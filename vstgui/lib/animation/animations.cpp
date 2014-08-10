@@ -145,6 +145,8 @@ ExchangeViewAnimation::ExchangeViewAnimation (CView* oldView, CView* newView, An
 
 	newViewValueEnd = newView->getAlphaValue ();
 	newView->setAlphaValue (0.f);
+	
+	destinationRect = viewToRemove->getViewSize ();
 }
 
 //-----------------------------------------------------------------------------
@@ -187,7 +189,7 @@ void ExchangeViewAnimation::animationTick (CView* view, IdStringPtr name, float 
 		case kPushInFromLeft:
 		{
 			CRect viewSize (newView->getViewSize ());
-			CCoord leftOrigin = viewToRemove->getViewSize ().left;
+			CCoord leftOrigin = destinationRect.left;
 			CCoord offset = viewSize.getWidth () * (1.f - pos);
 			viewSize.offset (-viewSize.left, 0);
 			viewSize.offset (leftOrigin - offset, 0);
@@ -200,7 +202,7 @@ void ExchangeViewAnimation::animationTick (CView* view, IdStringPtr name, float 
 		case kPushInFromRight:
 		{
 			CRect viewSize (newView->getViewSize ());
-			CCoord rightOrigin = viewToRemove->getViewSize ().left + viewToRemove->getViewSize ().getWidth ();
+			CCoord rightOrigin = destinationRect.left + destinationRect.getWidth ();
 			CCoord offset = viewSize.getWidth () * pos;
 			viewSize.offset (-viewSize.left, 0);
 			viewSize.offset (rightOrigin - offset, 0);
@@ -213,7 +215,7 @@ void ExchangeViewAnimation::animationTick (CView* view, IdStringPtr name, float 
 		case kPushInFromTop:
 		{
 			CRect viewSize (newView->getViewSize ());
-			CCoord topOrigin = viewToRemove->getViewSize ().top;
+			CCoord topOrigin = destinationRect.top;
 			CCoord offset = viewSize.getHeight () * (1.f - pos);
 			viewSize.offset (0, -viewSize.top);
 			viewSize.offset (0, topOrigin - offset);
@@ -226,7 +228,7 @@ void ExchangeViewAnimation::animationTick (CView* view, IdStringPtr name, float 
 		case kPushInFromBottom:
 		{
 			CRect viewSize (newView->getViewSize ());
-			CCoord bottomOrigin = viewToRemove->getViewSize ().top + viewToRemove->getViewSize ().getHeight ();
+			CCoord bottomOrigin = destinationRect.top + destinationRect.getHeight ();
 			CCoord offset = viewSize.getHeight () * pos;
 			viewSize.offset (0, -viewSize.top);
 			viewSize.offset (0, bottomOrigin - offset);
@@ -234,6 +236,46 @@ void ExchangeViewAnimation::animationTick (CView* view, IdStringPtr name, float 
 			newView->setViewSize (viewSize);
 			newView->setMouseableArea (viewSize);
 			newView->invalid ();
+			break;
+		}
+		case kPushInOutFromLeft:
+		{
+			CRect viewSize (newView->getViewSize ());
+			CCoord offset = viewSize.getWidth () * (1.f - pos);
+			viewSize.offset (-viewSize.left, 0);
+			viewSize.offset (destinationRect.left - offset, 0);
+			newView->invalid ();
+			newView->setViewSize (viewSize);
+			newView->setMouseableArea (viewSize);
+			newView->invalid ();
+			
+			offset = viewToRemove->getWidth () * pos;
+			viewSize = destinationRect;
+			viewSize.offset (offset, 0);
+			viewToRemove->invalid ();
+			viewToRemove->setViewSize (viewSize);
+			viewToRemove->setMouseableArea (viewSize);
+			viewToRemove->invalid ();
+			break;
+		}
+		case kPushInOutFromRight:
+		{
+			CRect viewSize (newView->getViewSize ());
+			CCoord offset = viewSize.getWidth () * pos;
+			viewSize.offset (-viewSize.left, 0);
+			viewSize.offset ((destinationRect.left + destinationRect.getWidth ()) - offset, 0);
+			newView->invalid ();
+			newView->setViewSize (viewSize);
+			newView->setMouseableArea (viewSize);
+			newView->invalid ();
+			
+			offset = viewToRemove->getWidth () * pos;
+			viewSize = destinationRect;
+			viewSize.offset (-offset, 0);
+			viewToRemove->invalid ();
+			viewToRemove->setViewSize (viewSize);
+			viewToRemove->setMouseableArea (viewSize);
+			viewToRemove->invalid ();
 			break;
 		}
 	}

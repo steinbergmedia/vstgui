@@ -53,6 +53,8 @@ typedef std::unordered_map<std::string,std::string> UIAttributesMap;
 class UIAttributes : public CBaseObject, private UIAttributesMap
 {
 public:
+	typedef std::vector<std::string> StringArray;
+	
 	UIAttributes (UTF8StringPtr* attributes = 0);
 	~UIAttributes ();
 
@@ -84,9 +86,11 @@ public:
 	
 	void setRectAttribute (const std::string& name, const CRect& r);
 	bool getRectAttribute (const std::string& name, CRect& r) const;
+
+	void setStringArrayAttribute (const std::string& name, const StringArray& values);
+	bool getStringArrayAttribute (const std::string& name, StringArray& values) const;
 	
-	void setAttributeArray (const std::string& name, const std::vector<std::string>& values);
-	bool getAttributeArray (const std::string& name, std::vector<std::string>& values) const;
+	static std::string createStringArrayValue (const StringArray& values);
 	
 	void removeAll () { clear (); }
 

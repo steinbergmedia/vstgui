@@ -71,78 +71,76 @@
 		</view>
 	</template>
 	<custom>
-		<attributes name="VST3Editor" Path="/Volumes/DATA/subversion/trunk/vstgui_head/vstgui/tests/uidescription vst3/resource/myEditor.uidesc"/>
-		<attributes windowSize="935, 84, 1235, 584" name="UIViewHierarchyBrowser"/>
-		<attributes windowSize="66, 185, 466, 742" name="UIViewInspector"/>
-		<attributes uidescPath="/Volumes/DATA/subversion/trunk/vstgui_head/vstgui/tests/uidescription vst3/resource/myEditor.uidesc" name="UIEditFrame" gridsize="5"/>
-		<attributes name="UIGridController" Size="5, 5"/>
+		<attributes Path="/Volumes/DATA/subversion/trunk/vstgui_head/vstgui/tests/uidescription vst3/resource/myEditor.uidesc" name="VST3Editor"/>
+		<attributes name="UIViewHierarchyBrowser" windowSize="935, 84, 1235, 584"/>
+		<attributes name="UIViewInspector" windowSize="66, 185, 466, 742"/>
+		<attributes gridsize="5" name="UIEditFrame" uidescPath="/Volumes/DATA/subversion/trunk/vstgui_head/vstgui/tests/uidescription vst3/resource/myEditor.uidesc"/>
+		<attributes Size="5, 5" name="UIGridController"/>
 		<attributes name="UIAttributesController"/>
-		<attributes EditorSize="0, 0, 1244, 732" SplitViewSize_2_1="0.1406752411575562800027938692437601275742" SplitViewSize_2_0="0.8553054662379421246853894444939214736223" SplitViewSize_0_1="0.154277699859747541299981321571976877749" SplitViewSize_0_0="0.8176718092566619411343253887025639414787" SplitViewSize_1_1="0.6690042075736325477564037100819405168295" TabSwitchValue="3" Version="1" SplitViewSize_1_0="0.3239831697054698644855363909300649538636" name="UIEditController"/>
-		<attributes SelectedRow="4" name="UIViewCreatorDataSource"/>
-		<attributes width="2" enabled="true" name="FocusDrawing" color="focus color"/>
-		<attributes SelectedRow="1" name="UITagsDataSource"/>
-		<attributes SelectedRow="2" name="UIColorsDataSource"/>
-		<attributes name="UIBitmapsDataSource" SelectedRow="11"/>
-		<attributes name="UIFontsDataSource" SelectedRow="1"/>
+		<attributes EditorSize="0, 0, 900, 698" SplitViewSize_2_1="0.3722222222222222320908713300013914704323" SplitViewSize_2_0="0.6222222222222222320908713300013914704323" SplitViewSize_0_1="0.1620029455081001545924124229713925160468" SplitViewSize_0_0="0.8085419734904271127362562765483744442463" Version="1" SplitViewSize_1_0="0.508100147275404978586266224738210439682" name="UIEditController" SplitViewSize_1_1="0.4845360824742268035514314306055894121528" TabSwitchValue="0"/>
+		<attributes SelectedRow="17" name="UIViewCreatorDataSource"/>
+		<attributes color="focus color" name="FocusDrawing" enabled="true" width="2"/>
+		<attributes name="UITagsDataSource" SelectedRow="1"/>
+		<attributes name="UIColorsDataSource" SelectedRow="2"/>
+		<attributes SelectedRow="11" name="UIBitmapsDataSource"/>
+		<attributes SelectedRow="1" name="UIFontsDataSource"/>
 		<attributes SelectedTemplate="view" name="UITemplateController"/>
-		<attributes SelectedRow="5" name="UIGradientsDataSource"/>
+		<attributes name="UIGradientsDataSource" SelectedRow="5"/>
 	</custom>
 	<colors>
-		<color rgba="#000000ff" name="black"/>
-		<color rgba="#ffffffff" name="white"/>
-		<color rgba="#414c58ff" name="default background"/>
-		<color rgba="#6c6cf1b8" name="focus color"/>
-		<color rgba="#ffffff37" name="group frame color"/>
-		<color rgba="#98989819" name="tab background"/>
-		<color rgba="#01020300" name="transparent"/>
-		<color rgba="#fefefebd" name="modal view background"/>
+		<color name="black" rgba="#000000ff"/>
+		<color name="white" rgba="#ffffffff"/>
+		<color name="default background" rgba="#414c58ff"/>
+		<color name="focus color" rgba="#6c6cf1b8"/>
+		<color name="group frame color" rgba="#ffffff37"/>
+		<color name="tab background" rgba="#98989819"/>
+		<color name="transparent" rgba="#01020300"/>
+		<color name="modal view background" rgba="#fefefebd"/>
 	</colors>
 	<bitmaps>
-		<bitmap path="horizontal_slider_back.bmp" name="slider_back_horizontal"/>
-		<bitmap path="vertical_slider_back.bmp" name="slider_back_vertical"/>
-		<bitmap path="slider_handle.bmp" name="slider_handle"/>
-		<bitmap path="switch_horizontal.bmp" name="switch_horizontal"/>
-		<bitmap path="switch_vertical.bmp" name="switch_vertical"/>
-		<bitmap path="animation_knob.png" name="animation_knob"/>
-		<bitmap path="TabController.png" name="TabController"/>
-		<bitmap path="onoff_button.bmp" name="onoff_button"/>
-		<bitmap path="rocker_switch.bmp" name="rocker_switch"/>
-		<bitmap path="vumeter_back.bmp" name="vumeter_back"/>
-		<bitmap path="vumeter_front.bmp" name="vumeter_front"/>
-		<bitmap nineparttiled-offsets="12, 22, 12, 12" path="FrameBackground.png" name="FrameBackground"/>
+		<bitmap name="slider_back_horizontal" path="horizontal_slider_back.bmp"/>
+		<bitmap name="slider_back_vertical" path="vertical_slider_back.bmp"/>
+		<bitmap name="slider_handle" path="slider_handle.bmp"/>
+		<bitmap name="switch_horizontal" path="switch_horizontal.bmp"/>
+		<bitmap name="switch_vertical" path="switch_vertical.bmp"/>
+		<bitmap name="animation_knob" path="animation_knob.png"/>
+		<bitmap name="TabController" path="TabController.png"/>
+		<bitmap name="onoff_button" path="onoff_button.bmp"/>
+		<bitmap name="rocker_switch" path="rocker_switch.bmp"/>
+		<bitmap name="vumeter_back" path="vumeter_back.bmp"/>
+		<bitmap name="vumeter_front" path="vumeter_front.bmp"/>
+		<bitmap name="FrameBackground" path="FrameBackground.png" nineparttiled-offsets="12, 22, 12, 12"/>
 	</bitmaps>
 	<fonts>
-		<font size="8" name="small label" font-name="Helvetica"/>
-		<font size="8" name="small label bold" font-name="Helvetica" bold="true"/>
-		<font size="8" name="display" alternative-font-names="Lucida Console" font-name="Menlo"/>
-		<font size="12" name="fp normal" font-name="Arial"/>
-		<font size="12" name="fp bold" font-name="Arial" bold="true"/>
-		<font size="12" name="fp italic" italic="true" font-name="Arial"/>
-		<font underline="true" size="12" name="fp underline" font-name="Arial"/>
-		<font strike-through="true" size="12" name="fp strikeout" font-name="Arial"/>
+		<font font-name="Helvetica" name="small label" size="8"/>
+		<font bold="true" font-name="Helvetica" name="small label bold" size="8"/>
+		<font font-name="Menlo" alternative-font-names="Lucida Console" name="display" size="8"/>
+		<font font-name="Arial" name="fp normal" size="12"/>
+		<font bold="true" font-name="Arial" name="fp bold" size="12"/>
+		<font font-name="Arial" italic="true" name="fp italic" size="12"/>
+		<font font-name="Arial" name="fp underline" size="12" underline="true"/>
+		<font font-name="Arial" name="fp strikeout" size="12" strike-through="true"/>
 	</fonts>
 	<control-tags>
-		<control-tag tag="1000" name="slider tag"/>
-		<control-tag tag="1001" name="switch tag"/>
-		<control-tag tag="20000" name="TabController"/>
-		<control-tag tag="20" name="peak tag"/>
-		<control-tag tag="1" name="close modal view tag"/>
-		<control-tag tag="0" name="open modal view tag"/>
-		<control-tag tag="20001" name="LineStyle"/>
-		<control-tag tag="20002" name="KnobStepCountTest"/>
+		<control-tag name="slider tag" tag="1000"/>
+		<control-tag name="switch tag" tag="1001"/>
+		<control-tag name="TabController" tag="20000"/>
+		<control-tag name="peak tag" tag="20"/>
+		<control-tag name="close modal view tag" tag="1"/>
+		<control-tag name="open modal view tag" tag="0"/>
+		<control-tag name="LineStyle" tag="20001"/>
+		<control-tag name="KnobStepCountTest" tag="20002"/>
 	</control-tags>
-	<template origin="0, 0" class="CViewContainer" minSize="500, 320" background-color="default background" mouse-enabled="true" size="500, 320" background-color-draw-style="filled and stroked" name="view" opacity="1" maxSize="500, 320" transparent="false">
-		<view class="CSegmentButton" transparent="false" origin="10, 8" opacity="1" bitmap="TabController" background-offset="0, 0" wheel-inc-value="0.1" gradient="Unselected Segment" max-value="4" min-value="0" default-value="0" text-alignment="center" frame-width="1" frame-color="black" icon-text-margin="0" gradient-highlighted="Selected Segment" text-color="black" text-color-highlighted="white" mouse-enabled="true" round-radius="5" size="480, 20" font="~ NormalFontSmall" control-tag="TabController" segment-count="5" style="horizontal"/>
-		<view transparent="false" opacity="1" template-names="controls,tab2,tab3,tab4,tab5" origin="10, 35" animation-time="120" mouse-enabled="true" size="480, 260" background-color-draw-style="filled and stroked" class="UIViewSwitchContainer" template-switch-control="TabController" background-color="tab background">
-			<view transparent="true" opacity="1" origin="0, 0" mouse-enabled="true" template="controls" size="480, 260" background-color-draw-style="filled and stroked" class="CViewContainer" background-color="tab background"/>
-		</view>
+	<template origin="0, 0" class="CViewContainer" minSize="500, 320" background-color="default background" opacity="1" maxSize="500, 320" name="view" mouse-enabled="true" size="500, 320" background-color-draw-style="filled and stroked" transparent="false">
+		<view class="CSegmentButton" transparent="false" origin="10, 8" opacity="1" background-offset="0, 0" wheel-inc-value="0.1" gradient="Unselected Segment" max-value="4" min-value="0" default-value="0" control-tag="TabController" text-alignment="center" frame-color="black" segment-names="Controls,Miscellaneous,ScrollView,SplitView,Fonts/LineStyle" frame-width="1" icon-text-margin="0" gradient-highlighted="Selected Segment" text-color-highlighted="white" text-color="black" mouse-enabled="true" round-radius="5" size="480, 20" font="~ NormalFontSmall" style="horizontal"/>
+		<view transparent="false" template-names="controls,tab2,tab3,tab4,tab5" origin="10, 35" mouse-enabled="true" size="480, 260" background-color-draw-style="filled and stroked" animation-time="120" class="UIViewSwitchContainer" template-switch-control="TabController" background-color="tab background" opacity="1" animation-style="push"/>
 		<view class="CTextButton" tooltip="This opens a modal view with an animation.\n\nAll other controls are disabled while the modal view is open." sub-controller="ModalViewController" mouse-enabled="true" transparent="false" origin="170, 300" opacity="1" background-offset="0, 0" icon-position="left" wheel-inc-value="0.1" gradient="Default TextButton Gradient" max-value="1" min-value="0" control-tag="open modal view tag" icon-text-margin="0" frame-width="1" default-value="0.5" frame-color-highlighted="black" frame-color="black" gradient-highlighted="Default TextButton Gradient Highlighted" text-color-highlighted="white" text-color="black" round-radius="6" size="127, 15" font="~ NormalFontVerySmall" text-alignment="center" title="Open Modal View" kick-style="true"/>
 		<view class="COptionMenu" tooltip="An option menu" transparent="false" size="70, 15" opacity="1" origin="420, 300" background-offset="0, 0" wheel-inc-value="0.1" min-value="0" control-tag="TabController" style-3D-out="false" text-rotation="0" style-round-rect="false" style-no-draw="false" style-3D-in="false" font-antialias="true" shadow-color="#ff0000ff" value-precision="2" text-alignment="center" frame-width="1" text-inset="0, 0" style-shadow-text="false" frame-color="black" max-value="4" menu-popup-style="true" default-value="0" back-color="black" font-color="white" style-no-text="false" style-no-frame="false" font="~ NormalFontVerySmall" round-rect-radius="6" mouse-enabled="true" menu-check-style="true"/>
 	</template>
-	<template transparent="true" origin="0, 0" class="CViewContainer" background-color="black" mouse-enabled="true" size="480, 260" background-color-draw-style="filled and stroked" opacity="1" name="tab2">
+	<template transparent="true" origin="0, 0" class="CViewContainer" background-color="black" name="tab2" mouse-enabled="true" size="480, 260" background-color-draw-style="filled and stroked" opacity="1">
 		<view bitmap="FrameBackground" transparent="false" mouse-enabled="true" background-color-draw-style="filled and stroked" size="460, 240" class="CViewContainer" opacity="1" origin="10, 10" background-color="black">
 			<view class="CKnob" mouse-enabled="true" transparent="false" background-offset="0, 0" wheel-inc-value="0.01" min-value="0" handle-line-width="6" size="100, 100" handle-color="~ BlackCColor" handle-shadow-color="group frame color" corona-from-center="false" corona-drawing="false" corona-inverted="false" angle-range="270" corona-inset="4" circle-drawing="false" opacity="1" zoom-factor="1.5" origin="20, 25" default-value="0" value-inset="2" control-tag="KnobStepCountTest" corona-color="~ BlueCColor" corona-outline="true" max-value="5" corona-dash-dot="false" angle-start="135"/>
-			<view transparent="false" opacity="1" shadow-blur-size="5" origin="125, 20" mouse-enabled="true" size="330, 220" background-color-draw-style="filled and stroked" shadow-intensity="0.3" shadow-offset="-2, -2" class="CShadowViewContainer" background-color="black">
+			<view transparent="false" opacity="1" shadow-blur-size="5" origin="125, 20" bitmap="0" mouse-enabled="true" size="330, 220" background-color-draw-style="filled and stroked" shadow-intensity="0.3" shadow-offset="-2, -2" class="CShadowViewContainer" background-color="black">
 				<view mouse-enabled="true" opacity="1" size="310, 200" view-resize-animation-time="200" background-color-draw-style="filled and stroked" class="CRowColumnView" background-color="group frame color" origin="10, 10" transparent="false" animate-view-resizing="false" margin="5,5,5,5" spacing="10" equal-size-layout="center" row-style="true">
 					<view mouse-enabled="true" transparent="false" opacity="1" class="CCheckBox" background-offset="0, 0" wheel-inc-value="0.1" max-value="1" min-value="0" origin="87.5, 5" default-value="0.5" autosize-to-fit="false" checkmark-color="~ RedCColor" boxfill-color="white" size="135, 20" font="~ SystemFont" boxframe-color="black" draw-crossbox="false" font-color="white" title="This is a Checkbox"/>
 					<view mouse-enabled="true" transparent="false" opacity="1" class="CCheckBox" background-offset="0, 0" wheel-inc-value="0.1" max-value="1" min-value="0" origin="88.5, 35" default-value="0.5" autosize-to-fit="false" checkmark-color="~ RedCColor" boxfill-color="white" size="133, 20" font="~ SystemFont" boxframe-color="black" draw-crossbox="false" font-color="white" title="Another Checkbox"/>
@@ -155,7 +153,7 @@
 			<view class="CGradientView" mouse-enabled="true" transparent="false" opacity="1" size="100, 100" draw-antialiased="true" round-rect-radius="5" frame-color="black" radial-center="0.5, 0.5" radial-radius="1" origin="20, 130" gradient-angle="45" gradient="GradientView" frame-width="1" gradient-style="linear"/>
 		</view>
 	</template>
-	<template origin="0, 0" class="CViewContainer" minSize="480, 260" background-color="black" mouse-enabled="true" size="480, 260" background-color-draw-style="filled and stroked" name="tab3" opacity="1" maxSize="480, 260" transparent="true">
+	<template origin="0, 0" class="CViewContainer" minSize="480, 260" background-color="black" opacity="1" maxSize="480, 260" name="tab3" mouse-enabled="true" size="480, 260" background-color-draw-style="filled and stroked" transparent="true">
 		<view bitmap="FrameBackground" transparent="true" mouse-enabled="true" background-color-draw-style="filled and stroked" size="260, 205" class="CViewContainer" opacity="1" origin="120, 25" background-color="black">
 			<view mouse-enabled="true" transparent="true" opacity="1" size="260, 185" origin="0, 20" background-color-draw-style="filled and stroked" overlay-scrollbars="false" scrollbar-scroller-color="group frame color" auto-drag-scrolling="false" auto-hide-scrollbars="false" class="CScrollView" background-color="white" vertical-scrollbar="true" follow-focus-view="false" scrollbar-background-color="default background" horizontal-scrollbar="true" bordered="false" scrollbar-width="12" scrollbar-frame-color="transparent" container-size="480, 260">
 				<view transparent="true" opacity="1" origin="0, 0" mouse-enabled="true" template="controls" size="480, 260" background-color-draw-style="filled and stroked" class="CViewContainer" background-color="tab background"/>
@@ -163,7 +161,7 @@
 			<view class="CTextLabel" mouse-enabled="true" transparent="true" size="260, 20" opacity="1" origin="0, 0" background-offset="0, 0" wheel-inc-value="0.1" max-value="1" min-value="0" style-3D-out="false" text-rotation="0" style-round-rect="false" style-no-draw="false" style-3D-in="false" font-antialias="true" shadow-color="#ff0000ff" value-precision="2" title="Scroll View" text-alignment="center" round-rect-radius="6" frame-width="1" text-inset="0, 0" style-shadow-text="false" frame-color="black" font-color="white" style-no-text="false" style-no-frame="false" font="small label bold" default-value="0.5" back-color="black"/>
 		</view>
 	</template>
-	<template transparent="true" origin="0, 0" class="CViewContainer" background-color="black" mouse-enabled="true" size="480, 260" background-color-draw-style="filled and stroked" opacity="1" name="tab4">
+	<template transparent="true" origin="0, 0" class="CViewContainer" background-color="black" name="tab4" mouse-enabled="true" size="480, 260" background-color-draw-style="filled and stroked" opacity="1">
 		<view transparent="false" sub-controller="SplitViewController" opacity="1" orientation="horizontal" origin="20, 20" mouse-enabled="true" size="440, 225" background-color-draw-style="filled and stroked" separator-width="7" resize-method="last" class="CSplitView" background-color="group frame color">
 			<view transparent="false" mouse-enabled="true" background-color-draw-style="filled and stroked" size="74, 225" class="CViewContainer" opacity="1" origin="0, 0" background-color="tab background"/>
 			<view bitmap="FrameBackground" transparent="false" mouse-enabled="true" background-color-draw-style="filled and stroked" size="114, 225" class="CViewContainer" opacity="1" origin="81, 0" background-color="black">
@@ -178,7 +176,7 @@
 		</view>
 		<view class="CTextLabel" mouse-enabled="true" transparent="true" size="480, 20" opacity="1" origin="0, 0" background-offset="0, 0" wheel-inc-value="0.1" max-value="1" min-value="0" style-3D-out="false" text-rotation="0" style-round-rect="false" style-no-draw="false" style-3D-in="false" font-antialias="true" shadow-color="~ RedCColor" value-precision="2" title="CSplitView Test" text-alignment="center" round-rect-radius="6" frame-width="1" text-inset="0, 0" style-shadow-text="false" frame-color="black" font-color="white" style-no-text="false" style-no-frame="false" font="~ NormalFont" default-value="0.5" back-color="black"/>
 	</template>
-	<template transparent="true" origin="0, 0" class="CViewContainer" background-color="black" mouse-enabled="true" size="480, 260" background-color-draw-style="filled and stroked" opacity="1" name="tab5">
+	<template transparent="true" origin="0, 0" class="CViewContainer" background-color="black" name="tab5" mouse-enabled="true" size="480, 260" background-color-draw-style="filled and stroked" opacity="1">
 		<view class="CTextLabel" mouse-enabled="true" transparent="false" size="165, 30" opacity="1" origin="15, 185" background-offset="0, 0" wheel-inc-value="0.1" max-value="1" min-value="0" style-3D-out="false" text-rotation="0" style-round-rect="false" style-no-draw="false" style-3D-in="false" font-antialias="true" shadow-color="~ RedCColor" value-precision="2" title="NormalFontVeryBig" text-alignment="center" round-rect-radius="6" frame-width="1" text-inset="0, 0" style-shadow-text="false" frame-color="black" font-color="~ BlackCColor" style-no-text="false" style-no-frame="false" font="~ NormalFontVeryBig" default-value="0.5" back-color="~ WhiteCColor"/>
 		<view class="CTextLabel" mouse-enabled="true" transparent="false" size="165, 30" opacity="1" origin="15, 150" background-offset="0, 0" wheel-inc-value="0.1" max-value="1" min-value="0" style-3D-out="false" text-rotation="0" style-round-rect="false" style-no-draw="false" style-3D-in="false" font-antialias="true" shadow-color="~ RedCColor" value-precision="2" title="NormalFontBig" text-alignment="center" round-rect-radius="6" frame-width="1" text-inset="0, 0" style-shadow-text="false" frame-color="black" font-color="~ BlackCColor" style-no-text="false" style-no-frame="false" font="~ NormalFontBig" default-value="0.5" back-color="~ WhiteCColor"/>
 		<view class="CTextLabel" mouse-enabled="true" transparent="false" size="165, 30" opacity="1" origin="15, 115" background-offset="0, 0" wheel-inc-value="0.1" max-value="1" min-value="0" style-3D-out="false" text-rotation="0" style-round-rect="false" style-no-draw="false" style-3D-in="false" font-antialias="true" shadow-color="~ RedCColor" value-precision="2" title="NormalFont" text-alignment="center" round-rect-radius="6" frame-width="1" text-inset="0, 0" style-shadow-text="false" frame-color="black" font-color="~ BlackCColor" style-no-text="false" style-no-frame="false" font="~ NormalFont" default-value="0.5" back-color="~ WhiteCColor"/>
@@ -204,7 +202,7 @@
 			<view class="COptionMenu" transparent="false" size="90, 15" opacity="1" origin="5, 95" background-offset="0, 0" wheel-inc-value="0.1" min-value="0" control-tag="LineStyle" style-3D-out="false" text-rotation="0" style-round-rect="false" style-no-draw="false" style-3D-in="false" font-antialias="true" shadow-color="~ RedCColor" value-precision="2" text-alignment="center" frame-width="1" text-inset="0, 0" style-shadow-text="false" frame-color="black" max-value="5" menu-popup-style="true" default-value="0" back-color="black" font-color="white" style-no-text="false" style-no-frame="false" font="~ NormalFontVerySmall" round-rect-radius="6" mouse-enabled="true" menu-check-style="true"/>
 		</view>
 	</template>
-	<template origin="0, 0" class="CViewContainer" minSize="500, 320" background-color="modal view background" mouse-enabled="true" size="480, 300" background-color-draw-style="filled and stroked" name="ModalView" opacity="1" maxSize="500, 320" transparent="false">
+	<template origin="0, 0" class="CViewContainer" minSize="500, 320" background-color="modal view background" opacity="1" maxSize="500, 320" name="ModalView" mouse-enabled="true" size="480, 300" background-color-draw-style="filled and stroked" transparent="false">
 		<view class="CGradientView" mouse-enabled="true" transparent="false" opacity="1" size="260, 190" draw-antialiased="true" round-rect-radius="15" frame-color="default background" radial-center="0, 0" radial-radius="0.5" origin="120, 60" gradient-angle="180" gradient="Dialog Gradient" frame-width="1" gradient-style="linear"/>
 		<view bitmap="FrameBackground" transparent="false" mouse-enabled="true" background-color-draw-style="filled and stroked" size="260, 190" class="CViewContainer" opacity="1" origin="120, 60" background-color="black">
 			<view class="CTextLabel" mouse-enabled="true" transparent="true" size="260, 70" opacity="1" origin="0, 20" background-offset="0, 0" wheel-inc-value="0.1" max-value="1" min-value="0" style-3D-out="false" text-rotation="0" style-round-rect="false" style-no-draw="false" style-3D-in="false" font-antialias="true" shadow-color="~ BlackCColor" value-precision="2" title="This is a Modal View" text-alignment="center" round-rect-radius="6" frame-width="1" text-inset="0, 0" style-shadow-text="true" frame-color="black" font-color="white" style-no-text="false" style-no-frame="false" font="~ NormalFontVeryBig" default-value="0.5" back-color="black"/>
@@ -214,32 +212,32 @@
 	<variables/>
 	<gradients>
 		<gradient name="Default TextButton Gradient">
-			<color-stop rgba="#dcdcdcff" start="0"/>
-			<color-stop rgba="#b4b4b4ff" start="1"/>
+			<color-stop start="0" rgba="#dcdcdcff"/>
+			<color-stop start="1" rgba="#b4b4b4ff"/>
 		</gradient>
 		<gradient name="Default TextButton Gradient Highlighted">
-			<color-stop rgba="#b4b4b4ff" start="0"/>
-			<color-stop rgba="#646464ff" start="1"/>
+			<color-stop start="0" rgba="#b4b4b4ff"/>
+			<color-stop start="1" rgba="#646464ff"/>
 		</gradient>
 		<gradient name="Dialog Gradient">
-			<color-stop start="0" rgba="#00000083"/>
-			<color-stop start="0.4817845394736842146166111433558398857713" rgba="#000000a6"/>
-			<color-stop start="1" rgba="#00000083"/>
+			<color-stop rgba="#00000083" start="0"/>
+			<color-stop rgba="#000000a6" start="0.4817845394736842146166111433558398857713"/>
+			<color-stop rgba="#00000083" start="1"/>
 		</gradient>
 		<gradient name="GradientView">
-			<color-stop start="0" rgba="#0000ffff"/>
-			<color-stop start="0.5162520559210526105431426913128234446049" rgba="#caff00ff"/>
-			<color-stop start="1" rgba="#00ffffff"/>
+			<color-stop rgba="#0000ffff" start="0"/>
+			<color-stop rgba="#caff00ff" start="0.5162520559210526105431426913128234446049"/>
+			<color-stop rgba="#00ffffff" start="1"/>
 		</gradient>
 		<gradient name="Selected Segment">
-			<color-stop rgba="#576576ff" start="0"/>
-			<color-stop rgba="#37414bff" start="0.5218236019736841591054599120980128645897"/>
-			<color-stop rgba="#4c5967ff" start="1"/>
+			<color-stop start="0" rgba="#576576ff"/>
+			<color-stop start="0.5218236019736841591054599120980128645897" rgba="#37414bff"/>
+			<color-stop start="1" rgba="#4c5967ff"/>
 		</gradient>
 		<gradient name="Unselected Segment">
-			<color-stop start="0" rgba="#cececeff"/>
-			<color-stop start="0.5218236019736841591054599120980128645897" rgba="#9b9b9bff"/>
-			<color-stop start="1" rgba="#b4b4b4ff"/>
+			<color-stop rgba="#cececeff" start="0"/>
+			<color-stop rgba="#9b9b9bff" start="0.5218236019736841591054599120980128645897"/>
+			<color-stop rgba="#b4b4b4ff" start="1"/>
 		</gradient>
 	</gradients>
 </vstgui-ui-description>

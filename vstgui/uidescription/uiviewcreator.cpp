@@ -2274,7 +2274,7 @@ CTextButtonCreator __gCTextButtonCreator;
 // CSegmentButtonCreator attributes
 //-----------------------------------------------------------------------------
 static const std::string kAttrStyle = "style";
-static const std::string kAttrSegmentCount = "segment-count";
+static const std::string kAttrSegmentNames = "segment-names";
 
 //-----------------------------------------------------------------------------
 class CSegmentButtonCreator : public IViewCreator
@@ -2285,7 +2285,7 @@ public:
 	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CControl"; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD
 	{
-		CSegmentButton* button = new CSegmentButton (CRect (0, 0, 100, 20));
+		CSegmentButton* button = new CSegmentButton (CRect (0, 0, 200, 20));
 		updateSegmentCount (button, 4);
 		return button;
 	}
@@ -2304,7 +2304,16 @@ public:
 				button->addSegment (seg);
 			}
 		}
-		
+	}
+	void updateSegments (CSegmentButton* button, const UIAttributes::StringArray& names) const
+	{
+		button->removeAllSegments ();
+		for (UIAttributes::StringArray::const_iterator it = names.begin (), end = names.end (); it != end; ++it)
+		{
+			CSegmentButton::Segment segment;
+			segment.name = *it;
+			button->addSegment (segment);
+		}
 	}
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD
 	{
@@ -2359,15 +2368,15 @@ public:
 		if (gradientHighlightedName)
 			button->setGradientHighlighted (description->getGradient (gradientHighlightedName->c_str ()));
 
-		int32_t segmentCount;
-		if (attributes.getIntegerAttribute (kAttrSegmentCount, segmentCount))
-			updateSegmentCount (button, segmentCount);
+		UIAttributes::StringArray segmentNames;
+		if (attributes.getStringArrayAttribute (kAttrSegmentNames, segmentNames))
+			updateSegments (button, segmentNames);
 		return true;
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const VSTGUI_OVERRIDE_VMETHOD
 	{
 		attributeNames.push_back (kAttrStyle);
-		attributeNames.push_back (kAttrSegmentCount);
+		attributeNames.push_back (kAttrSegmentNames);
 		attributeNames.push_back (kAttrFont);
 		attributeNames.push_back (kAttrTextColor);
 		attributeNames.push_back (kAttrTextColorHighlighted);
@@ -2383,7 +2392,7 @@ public:
 	AttrType getAttributeType (const std::string& attributeName) const VSTGUI_OVERRIDE_VMETHOD
 	{
 		if (attributeName == kAttrStyle) return kListType;
-		if (attributeName == kAttrSegmentCount) return kIntegerType;
+		if (attributeName == kAttrSegmentNames) return kStringType;
 		if (attributeName == kAttrFont) return kFontType;
 		if (attributeName == kAttrTextColor) return kColorType;
 		if (attributeName == kAttrTextColorHighlighted) return kColorType;
@@ -2430,9 +2439,13 @@ public:
 			}
 			return false;
 		}
-		else if (attributeName == kAttrSegmentCount)
+		else if (attributeName == kAttrSegmentNames)
 		{
-			stringValue = numberToString (button->getSegments ().size ());
+			const CSegmentButton::Segments& segments = button->getSegments ();
+			UIAttributes::StringArray stringArray;
+			for (CSegmentButton::Segments::const_iterator it = segments.begin (), end = segments.end (); it != end; ++it)
+				stringArray.push_back ((*it).name);
+			stringValue = UIAttributes::createStringArrayValue (stringArray);
 			return true;
 		}
 		else if (attributeName == kAttrTextColor)
@@ -3413,6 +3426,7 @@ CAnimationSplashScreenCreator __gCAnimationSplashScreenCreator;
 //-----------------------------------------------------------------------------
 static const std::string kAttrTemplateNames = "template-names";
 static const std::string kAttrTemplateSwitchControl = "template-switch-control";
+static const std::string kAttrAnimationStyle = "animation-style";
 
 //-----------------------------------------------------------------------------
 class UIViewSwitchContainerCreator : public IViewCreator
@@ -3452,6 +3466,17 @@ public:
 				controller->setSwitchControlTag (tag);
 			}
 		}
+		attr = attributes.getAttributeValue (kAttrAnimationStyle);
+		if (attr)
+		{
+			UIViewSwitchContainer::AnimationStyle style = UIViewSwitchContainer::kFadeInOut;
+			if (*attr == "move")
+				style = UIViewSwitchContainer::kMoveInOut;
+			else if (*attr == "push")
+				style = UIViewSwitchContainer::kPushInOut;
+			viewSwitch->setAnimationStyle (style);
+		}
+		
 		int32_t animationTime;
 		if (attributes.getIntegerAttribute (kAttrAnimationTime, animationTime))
 		{
@@ -3463,6 +3488,7 @@ public:
 	{
 		attributeNames.push_back (kAttrTemplateNames);
 		attributeNames.push_back (kAttrTemplateSwitchControl);
+		attributeNames.push_back (kAttrAnimationStyle);
 		attributeNames.push_back (kAttrAnimationTime);
 		return true;
 	}
@@ -3470,6 +3496,7 @@ public:
 	{
 		if (attributeName == kAttrTemplateNames) return kStringType;
 		if (attributeName == kAttrTemplateSwitchControl) return kTagType;
+		if (attributeName == kAttrAnimationStyle) return kListType;
 		if (attributeName == kAttrAnimationTime) return kIntegerType;
 		return kUnknownType;
 	}
@@ -3504,6 +3531,42 @@ public:
 		else if (attributeName == kAttrAnimationTime)
 		{
 			stringValue = numberToString ((int32_t)viewSwitch->getAnimationTime ());
+			return true;
+		}
+		else if (attributeName == kAttrAnimationStyle)
+		{
+			switch (viewSwitch->getAnimationStyle ())
+			{
+				case UIViewSwitchContainer::kFadeInOut:
+				{
+					stringValue = "fade";
+					return true;
+				}
+				case UIViewSwitchContainer::kMoveInOut:
+				{
+					stringValue = "move";
+					return true;
+				}
+				case UIViewSwitchContainer::kPushInOut:
+				{
+					stringValue = "push";
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	bool getPossibleListValues (const std::string& attributeName, std::list<const std::string*>& values) const VSTGUI_OVERRIDE_VMETHOD
+	{
+		if (attributeName == kAttrAnimationStyle)
+		{
+			static std::string kFadeInOut = "fade";
+			static std::string kMoveInOut = "move";
+			static std::string kPushInOut = "push";
+			
+			values.push_back (&kFadeInOut);
+			values.push_back (&kMoveInOut);
+			values.push_back (&kPushInOut);
 			return true;
 		}
 		return false;
