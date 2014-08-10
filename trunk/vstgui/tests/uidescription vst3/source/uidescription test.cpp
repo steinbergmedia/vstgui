@@ -37,6 +37,7 @@
 #include "pluginterfaces/base/ibstream.h"
 #include "pluginterfaces/vst/ivstparameterchanges.h"
 #include <cmath>
+#include <cassert>
 
 using namespace Steinberg;
 using namespace Steinberg::Vst;
