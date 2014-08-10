@@ -68,7 +68,7 @@ D2DFont::D2DFont (const char* name, const CCoord& size, const int32_t& style)
 			if (fontFamily)
 			{
 				IDWriteFont* font;
-				fontFamily->GetFont (0, &font);
+				fontFamily->GetFirstMatchingFont (fontWeight, DWRITE_FONT_STRETCH_NORMAL, fontStyle, &font);
 				if (font)
 				{
 					DWRITE_FONT_METRICS fontMetrics;
