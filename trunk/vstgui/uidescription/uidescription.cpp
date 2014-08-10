@@ -3135,7 +3135,7 @@ CFontRef UIFontNode::getFont ()
 					if (std::find (fontNames.begin (), fontNames.end (), *nameAttr) == fontNames.end ())
 					{
 						std::vector<std::string> alternativeFontNames;
-						attributes->getAttributeArray ("alternative-font-names", alternativeFontNames);
+						attributes->getStringArrayAttribute ("alternative-font-names", alternativeFontNames);
 						for (std::vector<std::string>::const_iterator it = alternativeFontNames.begin (); it != alternativeFontNames.end (); it++)
 						{
 							if (std::find (fontNames.begin (), fontNames.end (), *it) != fontNames.end ())

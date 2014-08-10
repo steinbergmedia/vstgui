@@ -264,14 +264,15 @@ void Animator::addAnimation (CView* view, IdStringPtr name, IAnimationTarget* ta
 void Animator::addAnimation (CView* view, IdStringPtr name, IAnimationTarget* target, ITimingFunction* timingFunction, CBaseObject* notificationObject)
 {
 #if VSTGUI_HAS_FUNCTIONAL
-	SharedPointer<CBaseObject> nObj (notificationObject);
-	auto notification = [nObj] (CView* view, const IdStringPtr name, IAnimationTarget* target) {
-		if (nObj)
-		{
+	NotificationFunction notification;
+	if (notificationObject)
+	{
+		SharedPointer<CBaseObject> nObj (notificationObject);
+		notification = [nObj] (CView* view, const IdStringPtr name, IAnimationTarget* target) {
 			FinishedMessage fmsg (view, name, target);
 			nObj->notify (&fmsg, kMsgAnimationFinished);
-		}
-	};
+		};
+	}
 	addAnimation (view, name, target, timingFunction, std::move (notification));
 #else
 	if (animations.empty ())

@@ -96,7 +96,9 @@ public:
 		kPushInFromLeft,
 		kPushInFromRight,
 		kPushInFromTop,
-		kPushInFromBottom
+		kPushInFromBottom,
+		kPushInOutFromLeft,
+		kPushInOutFromRight
 	};
 
 	/** oldView must be a subview of the animation view */
@@ -112,6 +114,7 @@ protected:
 	AnimationStyle style;
 	float newViewValueEnd;
 	float oldViewValueStart;
+	CRect destinationRect;
 };
 
 //-----------------------------------------------------------------------------

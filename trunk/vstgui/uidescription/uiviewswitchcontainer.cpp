@@ -36,8 +36,8 @@
 #include "iviewcreator.h"
 #include "uidescription.h"
 #include "../lib/cframe.h"
-#include "../lib/animation/animations.h"
 #include "../lib/animation/timingfunctions.h"
+#include "../lib/animation/animations.h"
 
 namespace VSTGUI {
 
@@ -45,8 +45,9 @@ namespace VSTGUI {
 UIViewSwitchContainer::UIViewSwitchContainer (const CRect& size)
 : CViewContainer (size)
 , controller (0)
-, currentViewIndex (0)
+, currentViewIndex (-1)
 , animationTime (120)
+, animationStyle (kFadeInOut)
 {
 }
 
@@ -71,7 +72,7 @@ void UIViewSwitchContainer::setController (IViewSwitchController* _controller)
 //-----------------------------------------------------------------------------
 void UIViewSwitchContainer::setCurrentViewIndex (int32_t viewIndex)
 {
-	if (controller)
+	if (controller && viewIndex != currentViewIndex)
 	{
 		CView* view = controller->createViewForIndex (viewIndex);
 		if (view)
@@ -90,7 +91,42 @@ void UIViewSwitchContainer::setCurrentViewIndex (int32_t viewIndex)
 				CView* oldView = getView (0);
 				if (isAttached () && oldView && getFrame ())
 				{
-					getFrame ()->getAnimator ()->addAnimation (this, "UIViewSwitchContainer::setCurrentViewIndex", new Animation::ExchangeViewAnimation (oldView, view, Animation::ExchangeViewAnimation::kAlphaValueFade), new Animation::LinearTimingFunction (animationTime));
+					Animation::IAnimationTarget* animation = 0;
+					switch (animationStyle)
+					{
+						case kFadeInOut:
+						{
+							animation = new Animation::ExchangeViewAnimation (oldView, view, Animation::ExchangeViewAnimation::kAlphaValueFade);
+							break;
+						}
+						case kMoveInOut:
+						{
+							Animation::ExchangeViewAnimation::AnimationStyle style = Animation::ExchangeViewAnimation::kPushInFromLeft;
+							if (viewIndex > currentViewIndex)
+							{
+								style = Animation::ExchangeViewAnimation::kPushInFromRight;
+							}
+							animation = new Animation::ExchangeViewAnimation (oldView, view, style);
+							break;
+						}
+						case kPushInOut:
+						{
+							Animation::ExchangeViewAnimation::AnimationStyle style = Animation::ExchangeViewAnimation::kPushInOutFromLeft;
+							if (viewIndex > currentViewIndex)
+							{
+								style = Animation::ExchangeViewAnimation::kPushInOutFromRight;
+							}
+							animation = new Animation::ExchangeViewAnimation (oldView, view, style);
+							break;
+						}
+					}
+					if (animation)
+						getFrame ()->getAnimator ()->addAnimation (this, "UIViewSwitchContainer::setCurrentViewIndex", animation, new Animation::LinearTimingFunction (animationTime));
+					else
+					{
+						removeAll ();
+						addView (view);
+					}
 				}
 				else
 				{
@@ -113,6 +149,12 @@ void UIViewSwitchContainer::setCurrentViewIndex (int32_t viewIndex)
 void UIViewSwitchContainer::setAnimationTime (int32_t ms)
 {
 	animationTime = ms;
+}
+
+//-----------------------------------------------------------------------------
+void UIViewSwitchContainer::setAnimationStyle (AnimationStyle style)
+{
+	animationStyle = style;
 }
 
 //-----------------------------------------------------------------------------

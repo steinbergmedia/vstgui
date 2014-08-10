@@ -60,6 +60,15 @@ public:
 	void setAnimationTime (int32_t ms);
 	int32_t getAnimationTime () const { return animationTime; }
 
+	enum AnimationStyle {
+		kFadeInOut,
+		kMoveInOut,
+		kPushInOut
+	};
+
+	void setAnimationStyle (AnimationStyle style);
+	AnimationStyle getAnimationStyle () const { return animationStyle; }
+
 //-----------------------------------------------------------------------------
 	CLASS_METHODS (UIViewSwitchContainer, CViewContainer)
 protected:
@@ -69,6 +78,7 @@ protected:
 	IViewSwitchController* controller;
 	int32_t currentViewIndex;
 	int32_t animationTime;
+	AnimationStyle animationStyle;
 };
 
 //-----------------------------------------------------------------------------

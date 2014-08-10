@@ -376,20 +376,6 @@ CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes
 				CSegmentButton* button = dynamic_cast<CSegmentButton*>(control);
 				if (button)
 				{
-					button->removeAllSegments ();
-					CSegmentButton::Segment segment;
-					segment.name = "Views";
-					button->addSegment (segment);
-					segment.name = "Tags";
-					button->addSegment (segment);
-					segment.name = "Colors";
-					button->addSegment (segment);
-					segment.name = "Gradients";
-					button->addSegment (segment);
-					segment.name = "Bitmaps";
-					button->addSegment (segment);
-					segment.name = "Fonts";
-					button->addSegment (segment);
 					button->setMax (static_cast<float> (button->getSegments ().size ()));
 					tabSwitchControl = button;
 					tabSwitchControl->addDependency (this);

@@ -208,7 +208,7 @@ bool UIAttributes::getPointAttribute (const std::string& name, CPoint& p) const
 		size_t pos = str->find (",", start, 1);
 		if (pos != std::string::npos)
 		{
-			std::vector<std::string> subStrings;
+			StringArray subStrings;
 			while (pos != std::string::npos)
 			{
 				std::string name (*str, start, pos - start);
@@ -253,7 +253,7 @@ bool UIAttributes::getRectAttribute (const std::string& name, CRect& r) const
 		size_t pos = str->find (",", start, 1);
 		if (pos != std::string::npos)
 		{
-			std::vector<std::string> subStrings;
+			StringArray subStrings;
 			while (pos != std::string::npos)
 			{
 				std::string name (*str, start, pos - start);
@@ -277,21 +277,13 @@ bool UIAttributes::getRectAttribute (const std::string& name, CRect& r) const
 }
 
 //-----------------------------------------------------------------------------
-void UIAttributes::setAttributeArray (const std::string& name, const std::vector<std::string>& values)
+void UIAttributes::setStringArrayAttribute (const std::string& name, const StringArray& values)
 {
-	std::string value;
-	size_t numValues = values.size ();
-	for (size_t i = 0; i < numValues - 1; i++)
-	{
-		value += values[i];
-		value += ',';
-	}
-	value += values[numValues-1];
-	setAttribute (name, value);
+	setAttribute (name, createStringArrayValue (values));
 }
 
 //-----------------------------------------------------------------------------
-bool UIAttributes::getAttributeArray (const std::string& name, std::vector<std::string>& values) const
+bool UIAttributes::getStringArrayAttribute (const std::string& name, StringArray& values) const
 {
 	const std::string* str = getAttributeValue (name);
 	if (str)
@@ -305,6 +297,20 @@ bool UIAttributes::getAttributeArray (const std::string& name, std::vector<std::
 		return true;
 	}
 	return false;
+}
+
+//-----------------------------------------------------------------------------
+std::string UIAttributes::createStringArrayValue (const StringArray& values)
+{
+	std::string value;
+	size_t numValues = values.size ();
+	for (size_t i = 0; i < numValues - 1; i++)
+	{
+		value += values[i];
+		value += ',';
+	}
+	value += values[numValues-1];
+	return value;
 }
 
 //-----------------------------------------------------------------------------
