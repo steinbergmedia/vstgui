@@ -327,17 +327,17 @@ void CSegmentButton::drawRect (CDrawContext* pContext, const CRect& dirtyRect)
 		path = owned (pContext->createGraphicsPath ());
 		path->addRoundRect (r, getRoundRadius ());
 	}
-	pContext->setDrawMode (kAntiAliasing|kIntegralMode);
-	if (gradient)
-	{
-		pContext->fillLinearGradient (path, *gradient, getViewSize ().getTopLeft (), getViewSize ().getBottomLeft ());
-	}
+	pContext->setDrawMode (kAntiAliasing);
 	bool drawLines = getFrameWidth () > 0. && getFrameColor ().alpha != 0;
 	if (drawLines)
 	{
 		pContext->setLineStyle (kLineSolid);
 		pContext->setLineWidth (getFrameWidth ());
 		pContext->setFrameColor (getFrameColor ());
+	}
+	if (gradient)
+	{
+		pContext->fillLinearGradient (path, *gradient, getViewSize ().getTopLeft (), getViewSize ().getBottomLeft ());
 	}
 	uint32_t selectedIndex = getSelectedSegment ();
 	for (uint32_t index = 0; index < segments.size (); ++index)
@@ -362,7 +362,7 @@ void CSegmentButton::drawRect (CDrawContext* pContext, const CRect& dirtyRect)
 		if (drawLines && index > 0 && index < segments.size ())
 		{
 			path->beginSubpath (segment.rect.getTopLeft ());
-			path->addLine(isHorizontal ? segment.rect.getBottomLeft () : segment.rect.getTopRight ());
+			path->addLine (isHorizontal ? segment.rect.getBottomLeft () : segment.rect.getTopRight ());
 		}
 	}
 	if (drawLines)
@@ -421,7 +421,7 @@ bool CSegmentButton::getFocusPath (CGraphicsPath& outPath)
 	r.inset (getFrameWidth () / 2., getFrameWidth () / 2.);
 	outPath.addRoundRect (r, getRoundRadius ());
 	CCoord focusWidth = getFrame ()->getFocusWidth ();
-	r.inset (-focusWidth, -focusWidth);
+	r.extend (focusWidth, focusWidth);
 	outPath.addRoundRect (r, getRoundRadius ());
 	return true;
 }

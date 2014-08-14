@@ -311,7 +311,7 @@ CMessageResult CViewContainer::notify (CBaseObject* sender, IdStringPtr message)
 		{
 			CCoord width = getFrame ()->getFocusWidth ();
 			CRect viewSize (view->getViewSize ());
-			viewSize.inset (-width, -width);
+			viewSize.extend (width, width);
 			invalidRect (viewSize);
 		}
 	}
@@ -635,7 +635,7 @@ void CViewContainer::drawBackgroundRect (CDrawContext* pContext, const CRect& _u
 		if (backgroundColorDrawStyle == kDrawFilled || (backgroundColorDrawStyle == kDrawFilledAndStroked && backgroundColor.alpha == 255))
 		{
 			r = _updateRect;
-			r.inset (-1, -1);
+			r.extend (1, 1);
 		}
 		else
 		{
@@ -705,6 +705,8 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 							pContext->setDrawMode (kAntiAliasing);
 							pContext->setFillColor (getFrame ()->getFocusColor ());
 							pContext->drawGraphicsPath (focusPath, CDrawContext::kPathFilledEvenOdd);
+							lastDrawnFocus = focusPath->getBoundingBox ();
+							lastDrawnFocus.extend (1, 1);
 						}
 						_focusDrawing = 0;
 						_focusView = 0;
@@ -744,7 +746,7 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 				if (!r.isEmpty ())
 				{
 					focusPath->addRect (r);
-					r.inset (-focusWidth, -focusWidth);
+					r.extend (focusWidth, focusWidth);
 					focusPath->addRect (r);
 				}
 			}
@@ -754,6 +756,8 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 				pContext->setDrawMode (kAntiAliasing);
 				pContext->setFillColor (getFrame ()->getFocusColor ());
 				pContext->drawGraphicsPath (focusPath, CDrawContext::kPathFilledEvenOdd);
+				lastDrawnFocus = focusPath->getBoundingBox ();
+				lastDrawnFocus.extend (1, 1);
 			}
 		}
 	}

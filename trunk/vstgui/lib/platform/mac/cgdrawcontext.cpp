@@ -114,6 +114,10 @@ CGDrawContext::CGDrawContext (CGBitmap* _bitmap)
 void CGDrawContext::init ()
 {
 	CGContextSaveGState (cgContext);
+	CGContextSetAllowsAntialiasing (cgContext, true);
+	CGContextSetAllowsFontSmoothing (cgContext, true);
+	CGContextSetAllowsFontSubpixelPositioning (cgContext, true);
+	CGContextSetAllowsFontSubpixelQuantization (cgContext, true);
 	CGContextSetShouldAntialias (cgContext, false);
 	CGContextSetFillColorSpace (cgContext, GetCGColorSpace ());
 	CGContextSetStrokeColorSpace (cgContext, GetCGColorSpace ()); 
@@ -219,6 +223,8 @@ void CGDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradient& g
 	CGContextRef context = beginCGContext (true, currentState.drawMode.integralMode ());
 	if (context)
 	{
+		applyLineWidthCTM (context);
+		
 		if (currentState.drawMode.integralMode ())
 		{
 			path->pixelAlign (this, t);
@@ -361,8 +367,6 @@ void CGDrawContext::drawLine (const LinePair& line)
 	{
 		applyLineStyle (context);
 		
-		applyLineWidthCTM (context);
-		
 		CGContextBeginPath (context);
 		CGPoint first = CGPointFromCPoint (line.first);
 		CGPoint second = CGPointFromCPoint (line.second);
@@ -371,6 +375,8 @@ void CGDrawContext::drawLine (const LinePair& line)
 			first = pixelAlligned (first);
 			second = pixelAlligned (second);
 		}
+
+		applyLineWidthCTM (context);
 
 		CGContextMoveToPoint (context, first.x, first.y);
 		CGContextAddLineToPoint (context, second.x, second.y);
@@ -761,6 +767,8 @@ CGContextRef CGDrawContext::beginCGContext (bool swapYAxis, bool integralOffset)
 		CGContextSaveGState (cgContext);
 
 		CGRect cgClipRect = CGRectFromCRect (currentState.clipRect);
+		if (integralOffset)
+			cgClipRect = pixelAlligned (cgClipRect);
 		CGContextClipToRect (cgContext, cgClipRect);
 #if DEBUG
 		if (showClip)
@@ -771,7 +779,16 @@ CGContextRef CGDrawContext::beginCGContext (bool swapYAxis, bool integralOffset)
 #endif
 
 		if (getCurrentTransform ().isInvariant () == false)
-			CGContextConcatCTM (cgContext, QuartzGraphicsPath::createCGAfflineTransform (getCurrentTransform ()));
+		{
+			CGraphicsTransform t = getCurrentTransform ();
+			if (integralOffset)
+			{
+				CGPoint p = pixelAlligned (CGPointMake (t.dx, t.dy));
+				t.dx = p.x;
+				t.dy = p.y;
+			}
+			CGContextConcatCTM (cgContext, QuartzGraphicsPath::createCGAfflineTransform (t));
+		}
 		
 		if (!swapYAxis)
 			CGContextScaleCTM (cgContext, 1, -1);

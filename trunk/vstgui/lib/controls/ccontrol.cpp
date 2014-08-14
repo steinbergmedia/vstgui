@@ -276,7 +276,7 @@ bool CControl::getFocusPath (CGraphicsPath& outPath)
 		if (!r.isEmpty ())
 		{
 			outPath.addRect (r);
-			r.inset (-focusWidth, -focusWidth);
+			r.extend (focusWidth, focusWidth);
 			outPath.addRect (r);
 		}
 	}

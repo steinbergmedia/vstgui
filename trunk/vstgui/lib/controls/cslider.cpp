@@ -270,7 +270,7 @@ void CSlider::draw (CDrawContext *pContext)
 	{
 		CRect r (getViewSize ());
 
-		pContext->setDrawMode (kAliasing | kIntegralMode);
+		pContext->setDrawMode (kAliasing);
 		pContext->setLineStyle (kLineSolid);
 		pContext->setLineWidth (1.);
 		if (drawStyle & kDrawFrame || drawStyle & kDrawBack)
@@ -284,7 +284,7 @@ void CSlider::draw (CDrawContext *pContext)
 				d = kDrawStroked;
 			pContext->drawRect (r, d);
 		}
-		pContext->setDrawMode (kAntiAliasing | kIntegralMode);
+		pContext->setDrawMode (kAntiAliasing);
 		if (drawStyle & kDrawValue)
 		{
 			if (drawStyle & kDrawFrame)

@@ -89,7 +89,7 @@ void UISearchTextField::drawClearMark (CDrawContext* context) const
 	CColor color (fontColor);
 	color.alpha /= 2;
 	context->setFillColor (color);
-	context->setDrawMode (kAntiAliasing);
+	context->setDrawMode (kAntiAliasing|kNonIntegralMode);
 	context->drawEllipse (r, kDrawFilled);
 	double h,s,v;
 	color.toHSV (h, s, v);

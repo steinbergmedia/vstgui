@@ -80,6 +80,7 @@ struct CRect
 
 	inline CRect& offset (CCoord x, CCoord y);
 	inline CRect& inset (CCoord deltaX, CCoord deltaY);
+	inline CRect& extend (CCoord deltaX, CCoord deltaY);
 	inline CRect& moveTo (CCoord x, CCoord y);
 
 	CRect& offset (const CPoint& p);
@@ -200,6 +201,12 @@ inline CRect& CRect::inset (CCoord deltaX, CCoord deltaY)
 	top += deltaY;
 	bottom -= deltaY;
 	return *this;
+}
+
+//------------------------------------------------------------------------
+inline CRect& CRect::extend (CCoord deltaX, CCoord deltaY)
+{
+	return inset (-deltaX, -deltaY);
 }
 
 //------------------------------------------------------------------------

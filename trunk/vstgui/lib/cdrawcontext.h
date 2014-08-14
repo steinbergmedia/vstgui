@@ -118,7 +118,7 @@ enum CDrawModeFlags
 	kAntialias = kAntiAliasing,		///< \deprecated use kAntiAliasing
 #endif
 
-	kIntegralMode = 0xF0000000		///< round coordinates to pixel aligned values
+	kNonIntegralMode = 0xF0000000		///< do not round coordinates to pixel aligned values
 };
 
 //-----------
@@ -130,9 +130,9 @@ public:
 	CDrawMode (int32_t mode = kAliasing) : mode (mode) {}
 	CDrawMode (const CDrawMode& m) : mode (m.mode) {}
 
-	int32_t modeIgnoringIntegralMode () const { return (mode & ~kIntegralMode); }
+	int32_t modeIgnoringIntegralMode () const { return (mode & ~kNonIntegralMode); }
 
-	bool integralMode () const { return mode & kIntegralMode ? true : false; }
+	bool integralMode () const { return mode & kNonIntegralMode ? false : true; }
 
 	CDrawMode& operator= (int32_t m) { mode = m; return *this; }
 

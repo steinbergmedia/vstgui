@@ -97,7 +97,7 @@ void UIColorSlider::updateBackground (CDrawContext* context)
 		const int32_t kNumPoints = (style == kHue) ? 360 : 256;
 		CCoord width = getWidth ();
 		offscreen->beginDraw ();
-		offscreen->setDrawMode (kAliasing|kIntegralMode);
+		offscreen->setDrawMode (kAliasing);
 		CCoord minWidth = 1. / scaleFactor;
 		CCoord widthPerColor = width / static_cast<double> (kNumPoints - 1);
 		CRect r;

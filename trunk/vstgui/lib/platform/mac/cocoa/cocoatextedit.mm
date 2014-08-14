@@ -160,7 +160,7 @@ static void VSTGUI_NSTextField_SyncSize (id self, SEL _cmd)
 
 	[containerView setFrame:nsRectFromCRect (rect)];
 
-	rect.inset (-15, -15);
+	rect.extend (15,-15);
 	[[containerView superview] setNeedsDisplayInRect:nsRectFromCRect (rect)];
 }
 

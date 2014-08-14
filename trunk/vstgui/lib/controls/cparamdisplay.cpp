@@ -166,10 +166,10 @@ bool CParamDisplay::getFocusPath (CGraphicsPath& outPath)
 	if (wantsFocus ())
 	{
 		CCoord focusWidth = getFrame ()->getFocusWidth ();
+		CRect r (getViewSize ());
 		if (style & kRoundRectStyle)
 		{
-			CRect r (getViewSize ());
-			r.inset (-focusWidth, -focusWidth);
+			r.extend (focusWidth, focusWidth);
 			outPath.addRoundRect (r, roundRectRadius);
 			outPath.closeSubpath ();
 			r = getViewSize ();
@@ -177,11 +177,9 @@ bool CParamDisplay::getFocusPath (CGraphicsPath& outPath)
 		}
 		else
 		{
-			CRect frameRect = getViewSize ();
-			frameRect.inset (frameWidth/2., frameWidth/2.);
-			outPath.addRect (frameRect);
-			frameRect.inset (-focusWidth, -focusWidth);
-			outPath.addRect (frameRect);
+			outPath.addRect (r);
+			r.inset (-focusWidth, -focusWidth);
+			outPath.addRect (r);
 		}
 	}
 	return true;
@@ -240,7 +238,7 @@ void CParamDisplay::drawBack (CDrawContext* pContext, CBitmap* newBack)
 				SharedPointer<CGraphicsPath> path = owned (pContext->createRoundRectGraphicsPath (pathRect, roundRectRadius));
 				if (path)
 				{
-					pContext->setDrawMode (kAntiAliasing|kIntegralMode);
+					pContext->setDrawMode (kAntiAliasing);
 					pContext->drawGraphicsPath (path, CDrawContext::kPathFilled);
 					if (!(style & (k3DIn|k3DOut|kNoFrame)))
 					{
@@ -253,7 +251,7 @@ void CParamDisplay::drawBack (CDrawContext* pContext, CBitmap* newBack)
 			}
 			else
 			{
-				pContext->setDrawMode (kAntiAliasing|kIntegralMode);
+				pContext->setDrawMode (kAntiAliasing);
 				SharedPointer<CGraphicsPath> path = owned (pContext->createGraphicsPath ());
 				if (path)
 				{
@@ -292,8 +290,8 @@ void CParamDisplay::drawBack (CDrawContext* pContext, CBitmap* newBack)
 	if (style & (k3DIn|k3DOut)) 
 	{
 		CRect r (getViewSize ());
-		r.right--; r.top++;
-		pContext->setDrawMode (kAliasing|kIntegralMode);
+		r.inset (frameWidth/2., frameWidth/2.);
+		pContext->setDrawMode (kAliasing);
 		pContext->setLineWidth (frameWidth);
 		pContext->setLineStyle (kLineSolid);
 		if (style & k3DIn)
@@ -357,7 +355,7 @@ void CParamDisplay::drawText (CDrawContext* pContext, UTF8StringPtr string, cons
 		transform.rotate (textRotation, center);
 		CDrawContext::Transform ctxTransform (*pContext, transform);
 		
-		pContext->setDrawMode (kAntiAliasing|kIntegralMode);
+		pContext->setDrawMode (kAntiAliasing);
 		pContext->setFont (fontID);
 
 		// draw darker text (as shadow)
