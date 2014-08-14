@@ -838,6 +838,7 @@ void CDataBrowserView::drawRect (CDrawContext* context, const CRect& updateRect)
 		testRect.bound (updateRect);
 		if (testRect.isEmpty () == false)
 		{
+			bool isSelected = std::find (selection.begin (), selection.end (), row) != selection.end ();
 			for (int32_t col = 0; col < numColumns; col++)
 			{
 				CCoord columnWidth = db->dbGetCurrentColumnWidth (col, browser);
@@ -849,7 +850,7 @@ void CDataBrowserView::drawRect (CDrawContext* context, const CRect& updateRect)
 					CRect cellSize (r);
 					cellSize.top--;
 					context->setClipRect (testRect);
-					db->dbDrawCell (context, cellSize, row, col, std::find (selection.begin (), selection.end (), row) != selection.end () ? IDataBrowserDelegate::kRowSelected : 0, browser);
+					db->dbDrawCell (context, cellSize, row, col, isSelected ? IDataBrowserDelegate::kRowSelected : 0, browser);
 				}
 				r.offset (columnWidth, 0);
 				if (browser->getStyle () & CDataBrowser::kDrawColumnLines)
@@ -892,7 +893,7 @@ void CDataBrowserView::drawRect (CDrawContext* context, const CRect& updateRect)
 		if (lines.size ())
 		{
 			context->setClipRect (updateRect);
-			context->setDrawMode (kAliasing | kIntegralMode);
+			context->setDrawMode (kAliasing);
 			context->setLineWidth (lineWidth);
 			context->setFrameColor (lineColor);
 			context->setLineStyle (kLineSolid);
@@ -1282,7 +1283,7 @@ void GenericStringListDataBrowserSource::dbDrawHeader (CDrawContext* context, co
 //-----------------------------------------------------------------------------
 void GenericStringListDataBrowserSource::dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser)
 {
-	context->setDrawMode (kAliasing | kIntegralMode);
+	context->setDrawMode (kAliasing);
 	context->setLineWidth (1.);
 	context->setFillColor (row % 2 ? rowBackColor : rowAlternateBackColor);
 	context->drawRect (size, kDrawFilled);

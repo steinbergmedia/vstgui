@@ -107,7 +107,7 @@ public:
 	virtual UTF8StringPtr getHeaderTitle () const = 0;
 	void dbDrawHeader (CDrawContext* context, const CRect& size, int32_t column, int32_t flags, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD
 	{
-		context->setDrawMode (kAliasing);
+		context->setDrawMode (kAliasing|kNonIntegralMode);
 		context->setLineWidth (1);
 		if (headerBackgroundColor == kTransparentCColor)
 		{

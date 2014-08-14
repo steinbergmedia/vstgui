@@ -167,7 +167,7 @@ void UISelectionView::draw (CDrawContext* pContext)
 	FOREACH_IN_SELECTION(selection, view)
 		CRect vs = selection->getGlobalViewCoordinates (view);
 		vs.offsetInverse (p);
-		vs.inset (-1., -1.);
+		vs.extend (1., 1.);
 		pContext->setFrameColor (lightColor);
 		pContext->drawRect (vs);
 		vs.inset (1., 1.);
@@ -214,7 +214,7 @@ CMessageResult UISelectionView::notify (CBaseObject* sender, IdStringPtr message
 		FOREACH_IN_SELECTION(selection, view)
 			CRect vs = selection->getGlobalViewCoordinates (view);
 			vs.offsetInverse (p);
-			vs.inset (-(handleInset + 1), -(handleInset + 1));
+			vs.extend (handleInset + 1, handleInset + 1);
 			invalidRect (vs);
 		FOREACH_IN_SELECTION_END
 		return kMessageNotified;
@@ -611,7 +611,7 @@ namespace UIEditViewInternal {
 static bool pointInResizeHandleRect (const CPoint& where, const CPoint& handle)
 {
 	CRect r (handle.x, handle.y, handle.x, handle.y);
-	r.inset (-kResizeHandleSize/2., -kResizeHandleSize/2.);
+	r.extend (kResizeHandleSize/2., kResizeHandleSize/2.);
 	return r.pointInside (where);
 }
 
@@ -630,7 +630,7 @@ UIEditView::MouseSizeMode UIEditView::selectionHitTest (const CPoint& _where, CV
 		CRect r = getSelection ()->getGlobalViewCoordinates (view);
 		bool isMainView = (mainView == view) ? true : false;
 		r.offset (p);
-		r.inset (-kResizeHandleSize, -kResizeHandleSize);
+		r.extend (kResizeHandleSize, kResizeHandleSize);
 		if (r.pointInside (where))
 		{
 			if (resultView)

@@ -260,14 +260,17 @@ void CoreTextFont::drawString (CDrawContext* context, const CString& string, con
 	if (line)
 	{
 		CGDrawContext* cgDrawContext = dynamic_cast<CGDrawContext*> (context);
-		CGContextRef cgContext = cgDrawContext ? cgDrawContext->beginCGContext (true, context->getDrawMode ().integralMode ()) : 0;
+		CGContextRef cgContext = cgDrawContext ? cgDrawContext->beginCGContext (true, false) : 0;
 		if (cgContext)
 		{
-			CGContextSetAllowsAntialiasing (cgContext, antialias);
+			CGPoint cgPoint = CGPointMake (point.x, point.y);
+			if (context->getDrawMode ().integralMode ())
+				cgPoint = cgDrawContext->pixelAlligned (cgPoint);
 			CGContextSetShouldAntialias (cgContext, antialias);
-			CGContextSetAllowsFontSmoothing (cgContext, true);
 			CGContextSetShouldSmoothFonts (cgContext, true);
-			CGContextSetTextPosition (cgContext, point.x, point.y);
+			CGContextSetShouldSubpixelPositionFonts (cgContext, true);
+			CGContextSetShouldSubpixelQuantizeFonts(cgContext, true);
+			CGContextSetTextPosition (cgContext, point.x, cgPoint.y);
 			CTLineDraw (line, cgContext);
 			if (style & kUnderlineFace)
 			{
@@ -278,8 +281,8 @@ void CoreTextFont::drawString (CDrawContext* context, const CString& string, con
 				CGContextSetLineWidth (cgContext, underlineThickness);
 				CGPoint cgPoint = CGContextGetTextPosition (cgContext);
 				CGContextBeginPath (cgContext);
-				CGContextMoveToPoint (cgContext, point.x, point.y - underlineOffset);
-				CGContextAddLineToPoint (cgContext, cgPoint.x, point.y - underlineOffset);
+				CGContextMoveToPoint (cgContext, point.x, cgPoint.y - underlineOffset);
+				CGContextAddLineToPoint (cgContext, cgPoint.x, cgPoint.y - underlineOffset);
 				CGContextDrawPath (cgContext, kCGPathStroke);
 			}
 			if (style & kStrikethroughFace)
@@ -291,8 +294,8 @@ void CoreTextFont::drawString (CDrawContext* context, const CString& string, con
 				CGContextSetLineWidth (cgContext, underlineThickness);
 				CGPoint cgPoint = CGContextGetTextPosition (cgContext);
 				CGContextBeginPath (cgContext);
-				CGContextMoveToPoint (cgContext, point.x, point.y - offset);
-				CGContextAddLineToPoint (cgContext, cgPoint.x, point.y - offset);
+				CGContextMoveToPoint (cgContext, point.x, cgPoint.y - offset);
+				CGContextAddLineToPoint (cgContext, cgPoint.x, cgPoint.y - offset);
 				CGContextDrawPath (cgContext, kCGPathStroke);
 			}	
 			cgDrawContext->releaseCGContext (cgContext);

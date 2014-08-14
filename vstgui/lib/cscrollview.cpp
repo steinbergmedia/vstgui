@@ -754,13 +754,13 @@ void CScrollView::drawBackgroundRect (CDrawContext *pContext, const CRect& _upda
 	r.originize ();
 	if ((backgroundColor.alpha != 255 && getTransparency ()) || !getTransparency ())
 	{
-		pContext->setDrawMode (kAliasing);
+		pContext->setDrawMode (kAliasing|kNonIntegralMode);
 		pContext->setFillColor (backgroundColor);
 		pContext->drawRect (r, kDrawFilled);
 	}
 	if (!(style & kDontDrawFrame))
 	{
-		pContext->setDrawMode (kAliasing);
+		pContext->setDrawMode (kAliasing|kNonIntegralMode);
 		pContext->setFrameColor (backgroundColor);
 		pContext->setLineWidth (1);
 		pContext->drawRect (r);
@@ -1138,7 +1138,7 @@ void CScrollbar::drawBackground (CDrawContext* pContext)
 		drawer->drawScrollbarBackground (pContext, r, direction, this);
 	else
 	{
-		pContext->setDrawMode (kAliasing);
+		pContext->setDrawMode (kAliasing|kNonIntegralMode);
 		pContext->setLineWidth (1);
 		pContext->setFillColor (backgroundColor);
 		pContext->setFrameColor (frameColor);
@@ -1165,14 +1165,14 @@ void CScrollbar::drawScroller (CDrawContext* pContext, const CRect& size)
 		{
 			if (wideness > 4)
 				wideness = 4;
-			pContext->setDrawMode (kAntiAliasing);
+			pContext->setDrawMode (kAntiAliasing|kNonIntegralMode);
 			path->addRoundRect (r, wideness);
 			pContext->drawGraphicsPath (path, CDrawContext::kPathFilled);
 			pContext->drawGraphicsPath (path, CDrawContext::kPathStroked);
 		}
 		else
 		{
-			pContext->setDrawMode (kAliasing);
+			pContext->setDrawMode (kAliasing|kNonIntegralMode);
 			pContext->drawRect (r, kDrawFilledAndStroked);
 		}
 	}

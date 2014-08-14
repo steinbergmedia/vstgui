@@ -320,7 +320,7 @@ void UIColorStopEditView::draw (CDrawContext* context)
 	context->setFrameColor (kBlackCColor);
 	context->setLineWidth (1.1);
 	context->setLineStyle (kLineSolid);
-	context->setDrawMode (kAntiAliasing|kIntegralMode);
+	context->setDrawMode (kAntiAliasing);
 
 	CColor selectedColor;
 
@@ -577,7 +577,7 @@ void UIGradientsDataSource::dbDrawCell (CDrawContext* context, const CRect& size
 		context->setFrameColor (kBlackCColor);
 		context->setLineWidth (1);
 		context->setLineStyle (kLineSolid);
-		context->setDrawMode (kAliasing | kIntegralMode);
+		context->setDrawMode (kAliasing);
 		CRect r (size);
 		r.left = r.right - (r.getHeight () * 2.);
 		r.inset (2, 2);

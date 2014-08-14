@@ -271,7 +271,7 @@ pascal OSStatus HIViewTextEdit::CarbonEventsTextControlProc (EventHandlerCallRef
 						#endif
 						{
 							CRect viewSize = textEdit->getViewSize (viewSize);
-							viewSize.inset (-10, -10);
+							viewSize.extend (10, 10);
 							CViewContainer* container = (CViewContainer*)textEdit->getParentView ();
 							while (!container->isTypeOf ("CScrollContainer"))
 							{

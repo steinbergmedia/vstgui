@@ -520,7 +520,7 @@ void CCheckBox::draw (CDrawContext* context)
 		checkBoxSize.offset (1., std::ceil ((getViewSize ().getHeight () - checkBoxSize.getHeight ()) / 2.));
 		context->setLineWidth (1);
 		context->setLineStyle (kLineSolid);
-		context->setDrawMode (kAntiAliasing|kIntegralMode);
+		context->setDrawMode (kAntiAliasing);
 		context->setFrameColor (boxFrameColor);
 		context->setFillColor (boxFillColor);
 		context->drawRect (checkBoxSize, kDrawFilledAndStroked);
@@ -535,7 +535,7 @@ void CCheckBox::draw (CDrawContext* context)
 			context->drawRect (r, kDrawStroked);
 		}
 
-		context->setDrawMode (kAntiAliasing|kIntegralMode);
+		context->setDrawMode (kAntiAliasing);
 		context->setFrameColor (checkMarkColor);
 		context->setLineWidth (2.);
 
@@ -585,7 +585,7 @@ void CCheckBox::draw (CDrawContext* context)
 		
 		context->setFont (font);
 		context->setFontColor (fontColor);
-		context->setDrawMode (kAntiAliasing|kIntegralMode);
+		context->setDrawMode (kAntiAliasing);
 		
 		context->drawString (title, p, true);
 	}
@@ -612,7 +612,7 @@ bool CCheckBox::getFocusPath (CGraphicsPath& outPath)
 			checkBoxSize.offset (1, std::ceil ((getViewSize ().getHeight () - checkBoxSize.getHeight ()) / 2));
 		}
 		outPath.addRect (checkBoxSize);
-		checkBoxSize.inset (-focusWidth, -focusWidth);
+		checkBoxSize.extend (focusWidth, focusWidth);
 		outPath.addRect (checkBoxSize);
 	}
 	return true;
@@ -902,7 +902,6 @@ void CTextButton::draw (CDrawContext* context)
 			CGradient* drawGradient = highlight ? gradientHighlighted : gradient;
 			if (drawGradient)
 				context->fillLinearGradient (path, *drawGradient, r.getTopLeft (), r.getBottomLeft (), false);
-			context->setDrawMode (kAntiAliasing|kIntegralMode);
 			context->drawGraphicsPath (path, CDrawContext::kPathStroked);
 		}
 	}
@@ -923,7 +922,6 @@ bool CTextButton::getFocusPath (CGraphicsPath& outPath)
 	outPath.addRoundRect (r, roundRadius);
 	outPath.closeSubpath ();
 	r = getViewSize ();
-	r.inset (frameWidth / 2., frameWidth / 2.);
 	outPath.addRoundRect (r, roundRadius);
 	return true;
 }

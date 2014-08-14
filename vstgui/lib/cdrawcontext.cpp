@@ -360,16 +360,16 @@ void CDrawContext::drawString (UTF8StringPtr _string, const CRect& _rect, const 
 		capHeight = platformFont->getCapHeight ();
 	
 	if (capHeight > 0.)
-		rect.bottom -= (rect.getHeight ()/2 - capHeight / 2);
+		rect.bottom -= (rect.getHeight () / 2. - capHeight / 2.);
 	else
-		rect.bottom -= (rect.getHeight ()/2 - currentState.font->getSize () / 2) + 1;
+		rect.bottom -= (rect.getHeight () / 2. - currentState.font->getSize () / 2.) + 1.;
 	if (hAlign != kLeftText)
 	{
 		CCoord stringWidth = painter->getStringWidth (this, string, antialias);
 		if (hAlign == kRightText)
 			rect.left = rect.right - stringWidth;
 		else
-			rect.left = (CCoord)(rect.left + (rect.getWidth () / 2.f) - (stringWidth / 2.f));
+			rect.left = rect.left + (rect.getWidth () / 2.) - (stringWidth / 2.);
 	}
 
 	painter->drawString (this, string, CPoint (rect.left, rect.bottom), antialias);

@@ -54,7 +54,7 @@ void CXYPad::draw (CDrawContext* context)
 	CCoord width = getWidth() - getRoundRectRadius ();
 	CCoord height = getHeight() - getRoundRectRadius ();
 	CRect r (x*width, y*height, x*width, y*height);
-	r.inset (-getRoundRectRadius () / 2., -getRoundRectRadius () / 2.);
+	r.extend (getRoundRectRadius () / 2., getRoundRectRadius () / 2.);
 	r.offset (getViewSize ().left + getRoundRectRadius() / 2., getViewSize ().top + getRoundRectRadius() / 2.);
 	context->setFillColor (getFontColor ());
 	context->setDrawMode (kAntiAliasing);

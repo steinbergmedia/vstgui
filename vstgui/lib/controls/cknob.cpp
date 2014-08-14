@@ -261,7 +261,7 @@ void CKnob::drawHandleAsCircle (CDrawContext* pContext) const
 
 	where.offset (getViewSize ().left, getViewSize ().top);
 	CRect r (where.x - 0.5, where.y - 0.5, where.x + 0.5, where.y + 0.5);
-	r.inset (-handleLineWidth, -handleLineWidth);
+	r.extend (handleLineWidth, handleLineWidth);
 	pContext->setDrawMode (kAntiAliasing);
 	pContext->setFrameColor (colorShadowHandle);
 	pContext->setFillColor (colorHandle);

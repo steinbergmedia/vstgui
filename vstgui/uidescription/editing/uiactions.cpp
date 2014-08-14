@@ -214,7 +214,7 @@ EmbedViewOperation::EmbedViewOperation (UISelection* selection, CViewContainer* 
 			r.bottom = viewSize.bottom;
 		it++;
 	}
-	r.inset (-10, -10);
+	r.extend (10, 10);
 	newContainer->setViewSize (r);
 	newContainer->setMouseableArea (r);
 }

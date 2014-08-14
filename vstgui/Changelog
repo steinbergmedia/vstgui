@@ -1,3 +1,8 @@
+2014-08-14 arne
+
+	* reversed DrawMode kIntegralMode style. Now the regular case is to draw pixel alligned.
+	* add CRect::extend method
+
 2014-08-10 arne
 
 	* add two more ExchangeViewAnimation styles
