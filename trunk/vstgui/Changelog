@@ -1,3 +1,8 @@
+2014-08-20 arne
+
+	* add CFrame::kDefaultKnobMode static variable to set the knob mode for the case when the VSTGUIEditorInterface does not provide one
+	* first part to make the Direct2D and Quartz backend draw exactly the same
+
 2014-08-14 arne
 
 	* reversed DrawMode kIntegralMode style. Now the regular case is to draw pixel alligned.

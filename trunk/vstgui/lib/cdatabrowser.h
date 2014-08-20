@@ -222,6 +222,7 @@ class IGenericStringListDataBrowserSourceSelectionChanged
 {
 public:
 	virtual void dbSelectionChanged (int32_t selectedRow, GenericStringListDataBrowserSource* source) = 0;
+	virtual void dbRowDoubleClick (int32_t row, GenericStringListDataBrowserSource* source) {};
 };
 
 //-----------------------------------------------------------------------------
@@ -239,7 +240,7 @@ public:
 	void setStringList (const StringVector* stringList);
 	const StringVector* getStringList () const { return stringList; }
 
-	void setupUI (const CColor& selectionColor, const CColor& fontColor, const CColor& rowlineColor, const CColor& rowBackColor, const CColor& rowAlteranteBackColor, CFontRef font = 0, int32_t rowHeight = -1);
+	void setupUI (const CColor& selectionColor, const CColor& fontColor, const CColor& rowlineColor, const CColor& rowBackColor, const CColor& rowAlteranteBackColor, CFontRef font = 0, int32_t rowHeight = -1, CCoord textInset = 2.);
 
 protected:
 	int32_t dbGetNumRows (CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
@@ -253,7 +254,7 @@ protected:
 	void dbDrawHeader (CDrawContext* context, const CRect& size, int32_t column, int32_t flags, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
 	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
 
-	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD { return kMouseDownEventHandledButDontNeedMovedOrUpEvents; }
+	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
 	CMouseEventResult dbOnMouseMoved (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD { return kMouseEventNotHandled; }
 	CMouseEventResult dbOnMouseUp (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD { return kMouseEventNotHandled; }
 

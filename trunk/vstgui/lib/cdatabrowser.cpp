@@ -1212,7 +1212,7 @@ void GenericStringListDataBrowserSource::setStringList (const StringVector* stri
 }
 
 //-----------------------------------------------------------------------------
-void GenericStringListDataBrowserSource::setupUI (const CColor& _selectionColor, const CColor& _fontColor, const CColor& _rowlineColor, const CColor& _rowBackColor, const CColor& _rowAlternateBackColor, CFontRef _font, int32_t _rowHeight)
+void GenericStringListDataBrowserSource::setupUI (const CColor& _selectionColor, const CColor& _fontColor, const CColor& _rowlineColor, const CColor& _rowBackColor, const CColor& _rowAlternateBackColor, CFontRef _font, int32_t _rowHeight, CCoord _textInset)
 {
 	if (_font)
 	{
@@ -1221,6 +1221,7 @@ void GenericStringListDataBrowserSource::setupUI (const CColor& _selectionColor,
 		drawFont = _font;
 		drawFont->remember ();
 	}
+	textInset = _textInset;
 	rowHeight = _rowHeight;
 	selectionColor = _selectionColor;
 	fontColor = _fontColor;
@@ -1268,7 +1269,7 @@ CCoord GenericStringListDataBrowserSource::dbGetRowHeight (CDataBrowser* browser
 			CCoord height = drawFont->getPlatformFont ()->getAscent ();
 			height += drawFont->getPlatformFont ()->getDescent ();
 			height += drawFont->getPlatformFont ()->getLeading ();
-			return ceil (height + 2.);
+			return std::floor (height + 2.5);
 		}
 		return drawFont->getSize () + 2.;
 	}
@@ -1346,6 +1347,14 @@ int32_t GenericStringListDataBrowserSource::dbOnKeyDown (const VstKeyCode& _key,
 		}
 	}
 	return -1;
+}
+
+//-----------------------------------------------------------------------------
+CMouseEventResult GenericStringListDataBrowserSource::dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser)
+{
+	if (delegate && buttons.isDoubleClick ())
+		delegate->dbRowDoubleClick (row, this);
+	return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 }
 
 //-----------------------------------------------------------------------------

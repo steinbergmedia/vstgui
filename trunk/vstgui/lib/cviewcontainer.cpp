@@ -702,7 +702,7 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 						if (!lastDrawnFocus.isEmpty ())
 						{
 							pContext->setClipRect (oldClip2);
-							pContext->setDrawMode (kAntiAliasing);
+							pContext->setDrawMode (kAntiAliasing|kNonIntegralMode);
 							pContext->setFillColor (getFrame ()->getFocusColor ());
 							pContext->drawGraphicsPath (focusPath, CDrawContext::kPathFilledEvenOdd);
 							lastDrawnFocus = focusPath->getBoundingBox ();
@@ -753,7 +753,7 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 			lastDrawnFocus = focusPath->getBoundingBox ();
 			if (!lastDrawnFocus.isEmpty ())
 			{
-				pContext->setDrawMode (kAntiAliasing);
+				pContext->setDrawMode (kAntiAliasing|kNonIntegralMode);
 				pContext->setFillColor (getFrame ()->getFocusColor ());
 				pContext->drawGraphicsPath (focusPath, CDrawContext::kPathFilledEvenOdd);
 				lastDrawnFocus = focusPath->getBoundingBox ();

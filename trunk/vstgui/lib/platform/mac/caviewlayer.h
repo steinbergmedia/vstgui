@@ -56,7 +56,7 @@ public:
 	CAViewLayer (CALayer* parent);
 	~CAViewLayer ();
 
-	bool init (IPlatformViewLayerDelegate* drawDelegate) VSTGUI_OVERRIDE_VMETHOD;
+	bool init (IPlatformViewLayerDelegate* drawDelegate);
 	
 	void invalidRect (const CRect& size) VSTGUI_OVERRIDE_VMETHOD;
 	void setSize (const CRect& size) VSTGUI_OVERRIDE_VMETHOD;

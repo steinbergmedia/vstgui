@@ -180,13 +180,12 @@ void CGDrawContext::drawGraphicsPath (CGraphicsPath* _path, PathDrawMode mode, C
 			{
 				cgMode = kCGPathStroke;
 				applyLineStyle (context);
+				applyLineWidthCTM (context);
 				break;
 			}
 			default: cgMode = kCGPathFill; break;
 		}
 		
-		applyLineWidthCTM (context);
-
 		if (currentState.drawMode.integralMode ())
 		{
 			path->pixelAlign (this, t);

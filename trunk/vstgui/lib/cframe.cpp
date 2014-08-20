@@ -693,11 +693,15 @@ uint32_t CFrame::getTicks () const
 }
 
 //-----------------------------------------------------------------------------
+int32_t CFrame::kDefaultKnobMode = kCircularMode;
+
+//-----------------------------------------------------------------------------
 int32_t CFrame::getKnobMode () const
 {
-	if (pEditor)
-		return pEditor->getKnobMode ();
-	return kCircularMode;
+	int32_t result = pEditor ? pEditor->getKnobMode () : -1;
+	if (result == -1)
+		result = kDefaultKnobMode;
+	return result;
 }
 
 //-----------------------------------------------------------------------------
