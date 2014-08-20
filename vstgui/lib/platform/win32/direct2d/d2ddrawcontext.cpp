@@ -72,7 +72,7 @@ D2DDrawContext::D2DApplyClip::D2DApplyClip (D2DDrawContext* drawContext, bool ha
 	{
 		CGraphicsTransform transform = drawContext->getCurrentTransform ();
 		if (halfPointOffset)
-			transform.translate (-0.5, 0.5);
+			transform.translate (0.5, -0.5);
 		drawContext->getRenderTarget ()->SetTransform (convert (transform));
 	}
 	else if (halfPointOffset)

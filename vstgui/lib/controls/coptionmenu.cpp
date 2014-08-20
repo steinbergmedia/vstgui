@@ -481,6 +481,7 @@ int32_t COptionMenu::onKeyDown (VstKeyCode& keyCode)
 	{
 		if (keyCode.virt == VKEY_RETURN)
 		{
+			CBaseObjectGuard guard (this);
 			if (bgWhenClick)
 				invalid ();
 			popup ();
@@ -599,6 +600,8 @@ bool COptionMenu::popup (CFrame* frame, const CPoint& frameLocation)
 		return false;
 	if (isAttached ())
 		return false;
+	CBaseObjectGuard guard (this);
+
 	CView* oldFocusView = frame->getFocusView ();
 	CBaseObjectGuard ofvg (oldFocusView);
 

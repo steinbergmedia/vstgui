@@ -577,12 +577,14 @@ void UIGradientsDataSource::dbDrawCell (CDrawContext* context, const CRect& size
 		context->setFrameColor (kBlackCColor);
 		context->setLineWidth (1);
 		context->setLineStyle (kLineSolid);
-		context->setDrawMode (kAliasing);
+		context->setDrawMode (kAliasing|kNonIntegralMode);
 		CRect r (size);
 		r.left = r.right - (r.getHeight () * 2.);
-		r.inset (2, 2);
+		r.offset (0, 1);
+		r.inset (3, 2);
 		SharedPointer<CGraphicsPath> path = owned (context->createGraphicsPath ());
 		path->addRect (r);
+		path->closeSubpath ();
 		context->fillLinearGradient (path, *gradient, r.getTopLeft (), r.getTopRight ());
 		context->drawGraphicsPath (path, CDrawContext::kPathStroked);
 	}

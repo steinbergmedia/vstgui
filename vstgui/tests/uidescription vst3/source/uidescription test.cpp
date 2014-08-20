@@ -531,7 +531,7 @@ CView* UIDescriptionTestController::verifyView (CView* view, const UIAttributes&
 	{
 		StringListParameter* slp = dynamic_cast<StringListParameter*> (getParameterObject (20000));
 		assert (slp && button->getSegments ().size () == slp->getInfo ().stepCount + 1);
-		for (uint32 i = 0; i <= slp->getInfo ().stepCount; i++)
+		for (int32 i = 0; i <= slp->getInfo ().stepCount; i++)
 		{
 			String128 str = {};
 			slp->toString (slp->toNormalized (i), str);

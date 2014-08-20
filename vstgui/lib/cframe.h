@@ -85,6 +85,8 @@ public:
 	VSTGUI_DEPRECATED(virtual void doIdleStuff ();)
 
 	virtual uint32_t getTicks () const;				///< get the current time (in ms)
+
+	static int32_t kDefaultKnobMode;				///< default knob mode if host does not provide one
 	virtual int32_t getKnobMode () const;			///< get hosts knob mode
 
 	virtual bool setPosition (CCoord x, CCoord y);
@@ -258,7 +260,7 @@ class VSTGUIEditorInterface
 {
 public:
 	virtual void doIdleStuff () {}
-	virtual int32_t getKnobMode () const { return 0; }
+	virtual int32_t getKnobMode () const { return -1; }
 	
 	virtual void beginEdit (int32_t index) {}
 	virtual void endEdit (int32_t index) {}

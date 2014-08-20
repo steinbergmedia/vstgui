@@ -2049,21 +2049,30 @@ public:
 
 		if (gradientName == 0 && gradientHighlightedName == 0)
 		{
+			bool hasOldGradient = true;
 			CColor startColor, highlightedStartColor, endColor, highlightedEndColor;
 			if (!stringToColor (attributes.getAttributeValue (kAttrGradientStartColor), startColor, description))
-				return false;
-			if (!stringToColor (attributes.getAttributeValue (kAttrGradientStartColorHighlighted), highlightedStartColor, description))
-				return false;
-			if (!stringToColor (attributes.getAttributeValue (kAttrGradientEndColor), endColor, description))
-				return false;
-			if (!stringToColor (attributes.getAttributeValue (kAttrGradientEndColorHighlighted), highlightedEndColor, description))
-				return false;
-			SharedPointer<CGradient> gradient = owned (CGradient::create (0, 1, startColor, endColor));
-			button->setGradient (gradient);
-			addGradientToUIDescription (description, gradient, "TextButton");
-			gradient = owned (CGradient::create (0, 1, highlightedStartColor, highlightedEndColor));
-			button->setGradientHighlighted (gradient);
-			addGradientToUIDescription (description, gradient, "TextButton Highlighted");
+				hasOldGradient = false;
+			if (hasOldGradient && !stringToColor (attributes.getAttributeValue (kAttrGradientStartColorHighlighted), highlightedStartColor, description))
+				hasOldGradient = false;
+			if (hasOldGradient && !stringToColor (attributes.getAttributeValue (kAttrGradientEndColor), endColor, description))
+				hasOldGradient = false;
+			if (hasOldGradient && !stringToColor (attributes.getAttributeValue (kAttrGradientEndColorHighlighted), highlightedEndColor, description))
+				hasOldGradient = false;
+			if (hasOldGradient)
+			{
+				SharedPointer<CGradient> gradient = owned (CGradient::create (0, 1, startColor, endColor));
+				button->setGradient (gradient);
+				addGradientToUIDescription (description, gradient, "TextButton");
+				gradient = owned (CGradient::create (0, 1, highlightedStartColor, highlightedEndColor));
+				button->setGradientHighlighted (gradient);
+				addGradientToUIDescription (description, gradient, "TextButton Highlighted");
+			}
+			else
+			{
+				button->setGradient (0);
+				button->setGradientHighlighted (0);
+			}
 		}
 
 		return true;
@@ -2247,21 +2256,15 @@ public:
 		else if (attributeName == kAttrGradient)
 		{
 			CGradient* gradient = button->getGradient ();
-			if (gradient)
-			{
-				UTF8StringPtr gradientName = desc->lookupGradientName (gradient);
-				stringValue = gradientName ? gradientName : "";
-			}
+			UTF8StringPtr gradientName = gradient ? desc->lookupGradientName (gradient) : 0;
+			stringValue = gradientName ? gradientName : "";
 			return true;
 		}
 		else if (attributeName == kAttrGradientHighlighted)
 		{
 			CGradient* gradient = button->getGradientHighlighted ();
-			if (gradient)
-			{
-				UTF8StringPtr gradientName = desc->lookupGradientName (gradient);
-				stringValue = gradientName ? gradientName : "";
-			}
+			UTF8StringPtr gradientName = gradient ? desc->lookupGradientName (gradient) : 0;
+			stringValue = gradientName ? gradientName : "";
 			return true;
 		}
 		return false;
@@ -3886,19 +3889,23 @@ public:
 		}
 		else
 		{ // support old version
+			bool hasOldGradient = true;
 			CColor startColor, endColor;
 			if (!stringToColor (attributes.getAttributeValue (kAttrGradientStartColor), startColor, description))
-				return false;
-			if (!stringToColor (attributes.getAttributeValue (kAttrGradientEndColor), endColor, description))
-				return false;
+				hasOldGradient = false;
+			if (hasOldGradient && !stringToColor (attributes.getAttributeValue (kAttrGradientEndColor), endColor, description))
+				hasOldGradient = false;
 			double startOffset, endOffset;
-			if (!attributes.getDoubleAttribute (kAttrGradientStartColorOffset, startOffset))
-				return false;
-			if (!attributes.getDoubleAttribute (kAttrGradientEndColorOffset, endOffset))
-				return false;
-			SharedPointer<CGradient> gradient = owned (CGradient::create (startOffset, 1. - endOffset, startColor, endColor));
-			gv->setGradient (gradient);
-			addGradientToUIDescription (description, gradient, "GradientView");
+			if (hasOldGradient && !attributes.getDoubleAttribute (kAttrGradientStartColorOffset, startOffset))
+				hasOldGradient = false;
+			if (hasOldGradient && !attributes.getDoubleAttribute (kAttrGradientEndColorOffset, endOffset))
+				hasOldGradient = false;
+			if (hasOldGradient)
+			{
+				SharedPointer<CGradient> gradient = owned (CGradient::create (startOffset, 1. - endOffset, startColor, endColor));
+				gv->setGradient (gradient);
+				addGradientToUIDescription (description, gradient, "GradientView");
+			}
 		}
 		return true;
 	}
@@ -3976,11 +3983,8 @@ public:
 		if (attributeName == kAttrGradient)
 		{
 			CGradient* gradient = gv->getGradient ();
-			if (gradient)
-			{
-				UTF8StringPtr gradientName = desc->lookupGradientName (gradient);
-				stringValue = gradientName ? gradientName : "";
-			}
+			UTF8StringPtr gradientName = gradient ? desc->lookupGradientName (gradient) : 0;
+			stringValue = gradientName ? gradientName : "";
 			return true;
 		}
 		return false;

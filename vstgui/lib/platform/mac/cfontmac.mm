@@ -264,12 +264,10 @@ void CoreTextFont::drawString (CDrawContext* context, const CString& string, con
 		if (cgContext)
 		{
 			CGPoint cgPoint = CGPointMake (point.x, point.y);
-			if (context->getDrawMode ().integralMode ())
-				cgPoint = cgDrawContext->pixelAlligned (cgPoint);
 			CGContextSetShouldAntialias (cgContext, antialias);
 			CGContextSetShouldSmoothFonts (cgContext, true);
 			CGContextSetShouldSubpixelPositionFonts (cgContext, true);
-			CGContextSetShouldSubpixelQuantizeFonts(cgContext, true);
+			CGContextSetShouldSubpixelQuantizeFonts (cgContext, true);
 			CGContextSetTextPosition (cgContext, point.x, cgPoint.y);
 			CTLineDraw (line, cgContext);
 			if (style & kUnderlineFace)
