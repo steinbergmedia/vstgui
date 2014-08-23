@@ -260,7 +260,7 @@ void CoreTextFont::drawString (CDrawContext* context, const CString& string, con
 	if (line)
 	{
 		CGDrawContext* cgDrawContext = dynamic_cast<CGDrawContext*> (context);
-		CGContextRef cgContext = cgDrawContext ? cgDrawContext->beginCGContext (true, false) : 0;
+		CGContextRef cgContext = cgDrawContext ? cgDrawContext->beginCGContext (true, true) : 0;
 		if (cgContext)
 		{
 			CGPoint cgPoint = CGPointMake (point.x, point.y);

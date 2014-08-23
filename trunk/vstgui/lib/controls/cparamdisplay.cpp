@@ -230,6 +230,7 @@ void CParamDisplay::drawBack (CDrawContext* pContext, CBitmap* newBack)
 	{
 		if (!getTransparency ())
 		{
+			bool strokePath = !(style & (k3DIn|k3DOut|kNoFrame));
 			pContext->setFillColor (backColor);
 			if (style & kRoundRectStyle)
 			{
@@ -240,7 +241,7 @@ void CParamDisplay::drawBack (CDrawContext* pContext, CBitmap* newBack)
 				{
 					pContext->setDrawMode (kAntiAliasing);
 					pContext->drawGraphicsPath (path, CDrawContext::kPathFilled);
-					if (!(style & (k3DIn|k3DOut|kNoFrame)))
+					if (strokePath)
 					{
 						pContext->setLineStyle (kLineSolid);
 						pContext->setLineWidth (frameWidth);
@@ -256,11 +257,11 @@ void CParamDisplay::drawBack (CDrawContext* pContext, CBitmap* newBack)
 				if (path)
 				{
 					CRect frameRect = getViewSize ();
-					if (!(style & (k3DIn|k3DOut|kNoFrame)))
+					if (strokePath)
 						frameRect.inset (frameWidth/2., frameWidth/2.);
 					path->addRect (frameRect);
 					pContext->drawGraphicsPath (path, CDrawContext::kPathFilled);
-					if (!(style & (k3DIn|k3DOut|kNoFrame)))
+					if (strokePath)
 					{
 						pContext->setLineStyle (kLineSolid);
 						pContext->setLineWidth (frameWidth);
@@ -272,7 +273,7 @@ void CParamDisplay::drawBack (CDrawContext* pContext, CBitmap* newBack)
 				{
 					pContext->drawRect (getViewSize (), kDrawFilled);
 			
-					if (!(style & (k3DIn|k3DOut|kNoFrame))) 
+					if (strokePath)
 					{
 						CRect frameRect = getViewSize ();
 						frameRect.inset (frameWidth/2., frameWidth/2.);

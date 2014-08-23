@@ -40,6 +40,7 @@
 #include "../uiattributes.h"
 #include "../../lib/controls/ctextedit.h"
 #include "../../lib/controls/coptionmenu.h"
+#include "../../lib/controls/cscrollbar.h"
 #include "uieditcontroller.h"
 #include "uiselection.h"
 #include "uiundomanager.h"

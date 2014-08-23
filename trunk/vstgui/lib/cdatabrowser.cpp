@@ -38,6 +38,7 @@
 #include "vstkeycode.h"
 #include "cframe.h"
 #include "controls/ctextedit.h"
+#include "controls/cscrollbar.h"
 #include "ifocusdrawing.h"
 #include "cvstguitimer.h"
 #include <cmath>

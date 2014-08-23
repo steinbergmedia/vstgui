@@ -316,6 +316,10 @@ CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes
 		if (splitViews.size () == 1)
 		{
 			CFontRef font = description->getFont ("control.font");
+			CColor fontColor = kWhiteCColor, frameColor = kBlackCColor, backColor = kBlackCColor;
+			description->getColor ("control.font", fontColor);
+			description->getColor ("control.frame", frameColor);
+			description->getColor ("control.back", backColor);
 			CTextLabel* label = new CTextLabel (CRect (0, 0, splitView->getWidth (), splitView->getSeparatorWidth ()), "Templates | View Hierarchy");
 			label->setTransparency (true);
 			label->setMouseEnabled (false);
@@ -330,8 +334,10 @@ CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes
 			COptionMenu* scaleMenu = new COptionMenu (scaleMenuRect, 0, -1);
 			scaleMenu->setStyle (kPopupStyle|kCheckStyle);
 			scaleMenu->setFont (font);
-			scaleMenu->setFontColor (kWhiteCColor);
-			scaleMenu->setBackColor (kBlackCColor);
+			scaleMenu->setFontColor (fontColor);
+			scaleMenu->setBackColor (backColor);
+			scaleMenu->setFrameColor (frameColor);
+			scaleMenu->setFrameWidth (1.);
 			scaleMenu->setAutosizeFlags (kAutosizeRight|kAutosizeTop|kAutosizeBottom);
 			scaleMenu->addEntry (new CCommandMenuItem ("50%", this, "Scale", "50%"));
 			scaleMenu->addEntry (new CCommandMenuItem ("75%", this, "Scale", "75%"));

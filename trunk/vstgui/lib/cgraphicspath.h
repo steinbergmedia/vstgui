@@ -111,7 +111,6 @@ public:
 	virtual CRect getBoundingBox () = 0;
 	//@}
 	
-	virtual void pixelAlign (CDrawContext* context, CGraphicsTransform* transform = 0) = 0;
 //-----------------------------------------------------------------------------
 	CLASS_METHODS_NOCOPY(CGraphicsPath, CBaseObject)
 protected:

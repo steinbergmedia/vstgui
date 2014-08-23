@@ -86,12 +86,6 @@ void GdiplusGraphicsPath::dirty ()
 }
 
 //-----------------------------------------------------------------------------
-void GdiplusGraphicsPath::pixelAlign (CDrawContext* context, CGraphicsTransform* transform)
-{
-	// nothing to do yet
-}
-
-//-----------------------------------------------------------------------------
 Gdiplus::GraphicsPath* GdiplusGraphicsPath::getGraphicsPath ()
 {
 	if (platformPath == 0)
