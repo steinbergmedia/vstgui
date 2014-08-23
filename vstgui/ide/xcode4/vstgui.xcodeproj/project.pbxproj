@@ -282,6 +282,11 @@
 		F4E9C6EA17A8271200F42EF8 /* quartzgraphicspath.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F17E13080B1C00F0A613 /* quartzgraphicspath.cpp */; };
 		F4E9C6EB17A8272700F42EF8 /* macstring.mm in Sources */ = {isa = PBXBuildFile; fileRef = F4FC1A9F1328C8C40066E2F8 /* macstring.mm */; };
 		F4E9C6EF17A82BC800F42EF8 /* uiviewframe.mm in Sources */ = {isa = PBXBuildFile; fileRef = F4E9C6ED17A82BC800F42EF8 /* uiviewframe.mm */; };
+		F4EA3F2C19A4E5C00054328B /* cscrollbar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4EA3F2A19A4E5C00054328B /* cscrollbar.cpp */; };
+		F4EA3F2D19A4E5C00054328B /* cscrollbar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4EA3F2A19A4E5C00054328B /* cscrollbar.cpp */; };
+		F4EA3F2E19A4E5C00054328B /* cscrollbar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4EA3F2A19A4E5C00054328B /* cscrollbar.cpp */; };
+		F4EA3F2F19A4E5C00054328B /* cscrollbar.h in Headers */ = {isa = PBXBuildFile; fileRef = F4EA3F2B19A4E5C00054328B /* cscrollbar.h */; };
+		F4EA3F3019A4E5C00054328B /* cscrollbar.h in Headers */ = {isa = PBXBuildFile; fileRef = F4EA3F2B19A4E5C00054328B /* cscrollbar.h */; };
 		F4F46F90183D20FB00577F86 /* caviewlayer.mm in Sources */ = {isa = PBXBuildFile; fileRef = F47883A218045A300054ED06 /* caviewlayer.mm */; };
 		F4F46F92183D211700577F86 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F4F46F91183D211700577F86 /* QuartzCore.framework */; };
 		F4F52DFF13E2B36500B3DB2F /* crowcolumnview.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4F52DFD13E2B36500B3DB2F /* crowcolumnview.cpp */; };
@@ -653,6 +658,8 @@
 		F4E9C69417A8266200F42EF8 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		F4E9C6ED17A82BC800F42EF8 /* uiviewframe.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = uiviewframe.mm; sourceTree = "<group>"; };
 		F4E9C6EE17A82BC800F42EF8 /* uiviewframe.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uiviewframe.h; sourceTree = "<group>"; };
+		F4EA3F2A19A4E5C00054328B /* cscrollbar.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cscrollbar.cpp; sourceTree = "<group>"; };
+		F4EA3F2B19A4E5C00054328B /* cscrollbar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cscrollbar.h; sourceTree = "<group>"; };
 		F4F46F91183D211700577F86 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		F4F52DFD13E2B36500B3DB2F /* crowcolumnview.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = crowcolumnview.cpp; sourceTree = "<group>"; };
 		F4F52DFE13E2B36500B3DB2F /* crowcolumnview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crowcolumnview.h; sourceTree = "<group>"; };
@@ -921,6 +928,8 @@
 				F497F13813080AE500F0A613 /* coptionmenu.h */,
 				F497F13913080AE500F0A613 /* cparamdisplay.cpp */,
 				F497F13A13080AE500F0A613 /* cparamdisplay.h */,
+				F4EA3F2A19A4E5C00054328B /* cscrollbar.cpp */,
+				F4EA3F2B19A4E5C00054328B /* cscrollbar.h */,
 				F44C2600198BA5B4008434DB /* csegmentbutton.cpp */,
 				F44C2601198BA5B4008434DB /* csegmentbutton.h */,
 				F497F13B13080AE500F0A613 /* cslider.cpp */,
@@ -1121,6 +1130,7 @@
 				F47883AE180469580054ED06 /* clayeredviewcontainer.h in Headers */,
 				F47D201C18A6648C00487CDB /* uiattributes.h in Headers */,
 				F42D5F6617B016F900B85FE8 /* cxypad.h in Headers */,
+				F4EA3F2F19A4E5C00054328B /* cscrollbar.h in Headers */,
 				F40E63FF16821A6300426847 /* cgradientview.h in Headers */,
 				F4C0F1FD197BC2F900A48B02 /* uicolorchoosercontroller.h in Headers */,
 				F440F8D017A8FF7600616683 /* itouchevent.h in Headers */,
@@ -1140,6 +1150,7 @@
 				F47883AF180469580054ED06 /* clayeredviewcontainer.h in Headers */,
 				F47D201D18A6648C00487CDB /* uiattributes.h in Headers */,
 				F42D5F6717B016F900B85FE8 /* cxypad.h in Headers */,
+				F4EA3F3019A4E5C00054328B /* cscrollbar.h in Headers */,
 				F40E640016821A6300426847 /* cgradientview.h in Headers */,
 				F4C0F1FE197BC2F900A48B02 /* uicolorchoosercontroller.h in Headers */,
 				F440F8D117A8FF7600616683 /* itouchevent.h in Headers */,
@@ -1325,6 +1336,7 @@
 				F497F15713080AE500F0A613 /* cmoviebutton.cpp in Sources */,
 				F497F15913080AE500F0A613 /* coptionmenu.cpp in Sources */,
 				F497F15B13080AE500F0A613 /* cparamdisplay.cpp in Sources */,
+				F4EA3F2C19A4E5C00054328B /* cscrollbar.cpp in Sources */,
 				F497F15D13080AE500F0A613 /* cslider.cpp in Sources */,
 				F497F15F13080AE500F0A613 /* cspecialdigit.cpp in Sources */,
 				F497F16113080AE500F0A613 /* csplashscreen.cpp in Sources */,
@@ -1525,6 +1537,7 @@
 				F4E9C6C817A826E300F42EF8 /* ctabview.cpp in Sources */,
 				F4E9C6C917A826E300F42EF8 /* ctooltipsupport.cpp in Sources */,
 				F4E9C6CA17A826E300F42EF8 /* cview.cpp in Sources */,
+				F4EA3F2E19A4E5C00054328B /* cscrollbar.cpp in Sources */,
 				F4E9C6CB17A826E300F42EF8 /* cviewcontainer.cpp in Sources */,
 				F4E9C6CC17A826E300F42EF8 /* cvstguitimer.cpp in Sources */,
 				F4E9C6CD17A826E300F42EF8 /* vstguidebug.cpp in Sources */,
@@ -1584,6 +1597,7 @@
 				F4F9541816510F40006EE1D1 /* cfontmac.mm in Sources */,
 				F4F9541916510F40006EE1D1 /* cgbitmap.cpp in Sources */,
 				F4F9541A16510F40006EE1D1 /* cgdrawcontext.cpp in Sources */,
+				F4EA3F2D19A4E5C00054328B /* cscrollbar.cpp in Sources */,
 				F4F9541B16510F40006EE1D1 /* macclipboard.mm in Sources */,
 				F4F9541C16510F40006EE1D1 /* macfileselector.mm in Sources */,
 				F4F9541D16510F40006EE1D1 /* macglobals.cpp in Sources */,

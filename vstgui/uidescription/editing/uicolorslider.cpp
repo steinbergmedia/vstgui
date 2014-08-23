@@ -94,21 +94,21 @@ void UIColorSlider::updateBackground (CDrawContext* context)
 	SharedPointer<COffscreenContext> offscreen = owned (COffscreenContext::create (getFrame (), getWidth (), getHeight (), scaleFactor));
 	if (offscreen)
 	{
-		const int32_t kNumPoints = (style == kHue) ? 360 : 256;
-		CCoord width = getWidth ();
+		const int32_t kNumPoints = (style <= kLightness) ? 360 : 256;
+		CCoord width = std::floor (getWidth () + 0.5);
 		offscreen->beginDraw ();
 		offscreen->setDrawMode (kAliasing);
 		CCoord minWidth = 1. / scaleFactor;
 		CCoord widthPerColor = width / static_cast<double> (kNumPoints - 1);
 		CRect r;
 		r.setHeight (getHeight ());
-		r.setWidth (widthPerColor < minWidth ? minWidth : (std::ceil (widthPerColor * scaleFactor) / scaleFactor));
+		r.setWidth (widthPerColor < minWidth ? minWidth : (std::floor (widthPerColor * scaleFactor + 0.5) / scaleFactor));
 		r.offset (-r.getWidth (), 0);
 		offscreen->setLineWidth (minWidth);
 		for (int32_t i = 0; i < kNumPoints; i++)
 		{
-			CCoord x = std::ceil (widthPerColor * i * scaleFactor) / scaleFactor;
-			if (x > r.right)
+			CCoord x = std::floor (widthPerColor * i * scaleFactor + 0.5) / scaleFactor;
+			if (x > r.right || i == kNumPoints -1)
 			{
 				CColor c = color->base ();
 				switch (style)
@@ -152,14 +152,16 @@ void UIColorSlider::updateBackground (CDrawContext* context)
 						break;
 					}
 				}
-				for (int32_t i = 0; i < r.getWidth () / minWidth; i++)
+				offscreen->setFrameColor (c);
+				CCoord next = r.left + widthPerColor;
+				while (r.left < next)
 				{
-					offscreen->setFrameColor (c);
 					offscreen->drawLine (std::make_pair (r.getTopLeft (), r.getBottomLeft ()));
 					r.offset (minWidth, 0);
 				}
 			}
 		}
+		offscreen->drawLine (std::make_pair (r.getTopLeft (), r.getBottomLeft ()));
 		offscreen->endDraw ();
 		setBackground (offscreen->getBitmap ());
 	}

@@ -2068,11 +2068,6 @@ public:
 				button->setGradientHighlighted (gradient);
 				addGradientToUIDescription (description, gradient, "TextButton Highlighted");
 			}
-			else
-			{
-				button->setGradient (0);
-				button->setGradientHighlighted (0);
-			}
 		}
 
 		return true;

@@ -316,6 +316,9 @@
     <ClCompile Include="..\..\..\lib\controls\csegmentbutton.cpp">
       <Filter>Source Files\lib\controls</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\lib\controls\cscrollbar.cpp">
+      <Filter>Source Files\lib\controls</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\lib\cbitmap.h">
@@ -686,6 +689,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\lib\animation\itimingfunction.h">
       <Filter>Source Files\lib\animation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\controls\cscrollbar.h">
+      <Filter>Source Files\lib\controls</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

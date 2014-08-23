@@ -71,6 +71,7 @@
 #include "lib/controls/cmoviebutton.cpp"
 #include "lib/controls/coptionmenu.cpp"
 #include "lib/controls/cparamdisplay.cpp"
+#include "lib/controls/cscrollbar.cpp"
 #include "lib/controls/csegmentbutton.cpp"
 #include "lib/controls/cslider.cpp"
 #include "lib/controls/cspecialdigit.cpp"

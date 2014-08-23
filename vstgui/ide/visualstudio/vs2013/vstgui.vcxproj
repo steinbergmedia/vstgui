@@ -164,6 +164,7 @@
     <ClCompile Include="..\..\..\lib\cgraphicspath.cpp" />
     <ClCompile Include="..\..\..\lib\clayeredviewcontainer.cpp" />
     <ClCompile Include="..\..\..\lib\coffscreencontext.cpp" />
+    <ClCompile Include="..\..\..\lib\controls\cscrollbar.cpp" />
     <ClCompile Include="..\..\..\lib\controls\csegmentbutton.cpp" />
     <ClCompile Include="..\..\..\lib\copenglview.cpp" />
     <ClCompile Include="..\..\..\lib\cpoint.cpp" />
@@ -264,6 +265,7 @@
     <ClInclude Include="..\..\..\lib\cgraphicstransform.h" />
     <ClInclude Include="..\..\..\lib\clayeredviewcontainer.h" />
     <ClInclude Include="..\..\..\lib\coffscreencontext.h" />
+    <ClInclude Include="..\..\..\lib\controls\cscrollbar.h" />
     <ClInclude Include="..\..\..\lib\controls\csegmentbutton.h" />
     <ClInclude Include="..\..\..\lib\copenglview.h" />
     <ClInclude Include="..\..\..\lib\cpoint.h" />

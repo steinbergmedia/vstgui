@@ -175,7 +175,13 @@ void CGDrawContext::drawGraphicsPath (CGraphicsPath* _path, PathDrawMode mode, C
 		CGPathDrawingMode cgMode;
 		switch (mode)
 		{
-			case kPathFilledEvenOdd: cgMode = kCGPathEOFill; break;
+			case kPathFilledEvenOdd:
+			{
+				cgMode = kCGPathEOFill;
+				if (currentState.drawMode.integralMode ())
+					applyLineWidthCTM (context);
+				break;
+			}
 			case kPathStroked:
 			{
 				cgMode = kCGPathStroke;
@@ -183,7 +189,13 @@ void CGDrawContext::drawGraphicsPath (CGraphicsPath* _path, PathDrawMode mode, C
 				applyLineWidthCTM (context);
 				break;
 			}
-			default: cgMode = kCGPathFill; break;
+			default:
+			{
+				cgMode = kCGPathFill;
+				if (currentState.drawMode.integralMode ())
+					applyLineWidthCTM (context);
+				break;
+			}
 		}
 		
 		if (currentState.drawMode.integralMode ())

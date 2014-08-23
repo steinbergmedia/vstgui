@@ -259,6 +259,7 @@ void UIViewFactory::evaluateAttributesAndRemember (CView* view, const UIAttribut
 				case IViewCreator::kColorType:
 				case IViewCreator::kTagType:
 				case IViewCreator::kFontType:
+				case IViewCreator::kGradientType:
 					rememberAttribute (view, attr.first.c_str (), value.c_str ());
 					break;
 				default:

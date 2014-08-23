@@ -101,6 +101,8 @@ public:
 		D2DDrawContext* drawContext;
 	};
 
+	template<typename T> void pixelAllign (T& rect) const;
+	
 //-----------------------------------------------------------------------------
 protected:
 	void init () VSTGUI_OVERRIDE_VMETHOD;
@@ -122,6 +124,18 @@ protected:
 	ID2D1StrokeStyle* strokeStyle;
 	CRect currentClip;
 };
+
+//-----------------------------------------------------------------------------
+template<typename T> void D2DDrawContext::pixelAllign (T& obj) const
+{
+	const CGraphicsTransform& t = getCurrentTransform ();
+	CGraphicsTransform tInv = t.inverse ();
+	if (currentState.drawMode.integralMode ())
+		obj.offset (-0.5, 0);
+	t.transform (obj);
+	obj.makeIntegral ();
+	tInv.transform (obj);
+}
 
 //-----------------------------------------------------------------------------
 static inline D2D1_RECT_F makeD2DRect (const CRect& r)

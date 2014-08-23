@@ -159,6 +159,135 @@ private:
 	ID2D1GeometrySink* sink;
 };
 
+//-----------------------------------------------------------------------------
+class AlignPixelSink : public ID2D1SimplifiedGeometrySink
+{
+public:
+	HRESULT STDMETHODCALLTYPE QueryInterface(REFIID iid, void ** ppvObject)
+	{
+		if (iid == __uuidof(IUnknown)
+			|| iid == __uuidof(ID2D1SimplifiedGeometrySink))
+		{
+			*ppvObject = static_cast<ID2D1SimplifiedGeometrySink*>(this);
+			AddRef();
+			return S_OK;
+		} else
+			return E_NOINTERFACE;
+	}
+    ULONG STDMETHODCALLTYPE AddRef(void) { return 1; }
+    ULONG STDMETHODCALLTYPE Release(void) { return 1; }
+
+	D2D1_POINT_2F alignPoint (const D2D1_POINT_2F& p)
+	{
+		CPoint point (p.x, p.y); 
+		if (transform)
+			transform->transform (point);
+		if (context)
+			context->pixelAllign (point);
+		return { static_cast<FLOAT> (point.x), static_cast<FLOAT> (point.y) };
+	}
+	
+	STDMETHOD_(void, AddBeziers)(const D2D1_BEZIER_SEGMENT * beziers, UINT beziersCount)
+	{
+		for (UINT i = 0; i < beziersCount; ++i)
+		{
+			D2D1_BEZIER_SEGMENT segment = {};
+			segment.point1 = alignPoint (beziers[i].point1);
+			segment.point2 = alignPoint (beziers[i].point2);
+			segment.point3 = alignPoint (beziers[i].point3);
+			sink->AddBezier (segment);
+		}
+	}
+
+	STDMETHOD_(void, AddLines)(const D2D1_POINT_2F *points, UINT pointsCount)
+	{
+		for (UINT i = 0; i < pointsCount; ++i)
+		{
+			D2D_POINT_2F point = alignPoint (points[i]);
+			sink->AddLine (point);
+		}
+	}
+
+	STDMETHOD_(void, BeginFigure)(D2D1_POINT_2F startPoint,
+								D2D1_FIGURE_BEGIN figureBegin)
+	{
+		startPoint = alignPoint (startPoint);
+		sink->BeginFigure (startPoint, figureBegin);
+	}
+
+	STDMETHOD_(void, EndFigure)(D2D1_FIGURE_END figureEnd)
+	{
+		sink->EndFigure (figureEnd);
+	}
+
+	STDMETHOD_(void, SetFillMode)(D2D1_FILL_MODE fillMode)
+	{
+		sink->SetFillMode (fillMode);
+	}
+
+	STDMETHOD_(void, SetSegmentFlags)(D2D1_PATH_SEGMENT vertexFlags)
+	{
+		sink->SetSegmentFlags (vertexFlags);
+	}
+
+	STDMETHOD(Close)()
+	{
+		isClosed = true;
+		return sink->Close ();
+	}
+
+	AlignPixelSink (D2DDrawContext* context, CGraphicsTransform* transform)
+	: context (context)
+	, transform (transform)
+	, path (0)
+	, sink (0)
+	, isClosed (true)
+	{
+	}
+
+	~AlignPixelSink ()
+	{
+		if (sink)
+			sink->Release ();
+		if (path)
+			path->Release ();
+	}
+	
+	bool init ()
+	{
+		getD2DFactory ()->CreatePathGeometry (&path);
+		if (path == 0)
+			return false;
+		if (!SUCCEEDED (path->Open (&sink)))
+			return false;
+		isClosed = false;
+		return true;
+	}
+
+	ID2D1PathGeometry* get ()
+	{
+		if (path)
+		{
+			if (sink)
+			{
+				if (!isClosed)
+					sink->Close ();
+				sink->Release ();
+				sink = 0;
+			}
+			ID2D1PathGeometry* result = path;
+			path = 0;
+			return result;
+		}
+		return 0;
+	}
+private:
+	ID2D1PathGeometry* path;
+	ID2D1GeometrySink* sink;
+	D2DDrawContext* context;
+	CGraphicsTransform* transform;
+	bool isClosed;
+};
 
 //-----------------------------------------------------------------------------
 D2DGraphicsPath::D2DGraphicsPath ()
@@ -250,7 +379,7 @@ CPoint D2DGraphicsPath::getCurrentPosition ()
 //-----------------------------------------------------------------------------
 bool D2DGraphicsPath::hitTest (const CPoint& p, bool evenOddFilled, CGraphicsTransform* transform)
 {
-	ID2D1PathGeometry* _path = getPath (evenOddFilled ? D2D1_FILL_MODE_ALTERNATE : D2D1_FILL_MODE_WINDING);
+	ID2D1PathGeometry* _path = createPath (evenOddFilled ? D2D1_FILL_MODE_ALTERNATE : D2D1_FILL_MODE_WINDING);
 	if (_path)
 	{
 		D2D1::Matrix3x2F matrix = D2D1::Matrix3x2F::Identity ();
@@ -264,11 +393,10 @@ bool D2DGraphicsPath::hitTest (const CPoint& p, bool evenOddFilled, CGraphicsTra
 			matrix._32 = (FLOAT)transform->dy;
 			
 		}
-		BOOL result;
-		if (SUCCEEDED (_path->FillContainsPoint (makeD2DPoint (p), matrix, &result)))
-		{
-			return result ? true : false;
-		}
+		BOOL result = false;
+		_path->FillContainsPoint (makeD2DPoint (p), matrix, &result);
+		_path->Release ();
+		return result ? true : false;
 	}
 	return false;
 }
@@ -277,7 +405,7 @@ bool D2DGraphicsPath::hitTest (const CPoint& p, bool evenOddFilled, CGraphicsTra
 CRect D2DGraphicsPath::getBoundingBox ()
 {
 	CRect r;
-	ID2D1PathGeometry* _path = getPath (currentPathFillMode);
+	ID2D1PathGeometry* _path = createPath (currentPathFillMode);
 	if (_path)
 	{
 		D2D1_RECT_F bounds;
@@ -288,6 +416,7 @@ CRect D2DGraphicsPath::getBoundingBox ()
 			r.right = bounds.right;
 			r.bottom = bounds.bottom;
 		}
+		_path->Release ();
 	}
 	return r;
 }
@@ -303,13 +432,7 @@ void D2DGraphicsPath::dirty ()
 }
 
 //-----------------------------------------------------------------------------
-void D2DGraphicsPath::pixelAlign (CDrawContext* context, CGraphicsTransform* transform)
-{
-	// nothing to do yet
-}
-
-//-----------------------------------------------------------------------------
-ID2D1PathGeometry* D2DGraphicsPath::getPath (int32_t fillMode)
+ID2D1PathGeometry* D2DGraphicsPath::createPath (int32_t fillMode, D2DDrawContext* context, CGraphicsTransform* transform)
 {
 	if (!elements.empty () && (path == 0 || fillMode != currentPathFillMode))
 	{
@@ -419,13 +542,14 @@ ID2D1PathGeometry* D2DGraphicsPath::getPath (int32_t fillMode)
 				}
 				case Element::kRect:
 				{
+					CRect r (e.instruction.rect.left, e.instruction.rect.top, e.instruction.rect.right, e.instruction.rect.bottom);
 					D2D1_POINT_2F points[4] = {
-						{(FLOAT)e.instruction.rect.right, (FLOAT)e.instruction.rect.top},
-						{(FLOAT)e.instruction.rect.right, (FLOAT)e.instruction.rect.bottom},
-						{(FLOAT)e.instruction.rect.left, (FLOAT)e.instruction.rect.bottom},
-						{(FLOAT)e.instruction.rect.left, (FLOAT)e.instruction.rect.top}
+						{(FLOAT)r.right, (FLOAT)r.top},
+						{(FLOAT)r.right, (FLOAT)r.bottom},
+						{(FLOAT)r.left, (FLOAT)r.bottom},
+						{(FLOAT)r.left, (FLOAT)r.top}
 					};
-					if (figureOpen && lastPos != CPoint (e.instruction.rect.left, e.instruction.rect.top))
+					if (figureOpen && lastPos != CPoint (r.left, r.top))
 					{
 						sink->EndFigure (D2D1_FIGURE_END_OPEN);
 						figureOpen = false;
@@ -439,16 +563,17 @@ ID2D1PathGeometry* D2DGraphicsPath::getPath (int32_t fillMode)
 					sink->AddLine (points[1]);
 					sink->AddLine (points[2]);
 					sink->AddLine (points[3]);
-					lastPos = CPoint (e.instruction.rect.left, e.instruction.rect.top);
+					lastPos = CPoint (r.left, r.top);
 					break;
 				}
 				case Element::kLine:
 				{
 					if (figureOpen)
 					{
-						D2D1_POINT_2F end = {(FLOAT)e.instruction.point.x, (FLOAT)e.instruction.point.y};
+						CPoint p (e.instruction.point.x, e.instruction.point.y);
+						D2D1_POINT_2F end = {(FLOAT)p.x, (FLOAT)p.y};
 						sink->AddLine (end);
-						lastPos = CPoint (e.instruction.point.x, e.instruction.point.y);
+						lastPos = p;
 					}
 					break;
 				}
@@ -469,10 +594,11 @@ ID2D1PathGeometry* D2DGraphicsPath::getPath (int32_t fillMode)
 				{
 					if (figureOpen)
 						sink->EndFigure (D2D1_FIGURE_END_OPEN);
-					D2D1_POINT_2F start = {(FLOAT)e.instruction.point.x, (FLOAT)e.instruction.point.y};
+					CPoint p (e.instruction.point.x, e.instruction.point.y);
+					D2D1_POINT_2F start = {(FLOAT)p.x, (FLOAT)p.y};
 					sink->BeginFigure (start, D2D1_FIGURE_BEGIN_FILLED);
 					figureOpen = true;
-					lastPos = CPoint (e.instruction.point.x, e.instruction.point.y);
+					lastPos = p;
 					break;
 				}
 				case Element::kCloseSubpath:
@@ -495,6 +621,21 @@ ID2D1PathGeometry* D2DGraphicsPath::getPath (int32_t fillMode)
 			path = 0;
 		}
 		sink->Release ();
+	}
+	if (path)
+	{
+		if (context || transform)
+		{
+			AlignPixelSink sink (context, transform);
+			if (sink.init () == false)
+				return 0;
+			if (!SUCCEEDED (path->Simplify (D2D1_GEOMETRY_SIMPLIFICATION_OPTION_CUBICS_AND_LINES, 0, &sink)))
+				return 0;
+			
+			ID2D1PathGeometry* result = sink.get ();
+			return result;
+		}
+		path->AddRef ();
 	}
 	return path;
 }

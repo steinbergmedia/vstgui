@@ -46,6 +46,7 @@ struct D2D1_GRADIENT_STOP;
 
 namespace VSTGUI {
 class D2DFont;
+class D2DDrawContext;
 
 //-----------------------------------------------------------------------------
 class D2DGraphicsPath : public CGraphicsPath
@@ -55,7 +56,7 @@ public:
 	D2DGraphicsPath (const D2DFont* font, UTF8StringPtr text);
 	~D2DGraphicsPath ();
 	
-	ID2D1PathGeometry* getPath (int32_t fillMode = 0);
+	ID2D1PathGeometry* createPath (int32_t fillMode, D2DDrawContext* context = 0, CGraphicsTransform* transform = 0);
 
 	CGradient* createGradient (double color1Start, double color2Start, const CColor& color1, const CColor& color2) VSTGUI_OVERRIDE_VMETHOD;
 
@@ -63,7 +64,6 @@ public:
 	CPoint getCurrentPosition () VSTGUI_OVERRIDE_VMETHOD;
 	CRect getBoundingBox () VSTGUI_OVERRIDE_VMETHOD;
 	void dirty () VSTGUI_OVERRIDE_VMETHOD;
-	void pixelAlign (CDrawContext* context, CGraphicsTransform* transform = 0) VSTGUI_OVERRIDE_VMETHOD;
 protected:
 	ID2D1PathGeometry* path;
 	int32_t currentPathFillMode;

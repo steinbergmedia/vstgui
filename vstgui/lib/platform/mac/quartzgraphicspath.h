@@ -59,7 +59,7 @@ public:
 	QuartzGraphicsPath (const CoreTextFont* font, UTF8StringPtr text);
 	~QuartzGraphicsPath ();
 
-	void pixelAlign (CDrawContext* context, CGraphicsTransform* transform = 0) VSTGUI_OVERRIDE_VMETHOD;
+	void pixelAlign (CDrawContext* context, CGraphicsTransform* transform = 0);
 	CGPathRef getCGPathRef ();
 	void dirty () VSTGUI_OVERRIDE_VMETHOD;
 

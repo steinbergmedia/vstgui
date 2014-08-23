@@ -58,7 +58,6 @@ public:
 	Gdiplus::GraphicsPath* getGraphicsPath ();
 
 	CGradient* createGradient (double color1Start, double color2Start, const CColor& color1, const CColor& color2) VSTGUI_OVERRIDE_VMETHOD;
-	void pixelAlign (CDrawContext* context, CGraphicsTransform* transform = 0) VSTGUI_OVERRIDE_VMETHOD;
 	void dirty () VSTGUI_OVERRIDE_VMETHOD;
 	bool hitTest (const CPoint& p, bool evenOddFilled = false, CGraphicsTransform* transform = 0) VSTGUI_OVERRIDE_VMETHOD;
 	CPoint getCurrentPosition () VSTGUI_OVERRIDE_VMETHOD;

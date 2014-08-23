@@ -36,6 +36,7 @@
 #include "../cdatabrowser.h"
 #include "cbuttons.h"
 #include "ctextedit.h"
+#include "cscrollbar.h"
 #include <list>
 #include <cmath>
 
