@@ -483,7 +483,9 @@ void UIDescWriter::encodeAttributeString (std::string& str)
 bool UIDescWriter::writeAttributes (UIAttributes* attr, OutputStream& stream)
 {
 	bool result = true;
-	for (UIAttributes::iterator it = attr->begin (), end = attr->end (); it != end; ++it)
+	typedef std::map<std::string,std::string> SortedAttributes;
+	SortedAttributes sortedAttributes (attr->begin (), attr->end ());
+	for (SortedAttributes::const_iterator it = sortedAttributes.begin (), end = sortedAttributes.end (); it != end; ++it)
 	{
 		if ((*it).second.length () > 0)
 		{
@@ -1435,7 +1437,7 @@ CBitmap* UIDescription::getBitmap (UTF8StringPtr name) const
 					if (childNodeBitmapName == 0)
 						continue;
 					std::string nameWithoutScaleFactor = UIDescriptionPrivate::removeScaleFactorFromName (*childNodeBitmapName);
-					if (nameWithoutScaleFactor == name && childNode->getBitmap ())
+					if (nameWithoutScaleFactor == name && childNode->getBitmap () && childNode->getBitmap ()->getPlatformBitmap ())
 					{
 						bitmap->addBitmap (childNode->getBitmap ()->getPlatformBitmap ());
 					}
@@ -3044,6 +3046,9 @@ void UIBitmapNode::setBitmap (UTF8StringPtr bitmapName)
 	if (bitmap)
 		bitmap->forget ();
 	bitmap = 0;
+	double scaleFactor = 1.;
+	if (UIDescriptionPrivate::decodeScaleFactorFromName (bitmapName, scaleFactor))
+		attributes->setDoubleAttribute ("scale-factor", scaleFactor);
 }
 
 //-----------------------------------------------------------------------------
