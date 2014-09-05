@@ -237,8 +237,14 @@ IPlatformBitmap* IPlatformBitmap::createFromPath (UTF8StringPtr absolutePath)
 //-----------------------------------------------------------------------------
 IPlatformBitmap* IPlatformBitmap::createFromMemory (const void* ptr, uint32_t memSize)
 {
-	// TODO: check that this implementation actually works
+#ifdef __GNUC__
+	typedef IStream* (*SHCreateMemStreamProc) (const BYTE* pInit, UINT cbInit);
+	HMODULE shlwDll = LoadLibraryA ("shlwapi.dll");
+	SHCreateMemStreamProc proc = reinterpret_cast<SHCreateMemStreamProc> (GetProcAddress (shlwDll, MAKEINTRESOURCEA (12)));
+	IStream* stream = proc (static_cast<const BYTE*> (ptr), memSize);
+#else
 	IStream* stream = SHCreateMemStream ((const BYTE*)ptr, memSize);
+#endif
 	if (stream)
 	{
 #if VSTGUI_DIRECT2D_SUPPORT
@@ -264,6 +270,9 @@ IPlatformBitmap* IPlatformBitmap::createFromMemory (const void* ptr, uint32_t me
 		bitmap->forget ();
 		stream->Release ();
 	}
+#ifdef __GNUC__
+	FreeLibrary (shlwDll);
+#endif
 	return 0;
 }
 

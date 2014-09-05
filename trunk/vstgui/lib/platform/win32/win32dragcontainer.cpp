@@ -188,7 +188,7 @@ uint32_t WinDragContainer::getData (uint32_t index, const void*& buffer, Type& t
 bool WinDragContainer::checkResolveLink (const TCHAR* nativePath, TCHAR* resolved)
 {
 	const TCHAR* ext = VSTGUI_STRRCHR (nativePath, '.');
-	if (ext && VSTGUI_STRICMP (ext, TEXT(".lnk")) == NULL)
+	if (ext && VSTGUI_STRICMP (ext, TEXT(".lnk")) == 0)
 	{
 		IShellLink* psl;
 		IPersistFile* ppf;

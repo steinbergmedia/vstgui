@@ -40,7 +40,7 @@
 #include "win32frame.h"
 #include <shobjidl.h>
 #include <shlobj.h>
-#include <Commdlg.h>
+#include <commdlg.h>
 #include <string>
 
 #define IID_PPV_ARG(IType, ppType) IID_##IType, (void**)ppType
@@ -165,7 +165,11 @@ CNewFileSelector* CNewFileSelector::create (CFrame* parent, Style style)
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
+#ifndef __GNUC__
 typedef HRESULT (STDAPICALLTYPE *SHCreateItemFromParsingNameProc) (__in PCWSTR pszPath, __in_opt IBindCtx *pbc, __in REFIID riid, __deref_out void **ppv);
+#else
+typedef HRESULT (STDAPICALLTYPE *SHCreateItemFromParsingNameProc) (PCWSTR pszPath, IBindCtx *pbc, REFIID riid, void **ppv);
+#endif
 SHCreateItemFromParsingNameProc _SHCreateItemFromParsingName = 0;
 
 //-----------------------------------------------------------------------------
@@ -389,7 +393,7 @@ bool XPFileSelector::runModalInternal ()
 		bi.pszDisplayName = szDisplayName; 
 		bi.lpszTitle = titleW.getWideString ();
 		bi.ulFlags = BIF_RETURNONLYFSDIRS;
-		bi.lParam = NULL; 
+		bi.lParam = 0; 
 		bi.iImage = 0;  
 
 		LPITEMIDLIST pidl = SHBrowseForFolder (&bi);

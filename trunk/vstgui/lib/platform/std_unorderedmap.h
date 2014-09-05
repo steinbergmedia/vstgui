@@ -9,6 +9,13 @@
 		#include <tr1/unordered_map>
 		namespace std { using tr1::unordered_map; }
 	#endif
+#elif defined (__GNUC__)
+	#if __cplusplus >= 201103L
+		#include <unordered_map>
+	#else
+		#include <tr1/unordered_map>
+		namespace std { using tr1::unordered_map; }
+	#endif
 #elif WINDOWS
 	#include <unordered_map>
 #endif
