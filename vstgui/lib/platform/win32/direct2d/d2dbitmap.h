@@ -82,7 +82,7 @@ protected:
 		bool init (D2DBitmap* bitmap, bool alphaPremultiplied);
 
 		uint8_t* getAddress () const { return (uint8_t*)ptr; }
-		int32_t getBytesPerRow () const { return (int32_t)bytesPerRow; }
+		uint32_t getBytesPerRow () const { return bytesPerRow; }
 		PixelFormat getPixelFormat () const { return kBGRA; }
 
 	protected:

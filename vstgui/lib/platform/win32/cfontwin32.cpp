@@ -105,11 +105,11 @@ GdiPlusFont::~GdiPlusFont ()
 }
 
 //-----------------------------------------------------------------------------
-void GdiPlusFont::drawString (CDrawContext* context, const CString& string, const CPoint& point, bool antialias)
+void GdiPlusFont::drawString (CDrawContext* context, IPlatformString* string, const CPoint& point, bool antialias)
 {
 	Gdiplus::Graphics* pGraphics = getGraphics (context);
 	Gdiplus::Brush* pFontBrush = getFontBrush (context);
-	const WinString* winString = dynamic_cast<const WinString*> (string.getPlatformString ());
+	const WinString* winString = dynamic_cast<const WinString*> (string);
 	if (pGraphics && font && pFontBrush && winString)
 	{
 		GdiplusDrawScope drawScope (pGraphics, context->getAbsoluteClipRect (), context->getCurrentTransform ());
@@ -120,10 +120,10 @@ void GdiPlusFont::drawString (CDrawContext* context, const CString& string, cons
 }
 
 //-----------------------------------------------------------------------------
-CCoord GdiPlusFont::getStringWidth (CDrawContext* context, const CString& string, bool antialias)
+CCoord GdiPlusFont::getStringWidth (CDrawContext* context, IPlatformString* string, bool antialias)
 {
 	CCoord result = 0;
-	const WinString* winString = dynamic_cast<const WinString*> (string.getPlatformString ());
+	const WinString* winString = dynamic_cast<const WinString*> (string);
 	if (winString)
 	{
 		Gdiplus::Graphics* pGraphics = context ? getGraphics (context) : 0;

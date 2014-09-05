@@ -146,7 +146,7 @@ void UIViewSwitchContainer::setCurrentViewIndex (int32_t viewIndex)
 }
 
 //-----------------------------------------------------------------------------
-void UIViewSwitchContainer::setAnimationTime (int32_t ms)
+void UIViewSwitchContainer::setAnimationTime (uint32_t ms)
 {
 	animationTime = ms;
 }
@@ -196,9 +196,9 @@ UIDescriptionViewSwitchController::UIDescriptionViewSwitchController (UIViewSwit
 //-----------------------------------------------------------------------------
 CView* UIDescriptionViewSwitchController::createViewForIndex (int32_t index)
 {
-	if (index < (int32_t)templateNames.size ())
+	if (index >= 0 && index < (int32_t)templateNames.size ())
 	{
-		return uiDescription->createView (templateNames[index].c_str (), uiController);
+		return uiDescription->createView (templateNames[static_cast<uint32_t> (index)].c_str (), uiController);
 	}
 	return 0;
 }

@@ -71,7 +71,7 @@ public:
 		if (name)
 		{
 			pContext->setFont (textFont);
-			pContext->setFontColor (value ? activeTextColor : inactiveTextColor);
+			pContext->setFontColor (value > 0.f ? activeTextColor : inactiveTextColor);
 			pContext->drawString (name, getViewSize ());
 		}
 	}

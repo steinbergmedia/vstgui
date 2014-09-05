@@ -138,7 +138,7 @@ public:
 			getPlatformOpenGLView ()->makeContextCurrent ();
 
 			CRect r (getViewSize ());
-			glViewport (0, 0, r.getWidth (), r.getHeight ());
+			glViewport (0, 0, static_cast<GLsizei> (r.getWidth ()), static_cast<GLsizei> (r.getHeight ()));
 
 			getPlatformOpenGLView ()->unlockContext ();
 		}

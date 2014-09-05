@@ -56,7 +56,7 @@ IPlatformBitmap* IPlatformBitmap::create (CPoint* size)
 IPlatformBitmap* IPlatformBitmap::createFromPath (UTF8StringPtr absolutePath)
 {
 	CGBitmap* bitmap = 0;
-	CFURLRef url = CFURLCreateFromFileSystemRepresentation (0, (const UInt8*)absolutePath, strlen (absolutePath), false);
+	CFURLRef url = CFURLCreateFromFileSystemRepresentation (0, (const UInt8*)absolutePath, static_cast<CFIndex> (strlen (absolutePath)), false);
 	if (url)
 	{
 		CGImageSourceRef source = CGImageSourceCreateWithURL (url, NULL);
@@ -211,7 +211,7 @@ bool CGBitmap::load (const CResourceDescription& desc)
 		{
 			CFURLRef url = NULL;
 			if (filename[0] == '/')
-				url = CFURLCreateFromFileSystemRepresentation (0, (const UInt8*)filename, strlen (filename), false);
+				url = CFURLCreateFromFileSystemRepresentation (0, (const UInt8*)filename, static_cast<CFIndex> (strlen (filename)), false);
 			int32_t i = 0;
 			while (url == NULL)
 			{
@@ -314,12 +314,12 @@ CGImageRef CGBitmap::getCGImage ()
 		freeCGImage ();
 
 		size_t rowBytes = getBytesPerRow ();
-		size_t byteCount = rowBytes * size.y;
+		size_t byteCount = rowBytes * static_cast<size_t> (size.y);
 		size_t bitDepth = 32;
 
 		CGDataProviderRef provider = CGDataProviderCreateWithData (NULL, bits, byteCount, NULL);
 		CGBitmapInfo bitmapInfo = kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Big;
-		image = CGImageCreate (size.x, size.y, 8, bitDepth, rowBytes, GetCGColorSpace (), bitmapInfo, provider, NULL, false, kCGRenderingIntentDefault);
+		image = CGImageCreate (static_cast<size_t> (size.x), static_cast<size_t> (size.y), 8, bitDepth, rowBytes, GetCGColorSpace (), bitmapInfo, provider, NULL, false, kCGRenderingIntentDefault);
 		CGDataProviderRelease (provider);
 		dirty = false;
 	}
@@ -351,8 +351,8 @@ CGContextRef CGBitmap::createCGContext ()
 	{
 		CGBitmapInfo bitmapInfo = kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Big;
 		context = CGBitmapContextCreate (bits,
-						size.x,
-						size.y,
+						static_cast<size_t> (size.x),
+						static_cast<size_t> (size.y),
 						8,
 						getBytesPerRow (),
 						GetCGColorSpace (),
@@ -383,10 +383,10 @@ void CGBitmap::allocBits ()
 {
 	if (bits == 0)
 	{
-		bytesPerRow = size.x * 4;
+		bytesPerRow = static_cast<uint32_t> (size.x * 4);
 		if (bytesPerRow % 16)
 			bytesPerRow += 16 - (bytesPerRow % 16);
-		int32_t bitmapByteCount     = bytesPerRow * size.y; 
+		uint32_t bitmapByteCount = bytesPerRow * static_cast<uint32_t> (size.y);
 		bits = calloc (1, bitmapByteCount);
 	}
 }
@@ -414,11 +414,11 @@ public:
 		{
 			vImage_Buffer buffer;
 			buffer.data = bitmap->getBits ();
-			buffer.width = bitmap->getSize ().x;
-			buffer.height = bitmap->getSize ().y;
+			buffer.width = static_cast<vImagePixelCount> (bitmap->getSize ().x);
+			buffer.height = static_cast<vImagePixelCount> (bitmap->getSize ().y);
 			buffer.rowBytes = bitmap->getBytesPerRow ();
 			vImage_Error error = vImageUnpremultiplyData_ARGB8888 (&buffer, &buffer, kvImageNoFlags);
-			assert (error == kvImageNoError);
+			__Verify (error == kvImageNoError);
 		}
 		bitmap->remember ();
 	}
@@ -429,11 +429,11 @@ public:
 		{
 			vImage_Buffer buffer;
 			buffer.data = bitmap->getBits ();
-			buffer.width = bitmap->getSize ().x;
-			buffer.height = bitmap->getSize ().y;
+			buffer.width = static_cast<vImagePixelCount> (bitmap->getSize ().x);
+			buffer.height = static_cast<vImagePixelCount> (bitmap->getSize ().y);
 			buffer.rowBytes = bitmap->getBytesPerRow ();
 			vImage_Error error = vImagePremultiplyData_ARGB8888 (&buffer, &buffer, kvImageNoFlags);
-			assert (error == kvImageNoError);
+			__Verify (error == kvImageNoError);
 		}
 		bitmap->setDirty ();
 		bitmap->forget ();
@@ -444,7 +444,7 @@ public:
 		return (uint8_t*)bitmap->getBits ();
 	}
 	
-	int32_t getBytesPerRow () const VSTGUI_OVERRIDE_VMETHOD
+	uint32_t getBytesPerRow () const VSTGUI_OVERRIDE_VMETHOD
 	{
 		return bitmap->getBytesPerRow ();
 	}

@@ -81,8 +81,10 @@ void PLUGIN_API ZoomTestController::update (FUnknown* changedUnknown, int32 mess
 	Parameter* param = FCast<Parameter> (changedUnknown);
 	if (param && param->getInfo ().id == 1000)
 	{
-		int32 index = param->toPlain (param->getNormalized ());
-		for (EditorVector::const_iterator it = editors.begin(), end = editors.end(); it != end; it++)
+		size_t index = static_cast<size_t> (param->toPlain (param->getNormalized ()));
+		if (index >= zoomFactors.size ())
+			return;
+		for (EditorVector::const_iterator it = editors.begin (), end = editors.end (); it != end; ++it)
 		{
 			VST3Editor* editor = dynamic_cast<VST3Editor*>(*it);
 			if (editor)

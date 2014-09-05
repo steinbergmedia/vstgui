@@ -174,7 +174,7 @@ void PLUGIN_API TestSubController::update (FUnknown* changedUnknown, int32 messa
 		FUnknownPtr<Parameter> parameter (changedUnknown);
 		if (parameter)
 		{
-			int32 value = parameter->toPlain (parameter->getNormalized ());
+			int32 value = static_cast<int32> (parameter->toPlain (parameter->getNormalized ()));
 			if (value == 0)
 			{
 				std::list<CControl*>::iterator it = freqControls.begin ();

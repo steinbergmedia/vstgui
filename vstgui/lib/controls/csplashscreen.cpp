@@ -312,7 +312,7 @@ bool CAnimationSplashScreen::sizeToFit ()
 }
 
 //------------------------------------------------------------------------
-bool CAnimationSplashScreen::createAnimation (int32_t animationIndex, int32_t animationTime, CView* splashView, bool removeViewAnimation)
+bool CAnimationSplashScreen::createAnimation (uint32_t animationIndex, uint32_t animationTime, CView* splashView, bool removeViewAnimation)
 {
 	switch (animationIndex)
 	{
@@ -322,16 +322,14 @@ bool CAnimationSplashScreen::createAnimation (int32_t animationIndex, int32_t an
 			{
 				splashView->setMouseEnabled (false);
 				splashView->addAnimation ("AnimationSplashScreenAnimation", new Animation::AlphaValueAnimation (0.f), new Animation::PowerTimingFunction (animationTime, 2), this);
-				return true;
 			}
 			else
 			{
 				setMouseEnabled (false);
 				splashView->setAlphaValue (0.f);
 				splashView->addAnimation ("AnimationSplashScreenAnimation", new Animation::AlphaValueAnimation (1.f), new Animation::PowerTimingFunction (animationTime, 2));
-				return true;
 			}
-			break;
+			return true;
 		}
 	}
 	return false;

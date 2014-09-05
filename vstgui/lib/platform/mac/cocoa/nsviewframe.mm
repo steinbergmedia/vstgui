@@ -91,7 +91,7 @@ static IDataPackage* gCocoaDragContainer = 0;
 @end
 
 //------------------------------------------------------------------------------------
-static void mapModifiers (NSInteger nsEventModifiers, CButtonState& buttonState)
+static void mapModifiers (NSUInteger nsEventModifiers, CButtonState& buttonState)
 {
 	if (nsEventModifiers & NSShiftKeyMask)
 		buttonState |= kShift;
@@ -406,8 +406,8 @@ static void VSTGUI_NSView_scrollWheel (id self, SEL _cmd, NSEvent* theEvent)
 	NSPoint nsPoint = [theEvent locationInWindow];
 	nsPoint = [self convertPoint:nsPoint fromView:nil];
 	mapModifiers (modifiers, buttons);
-	float distanceX = [theEvent deltaX];
-	float distanceY = [theEvent deltaY];
+	float distanceX = static_cast<float> ([theEvent deltaX]);
+	float distanceY = static_cast<float> ([theEvent deltaY]);
 	if ([theEvent respondsToSelector:@selector(isDirectionInvertedFromDevice)])
 	{
 		BOOL inverted = [theEvent isDirectionInvertedFromDevice];
@@ -419,9 +419,9 @@ static void VSTGUI_NSView_scrollWheel (id self, SEL _cmd, NSEvent* theEvent)
 		}
 	}
 	CPoint p = pointFromNSPoint (nsPoint);
-	if (distanceX)
+	if (distanceX != 0.f)
 		_vstguiframe->platformOnMouseWheel (p, kMouseWheelAxisX, distanceX, buttons);
-	if (distanceY)
+	if (distanceY != 0.f)
 		_vstguiframe->platformOnMouseWheel (p, kMouseWheelAxisY, distanceY, buttons);
 }
 
@@ -833,10 +833,10 @@ bool NSViewFrame::getCurrentMousePosition (CPoint& mousePosition) const
 bool NSViewFrame::getCurrentMouseButtons (CButtonState& buttons) const
 {
 #if MAC_OS_X_VERSION_MIN_REQUIRED > MAC_OS_X_VERSION_10_5
-	NSInteger modifiers = [NSEvent modifierFlags];
+	NSUInteger modifiers = [NSEvent modifierFlags];
 	mapModifiers (modifiers, buttons);
 
-	NSInteger mouseButtons = [NSEvent pressedMouseButtons];
+	NSUInteger mouseButtons = [NSEvent pressedMouseButtons];
 	if (mouseButtons & (1 << 0))
 	{
 		if (mouseButtons == (1 << 0) && modifiers & NSControlKeyMask)
@@ -1089,7 +1089,7 @@ CView::DragResult NSViewFrame::doDrag (IDataPackage* source, const CPoint& offse
 			case IDataPackage::kText:
 			{
 				const void* buffer = 0;
-				int32_t bufferSize = source->getData (0, buffer, type);
+				uint32_t bufferSize = source->getData (0, buffer, type);
 				if (bufferSize > 0)
 				{
 					[nsPasteboard declareTypes:[NSArray arrayWithObject:NSStringPboardType] owner:nil];
@@ -1100,7 +1100,7 @@ CView::DragResult NSViewFrame::doDrag (IDataPackage* source, const CPoint& offse
 			case IDataPackage::kBinary:
 			{
 				const void* buffer = 0;
-				int32_t bufferSize = source->getData (0, buffer, type);
+				uint32_t bufferSize = source->getData (0, buffer, type);
 				if (bufferSize > 0)
 				{
 					[nsPasteboard declareTypes:[NSArray arrayWithObject:[NSString stringWithCString:MacClipboard::getPasteboardBinaryType () encoding:NSASCIIStringEncoding]] owner:nil];

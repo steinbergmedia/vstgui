@@ -304,7 +304,7 @@ D2DGraphicsPath::D2DGraphicsPath (const D2DFont* font, UTF8StringPtr text)
 		return;
 
 	CString string (text);
-	IDWriteTextLayout* layout = font->createTextLayout (string);
+	IDWriteTextLayout* layout = font->createTextLayout (CString (string).getPlatformString ());
 	if (layout == 0)
 		return;
 	

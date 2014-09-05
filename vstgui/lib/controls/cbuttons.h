@@ -100,7 +100,7 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual void setTitle (UTF8StringPtr newTitle);
-	UTF8StringPtr getTitle () const { return title; }
+	const UTF8String& getTitle () const { return title; }
 	
 	virtual void setFont (CFontRef newFont);
 	const CFontRef getFont () const { return font; }
@@ -133,7 +133,7 @@ public:
 	CLASS_METHODS(CCheckBox, CControl)
 protected:
 	~CCheckBox ();
-	UTF8StringBuffer title;
+	UTF8String title;
 	int32_t style;
 	CColor fontColor;
 	CColor boxFrameColor;
@@ -202,7 +202,7 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual void setTitle (UTF8StringPtr newTitle);
-	UTF8StringPtr getTitle () const { return title.c_str (); }
+	const UTF8String& getTitle () const { return title; }
 
 	virtual void setFont (CFontRef newFont);
 	CFontRef getFont () const { return font; }
@@ -286,7 +286,7 @@ protected:
 	CHoriTxtAlign horiTxtAlign;
 	CDrawMethods::IconPosition iconPosition;
 	Style style;
-	std::string title;
+	UTF8String title;
 private:
 	float fEntryState;
 };

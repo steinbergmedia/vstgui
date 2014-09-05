@@ -39,7 +39,7 @@ namespace VSTGUI {
 namespace CDrawMethods {
 
 //------------------------------------------------------------------------
-void drawIconAndText (CDrawContext* context, CBitmap* iconToDraw, IconPosition iconPosition, CHoriTxtAlign textAlignment, CCoord textMargin, CRect drawRect, const std::string& title, CFontRef font, CColor textColor)
+void drawIconAndText (CDrawContext* context, CBitmap* iconToDraw, IconPosition iconPosition, CHoriTxtAlign textAlignment, CCoord textIconMargin, CRect drawRect, const UTF8String& title, CFontRef font, CColor textColor)
 {
 	if (iconToDraw)
 	{
@@ -49,20 +49,20 @@ void drawIconAndText (CDrawContext* context, CBitmap* iconToDraw, IconPosition i
 		{
 			case kIconLeft:
 			{
-				iconRect.offset (textMargin, drawRect.getHeight () / 2. - iconRect.getHeight () / 2.);
+				iconRect.offset (textIconMargin, drawRect.getHeight () / 2. - iconRect.getHeight () / 2.);
 				drawRect.left = iconRect.right;
-				drawRect.right -= textMargin;
+				drawRect.right -= textIconMargin;
 				if (textAlignment == kLeftText)
-					drawRect.left += textMargin;
+					drawRect.left += textIconMargin;
 				break;
 			}
 			case kIconRight:
 			{
-				iconRect.offset (drawRect.getWidth () - (textMargin + iconRect.getWidth ()), drawRect.getHeight () / 2. - iconRect.getHeight () / 2.);
+				iconRect.offset (drawRect.getWidth () - (textIconMargin + iconRect.getWidth ()), drawRect.getHeight () / 2. - iconRect.getHeight () / 2.);
 				drawRect.right = iconRect.left;
-				drawRect.left += textMargin;
+				drawRect.left += textIconMargin;
 				if (textAlignment == kRightText)
-					drawRect.right -= textMargin;
+					drawRect.right -= textIconMargin;
 				break;
 			}
 			case kIconCenterAbove:
@@ -72,13 +72,13 @@ void drawIconAndText (CDrawContext* context, CBitmap* iconToDraw, IconPosition i
 					iconRect.offset (0, drawRect.getHeight () / 2. - iconRect.getHeight () / 2.);
 				else
 				{
-					iconRect.offset (0, drawRect.getHeight () / 2. - (iconRect.getHeight () / 2. + (textMargin + font->getSize ()) / 2.));
-					drawRect.top = iconRect.bottom + textMargin;
+					iconRect.offset (0, drawRect.getHeight () / 2. - (iconRect.getHeight () / 2. + (textIconMargin + font->getSize ()) / 2.));
+					drawRect.top = iconRect.bottom + textIconMargin;
 					drawRect.setHeight (font->getSize ());
 					if (textAlignment == kLeftText)
-						drawRect.left += textMargin;
+						drawRect.left += textIconMargin;
 					else if (textAlignment == kRightText)
-						drawRect.right -= textMargin;
+						drawRect.right -= textIconMargin;
 				}
 				break;
 			}
@@ -89,13 +89,13 @@ void drawIconAndText (CDrawContext* context, CBitmap* iconToDraw, IconPosition i
 					iconRect.offset (0, drawRect.getHeight () / 2. - iconRect.getHeight () / 2.);
 				else
 				{
-					iconRect.offset (0, drawRect.getHeight () / 2. - (iconRect.getHeight () / 2.) + (textMargin + font->getSize ()) / 2.);
-					drawRect.top = iconRect.top - (textMargin + font->getSize ());
+					iconRect.offset (0, drawRect.getHeight () / 2. - (iconRect.getHeight () / 2.) + (textIconMargin + font->getSize ()) / 2.);
+					drawRect.top = iconRect.top - (textIconMargin + font->getSize ());
 					drawRect.setHeight (font->getSize ());
 					if (textAlignment == kLeftText)
-						drawRect.left += textMargin;
+						drawRect.left += textIconMargin;
 					else if (textAlignment == kRightText)
-						drawRect.right -= textMargin;
+						drawRect.right -= textIconMargin;
 				}
 				break;
 			}
@@ -105,15 +105,15 @@ void drawIconAndText (CDrawContext* context, CBitmap* iconToDraw, IconPosition i
 	else
 	{
 		if (textAlignment == kLeftText)
-			drawRect.left += textMargin;
+			drawRect.left += textIconMargin;
 		else if (textAlignment == kRightText)
-			drawRect.right -= textMargin;
+			drawRect.right -= textIconMargin;
 	}
 	if (!title.empty ())
 	{
 		context->setFont (font);
 		context->setFontColor (textColor);
-		context->drawString (title.c_str (), drawRect, textAlignment);
+		context->drawString (title.getPlatformString (), drawRect, textAlignment);
 	}
 }
 

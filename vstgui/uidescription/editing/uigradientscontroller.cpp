@@ -305,6 +305,8 @@ void UIColorStopEditView::draw (CDrawContext* context)
 {
 	CDrawContext::Transform t (*context, CGraphicsTransform ().translate (getViewSize ().left, getViewSize ().top));
 
+	context->setDrawMode (kAliasing);
+
 	SharedPointer<CGraphicsPath> gradientPath = owned (context->createGraphicsPath ());
 	gradientPath->addRect (CRect (stopWidth / 2., 0., getWidth () - stopWidth / 2., getHeight ()));
 	context->fillLinearGradient (gradientPath, *gradient, CPoint (stopWidth / 2., 0), CPoint (getWidth () - stopWidth / 2, 0));
@@ -523,7 +525,7 @@ CGradient* UIGradientsDataSource::getSelectedGradient ()
 {
 	int32_t selectedRow = dataBrowser ? dataBrowser->getSelectedRow() : CDataBrowser::kNoSelection;
 	if (selectedRow != CDataBrowser::kNoSelection && selectedRow < (int32_t)names.size ())
-		return description->getGradient (names.at (selectedRow).c_str ());
+		return description->getGradient (names.at (static_cast<uint32_t> (selectedRow)).c_str ());
 	return 0;
 }
 
@@ -532,7 +534,7 @@ std::string UIGradientsDataSource::getSelectedGradientName ()
 {
 	int32_t selectedRow = dataBrowser ? dataBrowser->getSelectedRow() : CDataBrowser::kNoSelection;
 	if (selectedRow != CDataBrowser::kNoSelection && selectedRow < (int32_t)names.size ())
-		return names[selectedRow];
+		return names[static_cast<uint32_t> (selectedRow)];
 	return "";
 }
 
@@ -572,15 +574,15 @@ void UIGradientsDataSource::dbDrawCell (CDrawContext* context, const CRect& size
 {
 	GenericStringListDataBrowserSource::dbDrawCell (context, size, row, column, flags, browser);
 	CGradient* gradient = 0;
-	if ((gradient = description->getGradient (names.at (row).c_str ())))
+	if ((gradient = description->getGradient (names.at (static_cast<uint32_t> (row)).c_str ())))
 	{
 		context->setFrameColor (kBlackCColor);
 		context->setLineWidth (1);
 		context->setLineStyle (kLineSolid);
-		context->setDrawMode (kAliasing|kNonIntegralMode);
+		context->setDrawMode (kAliasing);
 		CRect r (size);
 		r.left = r.right - (r.getHeight () * 2.);
-		r.offset (0, 1);
+		r.offset (-0.5, -0.5);
 		r.inset (3, 2);
 		SharedPointer<CGraphicsPath> path = owned (context->createGraphicsPath ());
 		path->addRect (r);

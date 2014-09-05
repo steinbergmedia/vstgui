@@ -83,22 +83,19 @@ PlatformOptionMenuResult Win32OptionMenu::popup (COptionMenu* optionMenu)
 	PlatformOptionMenuResult result = {0};
 	
 	//---Transform local coordinates to global coordinates
-	CRect rect (optionMenu->getViewSize ());
-	CPoint p (0, 0);
-	optionMenu->localToFrame (p);
-	rect.offset (p.x, p.y);
+	CRect rect = optionMenu->translateToGlobal (optionMenu->getViewSize ());
 
 	int32_t offset;
 
 	if (optionMenu->getStyle () & kPopupStyle)
 		offset = 0;
 	else
-		offset = (int32_t)optionMenu->getViewSize ().getHeight ();
+		offset = static_cast<int32_t> (rect.getHeight ());
 
 	CCoord gx = 0, gy = 0;
-	optionMenu->getFrame()->getPosition (gx, gy);
-	gy += rect.top + offset;
+	optionMenu->getFrame ()->getPosition (gx, gy);
 	gx += rect.left;
+	gy += rect.top + offset;
 
 	int32_t offsetIndex = 0;
 	HMENU menu = createMenu (optionMenu, offsetIndex);

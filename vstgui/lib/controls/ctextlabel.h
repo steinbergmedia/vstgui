@@ -36,7 +36,7 @@
 #define __ctextlabel__
 
 #include "cparamdisplay.h"
-#include <string>
+#include "../cstring.h"
 
 namespace VSTGUI {
 
@@ -55,8 +55,8 @@ public:
 	/// @name CTextLabel Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual void setText (UTF8StringPtr txt);	///< set text
-	virtual UTF8StringPtr getText () const;		///< read only access to text
+	virtual void setText (UTF8StringPtr txt);			///< set text
+	virtual const UTF8String& getText () const;				///< read only access to text
 
 	enum TextTruncateMode {
 		kTruncateNone = 0,						///< no characters will be removed
@@ -66,7 +66,7 @@ public:
 	
 	virtual void setTextTruncateMode (TextTruncateMode mode);					///< set text truncate mode
 	TextTruncateMode getTextTruncateMode () const { return textTruncateMode; }	///< get text truncate mode
-	UTF8StringPtr getTruncatedText () const { return truncatedText.c_str (); }	///< get the truncated text
+	UTF8StringPtr getTruncatedText () const { return truncatedText; }			///< get the truncated text
 	//@}
 
 	static IdStringPtr kMsgTruncatedTextChanged;								///< message which is send to dependent objects when the truncated text changes
@@ -86,8 +86,8 @@ protected:
 	bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD { return false; }
 
 	TextTruncateMode textTruncateMode;
-	UTF8StringBuffer text;
-	std::string truncatedText;
+	UTF8String text;
+	UTF8String truncatedText;
 };
 
 } // namespace

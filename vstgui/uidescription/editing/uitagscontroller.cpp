@@ -97,7 +97,7 @@ CMouseEventResult UITagsDataSource::dbOnMouseDown (const CPoint& where, const CB
 {
 	if (buttons.isLeftButton () && buttons.isDoubleClick ())
 	{
-		UTF8StringPtr value = column == 0 ? names.at (row).c_str () : tags.at (row).c_str ();
+		UTF8StringPtr value = column == 0 ? names.at (static_cast<uint32_t> (row)).c_str () : tags.at (static_cast<uint32_t> (row)).c_str ();
 		browser->beginTextEdit (CDataBrowser::Cell (row, column), value);
 	}
 	return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
@@ -112,9 +112,9 @@ void UITagsDataSource::dbCellTextChanged (int32_t row, int32_t column, UTF8Strin
 	}
 	else
 	{
-		if (tags.at (row) != newText)
+		if (tags.at (static_cast<uint32_t> (row)) != newText)
 		{
-			actionPerformer->performTagChange (names.at (row).c_str (), newText);
+			actionPerformer->performTagChange (names.at (static_cast<uint32_t> (row)).c_str (), newText);
 		}
 	}
 }

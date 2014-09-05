@@ -132,7 +132,7 @@ HIDDEN VstKeyCode CreateVstKeyCodeFromNSEvent (NSEvent* theEvent)
 						if ((c >= 'A') && (c <= 'Z'))
 							c += ('a' - 'A');
 						else
-							c = tolower (c);
+							c = static_cast<unichar> (tolower (c));
 						kc.character = c;
 						break;
 					}

@@ -54,7 +54,8 @@ struct PixelFormat
 	enum {
 		kDoubleBuffered = 1 << 0,
 		kAccelerated	= 1 << 1,
-		kMultiSample	= 1 << 2
+		kMultiSample	= 1 << 2,
+		kModernOpenGL	= 1 << 3		// Mac only currently. Indicates to use the NSOpenGLProfileVersion3_2Core. Not tested !
 	};
 
 	uint32_t flags;
@@ -72,6 +73,7 @@ class IOpenGLView
 {
 public:
 	virtual void drawOpenGL (const CRect& updateRect) = 0;
+	virtual void reshape () = 0;
 };
 
 //-----------------------------------------------------------------------------

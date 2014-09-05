@@ -86,7 +86,7 @@ static id VSTGUI_NSTextField_Init (id self, SEL _cmd, void* textEdit)
 			{
 				CTFontDescriptorRef fontDesc = CTFontCopyFontDescriptor (fontRef);
 				
-				[self setFont:[NSFont fontWithDescriptor:(NSFontDescriptor *)fontDesc size:0]];
+				[self setFont:[NSFont fontWithDescriptor:(NSFontDescriptor *)fontDesc size:ctf->getSize ()]];
 				CFRelease (fontDesc);
 			}
 		}

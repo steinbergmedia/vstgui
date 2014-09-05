@@ -284,7 +284,7 @@ void CSlider::draw (CDrawContext *pContext)
 				d = kDrawStroked;
 			pContext->drawRect (r, d);
 		}
-		pContext->setDrawMode (kAntiAliasing);
+		pContext->setDrawMode (kAliasing);
 		if (drawStyle & kDrawValue)
 		{
 			if (drawStyle & kDrawFrame)
@@ -326,7 +326,8 @@ void CSlider::draw (CDrawContext *pContext)
 						r.top = r.bottom - r.getHeight () * drawValue;
 				}
 			}
-			if (r.getWidth () && r.getHeight ())
+			r.normalize ();
+			if (r.getWidth () >= 0.5 && r.getHeight () >= 0.5)
 			{
 				pContext->setFillColor (valueColor);
 				pContext->drawRect (r, kDrawFilled);
@@ -432,13 +433,13 @@ CMouseEventResult CSlider::onMouseDown (CPoint& where, const CButtonState& butto
 
 	CRect handleRect;
 	delta = calculateDelta (where, getMode () != kFreeClickMode ? &handleRect : 0);
-	if (getMode () == kTouchMode && !where.isInside (handleRect))
+	if (getMode () == kTouchMode && !handleRect.pointInside (where))
 		return kMouseEventNotHandled;
 
 	oldVal    = getMin () - 1;
 	oldButton = buttons;
 
-	if ((getMode () == kRelativeTouchMode && where.isInside (handleRect)) || getMode () != kRelativeTouchMode)
+	if ((getMode () == kRelativeTouchMode && handleRect.pointInside (where)) || getMode () != kRelativeTouchMode)
 	{
 		if (checkDefaultValue (buttons))
 		{

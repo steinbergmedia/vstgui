@@ -77,7 +77,7 @@ PowerTimingFunction::PowerTimingFunction (uint32_t length, float factor)
 float PowerTimingFunction::getPosition (uint32_t milliseconds)
 {
 	float pos = ((float)milliseconds) / ((float)length);
-	pos = pow (pos, factor);
+	pos = std::pow (pos, factor);
 	if (pos > 1.f)
 		pos = 1.f;
 	else if (pos < 0.f)

@@ -210,7 +210,7 @@ void CParamDisplay::draw (CDrawContext *pContext)
 	}
 
 	drawBack (pContext);
-	drawText (pContext, string);
+	drawPlatformText (pContext, CString (string).getPlatformString ());
 	setDirty (false);
 }
 
@@ -311,8 +311,8 @@ void CParamDisplay::drawBack (CDrawContext* pContext, CBitmap* newBack)
 		}
 		else
 		{
-			pContext->drawLine (std::make_pair (CPoint (r.left, r.bottom), CPoint (r.left, r.top)));
-			pContext->drawLine (std::make_pair (CPoint (r.left, r.top), CPoint (r.right, r.top)));
+			pContext->drawLine (CPoint (r.left, r.bottom), CPoint (r.left, r.top));
+			pContext->drawLine (CPoint (r.left, r.top), CPoint (r.right, r.top));
 		}
 
 		if (style & k3DIn)
@@ -330,21 +330,27 @@ void CParamDisplay::drawBack (CDrawContext* pContext, CBitmap* newBack)
 		}
 		else
 		{
-			pContext->drawLine (std::make_pair (CPoint (r.right, r.top), CPoint (r.right, r.bottom)));
-			pContext->drawLine (std::make_pair (CPoint (r.right, r.bottom), CPoint (r.left, r.bottom)));
+			pContext->drawLine (CPoint (r.right, r.top), CPoint (r.right, r.bottom));
+			pContext->drawLine (CPoint (r.right, r.bottom), CPoint (r.left, r.bottom));
 		}
 	}
 }
 
 //------------------------------------------------------------------------
-void CParamDisplay::drawText (CDrawContext* pContext, UTF8StringPtr string, const CRect& size)
+void CParamDisplay::drawPlatformText (CDrawContext* pContext, IPlatformString* string)
 {
-	if (!(style & kNoTextStyle) && UTF8StringView (string).calculateByteCount () > 1)
+	drawPlatformText (pContext, string, getViewSize ());
+}
+
+//------------------------------------------------------------------------
+void CParamDisplay::drawPlatformText (CDrawContext* pContext, IPlatformString* string, const CRect& size)
+{
+	if (!(style & kNoTextStyle))
 	{
 		pContext->saveGlobalState ();
 		CRect textRect (size);
 		textRect.inset (textInset.x, textInset.y);
-
+		
 		CRect oldClip;
 		pContext->getClipRect (oldClip);
 		CRect newClip (textRect);
@@ -358,9 +364,9 @@ void CParamDisplay::drawText (CDrawContext* pContext, UTF8StringPtr string, cons
 		
 		pContext->setDrawMode (kAntiAliasing);
 		pContext->setFont (fontID);
-
+		
 		// draw darker text (as shadow)
-		if (style & kShadowText) 
+		if (style & kShadowText)
 		{
 			CRect newSize (textRect);
 			newSize.offset (1, 1);
@@ -373,11 +379,22 @@ void CParamDisplay::drawText (CDrawContext* pContext, UTF8StringPtr string, cons
 	}
 }
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+//------------------------------------------------------------------------
+void CParamDisplay::drawText (CDrawContext* pContext, UTF8StringPtr string, const CRect& size)
+{
+	if (!(style & kNoTextStyle) && UTF8StringView (string).calculateByteCount () > 1)
+	{
+		drawPlatformText (pContext, CString (string).getPlatformString (), size);
+	}
+}
+
 //------------------------------------------------------------------------
 void CParamDisplay::drawText (CDrawContext *pContext, UTF8StringPtr string)
 {
 	drawText (pContext, string, getViewSize ());
 }
+#endif
 
 //------------------------------------------------------------------------
 void CParamDisplay::setFont (CFontRef fontID)

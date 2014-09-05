@@ -41,6 +41,7 @@
 #include "controls/ctextedit.h"
 #include <cassert>
 #include <vector>
+#include <limits>
 
 namespace VSTGUI {
 
@@ -689,7 +690,7 @@ uint32_t CFrame::getTicks () const
 {
 	if (platformFrame)
 		return platformFrame->getTicks ();
-	return -1;
+	return std::numeric_limits<uint32_t>::max ();
 }
 
 //-----------------------------------------------------------------------------
@@ -1097,7 +1098,7 @@ CView* CFrame::getViewAt (const CPoint& where, bool deep, bool mustbeMouseEnable
 	{
 		CPoint where2 (where);
 		getTransform ().inverse ().transform (where2);
-		if (where2.isInside (pModalView->getViewSize ()))
+		if (pModalView->getViewSize ().pointInside (where2))
 		{
 			if (deep)
 			{
@@ -1121,7 +1122,7 @@ CViewContainer* CFrame::getContainerAt (const CPoint& where, bool deep, bool mus
 	{
 		CPoint where2 (where);
 		getTransform ().inverse ().transform (where2);
-		if (where2.isInside (pModalView->getViewSize ()))
+		if (pModalView->getViewSize ().pointInside (where2))
 		{
 			CViewContainer* container = dynamic_cast<CViewContainer*> (pModalView);
 			if (container)
@@ -1166,7 +1167,7 @@ void CFrame::onActivate (bool state)
 //-----------------------------------------------------------------------------
 bool CFrame::focusDrawingEnabled () const
 {
-	int32_t attrSize;
+	uint32_t attrSize;
 	if (getAttributeSize ('vfde', attrSize))
 		return true;
 	return false;
@@ -1176,7 +1177,7 @@ bool CFrame::focusDrawingEnabled () const
 CColor CFrame::getFocusColor () const
 {
 	CColor focusColor (kRedCColor);
-	int32_t outSize;
+	uint32_t outSize;
 	getAttribute ('vfco', sizeof (CColor), &focusColor, outSize);
 	return focusColor;
 }
@@ -1185,7 +1186,7 @@ CColor CFrame::getFocusColor () const
 CCoord CFrame::getFocusWidth () const
 {
 	CCoord focusWidth = 2;
-	int32_t outSize;
+	uint32_t outSize;
 	getAttribute ('vfwi', sizeof (CCoord), &focusWidth, outSize);
 	return focusWidth;
 }

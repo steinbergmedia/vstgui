@@ -57,8 +57,8 @@ public:
 	void setCurrentViewIndex (int32_t viewIndex);
 	int32_t getCurrentViewIndex () const { return currentViewIndex; }
 
-	void setAnimationTime (int32_t ms);
-	int32_t getAnimationTime () const { return animationTime; }
+	void setAnimationTime (uint32_t ms);
+	uint32_t getAnimationTime () const { return animationTime; }
 
 	enum AnimationStyle {
 		kFadeInOut,
@@ -77,7 +77,7 @@ protected:
 
 	IViewSwitchController* controller;
 	int32_t currentViewIndex;
-	int32_t animationTime;
+	uint32_t animationTime;
 	AnimationStyle animationStyle;
 };
 

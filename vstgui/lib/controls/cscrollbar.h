@@ -100,7 +100,6 @@ private:
 	CPoint startPoint;
 	CRect scrollerRect;
 	bool scrolling;
-	float startValue;
 };
 
 //-----------------------------------------------------------------------------

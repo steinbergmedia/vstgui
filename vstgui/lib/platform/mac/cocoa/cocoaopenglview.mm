@@ -88,6 +88,7 @@ bool CocoaOpenGLView::init (IOpenGLView* view, PixelFormat* _pixelFormat)
 			}
 			if (pixelFormat.flags & PixelFormat::kDoubleBuffered)
 			{
+				formatAttributes.push_back (NSOpenGLPFADoubleBuffer);
 				formatAttributes.push_back (NSOpenGLPFABackingStore);
 			}
 			if (pixelFormat.flags & PixelFormat::kMultiSample)
@@ -95,18 +96,30 @@ bool CocoaOpenGLView::init (IOpenGLView* view, PixelFormat* _pixelFormat)
 				formatAttributes.push_back (NSOpenGLPFAMultisample);
 				formatAttributes.push_back (true);
 				formatAttributes.push_back (NSOpenGLPFASampleBuffers);
-				formatAttributes.push_back (1);
+				formatAttributes.push_back (2);
 				formatAttributes.push_back (NSOpenGLPFASamples);
 				formatAttributes.push_back (pixelFormat.samples);
 			}
+		#if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_7
+			if (pixelFormat.flags & PixelFormat::kModernOpenGL)
+			{
+				formatAttributes.push_back (NSOpenGLPFAOpenGLProfile);
+				formatAttributes.push_back (NSOpenGLProfileVersion3_2Core);
+			}
+		#endif
 		}
 		else
 		{
 			formatAttributes.push_back (NSOpenGLPFANoRecovery);
 			formatAttributes.push_back (NSOpenGLPFAAccelerated);
+			formatAttributes.push_back (NSOpenGLPFADoubleBuffer);
 			formatAttributes.push_back (NSOpenGLPFABackingStore);
 			formatAttributes.push_back (NSOpenGLPFADepthSize);
 			formatAttributes.push_back (32);
+		#if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_7
+			formatAttributes.push_back (NSOpenGLPFAOpenGLProfile);
+			formatAttributes.push_back (NSOpenGLProfileVersionLegacy);
+		#endif
 		}
 		formatAttributes.push_back (0);
 		NSOpenGLPixelFormat* nsPixelFormat = [[[NSOpenGLPixelFormat alloc] initWithAttributes:&formatAttributes.front ()] autorelease];
@@ -117,6 +130,10 @@ bool CocoaOpenGLView::init (IOpenGLView* view, PixelFormat* _pixelFormat)
 			GLint swapInterval = 1;
 			[context setValues:&swapInterval forParameter:NSOpenGLCPSwapInterval];
 
+		#if DEBUG && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_7
+			if (pixelFormat.flags & PixelFormat::kModernOpenGL)
+				CGLEnable (static_cast<CGLContextObj> ([context CGLContextObj]), kCGLCECrashOnRemovedFunctions);
+		#endif
 			this->view = view;
 			return true;
 		}
@@ -233,6 +250,18 @@ void CocoaOpenGLView::doDraw (const CRect& rect)
 }
 
 //-----------------------------------------------------------------------------
+void CocoaOpenGLView::reshape ()
+{
+	lockContext ();
+	NSOpenGLContext* context = [platformView openGLContext];
+	if (context)
+		[context update];
+	unlockContext ();
+	view->reshape ();
+	[platformView setNeedsDisplay:YES];
+}
+
+//-----------------------------------------------------------------------------
 __attribute__((__destructor__)) static void cleanup_VSTGUI_NSOpenGLView ()
 {
 	if (openGLViewClass)
@@ -265,10 +294,9 @@ static void VSTGUI_NSOpenGLView_Dealloc (id self, SEL _cmd)
 //-----------------------------------------------------------------------------
 static void VSTGUI_NSOpenGLView_Update_Reshape (id self, SEL _cmd)
 {
-	CGLLockContext ((CGLContextObj)[[self openGLContext] CGLContextObj]);
-	[[self openGLContext] update];
-	CGLUnlockContext ((CGLContextObj)[[self openGLContext] CGLContextObj]);
-	[self setNeedsDisplay:YES];
+	CocoaOpenGLView* callback = (CocoaOpenGLView*)OBJC_GET_VALUE(self, cocoaOpenGLView);
+	if (callback)
+		callback->reshape ();
 }
 
 //------------------------------------------------------------------------------------

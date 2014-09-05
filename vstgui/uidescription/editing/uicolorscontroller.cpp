@@ -107,7 +107,7 @@ CMessageResult UIColorsDataSource::notify (CBaseObject* sender, IdStringPtr mess
 			int32_t selectedRow = dataBrowser->getSelectedRow ();
 			if (selectedRow != CDataBrowser::kNoSelection)
 			{
-				actionPerformer->beginLiveColorChange (names.at (selectedRow).c_str ());
+				actionPerformer->beginLiveColorChange (names.at (static_cast<uint32_t> (selectedRow)).c_str ());
 				editing = true;
 			}
 		}
@@ -116,7 +116,7 @@ CMessageResult UIColorsDataSource::notify (CBaseObject* sender, IdStringPtr mess
 			int32_t selectedRow = dataBrowser->getSelectedRow ();
 			if (selectedRow != CDataBrowser::kNoSelection)
 			{
-				actionPerformer->endLiveColorChange (names.at (selectedRow).c_str ());
+				actionPerformer->endLiveColorChange (names.at (static_cast<uint32_t> (selectedRow)).c_str ());
 				editing = false;
 			}
 		}
@@ -127,7 +127,7 @@ CMessageResult UIColorsDataSource::notify (CBaseObject* sender, IdStringPtr mess
 				int32_t selectedRow = dataBrowser->getSelectedRow ();
 				if (selectedRow != CDataBrowser::kNoSelection)
 				{
-					actionPerformer->performLiveColorChange (names.at (selectedRow).c_str (), color->base ());
+					actionPerformer->performLiveColorChange (names.at (static_cast<uint32_t> (selectedRow)).c_str (), color->base ());
 					dataBrowser->setSelectedRow (selectedRow);
 				}
 			}
@@ -174,7 +174,7 @@ void UIColorsDataSource::dbSelectionChanged (CDataBrowser* browser)
 	if (selectedRow != CDataBrowser::kNoSelection)
 	{
 		CColor c;
-		if (description->getColor (names.at (selectedRow).c_str (), c))
+		if (description->getColor (names.at (static_cast<uint32_t> (selectedRow)).c_str (), c))
 		{
 			if (c != color->base ())
 			{
@@ -189,7 +189,7 @@ void UIColorsDataSource::dbDrawCell (CDrawContext* context, const CRect& size, i
 {
 	GenericStringListDataBrowserSource::dbDrawCell (context, size, row, column, flags, browser);
 	CColor color;
-	if (description->getColor (names.at (row).c_str (), color))
+	if (description->getColor (names.at (static_cast<uint32_t> (row)).c_str (), color))
 	{
 		context->setFillColor (color);
 		context->setFrameColor (dragRow == row ? kRedCColor : kBlackCColor);
@@ -295,7 +295,7 @@ bool UIColorsDataSource::dbOnDropInCell (int32_t row, int32_t column, const CPoi
 		
 		if (row >= 0)
 		{
-			actionPerformer->performColorChange (names[row].c_str (), dragColor);
+			actionPerformer->performColorChange (names[static_cast<uint32_t> (row)].c_str (), dragColor);
 		}
 		else
 		{

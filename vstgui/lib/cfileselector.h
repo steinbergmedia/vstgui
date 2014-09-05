@@ -160,7 +160,7 @@ public:
 	/// @name CFileSelector result
 	//-----------------------------------------------------------------------------
 	//@{
-	int32_t getNumSelectedFiles () const;						///< get number of selected files
+	uint32_t getNumSelectedFiles () const;						///< get number of selected files
 	UTF8StringPtr getSelectedFile (uint32_t index) const;		///< get selected file. Result is only valid as long as the instance of CNewFileSelector is valid.
 	//@}
 

@@ -136,8 +136,8 @@ bool UIEditController::std__stringCompare (const std::string* lhs, const std::st
 {
 	for (std::string::const_iterator it = lhs->begin (), it2 = rhs->begin (); it != lhs->end () && it2 != rhs->end (); it++, it2++)
 	{
-		char c1 = tolower (*it);
-		char c2 = tolower (*it2);
+		char c1 = static_cast<char> (tolower (*it));
+		char c2 = static_cast<char> (tolower (*it2));
 		if (c1 != c2)
 			return c1 < c2;
 	}
@@ -186,17 +186,17 @@ public:
 				{
 					context->fillLinearGradient (path, *shading, CPoint (size.left, size.top), CPoint (size.right, size.top));
 					if (drawBottomLine)
-						context->drawLine (std::make_pair (CPoint (size.left, size.top), CPoint (size.left, size.bottom)));
+						context->drawLine (CPoint (size.left, size.top), CPoint (size.left, size.bottom));
 					if (drawTopLine)
-						context->drawLine (std::make_pair (CPoint (size.right-1, size.bottom), CPoint (size.right-1, size.top)));
+						context->drawLine (CPoint (size.right-1, size.bottom), CPoint (size.right-1, size.top));
 				}
 				else
 				{
 					context->fillLinearGradient (path, *shading, CPoint (size.left, size.top), CPoint (size.left, size.bottom));
 					if (drawTopLine)
-						context->drawLine (std::make_pair (CPoint (size.left, size.top+1), CPoint (size.right, size.top+1)));
+						context->drawLine (CPoint (size.left, size.top), CPoint (size.right, size.top));
 					if (drawBottomLine)
-						context->drawLine (std::make_pair (CPoint (size.right, size.bottom), CPoint (size.left, size.bottom)));
+						context->drawLine (CPoint (size.right, size.bottom-1), CPoint (size.left, size.bottom-1));
 				}
 			}
 		}
@@ -609,7 +609,7 @@ void UIEditController::doCopy (bool cut)
 		updateTemplate (editTemplateName.c_str ());
 	CMemoryStream stream (1024, 1024, false);
 	selection->store (stream, editDescription);
-	CDropSource* dataSource = new CDropSource (stream.getBuffer (), (int32_t)stream.tell (), IDataPackage::kText);
+	CDropSource* dataSource = new CDropSource (stream.getBuffer (), static_cast<uint32_t> (stream.tell ()), IDataPackage::kText);
 	editView->getFrame ()->setClipboard (dataSource);
 	dataSource->forget ();
 	if (cut)
@@ -626,7 +626,7 @@ void UIEditController::doPaste ()
 		{
 			const void* data;
 			IDataPackage::Type type;
-			int32_t size = clipboard->getData (0, data, type);
+			uint32_t size = clipboard->getData (0, data, type);
 			if (size > 0)
 			{
 				CPoint offset;

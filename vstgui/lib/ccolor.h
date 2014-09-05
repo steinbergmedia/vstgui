@@ -74,7 +74,7 @@ struct CColor
 		return *this; 
 	}
 	
-	CColor operator~ ()
+	VSTGUI_DEPRECATED (CColor operator~ ()
 	{
 		CColor c;
 		c.red   = ~red;
@@ -82,7 +82,7 @@ struct CColor
 		c.blue  = ~blue;
 		c.alpha = ~alpha;
 		return c;
-	}
+	})
 
 	bool operator!= (const CColor &other) const 
 	{ return (red != other.red || green != other.green || blue  != other.blue || alpha != other.alpha); }

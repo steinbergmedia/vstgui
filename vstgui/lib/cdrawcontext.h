@@ -127,20 +127,20 @@ enum CDrawModeFlags
 class CDrawMode
 {
 public:
-	CDrawMode (int32_t mode = kAliasing) : mode (mode) {}
+	CDrawMode (uint32_t mode = kAliasing) : mode (mode) {}
 	CDrawMode (const CDrawMode& m) : mode (m.mode) {}
 
-	int32_t modeIgnoringIntegralMode () const { return (mode & ~kNonIntegralMode); }
+	uint32_t modeIgnoringIntegralMode () const { return (mode & ~kNonIntegralMode); }
 
 	bool integralMode () const { return mode & kNonIntegralMode ? false : true; }
 
-	CDrawMode& operator= (int32_t m) { mode = m; return *this; }
+	CDrawMode& operator= (uint32_t m) { mode = m; return *this; }
 
-	int32_t operator() () const { return mode; }
+	uint32_t operator() () const { return mode; }
 	bool operator== (const CDrawMode& m) const { return modeIgnoringIntegralMode () == m.modeIgnoringIntegralMode (); }
 	bool operator!= (const CDrawMode& m) const { return modeIgnoringIntegralMode () != m.modeIgnoringIntegralMode (); }
 private:
-	int32_t mode;
+	uint32_t mode;
 };
 
 //----------------------------
@@ -203,7 +203,8 @@ public:
 	typedef std::pair<CPoint, CPoint> LinePair;
 	typedef std::vector<LinePair> LineList;
 	typedef std::vector<CPoint> PointList;
-	
+
+	inline void drawLine (const CPoint& start, const CPoint& end) { drawLine (std::make_pair (start, end)); }
 	virtual void drawLine (const LinePair& line) = 0;	///< draw a line
 	virtual void drawLines (const LineList& lines) = 0;	///< draw multiple lines at once
 	virtual void drawPolygon (const PointList& polygonPointList, const CDrawStyle drawStyle = kDrawStroked) = 0; ///< draw a polygon
@@ -274,6 +275,10 @@ public:
 	CCoord getStringWidth (UTF8StringPtr pStr);	///< get the width of an UTF-8 encoded string
 	void drawString (UTF8StringPtr string, const CRect& _rect, const CHoriTxtAlign hAlign = kCenterText, bool antialias = true);	///< draw an UTF-8 encoded string
 	void drawString (UTF8StringPtr string, const CPoint& _point, bool antialias = true);	///< draw an UTF-8 encoded string
+
+	CCoord getStringWidth (IPlatformString* pStr);	///< get the width of a platform string
+	void drawString (IPlatformString* string, const CRect& _rect, const CHoriTxtAlign hAlign = kCenterText, bool antialias = true);	///< draw a platform string
+	void drawString (IPlatformString* string, const CPoint& _point, bool antialias = true);	///< draw a platform string
 	//@}
 	
 	//-----------------------------------------------------------------------------
@@ -367,9 +372,9 @@ protected:
 	CRect surfaceRect;
 
 	CDrawContextState currentState;
-	std::stack<CDrawContextState> globalStatesStack;
 
 private:
+	std::stack<CDrawContextState> globalStatesStack;
 	std::stack<CGraphicsTransform> transformStack;
 };
 

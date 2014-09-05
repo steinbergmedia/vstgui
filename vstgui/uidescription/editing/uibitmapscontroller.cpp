@@ -89,19 +89,19 @@ public:
 				context->setLineWidth (1);
 				context->setLineStyle (kLineSolid);
 				
-				context->drawLine (std::make_pair (CPoint (r.left, r.top + offsets.top), CPoint (r.right, r.top + offsets.top)));
-				context->drawLine (std::make_pair (CPoint (r.left, r.bottom - offsets.bottom), CPoint (r.right, r.bottom - offsets.bottom)));
-				context->drawLine (std::make_pair (CPoint (r.left + offsets.left, r.top), CPoint (r.left + offsets.left, r.bottom)));
-				context->drawLine (std::make_pair (CPoint (r.right - offsets.right, r.top), CPoint (r.right - offsets.right, r.bottom)));
+				context->drawLine (CPoint (r.left, r.top + offsets.top), CPoint (r.right, r.top + offsets.top));
+				context->drawLine (CPoint (r.left, r.bottom - offsets.bottom), CPoint (r.right, r.bottom - offsets.bottom));
+				context->drawLine (CPoint (r.left + offsets.left, r.top), CPoint (r.left + offsets.left, r.bottom));
+				context->drawLine (CPoint (r.right - offsets.right, r.top), CPoint (r.right - offsets.right, r.bottom));
 
 				context->setFrameColor (kRedCColor);
 				context->setLineWidth (1);
 				context->setLineStyle (kLineOnOffDash2);
 
-				context->drawLine (std::make_pair (CPoint (r.left, r.top + offsets.top), CPoint (r.right, r.top + offsets.top)));
-				context->drawLine (std::make_pair (CPoint (r.left, r.bottom - offsets.bottom), CPoint (r.right, r.bottom - offsets.bottom)));
-				context->drawLine (std::make_pair (CPoint (r.left + offsets.left, r.top), CPoint (r.left + offsets.left, r.bottom)));
-				context->drawLine (std::make_pair (CPoint (r.right - offsets.right, r.top), CPoint (r.right - offsets.right, r.bottom)));
+				context->drawLine (CPoint (r.left, r.top + offsets.top), CPoint (r.right, r.top + offsets.top));
+				context->drawLine (CPoint (r.left, r.bottom - offsets.bottom), CPoint (r.right, r.bottom - offsets.bottom));
+				context->drawLine (CPoint (r.left + offsets.left, r.top), CPoint (r.left + offsets.left, r.bottom));
+				context->drawLine (CPoint (r.right - offsets.right, r.top), CPoint (r.right - offsets.right, r.bottom));
 			}
 		}
 	}
@@ -185,7 +185,7 @@ UIBitmapsDataSource::UIBitmapsDataSource (UIDescription* description, IActionPer
 //----------------------------------------------------------------------------------------------------
 void UIBitmapsDataSource::dbOnDragEnterBrowser (IDataPackage* drag, CDataBrowser* browser)
 {
-	int32_t index = 0;
+	uint32_t index = 0;
 	IDataPackage::Type type;
 	const void* item = 0;
 	while (drag->getData (index, item, type) > 0)
@@ -238,7 +238,7 @@ bool UIBitmapsDataSource::dbOnDropInCell (int32_t row, int32_t column, const CPo
 {
 	if (dragContainsBitmaps)
 	{
-		int32_t index = 0;
+		uint32_t index = 0;
 		IDataPackage::Type type;
 		const void* item = 0;
 		while (drag->getData (index++, item, type) > 0)
@@ -296,7 +296,7 @@ CBitmap* UIBitmapsDataSource::getSelectedBitmap ()
 {
 	int32_t selectedRow = dataBrowser ? dataBrowser->getSelectedRow() : CDataBrowser::kNoSelection;
 	if (selectedRow != CDataBrowser::kNoSelection && selectedRow < (int32_t)names.size ())
-		return description->getBitmap (names.at (selectedRow).c_str ());
+		return description->getBitmap (names.at (static_cast<uint32_t> (selectedRow)).c_str ());
 	return 0;
 }
 
@@ -305,7 +305,7 @@ UTF8StringPtr UIBitmapsDataSource::getSelectedBitmapName ()
 {
 	int32_t selectedRow = dataBrowser ? dataBrowser->getSelectedRow() : CDataBrowser::kNoSelection;
 	if (selectedRow != CDataBrowser::kNoSelection && selectedRow < (int32_t)names.size ())
-		return names.at (selectedRow).c_str ();
+		return names.at (static_cast<uint32_t> (selectedRow)).c_str ();
 	return 0;
 }
 
@@ -360,8 +360,8 @@ bool UIBitmapsDataSource::add ()
 		fs->setAllowMultiFileSelection (true);
 		if (fs->runModal ())
 		{
-			int32_t numFiles = fs->getNumSelectedFiles();
-			for (int32_t i = 0; i < numFiles; i++)
+			uint32_t numFiles = static_cast<uint32_t> (fs->getNumSelectedFiles ());
+			for (uint32_t i = 0; i < numFiles; i++)
 			{
 				UTF8StringPtr path = fs->getSelectedFile (i);
 				if (path)

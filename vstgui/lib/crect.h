@@ -36,6 +36,7 @@
 #define __crect__
 
 #include "vstguibase.h"
+#include "cpoint.h"
 #include <cmath>
 
 namespace VSTGUI {
@@ -61,40 +62,43 @@ struct CRect
 	inline CCoord getWidth () const;
 	inline CCoord getHeight () const;
 
-	inline void setWidth (CCoord width);
-	inline void setHeight (CCoord height);
+	inline CRect& setWidth (CCoord width);
+	inline CRect& setHeight (CCoord height);
 
-	CPoint getTopLeft () const;
-	CPoint getTopRight () const;
-	CPoint getBottomLeft () const;
-	CPoint getBottomRight () const;
-	void setTopLeft (const CPoint& inPoint);
-	void setTopRight (const CPoint& inPoint);
-	void setBottomLeft (const CPoint& inPoint);
-	void setBottomRight (const CPoint& inPoint);
+	inline CPoint getTopLeft () const;
+	inline CPoint getTopRight () const;
+	inline CPoint getBottomLeft () const;
+	inline CPoint getBottomRight () const;
+	inline CRect& setTopLeft (const CPoint& inPoint);
+	inline CRect& setTopRight (const CPoint& inPoint);
+	inline CRect& setBottomLeft (const CPoint& inPoint);
+	inline CRect& setBottomRight (const CPoint& inPoint);
 
-	CPoint getCenter () const;
+	inline CPoint getCenter () const;
 
-	CPoint getSize () const;
-	void setSize (const CPoint& size);
+	inline CPoint getSize () const;
+	inline CRect& setSize (const CPoint& size);
 
 	inline CRect& offset (CCoord x, CCoord y);
 	inline CRect& inset (CCoord deltaX, CCoord deltaY);
 	inline CRect& extend (CCoord deltaX, CCoord deltaY);
 	inline CRect& moveTo (CCoord x, CCoord y);
 
-	CRect& offset (const CPoint& p);
-	CRect& offsetInverse (const CPoint& p);
+	inline CRect& inset (const CPoint& p);
+	inline CRect& extend (const CPoint& p);
+	inline CRect& moveTo (const CPoint& p);
+	inline CRect& offset (const CPoint& p);
+	inline CRect& offsetInverse (const CPoint& p);
 
-	bool pointInside (const CPoint& where) const;	///< Checks if point is inside this rect
+	inline bool pointInside (const CPoint& where) const;	///< Checks if point is inside this rect
 	inline bool isEmpty () const;
 	inline bool rectOverlap (const CRect& rect) const;
-	inline void bound (const CRect& rect);
-	inline void unite (const CRect& rect);
-	inline void normalize ();
-	inline void originize ();
-	void centerInside (const CRect& r); ///< moves this rect to the center of r
-	inline void makeIntegral ();
+	inline CRect& bound (const CRect& rect);
+	inline CRect& unite (const CRect& rect);
+	inline CRect& normalize ();
+	inline CRect& originize ();
+	inline CRect& centerInside (const CRect& r); ///< moves this rect to the center of r
+	inline CRect& makeIntegral ();
 
 	CCoord left;
 	CCoord top;
@@ -172,15 +176,17 @@ inline CCoord CRect::getHeight () const
 }
 
 //------------------------------------------------------------------------
-inline void CRect::setWidth (CCoord width)
+inline CRect& CRect::setWidth (CCoord width)
 {
 	right = left + width;
+	return *this;
 }
 
 //------------------------------------------------------------------------
-inline void CRect::setHeight (CCoord height)
+inline CRect& CRect::setHeight (CCoord height)
 {
 	bottom = top + height;
+	return *this;
 }
 
 //------------------------------------------------------------------------
@@ -246,7 +252,7 @@ inline bool CRect::rectOverlap (const CRect& rect) const
 }
 
 //------------------------------------------------------------------------
-inline void CRect::bound (const CRect& rect)
+inline CRect& CRect::bound (const CRect& rect)
 {
 	if (left < rect.left)
 		left = rect.left;
@@ -260,25 +266,27 @@ inline void CRect::bound (const CRect& rect)
 		bottom = top;
 	if (right < left)
 		right = left;
+	return *this;
 }
 
 //------------------------------------------------------------------------
-inline void CRect::normalize ()
+inline CRect& CRect::normalize ()
 {
 	if (left > right)
 		std::swap (left, right);
 	if (top > bottom)
 		std::swap (top, bottom);
+	return *this;
 }
 
 //------------------------------------------------------------------------
-inline void CRect::originize ()
+inline CRect& CRect::originize ()
 {
-	offset (-left, -top);
+	return offset (-left, -top);
 }
 
 //-----------------------------------------------------------------------------
-inline void CRect::unite (const CRect& rect)
+inline CRect& CRect::unite (const CRect& rect)
 {
 	if (left > rect.left)
 		left = rect.left;
@@ -288,16 +296,144 @@ inline void CRect::unite (const CRect& rect)
 		top = rect.top;
 	if (bottom < rect.bottom)
 		bottom = rect.bottom;
+	return *this;
 }
 
 //------------------------------------------------------------------------
-inline void CRect::makeIntegral ()
+inline CRect& CRect::makeIntegral ()
 {
 	left = std::floor (left + 0.5);
 	right = std::floor (right + 0.5);
 	top = std::floor (top + 0.5);
 	bottom = std::floor (bottom + 0.5);
+	return *this;
 }
+
+//-----------------------------------------------------------------------------
+inline bool CRect::pointInside (const CPoint& where) const
+{
+	return where.x >= left && where.x < right && where.y >= top && where.y < bottom;
+}
+
+//-----------------------------------------------------------------------------
+inline CPoint CRect::getTopLeft () const
+{
+	CPoint myPoint (left, top);
+	return myPoint;
+}
+
+//-----------------------------------------------------------------------------
+inline CPoint CRect::getTopRight () const
+{
+	CPoint myPoint (right, top);
+	return myPoint;
+}
+
+//-----------------------------------------------------------------------------
+inline CPoint CRect::getBottomLeft () const
+{
+	CPoint myPoint (left, bottom);
+	return myPoint;
+}
+
+//-----------------------------------------------------------------------------
+inline CPoint CRect::getBottomRight () const
+{
+	CPoint myPoint (right, bottom);
+	return myPoint;
+}
+
+//-----------------------------------------------------------------------------
+inline CRect& CRect::setTopLeft (const CPoint& inPoint)
+{
+	left = inPoint.x;
+	top = inPoint.y;
+	return *this;
+}
+
+//-----------------------------------------------------------------------------
+inline CRect& CRect::setTopRight (const CPoint& inPoint)
+{
+	right = inPoint.x;
+	top = inPoint.y;
+	return *this;
+}
+
+//-----------------------------------------------------------------------------
+inline CRect& CRect::setBottomLeft (const CPoint& inPoint)
+{
+	left = inPoint.x;
+	bottom = inPoint.y;
+	return *this;
+}
+
+//-----------------------------------------------------------------------------
+inline CRect& CRect::setBottomRight (const CPoint& inPoint)
+{
+	right = inPoint.x;
+	bottom = inPoint.y;
+	return *this;
+}
+
+//-----------------------------------------------------------------------------
+inline CPoint CRect::getCenter () const
+{
+	CPoint myPoint (left + getWidth () / 2., top + getHeight () / 2.);
+	return myPoint;
+}
+
+//-----------------------------------------------------------------------------
+inline CPoint CRect::getSize () const
+{
+	CPoint myPoint (getWidth (), getHeight ());
+	return myPoint;
+}
+
+//-----------------------------------------------------------------------------
+inline CRect& CRect::setSize (const CPoint& size)
+{
+	setWidth (size.x);
+	return setHeight (size.y);
+}
+
+//-----------------------------------------------------------------------------
+inline CRect& CRect::centerInside (const CRect& r)
+{
+	CPoint cp = r.getCenter ();
+	CPoint cp2 = getCenter ();
+	return offset (cp.x - cp2.x, cp.y - cp2.y);
+}
+
+//-----------------------------------------------------------------------------
+inline CRect& CRect::offset (const CPoint& p)
+{
+	return offset (p.x, p.y);
+}
+
+//-----------------------------------------------------------------------------
+inline CRect& CRect::inset (const CPoint& p)
+{
+	return inset (p.x, p.y);
+}
+
+//-----------------------------------------------------------------------------
+inline CRect& CRect::extend (const CPoint& p)
+{
+	return extend (p.x, p.y);
+}
+
+//-----------------------------------------------------------------------------
+inline CRect& CRect::moveTo (const CPoint& p)
+{
+	return moveTo (p.x, p.y);
+}
+
+//-----------------------------------------------------------------------------
+inline CRect& CRect::offsetInverse (const CPoint& p)
+{
+	return offset (-p.x, -p.y);
+}
+
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 //------------------------------------------------------------------------

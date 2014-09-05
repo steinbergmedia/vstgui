@@ -169,7 +169,7 @@ void CGDrawContext::drawGraphicsPath (CGraphicsPath* _path, PathDrawMode mode, C
 	if (path == 0)
 		return;
 
-	CGContextRef context = beginCGContext (true, currentState.drawMode.integralMode ());
+	CGContextRef context = beginCGContext (true, getDrawMode ().integralMode ());
 	if (context)
 	{
 		CGPathDrawingMode cgMode;
@@ -178,28 +178,24 @@ void CGDrawContext::drawGraphicsPath (CGraphicsPath* _path, PathDrawMode mode, C
 			case kPathFilledEvenOdd:
 			{
 				cgMode = kCGPathEOFill;
-				if (currentState.drawMode.integralMode ())
-					applyLineWidthCTM (context);
 				break;
 			}
 			case kPathStroked:
 			{
 				cgMode = kCGPathStroke;
 				applyLineStyle (context);
-				applyLineWidthCTM (context);
 				break;
 			}
 			default:
 			{
 				cgMode = kCGPathFill;
-				if (currentState.drawMode.integralMode ())
-					applyLineWidthCTM (context);
 				break;
 			}
 		}
 		
-		if (currentState.drawMode.integralMode ())
+		if (getDrawMode ().integralMode ())
 		{
+			applyLineWidthCTM (context);
 			path->pixelAlign (this, t);
 			CGContextAddPath (context, path->getCGPathRef ());
 		}
@@ -231,15 +227,18 @@ void CGDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradient& g
 	if (cgGradient == 0)
 		return;
 
-	CGContextRef context = beginCGContext (true, currentState.drawMode.integralMode ());
+	CGContextRef context = beginCGContext (true, getDrawMode ().integralMode ());
 	if (context)
 	{
-		applyLineWidthCTM (context);
-		
-		if (currentState.drawMode.integralMode ())
+		CGPoint start = CGPointMake (startPoint.x, startPoint.y);
+		CGPoint end = CGPointMake (endPoint.x, endPoint.y);
+		if (getDrawMode ().integralMode ())
 		{
 			path->pixelAlign (this, t);
+			applyLineWidthCTM (context);
 			CGContextAddPath (context, path->getCGPathRef ());
+			start = pixelAlligned (start);
+			end = pixelAlligned (end);
 		}
 		else if (t)
 		{
@@ -257,7 +256,7 @@ void CGDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradient& g
 		else
 			CGContextClip (context);
 
-		CGContextDrawLinearGradient (context, *cgGradient, CGPointMake (startPoint.x, startPoint.y), CGPointMake (endPoint.x, endPoint.y), kCGGradientDrawsBeforeStartLocation | kCGGradientDrawsAfterEndLocation);
+		CGContextDrawLinearGradient (context, *cgGradient, start, end, kCGGradientDrawsBeforeStartLocation | kCGGradientDrawsAfterEndLocation);
 
 		releaseCGContext (context);
 	}
@@ -274,10 +273,10 @@ void CGDrawContext::fillRadialGradient (CGraphicsPath* _path, const CGradient& g
 	if (cgGradient == 0)
 		return;
 
-	CGContextRef context = beginCGContext (true, currentState.drawMode.integralMode ());
+	CGContextRef context = beginCGContext (true, getDrawMode ().integralMode ());
 	if (context)
 	{
-		if (currentState.drawMode.integralMode ())
+		if (getDrawMode ().integralMode ())
 		{
 			path->pixelAlign (this, t);
 			CGContextAddPath (context, path->getCGPathRef ());
@@ -373,7 +372,7 @@ void CGDrawContext::resetClipRect ()
 //-----------------------------------------------------------------------------
 void CGDrawContext::drawLine (const LinePair& line)
 {
-	CGContextRef context = beginCGContext (true, currentState.drawMode.integralMode ());
+	CGContextRef context = beginCGContext (true, getDrawMode ().integralMode ());
 	if (context)
 	{
 		applyLineStyle (context);
@@ -381,13 +380,16 @@ void CGDrawContext::drawLine (const LinePair& line)
 		CGContextBeginPath (context);
 		CGPoint first = CGPointFromCPoint (line.first);
 		CGPoint second = CGPointFromCPoint (line.second);
-		if (currentState.drawMode.integralMode ())
+
+		if (getDrawMode ().integralMode ())
 		{
 			first = pixelAlligned (first);
 			second = pixelAlligned (second);
-		}
 
-		applyLineWidthCTM (context);
+			int32_t frameWidth = static_cast<int32_t> (currentState.frameWidth);
+			if (frameWidth % 2)
+				CGContextTranslateCTM (context, 0.5, 0.5);
+		}
 
 		CGContextMoveToPoint (context, first.x, first.y);
 		CGContextAddLineToPoint (context, second.x, second.y);
@@ -402,25 +404,31 @@ void CGDrawContext::drawLines (const LineList& lines)
 {
 	if (lines.size () == 0)
 		return;
-	CGContextRef context = beginCGContext (true, currentState.drawMode.integralMode ());
+	CGContextRef context = beginCGContext (true, getDrawMode ().integralMode ());
 	if (context)
 	{
 		applyLineStyle (context);
-		
-		applyLineWidthCTM (context);
 		
 		CGPoint* cgPoints = new CGPoint[lines.size () * 2];
 		uint32_t index = 0;
 		VSTGUI_RANGE_BASED_FOR_LOOP(LineList, lines, LinePair, line)
 			cgPoints[index] = CGPointFromCPoint (line.first);
 			cgPoints[index+1] = CGPointFromCPoint (line.second);
-			if (currentState.drawMode.integralMode ())
+			if (getDrawMode ().integralMode ())
 			{
 				cgPoints[index] = pixelAlligned (cgPoints[index]);
 				cgPoints[index+1] = pixelAlligned (cgPoints[index+1]);
 			}
 			index += 2;
 		VSTGUI_RANGE_BASED_FOR_LOOP_END
+
+		if (getDrawMode ().integralMode ())
+		{
+			int32_t frameWidth = static_cast<int32_t> (currentState.frameWidth);
+			if (frameWidth % 2)
+				CGContextTranslateCTM (context, 0.5, 0.5);
+		}
+		
 		CGContextStrokeLineSegments (context, cgPoints, lines.size () * 2);
 		delete [] cgPoints;
 		
@@ -433,7 +441,7 @@ void CGDrawContext::drawPolygon (const PointList& polygonPointList, const CDrawS
 {
 	if (polygonPointList.size () == 0)
 		return;
-	CGContextRef context = beginCGContext (true, currentState.drawMode.integralMode ());
+	CGContextRef context = beginCGContext (true, getDrawMode ().integralMode ());
 	if (context)
 	{
 		CGPathDrawingMode m;
@@ -447,13 +455,13 @@ void CGDrawContext::drawPolygon (const PointList& polygonPointList, const CDrawS
 
 		CGContextBeginPath (context);
 		CGPoint p = CGPointFromCPoint(polygonPointList[0]);
-		if (currentState.drawMode.integralMode ())
+		if (getDrawMode ().integralMode ())
 			p = pixelAlligned (p);
 		CGContextMoveToPoint (context, p.x, p.y);
 		for (uint32_t i = 1; i < polygonPointList.size (); i++)
 		{
 			p = CGPointFromCPoint (polygonPointList[i]);
-			if (currentState.drawMode.integralMode ())
+			if (getDrawMode ().integralMode ())
 				p = pixelAlligned (p);
 			CGContextAddLineToPoint (context, p.x, p.y);
 		}
@@ -467,15 +475,17 @@ void CGDrawContext::applyLineWidthCTM (CGContextRef context) const
 {
 	int32_t frameWidth = static_cast<int32_t> (currentState.frameWidth);
 	if (frameWidth % 2)
-		CGContextTranslateCTM (context, 0.5f, -0.5f);
+		CGContextTranslateCTM (context, 0.5, -0.5);
 }
 
 //-----------------------------------------------------------------------------
 void CGDrawContext::drawRect (const CRect &rect, const CDrawStyle drawStyle)
 {
-	CGContextRef context = beginCGContext (true, currentState.drawMode.integralMode ());
+	CGContextRef context = beginCGContext (true, getDrawMode ().integralMode ());
 	if (context)
 	{
+		CGRect r = CGRectMake (rect.left, rect.top + 1, rect.getWidth () - 1, rect.getHeight () - 1);
+
 		CGPathDrawingMode m;
 		switch (drawStyle)
 		{
@@ -485,12 +495,12 @@ void CGDrawContext::drawRect (const CRect &rect, const CDrawStyle drawStyle)
 		}
 		applyLineStyle (context);
 
-		CGRect r = CGRectMake (rect.left, rect.top + 1, rect.getWidth () - 1, rect.getHeight () - 1);
-		if (currentState.drawMode.integralMode ())
+		if (getDrawMode ().integralMode ())
+		{
 			r = pixelAlligned (r);
+			applyLineWidthCTM (context);
+		}
 
-		applyLineWidthCTM (context);
-		
 		CGContextBeginPath (context);
 		CGContextAddRect (context, r);
 		CGContextDrawPath (context, m);
@@ -502,7 +512,7 @@ void CGDrawContext::drawRect (const CRect &rect, const CDrawStyle drawStyle)
 //-----------------------------------------------------------------------------
 void CGDrawContext::drawEllipse (const CRect &rect, const CDrawStyle drawStyle)
 {
-	CGContextRef context = beginCGContext (true, currentState.drawMode.integralMode ());
+	CGContextRef context = beginCGContext (true, getDrawMode ().integralMode ());
 	if (context)
 	{
 		CGPathDrawingMode m;
@@ -555,7 +565,7 @@ void CGDrawContext::drawPoint (const CPoint &point, const CColor& color)
 	setFrameColor (color);
 	CPoint point2 (point);
 	point2.x++;
-	drawLine (std::make_pair (point, point2));
+	COffscreenContext::drawLine (point, point2);
 
 	restoreGlobalState ();
 }
@@ -563,7 +573,7 @@ void CGDrawContext::drawPoint (const CPoint &point, const CColor& color)
 //-----------------------------------------------------------------------------
 void CGDrawContext::drawArc (const CRect &rect, const float _startAngle, const float _endAngle, const CDrawStyle drawStyle) // in degree
 {
-	CGContextRef context = beginCGContext (true, currentState.drawMode.integralMode ());
+	CGContextRef context = beginCGContext (true, getDrawMode ().integralMode ());
 	if (context)
 	{
 		CGPathDrawingMode m;
@@ -717,11 +727,11 @@ void CGDrawContext::drawCGImageRef (CGContextRef context, CGImageRef image, CGLa
 //-----------------------------------------------------------------------------
 void CGDrawContext::clearRect (const CRect& rect)
 {
-	CGContextRef context = beginCGContext (true, currentState.drawMode.integralMode ());
+	CGContextRef context = beginCGContext (true, getDrawMode ().integralMode ());
 	if (context)
 	{
 		CGRect cgRect = CGRectFromCRect (rect);
-		if (currentState.drawMode.integralMode ())
+		if (getDrawMode ().integralMode ())
 		{
 			cgRect = pixelAlligned (cgRect);
 		}

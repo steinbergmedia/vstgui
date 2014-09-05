@@ -47,7 +47,7 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-CMemoryStream::CMemoryStream (int32_t initialSize, int32_t inDelta, bool binaryMode, ByteOrder byteOrder)
+CMemoryStream::CMemoryStream (uint32_t initialSize, uint32_t inDelta, bool binaryMode, ByteOrder byteOrder)
 : OutputStream (byteOrder)
 , InputStream (byteOrder)
 , buffer (0)
@@ -61,7 +61,7 @@ CMemoryStream::CMemoryStream (int32_t initialSize, int32_t inDelta, bool binaryM
 }
 
 //-----------------------------------------------------------------------------
-CMemoryStream::CMemoryStream (const int8_t* inBuffer, int32_t bufferSize, bool binaryMode, ByteOrder byteOrder)
+CMemoryStream::CMemoryStream (const int8_t* inBuffer, uint32_t bufferSize, bool binaryMode, ByteOrder byteOrder)
 : OutputStream (byteOrder)
 , InputStream (byteOrder)
 , buffer (const_cast<int8_t*> (inBuffer))
@@ -81,7 +81,7 @@ CMemoryStream::~CMemoryStream ()
 }
 
 //-----------------------------------------------------------------------------
-bool CMemoryStream::resize (int32_t inSize)
+bool CMemoryStream::resize (uint32_t inSize)
 {
 	if (size >= inSize)
 		return true;
@@ -89,7 +89,7 @@ bool CMemoryStream::resize (int32_t inSize)
 	if (ownsBuffer == false)
 		return false;
 
-	int32_t newSize = size + delta;
+	uint32_t newSize = size + delta;
 	while (newSize < inSize)
 		newSize += delta;
 
@@ -105,10 +105,10 @@ bool CMemoryStream::resize (int32_t inSize)
 }
 
 //-----------------------------------------------------------------------------
-int32_t CMemoryStream::writeRaw (const void* inBuffer, int32_t size)
+uint32_t CMemoryStream::writeRaw (const void* inBuffer, uint32_t size)
 {
 	if (!resize (pos + size))
-		return -1;
+		return kStreamIOError;
 	
 	memcpy (buffer + pos, inBuffer, size);
 	pos += size;
@@ -117,12 +117,12 @@ int32_t CMemoryStream::writeRaw (const void* inBuffer, int32_t size)
 }
 
 //-----------------------------------------------------------------------------
-int32_t CMemoryStream::readRaw (void* outBuffer, int32_t outSize)
+uint32_t CMemoryStream::readRaw (void* outBuffer, uint32_t outSize)
 {
 	if ((size - pos) <= 0)
 		return 0;
 
-	outSize = std::min<int32_t> (outSize, size - pos);
+	outSize = std::min<uint32_t> (outSize, size - pos);
 	memcpy (outBuffer, buffer + pos, outSize);
 	pos += outSize;
 
@@ -141,10 +141,10 @@ int64_t CMemoryStream::seek (int64_t seekpos, SeekMode mode)
 	}
 	if (newPos < size)
 	{
-		pos = (int32_t)newPos;
+		pos = static_cast<uint32_t> (newPos);
 		return pos;
 	}
-	return -1;
+	return kStreamSeekError;
 }
 
 //-----------------------------------------------------------------------------
@@ -156,10 +156,10 @@ bool CMemoryStream::operator>> (std::string& string)
 		if (!(*(InputStream*)this >> identifier)) return false;
 		if (identifier == 'str ')
 		{
-			int32_t length;
+			uint32_t length;
 			if (!(*(InputStream*)this >> length)) return false;
 			int8_t* buffer = (int8_t*)std::malloc (length);
-			int32_t read = readRaw (buffer, length);
+			uint32_t read = readRaw (buffer, length);
 			if (read == length)
 				string.assign ((const char*)buffer, length);
 			std::free (buffer);
@@ -185,10 +185,10 @@ bool CMemoryStream::operator<< (const std::string& str)
 {
 	if (binaryMode)
 	{
-		if (!(*(OutputStream*)this << (int32_t)'str ')) return false;
-		if (!(*(OutputStream*)this << (int32_t)str.length ())) return false;
+		if (!(static_cast<OutputStream&>(*this) << (uint32_t)'str ')) return false;
+		if (!(static_cast<OutputStream&>(*this) << (uint32_t)str.length ())) return false;
 	}
-	return writeRaw (str.c_str (), (int32_t)str.length ()) == (int32_t)str.length ();
+	return writeRaw (str.c_str (), static_cast<uint32_t> (str.length ())) == str.length ();
 }
 
 //-----------------------------------------------------------------------------
@@ -256,24 +256,24 @@ bool CFileStream::open (UTF8StringPtr path, int32_t mode, ByteOrder byteOrder)
 }
 
 //-----------------------------------------------------------------------------
-int32_t CFileStream::writeRaw (const void* buffer, int32_t size)
+uint32_t CFileStream::writeRaw (const void* buffer, uint32_t size)
 {
 	if (stream)
 	{
-		int32_t written = (int32_t)fwrite (buffer, size, 1, stream);
+		uint32_t written = static_cast<uint32_t> (fwrite (buffer, size, 1, stream));
 		return written * size;
 	}
-	return -1;
+	return kStreamIOError;
 }
 
 //-----------------------------------------------------------------------------
-int32_t CFileStream::readRaw (void* buffer, int32_t size)
+uint32_t CFileStream::readRaw (void* buffer, uint32_t size)
 {
 	if (stream)
 	{
-		return (int32_t)fread (buffer, 1, size, stream);
+		return static_cast<uint32_t> (fread (buffer, 1, size, stream));
 	}
-	return -1;
+	return kStreamIOError;
 }
 
 //-----------------------------------------------------------------------------
@@ -291,7 +291,7 @@ int64_t CFileStream::seek (int64_t pos, SeekMode mode)
 		if (fseeko (stream, pos, fseekmode) == 0)
 			return tell ();
 	}
-	return -1;
+	return kStreamSeekError;
 }
 
 //-----------------------------------------------------------------------------
@@ -301,7 +301,7 @@ int64_t CFileStream::tell () const
 	{
 		return ftello (stream);
 	}
-	return -1;
+	return kStreamSeekError;
 }
 
 //-----------------------------------------------------------------------------
@@ -330,7 +330,7 @@ bool CFileStream::operator>> (std::string& string)
 //-----------------------------------------------------------------------------
 bool CFileStream::operator<< (const std::string& str)
 {
-	if (writeRaw (str.c_str (), (int32_t)str.size ()) == (int32_t)str.size ())
+	if (writeRaw (str.c_str (), static_cast<uint32_t> (str.size ())) == str.size ())
 	{
 		if (openMode & kBinaryMode)
 		{
@@ -407,18 +407,18 @@ bool CResourceInputStream::open (const CResourceDescription& res)
 }
 
 //-----------------------------------------------------------------------------
-int32_t CResourceInputStream::readRaw (void* buffer, int32_t size)
+uint32_t CResourceInputStream::readRaw (void* buffer, uint32_t size)
 {
-	int32_t readResult = -1;
+	uint32_t readResult = kStreamIOError;
 	if (platformHandle)
 	{
 	#if MAC
-		readResult = (int32_t)fread (buffer, 1, size, (FILE*)platformHandle);
+		readResult = static_cast<uint32_t> (fread (buffer, 1, size, (FILE*)platformHandle));
 		if (readResult == 0)
 		{
 			if (ferror ((FILE*)platformHandle) != 0)
 			{
-				readResult = -1;
+				readResult = kStreamIOError;
 				clearerr ((FILE*)platformHandle);
 			}
 		}
@@ -460,7 +460,7 @@ int64_t CResourceInputStream::seek (int64_t pos, SeekMode mode)
 			return tell ();
 	#endif
 	}
-	return -1;
+	return kStreamSeekError;
 }
 
 //-----------------------------------------------------------------------------
@@ -477,7 +477,7 @@ int64_t CResourceInputStream::tell () const
 			return (int64_t)pos.QuadPart;
 	#endif
 	}
-	return -1;
+	return kStreamSeekError;
 }
 
 //-----------------------------------------------------------------------------
@@ -664,7 +664,7 @@ bool InputStream::operator>> (int16_t& output)
 		if (byteOrder != kNativeByteOrder)
 		{
 			uint8_t* p = (uint8_t*)&output;
-			int8_t temp = p[0];
+			uint8_t temp = p[0];
 			p[0] = p[1];
 			p[1] = temp;
 		}
@@ -681,7 +681,7 @@ bool InputStream::operator>> (uint16_t& output)
 		if (byteOrder != kNativeByteOrder)
 		{
 			uint8_t* p = (uint8_t*)&output;
-			int8_t temp = p[0];
+			uint8_t temp = p[0];
 			p[0] = p[1];
 			p[1] = temp;
 		}
@@ -698,7 +698,7 @@ bool InputStream::operator>> (int32_t& output)
 		if (byteOrder != kNativeByteOrder)
 		{
 			uint8_t* p = (uint8_t*)&output;
-			int8_t temp = p[0];
+			uint8_t temp = p[0];
 			p[0] = p[3];
 			p[3] = temp;
 			temp = p[1];
@@ -718,7 +718,7 @@ bool InputStream::operator>> (uint32_t& output)
 		if (byteOrder != kNativeByteOrder)
 		{
 			uint8_t* p = (uint8_t*)&output;
-			int8_t temp = p[0];
+			uint8_t temp = p[0];
 			p[0] = p[3];
 			p[3] = temp;
 			temp = p[1];
@@ -738,7 +738,7 @@ bool InputStream::operator>> (int64_t& output)
 		if (byteOrder != kNativeByteOrder)
 		{
 			uint8_t* p = (uint8_t*)&output;
-			int8_t temp = p[0];
+			uint8_t temp = p[0];
 			p[0] = p[7];
 			p[7] = temp;
 			temp = p[6];
@@ -764,7 +764,7 @@ bool InputStream::operator>> (uint64_t& output)
 		if (byteOrder != kNativeByteOrder)
 		{
 			uint8_t* p = (uint8_t*)&output;
-			int8_t temp = p[0];
+			uint8_t temp = p[0];
 			p[0] = p[7];
 			p[7] = temp;
 			temp = p[6];
@@ -790,7 +790,7 @@ bool InputStream::operator>> (double& output)
 		if (byteOrder != kNativeByteOrder)
 		{
 			uint8_t* p = (uint8_t*)&output;
-			int8_t temp = p[0];
+			uint8_t temp = p[0];
 			p[0] = p[7];
 			p[7] = temp;
 			temp = p[6];

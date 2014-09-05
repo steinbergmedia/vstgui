@@ -171,7 +171,7 @@ void PLUGIN_API TestAnimationController::update (FUnknown* changedUnknown, int32
 		{
 			Animation::InterpolationTimingFunction* timingFunction = new Animation::InterpolationTimingFunction (200);
 			timingFunction->addPoint (0.5f, 0.2f);
-			int32 value = parameter->toPlain (parameter->getNormalized ());
+			int32 value = static_cast<int32> (parameter->toPlain (parameter->getNormalized ()));
 			if (value)
 			{
 				animationView->getFrame ()->getAnimator ()->addAnimation (animationView, "SizeAnimation", new Animation::ViewSizeAnimation (originalRect), timingFunction);

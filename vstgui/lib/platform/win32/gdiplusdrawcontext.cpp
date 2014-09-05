@@ -395,7 +395,7 @@ void GdiplusDrawContext::drawPoint (const CPoint &point, const CColor& color)
 	setFrameColor (color);
 	CPoint point2 (point);
 	point2.x++;
-	drawLine (std::make_pair (point, point2));
+	COffscreenContext::drawLine (point, point2);
 	restoreGlobalState ();
 }
 

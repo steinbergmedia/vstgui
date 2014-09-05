@@ -313,10 +313,10 @@ public:
 	/// @name Attribute Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	bool getAttributeSize (const CViewAttributeID id, int32_t& outSize) const;									///< get the size of an attribute
-	bool getAttribute (const CViewAttributeID id, const int32_t inSize, void* outData, int32_t& outSize) const;	///< get an attribute
-	bool setAttribute (const CViewAttributeID id, const int32_t inSize, const void* inData);					///< set an attribute
-	bool removeAttribute (const CViewAttributeID id);															///< remove an attribute
+	bool getAttributeSize (const CViewAttributeID id, uint32_t& outSize) const;										///< get the size of an attribute
+	bool getAttribute (const CViewAttributeID id, const uint32_t inSize, void* outData, uint32_t& outSize) const;	///< get an attribute
+	bool setAttribute (const CViewAttributeID id, const uint32_t inSize, const void* inData);						///< set an attribute
+	bool removeAttribute (const CViewAttributeID id);																///< remove an attribute
 	//@}
 
 	//-----------------------------------------------------------------------------

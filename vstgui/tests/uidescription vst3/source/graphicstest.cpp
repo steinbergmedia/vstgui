@@ -50,7 +50,7 @@ public:
 	GraphicsView ();
 	~GraphicsView ();
 	
-	void setRotation (double angle) { pathRotation = angle; invalid (); }
+	void setRotation (float angle) { pathRotation = angle; invalid (); }
 	void setFillGradient (bool state) { fillGradient = state; invalid (); }
 	void setStrokePath (bool state) { strokePath = state; invalid (); }
 	void setPathOne (int32_t index);
@@ -85,7 +85,7 @@ protected:
 	int32_t path2Index;
 
 	CGradient* gradient;
-	double pathRotation;
+	float pathRotation;
 	bool fillGradient;
 	bool strokePath;
 };
@@ -273,12 +273,12 @@ void GraphicsViewController::valueChanged (CControl* pControl)
 		}
 		case 20000:
 		{
-			graphicsView->setPathOne (pControl->getValue ());
+			graphicsView->setPathOne (static_cast<int32_t> (pControl->getValue ()));
 			break;
 		}
 		case 20001:
 		{
-			graphicsView->setPathTwo (pControl->getValue ());
+			graphicsView->setPathTwo (static_cast<int32_t> (pControl->getValue ()));
 			break;
 		}
 	}
@@ -290,7 +290,7 @@ void GraphicsViewController::valueChanged (CControl* pControl)
 GraphicsView::GraphicsView ()
 : CView (CRect (0, 0, 0, 0))
 , gradient (0)
-, pathRotation (0)
+, pathRotation (0.f)
 , fillGradient (false)
 , strokePath (false)
 , bitmap2 (0)
@@ -326,7 +326,7 @@ void GraphicsView::draw (CDrawContext *pContext)
 		drawPath->addPath (*path[path1Index]);
 		drawPath->closeSubpath ();
 		CGraphicsTransform t;
-		t.rotate (90.-pathRotation*2.);
+		t.rotate (90.f-pathRotation*2.f);
 		t.scale (1.3, 1.3);
 		drawPath->addPath (*path[path2Index], &t);
 
@@ -439,7 +439,7 @@ void GraphicsView::animationTick (CView* view, const char* name, float pos)
 {
 	if (strcmp (name, "Rotation") == 0 || strcmp (name, "RotateBack") == 0)
 	{
-		setRotation (360.*pos);
+		setRotation (360.f*pos);
 	}
 	else if (strcmp (name, "Saturation") == 0)
 	{
@@ -455,16 +455,16 @@ void GraphicsView::animationFinished (CView* view, const char* name, bool wasCan
 	{
 		if (wasCanceled)
 		{
-			if (pathRotation > 0. && pathRotation < 180.)
+			if (pathRotation > 0.f && pathRotation < 180.f)
 			{
 				remember ();
-				InterpolationTimingFunction* tf = new InterpolationTimingFunction (100, pathRotation/360., 0);
+				InterpolationTimingFunction* tf = new InterpolationTimingFunction (100, pathRotation/360.f, 0);
 				addAnimation ("RotateBack", this, tf);
 			}
-			else if (pathRotation >= 180.)
+			else if (pathRotation >= 180.f)
 			{
 				remember ();
-				InterpolationTimingFunction* tf = new InterpolationTimingFunction (100, pathRotation/360., 1);
+				InterpolationTimingFunction* tf = new InterpolationTimingFunction (100, pathRotation/360.f, 1);
 				addAnimation ("RotateBack", this, tf);
 			}
 		}

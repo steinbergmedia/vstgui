@@ -863,8 +863,24 @@ bool UIDescription::saveWindowsRCFile (UTF8StringPtr filename)
 }
 
 //-----------------------------------------------------------------------------
+static std::string moveOldFile (UTF8StringPtr filename)
+{
+	FILE* file = fopen (filename, "r");
+	if (file)
+	{
+		fclose (file);
+		std::string newName = filename;
+		newName += ".old";
+		if (std::rename (filename, newName.c_str ()) == 0)
+			return newName;
+	}
+	return "";
+}
+
+//-----------------------------------------------------------------------------
 bool UIDescription::save (UTF8StringPtr filename, int32_t flags)
 {
+	std::string oldName = moveOldFile (filename);
 	bool result = false;
 	CFileStream stream;
 	if (stream.open (filename, CFileStream::kWriteMode|CFileStream::kTruncateMode))
@@ -882,6 +898,9 @@ bool UIDescription::save (UTF8StringPtr filename, int32_t flags)
 			saveWindowsRCFile (rcFileName.c_str ());
 		}
 	}
+	if (result && oldName.empty () == false)
+		std::remove (oldName.c_str ());
+
 	return result;
 }
 
@@ -1133,12 +1152,12 @@ CView* UIDescription::createViewFromNode (UINode* node) const
 						char c2 = (*attrName)[1];
 						char c3 = (*attrName)[2];
 						char c4 = (*attrName)[3];
-						attrId = ((((int32_t)c1) << 24) | (((int32_t)c2) << 16) | (((int32_t)c3) << 8) | (((int32_t)c4) << 0));
+						attrId = ((((size_t)c1) << 24) | (((size_t)c2) << 16) | (((size_t)c3) << 8) | (((size_t)c4) << 0));
 					}
 					else
 						attrId = (CViewAttributeID)strtol (attrName->c_str (), 0, 10);
 					if (attrId)
-						result->setAttribute (attrId, (int32_t)attrValue->size ()+1, attrValue->c_str ());
+						result->setAttribute (attrId, static_cast<uint32_t> (attrValue->size () + 1), attrValue->c_str ());
 				}
 			}
 		VSTGUI_RANGE_BASED_FOR_LOOP_END
@@ -1180,7 +1199,7 @@ CView* UIDescription::createView (UTF8StringPtr name, IController* _controller) 
 				{
 					CView* view = createViewFromNode (itNode);
 					if (view)
-						view->setAttribute (kTemplateNameAttributeID, (int32_t)strlen (name)+1, name);
+						view->setAttribute (kTemplateNameAttributeID, static_cast<uint32_t> (strlen (name) + 1), name);
 					return view;
 				}
 			}
@@ -1193,7 +1212,7 @@ CView* UIDescription::createView (UTF8StringPtr name, IController* _controller) 
 bool UIDescription::getTemplateNameFromView (CView* view, std::string& templateName) const
 {
 	bool result = false;
-	int32_t attrSize = 0;
+	uint32_t attrSize = 0;
 	if (view->getAttributeSize (kTemplateNameAttributeID, attrSize))
 	{
 		char* str = new char[attrSize];
@@ -2270,7 +2289,7 @@ static bool tokenizeString (std::string& str, StringTokenList& tokens)
 			{
 				if (tokenStart != iterator)
 				{
-					std::string token ((const char*)tokenStart, iterator - tokenStart);
+					std::string token ((const char*)tokenStart, static_cast<size_t> (iterator - tokenStart));
 					tokens.push_back (token);
 				}
 				tokenStart = iterator + 1;
@@ -2283,7 +2302,7 @@ static bool tokenizeString (std::string& str, StringTokenList& tokens)
 					{
 						if (tokenStart != iterator)
 						{
-							std::string token ((const char*)tokenStart, iterator - tokenStart);
+							std::string token ((const char*)tokenStart, static_cast<size_t> (iterator - tokenStart));
 							tokens.push_back (token);
 						}
 						tokens.push_back (StringToken (StringToken::kAdd));
@@ -2294,7 +2313,7 @@ static bool tokenizeString (std::string& str, StringTokenList& tokens)
 					{
 						if (tokenStart != iterator)
 						{
-							std::string token ((const char*)tokenStart, iterator - tokenStart);
+							std::string token ((const char*)tokenStart, static_cast<size_t> (iterator - tokenStart));
 							tokens.push_back (token);
 						}
 						tokens.push_back (StringToken (StringToken::kSubtract));
@@ -2305,7 +2324,7 @@ static bool tokenizeString (std::string& str, StringTokenList& tokens)
 					{
 						if (tokenStart != iterator)
 						{
-							std::string token ((const char*)tokenStart, iterator - tokenStart);
+							std::string token ((const char*)tokenStart, static_cast<size_t> (iterator - tokenStart));
 							tokens.push_back (token);
 						}
 						tokens.push_back (StringToken (StringToken::kMulitply));
@@ -2316,7 +2335,7 @@ static bool tokenizeString (std::string& str, StringTokenList& tokens)
 					{
 						if (tokenStart != iterator)
 						{
-							std::string token ((const char*)tokenStart, iterator - tokenStart);
+							std::string token ((const char*)tokenStart, static_cast<size_t> (iterator - tokenStart));
 							tokens.push_back (token);
 						}
 						tokens.push_back (StringToken (StringToken::kDivide));
@@ -2327,7 +2346,7 @@ static bool tokenizeString (std::string& str, StringTokenList& tokens)
 					{
 						if (tokenStart != iterator)
 						{
-							std::string token ((const char*)tokenStart, iterator - tokenStart);
+							std::string token ((const char*)tokenStart, static_cast<size_t> (iterator - tokenStart));
 							tokens.push_back (token);
 						}
 						tokens.push_back (StringToken (StringToken::kOpenParenthesis));
@@ -2338,7 +2357,7 @@ static bool tokenizeString (std::string& str, StringTokenList& tokens)
 					{
 						if (tokenStart != iterator)
 						{
-							std::string token ((const char*)tokenStart, iterator - tokenStart);
+							std::string token ((const char*)tokenStart, static_cast<size_t> (iterator - tokenStart));
 							tokens.push_back (token);
 						}
 						tokens.push_back (StringToken (StringToken::kCloseParenthesis));
@@ -2351,7 +2370,7 @@ static bool tokenizeString (std::string& str, StringTokenList& tokens)
 	} while (iterator.next () != iterator.back ());
 	if (tokenStart != iterator)
 	{
-		std::string token ((const char*)tokenStart, iterator - tokenStart);
+		std::string token ((const char*)tokenStart, static_cast<size_t> (iterator - tokenStart));
 		tokens.push_back (token);
 	}
 	return true;	

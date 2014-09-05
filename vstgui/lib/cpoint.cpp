@@ -34,22 +34,15 @@
 
 #include "cpoint.h"
 #include "crect.h"
-#include <cmath>
 
 namespace VSTGUI {
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //-----------------------------------------------------------------------------
 bool CPoint::isInside (const CRect& r) const
 {
 	return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
 }
-
-//-----------------------------------------------------------------------------
-void CPoint::makeIntegral ()
-{
-	x = floor (x + 0.5);
-	y = floor (y + 0.5);
-}
-
+#endif
 
 }

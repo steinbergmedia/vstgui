@@ -268,6 +268,14 @@ namespace VSTGUI {
 namespace UIViewCreator {
 
 //-----------------------------------------------------------------------------
+template<typename T> std::string numberToString (T value)
+{
+	std::stringstream str;
+	str << value;
+	return str.str ();
+}
+
+//-----------------------------------------------------------------------------
 bool parseSize (const std::string& str, CPoint& point)
 {
 	size_t sep = str.find (',', 0);
@@ -303,11 +311,7 @@ bool bitmapToString (CBitmap* bitmap, std::string& string, const IUIDescription*
 		if (res.type == CResourceDescription::kStringType)
 			string = res.u.name;
 		else
-		{
-			std::stringstream stream;
-			stream << res.u.id;
-			string = stream.str ();
-		}
+			string = numberToString (res.u.id);
 	}
 	return true;
 }
@@ -352,7 +356,7 @@ static bool stringToBitmap (const std::string* value, CBitmap*& bitmap, const IU
 }
 
 //-----------------------------------------------------------------------------
-static void applyStyleMask (const std::string* value, int32_t mask, int32_t& style) noexcept
+static void applyStyleMask (const std::string* value, int32_t mask, int32_t& style)
 {
 	if (value)
 	{
@@ -361,14 +365,6 @@ static void applyStyleMask (const std::string* value, int32_t mask, int32_t& sty
 		else
 			style &= ~mask;
 	}
-}
-
-//-----------------------------------------------------------------------------
-template<typename T> std::string numberToString (T value)
-{
-	std::stringstream str;
-	str << value;
-	return str.str ();
 }
 
 //------------------------------------------------------------------------
@@ -492,18 +488,18 @@ public:
 		if (tooltipAttr)
 		{
 			if (tooltipAttr->size () > 0)
-				view->setAttribute (kCViewTooltipAttribute, (int32_t)tooltipAttr->size ()+1, tooltipAttr->c_str ());
+				view->setAttribute (kCViewTooltipAttribute, static_cast<uint32_t> (tooltipAttr->size () + 1), tooltipAttr->c_str ());
 			else
 				view->removeAttribute (kCViewTooltipAttribute);
 		}
 
 		const std::string* customViewAttr = attributes.getAttributeValue (kAttrCustomViewName);
 		if (customViewAttr)
-			view->setAttribute ('uicv', (int32_t)customViewAttr->size ()+1, customViewAttr->c_str ());
+			view->setAttribute ('uicv', static_cast<uint32_t> (customViewAttr->size () + 1), customViewAttr->c_str ());
 
 		const std::string* subControllerAttr = attributes.getAttributeValue (kAttrSubController);
 		if (subControllerAttr)
-			view->setAttribute ('uisc', (int32_t)subControllerAttr->size ()+1, subControllerAttr->c_str ());
+			view->setAttribute ('uisc', static_cast<uint32_t> (subControllerAttr->size () + 1), subControllerAttr->c_str ());
 
 		double opacity;
 		if (attributes.getDoubleAttribute (kAttrOpacity, opacity))
@@ -634,7 +630,7 @@ public:
 private:
 	static bool getViewAttributeString (CView* view, const CViewAttributeID attrID, std::string& value)
 	{
-		int32_t attrSize = 0;
+		uint32_t attrSize = 0;
 		if (view->getAttributeSize (attrID, attrSize))
 		{
 			char* cstr = new char [attrSize+1];
@@ -1390,7 +1386,7 @@ public:
 		
 		if (attributeName == kAttrTitle)
 		{
-			stringValue = checkbox->getTitle () ? checkbox->getTitle () : "";
+			stringValue = checkbox->getTitle ();
 			return true;
 		}
 		else if (attributeName == kAttrFont)
@@ -2298,7 +2294,7 @@ public:
 				str << "Segment ";
 				str << i + 1;
 				CSegmentButton::Segment seg;
-				seg.name = str.str ();
+				seg.name = str.str ().c_str ();
 				button->addSegment (seg);
 			}
 		}
@@ -2309,7 +2305,7 @@ public:
 		for (UIAttributes::StringArray::const_iterator it = names.begin (), end = names.end (); it != end; ++it)
 		{
 			CSegmentButton::Segment segment;
-			segment.name = *it;
+			segment.name = (*it).c_str ();
 			button->addSegment (segment);
 		}
 	}
@@ -2442,7 +2438,7 @@ public:
 			const CSegmentButton::Segments& segments = button->getSegments ();
 			UIAttributes::StringArray stringArray;
 			for (CSegmentButton::Segments::const_iterator it = segments.begin (), end = segments.end (); it != end; ++it)
-				stringArray.push_back ((*it).name);
+				stringArray.push_back (std::string ((*it).name));
 			stringValue = UIAttributes::createStringArrayValue (stringArray);
 			return true;
 		}
@@ -3354,9 +3350,9 @@ public:
 		}
 		int32_t value;
 		if (attributes.getIntegerAttribute (kAttrAnimationIndex, value))
-			splashScreen->setAnimationIndex (value);
+			splashScreen->setAnimationIndex (static_cast<uint32_t> (value));
 		if (attributes.getIntegerAttribute (kAttrAnimationTime, value))
-			splashScreen->setAnimationTime (value);
+			splashScreen->setAnimationTime (static_cast<uint32_t> (value));
 
 		return true;
 	}
@@ -3478,7 +3474,7 @@ public:
 		int32_t animationTime;
 		if (attributes.getIntegerAttribute (kAttrAnimationTime, animationTime))
 		{
-			viewSwitch->setAnimationTime (animationTime);
+			viewSwitch->setAnimationTime (static_cast<uint32_t> (animationTime));
 		}
 		return true;
 	}
@@ -3744,10 +3740,10 @@ public:
 			return false;
 		double d;
 		if (attributes.getDoubleAttribute (kAttrShadowIntensity, d))
-			shadowView->setShadowIntensity ((float)d);
+			shadowView->setShadowIntensity (static_cast<float> (d));
 		int32_t i;
 		if (attributes.getIntegerAttribute (kAttrShadowBlurSize, i))
-			shadowView->setShadowBlurSize (i);
+			shadowView->setShadowBlurSize (static_cast<uint32_t> (i));
 		CPoint p;
 		if (attributes.getPointAttribute (kAttrShadowOffset, p))
 			shadowView->setShadowOffset (p);

@@ -435,7 +435,7 @@ public:
 		if (textLabel)
 		{
 			if (txt && *txt != 0)
-				textLabel->setAttribute (kCViewTooltipAttribute, (int32_t)strlen (textLabel->getText ())+1, textLabel->getText ());
+				textLabel->setAttribute (kCViewTooltipAttribute, static_cast<uint32_t> (strlen (textLabel->getText ()) + 1), textLabel->getText ());
 			else
 				textLabel->removeAttribute (kCViewTooltipAttribute);
 		}
@@ -507,7 +507,7 @@ public:
 		CCommandMenuItem* item = new CCommandMenuItem (entryName->c_str (), this);
 		validateMenuEntry (item);
 		menu->addEntry (item);
-		if (*entryName == textLabel->getText ())
+		if (textLabel->getText () == *entryName)
 		{
 			int32_t index = menu->getNbEntries () - 1;
 			menu->setValue ((float)index);
@@ -555,7 +555,7 @@ public:
 		if (textLabel && menu)
 		{
 			if (txt && *txt != 0)
-				menu->setAttribute (kCViewTooltipAttribute, (int32_t)strlen (textLabel->getText ())+1, textLabel->getText ());
+				menu->setAttribute (kCViewTooltipAttribute, static_cast<uint32_t> (strlen (textLabel->getText ()) + 1), textLabel->getText ());
 			else
 				menu->removeAttribute (kCViewTooltipAttribute);
 		}
@@ -863,7 +863,7 @@ void UIAttributesController::valueChanged (CControl* control)
 			UISearchTextField* searchField = dynamic_cast<UISearchTextField*> (control);
 			if (searchField)
 			{
-				filterString = searchField->getText () ? searchField->getText () : "";
+				filterString = searchField->getText ();
 				rebuildAttributesView ();
 				UIAttributes* attributes = editDescription->getCustomAttributes ("UIAttributesController", true);
 				if (attributes)
