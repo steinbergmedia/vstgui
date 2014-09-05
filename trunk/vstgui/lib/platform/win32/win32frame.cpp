@@ -378,7 +378,7 @@ bool Win32Frame::setSize (const CRect& newSize)
 		backBuffer = createOffscreenContext (newSize.getWidth (), newSize.getHeight ());
 	}
 	// TODO for VST2: we only set the size of the window we own. In VST2 this was not the case, we also resized the parent window. This must be done upstream now.
-	SetWindowPos (windowHandle, HWND_TOP, (int)newSize.left, (int)newSize.top, (int)newSize.getWidth (), (int)newSize.getHeight (), SWP_NOMOVE|SWP_NOCOPYBITS|SWP_NOREDRAW|SWP_DEFERERASE);
+	SetWindowPos (windowHandle, HWND_TOP, (int)newSize.left, (int)newSize.top, (int)newSize.getWidth (), (int)newSize.getHeight (), SWP_NOZORDER|SWP_NOCOPYBITS|SWP_NOREDRAW|SWP_DEFERERASE);
 	invalidRect (newSize);
 	return true;
 }
