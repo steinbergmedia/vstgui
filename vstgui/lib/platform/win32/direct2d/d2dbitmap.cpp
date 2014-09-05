@@ -39,7 +39,7 @@
 #include "../win32support.h"
 #include <wincodec.h>
 #include <d2d1.h>
-#include <Shlwapi.h>
+#include <shlwapi.h>
 #include <cassert>
 
 #pragma comment (lib,"windowscodecs.lib")

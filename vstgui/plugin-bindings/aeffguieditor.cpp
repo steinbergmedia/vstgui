@@ -45,7 +45,7 @@
 #define kIdleRateMin   4 // minimum time between 2 idles in ms
 
 #if WINDOWS
-#include <Windows.h>
+#include <windows.h>
 #include "../lib/platform/win32/win32support.h"
 #endif
 

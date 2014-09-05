@@ -299,7 +299,7 @@ void Win32Frame::initTooltip ()
 		ti.hwnd   = (HWND)windowHandle;
 		ti.uId    = (UINT)0;
 		ti.hinst  = GetInstance ();
-		ti.lpszText  = TEXT("This is a tooltip");
+		ti.lpszText  = const_cast<TCHAR*> (TEXT("This is a tooltip"));
 		ti.rect.left = ti.rect.top = ti.rect.bottom = ti.rect.right = 0;
 
 		// Add the tool to the control

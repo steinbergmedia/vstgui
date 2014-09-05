@@ -114,12 +114,12 @@ void D2DFont::drawString (CDrawContext* context, IPlatformString* string, const 
 			{
 				if (style & kUnderlineFace)
 				{
-					DWRITE_TEXT_RANGE range = { 0, -1 };
+					DWRITE_TEXT_RANGE range = { 0, UINT_MAX };
 					textLayout->SetUnderline (true, range);
 				}
 				if (style & kStrikethroughFace) 
 				{
-					DWRITE_TEXT_RANGE range = { 0, -1 };
+					DWRITE_TEXT_RANGE range = { 0, UINT_MAX };
 					textLayout->SetStrikethrough (true, range);
 				}
 				renderTarget->SetTextAntialiasMode (antialias ? D2D1_TEXT_ANTIALIAS_MODE_CLEARTYPE : D2D1_TEXT_ANTIALIAS_MODE_ALIASED);

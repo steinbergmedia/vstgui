@@ -37,6 +37,7 @@
 
 #include <cstdlib>
 #include <cstdio>
+#include <cstring>
 #include <string>
 
 //-----------------------------------------------------------------------------
@@ -123,7 +124,9 @@
 	#endif
 
 #elif WIN32 || WINDOWS || defined(_WIN32)
-	#define NOMINMAX
+	#ifndef NOMINMAX
+		#define NOMINMAX
+	#endif
 	#include <sdkddkver.h>
 	#if _WIN32_WINNT < 0x600
 		#error unsupported Platform SDK you need at least the Vista Platform SDK to compile VSTGUI
@@ -132,7 +135,18 @@
 	#if defined (_WIN32_WINNT_WIN7) && !defined (VSTGUI_DIRECT2D_SUPPORT)
 		#define VSTGUI_DIRECT2D_SUPPORT	1
 	#endif
-	#if _MSC_VER >=	1600
+	#ifdef __GNUC__
+		#if __cplusplus >= 201103L
+			#define VSTGUI_OVERRIDE_VMETHOD	override
+			#define VSTGUI_FINAL_VMETHOD final
+			#define VSTGUI_RVALUE_REF_SUPPORT 1
+			#define VSTGUI_RANGE_BASED_FOR_LOOP_SUPPORT 1
+			#define VSTGUI_HAS_FUNCTIONAL 1
+		#else
+			#define noexcept
+		#endif
+		#include <stdint.h>
+	#elif _MSC_VER >=	1600
 		#define VSTGUI_OVERRIDE_VMETHOD	override
 		#define VSTGUI_FINAL_VMETHOD final
 		#define VSTGUI_RVALUE_REF_SUPPORT 1
@@ -155,7 +169,9 @@
 	#ifndef WINDOWS
 		#define WINDOWS 1
 	#endif
-	#define noexcept		// currently not supported by any VS compiler
+	#ifndef __GNUC__
+		#define noexcept		// currently not supported by any VS compiler
+	#endif
 	#define DEPRECATED_ATTRIBUTE __declspec(deprecated)
 	#pragma warning(3 : 4189) // local variable is initialized but not referenced
 	#pragma warning(3 : 4702) // unreachable code

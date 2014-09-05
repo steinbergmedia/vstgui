@@ -41,6 +41,11 @@
 #include "d2dfont.h"
 #include <dwrite.h>
 
+#ifdef __GNUC__
+#define __maybenull
+#define __out
+#endif
+
 namespace VSTGUI {
 
 class D2DPathTextRenderer : public IDWriteTextRenderer
