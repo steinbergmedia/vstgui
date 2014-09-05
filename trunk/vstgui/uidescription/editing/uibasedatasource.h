@@ -97,7 +97,7 @@ public:
 			int32_t selectedRow = dataBrowser->getSelectedRow ();
 			if (selectedRow != CDataBrowser::kNoSelection)
 			{
-				removeItem (names.at (selectedRow).c_str ());
+				removeItem (names.at (static_cast<uint32_t> (selectedRow)).c_str ());
 				dbSelectionChanged (dataBrowser);
 				dataBrowser->setSelectedRow (selectedRow);
 				return true;
@@ -114,7 +114,7 @@ public:
 			int32_t selectedRow = dataBrowser ? dataBrowser->getSelectedRow () : CDataBrowser::kNoSelection;
 			std::string selectedName;
 			if (selectedRow != CDataBrowser::kNoSelection)
-				selectedName = names.at (selectedRow);
+				selectedName = names.at (static_cast<uint32_t> (selectedRow));
 			update ();
 			if (selectedRow != CDataBrowser::kNoSelection)
 				selectName (selectedName.c_str ());
@@ -177,7 +177,7 @@ protected:
 			int32_t selectedRow = dataBrowser ? dataBrowser->getSelectedRow () : CDataBrowser::kNoSelection;
 			std::string selectedName;
 			if (selectedRow != CDataBrowser::kNoSelection)
-				selectedName = names.at (selectedRow);
+				selectedName = names.at (static_cast<uint32_t> (selectedRow));
 			update ();
 			if (selectedRow != CDataBrowser::kNoSelection)
 				selectName (selectedName.c_str ());
@@ -274,19 +274,19 @@ protected:
 	{
 		if (buttons.isLeftButton () && buttons.isDoubleClick ())
 		{
-			browser->beginTextEdit (CDataBrowser::Cell (row, column), names.at (row).c_str ());
+			browser->beginTextEdit (CDataBrowser::Cell (row, column), names.at (static_cast<uint32_t> (row)).c_str ());
 		}
 		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 	}
 
 	void dbCellTextChanged (int32_t row, int32_t column, UTF8StringPtr newText, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD
 	{
-		if (row < (int32_t)names.size () && names.at (row) != newText)
+		if (row < (int32_t)names.size () && names.at (static_cast<uint32_t> (row)) != newText)
 		{
-			if (performNameChange (names.at (row).c_str (), newText))
+			if (performNameChange (names.at (static_cast<uint32_t> (row)).c_str (), newText))
 			{
 				if (selectName (newText) == -1 && row < (int32_t)names.size ())
-					selectName (names.at (row).c_str ());
+					selectName (names.at (static_cast<uint32_t> (row)).c_str ());
 			}
 		}
 		textEditControl = 0;

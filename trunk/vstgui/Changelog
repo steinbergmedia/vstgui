@@ -1,3 +1,9 @@
+2014-09-05 arne
+
+	* fix some Direct2D and Quartz pixel drawing issues
+	* enable more compiler warnings and fix issues
+	* add methods to CDrawContext to draw IPlatform strings for better performance
+
 2014-08-23 arne
 
 	* moved CScrollbar into its own file

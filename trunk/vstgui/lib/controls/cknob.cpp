@@ -284,12 +284,12 @@ void CKnob::drawHandleAsLine (CDrawContext* pContext) const
 	pContext->setLineWidth (handleLineWidth);
 	pContext->setLineStyle (CLineStyle (CLineStyle::kLineCapRound));
 	pContext->setDrawMode (kAntiAliasing);
-	pContext->drawLine (std::make_pair (where, origin));
+	pContext->drawLine (where, origin);
 	
 	where.offset (1, -1);
 	origin.offset (1, -1);
 	pContext->setFrameColor (colorHandle);
-	pContext->drawLine (std::make_pair (where, origin));
+	pContext->drawLine (where, origin);
 }
 
 //------------------------------------------------------------------------
@@ -730,7 +730,7 @@ bool CAnimKnob::sizeToFit ()
 void CAnimKnob::setHeightOfOneImage (const CCoord& height)
 {
 	IMultiBitmapControl::setHeightOfOneImage (height);
-	if (getDrawBackground () && heightOfOneImage)
+	if (getDrawBackground () && heightOfOneImage > 0)
 		setNumSubPixmaps ((int32_t)(getDrawBackground ()->getHeight () / heightOfOneImage));
 }
 
@@ -740,7 +740,7 @@ void CAnimKnob::setBackground (CBitmap *background)
 	CKnob::setBackground (background);
 	if (heightOfOneImage == 0)
 		heightOfOneImage = getViewSize ().getHeight ();
-	if (background && heightOfOneImage)
+	if (background && heightOfOneImage > 0)
 		setNumSubPixmaps ((int32_t)(background->getHeight () / heightOfOneImage));
 }
 

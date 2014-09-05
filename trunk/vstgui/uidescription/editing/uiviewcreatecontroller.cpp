@@ -153,7 +153,7 @@ CMouseEventResult UIViewCreatorDataSource::dbOnMouseMoved (const CPoint& where, 
 	if (mouseDownRow >= 0 && buttons.isLeftButton ())
 	{
 		UIAttributes viewAttr;
-		viewAttr.setAttribute ("class", getStringList ()->at (mouseDownRow));
+		viewAttr.setAttribute ("class", getStringList ()->at (static_cast<uint32_t> (mouseDownRow)));
 		CView* view = factory->createView (viewAttr, description);
 		if (view)
 		{
@@ -169,7 +169,7 @@ CMouseEventResult UIViewCreatorDataSource::dbOnMouseMoved (const CPoint& where, 
 			if (selection.store (stream, description))
 			{
 				stream.end ();
-				CDropSource* dropSource = new CDropSource (stream.getBuffer (), (int32_t)stream.tell (), CDropSource::kText);
+				CDropSource* dropSource = new CDropSource (stream.getBuffer (), static_cast<uint32_t> (stream.tell ()), CDropSource::kText);
 				browser->doDrag (dropSource);
 				dropSource->forget ();
 			}

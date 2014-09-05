@@ -56,7 +56,7 @@ public:
 	};
 	
 	struct Segment {
-		mutable std::string name;
+		mutable UTF8String name;
 		mutable SharedPointer<CBitmap> icon;
 		mutable SharedPointer<CBitmap> iconHighlighted;
 		mutable SharedPointer<CBitmap> background;

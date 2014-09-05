@@ -100,14 +100,14 @@ public:
 	virtual void setSplashRect (const CRect& splashRect);
 	const CRect& getSplashRect () const;
 
-	virtual void setAnimationIndex (int32_t index) { animationIndex = index; }
-	int32_t getAnimationIndex () const { return animationIndex; }
+	virtual void setAnimationIndex (uint32_t index) { animationIndex = index; }
+	uint32_t getAnimationIndex () const { return animationIndex; }
 
-	virtual void setAnimationTime (int32_t time) { animationTime = time; }
-	int32_t getAnimationTime () const { return animationTime; }
+	virtual void setAnimationTime (uint32_t time) { animationTime = time; }
+	uint32_t getAnimationTime () const { return animationTime; }
 
 	/** create the animation. subclasses can override this to add special animations */
-	virtual bool createAnimation (int32_t animationIndex, int32_t animationTime, CView* splashView, bool removeViewAnimation);
+	virtual bool createAnimation (uint32_t animationIndex, uint32_t animationTime, CView* splashView, bool removeViewAnimation);
 	//@}
 
 	virtual void unSplash () VSTGUI_OVERRIDE_VMETHOD;
@@ -119,8 +119,8 @@ public:
 protected:
 	~CAnimationSplashScreen ();
 
-	int32_t animationIndex;
-	int32_t animationTime;
+	uint32_t animationIndex;
+	uint32_t animationTime;
 };
 
 } // namespace

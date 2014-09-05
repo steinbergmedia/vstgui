@@ -901,7 +901,7 @@ bool CViewContainer::onWheel (const CPoint &where, const CMouseWheelAxis &axis, 
 		CPoint where2 (where);
 		where2.offset (-getViewSize ().left, -getViewSize ().top);
 		transform.inverse ().transform (where2);
-		if (pV && pV->isVisible () && pV->getMouseEnabled () && where2.isInside (pV->getMouseableArea ()))
+		if (pV && pV->isVisible () && pV->getMouseEnabled () && pV->getMouseableArea ().pointInside (where2))
 		{
 			if (pV->onWheel (where2, axis, distance, buttons))
 				return true;
@@ -1165,7 +1165,7 @@ CView* CViewContainer::getViewAt (const CPoint& p, bool deep, bool mustbeMouseEn
 	transform.inverse ().transform (where);
 
 	FOREACHSUBVIEW_REVERSE(true)
-		if (pV && pV->isVisible () && where.isInside (pV->getMouseableArea ()))
+		if (pV && pV->isVisible () && pV->getMouseableArea ().pointInside (where))
 		{
 			if (mustbeMouseEnabled)
 			{
@@ -1200,7 +1200,7 @@ bool CViewContainer::getViewsAt (const CPoint& p, ViewList& views, bool deep) co
 	transform.inverse ().transform (where);
 
 	FOREACHSUBVIEW_REVERSE(true)
-		if (pV && pV->isVisible () && where.isInside (pV->getMouseableArea ()))
+		if (pV && pV->isVisible () && pV->getMouseableArea ().pointInside (where))
 		{
 			if (deep)
 			{
@@ -1228,7 +1228,7 @@ CViewContainer* CViewContainer::getContainerAt (const CPoint& p, bool deep, bool
 	transform.inverse ().transform (where);
 
 	FOREACHSUBVIEW_REVERSE(true)
-		if (pV && pV->isVisible () && where.isInside (pV->getMouseableArea ()))
+		if (pV && pV->isVisible () && pV->getMouseableArea ().pointInside (where))
 		{
 			if (mustbeMouseEnabled)
 			{

@@ -80,11 +80,11 @@ CTooltipSupport::~CTooltipSupport ()
 static UTF8StringBuffer getTooltipFromView (CView* view)
 {
 	UTF8StringBuffer tooltip = 0;
-	int32_t tooltipSize = 0;
+	uint32_t tooltipSize = 0;
 	if (view->getAttributeSize (kCViewTooltipAttribute, tooltipSize))
 	{
 		tooltip = (UTF8StringBuffer)std::malloc (tooltipSize + 1);
-		memset (tooltip, 0, tooltipSize+1);
+		memset (tooltip, 0, tooltipSize + 1);
 		if (!view->getAttribute (kCViewTooltipAttribute, tooltipSize, tooltip, tooltipSize))
 		{
 			std::free (tooltip);
@@ -97,7 +97,7 @@ static UTF8StringBuffer getTooltipFromView (CView* view)
 //------------------------------------------------------------------------
 static bool viewHasTooltip (CView* view)
 {
-	int32_t tooltipSize = 0;
+	uint32_t tooltipSize = 0;
 	if (view->getAttributeSize (kCViewTooltipAttribute, tooltipSize))
 	{
 		if (tooltipSize > 0)

@@ -115,7 +115,7 @@ CMouseEventResult COnOffButton::onMouseUp (CPoint& where, const CButtonState& bu
 {
 	if (isEditing ())
 	{
-		if (where.isInside (getViewSize ()))
+		if (getViewSize ().pointInside (where))
 		{
 			value = (value == getMax ()) ? getMin () : getMax ();
 			invalid ();
@@ -261,7 +261,7 @@ CMouseEventResult CKickButton::onMouseCancel ()
 //------------------------------------------------------------------------
 CMouseEventResult CKickButton::onMouseUp (CPoint& where, const CButtonState& buttons)
 {
-	if (value)
+	if (value > 0.f)
 		valueChanged ();
 	value = getMin ();
 	valueChanged ();
@@ -397,15 +397,13 @@ CCheckBox::CCheckBox (const CCheckBox& checkbox)
 //------------------------------------------------------------------------
 CCheckBox::~CCheckBox ()
 {
-	setTitle (0);
 	setFont (0);
 }
 
 //------------------------------------------------------------------------
 void CCheckBox::setTitle (UTF8StringPtr newTitle)
 {
-	String::free (title);
-	title = String::newWithString (newTitle);
+	title = newTitle;
 	if (style & kAutoSizeToFit)
 		sizeToFit ();
 }
@@ -466,7 +464,7 @@ static CCoord kCheckBoxTitleMargin = 5;
 //------------------------------------------------------------------------
 bool CCheckBox::sizeToFit ()
 {
-	if (title == 0)
+	if (title.empty ())
 		return false;
 	IFontPainter* painter = font ? font->getFontPainter () : 0;
 	if (painter)
@@ -482,7 +480,7 @@ bool CCheckBox::sizeToFit ()
 			fitSize.setWidth (fitSize.getHeight ());
 		}
 		fitSize.right += kCheckBoxTitleMargin;
-		fitSize.right += painter->getStringWidth (0, title, true);
+		fitSize.right += painter->getStringWidth (0, CString (title).getPlatformString (), true);
 		setViewSize (fitSize);
 		setMouseableArea (fitSize);
 		return true;
@@ -545,19 +543,19 @@ void CCheckBox::draw (CDrawContext* context)
 		{
 			if (norm == 0.5f)
 			{
-				context->drawLine (std::make_pair (CPoint (checkBoxSize.left + cbInset, checkBoxSize.top + checkBoxSize.getHeight () / 2.), CPoint (checkBoxSize.right - cbInset, checkBoxSize.top + checkBoxSize.getHeight () / 2)));
+				context->drawLine (CPoint (checkBoxSize.left + cbInset, checkBoxSize.top + checkBoxSize.getHeight () / 2.), CPoint (checkBoxSize.right - cbInset, checkBoxSize.top + checkBoxSize.getHeight () / 2));
 			}
 			else if (norm > 0.5f)
 			{
-				context->drawLine (std::make_pair (CPoint (checkBoxSize.left + cbInset, checkBoxSize.top + cbInset), CPoint (checkBoxSize.right - cbInset, checkBoxSize.bottom - cbInset)));
-				context->drawLine (std::make_pair (CPoint (checkBoxSize.left + cbInset, checkBoxSize.bottom - cbInset), CPoint (checkBoxSize.right - cbInset, checkBoxSize.top + cbInset)));
+				context->drawLine (CPoint (checkBoxSize.left + cbInset, checkBoxSize.top + cbInset), CPoint (checkBoxSize.right - cbInset, checkBoxSize.bottom - cbInset));
+				context->drawLine (CPoint (checkBoxSize.left + cbInset, checkBoxSize.bottom - cbInset), CPoint (checkBoxSize.right - cbInset, checkBoxSize.top + cbInset));
 			}
 		}
 		else
 		{
 			if (norm == 0.5f)
 			{
-				context->drawLine (std::make_pair (CPoint (checkBoxSize.left + cbInset, checkBoxSize.top + checkBoxSize.getHeight () / 2.), CPoint (checkBoxSize.right - cbInset, checkBoxSize.top + checkBoxSize.getHeight () / 2)));
+				context->drawLine (CPoint (checkBoxSize.left + cbInset, checkBoxSize.top + checkBoxSize.getHeight () / 2.), CPoint (checkBoxSize.right - cbInset, checkBoxSize.top + checkBoxSize.getHeight () / 2));
 			}
 			else if (norm > 0.5f)
 			{
@@ -571,14 +569,14 @@ void CCheckBox::draw (CDrawContext* context)
 				}
 				else
 				{
-					context->drawLine (std::make_pair (CPoint (checkBoxSize.left + cbInset, checkBoxSize.top + checkBoxSize.getHeight () / 2.), CPoint (checkBoxSize.left + checkBoxSize.getWidth () / 2, checkBoxSize.bottom - cbInset)));
-					context->drawLine (std::make_pair (CPoint (checkBoxSize.left + checkBoxSize.getWidth () / 2., checkBoxSize.bottom - cbInset), CPoint (checkBoxSize.right + 1, checkBoxSize.top - 1)));
+					context->drawLine (CPoint (checkBoxSize.left + cbInset, checkBoxSize.top + checkBoxSize.getHeight () / 2.), CPoint (checkBoxSize.left + checkBoxSize.getWidth () / 2, checkBoxSize.bottom - cbInset));
+					context->drawLine (CPoint (checkBoxSize.left + checkBoxSize.getWidth () / 2., checkBoxSize.bottom - cbInset), CPoint (checkBoxSize.right + 1, checkBoxSize.top - 1));
 				}
 			}
 		}
 	}
 	
-	if (title)
+	if (title.empty() == false)
 	{
 		CPoint p (checkBoxSize.getBottomRight ());
 		p.offset (kCheckBoxTitleMargin, -1.);
@@ -587,7 +585,7 @@ void CCheckBox::draw (CDrawContext* context)
 		context->setFontColor (fontColor);
 		context->setDrawMode (kAntiAliasing);
 		
-		context->drawString (title, p, true);
+		context->drawString (title.getPlatformString (), p, true);
 	}
 	
 	setDirty (false);
@@ -636,7 +634,7 @@ CMouseEventResult CCheckBox::onMouseMoved (CPoint& where, const CButtonState& bu
 	if (isEditing ())
 	{
 		bool wasHilighted = hilight;
-		if (where.isInside (getViewSize ()))
+		if (getViewSize ().pointInside (where))
 			hilight = true;
 		else
 			hilight = false;
@@ -662,7 +660,7 @@ CMouseEventResult CCheckBox::onMouseCancel ()
 CMouseEventResult CCheckBox::onMouseUp (CPoint& where, const CButtonState& buttons)
 {
 	hilight = false;
-	if (where.isInside (getViewSize ()))
+	if (getViewSize ().pointInside (where))
 		value = (previousValue < getMax ()) ? getMax () : getMin ();
 	else
 		value = previousValue;
@@ -876,7 +874,7 @@ bool CTextButton::sizeToFit ()
 	{
 		CRect fitSize (getViewSize ());
 		fitSize.right = fitSize.left + (roundRadius + 1.) * 4.;
-		fitSize.right += painter->getStringWidth (0, title.c_str (), true);
+		fitSize.right += painter->getStringWidth (0, title.getPlatformString (), true);
 		setViewSize (fitSize);
 		setMouseableArea (fitSize);
 		return true;

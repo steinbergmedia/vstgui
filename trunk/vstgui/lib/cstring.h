@@ -36,12 +36,11 @@
 #define __cstring__
 
 #include "vstguibase.h"
+#include "platform/iplatformstring.h"
 #include <string>
 #include <sstream>
 
 namespace VSTGUI {
-
-class IPlatformString;
 
 //-----------------------------------------------------------------------------
 /** @brief a string holder class
@@ -65,6 +64,38 @@ public:
 protected:
 	UTF8StringPtr utf8String;
 	IPlatformString* platformString;
+};
+
+/**
+ *  @brief holds an UTF8 encoded string and a platform representation of it
+ *
+ *	You should currently don't use this, it's used internally.
+ *
+ */
+//-----------------------------------------------------------------------------
+class UTF8String
+{
+public:
+	UTF8String (UTF8StringPtr str = 0);
+
+	void set (UTF8StringPtr str);
+	UTF8StringPtr get () const { return string.c_str (); }
+	size_t getByteCount () const { return string.length (); }
+	bool empty () const { return string.empty (); }
+
+	bool operator== (UTF8StringPtr str) const { return string == str; }
+	bool operator!= (UTF8StringPtr str) const { return string != str; }
+	bool operator== (const std::string& str) const { return string == str; }
+	bool operator!= (const std::string& str) const { return string != str; }
+
+	void operator= (UTF8StringPtr str) { set (str); }
+	operator UTF8StringPtr () const { return get (); }
+
+	IPlatformString* getPlatformString () const;
+//-----------------------------------------------------------------------------
+private:
+	std::string string;
+	mutable SharedPointer<IPlatformString> platformString;
 };
 
 //-----------------------------------------------------------------------------

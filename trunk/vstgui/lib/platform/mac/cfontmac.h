@@ -69,8 +69,8 @@ public:
 protected:
 	~CoreTextFont ();
 
-	void drawString (CDrawContext* context, const CString& string, const CPoint& p, bool antialias = true) VSTGUI_OVERRIDE_VMETHOD;
-	CCoord getStringWidth (CDrawContext* context, const CString& string, bool antialias = true) VSTGUI_OVERRIDE_VMETHOD;
+	void drawString (CDrawContext* context, IPlatformString* string, const CPoint& p, bool antialias = true) VSTGUI_OVERRIDE_VMETHOD;
+	CCoord getStringWidth (CDrawContext* context, IPlatformString* string, bool antialias = true) VSTGUI_OVERRIDE_VMETHOD;
 	CFDictionaryRef getStringAttributes (const CGColorRef color = 0);
 
 	CTLineRef createCTLine (CDrawContext* context, MacString* macString);

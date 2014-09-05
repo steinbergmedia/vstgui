@@ -33,7 +33,6 @@
 //-----------------------------------------------------------------------------
 
 #include "cstring.h"
-#include "platform/iplatformstring.h"
 
 namespace VSTGUI {
 
@@ -57,6 +56,31 @@ void CString::setUTF8String (UTF8StringPtr string)
 	utf8String = string;
 	if (platformString)
 		platformString->setUTF8String (string);
+}
+
+//-----------------------------------------------------------------------------
+UTF8String::UTF8String (UTF8StringPtr str)
+{
+	if (str)
+		string = str;
+}
+
+//-----------------------------------------------------------------------------
+void UTF8String::set (UTF8StringPtr str)
+{
+	if (str == 0 || string != str)
+	{
+		platformString = 0;
+		string = str ? str : "";
+	}
+}
+
+//-----------------------------------------------------------------------------
+IPlatformString* UTF8String::getPlatformString () const
+{
+	if (platformString == 0)
+		platformString = owned (IPlatformString::createWithUTF8String (get ()));
+	return platformString;
 }
 
 namespace String {

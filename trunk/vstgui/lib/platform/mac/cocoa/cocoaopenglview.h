@@ -70,6 +70,7 @@ public:
 	virtual void swapBuffers () VSTGUI_OVERRIDE_VMETHOD;
 	
 	void doDraw (const CRect& r);
+	void reshape ();
 protected:
 	static void initClass ();
 

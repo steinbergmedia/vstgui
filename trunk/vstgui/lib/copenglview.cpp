@@ -134,6 +134,18 @@ void COpenGLView::parentSizeChanged ()
 }
 
 //-----------------------------------------------------------------------------
+void COpenGLView::reshape ()
+{
+	if (platformOpenGLView)
+	{
+		platformOpenGLView->lockContext ();
+		platformOpenGLView->makeContextCurrent ();
+		platformOpenGLViewSizeChanged ();
+		platformOpenGLView->unlockContext ();
+	}
+}
+
+//-----------------------------------------------------------------------------
 bool COpenGLView::attached (CView* parent)
 {
 	if (CView::attached (parent))

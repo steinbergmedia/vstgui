@@ -49,6 +49,9 @@
 // Platform definitions
 //-----------------------------------------------------------------------------
 #if __APPLE_CC__
+	#ifndef __ASSERT_MACROS_DEFINE_VERSIONS_WITHOUT_UNDERSCORES
+		#define __ASSERT_MACROS_DEFINE_VERSIONS_WITHOUT_UNDERSCORES 0
+	#endif
 	#include <stdint.h>
 	#include <AvailabilityMacros.h>
 	#include <TargetConditionals.h>
@@ -109,6 +112,16 @@
 		#define noexcept
 	#endif
 
+	#ifdef __clang__
+		#if defined (VSTGUI_WARN_EVERYTHING) && VSTGUI_WARN_EVERYTHING
+			#pragma clang diagnostic warning "-Weverything"
+			#pragma clang diagnostic ignored "-Wreorder"
+		#else
+			#pragma clang diagnostic warning "-Wunreachable-code"
+			#pragma clang diagnostic warning "-Wconversion"
+		#endif
+	#endif
+
 #elif WIN32 || WINDOWS || defined(_WIN32)
 	#define NOMINMAX
 	#include <sdkddkver.h>
@@ -148,6 +161,8 @@
 	#pragma warning(3 : 4702) // unreachable code
 	#pragma warning(3 : 4995) // deprecated
 	#pragma warning(3 : 4431) // missing type specifier - int assumed. Note: C no longer supports default-int
+	#pragma warning(3 : 4254) // conversion from 'type1' to 'type2', possible loss of data
+	#pragma warning(3 : 4388) // signed/unsigned mismatch
 	#include <algorithm>
 	using std::min;
 	using std::max;
@@ -194,21 +209,6 @@
 #define VSTGUI_RANGE_BASED_FOR_LOOP_END }
 
 //----------------------------------------------------
-// Feature setting
-//----------------------------------------------------
-#ifndef VSTGUI_OPENGL_SUPPORT
-	#define VSTGUI_OPENGL_SUPPORT 1
-#endif
-
-#ifndef VSTGUI_TOUCH_EVENT_HANDLING
-	#define VSTGUI_TOUCH_EVENT_HANDLING 0
-#endif
-
-#ifndef VSTGUI_ENABLE_OLD_CLASS_TYPE_INFO
-	#define VSTGUI_ENABLE_OLD_CLASS_TYPE_INFO 1
-#endif
-
-//----------------------------------------------------
 // Deprecation setting
 //----------------------------------------------------
 #ifndef VSTGUI_ENABLE_DEPRECATED_METHODS
@@ -229,6 +229,21 @@
 	#define VSTGUI_DEPRECATED_FUNCTIONAL(x)	VSTGUI_DEPRECATED(x)
 #else
 	#define VSTGUI_DEPRECATED_FUNCTIONAL(x)	x
+#endif
+
+//----------------------------------------------------
+// Feature setting
+//----------------------------------------------------
+#ifndef VSTGUI_OPENGL_SUPPORT
+	#define VSTGUI_OPENGL_SUPPORT 1
+#endif
+
+#ifndef VSTGUI_TOUCH_EVENT_HANDLING
+	#define VSTGUI_TOUCH_EVENT_HANDLING 0
+#endif
+
+#ifndef VSTGUI_ENABLE_OLD_CLASS_TYPE_INFO
+	#define VSTGUI_ENABLE_OLD_CLASS_TYPE_INFO VSTGUI_ENABLE_DEPRECATED_METHODS
 #endif
 
 //----------------------------------------------------

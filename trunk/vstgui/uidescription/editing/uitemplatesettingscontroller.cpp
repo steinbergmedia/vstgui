@@ -189,7 +189,7 @@ void UITemplateSettingsController::valueChanged (CControl* control)
 			CTextEdit* edit = dynamic_cast<CTextEdit*>(control);
 			if (edit)
 			{
-				if (edit->getText ())
+				if (!edit->getText ().empty ())
 					newTemplateName = edit->getText ();
 				else
 					edit->setText (newTemplateName.c_str ());

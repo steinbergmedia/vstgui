@@ -39,8 +39,12 @@
 #include "../lib/cbitmap.h"
 #include <algorithm>
 #include <string>
+#include <limits>
 
 namespace VSTGUI {
+
+static const uint32_t kStreamIOError = std::numeric_limits<uint32_t>::max ();
+static const int64_t kStreamSeekError = -1;
 
 /**
 	ByteOrder aware output stream interface
@@ -65,7 +69,7 @@ public:
 
 	virtual bool operator<< (const std::string& str) = 0;
 
-	virtual int32_t writeRaw (const void* buffer, int32_t size) = 0;
+	virtual uint32_t writeRaw (const void* buffer, uint32_t size) = 0;
 private:
 	ByteOrder byteOrder;
 };
@@ -93,7 +97,7 @@ public:
 
 	virtual bool operator>> (std::string& string) = 0;
 
-	virtual int32_t readRaw (void* buffer, int32_t size) = 0;
+	virtual uint32_t readRaw (void* buffer, uint32_t size) = 0;
 private:
 	ByteOrder byteOrder;
 };
@@ -121,15 +125,15 @@ public:
 class CMemoryStream : public OutputStream, public InputStream, public SeekableStream, public CBaseObject
 {
 public:
-	CMemoryStream (int32_t initialSize = 1024, int32_t delta = 1024, bool binaryMode = true, ByteOrder byteOrder = kNativeByteOrder);
-	CMemoryStream (const int8_t* buffer, int32_t bufferSize, bool binaryMode = true, ByteOrder byteOrder = kNativeByteOrder);
+	CMemoryStream (uint32_t initialSize = 1024, uint32_t delta = 1024, bool binaryMode = true, ByteOrder byteOrder = kNativeByteOrder);
+	CMemoryStream (const int8_t* buffer, uint32_t bufferSize, bool binaryMode = true, ByteOrder byteOrder = kNativeByteOrder);
 	~CMemoryStream ();
 
-	int32_t writeRaw (const void* buffer, int32_t size) VSTGUI_OVERRIDE_VMETHOD;
-	int32_t readRaw (void* buffer, int32_t size) VSTGUI_OVERRIDE_VMETHOD;
+	uint32_t writeRaw (const void* buffer, uint32_t size) VSTGUI_OVERRIDE_VMETHOD;
+	uint32_t readRaw (void* buffer, uint32_t size) VSTGUI_OVERRIDE_VMETHOD;
 
 	int64_t seek (int64_t pos, SeekMode mode) VSTGUI_OVERRIDE_VMETHOD;
-	int64_t tell () const VSTGUI_OVERRIDE_VMETHOD { return pos; }
+	int64_t tell () const VSTGUI_OVERRIDE_VMETHOD { return static_cast<int64_t> (pos); }
 	void rewind () VSTGUI_OVERRIDE_VMETHOD { pos = 0; }
 
 	const int8_t* getBuffer () const { return buffer; }
@@ -139,14 +143,14 @@ public:
 	
 	bool end (); // write a zero byte if binaryMode is false
 protected:
-	bool resize (int32_t newSize);
+	bool resize (uint32_t newSize);
 
 	bool binaryMode;
 	bool ownsBuffer;
 	int8_t* buffer;
-	int32_t size;
-	int32_t pos;
-	int32_t delta;
+	uint32_t size;
+	uint32_t pos;
+	uint32_t delta;
 };
 
 /**
@@ -167,8 +171,8 @@ public:
 
 	bool open (UTF8StringPtr path, int32_t mode, ByteOrder byteOrder = kNativeByteOrder);
 
-	int32_t writeRaw (const void* buffer, int32_t size) VSTGUI_OVERRIDE_VMETHOD;
-	int32_t readRaw (void* buffer, int32_t size) VSTGUI_OVERRIDE_VMETHOD;
+	uint32_t writeRaw (const void* buffer, uint32_t size) VSTGUI_OVERRIDE_VMETHOD;
+	uint32_t readRaw (void* buffer, uint32_t size) VSTGUI_OVERRIDE_VMETHOD;
 
 	int64_t seek (int64_t pos, SeekMode mode) VSTGUI_OVERRIDE_VMETHOD;
 	int64_t tell () const VSTGUI_OVERRIDE_VMETHOD;
@@ -204,7 +208,7 @@ public:
 	bool open (const CResourceDescription& res);
 
 	virtual bool operator>> (std::string& string) VSTGUI_OVERRIDE_VMETHOD { return false; }
-	virtual int32_t readRaw (void* buffer, int32_t size) VSTGUI_OVERRIDE_VMETHOD;
+	virtual uint32_t readRaw (void* buffer, uint32_t size) VSTGUI_OVERRIDE_VMETHOD;
 	virtual int64_t seek (int64_t pos, SeekMode mode) VSTGUI_OVERRIDE_VMETHOD;
 	virtual int64_t tell () const VSTGUI_OVERRIDE_VMETHOD;
 	virtual void rewind () VSTGUI_OVERRIDE_VMETHOD;

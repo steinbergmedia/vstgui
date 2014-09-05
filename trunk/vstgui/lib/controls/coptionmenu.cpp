@@ -675,7 +675,7 @@ CMenuItem* COptionMenu::getEntry (int32_t index) const
 	if (index < 0 || menuItems->empty () || index > getNbEntries ())
 		return 0;
 	
-	return (*menuItems)[index];
+	return (*menuItems)[(size_t)index];
 }
 
 //-----------------------------------------------------------------------------
@@ -805,7 +805,8 @@ void COptionMenu::draw (CDrawContext *pContext)
 {
 	CMenuItem* item = getEntry (currentIndex);
 	drawBack (pContext, inPopup ? bgWhenClick : 0);
-	drawText (pContext, item ? item->getTitle () : 0);
+	if (item)
+		drawPlatformText (pContext, CString (item->getTitle ()).getPlatformString ());
 	setDirty (false);
 }
 

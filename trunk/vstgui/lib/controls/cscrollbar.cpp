@@ -130,7 +130,7 @@ void CScrollbar::doStepping ()
 	CRect scrollerRect = getScrollerRect ();
 	if (timer)
 	{
-		if (!startPoint.isInside (getViewSize ()) || startPoint.isInside (scrollerRect))
+		if (!getViewSize ().pointInside (startPoint) || scrollerRect.pointInside (startPoint))
 			return;
 	}
 	bool dir = (direction == kHorizontal && startPoint.x < scrollerRect.left) || (direction == kVertical && startPoint.y < scrollerRect.top);
@@ -218,13 +218,13 @@ CMouseEventResult CScrollbar::onMouseDown (CPoint &where, const CButtonState& bu
 
 	startPoint = where;
 	scrollerRect = getScrollerRect ();
-	scrolling = where.isInside (scrollerRect);
+	scrolling = scrollerRect.pointInside (where);
 	if (scrolling)
 	{
 		scrollerRect = getScrollerRect ();
 		return kMouseEventHandled;
 	}
-	else if (where.isInside (scrollerArea))
+	else if (scrollerArea.pointInside (where))
 	{
 		doStepping ();
 		timer = new CVSTGUITimer (this, 250);
@@ -278,7 +278,7 @@ CMouseEventResult CScrollbar::onMouseMoved (CPoint &where, const CButtonState& b
 			CPoint old (startPoint);
 			startPoint = where;
 			CRect scollerRect = getScrollerRect ();
-			if (where.isInside (getViewSize ()) && old.isInside (scollerRect) && !startPoint.isInside (scrollerRect))
+			if (getViewSize ().pointInside (where) && scollerRect.pointInside (old) && !scrollerRect.pointInside (startPoint))
 				doStepping ();
 		}
 		return kMouseEventHandled;

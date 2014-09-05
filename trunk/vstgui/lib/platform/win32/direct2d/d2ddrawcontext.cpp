@@ -76,11 +76,11 @@ D2DDrawContext::D2DApplyClip::D2DApplyClip (D2DDrawContext* drawContext, bool ha
 	{
 		CGraphicsTransform transform = drawContext->getCurrentTransform ();
 		if (halfPointOffset)
-			transform.translate (0.5, -0.5);
+			transform.translate (0.5, 0.5);
 		drawContext->getRenderTarget ()->SetTransform (convert (transform));
 	}
 	else if (halfPointOffset)
-		drawContext->getRenderTarget ()->SetTransform (D2D1::Matrix3x2F::Translation (0.5f, -0.5f));
+		drawContext->getRenderTarget ()->SetTransform (D2D1::Matrix3x2F::Translation (0.5f, 0.5f));
 }
 
 //-----------------------------------------------------------------------------
@@ -489,8 +489,8 @@ void D2DDrawContext::drawRect (const CRect &_rect, const CDrawStyle drawStyle)
 		if (drawStyle == kDrawStroked || drawStyle == kDrawFilledAndStroked)
 		{
 			D2DApplyClip clip (this, halfPointOffset);
-			rect.top += 1.;
 			rect.right -= 1.;
+			rect.bottom -= 1.;
 			renderTarget->DrawRectangle (makeD2DRect (rect), strokeBrush, (FLOAT)currentState.frameWidth, strokeStyle);
 		}
 	}
@@ -544,7 +544,7 @@ void D2DDrawContext::drawPoint (const CPoint &point, const CColor& color)
 	setFrameColor (color);
 	CPoint point2 (point);
 	point2.x++;
-	drawLine (std::make_pair (point, point2));
+	COffscreenContext::drawLine (point, point2);
 	restoreGlobalState ();
 }
 

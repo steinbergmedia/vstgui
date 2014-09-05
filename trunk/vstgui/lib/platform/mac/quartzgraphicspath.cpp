@@ -277,7 +277,17 @@ void QuartzGraphicsPath::pixelAlign (CDrawContext* context, CGraphicsTransform* 
 		void applyContextTransform (CGPoint& p)
 		{
 			if (contextTransform)
+			{
+			#if CGFLOAT_IS_DOUBLE
 				contextTransform->transform (p.x, p.y);
+			#else
+				CCoord x = p.x;
+				CCoord y = p.y;
+				contextTransform->transform (x, y);
+				p.x = x;
+				p.y = y;
+			#endif
+			}
 		}
 		void apply (const CGPathElement* element)
 		{
@@ -375,7 +385,7 @@ void QuartzGradient::addColorStop (std::pair<double, CColor> colorStop)
 void QuartzGradient::createCGGradient () const
 {
 	CGFloat* locations = new CGFloat [colorStops.size ()];
-	CFMutableArrayRef colors = CFArrayCreateMutable (kCFAllocatorDefault, colorStops.size (), &kCFTypeArrayCallBacks);
+	CFMutableArrayRef colors = CFArrayCreateMutable (kCFAllocatorDefault, static_cast<CFIndex> (colorStops.size ()), &kCFTypeArrayCallBacks);
 
 	uint32_t index = 0;
 	for (ColorStopMap::const_iterator it = colorStops.begin (); it != colorStops.end (); ++it, ++index)

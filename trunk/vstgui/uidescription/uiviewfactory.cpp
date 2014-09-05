@@ -231,7 +231,7 @@ bool UIViewFactory::applyCustomViewAttributeValues (CView* customView, IdStringP
 IdStringPtr UIViewFactory::getViewName (CView* view) const
 {
 	IdStringPtr viewName = 0;
-	int32_t size = sizeof (IdStringPtr);
+	uint32_t size = sizeof (IdStringPtr);
 	view->getAttribute (kViewNameAttribute, size, &viewName, size);
 	return viewName;
 }
@@ -402,7 +402,7 @@ size_t UIViewFactory::createHash (const std::string& str)
 	size_t hash = 5381;
 	for (std::size_t i = 0; i < str.length (); i++)
 	{
-		hash = ((hash << 5) + hash) + str[i];
+		hash = ((hash << 5) + hash) + static_cast<size_t> (str[i]);
 	}
 	return hash;
 #endif
@@ -412,7 +412,7 @@ size_t UIViewFactory::createHash (const std::string& str)
 void UIViewFactory::rememberAttribute (CView* view, IdStringPtr attrName, const std::string& value)
 {
 	size_t hash = createHash (attrName);
-	view->setAttribute (hash, (int32_t)value.size () + 1, value.c_str ());
+	view->setAttribute (hash, static_cast<uint32_t> (value.size () + 1), value.c_str ());
 }
 
 //-----------------------------------------------------------------------------
@@ -420,7 +420,7 @@ bool UIViewFactory::getRememberedAttribute (CView* view, IdStringPtr attrName, s
 {
 	bool result = false;
 	size_t hash = createHash (attrName);
-	int32_t attrSize = 0;
+	uint32_t attrSize = 0;
 	if (view->getAttributeSize (hash, attrSize))
 	{
 		char* temp = new char[attrSize];

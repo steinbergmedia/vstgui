@@ -115,22 +115,22 @@ void UIColorSlider::updateBackground (CDrawContext* context)
 				{
 					case kRed:
 					{
-						c.red = (int8_t)i;
+						c.red = (uint8_t)i;
 						break;
 					}
 					case kGreen:
 					{
-						c.green = (int8_t)i;
+						c.green = (uint8_t)i;
 						break;
 					}
 					case kBlue:
 					{
-						c.blue = (int8_t)i;
+						c.blue = (uint8_t)i;
 						break;
 					}
 					case kAlpha:
 					{
-						c.alpha = (int8_t)i;
+						c.alpha = (uint8_t)i;
 						break;
 					}
 					case kHue:
@@ -156,12 +156,12 @@ void UIColorSlider::updateBackground (CDrawContext* context)
 				CCoord next = r.left + widthPerColor;
 				while (r.left < next)
 				{
-					offscreen->drawLine (std::make_pair (r.getTopLeft (), r.getBottomLeft ()));
+					offscreen->drawLine (r.getTopLeft (), r.getBottomLeft ());
 					r.offset (minWidth, 0);
 				}
 			}
 		}
-		offscreen->drawLine (std::make_pair (r.getTopLeft (), r.getBottomLeft ()));
+		offscreen->drawLine (r.getTopLeft (), r.getBottomLeft ());
 		offscreen->endDraw ();
 		setBackground (offscreen->getBitmap ());
 	}

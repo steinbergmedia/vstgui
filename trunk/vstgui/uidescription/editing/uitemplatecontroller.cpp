@@ -105,10 +105,10 @@ public:
 		}
 		return GenericStringListDataBrowserSource::dbOnKeyDown (key, browser);
 	}
-	virtual UTF8StringPtr getHeaderTitle () const = 0;
+	virtual const UTF8String& getHeaderTitle () const { return headerTitle; }
 	void dbDrawHeader (CDrawContext* context, const CRect& size, int32_t column, int32_t flags, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD
 	{
-		context->setDrawMode (kAliasing|kNonIntegralMode);
+		context->setDrawMode (kAliasing);
 		context->setLineWidth (1);
 		if (headerBackgroundColor == kTransparentCColor)
 		{
@@ -121,8 +121,8 @@ public:
 		context->setFillColor (headerBackgroundColor);
 		context->drawRect (size, kDrawFilled);
 		context->setFrameColor (rowlineColor);
-		context->drawLine (std::make_pair (CPoint (size.left, size.bottom), CPoint (size.right, size.bottom)));
-		if (getHeaderTitle ())
+		context->drawLine (CPoint (size.left, size.bottom-1), CPoint (size.right, size.bottom-1));
+		if (!getHeaderTitle ().empty ())
 		{
 			if (headerFont == 0)
 			{
@@ -132,10 +132,11 @@ public:
 			}
 			context->setFont (headerFont);
 			context->setFontColor (fontColor);
-			context->drawString (getHeaderTitle (), size, kCenterText);
+			context->drawString (getHeaderTitle ().getPlatformString (), size, kCenterText);
 		}
 	}
 protected:
+	mutable UTF8String headerTitle;
 	CColor headerBackgroundColor;
 	OwningPointer<CFontDesc> headerFont;
 };
@@ -151,7 +152,6 @@ public:
 	void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* textEditControl, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
 	void dbAttached (CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
 protected:
-	UTF8StringPtr getHeaderTitle () const VSTGUI_OVERRIDE_VMETHOD { return "Templates"; }
 	SharedPointer<UIDescription> description;
 	IActionPerformer* actionPerformer;
 	std::string firstSelectedTemplateName;
@@ -170,16 +170,16 @@ public:
 	bool update (CViewContainer* vc);
 	void remove ();
 protected:
-	UTF8StringPtr getHeaderTitle () const VSTGUI_OVERRIDE_VMETHOD
+	const UTF8String& getHeaderTitle () const VSTGUI_OVERRIDE_VMETHOD
 	{
-		UTF8StringPtr name = 0;
+		headerTitle = "";
 		if (view)
 		{
-			name = viewFactory->getViewName (view);
-			if (name == 0 && view->getParentView ())
-				name = viewFactory->getViewName (view->getParentView ());
+			headerTitle = viewFactory->getViewName (view);
+			if (headerTitle.empty () && view->getParentView ())
+				headerTitle = viewFactory->getViewName (view->getParentView ());
 		}
-		return name;
+		return headerTitle;
 	}
 	
 	void verify ();
@@ -283,7 +283,7 @@ void UITemplateController::dbSelectionChanged (int32_t selectedRow, GenericStrin
 		if (selectedRow == CDataBrowser::kNoSelection)
 			newName = 0;
 		else
-			newName = &templateNames[selectedRow];
+			newName = &templateNames[static_cast<uint32_t> (selectedRow)];
 
 		if ((newName == 0 && selectedTemplateName != 0)
 		 || (newName != 0 && selectedTemplateName == 0)
@@ -433,7 +433,7 @@ UIViewListDataSource::~UIViewListDataSource ()
 CView* UIViewListDataSource::getSubview (int32_t index)
 {
 	if (index >= 0 && index < (int32_t)subviews.size ())
-		return subviews[index];
+		return subviews[static_cast<uint32_t> (index)];
 	return 0;
 }
 
@@ -633,6 +633,7 @@ UITemplatesDataSource::UITemplatesDataSource (IGenericStringListDataBrowserSourc
 , description (description)
 , actionPerformer (actionPerformer)
 {
+	headerTitle = "Templates";
 	if (templateName)
 		firstSelectedTemplateName = *templateName;
 }
@@ -644,7 +645,7 @@ CMouseEventResult UITemplatesDataSource::dbOnMouseDown (const CPoint& where, con
 	{
 		if (buttons.isDoubleClick ())
 		{
-			browser->beginTextEdit (CDataBrowser::Cell (row, column), getStringList ()->at (row).c_str ());
+			browser->beginTextEdit (CDataBrowser::Cell (row, column), getStringList ()->at (static_cast<uint32_t> (row)).c_str ());
 			return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 		}
 		delegate->dbSelectionChanged (row, this);
@@ -665,14 +666,14 @@ CMouseEventResult UITemplatesDataSource::dbOnMouseDown (const CPoint& where, con
 				{
 					std::list<const std::string*> tmp;
 					description->collectTemplateViewNames (tmp);
-					std::string newName (getStringList ()->at (row).c_str ());
+					std::string newName (getStringList ()->at (static_cast<uint32_t> (row)).c_str ());
 					UIEditMenuController::createUniqueTemplateName (tmp, newName);
-					actionPerformer->performDuplicateTemplate (getStringList ()->at (row).c_str (), newName.c_str ());
+					actionPerformer->performDuplicateTemplate (getStringList ()->at (static_cast<uint32_t> (row)).c_str (), newName.c_str ());
 					break;
 				}
 				case 1:
 				{
-					actionPerformer->performDeleteTemplate (getStringList ()->at (row).c_str ());
+					actionPerformer->performDeleteTemplate (getStringList ()->at (static_cast<uint32_t> (row)).c_str ());
 					break;
 				}
 			}
@@ -684,8 +685,8 @@ CMouseEventResult UITemplatesDataSource::dbOnMouseDown (const CPoint& where, con
 //----------------------------------------------------------------------------------------------------
 void UITemplatesDataSource::dbCellTextChanged (int32_t row, int32_t column, UTF8StringPtr newText, CDataBrowser* browser)
 {
-	if (getStringList ()->at (row) != newText)
-		actionPerformer->performTemplateNameChange (getStringList ()->at (row).c_str (), newText);
+	if (getStringList ()->at (static_cast<uint32_t> (row)) != newText)
+		actionPerformer->performTemplateNameChange (getStringList ()->at (static_cast<uint32_t> (row)).c_str (), newText);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -710,12 +711,12 @@ void UITemplatesDataSource::dbAttached (CDataBrowser* browser)
 		}
 		else
 		{
-			int32_t index = 0;
+			uint32_t index = 0;
 			for (StringVector::const_iterator it = getStringList ()->begin (); it != getStringList ()->end (); it++, index++)
 			{
 				if (getStringList()->at (index) == firstSelectedTemplateName)
 				{
-					browser->setSelectedRow (index, true);
+					browser->setSelectedRow (static_cast<int32_t> (index), true);
 					break;
 				}
 			}

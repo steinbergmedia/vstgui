@@ -753,13 +753,13 @@ void CScrollView::drawBackgroundRect (CDrawContext *pContext, const CRect& _upda
 	r.originize ();
 	if ((backgroundColor.alpha != 255 && getTransparency ()) || !getTransparency ())
 	{
-		pContext->setDrawMode (kAliasing|kNonIntegralMode);
+		pContext->setDrawMode (kAliasing);
 		pContext->setFillColor (backgroundColor);
-		pContext->drawRect (r, kDrawFilled);
+		pContext->drawRect (_updateRect, kDrawFilled);
 	}
 	if (!(style & kDontDrawFrame))
 	{
-		pContext->setDrawMode (kAliasing|kNonIntegralMode);
+		pContext->setDrawMode (kAliasing);
 		pContext->setFrameColor (backgroundColor);
 		pContext->setLineWidth (1);
 		pContext->drawRect (r);

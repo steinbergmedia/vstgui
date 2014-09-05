@@ -124,12 +124,12 @@ void UICrossLines::invalid ()
 //----------------------------------------------------------------------------------------------------
 void UICrossLines::drawLines (CDrawContext* pContext, const CRect& size, const CRect& selectionSize)
 {
-	pContext->drawLine (std::make_pair (CPoint (size.left, selectionSize.top+1), CPoint (size.right, selectionSize.top+1)));
-	pContext->drawLine (std::make_pair (CPoint (selectionSize.left, size.top), CPoint (selectionSize.left, size.bottom)));
+	pContext->drawLine (CPoint (size.left, selectionSize.top+1), CPoint (size.right, selectionSize.top+1));
+	pContext->drawLine (CPoint (selectionSize.left, size.top), CPoint (selectionSize.left, size.bottom));
 	if (style == kSelectionStyle)
 	{
-		pContext->drawLine (std::make_pair (CPoint (size.left, selectionSize.bottom), CPoint (size.right, selectionSize.bottom)));
-		pContext->drawLine (std::make_pair (CPoint (selectionSize.right-1, size.top), CPoint (selectionSize.right-1, size.bottom)));
+		pContext->drawLine (CPoint (size.left, selectionSize.bottom), CPoint (size.right, selectionSize.bottom));
+		pContext->drawLine (CPoint (selectionSize.right-1, size.top), CPoint (selectionSize.right-1, size.bottom));
 	}
 }
 

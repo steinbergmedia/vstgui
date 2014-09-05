@@ -36,10 +36,18 @@
 #include "cbitmap.h"
 #include "ccolor.h"
 #include "cgraphicspath.h"
+#include <cassert>
 
 namespace VSTGUI {
 
 namespace BitmapFilter {
+
+//----------------------------------------------------------------------------------------------------
+template<typename T> void Property::assign (T toAssign)
+{
+	value = std::malloc (sizeof (toAssign));
+	memcpy (value, &toAssign, sizeof (toAssign));
+}
 
 //----------------------------------------------------------------------------------------------------
 Property::Property (Type type)
@@ -52,24 +60,21 @@ Property::Property (Type type)
 Property::Property (int32_t intValue)
 : type (kInteger)
 {
-	value = std::malloc (sizeof (int32_t));
-	memcpy (value, &intValue, sizeof (int32_t));
+	assign (intValue);
 }
 
 //----------------------------------------------------------------------------------------------------
 Property::Property (double floatValue)
 : type (kFloat)
 {
-	value = std::malloc (sizeof (double));
-	memcpy (value, &floatValue, sizeof (double));
+	assign (floatValue);
 }
 
 //----------------------------------------------------------------------------------------------------
 Property::Property (CBaseObject* objectValue)
 : type (kObject)
 {
-	value = std::malloc (sizeof (CBaseObject*));
-	memcpy (value, &objectValue, sizeof (CBaseObject*));
+	assign (objectValue);
 	objectValue->remember ();
 }
 
@@ -77,32 +82,28 @@ Property::Property (CBaseObject* objectValue)
 Property::Property (const CRect& rectValue)
 : type (kRect)
 {
-	value = std::malloc (sizeof (CRect));
-	memcpy (value, &rectValue, sizeof (CRect));
+	assign (rectValue);
 }
 
 //----------------------------------------------------------------------------------------------------
 Property::Property (const CPoint& pointValue)
 : type (kPoint)
 {
-	value = std::malloc (sizeof (CPoint));
-	memcpy (value, &pointValue, sizeof (CPoint));
+	assign (pointValue);
 }
 
 //----------------------------------------------------------------------------------------------------
 Property::Property (const CColor& colorValue)
 : type (kColor)
 {
-	value = std::malloc (sizeof (CColor));
-	memcpy (value, &colorValue, sizeof (CColor));
+	assign (colorValue);
 }
 
 //----------------------------------------------------------------------------------------------------
 Property::Property (const CGraphicsTransform& transformValue)
 : type (kTransformMatrix)
 {
-	value = std::malloc (sizeof (CGraphicsTransform));
-	memcpy (value, &transformValue, sizeof (CGraphicsTransform));
+	assign (transformValue);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -186,42 +187,49 @@ Property& Property::operator=(const Property& p)
 //----------------------------------------------------------------------------------------------------
 int32_t Property::getInteger () const
 {
+	assert (type == kInteger);
 	return *static_cast<int32_t*> (value);
 }
 
 //----------------------------------------------------------------------------------------------------
 double Property::getFloat () const
 {
+	assert (type == kFloat);
 	return *static_cast<double*> (value);
 }
 
 //----------------------------------------------------------------------------------------------------
 CBaseObject* Property::getObject () const
 {
+	assert (type == kObject);
 	return *static_cast<CBaseObject**> (value);
 }
 
 //----------------------------------------------------------------------------------------------------
 const CRect& Property::getRect () const
 {
+	assert (type == kRect);
 	return *static_cast<CRect*> (value);
 }
 
 //----------------------------------------------------------------------------------------------------
 const CPoint& Property::getPoint () const
 {
+	assert (type == kPoint);
 	return *static_cast<CPoint*> (value);
 }
 
 //----------------------------------------------------------------------------------------------------
 const CColor& Property::getColor () const
 {
+	assert (type == kColor);
 	return *static_cast<CColor*> (value);
 }
 
 //----------------------------------------------------------------------------------------------------
 const CGraphicsTransform& Property::getTransform () const
 {
+	assert (type == kTransformMatrix);
 	return *static_cast<CGraphicsTransform*> (value);
 }
 
@@ -443,10 +451,10 @@ private:
 	inline void calculate (CColor* colors, uint32_t numColors)
 	{
 		uint32_t lastColor = numColors - 1;
-		int32_t red = colors[lastColor].red;
-		int32_t green = colors[lastColor].green;
-		int32_t blue = colors[lastColor].blue;
-		int32_t alpha = colors[lastColor].alpha;
+		uint32_t red = colors[lastColor].red;
+		uint32_t green = colors[lastColor].green;
+		uint32_t blue = colors[lastColor].blue;
+		uint32_t alpha = colors[lastColor].alpha;
 		for (int64_t i = (int64_t)numColors-2; i >= 0; i--)
 		{
 			red += colors[i].red;
@@ -591,10 +599,10 @@ private:
 		originalBitmap.setPosition (0, 0);
 		copyBitmap.setPosition (0, 0);
 		
-		int32_t origWidth = (int32_t)originalBitmap.getBitmapWidth ();
-		int32_t origHeight = (int32_t)originalBitmap.getBitmapHeight ();
-		int32_t newWidth = (int32_t)copyBitmap.getBitmapWidth ();
-		int32_t newHeight = (int32_t)copyBitmap.getBitmapHeight ();
+		uint32_t origWidth = (uint32_t)originalBitmap.getBitmapWidth ();
+		uint32_t origHeight = (uint32_t)originalBitmap.getBitmapHeight ();
+		uint32_t newWidth = (uint32_t)copyBitmap.getBitmapWidth ();
+		uint32_t newHeight = (uint32_t)copyBitmap.getBitmapHeight ();
 		
 		float xRatio = (float)origWidth / (float)newWidth;
 		float yRatio = (float)origHeight / (float)newHeight;
@@ -610,19 +618,20 @@ private:
 		int32_t* origPixel = 0;
 		float origY = 0;
 		float origX = 0;
-		for (int32_t y = 0; y < newHeight; y++, origY += yRatio)
+		for (uint32_t y = 0; y < newHeight; y++, origY += yRatio)
 		{
 			int32_t* copyPixel = (int32_t*)(copyAddress + y * copyBytesPerRow);
 			if (iy != (int32_t)origY)
 				iy = (int32_t)origY;
 			ix = -1;
 			origX = 0;
-			for (int32_t x = 0; x < newWidth; x++, origX += xRatio, copyPixel++)
+			for (uint32_t x = 0; x < newWidth; x++, origX += xRatio, copyPixel++)
 			{
 				if (ix != (int32_t)origX || origPixel == 0)
 				{
 					ix = (int32_t)origX;
-					origPixel = (int32_t*)(origAddress + iy * origBytesPerRow + ix * 4);
+					assert (iy >= 0);
+					origPixel = (int32_t*)(origAddress + static_cast<uint32_t> (iy) * origBytesPerRow + ix * 4);
 				}
 				*copyPixel = *origPixel;
 			}
@@ -647,10 +656,10 @@ private:
 		originalBitmap.setPosition (0, 0);
 		copyBitmap.setPosition (0, 0);
 
-		int32_t origWidth = (int32_t)originalBitmap.getBitmapWidth ();
-		int32_t origHeight = (int32_t)originalBitmap.getBitmapHeight ();
-		int32_t newWidth = (int32_t)copyBitmap.getBitmapWidth ();
-		int32_t newHeight = (int32_t)copyBitmap.getBitmapHeight ();
+		uint32_t origWidth = (uint32_t)originalBitmap.getBitmapWidth ();
+		uint32_t origHeight = (uint32_t)originalBitmap.getBitmapHeight ();
+		uint32_t newWidth = (uint32_t)copyBitmap.getBitmapWidth ();
+		uint32_t newHeight = (uint32_t)copyBitmap.getBitmapHeight ();
 
 		float xRatio = ((float)(origWidth-1)) / (float)newWidth;
 		float yRatio = ((float)(origHeight-1)) / (float)newHeight;
@@ -659,14 +668,14 @@ private:
 		CColor color[4];
 		CColor result;
 
-		for (int32_t i = 0; i < newHeight; i++)
+		for (uint32_t i = 0; i < newHeight; i++)
 		{
-			y = (int32_t)(yRatio * i);
+			y = static_cast<uint32_t> (yRatio * i);
 			yDiff = (yRatio * i) - y;
 
-			for (int32_t j = 0; j < newWidth; j++, copyBitmap++)
+			for (uint32_t j = 0; j < newWidth; j++, copyBitmap++)
 			{
-				x = (int32_t)(xRatio * j);
+				x = static_cast<uint32_t> (xRatio * j);
 				xDiff = (xRatio * j) - x;
 				originalBitmap.setPosition (x, y);
 				originalBitmap.getColor (color[0]);

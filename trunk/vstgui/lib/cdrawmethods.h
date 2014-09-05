@@ -52,17 +52,17 @@ enum IconPosition {
 /**
  *  draws an icon and a string into a rectangle
  *
- *  @param context       draw context
- *  @param iconToDraw    icon to draw
- *  @param iconPosition  position of the icon
- *  @param textAlignment alignment of the string
- *  @param textMargin    margin of the string
- *  @param drawRect      draw rectangle
- *  @param title         string
- *  @param font          font
- *  @param textColor     font color
+ *  @param context       	draw context
+ *  @param iconToDraw    	icon to draw
+ *  @param iconPosition  	position of the icon
+ *  @param textAlignment 	alignment of the string
+ *  @param textIconMargin    margin of the string
+ *  @param drawRect      	draw rectangle
+ *  @param title         	string
+ *  @param font          	font
+ *  @param textColor     	font color
  */
-void drawIconAndText (CDrawContext* context, CBitmap* iconToDraw, IconPosition iconPosition, CHoriTxtAlign textAlignment, CCoord textMargin, CRect drawRect, const std::string& title, CFontRef font, CColor textColor);
+void drawIconAndText (CDrawContext* context, CBitmap* iconToDraw, IconPosition iconPosition, CHoriTxtAlign textAlignment, CCoord textIconMargin, CRect drawRect, const UTF8String& title, CFontRef font, CColor textColor);
 	
 }} // namespaces
 

@@ -79,7 +79,7 @@ public:
 	};
 	
 	virtual uint8_t* getAddress () const = 0;
-	virtual int32_t getBytesPerRow () const = 0;
+	virtual uint32_t getBytesPerRow () const = 0;
 	virtual PixelFormat getPixelFormat () const = 0;
 };
 

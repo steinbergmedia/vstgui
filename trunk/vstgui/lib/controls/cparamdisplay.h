@@ -128,8 +128,11 @@ public:
 protected:
 	~CParamDisplay ();
 	virtual void drawBack (CDrawContext* pContext, CBitmap* newBack = 0);
-	virtual void drawText (CDrawContext* pContext, UTF8StringPtr string);
-	virtual void drawText (CDrawContext* pContext, UTF8StringPtr string, const CRect& size);
+	VSTGUI_DEPRECATED (void drawText (CDrawContext* pContext, UTF8StringPtr string);)
+	VSTGUI_DEPRECATED (void drawText (CDrawContext* pContext, UTF8StringPtr string, const CRect& size);)
+
+	virtual void drawPlatformText (CDrawContext* pContext, IPlatformString* string);
+	virtual void drawPlatformText (CDrawContext* pContext, IPlatformString* string, const CRect& size);
 
 	virtual void drawStyleChanged ();
 

@@ -250,20 +250,23 @@ CTLineRef CoreTextFont::createCTLine (CDrawContext* context, MacString* macStrin
 }
 
 //-----------------------------------------------------------------------------
-void CoreTextFont::drawString (CDrawContext* context, const CString& string, const CPoint& point, bool antialias)
+void CoreTextFont::drawString (CDrawContext* context, IPlatformString* string, const CPoint& point, bool antialias)
 {
-	MacString* macString = dynamic_cast<MacString*> (string.getPlatformString ());
+	MacString* macString = dynamic_cast<MacString*> (string);
 	if (macString == 0)
 		return;
 
 	CTLineRef line = createCTLine (context, macString);
 	if (line)
 	{
+		bool integralMode = context->getDrawMode ().integralMode ();
 		CGDrawContext* cgDrawContext = dynamic_cast<CGDrawContext*> (context);
-		CGContextRef cgContext = cgDrawContext ? cgDrawContext->beginCGContext (true, true) : 0;
+		CGContextRef cgContext = cgDrawContext ? cgDrawContext->beginCGContext (true, integralMode) : 0;
 		if (cgContext)
 		{
 			CGPoint cgPoint = CGPointMake (point.x, point.y);
+			if (integralMode)
+				cgPoint = cgDrawContext->pixelAlligned (cgPoint);
 			CGContextSetShouldAntialias (cgContext, antialias);
 			CGContextSetShouldSmoothFonts (cgContext, true);
 			CGContextSetShouldSubpixelPositionFonts (cgContext, true);
@@ -277,7 +280,7 @@ void CoreTextFont::drawString (CDrawContext* context, const CString& string, con
 				CGFloat underlineThickness = CTFontGetUnderlineThickness (fontRef);
 				CGContextSetStrokeColorWithColor (cgContext, cgColorRef);
 				CGContextSetLineWidth (cgContext, underlineThickness);
-				CGPoint cgPoint = CGContextGetTextPosition (cgContext);
+				cgPoint = CGContextGetTextPosition (cgContext);
 				CGContextBeginPath (cgContext);
 				CGContextMoveToPoint (cgContext, point.x, cgPoint.y - underlineOffset);
 				CGContextAddLineToPoint (cgContext, cgPoint.x, cgPoint.y - underlineOffset);
@@ -290,7 +293,7 @@ void CoreTextFont::drawString (CDrawContext* context, const CString& string, con
 				CGFloat offset = CTFontGetXHeight (fontRef) * 0.5;
 				CGContextSetStrokeColorWithColor (cgContext, cgColorRef);
 				CGContextSetLineWidth (cgContext, underlineThickness);
-				CGPoint cgPoint = CGContextGetTextPosition (cgContext);
+				cgPoint = CGContextGetTextPosition (cgContext);
 				CGContextBeginPath (cgContext);
 				CGContextMoveToPoint (cgContext, point.x, cgPoint.y - offset);
 				CGContextAddLineToPoint (cgContext, cgPoint.x, cgPoint.y - offset);
@@ -303,10 +306,10 @@ void CoreTextFont::drawString (CDrawContext* context, const CString& string, con
 }
 
 //-----------------------------------------------------------------------------
-CCoord CoreTextFont::getStringWidth (CDrawContext* context, const CString& string, bool antialias)
+CCoord CoreTextFont::getStringWidth (CDrawContext* context, IPlatformString* string, bool antialias)
 {
 	CCoord result = 0;
-	MacString* macString = dynamic_cast<MacString*> (string.getPlatformString ());
+	MacString* macString = dynamic_cast<MacString*> (string);
 	if (macString == 0)
 		return result;
 	

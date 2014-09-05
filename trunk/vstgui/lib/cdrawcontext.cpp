@@ -190,7 +190,8 @@ void CDrawContext::lineTo (const CPoint &point)
 //-----------------------------------------------------------------------------
 void CDrawContext::drawLines (const CPoint* points, const int32_t& numberOfLines)
 {
-	LineList list (numberOfLines);
+	assert (numberOfLines < 0);
+	LineList list (static_cast<uint32_t> (numberOfLines));
 	for (int32_t i = 0; i < numberOfLines * 2; i += 2)
 	{
 		list.push_back (std::make_pair (points[i], points[i+1]));
@@ -201,7 +202,8 @@ void CDrawContext::drawLines (const CPoint* points, const int32_t& numberOfLines
 //-----------------------------------------------------------------------------
 void CDrawContext::drawPolygon (const CPoint* pPoints, int32_t numberOfPoints, const CDrawStyle drawStyle)
 {
-	PointList list (numberOfPoints);
+	assert (numberOfPoints < 0);
+	PointList list (static_cast<uint32_t> (numberOfPoints));
 	for (int32_t i = 0; i < numberOfPoints; i++)
 	{
 		list.push_back (pPoints[i]);
@@ -311,49 +313,33 @@ void CDrawContext::clearDrawString ()
 		drawStringHelper->setUTF8String (0);
 }
 
-//-----------------------------------------------------------------------------
-CCoord CDrawContext::getStringWidth (UTF8StringPtr string)
+//------------------------------------------------------------------------
+CCoord CDrawContext::getStringWidth (IPlatformString* string)
 {
 	CCoord result = -1;
 	if (currentState.font == 0 || string == 0)
 		return result;
-
+	
 	IFontPainter* painter = currentState.font->getFontPainter ();
 	if (painter)
 	{
-		result = painter->getStringWidth (this, getDrawString (string), true);
-		clearDrawString ();
+		result = painter->getStringWidth (this, string, true);
 	}
-
+	
 	return result;
 }
 
-//-----------------------------------------------------------------------------
-void CDrawContext::drawString (UTF8StringPtr string, const CPoint& point, bool antialias)
+//------------------------------------------------------------------------
+void CDrawContext::drawString (IPlatformString* string, const CRect& _rect, const CHoriTxtAlign hAlign, bool antialias)
 {
-	if (string == 0 || currentState.font == 0)
-		return;
-
-	IFontPainter* painter = currentState.font->getFontPainter ();
-	if (painter)
-	{
-		painter->drawString (this, getDrawString (string), point, antialias);
-		clearDrawString ();
-	}
-}
-
-//-----------------------------------------------------------------------------
-void CDrawContext::drawString (UTF8StringPtr _string, const CRect& _rect, const CHoriTxtAlign hAlign, bool antialias)
-{
-	if (!_string || currentState.font == 0)
+	if (!string || currentState.font == 0)
 		return;
 	IFontPainter* painter = currentState.font->getFontPainter ();
 	if (painter == 0)
 		return;
 	
-	const CString& string = getDrawString (_string);
 	CRect rect (_rect);
-
+	
 	double capHeight = -1;
 	IPlatformFont* platformFont = currentState.font->getPlatformFont ();
 	if (platformFont)
@@ -373,7 +359,36 @@ void CDrawContext::drawString (UTF8StringPtr _string, const CRect& _rect, const 
 	}
 
 	painter->drawString (this, string, CPoint (rect.left, rect.bottom), antialias);
+}
 
+//------------------------------------------------------------------------
+void CDrawContext::drawString (IPlatformString* string, const CPoint& point, bool antialias)
+{
+	if (string == 0 || currentState.font == 0)
+		return;
+	
+	IFontPainter* painter = currentState.font->getFontPainter ();
+	if (painter)
+		painter->drawString (this, string, point, antialias);
+}
+
+//-----------------------------------------------------------------------------
+CCoord CDrawContext::getStringWidth (UTF8StringPtr string)
+{
+	return getStringWidth (getDrawString (string).getPlatformString ());
+}
+
+//-----------------------------------------------------------------------------
+void CDrawContext::drawString (UTF8StringPtr string, const CPoint& point, bool antialias)
+{
+	drawString (getDrawString (string).getPlatformString (), point, antialias);
+	clearDrawString ();
+}
+
+//-----------------------------------------------------------------------------
+void CDrawContext::drawString (UTF8StringPtr string, const CRect& rect, const CHoriTxtAlign hAlign, bool antialias)
+{
+	drawString (getDrawString (string).getPlatformString (), rect, hAlign, antialias);
 	clearDrawString ();
 }
 

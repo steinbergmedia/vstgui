@@ -33,7 +33,6 @@
 //-----------------------------------------------------------------------------
 
 #include "ctextlabel.h"
-#include "../cstring.h"
 
 namespace VSTGUI {
 
@@ -73,23 +72,14 @@ CTextLabel::CTextLabel (const CTextLabel& v)
 //------------------------------------------------------------------------
 CTextLabel::~CTextLabel ()
 {
-	freeText ();
-}
-
-//------------------------------------------------------------------------
-void CTextLabel::freeText ()
-{
-	String::free (text);
-	text = 0;
 }
 
 //------------------------------------------------------------------------
 void CTextLabel::setText (UTF8StringPtr txt)
 {
-	if (txt && text && UTF8StringView (txt) == text)
+	if (txt && UTF8StringView (txt) == text)
 		return;
-	freeText ();
-	text = String::newWithString (txt ? txt : "");
+	text = txt;
 	if (textTruncateMode != kTruncateNone)
 		calculateTruncatedText ();
 	setDirty (true);
@@ -108,24 +98,24 @@ void CTextLabel::setTextTruncateMode (TextTruncateMode mode)
 //------------------------------------------------------------------------
 void CTextLabel::calculateTruncatedText ()
 {
-	std::string tmp (truncatedText);
-	truncatedText.clear ();
+	truncatedText = "";
 	if (textRotation != 0.) // currently truncation is only supported when not rotated
 		return;
-	if (!(textTruncateMode == kTruncateNone || text == 0 || text[0] == 0 || fontID == 0 || fontID->getPlatformFont () == 0 || fontID->getPlatformFont ()->getPainter () == 0))
+	std::string _truncatedText;
+	if (!(textTruncateMode == kTruncateNone || text.getByteCount () == 0 || fontID == 0 || fontID->getPlatformFont () == 0 || fontID->getPlatformFont ()->getPainter () == 0))
 	{
 		IFontPainter* painter = fontID->getPlatformFont ()->getPainter ();
-		CCoord width = painter->getStringWidth (0, text, true);
+		CCoord width = painter->getStringWidth (0, text.getPlatformString (), true);
 		width += textInset.x * 2;
 		if (width > getWidth ())
 		{
 			if (textTruncateMode == kTruncateTail)
 			{
-				truncatedText = text;
-				truncatedText += "..";
-				while (width > getWidth () && truncatedText.size () > 2)
+				_truncatedText = text;
+				_truncatedText += "..";
+				while (width > getWidth () && _truncatedText.size () > 2)
 				{
-					UTF8CharacterIterator it (truncatedText);
+					UTF8CharacterIterator it (_truncatedText);
 					it.end ();
 					for (int32_t i = 0; i < 3; i++, --it)
 					{
@@ -134,18 +124,18 @@ void CTextLabel::calculateTruncatedText ()
 							break;
 						}
 					}
-					truncatedText.erase (truncatedText.size () - (2 + it.getByteLength ()), it.getByteLength ());
-					width = painter->getStringWidth (0, truncatedText.c_str (), true);
+					_truncatedText.erase (_truncatedText.size () - (2 + it.getByteLength ()), it.getByteLength ());
+					width = painter->getStringWidth (0, CString (_truncatedText.c_str ()).getPlatformString (), true);
 					width += textInset.x * 2;
 				}
 			}
 			else if (textTruncateMode == kTruncateHead)
 			{
-				truncatedText = "..";
-				truncatedText += text;
-				while (width > getWidth () && truncatedText.size () > 2)
+				_truncatedText = "..";
+				_truncatedText += text;
+				while (width > getWidth () && _truncatedText.size () > 2)
 				{
-					UTF8CharacterIterator it (truncatedText);
+					UTF8CharacterIterator it (_truncatedText);
 					for (int32_t i = 0; i < 2; i++, ++it)
 					{
 						if (it == it.back ())
@@ -153,19 +143,22 @@ void CTextLabel::calculateTruncatedText ()
 							break;
 						}
 					}
-					truncatedText.erase (2, it.getByteLength ());
-					width = painter->getStringWidth (0, truncatedText.c_str (), true);
+					_truncatedText.erase (2, it.getByteLength ());
+					width = painter->getStringWidth (0, CString (_truncatedText.c_str ()).getPlatformString (), true);
 					width += textInset.x * 2;
 				}
 			}
 		}
 	}
-	if (tmp != truncatedText)
+	if (truncatedText != _truncatedText)
+	{
+		truncatedText = _truncatedText.c_str ();
 		changed (kMsgTruncatedTextChanged);
+	}
 }
 
 //------------------------------------------------------------------------
-UTF8StringPtr CTextLabel::getText () const
+const UTF8String& CTextLabel::getText () const
 {
 	return text;
 }
@@ -174,7 +167,7 @@ UTF8StringPtr CTextLabel::getText () const
 void CTextLabel::draw (CDrawContext *pContext)
 {
 	drawBack (pContext);
-	drawText (pContext, truncatedText.empty () ? text : truncatedText.c_str ());
+	drawPlatformText (pContext, truncatedText.empty () ? text.getPlatformString () : truncatedText.getPlatformString ());
 	setDirty (false);
 }
 
@@ -183,7 +176,7 @@ bool CTextLabel::sizeToFit ()
 {
 	if (fontID == 0 || fontID->getPlatformFont () == 0 || fontID->getPlatformFont ()->getPainter () == 0)
 		return false;
-	CCoord width = fontID->getPlatformFont ()->getPainter ()->getStringWidth (0, text, true);
+	CCoord width = fontID->getPlatformFont ()->getPainter ()->getStringWidth (0, text.getPlatformString (), true);
 	if (width > 0)
 	{
 		width += (getTextInset ().x * 2.);

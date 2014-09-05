@@ -124,8 +124,8 @@ class IFontPainter
 public:
 	virtual ~IFontPainter () {}
 
-	virtual void drawString (CDrawContext* context, const CString& string, const CPoint& p, bool antialias = true) = 0;
-	virtual CCoord getStringWidth (CDrawContext* context, const CString& string, bool antialias = true) = 0;
+	virtual void drawString (CDrawContext* context, IPlatformString* string, const CPoint& p, bool antialias = true) = 0;
+	virtual CCoord getStringWidth (CDrawContext* context, IPlatformString* string, bool antialias = true) = 0;
 };
 
 //-----------------------------------------------------------------------------

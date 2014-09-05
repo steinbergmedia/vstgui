@@ -310,7 +310,8 @@ void CFontChooser::valueChanged (CControl* pControl)
 //-----------------------------------------------------------------------------
 void CFontChooser::dbSelectionChanged (int32_t selectedRow, GenericStringListDataBrowserSource* source)
 {
-	selFont->setName (fontNames[selectedRow].c_str ());
+	if (selectedRow >= 0 && static_cast<size_t> (selectedRow) <= fontNames.size ())
+		selFont->setName (fontNames[static_cast<size_t> (selectedRow)].c_str ());
 	static_cast<CFontChooserInternal::FontPreviewView*> (fontPreviewView)->setFont (selFont);
 	if (delegate)
 		delegate->fontChanged (this, selFont);

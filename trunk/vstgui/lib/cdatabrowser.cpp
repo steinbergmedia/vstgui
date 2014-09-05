@@ -602,7 +602,7 @@ CMessageResult CDataBrowser::notify (CBaseObject* sender, IdStringPtr message)
 			// get row and column
 			int32_t row = kNoSelection;
 			int32_t col = kNoSelection;
-			int32_t outSize;
+			uint32_t outSize;
 			te->getAttribute ('row ', sizeof (int32_t), &row, outSize);
 			te->getAttribute ('col ', sizeof (int32_t), &col, outSize);
 			UTF8StringPtr newText = te->getText ();
@@ -817,19 +817,23 @@ void CDataBrowserView::draw (CDrawContext* context)
 //-----------------------------------------------------------------------------------------------
 void CDataBrowserView::drawRect (CDrawContext* context, const CRect& updateRect)
 {
+	const bool drawRowLines = (browser->getStyle () & CDataBrowser::kDrawRowLines) ? true : false;
 	CCoord lineWidth = 0;
 	CColor lineColor;
 	if (browser->getStyle () & CDataBrowser::kDrawRowLines || browser->getStyle () & CDataBrowser::kDrawColumnLines)
 	{
 		db->dbGetLineWidthAndColor (lineWidth, lineColor, browser);
 	}
+
 	CCoord rowHeight = db->dbGetRowHeight (browser);
-	if (browser->getStyle () & CDataBrowser::kDrawRowLines)
+	if (drawRowLines)
 		rowHeight += lineWidth;
 	int32_t numRows = db->dbGetNumRows (browser);
 	int32_t numColumns = db->dbGetNumColumns (browser);
 
 	const CDataBrowser::Selection& selection = browser->getSelection ();
+
+	CDrawContext::LineList lines;
 
 	CRect r (getViewSize ());
 	r.setHeight (rowHeight - lineWidth);
@@ -848,9 +852,10 @@ void CDataBrowserView::drawRect (CDrawContext* context, const CRect& updateRect)
 				testRect.bound (updateRect);
 				if (testRect.isEmpty () == false)
 				{
-					CRect cellSize (r);
-					cellSize.top--;
 					context->setClipRect (testRect);
+					CRect cellSize (r);
+					cellSize.bottom++;
+					cellSize.right++;
 					db->dbDrawCell (context, cellSize, row, col, isSelected ? IDataBrowserDelegate::kRowSelected : 0, browser);
 				}
 				r.offset (columnWidth, 0);
@@ -858,13 +863,14 @@ void CDataBrowserView::drawRect (CDrawContext* context, const CRect& updateRect)
 					r.offset (lineWidth, 0);
 			}
 		}
-		r.offset (0, rowHeight);
 		r.left = getViewSize ().left;
 		r.setWidth (getWidth ());
+		if (drawRowLines)
+			lines.push_back (std::make_pair (r.getBottomLeft (), r.getBottomRight ()));
+		r.offset (0, rowHeight);
 	}
-	if (browser->getStyle () & CDataBrowser::kDrawColumnLines || browser->getStyle () & CDataBrowser::kDrawRowLines)
+	if (browser->getStyle () & CDataBrowser::kDrawColumnLines)
 	{
-		CDrawContext::LineList lines;
 		
 		CPoint p1;
 		CPoint p2;
@@ -878,28 +884,15 @@ void CDataBrowserView::drawRect (CDrawContext* context, const CRect& updateRect)
 				lines.push_back (std::make_pair (p1, p2));
 			}
 		}
-		if (browser->getStyle () & CDataBrowser::kDrawRowLines)
-		{
-			p1 (getViewSize ().left, getViewSize ().top);
-			p2 (getViewSize ().right, getViewSize ().top);
-			for (int32_t row = 0; row < numRows - 1; row++)
-			{
-				p1.y = p2.y = p1.y + rowHeight;
-				if (p1.y >= updateRect.top && p1.y <= updateRect.bottom)
-				{
-					lines.push_back (std::make_pair (p1, p2));
-				}
-			}
-		}
-		if (lines.size ())
-		{
-			context->setClipRect (updateRect);
-			context->setDrawMode (kAliasing);
-			context->setLineWidth (lineWidth);
-			context->setFrameColor (lineColor);
-			context->setLineStyle (kLineSolid);
-			context->drawLines (lines);
-		}
+	}
+	if (lines.size ())
+	{
+		context->setClipRect (updateRect);
+		context->setDrawMode (kAntiAliasing);
+		context->setLineWidth (lineWidth);
+		context->setFrameColor (lineColor);
+		context->setLineStyle (kLineSolid);
+		context->drawLines (lines);
 	}
 	setDirty (false);
 }
@@ -1057,7 +1050,7 @@ void CDataBrowserView::onDragEnter (IDataPackage* drag, const CPoint& where)
 //-----------------------------------------------------------------------------------------------
 void CDataBrowserView::onDragLeave (IDataPackage* drag, const CPoint& where)
 {
-	int32_t size;
+	uint32_t size;
 	int32_t oldRowNum = -1;
 	int32_t oldColNum = -1;
 	getAttribute (kDataBrowserViewDragRow, sizeof (int32_t), &oldRowNum, size);
@@ -1074,7 +1067,7 @@ void CDataBrowserView::onDragLeave (IDataPackage* drag, const CPoint& where)
 //-----------------------------------------------------------------------------------------------
 void CDataBrowserView::onDragMove (IDataPackage* drag, const CPoint& where)
 {
-	int32_t size;
+	uint32_t size;
 	int32_t oldRowNum = -1;
 	int32_t oldColNum = -1;
 	getAttribute (kDataBrowserViewDragRow, sizeof (int32_t), &oldRowNum, size);
@@ -1307,7 +1300,7 @@ void GenericStringListDataBrowserSource::dbDrawCell (CDrawContext* context, cons
 	stringSize.inset (textInset.x, textInset.y);
 	context->setFont (drawFont);
 	context->setFontColor (fontColor);
-	context->drawString ((*stringList)[row].c_str (), stringSize, textAlignment);
+	context->drawString ((*stringList)[static_cast<size_t> (row)].c_str (), stringSize, textAlignment);
 }
 
 //-----------------------------------------------------------------------------
@@ -1331,13 +1324,13 @@ int32_t GenericStringListDataBrowserSource::dbOnKeyDown (const VstKeyCode& _key,
 			timer->stop ();
 			timer->start ();
 		}
-		keyDownFindString += toupper (key.character);
+		keyDownFindString += static_cast<char> (toupper (key.character));
 		StringVector::const_iterator it = stringList->begin ();
 		int32_t row = 0;
 		while (it != stringList->end ())
 		{
 			std::string str ((*it), 0, keyDownFindString.length ());
-			std::transform (str.begin(), str.end(), str.begin(), ::toupper);
+			std::transform (str.begin (), str.end (), str.begin (), ::toupper);
 			if (str == keyDownFindString)
 			{
 				dataBrowser->setSelectedRow (row, true);

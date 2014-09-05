@@ -98,6 +98,7 @@ public:
 	CLASS_METHODS_NOCOPY(Property, CBaseObject)
 //----------------------------------------------------------------------------------------------------
 private:
+	template<typename T> void assign (T value);
 	Type type;
 	void* value;
 };

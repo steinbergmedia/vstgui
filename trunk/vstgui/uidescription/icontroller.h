@@ -69,7 +69,7 @@ public:
 inline IController* getViewController (const CView* view, bool deep = false)
 {
 	IController* controller = 0;
-	int32_t size = sizeof (IController*);
+	uint32_t size = sizeof (IController*);
 	if (view->getAttribute (kCViewControllerAttribute, sizeof (IController*), &controller, size) == false && deep)
 	{
 		if (view->getParentView () && view->getParentView () != view)

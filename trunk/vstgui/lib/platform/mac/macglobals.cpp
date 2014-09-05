@@ -71,7 +71,7 @@ struct ColorHash
 {
 	size_t operator () (const CColor& c) const
 	{
-		size_t v1 = c.red | (c.green << 8) | (c.blue << 16) | (c.alpha << 24);
+		size_t v1 = static_cast<size_t> (c.red | (c.green << 8) | (c.blue << 16) | (c.alpha << 24));
 		return v1;
 	}
 };

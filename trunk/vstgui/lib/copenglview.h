@@ -65,7 +65,8 @@ public:
 	~COpenGLView ();
 
 	// IOpenGLView	
-	virtual void drawOpenGL (const CRect& updateRect) = 0;	///< will be called when the view was marked invalid or the view was resized
+	virtual void drawOpenGL (const CRect& updateRect) VSTGUI_OVERRIDE_VMETHOD = 0;	///< will be called when the view was marked invalid or the view was resized
+	virtual void reshape () VSTGUI_OVERRIDE_VMETHOD;
 
 	// CView
 	virtual void setViewSize (const CRect& rect, bool invalid = true) VSTGUI_OVERRIDE_VMETHOD;

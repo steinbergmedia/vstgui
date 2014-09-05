@@ -36,6 +36,7 @@
 #define __cxypad__
 
 #include "cparamdisplay.h"
+#include <cmath>
 
 namespace VSTGUI {
 
@@ -56,14 +57,14 @@ public:
 
 	static float calculateValue (float x, float y)
 	{
-		x = floor ((float)(int32_t)(x * 1000.f)) * 0.001f;
-		y = floor ((float)(int32_t)(y * 1000.f)) * 0.0000001f;
+		x = std::floor ((float)(int32_t)(x * 1000.f)) * 0.001f;
+		y = std::floor ((float)(int32_t)(y * 1000.f)) * 0.0000001f;
 		return x + y;
 	}
 	
 	static void calculateXY (float value, float& x, float& y)
 	{
-		x = floor (value * 1000.f) * 0.001f;
+		x = std::floor (value * 1000.f) * 0.001f;
 		y = (value - x) * 10000.f;
 	}
 	

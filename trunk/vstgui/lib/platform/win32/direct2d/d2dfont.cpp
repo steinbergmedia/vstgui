@@ -91,9 +91,9 @@ D2DFont::~D2DFont ()
 }
 
 //-----------------------------------------------------------------------------
-IDWriteTextLayout* D2DFont::createTextLayout (const CString& string) const
+IDWriteTextLayout* D2DFont::createTextLayout (IPlatformString* string) const
 {
-	const WinString* winString = dynamic_cast<const WinString*> (string.getPlatformString ());
+	const WinString* winString = dynamic_cast<const WinString*> (string);
 	IDWriteTextLayout* textLayout = 0;
 	if (winString)
 		getDWriteFactory ()->CreateTextLayout (winString->getWideString (), (UINT32)wcslen (winString->getWideString ()), textFormat, 10000, 1000, &textLayout);
@@ -101,7 +101,7 @@ IDWriteTextLayout* D2DFont::createTextLayout (const CString& string) const
 }
 
 //-----------------------------------------------------------------------------
-void D2DFont::drawString (CDrawContext* context, const CString& string, const CPoint& p, bool antialias)
+void D2DFont::drawString (CDrawContext* context, IPlatformString* string, const CPoint& p, bool antialias)
 {
 	D2DDrawContext* d2dContext = dynamic_cast<D2DDrawContext*> (context);
 	if (d2dContext && textFormat)
@@ -123,9 +123,14 @@ void D2DFont::drawString (CDrawContext* context, const CString& string, const CP
 					textLayout->SetStrikethrough (true, range);
 				}
 				renderTarget->SetTextAntialiasMode (antialias ? D2D1_TEXT_ANTIALIAS_MODE_CLEARTYPE : D2D1_TEXT_ANTIALIAS_MODE_ALIASED);
+				CPoint pos (p);
+				pos.y -= textFormat->GetFontSize ();
+				if (context->getDrawMode ().integralMode ())
+					pos.makeIntegral ();
+				pos.y += 0.5;
 				CRect clipRect;
 				D2DDrawContext::D2DApplyClip ac (d2dContext);
-				D2D1_POINT_2F origin = {(FLOAT)(p.x), (FLOAT)(p.y + 1.) - textFormat->GetFontSize ()};
+				D2D1_POINT_2F origin = {(FLOAT)(p.x), (FLOAT)(pos.y)};
 				d2dContext->getRenderTarget ()->DrawTextLayout (origin, textLayout, d2dContext->getFontBrush ());
 				textLayout->Release ();
 			}
@@ -134,7 +139,7 @@ void D2DFont::drawString (CDrawContext* context, const CString& string, const CP
 }
 
 //-----------------------------------------------------------------------------
-CCoord D2DFont::getStringWidth (CDrawContext* context, const CString& string, bool antialias)
+CCoord D2DFont::getStringWidth (CDrawContext* context, IPlatformString* string, bool antialias)
 {
 	CCoord result = 0;
 	if (textFormat)

@@ -60,7 +60,7 @@ CMouseEventResult UISearchTextField::onMouseDown (CPoint& where, const CButtonSt
 {
 	if (buttons.isLeftButton ())
 	{
-		if (getText () != 0 && strlen (getText ()) != 0)
+		if (!getText ().empty ())
 		{
 			if (getClearMarkRect ().pointInside (where))
 			{
@@ -78,7 +78,7 @@ CMouseEventResult UISearchTextField::onMouseDown (CPoint& where, const CButtonSt
 //----------------------------------------------------------------------------------------------------
 void UISearchTextField::drawClearMark (CDrawContext* context) const
 {
-	if (getText () == 0 || strlen (getText ()) == 0)
+	if (getText ().empty ())
 		return;
 
 	SharedPointer<CGraphicsPath> path = owned (context->createGraphicsPath ());
@@ -117,19 +117,20 @@ void UISearchTextField::draw (CDrawContext *pContext)
 		return;
 	}
 
-	const char* string = getText ();
+	pContext->setDrawMode (kAntiAliasing);
+
 	CColor origFontColor (fontColor);
-	if (string == 0 || strlen (string) == 0)
+	if (getText ().empty ())
 	{
 		CColor color (fontColor);
 		color.alpha /= 2;
 		setFontColor (color);
-		string = "Search";
+		drawPlatformText(pContext, CString ("Search").getPlatformString ());
 	}
+	else
+		drawPlatformText (pContext, getText ().getPlatformString ());
 
-	drawText (pContext, string);
 	setDirty (false);
-
 	setFontColor (origFontColor);
 }
 

@@ -130,19 +130,19 @@ uint32_t CDropSource::getData (uint32_t index, const void*& buffer, Type& type) 
 //-----------------------------------------------------------------------------
 int32_t CDropSource::getEntrySize (int32_t index) const
 {
-	return getDataSize (index);
+	return static_cast<int32_t> (getDataSize (static_cast<uint32_t> (index)));
 }
 
 //-----------------------------------------------------------------------------
 CDropSource::Type CDropSource::getEntryType (int32_t index) const
 {
-	return getDataType (index);
+	return getDataType (static_cast<uint32_t> (index));
 }
 
 //-----------------------------------------------------------------------------
 int32_t CDropSource::getEntry (int32_t index, const void*& buffer, Type& type) const
 {
-	return getData (index, buffer, type);
+	return static_cast<int32_t> (getData (static_cast<uint32_t> (index), buffer, type));
 }
 #endif // VSTGUI_ENABLE_DEPRECATED_METHODS
 

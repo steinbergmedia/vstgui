@@ -84,7 +84,7 @@ public:
 class CViewAttributeEntry
 {
 public:
-	CViewAttributeEntry (int32_t _size, const void* _data)
+	CViewAttributeEntry (uint32_t _size, const void* _data)
 	: size (0)
 	, data (0)
 	{
@@ -97,10 +97,10 @@ public:
 			std::free (data);
 	}
 
-	int32_t getSize () const { return size; }
+	uint32_t getSize () const { return size; }
 	const void* getData () const { return data; }
 
-	void updateData (int32_t _size, const void* _data)
+	void updateData (uint32_t _size, const void* _data)
 	{
 		if (data && size != _size)
 		{
@@ -111,8 +111,8 @@ public:
 		if (size)
 		{
 			if (data == 0)
-				data = std::malloc (_size);
-			memcpy (data, _data, size);
+				data = std::malloc (size);
+			std::memcpy (data, _data, size);
 		}
 	}
 
@@ -137,7 +137,7 @@ public:
 #endif
 
 protected:
-	int32_t size;
+	uint32_t size;
 	void* data;
 };
 
@@ -256,7 +256,7 @@ CView::~CView ()
 	assert (viewListeners.empty ());
 
 	IController* controller = 0;
-	int32_t size = sizeof (IController*);
+	uint32_t size = sizeof (IController*);
 	if (getAttribute (kCViewControllerAttribute, sizeof (IController*), &controller, size) == true)
 	{
 		CBaseObject* obj = dynamic_cast<CBaseObject*> (controller);
@@ -466,7 +466,7 @@ bool CView::hitTest (const CPoint& where, const CButtonState& buttons)
 		p.offset (-getViewSize ().left, -getViewSize ().top);
 		return pHitTestPath->hitTest (p);
 	}
-	return where.isInside (mouseableArea);
+	return mouseableArea.pointInside (where);
 }
 
 //-----------------------------------------------------------------------------
@@ -747,7 +747,7 @@ const CViewAttributeID kCViewControllerAttribute = 'ictr';
  * @param outSize on return the size of the attribute
  * @return true if attribute exists. outSize is valid then.
  */
-bool CView::getAttributeSize (const CViewAttributeID aId, int32_t& outSize) const
+bool CView::getAttributeSize (const CViewAttributeID aId, uint32_t& outSize) const
 {
 	ViewAttributes::const_iterator it = attributes.find (aId);
 	if (it != attributes.end ())
@@ -766,7 +766,7 @@ bool CView::getAttributeSize (const CViewAttributeID aId, int32_t& outSize) cons
  * @param outSize the size in bytes which was copied into outData
  * @return true if attribute exists and outData was big enough. outSize and outData is valid then.
  */
-bool CView::getAttribute (const CViewAttributeID aId, const int32_t inSize, void* outData, int32_t& outSize) const
+bool CView::getAttribute (const CViewAttributeID aId, const uint32_t inSize, void* outData, uint32_t& outSize) const
 {
 	ViewAttributes::const_iterator it = attributes.find (aId);
 	if (it != attributes.end ())
@@ -775,7 +775,7 @@ bool CView::getAttribute (const CViewAttributeID aId, const int32_t inSize, void
 		{
 			outSize = it->second->getSize ();
 			if (outSize > 0)
-				memcpy (outData, it->second->getData (), outSize);
+				std::memcpy (outData, it->second->getData (), static_cast<size_t> (outSize));
 			return true;
 		}
 	}
@@ -790,7 +790,7 @@ bool CView::getAttribute (const CViewAttributeID aId, const int32_t inSize, void
  * @param inData a pointer to the data
  * @return true if attribute was set
  */
-bool CView::setAttribute (const CViewAttributeID aId, const int32_t inSize, const void* inData)
+bool CView::setAttribute (const CViewAttributeID aId, const uint32_t inSize, const void* inData)
 {
 	if (inData == 0 || inSize <= 0)
 		return false;
@@ -895,7 +895,7 @@ void* CDragContainerHelper::next (int32_t& outSize, int32_t& outType)
 {
 	IDataPackage::Type type;
 	const void* data = 0;
-	outSize = static_cast<int32_t> (drag->getData (index, data, type));
+	outSize = static_cast<int32_t> (drag->getData (static_cast<uint32_t> (index), data, type));
 	switch (type)
 	{
 		case IDataPackage::kFilePath:
@@ -927,7 +927,7 @@ void* CDragContainerHelper::next (int32_t& outSize, int32_t& outType)
 int32_t CDragContainerHelper::getType (int32_t idx) const
 {
 	int32_t outType;
-	IDataPackage::Type type = drag->getDataType (idx);
+	IDataPackage::Type type = drag->getDataType (static_cast<uint32_t> (idx));
 	switch (type)
 	{
 		case IDataPackage::kFilePath:

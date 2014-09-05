@@ -69,7 +69,7 @@ public:
 
 	void setDirty () { dirty = true; }
 	void* getBits () const { return bits; }
-	int32_t getBytesPerRow () const { return bytesPerRow; }
+	uint32_t getBytesPerRow () const { return bytesPerRow; }
 
 	CGLayerRef createCGLayer (CGContextRef context);
 	CGLayerRef getCGLayer () const { return layer; }
@@ -86,7 +86,7 @@ protected:
 
 	void* bits;
 	bool dirty;
-	int32_t bytesPerRow;
+	uint32_t bytesPerRow;
 	double scaleFactor;
 };
 

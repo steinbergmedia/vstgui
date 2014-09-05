@@ -823,7 +823,7 @@ CMouseEventResult UIEditView::onMouseUp (CPoint &where, const CButtonState& butt
 //-----------------------------------------------------------------------------
 void UIEditView::doKeyMove (const CPoint& delta)
 {
-	if (delta.x || delta.y)
+	if (delta.x != 0. || delta.y != 0.)
 	{
 		if (getSelection ()->contains (getEditView ()))
 			return;
@@ -841,7 +841,7 @@ void UIEditView::doKeyMove (const CPoint& delta)
 //-----------------------------------------------------------------------------
 void UIEditView::doKeySize (const CPoint& delta)
 {
-	if (delta.x || delta.y)
+	if (delta.x != 0. || delta.y != 0.)
 	{
 		if (!moveSizeOperation)
 			moveSizeOperation = new ViewSizeChangeOperation (selection, true, autosizing);
@@ -866,7 +866,7 @@ void UIEditView::doDragEditingMove (CPoint& where)
 	if (grid)
 		grid->process (where);
 	CPoint diff (where.x - mouseStartPoint.x, where.y - mouseStartPoint.y);
-	if (diff.x || diff.y)
+	if (diff.x != 0. || diff.y != 0.)
 	{
 		if (!moveSizeOperation)
 			moveSizeOperation = new ViewSizeChangeOperation (selection, false, autosizing);
@@ -1096,7 +1096,7 @@ void UIEditView::startDrag (CPoint& where)
 		return;
 	stream.end ();
 
-	CDropSource dropSource (stream.getBuffer (), (int32_t)stream.tell (), CDropSource::kText);
+	CDropSource dropSource (stream.getBuffer (), static_cast<uint32_t>(stream.tell ()), CDropSource::kText);
 	doDrag (&dropSource, offset, bitmap);
 	if (bitmap)
 		bitmap->forget ();
@@ -1108,7 +1108,7 @@ UISelection* UIEditView::getSelectionOutOfDrag (IDataPackage* drag)
 	
 	IDataPackage::Type type;
 	const void* dragData;
-	int32_t size;
+	uint32_t size;
 	if ((size = drag->getData (0, dragData, type)) > 0 && type == IDataPackage::kText)
 	{
 		IController* controller = getEditor () ? dynamic_cast<IController*> (getEditor ()) : 0;

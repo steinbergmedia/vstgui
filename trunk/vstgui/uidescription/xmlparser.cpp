@@ -142,10 +142,10 @@ bool Parser::parse (IContentProvider* provider, IHandler* _handler)
 			return false;
 		}
 
-		int32_t bytesRead = provider->readRawXmlData ((int8_t*)buffer, kBufferSize);
-		if (bytesRead < 0)
+		uint32_t bytesRead = provider->readRawXmlData ((int8_t*)buffer, kBufferSize);
+		if (bytesRead == kStreamIOError)
 			bytesRead = 0;
-		XML_Status status = XML_ParseBuffer (PARSER, bytesRead, bytesRead == 0);
+		XML_Status status = XML_ParseBuffer (PARSER, static_cast<int> (bytesRead), bytesRead == 0);
 		switch (status) 
 		{
 			case XML_STATUS_ERROR:
@@ -220,13 +220,13 @@ bool Parser::stop ()
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
-MemoryContentProvider::MemoryContentProvider (const void* data, int32_t dataSize)
+MemoryContentProvider::MemoryContentProvider (const void* data, uint32_t dataSize)
 : CMemoryStream ((const int8_t*)data, dataSize, false)
 {
 }
 
 //------------------------------------------------------------------------
-int32_t MemoryContentProvider::readRawXmlData (int8_t* buffer, int32_t size)
+uint32_t MemoryContentProvider::readRawXmlData (int8_t* buffer, uint32_t size)
 {
 	return readRaw (buffer, size);
 }
@@ -250,7 +250,7 @@ InputStreamContentProvider::InputStreamContentProvider (InputStream& stream)
 }
 
 //------------------------------------------------------------------------
-int32_t InputStreamContentProvider::readRawXmlData (int8_t* buffer, int32_t size)
+uint32_t InputStreamContentProvider::readRawXmlData (int8_t* buffer, uint32_t size)
 {
 	return stream.readRaw (buffer, size);
 }
@@ -264,6 +264,10 @@ void InputStreamContentProvider::rewind ()
 }
 
 //------------------------------------------------------------------------
+#ifdef __clang__
+#pragma clang diagnostic ignored "-Wconversion"
+#endif
+
 #include "./expat/xmltok.c"
 #include "./expat/xmlrole.c"
 #include "./expat/xmlparse.c"

@@ -75,7 +75,7 @@ protected:
 		bool init (GdiplusBitmap* bitmap, bool alphaPremulitplied);
 
 		uint8_t* getAddress () const { return (uint8_t*)data.Scan0; }
-		int32_t getBytesPerRow () const { return data.Stride; }
+		uint32_t getBytesPerRow () const { return data.Stride; }
 		PixelFormat getPixelFormat () const { return kBGRA; }
 	protected:
 		GdiplusBitmap* bitmap;

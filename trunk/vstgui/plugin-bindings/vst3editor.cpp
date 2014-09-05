@@ -190,7 +190,7 @@ public:
 			return parameter->getInfo ().id;
 		CControl* control = controls.front ();
 		if (control)
-			return control->getTag ();
+			return static_cast<Steinberg::Vst::ParamID> (control->getTag ());
 		return 0xFFFFFFFF;
 	}
 	
@@ -567,8 +567,8 @@ bool VST3Editor::requestResize (const CPoint& newSize)
 	if (width >= minSize.x * zoomFactor && width <= maxSize.x * zoomFactor && height >= minSize.y * zoomFactor && height <= maxSize.y * zoomFactor)
 	{
 		Steinberg::ViewRect vr;
-		vr.right = width;
-		vr.bottom = height;
+		vr.right = static_cast<Steinberg::int32> (width);
+		vr.bottom = static_cast<Steinberg::int32> (height);
 		return plugFrame->resizeView (this, &vr) == Steinberg::kResultTrue ? true : false;
 	}
 	return false;
@@ -678,7 +678,7 @@ void VST3Editor::controlTagDidChange (CControl* pControl)
 			Steinberg::Vst::EditController* editController = getController ();
 			if (editController)
 			{
-				Steinberg::Vst::Parameter* parameter = editController->getParameterObject (pControl->getTag ());
+				Steinberg::Vst::Parameter* parameter = editController->getParameterObject (static_cast<Steinberg::Vst::ParamID> (pControl->getTag ()));
 				paramChangeListeners.insert (std::make_pair (pControl->getTag (), new ParameterChangeListener (editController, parameter, pControl)));
 			}
 		}
@@ -875,7 +875,7 @@ CMouseEventResult VST3Editor::onMouseDown (CFrame* frame, const CPoint& where, c
 				getFrame ()->getTransform ().transform (where2);
 				if (controllerMenu)
 					VST3EditorInternal::addCOptionMenuEntriesToIContextMenu (this, controllerMenu, contextMenu);
-				if (contextMenu->popup (where2.x, where2.y) == Steinberg::kResultTrue)
+				if (contextMenu->popup (static_cast<Steinberg::UCoord> (where2.x), static_cast<Steinberg::UCoord> (where2.y)) == Steinberg::kResultTrue)
 					result = kMouseEventHandled;
 				contextMenu->release ();
 			}
@@ -977,7 +977,7 @@ CView* VST3Editor::verifyView (CView* view, const UIAttributes& attributes, cons
 			Steinberg::Vst::EditController* editController = getController ();
 			if (editController)
 			{
-				Steinberg::Vst::Parameter* parameter = editController->getParameterObject (control->getTag ());
+				Steinberg::Vst::Parameter* parameter = editController->getParameterObject (static_cast<Steinberg::Vst::ParamID> (control->getTag ()));
 				paramChangeListeners.insert (std::make_pair (control->getTag (), new ParameterChangeListener (editController, parameter, control)));
 			}
 		}
@@ -1167,7 +1167,7 @@ CMessageResult VST3Editor::notify (CBaseObject* sender, IdStringPtr message)
 			}
 			else if (cmdCategory == "Zoom")
 			{
-				int32_t index = item->getTag ();
+				size_t index = static_cast<size_t> (item->getTag ());
 				if (index < allowedZoomFactors.size ())
 				{
 					setZoomFactor (allowedZoomFactors[index]);
@@ -1296,7 +1296,7 @@ void VST3Editor::syncParameterTags ()
 					paramTitle.removeChars (' ');
 					Steinberg::String paramIDStr;
 					paramIDStr.printInt64 (info.id);
-					if (UTF8StringPtr tagName = description->lookupControlTagName (info.id))
+					if (UTF8StringPtr tagName = description->lookupControlTagName (static_cast<int32_t> (info.id)))
 					{
 						actionPerformer->performTagNameChange (tagName, paramTitle);
 					}

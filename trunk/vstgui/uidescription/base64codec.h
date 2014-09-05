@@ -116,7 +116,7 @@ public:
 	uint32_t getDataSize () const { return dataSize; }
 
 protected:
-	inline int32_t decodeblock (uint8_t input[4], uint8_t output[3])
+	inline uint32_t decodeblock (uint8_t input[4], uint8_t output[3])
 	{
 		static const uint8_t cd64[] = {
 			62,   0xFF, 0xFF, 0xFF, 63,   52,   53, 54, 55, 56, 57, 58, 59, 60, 61, 0xFF,
@@ -125,7 +125,7 @@ protected:
 			0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35,
 			36,   37,   38,   39,   40,   41,   42, 43, 44, 45, 46, 47, 48, 49, 50, 51};
 
-		int32_t result = 3;
+		uint32_t result = 3;
 		if (input[2] == '=')
 			result = 1;
 		else if (input[3] == '=')
@@ -134,15 +134,15 @@ protected:
 		input[1] = cd64[input[1] - 43];
 		input[2] = cd64[input[2] - 43];
 		input[3] = cd64[input[3] - 43];
-		output[0] = (input[0] << 2) | ((input[1] & 0x30) >> 4);
-		output[1] = ((input[1] & 0xF) << 4) | ((input[2] & 0x3C) >> 2);
-		output[2] = ((input[2] & 0x03) << 6) | input[3];
+		output[0] = static_cast<uint8_t> ((input[0] << 2) | ((input[1] & 0x30) >> 4));
+		output[1] = static_cast<uint8_t> (((input[1] & 0xF) << 4) | ((input[2] & 0x3C) >> 2));
+		output[2] = static_cast<uint8_t> (((input[2] & 0x03) << 6) | input[3]);
 		return result;
 	}
 
-	inline void encodeblock (uint8_t input[3], uint8_t output[4], int32_t len)
+	inline void encodeblock (uint8_t input[3], uint8_t output[4], uint32_t len)
 	{
-		static const int8_t cb64[] =
+		static const uint8_t cb64[] =
 			"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 		output[0] = cb64[input[0] >> 2];

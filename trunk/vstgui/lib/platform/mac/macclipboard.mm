@@ -105,10 +105,10 @@ Pasteboard::Pasteboard (NSPasteboard* pb)
 			if (nsColor)
 			{
 				nsColor = [nsColor colorUsingColorSpace:[[[NSColorSpace alloc] initWithCGColorSpace:GetCGColorSpace ()] autorelease]];
-				int32_t red = [nsColor redComponent] * 255.;
-				int32_t green = [nsColor greenComponent] * 255.;
-				int32_t blue = [nsColor blueComponent] * 255.;
-				int32_t alpha = [nsColor alphaComponent] * 255.;
+				int32_t red = static_cast<int32_t> ([nsColor redComponent] * 255.);
+				int32_t green = static_cast<int32_t> ([nsColor greenComponent] * 255.);
+				int32_t blue = static_cast<int32_t> ([nsColor blueComponent] * 255.);
+				int32_t alpha = static_cast<int32_t> ([nsColor alphaComponent] * 255.);
 				char str[10];
 				sprintf (str, "#%02x%02x%02x%02x", red, green, blue, alpha);
 				strings.push_back (str);
@@ -116,7 +116,7 @@ Pasteboard::Pasteboard (NSPasteboard* pb)
 		}
 		else
 		{
-			nbItems = (int32_t)[[pb types] count];
+			nbItems = static_cast<uint32_t> ([[pb types] count]);
 			dataArray = [[NSMutableArray alloc] initWithCapacity:nbItems];
 			for (uint32_t i = 0; i < nbItems; i++)
 			{
@@ -175,13 +175,13 @@ uint32_t Pasteboard::getData (uint32_t index, const void*& buffer, Pasteboard::T
 	{
 		buffer = [[dataArray objectAtIndex:index] bytes];
 		type = kBinary;
-		return (int32_t)[[dataArray objectAtIndex:index] length];
+		return static_cast<uint32_t> ([[dataArray objectAtIndex:index] length]);
 	}
 	if (index < strings.size ())
 	{
 		buffer = strings[index].c_str ();
 		type = stringsAreFiles ? kFilePath : kText;
-		return (int32_t)strings[index].length ();
+		return static_cast<uint32_t> (strings[index].length ());
 	}
 	return 0;
 }
@@ -224,12 +224,12 @@ void setClipboard (IDataPackage* dataSource)
 	NSPasteboard* pb = [NSPasteboard generalPasteboard];
 	if (dataSource)
 	{
-		int32_t nbItems = dataSource->getCount ();
+		uint32_t nbItems = dataSource->getCount ();
 		NSMutableArray* fileArray = 0;
 		IDataPackage::Type type;
 		const void* data;
-		int32_t length;
-		for (int32_t i = 0; i < nbItems; i++)
+		uint32_t length;
+		for (uint32_t i = 0; i < nbItems; i++)
 		{
 			if ((length = dataSource->getData (i, data, type)) > 0)
 			{

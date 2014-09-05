@@ -59,14 +59,14 @@ enum {
 class PeakParameter : public Parameter
 {
 public:
-	PeakParameter (int32 flags, int32 id, const TChar* title);
+	PeakParameter (int32 flags, ParamID id, const TChar* title);
 
 	void toString (ParamValue normValue, String128 string) const VSTGUI_OVERRIDE_VMETHOD;
 	bool fromString (const TChar* string, ParamValue& normValue) const VSTGUI_OVERRIDE_VMETHOD;
 };
 
 //------------------------------------------------------------------------
-PeakParameter::PeakParameter (int32 flags, int32 id, const TChar* title)
+PeakParameter::PeakParameter (int32 flags, ParamID id, const TChar* title)
 {
 	UString (info.title, USTRINGSIZE (info.title)).assign (title);
 	
@@ -189,7 +189,7 @@ public:
 	CControlListener* getControlListener (const char* controlTagName) VSTGUI_OVERRIDE_VMETHOD { return this; }
 	void valueChanged (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD
 	{
-		if (pControl->getValue ())
+		if (pControl->getValue () > 0.)
 		{
 			switch (pControl->getTag ())
 			{
@@ -325,7 +325,7 @@ public:
 				end = CPoint (size.left, size.top);
 			}
 			context->saveGlobalState ();
-			context->setGlobalAlpha (context->getGlobalAlpha () * (flags == ISplitViewSeparatorDrawer::kMouseOver ? 0.9 : 0.6));
+			context->setGlobalAlpha (context->getGlobalAlpha () * (flags == ISplitViewSeparatorDrawer::kMouseOver ? 0.9f : 0.6f));
 			context->fillLinearGradient (path, *gradient, start, end, false, &tm);
 			context->restoreGlobalState ();
 		}
@@ -338,6 +338,9 @@ protected:
 	CGradient* gradient;
 };
 
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
 class LineStyleTestView : public CControl
 {
 public:
@@ -385,6 +388,99 @@ public:
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
+class DrawPrimitivesTestView : public CView
+{
+public:
+	DrawPrimitivesTestView (const CRect& size) : CView (size) {}
+	
+	void draw (CDrawContext* context) VSTGUI_OVERRIDE_VMETHOD
+	{
+		context->setDrawMode (kAliasing);
+		context->setLineWidth (1);
+		context->setLineStyle (kLineSolid);
+
+		context->setFrameColor (kBlackCColor);
+
+		context->setLineWidth (1);
+		context->setLineStyle (kLineSolid);
+		context->setFrameColor (kBlackCColor);
+
+		CDrawContext::LineList lines;
+		const CCoord gridOffset = 10;
+		CPoint p = getViewSize ().getTopLeft ();
+		while (p.x < getWidth ())
+		{
+			CPoint p2 (p);
+			p2.y = getHeight ();
+			lines.push_back (std::make_pair (p, p2));
+			p.offset (gridOffset, 0);
+		}
+		p = getViewSize ().getTopLeft ();
+		while (p.y < getHeight ())
+		{
+			CPoint p2 (p);
+			p2.x = getWidth ();
+			lines.push_back (std::make_pair (p, p2));
+			p.offset (0, gridOffset);
+		}
+		context->drawLines (lines);
+
+		context->setLineWidth (1);
+		context->setDrawMode (kAliasing);
+
+		CColor c (kGreenCColor);
+		context->setFrameColor (c);
+		CRect r (getViewSize());
+		r.inset (1, 1);
+		context->drawRect (r);
+		context->drawLine (r.getTopLeft (), r.getTopRight ());
+		context->drawLine (r.getTopRight (), r.getBottomRight ());
+		context->drawLine (r.getBottomRight (), r.getBottomLeft ());
+		context->drawLine (r.getBottomLeft (), r.getTopLeft ());
+
+		SharedPointer<CGraphicsPath> path = owned (context->createGraphicsPath ());
+		r.inset (4, 4);
+		path->addRect (r);
+		context->drawGraphicsPath (path, CDrawContext::kPathStroked);
+		path = owned (context->createGraphicsPath ());
+		path->beginSubpath (r.getTopLeft ());
+		path->addLine (r.getTopRight ());
+		path->addLine (r.getBottomRight ());
+		path->addLine (r.getBottomLeft ());
+		path->addLine (r.getTopLeft ());
+		context->drawGraphicsPath (path, CDrawContext::kPathStroked);
+		
+
+		context->setDrawMode (kAliasing);
+		context->setFillColor (c);
+		r = getViewSize ();
+		r.offset (gridOffset + 1, gridOffset + 1);
+		r.setWidth (gridOffset - 1);
+		r.setHeight (gridOffset - 1);
+		context->drawRect (r, kDrawFilled);
+		r.offset (gridOffset * 2, gridOffset * 2);
+		context->setDrawMode (kAntiAliasing);
+		context->drawRect (r, kDrawFilled);
+		
+		context->setDrawMode (kAntiAliasing|kNonIntegralMode);
+		c = kRedCColor;
+		c.alpha = 150;
+		context->setFillColor (c);
+		r = getViewSize ();
+		r.offset (51.5, 51.5);
+		r.setWidth (gridOffset-1.5);
+		r.setHeight (gridOffset-1.5);
+		context->drawRect (r, kDrawFilled);
+
+		r.offset (0, r.getHeight ()+1);
+		context->setDrawMode (kAntiAliasing);
+		context->drawRect (r, kDrawFilled);
+	}
+};
+
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
 UIDescriptionTestController::UIDescriptionTestController ()
 : splitViewController (0)
 {
@@ -403,6 +499,7 @@ tresult PLUGIN_API UIDescriptionTestController::initialize (FUnknown* context)
 		slp->appendString (USTRING("ScrollView"));
 		slp->appendString (USTRING("SplitView"));
 		slp->appendString (USTRING("Fonts/LineStyle"));
+		slp->appendString (USTRING("Primitives"));
 		uiParameters.addParameter (slp);
 		
 		slp = new StringListParameter (USTRING("LineStyle"), 20001);
@@ -516,9 +613,14 @@ IController* UIDescriptionTestController::createSubController (const char* name,
 //------------------------------------------------------------------------
 CView* UIDescriptionTestController::createCustomView (UTF8StringPtr name, const UIAttributes& attributes, const IUIDescription* description, VST3Editor* editor)
 {
-	if (strcmp (name, "LineStyleTestView") == 0)
+	UTF8StringView viewName (name);
+	if (viewName == "LineStyleTestView")
 	{
 		return new LineStyleTestView (CRect (0, 0, 0, 0));
+	}
+	else if (viewName == "DrawPrimitivesTestView")
+	{
+		return new DrawPrimitivesTestView (CRect (0, 0, 0, 0));
 	}
 	return 0;
 }
@@ -530,8 +632,8 @@ CView* UIDescriptionTestController::verifyView (CView* view, const UIAttributes&
 	if (button && button->getTag () == 20000)
 	{
 		StringListParameter* slp = dynamic_cast<StringListParameter*> (getParameterObject (20000));
-		assert (slp && button->getSegments ().size () == slp->getInfo ().stepCount + 1);
-		for (int32 i = 0; i <= slp->getInfo ().stepCount; i++)
+		assert (slp && button->getSegments ().size () == static_cast<size_t> (slp->getInfo ().stepCount + 1));
+		for (uint32_t i = 0; i <= static_cast<uint32_t> (slp->getInfo ().stepCount); i++)
 		{
 			String128 str = {};
 			slp->toString (slp->toNormalized (i), str);
@@ -601,7 +703,7 @@ tresult PLUGIN_API UIDescriptionTestProcessor::process (ProcessData& data)
 		{
 			float value = data.inputs[0].channelBuffers32[channel][sample];
 			data.outputs[0].channelBuffers32[channel][sample] = value;
-			value = fabs (value);
+			value = std::abs (value);
 			if (value > localPeak)
 				localPeak = value;
 		}
@@ -610,13 +712,13 @@ tresult PLUGIN_API UIDescriptionTestProcessor::process (ProcessData& data)
 	{
 		if (localPeak < peak)
 		{
-			float vuDecrease = data.numSamples > 0 ? data.numSamples / processSetup.sampleRate : 0.001f;
+			float vuDecrease = static_cast<float> (data.numSamples > 0 ? data.numSamples / processSetup.sampleRate : 0.001);
 			peak -= vuDecrease;
 			if (peak < 0.f)
 				peak = 0.f;
 		}
 		else
-			peak = localPeak;
+			peak = static_cast<float> (localPeak);
 		int32 index;
 		IParamValueQueue* queue = data.outputParameterChanges->addParameterData (kPeakParam, index);
 		if (queue)
