@@ -33,6 +33,7 @@
 //-----------------------------------------------------------------------------
 
 #include "ctooltipsupport.h"
+#include "cframe.h"
 #include "cvstguitimer.h"
 
 #if DEBUG

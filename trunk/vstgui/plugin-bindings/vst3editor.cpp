@@ -82,7 +82,7 @@ protected:
 	IdleUpdateHandler () 
 	{
 		timer = Timer::create (this, 1000/30); // 30 Hz timer
-		CView::kDirtyCallAlwaysOnMainThread = true; // we will always call CView::setDirty() on the main thread
+		VSTGUI::CView::kDirtyCallAlwaysOnMainThread = true; // we will always call CView::setDirty() on the main thread
 	}
 	~IdleUpdateHandler () { timer->release (); }
 	void onTimer (Timer* timer)

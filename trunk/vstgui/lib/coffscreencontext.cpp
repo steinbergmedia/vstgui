@@ -34,6 +34,7 @@
 
 #include "coffscreencontext.h"
 #include "cframe.h"
+#include "cbitmap.h"
 
 namespace VSTGUI {
 
@@ -76,6 +77,18 @@ COffscreenContext* COffscreenContext::create (CFrame* frame, CCoord width, CCoor
 			return pf->createOffscreenContext (width, height, scaleFactor);
 	}
 	return 0;
+}
+
+//-----------------------------------------------------------------------------
+CCoord COffscreenContext::getWidth () const
+{
+	return bitmap ? bitmap->getWidth () : 0.;
+}
+
+//-----------------------------------------------------------------------------
+CCoord COffscreenContext::getHeight () const
+{
+	return bitmap ? bitmap->getHeight () : 0.;
 }
 
 } // namespace

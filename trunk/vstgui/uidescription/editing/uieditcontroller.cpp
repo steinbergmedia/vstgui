@@ -60,6 +60,7 @@
 #include "../../lib/animation/animations.h"
 #include "../../lib/animation/timingfunctions.h"
 #include "../../lib/cdropsource.h"
+#include "../../lib/cgraphicspath.h"
 
 #include <sstream>
 #include <algorithm>

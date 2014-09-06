@@ -35,12 +35,13 @@
 #include "csegmentbutton.h"
 #include "../cdrawcontext.h"
 #include "../cframe.h"
+#include "../cgraphicspath.h"
 #include <algorithm>
 
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-CSegmentButton::CSegmentButton (const CRect& size, CControlListener* listener, int32_t tag)
+CSegmentButton::CSegmentButton (const CRect& size, IControlListener* listener, int32_t tag)
 : CControl (size, listener, tag)
 , textColor (kBlackCColor)
 , textColorHighlighted (kWhiteCColor)

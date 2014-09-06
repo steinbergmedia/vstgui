@@ -35,15 +35,13 @@
 #ifndef __iaction__
 #define __iaction__
 
-#include "../../lib/cview.h"
+#include "../../lib/vstguifwd.h"
 
 #if VSTGUI_LIVE_EDITING
-#include "../../lib/ccolor.h"
 #include "../../lib/cfont.h"
 
 namespace VSTGUI {
 class UIAttributes;
-class CGradient;
 
 //----------------------------------------------------------------------------------------------------
 class IAction

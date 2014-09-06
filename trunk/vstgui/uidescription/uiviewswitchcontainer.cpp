@@ -36,6 +36,7 @@
 #include "iviewcreator.h"
 #include "uidescription.h"
 #include "../lib/cframe.h"
+#include "../lib/controls/ccontrol.h"
 #include "../lib/animation/timingfunctions.h"
 #include "../lib/animation/animations.h"
 

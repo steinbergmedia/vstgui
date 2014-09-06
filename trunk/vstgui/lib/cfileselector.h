@@ -35,7 +35,7 @@
 #ifndef __cfileselector__
 #define __cfileselector__
 
-#include "cframe.h"
+#include "vstguifwd.h"
 #include <list>
 #include <vector>
 #if VSTGUI_HAS_FUNCTIONAL

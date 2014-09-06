@@ -44,7 +44,6 @@
 #include "../iviewcreator.h"
 #include "uiundomanager.h"
 #include "../../lib/controls/ctextedit.h"
-#include "../../lib/cvstguitimer.h"
 
 namespace VSTGUI {
 class CRowColumnView;
@@ -76,7 +75,7 @@ protected:
 	void valueChanged (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
 	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
 	IController* createSubController (IdStringPtr name, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
-	CControlListener* getControlListener (UTF8StringPtr name) VSTGUI_OVERRIDE_VMETHOD;
+	IControlListener* getControlListener (UTF8StringPtr name) VSTGUI_OVERRIDE_VMETHOD;
 
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
 

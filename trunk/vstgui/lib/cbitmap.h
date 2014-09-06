@@ -35,40 +35,13 @@
 #ifndef __cbitmap__
 #define __cbitmap__
 
-#include "vstguibase.h"
+#include "vstguifwd.h"
 #include "cpoint.h"
 #include "crect.h"
-#include "ccolor.h"
-#include "platform/iplatformbitmap.h"
+#include "cresourcedescription.h"
 #include <vector>
 
 namespace VSTGUI {
-class CDrawContext;
-class IPlatformBitmap;
-class IPlatformBitmapPixelAccess;
-
-//-----------------------------------------------------------------------------
-// CResourceDescription Declaration
-//! @brief Describes a resource by name or by ID
-//-----------------------------------------------------------------------------
-class CResourceDescription
-{
-public:
-	enum { kIntegerType, kStringType, kUnknownType };
-
-	CResourceDescription () : type (kUnknownType) { u.name = 0; }
-	CResourceDescription (int32_t id) : type (kIntegerType) { u.id = id; }
-	CResourceDescription (UTF8StringPtr name) : type (kStringType) { u.name = name; }
-
-	CResourceDescription& operator= (int32_t id) { u.id = id; type = kIntegerType; return *this; }
-	CResourceDescription& operator= (const CResourceDescription& desc) { type = desc.type; u.id = desc.u.id; u.name = desc.u.name; return *this; }
-
-	int32_t type;
-	union {
-		int32_t id;
-		UTF8StringPtr name;
-	} u;
-};
 
 //-----------------------------------------------------------------------------
 // CBitmap Declaration
@@ -95,7 +68,7 @@ public:
 
 	const CResourceDescription& getResourceDescription () const { return resourceDesc; }
 
-	IPlatformBitmap* getPlatformBitmap () const { return bitmaps.empty () ? 0 : bitmaps[0]; }
+	IPlatformBitmap* getPlatformBitmap () const;
 	void setPlatformBitmap (IPlatformBitmap* bitmap);
 
 	bool addBitmap (IPlatformBitmap* platformBitmap);
@@ -208,8 +181,8 @@ public:
 	virtual void getColor (CColor& c) const = 0;	///< get color of current pixel
 	virtual void setColor (const CColor& c) = 0;	///< set color of current pixel
 
-	inline uint32_t getBitmapWidth () const { return (uint32_t)bitmap->getPlatformBitmap ()->getSize ().x; }
-	inline uint32_t getBitmapHeight () const { return (uint32_t)bitmap->getPlatformBitmap ()->getSize ().y; }
+	inline uint32_t getBitmapWidth () const { return maxX+1; }
+	inline uint32_t getBitmapHeight () const { return maxY+1; }
 
 	inline IPlatformBitmapPixelAccess* getPlatformBitmapPixelAccess () const { return pixelAccess; }
 	/** create an accessor.

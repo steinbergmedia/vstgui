@@ -36,6 +36,7 @@
 #define __cslider__
 
 #include "ccontrol.h"
+#include "../ccolor.h"
 
 namespace VSTGUI {
 
@@ -47,8 +48,8 @@ namespace VSTGUI {
 class CSlider : public CControl
 {
 public:
-	CSlider (const CRect& size, CControlListener* listener, int32_t tag, int32_t iMinPos, int32_t iMaxPos, CBitmap* handle, CBitmap* background, const CPoint& offset = CPoint (0, 0), const int32_t style = kLeft|kHorizontal);
-	CSlider (const CRect& rect, CControlListener* listener, int32_t tag, const CPoint& offsetHandle, int32_t rangeHandle, CBitmap* handle, CBitmap* background, const CPoint& offset = CPoint (0, 0), const int32_t style = kLeft|kHorizontal);
+	CSlider (const CRect& size, IControlListener* listener, int32_t tag, int32_t iMinPos, int32_t iMaxPos, CBitmap* handle, CBitmap* background, const CPoint& offset = CPoint (0, 0), const int32_t style = kLeft|kHorizontal);
+	CSlider (const CRect& rect, IControlListener* listener, int32_t tag, const CPoint& offsetHandle, int32_t rangeHandle, CBitmap* handle, CBitmap* background, const CPoint& offset = CPoint (0, 0), const int32_t style = kLeft|kHorizontal);
 	CSlider (const CSlider& slider);
 
 	enum Mode {
@@ -167,8 +168,8 @@ private:
 class CVerticalSlider : public CSlider
 {
 public:
-	CVerticalSlider (const CRect& size, CControlListener* listener, int32_t tag, int32_t iMinPos, int32_t iMaxPos, CBitmap* handle, CBitmap* background, const CPoint& offset = CPoint (0, 0), const int32_t style = kBottom);
-	CVerticalSlider (const CRect& rect, CControlListener* listener, int32_t tag, const CPoint& offsetHandle, int32_t rangeHandle, CBitmap* handle, CBitmap* background, const CPoint& offset = CPoint (0, 0), const int32_t style = kBottom);
+	CVerticalSlider (const CRect& size, IControlListener* listener, int32_t tag, int32_t iMinPos, int32_t iMaxPos, CBitmap* handle, CBitmap* background, const CPoint& offset = CPoint (0, 0), const int32_t style = kBottom);
+	CVerticalSlider (const CRect& rect, IControlListener* listener, int32_t tag, const CPoint& offsetHandle, int32_t rangeHandle, CBitmap* handle, CBitmap* background, const CPoint& offset = CPoint (0, 0), const int32_t style = kBottom);
 	CVerticalSlider (const CVerticalSlider& slider);
 };
 
@@ -180,8 +181,8 @@ public:
 class CHorizontalSlider : public CSlider
 {
 public:
-	CHorizontalSlider (const CRect& size, CControlListener* listener, int32_t tag, int32_t iMinPos, int32_t iMaxPos, CBitmap* handle, CBitmap* background, const CPoint& offset = CPoint (0, 0), const int32_t style = kRight);
-	CHorizontalSlider (const CRect& rect, CControlListener* listener, int32_t tag, const CPoint& offsetHandle, int32_t rangeHandle, CBitmap* handle, CBitmap* background, const CPoint& offset = CPoint (0, 0), const int32_t style = kRight);
+	CHorizontalSlider (const CRect& size, IControlListener* listener, int32_t tag, int32_t iMinPos, int32_t iMaxPos, CBitmap* handle, CBitmap* background, const CPoint& offset = CPoint (0, 0), const int32_t style = kRight);
+	CHorizontalSlider (const CRect& rect, IControlListener* listener, int32_t tag, const CPoint& offsetHandle, int32_t rangeHandle, CBitmap* handle, CBitmap* background, const CPoint& offset = CPoint (0, 0), const int32_t style = kRight);
 	CHorizontalSlider (const CHorizontalSlider& slider);
 };
 

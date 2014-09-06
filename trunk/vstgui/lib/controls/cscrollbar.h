@@ -10,11 +10,9 @@
 #define __cscrollbar__
 
 #include "ccontrol.h"
+#include "../ccolor.h"
 
 namespace VSTGUI {
-
-class IScrollbarDrawer;
-class CVSTGUITimer;
 
 //-----------------------------------------------------------------------------
 // CScrollbar Declaration
@@ -29,7 +27,7 @@ public:
 		kVertical
 	};
 	
-	CScrollbar (const CRect& size, CControlListener* listener, int32_t tag, ScrollbarDirection style, const CRect& scrollSize);
+	CScrollbar (const CRect& size, IControlListener* listener, int32_t tag, ScrollbarDirection style, const CRect& scrollSize);
 	CScrollbar (const CScrollbar& scrollbar);
 	
 	//-----------------------------------------------------------------------------

@@ -50,7 +50,7 @@ namespace VSTGUI {
  * @param offset
  */
 //------------------------------------------------------------------------
-CMovieButton::CMovieButton (const CRect& size, CControlListener* listener, int32_t tag, CBitmap* background, const CPoint &offset)
+CMovieButton::CMovieButton (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background, const CPoint &offset)
 : CControl (size, listener, tag, background), offset (offset), buttonState (value)
 {
 	heightOfOneImage = size.getHeight ();
@@ -68,7 +68,7 @@ CMovieButton::CMovieButton (const CRect& size, CControlListener* listener, int32
  * @param offset
  */
 //------------------------------------------------------------------------
-CMovieButton::CMovieButton (const CRect& size, CControlListener* listener, int32_t tag, CCoord heightOfOneImage, CBitmap* background, const CPoint &offset)
+CMovieButton::CMovieButton (const CRect& size, IControlListener* listener, int32_t tag, CCoord heightOfOneImage, CBitmap* background, const CPoint &offset)
 : CControl (size, listener, tag, background)
 , offset (offset)
 , buttonState (value)

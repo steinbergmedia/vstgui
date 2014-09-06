@@ -33,6 +33,7 @@
 //-----------------------------------------------------------------------------
 
 #include "cstream.h"
+#include "../lib/cresourcedescription.h"
 #include <algorithm>
 #include <sstream>
 

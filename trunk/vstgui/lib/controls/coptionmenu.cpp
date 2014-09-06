@@ -35,6 +35,7 @@
 #include "coptionmenu.h"
 #include "../cbitmap.h"
 #include "../cframe.h"
+#include "../cstring.h"
 
 #include "../platform/iplatformoptionmenu.h"
 
@@ -406,7 +407,7 @@ There are 2 styles with or without a shadowed text. When a mouse click occurs, a
  * @param style the style of the display (see CParamDisplay for styles)
  */
 //------------------------------------------------------------------------
-COptionMenu::COptionMenu (const CRect& size, CControlListener* listener, int32_t tag, CBitmap* background, CBitmap* bgWhenClick, const int32_t style)
+COptionMenu::COptionMenu (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background, CBitmap* bgWhenClick, const int32_t style)
 : CParamDisplay (size, background, style)
 , bgWhenClick (bgWhenClick)
 , nbItemsPerColumn (-1)

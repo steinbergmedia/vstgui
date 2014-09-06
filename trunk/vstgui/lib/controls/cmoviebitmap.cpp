@@ -50,7 +50,7 @@ namespace VSTGUI {
  * @param offset
  */
 //------------------------------------------------------------------------
-CMovieBitmap::CMovieBitmap (const CRect& size, CControlListener* listener, int32_t tag, CBitmap* background, const CPoint &offset)
+CMovieBitmap::CMovieBitmap (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background, const CPoint &offset)
 : CControl (size, listener, tag, background)
 , offset (offset)
 {
@@ -70,7 +70,7 @@ CMovieBitmap::CMovieBitmap (const CRect& size, CControlListener* listener, int32
  * @param offset
  */
 //------------------------------------------------------------------------
-CMovieBitmap::CMovieBitmap (const CRect& size, CControlListener* listener, int32_t tag, int32_t subPixmaps, CCoord heightOfOneImage, CBitmap* background, const CPoint &offset)
+CMovieBitmap::CMovieBitmap (const CRect& size, IControlListener* listener, int32_t tag, int32_t subPixmaps, CCoord heightOfOneImage, CBitmap* background, const CPoint &offset)
 : CControl (size, listener, tag, background)
 , offset (offset)
 {

@@ -33,6 +33,8 @@
 //-----------------------------------------------------------------------------
 
 #include "cfileselector.h"
+#include "cframe.h"
+#include "cstring.h"
 #include <algorithm>
 
 namespace VSTGUI {

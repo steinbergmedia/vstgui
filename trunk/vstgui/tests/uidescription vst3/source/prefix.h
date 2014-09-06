@@ -35,3 +35,7 @@
 #if DEVELOPMENT
 	#define VSTGUI_LIVE_EDITING 1
 #endif
+
+#define VSTGUI_DISABLE_GLOBAL_NAMESPACE_POLLUTION 0
+
+#include "vstgui/lib/vstguifwd.h"

@@ -34,6 +34,7 @@
 
 #include "cgradientview.h"
 #include "cdrawcontext.h"
+#include "cgraphicspath.h"
 
 namespace VSTGUI {
 
@@ -166,7 +167,7 @@ void CGradientView::draw (CDrawContext* context)
 	{
 		CRect r = getViewSize ();
 		r.inset (frameWidth / 2., frameWidth / 2.);
-		path = context->createRoundRectGraphicsPath (r, roundRectRadius);
+		path = owned (context->createRoundRectGraphicsPath (r, roundRectRadius));
 	}
 	if (path && gradient)
 	{

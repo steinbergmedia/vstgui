@@ -47,8 +47,6 @@ class IUIDescription;
 class UICrossLines;
 class IAction;
 class UIGrid;
-class CVSTGUITimer;
-class CLayeredViewContainer;
 namespace UIEditViewInternal {
 	class UIHighlightView;
 } // namespace UIEditViewInternal

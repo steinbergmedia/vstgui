@@ -36,8 +36,9 @@
 #ifndef __cgradientview__
 #define __cgradientview__
 
+#include "vstguifwd.h"
 #include "cview.h"
-#include "cgraphicspath.h"
+#include "ccolor.h"
 
 namespace VSTGUI {
 
@@ -94,7 +95,7 @@ protected:
 	CPoint radialCenter;
 	bool drawAntialiased;
 
-	OwningPointer<CGraphicsPath> path;
+	SharedPointer<CGraphicsPath> path;
 	SharedPointer<CGradient> gradient;
 };
 	

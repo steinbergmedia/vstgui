@@ -34,6 +34,8 @@
 
 #include "cdrawmethods.h"
 #include "cbitmap.h"
+#include "cstring.h"
+#include "cdrawcontext.h"
 
 namespace VSTGUI {
 namespace CDrawMethods {

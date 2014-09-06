@@ -186,7 +186,7 @@ class ModalViewController : public DelegationController
 public:
 	ModalViewController (IController* controller, const UIDescription* desc) : DelegationController (controller), desc (desc) {}
 
-	CControlListener* getControlListener (const char* controlTagName) VSTGUI_OVERRIDE_VMETHOD { return this; }
+	IControlListener* getControlListener (const char* controlTagName) VSTGUI_OVERRIDE_VMETHOD { return this; }
 	void valueChanged (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD
 	{
 		if (pControl->getValue () > 0.)

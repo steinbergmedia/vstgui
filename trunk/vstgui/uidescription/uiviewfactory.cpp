@@ -34,6 +34,7 @@
 
 #include "uiviewfactory.h"
 #include "uiattributes.h"
+#include "../lib/cview.h"
 #include <map>
 
 namespace VSTGUI {
@@ -136,7 +137,7 @@ static ViewCreatorRegistry& getCreatorRegistry ()
 }
 
 //-----------------------------------------------------------------------------
-CViewAttributeID UIViewFactory::kViewNameAttribute = 'cvcr';
+static CViewAttributeID kViewNameAttribute = 'cvcr';
 
 //-----------------------------------------------------------------------------
 UIViewFactory::UIViewFactory ()

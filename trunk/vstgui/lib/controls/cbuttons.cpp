@@ -36,6 +36,7 @@
 #include "../cdrawcontext.h"
 #include "../cbitmap.h"
 #include "../cframe.h"
+#include "../cgraphicspath.h"
 #include <cmath>
 
 namespace VSTGUI {
@@ -58,7 +59,7 @@ When its value changes, the listener is called.
  * @param style style, currently not used
  */
 //------------------------------------------------------------------------
-COnOffButton::COnOffButton (const CRect& size, CControlListener* listener, int32_t tag, CBitmap* background, int32_t style)
+COnOffButton::COnOffButton (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background, int32_t style)
 : CControl (size, listener, tag, background)
 , style (style)
 {
@@ -181,7 +182,7 @@ When the mouse button is relaxed, the first subbitmap is framed.
  * @param offset unused
  */
 //------------------------------------------------------------------------
-CKickButton::CKickButton (const CRect& size, CControlListener* listener, int32_t tag, CBitmap* background, const CPoint& offset)
+CKickButton::CKickButton (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background, const CPoint& offset)
 : CControl (size, listener, tag, background)
 , offset (offset)
 {
@@ -200,7 +201,7 @@ CKickButton::CKickButton (const CRect& size, CControlListener* listener, int32_t
  * @param offset of background
  */
 //------------------------------------------------------------------------
-CKickButton::CKickButton (const CRect& size, CControlListener* listener, int32_t tag, CCoord heightOfOneImage, CBitmap* background, const CPoint& offset)
+CKickButton::CKickButton (const CRect& size, IControlListener* listener, int32_t tag, CCoord heightOfOneImage, CBitmap* background, const CPoint& offset)
 : CControl (size, listener, tag, background)
 , offset (offset)
 {
@@ -357,7 +358,7 @@ If the bitmap is set, the bitmap must contain 6 states of the checkbox in the fo
 */
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
-CCheckBox::CCheckBox (const CRect& size, CControlListener* listener, int32_t tag, UTF8StringPtr title, CBitmap* bitmap, int32_t style)
+CCheckBox::CCheckBox (const CRect& size, IControlListener* listener, int32_t tag, UTF8StringPtr title, CBitmap* bitmap, int32_t style)
 : CControl (size, listener, tag, bitmap)
 , title (0)
 , style (style)
@@ -691,7 +692,7 @@ int32_t CCheckBox::onKeyDown (VstKeyCode& keyCode)
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
-CTextButton::CTextButton (const CRect& size, CControlListener* listener, int32_t tag, UTF8StringPtr title, Style style)
+CTextButton::CTextButton (const CRect& size, IControlListener* listener, int32_t tag, UTF8StringPtr title, Style style)
 : CControl (size, listener, tag, 0)
 , title (title)
 , font (0)
@@ -727,6 +728,30 @@ void CTextButton::setViewSize (const CRect& rect, bool invalid)
 {
 	invalidPath ();
 	CControl::setViewSize (rect, invalid);
+}
+
+//------------------------------------------------------------------------
+CGradient* CTextButton::getGradient () const
+{
+	return gradient;
+}
+
+//------------------------------------------------------------------------
+CGradient* CTextButton::getGradientHighlighted () const
+{
+	return gradientHighlighted;
+}
+
+//------------------------------------------------------------------------
+CBitmap* CTextButton::getIcon () const
+{
+	return icon;
+}
+
+//------------------------------------------------------------------------
+CBitmap* CTextButton::getIconHighlighted () const
+{
+	return iconHighlighted;
 }
 
 //------------------------------------------------------------------------

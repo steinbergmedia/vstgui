@@ -35,12 +35,10 @@
 #ifndef __coffscreencontext__
 #define __coffscreencontext__
 
+#include "vstguifwd.h"
 #include "cdrawcontext.h"
 
-#include "cbitmap.h"
-
 namespace VSTGUI {
-class CFrame;
 
 //-----------------------------------------------------------------------------
 // COffscreenContext Declaration
@@ -102,8 +100,8 @@ public:
 	//@{
 	void copyFrom (CDrawContext *pContext, CRect destRect, CPoint srcOffset = CPoint (0, 0));	///< copy from offscreen to pContext
 
-	inline CCoord getWidth () const { return bitmap ? bitmap->getWidth () : 0; }
-	inline CCoord getHeight () const { return bitmap ? bitmap->getHeight () : 0; }
+	CCoord getWidth () const;
+	CCoord getHeight () const;
 	//@}
 
 	CBitmap* getBitmap () const { return bitmap; }

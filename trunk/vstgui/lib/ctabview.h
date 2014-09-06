@@ -35,16 +35,17 @@
 #ifndef __ctabview__
 #define __ctabview__
 
+#include "vstguifwd.h"
 #include "cviewcontainer.h"
 #include "cfont.h"
-#include "controls/ccontrol.h"
+#include "controls/icontrollistener.h"
 
 namespace VSTGUI {
 
 class CTabChildView;
 
 //-----------------------------------------------------------------------------
-class CTabView : public CViewContainer, public CControlListener
+class CTabView : public CViewContainer, public IControlListener
 //! @brief a tab view
 /// @ingroup containerviews
 //-----------------------------------------------------------------------------

@@ -35,15 +35,13 @@
 #ifndef __cfontchooser__
 #define __cfontchooser__
 
+#include "../vstguifwd.h"
 #include "../cviewcontainer.h"
 #include "../cfont.h"
 #include "../cdatabrowser.h"
+#include "icontrollistener.h"
 
 namespace VSTGUI {
-class CFontChooser;
-class CDataBrowser;
-class CCheckBox;
-class CTextEdit;
 
 ///	@ingroup new_in_4_0
 //-----------------------------------------------------------------------------
@@ -93,7 +91,7 @@ struct CFontChooserUIDefinition
 
 ///	@ingroup new_in_4_0
 //-----------------------------------------------------------------------------
-class CFontChooser : public CViewContainer, public CControlListener, public IGenericStringListDataBrowserSourceSelectionChanged
+class CFontChooser : public CViewContainer, public IControlListener, public IGenericStringListDataBrowserSourceSelectionChanged
 {
 public:
 	CFontChooser (IFontChooserDelegate* delegate, CFontRef initialFont = 0, const CFontChooserUIDefinition& uiDef = CFontChooserUIDefinition ());

@@ -61,7 +61,7 @@ All digit have the same size and are stacked in height in the bitmap.
  * @param background bitmap
  */
 //------------------------------------------------------------------------
-CSpecialDigit::CSpecialDigit (const CRect& size, CControlListener* listener, int32_t tag, int32_t dwPos, int32_t iNumbers, int32_t* xpos, int32_t* ypos, int32_t width, int32_t height, CBitmap* background)
+CSpecialDigit::CSpecialDigit (const CRect& size, IControlListener* listener, int32_t tag, int32_t dwPos, int32_t iNumbers, int32_t* xpos, int32_t* ypos, int32_t width, int32_t height, CBitmap* background)
 : CControl (size, listener, tag, background)
 , iNumbers (iNumbers)
 , width (width)

@@ -319,6 +319,9 @@
     <ClCompile Include="..\..\..\lib\controls\cscrollbar.cpp">
       <Filter>Source Files\lib\controls</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\lib\clinestyle.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\lib\cbitmap.h">
@@ -692,6 +695,21 @@
     </ClInclude>
     <ClInclude Include="..\..\..\lib\controls\cscrollbar.h">
       <Filter>Source Files\lib\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\cbuttonstate.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\cdrawdefs.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\clinestyle.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\cresourcedescription.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\vstguifwd.h">
+      <Filter>Source Files\lib</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

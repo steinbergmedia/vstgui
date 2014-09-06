@@ -37,11 +37,9 @@
 
 /// @cond ignore
 
-#include "../vstguibase.h"
+#include "../vstguifwd.h"
 
 namespace VSTGUI {
-class COptionMenu;
-class CMenuItem;
 
 //-----------------------------------------------------------------------------
 struct PlatformOptionMenuResult

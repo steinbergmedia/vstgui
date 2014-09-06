@@ -35,6 +35,8 @@
 /// @cond ignore
 
 #import "../../cfileselector.h"
+#import "../../cstring.h"
+#import "../../cframe.h"
 
 // the cocoa fileselector is also used for carbon
 #import <Cocoa/Cocoa.h>

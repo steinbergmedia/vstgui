@@ -35,21 +35,19 @@
 #ifndef __cscrollview__
 #define __cscrollview__
 
+#include "vstguifwd.h"
 #include "cviewcontainer.h"
-#include "controls/ccontrol.h"
+#include "controls/icontrollistener.h"
 
 namespace VSTGUI {
-
-class CScrollbar;
 class CScrollContainer;
-class CVSTGUITimer;
 
 //-----------------------------------------------------------------------------
 // CScrollView Declaration
 //! @brief a scrollable container view with scrollbars
 /// @ingroup containerviews
 //-----------------------------------------------------------------------------
-class CScrollView : public CViewContainer, public CControlListener
+class CScrollView : public CViewContainer, public IControlListener
 {
 protected:
 	enum

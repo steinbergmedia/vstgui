@@ -57,7 +57,7 @@ A bitmap can be used as background.
  * @param style the display style (see CParamDisplay for styles)
  */
 //------------------------------------------------------------------------
-CTextEdit::CTextEdit (const CRect& size, CControlListener* listener, int32_t tag, UTF8StringPtr txt, CBitmap* background, const int32_t style)
+CTextEdit::CTextEdit (const CRect& size, IControlListener* listener, int32_t tag, UTF8StringPtr txt, CBitmap* background, const int32_t style)
 : CTextLabel (size, txt, background, style)
 , platformControl (0)
 #if !VSTGUI_HAS_FUNCTIONAL

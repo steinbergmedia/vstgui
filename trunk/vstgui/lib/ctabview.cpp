@@ -37,6 +37,7 @@
 #include "cbitmap.h"
 #include "cdrawcontext.h"
 #include "controls/cbuttons.h"
+#include "cgraphicspath.h"
 
 namespace VSTGUI {
 
@@ -48,7 +49,7 @@ class CTabButton : public COnOffButton
 //-----------------------------------------------------------------------------
 {
 public:
-	CTabButton (const CRect &size, CControlListener *listener, int32_t tag, CBitmap *background, UTF8StringPtr inName)
+	CTabButton (const CRect &size, IControlListener *listener, int32_t tag, CBitmap *background, UTF8StringPtr inName)
 	: COnOffButton (size, listener, tag, background)
 	, name (0)
 	{

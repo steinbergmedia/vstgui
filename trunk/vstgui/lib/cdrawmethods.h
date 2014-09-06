@@ -35,7 +35,9 @@
 #ifndef __cdrawmethods__
 #define __cdrawmethods__
 
-#include "cdrawcontext.h"
+#include "vstguifwd.h"
+#include "cdrawdefs.h"
+#include "cfont.h"
 
 namespace VSTGUI {
 

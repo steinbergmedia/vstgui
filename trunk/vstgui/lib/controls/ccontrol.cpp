@@ -33,7 +33,9 @@
 //-----------------------------------------------------------------------------
 
 #include "ccontrol.h"
+#include "icontrollistener.h"
 #include "../cframe.h"
+#include "../cgraphicspath.h"
 #include <cassert>
 
 #define VSTGUI_CCONTROL_LOG_EDITING DEBUG
@@ -52,7 +54,7 @@ IdStringPtr CControl::kMessageEndEdit = "kMessageEndEdit";
 /*! @class CControl
 This object manages the tag identification and the value of a control object.
 */
-CControl::CControl (const CRect& size, CControlListener* listener, int32_t tag, CBitmap *pBackground)
+CControl::CControl (const CRect& size, IControlListener* listener, int32_t tag, CBitmap *pBackground)
 : CView (size)
 , listener (listener)
 , tag (tag)

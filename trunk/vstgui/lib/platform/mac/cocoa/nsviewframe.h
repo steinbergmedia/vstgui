@@ -35,7 +35,9 @@
 #ifndef __nsviewframe__
 #define __nsviewframe__
 
-#include "../../../cframe.h"
+#include "../../../vstguifwd.h"
+#include "../../../cview.h"
+#include "../../iplatformframe.h"
 
 #if MAC_COCOA
 

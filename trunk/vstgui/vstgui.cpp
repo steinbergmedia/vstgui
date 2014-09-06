@@ -45,6 +45,7 @@
 #include "lib/cgradientview.cpp"
 #include "lib/cgraphicspath.cpp"
 #include "lib/clayeredviewcontainer.cpp"
+#include "lib/clinestyle.cpp"
 #include "lib/coffscreencontext.cpp"
 #include "lib/copenglview.cpp"
 #include "lib/cpoint.cpp"

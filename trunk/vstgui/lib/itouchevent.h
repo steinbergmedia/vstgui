@@ -35,6 +35,7 @@
 #ifndef __itouchevent__
 #define __itouchevent__
 
+#include "vstguifwd.h"
 #include "cpoint.h"
 
 #if VSTGUI_TOUCH_EVENT_HANDLING
@@ -42,7 +43,6 @@
 #include <map>
 
 namespace VSTGUI {
-class CView;
 
 //-----------------------------------------------------------------------------
 //! @brief a touch event

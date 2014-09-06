@@ -35,11 +35,9 @@
 #ifndef __iplatformviewlayer__
 #define __iplatformviewlayer__
 
-#include "../vstguibase.h"
+#include "../vstguifwd.h"
 
 namespace VSTGUI {
-class CDrawContext;
-struct CRect;
 
 //-----------------------------------------------------------------------------
 class IPlatformViewLayerDelegate

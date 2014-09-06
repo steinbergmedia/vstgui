@@ -38,14 +38,12 @@
 #include "ccontrol.h"
 #include "../cfont.h"
 #include "../ccolor.h"
-#include "../cdrawcontext.h"
+#include "../cdrawdefs.h"
 #if VSTGUI_HAS_FUNCTIONAL
 #include <functional>
 #endif
 
 namespace VSTGUI {
-class CParamDisplay;
-class CParamDisplayRotationPathCache;
 
 //-----------------------------------------------------------------------------
 typedef bool (*CParamDisplayValueToStringProc) (float value, char utf8String[256], void* userData);

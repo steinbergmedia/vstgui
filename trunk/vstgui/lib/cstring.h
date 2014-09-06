@@ -35,7 +35,7 @@
 #ifndef __cstring__
 #define __cstring__
 
-#include "vstguibase.h"
+#include "vstguifwd.h"
 #include "platform/iplatformstring.h"
 #include <string>
 #include <sstream>

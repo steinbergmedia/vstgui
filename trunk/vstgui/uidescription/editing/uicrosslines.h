@@ -35,7 +35,7 @@
 #ifndef __uicrosslines__
 #define __uicrosslines__
 
-#include "../../lib/vstguibase.h"
+#include "../../lib/vstguifwd.h"
 
 #if VSTGUI_LIVE_EDITING
 
@@ -45,9 +45,7 @@
 #include "../../lib/iviewlistener.h"
 
 namespace VSTGUI {
-class CViewContainer;
 class UISelection;
-class CDrawContext;
 
 //----------------------------------------------------------------------------------------------------
 class UICrossLines : public CView, public IViewListenerAdapter

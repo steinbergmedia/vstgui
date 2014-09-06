@@ -33,6 +33,7 @@
 //-----------------------------------------------------------------------------
 
 #include "cxypad.h"
+#include "../cdrawcontext.h"
 
 namespace VSTGUI {
 

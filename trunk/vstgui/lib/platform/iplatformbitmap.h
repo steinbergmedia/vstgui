@@ -37,11 +37,9 @@
 
 /// @cond ignore
 
-#include "../cpoint.h"
-#include "../crect.h"
+#include "../vstguifwd.h"
 
 namespace VSTGUI {
-class CResourceDescription;
 class IPlatformBitmapPixelAccess;
 
 //-----------------------------------------------------------------------------

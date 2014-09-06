@@ -35,10 +35,9 @@
 #ifndef __iviewfactory__
 #define __iviewfactory__
 
-#include "../lib/vstguibase.h"
+#include "../lib/vstguifwd.h"
 
 namespace VSTGUI {
-class CView;
 class UIAttributes;
 class IUIDescription;
 

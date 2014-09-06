@@ -48,7 +48,6 @@
 
 namespace VSTGUI {
 class UIFontsDataSource;
-class COptionMenu;
 //----------------------------------------------------------------------------------------------------
 class UIFontsController : public CBaseObject, public DelegationController, public IGenericStringListDataBrowserSourceSelectionChanged
 {
@@ -59,7 +58,7 @@ public:
 protected:
 	CView* createView (const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
 	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
-	CControlListener* getControlListener (UTF8StringPtr name) VSTGUI_OVERRIDE_VMETHOD;
+	IControlListener* getControlListener (UTF8StringPtr name) VSTGUI_OVERRIDE_VMETHOD;
 	void valueChanged (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
 
 	void dbSelectionChanged (int32_t selectedRow, GenericStringListDataBrowserSource* source) VSTGUI_OVERRIDE_VMETHOD;

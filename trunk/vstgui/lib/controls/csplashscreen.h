@@ -36,6 +36,7 @@
 #define __csplashscreen__
 
 #include "ccontrol.h"
+#include "icontrollistener.h"
 
 namespace VSTGUI {
 
@@ -44,11 +45,11 @@ namespace VSTGUI {
 //!
 /// @ingroup views
 //-----------------------------------------------------------------------------
-class CSplashScreen : public CControl, public CControlListener
+class CSplashScreen : public CControl, public IControlListener
 {
 public:
-	CSplashScreen (const CRect& size, CControlListener* listener, int32_t tag, CBitmap* background, const CRect& toDisplay, const CPoint& offset = CPoint (0, 0));
-	CSplashScreen (const CRect& size, CControlListener* listener, int32_t tag, CView* splashView);
+	CSplashScreen (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background, const CRect& toDisplay, const CPoint& offset = CPoint (0, 0));
+	CSplashScreen (const CRect& size, IControlListener* listener, int32_t tag, CView* splashView);
 	CSplashScreen (const CSplashScreen& splashScreen);
 
 	virtual void draw (CDrawContext*) VSTGUI_OVERRIDE_VMETHOD;

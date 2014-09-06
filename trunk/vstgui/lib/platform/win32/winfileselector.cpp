@@ -38,6 +38,7 @@
 
 #include "win32support.h"
 #include "win32frame.h"
+#include "../../cstring.h"
 #include <shobjidl.h>
 #include <shlobj.h>
 #include <commdlg.h>

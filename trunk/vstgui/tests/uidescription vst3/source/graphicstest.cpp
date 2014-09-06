@@ -117,7 +117,7 @@ public:
 	~GraphicsViewController ();
 
 	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
-	CControlListener* getControlListener (const char* controlTagName) VSTGUI_OVERRIDE_VMETHOD;
+	IControlListener* getControlListener (const char* controlTagName) VSTGUI_OVERRIDE_VMETHOD;
 	void valueChanged (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
 
 	CMessageResult notify (CBaseObject* object, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
@@ -218,7 +218,7 @@ CView* GraphicsViewController::verifyView (CView* view, const UIAttributes& attr
 }
 
 //------------------------------------------------------------------------
-CControlListener* GraphicsViewController::getControlListener (const char* controlTagName)
+IControlListener* GraphicsViewController::getControlListener (const char* controlTagName)
 {
 	if (strcmp (controlTagName, "Rotate") == 0 
 	 || strcmp (controlTagName, "FillGradient") == 0

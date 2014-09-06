@@ -217,7 +217,7 @@ CView* UIFontsController::verifyView (CView* view, const UIAttributes& attribute
 }
 
 //----------------------------------------------------------------------------------------------------
-CControlListener* UIFontsController::getControlListener (UTF8StringPtr name)
+IControlListener* UIFontsController::getControlListener (UTF8StringPtr name)
 {
 	return this;
 }

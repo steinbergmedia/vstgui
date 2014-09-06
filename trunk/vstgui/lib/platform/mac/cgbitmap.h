@@ -38,6 +38,7 @@
 #include "../iplatformbitmap.h"
 
 #if MAC
+#include "../../cpoint.h"
 
 #if TARGET_OS_IPHONE
 	#include <CoreGraphics/CoreGraphics.h>

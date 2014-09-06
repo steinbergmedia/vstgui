@@ -34,6 +34,7 @@
 
 #include "cgraphicspath.h"
 #include "cdrawcontext.h"
+#include "cgraphicstransform.h"
 
 namespace VSTGUI {
 

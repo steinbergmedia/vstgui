@@ -41,6 +41,7 @@
 #include "uieditcontroller.h"
 #include "../uiviewfactory.h"
 #include "../uiattributes.h"
+#include "../../lib/cvstguitimer.h"
 #include "../../lib/controls/coptionmenu.h"
 #include "../../lib/controls/ctextlabel.h"
 #include <cctype>

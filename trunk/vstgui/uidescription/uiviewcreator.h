@@ -37,8 +37,7 @@
 
 /// @cond ignore
 
-#include "../lib/cbitmap.h"
-#include "../lib/cview.h"
+#include "../lib/vstguifwd.h"
 #include <string>
 
 namespace VSTGUI {

@@ -37,6 +37,7 @@
 #include "cbuttons.h"
 #include "ctextedit.h"
 #include "cscrollbar.h"
+#include "../cstring.h"
 #include <list>
 #include <cmath>
 

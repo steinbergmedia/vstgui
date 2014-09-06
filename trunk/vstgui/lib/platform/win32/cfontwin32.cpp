@@ -46,6 +46,7 @@ namespace VSTGUI {
 //-----------------------------------------------------------------------------
 bool IPlatformFont::getAllPlatformFontFamilies (std::list<std::string>& fontFamilyNames)
 {
+	GDIPlusGlobals::enter ();
 	Gdiplus::InstalledFontCollection fonts;
 	INT numFonts = fonts.GetFamilyCount ();
 	if (numFonts > 0)
@@ -62,10 +63,13 @@ bool IPlatformFont::getAllPlatformFontFamilies (std::list<std::string>& fontFami
 			}
 		}
 		::delete [] families;
+		GDIPlusGlobals::exit ();
 		return true;
 	}
+	GDIPlusGlobals::exit ();
 	return false;
 }
+
 //-----------------------------------------------------------------------------
 static Gdiplus::Graphics* getGraphics (CDrawContext* context)
 {

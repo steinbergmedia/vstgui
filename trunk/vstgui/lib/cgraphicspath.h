@@ -35,15 +35,14 @@
 #ifndef __cgraphicspath__
 #define __cgraphicspath__
 
-#include "cgraphicstransform.h"
+#include "vstguifwd.h"
 #include "ccolor.h"
+#include "crect.h"
 #include <vector>
 #include <map>
 #include <algorithm>
 
 namespace VSTGUI {
-class CGradient;
-class CDrawContext;
 
 //-----------------------------------------------------------------------------
 ///	@brief Graphics Path Object

@@ -35,7 +35,7 @@
 #ifndef __animator__
 #define __animator__
 
-#include "../vstguibase.h"
+#include "../vstguifwd.h"
 #include <list>
 #include <string>
 #if VSTGUI_HAS_FUNCTIONAL
@@ -43,12 +43,7 @@
 #endif
 
 namespace VSTGUI {
-class CVSTGUITimer;
-class CView;
-
 namespace Animation {
-class IAnimationTarget;
-class ITimingFunction;
 
 //-----------------------------------------------------------------------------
 /// @brief Animation runner

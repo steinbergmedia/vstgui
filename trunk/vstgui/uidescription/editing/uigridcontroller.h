@@ -55,7 +55,7 @@ public:
 protected:
 	void valueChanged (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
 	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
-	CControlListener* getControlListener (UTF8StringPtr name) VSTGUI_OVERRIDE_VMETHOD;
+	IControlListener* getControlListener (UTF8StringPtr name) VSTGUI_OVERRIDE_VMETHOD;
 
 	SharedPointer<UIDescription> editDescription;
 	SharedPointer<CTextEdit> gridControls[2];

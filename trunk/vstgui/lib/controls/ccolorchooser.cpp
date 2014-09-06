@@ -35,6 +35,7 @@
 #include "ccolorchooser.h"
 #include "cslider.h"
 #include "ctextlabel.h"
+#include "ccontrol.h"
 #include "../cdrawcontext.h"
 #include "../cframe.h"
 #include "../idatapackage.h"
@@ -49,7 +50,7 @@ namespace CColorChooserInternal {
 class Slider : public CSlider
 {
 public:
-	Slider (const CRect& size, CControlListener* listener = 0, int32_t tag = -1)
+	Slider (const CRect& size, IControlListener* listener = 0, int32_t tag = -1)
 	: CSlider (size, listener, tag, 0, 0, 0, 0)
 	{
 		if (size.getWidth () > size.getHeight ())
@@ -141,7 +142,7 @@ public:
 class ColorView : public CControl
 {
 public:
-	ColorView (const CRect& r, const CColor& initialColor, CControlListener* listener = 0, int32_t tag = -1, bool checkerBoardBack = true, const CColor& checkerBoardColor1 = kWhiteCColor, const CColor& checkerBoardColor2 = kBlackCColor)
+	ColorView (const CRect& r, const CColor& initialColor, IControlListener* listener = 0, int32_t tag = -1, bool checkerBoardBack = true, const CColor& checkerBoardColor1 = kWhiteCColor, const CColor& checkerBoardColor2 = kBlackCColor)
 	: CControl (r, listener, tag)
 	, color (initialColor)
 	, checkerBoardBack (checkerBoardBack)

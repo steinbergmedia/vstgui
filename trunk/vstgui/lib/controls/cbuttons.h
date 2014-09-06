@@ -39,7 +39,8 @@
 #include "../cfont.h"
 #include "../ccolor.h"
 #include "../cbitmap.h"
-#include "../cdrawcontext.h"
+#include "../cgraphicspath.h"
+#include "../cstring.h"
 #include "../cdrawmethods.h"
 
 namespace VSTGUI {
@@ -52,7 +53,7 @@ namespace VSTGUI {
 class COnOffButton : public CControl
 {
 public:
-	COnOffButton (const CRect& size, CControlListener* listener = 0, int32_t tag = -1, CBitmap* background = 0, int32_t style = 0);
+	COnOffButton (const CRect& size, IControlListener* listener = 0, int32_t tag = -1, CBitmap* background = 0, int32_t style = 0);
 	COnOffButton (const COnOffButton& onOffButton);
 
 	//-----------------------------------------------------------------------------
@@ -87,7 +88,7 @@ protected:
 class CCheckBox : public CControl
 {
 public:
-	CCheckBox (const CRect& size, CControlListener* listener, int32_t tag, UTF8StringPtr title, CBitmap* bitmap = 0, int32_t style = 0);
+	CCheckBox (const CRect& size, IControlListener* listener, int32_t tag, UTF8StringPtr title, CBitmap* bitmap = 0, int32_t style = 0);
 	CCheckBox (const CCheckBox& checkbox);
 
 	enum Styles {
@@ -154,8 +155,8 @@ private:
 class CKickButton : public CControl, public IMultiBitmapControl
 {
 public:
-	CKickButton (const CRect& size, CControlListener* listener, int32_t tag, CBitmap* background, const CPoint& offset = CPoint (0, 0));
-	CKickButton (const CRect& size, CControlListener* listener, int32_t tag, CCoord heightOfOneImage, CBitmap* background, const CPoint& offset = CPoint (0, 0));
+	CKickButton (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background, const CPoint& offset = CPoint (0, 0));
+	CKickButton (const CRect& size, IControlListener* listener, int32_t tag, CCoord heightOfOneImage, CBitmap* background, const CPoint& offset = CPoint (0, 0));
 	CKickButton (const CKickButton& kickButton);
 
 	virtual void draw (CDrawContext*) VSTGUI_OVERRIDE_VMETHOD;
@@ -195,7 +196,7 @@ public:
 		kOnOffStyle
 	};
 
-	CTextButton (const CRect& size, CControlListener* listener, int32_t tag, UTF8StringPtr title, Style = kKickStyle);
+	CTextButton (const CRect& size, IControlListener* listener, int32_t tag, UTF8StringPtr title, Style = kKickStyle);
 
 	//-----------------------------------------------------------------------------
 	/// @name CTextButton Methods
@@ -213,9 +214,9 @@ public:
 	const CColor& getTextColorHighlighted () const { return textColorHighlighted; }
 	
 	virtual void setGradient (CGradient* gradient);
-	CGradient* getGradient () const { return gradient; }
+	CGradient* getGradient () const;
 	virtual void setGradientHighlighted (CGradient* gradient);
-	CGradient* getGradientHighlighted () const { return gradientHighlighted; }
+	CGradient* getGradientHighlighted () const;
 	
 	virtual void setFrameColor (const CColor& color);
 	const CColor& getFrameColor () const { return frameColor; }
@@ -232,10 +233,10 @@ public:
 	Style getStyle () const { return style; }
 
 	virtual void setIcon (CBitmap* bitmap);
-	CBitmap* getIcon () const { return icon; }
+	CBitmap* getIcon () const;
 	
 	virtual void setIconHighlighted (CBitmap* bitmap);
-	CBitmap* getIconHighlighted () const { return iconHighlighted; }
+	CBitmap* getIconHighlighted () const;
 
 	virtual void setIconPosition (CDrawMethods::IconPosition pos);
 	CDrawMethods::IconPosition getIconPosition () const { return iconPosition; }

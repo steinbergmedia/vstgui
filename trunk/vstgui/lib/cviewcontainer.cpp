@@ -37,6 +37,8 @@
 #include "cbitmap.h"
 #include "cframe.h"
 #include "ifocusdrawing.h"
+#include "itouchevent.h"
+#include "cgraphicspath.h"
 #include "controls/ccontrol.h"
 
 #include <algorithm>

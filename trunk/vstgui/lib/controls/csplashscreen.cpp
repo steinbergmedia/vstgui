@@ -46,7 +46,7 @@ namespace VSTGUI {
 class CDefaultSplashScreenView : public CControl
 {
 public:
-	CDefaultSplashScreenView (const CRect& size, CControlListener* listener, CBitmap* bitmap, const CPoint& offset) : CControl (size, listener), offset (offset) { setBackground (bitmap); }
+	CDefaultSplashScreenView (const CRect& size, IControlListener* listener, CBitmap* bitmap, const CPoint& offset) : CControl (size, listener), offset (offset) { setBackground (bitmap); }
 
 	void draw (CDrawContext *pContext) VSTGUI_OVERRIDE_VMETHOD
 	{
@@ -88,7 +88,7 @@ and another click on the displayed area will leave the modal mode.
  * @param offset offset of background bitmap
  */
 //------------------------------------------------------------------------
-CSplashScreen::CSplashScreen (const CRect& size, CControlListener* listener, int32_t tag, CBitmap* background, const CRect& toDisplay, const CPoint& offset)
+CSplashScreen::CSplashScreen (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background, const CRect& toDisplay, const CPoint& offset)
 : CControl (size, listener, tag, background)
 , toDisplay (toDisplay)
 , offset (offset)
@@ -106,7 +106,7 @@ CSplashScreen::CSplashScreen (const CRect& size, CControlListener* listener, int
  * @param splashView the view to show
  */
 //------------------------------------------------------------------------
-CSplashScreen::CSplashScreen (const CRect& size, CControlListener* listener, int32_t tag, CView* splashView)
+CSplashScreen::CSplashScreen (const CRect& size, IControlListener* listener, int32_t tag, CView* splashView)
 : CControl (size, listener, tag)
 , modalView (splashView)
 {

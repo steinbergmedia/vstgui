@@ -41,11 +41,8 @@
 #include <functional>
 #endif
 
-#include "../platform/iplatformoptionmenu.h"
-
 namespace VSTGUI {
 
-class COptionMenu;
 //-----------------------------------------------------------------------------
 // CMenuItem Declaration
 //! @brief a menu item
@@ -176,7 +173,7 @@ class COptionMenu : public CParamDisplay
 {
 public:
 	COptionMenu ();
-	COptionMenu (const CRect& size, CControlListener* listener, int32_t tag, CBitmap* background = 0, CBitmap* bgWhenClick = 0, const int32_t style = 0);
+	COptionMenu (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background = 0, CBitmap* bgWhenClick = 0, const int32_t style = 0);
 	COptionMenu (const COptionMenu& menu);
 	~COptionMenu ();
 

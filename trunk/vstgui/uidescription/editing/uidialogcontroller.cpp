@@ -192,7 +192,7 @@ void UIDialogController::valueChanged (CControl* control)
 }
 
 //----------------------------------------------------------------------------------------------------
-CControlListener* UIDialogController::getControlListener (UTF8StringPtr controlTagName)
+IControlListener* UIDialogController::getControlListener (UTF8StringPtr controlTagName)
 {
 	return this;
 }

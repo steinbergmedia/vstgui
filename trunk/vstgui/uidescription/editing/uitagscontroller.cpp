@@ -199,7 +199,7 @@ CView* UITagsController::verifyView (CView* view, const UIAttributes& attributes
 }
 
 //----------------------------------------------------------------------------------------------------
-CControlListener* UITagsController::getControlListener (UTF8StringPtr name)
+IControlListener* UITagsController::getControlListener (UTF8StringPtr name)
 {
 	return this;
 }

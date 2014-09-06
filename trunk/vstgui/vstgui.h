@@ -38,6 +38,7 @@
 #include "lib/vstguibase.h"
 #include "lib/cbitmap.h"
 #include "lib/cbitmapfilter.h"
+#include "lib/cbuttonstate.h"
 #include "lib/ccolor.h"
 #include "lib/cdatabrowser.h"
 #include "lib/cdrawcontext.h"
@@ -49,6 +50,7 @@
 #include "lib/cgradientview.h"
 #include "lib/cgraphicspath.h"
 #include "lib/clayeredviewcontainer.h"
+#include "lib/clinestyle.h"
 #include "lib/coffscreencontext.h"
 #include "lib/copenglview.h"
 #include "lib/cpoint.h"
@@ -90,6 +92,8 @@
 #include "lib/animation/animator.h"
 #include "lib/animation/timingfunctions.h"
 
+#if !defined (VSTGUI_DISABLE_GLOBAL_NAMESPACE_POLLUTION) || VSTGUI_DISABLE_GLOBAL_NAMESPACE_POLLUTION == 0
 using namespace VSTGUI;
+#endif
 
 #endif	// __vstgui__

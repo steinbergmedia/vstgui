@@ -35,14 +35,11 @@
 #ifndef __animation__
 #define __animation__
 
-#include "animator.h"
+#include "../vstguifwd.h"
 #include "ianimationtarget.h"
 #include "../crect.h"
-#include "../vstguibase.h"
 
 namespace VSTGUI {
-class CView;
-
 namespace Animation {
 
 //-----------------------------------------------------------------------------

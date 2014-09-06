@@ -35,18 +35,12 @@
 #ifndef __cbitmapfilter__
 #define __cbitmapfilter__
 
-#include "cbitmap.h"
+#include "vstguifwd.h"
 #include <vector>
 #include <string>
 #include <map>
 
 namespace VSTGUI {
-class CBitmap;
-class CBitmapPixelAccess;
-struct CColor;
-struct CRect;
-struct CPoint;
-struct CGraphicsTransform;
 
 namespace BitmapFilter {
 

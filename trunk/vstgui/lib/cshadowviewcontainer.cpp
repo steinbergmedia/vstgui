@@ -36,6 +36,7 @@
 #include "coffscreencontext.h"
 #include "cbitmapfilter.h"
 #include "cframe.h"
+#include "cbitmap.h"
 
 namespace VSTGUI {
 

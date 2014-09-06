@@ -35,13 +35,11 @@
 #ifndef __iplatformopenglview__
 #define __iplatformopenglview__
 
-#include "../vstguibase.h"
+#include "../vstguifwd.h"
 
 /// @cond ignore
 
 #if VSTGUI_OPENGL_SUPPORT
-
-#include "../crect.h"
 
 namespace VSTGUI {
 class IPlatformFrame;

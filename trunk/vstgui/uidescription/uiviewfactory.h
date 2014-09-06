@@ -35,7 +35,7 @@
 #ifndef __uiviewfactory__
 #define __uiviewfactory__
 
-#include "../lib/cview.h"
+#include "../lib/vstguifwd.h"
 #include "iuidescription.h"
 #include "iviewfactory.h"
 #include "iviewcreator.h"
@@ -80,8 +80,6 @@ protected:
 	static void rememberAttribute (CView* view, IdStringPtr attrName, const std::string& value);
 	static bool getRememberedAttribute (CView* view, IdStringPtr attrName, std::string& value);
 #endif
-	
-	static CViewAttributeID kViewNameAttribute;
 };
 
 } // namespace

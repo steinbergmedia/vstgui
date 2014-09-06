@@ -291,7 +291,7 @@ public:
 	, openGLView (0)
 	{}
 
-	CControlListener* getControlListener (UTF8StringPtr name) VSTGUI_OVERRIDE_VMETHOD
+	IControlListener* getControlListener (UTF8StringPtr name) VSTGUI_OVERRIDE_VMETHOD
 	{
 		if (strcmp (name, "threaded") == 0)
 			return this;
