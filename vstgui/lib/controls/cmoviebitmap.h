@@ -47,8 +47,8 @@ namespace VSTGUI {
 class CMovieBitmap : public CControl, public IMultiBitmapControl
 {
 public:
-	CMovieBitmap (const CRect& size, CControlListener* listener, int32_t tag, CBitmap* background, const CPoint& offset = CPoint (0, 0));
-	CMovieBitmap (const CRect& size, CControlListener* listener, int32_t tag, int32_t subPixmaps, CCoord heightOfOneImage, CBitmap* background, const CPoint& offset = CPoint (0, 0));
+	CMovieBitmap (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background, const CPoint& offset = CPoint (0, 0));
+	CMovieBitmap (const CRect& size, IControlListener* listener, int32_t tag, int32_t subPixmaps, CCoord heightOfOneImage, CBitmap* background, const CPoint& offset = CPoint (0, 0));
 	CMovieBitmap (const CMovieBitmap& movieBitmap);
 
 	virtual void draw (CDrawContext*) VSTGUI_OVERRIDE_VMETHOD;

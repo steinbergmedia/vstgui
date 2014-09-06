@@ -35,6 +35,7 @@
 #ifndef __base64codec__
 #define __base64codec__
 
+#include "../lib/vstguibase.h"
 #include <string>
 #include <cstdlib>
 

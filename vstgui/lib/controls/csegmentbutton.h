@@ -38,6 +38,8 @@
 #include "ccontrol.h"
 #include "../cdrawmethods.h"
 #include "../cbitmap.h"
+#include "../cstring.h"
+#include "../ccolor.h"
 #include <vector>
 #include <limits>
 
@@ -68,7 +70,7 @@ public:
 	typedef std::vector<Segment> Segments;
 	typedef std::numeric_limits<uint32_t> UInt32Limit;
 
-	CSegmentButton (const CRect& size, CControlListener* listener = 0, int32_t tag = -1);
+	CSegmentButton (const CRect& size, IControlListener* listener = 0, int32_t tag = -1);
 
 	//-----------------------------------------------------------------------------
 	/// @name Segment Methods

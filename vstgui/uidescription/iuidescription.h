@@ -35,17 +35,13 @@
 #ifndef __iuidescription__
 #define __iuidescription__
 
+#include "../lib/vstguifwd.h"
 #include "../lib/cfont.h"
-
-class CControlListener;
 
 namespace VSTGUI {
 
 class IController;
 class IViewFactory;
-class CBitmap;
-class CGradient;
-struct CColor;
 
 //-----------------------------------------------------------------------------
 class IUIDescription
@@ -58,7 +54,7 @@ public:
 	virtual bool getColor (UTF8StringPtr name, CColor& color) const = 0;
 	virtual CGradient* getGradient (UTF8StringPtr name) const = 0;
 	virtual int32_t getTagForName (UTF8StringPtr name) const = 0;
-	virtual CControlListener* getControlListener (UTF8StringPtr name) const = 0;
+	virtual IControlListener* getControlListener (UTF8StringPtr name) const = 0;
 	virtual IController* getController () const = 0;
 
 	virtual UTF8StringPtr lookupColorName (const CColor& color) const = 0;

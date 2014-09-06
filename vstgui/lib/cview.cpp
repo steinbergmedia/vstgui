@@ -37,6 +37,7 @@
 #include "cbitmap.h"
 #include "cframe.h"
 #include "cvstguitimer.h"
+#include "cgraphicspath.h"
 #include "idatapackage.h"
 #include "iviewlistener.h"
 #include "animation/animator.h"

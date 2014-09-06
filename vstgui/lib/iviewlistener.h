@@ -35,10 +35,9 @@
 #ifndef __iviewlistener__
 #define __iviewlistener__
 
-namespace VSTGUI {
+#include "vstguifwd.h"
 
-class CView;
-struct CRect;
+namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
 /// @brief View Listener Interface

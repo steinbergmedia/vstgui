@@ -42,7 +42,6 @@
 #endif
 
 namespace VSTGUI {
-class CTextEdit;
 
 typedef bool (*CTextEditStringToValueProc) (UTF8StringPtr txt, float& result, void* userData);
 
@@ -54,7 +53,7 @@ typedef bool (*CTextEditStringToValueProc) (UTF8StringPtr txt, float& result, vo
 class CTextEdit : public CTextLabel, public IPlatformTextEditCallback
 {
 public:
-	CTextEdit (const CRect& size, CControlListener* listener, int32_t tag, UTF8StringPtr txt = 0, CBitmap* background = 0, const int32_t style = 0);
+	CTextEdit (const CRect& size, IControlListener* listener, int32_t tag, UTF8StringPtr txt = 0, CBitmap* background = 0, const int32_t style = 0);
 	CTextEdit (const CTextEdit& textEdit);
 
 	//-----------------------------------------------------------------------------

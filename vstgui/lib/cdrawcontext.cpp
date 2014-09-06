@@ -35,6 +35,7 @@
 #include "cdrawcontext.h"
 #include "cgraphicspath.h"
 #include "cbitmap.h"
+#include "cstring.h"
 #include <cassert>
 
 namespace VSTGUI {
@@ -474,94 +475,5 @@ const CGraphicsTransform& CDrawContext::getCurrentTransform () const
 {
 	return transformStack.top ();
 }
-
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-CLineStyle::CLineStyle (LineCap _cap, LineJoin _join, CCoord _dashPhase, uint32_t _dashCount, const CCoord* _dashLengths)
-: cap (_cap)
-, join (_join)
-, dashPhase (_dashPhase)
-{
-	if (_dashCount && _dashLengths)
-	{
-		for (uint32_t i = 0; i < _dashCount; i++)
-			dashLengths.push_back (_dashLengths[i]);
-	}
-}
-
-//-----------------------------------------------------------------------------
-CLineStyle::CLineStyle (LineCap _cap, LineJoin _join, CCoord _dashPhase, const CoordVector& _dashLengths)
-: cap (_cap)
-, join (_join)
-, dashPhase (_dashPhase)
-, dashLengths (_dashLengths)
-{
-}
-
-//-----------------------------------------------------------------------------
-CLineStyle::CLineStyle (const CLineStyle& lineStyle)
-{
-	*this = lineStyle;
-}
-
-//-----------------------------------------------------------------------------
-CLineStyle::~CLineStyle ()
-{
-}
-
-#if VSTGUI_RVALUE_REF_SUPPORT
-//-----------------------------------------------------------------------------
-CLineStyle::CLineStyle (LineCap _cap, LineJoin _join, CCoord _dashPhase, CoordVector&& _dashLengths) noexcept
-: cap (_cap)
-, join (_join)
-, dashPhase (_dashPhase)
-, dashLengths (std::move (_dashLengths))
-{
-}
-
-//-----------------------------------------------------------------------------
-CLineStyle::CLineStyle (CLineStyle&& cls) noexcept
-{
-	*this = std::move (cls);
-}
-
-//-----------------------------------------------------------------------------
-CLineStyle& CLineStyle::operator= (CLineStyle&& cls) noexcept
-{
-	dashLengths.clear ();
-	cap = cls.cap;
-	join = cls.join;
-	dashPhase = cls.dashPhase;
-	dashLengths = std::move (cls.dashLengths);
-	return *this;
-}
-#endif
-
-//-----------------------------------------------------------------------------
-bool CLineStyle::operator== (const CLineStyle& cls) const
-{
-	if (cap == cls.cap && join == cls.join && dashPhase == cls.dashPhase && dashLengths == cls.dashLengths)
-	{
-		return true;
-	}
-	return false;
-}
-
-//-----------------------------------------------------------------------------
-CLineStyle& CLineStyle::operator= (const CLineStyle& cls)
-{
-	dashLengths.clear ();
-	cap = cls.cap;
-	join = cls.join;
-	dashPhase = cls.dashPhase;
-	dashLengths = cls.dashLengths;
-	return *this;
-}
-
-//-----------------------------------------------------------------------------
-static const CCoord kDefaultOnOffDashLength[] = {1, 1};
-const CLineStyle kLineSolid;
-const CLineStyle kLineOnOffDash (CLineStyle::kLineCapButt, CLineStyle::kLineJoinMiter, 0, 2, kDefaultOnOffDashLength);
 
 } // namespace

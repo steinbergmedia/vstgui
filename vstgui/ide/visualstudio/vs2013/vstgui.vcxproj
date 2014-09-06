@@ -163,6 +163,7 @@
     <ClCompile Include="..\..\..\lib\cgradientview.cpp" />
     <ClCompile Include="..\..\..\lib\cgraphicspath.cpp" />
     <ClCompile Include="..\..\..\lib\clayeredviewcontainer.cpp" />
+    <ClCompile Include="..\..\..\lib\clinestyle.cpp" />
     <ClCompile Include="..\..\..\lib\coffscreencontext.cpp" />
     <ClCompile Include="..\..\..\lib\controls\cscrollbar.cpp" />
     <ClCompile Include="..\..\..\lib\controls\csegmentbutton.cpp" />
@@ -252,9 +253,11 @@
     <ClInclude Include="..\..\..\lib\animation\itimingfunction.h" />
     <ClInclude Include="..\..\..\lib\cbitmap.h" />
     <ClInclude Include="..\..\..\lib\cbitmapfilter.h" />
+    <ClInclude Include="..\..\..\lib\cbuttonstate.h" />
     <ClInclude Include="..\..\..\lib\ccolor.h" />
     <ClInclude Include="..\..\..\lib\cdatabrowser.h" />
     <ClInclude Include="..\..\..\lib\cdrawcontext.h" />
+    <ClInclude Include="..\..\..\lib\cdrawdefs.h" />
     <ClInclude Include="..\..\..\lib\cdrawmethods.h" />
     <ClInclude Include="..\..\..\lib\cdropsource.h" />
     <ClInclude Include="..\..\..\lib\cfileselector.h" />
@@ -264,12 +267,14 @@
     <ClInclude Include="..\..\..\lib\cgraphicspath.h" />
     <ClInclude Include="..\..\..\lib\cgraphicstransform.h" />
     <ClInclude Include="..\..\..\lib\clayeredviewcontainer.h" />
+    <ClInclude Include="..\..\..\lib\clinestyle.h" />
     <ClInclude Include="..\..\..\lib\coffscreencontext.h" />
     <ClInclude Include="..\..\..\lib\controls\cscrollbar.h" />
     <ClInclude Include="..\..\..\lib\controls\csegmentbutton.h" />
     <ClInclude Include="..\..\..\lib\copenglview.h" />
     <ClInclude Include="..\..\..\lib\cpoint.h" />
     <ClInclude Include="..\..\..\lib\crect.h" />
+    <ClInclude Include="..\..\..\lib\cresourcedescription.h" />
     <ClInclude Include="..\..\..\lib\crowcolumnview.h" />
     <ClInclude Include="..\..\..\lib\cscrollview.h" />
     <ClInclude Include="..\..\..\lib\cshadowviewcontainer.h" />
@@ -288,6 +293,7 @@
     <ClInclude Include="..\..\..\lib\iviewlistener.h" />
     <ClInclude Include="..\..\..\lib\vstguibase.h" />
     <ClInclude Include="..\..\..\lib\vstguidebug.h" />
+    <ClInclude Include="..\..\..\lib\vstguifwd.h" />
     <ClInclude Include="..\..\..\lib\vstkeycode.h" />
     <ClInclude Include="..\..\..\lib\animation\animations.h" />
     <ClInclude Include="..\..\..\lib\animation\animator.h" />

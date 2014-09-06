@@ -41,6 +41,7 @@
 #include "controls/cscrollbar.h"
 #include "ifocusdrawing.h"
 #include "cvstguitimer.h"
+#include "cgraphicspath.h"
 #include <cmath>
 #include <algorithm>
 

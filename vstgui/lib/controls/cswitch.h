@@ -38,7 +38,6 @@
 #include "ccontrol.h"
 
 namespace VSTGUI {
-class CVSTGUITimer;
 
 //-----------------------------------------------------------------------------
 // CVerticalSwitch Declaration
@@ -48,8 +47,8 @@ class CVSTGUITimer;
 class CVerticalSwitch : public CControl, public IMultiBitmapControl
 {
 public:
-	CVerticalSwitch (const CRect& size, CControlListener* listener, int32_t tag, CBitmap* background, const CPoint& offset = CPoint (0, 0));
-	CVerticalSwitch (const CRect& size, CControlListener* listener, int32_t tag, int32_t subPixmaps, CCoord heightOfOneImage, int32_t iMaxPositions, CBitmap* background, const CPoint& offset = CPoint (0, 0));
+	CVerticalSwitch (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background, const CPoint& offset = CPoint (0, 0));
+	CVerticalSwitch (const CRect& size, IControlListener* listener, int32_t tag, int32_t subPixmaps, CCoord heightOfOneImage, int32_t iMaxPositions, CBitmap* background, const CPoint& offset = CPoint (0, 0));
 	CVerticalSwitch (const CVerticalSwitch& vswitch);
 
 	virtual void draw (CDrawContext*) VSTGUI_OVERRIDE_VMETHOD;
@@ -81,8 +80,8 @@ private:
 class CHorizontalSwitch : public CControl, public IMultiBitmapControl
 {
 public:
-	CHorizontalSwitch (const CRect& size, CControlListener* listener, int32_t tag, CBitmap* background, const CPoint& offset = CPoint (0, 0));
-	CHorizontalSwitch (const CRect& size, CControlListener* listener, int32_t tag, int32_t subPixmaps, CCoord heightOfOneImage, int32_t iMaxPositions, CBitmap* background, const CPoint& offset = CPoint (0, 0));
+	CHorizontalSwitch (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background, const CPoint& offset = CPoint (0, 0));
+	CHorizontalSwitch (const CRect& size, IControlListener* listener, int32_t tag, int32_t subPixmaps, CCoord heightOfOneImage, int32_t iMaxPositions, CBitmap* background, const CPoint& offset = CPoint (0, 0));
 	CHorizontalSwitch (const CHorizontalSwitch& hswitch);
 
 	virtual void draw (CDrawContext*) VSTGUI_OVERRIDE_VMETHOD;
@@ -114,8 +113,8 @@ private:
 class CRockerSwitch : public CControl, public IMultiBitmapControl
 {
 public:
-	CRockerSwitch (const CRect& size, CControlListener* listener, int32_t tag, CBitmap* background, const CPoint& offset = CPoint (0, 0), const int32_t style = kHorizontal);
-	CRockerSwitch (const CRect& size, CControlListener* listener, int32_t tag, CCoord heightOfOneImage, CBitmap* background, const CPoint& offset = CPoint (0, 0), const int32_t style = kHorizontal);
+	CRockerSwitch (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background, const CPoint& offset = CPoint (0, 0), const int32_t style = kHorizontal);
+	CRockerSwitch (const CRect& size, IControlListener* listener, int32_t tag, CCoord heightOfOneImage, CBitmap* background, const CPoint& offset = CPoint (0, 0), const int32_t style = kHorizontal);
 	CRockerSwitch (const CRockerSwitch& rswitch);
 
 	virtual void draw (CDrawContext*) VSTGUI_OVERRIDE_VMETHOD;

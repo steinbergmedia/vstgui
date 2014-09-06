@@ -35,10 +35,10 @@
 #ifndef __cviewcontainer__
 #define __cviewcontainer__
 
+#include "vstguifwd.h"
 #include "cview.h"
 #include "ccolor.h"
-#include "cdrawcontext.h"
-#include "itouchevent.h"
+#include "cdrawdefs.h"
 #include <list>
 
 namespace VSTGUI {

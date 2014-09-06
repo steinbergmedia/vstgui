@@ -229,7 +229,7 @@ CView* UIColorChooserController::verifyView (CView* view, const UIAttributes& at
 }
 
 //----------------------------------------------------------------------------------------------------
-CControlListener* UIColorChooserController::getControlListener (UTF8StringPtr name)
+IControlListener* UIColorChooserController::getControlListener (UTF8StringPtr name)
 {
 	return this;
 }

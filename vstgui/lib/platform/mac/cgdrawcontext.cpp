@@ -40,6 +40,7 @@
 #include "cgbitmap.h"
 #include "quartzgraphicspath.h"
 #include "cfontmac.h"
+#include "../../cbitmap.h"
 
 #ifndef CGFLOAT_DEFINED
 	#define CGFLOAT_DEFINED
@@ -67,10 +68,10 @@ static void addOvalToPath (CGContextRef c, CPoint center, CGFloat a, CGFloat b, 
 	double endAngle = radians (end_angle);
 	if (a != b)
 	{
-		startAngle = atan2 (sin (startAngle) * a, cos (startAngle) * b);
-		endAngle = atan2 (sin (endAngle) * a, cos (endAngle) * b);
+		startAngle = std::atan2 (std::sin (startAngle) * a, std::cos (startAngle) * b);
+		endAngle = std::atan2 (std::sin (endAngle) * a, std::cos (endAngle) * b);
 	}
-	CGContextMoveToPoint (c, cos (startAngle), sin (startAngle));
+	CGContextMoveToPoint (c, std::cos (startAngle), std::sin (startAngle));
 	
 	CGContextAddArc(c, 0, 0, 1, startAngle, endAngle, 0);
 	

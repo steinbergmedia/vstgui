@@ -38,6 +38,7 @@
 #include "../cview.h"
 #include "../ifocusdrawing.h"
 #include "../idependency.h"
+#include "icontrollistener.h"
 #include <list>
 
 //------------------
@@ -72,27 +73,6 @@
 #endif
 
 namespace VSTGUI {
-class CControl;
-} // namespace
-
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-class CControlListener
-{
-public:
-	virtual ~CControlListener() {}
-	virtual void valueChanged (VSTGUI::CControl* pControl) = 0;
-	virtual int32_t controlModifierClicked (VSTGUI::CControl* pControl, VSTGUI::CButtonState button) { return 0; }	///< return 1 if you want the control to not handle it, otherwise 0
-	virtual void controlBeginEdit (VSTGUI::CControl* pControl) {}
-	virtual void controlEndEdit (VSTGUI::CControl* pControl) {}
-	virtual void controlTagWillChange (VSTGUI::CControl* pControl) {}
-	virtual void controlTagDidChange (VSTGUI::CControl* pControl) {}
-#if DEBUG
-	virtual char controlModifierClicked (VSTGUI::CControl* pControl, long button) { return 0; }
-#endif
-};
-
-namespace VSTGUI {
 
 //------------------
 // CControlEnum type
@@ -125,7 +105,7 @@ enum CControlEnum
 class CControl : public CView, public IFocusDrawing, public IDependency
 {
 public:
-	CControl (const CRect& size, CControlListener* listener = 0, int32_t tag = 0, CBitmap* pBackground = 0);
+	CControl (const CRect& size, IControlListener* listener = 0, int32_t tag = 0, CBitmap* pBackground = 0);
 	CControl (const CControl& c);
 
 	//-----------------------------------------------------------------------------
@@ -166,8 +146,8 @@ public:
 	virtual void endEdit ();
 	bool isEditing () const { return editing > 0; }
 
-	virtual CControlListener* getListener () const { return listener; }	///< get main listener
-	virtual void setListener (CControlListener* l) { listener = l; } ///< set main listener
+	virtual IControlListener* getListener () const { return listener; }	///< get main listener
+	virtual void setListener (IControlListener* l) { listener = l; } ///< set main listener
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -207,7 +187,7 @@ protected:
 	~CControl ();
 	static int32_t mapVstKeyModifier (int32_t vstModifier);
 
-	CControlListener* listener;
+	IControlListener* listener;
 	int32_t  tag;
 	float oldValue;
 	float defaultValue;
@@ -242,5 +222,7 @@ protected:
 };
 
 } // namespace
+
+VSTGUI_DEPRECATED(typedef VSTGUI::IControlListener CControlListener;) ///< \deprecated use IControlListener instead of CControlListener
 
 #endif

@@ -34,6 +34,8 @@
 
 #include "cbitmap.h"
 #include "cdrawcontext.h"
+#include "ccolor.h"
+#include "platform/iplatformbitmap.h"
 #include <cassert>
 
 namespace VSTGUI {
@@ -121,6 +123,12 @@ CCoord CBitmap::getHeight () const
 	if (getPlatformBitmap ())
 		return getPlatformBitmap ()->getSize ().y / getPlatformBitmap ()->getScaleFactor ();
 	return 0;
+}
+
+//-----------------------------------------------------------------------------
+IPlatformBitmap* CBitmap::getPlatformBitmap () const
+{
+	return bitmaps.empty () ? 0 : bitmaps[0];
 }
 
 //-----------------------------------------------------------------------------

@@ -35,20 +35,12 @@
 #ifndef __cframe__
 #define __cframe__
 
+#include "vstguifwd.h"
 #include "cviewcontainer.h"
 #include "platform/iplatformframe.h"
 #include <list>
 
 namespace VSTGUI {
-class VSTGUIEditorInterface;
-class IMouseObserver;
-class IKeyboardHook;
-class IViewAddedRemovedObserver;
-class IScaleFactorChangedListener;
-class CTooltipSupport;
-namespace Animation {
-	class Animator;
-}
 
 //----------------------------
 // @brief Knob Mode

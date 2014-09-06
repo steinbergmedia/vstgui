@@ -35,15 +35,13 @@
 #ifndef __uiattributes__
 #define __uiattributes__
 
-#include "../lib/vstguibase.h"
+#include "../lib/vstguifwd.h"
 
 #include <string>
 #include <vector>
 #include "../lib/platform/std_unorderedmap.h"
 
 namespace VSTGUI {
-struct CPoint;
-struct CRect;
 class OutputStream;
 class InputStream;
 

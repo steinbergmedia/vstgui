@@ -109,7 +109,7 @@ CView* UIViewCreatorController::verifyView (CView* view, const UIAttributes& att
 }
 
 //----------------------------------------------------------------------------------------------------
-CControlListener* UIViewCreatorController::getControlListener (UTF8StringPtr name)
+IControlListener* UIViewCreatorController::getControlListener (UTF8StringPtr name)
 {
 	if (std::strcmp (name, "viewcreator.search") == 0)
 		return dataSource;

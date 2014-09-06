@@ -39,6 +39,8 @@
 
 #if WINDOWS && VSTGUI_DIRECT2D_SUPPORT
 
+#include "../../../cpoint.h"
+
 struct IWICBitmapSource;
 struct ID2D1Bitmap;
 struct ID2D1RenderTarget;

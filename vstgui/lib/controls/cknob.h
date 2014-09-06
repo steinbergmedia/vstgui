@@ -58,7 +58,7 @@ public:
 		kCoronaOutline				= 1 << 5
 	};
 	
-	CKnob (const CRect& size, CControlListener* listener, int32_t tag, CBitmap* background, CBitmap* handle, const CPoint& offset = CPoint (0, 0), int32_t drawStyle = kLegacyHandleLineDrawing);
+	CKnob (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background, CBitmap* handle, const CPoint& offset = CPoint (0, 0), int32_t drawStyle = kLegacyHandleLineDrawing);
 	CKnob (const CKnob& knob);
 
 	//-----------------------------------------------------------------------------
@@ -160,8 +160,8 @@ private:
 class CAnimKnob : public CKnob, public IMultiBitmapControl
 {
 public:
-	CAnimKnob (const CRect& size, CControlListener* listener, int32_t tag, CBitmap* background, const CPoint& offset = CPoint (0, 0));
-	CAnimKnob (const CRect& size, CControlListener* listener, int32_t tag, int32_t subPixmaps, CCoord heightOfOneImage, CBitmap* background, const CPoint& offset = CPoint (0, 0));
+	CAnimKnob (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background, const CPoint& offset = CPoint (0, 0));
+	CAnimKnob (const CRect& size, IControlListener* listener, int32_t tag, int32_t subPixmaps, CCoord heightOfOneImage, CBitmap* background, const CPoint& offset = CPoint (0, 0));
 	CAnimKnob (const CAnimKnob& knob);
 
 	//-----------------------------------------------------------------------------

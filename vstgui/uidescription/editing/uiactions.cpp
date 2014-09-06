@@ -40,6 +40,7 @@
 #include "../uiviewfactory.h"
 #include "../uidescription.h"
 #include "../uiattributes.h"
+#include "../../lib/cgraphicspath.h"
 
 namespace VSTGUI {
 

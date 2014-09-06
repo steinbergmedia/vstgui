@@ -35,11 +35,10 @@
 #ifndef __ctooltipsupport__
 #define __ctooltipsupport__
 
-#include "cframe.h"
+#include "vstguifwd.h"
+#include "cpoint.h"
 
 namespace VSTGUI {
-
-class CVSTGUITimer;
 
 //-----------------------------------------------------------------------------
 // CTooltipSupport Declaration

@@ -35,17 +35,14 @@
 #ifndef __cfont__
 #define __cfont__
 
-#include "vstguibase.h"
-#include "cstring.h"
+#include "vstguifwd.h"
 #include <string>
 #include <list>
 
 namespace VSTGUI {
 
-class CDrawContext;
 class IPlatformFont;
 class IFontPainter;
-struct CPoint;
 
 //-----------
 // @brief Text Face

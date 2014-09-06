@@ -47,8 +47,8 @@ namespace VSTGUI {
 class CMovieButton : public CControl, public IMultiBitmapControl
 {
 public:
-	CMovieButton (const CRect& size, CControlListener* listener, int32_t tag, CBitmap* background, const CPoint& offset = CPoint (0, 0));
-	CMovieButton (const CRect& size, CControlListener* listener, int32_t tag, CCoord heightOfOneImage, CBitmap* background, const CPoint& offset = CPoint (0, 0));
+	CMovieButton (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background, const CPoint& offset = CPoint (0, 0));
+	CMovieButton (const CRect& size, IControlListener* listener, int32_t tag, CCoord heightOfOneImage, CBitmap* background, const CPoint& offset = CPoint (0, 0));
 	CMovieButton (const CMovieButton& movieButton);
 
 	virtual void draw (CDrawContext*) VSTGUI_OVERRIDE_VMETHOD;

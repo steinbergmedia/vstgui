@@ -48,6 +48,7 @@
 #import "../caviewlayer.h"
 #import "../../../cvstguitimer.h"
 #import "../../../idatapackage.h"
+#import "../../../cbitmap.h"
 
 #if MAC_CARBON
 	#import "../carbon/hiviewframe.h"

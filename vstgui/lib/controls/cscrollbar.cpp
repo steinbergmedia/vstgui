@@ -11,11 +11,13 @@
 #include "../animation/animations.h"
 #include "../animation/timingfunctions.h"
 #include "../cframe.h"
+#include "../cgraphicspath.h"
+#include "../cdrawcontext.h"
 
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-CScrollbar::CScrollbar (const CRect& size, CControlListener* listener, int32_t tag, ScrollbarDirection direction, const CRect& scrollSize)
+CScrollbar::CScrollbar (const CRect& size, IControlListener* listener, int32_t tag, ScrollbarDirection direction, const CRect& scrollSize)
 : CControl (size, listener, tag, 0)
 , direction (direction)
 , scrollSize (scrollSize)

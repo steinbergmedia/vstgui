@@ -56,7 +56,7 @@ protected:
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
 	CView* createView (const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
 	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
-	CControlListener* getControlListener (UTF8StringPtr name) VSTGUI_OVERRIDE_VMETHOD;
+	IControlListener* getControlListener (UTF8StringPtr name) VSTGUI_OVERRIDE_VMETHOD;
 	void valueChanged (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
 	void controlBeginEdit (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
 	void controlEndEdit (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;

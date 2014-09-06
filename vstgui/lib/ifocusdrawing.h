@@ -35,7 +35,7 @@
 #ifndef __ifocusdrawing__
 #define __ifocusdrawing__
 
-#include "cgraphicspath.h"
+#include "vstguifwd.h"
 
 namespace VSTGUI {
 

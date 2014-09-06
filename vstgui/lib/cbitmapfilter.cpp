@@ -34,8 +34,10 @@
 
 #include "cbitmapfilter.h"
 #include "cbitmap.h"
+#include "platform/iplatformbitmap.h"
 #include "ccolor.h"
 #include "cgraphicspath.h"
+#include "cgraphicstransform.h"
 #include <cassert>
 
 namespace VSTGUI {

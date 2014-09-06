@@ -35,8 +35,7 @@
 #ifndef __cstream__
 #define __cstream__
 
-#include "../lib/vstguibase.h"
-#include "../lib/cbitmap.h"
+#include "../lib/vstguifwd.h"
 #include <algorithm>
 #include <string>
 #include <limits>

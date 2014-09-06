@@ -44,6 +44,7 @@
 #include "uicolor.h"
 #include "../../lib/cgradientview.h"
 #include "../../lib/ifocusdrawing.h"
+#include "../../lib/cgraphicspath.h"
 #include <algorithm>
 
 namespace VSTGUI {
@@ -665,7 +666,7 @@ CView* UIGradientsController::verifyView (CView* view, const UIAttributes& attri
 }
 
 //----------------------------------------------------------------------------------------------------
-CControlListener* UIGradientsController::getControlListener (UTF8StringPtr name)
+IControlListener* UIGradientsController::getControlListener (UTF8StringPtr name)
 {
 	return this;
 }

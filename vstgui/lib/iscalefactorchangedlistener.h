@@ -35,8 +35,9 @@
 #ifndef __iscalefactorchangedlistener__
 #define __iscalefactorchangedlistener__
 
+#include "vstguifwd.h"
+
 namespace VSTGUI {
-class CFrame;
 
 //-----------------------------------------------------------------------------
 class IScaleFactorChangedListener

@@ -42,13 +42,9 @@
 #include "uiselection.h"
 #include "uiundomanager.h"
 #include "../delegationcontroller.h"
-#include "../../lib/cvstguitimer.h"
-#include "../../lib/controls/coptionmenu.h"
 
 namespace VSTGUI {
-class CCommandMenuItem;
 class IActionPerformer;
-class CTextLabel;
 
 namespace UIEditing {
 
@@ -175,7 +171,7 @@ protected:
 	void createFileMenu (COptionMenu* menu);
 
 	virtual CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
-	CControlListener* getControlListener (UTF8StringPtr name) VSTGUI_OVERRIDE_VMETHOD { return this; }
+	IControlListener* getControlListener (UTF8StringPtr name) VSTGUI_OVERRIDE_VMETHOD { return this; }
 	void controlBeginEdit (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
 	void controlEndEdit (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
 

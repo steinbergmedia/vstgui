@@ -33,11 +33,12 @@
 //-----------------------------------------------------------------------------
 
 #include "cgbitmap.h"
-#include "../../cbitmap.h"
+#include "../../cresourcedescription.h"
 
 #if MAC
 #include "macglobals.h"
 #include <Accelerate/Accelerate.h>
+#include <AssertMacros.h>
 #if TARGET_OS_IPHONE
 	#include <MobileCoreServices/MobileCoreServices.h>
 #endif

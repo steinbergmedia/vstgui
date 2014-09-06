@@ -37,11 +37,12 @@
 #if VSTGUI_LIVE_EDITING
 
 #include "../../lib/cframe.h"
+#include "../../lib/cgraphicspath.h"
 
 namespace VSTGUI {
 
 //----------------------------------------------------------------------------------------------------
-UISearchTextField::UISearchTextField (const CRect& size, CControlListener* listener, int32_t tag, UTF8StringPtr txt, CBitmap* background, const int32_t style)
+UISearchTextField::UISearchTextField (const CRect& size, IControlListener* listener, int32_t tag, UTF8StringPtr txt, CBitmap* background, const int32_t style)
 : CTextEdit (size, listener, tag, 0, background, style)
 {
 }

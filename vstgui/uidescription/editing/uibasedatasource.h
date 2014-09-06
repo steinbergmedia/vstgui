@@ -48,7 +48,7 @@
 namespace VSTGUI {
 
 //----------------------------------------------------------------------------------------------------
-class UIBaseDataSource : public GenericStringListDataBrowserSource, public CControlListener
+class UIBaseDataSource : public GenericStringListDataBrowserSource, public IControlListener
 {
 public:
 	typedef std::vector<std::string> StringVector;

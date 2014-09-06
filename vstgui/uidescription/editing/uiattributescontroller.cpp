@@ -47,6 +47,8 @@
 #include "../../lib/crowcolumnview.h"
 #include "../../lib/iviewlistener.h"
 #include "../../lib/cstring.h"
+#include "../../lib/cgraphicspath.h"
+#include "../../lib/cvstguitimer.h"
 #include <sstream>
 #include <algorithm>
 #include <cassert>
@@ -68,7 +70,7 @@ public:
 	virtual void hasDifferentValues (bool state) { differentValues = state; }
 	bool hasDifferentValues () const { return differentValues; }
 protected:
-	CControlListener* getControlListener (UTF8StringPtr controlTagName) VSTGUI_OVERRIDE_VMETHOD { return this; }
+	IControlListener* getControlListener (UTF8StringPtr controlTagName) VSTGUI_OVERRIDE_VMETHOD { return this; }
 	UIAttributesController* getAttributesController () const { return dynamic_cast<UIAttributesController*> (controller); }
 	void performValueChange (UTF8StringPtr value)
 	{
@@ -917,7 +919,7 @@ CView* UIAttributesController::verifyView (CView* view, const UIAttributes& attr
 }
 
 //----------------------------------------------------------------------------------------------------
-CControlListener* UIAttributesController::getControlListener (UTF8StringPtr name)
+IControlListener* UIAttributesController::getControlListener (UTF8StringPtr name)
 {
 	return this;
 }

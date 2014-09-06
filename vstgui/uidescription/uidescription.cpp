@@ -42,10 +42,12 @@
 #include "../lib/cstring.h"
 #include "../lib/cframe.h"
 #include "../lib/cdrawcontext.h"
+#include "../lib/cgraphicspath.h"
 #include "../lib/cbitmapfilter.h"
 #include "../lib/platform/win32/win32support.h"
 #include "../lib/platform/mac/macglobals.h"
 #include "../lib/platform/std_unorderedmap.h"
+#include "../lib/platform/iplatformbitmap.h"
 #include <sstream>
 #include <fstream>
 #include <algorithm>
@@ -1330,7 +1332,7 @@ bool UIDescription::hasGradientName (UTF8StringPtr name) const
 }
 
 //-----------------------------------------------------------------------------
-CControlListener* UIDescription::getControlListener (UTF8StringPtr name) const
+IControlListener* UIDescription::getControlListener (UTF8StringPtr name) const
 {
 	if (controller)
 		return controller->getControlListener (name);

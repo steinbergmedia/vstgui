@@ -37,19 +37,13 @@
 #ifndef __cdatabrowser__
 #define __cdatabrowser__
 
+#include "vstguifwd.h"
 #include "cscrollview.h"
 #include "cfont.h"
-#include "cdrawcontext.h"
 #include <vector>
 #include <string>
 
 namespace VSTGUI {
-
-class CTextEdit;
-class CDataBrowser;
-class CDataBrowserView;
-class CDataBrowserHeader;
-class GenericStringListDataBrowserSource;
 
 //-----------------------------------------------------------------------------
 // IDataBrowserDelegate Declaration
@@ -118,6 +112,10 @@ public:
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 typedef IDataBrowserDelegate IDataBrowser;	///< \deprecated
 #endif
+
+// forward private internal views
+class CDataBrowserView;
+class CDataBrowserHeader;
 
 //-----------------------------------------------------------------------------
 // CDataBrowser Declaration

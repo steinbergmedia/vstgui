@@ -136,7 +136,7 @@ protected:
 	// IParameterFinder
 	Steinberg::tresult PLUGIN_API findParameter (Steinberg::int32 xPos, Steinberg::int32 yPos, Steinberg::Vst::ParamID& resultTag) VSTGUI_OVERRIDE_VMETHOD;
 
-	// CControlListener
+	// IControlListener
 	virtual void valueChanged (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
 	virtual void controlBeginEdit (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
 	virtual void controlEndEdit (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;

@@ -36,10 +36,11 @@
 
 #if WINDOWS
 
-#include <cmath>
 #include "gdiplusbitmap.h"
 #include "gdiplusgraphicspath.h"
 #include "cfontwin32.h"
+#include "../../cbitmap.h"
+#include <cmath>
 
 namespace VSTGUI {
 

@@ -35,13 +35,12 @@
 #ifndef __ccolorchooser__
 #define __ccolorchooser__
 
+#include "../vstguifwd.h"
 #include "../cviewcontainer.h"
-#include "ccontrol.h"
+#include "icontrollistener.h"
 #include "ctextedit.h"
 
 namespace VSTGUI {
-class CColorChooser;
-class CSlider;
 /// @cond ignore
 namespace CColorChooserInternal {
 class ColorView;
@@ -72,7 +71,7 @@ struct CColorChooserUISettings
 
 ///	@ingroup new_in_4_0
 //-----------------------------------------------------------------------------
-class CColorChooser : public CViewContainer, public CControlListener, public IDependency
+class CColorChooser : public CViewContainer, public IControlListener, public IDependency
 {
 public:
 	CColorChooser (IColorChooserDelegate* delegate = 0, const CColor& initialColor = kTransparentCColor, const CColorChooserUISettings& settings = CColorChooserUISettings ());

@@ -798,7 +798,7 @@ CView* UIBitmapsController::verifyView (CView* view, const UIAttributes& attribu
 }
 
 //----------------------------------------------------------------------------------------------------
-CControlListener* UIBitmapsController::getControlListener (UTF8StringPtr name)
+IControlListener* UIBitmapsController::getControlListener (UTF8StringPtr name)
 {
 	return this;
 }

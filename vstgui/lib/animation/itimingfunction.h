@@ -9,6 +9,8 @@
 #ifndef __itimingfunction__
 #define __itimingfunction__
 
+#include "../vstguibase.h"
+
 namespace VSTGUI {
 namespace Animation {
 

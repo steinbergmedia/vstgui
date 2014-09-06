@@ -35,6 +35,9 @@
 #include "cparamdisplay.h"
 #include "../cbitmap.h"
 #include "../cframe.h"
+#include "../cstring.h"
+#include "../cgraphicspath.h"
+#include "../cdrawcontext.h"
 #include <string>
 
 namespace VSTGUI {

@@ -35,139 +35,22 @@
 #ifndef __cdrawcontext__
 #define __cdrawcontext__
 
-#include "vstguibase.h"
+#include "vstguifwd.h"
+
 #include "cpoint.h"
 #include "crect.h"
 #include "cfont.h"
 #include "ccolor.h"
 #include "cgraphicstransform.h"
+#include "clinestyle.h"
+#include "cdrawdefs.h"
 #include <cmath>
 #include <stack>
 #include <vector>
 
 namespace VSTGUI {
 
-//-----------
-// @brief Line Style
-//-----------
-class CLineStyle
-{
-public:
-	typedef std::vector<CCoord> CoordVector;
-
-	enum LineCap
-	{
-		kLineCapButt = 0,
-		kLineCapRound,
-		kLineCapSquare
-	};
-
-	enum LineJoin
-	{
-		kLineJoinMiter = 0,
-		kLineJoinRound,
-		kLineJoinBevel
-	};
-
-	CLineStyle (LineCap cap = kLineCapButt, LineJoin join = kLineJoinMiter, CCoord dashPhase = 0., uint32_t dashCount = 0, const CCoord* dashLengths = 0);
-	CLineStyle (LineCap cap, LineJoin join, CCoord dashPhase, const CoordVector& dashLengths);
-	CLineStyle (const CLineStyle& lineStyle);
-	~CLineStyle ();
-
-#if VSTGUI_RVALUE_REF_SUPPORT
-	CLineStyle (LineCap cap, LineJoin join, CCoord dashPhase, CoordVector&& dashLengths) noexcept;
-	CLineStyle (CLineStyle&& cls) noexcept;
-	CLineStyle& operator= (CLineStyle&& cls) noexcept;
-#endif
-	
-	LineCap getLineCap () const { return cap; }
-	LineJoin getLineJoin () const { return join; }
-	CCoord getDashPhase () const { return dashPhase; }
-	uint32_t getDashCount () const { return static_cast<uint32_t> (dashLengths.size ()); }
-	const CCoord* getDashLengths () const { return &dashLengths[0]; }
-	CoordVector& getDashLengths () { return dashLengths; }
-
-	void setLineCap (LineCap newCap) { cap = newCap; }
-	void setLineJoin (LineJoin newJoin) { join = newJoin; }
-	void setDashPhase (CCoord phase) { dashPhase = phase; }
-
-	bool operator== (const CLineStyle& cls) const;
-	bool operator!= (const CLineStyle& cls) const { return !(*this == cls); }
-	CLineStyle& operator= (const CLineStyle& cls);
-
-protected:
-	LineCap cap;
-	LineJoin join;
-	CCoord dashPhase;
-	CoordVector dashLengths;
-};
-
-extern const CLineStyle kLineSolid;
-extern const CLineStyle kLineOnOffDash;
-
-//-----------
-// @brief Draw Mode Flags
-//-----------
-enum CDrawModeFlags
-{
-	kAliasing = 0,					///< aliased drawing
-	kAntiAliasing = 1,				///< antialised drawing
-
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	kCopyMode = kAliasing,			///< \deprecated use kAliasing
-	kAntialias = kAntiAliasing,		///< \deprecated use kAntiAliasing
-#endif
-
-	kNonIntegralMode = 0xF0000000		///< do not round coordinates to pixel aligned values
-};
-
-//-----------
-// @brief Draw Mode
-//-----------
-class CDrawMode
-{
-public:
-	CDrawMode (uint32_t mode = kAliasing) : mode (mode) {}
-	CDrawMode (const CDrawMode& m) : mode (m.mode) {}
-
-	uint32_t modeIgnoringIntegralMode () const { return (mode & ~kNonIntegralMode); }
-
-	bool integralMode () const { return mode & kNonIntegralMode ? false : true; }
-
-	CDrawMode& operator= (uint32_t m) { mode = m; return *this; }
-
-	uint32_t operator() () const { return mode; }
-	bool operator== (const CDrawMode& m) const { return modeIgnoringIntegralMode () == m.modeIgnoringIntegralMode (); }
-	bool operator!= (const CDrawMode& m) const { return modeIgnoringIntegralMode () != m.modeIgnoringIntegralMode (); }
-private:
-	uint32_t mode;
-};
-
-//----------------------------
-// @brief Text Alignment (Horizontal)
-//----------------------------
-enum CHoriTxtAlign
-{
-	kLeftText = 0,
-	kCenterText,
-	kRightText
-};
-
-//----------------------------
-// @brief Draw Style
-//----------------------------
-enum CDrawStyle
-{
-	kDrawStroked = 0,
-	kDrawFilled,
-	kDrawFilledAndStroked
-};
-
-class CBitmap;
-class CGraphicsPath;
-class CGradient;
 class CString;
-struct CGraphicsTransform;
 struct CNinePartTiledDescription;
 
 //-----------------------------------------------------------------------------

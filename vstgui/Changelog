@@ -3,6 +3,8 @@
 	* fix some Direct2D and Quartz pixel drawing issues
 	* enable more compiler warnings and fix issues
 	* add methods to CDrawContext to draw IPlatform strings for better performance
+	* renamed CControlListener to VSTGUI::IControlListener and moved into its own header file
+	* add forwarding header : vstguifwd.h and minimize includes
 
 2014-08-23 arne
 

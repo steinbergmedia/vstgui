@@ -56,7 +56,7 @@ Two functions allows to get the previous or the next subbitmap (these functions 
  * @param offset unused
  */
 //------------------------------------------------------------------------
-CAutoAnimation::CAutoAnimation (const CRect& size, CControlListener* listener, int32_t tag, CBitmap* background, const CPoint& offset)
+CAutoAnimation::CAutoAnimation (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background, const CPoint& offset)
 : CControl (size, listener, tag, background)
 , offset (offset)
 , bWindowOpened (false)
@@ -79,7 +79,7 @@ CAutoAnimation::CAutoAnimation (const CRect& size, CControlListener* listener, i
  * @param offset unused
  */
 //------------------------------------------------------------------------
-CAutoAnimation::CAutoAnimation (const CRect& size, CControlListener* listener, int32_t tag, int32_t subPixmaps, CCoord heightOfOneImage, CBitmap* background, const CPoint& offset)
+CAutoAnimation::CAutoAnimation (const CRect& size, IControlListener* listener, int32_t tag, int32_t subPixmaps, CCoord heightOfOneImage, CBitmap* background, const CPoint& offset)
 : CControl (size, listener, tag, background)
 , offset (offset)
 , bWindowOpened (false)

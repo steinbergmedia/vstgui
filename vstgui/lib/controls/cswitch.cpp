@@ -58,7 +58,7 @@ By clicking Alt+Left Mouse the default value is used.
  * @param offset unused 
  */
 //------------------------------------------------------------------------
-CVerticalSwitch::CVerticalSwitch (const CRect& size, CControlListener* listener, int32_t tag, CBitmap* background, const CPoint &offset)
+CVerticalSwitch::CVerticalSwitch (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background, const CPoint &offset)
 : CControl (size, listener, tag, background)
 , offset (offset)
 {
@@ -82,7 +82,7 @@ CVerticalSwitch::CVerticalSwitch (const CRect& size, CControlListener* listener,
  * @param offset unused
  */
 //------------------------------------------------------------------------
-CVerticalSwitch::CVerticalSwitch (const CRect& size, CControlListener* listener, int32_t tag, int32_t subPixmaps, CCoord heightOfOneImage, int32_t iMaxPositions, CBitmap* background, const CPoint &offset)
+CVerticalSwitch::CVerticalSwitch (const CRect& size, IControlListener* listener, int32_t tag, int32_t subPixmaps, CCoord heightOfOneImage, int32_t iMaxPositions, CBitmap* background, const CPoint &offset)
 : CControl (size, listener, tag, background)
 , offset (offset)
 {
@@ -229,7 +229,7 @@ Same as the CVerticalSwitch but horizontal.
  * @param offset unused
  */
 //------------------------------------------------------------------------
-CHorizontalSwitch::CHorizontalSwitch (const CRect& size, CControlListener* listener, int32_t tag, CBitmap* background, const CPoint &offset)
+CHorizontalSwitch::CHorizontalSwitch (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background, const CPoint &offset)
 : CControl (size, listener, tag, background)
 , offset (offset)
 {
@@ -253,7 +253,7 @@ CHorizontalSwitch::CHorizontalSwitch (const CRect& size, CControlListener* liste
  * @param offset unused
  */
 //------------------------------------------------------------------------
-CHorizontalSwitch::CHorizontalSwitch (const CRect& size, CControlListener* listener, int32_t tag, int32_t subPixmaps, CCoord heightOfOneImage, int32_t iMaxPositions, CBitmap* background, const CPoint &offset)
+CHorizontalSwitch::CHorizontalSwitch (const CRect& size, IControlListener* listener, int32_t tag, int32_t subPixmaps, CCoord heightOfOneImage, int32_t iMaxPositions, CBitmap* background, const CPoint &offset)
 : CControl (size, listener, tag, background)
 , offset (offset)
 {
@@ -404,7 +404,7 @@ When the mouse button is relaxed, the second subbitmap is framed. */
  * @param style
  */
 //------------------------------------------------------------------------
-CRockerSwitch::CRockerSwitch (const CRect& size, CControlListener* listener, int32_t tag, CBitmap* background, const CPoint &offset, const int32_t style)
+CRockerSwitch::CRockerSwitch (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background, const CPoint &offset, const int32_t style)
 : CControl (size, listener, tag, background)
 , offset (offset)
 , style (style)
@@ -430,7 +430,7 @@ CRockerSwitch::CRockerSwitch (const CRect& size, CControlListener* listener, int
  * @param style
  */
 //------------------------------------------------------------------------
-CRockerSwitch::CRockerSwitch (const CRect& size, CControlListener* listener, int32_t tag, CCoord heightOfOneImage, CBitmap* background, const CPoint &offset, const int32_t style)
+CRockerSwitch::CRockerSwitch (const CRect& size, IControlListener* listener, int32_t tag, CCoord heightOfOneImage, CBitmap* background, const CPoint &offset, const int32_t style)
 : CControl (size, listener, tag, background)
 , offset (offset)
 , style (style)

@@ -37,7 +37,7 @@
 
 /// @cond ignore
 
-#include "../cview.h"
+#include "../vstguifwd.h"
 
 struct VstKeyCode;
 
@@ -48,15 +48,6 @@ class IPlatformOptionMenu;
 class IPlatformOpenGLView;
 class IPlatformViewLayer;
 class IPlatformViewLayerDelegate;
-class CGraphicsPath;
-class CDrawContext;
-class COffscreenContext;
-class IDataPackage;
-struct CRect;
-struct CPoint;
-#if VSTGUI_TOUCH_EVENT_HANDLING
-class ITouchEvent;
-#endif
 
 enum PlatformType {
 	kHWND,

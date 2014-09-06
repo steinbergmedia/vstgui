@@ -126,7 +126,7 @@ CView* UIGridController::verifyView (CView* view, const UIAttributes& attributes
 }
 
 //----------------------------------------------------------------------------------------------------
-CControlListener* UIGridController::getControlListener (UTF8StringPtr name)
+IControlListener* UIGridController::getControlListener (UTF8StringPtr name)
 {
 	return this;
 }

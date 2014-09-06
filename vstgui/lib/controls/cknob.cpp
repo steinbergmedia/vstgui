@@ -36,6 +36,7 @@
 #include "../cbitmap.h"
 #include "../cdrawcontext.h"
 #include "../cframe.h"
+#include "../cgraphicspath.h"
 #include <cmath>
 
 namespace VSTGUI {
@@ -66,7 +67,7 @@ By clicking alt modifier and left mouse button the value changes with a vertical
  * @param drawStyle draw style
  */
 //------------------------------------------------------------------------
-CKnob::CKnob (const CRect& size, CControlListener* listener, int32_t tag, CBitmap* background, CBitmap* handle, const CPoint& offset, int32_t drawStyle)
+CKnob::CKnob (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background, CBitmap* handle, const CPoint& offset, int32_t drawStyle)
 : CControl (size, listener, tag, background)
 , drawStyle (drawStyle)
 , offset (offset)
@@ -668,7 +669,7 @@ According to the value, a specific subbitmap is displayed. The different subbitm
  * @param offset unused
  */
 //------------------------------------------------------------------------
-CAnimKnob::CAnimKnob (const CRect& size, CControlListener* listener, int32_t tag, CBitmap* background, const CPoint &offset)
+CAnimKnob::CAnimKnob (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background, const CPoint &offset)
 : CKnob (size, listener, tag, background, 0, offset)
 , bInverseBitmap (false)
 {
@@ -689,7 +690,7 @@ CAnimKnob::CAnimKnob (const CRect& size, CControlListener* listener, int32_t tag
  * @param offset unused
  */
 //------------------------------------------------------------------------
-CAnimKnob::CAnimKnob (const CRect& size, CControlListener* listener, int32_t tag, int32_t subPixmaps, CCoord heightOfOneImage, CBitmap* background, const CPoint &offset)
+CAnimKnob::CAnimKnob (const CRect& size, IControlListener* listener, int32_t tag, int32_t subPixmaps, CCoord heightOfOneImage, CBitmap* background, const CPoint &offset)
 : CKnob (size, listener, tag, background, 0, offset)
 , bInverseBitmap (false)
 {

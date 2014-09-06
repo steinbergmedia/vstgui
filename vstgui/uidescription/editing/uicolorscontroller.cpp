@@ -358,7 +358,7 @@ CView* UIColorsController::verifyView (CView* view, const UIAttributes& attribut
 }
 
 //----------------------------------------------------------------------------------------------------
-CControlListener* UIColorsController::getControlListener (UTF8StringPtr name)
+IControlListener* UIColorsController::getControlListener (UTF8StringPtr name)
 {
 	return this;
 }

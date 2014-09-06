@@ -36,6 +36,7 @@
 #define __uidescription__
 
 #include "../lib/idependency.h"
+#include "../lib/cbitmap.h"
 #include "iuidescription.h"
 #include "icontroller.h"
 #include "xmlparser.h"
@@ -89,7 +90,7 @@ public:
 	bool getColor (UTF8StringPtr name, CColor& color) const VSTGUI_OVERRIDE_VMETHOD;
 	CGradient* getGradient (UTF8StringPtr name) const VSTGUI_OVERRIDE_VMETHOD;
 	int32_t getTagForName (UTF8StringPtr name) const VSTGUI_OVERRIDE_VMETHOD;
-	CControlListener* getControlListener (UTF8StringPtr name) const VSTGUI_OVERRIDE_VMETHOD;
+	IControlListener* getControlListener (UTF8StringPtr name) const VSTGUI_OVERRIDE_VMETHOD;
 	IController* getController () const VSTGUI_OVERRIDE_VMETHOD { return controller; }
 	const IViewFactory* getViewFactory () const VSTGUI_OVERRIDE_VMETHOD { return viewFactory; }
 	

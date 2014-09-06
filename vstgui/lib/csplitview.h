@@ -35,12 +35,10 @@
 #ifndef __csplitview__
 #define __csplitview__
 
+#include "vstguifwd.h"
 #include "cviewcontainer.h"
 
 namespace VSTGUI {
-
-class CBitmap;
-class ISplitViewSeparatorDrawer;
 class CSplitViewSeparatorView;
 
 //-----------------------------------------------------------------------------
