@@ -42,6 +42,7 @@
 	#include <OpenGL/gl.h>
 	#include <OpenGL/glu.h>
 #elif WINDOWS
+	#include <windows.h>
 	#include <GL/gl.h>
 	#include <GL/glu.h>
 #endif

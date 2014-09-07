@@ -36,14 +36,7 @@
 #define __cvstguitimer__
 
 #include "vstguibase.h"
-
-#if MAC
-#include <CoreFoundation/CoreFoundation.h>
-
-#elif WINDOWS
-#include <windows.h>
-
-#endif
+#include "platform/iplatformtimer.h"
 
 #if VSTGUI_HAS_FUNCTIONAL
 #include <functional>
@@ -55,7 +48,7 @@ namespace VSTGUI {
 // CVSTGUITimer Declaration
 //! A timer class, which posts timer messages to CBaseObjects or calls a lambda function (c++11 only).
 //-----------------------------------------------------------------------------
-class CVSTGUITimer : public CBaseObject
+class CVSTGUITimer : public CBaseObject, public IPlatformTimerCallback
 {
 public:
 #if VSTGUI_HAS_FUNCTIONAL
@@ -79,7 +72,7 @@ public:
 protected:
 	~CVSTGUITimer ();
 	
-	void fire ();
+	void fire () VSTGUI_OVERRIDE_VMETHOD;
 	
 	int32_t fireTime;
 #if VSTGUI_HAS_FUNCTIONAL
@@ -88,13 +81,7 @@ protected:
 	CBaseObject* timerObject;
 #endif
 
-	void* platformTimer;
-
-#if MAC
-	static void timerCallback (CFRunLoopTimerRef timer, void *info);
-#elif WINDOWS
-	static VOID CALLBACK TimerProc (HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime);
-#endif
+	SharedPointer<IPlatformTimer> platformTimer;
 };
 
 #if VSTGUI_HAS_FUNCTIONAL

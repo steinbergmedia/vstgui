@@ -884,10 +884,8 @@ CMouseEventResult VST3Editor::onMouseDown (CFrame* frame, const CPoint& where, c
 	#endif
 		if (controllerMenu)
 		{
-			CPoint where2 (where);
-			getFrame ()->getTransform ().transform (where2);
 			controllerMenu->setStyle (kPopupStyle|kMultipleCheckStyle);
-			controllerMenu->popup (frame, where2);
+			controllerMenu->popup (frame, where);
 			result = kMouseEventHandled;
 		}
 		if (controllerMenu)

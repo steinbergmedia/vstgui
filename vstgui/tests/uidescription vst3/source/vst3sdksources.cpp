@@ -32,6 +32,9 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
+#if MAC
+#include <CoreFoundation/CoreFoundation.h>
+#endif
 
 #include "public.sdk/source/vst/vst2wrapper/vst2wrapper.sdk.cpp"
 #include "public.sdk/source/common/pluginview.cpp"
