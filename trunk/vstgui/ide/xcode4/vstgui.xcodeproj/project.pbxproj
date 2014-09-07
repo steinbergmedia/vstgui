@@ -98,6 +98,9 @@
 		F4462D731756479A00E6835D /* macclipboard.mm in Sources */ = {isa = PBXBuildFile; fileRef = F40B7835140E106600E2BF16 /* macclipboard.mm */; };
 		F4462D741756479A00E6835D /* macfileselector.mm in Sources */ = {isa = PBXBuildFile; fileRef = F497F17B13080B1C00F0A613 /* macfileselector.mm */; };
 		F4462D751756479A00E6835D /* macstring.mm in Sources */ = {isa = PBXBuildFile; fileRef = F4FC1A9F1328C8C40066E2F8 /* macstring.mm */; };
+		F447196E19BB5AEA0076782F /* mactimer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F447196D19BB5AEA0076782F /* mactimer.cpp */; };
+		F447196F19BB5AEA0076782F /* mactimer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F447196D19BB5AEA0076782F /* mactimer.cpp */; };
+		F447197019BB5AEA0076782F /* mactimer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F447196D19BB5AEA0076782F /* mactimer.cpp */; };
 		F44C25FA198B9A8E008434DB /* cdrawmethods.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F44C25F8198B9A8E008434DB /* cdrawmethods.cpp */; };
 		F44C25FB198B9A8E008434DB /* cdrawmethods.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F44C25F8198B9A8E008434DB /* cdrawmethods.cpp */; };
 		F44C25FC198B9A8E008434DB /* cdrawmethods.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F44C25F8198B9A8E008434DB /* cdrawmethods.cpp */; };
@@ -423,6 +426,7 @@
 		F4201BD119BB0B5F0001D594 /* clinestyle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = clinestyle.h; sourceTree = "<group>"; };
 		F4201BD719BB0CCE0001D594 /* cdrawdefs.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = cdrawdefs.h; sourceTree = "<group>"; };
 		F4201BD819BB10090001D594 /* cresourcedescription.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = cresourcedescription.h; sourceTree = "<group>"; };
+		F4201BDC19BB46750001D594 /* iplatformtimer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iplatformtimer.h; sourceTree = "<group>"; };
 		F4282B001710699700A79F13 /* crect_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = crect_test.cpp; path = ../../tests/unittest/lib/crect_test.cpp; sourceTree = "<group>"; };
 		F42D5F6117B016F900B85FE8 /* cxypad.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cxypad.cpp; sourceTree = "<group>"; };
 		F42D5F6217B016F900B85FE8 /* cxypad.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cxypad.h; sourceTree = "<group>"; };
@@ -449,6 +453,7 @@
 		F4462D34175646EE00E6835D /* vstgui_win32.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = vstgui_win32.cpp; path = ../../vstgui_win32.cpp; sourceTree = "<group>"; };
 		F4462D35175646EE00E6835D /* vstgui.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = vstgui.cpp; path = ../../vstgui.cpp; sourceTree = "<group>"; };
 		F4462D7617564B4700E6835D /* libprofile_rt.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libprofile_rt.dylib; path = /usr/lib/libprofile_rt.dylib; sourceTree = "<absolute>"; };
+		F447196D19BB5AEA0076782F /* mactimer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = mactimer.cpp; sourceTree = "<group>"; };
 		F449AC0C19924DE600C6B976 /* ianimationtarget.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ianimationtarget.h; sourceTree = "<group>"; };
 		F449AC0D19924E5B00C6B976 /* itimingfunction.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = itimingfunction.h; sourceTree = "<group>"; };
 		F44C25F8198B9A8E008434DB /* cdrawmethods.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cdrawmethods.cpp; sourceTree = "<group>"; };
@@ -984,6 +989,7 @@
 				F497F16F13080B0200F0A613 /* iplatformtextedit.h */,
 				F47883A1180457E70054ED06 /* iplatformviewlayer.h */,
 				F476BEA518EC2E7500230A63 /* std_unorderedmap.h */,
+				F4201BDC19BB46750001D594 /* iplatformtimer.h */,
 			);
 			path = platform;
 			sourceTree = "<group>";
@@ -1007,6 +1013,7 @@
 				F497F17D13080B1C00F0A613 /* macglobals.h */,
 				F4FC1A9F1328C8C40066E2F8 /* macstring.mm */,
 				F4FC1AA01328C8C40066E2F8 /* macstring.h */,
+				F447196D19BB5AEA0076782F /* mactimer.cpp */,
 				F497F17E13080B1C00F0A613 /* quartzgraphicspath.cpp */,
 				F497F17F13080B1C00F0A613 /* quartzgraphicspath.h */,
 				F47883A218045A300054ED06 /* caviewlayer.mm */,
@@ -1357,6 +1364,7 @@
 				F497F15713080AE500F0A613 /* cmoviebutton.cpp in Sources */,
 				F497F15913080AE500F0A613 /* coptionmenu.cpp in Sources */,
 				F497F15B13080AE500F0A613 /* cparamdisplay.cpp in Sources */,
+				F447196E19BB5AEA0076782F /* mactimer.cpp in Sources */,
 				F4EA3F2C19A4E5C00054328B /* cscrollbar.cpp in Sources */,
 				F497F15D13080AE500F0A613 /* cslider.cpp in Sources */,
 				F497F15F13080AE500F0A613 /* cspecialdigit.cpp in Sources */,
@@ -1576,6 +1584,7 @@
 				F42D5F6517B016F900B85FE8 /* cxypad.cpp in Sources */,
 				F47883A618045A300054ED06 /* caviewlayer.mm in Sources */,
 				F4E9C6EA17A8271200F42EF8 /* quartzgraphicspath.cpp in Sources */,
+				F447197019BB5AEA0076782F /* mactimer.cpp in Sources */,
 				F4E9C6EB17A8272700F42EF8 /* macstring.mm in Sources */,
 				F4E9C6EF17A82BC800F42EF8 /* uiviewframe.mm in Sources */,
 			);
@@ -1620,6 +1629,7 @@
 				F4F9541816510F40006EE1D1 /* cfontmac.mm in Sources */,
 				F4F9541916510F40006EE1D1 /* cgbitmap.cpp in Sources */,
 				F4F9541A16510F40006EE1D1 /* cgdrawcontext.cpp in Sources */,
+				F447196F19BB5AEA0076782F /* mactimer.cpp in Sources */,
 				F4EA3F2D19A4E5C00054328B /* cscrollbar.cpp in Sources */,
 				F4F9541B16510F40006EE1D1 /* macclipboard.mm in Sources */,
 				F4F9541C16510F40006EE1D1 /* macfileselector.mm in Sources */,

@@ -34,15 +34,6 @@
 
 #include "cvstguitimer.h"
 
-#if WINDOWS
-#include <windows.h>
-#include <list>
-namespace VSTGUI {
-static std::list<CVSTGUITimer*> gTimerList;
-} // namespace
-
-#endif
-
 #if DEBUG
 #define DEBUGLOG	0
 #endif
@@ -102,28 +93,14 @@ bool CVSTGUITimer::start ()
 {
 	if (platformTimer == 0)
 	{
-		#if MAC
-		CFRunLoopTimerContext timerContext = {0};
-		timerContext.info = this;
-		platformTimer = CFRunLoopTimerCreate (kCFAllocatorDefault, CFAbsoluteTimeGetCurrent () + fireTime * 0.001f, fireTime * 0.001f, 0, 0, timerCallback, &timerContext);
+		platformTimer = owned (IPlatformTimer::create (this));
 		if (platformTimer)
 		{
-		#if MAC_OS_X_VERSION_MIN_REQUIRED > MAC_OS_X_VERSION_10_8
-			if (CFRunLoopTimerSetTolerance)
-				CFRunLoopTimerSetTolerance ((CFRunLoopTimerRef)platformTimer, fireTime * 0.0001f);
-		#endif
-			CFRunLoopAddTimer (CFRunLoopGetCurrent (), (CFRunLoopTimerRef)platformTimer, kCFRunLoopCommonModes);
-		}
-
-		#elif WINDOWS
-		platformTimer = (void*)SetTimer ((HWND)NULL, (UINT_PTR)0, fireTime, TimerProc);
-		if (platformTimer)
-			gTimerList.push_back (this);
-		#endif
-		
+			platformTimer->start (fireTime);
 		#if DEBUGLOG
-		DebugPrint ("Timer started (0x%x)\n", timerObject);
+			DebugPrint ("Timer started (0x%x)\n", timerObject);
 		#endif
+		}
 	}
 	return (platformTimer != 0);
 }
@@ -133,24 +110,9 @@ bool CVSTGUITimer::stop ()
 {
 	if (platformTimer)
 	{
-		#if MAC
-		CFRunLoopTimerInvalidate ((CFRunLoopTimerRef)platformTimer);
-		CFRelease ((CFRunLoopTimerRef)platformTimer);
-
-		#elif WINDOWS
-		KillTimer ((HWND)NULL, (UINT_PTR)platformTimer);
-		std::list<CVSTGUITimer*>::iterator it = gTimerList.begin ();
-		while (it != gTimerList.end ())
-		{
-			if ((*it) == this)
-			{
-				gTimerList.remove (*it);
-				break;
-			}
-			it++;
-		}
-		#endif
+		platformTimer->stop ();
 		platformTimer = 0;
+
 		#if DEBUGLOG
 		DebugPrint ("Timer stopped (0x%x)\n", timerObject);
 		#endif
@@ -185,31 +147,6 @@ void CVSTGUITimer::fire ()
 		timerObject->notify (this, kMsgTimer);
 #endif
 }
-
-#if MAC
-//-----------------------------------------------------------------------------
-void CVSTGUITimer::timerCallback (CFRunLoopTimerRef t, void *info)
-{
-	CVSTGUITimer* timer = (CVSTGUITimer*)info;
-	timer->fire ();
-}
-
-#elif WINDOWS
-//------------------------------------------------------------------------
-VOID CALLBACK CVSTGUITimer::TimerProc (HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
-{
-	std::list<CVSTGUITimer*>::iterator it = gTimerList.begin ();
-	while (it != gTimerList.end ())
-	{
-		if ((UINT_PTR)((*it)->platformTimer) == idEvent)
-		{
-			(*it)->fire ();
-			break;
-		}
-		it++;
-	}
-}
-#endif
 
 } // namespace
 

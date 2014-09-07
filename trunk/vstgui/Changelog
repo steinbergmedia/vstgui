@@ -1,3 +1,7 @@
+2014-09-07 arne
+
+	* moved platform implementation of CVSTGUITimer into its own files
+	
 2014-09-05 arne
 
 	* fix some Direct2D and Quartz pixel drawing issues
