@@ -271,7 +271,7 @@ CMessageResult CScrollContainer::notify (CBaseObject* sender, IdStringPtr messag
 {
 	if (message == kMsgViewSizeChanged && !inScrolling)
 	{
-		int32_t numSubViews = getNbViews ();
+		uint32_t numSubViews = getNbViews ();
 		CView* view = static_cast<CView*> (sender);
 		if (numSubViews == 1 && view && isChild (view))
 		{
@@ -677,13 +677,13 @@ bool CScrollView::removeAll (bool withForget)
 }
 
 //-----------------------------------------------------------------------------
-int32_t CScrollView::getNbViews () const
+uint32_t CScrollView::getNbViews () const
 {
 	return sc->getNbViews ();
 }
 
 //-----------------------------------------------------------------------------
-CView* CScrollView::getView (int32_t index) const
+CView* CScrollView::getView (uint32_t index) const
 {
 	return sc->getView (index);
 }

@@ -67,6 +67,7 @@ Note: All current deprecated methods will be removed in the next version. So mak
 - VSTGUI::CGradient can now be created without a VSTGUI::CDrawContext object
 - VSTGUI::CGradientView takes now a VSTGUI::CGradient. Setting the gradient colors and start offsets are removed.
 - VSTGUI::CTextButton takes now VSTGUI::CGradient objects instead of colors and start offsets.
+- Some methods changed its arguments or return types from a signed type to an unsigned type, check your overrides !
 
 @subsection code_changes_4_1_to_4_2 VSTGUI 4.1 -> VSTGUI 4.2
 

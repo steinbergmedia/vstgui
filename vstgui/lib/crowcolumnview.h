@@ -55,7 +55,7 @@ public:
 	bool addView (CView* pView, const CRect& mouseableArea, bool mouseEnabled = true) VSTGUI_OVERRIDE_VMETHOD;
 	bool addView (CView* pView, CView* pBefore) VSTGUI_OVERRIDE_VMETHOD;
 	bool removeView (CView* pView, bool withForget = true) VSTGUI_OVERRIDE_VMETHOD;
-	bool changeViewZOrder (CView* view, int32_t newIndex) VSTGUI_OVERRIDE_VMETHOD;
+	bool changeViewZOrder (CView* view, uint32_t newIndex) VSTGUI_OVERRIDE_VMETHOD;
 
 	CLASS_METHODS_VIRTUAL(CAutoLayoutContainerView, CViewContainer)
 };

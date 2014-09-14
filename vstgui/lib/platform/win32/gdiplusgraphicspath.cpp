@@ -37,6 +37,7 @@
 #if WINDOWS
 
 #include "gdiplusdrawcontext.h"
+#include "../../cgradient.h"
 #include "cfontwin32.h"
 #include "win32support.h"
 #include <cmath>

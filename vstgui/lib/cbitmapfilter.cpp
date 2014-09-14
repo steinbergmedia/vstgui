@@ -450,32 +450,24 @@ private:
 		return false;
 	}
 
-	inline void calculate (CColor* colors, uint32_t numColors)
+	inline uint32_t saturate (uint32_t value) { return std::min<uint32_t> (value, 255); }
+
+	inline void calculate (uint32_t* colors, uint32_t numColors)
 	{
 		uint32_t lastColor = numColors - 1;
-		uint32_t red = colors[lastColor].red;
-		uint32_t green = colors[lastColor].green;
-		uint32_t blue = colors[lastColor].blue;
-		uint32_t alpha = colors[lastColor].alpha;
+		uint32_t red = colors[lastColor] & 0x000000FF;
+		uint32_t green = (colors[lastColor] >> 8) & 0x000000FF;
+		uint32_t blue = (colors[lastColor] >> 16) & 0x000000FF;
+		uint32_t alpha = (colors[lastColor] >> 24) & 0x000000FF;
 		for (int64_t i = (int64_t)numColors-2; i >= 0; i--)
 		{
-			red += colors[i].red;
-			green += colors[i].green;
-			blue += colors[i].blue;
-			alpha += colors[i].alpha;
+			red += colors[i] & 0x000000FF;
+			green += (colors[i] >> 8) & 0x000000FF;
+			blue += (colors[i] >> 16) & 0x000000FF;
+			alpha += (colors[i] >> 24) & 0x000000FF;
 			colors[i+1] = colors[i];
 		}
-		colors[0].alpha = (uint8_t)(alpha / numColors);
-		if (colors[0].alpha == 0)
-		{
-			colors[0].red = colors[0].green = colors[0].blue = 0;
-		}
-		else
-		{
-			colors[0].red = (uint8_t)(red / numColors);
-			colors[0].green = (uint8_t)(green / numColors);
-			colors[0].blue = (uint8_t)(blue / numColors);
-		}
+		colors[0] = saturate (red / numColors) | (saturate (green / numColors) << 8) | (saturate (blue / numColors) << 16) | (saturate (alpha / numColors) << 24);
 	}
 
 	void run (CBitmapPixelAccess& inputAccessor, CBitmapPixelAccess& outputAccessor, uint32_t radius)
@@ -484,60 +476,60 @@ private:
 		const uint32_t width = inputAccessor.getBitmapWidth ();
 		const uint32_t height = inputAccessor.getBitmapHeight ();
 		uint32_t x,y,x1,y1;
-		CColor stackColors[20];
-		CColor* nc;
+		uint32_t stackColors[20];
+		uint32_t* nc;
 		if (radius > 19)
-			nc = new CColor[(size_t)radius];
+			nc = new uint32_t[(size_t)radius];
 		else
 			nc = stackColors;
 		for (y = 0; y < height; y++)
 		{
-			memset (nc, 0, sizeof(CColor) * (size_t)radius);
+			memset (nc, 0, sizeof(uint32_t) * (size_t)radius);
 			for (x1 = 0; x1 < radius / 2; x1++)
 			{
 				inputAccessor.setPosition (x1, y);
-				inputAccessor.getColor (nc[0]);
+				inputAccessor.getValue (nc[0]);
 				calculate (nc, radius);
 			}
 			for (x = 0; x < width - halfRadius; x++, x1++)
 			{
 				inputAccessor.setPosition (x1, y);
-				inputAccessor.getColor (nc[0]);
+				inputAccessor.getValue (nc[0]);
 				calculate (nc, radius);
 				outputAccessor.setPosition (x, y);
-				outputAccessor.setColor (nc[0]);
+				outputAccessor.setValue (nc[0]);
 			}
 			for (;x < width; x++, x1++)
 			{
 				nc[0] = nc[1];
 				calculate (nc, radius);
 				outputAccessor.setPosition (x, y);
-				outputAccessor.setColor (nc[0]);
+				outputAccessor.setValue (nc[0]);
 			}
 		}
 		for (x = 0; x < width; x++)
 		{
-			memset (nc, 0, sizeof(CColor) * (size_t)radius);
+			memset (nc, 0, sizeof(uint32_t) * (size_t)radius);
 			for (y1 = 0; y1 < radius / 2; y1++)
 			{
 				inputAccessor.setPosition (x, y1);
-				inputAccessor.getColor (nc[0]);
+				inputAccessor.getValue (nc[0]);
 				calculate (nc, radius);
 			}
 			for (y = 0; y < height - halfRadius; y++, y1++)
 			{
 				inputAccessor.setPosition (x, y1);
-				inputAccessor.getColor (nc[0]);
+				inputAccessor.getValue (nc[0]);
 				calculate (nc, radius);
 				outputAccessor.setPosition (x, y);
-				outputAccessor.setColor (nc[0]);
+				outputAccessor.setValue (nc[0]);
 			}
 			for (; y < height; y++, y1++)
 			{
 				nc[0] = nc[1];
 				calculate (nc, radius);
 				outputAccessor.setPosition (x, y);
-				outputAccessor.setColor (nc[0]);
+				outputAccessor.setValue (nc[0]);
 			}
 		}
 		if (radius > 19)
@@ -751,15 +743,26 @@ protected:
 		inputAccessor.setPosition (0, 0);
 		outputAccessor.setPosition (0, 0);
 		CColor color;
-		while (true)
+		if (&inputAccessor == &outputAccessor)
 		{
-			inputAccessor.getColor (color);
-			processFunction (color, this);
-			outputAccessor.setColor (color);
-			if (inputAccessor++ == false)
-				break;
-			if (&inputAccessor != &outputAccessor)
+			do
+			{
+				inputAccessor.getColor (color);
+				processFunction (color, this);
+				outputAccessor.setColor (color);
+			}
+			while (inputAccessor++);
+		}
+		else
+		{
+			do
+			{
+				inputAccessor.getColor (color);
+				processFunction (color, this);
+				outputAccessor.setColor (color);
 				outputAccessor++;
+			}
+			while (inputAccessor++);
 		}
 	}
 

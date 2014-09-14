@@ -554,7 +554,7 @@ void CTabView::setViewSize (const CRect &rect, bool invalid)
 
 	if (widthDelta != 0 || heightDelta != 0)
 	{
-		int32_t numSubviews = getNbViews();
+		uint32_t numSubviews = getNbViews();
 		int32_t counter = 1;
 		bool treatAsColumn = (getAutosizeFlags () & kAutosizeColumn) ? true : false;
 		bool treatAsRow = (getAutosizeFlags () & kAutosizeRow) ? true : false;

@@ -1600,6 +1600,11 @@ void CFrame::platformOnTouchEvent (ITouchEvent& event)
 	}
 	if (hasBeganTouch)
 	{
+		if (CView* focusView = getFocusView ())
+		{
+			if (dynamic_cast<CTextEdit*> (focusView))
+				setFocusView (0);
+		}
 		for (const auto& e : event)
 		{
 			if (e.second.target == 0 && e.second.state == ITouchEvent::kBegan)

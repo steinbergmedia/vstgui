@@ -44,7 +44,7 @@ namespace VSTGUI {
 IdStringPtr CVSTGUITimer::kMsgTimer = "timer fired";
 
 //-----------------------------------------------------------------------------
-CVSTGUITimer::CVSTGUITimer (CBaseObject* timerObject, int32_t fireTime, bool doStart)
+CVSTGUITimer::CVSTGUITimer (CBaseObject* timerObject, uint32_t fireTime, bool doStart)
 : fireTime (fireTime)
 #if !VSTGUI_HAS_FUNCTIONAL
 , timerObject (timerObject)
@@ -62,7 +62,7 @@ CVSTGUITimer::CVSTGUITimer (CBaseObject* timerObject, int32_t fireTime, bool doS
 
 #if VSTGUI_HAS_FUNCTIONAL
 //-----------------------------------------------------------------------------
-CVSTGUITimer::CVSTGUITimer (const CallbackFunc& callback, int32_t fireTime, bool doStart)
+CVSTGUITimer::CVSTGUITimer (const CallbackFunc& callback, uint32_t fireTime, bool doStart)
 : fireTime (fireTime)
 , platformTimer (0)
 , callbackFunc (callback)
@@ -72,7 +72,7 @@ CVSTGUITimer::CVSTGUITimer (const CallbackFunc& callback, int32_t fireTime, bool
 }
 
 //-----------------------------------------------------------------------------
-CVSTGUITimer::CVSTGUITimer (CallbackFunc&& callback, int32_t fireTime, bool doStart)
+CVSTGUITimer::CVSTGUITimer (CallbackFunc&& callback, uint32_t fireTime, bool doStart)
 : fireTime (fireTime)
 , platformTimer (0)
 , callbackFunc (std::move (callback))
@@ -122,7 +122,7 @@ bool CVSTGUITimer::stop ()
 }
 
 //-----------------------------------------------------------------------------
-bool CVSTGUITimer::setFireTime (int32_t newFireTime)
+bool CVSTGUITimer::setFireTime (uint32_t newFireTime)
 {
 	if (fireTime != newFireTime)
 	{

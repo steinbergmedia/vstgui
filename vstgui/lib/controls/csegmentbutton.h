@@ -38,6 +38,7 @@
 #include "ccontrol.h"
 #include "../cdrawmethods.h"
 #include "../cbitmap.h"
+#include "../cgradient.h"
 #include "../cstring.h"
 #include "../ccolor.h"
 #include <vector>

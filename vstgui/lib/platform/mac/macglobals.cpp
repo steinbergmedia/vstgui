@@ -199,6 +199,7 @@ public:
 			CFRelease (csProfileRef);
 			return colorSpace;
 		}
+		return 0;
 	#else
 		CMProfileRef sysprof = NULL;
 
@@ -212,8 +213,8 @@ public:
 			CMCloseProfile (sysprof);
 			return colorSpace;
 		}
-	#endif
 		return 0;
+	#endif
 	}
 #endif
 

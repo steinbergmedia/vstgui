@@ -39,8 +39,6 @@
 #include "ccolor.h"
 #include "crect.h"
 #include <vector>
-#include <map>
-#include <algorithm>
 
 namespace VSTGUI {
 
@@ -170,58 +168,6 @@ protected:
 
 	typedef std::vector<Element> ElementList;
 	ElementList elements;
-};
-
-//-----------------------------------------------------------------------------
-///	@brief Gradient Object [new in 4.0]
-///	@ingroup new_in_4_0
-//-----------------------------------------------------------------------------
-class CGradient : public CBaseObject
-{
-public:
-	typedef std::multimap<double, CColor> ColorStopMap;
-
-	static CGradient* create (const ColorStopMap& colorStopMap);
-	static CGradient* create (double color1Start, double color2Start, const CColor& color1, const CColor& color2)
-	{
-		ColorStopMap map;
-		map.insert (std::make_pair (color1Start, color1));
-		map.insert (std::make_pair (color2Start, color2));
-		return create (map);
-	}
-	
-	//-----------------------------------------------------------------------------
-	/// @name Member Access
-	//-----------------------------------------------------------------------------
-	//@{
-	
-	void addColorStop (double start, const CColor& color)
-	{
-		addColorStop (std::make_pair (start, color));
-	}
-	
-	virtual void addColorStop (std::pair<double, CColor> colorStop)
-	{
-#if VSTGUI_RVALUE_REF_SUPPORT
-		colorStops.insert (std::move (colorStop));
-#else
-		colorStops.insert (colorStop);
-#endif
-	}
-	
-	const ColorStopMap& getColorStops () const { return colorStops; }
-	//@}
-//-----------------------------------------------------------------------------
-	CLASS_METHODS_NOCOPY(CGradient, CBaseObject)
-protected:
-	CGradient (double color1Start, double color2Start, const CColor& color1, const CColor& color2)
-	{
-		addColorStop (color1Start, color1);
-		addColorStop (color2Start, color2);
-	}
-	CGradient (const ColorStopMap& colorStopMap) : colorStops (colorStopMap) {}
-
-	ColorStopMap colorStops;
 };
 
 } // namespace

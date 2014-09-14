@@ -338,6 +338,11 @@ bool colorToString (const CColor& color, std::string& string, const IUIDescripti
 //-----------------------------------------------------------------------------
 static bool stringToColor (const std::string* value, CColor& color, const IUIDescription* desc)
 {
+	if (value && *value == "")
+	{
+		color = kTransparentCColor;
+		return true;
+	}
 	return value ? desc->getColor (value->c_str (), color) : false;
 }
 
@@ -3741,9 +3746,8 @@ public:
 		double d;
 		if (attributes.getDoubleAttribute (kAttrShadowIntensity, d))
 			shadowView->setShadowIntensity (static_cast<float> (d));
-		int32_t i;
-		if (attributes.getIntegerAttribute (kAttrShadowBlurSize, i))
-			shadowView->setShadowBlurSize (static_cast<uint32_t> (i));
+		if (attributes.getDoubleAttribute (kAttrShadowBlurSize, d))
+			shadowView->setShadowBlurSize (d);
 		CPoint p;
 		if (attributes.getPointAttribute (kAttrShadowOffset, p))
 			shadowView->setShadowOffset (p);
@@ -3760,7 +3764,7 @@ public:
 	{
 		if (attributeName == kAttrShadowIntensity) return kFloatType;
 		if (attributeName == kAttrShadowOffset) return kPointType;
-		if (attributeName == kAttrShadowBlurSize) return kIntegerType;
+		if (attributeName == kAttrShadowBlurSize) return kFloatType;
 		return kUnknownType;
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const VSTGUI_OVERRIDE_VMETHOD
@@ -3789,8 +3793,8 @@ public:
 	{
 		if (attributeName == kAttrShadowBlurSize)
 		{
-			minValue = 1;
-			maxValue = 40;
+			minValue = 0.8;
+			maxValue = 20;
 			return true;
 		}
 		else if (attributeName == kAttrShadowIntensity)
@@ -3886,7 +3890,7 @@ public:
 				hasOldGradient = false;
 			if (hasOldGradient && !stringToColor (attributes.getAttributeValue (kAttrGradientEndColor), endColor, description))
 				hasOldGradient = false;
-			double startOffset, endOffset;
+			double startOffset = 0.0, endOffset = 1.0;
 			if (hasOldGradient && !attributes.getDoubleAttribute (kAttrGradientStartColorOffset, startOffset))
 				hasOldGradient = false;
 			if (hasOldGradient && !attributes.getDoubleAttribute (kAttrGradientEndColorOffset, endOffset))

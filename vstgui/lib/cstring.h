@@ -291,7 +291,7 @@ inline double UTF8StringView::toDouble (uint32_t precision) const
 {
 	std::istringstream sstream (str);
 	sstream.imbue (std::locale::classic ());
-	sstream.precision (precision);
+	sstream.precision (static_cast<std::streamsize> (precision));
 	double result;
 	sstream >> result;
 	return result;

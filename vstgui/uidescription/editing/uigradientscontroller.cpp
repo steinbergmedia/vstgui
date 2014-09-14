@@ -327,6 +327,7 @@ void UIColorStopEditView::draw (CDrawContext* context)
 
 	CColor selectedColor;
 
+	context->setGlobalAlpha (0.5f);
 	for (CGradient::ColorStopMap::const_iterator it = colorStopMap.begin (), end = colorStopMap.end (); it != end; it++)
 	{
 		if (it->first == getSelectedColorStart ())
@@ -337,7 +338,6 @@ void UIColorStopEditView::draw (CDrawContext* context)
 		{
 			CGraphicsTransform offset;
 			offset.translate (it->first * width, getHeight () / 4.);
-			context->setGlobalAlpha (0.5f);
 			if (it->second.getLuma () < 127)
 				context->setFrameColor (kWhiteCColor);
 			else
@@ -346,11 +346,11 @@ void UIColorStopEditView::draw (CDrawContext* context)
 		}
 	}
 	
+	context->setGlobalAlpha (1.f);
 	if (getSelectedColorStart () >= 0.)
 	{
 		CGraphicsTransform offset;
 		offset.translate (getSelectedColorStart () * width, getHeight() / 4.);
-		context->setGlobalAlpha (1.f);
 		if (selectedColor.getLuma () < 127)
 			context->setFrameColor (kWhiteCColor);
 		else
@@ -393,6 +393,8 @@ public:
 	CView* createView (const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
 	IController* createSubController (UTF8StringPtr name, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
 protected:
+	void apply ();
+	
 	IActionPerformer* actionPerformer;
 	SharedPointer<UIDescription> editDescription;
 	SharedPointer<UIColorStopEditView> colorStopEditView;
@@ -421,6 +423,14 @@ UIGradientEditorController::~UIGradientEditorController ()
 }
 
 //----------------------------------------------------------------------------------------------------
+void UIGradientEditorController::apply ()
+{
+	CGradient* g = editDescription->getGradient (gradientName.c_str ());
+	if (g->getColorStops () != gradient->getColorStops ())
+		actionPerformer->performGradientChange (gradientName.c_str (), gradient);
+}
+
+//----------------------------------------------------------------------------------------------------
 CMessageResult UIGradientEditorController::notify (CBaseObject* sender, IdStringPtr message)
 {
 	if (message == UIColor::kMsgChanged || message == UIColor::kMsgEditChange)
@@ -443,7 +453,7 @@ CMessageResult UIGradientEditorController::notify (CBaseObject* sender, IdString
 	}
 	else if (message == UIDialogController::kMsgDialogButton1Clicked)
 	{
-		actionPerformer->performGradientChange (gradientName.c_str (), gradient);
+		apply ();
 		return kMessageNotified;
 	}
 	return kMessageUnknown;
@@ -462,7 +472,10 @@ IController* UIGradientEditorController::createSubController (UTF8StringPtr name
 //----------------------------------------------------------------------------------------------------
 void UIGradientEditorController::valueChanged (CControl* pControl)
 {
-	
+	if (pControl->getTag () == 1 && pControl->getValue () > 0.f)
+	{
+		apply ();
+	}
 }
 
 //----------------------------------------------------------------------------------------------------

@@ -51,13 +51,13 @@ struct CPoint
 
 	VSTGUI_DEPRECATED (bool isInside (const CRect& r) const;)
 
-	bool operator != (const CPoint &other) const { return (x != other.x || y != other.y); }
-	bool operator == (const CPoint &other) const { return (x == other.x && y == other.y); }
+	bool operator!= (const CPoint &other) const { return (x != other.x || y != other.y); }
+	bool operator== (const CPoint &other) const { return (x == other.x && y == other.y); }
 
-	CPoint& operator += (const CPoint& other) { x += other.x; y += other.y; return *this; }
-	CPoint& operator -= (const CPoint& other) { x -= other.x; y -= other.y; return *this; }
-	CPoint operator + (const CPoint& other) const { return CPoint (x + other.x, y + other.y); }
-	CPoint operator - (const CPoint& other) const { return CPoint (x - other.x, y - other.y); }
+	CPoint& operator+= (const CPoint& other) { x += other.x; y += other.y; return *this; }
+	CPoint& operator-= (const CPoint& other) { x -= other.x; y -= other.y; return *this; }
+	CPoint operator+ (const CPoint& other) const { return CPoint (x + other.x, y + other.y); }
+	CPoint operator- (const CPoint& other) const { return CPoint (x - other.x, y - other.y); }
 
 	CPoint& offset (const CCoord x, const CCoord y) { *this += CPoint (x, y); return *this; }
 	CPoint& offset (const CPoint& other) { *this += other; return *this; }

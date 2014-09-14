@@ -1,6 +1,6 @@
 //-----------------------------------------------------------------------------
 // VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework not only for VST plugins :
+// VSTGUI: Graphical User Interface Framework for VST plugins
 //
 // Version 4.2
 //
@@ -32,66 +32,68 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#ifndef __cshadowviewcontainer__
-#define __cshadowviewcontainer__
+#ifndef __cgradient__
+#define __cgradient__
 
-#include "cviewcontainer.h"
-#include "iscalefactorchangedlistener.h"
+#include "vstguifwd.h"
+#include "ccolor.h"
+#include <map>
+#include <algorithm>
 
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-// CShadowViewContainer Declaration
-//! @brief a view container which draws a shadow for it's subviews
-/// @ingroup containerviews
-/// @ingroup new_in_4_1
+///	@brief Gradient Object [new in 4.0]
+///	@ingroup new_in_4_0
 //-----------------------------------------------------------------------------
-class CShadowViewContainer : public CViewContainer, public IScaleFactorChangedListener
+class CGradient : public CBaseObject
 {
 public:
-	CShadowViewContainer (const CRect& size);
-	CShadowViewContainer (const CShadowViewContainer& copy);
+	typedef std::multimap<double, CColor> ColorStopMap;
 
+	static CGradient* create (const ColorStopMap& colorStopMap);
+	static CGradient* create (double color1Start, double color2Start, const CColor& color1, const CColor& color2)
+	{
+		ColorStopMap map;
+		map.insert (std::make_pair (color1Start, color1));
+		map.insert (std::make_pair (color2Start, color2));
+		return create (map);
+	}
+	
 	//-----------------------------------------------------------------------------
-	/// @name CShadowViewContainer Methods
+	/// @name Member Access
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual void setShadowOffset (const CPoint& offset);
-	const CPoint& getShadowOffset () const { return shadowOffset; }
 	
-	virtual void setShadowIntensity (float intensity);
-	float getShadowIntensity () const { return shadowIntensity; }
-
-	virtual void setShadowBlurSize (double size);
-	double getShadowBlurSize () const { return shadowBlurSize; }
-
-	void invalidateShadow ();
+	void addColorStop (double start, const CColor& color)
+	{
+		addColorStop (std::make_pair (start, color));
+	}
+	
+	virtual void addColorStop (std::pair<double, CColor> colorStop)
+	{
+#if VSTGUI_RVALUE_REF_SUPPORT
+		colorStops.insert (std::move (colorStop));
+#else
+		colorStops.insert (colorStop);
+#endif
+	}
+	
+	const ColorStopMap& getColorStops () const { return colorStops; }
 	//@}
-
-	// override
-	bool removed (CView* parent) VSTGUI_OVERRIDE_VMETHOD;
-	bool attached (CView* parent) VSTGUI_OVERRIDE_VMETHOD;
-	void drawRect (CDrawContext* pContext, const CRect& updateRect) VSTGUI_OVERRIDE_VMETHOD;
-	void drawBackgroundRect (CDrawContext* pContext, const CRect& _updateRect) VSTGUI_OVERRIDE_VMETHOD;
-	void setViewSize (const CRect& rect, bool invalid = true) VSTGUI_OVERRIDE_VMETHOD;
-	bool addView (CView* pView) VSTGUI_OVERRIDE_VMETHOD;
-	bool addView (CView* pView, const CRect& mouseableArea, bool mouseEnabled = true) VSTGUI_OVERRIDE_VMETHOD;
-	bool addView (CView* pView, CView* pBefore) VSTGUI_OVERRIDE_VMETHOD;
-	bool removeView (CView* pView, bool withForget = true) VSTGUI_OVERRIDE_VMETHOD;
-	bool changeViewZOrder (CView* view, uint32_t newIndex) VSTGUI_OVERRIDE_VMETHOD;
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
-
-	void onScaleFactorChanged (CFrame* frame) VSTGUI_OVERRIDE_VMETHOD;
-
-	CLASS_METHODS(CShadowViewContainer, CViewContainer)
+//-----------------------------------------------------------------------------
+	CLASS_METHODS_NOCOPY(CGradient, CBaseObject)
 protected:
+	CGradient (double color1Start, double color2Start, const CColor& color1, const CColor& color2)
+	{
+		addColorStop (color1Start, color1);
+		addColorStop (color2Start, color2);
+	}
+	CGradient (const ColorStopMap& colorStopMap) : colorStops (colorStopMap) {}
 
-	bool shadowInvalid;
-	CPoint shadowOffset;
-	float shadowIntensity;
-	double shadowBlurSize;
+	ColorStopMap colorStops;
 };
 
-} // namespace
+}
 
-#endif // __cshadowviewcontainer__
+#endif // __cgradient__

@@ -47,6 +47,7 @@
 #include "lib/cfileselector.h"
 #include "lib/cfont.h"
 #include "lib/cframe.h"
+#include "lib/cgradient.h"
 #include "lib/cgradientview.h"
 #include "lib/cgraphicspath.h"
 #include "lib/clayeredviewcontainer.h"

@@ -475,6 +475,21 @@ public:
 		r.offset (0, r.getHeight ()+1);
 		context->setDrawMode (kAntiAliasing);
 		context->drawRect (r, kDrawFilled);
+
+		r = getViewSize ();
+		r.setWidth (gridOffset * 4. + 1);
+		r.setHeight (gridOffset * 4. + 1);
+		r.offset (gridOffset*8, gridOffset*4);
+		context->setDrawMode (kAliasing);
+		context->setFrameColor (kBlueCColor);
+		context->drawRect (r, kDrawStroked);
+		context->setFrameColor (kRedCColor);
+		context->drawEllipse (r, kDrawStroked);
+		r.offset (r.getWidth () + gridOffset - 1, 0);
+		context->setFrameColor (kBlueCColor);
+		context->drawRect (r, kDrawStroked);
+		context->setFillColor (kRedCColor);
+		context->drawEllipse (r, kDrawFilled);
 	}
 };
 

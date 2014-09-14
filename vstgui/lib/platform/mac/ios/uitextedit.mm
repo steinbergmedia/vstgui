@@ -107,7 +107,7 @@ UITextEdit::UITextEdit (UIView* parent, IPlatformTextEditCallback* textEdit)
 
 	CRect rect (textEdit->platformGetSize ());
 	CPoint textInset = textEdit->platformGetTextInset ();
-	CGRect r = CGRectMake (rect.left, rect.top, rect.getWidth (), rect.getHeight ());
+	CGRect r = CGRectFromCRect (rect);
 	r.origin.x += textInset.x / 2.;
 	r.origin.y += textInset.y / 2.;
 	r.size.width -= textInset.x / 2;
@@ -130,10 +130,10 @@ UITextEdit::UITextEdit (UIView* parent, IPlatformTextEditCallback* textEdit)
 	if (!fontSet)
 	{
 		NSString* fontName = [NSString stringWithCString:textEdit->platformGetFont ()->getName () encoding:NSUTF8StringEncoding];
-		[platformControl setFont:[UIFont fontWithName:fontName size:textEdit->platformGetFont ()->getSize ()]];
+		[platformControl setFont:[UIFont fontWithName:fontName size:static_cast<CGFloat> (textEdit->platformGetFont ()->getSize ())]];
 	}
 	CColor fontColor = textEdit->platformGetFontColor ();
-	platformControl.textColor = [UIColor colorWithRed:fontColor.red / 255. green:fontColor.green / 255. blue:fontColor.red / 255. alpha:fontColor.alpha / 255.];
+	platformControl.textColor = [UIColor colorWithRed:fontColor.red / 255.f green:fontColor.green / 255.f blue:fontColor.red / 255.f alpha:fontColor.alpha / 255.f];
 	platformControl.borderStyle = UITextBorderStyleNone;
 	platformControl.opaque = NO;
 	platformControl.clearsContextBeforeDrawing = YES;

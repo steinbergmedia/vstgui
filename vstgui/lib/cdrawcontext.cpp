@@ -403,7 +403,9 @@ void CDrawContext::fillRectWithBitmap (CBitmap* bitmap, const CRect& srcRect, co
 	CCoord left;
 	CCoord top;
 	CPoint sourceOffset (srcRect.left, srcRect.top);
-	
+
+	CRect currentClip = getClipRect (currentClip);
+
 	for (top = dstRect.top; top < dstRect.bottom; top += srcRect.getHeight ())
 	{
 		bitmapPartRect.top = top;
@@ -424,7 +426,8 @@ void CDrawContext::fillRectWithBitmap (CBitmap* bitmap, const CRect& srcRect, co
 			if (bitmapPartRect.getWidth () > srcRect.getWidth ())
 				bitmapPartRect.setWidth (srcRect.getWidth ());
 			
-			drawBitmap (bitmap, bitmapPartRect, sourceOffset, alpha);
+			if (currentClip.rectOverlap (bitmapPartRect))
+				drawBitmap (bitmap, bitmapPartRect, sourceOffset, alpha);
 		}
 	}
 }

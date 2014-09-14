@@ -327,7 +327,7 @@ bool CAutoLayoutContainerView::removeView (CView* pView, bool withForget)
 }
 
 //--------------------------------------------------------------------------------
-bool CAutoLayoutContainerView::changeViewZOrder (CView* view, int32_t newIndex)
+bool CAutoLayoutContainerView::changeViewZOrder (CView* view, uint32_t newIndex)
 {
 	if (CViewContainer::changeViewZOrder (view, newIndex))
 	{

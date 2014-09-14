@@ -134,13 +134,13 @@ CoreTextFont::CoreTextFont (UTF8StringPtr name, const CCoord& size, const int32_
 			CFMutableDictionaryRef attributes = CFDictionaryCreateMutable (kCFAllocatorDefault, 1, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
 			CFDictionaryAddValue (attributes, kCTFontFamilyNameAttribute, fontNameRef);
 			CTFontDescriptorRef descriptor = CTFontDescriptorCreateWithAttributes (attributes);
-			fontRef = CTFontCreateWithFontDescriptor (descriptor, size, 0);
+			fontRef = CTFontCreateWithFontDescriptor (descriptor, static_cast<CGFloat> (size), 0);
 			CFRelease (attributes);
 			CFRelease (descriptor);
 		}
 		else
 		{
-			fontRef = CTFontCreateWithName (fontNameRef, size, 0);
+			fontRef = CTFontCreateWithName (fontNameRef, static_cast<CGFloat> (size), 0);
 		}
 
 		if (style & kBoldFace)
@@ -264,25 +264,25 @@ void CoreTextFont::drawString (CDrawContext* context, IPlatformString* string, c
 		CGContextRef cgContext = cgDrawContext ? cgDrawContext->beginCGContext (true, integralMode) : 0;
 		if (cgContext)
 		{
-			CGPoint cgPoint = CGPointMake (point.x, point.y);
+			CGPoint cgPoint = CGPointFromCPoint (point);
 			if (integralMode)
 				cgPoint = cgDrawContext->pixelAlligned (cgPoint);
 			CGContextSetShouldAntialias (cgContext, antialias);
 			CGContextSetShouldSmoothFonts (cgContext, true);
 			CGContextSetShouldSubpixelPositionFonts (cgContext, true);
 			CGContextSetShouldSubpixelQuantizeFonts (cgContext, true);
-			CGContextSetTextPosition (cgContext, point.x, cgPoint.y);
+			CGContextSetTextPosition (cgContext, static_cast<CGFloat> (point.x), cgPoint.y);
 			CTLineDraw (line, cgContext);
 			if (style & kUnderlineFace)
 			{
 				CGColorRef cgColorRef = getCGColor (context->getFontColor ());
-				CGFloat underlineOffset = CTFontGetUnderlinePosition (fontRef) - 1.;
+				CGFloat underlineOffset = CTFontGetUnderlinePosition (fontRef) - 1.f;
 				CGFloat underlineThickness = CTFontGetUnderlineThickness (fontRef);
 				CGContextSetStrokeColorWithColor (cgContext, cgColorRef);
 				CGContextSetLineWidth (cgContext, underlineThickness);
 				cgPoint = CGContextGetTextPosition (cgContext);
 				CGContextBeginPath (cgContext);
-				CGContextMoveToPoint (cgContext, point.x, cgPoint.y - underlineOffset);
+				CGContextMoveToPoint (cgContext, static_cast<CGFloat> (point.x), cgPoint.y - underlineOffset);
 				CGContextAddLineToPoint (cgContext, cgPoint.x, cgPoint.y - underlineOffset);
 				CGContextDrawPath (cgContext, kCGPathStroke);
 			}
@@ -290,15 +290,15 @@ void CoreTextFont::drawString (CDrawContext* context, IPlatformString* string, c
 			{
 				CGColorRef cgColorRef = getCGColor (context->getFontColor ());
 				CGFloat underlineThickness = CTFontGetUnderlineThickness (fontRef);
-				CGFloat offset = CTFontGetXHeight (fontRef) * 0.5;
+				CGFloat offset = CTFontGetXHeight (fontRef) * 0.5f;
 				CGContextSetStrokeColorWithColor (cgContext, cgColorRef);
 				CGContextSetLineWidth (cgContext, underlineThickness);
 				cgPoint = CGContextGetTextPosition (cgContext);
 				CGContextBeginPath (cgContext);
-				CGContextMoveToPoint (cgContext, point.x, cgPoint.y - offset);
+				CGContextMoveToPoint (cgContext, static_cast<CGFloat> (point.x), cgPoint.y - offset);
 				CGContextAddLineToPoint (cgContext, cgPoint.x, cgPoint.y - offset);
 				CGContextDrawPath (cgContext, kCGPathStroke);
-			}	
+			}
 			cgDrawContext->releaseCGContext (cgContext);
 		}
 		CFRelease (line);

@@ -1,3 +1,10 @@
+2014-09-14 arne
+
+	* fix CShadowViewContainer drawing on Windows and use a gaussian blur approximation instead of a simple box blur
+	* fix some more Direct2D and Quartz pixel drawing issues
+	* fix iOS compilation issues
+	* fix compilation issues with OS X 10.6 SDK
+
 2014-09-07 arne
 
 	* moved platform implementation of CVSTGUITimer into its own files

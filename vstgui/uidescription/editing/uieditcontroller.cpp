@@ -72,7 +72,7 @@ namespace VSTGUI {
 class UIEditControllerDescription
 {
 public:
-	UIDescription& get ()
+	UIDescription& get () const
 	{
 		if (uiDesc == 0)
 		{
@@ -87,11 +87,9 @@ public:
 				if (stream.open (descPath.c_str (), CFileStream::kReadMode))
 				{
 					Xml::InputStreamContentProvider xmlProvider (stream);
-					UIDescription* editorDesc = new UIDescription (&xmlProvider);
+					SharedPointer<UIDescription> editorDesc = owned (new UIDescription (&xmlProvider));
 					if (editorDesc->parse ())
-						uiDesc = owned (editorDesc);
-					else
-						editorDesc->forget ();
+						uiDesc = editorDesc;
 				}
 			}
 		}
@@ -518,7 +516,8 @@ CMessageResult UIEditController::notify (CBaseObject* sender, IdStringPtr messag
 	else if (message == UIEditView::kMsgRemoved)
 	{
 		editView->getFrame ()->unregisterKeyboardHook (this);
-		notify (0, UIDescription::kMessageBeforeSave);
+		beforeSave ();
+		splitViews.clear ();
 		return kMessageNotified;
 	}
 	else if (message == UIDescription::kMessageBeforeSave)

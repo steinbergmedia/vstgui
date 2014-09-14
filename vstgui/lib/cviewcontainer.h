@@ -39,6 +39,9 @@
 #include "cview.h"
 #include "ccolor.h"
 #include "cdrawdefs.h"
+#if VSTGUI_TOUCH_EVENT_HANDLING
+#include "itouchevent.h"
+#endif
 #include <list>
 
 namespace VSTGUI {
@@ -75,12 +78,12 @@ public:
 	virtual bool isChild (CView* pView) const;	///< check if pView is a child view of this container
 	virtual bool isChild (CView* pView, bool deep) const;	///< check if pView is a child view of this container
 	virtual bool hasChildren () const;						///< check if container has child views
-	virtual int32_t getNbViews () const;			///< get the number of child views
-	virtual CView* getView (int32_t index) const;	///< get the child view at index
+	virtual uint32_t getNbViews () const;			///< get the number of child views
+	virtual CView* getView (uint32_t index) const;	///< get the child view at index
 	virtual CView* getViewAt (const CPoint& where, bool deep = false, bool mustbeMouseEnabled = false) const;	///< get the view at point where
 	virtual CViewContainer* getContainerAt (const CPoint& where, bool deep = true, bool mustbeMouseEnabled = false) const;		///< get the container at point where
 	virtual bool getViewsAt (const CPoint& where, ViewList& views, bool deep = true) const;	///< get all views at point where, top->down
-	virtual bool changeViewZOrder (CView* view, int32_t newIndex);	///< change view z order position
+	virtual bool changeViewZOrder (CView* view, uint32_t newIndex);	///< change view z order position
 
 	virtual void setAutosizingEnabled (bool state);					///< enable or disable autosizing subviews. Per default this is enabled.
 	bool getAutosizingEnabled () const { return (viewFlags & kAutosizeSubviews) ? true : false; }

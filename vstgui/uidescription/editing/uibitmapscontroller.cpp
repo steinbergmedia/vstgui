@@ -46,6 +46,7 @@
 #include "../../lib/cvstguitimer.h"
 #include "../../lib/controls/ccolorchooser.h"
 #include "../../lib/controls/ctextedit.h"
+#include "../../lib/platform/iplatformbitmap.h"
 
 namespace VSTGUI {
 //----------------------------------------------------------------------------------------------------
@@ -138,7 +139,21 @@ public:
 
 	void setBackground (CBitmap *background) VSTGUI_OVERRIDE_VMETHOD
 	{
-		CView::setBackground (background);
+		IPlatformBitmap* platformBitmap = background ? background->getPlatformBitmap () : 0;
+		if (platformBitmap && platformBitmap->getScaleFactor () != 1.)
+		{
+			// get rid of the scale factor
+			void* ptr;
+			uint32_t memSize;
+			if (IPlatformBitmap::createMemoryPNGRepresentation (platformBitmap, &ptr, memSize))
+			{
+				SharedPointer<IPlatformBitmap> newPlatformBitmap = owned (IPlatformBitmap::createFromMemory (ptr, memSize));
+				CView::setBackground (owned (new CBitmap (newPlatformBitmap)));
+				std::free (ptr);
+			}
+		}
+		else
+			CView::setBackground (background);
 		updateSize ();
 	}
 
@@ -589,9 +604,10 @@ CView* UIBitmapSettingsController::verifyView (CView* view, const UIAttributes& 
 				CTextLabel* label = dynamic_cast<CTextLabel*>(control);
 				if (label)
 				{
+					float width = bitmap->getPlatformBitmap () ? (float)bitmap->getPlatformBitmap ()->getSize ().x : 0.f;
 					label->setPrecision (0);
-					label->setMax ((float)bitmap->getWidth ());
-					label->setValue ((float)bitmap->getWidth ());
+					label->setMax (width);
+					label->setValue (width);
 					label->sizeToFit ();
 				}
 				break;
@@ -601,9 +617,10 @@ CView* UIBitmapSettingsController::verifyView (CView* view, const UIAttributes& 
 				CTextLabel* label = dynamic_cast<CTextLabel*>(control);
 				if (label)
 				{
+					float height = bitmap->getPlatformBitmap () ? (float)bitmap->getPlatformBitmap ()->getSize ().y : 0.f;
 					label->setPrecision (0);
-					label->setMax ((float)bitmap->getHeight ());
-					label->setValue ((float)bitmap->getHeight ());
+					label->setMax (height);
+					label->setValue (height);
 					label->sizeToFit ();
 					if (controls[kBitmapWidthTag])
 					{

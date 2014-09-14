@@ -57,7 +57,7 @@ Adding CTooltipSupport is done via VSTGUI::CFrame::enableTooltips (true) */
  * @param frame CFrame object
  * @param delay tooltip delay time in milliseconds
  */
-CTooltipSupport::CTooltipSupport (CFrame* frame, int32_t delay)
+CTooltipSupport::CTooltipSupport (CFrame* frame, uint32_t delay)
 : timer (0)
 , frame (frame)
 , currentView (0)
