@@ -88,7 +88,6 @@ void CShadowViewContainer::setShadowOffset (const CPoint& offset)
 	if (shadowOffset != offset)
 	{
 		shadowOffset = offset;
-		setBackgroundOffset (offset);
 		invalid ();
 	}
 }
@@ -104,7 +103,7 @@ void CShadowViewContainer::setShadowIntensity (float intensity)
 }
 
 //-----------------------------------------------------------------------------
-void CShadowViewContainer::setShadowBlurSize (uint32_t size)
+void CShadowViewContainer::setShadowBlurSize (double size)
 {
 	if (shadowBlurSize != size)
 	{
@@ -129,6 +128,22 @@ CMessageResult CShadowViewContainer::notify (CBaseObject* sender, IdStringPtr me
 }
 
 //-----------------------------------------------------------------------------
+static std::vector<int32_t> boxesForGauss (double sigma, uint16_t numBoxes)
+{
+	std::vector<int32_t> boxes;
+	double ideal = std::sqrt ((12 * sigma * sigma / numBoxes) + 1);
+	uint16_t l = static_cast<uint16_t> (std::floor (ideal));
+	if (l % 2 == 0)
+		l--;
+	int32_t u = l + 2;
+	ideal = ((12. * sigma * sigma) - (numBoxes * l * l) - (4. * numBoxes * l) - (3. * numBoxes)) / ((-4. * l) - 4.);
+	int32_t m = static_cast<int32_t> (std::floor (ideal));
+	for (int32_t i = 0; i < numBoxes; ++i)
+		boxes.push_back (i < m ? l : u);
+	return boxes;
+}
+
+//-----------------------------------------------------------------------------
 void CShadowViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 {
 	if (shadowInvalid && getWidth () > 0. && getHeight () > 0.)
@@ -141,7 +156,7 @@ void CShadowViewContainer::drawRect (CDrawContext* pContext, const CRect& update
 		if (offscreenContext)
 		{
 			offscreenContext->beginDraw ();
-			CDrawContext::Transform transform (*offscreenContext, CGraphicsTransform ().translate(-getViewSize ().left, -getViewSize ().top));
+			CDrawContext::Transform transform (*offscreenContext, CGraphicsTransform ().translate (-getViewSize ().left - shadowOffset.x, -getViewSize ().top - shadowOffset.y));
 			CViewContainer::draw (offscreenContext);
 			offscreenContext->endDraw ();
 			CBitmap* bitmap = offscreenContext->getBitmap ();
@@ -159,10 +174,15 @@ void CShadowViewContainer::drawRect (CDrawContext* pContext, const CRect& update
 						SharedPointer<BitmapFilter::IFilter> boxBlurFilter = owned (BitmapFilter::Factory::getInstance ().createFilter (BitmapFilter::Standard::kBoxBlur));
 						if (boxBlurFilter)
 						{
+							std::vector<int32_t> boxSizes = boxesForGauss (shadowBlurSize, 3);
 							boxBlurFilter->setProperty (BitmapFilter::Standard::Property::kInputBitmap, bitmap);
-							boxBlurFilter->setProperty (BitmapFilter::Standard::Property::kRadius, (int32_t)shadowBlurSize);
+							boxBlurFilter->setProperty (BitmapFilter::Standard::Property::kRadius, boxSizes[0]);
 							if (boxBlurFilter->run (true))
 							{
+								boxBlurFilter->setProperty (BitmapFilter::Standard::Property::kRadius, boxSizes[1]);
+								boxBlurFilter->run (true);
+								boxBlurFilter->setProperty (BitmapFilter::Standard::Property::kRadius, boxSizes[2]);
+								boxBlurFilter->run (true);
 								shadowInvalid = false;
 							}
 						}
@@ -248,7 +268,7 @@ bool CShadowViewContainer::removeView (CView* pView, bool withForget)
 }
 
 //-----------------------------------------------------------------------------
-bool CShadowViewContainer::changeViewZOrder (CView* view, int32_t newIndex)
+bool CShadowViewContainer::changeViewZOrder (CView* view, uint32_t newIndex)
 {
 	if (CViewContainer::changeViewZOrder (view, newIndex))
 	{

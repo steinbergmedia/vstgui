@@ -67,7 +67,7 @@ inline CRect CRectFromCGRect (const CGRect& r)
 //-----------------------------------------------------------------------------
 inline CGRect CGRectFromCRect (const CRect& r)
 {
-	return CGRectMake (r.left, r.top, r.getWidth (), r.getHeight ());
+	return CGRectMake (static_cast<CGFloat> (r.left), static_cast<CGFloat> (r.top), static_cast<CGFloat> (r.getWidth ()), static_cast<CGFloat> (r.getHeight ()));
 }
 
 //-----------------------------------------------------------------------------
@@ -79,7 +79,13 @@ inline CPoint CPointFromCGPoint (const CGPoint& p)
 //-----------------------------------------------------------------------------
 inline CGPoint CGPointFromCPoint (const CPoint& p)
 {
-	return CGPointMake (p.x, p.y);
+	return CGPointMake (static_cast<CGFloat> (p.x), static_cast<CGFloat> (p.y));
+}
+
+//-----------------------------------------------------------------------------
+inline CGSize CGSizeFromCPoint (const CPoint& p)
+{
+	return CGSizeMake (static_cast<CGFloat> (p.x), static_cast<CGFloat> (p.y));
 }
 
 } // namespace

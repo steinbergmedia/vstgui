@@ -1294,7 +1294,12 @@ void VST3Editor::syncParameterTags ()
 					paramTitle.removeChars (' ');
 					Steinberg::String paramIDStr;
 					paramIDStr.printInt64 (info.id);
-					if (UTF8StringPtr tagName = description->lookupControlTagName (static_cast<int32_t> (info.id)))
+					if (int32_t tag = description->getTagForName (paramTitle) != -1)
+					{
+						if (tag != info.id)
+							actionPerformer->performTagChange (paramTitle, paramIDStr);
+					}
+					else if (UTF8StringPtr tagName = description->lookupControlTagName (static_cast<int32_t> (info.id)))
 					{
 						actionPerformer->performTagNameChange (tagName, paramTitle);
 					}

@@ -40,6 +40,7 @@
 #include "gdiplusgraphicspath.h"
 #include "cfontwin32.h"
 #include "../../cbitmap.h"
+#include "../../cgradient.h"
 #include <cmath>
 
 namespace VSTGUI {
@@ -379,11 +380,11 @@ void GdiplusDrawContext::drawEllipse (const CRect &_rect, const CDrawStyle drawS
 		rect.normalize ();
 		if (pBrush && (drawStyle == kDrawFilled || drawStyle == kDrawFilledAndStroked))
 		{
-			pGraphics->FillEllipse (pBrush, (Gdiplus::REAL)rect.left, (Gdiplus::REAL)rect.top, (Gdiplus::REAL)rect.getWidth ()-1, (Gdiplus::REAL)rect.getHeight ()-1);
+			pGraphics->FillEllipse (pBrush, (Gdiplus::REAL)rect.left, (Gdiplus::REAL)rect.top, (Gdiplus::REAL)rect.getWidth (), (Gdiplus::REAL)rect.getHeight ());
 		}
 		if (pPen && (drawStyle == kDrawStroked || drawStyle == kDrawFilledAndStroked))
 		{
-			pGraphics->DrawEllipse (pPen, (Gdiplus::REAL)rect.left, (Gdiplus::REAL)rect.top, (Gdiplus::REAL)rect.getWidth ()-1, (Gdiplus::REAL)rect.getHeight ()-1);
+			pGraphics->DrawEllipse (pPen, (Gdiplus::REAL)rect.left, (Gdiplus::REAL)rect.top, (Gdiplus::REAL)rect.getWidth (), (Gdiplus::REAL)rect.getHeight ());
 		}
 	}
 }

@@ -39,6 +39,7 @@
 #include "../cfont.h"
 #include "../ccolor.h"
 #include "../cbitmap.h"
+#include "../cgradient.h"
 #include "../cgraphicspath.h"
 #include "../cstring.h"
 #include "../cdrawmethods.h"

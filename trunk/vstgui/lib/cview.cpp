@@ -198,7 +198,7 @@ protected:
 	static IdleViewUpdater* gInstance;
 };
 IdleViewUpdater* IdleViewUpdater::gInstance = 0;
-int32_t CView::idleRate = 30;
+uint32_t CView::idleRate = 30;
 /// @endcond
 
 UTF8StringPtr kDegreeSymbol		= "\xC2\xB0";

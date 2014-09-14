@@ -42,6 +42,7 @@
 #include "../lib/cstring.h"
 #include "../lib/cframe.h"
 #include "../lib/cdrawcontext.h"
+#include "../lib/cgradient.h"
 #include "../lib/cgraphicspath.h"
 #include "../lib/cbitmapfilter.h"
 #include "../lib/platform/win32/win32support.h"
@@ -2988,7 +2989,7 @@ void UIBitmapNode::createXMLData ()
 						getChildren ().remove (node);
 					UINode* dataNode = new UINode ("data");
 					dataNode->getAttributes ()->setAttribute ("encoding", "base64");
-					dataNode->getData ().write ((const char*)bd.getData (), bd.getDataSize ());
+					dataNode->getData ().write ((const char*)bd.getData (), static_cast<std::streamsize> (bd.getDataSize ()));
 					getChildren ().add (dataNode);
 				}
 				std::free (data);

@@ -37,6 +37,7 @@
 #if WINDOWS && VSTGUI_DIRECT2D_SUPPORT
 
 #include "../win32support.h"
+#include "../../../cgradient.h"
 #include "d2dbitmap.h"
 #include "d2dgraphicspath.h"
 #include "d2dfont.h"
@@ -517,7 +518,8 @@ void D2DDrawContext::drawEllipse (const CRect &_rect, const CDrawStyle drawStyle
 	if (renderTarget)
 	{
 		CRect rect (_rect);
-		rect.normalize ();
+		if (currentState.drawMode.integralMode ())
+			pixelAllign (rect);
 		D2DApplyClip clip (this);
 		CPoint center (rect.getTopLeft ());
 		center.offset (rect.getWidth () / 2., rect.getHeight () / 2.);

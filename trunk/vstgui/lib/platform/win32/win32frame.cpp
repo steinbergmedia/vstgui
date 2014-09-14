@@ -50,6 +50,7 @@
 #include "win32support.h"
 #include "win32dragcontainer.h"
 #include "../../cdropsource.h"
+#include "../../cgradient.h"
 
 #if VSTGUI_OPENGL_SUPPORT
 #include "win32openglview.h"

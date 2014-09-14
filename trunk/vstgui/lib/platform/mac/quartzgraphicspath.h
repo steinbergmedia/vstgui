@@ -36,6 +36,7 @@
 #define __quartzgraphicspath__
 
 #include "../../cgraphicspath.h"
+#include "../../cgradient.h"
 
 #if MAC
 
@@ -69,7 +70,7 @@ public:
 
 	CGradient* createGradient (double color1Start, double color2Start, const CColor& color1, const CColor& color2) VSTGUI_OVERRIDE_VMETHOD;
 
-	static CGAffineTransform createCGAfflineTransform (const CGraphicsTransform& t);
+	static CGAffineTransform createCGAffineTransform (const CGraphicsTransform& t);
 
 //------------------------------------------------------------------------------------
 protected:

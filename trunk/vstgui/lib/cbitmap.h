@@ -181,6 +181,9 @@ public:
 	virtual void getColor (CColor& c) const = 0;	///< get color of current pixel
 	virtual void setColor (const CColor& c) = 0;	///< set color of current pixel
 
+	inline void getValue (uint32_t& value);			///< get native color value
+	inline void setValue (uint32_t value);			///< set native color value
+
 	inline uint32_t getBitmapWidth () const { return maxX+1; }
 	inline uint32_t getBitmapHeight () const { return maxY+1; }
 
@@ -253,6 +256,18 @@ inline bool CBitmapPixelAccess::setPosition (uint32_t _x, uint32_t _y)
 	y = _y;
 	currentPos = address + y * bytesPerRow + x * 4;
 	return true;
+}
+
+//------------------------------------------------------------------------
+inline void CBitmapPixelAccess::getValue (uint32_t& value)
+{
+	value = *(uint32_t*) (currentPos);
+}
+
+//------------------------------------------------------------------------
+inline void CBitmapPixelAccess::setValue (uint32_t value)
+{
+	*(uint32_t*) (currentPos) = value;
 }
 
 } // namespace VSTGUI

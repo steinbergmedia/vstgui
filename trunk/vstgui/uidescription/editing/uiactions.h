@@ -42,6 +42,7 @@
 #include "uiselection.h"
 #include "../uiviewfactory.h"
 #include "../../lib/ccolor.h"
+#include "../../lib/cgradient.h"
 #include <list>
 #include <map>
 #include <string>

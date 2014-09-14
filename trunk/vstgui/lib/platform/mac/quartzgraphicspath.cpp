@@ -42,15 +42,15 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-CGAffineTransform QuartzGraphicsPath::createCGAfflineTransform (const CGraphicsTransform& t)
+CGAffineTransform QuartzGraphicsPath::createCGAffineTransform (const CGraphicsTransform& t)
 {
 	CGAffineTransform transform;
-	transform.a = t.m11;
-	transform.b = t.m12;
-	transform.c = t.m21;
-	transform.d = t.m22;
-	transform.tx = t.dx;
-	transform.ty = t.dy;
+	transform.a = static_cast<CGFloat> (t.m11);
+	transform.b = static_cast<CGFloat> (t.m12);
+	transform.c = static_cast<CGFloat> (t.m21);
+	transform.d = static_cast<CGFloat> (t.m22);
+	transform.tx = static_cast<CGFloat> (t.dx);
+	transform.ty = static_cast<CGFloat> (t.dy);
 	return transform;
 }
 
@@ -95,7 +95,7 @@ QuartzGraphicsPath::QuartzGraphicsPath (const CoreTextFont* font, UTF8StringPtr 
 				CGPathRef letter = CTFontCreatePathForGlyph (runFont, glyph, NULL);
 				CGAffineTransform t = CGAffineTransformMakeTranslation (position.x, position.y);
 				t = CGAffineTransformScale (t, 1, -1);
-				t = CGAffineTransformTranslate (t, 0, -capHeight);
+				t = CGAffineTransformTranslate (t, 0, static_cast<CGFloat> (-capHeight));
 				CGPathAddPath (path, &t, letter);
 				CGPathRelease (letter);
 			}
@@ -133,11 +133,11 @@ CGPathRef QuartzGraphicsPath::getCGPathRef ()
 					CCoord radiusX = (e.instruction.arc.rect.right - e.instruction.arc.rect.left) / 2.;
 					CCoord radiusY = (e.instruction.arc.rect.bottom - e.instruction.arc.rect.top) / 2.;
 					
-					CGFloat centerX = e.instruction.arc.rect.left + radiusX;
-					CGFloat centerY = e.instruction.arc.rect.top + radiusY;
+					CGFloat centerX = static_cast<CGFloat> (e.instruction.arc.rect.left + radiusX);
+					CGFloat centerY = static_cast<CGFloat> (e.instruction.arc.rect.top + radiusY);
 
 					CGAffineTransform transform = CGAffineTransformMakeTranslation (centerX, centerY);
-					transform = CGAffineTransformScale (transform, radiusX, radiusY);
+					transform = CGAffineTransformScale (transform, static_cast<CGFloat> (radiusX), static_cast<CGFloat> (radiusY));
 					
 					double startAngle = radians (e.instruction.arc.startAngle);
 					double endAngle = radians (e.instruction.arc.endAngle);
@@ -147,38 +147,38 @@ CGPathRef QuartzGraphicsPath::getCGPathRef ()
 						endAngle = atan2 (sin (endAngle) * radiusX, cos (endAngle) * radiusY);
 					}
 					if (CGPathIsEmpty (path))
-						CGPathMoveToPoint (path, &transform, cos (startAngle), sin (startAngle));
+						CGPathMoveToPoint (path, &transform, static_cast<CGFloat> (std::cos (startAngle)), static_cast<CGFloat> (std::sin (startAngle)));
 
-					CGPathAddArc (path, &transform, 0, 0, 1, startAngle, endAngle, !e.instruction.arc.clockwise);
+					CGPathAddArc (path, &transform, 0, 0, 1, static_cast<CGFloat> (startAngle), static_cast<CGFloat> (endAngle), !e.instruction.arc.clockwise);
 					break;
 				}
 				case Element::kEllipse:
 				{
 					CCoord width = e.instruction.rect.right - e.instruction.rect.left;
 					CCoord height = e.instruction.rect.bottom - e.instruction.rect.top;
-					CGPathAddEllipseInRect (path, 0, CGRectMake (e.instruction.rect.left, e.instruction.rect.top, width, height));
+					CGPathAddEllipseInRect (path, 0, CGRectMake (static_cast<CGFloat> (e.instruction.rect.left), static_cast<CGFloat> (e.instruction.rect.top), static_cast<CGFloat> (width), static_cast<CGFloat> (height)));
 					break;
 				}
 				case Element::kRect:
 				{
 					CCoord width = e.instruction.rect.right - e.instruction.rect.left;
 					CCoord height = e.instruction.rect.bottom - e.instruction.rect.top;
-					CGPathAddRect (path, 0, CGRectMake (e.instruction.rect.left, e.instruction.rect.top, width, height));
+					CGPathAddRect (path, 0, CGRectMake (static_cast<CGFloat> (e.instruction.rect.left), static_cast<CGFloat> (e.instruction.rect.top), static_cast<CGFloat> (width), static_cast<CGFloat> (height)));
 					break;
 				}
 				case Element::kLine:
 				{
-					CGPathAddLineToPoint (path, 0, e.instruction.point.x, e.instruction.point.y);
+					CGPathAddLineToPoint (path, 0, static_cast<CGFloat> (e.instruction.point.x), static_cast<CGFloat> (e.instruction.point.y));
 					break;
 				}
 				case Element::kBezierCurve:
 				{
-					CGPathAddCurveToPoint (path, 0, e.instruction.curve.control1.x, e.instruction.curve.control1.y, e.instruction.curve.control2.x, e.instruction.curve.control2.y, e.instruction.curve.end.x, e.instruction.curve.end.y);
+					CGPathAddCurveToPoint (path, 0, static_cast<CGFloat> (e.instruction.curve.control1.x), static_cast<CGFloat> (e.instruction.curve.control1.y), static_cast<CGFloat> (e.instruction.curve.control2.x), static_cast<CGFloat> (e.instruction.curve.control2.y), static_cast<CGFloat> (e.instruction.curve.end.x), static_cast<CGFloat> (e.instruction.curve.end.y));
 					break;
 				}
 				case Element::kBeginSubpath:
 				{
-					CGPathMoveToPoint (path, 0, e.instruction.point.x, e.instruction.point.y);
+					CGPathMoveToPoint (path, 0, static_cast<CGFloat> (e.instruction.point.x), static_cast<CGFloat> (e.instruction.point.y));
 					break;
 				}
 				case Element::kCloseSubpath:
@@ -208,10 +208,10 @@ bool QuartzGraphicsPath::hitTest (const CPoint& p, bool evenOddFilled, CGraphics
 	CGPathRef cgPath = getCGPathRef ();
 	if (cgPath)
 	{
-		CGPoint cgPoint = CGPointMake (p.x, p.y);
+		CGPoint cgPoint = CGPointFromCPoint (p);
 		CGAffineTransform cgTransform;
 		if (transform)
-			cgTransform = createCGAfflineTransform (*transform);
+			cgTransform = createCGAffineTransform (*transform);
 		return CGPathContainsPoint (cgPath, transform ? &cgTransform : 0, cgPoint, evenOddFilled);
 	}
 	return false;
@@ -284,8 +284,8 @@ void QuartzGraphicsPath::pixelAlign (CDrawContext* context, CGraphicsTransform* 
 				CCoord x = p.x;
 				CCoord y = p.y;
 				contextTransform->transform (x, y);
-				p.x = x;
-				p.y = y;
+				p.x = static_cast<CGFloat> (x);
+				p.y = static_cast<CGFloat> (y);
 			#endif
 			}
 		}
@@ -390,7 +390,7 @@ void QuartzGradient::createCGGradient () const
 	uint32_t index = 0;
 	for (ColorStopMap::const_iterator it = colorStops.begin (); it != colorStops.end (); ++it, ++index)
 	{
-		locations[index] = it->first;
+		locations[index] = static_cast<CGFloat> (it->first);
 		CColor color = it->second;
 		CFArrayAppendValue (colors, getCGColor (color));
 	}

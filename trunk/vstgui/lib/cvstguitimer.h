@@ -54,16 +54,16 @@ public:
 #if VSTGUI_HAS_FUNCTIONAL
 	typedef std::function<void(CVSTGUITimer*)> CallbackFunc;
 
-	CVSTGUITimer (const CallbackFunc& callback, int32_t fireTime = 100, bool doStart = true);
-	CVSTGUITimer (CallbackFunc&& callback, int32_t fireTime = 100, bool doStart = true);
+	CVSTGUITimer (const CallbackFunc& callback, uint32_t fireTime = 100, bool doStart = true);
+	CVSTGUITimer (CallbackFunc&& callback, uint32_t fireTime = 100, bool doStart = true);
 #endif
-	CVSTGUITimer (CBaseObject* timerObject, int32_t fireTime = 100, bool doStart = false);
+	CVSTGUITimer (CBaseObject* timerObject, uint32_t fireTime = 100, bool doStart = false);
 	
 	virtual bool start ();							///< starts the timer
 	virtual bool stop ();							///< stops the timer, returns whether timer was running or not
 
-	virtual bool setFireTime (int32_t newFireTime);		///< in milliseconds
-	int32_t getFireTime () const { return fireTime; }	///< in milliseconds
+	virtual bool setFireTime (uint32_t newFireTime);		///< in milliseconds
+	uint32_t getFireTime () const { return fireTime; }		///< in milliseconds
 
 //-----------------------------------------------------------------------------
 	static IdStringPtr kMsgTimer;					///< message string posted to CBaseObject's notify method
@@ -74,7 +74,7 @@ protected:
 	
 	void fire () VSTGUI_OVERRIDE_VMETHOD;
 	
-	int32_t fireTime;
+	uint32_t fireTime;
 #if VSTGUI_HAS_FUNCTIONAL
 	CallbackFunc callbackFunc;
 #else
@@ -90,7 +90,7 @@ namespace Call
 	typedef std::function<void ()> FunctionCallback;
 
 	/** Trigger a function call at a later timer */
-	inline void later (FunctionCallback callback, int32_t delayInMilliseconds = 10)
+	inline void later (FunctionCallback callback, uint32_t delayInMilliseconds = 10)
 	{
 		new CVSTGUITimer ([callback] (CVSTGUITimer* timer) {
 			callback ();

@@ -84,8 +84,10 @@ bool MacTimer::start (uint32_t fireTime)
 	timer = CFRunLoopTimerCreate (kCFAllocatorDefault, CFAbsoluteTimeGetCurrent () + fireTime * 0.001f, fireTime * 0.001f, 0, 0, timerCallback, &timerContext);
 	if (timer)
 	{
-#if MAC_OS_X_VERSION_MIN_REQUIRED > MAC_OS_X_VERSION_10_8
+#if MAC_OS_X_VERSION_MAX_ALLOWED > MAC_OS_X_VERSION_10_8
+	#if MAC_OS_X_VERSION_MIN_REQUIRED <= MAX_OS_X_VERSION_10_8
 		if (CFRunLoopTimerSetTolerance)
+	#endif
 			CFRunLoopTimerSetTolerance (timer, fireTime * 0.0001f);
 #endif
 		CFRunLoopAddTimer (CFRunLoopGetCurrent (), timer, kCFRunLoopCommonModes);

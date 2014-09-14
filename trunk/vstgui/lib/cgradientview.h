@@ -39,6 +39,7 @@
 #include "vstguifwd.h"
 #include "cview.h"
 #include "ccolor.h"
+#include "cgradient.h"
 
 namespace VSTGUI {
 

@@ -39,6 +39,7 @@
 #import "lib/platform/mac/cgbitmap.cpp"
 #import "lib/platform/mac/quartzgraphicspath.cpp"
 #import "lib/platform/mac/macstring.mm"
+#import "lib/platform/mac/mactimer.cpp"
 #import "lib/platform/mac/cfontmac.mm"
 #import "lib/platform/mac/caviewlayer.mm"
 #import "lib/platform/mac/ios/uiviewframe.mm"

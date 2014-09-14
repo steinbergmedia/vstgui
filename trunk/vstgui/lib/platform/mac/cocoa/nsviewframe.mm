@@ -213,7 +213,9 @@ static void VSTGUI_NSView_viewDidMoveToWindow (id self, SEL _cmd)
 	{
 		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(windowKeyStateChanged:) name:NSWindowDidBecomeKeyNotification object:window];
 		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(windowKeyStateChanged:) name:NSWindowDidResignKeyNotification object:window];
+	#if MAC_OS_X_VERSION_MAX_ALLOWED > MAC_OS_X_VERSION_10_6
 		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(windowDidChangeBackingProperties:) name:NSWindowDidChangeBackingPropertiesNotification object:window];
+	#endif
 		IPlatformFrameCallback* frame = getFrame (self);
 		if (frame)
 			frame->platformOnActivate ([window isKeyWindow] ? true : false);

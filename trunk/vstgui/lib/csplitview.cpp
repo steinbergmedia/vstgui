@@ -281,11 +281,11 @@ void CSplitView::resizeLastView (CPoint diff)
 //-----------------------------------------------------------------------------
 void CSplitView::resizeViewsEqual (CPoint diff)
 {
-	int32_t numViews = getNbViews ();
+	uint32_t numViews = getNbViews ();
 	if (numViews == 0)
 		return;
 
-	int32_t numSeparators = numViews / 2;
+	uint32_t numSeparators = numViews / 2;
 	numViews -= numSeparators;
 
 	CPoint offset;
@@ -552,7 +552,7 @@ bool CSplitView::requestNewSeparatorSize (CSplitViewSeparatorView* separatorView
 {
 	bool result = false;
 	ViewIterator it (this);
-	int32_t sepIndex = 0;
+	uint32_t sepIndex = 0;
 	CView* view1 = 0;
 	CView* view2 = 0;
 	while (*it)
@@ -573,10 +573,12 @@ bool CSplitView::requestNewSeparatorSize (CSplitViewSeparatorView* separatorView
 	if (view1 && view2)
 	{
 		CRect newSize (_newSize);
+		newSize.makeIntegral ();
+
 		CRect constrainSize (getViewSize ());
 		constrainSize.originize ();
 
-		CView* prevSeparator = getView (sepIndex - 2);
+		CView* prevSeparator = sepIndex > 2 ? getView (sepIndex - 2) : 0;
 		CView* nextSeparator = getView (sepIndex + 2);
 		if (prevSeparator)
 		{

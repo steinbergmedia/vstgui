@@ -81,7 +81,7 @@ IPlatformBitmap* IPlatformBitmap::createFromPath (UTF8StringPtr absolutePath)
 IPlatformBitmap* IPlatformBitmap::createFromMemory (const void* ptr, uint32_t memSize)
 {
 	CGBitmap* bitmap = 0;
-	CFDataRef data = CFDataCreate (0, (const UInt8*)ptr, memSize);
+	CFDataRef data = CFDataCreate (0, (const UInt8*)ptr, static_cast<CFIndex> (memSize));
 	if (data)
 	{
 		CGImageSourceRef source = CGImageSourceCreateWithData (data, NULL);
@@ -342,7 +342,7 @@ CGContextRef CGBitmap::createCGContext ()
 			if (context)
 			{
 				CGContextScaleCTM (context, 1, -1);
-				CGContextDrawImage (context, CGRectMake (0, -size.y, size.x, size.y), image);
+				CGContextDrawImage (context, CGRectMake (0, static_cast<CGFloat> (-size.y), static_cast<CGFloat> (size.x), static_cast<CGFloat> (size.y)), image);
 				CGContextScaleCTM (context, 1, -1);
 				return context;
 			}
@@ -370,11 +370,11 @@ CGLayerRef CGBitmap::createCGLayer (CGContextRef context)
 	if (layer && !dirty)
 		return layer;
 	CGImageRef image = getCGImage ();
-	layer = image ? CGLayerCreateWithContext (context, CGSizeMake (size.x, size.y), 0) : 0;
+	layer = image ? CGLayerCreateWithContext (context, CGSizeFromCPoint (size), 0) : 0;
 	if (layer)
 	{
 		CGContextRef layerContext = CGLayerGetContext (layer);
-		CGContextDrawImage (layerContext, CGRectMake (0, 0, size.x, size.y), image);
+		CGContextDrawImage (layerContext, CGRectMake (0, 0, static_cast<CGFloat> (size.x), static_cast<CGFloat> (size.y)), image);
 	}
 	return layer;
 }

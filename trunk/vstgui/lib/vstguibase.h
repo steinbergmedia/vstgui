@@ -78,6 +78,9 @@
 		#ifndef MAC_OS_X_VERSION_10_8
 			#define MAC_OS_X_VERSION_10_8 1080
 		#endif
+		#ifndef MAC_OS_X_VERSION_10_9
+			#define MAC_OS_X_VERSION_10_9 1090
+		#endif
 		#ifndef MAC_COCOA
 			#define MAC_COCOA 1
 		#endif
@@ -113,8 +116,8 @@
 		#define noexcept
 	#endif
 
-	#ifdef __clang__
-		#if defined (VSTGUI_WARN_EVERYTHING) && VSTGUI_WARN_EVERYTHING
+	#if defined (__clang__) && __clang_major__ > 4
+		#if defined (VSTGUI_WARN_EVERYTHING) && VSTGUI_WARN_EVERYTHING == 1
 			#pragma clang diagnostic warning "-Weverything"
 			#pragma clang diagnostic ignored "-Wreorder"
 		#else

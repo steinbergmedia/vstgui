@@ -1363,7 +1363,7 @@ void HierarchyMoveViewOperation::perform ()
 {
 	if (!parent)
 		return;
-	int32_t currentIndex = 0;
+	uint32_t currentIndex = 0;
 	ViewIterator it (parent);
 	while (*it && *it != view)
 	{

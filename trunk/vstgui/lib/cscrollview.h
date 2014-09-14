@@ -109,8 +109,8 @@ public:
 	bool addView (CView* pView, CView* pBefore) VSTGUI_OVERRIDE_VMETHOD;
 	bool removeView (CView* pView, bool withForget = true) VSTGUI_OVERRIDE_VMETHOD;
 	bool removeAll (bool withForget = true) VSTGUI_OVERRIDE_VMETHOD;
-	int32_t getNbViews () const VSTGUI_OVERRIDE_VMETHOD;
-	CView* getView (int32_t index) const VSTGUI_OVERRIDE_VMETHOD;
+	uint32_t getNbViews () const VSTGUI_OVERRIDE_VMETHOD;
+	CView* getView (uint32_t index) const VSTGUI_OVERRIDE_VMETHOD;
 	void drawBackgroundRect (CDrawContext* pContext, const CRect& _updateRect) VSTGUI_OVERRIDE_VMETHOD;
 	bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
 	void valueChanged (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;

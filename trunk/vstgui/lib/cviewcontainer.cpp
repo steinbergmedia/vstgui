@@ -161,8 +161,8 @@ void CViewContainer::setViewSize (const CRect &rect, bool invalid)
 
 		if (widthDelta != 0 || heightDelta != 0)
 		{
-			int32_t numSubviews = getNbViews ();
-			int32_t counter = 0;
+			uint32_t numSubviews = getNbViews ();
+			uint32_t counter = 0;
 			bool treatAsColumn = (getAutosizeFlags () & kAutosizeColumn) != 0;
 			bool treatAsRow = (getAutosizeFlags () & kAutosizeRow) != 0;
 			FOREACHSUBVIEW
@@ -501,9 +501,9 @@ bool CViewContainer::hasChildren () const
 /**
  * @return number of subviews
  */
-int32_t CViewContainer::getNbViews () const
+uint32_t CViewContainer::getNbViews () const
 {
-	return static_cast<int32_t> (children.size ());
+	return static_cast<uint32_t> (children.size ());
 }
 
 //-----------------------------------------------------------------------------
@@ -511,15 +511,12 @@ int32_t CViewContainer::getNbViews () const
  * @param index the index of the view to return
  * @return view at index. NULL if view at index does not exist.
  */
-CView* CViewContainer::getView (int32_t index) const
+CView* CViewContainer::getView (uint32_t index) const
 {
-	if (index >= 0)
-	{
-		ChildViewConstIterator it = children.begin ();
-		std::advance (it, index);
-		if (it != children.end ())
-			return *it;
-	}
+	ChildViewConstIterator it = children.begin ();
+	std::advance (it, index);
+	if (it != children.end ())
+		return *it;
 	return 0;
 }
 
@@ -529,9 +526,9 @@ CView* CViewContainer::getView (int32_t index) const
  * @param newIndex index of new z position
  * @return true if z order of view changed
  */
-bool CViewContainer::changeViewZOrder (CView* view, int32_t newIndex)
+bool CViewContainer::changeViewZOrder (CView* view, uint32_t newIndex)
 {
-	if (newIndex >= 0 && newIndex < getNbViews ())
+	if (newIndex < getNbViews ())
 	{
 		ViewList::iterator it = std::find (children.begin (), children.end (), view);
 		if (it != children.end ())

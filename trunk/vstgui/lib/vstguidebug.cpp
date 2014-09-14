@@ -87,7 +87,7 @@ void DebugPrint (const char *format, ...)
 	std::va_list marker;
 	va_start (marker, format);
 	std::vsprintf (string, format, marker);
-	if (!string)
+	if (string[0] == 0)
 		std::strcpy (string, "Empty string\n");
 	#if WINDOWS
 	UTF8StringHelper debugString (string);
