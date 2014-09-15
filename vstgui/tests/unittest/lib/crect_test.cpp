@@ -32,7 +32,7 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#include "../../../lib/cpoint.h"
+#include "../../../lib/crect.h"
 #include "../unittests.h"
 
 namespace VSTGUI {

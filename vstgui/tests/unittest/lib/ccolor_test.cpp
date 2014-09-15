@@ -49,7 +49,7 @@ TESTCASE(CColorTest,
 			{
 				for (uint16_t blue = 0; blue <= 255; blue++)
 				{
-					CColor c (red, green, blue);
+					CColor c (static_cast<uint8_t> (red), static_cast<uint8_t> (green), static_cast<uint8_t> (blue));
 					c.toHSV (hue, saturation, value);
 					c.fromHSV (hue, saturation, value);
 					EXPECT(c.red == red)
@@ -71,7 +71,7 @@ TESTCASE(CColorTest,
 			{
 				for (uint16_t blue = 0; blue <= 255; blue++)
 				{
-					CColor c (red, green, blue);
+					CColor c (static_cast<uint8_t> (red), static_cast<uint8_t> (green), static_cast<uint8_t> (blue));
 					c.toHSL (hue, saturation, lightness);
 					c.fromHSL (hue, saturation, lightness);
 					EXPECT(c.red == red)
