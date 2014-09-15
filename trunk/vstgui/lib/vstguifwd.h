@@ -157,6 +157,8 @@ template <class I> class SharedPointer;
 class IPlatformString;
 class IPlatformBitmap;
 class IPlatformBitmapPixelAccess;
+class IPlatformFont;
+class IFontPainter;
 
 }
 

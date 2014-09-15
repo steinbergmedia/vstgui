@@ -41,9 +41,6 @@
 
 namespace VSTGUI {
 
-class IPlatformFont;
-class IFontPainter;
-
 //-----------
 // @brief Text Face
 //-----------
@@ -111,39 +108,6 @@ extern const CFontRef kNormalFontSmall;
 extern const CFontRef kNormalFontSmaller;
 extern const CFontRef kNormalFontVerySmall;
 extern const CFontRef kSymbolFont;
-
-//-----------------------------------------------------------------------------
-// IFontPainter Declaration
-//! @brief font paint interface
-//-----------------------------------------------------------------------------
-class IFontPainter
-{
-public:
-	virtual ~IFontPainter () {}
-
-	virtual void drawString (CDrawContext* context, IPlatformString* string, const CPoint& p, bool antialias = true) = 0;
-	virtual CCoord getStringWidth (CDrawContext* context, IPlatformString* string, bool antialias = true) = 0;
-};
-
-//-----------------------------------------------------------------------------
-// IPlatformFont declaration
-//! @brief platform font class
-///
-/// Encapsulation of a platform font. You should never need to call IPlatformFont::create(..), instead use CFontDesc::getPlatformFont().
-//-----------------------------------------------------------------------------
-class IPlatformFont : public CBaseObject
-{
-public:
-	static IPlatformFont* create (UTF8StringPtr name, const CCoord& size, const int32_t& style);
-	static bool getAllPlatformFontFamilies (std::list<std::string>& fontFamilyNames);
-	
-	virtual double getAscent () const = 0;		///< returns the ascent line offset of the baseline of this font. If not supported returns -1
-	virtual double getDescent () const = 0;		///< returns the descent line offset of the baseline of this font. If not supported returns -1
-	virtual double getLeading () const = 0;		///< returns the space between lines for this font. If not supported returns -1
-	virtual double getCapHeight () const = 0;	///< returns the height of the highest capital letter for this font. If not supported returns -1
-
-	virtual IFontPainter* getPainter () = 0;
-};
 
 } // namespace
 

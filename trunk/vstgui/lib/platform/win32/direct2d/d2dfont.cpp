@@ -45,6 +45,38 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
+bool D2DFont::getAllPlatformFontFamilies (std::list<std::string>& fontFamilyNames)
+{
+	IDWriteFontCollection* collection = 0;
+	if (SUCCEEDED (getDWriteFactory ()->GetSystemFontCollection (&collection, false)))
+	{
+		UINT32 numFonts = collection->GetFontFamilyCount ();
+		for (UINT32 i = 0; i < numFonts; ++i)
+		{
+			IDWriteFontFamily* fontFamily = 0;
+			if (!SUCCEEDED (collection->GetFontFamily (i, &fontFamily)))
+				continue;
+			IDWriteLocalizedStrings* names = 0;
+			if (!SUCCEEDED (fontFamily->GetFamilyNames (&names)))
+				continue;
+			UINT32 nameLength = 0;
+			if (!SUCCEEDED (names->GetStringLength (0, &nameLength)) || nameLength < 1)
+				continue;
+			nameLength++;
+			WCHAR* name = new WCHAR[nameLength];
+			if (SUCCEEDED (names->GetString (0, name, nameLength)))
+			{
+				UTF8StringHelper str (name);
+				fontFamilyNames.push_back (str.getUTF8String ());
+			}
+			delete [] name;
+		}
+		return true;
+	}
+	return false;
+}
+
+//-----------------------------------------------------------------------------
 D2DFont::D2DFont (const char* name, const CCoord& size, const int32_t& style)
 : textFormat (0)
 , ascent (-1)

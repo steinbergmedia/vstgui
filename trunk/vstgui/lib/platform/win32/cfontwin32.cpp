@@ -44,7 +44,7 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-bool IPlatformFont::getAllPlatformFontFamilies (std::list<std::string>& fontFamilyNames)
+bool GdiPlusFont::getAllPlatformFontFamilies (std::list<std::string>& fontFamilyNames)
 {
 	GDIPlusGlobals::enter ();
 	Gdiplus::InstalledFontCollection fonts;

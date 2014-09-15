@@ -37,6 +37,7 @@
 #include "../cbitmap.h"
 #include "../cframe.h"
 #include "../cgraphicspath.h"
+#include "../platform/iplatformfont.h"
 #include <cmath>
 
 namespace VSTGUI {

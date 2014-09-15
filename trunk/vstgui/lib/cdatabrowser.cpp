@@ -42,6 +42,7 @@
 #include "ifocusdrawing.h"
 #include "cvstguitimer.h"
 #include "cgraphicspath.h"
+#include "platform/iplatformfont.h"
 #include <cmath>
 #include <algorithm>
 

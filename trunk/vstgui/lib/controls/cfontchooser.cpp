@@ -38,6 +38,7 @@
 #include "ctextedit.h"
 #include "cscrollbar.h"
 #include "../cstring.h"
+#include "../platform/iplatformfont.h"
 #include <list>
 #include <cmath>
 

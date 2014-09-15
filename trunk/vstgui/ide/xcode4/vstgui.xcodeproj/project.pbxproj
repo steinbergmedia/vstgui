@@ -622,6 +622,7 @@
 		F497F1A613080B4800F0A613 /* nsviewoptionmenu.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = nsviewoptionmenu.mm; sourceTree = "<group>"; };
 		F4A63DE514023EAD00023102 /* uifontscontroller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uifontscontroller.h; sourceTree = "<group>"; };
 		F4A63DE714023EB300023102 /* uifontscontroller.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uifontscontroller.cpp; sourceTree = "<group>"; };
+		F4A734DC19C6D309006D7CD5 /* iplatformfont.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iplatformfont.h; sourceTree = "<group>"; };
 		F4C0F1F1197AA20700A48B02 /* uicolorslider.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uicolorslider.cpp; sourceTree = "<group>"; };
 		F4C0F1F2197AA20700A48B02 /* uicolorslider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uicolorslider.h; sourceTree = "<group>"; };
 		F4C0F1F9197BC2F900A48B02 /* uicolorchoosercontroller.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uicolorchoosercontroller.cpp; sourceTree = "<group>"; };
@@ -994,6 +995,7 @@
 				F47883A1180457E70054ED06 /* iplatformviewlayer.h */,
 				F476BEA518EC2E7500230A63 /* std_unorderedmap.h */,
 				F4201BDC19BB46750001D594 /* iplatformtimer.h */,
+				F4A734DC19C6D309006D7CD5 /* iplatformfont.h */,
 			);
 			path = platform;
 			sourceTree = "<group>";

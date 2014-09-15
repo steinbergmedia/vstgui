@@ -35,7 +35,7 @@
 #ifndef __cfontwin32__
 #define __cfontwin32__
 
-#include "../../cfont.h"
+#include "../iplatformfont.h"
 
 #if WINDOWS
 
@@ -53,6 +53,7 @@ public:
 
 	Gdiplus::Font* getFont () const { return font; }
 
+	static bool getAllPlatformFontFamilies (std::list<std::string>& fontFamilyNames);
 protected:
 	~GdiPlusFont ();
 	

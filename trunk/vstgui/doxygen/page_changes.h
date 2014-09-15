@@ -24,7 +24,7 @@ It's recommended to start new projects with version 4 while old projects should 
 - add support for adding a custom view to the split view separator
 - transformation matrix support in VSTGUI::CDrawContext
 - HiDPI support (aka Retina support)
-- use c++11 callback functions for VSTGUI::CFileSelector::run(), VSTGUI::CVSTGUITimer, VSTGUI::CParamDisplay::setValueToStringFunction, VSTGUI::CTextEdit::setStringToValueFunction and VSTGUI::CCommandMenuItem::setActions
+- alternative c++11 callback functions for VSTGUI::CFileSelector::run(), VSTGUI::CVSTGUITimer, VSTGUI::CParamDisplay::setValueToStringFunction, VSTGUI::CTextEdit::setStringToValueFunction and VSTGUI::CCommandMenuItem::setActions
 
 Note: All current deprecated methods will be removed in the next version. So make sure that your code compiles with VSTGUI_ENABLE_DEPRECATED_METHODS=0
 

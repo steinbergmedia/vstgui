@@ -1,3 +1,8 @@
+2014-09-15 arne
+
+	* moved IPlatformFont and IFontPainter into lib/platform/iplatformfont.h
+	* use DirectWrite for IPlatformFont::getAllPlatformFontFamilies(..) when available
+
 2014-09-14 arne
 
 	* fix CShadowViewContainer drawing on Windows and use a gaussian blur approximation instead of a simple box blur

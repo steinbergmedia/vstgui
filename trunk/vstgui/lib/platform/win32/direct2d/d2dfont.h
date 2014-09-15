@@ -35,7 +35,7 @@
 #ifndef __d2dfont__
 #define __d2dfont__
 
-#include "../../../cfont.h"
+#include "../../iplatformfont.h"
 
 #if WINDOWS && VSTGUI_DIRECT2D_SUPPORT
 
@@ -51,6 +51,8 @@ public:
 	D2DFont (const char* name, const CCoord& size, const int32_t& style);
 
 	IDWriteTextLayout* createTextLayout (IPlatformString* string) const;
+
+	static bool getAllPlatformFontFamilies (std::list<std::string>& fontFamilyNames);
 
 protected:
 	~D2DFont ();

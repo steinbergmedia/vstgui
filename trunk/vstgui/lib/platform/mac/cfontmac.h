@@ -35,11 +35,11 @@
 #ifndef __cfontmac__
 #define __cfontmac__
 
-#include "../../cfont.h"
+#include "../iplatformfont.h"
 
 #if MAC
-
 #include "../../ccolor.h"
+
 #if TARGET_OS_IPHONE
 	#include <CoreText/CoreText.h>
 #else

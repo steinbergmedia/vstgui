@@ -301,6 +301,18 @@ IPlatformFont* IPlatformFont::create (const char* name, const CCoord& size, cons
 	return 0;
 }
 
+//-----------------------------------------------------------------------------
+bool IPlatformFont::getAllPlatformFontFamilies (std::list<std::string>& fontFamilyNames)
+{
+#if VSTGUI_DIRECT2D_SUPPORT
+	if (getD2DFactory ())
+	{
+		return D2DFont::getAllPlatformFontFamilies (fontFamilyNames);
+	}
+#endif
+	return GdiPlusFont::getAllPlatformFontFamilies (fontFamilyNames);
+}
+
 /// @cond ignore
 //-----------------------------------------------------------------------------
 GDIPlusGlobals* GDIPlusGlobals::gInstance = 0;
