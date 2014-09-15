@@ -88,7 +88,7 @@ void CShadowViewContainer::setShadowOffset (const CPoint& offset)
 	if (shadowOffset != offset)
 	{
 		shadowOffset = offset;
-		invalid ();
+		invalidateShadow ();
 	}
 }
 
