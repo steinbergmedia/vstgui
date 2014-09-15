@@ -45,10 +45,9 @@
 #include "../lib/cgradient.h"
 #include "../lib/cgraphicspath.h"
 #include "../lib/cbitmapfilter.h"
-#include "../lib/platform/win32/win32support.h"
-#include "../lib/platform/mac/macglobals.h"
 #include "../lib/platform/std_unorderedmap.h"
 #include "../lib/platform/iplatformbitmap.h"
+#include "../lib/platform/iplatformfont.h"
 #include <sstream>
 #include <fstream>
 #include <algorithm>

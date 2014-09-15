@@ -34,6 +34,7 @@
 
 #include "cfont.h"
 #include "cstring.h"
+#include "platform/iplatformfont.h"
 
 namespace VSTGUI {
 

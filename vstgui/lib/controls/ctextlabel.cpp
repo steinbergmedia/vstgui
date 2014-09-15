@@ -33,6 +33,7 @@
 //-----------------------------------------------------------------------------
 
 #include "ctextlabel.h"
+#include "../platform/iplatformfont.h"
 
 namespace VSTGUI {
 

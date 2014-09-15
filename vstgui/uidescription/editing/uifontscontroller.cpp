@@ -41,6 +41,7 @@
 #include "uibasedatasource.h"
 #include "../../lib/controls/ccolorchooser.h"
 #include "../../lib/controls/coptionmenu.h"
+#include "../../lib/platform/iplatformfont.h"
 #include <sstream>
 
 namespace VSTGUI {
