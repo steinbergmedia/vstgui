@@ -1232,18 +1232,35 @@ void UIAttributesController::rebuildAttributesView ()
 	if (viewNameLabel)
 	{
 		int32_t selectedViews = selection->total ();
-		if (selectedViews == 1)
+		if (selectedViews > 0)
 		{
-			CView* view = selection->first ();
-			UTF8StringPtr viewname = viewFactory->getViewName (view);
-			viewNameLabel->setText (viewname);
-		}
-		else if (selectedViews > 1)
-		{
-			std::stringstream str;
-			str << selectedViews;
-			str << " Selected Views";
-			viewNameLabel->setText (str.str ().c_str ());
+			UTF8StringPtr viewname = 0;
+			FOREACH_IN_SELECTION(selection, view)
+				UTF8StringPtr name = viewFactory->getViewName (view);
+				if (viewname != 0 && UTF8StringView (name) != viewname)
+				{
+					viewname = 0;
+					break;
+				}
+				viewname = name;
+			FOREACH_IN_SELECTION_END
+			if (viewname != 0)
+			{
+				if (selectedViews == 1)
+					viewNameLabel->setText (viewname);
+				else
+				{
+					std::stringstream str;
+					str << selectedViews << "x " << viewname;
+					viewNameLabel->setText (str.str ().c_str ());
+				}
+			}
+			else
+			{
+				std::stringstream str;
+				str << selectedViews << "x different views";
+				viewNameLabel->setText (str.str ().c_str ());
+			}
 		}
 		else
 		{
