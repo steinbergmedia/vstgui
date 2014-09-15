@@ -198,6 +198,10 @@
 		F497F1B413080B4800F0A613 /* nsviewoptionmenu.mm in Sources */ = {isa = PBXBuildFile; fileRef = F497F1A613080B4800F0A613 /* nsviewoptionmenu.mm */; };
 		F49B43FE1666081900461790 /* xmlparser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4E3903813080ECC00615042 /* xmlparser.cpp */; };
 		F4A63DE814023EB400023102 /* uifontscontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4A63DE714023EB300023102 /* uifontscontroller.cpp */; };
+		F4A734DD19C6E487006D7CD5 /* clinestyle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4201BD019BB0B5F0001D594 /* clinestyle.cpp */; };
+		F4A734DE19C6E49F006D7CD5 /* cscrollbar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4EA3F2A19A4E5C00054328B /* cscrollbar.cpp */; };
+		F4A734DF19C6E4AE006D7CD5 /* cdrawmethods.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F44C25F8198B9A8E008434DB /* cdrawmethods.cpp */; };
+		F4A734E019C6E4B5006D7CD5 /* mactimer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F447196D19BB5AEA0076782F /* mactimer.cpp */; };
 		F4C0F1F3197AA20700A48B02 /* uicolorslider.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4C0F1F1197AA20700A48B02 /* uicolorslider.cpp */; };
 		F4C0F1F4197AA20700A48B02 /* uicolorslider.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4C0F1F1197AA20700A48B02 /* uicolorslider.cpp */; };
 		F4C0F1F6197AA20700A48B02 /* uicolorslider.h in Headers */ = {isa = PBXBuildFile; fileRef = F4C0F1F2197AA20700A48B02 /* uicolorslider.h */; };
@@ -1450,6 +1454,7 @@
 				F4282B011710699700A79F13 /* crect_test.cpp in Sources */,
 				F4462D2C17563BD900E6835D /* ccolor_test.cpp in Sources */,
 				F4462D2E1756444800E6835D /* idependency_test.cpp in Sources */,
+				F4A734DD19C6E487006D7CD5 /* clinestyle.cpp in Sources */,
 				F4462D371756474E00E6835D /* animations.cpp in Sources */,
 				F4462D381756474E00E6835D /* animator.cpp in Sources */,
 				F4462D391756474E00E6835D /* timingfunctions.cpp in Sources */,
@@ -1462,6 +1467,7 @@
 				F4462D3D1756474E00E6835D /* ccontrol.cpp in Sources */,
 				F4462D3E1756474E00E6835D /* cfontchooser.cpp in Sources */,
 				F4462D3F1756474E00E6835D /* cknob.cpp in Sources */,
+				F4A734DF19C6E4AE006D7CD5 /* cdrawmethods.cpp in Sources */,
 				F4462D401756474E00E6835D /* cmoviebitmap.cpp in Sources */,
 				F4462D411756474E00E6835D /* cmoviebutton.cpp in Sources */,
 				F4462D421756474E00E6835D /* coptionmenu.cpp in Sources */,
@@ -1482,6 +1488,7 @@
 				F4462D501756475900E6835D /* cdropsource.cpp in Sources */,
 				F4462D511756475900E6835D /* cfileselector.cpp in Sources */,
 				F4462D521756475900E6835D /* cfont.cpp in Sources */,
+				F4A734E019C6E4B5006D7CD5 /* mactimer.cpp in Sources */,
 				F4462D531756475900E6835D /* cframe.cpp in Sources */,
 				F4462D541756475900E6835D /* cgradientview.cpp in Sources */,
 				F4462D551756475900E6835D /* cgraphicspath.cpp in Sources */,
@@ -1494,6 +1501,7 @@
 				F44DC9F118A7C0780029125A /* cstream.cpp in Sources */,
 				F4462D5C1756475900E6835D /* cshadowviewcontainer.cpp in Sources */,
 				F4462D5D1756475900E6835D /* csplitview.cpp in Sources */,
+				F4A734DE19C6E49F006D7CD5 /* cscrollbar.cpp in Sources */,
 				F4462D5E1756475900E6835D /* cstring.cpp in Sources */,
 				F4462D5F1756475900E6835D /* ctabview.cpp in Sources */,
 				F4462D601756475900E6835D /* ctooltipsupport.cpp in Sources */,

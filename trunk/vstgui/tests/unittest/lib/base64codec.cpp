@@ -57,7 +57,7 @@ TESTCASE(Base64Codec,
 	);
 
 	TEST(EncodeBinary,
-		 char binary [6];
+		 unsigned char binary [6];
 		 binary[0] = 0x89;
 		 binary[1] = 0x50;
 		 binary[2] = 0x4E;
