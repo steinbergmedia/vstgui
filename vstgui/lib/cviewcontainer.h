@@ -53,6 +53,27 @@ extern IdStringPtr kMsgCheckIfViewContainer;	///< Message to check if View is a 
 extern IdStringPtr kMsgLooseFocus;				///< Message of a view loosing focus (only CTextEdit and COptionMenu send this yet)
 
 //-----------------------------------------------------------------------------
+struct GetViewOptions
+{
+	enum {
+		kNone					= 0,
+		kDeep					= 1 << 0,
+		kMouseEnabled			= 1 << 1,
+		kIncludeViewContainer	= 1 << 2,
+		kIncludeInvisible		= 1 << 3
+	};
+
+	explicit GetViewOptions (uint32_t options = kNone) : flags (options) {}
+
+	bool deep () const { return flags & kDeep; }
+	bool mouseEnabled () const { return flags & kMouseEnabled; }
+	bool includeViewContainer () const { return flags & kIncludeViewContainer; }
+	bool includeInvisible () const { return flags & kIncludeInvisible; }
+private:
+	uint32_t flags;
+};
+
+//-----------------------------------------------------------------------------
 // CViewContainer Declaration
 //! @brief Container Class of CView objects
 /// @ingroup containerviews
@@ -80,9 +101,9 @@ public:
 	virtual bool hasChildren () const;						///< check if container has child views
 	virtual uint32_t getNbViews () const;			///< get the number of child views
 	virtual CView* getView (uint32_t index) const;	///< get the child view at index
-	virtual CView* getViewAt (const CPoint& where, bool deep = false, bool mustbeMouseEnabled = false) const;	///< get the view at point where
-	virtual CViewContainer* getContainerAt (const CPoint& where, bool deep = true, bool mustbeMouseEnabled = false) const;		///< get the container at point where
-	virtual bool getViewsAt (const CPoint& where, ViewList& views, bool deep = true) const;	///< get all views at point where, top->down
+	virtual CView* getViewAt (const CPoint& where, const GetViewOptions& options = GetViewOptions (GetViewOptions::kNone)) const;	///< get the view at point where
+	virtual CViewContainer* getContainerAt (const CPoint& where, const GetViewOptions& options = GetViewOptions (GetViewOptions::kDeep)) const;		///< get the container at point where
+	virtual bool getViewsAt (const CPoint& where, ViewList& views, const GetViewOptions& options = GetViewOptions (GetViewOptions::kDeep)) const;	///< get all views at point where, top->down
 	virtual bool changeViewZOrder (CView* view, uint32_t newIndex);	///< change view z order position
 
 	virtual void setAutosizingEnabled (bool state);					///< enable or disable autosizing subviews. Per default this is enabled.

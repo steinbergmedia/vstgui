@@ -1,3 +1,8 @@
+2014-09-17 arne
+
+	* changed method signature of the various getViewAt/getViewsAt/getContainerAt methods
+		They all have an options argument now instead of multiple bool arguments to refine the options which views should be returned
+
 2014-09-15 arne
 
 	* moved IPlatformFont and IFontPainter into lib/platform/iplatformfont.h

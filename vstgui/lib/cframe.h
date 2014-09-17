@@ -161,8 +161,8 @@ public:
 
 	bool removeView (CView* pView, bool withForget = true) VSTGUI_OVERRIDE_VMETHOD;
 	bool removeAll (bool withForget = true) VSTGUI_OVERRIDE_VMETHOD;
-	CView* getViewAt (const CPoint& where, bool deep = false, bool mustbeMouseEnabled = false) const VSTGUI_OVERRIDE_VMETHOD;
-	CViewContainer* getContainerAt (const CPoint& where, bool deep = true, bool mustbeMouseEnabled = false) const VSTGUI_OVERRIDE_VMETHOD;
+	CView* getViewAt (const CPoint& where, const GetViewOptions& options = GetViewOptions (GetViewOptions::kNone)) const VSTGUI_OVERRIDE_VMETHOD;
+	CViewContainer* getContainerAt (const CPoint& where, const GetViewOptions& options = GetViewOptions (GetViewOptions::kDeep)) const VSTGUI_OVERRIDE_VMETHOD;
 
 	// CView
 	virtual bool attached (CView* parent) VSTGUI_OVERRIDE_VMETHOD;

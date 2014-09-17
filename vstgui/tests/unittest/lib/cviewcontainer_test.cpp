@@ -155,6 +155,25 @@ TESTCASE(CViewContainerTest,
 		EXPECT(container->getViewSize ().right == 30)
 		EXPECT(container->getViewSize ().bottom == 30)
 	);
+	TEST(GetViewAt,
+		CRect r (10, 10, 20, 20);
+		CView* view = new CView (r);
+		container->addView (view);
+		EXPECT(view == container->getViewAt (r.getTopLeft ()));
+		EXPECT(nullptr == container->getViewAt (CPoint (0, 0)));
+	);
+	TEST(GetViewAtDeep,
+		CRect r (10, 10, 20, 20);
+		CViewContainer* container2 = new CViewContainer (r);
+		container->addView (container2);
+		CRect r2 (2, 2, 4, 4);
+		CView* view = new CView (r2);
+		container2->addView (view);
+		EXPECT(container->getViewAt (CPoint (12, 12)) == nullptr);
+		EXPECT(container->getViewAt (CPoint (12, 12), GetViewOptions (GetViewOptions::kDeep)) == view);
+		EXPECT(container->getViewAt (CPoint (11, 11), GetViewOptions (GetViewOptions::kDeep)) == nullptr);
+		EXPECT(container->getViewAt (CPoint (11, 11), GetViewOptions (GetViewOptions::kDeep|GetViewOptions::kIncludeViewContainer)) == container2);
+	);
 ); // TESTCASE
 
 } // namespaces

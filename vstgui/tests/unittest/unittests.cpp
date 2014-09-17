@@ -51,18 +51,25 @@ TestCase::TestCase (std::string&& name, TestCaseFunction&& testCase)
 }
 
 //----------------------------------------------------------------------------------------------------
-TestCase::TestCase (TestCase&& tc)
+TestCase::TestCase (TestCase&& tc) noexcept
+{
+	*this = std::move (tc);
+}
+
+//----------------------------------------------------------------------------------------------------
+TestCase& TestCase::operator=(TestCase &&tc) noexcept
 {
 	name = std::move (tc.name);
 	tests = std::move (tc.tests);
 	setupFunction = std::move (tc.setupFunction);
 	teardownFunction = std::move (tc.teardownFunction);
+	return *this;
 }
 
 //----------------------------------------------------------------------------------------------------
 void TestCase::registerTest (std::string&& name, TestFunction&& function)
 {
-	tests.push_back (TestPair (name, function));
+	tests.push_back (TestPair (name, std::move (function)));
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -108,6 +115,8 @@ void Context::print (const char* fmt, ...)
 	}
 #endif
 }
+
+using namespace std::chrono;
 
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
@@ -175,15 +184,15 @@ public:
 	
 	bool runTest (const std::string& testName, const TestFunction& f)
 	{
-		std::chrono::time_point<std::chrono::system_clock> start, end;
+		time_point<system_clock> start, end;
 		printIntend ();
 		printf ("%s", testName.c_str());
 		intend++;
-		start = std::chrono::system_clock::now ();
+		start = system_clock::now ();
 		bool result = f (this);
-		end = std::chrono::system_clock::now ();
+		end = system_clock::now ();
 		intend--;
-		printf (" [%s] -> %lldµs\n", result ? "OK" : "Failed", std::chrono::duration_cast<std::chrono::microseconds> (end-start).count ());
+		printf (" [%s] -> %lldµs\n", result ? "OK" : "Failed", duration_cast<microseconds> (end-start).count ());
 		printOutput ();
 		return result;
 	}
@@ -191,14 +200,14 @@ public:
 	void run ()
 	{
 		Result result;
-		std::chrono::time_point<std::chrono::system_clock> start, end;
-		start = std::chrono::system_clock::now ();
+		time_point<system_clock> start, end;
+		start = system_clock::now ();
 		for (auto& it : UnitTestRegistry::instance ())
 		{
 			result += runTestCase (std::move (it));
 		}
-		end = std::chrono::system_clock::now ();
-		print ("\nDone running %d tests in %lldms. [%d Failed]\n", result.succeded+result.failed, std::chrono::duration_cast<std::chrono::milliseconds> (end-start).count (), result.failed);
+		end = system_clock::now ();
+		print ("\nDone running %d tests in %lldms. [%d Failed]\n", result.succeded+result.failed, duration_cast<milliseconds> (end-start).count (), result.failed);
 		printOutput ();
 	}
 private:
@@ -216,7 +225,7 @@ static void RunTests ()
 
 #if __APPLE_CC__
 #include <CoreFoundation/CoreFoundation.h>
-namespace VSTGUI { void* gBundleRef = CFBundleGetMainBundle(); }
+namespace VSTGUI { void* gBundleRef = CFBundleGetMainBundle (); }
 #endif
 
 int main ()

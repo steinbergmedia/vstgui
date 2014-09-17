@@ -847,7 +847,7 @@ CMouseEventResult VST3Editor::onMouseDown (CFrame* frame, const CPoint& where, c
 		}
 	#endif
 		CViewContainer::ViewList views;
-		if (editingEnabled == false && getFrame ()->getViewsAt (where, views, true))
+		if (editingEnabled == false && getFrame ()->getViewsAt (where, views, GetViewOptions (GetViewOptions::kDeep|GetViewOptions::kIncludeViewContainer)))
 		{
 			VSTGUI_RANGE_BASED_FOR_LOOP(CViewContainer::ViewList, views, SharedPointer<CView>, view)
 				IContextMenuController* contextMenuController = dynamic_cast<IContextMenuController*> (getViewController (view));
