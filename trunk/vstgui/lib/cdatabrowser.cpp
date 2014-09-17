@@ -259,7 +259,7 @@ void CDataBrowser::valueChanged (CControl *pControl)
 		{
 			CPoint where;
 			getFrame ()->getCurrentMouseLocation (where);
-			if (getFrame ()->getViewAt (where, true) == dbView)
+			if (getFrame ()->getViewAt (where, GetViewOptions (GetViewOptions::kDeep)) == dbView)
 			{
 				CDataBrowser::Cell cell;
 				dbView->frameToLocal (where);

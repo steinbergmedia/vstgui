@@ -38,6 +38,25 @@ TESTCASE(UTF8StringViewTest,
 		EXPECT (str.endsWith ("String") == true);
 		EXPECT (str.endsWith ("This") == false);
 	);
+	
+	TEST(DoubleConversionTest,
+		UTF8StringView str ("32.56789");
+		double value = str.toDouble ();
+		EXPECT (value == 32.56789);
+	);
+
+	TEST(FloatConversionTest,
+		UTF8StringView str ("32.56789");
+		float value = str.toFloat ();
+		EXPECT (value == 32.56789f);
+	);
+
+	TEST(ComareTest,
+		std::string test ("This is a simple ASCII String");
+		UTF8StringView str1 (test.c_str ());
+		UTF8StringView str2 (asciiStr);
+		EXPECT (str1 == str2);
+	);
 
 );
 }

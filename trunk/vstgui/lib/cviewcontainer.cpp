@@ -929,7 +929,7 @@ bool CViewContainer::onDrop (IDataPackage* drag, const CPoint& where)
 	where2.offset (-getViewSize ().left, -getViewSize ().top);
 	transform.inverse ().transform (where2);
 
-	CView* view = getViewAt (where, false, true);
+	CView* view = getViewAt (where, GetViewOptions (GetViewOptions::kMouseEnabled|GetViewOptions::kIncludeViewContainer));
 	if (view != currentDragView)
 	{
 		if (currentDragView)
@@ -958,7 +958,7 @@ void CViewContainer::onDragEnter (IDataPackage* drag, const CPoint& where)
 
 	if (currentDragView)
 		currentDragView->onDragLeave (drag, where2);
-	CView* view = getViewAt (where, false, true);
+	CView* view = getViewAt (where, GetViewOptions (GetViewOptions::kMouseEnabled|GetViewOptions::kIncludeViewContainer));
 	currentDragView = view;
 	if (view)
 		view->onDragEnter (drag, where2);
@@ -989,7 +989,7 @@ void CViewContainer::onDragMove (IDataPackage* drag, const CPoint& where)
 	where2.offset (-getViewSize ().left, -getViewSize ().top);
 	transform.inverse ().transform (where2);
 
-	CView* view = getViewAt (where, false, true);
+	CView* view = getViewAt (where, GetViewOptions (GetViewOptions::kMouseEnabled|GetViewOptions::kIncludeViewContainer));
 	if (view != currentDragView)
 	{
 		if (currentDragView)
@@ -1154,28 +1154,35 @@ bool CViewContainer::isDirty () const
 //-----------------------------------------------------------------------------
 /**
  * @param p location
- * @param deep search deep
- * @return view at position p
+ * @param options search options
+ * @return view at position p or null
  */
-CView* CViewContainer::getViewAt (const CPoint& p, bool deep, bool mustbeMouseEnabled) const
+CView* CViewContainer::getViewAt (const CPoint& p, const GetViewOptions& options) const
 {
 	CPoint where (p);
 	where.offset (-getViewSize ().left, -getViewSize ().top);
 	transform.inverse ().transform (where);
 
 	FOREACHSUBVIEW_REVERSE(true)
-		if (pV && pV->isVisible () && pV->getMouseableArea ().pointInside (where))
+		if (pV && pV->getMouseableArea ().pointInside (where))
 		{
-			if (mustbeMouseEnabled)
+			if (!options.includeInvisible () && pV->isVisible () == false)
+				continue;
+			if (options.mouseEnabled ())
 			{
-				if (pV->getMouseEnabled() == false)
+				if (pV->getMouseEnabled () == false)
 					continue;
 			}
-			if (deep)
+			if (options.deep ())
 			{
 				if (CViewContainer* container = dynamic_cast<CViewContainer*> (pV))
-					return container->getViewAt (where, deep, mustbeMouseEnabled);
+				{
+					CView* view = container->getViewAt (where, options);
+					return options.includeViewContainer () ? (view ? view : container) : view;
+				}
 			}
+			if (!options.includeViewContainer () && dynamic_cast<CViewContainer*> (pV))
+				continue;
 			return pV;
 		}
 	ENDFOREACHSUBVIEW
@@ -1187,10 +1194,10 @@ CView* CViewContainer::getViewAt (const CPoint& p, bool deep, bool mustbeMouseEn
 /**
  * @param p location
  * @param views result list
- * @param deep search deep
+ * @param options search options
  * @return success
  */
-bool CViewContainer::getViewsAt (const CPoint& p, ViewList& views, bool deep) const
+bool CViewContainer::getViewsAt (const CPoint& p, ViewList& views, const GetViewOptions& options) const
 {
 	bool result = false;
 
@@ -1199,12 +1206,24 @@ bool CViewContainer::getViewsAt (const CPoint& p, ViewList& views, bool deep) co
 	transform.inverse ().transform (where);
 
 	FOREACHSUBVIEW_REVERSE(true)
-		if (pV && pV->isVisible () && pV->getMouseableArea ().pointInside (where))
+		if (pV && pV->getMouseableArea ().pointInside (where))
 		{
-			if (deep)
+			if (!options.includeInvisible () && pV->isVisible () == false)
+				continue;
+			if (options.mouseEnabled ())
+			{
+				if (pV->getMouseEnabled () == false)
+					continue;
+			}
+			if (options.deep ())
 			{
 				if (CViewContainer* container = dynamic_cast<CViewContainer*> (pV))
-					container->getViewsAt (where, views);
+					container->getViewsAt (where, views, options);
+			}
+			if (options.includeViewContainer () == false)
+			{
+				if (dynamic_cast<CViewContainer*> (pV))
+					continue;
 			}
 			views.push_back (pV);
 			result = true;
@@ -1217,27 +1236,29 @@ bool CViewContainer::getViewsAt (const CPoint& p, ViewList& views, bool deep) co
 //-----------------------------------------------------------------------------
 /**
  * @param p location
- * @param deep search deep
- * @return view container at position p
+ * @param options search search options
+ * @return view container at position p or null
  */
-CViewContainer* CViewContainer::getContainerAt (const CPoint& p, bool deep, bool mustbeMouseEnabled) const
+CViewContainer* CViewContainer::getContainerAt (const CPoint& p, const GetViewOptions& options) const
 {
 	CPoint where (p);
 	where.offset (-getViewSize ().left, -getViewSize ().top);
 	transform.inverse ().transform (where);
 
 	FOREACHSUBVIEW_REVERSE(true)
-		if (pV && pV->isVisible () && pV->getMouseableArea ().pointInside (where))
+		if (pV && pV->getMouseableArea ().pointInside (where))
 		{
-			if (mustbeMouseEnabled)
+			if (!options.includeInvisible () && pV->isVisible () == false)
+				continue;
+			if (options.mouseEnabled ())
 			{
 				if (pV->getMouseEnabled() == false)
 					continue;
 			}
-			if (deep)
+			if (options.deep ())
 			{
 				if (CViewContainer* container = dynamic_cast<CViewContainer*> (pV))
-					return container->getContainerAt (where, deep);
+					return container->getContainerAt (where, options);
 			}
 			break;
 		}

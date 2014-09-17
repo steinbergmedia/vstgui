@@ -120,8 +120,8 @@ protected:
 
 	void draw (CDrawContext *pContext) VSTGUI_OVERRIDE_VMETHOD;
 	void drawRect (CDrawContext *pContext, const CRect& updateRect) VSTGUI_OVERRIDE_VMETHOD;
-	CView* getViewAt (const CPoint& p, bool deep, bool mustbeMouseEnabled = false) const VSTGUI_OVERRIDE_VMETHOD;
-	CViewContainer* getContainerAt (const CPoint& p, bool deep, bool mustbeMouseEnabled = false) const VSTGUI_OVERRIDE_VMETHOD;
+	CView* getViewAt (const CPoint& p, const GetViewOptions& options = GetViewOptions (GetViewOptions::kNone)) const VSTGUI_OVERRIDE_VMETHOD;
+	CViewContainer* getContainerAt (const CPoint& p, const GetViewOptions& options = GetViewOptions (GetViewOptions::kDeep)) const VSTGUI_OVERRIDE_VMETHOD;
 	bool advanceNextFocusView (CView* oldFocus, bool reverse) VSTGUI_OVERRIDE_VMETHOD;
 	bool onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const CButtonState &buttons) VSTGUI_OVERRIDE_VMETHOD;
 

@@ -131,7 +131,7 @@ class TestCase
 	typedef Tests::const_iterator Iterator;
 public:
 	TestCase (std::string&& name, TestCaseFunction&& testCase);
-	TestCase (TestCase&& tc);
+	TestCase (TestCase&& tc) noexcept;
 
 	void setSetupFunction (SetupFunction&& setupFunction);
 	void setTeardownFunction (TeardownFunction&& teardownFunction);
@@ -144,6 +144,8 @@ public:
 	
 	const SetupFunction& setup () const { return setupFunction; }
 	const TeardownFunction& teardown () const { return teardownFunction; }
+	
+	TestCase& operator= (TestCase&& tc) noexcept;
 private:
 	Tests tests;
 	std::string name;

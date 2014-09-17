@@ -548,9 +548,9 @@ void UIEditView::drawRect (CDrawContext *pContext, const CRect& updateRect)
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIEditView::getViewAt (const CPoint& p, bool deep, bool mustbeMouseEnabled) const
+CView* UIEditView::getViewAt (const CPoint& p, const GetViewOptions& options) const
 {
-	CView* view = CViewContainer::getViewAt (p, deep, mustbeMouseEnabled);
+	CView* view = CViewContainer::getViewAt (p, options);
 	if (editing)
 	{
 		const IViewFactory* factory = description->getViewFactory ();
@@ -566,9 +566,9 @@ CView* UIEditView::getViewAt (const CPoint& p, bool deep, bool mustbeMouseEnable
 }
 
 //----------------------------------------------------------------------------------------------------
-CViewContainer* UIEditView::getContainerAt (const CPoint& p, bool deep, bool mustbeMouseEnabled) const
+CViewContainer* UIEditView::getContainerAt (const CPoint& p, const GetViewOptions& options) const
 {
-	CViewContainer* view = CViewContainer::getContainerAt (p, deep, mustbeMouseEnabled);
+	CViewContainer* view = CViewContainer::getContainerAt (p, options);
 	if (editing)
 	{
 		const IViewFactory* factory = description->getViewFactory ();
@@ -684,9 +684,7 @@ CMouseEventResult UIEditView::onMouseDown (CPoint &where, const CButtonState& bu
 			where2.offset (-getViewSize ().left, -getViewSize ().top);
 			getTransform ().inverse ().transform (where2);
 			MouseSizeMode sizeMode = selectionHitTest (where, &selectionHitView);
-			CView* mouseHitView = getViewAt (where, true);
-			if (mouseHitView == 0)
-				mouseHitView = getContainerAt (where, true);
+			CView* mouseHitView = getViewAt (where, GetViewOptions (GetViewOptions::kDeep|GetViewOptions::kIncludeViewContainer|GetViewOptions::kIncludeInvisible));
 			if (selectionHitView == 0 && mouseHitView == 0)
 			{
 				getSelection ()->empty ();
@@ -791,13 +789,9 @@ CMouseEventResult UIEditView::onMouseUp (CPoint &where, const CButtonState& butt
 		}
 		if (mouseEditMode != kNoEditing && !moveSizeOperation && buttons == kLButton && !lines)
 		{
-			CView* view = getViewAt (where, true);
-			if (!view)
-			{
-				view = getContainerAt (where, true);
-				if (view == this)
-					view = 0;
-			}
+			CView* view = getViewAt (where, GetViewOptions (GetViewOptions::kDeep|GetViewOptions::kIncludeViewContainer|GetViewOptions::kIncludeInvisible));
+			if (view == this)
+				view = 0;
 			if (view)
 			{
 				getSelection ()->setExclusive (view);
@@ -1153,7 +1147,7 @@ bool UIEditView::onDrop (IDataPackage* drag, const CPoint& where)
 				grid->process (where2);
 				getTransform ().transform (where2);
 			}
-			CViewContainer* viewContainer = getContainerAt (where2, true);
+			CViewContainer* viewContainer = getContainerAt (where2, GetViewOptions (GetViewOptions::kDeep));
 			if (viewContainer)
 			{
 				getTransform ().inverse ().transform (where2);
@@ -1250,7 +1244,7 @@ void UIEditView::onDragMove (IDataPackage* drag, const CPoint& where)
 					CRect visibleRect = getVisibleViewSize ();
 					where2.offset (getViewSize ().left, getViewSize ().top);
 					where2.offset (-visibleRect.left, -visibleRect.top);
-					highlightView->setHighlightView (getContainerAt (where2, true));
+					highlightView->setHighlightView (getContainerAt (where2, GetViewOptions (GetViewOptions::kDeep)));
 				}
 			}
 		}

@@ -339,9 +339,7 @@ void CFrame::checkMouseViews (const CPoint& where, const CButtonState& buttons)
 	if (mouseDownView)
 		return;
 	CPoint lp;
-	CView* mouseView = getViewAt (where, true, true);
-	if (mouseView == 0)
-		mouseView = getContainerAt (where, true, true);
+	CView* mouseView = getViewAt (where, GetViewOptions (GetViewOptions::kDeep|GetViewOptions::kMouseEnabled|GetViewOptions::kIncludeViewContainer));
 	CView* currentMouseView = pMouseViews.empty () == false ? pMouseViews.back () : 0;
 	if (currentMouseView == mouseView)
 		return; // no change
@@ -1092,7 +1090,7 @@ bool CFrame::removeAll (bool withForget)
 }
 
 //-----------------------------------------------------------------------------
-CView* CFrame::getViewAt (const CPoint& where, bool deep, bool mustbeMouseEnabled) const
+CView* CFrame::getViewAt (const CPoint& where, const GetViewOptions& options) const
 {
 	if (pModalView)
 	{
@@ -1100,23 +1098,23 @@ CView* CFrame::getViewAt (const CPoint& where, bool deep, bool mustbeMouseEnable
 		getTransform ().inverse ().transform (where2);
 		if (pModalView->getViewSize ().pointInside (where2))
 		{
-			if (deep)
+			if (options.deep ())
 			{
 				CViewContainer* container = dynamic_cast<CViewContainer*> (pModalView);
 				if (container)
 				{
-					return container->getViewAt (where2, deep, mustbeMouseEnabled);
+					return container->getViewAt (where2, options);
 				}
 			}
 			return pModalView;
 		}
 		return 0;
 	}
-	return CViewContainer::getViewAt (where, deep, mustbeMouseEnabled);
+	return CViewContainer::getViewAt (where, options);
 }
 
 //-----------------------------------------------------------------------------
-CViewContainer* CFrame::getContainerAt (const CPoint& where, bool deep, bool mustbeMouseEnabled) const
+CViewContainer* CFrame::getContainerAt (const CPoint& where, const GetViewOptions& options) const
 {
 	if (pModalView)
 	{
@@ -1127,14 +1125,14 @@ CViewContainer* CFrame::getContainerAt (const CPoint& where, bool deep, bool mus
 			CViewContainer* container = dynamic_cast<CViewContainer*> (pModalView);
 			if (container)
 			{
-				if (deep)
-					return container->getContainerAt (where2, deep, mustbeMouseEnabled);
+				if (options.deep ())
+					return container->getContainerAt (where2, options);
 				return container;
 			}
 		}
 		return 0;
 	}
-	return CViewContainer::getContainerAt (where, deep, mustbeMouseEnabled);
+	return CViewContainer::getContainerAt (where, options);
 }
 
 //-----------------------------------------------------------------------------

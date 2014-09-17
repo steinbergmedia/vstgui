@@ -175,6 +175,7 @@ protected:
 	}
 
 	Timer ()
+	: inTimer (false)
 	{
 		#if DEBUG_LOG
 		DebugPrint ("Animation timer started\n");

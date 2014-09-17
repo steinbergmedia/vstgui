@@ -429,6 +429,21 @@ static void VSTGUI_NSView_scrollWheel (id self, SEL _cmd, NSEvent* theEvent)
 }
 
 //------------------------------------------------------------------------------------
+static NSPoint getGlobalMouseLocation (NSView* view)
+{
+#if MAC_OS_X_VERSION_MAX_ALLOWED > MAC_OS_X_VERSION_10_6
+	NSRect r = {};
+	r.origin = [NSEvent mouseLocation];
+	r = [[view window] convertRectFromScreen:r];
+	return [view convertPoint:r.origin fromView:nil];
+#else
+	NSPoint nsPoint = [NSEvent mouseLocation];
+	nsPoint = [[view window] convertScreenToBase:nsPoint];
+	return [view convertPoint:nsPoint fromView:nil];
+#endif
+}
+
+//------------------------------------------------------------------------------------
 static void VSTGUI_NSView_mouseEntered (id self, SEL _cmd, NSEvent* theEvent)
 {
 	IPlatformFrameCallback* _vstguiframe = getFrame (self);
@@ -436,13 +451,9 @@ static void VSTGUI_NSView_mouseEntered (id self, SEL _cmd, NSEvent* theEvent)
 		return;
 	CButtonState buttons = 0; //eventButton (theEvent);
 	NSUInteger modifiers = [theEvent modifierFlags];
-	NSPoint nsPoint;
-	nsPoint = [NSEvent mouseLocation];
-	nsPoint = [[self window] convertScreenToBase:nsPoint];
+	CPoint p = pointFromNSPoint (getGlobalMouseLocation (self));
 
-	nsPoint = [self convertPoint:nsPoint fromView:nil];
 	mapModifiers (modifiers, buttons);
-	CPoint p = pointFromNSPoint (nsPoint);
 	_vstguiframe->platformOnMouseMoved (p, buttons);
 }
 
@@ -454,13 +465,8 @@ static void VSTGUI_NSView_mouseExited (id self, SEL _cmd, NSEvent* theEvent)
 		return;
 	CButtonState buttons = 0; //eventButton (theEvent);
 	NSUInteger modifiers = [theEvent modifierFlags];
-	NSPoint nsPoint;
-	nsPoint = [NSEvent mouseLocation];
-	nsPoint = [[self window] convertScreenToBase:nsPoint];
-
-	nsPoint = [self convertPoint:nsPoint fromView:nil];
 	mapModifiers (modifiers, buttons);
-	CPoint p = pointFromNSPoint (nsPoint);
+	CPoint p = pointFromNSPoint (getGlobalMouseLocation (self));
 	_vstguiframe->platformOnMouseExited (p, buttons);
 }
 
@@ -751,8 +757,7 @@ void NSViewFrame::initTrackingArea ()
 {
 	if (trackingAreaInitialized == false)
 	{
-		NSPoint p = [NSEvent mouseLocation];
-		p = [nsView convertPoint:[[nsView window] convertScreenToBase:p] fromView:nil];
+		NSPoint p = getGlobalMouseLocation (nsView);
 		NSTrackingAreaOptions options = NSTrackingMouseEnteredAndExited|NSTrackingMouseMoved|NSTrackingActiveInActiveApp|NSTrackingInVisibleRect;
 		if ([nsView hitTest:p])
 		{
