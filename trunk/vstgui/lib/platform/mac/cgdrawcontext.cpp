@@ -695,6 +695,7 @@ void CGDrawContext::drawCGImageRef (CGContextRef context, CGImageRef image, CGLa
 		dest.origin = CGPointApplyAffineTransform (dest.origin, transform);
 		dest.size = CGSizeApplyAffineTransform (dest.size, transform);
 	}
+	dest = pixelAlligned (dest);
 	clipRect = pixelAlligned (clipRect);
 	
 	CGContextClipToRect (context, clipRect);
