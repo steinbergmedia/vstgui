@@ -42,6 +42,48 @@
 
 namespace VSTGUI {
 
+//------------------------------------------------------------------------
+namespace CControlPrivate {
+
+//------------------------------------------------------------------------
+struct ControlListenerCall
+{
+	CControl* control;
+	ControlListenerCall (CControl* control) : control (control) {}
+};
+
+//------------------------------------------------------------------------
+struct ControlBeginEdit : ControlListenerCall
+{
+	ControlBeginEdit (CControl* control) : ControlListenerCall (control) {}
+	void operator () (IControlListener* listener) const
+	{
+		listener->controlBeginEdit (control);
+	}
+};
+
+//------------------------------------------------------------------------
+struct ControlEndEdit : ControlListenerCall
+{
+	ControlEndEdit (CControl* control) : ControlListenerCall (control) {}
+	void operator () (IControlListener* listener) const
+	{
+		listener->controlEndEdit (control);
+	}
+};
+
+//------------------------------------------------------------------------
+struct ControlValueChanged : ControlListenerCall
+{
+	ControlValueChanged (CControl* control) : ControlListenerCall (control) {}
+	void operator () (IControlListener* listener) const
+	{
+		listener->valueChanged (control);
+	}
+};
+
+} // CControlPrivate
+
 IdStringPtr CControl::kMessageTagWillChange = "kMessageTagWillChange";
 IdStringPtr CControl::kMessageTagDidChange = "kMessageTagDidChange";
 IdStringPtr CControl::kMessageValueChanged = "kMessageValueChanged";
@@ -94,6 +136,18 @@ CControl::~CControl ()
 }
 
 //------------------------------------------------------------------------
+void CControl::registerControlListener (IControlListener* listener)
+{
+	subListeners.add (listener);
+}
+
+//------------------------------------------------------------------------
+void CControl::unregisterControlListener (IControlListener* listener)
+{
+	subListeners.remove(listener);
+}
+
+//------------------------------------------------------------------------
 int32_t CControl::kZoomModifier = kShift;
 int32_t CControl::kDefaultValueModifier = kControl;
 
@@ -127,6 +181,7 @@ void CControl::beginEdit ()
 	{
 		if (listener)
 			listener->controlBeginEdit (this);
+		subListeners.forEach (CControlPrivate::ControlBeginEdit (this));
 		changed (kMessageBeginEdit);
 		if (getFrame ())
 			getFrame ()->beginEdit (tag);
@@ -147,6 +202,7 @@ void CControl::endEdit ()
 			getFrame ()->endEdit (tag);
 		if (listener)
 			listener->controlEndEdit (this);
+		subListeners.forEach (CControlPrivate::ControlEndEdit (this));
 		changed (kMessageEndEdit);
 	}
 #if VSTGUI_CCONTROL_LOG_EDITING
@@ -189,6 +245,7 @@ void CControl::valueChanged ()
 {
 	if (listener)
 		listener->valueChanged (this);
+	subListeners.forEach (CControlPrivate::ControlValueChanged (this));
 	changed (kMessageValueChanged);
 }
 

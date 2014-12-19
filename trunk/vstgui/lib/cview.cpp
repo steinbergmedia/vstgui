@@ -209,6 +209,81 @@ UTF8StringPtr kRegisteredSymbol	= "\xC2\xAE";
 UTF8StringPtr kMicroSymbol		= "\xC2\xB5";
 UTF8StringPtr kPerthousandSymbol	= "\xE2\x80\xB0";
 
+//------------------------------------------------------------------------
+namespace CViewPrivate {
+
+//------------------------------------------------------------------------
+struct ViewListenerCall
+{
+	CView* view;
+	ViewListenerCall (CView* view) : view (view) {}
+	
+};
+
+//------------------------------------------------------------------------
+struct ViewSizeChanged : ViewListenerCall
+{
+	const CRect& oldSize;
+	ViewSizeChanged (CView* view, const CRect& oldSize) : ViewListenerCall (view), oldSize (oldSize) {}
+	void operator () (IViewListener* listener) const
+	{
+		listener->viewSizeChanged (view, oldSize);
+	}
+};
+
+//------------------------------------------------------------------------
+struct ViewAttached : ViewListenerCall
+{
+	ViewAttached (CView* view) : ViewListenerCall (view) {}
+	void operator () (IViewListener* listener) const
+	{
+		listener->viewAttached (view);
+	}
+};
+
+//------------------------------------------------------------------------
+struct ViewRemoved : ViewListenerCall
+{
+	ViewRemoved (CView* view) : ViewListenerCall (view) {}
+	void operator () (IViewListener* listener) const
+	{
+		listener->viewRemoved (view);
+	}
+};
+
+//------------------------------------------------------------------------
+struct ViewLostFocus : ViewListenerCall
+{
+	ViewLostFocus (CView* view) : ViewListenerCall (view) {}
+	void operator () (IViewListener* listener) const
+	{
+		listener->viewLostFocus (view);
+	}
+};
+
+//------------------------------------------------------------------------
+struct ViewTookFocus : ViewListenerCall
+{
+	ViewTookFocus (CView* view) : ViewListenerCall (view) {}
+	void operator () (IViewListener* listener) const
+	{
+		listener->viewTookFocus (view);
+	}
+};
+
+//------------------------------------------------------------------------
+struct ViewWillDelete : ViewListenerCall
+{
+	ViewWillDelete (CView* view) : ViewListenerCall (view) {}
+	void operator () (IViewListener* listener) const
+	{
+		listener->viewWillDelete (view);
+	}
+};
+
+//------------------------------------------------------------------------
+} // CViewPrivate
+
 //-----------------------------------------------------------------------------
 IdStringPtr kMsgViewSizeChanged = "kMsgViewSizeChanged";
 
@@ -279,9 +354,7 @@ CView::~CView ()
 //-----------------------------------------------------------------------------
 void CView::beforeDelete ()
 {
-	VSTGUI_RANGE_BASED_FOR_LOOP (ViewListenerVector, viewListeners, IViewListener*, listener)
-		listener->viewWillDelete (this);
-	VSTGUI_RANGE_BASED_FOR_LOOP_END
+	viewListeners.forEach (CViewPrivate::ViewWillDelete (this));
 }
 
 //-----------------------------------------------------------------------------
@@ -377,9 +450,7 @@ bool CView::attached (CView* parent)
 		pParentFrame->onViewAdded (this);
 	if (wantsIdle ())
 		IdleViewUpdater::add (this);
-	VSTGUI_RANGE_BASED_FOR_LOOP (ViewListenerVector, viewListeners, IViewListener*, listener)
-		listener->viewAttached (this);
-	VSTGUI_RANGE_BASED_FOR_LOOP_END
+	viewListeners.forEach (CViewPrivate::ViewAttached (this));
 	return true;
 }
 
@@ -399,9 +470,7 @@ bool CView::removed (CView* parent)
 	pParentView = 0;
 	pParentFrame = 0;
 	viewFlags &= ~kIsAttached;
-	VSTGUI_RANGE_BASED_FOR_LOOP (ViewListenerVector, viewListeners, IViewListener*, listener)
-		listener->viewRemoved (this);
-	VSTGUI_RANGE_BASED_FOR_LOOP_END
+	viewListeners.forEach (CViewPrivate::ViewRemoved (this));
 	return true;
 }
 
@@ -630,17 +699,13 @@ CMessageResult CView::notify (CBaseObject* sender, IdStringPtr message)
 //------------------------------------------------------------------------------
 void CView::looseFocus ()
 {
-	VSTGUI_RANGE_BASED_FOR_LOOP (ViewListenerVector, viewListeners, IViewListener*, listener)
-		listener->viewLostFocus (this);
-	VSTGUI_RANGE_BASED_FOR_LOOP_END
+	viewListeners.forEach (CViewPrivate::ViewLostFocus (this));
 }
 
 //------------------------------------------------------------------------------
 void CView::takeFocus ()
 {
-	VSTGUI_RANGE_BASED_FOR_LOOP (ViewListenerVector, viewListeners, IViewListener*, listener)
-		listener->viewTookFocus (this);
-	VSTGUI_RANGE_BASED_FOR_LOOP_END
+	viewListeners.forEach (CViewPrivate::ViewTookFocus (this));
 }
 
 //------------------------------------------------------------------------------
@@ -660,9 +725,7 @@ void CView::setViewSize (const CRect& newSize, bool doInvalid)
 			setDirty ();
 		if (getParentView ())
 			getParentView ()->notify (this, kMsgViewSizeChanged);
-		VSTGUI_RANGE_BASED_FOR_LOOP (ViewListenerVector, viewListeners, IViewListener*, listener)
-			listener->viewSizeChanged (this, oldSize);
-		VSTGUI_RANGE_BASED_FOR_LOOP_END
+		viewListeners.forEach (CViewPrivate::ViewSizeChanged (this, oldSize));
 	}
 }
 
@@ -862,15 +925,13 @@ void CView::dumpInfo ()
 //-----------------------------------------------------------------------------
 void CView::registerViewListener (IViewListener* listener)
 {
-	viewListeners.push_back (listener);
+	viewListeners.add (listener);
 }
 
 //-----------------------------------------------------------------------------
 void CView::unregisterViewListener (IViewListener* listener)
 {
-	ViewListenerVector::iterator pos = std::find (viewListeners.begin (), viewListeners.end (), listener);
-	if (pos != viewListeners.end ())
-		viewListeners.erase (pos);
+	viewListeners.remove (listener);
 }
 
 

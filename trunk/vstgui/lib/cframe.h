@@ -149,6 +149,8 @@ public:
 	virtual CCoord getFocusWidth () const;							///< get focus draw width
 	//@}
 
+	void onStartLocalEventLoop ();
+
 	void invalid () VSTGUI_OVERRIDE_VMETHOD { invalidRect (getViewSize ()); setDirty (false); }
 	void invalidRect (const CRect& rect) VSTGUI_OVERRIDE_VMETHOD;
 
@@ -245,6 +247,26 @@ protected:
 #if VSTGUI_TOUCH_EVENT_HANDLING
 	void platformOnTouchEvent (ITouchEvent& event) VSTGUI_OVERRIDE_VMETHOD;
 #endif
+
+	struct CollectInvalidRects : public CBaseObject
+	{
+		CollectInvalidRects (CFrame* frame);
+		~CollectInvalidRects ();
+		
+		void addRect (const CRect& rect);
+		void flush ();
+	private:
+		SharedPointer<CFrame> frame;
+		typedef std::vector<CRect> InvalidRects;
+		InvalidRects invalidRects;
+		uint32_t lastTicks;
+	#if VSTGUI_LOG_COLLECT_INVALID_RECTS
+		uint32_t numAddedRects;
+	#endif
+	};
+
+	void setCollectInvalidRects (CollectInvalidRects* collectInvalidRects);
+	CollectInvalidRects* collectInvalidRects;
 };
 
 //----------------------------------------------------

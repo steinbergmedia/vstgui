@@ -40,6 +40,7 @@
 #include <list>
 #include <set>
 #include <algorithm>
+#include <cassert>
 
 namespace VSTGUI {
 
@@ -146,12 +147,7 @@ inline IDependency::IDependency ()
 //----------------------------------------------------------------------------------------------------
 inline IDependency::~IDependency ()
 {
-#if DEBUG
-	if (dependents.size () != 0)
-	{
-		DebugPrint ("IDependency has dependent objects on destruction.\n");
-	}
-#endif
+	assert (dependents.size () == 0);
 }
 
 } // namespace

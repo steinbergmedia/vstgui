@@ -1218,7 +1218,7 @@ bool CViewContainer::getViewsAt (const CPoint& p, ViewList& views, const GetView
 			if (options.deep ())
 			{
 				if (CViewContainer* container = dynamic_cast<CViewContainer*> (pV))
-					container->getViewsAt (where, views, options);
+					result |= container->getViewsAt (where, views, options);
 			}
 			if (options.includeViewContainer () == false)
 			{

@@ -3314,7 +3314,7 @@ CGradient* UIGradientNode::getGradient ()
 			}
 		}
 		if (colorStops.size () > 1)
-			gradient = CGradient::create (colorStops);
+			gradient = owned (CGradient::create (colorStops));
 	}
 	return gradient;
 }

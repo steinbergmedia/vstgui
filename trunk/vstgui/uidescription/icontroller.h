@@ -50,7 +50,7 @@ class IUIDescription;
 class IController : public IControlListener
 {
 public:
-	virtual int32_t getTagForName (UTF8StringPtr name, int32_t registeredTag) const { return registeredTag; };
+	virtual int32_t getTagForName (UTF8StringPtr name, int32_t registeredTag) const { return registeredTag; }
 	virtual IControlListener* getControlListener (UTF8StringPtr controlTagName) { return this; }
 	virtual CView* createView (const UIAttributes& attributes, const IUIDescription* description) { return 0; }
 	virtual CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) { return view; }
@@ -63,6 +63,20 @@ public:
 	virtual int32_t verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description) VSTGUI_FINAL_VMETHOD { return 0; }
 	virtual int32_t createSubController (UTF8StringPtr name, IUIDescription* description) VSTGUI_FINAL_VMETHOD { return 0;}
 #endif
+};
+
+//-----------------------------------------------------------------------------
+//! @brief extension to IController
+//!			The VST3Editor checks all controllers of the views under the mouse on a right click if they have
+//!			this interface implemented and calls the appendContextMenuItems before showing the context menu to the user
+//! @ingroup new_in_4_3
+//-----------------------------------------------------------------------------
+class IContextMenuController
+{
+public:
+	virtual ~IContextMenuController () {}
+	
+	virtual void appendContextMenuItems (COptionMenu& contextMenu, const CPoint& where) = 0;
 };
 
 //-----------------------------------------------------------------------------

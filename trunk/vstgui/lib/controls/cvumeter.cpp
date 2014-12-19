@@ -155,9 +155,11 @@ void CVuMeter::draw (CDrawContext *_pContext)
 		newValue = value;
 	setOldValue (newValue);
 
+	newValue = (newValue - getMin ()) / getRange (); // normalize
+	
 	if (style & kHorizontal) 
 	{
-		CCoord tmp = (CCoord)(((int32_t)(nbLed * (getMin () + newValue) + 0.5f) / (float)nbLed) * getOnBitmap ()->getWidth ());
+		CCoord tmp = (CCoord)(((int32_t)(nbLed * newValue + 0.5f) / (float)nbLed) * getOnBitmap ()->getWidth ());
 		pointOff (tmp, 0);
 
 		_rectOff.left += tmp;
@@ -165,7 +167,7 @@ void CVuMeter::draw (CDrawContext *_pContext)
 	}
 	else 
 	{
-		CCoord tmp = (CCoord)(((int32_t)(nbLed * (getMax () - newValue) + 0.5f) / (float)nbLed) * getOnBitmap ()->getHeight ());
+		CCoord tmp = (CCoord)(((int32_t)(nbLed * (1.f - newValue) + 0.5f) / (float)nbLed) * getOnBitmap ()->getHeight ());
 		pointOn (0, tmp);
 
 		_rectOff.bottom = tmp + rectOff.top;

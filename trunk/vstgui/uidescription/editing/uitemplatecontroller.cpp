@@ -318,14 +318,15 @@ CMessageResult UITemplateController::notify (CBaseObject* sender, IdStringPtr me
 			int32_t rowToSelect = templateDataBrowser->getSelectedRow ();
 			int32_t index = 0;
 			templateNames.clear ();
+			std::string selectedTemplateStr = *selectedTemplateName;
 			dataSource->setStringList (&templateNames);
 			std::list<const std::string*> tmp;
 			editDescription->collectTemplateViewNames (tmp);
 			tmp.sort (UIEditController::std__stringCompare);
-			for (std::list<const std::string*>::const_iterator it = tmp.begin (); it != tmp.end (); it++, index++)
+			for (std::list<const std::string*>::const_iterator it = tmp.begin (), end = tmp.end (); it != end; ++it, ++index)
 			{
 				templateNames.push_back ((*it)->c_str ());
-				if (selectedTemplateName && *(*it) == *selectedTemplateName)
+				if (*(*it) == selectedTemplateStr)
 					rowToSelect = index;
 			}
 			dataSource->setStringList (&templateNames);

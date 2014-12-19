@@ -85,6 +85,7 @@ CFrame::CFrame (const CRect &inSize, void* inSystemWindow, VSTGUIEditorInterface
 , pActiveFocusView (0)
 , bActive (true)
 , platformFrame (0)
+, collectInvalidRects (0)
 {
 	pParentFrame = this;
 	open (inSystemWindow);
@@ -106,6 +107,7 @@ CFrame::CFrame (const CRect& inSize, VSTGUIEditorInterface* inEditor)
 , pActiveFocusView (0)
 , bActive (true)
 , platformFrame (0)
+, collectInvalidRects (0)
 {
 	pParentFrame = this;
 }
@@ -1250,7 +1252,10 @@ void CFrame::invalidRect (const CRect& rect)
 
 	CRect _rect (rect);
 	getTransform ().transform (_rect);
-	platformFrame->invalidRect (_rect);
+	if (collectInvalidRects)
+		collectInvalidRects->addRect (_rect);
+	else
+		platformFrame->invalidRect (_rect);
 }
 
 //-----------------------------------------------------------------------------
@@ -1437,77 +1442,77 @@ bool CFrame::platformDrawRect (CDrawContext* context, const CRect& rect)
 //-----------------------------------------------------------------------------
 CMouseEventResult CFrame::platformOnMouseDown (CPoint& where, const CButtonState& buttons)
 {
-	CBaseObjectGuard bog (this);
+	CollectInvalidRects cir (this);
 	return onMouseDown (where, buttons);
 }
 
 //-----------------------------------------------------------------------------
 CMouseEventResult CFrame::platformOnMouseMoved (CPoint& where, const CButtonState& buttons)
 {
-	CBaseObjectGuard bog (this);
+	CollectInvalidRects cir (this);
 	return onMouseMoved (where, buttons);
 }
 
 //-----------------------------------------------------------------------------
 CMouseEventResult CFrame::platformOnMouseUp (CPoint& where, const CButtonState& buttons)
 {
-	CBaseObjectGuard bog (this);
+	CollectInvalidRects cir (this);
 	return onMouseUp (where, buttons);
 }
 
 //-----------------------------------------------------------------------------
 CMouseEventResult CFrame::platformOnMouseExited (CPoint& where, const CButtonState& buttons)
 {
-	CBaseObjectGuard bog (this);
+	CollectInvalidRects cir (this);
 	return onMouseExited (where, buttons);
 }
 
 //-----------------------------------------------------------------------------
 bool CFrame::platformOnMouseWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const CButtonState &buttons)
 {
-	CBaseObjectGuard bog (this);
+	CollectInvalidRects cir (this);
 	return onWheel (where, axis, distance, buttons);
 }
 
 //-----------------------------------------------------------------------------
 bool CFrame::platformOnDrop (IDataPackage* drag, const CPoint& where)
 {
-	CBaseObjectGuard bog (this);
+	CollectInvalidRects cir (this);
 	return onDrop (drag, where);
 }
 
 //-----------------------------------------------------------------------------
 void CFrame::platformOnDragEnter (IDataPackage* drag, const CPoint& where)
 {
-	CBaseObjectGuard bog (this);
+	CollectInvalidRects cir (this);
 	return onDragEnter (drag, where);
 }
 
 //-----------------------------------------------------------------------------
 void CFrame::platformOnDragLeave (IDataPackage* drag, const CPoint& where)
 {
-	CBaseObjectGuard bog (this);
+	CollectInvalidRects cir (this);
 	return onDragLeave (drag, where);
 }
 
 //-----------------------------------------------------------------------------
 void CFrame::platformOnDragMove (IDataPackage* drag, const CPoint& where)
 {
-	CBaseObjectGuard bog (this);
+	CollectInvalidRects cir (this);
 	return onDragMove (drag, where);
 }
 
 //-----------------------------------------------------------------------------
 bool CFrame::platformOnKeyDown (VstKeyCode& keyCode)
 {
-	CBaseObjectGuard bog (this);
+	CollectInvalidRects cir (this);
 	return onKeyDown (keyCode) == 1;
 }
 
 //-----------------------------------------------------------------------------
 bool CFrame::platformOnKeyUp (VstKeyCode& keyCode)
 {
-	CBaseObjectGuard bog (this);
+	CollectInvalidRects cir (this);
 	return onKeyUp (keyCode) == 1;
 }
 
@@ -1515,7 +1520,10 @@ bool CFrame::platformOnKeyUp (VstKeyCode& keyCode)
 void CFrame::platformOnActivate (bool state)
 {
 	if (pParentFrame)
+	{
+		CollectInvalidRects cir (this);
 		onActivate (state);
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -1615,6 +1623,91 @@ void CFrame::platformOnTouchEvent (ITouchEvent& event)
 }
 
 #endif
+
+//-----------------------------------------------------------------------------
+void CFrame::onStartLocalEventLoop ()
+{
+	if (collectInvalidRects)
+	{
+		collectInvalidRects->flush ();
+		collectInvalidRects = 0;
+	}
+}
+
+//-----------------------------------------------------------------------------
+void CFrame::setCollectInvalidRects (CollectInvalidRects* cir)
+{
+	if (collectInvalidRects)
+		collectInvalidRects->flush ();
+	collectInvalidRects = cir;
+}
+
+//-----------------------------------------------------------------------------
+CFrame::CollectInvalidRects::CollectInvalidRects (CFrame* frame)
+: frame (frame)
+, lastTicks (frame->getTicks ())
+{
+#if VSTGUI_LOG_COLLECT_INVALID_RECTS
+	numAddedRects = 0;
+#endif
+	frame->setCollectInvalidRects (this);
+}
+
+//-----------------------------------------------------------------------------
+CFrame::CollectInvalidRects::~CollectInvalidRects ()
+{
+	frame->setCollectInvalidRects (0);
+}
+
+//-----------------------------------------------------------------------------
+void CFrame::CollectInvalidRects::flush ()
+{
+	if (!invalidRects.empty ())
+	{
+		if (frame->isVisible () && frame->platformFrame)
+		{
+			for (InvalidRects::const_iterator it = invalidRects.begin (), end = invalidRects.end (); it != end; ++it)
+				frame->platformFrame->invalidRect (*it);
+		#if VSTGUI_LOG_COLLECT_INVALID_RECTS
+			DebugPrint ("%d -> %d\n", numAddedRects, invalidRects.size ());
+			numAddedRects = 0;
+		#endif
+		}
+		invalidRects.clear ();
+	}
+}
+
+//-----------------------------------------------------------------------------
+void CFrame::CollectInvalidRects::addRect (const CRect& rect)
+{
+#if VSTGUI_LOG_COLLECT_INVALID_RECTS
+	numAddedRects++;
+#endif
+	bool add = true;
+	for (InvalidRects::iterator it = invalidRects.begin (), end = invalidRects.end (); it != end; ++it)
+	{
+		CRect r (rect);
+		if (r.bound (*it) == rect)
+		{
+			add = false;
+			break;
+		}
+		r = *it;
+		if (r.bound (rect) == *it)
+		{
+			invalidRects.erase (it);
+			break;
+		}
+	}
+	if (add)
+		invalidRects.push_back (rect);
+	uint32_t now = frame->getTicks ();
+	if (lastTicks - now > 16)
+	{
+		flush ();
+		lastTicks = now;
+	}
+}
 
 } // namespace
 

@@ -354,7 +354,7 @@ void CScrollbar::drawBackground (CDrawContext* pContext)
 		drawer->drawScrollbarBackground (pContext, r, direction, this);
 	else
 	{
-		pContext->setDrawMode (kAliasing|kNonIntegralMode);
+		pContext->setDrawMode (kAliasing);
 		pContext->setLineWidth (1);
 		pContext->setFillColor (backgroundColor);
 		pContext->setFrameColor (frameColor);

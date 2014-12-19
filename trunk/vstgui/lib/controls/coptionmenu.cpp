@@ -569,6 +569,8 @@ bool COptionMenu::popup ()
 	lastResult = -1;
 	lastMenu = 0;
 
+	getFrame ()->onStartLocalEventLoop ();
+
 	IPlatformOptionMenu* platformMenu = getFrame ()->getPlatformFrame ()->createPlatformOptionMenu ();
 	if (platformMenu)
 	{

@@ -69,20 +69,6 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-//! @brief extension of VSTGUI::IController
-//!			The VST3Editor checks all controllers of the views under the mouse on a right click if they have
-//!			this interface implemented and calls the appendContextMenuItems before showing the context menu to the user
-//! @ingroup new_in_4_3
-//-----------------------------------------------------------------------------
-class IContextMenuController
-{
-public:
-	virtual ~IContextMenuController () {}
-	
-	virtual void appendContextMenuItems (COptionMenu& contextMenu, const CPoint& where) = 0;
-};
-
-//-----------------------------------------------------------------------------
 //! @brief VST3 Editor with automatic parameter binding
 //! @ingroup new_in_4_0
 //-----------------------------------------------------------------------------

@@ -41,6 +41,7 @@
 #include "vstkeycode.h"
 #include "cbuttonstate.h"
 #include "cgraphicstransform.h"
+#include "dispatchlist.h"
 #include <map>
 #include <vector>
 
@@ -374,8 +375,8 @@ private:
 	typedef std::map<CViewAttributeID, CViewAttributeEntry*> ViewAttributes;
 	ViewAttributes attributes;
 
-	typedef std::vector<IViewListener*> ViewListenerVector;
-	ViewListenerVector viewListeners;
+	typedef DispatchList<IViewListener> ViewListenerDispatcher;
+	ViewListenerDispatcher viewListeners;
 
 #if DEBUG && VSTGUI_ENABLE_DEPRECATED_METHODS
 public:

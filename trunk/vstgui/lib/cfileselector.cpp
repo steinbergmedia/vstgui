@@ -175,6 +175,8 @@ bool CNewFileSelector::run (CBaseObject* delegate)
 		#endif
 		return false;
 	}
+	if (frame)
+		frame->onStartLocalEventLoop ();
 	return runInternal (delegate);
 }
 
@@ -187,6 +189,8 @@ void CNewFileSelector::cancel ()
 //-----------------------------------------------------------------------------
 bool CNewFileSelector::runModal ()
 {
+	if (frame)
+		frame->onStartLocalEventLoop ();
 	return runModalInternal ();
 }
 
@@ -214,6 +218,8 @@ private:
 //-----------------------------------------------------------------------------
 bool CNewFileSelector::run (CallbackFunc&& callback)
 {
+	if (frame)
+		frame->onStartLocalEventLoop ();
 	OwningPointer<CNewFileSelectorCallback> fsCallback = new CNewFileSelectorCallback (std::move (callback));
 	return runInternal (fsCallback);
 }

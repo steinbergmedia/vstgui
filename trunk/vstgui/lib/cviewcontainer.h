@@ -65,10 +65,10 @@ struct GetViewOptions
 
 	explicit GetViewOptions (uint32_t options = kNone) : flags (options) {}
 
-	bool deep () const { return flags & kDeep; }
-	bool mouseEnabled () const { return flags & kMouseEnabled; }
-	bool includeViewContainer () const { return flags & kIncludeViewContainer; }
-	bool includeInvisible () const { return flags & kIncludeInvisible; }
+	bool deep () const { return (flags & kDeep) ? true : false; }
+	bool mouseEnabled () const { return (flags & kMouseEnabled) ? true : false; }
+	bool includeViewContainer () const { return (flags & kIncludeViewContainer) ? true : false; }
+	bool includeInvisible () const { return (flags & kIncludeInvisible) ? true : false; }
 private:
 	uint32_t flags;
 };
