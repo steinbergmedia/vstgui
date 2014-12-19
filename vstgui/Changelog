@@ -1,3 +1,13 @@
+2014-12-19 arne
+
+	* fix CViewContainer::getViewsAt () returns wrong result when deep is active
+	* add DispatchList<T> for listeners to dispatch events so that listeners can unregister it self while in dispatch
+	* add IControlListener dispatchlist to CControl
+	* optimize invalidRect
+	* fix cursor issue on Windows
+	* fix VUMeter when min or max not normalized
+	* move IContextMenuController from VST3Editor to IController so that it can always be used
+
 2014-09-17 arne
 
 	* changed method signature of the various getViewAt/getViewsAt/getContainerAt methods

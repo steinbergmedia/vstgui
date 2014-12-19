@@ -38,6 +38,7 @@
 #include "../cview.h"
 #include "../ifocusdrawing.h"
 #include "../idependency.h"
+#include "../dispatchlist.h"
 #include "icontrollistener.h"
 #include <list>
 
@@ -113,7 +114,7 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual void setValue (float val);
-	virtual float getValue () const { return value; };
+	virtual float getValue () const { return value; }
 
 	virtual void setValueNormalized (float val);
 	virtual float getValueNormalized () const;
@@ -148,6 +149,9 @@ public:
 
 	virtual IControlListener* getListener () const { return listener; }	///< get main listener
 	virtual void setListener (IControlListener* l) { listener = l; } ///< set main listener
+
+	void registerControlListener (IControlListener* listener); ///< register a sub listener
+	void unregisterControlListener (IControlListener* listener); ///< unregister a sub listener
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -187,7 +191,10 @@ protected:
 	~CControl ();
 	static int32_t mapVstKeyModifier (int32_t vstModifier);
 
+	typedef DispatchList<IControlListener> SubListenerDispatcher;
+
 	IControlListener* listener;
+	SubListenerDispatcher subListeners;
 	int32_t  tag;
 	float oldValue;
 	float defaultValue;

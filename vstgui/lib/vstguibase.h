@@ -119,10 +119,10 @@
 	#if defined (__clang__) && __clang_major__ > 4
 		#if defined (VSTGUI_WARN_EVERYTHING) && VSTGUI_WARN_EVERYTHING == 1
 			#pragma clang diagnostic warning "-Weverything"
+			#pragma clang diagnostic warning "-Wconversion"
 			#pragma clang diagnostic ignored "-Wreorder"
 		#else
 			#pragma clang diagnostic warning "-Wunreachable-code"
-			#pragma clang diagnostic warning "-Wconversion"
 		#endif
 	#endif
 

@@ -70,14 +70,17 @@ public:
 		addColorStop (std::make_pair (start, color));
 	}
 	
-	virtual void addColorStop (std::pair<double, CColor> colorStop)
+	virtual void addColorStop (const std::pair<double, CColor>& colorStop)
 	{
-#if VSTGUI_RVALUE_REF_SUPPORT
-		colorStops.insert (std::move (colorStop));
-#else
 		colorStops.insert (colorStop);
-#endif
 	}
+
+#if VSTGUI_RVALUE_REF_SUPPORT
+	virtual void addColorStop (std::pair<double, CColor>&& colorStop)
+	{
+		colorStops.insert (std::move (colorStop));
+	}
+#endif
 	
 	const ColorStopMap& getColorStops () const { return colorStops; }
 	//@}

@@ -240,13 +240,7 @@ CRect QuartzGraphicsPath::getBoundingBox ()
 
 	CGPathRef cgPath = getCGPathRef ();
 	if (cgPath)
-	{
-		CGRect cgRect = CGPathGetBoundingBox (cgPath);
-		r.left = cgRect.origin.x;
-		r.top = cgRect.origin.y;
-		r.setWidth (cgRect.size.width);
-		r.setHeight (cgRect.size.height);
-	}
+		r = CRectFromCGRect (CGPathGetBoundingBox (cgPath));
 	return r;
 }
 
@@ -371,15 +365,20 @@ QuartzGradient::~QuartzGradient ()
 }
 
 //-----------------------------------------------------------------------------
-void QuartzGradient::addColorStop (std::pair<double, CColor> colorStop)
+void QuartzGradient::addColorStop (const std::pair<double, CColor>& colorStop)
 {
-#if VSTGUI_RVALUE_REF_SUPPORT
-	CGradient::addColorStop (std::move (colorStop));
-#else
 	CGradient::addColorStop (colorStop);
-#endif
 	releaseCGGradient ();
 }
+
+#if VSTGUI_RVALUE_REF_SUPPORT
+//-----------------------------------------------------------------------------
+void QuartzGradient::addColorStop (std::pair<double, CColor>&& colorStop)
+{
+	CGradient::addColorStop (colorStop);
+	releaseCGGradient ();
+}
+#endif
 
 //-----------------------------------------------------------------------------
 void QuartzGradient::createCGGradient () const

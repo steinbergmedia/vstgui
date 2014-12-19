@@ -814,7 +814,7 @@ CMouseEventResult VST3Editor::onMouseDown (CFrame* frame, const CPoint& where, c
 	if (buttons.isRightButton ())
 	{
 		COptionMenu* controllerMenu = (delegate && editingEnabled == false) ? delegate->createContextMenu (where, this) : 0;
-		if (allowedZoomFactors.empty () == false)
+		if (allowedZoomFactors.empty () == false && editingEnabled == false)
 		{
 			if (controllerMenu == 0)
 				controllerMenu = new COptionMenu ();
@@ -873,6 +873,7 @@ CMouseEventResult VST3Editor::onMouseDown (CFrame* frame, const CPoint& where, c
 			{
 				CPoint where2 (where);
 				getFrame ()->getTransform ().transform (where2);
+				getFrame ()->onStartLocalEventLoop ();
 				if (controllerMenu)
 					VST3EditorInternal::addCOptionMenuEntriesToIContextMenu (this, controllerMenu, contextMenu);
 				if (contextMenu->popup (static_cast<Steinberg::UCoord> (where2.x), static_cast<Steinberg::UCoord> (where2.y)) == Steinberg::kResultTrue)

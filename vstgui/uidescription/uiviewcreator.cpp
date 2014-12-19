@@ -1187,8 +1187,8 @@ public:
 				int32_t tag = description->getTagForName (controlTagAttr->c_str ());
 				if (tag != -1)
 				{
-					control->setTag (tag);
 					control->setListener (description->getControlListener (controlTagAttr->c_str ()));
+					control->setTag (tag);
 				}
 				else
 				{
@@ -1196,8 +1196,8 @@ public:
 					tag = (int32_t)strtol (controlTagAttr->c_str (), &endPtr, 10);
 					if (endPtr != controlTagAttr->c_str ())
 					{
-						control->setTag (tag);
 						control->setListener (description->getControlListener (controlTagAttr->c_str ()));
+						control->setTag (tag);
 					}
 				}
 			}

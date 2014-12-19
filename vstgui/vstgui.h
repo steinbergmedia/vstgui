@@ -66,6 +66,7 @@
 #include "lib/cview.h"
 #include "lib/cviewcontainer.h"
 #include "lib/cvstguitimer.h"
+#include "lib/iviewlistener.h"
 #include "lib/vstguidebug.h"
 
 #include "lib/controls/cautoanimation.h"

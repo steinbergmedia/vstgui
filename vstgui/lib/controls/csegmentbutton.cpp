@@ -40,6 +40,9 @@
 
 namespace VSTGUI {
 
+typedef std::numeric_limits<uint32_t> UInt32Limit;
+uint32_t CSegmentButton::kPushBack = UInt32Limit::max ();
+
 //-----------------------------------------------------------------------------
 CSegmentButton::CSegmentButton (const CRect& size, IControlListener* listener, int32_t tag)
 : CControl (size, listener, tag)
@@ -59,7 +62,7 @@ CSegmentButton::CSegmentButton (const CRect& size, IControlListener* listener, i
 //-----------------------------------------------------------------------------
 void CSegmentButton::addSegment (Segment segment, uint32_t index)
 {
-	if (index == UInt32Limit::max () && segments.size () < UInt32Limit::max ())
+	if (index == kPushBack && segments.size () < kPushBack)
 		segments.push_back (segment);
 	else if (index < segments.size ())
 	{
@@ -375,7 +378,7 @@ void CSegmentButton::drawRect (CDrawContext* pContext, const CRect& dirtyRect)
 uint32_t CSegmentButton::getSegmentIndex (float value) const
 {
 	if (value < 0.f || value > 1.f)
-		return UInt32Limit::max ();
+		return kPushBack;
 	return static_cast<uint32_t> (static_cast<float> (segments.size () - 1) * value);
 }
 

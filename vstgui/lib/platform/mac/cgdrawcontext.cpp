@@ -640,7 +640,7 @@ void CGDrawContext::drawBitmap (CBitmap* bitmap, const CRect& inRect, const CPoi
 	CGImageRef image = cgBitmap ? cgBitmap->getCGImage () : 0;
 	if (image)
 	{
-		CGContextRef context = beginCGContext (false, true);
+		CGContextRef context = beginCGContext (false, false);
 		if (context)
 		{
 			CGLayerRef layer = cgBitmap->getCGLayer ();
@@ -695,8 +695,8 @@ void CGDrawContext::drawCGImageRef (CGContextRef context, CGImageRef image, CGLa
 		dest.origin = CGPointApplyAffineTransform (dest.origin, transform);
 		dest.size = CGSizeApplyAffineTransform (dest.size, transform);
 	}
-	dest = pixelAlligned (dest);
-	clipRect = pixelAlligned (clipRect);
+//	dest.origin = pixelAlligned (dest.origin);
+	clipRect.origin = pixelAlligned (clipRect.origin);
 	
 	CGContextClipToRect (context, clipRect);
 	
