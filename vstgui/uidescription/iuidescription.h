@@ -37,6 +37,8 @@
 
 #include "../lib/vstguifwd.h"
 #include "../lib/cfont.h"
+#include <string>
+#include <list>
 
 namespace VSTGUI {
 
@@ -65,6 +67,13 @@ public:
 
 	virtual bool getVariable (UTF8StringPtr name, double& value) const = 0;
 	virtual bool getVariable (UTF8StringPtr name, std::string& value) const = 0;
+
+	virtual void collectTemplateViewNames (std::list<const std::string*>& names) const = 0;
+	virtual void collectColorNames (std::list<const std::string*>& names) const = 0;
+	virtual void collectFontNames (std::list<const std::string*>& names) const = 0;
+	virtual void collectBitmapNames (std::list<const std::string*>& names) const = 0;
+	virtual void collectGradientNames (std::list<const std::string*>& names) const = 0;
+	virtual void collectControlTagNames (std::list<const std::string*>& names) const = 0;
 
 	virtual const IViewFactory* getViewFactory () const = 0;
 
