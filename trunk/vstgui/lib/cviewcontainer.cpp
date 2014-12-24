@@ -228,16 +228,18 @@ void CViewContainer::setViewSize (const CRect &rect, bool invalid)
  */
 CRect CViewContainer::getVisibleSize (const CRect& rect) const
 {
+	CRect viewSize (getViewSize ());
+	getTransform ().inverse ().transform (viewSize);
 	CRect result (rect);
-	result.offset (getViewSize ().left, getViewSize ().top);
-	result.bound (getViewSize ());
+	result.offset (viewSize.left, viewSize.top);
+	result.bound (viewSize);
 	if (pParentFrame == this)
 	{}
 	else if (pParentView)
 		result = static_cast<CViewContainer*> (pParentView)->getVisibleSize (result);
 	else if (pParentFrame)
 		result = pParentFrame->getVisibleSize (result);
-	result.offset (-getViewSize ().left, -getViewSize ().top);
+	result.offset (-viewSize.left, -viewSize.top);
 	return result;
 }
 
