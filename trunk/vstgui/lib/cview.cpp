@@ -465,12 +465,12 @@ bool CView::removed (CView* parent)
 		return false;
 	if (wantsIdle ())
 		IdleViewUpdater::remove (this);
+	viewListeners.forEach (CViewPrivate::ViewRemoved (this));
 	if (pParentFrame)
 		pParentFrame->onViewRemoved (this);
 	pParentView = 0;
 	pParentFrame = 0;
 	viewFlags &= ~kIsAttached;
-	viewListeners.forEach (CViewPrivate::ViewRemoved (this));
 	return true;
 }
 

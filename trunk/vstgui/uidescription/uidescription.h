@@ -103,12 +103,12 @@ public:
 	bool getVariable (UTF8StringPtr name, double& value) const VSTGUI_OVERRIDE_VMETHOD;
 	bool getVariable (UTF8StringPtr name, std::string& value) const VSTGUI_OVERRIDE_VMETHOD;
 
-	void collectTemplateViewNames (std::list<const std::string*>& names) const;
-	void collectColorNames (std::list<const std::string*>& names) const;
-	void collectFontNames (std::list<const std::string*>& names) const;
-	void collectBitmapNames (std::list<const std::string*>& names) const;
-	void collectGradientNames (std::list<const std::string*>& names) const;
-	void collectControlTagNames (std::list<const std::string*>& names) const;
+	void collectTemplateViewNames (std::list<const std::string*>& names) const VSTGUI_OVERRIDE_VMETHOD;
+	void collectColorNames (std::list<const std::string*>& names) const VSTGUI_OVERRIDE_VMETHOD;
+	void collectFontNames (std::list<const std::string*>& names) const VSTGUI_OVERRIDE_VMETHOD;
+	void collectBitmapNames (std::list<const std::string*>& names) const VSTGUI_OVERRIDE_VMETHOD;
+	void collectGradientNames (std::list<const std::string*>& names) const VSTGUI_OVERRIDE_VMETHOD;
+	void collectControlTagNames (std::list<const std::string*>& names) const VSTGUI_OVERRIDE_VMETHOD;
 	
 	void changeColorName (UTF8StringPtr oldName, UTF8StringPtr newName);
 	void changeTagName (UTF8StringPtr oldName, UTF8StringPtr newName);
