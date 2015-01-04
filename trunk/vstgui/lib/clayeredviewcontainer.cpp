@@ -66,8 +66,19 @@ void CLayeredViewContainer::setZIndex (uint32_t _zIndex)
 //-----------------------------------------------------------------------------
 void CLayeredViewContainer::updateLayerSize ()
 {
-	// TODO: getVisibleViewSize() does not return the correct size when there is a scaled transform in one of the parents and this layer is inside a scrollview. It's not clipped correctly.
-	CRect newSize = translateToGlobal (getVisibleViewSize ());
+	CRect newSize = getViewSize ();
+	getTransform ().transform (newSize);
+
+	CViewContainer* parent = static_cast<CViewContainer*> (getParentView ());
+	while (parent)
+	{
+		CRect parentSize = parent->getViewSize ();
+		parent->getTransform ().transform (newSize);
+		newSize.offset (parentSize.left, parentSize.top);
+		newSize.bound (parentSize);
+		parent = static_cast<CViewContainer*> (parent->getParentView ());
+	}
+
 	if (parentLayerView)
 	{
 		CPoint p (parentLayerView->getVisibleViewSize ().getTopLeft ());
@@ -208,18 +219,18 @@ CGraphicsTransform CLayeredViewContainer::getDrawTransform () const
 	CGraphicsTransform transform;
 	typedef std::list<CViewContainer*> ParentViews;
 	ParentViews parents;
-	
-	CViewContainer* parent = dynamic_cast<CViewContainer*>(getParentView ());
+
+	CViewContainer* parent = static_cast<CViewContainer*> (getParentView ());
 	while (parent)
 	{
 		parents.push_front (parent);
-		parent = dynamic_cast<CViewContainer*>(parent->getParentView ());
+		parent = static_cast<CViewContainer*> (parent->getParentView ());
 	}
 	VSTGUI_RANGE_BASED_FOR_LOOP (ParentViews, parents, CViewContainer*, parent)
 		transform = parent->getTransform () * transform;
 	VSTGUI_RANGE_BASED_FOR_LOOP_END
 	
-	const CViewContainer* This = dynamic_cast<const CViewContainer*> (this);
+	const CViewContainer* This = static_cast<const CViewContainer*> (this);
 	if (This)
 		transform = This->getTransform () * transform;
 	return transform;
