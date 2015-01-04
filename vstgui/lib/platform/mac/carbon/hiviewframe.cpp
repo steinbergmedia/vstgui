@@ -37,6 +37,7 @@
 #if MAC_CARBON
 
 #include "../../iplatformtextedit.h"
+#include "../../../cbitmap.h"
 #include "../../../cdrawcontext.h"
 #include "../../../cdropsource.h"
 #include "hiviewtextedit.h"

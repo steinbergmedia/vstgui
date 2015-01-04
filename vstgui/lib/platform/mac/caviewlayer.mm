@@ -255,7 +255,8 @@ void CAViewLayer::setSize (const CRect& size)
         CGRect parentSize = layer.superlayer.frame;
 		cgRect.origin.y = (-cgRect.origin.y - cgRect.size.height) + parentSize.size.height;
     }
-	layer.frame = cgRect;
+	if (CGRectEqualToRect (layer.frame, cgRect) == false)
+		layer.frame = cgRect;
 }
 
 //-----------------------------------------------------------------------------
