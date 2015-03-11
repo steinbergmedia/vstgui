@@ -79,6 +79,9 @@ template <typename T>
 template <typename Procedure>
 void DispatchList<T>::forEach (Procedure proc)
 {
+	if (entries.empty ())
+		return;
+
 	inForEach = true;
 	for (typename Array::const_iterator it = entries.begin (), end = entries.end (); it != end; ++it)
 		proc (*it);
