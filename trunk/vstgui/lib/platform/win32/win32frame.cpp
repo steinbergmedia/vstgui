@@ -183,6 +183,7 @@ Win32Frame::Win32Frame (IPlatformFrameCallback* frame, const CRect& size, HWND p
 , updateRegionListSize (0)
 {
 	initWindowClass ();
+	useD2D ();
 
 	DWORD style = isParentLayered (parent) ? WS_EX_TRANSPARENT : 0;
 	#if !DEBUG_DRAWING
@@ -226,7 +227,7 @@ Win32Frame::~Win32Frame ()
 		backBuffer->forget ();
 	destroyWindowClass ();
 
-	releaseD2DFactory ();
+	unuseD2D ();
 }
 
 //-----------------------------------------------------------------------------
