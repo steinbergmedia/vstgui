@@ -83,6 +83,7 @@ public:
 	, writeFactory (0)
 	, d2d1Dll (0)
 	, dwriteDll (0)
+	, useCount (0)
 	{
 		d2d1Dll = LoadLibraryA ("d2d1.dll");
 		if (d2d1Dll)
@@ -125,6 +126,19 @@ public:
 		}
 		return factory;
 	}
+	
+	void use ()
+	{
+		++useCount;
+	}
+
+	void unuse ()
+	{
+		assert (useCount > 0);
+		if (--useCount == 0)
+			releaseFactory ();
+	}
+
 	void releaseFactory ()
 	{
 		if (factory)
@@ -138,6 +152,7 @@ protected:
 	IDWriteFactory* writeFactory;
 	HMODULE d2d1Dll;
 	HMODULE dwriteDll;
+	int32_t useCount;
 };
 
 //-----------------------------------------------------------------------------
@@ -158,13 +173,23 @@ ID2D1Factory* getD2DFactory ()
 #endif
 }
 
-void releaseD2DFactory ()
+//-----------------------------------------------------------------------------
+void useD2D ()
 {
 #if VSTGUI_DIRECT2D_SUPPORT
-	getD2DFactoryInstance ().releaseFactory ();
+	getD2DFactoryInstance ().use ();
 #endif
 }
 
+//-----------------------------------------------------------------------------
+void unuseD2D ()
+{
+#if VSTGUI_DIRECT2D_SUPPORT
+	getD2DFactoryInstance ().unuse ();
+#endif
+}
+
+//-----------------------------------------------------------------------------
 IDWriteFactory* getDWriteFactory ()
 {
 #if VSTGUI_DIRECT2D_SUPPORT
