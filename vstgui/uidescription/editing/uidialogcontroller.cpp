@@ -103,7 +103,8 @@ void UIDialogController::run (UTF8StringPtr _templateName, UTF8StringPtr _dialog
 		if (button1)
 			frame->setFocusView (button1);
 		setOpenGLViewsVisible (false);
-		dialogController->notify (this, kMsgDialogShow);
+		if (dialogController)
+			dialogController->notify (this, kMsgDialogShow);
 
 		view->addAnimation ("AlphaAnimation", new Animation::AlphaValueAnimation (1.f), new Animation::LinearTimingFunction (160));
 	}
@@ -177,12 +178,14 @@ void UIDialogController::valueChanged (CControl* control)
 		{
 			case kButton1Tag:
 			{
-				dialogController->notify (this, kMsgDialogButton1Clicked);
+				if (dialogController)
+					dialogController->notify (this, kMsgDialogButton1Clicked);
 				break;
 			}
 			case kButton2Tag:
 			{
-				dialogController->notify (this, kMsgDialogButton2Clicked);
+				if (dialogController)
+					dialogController->notify (this, kMsgDialogButton2Clicked);
 				break;
 			}
 		}
