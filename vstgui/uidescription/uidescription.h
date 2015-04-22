@@ -78,7 +78,8 @@ public:
 	bool storeViews (const std::list<CView*> views, OutputStream& stream, UIAttributes* customData = 0) const;
 	bool restoreViews (InputStream& stream, std::list<SharedPointer<CView> >& views, UIAttributes** customData = 0);
 
-	UTF8StringPtr getXmFileName () const { return xmlFile.u.name; }
+	UTF8StringPtr getFilePath () const { return filePath.c_str (); }
+	void setFilePath (UTF8StringPtr path);
 	
 	CView* createView (UTF8StringPtr name, IController* controller) const;
 	const UIAttributes* getViewAttributes (UTF8StringPtr name) const;
@@ -188,6 +189,8 @@ protected:
 	void xmlComment (Xml::Parser* parser, IdStringPtr comment) VSTGUI_OVERRIDE_VMETHOD;
 
 	CResourceDescription xmlFile;
+	std::string filePath;
+
 	UINode* nodes;
 	mutable IController* controller;
 	IViewFactory* viewFactory;

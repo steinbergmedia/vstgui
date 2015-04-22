@@ -681,6 +681,8 @@ UIDescription::UIDescription (const CResourceDescription& xmlFile, IViewFactory*
 , bitmapCreator (0)
 , restoreViewsMode (false)
 {
+	if (xmlFile.type == CResourceDescription::kStringType && xmlFile.u.name != 0)
+		setFilePath (xmlFile.u.name);
 	if (viewFactory == 0)
 		viewFactory = getGenericViewFactory ();
 }
@@ -704,6 +706,12 @@ UIDescription::~UIDescription ()
 {
 	if (nodes)
 		nodes->forget ();
+}
+
+//------------------------------------------------------------------------
+void UIDescription::setFilePath (UTF8StringPtr path)
+{
+	filePath = path;
 }
 
 //-----------------------------------------------------------------------------
@@ -1351,6 +1359,9 @@ CBitmap* UIDescription::getBitmap (UTF8StringPtr name) const
 			IPlatformBitmap* platformBitmap = bitmapCreator->createBitmap (*bitmapNode->getAttributes ());
 			if (platformBitmap)
 			{
+				double scaleFactor;
+				if (UIDescriptionPrivate::decodeScaleFactorFromName (name, scaleFactor))
+					platformBitmap->setScaleFactor (scaleFactor);
 				bitmap->setPlatformBitmap (platformBitmap);
 				platformBitmap->forget ();
 			}

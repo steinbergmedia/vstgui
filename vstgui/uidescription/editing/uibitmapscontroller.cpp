@@ -340,7 +340,7 @@ bool UIBitmapsDataSource::addBitmap (UTF8StringPtr path, std::string& outName)
 	if (createUniqueName (outName))
 	{
 		std::string pathStr (path);
-		UTF8StringPtr descPath = description->getXmFileName ();
+		UTF8StringPtr descPath = description->getFilePath ();
 		if (descPath && descPath[0] != 0)
 		{
 			std::string descPathStr (descPath);
