@@ -109,6 +109,10 @@ static id VSTGUI_NSMenu_Init (id self, SEL _cmd, void* _menu)
 				nsItem = [nsMenu addItemWithTitle:itemTitle action:nil keyEquivalent:@""];
 				NSMenu* subMenu = [[[menuClass alloc] initWithOptionMenu:(id)item->getSubmenu ()] autorelease];
 				[nsMenu setSubmenu: subMenu forItem:nsItem];
+				if (multipleCheck && item->isChecked ())
+					[nsItem setState:NSOnState];
+				else
+					[nsItem setState:NSOffState];
 			}
 			else if (item->isSeparator ())
 			{
