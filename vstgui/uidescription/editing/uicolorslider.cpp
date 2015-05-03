@@ -59,7 +59,9 @@ UIColorSlider::~UIColorSlider ()
 //----------------------------------------------------------------------------------------------------
 void UIColorSlider::draw (CDrawContext* context)
 {
-	if (getHandle () == 0 || getBackground () == 0)
+	if (getHandle () == 0)
+		updateHandle (context);
+	if (getBackground () == 0)
 		updateBackground (context);
 	CSlider::draw (context);
 }
@@ -67,13 +69,13 @@ void UIColorSlider::draw (CDrawContext* context)
 //----------------------------------------------------------------------------------------------------
 void UIColorSlider::setViewSize (const CRect& rect, bool invalid)
 {
-	bool different = rect != getViewSize ();
+	bool widthDifferent = rect.getWidth () != getWidth ();
+	bool heightDifferent = rect.getHeight () != getHeight ();
 	CSlider::setViewSize (rect, invalid);
-	if (different)
-	{
-		setHandle (0);
+	if (widthDifferent)
 		setBackground (0);
-	}
+	if (heightDifferent)
+		setHandle (0);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -165,23 +167,25 @@ void UIColorSlider::updateBackground (CDrawContext* context)
 		offscreen->endDraw ();
 		setBackground (offscreen->getBitmap ());
 	}
-	if (getHandle () == 0)
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIColorSlider::updateHandle (CDrawContext* context)
+{
+	SharedPointer<COffscreenContext> offscreen = owned (COffscreenContext::create (getFrame (), 7, getHeight (), context->getScaleFactor ()));
+	if (offscreen)
 	{
-		offscreen = owned (COffscreenContext::create (getFrame (), 7, getHeight (), context->getScaleFactor ()));
-		if (offscreen)
-		{
-			offscreen->beginDraw ();
-			offscreen->setFrameColor (kBlackCColor);
-			offscreen->setLineWidth (1);
-			offscreen->setDrawMode (kAliasing);
-			CRect r (0, 0, 7, getHeight ());
-			offscreen->drawRect (r, kDrawStroked);
-			r.inset (1, 1);
-			offscreen->setFrameColor (kWhiteCColor);
-			offscreen->drawRect (r, kDrawStroked);
-			offscreen->endDraw ();
-			setHandle (offscreen->getBitmap ());
-		}
+		offscreen->beginDraw ();
+		offscreen->setFrameColor (kBlackCColor);
+		offscreen->setLineWidth (1);
+		offscreen->setDrawMode (kAliasing);
+		CRect r (0, 0, 7, getHeight ());
+		offscreen->drawRect (r, kDrawStroked);
+		r.inset (1, 1);
+		offscreen->setFrameColor (kWhiteCColor);
+		offscreen->drawRect (r, kDrawStroked);
+		offscreen->endDraw ();
+		setHandle (offscreen->getBitmap ());
 	}
 }
 
