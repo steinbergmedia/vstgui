@@ -52,6 +52,7 @@ class OutputStream
 {
 public:
 	OutputStream (ByteOrder byteOrder = kNativeByteOrder) : byteOrder (byteOrder) {}
+	virtual ~OutputStream () {}
 
 	ByteOrder getByteOrder () const { return byteOrder; }
 	void setByteOrder (ByteOrder newByteOrder) { byteOrder = newByteOrder; }
@@ -80,6 +81,7 @@ class InputStream
 {
 public:
 	InputStream (ByteOrder byteOrder = kNativeByteOrder) : byteOrder (byteOrder) {}
+	virtual ~InputStream () {}
 
 	ByteOrder getByteOrder () const { return byteOrder; }
 	void setByteOrder (ByteOrder newByteOrder) { byteOrder = newByteOrder; }
@@ -107,6 +109,7 @@ private:
 class SeekableStream
 {
 public:
+	virtual ~SeekableStream () {}
 	enum SeekMode {
 		kSeekSet,
 		kSeekCurrent,
