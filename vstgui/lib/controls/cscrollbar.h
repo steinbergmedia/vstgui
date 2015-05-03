@@ -65,8 +65,8 @@ public:
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
 	void setViewSize (const CRect& newSize, bool invalid) VSTGUI_OVERRIDE_VMETHOD;
 	
-	virtual CMouseEventResult onMouseEntered (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
-	virtual CMouseEventResult onMouseExited (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
+	CMouseEventResult onMouseEntered (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
+	CMouseEventResult onMouseExited (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
 	
 	CLASS_METHODS(CScrollbar, CControl)
 	//-----------------------------------------------------------------------------
@@ -91,6 +91,7 @@ protected:
 	CColor backgroundColor;
 	
 	bool overlayStyle;
+	bool mouseIsInside;
 	
 	IScrollbarDrawer* drawer;
 private:

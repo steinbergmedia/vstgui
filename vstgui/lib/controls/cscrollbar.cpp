@@ -25,6 +25,7 @@ CScrollbar::CScrollbar (const CRect& size, IControlListener* listener, int32_t t
 , stepValue (0.1f)
 , scrollerLength (0)
 , overlayStyle (false)
+, mouseIsInside (false)
 , drawer (0)
 , timer (0)
 {
@@ -49,6 +50,7 @@ CScrollbar::CScrollbar (const CScrollbar& v)
 , scrollerColor (v.scrollerColor)
 , backgroundColor (v.backgroundColor)
 , overlayStyle (v.overlayStyle)
+, mouseIsInside (false)
 , drawer (v.drawer)
 , timer (0)
 {
@@ -190,6 +192,7 @@ CMouseEventResult CScrollbar::onMouseEntered (CPoint& where, const CButtonState&
 	{
 		addAnimation ("AlphaValueAnimation", new Animation::AlphaValueAnimation (1.f), new Animation::LinearTimingFunction (100));
 	}
+	mouseIsInside = true;
 	return kMouseEventNotHandled;
 }
 
@@ -209,6 +212,7 @@ CMouseEventResult CScrollbar::onMouseExited (CPoint& where, const CButtonState& 
 			timingFunction = new Animation::LinearTimingFunction (100);
 		addAnimation ("AlphaValueAnimation", new Animation::AlphaValueAnimation (0.001f), timingFunction);
 	}
+	mouseIsInside = false;
 	return kMouseEventNotHandled;
 }
 
@@ -291,18 +295,12 @@ CMouseEventResult CScrollbar::onMouseMoved (CPoint &where, const CButtonState& b
 //------------------------------------------------------------------------
 void CScrollbar::onVisualChange ()
 {
-	if (overlayStyle && getFrame ())
+	if (overlayStyle && !mouseIsInside)
 	{
-		CPoint mousePos;
-		getFrame ()->getCurrentMouseLocation (mousePos);
-		frameToLocal (mousePos);
-		if (getMouseableArea ().pointInside (mousePos) == false)
-		{
-			Animation::InterpolationTimingFunction* timingFunction = new Animation::InterpolationTimingFunction (1100);
-			timingFunction->addPoint (1000.f/1100.f, 0);
-			addAnimation ("AlphaValueAnimation", new Animation::AlphaValueAnimation (0.001f), timingFunction);
-			setAlphaValue (1.f);
-		}
+		Animation::InterpolationTimingFunction* timingFunction = new Animation::InterpolationTimingFunction (1100);
+		timingFunction->addPoint (1000.f/1100.f, 0);
+		addAnimation ("AlphaValueAnimation", new Animation::AlphaValueAnimation (0.001f), timingFunction);
+		setAlphaValue (1.f);
 	}
 }
 
@@ -335,11 +333,7 @@ bool CScrollbar::onWheel (const CPoint &where, const CMouseWheelAxis &axis, cons
 
 	if (isDirty ())
 	{
-		if (getMouseableArea().pointInside (where) == false)
-		{
-			onVisualChange ();
-		}
-
+		onVisualChange ();
 		valueChanged ();
 		invalid ();
 	}
