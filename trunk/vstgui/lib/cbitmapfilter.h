@@ -52,7 +52,7 @@ class Property : public CBaseObject
 {
 public:
 	enum Type {
-		kNotFound = 0,
+		kUnknown = 0,
 		kInteger,
 		kFloat,
 		kObject,
@@ -62,7 +62,7 @@ public:
 		kTransformMatrix
 	};
 	
-	Property (Type type = kNotFound);
+	Property (Type type = kUnknown);
 	Property (int32_t intValue);
 	Property (double floatValue);
 	Property (CBaseObject* objectValue);
@@ -161,8 +161,8 @@ namespace Standard {
 		Produces a grayscale version of the input bitmap.
 
 		Properties:
-		- Property::kInputBitmap
-		- Property::kOutputBitmap
+			- Property::kInputBitmap
+			- Property::kOutputBitmap
 	 */
 	static const IdStringPtr kGrayscale = "Grayscale";
 
@@ -171,10 +171,10 @@ namespace Standard {
 		Replaces the colors which match the input color to the output color.
 
 		Properties:
-		- Property::kInputBitmap
-		- Property::kInputColor
-		- Property::kOutputColor
-		- Property::kOutputBitmap
+			- Property::kInputBitmap
+			- Property::kInputColor
+			- Property::kOutputColor
+			- Property::kOutputBitmap
 	 */
 	static const IdStringPtr kReplaceColor = "Replace Color";
 
@@ -184,10 +184,10 @@ namespace Standard {
 		alpha value of the input bitmap is not changed.
 		 
 		Properties:
-		- Property::kInputBitmap
-		- Property::kInputColor
-		- Property::kIgnoreAlphaColorValue
-		- Property::kOutputBitmap
+			- Property::kInputBitmap
+			- Property::kInputColor
+			- Property::kIgnoreAlphaColorValue
+			- Property::kOutputBitmap
 	 */
 	static const IdStringPtr kSetColor = "Set Color";
 
@@ -197,9 +197,9 @@ namespace Standard {
 		Does not work inplace.
 
 		Properties:
-		- Property::kInputBitmap
-		- Property::kOutputRect
-		- Property::kOutputBitmap
+			- Property::kInputBitmap
+			- Property::kOutputRect
+			- Property::kOutputBitmap
 	 */
 	static const IdStringPtr kScaleBilinear = "Scale Biliniear";
 
@@ -209,9 +209,9 @@ namespace Standard {
 		Does not work inplace.
 
 		Properties:
-		- Property::kInputBitmap
-		- Property::kOutputRect
-		- Property::kOutputBitmap
+			- Property::kInputBitmap
+			- Property::kOutputRect
+			- Property::kOutputBitmap
 	 */
 	static const IdStringPtr kScaleLinear = "Scale Linear";
 

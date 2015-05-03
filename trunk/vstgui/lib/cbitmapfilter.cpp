@@ -147,7 +147,7 @@ Property& Property::operator=(Property&& p) noexcept
 	type = p.type;
 	value = p.value;
 	p.value = nullptr;
-	p.type = kNotFound;
+	p.type = kUnknown;
 	return *this;
 }
 #endif
@@ -175,7 +175,7 @@ Property& Property::operator=(const Property& p)
 			case kPoint: valueSize = sizeof (CPoint); break;
 			case kColor: valueSize = sizeof (CColor); break;
 			case kTransformMatrix: valueSize = sizeof (CGraphicsTransform); break;
-			case kNotFound: valueSize = 0; break;
+			case kUnknown: valueSize = 0; break;
 		}
 		if (valueSize)
 		{
@@ -333,7 +333,7 @@ const Property& FilterBase::getProperty (IdStringPtr name) const
 	const_iterator it = find (name);
 	if (it != end ())
 		return it->second;
-	static Property notFound (Property::kNotFound);
+	static Property notFound (Property::kUnknown);
 	return notFound;
 }
 
@@ -362,7 +362,7 @@ Property::Type FilterBase::getPropertyType (uint32_t index) const
 		if (index == 0)
 			return (*it).second.getType ();
 	}
-	return Property::kNotFound;
+	return Property::kUnknown;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -373,7 +373,7 @@ Property::Type FilterBase::getPropertyType (IdStringPtr name) const
 	{
 		return (*it).second.getType ();
 	}
-	return Property::kNotFound;
+	return Property::kUnknown;
 }
 
 //----------------------------------------------------------------------------------------------------
