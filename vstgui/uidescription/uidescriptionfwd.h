@@ -14,6 +14,7 @@ namespace VSTGUI {
 class UIAttributes;
 class IController;
 class IUIDescription;
+class UIDescription;
 
 } // namespace
 
