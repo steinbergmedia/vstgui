@@ -253,6 +253,7 @@ bool UIBitmapsDataSource::dbOnDropInCell (int32_t row, int32_t column, const CPo
 {
 	if (dragContainsBitmaps)
 	{
+		bool didBeganGroupAction = false;
 		uint32_t index = 0;
 		IDataPackage::Type type;
 		const void* item = 0;
@@ -267,12 +268,19 @@ bool UIBitmapsDataSource::dbOnDropInCell (int32_t row, int32_t column, const CPo
 					std::transform (extStr.begin (), extStr.end (), extStr.begin (), ::tolower);
 					if (extStr == ".png" || extStr == ".bmp" || extStr == ".jpg" || extStr == ".jpeg")
 					{
+						if (!didBeganGroupAction)
+						{
+							actionPerformer->beginGroupAction ("Add Bitmaps");
+							didBeganGroupAction = true;
+						}
 						std::string name;
 						addBitmap (static_cast<UTF8StringPtr> (item), name);
 					}
 				}
 			}
 		}
+		if (didBeganGroupAction)
+			actionPerformer->finishGroupAction ();
 		dragContainsBitmaps = false;
 		return true;
 	}
@@ -376,6 +384,8 @@ bool UIBitmapsDataSource::add ()
 		if (fs->runModal ())
 		{
 			uint32_t numFiles = static_cast<uint32_t> (fs->getNumSelectedFiles ());
+			if (numFiles > 1)
+				actionPerformer->beginGroupAction ("Add Bitmaps");
 			for (uint32_t i = 0; i < numFiles; i++)
 			{
 				UTF8StringPtr path = fs->getSelectedFile (i);
@@ -391,6 +401,8 @@ bool UIBitmapsDataSource::add ()
 					}
 				}
 			}
+			if (numFiles > 1)
+				actionPerformer->finishGroupAction ();
 		}
 	}
 	return result;
