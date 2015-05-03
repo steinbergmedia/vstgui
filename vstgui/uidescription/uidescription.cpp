@@ -1432,7 +1432,7 @@ CBitmap* UIDescription::getBitmap (UTF8StringPtr name) const
 								break;
 							}
 							case BitmapFilter::Property::kObject: // objects can not be stored/restored
-							case BitmapFilter::Property::kNotFound:
+							case BitmapFilter::Property::kUnknown:
 								break;
 						}
 					}
