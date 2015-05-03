@@ -69,6 +69,7 @@ protected:
 	void setViewSize (const CRect& rect, bool invalid = true) VSTGUI_OVERRIDE_VMETHOD;
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
 	void updateBackground (CDrawContext* context);
+	void updateHandle (CDrawContext* context);
 
 	SharedPointer<UIColor> color;
 	int32_t style;
