@@ -426,7 +426,13 @@ public:
 		}
 		if (slider)
 		{
-			float floatValue = strtof (value.c_str (), 0);
+			float floatValue;
+
+			std::istringstream sstream (value);
+			sstream.imbue (std::locale::classic ());
+			sstream.precision (40);
+			sstream >> floatValue;
+
 			slider->setValue (floatValue);
 			slider->invalid ();
 		}

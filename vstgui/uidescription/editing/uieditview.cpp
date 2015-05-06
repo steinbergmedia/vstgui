@@ -54,7 +54,11 @@
 
 #if __cplusplus < 201103L
 namespace std {
+#if _MSC_VER < 1800
+	template <typename T> T round (T value) { return floor (value + 0.5); }
+#else
 	using ::round;
+#endif
 }
 #endif
 

@@ -191,7 +191,7 @@ public:
 			transform->transform (point);
 		if (context)
 			context->pixelAllign (point);
-		return { static_cast<FLOAT> (point.x), static_cast<FLOAT> (point.y) };
+		return D2D1::Point2F (static_cast<FLOAT> (point.x), static_cast<FLOAT> (point.y));
 	}
 	
 	STDMETHOD_(void, AddBeziers)(const D2D1_BEZIER_SEGMENT * beziers, UINT beziersCount)
