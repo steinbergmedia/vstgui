@@ -75,6 +75,7 @@ public:
 //------------------------------------------------------------------------------------
 protected:
 	CGMutablePathRef path;
+	CGMutablePathRef originalTextPath;
 	bool isPixelAlligned;
 };
 

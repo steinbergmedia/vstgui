@@ -490,6 +490,25 @@ public:
 		context->drawRect (r, kDrawStroked);
 		context->setFillColor (kRedCColor);
 		context->drawEllipse (r, kDrawFilled);
+
+		context->setFillColor (kRedCColor);
+		context->setFrameColor (kBlackCColor);
+		context->setLineWidth (2.);
+		CFontDesc font (*kSystemFont);
+		font.setSize (50);
+		auto textPath = owned (context->createTextPath (&font, "Test"));
+		{
+			CDrawContext::Transform t (*context, CGraphicsTransform ().translate (20., 90.));
+			context->setDrawMode (kAntiAliasing|kNonIntegralMode);
+			context->drawGraphicsPath (textPath, CDrawContext::kPathStroked);
+			context->drawGraphicsPath (textPath);
+		}
+		{
+			CDrawContext::Transform t (*context, CGraphicsTransform ().translate (20. + std::ceil (textPath->getBoundingBox ().getWidth () / 10.) * 10, 90.));
+			context->setDrawMode (kAntiAliasing);
+			context->drawGraphicsPath (textPath, CDrawContext::kPathStroked);
+			context->drawGraphicsPath (textPath);
+		}
 	}
 };
 
