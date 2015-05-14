@@ -57,6 +57,7 @@ CGAffineTransform QuartzGraphicsPath::createCGAffineTransform (const CGraphicsTr
 //-----------------------------------------------------------------------------
 QuartzGraphicsPath::QuartzGraphicsPath ()
 : path (0)
+, originalTextPath (0)
 , isPixelAlligned (false)
 {
 }
@@ -103,12 +104,15 @@ QuartzGraphicsPath::QuartzGraphicsPath (const CoreTextFont* font, UTF8StringPtr 
 		CFRelease (line);
 	}
 	CFRelease (attrString);
+	originalTextPath = path;
 }
 
 //-----------------------------------------------------------------------------
 QuartzGraphicsPath::~QuartzGraphicsPath ()
 {
 	dirty ();
+	if (originalTextPath)
+		CFRelease (originalTextPath);
 }
 
 //-----------------------------------------------------------------------------
@@ -122,6 +126,11 @@ CGPathRef QuartzGraphicsPath::getCGPathRef ()
 {
 	if (path == 0)
 	{
+		if (originalTextPath)
+		{
+			path = originalTextPath;
+			return path;
+		}
 		path = CGPathCreateMutable ();
 		for (ElementList::const_iterator it = elements.begin (); it != elements.end (); it++)
 		{
@@ -197,7 +206,8 @@ void QuartzGraphicsPath::dirty ()
 {
 	if (path)
 	{
-		CFRelease (path);
+		if (originalTextPath != path)
+			CFRelease (path);
 		path = 0;
 	}
 }
