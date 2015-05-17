@@ -130,6 +130,8 @@ public:
 
 	void addControl (CControl* control)
 	{
+		if (containsControl (control))
+			return;
 		control->remember ();
 		controls.push_back (control);
 		Steinberg::Vst::ParamValue value = 0.;
