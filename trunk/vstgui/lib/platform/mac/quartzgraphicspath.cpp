@@ -255,7 +255,7 @@ CRect QuartzGraphicsPath::getBoundingBox ()
 }
 
 //-----------------------------------------------------------------------------
-void QuartzGraphicsPath::pixelAlign (CDrawContext* context, CGraphicsTransform* transform)
+void QuartzGraphicsPath::pixelAlign (CDrawContext* context)
 {
 	CGDrawContext* cgDrawContext = dynamic_cast<CGDrawContext*>(context);
 	if (cgDrawContext == 0)
@@ -269,29 +269,12 @@ void QuartzGraphicsPath::pixelAlign (CDrawContext* context, CGraphicsTransform* 
 		CGMutablePathRef path;
 		const CGDrawContext& context;
 		CGAffineTransform transform;
-		CGraphicsTransform* contextTransform;
 		
-		PathIterator (const CGDrawContext& context, CGraphicsTransform* cTransform)
+		PathIterator (const CGDrawContext& context)
 		: context (context)
-		, contextTransform (cTransform)
 		{
 			path = CGPathCreateMutable ();
 			transform = CGAffineTransformMakeTranslation (-0.5, 0.5);
-		}
-		void applyContextTransform (CGPoint& p)
-		{
-			if (contextTransform)
-			{
-			#if CGFLOAT_IS_DOUBLE
-				contextTransform->transform (p.x, p.y);
-			#else
-				CCoord x = p.x;
-				CCoord y = p.y;
-				contextTransform->transform (x, y);
-				p.x = static_cast<CGFloat> (x);
-				p.y = static_cast<CGFloat> (y);
-			#endif
-			}
 		}
 		void apply (const CGPathElement* element)
 		{
@@ -299,22 +282,18 @@ void QuartzGraphicsPath::pixelAlign (CDrawContext* context, CGraphicsTransform* 
 			{
 				case kCGPathElementMoveToPoint:
 				{
-					applyContextTransform (element->points[0]);
 					element->points[0] = context.pixelAlligned (element->points[0]);
 					CGPathMoveToPoint (path, &transform, element->points[0].x, element->points[0].y);
 					break;
 				}
 				case kCGPathElementAddLineToPoint:
 				{
-					applyContextTransform (element->points[0]);
 					element->points[0] = context.pixelAlligned (element->points[0]);
 					CGPathAddLineToPoint (path, &transform, element->points[0].x, element->points[0].y);
 					break;
 				}
 				case kCGPathElementAddQuadCurveToPoint:
 				{
-					applyContextTransform (element->points[0]);
-					applyContextTransform (element->points[1]);
 					element->points[0] = context.pixelAlligned (element->points[0]);
 					element->points[1] = context.pixelAlligned (element->points[1]);
 					CGPathAddQuadCurveToPoint (path, &transform, element->points[0].x, element->points[0].y, element->points[1].x, element->points[1].y);
@@ -322,9 +301,6 @@ void QuartzGraphicsPath::pixelAlign (CDrawContext* context, CGraphicsTransform* 
 				}
 				case kCGPathElementAddCurveToPoint:
 				{
-					applyContextTransform (element->points[0]);
-					applyContextTransform (element->points[1]);
-					applyContextTransform (element->points[2]);
 					element->points[0] = context.pixelAlligned (element->points[0]);
 					element->points[1] = context.pixelAlligned (element->points[1]);
 					element->points[2] = context.pixelAlligned (element->points[2]);
@@ -345,7 +321,7 @@ void QuartzGraphicsPath::pixelAlign (CDrawContext* context, CGraphicsTransform* 
 			This->apply (element);
 		}
 	};
-	PathIterator iterator (*cgDrawContext, transform);
+	PathIterator iterator (*cgDrawContext);
 	CGPathApply (getCGPathRef (), &iterator, PathIterator::apply);
 	dirty ();
 	path = iterator.path;

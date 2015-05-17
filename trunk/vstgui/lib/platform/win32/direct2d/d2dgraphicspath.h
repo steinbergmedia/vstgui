@@ -56,7 +56,7 @@ public:
 	D2DGraphicsPath (const D2DFont* font, UTF8StringPtr text);
 	~D2DGraphicsPath ();
 	
-	ID2D1PathGeometry* createPath (int32_t fillMode, D2DDrawContext* context = 0, CGraphicsTransform* transform = 0);
+	ID2D1Geometry* createPath (int32_t fillMode, D2DDrawContext* context = 0, CGraphicsTransform* transform = 0);
 
 	CGradient* createGradient (double color1Start, double color2Start, const CColor& color1, const CColor& color2) VSTGUI_OVERRIDE_VMETHOD;
 
@@ -65,7 +65,7 @@ public:
 	CRect getBoundingBox () VSTGUI_OVERRIDE_VMETHOD;
 	void dirty () VSTGUI_OVERRIDE_VMETHOD;
 protected:
-	ID2D1PathGeometry* path;
+	ID2D1Geometry* path;
 	int32_t currentPathFillMode;
 };
 

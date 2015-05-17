@@ -187,8 +187,6 @@ public:
 	D2D1_POINT_2F alignPoint (const D2D1_POINT_2F& p)
 	{
 		CPoint point (p.x, p.y); 
-		if (transform)
-			transform->transform (point);
 		if (context)
 			context->pixelAllign (point);
 		return D2D1::Point2F (static_cast<FLOAT> (point.x), static_cast<FLOAT> (point.y));
@@ -243,9 +241,8 @@ public:
 		return sink->Close ();
 	}
 
-	AlignPixelSink (D2DDrawContext* context, CGraphicsTransform* transform)
+	AlignPixelSink (D2DDrawContext* context)
 	: context (context)
-	, transform (transform)
 	, path (0)
 	, sink (0)
 	, isClosed (true)
@@ -292,7 +289,6 @@ private:
 	ID2D1PathGeometry* path;
 	ID2D1GeometrySink* sink;
 	D2DDrawContext* context;
-	CGraphicsTransform* transform;
 	bool isClosed;
 };
 
@@ -306,8 +302,9 @@ D2DGraphicsPath::D2DGraphicsPath ()
 //-----------------------------------------------------------------------------
 D2DGraphicsPath::D2DGraphicsPath (const D2DFont* font, UTF8StringPtr text)
 {
-	getD2DFactory ()->CreatePathGeometry (&path);
-	if (path == 0)
+	ID2D1PathGeometry* localPath = 0;
+	getD2DFactory ()->CreatePathGeometry (&localPath);
+	if (localPath == 0)
 		return;
 
 	IDWriteTextLayout* layout = font->createTextLayout (CString (text).getPlatformString ());
@@ -337,7 +334,7 @@ D2DGraphicsPath::D2DGraphicsPath (const D2DFont* font, UTF8StringPtr text)
 	sink->Release ();
 	layout->Release ();
 	
-	if (!SUCCEEDED (path->Open (&sink)))
+	if (!SUCCEEDED (localPath->Open (&sink)))
 	{
 		textPath->Release ();
 		return;
@@ -352,6 +349,7 @@ D2DGraphicsPath::D2DGraphicsPath (const D2DFont* font, UTF8StringPtr text)
 	textPath->Release ();
 	sink->Close ();
 	sink->Release ();
+	path = localPath;
 }
 
 //-----------------------------------------------------------------------------
@@ -385,7 +383,7 @@ CPoint D2DGraphicsPath::getCurrentPosition ()
 //-----------------------------------------------------------------------------
 bool D2DGraphicsPath::hitTest (const CPoint& p, bool evenOddFilled, CGraphicsTransform* transform)
 {
-	ID2D1PathGeometry* _path = createPath (evenOddFilled ? D2D1_FILL_MODE_ALTERNATE : D2D1_FILL_MODE_WINDING);
+	ID2D1Geometry* _path = createPath (evenOddFilled ? D2D1_FILL_MODE_ALTERNATE : D2D1_FILL_MODE_WINDING);
 	if (_path)
 	{
 		D2D1::Matrix3x2F matrix = D2D1::Matrix3x2F::Identity ();
@@ -411,7 +409,7 @@ bool D2DGraphicsPath::hitTest (const CPoint& p, bool evenOddFilled, CGraphicsTra
 CRect D2DGraphicsPath::getBoundingBox ()
 {
 	CRect r;
-	ID2D1PathGeometry* _path = createPath (currentPathFillMode);
+	ID2D1Geometry* _path = createPath (currentPathFillMode);
 	if (_path)
 	{
 		D2D1_RECT_F bounds;
@@ -438,24 +436,27 @@ void D2DGraphicsPath::dirty ()
 }
 
 //-----------------------------------------------------------------------------
-ID2D1PathGeometry* D2DGraphicsPath::createPath (int32_t fillMode, D2DDrawContext* context, CGraphicsTransform* transform)
+ID2D1Geometry* D2DGraphicsPath::createPath (int32_t fillMode, D2DDrawContext* context, CGraphicsTransform* transform)
 {
 	if (!elements.empty () && (path == 0 || fillMode != currentPathFillMode))
 	{
 		dirty ();
-		if (!SUCCEEDED (getD2DFactory ()->CreatePathGeometry (&path)))
+		ID2D1PathGeometry* localPath = 0;
+		if (!SUCCEEDED (getD2DFactory ()->CreatePathGeometry (&localPath)))
 			return 0;
 		if (fillMode == -1)
 			fillMode = 0;
 		currentPathFillMode = fillMode;
 		
 		ID2D1GeometrySink* sink = 0;
-		if (!SUCCEEDED (path->Open (&sink)))
+		if (!SUCCEEDED (localPath->Open (&sink)))
 		{
 			path->Release ();
 			path = 0;
 			return 0;
 		}
+
+		path = localPath;
 
 		sink->SetFillMode ((D2D1_FILL_MODE)fillMode);
 
@@ -628,21 +629,41 @@ ID2D1PathGeometry* D2DGraphicsPath::createPath (int32_t fillMode, D2DDrawContext
 		}
 		sink->Release ();
 	}
-	if (path)
+	if (path && (transform || context))
 	{
-		if (context || transform)
+		ID2D1Geometry* geometry = path;
+		if (transform)
 		{
-			AlignPixelSink sink (context, transform);
+			ID2D1TransformedGeometry* tg = 0;
+			if (!SUCCEEDED (getD2DFactory ()->CreateTransformedGeometry (geometry, convert (*transform), &tg)))
+				return 0;
+			geometry = tg;
+		}
+		if (context)
+		{
+			AlignPixelSink sink (context);
 			if (sink.init () == false)
+			{
+				if (transform)
+					geometry->Release ();
 				return 0;
-			if (!SUCCEEDED (path->Simplify (D2D1_GEOMETRY_SIMPLIFICATION_OPTION_CUBICS_AND_LINES, 0, &sink)))
+			}
+			if (!SUCCEEDED (geometry->Simplify (D2D1_GEOMETRY_SIMPLIFICATION_OPTION_CUBICS_AND_LINES, 0, &sink)))
+			{
+				if (transform)
+					geometry->Release ();
 				return 0;
+			}
 			
 			ID2D1PathGeometry* result = sink.get ();
+			if (transform)
+				geometry->Release ();
 			return result;
 		}
-		path->AddRef ();
+		return geometry;
 	}
+	if (path)
+		path->AddRef ();
 	return path;
 }
 

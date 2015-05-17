@@ -258,7 +258,7 @@ void D2DDrawContext::drawGraphicsPath (CGraphicsPath* _path, PathDrawMode mode, 
 
 	bool halfPointOffset = (mode == kPathStroked || currentState.drawMode.integralMode ()) ? ((((int32_t)currentState.frameWidth) % 2) != 0) : false;
 	D2DApplyClip ac (this, halfPointOffset);
-	ID2D1PathGeometry* path = d2dPath->createPath (mode == kPathFilledEvenOdd ? D2D1_FILL_MODE_ALTERNATE : D2D1_FILL_MODE_WINDING, currentState.drawMode.integralMode () ? this : 0, t);
+	ID2D1Geometry* path = d2dPath->createPath (mode == kPathFilledEvenOdd ? D2D1_FILL_MODE_ALTERNATE : D2D1_FILL_MODE_WINDING, currentState.drawMode.integralMode () ? this : 0, t);
 	if (path)
 	{
 		if (mode == kPathFilled || mode == kPathFilledEvenOdd)
@@ -295,7 +295,7 @@ void D2DDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradient& 
 	if (d2dPath == 0)
 		return;
 
-	ID2D1PathGeometry* path = d2dPath->createPath (evenOdd ? D2D1_FILL_MODE_ALTERNATE : D2D1_FILL_MODE_WINDING, this, t);
+	ID2D1Geometry* path = d2dPath->createPath (evenOdd ? D2D1_FILL_MODE_ALTERNATE : D2D1_FILL_MODE_WINDING, this, t);
 	if (path)
 	{
 		bool halfPointOffset = currentState.drawMode.integralMode () ? ((((int32_t)currentState.frameWidth) % 2) != 0) : false;
@@ -329,7 +329,7 @@ void D2DDrawContext::fillRadialGradient (CGraphicsPath* _path, const CGradient& 
 	if (d2dPath == 0)
 		return;
 
-	ID2D1PathGeometry* path = d2dPath->createPath (evenOdd ? D2D1_FILL_MODE_ALTERNATE : D2D1_FILL_MODE_WINDING);
+	ID2D1Geometry* path = d2dPath->createPath (evenOdd ? D2D1_FILL_MODE_ALTERNATE : D2D1_FILL_MODE_WINDING);
 	if (path)
 	{
 		D2DApplyClip ac (this);
