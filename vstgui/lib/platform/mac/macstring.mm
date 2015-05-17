@@ -83,6 +83,8 @@ void MacString::setUTF8String (UTF8StringPtr utf8String)
 //-----------------------------------------------------------------------------
 void MacString::setCTLine (CTLineRef line, const void* fontRef, const CColor& color)
 {
+	if (ctLine)
+		CFRelease (ctLine);
 	ctLine = line;
 	if (ctLine)
 		CFRetain (ctLine);
