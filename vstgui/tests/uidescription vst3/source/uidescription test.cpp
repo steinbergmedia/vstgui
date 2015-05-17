@@ -496,18 +496,41 @@ public:
 		context->setLineWidth (2.);
 		CFontDesc font (*kSystemFont);
 		font.setSize (50);
-		auto textPath = owned (context->createTextPath (&font, "Test"));
+		path = owned (context->createTextPath (&font, "Test"));
 		{
 			CDrawContext::Transform t (*context, CGraphicsTransform ().translate (20., 90.));
 			context->setDrawMode (kAntiAliasing|kNonIntegralMode);
-			context->drawGraphicsPath (textPath, CDrawContext::kPathStroked);
-			context->drawGraphicsPath (textPath);
+			context->drawGraphicsPath (path, CDrawContext::kPathStroked);
+			context->drawGraphicsPath (path);
 		}
 		{
-			CDrawContext::Transform t (*context, CGraphicsTransform ().translate (20. + std::ceil (textPath->getBoundingBox ().getWidth () / 10.) * 10, 90.));
+			CDrawContext::Transform t (*context, CGraphicsTransform ().translate (20. + std::ceil (path->getBoundingBox ().getWidth () / 10.) * 10, 90.));
 			context->setDrawMode (kAntiAliasing);
-			context->drawGraphicsPath (textPath, CDrawContext::kPathStroked);
-			context->drawGraphicsPath (textPath);
+			context->drawGraphicsPath (path, CDrawContext::kPathStroked);
+			context->drawGraphicsPath (path);
+		}
+
+		path = owned (context->createGraphicsPath ());
+		path->addRect (CRect (20., 190., 120., 210.));
+		context->setFrameColor (kRedCColor);
+		context->setLineWidth (1.);
+
+		const CPoint center (70, 200);
+		context->drawPoint (center, kGreenCColor);
+		for (double r = 0.; r < 180.; r += 30.)
+		{
+			CGraphicsTransform t;
+			t.rotate (r, center);
+			context->drawGraphicsPath (path, CDrawContext::kPathStroked, &t);
+		}
+
+		context->setDrawMode (kAntiAliasing|kNonIntegralMode);
+		for (double r = 0.; r < 180.; r += 30.)
+		{
+			CGraphicsTransform transform;
+			transform.rotate (r, center);
+			CDrawContext::Transform t (*context, CGraphicsTransform ().translate (110., 0.));
+			context->drawGraphicsPath (path, CDrawContext::kPathStroked, &transform);
 		}
 	}
 };

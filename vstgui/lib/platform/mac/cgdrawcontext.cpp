@@ -194,23 +194,22 @@ void CGDrawContext::drawGraphicsPath (CGraphicsPath* _path, PathDrawMode mode, C
 			}
 		}
 		
+		CGContextSaveGState (context);
+		if (t)
+		{
+			CGAffineTransform transform = QuartzGraphicsPath::createCGAffineTransform (*t);
+			CGContextConcatCTM (context, transform);
+		}
 		if (getDrawMode ().integralMode ())
 		{
 			applyLineWidthCTM (context);
-			path->pixelAlign (this, t);
+			path->pixelAlign (this);
 			CGContextAddPath (context, path->getCGPathRef ());
-		}
-		else if (t)
-		{
-			CGContextSaveGState (context);
-			CGAffineTransform transform = QuartzGraphicsPath::createCGAffineTransform (*t);
-			CGContextConcatCTM (context, transform);
-			CGContextAddPath (context, path->getCGPathRef ());
-			CGContextRestoreGState (context);
 		}
 		else
 			CGContextAddPath (context, path->getCGPathRef ());
 		
+		CGContextRestoreGState (context);
 		CGContextDrawPath (context, cgMode);
 
 		releaseCGContext (context);
@@ -231,26 +230,25 @@ void CGDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradient& g
 	CGContextRef context = beginCGContext (true, getDrawMode ().integralMode ());
 	if (context)
 	{
+		CGContextSaveGState (context);
 		CGPoint start = CGPointFromCPoint (startPoint);
 		CGPoint end = CGPointFromCPoint (endPoint);
 		if (getDrawMode ().integralMode ())
 		{
-			path->pixelAlign (this, t);
 			applyLineWidthCTM (context);
-			CGContextAddPath (context, path->getCGPathRef ());
 			start = pixelAlligned (start);
 			end = pixelAlligned (end);
 		}
-		else if (t)
+		if (t)
 		{
-			CGContextSaveGState (context);
 			CGAffineTransform transform = QuartzGraphicsPath::createCGAffineTransform (*t);
 			CGContextConcatCTM (context, transform);
-			CGContextAddPath (context, path->getCGPathRef ());
-			CGContextRestoreGState (context);
 		}
-		else
-			CGContextAddPath (context, path->getCGPathRef ());
+		if (getDrawMode ().integralMode ())
+			path->pixelAlign (this);
+
+		CGContextAddPath (context, path->getCGPathRef ());
+		CGContextRestoreGState (context);
 
 		if (evenOdd)
 			CGContextEOClip (context);
@@ -277,21 +275,17 @@ void CGDrawContext::fillRadialGradient (CGraphicsPath* _path, const CGradient& g
 	CGContextRef context = beginCGContext (true, getDrawMode ().integralMode ());
 	if (context)
 	{
-		if (getDrawMode ().integralMode ())
+		CGContextSaveGState (context);
+		if (t)
 		{
-			path->pixelAlign (this, t);
-			CGContextAddPath (context, path->getCGPathRef ());
-		}
-		else if (t)
-		{
-			CGContextSaveGState (context);
 			CGAffineTransform transform = QuartzGraphicsPath::createCGAffineTransform (*t);
 			CGContextConcatCTM (context, transform);
-			CGContextAddPath (context, path->getCGPathRef ());
-			CGContextRestoreGState (context);
 		}
-		else
-			CGContextAddPath (context, path->getCGPathRef ());
+		if (getDrawMode ().integralMode ())
+			path->pixelAlign (this);
+		
+		CGContextAddPath (context, path->getCGPathRef ());
+		CGContextRestoreGState (context);
 		
 		if (evenOdd)
 			CGContextEOClip (context);
