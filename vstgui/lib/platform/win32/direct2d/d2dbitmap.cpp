@@ -483,7 +483,15 @@ D2DBitmapCache* D2DBitmapCache::instance ()
 WICGlobal::WICGlobal ()
 : factory (0)
 {
-	CoCreateInstance (CLSID_WICImagingFactory, NULL, CLSCTX_INPROC_SERVER, IID_IWICImagingFactory, (void**)&factory);
+
+#if _WIN32_WINNT > 0x601
+// make sure when building with the Win 8.0 SDK we work on Win7
+#define VSTGUI_WICImagingFactory CLSID_WICImagingFactory1
+#else
+#define VSTGUI_WICImagingFactory CLSID_WICImagingFactory
+#endif
+
+	CoCreateInstance (VSTGUI_WICImagingFactory, NULL, CLSCTX_INPROC_SERVER, IID_IWICImagingFactory, (void**)&factory);
 	assert (factory);
 }
 
