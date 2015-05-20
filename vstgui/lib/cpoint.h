@@ -58,7 +58,8 @@ struct CPoint
 	CPoint& operator-= (const CPoint& other) { x -= other.x; y -= other.y; return *this; }
 	CPoint operator+ (const CPoint& other) const { return CPoint (x + other.x, y + other.y); }
 	CPoint operator- (const CPoint& other) const { return CPoint (x - other.x, y - other.y); }
-
+	CPoint operator- () const { return CPoint (-x, -y); }
+	
 	CPoint& offset (const CCoord x, const CCoord y) { *this += CPoint (x, y); return *this; }
 	CPoint& offset (const CPoint& other) { *this += other; return *this; }
 	CPoint& offsetInverse (const CPoint& other) { *this -= other; return *this; }

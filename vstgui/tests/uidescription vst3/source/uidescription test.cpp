@@ -327,6 +327,8 @@ public:
 			context->saveGlobalState ();
 			context->setGlobalAlpha (context->getGlobalAlpha () * (flags == ISplitViewSeparatorDrawer::kMouseOver ? 0.9f : 0.6f));
 			context->fillLinearGradient (path, *gradient, start, end, false, &tm);
+			context->setFillColor (MakeCColor (255, 0, 0, 155));
+			context->drawGraphicsPath (path, CDrawContext::kPathFilled, &tm);
 			context->restoreGlobalState ();
 		}
 	}
@@ -511,11 +513,17 @@ public:
 		}
 
 		path = owned (context->createGraphicsPath ());
-		path->addRect (CRect (20., 190., 120., 210.));
+		CPoint pathOffset (20., 190.);
+		CRect pathSize (0., 0., 100., 20.);
+		path->addRect (pathSize);
 		context->setFrameColor (kRedCColor);
 		context->setLineWidth (1.);
+		context->setDrawMode (kAntiAliasing);
+		CRect pathBounds = path->getBoundingBox ();
 
-		const CPoint center (70, 200);
+		CDrawContext::Transform gt (*context, CGraphicsTransform ().translate (pathOffset.x, pathOffset.y));
+
+		const CPoint center = pathBounds.getCenter ();
 		context->drawPoint (center, kGreenCColor);
 		for (double r = 0.; r < 180.; r += 30.)
 		{
@@ -525,12 +533,46 @@ public:
 		}
 
 		context->setDrawMode (kAntiAliasing|kNonIntegralMode);
-		for (double r = 0.; r < 180.; r += 30.)
 		{
-			CGraphicsTransform transform;
-			transform.rotate (r, center);
 			CDrawContext::Transform t (*context, CGraphicsTransform ().translate (110., 0.));
-			context->drawGraphicsPath (path, CDrawContext::kPathStroked, &transform);
+			for (double r = 0.; r < 180.; r += 30.)
+			{
+				CGraphicsTransform transform;
+				transform.rotate (r, center);
+				context->drawGraphicsPath (path, CDrawContext::kPathStroked, &transform);
+			}
+		}
+
+		context->setDrawMode (kAntiAliasing);
+		SharedPointer<CGradient> gradient = CGradient::create (0, 1, MakeCColor (255, 0, 0, 255), MakeCColor (0, 0, 255, 100));
+		{
+			CDrawContext::Transform t (*context, CGraphicsTransform ().translate (220., 0.));
+			CPoint start = pathBounds.getTopLeft ();
+			CPoint end = pathBounds.getBottomRight ();
+			for (double r = 0.; r < 180.; r += 30.)
+			{
+				CGraphicsTransform transform;
+				transform.rotate (r, center);
+				context->fillLinearGradient (path, *gradient, start, end, false, &transform);
+			}
+		}
+
+		context->setDrawMode (kAntiAliasing|kNonIntegralMode);
+		{
+			CDrawContext::Transform t (*context, CGraphicsTransform ().translate (330., 0.));
+			for (double r = 0.; r < 180.; r += 10.)
+			{
+				CGraphicsTransform transform;
+				transform.rotate (r, center);
+				CPoint start = pathBounds.getTopLeft ();
+				start.y += pathBounds.getHeight() / 2.;
+				CPoint end = pathBounds.getBottomRight ();
+				end.y -= pathBounds.getHeight() / 2.;
+				transform.transform (start);
+				transform.transform (end);
+				context->fillLinearGradient (path, *gradient, start, end, false, &transform);
+//				context->drawLine (start, end);
+			}
 		}
 	}
 };

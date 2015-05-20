@@ -463,7 +463,7 @@ void CDrawContext::pushTransform (const CGraphicsTransform& transformation)
 {
 	assert (transformStack.size () > 0);
 	const CGraphicsTransform& currentTransform = transformStack.top ();
-	CGraphicsTransform newTransform = transformation * currentTransform;
+	CGraphicsTransform newTransform = currentTransform * transformation;
 	transformStack.push (newTransform);
 }
 

@@ -140,7 +140,8 @@ void GdiplusDrawContext::drawGraphicsPath (CGraphicsPath* _path, PathDrawMode mo
 
 		if (t)
 		{
-			Gdiplus::Matrix matrix ((Gdiplus::REAL)t->m11, (Gdiplus::REAL)t->m12, (Gdiplus::REAL)t->m21, (Gdiplus::REAL)t->m22, (Gdiplus::REAL)t->dx, (Gdiplus::REAL)t->dy);
+			Gdiplus::Matrix matrix;
+			convert (matrix, *t);
 			path = path->Clone ();
 			path->Transform (&matrix);
 		}
@@ -174,7 +175,8 @@ void GdiplusDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradie
 
 		if (t)
 		{
-			Gdiplus::Matrix matrix ((Gdiplus::REAL)t->m11, (Gdiplus::REAL)t->m12, (Gdiplus::REAL)t->m21, (Gdiplus::REAL)t->m22, (Gdiplus::REAL)t->dx, (Gdiplus::REAL)t->dy);
+			Gdiplus::Matrix matrix;
+			convert (matrix, *t);
 			path = path->Clone ();
 			path->Transform (&matrix);
 		}
@@ -208,7 +210,7 @@ void GdiplusDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradie
 void GdiplusDrawContext::fillRadialGradient (CGraphicsPath* _path, const CGradient& gradient, const CPoint& center, CCoord radius, const CPoint& originOffset, bool evenOdd, CGraphicsTransform* t)
 {
 #if DEBUG
-	DebugPrint ("WARNING: GdiplusDrawContext::fillRadialGradient is not working as expected ! FIXME");
+	DebugPrint ("WARNING: GdiplusDrawContext::fillRadialGradient is not working as expected ! FIXME\n");
 #endif
 	GdiplusGraphicsPath* gdiPlusPath = dynamic_cast<GdiplusGraphicsPath*> (_path);
 	if (gdiPlusPath && pGraphics)
@@ -219,7 +221,8 @@ void GdiplusDrawContext::fillRadialGradient (CGraphicsPath* _path, const CGradie
 
 		if (t)
 		{
-			Gdiplus::Matrix matrix ((Gdiplus::REAL)t->m11, (Gdiplus::REAL)t->m12, (Gdiplus::REAL)t->m21, (Gdiplus::REAL)t->m22, (Gdiplus::REAL)t->dx, (Gdiplus::REAL)t->dy);
+			Gdiplus::Matrix matrix;
+			convert (matrix, *t);
 			path = path->Clone ();
 			path->Transform (&matrix);
 		}
