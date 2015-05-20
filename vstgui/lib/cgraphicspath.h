@@ -84,6 +84,19 @@ public:
 	virtual void beginSubpath (const CPoint& start);
 	/** close a subpath. A straight line will be added from the current point to the start point. */
 	virtual void closeSubpath ();
+
+	inline void beginSubpath (CCoord x, CCoord y)
+	{
+		beginSubpath (CPoint (x, y));
+	}
+	inline void addLine (CCoord x, CCoord y)
+	{
+		addLine (CPoint(x, y));
+	}
+	inline void addBezierCurve (CCoord cp1x, CCoord cp1y, CCoord cp2x, CCoord cp2y, CCoord x, CCoord y)
+	{
+		addBezierCurve (CPoint (cp1x, cp1y), CPoint (cp2x, cp2y), CPoint (x, y));
+	}
 	//@}
 
 	//-----------------------------------------------------------------------------
