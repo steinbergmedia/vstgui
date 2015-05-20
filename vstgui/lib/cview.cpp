@@ -51,7 +51,7 @@
 namespace VSTGUI {
 
 /// @cond ignore
-#define VSTGUI_CHECK_VIEW_RELEASING	DEBUG
+#define VSTGUI_CHECK_VIEW_RELEASING	0//DEBUG
 #if VSTGUI_CHECK_VIEW_RELEASING
 //------------------------------------------------------------------------
 namespace CViewInternal {
@@ -577,8 +577,9 @@ CGraphicsTransform CView::getGlobalTransform () const
 		parent = dynamic_cast<CViewContainer*>(parent->getParentView ());
 	}
 	VSTGUI_RANGE_BASED_FOR_LOOP (ParentViews, parents, CViewContainer*, parent)
-		transform.translate (parent->getViewSize ().left, parent->getViewSize ().top);
-		transform = parent->getTransform () * transform;
+		CGraphicsTransform t = parent->getTransform ();
+		t.translate (parent->getViewSize ().getTopLeft ());
+		transform = transform * t;
 	VSTGUI_RANGE_BASED_FOR_LOOP_END
 
 	const CViewContainer* This = dynamic_cast<const CViewContainer*> (this);
