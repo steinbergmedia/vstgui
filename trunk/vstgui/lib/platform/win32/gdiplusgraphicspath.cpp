@@ -171,7 +171,8 @@ bool GdiplusGraphicsPath::hitTest (const CPoint& p, bool evenOddFilled, CGraphic
 	{
 		if (transform)
 		{
-			Gdiplus::Matrix matrix ((Gdiplus::REAL)transform->m11, (Gdiplus::REAL)transform->m12, (Gdiplus::REAL)transform->m21, (Gdiplus::REAL)transform->m22, (Gdiplus::REAL)transform->dx, (Gdiplus::REAL)transform->dy);
+			Gdiplus::Matrix matrix;
+			convert (matrix, *transform);
 			path = path->Clone ();
 			path->Transform (&matrix);
 			bool result = path->IsVisible ((Gdiplus::REAL)p.x, (Gdiplus::REAL)p.y, NULL) != 0;

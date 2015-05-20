@@ -128,6 +128,13 @@ struct GdiplusDrawScope
 	Gdiplus::Graphics* graphics;
 };
 
+//-----------------------------------------------------------------------------
+inline void convert (Gdiplus::Matrix& matrix, const CGraphicsTransform& t)
+{
+	matrix.SetElements ((Gdiplus::REAL)t.m11, (Gdiplus::REAL)t.m21, (Gdiplus::REAL)t.m12, (Gdiplus::REAL)t.m22, (Gdiplus::REAL)t.dx, (Gdiplus::REAL)t.dy);
+}
+
+
 } // namespace
 
 #endif // WINDOWS

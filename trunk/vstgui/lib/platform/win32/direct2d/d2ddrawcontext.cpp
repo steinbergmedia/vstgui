@@ -43,20 +43,14 @@
 #include "d2dfont.h"
 #include <cassert>
 
-namespace VSTGUI {
+#define VSTGUI_WIN81_HIDPI_SUPPORT 0 // _WIN32_WINNT >= 0x603
 
-//-----------------------------------------------------------------------------
-static D2D1_MATRIX_3X2_F convert (const CGraphicsTransform& t)
-{
-	D2D1_MATRIX_3X2_F matrix;
-	matrix._11 = static_cast<FLOAT> (t.m11);
-	matrix._12 = static_cast<FLOAT> (t.m12);
-	matrix._21 = static_cast<FLOAT> (t.m21);
-	matrix._22 = static_cast<FLOAT> (t.m22);
-	matrix._31 = static_cast<FLOAT> (t.dx);
-	matrix._32 = static_cast<FLOAT> (t.dy);
-	return matrix;
-}
+#if VSTGUI_WIN81_HIDPI_SUPPORT
+#include <ShellScalingAPI.h>
+#pragma comment(lib, "Shcore.lib")
+#endif
+
+namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
 D2DDrawContext::D2DApplyClip::D2DApplyClip (D2DDrawContext* drawContext, bool halfPointOffset)
@@ -139,7 +133,17 @@ void D2DDrawContext::createRenderTarget ()
 		HRESULT hr = getD2DFactory ()->CreateHwndRenderTarget (D2D1::RenderTargetProperties (targetType, pixelFormat), D2D1::HwndRenderTargetProperties (window, size, D2D1_PRESENT_OPTIONS_RETAIN_CONTENTS), &hwndRenderTarget);
 		if (SUCCEEDED (hr))
 		{
-			hwndRenderTarget->SetDpi (96.0, 96.0);
+			UINT dpix = 96;
+			UINT dpiy = 96;
+#if VSTGUI_WIN81_HIDPI_SUPPORT
+			HMONITOR monitor = MonitorFromWindow (window, MONITOR_DEFAULTTONEAREST);
+			if (FAILED (GetDpiForMonitor (monitor, MONITOR_DPI_TYPE::MDT_EFFECTIVE_DPI, &dpix, &dpiy)))
+			{
+				dpix = 96;
+				dpiy = 96;
+			}
+#endif
+			hwndRenderTarget->SetDpi (static_cast<FLOAT> (dpix), static_cast<FLOAT> (dpiy));
 			renderTarget = hwndRenderTarget;
 		}
 	}

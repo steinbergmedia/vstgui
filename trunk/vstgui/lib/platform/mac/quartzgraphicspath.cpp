@@ -46,8 +46,8 @@ CGAffineTransform QuartzGraphicsPath::createCGAffineTransform (const CGraphicsTr
 {
 	CGAffineTransform transform;
 	transform.a = static_cast<CGFloat> (t.m11);
-	transform.b = static_cast<CGFloat> (t.m12);
-	transform.c = static_cast<CGFloat> (t.m21);
+	transform.b = static_cast<CGFloat> (t.m21);
+	transform.c = static_cast<CGFloat> (t.m12);
 	transform.d = static_cast<CGFloat> (t.m22);
 	transform.tx = static_cast<CGFloat> (t.dx);
 	transform.ty = static_cast<CGFloat> (t.dy);

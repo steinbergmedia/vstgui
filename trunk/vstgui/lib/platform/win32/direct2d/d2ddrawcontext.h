@@ -157,6 +157,19 @@ static inline D2D1_SIZE_F makeD2DSize (CCoord width, CCoord height)
 	return ds;
 }
 
+//-----------------------------------------------------------------------------
+static inline D2D1_MATRIX_3X2_F convert (const CGraphicsTransform& t)
+{
+	D2D1_MATRIX_3X2_F matrix;
+	matrix._11 = static_cast<FLOAT> (t.m11);
+	matrix._12 = static_cast<FLOAT> (t.m21);
+	matrix._21 = static_cast<FLOAT> (t.m12);
+	matrix._22 = static_cast<FLOAT> (t.m22);
+	matrix._31 = static_cast<FLOAT> (t.dx);
+	matrix._32 = static_cast<FLOAT> (t.dy);
+	return matrix;
+}
+
 } // namespace
 
 #endif // WINDOWS

@@ -908,8 +908,22 @@ bool NSViewFrame::setMouseCursor (CCursorType type)
 		case kCursorHSize: cur = [NSCursor resizeLeftRightCursor]; break;
 		case kCursorVSize: cur = [NSCursor resizeUpDownCursor]; break;
 		case kCursorSizeAll: cur = [NSCursor crosshairCursor]; break;
-		case kCursorNESWSize: cur = [NSCursor crosshairCursor]; break;
-		case kCursorNWSESize: cur = [NSCursor crosshairCursor]; break;
+		case kCursorNESWSize:
+		{
+			if ([NSCursor respondsToSelector:@selector(_windowResizeNorthEastSouthWestCursor)])
+				cur = [NSCursor performSelector:@selector(_windowResizeNorthEastSouthWestCursor)];
+			else
+				cur = [NSCursor crosshairCursor];
+			break;
+		}
+		case kCursorNWSESize:
+		{
+			if ([NSCursor respondsToSelector:@selector(_windowResizeNorthWestSouthEastCursor)])
+				cur = [NSCursor performSelector:@selector(_windowResizeNorthWestSouthEastCursor)];
+			else
+				cur = [NSCursor crosshairCursor];
+			break;
+		}
 		case kCursorCopy:
 		{
 			if ([NSCursor respondsToSelector:@selector(dragCopyCursor)])

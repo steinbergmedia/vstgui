@@ -69,22 +69,32 @@ struct CGraphicsTransform
 		return *this;
 	}
 	
+	CGraphicsTransform& translate (const CPoint& p)
+	{
+		return translate (p.x, p.y);
+	}
+	
 	CGraphicsTransform& scale (double x, double y)
 	{
 		*this = CGraphicsTransform (x, 0., 0., y, 0., 0.) * this;
 		return *this;
 	}
+
+	CGraphicsTransform& scale (const CPoint& p)
+	{
+		return scale (p.x, p.y);
+	}
 	
 	CGraphicsTransform& rotate (double angle)
 	{
 		angle = radians (angle);
-		*this = CGraphicsTransform (cos (angle), sin (angle), -sin (angle), cos (angle), 0, 0) * this;
+		*this = CGraphicsTransform (cos (angle), -sin (angle), sin (angle), cos (angle), 0, 0) * this;
 		return *this;
 	}
 
 	CGraphicsTransform& rotate (double angle, const CPoint& center)
 	{
-		return translate (center.x, center.y).rotate (angle).translate (-center.x, -center.y);
+		return translate (-center.x, -center.y).rotate (angle).translate (center.x, center.y);
 	}
 
 	CGraphicsTransform& skewX (double angle)
@@ -151,10 +161,10 @@ struct CGraphicsTransform
 		CGraphicsTransform result;
 		result.m11 = (m11 * t.m11) + (m12 * t.m21);
 		result.m21 = (m21 * t.m11) + (m22 * t.m21);
-		result.dx = (dx * t.m11) + (dy * t.m21) + t.dx;
+		result.dx = (m11 * t.dx) + (m12 * t.dy) + dx;
 		result.m12 = (m11 * t.m12) + (m12 * t.m22);
 		result.m22 = (m21 * t.m12) + (m22 * t.m22);
-		result.dy = (dx * t.m12) + (dy * t.m22) + t.dy;
+		result.dy = (m21 * t.dx) + (m22 * t.dy) + dy;
 		return result;
 	}
 	
