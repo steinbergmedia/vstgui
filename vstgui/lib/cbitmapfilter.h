@@ -220,7 +220,7 @@ namespace Standard {
 	
 		static const IdStringPtr kInputBitmap = "InputBitmap"; ///< [Property::kObject - CBitmap]
 		static const IdStringPtr kOutputBitmap = "OutputBitmap"; ///< [Property::kObject - CBitmap]
-		static const IdStringPtr kRadius = "Radius"; //< [Property::kInteger]
+		static const IdStringPtr kRadius = "Radius"; ///< [Property::kInteger]
 		static const IdStringPtr kInputColor = "InputColor"; ///< [Property::kColor]
 		static const IdStringPtr kOutputColor = "OutputColor"; ///< [Property::kColor]
 		static const IdStringPtr kOutputRect = "OutputRect"; ///< [Property::kRect]
