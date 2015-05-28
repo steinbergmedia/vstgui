@@ -209,7 +209,7 @@ void CLayeredViewContainer::drawViewLayer (CDrawContext* context, const CRect& _
 	CRect visibleSize = getVisibleViewSize ();
 	CPoint p (visibleSize.left, visibleSize.top);
 	dirtyRect.offset (p.x, p.y);
-	CDrawContext::Transform transform (*context, CGraphicsTransform ().translate (-p.x, -p.y) * drawTransform);
+	CDrawContext::Transform transform (*context, drawTransform * CGraphicsTransform ().translate (-p.x, -p.y));
 	CViewContainer::drawRect (context, dirtyRect);
 }
 
