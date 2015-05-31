@@ -86,10 +86,11 @@ public:
 	CLASS_METHODS(CShadowViewContainer, CViewContainer)
 protected:
 
-	bool shadowInvalid;
+	bool dontDrawBackground;
 	CPoint shadowOffset;
 	float shadowIntensity;
 	double shadowBlurSize;
+	double scaleFactorUsed;
 };
 
 } // namespace

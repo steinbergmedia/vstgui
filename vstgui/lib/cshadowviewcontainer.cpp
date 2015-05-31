@@ -43,18 +43,20 @@ namespace VSTGUI {
 //-----------------------------------------------------------------------------
 CShadowViewContainer::CShadowViewContainer (const CRect& size)
 : CViewContainer (size)
-, shadowInvalid (true)
+, dontDrawBackground (false)
 , shadowIntensity (0.3f)
 , shadowBlurSize (4)
+, scaleFactorUsed (0.)
 {
 }
 
 //-----------------------------------------------------------------------------
 CShadowViewContainer::CShadowViewContainer (const CShadowViewContainer& copy)
 : CViewContainer (copy)
-, shadowInvalid (copy.shadowInvalid)
+, dontDrawBackground (false)
 , shadowIntensity (copy.shadowIntensity)
 , shadowBlurSize (copy.shadowBlurSize)
+, scaleFactorUsed (0.)
 {
 }
 
@@ -62,6 +64,7 @@ CShadowViewContainer::CShadowViewContainer (const CShadowViewContainer& copy)
 bool CShadowViewContainer::removed (CView* parent)
 {
 	getFrame ()->unregisterScaleFactorChangedListeneer (this);
+	setBackground (0);
 	return CViewContainer::removed (parent);
 }
 
@@ -115,7 +118,7 @@ void CShadowViewContainer::setShadowBlurSize (double size)
 //-----------------------------------------------------------------------------
 void CShadowViewContainer::invalidateShadow ()
 {
-	shadowInvalid = true;
+	scaleFactorUsed = 0.;
 	invalid ();
 }
 
@@ -144,11 +147,25 @@ static std::vector<int32_t> boxesForGauss (double sigma, uint16_t numBoxes)
 }
 
 //-----------------------------------------------------------------------------
+static bool isUniformScaled (const CGraphicsTransform& matrix)
+{
+	return matrix.m11 == matrix.m22;
+}
+
+//-----------------------------------------------------------------------------
 void CShadowViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 {
-	if (shadowInvalid && getWidth () > 0. && getHeight () > 0.)
+	double scaleFactor = pContext->getScaleFactor ();
+	CGraphicsTransform matrix = pContext->getCurrentTransform ();
+	if (isUniformScaled (matrix))
 	{
-		const double scaleFactor = pContext->getScaleFactor ();
+		double matrixScale = std::floor (matrix.m11 + 0.5);
+		if (matrixScale != 0.)
+			scaleFactor *= matrixScale;
+	}
+	if (scaleFactor != scaleFactorUsed && getWidth () > 0. && getHeight () > 0.)
+	{
+		scaleFactorUsed = scaleFactor;
 		CCoord width = getWidth ();
 		CCoord height = getHeight ();
 		
@@ -157,7 +174,9 @@ void CShadowViewContainer::drawRect (CDrawContext* pContext, const CRect& update
 		{
 			offscreenContext->beginDraw ();
 			CDrawContext::Transform transform (*offscreenContext, CGraphicsTransform ().translate (-getViewSize ().left - shadowOffset.x, -getViewSize ().top - shadowOffset.y));
+			dontDrawBackground = true;
 			CViewContainer::draw (offscreenContext);
+			dontDrawBackground = false;
 			offscreenContext->endDraw ();
 			CBitmap* bitmap = offscreenContext->getBitmap ();
 			if (bitmap)
@@ -183,7 +202,6 @@ void CShadowViewContainer::drawRect (CDrawContext* pContext, const CRect& update
 								boxBlurFilter->run (true);
 								boxBlurFilter->setProperty (BitmapFilter::Standard::Property::kRadius, boxSizes[2]);
 								boxBlurFilter->run (true);
-								shadowInvalid = false;
 							}
 						}
 					}
@@ -202,7 +220,7 @@ void CShadowViewContainer::drawRect (CDrawContext* pContext, const CRect& update
 //-----------------------------------------------------------------------------
 void CShadowViewContainer::drawBackgroundRect (CDrawContext* pContext, const CRect& _updateRect)
 {
-	if (shadowInvalid == false)
+	if (!dontDrawBackground)
 	{
 		float tmp = pContext->getGlobalAlpha ();
 		pContext->setGlobalAlpha (tmp * shadowIntensity);
