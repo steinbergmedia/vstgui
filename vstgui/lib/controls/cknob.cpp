@@ -751,13 +751,14 @@ void CAnimKnob::draw (CDrawContext *pContext)
 	if (getDrawBackground ())
 	{
 		CPoint where (0, 0);
-		if (value >= 0.f && heightOfOneImage > 0.) 
+		float val = getValueNormalized ();
+		if (val >= 0.f && heightOfOneImage > 0.)
 		{
 			CCoord tmp = heightOfOneImage * (getNumSubPixmaps () - 1);
 			if (bInverseBitmap)
-				where.y = floor ((1. - value) * tmp);
+				where.y = floor ((1. - val) * tmp);
 			else
-				where.y = floor (value * tmp);
+				where.y = floor (val * tmp);
 			where.y -= (int32_t)where.y % (int32_t)heightOfOneImage;
 		}
 
