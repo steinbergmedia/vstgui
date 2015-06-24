@@ -115,6 +115,8 @@ protected:
 
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
 
+	bool beforeSizeChange (const CRect& newSize, const CRect& oldSize) VSTGUI_OVERRIDE_VMETHOD;
+
 	Steinberg::tresult PLUGIN_API onSize (Steinberg::ViewRect* newSize) VSTGUI_OVERRIDE_VMETHOD;
 	Steinberg::tresult PLUGIN_API canResize () VSTGUI_OVERRIDE_VMETHOD;
 	Steinberg::tresult PLUGIN_API checkSizeConstraint (Steinberg::ViewRect* rect) VSTGUI_OVERRIDE_VMETHOD;
@@ -153,6 +155,7 @@ protected:
 	bool tooltipsEnabled;
 	bool doCreateView;
 	bool editingEnabled;
+	bool requestResizeGuard;
 
 	double zoomFactor;
 	std::vector<double> allowedZoomFactors;
