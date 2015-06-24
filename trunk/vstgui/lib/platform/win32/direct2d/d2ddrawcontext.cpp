@@ -43,13 +43,6 @@
 #include "d2dfont.h"
 #include <cassert>
 
-#define VSTGUI_WIN81_HIDPI_SUPPORT 0 // _WIN32_WINNT >= 0x603
-
-#if VSTGUI_WIN81_HIDPI_SUPPORT
-#include <ShellScalingAPI.h>
-#pragma comment(lib, "Shcore.lib")
-#endif
-
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
@@ -65,8 +58,13 @@ D2DDrawContext::D2DApplyClip::D2DApplyClip (D2DDrawContext* drawContext, bool ha
 			drawContext->getRenderTarget ()->PopAxisAlignedClip ();
 		if (clip.isEmpty () == false)
 			drawContext->getRenderTarget ()->PushAxisAlignedClip (makeD2DRect (clip), D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
-		drawContext->currentClip = clip;
+		drawContext->currentClip = applyClip = clip;
 	}
+	else
+	{
+		applyClip = drawContext->currentClip;
+	}
+
 	if (drawContext->getCurrentTransform ().isInvariant () == false)
 	{
 		CGraphicsTransform transform = drawContext->getCurrentTransform ();
@@ -135,14 +133,6 @@ void D2DDrawContext::createRenderTarget ()
 		{
 			UINT dpix = 96;
 			UINT dpiy = 96;
-#if VSTGUI_WIN81_HIDPI_SUPPORT
-			HMONITOR monitor = MonitorFromWindow (window, MONITOR_DEFAULTTONEAREST);
-			if (FAILED (GetDpiForMonitor (monitor, MONITOR_DPI_TYPE::MDT_EFFECTIVE_DPI, &dpix, &dpiy)))
-			{
-				dpix = 96;
-				dpiy = 96;
-			}
-#endif
 			hwndRenderTarget->SetDpi (static_cast<FLOAT> (dpix), static_cast<FLOAT> (dpiy));
 			renderTarget = hwndRenderTarget;
 		}
@@ -256,12 +246,15 @@ void D2DDrawContext::drawGraphicsPath (CGraphicsPath* _path, PathDrawMode mode, 
 	if (renderTarget == 0)
 		return;
 
+	bool halfPointOffset = (mode == kPathStroked || currentState.drawMode.integralMode ()) ? ((((int32_t)currentState.frameWidth) % 2) != 0) : false;
+	D2DApplyClip ac (this, halfPointOffset);
+	if (ac.isEmpty ())
+		return;
+
 	D2DGraphicsPath* d2dPath = dynamic_cast<D2DGraphicsPath*> (_path);
 	if (d2dPath == 0)
 		return;
 
-	bool halfPointOffset = (mode == kPathStroked || currentState.drawMode.integralMode ()) ? ((((int32_t)currentState.frameWidth) % 2) != 0) : false;
-	D2DApplyClip ac (this, halfPointOffset);
 	ID2D1Geometry* path = d2dPath->createPath (mode == kPathFilledEvenOdd ? D2D1_FILL_MODE_ALTERNATE : D2D1_FILL_MODE_WINDING, currentState.drawMode.integralMode () ? this : 0, t);
 	if (path)
 	{
@@ -295,6 +288,11 @@ void D2DDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradient& 
 	if (renderTarget == 0)
 		return;
 
+	bool halfPointOffset = currentState.drawMode.integralMode () ? ((((int32_t)currentState.frameWidth) % 2) != 0) : false;
+	D2DApplyClip ac (this, halfPointOffset);
+	if (ac.isEmpty ())
+		return;
+	
 	D2DGraphicsPath* d2dPath = dynamic_cast<D2DGraphicsPath*> (_path);
 	if (d2dPath == 0)
 		return;
@@ -302,8 +300,6 @@ void D2DDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradient& 
 	ID2D1Geometry* path = d2dPath->createPath (evenOdd ? D2D1_FILL_MODE_ALTERNATE : D2D1_FILL_MODE_WINDING, this, t);
 	if (path)
 	{
-		bool halfPointOffset = currentState.drawMode.integralMode () ? ((((int32_t)currentState.frameWidth) % 2) != 0) : false;
-		D2DApplyClip ac (this, halfPointOffset);
 
 		ID2D1GradientStopCollection* collection = createGradientStopCollection (gradient);
 		if (collection)
@@ -329,6 +325,10 @@ void D2DDrawContext::fillRadialGradient (CGraphicsPath* _path, const CGradient& 
 	if (renderTarget == 0)
 		return;
 
+	D2DApplyClip ac (this);
+	if (ac.isEmpty ())
+		return;
+	
 	D2DGraphicsPath* d2dPath = dynamic_cast<D2DGraphicsPath*> (_path);
 	if (d2dPath == 0)
 		return;
@@ -336,8 +336,6 @@ void D2DDrawContext::fillRadialGradient (CGraphicsPath* _path, const CGradient& 
 	ID2D1Geometry* path = d2dPath->createPath (evenOdd ? D2D1_FILL_MODE_ALTERNATE : D2D1_FILL_MODE_WINDING);
 	if (path)
 	{
-		D2DApplyClip ac (this);
-
 		ID2D1Geometry* geometry = 0;
 		if (t)
 		{
@@ -389,13 +387,19 @@ void D2DDrawContext::clearRect (const CRect& rect)
 //-----------------------------------------------------------------------------
 void D2DDrawContext::drawBitmap (CBitmap* bitmap, const CRect& dest, const CPoint& offset, float alpha)
 {
+	if (renderTarget == 0)
+		return;
+	D2DApplyClip ac (this);
+	if (ac.isEmpty ())
+		return;
+	
 	double transformedScaleFactor = getScaleFactor ();
 	CGraphicsTransform t = getCurrentTransform ();
 	if (t.m11 == t.m22 && t.m12 == 0 && t.m21 == 0)
 		transformedScaleFactor *= t.m11;
 	IPlatformBitmap* platformBitmap = bitmap->getBestPlatformBitmapForScaleFactor (transformedScaleFactor);
 	D2DBitmap* d2dBitmap = platformBitmap ? dynamic_cast<D2DBitmap*> (platformBitmap) : 0;
-	if (renderTarget && d2dBitmap)
+	if (d2dBitmap)
 	{
 		if (d2dBitmap->getSource ())
 		{
@@ -407,7 +411,6 @@ void D2DDrawContext::drawBitmap (CBitmap* bitmap, const CRect& dest, const CPoin
 				bitmapTransform.scale (bitmapScaleFactor, bitmapScaleFactor);
 				Transform transform (*this, bitmapTransform.inverse ());
 
-				D2DApplyClip clip (this);
 				CRect d (dest);
 				d.makeIntegral ();
 				CRect source (dest);
@@ -427,6 +430,12 @@ void D2DDrawContext::drawBitmap (CBitmap* bitmap, const CRect& dest, const CPoin
 //-----------------------------------------------------------------------------
 void D2DDrawContext::drawLine (const LinePair& line)
 {
+	if (renderTarget == 0)
+		return;
+	D2DApplyClip ac (this, (((int32_t)currentState.frameWidth) % 2) != 0);
+	if (ac.isEmpty ())
+		return;
+	
 	if (renderTarget)
 	{
 		CPoint start (line.first);
@@ -437,7 +446,6 @@ void D2DDrawContext::drawLine (const LinePair& line)
 			pixelAllign (end);
 		}
 
-		D2DApplyClip clip (this, (((int32_t)currentState.frameWidth) % 2) != 0);
 		renderTarget->DrawLine (makeD2DPoint (start), makeD2DPoint (end), strokeBrush, (FLOAT)currentState.frameWidth, strokeStyle);
 	}
 }
@@ -455,49 +463,52 @@ void D2DDrawContext::drawLines (const LineList& lines)
 //-----------------------------------------------------------------------------
 void D2DDrawContext::drawPolygon (const PointList& polygonPointList, const CDrawStyle drawStyle)
 {
-	if (polygonPointList.size () == 0)
+	if (renderTarget == 0 || polygonPointList.size () == 0)
 		return;
-	if (renderTarget)
+	D2DApplyClip ac (this);
+	if (ac.isEmpty ())
+		return;
+
+	D2DGraphicsPath path;
+	path.beginSubpath (polygonPointList[0]);
+	for (uint32_t i = 1; i < polygonPointList.size (); ++i)
 	{
-		D2DApplyClip clip (this);
-		D2DGraphicsPath path;
-		path.beginSubpath (polygonPointList[0]);
-		for (uint32_t i = 1; i < polygonPointList.size (); ++i)
-		{
-			path.addLine (polygonPointList[i]);
-		}
-		if (drawStyle == kDrawFilled || drawStyle == kDrawFilledAndStroked)
-		{
-			drawGraphicsPath (&path, kPathFilled);
-		}
-		if (drawStyle == kDrawStroked || drawStyle == kDrawFilledAndStroked)
-		{
-			drawGraphicsPath (&path, kPathStroked);
-		}
+		path.addLine (polygonPointList[i]);
+	}
+	if (drawStyle == kDrawFilled || drawStyle == kDrawFilledAndStroked)
+	{
+		drawGraphicsPath (&path, kPathFilled);
+	}
+	if (drawStyle == kDrawStroked || drawStyle == kDrawFilledAndStroked)
+	{
+		drawGraphicsPath (&path, kPathStroked);
 	}
 }
 
 //-----------------------------------------------------------------------------
 void D2DDrawContext::drawRect (const CRect &_rect, const CDrawStyle drawStyle)
 {
-	if (renderTarget)
+	if (renderTarget == 0)
+		return;
+	CRect rect (_rect);
+	if (currentState.drawMode.integralMode ())
+		pixelAllign (rect);
+	bool halfPointOffset = (((int32_t)currentState.frameWidth) % 2) != 0;
+	if (drawStyle == kDrawFilled || drawStyle == kDrawFilledAndStroked)
 	{
-		CRect rect (_rect);
-		if (currentState.drawMode.integralMode ())
-			pixelAllign (rect);
-		bool halfPointOffset = (((int32_t)currentState.frameWidth) % 2) != 0;
-		if (drawStyle == kDrawFilled || drawStyle == kDrawFilledAndStroked)
-		{
-			D2DApplyClip clip (this);
-			renderTarget->FillRectangle (makeD2DRect (rect), fillBrush);
-		}
-		if (drawStyle == kDrawStroked || drawStyle == kDrawFilledAndStroked)
-		{
-			D2DApplyClip clip (this, halfPointOffset);
-			rect.right -= 1.;
-			rect.bottom -= 1.;
-			renderTarget->DrawRectangle (makeD2DRect (rect), strokeBrush, (FLOAT)currentState.frameWidth, strokeStyle);
-		}
+		D2DApplyClip ac (this);
+		if (ac.isEmpty ())
+			return;
+		renderTarget->FillRectangle (makeD2DRect (rect), fillBrush);
+	}
+	if (drawStyle == kDrawStroked || drawStyle == kDrawFilledAndStroked)
+	{
+		D2DApplyClip ac (this, halfPointOffset);
+		if (ac.isEmpty ())
+			return;
+		rect.right -= 1.;
+		rect.bottom -= 1.;
+		renderTarget->DrawRectangle (makeD2DRect (rect), strokeBrush, (FLOAT)currentState.frameWidth, strokeStyle);
 	}
 }
 
@@ -519,26 +530,27 @@ void D2DDrawContext::drawArc (const CRect& _rect, const float _startAngle, const
 //-----------------------------------------------------------------------------
 void D2DDrawContext::drawEllipse (const CRect &_rect, const CDrawStyle drawStyle)
 {
-	if (renderTarget)
+	if (renderTarget == 0)
+		return;
+	D2DApplyClip ac (this);
+	if (ac.isEmpty ())
+		return;
+	CRect rect (_rect);
+	if (currentState.drawMode.integralMode ())
+		pixelAllign (rect);
+	CPoint center (rect.getTopLeft ());
+	center.offset (rect.getWidth () / 2., rect.getHeight () / 2.);
+	D2D1_ELLIPSE ellipse;
+	ellipse.point = makeD2DPoint (center);
+	ellipse.radiusX = (FLOAT)(rect.getWidth () / 2.);
+	ellipse.radiusY = (FLOAT)(rect.getHeight () / 2.);
+	if (drawStyle == kDrawFilled || drawStyle == kDrawFilledAndStroked)
 	{
-		CRect rect (_rect);
-		if (currentState.drawMode.integralMode ())
-			pixelAllign (rect);
-		D2DApplyClip clip (this);
-		CPoint center (rect.getTopLeft ());
-		center.offset (rect.getWidth () / 2., rect.getHeight () / 2.);
-		D2D1_ELLIPSE ellipse;
-		ellipse.point = makeD2DPoint (center);
-		ellipse.radiusX = (FLOAT)(rect.getWidth () / 2.);
-		ellipse.radiusY = (FLOAT)(rect.getHeight () / 2.);
-		if (drawStyle == kDrawFilled || drawStyle == kDrawFilledAndStroked)
-		{
-			renderTarget->FillEllipse (ellipse, fillBrush);
-		}
-		if (drawStyle == kDrawStroked || drawStyle == kDrawFilledAndStroked)
-		{
-			renderTarget->DrawEllipse (ellipse, strokeBrush, (FLOAT)currentState.frameWidth, strokeStyle);
-		}
+		renderTarget->FillEllipse (ellipse, fillBrush);
+	}
+	if (drawStyle == kDrawStroked || drawStyle == kDrawFilledAndStroked)
+	{
+		renderTarget->DrawEllipse (ellipse, strokeBrush, (FLOAT)currentState.frameWidth, strokeStyle);
 	}
 }
 
