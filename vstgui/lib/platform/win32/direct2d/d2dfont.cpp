@@ -138,6 +138,9 @@ void D2DFont::drawString (CDrawContext* context, IPlatformString* string, const 
 	D2DDrawContext* d2dContext = dynamic_cast<D2DDrawContext*> (context);
 	if (d2dContext && textFormat)
 	{
+		D2DDrawContext::D2DApplyClip ac (d2dContext);
+		if (ac.isEmpty ())
+			return;
 		ID2D1RenderTarget* renderTarget = d2dContext->getRenderTarget ();
 		if (renderTarget)
 		{
@@ -161,7 +164,7 @@ void D2DFont::drawString (CDrawContext* context, IPlatformString* string, const 
 					pos.makeIntegral ();
 				pos.y += 0.5;
 				CRect clipRect;
-				D2DDrawContext::D2DApplyClip ac (d2dContext);
+				
 				D2D1_POINT_2F origin = {(FLOAT)(p.x), (FLOAT)(pos.y)};
 				d2dContext->getRenderTarget ()->DrawTextLayout (origin, textLayout, d2dContext->getFontBrush ());
 				textLayout->Release ();

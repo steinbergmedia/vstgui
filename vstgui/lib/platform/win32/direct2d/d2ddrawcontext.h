@@ -97,8 +97,10 @@ public:
 	public:
 		D2DApplyClip (D2DDrawContext* drawContext, bool halfPointOffset = false);
 		~D2DApplyClip ();
+		bool isEmpty () const { return applyClip.isEmpty (); }
 	protected:
 		D2DDrawContext* drawContext;
+		CRect applyClip;
 	};
 
 	template<typename T> void pixelAllign (T& rect) const;
