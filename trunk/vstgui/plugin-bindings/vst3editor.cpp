@@ -386,6 +386,7 @@ VST3Editor::VST3Editor (Steinberg::Vst::EditController* controller, UTF8StringPt
 , delegate (dynamic_cast<VST3EditorDelegate*> (controller))
 , originalController (0)
 , editingEnabled (false)
+, requestResizeGuard (false)
 {
 	description = new UIDescription (_xmlFile);
 	viewName = _viewName;
@@ -401,6 +402,7 @@ VST3Editor::VST3Editor (UIDescription* desc, Steinberg::Vst::EditController* con
 , delegate (dynamic_cast<VST3EditorDelegate*> (controller))
 , originalController (0)
 , editingEnabled (false)
+, requestResizeGuard (false)
 {
 	description = desc;
 	description->remember ();
@@ -546,17 +548,18 @@ void VST3Editor::setZoomFactor (double factor)
 	if (getFrame () == 0)
 		return;
 
-	CView* view = getFrame ()->getView (0);
-	if (view == 0)
-		return;
+	getFrame ()->setZoom (factor);
+}
 
-	CCoord width = view->getWidth () * zoomFactor;
-	CCoord height = view->getHeight () * zoomFactor;
-	getFrame ()->setAutosizingEnabled (false);
-	getFrame ()->setSize (width, height);
-	getFrame ()->setTransform (CGraphicsTransform ().scale (zoomFactor, zoomFactor));
-	requestResize (CPoint (width, height));
-	getFrame ()->setAutosizingEnabled (true);
+//-----------------------------------------------------------------------------
+bool VST3Editor::beforeSizeChange (const CRect& newSize, const CRect& oldSize)
+{
+	if (requestResizeGuard)
+		return true;
+	requestResizeGuard = true;
+	bool result = requestResize (newSize.getSize ());
+	requestResizeGuard = false;
+	return result;
 }
 
 //-----------------------------------------------------------------------------
@@ -566,7 +569,7 @@ bool VST3Editor::requestResize (const CPoint& newSize)
 		return false;
 	CCoord width = newSize.x;
 	CCoord height = newSize.y;
-	if (width >= minSize.x * zoomFactor && width <= maxSize.x * zoomFactor && height >= minSize.y * zoomFactor && height <= maxSize.y * zoomFactor)
+	if (editingEnabled || (width >= minSize.x * zoomFactor && width <= maxSize.x * zoomFactor && height >= minSize.y * zoomFactor && height <= maxSize.y * zoomFactor))
 	{
 		Steinberg::ViewRect vr;
 		vr.right = static_cast<Steinberg::int32> (width);
@@ -1055,6 +1058,11 @@ void PLUGIN_API VST3Editor::close ()
 //------------------------------------------------------------------------
 Steinberg::tresult PLUGIN_API VST3Editor::onSize (Steinberg::ViewRect* newSize)
 {
+	CRect r (newSize->left, newSize->top, newSize->right, newSize->bottom);
+	CRect currentSize;
+	getFrame ()->getSize (currentSize);
+	if (r == currentSize)
+		return Steinberg::kResultTrue;
 	return VSTGUIEditor::onSize (newSize);
 }
 
@@ -1335,12 +1343,12 @@ bool VST3Editor::enableEditing (bool state)
 			CView* view = editController->createEditView ();
 			if (view)
 			{
-				getFrame ()->setSize (view->getWidth (), view->getHeight ());
+				editingEnabled = true;
 				getFrame ()->addView (view);
-
-				rect.right = rect.left + (Steinberg::int32)view->getWidth ();
-				rect.bottom = rect.top + (Steinberg::int32)view->getHeight ();
-				plugFrame->resizeView (this, &rect);
+				int32_t autosizeFlags = view->getAutosizeFlags ();
+				view->setAutosizeFlags (0);
+				getFrame ()->setSize (view->getWidth (), view->getHeight ());
+				view->setAutosizeFlags (autosizeFlags);
 
 				getFrame ()->enableTooltips (true);
 				CColor focusColor = kBlueCColor;
@@ -1365,7 +1373,6 @@ bool VST3Editor::enableEditing (bool state)
 					editMenu->addSeparator ();
 					editMenu->addEntry (new CCommandMenuItem ("Sync Parameter Tags", this, "Edit", "Sync Parameter Tags"));
 				}
-				editingEnabled = true;
 				return true;
 			}
 			editController->forget ();

@@ -73,6 +73,8 @@ public:
 	virtual bool open (void* pSystemWindow, PlatformType systemWindowType = kDefaultNative);
 	virtual void close ();							///< closes the frame and calls forget
 
+	bool setZoom (double zoomFactor);				///< set zoom factor
+
 	virtual void idle ();
 	VSTGUI_DEPRECATED(virtual void doIdleStuff ();)
 

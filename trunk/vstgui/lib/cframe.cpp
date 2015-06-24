@@ -232,6 +232,31 @@ bool CFrame::attached (CView* parent)
 }
 
 //-----------------------------------------------------------------------------
+bool CFrame::setZoom (double zoomFactor)
+{
+	if (zoomFactor == 0.)
+		return false;
+
+	bool result = true;
+	CGraphicsTransform currentTransform = getTransform ();
+	CCoord origWidth = getWidth () / currentTransform.m11;
+	CCoord origHeight = getHeight () / currentTransform.m22;
+	CCoord newWidth = origWidth * zoomFactor;
+	CCoord newHeight = origHeight * zoomFactor;
+	setAutosizingEnabled (false);
+	setTransform (CGraphicsTransform ().scale (zoomFactor, zoomFactor));
+	if (!setSize (newWidth, newHeight))
+	{
+		setTransform (currentTransform);
+		setSize (origWidth * currentTransform.m11, origHeight * currentTransform.m22);
+		result = false;
+	}
+	invalid ();
+	setAutosizingEnabled (true);
+	return result;
+}
+
+//-----------------------------------------------------------------------------
 void CFrame::enableTooltips (bool state)
 {
 	if (state)
@@ -1702,7 +1727,7 @@ void CFrame::CollectInvalidRects::addRect (const CRect& rect)
 	if (add)
 		invalidRects.push_back (rect);
 	uint32_t now = frame->getTicks ();
-	if (lastTicks - now > 16)
+	if (now - lastTicks > 16)
 	{
 		flush ();
 		lastTicks = now;
