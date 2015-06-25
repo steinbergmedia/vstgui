@@ -638,9 +638,6 @@ static bool decodeScaleFactorFromName (std::string name, double& scaleFactor)
 	if (index == std::string::npos)
 		return false;
 	name.erase (0, index+1);
-	index = name.find_last_of (".");
-	if (index != std::string::npos)
-		name.erase (index);
 	index = name.find_last_of ("x");
 	if (index == std::string::npos)
 		return false;
@@ -1469,9 +1466,12 @@ CBitmap* UIDescription::getBitmap (UTF8StringPtr name) const
 					if (childNodeBitmapName == 0)
 						continue;
 					std::string nameWithoutScaleFactor = UIDescriptionPrivate::removeScaleFactorFromName (*childNodeBitmapName);
-					if (nameWithoutScaleFactor == name && childNode->getBitmap () && childNode->getBitmap ()->getPlatformBitmap ())
+					if (nameWithoutScaleFactor == name)
 					{
-						bitmap->addBitmap (childNode->getBitmap ()->getPlatformBitmap ());
+						childNode->setScaledBitmapsAdded ();
+						CBitmap* childBitmap = getBitmap (childNodeBitmapName->c_str ());
+						if (childBitmap && childBitmap->getPlatformBitmap ())
+							bitmap->addBitmap (childBitmap->getPlatformBitmap ());
 					}
 				}
 			}
