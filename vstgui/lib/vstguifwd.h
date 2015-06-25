@@ -49,6 +49,7 @@ struct CGraphicsTransform;
 
 // interfaces
 class IViewListener;
+class IViewContainerListener;
 class IDataPackage;
 class IDependency;
 class IFocusDrawing;

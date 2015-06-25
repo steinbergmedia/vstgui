@@ -36,6 +36,7 @@
 #define __cshadowviewcontainer__
 
 #include "cviewcontainer.h"
+#include "iviewlistener.h"
 #include "iscalefactorchangedlistener.h"
 
 namespace VSTGUI {
@@ -46,11 +47,12 @@ namespace VSTGUI {
 /// @ingroup containerviews
 /// @ingroup new_in_4_1
 //-----------------------------------------------------------------------------
-class CShadowViewContainer : public CViewContainer, public IScaleFactorChangedListener
+class CShadowViewContainer : public CViewContainer, public IScaleFactorChangedListener, public IViewContainerListenerAdapter
 {
 public:
 	CShadowViewContainer (const CRect& size);
 	CShadowViewContainer (const CShadowViewContainer& copy);
+	~CShadowViewContainer ();
 
 	//-----------------------------------------------------------------------------
 	/// @name CShadowViewContainer Methods
@@ -74,17 +76,15 @@ public:
 	void drawRect (CDrawContext* pContext, const CRect& updateRect) VSTGUI_OVERRIDE_VMETHOD;
 	void drawBackgroundRect (CDrawContext* pContext, const CRect& _updateRect) VSTGUI_OVERRIDE_VMETHOD;
 	void setViewSize (const CRect& rect, bool invalid = true) VSTGUI_OVERRIDE_VMETHOD;
-	bool addView (CView* pView) VSTGUI_OVERRIDE_VMETHOD;
-	bool addView (CView* pView, const CRect& mouseableArea, bool mouseEnabled = true) VSTGUI_OVERRIDE_VMETHOD;
-	bool addView (CView* pView, CView* pBefore) VSTGUI_OVERRIDE_VMETHOD;
-	bool removeView (CView* pView, bool withForget = true) VSTGUI_OVERRIDE_VMETHOD;
-	bool changeViewZOrder (CView* view, uint32_t newIndex) VSTGUI_OVERRIDE_VMETHOD;
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
 
 	void onScaleFactorChanged (CFrame* frame) VSTGUI_OVERRIDE_VMETHOD;
 
 	CLASS_METHODS(CShadowViewContainer, CViewContainer)
 protected:
+	void viewContainerViewAdded (CViewContainer* container, CView* view);
+	void viewContainerViewRemoved (CViewContainer* container, CView* view);
+	void viewContainerViewZOrderChanged (CViewContainer* container, CView* view);
 
 	bool dontDrawBackground;
 	CPoint shadowOffset;
