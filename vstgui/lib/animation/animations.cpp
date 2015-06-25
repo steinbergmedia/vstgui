@@ -147,6 +147,7 @@ ExchangeViewAnimation::ExchangeViewAnimation (CView* oldView, CView* newView, An
 	newView->setAlphaValue (0.f);
 	
 	destinationRect = viewToRemove->getViewSize ();
+	animationTick (newView, nullptr, 0.f);
 }
 
 //-----------------------------------------------------------------------------
