@@ -36,6 +36,7 @@
 #define __clayeredviewcontainer__
 
 #include "cviewcontainer.h"
+#include "iviewlistener.h"
 #include "platform/iplatformviewlayer.h"
 
 namespace VSTGUI {
@@ -48,7 +49,7 @@ namespace VSTGUI {
 //! A CLayeredViewContainer creates a platform layer on top of a parent layer or the platform view of CFrame
 //! if available on that platform and draws into it, otherwise it acts exactly like a CViewContainer
 //-----------------------------------------------------------------------------
-class CLayeredViewContainer : public CViewContainer, public IPlatformViewLayerDelegate
+class CLayeredViewContainer : public CViewContainer, public IPlatformViewLayerDelegate, public IViewContainerListenerAdapter
 {
 public:
 	CLayeredViewContainer (const CRect& r = CRect (0, 0, 0, 0));
@@ -70,8 +71,10 @@ public:
 protected:
 	void drawRect (CDrawContext* pContext, const CRect& updateRect) VSTGUI_OVERRIDE_VMETHOD;
 	void drawViewLayer (CDrawContext* context, const CRect& dirtyRect) VSTGUI_OVERRIDE_VMETHOD;
+	void viewContainerTransformChanged (CViewContainer* container) VSTGUI_OVERRIDE_VMETHOD;
 	void updateLayerSize ();
 	CGraphicsTransform getDrawTransform () const;
+	void registerListeners (bool state);
 
 	OwningPointer<IPlatformViewLayer>layer;
 	CLayeredViewContainer* parentLayerView;

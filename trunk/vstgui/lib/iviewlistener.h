@@ -54,6 +54,18 @@ public:
 };
 
 //-----------------------------------------------------------------------------
+/// @brief ViewContainer Listener Interface
+//-----------------------------------------------------------------------------
+class IViewContainerListener
+{
+public:
+	virtual void viewContainerViewAdded (CViewContainer* container, CView* view) = 0;
+	virtual void viewContainerViewRemoved (CViewContainer* container, CView* view) = 0;
+	virtual void viewContainerViewZOrderChanged (CViewContainer* container, CView* view) = 0;
+	virtual void viewContainerTransformChanged (CViewContainer* container) = 0;
+};
+
+//-----------------------------------------------------------------------------
 /// @brief View Listener Interface Adapter
 //-----------------------------------------------------------------------------
 class IViewListenerAdapter : public IViewListener
@@ -67,6 +79,18 @@ public:
 	void viewLostFocus (CView* view) VSTGUI_OVERRIDE_VMETHOD {}
 	void viewTookFocus (CView* view) VSTGUI_OVERRIDE_VMETHOD {}
 	void viewWillDelete (CView* view) VSTGUI_OVERRIDE_VMETHOD {}
+};
+
+//-----------------------------------------------------------------------------
+/// @brief ViewContainer Listener Interface Adapter
+//-----------------------------------------------------------------------------
+class IViewContainerListenerAdapter : public IViewContainerListener
+{
+public:
+	void viewContainerViewAdded (CViewContainer* container, CView* view) VSTGUI_OVERRIDE_VMETHOD {}
+	void viewContainerViewRemoved (CViewContainer* container, CView* view) VSTGUI_OVERRIDE_VMETHOD {}
+	void viewContainerViewZOrderChanged (CViewContainer* container, CView* view) VSTGUI_OVERRIDE_VMETHOD {}
+	void viewContainerTransformChanged (CViewContainer* container) VSTGUI_OVERRIDE_VMETHOD {}
 };
 
 }

@@ -135,6 +135,9 @@ public:
 	void setTransform (const CGraphicsTransform& t);
 	const CGraphicsTransform& getTransform () const { return transform; }
 	
+	void registerViewContainerListener (IViewContainerListener* listener);
+	void unregisterViewContainerListener (IViewContainerListener* listener);
+	
 	// CView
 	virtual void draw (CDrawContext* pContext) VSTGUI_OVERRIDE_VMETHOD;
 	virtual void drawRect (CDrawContext* pContext, const CRect& updateRect) VSTGUI_OVERRIDE_VMETHOD;
@@ -269,6 +272,8 @@ protected:
 	CView* mouseDownView;
 
 private:
+	typedef DispatchList<IViewContainerListener> ViewContainerListenerDispatcher;
+	ViewContainerListenerDispatcher viewContainerListeners;
 	CGraphicsTransform transform;
 };
 

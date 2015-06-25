@@ -37,6 +37,7 @@
 #include "cbitmapfilter.h"
 #include "cframe.h"
 #include "cbitmap.h"
+#include <cassert>
 
 namespace VSTGUI {
 
@@ -48,6 +49,7 @@ CShadowViewContainer::CShadowViewContainer (const CRect& size)
 , shadowBlurSize (4)
 , scaleFactorUsed (0.)
 {
+	registerViewContainerListener (this);
 }
 
 //-----------------------------------------------------------------------------
@@ -58,6 +60,13 @@ CShadowViewContainer::CShadowViewContainer (const CShadowViewContainer& copy)
 , shadowBlurSize (copy.shadowBlurSize)
 , scaleFactorUsed (0.)
 {
+	registerViewContainerListener (this);
+}
+
+//------------------------------------------------------------------------
+CShadowViewContainer::~CShadowViewContainer ()
+{
+	unregisterViewContainerListener (this);
 }
 
 //-----------------------------------------------------------------------------
@@ -73,6 +82,7 @@ bool CShadowViewContainer::attached (CView* parent)
 {
 	if (CViewContainer::attached (parent))
 	{
+		invalidateShadow ();
 		getFrame ()->registerScaleFactorChangedListeneer (this);
 		return true;
 	}
@@ -242,58 +252,24 @@ void CShadowViewContainer::setViewSize (const CRect& rect, bool invalid)
 }
 
 //-----------------------------------------------------------------------------
-bool CShadowViewContainer::addView (CView* pView)
+void CShadowViewContainer::viewContainerViewAdded (CViewContainer* container, CView* view)
 {
-	if (CViewContainer::addView (pView))
-	{
-		invalidateShadow ();
-		return true;
-	}
-	return false;
+	assert (container == this);
+	invalidateShadow ();
 }
 
 //-----------------------------------------------------------------------------
-bool CShadowViewContainer::addView (CView* pView, const CRect& mouseableArea, bool mouseEnabled)
+void CShadowViewContainer::viewContainerViewRemoved (CViewContainer* container, CView* view)
 {
-	if (CViewContainer::addView (pView, mouseableArea, mouseEnabled))
-	{
-		invalidateShadow ();
-		return true;
-	}
-	return false;
+	assert (container == this);
+	invalidateShadow ();
 }
 
 //-----------------------------------------------------------------------------
-bool CShadowViewContainer::addView (CView* pView, CView* pBefore)
+void CShadowViewContainer::viewContainerViewZOrderChanged (CViewContainer* container, CView* view)
 {
-	if (CViewContainer::addView (pView, pBefore))
-	{
-		invalidateShadow ();
-		return true;
-	}
-	return false;
-}
-
-//-----------------------------------------------------------------------------
-bool CShadowViewContainer::removeView (CView* pView, bool withForget)
-{
-	if (CViewContainer::removeView (pView, withForget))
-	{
-		invalidateShadow ();
-		return true;
-	}
-	return false;
-}
-
-//-----------------------------------------------------------------------------
-bool CShadowViewContainer::changeViewZOrder (CView* view, uint32_t newIndex)
-{
-	if (CViewContainer::changeViewZOrder (view, newIndex))
-	{
-		invalidateShadow ();
-		return true;
-	}
-	return false;
+	assert (container == this);
+	invalidateShadow ();
 }
 
 } // namespace

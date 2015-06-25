@@ -91,6 +91,9 @@ void CLayeredViewContainer::updateLayerSize ()
 //-----------------------------------------------------------------------------
 bool CLayeredViewContainer::removed (CView* parent)
 {
+	if (!isAttached ())
+		return false;
+	registerListeners (false);
 	if (layer)
 	{
 		layer = 0;
@@ -127,10 +130,33 @@ bool CLayeredViewContainer::attached (CView* parent)
 		}
 	}
 	parent = pParentView;
+	
+	registerListeners (true);
+	
 	pParentView = 0;
 	pParentFrame = 0;
 
 	return CViewContainer::attached (parent);
+}
+
+//-----------------------------------------------------------------------------
+void CLayeredViewContainer::registerListeners (bool state)
+{
+	CViewContainer* parent = static_cast<CViewContainer*> (getParentView ());
+	while (parent)
+	{
+		if (state)
+			parent->registerViewContainerListener (this);
+		else
+			parent->unregisterViewContainerListener (this);
+		parent = static_cast<CViewContainer*> (parent->getParentView ());
+	}
+}
+
+//-----------------------------------------------------------------------------
+void CLayeredViewContainer::viewContainerTransformChanged (CViewContainer* container)
+{
+	updateLayerSize ();
 }
 
 //-----------------------------------------------------------------------------

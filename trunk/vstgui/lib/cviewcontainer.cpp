@@ -38,6 +38,7 @@
 #include "cframe.h"
 #include "ifocusdrawing.h"
 #include "itouchevent.h"
+#include "iviewlistener.h"
 #include "cgraphicspath.h"
 #include "controls/ccontrol.h"
 
@@ -54,6 +55,60 @@ namespace VSTGUI {
 IdStringPtr kMsgCheckIfViewContainer	= "kMsgCheckIfViewContainer";
 #endif
 IdStringPtr kMsgLooseFocus = "LooseFocus";
+
+namespace CViewContainerPrivate {
+
+//-----------------------------------------------------------------------------
+struct ViewContainerListenerCall
+{
+	CViewContainer* container;
+	ViewContainerListenerCall (CViewContainer* container) : container (container) {}
+};
+
+//-----------------------------------------------------------------------------
+struct ViewContainerTransformChanged : ViewContainerListenerCall
+{
+	ViewContainerTransformChanged (CViewContainer* container) : ViewContainerListenerCall (container) {}
+	void operator () (IViewContainerListener* listener) const
+	{
+		listener->viewContainerTransformChanged (container);
+	}
+};
+
+//-----------------------------------------------------------------------------
+struct ViewContainerViewAdded : ViewContainerListenerCall
+{
+	CView* view;
+	ViewContainerViewAdded (CViewContainer* container, CView* view) : ViewContainerListenerCall (container), view (view) {}
+	void operator () (IViewContainerListener* listener) const
+	{
+		listener->viewContainerViewAdded (container, view);
+	}
+};
+
+//-----------------------------------------------------------------------------
+struct ViewContainerViewRemoved : ViewContainerListenerCall
+{
+	CView* view;
+	ViewContainerViewRemoved (CViewContainer* container, CView* view) : ViewContainerListenerCall (container), view (view) {}
+	void operator () (IViewContainerListener* listener) const
+	{
+		listener->viewContainerViewAdded (container, view);
+	}
+};
+
+//-----------------------------------------------------------------------------
+struct ViewContainerViewZOrderChanged : ViewContainerListenerCall
+{
+	CView* view;
+	ViewContainerViewZOrderChanged (CViewContainer* container, CView* view) : ViewContainerListenerCall (container), view (view) {}
+	void operator () (IViewContainerListener* listener) const
+	{
+		listener->viewContainerViewZOrderChanged (container, view);
+	}
+};
+
+}
 
 //-----------------------------------------------------------------------------
 // CViewContainer Implementation
@@ -115,6 +170,19 @@ CViewContainer::~CViewContainer ()
 {
 	// remove all views
 	removeAll (true);
+	assert (viewContainerListeners.empty ());
+}
+
+//-----------------------------------------------------------------------------
+void CViewContainer::registerViewContainerListener (IViewContainerListener* listener)
+{
+	viewContainerListeners.add (listener);
+}
+
+//-----------------------------------------------------------------------------
+void CViewContainer::unregisterViewContainerListener (IViewContainerListener* listener)
+{
+	viewContainerListeners.remove (listener);
 }
 
 //-----------------------------------------------------------------------------
@@ -128,7 +196,11 @@ void CViewContainer::parentSizeChanged ()
 //-----------------------------------------------------------------------------
 void CViewContainer::setTransform (const CGraphicsTransform& t)
 {
-	transform = t;
+	if (transform != t)
+	{
+		transform = t;
+		viewContainerListeners.forEach (CViewContainerPrivate::ViewContainerTransformChanged (this));
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -343,6 +415,8 @@ bool CViewContainer::addView (CView* pView)
 
 	children.push_back (pView);
 
+	viewContainerListeners.forEach (CViewContainerPrivate::ViewContainerViewAdded (this, pView));
+
 	if (isAttached ())
 	{
 		pView->attached (this);
@@ -374,6 +448,8 @@ bool CViewContainer::addView (CView *pView, CView* pBefore)
 	{
 		children.push_back (pView);
 	}
+
+	viewContainerListeners.forEach (CViewContainerPrivate::ViewContainerViewAdded (this, pView));
 
 	if (isAttached ())
 	{
@@ -422,6 +498,7 @@ bool CViewContainer::removeAll (bool withForget)
 		children.erase (it);
 		if (isAttached ())
 			view->removed (this);
+		viewContainerListeners.forEach (CViewContainerPrivate::ViewContainerViewRemoved (this, view));
 		if (withForget)
 			view->forget ();
 		it = children.begin ();
@@ -448,6 +525,7 @@ bool CViewContainer::removeView (CView *pView, bool withForget)
 		children.erase (it);
 		if (isAttached ())
 			pView->removed (this);
+		viewContainerListeners.forEach (CViewContainerPrivate::ViewContainerViewRemoved (this, pView));
 		if (withForget)
 			pView->forget ();
 		return true;
@@ -538,7 +616,10 @@ bool CViewContainer::changeViewZOrder (CView* view, uint32_t newIndex)
 			children.erase (it);
 			it = children.begin ();
 			std::advance (it, newIndex);
-			return children.insert (it, view) != children.end ();
+			bool result = children.insert (it, view) != children.end ();
+			if (result)
+				viewContainerListeners.forEach (CViewContainerPrivate::ViewContainerViewZOrderChanged (this, view));
+			return result;
 		}
 	}
 	return false;
