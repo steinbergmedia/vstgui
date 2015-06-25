@@ -1389,6 +1389,7 @@ bool VST3Editor::enableEditing (bool state)
 				getFrame ()->setSize (width, height);
 				getFrame ()->addView (view);
 				getFrame ()->setTransform (CGraphicsTransform ().scale (zoomFactor, zoomFactor));
+				getFrame ()->invalid ();
 				if (nonEditRect.isEmpty () == false)
 				{
 					rect.right = rect.left + (Steinberg::int32)nonEditRect.getWidth ();
