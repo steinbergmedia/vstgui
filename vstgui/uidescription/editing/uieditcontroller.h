@@ -51,6 +51,7 @@ class UIUndoManager;
 class UITemplateController;
 class UIEditMenuController;
 class UIGridController;
+class UIZoomSettingController;
 class GenericStringListDataBrowserSource;
 class CCommandMenuItem;
 
@@ -64,6 +65,8 @@ public:
 	UIEditMenuController* getMenuController () const { return menuController; }
 	const std::string& getEditTemplateName () const { return editTemplateName; }
 	UIAttributes* getSettings ();
+
+	void onZoomChanged (double zoom);
 
 	static UIDescription& getEditorDescription ();
 	static void setupDataSource (GenericStringListDataBrowserSource* source);
@@ -136,6 +139,7 @@ protected:
 	UIEditView* editView;
 	SharedPointer<UITemplateController> templateController;
 	SharedPointer<UIEditMenuController> menuController;
+	SharedPointer<UIZoomSettingController> zoomSettingController;
 	SharedPointer<CControl> enableEditingControl;
 	SharedPointer<CControl> notSavedControl;
 	SharedPointer<CControl> tabSwitchControl;
