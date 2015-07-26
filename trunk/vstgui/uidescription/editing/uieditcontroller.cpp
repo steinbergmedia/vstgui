@@ -384,8 +384,6 @@ UIEditController::UIEditController (UIDescription* description)
 //----------------------------------------------------------------------------------------------------
 UIEditController::~UIEditController ()
 {
-	if (zoomSettingController)
-		zoomSettingController->storeSetting (*getSettings ());
 	if (tabSwitchControl)
 		tabSwitchControl->removeDependency (this);
 	if (templateController)
@@ -457,6 +455,8 @@ void UIEditController::onZoomChanged (double zoom)
 {
 	if (editView)
 		editView->setScale (zoom);
+	if (zoomSettingController)
+		zoomSettingController->storeSetting (*getSettings ());
 }
 
 enum {
