@@ -66,6 +66,10 @@
 #include <algorithm>
 #include <cassert>
 
+#if WINDOWS
+#define snprintf _snprintf
+#endif
+
 namespace VSTGUI {
 
 //----------------------------------------------------------------------------------------------------
@@ -208,6 +212,157 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
+class UIZoomSettingController : public IController, public CBaseObject
+{
+public:
+	UIZoomSettingController (UIEditController* editController)
+	: editController (editController)
+	, zoomValueControl (0)
+	{}
+
+	~UIZoomSettingController ()
+	{
+	}
+
+	void restoreSetting (const UIAttributes& attributes)
+	{
+		double value;
+		if (attributes.getDoubleAttribute ("EditViewScale", value))
+		{
+			if (zoomValueControl)
+			{
+				zoomValueControl->setValue (static_cast<float> (value) * 100.f);
+				valueChanged (zoomValueControl);
+			}
+		}
+	}
+	
+	void storeSetting (UIAttributes& attributes) const
+	{
+		attributes.setDoubleAttribute ("EditViewScale", zoomValueControl->getValue () / 100.f);
+	}
+
+	void increaseZoom ()
+	{
+		if (!zoomValueControl)
+			return;
+		float add = 10.f;
+		float current = zoomValueControl->getValue ();
+		if (current >= 100.f)
+			add = 50.f;
+		updateZoom (current + add);
+	}
+	
+	void decreaseZoom ()
+	{
+		if (!zoomValueControl)
+			return;
+		float sub = 10.f;
+		float current = zoomValueControl->getValue ();
+		if (current >= 150.f)
+			sub = 50.f;
+		updateZoom (current - sub);
+	}
+	
+	void resetZoom ()
+	{
+		if (!zoomValueControl)
+			return;
+		updateZoom (100.f);
+	}
+	
+	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD
+	{
+		if (!zoomValueControl)
+		{
+			zoomValueControl = dynamic_cast<CTextEdit*> (view);
+			if (zoomValueControl)
+			{
+				zoomValueControl->setMin (50.f);
+				zoomValueControl->setMax (1000.f);
+#if VSTGUI_HAS_FUNCTIONAL
+				zoomValueControl->setStringToValueFunction ([] (UTF8StringPtr txt, float& result, CTextEdit*) {
+					int32_t intValue = static_cast<int32_t> (strtol (txt, 0, 10));
+					if (intValue > 0)
+					{
+						result = static_cast<float> (intValue);
+						return true;
+					}
+					
+					return false;
+				});
+				zoomValueControl->setValueToStringFunction ([] (float value, char utf8String[256], CParamDisplay*) {
+					snprintf (utf8String, 255, "%d %%", static_cast<uint32_t> (value));
+					return true;
+				});
+#else
+				// TODO: support non c++11 compilation
+#endif
+				zoomValueControl->setValue (100.f);
+				CFontRef font = description->getFont ("control.font");
+				CColor fontColor = kWhiteCColor, frameColor = kBlackCColor, backColor = kBlackCColor;
+				description->getColor ("control.font", fontColor);
+				description->getColor ("control.frame", frameColor);
+				description->getColor ("control.back", backColor);
+				zoomValueControl->setFont (font);
+				zoomValueControl->setFontColor (fontColor);
+				zoomValueControl->setBackColor (backColor);
+				zoomValueControl->setFrameColor (frameColor);
+				zoomValueControl->setFrameWidth (1.);
+			}
+		}
+		return view;
+	}
+
+	int32_t controlModifierClicked (CControl* pControl, CButtonState button) VSTGUI_OVERRIDE_VMETHOD
+	{
+		if (pControl == zoomValueControl && button.isRightButton ())
+		{
+			popupZoomMenu (pControl);
+			return 1;
+		}
+		return 0;
+	}
+
+	void valueChanged (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD
+	{
+		if (pControl == zoomValueControl)
+			editController->onZoomChanged (pControl->getValue () / 100.f);
+	}
+	
+private:
+	void updateZoom (float newZoom)
+	{
+		if (zoomValueControl)
+		{
+			zoomValueControl->setValue (newZoom);
+			valueChanged (zoomValueControl);
+		}
+	}
+	
+	void popupZoomMenu (CView* anchor)
+	{
+		COptionMenu menu;
+		menu.addEntry ("50%")->setTag (50);
+		menu.addEntry ("100%")->setTag (100);
+		menu.addEntry ("150%")->setTag (150);
+		menu.addEntry ("200%")->setTag (200);
+		CPoint location = anchor->getViewSize ().getTopLeft ();
+		anchor->localToFrame (location);
+		if (menu.popup (anchor->getFrame (), location))
+		{
+			if (CMenuItem* item = menu.getEntry (menu.getLastResult ()))
+			{
+				updateZoom (static_cast<float> (item->getTag ()));
+			}
+		}
+	}
+
+	UIEditController* editController;
+	CTextEdit* zoomValueControl;
+};
+
+//----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 UIEditController::UIEditController (UIDescription* description)
@@ -228,6 +383,8 @@ UIEditController::UIEditController (UIDescription* description)
 //----------------------------------------------------------------------------------------------------
 UIEditController::~UIEditController ()
 {
+	if (zoomSettingController)
+		zoomSettingController->storeSetting (*getSettings ());
 	if (tabSwitchControl)
 		tabSwitchControl->removeDependency (this);
 	if (templateController)
@@ -294,6 +451,13 @@ CView* UIEditController::createView (const UIAttributes& attributes, const IUIDe
 	return 0;
 }
 
+//----------------------------------------------------------------------------------------------------
+void UIEditController::onZoomChanged (double zoom)
+{
+	if (editView)
+		editView->setScale (zoom);
+}
+
 enum {
 	kNotSavedTag = 666,
 	kEditingTag,
@@ -330,24 +494,14 @@ CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes
 			CRect scaleMenuRect (0, 0, 50, splitView->getSeparatorWidth ());
 			scaleMenuRect.offset (splitView->getWidth ()-scaleMenuRect.getWidth (), 0);
 			scaleMenuRect.inset (2, 2);
-			COptionMenu* scaleMenu = new COptionMenu (scaleMenuRect, 0, -1);
-			scaleMenu->setStyle (kPopupStyle|kCheckStyle);
-			scaleMenu->setFont (font);
-			scaleMenu->setFontColor (fontColor);
-			scaleMenu->setBackColor (backColor);
-			scaleMenu->setFrameColor (frameColor);
-			scaleMenu->setFrameWidth (1.);
-			scaleMenu->setAutosizeFlags (kAutosizeRight|kAutosizeTop|kAutosizeBottom);
-			scaleMenu->addEntry (new CCommandMenuItem ("50%", this, "Scale", "50%"));
-			scaleMenu->addEntry (new CCommandMenuItem ("75%", this, "Scale", "75%"));
-			scaleMenu->addEntry (new CCommandMenuItem ("100%", this, "Scale", "100%"));
-			scaleMenu->addEntry (new CCommandMenuItem ("150%", this, "Scale", "150%"));
-			scaleMenu->addEntry (new CCommandMenuItem ("200%", this, "Scale", "200%"));
-			scaleMenu->addEntry (new CCommandMenuItem ("300%", this, "Scale", "300%"));
-			scaleMenu->addEntry (new CCommandMenuItem ("400%", this, "Scale", "400%"));
-			scaleMenu->addEntry (new CCommandMenuItem ("500%", this, "Scale", "500%"));
-			scaleMenu->setValue (2);
-			splitView->addViewToSeparator (0, scaleMenu);
+			
+			zoomSettingController = new UIZoomSettingController (this); // not owned, shared with control
+			CTextEdit* textEdit = new CTextEdit (scaleMenuRect, zoomSettingController, 0);
+			textEdit->setAttribute (kCViewControllerAttribute, sizeof (IController*), &zoomSettingController);
+			CView* zoomView = zoomSettingController->verifyView (textEdit, UIAttributes (), &getEditorDescription ());
+			zoomView->setAutosizeFlags (kAutosizeRight|kAutosizeTop|kAutosizeBottom);
+			splitView->addViewToSeparator (0, zoomView);
+			zoomSettingController->restoreSetting (*getSettings ());
 		}
 	}
 	CControl* control = dynamic_cast<CControl*>(view);
@@ -555,6 +709,8 @@ void UIEditController::beforeSave ()
 			container = dynamic_cast<CViewContainer*> (container->getParentView ());
 		}
 		undoManager->markSavePosition ();
+		if (zoomSettingController)
+			zoomSettingController->storeSetting (*getSettings ());
 		setDirty (false);
 	}
 }
@@ -766,13 +922,21 @@ CMessageResult UIEditController::onMenuItemSelection (CCommandMenuItem* item)
 			return kMessageNotified;
 		}
 	}
-	else if (cmdCategory == "Scale")
+	else if (cmdCategory == "Zoom")
 	{
-		int32_t percent = static_cast<int32_t> (strtol (cmdName, NULL, 10));
-		if (percent > 0)
+		if (cmdName == "Zoom In")
 		{
-			double scale = percent / 100.;
-			editView->setScale (scale);
+			zoomSettingController->increaseZoom ();
+			return kMessageNotified;
+		}
+		else if (cmdName == "Zoom Out")
+		{
+			zoomSettingController->decreaseZoom ();
+			return kMessageNotified;
+		}
+		else if (cmdName == "Zoom 100%")
+		{
+			zoomSettingController->resetZoom ();
 			return kMessageNotified;
 		}
 	}

@@ -122,6 +122,14 @@ static const MenuEntry editMenu[] = {
 	
 	kSubMenuEnd,
 	kMenuSeparator,
+	{ "Zoom", "Zoom" , 0, 0, 0, MenuEntry::kSubMenu},
+	{ "Zoom", "Zoom In" , "=", kControl },
+	{ "Zoom", "Zoom Out" , "-", kControl },
+	kMenuSeparator,
+	{ "Zoom", "Zoom 100%" , "0", kControl|kAlt },
+	kSubMenuEnd,
+
+	kMenuSeparator,
 	{ "Edit", "Size To Fit" , 0, 0, 0 },
 	{ "Edit", "Unembed Views" , 0, 0, 0 },
 	{ "Edit", "Embed Into" , 0, 0, 0 },
