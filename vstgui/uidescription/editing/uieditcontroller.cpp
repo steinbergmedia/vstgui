@@ -239,7 +239,8 @@ public:
 	
 	void storeSetting (UIAttributes& attributes) const
 	{
-		attributes.setDoubleAttribute ("EditViewScale", zoomValueControl->getValue () / 100.f);
+		if (zoomValueControl)
+			attributes.setDoubleAttribute ("EditViewScale", zoomValueControl->getValue () / 100.f);
 	}
 
 	void increaseZoom ()
