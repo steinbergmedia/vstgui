@@ -172,8 +172,8 @@
 	#ifndef WINDOWS
 		#define WINDOWS 1
 	#endif
-	#ifndef __GNUC__
-		#define noexcept		// currently not supported by any VS compiler
+	#if !defined(__GNUC__) && _MSC_VER <= 1800
+		#define noexcept		// only supported since VS 2015
 	#endif
 	#define DEPRECATED_ATTRIBUTE __declspec(deprecated)
 	#pragma warning(3 : 4189) // local variable is initialized but not referenced
