@@ -1058,11 +1058,14 @@ void PLUGIN_API VST3Editor::close ()
 //------------------------------------------------------------------------
 Steinberg::tresult PLUGIN_API VST3Editor::onSize (Steinberg::ViewRect* newSize)
 {
-	CRect r (newSize->left, newSize->top, newSize->right, newSize->bottom);
-	CRect currentSize;
-	getFrame ()->getSize (currentSize);
-	if (r == currentSize)
-		return Steinberg::kResultTrue;
+	if (getFrame ())
+	{
+		CRect r (newSize->left, newSize->top, newSize->right, newSize->bottom);
+		CRect currentSize;
+		getFrame ()->getSize (currentSize);
+		if (r == currentSize)
+			return Steinberg::kResultTrue;
+	}
 	return VSTGUIEditor::onSize (newSize);
 }
 
