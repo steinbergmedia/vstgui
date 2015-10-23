@@ -55,13 +55,15 @@ use File::Spec::Functions qw /abs2rel catdir file_name_is_absolute splitdir
 			      splitpath catpath/;
 use Getopt::Long;
 use Digest::MD5 qw(md5_base64);
+use Cwd qw/abs_path/;
 if( $^O eq "msys" )
 {
 	require File::Spec::Win32;
 }
 
 # Constants
-our $lcov_version	= 'LCOV version 1.10';
+our $tool_dir		= abs_path(dirname($0));
+our $lcov_version	= "LCOV version 1.12";
 our $lcov_url		= "http://ltp.sourceforge.net/coverage/lcov.php";
 our $gcov_tool		= "gcov";
 our $tool_name		= basename($0);
@@ -86,7 +88,10 @@ our %ERROR_ID = (
 
 our $EXCL_START = "LCOV_EXCL_START";
 our $EXCL_STOP = "LCOV_EXCL_STOP";
-our $EXCL_LINE = "LCOV_EXCL_LINE";
+
+# Marker to exclude branch coverage but keep function and line coveage
+our $EXCL_BR_START = "LCOV_EXCL_BR_START";
+our $EXCL_BR_STOP = "LCOV_EXCL_BR_STOP";
 
 # Compatibility mode values
 our $COMPAT_VALUE_OFF	= 0;
@@ -140,8 +145,9 @@ our $BR_BRANCH		= 2;
 our $BR_TAKEN		= 3;
 our $BR_VEC_ENTRIES	= 4;
 our $BR_VEC_WIDTH	= 32;
+our $BR_VEC_MAX		= vec(pack('b*', 1 x $BR_VEC_WIDTH), 0, $BR_VEC_WIDTH);
 
-our $UNNAMED_BLOCK	= 9999;
+our $UNNAMED_BLOCK	= -1;
 
 # Prototypes
 sub print_usage(*);
@@ -168,6 +174,7 @@ sub graph_error($$);
 sub graph_expect($);
 sub graph_read(*$;$$);
 sub graph_skip(*$;$);
+sub uniq(@);
 sub sort_uniq(@);
 sub sort_uniq_lex(@);
 sub graph_cleanup($);
@@ -249,6 +256,8 @@ our $gcno_split_crc;
 our $func_coverage = 1;
 our $br_coverage = 0;
 our $rc_auto_base = 1;
+our $excl_line = "LCOV_EXCL_LINE";
+our $excl_br_line = "LCOV_EXCL_BR_LINE";
 
 our $cwd = `pwd`;
 chomp($cwd);
@@ -263,17 +272,27 @@ $SIG{"INT"} = \&int_handler;
 $SIG{__WARN__} = \&warn_handler;
 $SIG{__DIE__} = \&die_handler;
 
-# Prettify version string
-$lcov_version =~ s/\$\s*Revision\s*:?\s*(\S+)\s*\$/$1/;
-
-# Set LANG so that gcov output will be in a unified format
-$ENV{"LANG"} = "C";
+# Set LC_ALL so that gcov output will be in a unified format
+$ENV{"LC_ALL"} = "C";
 
 # Check command line for a configuration file name
 Getopt::Long::Configure("pass_through", "no_auto_abbrev");
 GetOptions("config-file=s" => \$opt_config_file,
 	   "rc=s%" => \%opt_rc);
 Getopt::Long::Configure("default");
+
+{
+	# Remove spaces around rc options
+	my %new_opt_rc;
+
+	while (my ($key, $value) = each(%opt_rc)) {
+		$key =~ s/^\s+|\s+$//g;
+		$value =~ s/^\s+|\s+$//g;
+
+		$new_opt_rc{$key} = $value;
+	}
+	%opt_rc = %new_opt_rc;
+}
 
 # Read configuration file if available
 if (defined($opt_config_file)) {
@@ -303,6 +322,8 @@ if ($config || %opt_rc)
 		"geninfo_auto_base"		=> \$rc_auto_base,
 		"lcov_function_coverage"	=> \$func_coverage,
 		"lcov_branch_coverage"		=> \$br_coverage,
+		"lcov_excl_line"		=> \$excl_line,
+		"lcov_excl_br_line"		=> \$excl_br_line,
 	});
 
 	# Merge options
@@ -331,6 +352,13 @@ if ($config || %opt_rc)
 		} else {
 			$adjust_src_replace = $replace;
 		}
+	}
+	for my $regexp (($excl_line, $excl_br_line)) {
+		eval 'qr/'.$regexp.'/';
+		my $error = $@;
+		chomp($error);
+		$error =~ s/at \(eval.*$//;
+		die("ERROR: invalid exclude pattern: $error") if $error;
 	}
 }
 
@@ -682,10 +710,13 @@ sub gen_info($)
 	{
 		info("Scanning $directory for $ext files ...\n");
 
-		@file_list = `find "$directory" $maxdepth $follow -name \\*$ext -type f 2>/dev/null`;
+		@file_list = `find "$directory" $maxdepth $follow -name \\*$ext -type f -o -name \\*$ext -type l 2>/dev/null`;
 		chomp(@file_list);
-		@file_list or
-			die("ERROR: no $ext files found in $directory!\n");
+		if (!@file_list) {
+			warn("WARNING: no $ext files found in $directory - ".
+			     "skipping!\n");
+			return;
+		}
 		$prefix = get_common_prefix(1, @file_list);
 		info("Found %d %s files in %s\n", $#file_list+1, $type,
 		     $directory);
@@ -861,7 +892,6 @@ sub process_dafile($$)
 	my $source;		# gcov source header information
 	my $object;		# gcov object header information
 	my @matches;		# List of absolute paths matching filename
-	my @unprocessed;	# List of unprocessed source code files
 	my $base_dir;		# Base directory for current file
 	my @tmp_links;		# Temporary links to be cleaned up
 	my @result;
@@ -1057,7 +1087,6 @@ sub process_dafile($$)
 
 	# Traverse the list of generated .gcov files and combine them into a
 	# single .info file
-	@unprocessed = keys(%{$instr});
 	foreach $gcov_file (sort(@gcov_list))
 	{
 		my $i;
@@ -1138,16 +1167,6 @@ sub process_dafile($$)
 			# Try to solve the ambiguity
 			$source_filename = solve_ambiguous_match($gcov_file,
 						\@matches, \@gcov_content);
-		}
-
-		# Remove processed file from list
-		for ($index = scalar(@unprocessed) - 1; $index >= 0; $index--)
-		{
-			if ($unprocessed[$index] eq $source_filename)
-			{
-				splice(@unprocessed, $index, 1);
-				last;
-			}
 		}
 
 		# Skip external files if requested
@@ -1246,6 +1265,7 @@ sub process_dafile($$)
 			my ($line, $block, $branch, $taken) =
 				br_gvec_get($gcov_branches, $i);
 
+			$block = $BR_VEC_MAX if ($block < 0);
 			print(INFO_HANDLE "BRDA:$line,$block,$branch,$taken\n");
 			$br_found++;
 			$br_hit++ if ($taken ne '-' && $taken > 0);
@@ -1292,16 +1312,6 @@ sub process_dafile($$)
 
 		# Remove .gcov file after processing
 		unlink($gcov_file);
-	}
-
-	# Check for files which show up in the graph file but were never
-	# processed
-	if (@unprocessed && @gcov_list)
-	{
-		foreach (@unprocessed)
-		{
-			warn("WARNING: no data found for $_\n");
-		}
 	}
 
 	if (!($output_filename && ($output_filename eq "-")))
@@ -1600,6 +1610,7 @@ sub br_gvec_get($$)
 	# Retrieve data from vector
 	$line	= vec($vec, $offset + $BR_LINE, $BR_VEC_WIDTH);
 	$block	= vec($vec, $offset + $BR_BLOCK, $BR_VEC_WIDTH);
+	$block = -1 if ($block == $BR_VEC_MAX);
 	$branch = vec($vec, $offset + $BR_BRANCH, $BR_VEC_WIDTH);
 	$taken	= vec($vec, $offset + $BR_TAKEN, $BR_VEC_WIDTH);
 
@@ -1627,6 +1638,7 @@ sub br_gvec_push($$$$$)
 
 	$vec = "" if (!defined($vec));
 	$offset = br_gvec_len($vec) * $BR_VEC_ENTRIES;
+	$block = $BR_VEC_MAX if $block < 0;
 
 	# Encode taken value into an integer
 	if ($taken eq "-") {
@@ -1676,6 +1688,8 @@ sub read_gcov_file($)
 	my $number;
 	my $exclude_flag = 0;
 	my $exclude_line = 0;
+	my $exclude_br_flag = 0;
+	my $exclude_branch = 0;
 	my $last_block = $UNNAMED_BLOCK;
 	my $last_line = 0;
 	local *INPUT;
@@ -1702,11 +1716,13 @@ sub read_gcov_file($)
 			if (/^branch\s+(\d+)\s+taken\s+=\s+(\d+)/) {
 				next if (!$br_coverage);
 				next if ($exclude_line);
+				next if ($exclude_branch);
 				$branches = br_gvec_push($branches, $last_line,
 						$last_block, $1, $2);
 			} elsif (/^branch\s+(\d+)\s+never\s+executed/) {
 				next if (!$br_coverage);
 				next if ($exclude_line);
+				next if ($exclude_branch);
 				$branches = br_gvec_push($branches, $last_line,
 						$last_block, $1, '-');
 			}
@@ -1724,10 +1740,23 @@ sub read_gcov_file($)
 					} elsif (/$EXCL_START/) {
 						$exclude_flag = 1;
 					}
-					if (/$EXCL_LINE/ || $exclude_flag) {
+					if (/$excl_line/ || $exclude_flag) {
 						$exclude_line = 1;
 					} else {
 						$exclude_line = 0;
+					}
+				}
+				# Check for exclusion markers (branch exclude)
+				if (!$no_markers) {
+					if (/$EXCL_BR_STOP/) {
+						$exclude_br_flag = 0;
+					} elsif (/$EXCL_BR_START/) {
+						$exclude_br_flag = 1;
+					}
+					if (/$excl_br_line/ || $exclude_br_flag) {
+						$exclude_branch = 1;
+					} else {
+						$exclude_branch = 0;
 					}
 				}
 				# Source code execution data
@@ -1775,11 +1804,13 @@ sub read_gcov_file($)
 			} elsif (/^branch\s+(\d+)\s+taken\s+(\d+)/) {
 				next if (!$br_coverage);
 				next if ($exclude_line);
+				next if ($exclude_branch);
 				$branches = br_gvec_push($branches, $last_line,
 						$last_block, $1, $2);
 			} elsif (/^branch\s+(\d+)\s+never\s+executed/) {
 				next if (!$br_coverage);
 				next if ($exclude_line);
+				next if ($exclude_branch);
 				$branches = br_gvec_push($branches, $last_line,
 						$last_block, $1, '-');
 			}
@@ -1808,12 +1839,26 @@ sub read_gcov_file($)
 					} elsif (/$EXCL_START/) {
 						$exclude_flag = 1;
 					}
-					if (/$EXCL_LINE/ || $exclude_flag) {
+					if (/$excl_line/ || $exclude_flag) {
 						$exclude_line = 1;
 					} else {
 						$exclude_line = 0;
 					}
 				}
+				# Check for exclusion markers (branch exclude)
+				if (!$no_markers) {
+					if (/$EXCL_BR_STOP/) {
+						$exclude_br_flag = 0;
+					} elsif (/$EXCL_BR_START/) {
+						$exclude_br_flag = 1;
+					}
+					if (/$excl_br_line/ || $exclude_br_flag) {
+						$exclude_branch = 1;
+					} else {
+						$exclude_branch = 0;
+					}
+				}
+
 				# <exec count>:<line number>:<source code>
 				if ($line eq "0")
 				{
@@ -1833,7 +1878,7 @@ sub read_gcov_file($)
 						push(@result, 0);
 					} else {
 						# Check for zero count
-						if ($count eq "#####") {
+						if ($count =~ /^[#=]/) {
 							$count = 0;
 						}
 						push(@result, 1);
@@ -1846,7 +1891,7 @@ sub read_gcov_file($)
 	}
 
 	close(INPUT);
-	if ($exclude_flag) {
+	if ($exclude_flag || $exclude_br_flag) {
 		warn("WARNING: unterminated exclusion section in $filename\n");
 	}
 	return(\@result, $branches, \@functions);
@@ -1864,11 +1909,28 @@ sub get_gcov_version()
 	local *HANDLE;
 	my $version_string;
 	my $result;
+	my $pipe_next_line;
 
-	open(GCOV_PIPE, "-|", "$gcov_tool -v")
+	open(GCOV_PIPE, "-|", "$gcov_tool --version")
 		or die("ERROR: cannot retrieve gcov version!\n");
 	$version_string = <GCOV_PIPE>;
+	# LLVM gcov keeps version information on the second line.
+	# For example, gcov --version yields:
+	# LLVM (http://llvm.org/):
+	#   LLVM version 3.4svn
+
+	$pipe_next_line = <GCOV_PIPE>;	
+	# In case version information is on first line.
+	# For example, with Xcode 7.0 gcov --version yields:
+	# Apple LLVM 7.0.0 (clang-700.0.65)
+
+	$version_string = $pipe_next_line if ($pipe_next_line && $version_string =~ /LLVM/);
 	close(GCOV_PIPE);
+
+	# Remove version information in parenthesis to cope with the following:
+	# - gcov (GCC) 4.4.7 20120313 (Red Hat 4.4.7-3)
+	# - gcov (crosstool-NG 1.18.0) 4.7.2
+	$version_string =~ s/\([^\)]*\)//g;
 
 	$result = 0;
 	if ($version_string =~ /(\d+)\.(\d+)(\.(\d+))?/)
@@ -1882,6 +1944,21 @@ sub get_gcov_version()
 		{
 			info("Found gcov version: $1.$2\n");
 			$result = $1 << 16 | $2 << 8;
+		}
+	}
+	if ($version_string =~ /LLVM/)
+	{
+		# Map LLVM versions to the version of GCC gcov which
+		# they emulate
+		if ($result >= 0x030400)
+		{
+			info("Found LLVM gcov version 3.4, which emulates gcov version 4.2\n");
+			$result = 0x040200;
+		}
+		else
+		{
+			warn("This version of LLVM's gcov is unknown.  Assuming it emulates GCC gcov version 4.2.\n");
+			$result = 0x040200;
 		}
 	}
 	return ($result, $version_string);
@@ -2068,7 +2145,7 @@ sub get_exclusion_data($)
 		} elsif (/$EXCL_START/) {
 			$flag = 1;
 		}
-		if (/$EXCL_LINE/ || $flag) {
+		if (/$excl_line/ || $flag) {
 			$list{$.} = 1;
 		}
 	}
@@ -2227,6 +2304,13 @@ sub process_graphfile($$)
 		$base_dir = $source_dir;
 	}
 
+	# Ignore empty graph file (e.g. source file with no statement)
+	if (-z $graph_filename)
+	{
+		warn("WARNING: empty $graph_filename (skipped)\n");
+		return;
+	}
+
 	if ($gcov_version < $GCOV_VERSION_3_4_0)
 	{
 		if (is_compat($COMPAT_MODE_HAMMER))
@@ -2284,6 +2368,15 @@ sub process_graphfile($$)
 		my $funcdata = $graph->{$filename};
 		my $line;
 		my $linedata;
+
+		# Skip external files if requested
+		if (!$opt_external) {
+			if (is_external($filename)) {
+				info("  ignoring data for external file ".
+				     "$filename\n");
+				next;
+			}
+		}
 
 		print(INFO_HANDLE "SF:$filename\n");
 
@@ -2459,6 +2552,27 @@ sub graph_skip(*$;$)
 		return 1;
 	}
 	return 0;
+}
+
+#
+# uniq(list)
+#
+# Return list without duplicate entries.
+#
+
+sub uniq(@)
+{
+	my (@list) = @_;
+	my @new_list;
+	my %known;
+
+	foreach my $item (@list) {
+		next if ($known{$item});
+		$known{$item} = 1;
+		push(@new_list, $item);
+	}
+
+	return @new_list;
 }
 
 #
@@ -2647,7 +2761,7 @@ sub graph_cleanup($)
 				next;
 			}
 			# Normalize list
-			$per_file->{$function} = [ sort_uniq(@$lines) ];
+			$per_file->{$function} = [ uniq(@$lines) ];
 		}
 		if (scalar(keys(%{$per_file})) == 0) {
 			# Remove empty file
@@ -3341,9 +3455,11 @@ sub read_gcno($)
 	my $fileorder = {};
 	my $instr;
 	my $graph;
+	my $filelength;
 	local *HANDLE;
 
 	open(HANDLE, "<", $gcno_filename) or goto open_error;
+	$filelength = (stat(HANDLE))[7];
 	binmode(HANDLE);
 	# Read magic
 	$word = read_gcno_word(*HANDLE, "file magic");
@@ -3375,6 +3491,14 @@ sub read_gcno($)
 		$next_pos = tell(HANDLE);
 		goto tell_error if ($next_pos == -1);
 		$next_pos += $length;
+		# Catch garbage at the end of a gcno file
+		if ($next_pos > $filelength) {
+			debug("Overlong record: file_length=$filelength ".
+			      "rec_length=$length\n");
+			warn("WARNING: $gcno_filename: Overlong record at end ".
+			     "of file!\n");
+			last;
+		}
 		# Process record
 		if ($tag == $tag_function) {
 			($filename, $function) = read_gcno_function_record(
@@ -3443,15 +3567,36 @@ sub get_gcov_capabilities()
 {
 	my $help = `$gcov_tool --help`;
 	my %capabilities;
+	my %short_option_translations = (
+		'a' => 'all-blocks',
+		'b' => 'branch-probabilities',
+		'c' => 'branch-counts',
+		'f' => 'function-summaries',
+		'h' => 'help',
+		'l' => 'long-file-names',
+		'n' => 'no-output',
+		'o' => 'object-directory',
+		'p' => 'preserve-paths',
+		'u' => 'unconditional-branches',
+		'v' => 'version',
+	);
 
 	foreach (split(/\n/, $help)) {
-		next if (!/--(\S+)/);
-		next if ($1 eq 'help');
-		next if ($1 eq 'version');
-		next if ($1 eq 'object-directory');
+		my $capability;
+		if (/--(\S+)/) {
+			$capability = $1;
+		} else {
+			# If the line provides a short option, translate it.
+			next if (!/^\s*-(\S)\s/);
+			$capability = $short_option_translations{$1};
+			next if not defined($capability);
+		}
+		next if ($capability eq 'help');
+		next if ($capability eq 'version');
+		next if ($capability eq 'object-directory');
 
-		$capabilities{$1} = 1;
-		debug("gcov has capability '$1'\n");
+		$capabilities{$capability} = 1;
+		debug("gcov has capability '$capability'\n");
 	}
 
 	return \%capabilities;

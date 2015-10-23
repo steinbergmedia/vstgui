@@ -20,7 +20,6 @@
 		F4201BD419BB0B5F0001D594 /* clinestyle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4201BD019BB0B5F0001D594 /* clinestyle.cpp */; };
 		F4201BD519BB0B5F0001D594 /* clinestyle.h in Headers */ = {isa = PBXBuildFile; fileRef = F4201BD119BB0B5F0001D594 /* clinestyle.h */; };
 		F4201BD619BB0B5F0001D594 /* clinestyle.h in Headers */ = {isa = PBXBuildFile; fileRef = F4201BD119BB0B5F0001D594 /* clinestyle.h */; };
-		F4282B011710699700A79F13 /* crect_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4282B001710699700A79F13 /* crect_test.cpp */; };
 		F42D5F6317B016F900B85FE8 /* cxypad.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F42D5F6117B016F900B85FE8 /* cxypad.cpp */; };
 		F42D5F6417B016F900B85FE8 /* cxypad.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F42D5F6117B016F900B85FE8 /* cxypad.cpp */; };
 		F42D5F6517B016F900B85FE8 /* cxypad.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F42D5F6117B016F900B85FE8 /* cxypad.cpp */; };
@@ -33,71 +32,6 @@
 		F440F8D017A8FF7600616683 /* itouchevent.h in Headers */ = {isa = PBXBuildFile; fileRef = F440F8CC17A8FF7600616683 /* itouchevent.h */; };
 		F440F8D117A8FF7600616683 /* itouchevent.h in Headers */ = {isa = PBXBuildFile; fileRef = F440F8CC17A8FF7600616683 /* itouchevent.h */; };
 		F440F92117A915C200616683 /* cfontmac.mm in Sources */ = {isa = PBXBuildFile; fileRef = F497F17613080B1C00F0A613 /* cfontmac.mm */; };
-		F4462D2C17563BD900E6835D /* ccolor_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4462D2B17563BD900E6835D /* ccolor_test.cpp */; };
-		F4462D2E1756444800E6835D /* idependency_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4462D2D1756444800E6835D /* idependency_test.cpp */; };
-		F4462D371756474E00E6835D /* animations.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F11A13080AD100F0A613 /* animations.cpp */; };
-		F4462D381756474E00E6835D /* animator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F11C13080AD100F0A613 /* animator.cpp */; };
-		F4462D391756474E00E6835D /* timingfunctions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F11E13080AD100F0A613 /* timingfunctions.cpp */; };
-		F4462D3A1756474E00E6835D /* cautoanimation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F12713080AE400F0A613 /* cautoanimation.cpp */; };
-		F4462D3B1756474E00E6835D /* cbuttons.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F12913080AE500F0A613 /* cbuttons.cpp */; };
-		F4462D3C1756474E00E6835D /* ccolorchooser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F12B13080AE500F0A613 /* ccolorchooser.cpp */; };
-		F4462D3D1756474E00E6835D /* ccontrol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F12D13080AE500F0A613 /* ccontrol.cpp */; };
-		F4462D3E1756474E00E6835D /* cfontchooser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F12F13080AE500F0A613 /* cfontchooser.cpp */; };
-		F4462D3F1756474E00E6835D /* cknob.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F13113080AE500F0A613 /* cknob.cpp */; };
-		F4462D401756474E00E6835D /* cmoviebitmap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F13313080AE500F0A613 /* cmoviebitmap.cpp */; };
-		F4462D411756474E00E6835D /* cmoviebutton.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F13513080AE500F0A613 /* cmoviebutton.cpp */; };
-		F4462D421756474E00E6835D /* coptionmenu.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F13713080AE500F0A613 /* coptionmenu.cpp */; };
-		F4462D431756474E00E6835D /* cparamdisplay.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F13913080AE500F0A613 /* cparamdisplay.cpp */; };
-		F4462D441756474E00E6835D /* cslider.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F13B13080AE500F0A613 /* cslider.cpp */; };
-		F4462D451756474E00E6835D /* cspecialdigit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F13D13080AE500F0A613 /* cspecialdigit.cpp */; };
-		F4462D461756474E00E6835D /* csplashscreen.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F13F13080AE500F0A613 /* csplashscreen.cpp */; };
-		F4462D471756474E00E6835D /* cswitch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F14113080AE500F0A613 /* cswitch.cpp */; };
-		F4462D481756474E00E6835D /* ctextedit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F14313080AE500F0A613 /* ctextedit.cpp */; };
-		F4462D491756474E00E6835D /* ctextlabel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F14513080AE500F0A613 /* ctextlabel.cpp */; };
-		F4462D4A1756474E00E6835D /* cvumeter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F14713080AE500F0A613 /* cvumeter.cpp */; };
-		F4462D4B1756475900E6835D /* cbitmap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0C213080A1C00F0A613 /* cbitmap.cpp */; };
-		F4462D4C1756475900E6835D /* cbitmapfilter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4CE1BE1141138F700CF75B6 /* cbitmapfilter.cpp */; };
-		F4462D4D1756475900E6835D /* ccolor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0C413080A1C00F0A613 /* ccolor.cpp */; };
-		F4462D4E1756475900E6835D /* cdatabrowser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0C613080A1C00F0A613 /* cdatabrowser.cpp */; };
-		F4462D4F1756475900E6835D /* cdrawcontext.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0C813080A1C00F0A613 /* cdrawcontext.cpp */; };
-		F4462D501756475900E6835D /* cdropsource.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0CA13080A1C00F0A613 /* cdropsource.cpp */; };
-		F4462D511756475900E6835D /* cfileselector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0CC13080A1C00F0A613 /* cfileselector.cpp */; };
-		F4462D521756475900E6835D /* cfont.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0CE13080A1C00F0A613 /* cfont.cpp */; };
-		F4462D531756475900E6835D /* cframe.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0D013080A1C00F0A613 /* cframe.cpp */; };
-		F4462D541756475900E6835D /* cgradientview.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F40E63FB16821A6300426847 /* cgradientview.cpp */; };
-		F4462D551756475900E6835D /* cgraphicspath.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0D213080A1C00F0A613 /* cgraphicspath.cpp */; };
-		F4462D561756475900E6835D /* coffscreencontext.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0D413080A1C00F0A613 /* coffscreencontext.cpp */; };
-		F4462D571756475900E6835D /* copenglview.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F452950B13A2166A006EEF82 /* copenglview.cpp */; };
-		F4462D581756475900E6835D /* cpoint.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0D713080A1C00F0A613 /* cpoint.cpp */; };
-		F4462D591756475900E6835D /* crect.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0D913080A1C00F0A613 /* crect.cpp */; };
-		F4462D5A1756475900E6835D /* crowcolumnview.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4F52DFD13E2B36500B3DB2F /* crowcolumnview.cpp */; };
-		F4462D5B1756475900E6835D /* cscrollview.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0DB13080A1C00F0A613 /* cscrollview.cpp */; };
-		F4462D5C1756475900E6835D /* cshadowviewcontainer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F42E1F8914239E48005E0BD7 /* cshadowviewcontainer.cpp */; };
-		F4462D5D1756475900E6835D /* csplitview.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BD677131817CD00C46C02 /* csplitview.cpp */; };
-		F4462D5E1756475900E6835D /* cstring.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4FC1AA31328CB310066E2F8 /* cstring.cpp */; };
-		F4462D5F1756475900E6835D /* ctabview.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0DD13080A1C00F0A613 /* ctabview.cpp */; };
-		F4462D601756475900E6835D /* ctooltipsupport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0DF13080A1C00F0A613 /* ctooltipsupport.cpp */; };
-		F4462D611756475900E6835D /* cview.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0E113080A1C00F0A613 /* cview.cpp */; };
-		F4462D621756475900E6835D /* cviewcontainer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0E313080A1C00F0A613 /* cviewcontainer.cpp */; };
-		F4462D631756475900E6835D /* cvstguitimer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0E513080A1C00F0A613 /* cvstguitimer.cpp */; };
-		F4462D641756475900E6835D /* vstguidebug.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0E913080A1C00F0A613 /* vstguidebug.cpp */; };
-		F4462D651756478D00E6835D /* cgbitmap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F17713080B1C00F0A613 /* cgbitmap.cpp */; };
-		F4462D661756478D00E6835D /* cgdrawcontext.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F17913080B1C00F0A613 /* cgdrawcontext.cpp */; };
-		F4462D671756478D00E6835D /* macglobals.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F17C13080B1C00F0A613 /* macglobals.cpp */; };
-		F4462D681756478D00E6835D /* quartzgraphicspath.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F17E13080B1C00F0A613 /* quartzgraphicspath.cpp */; };
-		F4462D691756479100E6835D /* hiviewframe.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F18C13080B2A00F0A613 /* hiviewframe.cpp */; };
-		F4462D6A1756479100E6835D /* hiviewoptionmenu.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F18E13080B2A00F0A613 /* hiviewoptionmenu.cpp */; };
-		F4462D6B1756479100E6835D /* hiviewtextedit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F19013080B2A00F0A613 /* hiviewtextedit.cpp */; };
-		F4462D6C1756479A00E6835D /* autoreleasepool.mm in Sources */ = {isa = PBXBuildFile; fileRef = F497F19A13080B4800F0A613 /* autoreleasepool.mm */; };
-		F4462D6D1756479A00E6835D /* cocoahelpers.mm in Sources */ = {isa = PBXBuildFile; fileRef = F497F19E13080B4800F0A613 /* cocoahelpers.mm */; };
-		F4462D6E1756479A00E6835D /* cocoatextedit.mm in Sources */ = {isa = PBXBuildFile; fileRef = F497F1A013080B4800F0A613 /* cocoatextedit.mm */; };
-		F4462D6F1756479A00E6835D /* cocoaopenglview.mm in Sources */ = {isa = PBXBuildFile; fileRef = F452950613A211E6006EEF82 /* cocoaopenglview.mm */; };
-		F4462D701756479A00E6835D /* nsviewframe.mm in Sources */ = {isa = PBXBuildFile; fileRef = F497F1A413080B4800F0A613 /* nsviewframe.mm */; };
-		F4462D711756479A00E6835D /* nsviewoptionmenu.mm in Sources */ = {isa = PBXBuildFile; fileRef = F497F1A613080B4800F0A613 /* nsviewoptionmenu.mm */; };
-		F4462D721756479A00E6835D /* cfontmac.mm in Sources */ = {isa = PBXBuildFile; fileRef = F497F17613080B1C00F0A613 /* cfontmac.mm */; };
-		F4462D731756479A00E6835D /* macclipboard.mm in Sources */ = {isa = PBXBuildFile; fileRef = F40B7835140E106600E2BF16 /* macclipboard.mm */; };
-		F4462D741756479A00E6835D /* macfileselector.mm in Sources */ = {isa = PBXBuildFile; fileRef = F497F17B13080B1C00F0A613 /* macfileselector.mm */; };
-		F4462D751756479A00E6835D /* macstring.mm in Sources */ = {isa = PBXBuildFile; fileRef = F4FC1A9F1328C8C40066E2F8 /* macstring.mm */; };
 		F447196E19BB5AEA0076782F /* mactimer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F447196D19BB5AEA0076782F /* mactimer.cpp */; };
 		F447196F19BB5AEA0076782F /* mactimer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F447196D19BB5AEA0076782F /* mactimer.cpp */; };
 		F447197019BB5AEA0076782F /* mactimer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F447196D19BB5AEA0076782F /* mactimer.cpp */; };
@@ -111,14 +45,21 @@
 		F44C2604198BA5B4008434DB /* csegmentbutton.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F44C2600198BA5B4008434DB /* csegmentbutton.cpp */; };
 		F44C2605198BA5B4008434DB /* csegmentbutton.h in Headers */ = {isa = PBXBuildFile; fileRef = F44C2601198BA5B4008434DB /* csegmentbutton.h */; };
 		F44C2606198BA5B4008434DB /* csegmentbutton.h in Headers */ = {isa = PBXBuildFile; fileRef = F44C2601198BA5B4008434DB /* csegmentbutton.h */; };
-		F44DC9F118A7C0780029125A /* cstream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4E3901913080ECC00615042 /* cstream.cpp */; };
-		F44DC9F318A7C12F0029125A /* base64codec.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F44DC9F218A7C12F0029125A /* base64codec.cpp */; };
 		F452950813A211E6006EEF82 /* cocoaopenglview.mm in Sources */ = {isa = PBXBuildFile; fileRef = F452950613A211E6006EEF82 /* cocoaopenglview.mm */; };
 		F452950D13A2166A006EEF82 /* copenglview.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F452950B13A2166A006EEF82 /* copenglview.cpp */; };
 		F453B21F13F123700067C1C2 /* uiundomanager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F453B21E13F123700067C1C2 /* uiundomanager.cpp */; };
 		F453B22513F129A20067C1C2 /* uiactions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F453B22413F129A20067C1C2 /* uiactions.cpp */; };
 		F453B22913F19BC40067C1C2 /* uieditview.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F453B22813F19BC30067C1C2 /* uieditview.cpp */; };
 		F45BD679131817CD00C46C02 /* csplitview.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F45BD677131817CD00C46C02 /* csplitview.cpp */; };
+		F4762E831BDA957E00810447 /* cviewcontainer_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4CC1E781709F253008F07FD /* cviewcontainer_test.cpp */; };
+		F4762E841BDA957E00810447 /* crect_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4282B001710699700A79F13 /* crect_test.cpp */; };
+		F4762E851BDA957E00810447 /* ccolor_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4462D2B17563BD900E6835D /* ccolor_test.cpp */; };
+		F4762E861BDA957E00810447 /* idependency_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4462D2D1756444800E6835D /* idependency_test.cpp */; };
+		F4762E871BDA957E00810447 /* base64codec.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F44DC9F218A7C12F0029125A /* base64codec.cpp */; };
+		F4762E881BDA957E00810447 /* utf8stringview_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4E706AB1907BC0000765574 /* utf8stringview_test.cpp */; };
+		F4762E891BDA958100810447 /* unittests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4CC1E99170A3B36008F07FD /* unittests.cpp */; };
+		F4762E8A1BDA958800810447 /* vstgui_mac.mm in Sources */ = {isa = PBXBuildFile; fileRef = F4462D2F175646EE00E6835D /* vstgui_mac.mm */; };
+		F4762E8B1BDA958C00810447 /* vstgui_uidescription_mac.mm in Sources */ = {isa = PBXBuildFile; fileRef = F4462D30175646EE00E6835D /* vstgui_uidescription_mac.mm */; };
 		F47883A418045A300054ED06 /* caviewlayer.mm in Sources */ = {isa = PBXBuildFile; fileRef = F47883A218045A300054ED06 /* caviewlayer.mm */; };
 		F47883A518045A300054ED06 /* caviewlayer.mm in Sources */ = {isa = PBXBuildFile; fileRef = F47883A218045A300054ED06 /* caviewlayer.mm */; };
 		F47883A618045A300054ED06 /* caviewlayer.mm in Sources */ = {isa = PBXBuildFile; fileRef = F47883A218045A300054ED06 /* caviewlayer.mm */; };
@@ -132,7 +73,6 @@
 		F47D201818A6648C00487CDB /* uiattributes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F47D201618A6648C00487CDB /* uiattributes.cpp */; };
 		F47D201918A6648C00487CDB /* uiattributes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F47D201618A6648C00487CDB /* uiattributes.cpp */; };
 		F47D201A18A6648C00487CDB /* uiattributes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F47D201618A6648C00487CDB /* uiattributes.cpp */; };
-		F47D201B18A6648C00487CDB /* uiattributes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F47D201618A6648C00487CDB /* uiattributes.cpp */; };
 		F47D201C18A6648C00487CDB /* uiattributes.h in Headers */ = {isa = PBXBuildFile; fileRef = F47D201718A6648C00487CDB /* uiattributes.h */; };
 		F47D201D18A6648C00487CDB /* uiattributes.h in Headers */ = {isa = PBXBuildFile; fileRef = F47D201718A6648C00487CDB /* uiattributes.h */; };
 		F485F11513F8F7770001A913 /* uitagscontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F485F11413F8F7770001A913 /* uitagscontroller.cpp */; };
@@ -198,10 +138,6 @@
 		F497F1B413080B4800F0A613 /* nsviewoptionmenu.mm in Sources */ = {isa = PBXBuildFile; fileRef = F497F1A613080B4800F0A613 /* nsviewoptionmenu.mm */; };
 		F49B43FE1666081900461790 /* xmlparser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4E3903813080ECC00615042 /* xmlparser.cpp */; };
 		F4A63DE814023EB400023102 /* uifontscontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4A63DE714023EB300023102 /* uifontscontroller.cpp */; };
-		F4A734DD19C6E487006D7CD5 /* clinestyle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4201BD019BB0B5F0001D594 /* clinestyle.cpp */; };
-		F4A734DE19C6E49F006D7CD5 /* cscrollbar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4EA3F2A19A4E5C00054328B /* cscrollbar.cpp */; };
-		F4A734DF19C6E4AE006D7CD5 /* cdrawmethods.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F44C25F8198B9A8E008434DB /* cdrawmethods.cpp */; };
-		F4A734E019C6E4B5006D7CD5 /* mactimer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F447196D19BB5AEA0076782F /* mactimer.cpp */; };
 		F4C0F1F3197AA20700A48B02 /* uicolorslider.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4C0F1F1197AA20700A48B02 /* uicolorslider.cpp */; };
 		F4C0F1F4197AA20700A48B02 /* uicolorslider.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4C0F1F1197AA20700A48B02 /* uicolorslider.cpp */; };
 		F4C0F1F6197AA20700A48B02 /* uicolorslider.h in Headers */ = {isa = PBXBuildFile; fileRef = F4C0F1F2197AA20700A48B02 /* uicolorslider.h */; };
@@ -222,12 +158,10 @@
 		F4CA76BE13F1A1F700BB1842 /* uicrosslines.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4CA76BD13F1A1F700BB1842 /* uicrosslines.cpp */; };
 		F4CA76C613F27A4900BB1842 /* uieditcontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4CA76C513F27A4900BB1842 /* uieditcontroller.cpp */; };
 		F4CA76CA13F27E6700BB1842 /* uitemplatecontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4CA76C913F27E6600BB1842 /* uitemplatecontroller.cpp */; };
-		F4CC1E8A1709F33A008F07FD /* cviewcontainer_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4CC1E781709F253008F07FD /* cviewcontainer_test.cpp */; };
 		F4CC1E91170A0A22008F07FD /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F4CC1E90170A0A22008F07FD /* Cocoa.framework */; };
 		F4CC1E93170A0A27008F07FD /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F4CC1E92170A0A27008F07FD /* Carbon.framework */; };
 		F4CC1E96170A0A40008F07FD /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F4CC1E94170A0A40008F07FD /* Accelerate.framework */; };
 		F4CC1E97170A0A40008F07FD /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F4CC1E95170A0A40008F07FD /* OpenGL.framework */; };
-		F4CC1E9A170A3B36008F07FD /* unittests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4CC1E99170A3B36008F07FD /* unittests.cpp */; };
 		F4CE1BE2141138F700CF75B6 /* cbitmapfilter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4CE1BE1141138F700CF75B6 /* cbitmapfilter.cpp */; };
 		F4D23BB41405466900A5F888 /* uitemplatesettingscontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4D23BB31405466900A5F888 /* uitemplatesettingscontroller.cpp */; };
 		F4E3903A13080ECC00615042 /* cstream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4E3901913080ECC00615042 /* cstream.cpp */; };
@@ -237,7 +171,6 @@
 		F4E3905013080ECC00615042 /* uiviewfactory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4E3902F13080ECC00615042 /* uiviewfactory.cpp */; };
 		F4E3905613080ECC00615042 /* uiviewswitchcontainer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4E3903513080ECC00615042 /* uiviewswitchcontainer.cpp */; };
 		F4E3905913080ECC00615042 /* xmlparser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4E3903813080ECC00615042 /* xmlparser.cpp */; };
-		F4E706AC1907BC0000765574 /* utf8stringview_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4E706AB1907BC0000765574 /* utf8stringview_test.cpp */; };
 		F4E9C6A017A826D000F42EF8 /* animations.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F11A13080AD100F0A613 /* animations.cpp */; };
 		F4E9C6A117A826D000F42EF8 /* animator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F11C13080AD100F0A613 /* animator.cpp */; };
 		F4E9C6A217A826D000F42EF8 /* timingfunctions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F11E13080AD100F0A613 /* timingfunctions.cpp */; };
@@ -301,7 +234,6 @@
 		F4EA3F2E19A4E5C00054328B /* cscrollbar.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4EA3F2A19A4E5C00054328B /* cscrollbar.cpp */; };
 		F4EA3F2F19A4E5C00054328B /* cscrollbar.h in Headers */ = {isa = PBXBuildFile; fileRef = F4EA3F2B19A4E5C00054328B /* cscrollbar.h */; };
 		F4EA3F3019A4E5C00054328B /* cscrollbar.h in Headers */ = {isa = PBXBuildFile; fileRef = F4EA3F2B19A4E5C00054328B /* cscrollbar.h */; };
-		F4F46F90183D20FB00577F86 /* caviewlayer.mm in Sources */ = {isa = PBXBuildFile; fileRef = F47883A218045A300054ED06 /* caviewlayer.mm */; };
 		F4F46F92183D211700577F86 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F4F46F91183D211700577F86 /* QuartzCore.framework */; };
 		F4F52DFF13E2B36500B3DB2F /* crowcolumnview.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4F52DFD13E2B36500B3DB2F /* crowcolumnview.cpp */; };
 		F4F953FA16510F40006EE1D1 /* animations.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F11A13080AD100F0A613 /* animations.cpp */; };
@@ -1339,7 +1271,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "#cd $PROJECT_DIR/../../tests/unittest/lcov/\n#./lcov --capture --directory $OBJECT_FILE_DIR_normal/$NATIVE_ARCH_ACTUAL/ --output-file vstgui-coverage.info\n#./genhtml vstgui-coverage.info --output-directory out\n\n";
+			shellScript = "cd \"$PROJECT_DIR/../../\"\nFOLDER=`pwd`\necho $FOLDER\ncd \"$PROJECT_DIR/../../tests/unittest/lcov/\"\n./lcov --capture --no-external --directory \"$FOLDER/\" --output-file vstgui-coverage.info\n./genhtml vstgui-coverage.info --output-directory out\n\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -1457,83 +1389,15 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F4CC1E8A1709F33A008F07FD /* cviewcontainer_test.cpp in Sources */,
-				F4CC1E9A170A3B36008F07FD /* unittests.cpp in Sources */,
-				F4282B011710699700A79F13 /* crect_test.cpp in Sources */,
-				F4462D2C17563BD900E6835D /* ccolor_test.cpp in Sources */,
-				F4462D2E1756444800E6835D /* idependency_test.cpp in Sources */,
-				F4A734DD19C6E487006D7CD5 /* clinestyle.cpp in Sources */,
-				F4462D371756474E00E6835D /* animations.cpp in Sources */,
-				F4462D381756474E00E6835D /* animator.cpp in Sources */,
-				F4462D391756474E00E6835D /* timingfunctions.cpp in Sources */,
-				F47D201B18A6648C00487CDB /* uiattributes.cpp in Sources */,
-				F4E706AC1907BC0000765574 /* utf8stringview_test.cpp in Sources */,
-				F4462D3A1756474E00E6835D /* cautoanimation.cpp in Sources */,
-				F4462D3B1756474E00E6835D /* cbuttons.cpp in Sources */,
-				F44DC9F318A7C12F0029125A /* base64codec.cpp in Sources */,
-				F4462D3C1756474E00E6835D /* ccolorchooser.cpp in Sources */,
-				F4462D3D1756474E00E6835D /* ccontrol.cpp in Sources */,
-				F4462D3E1756474E00E6835D /* cfontchooser.cpp in Sources */,
-				F4462D3F1756474E00E6835D /* cknob.cpp in Sources */,
-				F4A734DF19C6E4AE006D7CD5 /* cdrawmethods.cpp in Sources */,
-				F4462D401756474E00E6835D /* cmoviebitmap.cpp in Sources */,
-				F4462D411756474E00E6835D /* cmoviebutton.cpp in Sources */,
-				F4462D421756474E00E6835D /* coptionmenu.cpp in Sources */,
-				F4462D431756474E00E6835D /* cparamdisplay.cpp in Sources */,
-				F4462D441756474E00E6835D /* cslider.cpp in Sources */,
-				F4462D451756474E00E6835D /* cspecialdigit.cpp in Sources */,
-				F4462D461756474E00E6835D /* csplashscreen.cpp in Sources */,
-				F4462D471756474E00E6835D /* cswitch.cpp in Sources */,
-				F4462D481756474E00E6835D /* ctextedit.cpp in Sources */,
-				F4462D491756474E00E6835D /* ctextlabel.cpp in Sources */,
-				F4462D4A1756474E00E6835D /* cvumeter.cpp in Sources */,
-				F4462D4B1756475900E6835D /* cbitmap.cpp in Sources */,
-				F4462D4C1756475900E6835D /* cbitmapfilter.cpp in Sources */,
-				F4462D4D1756475900E6835D /* ccolor.cpp in Sources */,
-				F4462D4E1756475900E6835D /* cdatabrowser.cpp in Sources */,
-				F4F46F90183D20FB00577F86 /* caviewlayer.mm in Sources */,
-				F4462D4F1756475900E6835D /* cdrawcontext.cpp in Sources */,
-				F4462D501756475900E6835D /* cdropsource.cpp in Sources */,
-				F4462D511756475900E6835D /* cfileselector.cpp in Sources */,
-				F4462D521756475900E6835D /* cfont.cpp in Sources */,
-				F4A734E019C6E4B5006D7CD5 /* mactimer.cpp in Sources */,
-				F4462D531756475900E6835D /* cframe.cpp in Sources */,
-				F4462D541756475900E6835D /* cgradientview.cpp in Sources */,
-				F4462D551756475900E6835D /* cgraphicspath.cpp in Sources */,
-				F4462D561756475900E6835D /* coffscreencontext.cpp in Sources */,
-				F4462D571756475900E6835D /* copenglview.cpp in Sources */,
-				F4462D581756475900E6835D /* cpoint.cpp in Sources */,
-				F4462D591756475900E6835D /* crect.cpp in Sources */,
-				F4462D5A1756475900E6835D /* crowcolumnview.cpp in Sources */,
-				F4462D5B1756475900E6835D /* cscrollview.cpp in Sources */,
-				F44DC9F118A7C0780029125A /* cstream.cpp in Sources */,
-				F4462D5C1756475900E6835D /* cshadowviewcontainer.cpp in Sources */,
-				F4462D5D1756475900E6835D /* csplitview.cpp in Sources */,
-				F4A734DE19C6E49F006D7CD5 /* cscrollbar.cpp in Sources */,
-				F4462D5E1756475900E6835D /* cstring.cpp in Sources */,
-				F4462D5F1756475900E6835D /* ctabview.cpp in Sources */,
-				F4462D601756475900E6835D /* ctooltipsupport.cpp in Sources */,
-				F4462D611756475900E6835D /* cview.cpp in Sources */,
-				F4462D621756475900E6835D /* cviewcontainer.cpp in Sources */,
-				F4462D631756475900E6835D /* cvstguitimer.cpp in Sources */,
-				F4462D641756475900E6835D /* vstguidebug.cpp in Sources */,
-				F4462D651756478D00E6835D /* cgbitmap.cpp in Sources */,
-				F4462D661756478D00E6835D /* cgdrawcontext.cpp in Sources */,
-				F4462D671756478D00E6835D /* macglobals.cpp in Sources */,
-				F4462D681756478D00E6835D /* quartzgraphicspath.cpp in Sources */,
-				F4462D691756479100E6835D /* hiviewframe.cpp in Sources */,
-				F4462D6A1756479100E6835D /* hiviewoptionmenu.cpp in Sources */,
-				F4462D6B1756479100E6835D /* hiviewtextedit.cpp in Sources */,
-				F4462D6C1756479A00E6835D /* autoreleasepool.mm in Sources */,
-				F4462D6D1756479A00E6835D /* cocoahelpers.mm in Sources */,
-				F4462D6E1756479A00E6835D /* cocoatextedit.mm in Sources */,
-				F4462D6F1756479A00E6835D /* cocoaopenglview.mm in Sources */,
-				F4462D701756479A00E6835D /* nsviewframe.mm in Sources */,
-				F4462D711756479A00E6835D /* nsviewoptionmenu.mm in Sources */,
-				F4462D721756479A00E6835D /* cfontmac.mm in Sources */,
-				F4462D731756479A00E6835D /* macclipboard.mm in Sources */,
-				F4462D741756479A00E6835D /* macfileselector.mm in Sources */,
-				F4462D751756479A00E6835D /* macstring.mm in Sources */,
+				F4762E861BDA957E00810447 /* idependency_test.cpp in Sources */,
+				F4762E831BDA957E00810447 /* cviewcontainer_test.cpp in Sources */,
+				F4762E881BDA957E00810447 /* utf8stringview_test.cpp in Sources */,
+				F4762E8B1BDA958C00810447 /* vstgui_uidescription_mac.mm in Sources */,
+				F4762E851BDA957E00810447 /* ccolor_test.cpp in Sources */,
+				F4762E891BDA958100810447 /* unittests.cpp in Sources */,
+				F4762E841BDA957E00810447 /* crect_test.cpp in Sources */,
+				F4762E871BDA957E00810447 /* base64codec.cpp in Sources */,
+				F4762E8A1BDA958800810447 /* vstgui_mac.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1817,6 +1681,8 @@
 				CLANG_WARN_CXX0X_EXTENSIONS = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				GCC_C_LANGUAGE_STANDARD = c11;
+				GCC_GENERATE_TEST_COVERAGE_FILES = YES;
+				GCC_INSTRUMENT_PROGRAM_FLOW_ARCS = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",
@@ -1836,6 +1702,8 @@
 				CLANG_WARN_CXX0X_EXTENSIONS = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				GCC_C_LANGUAGE_STANDARD = c11;
+				GCC_GENERATE_TEST_COVERAGE_FILES = YES;
+				GCC_INSTRUMENT_PROGRAM_FLOW_ARCS = YES;
 				GCC_OPTIMIZATION_LEVEL = 3;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					NDEBUG,
