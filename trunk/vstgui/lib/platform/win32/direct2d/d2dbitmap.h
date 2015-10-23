@@ -115,7 +115,7 @@ public:
 	static D2DBitmapCache* instance ();
 //-----------------------------------------------------------------------------
 protected:
-	D2DBitmapCache () {};
+	D2DBitmapCache ();
 	~D2DBitmapCache ();
 	ID2D1Bitmap* createBitmap (D2DBitmap* bitmap, ID2D1RenderTarget* renderTarget);
 	typedef std::map<ID2D1RenderTarget*, ID2D1Bitmap*> RenderTargetBitmapMap;
