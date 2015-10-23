@@ -89,7 +89,9 @@ D2DBitmap::D2DBitmap (const CPoint& size)
 //-----------------------------------------------------------------------------
 D2DBitmap::~D2DBitmap ()
 {
-	D2DBitmapCache::instance ()->removeBitmap (this);
+	D2DBitmapCache* gCache = D2DBitmapCache::instance ();
+	if (gCache)
+		gCache->removeBitmap (this);
 	if (source)
 		source->Release ();
 }
@@ -459,6 +461,13 @@ ID2D1Bitmap* D2DBitmapCache::createBitmap (D2DBitmap* bitmap, ID2D1RenderTarget*
 	return d2d1Bitmap;
 }
 
+static D2DBitmapCache* gD2DBitmapCache = 0;
+//-----------------------------------------------------------------------------
+D2DBitmapCache::D2DBitmapCache ()
+{
+	gD2DBitmapCache = this;
+}
+
 //-----------------------------------------------------------------------------
 D2DBitmapCache::~D2DBitmapCache ()
 {
@@ -468,13 +477,14 @@ D2DBitmapCache::~D2DBitmapCache ()
 		assert (it->second.size () == 0);
 	}
 #endif
+	gD2DBitmapCache = 0;
 }
 
 //-----------------------------------------------------------------------------
 D2DBitmapCache* D2DBitmapCache::instance ()
 {
 	static D2DBitmapCache gInstance;
-	return &gInstance;
+	return gD2DBitmapCache;
 }
 
 //-----------------------------------------------------------------------------
