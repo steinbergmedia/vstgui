@@ -36,12 +36,73 @@
 #include "cbitmap.h"
 #include "cstring.h"
 #include "cdrawcontext.h"
+#include "platform/iplatformfont.h"
 
 namespace VSTGUI {
 namespace CDrawMethods {
 
 //------------------------------------------------------------------------
-void drawIconAndText (CDrawContext* context, CBitmap* iconToDraw, IconPosition iconPosition, CHoriTxtAlign textAlignment, CCoord textIconMargin, CRect drawRect, const UTF8String& title, CFontRef font, CColor textColor)
+UTF8String createTruncatedText (TextTruncateMode mode, const UTF8String& text, CFontRef font, CCoord maxWidth, const CPoint& textInset, uint32_t flags)
+{
+	if (mode == TextTruncateMode::kNone)
+		return text;
+	IFontPainter* painter = font->getPlatformFont ()->getPainter ();
+	CCoord width = painter->getStringWidth (0, text.getPlatformString (), true);
+	width += textInset.x * 2;
+	if (width > maxWidth)
+	{
+		std::string _truncatedText;
+		UTF8String utf8Str;
+		if (mode == kTail)
+		{
+			_truncatedText = text;
+			_truncatedText += "..";
+			while (width > maxWidth && _truncatedText.size () > 2)
+			{
+				UTF8CharacterIterator it (_truncatedText);
+				it.end ();
+				for (int32_t i = 0; i < 3; i++, --it)
+				{
+					if (it == it.front ())
+					{
+						break;
+					}
+				}
+				_truncatedText.erase (_truncatedText.size () - (2 + it.getByteLength ()), it.getByteLength ());
+				utf8Str.set (_truncatedText.c_str ());
+				width = painter->getStringWidth (0, utf8Str.getPlatformString (), true);
+				width += textInset.x * 2;
+			}
+		}
+		else if (mode == kHead)
+		{
+			_truncatedText = "..";
+			_truncatedText += text;
+			while (width > maxWidth && _truncatedText.size () > 2)
+			{
+				UTF8CharacterIterator it (_truncatedText);
+				for (int32_t i = 0; i < 2; i++, ++it)
+				{
+					if (it == it.back ())
+					{
+						break;
+					}
+				}
+				_truncatedText.erase (2, it.getByteLength ());
+				utf8Str.set (_truncatedText.c_str ());
+				width = painter->getStringWidth (0, utf8Str.getPlatformString (), true);
+				width += textInset.x * 2;
+			}
+		}
+		if (width > maxWidth && flags & CreateTextTruncateFlags::kReturnEmptyIfTruncationIsPlaceholderOnly)
+			utf8Str.set ("");
+		return utf8Str;
+	}
+	return text;
+}
+
+//------------------------------------------------------------------------
+void drawIconAndText (CDrawContext* context, CBitmap* iconToDraw, IconPosition iconPosition, CHoriTxtAlign textAlignment, CCoord textIconMargin, CRect drawRect, const UTF8String& title, CFontRef font, CColor textColor, TextTruncateMode textTruncateMode)
 {
 	if (iconToDraw)
 	{
@@ -115,7 +176,13 @@ void drawIconAndText (CDrawContext* context, CBitmap* iconToDraw, IconPosition i
 	{
 		context->setFont (font);
 		context->setFontColor (textColor);
-		context->drawString (title.getPlatformString (), drawRect, textAlignment);
+		if (textTruncateMode != TextTruncateMode::kNone)
+		{
+			UTF8String truncatedText = createTruncatedText (textTruncateMode, title, font, drawRect.getWidth (), CPoint (0, 0), CreateTextTruncateFlags::kReturnEmptyIfTruncationIsPlaceholderOnly);
+			context->drawString (truncatedText.getPlatformString (), drawRect, textAlignment);
+		}
+		else
+			context->drawString (title.getPlatformString (), drawRect, textAlignment);
 	}
 }
 

@@ -39,6 +39,7 @@
 #include "graphicstest.h"
 #include "openglviewtest.h"
 #include "zoomtest.h"
+#include "edituidescriptioneditor.h"
 #include "public.sdk/source/main/pluginfactoryvst3.h"
 
 using namespace VSTGUI;
@@ -167,7 +168,27 @@ BEGIN_FACTORY("VSTGUI", "", "", PFactoryInfo::kUnicode)
 				"1.0.0",
 				kVstVersionString,
 				ZoomTestController::createInstance)
-				
+
+	DEF_CLASS2 (INLINE_UID_FROM_FUID(EditEditorProcessor::cid),
+				PClassInfo::kManyInstances,
+				kVstAudioEffectClass,
+				"UIDescription Editor",
+				Vst::kDistributable,
+				"Fx",
+				"1.0.0",
+				kVstVersionString,
+				EditEditorProcessor::createInstance)
+
+	DEF_CLASS2 (INLINE_UID_FROM_FUID(EditEditorController::cid),
+				PClassInfo::kManyInstances,
+				kVstComponentControllerClass,
+				"UIDescription Editor",
+				Vst::kDistributable,
+				"Fx",
+				"1.0.0",
+				kVstVersionString,
+				EditEditorController::createInstance)
+
 END_FACTORY
 
 //------------------------------------------------------------------------

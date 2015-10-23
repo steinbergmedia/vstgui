@@ -38,6 +38,7 @@
 #include "vstguifwd.h"
 #include "cdrawdefs.h"
 #include "cfont.h"
+#include "cpoint.h"
 
 namespace VSTGUI {
 
@@ -51,8 +52,34 @@ enum IconPosition {
 	kIconRight			///< icon right, text centered in the area next to the icon
 };
 
-/**
- *  draws an icon and a string into a rectangle
+//-----------------------------------------------------------------------------
+enum TextTruncateMode {
+	kNone,
+	kHead,
+	kTail
+};
+
+//-----------------------------------------------------------------------------
+enum CreateTextTruncateFlags {
+	/** return an empty string if the truncated text is only the placeholder string */
+	kReturnEmptyIfTruncationIsPlaceholderOnly = 1 << 0,
+};
+
+//-----------------------------------------------------------------------------
+/** create a truncated string
+ *
+ *	@param mode			truncation mode
+ *	@param text			text string
+ *	@param font			font
+ *	@param maxWidth		maximum width
+ *	@param textInset	text inset
+ *	@param flags		flags see CreateTextTruncateFlags
+ *	@return				truncated text or original text if no truncation needed
+ */
+UTF8String createTruncatedText (TextTruncateMode mode, const UTF8String& text, CFontRef font, CCoord maxWidth, const CPoint& textInset = CPoint (0, 0), uint32_t flags = 0);
+
+//-----------------------------------------------------------------------------
+/** draws an icon and a string into a rectangle
  *
  *  @param context       	draw context
  *  @param iconToDraw    	icon to draw
@@ -64,7 +91,7 @@ enum IconPosition {
  *  @param font          	font
  *  @param textColor     	font color
  */
-void drawIconAndText (CDrawContext* context, CBitmap* iconToDraw, IconPosition iconPosition, CHoriTxtAlign textAlignment, CCoord textIconMargin, CRect drawRect, const UTF8String& title, CFontRef font, CColor textColor);
+void drawIconAndText (CDrawContext* context, CBitmap* iconToDraw, IconPosition iconPosition, CHoriTxtAlign textAlignment, CCoord textIconMargin, CRect drawRect, const UTF8String& title, CFontRef font, CColor textColor, TextTruncateMode truncateMode = TextTruncateMode::kNone);
 	
 }} // namespaces
 

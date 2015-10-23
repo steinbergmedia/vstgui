@@ -219,7 +219,7 @@ class UIBitmapNode : public UINode
 public:
 	UIBitmapNode (const std::string& name, UIAttributes* attributes);
 	UIBitmapNode (const UIBitmapNode& n);
-	CBitmap* getBitmap ();
+	CBitmap* getBitmap (const std::string& pathHint);
 	void setBitmap (UTF8StringPtr bitmapName);
 	void setNinePartTiledOffset (const CRect* offsets);
 	void invalidBitmap ();
@@ -228,11 +228,12 @@ public:
 	bool getScaledBitmapsAdded () const { return scaledBitmapsAdded; }
 	void setScaledBitmapsAdded () { scaledBitmapsAdded = true; }
 	
-	void createXMLData ();
+	void createXMLData (const std::string& pathHint);
 	void removeXMLData ();
 	CLASS_METHODS(UIBitmapNode, UINode)
 protected:
 	~UIBitmapNode ();
+	CBitmap* createBitmap (const std::string& str, CNinePartTiledDescription* partDesc) const;
 	CBitmap* bitmap;
 	bool filterProcessed;
 	bool scaledBitmapsAdded;
@@ -709,6 +710,7 @@ UIDescription::~UIDescription ()
 void UIDescription::setFilePath (UTF8StringPtr path)
 {
 	filePath = path;
+	xmlFile.u.name = filePath.c_str (); // make sure that xmlFile.u.name points to valid memory
 }
 
 //-----------------------------------------------------------------------------
@@ -924,7 +926,7 @@ bool UIDescription::saveToStream (OutputStream& stream, int32_t flags)
 			if (bitmapNode)
 			{
 				if (flags & kWriteImagesIntoXMLFile)
-					bitmapNode->createXMLData ();
+					bitmapNode->createXMLData (filePath);
 				else
 					bitmapNode->removeXMLData ();
 				
@@ -1350,7 +1352,7 @@ CBitmap* UIDescription::getBitmap (UTF8StringPtr name) const
 	UIBitmapNode* bitmapNode = dynamic_cast<UIBitmapNode*> (findChildNodeByNameAttribute (getBaseNode (MainNodeNames::kBitmap), name));
 	if (bitmapNode)
 	{
-		CBitmap* bitmap = bitmapNode->getBitmap ();
+		CBitmap* bitmap = bitmapNode->getBitmap (filePath);
 		if (bitmapCreator && bitmap && bitmap->getPlatformBitmap () == 0)
 		{
 			IPlatformBitmap* platformBitmap = bitmapCreator->createBitmap (*bitmapNode->getAttributes ());
@@ -1561,7 +1563,7 @@ UTF8StringPtr UIDescription::lookupBitmapName (const CBitmap* bitmap) const
 {
 	struct Compare {
 		bool operator () (const UIDescription* desc, UIBitmapNode* node, const CBitmap* bitmap) const {
-			return node->getBitmap() == bitmap;
+			return node->getBitmap (desc->filePath) == bitmap;
 		}
 	};
 	return bitmap ? lookupName<UIBitmapNode> (bitmap, MainNodeNames::kBitmap, Compare ()) : 0;
@@ -2979,9 +2981,9 @@ UIBitmapNode::~UIBitmapNode ()
 }
 
 //-----------------------------------------------------------------------------
-void UIBitmapNode::createXMLData ()
+void UIBitmapNode::createXMLData (const std::string& pathHint)
 {
-	CBitmap* bitmap = getBitmap ();
+	CBitmap* bitmap = getBitmap (pathHint);
 	if (bitmap)
 	{
 		IPlatformBitmap* platformBitmap = bitmap->getPlatformBitmap ();
@@ -3017,21 +3019,40 @@ void UIBitmapNode::removeXMLData ()
 }
 
 //-----------------------------------------------------------------------------
-CBitmap* UIBitmapNode::getBitmap ()
+CBitmap* UIBitmapNode::createBitmap (const std::string& str, CNinePartTiledDescription* partDesc) const
+{
+	if (partDesc)
+		return new CNinePartTiledBitmap (CResourceDescription (str.c_str()), *partDesc);
+	return new CBitmap (CResourceDescription (str.c_str()));
+}
+
+//-----------------------------------------------------------------------------
+CBitmap* UIBitmapNode::getBitmap (const std::string& pathHint)
 {
 	if (bitmap == 0)
 	{
 		const std::string* path = attributes->getAttributeValue ("path");
 		if (path)
 		{
+			CNinePartTiledDescription partDesc;
+			CNinePartTiledDescription* partDescPtr = 0;
 			CRect offsets;
 			if (attributes->getRectAttribute ("nineparttiled-offsets", offsets))
 			{
-				bitmap = new CNinePartTiledBitmap (CResourceDescription (path->c_str ()), CNinePartTiledDescription (offsets.left, offsets.top, offsets.right, offsets.bottom));
+				partDesc = CNinePartTiledDescription (offsets.left, offsets.top, offsets.right, offsets.bottom);
+				partDescPtr = &partDesc;
 			}
-			else
+			bitmap = createBitmap (*path, partDescPtr);
+			if (bitmap->getPlatformBitmap () == 0 && pathIsAbsolute (pathHint))
 			{
-				bitmap = new CBitmap (CResourceDescription (path->c_str ()));
+				std::string absPath = pathHint;
+				if (removeLastPathComponent (absPath))
+				{
+					absPath += "/" + *path;
+					SharedPointer<IPlatformBitmap> platformBitmap = owned (IPlatformBitmap::createFromPath (absPath.c_str ()));
+					if (platformBitmap)
+						bitmap->setPlatformBitmap (platformBitmap);
+				}
 			}
 		}
 		if (bitmap && bitmap->getPlatformBitmap () == 0)

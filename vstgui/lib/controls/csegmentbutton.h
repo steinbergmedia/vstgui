@@ -93,6 +93,9 @@ public:
 	void setStyle (Style newStyle);
 	Style getStyle () const { return style; }
 
+	void setTextTruncateMode (CDrawMethods::TextTruncateMode mode);
+	CDrawMethods::TextTruncateMode getTextTruncateMode () const { return textTruncateMode; }
+
 	void setGradient (CGradient* newGradient);
 	CGradient* getGradient () const { return gradient; }
 	
@@ -151,6 +154,7 @@ private:
 	CCoord roundRadius;
 	CCoord frameWidth;
 	Style style;
+	CDrawMethods::TextTruncateMode textTruncateMode;
 };
 
 } // namespace

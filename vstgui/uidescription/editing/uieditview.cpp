@@ -119,7 +119,7 @@ public:
 	~UISelectionView ();
 
 private:
-	void draw (CDrawContext* pContext);
+	void draw (CDrawContext* pContext) VSTGUI_OVERRIDE_VMETHOD;
 	void drawResizeHandle (const CPoint& p, CDrawContext* pContext);
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
 	

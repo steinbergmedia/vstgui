@@ -55,6 +55,7 @@ CSegmentButton::CSegmentButton (const CRect& size, IControlListener* listener, i
 , roundRadius (5)
 , frameWidth (1)
 , style (kHorizontal)
+, textTruncateMode (CDrawMethods::TextTruncateMode::kNone)
 {
 	setWantsFocus (true);
 }
@@ -112,6 +113,16 @@ void CSegmentButton::setStyle (Style newStyle)
 	{
 		style = newStyle;
 		updateSegmentSizes ();
+		invalid ();
+	}
+}
+
+//-----------------------------------------------------------------------------
+void CSegmentButton::setTextTruncateMode (CDrawMethods::TextTruncateMode mode)
+{
+	if (textTruncateMode != mode)
+	{
+		textTruncateMode = mode;
 		invalid ();
 	}
 }
@@ -361,7 +372,7 @@ void CSegmentButton::drawRect (CDrawContext* pContext, const CRect& dirtyRect)
 			segment.backgroundHighlighted->draw (pContext, segment.rect);
 		else if (segment.background)
 			segment.background->draw (pContext, segment.rect);
-		CDrawMethods::drawIconAndText (pContext, selected ? segment.iconHighlighted : segment.icon, segment.iconPosition, textAlignment, textMargin, segment.rect, segment.name, font, selected ? textColorHighlighted : textColor);
+		CDrawMethods::drawIconAndText (pContext, selected ? segment.iconHighlighted : segment.icon, segment.iconPosition, textAlignment, textMargin, segment.rect, segment.name, font, selected ? textColorHighlighted : textColor, textTruncateMode);
 		pContext->setClipRect (oldClip);
 		if (drawLines && index > 0 && index < segments.size ())
 		{

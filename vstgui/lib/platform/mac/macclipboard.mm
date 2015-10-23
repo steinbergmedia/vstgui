@@ -269,7 +269,7 @@ void setClipboard (IDataPackage* dataSource)
 	}
 	else
 	{
-		[pb declareTypes:nil owner:nil];
+		[pb declareTypes:[NSArray array] owner:nil];
 	}
 }
 

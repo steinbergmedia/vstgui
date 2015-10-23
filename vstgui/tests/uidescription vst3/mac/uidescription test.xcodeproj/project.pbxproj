@@ -11,6 +11,7 @@
 		F41CA1C8112E99F000D425D7 /* animationtest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F41CA1C7112E99F000D425D7 /* animationtest.cpp */; };
 		F41CA21F112E9E6B00D425D7 /* AnimationTest.uidesc in Resources */ = {isa = PBXBuildFile; fileRef = F41CA21E112E9E6B00D425D7 /* AnimationTest.uidesc */; };
 		F420E6DB1906D45300AFD962 /* libvstgui c++11.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F481925C165D3C050035058F /* libvstgui c++11.a */; };
+		F420F3B51BD8DAB500F4CBAF /* edituidescriptioneditor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F420F3B31BD8DAB500F4CBAF /* edituidescriptioneditor.cpp */; settings = {ASSET_TAGS = (); }; };
 		F42731DE1125507F00BE2194 /* factory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F42731DD1125507F00BE2194 /* factory.cpp */; };
 		F42731E51125516A00BE2194 /* subcontrollertest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F42731E41125516A00BE2194 /* subcontrollertest.cpp */; };
 		F427326A1125623200BE2194 /* SubControllerTest.uidesc in Resources */ = {isa = PBXBuildFile; fileRef = F42732691125623200BE2194 /* SubControllerTest.uidesc */; };
@@ -101,6 +102,8 @@
 		F41CA1C6112E99F000D425D7 /* animationtest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = animationtest.h; path = ../source/animationtest.h; sourceTree = SOURCE_ROOT; };
 		F41CA1C7112E99F000D425D7 /* animationtest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = animationtest.cpp; path = ../source/animationtest.cpp; sourceTree = SOURCE_ROOT; };
 		F41CA21E112E9E6B00D425D7 /* AnimationTest.uidesc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = AnimationTest.uidesc; path = ../resource/AnimationTest.uidesc; sourceTree = SOURCE_ROOT; };
+		F420F3B31BD8DAB500F4CBAF /* edituidescriptioneditor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = edituidescriptioneditor.cpp; path = ../source/edituidescriptioneditor.cpp; sourceTree = "<group>"; };
+		F420F3B41BD8DAB500F4CBAF /* edituidescriptioneditor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = edituidescriptioneditor.h; path = ../source/edituidescriptioneditor.h; sourceTree = "<group>"; };
 		F42731C011254BEC00BE2194 /* uidescription test.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "uidescription test.h"; path = "../source/uidescription test.h"; sourceTree = SOURCE_ROOT; };
 		F42731DD1125507F00BE2194 /* factory.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = factory.cpp; path = ../source/factory.cpp; sourceTree = SOURCE_ROOT; };
 		F42731E31125516A00BE2194 /* subcontrollertest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = subcontrollertest.h; path = ../source/subcontrollertest.h; sourceTree = SOURCE_ROOT; };
@@ -201,6 +204,8 @@
 				F440753410BE6C0A003C59F6 /* prefix.h */,
 				F440755510BE6D26003C59F6 /* uidescription test.cpp */,
 				F42731C011254BEC00BE2194 /* uidescription test.h */,
+				F420F3B31BD8DAB500F4CBAF /* edituidescriptioneditor.cpp */,
+				F420F3B41BD8DAB500F4CBAF /* edituidescriptioneditor.h */,
 				F455A16F13D1BBB800C2C7C5 /* openglviewtest.cpp */,
 				F455A17113D1BBCD00C2C7C5 /* openglviewtest.h */,
 				F42731DD1125507F00BE2194 /* factory.cpp */,
@@ -456,6 +461,7 @@
 				F440758810BF043D003C59F6 /* vst3editor.cpp in Sources */,
 				F49A665D195C2FCD00CF5163 /* zoomtest.cpp in Sources */,
 				F42731DE1125507F00BE2194 /* factory.cpp in Sources */,
+				F420F3B51BD8DAB500F4CBAF /* edituidescriptioneditor.cpp in Sources */,
 				F42731E51125516A00BE2194 /* subcontrollertest.cpp in Sources */,
 				F41CA1C8112E99F000D425D7 /* animationtest.cpp in Sources */,
 				F4657609114F83D100846DAE /* graphicstest.cpp in Sources */,
@@ -555,6 +561,10 @@
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
 				CLANG_CXX_LIBRARY = "libc++";
+				HEADER_SEARCH_PATHS = (
+					../../../../,
+					../../../../../../git/VST3SDK/,
+				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../../../ide/xcode4/build/Debug\"",
@@ -567,6 +577,10 @@
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
 				CLANG_CXX_LIBRARY = "libc++";
+				HEADER_SEARCH_PATHS = (
+					../../../../,
+					../../../../../../git/VST3SDK/,
+				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../../../ide/xcode4/build/Release\"",
