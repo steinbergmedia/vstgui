@@ -55,13 +55,13 @@ public:
 	~UIColorsDataSource ();
 	
 protected:
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message);
-	virtual void update () VSTGUI_OVERRIDE_VMETHOD;
-	virtual void getNames (std::list<const std::string*>& names) VSTGUI_OVERRIDE_VMETHOD;
-	virtual bool addItem (UTF8StringPtr name) VSTGUI_OVERRIDE_VMETHOD;
-	virtual bool removeItem (UTF8StringPtr name) VSTGUI_OVERRIDE_VMETHOD;
-	virtual bool performNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) VSTGUI_OVERRIDE_VMETHOD;
-	virtual UTF8StringPtr getDefaultsName () VSTGUI_OVERRIDE_VMETHOD { return "UIColorsDataSource"; }
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
+	void update () VSTGUI_OVERRIDE_VMETHOD;
+	void getNames (std::list<const std::string*>& names) VSTGUI_OVERRIDE_VMETHOD;
+	bool addItem (UTF8StringPtr name) VSTGUI_OVERRIDE_VMETHOD;
+	bool removeItem (UTF8StringPtr name) VSTGUI_OVERRIDE_VMETHOD;
+	bool performNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) VSTGUI_OVERRIDE_VMETHOD;
+	UTF8StringPtr getDefaultsName () VSTGUI_OVERRIDE_VMETHOD { return "UIColorsDataSource"; }
 
 	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
 	void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* control, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;

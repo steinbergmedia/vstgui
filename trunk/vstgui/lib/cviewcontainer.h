@@ -246,7 +246,7 @@ public:
 	CLASS_METHODS(CViewContainer, CView)
 
 	#if DEBUG
-	virtual void dumpInfo ();
+	virtual void dumpInfo () VSTGUI_OVERRIDE_VMETHOD;
 	virtual void dumpHierarchy ();
 	#endif
 

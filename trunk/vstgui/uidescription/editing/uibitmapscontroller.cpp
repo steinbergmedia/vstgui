@@ -60,7 +60,7 @@ public:
 		setBackground (bitmap);
 	}
 	
-	void draw (CDrawContext* context)
+	void draw (CDrawContext* context) VSTGUI_OVERRIDE_VMETHOD
 	{
 		if (CBitmap* bitmap = getBackground ())
 		{
@@ -170,13 +170,13 @@ public:
 	CBitmap* getSelectedBitmap ();
 	UTF8StringPtr getSelectedBitmapName ();
 
-	virtual bool add ();
+	bool add () VSTGUI_OVERRIDE_VMETHOD;
 protected:
-	virtual void getNames (std::list<const std::string*>& names);
-	virtual bool addItem (UTF8StringPtr name);
-	virtual bool removeItem (UTF8StringPtr name);
-	virtual bool performNameChange (UTF8StringPtr oldName, UTF8StringPtr newName);
-	virtual UTF8StringPtr getDefaultsName () { return "UIBitmapsDataSource"; }
+	void getNames (std::list<const std::string*>& names) VSTGUI_OVERRIDE_VMETHOD;
+	bool addItem (UTF8StringPtr name) VSTGUI_OVERRIDE_VMETHOD;
+	bool removeItem (UTF8StringPtr name) VSTGUI_OVERRIDE_VMETHOD;
+	bool performNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) VSTGUI_OVERRIDE_VMETHOD;
+	UTF8StringPtr getDefaultsName () VSTGUI_OVERRIDE_VMETHOD { return "UIBitmapsDataSource"; }
 
 	bool addBitmap (UTF8StringPtr path, std::string& outName);
 
@@ -353,11 +353,9 @@ bool UIBitmapsDataSource::addBitmap (UTF8StringPtr path, std::string& outName)
 		{
 			std::string descPathStr (descPath);
 			unixfyPath (descPathStr);
-			index = descPathStr.find_last_of (unixPathSeparator);
-			if (index != std::string::npos)
+			if (removeLastPathComponent (descPathStr))
 			{
-				descPathStr.erase (index);
-				if ((index = pathStr.find (descPathStr)) == 0)
+				if (pathStr.find (descPathStr) == 0)
 				{
 					pathStr.erase (0, descPathStr.length () + 1);
 				}

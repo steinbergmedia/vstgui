@@ -34,6 +34,7 @@
 
 #include "ctextlabel.h"
 #include "../platform/iplatformfont.h"
+#include "../cdrawmethods.h"
 
 namespace VSTGUI {
 
@@ -99,61 +100,17 @@ void CTextLabel::setTextTruncateMode (TextTruncateMode mode)
 //------------------------------------------------------------------------
 void CTextLabel::calculateTruncatedText ()
 {
-	truncatedText = "";
 	if (textRotation != 0.) // currently truncation is only supported when not rotated
+	{
+		truncatedText = "";
 		return;
-	std::string _truncatedText;
+	}
 	if (!(textTruncateMode == kTruncateNone || text.getByteCount () == 0 || fontID == 0 || fontID->getPlatformFont () == 0 || fontID->getPlatformFont ()->getPainter () == 0))
 	{
-		IFontPainter* painter = fontID->getPlatformFont ()->getPainter ();
-		CCoord width = painter->getStringWidth (0, text.getPlatformString (), true);
-		width += textInset.x * 2;
-		if (width > getWidth ())
-		{
-			if (textTruncateMode == kTruncateTail)
-			{
-				_truncatedText = text;
-				_truncatedText += "..";
-				while (width > getWidth () && _truncatedText.size () > 2)
-				{
-					UTF8CharacterIterator it (_truncatedText);
-					it.end ();
-					for (int32_t i = 0; i < 3; i++, --it)
-					{
-						if (it == it.front ())
-						{
-							break;
-						}
-					}
-					_truncatedText.erase (_truncatedText.size () - (2 + it.getByteLength ()), it.getByteLength ());
-					width = painter->getStringWidth (0, CString (_truncatedText.c_str ()).getPlatformString (), true);
-					width += textInset.x * 2;
-				}
-			}
-			else if (textTruncateMode == kTruncateHead)
-			{
-				_truncatedText = "..";
-				_truncatedText += text;
-				while (width > getWidth () && _truncatedText.size () > 2)
-				{
-					UTF8CharacterIterator it (_truncatedText);
-					for (int32_t i = 0; i < 2; i++, ++it)
-					{
-						if (it == it.back ())
-						{
-							break;
-						}
-					}
-					_truncatedText.erase (2, it.getByteLength ());
-					width = painter->getStringWidth (0, CString (_truncatedText.c_str ()).getPlatformString (), true);
-					width += textInset.x * 2;
-				}
-			}
-		}
-	}
-	if (truncatedText != _truncatedText)
-	{
-		truncatedText = _truncatedText.c_str ();
+		CDrawMethods::TextTruncateMode mode = textTruncateMode == kTruncateHead ? CDrawMethods::TextTruncateMode::kHead : CDrawMethods::TextTruncateMode::kTail;
+		truncatedText = CDrawMethods::createTruncatedText (mode, text, fontID, getWidth ());
+		if (truncatedText == text)
+			truncatedText.set (0);
 		changed (kMsgTruncatedTextChanged);
 	}
 }

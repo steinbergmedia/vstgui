@@ -82,9 +82,9 @@ public:
 
 	CLASS_METHODS(CShadowViewContainer, CViewContainer)
 protected:
-	void viewContainerViewAdded (CViewContainer* container, CView* view);
-	void viewContainerViewRemoved (CViewContainer* container, CView* view);
-	void viewContainerViewZOrderChanged (CViewContainer* container, CView* view);
+	void viewContainerViewAdded (CViewContainer* container, CView* view) VSTGUI_OVERRIDE_VMETHOD;
+	void viewContainerViewRemoved (CViewContainer* container, CView* view) VSTGUI_OVERRIDE_VMETHOD;
+	void viewContainerViewZOrderChanged (CViewContainer* container, CView* view) VSTGUI_OVERRIDE_VMETHOD;
 
 	bool dontDrawBackground;
 	CPoint shadowOffset;

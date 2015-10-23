@@ -186,7 +186,7 @@ public:
 	virtual VSTGUIEditorInterface* getEditor () const VSTGUI_OVERRIDE_VMETHOD { return pEditor; }
 
 	#if DEBUG
-	virtual void dumpHierarchy ();
+	virtual void dumpHierarchy () VSTGUI_OVERRIDE_VMETHOD;
 	#endif
 
 	CLASS_METHODS(CFrame, CViewContainer)

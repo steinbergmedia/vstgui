@@ -82,19 +82,12 @@ public:
 		{
 			std::string descPath (__FILE__);
 			unixfyPath (descPath);
-			size_t sepPos = descPath.find_last_of (unixPathSeparator);
-			if (sepPos != std::string::npos)
+			if (removeLastPathComponent (descPath))
 			{
-				descPath.erase (sepPos+1);
-				descPath += "uidescriptioneditor.uidesc";
-				CFileStream stream;
-				if (stream.open (descPath.c_str (), CFileStream::kReadMode))
-				{
-					Xml::InputStreamContentProvider xmlProvider (stream);
-					SharedPointer<UIDescription> editorDesc = owned (new UIDescription (&xmlProvider));
-					if (editorDesc->parse ())
-						uiDesc = editorDesc;
-				}
+				descPath += "/uidescriptioneditor.uidesc";
+				SharedPointer<UIDescription> editorDesc = owned (new UIDescription (descPath.c_str ()));
+				if (editorDesc->parse ())
+					uiDesc = editorDesc;
 			}
 		}
 		return *uiDesc;
@@ -534,12 +527,27 @@ CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes
 				CSegmentButton* button = dynamic_cast<CSegmentButton*>(control);
 				if (button)
 				{
-					button->setMax (static_cast<float> (button->getSegments ().size ()));
+					size_t numSegments = button->getSegments ().size ();
+					button->setMax (static_cast<float> (numSegments));
 					tabSwitchControl = button;
 					tabSwitchControl->addDependency (this);
 					int32_t value = 0;
 					getSettings ()->getIntegerAttribute ("TabSwitchValue", value);
 					button->setSelectedSegment (static_cast<uint32_t> (value));
+					static const char* segmentBitmapNames[] = {"segment-views", "segment-tags", "segment-colors", "segment-gradients", "segment-bitmaps", "segment-fonts", 0};
+					size_t segmentBitmapNameIndex = 0;
+					for (CSegmentButton::Segments::const_iterator it = button->getSegments().begin(), end = button->getSegments().end (); it != end; ++it)
+					{
+						if (segmentBitmapNames[segmentBitmapNameIndex])
+						{
+							CBitmap* bitmap = getEditorDescription().getBitmap (segmentBitmapNames[segmentBitmapNameIndex++]);
+							if (!bitmap)
+								continue;
+							(*it).icon = bitmap;
+							(*it).iconHighlighted = bitmap;
+							(*it).iconPosition = CDrawMethods::kIconLeft;
+						}
+					}
 				}
 				break;
 			}

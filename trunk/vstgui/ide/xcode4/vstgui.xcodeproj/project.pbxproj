@@ -434,6 +434,7 @@
 		F4201BD719BB0CCE0001D594 /* cdrawdefs.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = cdrawdefs.h; sourceTree = "<group>"; };
 		F4201BD819BB10090001D594 /* cresourcedescription.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = cresourcedescription.h; sourceTree = "<group>"; };
 		F4201BDC19BB46750001D594 /* iplatformtimer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iplatformtimer.h; sourceTree = "<group>"; };
+		F420F3B61BD8EF3D00F4CBAF /* uidescriptioneditor.uidesc */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = uidescriptioneditor.uidesc; path = editing/uidescriptioneditor.uidesc; sourceTree = "<group>"; };
 		F4282B001710699700A79F13 /* crect_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = crect_test.cpp; path = ../../tests/unittest/lib/crect_test.cpp; sourceTree = "<group>"; };
 		F42D5F6117B016F900B85FE8 /* cxypad.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cxypad.cpp; sourceTree = "<group>"; };
 		F42D5F6217B016F900B85FE8 /* cxypad.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cxypad.h; sourceTree = "<group>"; };
@@ -445,6 +446,7 @@
 		F434EEC817DF02C400FC7603 /* uiopenglview.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = uiopenglview.mm; sourceTree = "<group>"; };
 		F434EECA17DF057D00FC7603 /* GLKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLKit.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS7.0.sdk/System/Library/Frameworks/GLKit.framework; sourceTree = DEVELOPER_DIR; };
 		F434EECC17DF058700FC7603 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS7.0.sdk/System/Library/Frameworks/UIKit.framework; sourceTree = DEVELOPER_DIR; };
+		F43AF65C1BD92AA800A71D88 /* resources */ = {isa = PBXFileReference; lastKnownFileType = folder; path = resources; sourceTree = "<group>"; };
 		F440F8CC17A8FF7600616683 /* itouchevent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = itouchevent.h; sourceTree = "<group>"; };
 		F440F8D217A90D9A00616683 /* uitouchevent.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = uitouchevent.h; sourceTree = "<group>"; };
 		F440F8D317A9117500616683 /* vstgui_ios.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = vstgui_ios.mm; path = ../../vstgui_ios.mm; sourceTree = "<group>"; };
@@ -752,6 +754,7 @@
 		F453B21B13F122500067C1C2 /* editing */ = {
 			isa = PBXGroup;
 			children = (
+				F43AF65C1BD92AA800A71D88 /* resources */,
 				F40329C713FE499D00466973 /* doc.h */,
 				F453B22013F124090067C1C2 /* iaction.h */,
 				F453B22413F129A20067C1C2 /* uiactions.cpp */,
@@ -1117,6 +1120,7 @@
 			isa = PBXGroup;
 			children = (
 				F453B21B13F122500067C1C2 /* editing */,
+				F420F3B61BD8EF3D00F4CBAF /* uidescriptioneditor.uidesc */,
 				F47CE2BE14EE5315001B25B9 /* base64codec.h */,
 				F4E3901913080ECC00615042 /* cstream.cpp */,
 				F4E3901A13080ECC00615042 /* cstream.h */,

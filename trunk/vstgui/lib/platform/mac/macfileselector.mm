@@ -77,6 +77,8 @@ protected:
 	bool runModalInternal () VSTGUI_OVERRIDE_VMETHOD;
 	void cancelInternal () VSTGUI_OVERRIDE_VMETHOD;
 
+	void setupInitalDir ();
+
 	Style style;
 	SharedPointer<CBaseObject> delegate;
 	NSSavePanel* savePanel;
@@ -204,7 +206,7 @@ bool CocoaFileSelector::runInternal (CBaseObject* _delegate)
 				}
 			}
 			if (uti == 0 && (*it).getExtension ())
-				uti = (NSString*)UTTypeCreatePreferredIdentifierForTag (kUTTagClassFilenameExtension, (CFStringRef)[NSString stringWithCString: (*it).getExtension () encoding:NSUTF8StringEncoding], kUTTypeData);
+				uti = [NSString stringWithUTF8String:(*it).getExtension ()];
 			if (uti)
 			{
 				[typesArray addObject:uti];
@@ -239,10 +241,7 @@ bool CocoaFileSelector::runInternal (CBaseObject* _delegate)
 		if (parentWindow)
 		{
 		#if MAC_OS_X_VERSION_MIN_REQUIRED > MAC_OS_X_VERSION_10_6
-			if (initialPath)
-			{
-				openPanel.directoryURL = [NSURL fileURLWithPath:[NSString stringWithCString:initialPath encoding:NSUTF8StringEncoding]];
-			}
+			setupInitalDir ();
 			openPanel.allowedFileTypes = typesArray;
 			remember ();
 			[openPanel beginSheetModalForWindow:parentWindow completionHandler:^(NSInteger result) {
@@ -258,10 +257,7 @@ bool CocoaFileSelector::runInternal (CBaseObject* _delegate)
 	#endif
 		{
 		#if MAC_OS_X_VERSION_MIN_REQUIRED > MAC_OS_X_VERSION_10_6
-			if (initialPath)
-			{
-				openPanel.directoryURL = [NSURL fileURLWithPath:[NSString stringWithCString:initialPath encoding:NSUTF8StringEncoding]];
-			}
+			setupInitalDir ();
 			openPanel.allowedFileTypes = typesArray;
 			NSInteger res = [openPanel runModal];
 		#else
@@ -277,14 +273,7 @@ bool CocoaFileSelector::runInternal (CBaseObject* _delegate)
 		if (parentWindow)
 		{
 		#if MAC_OS_X_VERSION_MIN_REQUIRED > MAC_OS_X_VERSION_10_6
-			if (initialPath)
-			{
-				savePanel.directoryURL = [NSURL fileURLWithPath:[NSString stringWithCString:initialPath encoding:NSUTF8StringEncoding]];
-			}
-			if (defaultSaveName)
-			{
-				savePanel.nameFieldStringValue = [NSString stringWithCString:defaultSaveName encoding:NSUTF8StringEncoding];
-			}
+			setupInitalDir ();
 			savePanel.allowedFileTypes = typesArray;
 			remember ();
 			[savePanel beginSheetModalForWindow:parentWindow completionHandler:^(NSInteger result) {
@@ -300,14 +289,7 @@ bool CocoaFileSelector::runInternal (CBaseObject* _delegate)
 	#endif
 		{
 		#if MAC_OS_X_VERSION_MIN_REQUIRED > MAC_OS_X_VERSION_10_6
-			if (initialPath)
-			{
-				savePanel.directoryURL = [NSURL fileURLWithPath:[NSString stringWithCString:initialPath encoding:NSUTF8StringEncoding]];
-			}
-			if (defaultSaveName)
-			{
-				savePanel.nameFieldStringValue = [NSString stringWithCString:defaultSaveName encoding:NSUTF8StringEncoding];
-			}
+			setupInitalDir ();
 			savePanel.allowedFileTypes = typesArray;
 			NSInteger res = [savePanel runModal];
 		#else
@@ -319,6 +301,31 @@ bool CocoaFileSelector::runInternal (CBaseObject* _delegate)
 	}
 	
 	return true;
+}
+
+//-----------------------------------------------------------------------------
+void CocoaFileSelector::setupInitalDir ()
+{
+#if MAC_OS_X_VERSION_MIN_REQUIRED > MAC_OS_X_VERSION_10_6
+	if (initialPath)
+	{
+		NSURL* dirURL = [NSURL fileURLWithPath:[NSString stringWithCString:initialPath encoding:NSUTF8StringEncoding]];
+		NSNumber* isDir;
+		if ([dirURL getResourceValue:&isDir forKey:NSURLIsDirectoryKey error:nil])
+		{
+			if ([isDir boolValue] == NO)
+			{
+				savePanel.nameFieldStringValue = [[dirURL.path lastPathComponent] stringByDeletingPathExtension];
+				dirURL = [NSURL fileURLWithPath:[dirURL.path stringByDeletingLastPathComponent]];
+			}
+			savePanel.directoryURL = dirURL;
+		}
+	}
+	if (defaultSaveName)
+	{
+		savePanel.nameFieldStringValue = [NSString stringWithCString:defaultSaveName encoding:NSUTF8StringEncoding];
+	}
+#endif
 }
 
 //-----------------------------------------------------------------------------

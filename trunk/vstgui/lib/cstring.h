@@ -78,6 +78,8 @@ class UTF8String
 {
 public:
 	UTF8String (UTF8StringPtr str = 0);
+	UTF8String (const UTF8String& other);
+	UTF8String& operator=(const UTF8String& other);
 
 	void set (UTF8StringPtr str);
 	UTF8StringPtr get () const { return string.c_str (); }
@@ -93,6 +95,11 @@ public:
 	operator UTF8StringPtr () const { return get (); }
 
 	IPlatformString* getPlatformString () const;
+
+#if VSTGUI_RVALUE_REF_SUPPORT
+	UTF8String (UTF8String&& other);
+	UTF8String& operator=(UTF8String&& other);
+#endif
 //-----------------------------------------------------------------------------
 private:
 	std::string string;

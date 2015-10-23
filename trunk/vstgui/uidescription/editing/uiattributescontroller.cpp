@@ -373,7 +373,7 @@ public:
 		return controller->verifyView (view, attributes, description);
 	}
 	
-	void controlBeginEdit (VSTGUI::CControl* pControl)
+	void controlBeginEdit (VSTGUI::CControl* pControl) VSTGUI_OVERRIDE_VMETHOD
 	{
 		if (pControl == slider)
 		{
@@ -384,7 +384,7 @@ public:
 		Controller::controlBeginEdit (pControl);
 	}
 	
-	void controlEndEdit (VSTGUI::CControl* pControl)
+	void controlEndEdit (VSTGUI::CControl* pControl) VSTGUI_OVERRIDE_VMETHOD
 	{
 		if (pControl == slider)
 		{

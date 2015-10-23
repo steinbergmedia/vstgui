@@ -273,7 +273,8 @@ protected:
 		}
 		VSTGUI_RANGE_BASED_FOR_LOOP(ControlList, controls, CControl*, c)
 			c->setMouseEnabled (mouseEnabled);
-			c->setDefaultValue ((float)defaultValue);
+			if (parameter)
+				c->setDefaultValue ((float)defaultValue);
 			CTextLabel* label = dynamic_cast<CTextLabel*>(c);
 			if (label)
 			{
@@ -283,7 +284,8 @@ protected:
 					normValue = parameter->toNormalized (value);
 				}
 				Steinberg::Vst::String128 utf16Str;
-				editController->getParamStringByValue (getParameterID (), normValue, utf16Str);
+				if (editController->getParamStringByValue (getParameterID (), normValue, utf16Str) != Steinberg::kResultTrue)
+					continue;
 				Steinberg::String utf8Str (utf16Str);
 				utf8Str.toMultiByte (Steinberg::kCP_Utf8);
 				label->setText (utf8Str);
@@ -1232,6 +1234,13 @@ void VST3Editor::save (bool saveAs)
 		const std::string* filePath = attributes->getAttributeValue ("Path");
 		if (filePath)
 			fileSelector->setInitialDirectory (filePath->c_str ());
+		else if (!xmlFile.empty ())
+		{
+			if (xmlFile[0] == '/')
+				fileSelector->setInitialDirectory (xmlFile.c_str ());
+			else
+				fileSelector->setDefaultSaveName (xmlFile.c_str ());
+		}
 		if (fileSelector->runModal ())
 		{
 			UTF8StringPtr filePath = fileSelector->getSelectedFile (0);

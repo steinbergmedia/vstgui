@@ -397,6 +397,8 @@ static void addGradientToUIDescription (const IUIDescription* description, CGrad
 	}
 }
 
+static bool getStandardAttributeListValues (const std::string& attributeName, std::list<const std::string*>& values);
+
 //-----------------------------------------------------------------------------
 // attributes used in more than one view creator
 //-----------------------------------------------------------------------------
@@ -1848,14 +1850,7 @@ public:
 	{
 		if (attributeName == kAttrTruncateMode)
 		{
-			static std::string kNone = "none";
-			static std::string kHead = "head";
-			static std::string kTail = "tail";
-	
-			values.push_back (&kNone);
-			values.push_back (&kHead);
-			values.push_back (&kTail);
-			return true;
+			return getStandardAttributeListValues (kAttrTruncateMode, values);
 		}
 		return false;
 	}
@@ -2370,6 +2365,17 @@ public:
 		UIAttributes::StringArray segmentNames;
 		if (attributes.getStringArrayAttribute (kAttrSegmentNames, segmentNames))
 			updateSegments (button, segmentNames);
+
+		attr = attributes.getAttributeValue (kAttrTruncateMode);
+		if (attr)
+		{
+			if (*attr == "head")
+				button->setTextTruncateMode (CDrawMethods::TextTruncateMode::kHead);
+			else if (*attr == "tail")
+				button->setTextTruncateMode (CDrawMethods::TextTruncateMode::kTail);
+			else
+				button->setTextTruncateMode (CDrawMethods::TextTruncateMode::kNone);
+		}
 		return true;
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const VSTGUI_OVERRIDE_VMETHOD
@@ -2386,6 +2392,7 @@ public:
 		attributeNames.push_back (kAttrFrameWidth);
 		attributeNames.push_back (kAttrIconTextMargin);
 		attributeNames.push_back (kAttrTextAlignment);
+		attributeNames.push_back (kAttrTruncateMode);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const VSTGUI_OVERRIDE_VMETHOD
@@ -2402,24 +2409,18 @@ public:
 		if (attributeName == kAttrRoundRadius) return kFloatType;
 		if (attributeName == kAttrIconTextMargin) return kFloatType;
 		if (attributeName == kAttrTextAlignment) return kStringType;
+		if (attributeName == kAttrTruncateMode) return kListType;
 		return kUnknownType;
 	}
 	bool getPossibleListValues (const std::string& attributeName, std::list<const std::string*>& values) const VSTGUI_OVERRIDE_VMETHOD
 	{
 		if (attributeName == kAttrStyle)
 		{
-			static std::string positions[] = {
-				"horizontal",
-				"vertical",
-				""
-			};
-			int32_t index = 0;
-			while (positions[index].size () > 0)
-			{
-				values.push_back(&positions[index]);
-				index++;
-			}
-			return true;
+			return getStandardAttributeListValues (kAttrOrientation, values);
+		}
+		else if (attributeName == kAttrTruncateMode)
+		{
+			return getStandardAttributeListValues (kAttrTruncateMode, values);
 		}
 		return false;
 	}
@@ -2510,6 +2511,16 @@ public:
 			{
 				UTF8StringPtr gradientName = desc->lookupGradientName (gradient);
 				stringValue = gradientName ? gradientName : "";
+			}
+			return true;
+		}
+		else if (attributeName == kAttrTruncateMode)
+		{
+			switch (button->getTextTruncateMode ())
+			{
+				case CDrawMethods::TextTruncateMode::kHead: stringValue = "head"; break;
+				case CDrawMethods::TextTruncateMode::kTail: stringValue = "tail"; break;
+				case CDrawMethods::TextTruncateMode::kNone: stringValue = ""; break;
 			}
 			return true;
 		}
@@ -3183,12 +3194,7 @@ public:
 	{
 		if (attributeName == kAttrOrientation)
 		{
-			static std::string kHorizontal = "horizontal";
-			static std::string kVertical = "vertical";
-	
-			values.push_back (&kHorizontal);
-			values.push_back (&kVertical);
-			return true;
+			return getStandardAttributeListValues (kAttrOrientation, values);
 		}
 		if (attributeName == kAttrMode)
 		{
@@ -3299,12 +3305,7 @@ public:
 	{
 		if (attributeName == kAttrOrientation)
 		{
-			static std::string kHorizontal = "horizontal";
-			static std::string kVertical = "vertical";
-	
-			values.push_back (&kHorizontal);
-			values.push_back (&kVertical);
-			return true;
+			return getStandardAttributeListValues (kAttrOrientation, values);
 		}
 		return false;
 	}
@@ -3693,12 +3694,7 @@ public:
 	{
 		if (attributeName == kAttrOrientation)
 		{
-			static std::string kHorizontal = "horizontal";
-			static std::string kVertical = "vertical";
-	
-			values.push_back (&kHorizontal);
-			values.push_back (&kVertical);
-			return true;
+			return getStandardAttributeListValues (kAttrOrientation, values);
 		}
 		else if (attributeName == kAttrResizeMethod)
 		{
@@ -4037,6 +4033,31 @@ public:
 };
 CXYPadCreator __gCXYPadCreator;
 
+//-----------------------------------------------------------------------------
+static bool getStandardAttributeListValues (const std::string& attributeName, std::list<const std::string*>& values)
+{
+	if (attributeName == kAttrOrientation)
+	{
+		static std::string kHorizontal = "horizontal";
+		static std::string kVertical = "vertical";
+		
+		values.push_back (&kHorizontal);
+		values.push_back (&kVertical);
+		return true;
+	}
+	else if (attributeName == kAttrTruncateMode)
+	{
+		static std::string kNone = "none";
+		static std::string kHead = "head";
+		static std::string kTail = "tail";
+		
+		values.push_back (&kNone);
+		values.push_back (&kHead);
+		values.push_back (&kTail);
+		return true;
+	}
+	return false;
+}
 }} // namespace
 
 /**

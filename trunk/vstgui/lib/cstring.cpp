@@ -66,6 +66,36 @@ UTF8String::UTF8String (UTF8StringPtr str)
 }
 
 //-----------------------------------------------------------------------------
+UTF8String::UTF8String (const UTF8String& other)
+{
+	*this = other;
+}
+
+//-----------------------------------------------------------------------------
+UTF8String& UTF8String::operator=(const UTF8String& other)
+{
+	string = other.string;
+	platformString = other.platformString;
+	return *this;
+}
+
+#if VSTGUI_RVALUE_REF_SUPPORT
+//-----------------------------------------------------------------------------
+UTF8String::UTF8String (UTF8String&& other)
+{
+	*this = std::move (other);
+}
+
+//-----------------------------------------------------------------------------
+UTF8String& UTF8String::operator=(UTF8String&& other)
+{
+	string = std::move (other.string);
+	platformString = std::move (other.platformString);
+	return *this;
+}
+#endif
+
+//-----------------------------------------------------------------------------
 void UTF8String::set (UTF8StringPtr str)
 {
 	if (str == 0 || string != str)

@@ -197,6 +197,28 @@ inline void unixfyPath (std::string& path)
 	std::replace (path.begin (), path.end (), windowsPathSeparator, unixPathSeparator);
 }
 
+//------------------------------------------------------------------------
+inline bool removeLastPathComponent (std::string& path)
+{
+	size_t sepPos = path.find_last_of (unixPathSeparator);
+	if (sepPos != std::string::npos)
+	{
+		path.erase (sepPos);
+		return true;
+	}
+	return false;
+}
+
+//------------------------------------------------------------------------
+inline bool pathIsAbsolute (const std::string& path)
+{
+#if MAC
+	return !path.empty () && path[0] == unixPathSeparator;
+#elif WINDOWS
+	return path.length () >= 2 && path[1] == ':';
+#endif
+	return false;
+}
 
 /**
 	Resource input stream
