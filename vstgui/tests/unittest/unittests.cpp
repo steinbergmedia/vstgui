@@ -197,7 +197,7 @@ public:
 		return result;
 	}
 	
-	void run ()
+	int run ()
 	{
 		Result result;
 		time_point<system_clock> start, end;
@@ -209,16 +209,17 @@ public:
 		end = system_clock::now ();
 		print ("\nDone running %d tests in %lldms. [%d Failed]\n", result.succeded+result.failed, duration_cast<milliseconds> (end-start).count (), result.failed);
 		printOutput ();
+		return result.failed;
 	}
 private:
 	int intend;
 	std::string testOutput;
 };
 
-static void RunTests ()
+static int RunTests ()
 {
 	StdOutContext context;
-	context.run ();
+	return context.run ();
 }
 
 }} // namespaces
@@ -230,9 +231,7 @@ namespace VSTGUI { void* gBundleRef = CFBundleGetMainBundle (); }
 
 int main ()
 {
-	VSTGUI::UnitTest::RunTests ();
-	
-	return 0;
+	return VSTGUI::UnitTest::RunTests ();
 }
 
 TESTCASE(Example,

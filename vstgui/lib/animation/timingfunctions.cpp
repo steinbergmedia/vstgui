@@ -115,8 +115,8 @@ float InterpolationTimingFunction::getPosition (uint32_t milliseconds)
 			return pos;
 		else if (time <= milliseconds && prevTime > milliseconds)
 		{
-			float timePos = (float)(milliseconds - time) / (float)(prevTime - time);
-			return pos + ((prevPos - pos) * timePos);
+			double timePos = (double)(milliseconds - time) / (double)(prevTime - time);
+			return static_cast<float> (static_cast<double> (pos) + ((static_cast<double> (prevPos) - static_cast<double> (pos)) * timePos));
 		}
 		prevTime = time;
 		prevPos = pos;

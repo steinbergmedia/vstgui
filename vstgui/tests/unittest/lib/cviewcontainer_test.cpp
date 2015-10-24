@@ -33,9 +33,28 @@
 //-----------------------------------------------------------------------------
 
 #include "../../../lib/cframe.h"
+#include "../../../lib/iviewlistener.h"
 #include "../unittests.h"
 
 namespace VSTGUI {
+
+class TestViewContainerListener : public IViewContainerListener
+{
+public:
+	void viewContainerViewAdded (CViewContainer* container, CView* view) override
+	{ viewAddedCalled = true; }
+	void viewContainerViewRemoved (CViewContainer* container, CView* view) override
+	{ viewRemovedCalled = true; }
+	void viewContainerViewZOrderChanged (CViewContainer* container, CView* view) override
+	{ viewZOrderChangedCalled = true; }
+	void viewContainerTransformChanged (CViewContainer* container) override
+	{ transformChangedCalled = true; }
+
+	bool viewAddedCalled {false};
+	bool viewRemovedCalled {false};
+	bool viewZOrderChangedCalled {false};
+	bool transformChangedCalled {false};
+};
 
 TESTCASE(CViewContainerTest,
 
@@ -173,6 +192,23 @@ TESTCASE(CViewContainerTest,
 		EXPECT(container->getViewAt (CPoint (12, 12), GetViewOptions (GetViewOptions::kDeep)) == view);
 		EXPECT(container->getViewAt (CPoint (11, 11), GetViewOptions (GetViewOptions::kDeep)) == nullptr);
 		EXPECT(container->getViewAt (CPoint (11, 11), GetViewOptions (GetViewOptions::kDeep|GetViewOptions::kIncludeViewContainer)) == container2);
+	);
+	TEST(Listener,
+		 TestViewContainerListener listener;
+		 container->registerViewContainerListener (&listener);
+		 auto view = new CView (CRect (0, 0, 0, 0));
+		 container->addView (view);
+		 EXPECT(listener.viewAddedCalled == true);
+		 container->removeView (view, false);
+		 EXPECT(listener.viewRemovedCalled == true);
+		 auto view2 = new CView (CRect (0, 0, 0, 0));
+		 container->addView (view);
+		 container->addView (view2);
+		 container->changeViewZOrder (view2, 0);
+		 EXPECT(listener.viewZOrderChangedCalled == true);
+		 container->setTransform(CGraphicsTransform ().translate(1., 1.));
+		 EXPECT(listener.transformChangedCalled == true);
+		 container->unregisterViewContainerListener (&listener);
 	);
 ); // TESTCASE
 
