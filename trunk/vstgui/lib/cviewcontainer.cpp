@@ -93,7 +93,7 @@ struct ViewContainerViewRemoved : ViewContainerListenerCall
 	ViewContainerViewRemoved (CViewContainer* container, CView* view) : ViewContainerListenerCall (container), view (view) {}
 	void operator () (IViewContainerListener* listener) const
 	{
-		listener->viewContainerViewAdded (container, view);
+		listener->viewContainerViewRemoved (container, view);
 	}
 };
 

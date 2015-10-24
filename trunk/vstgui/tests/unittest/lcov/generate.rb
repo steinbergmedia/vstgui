@@ -1,0 +1,44 @@
+#!/usr/bin/ruby
+
+VSTGUI_DIR = File.expand_path(ARGV[0])
+OBJ_DIR = File.expand_path(ARGV[1])
+UNITTEST_EXE = File.expand_path(ARGV[2])
+SCRIPT_DIR = File.expand_path(File.dirname(__FILE__))
+puts "Generating Code Coveragew with:"
+puts "VSTGUI_DIR=" + VSTGUI_DIR
+puts "OBJ_DIR=" + OBJ_DIR
+
+begin
+
+  system (UNITTEST_EXE)
+
+  if ($? != 0)
+    raise "unittest error"
+  end
+
+  Dir.chdir (SCRIPT_DIR)
+
+  system ("./lcov --capture --no-external --directory #{VSTGUI_DIR} --output-file vstgui-coverage.info")
+
+  if ($? != 0)
+    raise "lcov error"
+  end
+
+
+  system ("./genhtml vstgui-coverage.info --output-directory out")
+
+  if ($? != 0)
+    raise "genhtml error"
+  end
+
+ensure
+
+  Dir.foreach(OBJ_DIR) { |f| 
+    ext = File.extname(f)
+    if (ext == ".gcda")
+      File.delete (File.join(OBJ_DIR, f))
+    end
+  }
+
+end
+

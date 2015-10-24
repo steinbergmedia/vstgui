@@ -106,11 +106,23 @@ public:
 	void animationTick (CView* view, IdStringPtr name, float pos) VSTGUI_OVERRIDE_VMETHOD;
 	void animationFinished (CView* view, IdStringPtr name, bool wasCanceled) VSTGUI_OVERRIDE_VMETHOD;
 protected:
+
+	void init ();
+	void doAlphaFade (float pos);
+	void doPushInFromLeft (float pos);
+	void doPushInFromRight (float pos);
+	void doPushInFromTop (float pos);
+	void doPushInFromBottom (float pos);
+	void doPushInOutFromLeft (float pos);
+	void doPushInOutFromRight (float pos);
+
+	void updateViewSize (CView* view, const CRect& rect);
+
 	CView* newView;
 	CView* viewToRemove;
 	AnimationStyle style;
-	float newViewValueEnd;
-	float oldViewValueStart;
+	float newViewAlphaValueEnd;
+	float oldViewAlphaValueStart;
 	CRect destinationRect;
 };
 

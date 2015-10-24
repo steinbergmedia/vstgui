@@ -82,7 +82,13 @@ TESTCASE(CRectTest,
 	TEST(rectNotOverlap,
 		CRect r (50, 50, 100, 100);
 		CRect r2 (100, 101, 120, 120);
+		CRect r3 (101, 100, 120, 120);
+		CRect r4 (0, 0, 40, 40);
+		CRect r5 (51, 51, 100, 40);
 		EXPECT(r.rectOverlap (r2) == false)
+		EXPECT(r.rectOverlap (r3) == false)
+		EXPECT(r.rectOverlap (r4) == false)
+		EXPECT(r.rectOverlap (r5) == false)
 	);
 
 	TEST(bound,
@@ -90,9 +96,12 @@ TESTCASE(CRectTest,
 		CRect r2 ( 90, 90, 200, 200);
 		r.bound (r2);
 		EXPECT(r.left == 90 && r.top == 90 && r.right == 100 && r.bottom == 100)
-		r = CRect (0, 0, 80, 80);
+		r (0, 0, 80, 80);
 		r.bound (r2);
 		EXPECT(r.left == 90 && r.top == 90 && r.right == 90 && r.bottom == 90)
+		r (0, 0, 280, 280);
+		r.bound (r2);
+		EXPECT(r.left == 90 && r.top == 90 && r.right == 200 && r.bottom == 200)
 	);
 
 	TEST(unite,
@@ -100,6 +109,123 @@ TESTCASE(CRectTest,
 		CRect r2 (40, 40, 80, 80);
 		r.unite (r2);
 		EXPECT(r.left == 20 && r.top == 20 && r.right == 80 && r.bottom == 80)
+		r (50, 50, 120, 120);
+		r.unite (r2);
+		EXPECT(r.left == 40 && r.top == 40 && r.right == 120 && r.bottom == 120)
+	);
+
+	TEST(setWidth,
+		CRect r (0., 0., 0., 0.);
+		EXPECT (r.getWidth () == 0.);
+		r.setWidth (100.);
+		EXPECT (r.getWidth () == 100.);
+	);
+
+	TEST(setWidth,
+		CRect r (0., 0., 0., 0.);
+		EXPECT (r.getHeight () == 0.);
+		r.setHeight (100.);
+		EXPECT (r.getHeight () == 100.);
+	);
+
+	TEST(offset,
+		CRect r (0, 0, 10, 10);
+		r.offset (CPoint (5, 5));
+		EXPECT(r.left == 5 && r.top == 5 && r.right == 15 && r.bottom == 15);
+	);
+	TEST(offsetInverse,
+		CRect r (10, 10, 20, 20);
+		r.offsetInverse (CPoint (5, 5));
+		EXPECT(r.left == 5 && r.top == 5 && r.right == 15 && r.bottom == 15);
+	);
+
+	TEST(extend,
+		CRect r (5, 5, 10, 10);
+		r.extend (CPoint (5, 5));
+		EXPECT(r.left == 0 && r.top == 0 && r.right == 15 && r.bottom == 15);
+	);
+
+	TEST(assign4CoordOperator,
+		CRect r;
+		r (0, 0, 15, 15);
+		EXPECT(r.left == 0 && r.top == 0 && r.right == 15 && r.bottom == 15);
+		r (15, 15, 0, 0);
+		EXPECT(r.left == 0 && r.top == 0 && r.right == 15 && r.bottom == 15);
+	);
+
+	TEST(originSizeConstructor,
+		CRect r (CPoint (10, 10), CPoint (10, 10));
+		EXPECT(r.left == 10 && r.top == 10 && r.right == 20 && r.bottom == 20);
+	);
+	
+	TEST(inset,
+		CRect r (0., 0., 100., 100.);
+		r.inset (CPoint (5, 5));
+		EXPECT(r.left == 5.);
+		EXPECT(r.top == 5.);
+		EXPECT(r.right == 95.);
+		EXPECT(r.bottom == 95.);
+	);
+
+	TEST(normalize,
+		CRect r (50, 50, 0, 0);
+		r.normalize ();
+		EXPECT(r.left == 0 && r.top == 0 && r.right == 50 && r.bottom == 50);
+	);
+
+	TEST(originize,
+		CRect r (50, 50, 150, 150);
+		r.originize ();
+		EXPECT(r.left == 0 && r.top == 0 && r.right == 100 && r.bottom == 100);
+	);
+
+	TEST(moveTo,
+		CRect r (0, 0, 20, 20);
+		r.moveTo (CPoint (20, 20));
+		EXPECT(r.left == 20 && r.top == 20 && r.right == 40 && r.bottom == 40);
+	);
+	
+	TEST(corners,
+		CRect r (10, 10, 20, 20);
+		auto topLeft = r.getTopLeft ();
+		EXPECT(topLeft.x == 10 && topLeft.y == 10);
+		auto topRight = r.getTopRight ();
+		EXPECT(topRight.x == 20 && topRight.y == 10);
+		auto bottomLeft = r.getBottomLeft ();
+		EXPECT(bottomLeft.x == 10 && bottomLeft.y == 20);
+		auto bottomRight = r.getBottomRight ();
+		EXPECT(bottomRight.x == 20 && bottomRight.y == 20);
+	);
+
+	TEST(setCorners,
+		CRect r (0, 0, 0, 0);
+		r.setTopLeft (CPoint (10, 10));
+		EXPECT(r.left == 10 && r.top == 10);
+		r.setTopRight (CPoint (10, 10));
+		EXPECT(r.right == 10 && r.top == 10);
+		r.setBottomLeft (CPoint (10, 10));
+		EXPECT(r.left == 10 && r.bottom == 10);
+		r.setBottomRight (CPoint (10, 10));
+		EXPECT(r.right == 10 && r.bottom == 10);
+	);
+
+	TEST(getSize,
+		CRect r (20, 20, 22, 22);
+		auto s = r.getSize ();
+		EXPECT(s.x == 2 && s.y == 2);
+	);
+
+	TEST(isEmpty,
+		CRect r (1, 1, 1, 2);
+		EXPECT(r.isEmpty ());
+		r (1, 1, 2, 1);
+		EXPECT(r.isEmpty ());
+	);
+
+	TEST(operatorEqual,
+		CRect r1 (0, 1, 2, 3);
+		CRect r2 (0, 1, 2, 3);
+		EXPECT(r1 == r2);
 	);
 
 ); // TESTCASE

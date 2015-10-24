@@ -60,6 +60,7 @@
 		F4762E891BDA958100810447 /* unittests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4CC1E99170A3B36008F07FD /* unittests.cpp */; };
 		F4762E8A1BDA958800810447 /* vstgui_mac.mm in Sources */ = {isa = PBXBuildFile; fileRef = F4462D2F175646EE00E6835D /* vstgui_mac.mm */; };
 		F4762E8B1BDA958C00810447 /* vstgui_uidescription_mac.mm in Sources */ = {isa = PBXBuildFile; fileRef = F4462D30175646EE00E6835D /* vstgui_uidescription_mac.mm */; };
+		F4762E8F1BDAADA700810447 /* animations_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4762E8D1BDAAD4E00810447 /* animations_test.cpp */; };
 		F47883A418045A300054ED06 /* caviewlayer.mm in Sources */ = {isa = PBXBuildFile; fileRef = F47883A218045A300054ED06 /* caviewlayer.mm */; };
 		F47883A518045A300054ED06 /* caviewlayer.mm in Sources */ = {isa = PBXBuildFile; fileRef = F47883A218045A300054ED06 /* caviewlayer.mm */; };
 		F47883A618045A300054ED06 /* caviewlayer.mm in Sources */ = {isa = PBXBuildFile; fileRef = F47883A218045A300054ED06 /* caviewlayer.mm */; };
@@ -236,6 +237,8 @@
 		F4EA3F3019A4E5C00054328B /* cscrollbar.h in Headers */ = {isa = PBXBuildFile; fileRef = F4EA3F2B19A4E5C00054328B /* cscrollbar.h */; };
 		F4F46F92183D211700577F86 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F4F46F91183D211700577F86 /* QuartzCore.framework */; };
 		F4F52DFF13E2B36500B3DB2F /* crowcolumnview.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4F52DFD13E2B36500B3DB2F /* crowcolumnview.cpp */; };
+		F4F7D5FA1BDBAA2C00A8B6FD /* timingfunction_tests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4F7D5F91BDBAA2C00A8B6FD /* timingfunction_tests.cpp */; };
+		F4F7D5FC1BDBB4BD00A8B6FD /* animator_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4F7D5FB1BDBB4BD00A8B6FD /* animator_test.cpp */; };
 		F4F953FA16510F40006EE1D1 /* animations.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F11A13080AD100F0A613 /* animations.cpp */; };
 		F4F953FB16510F40006EE1D1 /* animator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F11C13080AD100F0A613 /* animator.cpp */; };
 		F4F953FC16510F40006EE1D1 /* timingfunctions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F11E13080AD100F0A613 /* timingfunctions.cpp */; };
@@ -367,7 +370,7 @@
 		F4201BD819BB10090001D594 /* cresourcedescription.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = cresourcedescription.h; sourceTree = "<group>"; };
 		F4201BDC19BB46750001D594 /* iplatformtimer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iplatformtimer.h; sourceTree = "<group>"; };
 		F420F3B61BD8EF3D00F4CBAF /* uidescriptioneditor.uidesc */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = uidescriptioneditor.uidesc; path = editing/uidescriptioneditor.uidesc; sourceTree = "<group>"; };
-		F4282B001710699700A79F13 /* crect_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = crect_test.cpp; path = ../../tests/unittest/lib/crect_test.cpp; sourceTree = "<group>"; };
+		F4282B001710699700A79F13 /* crect_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = crect_test.cpp; sourceTree = "<group>"; };
 		F42D5F6117B016F900B85FE8 /* cxypad.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cxypad.cpp; sourceTree = "<group>"; };
 		F42D5F6217B016F900B85FE8 /* cxypad.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cxypad.h; sourceTree = "<group>"; };
 		F42D5F6817B0197500B85FE8 /* plugin-bindings */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "plugin-bindings"; path = "../../plugin-bindings"; sourceTree = "<group>"; };
@@ -384,8 +387,8 @@
 		F440F8D317A9117500616683 /* vstgui_ios.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = vstgui_ios.mm; path = ../../vstgui_ios.mm; sourceTree = "<group>"; };
 		F440F8D417A9117500616683 /* vstgui_uidescription_ios.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = vstgui_uidescription_ios.mm; path = ../../vstgui_uidescription_ios.mm; sourceTree = "<group>"; };
 		F442AF8F18FEFBE800E7BC3A /* cgraphicstransform.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = cgraphicstransform.h; sourceTree = "<group>"; };
-		F4462D2B17563BD900E6835D /* ccolor_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ccolor_test.cpp; path = ../../tests/unittest/lib/ccolor_test.cpp; sourceTree = "<group>"; };
-		F4462D2D1756444800E6835D /* idependency_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = idependency_test.cpp; path = ../../tests/unittest/lib/idependency_test.cpp; sourceTree = "<group>"; };
+		F4462D2B17563BD900E6835D /* ccolor_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ccolor_test.cpp; sourceTree = "<group>"; };
+		F4462D2D1756444800E6835D /* idependency_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = idependency_test.cpp; sourceTree = "<group>"; };
 		F4462D2F175646EE00E6835D /* vstgui_mac.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = vstgui_mac.mm; path = ../../vstgui_mac.mm; sourceTree = "<group>"; };
 		F4462D30175646EE00E6835D /* vstgui_uidescription_mac.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = vstgui_uidescription_mac.mm; path = ../../vstgui_uidescription_mac.mm; sourceTree = "<group>"; };
 		F4462D31175646EE00E6835D /* vstgui_uidescription_win32.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = vstgui_uidescription_win32.cpp; path = ../../vstgui_uidescription_win32.cpp; sourceTree = "<group>"; };
@@ -401,7 +404,7 @@
 		F44C25F9198B9A8E008434DB /* cdrawmethods.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cdrawmethods.h; sourceTree = "<group>"; };
 		F44C2600198BA5B4008434DB /* csegmentbutton.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = csegmentbutton.cpp; sourceTree = "<group>"; };
 		F44C2601198BA5B4008434DB /* csegmentbutton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = csegmentbutton.h; sourceTree = "<group>"; };
-		F44DC9F218A7C12F0029125A /* base64codec.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = base64codec.cpp; path = ../../tests/unittest/lib/base64codec.cpp; sourceTree = "<group>"; };
+		F44DC9F218A7C12F0029125A /* base64codec.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = base64codec.cpp; sourceTree = "<group>"; };
 		F452950513A211E6006EEF82 /* cocoaopenglview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cocoaopenglview.h; sourceTree = "<group>"; };
 		F452950613A211E6006EEF82 /* cocoaopenglview.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = cocoaopenglview.mm; sourceTree = "<group>"; };
 		F452950913A2127D006EEF82 /* iplatformopenglview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = iplatformopenglview.h; sourceTree = "<group>"; };
@@ -421,6 +424,7 @@
 		F466318319BA11C20063536E /* cbuttonstate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = cbuttonstate.h; sourceTree = "<group>"; };
 		F466318619BA1B3A0063536E /* vstguifwd.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = vstguifwd.h; sourceTree = "<group>"; };
 		F46B06B31902D29F006189B9 /* iscalefactorchangedlistener.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iscalefactorchangedlistener.h; sourceTree = "<group>"; };
+		F4762E8D1BDAAD4E00810447 /* animations_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = animations_test.cpp; sourceTree = "<group>"; };
 		F476BEA518EC2E7500230A63 /* std_unorderedmap.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = std_unorderedmap.h; sourceTree = "<group>"; };
 		F47883A1180457E70054ED06 /* iplatformviewlayer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iplatformviewlayer.h; sourceTree = "<group>"; };
 		F47883A218045A300054ED06 /* caviewlayer.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = caviewlayer.mm; sourceTree = "<group>"; };
@@ -580,7 +584,7 @@
 		F4CA76C513F27A4900BB1842 /* uieditcontroller.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uieditcontroller.cpp; sourceTree = "<group>"; };
 		F4CA76C713F27E6100BB1842 /* uitemplatecontroller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uitemplatecontroller.h; sourceTree = "<group>"; };
 		F4CA76C913F27E6600BB1842 /* uitemplatecontroller.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uitemplatecontroller.cpp; sourceTree = "<group>"; };
-		F4CC1E781709F253008F07FD /* cviewcontainer_test.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = cviewcontainer_test.cpp; path = ../../tests/unittest/lib/cviewcontainer_test.cpp; sourceTree = "<group>"; };
+		F4CC1E781709F253008F07FD /* cviewcontainer_test.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = cviewcontainer_test.cpp; sourceTree = "<group>"; };
 		F4CC1E811709F2EC008F07FD /* unittests */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = unittests; sourceTree = BUILT_PRODUCTS_DIR; };
 		F4CC1E8E1709F448008F07FD /* unittests.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = unittests.h; path = ../../tests/unittest/unittests.h; sourceTree = "<group>"; };
 		F4CC1E90170A0A22008F07FD /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
@@ -614,7 +618,7 @@
 		F4E3905D1308190800615042 /* Changelog */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = Changelog; path = ../../Changelog; sourceTree = "<group>"; };
 		F4E3905F13081BA500615042 /* win32 */ = {isa = PBXFileReference; lastKnownFileType = folder; path = win32; sourceTree = "<group>"; };
 		F4E3906013081BCD00615042 /* doxygen */ = {isa = PBXFileReference; lastKnownFileType = folder; name = doxygen; path = ../../doxygen; sourceTree = "<group>"; };
-		F4E706AB1907BC0000765574 /* utf8stringview_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = utf8stringview_test.cpp; path = ../../tests/unittest/lib/utf8stringview_test.cpp; sourceTree = "<group>"; };
+		F4E706AB1907BC0000765574 /* utf8stringview_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = utf8stringview_test.cpp; sourceTree = "<group>"; };
 		F4E9C69317A8266200F42EF8 /* libvstgui-ios.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libvstgui-ios.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F4E9C69417A8266200F42EF8 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		F4E9C6ED17A82BC800F42EF8 /* uiviewframe.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = uiviewframe.mm; sourceTree = "<group>"; };
@@ -624,6 +628,9 @@
 		F4F46F91183D211700577F86 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		F4F52DFD13E2B36500B3DB2F /* crowcolumnview.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = crowcolumnview.cpp; sourceTree = "<group>"; };
 		F4F52DFE13E2B36500B3DB2F /* crowcolumnview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crowcolumnview.h; sourceTree = "<group>"; };
+		F4F7D5F91BDBAA2C00A8B6FD /* timingfunction_tests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = timingfunction_tests.cpp; sourceTree = "<group>"; };
+		F4F7D5FB1BDBB4BD00A8B6FD /* animator_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = animator_test.cpp; sourceTree = "<group>"; };
+		F4F7D5FD1BDBD52100A8B6FD /* generate.rb */ = {isa = PBXFileReference; lastKnownFileType = text.script.ruby; name = generate.rb; path = ../../tests/unittest/lcov/generate.rb; sourceTree = "<group>"; };
 		F4F953F616510E61006EE1D1 /* libvstgui c++11.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libvstgui c++11.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F4FB92AC13FBD12F007D72DE /* uibasedatasource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uibasedatasource.h; sourceTree = "<group>"; };
 		F4FB92AE13FBEC89007D72DE /* uibitmapscontroller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uibitmapscontroller.h; sourceTree = "<group>"; };
@@ -739,6 +746,16 @@
 				F48BCB4313F569820010DCC1 /* uiviewcreatecontroller.h */,
 			);
 			path = editing;
+			sourceTree = "<group>";
+		};
+		F4762E8C1BDAAD0000810447 /* animation */ = {
+			isa = PBXGroup;
+			children = (
+				F4762E8D1BDAAD4E00810447 /* animations_test.cpp */,
+				F4F7D5F91BDBAA2C00A8B6FD /* timingfunction_tests.cpp */,
+				F4F7D5FB1BDBB4BD00A8B6FD /* animator_test.cpp */,
+			);
+			path = animation;
 			sourceTree = "<group>";
 		};
 		F497F0A21308094300F0A613 = {
@@ -1016,6 +1033,7 @@
 				F4CC1E7C1709F26D008F07FD /* lib */,
 				F4CC1E8E1709F448008F07FD /* unittests.h */,
 				F4CC1E99170A3B36008F07FD /* unittests.cpp */,
+				F4F7D5FD1BDBD52100A8B6FD /* generate.rb */,
 			);
 			name = unittest;
 			sourceTree = "<group>";
@@ -1023,6 +1041,7 @@
 		F4CC1E7C1709F26D008F07FD /* lib */ = {
 			isa = PBXGroup;
 			children = (
+				F4762E8C1BDAAD0000810447 /* animation */,
 				F4CC1E781709F253008F07FD /* cviewcontainer_test.cpp */,
 				F4282B001710699700A79F13 /* crect_test.cpp */,
 				F4462D2B17563BD900E6835D /* ccolor_test.cpp */,
@@ -1031,6 +1050,7 @@
 				F4E706AB1907BC0000765574 /* utf8stringview_test.cpp */,
 			);
 			name = lib;
+			path = ../../tests/unittest/lib;
 			sourceTree = "<group>";
 		};
 		F4CC1E98170A0A58008F07FD /* Frameworks */ = {
@@ -1169,7 +1189,6 @@
 				F4CC1E7E1709F2EC008F07FD /* Frameworks */,
 				F4CC1E7F1709F2EC008F07FD /* CopyFiles */,
 				F4282B0417106C6500A79F13 /* Run Tests */,
-				F4462D7D17564E5100E6835D /* Create Codecoverage */,
 			);
 			buildRules = (
 			);
@@ -1256,22 +1275,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "exec $BUILT_PRODUCTS_DIR/$EXECUTABLE_NAME\n";
-			showEnvVarsInLog = 0;
-		};
-		F4462D7D17564E5100E6835D /* Create Codecoverage */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "Create Codecoverage";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "cd \"$PROJECT_DIR/../../\"\nFOLDER=`pwd`\necho $FOLDER\ncd \"$PROJECT_DIR/../../tests/unittest/lcov/\"\n./lcov --capture --no-external --directory \"$FOLDER/\" --output-file vstgui-coverage.info\n./genhtml vstgui-coverage.info --output-directory out\n\n";
+			shellScript = "ruby \"$PROJECT_DIR/../../tests/unittest/lcov/generate.rb\" \"$PROJECT_DIR/../../\" \"$OBJECT_FILE_DIR_normal/$NATIVE_ARCH_ACTUAL/\" \"$BUILT_PRODUCTS_DIR/$EXECUTABLE_NAME\"";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -1389,15 +1393,18 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F4762E8A1BDA958800810447 /* vstgui_mac.mm in Sources */,
+				F4762E8B1BDA958C00810447 /* vstgui_uidescription_mac.mm in Sources */,
 				F4762E861BDA957E00810447 /* idependency_test.cpp in Sources */,
 				F4762E831BDA957E00810447 /* cviewcontainer_test.cpp in Sources */,
+				F4F7D5FC1BDBB4BD00A8B6FD /* animator_test.cpp in Sources */,
 				F4762E881BDA957E00810447 /* utf8stringview_test.cpp in Sources */,
-				F4762E8B1BDA958C00810447 /* vstgui_uidescription_mac.mm in Sources */,
 				F4762E851BDA957E00810447 /* ccolor_test.cpp in Sources */,
 				F4762E891BDA958100810447 /* unittests.cpp in Sources */,
+				F4F7D5FA1BDBAA2C00A8B6FD /* timingfunction_tests.cpp in Sources */,
 				F4762E841BDA957E00810447 /* crect_test.cpp in Sources */,
 				F4762E871BDA957E00810447 /* base64codec.cpp in Sources */,
-				F4762E8A1BDA958800810447 /* vstgui_mac.mm in Sources */,
+				F4762E8F1BDAADA700810447 /* animations_test.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
