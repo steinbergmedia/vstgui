@@ -59,15 +59,19 @@ public:
 	bool applyCustomViewAttributeValues (CView* customView, IdStringPtr baseViewName, const UIAttributes& attributes, const IUIDescription* desc) const VSTGUI_OVERRIDE_VMETHOD;
 	
 	static void registerViewCreator (const IViewCreator& viewCreator);
+	static void unregisterViewCreator (const IViewCreator& viewCreator);
 
 	#if VSTGUI_LIVE_EDITING
-	bool getAttributeNamesForView (CView* view, std::list<std::string>& attributeNames) const;
+	typedef std::list<const std::string*> StringPtrList;
+	typedef std::list<std::string> StringList;
+	
+	bool getAttributeNamesForView (CView* view, StringList& attributeNames) const;
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const;
 	IViewCreator::AttrType getAttributeType (CView* view, const std::string& attributeName) const;
-	void collectRegisteredViewNames (std::list<const std::string*>& viewNames, IdStringPtr baseClassNameFilter = 0) const;
+	void collectRegisteredViewNames (StringPtrList& viewNames, IdStringPtr baseClassNameFilter = 0) const;
 	bool getAttributesForView (CView* view, const IUIDescription* desc, UIAttributes& attr) const;
 	// list type support
-	bool getPossibleAttributeListValues (CView* view, const std::string& attributeName, std::list<const std::string*>& values) const;
+	bool getPossibleAttributeListValues (CView* view, const std::string& attributeName, StringPtrList& values) const;
 	bool getAttributeValueRange (CView* view, const std::string& attributeName, double& minValue, double& maxValue) const;
 	#endif
 

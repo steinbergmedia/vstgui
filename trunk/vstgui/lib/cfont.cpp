@@ -190,11 +190,11 @@ CFontDesc& CFontDesc::operator = (const CFontDesc& f)
 //-----------------------------------------------------------------------------
 bool CFontDesc::operator == (const CFontDesc& f) const
 {
-	if (UTF8StringView (name) == f.getName ())
-		return false;
 	if (size != f.getSize ())
 		return false;
 	if (style != f.getStyle ())
+		return false;
+	if (UTF8StringView (name) != f.getName ())
 		return false;
 	return true;
 }

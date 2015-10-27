@@ -32,76 +32,87 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-
+#include "../../../lib/cpoint.h"
 #include "../unittests.h"
-#include "../../../lib/idependency.h"
 
 namespace VSTGUI {
 
-class DependentObject : public CBaseObject, public IDependency
-{
-public:
-	DependentObject ()
-	: notifyCalledCount (0)
-	{
-		
-	}
-	
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message)
-	{
-		notifyCalledCount++;
-		return kMessageNotified;
-	}
-	
-	int32_t notifyCalledCount;
-};
+TESTCASE(CPointTest,
 
-class TestObject : public CBaseObject, public IDependency
-{
-public:
-	TestObject ()
-	{
-		
-	}
-
-};
-
-TESTCASE(IDependencyTest,
-
-	TEST(simpleDependency,
-		DependentObject dObj;
-		TestObject tObj;
-		tObj.addDependency (&dObj);
-		tObj.changed ("Test");
-		EXPECT(dObj.notifyCalledCount == 1)
-		tObj.removeDependency(&dObj);
+	TEST(unequal,
+		EXPECT(CPoint (0, 0) != CPoint (1, 1));
+		EXPECT(CPoint (0, 0) != CPoint (0, 1));
+		EXPECT(CPoint (0, 0) != CPoint (1, 0));
 	);
 
-	TEST(simpleDeferedDependency,
-		DependentObject dObj;
-		TestObject tObj;
-		tObj.addDependency (&dObj);
-		tObj.deferChanges (true);
-		tObj.changed ("Test");
-		EXPECT(dObj.notifyCalledCount == 0)
-		tObj.deferChanges (false);
-		EXPECT(dObj.notifyCalledCount == 1)
-		tObj.removeDependency (&dObj);
+	TEST(equal,
+		EXPECT(CPoint (0, 0) == CPoint (0, 0));
 	);
 
-	TEST(simpleDeferChanges,
-		DependentObject dObj;
-		TestObject tObj;
-		tObj.addDependency (&dObj);
-		{
-			IDependency::DeferChanges df (&tObj);
-			tObj.changed ("Test");
-			tObj.changed ("Test");
-			EXPECT(dObj.notifyCalledCount == 0)
-		}
-		EXPECT(dObj.notifyCalledCount == 1)
-		tObj.removeDependency (&dObj);
+	TEST(operatorAddAssign,
+		CPoint p (1, 1);
+		p += CPoint (1, 1);
+		EXPECT(p == CPoint (2, 2));
+	);
+
+	TEST(operatorSubtractAssign,
+		CPoint p (2, 2);
+		p -= CPoint (1, 1);
+		EXPECT(p == CPoint (1, 1));
+	);
+
+	TEST(operatorAdd,
+		CPoint p (2, 2);
+		auto p2 = p + CPoint (1, 1);
+		EXPECT(p2 == CPoint (3, 3));
+		EXPECT(p == CPoint (2, 2));
+	);
+
+	TEST(operatorSubtract,
+		CPoint p (2, 2);
+		auto p2 = p - CPoint (1, 1);
+		EXPECT(p2 == CPoint (1, 1));
+		EXPECT(p == CPoint (2, 2));
+	);
+
+	TEST(operatorInverse,
+		CPoint p (2, 2);
+		auto p2 = -p;
+		EXPECT(p2 == CPoint (-2, -2));
+		EXPECT(p == CPoint (2, 2));
+	);
+
+	TEST(offsetCoords,
+		CPoint p (1, 2);
+		p.offset (1, 2);
+		EXPECT(p == CPoint (2, 4));
+	);
+	TEST(offsetPoint,
+		CPoint p (1, 2);
+		p.offset (CPoint (2, 3));
+		EXPECT(p == CPoint (3, 5));
+	);
+
+	TEST(offsetInverse,
+		CPoint p (5, 3);
+		p.offsetInverse (CPoint(2, 1));
+		EXPECT(p == CPoint (3, 2));
+	);
+
+	TEST(makeIntegral,
+		CPoint p (5.3, 4.2);
+		p.makeIntegral ();
+		EXPECT(p == CPoint (5, 4));
+		p (5.5, 4.5);
+		p.makeIntegral ();
+		EXPECT(p == CPoint (6, 5));
+		p (5.9, 4.1);
+		p.makeIntegral ();
+		EXPECT(p == CPoint (6, 4));
+		p (5.1, 4.501);
+		p.makeIntegral ();
+		EXPECT(p == CPoint (5, 5));
 	);
 );
 
-} // namespace
+} // VSTGUI

@@ -45,6 +45,8 @@
 namespace VSTGUI {
 using namespace Animation;
 
+namespace {
+
 struct RemoveAnimationInCallback : public IAnimationTarget
 {
 	RemoveAnimationInCallback (Animator* animator) : animator (animator) {}
@@ -71,6 +73,8 @@ struct MessageReceiver : public CBaseObject
 	
 	bool messageReceived {false};
 };
+
+} // anonymous
 
 //-----------------------------------------------------------------------------
 TESTCASE(AnimatorTest,

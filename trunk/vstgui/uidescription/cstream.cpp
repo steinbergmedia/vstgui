@@ -52,6 +52,7 @@ CMemoryStream::CMemoryStream (uint32_t initialSize, uint32_t inDelta, bool binar
 : OutputStream (byteOrder)
 , InputStream (byteOrder)
 , buffer (0)
+, bufferSize (0)
 , size (0)
 , pos (0)
 , delta (inDelta)
@@ -66,6 +67,7 @@ CMemoryStream::CMemoryStream (const int8_t* inBuffer, uint32_t bufferSize, bool 
 : OutputStream (byteOrder)
 , InputStream (byteOrder)
 , buffer (const_cast<int8_t*> (inBuffer))
+, bufferSize (bufferSize)
 , size (bufferSize)
 , pos (0)
 , delta (0)
@@ -84,13 +86,13 @@ CMemoryStream::~CMemoryStream ()
 //-----------------------------------------------------------------------------
 bool CMemoryStream::resize (uint32_t inSize)
 {
-	if (size >= inSize)
+	if (bufferSize >= inSize)
 		return true;
 
 	if (ownsBuffer == false)
 		return false;
 
-	uint32_t newSize = size + delta;
+	uint32_t newSize = bufferSize + delta;
 	while (newSize < inSize)
 		newSize += delta;
 
@@ -100,21 +102,22 @@ bool CMemoryStream::resize (uint32_t inSize)
 	if (buffer)
 		std::free (buffer);
 	buffer = newBuffer;
-	size = newSize;
+	bufferSize = newSize;
 	
 	return buffer != 0;
 }
 
 //-----------------------------------------------------------------------------
-uint32_t CMemoryStream::writeRaw (const void* inBuffer, uint32_t size)
+uint32_t CMemoryStream::writeRaw (const void* inBuffer, uint32_t inSize)
 {
-	if (!resize (pos + size))
+	if (!resize (pos + inSize))
 		return kStreamIOError;
 	
-	memcpy (buffer + pos, inBuffer, size);
-	pos += size;
+	memcpy (buffer + pos, inBuffer, inSize);
+	pos += inSize;
+	size = pos;
 	
-	return size;
+	return inSize;
 }
 
 //-----------------------------------------------------------------------------
@@ -140,7 +143,7 @@ int64_t CMemoryStream::seek (int64_t seekpos, SeekMode mode)
 		case kSeekCurrent: newPos = pos + seekpos; break;
 		case kSeekEnd: newPos = size - seekpos; break;
 	}
-	if (newPos < size)
+	if (newPos <= size && newPos > 0)
 	{
 		pos = static_cast<uint32_t> (newPos);
 		return pos;
@@ -495,6 +498,46 @@ void CResourceInputStream::rewind ()
 }
 
 //-----------------------------------------------------------------------------
+template<typename T>
+bool writeEndianSwap (const T& value, OutputStream& s)
+{
+	uint32_t size = sizeof (T);
+	const int8_t* ptr = reinterpret_cast<const int8_t*> (&value);
+	while (size >= 2)
+	{
+		if (s.writeRaw (ptr + 1, 1) != 1)
+			return false;
+		if (s.writeRaw (ptr, 1) != 1)
+			return false;
+		size -= 2;
+		ptr += 2;
+	}
+	if (size)
+	{
+		if (s.writeRaw (ptr, 1) != 1)
+			return false;
+	}
+	return true;
+}
+
+//-----------------------------------------------------------------------------
+template<typename T>
+void endianSwap (T& value)
+{
+	uint32_t size = sizeof (T);
+	int8_t* ptr = reinterpret_cast<int8_t*> (&value);
+	int8_t tmp;
+	while (size >= 2)
+	{
+		tmp = ptr[0];
+		ptr[0] = ptr[1];
+		ptr[1] = tmp;
+		ptr += 2;
+		size -= 2;
+	}
+}
+
+//-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 bool OutputStream::operator<< (const int8_t& input)
@@ -515,13 +558,7 @@ bool OutputStream::operator<< (const int16_t& input)
 	{
 		return writeRaw (&input, sizeof (int16_t)) == sizeof (int16_t);
 	}
-	else
-	{
-		const uint8_t* p = (const uint8_t*)&input;
-		if (writeRaw (&p[1], sizeof (int8_t)) != sizeof (int8_t)) return false;
-		if (writeRaw (&p[0], sizeof (int8_t)) != sizeof (int8_t)) return false;
-		return true;
-	}
+	return writeEndianSwap (input, *this);
 }
 
 //-----------------------------------------------------------------------------
@@ -531,13 +568,7 @@ bool OutputStream::operator<< (const uint16_t& input)
 	{
 		return writeRaw (&input, sizeof (uint16_t)) == sizeof (uint16_t);
 	}
-	else
-	{
-		const uint8_t* p = (const uint8_t*)&input;
-		if (writeRaw (&p[1], sizeof (int8_t)) != sizeof (int8_t)) return false;
-		if (writeRaw (&p[0], sizeof (int8_t)) != sizeof (int8_t)) return false;
-		return true;
-	}
+	return writeEndianSwap (input, *this);
 }
 
 //-----------------------------------------------------------------------------
@@ -547,15 +578,7 @@ bool OutputStream::operator<< (const int32_t& input)
 	{
 		return writeRaw (&input, sizeof (int32_t)) == sizeof (int32_t);
 	}
-	else
-	{
-		const uint8_t* p = (const uint8_t*)&input;
-		if (writeRaw (&p[3], sizeof (int8_t)) != sizeof (int8_t)) return false;
-		if (writeRaw (&p[2], sizeof (int8_t)) != sizeof (int8_t)) return false;
-		if (writeRaw (&p[1], sizeof (int8_t)) != sizeof (int8_t)) return false;
-		if (writeRaw (&p[0], sizeof (int8_t)) != sizeof (int8_t)) return false;
-		return true;
-	}
+	return writeEndianSwap (input, *this);
 }
 
 //-----------------------------------------------------------------------------
@@ -565,15 +588,7 @@ bool OutputStream::operator<< (const uint32_t& input)
 	{
 		return writeRaw (&input, sizeof (uint32_t)) == sizeof (uint32_t);
 	}
-	else
-	{
-		const uint8_t* p = (const uint8_t*)&input;
-		if (writeRaw (&p[3], sizeof (int8_t)) != sizeof (int8_t)) return false;
-		if (writeRaw (&p[2], sizeof (int8_t)) != sizeof (int8_t)) return false;
-		if (writeRaw (&p[1], sizeof (int8_t)) != sizeof (int8_t)) return false;
-		if (writeRaw (&p[0], sizeof (int8_t)) != sizeof (int8_t)) return false;
-		return true;
-	}
+	return writeEndianSwap (input, *this);
 }
 
 //-----------------------------------------------------------------------------
@@ -583,19 +598,7 @@ bool OutputStream::operator<< (const int64_t& input)
 	{
 		return writeRaw (&input, sizeof (int64_t)) == sizeof (int64_t);
 	}
-	else
-	{
-		const uint8_t* p = (const uint8_t*)&input;
-		if (writeRaw (&p[7], sizeof (int8_t)) != sizeof (int8_t)) return false;
-		if (writeRaw (&p[6], sizeof (int8_t)) != sizeof (int8_t)) return false;
-		if (writeRaw (&p[5], sizeof (int8_t)) != sizeof (int8_t)) return false;
-		if (writeRaw (&p[4], sizeof (int8_t)) != sizeof (int8_t)) return false;
-		if (writeRaw (&p[3], sizeof (int8_t)) != sizeof (int8_t)) return false;
-		if (writeRaw (&p[2], sizeof (int8_t)) != sizeof (int8_t)) return false;
-		if (writeRaw (&p[1], sizeof (int8_t)) != sizeof (int8_t)) return false;
-		if (writeRaw (&p[0], sizeof (int8_t)) != sizeof (int8_t)) return false;
-		return true;
-	}
+	return writeEndianSwap (input, *this);
 }
 
 //-----------------------------------------------------------------------------
@@ -605,19 +608,7 @@ bool OutputStream::operator<< (const uint64_t& input)
 	{
 		return writeRaw (&input, sizeof (uint64_t)) == sizeof (uint64_t);
 	}
-	else
-	{
-		const uint8_t* p = (const uint8_t*)&input;
-		if (writeRaw (&p[7], sizeof (int8_t)) != sizeof (int8_t)) return false;
-		if (writeRaw (&p[6], sizeof (int8_t)) != sizeof (int8_t)) return false;
-		if (writeRaw (&p[5], sizeof (int8_t)) != sizeof (int8_t)) return false;
-		if (writeRaw (&p[4], sizeof (int8_t)) != sizeof (int8_t)) return false;
-		if (writeRaw (&p[3], sizeof (int8_t)) != sizeof (int8_t)) return false;
-		if (writeRaw (&p[2], sizeof (int8_t)) != sizeof (int8_t)) return false;
-		if (writeRaw (&p[1], sizeof (int8_t)) != sizeof (int8_t)) return false;
-		if (writeRaw (&p[0], sizeof (int8_t)) != sizeof (int8_t)) return false;
-		return true;
-	}
+	return writeEndianSwap (input, *this);
 }
 
 //-----------------------------------------------------------------------------
@@ -627,19 +618,7 @@ bool OutputStream::operator<< (const double& input)
 	{
 		return writeRaw (&input, sizeof (double)) == sizeof (double);
 	}
-	else
-	{
-		const uint8_t* p = (const uint8_t*)&input;
-		if (writeRaw (&p[7], sizeof (int8_t)) != sizeof (int8_t)) return false;
-		if (writeRaw (&p[6], sizeof (int8_t)) != sizeof (int8_t)) return false;
-		if (writeRaw (&p[5], sizeof (int8_t)) != sizeof (int8_t)) return false;
-		if (writeRaw (&p[4], sizeof (int8_t)) != sizeof (int8_t)) return false;
-		if (writeRaw (&p[3], sizeof (int8_t)) != sizeof (int8_t)) return false;
-		if (writeRaw (&p[2], sizeof (int8_t)) != sizeof (int8_t)) return false;
-		if (writeRaw (&p[1], sizeof (int8_t)) != sizeof (int8_t)) return false;
-		if (writeRaw (&p[0], sizeof (int8_t)) != sizeof (int8_t)) return false;
-		return true;
-	}
+	return writeEndianSwap (input, *this);
 }
 
 
@@ -664,10 +643,7 @@ bool InputStream::operator>> (int16_t& output)
 	{
 		if (byteOrder != kNativeByteOrder)
 		{
-			uint8_t* p = (uint8_t*)&output;
-			uint8_t temp = p[0];
-			p[0] = p[1];
-			p[1] = temp;
+			endianSwap (output);
 		}
 		return true;
 	}
@@ -681,10 +657,7 @@ bool InputStream::operator>> (uint16_t& output)
 	{
 		if (byteOrder != kNativeByteOrder)
 		{
-			uint8_t* p = (uint8_t*)&output;
-			uint8_t temp = p[0];
-			p[0] = p[1];
-			p[1] = temp;
+			endianSwap (output);
 		}
 		return true;
 	}
@@ -698,13 +671,7 @@ bool InputStream::operator>> (int32_t& output)
 	{
 		if (byteOrder != kNativeByteOrder)
 		{
-			uint8_t* p = (uint8_t*)&output;
-			uint8_t temp = p[0];
-			p[0] = p[3];
-			p[3] = temp;
-			temp = p[1];
-			p[1] = p[2];
-			p[2] = temp;
+			endianSwap (output);
 		}
 		return true;
 	}
@@ -718,13 +685,7 @@ bool InputStream::operator>> (uint32_t& output)
 	{
 		if (byteOrder != kNativeByteOrder)
 		{
-			uint8_t* p = (uint8_t*)&output;
-			uint8_t temp = p[0];
-			p[0] = p[3];
-			p[3] = temp;
-			temp = p[1];
-			p[1] = p[2];
-			p[2] = temp;
+			endianSwap (output);
 		}
 		return true;
 	}
@@ -738,19 +699,7 @@ bool InputStream::operator>> (int64_t& output)
 	{
 		if (byteOrder != kNativeByteOrder)
 		{
-			uint8_t* p = (uint8_t*)&output;
-			uint8_t temp = p[0];
-			p[0] = p[7];
-			p[7] = temp;
-			temp = p[6];
-			p[1] = p[6];
-			p[6] = temp;
-			temp = p[5];
-			p[2] = p[5];
-			p[2] = temp;
-			temp = p[3];
-			p[3] = p[4];
-			p[4] = temp;
+			endianSwap (output);
 		}
 		return true;
 	}
@@ -764,19 +713,7 @@ bool InputStream::operator>> (uint64_t& output)
 	{
 		if (byteOrder != kNativeByteOrder)
 		{
-			uint8_t* p = (uint8_t*)&output;
-			uint8_t temp = p[0];
-			p[0] = p[7];
-			p[7] = temp;
-			temp = p[6];
-			p[1] = p[6];
-			p[6] = temp;
-			temp = p[5];
-			p[2] = p[5];
-			p[2] = temp;
-			temp = p[3];
-			p[3] = p[4];
-			p[4] = temp;
+			endianSwap (output);
 		}
 		return true;
 	}
@@ -790,19 +727,7 @@ bool InputStream::operator>> (double& output)
 	{
 		if (byteOrder != kNativeByteOrder)
 		{
-			uint8_t* p = (uint8_t*)&output;
-			uint8_t temp = p[0];
-			p[0] = p[7];
-			p[7] = temp;
-			temp = p[6];
-			p[1] = p[6];
-			p[6] = temp;
-			temp = p[5];
-			p[2] = p[5];
-			p[2] = temp;
-			temp = p[3];
-			p[3] = p[4];
-			p[4] = temp;
+			endianSwap (output);
 		}
 		return true;
 	}

@@ -39,7 +39,49 @@ namespace VSTGUI {
 
 TESTCASE(CColorTest,
 
-	TEST(hsvTest,
+	TEST(makeCColor,
+		CColor c = MakeCColor (10, 20, 30, 40);
+		EXPECT(c.red == 10);
+		EXPECT(c.green == 20);
+		EXPECT(c.blue == 30);
+		EXPECT(c.alpha == 40);
+	);
+	
+	TEST(luma,
+		CColor c (30, 50, 80, 255);
+		EXPECT (c.getLuma () == 47);
+	);
+
+	TEST(lightness,
+		CColor c (80, 30, 50, 255);
+		EXPECT(c.getLightness () == 55);
+	);
+
+	TEST(operatorEqual,
+		CColor c (30, 40, 50, 60);
+		EXPECT(c == CColor (30, 40, 50, 60));
+	);
+
+	TEST(operatorNotEqual,
+		CColor c (30, 40, 50, 60);
+		EXPECT(c != CColor (50, 40, 50, 60));
+		EXPECT(c != CColor (30, 50, 50, 60));
+		EXPECT(c != CColor (30, 40, 60, 60));
+		EXPECT(c != CColor (30, 40, 50, 70));
+	);
+
+	TEST(copyConstructor,
+		CColor c (60, 50, 40, 100);
+		EXPECT(c == CColor (c));
+	);
+
+	TEST(assignOperator,
+		CColor c;
+		c (20, 30, 40, 50);
+		EXPECT(c == CColor (20, 30, 40, 50));
+	);
+
+	TEST(hsv,
 		double hue;
 		double saturation;
 		double value;
@@ -61,7 +103,7 @@ TESTCASE(CColorTest,
 		}
 	);
 
-	TEST(hslTest,
+	TEST(hsl,
 		double hue;
 		double saturation;
 		double lightness;

@@ -91,12 +91,12 @@ namespace UnitTest {
 
 //----------------------------------------------------------------------------------------------------
 #define TESTCASE(name,function) static VSTGUI::UnitTest::TestCaseRegistrar name##TestCaseRegistrar (VSTGUI_UNITTEST_MAKE_STRING(name), [](VSTGUI::UnitTest::TestCase* testCase) { function })
-#define TEST(name,function) testCase->registerTest (VSTGUI_UNITTEST_MAKE_STRING(name), [&](VSTGUI::UnitTest::Context* context) { { function } return true; });
+#define TEST(name,function) testCase->registerTest (VSTGUI_UNITTEST_MAKE_STRING(name), [](VSTGUI::UnitTest::Context* context) { { function } return true; });
 #define EXPECT(condition) if (!(condition)) { context->print (__FILE__ ":%d: Expected: " VSTGUI_UNITTEST_MAKE_STRING(condition), __LINE__); return false; }
 #define FAIL(reason) { context->print (__FILE__ ":%d: Failure: " reason, __LINE__); return false; }
 
-#define SETUP(function) testCase->setSetupFunction ([&](VSTGUI::UnitTest::Context* context) { function } )
-#define TEARDOWN(function) testCase->setTeardownFunction ([&](VSTGUI::UnitTest::Context* context) { function } )
+#define SETUP(function) testCase->setSetupFunction ([](VSTGUI::UnitTest::Context* context) { function } )
+#define TEARDOWN(function) testCase->setTeardownFunction ([](VSTGUI::UnitTest::Context* context) { function } )
 //----------------------------------------------------------------------------------------------------
 class Context;
 class TestCase;
@@ -149,6 +149,7 @@ public:
 private:
 	Tests tests;
 	std::string name;
+	TestCaseFunction tcf;
 	SetupFunction setupFunction;
 	TeardownFunction teardownFunction;
 };

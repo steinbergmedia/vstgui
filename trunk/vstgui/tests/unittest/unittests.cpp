@@ -47,7 +47,8 @@ namespace UnitTest {
 TestCase::TestCase (std::string&& name, TestCaseFunction&& testCase)
 : name (name)
 {
-	testCase (this);
+	tcf = std::move (testCase);
+	tcf (this);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -61,6 +62,7 @@ TestCase& TestCase::operator=(TestCase &&tc) noexcept
 {
 	name = std::move (tc.name);
 	tests = std::move (tc.tests);
+	tcf = std::move (tc.tcf);
 	setupFunction = std::move (tc.setupFunction);
 	teardownFunction = std::move (tc.teardownFunction);
 	return *this;
@@ -236,7 +238,7 @@ int main ()
 
 TESTCASE(Example,
 		 
-	int result;
+	static int result;
 
 	SETUP(
 		result = 0;

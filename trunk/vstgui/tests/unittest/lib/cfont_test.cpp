@@ -32,76 +32,45 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-
 #include "../unittests.h"
-#include "../../../lib/idependency.h"
+#include "../../../lib/cfont.h"
 
 namespace VSTGUI {
 
-class DependentObject : public CBaseObject, public IDependency
-{
-public:
-	DependentObject ()
-	: notifyCalledCount (0)
-	{
-		
-	}
-	
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message)
-	{
-		notifyCalledCount++;
-		return kMessageNotified;
-	}
-	
-	int32_t notifyCalledCount;
-};
+TESTCASE(CFontTests,
 
-class TestObject : public CBaseObject, public IDependency
-{
-public:
-	TestObject ()
-	{
-		
-	}
-
-};
-
-TESTCASE(IDependencyTest,
-
-	TEST(simpleDependency,
-		DependentObject dObj;
-		TestObject tObj;
-		tObj.addDependency (&dObj);
-		tObj.changed ("Test");
-		EXPECT(dObj.notifyCalledCount == 1)
-		tObj.removeDependency(&dObj);
+	TEST(attributes,
+		CFontDesc f;
+		EXPECT(f.getName () == nullptr);
+		EXPECT(f.getSize () == 0.);
+		EXPECT(f.getStyle () == kNormalFace);
+		f.setName ("Test");
+		EXPECT(strcmp (f.getName (), "Test") == 0);
+		f.setSize (20.2);
+		EXPECT(f.getSize () == 20.2);
+		f.setStyle (kBoldFace|kItalicFace);
+		EXPECT(f.getStyle () == (kBoldFace|kItalicFace));
+		CFontDesc::cleanup ();
 	);
 
-	TEST(simpleDeferedDependency,
-		DependentObject dObj;
-		TestObject tObj;
-		tObj.addDependency (&dObj);
-		tObj.deferChanges (true);
-		tObj.changed ("Test");
-		EXPECT(dObj.notifyCalledCount == 0)
-		tObj.deferChanges (false);
-		EXPECT(dObj.notifyCalledCount == 1)
-		tObj.removeDependency (&dObj);
+	TEST(copyConstructor,
+		CFontDesc f (*kSystemFont);
+		EXPECT(f == *kSystemFont);
 	);
 
-	TEST(simpleDeferChanges,
-		DependentObject dObj;
-		TestObject tObj;
-		tObj.addDependency (&dObj);
-		{
-			IDependency::DeferChanges df (&tObj);
-			tObj.changed ("Test");
-			tObj.changed ("Test");
-			EXPECT(dObj.notifyCalledCount == 0)
-		}
-		EXPECT(dObj.notifyCalledCount == 1)
-		tObj.removeDependency (&dObj);
+	TEST(notEqualOperator,
+		CFontDesc f (*kSystemFont);
+		EXPECT(f == *kSystemFont);
+		f.setSize (f.getSize ()+1);
+		EXPECT(f != *kSystemFont);
+		f = *kSystemFont;
+		f.setStyle (kBoldFace);
+		EXPECT(f != *kSystemFont);
+		f = *kSystemFont;
+		f.setName ("Bla");
+		EXPECT(f != *kSystemFont);
 	);
+
 );
 
-} // namespace
+} // VSTGUI

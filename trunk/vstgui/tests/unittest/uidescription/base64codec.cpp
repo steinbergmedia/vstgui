@@ -38,9 +38,9 @@
 
 namespace VSTGUI {
 
-TESTCASE(Base64Codec,
+TESTCASE(Base64CodecTest,
 
-	TEST(EncodeAscii,
+	TEST(encodeAscii,
 		 std::string test ("ABCD");
 		 Base64Codec bd;
 		 EXPECT (bd.init (test.c_str (), 4) == true)
@@ -56,7 +56,7 @@ TESTCASE(Base64Codec,
 		 EXPECT (ptr[7] == '=');
 	);
 
-	TEST(EncodeBinary,
+	TEST(encodeBinary,
 		 unsigned char binary [6];
 		 binary[0] = 0x89;
 		 binary[1] = 0x50;
@@ -78,8 +78,8 @@ TESTCASE(Base64Codec,
 		 EXPECT (ptr[7] == 'K');
 	);
 
-	TEST(DecodeAscii,
-		 std::string test ("QUJDRA==");
+	TEST(decodeAscii,
+		 std::string test ("QUJDRA");
 		 Base64Codec bd;
 		 EXPECT (bd.init (test) == true)
 		 EXPECT (bd.getDataSize () == 4);
@@ -90,7 +90,7 @@ TESTCASE(Base64Codec,
 		 EXPECT (ptr[3] == 'D');
 	);
 
-	TEST(DecodeBinary,
+	TEST(decodeBinary,
 		 std::string test ("iVBORw0K");
 		 Base64Codec bd;
 		 EXPECT (bd.init (test) == true)
