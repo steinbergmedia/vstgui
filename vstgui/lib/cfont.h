@@ -80,8 +80,9 @@ public:
 	virtual IPlatformFont* getPlatformFont ();
 	virtual IFontPainter* getFontPainter ();
 
-	virtual CFontDesc& operator = (const CFontDesc&);
-	virtual bool operator == (const CFontDesc&) const;
+	virtual CFontDesc& operator= (const CFontDesc&);
+	virtual bool operator== (const CFontDesc&) const;
+	virtual bool operator!= (const CFontDesc& other) const { return !(*this == other);}
 	
 	static void cleanup ();
 

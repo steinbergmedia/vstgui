@@ -32,76 +32,32 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-
 #include "../unittests.h"
-#include "../../../lib/idependency.h"
+#include "../../../lib/cbuttonstate.h"
 
 namespace VSTGUI {
 
-class DependentObject : public CBaseObject, public IDependency
-{
-public:
-	DependentObject ()
-	: notifyCalledCount (0)
-	{
-		
-	}
-	
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message)
-	{
-		notifyCalledCount++;
-		return kMessageNotified;
-	}
-	
-	int32_t notifyCalledCount;
-};
+TESTCASE(CButtonStateTests,
 
-class TestObject : public CBaseObject, public IDependency
-{
-public:
-	TestObject ()
-	{
-		
-	}
-
-};
-
-TESTCASE(IDependencyTest,
-
-	TEST(simpleDependency,
-		DependentObject dObj;
-		TestObject tObj;
-		tObj.addDependency (&dObj);
-		tObj.changed ("Test");
-		EXPECT(dObj.notifyCalledCount == 1)
-		tObj.removeDependency(&dObj);
-	);
-
-	TEST(simpleDeferedDependency,
-		DependentObject dObj;
-		TestObject tObj;
-		tObj.addDependency (&dObj);
-		tObj.deferChanges (true);
-		tObj.changed ("Test");
-		EXPECT(dObj.notifyCalledCount == 0)
-		tObj.deferChanges (false);
-		EXPECT(dObj.notifyCalledCount == 1)
-		tObj.removeDependency (&dObj);
-	);
-
-	TEST(simpleDeferChanges,
-		DependentObject dObj;
-		TestObject tObj;
-		tObj.addDependency (&dObj);
-		{
-			IDependency::DeferChanges df (&tObj);
-			tObj.changed ("Test");
-			tObj.changed ("Test");
-			EXPECT(dObj.notifyCalledCount == 0)
-		}
-		EXPECT(dObj.notifyCalledCount == 1)
-		tObj.removeDependency (&dObj);
+	TEST(test,
+		CButtonState s;
+		EXPECT(s.getButtonState () == 0);
+		EXPECT(s.getModifierState () == 0);
+		s = kLButton;
+		EXPECT(s.isLeftButton () == true);
+		s |= kShift;
+		EXPECT(s.isLeftButton () == true);
+		EXPECT(s.getModifierState () == kShift);
+		s = kRButton;
+		EXPECT(s.isRightButton () == true);
+		s |= kDoubleClick;
+		EXPECT(s.isDoubleClick () == true);
+		EXPECT(s & CButtonState (kDoubleClick));
+		CButtonState s2 (s);
+		EXPECT(s == s2);
+		s2 = ~s;
+		EXPECT(s != s2);
 	);
 );
 
-} // namespace
+} // VSTGUI

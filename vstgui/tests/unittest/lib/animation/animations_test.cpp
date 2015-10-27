@@ -41,6 +41,8 @@
 namespace VSTGUI {
 using namespace Animation;
 
+namespace {
+
 //-----------------------------------------------------------------------------
 class TestView : public CView
 {
@@ -58,8 +60,10 @@ public:
 	CLASS_METHODS(TestControl, CControl)
 };
 
+} // anonymous
+
 //-----------------------------------------------------------------------------
-TESTCASE(alphaValueAnimation,
+TESTCASE(AlphaValueAnimationTest,
 
 	TEST(animation,
 		TestView view;
@@ -77,7 +81,7 @@ TESTCASE(alphaValueAnimation,
 );
 
 //-----------------------------------------------------------------------------
-TESTCASE(viewSizeAnimation,
+TESTCASE(ViewSizeAnimationTest,
 
 	TEST(animation,
 		TestView view;
@@ -105,7 +109,7 @@ TESTCASE(viewSizeAnimation,
 );
 
 //-----------------------------------------------------------------------------
-TESTCASE(controlValueAnimation,
+TESTCASE(ControlValueAnimationTest,
 	
 	TEST(animation,
 		TestControl control;
@@ -123,7 +127,7 @@ TESTCASE(controlValueAnimation,
 );
 
 //-----------------------------------------------------------------------------
-TESTCASE(exchangeViewAnimation,
+TESTCASE(ExchangeViewAnimationTest,
 
 	TEST(alphaValueFade,
 		auto parentContainer = owned (new CViewContainer (CRect (0, 0, 0, 0)));

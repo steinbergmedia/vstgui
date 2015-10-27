@@ -244,7 +244,7 @@ void UIViewFactory::evaluateAttributesAndRemember (CView* view, const UIAttribut
 	typedef std::pair<std::string, std::string> StringPair;
 	VSTGUI_RANGE_BASED_FOR_LOOP (UIAttributesMap, attributes, StringPair, attr)
 		const std::string& value = attr.second;
-		if (description->getVariable (value.c_str (), evaluatedValue))
+		if (description && description->getVariable (value.c_str (), evaluatedValue))
 		{
 		#if VSTGUI_LIVE_EDITING
 			rememberAttribute (view, attr.first.c_str (), value.c_str ());
@@ -274,7 +274,7 @@ void UIViewFactory::evaluateAttributesAndRemember (CView* view, const UIAttribut
 
 #if VSTGUI_LIVE_EDITING
 //-----------------------------------------------------------------------------
-bool UIViewFactory::getAttributeNamesForView (CView* view, std::list<std::string>& attributeNames) const
+bool UIViewFactory::getAttributeNamesForView (CView* view, StringList& attributeNames) const
 {
 	bool result = false;
 	ViewCreatorRegistry& registry = getCreatorRegistry ();
@@ -317,7 +317,7 @@ IViewCreator::AttrType UIViewFactory::getAttributeType (CView* view, const std::
 }
 
 //-----------------------------------------------------------------------------
-bool UIViewFactory::getPossibleAttributeListValues (CView* view, const std::string& attributeName, std::list<const std::string*>& values) const
+bool UIViewFactory::getPossibleAttributeListValues (CView* view, const std::string& attributeName, StringPtrList& values) const
 {
 	ViewCreatorRegistry& registry = getCreatorRegistry ();
 	ViewCreatorRegistry::const_iterator iter = registry.find (getViewName (view));
@@ -345,10 +345,10 @@ bool UIViewFactory::getAttributeValueRange (CView* view, const std::string& attr
 bool UIViewFactory::getAttributesForView (CView* view, const IUIDescription* desc, UIAttributes& attr) const
 {
 	bool result = false;
-	std::list<std::string> attrNames;
+	StringList attrNames;
 	if (getAttributeNamesForView (view, attrNames))
 	{
-		std::list<std::string>::const_iterator it = attrNames.begin ();
+		StringList::const_iterator it = attrNames.begin ();
 		while (it != attrNames.end ())
 		{
 			std::string value;
@@ -363,7 +363,7 @@ bool UIViewFactory::getAttributesForView (CView* view, const IUIDescription* des
 }
 
 //-----------------------------------------------------------------------------
-void UIViewFactory::collectRegisteredViewNames (std::list<const std::string*>& viewNames, IdStringPtr baseClassNameFilter) const
+void UIViewFactory::collectRegisteredViewNames (StringPtrList& viewNames, IdStringPtr baseClassNameFilter) const
 {
 	ViewCreatorRegistry& registry = getCreatorRegistry ();
 	ViewCreatorRegistry::const_iterator iter = registry.begin ();
@@ -375,7 +375,7 @@ void UIViewFactory::collectRegisteredViewNames (std::list<const std::string*>& v
 			ViewCreatorRegistry::const_iterator iter2 (iter);
 			while (iter2 != registry.end () && (*iter2).second->getBaseViewName ())
 			{
-				if ((*iter2).first == baseClassNameFilter)
+				if ((*iter2).first == baseClassNameFilter || (*iter2).second->getBaseViewName () == baseClassNameFilter)
 				{
 					found = true;
 					break;
@@ -448,6 +448,16 @@ void UIViewFactory::registerViewCreator (const IViewCreator& viewCreator)
 	}
 #endif
 	registry.insert (std::make_pair (viewCreator.getViewName (), &viewCreator));
+}
+
+//-----------------------------------------------------------------------------
+void UIViewFactory::unregisterViewCreator (const IViewCreator& viewCreator)
+{
+	ViewCreatorRegistry& registry = getCreatorRegistry ();
+	ViewCreatorRegistry::const_iterator it = registry.find (viewCreator.getViewName ());
+	if (it == registry.end ())
+		return;
+	registry.erase (it);
 }
 
 } // namespace

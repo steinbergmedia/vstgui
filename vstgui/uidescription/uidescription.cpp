@@ -432,7 +432,6 @@ class UIDescWriter
 {
 public:
 	bool write (OutputStream& stream, UINode* rootNode);
-	bool write (OutputStream& stream, std::list<UINode*> nodeList);
 protected:
 	static void encodeAttributeString (std::string& str);
 
@@ -449,19 +448,6 @@ bool UIDescWriter::write (OutputStream& stream, UINode* rootNode)
 	intendLevel = 0;
 	stream << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
 	return writeNode (rootNode, stream);
-}
-
-//-----------------------------------------------------------------------------
-bool UIDescWriter::write (OutputStream& stream, std::list<UINode*> nodeList)
-{
-	intendLevel = 0;
-	stream << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
-	for (std::list<UINode*>::const_iterator it = nodeList.begin (); it != nodeList.end (); it++)
-	{
-		if (!writeNode (*it, stream))
-			return false;
-	}
-	return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -2912,7 +2898,7 @@ int32_t UIControlTagNode::getTag ()
 		const std::string* tagStr = attributes->getAttributeValue ("tag");
 		if (tagStr)
 		{
-			if (tagStr->size () == 6 && (*tagStr)[0] == '\'' && (*tagStr)[6] == '\'')
+			if (tagStr->size () == 6 && (*tagStr)[0] == '\'' && (*tagStr)[5] == '\'')
 			{
 				char c1 = (*tagStr)[1];
 				char c2 = (*tagStr)[2];

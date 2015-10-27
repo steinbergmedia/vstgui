@@ -38,6 +38,8 @@
 
 namespace VSTGUI {
 
+namespace {
+
 class TestViewContainerListener : public IViewContainerListener
 {
 public:
@@ -56,9 +58,23 @@ public:
 	bool transformChangedCalled {false};
 };
 
+class TestView1 : public CView
+{
+public:
+	TestView1 () : CView (CRect (0, 0, 10, 10)) {}
+};
+
+class TestView2 : public CView
+{
+public:
+	TestView2 () : CView (CRect (10, 10, 20, 20)) {}
+};
+
+} // anonymous
+
 TESTCASE(CViewContainerTest,
 
-	CViewContainer* container = nullptr;
+	static CViewContainer* container = nullptr;
 
 	SETUP(
 		container = new CViewContainer (CRect (0, 0, 200, 200));
@@ -69,7 +85,7 @@ TESTCASE(CViewContainerTest,
 		container = 0;
 	);
 	
-	TEST(ChangeViewZOrder,
+	TEST(changeViewZOrder,
 		CView* view1 = new CView (CRect (0, 0, 10, 10));
 		CView* view2 = new CView (CRect (0, 0, 10, 10));
 		CView* view3 = new CView (CRect (0, 0, 10, 10));
@@ -82,7 +98,7 @@ TESTCASE(CViewContainerTest,
 		EXPECT (container->getView (2) == view2)
 	);
 
-	TEST(AddView,
+	TEST(addView,
 		CView* view = new CView (CRect (0, 0, 10, 10));
 		CView* view2 = new CView (CRect (0, 0, 10, 10));
 		
@@ -93,7 +109,15 @@ TESTCASE(CViewContainerTest,
 		EXPECT (container->isChild (view2))
 	);
 
-	TEST(AddViewBeforeOtherView,
+	TEST(addView2,
+		auto v = new TestView1 ();
+		CRect r (30, 40, 50, 60);
+		container->addView (v, r, false);
+		EXPECT(v->getMouseEnabled () == false);
+		EXPECT(v->getMouseableArea () == r);
+	);
+
+	TEST(addViewBeforeOtherView,
 		CView* view = new CView (CRect (0, 0, 10, 10));
 		CView* view2 = new CView (CRect (0, 0, 10, 10));
 		
@@ -104,7 +128,7 @@ TESTCASE(CViewContainerTest,
 		EXPECT (container->getView (1) == view)
 	);
 
-	TEST(RemoveView,
+	TEST(removeView,
 		OwningPointer<CView> view = new CView (CRect (0, 0, 10, 10));
 		CView* view2 = new CView (CRect (0, 0, 10, 10));
 		
@@ -116,7 +140,7 @@ TESTCASE(CViewContainerTest,
 		EXPECT (container->isChild (view2))
 	);
 
-	TEST(RemoveAllViews,
+	TEST(removeAllViews,
 		OwningPointer<CView> view = new CView (CRect (0, 0, 10, 10));
 		OwningPointer<CView> view2 = new CView (CRect (0, 0, 10, 10));
 		
@@ -129,7 +153,7 @@ TESTCASE(CViewContainerTest,
 		EXPECT (container->hasChildren () == false)
 	);
 	
-	TEST(AdvanceNextFocusView,
+	TEST(advanceNextFocusView,
 		CFrame* frame = new CFrame (CRect (0, 0, 10, 10), 0);
 		CView* view1 = new CView (CRect (0, 0, 10, 10));
 		CView* view2 = new CView (CRect (0, 0, 10, 10));
@@ -154,7 +178,7 @@ TESTCASE(CViewContainerTest,
 		frame->close ();
 	);
 
-	TEST(AutoSizeAll,
+	TEST(autoSizeAll,
 		CView* view = new CView (container->getViewSize ());
 		view->setAutosizeFlags (kAutosizeAll);
 		container->addView (view);
@@ -166,7 +190,7 @@ TESTCASE(CViewContainerTest,
 		EXPECT(view->getViewSize ().bottom == 500)
 	);
 
-	TEST(SizeToFit,
+	TEST(sizeToFit,
 		CRect r (10, 10, 20, 20);
 		CView* view = new CView (r);
 		container->addView (view);
@@ -174,14 +198,16 @@ TESTCASE(CViewContainerTest,
 		EXPECT(container->getViewSize ().right == 30)
 		EXPECT(container->getViewSize ().bottom == 30)
 	);
-	TEST(GetViewAt,
+
+	TEST(getViewAt,
 		CRect r (10, 10, 20, 20);
 		CView* view = new CView (r);
 		container->addView (view);
 		EXPECT(view == container->getViewAt (r.getTopLeft ()));
 		EXPECT(nullptr == container->getViewAt (CPoint (0, 0)));
 	);
-	TEST(GetViewAtDeep,
+
+	TEST(getViewAtDeep,
 		CRect r (10, 10, 20, 20);
 		CViewContainer* container2 = new CViewContainer (r);
 		container->addView (container2);
@@ -193,7 +219,8 @@ TESTCASE(CViewContainerTest,
 		EXPECT(container->getViewAt (CPoint (11, 11), GetViewOptions (GetViewOptions::kDeep)) == nullptr);
 		EXPECT(container->getViewAt (CPoint (11, 11), GetViewOptions (GetViewOptions::kDeep|GetViewOptions::kIncludeViewContainer)) == container2);
 	);
-	TEST(Listener,
+
+	TEST(listener,
 		 TestViewContainerListener listener;
 		 container->registerViewContainerListener (&listener);
 		 auto view = new CView (CRect (0, 0, 0, 0));
@@ -210,6 +237,83 @@ TESTCASE(CViewContainerTest,
 		 EXPECT(listener.transformChangedCalled == true);
 		 container->unregisterViewContainerListener (&listener);
 	);
+	
+	TEST(backgroundColor,
+		container->setBackgroundColor (kGreenCColor);
+		EXPECT(container->getBackgroundColor () == kGreenCColor);
+		container->setBackgroundColorDrawStyle (kDrawFilledAndStroked);
+		EXPECT(container->getBackgroundColorDrawStyle () == kDrawFilledAndStroked);
+		container->setBackgroundColorDrawStyle (kDrawFilled);
+		EXPECT(container->getBackgroundColorDrawStyle () == kDrawFilled);
+		container->setBackgroundColorDrawStyle (kDrawStroked);
+		EXPECT(container->getBackgroundColorDrawStyle () == kDrawStroked);
+	);
+
+	TEST(backgroundOffset,
+		container->setBackgroundOffset (CPoint (10, 10));
+		EXPECT(container->getBackgroundOffset () == CPoint (10, 10));
+	);
+
+	TEST(getChildViewsOfType,
+		container->addView (new TestView1 ());
+		container->addView (new TestView2 ());
+		std::vector<TestView1*> r;
+		container->getChildViewsOfType<TestView1> (r);
+		EXPECT(r.size () == 1);
+		EXPECT(r[0] == container->getView (0));
+		std::vector<TestView2*> r2;
+		container->getChildViewsOfType<TestView2> (r2);
+		EXPECT(r2.size () == 1);
+		EXPECT(r2[0] == container->getView (1));
+		auto c2 = owned (new CViewContainer (CRect (0, 0, 100, 100)));
+		c2->addView (container);
+		r.clear ();
+		c2->getChildViewsOfType<TestView1> (r);
+		EXPECT(r.size () == 0);
+		c2->getChildViewsOfType<TestView1> (r, true);
+		EXPECT(r.size () == 1);
+		c2->removeView (container, false);
+	);
+	
+	TEST(iterator,
+		auto v1 = new TestView1 ();
+		auto v2 = new TestView2 ();
+		container->addView (v1);
+		container->addView (v2);
+		ViewIterator it (container);
+		EXPECT(*it == v1);
+		++it;
+		EXPECT(*it == v2);
+		--it;
+		EXPECT(*it == v1);
+		auto it2 = it++;
+		EXPECT(*it2 == v1);
+		EXPECT(*it == v2);
+		auto it3 = it2--;
+		EXPECT(*it3 == v1);
+		EXPECT(*it2 == nullptr);
+		++it;
+		EXPECT(*it == nullptr);
+	);
+
+	TEST(reverseIterator,
+		auto v1 = new TestView1 ();
+		auto v2 = new TestView2 ();
+		container->addView (v1);
+		container->addView (v2);
+		ReverseViewIterator it (container);
+		EXPECT(*it == v2);
+		++it;
+		EXPECT(*it == v1);
+		--it;
+		EXPECT(*it == v2);
+		auto it2 = it++;
+		EXPECT(*it2 == v2);
+		EXPECT(*it == v1);
+		++it;
+		EXPECT(*it == nullptr);
+	);
+	
 ); // TESTCASE
 
 } // namespaces

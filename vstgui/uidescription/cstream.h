@@ -124,7 +124,7 @@ public:
 /**
 	Memory input and output stream
  */
-class CMemoryStream : public OutputStream, public InputStream, public SeekableStream, public CBaseObject
+class CMemoryStream : virtual public OutputStream, virtual public InputStream, public SeekableStream, public CBaseObject
 {
 public:
 	CMemoryStream (uint32_t initialSize = 1024, uint32_t delta = 1024, bool binaryMode = true, ByteOrder byteOrder = kNativeByteOrder);
@@ -142,7 +142,7 @@ public:
 
 	virtual bool operator<< (const std::string& str) VSTGUI_OVERRIDE_VMETHOD;
 	virtual bool operator>> (std::string& string) VSTGUI_OVERRIDE_VMETHOD;
-	
+
 	bool end (); // write a zero byte if binaryMode is false
 protected:
 	bool resize (uint32_t newSize);
@@ -150,6 +150,7 @@ protected:
 	bool binaryMode;
 	bool ownsBuffer;
 	int8_t* buffer;
+	uint32_t bufferSize;
 	uint32_t size;
 	uint32_t pos;
 	uint32_t delta;

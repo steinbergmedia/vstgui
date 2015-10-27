@@ -1,24 +1,233 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <vstgui-ui-description version="1">
 	<bitmaps>
-		<bitmap name="segment-bitmaps" path="resources/segment-bitmaps.png"/>
-		<bitmap name="segment-bitmaps#2.0x" path="resources/segment-bitmaps#2.0x.png" scale-factor="2"/>
-		<bitmap name="segment-colors" path="resources/segment-colors.png"/>
-		<bitmap name="segment-colors#2.0x" path="resources/segment-colors#2.0x.png" scale-factor="2"/>
-		<bitmap name="segment-fonts" path="resources/segment-fonts.png"/>
-		<bitmap name="segment-fonts#2.0x" path="resources/segment-fonts#2.0x.png" scale-factor="2"/>
-		<bitmap name="segment-gradients" path="resources/segment-gradients.png"/>
-		<bitmap name="segment-gradients#2.0x" path="resources/segment-gradients#2.0x.png" scale-factor="2"/>
-		<bitmap name="segment-tags" path="resources/segment-tags.png"/>
-		<bitmap name="segment-tags#2.0x" path="resources/segment-tags#2.0x.png" scale-factor="2"/>
-		<bitmap name="segment-views" path="resources/segment-views.png"/>
-		<bitmap name="segment-views#2.0x" path="resources/segment-views#2.0x.png" scale-factor="2"/>
-		<bitmap name="text-align-center" path="resources/text-align-center.png"/>
-		<bitmap name="text-align-center-white" path="resources/text-align-center-white.png"/>
-		<bitmap name="text-align-left" path="resources/text-align-left.png"/>
-		<bitmap name="text-align-left-white" path="resources/text-align-left-white.png"/>
-		<bitmap name="text-align-right" path="resources/text-align-right.png"/>
-		<bitmap name="text-align-right-white" path="resources/text-align-right-white.png"/>
+		<bitmap name="segment-bitmaps" path="resources/segment-bitmaps.png">
+			<data encoding="base64">
+				iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAMJJREFUOBFjYBhowA
+				hywP///02AlBUQywDxEyB+D8SCePjHGBkZzwDlGVhABBBYMabPmghhAg2cmbYu3cQkCMafeebMOqAGOB9o
+				YT5QDmwAE1SRFEwxqXyYAc/QDCCaDwuDWKABAUAMC4PXQLYoHv4GoJcWA+XhYSCYPisd5kezmWkz1509ex
+				bONzY2XjcLEQZmaf//HwRpBgGYF4ZDGDAwwOPZDJgS1p1lRAqD/8br0tORwmjmzEEYBmTnBUhkUkACABwi
+				WK9EDJAuAAAAAElFTkSuQmCC
+			</data>
+		</bitmap>
+		<bitmap name="segment-bitmaps#2.0x" path="resources/segment-bitmaps#2.0x.png" scale-factor="2">
+			<data encoding="base64">
+				iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAa5JREFUWAntV8FKxD
+				AQ3YrIXhSRxZu3RcRre/MX9juaH9Cv0B9Iv0dv7VVUvHlSRKRexEt8r5uENJts2EVR2A4Mk8lLpukkeZ2O
+				RoNsegYykwCl1BjtPehE2x2NfcG20A/t78Jy3Kr4K+a0WZZ96jid2XYcBj2FFtoeaOwN9hb6qP0pLMetit
+				eYwzjRBfDNi0xUl7ALomR5xU5RFOcLIDpkXXc43jCII8MXGPai1YYIZcCCXuPE8303hTNr1/4kdwHcU5NW
+				fxz9/VCn05fCGducGztty7b+qOFmgKedBy4m7zFA96dwxuYzeuJmoAXCUxqTOwDUmKRwxuYzeuLywBGQHH
+				oG5YEye8o3Y/B7KMcfQ9fBbzCvwS15grXiZsB2LmmoJRihFL4w3T0DZLipqEToHs9kKbt73jRNEM/zvMOr
+				MA/MSqWeEf/BX4G7AMOE/hjjp+55Ch94wGSyZ90tGHhg4IGOB0B2wXsOjpnzQBbhATXnASEiPCLlwANDPf
+				D/64FDcCQ/GIW23DMKV85i4kfKctQDrIytuAXJGL38Ik60NQUkKZqVzK/8mCDuhss3dLWpMq08Wq0AAAAA
+				SUVORK5CYII=
+			</data>
+		</bitmap>
+		<bitmap name="segment-colors" path="resources/segment-colors.png">
+			<data encoding="base64">
+				iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAjVJREFUOBGtk8tOU1
+				EUhr/TC5dCKqBUSosXYkWbkJgwlBfQkRgHOBMn4gBNfA4diBMY6AM4AOMTqAOdNMZEKTcTG8ALrYLa0lrO
+				ZfufHggEnelKvnNZl/+svfY+8I9m/a3+QreJxm2yfVsMpWyXFPVcL/X8MF3OwfzIQUf2pBkpbzPV5pDw1U
+				MYWnBpwy2uszZ+lPTs/prQ/pfYoJn83sRMLUyiEgVb0bAEWvE4hJPoxJ4xvJzcX7MncNOMVE8xsd4KpRbY
+				aIZ6GJok0IFDN9tE+aTawoTh3qVdkUDgkYkwwBRZcM/BSnsgsCWBmNpP8Yt2Cqp5J+bE8rRhtLH8YAZnVF
+				ojwU/FTogeeP8CTv+A3nKdJItyPhcroii2ElA9q4e3QrZhrlMyhs+iIBbEM3HN6PJQDIuMSIrDolPEx/zS
+				oIO4r7wtbFEWJcjkSZ6/D1c/wrRcH0RFVIUr/NRvuwLM5bD86KbQoKx5Tf4VF6s1lgciZK5o+18rtCY2RC
+				CU2xOwFvKKFLG+aG0FTX6RwbpNj+tRCofJDErAP0JxsS6+ahA15nnjnxPfwnccrKVxyGtNS/TbDinXIeZ5
+				VEMWmzGlHVOeT1r0ccN62pDcEZCP0OPZKKsP/MJufbnDNTQbfzIW5ZAE1Ju2w9+hSesuT/wS34IOgmedvN
+				Vbna53Oe55xTbjNbyeznNFXVSarSJdjFhj3N5Jb9wU/tNGy0ciacfJphx36Lh+pj7HyaUddz7Zr/b+t/0G
+				PUPe9o1DLvIAAAAASUVORK5CYII=
+			</data>
+		</bitmap>
+		<bitmap name="segment-colors#2.0x" path="resources/segment-colors#2.0x.png" scale-factor="2">
+			<data encoding="base64">
+				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
+			</data>
+		</bitmap>
+		<bitmap name="segment-fonts" path="resources/segment-fonts.png">
+			<data encoding="base64">
+				iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAi5JREFUOBGlkkFrGl
+				EQx982SwxBlhCsppscZHPopYTSSlxKDjEEMSB4EIr1C1iweC/5FKLYg3hQ8KoXayBokUQiGiIGPEgpHooG
+				KZrWGiVG6fY/xgiLJZc++PH+M87MzoyPsf883L/yFUXh4V+e8gf3DbjlOI606jxRWTCQTD5KljKZjKvRaO
+				xCi2ARzJ25Aoggnw68icVih6lU6iP0SyBMO4N85CBIC3bq9fqRRqNRLBaLMh6PP8G3BZYeSb1vH0F64AoE
+				Am0EK0Qul7uC7y3QAVXXKgPBNKe23+/rut0u5/V6YTIWj8ef4XoFaDRa8PyhyoDm3A4Gg/FCoXBaKpUmHS
+				BaqdVql/jNNo2ZfXgmEERaAPpqtbopy3LRZDKdW61WuBhLJpNbuGiZq2CWNxNwUvur2Wz2Nc/zo3Q6vZDP
+				578/FPD7/azdbu8iZgOol4m2qH1a0J7H4/nSbDY/QO8DF3ZxYjQaJ6NEo9EhfO+BCCa7eOiAvr7SarXWh8
+				PhgiiKX2F/AxVBENI+nw+SsVAotDgajWTINXBfAJWoCL08fTgcPrDb7XnoH+AatEDF4XBc4E2wYrHI8Dr3
+				4JMAvReekqkSFRDK5fJzp9N5Dv0L3E5pSJKUwWgwGYtEIk9x0d+pBTyHKst4si96vZ6MJW2azeaszWY7w4
+				9UhI4+kUi8Q9xBp9MxDgaDnwaD4TPsY7fbXaECND9VEwDp34CS7wCdyXi4afsUQ51dARrv5i+W1Q7Fh0TQ
+				dgAAAABJRU5ErkJggg==
+			</data>
+		</bitmap>
+		<bitmap name="segment-fonts#2.0x" path="resources/segment-fonts#2.0x.png" scale-factor="2">
+			<data encoding="base64">
+				iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAABRVJREFUWAntl39I1G
+				ccx88mV7gUDXfdbnZWVOaYols5uWaTGDFGrBz+SmWcOv/TINgf0l85xvbPNsYg/9AQRlBGi/bHZoa1pehm
+				EkNFhiTY5o9yxzm1pGmbfvd6X9/zut3UO2nbP/vAi+/3+3me5/N8ns/zeT7PncXyv/zHEYiKdH7DMNYxJh
+				o2mM9Fng9FVFTUHzwjEhmKVDQmDhwQD5p8Arw49wAn5FDYotWELebqtXInuNxud0NbW9s7vL8AcmYtC2JY
+				mIID0eCEsu7u7k6GGTU1Nff4fh+yYCNEtKgwp37UzZxgD89PTp48aciBmJgYY3R09Ca6EnDAPxMFDK8DO+
+				RPTk5+b7PZfA7Iifr6etTGB5ABMRGtKtzOGN4Au+HEuXPnftfEflJSUozZ2dlrtL0JNniy2yCDEA+5CwsL
+				nx84cGBpcr8Tly5dmqe9FuSkEjUsCddT7avv6HV0dKSPjY1Z4uL0GZCGhgYrE7+IJgkUrbBsr9rJNGTF6C
+				ZwNDc3bz1+/Lilurqaz4BcvnzZwsnIRbML1PfJJCMO6Ogp+V4fGhqqT0hIWLx79+4vAwMDIdvAkaSb0QAu
+				iINVF4ijKwtG/Mnnrqur+6G8vPwOui9goKCgIMSJ4eHhQdrehiRYNQoreogBtetYJc7Pzz939uzZ3UePHr
+				3Bdw9craysnOcZJCRjCgpVRhto69YuOKDE2gr5TP71vn37png/AUfAjVPfZGZmBkXB6XQa09PTnbS/BTqS
+				K0Zh2QgwUG06TongvHDhwp6KiopB3mfhHnitVust9p3XgIyMjFiuXLmSjeZ50Ni1OcBAObAR7P39/Rm9vb
+				0JRUVFt029HJPh6cOHD9+Pj9c9FJBTp049Rb14CY0urRhzMYEOj72t5J32T5aTzp8//3JqaupvjY2NyV6v
+				10qI07h2o55BtmzZMulyuWJbWlqWzFIrLF1dXbn79+//FuUtUNR0bYcn8hg2Qe7MzMyHycnJD9vb29v4fh
+				fegGwT5cJHfX19c1gOygUSlCajCV6ByI4kA5R826Hk9OnT7dnZ2bpy3wNNvgN064ldoGT7Mi8vL8gBOTQ4
+				ODhMmxuWPZIhSUjnx5MvicqXxt7/iMFhkwmeXpM7PJWY31VVVSkKQXLx4sVtKNLBDuHdDzigyqfVHens7G
+				ym5i+Mj49/yvdrEHTT8a2tSoRDc3NzrRkZGUFRsNvtBjlzg/Z8UDUNybmQCOCpkk+1XMm3t7CwcMzhcGj1
+				Hgj6zWf+/nuAfmT9+vU3/3o/TExMWEjOvbSrMK18JPFOq9He++q+x+P5jB8dC62trV+hKwT9FAupbOj8ES
+				thwn6OZFAUsrKyDApWC/0OgSKoOZYW7nsxFTLu/7W7nf3LIfvnDx48qP3/FbTS5X5264h5Nm/e3Hvs2DFe
+				A9LT02O5fv26C40KkwM0x5ITfk+0NzGgMCljk86cObOzrKzsZ8I8jU7neLnJ/TaUhGPFxcX3eQZJU1OTJt
+				0KKkyaQ3P58sGfFDJiLS0tdRP2Zymx27hyo2G2trY2nRvwKj+7FukTJGbkNHYdK381NjZ2J4Xpdk5OTtrU
+				1NTSnx7qxCI3aSYF7GlsejhZH2uMjPk6YUjhV9lV8unI2MxvhX3MRNswZyYer4/EHOuPnkK8HXaA3nX0FD
+				3ZUCL/BDrGsjWLrYd+B3wRQKkBMqandAq7nJCRv/3rZUZBCxAaq4UIvw1FTtsjG7Il9C17IVFF/+/Kn1SY
+				GQ/x3P+kAAAAAElFTkSuQmCC
+			</data>
+		</bitmap>
+		<bitmap name="segment-gradients" path="resources/segment-gradients.png">
+			<data encoding="base64">
+				iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAP9JREFUOBHVUk0SgT
+				EMTcvKzoexNmNwACuXchaXsnIAjL8DWFnYab2XNMWMnZU3k6ZNk5ekqcjfI7CDnPMcagGZQTqQCPmGBOMd
+				soWsQwibdvFaXEbD1X7SCGU3beQw7kL35NpuRM59kdOgaOyPA7mth0vEbjwTMytiypJDgLgFOuGQy/l1oT
+				FO0GEgwfuQ30jUUC7UgYuCrdZeY4qW8tGKIDAPJTVGeML4eC/LYr0CzaqMpRLulbSFd2MLZGW8s9MBcILE
+				vgkrX7e2MJjZa+/mh0tOpBJwNOIPyD3h7/LxiE5o46wEnKuWzEQ1kEYHE7P8WFqyv6Bd/fSRnP+P9RNWYm
+				AXVDwH+gAAAABJRU5ErkJggg==
+			</data>
+		</bitmap>
+		<bitmap name="segment-gradients#2.0x" path="resources/segment-gradients#2.0x.png" scale-factor="2">
+			<data encoding="base64">
+				iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAstJREFUWAntllFuE0
+				EMhmc3EUpSCYlQyh363KtxCq6GeOwhQkjaSkgIZXfxZ/vfnXThBSF4aCzNjscz9m//nk22lItcGHjpDDQi
+				YBiGlemvbVzn/Mrm1sbfkN6C/LDxZGPP3DTNd5vLkkcK4Lc27nLe2lzv2/KP5WSeBxv3Nj7lPEuAyu9277
+				cfv75dl/31pjAf36zKl3cbn3c3m3LYrszO3sr0dfnWbkp5XFv4qxhHWz+kbW829h5tfbBxvCpPn7cfDGeX
+				44xiMVCGJjrTDIPp1oc+ZnPKvaE0AzqWFPTWjAykN8MS5lPnME7BMlgudY/pObTPpFs0Z2Ak1LeJvshMIr
+				iBpDvrUx3e7CQVGGC51CfQl1QPANUjrIkVI+x92/oZPxBBXfUswy3ogQ3R5AH8GPdqxB2ViHBOt5JYdH3E
+				ztZwlrjeKgHWiXAAQM2ttcIdwlQ/ZwmMge1Ut2idCeie7gXuQjVVlHulZmddV87x3mCw6Sy2lFkC2HX50A
+				GPBIKd6H20hX3PBXBRDBNiwwHt4QkRzA3upscsAeKo79wFjUVXVZ3e7HlVopsjngj2HJztEljn0p9plkBU
+				GC3jgHyY2eM+UHa0ylRVJdq9FXia+J458qb8RmYJ1P5qBcC8ilTMvYiyMzmAkc7sZMmFQxRIrGsdu+Nzlo
+				AqBuT84gUD4RmgY0wUOaLP1lVCI3Qov0gg+q5XUOdZe8/NICzNUTlJZSJseBJ4py5mMFUyS4A96Fbw5yxE
+				WyZ2xjeSfgtYDARRnsP4KlbgqHUCNO+kN4BXF6Hqmo3YDxs4o7AQoIxigUs4McA/Y16U8wT4vz4ITAzUb0
+				UNKGamywb6sxbU778n6BnztwyWS80AHwv3Cjz1eypL1deJeBRlKwrA8Xb4bujTmm8CsFw8JTT7Irqx6dbG
+				P/kgsS8ivgn8d4yZBP7LJ5mDXx4XBl40Az8BicVNWXOzqGcAAAAASUVORK5CYII=
+			</data>
+		</bitmap>
+		<bitmap name="segment-tags" path="resources/segment-tags.png">
+			<data encoding="base64">
+				iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAUVJREFUOBGtk7FLw0
+				AUxnuxGgIiBaVTKVmzOLmbSYcsjv5l+Rv8BzKUDKbQobNLtiCXTRSKCAEtOb8v3h2naZvFg4/37n2/9+7o
+				NWK0YymlTlA+hc60/Y74IYT41HsbhM10opun2F6WZXnNchRFS4Qn6GXXEDLdYjM0h+6llI9xHCuKOWva4+
+				36CyabZwTrul6zEVQn5qzR00x/CIwpdAdw5Tb/GbIiQ7Z3BRSvqqp6cJuzLFOUO4QMWTPAMwniLM/zm6Io
+				nNLvlB4ZssYZmwRx4vu+ebaunCSJY/+kmpkYw73BGE90ZIx9UTP2YHfAvp6D9X8dsG3bdnvwOJiasZx7g0
+				3TNK9DAzSzMZz9MVCQYRgu0jS9DYLg3PO8YwMx4uQvNL+RIWs8+zHhz3GB4hwKIT6nOxzbEa/Nr/IZkniN
+				wduCG17fcpi2nJTv0OcAAAAASUVORK5CYII=
+			</data>
+		</bitmap>
+		<bitmap name="segment-tags#2.0x" path="resources/segment-tags#2.0x.png" scale-factor="2">
+			<data encoding="base64">
+				iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAdZJREFUWAntl7FKA0
+				EQhnMiIZVFELFImUqsxDJcrMXWt7DJk8QihVwRSKudz2AXS/EJLEREJJWG4Pr9yV6I3G2ylyyY4gZ+Ztmd
+				+f+5ndxlt1L5Z4uK6htjdsjZBTULUXxZTKIo+tGErxUqwIpXIa+DBji0Qq/4F/ABxkWK8C5gQXwfkWPQ6n
+				a7l/hKp9O5wz2AJ/AOChVB/HKTOKiBBrgAN/1+/5ssI2isObumGMWqVZubiCxhKp4MBoOpMOxzrzksASow
+				TBEQeYmnhQQtoqh40CLWFQ9WBAVUgfp4DnJ7noq5/EI7xCEuvb5+RnAdxOAaIn1Y5j+2dNxut81wOJwiju
+				PMuuKUKw7LpW+Hn5HQBFdJknySkUsu8dQ0dsWJQ1yg6acuJmNOQM9FqnnfAmZ0pidOxn5GcAvcEu18Mm37
+				qhak+eISp5+6sow5A/cpwaZeXOKEJ2PLPpfL1jJEKyacXM6FFYTBlssCyh0od2Brd0D/gJNgL/uMK/e47t
+				qBMeI6Yoey6XE9j8xVwIjg57yENefEJc6M5d4L+OM4IPIInFpfx+s2VMTUQj25xB/lubC84f+YqwBdu/aA
+				LiHyOk65doulXFPP1Uo9uS4rIwrQFa607dqBX76xCWEB3lZIAAAAAElFTkSuQmCC
+			</data>
+		</bitmap>
+		<bitmap name="segment-views" path="resources/segment-views.png">
+			<data encoding="base64">
+				iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAYBJREFUOBHFUj1Pwl
+				AUfbWEaJxwoJODMSGMTHZxdFDTGNgZHJUQ/oEb/R+ubuCCoxgTagkrCSpbO7BYYiXE0FLPadoosWVx8CUn
+				7/aej9f7WiH+uKQ0fxAE2+DOIv5WkqRZknYlACY+HwLnvu8fG4bxCqOkquq+LMt36F8Dj2gF2L8XjHvAFU
+				wvlmX16/V6L5vNfkJBYcC60Wj0yEHzTC09YQKKIzSX0+nUbTabbj6fD02x+edOTtd1F9oPeujdgCA3HA7f
+				NE3bKhaL3mAw8FutliiXywInh6hUKqLdbgtyhULBg3aTHnoFUk5N03yIT+J8tVpt1u123x3HWRKs2YtmD9
+				+QHnp/BcRB3G3bDhRFSRwpDuAIqQsniMlkksqTWBuw1hmR/x/AS9zFNx2PRqNetVrt44/z8XbhxeHHWblA
+				ctRQSw+94SQoMsAJcLNYLKxOp3NfKpXGcQBr9shRE2kziXcEcge4BJ48z5u7rjtHbQAXQC7RlNaEQQUO0n
+				j2vwD/OiglPWLWTQAAAABJRU5ErkJggg==
+			</data>
+		</bitmap>
+		<bitmap name="segment-views#2.0x" path="resources/segment-views#2.0x.png" scale-factor="2">
+			<data encoding="base64">
+				iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAxxJREFUWAntVj1Im0
+				EYVhERQaEdHNwEwVAdkt2pXSQ4qLiIi9ipncxQkjUpCnXS4q624lCI0dVBEkOQBg1JEOxkqq1UMTGxUTF/
+				vT7PJSefyWeIPwULeeG5u9w97/O+997l+76amqr9jxUQQrwApoDdAj5w7p/uBQGeA28BPyAtl8slCfUb/V
+				fgDfDsUZKBUD1gBr4AKYD25+joKGC1Wn1NTU2XhM1m8x0fHwe4Jhl5Ln3oW3/nZODUBUwBvwBpqVTq++Li
+				oru9vf0QgkIPXFtaWnKDu6/80FODWl1lEwGhDXgH+AFpLO/W1pa3t7c3rBew3JzZbA5tb297i46I2ozRdi
+				MZTPQBOUBaMpn8OTEx4Wd5ywWpZI0ak5OTfmoqffSM1XedBH5scPHs7Owqm81yKDKZjFhZWRH9/f2ioaFB
+				t+TlEqDPwMCAWF1dlVrUpDZjcAzb0Cbg4szIyIjo7u7OLSwsxCORSIZztJOTEzE9PS2MRmPZRGpra4XJZB
+				IzMzMiGo3mndHu7e2lqUltxijYsjaBWU5itwntroaHh6/W1tYS8Xhc3W4RDAbF+Pi4aG1tvU6GY4vFIkKh
+				kBIX9KEvNbSajFEgzZYk0NPTs6slq3Fzc7Ow2+2/canOtUe0ubkpCB4XjWvkkEsf5a/tGePOCWgF1BGhxP
+				nLAjU8A7KqxFqu3vjBCShRj8cjNzI6Oqq7U8Ur7osTqAPhXoZbLv3m5+fv5a+c7p2AEnhoX02gWoFqBZ5M
+				Bb7x/7y+vt7idDo9nZ2dPx76/y72NxgMBy6Xy8MYhTUZU47xTG0EPgKX8vmKJhaLhfBS8eKlcg5SyeOWLy
+				Ga3pqao6/D4fCenp6GJTnfMAZjNcrg2gaTLcBrwAsouwiHw77BwcEA3/dK/LYEyBkaGgrs7Oz4IHChRNDz
+				o2cMUBXQhi4dg9gBvAcOAGnpdPoQR+TGER0UJ4AS76PEbnIUHz0/Th1AR2mECmfgXAe8Aj4D10eEbwC5u7
+				m5OZFIJLQ7JecT8BJ43EsOQb0jwrS0DbRjQGUlrrAAt9IQyAAsA06ObyU+9YW/y30KUvnazC4AAAAASUVO
+				RK5CYII=
+			</data>
+		</bitmap>
+		<bitmap name="text-align-center" path="resources/text-align-center.png">
+			<data encoding="base64">
+				iVBORw0KGgoAAAANSUhEUgAAAA4AAAAHCAYAAAA4R3wZAAAAAXNSR0IArs4c6QAAADpJREFUGBmdj0EKAD
+				AMwhT2/y+7duDdWSg9xVQC0Oz3UKo4HKtIRgkj4jK1cenI5M98a+PrmPazbXteMysTA3aVaLcAAAAASUVO
+				RK5CYII=
+			</data>
+		</bitmap>
+		<bitmap name="text-align-center-white" path="resources/text-align-center-white.png">
+			<data encoding="base64">
+				iVBORw0KGgoAAAANSUhEUgAAAA4AAAAHCAYAAAA4R3wZAAAAAXNSR0IArs4c6QAAADFJREFUGBlj/A8EDG
+				QAFqAeRjL0MYA0wgCxNoMtQtZIks0gjcTaBHMZmKbYj6TayggALLEHGN0UYukAAAAASUVORK5CYII=
+			</data>
+		</bitmap>
+		<bitmap name="text-align-left" path="resources/text-align-left.png">
+			<data encoding="base64">
+				iVBORw0KGgoAAAANSUhEUgAAAA4AAAAHCAYAAAA4R3wZAAAAAXNSR0IArs4c6QAAAC1JREFUGBljZGBg+A
+				/EJAPG///J0sfACLSKaJ1AS0DqwYA+NsJsA9H0sxHmTwBPOxL3pHFqkwAAAABJRU5ErkJggg==
+			</data>
+		</bitmap>
+		<bitmap name="text-align-left-white" path="resources/text-align-left-white.png">
+			<data encoding="base64">
+				iVBORw0KGgoAAAANSUhEUgAAAA4AAAAHCAYAAAA4R3wZAAAAAXNSR0IArs4c6QAAACZJREFUGBlj/A8EDG
+				QAFqAeRjL0MYA0kmIj3BK62Qj3FV1tBPsTADi1BxhF1WqlAAAAAElFTkSuQmCC
+			</data>
+		</bitmap>
+		<bitmap name="text-align-right" path="resources/text-align-right.png">
+			<data encoding="base64">
+				iVBORw0KGgoAAAANSUhEUgAAAA4AAAAHCAYAAAA4R3wZAAAAAXNSR0IArs4c6QAAADFJREFUGBljZGBg+A
+				/EJAPG///J0sfAgmwVIyMj0aaQbSMj0EaibUFxHcV+JMV/IJsBYs4NB7DUPhAAAAAASUVORK5CYII=
+			</data>
+		</bitmap>
+		<bitmap name="text-align-right-white" path="resources/text-align-right-white.png">
+			<data encoding="base64">
+				iVBORw0KGgoAAAANSUhEUgAAAA4AAAAHCAYAAAA4R3wZAAAAAXNSR0IArs4c6QAAACxJREFUGBlj/A8EDG
+				QAFqAeRjL0MYA0IgOibUfXSLTtII1E24LsNKr4kSSbASPLBxbAIufgAAAAAElFTkSuQmCC
+			</data>
+		</bitmap>
 	</bitmaps>
 	<fonts>
 		<font font-name="Arial" name="autosize.font" size="8"/>
@@ -202,7 +411,7 @@
 					<view autosize="left right bottom " back-color="~ TransparentCColor" background-offset="0, 0" class="CTextEdit" control-tag="attributes.search" custom-view-name="UISearchTextField" default-value="0.5" font="control.small.font" font-antialias="true" font-color="~ BlackCColor" frame-color="control.frame" frame-width="1" immediate-text-change="true" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="5, 206" round-rect-radius="6" shadow-color="~ RedCColor" size="153, 16" style-3D-in="false" style-3D-out="false" style-doubleclick="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="true" style-shadow-text="false" text-alignment="left" text-inset="6, 0" text-rotation="0" tooltip="Search Attributes" transparent="false" value-precision="2" wheel-inc-value="0.1"/>
 				</view>
 				<view background-color="background" background-color-draw-style="filled and stroked" class="CViewContainer" mouse-enabled="true" opacity="1" origin="0, 228" size="175, 251" transparent="false">
-					<view autosize="left right top " background-offset="0, 0" class="CSegmentButton" control-tag="textswitch" default-value="0.5" font="control.font" frame-color="control.frame" frame-width="1" gradient="shading.light" gradient-highlighted="tabswitch.selected" icon-text-margin="5" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="1, 1" round-radius="0" segment-names="Views,Tags,Colors,Gradients,Bitmaps,Fonts" size="173, 18" style="horizontal" text-alignment="left" text-color="db.font" text-color-highlighted="checkmark.dark" transparent="false" truncate-mode="tail" wheel-inc-value="0.1"/>
+					<view autosize="left right top " background-offset="0, 0" class="CSegmentButton" control-tag="textswitch" default-value="0.5" font="control.font" frame-color="control.frame" frame-width="1" gradient="shading.light" gradient-highlighted="tabswitch.selected" icon-text-margin="5" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="1, 1" round-radius="0" segment-names="Views,Tags,Colors,Gradients,Bitmaps,Fonts" size="173, 18" style="horizontal" text-alignment="center" text-color="db.font" text-color-highlighted="checkmark.dark" transparent="false" truncate-mode="tail" wheel-inc-value="0.1"/>
 					<view animation-style="fade" animation-time="0" autosize="left right top bottom " background-color="db.font" background-color-draw-style="filled and stroked" class="UIViewSwitchContainer" mouse-enabled="true" opacity="1" origin="0, 20" size="175, 232" template-names="viewcreation,tagediting,colorediting,gradientediting,bitmapediting,fontediting" template-switch-control="textswitch" transparent="true">
 						<view autosize="left right top bottom " background-color="background" background-color-draw-style="filled and stroked" class="CViewContainer" mouse-enabled="true" opacity="1" origin="0, 0" size="175, 232" sub-controller="ViewCreatorController" template="viewcreation" transparent="false"/>
 					</view>
@@ -246,7 +455,7 @@
 		<view autosize="left right top bottom " back-color="db.font" background-offset="0, 0" class="COptionMenu" control-tag="attributes.optionmenu" default-value="0.5" font="~ NormalFont" font-antialias="true" font-color="db.background" frame-color="db.font" frame-width="1" max-value="1.84467e+19" menu-check-style="true" menu-popup-style="true" min-value="0" mouse-enabled="true" opacity="1" origin="1, 1" round-rect-radius="6" shadow-color="~ RedCColor" size="398, 16" style-3D-in="false" style-3D-out="false" style-no-draw="true" style-no-frame="false" style-no-text="true" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" transparent="true" value-precision="2" wheel-inc-value="0.1"/>
 	</template>
 	<custom>
-		<attributes EditViewScale="1" EditorSize="0, 0, 1244, 755" EncodeBitmaps="false" SplitViewSize_0_0="0.7302452316076294414060043891367968171835" SplitViewSize_0_1="0.2438692098092642979167976591270416975021" SplitViewSize_1_0="0.4686648501362397634117940015130443498492" SplitViewSize_1_1="0.5258855585831062606771979517361614853144" SplitViewSize_2_0="0.6881028938906752490112239684094674885273" SplitViewSize_2_1="0.3078778135048231279213837296993006020784" TabSwitchValue="3" Version="1" name="UIEditController"/>
+		<attributes EditViewScale="1" EditorSize="0, 0, 1244, 755" EncodeBitmaps="true" SplitViewSize_0_0="0.7302452316076294414060043891367968171835" SplitViewSize_0_1="0.2438692098092642979167976591270416975021" SplitViewSize_1_0="0.4686648501362397634117940015130443498492" SplitViewSize_1_1="0.5258855585831062606771979517361614853144" SplitViewSize_2_0="0.6881028938906752490112239684094674885273" SplitViewSize_2_1="0.3078778135048231279213837296993006020784" TabSwitchValue="3" Version="1" name="UIEditController"/>
 		<attributes name="UIViewCreatorController"/>
 		<attributes Size="5, 5" name="UIGridController"/>
 		<attributes SelectedRow="22" name="UIViewCreatorDataSource"/>
