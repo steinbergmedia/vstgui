@@ -322,7 +322,7 @@ D2DBitmap::PixelAccess::~PixelAccess ()
 bool D2DBitmap::PixelAccess::init (D2DBitmap* inBitmap, bool _alphaPremultiplied)
 {
 	bool result = false;
-	assert (inBitmap);
+	vstgui_assert (inBitmap);
 	IWICBitmap* icBitmap = inBitmap->getBitmap ();
 	if (icBitmap)
 	{
@@ -474,7 +474,7 @@ D2DBitmapCache::~D2DBitmapCache ()
 #if DEBUG
 	for (BitmapCache::const_iterator it = cache.begin (); it != cache.end (); it++)
 	{
-		assert (it->second.size () == 0);
+		vstgui_assert (it->second.size () == 0);
 	}
 #endif
 	gD2DBitmapCache = 0;
@@ -502,7 +502,7 @@ WICGlobal::WICGlobal ()
 #endif
 
 	CoCreateInstance (VSTGUI_WICImagingFactory, NULL, CLSCTX_INPROC_SERVER, IID_IWICImagingFactory, (void**)&factory);
-	assert (factory);
+	vstgui_assert (factory);
 }
 
 //-----------------------------------------------------------------------------

@@ -217,7 +217,7 @@ bool CFrame::attached (CView* parent)
 {
 	if (isAttached ())
 		return false;
-	assert (parent == this);
+	vstgui_assert (parent == this);
 	if (CView::attached (parent))
 	{
 		pParentView = 0;
@@ -449,7 +449,7 @@ void CFrame::checkMouseViews (const CPoint& where, const CButtonState& buttons)
 	else
 	{
 		// must be pMouseViews.size () == 0
-		assert (pMouseViews.empty ());
+		vstgui_assert (pMouseViews.empty ());
 		pMouseViews.push_back (mouseView);
 		mouseView->remember ();
 		while ((vc = static_cast<CViewContainer*> (mouseView->getParentView ())) != this)

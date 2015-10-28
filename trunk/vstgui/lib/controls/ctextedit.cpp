@@ -91,7 +91,7 @@ CTextEdit::CTextEdit (const CTextEdit& v)
 CTextEdit::~CTextEdit ()
 {
 	listener = 0;
-	assert (platformControl == 0);
+	vstgui_assert (platformControl == 0);
 }
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS || !VSTGUI_HAS_FUNCTIONAL

@@ -147,7 +147,7 @@ void D2DDrawContext::createRenderTarget ()
 			getD2DFactory ()->CreateWicBitmapRenderTarget (d2dBitmap->getBitmap (), D2D1::RenderTargetProperties (targetType, pixelFormat), &renderTarget);
 		}
 	}
-	assert (renderTarget);
+	vstgui_assert (renderTarget);
 	init ();
 }
 
@@ -211,7 +211,7 @@ void D2DDrawContext::endDraw ()
 		}
 		else
 		{
-			assert (result == S_OK);
+			vstgui_assert (result == S_OK);
 		}
 		if (bitmap)
 		{

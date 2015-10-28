@@ -150,13 +150,13 @@ bool CBitmap::addBitmap (IPlatformBitmap* platformBitmap)
 	bitmapSize.y /= scaleFactor;
 	if (size != bitmapSize)
 	{
-		assert (size == bitmapSize);
+		vstgui_assert (size == bitmapSize);
 		return false;
 	}
 	VSTGUI_RANGE_BASED_FOR_LOOP (BitmapVector, bitmaps, BitmapPointer, bitmap)
 		if (bitmap->getScaleFactor () == scaleFactor || bitmap == platformBitmap)
 		{
-			assert (bitmap->getScaleFactor () != scaleFactor && bitmap != platformBitmap);
+			vstgui_assert (bitmap->getScaleFactor () != scaleFactor && bitmap != platformBitmap);
 			return false;
 		}
 	VSTGUI_RANGE_BASED_FOR_LOOP_END

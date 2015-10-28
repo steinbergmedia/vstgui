@@ -157,6 +157,12 @@ TESTCASE(UIAttributesTest,
 			EXPECT(a2.hasAttribute (v.first));
 		}
 	);
+	
+	TEST(restoreFromInvalidStream,
+		CMemoryStream s;
+		UIAttributes a;
+		EXPECT(a.restore(s) == false);
+	);
 );
 
 } // VSTGUI

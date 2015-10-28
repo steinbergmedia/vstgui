@@ -19,13 +19,14 @@ begin
   Dir.chdir (SCRIPT_DIR)
 
   system ("./lcov --capture --no-external --directory #{VSTGUI_DIR} --output-file vstgui-coverage.info")
-
+  system ("./lcov -r vstgui-coverage.info --output-file vstgui-coverage.info vstgui/uidescription/expat/*")
+  system ("./lcov -r vstgui-coverage.info --output-file vstgui-coverage.info vstgui/tests/unittest/*")
   if ($? != 0)
     raise "lcov error"
   end
 
 
-  system ("./genhtml vstgui-coverage.info --output-directory out")
+  system ("./genhtml vstgui-coverage.info -t 'VSTGUI Test Coverage' --num-spaces 4 --demangle-cpp --output-directory out")
 
   if ($? != 0)
     raise "genhtml error"

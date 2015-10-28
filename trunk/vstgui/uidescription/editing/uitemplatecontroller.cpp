@@ -375,7 +375,7 @@ CView* UITemplateController::createView (const UIAttributes& attributes, const I
 	{
 		if (*name == "TemplateBrowser")
 		{
-			assert (templateDataBrowser == 0);
+			vstgui_assert (templateDataBrowser == 0);
 			std::list<const std::string*> tmp;
 			editDescription->collectTemplateViewNames (tmp);
 			tmp.sort (UIEditController::std__stringCompare);

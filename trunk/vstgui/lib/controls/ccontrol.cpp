@@ -195,7 +195,7 @@ void CControl::beginEdit ()
 void CControl::endEdit ()
 {
 	editing--;
-	assert(editing >= 0);
+	vstgui_assert(editing >= 0);
 	if (editing == 0)
 	{
 		if (getFrame ())

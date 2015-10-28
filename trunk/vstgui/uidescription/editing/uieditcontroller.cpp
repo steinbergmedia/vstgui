@@ -415,7 +415,7 @@ CView* UIEditController::createView (const UIAttributes& attributes, const IUIDe
 	{
 		if (*name == "UIEditView")
 		{
-			assert (editView == 0);
+			vstgui_assert (editView == 0);
 			editView = new UIEditView (CRect (0, 0, 0, 0), editDescription);
 			editView->setSelection (selection);
 			editView->setUndoManager (undoManager);
@@ -562,7 +562,7 @@ IController* UIEditController::createSubController (UTF8StringPtr name, const IU
 	UTF8StringView subControllerName (name);
 	if (subControllerName == "TemplatesController")
 	{
-		assert (templateController == 0);
+		vstgui_assert (templateController == 0);
 		templateController = new UITemplateController (this, editDescription, selection, undoManager, this);
 		templateController->addDependency (this);
 		return templateController;
@@ -672,7 +672,7 @@ CMessageResult UIEditController::notify (CBaseObject* sender, IdStringPtr messag
 	}
 	else if (message == UIEditView::kMsgAttached)
 	{
-		assert (editView);
+		vstgui_assert (editView);
 		editView->getFrame ()->registerKeyboardHook (this);
 		return kMessageNotified;
 	}

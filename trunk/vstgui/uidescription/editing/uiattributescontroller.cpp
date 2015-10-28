@@ -1181,7 +1181,7 @@ CView* UIAttributesController::createViewForAttribute (const std::string& attrNa
 void UIAttributesController::getConsolidatedAttributeNames (StringList& attrNames, const std::string& filter)
 {
 	const UIViewFactory* viewFactory = dynamic_cast<const UIViewFactory*> (editDescription->getViewFactory ());
-	assert (viewFactory);
+	vstgui_assert (viewFactory);
 	FOREACH_IN_SELECTION(selection, view)
 		StringList temp;
 		if (viewFactory->getAttributeNamesForView (view, temp))

@@ -331,7 +331,7 @@ void CDataBrowser::recalculateLayout (bool rememberSelection)
 			dbHeader = new CDataBrowserHeader (headerSize, db, this);
 			dbHeader->setAutosizeFlags (kAutosizeLeft|kAutosizeRight|kAutosizeTop);
 			dbHeaderContainer->addView (dbHeader);
-			CViewContainer::addView (dbHeaderContainer);
+			CViewContainer::addView (dbHeaderContainer, 0);
 		}
 		else
 		{

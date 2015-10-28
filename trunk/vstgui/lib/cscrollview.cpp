@@ -339,16 +339,16 @@ CScrollView::CScrollView (const CScrollView& v)
 	{
 		hsb = (CScrollbar*)v.hsb->newCopy ();
 		hsb->setListener (this);
-		CViewContainer::addView (hsb);
+		CViewContainer::addView (hsb, 0);
 	}
 	if (activeScrollbarStyle & kVerticalScrollbar && v.vsb)
 	{
 		vsb = (CScrollbar*)v.vsb->newCopy ();
 		vsb->setListener (this);
-		CViewContainer::addView (vsb);
+		CViewContainer::addView (vsb, 0);
 	}
 	sc = (CScrollContainer*)v.sc->newCopy ();
-	CViewContainer::addView (sc);
+	CViewContainer::addView (sc, 0);
 }
 
 //-----------------------------------------------------------------------------
@@ -416,7 +416,7 @@ void CScrollView::recalculateSubViews ()
 		{
 			hsb = new CScrollbar (sbr, this, kHSBTag, CScrollbar::kHorizontal, containerSize);
 			hsb->setAutosizeFlags (kAutosizeLeft | kAutosizeRight | kAutosizeBottom);
-			CViewContainer::addView (hsb);
+			CViewContainer::addView (hsb, 0);
 		}
 		if (!(style & kOverlayScrollbars))
 			scsize.bottom = sbr.top;
@@ -447,7 +447,7 @@ void CScrollView::recalculateSubViews ()
 		{
 			vsb = new CScrollbar (sbr, this, kVSBTag, CScrollbar::kVertical, containerSize);
 			vsb->setAutosizeFlags (kAutosizeTop | kAutosizeRight | kAutosizeBottom);
-			CViewContainer::addView (vsb);
+			CViewContainer::addView (vsb, 0);
 		}
 		if (!(style & kOverlayScrollbars))
 			scsize.right = sbr.left;
@@ -462,7 +462,7 @@ void CScrollView::recalculateSubViews ()
 	{
 		sc = new CScrollContainer (scsize, containerSize);
 		sc->setAutosizeFlags (kAutosizeAll);
-		CViewContainer::addView (sc);
+		CViewContainer::addView (sc, 0);
 	}
 	else
 	{

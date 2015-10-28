@@ -731,7 +731,7 @@ CView* UIDescriptionTestController::verifyView (CView* view, const UIAttributes&
 	if (button && button->getTag () == 20000)
 	{
 		StringListParameter* slp = dynamic_cast<StringListParameter*> (getParameterObject (20000));
-		assert (slp && button->getSegments ().size () == static_cast<size_t> (slp->getInfo ().stepCount + 1));
+		vstgui_assert (slp && button->getSegments ().size () == static_cast<size_t> (slp->getInfo ().stepCount + 1));
 		for (uint32_t i = 0; i <= static_cast<uint32_t> (slp->getInfo ().stepCount); i++)
 		{
 			String128 str = {};

@@ -51,7 +51,7 @@ COpenGLView::COpenGLView (const CRect& size)
 //-----------------------------------------------------------------------------
 COpenGLView::~COpenGLView ()
 {
-	assert (platformOpenGLView == 0);
+	vstgui_assert (platformOpenGLView == 0);
 }
 
 //-----------------------------------------------------------------------------
@@ -71,7 +71,7 @@ void COpenGLView::updatePlatformOpenGLViewSize ()
 //-----------------------------------------------------------------------------
 bool COpenGLView::createPlatformOpenGLView ()
 {
-	assert (platformOpenGLView == 0);
+	vstgui_assert (platformOpenGLView == 0);
 	IPlatformFrame* platformFrame = getFrame ()->getPlatformFrame ();
 	platformOpenGLView = platformFrame ? platformFrame->createPlatformOpenGLView () : 0;
 	if (platformOpenGLView)

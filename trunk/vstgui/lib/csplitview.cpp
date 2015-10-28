@@ -413,11 +413,11 @@ bool CSplitView::addView (CView* pView)
 			viewSize.offset (0, r.bottom);
 		}
 		CSplitViewSeparatorView* separator = new CSplitViewSeparatorView (r, getStyle (), (getNbViews () - 1) / 2);
-		CViewContainer::addView (separator);
+		CViewContainer::addView (separator, 0);
 	}
 	pView->setViewSize (viewSize);
 	pView->setMouseableArea (viewSize);
-	return CViewContainer::addView (pView);
+	return CViewContainer::addView (pView, 0);
 }
 
 //-----------------------------------------------------------------------------

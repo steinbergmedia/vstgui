@@ -169,8 +169,7 @@ class UICommentNode : public UINode
 {
 public:
 	UICommentNode (const std::string& comment);
-	UICommentNode (const UICommentNode& n);
-	CLASS_METHODS(UICommentNode, UINode)
+	CLASS_METHODS_NOCOPY(UICommentNode, UINode)
 };
 
 //-----------------------------------------------------------------------------
@@ -178,7 +177,6 @@ class UIVariableNode : public UINode
 {
 public:
 	UIVariableNode (const std::string& name, UIAttributes* attributes);
-	UIVariableNode (const UIVariableNode& n);
 	
 	enum Type {
 		kNumber,
@@ -190,7 +188,7 @@ public:
 	double getNumber () const;
 	const std::string& getString () const;
 
-	CLASS_METHODS(UIVariableNode, UINode)
+	CLASS_METHODS_NOCOPY(UIVariableNode, UINode)
 protected:
 	Type type;
 	double number;
@@ -201,14 +199,13 @@ class UIControlTagNode : public UINode
 {
 public:
 	UIControlTagNode (const std::string& name, UIAttributes* attributes);
-	UIControlTagNode (const UIControlTagNode& n);
 	int32_t getTag ();
 	void setTag (int32_t newTag);
 	
 	const std::string* getTagString () const;
 	void setTagString (const std::string& str);
 	
-	CLASS_METHODS(UIControlTagNode, UINode)
+	CLASS_METHODS_NOCOPY(UIControlTagNode, UINode)
 protected:
 	int32_t tag;
 };
@@ -218,7 +215,6 @@ class UIBitmapNode : public UINode
 {
 public:
 	UIBitmapNode (const std::string& name, UIAttributes* attributes);
-	UIBitmapNode (const UIBitmapNode& n);
 	CBitmap* getBitmap (const std::string& pathHint);
 	void setBitmap (UTF8StringPtr bitmapName);
 	void setNinePartTiledOffset (const CRect* offsets);
@@ -230,7 +226,7 @@ public:
 	
 	void createXMLData (const std::string& pathHint);
 	void removeXMLData ();
-	CLASS_METHODS(UIBitmapNode, UINode)
+	CLASS_METHODS_NOCOPY(UIBitmapNode, UINode)
 protected:
 	~UIBitmapNode ();
 	CBitmap* createBitmap (const std::string& str, CNinePartTiledDescription* partDesc) const;
@@ -244,12 +240,11 @@ class UIFontNode : public UINode
 {
 public:
 	UIFontNode (const std::string& name, UIAttributes* attributes);
-	UIFontNode (const UIFontNode& n);
 	CFontRef getFont ();
 	void setFont (CFontRef newFont);
 	void setAlternativeFontNames (UTF8StringPtr fontNames);
 	bool getAlternativeFontNames (std::string& fontNames);
-	CLASS_METHODS(UIFontNode, UINode)
+	CLASS_METHODS_NOCOPY(UIFontNode, UINode)
 protected:
 	~UIFontNode ();
 	CFontRef font;
@@ -260,10 +255,9 @@ class UIColorNode : public UINode
 {
 public:
 	UIColorNode (const std::string& name, UIAttributes* attributes);
-	UIColorNode (const UIColorNode& n);
 	const CColor& getColor () const { return color; }
 	void setColor (const CColor& newColor);
-	CLASS_METHODS(UIColorNode, UINode)
+	CLASS_METHODS_NOCOPY(UIColorNode, UINode)
 protected:
 	CColor color;
 };
@@ -273,10 +267,9 @@ class UIGradientNode : public UINode
 {
 public:
 	UIGradientNode (const std::string& name, UIAttributes* attributes);
-	UIGradientNode (const UIGradientNode& n);
 	CGradient* getGradient ();
 	void setGradient (CGradient* g);
-	CLASS_METHODS(UIGradientNode, UINode)
+	CLASS_METHODS_NOCOPY(UIGradientNode, UINode)
 protected:
 	SharedPointer<CGradient> gradient;
 	
@@ -352,7 +345,11 @@ UIDescList::UIDescList (bool ownsObjects)
 UIDescList::UIDescList (const UIDescList& descList)
 {
 	for (const_iterator it = descList.begin (); it != descList.end (); it++)
-		add (static_cast<UINode*>((*it)->newCopy ()));
+	{
+		UINode* node = static_cast<UINode*> ((*it)->newCopy ());
+		vstgui_assert (node);
+		add (node);
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -952,7 +949,7 @@ UINode* UIDescription::findNodeForView (CView* view) const
 				if (view == parentView)
 					return node;
 				CViewContainer* container = dynamic_cast<CViewContainer*> (parentView);
-				assert (container != 0);
+				vstgui_assert (container != 0);
 				UIDescList::iterator nodeIterator = node->getChildren ().begin ();
 				CViewContainer* childContainer = 0;
 				ViewIterator it (container);
@@ -2111,6 +2108,7 @@ bool UIDescription::duplicateTemplate (UTF8StringPtr name, UTF8StringPtr duplica
 	if (templateNode)
 	{
 		UINode* duplicate = static_cast<UINode*> (templateNode->newCopy ());
+		vstgui_assert (duplicate);
 		if (duplicate)
 		{
 			duplicate->getAttributes()->setAttribute ("name", duplicateName);
@@ -2670,7 +2668,7 @@ void UIDescription::startXmlElement (Xml::Parser* parser, IdStringPtr elementNam
 	}
 	else if (name == "vstgui-ui-description-view-list")
 	{
-		assert (nodes == 0);
+		vstgui_assert (nodes == 0);
 		nodes = new UINode (name, new UIAttributes (elementAttributes));
 		nodeStack.push_back (nodes);
 		restoreViewsMode = true;
@@ -2744,7 +2742,7 @@ UINode::UINode (const std::string& _name, UIDescList* _children, UIAttributes* _
 , attributes (_attributes)
 , flags (0)
 {
-	assert (children != 0);
+	vstgui_assert (children != 0);
 	data.clear ();
 	children->remember ();
 	if (attributes == 0)
@@ -2798,12 +2796,6 @@ UICommentNode::UICommentNode (const std::string& comment)
 }
 
 //-----------------------------------------------------------------------------
-UICommentNode::UICommentNode (const UICommentNode& n)
-: UINode (n)
-{
-}
-
-//-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 UIVariableNode::UIVariableNode (const std::string& name, UIAttributes* attributes)
@@ -2845,14 +2837,6 @@ UIVariableNode::UIVariableNode (const std::string& name, UIAttributes* attribute
 }
 
 //-----------------------------------------------------------------------------
-UIVariableNode::UIVariableNode (const UIVariableNode& n)
-: UINode (n)
-, type (n.type)
-, number (n.number)
-{
-}
-
-//-----------------------------------------------------------------------------
 UIVariableNode::Type UIVariableNode::getType () const
 {
 	return type;
@@ -2880,13 +2864,6 @@ const std::string& UIVariableNode::getString () const
 UIControlTagNode::UIControlTagNode (const std::string& name, UIAttributes* attributes)
 : UINode (name, attributes)
 , tag (-1)
-{
-}
-
-//-----------------------------------------------------------------------------
-UIControlTagNode::UIControlTagNode (const UIControlTagNode& n)
-: UINode (n)
-, tag (n.tag)
 {
 }
 
@@ -2946,17 +2923,6 @@ UIBitmapNode::UIBitmapNode (const std::string& name, UIAttributes* attributes)
 , filterProcessed (false)
 , scaledBitmapsAdded (false)
 {
-}
-
-//-----------------------------------------------------------------------------
-UIBitmapNode::UIBitmapNode (const UIBitmapNode& n)
-: UINode (n)
-, bitmap (n.bitmap)
-, filterProcessed (n.filterProcessed)
-, scaledBitmapsAdded (n.scaledBitmapsAdded)
-{
-	if (bitmap)
-		bitmap->remember ();
 }
 
 //-----------------------------------------------------------------------------
@@ -3131,15 +3097,6 @@ UIFontNode::UIFontNode (const std::string& name, UIAttributes* attributes)
 }
 
 //-----------------------------------------------------------------------------
-UIFontNode::UIFontNode (const UIFontNode& n)
-: UINode (n)
-, font (n.font)
-{
-	if (font)
-		font->remember ();
-}
-
-//-----------------------------------------------------------------------------
 UIFontNode::~UIFontNode ()
 {
 	if (font)
@@ -3279,13 +3236,6 @@ UIColorNode::UIColorNode (const std::string& name, UIAttributes* attributes)
 }
 
 //-----------------------------------------------------------------------------
-UIColorNode::UIColorNode (const UIColorNode& n)
-: UINode (n)
-, color (n.color)
-{
-}
-
-//-----------------------------------------------------------------------------
 void UIColorNode::setColor (const CColor& newColor)
 {
 	std::string name (*attributes->getAttributeValue ("name"));
@@ -3301,12 +3251,6 @@ void UIColorNode::setColor (const CColor& newColor)
 //-----------------------------------------------------------------------------
 UIGradientNode::UIGradientNode (const std::string& name, UIAttributes* attributes)
 : UINode (name, attributes)
-{
-}
-
-//-----------------------------------------------------------------------------
-UIGradientNode::UIGradientNode (const UIGradientNode& n)
-: UINode (n)
 {
 }
 
