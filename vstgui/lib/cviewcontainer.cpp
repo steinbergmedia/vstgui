@@ -170,7 +170,7 @@ CViewContainer::~CViewContainer ()
 {
 	// remove all views
 	removeAll (true);
-	assert (viewContainerListeners.empty ());
+	vstgui_assert (viewContainerListeners.empty ());
 }
 
 //-----------------------------------------------------------------------------
@@ -407,22 +407,7 @@ CMessageResult CViewContainer::notify (CBaseObject* sender, IdStringPtr message)
  */
 bool CViewContainer::addView (CView* pView)
 {
-	if (!pView)
-		return false;
-
-	if (pView->isAttached ())
-		return false;
-
-	children.push_back (pView);
-
-	viewContainerListeners.forEach (CViewContainerPrivate::ViewContainerViewAdded (this, pView));
-
-	if (isAttached ())
-	{
-		pView->attached (this);
-		pView->invalid ();
-	}
-	return true;
+	return addView (pView, 0);
 }
 
 //-----------------------------------------------------------------------------
@@ -436,8 +421,7 @@ bool CViewContainer::addView (CView *pView, CView* pBefore)
 	if (!pView)
 		return false;
 
-	if (pView->isAttached ())
-		return false;
+	vstgui_assert (!pView->isSubview (), "view is already added to a container view");
 
 	if (pBefore)
 	{
@@ -448,6 +432,8 @@ bool CViewContainer::addView (CView *pView, CView* pBefore)
 	{
 		children.push_back (pView);
 	}
+
+	pView->setSubviewState (true);
 
 	viewContainerListeners.forEach (CViewContainerPrivate::ViewContainerViewAdded (this, pView));
 
@@ -468,10 +454,7 @@ bool CViewContainer::addView (CView *pView, CView* pBefore)
  */
 bool CViewContainer::addView (CView* pView, const CRect &mouseableArea, bool mouseEnabled)
 {
-	if (!pView)
-		return false;
-
-	if (addView (pView))
+	if (addView (pView, 0))
 	{
 		pView->setMouseEnabled (mouseEnabled);
 		pView->setMouseableArea (mouseableArea);
@@ -498,6 +481,7 @@ bool CViewContainer::removeAll (bool withForget)
 		children.erase (it);
 		if (isAttached ())
 			view->removed (this);
+		view->setSubviewState (false);
 		viewContainerListeners.forEach (CViewContainerPrivate::ViewContainerViewRemoved (this, view));
 		if (withForget)
 			view->forget ();
@@ -525,6 +509,7 @@ bool CViewContainer::removeView (CView *pView, bool withForget)
 		children.erase (it);
 		if (isAttached ())
 			pView->removed (this);
+		pView->setSubviewState (false);
 		viewContainerListeners.forEach (CViewContainerPrivate::ViewContainerViewRemoved (this, pView));
 		if (withForget)
 			pView->forget ();
@@ -1003,9 +988,6 @@ bool CViewContainer::onWheel (const CPoint &where, const float &distance, const 
 //-----------------------------------------------------------------------------
 bool CViewContainer::onDrop (IDataPackage* drag, const CPoint& where)
 {
-	if (!pParentFrame)
-		return false;
-
 	bool result = false;
 
 	CPoint where2 (where);
@@ -1032,9 +1014,6 @@ bool CViewContainer::onDrop (IDataPackage* drag, const CPoint& where)
 //-----------------------------------------------------------------------------
 void CViewContainer::onDragEnter (IDataPackage* drag, const CPoint& where)
 {
-	if (!pParentFrame)
-		return;
-	
 	CPoint where2 (where);
 	where2.offset (-getViewSize ().left, -getViewSize ().top);
 	transform.inverse ().transform (where2);
@@ -1050,9 +1029,6 @@ void CViewContainer::onDragEnter (IDataPackage* drag, const CPoint& where)
 //-----------------------------------------------------------------------------
 void CViewContainer::onDragLeave (IDataPackage* drag, const CPoint& where)
 {
-	if (!pParentFrame)
-		return;
-	
 	CPoint where2 (where);
 	where2.offset (-getViewSize ().left, -getViewSize ().top);
 	transform.inverse ().transform (where2);
@@ -1065,9 +1041,6 @@ void CViewContainer::onDragLeave (IDataPackage* drag, const CPoint& where)
 //-----------------------------------------------------------------------------
 void CViewContainer::onDragMove (IDataPackage* drag, const CPoint& where)
 {
-	if (!pParentFrame)
-		return;
-	
 	CPoint where2 (where);
 	where2.offset (-getViewSize ().left, -getViewSize ().top);
 	transform.inverse ().transform (where2);
@@ -1118,8 +1091,8 @@ void CViewContainer::onTouchEvent (ITouchEvent& event)
 //-----------------------------------------------------------------------------
 void CViewContainer::findSingleTouchEventTarget (ITouchEvent::Touch& event)
 {
-	assert(event.target == 0);
-	assert(event.state == ITouchEvent::kBegan);
+	vstgui_assert(event.target == 0);
+	vstgui_assert(event.state == ITouchEvent::kBegan);
 
 	CButtonState buttons (kLButton + (event.tapCount > 1 ? kDoubleClick : 0));
 	CPoint where (event.location);

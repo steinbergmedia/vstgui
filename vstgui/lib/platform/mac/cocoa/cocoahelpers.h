@@ -49,7 +49,7 @@ struct VstKeyCode;
 #define HIDDEN __attribute__((__visibility__("hidden")))
 
 #if DEBUG
-#define VSTGUI_CHECK_YES(x) { BOOL res = x; assert (res == YES); }
+#define VSTGUI_CHECK_YES(x) { BOOL res = x; vstgui_assert (res == YES); }
 #else
 #define VSTGUI_CHECK_YES(x) x;
 #endif

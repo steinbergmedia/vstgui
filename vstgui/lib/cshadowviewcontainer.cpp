@@ -254,21 +254,21 @@ void CShadowViewContainer::setViewSize (const CRect& rect, bool invalid)
 //-----------------------------------------------------------------------------
 void CShadowViewContainer::viewContainerViewAdded (CViewContainer* container, CView* view)
 {
-	assert (container == this);
+	vstgui_assert (container == this);
 	invalidateShadow ();
 }
 
 //-----------------------------------------------------------------------------
 void CShadowViewContainer::viewContainerViewRemoved (CViewContainer* container, CView* view)
 {
-	assert (container == this);
+	vstgui_assert (container == this);
 	invalidateShadow ();
 }
 
 //-----------------------------------------------------------------------------
 void CShadowViewContainer::viewContainerViewZOrderChanged (CViewContainer* container, CView* view)
 {
-	assert (container == this);
+	vstgui_assert (container == this);
 	invalidateShadow ();
 }
 

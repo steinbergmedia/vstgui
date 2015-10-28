@@ -189,49 +189,49 @@ Property& Property::operator=(const Property& p)
 //----------------------------------------------------------------------------------------------------
 int32_t Property::getInteger () const
 {
-	assert (type == kInteger);
+	vstgui_assert (type == kInteger);
 	return *static_cast<int32_t*> (value);
 }
 
 //----------------------------------------------------------------------------------------------------
 double Property::getFloat () const
 {
-	assert (type == kFloat);
+	vstgui_assert (type == kFloat);
 	return *static_cast<double*> (value);
 }
 
 //----------------------------------------------------------------------------------------------------
 CBaseObject* Property::getObject () const
 {
-	assert (type == kObject);
+	vstgui_assert (type == kObject);
 	return *static_cast<CBaseObject**> (value);
 }
 
 //----------------------------------------------------------------------------------------------------
 const CRect& Property::getRect () const
 {
-	assert (type == kRect);
+	vstgui_assert (type == kRect);
 	return *static_cast<CRect*> (value);
 }
 
 //----------------------------------------------------------------------------------------------------
 const CPoint& Property::getPoint () const
 {
-	assert (type == kPoint);
+	vstgui_assert (type == kPoint);
 	return *static_cast<CPoint*> (value);
 }
 
 //----------------------------------------------------------------------------------------------------
 const CColor& Property::getColor () const
 {
-	assert (type == kColor);
+	vstgui_assert (type == kColor);
 	return *static_cast<CColor*> (value);
 }
 
 //----------------------------------------------------------------------------------------------------
 const CGraphicsTransform& Property::getTransform () const
 {
-	assert (type == kTransformMatrix);
+	vstgui_assert (type == kTransformMatrix);
 	return *static_cast<CGraphicsTransform*> (value);
 }
 
@@ -624,7 +624,7 @@ private:
 				if (ix != (int32_t)origX || origPixel == 0)
 				{
 					ix = (int32_t)origX;
-					assert (iy >= 0);
+					vstgui_assert (iy >= 0);
 					origPixel = (int32_t*)(origAddress + static_cast<uint32_t> (iy) * origBytesPerRow + ix * 4);
 				}
 				*copyPixel = *origPixel;

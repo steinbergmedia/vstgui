@@ -5334,7 +5334,7 @@ sub demangle_list($)
 	close($handle);
 
 	# Build translation hash from c++filt output
-	open($handle, "-|", "c++filt < $tmpfile") or
+	open($handle, "-|", "c++filt -n < $tmpfile") or
 		die("ERROR: could not run c++filt: $!\n");
 	foreach my $func (@$list) {
 		my $translated = <$handle>;

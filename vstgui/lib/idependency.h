@@ -147,7 +147,7 @@ inline IDependency::IDependency ()
 //----------------------------------------------------------------------------------------------------
 inline IDependency::~IDependency ()
 {
-	assert (dependents.size () == 0);
+	vstgui_assert (dependents.size () == 0);
 }
 
 } // namespace

@@ -134,8 +134,8 @@ ExchangeViewAnimation::ExchangeViewAnimation (CView* oldView, CView* newView, An
 , viewToRemove (oldView)
 , style (style)
 {
-	assert (newView->isAttached () == false);
-	assert (viewToRemove->isAttached ());
+	vstgui_assert (newView->isAttached () == false);
+	vstgui_assert (viewToRemove->isAttached ());
 
 	viewToRemove->remember ();
 	newView->remember ();
@@ -299,7 +299,7 @@ void ExchangeViewAnimation::animationStart (CView* view, IdStringPtr name)
 {
 	#if DEBUG
 	CViewContainer* parent = static_cast<CViewContainer*> (viewToRemove->getParentView ());
-	assert (view == parent);
+	vstgui_assert (view == parent);
 	#endif
 }
 

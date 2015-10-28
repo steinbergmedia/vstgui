@@ -170,7 +170,7 @@ protected:
 
 	IdleViewUpdater ()
 	{
-		assert (gInstance == 0);
+		vstgui_assert (gInstance == 0);
 		gInstance = this;
 		timer = new CVSTGUITimer (this, 1000/CView::idleRate, true);
 	}
@@ -328,8 +328,8 @@ CView::CView (const CView& v)
 //-----------------------------------------------------------------------------
 CView::~CView ()
 {
-	assert (isAttached () == false);
-	assert (viewListeners.empty ());
+	vstgui_assert (isAttached () == false);
+	vstgui_assert (viewListeners.empty ());
 
 	IController* controller = 0;
 	uint32_t size = sizeof (IController*);
@@ -434,6 +434,16 @@ void CView::setDirty (bool state)
 }
 
 //-----------------------------------------------------------------------------
+void CView::setSubviewState (bool state)
+{
+	vstgui_assert (isSubview () != state, "");
+	if (state)
+		viewFlags |= kIsSubview;
+	else
+		viewFlags &= ~kIsSubview;
+}
+
+//-----------------------------------------------------------------------------
 /**
  * @param parent parent view
  * @return true if view successfully attached to parent
@@ -442,7 +452,7 @@ bool CView::attached (CView* parent)
 {
 	if (isAttached ())
 		return false;
-	assert (dynamic_cast<CViewContainer*> (parent) != 0);
+	vstgui_assert (dynamic_cast<CViewContainer*> (parent) != 0);
 	pParentView = parent;
 	pParentFrame = parent->getFrame ();
 	viewFlags |= kIsAttached;

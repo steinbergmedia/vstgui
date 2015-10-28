@@ -134,7 +134,7 @@ public:
 
 	void unuse ()
 	{
-		assert (useCount > 0);
+		vstgui_assert (useCount > 0);
 		if (--useCount == 0)
 			releaseFactory ();
 	}

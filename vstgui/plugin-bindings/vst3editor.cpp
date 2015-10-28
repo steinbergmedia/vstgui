@@ -1222,7 +1222,7 @@ static int32_t getUIDescriptionSaveOptions (CFrame* frame)
 void VST3Editor::save (bool saveAs)
 {
 	UIAttributes* attributes = description->getCustomAttributes ("VST3Editor", true);
-	assert(attributes);
+	vstgui_assert(attributes);
 	std::string savePath;
 	if (saveAs)
 	{

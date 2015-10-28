@@ -286,6 +286,9 @@ public:
 	bool isAttached () const { return (viewFlags & kIsAttached) ? true : false; }				///< is view attached to a parentView
 	//@}
 
+	void setSubviewState (bool state);
+	bool isSubview () const { return (viewFlags & kIsSubview) ? true : false; }
+
 	//-----------------------------------------------------------------------------
 	/// @name Parent Methods
 	//-----------------------------------------------------------------------------
@@ -359,7 +362,8 @@ protected:
 		kVisible				= 1 << 4,
 		kDirty					= 1 << 5,
 		kWantsIdle				= 1 << 6,
-		kLastCViewFlag			= 6
+		kIsSubview				= 1 << 7,
+		kLastCViewFlag			= 7
 	};
 	int32_t viewFlags;
 	

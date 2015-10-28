@@ -360,7 +360,7 @@ void UIEditView::enableEditing (bool state)
 		{
 			CRect r = parent->getViewSize ();
 			r.originize ();
-			assert (overlayView == 0);
+			vstgui_assert (overlayView == 0);
 			overlayView = new CLayeredViewContainer (r);
 			overlayView->setAutosizeFlags (kAutosizeAll);
 			overlayView->setMouseEnabled (false);

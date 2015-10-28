@@ -192,7 +192,7 @@ void CDrawContext::lineTo (const CPoint &point)
 //-----------------------------------------------------------------------------
 void CDrawContext::drawLines (const CPoint* points, const int32_t& numberOfLines)
 {
-	assert (numberOfLines < 0);
+	vstgui_assert (numberOfLines > 0);
 	LineList list (static_cast<uint32_t> (numberOfLines));
 	for (int32_t i = 0; i < numberOfLines * 2; i += 2)
 	{
@@ -204,7 +204,7 @@ void CDrawContext::drawLines (const CPoint* points, const int32_t& numberOfLines
 //-----------------------------------------------------------------------------
 void CDrawContext::drawPolygon (const CPoint* pPoints, int32_t numberOfPoints, const CDrawStyle drawStyle)
 {
-	assert (numberOfPoints < 0);
+	vstgui_assert (numberOfPoints > 0);
 	PointList list (static_cast<uint32_t> (numberOfPoints));
 	for (int32_t i = 0; i < numberOfPoints; i++)
 	{
@@ -461,7 +461,7 @@ CGraphicsPath* CDrawContext::createRoundRectGraphicsPath (const CRect& size, CCo
 //-----------------------------------------------------------------------------
 void CDrawContext::pushTransform (const CGraphicsTransform& transformation)
 {
-	assert (transformStack.size () > 0);
+	vstgui_assert (transformStack.size () > 0);
 	const CGraphicsTransform& currentTransform = transformStack.top ();
 	CGraphicsTransform newTransform = currentTransform * transformation;
 	transformStack.push (newTransform);
@@ -470,7 +470,7 @@ void CDrawContext::pushTransform (const CGraphicsTransform& transformation)
 //-----------------------------------------------------------------------------
 void CDrawContext::popTransform ()
 {
-	assert (transformStack.size () > 1);
+	vstgui_assert (transformStack.size () > 1);
 	transformStack.pop ();
 }
 

@@ -103,7 +103,7 @@ using namespace VSTGUI;
 		if (it != touchEvent.nativeTouches.end ())
 		{
 			auto iTouch = touchMap.find (it->second);
-			assert (iTouch != touchMap.end ());
+			vstgui_assert (iTouch != touchMap.end ());
 			if (touch.phase == UITouchPhaseStationary)
 			{
 				iTouch->second.state = ITouchEvent::kNoChange;
@@ -141,7 +141,7 @@ using namespace VSTGUI;
 	for (UITouch* touch in touches)
 	{
 		auto it = touchEvent.nativeTouches.find (touch);
-		assert (it != touchEvent.nativeTouches.end ());
+		vstgui_assert (it != touchEvent.nativeTouches.end ());
 		if (it != touchEvent.nativeTouches.end ())
 		{
 			touchMap.erase (it->second);

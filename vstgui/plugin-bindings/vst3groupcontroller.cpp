@@ -43,7 +43,7 @@ GroupController::GroupController (Steinberg::Vst::Parameter* parameter, Steinber
 , editController (editController)
 {
 	parameter->addDependent (this);
-	assert (parameter->getInfo ().stepCount > 0);
+	vstgui_assert (parameter->getInfo ().stepCount > 0);
 }
 
 //------------------------------------------------------------------------

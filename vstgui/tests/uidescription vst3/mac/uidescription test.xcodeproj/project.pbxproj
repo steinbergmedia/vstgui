@@ -11,7 +11,7 @@
 		F41CA1C8112E99F000D425D7 /* animationtest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F41CA1C7112E99F000D425D7 /* animationtest.cpp */; };
 		F41CA21F112E9E6B00D425D7 /* AnimationTest.uidesc in Resources */ = {isa = PBXBuildFile; fileRef = F41CA21E112E9E6B00D425D7 /* AnimationTest.uidesc */; };
 		F420E6DB1906D45300AFD962 /* libvstgui c++11.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F481925C165D3C050035058F /* libvstgui c++11.a */; };
-		F420F3B51BD8DAB500F4CBAF /* edituidescriptioneditor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F420F3B31BD8DAB500F4CBAF /* edituidescriptioneditor.cpp */; settings = {ASSET_TAGS = (); }; };
+		F420F3B51BD8DAB500F4CBAF /* edituidescriptioneditor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F420F3B31BD8DAB500F4CBAF /* edituidescriptioneditor.cpp */; };
 		F42731DE1125507F00BE2194 /* factory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F42731DD1125507F00BE2194 /* factory.cpp */; };
 		F42731E51125516A00BE2194 /* subcontrollertest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F42731E41125516A00BE2194 /* subcontrollertest.cpp */; };
 		F427326A1125623200BE2194 /* SubControllerTest.uidesc in Resources */ = {isa = PBXBuildFile; fileRef = F42732691125623200BE2194 /* SubControllerTest.uidesc */; };
@@ -122,8 +122,8 @@
 		F440753410BE6C0A003C59F6 /* prefix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = prefix.h; path = ../source/prefix.h; sourceTree = SOURCE_ROOT; };
 		F440754910BE6D00003C59F6 /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = System/Library/Frameworks/Carbon.framework; sourceTree = SDKROOT; };
 		F440754B10BE6D00003C59F6 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
-		F440755510BE6D26003C59F6 /* uidescription test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "uidescription test.cpp"; path = "../source/uidescription test.cpp"; sourceTree = SOURCE_ROOT; };
-		F440758610BF043D003C59F6 /* vst3editor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vst3editor.cpp; path = "../../../plugin-bindings/vst3editor.cpp"; sourceTree = SOURCE_ROOT; };
+		F440755510BE6D26003C59F6 /* uidescription test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 0; name = "uidescription test.cpp"; path = "../source/uidescription test.cpp"; sourceTree = SOURCE_ROOT; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
+		F440758610BF043D003C59F6 /* vst3editor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 0; name = vst3editor.cpp; path = "../../../plugin-bindings/vst3editor.cpp"; sourceTree = SOURCE_ROOT; };
 		F440758710BF043D003C59F6 /* vst3editor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = vst3editor.h; path = "../../../plugin-bindings/vst3editor.h"; sourceTree = SOURCE_ROOT; };
 		F44075AC10BF053A003C59F6 /* myEditor.uidesc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = myEditor.uidesc; path = ../resource/myEditor.uidesc; sourceTree = SOURCE_ROOT; };
 		F4457814110A06590022C0E5 /* FrameBackground.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = FrameBackground.png; path = ../resource/FrameBackground.png; sourceTree = SOURCE_ROOT; };
@@ -149,7 +149,7 @@
 		F49A667B195C417600CF5163 /* Foreground.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = Foreground.png; path = ../resource/ZoomExample/Foreground.png; sourceTree = "<group>"; };
 		F49A667C195C417600CF5163 /* Foreground#0.5x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "Foreground#0.5x.png"; path = "../resource/ZoomExample/Foreground#0.5x.png"; sourceTree = "<group>"; };
 		F49A667D195C417600CF5163 /* Foreground#2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "Foreground#2x.png"; path = "../resource/ZoomExample/Foreground#2x.png"; sourceTree = "<group>"; };
-		F49A6681195C43AA00CF5163 /* vst3groupcontroller.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vst3groupcontroller.cpp; path = "../../../plugin-bindings/vst3groupcontroller.cpp"; sourceTree = "<group>"; };
+		F49A6681195C43AA00CF5163 /* vst3groupcontroller.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 0; name = vst3groupcontroller.cpp; path = "../../../plugin-bindings/vst3groupcontroller.cpp"; sourceTree = "<group>"; };
 		F49A6682195C43AA00CF5163 /* vst3groupcontroller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = vst3groupcontroller.h; path = "../../../plugin-bindings/vst3groupcontroller.h"; sourceTree = "<group>"; };
 		F4C04ECD123B8E450082BA28 /* vst3sdksources.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vst3sdksources.cpp; path = ../source/vst3sdksources.cpp; sourceTree = SOURCE_ROOT; };
 		F4C04F00123B90940082BA28 /* README.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = README.txt; path = ../README.txt; sourceTree = SOURCE_ROOT; };

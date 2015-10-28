@@ -281,7 +281,7 @@ void CAutoLayoutContainerView::setViewSize (const CRect& rect, bool invalid)
 //--------------------------------------------------------------------------------
 bool CAutoLayoutContainerView::addView (CView* pView)
 {
-	if (CViewContainer::addView (pView))
+	if (CViewContainer::addView (pView, 0))
 	{
 		if (isAttached ())
 			layoutViews ();

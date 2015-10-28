@@ -95,6 +95,18 @@ namespace UnitTest {
 #define EXPECT(condition) if (!(condition)) { context->print (__FILE__ ":%d: Expected: " VSTGUI_UNITTEST_MAKE_STRING(condition), __LINE__); return false; }
 #define FAIL(reason) { context->print (__FILE__ ":%d: Failure: " reason, __LINE__); return false; }
 
+#define EXPECT_EXCEPTION(call, name) \
+{ \
+	bool b = false; \
+	try { \
+		call; \
+	} catch (const std::exception& error) {\
+		EXPECT(error.what() == std::string(name));\
+		b = true;\
+	} \
+	EXPECT(b);\
+}
+
 #define SETUP(function) testCase->setSetupFunction ([](VSTGUI::UnitTest::Context* context) { function } )
 #define TEARDOWN(function) testCase->setTeardownFunction ([](VSTGUI::UnitTest::Context* context) { function } )
 //----------------------------------------------------------------------------------------------------
