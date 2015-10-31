@@ -35,73 +35,87 @@
 #include "../unittests.h"
 #include "../../../lib/cstring.h"
 
+#if MAC
+#include "../../../lib/platform/mac/macstring.h"
+#endif
+
 namespace VSTGUI {
 
-TESTCASE(UTF8StringViewTest,
-	static UTF8StringPtr asciiStr = "This is a simple ASCII String";
-	static UTF8StringPtr utf8Str = u8"インターネットをもっと快適に。";
+TESTCASE(CStringTest,
 
-	TEST(calculateASCIICharacterCount,
-		UTF8StringView str (asciiStr);
-		EXPECT(str.calculateCharacterCount () == 29);
-	);
-
-	TEST(calculateUTF8CharacterCount,
-		UTF8StringView str (utf8Str);
-		EXPECT(str.calculateCharacterCount () == 15);
-		UTF8StringView str2 (u8"Äॴ𪀚");
-		EXPECT(str2.calculateCharacterCount () == 3);
-		EXPECT(str2.calculateByteCount () == 10);
-	);
-
-	TEST(calculateEmptyCharacterCount,
-		UTF8StringView str (nullptr);
-		EXPECT(str.calculateCharacterCount () == 0);
-	);
-
-	TEST(calculateASCIIByteCount,
-		UTF8StringView str (asciiStr);
-		EXPECT(str.calculateByteCount () == 30);
-	);
-
-	TEST(calculateUTF8ByteCount,
-		UTF8StringView str (utf8Str);
-		EXPECT(str.calculateByteCount () == 46);
-	);
-	
-	TEST(contains,
-		UTF8StringView str (asciiStr);
-		EXPECT(str.contains ("simple") == true);
-		EXPECT(str.contains ("not") == false);
-	);
-
-	TEST(endsWith,
-		UTF8StringView str (asciiStr);
-		EXPECT(str.endsWith ("String") == true);
-		EXPECT(str.endsWith ("This") == false);
-		EXPECT(str.endsWith ("This is a simple ASCII String which is longer") == false);
-	);
-	
-	TEST(doubleConversion,
-		UTF8StringView str ("32.56789");
-		double value = str.toDouble ();
-		EXPECT(value == 32.56789);
-	);
-
-	TEST(floatConversion,
-		UTF8StringView str ("32.56789");
-		float value = str.toFloat ();
-		EXPECT(value == 32.56789f);
-	);
-
-	TEST(compare,
-		std::string test ("This is a simple ASCII String");
-		UTF8StringView str1 (test.c_str ());
-		UTF8StringView str2 (asciiStr);
-		EXPECT(str1 == str2);
-		UTF8StringView str3 (utf8Str);
-		EXPECT(str1 != str3);
+	TEST(test,
+		CString str ("Test");
+		EXPECT(str.getPlatformString ());
+		EXPECT(UTF8String ("Test") == str.getUTF8String ());
+		str.setUTF8String ("Other");
+		EXPECT(str.getPlatformString ());
+		EXPECT(UTF8String ("Other") == str.getUTF8String ());
 	);
 
 );
-}
+
+TESTCASE(UTF8StringTest,
+
+	TEST(empty,
+		UTF8String str;
+		EXPECT (str.empty ());
+		EXPECT (str.getByteCount () == 0);
+	);
+	
+	TEST(set,
+		UTF8String str;
+		EXPECT (str.empty ());
+		str.set ("Test");
+		EXPECT(str.empty () == false);
+		EXPECT(str.get () == std::string ("Test"));
+	);
+
+	TEST(equalOperator,
+		EXPECT(UTF8String ("bla") == "bla");
+		EXPECT(UTF8String ("bla") != "uhh");
+		std::string str ("bla");
+		std::string str2 ("uhh");
+		EXPECT(UTF8String ("bla") == str);
+		EXPECT(UTF8String ("bla") != str2);
+	);
+
+	TEST(setOperator,
+		UTF8String str;
+		str = "Test";
+		EXPECT(str == "Test");
+	);
+
+	TEST(getOperator,
+		UTF8String str ("Test");
+		UTF8StringPtr cstr = str;
+		EXPECT(cstr == std::string ("Test"));
+	);
+	
+	TEST(copyOperator,
+		UTF8String str1 ("str");
+		UTF8String str2 (str1);
+		EXPECT(str1 == str2);
+	);
+
+	TEST(moveOperator,
+		UTF8String str1 ("str");
+		UTF8String str2 (std::move (str1));
+		EXPECT(str1 != str2);
+	);
+
+#if MAC
+	TEST(platformString,
+		UTF8String str1 ("Test");
+		auto platformStr = str1.getPlatformString ();
+		auto macStr = dynamic_cast<MacString*>(platformStr);
+		EXPECT(macStr);
+		auto cfStr = macStr->getCFString ();
+		auto cfStr2 = CFStringCreateWithCString (kCFAllocatorDefault, "Test", kCFStringEncodingUTF8);
+		EXPECT(CFStringCompare (cfStr, cfStr2, 0) == kCFCompareEqualTo);
+		CFRelease (cfStr2);
+	);
+
+#endif
+);
+
+} // VSTGUI

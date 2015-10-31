@@ -32,7 +32,6 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-
 #include "../unittests.h"
 #include "../../../lib/idependency.h"
 

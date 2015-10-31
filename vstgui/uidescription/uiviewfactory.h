@@ -61,7 +61,7 @@ public:
 	static void registerViewCreator (const IViewCreator& viewCreator);
 	static void unregisterViewCreator (const IViewCreator& viewCreator);
 
-	#if VSTGUI_LIVE_EDITING
+#if VSTGUI_LIVE_EDITING
 	typedef std::list<const std::string*> StringPtrList;
 	typedef std::list<std::string> StringList;
 	
@@ -73,7 +73,11 @@ public:
 	// list type support
 	bool getPossibleAttributeListValues (CView* view, const std::string& attributeName, StringPtrList& values) const;
 	bool getAttributeValueRange (CView* view, const std::string& attributeName, double& minValue, double& maxValue) const;
-	#endif
+
+#if ENABLE_UNIT_TESTS
+	bool disableRememberAttributes {false};
+#endif
+#endif
 
 protected:
 	void evaluateAttributesAndRemember (CView* view, const UIAttributes& attributes, UIAttributes& evaluatedAttributes, const IUIDescription* description) const;
@@ -81,8 +85,8 @@ protected:
 
 #if VSTGUI_LIVE_EDITING
 	static size_t createHash (const std::string& str);
-	static void rememberAttribute (CView* view, IdStringPtr attrName, const std::string& value);
-	static bool getRememberedAttribute (CView* view, IdStringPtr attrName, std::string& value);
+	void rememberAttribute (CView* view, IdStringPtr attrName, const std::string& value) const;
+	bool getRememberedAttribute (CView* view, IdStringPtr attrName, std::string& value) const;
 #endif
 };
 

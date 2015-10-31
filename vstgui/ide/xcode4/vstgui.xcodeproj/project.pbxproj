@@ -86,6 +86,17 @@
 		F48BCB4E13F69BB90010DCC1 /* uiattributescontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F48BCB4D13F69BB80010DCC1 /* uiattributescontroller.cpp */; };
 		F48E9CF319C2D1000082B06D /* cgradient.h in Headers */ = {isa = PBXBuildFile; fileRef = F48E9CEF19C2D1000082B06D /* cgradient.h */; };
 		F48E9CF419C2D1000082B06D /* cgradient.h in Headers */ = {isa = PBXBuildFile; fileRef = F48E9CEF19C2D1000082B06D /* cgradient.h */; };
+		F490FDD41BE2C5F000386A09 /* clinestyle_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F490FDD31BE2C5F000386A09 /* clinestyle_test.cpp */; };
+		F490FDD61BE3C82F00386A09 /* utf8string_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F490FDD51BE3C82F00386A09 /* utf8string_test.cpp */; };
+		F490FDD91BE3D00C00386A09 /* cviewcreator_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F490FDD81BE3D00C00386A09 /* cviewcreator_test.cpp */; };
+		F490FDDE1BE4B7DE00386A09 /* cviewcontainercreator_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F490FDDD1BE4B7DE00386A09 /* cviewcontainercreator_test.cpp */; };
+		F490FDE01BE4C06800386A09 /* clayeredviewcontainercreator_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F490FDDF1BE4C06800386A09 /* clayeredviewcontainercreator_test.cpp */; };
+		F490FDE21BE4C1A600386A09 /* crowcolumnviewcreator_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F490FDE11BE4C1A600386A09 /* crowcolumnviewcreator_test.cpp */; };
+		F490FDE41BE4CF4100386A09 /* cscrollviewcreator_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F490FDE31BE4CF4100386A09 /* cscrollviewcreator_test.cpp */; };
+		F490FDE61BE4D51300386A09 /* ccontrolcreator_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F490FDE51BE4D51300386A09 /* ccontrolcreator_test.cpp */; };
+		F490FDE81BE4DBD800386A09 /* conoffbuttoncreator_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F490FDE71BE4DBD800386A09 /* conoffbuttoncreator_test.cpp */; };
+		F490FDEA1BE4EB9600386A09 /* ccheckboxcreator_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F490FDE91BE4EB9600386A09 /* ccheckboxcreator_test.cpp */; };
+		F490FDEC1BE5027C00386A09 /* cparamdisplaycreator_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F490FDEB1BE5027C00386A09 /* cparamdisplaycreator_test.cpp */; };
 		F497F0EC13080A1C00F0A613 /* cbitmap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0C213080A1C00F0A613 /* cbitmap.cpp */; };
 		F497F0EE13080A1C00F0A613 /* ccolor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0C413080A1C00F0A613 /* ccolor.cpp */; };
 		F497F0F013080A1C00F0A613 /* cdatabrowser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0C613080A1C00F0A613 /* cdatabrowser.cpp */; };
@@ -462,6 +473,19 @@
 		F48BCB4B13F69BB10010DCC1 /* uiattributescontroller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uiattributescontroller.h; sourceTree = "<group>"; };
 		F48BCB4D13F69BB80010DCC1 /* uiattributescontroller.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 0; path = uiattributescontroller.cpp; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
 		F48E9CEF19C2D1000082B06D /* cgradient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cgradient.h; sourceTree = "<group>"; };
+		F490FDD31BE2C5F000386A09 /* clinestyle_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = clinestyle_test.cpp; sourceTree = "<group>"; };
+		F490FDD51BE3C82F00386A09 /* utf8string_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = utf8string_test.cpp; sourceTree = "<group>"; };
+		F490FDD81BE3D00C00386A09 /* cviewcreator_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cviewcreator_test.cpp; sourceTree = "<group>"; };
+		F490FDDB1BE3D0DF00386A09 /* uiviewcreatorattributes.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = uiviewcreatorattributes.h; sourceTree = "<group>"; };
+		F490FDDC1BE3E07000386A09 /* helpers.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = helpers.h; sourceTree = "<group>"; };
+		F490FDDD1BE4B7DE00386A09 /* cviewcontainercreator_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cviewcontainercreator_test.cpp; sourceTree = "<group>"; };
+		F490FDDF1BE4C06800386A09 /* clayeredviewcontainercreator_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = clayeredviewcontainercreator_test.cpp; sourceTree = "<group>"; };
+		F490FDE11BE4C1A600386A09 /* crowcolumnviewcreator_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = crowcolumnviewcreator_test.cpp; sourceTree = "<group>"; };
+		F490FDE31BE4CF4100386A09 /* cscrollviewcreator_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cscrollviewcreator_test.cpp; sourceTree = "<group>"; };
+		F490FDE51BE4D51300386A09 /* ccontrolcreator_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ccontrolcreator_test.cpp; sourceTree = "<group>"; };
+		F490FDE71BE4DBD800386A09 /* conoffbuttoncreator_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = conoffbuttoncreator_test.cpp; sourceTree = "<group>"; };
+		F490FDE91BE4EB9600386A09 /* ccheckboxcreator_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ccheckboxcreator_test.cpp; sourceTree = "<group>"; };
+		F490FDEB1BE5027C00386A09 /* cparamdisplaycreator_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cparamdisplaycreator_test.cpp; sourceTree = "<group>"; };
 		F497F0AD1308094300F0A613 /* libvstgui.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libvstgui.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		F497F0C213080A1C00F0A613 /* cbitmap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 0; path = cbitmap.cpp; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
 		F497F0C313080A1C00F0A613 /* cbitmap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cbitmap.h; sourceTree = "<group>"; };
@@ -778,6 +802,31 @@
 			path = animation;
 			sourceTree = "<group>";
 		};
+		F490FDD71BE3CF8000386A09 /* uiviewcreator */ = {
+			isa = PBXGroup;
+			children = (
+				F490FDE91BE4EB9600386A09 /* ccheckboxcreator_test.cpp */,
+				F490FDE51BE4D51300386A09 /* ccontrolcreator_test.cpp */,
+				F490FDDF1BE4C06800386A09 /* clayeredviewcontainercreator_test.cpp */,
+				F490FDE71BE4DBD800386A09 /* conoffbuttoncreator_test.cpp */,
+				F490FDEB1BE5027C00386A09 /* cparamdisplaycreator_test.cpp */,
+				F490FDE11BE4C1A600386A09 /* crowcolumnviewcreator_test.cpp */,
+				F490FDE31BE4CF4100386A09 /* cscrollviewcreator_test.cpp */,
+				F490FDDD1BE4B7DE00386A09 /* cviewcontainercreator_test.cpp */,
+				F490FDD81BE3D00C00386A09 /* cviewcreator_test.cpp */,
+				F490FDDC1BE3E07000386A09 /* helpers.h */,
+			);
+			path = uiviewcreator;
+			sourceTree = "<group>";
+		};
+		F490FDDA1BE3D0C000386A09 /* detail */ = {
+			isa = PBXGroup;
+			children = (
+				F490FDDB1BE3D0DF00386A09 /* uiviewcreatorattributes.h */,
+			);
+			path = detail;
+			sourceTree = "<group>";
+		};
 		F497F0A21308094300F0A613 = {
 			isa = PBXGroup;
 			children = (
@@ -1044,11 +1093,12 @@
 			children = (
 				F44DC9F218A7C12F0029125A /* base64codec.cpp */,
 				F4B0AF801BDD25DF0033C579 /* cstream_test.cpp */,
+				F4B1D4EE1BE0E6A600EE6BDA /* delegationcontroller_test.cpp */,
 				F4B0AF881BDD378F0033C579 /* uiattributes_test.cpp */,
+				F4370BDE1BDE5CF600DC943A /* uidescription_test.cpp */,
+				F490FDD71BE3CF8000386A09 /* uiviewcreator */,
 				F4B0AF7E1BDD02A20033C579 /* uiviewfactory_test.cpp */,
 				F4370BDC1BDE56E300DC943A /* xmlparser_test.cpp */,
-				F4370BDE1BDE5CF600DC943A /* uidescription_test.cpp */,
-				F4B1D4EE1BE0E6A600EE6BDA /* delegationcontroller_test.cpp */,
 			);
 			path = uidescription;
 			sourceTree = "<group>";
@@ -1081,11 +1131,13 @@
 				F4B0AF7B1BDD007D0033C579 /* cbuttonstate_test.cpp */,
 				F4462D2B17563BD900E6835D /* ccolor_test.cpp */,
 				F4B0AF791BDCFB640033C579 /* cfont_test.cpp */,
+				F490FDD31BE2C5F000386A09 /* clinestyle_test.cpp */,
 				F4B0AF751BDCDD060033C579 /* cpoint_test.cpp */,
 				F4282B001710699700A79F13 /* crect_test.cpp */,
 				F4B0AF771BDCEC6C0033C579 /* cview_test.cpp */,
 				F4CC1E781709F253008F07FD /* cviewcontainer_test.cpp */,
 				F4462D2D1756444800E6835D /* idependency_test.cpp */,
+				F490FDD51BE3C82F00386A09 /* utf8string_test.cpp */,
 				F4E706AB1907BC0000765574 /* utf8stringview_test.cpp */,
 			);
 			path = lib;
@@ -1109,6 +1161,7 @@
 		F4E3901713080EC000615042 /* uidescription */ = {
 			isa = PBXGroup;
 			children = (
+				F490FDDA1BE3D0C000386A09 /* detail */,
 				F453B21B13F122500067C1C2 /* editing */,
 				F420F3B61BD8EF3D00F4CBAF /* uidescriptioneditor.uidesc */,
 				F47CE2BE14EE5315001B25B9 /* base64codec.h */,
@@ -1432,17 +1485,27 @@
 			buildActionMask = 2147483647;
 			files = (
 				F4762E8A1BDA958800810447 /* vstgui_mac.mm in Sources */,
+				F490FDDE1BE4B7DE00386A09 /* cviewcontainercreator_test.cpp in Sources */,
 				F4762E8B1BDA958C00810447 /* vstgui_uidescription_mac.mm in Sources */,
+				F490FDEA1BE4EB9600386A09 /* ccheckboxcreator_test.cpp in Sources */,
 				F4B0AF7F1BDD02A20033C579 /* uiviewfactory_test.cpp in Sources */,
 				F4B0AF811BDD25DF0033C579 /* cstream_test.cpp in Sources */,
+				F490FDEC1BE5027C00386A09 /* cparamdisplaycreator_test.cpp in Sources */,
+				F490FDD91BE3D00C00386A09 /* cviewcreator_test.cpp in Sources */,
 				F4B0AF761BDCDD060033C579 /* cpoint_test.cpp in Sources */,
 				F4370BDF1BDE5CF600DC943A /* uidescription_test.cpp in Sources */,
+				F490FDE81BE4DBD800386A09 /* conoffbuttoncreator_test.cpp in Sources */,
 				F4762E861BDA957E00810447 /* idependency_test.cpp in Sources */,
 				F4B1D4EF1BE0E6A600EE6BDA /* delegationcontroller_test.cpp in Sources */,
 				F4762E831BDA957E00810447 /* cviewcontainer_test.cpp in Sources */,
+				F490FDE01BE4C06800386A09 /* clayeredviewcontainercreator_test.cpp in Sources */,
+				F490FDD61BE3C82F00386A09 /* utf8string_test.cpp in Sources */,
 				F4B0AF891BDD378F0033C579 /* uiattributes_test.cpp in Sources */,
+				F490FDE21BE4C1A600386A09 /* crowcolumnviewcreator_test.cpp in Sources */,
 				F4370BDD1BDE56E300DC943A /* xmlparser_test.cpp in Sources */,
+				F490FDE61BE4D51300386A09 /* ccontrolcreator_test.cpp in Sources */,
 				F4B0AF7C1BDD007D0033C579 /* cbuttonstate_test.cpp in Sources */,
+				F490FDE41BE4CF4100386A09 /* cscrollviewcreator_test.cpp in Sources */,
 				F4F7D5FC1BDBB4BD00A8B6FD /* animator_test.cpp in Sources */,
 				F4762E881BDA957E00810447 /* utf8stringview_test.cpp in Sources */,
 				F4762E851BDA957E00810447 /* ccolor_test.cpp in Sources */,
@@ -1453,6 +1516,7 @@
 				F4B0AF781BDCEC6C0033C579 /* cview_test.cpp in Sources */,
 				F4762E8F1BDAADA700810447 /* animations_test.cpp in Sources */,
 				F4B0AF7A1BDCFB640033C579 /* cfont_test.cpp in Sources */,
+				F490FDD41BE2C5F000386A09 /* clinestyle_test.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

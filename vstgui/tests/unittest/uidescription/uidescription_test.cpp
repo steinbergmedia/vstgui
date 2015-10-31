@@ -36,6 +36,7 @@
 #include "../../../uidescription/uidescription.h"
 #include "../../../uidescription/uiattributes.h"
 #include "../../../uidescription/xmlparser.h"
+#include "../../../uidescription/detail/uiviewcreatorattributes.h"
 #include "../../../lib/ccolor.h"
 #include "../../../lib/cgradient.h"
 #include "../../../lib/cviewcontainer.h"
@@ -121,6 +122,7 @@ constexpr auto variableNodesUIDesc = R"(
 		<var name="v3" value="string"/>
 		<var name="v4" value="20.5"/>
 		<var name="v5" type="string" value="2*var.v1"/>
+		<var name="v6"/>
 	</variables>
 </vstgui-ui-description>
 )";
@@ -531,6 +533,8 @@ TESTCASE(UIDescriptionTests,
 		EXPECT(value == 20.5);
 		EXPECT(desc.getVariable ("v5", value));
 		EXPECT(value == 20.);
+		EXPECT(desc.getVariable ("v6", strValue));
+		EXPECT(strValue == "");
 	);
 	
 	TEST(calculations,
@@ -574,7 +578,7 @@ TESTCASE(UIDescriptionTests,
 		
 		auto attributes = desc.getViewAttributes ("view");
 		EXPECT(attributes);
-		auto classAttr = attributes->getAttributeValue ("class");
+		auto classAttr = attributes->getAttributeValue (UIViewCreator::kAttrClass);
 		EXPECT(classAttr);
 		EXPECT(*classAttr == "CViewContainer");
 		attributes = desc.getViewAttributes ("view not existing");
@@ -609,7 +613,7 @@ TESTCASE(UIDescriptionTests,
 		EXPECT(view == nullptr);
 
 		auto a = new UIAttributes ();
-		a->setAttribute ("class", "CViewContainer");
+		a->setAttribute (UIViewCreator::kAttrClass, "CViewContainer");
 		EXPECT(desc.addNewTemplate ("addNewTemplate", a));
 		EXPECT(desc.getViewAttributes ("addNewTemplate"));
 	);

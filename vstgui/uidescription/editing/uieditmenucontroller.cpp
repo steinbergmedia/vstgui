@@ -44,6 +44,7 @@
 #include "../../lib/cvstguitimer.h"
 #include "../../lib/controls/coptionmenu.h"
 #include "../../lib/controls/ctextlabel.h"
+#include "../detail/uiviewcreatorattributes.h"
 #include <cctype>
 
 namespace VSTGUI {
@@ -435,7 +436,7 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 		{
 			const IViewFactory* viewFactory = description->getViewFactory ();
 			UIAttributes viewAttr;
-			viewAttr.setAttribute ("class", item->getCommandName ());
+			viewAttr.setAttribute (UIViewCreator::kAttrClass, item->getCommandName ());
 			CViewContainer* newContainer = dynamic_cast<CViewContainer*> (viewFactory->createView (viewAttr, description));
 			if (newContainer)
 			{
