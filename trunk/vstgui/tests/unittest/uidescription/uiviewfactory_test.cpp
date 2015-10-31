@@ -37,6 +37,7 @@
 #include "../../../lib/cviewcontainer.h"
 #include "../../../uidescription/uiviewfactory.h"
 #include "../../../uidescription/uiattributes.h"
+#include "../../../uidescription/detail/uiviewcreatorattributes.h"
 
 namespace VSTGUI {
 namespace {
@@ -195,7 +196,7 @@ ViewCreator viewCreator;
 static SharedPointer<CView> createView (IViewFactory* factory)
 {
 	UIAttributes a;
-	a.setAttribute ("class", viewCreator.getViewName ());
+	a.setAttribute (UIViewCreator::kAttrClass, viewCreator.getViewName ());
 	return owned (factory->createView (a, nullptr));
 }
 
@@ -240,7 +241,7 @@ TESTCASE(UIViewFactoryTests,
 	
 	TEST(createUnknownView,
 		UIAttributes a;
-		a.setAttribute ("class", "Unknown");
+		a.setAttribute (UIViewCreator::kAttrClass, "Unknown");
 		auto view = owned (factory->createView (a, nullptr));
 		EXPECT(view == nullptr);
 	);

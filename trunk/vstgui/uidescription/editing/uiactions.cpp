@@ -41,6 +41,7 @@
 #include "../uidescription.h"
 #include "../uiattributes.h"
 #include "../../lib/cgraphicspath.h"
+#include "../detail/uiviewcreatorattributes.h"
 
 namespace VSTGUI {
 
@@ -541,7 +542,7 @@ TransformViewTypeOperation::TransformViewTypeOperation (UISelection* selection, 
 	UIAttributes attr;
 	if (factory->getAttributesForView (view, desc, attr))
 	{
-		attr.setAttribute ("class", viewClassName);
+		attr.setAttribute (UIViewCreator::kAttrClass, viewClassName);
 		newView = factory->createView (attr, desc);
 		ViewIterator it (parent);
 		while (*it)
@@ -1436,7 +1437,7 @@ void CreateNewTemplateAction::perform ()
 {
 	IDependency::DeferChanges dc (description);
 	UIAttributes* attr = new UIAttributes ();
-	attr->setAttribute ("class", baseViewClassName);
+	attr->setAttribute (UIViewCreator::kAttrClass, baseViewClassName);
 	attr->setAttribute ("size", "400,400");
 	description->addNewTemplate (name.c_str (), attr);
 	if (view == 0)

@@ -48,6 +48,7 @@
 #include "../lib/platform/std_unorderedmap.h"
 #include "../lib/platform/iplatformbitmap.h"
 #include "../lib/platform/iplatformfont.h"
+#include "detail/uiviewcreatorattributes.h"
 #include <sstream>
 #include <fstream>
 #include <algorithm>
@@ -1101,7 +1102,7 @@ CView* UIDescription::createViewFromNode (UINode* node) const
 		result = controller->createView (*node->getAttributes (), this);
 		if (result && viewFactory)
 		{
-			const std::string* viewClass = node->getAttributes ()->getAttributeValue ("class");
+			const std::string* viewClass = node->getAttributes ()->getAttributeValue (UIViewCreator::kAttrClass);
 			if (viewClass)
 				viewFactory->applyCustomViewAttributeValues (result, viewClass->c_str (), *node->getAttributes (), this);
 		}
@@ -1963,7 +1964,7 @@ bool UIDescription::updateAttributesForView (UINode* node, CView* view, bool dee
 			if (factory->getAttributeValue (view, (*it), value, this))
 				node->getAttributes ()->setAttribute ((*it), value);
 		}
-		node->getAttributes ()->setAttribute ("class", factory->getViewName (view));
+		node->getAttributes ()->setAttribute (UIViewCreator::kAttrClass, factory->getViewName (view));
 		result = true;
 	}
 	if (deep && container)

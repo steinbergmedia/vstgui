@@ -42,6 +42,7 @@
 #include "../uiviewfactory.h"
 #include "../../lib/cdropsource.h"
 #include "uiselection.h"
+#include "../detail/uiviewcreatorattributes.h"
 
 namespace VSTGUI {
 
@@ -153,7 +154,7 @@ CMouseEventResult UIViewCreatorDataSource::dbOnMouseMoved (const CPoint& where, 
 	if (mouseDownRow >= 0 && buttons.isLeftButton ())
 	{
 		UIAttributes viewAttr;
-		viewAttr.setAttribute ("class", getStringList ()->at (static_cast<uint32_t> (mouseDownRow)));
+		viewAttr.setAttribute (UIViewCreator::kAttrClass, getStringList ()->at (static_cast<uint32_t> (mouseDownRow)));
 		CView* view = factory->createView (viewAttr, description);
 		if (view)
 		{

@@ -38,6 +38,7 @@
 #include "../uidescription/editing/uieditmenucontroller.h"
 #include "../uidescription/uiviewfactory.h"
 #include "../uidescription/uiattributes.h"
+#include "../uidescription/detail/uiviewcreatorattributes.h"
 #include "base/source/updatehandler.h"
 #include "base/source/fstring.h"
 #include "base/source/timer.h"
@@ -462,7 +463,7 @@ void VST3Editor::init ()
 		else
 		{
 			UIAttributes* attr = new UIAttributes ();
-			attr->setAttribute ("class", "CViewContainer");
+			attr->setAttribute (UIViewCreator::kAttrClass, "CViewContainer");
 			attr->setAttribute ("size", "300, 300");
 			description->addNewTemplate (viewName.c_str (), attr);
 			rect.right = 300;
@@ -476,7 +477,7 @@ void VST3Editor::init ()
 	else
 	{
 		UIAttributes* attr = new UIAttributes ();
-		attr->setAttribute ("class", "CViewContainer");
+		attr->setAttribute (UIViewCreator::kAttrClass, "CViewContainer");
 		attr->setAttribute ("size", "300, 300");
 		description->addNewTemplate (viewName.c_str (), attr);
 		rect.right = 300;

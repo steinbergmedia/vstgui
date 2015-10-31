@@ -77,7 +77,7 @@ public:
 	LineJoin getLineJoin () const { return join; }
 	CCoord getDashPhase () const { return dashPhase; }
 	uint32_t getDashCount () const { return static_cast<uint32_t> (dashLengths.size ()); }
-	const CCoord* getDashLengths () const { return &dashLengths[0]; }
+	VSTGUI_DEPRECATED (const CCoord* getDashLengths () const { return &dashLengths[0]; })
 	CoordVector& getDashLengths () { return dashLengths; }
 
 	void setLineCap (LineCap newCap) { cap = newCap; }

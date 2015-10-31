@@ -191,7 +191,18 @@ public:
 		printf ("%s", testName.c_str());
 		intend++;
 		start = system_clock::now ();
-		bool result = f (this);
+		bool result;
+		try {
+			result = f (this);
+		} catch (const error& exc)
+		{
+			result = false;
+			print ("%s", exc.what () ? exc.what () : "unknown");
+		} catch (const std::exception& exc)
+		{
+			result = false;
+			printf ("Exception: %s", exc.what () ? exc.what () : "unknown");
+		}
 		end = system_clock::now ();
 		intend--;
 		printf (" [%s] -> %lldµs\n", result ? "OK" : "Failed", duration_cast<microseconds> (end-start).count ());

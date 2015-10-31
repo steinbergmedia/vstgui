@@ -49,7 +49,7 @@ TESTCASE(CColorTest,
 	
 	TEST(luma,
 		CColor c (30, 50, 80, 255);
-		EXPECT (c.getLuma () == 47);
+		EXPECT(c.getLuma () == 47);
 	);
 
 	TEST(lightness,

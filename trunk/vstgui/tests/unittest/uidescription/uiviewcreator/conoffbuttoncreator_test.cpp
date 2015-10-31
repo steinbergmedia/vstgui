@@ -32,76 +32,30 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#include "../unittests.h"
-#include "../../../lib/cstring.h"
+#include "../../unittests.h"
+#include "../../../../uidescription/uiviewfactory.h"
+#include "../../../../uidescription/uiattributes.h"
+#include "../../../../uidescription/detail/uiviewcreatorattributes.h"
+#include "../../../../lib/controls/cbuttons.h"
+#include "../../../../lib/cstring.h"
 
 namespace VSTGUI {
+using namespace UIViewCreator;
 
-TESTCASE(UTF8StringViewTest,
-	static UTF8StringPtr asciiStr = "This is a simple ASCII String";
-	static UTF8StringPtr utf8Str = u8"インターネットをもっと快適に。";
+TESTCASE(COnOffButtonCreatorTest,
 
-	TEST(calculateASCIICharacterCount,
-		UTF8StringView str (asciiStr);
-		EXPECT(str.calculateCharacterCount () == 29);
-	);
-
-	TEST(calculateUTF8CharacterCount,
-		UTF8StringView str (utf8Str);
-		EXPECT(str.calculateCharacterCount () == 15);
-		UTF8StringView str2 (u8"Äॴ𪀚");
-		EXPECT(str2.calculateCharacterCount () == 3);
-		EXPECT(str2.calculateByteCount () == 10);
-	);
-
-	TEST(calculateEmptyCharacterCount,
-		UTF8StringView str (nullptr);
-		EXPECT(str.calculateCharacterCount () == 0);
-	);
-
-	TEST(calculateASCIIByteCount,
-		UTF8StringView str (asciiStr);
-		EXPECT(str.calculateByteCount () == 30);
-	);
-
-	TEST(calculateUTF8ByteCount,
-		UTF8StringView str (utf8Str);
-		EXPECT(str.calculateByteCount () == 46);
-	);
-	
-	TEST(contains,
-		UTF8StringView str (asciiStr);
-		EXPECT(str.contains ("simple") == true);
-		EXPECT(str.contains ("not") == false);
-	);
-
-	TEST(endsWith,
-		UTF8StringView str (asciiStr);
-		EXPECT(str.endsWith ("String") == true);
-		EXPECT(str.endsWith ("This") == false);
-		EXPECT(str.endsWith ("This is a simple ASCII String which is longer") == false);
-	);
-	
-	TEST(doubleConversion,
-		UTF8StringView str ("32.56789");
-		double value = str.toDouble ();
-		EXPECT(value == 32.56789);
-	);
-
-	TEST(floatConversion,
-		UTF8StringView str ("32.56789");
-		float value = str.toFloat ();
-		EXPECT(value == 32.56789f);
-	);
-
-	TEST(compare,
-		std::string test ("This is a simple ASCII String");
-		UTF8StringView str1 (test.c_str ());
-		UTF8StringView str2 (asciiStr);
-		EXPECT(str1 == str2);
-		UTF8StringView str3 (utf8Str);
-		EXPECT(str1 != str3);
+	TEST(create,
+		UIViewFactory factory;
+		UIAttributes a;
+		a.setAttribute (kAttrClass, kCOnOffButton);
+		
+		auto view = owned (factory.createView (a, nullptr));
+		auto control = view.cast<COnOffButton> ();
+		EXPECT(control);
+		UIAttributes a2;
+		EXPECT(factory.getAttributesForView (view, nullptr, a2));
 	);
 
 );
-}
+
+} // VSTGUI

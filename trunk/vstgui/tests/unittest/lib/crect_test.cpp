@@ -116,16 +116,16 @@ TESTCASE(CRectTest,
 
 	TEST(setWidth,
 		CRect r (0., 0., 0., 0.);
-		EXPECT (r.getWidth () == 0.);
+		EXPECT(r.getWidth () == 0.);
 		r.setWidth (100.);
-		EXPECT (r.getWidth () == 100.);
+		EXPECT(r.getWidth () == 100.);
 	);
 
 	TEST(setWidth,
 		CRect r (0., 0., 0., 0.);
-		EXPECT (r.getHeight () == 0.);
+		EXPECT(r.getHeight () == 0.);
 		r.setHeight (100.);
-		EXPECT (r.getHeight () == 100.);
+		EXPECT(r.getHeight () == 100.);
 	);
 
 	TEST(offset,

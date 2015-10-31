@@ -78,6 +78,10 @@ public:
 	bool mouseDownCalled {false};
 	bool mouseMovedCalled {false};
 	bool mouseUpCalled {false};
+	bool onDragEnterCalled {false};
+	bool onDragLeaveCalled {false};
+	bool onDragMoveCalled {false};
+	bool onWheelCalled {false};
 
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override
 	{
@@ -97,7 +101,31 @@ public:
 		return kMouseEventHandled;
 	}
 
-};
+	void onDragEnter (IDataPackage* drag, const CPoint& where) override
+	{
+		onDragEnterCalled = true;
+		CView::onDragEnter (drag, where);
+	}
+
+	void onDragLeave (IDataPackage* drag, const CPoint& where) override
+	{
+		onDragLeaveCalled = true;
+		CView::onDragLeave (drag, where);
+	}
+
+	void onDragMove (IDataPackage* drag, const CPoint& where) override
+	{
+		onDragMoveCalled = true;
+		CView::onDragMove (drag, where);
+	}
+
+	bool onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const CButtonState &buttons) override
+	{
+		onWheelCalled = true;
+		return true;
+	}
+	
+ };
 
 } // anonymous
 
@@ -122,9 +150,10 @@ TESTCASE(CViewContainerTest,
 		container->addView (view2);
 		container->addView (view3);
 		EXPECT(container->changeViewZOrder (view3, 1));
-		EXPECT(container->getView (0) == view1)
-		EXPECT(container->getView (1) == view3)
-		EXPECT(container->getView (2) == view2)
+		EXPECT(container->getView (0) == view1);
+		EXPECT(container->getView (1) == view3);
+		EXPECT(container->getView (2) == view2);
+		EXPECT(container->getView (3) == nullptr);
 		EXPECT(container->changeViewZOrder (view3, 4) == false);
 	);
 
@@ -135,8 +164,8 @@ TESTCASE(CViewContainerTest,
 		EXPECT(container->addView (view));
 		EXPECT(container->addView (view2));
 		
-		EXPECT (container->isChild (view))
-		EXPECT (container->isChild (view2))
+		EXPECT(container->isChild (view));
+		EXPECT(container->isChild (view2));
 	);
 
 	TEST(addView2,
@@ -167,8 +196,8 @@ TESTCASE(CViewContainerTest,
 		EXPECT(container->addView (view));
 		EXPECT(container->addView (view2, view));
 		
-		EXPECT (container->getView (0) == view2)
-		EXPECT (container->getView (1) == view)
+		EXPECT(container->getView (0) == view2)
+		EXPECT(container->getView (1) == view)
 	);
 
 	TEST(removeView,
@@ -179,8 +208,8 @@ TESTCASE(CViewContainerTest,
 		container->addView (view2);
 		container->removeView (view, false);
 		
-		EXPECT (container->isChild (view) == false)
-		EXPECT (container->isChild (view2))
+		EXPECT(container->isChild (view) == false)
+		EXPECT(container->isChild (view2))
 	);
 
 	TEST(removeAllViews,
@@ -191,9 +220,9 @@ TESTCASE(CViewContainerTest,
 		container->addView (view2);
 		container->removeAll (false);
 		
-		EXPECT (container->isChild (view) == false)
-		EXPECT (container->isChild (view2) == false)
-		EXPECT (container->hasChildren () == false)
+		EXPECT(container->isChild (view) == false)
+		EXPECT(container->isChild (view2) == false)
+		EXPECT(container->hasChildren () == false)
 	);
 	
 	TEST(advanceNextFocusView,
@@ -212,12 +241,12 @@ TESTCASE(CViewContainerTest,
 		container->remember ();
 		frame->attached (frame);
 
-		EXPECT (container->advanceNextFocusView (0, true) == true)
-		EXPECT (frame->getFocusView () == view3)
-		EXPECT (container->advanceNextFocusView (view3) == false)
+		EXPECT(container->advanceNextFocusView (0, true) == true)
+		EXPECT(frame->getFocusView () == view3)
+		EXPECT(container->advanceNextFocusView (view3) == false)
 		frame->setFocusView (0);
-		EXPECT (container->advanceNextFocusView (0) == true)
-		EXPECT (frame->getFocusView () == view1)
+		EXPECT(container->advanceNextFocusView (0) == true)
+		EXPECT(frame->getFocusView () == view1)
 		frame->close ();
 	);
 
@@ -383,16 +412,66 @@ TESTCASE(CViewContainerTest,
 		container->addView (v1);
 		container->addView (v2);
 		
-		CPoint p1 (10, 10);
-		EXPECT(container->onMouseDown (p1, kLButton) == kMouseEventHandled);
+		CPoint p (10, 10);
+		EXPECT(container->onMouseDown (p, kLButton) == kMouseEventHandled);
 		EXPECT(v1->mouseDownCalled);
 		EXPECT(v2->mouseDownCalled == false);
-		EXPECT(container->onMouseMoved (p1, kLButton) == kMouseEventHandled);
+		EXPECT(container->onMouseMoved (p, kLButton) == kMouseEventHandled);
 		EXPECT(v1->mouseMovedCalled);
 		EXPECT(v2->mouseMovedCalled == false);
-		EXPECT(container->onMouseUp (p1, kLButton) == kMouseEventHandled);
+		EXPECT(container->onMouseUp (p, kLButton) == kMouseEventHandled);
 		EXPECT(v1->mouseUpCalled);
 		EXPECT(v2->mouseUpCalled == false);
+		
+		p (60, 10);
+		EXPECT(container->onWheel (p, 0.5f, 0));
+		EXPECT(v1->onWheelCalled == false);
+		EXPECT(v2->onWheelCalled);
+	);
+
+	TEST(dragEvents,
+		auto v1 = new MouseEventCheckView ();
+		auto v2 = new MouseEventCheckView ();
+		CRect r1 (0, 0, 50, 50);
+		CRect r2 (50, 0, 100, 50);
+		v1->setViewSize (r1);
+		v1->setMouseableArea (r1);
+		v2->setViewSize (r2);
+		v2->setMouseableArea (r2);
+		container->addView (v1);
+		container->addView (v2);
+
+		CPoint p (10, 10);
+		container->onDragEnter (nullptr, p);
+		EXPECT(v1->onDragEnterCalled);
+		EXPECT(v2->onDragEnterCalled == false);
+		container->onDragMove (nullptr, p);
+		EXPECT(v1->onDragMoveCalled);
+		EXPECT(v2->onDragMoveCalled == false);
+		container->onDragLeave (nullptr, p);
+		EXPECT(v1->onDragLeaveCalled);
+		EXPECT(v2->onDragLeaveCalled == false);
+	);
+
+	TEST(dragMoveBetweenTwoViews,
+		auto v1 = new MouseEventCheckView ();
+		auto v2 = new MouseEventCheckView ();
+		CRect r1 (0, 0, 50, 50);
+		CRect r2 (50, 0, 100, 50);
+		v1->setViewSize (r1);
+		v1->setMouseableArea (r1);
+		v2->setViewSize (r2);
+		v2->setMouseableArea (r2);
+		container->addView (v1);
+		container->addView (v2);
+		CPoint p (10, 10);
+		container->onDragEnter (nullptr, p);
+		EXPECT(v1->onDragEnterCalled);
+		EXPECT(v2->onDragEnterCalled == false);
+		p (60, 10);
+		container->onDragMove (nullptr, p);
+		EXPECT(v1->onDragLeaveCalled);
+		EXPECT(v2->onDragEnterCalled);
 	);
 
 	TEST(mouseDownOnTransparentViewWithoutMouseSupportHidingSubviewWithMouseSupport,

@@ -35,6 +35,7 @@
 #include "uiviewfactory.h"
 #include "uiattributes.h"
 #include "../lib/cview.h"
+#include "detail/uiviewcreatorattributes.h"
 #include <map>
 
 namespace VSTGUI {
@@ -184,7 +185,7 @@ CView* UIViewFactory::createViewByName (const std::string* className, const UIAt
 //-----------------------------------------------------------------------------
 CView* UIViewFactory::createView (const UIAttributes& attributes, const IUIDescription* description) const
 {
-	const std::string* className = attributes.getAttributeValue ("class");
+	const std::string* className = attributes.getAttributeValue (UIViewCreator::kAttrClass);
 	if (className)
 		return createViewByName (className, attributes, description);
 	std::string viewContainerName ("CViewContainer");
@@ -356,7 +357,7 @@ bool UIViewFactory::getAttributesForView (CView* view, const IUIDescription* des
 				attr.setAttribute (*it, value);
 			it++;
 		}
-		attr.setAttribute ("class", getViewName (view));
+		attr.setAttribute (UIViewCreator::kAttrClass, getViewName (view));
 		result = true;
 	}
 	return result;
@@ -410,14 +411,18 @@ size_t UIViewFactory::createHash (const std::string& str)
 }
 
 //-----------------------------------------------------------------------------
-void UIViewFactory::rememberAttribute (CView* view, IdStringPtr attrName, const std::string& value)
+void UIViewFactory::rememberAttribute (CView* view, IdStringPtr attrName, const std::string& value) const
 {
+#if ENABLE_UNIT_TESTS
+	if (disableRememberAttributes)
+		return;
+#endif
 	size_t hash = createHash (attrName);
 	view->setAttribute (hash, static_cast<uint32_t> (value.size () + 1), value.c_str ());
 }
 
 //-----------------------------------------------------------------------------
-bool UIViewFactory::getRememberedAttribute (CView* view, IdStringPtr attrName, std::string& value)
+bool UIViewFactory::getRememberedAttribute (CView* view, IdStringPtr attrName, std::string& value) const
 {
 	bool result = false;
 	size_t hash = createHash (attrName);

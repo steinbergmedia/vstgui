@@ -132,11 +132,11 @@ TESTCASE(CViewTest,
 
 	TEST(mouseEnabledState,
 		View v;
-		EXPECT (v.getMouseEnabled () == true);
+		EXPECT(v.getMouseEnabled () == true);
 		v.setMouseEnabled (false);
-		EXPECT (v.getMouseEnabled () == false);
+		EXPECT(v.getMouseEnabled () == false);
 		v.setMouseEnabled (true);
-		EXPECT (v.getMouseEnabled () == true);
+		EXPECT(v.getMouseEnabled () == true);
 	);
 
 	TEST(autosizeFlags,
@@ -155,6 +155,8 @@ TESTCASE(CViewTest,
 		EXPECT(v.getAttribute (0, 10, outData, outSize) == false);
 		EXPECT(v.removeAttribute (0) == false);
 		uint64_t myAttr = 500;
+		EXPECT(v.setAttribute (0, 0, &myAttr) == false);
+		EXPECT(v.setAttribute (0, sizeof(myAttr), nullptr) == false);
 		EXPECT(v.setAttribute ('myAt', sizeof(myAttr), &myAttr) == true);
 		myAttr = 10;
 		EXPECT(v.getAttributeSize ('myAt', outSize) == true);
@@ -168,6 +170,23 @@ TESTCASE(CViewTest,
 		EXPECT(myAttr == 100);
 		EXPECT(v.removeAttribute ('myAt') == true);
 		EXPECT(v.getAttribute ('myAt', sizeof(myAttr), &myAttr, outSize) == false);
+	);
+
+	TEST(resizeAttribute,
+		View v;
+		uint32_t outSize;
+		uint8_t firstData = 8;
+		EXPECT(v.setAttribute(0, sizeof(firstData), &firstData));
+		firstData = 0;
+		EXPECT(v.getAttribute (0, sizeof(firstData), &firstData, outSize));
+		EXPECT(firstData == 8);
+		uint32_t secondData = 32;
+		EXPECT(v.setAttribute(0, sizeof(secondData), &secondData));
+		secondData = 0;
+		EXPECT(v.getAttribute (0, sizeof(firstData), &firstData, outSize) == false);
+		EXPECT(v.getAttribute (0, sizeof(secondData), &secondData, outSize));
+		EXPECT(secondData == 32);
+		
 	);
 
 	TEST(viewListener,
@@ -185,12 +204,12 @@ TESTCASE(CViewTest,
 			container2->removeView (v);
 			container2->removed (container1);
 		}
-		EXPECT (listener.sizeChangedCalled);
-		EXPECT (listener.attachedCalled);
-		EXPECT (listener.removedCalled);
-		EXPECT (listener.tookFocusCalled);
-		EXPECT (listener.lostFocusCalled);
-		EXPECT (listener.willDeleteCalled);
+		EXPECT(listener.sizeChangedCalled);
+		EXPECT(listener.attachedCalled);
+		EXPECT(listener.removedCalled);
+		EXPECT(listener.tookFocusCalled);
+		EXPECT(listener.lostFocusCalled);
+		EXPECT(listener.willDeleteCalled);
 	);
 	
 	TEST(coordCalculations,
@@ -201,7 +220,7 @@ TESTCASE(CViewTest,
 		container->addView (v);
 		CPoint p (0, 0);
 		v->localToFrame (p);
-		EXPECT (p.x == 50 && p.y == 50);
+		EXPECT(p.x == 50 && p.y == 50);
 		p (52, 53);
 		v->frameToLocal (p);
 		EXPECT(p.x == 2 && p.y == 3);

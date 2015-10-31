@@ -257,6 +257,7 @@ public:
 */
 
 #include "iviewfactory.h"
+#include "detail/uiviewcreatorattributes.h"
 #include "uiviewcreator.h"
 #include "uiviewswitchcontainer.h"
 #include "uiattributes.h"
@@ -400,44 +401,11 @@ static void addGradientToUIDescription (const IUIDescription* description, CGrad
 static bool getStandardAttributeListValues (const std::string& attributeName, std::list<const std::string*>& values);
 
 //-----------------------------------------------------------------------------
-// attributes used in more than one view creator
-//-----------------------------------------------------------------------------
-static const std::string kAttrTitle = "title";
-static const std::string kAttrFont = "font";
-static const std::string kAttrFontColor = "font-color";
-static const std::string kAttrFrameColor = "frame-color";
-static const std::string kAttrTextAlignment = "text-alignment";
-static const std::string kAttrRoundRectRadius = "round-rect-radius";
-static const std::string kAttrFrameWidth = "frame-width";
-static const std::string kAttrGradientStartColor = "gradient-start-color";
-static const std::string kAttrGradientEndColor = "gradient-end-color";
-static const std::string kAttrZoomFactor = "zoom-factor";
-static const std::string kAttrHandleBitmap = "handle-bitmap";
-static const std::string kAttrOrientation = "orientation";
-static const std::string kAttrAnimationTime = "animation-time";
-static const std::string kAttrGradient = "gradient";
-
-//-----------------------------------------------------------------------------
-// CViewCreator attributes
-//-----------------------------------------------------------------------------
-static const std::string kAttrOrigin = "origin";
-static const std::string kAttrSize = "size";
-static const std::string kAttrTransparent = "transparent";
-static const std::string kAttrMouseEnabled = "mouse-enabled";
-static const std::string kAttrBitmap = "bitmap";
-static const std::string kAttrDisabledBitmap = "disabled-bitmap";
-static const std::string kAttrAutosize = "autosize";
-static const std::string kAttrTooltip = "tooltip";
-static const std::string kAttrCustomViewName = IUIDescription::kCustomViewName;
-static const std::string kAttrSubController = "sub-controller";
-static const std::string kAttrOpacity = "opacity";
-
-//-----------------------------------------------------------------------------
 class CViewCreator : public IViewCreator
 {
 public:
 	CViewCreator () { UIViewFactory::registerViewCreator (*this); }
-	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CView"; }
+	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return kCView; }
 	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return 0; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD { return new CView (CRect (0, 0, 0, 0)); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD
@@ -654,18 +622,12 @@ private:
 CViewCreator __gCViewCreator;
 
 //-----------------------------------------------------------------------------
-// CViewContainerCreator attributes
-//-----------------------------------------------------------------------------
-static const std::string kAttrBackgroundColor = "background-color";
-static const std::string kAttrBackgroundColorDrawStyle = "background-color-draw-style";
-
-//-----------------------------------------------------------------------------
 class CViewContainerCreator : public IViewCreator
 {
 public:
 	CViewContainerCreator () { UIViewFactory::registerViewCreator (*this); }
-	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CViewContainer"; }
-	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CView"; }
+	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return kCViewContainer; }
+	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return kCView; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD { return new CViewContainer (CRect (0, 0, 100, 100)); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD
 	{
@@ -745,17 +707,12 @@ public:
 CViewContainerCreator __CViewContainerCreator;
 
 //-----------------------------------------------------------------------------
-// CLayeredViewContainerCreator attributes
-//-----------------------------------------------------------------------------
-static const std::string kAttrZIndex = "z-index";
-
-//-----------------------------------------------------------------------------
 class CLayeredViewContainerCreator : public IViewCreator
 {
 public:
 	CLayeredViewContainerCreator () { UIViewFactory::registerViewCreator (*this); }
-	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CLayeredViewContainer"; }
-	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CViewContainer"; }
+	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return kCLayeredViewContainer; }
+	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return kCViewContainer; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD { return new CLayeredViewContainer (CRect (0, 0, 100, 100)); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD
 	{
@@ -793,22 +750,12 @@ public:
 CLayeredViewContainerCreator __CLayeredViewContainerCreator;
 
 //-----------------------------------------------------------------------------
-// CRowColumnViewCreator attributes
-//-----------------------------------------------------------------------------
-static const std::string kAttrRowStyle = "row-style";
-static const std::string kAttrSpacing = "spacing";
-static const std::string kAttrMargin = "margin";
-static const std::string kAttrAnimateViewResizing = "animate-view-resizing";
-static const std::string kAttrEqualSizeLayout = "equal-size-layout";
-static const std::string kAttrViewResizeAnimationTime = "view-resize-animation-time";
-
-//-----------------------------------------------------------------------------
 class CRowColumnViewCreator : public IViewCreator
 {
 public:
 	CRowColumnViewCreator () { UIViewFactory::registerViewCreator (*this); }
-	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CRowColumnView"; }
-	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CViewContainer"; }
+	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return kCRowColumnView; }
+	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return kCViewContainer; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD { return new CRowColumnView (CRect (0, 0, 100, 100)); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD
 	{
@@ -944,28 +891,12 @@ public:
 CRowColumnViewCreator __CRowColumnViewCreator;
 
 //-----------------------------------------------------------------------------
-// CScrollViewCreator attributes
-//-----------------------------------------------------------------------------
-static const std::string kAttrContainerSize = "container-size";
-static const std::string kAttrHorizontalScrollbar = "horizontal-scrollbar";
-static const std::string kAttrVerticalScrollbar = "vertical-scrollbar";
-static const std::string kAttrAutoDragScrolling = "auto-drag-scrolling";
-static const std::string kAttrBordered = "bordered";
-static const std::string kAttrOverlayScrollbars = "overlay-scrollbars";
-static const std::string kAttrFollowFocusView = "follow-focus-view";
-static const std::string kAttrAutoHideScrollbars = "auto-hide-scrollbars";
-static const std::string kAttrScrollbarBackgroundColor = "scrollbar-background-color";
-static const std::string kAttrScrollbarFrameColor = "scrollbar-frame-color";
-static const std::string kAttrScrollbarScrollerColor = "scrollbar-scroller-color";
-static const std::string kAttrScrollbarWidth = "scrollbar-width";
-
-//-----------------------------------------------------------------------------
 class CScrollViewCreator : public IViewCreator
 {
 public:
 	CScrollViewCreator () { UIViewFactory::registerViewCreator (*this); }
-	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CScrollView"; }
-	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CViewContainer"; }
+	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return kCScrollView; }
+	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return kCViewContainer; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD { return new CScrollView (CRect (0, 0, 100, 100), CRect (0, 0, 200, 200), CScrollView::kHorizontalScrollbar|CScrollView::kVerticalScrollbar); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD
 	{
@@ -1130,31 +1061,21 @@ public:
 CScrollViewCreator __CScrollViewCreator;
 
 //-----------------------------------------------------------------------------
-// CControlCreator attributes
-//-----------------------------------------------------------------------------
-static const std::string kAttrControlTag = "control-tag";
-static const std::string kAttrDefaultValue = "default-value";
-static const std::string kAttrMinValue = "min-value";
-static const std::string kAttrMaxValue = "max-value";
-static const std::string kAttrWheelIncValue = "wheel-inc-value";
-static const std::string kAttrBackgroundOffset = "background-offset";
-
-//-----------------------------------------------------------------------------
 class CControlCreator : public IViewCreator
 {
 protected:
 	class DummyControl : public CControl
 	{
 	public:
-		DummyControl () : CControl (CRect (0, 0, 0, 0)) {}
+		DummyControl () : CControl (CRect (0, 0, 0, 0), nullptr, -1) {}
 		void draw (CDrawContext* pContext) VSTGUI_OVERRIDE_VMETHOD { CView::draw (pContext); }
 		
 		CLASS_METHODS(DummyControl, CControl)
 	};
 public:
 	CControlCreator () { UIViewFactory::registerViewCreator (*this); }
-	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CControl"; }
-	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CView"; }
+	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return kCControl; }
+	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return kCView; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD { return new DummyControl (); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD
 	{
@@ -1280,8 +1201,8 @@ class COnOffButtonCreator : public IViewCreator
 {
 public:
 	COnOffButtonCreator () { UIViewFactory::registerViewCreator (*this); }
-	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return "COnOffButton"; }
-	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CControl"; }
+	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return kCOnOffButton; }
+	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return kCControl; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD { return new COnOffButton (CRect (0, 0, 0, 0), 0, -1, 0); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD
 	{
@@ -1304,21 +1225,12 @@ public:
 COnOffButtonCreator __gCOnOffButtonCreator;
 
 //-----------------------------------------------------------------------------
-// CCheckBoxCreator attributes
-//-----------------------------------------------------------------------------
-static const std::string kAttrBoxframeColor = "boxframe-color";
-static const std::string kAttrBoxfillColor = "boxfill-color";
-static const std::string kAttrCheckmarkColor = "checkmark-color";
-static const std::string kAttrDrawCrossbox = "draw-crossbox";
-static const std::string kAttrAutosizeToFit = "autosize-to-fit";
-
-//-----------------------------------------------------------------------------
 class CCheckBoxCreator : public IViewCreator
 {
 public:
 	CCheckBoxCreator () { UIViewFactory::registerViewCreator (*this); }
-	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CCheckBox"; }
-	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CControl"; }
+	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return kCCheckBox; }
+	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return kCControl; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD { return new CCheckBox (CRect (0, 0, 100, 20), 0, -1, "Title"); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD
 	{
@@ -1449,29 +1361,12 @@ public:
 CCheckBoxCreator __gCCheckBoxCreator;
 
 //-----------------------------------------------------------------------------
-// CParamDisplayCreator attributes
-//-----------------------------------------------------------------------------
-static const std::string kAttrBackColor = "back-color";
-static const std::string kAttrShadowColor = "shadow-color";
-static const std::string kAttrFontAntialias = "font-antialias";
-static const std::string kAttrStyle3DIn = "style-3D-in";
-static const std::string kAttrStyle3DOut = "style-3D-out";
-static const std::string kAttrStyleNoFrame = "style-no-frame";
-static const std::string kAttrStyleNoText = "style-no-text";
-static const std::string kAttrStyleNoDraw = "style-no-draw";
-static const std::string kAttrStyleShadowText = "style-shadow-text";
-static const std::string kAttrStyleRoundRect = "style-round-rect";
-static const std::string kAttrTextInset = "text-inset";
-static const std::string kAttrValuePrecision = "value-precision";
-static const std::string kAttrTextRotation = "text-rotation";
-
-//-----------------------------------------------------------------------------
 class CParamDisplayCreator : public IViewCreator
 {
 public:
 	CParamDisplayCreator () { UIViewFactory::registerViewCreator (*this); }
-	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CParamDisplay"; }
-	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CControl"; }
+	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return kCParamDisplay; }
+	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return kCControl; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD { return new CParamDisplay (CRect (0, 0, 0, 0)); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD
 	{
@@ -1717,18 +1612,12 @@ public:
 CParamDisplayCreator __gCParamDisplayCreator;
 
 //-----------------------------------------------------------------------------
-// COptionMenuCreator attributes
-//-----------------------------------------------------------------------------
-static const std::string kAttrMenuPopupStyle = "menu-popup-style";
-static const std::string kAttrMenuCheckStyle = "menu-check-style";
-
-//-----------------------------------------------------------------------------
 class COptionMenuCreator : public IViewCreator
 {
 public:
 	COptionMenuCreator () { UIViewFactory::registerViewCreator (*this); }
-	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return "COptionMenu"; }
-	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CParamDisplay"; }
+	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return kCOptionMenu; }
+	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return kCParamDisplay; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD { return new COptionMenu (); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD
 	{
@@ -1777,17 +1666,12 @@ public:
 COptionMenuCreator __gCOptionMenuCreator;
 
 //-----------------------------------------------------------------------------
-// CTextLabelCreator attributes
-//-----------------------------------------------------------------------------
-static const std::string kAttrTruncateMode = "truncate-mode";
-
-//-----------------------------------------------------------------------------
 class CTextLabelCreator : public IViewCreator
 {
 public:
 	CTextLabelCreator () { UIViewFactory::registerViewCreator (*this); }
-	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CTextLabel"; }
-	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CParamDisplay"; }
+	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return kCTextLabel; }
+	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return kCParamDisplay; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD { return new CTextLabel (CRect (0, 0, 100, 20)); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD
 	{
@@ -1859,18 +1743,12 @@ public:
 CTextLabelCreator __gCTextLabelCreator;
 
 //-----------------------------------------------------------------------------
-// CTextEditCreator attributes
-//-----------------------------------------------------------------------------
-static const std::string kAttrImmediateTextChange = "immediate-text-change";
-static const std::string kAttrStyleDoubleClick = "style-doubleclick";
-
-//-----------------------------------------------------------------------------
 class CTextEditCreator : public IViewCreator
 {
 public:
 	CTextEditCreator () { UIViewFactory::registerViewCreator (*this); }
-	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CTextEdit"; }
-	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CTextLabel"; }
+	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return kCTextEdit; }
+	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return kCTextLabel; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD { return new CTextEdit (CRect (0, 0, 100, 20), 0, -1); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD
 	{
@@ -1923,28 +1801,12 @@ public:
 CTextEditCreator __gCTextEditCreator;
 
 //-----------------------------------------------------------------------------
-// CTextButtonCreator attributes
-//-----------------------------------------------------------------------------
-static const std::string kAttrTextColor = "text-color";
-static const std::string kAttrTextColorHighlighted = "text-color-highlighted";
-static const std::string kAttrGradientStartColorHighlighted = "gradient-start-color-highlighted";
-static const std::string kAttrGradientEndColorHighlighted = "gradient-end-color-highlighted";
-static const std::string kAttrFrameColorHighlighted = "frame-color-highlighted";
-static const std::string kAttrRoundRadius = "round-radius";
-static const std::string kAttrKickStyle = "kick-style";
-static const std::string kAttrIcon = "icon";
-static const std::string kAttrIconHighlighted = "icon-highlighted";
-static const std::string kAttrIconPosition = "icon-position";
-static const std::string kAttrIconTextMargin = "icon-text-margin";
-static const std::string kAttrGradientHighlighted = "gradient-highlighted";
-
-//-----------------------------------------------------------------------------
 class CTextButtonCreator : public IViewCreator
 {
 public:
 	CTextButtonCreator () { UIViewFactory::registerViewCreator (*this); }
-	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CTextButton"; }
-	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CControl"; }
+	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return kCTextButton; }
+	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return kCControl; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD
 	{
 		CTextButton* button = new CTextButton (CRect (0, 0, 100, 20), 0, -1, "");
@@ -2265,18 +2127,12 @@ public:
 CTextButtonCreator __gCTextButtonCreator;
 
 //-----------------------------------------------------------------------------
-// CSegmentButtonCreator attributes
-//-----------------------------------------------------------------------------
-static const std::string kAttrStyle = "style";
-static const std::string kAttrSegmentNames = "segment-names";
-
-//-----------------------------------------------------------------------------
 class CSegmentButtonCreator : public IViewCreator
 {
 public:
 	CSegmentButtonCreator () { UIViewFactory::registerViewCreator (*this); }
-	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CSegmentButton"; }
-	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CControl"; }
+	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return kCSegmentButton; }
+	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return kCControl; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD
 	{
 		CSegmentButton* button = new CSegmentButton (CRect (0, 0, 200, 20));
@@ -2531,30 +2387,12 @@ public:
 CSegmentButtonCreator __gCSegmentButtonCreator;
 
 //-----------------------------------------------------------------------------
-// CKnobCreator attributes
-//-----------------------------------------------------------------------------
-static const std::string kAttrAngleStart = "angle-start";
-static const std::string kAttrAngleRange = "angle-range";
-static const std::string kAttrValueInset = "value-inset";
-static const std::string kAttrCoronaInset = "corona-inset";
-static const std::string kAttrCoronaColor = "corona-color";
-static const std::string kAttrCoronaDrawing = "corona-drawing";
-static const std::string kAttrCoronaOutline = "corona-outline";
-static const std::string kAttrCoronaInverted = "corona-inverted";
-static const std::string kAttrCoronaFromCenter = "corona-from-center";
-static const std::string kAttrCoronaDashDot = "corona-dash-dot";
-static const std::string kAttrHandleColor = "handle-color";
-static const std::string kAttrHandleShadowColor = "handle-shadow-color";
-static const std::string kAttrHandleLineWidth = "handle-line-width";
-static const std::string kAttrCircleDrawing = "circle-drawing";
-
-//-----------------------------------------------------------------------------
 class CKnobCreator : public IViewCreator
 {
 public:
 	CKnobCreator () { UIViewFactory::registerViewCreator (*this); }
-	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CKnob"; }
-	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CControl"; }
+	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return kCKnob; }
+	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return kCControl; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD { return new CKnob (CRect (0, 0, 0, 0), 0, -1, 0, 0); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD
 	{
@@ -2760,12 +2598,6 @@ public:
 CKnobCreator __CKnobCreator;
 
 //-----------------------------------------------------------------------------
-// IMultiBitmapControlCreator attributes
-//-----------------------------------------------------------------------------
-static const std::string kAttrHeightOfOneImage = "height-of-one-image";
-static const std::string kAttrSubPixmaps = "sub-pixmaps";
-
-//-----------------------------------------------------------------------------
 class IMultiBitmapControlCreator : public IViewCreator
 {
 public:
@@ -2823,8 +2655,8 @@ class CAnimKnobCreator : public IMultiBitmapControlCreator
 {
 public:
 	CAnimKnobCreator () { UIViewFactory::registerViewCreator (*this); }
-	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CAnimKnob"; }
-	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CKnob"; }
+	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return kCAnimKnob; }
+	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return kCKnob; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD { return new CAnimKnob (CRect (0, 0, 0, 0), 0, -1, 0); }
 };
 CAnimKnobCreator __gCAnimKnobCreator;
@@ -2834,8 +2666,8 @@ class CVerticalSwitchCreator : public IMultiBitmapControlCreator
 {
 public:
 	CVerticalSwitchCreator () { UIViewFactory::registerViewCreator (*this); }
-	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CVerticalSwitch"; }
-	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CControl"; }
+	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return kCVerticalSwitch; }
+	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return kCControl; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD { return new CVerticalSwitch (CRect (0, 0, 0, 0), 0, -1, 0); }
 };
 CVerticalSwitchCreator __gCVerticalSwitchCreator;
@@ -2845,8 +2677,8 @@ class CHorizontalSwitchCreator : public IMultiBitmapControlCreator
 {
 public:
 	CHorizontalSwitchCreator () { UIViewFactory::registerViewCreator (*this); }
-	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CHorizontalSwitch"; }
-	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CControl"; }
+	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return kCHorizontalSwitch; }
+	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return kCControl; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD { return new CHorizontalSwitch (CRect (0, 0, 0, 0), 0, -1, 0); }
 };
 CHorizontalSwitchCreator __gCHorizontalSwitchCreator;
@@ -2856,8 +2688,8 @@ class CRockerSwitchCreator : public IMultiBitmapControlCreator
 {
 public:
 	CRockerSwitchCreator () { UIViewFactory::registerViewCreator (*this); }
-	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CRockerSwitch"; }
-	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CControl"; }
+	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return kCRockerSwitch; }
+	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return kCControl; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD { return new CRockerSwitch (CRect (0, 0, 0, 0), 0, -1, 0); }
 };
 CRockerSwitchCreator __gCRockerSwitchCreator;
@@ -2867,8 +2699,8 @@ class CMovieBitmapCreator : public IMultiBitmapControlCreator
 {
 public:
 	CMovieBitmapCreator () { UIViewFactory::registerViewCreator (*this); }
-	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CMovieBitmap"; }
-	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CControl"; }
+	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return kCMovieBitmap; }
+	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return kCControl; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD { return new CMovieBitmap (CRect (0, 0, 0, 0), 0, -1, 0); }
 };
 CMovieBitmapCreator __gCMovieBitmapCreator;
@@ -2878,8 +2710,8 @@ class CMovieButtonCreator : public IMultiBitmapControlCreator
 {
 public:
 	CMovieButtonCreator () { UIViewFactory::registerViewCreator (*this); }
-	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CMovieButton"; }
-	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CControl"; }
+	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return kCMovieButton; }
+	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return kCControl; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD { return new CMovieButton (CRect (0, 0, 0, 0), 0, -1, 0); }
 };
 CMovieButtonCreator __gCMovieButtonCreator;
@@ -2889,36 +2721,19 @@ class CKickButtonCreator : public IMultiBitmapControlCreator
 {
 public:
 	CKickButtonCreator () { UIViewFactory::registerViewCreator (*this); }
-	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CKickButton"; }
-	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CControl"; }
+	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return kCKickButton; }
+	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return kCControl; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD { return new CKickButton (CRect (0, 0, 0, 0), 0, -1, 0); }
 };
 CKickButtonCreator __gCKickButtonCreator;
-
-//-----------------------------------------------------------------------------
-// CSliderCreator attributes
-//-----------------------------------------------------------------------------
-static const std::string kAttrTransparentHandle = "transparent-handle";
-static const std::string kAttrMode = "mode";
-static const std::string kAttrHandleOffset = "handle-offset";
-static const std::string kAttrBitmapOffset = "bitmap-offset";
-static const std::string kAttrReverseOrientation = "reverse-orientation";
-static const std::string kAttrDrawFrame = "draw-frame";
-static const std::string kAttrDrawBack = "draw-back";
-static const std::string kAttrDrawValue = "draw-value";
-static const std::string kAttrDrawValueInverted = "draw-value-inverted";
-static const std::string kAttrDrawValueFromCenter = "draw-value-from-center";
-static const std::string kAttrDrawFrameColor = "draw-frame-color";
-static const std::string kAttrDrawBackColor = "draw-back-color";
-static const std::string kAttrDrawValueColor = "draw-value-color";
 
 //-----------------------------------------------------------------------------
 class CSliderCreator : public IViewCreator
 {
 public:
 	CSliderCreator () { UIViewFactory::registerViewCreator (*this); }
-	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CSlider"; }
-	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CControl"; }
+	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return kCSlider; }
+	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return kCControl; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD { return new CSlider (CRect (0, 0, 0, 0), 0, -1, 0, 0, 0, 0); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD
 	{
@@ -3214,19 +3029,12 @@ public:
 CSliderCreator __gCSliderCreator;
 
 //-----------------------------------------------------------------------------
-// CVuMeterCreator attributes
-//-----------------------------------------------------------------------------
-static const std::string kAttrOffBitmap = "off-bitmap";
-static const std::string kAttrNumLed = "num-led";
-static const std::string kAttrDecreaseStepValue = "decrease-step-value";
-
-//-----------------------------------------------------------------------------
 class CVuMeterCreator : public IViewCreator
 {
 public:
 	CVuMeterCreator () { UIViewFactory::registerViewCreator (*this); }
-	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CVuMeter"; }
-	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CControl"; }
+	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return kCVuMeter; }
+	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return kCControl; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD { return new CVuMeter (CRect (0, 0, 0, 0), 0, 0, 100); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD
 	{
@@ -3314,20 +3122,12 @@ public:
 CVuMeterCreator __gCVuMeterCreator;
 
 //-----------------------------------------------------------------------------
-// CAnimationSplashScreenCreator attributes
-//-----------------------------------------------------------------------------
-static const std::string kAttrSplashBitmap = "splash-bitmap";
-static const std::string kAttrSplashOrigin = "splash-origin";
-static const std::string kAttrSplashSize = "splash-size";
-static const std::string kAttrAnimationIndex = "animation-index";
-
-//-----------------------------------------------------------------------------
 class CAnimationSplashScreenCreator : public IViewCreator
 {
 public:
 	CAnimationSplashScreenCreator () { UIViewFactory::registerViewCreator (*this); }
-	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CAnimationSplashScreen"; }
-	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CControl"; }
+	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return kCAnimationSplashScreen; }
+	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return kCControl; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD { return new CAnimationSplashScreen (CRect (0, 0, 0, 0), -1, 0, 0); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD
 	{
@@ -3422,19 +3222,12 @@ public:
 CAnimationSplashScreenCreator __gCAnimationSplashScreenCreator;
 
 //-----------------------------------------------------------------------------
-// UIViewSwitchContainerCreator attributes
-//-----------------------------------------------------------------------------
-static const std::string kAttrTemplateNames = "template-names";
-static const std::string kAttrTemplateSwitchControl = "template-switch-control";
-static const std::string kAttrAnimationStyle = "animation-style";
-
-//-----------------------------------------------------------------------------
 class UIViewSwitchContainerCreator : public IViewCreator
 {
 public:
 	UIViewSwitchContainerCreator () { UIViewFactory::registerViewCreator (*this); }
-	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return "UIViewSwitchContainer"; }
-	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CViewContainer"; }
+	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return kUIViewSwitchContainer; }
+	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return kCViewContainer; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD
 	{
 		UIViewSwitchContainer* vsc = new UIViewSwitchContainer (CRect (0, 0, 100, 100));
@@ -3575,18 +3368,12 @@ public:
 UIViewSwitchContainerCreator __gUIViewSwitchContainerCreator;
 
 //-----------------------------------------------------------------------------
-// CSplitViewCreator attributes
-//-----------------------------------------------------------------------------
-static const std::string kAttrSeparatorWidth = "separator-width";
-static const std::string kAttrResizeMethod = "resize-method";
-
-//-----------------------------------------------------------------------------
 class CSplitViewCreator : public IViewCreator
 {
 public:
 	CSplitViewCreator () { UIViewFactory::registerViewCreator (*this); }
-	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CSplitView"; }
-	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CViewContainer"; }
+	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return kCSplitView; }
+	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return kCViewContainer; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD { return new CSplitView (CRect (0, 0, 100, 100)); }
 
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD
@@ -3716,19 +3503,12 @@ public:
 CSplitViewCreator __gCSplitViewCreator;
 
 //-----------------------------------------------------------------------------
-// CShadowViewContainerCreator attributes
-//-----------------------------------------------------------------------------
-static const std::string kAttrShadowIntensity = "shadow-intensity";
-static const std::string kAttrShadowBlurSize = "shadow-blur-size";
-static const std::string kAttrShadowOffset = "shadow-offset";
-
-//-----------------------------------------------------------------------------
 class CShadowViewContainerCreator : public IViewCreator
 {
 public:
 	CShadowViewContainerCreator () { UIViewFactory::registerViewCreator (*this); }
-	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CShadowViewContainer"; }
-	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CViewContainer"; }
+	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return kCShadowViewContainer; }
+	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return kCViewContainer; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD
 	{
 		return new CShadowViewContainer (CRect (0, 0, 200, 200));
@@ -3805,23 +3585,12 @@ public:
 CShadowViewContainerCreator __gCShadowViewContainerCreator;
 
 //-----------------------------------------------------------------------------
-// CGradientViewCreator attributes
-//-----------------------------------------------------------------------------
-static const std::string kAttrGradientAngle = "gradient-angle";
-static const std::string kAttrGradientStyle = "gradient-style";
-static const std::string kAttrGradientStartColorOffset = "gradient-start-color-offset";
-static const std::string kAttrGradientEndColorOffset = "gradient-end-color-offset";
-static const std::string kAttrDrawAntialiased = "draw-antialiased";
-static const std::string kAttrRadialCenter = "radial-center";
-static const std::string kAttrRadialRadius = "radial-radius";
-
-//-----------------------------------------------------------------------------
 class CGradientViewCreator : public IViewCreator
 {
 public:
 	CGradientViewCreator () { UIViewFactory::registerViewCreator (*this); }
-	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CGradientView"; }
-	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CView"; }
+	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return kCGradientView; }
+	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return kCView; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD
 	{
 		CGradientView* gradientView = new CGradientView (CRect (0, 0, 100, 100));
@@ -4011,8 +3780,8 @@ class CXYPadCreator : public IViewCreator
 {
 public:
 	CXYPadCreator () { UIViewFactory::registerViewCreator (*this); }
-	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CXYPad"; }
-	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return "CParamDisplay"; }
+	IdStringPtr getViewName () const VSTGUI_OVERRIDE_VMETHOD { return kCXYPad; }
+	IdStringPtr getBaseViewName () const VSTGUI_OVERRIDE_VMETHOD { return kCParamDisplay; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD { return new CXYPad (CRect (0, 0, 100, 20)); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD
 	{
