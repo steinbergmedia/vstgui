@@ -257,8 +257,10 @@ public:
 */
 
 #include "iviewfactory.h"
+#include "iviewcreator.h"
 #include "detail/uiviewcreatorattributes.h"
 #include "uiviewcreator.h"
+#include "uiviewfactory.h"
 #include "uiviewswitchcontainer.h"
 #include "uiattributes.h"
 #include "uidescription.h"

@@ -36,13 +36,12 @@
 #define __uiviewswitchcontainer__
 
 #include "../lib/cviewcontainer.h"
-#include "uiviewfactory.h"
+#include "../lib/vstguifwd.h"
+#include "uidescriptionfwd.h"
 #include <vector>
 
 namespace VSTGUI {
 class IViewSwitchController;
-class UIDescription;
-class CControl;
 
 //-----------------------------------------------------------------------------
 class UIViewSwitchContainer : public CViewContainer
@@ -103,7 +102,7 @@ protected:
 class UIDescriptionViewSwitchController : public CBaseObject, public IViewSwitchController
 {
 public:
-	UIDescriptionViewSwitchController (UIViewSwitchContainer* viewSwitch, const UIDescription* uiDescription, IController* uiController);
+	UIDescriptionViewSwitchController (UIViewSwitchContainer* viewSwitch, const IUIDescription* uiDescription, IController* uiController);
 
 	CView* createViewForIndex (int32_t index) VSTGUI_OVERRIDE_VMETHOD;
 	void switchContainerAttached () VSTGUI_OVERRIDE_VMETHOD;
@@ -117,7 +116,7 @@ public:
 	void setSwitchControlTag (int32_t tag) { switchControlTag = tag; }
 	int32_t getSwitchControlTag () const { return switchControlTag; }
 protected:
-	const UIDescription* uiDescription;
+	const IUIDescription* uiDescription;
 	IController* uiController;
 	int32_t switchControlTag;
 	int32_t currentIndex;

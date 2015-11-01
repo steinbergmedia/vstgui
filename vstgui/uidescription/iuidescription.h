@@ -51,6 +51,8 @@ class IUIDescription
 public:
 	virtual ~IUIDescription () {}
 
+	virtual CView* createView (UTF8StringPtr name, IController* controller) const = 0;
+
 	virtual CBitmap* getBitmap (UTF8StringPtr name) const = 0;
 	virtual CFontRef getFont (UTF8StringPtr name) const = 0;
 	virtual bool getColor (UTF8StringPtr name, CColor& color) const = 0;

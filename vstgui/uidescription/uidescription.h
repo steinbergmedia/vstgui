@@ -81,11 +81,11 @@ public:
 	UTF8StringPtr getFilePath () const { return filePath.c_str (); }
 	void setFilePath (UTF8StringPtr path);
 	
-	CView* createView (UTF8StringPtr name, IController* controller) const;
 	const UIAttributes* getViewAttributes (UTF8StringPtr name) const;
 
 	void setController (IController* controller) const;
 
+	CView* createView (UTF8StringPtr name, IController* controller) const VSTGUI_OVERRIDE_VMETHOD;
 	CBitmap* getBitmap (UTF8StringPtr name) const VSTGUI_OVERRIDE_VMETHOD;
 	CFontRef getFont (UTF8StringPtr name) const VSTGUI_OVERRIDE_VMETHOD;
 	bool getColor (UTF8StringPtr name, CColor& color) const VSTGUI_OVERRIDE_VMETHOD;
