@@ -36,42 +36,28 @@
 #include "../../../../uidescription/uiviewfactory.h"
 #include "../../../../uidescription/uiattributes.h"
 #include "../../../../uidescription/detail/uiviewcreatorattributes.h"
-#include "../../../../lib/cviewcontainer.h"
+#include "../../../../lib/controls/cxypad.h"
 #include "../../../../lib/cstring.h"
 #include "helpers.h"
 
 namespace VSTGUI {
 using namespace UIViewCreator;
 
-TESTCASE(CViewContainerCreatorTest,
+TESTCASE(CXYPadCreatorTest,
 
-	TEST(backgroundColor,
+	TEST(create,
 		DummyUIDescription uidesc;
-		testAttribute<CViewContainer>(kCViewContainer, kAttrBackgroundColor, kColorName, &uidesc, [&] (CViewContainer* v) {
-			return v->getBackgroundColor () == uidesc.color;
-		});
-		testAttribute<CViewContainer>(kCViewContainer, kAttrBackgroundColor, kColorName, &uidesc, [&] (CViewContainer* v) {
-			return v->getBackgroundColor () == uidesc.color;
-		}, true);
-	);
-	
-	TEST(backgroundColorDrawStyle,
-		DummyUIDescription uidesc;
-		testAttribute<CViewContainer>(kCViewContainer, kAttrBackgroundColorDrawStyle, "stroked", &uidesc, [] (CViewContainer* v) {
-			return v->getBackgroundColorDrawStyle () == kDrawStroked;
-		});
-		testAttribute<CViewContainer>(kCViewContainer, kAttrBackgroundColorDrawStyle, "filled", &uidesc, [] (CViewContainer* v) {
-			return v->getBackgroundColorDrawStyle () == kDrawFilled;
-		});
-		testAttribute<CViewContainer>(kCViewContainer, kAttrBackgroundColorDrawStyle, "filled and stroked", &uidesc, [] (CViewContainer* v) {
-			return v->getBackgroundColorDrawStyle () == kDrawFilledAndStroked;
-		});
+		UIViewFactory factory;
+		UIAttributes a;
+		a.setAttribute (kAttrClass, kCXYPad);
+		
+		auto view = owned (factory.createView (a, &uidesc));
+		auto control = view.cast<CXYPad> ();
+		EXPECT(control);
+		UIAttributes a2;
+		EXPECT(factory.getAttributesForView (view, &uidesc, a2));
 	);
 
-	TEST(backgroundColorDrawStyleValues,
-		DummyUIDescription uidesc;
-		testPossibleValues (kCViewContainer, kAttrBackgroundColorDrawStyle, &uidesc, {"stroked", "filled", "filled and stroked"});
-	);
 );
 
 } // VSTGUI

@@ -36,42 +36,51 @@
 #include "../../../../uidescription/uiviewfactory.h"
 #include "../../../../uidescription/uiattributes.h"
 #include "../../../../uidescription/detail/uiviewcreatorattributes.h"
-#include "../../../../lib/cviewcontainer.h"
+#include "../../../../lib/controls/cvumeter.h"
 #include "../../../../lib/cstring.h"
 #include "helpers.h"
 
 namespace VSTGUI {
 using namespace UIViewCreator;
 
-TESTCASE(CViewContainerCreatorTest,
+TESTCASE(CVuMeterCreatorTest,
 
-	TEST(backgroundColor,
+	TEST(offBitmap,
 		DummyUIDescription uidesc;
-		testAttribute<CViewContainer>(kCViewContainer, kAttrBackgroundColor, kColorName, &uidesc, [&] (CViewContainer* v) {
-			return v->getBackgroundColor () == uidesc.color;
-		});
-		testAttribute<CViewContainer>(kCViewContainer, kAttrBackgroundColor, kColorName, &uidesc, [&] (CViewContainer* v) {
-			return v->getBackgroundColor () == uidesc.color;
-		}, true);
-	);
-	
-	TEST(backgroundColorDrawStyle,
-		DummyUIDescription uidesc;
-		testAttribute<CViewContainer>(kCViewContainer, kAttrBackgroundColorDrawStyle, "stroked", &uidesc, [] (CViewContainer* v) {
-			return v->getBackgroundColorDrawStyle () == kDrawStroked;
-		});
-		testAttribute<CViewContainer>(kCViewContainer, kAttrBackgroundColorDrawStyle, "filled", &uidesc, [] (CViewContainer* v) {
-			return v->getBackgroundColorDrawStyle () == kDrawFilled;
-		});
-		testAttribute<CViewContainer>(kCViewContainer, kAttrBackgroundColorDrawStyle, "filled and stroked", &uidesc, [] (CViewContainer* v) {
-			return v->getBackgroundColorDrawStyle () == kDrawFilledAndStroked;
+		testAttribute<CVuMeter>(kCVuMeter, kAttrOffBitmap, kBitmapName, &uidesc, [&] (CVuMeter* v) {
+			return v->getOffBitmap() == uidesc.bitmap;
 		});
 	);
 
-	TEST(backgroundColorDrawStyleValues,
+	TEST(orientation,
 		DummyUIDescription uidesc;
-		testPossibleValues (kCViewContainer, kAttrBackgroundColorDrawStyle, &uidesc, {"stroked", "filled", "filled and stroked"});
+		testAttribute<CVuMeter>(kCVuMeter, kAttrOrientation, "horizontal", &uidesc, [&] (CVuMeter* v) {
+			return v->getStyle() == kHorizontal;
+		});
+		testAttribute<CVuMeter>(kCVuMeter, kAttrOrientation, "vertical", &uidesc, [&] (CVuMeter* v) {
+			return v->getStyle() == kVertical;
+		});
 	);
+
+	TEST(numLed,
+		DummyUIDescription uidesc;
+		testAttribute<CVuMeter>(kCVuMeter, kAttrNumLed, 5, &uidesc, [&] (CVuMeter* v) {
+			return v->getNbLed () == 5;
+		});
+	);
+
+	TEST(decreaseStepValue,
+		DummyUIDescription uidesc;
+		testAttribute<CVuMeter>(kCVuMeter, kAttrDecreaseStepValue, 15., &uidesc, [&] (CVuMeter* v) {
+			return v->getDecreaseStepValue () == 15.;
+		});
+	);
+
+	TEST(orientationValues,
+		DummyUIDescription uidesc;
+		testPossibleValues (kCVuMeter, kAttrOrientation, &uidesc, {"horizontal", "vertical"});
+	);
+
 );
 
 } // VSTGUI

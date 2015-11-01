@@ -36,42 +36,57 @@
 #include "../../../../uidescription/uiviewfactory.h"
 #include "../../../../uidescription/uiattributes.h"
 #include "../../../../uidescription/detail/uiviewcreatorattributes.h"
-#include "../../../../lib/cviewcontainer.h"
+#include "../../../../lib/csplitview.h"
 #include "../../../../lib/cstring.h"
 #include "helpers.h"
 
 namespace VSTGUI {
 using namespace UIViewCreator;
 
-TESTCASE(CViewContainerCreatorTest,
+TESTCASE(CSplitViewCreatorTest,
 
-	TEST(backgroundColor,
-		DummyUIDescription uidesc;
-		testAttribute<CViewContainer>(kCViewContainer, kAttrBackgroundColor, kColorName, &uidesc, [&] (CViewContainer* v) {
-			return v->getBackgroundColor () == uidesc.color;
-		});
-		testAttribute<CViewContainer>(kCViewContainer, kAttrBackgroundColor, kColorName, &uidesc, [&] (CViewContainer* v) {
-			return v->getBackgroundColor () == uidesc.color;
-		}, true);
-	);
-	
-	TEST(backgroundColorDrawStyle,
-		DummyUIDescription uidesc;
-		testAttribute<CViewContainer>(kCViewContainer, kAttrBackgroundColorDrawStyle, "stroked", &uidesc, [] (CViewContainer* v) {
-			return v->getBackgroundColorDrawStyle () == kDrawStroked;
-		});
-		testAttribute<CViewContainer>(kCViewContainer, kAttrBackgroundColorDrawStyle, "filled", &uidesc, [] (CViewContainer* v) {
-			return v->getBackgroundColorDrawStyle () == kDrawFilled;
-		});
-		testAttribute<CViewContainer>(kCViewContainer, kAttrBackgroundColorDrawStyle, "filled and stroked", &uidesc, [] (CViewContainer* v) {
-			return v->getBackgroundColorDrawStyle () == kDrawFilledAndStroked;
+	TEST(separatorWidth,
+		testAttribute<CSplitView>(kCSplitView, kAttrSeparatorWidth, 123, nullptr, [] (CSplitView* v) {
+			return v->getSeparatorWidth () == 123;
 		});
 	);
 
-	TEST(backgroundColorDrawStyleValues,
+	TEST(orientation,
 		DummyUIDescription uidesc;
-		testPossibleValues (kCViewContainer, kAttrBackgroundColorDrawStyle, &uidesc, {"stroked", "filled", "filled and stroked"});
+		testAttribute<CSplitView>(kCSplitView, kAttrOrientation, "horizontal", &uidesc, [&] (CSplitView* v) {
+			return v->getStyle() == CSplitView::kHorizontal;
+		});
+		testAttribute<CSplitView>(kCSplitView, kAttrOrientation, "vertical", &uidesc, [&] (CSplitView* v) {
+			return v->getStyle() == CSplitView::kVertical;
+		});
 	);
+
+	TEST(resizeMethod,
+		DummyUIDescription uidesc;
+		testAttribute<CSplitView>(kCSplitView, kAttrResizeMethod, "first", &uidesc, [&] (CSplitView* v) {
+			return v->getResizeMethod() == CSplitView::kResizeFirstView;
+		});
+		testAttribute<CSplitView>(kCSplitView, kAttrResizeMethod, "second", &uidesc, [&] (CSplitView* v) {
+			return v->getResizeMethod() == CSplitView::kResizeSecondView;
+		});
+		testAttribute<CSplitView>(kCSplitView, kAttrResizeMethod, "last", &uidesc, [&] (CSplitView* v) {
+			return v->getResizeMethod() == CSplitView::kResizeLastView;
+		});
+		testAttribute<CSplitView>(kCSplitView, kAttrResizeMethod, "all", &uidesc, [&] (CSplitView* v) {
+			return v->getResizeMethod() == CSplitView::kResizeAllViews;
+		});
+	);
+
+	TEST(orientationValues,
+		DummyUIDescription uidesc;
+		testPossibleValues (kCSplitView, kAttrOrientation, &uidesc, {"horizontal", "vertical"});
+	);
+
+	TEST(resizeMethodValues,
+		DummyUIDescription uidesc;
+		testPossibleValues (kCSplitView, kAttrResizeMethod, &uidesc, {"first", "second", "last", "all"});
+	);
+
 );
 
 } // VSTGUI

@@ -44,37 +44,6 @@
 namespace VSTGUI {
 using namespace UIViewCreator;
 
-namespace {
-
-constexpr IdStringPtr kColorName = "MyColor";
-
-class MyUIDescription : public UIDescriptionAdapter
-{
-public:
-	bool getColor (UTF8StringPtr name, CColor& color) const override
-	{
-		if (UTF8StringView(name) == kColorName)
-		{
-			color = this->color;
-			return true;
-		}
-		return false;
-	}
-
-	UTF8StringPtr lookupColorName (const CColor& color) const override
-	{
-		if (this->color == color)
-			return kColorName;
-		return nullptr;
-	}
-
-	CColor color {20, 30, 50, 255};
-};
-
-
-} // anonymous
-
-
 TESTCASE(CScrollViewContainerCreatorTest,
 
 	TEST(containerSize,
@@ -95,7 +64,7 @@ TESTCASE(CScrollViewContainerCreatorTest,
 	);
 
 	TEST(dontDrawFrame,
-		MyUIDescription uiDesc;
+		DummyUIDescription uiDesc;
 		testAttribute<CScrollView> (kCScrollView, kAttrBordered, true, &uiDesc, [&] (CScrollView* v) { return v->getStyle () & ~CScrollView::kDontDrawFrame; });
 		testAttribute<CScrollView> (kCScrollView, kAttrBordered, false, &uiDesc, [&] (CScrollView* v) { return v->getStyle () & CScrollView::kDontDrawFrame; });
 	);
@@ -117,7 +86,7 @@ TESTCASE(CScrollViewContainerCreatorTest,
 	);
 
 	TEST(scrollbarBackgroundColor,
-		MyUIDescription uiDesc;
+		DummyUIDescription uiDesc;
 		testAttribute<CScrollView> (kCScrollView, kAttrScrollbarBackgroundColor, kColorName, &uiDesc, [&] (CScrollView* v) {
 			auto sb = v->getVerticalScrollbar ();
 			if (!sb)
@@ -127,7 +96,7 @@ TESTCASE(CScrollViewContainerCreatorTest,
 	);
 
 	TEST(scrollbarFrameColor,
-		MyUIDescription uiDesc;
+		DummyUIDescription uiDesc;
 		testAttribute<CScrollView> (kCScrollView, kAttrScrollbarFrameColor, kColorName, &uiDesc, [&] (CScrollView* v) {
 			auto sb = v->getVerticalScrollbar ();
 			if (!sb)
@@ -137,7 +106,7 @@ TESTCASE(CScrollViewContainerCreatorTest,
 	);
 
 	TEST(scrollbarScrollerColor,
-		MyUIDescription uiDesc;
+		DummyUIDescription uiDesc;
 		testAttribute<CScrollView> (kCScrollView, kAttrScrollbarScrollerColor, kColorName, &uiDesc, [&] (CScrollView* v) {
 			auto sb = v->getVerticalScrollbar ();
 			if (!sb)

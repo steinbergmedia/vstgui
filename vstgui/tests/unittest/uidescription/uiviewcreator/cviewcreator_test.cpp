@@ -62,32 +62,6 @@ bool getViewAttributeString (CView* view, const CViewAttributeID attrID, std::st
 	return false;
 }
 
-constexpr IdStringPtr kBitmapName = "testbitmap";
-
-class MyUIDescription : public UIDescriptionAdapter
-{
-public:
-	MyUIDescription ()
-	{
-		bitmap = owned (new CBitmap (1, 1));
-	}
-	CBitmap* getBitmap (UTF8StringPtr name) const override
-	{
-		if (UTF8StringView (name) == kBitmapName)
-			return bitmap;
-		return nullptr;
-	}
-
-	UTF8StringPtr lookupBitmapName (const CBitmap* inBitmap) const override
-	{
-		if (inBitmap == bitmap)
-			return kBitmapName;
-		return nullptr;
-	}
-
-	SharedPointer<CBitmap> bitmap;
-};
-
 } // anonymous
 
 TESTCASE(CViewCreatorTest,
@@ -107,14 +81,14 @@ TESTCASE(CViewCreatorTest,
 	);
 
 	TEST(bitmap,
-		MyUIDescription uiDesc;
+		DummyUIDescription uiDesc;
 		testAttribute<CView>(kCView, kAttrBitmap, kBitmapName, &uiDesc, [&] (CView* v) {
 			return v->getBackground() == uiDesc.bitmap;
 		});
 	);
 
 	TEST(disabledBitmap,
-		MyUIDescription uiDesc;
+		DummyUIDescription uiDesc;
 		testAttribute<CView>(kCView, kAttrDisabledBitmap, kBitmapName, &uiDesc, [&] (CView* v) {
 			return v->getDisabledBackground() == uiDesc.bitmap;
 		});
@@ -202,14 +176,7 @@ TESTCASE(CViewCreatorTest,
 	);
 
 	TEST(opacityValueRange,
-		UIViewFactory factory;
-		UIAttributes a;
-		a.setAttribute (kAttrClass, kCView);
-		auto view = owned (factory.createView (a, nullptr));
-		double minValue = -1.;
-		double maxValue = -1.;
-		EXPECT(factory.getAttributeValueRange (view, kAttrOpacity, minValue, maxValue));
-		EXPECT(minValue == 0. && maxValue == 1.);
+		testMinMaxValues(kCView, kAttrOpacity, nullptr, 0., 1.);
 	);
 
 );

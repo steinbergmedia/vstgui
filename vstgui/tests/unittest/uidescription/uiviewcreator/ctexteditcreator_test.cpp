@@ -36,41 +36,27 @@
 #include "../../../../uidescription/uiviewfactory.h"
 #include "../../../../uidescription/uiattributes.h"
 #include "../../../../uidescription/detail/uiviewcreatorattributes.h"
-#include "../../../../lib/cviewcontainer.h"
+#include "../../../../lib/controls/ctextedit.h"
 #include "../../../../lib/cstring.h"
 #include "helpers.h"
 
 namespace VSTGUI {
 using namespace UIViewCreator;
 
-TESTCASE(CViewContainerCreatorTest,
+TESTCASE(CTextEditCreatorTest,
 
-	TEST(backgroundColor,
-		DummyUIDescription uidesc;
-		testAttribute<CViewContainer>(kCViewContainer, kAttrBackgroundColor, kColorName, &uidesc, [&] (CViewContainer* v) {
-			return v->getBackgroundColor () == uidesc.color;
-		});
-		testAttribute<CViewContainer>(kCViewContainer, kAttrBackgroundColor, kColorName, &uidesc, [&] (CViewContainer* v) {
-			return v->getBackgroundColor () == uidesc.color;
-		}, true);
-	);
-	
-	TEST(backgroundColorDrawStyle,
-		DummyUIDescription uidesc;
-		testAttribute<CViewContainer>(kCViewContainer, kAttrBackgroundColorDrawStyle, "stroked", &uidesc, [] (CViewContainer* v) {
-			return v->getBackgroundColorDrawStyle () == kDrawStroked;
-		});
-		testAttribute<CViewContainer>(kCViewContainer, kAttrBackgroundColorDrawStyle, "filled", &uidesc, [] (CViewContainer* v) {
-			return v->getBackgroundColorDrawStyle () == kDrawFilled;
-		});
-		testAttribute<CViewContainer>(kCViewContainer, kAttrBackgroundColorDrawStyle, "filled and stroked", &uidesc, [] (CViewContainer* v) {
-			return v->getBackgroundColorDrawStyle () == kDrawFilledAndStroked;
+	TEST(immediateTextChange,
+		UIDescriptionAdapter uidesc;
+		testAttribute<CTextEdit>(kCTextEdit, kAttrImmediateTextChange, true, &uidesc, [] (CTextEdit* v) {
+			return v->getImmediateTextChange ();
 		});
 	);
 
-	TEST(backgroundColorDrawStyleValues,
-		DummyUIDescription uidesc;
-		testPossibleValues (kCViewContainer, kAttrBackgroundColorDrawStyle, &uidesc, {"stroked", "filled", "filled and stroked"});
+	TEST(doubleClick,
+		UIDescriptionAdapter uidesc;
+		testAttribute<CTextEdit>(kCTextEdit, kAttrStyleDoubleClick, true, &uidesc, [] (CTextEdit* v) {
+			return v->getStyle () & kDoubleClickStyle;
+		});
 	);
 );
 

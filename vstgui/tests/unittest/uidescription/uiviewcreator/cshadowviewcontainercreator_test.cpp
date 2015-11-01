@@ -36,41 +36,45 @@
 #include "../../../../uidescription/uiviewfactory.h"
 #include "../../../../uidescription/uiattributes.h"
 #include "../../../../uidescription/detail/uiviewcreatorattributes.h"
-#include "../../../../lib/cviewcontainer.h"
+#include "../../../../lib/cshadowviewcontainer.h"
 #include "../../../../lib/cstring.h"
 #include "helpers.h"
 
 namespace VSTGUI {
 using namespace UIViewCreator;
 
-TESTCASE(CViewContainerCreatorTest,
+TESTCASE(CShadowViewContainerCreatorTest,
 
-	TEST(backgroundColor,
+	TEST(shadowIntensity,
 		DummyUIDescription uidesc;
-		testAttribute<CViewContainer>(kCViewContainer, kAttrBackgroundColor, kColorName, &uidesc, [&] (CViewContainer* v) {
-			return v->getBackgroundColor () == uidesc.color;
+		testAttribute<CShadowViewContainer>(kCShadowViewContainer, kAttrShadowIntensity, 0.5, &uidesc, [] (CShadowViewContainer* v) {
+			return v->getShadowIntensity () == 0.5f;
 		});
-		testAttribute<CViewContainer>(kCViewContainer, kAttrBackgroundColor, kColorName, &uidesc, [&] (CViewContainer* v) {
-			return v->getBackgroundColor () == uidesc.color;
-		}, true);
+	);
+
+	TEST(shadowBlurSize,
+		DummyUIDescription uidesc;
+		testAttribute<CShadowViewContainer>(kCShadowViewContainer, kAttrShadowBlurSize, 0.5, &uidesc, [] (CShadowViewContainer* v) {
+			return v->getShadowBlurSize () == 0.5f;
+		});
+	);
+
+	TEST(shadowOffset,
+		DummyUIDescription uidesc;
+		CPoint p (20, 20);
+		testAttribute<CShadowViewContainer>(kCShadowViewContainer, kAttrShadowOffset, p, &uidesc, [&] (CShadowViewContainer* v) {
+			return v->getShadowOffset () == p;
+		});
 	);
 	
-	TEST(backgroundColorDrawStyle,
+	TEST(shadowBlurSizeMinMax,
 		DummyUIDescription uidesc;
-		testAttribute<CViewContainer>(kCViewContainer, kAttrBackgroundColorDrawStyle, "stroked", &uidesc, [] (CViewContainer* v) {
-			return v->getBackgroundColorDrawStyle () == kDrawStroked;
-		});
-		testAttribute<CViewContainer>(kCViewContainer, kAttrBackgroundColorDrawStyle, "filled", &uidesc, [] (CViewContainer* v) {
-			return v->getBackgroundColorDrawStyle () == kDrawFilled;
-		});
-		testAttribute<CViewContainer>(kCViewContainer, kAttrBackgroundColorDrawStyle, "filled and stroked", &uidesc, [] (CViewContainer* v) {
-			return v->getBackgroundColorDrawStyle () == kDrawFilledAndStroked;
-		});
+		testMinMaxValues(kCShadowViewContainer, kAttrShadowBlurSize, &uidesc, 0.8, 20);
 	);
 
-	TEST(backgroundColorDrawStyleValues,
+	TEST(shadowIntensityMinMax,
 		DummyUIDescription uidesc;
-		testPossibleValues (kCViewContainer, kAttrBackgroundColorDrawStyle, &uidesc, {"stroked", "filled", "filled and stroked"});
+		testMinMaxValues(kCShadowViewContainer, kAttrShadowIntensity, &uidesc, 0., 1.);
 	);
 );
 

@@ -43,107 +43,59 @@
 namespace VSTGUI {
 using namespace UIViewCreator;
 
-namespace {
-
-constexpr IdStringPtr kColorName = "MyColor";
-constexpr IdStringPtr kFontName = "MyFont";
-
-class MyUIDescription : public UIDescriptionAdapter
-{
-public:
-	bool getColor (UTF8StringPtr name, CColor& color) const override
-	{
-		if (UTF8StringView(name) == kColorName)
-		{
-			color = this->color;
-			return true;
-		}
-		return false;
-	}
-
-	UTF8StringPtr lookupColorName (const CColor& color) const override
-	{
-		if (this->color == color)
-			return kColorName;
-		return nullptr;
-	}
-
-	CFontRef getFont (UTF8StringPtr name) const override
-	{
-		if (UTF8StringView(name) == kFontName)
-		{
-			return font;
-		}
-		return nullptr;
-	}
-	
-	UTF8StringPtr lookupFontName (const CFontRef font) const override
-	{
-		if (font == this->font)
-			return kFontName;
-		return nullptr;
-	}
-
-	CColor color {20, 30, 50, 255};
-	SharedPointer<CFontDesc> font = owned (new CFontDesc ("Arial", 12));
-};
-
-
-} // anonymous
-
 TESTCASE(COnOffButtonCreatorTest,
 
 	TEST(title,
-		MyUIDescription uidesc;
+		DummyUIDescription uidesc;
 		testAttribute<CCheckBox> (kCCheckBox, kAttrTitle, "title", &uidesc, [] (CCheckBox* b) {
 			return b->getTitle () == "title";
 		});
 	);
 
 	TEST(font,
-		MyUIDescription uidesc;
+		DummyUIDescription uidesc;
 		testAttribute<CCheckBox> (kCCheckBox, kAttrFont, kFontName, &uidesc, [&] (CCheckBox* b) {
 			return uidesc.font == b->getFont ();
 		}, true);
 	);
 
 	TEST(fontColor,
-		MyUIDescription uidesc;
+		DummyUIDescription uidesc;
 		testAttribute<CCheckBox> (kCCheckBox, kAttrFontColor, kColorName, &uidesc, [&] (CCheckBox* b) {
 			return b->getFontColor () == uidesc.color;
 		});
 	);
 
 	TEST(boxFrameColor,
-		MyUIDescription uidesc;
+		DummyUIDescription uidesc;
 		testAttribute<CCheckBox> (kCCheckBox, kAttrBoxframeColor, kColorName, &uidesc, [&] (CCheckBox* b) {
 			return b->getBoxFrameColor () == uidesc.color;
 		});
 	);
 
 	TEST(boxFillColor,
-		MyUIDescription uidesc;
+		DummyUIDescription uidesc;
 		testAttribute<CCheckBox> (kCCheckBox, kAttrBoxfillColor, kColorName, &uidesc, [&] (CCheckBox* b) {
 			return b->getBoxFillColor () == uidesc.color;
 		});
 	);
 
 	TEST(checkmarkColor,
-		MyUIDescription uidesc;
+		DummyUIDescription uidesc;
 		testAttribute<CCheckBox> (kCCheckBox, kAttrCheckmarkColor, kColorName, &uidesc, [&] (CCheckBox* b) {
 			return b->getCheckMarkColor () == uidesc.color;
 		});
 	);
 
 	TEST(drawCrossbox,
-		MyUIDescription uidesc;
+		DummyUIDescription uidesc;
 		testAttribute<CCheckBox> (kCCheckBox, kAttrDrawCrossbox, true, &uidesc, [&] (CCheckBox* b) {
 			return b->getStyle () & CCheckBox::kDrawCrossBox;
 		});
 	);
 
 	TEST(autoSizeToFit,
-		MyUIDescription uidesc;
+		DummyUIDescription uidesc;
 		testAttribute<CCheckBox> (kCCheckBox, kAttrAutosizeToFit, true, &uidesc, [&] (CCheckBox* b) {
 			return b->getStyle () & CCheckBox::kAutoSizeToFit;
 		});

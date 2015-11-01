@@ -97,6 +97,27 @@
 		F490FDE81BE4DBD800386A09 /* conoffbuttoncreator_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F490FDE71BE4DBD800386A09 /* conoffbuttoncreator_test.cpp */; };
 		F490FDEA1BE4EB9600386A09 /* ccheckboxcreator_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F490FDE91BE4EB9600386A09 /* ccheckboxcreator_test.cpp */; };
 		F490FDEC1BE5027C00386A09 /* cparamdisplaycreator_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F490FDEB1BE5027C00386A09 /* cparamdisplaycreator_test.cpp */; };
+		F490FDEE1BE5121500386A09 /* coptionmenucreator_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F490FDED1BE5121500386A09 /* coptionmenucreator_test.cpp */; };
+		F490FDF01BE512F800386A09 /* ctextlabelcreator_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F490FDEF1BE512F800386A09 /* ctextlabelcreator_test.cpp */; };
+		F490FDF21BE514F900386A09 /* ctexteditcreator_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F490FDF11BE514F900386A09 /* ctexteditcreator_test.cpp */; };
+		F490FDF41BE515FD00386A09 /* ctextbuttoncreator_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F490FDF31BE515FD00386A09 /* ctextbuttoncreator_test.cpp */; };
+		F490FDF61BE60B4F00386A09 /* csegmentbuttoncreator_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F490FDF51BE60B4F00386A09 /* csegmentbuttoncreator_test.cpp */; };
+		F490FDF81BE60F9200386A09 /* cknobcreator_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F490FDF71BE60F9200386A09 /* cknobcreator_test.cpp */; };
+		F490FDFA1BE6155100386A09 /* cslidercreator_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F490FDF91BE6155100386A09 /* cslidercreator_test.cpp */; };
+		F490FDFC1BE61C4D00386A09 /* cvumetercreator_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F490FDFB1BE61C4D00386A09 /* cvumetercreator_test.cpp */; };
+		F490FDFE1BE61D7500386A09 /* canimationsplashscreencreator_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F490FDFD1BE61D7500386A09 /* canimationsplashscreencreator_test.cpp */; };
+		F490FE001BE61EA800386A09 /* uiviewswitchcontainercreator_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F490FDFF1BE61EA800386A09 /* uiviewswitchcontainercreator_test.cpp */; };
+		F490FE021BE6216100386A09 /* csplitviewcreator_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F490FE011BE6216100386A09 /* csplitviewcreator_test.cpp */; };
+		F490FE041BE6229F00386A09 /* cshadowviewcontainercreator_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F490FE031BE6229F00386A09 /* cshadowviewcontainercreator_test.cpp */; };
+		F490FE061BE6256D00386A09 /* cgradientviewcreator_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F490FE051BE6256D00386A09 /* cgradientviewcreator_test.cpp */; };
+		F490FE081BE627B100386A09 /* cxypadcreator_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F490FE071BE627B100386A09 /* cxypadcreator_test.cpp */; };
+		F490FE0A1BE6289100386A09 /* canimknobcreator_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F490FE091BE6289100386A09 /* canimknobcreator_test.cpp */; };
+		F490FE0C1BE6291700386A09 /* cverticalswitchcreator_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F490FE0B1BE6291700386A09 /* cverticalswitchcreator_test.cpp */; };
+		F490FE0E1BE6294800386A09 /* chorizontalswitchcreator_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F490FE0D1BE6294800386A09 /* chorizontalswitchcreator_test.cpp */; };
+		F490FE101BE6297200386A09 /* crockerswitchcreator_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F490FE0F1BE6297200386A09 /* crockerswitchcreator_test.cpp */; };
+		F490FE121BE6299800386A09 /* cmoviebitmapcreator_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F490FE111BE6299800386A09 /* cmoviebitmapcreator_test.cpp */; };
+		F490FE141BE629D100386A09 /* cmoviebuttoncreator_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F490FE131BE629D100386A09 /* cmoviebuttoncreator_test.cpp */; };
+		F490FE161BE629F600386A09 /* ckickbuttoncreator_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F490FE151BE629F600386A09 /* ckickbuttoncreator_test.cpp */; };
 		F497F0EC13080A1C00F0A613 /* cbitmap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0C213080A1C00F0A613 /* cbitmap.cpp */; };
 		F497F0EE13080A1C00F0A613 /* ccolor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0C413080A1C00F0A613 /* ccolor.cpp */; };
 		F497F0F013080A1C00F0A613 /* cdatabrowser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0C613080A1C00F0A613 /* cdatabrowser.cpp */; };
@@ -486,6 +507,27 @@
 		F490FDE71BE4DBD800386A09 /* conoffbuttoncreator_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = conoffbuttoncreator_test.cpp; sourceTree = "<group>"; };
 		F490FDE91BE4EB9600386A09 /* ccheckboxcreator_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ccheckboxcreator_test.cpp; sourceTree = "<group>"; };
 		F490FDEB1BE5027C00386A09 /* cparamdisplaycreator_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cparamdisplaycreator_test.cpp; sourceTree = "<group>"; };
+		F490FDED1BE5121500386A09 /* coptionmenucreator_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = coptionmenucreator_test.cpp; sourceTree = "<group>"; };
+		F490FDEF1BE512F800386A09 /* ctextlabelcreator_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ctextlabelcreator_test.cpp; sourceTree = "<group>"; };
+		F490FDF11BE514F900386A09 /* ctexteditcreator_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ctexteditcreator_test.cpp; sourceTree = "<group>"; };
+		F490FDF31BE515FD00386A09 /* ctextbuttoncreator_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ctextbuttoncreator_test.cpp; sourceTree = "<group>"; };
+		F490FDF51BE60B4F00386A09 /* csegmentbuttoncreator_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = csegmentbuttoncreator_test.cpp; sourceTree = "<group>"; };
+		F490FDF71BE60F9200386A09 /* cknobcreator_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cknobcreator_test.cpp; sourceTree = "<group>"; };
+		F490FDF91BE6155100386A09 /* cslidercreator_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cslidercreator_test.cpp; sourceTree = "<group>"; };
+		F490FDFB1BE61C4D00386A09 /* cvumetercreator_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cvumetercreator_test.cpp; sourceTree = "<group>"; };
+		F490FDFD1BE61D7500386A09 /* canimationsplashscreencreator_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = canimationsplashscreencreator_test.cpp; sourceTree = "<group>"; };
+		F490FDFF1BE61EA800386A09 /* uiviewswitchcontainercreator_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uiviewswitchcontainercreator_test.cpp; sourceTree = "<group>"; };
+		F490FE011BE6216100386A09 /* csplitviewcreator_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = csplitviewcreator_test.cpp; sourceTree = "<group>"; };
+		F490FE031BE6229F00386A09 /* cshadowviewcontainercreator_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cshadowviewcontainercreator_test.cpp; sourceTree = "<group>"; };
+		F490FE051BE6256D00386A09 /* cgradientviewcreator_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cgradientviewcreator_test.cpp; sourceTree = "<group>"; };
+		F490FE071BE627B100386A09 /* cxypadcreator_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cxypadcreator_test.cpp; sourceTree = "<group>"; };
+		F490FE091BE6289100386A09 /* canimknobcreator_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = canimknobcreator_test.cpp; sourceTree = "<group>"; };
+		F490FE0B1BE6291700386A09 /* cverticalswitchcreator_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cverticalswitchcreator_test.cpp; sourceTree = "<group>"; };
+		F490FE0D1BE6294800386A09 /* chorizontalswitchcreator_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = chorizontalswitchcreator_test.cpp; sourceTree = "<group>"; };
+		F490FE0F1BE6297200386A09 /* crockerswitchcreator_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = crockerswitchcreator_test.cpp; sourceTree = "<group>"; };
+		F490FE111BE6299800386A09 /* cmoviebitmapcreator_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cmoviebitmapcreator_test.cpp; sourceTree = "<group>"; };
+		F490FE131BE629D100386A09 /* cmoviebuttoncreator_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cmoviebuttoncreator_test.cpp; sourceTree = "<group>"; };
+		F490FE151BE629F600386A09 /* ckickbuttoncreator_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ckickbuttoncreator_test.cpp; sourceTree = "<group>"; };
 		F497F0AD1308094300F0A613 /* libvstgui.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libvstgui.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		F497F0C213080A1C00F0A613 /* cbitmap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 0; path = cbitmap.cpp; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
 		F497F0C313080A1C00F0A613 /* cbitmap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cbitmap.h; sourceTree = "<group>"; };
@@ -805,16 +847,37 @@
 		F490FDD71BE3CF8000386A09 /* uiviewcreator */ = {
 			isa = PBXGroup;
 			children = (
+				F490FDFD1BE61D7500386A09 /* canimationsplashscreencreator_test.cpp */,
+				F490FE091BE6289100386A09 /* canimknobcreator_test.cpp */,
 				F490FDE91BE4EB9600386A09 /* ccheckboxcreator_test.cpp */,
 				F490FDE51BE4D51300386A09 /* ccontrolcreator_test.cpp */,
+				F490FE051BE6256D00386A09 /* cgradientviewcreator_test.cpp */,
+				F490FE0D1BE6294800386A09 /* chorizontalswitchcreator_test.cpp */,
+				F490FE151BE629F600386A09 /* ckickbuttoncreator_test.cpp */,
+				F490FDF71BE60F9200386A09 /* cknobcreator_test.cpp */,
 				F490FDDF1BE4C06800386A09 /* clayeredviewcontainercreator_test.cpp */,
+				F490FE111BE6299800386A09 /* cmoviebitmapcreator_test.cpp */,
+				F490FE131BE629D100386A09 /* cmoviebuttoncreator_test.cpp */,
 				F490FDE71BE4DBD800386A09 /* conoffbuttoncreator_test.cpp */,
+				F490FDED1BE5121500386A09 /* coptionmenucreator_test.cpp */,
 				F490FDEB1BE5027C00386A09 /* cparamdisplaycreator_test.cpp */,
+				F490FE0F1BE6297200386A09 /* crockerswitchcreator_test.cpp */,
 				F490FDE11BE4C1A600386A09 /* crowcolumnviewcreator_test.cpp */,
 				F490FDE31BE4CF4100386A09 /* cscrollviewcreator_test.cpp */,
+				F490FDF51BE60B4F00386A09 /* csegmentbuttoncreator_test.cpp */,
+				F490FE031BE6229F00386A09 /* cshadowviewcontainercreator_test.cpp */,
+				F490FDF91BE6155100386A09 /* cslidercreator_test.cpp */,
+				F490FE011BE6216100386A09 /* csplitviewcreator_test.cpp */,
+				F490FDF31BE515FD00386A09 /* ctextbuttoncreator_test.cpp */,
+				F490FDF11BE514F900386A09 /* ctexteditcreator_test.cpp */,
+				F490FDEF1BE512F800386A09 /* ctextlabelcreator_test.cpp */,
+				F490FE0B1BE6291700386A09 /* cverticalswitchcreator_test.cpp */,
 				F490FDDD1BE4B7DE00386A09 /* cviewcontainercreator_test.cpp */,
 				F490FDD81BE3D00C00386A09 /* cviewcreator_test.cpp */,
+				F490FDFB1BE61C4D00386A09 /* cvumetercreator_test.cpp */,
+				F490FE071BE627B100386A09 /* cxypadcreator_test.cpp */,
 				F490FDDC1BE3E07000386A09 /* helpers.h */,
+				F490FDFF1BE61EA800386A09 /* uiviewswitchcontainercreator_test.cpp */,
 			);
 			path = uiviewcreator;
 			sourceTree = "<group>";
@@ -1485,17 +1548,24 @@
 			buildActionMask = 2147483647;
 			files = (
 				F4762E8A1BDA958800810447 /* vstgui_mac.mm in Sources */,
+				F490FE101BE6297200386A09 /* crockerswitchcreator_test.cpp in Sources */,
 				F490FDDE1BE4B7DE00386A09 /* cviewcontainercreator_test.cpp in Sources */,
 				F4762E8B1BDA958C00810447 /* vstgui_uidescription_mac.mm in Sources */,
+				F490FDF21BE514F900386A09 /* ctexteditcreator_test.cpp in Sources */,
+				F490FDF01BE512F800386A09 /* ctextlabelcreator_test.cpp in Sources */,
 				F490FDEA1BE4EB9600386A09 /* ccheckboxcreator_test.cpp in Sources */,
 				F4B0AF7F1BDD02A20033C579 /* uiviewfactory_test.cpp in Sources */,
+				F490FE061BE6256D00386A09 /* cgradientviewcreator_test.cpp in Sources */,
 				F4B0AF811BDD25DF0033C579 /* cstream_test.cpp in Sources */,
 				F490FDEC1BE5027C00386A09 /* cparamdisplaycreator_test.cpp in Sources */,
 				F490FDD91BE3D00C00386A09 /* cviewcreator_test.cpp in Sources */,
+				F490FDF61BE60B4F00386A09 /* csegmentbuttoncreator_test.cpp in Sources */,
 				F4B0AF761BDCDD060033C579 /* cpoint_test.cpp in Sources */,
 				F4370BDF1BDE5CF600DC943A /* uidescription_test.cpp in Sources */,
 				F490FDE81BE4DBD800386A09 /* conoffbuttoncreator_test.cpp in Sources */,
+				F490FE121BE6299800386A09 /* cmoviebitmapcreator_test.cpp in Sources */,
 				F4762E861BDA957E00810447 /* idependency_test.cpp in Sources */,
+				F490FE141BE629D100386A09 /* cmoviebuttoncreator_test.cpp in Sources */,
 				F4B1D4EF1BE0E6A600EE6BDA /* delegationcontroller_test.cpp in Sources */,
 				F4762E831BDA957E00810447 /* cviewcontainer_test.cpp in Sources */,
 				F490FDE01BE4C06800386A09 /* clayeredviewcontainercreator_test.cpp in Sources */,
@@ -1506,17 +1576,31 @@
 				F490FDE61BE4D51300386A09 /* ccontrolcreator_test.cpp in Sources */,
 				F4B0AF7C1BDD007D0033C579 /* cbuttonstate_test.cpp in Sources */,
 				F490FDE41BE4CF4100386A09 /* cscrollviewcreator_test.cpp in Sources */,
+				F490FDEE1BE5121500386A09 /* coptionmenucreator_test.cpp in Sources */,
+				F490FE081BE627B100386A09 /* cxypadcreator_test.cpp in Sources */,
+				F490FDFC1BE61C4D00386A09 /* cvumetercreator_test.cpp in Sources */,
 				F4F7D5FC1BDBB4BD00A8B6FD /* animator_test.cpp in Sources */,
 				F4762E881BDA957E00810447 /* utf8stringview_test.cpp in Sources */,
+				F490FE0C1BE6291700386A09 /* cverticalswitchcreator_test.cpp in Sources */,
 				F4762E851BDA957E00810447 /* ccolor_test.cpp in Sources */,
+				F490FDFA1BE6155100386A09 /* cslidercreator_test.cpp in Sources */,
 				F4762E891BDA958100810447 /* unittests.cpp in Sources */,
+				F490FE021BE6216100386A09 /* csplitviewcreator_test.cpp in Sources */,
 				F4F7D5FA1BDBAA2C00A8B6FD /* timingfunction_tests.cpp in Sources */,
+				F490FE161BE629F600386A09 /* ckickbuttoncreator_test.cpp in Sources */,
+				F490FDF41BE515FD00386A09 /* ctextbuttoncreator_test.cpp in Sources */,
 				F4762E841BDA957E00810447 /* crect_test.cpp in Sources */,
 				F4762E871BDA957E00810447 /* base64codec.cpp in Sources */,
+				F490FE001BE61EA800386A09 /* uiviewswitchcontainercreator_test.cpp in Sources */,
 				F4B0AF781BDCEC6C0033C579 /* cview_test.cpp in Sources */,
+				F490FE0E1BE6294800386A09 /* chorizontalswitchcreator_test.cpp in Sources */,
+				F490FE041BE6229F00386A09 /* cshadowviewcontainercreator_test.cpp in Sources */,
 				F4762E8F1BDAADA700810447 /* animations_test.cpp in Sources */,
+				F490FE0A1BE6289100386A09 /* canimknobcreator_test.cpp in Sources */,
 				F4B0AF7A1BDCFB640033C579 /* cfont_test.cpp in Sources */,
 				F490FDD41BE2C5F000386A09 /* clinestyle_test.cpp in Sources */,
+				F490FDFE1BE61D7500386A09 /* canimationsplashscreencreator_test.cpp in Sources */,
+				F490FDF81BE60F9200386A09 /* cknobcreator_test.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

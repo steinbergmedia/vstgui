@@ -2921,7 +2921,7 @@ public:
 		}
 		else if (attributeName == kAttrBitmapOffset)
 		{
-			pointToString (slider->getBackOffset (), stringValue);
+			pointToString (slider->getOffset (), stringValue);
 			return true;
 		}
 		else if (attributeName == kAttrZoomFactor)
