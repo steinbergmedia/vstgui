@@ -17,6 +17,7 @@ namespace VSTGUI {
 class UIDescriptionAdapter : public IUIDescription
 {
 public:
+	CView* createView (UTF8StringPtr name, IController* controller) const override { return nullptr; }
 	CBitmap* getBitmap (UTF8StringPtr name) const override { return nullptr; }
 	CFontRef getFont (UTF8StringPtr name) const override { return nullptr; }
 	bool getColor (UTF8StringPtr name, CColor& color) const override { return false; }
