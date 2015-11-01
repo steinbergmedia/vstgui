@@ -9,6 +9,8 @@
 #pragma once
 
 #include "../../../../uidescription/iuidescription.h"
+#include "../../../../lib/cbitmap.h"
+#include "../../../../lib/cgradient.h"
 
 namespace VSTGUI {
 
@@ -42,6 +44,101 @@ public:
 	const IViewFactory* getViewFactory () const override { return nullptr; }
 };
 
+constexpr IdStringPtr kColorName = "MyColor";
+constexpr IdStringPtr kFontName = "MyFont";
+constexpr IdStringPtr kBitmapName = "MyBitmap";
+constexpr IdStringPtr kGradientName = "MyGradient";
+constexpr IdStringPtr kTagName = "tagname";
+
+class DummyUIDescription : public UIDescriptionAdapter
+{
+public:
+	bool getColor (UTF8StringPtr name, CColor& color) const override
+	{
+		if (UTF8StringView(name) == kColorName)
+		{
+			color = this->color;
+			return true;
+		}
+		return false;
+	}
+
+	UTF8StringPtr lookupColorName (const CColor& color) const override
+	{
+		if (this->color == color)
+			return kColorName;
+		return nullptr;
+	}
+
+	CFontRef getFont (UTF8StringPtr name) const override
+	{
+		if (UTF8StringView(name) == kFontName)
+			return font;
+		return nullptr;
+	}
+	
+	UTF8StringPtr lookupFontName (const CFontRef font) const override
+	{
+		if (font == this->font)
+			return kFontName;
+		return nullptr;
+	}
+
+	CBitmap* getBitmap (UTF8StringPtr name) const override
+	{
+		if (UTF8StringView (name) == kBitmapName)
+			return bitmap;
+		return nullptr;
+	}
+
+	UTF8StringPtr lookupBitmapName (const CBitmap* inBitmap) const override
+	{
+		if (inBitmap == bitmap)
+			return kBitmapName;
+		return nullptr;
+	}
+
+	CGradient* getGradient (UTF8StringPtr name) const override
+	{
+		if (UTF8StringView(name) == kGradientName)
+			return gradient;
+		return nullptr;
+	}
+	
+	UTF8StringPtr lookupGradientName (const CGradient* gradient) const override
+	{
+		if (gradient == this->gradient)
+			return kGradientName;
+		return nullptr;
+	}
+
+	int32_t getTagForName (UTF8StringPtr name) const override
+	{
+		if (UTF8StringView (name) == kTagName)
+			return tag;
+		return -1;
+	}
+	UTF8StringPtr lookupControlTagName (const int32_t tag) const override
+	{
+		if (this->tag != -1 && tag == this->tag)
+			return kTagName;
+		return nullptr;
+	}
+	IControlListener* getControlListener (UTF8StringPtr name) const override
+	{
+		if (UTF8StringView (name) == kTagName)
+			return listener;
+		return nullptr;
+	}
+
+	int32_t tag {-1};
+	CColor color {20, 30, 50, 255};
+	SharedPointer<CFontDesc> font = owned (new CFontDesc ("Arial", 12));
+	SharedPointer<CBitmap> bitmap = owned (new CBitmap (1, 1));
+	SharedPointer<CGradient> gradient = owned (CGradient::create(0, 1, kBlackCColor, kWhiteCColor));
+	IControlListener* listener {nullptr};
+};
+
 inline void testPossibleValues (const IdStringPtr className, const std::string& attrName, IUIDescription* desc, UIViewFactory::StringList expectedValues)
 {
 	UIViewFactory factory;
@@ -57,6 +154,18 @@ inline void testPossibleValues (const IdStringPtr className, const std::string& 
 		}) != values.end ());
 	}
 	EXPECT(values.size () == expectedValues.size ());
+}
+
+inline void testMinMaxValues (const IdStringPtr className, const std::string& attrName, IUIDescription* desc, double minValue, double maxValue)
+{
+	UIViewFactory factory;
+	UIAttributes a;
+	a.setAttribute (UIViewCreator::kAttrClass, className);
+	auto view = owned (factory.createView (a, desc));
+	double min, max;
+	EXPECT (factory.getAttributeValueRange(view, attrName, min, max));
+	EXPECT(min == minValue);
+	EXPECT(max == maxValue);
 }
 
 template<typename ViewClass, typename Proc>

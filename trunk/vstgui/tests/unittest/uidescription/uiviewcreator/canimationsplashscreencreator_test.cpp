@@ -36,42 +36,52 @@
 #include "../../../../uidescription/uiviewfactory.h"
 #include "../../../../uidescription/uiattributes.h"
 #include "../../../../uidescription/detail/uiviewcreatorattributes.h"
-#include "../../../../lib/cviewcontainer.h"
+#include "../../../../lib/controls/csplashscreen.h"
 #include "../../../../lib/cstring.h"
 #include "helpers.h"
 
 namespace VSTGUI {
 using namespace UIViewCreator;
 
-TESTCASE(CViewContainerCreatorTest,
+TESTCASE(CAnimationSplashScreenCreatorTest,
 
-	TEST(backgroundColor,
+	TEST(splashBitmap,
 		DummyUIDescription uidesc;
-		testAttribute<CViewContainer>(kCViewContainer, kAttrBackgroundColor, kColorName, &uidesc, [&] (CViewContainer* v) {
-			return v->getBackgroundColor () == uidesc.color;
-		});
-		testAttribute<CViewContainer>(kCViewContainer, kAttrBackgroundColor, kColorName, &uidesc, [&] (CViewContainer* v) {
-			return v->getBackgroundColor () == uidesc.color;
-		}, true);
-	);
-	
-	TEST(backgroundColorDrawStyle,
-		DummyUIDescription uidesc;
-		testAttribute<CViewContainer>(kCViewContainer, kAttrBackgroundColorDrawStyle, "stroked", &uidesc, [] (CViewContainer* v) {
-			return v->getBackgroundColorDrawStyle () == kDrawStroked;
-		});
-		testAttribute<CViewContainer>(kCViewContainer, kAttrBackgroundColorDrawStyle, "filled", &uidesc, [] (CViewContainer* v) {
-			return v->getBackgroundColorDrawStyle () == kDrawFilled;
-		});
-		testAttribute<CViewContainer>(kCViewContainer, kAttrBackgroundColorDrawStyle, "filled and stroked", &uidesc, [] (CViewContainer* v) {
-			return v->getBackgroundColorDrawStyle () == kDrawFilledAndStroked;
+		testAttribute<CAnimationSplashScreen>(kCAnimationSplashScreen, kAttrSplashBitmap, kBitmapName, &uidesc, [&] (CAnimationSplashScreen* v) {
+			return v->getSplashBitmap() == uidesc.bitmap;
 		});
 	);
 
-	TEST(backgroundColorDrawStyleValues,
+	TEST(splashOrigin,
 		DummyUIDescription uidesc;
-		testPossibleValues (kCViewContainer, kAttrBackgroundColorDrawStyle, &uidesc, {"stroked", "filled", "filled and stroked"});
+		CPoint p (20, 20);
+		testAttribute<CAnimationSplashScreen>(kCAnimationSplashScreen, kAttrSplashOrigin, p, &uidesc, [&] (CAnimationSplashScreen* v) {
+			return v->getSplashRect().getTopLeft() == p;
+		});
 	);
+
+	TEST(splashSize,
+		DummyUIDescription uidesc;
+		CPoint p (20, 20);
+		testAttribute<CAnimationSplashScreen>(kCAnimationSplashScreen, kAttrSplashSize, p, &uidesc, [&] (CAnimationSplashScreen* v) {
+			return v->getSplashRect().getSize() == p;
+		});
+	);
+
+	TEST(animationIndex,
+		DummyUIDescription uidesc;
+		testAttribute<CAnimationSplashScreen>(kCAnimationSplashScreen, kAttrAnimationIndex, 1, &uidesc, [&] (CAnimationSplashScreen* v) {
+			return v->getAnimationIndex () == 1;
+		});
+	);
+
+	TEST(animationTime,
+		DummyUIDescription uidesc;
+		testAttribute<CAnimationSplashScreen>(kCAnimationSplashScreen, kAttrAnimationTime, 222, &uidesc, [&] (CAnimationSplashScreen* v) {
+			return v->getAnimationTime () == 222;
+		});
+	);
+
 );
 
 } // VSTGUI

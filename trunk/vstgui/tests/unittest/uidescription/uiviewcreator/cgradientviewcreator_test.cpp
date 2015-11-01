@@ -36,92 +36,93 @@
 #include "../../../../uidescription/uiviewfactory.h"
 #include "../../../../uidescription/uiattributes.h"
 #include "../../../../uidescription/detail/uiviewcreatorattributes.h"
-#include "../../../../lib/controls/ccontrol.h"
+#include "../../../../lib/cgradientview.h"
 #include "../../../../lib/cstring.h"
 #include "helpers.h"
 
 namespace VSTGUI {
 using namespace UIViewCreator;
 
-namespace {
+TESTCASE(CGradientViewCreatorTest,
 
-struct DummyListener : public IControlListener
-{
-	void valueChanged (CControl* pControl) override {}
-};
-
-} // anonymous
-
-TESTCASE(CControlCreatorTest,
-
-	TEST(defaultValue,
-		testAttribute<CControl>(kCControl, kAttrDefaultValue, 1., nullptr, [] (CControl* v) {
-			return v->getDefaultValue () == 1.;
-		});
-	);
-
-	TEST(minValue,
-		testAttribute<CControl>(kCControl, kAttrMinValue, 0.5, nullptr, [] (CControl* v) {
-			return v->getMin () == 0.5;
-		});
-	);
-
-	TEST(maxValue,
-		testAttribute<CControl>(kCControl, kAttrMaxValue, 0.5, nullptr, [] (CControl* v) {
-			return v->getMax () == 0.5;
-		});
-	);
-
-	TEST(wheelIncValue,
-		testAttribute<CControl>(kCControl, kAttrWheelIncValue, 0.5, nullptr, [] (CControl* v) {
-			return v->getWheelInc () == 0.5;
-		});
-	);
-
-	TEST(backgroundOffset,
-		CPoint offset (20, 20);
-		testAttribute<CControl>(kCControl, kAttrBackgroundOffset, offset, nullptr, [&] (CControl* v) {
-			return v->getBackOffset() == offset;
-		});
-	);
-
-	TEST(tagUnknown,
+	TEST(frameColor,
 		DummyUIDescription uidesc;
-		testAttribute<CControl>(kCControl, kAttrControlTag, kTagName, &uidesc, [&] (CControl* v) {
-			return v->getTag() == -1 && v->getListener() == nullptr;
+		testAttribute<CGradientView>(kCGradientView, kAttrFrameColor, kColorName, &uidesc, [&] (CGradientView* v) {
+			return v->getFrameColor () == uidesc.color;
 		});
 	);
 
-	TEST(tagStrEmpty,
+	TEST(gradientAngle,
 		DummyUIDescription uidesc;
-		testAttribute<CControl>(kCControl, kAttrControlTag, "", &uidesc, [&] (CControl* v) {
-			return v->getTag() == -1 && v->getListener() == nullptr;
+		testAttribute<CGradientView>(kCGradientView, kAttrGradientAngle, 5., &uidesc, [&] (CGradientView* v) {
+			return v->getGradientAngle() == 5.;
 		});
 	);
 
-	TEST(tagWithNumber,
+	TEST(roundRectRadius,
 		DummyUIDescription uidesc;
-		testAttribute<CControl>(kCControl, kAttrControlTag, "5", &uidesc, [&] (CControl* v) {
-			return v->getTag() == 5 && v->getListener() == nullptr;
+		testAttribute<CGradientView>(kCGradientView, kAttrRoundRectRadius, 35., &uidesc, [&] (CGradientView* v) {
+			return v->getRoundRectRadius() == 35.;
 		});
 	);
 
-	TEST(tagNoListener,
+	TEST(frameWidth,
 		DummyUIDescription uidesc;
-		uidesc.tag = 5;
-		testAttribute<CControl>(kCControl, kAttrControlTag, kTagName, &uidesc, [&] (CControl* v) {
-			return v->getTag() == 5 && v->getListener() == nullptr;
-		}, true);
+		testAttribute<CGradientView>(kCGradientView, kAttrFrameWidth, 5., &uidesc, [&] (CGradientView* v) {
+			return v->getFrameWidth() == 5.;
+		});
 	);
 
-	TEST(tagWithListener,
+	TEST(drawAntialiased,
 		DummyUIDescription uidesc;
-		DummyListener listener;
-		uidesc.tag = 5;
-		uidesc.listener = &listener;
-		testAttribute<CControl>(kCControl, kAttrControlTag, kTagName, &uidesc, [&] (CControl* v) {
-			return v->getTag() == 5 && v->getListener() == &listener;
-		}, true);
+		testAttribute<CGradientView>(kCGradientView, kAttrDrawAntialiased, true, &uidesc, [&] (CGradientView* v) {
+			return v->getDrawAntialised();
+		});
+		testAttribute<CGradientView>(kCGradientView, kAttrDrawAntialiased, false, &uidesc, [&] (CGradientView* v) {
+			return v->getDrawAntialised() == false;
+		});
+	);
+
+	TEST(gradientStyle,
+		DummyUIDescription uidesc;
+		testAttribute<CGradientView>(kCGradientView, kAttrGradientStyle, "radial", &uidesc, [&] (CGradientView* v) {
+			return v->getGradientStyle() == CGradientView::kRadialGradient;
+		});
+		testAttribute<CGradientView>(kCGradientView, kAttrGradientStyle, "linear", &uidesc, [&] (CGradientView* v) {
+			return v->getGradientStyle() == CGradientView::kLinearGradient;
+		});
+	);
+
+	TEST(radialCenter,
+		DummyUIDescription uidesc;
+		CPoint p (20, 20);
+		testAttribute<CGradientView>(kCGradientView, kAttrRadialCenter, p, &uidesc, [&] (CGradientView* v) {
+			return v->getRadialCenter() == p;
+		});
+	);
+
+	TEST(radialRadius,
+		DummyUIDescription uidesc;
+		testAttribute<CGradientView>(kCGradientView, kAttrRadialRadius, 25., &uidesc, [&] (CGradientView* v) {
+			return v->getRadialRadius() == 25.;
+		});
+	);
+
+	TEST(gradient,
+		DummyUIDescription uidesc;
+		testAttribute<CGradientView>(kCGradientView, kAttrGradient, kGradientName, &uidesc, [&] (CGradientView* v) {
+			return v->getGradient() == uidesc.gradient;
+		});
+	);
+
+	TEST(gradientStyleValues,
+		DummyUIDescription uidesc;
+		testPossibleValues(kCGradientView, kAttrGradientStyle, &uidesc, {"radial", "linear"});
+	);
+
+	TEST(gradientAngleMinMax,
+		DummyUIDescription uidesc;
+		testMinMaxValues(kCGradientView, kAttrGradientAngle, &uidesc, 0., 360.);
 	);
 );
 

@@ -43,93 +43,45 @@
 namespace VSTGUI {
 using namespace UIViewCreator;
 
-namespace {
-
-constexpr IdStringPtr kColorName = "MyColor";
-constexpr IdStringPtr kFontName = "MyFont";
-
-class MyUIDescription : public UIDescriptionAdapter
-{
-public:
-	bool getColor (UTF8StringPtr name, CColor& color) const override
-	{
-		if (UTF8StringView(name) == kColorName)
-		{
-			color = this->color;
-			return true;
-		}
-		return false;
-	}
-
-	UTF8StringPtr lookupColorName (const CColor& color) const override
-	{
-		if (this->color == color)
-			return kColorName;
-		return nullptr;
-	}
-
-	CFontRef getFont (UTF8StringPtr name) const override
-	{
-		if (UTF8StringView(name) == kFontName)
-		{
-			return font;
-		}
-		return nullptr;
-	}
-	
-	UTF8StringPtr lookupFontName (const CFontRef font) const override
-	{
-		if (font == this->font)
-			return kFontName;
-		return nullptr;
-	}
-
-	CColor color {20, 30, 50, 255};
-	SharedPointer<CFontDesc> font = owned (new CFontDesc ("Arial", 12));
-};
-
-
-} // anonymous
-
 TESTCASE(CParamDisplayCreatorTest,
 
 	TEST(font,
-		MyUIDescription uiDesc;
+		DummyUIDescription uiDesc;
 		testAttribute<CParamDisplay>(kCParamDisplay, kAttrFont, kFontName, &uiDesc, [&] (CParamDisplay* v) {
 			return v->getFont () == uiDesc.font;
 		}, true);
 	);
 
 	TEST(fontColor,
-		MyUIDescription uiDesc;
+		DummyUIDescription uiDesc;
 		testAttribute<CParamDisplay>(kCParamDisplay, kAttrFontColor, kColorName, &uiDesc, [&] (CParamDisplay* v) {
 			return v->getFontColor () == uiDesc.color;
 		});
 	);
 
 	TEST(backColor,
-		MyUIDescription uiDesc;
+		DummyUIDescription uiDesc;
 		testAttribute<CParamDisplay>(kCParamDisplay, kAttrBackColor, kColorName, &uiDesc, [&] (CParamDisplay* v) {
 			return v->getBackColor () == uiDesc.color;
 		});
 	);
 
 	TEST(frameColor,
-		MyUIDescription uiDesc;
+		DummyUIDescription uiDesc;
 		testAttribute<CParamDisplay>(kCParamDisplay, kAttrFrameColor, kColorName, &uiDesc, [&] (CParamDisplay* v) {
 			return v->getFrameColor () == uiDesc.color;
 		});
 	);
 
 	TEST(shadowColor,
-		MyUIDescription uiDesc;
+		DummyUIDescription uiDesc;
 		testAttribute<CParamDisplay>(kCParamDisplay, kAttrShadowColor, kColorName, &uiDesc, [&] (CParamDisplay* v) {
 			return v->getShadowColor () == uiDesc.color;
 		});
 	);
 
 	TEST(textInset,
-		MyUIDescription uiDesc;
+		DummyUIDescription uiDesc;
 		CPoint inset (5, 6);
 		testAttribute<CParamDisplay>(kCParamDisplay, kAttrTextInset, inset, &uiDesc, [&] (CParamDisplay* v) {
 			return v->getTextInset () == inset;
@@ -137,7 +89,7 @@ TESTCASE(CParamDisplayCreatorTest,
 	);
 
 	TEST(fontAntialias,
-		MyUIDescription uiDesc;
+		DummyUIDescription uiDesc;
 		testAttribute<CParamDisplay>(kCParamDisplay, kAttrFontAntialias, true, &uiDesc, [&] (CParamDisplay* v) {
 			return v->getAntialias ();
 		});
@@ -147,7 +99,7 @@ TESTCASE(CParamDisplayCreatorTest,
 	);
 
 	TEST(textAlignment,
-		MyUIDescription uiDesc;
+		DummyUIDescription uiDesc;
 		testAttribute<CParamDisplay>(kCParamDisplay, kAttrTextAlignment, "left", &uiDesc, [&] (CParamDisplay* v) {
 			return v->getHoriAlign () == kLeftText;
 		});
@@ -160,28 +112,28 @@ TESTCASE(CParamDisplayCreatorTest,
 	);
 
 	TEST(roundRectRadius,
-		MyUIDescription uiDesc;
+		DummyUIDescription uiDesc;
 		testAttribute<CParamDisplay>(kCParamDisplay, kAttrRoundRectRadius, 15., &uiDesc, [&] (CParamDisplay* v) {
 			return v->getRoundRectRadius () == 15.;
 		});
 	);
 
 	TEST(frameWidth,
-		MyUIDescription uiDesc;
+		DummyUIDescription uiDesc;
 		testAttribute<CParamDisplay>(kCParamDisplay, kAttrFrameWidth, 12., &uiDesc, [&] (CParamDisplay* v) {
 			return v->getFrameWidth () == 12.;
 		});
 	);
 
 	TEST(textRotation,
-		MyUIDescription uiDesc;
+		DummyUIDescription uiDesc;
 		testAttribute<CParamDisplay>(kCParamDisplay, kAttrTextRotation, 89., &uiDesc, [&] (CParamDisplay* v) {
 			return v->getTextRotation () == 89.;
 		});
 	);
 
 	TEST(styles,
-		MyUIDescription uiDesc;
+		DummyUIDescription uiDesc;
 		testAttribute<CParamDisplay>(kCParamDisplay, kAttrStyle3DIn, true, &uiDesc, [&] (CParamDisplay* v) {
 			return v->getStyle() & k3DIn;
 		});
@@ -206,12 +158,16 @@ TESTCASE(CParamDisplayCreatorTest,
 	);
 
 	TEST(valuePrecision,
-		MyUIDescription uiDesc;
+		DummyUIDescription uiDesc;
 		testAttribute<CParamDisplay>(kCParamDisplay, kAttrValuePrecision, 3, &uiDesc, [&] (CParamDisplay* v) {
 			return v->getPrecision () == 3;
 		});
 	);
 
+	TEST(textRotationMinMax,
+		DummyUIDescription uidesc;
+		testMinMaxValues(kCParamDisplay, kAttrTextRotation, &uidesc, 0., 360.);
+	);
 
 );
 

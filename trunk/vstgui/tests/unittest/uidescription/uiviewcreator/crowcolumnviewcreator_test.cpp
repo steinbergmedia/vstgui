@@ -87,27 +87,7 @@ TESTCASE(CRowColumnViewCreatorTest,
 	);
 
 	TEST(equalSizeLayoutValues,
-		UIViewFactory factory;
-		UIAttributes a;
-		a.setAttribute (kAttrClass, kCRowColumnView);
-
-		auto view = owned (factory.createView (a, nullptr));
-		UIViewFactory::StringPtrList values;
-		EXPECT(factory.getPossibleAttributeListValues(view, kAttrEqualSizeLayout, values));
-		EXPECT(std::find_if (values.begin(), values.end(), [] (const UIViewFactory::StringPtrList::value_type& v) {
-			return *v == "left-top";
-		}) != values.end ());
-		EXPECT(std::find_if (values.begin(), values.end(), [] (const UIViewFactory::StringPtrList::value_type& v) {
-			return *v == "stretch";
-		}) != values.end ());
-		EXPECT(std::find_if (values.begin(), values.end(), [] (const UIViewFactory::StringPtrList::value_type& v) {
-			return *v == "center";
-		}) != values.end ());
-		EXPECT(std::find_if (values.begin(), values.end(), [] (const UIViewFactory::StringPtrList::value_type& v) {
-			return *v == "right-bottom";
-		}) != values.end ());
-		EXPECT(values.size () == 4);
-		
+		testPossibleValues(kCRowColumnView, kAttrEqualSizeLayout, nullptr, {"left-top", "stretch", "center", "right-bottom"});
 	);
 );
 

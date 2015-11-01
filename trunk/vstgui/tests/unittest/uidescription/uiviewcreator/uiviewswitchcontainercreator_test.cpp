@@ -36,42 +36,61 @@
 #include "../../../../uidescription/uiviewfactory.h"
 #include "../../../../uidescription/uiattributes.h"
 #include "../../../../uidescription/detail/uiviewcreatorattributes.h"
-#include "../../../../lib/cviewcontainer.h"
+#include "../../../../uidescription/uiviewswitchcontainer.h"
 #include "../../../../lib/cstring.h"
 #include "helpers.h"
 
 namespace VSTGUI {
 using namespace UIViewCreator;
 
-TESTCASE(CViewContainerCreatorTest,
+TESTCASE(UIViewSwitchContainerCreatorTest,
 
-	TEST(backgroundColor,
+	TEST(templateNames,
 		DummyUIDescription uidesc;
-		testAttribute<CViewContainer>(kCViewContainer, kAttrBackgroundColor, kColorName, &uidesc, [&] (CViewContainer* v) {
-			return v->getBackgroundColor () == uidesc.color;
+		testAttribute<UIViewSwitchContainer>(kUIViewSwitchContainer, kAttrTemplateNames, "temp1,temp2", &uidesc, [] (UIViewSwitchContainer* v) {
+			auto controller = dynamic_cast<UIDescriptionViewSwitchController*> (v->getController ());
+			EXPECT(controller);
+			std::string str;
+			controller->getTemplateNames(str);
+			return str == "temp1,temp2";
 		});
-		testAttribute<CViewContainer>(kCViewContainer, kAttrBackgroundColor, kColorName, &uidesc, [&] (CViewContainer* v) {
-			return v->getBackgroundColor () == uidesc.color;
+	);
+
+	TEST(templateSwitchControl,
+		DummyUIDescription uidesc;
+		uidesc.tag = 12345;
+		testAttribute<UIViewSwitchContainer>(kUIViewSwitchContainer, kAttrTemplateSwitchControl, kTagName, &uidesc, [&] (UIViewSwitchContainer* v) {
+			auto controller = dynamic_cast<UIDescriptionViewSwitchController*> (v->getController ());
+			EXPECT(controller);
+			return controller->getSwitchControlTag() == uidesc.tag;
 		}, true);
 	);
-	
-	TEST(backgroundColorDrawStyle,
+
+	TEST(animationStyle,
 		DummyUIDescription uidesc;
-		testAttribute<CViewContainer>(kCViewContainer, kAttrBackgroundColorDrawStyle, "stroked", &uidesc, [] (CViewContainer* v) {
-			return v->getBackgroundColorDrawStyle () == kDrawStroked;
+		testAttribute<UIViewSwitchContainer>(kUIViewSwitchContainer, kAttrAnimationStyle, "fade", &uidesc, [] (UIViewSwitchContainer* v) {
+			return v->getAnimationStyle() == UIViewSwitchContainer::kFadeInOut;
 		});
-		testAttribute<CViewContainer>(kCViewContainer, kAttrBackgroundColorDrawStyle, "filled", &uidesc, [] (CViewContainer* v) {
-			return v->getBackgroundColorDrawStyle () == kDrawFilled;
+		testAttribute<UIViewSwitchContainer>(kUIViewSwitchContainer, kAttrAnimationStyle, "move", &uidesc, [] (UIViewSwitchContainer* v) {
+			return v->getAnimationStyle() == UIViewSwitchContainer::kMoveInOut;
 		});
-		testAttribute<CViewContainer>(kCViewContainer, kAttrBackgroundColorDrawStyle, "filled and stroked", &uidesc, [] (CViewContainer* v) {
-			return v->getBackgroundColorDrawStyle () == kDrawFilledAndStroked;
+		testAttribute<UIViewSwitchContainer>(kUIViewSwitchContainer, kAttrAnimationStyle, "push", &uidesc, [] (UIViewSwitchContainer* v) {
+			return v->getAnimationStyle() == UIViewSwitchContainer::kPushInOut;
 		});
 	);
 
-	TEST(backgroundColorDrawStyleValues,
+	TEST(animationTime,
 		DummyUIDescription uidesc;
-		testPossibleValues (kCViewContainer, kAttrBackgroundColorDrawStyle, &uidesc, {"stroked", "filled", "filled and stroked"});
+		testAttribute<UIViewSwitchContainer>(kUIViewSwitchContainer, kAttrAnimationTime, 1234, &uidesc, [] (UIViewSwitchContainer* v) {
+			return v->getAnimationTime() == 1234;
+		});
 	);
+	
+	TEST(animationStyleValues,
+		DummyUIDescription uidesc;
+		testPossibleValues (kUIViewSwitchContainer, kAttrAnimationStyle, &uidesc, {"fade", "move", "push"});
+	);
+	
 );
 
 } // VSTGUI
