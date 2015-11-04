@@ -151,7 +151,7 @@ TESTCASE(CViewTest,
 	TEST(attributes,
 		View v;
 		uint32_t outSize;
-		void* outData;
+		void* outData = nullptr;
 		EXPECT(v.getAttribute (0, 10, outData, outSize) == false);
 		EXPECT(v.removeAttribute (0) == false);
 		uint64_t myAttr = 500;
@@ -306,7 +306,11 @@ TESTCASE(CViewTest,
 		EXPECT(v.getMouseableArea (r) == v.getMouseableArea ());
 	);
 	
+);
+
 #if MAC
+TESTCASE(CViewTest,
+
 	TEST(idleAfterAttached,
 		auto parent = owned (new CViewContainer (CRect (0, 0, 100, 100)));
 		auto container = owned (new CViewContainer (CRect (50, 50, 100, 100)));
@@ -336,7 +340,9 @@ TESTCASE(CViewTest,
 		container->removeView (v);
 		container->removed (parent);
 	);
-#endif
+
 );
+
+#endif
 
 } // VSTGUI

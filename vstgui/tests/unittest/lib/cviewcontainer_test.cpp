@@ -364,11 +364,6 @@ TESTCASE(CViewContainerTest,
 		auto it2 = it++;
 		EXPECT(*it2 == v1);
 		EXPECT(*it == v2);
-		auto it3 = it2--;
-		EXPECT(*it3 == v1);
-		EXPECT(*it2 == nullptr);
-		++it;
-		EXPECT(*it == nullptr);
 	);
 
 	TEST(reverseIterator,

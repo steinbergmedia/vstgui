@@ -43,15 +43,22 @@
 #include <cassert>
 
 // assert handling
-#define VSTGUI_GET_ASSERT(_1, _2, NAME, ...) NAME
+
 #if ENABLE_UNIT_TESTS
-	#define VSTGUI_ASSERT1(x) if (!(x)) throw std::logic_error ("unknown")
-	#define VSTGUI_ASSERT2(x, msg) if (!(x)) throw std::logic_error (msg)
+template<typename Expect>
+void vstgui_assert (Expect expect, const char* str = nullptr)
+{
+	if (!expect)
+		throw std::logic_error (str ? str : "unknown");
+}
 #else
-	#define VSTGUI_ASSERT1(x) assert (x)
-	#define VSTGUI_ASSERT2(x, msg) assert (x)
+template<typename Expect>
+void vstgui_assert (Expect expect, const char* = nullptr)
+{
+	assert (expect);
+}
 #endif
-#define vstgui_assert(...) VSTGUI_GET_ASSERT(__VA_ARGS__, VSTGUI_ASSERT2, VSTGUI_ASSERT1)(__VA_ARGS__)
+
 
 namespace VSTGUI {
 

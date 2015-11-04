@@ -103,7 +103,11 @@ TESTCASE(UTF8StringTest,
 		EXPECT(str1 != str2);
 	);
 
+);
+
 #if MAC
+TESTCASE(UTF8StringTest,
+
 	TEST(platformString,
 		UTF8String str1 ("Test");
 		auto platformStr = str1.getPlatformString ();
@@ -115,7 +119,8 @@ TESTCASE(UTF8StringTest,
 		CFRelease (cfStr2);
 	);
 
-#endif
 );
+#endif
+
 
 } // VSTGUI

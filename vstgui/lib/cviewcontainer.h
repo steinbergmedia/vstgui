@@ -219,16 +219,6 @@ public:
 			return *this;
 		}
 		
-		Iterator<reverse> operator-- (int)
-		{
-			Iterator<reverse> old (*this);
-			if (reverse)
-				riterator--;
-			else
-				iterator--;
-			return old;
-		}
-		
 		CView* operator* () const
 		{
 			if (reverse)

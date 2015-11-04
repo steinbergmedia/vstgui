@@ -695,6 +695,8 @@ TESTCASE(UIDescriptionTests,
 		EXPECT(desc.setCustomAttributes("Test", nullptr) == false);
 	);
 
+);
+
 #if 0
 	TEST(completeExample,
 		Xml::MemoryContentProvider provider (completeExample, strlen(completeExample));
@@ -707,6 +709,5 @@ TESTCASE(UIDescriptionTests,
 		EXPECT(desc.saveToStream (outputStream, SaveUIDescription::kWriteImagesIntoXMLFile));
 	);
 #endif
-);
 
 } // VSTGUI

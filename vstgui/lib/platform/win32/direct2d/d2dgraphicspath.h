@@ -42,6 +42,7 @@
 #include <list>
 
 struct ID2D1PathGeometry;
+struct ID2D1Geometry;
 struct D2D1_GRADIENT_STOP;
 
 namespace VSTGUI {

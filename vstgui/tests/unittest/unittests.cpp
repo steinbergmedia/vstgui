@@ -37,9 +37,40 @@
 #if ENABLE_UNIT_TESTS
 
 #include <chrono>
+#include <cstdarg>
+#include <cstdio>
+
+#if WINDOWS
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <Windows.h>
+#endif
 
 namespace VSTGUI {
 namespace UnitTest {
+
+#if WINDOWS
+static void printf (const char* fmt, ...)
+{
+	va_list args;
+	va_start (args, fmt);
+	auto numBytes = vsnprintf (nullptr, 0, fmt, args);
+	if (numBytes <= 0)
+		return;
+	numBytes++;
+	auto buffer = new char[numBytes];
+	if (vsnprintf (buffer, numBytes, fmt, args) > 0)
+	{
+		if (IsDebuggerPresent ())
+			OutputDebugStringA (buffer);
+		else
+			::printf_s ("%s", buffer);
+	}
+
+	delete[] buffer;
+}
+#endif
 
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
@@ -106,10 +137,17 @@ void Context::print (const char* fmt, ...)
 {
 	va_list args;
 	va_start (args, fmt);
-	
+#if WINDOWS
+	auto numBytes = vsnprintf(nullptr, 0, fmt, args);
+	if (numBytes <= 0)
+		return;
+	auto buffer = new char[numBytes];
+	if (vsnprintf(buffer, numBytes, fmt, args) > 0)
+		printRaw (buffer);
+
+	delete[] buffer;
+#else
 	char* str = 0;
-	// TODO: Windows alternative implementation needed !
-#if !_WIN32
 	if (vasprintf (&str, fmt, args) >= 0 && str != 0)
 	{
 		printRaw (str);
@@ -205,7 +243,7 @@ public:
 		}
 		end = system_clock::now ();
 		intend--;
-		printf (" [%s] -> %lldµs\n", result ? "OK" : "Failed", duration_cast<microseconds> (end-start).count ());
+		printf (" [%s] -> %lld µs\n", result ? "OK" : "Failed", duration_cast<microseconds> (end-start).count ());
 		printOutput ();
 		return result;
 	}
@@ -242,8 +280,16 @@ static int RunTests ()
 namespace VSTGUI { void* gBundleRef = CFBundleGetMainBundle (); }
 #endif
 
+#if WINDOWS
+void* hInstance = nullptr;
+#endif
+
 int main ()
 {
+#if WINDOWS
+	CoInitialize (nullptr);
+	hInstance = GetModuleHandle (nullptr);
+#endif
 	return VSTGUI::UnitTest::RunTests ();
 }
 
