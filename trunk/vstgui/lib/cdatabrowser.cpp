@@ -1279,7 +1279,7 @@ void GenericStringListDataBrowserSource::dbDrawHeader (CDrawContext* context, co
 //-----------------------------------------------------------------------------
 void GenericStringListDataBrowserSource::dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser)
 {
-	context->setDrawMode (kAliasing);
+	context->setDrawMode (kAliasing|kNonIntegralMode);
 	context->setLineWidth (1.);
 	context->setFillColor (row % 2 ? rowBackColor : rowAlternateBackColor);
 	context->drawRect (size, kDrawFilled);

@@ -35,8 +35,9 @@
 #include "uiviewfactory.h"
 #include "uiattributes.h"
 #include "../lib/cview.h"
+#include "../lib/cstring.h"
 #include "detail/uiviewcreatorattributes.h"
-#include <map>
+#include "../lib/platform/std_unorderedmap.h"
 
 namespace VSTGUI {
 
@@ -116,17 +117,42 @@ namespace VSTGUI {
 	@endcode
 */
 
-typedef std::map<std::string, const IViewCreator*> ViewCreatorRegistryMap;
+typedef std::unordered_map<std::string, const IViewCreator*> ViewCreatorRegistryMap;
 
 //-----------------------------------------------------------------------------
-class ViewCreatorRegistry : public ViewCreatorRegistryMap
+class ViewCreatorRegistry : private ViewCreatorRegistryMap
 {
 public:
+	typedef ViewCreatorRegistryMap::const_iterator const_iterator;
+
+	const_iterator begin () { return ViewCreatorRegistryMap::begin (); }
+	const_iterator end () { return ViewCreatorRegistryMap::end (); }
+
 	const_iterator find (IdStringPtr name)
 	{
 		if (name)
 			return ViewCreatorRegistryMap::find (name);
 		return end ();
+	}
+
+	void add (IdStringPtr name, const IViewCreator* viewCreator)
+	{
+#if DEBUG
+		if (find (viewCreator->getViewName ()) != end ())
+		{
+			DebugPrint ("ViewCreateFunction for '%s' already registered\n", viewCreator->getViewName ());
+		}
+#endif
+		insert (std::make_pair (viewCreator->getViewName (), viewCreator));
+		
+	}
+
+	void remove (const IViewCreator* viewCreator)
+	{
+		ViewCreatorRegistry::const_iterator it = find (viewCreator->getViewName ());
+		if (it == end ())
+			return;
+		erase (it);
 	}
 };
 
@@ -364,8 +390,15 @@ bool UIViewFactory::getAttributesForView (CView* view, const IUIDescription* des
 }
 
 //-----------------------------------------------------------------------------
-void UIViewFactory::collectRegisteredViewNames (StringPtrList& viewNames, IdStringPtr baseClassNameFilter) const
+static bool viewNamesSortFunc (const std::string* lhs, const std::string* rhs)
 {
+	return *lhs < *rhs;
+}
+
+//-----------------------------------------------------------------------------
+void UIViewFactory::collectRegisteredViewNames (StringPtrList& viewNames, IdStringPtr _baseClassNameFilter) const
+{
+	UTF8StringView baseClassNameFilter (_baseClassNameFilter);
 	ViewCreatorRegistry& registry = getCreatorRegistry ();
 	ViewCreatorRegistry::const_iterator iter = registry.begin ();
 	while (iter != registry.end ())
@@ -376,7 +409,7 @@ void UIViewFactory::collectRegisteredViewNames (StringPtrList& viewNames, IdStri
 			ViewCreatorRegistry::const_iterator iter2 (iter);
 			while (iter2 != registry.end () && (*iter2).second->getBaseViewName ())
 			{
-				if ((*iter2).first == baseClassNameFilter || (*iter2).second->getBaseViewName () == baseClassNameFilter)
+				if (baseClassNameFilter == (*iter2).second->getViewName () || baseClassNameFilter == (*iter2).second->getBaseViewName ())
 				{
 					found = true;
 					break;
@@ -392,6 +425,7 @@ void UIViewFactory::collectRegisteredViewNames (StringPtrList& viewNames, IdStri
 		viewNames.push_back (&(*iter).first);
 		iter++;
 	}
+	viewNames.sort (viewNamesSortFunc);
 }
 
 //-----------------------------------------------------------------------------
@@ -446,23 +480,14 @@ bool UIViewFactory::getRememberedAttribute (CView* view, IdStringPtr attrName, s
 void UIViewFactory::registerViewCreator (const IViewCreator& viewCreator)
 {
 	ViewCreatorRegistry& registry = getCreatorRegistry ();
-#if DEBUG
-	if (registry.find (viewCreator.getViewName ()) != registry.end ())
-	{
-		DebugPrint ("ViewCreateFunction for '%s' already registered\n", viewCreator.getViewName ());
-	}
-#endif
-	registry.insert (std::make_pair (viewCreator.getViewName (), &viewCreator));
+	registry.add (viewCreator.getViewName (), &viewCreator);
 }
 
 //-----------------------------------------------------------------------------
 void UIViewFactory::unregisterViewCreator (const IViewCreator& viewCreator)
 {
 	ViewCreatorRegistry& registry = getCreatorRegistry ();
-	ViewCreatorRegistry::const_iterator it = registry.find (viewCreator.getViewName ());
-	if (it == registry.end ())
-		return;
-	registry.erase (it);
+	registry.remove (&viewCreator);
 }
 
 } // namespace

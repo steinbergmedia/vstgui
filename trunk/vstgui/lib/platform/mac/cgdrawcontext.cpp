@@ -425,7 +425,16 @@ void CGDrawContext::drawLines (const LineList& lines)
 				CGContextTranslateCTM (context, 0.5, 0.5);
 		}
 		
-		CGContextStrokeLineSegments (context, cgPoints, lines.size () * 2);
+		const size_t maxPointsPerIteration = 16;
+		const CGPoint* pointPtr = cgPoints;
+		size_t numPoints = lines.size () * 2;
+		while (numPoints)
+		{
+			size_t np = std::min (numPoints, std::min (maxPointsPerIteration, numPoints));
+			CGContextStrokeLineSegments (context, pointPtr, np);
+			numPoints -= np;
+			pointPtr += np;
+		}
 		delete [] cgPoints;
 		
 		releaseCGContext (context);
