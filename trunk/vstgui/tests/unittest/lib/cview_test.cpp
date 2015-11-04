@@ -309,7 +309,7 @@ TESTCASE(CViewTest,
 );
 
 #if MAC
-TESTCASE(CViewTest,
+TESTCASE(CViewMacTest,
 
 	TEST(idleAfterAttached,
 		auto parent = owned (new CViewContainer (CRect (0, 0, 100, 100)));

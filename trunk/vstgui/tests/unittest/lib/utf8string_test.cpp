@@ -106,7 +106,7 @@ TESTCASE(UTF8StringTest,
 );
 
 #if MAC
-TESTCASE(UTF8StringTest,
+TESTCASE(UTF8StringMacTest,
 
 	TEST(platformString,
 		UTF8String str1 ("Test");
