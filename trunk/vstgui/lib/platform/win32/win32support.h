@@ -68,6 +68,7 @@ extern void useD2D ();
 extern void unuseD2D ();
 extern IDWriteFactory* getDWriteFactory ();
 extern CDrawContext* createDrawContext (HWND window, HDC device, const CRect& surfaceRect);
+extern void useD2DHardwareRenderer (bool state);
 
 /// @cond ignore
 class GDIPlusGlobals : public CBaseObject

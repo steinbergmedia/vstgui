@@ -45,6 +45,17 @@
 
 namespace VSTGUI {
 
+static D2D1_RENDER_TARGET_TYPE gRenderTargetType = D2D1_RENDER_TARGET_TYPE_SOFTWARE;
+
+//-----------------------------------------------------------------------------
+void useD2DHardwareRenderer (bool state)
+{
+	if (state)
+		gRenderTargetType = D2D1_RENDER_TARGET_TYPE_HARDWARE;
+	else
+		gRenderTargetType = D2D1_RENDER_TARGET_TYPE_SOFTWARE;
+}
+
 //-----------------------------------------------------------------------------
 D2DDrawContext::D2DApplyClip::D2DApplyClip (D2DDrawContext* drawContext, bool halfPointOffset)
 : drawContext (drawContext)
@@ -125,10 +136,8 @@ void D2DDrawContext::createRenderTarget ()
 
 		D2D1_SIZE_U size = D2D1::SizeU (rc.right - rc.left, rc.bottom - rc.top);
 		ID2D1HwndRenderTarget* hwndRenderTarget = 0;
-//		D2D1_RENDER_TARGET_TYPE targetType = D2D1_RENDER_TARGET_TYPE_HARDWARE;
-		D2D1_RENDER_TARGET_TYPE targetType = D2D1_RENDER_TARGET_TYPE_SOFTWARE;
 		D2D1_PIXEL_FORMAT pixelFormat = D2D1::PixelFormat (DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_PREMULTIPLIED);
-		HRESULT hr = getD2DFactory ()->CreateHwndRenderTarget (D2D1::RenderTargetProperties (targetType, pixelFormat), D2D1::HwndRenderTargetProperties (window, size, D2D1_PRESENT_OPTIONS_RETAIN_CONTENTS), &hwndRenderTarget);
+		HRESULT hr = getD2DFactory ()->CreateHwndRenderTarget (D2D1::RenderTargetProperties (gRenderTargetType, pixelFormat), D2D1::HwndRenderTargetProperties (window, size, D2D1_PRESENT_OPTIONS_RETAIN_CONTENTS), &hwndRenderTarget);
 		if (SUCCEEDED (hr))
 		{
 			UINT dpix = 96;
