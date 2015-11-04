@@ -1,0 +1,715 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Source Files\lib">
+      <UniqueIdentifier>{a251f7f2-bde4-4523-a315-802604b6af14}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\lib\animation">
+      <UniqueIdentifier>{623e0ff9-75b3-4d0a-8937-21246cb115d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\lib\controls">
+      <UniqueIdentifier>{1f12ffad-3b76-4c42-9604-86c49e8bca6d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\lib\platform">
+      <UniqueIdentifier>{e4f00b58-b9c8-4cb4-af63-a6346b1cce09}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\lib\platform\win32">
+      <UniqueIdentifier>{579fece7-af99-4bec-a876-2c3092658b3e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\lib\platform\win32\direct2d">
+      <UniqueIdentifier>{7423b438-c301-4084-a4a0-d824315328f9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\uidescription">
+      <UniqueIdentifier>{9f753f62-7743-4964-8f3e-40038a97c257}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\uidescription\editing">
+      <UniqueIdentifier>{b11dcc5c-7519-4a8d-a8fb-cf9d0198a491}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\lib\cbitmap.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\cbitmapfilter.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\ccolor.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\cdatabrowser.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\cdrawcontext.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\cdropsource.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\cfileselector.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\cfont.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\cframe.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\cgradientview.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\cgraphicspath.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\coffscreencontext.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\copenglview.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\cpoint.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\crect.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\crowcolumnview.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\cscrollview.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\cshadowviewcontainer.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\csplitview.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\cstring.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\ctabview.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\ctooltipsupport.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\cview.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\cviewcontainer.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\cvstguitimer.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\vstguidebug.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\animation\animations.cpp">
+      <Filter>Source Files\lib\animation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\animation\animator.cpp">
+      <Filter>Source Files\lib\animation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\animation\timingfunctions.cpp">
+      <Filter>Source Files\lib\animation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\controls\cautoanimation.cpp">
+      <Filter>Source Files\lib\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\controls\cbuttons.cpp">
+      <Filter>Source Files\lib\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\controls\ccolorchooser.cpp">
+      <Filter>Source Files\lib\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\controls\ccontrol.cpp">
+      <Filter>Source Files\lib\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\controls\cfontchooser.cpp">
+      <Filter>Source Files\lib\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\controls\cknob.cpp">
+      <Filter>Source Files\lib\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\controls\cmoviebitmap.cpp">
+      <Filter>Source Files\lib\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\controls\cmoviebutton.cpp">
+      <Filter>Source Files\lib\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\controls\coptionmenu.cpp">
+      <Filter>Source Files\lib\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\controls\cparamdisplay.cpp">
+      <Filter>Source Files\lib\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\controls\cslider.cpp">
+      <Filter>Source Files\lib\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\controls\cspecialdigit.cpp">
+      <Filter>Source Files\lib\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\controls\csplashscreen.cpp">
+      <Filter>Source Files\lib\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\controls\cswitch.cpp">
+      <Filter>Source Files\lib\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\controls\ctextedit.cpp">
+      <Filter>Source Files\lib\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\controls\ctextlabel.cpp">
+      <Filter>Source Files\lib\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\controls\cvumeter.cpp">
+      <Filter>Source Files\lib\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\platform\win32\cfontwin32.cpp">
+      <Filter>Source Files\lib\platform\win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\platform\win32\gdiplusbitmap.cpp">
+      <Filter>Source Files\lib\platform\win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\platform\win32\gdiplusdrawcontext.cpp">
+      <Filter>Source Files\lib\platform\win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\platform\win32\gdiplusgraphicspath.cpp">
+      <Filter>Source Files\lib\platform\win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\platform\win32\win32dragcontainer.cpp">
+      <Filter>Source Files\lib\platform\win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\platform\win32\win32frame.cpp">
+      <Filter>Source Files\lib\platform\win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\platform\win32\win32openglview.cpp">
+      <Filter>Source Files\lib\platform\win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\platform\win32\win32optionmenu.cpp">
+      <Filter>Source Files\lib\platform\win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\platform\win32\win32support.cpp">
+      <Filter>Source Files\lib\platform\win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\platform\win32\win32textedit.cpp">
+      <Filter>Source Files\lib\platform\win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\platform\win32\winfileselector.cpp">
+      <Filter>Source Files\lib\platform\win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\platform\win32\winstring.cpp">
+      <Filter>Source Files\lib\platform\win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\platform\win32\direct2d\d2dbitmap.cpp">
+      <Filter>Source Files\lib\platform\win32\direct2d</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\platform\win32\direct2d\d2ddrawcontext.cpp">
+      <Filter>Source Files\lib\platform\win32\direct2d</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\platform\win32\direct2d\d2dfont.cpp">
+      <Filter>Source Files\lib\platform\win32\direct2d</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\platform\win32\direct2d\d2dgraphicspath.cpp">
+      <Filter>Source Files\lib\platform\win32\direct2d</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\uidescription\cstream.cpp">
+      <Filter>Source Files\uidescription</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\uidescription\uidescription.cpp">
+      <Filter>Source Files\uidescription</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\uidescription\uiviewcreator.cpp">
+      <Filter>Source Files\uidescription</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\uidescription\uiviewfactory.cpp">
+      <Filter>Source Files\uidescription</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\uidescription\uiviewswitchcontainer.cpp">
+      <Filter>Source Files\uidescription</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\uidescription\xmlparser.cpp">
+      <Filter>Source Files\uidescription</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\uidescription\editing\uiactions.cpp">
+      <Filter>Source Files\uidescription\editing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\uidescription\editing\uiattributescontroller.cpp">
+      <Filter>Source Files\uidescription\editing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\uidescription\editing\uibitmapscontroller.cpp">
+      <Filter>Source Files\uidescription\editing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\uidescription\editing\uicolorscontroller.cpp">
+      <Filter>Source Files\uidescription\editing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\uidescription\editing\uicrosslines.cpp">
+      <Filter>Source Files\uidescription\editing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\uidescription\editing\uidialogcontroller.cpp">
+      <Filter>Source Files\uidescription\editing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\uidescription\editing\uieditcontroller.cpp">
+      <Filter>Source Files\uidescription\editing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\uidescription\editing\uieditmenucontroller.cpp">
+      <Filter>Source Files\uidescription\editing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\uidescription\editing\uieditview.cpp">
+      <Filter>Source Files\uidescription\editing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\uidescription\editing\uifocussettingscontroller.cpp">
+      <Filter>Source Files\uidescription\editing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\uidescription\editing\uifontscontroller.cpp">
+      <Filter>Source Files\uidescription\editing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\uidescription\editing\uigridcontroller.cpp">
+      <Filter>Source Files\uidescription\editing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\uidescription\editing\uisearchtextfield.cpp">
+      <Filter>Source Files\uidescription\editing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\uidescription\editing\uiselection.cpp">
+      <Filter>Source Files\uidescription\editing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\uidescription\editing\uitagscontroller.cpp">
+      <Filter>Source Files\uidescription\editing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\uidescription\editing\uitemplatecontroller.cpp">
+      <Filter>Source Files\uidescription\editing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\uidescription\editing\uitemplatesettingscontroller.cpp">
+      <Filter>Source Files\uidescription\editing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\uidescription\editing\uiundomanager.cpp">
+      <Filter>Source Files\uidescription\editing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\uidescription\editing\uiviewcreatecontroller.cpp">
+      <Filter>Source Files\uidescription\editing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\clayeredviewcontainer.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\uidescription\uiattributes.cpp">
+      <Filter>Source Files\uidescription</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\uidescription\editing\uicolor.cpp">
+      <Filter>Source Files\uidescription\editing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\uidescription\editing\uicolorchoosercontroller.cpp">
+      <Filter>Source Files\uidescription\editing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\uidescription\editing\uicolorslider.cpp">
+      <Filter>Source Files\uidescription\editing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\uidescription\editing\uigradientscontroller.cpp">
+      <Filter>Source Files\uidescription\editing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\cdrawmethods.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\controls\csegmentbutton.cpp">
+      <Filter>Source Files\lib\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\controls\cscrollbar.cpp">
+      <Filter>Source Files\lib\controls</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\lib\clinestyle.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\lib\cbitmap.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\cbitmapfilter.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\ccolor.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\cdatabrowser.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\cdrawcontext.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\cdropsource.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\cfileselector.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\cfont.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\cframe.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\cgradientview.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\cgraphicspath.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\coffscreencontext.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\copenglview.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\cpoint.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\crect.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\crowcolumnview.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\cscrollview.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\cshadowviewcontainer.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\csplitview.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\cstring.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\ctabview.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\ctooltipsupport.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\cview.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\cviewcontainer.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\cvstguitimer.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\idependency.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\ifocusdrawing.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\vstguibase.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\vstguidebug.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\vstkeycode.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\animation\animations.h">
+      <Filter>Source Files\lib\animation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\animation\animator.h">
+      <Filter>Source Files\lib\animation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\animation\timingfunctions.h">
+      <Filter>Source Files\lib\animation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\controls\cautoanimation.h">
+      <Filter>Source Files\lib\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\controls\cbuttons.h">
+      <Filter>Source Files\lib\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\controls\ccolorchooser.h">
+      <Filter>Source Files\lib\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\controls\ccontrol.h">
+      <Filter>Source Files\lib\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\controls\cfontchooser.h">
+      <Filter>Source Files\lib\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\controls\cknob.h">
+      <Filter>Source Files\lib\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\controls\cmoviebitmap.h">
+      <Filter>Source Files\lib\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\controls\cmoviebutton.h">
+      <Filter>Source Files\lib\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\controls\coptionmenu.h">
+      <Filter>Source Files\lib\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\controls\cparamdisplay.h">
+      <Filter>Source Files\lib\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\controls\cslider.h">
+      <Filter>Source Files\lib\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\controls\cspecialdigit.h">
+      <Filter>Source Files\lib\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\controls\csplashscreen.h">
+      <Filter>Source Files\lib\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\controls\cswitch.h">
+      <Filter>Source Files\lib\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\controls\ctextedit.h">
+      <Filter>Source Files\lib\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\controls\ctextlabel.h">
+      <Filter>Source Files\lib\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\controls\cvumeter.h">
+      <Filter>Source Files\lib\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\platform\iplatformbitmap.h">
+      <Filter>Source Files\lib\platform</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\platform\iplatformframe.h">
+      <Filter>Source Files\lib\platform</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\platform\iplatformopenglview.h">
+      <Filter>Source Files\lib\platform</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\platform\iplatformoptionmenu.h">
+      <Filter>Source Files\lib\platform</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\platform\iplatformstring.h">
+      <Filter>Source Files\lib\platform</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\platform\iplatformtextedit.h">
+      <Filter>Source Files\lib\platform</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\platform\win32\cfontwin32.h">
+      <Filter>Source Files\lib\platform\win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\platform\win32\gdiplusbitmap.h">
+      <Filter>Source Files\lib\platform\win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\platform\win32\gdiplusdrawcontext.h">
+      <Filter>Source Files\lib\platform\win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\platform\win32\gdiplusgraphicspath.h">
+      <Filter>Source Files\lib\platform\win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\platform\win32\win32bitmapbase.h">
+      <Filter>Source Files\lib\platform\win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\platform\win32\win32dragcontainer.h">
+      <Filter>Source Files\lib\platform\win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\platform\win32\win32frame.h">
+      <Filter>Source Files\lib\platform\win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\platform\win32\win32openglview.h">
+      <Filter>Source Files\lib\platform\win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\platform\win32\win32optionmenu.h">
+      <Filter>Source Files\lib\platform\win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\platform\win32\win32support.h">
+      <Filter>Source Files\lib\platform\win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\platform\win32\win32textedit.h">
+      <Filter>Source Files\lib\platform\win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\platform\win32\winstring.h">
+      <Filter>Source Files\lib\platform\win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\platform\win32\direct2d\d2dbitmap.h">
+      <Filter>Source Files\lib\platform\win32\direct2d</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\platform\win32\direct2d\d2ddrawcontext.h">
+      <Filter>Source Files\lib\platform\win32\direct2d</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\platform\win32\direct2d\d2dfont.h">
+      <Filter>Source Files\lib\platform\win32\direct2d</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\platform\win32\direct2d\d2dgraphicspath.h">
+      <Filter>Source Files\lib\platform\win32\direct2d</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\uidescription\cstream.h">
+      <Filter>Source Files\uidescription</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\uidescription\doc.h">
+      <Filter>Source Files\uidescription</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\uidescription\icontroller.h">
+      <Filter>Source Files\uidescription</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\uidescription\uidescription.h">
+      <Filter>Source Files\uidescription</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\uidescription\uiviewcreator.h">
+      <Filter>Source Files\uidescription</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\uidescription\uiviewfactory.h">
+      <Filter>Source Files\uidescription</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\uidescription\uiviewswitchcontainer.h">
+      <Filter>Source Files\uidescription</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\uidescription\xmlparser.h">
+      <Filter>Source Files\uidescription</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\uidescription\editing\doc.h">
+      <Filter>Source Files\uidescription\editing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\uidescription\editing\iaction.h">
+      <Filter>Source Files\uidescription\editing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\uidescription\editing\uiactions.h">
+      <Filter>Source Files\uidescription\editing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\uidescription\editing\uiattributescontroller.h">
+      <Filter>Source Files\uidescription\editing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\uidescription\editing\uibasedatasource.h">
+      <Filter>Source Files\uidescription\editing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\uidescription\editing\uibitmapscontroller.h">
+      <Filter>Source Files\uidescription\editing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\uidescription\editing\uicolorscontroller.h">
+      <Filter>Source Files\uidescription\editing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\uidescription\editing\uicrosslines.h">
+      <Filter>Source Files\uidescription\editing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\uidescription\editing\uidialogcontroller.h">
+      <Filter>Source Files\uidescription\editing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\uidescription\editing\uieditcontroller.h">
+      <Filter>Source Files\uidescription\editing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\uidescription\editing\uieditmenucontroller.h">
+      <Filter>Source Files\uidescription\editing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\uidescription\editing\uieditordescription.h">
+      <Filter>Source Files\uidescription\editing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\uidescription\editing\uieditview.h">
+      <Filter>Source Files\uidescription\editing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\uidescription\editing\uifocussettingscontroller.h">
+      <Filter>Source Files\uidescription\editing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\uidescription\editing\uifontscontroller.h">
+      <Filter>Source Files\uidescription\editing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\uidescription\editing\uigrid.h">
+      <Filter>Source Files\uidescription\editing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\uidescription\editing\uigridcontroller.h">
+      <Filter>Source Files\uidescription\editing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\uidescription\editing\uisearchtextfield.h">
+      <Filter>Source Files\uidescription\editing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\uidescription\editing\uiselection.h">
+      <Filter>Source Files\uidescription\editing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\uidescription\editing\uitagscontroller.h">
+      <Filter>Source Files\uidescription\editing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\uidescription\editing\uitemplatecontroller.h">
+      <Filter>Source Files\uidescription\editing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\uidescription\editing\uitemplatesettingscontroller.h">
+      <Filter>Source Files\uidescription\editing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\uidescription\editing\uiundomanager.h">
+      <Filter>Source Files\uidescription\editing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\uidescription\editing\uiviewcreatecontroller.h">
+      <Filter>Source Files\uidescription\editing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\idatapackage.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\clayeredviewcontainer.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\uidescription\delegationcontroller.h">
+      <Filter>Source Files\uidescription</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\uidescription\iuidescription.h">
+      <Filter>Source Files\uidescription</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\uidescription\iviewfactory.h">
+      <Filter>Source Files\uidescription</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\uidescription\uiattributes.h">
+      <Filter>Source Files\uidescription</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\itouchevent.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\iviewlistener.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\cgraphicstransform.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\iscalefactorchangedlistener.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\uidescription\editing\uicolor.h">
+      <Filter>Source Files\uidescription\editing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\uidescription\editing\uicolorchoosercontroller.h">
+      <Filter>Source Files\uidescription\editing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\uidescription\editing\uicolorslider.h">
+      <Filter>Source Files\uidescription\editing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\uidescription\editing\uigradientscontroller.h">
+      <Filter>Source Files\uidescription\editing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\uidescription\iviewcreator.h">
+      <Filter>Source Files\uidescription</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\cdrawmethods.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\controls\csegmentbutton.h">
+      <Filter>Source Files\lib\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\animation\ianimationtarget.h">
+      <Filter>Source Files\lib\animation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\animation\itimingfunction.h">
+      <Filter>Source Files\lib\animation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\controls\cscrollbar.h">
+      <Filter>Source Files\lib\controls</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\cbuttonstate.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\cdrawdefs.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\clinestyle.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\cresourcedescription.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\lib\vstguifwd.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

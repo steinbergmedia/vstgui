@@ -422,6 +422,7 @@ bool CViewContainer::addView (CView *pView, CView* pBefore)
 		return false;
 
 	vstgui_assert (!pView->isSubview (), "view is already added to a container view");
+	vstgui_assert(!pView->isSubview());
 
 	if (pBefore)
 	{

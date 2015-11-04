@@ -73,8 +73,6 @@ const OSVERSIONINFOEX& getSystemVersion ()
 typedef HRESULT (WINAPI *D2D1CreateFactoryProc) (D2D1_FACTORY_TYPE type, REFIID riid, CONST D2D1_FACTORY_OPTIONS *pFactoryOptions, void** factory);
 typedef HRESULT (WINAPI *DWriteCreateFactoryProc) (DWRITE_FACTORY_TYPE factoryType, REFIID iid, void** factory);
 
-static int VSTGUI_Eval_Exception( int ) { return EXCEPTION_EXECUTE_HANDLER; }
-
 class D2DFactory
 {
 public:
@@ -105,6 +103,7 @@ public:
 
 	~D2DFactory ()
 	{
+		CFontDesc::cleanup ();
 		if (writeFactory)
 			writeFactory->Release ();
 		if (dwriteDll)
@@ -228,7 +227,6 @@ IPlatformBitmap* IPlatformBitmap::create (CPoint* size)
 //-----------------------------------------------------------------------------
 IPlatformBitmap* IPlatformBitmap::createFromPath (UTF8StringPtr absolutePath)
 {
-	// TODO: check that this implementation actually works
 	UTF8StringHelper path (absolutePath);
 	IStream* stream = 0;
 	if (SUCCEEDED (SHCreateStreamOnFileEx (path, STGM_READ|STGM_SHARE_DENY_WRITE, 0, false, 0, &stream)))
