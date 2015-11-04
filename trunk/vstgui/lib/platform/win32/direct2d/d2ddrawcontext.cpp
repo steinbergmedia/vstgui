@@ -125,7 +125,7 @@ void D2DDrawContext::createRenderTarget ()
 
 		D2D1_SIZE_U size = D2D1::SizeU (rc.right - rc.left, rc.bottom - rc.top);
 		ID2D1HwndRenderTarget* hwndRenderTarget = 0;
-//		D2D1_RENDER_TARGET_TYPE targetType = D2D1_RENDER_TARGET_TYPE_DEFAULT;
+//		D2D1_RENDER_TARGET_TYPE targetType = D2D1_RENDER_TARGET_TYPE_HARDWARE;
 		D2D1_RENDER_TARGET_TYPE targetType = D2D1_RENDER_TARGET_TYPE_SOFTWARE;
 		D2D1_PIXEL_FORMAT pixelFormat = D2D1::PixelFormat (DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_PREMULTIPLIED);
 		HRESULT hr = getD2DFactory ()->CreateHwndRenderTarget (D2D1::RenderTargetProperties (targetType, pixelFormat), D2D1::HwndRenderTargetProperties (window, size, D2D1_PRESENT_OPTIONS_RETAIN_CONTENTS), &hwndRenderTarget);
@@ -418,7 +418,6 @@ void D2DDrawContext::drawBitmap (CBitmap* bitmap, const CRect& dest, const CPoin
 				source.offset (offset.x, offset.y);
 
 				bitmapTransform.transform (source);
-				bitmapTransform.transform (d);
 
 				D2D1_RECT_F sourceRect = makeD2DRect (source);
 				renderTarget->DrawBitmap (d2d1Bitmap, makeD2DRect (d), alpha * currentState.globalAlpha, D2D1_BITMAP_INTERPOLATION_MODE_LINEAR, &sourceRect);
