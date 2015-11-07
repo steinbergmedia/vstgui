@@ -606,10 +606,8 @@ void CView::invalidRect (const CRect& rect)
 {
 	if (isAttached () && viewFlags & kVisible)
 	{
-		if (pParentView)
-			pParentView->invalidRect (rect);
-		else if (pParentFrame)
-			pParentFrame->invalidRect (rect);
+		vstgui_assert (pParentView);
+		pParentView->invalidRect (rect);
 	}
 }
 
@@ -748,8 +746,6 @@ CRect CView::getVisibleViewSize () const
 {
 	if (pParentView)
 		return static_cast<CViewContainer*>(pParentView)->getVisibleSize (size);
-	else if (pParentFrame)
-		return pParentFrame->getVisibleSize (size);
 	return CRect (0, 0, 0, 0);
 }
 
