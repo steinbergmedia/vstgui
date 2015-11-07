@@ -38,7 +38,7 @@
 #include "../cgraphicspath.h"
 #include <cassert>
 
-#define VSTGUI_CCONTROL_LOG_EDITING DEBUG
+#define VSTGUI_CCONTROL_LOG_EDITING 0 //DEBUG
 
 namespace VSTGUI {
 

@@ -84,7 +84,16 @@ protected:
 
 #else
 
+#if ENABLE_UNIT_TESTS
+template<typename Expect>
+void vstgui_assert (Expect expect, const char* str = nullptr)
+{
+	if (!expect)
+		throw std::logic_error (str ? str : "unknown");
+}
+#else
 #define vstgui_assert(...)
+#endif
 
 #endif // DEBUG
 

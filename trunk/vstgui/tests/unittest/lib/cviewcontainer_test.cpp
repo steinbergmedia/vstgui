@@ -78,6 +78,7 @@ public:
 	bool mouseDownCalled {false};
 	bool mouseMovedCalled {false};
 	bool mouseUpCalled {false};
+	bool mouseCancelCalled {false};
 	bool onDragEnterCalled {false};
 	bool onDragLeaveCalled {false};
 	bool onDragMoveCalled {false};
@@ -98,6 +99,12 @@ public:
 	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override
 	{
 		mouseUpCalled = true;
+		return kMouseEventHandled;
+	}
+
+	CMouseEventResult onMouseCancel () override
+	{
+		mouseCancelCalled = true;
 		return kMouseEventHandled;
 	}
 
@@ -424,6 +431,20 @@ TESTCASE(CViewContainerTest,
 		EXPECT(v2->onWheelCalled);
 	);
 
+	TEST(mouseCancel,
+		auto v1 = new MouseEventCheckView ();
+		CRect r1 (0, 0, 50, 50);
+		v1->setViewSize (r1);
+		v1->setMouseableArea (r1);
+		container->addView (v1);
+		
+		CPoint p (10, 10);
+		EXPECT(container->onMouseDown (p, kLButton) == kMouseEventHandled);
+		EXPECT(v1->mouseDownCalled);
+		container->onMouseCancel ();
+		EXPECT(v1->mouseCancelCalled);
+	);
+
 	TEST(dragEvents,
 		auto v1 = new MouseEventCheckView ();
 		auto v2 = new MouseEventCheckView ();
@@ -483,6 +504,55 @@ TESTCASE(CViewContainerTest,
 		EXPECT(v1->mouseDownCalled == false);
 		EXPECT(container->onMouseMoved (p1, kLButton) == kMouseEventNotHandled);
 		EXPECT(container->onMouseUp (p1, kLButton) == kMouseEventNotHandled);
+	);
+	
+	TEST(getViewsAt,
+		auto v1 = new TestView1 ();
+		auto v2 = new TestView1 ();
+		auto c1 = new CViewContainer (CRect (0, 0, 10, 10));
+		auto v1c1 = new TestView1 ();
+		v1c1->setVisible (false);
+		auto v2c1 = new TestView1 ();
+		c1->addView (v1c1);
+		c1->addView (v2c1);
+		v2->setMouseEnabled (false);
+		container->addView (v1);
+		container->addView (v2);
+		container->addView (c1);
+		CViewContainer::ViewList views;
+		container->getViewsAt (CPoint (0, 0), views, GetViewOptions (GetViewOptions::kNone));
+		EXPECT (views.size () == 2);
+		views.clear ();
+		container->getViewsAt (CPoint (0, 0), views, GetViewOptions (GetViewOptions::kMouseEnabled));
+		EXPECT (views.size () == 1);
+		views.clear ();
+		container->getViewsAt (CPoint (0, 0), views, GetViewOptions (GetViewOptions::kIncludeViewContainer));
+		EXPECT (views.size () == 3);
+		views.clear ();
+		container->getViewsAt (CPoint (0, 0), views, GetViewOptions (GetViewOptions::kDeep));
+		EXPECT (views.size () == 3);
+		views.clear ();
+		container->getViewsAt (CPoint (0, 0), views, GetViewOptions (GetViewOptions::kDeep | GetViewOptions::kIncludeInvisible));
+		EXPECT (views.size () == 4);
+	);
+	
+	TEST(getContainerAt,
+		auto c1 = new CViewContainer (CRect (0, 0, 10, 10));
+		auto c2 = new CViewContainer (CRect (0, 0, 10, 10));
+		auto c3 = new CViewContainer (CRect (0, 0, 10, 10));
+		c2->setMouseEnabled (false);
+		c3->setVisible (false);
+		c2->addView (c3);
+		container->addView (c1);
+		container->addView (c2);
+		auto res = container->getContainerAt (CPoint(0, 0), GetViewOptions (GetViewOptions::kNone));
+		EXPECT(res == container);
+		res = container->getContainerAt (CPoint(0, 0), GetViewOptions (GetViewOptions::kDeep));
+		EXPECT(res == c2);
+		res = container->getContainerAt (CPoint(0, 0), GetViewOptions (GetViewOptions::kDeep | GetViewOptions::kIncludeInvisible));
+		EXPECT(res == c3);
+		res = container->getContainerAt (CPoint(0, 0), GetViewOptions (GetViewOptions::kDeep | GetViewOptions::kMouseEnabled));
+		EXPECT(res == c1);
 	);
 	
 ); // TESTCASE
