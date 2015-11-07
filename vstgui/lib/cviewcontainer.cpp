@@ -309,8 +309,6 @@ CRect CViewContainer::getVisibleSize (const CRect& rect) const
 	{}
 	else if (pParentView)
 		result = static_cast<CViewContainer*> (pParentView)->getVisibleSize (result);
-	else if (pParentFrame)
-		result = pParentFrame->getVisibleSize (result);
 	result.offset (-viewSize.left, -viewSize.top);
 	return result;
 }
@@ -620,8 +618,6 @@ bool CViewContainer::invalidateDirtyViews ()
 	{
 		if (pParentView)
 			pParentView->invalidRect (getViewSize ());
-		else if (pParentFrame)
-			pParentFrame->invalidRect (getViewSize ());
 		return true;
 	}
 	FOREACHSUBVIEW
@@ -644,8 +640,6 @@ void CViewContainer::invalid ()
 	CRect _rect (getViewSize ());
 	if (pParentView)
 		pParentView->invalidRect (_rect);
-	else if (pParentFrame)
-		pParentFrame->invalidRect (_rect);
 }
 
 //-----------------------------------------------------------------------------
@@ -661,8 +655,6 @@ void CViewContainer::invalidRect (const CRect& rect)
 		return;
 	if (pParentView)
 		pParentView->invalidRect (_rect);
-	else if (pParentFrame)
-		pParentFrame->invalidRect (_rect);
 }
 
 //-----------------------------------------------------------------------------
