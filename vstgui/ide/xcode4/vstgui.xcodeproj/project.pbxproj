@@ -15,6 +15,7 @@
 		F40E63FF16821A6300426847 /* cgradientview.h in Headers */ = {isa = PBXBuildFile; fileRef = F40E63FC16821A6300426847 /* cgradientview.h */; };
 		F40E640016821A6300426847 /* cgradientview.h in Headers */ = {isa = PBXBuildFile; fileRef = F40E63FC16821A6300426847 /* cgradientview.h */; };
 		F41DA9341406860B00EDAB4B /* uifocussettingscontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F41DA9331406860B00EDAB4B /* uifocussettingscontroller.cpp */; };
+		F41F03381BE7DC0A00C47DEA /* uiviewswitchcontainer_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F41F03371BE7DC0A00C47DEA /* uiviewswitchcontainer_test.cpp */; };
 		F4201BD219BB0B5F0001D594 /* clinestyle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4201BD019BB0B5F0001D594 /* clinestyle.cpp */; };
 		F4201BD319BB0B5F0001D594 /* clinestyle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4201BD019BB0B5F0001D594 /* clinestyle.cpp */; };
 		F4201BD419BB0B5F0001D594 /* clinestyle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4201BD019BB0B5F0001D594 /* clinestyle.cpp */; };
@@ -406,6 +407,8 @@
 		F40E63FC16821A6300426847 /* cgradientview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cgradientview.h; sourceTree = "<group>"; };
 		F41DA9311406860300EDAB4B /* uifocussettingscontroller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uifocussettingscontroller.h; sourceTree = "<group>"; };
 		F41DA9331406860B00EDAB4B /* uifocussettingscontroller.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uifocussettingscontroller.cpp; sourceTree = "<group>"; };
+		F41F03371BE7DC0A00C47DEA /* uiviewswitchcontainer_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uiviewswitchcontainer_test.cpp; sourceTree = "<group>"; };
+		F41F03391BE7DE0500C47DEA /* uidescriptionadapter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = uidescriptionadapter.h; sourceTree = "<group>"; };
 		F4201BD019BB0B5F0001D594 /* clinestyle.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = clinestyle.cpp; sourceTree = "<group>"; };
 		F4201BD119BB0B5F0001D594 /* clinestyle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = clinestyle.h; sourceTree = "<group>"; };
 		F4201BD719BB0CCE0001D594 /* cdrawdefs.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = cdrawdefs.h; sourceTree = "<group>"; };
@@ -1159,8 +1162,10 @@
 				F4B1D4EE1BE0E6A600EE6BDA /* delegationcontroller_test.cpp */,
 				F4B0AF881BDD378F0033C579 /* uiattributes_test.cpp */,
 				F4370BDE1BDE5CF600DC943A /* uidescription_test.cpp */,
+				F41F03391BE7DE0500C47DEA /* uidescriptionadapter.h */,
 				F490FDD71BE3CF8000386A09 /* uiviewcreator */,
 				F4B0AF7E1BDD02A20033C579 /* uiviewfactory_test.cpp */,
+				F41F03371BE7DC0A00C47DEA /* uiviewswitchcontainer_test.cpp */,
 				F4370BDC1BDE56E300DC943A /* xmlparser_test.cpp */,
 			);
 			path = uidescription;
@@ -1578,6 +1583,7 @@
 				F490FDE41BE4CF4100386A09 /* cscrollviewcreator_test.cpp in Sources */,
 				F490FDEE1BE5121500386A09 /* coptionmenucreator_test.cpp in Sources */,
 				F490FE081BE627B100386A09 /* cxypadcreator_test.cpp in Sources */,
+				F41F03381BE7DC0A00C47DEA /* uiviewswitchcontainer_test.cpp in Sources */,
 				F490FDFC1BE61C4D00386A09 /* cvumetercreator_test.cpp in Sources */,
 				F4F7D5FC1BDBB4BD00A8B6FD /* animator_test.cpp in Sources */,
 				F4762E881BDA957E00810447 /* utf8stringview_test.cpp in Sources */,

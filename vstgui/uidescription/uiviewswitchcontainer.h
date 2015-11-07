@@ -68,12 +68,11 @@ public:
 	void setAnimationStyle (AnimationStyle style);
 	AnimationStyle getAnimationStyle () const { return animationStyle; }
 
+	bool attached (CView* parent) VSTGUI_OVERRIDE_VMETHOD;
+	bool removed (CView* parent) VSTGUI_OVERRIDE_VMETHOD;
 //-----------------------------------------------------------------------------
 	CLASS_METHODS (UIViewSwitchContainer, CViewContainer)
 protected:
-	bool attached (CView* parent) VSTGUI_OVERRIDE_VMETHOD;
-	bool removed (CView* parent) VSTGUI_OVERRIDE_VMETHOD;
-
 	IViewSwitchController* controller;
 	int32_t currentViewIndex;
 	uint32_t animationTime;
@@ -92,8 +91,8 @@ public:
 	UIViewSwitchContainer* getViewSwitchContainer () const { return viewSwitch; }
 
 	virtual CView* createViewForIndex (int32_t index) = 0;
-	virtual void switchContainerAttached () {}
-	virtual void switchContainerRemoved () {}
+	virtual void switchContainerAttached () = 0;
+	virtual void switchContainerRemoved () = 0;
 protected:
 	UIViewSwitchContainer* viewSwitch;
 };

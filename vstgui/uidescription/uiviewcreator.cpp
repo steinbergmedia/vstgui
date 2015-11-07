@@ -3233,7 +3233,7 @@ public:
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD
 	{
 		UIViewSwitchContainer* vsc = new UIViewSwitchContainer (CRect (0, 0, 100, 100));
-		new UIDescriptionViewSwitchController (vsc, dynamic_cast<const UIDescription*> (description), description->getController ());
+		new UIDescriptionViewSwitchController (vsc, description, description->getController ());
 		return vsc;
 	}
 
@@ -3596,11 +3596,10 @@ public:
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD
 	{
 		CGradientView* gradientView = new CGradientView (CRect (0, 0, 100, 100));
-		const UIDescription* uiDesc = dynamic_cast<const UIDescription*>(description);
-		if (uiDesc)
+		if (description)
 		{
 			std::list<const std::string*> gradients;
-			uiDesc->collectGradientNames (gradients);
+			description->collectGradientNames (gradients);
 			if (gradients.size () > 0)
 			{
 				gradientView->setGradient (description->getGradient (gradients.front ()->c_str ()));

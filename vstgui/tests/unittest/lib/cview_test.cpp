@@ -33,9 +33,11 @@
 //-----------------------------------------------------------------------------
 
 #include "../unittests.h"
+#include "../../../lib/cstring.h"
 #include "../../../lib/cview.h"
 #include "../../../lib/cviewcontainer.h"
 #include "../../../lib/iviewlistener.h"
+#include "../../../lib/idatapackage.h"
 
 #if MAC
 #include <CoreFoundation/CoreFoundation.h>
@@ -344,5 +346,105 @@ TESTCASE(CViewMacTest,
 );
 
 #endif
+
+struct DataPackage : IDataPackage
+{
+	UTF8String str;
+	UTF8String path;
+	int8_t binary[3];
+	
+	uint32_t getCount () const override
+	{
+		return 3;
+	}
+	
+	uint32_t getDataSize (uint32_t index) const override
+	{
+		if (index == 0)
+			return static_cast<uint32_t> (str.getByteCount ());
+		else if (index == 1)
+			return static_cast<uint32_t> (path.getByteCount ());
+		else if (index == 2)
+			return 3;
+		return 0;
+	}
+	
+	Type getDataType (uint32_t index) const override
+	{
+		if (index == 0)
+			return kText;
+		else if (index == 1)
+			return kFilePath;
+		else if (index == 2)
+			return kBinary;
+		return kError;
+	}
+	
+	uint32_t getData (uint32_t index, const void*& buffer, Type& type) const override
+	{
+		type = kError;
+		if (index == 0)
+		{
+			buffer = str.get ();
+			type = kText;
+		}
+		else if (index == 1)
+		{
+			buffer = path.get ();
+			type = kFilePath;
+		}
+		else if (index == 2)
+		{
+			buffer = binary;
+			type = kBinary;
+		}
+		return getDataSize (index);
+	}
+	
+};
+
+TESTCASE(CDragContainerHelperTest,
+
+	TEST(count,
+		DataPackage package;
+		CDragContainerHelper helper (&package);
+		EXPECT(helper.getCount () == 3);
+	);
+
+	TEST(getType,
+		DataPackage package;
+		CDragContainerHelper helper (&package);
+		EXPECT(helper.getType (0) == CDragContainerHelper::kUnicodeText);
+		EXPECT(helper.getType (1) == CDragContainerHelper::kFile);
+		EXPECT(helper.getType (2) == CDragContainerHelper::kUnknown);
+		EXPECT(helper.getType (3) == CDragContainerHelper::kError);
+	);
+
+	TEST(iteration,
+		DataPackage package;
+		package.str = "Test";
+		package.path = "/var/tmp/test";
+		CDragContainerHelper helper (&package);
+		int32_t size;
+		int32_t type;
+		auto res = helper.first (size, type);
+		EXPECT(res == package.str.get ());
+		EXPECT(size == static_cast<int32_t> (package.str.getByteCount ()));
+		EXPECT(type == CDragContainerHelper::kUnicodeText);
+		res = helper.next(size, type);
+		EXPECT(res == package.path.get ());
+		EXPECT(size == static_cast<int32_t> (package.path.getByteCount ()));
+		EXPECT(type == CDragContainerHelper::kFile);
+		res = helper.next(size, type);
+		EXPECT(res == package.binary);
+		EXPECT(size == 3);
+		EXPECT(type == CDragContainerHelper::kUnknown);
+		res = helper.next(size, type);
+		EXPECT(res == nullptr);
+		EXPECT(size == 0);
+		EXPECT(type == CDragContainerHelper::kError);
+	);
+
+);
 
 } // VSTGUI

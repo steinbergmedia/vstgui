@@ -43,21 +43,6 @@
 namespace VSTGUI {
 using namespace UIViewCreator;
 
-static bool operator!= (const CGradient& g1, const CGradient& g2)
-{
-	auto cs1 = g1.getColorStops ();
-	auto cs2 = g2.getColorStops ();
-	return cs1 != cs2;
-}
-
-static bool operator== (const CGradient& g1, const CGradient& g2)
-{
-	auto cs1 = g1.getColorStops ();
-	auto cs2 = g2.getColorStops ();
-	return cs1 == cs2;
-}
-
-
 TESTCASE(CTextButtonCreatorTest,
 
 	TEST(title,

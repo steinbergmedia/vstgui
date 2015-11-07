@@ -7,6 +7,8 @@ SCRIPT_DIR = File.expand_path(File.dirname(__FILE__))
 puts "Generating Code Coveragew with:"
 puts "VSTGUI_DIR=" + VSTGUI_DIR
 puts "OBJ_DIR=" + OBJ_DIR
+puts "UNITTEST_EXE=" + UNITTEST_EXE
+puts "SCRIPT_DIR=" + SCRIPT_DIR
 
 begin
 
