@@ -268,13 +268,11 @@ void QuartzGraphicsPath::pixelAlign (CDrawContext* context)
 	{
 		CGMutablePathRef path;
 		const CGDrawContext& context;
-		CGAffineTransform transform;
 		
 		PathIterator (const CGDrawContext& context)
 		: context (context)
 		{
 			path = CGPathCreateMutable ();
-			transform = CGAffineTransformMakeTranslation (-0.5, 0.5);
 		}
 		void apply (const CGPathElement* element)
 		{
@@ -283,20 +281,20 @@ void QuartzGraphicsPath::pixelAlign (CDrawContext* context)
 				case kCGPathElementMoveToPoint:
 				{
 					element->points[0] = context.pixelAlligned (element->points[0]);
-					CGPathMoveToPoint (path, &transform, element->points[0].x, element->points[0].y);
+					CGPathMoveToPoint (path, 0, element->points[0].x, element->points[0].y);
 					break;
 				}
 				case kCGPathElementAddLineToPoint:
 				{
 					element->points[0] = context.pixelAlligned (element->points[0]);
-					CGPathAddLineToPoint (path, &transform, element->points[0].x, element->points[0].y);
+					CGPathAddLineToPoint (path, 0, element->points[0].x, element->points[0].y);
 					break;
 				}
 				case kCGPathElementAddQuadCurveToPoint:
 				{
 					element->points[0] = context.pixelAlligned (element->points[0]);
 					element->points[1] = context.pixelAlligned (element->points[1]);
-					CGPathAddQuadCurveToPoint (path, &transform, element->points[0].x, element->points[0].y, element->points[1].x, element->points[1].y);
+					CGPathAddQuadCurveToPoint (path, 0, element->points[0].x, element->points[0].y, element->points[1].x, element->points[1].y);
 					break;
 				}
 				case kCGPathElementAddCurveToPoint:
@@ -304,7 +302,7 @@ void QuartzGraphicsPath::pixelAlign (CDrawContext* context)
 					element->points[0] = context.pixelAlligned (element->points[0]);
 					element->points[1] = context.pixelAlligned (element->points[1]);
 					element->points[2] = context.pixelAlligned (element->points[2]);
-					CGPathAddCurveToPoint (path, &transform, element->points[0].x, element->points[0].y, element->points[1].x, element->points[1].y, element->points[2].x, element->points[2].y);
+					CGPathAddCurveToPoint (path, 0, element->points[0].x, element->points[0].y, element->points[1].x, element->points[1].y, element->points[2].x, element->points[2].y);
 					break;
 				}
 				case kCGPathElementCloseSubpath:

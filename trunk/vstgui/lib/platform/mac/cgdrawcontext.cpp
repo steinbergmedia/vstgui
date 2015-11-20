@@ -202,8 +202,10 @@ void CGDrawContext::drawGraphicsPath (CGraphicsPath* _path, PathDrawMode mode, C
 		}
 		if (getDrawMode ().integralMode ())
 		{
+			CGContextSaveGState (context);
 			applyLineWidthCTM (context);
 			path->pixelAlign (this);
+			CGContextRestoreGState (context);
 			CGContextAddPath (context, path->getCGPathRef ());
 		}
 		else
@@ -235,7 +237,6 @@ void CGDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradient& g
 		CGPoint end = CGPointFromCPoint (endPoint);
 		if (getDrawMode ().integralMode ())
 		{
-			applyLineWidthCTM (context);
 			start = pixelAlligned (start);
 			end = pixelAlligned (end);
 		}
@@ -847,12 +848,15 @@ void CGDrawContext::applyLineStyle (CGContextRef context)
 //-----------------------------------------------------------------------------
 CGRect CGDrawContext::pixelAlligned (const CGRect& r) const
 {
-	CGRect result = CGContextConvertRectToDeviceSpace (cgContext, r);
+	CGRect result;
+	result.origin = CGContextConvertPointToDeviceSpace (cgContext, r.origin);
+	result.size = CGContextConvertSizeToDeviceSpace (cgContext, r.size);
 	result.origin.x = std::round (result.origin.x);
 	result.origin.y = std::round (result.origin.y);
 	result.size.width = std::round (result.size.width);
 	result.size.height = std::round (result.size.height);
-	result = CGContextConvertRectToUserSpace (cgContext, result);
+	result.origin = CGContextConvertPointToUserSpace (cgContext, result.origin);
+	result.size = CGContextConvertSizeToUserSpace (cgContext, result.size);
 	return result;
 }
 
