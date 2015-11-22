@@ -182,6 +182,7 @@
 		F4B0AF811BDD25DF0033C579 /* cstream_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4B0AF801BDD25DF0033C579 /* cstream_test.cpp */; };
 		F4B0AF891BDD378F0033C579 /* uiattributes_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4B0AF881BDD378F0033C579 /* uiattributes_test.cpp */; };
 		F4B1D4EF1BE0E6A600EE6BDA /* delegationcontroller_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4B1D4EE1BE0E6A600EE6BDA /* delegationcontroller_test.cpp */; };
+		F4B627971C01AFC4000A7D6C /* platform_helper_mac.mm in Sources */ = {isa = PBXBuildFile; fileRef = F4B627961C01AFC4000A7D6C /* platform_helper_mac.mm */; };
 		F4C0F1F3197AA20700A48B02 /* uicolorslider.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4C0F1F1197AA20700A48B02 /* uicolorslider.cpp */; };
 		F4C0F1F4197AA20700A48B02 /* uicolorslider.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4C0F1F1197AA20700A48B02 /* uicolorslider.cpp */; };
 		F4C0F1F6197AA20700A48B02 /* uicolorslider.h in Headers */ = {isa = PBXBuildFile; fileRef = F4C0F1F2197AA20700A48B02 /* uicolorslider.h */; };
@@ -215,6 +216,7 @@
 		F4E3905013080ECC00615042 /* uiviewfactory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4E3902F13080ECC00615042 /* uiviewfactory.cpp */; };
 		F4E3905613080ECC00615042 /* uiviewswitchcontainer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4E3903513080ECC00615042 /* uiviewswitchcontainer.cpp */; };
 		F4E3905913080ECC00615042 /* xmlparser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4E3903813080ECC00615042 /* xmlparser.cpp */; };
+		F4E765A71BFB830D006D83CE /* cframe_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4E765A61BFB830D006D83CE /* cframe_test.cpp */; };
 		F4E9C6A017A826D000F42EF8 /* animations.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F11A13080AD100F0A613 /* animations.cpp */; };
 		F4E9C6A117A826D000F42EF8 /* animator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F11C13080AD100F0A613 /* animator.cpp */; };
 		F4E9C6A217A826D000F42EF8 /* timingfunctions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F11E13080AD100F0A613 /* timingfunctions.cpp */; };
@@ -656,6 +658,8 @@
 		F4B0AF801BDD25DF0033C579 /* cstream_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cstream_test.cpp; sourceTree = "<group>"; };
 		F4B0AF881BDD378F0033C579 /* uiattributes_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uiattributes_test.cpp; sourceTree = "<group>"; };
 		F4B1D4EE1BE0E6A600EE6BDA /* delegationcontroller_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = delegationcontroller_test.cpp; sourceTree = "<group>"; };
+		F4B627951C01AEDA000A7D6C /* platform_helper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = platform_helper.h; sourceTree = "<group>"; };
+		F4B627961C01AFC4000A7D6C /* platform_helper_mac.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = platform_helper_mac.mm; sourceTree = "<group>"; };
 		F4C0F1F1197AA20700A48B02 /* uicolorslider.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uicolorslider.cpp; sourceTree = "<group>"; };
 		F4C0F1F2197AA20700A48B02 /* uicolorslider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uicolorslider.h; sourceTree = "<group>"; };
 		F4C0F1F9197BC2F900A48B02 /* uicolorchoosercontroller.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uicolorchoosercontroller.cpp; sourceTree = "<group>"; };
@@ -708,6 +712,7 @@
 		F4E3905F13081BA500615042 /* win32 */ = {isa = PBXFileReference; lastKnownFileType = folder; path = win32; sourceTree = "<group>"; };
 		F4E3906013081BCD00615042 /* doxygen */ = {isa = PBXFileReference; lastKnownFileType = folder; name = doxygen; path = ../../doxygen; sourceTree = "<group>"; };
 		F4E706AB1907BC0000765574 /* utf8stringview_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = utf8stringview_test.cpp; sourceTree = "<group>"; };
+		F4E765A61BFB830D006D83CE /* cframe_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cframe_test.cpp; sourceTree = "<group>"; };
 		F4E9C69317A8266200F42EF8 /* libvstgui-ios.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libvstgui-ios.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F4E9C69417A8266200F42EF8 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		F4E9C6ED17A82BC800F42EF8 /* uiviewframe.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; lineEnding = 0; path = uiviewframe.mm; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
@@ -1207,6 +1212,9 @@
 				F4462D2D1756444800E6835D /* idependency_test.cpp */,
 				F490FDD51BE3C82F00386A09 /* utf8string_test.cpp */,
 				F4E706AB1907BC0000765574 /* utf8stringview_test.cpp */,
+				F4E765A61BFB830D006D83CE /* cframe_test.cpp */,
+				F4B627951C01AEDA000A7D6C /* platform_helper.h */,
+				F4B627961C01AFC4000A7D6C /* platform_helper_mac.mm */,
 			);
 			path = lib;
 			sourceTree = "<group>";
@@ -1573,6 +1581,7 @@
 				F490FE141BE629D100386A09 /* cmoviebuttoncreator_test.cpp in Sources */,
 				F4B1D4EF1BE0E6A600EE6BDA /* delegationcontroller_test.cpp in Sources */,
 				F4762E831BDA957E00810447 /* cviewcontainer_test.cpp in Sources */,
+				F4E765A71BFB830D006D83CE /* cframe_test.cpp in Sources */,
 				F490FDE01BE4C06800386A09 /* clayeredviewcontainercreator_test.cpp in Sources */,
 				F490FDD61BE3C82F00386A09 /* utf8string_test.cpp in Sources */,
 				F4B0AF891BDD378F0033C579 /* uiattributes_test.cpp in Sources */,
@@ -1606,6 +1615,7 @@
 				F4B0AF7A1BDCFB640033C579 /* cfont_test.cpp in Sources */,
 				F490FDD41BE2C5F000386A09 /* clinestyle_test.cpp in Sources */,
 				F490FDFE1BE61D7500386A09 /* canimationsplashscreencreator_test.cpp in Sources */,
+				F4B627971C01AFC4000A7D6C /* platform_helper_mac.mm in Sources */,
 				F490FDF81BE60F9200386A09 /* cknobcreator_test.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -292,7 +292,7 @@ TESTCASE(CViewTest,
 		EXPECT(v.onMouseEntered (p, kLButton) == kMouseEventNotImplemented);
 		EXPECT(v.onMouseExited (p, kLButton) == kMouseEventNotImplemented);
 		EXPECT(v.notify (nullptr, nullptr) == kMessageUnknown);
-		EXPECT(v.doDrag (nullptr) == CView::kDragError);
+		EXPECT(v.doDrag (nullptr) == kDragError);
 		EXPECT(v.onDrop (nullptr, p) == false);
 		EXPECT(v.getEditor () == nullptr);
 		EXPECT(v.isDirty () == false);

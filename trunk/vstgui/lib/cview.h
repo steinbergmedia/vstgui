@@ -48,59 +48,6 @@
 namespace VSTGUI {
 class CViewAttributeEntry;
 
-//----------------------------
-// @brief Mouse Wheel Axis
-//----------------------------
-enum CMouseWheelAxis
-{
-	kMouseWheelAxisX = 0,
-	kMouseWheelAxisY
-};
-
-//----------------------------
-// @brief Mouse Event Results
-//----------------------------
-enum CMouseEventResult
-{
-	kMouseEventNotImplemented = 0,
-	kMouseEventHandled,
-	kMouseEventNotHandled,
-	kMouseDownEventHandledButDontNeedMovedOrUpEvents,
-	kMouseMoveEventHandledButDontNeedMoreEvents
-};
-
-//----------------------------
-// @brief Cursor Type
-//----------------------------
-enum CCursorType
-{
-	kCursorDefault = 0,				///< arrow cursor
-	kCursorWait,					///< wait cursor
-	kCursorHSize,					///< horizontal size cursor
-	kCursorVSize,					///< vertical size cursor
-	kCursorSizeAll,					///< size all cursor
-	kCursorNESWSize,				///< northeast and southwest size cursor
-	kCursorNWSESize,				///< northwest and southeast size cursor
-	kCursorCopy,					///< copy cursor (mainly for drag&drop operations)
-	kCursorNotAllowed,				///< not allowed cursor (mainly for drag&drop operations)
-	kCursorHand						///< hand cursor
-};
-
-//----------------------------
-// @brief View Autosizing
-//----------------------------
-enum CViewAutosizing
-{
-	kAutosizeNone			= 0,
-	kAutosizeLeft			= 1 << 0,
-	kAutosizeTop			= 1 << 1,
-	kAutosizeRight			= 1 << 2,
-	kAutosizeBottom			= 1 << 3,
-	kAutosizeColumn			= 1 << 4,	///< view containers treat their children as columns
-	kAutosizeRow			= 1 << 5,	///< view containers treat their children as rows
-	kAutosizeAll			= kAutosizeLeft | kAutosizeTop | kAutosizeRight | kAutosizeBottom
-};
-
 //-----------------------------------------------------------------------------
 // Definitions of special characters in a platform independent way
 extern UTF8StringPtr kDegreeSymbol;			///< degree sign
@@ -194,12 +141,6 @@ public:
 	/// @name Drag & Drop Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	enum DragResult {
-		kDragRefused = 0,
-		kDragMoved,
-		kDragCopied,
-		kDragError = -1
-	};
 	virtual DragResult doDrag (IDataPackage* source, const CPoint& offset = CPoint (0, 0), CBitmap* dragBitmap = 0);	///< start a drag operation. See CDropSource to create the source data package
 	virtual bool onDrop (IDataPackage* drag, const CPoint& where) { return false; }				///< called if a drag is dropped onto this view
 	virtual void onDragEnter (IDataPackage* drag, const CPoint& where) {}						///< called if a drag is entering this view

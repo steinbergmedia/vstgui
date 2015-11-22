@@ -612,9 +612,9 @@ COffscreenContext* Win32Frame::createOffscreenContext (CCoord width, CCoord heig
 }
 
 //------------------------------------------------------------------------------------
-CView::DragResult Win32Frame::doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap)
+DragResult Win32Frame::doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap)
 {
-	CView::DragResult result = CView::kDragRefused;
+	DragResult result = kDragRefused;
 	Win32DataObject* dataObject = new Win32DataObject (source);
 	Win32DropSource* dropSource = new Win32DropSource;
 	DWORD outEffect;
@@ -624,9 +624,9 @@ CView::DragResult Win32Frame::doDrag (IDataPackage* source, const CPoint& offset
 	if (hResult == DRAGDROP_S_DROP)
 	{
 		if (outEffect == DROPEFFECT_MOVE)
-			result = CView::kDragMoved;
+			result = kDragMoved;
 		else
-			result = CView::kDragCopied;
+			result = kDragCopied;
 	}
 	return result;
 }

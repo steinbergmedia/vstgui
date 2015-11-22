@@ -123,7 +123,7 @@ public:
 	
 	virtual COffscreenContext* createOffscreenContext (CCoord width, CCoord height, double scaleFactor = 1.) = 0; ///< create an offscreen draw device
 
-	virtual CView::DragResult doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap) = 0; ///< start a drag operation
+	virtual DragResult doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap) = 0; ///< start a drag operation
 
 	virtual void setClipboard (IDataPackage* data) = 0;	///< set clipboard data
 	virtual IDataPackage* getClipboard () = 0;			///< get clipboard data

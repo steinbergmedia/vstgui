@@ -76,7 +76,7 @@ public:
 #endif
 	IPlatformViewLayer* createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer) VSTGUI_OVERRIDE_VMETHOD;
 	COffscreenContext* createOffscreenContext (CCoord width, CCoord height, double scaleFactor = 1.) VSTGUI_OVERRIDE_VMETHOD;
-	CView::DragResult doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap) VSTGUI_OVERRIDE_VMETHOD { return CView::kDragError; }
+	DragResult doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap) VSTGUI_OVERRIDE_VMETHOD { return kDragError; }
 	void setClipboard (IDataPackage* data) VSTGUI_OVERRIDE_VMETHOD {}
 	IDataPackage* getClipboard () VSTGUI_OVERRIDE_VMETHOD { return nullptr; }
 

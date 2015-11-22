@@ -39,6 +39,67 @@
 
 namespace VSTGUI {
 
+// enums
+//----------------------------
+// @brief Mouse Wheel Axis
+//----------------------------
+enum CMouseWheelAxis
+{
+	kMouseWheelAxisX = 0,
+	kMouseWheelAxisY
+};
+
+//----------------------------
+// @brief Mouse Event Results
+//----------------------------
+enum CMouseEventResult
+{
+	kMouseEventNotImplemented = 0,
+	kMouseEventHandled,
+	kMouseEventNotHandled,
+	kMouseDownEventHandledButDontNeedMovedOrUpEvents,
+	kMouseMoveEventHandledButDontNeedMoreEvents
+};
+
+//----------------------------
+// @brief Cursor Type
+//----------------------------
+enum CCursorType
+{
+	kCursorDefault = 0,				///< arrow cursor
+	kCursorWait,					///< wait cursor
+	kCursorHSize,					///< horizontal size cursor
+	kCursorVSize,					///< vertical size cursor
+	kCursorSizeAll,					///< size all cursor
+	kCursorNESWSize,				///< northeast and southwest size cursor
+	kCursorNWSESize,				///< northwest and southeast size cursor
+	kCursorCopy,					///< copy cursor (mainly for drag&drop operations)
+	kCursorNotAllowed,				///< not allowed cursor (mainly for drag&drop operations)
+	kCursorHand						///< hand cursor
+};
+
+//----------------------------
+// @brief View Autosizing
+//----------------------------
+enum CViewAutosizing
+{
+	kAutosizeNone			= 0,
+	kAutosizeLeft			= 1 << 0,
+	kAutosizeTop			= 1 << 1,
+	kAutosizeRight			= 1 << 2,
+	kAutosizeBottom			= 1 << 3,
+	kAutosizeColumn			= 1 << 4,	///< view containers treat their children as columns
+	kAutosizeRow			= 1 << 5,	///< view containers treat their children as rows
+	kAutosizeAll			= kAutosizeLeft | kAutosizeTop | kAutosizeRight | kAutosizeBottom
+};
+
+enum DragResult {
+	kDragRefused = 0,
+	kDragMoved,
+	kDragCopied,
+	kDragError = -1
+};
+
 // simple structs
 struct CColor;
 struct CPoint;
@@ -150,7 +211,7 @@ class LinearTimingFunction;
 class PowerTimingFunction;
 class InterpolationTimingFunction;
 class RepeatTimingFunction;
-}
+} // Animation
 
 template <class I> class SharedPointer;
 

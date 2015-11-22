@@ -620,14 +620,14 @@ static void VSTGUI_NSView_draggedImageEndedAtOperation (id self, SEL _cmd, NSIma
 	{
 		if (operation == NSDragOperationNone)
 		{
-			frame->setLastDragOperationResult (CView::kDragRefused);
+			frame->setLastDragOperationResult (kDragRefused);
 		}
 		else if (operation == NSDragOperationMove)
 		{
-			frame->setLastDragOperationResult (CView::kDragMoved);
+			frame->setLastDragOperationResult (kDragMoved);
 		}
 		else
-			frame->setLastDragOperationResult (CView::kDragCopied);
+			frame->setLastDragOperationResult (kDragCopied);
 	}
 }
 
@@ -802,9 +802,16 @@ bool NSViewFrame::getGlobalPosition (CPoint& pos) const
 {
 	NSPoint p = [nsView bounds].origin;
 	convertPointToGlobal (nsView, p);
-	NSScreen* mainScreen = [[NSScreen screens] objectAtIndex:0];
-	NSRect screenRect = [mainScreen frame];
-	p.y = screenRect.size.height - (p.y + screenRect.origin.y);
+	if ([nsView window] == nil)
+	{
+		p.y -= [nsView bounds].size.height;
+	}
+	else
+	{
+		NSScreen* mainScreen = [[NSScreen screens] objectAtIndex:0];
+		NSRect screenRect = [mainScreen frame];
+		p.y = screenRect.size.height - (p.y + screenRect.origin.y);
+	}
 	pos.x = p.x;
 	pos.y = p.y;
 	return true;
@@ -1058,9 +1065,9 @@ COffscreenContext* NSViewFrame::createOffscreenContext (CCoord width, CCoord hei
 }
 
 //------------------------------------------------------------------------------------
-CView::DragResult NSViewFrame::doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap)
+DragResult NSViewFrame::doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap)
 {
-	lastDragOperationResult = CView::kDragError;
+	lastDragOperationResult = kDragError;
 	CGBitmap* cgBitmap = dragBitmap ? dynamic_cast<CGBitmap*> (dragBitmap->getPlatformBitmap ()) : 0;
 	CGImageRef cgImage = cgBitmap ? cgBitmap->getCGImage () : 0;
 	if (nsView)
@@ -1070,7 +1077,7 @@ CView::DragResult NSViewFrame::doDrag (IDataPackage* source, const CPoint& offse
 		NSImage* nsImage = nil;
 		NSEvent* event = [NSApp currentEvent];
 		if (event == 0 || !([event type] == NSLeftMouseDown || [event type] == NSLeftMouseDragged))
-			return CView::kDragRefused;
+			return kDragRefused;
 		NSPoint nsLocation = [event locationInWindow];
 		if (cgImage)
 		{
@@ -1135,14 +1142,14 @@ CView::DragResult NSViewFrame::doDrag (IDataPackage* source, const CPoint& offse
 			}
 			case IDataPackage::kError:
 			{
-				return CView::kDragError;
+				return kDragError;
 			}
 		}
 		[nsView dragImage:nsImage at:bitmapOffset offset:NSMakeSize (0, 0) event:event pasteboard:nsPasteboard source:nsView slideBack:dragBitmap ? YES : NO];
 		[nsPasteboard clearContents];
 		return lastDragOperationResult;
 	}
-	return CView::kDragError;
+	return kDragError;
 }
 
 //-----------------------------------------------------------------------------

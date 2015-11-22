@@ -770,9 +770,9 @@ COffscreenContext* HIViewFrame::createOffscreenContext (CCoord width, CCoord hei
 }
 
 //------------------------------------------------------------------------------------
-CView::DragResult HIViewFrame::doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap)
+DragResult HIViewFrame::doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap)
 {
-	CView::DragResult result = CView::kDragError;
+	DragResult result = CView::kDragError;
 	PasteboardRef pb;
 	if (PasteboardCreate (kPasteboardUniqueName, &pb) == noErr)
 	{
@@ -853,11 +853,11 @@ CView::DragResult HIViewFrame::doDrag (IDataPackage* source, const CPoint& offse
 					if (GetDragDropAction (drag, &action) == noErr)
 					{
 						if (action == kDragActionNothing)
-							result = CView::kDragRefused;
+							result = kDragRefused;
 						else if (action & kDragActionMove)
-							result = CView::kDragMoved;
+							result = kDragMoved;
 						else
-							result = CView::kDragCopied;
+							result = kDragCopied;
 					}
 				}
 			}
