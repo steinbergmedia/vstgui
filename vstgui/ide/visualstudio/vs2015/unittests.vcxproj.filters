@@ -192,6 +192,12 @@
     <ClCompile Include="..\..\..\tests\unittest\lib\animation\timingfunction_tests.cpp">
       <Filter>Source Files\lib\animation</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\tests\unittest\lib\cframe_test.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\tests\unittest\lib\platform_helper_win32.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\tests\unittest\unittests.h">
@@ -199,6 +205,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\tests\unittest\uidescription\uiviewcreator\helpers.h">
       <Filter>Source Files\uidescription\uiviewcreator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\tests\unittest\lib\platform_helper.h">
+      <Filter>Source Files\lib</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
