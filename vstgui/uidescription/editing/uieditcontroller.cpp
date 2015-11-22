@@ -782,6 +782,25 @@ void UIEditController::doCopy (bool cut)
 }
 
 //----------------------------------------------------------------------------------------------------
+void UIEditController::addSelectionToCurrentView (UISelection* copySelection)
+{
+	if (selection->total () == 0)
+		return;
+	CPoint offset;
+	CViewContainer* container = dynamic_cast<CViewContainer*> (selection->first ());
+	if (container == 0)
+	{
+		container = dynamic_cast<CViewContainer*> (selection->first ()->getParentView ());
+		offset = selection->first ()->getViewSize ().getTopLeft ();
+		offset.offset (gridController->getSize ().x, gridController->getSize ().y);
+	}
+	IAction* action = new ViewCopyOperation (copySelection, selection, container, offset, editDescription);
+	undoManager->pushAndPerform (action);
+	if (!editTemplateName.empty ())
+		updateTemplate (editTemplateName.c_str ());
+}
+
+//----------------------------------------------------------------------------------------------------
 void UIEditController::doPaste ()
 {
 	IDataPackage* clipboard = editView->getFrame ()->getClipboard ();
@@ -794,22 +813,11 @@ void UIEditController::doPaste ()
 			uint32_t size = clipboard->getData (0, data, type);
 			if (size > 0)
 			{
-				CPoint offset;
-				CViewContainer* container = dynamic_cast<CViewContainer*> (selection->first ());
-				if (container == 0)
-				{
-					container = dynamic_cast<CViewContainer*> (selection->first ()->getParentView ());
-					offset = selection->first ()->getViewSize ().getTopLeft ();
-					offset.offset (gridController->getSize ().x, gridController->getSize ().y);
-				}
 				CMemoryStream stream ((const int8_t*)data, size, false);
 				UISelection* copySelection = new UISelection ();
 				if (copySelection->restore (stream, editDescription))
 				{
-					IAction* action = new ViewCopyOperation (copySelection, selection, container, offset, editDescription);
-					undoManager->pushAndPerform (action);
-					if (!editTemplateName.empty ())
-						updateTemplate (editTemplateName.c_str ());
+					addSelectionToCurrentView (copySelection);
 				}
 				copySelection->forget ();
 			}

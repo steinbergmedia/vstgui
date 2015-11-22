@@ -52,6 +52,8 @@ class UIViewCreatorController : public CBaseObject, public DelegationController
 public:
 	UIViewCreatorController (IController* baseController, UIDescription* description);
 	~UIViewCreatorController ();
+	
+	IController* getBaseController () const { return controller; }
 protected:
 	void valueChanged (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
 	CView* createView (const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;

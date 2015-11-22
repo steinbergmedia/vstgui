@@ -41,6 +41,7 @@
 #include "uibasedatasource.h"
 #include "../uiviewfactory.h"
 #include "../../lib/cdropsource.h"
+#include "../../lib/controls/coptionmenu.h"
 #include "uiselection.h"
 #include "../detail/uiviewcreatorattributes.h"
 
@@ -61,6 +62,8 @@ public:
 	bool performNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) VSTGUI_OVERRIDE_VMETHOD { return false; }
 	UTF8StringPtr getDefaultsName () VSTGUI_OVERRIDE_VMETHOD { return "UIViewCreatorDataSource"; }
 protected:
+	void addViewToCurrentEditView ();
+	SharedPointer<UISelection> createSelection ();
 	const UIViewFactory* factory;
 	int32_t mouseDownRow;
 };
@@ -138,13 +141,67 @@ void UIViewCreatorDataSource::getNames (std::list<const std::string*>& names)
 }
 
 //----------------------------------------------------------------------------------------------------
+void UIViewCreatorDataSource::addViewToCurrentEditView ()
+{
+	UIViewCreatorController* controller = dynamic_cast<UIViewCreatorController*> (getViewController (dataBrowser, true));
+	if (controller)
+	{
+		if (UIEditController* editController = dynamic_cast<UIEditController*>(controller->getBaseController ()))
+		{
+			SharedPointer<UISelection> selection = createSelection ();
+			editController->addSelectionToCurrentView (selection);
+		}
+	}
+}
+
+//----------------------------------------------------------------------------------------------------
+SharedPointer<UISelection> UIViewCreatorDataSource::createSelection ()
+{
+	SharedPointer<UISelection> selection;
+	UIAttributes viewAttr;
+	viewAttr.setAttribute (UIViewCreator::kAttrClass, getStringList ()->at (static_cast<uint32_t> (mouseDownRow)));
+	CView* view = factory->createView (viewAttr, description);
+	if (view)
+	{
+		if (view->getViewSize ().isEmpty ())
+		{
+			CRect size (CPoint (0, 0), CPoint (20, 20));
+			view->setViewSize (size);
+			view->setMouseableArea (size);
+		}
+		selection = owned (new UISelection ());
+		selection->add (view);
+		view->forget ();
+	}
+	return selection;
+}
+
+//----------------------------------------------------------------------------------------------------
 CMouseEventResult UIViewCreatorDataSource::dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser)
 {
+	mouseDownRow = row;
 	if (buttons.isLeftButton ())
 	{
-		mouseDownRow = row;
-		return kMouseEventHandled;
+		if (!buttons.isDoubleClick ())
+			return kMouseEventHandled;
+		addViewToCurrentEditView ();
 	}
+	else if (buttons.isRightButton ())
+	{
+		const std::string& viewName = getStringList ()->at (static_cast<uint32_t> (mouseDownRow));
+		std::string menuEntryName = "Add a new '" + viewName + "'";
+		COptionMenu menu;
+		menu.setStyle (kPopupStyle);
+		menu.addEntry (menuEntryName.c_str ());
+		CPoint menuLocation (where);
+		browser->localToFrame (menuLocation);
+		if (menu.popup (browser->getFrame (), menuLocation))
+		{
+			if (menu.getEntry (menu.getLastResult ()))
+				addViewToCurrentEditView ();
+		}
+	}
+	mouseDownRow = -1;
 	return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 }
 
@@ -153,28 +210,14 @@ CMouseEventResult UIViewCreatorDataSource::dbOnMouseMoved (const CPoint& where, 
 {
 	if (mouseDownRow >= 0 && buttons.isLeftButton ())
 	{
-		UIAttributes viewAttr;
-		viewAttr.setAttribute (UIViewCreator::kAttrClass, getStringList ()->at (static_cast<uint32_t> (mouseDownRow)));
-		CView* view = factory->createView (viewAttr, description);
-		if (view)
+		SharedPointer<UISelection> selection = createSelection ();
+		CMemoryStream stream (1024, 1024, false);
+		if (selection->store (stream, description))
 		{
-			if (view->getViewSize ().isEmpty ())
-			{
-				CRect size (CPoint (0, 0), CPoint (20, 20));
-				view->setViewSize (size);
-				view->setMouseableArea (size);
-			}
-			UISelection selection;
-			selection.add (view);
-			CMemoryStream stream (1024, 1024, false);
-			if (selection.store (stream, description))
-			{
-				stream.end ();
-				CDropSource* dropSource = new CDropSource (stream.getBuffer (), static_cast<uint32_t> (stream.tell ()), CDropSource::kText);
-				browser->doDrag (dropSource);
-				dropSource->forget ();
-			}
-			view->forget ();
+			stream.end ();
+			CDropSource* dropSource = new CDropSource (stream.getBuffer (), static_cast<uint32_t> (stream.tell ()), CDropSource::kText);
+			browser->doDrag (dropSource);
+			dropSource->forget ();
 		}
 		mouseDownRow = -1;
 	}
