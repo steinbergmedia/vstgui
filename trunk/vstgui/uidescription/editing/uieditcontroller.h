@@ -68,6 +68,8 @@ public:
 
 	void onZoomChanged (double zoom);
 
+	void addSelectionToCurrentView (UISelection* selection);
+
 	static UIDescription& getEditorDescription ();
 	static void setupDataSource (GenericStringListDataBrowserSource* source);
 	static bool std__stringCompare (const std::string* lhs, const std::string* rhs);
