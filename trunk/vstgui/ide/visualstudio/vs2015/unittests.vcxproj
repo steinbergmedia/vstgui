@@ -164,12 +164,14 @@
     <ClCompile Include="..\..\..\tests\unittest\lib\cbuttonstate_test.cpp" />
     <ClCompile Include="..\..\..\tests\unittest\lib\ccolor_test.cpp" />
     <ClCompile Include="..\..\..\tests\unittest\lib\cfont_test.cpp" />
+    <ClCompile Include="..\..\..\tests\unittest\lib\cframe_test.cpp" />
     <ClCompile Include="..\..\..\tests\unittest\lib\clinestyle_test.cpp" />
     <ClCompile Include="..\..\..\tests\unittest\lib\cpoint_test.cpp" />
     <ClCompile Include="..\..\..\tests\unittest\lib\crect_test.cpp" />
     <ClCompile Include="..\..\..\tests\unittest\lib\cviewcontainer_test.cpp" />
     <ClCompile Include="..\..\..\tests\unittest\lib\cview_test.cpp" />
     <ClCompile Include="..\..\..\tests\unittest\lib\idependency_test.cpp" />
+    <ClCompile Include="..\..\..\tests\unittest\lib\platform_helper_win32.cpp" />
     <ClCompile Include="..\..\..\tests\unittest\lib\utf8stringview_test.cpp" />
     <ClCompile Include="..\..\..\tests\unittest\lib\utf8string_test.cpp" />
     <ClCompile Include="..\..\..\tests\unittest\uidescription\base64codec.cpp" />
@@ -214,6 +216,7 @@
     <ClCompile Include="..\..\..\vstgui_win32.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\tests\unittest\lib\platform_helper.h" />
     <ClInclude Include="..\..\..\tests\unittest\uidescription\uiviewcreator\helpers.h" />
     <ClInclude Include="..\..\..\tests\unittest\unittests.h" />
   </ItemGroup>
