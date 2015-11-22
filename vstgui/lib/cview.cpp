@@ -328,8 +328,8 @@ CView::CView (const CView& v)
 //-----------------------------------------------------------------------------
 CView::~CView ()
 {
-	vstgui_assert (isAttached () == false);
-	vstgui_assert (viewListeners.empty ());
+	vstgui_assert (isAttached () == false, "View is still attached");
+	vstgui_assert (viewListeners.empty (), "View listeners not empty");
 
 	IController* controller = 0;
 	uint32_t size = sizeof (IController*);
@@ -684,7 +684,7 @@ int32_t CView::onKeyUp (VstKeyCode& keyCode)
  * @param dragBitmap bitmap to drag
  * @return 0 on failure, negative if source was moved and positive if source was copied
  */
-CView::DragResult CView::doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap)
+DragResult CView::doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap)
 {
 	CFrame* frame = getFrame ();
 	if (frame)

@@ -63,7 +63,7 @@ public:
 	NSView* getPlatformControl () const { return nsView; }
 	IPlatformFrameCallback* getFrame () const { return frame; }
 	
-	void setLastDragOperationResult (CView::DragResult result) { lastDragOperationResult = result; }
+	void setLastDragOperationResult (DragResult result) { lastDragOperationResult = result; }
 	void setIgnoreNextResignFirstResponder (bool state) { ignoreNextResignFirstResponder = state; }
 	bool getIgnoreNextResignFirstResponder () const { return ignoreNextResignFirstResponder; }
 
@@ -90,7 +90,7 @@ public:
 #endif
 	IPlatformViewLayer* createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer = 0) VSTGUI_OVERRIDE_VMETHOD;
 	COffscreenContext* createOffscreenContext (CCoord width, CCoord height, double scaleFactor) VSTGUI_OVERRIDE_VMETHOD;
-	CView::DragResult doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap) VSTGUI_OVERRIDE_VMETHOD;
+	DragResult doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap) VSTGUI_OVERRIDE_VMETHOD;
 	void setClipboard (IDataPackage* data) VSTGUI_OVERRIDE_VMETHOD;
 	IDataPackage* getClipboard () VSTGUI_OVERRIDE_VMETHOD;
 
@@ -101,7 +101,7 @@ protected:
 	NSView* nsView;
 	CocoaTooltipWindow* tooltipWindow;
 
-	CView::DragResult lastDragOperationResult;
+	DragResult lastDragOperationResult;
 	bool ignoreNextResignFirstResponder;
 	bool trackingAreaInitialized;
 	bool inDraw;

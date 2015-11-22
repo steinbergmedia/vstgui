@@ -425,11 +425,12 @@ void CFrame::checkMouseViews (const CPoint& where, const CButtonState& buttons)
 	{
 		ViewList::iterator it2 = pMouseViews.end ();
 		it2--;
-		while ((vc = static_cast<CViewContainer*> (mouseView->getParentView ())) != *it2)
+		CView* container = mouseView;
+		while ((vc = static_cast<CViewContainer*> (container->getParentView ())) != *it2)
 		{
-			pMouseViews.insert (it2, vc);
+			pMouseViews.push_back (vc);
 			vc->remember ();
-			mouseView = vc;
+			container = vc;
 		}
 		pMouseViews.push_back (mouseView);
 		mouseView->remember ();
@@ -660,11 +661,11 @@ bool CFrame::onWheel (const CPoint &where, const float &distance, const CButtonS
 }
 
 //-----------------------------------------------------------------------------
-CView::DragResult CFrame::doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap)
+DragResult CFrame::doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap)
 {
 	if (platformFrame)
 		return platformFrame->doDrag (source, offset, dragBitmap);
-	return CView::kDragError;
+	return kDragError;
 }
 
 //-----------------------------------------------------------------------------
@@ -742,8 +743,12 @@ bool CFrame::setPosition (CCoord x, CCoord y)
 	if (platformFrame)
 	{
 		CRect rect (getViewSize ());
-		size.offset (x - size.left, y - size.top);
-		return platformFrame->setSize (rect);
+		rect.offset (x - size.left, y - size.top);
+		if (platformFrame->setSize (rect))
+		{
+			size = rect;
+			return true;
+		}
 	}
 	return false;
 }

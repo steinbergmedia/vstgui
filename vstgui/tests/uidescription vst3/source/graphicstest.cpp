@@ -307,8 +307,6 @@ GraphicsView::~GraphicsView ()
 //------------------------------------------------------------------------
 void GraphicsView::draw (CDrawContext *pContext)
 {
-	CCoord x,y;
-	getFrame ()->getPosition (x, y);
 	CView::draw (pContext);
 	if (path[kType1] == 0)
 		path[kType1] = buildPath (pContext, kType1);

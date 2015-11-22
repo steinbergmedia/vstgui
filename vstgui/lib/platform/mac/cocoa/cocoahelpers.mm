@@ -241,6 +241,8 @@ HIDDEN int32_t eventButton (NSEvent* theEvent)
 HIDDEN void convertPointToGlobal (NSView* view, NSPoint& p)
 {
 	p = [view convertPoint:p toView:nil];
+	if ([view window] == nil)
+		return;
 #if MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_6
 	p = [[view window] convertBaseToScreen:p];
 #else

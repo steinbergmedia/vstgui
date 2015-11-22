@@ -102,7 +102,7 @@ TestCase& TestCase::operator=(TestCase &&tc) noexcept
 //----------------------------------------------------------------------------------------------------
 void TestCase::registerTest (std::string&& name, TestFunction&& function)
 {
-	tests.push_back (TestPair (name, std::move (function)));
+	tests.push_back (TestPair (std::move (name), std::move (function)));
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -201,21 +201,26 @@ public:
 		intend++;
 		for (auto& it : testCase)
 		{
-			if (testCase.setup ())
-			{
-				testCase.setup () (this);
-			}
-			if (runTest (it.first, it.second))
-			{
-				result.succeded++;
-			}
-			else
+			try {
+				if (testCase.setup ())
+				{
+					testCase.setup () (this);
+				}
+				if (runTest (it.first, it.second))
+				{
+					result.succeded++;
+				}
+				else
+				{
+					result.failed++;
+				}
+				if (testCase.teardown ())
+				{
+					testCase.teardown () (this);
+				}
+			} catch (const std::exception& exc)
 			{
 				result.failed++;
-			}
-			if (testCase.teardown ())
-			{
-				testCase.teardown () (this);
 			}
 		}
 		intend--;

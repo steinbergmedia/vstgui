@@ -64,6 +64,7 @@ Note: All current deprecated methods will be removed in the next version. So mak
 - CControlListener was renamed to IControlListener and moved into the VSTGUI namespace and its own header file. A typedef for CControlListener is available but marked as deprecated.
 - the VSTGUI::CDrawContext::drawString methods don't set the clip to rect by itself anymore. If you call this method in your code, you need to set the clip yourself now.
 - the interfaces for VSTGUI::IController and VSTGUI::IViewCreator have changed and if you have inherited from them you need to change your implementations accordingly.
+- the enum DragResult was moved out of CView into VSTGUI namespace
 - VSTGUI::CGradient can now be created without a VSTGUI::CDrawContext object
 - VSTGUI::CGradientView takes now a VSTGUI::CGradient. Setting the gradient colors and start offsets are removed.
 - VSTGUI::CTextButton takes now VSTGUI::CGradient objects instead of colors and start offsets.
