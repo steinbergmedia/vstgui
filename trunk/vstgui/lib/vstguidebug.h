@@ -53,7 +53,7 @@ void vstgui_assert (Expect expect, const char* str = nullptr)
 }
 #else
 template<typename Expect>
-void vstgui_assert (Expect expect, const char* = nullptr)
+void vstgui_assert (Expect expect, const char* = 0)
 {
 	assert (expect);
 }
@@ -86,7 +86,7 @@ protected:
 
 #if ENABLE_UNIT_TESTS
 template<typename Expect>
-void vstgui_assert (Expect expect, const char* str = nullptr)
+void vstgui_assert (Expect expect, const char* str = 0)
 {
 	if (!expect)
 		throw std::logic_error (str ? str : "unknown");

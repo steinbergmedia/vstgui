@@ -61,7 +61,7 @@ void DispatchList<T>::remove (T* obj)
 		toRemove.push_back (obj);
 	else
 	{
-		typename Array::const_iterator it = std::find (entries.begin (), entries.end (), obj);
+		typename Array::iterator it = std::find (entries.begin (), entries.end (), obj);
 		if (it != entries.end ())
 			entries.erase (it);
 	}

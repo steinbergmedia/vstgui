@@ -1069,7 +1069,7 @@ protected:
 	class DummyControl : public CControl
 	{
 	public:
-		DummyControl () : CControl (CRect (0, 0, 0, 0), nullptr, -1) {}
+		DummyControl () : CControl (CRect (0, 0, 0, 0), 0, -1) {}
 		void draw (CDrawContext* pContext) VSTGUI_OVERRIDE_VMETHOD { CView::draw (pContext); }
 		
 		CLASS_METHODS(DummyControl, CControl)

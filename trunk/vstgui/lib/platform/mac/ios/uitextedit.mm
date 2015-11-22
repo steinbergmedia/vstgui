@@ -38,6 +38,7 @@
 #if TARGET_OS_IPHONE
 
 #import "../cfontmac.h"
+#import "../macglobals.h"
 
 #if __has_feature(objc_arc) && __clang_major__ >= 3
 #define ARC_ENABLED 1
