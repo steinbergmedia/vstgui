@@ -276,7 +276,7 @@ static BOOL VSTGUI_NSView_onMouseDown (id self, SEL _cmd, NSEvent* theEvent)
 	NSPoint nsPoint = [theEvent locationInWindow];
 	nsPoint = [self convertPoint:nsPoint fromView:nil];
 	mapModifiers (modifiers, buttons);
-	if ([theEvent clickCount] > 1)
+	if ([theEvent clickCount] == 2)
 		buttons |= kDoubleClick;
 	CPoint p = pointFromNSPoint (nsPoint);
 	CMouseEventResult result = _vstguiframe->platformOnMouseDown (p, buttons);
