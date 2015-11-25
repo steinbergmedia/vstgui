@@ -37,10 +37,6 @@
 
 namespace VSTGUI {
 
-namespace {
-
-}
-
 TESTCASE(CXYPadTest,
 
 	TEST(valueCalculation,

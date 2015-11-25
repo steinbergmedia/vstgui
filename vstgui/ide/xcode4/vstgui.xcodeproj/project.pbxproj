@@ -121,6 +121,11 @@
 		F490FE161BE629F600386A09 /* ckickbuttoncreator_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F490FE151BE629F600386A09 /* ckickbuttoncreator_test.cpp */; };
 		F491078C1C05BE700054CA73 /* ccontrol_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F491078B1C05BE700054CA73 /* ccontrol_test.cpp */; };
 		F491078E1C05C6E80054CA73 /* cxypad_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F491078D1C05C6E80054CA73 /* cxypad_test.cpp */; };
+		F49107901C05FCF80054CA73 /* csegmentbutton_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F491078F1C05FCF80054CA73 /* csegmentbutton_test.cpp */; };
+		F49107921C06090A0054CA73 /* conoffbutton_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F49107911C06090A0054CA73 /* conoffbutton_test.cpp */; };
+		F49107941C060C310054CA73 /* ckickbutton_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F49107931C060C310054CA73 /* ckickbutton_test.cpp */; };
+		F49107961C060E180054CA73 /* ccheckbox_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F49107951C060E180054CA73 /* ccheckbox_test.cpp */; };
+		F49107981C0610280054CA73 /* ctextbutton_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F49107971C0610280054CA73 /* ctextbutton_test.cpp */; };
 		F497F0EC13080A1C00F0A613 /* cbitmap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0C213080A1C00F0A613 /* cbitmap.cpp */; };
 		F497F0EE13080A1C00F0A613 /* ccolor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0C413080A1C00F0A613 /* ccolor.cpp */; };
 		F497F0F013080A1C00F0A613 /* cdatabrowser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F0C613080A1C00F0A613 /* cdatabrowser.cpp */; };
@@ -537,6 +542,11 @@
 		F490FE151BE629F600386A09 /* ckickbuttoncreator_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ckickbuttoncreator_test.cpp; sourceTree = "<group>"; };
 		F491078B1C05BE700054CA73 /* ccontrol_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ccontrol_test.cpp; sourceTree = "<group>"; };
 		F491078D1C05C6E80054CA73 /* cxypad_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cxypad_test.cpp; sourceTree = "<group>"; };
+		F491078F1C05FCF80054CA73 /* csegmentbutton_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = csegmentbutton_test.cpp; sourceTree = "<group>"; };
+		F49107911C06090A0054CA73 /* conoffbutton_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = conoffbutton_test.cpp; sourceTree = "<group>"; };
+		F49107931C060C310054CA73 /* ckickbutton_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ckickbutton_test.cpp; sourceTree = "<group>"; };
+		F49107951C060E180054CA73 /* ccheckbox_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ccheckbox_test.cpp; sourceTree = "<group>"; };
+		F49107971C0610280054CA73 /* ctextbutton_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ctextbutton_test.cpp; sourceTree = "<group>"; };
 		F497F0AD1308094300F0A613 /* libvstgui.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libvstgui.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		F497F0C213080A1C00F0A613 /* cbitmap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 0; path = cbitmap.cpp; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
 		F497F0C313080A1C00F0A613 /* cbitmap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cbitmap.h; sourceTree = "<group>"; };
@@ -905,7 +915,12 @@
 		F491078A1C05BE3E0054CA73 /* controls */ = {
 			isa = PBXGroup;
 			children = (
+				F49107951C060E180054CA73 /* ccheckbox_test.cpp */,
 				F491078B1C05BE700054CA73 /* ccontrol_test.cpp */,
+				F49107931C060C310054CA73 /* ckickbutton_test.cpp */,
+				F49107911C06090A0054CA73 /* conoffbutton_test.cpp */,
+				F491078F1C05FCF80054CA73 /* csegmentbutton_test.cpp */,
+				F49107971C0610280054CA73 /* ctextbutton_test.cpp */,
 				F491078D1C05C6E80054CA73 /* cxypad_test.cpp */,
 			);
 			path = controls;
@@ -1574,6 +1589,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F49107961C060E180054CA73 /* ccheckbox_test.cpp in Sources */,
 				F4762E8A1BDA958800810447 /* vstgui_mac.mm in Sources */,
 				F490FE101BE6297200386A09 /* crockerswitchcreator_test.cpp in Sources */,
 				F490FDDE1BE4B7DE00386A09 /* cviewcontainercreator_test.cpp in Sources */,
@@ -1593,6 +1609,7 @@
 				F490FE121BE6299800386A09 /* cmoviebitmapcreator_test.cpp in Sources */,
 				F4762E861BDA957E00810447 /* idependency_test.cpp in Sources */,
 				F490FE141BE629D100386A09 /* cmoviebuttoncreator_test.cpp in Sources */,
+				F49107941C060C310054CA73 /* ckickbutton_test.cpp in Sources */,
 				F4B1D4EF1BE0E6A600EE6BDA /* delegationcontroller_test.cpp in Sources */,
 				F4762E831BDA957E00810447 /* cviewcontainer_test.cpp in Sources */,
 				F4E765A71BFB830D006D83CE /* cframe_test.cpp in Sources */,
@@ -1612,6 +1629,7 @@
 				F4762E881BDA957E00810447 /* utf8stringview_test.cpp in Sources */,
 				F490FE0C1BE6291700386A09 /* cverticalswitchcreator_test.cpp in Sources */,
 				F4762E851BDA957E00810447 /* ccolor_test.cpp in Sources */,
+				F49107981C0610280054CA73 /* ctextbutton_test.cpp in Sources */,
 				F490FDFA1BE6155100386A09 /* cslidercreator_test.cpp in Sources */,
 				F4762E891BDA958100810447 /* unittests.cpp in Sources */,
 				F490FE021BE6216100386A09 /* csplitviewcreator_test.cpp in Sources */,
@@ -1623,7 +1641,9 @@
 				F4762E871BDA957E00810447 /* base64codec.cpp in Sources */,
 				F490FE001BE61EA800386A09 /* uiviewswitchcontainercreator_test.cpp in Sources */,
 				F4B0AF781BDCEC6C0033C579 /* cview_test.cpp in Sources */,
+				F49107901C05FCF80054CA73 /* csegmentbutton_test.cpp in Sources */,
 				F490FE0E1BE6294800386A09 /* chorizontalswitchcreator_test.cpp in Sources */,
+				F49107921C06090A0054CA73 /* conoffbutton_test.cpp in Sources */,
 				F490FE041BE6229F00386A09 /* cshadowviewcontainercreator_test.cpp in Sources */,
 				F4762E8F1BDAADA700810447 /* animations_test.cpp in Sources */,
 				F491078E1C05C6E80054CA73 /* cxypad_test.cpp in Sources */,

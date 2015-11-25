@@ -89,7 +89,7 @@ protected:
 class CCheckBox : public CControl
 {
 public:
-	CCheckBox (const CRect& size, IControlListener* listener, int32_t tag, UTF8StringPtr title, CBitmap* bitmap = 0, int32_t style = 0);
+	CCheckBox (const CRect& size, IControlListener* listener = 0, int32_t tag = -1, UTF8StringPtr title = 0, CBitmap* bitmap = 0, int32_t style = 0);
 	CCheckBox (const CCheckBox& checkbox);
 
 	enum Styles {
@@ -197,7 +197,7 @@ public:
 		kOnOffStyle
 	};
 
-	CTextButton (const CRect& size, IControlListener* listener, int32_t tag, UTF8StringPtr title, Style = kKickStyle);
+	CTextButton (const CRect& size, IControlListener* listener = 0, int32_t tag = -1, UTF8StringPtr title = 0, Style = kKickStyle);
 
 	//-----------------------------------------------------------------------------
 	/// @name CTextButton Methods
