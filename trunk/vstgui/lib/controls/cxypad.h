@@ -57,15 +57,15 @@ public:
 
 	static float calculateValue (float x, float y)
 	{
-		x = std::floor ((float)(int32_t)(x * 1000.f)) * 0.001f;
-		y = std::floor ((float)(int32_t)(y * 1000.f)) * 0.0000001f;
+		x = std::floor (x * 1000.f + 0.5f) * 0.001f;
+		y = std::floor (y * 1000.f + 0.5f) * 0.0000001f;
 		return x + y;
 	}
 	
 	static void calculateXY (float value, float& x, float& y)
 	{
-		x = std::floor (value * 1000.f) * 0.001f;
-		y = (value - x) * 10000.f;
+		x = std::floor (value * 1000.f + 0.5f) * 0.001f;
+		y = std::floor ((value - x)  * 10000000.f + 0.5f) * 0.001f;
 	}
 	
 protected:
