@@ -667,7 +667,7 @@ private:
 			y = static_cast<uint32_t> (yRatio * i);
 			yDiff = (yRatio * i) - y;
 
-			for (uint32_t j = 0; j < newWidth; j++, copyBitmap++)
+			for (uint32_t j = 0; j < newWidth; j++, ++copyBitmap)
 			{
 				x = static_cast<uint32_t> (xRatio * j);
 				xDiff = (xRatio * j) - x;
@@ -751,7 +751,7 @@ protected:
 				processFunction (color, this);
 				outputAccessor.setColor (color);
 			}
-			while (inputAccessor++);
+			while (++inputAccessor);
 		}
 		else
 		{
@@ -760,9 +760,9 @@ protected:
 				inputAccessor.getColor (color);
 				processFunction (color, this);
 				outputAccessor.setColor (color);
-				outputAccessor++;
+				++outputAccessor;
 			}
-			while (inputAccessor++);
+			while (++inputAccessor);
 		}
 	}
 
