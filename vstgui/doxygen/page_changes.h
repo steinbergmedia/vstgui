@@ -4,6 +4,7 @@
 - @ref version4_introduction @n
 - @ref new_stuff @n
 - @ref code_changes @n
+- @ref hidpi_support @n
 - @ref cocoa_support @n
 - @ref ios_support @n
 - @subpage page_previous_new_stuff
@@ -19,11 +20,11 @@ It's recommended to start new projects with version 4 while old projects should 
 @subsection version4_3 Version 4.3
 
 - last version to support Windows XP, Mac OS X 10.6 and non c++11 mode
+- HiDPI support (aka Retina support) for Quartz2D and Direct2D backends
 - support for creating a graphics path from a string
 - new Control : VSTGUI::CSegmentButton
 - add support for adding a custom view to the split view separator
 - transformation matrix support in VSTGUI::CDrawContext
-- HiDPI support (aka Retina support)
 - alternative c++11 callback functions for VSTGUI::CFileSelector::run(), VSTGUI::CVSTGUITimer, VSTGUI::CParamDisplay::setValueToStringFunction, VSTGUI::CTextEdit::setStringToValueFunction and VSTGUI::CCommandMenuItem::setActions
 
 Note: All current deprecated methods will be removed in the next version. So make sure that your code compiles with VSTGUI_ENABLE_DEPRECATED_METHODS=0
@@ -104,9 +105,13 @@ Note: All current deprecated methods will be removed in the next version. So mak
 	- CViewContainer::drawBackgroundRect (CDrawContext* pContext, CRect& _updateRect)
 	- CViewContainer::addView (CView* pView, CRect& mouseableArea, bool mouseEnabled = true)
 
+@section hidpi_support HiDPI notes
+- HiDPI is supported on OSX, iOS and Windows (with Direct2D backend)
+- Due to platform differences one need to call frame->setZoom (scaleFactor) on Windows, while on OSX and iOS this is not needed.
+ 
 @section cocoa_support Cocoa notes
 
-- To get cocoa support your minimum required Mac OS X version is 10.5.
+- To get cocoa support your minimum required Mac OS X version is 10.6.
 - In 32 bit Cocoa and Carbon are available. You can switch between them with CFrame::setCocoaMode(bool state). You must do this before creating the CFrame.
 - In 64 bit only Cocoa is available.
 - The pSystemWindow pointer in the CFrame constructor must be a NSView not a NSWindow.
@@ -114,10 +119,8 @@ Note: All current deprecated methods will be removed in the next version. So mak
 @section ios_support iOS support notes
 
 - VSTGUI supports iOS 7 and later
-- Currently COptionMenu and COpenGLView are not supported
-- CScrollView is not supported yet
+- Currently COptionMenu, CScrollView and COpenGLView are not supported
 - Support for a single MultiTouch View is not yet tested and the API may change in the future
-- Bitmaps are currently drawn stretched on retina displays
 
 @page page_previous_new_stuff New Stuff in VSTGUI 3.6 and earlier
  
