@@ -172,9 +172,6 @@ class CBitmapPixelAccess : public CBaseObject
 {
 public:
 	inline bool operator++ ();								///< advance position
-	inline bool operator++ (int) { return ++(*this); }	///< advance position
-	inline bool operator-- ();								///< decrease position
-	inline bool operator-- (int) { return --(*this); }	///< decrease position
 	inline bool setPosition (uint32_t x, uint32_t y);		///< set current position
 	inline uint32_t getX () const { return x; }			///< return current x position
 	inline uint32_t getY () const { return y; }			///< return current y position
@@ -221,25 +218,6 @@ inline bool CBitmapPixelAccess::operator++ ()
 	else if (y < maxY)
 	{
 		y++;
-		x = 0;
-		currentPos = address + y * bytesPerRow;
-		return true;
-	}
-	return false;
-}
-
-//------------------------------------------------------------------------
-inline bool CBitmapPixelAccess::operator-- ()
-{
-	if (x > 0 && y > 0)
-	{
-		x--;
-		currentPos -= 4;
-		return true;
-	}
-	else if (y > 0)
-	{
-		y--;
 		x = 0;
 		currentPos = address + y * bytesPerRow;
 		return true;

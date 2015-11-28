@@ -291,6 +291,8 @@
 		F4F52DFF13E2B36500B3DB2F /* crowcolumnview.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4F52DFD13E2B36500B3DB2F /* crowcolumnview.cpp */; };
 		F4F7D5FA1BDBAA2C00A8B6FD /* timingfunction_tests.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4F7D5F91BDBAA2C00A8B6FD /* timingfunction_tests.cpp */; };
 		F4F7D5FC1BDBB4BD00A8B6FD /* animator_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4F7D5FB1BDBB4BD00A8B6FD /* animator_test.cpp */; };
+		F4F7F7041C09D4A900F101B7 /* cbitmap_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4F7F7031C09D4A900F101B7 /* cbitmap_test.cpp */; };
+		F4F837161C0654B7001A8ADC /* csplitview_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4F837151C0654B7001A8ADC /* csplitview_test.cpp */; };
 		F4F953FA16510F40006EE1D1 /* animations.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F11A13080AD100F0A613 /* animations.cpp */; };
 		F4F953FB16510F40006EE1D1 /* animator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F11C13080AD100F0A613 /* animator.cpp */; };
 		F4F953FC16510F40006EE1D1 /* timingfunctions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F497F11E13080AD100F0A613 /* timingfunctions.cpp */; };
@@ -739,6 +741,8 @@
 		F4F7D5F91BDBAA2C00A8B6FD /* timingfunction_tests.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = timingfunction_tests.cpp; sourceTree = "<group>"; };
 		F4F7D5FB1BDBB4BD00A8B6FD /* animator_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = animator_test.cpp; sourceTree = "<group>"; };
 		F4F7D5FD1BDBD52100A8B6FD /* generate.rb */ = {isa = PBXFileReference; lastKnownFileType = text.script.ruby; name = generate.rb; path = ../../tests/unittest/lcov/generate.rb; sourceTree = "<group>"; };
+		F4F7F7031C09D4A900F101B7 /* cbitmap_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cbitmap_test.cpp; sourceTree = "<group>"; };
+		F4F837151C0654B7001A8ADC /* csplitview_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = csplitview_test.cpp; sourceTree = "<group>"; };
 		F4F953F616510E61006EE1D1 /* libvstgui c++11.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libvstgui c++11.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F4FB92AC13FBD12F007D72DE /* uibasedatasource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uibasedatasource.h; sourceTree = "<group>"; };
 		F4FB92AE13FBEC89007D72DE /* uibitmapscontroller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uibitmapscontroller.h; sourceTree = "<group>"; };
@@ -1229,21 +1233,23 @@
 			isa = PBXGroup;
 			children = (
 				F4762E8C1BDAAD0000810447 /* animation */,
-				F491078A1C05BE3E0054CA73 /* controls */,
 				F4B0AF7B1BDD007D0033C579 /* cbuttonstate_test.cpp */,
 				F4462D2B17563BD900E6835D /* ccolor_test.cpp */,
 				F4B0AF791BDCFB640033C579 /* cfont_test.cpp */,
+				F4E765A61BFB830D006D83CE /* cframe_test.cpp */,
 				F490FDD31BE2C5F000386A09 /* clinestyle_test.cpp */,
+				F491078A1C05BE3E0054CA73 /* controls */,
 				F4B0AF751BDCDD060033C579 /* cpoint_test.cpp */,
 				F4282B001710699700A79F13 /* crect_test.cpp */,
+				F4F837151C0654B7001A8ADC /* csplitview_test.cpp */,
 				F4B0AF771BDCEC6C0033C579 /* cview_test.cpp */,
 				F4CC1E781709F253008F07FD /* cviewcontainer_test.cpp */,
 				F4462D2D1756444800E6835D /* idependency_test.cpp */,
+				F4B627961C01AFC4000A7D6C /* platform_helper_mac.mm */,
+				F4B627951C01AEDA000A7D6C /* platform_helper.h */,
 				F490FDD51BE3C82F00386A09 /* utf8string_test.cpp */,
 				F4E706AB1907BC0000765574 /* utf8stringview_test.cpp */,
-				F4E765A61BFB830D006D83CE /* cframe_test.cpp */,
-				F4B627951C01AEDA000A7D6C /* platform_helper.h */,
-				F4B627961C01AFC4000A7D6C /* platform_helper_mac.mm */,
+				F4F7F7031C09D4A900F101B7 /* cbitmap_test.cpp */,
 			);
 			path = lib;
 			sourceTree = "<group>";
@@ -1589,6 +1595,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F4F7F7041C09D4A900F101B7 /* cbitmap_test.cpp in Sources */,
 				F49107961C060E180054CA73 /* ccheckbox_test.cpp in Sources */,
 				F4762E8A1BDA958800810447 /* vstgui_mac.mm in Sources */,
 				F490FE101BE6297200386A09 /* crockerswitchcreator_test.cpp in Sources */,
@@ -1603,6 +1610,7 @@
 				F490FDEC1BE5027C00386A09 /* cparamdisplaycreator_test.cpp in Sources */,
 				F490FDD91BE3D00C00386A09 /* cviewcreator_test.cpp in Sources */,
 				F490FDF61BE60B4F00386A09 /* csegmentbuttoncreator_test.cpp in Sources */,
+				F4F837161C0654B7001A8ADC /* csplitview_test.cpp in Sources */,
 				F4B0AF761BDCDD060033C579 /* cpoint_test.cpp in Sources */,
 				F4370BDF1BDE5CF600DC943A /* uidescription_test.cpp in Sources */,
 				F490FDE81BE4DBD800386A09 /* conoffbuttoncreator_test.cpp in Sources */,

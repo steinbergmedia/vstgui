@@ -449,6 +449,14 @@ bool CSplitView::removeView (CView* pView, bool withForget)
 					CViewContainer::removeView (sepView, true);
 				}
 			}
+			else
+			{
+				CSplitViewSeparatorView* sepView = dynamic_cast<CSplitViewSeparatorView*> (getView (1));
+				if (sepView)
+				{
+					CViewContainer::removeView (sepView, true);
+				}
+			}
 			break;
 		}
 		it++;
