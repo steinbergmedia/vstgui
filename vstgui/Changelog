@@ -1,3 +1,169 @@
+2015-11-28 arne
+
+  * more unit tests (now 38% line coverage)
+  * remove inefficient bitmap pixel accessor reverse iteration
+  * fix removing first subview of CSplitView not removing the first split separator view
+  * a few little updates to the documentation and a short section about HiDPI support
+
+2015-11-25 arne
+
+  * unit tests for CControl and CXYPad
+  * fix value calculation in CXYPad
+  * Cocoa: set double click on buttons only if click count == 2 not when more
+  * unit tests for CCheckbox, CKickButton, COnOffButton, CTextButton, CSegmentButton
+  * unit test line coverage now at 36%
+  
+2015-11-22 arne
+
+  * move enum DragResult out of CView
+  * some CFrame unit tests
+  * fix two bugs in CFrame found during unit test writing
+  * unit test line coverage up to 34.6%
+  * add possibility to add a new view in the UIDesc editor via double click or right click with popup menu from the view data browser
+  * fix compiling in non c++11 mode and fix compiling for iOS
+
+2015-11-20 arne
+
+  * quartz: fix a transformation issue when pixel aligning rects and fix transformation issues for paths
+
+2015-11-07 arne
+
+  * make unit tests work in release mode
+  * more unit tests (31.3% line coverage now)
+  * remove unused code
+
+2015-11-04 arne
+
+  * change vstgui_assert to actually work with Visual Studio
+  * add vstgui and unittest projects for VS 2015
+  * fix a few errors/issues with VS 2015
+  * fix scaled bitmap drawing with Direct2D
+  * make Direct2D render target accessible to the outside so that they can set it if they want to...
+  * optimization for CGDrawContext::drawLines
+  * use unordered_map for ViewRegistry for faster lookup
+  
+2015-11-01 arne
+
+  * more unit tests (30.7% line coverage now)
+  * fix for found bug in CSliderCreator
+  * move createView method into IUIDecription interface so that UIViewSwitchContainer does not need a UIDescription object
+  * fix warnings/errors on windows
+  
+2015-10-31 arne
+
+  * more unit tests (23% line coverage now)
+
+2015-10-28 arne
+
+  * introduce vstgui_assert which replaces the normal assert function, mainly for testing purposes
+  * add a new flag to CView to indicate if a view is added to a container view
+  * remove duplicate code to add a view to a view container
+  * add more unit tests and streamline code coverage report to exclude uninteresting stuff
+
+2015-10-27 arne
+
+  * more unit tests (18.4% line coverage)
+
+  which found the following issues :
+  * fix: CMemoryStream cannot rewind and read again (no way to know how many bytes were written before)
+  * fix: UIDescription tags could not be specified with OSType strings
+  * fix: UIViewFactory::collectRegisteredViewNames may not work correctly when using with a base class name filter
+
+2015-10-24 arne
+
+  * refactor Animation::ExchangeViewAnimation to better test it
+  * add a bunch of unit tests (coverage now : 6.4% lines)
+  * fix view container listener viewRemoved not called
+  * write script for better unit test build workflow
+
+2015-10-23 arne
+
+  * add text truncate mode to CSegmentButton
+  * workaround Apple bug in CocoaFileSelector which generates double file extensions when a temporary UTI is used
+  * add missing override method declarations
+  * fix access violation when opening the uidescription editor in debug mode
+  * make code coverage work with Xcode 7
+  
+2015-08-19 arne
+
+  * support VS 2015
+  * fix a possible nullptr access
+  
+2015-07-26 arne
+
+  * make zooming in UIDescription Editor step-less
+  
+2015-06-25 arne
+
+  * make sure that when creating an exchange animation the new view is not visible all time
+  * add IViewContainerListener interface and some use of it
+  * make sure that the view is completely redrawn in all cases
+  * fix decode scale factor from name if name does not include a file extension and also make sure that scaled bitmaps are processed 
+  
+2015-06-24 arne
+
+  * Direct2D: don’t draw if clip is empty
+  * move setZoomFactor from VST3Editor to CFrame
+  
+2015-06-07 arne
+
+  * make CAnimKnob work with normalized values
+  
+2015-05-31 arne
+
+  * update bitmap when a shadow view container is drawn scaled
+
+2015-05-28 arne
+
+  * fix layer drawing after transform matrix fix
+  * add documentation
+  
+2015-05-20 arne
+
+  * fix CGraphicsTransform matrix
+  * change the way the mouse cursor is set on Win32
+
+2015-05-19 arne
+
+  * fix Win7 issue when building with the Win 8 SDK
+  
+2015-05-17 arne
+
+  * fix transformed graphics path drawing
+  * fix memory leaks
+  
+2015-05-14 arne
+
+  * fix compile errors with Visual Studio 2010
+  * fix quartz text path after HiDPI changes
+  * fix crash in d2d text path creation
+
+2015-05-03 arne
+
+  * add some contribution classes:
+    - Mac BoxBlur filter which uses CoreImage (GPU)
+    - compressed UIDescription file support
+  * deprecated methods support should be off per default
+
+2015-04-22 arne
+
+  * make Cocoa menu behave the same as the Carbon one and allowing to set a checkmark on the sub menu (thanks to Steve Duda for the fix)
+  * allow to set ui description file path for better development integration
+  
+2015-03-11 arne
+
+  * fix too early unload of the D2D libraries when multiple frame objects are created
+
+2015-01-04 arne
+
+  * fix layer size when placed into scroll view
+  * fix mac 32 bit release build
+
+2014-12-24 arne
+
+  * fix getVisibleSize if a transform is set on the view container
+  * minor change to inform viewlisteners of view remove before the parent is set to zero and move some methods from UIDescription into its interface
+
 2014-12-19 arne
 
 	* fix CViewContainer::getViewsAt () returns wrong result when deep is active
