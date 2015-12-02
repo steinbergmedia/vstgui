@@ -52,4 +52,7 @@
 	#endif
 #elif WINDOWS
 	#include <unordered_map>
+	#if _MSC_VER <	1600
+		namespace std { using tr1::unordered_map; }
+	#endif
 #endif
