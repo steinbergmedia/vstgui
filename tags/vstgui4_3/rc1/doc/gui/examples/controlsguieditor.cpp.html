@@ -1,0 +1,827 @@
+<html>
+<head>
+    <title>controlsguieditor.cpp</title>
+	
+<link rel="stylesheet" href="../../formate.txt" type="text/css">
+</head>
+<body>
+
+<code>
+<pre>//------------------------------------------------------------------------
+//-
+//- Project     : Use different Controls of VSTGUI
+//- Filename    : controlsguieditor.cpp
+//- Created by  : Yvan Grabit
+//- Description :
+//-
+//- &copy; 2003 Steinberg Media Technologies GmbH, All Rights Reserved
+//------------------------------------------------------------------------
+
+#ifndef __controlsguieditor__
+#include "<a href="controlsguieditor.h.html">controlsguieditor.h</a>"
+#endif
+
+#ifndef __controlsgui__
+#include "<a href="controlsgui.h.html">controlsgui.h</a>"
+#endif
+
+#include &lt;math.h&gt;
+#include &lt;stdlib.h&gt;    
+#include &lt;stdio.h&gt;
+
+// this allows to use this bitmap in different instances of this plugin
+static CBitmap *background = 0;
+
+enum
+{
+    // bitmaps
+    kBackgroundBitmap = 1001,
+    
+    kSliderHBgBitmap,
+    kSliderVBgBitmap,
+    kSliderHandleBitmap,
+
+    kSwitchHBitmap,
+    kSwitchVBitmap,
+
+    kOnOffBitmap,
+
+    kKnobHandleBitmap,
+    kKnobBgBitmap,
+
+    kDigitBitmap,
+    kRockerBitmap,
+
+    kVuOnBitmap,
+    kVuOffBitmap,
+
+    kSplashBitmap,
+
+    kMovieKnobBitmap,
+
+    kMovieBitmap,
+
+    // others
+    kBackgroundW = 420,
+    kBackgroundH = 210
+};
+
+
+#if MOTIF
+#include "bmp001.xpm"
+#include "bmp002.xpm"
+#include "bmp003.xpm"
+#include "bmp004.xpm"
+#include "bmp005.xpm"
+#include "bmp006.xpm"
+#include "bmp007.xpm"
+#include "bmp008.xpm"
+#include "bmp009.xpm"
+#include "bmp010.xpm"
+#include "bmp011.xpm"
+#include "bmp012.xpm"
+#include "bmp013.xpm"
+#include "bmp014.xpm"
+#include "bmp015.xpm"
+#include "bmp016.xpm"
+
+
+CResTable xpmResources = {
+    {kBackgroundBitmap   , bmp001},
+
+    {kSliderHBgBitmap    , bmp002},
+    {kSliderVBgBitmap    , bmp003},
+    {kSliderHandleBitmap , bmp004},
+
+    {kSwitchHBitmap      , bmp005},
+    {kSwitchVBitmap      , bmp006},
+
+    {kOnOffBitmap        , bmp007},
+ 
+    {kKnobHandleBitmap   , bmp008},
+    {kKnobBgBitmap       , bmp009},
+ 
+    {kDigitBitmap        , bmp010},
+    {kRockerBitmap       , bmp011},
+    {kVuOnBitmap         , bmp012},
+    {kVuOffBitmap        , bmp013},
+    {kSplashBitmap       , bmp014},
+
+    {kMovieKnobBitmap    , bmp015},
+    {kMovieBitmap        , bmp016},
+
+    {0, 0}
+};
+#endif
+
+void stringConvert (float value, char* string);
+
+
+//-----------------------------------------------------------------------------
+// CLabel declaration
+//-----------------------------------------------------------------------------
+class CLabel : public CParamDisplay
+{
+public:
+    CLabel (CRect &amp;size, char *text);
+
+    void draw (CDrawContext *pContext);
+
+    void setLabel (char *text);
+    bool onDrop (void **ptrItems, long nbItems, long type, CPoint &amp;where);
+
+protected:
+    char label[256];
+};
+
+//-----------------------------------------------------------------------------
+// CLabel implementation
+//-----------------------------------------------------------------------------
+CLabel::CLabel (CRect &amp;size, char *text)
+: CParamDisplay (size)
+{
+    strcpy (label, "");
+    setLabel (text);
+}
+
+//------------------------------------------------------------------------
+void CLabel::setLabel (char *text)
+{
+    if (text)
+        strcpy (label, text);
+    setDirty ();
+}
+
+//-----------------------------------------------------------------------------
+bool CLabel::onDrop (void **ptrItems, long nbItems, long type, CPoint &amp;where)
+{
+    if (nbItems &gt; 0 &amp;&amp; type == kDropFiles)
+    {
+        char text[1024];
+        long pos = where.h - size.left;
+        sprintf (text, "%d : %s at %d", nbItems, (char*)ptrItems[0], pos);
+        setLabel (text);
+    }
+    return true;
+}
+
+//------------------------------------------------------------------------
+void CLabel::draw (CDrawContext *pContext)
+{
+    pContext-&gt;setFillColor (backColor);
+    pContext-&gt;fillRect (size);
+    pContext-&gt;setFrameColor (fontColor);
+    pContext-&gt;drawRect (size);
+
+    pContext-&gt;setFont (fontID);
+    pContext-&gt;setFontColor (fontColor);
+    pContext-&gt;drawString (label, size, false, kCenterText);
+}
+
+
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+ControlsguiEditor::ControlsguiEditor (AudioEffect *effect) 
+    :    AEffGUIEditor (effect)
+{
+    frame = 0;
+    oldTicks = 0;
+
+    rect.left   = 0;
+    rect.top    = 0;
+    rect.right  = kBackgroundW;
+    rect.bottom = kBackgroundH;
+
+    // we decide in this plugin to open all bitmaps in the open function
+}
+
+//-----------------------------------------------------------------------------
+ControlsguiEditor::~ControlsguiEditor ()
+{}
+
+//-----------------------------------------------------------------------------
+long ControlsguiEditor::open (void *ptr)
+{
+    // always call this !!!
+    AEffGUIEditor::open (ptr);
+
+    // get version
+    int version = getVstGuiVersion ();
+    int verMaj = (version &amp; 0xFF00) &gt;&gt; 16;
+    int verMin = (version &amp; 0x00FF);
+
+    // init the background bitmap (a global bitmap for all instance of this plugin)
+    if (!background)
+        background = new CBitmap (kBackgroundBitmap);
+    else
+        background-&gt;remember ();
+
+    //--CFrame-----------------------------------------------
+    CRect size (0, 0, background-&gt;getWidth () + 100, background-&gt;getHeight ());
+    frame = new CFrame (size, ptr, this);
+    frame-&gt;setBackground (background);
+    background-&gt;forget ();
+
+    CPoint point (0, 0);
+
+    //--COnOffButton-----------------------------------------------
+    CBitmap *onOffButton = new CBitmap (kOnOffBitmap);
+
+    size (0, 0, onOffButton-&gt;getWidth (), onOffButton-&gt;getHeight () / 2);
+    size.offset (20, 20);
+    cOnOffButton = new COnOffButton (size, this, kOnOffTag, onOffButton);
+    frame-&gt;addView (cOnOffButton);
+
+
+    //--CKickButton-----------------------------------------------
+     size.offset (70, 0);
+    point (0, 0);
+    cKickButton = new CKickButton (size, this, kKickTag, onOffButton-&gt;getHeight() / 2, onOffButton, point);
+    frame-&gt;addView (cKickButton);
+
+
+    //--CKnob--------------------------------------
+    CBitmap *knob   = new CBitmap (kKnobHandleBitmap);
+    CBitmap *bgKnob = new CBitmap (kKnobBgBitmap);
+
+     size (0, 0, bgKnob-&gt;getWidth (), bgKnob-&gt;getHeight ());
+    size.offset (140 + 15, 15);
+    point (0, 0);
+    cKnob = new CKnob (size, this, kKnobTag, bgKnob, knob, point);
+    cKnob-&gt;setInsetValue (7);
+    frame-&gt;addView (cKnob);
+    knob-&gt;forget ();
+    bgKnob-&gt;forget ();
+
+
+    //--CMovieButton--------------------------------------
+     size (0, 0, onOffButton-&gt;getWidth (), onOffButton-&gt;getHeight () / 2);
+    size.offset (210 + 20, 20);
+    point (0, 0);
+    cMovieButton = new CMovieButton (size, this, kMovieButtonTag, onOffButton-&gt;getHeight () / 2, onOffButton, point);
+    frame-&gt;addView (cMovieButton);
+
+    onOffButton-&gt;forget ();
+
+
+    //--CAnimKnob--------------------------------------
+    CBitmap *movieKnobBitmap = new CBitmap (kMovieKnobBitmap);
+
+    size (0, 0, movieKnobBitmap-&gt;getWidth (), movieKnobBitmap-&gt;getHeight () / 7);
+    size.offset (280 + 15, 15);
+    point (0, 0);
+    cAnimKnob = new CAnimKnob (size, this, kAnimKnobTag, 7, movieKnobBitmap-&gt;getHeight () / 7, movieKnobBitmap, point);
+    frame-&gt;addView (cAnimKnob);
+    
+    movieKnobBitmap-&gt;forget ();
+
+
+    //--COptionMenu--------------------------------------
+    size (0, 0, 50, 14);
+    size.offset (350 + 10, 30);
+
+    long style = k3DIn | kMultipleCheckStyle;
+    cOptionMenu = new COptionMenu (size, this, kOptionMenuTag, bgKnob, 0, style);
+    if (cOptionMenu)
+    {
+        cOptionMenu-&gt;setFont (kNormalFont);
+        cOptionMenu-&gt;setFontColor (kWhiteCColor);
+        cOptionMenu-&gt;setBackColor (kRedCColor);
+        cOptionMenu-&gt;setFrameColor (kWhiteCColor);
+        cOptionMenu-&gt;setHoriAlign (kLeftText);
+        int i;
+        for (i = 0; i &lt; 3; i++)
+        {
+            char txt[256];
+            sprintf (txt, "Entry %d", i);
+            cOptionMenu-&gt;addEntry (txt);
+        }
+        cOptionMenu-&gt;addEntry ("-");
+        for (i = 3; i &lt; 60; i++)
+        {
+            char txt[256];
+            sprintf (txt, "Entry %d", i);
+            cOptionMenu-&gt;addEntry (txt);
+        }
+
+        frame-&gt;addView (cOptionMenu);
+    }
+
+
+    //--CRockerSwitch--------------------------------------
+    CBitmap *rocker = new CBitmap (kRockerBitmap);
+     size (0, 0, rocker-&gt;getWidth (), rocker-&gt;getHeight () / 3);
+    size.offset (9, 70 + 29);
+    point (0, 0);
+    cRockerSwitch = new CRockerSwitch (size, this, kRockerSwitchTag, rocker-&gt;getHeight () / 3, rocker, point);
+    frame-&gt;addView (cRockerSwitch);
+    rocker-&gt;forget ();
+
+
+    //--CHorizontalSwitch--------------------------------------
+    CBitmap *switchHBitmap = new CBitmap (kSwitchHBitmap);
+    size (0, 0, switchHBitmap-&gt;getWidth (), switchHBitmap-&gt;getHeight () / 4);
+    size.offset (70 + 10, 70 + 30);
+    point (0, 0);
+    cHorizontalSwitch = new CHorizontalSwitch (size, this, kSwitchHTag, 4, switchHBitmap-&gt;getHeight () / 4, 4, switchHBitmap, point);
+    frame-&gt;addView (cHorizontalSwitch);
+    switchHBitmap-&gt;forget ();
+
+
+    //--CVerticalSwitch--------------------------------------
+    CBitmap *switchVBitmap = new CBitmap (kSwitchVBitmap);
+
+    size (0, 0, switchVBitmap-&gt;getWidth (), switchVBitmap-&gt;getHeight () / 4);
+    size.offset (140 + 30, 70 + 5);
+    cVerticalSwitch = new CVerticalSwitch (size, this, kSwitchVTag, 4, switchVBitmap-&gt;getHeight () / 4, 4, switchVBitmap, point);
+    frame-&gt;addView (cVerticalSwitch);
+    switchVBitmap-&gt;forget ();
+
+
+    //--CHorizontalSlider--------------------------------------
+    CBitmap *sliderHBgBitmap = new CBitmap (kSliderHBgBitmap);
+    CBitmap *sliderHandleBitmap = new CBitmap (kSliderHandleBitmap);
+
+    size (0, 0, sliderHBgBitmap-&gt;getWidth (), sliderHBgBitmap-&gt;getHeight ());
+    size.offset (10, 30);
+
+    point (0, 0);
+    cHorizontalSlider = new CHorizontalSlider (size, this, kSliderHTag, size.left + 2, size.left + sliderHBgBitmap-&gt;getWidth () - sliderHandleBitmap-&gt;getWidth () - 1, sliderHandleBitmap, sliderHBgBitmap, point, kLeft);
+    size.offset (0, -30 + 10);
+    point (0, 2);
+    cHorizontalSlider-&gt;setOffsetHandle (point);
+
+    cHorizontalSlider2 = 0;
+    style =  k3DIn | kCheckStyle;
+    COptionMenu *cOptionMenu2 = new COptionMenu (size, this, kOptionMenuTag, bgKnob, 0, style);
+    if (cOptionMenu2)
+    {
+        cOptionMenu2-&gt;setFont (kNormalFont);
+        cOptionMenu2-&gt;setFontColor (kWhiteCColor);
+        cOptionMenu2-&gt;setBackColor (kRedCColor);
+        cOptionMenu2-&gt;setFrameColor (kWhiteCColor);
+        cOptionMenu2-&gt;setHoriAlign (kLeftText);
+        int i;
+        for (i = 0; i &lt; 3; i++)
+        {
+            char txt[256];
+            sprintf (txt, "Entry %d", i);
+            cOptionMenu2-&gt;addEntry (txt);
+        }
+    }
+
+    // add this 2 control in a CViewContainer
+    size (0, 0, 70, 45);
+    size.offset (210, 70);
+    cViewContainer = new CViewContainer (size, frame, background);
+    cViewContainer-&gt;addView (cHorizontalSlider);
+    cViewContainer-&gt;addView (cOptionMenu2);
+    frame-&gt;addView (cViewContainer);
+
+    sliderHBgBitmap-&gt;forget ();
+
+
+    //--CVerticalSlider--------------------------------------
+    CBitmap *sliderVBgBitmap = new CBitmap (kSliderVBgBitmap);
+
+    size (0, 0, sliderVBgBitmap-&gt;getWidth (), sliderVBgBitmap-&gt;getHeight ());
+    size.offset (280 + 30, 70 + 5);
+    point (0, 0);
+    cVerticalSlider = new CVerticalSlider (size, this, kSliderVTag, size.top + 2, size.top + sliderVBgBitmap-&gt;getHeight () - sliderHandleBitmap-&gt;getHeight () - 1, sliderHandleBitmap, sliderVBgBitmap, point, kBottom);
+    point (2, 0);
+    cVerticalSlider-&gt;setOffsetHandle (point);
+    cVerticalSlider-&gt;setFreeClick (true);
+    frame-&gt;addView (cVerticalSlider);
+
+    sliderVBgBitmap-&gt;forget ();
+    sliderHandleBitmap-&gt;forget ();
+
+
+    //--CTextEdit--------------------------------------
+    size (0, 0, 50, 12);
+    size.offset (350 + 10, 70 + 30);
+    cTextEdit = new CTextEdit (size, this, kTextEditTag, 0, 0, k3DIn);
+    if (cTextEdit)
+    {
+        cTextEdit-&gt;setFont (kNormalFontVerySmall);
+        cTextEdit-&gt;setFontColor (kWhiteCColor);
+        cTextEdit-&gt;setBackColor (kBlackCColor);
+        cTextEdit-&gt;setFrameColor (kWhiteCColor);
+        cTextEdit-&gt;setHoriAlign (kCenterText);
+        frame-&gt;addView (cTextEdit);
+    }
+
+    //--CSplashScreen--------------------------------------
+    CBitmap *splashBitmap = new CBitmap (kSplashBitmap);
+
+    size (0, 0, 70, 70);
+    size.offset (0, 140);
+    point (0, 0);
+    CRect toDisplay (0, 0, splashBitmap-&gt;getWidth (), splashBitmap-&gt;getHeight ());
+    toDisplay.offset (100, 50);
+
+    cSplashScreen = new CSplashScreen (size, this, kAbout, splashBitmap, toDisplay, point);
+    frame-&gt;addView (cSplashScreen);
+    splashBitmap-&gt;forget ();
+
+
+    //--CMovieBitmap--------------------------------------
+      CBitmap *movieBitmap = new CBitmap (kMovieBitmap);
+
+    size (0, 0, movieBitmap-&gt;getWidth (), movieBitmap-&gt;getHeight () / 10);
+    size.offset (70 + 15, 140 + 15);
+    point (0, 0);    
+    cMovieBitmap = new CMovieBitmap (size, this, kMovieBitmapTag, 10, movieBitmap-&gt;getHeight () / 10, movieBitmap, point);
+    frame-&gt;addView (cMovieBitmap);
+
+
+    //--CAutoAnimation--------------------------------------
+    size (0, 0, movieBitmap-&gt;getWidth (), movieBitmap-&gt;getHeight () / 10);
+    size.offset (140 + 15, 140 + 15);
+    point (0, 0);
+    cAutoAnimation = new CAutoAnimation (size, this, kAutoAnimationTag, 10, movieBitmap-&gt;getHeight () / 10, movieBitmap, point);
+    frame-&gt;addView (cAutoAnimation);
+    movieBitmap-&gt;forget ();
+
+
+    //--CSpecialDigit--------------------------------------
+    CBitmap *specialDigitBitmap = new CBitmap (kDigitBitmap);
+
+     size (0, 0, specialDigitBitmap-&gt;getWidth (), specialDigitBitmap-&gt;getHeight () / 10);
+    size.offset (210 + 10, 140 + 30);
+
+    int xpos[10];
+    int ypos[10];
+    for (int i = 0; i &lt; 10; i++) 
+    {
+      xpos[i] = size.left + i * (specialDigitBitmap-&gt;getWidth ());
+      ypos[i] = size.top;
+    }
+    cSpecialDigit = new CSpecialDigit (size, this, kDigitTag, 0, 7, xpos, ypos, specialDigitBitmap-&gt;getWidth (), specialDigitBitmap-&gt;getHeight () / 10 , specialDigitBitmap);
+    frame-&gt;addView (cSpecialDigit);
+    specialDigitBitmap-&gt;forget ();
+
+
+    //--CParamDisplay--------------------------------------
+    size (0, 0, 50, 15);
+    size.offset (280 + 10, 140 + 30);
+    cParamDisplay = new CParamDisplay (size);
+    if (cParamDisplay)
+    {
+        cParamDisplay-&gt;setFont (kNormalFontSmall);
+        cParamDisplay-&gt;setFontColor (kWhiteCColor);
+        cParamDisplay-&gt;setBackColor (kBlackCColor);
+        frame-&gt;addView (cParamDisplay);
+    }
+
+
+    //--CVuMeter--------------------------------------
+    CBitmap* vuOnBitmap  = new CBitmap (kVuOnBitmap);
+    CBitmap* vuOffBitmap = new CBitmap (kVuOffBitmap);
+
+    size (0, 0, vuOnBitmap-&gt;getWidth (), vuOnBitmap-&gt;getHeight ());
+    size.offset (350 + 30, 140 + 5);
+    cVuMeter = new CVuMeter (size, vuOnBitmap, vuOffBitmap, 14);
+    cVuMeter-&gt;setDecreaseStepValue (0.1f);
+    frame-&gt;addView (cVuMeter);
+    vuOnBitmap-&gt;forget ();
+    vuOffBitmap-&gt;forget ();
+
+    //--My controls---------------------------------
+    //--CLabel--------------------------------------
+    size (0, 0, 349, 14);
+    size.offset (0, 140);
+    cLabel = new CLabel (size, "Type a Key or Drop a file...");
+    if (cLabel)
+    {
+        cLabel-&gt;setFont (kNormalFontSmall);
+        cLabel-&gt;setFontColor (kWhiteCColor);
+        cLabel-&gt;setBackColor (kGreyCColor);
+        frame-&gt;addView (cLabel);
+    }
+
+    //--CLabel--------------------------------------
+    size (0, 0, 65, 12);
+    size.offset (1, 40);
+    CLabel *cLabel2 = new CLabel (size, "FileSelector");
+    if (cLabel2)
+    {
+        cLabel2-&gt;setFont (kNormalFontSmaller);
+        cLabel2-&gt;setFontColor (kWhiteCColor);
+        cLabel2-&gt;setBackColor (kGreyCColor);
+        frame-&gt;addView (cLabel2);
+    }
+
+    // here we can call a initialize () function to initalize all controls values
+    return true;
+}
+
+//-----------------------------------------------------------------------------
+bool ControlsguiEditor::keysRequired ()
+{
+    if (frame &amp;&amp; frame-&gt;getEditView ())
+        return true;
+    else
+        return false;
+}
+
+//-----------------------------------------------------------------------------
+long ControlsguiEditor::onKeyDown (VstKeyCode &amp;keyCode)
+{
+    if (frame &amp;&amp; cLabel &amp;&amp; (keyCode.character &gt;= 'a' &amp;&amp; keyCode.character &lt;= 'z'))
+    {
+        char val[64];
+        char modifiers[32];
+        strcpy (modifiers, "");
+        if (keyCode.modifier &amp; MODIFIER_SHIFT)
+            strcpy (modifiers, "Shift+");
+        if (keyCode.modifier &amp; MODIFIER_ALTERNATE)
+            strcat (modifiers, "Alt+");
+        if (keyCode.modifier &amp; MODIFIER_COMMAND)
+            strcat (modifiers, "Cmd+");
+        if (keyCode.modifier &amp; MODIFIER_CONTROL)
+            strcat (modifiers, "Ctrl+");
+
+        sprintf (val, "onKeyDown : '%s%c'", modifiers, (char)(keyCode.character));
+        cLabel-&gt;setLabel (val);
+        return 1;
+    }
+
+    if (frame &amp;&amp; (keyCode.virt == VKEY_UP || keyCode.virt == VKEY_DOWN))
+    {
+        CView *pView = frame-&gt;getCurrentView ();
+        if (pView == cVerticalSlider || pView == cKnob || pView == cViewContainer)
+        {
+            CControl *control = (CControl*)pView;
+            if (pView == cViewContainer)
+            {
+                pView = (CControl*)(cViewContainer-&gt;getCurrentView ());
+                if (pView == cHorizontalSlider)
+                    control = (CControl*)pView;
+                else
+                    return -1;
+            }
+
+            float inc;
+            if (keyCode.virt == VKEY_UP)
+                inc = 0.05;
+            else
+                inc = -0.05;
+            float val = control-&gt;getValue () + inc;
+            float min = control-&gt;getMin ();
+            float max = control-&gt;getMax ();
+            if (val &gt; max)
+                val = max;
+            else if (val &lt; min)
+                val = min;
+            control-&gt;setValue (val);
+
+            return 1;
+        }
+    }
+    return -1;
+}
+
+//-----------------------------------------------------------------------------
+long ControlsguiEditor::onKeyUp (VstKeyCode &amp;keyCode)
+{
+    if (cLabel &amp;&amp; (keyCode.character &gt;= 'a' &amp;&amp; keyCode.character &lt;= 'z'))
+    {
+        char val[64];
+        char modifiers[32];
+        strcpy (modifiers, "");
+        if (keyCode.modifier &amp; MODIFIER_SHIFT)
+            strcpy (modifiers, "Shift+");
+        if (keyCode.modifier &amp; MODIFIER_ALTERNATE)
+            strcat (modifiers, "Alt+");
+        if (keyCode.modifier &amp; MODIFIER_COMMAND)
+            strcat (modifiers, "Cmd+");
+        if (keyCode.modifier &amp; MODIFIER_CONTROL)
+            strcat (modifiers, "Ctrl+");
+
+        sprintf (val, "onKeyUp : '%s%c'", modifiers, (char)(keyCode.character));
+        cLabel-&gt;setLabel (val);
+        return 1;
+    }
+
+    return -1; 
+}
+
+//-----------------------------------------------------------------------------
+void ControlsguiEditor::resume ()
+{
+    // called when the plugin will be On
+}
+
+//-----------------------------------------------------------------------------
+void ControlsguiEditor::suspend ()
+{
+    // called when the plugin will be Off
+}
+
+//-----------------------------------------------------------------------------
+void ControlsguiEditor::close ()
+{
+    // don't forget to remove the frame !!
+    if (frame)
+        delete frame;
+    frame = 0;
+
+    // forget background if not anymore used
+    if (background)
+    {
+        if (background-&gt;getNbReference () &lt;= 1)
+        {
+            background-&gt;forget ();    
+            background = 0;
+        }
+        else
+            background-&gt;forget ();    
+    }
+
+    // set to zero all pointer (security)
+    cOnOffButton   = 0;
+    cKickButton    = 0;
+    cKnob          = 0;
+    cMovieButton   = 0;
+    cAutoAnimation = 0;
+    cOptionMenu    = 0;
+
+    cRockerSwitch     = 0;
+    cHorizontalSwitch = 0;
+    cVerticalSwitch   = 0;
+    cHorizontalSlider = 0;
+    cHorizontalSlider2 = 0;
+    cVerticalSlider   = 0;
+    cTextEdit         = 0;
+
+    cSplashScreen = 0;
+    cMovieBitmap  = 0;
+    cAnimKnob     = 0;
+    cSpecialDigit = 0;
+    cParamDisplay = 0;
+    cVuMeter      = 0;
+
+    cViewContainer = 0;
+    cLabel = 0;
+}
+
+//-----------------------------------------------------------------------------
+void ControlsguiEditor::idle ()
+{
+    AEffGUIEditor::idle ();        // always call this to ensure update
+
+    if (cAutoAnimation &amp;&amp; cAutoAnimation-&gt;isWindowOpened ())
+    {
+        long newTicks = getTicks ();
+        if (newTicks &gt; oldTicks + 60)
+        {
+            cAutoAnimation-&gt;nextPixmap ();
+            oldTicks = newTicks;
+        }
+    }
+}
+
+//-----------------------------------------------------------------------------
+void ControlsguiEditor::setParameter (long index, float value)
+{
+    // called from the Aeffect to update the control's value
+
+    // test if the plug is opened
+    if (!frame)
+        return;
+
+    switch (index)
+    {
+    case kSliderHTag:
+        if (cHorizontalSlider)
+            cHorizontalSlider-&gt;setValue (effect-&gt;getParameter (index));
+        if (cHorizontalSlider2)
+            cHorizontalSlider2-&gt;setValue (effect-&gt;getParameter (index));
+        break;
+
+    case kSliderVTag:
+        if (cVerticalSlider)
+            cVerticalSlider-&gt;setValue (effect-&gt;getParameter (index));
+         break;
+
+    case kKnobTag:
+        if (cKnob)
+            cKnob-&gt;setValue (effect-&gt;getParameter (index));
+        if (cParamDisplay)
+            cParamDisplay-&gt;setValue (effect-&gt;getParameter (index));
+        if (cSpecialDigit)
+            cSpecialDigit-&gt;setValue (1000000 * effect-&gt;getParameter (index));
+        if (cVuMeter)
+            cVuMeter-&gt;setValue (effect-&gt;getParameter (index));
+        if (cAnimKnob)
+            cAnimKnob-&gt;setValue (effect-&gt;getParameter (index));
+        if (cMovieBitmap)
+            cMovieBitmap-&gt;setValue (effect-&gt;getParameter (index));
+        break;
+    }
+    
+    // call this to be sure that the graphic will be updated
+    postUpdate ();
+}
+
+//-----------------------------------------------------------------------------
+void ControlsguiEditor::valueChanged (CDrawContext* context, CControl* control)
+{
+    // called when something changes in the UI (mouse, key..)
+    switch (control-&gt;getTag ())
+    {
+    case kSliderVTag:
+        // this function will called later the setParameter of ControlsguiEditor
+        effect-&gt;setParameter (control-&gt;getTag (), control-&gt;getValue ());    
+        effect-&gt;setParameter (kSliderHTag, control-&gt;getValue ());
+        effect-&gt;setParameter (kKnobTag, control-&gt;getValue ());
+        break;
+
+    case kSliderHTag:
+        effect-&gt;setParameter (control-&gt;getTag (), control-&gt;getValue ());    
+        effect-&gt;setParameter (kSliderVTag, control-&gt;getValue ());
+        effect-&gt;setParameter (kKnobTag, control-&gt;getValue ());
+        break;
+
+    case kKnobTag: {
+        effect-&gt;setParameter (control-&gt;getTag (), control-&gt;getValue ());    
+        effect-&gt;setParameter (kSliderVTag, control-&gt;getValue ());
+        effect-&gt;setParameter (kSliderHTag, control-&gt;getValue ());
+        char text[256];
+        cTextEdit-&gt;getText (text);
+        long v = context-&gt;getStringWidth (text);
+    } break;
+
+    case kAnimKnobTag:
+        effect-&gt;setParameter (control-&gt;getTag (), control-&gt;getValue ());    
+        effect-&gt;setParameter (kSliderVTag, control-&gt;getValue ());
+        effect-&gt;setParameter (kSliderHTag, control-&gt;getValue ());
+        effect-&gt;setParameter (kKnobTag, control-&gt;getValue ());
+        break;
+
+
+    // open file selector
+    case kOnOffTag: {
+        control-&gt;update (context);    
+
+        AudioEffectX *effect = (AudioEffectX*)getEffect ();
+        if (effect &amp;&amp; control-&gt;getValue () &gt; 0.5f)
+        {
+            if (effect-&gt;canHostDo ("openFileSelector"))
+            {
+                VstFileType aiffType ("AIFF File", "AIFF", "aif", "aiff", "audio/aiff", "audio/x-aiff");
+                VstFileType aifcType ("AIFC File", "AIFC", "aif", "aifc", "audio/x-aifc");
+                VstFileType waveType ("Wave File", ".WAV", "wav", "wav",  "audio/wav", "audio/x-wav");
+                VstFileType sdIIType ("SoundDesigner II File", "Sd2f", "sd2", "sd2");
+
+                VstFileSelect vstFileSelect;
+                memset (&amp;vstFileSelect, 0, sizeof (VstFileType));
+
+                vstFileSelect.command     = kVstFileLoad;
+                vstFileSelect.type        = kVstFileType;
+                strcpy (vstFileSelect.title, "Test for open file selector");
+                vstFileSelect.nbFileTypes = 1;
+                vstFileSelect.fileTypes   = &amp;waveType;
+                vstFileSelect.returnPath  = new char[1024];
+                //vstFileSelect.initialPath  = new char[1024];
+                vstFileSelect.initialPath = 0;
+                if (effect-&gt;openFileSelector (&amp;vstFileSelect))
+                {
+                    if (cLabel)
+                        cLabel-&gt;setLabel (vstFileSelect.returnPath);
+                    frame-&gt;setDropActive (true);
+                }
+                else
+                {
+                    if (cLabel)
+                        cLabel-&gt;setLabel ("OpenFileSelector: canceled!!!!");
+                    frame-&gt;setDropActive (false);
+                }
+                delete []vstFileSelect.returnPath;
+                if (vstFileSelect.initialPath)
+                    delete []vstFileSelect.initialPath;
+            }
+        }
+        } break;
+    
+    default:
+        control-&gt;update (context);    
+    }
+}
+
+//-----------------------------------------------------------------------------
+void stringConvert (float value, char* string)
+{
+     sprintf (string, "p %.2f", value);
+}
+
+
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+</pre>
+</code>
+
+
+</body>
+</html>

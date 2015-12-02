@@ -1,0 +1,92 @@
+<html>
+<head>
+	<base target="vstdoc">
+	<title>CVuMeter</title>
+	
+<link rel="stylesheet" href="../../formate.txt" type="text/css">
+</head>
+<body>
+
+
+<code><pre>
+//------------------------------------------------------------------------
+// CVuMeter
+//------------------------------------------------------------------------
+CVuMeter::CVuMeter (const CRect &size, CBitmap *onBitmap, CBitmap *offBitmap,
+                    long nbLed, const long style)
+	: CControl (size, 0, 0),
+	  onBitmap (onBitmap), offBitmap (offBitmap), nbLed (nbLed), style (style)
+{
+	setDecreaseStepValue (1.0f);
+	
+	if (onBitmap)
+		onBitmap->remember ();
+	if (offBitmap)
+		offBitmap->remember ();
+
+	rectOn  (size.left, size.top, size.right, size.bottom);
+	rectOff (size.left, size.top, size.right, size.bottom);
+}
+
+//------------------------------------------------------------------------
+CVuMeter::~CVuMeter ()
+{
+	if (onBitmap)
+		onBitmap->forget ();
+	if (offBitmap)
+		offBitmap->forget ();
+}
+
+//------------------------------------------------------------------------
+void CVuMeter::draw (CDrawContext *pContext)
+{
+	if (!onBitmap) 
+		return;
+
+	CPoint pointOn;
+	CPoint pointOff;
+
+	bounceValue ();
+	
+	float newValue = oldValue - decreaseValue;
+	if (newValue < getMin ())
+		newValue = getMin ();
+	if (value < newValue)
+		value = newValue;
+	oldValue = value;
+
+	if (style & kHorizontal) 
+	{
+		long tmp = (long)(((long)(nbLed * value + 0.5f) / (float)nbLed) * onBitmap->getWidth ());
+		pointOff (tmp, 0);
+		tmp += size.left;
+
+		rectOff.left = tmp;
+		rectOn.right = tmp;
+	}
+	else 
+	{
+		long tmp = (long)(((long)(nbLed * (getMax () - value) + 0.5f) / (float)nbLed) * onBitmap->getHeight ());
+		pointOn (0, tmp);
+		tmp += size.top;
+
+		rectOff.bottom = tmp;
+		rectOn.top     = tmp;
+	}
+	if (offBitmap)
+	{
+		if (bTransparencyEnabled)
+			offBitmap->drawTransparent (pContext, rectOff, pointOff);
+		else
+			offBitmap->draw (pContext, rectOff, pointOff);
+	}
+
+	if (bTransparencyEnabled)
+		onBitmap->drawTransparent (pContext, rectOn, pointOn);
+	else
+		onBitmap->draw (pContext, rectOn, pointOn);
+}
+
+</pre></code>
+</body>
+</html>

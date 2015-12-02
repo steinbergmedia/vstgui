@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vstgui-ui-description version="1">
+	<fonts>
+	</fonts>
+	<colors>
+	</colors>
+	<template autosize="left right top bottom " background-color="~ GreyCColor" class="CViewContainer" maxSize="3000, 3000" minSize="300, 320" name="view" origin="0, 0" size="300, 320" sub-controller="OpenGLViewController" transparent="false">
+		<view autosize="left right top bottom " class="CView" custom-view-name="OpenGLView" origin="10, 10" size="280, 280" transparent="false"/>
+		<view autosize="left bottom " autosize-to-fit="false" background-offset="0, 0" boxfill-color="~ WhiteCColor" boxframe-color="~ BlackCColor" checkmark-color="~ RedCColor" class="CCheckBox" control-tag="threaded" default-value="0.5" draw-crossbox="false" font="~ SystemFont" font-color="~ WhiteCColor" max-value="1" min-value="0" origin="10, 295" size="100, 20" title="Threaded" transparent="false" wheel-inc-value="0.1"/>
+	</template>
+	<custom>
+		<attributes name="UIViewInspector" windowSize="72, 215, 472, 731"/>
+		<attributes gridsize="10" name="UIEditFrame" uidescPath="/Volumes/DATA/subversion/trunk/vstgui_head/vstgui/tests/uidescription vst3/resource/OpenGLViewTest.uidesc"/>
+		<attributes Path="/Volumes/DATA/subversion/trunk/vstgui_head/vstgui/tests/uidescription vst3/resource/OpenGLViewTest.uidesc" name="VST3Editor"/>
+		<attributes name="FocusDrawing"/>
+		<attributes Size="5, 5" name="UIGridController"/>
+		<attributes SelectedTemplate="view" name="UITemplateController"/>
+		<attributes name="UIAttributesController"/>
+		<attributes EditorSize="0, 0, 975, 677" SplitViewSize_0_0="0.800613" SplitViewSize_0_1="0.184049" SplitViewSize_1_0="0.476994" SplitViewSize_1_1="0.509202" SplitViewSize_2_0="0.815385" SplitViewSize_2_1="0.174359" name="UIEditController"/>
+		<attributes SelectedRow="2" name="UIViewCreatorDataSource"/>
+		<attributes SelectedRow="0" name="UITagsDataSource"/>
+		<attributes SelectedRow="-1" name="UIColorsDataSource"/>
+		<attributes SelectedRow="-1" name="UIBitmapsDataSource"/>
+		<attributes SelectedRow="-1" name="UIFontsDataSource"/>
+	</custom>
+	<bitmaps>
+		<bitmap name="animation_knob" path="animation_knob.png"/>
+		<bitmap name="FrameBackground" path="FrameBackground.png"/>
+		<bitmap name="TabController" path="TabController.png"/>
+		<bitmap name="horizontal_slider_back" path="horizontal_slider_back.bmp"/>
+		<bitmap name="onoff_button" path="onoff_button.bmp"/>
+		<bitmap name="rocker_switch" path="rocker_switch.bmp"/>
+		<bitmap name="slider_handle" path="slider_handle.bmp"/>
+		<bitmap name="switch_horizontal" path="switch_horizontal.bmp"/>
+		<bitmap name="switch_vertical" path="switch_vertical.bmp"/>
+		<bitmap name="vertical_slider_back" path="vertical_slider_back.bmp"/>
+		<bitmap name="vumeter_back" path="vumeter_back.bmp"/>
+		<bitmap name="vumeter_front" path="vumeter_front.bmp"/>
+	</bitmaps>
+	<control-tags>
+		<control-tag name="threaded" tag="0"/>
+	</control-tags>
+</vstgui-ui-description>

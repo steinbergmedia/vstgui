@@ -1,0 +1,539 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+	<head>
+		<title>CControl</title>
+		<base target="vstdoc">
+		<link rel="stylesheet" href="../sdkdoc.css" type="text/css">
+	</head>
+	<body>
+		<div>
+			<bod></bod>
+			<h2>CControl</h2>
+			<p><code>#include &lt;vstcontrols.h&gt;</code></p>
+			<p><code>class CControl : public <a href="CView.html">CView</a> </code>;</p>
+			<p>Each control object (such as <a href="COnOffButton.html">COnOffButton</a> ) is 
+				derived from this class. This object manages the tag identification and the 
+				value of a control object.</p>
+			<h4>Note :</h4>
+			<p>In version 2.1, when an object uses the transparency for its background and 
+				draws on it (tranparency area) or the transparency area changes during 
+				different draws (<a href="CMovieBitmap.html">CMovieBitmap</a> ,...), the 
+				background will be false (not updated), you have to rewrite the draw function 
+				in order to redraw the background and then call the draw of the object.</p>
+			<p><img src="images/diagvstgui2.gif" width="466" height="287" alt="[vst-gui" diagra="">
+			</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h3><a name="cCControl1">CControl</a>
+							</h3>
+						</td>
+						<td align="right">
+							<h3>1.0</h3>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">CControl (<a href="CRect.html">CRect</a> &amp;size, <a href="CControlListener.html">CControlListener</a> *listener, int tag, <a href="CBitmap.html">CBitmap</a> *pBackground = 0); );</div></p>
+			<p>Creates a control with a given rect, listener and tag.</p>
+			<table width="100%" cellpadding="0" cellspacing="0" border="1" bordercolor="#000000">
+				<tbody>
+					<tr>
+						<th align="right" valign="top">
+							<code>size</code></th>
+						<td>The enclosing rectangle, in relative to the parent frame.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>listener</code></th>
+						<td>The object responsible for handling events in this control.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>tag</code></th>
+						<td>The index of the control</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>pBackground</code></th>
+						<td>An optional background pixmap (only available since vesrion 2.0).</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><img src="images/CControl.jpg">
+			</p>
+			<p><img src="images/source.jpg" alt="[source]"> <a href="sources/sCControl.html" target="sources">
+					source</a>
+			</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h3><a name="dCControl">~CControl</a>
+							</h3>
+						</td>
+						<td align="right">
+							<h3>1.0</h3>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual ~CControl ();</div></p>
+			<p>Destroys a control object.</p>
+			<p><img src="images/source.jpg" alt="[source]"> <a href="sources/sCControl.html" target="sources">
+					source</a>
+			</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h3><a name="draw">draw</a>
+							</h3>
+						</td>
+						<td align="right">
+							<h3>1.0</h3>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual void draw (<a href="CDrawContext.html">CDrawContext</a> *context) ;</div></p>
+			<p>Draws the control.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h3><a name="update">update</a>
+							</h3>
+						</td>
+						<td align="right">
+							<h3>1.0</h3>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual void update (<a href="CDrawContext.html">CDrawContext</a> *context);</div></p>
+			<p>Calls <code><a href="#draw">draw</a> </code>if the value is modified.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h3><a name="doIdleStuff">doIdleStuff</a>
+							</h3>
+						</td>
+						<td align="right">
+							<h3>1.0</h3>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual void doIdleStuff ();</div></p>
+			<p>Calls editor's doIdleStuff.<br>
+			</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h3><a name="setValue">setValue</a>
+							</h3>
+						</td>
+						<td align="right">
+							<h3>1.0</h3>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual void setValue (float value);</div></p>
+			<p>Sets the current value.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h3><a name="getValue">getValue</a>
+							</h3>
+						</td>
+						<td align="right">
+							<h3>1.0</h3>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual float getValue ();</div></p>
+			<p>Returns the current value.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h3><a name="setMin">setMin</a>
+							</h3>
+						</td>
+						<td align="right">
+							<h3>1.0</h3>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual void setMin (float min);</div></p>
+			<p>Sets the control's minimal value.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h3><a name="getMin">getMin</a>
+							</h3>
+						</td>
+						<td align="right">
+							<h3>1.0</h3>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual float getMin ();</div></p>
+			<p>Returns the control's minimal value;</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h3><a name="setMax">setMax</a>
+							</h3>
+						</td>
+						<td align="right">
+							<h3>1.0</h3>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual void setMax (float value);</div></p>
+			<p>Sets the control's maximal value.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h3><a name="getMax">getMax</a>
+							</h3>
+						</td>
+						<td align="right">
+							<h3>1.0</h3>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual float getMax ();</div></p>
+			<p>Returns the control's maximal value.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h3><a name="setOldValue">setOldValue</a>
+							</h3>
+						</td>
+						<td align="right">
+							<h3>1.0</h3>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual void setOldValue (float ov);</div></p>
+			<p>Sets the old value.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h3><a name="setValue">getOldValue</a>
+							</h3>
+						</td>
+						<td align="right">
+							<h3>1.0</h3>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual float getOldValue (void);</div></p>
+			<p>Returns the old value.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h3><a name="setDefaultValue">setDefaultValue</a>
+							</h3>
+						</td>
+						<td align="right">
+							<h3>1.0</h3>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual void setDefaultValue (float ov);</div></p>
+			<p>Sets the default value.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h3><a name="getDefaultValue">getDefaultValue</a>
+							</h3>
+						</td>
+						<td align="right">
+							<h3>1.0</h3>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual float getDefaultValue (void);</div></p>
+			<p>Returns the default value.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h3><a name="setTag">setTag</a>
+							</h3>
+						</td>
+						<td align="right">
+							<h3>2.0</h3>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual void setTag (long tag);</div></p>
+			<p>Sets the tag of this control.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h3><a name="getTag">getTag</a>
+							</h3>
+						</td>
+						<td align="right">
+							<h3>1.0</h3>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">int getTag ();</div></p>
+			<p>Returns the tag of this control. Use to know which control object (i.e. <code><a href="COnOffButton.html">
+						COnOffButton</a> </code>, ...) is concerned by this control.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h3><a name="isDirty">isDirty</a>
+							</h3>
+						</td>
+						<td align="right">
+							<h3>2.0</h3>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual bool isDirty ();</div></p>
+			<p>Returns <code>true</code> if dirty (<code>oldValue != value</code>).
+			</p>
+			<p><img src="images/source.jpg" alt="[source]"> <a href="sources/sCControl.html" target="sources">
+					source</a>
+			</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h3><a name="setDirty">setDirty</a>
+							</h3>
+						</td>
+						<td align="right">
+							<h3>2.0</h3>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual void setDirty (const bool val = true);</div></p>
+			<p>Sets the control to dirty (the next update will redraw it).
+			</p>
+			<p><img src="images/source.jpg" alt="[source]"> <a href="sources/sCControl.html" target="sources">
+					source</a>
+			</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h3><a name="setBackground">setBackground</a>
+							</h3>
+						</td>
+						<td align="right">
+							<h3>1.0</h3>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual void setBackground (<a href="CBitmap.html">CBitmap</a> *background);</div></p>
+			<p>Sets the background pixmap.</p>
+			<p><img src="images/source.jpg" alt="[source]"> <a href="sources/sCControl.html" target="sources">
+					source</a>
+			</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h3><a name="getBackground">getBackground</a>
+							</h3>
+						</td>
+						<td align="right">
+							<h3>2.0</h3>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual <a href="CBitmap.html">CBitmap</a> *getBackground ();</div></p>
+			<p>Returns the background pixmap.</p>
+			<hr width="100%" size="2">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h3><a name="setBackOffset">setBackOffset</a>
+							</h3>
+						</td>
+						<td align="right">
+							<h3>2.2</h3>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual void setBackOffset (CPoint &amp;offset);</div>
+			</p>
+			<p>Used to set the offset of the control's background.<br></p>
+			<hr width="100%" size="2">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h3><a name="copyBackOffset">copyBackOffset</a>
+							</h3>
+						</td>
+						<td align="right">
+							<h3>2.0</h3>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual void copyBackOffset ();</div></p>
+			<p><code></code></p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h3><a name="setWheelInc">setWheelInc</a>
+							</h3>
+						</td>
+						<td align="right">
+							<h3>2.1</h3>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual void setWheelInc (float val);</div></p>
+			<p>Every control has a parameter called WheelInc which defines the step at which 
+				the control is affected by a mouse move (the control's value is modified by 
+				distance-of-the-move * WheelInc). This method lets you set this parameter.<br>
+			</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h3><a name="getWheelInc">getWheelInc</a>
+							</h3>
+						</td>
+						<td align="right">
+							<h3>2.1</h3>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual float getWheelInc ();</div></p>
+			<p>Returns the WheelInc parameter. See above.<br>
+			</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h3><a name="bounceValue">bounceValue</a>
+							</h3>
+						</td>
+						<td align="right">
+							<h3>2.1</h3>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual void bounceValue ();</div></p>
+			<p>Used to make the control's value stay in the [vmin;vmax] range of the control.<br>
+			</p>
+			<hr width="100%" size="2">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h3><a name="getListener">getListener</a>
+							</h3>
+						</td>
+						<td align="right">
+							<h3>2.2</h3>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp"><a href="CControlListener.html">CControlListener</a>* getListener ();</div>
+			</p>
+			<p>Returns the listener for the control.<br>
+			</p>
+			<hr width="100%" size="2">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h3><a name="isDoubleClick">isDoubleClick</a>
+							</h3>
+						</td>
+						<td align="right">
+							<h3>2.2</h3>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">bool isDoubleClick ();</div>
+			</p>
+			<p>Checks whether the click is part of a double one.<br>
+			</p>
+			<hr noshade="noshade" size="4">
+			<div align="center">Copyright &copy;2003 <a href="http://www.steinberg.net" target="_blank">
+					<u>Steinberg Media Technologies GmbH</u></a>.
+			</div>
+			<DIV align=center><FONT size=1>Last Modified:
+			<SCRIPT language=Javascript %>document.writeln(document.lastModified);</SCRIPT>
+			</FONT></DIV>
+			<br>
+		</div>
+		<br>
+	</body>
+</html>

@@ -1,0 +1,385 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{8FADB6CE-90BB-4FAD-AFB2-F2CBB19C80EB}</ProjectGuid>
+    <RootNamespace>vstgui</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>NotSet</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v120</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>NotSet</CharacterSet>
+    <PlatformToolset>v120</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>NotSet</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v120</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>NotSet</CharacterSet>
+    <PlatformToolset>v120</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">build\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">build\$(Platform)\$(Configuration)\objects\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">build\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">build\$(Platform)\$(Configuration)\objects\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">build\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">build\$(Platform)\$(Configuration)\objects\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">build\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">build\$(Platform)\$(Configuration)\objects\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WINDOWS=1; _WIN32;_CRT_SECURE_NO_WARNINGS; VSTGUI_LIVE_EDITING; DEBUG=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <MinimalRebuild>false</MinimalRebuild>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <BrowseInformation>true</BrowseInformation>
+    </ClCompile>
+    <Lib>
+      <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>LIBCMTD;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Midl>
+      <TargetEnvironment>X64</TargetEnvironment>
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WINDOWS=1; _WIN32;_CRT_SECURE_NO_WARNINGS; VSTGUI_LIVE_EDITING; DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <MinimalRebuild>false</MinimalRebuild>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Lib>
+      <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>LIBCMTD;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WINDOWS=1; _WIN32;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <MinimalRebuild>false</MinimalRebuild>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Midl>
+      <TargetEnvironment>X64</TargetEnvironment>
+    </Midl>
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WINDOWS=1; _WIN32;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <MinimalRebuild>false</MinimalRebuild>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\lib\cbitmap.cpp" />
+    <ClCompile Include="..\..\..\lib\cbitmapfilter.cpp" />
+    <ClCompile Include="..\..\..\lib\ccolor.cpp" />
+    <ClCompile Include="..\..\..\lib\cdatabrowser.cpp" />
+    <ClCompile Include="..\..\..\lib\cdrawcontext.cpp" />
+    <ClCompile Include="..\..\..\lib\cdrawmethods.cpp" />
+    <ClCompile Include="..\..\..\lib\cdropsource.cpp" />
+    <ClCompile Include="..\..\..\lib\cfileselector.cpp" />
+    <ClCompile Include="..\..\..\lib\cfont.cpp" />
+    <ClCompile Include="..\..\..\lib\cframe.cpp" />
+    <ClCompile Include="..\..\..\lib\cgradientview.cpp" />
+    <ClCompile Include="..\..\..\lib\cgraphicspath.cpp" />
+    <ClCompile Include="..\..\..\lib\clayeredviewcontainer.cpp" />
+    <ClCompile Include="..\..\..\lib\clinestyle.cpp" />
+    <ClCompile Include="..\..\..\lib\coffscreencontext.cpp" />
+    <ClCompile Include="..\..\..\lib\controls\cscrollbar.cpp" />
+    <ClCompile Include="..\..\..\lib\controls\csegmentbutton.cpp" />
+    <ClCompile Include="..\..\..\lib\copenglview.cpp" />
+    <ClCompile Include="..\..\..\lib\cpoint.cpp" />
+    <ClCompile Include="..\..\..\lib\crect.cpp" />
+    <ClCompile Include="..\..\..\lib\crowcolumnview.cpp" />
+    <ClCompile Include="..\..\..\lib\cscrollview.cpp" />
+    <ClCompile Include="..\..\..\lib\cshadowviewcontainer.cpp" />
+    <ClCompile Include="..\..\..\lib\csplitview.cpp" />
+    <ClCompile Include="..\..\..\lib\cstring.cpp" />
+    <ClCompile Include="..\..\..\lib\ctabview.cpp" />
+    <ClCompile Include="..\..\..\lib\ctooltipsupport.cpp" />
+    <ClCompile Include="..\..\..\lib\cview.cpp" />
+    <ClCompile Include="..\..\..\lib\cviewcontainer.cpp" />
+    <ClCompile Include="..\..\..\lib\cvstguitimer.cpp" />
+    <ClCompile Include="..\..\..\lib\vstguidebug.cpp" />
+    <ClCompile Include="..\..\..\lib\animation\animations.cpp" />
+    <ClCompile Include="..\..\..\lib\animation\animator.cpp" />
+    <ClCompile Include="..\..\..\lib\animation\timingfunctions.cpp" />
+    <ClCompile Include="..\..\..\lib\controls\cautoanimation.cpp" />
+    <ClCompile Include="..\..\..\lib\controls\cbuttons.cpp" />
+    <ClCompile Include="..\..\..\lib\controls\ccolorchooser.cpp" />
+    <ClCompile Include="..\..\..\lib\controls\ccontrol.cpp" />
+    <ClCompile Include="..\..\..\lib\controls\cfontchooser.cpp" />
+    <ClCompile Include="..\..\..\lib\controls\cknob.cpp" />
+    <ClCompile Include="..\..\..\lib\controls\cmoviebitmap.cpp" />
+    <ClCompile Include="..\..\..\lib\controls\cmoviebutton.cpp" />
+    <ClCompile Include="..\..\..\lib\controls\coptionmenu.cpp" />
+    <ClCompile Include="..\..\..\lib\controls\cparamdisplay.cpp" />
+    <ClCompile Include="..\..\..\lib\controls\cslider.cpp" />
+    <ClCompile Include="..\..\..\lib\controls\cspecialdigit.cpp" />
+    <ClCompile Include="..\..\..\lib\controls\csplashscreen.cpp" />
+    <ClCompile Include="..\..\..\lib\controls\cswitch.cpp" />
+    <ClCompile Include="..\..\..\lib\controls\ctextedit.cpp" />
+    <ClCompile Include="..\..\..\lib\controls\ctextlabel.cpp" />
+    <ClCompile Include="..\..\..\lib\controls\cvumeter.cpp" />
+    <ClCompile Include="..\..\..\lib\platform\win32\cfontwin32.cpp" />
+    <ClCompile Include="..\..\..\lib\platform\win32\gdiplusbitmap.cpp" />
+    <ClCompile Include="..\..\..\lib\platform\win32\gdiplusdrawcontext.cpp" />
+    <ClCompile Include="..\..\..\lib\platform\win32\gdiplusgraphicspath.cpp" />
+    <ClCompile Include="..\..\..\lib\platform\win32\win32dragcontainer.cpp" />
+    <ClCompile Include="..\..\..\lib\platform\win32\win32frame.cpp" />
+    <ClCompile Include="..\..\..\lib\platform\win32\win32openglview.cpp" />
+    <ClCompile Include="..\..\..\lib\platform\win32\win32optionmenu.cpp" />
+    <ClCompile Include="..\..\..\lib\platform\win32\win32support.cpp" />
+    <ClCompile Include="..\..\..\lib\platform\win32\win32textedit.cpp" />
+    <ClCompile Include="..\..\..\lib\platform\win32\winfileselector.cpp" />
+    <ClCompile Include="..\..\..\lib\platform\win32\winstring.cpp" />
+    <ClCompile Include="..\..\..\lib\platform\win32\direct2d\d2dbitmap.cpp" />
+    <ClCompile Include="..\..\..\lib\platform\win32\direct2d\d2ddrawcontext.cpp" />
+    <ClCompile Include="..\..\..\lib\platform\win32\direct2d\d2dfont.cpp" />
+    <ClCompile Include="..\..\..\lib\platform\win32\direct2d\d2dgraphicspath.cpp" />
+    <ClCompile Include="..\..\..\uidescription\cstream.cpp" />
+    <ClCompile Include="..\..\..\uidescription\editing\uicolor.cpp" />
+    <ClCompile Include="..\..\..\uidescription\editing\uicolorchoosercontroller.cpp" />
+    <ClCompile Include="..\..\..\uidescription\editing\uicolorslider.cpp" />
+    <ClCompile Include="..\..\..\uidescription\editing\uigradientscontroller.cpp" />
+    <ClCompile Include="..\..\..\uidescription\uiattributes.cpp" />
+    <ClCompile Include="..\..\..\uidescription\uidescription.cpp" />
+    <ClCompile Include="..\..\..\uidescription\uiviewcreator.cpp" />
+    <ClCompile Include="..\..\..\uidescription\uiviewfactory.cpp" />
+    <ClCompile Include="..\..\..\uidescription\uiviewswitchcontainer.cpp" />
+    <ClCompile Include="..\..\..\uidescription\xmlparser.cpp" />
+    <ClCompile Include="..\..\..\uidescription\editing\uiactions.cpp" />
+    <ClCompile Include="..\..\..\uidescription\editing\uiattributescontroller.cpp" />
+    <ClCompile Include="..\..\..\uidescription\editing\uibitmapscontroller.cpp" />
+    <ClCompile Include="..\..\..\uidescription\editing\uicolorscontroller.cpp" />
+    <ClCompile Include="..\..\..\uidescription\editing\uicrosslines.cpp" />
+    <ClCompile Include="..\..\..\uidescription\editing\uidialogcontroller.cpp" />
+    <ClCompile Include="..\..\..\uidescription\editing\uieditcontroller.cpp" />
+    <ClCompile Include="..\..\..\uidescription\editing\uieditmenucontroller.cpp" />
+    <ClCompile Include="..\..\..\uidescription\editing\uieditview.cpp" />
+    <ClCompile Include="..\..\..\uidescription\editing\uifocussettingscontroller.cpp" />
+    <ClCompile Include="..\..\..\uidescription\editing\uifontscontroller.cpp" />
+    <ClCompile Include="..\..\..\uidescription\editing\uigridcontroller.cpp" />
+    <ClCompile Include="..\..\..\uidescription\editing\uisearchtextfield.cpp" />
+    <ClCompile Include="..\..\..\uidescription\editing\uiselection.cpp" />
+    <ClCompile Include="..\..\..\uidescription\editing\uitagscontroller.cpp" />
+    <ClCompile Include="..\..\..\uidescription\editing\uitemplatecontroller.cpp" />
+    <ClCompile Include="..\..\..\uidescription\editing\uitemplatesettingscontroller.cpp" />
+    <ClCompile Include="..\..\..\uidescription\editing\uiundomanager.cpp" />
+    <ClCompile Include="..\..\..\uidescription\editing\uiviewcreatecontroller.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\lib\animation\ianimationtarget.h" />
+    <ClInclude Include="..\..\..\lib\animation\itimingfunction.h" />
+    <ClInclude Include="..\..\..\lib\cbitmap.h" />
+    <ClInclude Include="..\..\..\lib\cbitmapfilter.h" />
+    <ClInclude Include="..\..\..\lib\cbuttonstate.h" />
+    <ClInclude Include="..\..\..\lib\ccolor.h" />
+    <ClInclude Include="..\..\..\lib\cdatabrowser.h" />
+    <ClInclude Include="..\..\..\lib\cdrawcontext.h" />
+    <ClInclude Include="..\..\..\lib\cdrawdefs.h" />
+    <ClInclude Include="..\..\..\lib\cdrawmethods.h" />
+    <ClInclude Include="..\..\..\lib\cdropsource.h" />
+    <ClInclude Include="..\..\..\lib\cfileselector.h" />
+    <ClInclude Include="..\..\..\lib\cfont.h" />
+    <ClInclude Include="..\..\..\lib\cframe.h" />
+    <ClInclude Include="..\..\..\lib\cgradientview.h" />
+    <ClInclude Include="..\..\..\lib\cgraphicspath.h" />
+    <ClInclude Include="..\..\..\lib\cgraphicstransform.h" />
+    <ClInclude Include="..\..\..\lib\clayeredviewcontainer.h" />
+    <ClInclude Include="..\..\..\lib\clinestyle.h" />
+    <ClInclude Include="..\..\..\lib\coffscreencontext.h" />
+    <ClInclude Include="..\..\..\lib\controls\cscrollbar.h" />
+    <ClInclude Include="..\..\..\lib\controls\csegmentbutton.h" />
+    <ClInclude Include="..\..\..\lib\copenglview.h" />
+    <ClInclude Include="..\..\..\lib\cpoint.h" />
+    <ClInclude Include="..\..\..\lib\crect.h" />
+    <ClInclude Include="..\..\..\lib\cresourcedescription.h" />
+    <ClInclude Include="..\..\..\lib\crowcolumnview.h" />
+    <ClInclude Include="..\..\..\lib\cscrollview.h" />
+    <ClInclude Include="..\..\..\lib\cshadowviewcontainer.h" />
+    <ClInclude Include="..\..\..\lib\csplitview.h" />
+    <ClInclude Include="..\..\..\lib\cstring.h" />
+    <ClInclude Include="..\..\..\lib\ctabview.h" />
+    <ClInclude Include="..\..\..\lib\ctooltipsupport.h" />
+    <ClInclude Include="..\..\..\lib\cview.h" />
+    <ClInclude Include="..\..\..\lib\cviewcontainer.h" />
+    <ClInclude Include="..\..\..\lib\cvstguitimer.h" />
+    <ClInclude Include="..\..\..\lib\idatapackage.h" />
+    <ClInclude Include="..\..\..\lib\idependency.h" />
+    <ClInclude Include="..\..\..\lib\ifocusdrawing.h" />
+    <ClInclude Include="..\..\..\lib\iscalefactorchangedlistener.h" />
+    <ClInclude Include="..\..\..\lib\itouchevent.h" />
+    <ClInclude Include="..\..\..\lib\iviewlistener.h" />
+    <ClInclude Include="..\..\..\lib\vstguibase.h" />
+    <ClInclude Include="..\..\..\lib\vstguidebug.h" />
+    <ClInclude Include="..\..\..\lib\vstguifwd.h" />
+    <ClInclude Include="..\..\..\lib\vstkeycode.h" />
+    <ClInclude Include="..\..\..\lib\animation\animations.h" />
+    <ClInclude Include="..\..\..\lib\animation\animator.h" />
+    <ClInclude Include="..\..\..\lib\animation\timingfunctions.h" />
+    <ClInclude Include="..\..\..\lib\controls\cautoanimation.h" />
+    <ClInclude Include="..\..\..\lib\controls\cbuttons.h" />
+    <ClInclude Include="..\..\..\lib\controls\ccolorchooser.h" />
+    <ClInclude Include="..\..\..\lib\controls\ccontrol.h" />
+    <ClInclude Include="..\..\..\lib\controls\cfontchooser.h" />
+    <ClInclude Include="..\..\..\lib\controls\cknob.h" />
+    <ClInclude Include="..\..\..\lib\controls\cmoviebitmap.h" />
+    <ClInclude Include="..\..\..\lib\controls\cmoviebutton.h" />
+    <ClInclude Include="..\..\..\lib\controls\coptionmenu.h" />
+    <ClInclude Include="..\..\..\lib\controls\cparamdisplay.h" />
+    <ClInclude Include="..\..\..\lib\controls\cslider.h" />
+    <ClInclude Include="..\..\..\lib\controls\cspecialdigit.h" />
+    <ClInclude Include="..\..\..\lib\controls\csplashscreen.h" />
+    <ClInclude Include="..\..\..\lib\controls\cswitch.h" />
+    <ClInclude Include="..\..\..\lib\controls\ctextedit.h" />
+    <ClInclude Include="..\..\..\lib\controls\ctextlabel.h" />
+    <ClInclude Include="..\..\..\lib\controls\cvumeter.h" />
+    <ClInclude Include="..\..\..\lib\platform\iplatformbitmap.h" />
+    <ClInclude Include="..\..\..\lib\platform\iplatformframe.h" />
+    <ClInclude Include="..\..\..\lib\platform\iplatformopenglview.h" />
+    <ClInclude Include="..\..\..\lib\platform\iplatformoptionmenu.h" />
+    <ClInclude Include="..\..\..\lib\platform\iplatformstring.h" />
+    <ClInclude Include="..\..\..\lib\platform\iplatformtextedit.h" />
+    <ClInclude Include="..\..\..\lib\platform\win32\cfontwin32.h" />
+    <ClInclude Include="..\..\..\lib\platform\win32\gdiplusbitmap.h" />
+    <ClInclude Include="..\..\..\lib\platform\win32\gdiplusdrawcontext.h" />
+    <ClInclude Include="..\..\..\lib\platform\win32\gdiplusgraphicspath.h" />
+    <ClInclude Include="..\..\..\lib\platform\win32\win32bitmapbase.h" />
+    <ClInclude Include="..\..\..\lib\platform\win32\win32dragcontainer.h" />
+    <ClInclude Include="..\..\..\lib\platform\win32\win32frame.h" />
+    <ClInclude Include="..\..\..\lib\platform\win32\win32openglview.h" />
+    <ClInclude Include="..\..\..\lib\platform\win32\win32optionmenu.h" />
+    <ClInclude Include="..\..\..\lib\platform\win32\win32support.h" />
+    <ClInclude Include="..\..\..\lib\platform\win32\win32textedit.h" />
+    <ClInclude Include="..\..\..\lib\platform\win32\winstring.h" />
+    <ClInclude Include="..\..\..\lib\platform\win32\direct2d\d2dbitmap.h" />
+    <ClInclude Include="..\..\..\lib\platform\win32\direct2d\d2ddrawcontext.h" />
+    <ClInclude Include="..\..\..\lib\platform\win32\direct2d\d2dfont.h" />
+    <ClInclude Include="..\..\..\lib\platform\win32\direct2d\d2dgraphicspath.h" />
+    <ClInclude Include="..\..\..\uidescription\cstream.h" />
+    <ClInclude Include="..\..\..\uidescription\delegationcontroller.h" />
+    <ClInclude Include="..\..\..\uidescription\doc.h" />
+    <ClInclude Include="..\..\..\uidescription\editing\uicolor.h" />
+    <ClInclude Include="..\..\..\uidescription\editing\uicolorchoosercontroller.h" />
+    <ClInclude Include="..\..\..\uidescription\editing\uicolorslider.h" />
+    <ClInclude Include="..\..\..\uidescription\editing\uigradientscontroller.h" />
+    <ClInclude Include="..\..\..\uidescription\icontroller.h" />
+    <ClInclude Include="..\..\..\uidescription\iuidescription.h" />
+    <ClInclude Include="..\..\..\uidescription\iviewcreator.h" />
+    <ClInclude Include="..\..\..\uidescription\iviewfactory.h" />
+    <ClInclude Include="..\..\..\uidescription\uiattributes.h" />
+    <ClInclude Include="..\..\..\uidescription\uidescription.h" />
+    <ClInclude Include="..\..\..\uidescription\uiviewcreator.h" />
+    <ClInclude Include="..\..\..\uidescription\uiviewfactory.h" />
+    <ClInclude Include="..\..\..\uidescription\uiviewswitchcontainer.h" />
+    <ClInclude Include="..\..\..\uidescription\xmlparser.h" />
+    <ClInclude Include="..\..\..\uidescription\editing\doc.h" />
+    <ClInclude Include="..\..\..\uidescription\editing\iaction.h" />
+    <ClInclude Include="..\..\..\uidescription\editing\uiactions.h" />
+    <ClInclude Include="..\..\..\uidescription\editing\uiattributescontroller.h" />
+    <ClInclude Include="..\..\..\uidescription\editing\uibasedatasource.h" />
+    <ClInclude Include="..\..\..\uidescription\editing\uibitmapscontroller.h" />
+    <ClInclude Include="..\..\..\uidescription\editing\uicolorscontroller.h" />
+    <ClInclude Include="..\..\..\uidescription\editing\uicrosslines.h" />
+    <ClInclude Include="..\..\..\uidescription\editing\uidialogcontroller.h" />
+    <ClInclude Include="..\..\..\uidescription\editing\uieditcontroller.h" />
+    <ClInclude Include="..\..\..\uidescription\editing\uieditmenucontroller.h" />
+    <ClInclude Include="..\..\..\uidescription\editing\uieditordescription.h" />
+    <ClInclude Include="..\..\..\uidescription\editing\uieditview.h" />
+    <ClInclude Include="..\..\..\uidescription\editing\uifocussettingscontroller.h" />
+    <ClInclude Include="..\..\..\uidescription\editing\uifontscontroller.h" />
+    <ClInclude Include="..\..\..\uidescription\editing\uigrid.h" />
+    <ClInclude Include="..\..\..\uidescription\editing\uigridcontroller.h" />
+    <ClInclude Include="..\..\..\uidescription\editing\uisearchtextfield.h" />
+    <ClInclude Include="..\..\..\uidescription\editing\uiselection.h" />
+    <ClInclude Include="..\..\..\uidescription\editing\uitagscontroller.h" />
+    <ClInclude Include="..\..\..\uidescription\editing\uitemplatecontroller.h" />
+    <ClInclude Include="..\..\..\uidescription\editing\uitemplatesettingscontroller.h" />
+    <ClInclude Include="..\..\..\uidescription\editing\uiundomanager.h" />
+    <ClInclude Include="..\..\..\uidescription\editing\uiviewcreatecontroller.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

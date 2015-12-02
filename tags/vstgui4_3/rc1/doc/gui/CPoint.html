@@ -1,0 +1,103 @@
+<html>
+	<head>
+		<base target="vstdoc">
+		<title>CPoint</title>
+		<link rel="stylesheet" href="../sdkdoc.css" type="text/css">
+	</head>
+	<body>
+	<div>
+		<h2>CPoint</h2>
+		<p><code>#include &lt;vstgui.h&gt;</code></p>
+		<p><code>struct CPoint;</code></p>
+		<p>Structure used for the definition and support of the point in pixel.</p>
+		<hr noShade SIZE="4">
+		<table width="100%">
+			<tr>
+				<td align="left"><h4><a name="cCPoint">CPoint</a></h4>
+				</td>
+				<td align="right"><h4>1.0</h4>
+				</td>
+			</tr>
+		</table>
+		<p><div class="cpp">CPoint (long h = 0, long v = 0);</div>
+		</p>
+		<p>-</p>
+		<p><img src="images/CPoint.jpg" alt="[CPoint]" width="94" height="98" /></p>
+		<hr noShade SIZE="4">
+		<table width="100%">
+			<tr>
+				<td align="left"><h4><a name="operator1">operator ()</a></h4>
+				</td>
+				<td align="right"><h4>1.0</h4>
+				</td>
+			</tr>
+		</table>
+		<p><div class="cpp">CPoint &amp;operator () (long h, long v);</div>
+		</p>
+		<p>Overloads the <code>()</code> operator.</p>
+		<hr noShade SIZE="4">
+		<table width="100%">
+			<tr>
+				<td align="left"><h4><a name="isInside">isInside</a></h4>
+				</td>
+				<td align="right"><h4>1.0</h4>
+				</td>
+			</tr>
+		</table>
+		<p><div class="cpp">bool isInside (<a href="CRect.html">CRect</a>&amp; r);</div>
+		</p>
+		<p>Returns <code>true</code> if the point is inside the rectangle.</p>
+		<h4>Example :</h4>
+		<code>
+			<pre>CRect myRect (0, 0, 100, 200);
+CPoint myPoint (12, 23);
+if (myPoint.inside (myRect)) {
+    ...
+}</pre>
+		</code>
+		<hr noShade SIZE="4">
+		<table width="100%">
+			<tr>
+				<td align="left"><h4><a name="operator2">operator ==</a></h4>
+				</td>
+				<td align="right"><h4>2.1</h4>
+				</td>
+			</tr>
+		</table>
+		<p><div class="cpp">bool operator == (const CPoint &other) const;</div>
+		</p>
+		<p>Overloads the <code>==</code> operator.</p>
+		<hr noShade SIZE="4">
+		<table width="100%">
+			<tr>
+				<td align="left"><h4><a name="operator3">operator !=</a></h4>
+				</td>
+				<td align="right"><h4>2.1</h4>
+				</td>
+			</tr>
+		</table>
+		<p><div class="cpp">bool operator != (const CPoint &other) const;</div>
+		</p>
+		<p>Overloads the <code>!=</code> operator.</p>
+		<hr noShade SIZE="4">
+		<table width="100%">
+			<tr>
+				<td align="left"><h4><a name="offset">offset</a></h4>
+				</td>
+				<td align="right"><h4>2.1</h4>
+				</td>
+			</tr>
+		</table>
+		<p><div class="cpp">CPoint &offset (long x, long y);</div>
+		</p>
+		<p>Adds an offset to the point.</p>
+		<hr noShade SIZE="4">
+		<div align="center">Copyright &copy;2003 <a href="http://www.steinberg.net" target="_blank"><u>Steinberg 
+					Media Technologies GmbH</u></a>.
+		</div>
+		<DIV align=center><FONT size=1>Last Modified:
+		<SCRIPT language=Javascript %>document.writeln(document.lastModified);</SCRIPT>
+		</FONT></DIV>
+		</div>
+	</body>
+</html>

@@ -1,0 +1,380 @@
+<html>
+<head>
+	<base target="vstdoc">
+	<title>CSlider</title>
+	
+<link rel="stylesheet" href="../../formate.txt" type="text/css">
+</head>
+<body>
+
+<code><pre>
+//------------------------------------------------------------------------
+// CSlider
+//------------------------------------------------------------------------
+CSlider::CSlider (const CRect &rect, CControlListener *listener, long tag,
+                  long      iMinPos, // min position in pixel
+                  long      iMaxPos, // max position in pixel
+                  CBitmap  *handle,  // bitmap of slider
+                  CBitmap  *background, // bitmap of background
+                  CPoint   &offset,  // offset in the background
+                  const long style)  // style (kBottom,kRight,kTop,kLeft,kHorizontal,kVertical)
+  :	CControl (rect, listener, tag, background), pHandle (handle),
+	offset (offset), style (style), bFreeClick (true), pOScreen (0)
+{
+	setDrawTransparentHandle (true);
+
+	if (pHandle)
+	{
+		pHandle->remember ();
+		widthOfSlider  = pHandle->getWidth ();
+		heightOfSlider = pHandle->getHeight ();
+	}
+	else
+	{
+		widthOfSlider  = 1; 
+		heightOfSlider = 1;
+	}
+
+	widthControl  = size.width ();
+	heightControl = size.height ();
+
+	if (style & kHorizontal)
+	{
+		minPos = iMinPos - size.left;
+		rangeHandle = iMaxPos - iMinPos;
+		CPoint p (0, 0);
+		setOffsetHandle (p);
+	}
+	else
+	{
+		minPos = iMinPos - size.top;
+		rangeHandle = iMaxPos - iMinPos;
+		CPoint p (0, 0);
+		setOffsetHandle (p);
+	}
+
+	zoomFactor = 10.f;
+}
+
+//------------------------------------------------------------------------
+CSlider::CSlider (const CRect &rect, CControlListener *listener, long tag,
+                  CPoint   &offsetHandle,    // handle offset
+                  long     _rangeHandle, // size of handle range
+                  CBitmap  *handle,     // bitmap of slider
+                  CBitmap  *background, // bitmap of background
+                  CPoint   &offset,     // offset in the background
+                  const long style)     // style (kBottom,kRight,kTop,kLeft,kHorizontal,kVertical)
+:	CControl (rect, listener, tag, background), pHandle (handle),
+	offset (offset),
+	style (style), bFreeClick (true), pOScreen (0), minPos (0)
+{
+	setDrawTransparentHandle (true);
+
+	if (pHandle)
+	{
+		pHandle->remember ();
+		widthOfSlider  = pHandle->getWidth ();
+		heightOfSlider = pHandle->getHeight ();
+	}
+	else
+	{
+		widthOfSlider  = 1; 
+		heightOfSlider = 1;
+	}
+
+	widthControl  = size.width ();
+	heightControl = size.height ();
+	if (style & kHorizontal)
+		rangeHandle = _rangeHandle - widthOfSlider;
+	else
+		rangeHandle = _rangeHandle - heightOfSlider;
+
+	setOffsetHandle (offsetHandle);
+	
+	zoomFactor = 10.f;
+}
+
+//------------------------------------------------------------------------
+CSlider::~CSlider ()
+{
+	if (pHandle)
+		pHandle->forget ();
+}
+
+//------------------------------------------------------------------------
+void CSlider::setOffsetHandle (CPoint &val)
+{
+	offsetHandle = val;
+
+	if (style & kHorizontal)
+	{
+		minTmp = offsetHandle.h + minPos;
+		maxTmp = minTmp + rangeHandle + widthOfSlider;
+	}
+	else
+	{
+		minTmp = offsetHandle.v + minPos;
+		maxTmp = minTmp + rangeHandle + heightOfSlider;
+	}
+}
+
+//-----------------------------------------------------------------------------
+bool CSlider::attached (CView *parent)
+{
+	if (pOScreen)
+		delete pOScreen;
+
+	pOScreen = new COffscreenContext (getParent (), widthControl, heightControl, kBlackCColor);
+	
+	return CControl::attached (parent);
+}
+
+//-----------------------------------------------------------------------------
+bool CSlider::removed (CView *parent)
+{
+	if (pOScreen)
+	{
+		delete pOScreen;
+		pOScreen = 0;
+	}
+	return CControl::removed (parent);
+}
+
+//------------------------------------------------------------------------
+void CSlider::draw (CDrawContext *pContext)
+{
+	float fValue;
+	if (style & kLeft || style & kTop)
+		fValue = value;
+	else 
+		fValue = 1.f - value;
+	
+	// (re)draw background
+	CRect rect (0, 0, widthControl, heightControl);
+	if (pBackground)
+	{
+		if (bTransparencyEnabled)
+			pBackground->drawTransparent (pOScreen, rect, offset);
+		else
+			pBackground->draw (pOScreen, rect, offset);
+	}
+	
+	// calc new coords of slider
+	CRect   rectNew;
+	if (style & kHorizontal)
+	{
+		rectNew.top    = offsetHandle.v;
+		rectNew.bottom = rectNew.top + heightOfSlider;	
+
+		rectNew.left   = offsetHandle.h + (int)(fValue * rangeHandle);
+		rectNew.left   = (rectNew.left < minTmp) ? minTmp : rectNew.left;
+
+		rectNew.right  = rectNew.left + widthOfSlider;
+		rectNew.right  = (rectNew.right > maxTmp) ? maxTmp : rectNew.right;
+	}
+	else
+	{
+		rectNew.left   = offsetHandle.h;
+		rectNew.right  = rectNew.left + widthOfSlider;	
+
+		rectNew.top    = offsetHandle.v + (int)(fValue * rangeHandle);
+		rectNew.top    = (rectNew.top < minTmp) ? minTmp : rectNew.top;
+
+		rectNew.bottom = rectNew.top + heightOfSlider;
+		rectNew.bottom = (rectNew.bottom > maxTmp) ? maxTmp : rectNew.bottom;
+	}
+
+	// draw slider at new position
+	if (pHandle)
+	{
+		if (bDrawTransparentEnabled)
+			pHandle->drawTransparent (pOScreen, rectNew);
+		else 
+			pHandle->draw (pOScreen, rectNew);
+	}
+
+	pOScreen->copyFrom (pContext, size);
+
+	setDirty (false);
+}
+
+//------------------------------------------------------------------------
+void CSlider::mouse (CDrawContext *pContext, CPoint &where)
+{
+	if (!bMouseEnabled)
+		return;
+
+	long button = pContext->getMouseButtons ();
+
+	// set the default value
+	if (button == (kControl|kLButton))
+	{
+		value = getDefaultValue ();
+		if (isDirty () && listener)
+			listener->valueChanged (pContext, this);
+		return;
+	}
+	
+	// allow left mousebutton only
+	if (!(button & kLButton))
+		return;
+
+	long delta;
+	if (style & kHorizontal)
+		delta = size.left + offsetHandle.h;
+	else
+		delta = size.top + offsetHandle.v;
+	if (!bFreeClick)
+	{
+		float fValue;
+		if (style & kLeft || style & kTop)
+			fValue = value;
+		else 
+			fValue = 1.f - value;
+		long actualPos;
+		CRect rect;
+
+		if (style & kHorizontal)
+		{
+			actualPos = offsetHandle.h + (int)(fValue * rangeHandle) + size.left;
+
+			rect.left   = actualPos;
+			rect.top    = size.top  + offsetHandle.v;
+			rect.right  = rect.left + widthOfSlider;
+			rect.bottom = rect.top  + heightOfSlider;
+
+			if (!where.isInside (rect))
+				return;
+			else
+				delta += where.h - actualPos;
+		}
+		else
+		{
+			actualPos = offsetHandle.v + (int)(fValue * rangeHandle) + size.top;
+		
+			rect.left   = size.left  + offsetHandle.h;
+			rect.top    = actualPos;
+			rect.right  = rect.left + widthOfSlider;
+			rect.bottom = rect.top  + heightOfSlider;
+
+			if (!where.isInside (rect))
+				return;
+			else
+				delta += where.v - actualPos;
+		}
+	} 
+	else
+	{
+		if (style & kHorizontal)
+			delta += widthOfSlider / 2 - 1;
+		else
+			delta += heightOfSlider / 2 - 1;
+	}
+	
+	float oldVal    = value;
+	long  oldButton = button;
+
+	// begin of edit parameter
+	getParent ()->beginEdit (tag);
+	getParent ()->setEditView (this);
+
+	while (1)
+	{
+		button = pContext->getMouseButtons ();
+		if (!(button & kLButton))
+			break;
+
+		if ((oldButton != button) && (button & kShift))
+		{
+			oldVal    = value;
+			oldButton = button;
+		}
+		else if (!(button & kShift))
+			oldVal = value;
+
+		if (style & kHorizontal)
+			value = (float)(where.h - delta) / (float)rangeHandle;
+		else
+			value = (float)(where.v - delta) / (float)rangeHandle;
+			
+		if (style & kRight || style & kBottom)
+			value = 1.f - value;
+
+		if (button & kShift)
+			value = oldVal + ((value - oldVal) / zoomFactor);
+		bounceValue ();
+    	    
+		if (isDirty () && listener)
+			listener->valueChanged (pContext, this);
+
+		pContext->getMouseLocation (where);
+
+		doIdleStuff ();
+	}
+
+	// end of edit parameter
+	getParent ()->endEdit (tag);
+}
+
+//------------------------------------------------------------------------
+bool CSlider::onWheel (CDrawContext *pContext, const CPoint &where, float distance)
+{
+	if (!bMouseEnabled)
+		return false;
+
+	long buttons = pContext->getMouseButtons ();
+	if (buttons & kShift)
+		value += 0.1f * distance * wheelInc;
+	else
+		value += distance * wheelInc;
+	bounceValue ();
+
+	if (isDirty () && listener)
+		listener->valueChanged (pContext, this);
+	return true;
+}
+
+//------------------------------------------------------------------------
+long CSlider::onKeyDown (VstKeyCode& keyCode)
+{
+	switch(keyCode.virt)
+	{
+	case VKEY_UP :
+	case VKEY_RIGHT :
+	case VKEY_DOWN :
+	case VKEY_LEFT :
+		{
+			float distance = 1.f;
+			if (keyCode.virt == VKEY_DOWN || keyCode.virt == VKEY_LEFT)
+				distance = -distance;
+
+			if (keyCode.modifier & MODIFIER_SHIFT)
+				value += 0.1f * distance * wheelInc;
+			else
+				value += distance * wheelInc;
+			bounceValue ();
+
+			if (isDirty () && listener)
+				listener->valueChanged (0, this);
+		} return 1;
+	}
+
+	return -1;
+}
+
+//------------------------------------------------------------------------
+void CSlider::setHandle (CBitmap *_pHandle)
+{
+	if (pHandle)
+		pHandle->forget ();
+	pHandle = _pHandle;
+	if (pHandle)
+	{
+		pHandle->remember ();
+		widthOfSlider  = pHandle->getWidth ();
+		heightOfSlider = pHandle->getHeight ();
+	}
+}
+</pre></code>
+</body>
+</html>

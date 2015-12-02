@@ -1,0 +1,706 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vstgui-ui-description version="1">
+	<template background-color="tab background" background-color-draw-style="filled and stroked" class="CViewContainer" mouse-enabled="true" name="controls" opacity="1" origin="0, 0" size="480, 260" transparent="true">
+		<view background-color="group frame color" background-color-draw-style="filled and stroked" bitmap="FrameBackground" class="CViewContainer" mouse-enabled="true" opacity="1" origin="5, 5" size="100, 150" transparent="false">
+			<view back-color="black" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="~ NormalFontSmaller" font-antialias="true" font-color="white" frame-color="black" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="0, 0" round-rect-radius="6" shadow-color="#ff0000ff" size="100, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" title="Slider" transparent="true" value-precision="2" wheel-inc-value="0.1"/>
+			<view background-color="transparent" background-color-draw-style="filled and stroked" class="CViewContainer" mouse-enabled="true" opacity="1" origin="10, 20" size="80, 40" transparent="true">
+				<view back-color="#000000ff" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="~ NormalFontVerySmall" font-antialias="true" font-color="black" frame-color="#000000ff" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="5, 0" round-rect-radius="6" shadow-color="#ff0000ff" size="70, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" title="Horizontal" transparent="true" value-precision="2" wheel-inc-value="0.1"/>
+				<view background-offset="0, 0" bitmap="slider_back_horizontal" bitmap-offset="0, 0" class="CSlider" control-tag="slider tag" default-value="0.5" draw-back="false" draw-back-color="white" draw-frame="false" draw-frame-color="white" draw-value="false" draw-value-color="white" draw-value-from-center="false" draw-value-inverted="false" handle-bitmap="slider_handle" handle-offset="2, 2" max-value="1" min-value="0" mode="touch" mouse-enabled="true" opacity="1" orientation="horizontal" origin="15, 20" reverse-orientation="false" size="50, 15" tooltip="An horizontal slider control" transparent="false" transparent-handle="true" wheel-inc-value="0.1" zoom-factor="10"/>
+			</view>
+			<view background-color="transparent" background-color-draw-style="filled and stroked" class="CViewContainer" mouse-enabled="true" opacity="1" origin="10, 65" size="80, 80" transparent="true">
+				<view back-color="#000000ff" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="~ NormalFontVerySmall" font-antialias="true" font-color="black" frame-color="#000000ff" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="5, 0" round-rect-radius="6" shadow-color="#ff0000ff" size="70, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" title="Vertical" transparent="true" value-precision="2" wheel-inc-value="0.1"/>
+				<view background-offset="0, 0" bitmap="slider_back_vertical" bitmap-offset="0, 0" class="CSlider" control-tag="slider tag" default-value="0.5" draw-back="false" draw-back-color="white" draw-frame="false" draw-frame-color="white" draw-value="false" draw-value-color="white" draw-value-from-center="false" draw-value-inverted="false" handle-bitmap="slider_handle" handle-offset="2, 2" max-value="1" min-value="0" mode="touch" mouse-enabled="true" opacity="1" orientation="vertical" origin="33, 20" reverse-orientation="true" size="15, 50" tooltip="A vertical slider control" transparent="false" transparent-handle="true" wheel-inc-value="0.1" zoom-factor="10"/>
+			</view>
+		</view>
+		<view background-color="group frame color" background-color-draw-style="filled and stroked" bitmap="FrameBackground" class="CViewContainer" mouse-enabled="true" opacity="1" origin="5, 160" size="100, 80" transparent="false">
+			<view background-color="transparent" background-color-draw-style="filled and stroked" class="CViewContainer" mouse-enabled="true" opacity="1" origin="10, 20" size="80, 55" transparent="true">
+				<view angle-range="270" angle-start="135" background-offset="0, 0" bitmap="animation_knob" circle-drawing="false" class="CAnimKnob" control-tag="slider tag" corona-color="white" corona-dash-dot="false" corona-drawing="false" corona-from-center="false" corona-inset="0" corona-inverted="false" corona-outline="false" default-value="0.5" handle-color="#ffffffff" handle-line-width="1" handle-shadow-color="#7f7f7fff" height-of-one-image="40" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="20, 10" size="40, 40" sub-pixmaps="7" tooltip="An animation knob control" transparent="false" value-inset="0" wheel-inc-value="0.1" zoom-factor="1.5"/>
+			</view>
+			<view back-color="black" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="~ NormalFontSmaller" font-antialias="true" font-color="white" frame-color="black" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="0, 0" round-rect-radius="6" shadow-color="#ff0000ff" size="100, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" title="Animation Knob" transparent="true" value-precision="2" wheel-inc-value="0.1"/>
+		</view>
+		<view background-color="group frame color" background-color-draw-style="filled and stroked" bitmap="FrameBackground" class="CViewContainer" mouse-enabled="true" opacity="1" origin="110, 5" size="100, 150" transparent="false">
+			<view background-color="transparent" background-color-draw-style="filled and stroked" class="CViewContainer" mouse-enabled="true" opacity="1" origin="10, 20" size="80, 40" transparent="true">
+				<view back-color="#000000ff" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="~ NormalFontVerySmall" font-antialias="true" font-color="black" frame-color="#000000ff" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="5, 0" round-rect-radius="6" shadow-color="#ff0000ff" size="70, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" title="Horizontal" transparent="true" value-precision="2" wheel-inc-value="0.1"/>
+				<view background-offset="0, 0" bitmap="switch_horizontal" class="CHorizontalSwitch" control-tag="switch tag" default-value="0.5" height-of-one-image="15" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="15, 20" size="50, 15" sub-pixmaps="4" tooltip="An horizontal switch control" transparent="false" wheel-inc-value="0.1"/>
+			</view>
+			<view background-color="transparent" background-color-draw-style="filled and stroked" class="CViewContainer" mouse-enabled="true" opacity="1" origin="10, 65" size="80, 80" transparent="true">
+				<view back-color="#000000ff" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="~ NormalFontVerySmall" font-antialias="true" font-color="black" frame-color="#000000ff" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="5, 0" round-rect-radius="6" shadow-color="#ff0000ff" size="70, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" title="Vertical" transparent="true" value-precision="2" wheel-inc-value="0.1"/>
+				<view background-offset="0, 0" bitmap="switch_vertical" class="CVerticalSwitch" control-tag="switch tag" default-value="0.5" height-of-one-image="50" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="33, 20" size="15, 50" sub-pixmaps="4" tooltip="A vertical switch control" transparent="false" wheel-inc-value="0.1"/>
+			</view>
+			<view back-color="black" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="~ NormalFontSmaller" font-antialias="true" font-color="white" frame-color="black" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="0, 0" round-rect-radius="6" shadow-color="#ff0000ff" size="100, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" title="Switch" transparent="true" value-precision="2" wheel-inc-value="0.1"/>
+		</view>
+		<view background-color="group frame color" background-color-draw-style="filled and stroked" bitmap="FrameBackground" class="CViewContainer" mouse-enabled="true" opacity="1" origin="110, 160" size="100, 60" transparent="false">
+			<view background-color="transparent" background-color-draw-style="filled and stroked" class="CViewContainer" mouse-enabled="true" opacity="1" origin="10, 20" size="80, 35" transparent="true">
+				<view background-offset="0, 0" bitmap="rocker_switch" class="CRockerSwitch" default-value="0.5" height-of-one-image="18" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="15, 10" size="51, 18" sub-pixmaps="3" tooltip="A rocker switch control" transparent="false" wheel-inc-value="0.1"/>
+			</view>
+			<view back-color="black" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="~ NormalFontSmaller" font-antialias="true" font-color="white" frame-color="black" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="0, 0" round-rect-radius="6" shadow-color="#ff0000ff" size="100, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" title="Rocker Switch" transparent="true" value-precision="2" wheel-inc-value="0.1"/>
+		</view>
+		<view background-color="group frame color" background-color-draw-style="filled and stroked" bitmap="FrameBackground" class="CViewContainer" mouse-enabled="true" opacity="1" origin="215, 5" size="100, 50" transparent="false">
+			<view background-color="transparent" background-color-draw-style="filled and stroked" class="CViewContainer" mouse-enabled="true" opacity="1" origin="10, 20" size="80, 25" transparent="true">
+				<view autosize-to-fit="true" background-offset="0, 0" boxfill-color="white" boxframe-color="black" checkmark-color="black" class="CCheckBox" default-value="0.5" draw-crossbox="false" font="~ NormalFontVerySmall" font-color="white" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="20, 5" size="45.5103, 15" title="Check" tooltip="A checkbox control" transparent="false" wheel-inc-value="0.1"/>
+			</view>
+			<view back-color="black" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="~ NormalFontSmaller" font-antialias="true" font-color="white" frame-color="black" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="0, 0" round-rect-radius="6" shadow-color="#ff0000ff" size="100, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" title="Checkbox" transparent="true" value-precision="2" wheel-inc-value="0.1"/>
+		</view>
+		<view background-color="group frame color" background-color-draw-style="filled and stroked" bitmap="FrameBackground" class="CViewContainer" mouse-enabled="true" opacity="1" origin="215, 60" size="100, 95" transparent="false">
+			<view background-color="transparent" background-color-draw-style="filled and stroked" class="CViewContainer" mouse-enabled="true" opacity="1" origin="10, 20" size="80, 70" transparent="true">
+				<view background-offset="0, 0" bitmap="vumeter_front" class="CVuMeter" control-tag="peak tag" decrease-step-value="0.05" default-value="0.5" max-value="1" min-value="0" mouse-enabled="false" num-led="14" off-bitmap="vumeter_back" opacity="1" orientation="vertical" origin="36, 10" size="7, 55" tooltip="A VU meter control" transparent="false" wheel-inc-value="0.1"/>
+			</view>
+			<view back-color="black" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="~ NormalFontSmaller" font-antialias="true" font-color="white" frame-color="black" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="0, 0" round-rect-radius="6" shadow-color="#ff0000ff" size="100, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" title="VU Meter" transparent="true" value-precision="2" wheel-inc-value="0.1"/>
+		</view>
+		<view background-color="group frame color" background-color-draw-style="filled and stroked" bitmap="FrameBackground" class="CViewContainer" mouse-enabled="true" opacity="1" origin="215, 160" size="100, 60" transparent="false">
+			<view background-color="transparent" background-color-draw-style="filled and stroked" class="CViewContainer" mouse-enabled="true" opacity="1" origin="10, 20" size="80, 35" transparent="true">
+				<view back-color="black" background-offset="0, 0" class="CParamDisplay" control-tag="peak tag" default-value="0.5" font="display" font-antialias="true" font-color="white" frame-color="black" frame-width="1" max-value="1" min-value="0" mouse-enabled="false" opacity="1" origin="5, 10" round-rect-radius="6" shadow-color="#ff0000ff" size="70, 15" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" tooltip="A parameter display view" transparent="false" value-precision="2" wheel-inc-value="0.1"/>
+			</view>
+			<view back-color="black" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="~ NormalFontSmaller" font-antialias="true" font-color="white" frame-color="black" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="0, 0" round-rect-radius="6" shadow-color="#ff0000ff" size="100, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" title="Parameter Display" transparent="true" value-precision="2" wheel-inc-value="0.1"/>
+		</view>
+		<view background-color="group frame color" background-color-draw-style="filled and stroked" bitmap="FrameBackground" class="CViewContainer" mouse-enabled="true" opacity="1" origin="320, 5" size="100, 50" transparent="false">
+			<view back-color="black" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="~ NormalFontSmaller" font-antialias="true" font-color="white" frame-color="black" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="0, 0" round-rect-radius="6" shadow-color="#ff0000ff" size="100, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" title="Kick Button" transparent="true" value-precision="2" wheel-inc-value="0.1"/>
+			<view background-offset="0, 0" bitmap="onoff_button" class="CKickButton" default-value="0.5" height-of-one-image="15" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="35, 25" size="30, 15" sub-pixmaps="2" tooltip="A kick button control" transparent="false" wheel-inc-value="0.1"/>
+		</view>
+		<view background-color="group frame color" background-color-draw-style="filled and stroked" bitmap="FrameBackground" class="CViewContainer" mouse-enabled="true" opacity="1" origin="320, 60" size="100, 50" transparent="false">
+			<view back-color="black" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="~ NormalFontSmaller" font-antialias="true" font-color="white" frame-color="black" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="0, 0" round-rect-radius="6" shadow-color="#ff0000ff" size="100, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" title="On Off Button" transparent="true" value-precision="2" wheel-inc-value="0.1"/>
+			<view background-offset="0, 0" bitmap="onoff_button" class="COnOffButton" default-value="0.5" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="35, 25" size="30, 15" tooltip="An on-off button control" transparent="false" wheel-inc-value="0.1"/>
+		</view>
+		<view background-color="group frame color" background-color-draw-style="filled and stroked" bitmap="FrameBackground" class="CViewContainer" mouse-enabled="true" opacity="1" origin="320, 115" size="100, 50" transparent="false">
+			<view back-color="black" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="~ NormalFontSmaller" font-antialias="true" font-color="white" frame-color="black" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="0, 0" round-rect-radius="6" shadow-color="#ff0000ff" size="100, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" title="Movie Button" transparent="true" value-precision="2" wheel-inc-value="0.1"/>
+			<view background-offset="0, 0" bitmap="onoff_button" class="CMovieButton" default-value="0.5" height-of-one-image="15" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="35, 25" size="30, 15" sub-pixmaps="2" tooltip="A movie button control" transparent="false" wheel-inc-value="0.1"/>
+		</view>
+		<view background-color="group frame color" background-color-draw-style="filled and stroked" bitmap="FrameBackground" class="CViewContainer" mouse-enabled="true" opacity="1" origin="320, 170" size="100, 50" transparent="false">
+			<view back-color="black" background-offset="0, 0" class="CTextEdit" default-value="0.5" font="~ NormalFontVerySmall" font-antialias="true" font-color="white" frame-color="black" frame-width="1" immediate-text-change="false" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="15, 25" round-rect-radius="6" shadow-color="#ff0000ff" size="70, 15" style-3D-in="false" style-3D-out="false" style-doubleclick="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" title="test me" tooltip="A text edit control" transparent="false" value-precision="2" wheel-inc-value="0.1"/>
+			<view back-color="black" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="~ NormalFontSmaller" font-antialias="true" font-color="white" frame-color="black" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="0, 0" round-rect-radius="6" shadow-color="#ff0000ff" size="100, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" title="Text Edit" transparent="true" value-precision="2" wheel-inc-value="0.1"/>
+		</view>
+	</template>
+	<custom>
+		<attributes Path="/Volumes/DATA/subversion/trunk/vstgui_head/vstgui/tests/uidescription vst3/resource/myEditor.uidesc" name="VST3Editor"/>
+		<attributes name="UIViewHierarchyBrowser" windowSize="935, 84, 1235, 584"/>
+		<attributes name="UIViewInspector" windowSize="66, 185, 466, 742"/>
+		<attributes gridsize="5" name="UIEditFrame" uidescPath="/Volumes/DATA/subversion/trunk/vstgui_head/vstgui/tests/uidescription vst3/resource/myEditor.uidesc"/>
+		<attributes Size="5, 5" name="UIGridController"/>
+		<attributes name="UIAttributesController"/>
+		<attributes EditorSize="0, 0, 900, 698" SplitViewSize_0_0="0.7134416543574594316012849049002397805452" SplitViewSize_0_1="0.2570162481536188980868473663576878607273" SplitViewSize_1_0="0.5081240768094534843157816794700920581818" SplitViewSize_1_1="0.4844903988183161258618270039733033627272" SplitViewSize_2_0="0.6222222222222222320908713300013914704323" SplitViewSize_2_1="0.3722222222222222320908713300013914704323" TabSwitchValue="0" Version="1" name="UIEditController"/>
+		<attributes SelectedRow="25" name="UIViewCreatorDataSource"/>
+		<attributes color="focus color" enabled="true" name="FocusDrawing" width="2"/>
+		<attributes SelectedRow="1" name="UITagsDataSource"/>
+		<attributes SelectedRow="2" name="UIColorsDataSource"/>
+		<attributes SelectedRow="11" name="UIBitmapsDataSource"/>
+		<attributes SelectedRow="1" name="UIFontsDataSource"/>
+		<attributes SelectedTemplate="tab2" name="UITemplateController"/>
+		<attributes SelectedRow="5" name="UIGradientsDataSource"/>
+	</custom>
+	<colors>
+		<color name="black" rgba="#000000ff"/>
+		<color name="white" rgba="#ffffffff"/>
+		<color name="default background" rgba="#414c58ff"/>
+		<color name="focus color" rgba="#6c6cf1b8"/>
+		<color name="group frame color" rgba="#ffffff37"/>
+		<color name="tab background" rgba="#98989819"/>
+		<color name="transparent" rgba="#01020300"/>
+		<color name="modal view background" rgba="#fefefebd"/>
+	</colors>
+	<bitmaps>
+		<bitmap name="slider_back_horizontal" path="horizontal_slider_back.bmp">
+			<data encoding="base64">
+				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
+			</data>
+		</bitmap>
+		<bitmap name="slider_back_vertical" path="vertical_slider_back.bmp">
+			<data encoding="base64">
+				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
+			</data>
+		</bitmap>
+		<bitmap name="slider_handle" path="slider_handle.bmp">
+			<data encoding="base64">
+				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
+			</data>
+		</bitmap>
+		<bitmap name="switch_horizontal" path="switch_horizontal.bmp">
+			<data encoding="base64">
+				iVBORw0KGgoAAAANSUhEUgAAADIAAAA8CAIAAACrV36WAAAKQWlDQ1BJQ0MgUHJvZmlsZQAASA2dlndUU9
+				kWh8+9N73QEiIgJfQaegkg0jtIFQRRiUmAUAKGhCZ2RAVGFBEpVmRUwAFHhyJjRRQLg4Ji1wnyEFDGwVFE
+				ReXdjGsJ7601896a/cdZ39nnt9fZZ+9917oAUPyCBMJ0WAGANKFYFO7rwVwSE8vE9wIYEAEOWAHA4WZmBE
+				f4RALU/L09mZmoSMaz9u4ugGS72yy/UCZz1v9/kSI3QyQGAApF1TY8fiYX5QKUU7PFGTL/BMr0lSkyhjEy
+				FqEJoqwi48SvbPan5iu7yZiXJuShGlnOGbw0noy7UN6aJeGjjAShXJgl4GejfAdlvVRJmgDl9yjT0/icTA
+				AwFJlfzOcmoWyJMkUUGe6J8gIACJTEObxyDov5OWieAHimZ+SKBIlJYqYR15hp5ejIZvrxs1P5YjErlMNN
+				4Yh4TM/0tAyOMBeAr2+WRQElWW2ZaJHtrRzt7VnW5mj5v9nfHn5T/T3IevtV8Sbsz55BjJ5Z32zsrC+9Fg
+				D2JFqbHbO+lVUAtG0GQOXhrE/vIADyBQC03pzzHoZsXpLE4gwnC4vs7GxzAZ9rLivoN/ufgm/Kv4Y595nL
+				7vtWO6YXP4EjSRUzZUXlpqemS0TMzAwOl89k/fcQ/+PAOWnNycMsnJ/AF/GF6FVR6JQJhIlou4U8gViQLm
+				QKhH/V4X8YNicHGX6daxRodV8AfYU5ULhJB8hvPQBDIwMkbj96An3rWxAxCsi+vGitka9zjzJ6/uf6Hwtc
+				im7hTEEiU+b2DI9kciWiLBmj34RswQISkAd0oAo0gS4wAixgDRyAM3AD3iAAhIBIEAOWAy5IAmlABLJBPt
+				gACkEx2AF2g2pwANSBetAEToI2cAZcBFfADXALDIBHQAqGwUswAd6BaQiC8BAVokGqkBakD5lC1hAbWgh5
+				Q0FQOBQDxUOJkBCSQPnQJqgYKoOqoUNQPfQjdBq6CF2D+qAH0CA0Bv0BfYQRmALTYQ3YALaA2bA7HAhHws
+				vgRHgVnAcXwNvhSrgWPg63whfhG/AALIVfwpMIQMgIA9FGWAgb8URCkFgkAREha5EipAKpRZqQDqQbuY1I
+				kXHkAwaHoWGYGBbGGeOHWYzhYlZh1mJKMNWYY5hWTBfmNmYQM4H5gqVi1bGmWCesP3YJNhGbjS3EVmCPYF
+				uwl7ED2GHsOxwOx8AZ4hxwfrgYXDJuNa4Etw/XjLuA68MN4SbxeLwq3hTvgg/Bc/BifCG+Cn8cfx7fjx/G
+				vyeQCVoEa4IPIZYgJGwkVBAaCOcI/YQRwjRRgahPdCKGEHnEXGIpsY7YQbxJHCZOkxRJhiQXUiQpmbSBVE
+				lqIl0mPSa9IZPJOmRHchhZQF5PriSfIF8lD5I/UJQoJhRPShxFQtlOOUq5QHlAeUOlUg2obtRYqpi6nVpP
+				vUR9Sn0vR5Mzl/OX48mtk6uRa5Xrl3slT5TXl3eXXy6fJ18hf0r+pvy4AlHBQMFTgaOwVqFG4bTCPYVJRZ
+				qilWKIYppiiWKD4jXFUSW8koGStxJPqUDpsNIlpSEaQtOledK4tE20Otpl2jAdRzek+9OT6cX0H+i99All
+				JWVb5SjlHOUa5bPKUgbCMGD4M1IZpYyTjLuMj/M05rnP48/bNq9pXv+8KZX5Km4qfJUilWaVAZWPqkxVb9
+				UU1Z2qbapP1DBqJmphatlq+9Uuq43Pp893ns+dXzT/5PyH6rC6iXq4+mr1w+o96pMamhq+GhkaVRqXNMY1
+				GZpumsma5ZrnNMe0aFoLtQRa5VrntV4wlZnuzFRmJbOLOaGtru2nLdE+pN2rPa1jqLNYZ6NOs84TXZIuWz
+				dBt1y3U3dCT0svWC9fr1HvoT5Rn62fpL9Hv1t/ysDQINpgi0GbwaihiqG/YZ5ho+FjI6qRq9Eqo1qjO8Y4
+				Y7ZxivE+41smsImdSZJJjclNU9jU3lRgus+0zwxr5mgmNKs1u8eisNxZWaxG1qA5wzzIfKN5m/krCz2LWI
+				udFt0WXyztLFMt6ywfWSlZBVhttOqw+sPaxJprXWN9x4Zq42Ozzqbd5rWtqS3fdr/tfTuaXbDdFrtOu8/2
+				DvYi+yb7MQc9h3iHvQ732HR2KLuEfdUR6+jhuM7xjOMHJ3snsdNJp9+dWc4pzg3OowsMF/AX1C0YctFx4b
+				gccpEuZC6MX3hwodRV25XjWuv6zE3Xjed2xG3E3dg92f24+ysPSw+RR4vHlKeT5xrPC16Il69XkVevt5L3
+				Yu9q76c+Oj6JPo0+E752vqt9L/hh/QL9dvrd89fw5/rX+08EOASsCegKpARGBFYHPgsyCRIFdQTDwQHBu4
+				IfL9JfJFzUFgJC/EN2hTwJNQxdFfpzGC4sNKwm7Hm4VXh+eHcELWJFREPEu0iPyNLIR4uNFksWd0bJR8VF
+				1UdNRXtFl0VLl1gsWbPkRoxajCCmPRYfGxV7JHZyqffS3UuH4+ziCuPuLjNclrPs2nK15anLz66QX8FZcS
+				oeGx8d3xD/iRPCqeVMrvRfuXflBNeTu4f7kufGK+eN8V34ZfyRBJeEsoTRRJfEXYljSa5JFUnjAk9BteB1
+				sl/ygeSplJCUoykzqdGpzWmEtPi000IlYYqwK10zPSe9L8M0ozBDuspp1e5VE6JA0ZFMKHNZZruYjv5M9U
+				iMJJslg1kLs2qy3mdHZZ/KUcwR5vTkmuRuyx3J88n7fjVmNXd1Z752/ob8wTXuaw6thdauXNu5Tnddwbrh
+				9b7rj20gbUjZ8MtGy41lG99uit7UUaBRsL5gaLPv5sZCuUJR4b0tzlsObMVsFWzt3WazrWrblyJe0fViy+
+				KK4k8l3JLr31l9V/ndzPaE7b2l9qX7d+B2CHfc3em681iZYlle2dCu4F2t5czyovK3u1fsvlZhW3FgD2mP
+				ZI+0MqiyvUqvakfVp+qk6oEaj5rmvep7t+2d2sfb17/fbX/TAY0DxQc+HhQcvH/I91BrrUFtxWHc4azDz+
+				ui6rq/Z39ff0TtSPGRz0eFR6XHwo911TvU1zeoN5Q2wo2SxrHjccdv/eD1Q3sTq+lQM6O5+AQ4ITnx4sf4
+				H++eDDzZeYp9qukn/Z/2ttBailqh1tzWibakNml7THvf6YDTnR3OHS0/m/989Iz2mZqzymdLz5HOFZybOZ
+				93fvJCxoXxi4kXhzpXdD66tOTSna6wrt7LgZevXvG5cqnbvfv8VZerZ645XTt9nX297Yb9jdYeu56WX+x+
+				aem172296XCz/ZbjrY6+BX3n+l37L972un3ljv+dGwOLBvruLr57/17cPel93v3RB6kPXj/Mejj9aP1j7O
+				OiJwpPKp6qP6391fjXZqm99Oyg12DPs4hnj4a4Qy//lfmvT8MFz6nPK0a0RupHrUfPjPmM3Xqx9MXwy4yX
+				0+OFvyn+tveV0auffnf7vWdiycTwa9HrmT9K3qi+OfrW9m3nZOjk03dp76anit6rvj/2gf2h+2P0x5Hp7E
+				/4T5WfjT93fAn88ngmbWbm3/eE8/syOll+AAABiUlEQVRoBe1YSxaDIAxs+3oyD+bCg/k8WtPP04BmCBrt
+				LOiKGhjGyRDS3m6Un7uw6vueilvXdc8vIRkBZuM4gugZoR8tgbb2HobhejkfZ7zrccxGq0bDxVtgldgLRK
+				NC2sEuWtM0Re0NcPSZc9HSCwBuYKhZvkbMJYnX+NrJjfROfNO65qA5daKeRprExfJF9a5sfipoCW+rroY3
+				P62cFl2iJpCqlXgLF3psebxWCWEOzcZGAnhvEzKiJuvzlKglu+pYRgIzBgszHM9XUm+R0sqTiBU+7muMP0
+				dJ78TW2MwZcgxIk1hn+eJ7RtW2YFrC26qrVc0Pad1qtIrGVBMSbx0v4tjyGP+Uxka9qjnEP0j1WUnUEjwd
+				M+HtAFbLD94sb2u8juRJXM+ofYJ97UQjvRNbY+PM32caaRLjLV8UxVPb/kBLeFt1dW5+WjktZldNIFUr8V
+				ZIgVbvvD3Elv+uSWgd+cdmm8LepwktAbHOyF78jXUetUi9RUorT+KG6Cc8Kp4t0juRtLF5AU39dlUwLCdw
+				AAAAAElFTkSuQmCC
+			</data>
+		</bitmap>
+		<bitmap name="switch_vertical" path="switch_vertical.bmp">
+			<data encoding="base64">
+				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
+				clx+AAAAAElFTkSuQmCC
+			</data>
+		</bitmap>
+		<bitmap name="animation_knob" path="animation_knob.png">
+			<data encoding="base64">
+				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
+			</data>
+		</bitmap>
+		<bitmap name="TabController" path="TabController.png"/>
+		<bitmap name="onoff_button" path="onoff_button.bmp">
+			<data encoding="base64">
+				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
+				TUFxXVvACL+k/B4al07wAAAABJRU5ErkJggg==
+			</data>
+		</bitmap>
+		<bitmap name="rocker_switch" path="rocker_switch.bmp">
+			<data encoding="base64">
+				iVBORw0KGgoAAAANSUhEUgAAADQAAAA2CAMAAAC/bkrSAAAAOVBMVEWAgIBaAAD39/fv7+/W1tbGxsa1tb
+				Wtra2cnJx7e3tra2tCQkLG79Zzzs5SxsYxlJTG7+/c8P////9X91vQAAABD0lEQVRIDe2V4Q6DIAyEFTqF
+				otvk/R92BTRRuMVJsmQuXuIPjUfx6GebpkrtYUmZlrEMQbmmDab74HWpYfSFiDgYYqXJIhmVr+SZnVtMhD
+				z2Ms2xnC4ItT7cyaPTLb9Jr00OqntIjwG52Hs1aIDFvvTo8O7iNxmUnTUMwSVKQRD1U/lC12uigl3hMJFL
+				ClJoxFRKeI/bI4UP9zKlczt3euMNdR+eGktHWOlYwG5n0QgS1P6X3Ihuwe87dDkGcSMKg3LqtwroluR6n9
+				KLJpJ/bibcfGplUkJ/pl8y+Zrt+ZogqiqpmkrqmQXOvB+5ltmYacc0SheNLvMwRpdSR1hrhMdwbYXRnafG
+				4am2XfvTuxcFcjbFcd7wMwAAAABJRU5ErkJggg==
+			</data>
+		</bitmap>
+		<bitmap name="vumeter_back" path="vumeter_back.bmp">
+			<data encoding="base64">
+				iVBORw0KGgoAAAANSUhEUgAAAAcAAAA3CAMAAAD39qBMAAAAMFBMVEUAAABLAABaWhgAMgAAAACEAAAAAA
+				CiAADsAM5aAFYAAAAAAAAEAAA7AFbIv/eEAAAqTNCrAAAAK0lEQVQYGWNghAAGGM2ABpgggAFGo0nDxcmV
+				Z4YABhiNbj5MHEaPyoNDAACYpwIHQKxN3wAAAABJRU5ErkJggg==
+			</data>
+		</bitmap>
+		<bitmap name="vumeter_front" path="vumeter_front.bmp">
+			<data encoding="base64">
+				iVBORw0KGgoAAAANSUhEUgAAAAcAAAA3CAMAAAD39qBMAAAAMFBMVEUAAAAA/wD//wBQAAAAAACEAAAAAA
+				BKAADsARRaAFYAAAAAAAAEAAA7AFZQv/eEAABfaxcVAAAAKElEQVQYGWNgggAGGM2ABmDiMBpNGq5voOQZ
+				IYABRqO7DyYOo4eJPAAgxwEZACBZvgAAAABJRU5ErkJggg==
+			</data>
+		</bitmap>
+		<bitmap name="FrameBackground" nineparttiled-offsets="12, 22, 12, 12" path="FrameBackground.png">
+			<data encoding="base64">
+				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
+				EKiAQOphEYiAQMJhEKiAQOphEYiAQMJhEKiAQOphEYiAQMJhEKiAQOphEYiAQMJhEKiAQOphEYiAQMJhEK
+				iAQOphEYiAQMJhEKiAQOphEYiAQMJhEKiAQOphEYiAQMJhEKiAQOphEYiAQMJhEKiAQOphEYiAQMJhEKiA
+				QOphEYiAQMJhEKiAQOphEYiAQMJhEKiAQOphEYiAQMJhEKiAQOphEYiAQMJhEKiAQOphEYiAQMJhEKiAQO
+				phEYiAQMJhEKiAQOphEYiAQMJhEKiAQOphEYiAQMJhEKiAQOphEYiAQMJhEKiAQOphEYiAQMJhEKiAQOph
+				EYiAQMJhEKiAQOphEYiAQMJhEKiAQOphEYiAQMJhEKiAQOphEYiAQMJhEKiAQOphEYiAQMJhEKiAQOphEY
+				iAQMJhEKiAQOphEYiAQMJhEKiAQOphEYiAQMJhEKiAQOphEYiAQMJhEKiAQOphEYiAQMJhEKiAQOphEYiA
+				QMJhEKiAQOphEYiAQMJhEKiAQOphEYiAQMJhEKiAQOphEYiAQMJhEKiAQOphEYiAQMJhEKiAQOphEYiAQM
+				JhEKiAQOphEYiAQMJhEKiAQOphEYiAQMJhEKiAQOphEYiAQMJhEKiAQOphEYiAQMJhEKiAQOphEYiAQMJh
+				EKiAQOphEYiAQMJhEKiAQOphEYiAQMJhEKiAQOphEYiAQMJhEKiAQOphEYiAQMJhEKiAQOphEYiAQMJhEK
+				iAQOphEYiAQMJhEKiAQOphEYiAQMJhEKiAQOphEYiAQMJhEKiAQOphEYiAQMJhEKiAQOphEYiAQMJhEKiA
+				QOphEYjA8vj4OAcMAgT+IzDbWI6PcyAECFwVmG0sz8/Pz67e5AgBArON5dbWltdYHgsErhGYbSzPzs6Oxm
+				0H19zuEIFNFjiYbSy3t7f/MRT2N1nCuRO4RmB/trF8+vTp1+PGV9fcwSECmyzwaraxeh9kPJW83GQJ507g
+				ssC6iVUgOzs7Xy0WC5FcVrI3UmC2MJuYJ78K5NmzZ38fv/P9ciM1nDSBSwKzhdnEPPzNn5q8fv36y/F73z
+				9euq9JYKMEZgOzhfVJfxPI8+fPTw8PD38vkjWNz5smMB/7s4HZwvrcF+Pg+vrq86NHj7bu3Lnzyfgh5ZNx
+				273caBD4HgrMnznmy6r5zHExjnmqVwJZn//jx49/dHJy8mB84YzkJ+Nya1z21rf7TOD/WGC+MT7f+3s1f1
+				s1fyBf/8xx+Zy+NZCLd3zy5MmHY384/rGb41llZ1y2xvXFvM/u7u7Fu7pO4DslsP5r9fEf/fl4pjgdl5Nx
+				/XB8k1+/ew/wv36//wZ/G+DhhCuNGwAAAABJRU5ErkJggg==
+			</data>
+		</bitmap>
+	</bitmaps>
+	<fonts>
+		<font font-name="Helvetica" name="small label" size="8"/>
+		<font bold="true" font-name="Helvetica" name="small label bold" size="8"/>
+		<font alternative-font-names="Lucida Console" font-name="Menlo" name="display" size="8"/>
+		<font font-name="Arial" name="fp normal" size="12"/>
+		<font bold="true" font-name="Arial" name="fp bold" size="12"/>
+		<font font-name="Arial" italic="true" name="fp italic" size="12"/>
+		<font font-name="Arial" name="fp underline" size="12" underline="true"/>
+		<font font-name="Arial" name="fp strikeout" size="12" strike-through="true"/>
+	</fonts>
+	<control-tags>
+		<control-tag name="slider tag" tag="1000"/>
+		<control-tag name="switch tag" tag="1001"/>
+		<control-tag name="TabController" tag="20000"/>
+		<control-tag name="peak tag" tag="20"/>
+		<control-tag name="close modal view tag" tag="1"/>
+		<control-tag name="open modal view tag" tag="0"/>
+		<control-tag name="LineStyle" tag="20001"/>
+		<control-tag name="KnobStepCountTest" tag="20002"/>
+	</control-tags>
+	<template background-color="default background" background-color-draw-style="filled and stroked" class="CViewContainer" maxSize="500, 320" minSize="500, 320" mouse-enabled="true" name="view" opacity="1" origin="0, 0" size="500, 320" transparent="false">
+		<view background-offset="0, 0" class="CSegmentButton" control-tag="TabController" default-value="0" font="~ NormalFontSmall" frame-color="black" frame-width="1" gradient="Unselected Segment" gradient-highlighted="Selected Segment" icon-text-margin="0" max-value="4" min-value="0" mouse-enabled="true" opacity="1" origin="10, 8" round-radius="5" segment-names="Controls,Miscellaneous,ScrollView,SplitView,Fonts/LineStyle,Prim." size="480, 20" style="horizontal" text-alignment="center" text-color="black" text-color-highlighted="white" transparent="false" wheel-inc-value="0.1"/>
+		<view animation-style="push" animation-time="120" background-color="tab background" background-color-draw-style="filled and stroked" class="UIViewSwitchContainer" mouse-enabled="true" opacity="1" origin="10, 35" size="480, 260" template-names="controls,tab2,tab3,tab4,tab5,tab6" template-switch-control="TabController" transparent="false"/>
+		<view background-offset="0, 0" class="CTextButton" control-tag="open modal view tag" default-value="0.5" font="~ NormalFontVerySmall" frame-color="black" frame-color-highlighted="black" frame-width="1" gradient="Default TextButton Gradient" gradient-highlighted="Default TextButton Gradient Highlighted" icon-position="left" icon-text-margin="0" kick-style="true" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="170, 300" round-radius="6" size="127, 15" sub-controller="ModalViewController" text-alignment="center" text-color="black" text-color-highlighted="white" title="Open Modal View" tooltip="This opens a modal view with an animation.\n\nAll other controls are disabled while the modal view is open." transparent="false" wheel-inc-value="0.1"/>
+		<view back-color="black" background-offset="0, 0" class="COptionMenu" control-tag="TabController" default-value="0" font="~ NormalFontVerySmall" font-antialias="true" font-color="white" frame-color="black" frame-width="1" max-value="1.84467e+19" menu-check-style="true" menu-popup-style="true" min-value="0" mouse-enabled="true" opacity="1" origin="420, 300" round-rect-radius="6" shadow-color="#ff0000ff" size="70, 15" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" tooltip="An option menu" transparent="false" value-precision="2" wheel-inc-value="0.1"/>
+	</template>
+	<template background-color="black" background-color-draw-style="filled and stroked" class="CViewContainer" mouse-enabled="true" name="tab2" opacity="1" origin="0, 0" size="480, 260" transparent="true">
+		<view background-color="black" background-color-draw-style="filled and stroked" bitmap="FrameBackground" class="CViewContainer" mouse-enabled="true" opacity="1" origin="10, 10" size="460, 240" transparent="false">
+			<view angle-range="270" angle-start="135" background-offset="0, 0" circle-drawing="false" class="CKnob" control-tag="KnobStepCountTest" corona-color="~ BlueCColor" corona-dash-dot="false" corona-drawing="false" corona-from-center="false" corona-inset="4" corona-inverted="false" corona-outline="true" default-value="0" handle-color="~ BlackCColor" handle-line-width="6" handle-shadow-color="group frame color" max-value="5" min-value="0" mouse-enabled="true" opacity="1" origin="20, 25" size="100, 100" transparent="false" value-inset="2" wheel-inc-value="0.01" zoom-factor="1.5"/>
+			<view background-color="black" background-color-draw-style="filled and stroked" bitmap="0" class="CShadowViewContainer" mouse-enabled="true" opacity="1" origin="125, 20" shadow-blur-size="1.15046" shadow-intensity="0.3" shadow-offset="-5, -5" size="330, 220" transparent="false">
+				<view animate-view-resizing="false" background-color="group frame color" background-color-draw-style="filled and stroked" class="CRowColumnView" equal-size-layout="center" margin="5,5,5,5" mouse-enabled="true" opacity="1" origin="10, 10" row-style="true" size="310, 200" spacing="10" transparent="false" view-resize-animation-time="200">
+					<view autosize-to-fit="false" background-offset="0, 0" boxfill-color="white" boxframe-color="black" checkmark-color="~ RedCColor" class="CCheckBox" default-value="0.5" draw-crossbox="false" font="~ SystemFont" font-color="white" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="87.5, 5" size="135, 20" title="This is a Checkbox" transparent="false" wheel-inc-value="0.1"/>
+					<view autosize-to-fit="false" background-offset="0, 0" boxfill-color="white" boxframe-color="black" checkmark-color="~ RedCColor" class="CCheckBox" default-value="0.5" draw-crossbox="false" font="~ SystemFont" font-color="white" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="88.5, 35" size="133, 20" title="Another Checkbox" transparent="false" wheel-inc-value="0.1"/>
+					<view autosize-to-fit="false" background-offset="0, 0" boxfill-color="white" boxframe-color="black" checkmark-color="~ RedCColor" class="CCheckBox" default-value="0.5" draw-crossbox="false" font="~ SystemFont" font-color="white" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="80.5, 65" size="149, 20" title="This may be a setting" transparent="false" wheel-inc-value="0.1"/>
+					<view autosize-to-fit="false" background-offset="0, 0" boxfill-color="white" boxframe-color="black" checkmark-color="~ RedCColor" class="CCheckBox" default-value="0.5" draw-crossbox="false" font="~ SystemFont" font-color="white" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="102, 95" size="106, 20" title="Do something" transparent="false" wheel-inc-value="0.1"/>
+					<view autosize-to-fit="false" background-offset="0, 0" boxfill-color="white" boxframe-color="black" checkmark-color="~ RedCColor" class="CCheckBox" default-value="0.5" draw-crossbox="false" font="~ SystemFont" font-color="white" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="112, 125" size="86, 20" title="Make a Hit" transparent="false" wheel-inc-value="0.1"/>
+					<view autosize-to-fit="false" background-offset="0, 0" boxfill-color="white" boxframe-color="black" checkmark-color="~ RedCColor" class="CCheckBox" default-value="0.5" draw-crossbox="false" font="~ SystemFont" font-color="white" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="127, 155" size="56, 20" title="Smile" transparent="false" wheel-inc-value="0.1"/>
+				</view>
+			</view>
+			<view class="CGradientView" draw-antialiased="true" frame-color="black" frame-width="1" gradient="GradientView" gradient-angle="45" gradient-style="linear" mouse-enabled="true" opacity="1" origin="20, 130" radial-center="0.5, 0.5" radial-radius="1" round-rect-radius="5" size="100, 100" transparent="false"/>
+		</view>
+	</template>
+	<template background-color="black" background-color-draw-style="filled and stroked" class="CViewContainer" maxSize="480, 260" minSize="480, 260" mouse-enabled="true" name="tab3" opacity="1" origin="0, 0" size="480, 260" transparent="true">
+		<view background-color="black" background-color-draw-style="filled and stroked" bitmap="FrameBackground" class="CViewContainer" mouse-enabled="true" opacity="1" origin="120, 25" size="260, 205" transparent="true">
+			<view auto-drag-scrolling="false" auto-hide-scrollbars="false" background-color="white" background-color-draw-style="filled and stroked" bordered="false" class="CScrollView" container-size="480, 260" follow-focus-view="false" horizontal-scrollbar="true" mouse-enabled="true" opacity="1" origin="0, 20" overlay-scrollbars="false" scrollbar-background-color="default background" scrollbar-frame-color="transparent" scrollbar-scroller-color="group frame color" scrollbar-width="12" size="260, 185" transparent="true" vertical-scrollbar="true">
+				<view background-color="tab background" background-color-draw-style="filled and stroked" class="CViewContainer" mouse-enabled="true" opacity="1" origin="0, 0" size="480, 260" template="controls" transparent="true"/>
+			</view>
+			<view back-color="black" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="small label bold" font-antialias="true" font-color="white" frame-color="black" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="0, 0" round-rect-radius="6" shadow-color="#ff0000ff" size="260, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" title="Scroll View" transparent="true" value-precision="2" wheel-inc-value="0.1"/>
+		</view>
+	</template>
+	<template background-color="black" background-color-draw-style="filled and stroked" class="CViewContainer" mouse-enabled="true" name="tab4" opacity="1" origin="0, 0" size="480, 260" transparent="true">
+		<view background-color="group frame color" background-color-draw-style="filled and stroked" class="CSplitView" mouse-enabled="true" opacity="1" orientation="horizontal" origin="20, 20" resize-method="last" separator-width="7" size="440, 225" sub-controller="SplitViewController" transparent="false">
+			<view background-color="tab background" background-color-draw-style="filled and stroked" class="CViewContainer" mouse-enabled="true" opacity="1" origin="0, 0" size="74, 225" transparent="false"/>
+			<view background-color="black" background-color-draw-style="filled and stroked" bitmap="FrameBackground" class="CViewContainer" mouse-enabled="true" opacity="1" origin="81, 0" size="114, 225" transparent="false">
+				<view auto-drag-scrolling="false" auto-hide-scrollbars="false" autosize="left right top bottom " background-color="black" background-color-draw-style="filled and stroked" bordered="false" class="CScrollView" container-size="295, 195" follow-focus-view="false" horizontal-scrollbar="true" mouse-enabled="true" opacity="1" origin="0, 20" overlay-scrollbars="false" scrollbar-background-color="~ TransparentCColor" scrollbar-frame-color="~ TransparentCColor" scrollbar-scroller-color="default background" scrollbar-width="8" size="114, 203" transparent="true" vertical-scrollbar="false">
+					<view background-color="black" background-color-draw-style="filled and stroked" class="CSplitView" mouse-enabled="true" opacity="1" orientation="vertical" origin="0, 0" resize-method="last" separator-width="7" size="295, 195" transparent="true">
+						<view background-color="group frame color" background-color-draw-style="filled and stroked" class="CViewContainer" mouse-enabled="true" opacity="1" origin="0, 0" size="295, 74" transparent="false"/>
+						<view background-color="group frame color" background-color-draw-style="filled and stroked" class="CViewContainer" mouse-enabled="true" opacity="1" origin="0, 81" size="295, 114" transparent="false"/>
+					</view>
+				</view>
+			</view>
+			<view background-color="tab background" background-color-draw-style="filled and stroked" class="CViewContainer" mouse-enabled="true" opacity="1" origin="202, 0" size="238, 225" transparent="false"/>
+		</view>
+		<view back-color="black" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="~ NormalFont" font-antialias="true" font-color="white" frame-color="black" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="0, 0" round-rect-radius="6" shadow-color="~ RedCColor" size="480, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" title="CSplitView Test" transparent="true" value-precision="2" wheel-inc-value="0.1"/>
+	</template>
+	<template background-color="black" background-color-draw-style="filled and stroked" class="CViewContainer" mouse-enabled="true" name="tab5" opacity="1" origin="0, 0" size="480, 260" transparent="true">
+		<view back-color="~ WhiteCColor" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="~ NormalFontVeryBig" font-antialias="true" font-color="~ BlackCColor" frame-color="black" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="15, 185" round-rect-radius="6" shadow-color="~ RedCColor" size="165, 30" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" title="NormalFontVeryBig" transparent="false" value-precision="2" wheel-inc-value="0.1"/>
+		<view back-color="~ WhiteCColor" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="~ NormalFontBig" font-antialias="true" font-color="~ BlackCColor" frame-color="black" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="15, 150" round-rect-radius="6" shadow-color="~ RedCColor" size="165, 30" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" title="NormalFontBig" transparent="false" value-precision="2" wheel-inc-value="0.1"/>
+		<view back-color="~ WhiteCColor" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="~ NormalFont" font-antialias="true" font-color="~ BlackCColor" frame-color="black" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="15, 115" round-rect-radius="6" shadow-color="~ RedCColor" size="165, 30" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" title="NormalFont" transparent="false" value-precision="2" wheel-inc-value="0.1"/>
+		<view back-color="~ WhiteCColor" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="~ NormalFontSmall" font-antialias="true" font-color="~ BlackCColor" frame-color="black" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="15, 80" round-rect-radius="6" shadow-color="~ RedCColor" size="165, 30" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" title="NormalFontSmall" transparent="false" value-precision="2" wheel-inc-value="0.1"/>
+		<view back-color="~ WhiteCColor" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="~ NormalFontSmaller" font-antialias="true" font-color="~ BlackCColor" frame-color="black" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="15, 45" round-rect-radius="6" shadow-color="~ RedCColor" size="165, 30" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" title="NormalFontSmaller" transparent="false" value-precision="2" wheel-inc-value="0.1"/>
+		<view back-color="~ WhiteCColor" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="~ NormalFontVerySmall" font-antialias="true" font-color="~ BlackCColor" frame-color="black" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="15, 10" round-rect-radius="6" shadow-color="~ RedCColor" size="165, 30" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" title="NormalFontVerySmall" transparent="false" value-precision="2" wheel-inc-value="0.1"/>
+		<view back-color="~ BlackCColor" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="~ NormalFontVerySmall" font-antialias="true" font-color="~ WhiteCColor" frame-color="~ WhiteCColor" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="300, 10" round-rect-radius="6" shadow-color="~ RedCColor" size="165, 30" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" title="NormalFontVerySmall" transparent="false" value-precision="2" wheel-inc-value="0.1"/>
+		<view back-color="~ BlackCColor" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="~ NormalFontSmaller" font-antialias="true" font-color="~ WhiteCColor" frame-color="~ WhiteCColor" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="300, 45" round-rect-radius="6" shadow-color="~ RedCColor" size="165, 30" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" title="NormalFontSmaller" transparent="false" value-precision="2" wheel-inc-value="0.1"/>
+		<view back-color="~ BlackCColor" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="~ NormalFontSmall" font-antialias="true" font-color="~ WhiteCColor" frame-color="~ WhiteCColor" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="300, 80" round-rect-radius="6" shadow-color="~ RedCColor" size="165, 30" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" title="NormalFontSmall" transparent="false" value-precision="2" wheel-inc-value="0.1"/>
+		<view back-color="~ BlackCColor" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="~ NormalFont" font-antialias="true" font-color="~ WhiteCColor" frame-color="~ WhiteCColor" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="300, 115" round-rect-radius="6" shadow-color="~ RedCColor" size="165, 30" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" title="NormalFont" transparent="false" value-precision="2" wheel-inc-value="0.1"/>
+		<view back-color="~ BlackCColor" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="~ NormalFontBig" font-antialias="true" font-color="~ WhiteCColor" frame-color="~ WhiteCColor" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="300, 150" round-rect-radius="6" shadow-color="~ RedCColor" size="165, 30" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" title="NormalFontBig" transparent="false" value-precision="2" wheel-inc-value="0.1"/>
+		<view back-color="~ BlackCColor" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="~ NormalFontVeryBig" font-antialias="true" font-color="~ WhiteCColor" frame-color="~ WhiteCColor" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="300, 185" round-rect-radius="6" shadow-color="~ RedCColor" size="165, 30" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" title="NormalFontVeryBig" transparent="false" value-precision="2" wheel-inc-value="0.1"/>
+		<view back-color="~ GreyCColor" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="fp normal" font-antialias="true" font-color="~ BlackCColor" frame-color="~ TransparentCColor" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="190, 25" round-rect-radius="6" shadow-color="~ RedCColor" size="100, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" title="arial 12pt" transparent="false" value-precision="2" wheel-inc-value="0.1"/>
+		<view back-color="~ GreyCColor" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="fp bold" font-antialias="true" font-color="~ BlackCColor" frame-color="~ TransparentCColor" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="190, 45" round-rect-radius="6" shadow-color="~ RedCColor" size="100, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" title="bold" transparent="false" value-precision="2" wheel-inc-value="0.1"/>
+		<view back-color="~ GreyCColor" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="fp italic" font-antialias="true" font-color="~ BlackCColor" frame-color="~ TransparentCColor" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="190, 65" round-rect-radius="6" shadow-color="~ RedCColor" size="100, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" title="italic" transparent="false" value-precision="2" wheel-inc-value="0.1"/>
+		<view back-color="~ GreyCColor" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="fp underline" font-antialias="true" font-color="~ BlackCColor" frame-color="~ TransparentCColor" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="190, 85" round-rect-radius="6" shadow-color="~ RedCColor" size="100, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" title="underline" transparent="false" value-precision="2" wheel-inc-value="0.1"/>
+		<view back-color="~ GreyCColor" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="fp strikeout" font-antialias="true" font-color="~ BlackCColor" frame-color="~ TransparentCColor" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="190, 105" round-rect-radius="6" shadow-color="~ RedCColor" size="100, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" title="strikeout" transparent="false" value-precision="2" wheel-inc-value="0.1"/>
+		<view back-color="~ WhiteCColor" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="~ SymbolFont" font-antialias="true" font-color="~ BlackCColor" frame-color="black" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="15, 220" round-rect-radius="6" shadow-color="~ RedCColor" size="165, 30" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" title="SymbolFont" transparent="false" value-precision="2" wheel-inc-value="0.1"/>
+		<view back-color="~ BlackCColor" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="~ SystemFont" font-antialias="true" font-color="~ WhiteCColor" frame-color="~ WhiteCColor" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="300, 220" round-rect-radius="6" shadow-color="~ RedCColor" size="165, 30" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" title="SystemFont" transparent="false" value-precision="2" wheel-inc-value="0.1"/>
+		<view background-color="~ WhiteCColor" background-color-draw-style="filled and stroked" class="CViewContainer" mouse-enabled="true" opacity="1" origin="190, 135" size="100, 115" transparent="false">
+			<view background-offset="0, 0" class="COnOffButton" control-tag="LineStyle" custom-view-name="LineStyleTestView" default-value="0" max-value="5" min-value="0" mouse-enabled="true" opacity="1" origin="5, 5" size="90, 75" transparent="false" wheel-inc-value="0.1"/>
+			<view back-color="~ WhiteCColor" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="~ NormalFontVerySmall" font-antialias="true" font-color="~ BlackCColor" frame-color="~ TransparentCColor" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="5, 80" round-rect-radius="6" shadow-color="~ RedCColor" size="90, 15" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" title="Line Style" transparent="false" value-precision="2" wheel-inc-value="0.1"/>
+			<view back-color="black" background-offset="0, 0" class="COptionMenu" control-tag="LineStyle" default-value="0" font="~ NormalFontVerySmall" font-antialias="true" font-color="white" frame-color="black" frame-width="1" max-value="1.84467e+19" menu-check-style="true" menu-popup-style="true" min-value="0" mouse-enabled="true" opacity="1" origin="5, 95" round-rect-radius="6" shadow-color="~ RedCColor" size="90, 15" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" transparent="false" value-precision="2" wheel-inc-value="0.1"/>
+		</view>
+	</template>
+	<template background-color="modal view background" background-color-draw-style="filled and stroked" class="CViewContainer" maxSize="500, 320" minSize="500, 320" mouse-enabled="true" name="ModalView" opacity="1" origin="0, 0" size="480, 300" transparent="false">
+		<view class="CGradientView" draw-antialiased="true" frame-color="default background" frame-width="1" gradient="Dialog Gradient" gradient-angle="180" gradient-style="linear" mouse-enabled="true" opacity="1" origin="120, 60" radial-center="0, 0" radial-radius="0.5" round-rect-radius="15" size="260, 190" transparent="false"/>
+		<view background-color="black" background-color-draw-style="filled and stroked" bitmap="FrameBackground" class="CViewContainer" mouse-enabled="true" opacity="1" origin="120, 60" size="260, 190" transparent="false">
+			<view back-color="black" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="~ NormalFontVeryBig" font-antialias="true" font-color="white" frame-color="black" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="0, 20" round-rect-radius="6" shadow-color="~ BlackCColor" size="260, 70" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="true" text-alignment="center" text-inset="0, 0" text-rotation="0" title="This is a Modal View" transparent="true" value-precision="2" wheel-inc-value="0.1"/>
+			<view background-offset="0, 0" class="CTextButton" control-tag="close modal view tag" default-value="0.5" font="~ SystemFont" frame-color="black" frame-color-highlighted="black" frame-width="1" gradient="Default TextButton Gradient" gradient-highlighted="Default TextButton Gradient Highlighted" icon-position="left" icon-text-margin="0" kick-style="true" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="80, 140" round-radius="6" size="100, 20" text-alignment="center" text-color="black" text-color-highlighted="white" title="Close" transparent="false" wheel-inc-value="0.1"/>
+		</view>
+	</template>
+	<variables/>
+	<gradients>
+		<gradient name="Default TextButton Gradient">
+			<color-stop rgba="#dcdcdcff" start="0"/>
+			<color-stop rgba="#b4b4b4ff" start="1"/>
+		</gradient>
+		<gradient name="Default TextButton Gradient Highlighted">
+			<color-stop rgba="#b4b4b4ff" start="0"/>
+			<color-stop rgba="#646464ff" start="1"/>
+		</gradient>
+		<gradient name="Dialog Gradient">
+			<color-stop rgba="#00000083" start="0"/>
+			<color-stop rgba="#000000a6" start="0.4817845394736842146166111433558398857713"/>
+			<color-stop rgba="#00000083" start="1"/>
+		</gradient>
+		<gradient name="GradientView">
+			<color-stop rgba="#0000ffff" start="0"/>
+			<color-stop rgba="#caff00ff" start="0.5162520559210526105431426913128234446049"/>
+			<color-stop rgba="#00ffffff" start="1"/>
+		</gradient>
+		<gradient name="Selected Segment">
+			<color-stop rgba="#576576ff" start="0"/>
+			<color-stop rgba="#37414bff" start="0.5218236019736841591054599120980128645897"/>
+			<color-stop rgba="#4c5967ff" start="1"/>
+		</gradient>
+		<gradient name="Unselected Segment">
+			<color-stop rgba="#cececeff" start="0"/>
+			<color-stop rgba="#9b9b9bff" start="0.5218236019736841591054599120980128645897"/>
+			<color-stop rgba="#b4b4b4ff" start="1"/>
+		</gradient>
+	</gradients>
+	<template background-color="transparent" background-color-draw-style="filled and stroked" class="CViewContainer" mouse-enabled="true" name="tab6" opacity="1" origin="0, 0" size="480, 260" transparent="false">
+		<view autosize="left right top bottom " class="CView" custom-view-name="DrawPrimitivesTestView" mouse-enabled="true" opacity="1" origin="0, 0" size="480, 260" transparent="false"/>
+	</template>
+</vstgui-ui-description>

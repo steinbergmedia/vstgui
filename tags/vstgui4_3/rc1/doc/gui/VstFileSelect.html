@@ -1,0 +1,24 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+	<head>
+		<base target="vstdoc">
+		<title>VstFileSelect</title>
+		<link rel="stylesheet" href="../sdkdoc.css" type="text/css">
+	</head>
+	<body>
+	<div>
+		<h2>VstFileSelect</h2>
+		<p><code>#include &lt;&gt;</code></p>
+		<p><code>struct VstFileSelect;</code></p>
+		<p>Defined in the VST 2.2, this is used with the function openFileSelector.</p>
+		<pre>{<br>        long command;           // see enum kVstFileLoad....<br>        long type;              // see enum kVstFileType...<br><br>        long macCreator;        // optional: 0 = no creator<br><br>        long nbFileTypes;       // nb of fileTypes to used<br>        VstFileType *fileTypes; // list of fileTypes<br><br>        char title[1024];       // text display in the file selector's title<br><br>        char *initialPath;      // initial path<br><br>        char *returnPath;       // use with kVstFileLoad and kVstDirectorySelect<br>                                                // if null is passed, the host will allocated memory<br>                                                // the plugin should then called closeOpenFileSelector for freeing memory<br>        long sizeReturnPath; <br><br>        char **returnMultiplePaths; // use with kVstMultipleFilesLoad<br>                                                                // the host allocates this array. The plugin should then called closeOpenFileSelector for freeing memory<br>        long nbReturnPath;                      // number of selected paths<br><br>        long reserved;                          // reserved for host application<br>        char future[116];                       // future use<br>};<br><br>enum {<br>        kVstFileLoad = 0,<br>        kVstFileSave,<br>        kVstMultipleFilesLoad,<br>        kVstDirectorySelect,<br><br>        kVstFileType = 0<br>};<br></pre>
+		<hr noShade SIZE="4">
+		<div align="center">Copyright &copy;2003 <a href="http://www.steinberg.net" target="_blank"><u>Steinberg 
+					Media Technologies GmbH</u></a>.
+		</div>
+		<DIV align=center><FONT size=1>Last Modified:
+		<SCRIPT language=Javascript %>document.writeln(document.lastModified);</SCRIPT>
+		</FONT></DIV>
+		</div>
+	</body>
+</html>
