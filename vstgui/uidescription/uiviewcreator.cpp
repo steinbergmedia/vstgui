@@ -2228,11 +2228,11 @@ public:
 		if (attr)
 		{
 			if (*attr == "head")
-				button->setTextTruncateMode (CDrawMethods::TextTruncateMode::kHead);
+				button->setTextTruncateMode (CDrawMethods::kTextTruncateHead);
 			else if (*attr == "tail")
-				button->setTextTruncateMode (CDrawMethods::TextTruncateMode::kTail);
+				button->setTextTruncateMode (CDrawMethods::kTextTruncateTail);
 			else
-				button->setTextTruncateMode (CDrawMethods::TextTruncateMode::kNone);
+				button->setTextTruncateMode (CDrawMethods::kTextTruncateNone);
 		}
 		return true;
 	}
@@ -2376,9 +2376,9 @@ public:
 		{
 			switch (button->getTextTruncateMode ())
 			{
-				case CDrawMethods::TextTruncateMode::kHead: stringValue = "head"; break;
-				case CDrawMethods::TextTruncateMode::kTail: stringValue = "tail"; break;
-				case CDrawMethods::TextTruncateMode::kNone: stringValue = ""; break;
+				case CDrawMethods::kTextTruncateHead: stringValue = "head"; break;
+				case CDrawMethods::kTextTruncateTail: stringValue = "tail"; break;
+				case CDrawMethods::kTextTruncateNone: stringValue = ""; break;
 			}
 			return true;
 		}

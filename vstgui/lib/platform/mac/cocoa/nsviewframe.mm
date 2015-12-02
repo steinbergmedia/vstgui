@@ -204,6 +204,8 @@ static void VSTGUI_NSView_updateTrackingAreas (id self, SEL _cmd)
 	objc_msgSendSuper (SUPER, @selector(updateTrackingAreas));
 }
 
+extern NSString* const NSWindowDidChangeBackingPropertiesNotification;
+
 //------------------------------------------------------------------------------------
 static void VSTGUI_NSView_viewDidMoveToWindow (id self, SEL _cmd)
 {
