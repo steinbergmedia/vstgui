@@ -37,17 +37,16 @@
 #if MAC
 #include "../../cframe.h"
 #include "../iplatformframe.h"
+#include "../std_unorderedmap.h"
 #include <mach/mach_time.h>
-#ifdef _LIBCPP_VERSION
-#include <unordered_map>
-#else
-#include <tr1/unordered_map>
-namespace std {
-	using tr1::unordered_map;
-}
-#endif
 
 #define USE_MAIN_DISPLAY_COLORSPACE	1
+
+#if MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_7
+// forward declare functions Apple removed from OSX SDK 10.11
+extern CMError CMGetSystemProfile (CMProfileRef * prof);
+extern CMError CMCloseProfile (CMProfileRef prof);
+#endif
 
 namespace VSTGUI {
 

@@ -44,7 +44,7 @@ namespace CDrawMethods {
 //------------------------------------------------------------------------
 UTF8String createTruncatedText (TextTruncateMode mode, const UTF8String& text, CFontRef font, CCoord maxWidth, const CPoint& textInset, uint32_t flags)
 {
-	if (mode == TextTruncateMode::kNone)
+	if (mode == kTextTruncateNone)
 		return text;
 	IFontPainter* painter = font->getPlatformFont ()->getPainter ();
 	CCoord width = painter->getStringWidth (0, text.getPlatformString (), true);
@@ -53,7 +53,7 @@ UTF8String createTruncatedText (TextTruncateMode mode, const UTF8String& text, C
 	{
 		std::string _truncatedText;
 		UTF8String utf8Str;
-		if (mode == kTail)
+		if (mode == kTextTruncateTail)
 		{
 			_truncatedText = text;
 			_truncatedText += "..";
@@ -74,7 +74,7 @@ UTF8String createTruncatedText (TextTruncateMode mode, const UTF8String& text, C
 				width += textInset.x * 2;
 			}
 		}
-		else if (mode == kHead)
+		else if (mode == kTextTruncateHead)
 		{
 			_truncatedText = "..";
 			_truncatedText += text;
@@ -94,7 +94,7 @@ UTF8String createTruncatedText (TextTruncateMode mode, const UTF8String& text, C
 				width += textInset.x * 2;
 			}
 		}
-		if (width > maxWidth && flags & CreateTextTruncateFlags::kReturnEmptyIfTruncationIsPlaceholderOnly)
+		if (width > maxWidth && flags & kReturnEmptyIfTruncationIsPlaceholderOnly)
 			utf8Str.set ("");
 		return utf8Str;
 	}
@@ -176,9 +176,9 @@ void drawIconAndText (CDrawContext* context, CBitmap* iconToDraw, IconPosition i
 	{
 		context->setFont (font);
 		context->setFontColor (textColor);
-		if (textTruncateMode != TextTruncateMode::kNone)
+		if (textTruncateMode != kTextTruncateNone)
 		{
-			UTF8String truncatedText = createTruncatedText (textTruncateMode, title, font, drawRect.getWidth (), CPoint (0, 0), CreateTextTruncateFlags::kReturnEmptyIfTruncationIsPlaceholderOnly);
+			UTF8String truncatedText = createTruncatedText (textTruncateMode, title, font, drawRect.getWidth (), CPoint (0, 0), kReturnEmptyIfTruncationIsPlaceholderOnly);
 			context->drawString (truncatedText.getPlatformString (), drawRect, textAlignment);
 		}
 		else

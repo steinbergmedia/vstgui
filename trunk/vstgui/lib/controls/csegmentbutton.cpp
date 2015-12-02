@@ -55,7 +55,7 @@ CSegmentButton::CSegmentButton (const CRect& size, IControlListener* listener, i
 , roundRadius (5)
 , frameWidth (1)
 , style (kHorizontal)
-, textTruncateMode (CDrawMethods::TextTruncateMode::kNone)
+, textTruncateMode (CDrawMethods::kTextTruncateNone)
 {
 	setWantsFocus (true);
 }

@@ -54,9 +54,9 @@ enum IconPosition {
 
 //-----------------------------------------------------------------------------
 enum TextTruncateMode {
-	kNone,
-	kHead,
-	kTail
+	kTextTruncateNone,
+	kTextTruncateHead,
+	kTextTruncateTail
 };
 
 //-----------------------------------------------------------------------------
@@ -91,7 +91,7 @@ UTF8String createTruncatedText (TextTruncateMode mode, const UTF8String& text, C
  *  @param font          	font
  *  @param textColor     	font color
  */
-void drawIconAndText (CDrawContext* context, CBitmap* iconToDraw, IconPosition iconPosition, CHoriTxtAlign textAlignment, CCoord textIconMargin, CRect drawRect, const UTF8String& title, CFontRef font, CColor textColor, TextTruncateMode truncateMode = TextTruncateMode::kNone);
+void drawIconAndText (CDrawContext* context, CBitmap* iconToDraw, IconPosition iconPosition, CHoriTxtAlign textAlignment, CCoord textIconMargin, CRect drawRect, const UTF8String& title, CFontRef font, CColor textColor, TextTruncateMode truncateMode = kTextTruncateNone);
 	
 }} // namespaces
 
