@@ -1,0 +1,189 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+	<head>
+		<base target="vstdoc">
+		<title>CHorizontalSlider</title>
+		<link rel="stylesheet" href="../sdkdoc.css" type="text/css">
+	</head>
+	<body>
+		<div>
+			<h2>CHorizontalSlider</h2>
+			<p><code>#include &lt;vstcontrols.h&gt;</code></p>
+			<p><code>class CHorizontalSlider : public <a href="CControl.html">CControl</a> ;</code></p>
+			<p>Define a horizontal slider with a background and a handle. The range of 
+				variation of the handle should be defined. By default the handler is drawn with 
+				transparency (white color). By clicking Alt+Left Mouse the default value is 
+				used.</p>
+			<h4>See also :</h4>
+			<ul>
+				<li>
+					<code><a href="CVerticalSlider.html">CVerticalSlider</a> </code>
+				</li>
+			</ul>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="cCHorizontalSlider">CHorizontalSlider</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">CHorizontalSlider (<a href="CRect.html">CRect</a> &amp;size, <a href="CControlListener.html">CControlListener</a> *listener, long tag, long iMinPos, long iMaxPos, <a href="CBitmap.html">CBitmap</a> *handle, <a href="CBitmap.html">CBitmap</a> *bk, <a href="CPoint.html">CPoint</a> &amp;offset, int style);</div>
+			</p>
+			<p>Creates a horizontal slider object. Note that the min and max position is given 
+				in absolute value in the frame parent.</p>
+			<table width="100%" cellpadding="0" cellspacing="0" border="1" bordercolor="#000000">
+				<tbody>
+					<tr>
+						<th align="right" valign="top">
+							<code>size</code></th>
+						<td>The coordinates of the enclosing rectangle, relative to the parent frame.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>listener</code></th>
+						<td>The object responsible for handling events in this control. for this control.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>tag</code></th>
+						<td>The index of the control.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>iMinPos</code></th>
+						<td>The minimum horizontal position of the handle in pixel.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>iMaxPos</code></th>
+						<td>The maximum horizontal position of the handle in pixel.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>handle</code></th>
+						<td>The handle's pixmap.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>bk</code></th>
+						<td>The background's pixmap.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>offset</code></th>
+						<td>
+							The offset is the top-left point of the displayed area of the background.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>style</code></th>
+						<td>The style allows to define where the zero position is defined (<code> kLeft</code>
+							or <code>kRight</code> (the default value)).</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><img src="images/source.jpg" alt="[source]" width="16" height="16"> <a href="sources/sCHorizontalSlider.html" target="sources">
+					source</a>
+			</p>
+			<p><img src="images/CHorizontalSlider.jpg" alt="[CHorizontalSlider]" width="210" height="121">
+			</p>
+			<h4>Example :</h4>
+			<code>
+				<pre>myBackground<br>    = new CBitmap (kBackgroundBitmap);<br>myHandle<br>    = new CBitmap (kHandleBitmap);<br>		<br>CRect size (<br>    kSlider_left,<br>    kSlider_top,<br>    kSlider_left + myBackground-&gt;getWidth(),<br>    kSlider_top + myBackground-&gt;getHeight()<br>);<br>CPoint offset(0, 0);<br>int minPos = kSlider_left;<br>int maxPos = kSlider_left + myBackground-&gt;getWidth()<br>     - myHandle-&gt;getWidth () - 1;<br>myHorizontalSlider = new CHorizontalSlider (<br>    size,<br>    this,<br>    kMyParameter,<br>    minPos,<br>    maxPos,<br>    myHandle,<br>    myBackground,<br>    offset<br>);<br>frame-&gt;addView (myHorizontalSlider);</pre>
+			</code>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="CHorizontalSlider2">CHorizontalSlider</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">CHorizontalSlider (<a href="CRect.html">CRect</a>&amp;size, <a href="CControlListener.html">CControlListener</a> *listener, long tag, CPoint &amp;offsetHandle, long rangeHandle, <a href="CBitmap.html">CBitmap</a> *handle, <a href="CBitmap.html">CBitmap</a> *bk, <a href="CPoint.html">CPoint</a> &amp;offset, long style);</div>
+			</p>
+			<p>Creates a horizontal slider object.<br>
+			</p>
+			<table width="100%" cellpadding="0" cellspacing="0" border="1" bordercolor="#000000">
+				<tbody>
+					<tr>
+						<th align="right" valign="top">
+							<code>size</code></th>
+						<td>The coordinates of the enclosing rectangle, relative to the parent frame.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>listener</code></th>
+						<td>The object responsible for handling events in this control. for this control.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>tag</code></th>
+						<td>The index of the control.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>offsetHandle</code></th>
+						<td>The offset of the handle.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>rangeHandle</code></th>
+						<td>The size of the handle range.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>handle</code></th>
+						<td>The pixmap of the slider</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>bk</code></th>
+						<td>The pixmap of the background.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>offset</code></th>
+						<td>The top-left point of the displayed area of the background, relative to the 
+							control.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>style</code></th>
+						<td>
+							The style allows to define where the zero position is defined (<code>kLeft</code>
+							or <code>kRight</code> (the default value)).<br>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<br>
+			<hr width="100%" size="2">
+			<p>
+			</p>
+			<p>
+			</p>
+			<hr noshade="noshade" size="4">
+			<div align="center">Copyright &copy;2003 <a href="http://www.steinberg.net" target="_blank">
+					<u>Steinberg Media Technologies GmbH</u></a>.
+			</div>
+			<DIV align=center><FONT size=1>Last Modified:
+			<SCRIPT language=Javascript %>document.writeln(document.lastModified);</SCRIPT>
+			</FONT></DIV>
+			<br>
+		</div>
+		<br>
+	</body>
+</html>

@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="vstgui" />
+		<Option compiler="clang_compiler" />
+		<Option virtualFolders="doc/;" />
+		<Build>
+			<Target title="Debug">
+				<Option output="vstgui" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="" />
+				<Option object_output="obj/Debug/" />
+				<Option type="2" />
+				<Option compiler="clang_compiler" />
+				<Option createDefFile="1" />
+				<Compiler>
+					<Add option="-Wall" />
+					<Add option="-g" />
+					<Add option="-DDEVELOPMENT=1" />
+					<Add option="-DVSTGUI_LIVE_EDITING=1" />
+				</Compiler>
+			</Target>
+			<Target title="Release">
+				<Option output="vstgui" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="" />
+				<Option object_output="obj/Release/" />
+				<Option type="2" />
+				<Option compiler="clang_compiler" />
+				<Option createDefFile="1" />
+				<Compiler>
+					<Add option="-O3" />
+					<Add option="-Wall" />
+					<Add option="-g" />
+					<Add option="-DRELEASE=1" />
+					<Add option="-DVSTGUI_LIVE_EDITING=0" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+			</Target>
+		</Build>
+		<Unit filename="../../doxygen/Doxyfile">
+			<Option virtualFolder="doc/" />
+		</Unit>
+		<Unit filename="../../doxygen/doc.h">
+			<Option virtualFolder="doc/" />
+		</Unit>
+		<Unit filename="../../doxygen/doxydocu.css">
+			<Option virtualFolder="doc/" />
+		</Unit>
+		<Unit filename="../../doxygen/page_changelog.h">
+			<Option virtualFolder="doc/" />
+		</Unit>
+		<Unit filename="../../doxygen/page_changes.h">
+			<Option virtualFolder="doc/" />
+		</Unit>
+		<Unit filename="../../doxygen/page_keyeventflow.h">
+			<Option virtualFolder="doc/" />
+		</Unit>
+		<Unit filename="../../doxygen/page_license.h">
+			<Option virtualFolder="doc/" />
+		</Unit>
+		<Unit filename="../../doxygen/page_tutorial.h">
+			<Option virtualFolder="doc/" />
+		</Unit>
+		<Unit filename="../../doxygen/screenshots/contextmenu.png" />
+		<Unit filename="../../doxygen/screenshots/inspector_overview.png" />
+		<Unit filename="../../doxygen/screenshots/ui_editor.png" />
+		<Unit filename="../../doxygen/screenshots/ui_editor_bitmaps_browser.png" />
+		<Unit filename="../../doxygen/screenshots/ui_editor_colors_browser.png" />
+		<Unit filename="../../doxygen/screenshots/ui_editor_fonts_browser.png" />
+		<Unit filename="../../doxygen/screenshots/ui_editor_tags_browser.png" />
+		<Unit filename="../../doxygen/screenshots/ui_editor_views_browser.png" />
+		<Unit filename="../../doxygen/tutorial.h">
+			<Option virtualFolder="doc/" />
+		</Unit>
+		<Unit filename="../../lib/animation/animations.cpp" />
+		<Unit filename="../../lib/animation/animations.h" />
+		<Unit filename="../../lib/animation/animator.cpp" />
+		<Unit filename="../../lib/animation/animator.h" />
+		<Unit filename="../../lib/animation/timingfunctions.cpp" />
+		<Unit filename="../../lib/animation/timingfunctions.h" />
+		<Unit filename="../../lib/cbitmap.cpp" />
+		<Unit filename="../../lib/cbitmap.h" />
+		<Unit filename="../../lib/cbitmapfilter.cpp" />
+		<Unit filename="../../lib/cbitmapfilter.h" />
+		<Unit filename="../../lib/ccolor.cpp" />
+		<Unit filename="../../lib/ccolor.h" />
+		<Unit filename="../../lib/cdatabrowser.cpp" />
+		<Unit filename="../../lib/cdatabrowser.h" />
+		<Unit filename="../../lib/cdrawcontext.cpp" />
+		<Unit filename="../../lib/cdrawcontext.h" />
+		<Unit filename="../../lib/cdropsource.cpp" />
+		<Unit filename="../../lib/cdropsource.h" />
+		<Unit filename="../../lib/cfileselector.cpp" />
+		<Unit filename="../../lib/cfileselector.h" />
+		<Unit filename="../../lib/cfont.cpp" />
+		<Unit filename="../../lib/cfont.h" />
+		<Unit filename="../../lib/cframe.cpp" />
+		<Unit filename="../../lib/cframe.h" />
+		<Unit filename="../../lib/cgraphicspath.cpp" />
+		<Unit filename="../../lib/cgraphicspath.h" />
+		<Unit filename="../../lib/coffscreencontext.cpp" />
+		<Unit filename="../../lib/coffscreencontext.h" />
+		<Unit filename="../../lib/controls/cautoanimation.cpp" />
+		<Unit filename="../../lib/controls/cautoanimation.h" />
+		<Unit filename="../../lib/controls/cbuttons.cpp" />
+		<Unit filename="../../lib/controls/cbuttons.h" />
+		<Unit filename="../../lib/controls/ccolorchooser.cpp" />
+		<Unit filename="../../lib/controls/ccolorchooser.h" />
+		<Unit filename="../../lib/controls/ccontrol.cpp" />
+		<Unit filename="../../lib/controls/ccontrol.h" />
+		<Unit filename="../../lib/controls/cfontchooser.cpp" />
+		<Unit filename="../../lib/controls/cfontchooser.h" />
+		<Unit filename="../../lib/controls/cknob.cpp" />
+		<Unit filename="../../lib/controls/cknob.h" />
+		<Unit filename="../../lib/controls/cmoviebitmap.cpp" />
+		<Unit filename="../../lib/controls/cmoviebitmap.h" />
+		<Unit filename="../../lib/controls/cmoviebutton.cpp" />
+		<Unit filename="../../lib/controls/cmoviebutton.h" />
+		<Unit filename="../../lib/controls/coptionmenu.cpp" />
+		<Unit filename="../../lib/controls/coptionmenu.h" />
+		<Unit filename="../../lib/controls/cparamdisplay.cpp" />
+		<Unit filename="../../lib/controls/cparamdisplay.h" />
+		<Unit filename="../../lib/controls/cslider.cpp" />
+		<Unit filename="../../lib/controls/cslider.h" />
+		<Unit filename="../../lib/controls/cspecialdigit.cpp" />
+		<Unit filename="../../lib/controls/cspecialdigit.h" />
+		<Unit filename="../../lib/controls/csplashscreen.cpp" />
+		<Unit filename="../../lib/controls/csplashscreen.h" />
+		<Unit filename="../../lib/controls/cswitch.cpp" />
+		<Unit filename="../../lib/controls/cswitch.h" />
+		<Unit filename="../../lib/controls/ctextedit.cpp" />
+		<Unit filename="../../lib/controls/ctextedit.h" />
+		<Unit filename="../../lib/controls/ctextlabel.cpp" />
+		<Unit filename="../../lib/controls/ctextlabel.h" />
+		<Unit filename="../../lib/controls/cvumeter.cpp" />
+		<Unit filename="../../lib/controls/cvumeter.h" />
+		<Unit filename="../../lib/copenglview.cpp" />
+		<Unit filename="../../lib/copenglview.h" />
+		<Unit filename="../../lib/cpoint.cpp" />
+		<Unit filename="../../lib/cpoint.h" />
+		<Unit filename="../../lib/crect.cpp" />
+		<Unit filename="../../lib/crect.h" />
+		<Unit filename="../../lib/crowcolumnview.cpp" />
+		<Unit filename="../../lib/crowcolumnview.h" />
+		<Unit filename="../../lib/cscrollview.cpp" />
+		<Unit filename="../../lib/cscrollview.h" />
+		<Unit filename="../../lib/cshadowviewcontainer.cpp" />
+		<Unit filename="../../lib/cshadowviewcontainer.h" />
+		<Unit filename="../../lib/csplitview.cpp" />
+		<Unit filename="../../lib/csplitview.h" />
+		<Unit filename="../../lib/cstring.cpp" />
+		<Unit filename="../../lib/cstring.h" />
+		<Unit filename="../../lib/ctabview.cpp" />
+		<Unit filename="../../lib/ctabview.h" />
+		<Unit filename="../../lib/ctooltipsupport.cpp" />
+		<Unit filename="../../lib/ctooltipsupport.h" />
+		<Unit filename="../../lib/cview.cpp" />
+		<Unit filename="../../lib/cview.h" />
+		<Unit filename="../../lib/cviewcontainer.cpp" />
+		<Unit filename="../../lib/cviewcontainer.h" />
+		<Unit filename="../../lib/cvstguitimer.cpp" />
+		<Unit filename="../../lib/cvstguitimer.h" />
+		<Unit filename="../../lib/idependency.h" />
+		<Unit filename="../../lib/ifocusdrawing.h" />
+		<Unit filename="../../lib/vstguibase.h">
+			<Option weight="0" />
+		</Unit>
+		<Unit filename="../../lib/vstguidebug.cpp" />
+		<Unit filename="../../lib/vstguidebug.h" />
+		<Unit filename="../../lib/vstkeycode.h" />
+		<Unit filename="../../uidescription/base64codec.h" />
+		<Unit filename="../../uidescription/cstream.cpp" />
+		<Unit filename="../../uidescription/cstream.h" />
+		<Unit filename="../../uidescription/doc.h" />
+		<Unit filename="../../uidescription/editing/doc.h" />
+		<Unit filename="../../uidescription/editing/iaction.h" />
+		<Unit filename="../../uidescription/editing/uiactions.cpp" />
+		<Unit filename="../../uidescription/editing/uiactions.h" />
+		<Unit filename="../../uidescription/editing/uiattributescontroller.cpp" />
+		<Unit filename="../../uidescription/editing/uiattributescontroller.h" />
+		<Unit filename="../../uidescription/editing/uibasedatasource.h" />
+		<Unit filename="../../uidescription/editing/uibitmapscontroller.cpp" />
+		<Unit filename="../../uidescription/editing/uibitmapscontroller.h" />
+		<Unit filename="../../uidescription/editing/uicolorscontroller.cpp" />
+		<Unit filename="../../uidescription/editing/uicolorscontroller.h" />
+		<Unit filename="../../uidescription/editing/uicrosslines.cpp" />
+		<Unit filename="../../uidescription/editing/uicrosslines.h" />
+		<Unit filename="../../uidescription/editing/uidescriptioneditor.uidesc" />
+		<Unit filename="../../uidescription/editing/uidialogcontroller.cpp" />
+		<Unit filename="../../uidescription/editing/uidialogcontroller.h" />
+		<Unit filename="../../uidescription/editing/uieditcontroller.cpp" />
+		<Unit filename="../../uidescription/editing/uieditcontroller.h" />
+		<Unit filename="../../uidescription/editing/uieditmenucontroller.cpp" />
+		<Unit filename="../../uidescription/editing/uieditmenucontroller.h" />
+		<Unit filename="../../uidescription/editing/uieditview.cpp" />
+		<Unit filename="../../uidescription/editing/uieditview.h" />
+		<Unit filename="../../uidescription/editing/uifocussettingscontroller.cpp" />
+		<Unit filename="../../uidescription/editing/uifocussettingscontroller.h" />
+		<Unit filename="../../uidescription/editing/uifontscontroller.cpp" />
+		<Unit filename="../../uidescription/editing/uifontscontroller.h" />
+		<Unit filename="../../uidescription/editing/uigrid.h" />
+		<Unit filename="../../uidescription/editing/uigridcontroller.cpp" />
+		<Unit filename="../../uidescription/editing/uigridcontroller.h" />
+		<Unit filename="../../uidescription/editing/uisearchtextfield.cpp" />
+		<Unit filename="../../uidescription/editing/uisearchtextfield.h" />
+		<Unit filename="../../uidescription/editing/uiselection.cpp" />
+		<Unit filename="../../uidescription/editing/uiselection.h" />
+		<Unit filename="../../uidescription/editing/uitagscontroller.cpp" />
+		<Unit filename="../../uidescription/editing/uitagscontroller.h" />
+		<Unit filename="../../uidescription/editing/uitemplatecontroller.cpp" />
+		<Unit filename="../../uidescription/editing/uitemplatecontroller.h" />
+		<Unit filename="../../uidescription/editing/uitemplatesettingscontroller.cpp" />
+		<Unit filename="../../uidescription/editing/uitemplatesettingscontroller.h" />
+		<Unit filename="../../uidescription/editing/uiundomanager.cpp" />
+		<Unit filename="../../uidescription/editing/uiundomanager.h" />
+		<Unit filename="../../uidescription/editing/uiviewcreatecontroller.cpp" />
+		<Unit filename="../../uidescription/editing/uiviewcreatecontroller.h" />
+		<Unit filename="../../uidescription/icontroller.h" />
+		<Unit filename="../../uidescription/uidescription.cpp" />
+		<Unit filename="../../uidescription/uidescription.h" />
+		<Unit filename="../../uidescription/uiviewcreator.cpp" />
+		<Unit filename="../../uidescription/uiviewcreator.h" />
+		<Unit filename="../../uidescription/uiviewfactory.cpp" />
+		<Unit filename="../../uidescription/uiviewfactory.h" />
+		<Unit filename="../../uidescription/uiviewswitchcontainer.cpp" />
+		<Unit filename="../../uidescription/uiviewswitchcontainer.h" />
+		<Unit filename="../../uidescription/xmlparser.cpp" />
+		<Unit filename="../../uidescription/xmlparser.h" />
+		<Extensions>
+			<code_completion />
+			<envvars />
+			<debugger />
+			<DoxyBlocks>
+				<comment_style block="0" line="0" />
+				<doxyfile_project />
+				<doxyfile_build />
+				<doxyfile_warnings />
+				<doxyfile_output />
+				<doxyfile_dot />
+				<general />
+			</DoxyBlocks>
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vstgui-ui-description version="1">
+	<template autosize="left right top bottom " background-color="black" background-color-draw-style="filled and stroked" class="CViewContainer" maxSize="10000, 10000" minSize="240, 160" mouse-enabled="true" name="view" origin="0, 0" size="240, 160" transparent="false">
+		<view autosize="left right top bottom " background-color="white" background-color-draw-style="filled and stroked" class="CViewContainer" mouse-enabled="true" origin="10, 10" size="220, 140" sub-controller="GraphicsViewController" transparent="false">
+			<view autosize="left right top bottom " bitmap="FrameBackground" class="CView" custom-view-name="GraphicsView" mouse-enabled="true" origin="10, 10" size="200, 100" transparent="false"/>
+			<view autosize="left bottom " back-color="~ TransparentCColor" background-offset="0, 0" class="COptionMenu" control-tag="GraphicsPath1" default-value="0" font="~ NormalFont" font-antialias="true" font-color="black" frame-color="black" max-value="2" menu-check-style="false" menu-popup-style="false" min-value="0" mouse-enabled="true" origin="20, 110" round-rect-radius="6" shadow-color="~ RedCColor" size="90, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" transparent="false" value-precision="2" wheel-inc-value="0.1"/>
+			<view autosize="right bottom " back-color="~ TransparentCColor" background-offset="0, 0" class="COptionMenu" control-tag="GraphicsPath2" default-value="0" font="~ NormalFont" font-antialias="true" font-color="black" frame-color="black" max-value="2" menu-check-style="false" menu-popup-style="false" min-value="0" mouse-enabled="true" origin="110, 110" round-rect-radius="6" shadow-color="~ RedCColor" size="90, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" transparent="false" value-precision="2" wheel-inc-value="0.1"/>
+			<view background-color="black" background-color-draw-style="filled and stroked" bitmap="0" class="CShadowViewContainer" mouse-enabled="true" origin="70, 30" shadow-blur-size="4" shadow-intensity="0.3" shadow-offset="-5, -5" size="140, 100" transparent="false">
+				<view autosize="right top " background-color="groupframe" background-color-draw-style="filled and stroked" class="CViewContainer" custom-view-name="FadeViewContainer" mouse-enabled="true" origin="10, 10" size="120, 80" transparent="false">
+					<view autosize="right top " autosize-to-fit="false" background-offset="0, 0" boxfill-color="white" boxframe-color="black" checkmark-color="#ff0000ff" class="CCheckBox" control-tag="StrokePath" default-value="0.5" draw-crossbox="false" font="~ SystemFont" font-color="black" max-value="1" min-value="0" mouse-enabled="true" origin="10, 50" size="100, 20" title="Stroke Path" transparent="true" wheel-inc-value="0.1"/>
+					<view autosize="right top " autosize-to-fit="false" background-offset="0, 0" boxfill-color="white" boxframe-color="black" checkmark-color="#ff0000ff" class="CCheckBox" control-tag="FillGradient" default-value="0.5" draw-crossbox="false" font="~ SystemFont" font-color="black" max-value="1" min-value="0" mouse-enabled="true" origin="10, 30" size="100, 20" title="Fill Gradient" transparent="true" wheel-inc-value="0.1"/>
+					<view autosize="right top " autosize-to-fit="false" background-offset="0, 0" boxfill-color="white" boxframe-color="black" checkmark-color="#ff0000ff" class="CCheckBox" control-tag="Rotate" default-value="0.5" draw-crossbox="false" font="~ SystemFont" font-color="black" max-value="1" min-value="0" mouse-enabled="true" origin="10, 10" size="100, 20" title="Rotate" transparent="true" wheel-inc-value="0.1"/>
+				</view>
+			</view>
+		</view>
+	</template>
+	<colors>
+		<color name="black" rgba="#000000ff"/>
+		<color name="white" rgba="#ffffffff"/>
+		<color name="groupframe" rgba="#ffffff76"/>
+	</colors>
+	<custom>
+		<attributes name="UIViewInspector" windowSize="48, 240, 448, 703"/>
+		<attributes gridsize="10" name="UIEditFrame" uidescPath="/Volumes/DATA/subversion/trunk/vstgui_head/vstgui/tests/uidescription vst3/resource/GraphicsTest.uidesc"/>
+		<attributes Path="/Volumes/DATA/subversion/trunk/vstgui_head/vstgui/tests/uidescription vst3/resource/GraphicsTest.uidesc" name="VST3Editor"/>
+		<attributes name="FocusDrawing"/>
+		<attributes name="UIGridController"/>
+		<attributes SelectedTemplate="view" name="UITemplateController"/>
+		<attributes name="UIAttributesController"/>
+		<attributes EditorSize="0, 0, 500, 500" SplitViewSize_0_0="0.7263157894736842479233018821105360984802" SplitViewSize_0_1="0.2526315789473684292332222867116797715425" SplitViewSize_1_0="0.4673684210526315996325763535423902794719" SplitViewSize_1_1="0.5115789473684210220127965840219985693693" SplitViewSize_2_0="0.6400000000000000133226762955018784850836" SplitViewSize_2_1="0.3400000000000000244249065417534438893199" name="UIEditController"/>
+		<attributes SelectedRow="-1" name="UIViewCreatorDataSource"/>
+	</custom>
+	<bitmaps>
+		<bitmap name="animation_knob" path="animation_knob.png"/>
+		<bitmap name="FrameBackground" nineparttiled-offsets="10, 20, 10, 10" path="FrameBackground.png"/>
+		<bitmap name="TabController" path="TabController.png"/>
+		<bitmap name="horizontal_slider_back" path="horizontal_slider_back.bmp"/>
+		<bitmap name="onoff_button" path="onoff_button.bmp"/>
+		<bitmap name="rocker_switch" path="rocker_switch.bmp"/>
+		<bitmap name="slider_handle" path="slider_handle.bmp"/>
+		<bitmap name="switch_horizontal" path="switch_horizontal.bmp"/>
+		<bitmap name="switch_vertical" path="switch_vertical.bmp"/>
+		<bitmap name="vertical_slider_back" path="vertical_slider_back.bmp"/>
+		<bitmap name="vumeter_back" path="vumeter_back.bmp"/>
+		<bitmap name="vumeter_front" path="vumeter_front.bmp"/>
+	</bitmaps>
+	<fonts>
+	</fonts>
+	<control-tags>
+		<control-tag name="Rotate" tag="0"/>
+		<control-tag name="FillGradient" tag="1"/>
+		<control-tag name="StrokePath" tag="2"/>
+		<control-tag name="GraphicsPath1" tag="20000"/>
+		<control-tag name="GraphicsPath2" tag="20001"/>
+	</control-tags>
+</vstgui-ui-description>

@@ -1,0 +1,615 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		F40E268A1813FEC4001CAC0D /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F40E26891813FEC4001CAC0D /* QuartzCore.framework */; };
+		F41CA1C8112E99F000D425D7 /* animationtest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F41CA1C7112E99F000D425D7 /* animationtest.cpp */; };
+		F41CA21F112E9E6B00D425D7 /* AnimationTest.uidesc in Resources */ = {isa = PBXBuildFile; fileRef = F41CA21E112E9E6B00D425D7 /* AnimationTest.uidesc */; };
+		F420E6DB1906D45300AFD962 /* libvstgui c++11.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F481925C165D3C050035058F /* libvstgui c++11.a */; };
+		F420F3B51BD8DAB500F4CBAF /* edituidescriptioneditor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F420F3B31BD8DAB500F4CBAF /* edituidescriptioneditor.cpp */; };
+		F42731DE1125507F00BE2194 /* factory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F42731DD1125507F00BE2194 /* factory.cpp */; };
+		F42731E51125516A00BE2194 /* subcontrollertest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F42731E41125516A00BE2194 /* subcontrollertest.cpp */; };
+		F427326A1125623200BE2194 /* SubControllerTest.uidesc in Resources */ = {isa = PBXBuildFile; fileRef = F42732691125623200BE2194 /* SubControllerTest.uidesc */; };
+		F4273C10112C0C2400BE2194 /* animation_knob.png in Resources */ = {isa = PBXBuildFile; fileRef = F4273C06112C0C2400BE2194 /* animation_knob.png */; };
+		F4273C11112C0C2400BE2194 /* horizontal_slider_back.bmp in Resources */ = {isa = PBXBuildFile; fileRef = F4273C07112C0C2400BE2194 /* horizontal_slider_back.bmp */; };
+		F4273C12112C0C2400BE2194 /* onoff_button.bmp in Resources */ = {isa = PBXBuildFile; fileRef = F4273C08112C0C2400BE2194 /* onoff_button.bmp */; };
+		F4273C13112C0C2400BE2194 /* rocker_switch.bmp in Resources */ = {isa = PBXBuildFile; fileRef = F4273C09112C0C2400BE2194 /* rocker_switch.bmp */; };
+		F4273C14112C0C2400BE2194 /* slider_handle.bmp in Resources */ = {isa = PBXBuildFile; fileRef = F4273C0A112C0C2400BE2194 /* slider_handle.bmp */; };
+		F4273C15112C0C2400BE2194 /* switch_horizontal.bmp in Resources */ = {isa = PBXBuildFile; fileRef = F4273C0B112C0C2400BE2194 /* switch_horizontal.bmp */; };
+		F4273C16112C0C2400BE2194 /* switch_vertical.bmp in Resources */ = {isa = PBXBuildFile; fileRef = F4273C0C112C0C2400BE2194 /* switch_vertical.bmp */; };
+		F4273C17112C0C2400BE2194 /* vertical_slider_back.bmp in Resources */ = {isa = PBXBuildFile; fileRef = F4273C0D112C0C2400BE2194 /* vertical_slider_back.bmp */; };
+		F4273C18112C0C2400BE2194 /* vumeter_back.bmp in Resources */ = {isa = PBXBuildFile; fileRef = F4273C0E112C0C2400BE2194 /* vumeter_back.bmp */; };
+		F4273C19112C0C2400BE2194 /* vumeter_front.bmp in Resources */ = {isa = PBXBuildFile; fileRef = F4273C0F112C0C2400BE2194 /* vumeter_front.bmp */; };
+		F440754A10BE6D00003C59F6 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F440754910BE6D00003C59F6 /* Carbon.framework */; };
+		F440754C10BE6D00003C59F6 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F440754B10BE6D00003C59F6 /* Cocoa.framework */; };
+		F440755610BE6D26003C59F6 /* uidescription test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F440755510BE6D26003C59F6 /* uidescription test.cpp */; };
+		F440758810BF043D003C59F6 /* vst3editor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F440758610BF043D003C59F6 /* vst3editor.cpp */; };
+		F44075AD10BF053A003C59F6 /* myEditor.uidesc in Resources */ = {isa = PBXBuildFile; fileRef = F44075AC10BF053A003C59F6 /* myEditor.uidesc */; };
+		F4457815110A06590022C0E5 /* FrameBackground.png in Resources */ = {isa = PBXBuildFile; fileRef = F4457814110A06590022C0E5 /* FrameBackground.png */; };
+		F455A17013D1BBB800C2C7C5 /* openglviewtest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F455A16F13D1BBB800C2C7C5 /* openglviewtest.cpp */; };
+		F455A17713D1C60800C2C7C5 /* OpenGLViewTest.uidesc in Resources */ = {isa = PBXBuildFile; fileRef = F455A17613D1C60800C2C7C5 /* OpenGLViewTest.uidesc */; };
+		F4657609114F83D100846DAE /* graphicstest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4657608114F83D100846DAE /* graphicstest.cpp */; };
+		F465763D114F8EA200846DAE /* GraphicsTest.uidesc in Resources */ = {isa = PBXBuildFile; fileRef = F465763C114F8EA200846DAE /* GraphicsTest.uidesc */; };
+		F496F16C119715B500DD3F7A /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F496F16B119715B500DD3F7A /* Accelerate.framework */; };
+		F49A665D195C2FCD00CF5163 /* zoomtest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F49A665B195C2FCD00CF5163 /* zoomtest.cpp */; };
+		F49A666A195C30D700CF5163 /* Background.png in Resources */ = {isa = PBXBuildFile; fileRef = F49A6661195C30D700CF5163 /* Background.png */; };
+		F49A666B195C30D700CF5163 /* Background#0.5x.png in Resources */ = {isa = PBXBuildFile; fileRef = F49A6662195C30D700CF5163 /* Background#0.5x.png */; };
+		F49A666C195C30D700CF5163 /* Background#2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F49A6663195C30D700CF5163 /* Background#2x.png */; };
+		F49A666D195C30D700CF5163 /* VUMeterBack.png in Resources */ = {isa = PBXBuildFile; fileRef = F49A6664195C30D700CF5163 /* VUMeterBack.png */; };
+		F49A666E195C30D700CF5163 /* VUMeterBack#0.5x.png in Resources */ = {isa = PBXBuildFile; fileRef = F49A6665195C30D700CF5163 /* VUMeterBack#0.5x.png */; };
+		F49A666F195C30D700CF5163 /* VUMeterBack#2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F49A6666195C30D700CF5163 /* VUMeterBack#2x.png */; };
+		F49A6670195C30D700CF5163 /* VUMeterFront.png in Resources */ = {isa = PBXBuildFile; fileRef = F49A6667195C30D700CF5163 /* VUMeterFront.png */; };
+		F49A6671195C30D700CF5163 /* VUMeterFront#0.5x.png in Resources */ = {isa = PBXBuildFile; fileRef = F49A6668195C30D700CF5163 /* VUMeterFront#0.5x.png */; };
+		F49A6672195C30D700CF5163 /* VUMeterFront#2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F49A6669195C30D700CF5163 /* VUMeterFront#2x.png */; };
+		F49A6675195C316B00CF5163 /* zoomtest.uidesc in Resources */ = {isa = PBXBuildFile; fileRef = F49A6674195C316B00CF5163 /* zoomtest.uidesc */; };
+		F49A667E195C417600CF5163 /* Foreground.png in Resources */ = {isa = PBXBuildFile; fileRef = F49A667B195C417600CF5163 /* Foreground.png */; };
+		F49A667F195C417600CF5163 /* Foreground#0.5x.png in Resources */ = {isa = PBXBuildFile; fileRef = F49A667C195C417600CF5163 /* Foreground#0.5x.png */; };
+		F49A6680195C417600CF5163 /* Foreground#2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F49A667D195C417600CF5163 /* Foreground#2x.png */; };
+		F49A6683195C43AA00CF5163 /* vst3groupcontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F49A6681195C43AA00CF5163 /* vst3groupcontroller.cpp */; };
+		F4C04ECE123B8E450082BA28 /* vst3sdksources.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4C04ECD123B8E450082BA28 /* vst3sdksources.cpp */; };
+		F4CF0E1B13B5E17A0027351A /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F4CF0E1A13B5E17A0027351A /* OpenGL.framework */; };
+		F4F5DA8A10BFD28900DB6C33 /* TabController.png in Resources */ = {isa = PBXBuildFile; fileRef = F4F5DA8910BFD28900DB6C33 /* TabController.png */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		F40DCF9D13119C240084A8AE /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F40DCF9913119C240084A8AE /* vstgui.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = F497F0AD1308094300F0A613;
+			remoteInfo = vstgui;
+		};
+		F40E268E1813FEC4001CAC0D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F40DCF9913119C240084A8AE /* vstgui.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = F4CC1E811709F2EC008F07FD;
+			remoteInfo = unittests;
+		};
+		F40E26901813FEC4001CAC0D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F40DCF9913119C240084A8AE /* vstgui.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = F4E9C69317A8266200F42EF8;
+			remoteInfo = "vstgui-ios";
+		};
+		F420E6D91906D45000AFD962 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F40DCF9913119C240084A8AE /* vstgui.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = F4F953F516510E61006EE1D1;
+			remoteInfo = "vstgui c++11";
+		};
+		F481925B165D3C050035058F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F40DCF9913119C240084A8AE /* vstgui.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = F4F953F616510E61006EE1D1;
+			remoteInfo = "vstgui c++11";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		508817D409F0C9AD0071BF1A /* uidescription test.vst3 */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "uidescription test.vst3"; sourceTree = BUILT_PRODUCTS_DIR; };
+		508817D609F0C9AD0071BF1A /* uidescription test-Info.plist */ = {isa = PBXFileReference; explicitFileType = text.plist.xml; path = "uidescription test-Info.plist"; sourceTree = "<group>"; };
+		F40DCF9913119C240084A8AE /* vstgui.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = vstgui.xcodeproj; path = ../../../ide/xcode4/vstgui.xcodeproj; sourceTree = "<group>"; };
+		F40E26891813FEC4001CAC0D /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		F41CA1C6112E99F000D425D7 /* animationtest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = animationtest.h; path = ../source/animationtest.h; sourceTree = SOURCE_ROOT; };
+		F41CA1C7112E99F000D425D7 /* animationtest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = animationtest.cpp; path = ../source/animationtest.cpp; sourceTree = SOURCE_ROOT; };
+		F41CA21E112E9E6B00D425D7 /* AnimationTest.uidesc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = AnimationTest.uidesc; path = ../resource/AnimationTest.uidesc; sourceTree = SOURCE_ROOT; };
+		F420F3B31BD8DAB500F4CBAF /* edituidescriptioneditor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = edituidescriptioneditor.cpp; path = ../source/edituidescriptioneditor.cpp; sourceTree = "<group>"; };
+		F420F3B41BD8DAB500F4CBAF /* edituidescriptioneditor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = edituidescriptioneditor.h; path = ../source/edituidescriptioneditor.h; sourceTree = "<group>"; };
+		F42731C011254BEC00BE2194 /* uidescription test.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "uidescription test.h"; path = "../source/uidescription test.h"; sourceTree = SOURCE_ROOT; };
+		F42731DD1125507F00BE2194 /* factory.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = factory.cpp; path = ../source/factory.cpp; sourceTree = SOURCE_ROOT; };
+		F42731E31125516A00BE2194 /* subcontrollertest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = subcontrollertest.h; path = ../source/subcontrollertest.h; sourceTree = SOURCE_ROOT; };
+		F42731E41125516A00BE2194 /* subcontrollertest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = subcontrollertest.cpp; path = ../source/subcontrollertest.cpp; sourceTree = SOURCE_ROOT; };
+		F42732691125623200BE2194 /* SubControllerTest.uidesc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = SubControllerTest.uidesc; path = ../resource/SubControllerTest.uidesc; sourceTree = SOURCE_ROOT; };
+		F4273C06112C0C2400BE2194 /* animation_knob.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = animation_knob.png; path = ../resource/animation_knob.png; sourceTree = SOURCE_ROOT; };
+		F4273C07112C0C2400BE2194 /* horizontal_slider_back.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = horizontal_slider_back.bmp; path = ../resource/horizontal_slider_back.bmp; sourceTree = SOURCE_ROOT; };
+		F4273C08112C0C2400BE2194 /* onoff_button.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = onoff_button.bmp; path = ../resource/onoff_button.bmp; sourceTree = SOURCE_ROOT; };
+		F4273C09112C0C2400BE2194 /* rocker_switch.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = rocker_switch.bmp; path = ../resource/rocker_switch.bmp; sourceTree = SOURCE_ROOT; };
+		F4273C0A112C0C2400BE2194 /* slider_handle.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = slider_handle.bmp; path = ../resource/slider_handle.bmp; sourceTree = SOURCE_ROOT; };
+		F4273C0B112C0C2400BE2194 /* switch_horizontal.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = switch_horizontal.bmp; path = ../resource/switch_horizontal.bmp; sourceTree = SOURCE_ROOT; };
+		F4273C0C112C0C2400BE2194 /* switch_vertical.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = switch_vertical.bmp; path = ../resource/switch_vertical.bmp; sourceTree = SOURCE_ROOT; };
+		F4273C0D112C0C2400BE2194 /* vertical_slider_back.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = vertical_slider_back.bmp; path = ../resource/vertical_slider_back.bmp; sourceTree = SOURCE_ROOT; };
+		F4273C0E112C0C2400BE2194 /* vumeter_back.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = vumeter_back.bmp; path = ../resource/vumeter_back.bmp; sourceTree = SOURCE_ROOT; };
+		F4273C0F112C0C2400BE2194 /* vumeter_front.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = vumeter_front.bmp; path = ../resource/vumeter_front.bmp; sourceTree = SOURCE_ROOT; };
+		F440753410BE6C0A003C59F6 /* prefix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = prefix.h; path = ../source/prefix.h; sourceTree = SOURCE_ROOT; };
+		F440754910BE6D00003C59F6 /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = System/Library/Frameworks/Carbon.framework; sourceTree = SDKROOT; };
+		F440754B10BE6D00003C59F6 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
+		F440755510BE6D26003C59F6 /* uidescription test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 0; name = "uidescription test.cpp"; path = "../source/uidescription test.cpp"; sourceTree = SOURCE_ROOT; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
+		F440758610BF043D003C59F6 /* vst3editor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 0; name = vst3editor.cpp; path = "../../../plugin-bindings/vst3editor.cpp"; sourceTree = SOURCE_ROOT; };
+		F440758710BF043D003C59F6 /* vst3editor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = vst3editor.h; path = "../../../plugin-bindings/vst3editor.h"; sourceTree = SOURCE_ROOT; };
+		F44075AC10BF053A003C59F6 /* myEditor.uidesc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = myEditor.uidesc; path = ../resource/myEditor.uidesc; sourceTree = SOURCE_ROOT; };
+		F4457814110A06590022C0E5 /* FrameBackground.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = FrameBackground.png; path = ../resource/FrameBackground.png; sourceTree = SOURCE_ROOT; };
+		F455A16F13D1BBB800C2C7C5 /* openglviewtest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = openglviewtest.cpp; path = ../source/openglviewtest.cpp; sourceTree = "<group>"; };
+		F455A17113D1BBCD00C2C7C5 /* openglviewtest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = openglviewtest.h; path = ../source/openglviewtest.h; sourceTree = "<group>"; };
+		F455A17613D1C60800C2C7C5 /* OpenGLViewTest.uidesc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = OpenGLViewTest.uidesc; path = ../resource/OpenGLViewTest.uidesc; sourceTree = "<group>"; };
+		F4657607114F83D100846DAE /* graphicstest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = graphicstest.h; path = ../source/graphicstest.h; sourceTree = SOURCE_ROOT; };
+		F4657608114F83D100846DAE /* graphicstest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = graphicstest.cpp; path = ../source/graphicstest.cpp; sourceTree = SOURCE_ROOT; };
+		F465763C114F8EA200846DAE /* GraphicsTest.uidesc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = GraphicsTest.uidesc; path = ../resource/GraphicsTest.uidesc; sourceTree = SOURCE_ROOT; };
+		F496F16B119715B500DD3F7A /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
+		F49A665B195C2FCD00CF5163 /* zoomtest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = zoomtest.cpp; path = ../source/zoomtest.cpp; sourceTree = "<group>"; };
+		F49A665C195C2FCD00CF5163 /* zoomtest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = zoomtest.h; path = ../source/zoomtest.h; sourceTree = "<group>"; };
+		F49A6661195C30D700CF5163 /* Background.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = Background.png; path = ../resource/ZoomExample/Background.png; sourceTree = "<group>"; };
+		F49A6662195C30D700CF5163 /* Background#0.5x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "Background#0.5x.png"; path = "../resource/ZoomExample/Background#0.5x.png"; sourceTree = "<group>"; };
+		F49A6663195C30D700CF5163 /* Background#2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "Background#2x.png"; path = "../resource/ZoomExample/Background#2x.png"; sourceTree = "<group>"; };
+		F49A6664195C30D700CF5163 /* VUMeterBack.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = VUMeterBack.png; path = ../resource/ZoomExample/VUMeterBack.png; sourceTree = "<group>"; };
+		F49A6665195C30D700CF5163 /* VUMeterBack#0.5x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "VUMeterBack#0.5x.png"; path = "../resource/ZoomExample/VUMeterBack#0.5x.png"; sourceTree = "<group>"; };
+		F49A6666195C30D700CF5163 /* VUMeterBack#2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "VUMeterBack#2x.png"; path = "../resource/ZoomExample/VUMeterBack#2x.png"; sourceTree = "<group>"; };
+		F49A6667195C30D700CF5163 /* VUMeterFront.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = VUMeterFront.png; path = ../resource/ZoomExample/VUMeterFront.png; sourceTree = "<group>"; };
+		F49A6668195C30D700CF5163 /* VUMeterFront#0.5x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "VUMeterFront#0.5x.png"; path = "../resource/ZoomExample/VUMeterFront#0.5x.png"; sourceTree = "<group>"; };
+		F49A6669195C30D700CF5163 /* VUMeterFront#2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "VUMeterFront#2x.png"; path = "../resource/ZoomExample/VUMeterFront#2x.png"; sourceTree = "<group>"; };
+		F49A6674195C316B00CF5163 /* zoomtest.uidesc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = zoomtest.uidesc; path = ../resource/ZoomExample/zoomtest.uidesc; sourceTree = "<group>"; };
+		F49A667B195C417600CF5163 /* Foreground.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = Foreground.png; path = ../resource/ZoomExample/Foreground.png; sourceTree = "<group>"; };
+		F49A667C195C417600CF5163 /* Foreground#0.5x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "Foreground#0.5x.png"; path = "../resource/ZoomExample/Foreground#0.5x.png"; sourceTree = "<group>"; };
+		F49A667D195C417600CF5163 /* Foreground#2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "Foreground#2x.png"; path = "../resource/ZoomExample/Foreground#2x.png"; sourceTree = "<group>"; };
+		F49A6681195C43AA00CF5163 /* vst3groupcontroller.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 0; name = vst3groupcontroller.cpp; path = "../../../plugin-bindings/vst3groupcontroller.cpp"; sourceTree = "<group>"; };
+		F49A6682195C43AA00CF5163 /* vst3groupcontroller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = vst3groupcontroller.h; path = "../../../plugin-bindings/vst3groupcontroller.h"; sourceTree = "<group>"; };
+		F4C04ECD123B8E450082BA28 /* vst3sdksources.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = vst3sdksources.cpp; path = ../source/vst3sdksources.cpp; sourceTree = SOURCE_ROOT; };
+		F4C04F00123B90940082BA28 /* README.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = README.txt; path = ../README.txt; sourceTree = SOURCE_ROOT; };
+		F4CF0E1A13B5E17A0027351A /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
+		F4D787491380432A00B06ADC /* libvstgui.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; name = libvstgui.a; path = ../../../ide/xcode4/build/Debug/libvstgui.a; sourceTree = SOURCE_ROOT; };
+		F4F5DA8910BFD28900DB6C33 /* TabController.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = TabController.png; path = ../resource/TabController.png; sourceTree = SOURCE_ROOT; };
+		F4FFBE471169E8CA00A9BD34 /* bitmapsaturator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = bitmapsaturator.h; path = ../source/bitmapsaturator.h; sourceTree = SOURCE_ROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		508817D209F0C9AD0071BF1A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F420E6DB1906D45300AFD962 /* libvstgui c++11.a in Frameworks */,
+				F40E268A1813FEC4001CAC0D /* QuartzCore.framework in Frameworks */,
+				F4CF0E1B13B5E17A0027351A /* OpenGL.framework in Frameworks */,
+				F440754A10BE6D00003C59F6 /* Carbon.framework in Frameworks */,
+				F440754C10BE6D00003C59F6 /* Cocoa.framework in Frameworks */,
+				F496F16C119715B500DD3F7A /* Accelerate.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		508817C209F0C9740071BF1A = {
+			isa = PBXGroup;
+			children = (
+				F40DCF9913119C240084A8AE /* vstgui.xcodeproj */,
+				F4C04F00123B90940082BA28 /* README.txt */,
+				508817F509F0CAB50071BF1A /* Sources */,
+				F44075AA10BF0525003C59F6 /* Resources */,
+				5088180609F0CDD00071BF1A /* External Frameworks and Libraries */,
+				508817D509F0C9AD0071BF1A /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		508817D509F0C9AD0071BF1A /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				508817D409F0C9AD0071BF1A /* uidescription test.vst3 */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		508817F509F0CAB50071BF1A /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				F440752910BE6BBD003C59F6 /* vstgui */,
+				F44074C710BE6BB6003C59F6 /* VST3SDK */,
+				F440753410BE6C0A003C59F6 /* prefix.h */,
+				F440755510BE6D26003C59F6 /* uidescription test.cpp */,
+				F42731C011254BEC00BE2194 /* uidescription test.h */,
+				F420F3B31BD8DAB500F4CBAF /* edituidescriptioneditor.cpp */,
+				F420F3B41BD8DAB500F4CBAF /* edituidescriptioneditor.h */,
+				F455A16F13D1BBB800C2C7C5 /* openglviewtest.cpp */,
+				F455A17113D1BBCD00C2C7C5 /* openglviewtest.h */,
+				F42731DD1125507F00BE2194 /* factory.cpp */,
+				F42731E31125516A00BE2194 /* subcontrollertest.h */,
+				F42731E41125516A00BE2194 /* subcontrollertest.cpp */,
+				F41CA1C6112E99F000D425D7 /* animationtest.h */,
+				F41CA1C7112E99F000D425D7 /* animationtest.cpp */,
+				F4657607114F83D100846DAE /* graphicstest.h */,
+				F4657608114F83D100846DAE /* graphicstest.cpp */,
+				F4FFBE471169E8CA00A9BD34 /* bitmapsaturator.h */,
+				F49A665B195C2FCD00CF5163 /* zoomtest.cpp */,
+				F49A665C195C2FCD00CF5163 /* zoomtest.h */,
+			);
+			name = Sources;
+			sourceTree = "<group>";
+		};
+		5088180609F0CDD00071BF1A /* External Frameworks and Libraries */ = {
+			isa = PBXGroup;
+			children = (
+				F40E26891813FEC4001CAC0D /* QuartzCore.framework */,
+				F4D787491380432A00B06ADC /* libvstgui.a */,
+				F4CF0E1A13B5E17A0027351A /* OpenGL.framework */,
+				F440754910BE6D00003C59F6 /* Carbon.framework */,
+				F440754B10BE6D00003C59F6 /* Cocoa.framework */,
+				F496F16B119715B500DD3F7A /* Accelerate.framework */,
+			);
+			name = "External Frameworks and Libraries";
+			sourceTree = "<group>";
+		};
+		F40DCF9A13119C240084A8AE /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				F40DCF9E13119C240084A8AE /* libvstgui.a */,
+				F481925C165D3C050035058F /* libvstgui c++11.a */,
+				F40E26911813FEC4001CAC0D /* libvstgui-ios.a */,
+				F40E268F1813FEC4001CAC0D /* unittests */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		F44074C710BE6BB6003C59F6 /* VST3SDK */ = {
+			isa = PBXGroup;
+			children = (
+				F4C04ECD123B8E450082BA28 /* vst3sdksources.cpp */,
+			);
+			name = VST3SDK;
+			sourceTree = "<group>";
+		};
+		F440752910BE6BBD003C59F6 /* vstgui */ = {
+			isa = PBXGroup;
+			children = (
+				F49A6681195C43AA00CF5163 /* vst3groupcontroller.cpp */,
+				F49A6682195C43AA00CF5163 /* vst3groupcontroller.h */,
+				F440758610BF043D003C59F6 /* vst3editor.cpp */,
+				F440758710BF043D003C59F6 /* vst3editor.h */,
+			);
+			name = vstgui;
+			sourceTree = "<group>";
+		};
+		F44075AA10BF0525003C59F6 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				F49A6673195C30DD00CF5163 /* ZoomTest */,
+				508817D609F0C9AD0071BF1A /* uidescription test-Info.plist */,
+				F4273C07112C0C2400BE2194 /* horizontal_slider_back.bmp */,
+				F4273C08112C0C2400BE2194 /* onoff_button.bmp */,
+				F4273C09112C0C2400BE2194 /* rocker_switch.bmp */,
+				F4273C0A112C0C2400BE2194 /* slider_handle.bmp */,
+				F4273C0B112C0C2400BE2194 /* switch_horizontal.bmp */,
+				F4273C0C112C0C2400BE2194 /* switch_vertical.bmp */,
+				F4273C0D112C0C2400BE2194 /* vertical_slider_back.bmp */,
+				F4273C0E112C0C2400BE2194 /* vumeter_back.bmp */,
+				F4273C0F112C0C2400BE2194 /* vumeter_front.bmp */,
+				F4273C06112C0C2400BE2194 /* animation_knob.png */,
+				F4457814110A06590022C0E5 /* FrameBackground.png */,
+				F4F5DA8910BFD28900DB6C33 /* TabController.png */,
+				F41CA21E112E9E6B00D425D7 /* AnimationTest.uidesc */,
+				F465763C114F8EA200846DAE /* GraphicsTest.uidesc */,
+				F44075AC10BF053A003C59F6 /* myEditor.uidesc */,
+				F42732691125623200BE2194 /* SubControllerTest.uidesc */,
+				F455A17613D1C60800C2C7C5 /* OpenGLViewTest.uidesc */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+		};
+		F49A6673195C30DD00CF5163 /* ZoomTest */ = {
+			isa = PBXGroup;
+			children = (
+				F49A6661195C30D700CF5163 /* Background.png */,
+				F49A6662195C30D700CF5163 /* Background#0.5x.png */,
+				F49A6663195C30D700CF5163 /* Background#2x.png */,
+				F49A667B195C417600CF5163 /* Foreground.png */,
+				F49A667C195C417600CF5163 /* Foreground#0.5x.png */,
+				F49A667D195C417600CF5163 /* Foreground#2x.png */,
+				F49A6664195C30D700CF5163 /* VUMeterBack.png */,
+				F49A6665195C30D700CF5163 /* VUMeterBack#0.5x.png */,
+				F49A6666195C30D700CF5163 /* VUMeterBack#2x.png */,
+				F49A6667195C30D700CF5163 /* VUMeterFront.png */,
+				F49A6668195C30D700CF5163 /* VUMeterFront#0.5x.png */,
+				F49A6669195C30D700CF5163 /* VUMeterFront#2x.png */,
+				F49A6674195C316B00CF5163 /* zoomtest.uidesc */,
+			);
+			name = ZoomTest;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		508817D309F0C9AD0071BF1A /* uidescription test */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 508817D709F0C9AE0071BF1A /* Build configuration list for PBXNativeTarget "uidescription test" */;
+			buildPhases = (
+				508817D009F0C9AD0071BF1A /* Resources */,
+				508817D109F0C9AD0071BF1A /* Sources */,
+				508817D209F0C9AD0071BF1A /* Frameworks */,
+				F440758C10BF0479003C59F6 /* ShellScript */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				F420E6DA1906D45000AFD962 /* PBXTargetDependency */,
+			);
+			name = "uidescription test";
+			productName = "uidescription test";
+			productReference = 508817D409F0C9AD0071BF1A /* uidescription test.vst3 */;
+			productType = "com.apple.product-type.bundle";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		508817C409F0C9740071BF1A /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0510;
+			};
+			buildConfigurationList = 508817C509F0C9740071BF1A /* Build configuration list for PBXProject "uidescription test" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 508817C209F0C9740071BF1A;
+			productRefGroup = 508817D509F0C9AD0071BF1A /* Products */;
+			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = F40DCF9A13119C240084A8AE /* Products */;
+					ProjectRef = F40DCF9913119C240084A8AE /* vstgui.xcodeproj */;
+				},
+			);
+			projectRoot = "";
+			targets = (
+				508817D309F0C9AD0071BF1A /* uidescription test */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		F40DCF9E13119C240084A8AE /* libvstgui.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libvstgui.a;
+			remoteRef = F40DCF9D13119C240084A8AE /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		F40E268F1813FEC4001CAC0D /* unittests */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.executable";
+			path = unittests;
+			remoteRef = F40E268E1813FEC4001CAC0D /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		F40E26911813FEC4001CAC0D /* libvstgui-ios.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = "libvstgui-ios.a";
+			remoteRef = F40E26901813FEC4001CAC0D /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		F481925C165D3C050035058F /* libvstgui c++11.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = "libvstgui c++11.a";
+			remoteRef = F481925B165D3C050035058F /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
+
+/* Begin PBXResourcesBuildPhase section */
+		508817D009F0C9AD0071BF1A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F49A666F195C30D700CF5163 /* VUMeterBack#2x.png in Resources */,
+				F44075AD10BF053A003C59F6 /* myEditor.uidesc in Resources */,
+				F4F5DA8A10BFD28900DB6C33 /* TabController.png in Resources */,
+				F4457815110A06590022C0E5 /* FrameBackground.png in Resources */,
+				F427326A1125623200BE2194 /* SubControllerTest.uidesc in Resources */,
+				F4273C10112C0C2400BE2194 /* animation_knob.png in Resources */,
+				F4273C11112C0C2400BE2194 /* horizontal_slider_back.bmp in Resources */,
+				F4273C12112C0C2400BE2194 /* onoff_button.bmp in Resources */,
+				F49A667E195C417600CF5163 /* Foreground.png in Resources */,
+				F4273C13112C0C2400BE2194 /* rocker_switch.bmp in Resources */,
+				F4273C14112C0C2400BE2194 /* slider_handle.bmp in Resources */,
+				F4273C15112C0C2400BE2194 /* switch_horizontal.bmp in Resources */,
+				F4273C16112C0C2400BE2194 /* switch_vertical.bmp in Resources */,
+				F4273C17112C0C2400BE2194 /* vertical_slider_back.bmp in Resources */,
+				F4273C18112C0C2400BE2194 /* vumeter_back.bmp in Resources */,
+				F4273C19112C0C2400BE2194 /* vumeter_front.bmp in Resources */,
+				F49A666E195C30D700CF5163 /* VUMeterBack#0.5x.png in Resources */,
+				F41CA21F112E9E6B00D425D7 /* AnimationTest.uidesc in Resources */,
+				F49A666B195C30D700CF5163 /* Background#0.5x.png in Resources */,
+				F49A6680195C417600CF5163 /* Foreground#2x.png in Resources */,
+				F49A666D195C30D700CF5163 /* VUMeterBack.png in Resources */,
+				F49A6672195C30D700CF5163 /* VUMeterFront#2x.png in Resources */,
+				F49A6675195C316B00CF5163 /* zoomtest.uidesc in Resources */,
+				F49A666A195C30D700CF5163 /* Background.png in Resources */,
+				F49A6670195C30D700CF5163 /* VUMeterFront.png in Resources */,
+				F465763D114F8EA200846DAE /* GraphicsTest.uidesc in Resources */,
+				F49A666C195C30D700CF5163 /* Background#2x.png in Resources */,
+				F455A17713D1C60800C2C7C5 /* OpenGLViewTest.uidesc in Resources */,
+				F49A6671195C30D700CF5163 /* VUMeterFront#0.5x.png in Resources */,
+				F49A667F195C417600CF5163 /* Foreground#0.5x.png in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		F440758C10BF0479003C59F6 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if [[ \"$CONFIGURATION\" == \"Debug\" ]]\nthen\n\tmkdir -p ~/Library/Audio/Plug-Ins/VST3/\n\tcd ~/Library/Audio/Plug-Ins/VST3/\n\tln -f -s \"$BUILT_PRODUCTS_DIR/$WRAPPER_NAME\" .\nfi\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		508817D109F0C9AD0071BF1A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F4C04ECE123B8E450082BA28 /* vst3sdksources.cpp in Sources */,
+				F440755610BE6D26003C59F6 /* uidescription test.cpp in Sources */,
+				F440758810BF043D003C59F6 /* vst3editor.cpp in Sources */,
+				F49A665D195C2FCD00CF5163 /* zoomtest.cpp in Sources */,
+				F42731DE1125507F00BE2194 /* factory.cpp in Sources */,
+				F420F3B51BD8DAB500F4CBAF /* edituidescriptioneditor.cpp in Sources */,
+				F42731E51125516A00BE2194 /* subcontrollertest.cpp in Sources */,
+				F41CA1C8112E99F000D425D7 /* animationtest.cpp in Sources */,
+				F4657609114F83D100846DAE /* graphicstest.cpp in Sources */,
+				F455A17013D1BBB800C2C7C5 /* openglviewtest.cpp in Sources */,
+				F49A6683195C43AA00CF5163 /* vst3groupcontroller.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		F420E6DA1906D45000AFD962 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = "vstgui c++11";
+			targetProxy = F420E6D91906D45000AFD962 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		508817C609F0C9740071BF1A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREFIX_HEADER = ../source/prefix.h;
+				GCC_PREPROCESSOR_DEFINITIONS = "DEVELOPMENT=1";
+				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_PKGINFO_FILE = YES;
+				HEADER_SEARCH_PATHS = (
+					../../../../,
+					../../../../../SKI/,
+				);
+				INFOPLIST_FILE = "uidescription test-Info.plist";
+				INFOPLIST_PREPROCESS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				ONLY_ACTIVE_ARCH = YES;
+				PRESERVE_DEAD_CODE_INITS_AND_TERMS = NO;
+				PRODUCT_NAME = "uidescription test";
+				SDKROOT = "";
+				WRAPPER_EXTENSION = vst3;
+			};
+			name = Debug;
+		};
+		508817C709F0C9740071BF1A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				DEAD_CODE_STRIPPING = NO;
+				DEPLOYMENT_POSTPROCESSING = YES;
+				GCC_INLINES_ARE_PRIVATE_EXTERN = YES;
+				GCC_PREFIX_HEADER = ../source/prefix.h;
+				GCC_PREPROCESSOR_DEFINITIONS = "RELEASE=1";
+				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_PKGINFO_FILE = YES;
+				HEADER_SEARCH_PATHS = (
+					../../../../,
+					../../../../../SKI/,
+				);
+				INFOPLIST_FILE = "uidescription test-Info.plist";
+				INFOPLIST_PREPROCESS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				PRESERVE_DEAD_CODE_INITS_AND_TERMS = NO;
+				PRODUCT_NAME = "uidescription test";
+				SDKROOT = "";
+				STRIP_STYLE = "non-global";
+				WRAPPER_EXTENSION = vst3;
+			};
+			name = Release;
+		};
+		508817D809F0C9AE0071BF1A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				HEADER_SEARCH_PATHS = (
+					../../../../,
+					../../../../../../git/VST3SDK/,
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/../../../ide/xcode4/build/Debug\"",
+				);
+			};
+			name = Debug;
+		};
+		508817D909F0C9AE0071BF1A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				HEADER_SEARCH_PATHS = (
+					../../../../,
+					../../../../../../git/VST3SDK/,
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/../../../ide/xcode4/build/Release\"",
+				);
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		508817C509F0C9740071BF1A /* Build configuration list for PBXProject "uidescription test" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				508817C609F0C9740071BF1A /* Debug */,
+				508817C709F0C9740071BF1A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		508817D709F0C9AE0071BF1A /* Build configuration list for PBXNativeTarget "uidescription test" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				508817D809F0C9AE0071BF1A /* Debug */,
+				508817D909F0C9AE0071BF1A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 508817C409F0C9740071BF1A /* Project object */;
+}

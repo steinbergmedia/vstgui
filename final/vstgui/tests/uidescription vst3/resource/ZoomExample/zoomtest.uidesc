@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vstgui-ui-description version="1">
+	<fonts>
+		<font name="ButtonFont" font-name="Arial" size="18"/>
+	</fonts>
+	<colors>
+	</colors>
+	<template mouse-enabled="true" transparent="false" size="300, 400" origin="0, 0" background-color-draw-style="filled and stroked" class="CViewContainer" background-color="~ GreyCColor" minSize="300, 400" name="view" opacity="1" maxSize="300, 400">
+		<view bitmap="Background" transparent="false" mouse-enabled="true" background-color-draw-style="filled and stroked" size="100, 400" class="CViewContainer" opacity="1" origin="0, 0" background-color="~ BlackCColor">
+			<view bitmap="VUMeterFront" mouse-enabled="false" transparent="false" opacity="1" size="100, 400" orientation="vertical" default-value="0.5" origin="0, 0" class="CVuMeter" background-offset="0, 0" max-value="1" off-bitmap="VUMeterBack" control-tag="Peak" decrease-step-value="0.1" wheel-inc-value="0.1" min-value="0" num-led="100"/>
+			<view bitmap="Foreground" transparent="false" mouse-enabled="true" size="100, 400" class="CView" opacity="1" origin="0, 0"/>
+		</view>
+		<view mouse-enabled="true" sub-controller="ZoomController" opacity="1" size="190, 320" view-resize-animation-time="200" background-color-draw-style="filled and stroked" class="CRowColumnView" background-color="~ BlackCColor" origin="100, 40" transparent="true" animate-view-resizing="false" margin="5,5,5,5" spacing="5" equal-size-layout="stretch" row-style="true">
+			<view class="CTextButton" mouse-enabled="true" transparent="false" size="180, 40" background-offset="0, 0" icon-position="left" wheel-inc-value="0.1" min-value="0" control-tag="zoom.50%" icon-text-margin="0" frame-width="3" round-radius="6" frame-color="~ BlackCColor" max-value="1" gradient-end-color="#b4b4b4ff" opacity="1" gradient-start-color-highlighted="#b4b4b4ff" origin="5, 5" default-value="0.5" frame-color-highlighted="~ BlackCColor" text-alignment="center" title="50 %" gradient-start-color="#dcdcdcff" text-color="~ BlackCColor" gradient-end-color-highlighted="#646464ff" text-color-highlighted="~ WhiteCColor" font="ButtonFont" kick-style="false"/>
+			<view class="CTextButton" mouse-enabled="true" transparent="false" size="180, 40" background-offset="0, 0" icon-position="left" wheel-inc-value="0.1" min-value="0" control-tag="zoom.75%" icon-text-margin="0" frame-width="3" round-radius="6" frame-color="~ BlackCColor" max-value="1" gradient-end-color="#b4b4b4ff" opacity="1" gradient-start-color-highlighted="#b4b4b4ff" origin="5, 50" default-value="0.5" frame-color-highlighted="~ BlackCColor" text-alignment="center" title="75 %" gradient-start-color="#dcdcdcff" text-color="~ BlackCColor" gradient-end-color-highlighted="#646464ff" text-color-highlighted="~ WhiteCColor" font="ButtonFont" kick-style="false"/>
+			<view class="CTextButton" mouse-enabled="false" transparent="false" size="180, 40" background-offset="0, 0" icon-position="left" wheel-inc-value="0.1" min-value="0" control-tag="zoom.100%" icon-text-margin="0" frame-width="3" round-radius="6" frame-color="~ BlackCColor" max-value="1" gradient-end-color="#b4b4b4ff" opacity="1" gradient-start-color-highlighted="#b4b4b4ff" origin="5, 95" default-value="0.5" frame-color-highlighted="~ BlackCColor" text-alignment="center" title="100 %" gradient-start-color="#dcdcdcff" text-color="~ BlackCColor" gradient-end-color-highlighted="#646464ff" text-color-highlighted="~ WhiteCColor" font="ButtonFont" kick-style="false"/>
+			<view class="CTextButton" mouse-enabled="true" transparent="false" size="180, 40" background-offset="0, 0" icon-position="left" wheel-inc-value="0.1" min-value="0" control-tag="zoom.125%" icon-text-margin="0" frame-width="3" round-radius="6" frame-color="~ BlackCColor" max-value="1" gradient-end-color="#b4b4b4ff" opacity="1" gradient-start-color-highlighted="#b4b4b4ff" origin="5, 140" default-value="0.5" frame-color-highlighted="~ BlackCColor" text-alignment="center" title="125 %" gradient-start-color="#dcdcdcff" text-color="~ BlackCColor" gradient-end-color-highlighted="#646464ff" text-color-highlighted="~ WhiteCColor" font="ButtonFont" kick-style="false"/>
+			<view class="CTextButton" mouse-enabled="true" transparent="false" size="180, 40" background-offset="0, 0" icon-position="left" wheel-inc-value="0.1" min-value="0" control-tag="zoom.150%" icon-text-margin="0" frame-width="3" round-radius="6" frame-color="~ BlackCColor" max-value="1" gradient-end-color="#b4b4b4ff" opacity="1" gradient-start-color-highlighted="#b4b4b4ff" origin="5, 185" default-value="0.5" frame-color-highlighted="~ BlackCColor" text-alignment="center" title="150 %" gradient-start-color="#dcdcdcff" text-color="~ BlackCColor" gradient-end-color-highlighted="#646464ff" text-color-highlighted="~ WhiteCColor" font="ButtonFont" kick-style="false"/>
+			<view class="CTextButton" mouse-enabled="true" transparent="false" size="180, 40" background-offset="0, 0" icon-position="left" wheel-inc-value="0.1" min-value="0" control-tag="zoom.175%" icon-text-margin="0" frame-width="3" round-radius="6" frame-color="~ BlackCColor" max-value="1" gradient-end-color="#b4b4b4ff" opacity="1" gradient-start-color-highlighted="#b4b4b4ff" origin="5, 230" default-value="0.5" frame-color-highlighted="~ BlackCColor" text-alignment="center" title="175 %" gradient-start-color="#dcdcdcff" text-color="~ BlackCColor" gradient-end-color-highlighted="#646464ff" text-color-highlighted="~ WhiteCColor" font="ButtonFont" kick-style="false"/>
+			<view class="CTextButton" mouse-enabled="true" transparent="false" size="180, 40" background-offset="0, 0" icon-position="left" wheel-inc-value="0.1" min-value="0" control-tag="zoom.200%" icon-text-margin="0" frame-width="3" round-radius="6" frame-color="~ BlackCColor" max-value="1" gradient-end-color="#b4b4b4ff" opacity="1" gradient-start-color-highlighted="#b4b4b4ff" origin="5, 275" default-value="0.5" frame-color-highlighted="~ BlackCColor" text-alignment="center" title="200 %" gradient-start-color="#dcdcdcff" text-color="~ BlackCColor" gradient-end-color-highlighted="#646464ff" text-color-highlighted="~ WhiteCColor" font="ButtonFont" kick-style="false"/>
+		</view>
+		<view class="CTextLabel" mouse-enabled="true" transparent="true" size="170, 20" opacity="1" origin="110, 10" background-offset="0, 0" wheel-inc-value="0.1" max-value="1" min-value="0" style-3D-out="false" text-rotation="0" style-round-rect="false" style-no-draw="false" style-3D-in="false" font-antialias="true" shadow-color="~ RedCColor" value-precision="2" title="Zoom Test" text-alignment="center" round-rect-radius="6" frame-width="1" text-inset="0, 0" style-shadow-text="false" frame-color="~ BlackCColor" font-color="~ WhiteCColor" style-no-text="false" style-no-frame="false" font="~ NormalFont" default-value="0.5" back-color="~ BlackCColor"/>
+	</template>
+	<variables/>
+	<custom>
+		<attributes name="FocusDrawing" color="~ RedCColor" enabled="true" width="1"/>
+		<attributes name="UIGridController"/>
+		<attributes SelectedTemplate="view" name="UITemplateController"/>
+		<attributes UIAttributesController="tag" name="UIAttributesController"/>
+		<attributes EditorSize="0, 0, 1012, 858" SplitViewSize_2_1="0.2262845849802371522851984764201915822923" SplitViewSize_2_0="0.7697628458498023684697386670450214296579" SplitViewSize_0_1="0.1311084624553039423844325028767343610525" SplitViewSize_0_0="0.8450536352800953610042711261485237628222" Version="1" SplitViewSize_1_0="0.4803337306317044252956804939458379521966" name="UIEditController" SplitViewSize_1_1="0.5137067938021454560626466445683035999537" TabSwitchValue="0"/>
+		<attributes SelectedRow="22" name="UIViewCreatorDataSource"/>
+		<attributes name="UITagsDataSource" FilterString="zoom." SelectedRow="4"/>
+		<attributes Path="/Volumes/DATA/subversion/trunk/vstgui_head/vstgui/tests/uidescription vst3/resource/ZoomExample/zoomtest.uidesc" name="VST3Editor"/>
+		<attributes name="UIBitmapsDataSource" SelectedRow="5"/>
+		<attributes name="UIFontsDataSource" SelectedRow="0"/>
+	</custom>
+	<control-tags>
+		<control-tag tag="20" name="Peak"/>
+		<control-tag tag="2" name="zoom.100%"/>
+		<control-tag tag="3" name="zoom.125%"/>
+		<control-tag tag="4" name="zoom.150%"/>
+		<control-tag tag="5" name="zoom.175%"/>
+		<control-tag tag="6" name="zoom.200%"/>
+		<control-tag tag="0" name="zoom.50%"/>
+		<control-tag tag="1" name="zoom.75%"/>
+	</control-tags>
+	<bitmaps>
+		<bitmap name="Background" path="Background.png"/>
+		<bitmap scale-factor="0.5" path="Background#0.5x.png" name="Background#0.5x"/>
+		<bitmap scale-factor="2" name="Background#2x" path="Background#2x.png"/>
+		<bitmap name="Foreground" path="Foreground.png"/>
+		<bitmap scale-factor="0.5" name="Foreground#0.5x" path="Foreground#0.5x.png"/>
+		<bitmap scale-factor="2" name="Foreground#2x" path="Foreground#2x.png"/>
+		<bitmap name="VUMeterBack" path="VUMeterBack.png"/>
+		<bitmap scale-factor="0.5" path="VUMeterBack#0.5x.png" name="VUMeterBack#0.5x"/>
+		<bitmap scale-factor="2" name="VUMeterBack#2x" path="VUMeterBack#2x.png"/>
+		<bitmap name="VUMeterFront" path="VUMeterFront.png"/>
+		<bitmap scale-factor="0.5" path="VUMeterFront#0.5x.png" name="VUMeterFront#0.5x"/>
+		<bitmap scale-factor="2" name="VUMeterFront#2x" path="VUMeterFront#2x.png"/>
+	</bitmaps>
+</vstgui-ui-description>

@@ -1,0 +1,42 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+     		            
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=iso-8859-1">
+  <title>VST-GUI Classes</title>
+                 		 		            
+  <link rel="stylesheet" type="text/css" href="../../../../sdkdoc.css">
+</head>
+  <body>
+     
+<div>  		<a name="AEffGUIEditor"></a> 		         		    
+<h3>Changes between VSTGUI V2.1 and V2.2</h3>
+     		    
+<hr width="100%"> 		    
+<div align="center"><img src="../images/vstpluglogo.jpg" border="0"
+ height="88" width="151">
+     			<br>
+     		</div>
+     		    
+<hr width="100%"> 		    
+<h3>In vstgui.h file</h3>
+     		    
+<pre>----------------------------------------------------------------------------<br>        add functions :    <br>            in CFrame :     <br>                virtual bool removeAll (const bool &amp;withForget);<br>                void *getParentSystemWindow ();<br>                void setParentSystemWindow (void *val);<br>                bool setDropActive (bool val);<br>                bool isDropActive ();<br>                void *getGC ();<br>                void setOpenFlag (bool val);<br>                bool getOpenFlag ();<br>            in&nbsp;COffscreenContext : <br>                void copyTo (CDrawContext* pContext, CRect&amp; srcRect, CPoint destOffset);<br>            in CViewContainer : <br>                virtual CColor getBackgroundColor ();<br>                virtual const CPoint&amp; getBackgroundOffset ();<br>                void drawBackgroundRect (CDrawContext *pContext, CRect&amp; _updateRect); <br>            <br>----------------------------------------------------------------------------<br>23.05.02 Matthias Juwan (beta 3)<br>	MAC changes:<br>		new CBitmap implementation: getHandle returns GWorldPtr (to get the old stuff, set CASHED_PICT to 1)<br>		implemented CBitmap::setTransparencyMask<br>		implemented CDrawContext::floodFill (changed behavior: fill while color is color of start point)<br>		offscreen can modify bitmaps<br>	added invert operator to CColor<br><br>----------------------------------------------------------------------------<br>13.05.02 Matthias Juwan<br>	added CView::onKeyDown, CView::onKeyUp<br>	implemented key handling for CFrame, CViewContainer: edit view -&gt; modalview -&gt; sub views (reverse order)<br><br>----------------------------------------------------------------------------<br>22.02.02 Matthias Juwan<br>	added CView::drawRect, CView::checkUpdate<br>	implemented CFrame::drawRect, CViewContainer::drawRect<br>	added CRect::bound<br><br>----------------------------------------------------------------------------<br>21.02.02 Yvan Grabit<br>	change:<br>		the library msimg32.dll is now dynamically loaded (Windows)<br><br>----------------------------------------------------------------------------<br>20.02.02 Matthias Juwan<br>	added COptionMenuScheme (Windows)<br>	CDrawContext::waitDrag behavior: left mouse button must be pressed (no<br>modifiers)<br><br>----------------------------------------------------------------------------<br>11.02.02 Yvan Grabit<br>	add functions:<br>		void CFrame::invalidate (const CRect &amp;rect);<br>		long CFrame::getNbViews ();<br>		CView *CFrame::getView (long index);<br>		long CViewContainer::getNbViews ();<br>		CView *CViewContainer::getView (long index);<br><br>----------------------------------------------------------------------------<br>28.01.02 Matthias Juwan<br>	add functions:<br>		CDrawContext::getPoint<br>		CDrawContext::floodFill <br><br>		CView::setParentView<br>		CView::notify<br>		CView::hitTest =&gt; CView::mouse only called if it returns true<br><br>		CViewContainer::useOffscreen<br>		CViewContainer::hitTestSubViews<br><br>		CBitmap::setTransparencyMask<br>		CBitmap::CBitmap (CFrame&amp;, width, height) (windows)<br><br>	change:<br>		optimized transparent drawing of bitmaps (Windows)<br>		made CCView public<br>		made CDrawContext::getSystemContext public<br>		CDrawContext::waitDoubleClick now observes mouse position (Windows) =&gt;should be faster in most cases<br>		CViewContainer behavior: evaluate bTransparencyEnabled in draw<br>		added bool drawInBitmap to COffscreenContext constructor (Windows)<br> <br>----------------------------------------------------------------------------<br>11.12.01 Yvan Grabit (beta 1/beta 2)<br>	add functions:<br>		void CBitmap::setTransparentColor (const CColor color);<br>		CColor CBitmap::getTransparentColor ();<br><br>----------------------------------------------------------------------------<br>11.12.01 Matthias Juwan<br>	add functions<br>		bool CRect::isEmpty ();<br>	change:<br>		changed CPoint::isInside to const method<br>		new behaviour of CFrame::onWheel -&gt; only if view is mouse enabled<br><br>----------------------------------------------------------------------------<br>11.12.01 Yvan Grabit<br>	reorganization:<br>		remove class definition : AEffGUIEditor : add it in new file aeffguieditor.h<br>		change all AEffGUIEditor pointer to void pointer<br>	add enum for CViewContainer:<br>		enum {<br>			kNormalUpdate = 0,<br> 			kOnlyDirtyUpdate<br> 		};<br><br>	add functions:<br> 		unsigned long CFrame::getTicks ();<br> 		virtual void *CFrame::getEditor ();<br>		long CFrame::getKnobMode ();<br>		void CBitmap::drawAlphaBlend (CDrawContext *pContext, CRect &amp;rect, const CPoint &amp;offset = CPoint (0, 0), unsigned char alpha = 128);<br>		CFrame* CDrawContext::getFrame ();<br>		bool CDrawContext::waitDrag ();</pre>
+     		<br>
+     		    
+<hr width="100%"> 		    
+<h3>In vstcontrols.h file</h3>
+     		    
+<pre>----------------------------------------------------------------------------<br>	add functions :<br>	    in CAnimKnob : 	 <br>	        void setInverseBitmap (bool val);<br>            in CControl : &nbsp;<br>		virtual void setBackOffset (CPoint &amp;offset); <br>            in COptionMenu : <br>		long getLastResult ();<br>                COptionMenu *getLastItemMenu (long &amp;idxInMenu);<br>                void setScheme (COptionMenuScheme* s);<br>                virtual COptionMenuScheme* getScheme ();<br>            in CParamDisplay : <br>                CFont getFont ();<br>                virtual void setString2FloatConvert (void (*convert) (char *string, float &amp;output));<br>            in CSplashScreen :<br>                virtual void unSplash ();<br>            in CVuMeter : <br>                virtual void  setDirty (const bool val);&nbsp;<br>----------------------------------------------------------------------------<br>27.05.02 Yvan Grabit (beta 3)<br>	add some protections (test of null pointer)<br><br>----------------------------------------------------------------------------<br>15.05.02 Matthias Juwan<br>	add functions:<br>		implemented onKeyDown for CSlider<br>		added reference counting to COptionMenuScheme<br>		implemented onKeyDown for CKnob<br><br>----------------------------------------------------------------------------<br>18.02.02 Yvan Grabit<br>	COption menu is dynamically allocating.<br><br>----------------------------------------------------------------------------<br>28.01.02 Matthias Juwan<br>	CTextEdit sends "LooseFocus" to parent<br><br>----------------------------------------------------------------------------<br>15.01.02 Yvan Grabit (beta 2)<br>	add CSlider, redesign CVerticalSlider and CHorizontalSlider<br>	long style =&gt; const long style<br><br>----------------------------------------------------------------------------<br>13.12.01 Yvan Grabit (beta 1)<br>	fix problem with vertical and horizontal switch<br><br>----------------------------------------------------------------------------<br>20.11.01 Yvan Grabit<br>	add functions:<br>		virtual void COptionMenu::setValue (float val);<br>		virtual bool COptionMenu::addEntry (COptionMenu *subMenu, char *txt);<br>		bool CTextEdit::isDoubleClick ();<br><br></pre>
+     		    
+<hr noshade="noshade" size="4"> 		    
+<div align="center">Copyright &copy;2003 <a
+ href="http://www.steinberg.net" target="_blank"><u>Steinberg  					Media
+  Technologies GmbH</u></a>. 		</div>
+     	<br>
+    </div>
+     <br>
+   
+</body>
+</html>

@@ -1,0 +1,77 @@
+<html>
+<head>
+	<base target="vstdoc">
+	<title>CControl</title>
+	
+<link rel="stylesheet" href="../../formate.txt" type="text/css">
+</head>
+<body>
+
+<code><pre>
+//------------------------------------------------------------------------
+// CControl
+//------------------------------------------------------------------------
+CControl::CControl (const CRect &size, CControlListener *listener, long tag,
+ CBitmap *pBackground)
+:	CView (size), 
+	listener (listener), tag (tag), oldValue (1), defaultValue (0.5f),
+	value (0), vmin (0), vmax (1.f), pBackground (pBackground), wheelInc (0.1f)
+{
+	setTransparency (false);
+	setMouseEnabled (true);
+
+	if (pBackground)
+		pBackground->remember ();
+}
+
+//------------------------------------------------------------------------
+CControl::~CControl ()
+{
+	if (pBackground)
+		pBackground->forget ();
+}
+
+//------------------------------------------------------------------------
+bool CControl::isDirty ()
+{
+	if (oldValue != value || CView::isDirty ())
+		return true;
+	return false;
+}
+
+//------------------------------------------------------------------------
+void CControl::setDirty (const bool val)
+{
+	CView::setDirty (val);
+	if (val)
+	{
+		if (value != -1.f)
+			oldValue = -1.f;
+		else
+			oldValue = 0.f;
+	}
+	else
+		oldValue = value;
+}
+
+//------------------------------------------------------------------------
+void CControl::setBackground (CBitmap *_pBackground)
+{
+	if (pBackground)
+		pBackground->forget ();
+	pBackground = _pBackground;
+	if (pBackground)
+		pBackground->remember ();
+}
+
+//------------------------------------------------------------------------
+void CControl::bounceValue ()
+{
+	if (value > vmax)
+		value = vmax;
+	else if (value < vmin)
+		value = vmin;
+}
+</pre></code>
+</body>
+</html>
