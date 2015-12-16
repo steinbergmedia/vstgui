@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vstgui-ui-description version="1">
+	<template background-color="background" bitmap="" class="CViewContainer" name="view" origin="0, 0" size="300, 300" transparent="false">
+		<view background-color="black" bitmap="FrameBackground" class="CViewContainer" origin="90, 80" size="110, 100" sub-controller="FilterController" transparent="false">
+			<view back-color="black" background-offset="0, 0" bitmap="" class="COptionMenu" control-tag="switch" default-value="0.5" font-antialias="true" font-color="white" frame-color="black" max-value="1" menu-check-style="true" menu-popup-style="true" min-value="0" origin="10, 0" shadow-color="#ff0000ff" size="90, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" transparent="true" wheel-inc-value="0.1"/>
+			<view angle-range="-4.71239" angle-start="3.92699" background-offset="0, 0" bitmap="animation_knob" class="CAnimKnob" control-tag="freq" default-value="0.5" handle-color="white" handle-shadow-color="#7f7f7fff" height-of-one-image="40" max-value="1" min-value="0" origin="10, 30" size="40, 40" sub-pixmaps="7" transparent="false" value-inset="0" wheel-inc-value="0.1" zoom-factor="1.5"/>
+			<view angle-range="-4.71239" angle-start="3.92699" background-offset="0, 0" bitmap="animation_knob" class="CAnimKnob" control-tag="reso" default-value="0.5" handle-color="white" handle-shadow-color="#7f7f7fff" height-of-one-image="40" max-value="1" min-value="0" origin="60, 30" size="40, 40" sub-pixmaps="7" transparent="false" value-inset="0" wheel-inc-value="0.1" zoom-factor="1.5"/>
+			<view back-color="black" background-offset="0, 0" bitmap="" class="CTextEdit" control-tag="freq" default-value="0.5" font="small monospace" font-antialias="true" font-color="white" frame-color="black" max-value="1" min-value="0" origin="10, 75" shadow-color="#ff0000ff" size="40, 14" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" title="50" transparent="false" wheel-inc-value="0.1"/>
+			<view back-color="black" background-offset="0, 0" bitmap="" class="CTextEdit" control-tag="reso" default-value="0.5" font="small monospace" font-antialias="true" font-color="white" frame-color="black" max-value="1" min-value="0" origin="60, 75" shadow-color="#ff0000ff" size="40, 14" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" title="0.0000" transparent="false" wheel-inc-value="0.1"/>
+		</view>
+	</template>
+	<colors>
+		<color name="black" rgba="#000000ff"/>
+		<color name="white" rgba="#ffffffff"/>
+		<color name="background" rgba="#a1a1a1ff"/>
+		<color name="transparent" rgba="#01020300"/>
+	</colors>
+	<custom>
+		<attributes name="UIViewInspector" windowSize="59, 107, 476, 707"/>
+		<attributes gridsize="10" name="UIEditFrame" uidescPath="/Volumes/DATA/subversion/trunk/vstgui_head/vstgui/tests/uidescription vst3/resource/SubControllerTest.uidesc"/>
+		<attributes name="UIViewHierarchyBrowser" windowSize="513, 194, 813, 694"/>
+	</custom>
+	<bitmaps>
+		<bitmap name="animation_knob" path="animation_knob.png"/>
+		<bitmap name="FrameBackground" nineparttiled-offsets="10, 10, 10, 10" path="FrameBackground.png"/>
+	</bitmaps>
+	<fonts>
+		<font font-name="Monaco" name="small monospace" size="9"/>
+	</fonts>
+	<control-tags>
+		<control-tag name="switch" tag="20000"/>
+		<control-tag name="freq" tag="100"/>
+		<control-tag name="reso" tag="101"/>
+	</control-tags>
+</vstgui-ui-description>

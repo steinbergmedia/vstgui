@@ -1,0 +1,442 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+	<head>
+		<base target="vstdoc">
+		<title>AEffGUIEditor</title>
+		<link rel="stylesheet" type="text/css" href="../sdkdoc.css">
+	</head>
+	<body>
+		<div>
+			<h2>AEffGUIEditor</h2>
+			<p>Up to version 2.1 :</p>
+			<p><code>#include &lt;vstgui.h&gt;</code></p>
+			<p>Since version 2.2 :</p>
+			<p><code>#include &lt;aeffguieditor.h&gt;</code></p>
+			<p><code>class AEffGUIEditor : public <a href="../1.0/AEffEditor.html">AEffEditor</a> ;</code></p>
+			<p>Use this class as parent of a graphic editor instead of <a href="../1.0/AEffEditor.html">
+					AEffEditor</a> . This class includes some pre-initialization.</p>
+			<p><img src="images/diagplugin.gif" width="382" height="266" alt="[plugin diagram]">
+			</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="cAEffGUIEditor">AEffGUIEditor</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">AEffGUIEditor (<a href="../1.0/AudioEffect.html">AudioEffect</a> *effect);</div></p>
+			<h4>Example :</h4>
+			<code>
+				<pre>/ *this allows to use this pixmap<br>   in different instances of this plugin : */<br>static CBitmap *background = 0;<br><br>MyEditor::ControlsguiEditor (AudioEffect *effect) <br>    :	AEffGUIEditor (effect)<br>{<br>    frame = 0;<br><br>    rect.left   = 0;<br>    rect.top    = 0;<br>    rect.right  = kBackgroundW;<br>    rect.bottom = kBackgroundH;<br><br>    / *we decide in this plugin to open all<br>       bitmaps in the open function */<br>}</pre>
+			</code>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="dAEffGUIEditor">~AEffGUIEditor</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual ~AEffGUIEditor ();</div></p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="setParameter">setParameter</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual void setParameter (long index, float value);</div></p>
+			<p>Called from the <code><a href="../1.0/AEffect.html">AEffect</a> </code>to update 
+				the control's value.</p>
+			<h4>Example :</h4>
+			<code>
+				<pre>void MyEditor::setParameter (long index,<br>    float value)<br>{<br>    // test if the plug is opened<br>    if (!frame)<br>        return;<br><br>    switch (index)<br>    {<br>        case kMyTag:<br>         if (myControl)<br>            myControl-&gt;setValue (<br>                effect-&gt;getParameter (index)<br>            );<br>         if (myDisplay)<br>            myDisplay-&gt;setValue (<br>                effect-&gt;getParameter (index)<br>            );<br>         default :<br>            break;<br>    }<br>    // call this to be sure<br>    // that the graphic will be updated<br>    postUpdate ();<br>}</pre>
+			</code>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="getRect">getRect</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual long getRect (<a href="CRect.html">CRect</a> **rect);</div>
+			</p>
+			<p>Gives the Rect from the plug-in which states where its window should appear, and 
+				how large it should be.<br>
+			</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="open">open</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual long open (void *ptr);</div></p>
+			<p>Host is about to open a window for the editor.</p>
+			<h4>Note :</h4>
+			<p>Allways call this method from your own editor.</p>
+			<h4>Example :</h4>
+			<code>
+				<pre>long MyEditor::open (void *ptr)<br>    AEffGUIEditor::open (ptr);<br><br>    / *init the background pixmap<br>       (a global pixmap for<br>        all instance of this plugin) */<br>    if (!myBackground)<br>        myBackground = new CBitmap (<br>            kBackgroundPixmapID<br>        );<br>    else<br>        myBackground-&gt;remember ();<br>    ...<br>}</pre>
+			</code>
+			<h4>See also :</h4>
+			<ul>
+				<li>
+					<code><a href="../1.0/AEffEditor.html#close">close</a> </code>
+				</li>
+			</ul>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="idle">idle</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual void idle ();</div></p>
+			<h4>Example :</h4>
+			<code>
+				<pre>void MyEditor::idle ()<br>{<br>    // always call this to ensure update<br>    AEffGUIEditor::idle ();<br><br>    ...<br>}</pre>
+			</code>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="draw">draw</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual void draw (<a href="../1.0/AEffEditor.html#ERect">ERect</a> *rect);</div></p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="wait">wait</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>2.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><code>void wait (unsigned long ms);</code></p>
+			<p>Wait.</p>
+			<table width="100%" cellpadding="0" cellspacing="0" border="1" bordercolor="#000000">
+				<tbody>
+					<tr>
+						<th align="right" valign="top">
+							<code>ms</code></th>
+						<td>The number of milliseconds to wait.</td>
+					</tr>
+				</tbody>
+			</table>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="getTicks">getTicks</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">long getTicks ();</div></p>
+			<p>Gets the current time (in ms).</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="doIdleStuff">doIdleStuff</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void doIdleStuff ();</div></p>
+			<p>Feedback to the host application and to call the idle's function of this editor 
+				(thru host application (MAC/WINDOWS/MOTIF)). The idle frequency is between 10Hz 
+				and 20Hz.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="getEffect">getEffect</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp"><a href="../1.0/AudioEffect.html">AudioEffect</a> *getEffect ();</div></p>
+			<p>Gets the audio effect attached to this editor.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="getVstGuiVersion">getVstGuiVersion</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>2.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">long getVstGuiVersion ();</div></p>
+			<p>Gets the version of this VSTGUI.</p>
+			<table width="100%" cellpadding="0" cellspacing="0" border="1" bordercolor="#000000">
+				<tbody>
+					<tr>
+						<th align="right" valign="top">
+							<code>return</code></th>
+						<td>The major version in the most significant 16 bits, the minor version in the 
+							less significant 16 bits.</td>
+					</tr>
+				</tbody>
+			</table>
+			<h4>Example :</h4>
+			<code>
+				<pre>int version = getVstGuiVersion ();<br>int verMaj = (version &amp; 0xFF00) &gt;&gt; 16;<br>int verMin = (version &amp; 0x00FF);</pre>
+			</code>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="setKnobMode">setKnobMode</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual long setKnobMode (int val);</div></p>
+			<p>Sets the knob mode.</p>
+			<table width="100%" cellpadding="0" cellspacing="0" border="1" bordercolor="#000000">
+				<tbody>
+					<tr>
+						<th align="right" valign="top">
+							<code>val</code></th>
+						<td>
+							<table cellpadding="0" cellspacing="0" border="1" bordercolor="#cccccc">
+								<tbody>
+									<tr>
+										<td><code>kCircularMode</code></td>
+									</tr>
+									<tr>
+										<td><code>kRelativCircularMode</code></td>
+									</tr>
+									<tr>
+										<td><code>kLinearMode</code></td>
+									</tr>
+								</tbody>
+							</table>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="getKnobMode">getKnobMode</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>2.1</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">static long getKnobMode ();</div></p>
+			<p>Gets the knob mode.</p>
+			<table width="100%" cellpadding="0" cellspacing="0" border="1" bordercolor="#000000">
+				<tbody>
+					<tr>
+						<th align="right" valign="top" height="58">
+							<code>return</code></th>
+						<td height="58">
+							<table cellpadding="0" cellspacing="0" border="1" bordercolor="#cccccc">
+								<tbody>
+									<tr>
+										<td><code>kCircularMode</code></td>
+									</tr>
+									<tr>
+										<td><code>kRelativCircularMode</code></td>
+									</tr>
+									<tr>
+										<td><code>kLinearMode</code></td>
+									</tr>
+								</tbody>
+							</table>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="onWheel">onWheel</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>2.1</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual bool onWheel (float distance);</div></p>
+			<p>Should be called if you want to dispatch this info.</p>
+			<h4>Example :</h4>
+			<pre>long MyPlugEffectX::vendorSpecific (long lArg1,<br>    long lArg2, void *ptrArg, float floatArg)<br>{<br>    if (editor &amp;&amp; lArg1 == 'stCA' &amp;&amp; lArg2 == 'Whee')<br>        return editor-&gt;onWheel (floatArg)<br>             == true ? 1 : 0;<br>    else<br>        return AudioEffectX::vendorSpecific (<br>            lArg1, lArg2, ptrArg, floatArg<br>        );<br>}</pre>
+			<!--
+<hr noShade SIZE="4"><h2>Editor and plug communication</h2>
+<p>Calling chain after a click on a control :</p>
+<ul>
+	<li>AEffGuiEditor::mouse ()</li>
+	<li>CFrame::mouse ()</li>
+	<li>CControl::mouse ()</li>
+	<li>AEffGuiEditor::valueChanged ()</li>
+	<li>AudioEffect::setParameterAutomated ()<ul>
+		<li>AudioEffect::setParameter ()</li></ul>
+	</li>
+	<li>AEffGuiEditor::setParameter ()<ul>
+		<li>AudioEffect::getParameter ()</li>
+		<li>CControl::setValue ()</li>
+		<li>AEffEditor::postUpdate ()</li>
+	</ul></li>
+	<li>CControl::update ()</li>
+</ul>
+-->
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="onKeyDown">onKeyDown</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual long onKeyDown (<a href="VstKeyCode.html">VstKeyCode</a> &amp;keyCode);</div></p>
+			<p>Should be called if you want to dispatch this info.<br>
+				Returns 1 if the event is caught, -1 otherwise.<br>
+			</p>
+			<hr width="100%" size="2">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="onKeyUp">onKeyUp</a>
+							</h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual long onKeyUp (<a href="VstKeyCode.html">VstKeyCode</a> &amp;keyCode);</div></p>
+			<p>Should be called if you want to dispatch this info.<br>
+				Returns 1 if the event is caught, -1 otherwise.<br>
+				<!--
+<hr noShade SIZE="4"><h2>Editor and plug communication</h2>
+<p>Calling chain after a click on a control :</p>
+<ul>
+	<li>AEffGuiEditor::mouse ()</li>
+	<li>CFrame::mouse ()</li>
+	<li>CControl::mouse ()</li>
+	<li>AEffGuiEditor::valueChanged ()</li>
+	<li>AudioEffect::setParameterAutomated ()<ul>
+		<li>AudioEffect::setParameter ()</li></ul>
+	</li>
+	<li>AEffGuiEditor::setParameter ()<ul>
+		<li>AudioEffect::getParameter ()</li>
+		<li>CControl::setValue ()</li>
+		<li>AEffEditor::postUpdate ()</li>
+	</ul></li>
+	<li>CControl::update ()</li>
+</ul>
+--></p>
+			<hr noshade="noshade" size="4">
+			<div align="center">Copyright &copy;2003 <a href="http://www.steinberg.net" target="_blank">
+					<u>Steinberg Media Technologies GmbH</u></a>.
+			</div>
+
+			<DIV align=center><FONT size=1>Last Modified:
+			<SCRIPT language=Javascript %>document.writeln(document.lastModified);</SCRIPT>
+			</FONT></DIV>
+
+		</div>
+		<br>
+	</body>
+</html>

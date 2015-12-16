@@ -1,0 +1,226 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{B14892F5-6600-46C2-BA10-3ABCDB8B820D}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>unittests</RootNamespace>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>build\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>build\$(Platform)\$(Configuration)\build\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>build\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>build\$(Platform)\$(Configuration)\build\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>build\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>build\$(Platform)\$(Configuration)\build\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>build\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>build\$(Platform)\$(Configuration)\build\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;WINDOWS=1; _WIN32;VSTGUI_LIVE_EDITING;DEBUG;ENABLE_UNIT_TESTS=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>false</MinimalRebuild>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;WINDOWS=1;_WIN32;VSTGUI_LIVE_EDITING;DEBUG;ENABLE_UNIT_TESTS=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>false</MinimalRebuild>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\tests\unittest\lib\animation\animations_test.cpp" />
+    <ClCompile Include="..\..\..\tests\unittest\lib\animation\animator_test.cpp" />
+    <ClCompile Include="..\..\..\tests\unittest\lib\animation\timingfunction_tests.cpp" />
+    <ClCompile Include="..\..\..\tests\unittest\lib\cbuttonstate_test.cpp" />
+    <ClCompile Include="..\..\..\tests\unittest\lib\ccolor_test.cpp" />
+    <ClCompile Include="..\..\..\tests\unittest\lib\cfont_test.cpp" />
+    <ClCompile Include="..\..\..\tests\unittest\lib\cframe_test.cpp" />
+    <ClCompile Include="..\..\..\tests\unittest\lib\clinestyle_test.cpp" />
+    <ClCompile Include="..\..\..\tests\unittest\lib\cpoint_test.cpp" />
+    <ClCompile Include="..\..\..\tests\unittest\lib\crect_test.cpp" />
+    <ClCompile Include="..\..\..\tests\unittest\lib\cviewcontainer_test.cpp" />
+    <ClCompile Include="..\..\..\tests\unittest\lib\cview_test.cpp" />
+    <ClCompile Include="..\..\..\tests\unittest\lib\idependency_test.cpp" />
+    <ClCompile Include="..\..\..\tests\unittest\lib\platform_helper_win32.cpp" />
+    <ClCompile Include="..\..\..\tests\unittest\lib\utf8stringview_test.cpp" />
+    <ClCompile Include="..\..\..\tests\unittest\lib\utf8string_test.cpp" />
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\base64codec.cpp" />
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\cstream_test.cpp" />
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\delegationcontroller_test.cpp" />
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiattributes_test.cpp" />
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uidescription_test.cpp" />
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiviewcreator\canimationsplashscreencreator_test.cpp" />
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiviewcreator\canimknobcreator_test.cpp" />
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiviewcreator\ccheckboxcreator_test.cpp" />
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiviewcreator\ccontrolcreator_test.cpp" />
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiviewcreator\cgradientviewcreator_test.cpp" />
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiviewcreator\chorizontalswitchcreator_test.cpp" />
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiviewcreator\ckickbuttoncreator_test.cpp" />
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiviewcreator\cknobcreator_test.cpp" />
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiviewcreator\clayeredviewcontainercreator_test.cpp" />
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiviewcreator\cmoviebitmapcreator_test.cpp" />
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiviewcreator\cmoviebuttoncreator_test.cpp" />
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiviewcreator\conoffbuttoncreator_test.cpp" />
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiviewcreator\coptionmenucreator_test.cpp" />
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiviewcreator\cparamdisplaycreator_test.cpp" />
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiviewcreator\crockerswitchcreator_test.cpp" />
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiviewcreator\crowcolumnviewcreator_test.cpp" />
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiviewcreator\cscrollviewcreator_test.cpp" />
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiviewcreator\csegmentbuttoncreator_test.cpp" />
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiviewcreator\cshadowviewcontainercreator_test.cpp" />
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiviewcreator\cslidercreator_test.cpp" />
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiviewcreator\csplitviewcreator_test.cpp" />
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiviewcreator\ctextbuttoncreator_test.cpp" />
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiviewcreator\ctexteditcreator_test.cpp" />
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiviewcreator\ctextlabelcreator_test.cpp" />
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiviewcreator\cverticalswitchcreator_test.cpp" />
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiviewcreator\cviewcontainercreator_test.cpp" />
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiviewcreator\cviewcreator_test.cpp" />
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiviewcreator\cvumetercreator_test.cpp" />
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiviewcreator\cxypadcreator_test.cpp" />
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiviewcreator\uiviewswitchcontainercreator_test.cpp" />
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiviewfactory_test.cpp" />
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\xmlparser_test.cpp" />
+    <ClCompile Include="..\..\..\tests\unittest\unittests.cpp" />
+    <ClCompile Include="..\..\..\vstgui_uidescription_win32.cpp" />
+    <ClCompile Include="..\..\..\vstgui_win32.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\tests\unittest\lib\platform_helper.h" />
+    <ClInclude Include="..\..\..\tests\unittest\uidescription\uiviewcreator\helpers.h" />
+    <ClInclude Include="..\..\..\tests\unittest\unittests.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

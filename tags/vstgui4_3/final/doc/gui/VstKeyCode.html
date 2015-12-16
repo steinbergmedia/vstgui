@@ -1,0 +1,30 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+	<head>
+		<base target="vstdoc">
+		<title>VstKeyCode</title>
+		<link rel="stylesheet" href="../sdkdoc.css" type="text/css">
+	</head>
+	<body>
+	<div>
+		<h2>VstKeyCode</h2>
+		<p><code>#include &lt;&gt;</code></p>
+		<p><code>struct VstKeyCode</code><code>;</code></p>
+		<p>Defined in the VST 2.1, this is use with the functions onKeyDown and onKeyUp.</p>
+		<pre>{<br>        long character;<br>	unsigned char virt;     // see enum <a
+ href="#VstVirtualKey">VstVirtualKey</a><br>	unsigned char modifier; // see enum <a
+ href="#VstModifierKey">VstModifierKey</a><br>};<br><br></pre>
+		<p>Developers of VST hosts have to make the translation between platform-dependant 
+			keycodes and those VstVirtualKey and VstModifierKey.</p>
+		<pre><br><a name="VstVirtualKey"></a>enum VstVirtualKey <br>{<br>	VKEY_BACK = 1, <br>	VKEY_TAB, <br>	VKEY_CLEAR, <br>	VKEY_RETURN, <br>	VKEY_PAUSE, <br>	VKEY_ESCAPE, <br>	VKEY_SPACE, <br>	VKEY_NEXT, <br>	VKEY_END, <br>	VKEY_HOME, <br><br>	VKEY_LEFT, <br>	VKEY_UP, <br>	VKEY_RIGHT, <br>	VKEY_DOWN, <br>	VKEY_PAGEUP, <br>	VKEY_PAGEDOWN, <br><br>	VKEY_SELECT, <br>	VKEY_PRINT, <br>	VKEY_ENTER, <br>	VKEY_SNAPSHOT, <br>	VKEY_INSERT, <br>	VKEY_DELETE, <br>	VKEY_HELP, <br>	VKEY_NUMPAD0, <br>	VKEY_NUMPAD1, <br>	VKEY_NUMPAD2, <br>	VKEY_NUMPAD3, <br>	VKEY_NUMPAD4, <br>	VKEY_NUMPAD5, <br>	VKEY_NUMPAD6, <br>	VKEY_NUMPAD7, <br>	VKEY_NUMPAD8, <br>	VKEY_NUMPAD9, <br>	VKEY_MULTIPLY, <br>	VKEY_ADD, <br>	VKEY_SEPARATOR, <br>	VKEY_SUBTRACT, <br>	VKEY_DECIMAL, <br>	VKEY_DIVIDE, <br>	VKEY_F1, <br>	VKEY_F2, <br>	VKEY_F3, <br>	VKEY_F4, <br>	VKEY_F5, <br>	VKEY_F6, <br>	VKEY_F7, <br>	VKEY_F8, <br>	VKEY_F9, <br>	VKEY_F10, <br>	VKEY_F11, <br>	VKEY_F12, <br>	VKEY_NUMLOCK, <br>	VKEY_SCROLL,<br><br>	VKEY_SHIFT,<br>	VKEY_CONTROL,<br>	VKEY_ALT,<br><br>	VKEY_EQUALS<br>};<br><br><a
+ name="VstModifierKey"></a>enum VstModifierKey<br>{<br>	MODIFIER_SHIFT     = 1&lt;&lt;0, // Shift<br>	MODIFIER_ALTERNATE = 1&lt;&lt;1, // Alt<br>	MODIFIER_COMMAND   = 1&lt;&lt;2, // Control on Mac<br>	MODIFIER_CONTROL   = 1&lt;&lt;3  // Ctrl on PC, Apple on Mac<br>};<br></pre>
+		<hr noShade SIZE="4">
+		<div align="center">Copyright &copy;2003 <a href="http://www.steinberg.net" target="_blank"><u>Steinberg 
+					Media Technologies GmbH</u></a>.
+		</div>
+		<DIV align=center><FONT size=1>Last Modified:
+		<SCRIPT language=Javascript %>document.writeln(document.lastModified);</SCRIPT>
+		</FONT></DIV>
+		</div>
+	</body>
+</html>

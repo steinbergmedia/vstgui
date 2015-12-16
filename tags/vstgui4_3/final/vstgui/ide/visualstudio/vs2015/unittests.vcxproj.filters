@@ -1,0 +1,213 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Source Files\lib">
+      <UniqueIdentifier>{de0bd126-9e5d-4d36-a5b3-8cefe404a3eb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\vstgui">
+      <UniqueIdentifier>{aae2b8e2-efd5-4fcc-b5f3-064517eb1cdc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\uidescription">
+      <UniqueIdentifier>{a2967e3f-8db8-4923-8ae2-64978dce8abd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\uidescription\uiviewcreator">
+      <UniqueIdentifier>{f77c277e-f029-41bf-bd2c-4765f854d94b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\lib\animation">
+      <UniqueIdentifier>{33e96273-9585-4493-b062-bd1c333bb0be}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\tests\unittest\unittests.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\tests\unittest\lib\cbuttonstate_test.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\tests\unittest\lib\ccolor_test.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\tests\unittest\lib\cfont_test.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\tests\unittest\lib\clinestyle_test.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\tests\unittest\lib\cpoint_test.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\tests\unittest\lib\crect_test.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\tests\unittest\lib\cview_test.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\tests\unittest\lib\cviewcontainer_test.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\tests\unittest\lib\idependency_test.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\tests\unittest\lib\utf8string_test.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\tests\unittest\lib\utf8stringview_test.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\vstgui_uidescription_win32.cpp">
+      <Filter>Source Files\vstgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\vstgui_win32.cpp">
+      <Filter>Source Files\vstgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\base64codec.cpp">
+      <Filter>Source Files\uidescription</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\cstream_test.cpp">
+      <Filter>Source Files\uidescription</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\delegationcontroller_test.cpp">
+      <Filter>Source Files\uidescription</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiattributes_test.cpp">
+      <Filter>Source Files\uidescription</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uidescription_test.cpp">
+      <Filter>Source Files\uidescription</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiviewfactory_test.cpp">
+      <Filter>Source Files\uidescription</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\xmlparser_test.cpp">
+      <Filter>Source Files\uidescription</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiviewcreator\canimationsplashscreencreator_test.cpp">
+      <Filter>Source Files\uidescription\uiviewcreator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiviewcreator\canimknobcreator_test.cpp">
+      <Filter>Source Files\uidescription\uiviewcreator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiviewcreator\ccheckboxcreator_test.cpp">
+      <Filter>Source Files\uidescription\uiviewcreator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiviewcreator\ccontrolcreator_test.cpp">
+      <Filter>Source Files\uidescription\uiviewcreator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiviewcreator\cgradientviewcreator_test.cpp">
+      <Filter>Source Files\uidescription\uiviewcreator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiviewcreator\chorizontalswitchcreator_test.cpp">
+      <Filter>Source Files\uidescription\uiviewcreator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiviewcreator\ckickbuttoncreator_test.cpp">
+      <Filter>Source Files\uidescription\uiviewcreator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiviewcreator\cknobcreator_test.cpp">
+      <Filter>Source Files\uidescription\uiviewcreator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiviewcreator\clayeredviewcontainercreator_test.cpp">
+      <Filter>Source Files\uidescription\uiviewcreator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiviewcreator\cmoviebitmapcreator_test.cpp">
+      <Filter>Source Files\uidescription\uiviewcreator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiviewcreator\cmoviebuttoncreator_test.cpp">
+      <Filter>Source Files\uidescription\uiviewcreator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiviewcreator\conoffbuttoncreator_test.cpp">
+      <Filter>Source Files\uidescription\uiviewcreator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiviewcreator\coptionmenucreator_test.cpp">
+      <Filter>Source Files\uidescription\uiviewcreator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiviewcreator\cparamdisplaycreator_test.cpp">
+      <Filter>Source Files\uidescription\uiviewcreator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiviewcreator\crockerswitchcreator_test.cpp">
+      <Filter>Source Files\uidescription\uiviewcreator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiviewcreator\crowcolumnviewcreator_test.cpp">
+      <Filter>Source Files\uidescription\uiviewcreator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiviewcreator\cscrollviewcreator_test.cpp">
+      <Filter>Source Files\uidescription\uiviewcreator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiviewcreator\csegmentbuttoncreator_test.cpp">
+      <Filter>Source Files\uidescription\uiviewcreator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiviewcreator\cshadowviewcontainercreator_test.cpp">
+      <Filter>Source Files\uidescription\uiviewcreator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiviewcreator\cslidercreator_test.cpp">
+      <Filter>Source Files\uidescription\uiviewcreator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiviewcreator\csplitviewcreator_test.cpp">
+      <Filter>Source Files\uidescription\uiviewcreator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiviewcreator\ctextbuttoncreator_test.cpp">
+      <Filter>Source Files\uidescription\uiviewcreator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiviewcreator\ctexteditcreator_test.cpp">
+      <Filter>Source Files\uidescription\uiviewcreator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiviewcreator\ctextlabelcreator_test.cpp">
+      <Filter>Source Files\uidescription\uiviewcreator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiviewcreator\cverticalswitchcreator_test.cpp">
+      <Filter>Source Files\uidescription\uiviewcreator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiviewcreator\cviewcontainercreator_test.cpp">
+      <Filter>Source Files\uidescription\uiviewcreator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiviewcreator\cviewcreator_test.cpp">
+      <Filter>Source Files\uidescription\uiviewcreator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiviewcreator\cvumetercreator_test.cpp">
+      <Filter>Source Files\uidescription\uiviewcreator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiviewcreator\cxypadcreator_test.cpp">
+      <Filter>Source Files\uidescription\uiviewcreator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\tests\unittest\uidescription\uiviewcreator\uiviewswitchcontainercreator_test.cpp">
+      <Filter>Source Files\uidescription\uiviewcreator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\tests\unittest\lib\animation\animations_test.cpp">
+      <Filter>Source Files\lib\animation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\tests\unittest\lib\animation\animator_test.cpp">
+      <Filter>Source Files\lib\animation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\tests\unittest\lib\animation\timingfunction_tests.cpp">
+      <Filter>Source Files\lib\animation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\tests\unittest\lib\cframe_test.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\tests\unittest\lib\platform_helper_win32.cpp">
+      <Filter>Source Files\lib</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\tests\unittest\unittests.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\tests\unittest\uidescription\uiviewcreator\helpers.h">
+      <Filter>Source Files\uidescription\uiviewcreator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\tests\unittest\lib\platform_helper.h">
+      <Filter>Source Files\lib</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

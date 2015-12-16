@@ -1,0 +1,766 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+	<head>
+		<base target="vstdoc">
+		<title>CDrawContext</title>
+		<link rel="stylesheet" type="text/css" href="../sdkdoc.css">
+	</head>
+	<body>
+		<div>
+			<h2>CDrawContext</h2>
+			<p><code>#include &lt;vstgui.h&gt;</code></p>
+			<p><code>class CDrawContext;</code></p>
+			<p>A drawing context encapsulates the drawing context of the underlying OS. It 
+				implements the drawing functions.
+			</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="CDrawContext">CDrawContext</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">CDrawContext (<a href="CFrame.html">CFrame</a> *frame, void *systemContext, void *window = 0);</div>
+			</p>
+			<p>Create a drawing context.</p>
+			<table width="100%" cellpadding="0" cellspacing="0" border="1" bordercolor="#000000">
+				<tbody>
+					<tr>
+						<th align="right" valign="top">
+							<code>frame</code></th>
+						<td>The parent frame.</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>systemContext</code></th>
+						<td>-</td>
+					</tr>
+					<tr>
+						<th align="right" valign="top">
+							<code>window</code></th>
+						<td>The output of a drawing context is the given window.</td>
+					</tr>
+				</tbody>
+			</table>
+			<h4>Example :</h4>
+			<code>
+				<pre>void MyPlug::idle ()		{<br>    static CDrawContext drawContext<br>        (frame, NULL, systemWindow);<br>    <br>    AEffGUIEditor::idle ();<br>    <br>    myControl-&gt;update (drawContext);<br>}</pre>
+			</code>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="dCDrawContext">~CDrawContext</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">virtual ~CDrawContext ();</div>
+			</p>
+			<p>Destroy a drawContext object.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="moveTo">moveTo</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void moveTo (<a href="CPoint.html">CPoint</a>&amp; point);</div>
+			</p>
+			<p>Move the current pen position to specified point.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="lineTo">lineTo</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void lineTo (<a href="CPoint.html">CPoint</a>&amp; point);</div>
+			</p>
+			<p>Draw a line from the current pen position to the specified point (this point 
+				(pixel) is not drawn).
+			</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="polyLine">polyLine</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void polyLine (<a href="CPoint.html">CPoint</a>&amp; *pPoint, long numberOfPoints);</div>
+			</p>
+			<p>Draw a polyline defined by a list of points. p is an array of points of size 
+				numberofPoints.
+			</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="fillPolygon">fillPolygon</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void fillPolygon (<a href="CPoint.html">CPoint</a>&amp; *pPoint, long numberOfPoints);</div>
+			</p>
+			<p>Draw a filled polygon without its boundary. p is an array of points. if the 
+				first and the last point are different, the polygon will be closed. The fill 
+				color is set by setFillColor.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="drawRect">drawRect</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void drawRect (<a href="CRect.html">CRect</a>&amp; rect);</div>
+			</p>
+			<p>The given rect is framed using the current frame color.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="fillRect">fillRect</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void fillRect (<a href="CRect.html">CRect</a>&amp; rect);</div>
+			</p>
+			<p>The given rect is filled with the current fill color (note that with MOTIF the 
+				fill and the frame color are the same), its boundary is not drawn.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="drawArc">drawArc</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void drawArc (<a href="CRect.html">CRect</a>&amp; rect, <a href="CPoint.html">CPoint</a>&amp;point1, <a href="CPoint.html">CPoint</a>&amp; point2);</div>
+			</p>
+			<p>An arc included in the given rect with a begin angle defined by point1 and a end 
+				angle defined by point2 is framed (these 2 points ara defined as in Windows).</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="fillArc">fillArc</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void fillArc (<a href="CRect.html">CRect</a>&amp; rect, <a href="CPoint.html">CPoint</a>&amp;point1, <a href="CPoint.html">CPoint</a>&amp; point2);</div>
+			</p>
+			<p>Same as the previous function, but the arc is filled without its boundary.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="drawEllipse">drawEllipse</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void drawEllipse (<a href="CRect.html">CRect</a>&amp; rect);</div>
+			</p>
+			<p>An ellipse is drawn in the given rect.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="fillEllipse">fillEllipse</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void fillEllipse (<a href="CRect.html">CRect</a>&amp; rect);</div>
+			</p>
+			<p>An filled ellipse is drawn in the given rect without its boundary.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="drawPoint">drawPoint</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void drawPoint (<a href="CPoint.html">CPoint</a>&amp; point, <a href="CColor.html">CColor</a> &amp;color);</div>
+			</p>
+			<p>A point is drawn at a given position with a specified color.</p>
+			<hr width="100%" size="2">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="getPoint">getPoint</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp"><a href="CColor.html">CColor</a> getPoint (<a href="CPoint.html">CPoint</a>&amp; point);</div>
+			</p>
+			<p>Returns the color of the point.</p>
+			<hr width="100%" size="2">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="floodFill">floodFill</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void floodFill (<a href="CPoint.html">CPoint</a>&amp; start);</div>
+			</p>
+			From the point <code>start</code>, fills the area in all directions til the 
+			color doesn't change.<br>
+			<br>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="setLineStyle">setLineStyle</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void setLineStyle (<a href="CLineStyle.html">CLineStyle</a> style);</div>
+			</p>
+			<p>Sets the style to draw a line. It affects the functions lineTo, drawArc, 
+				polyLine, etc. The default setting is <i>kLineSolid</i>.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="CLineStyle">CLineStyle</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp"><a href="CLineStyle.html">CLineStyle</a> getLineStyle ();</div>
+			</p>
+			<p>Gets the current style to draw a line.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="setLineWidth">setLineWidth</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void setLineWidth (int width);</div>
+			</p>
+			<p>Sets the width of the pen drawing a frame. It affects the functions lineTo, 
+				drawArc, polyLine, etc. The default setting is 1.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="getLineWidth">getLineWidth</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">int getLineWidth ();</div>
+			</p>
+			<p>Gets the current width of the pen drawing a frame.</p>
+			<hr width="100%" size="2">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="setDrawMode">setDrawMode</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void setDrawMode (<a href="CDrawMode.html">CDrawMode</a>mode);</div>
+			</p>
+			<p>Sets the current drawing mode.</p>
+			<hr width="100%" size="2">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="getDrawMode">getDrawMode</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.1</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp"><a href="CDrawMode.html">CDrawMode</a>getDrawMode ();</div>
+			</p>
+			<p>Gets the current drawing mode.</p>
+			<hr width="100%" size="2">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="setClipRect">setClipRect</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void setClipRect (const <a href="CRect.html">CRect</a> &amp;clip);</div>
+			</p>
+			<p>Sets a given clipping rectangle to this context.</p>
+			<hr width="100%" size="2">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="getClipRect">getClipRect</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp"><a href="CRect.html">CRect</a>&amp;getClipRect (<a href="CRect.html">CRect</a>&amp;clip);</div>
+			</p>
+			<p>Gets the current clipping rectangle.</p>
+			<hr width="100%" size="2">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="resetClipRect">resetClipRect</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.1</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void resetClipRect ();</div>
+			</p>
+			<p>Reset the clipping area to its frame size.</p>
+			<hr width="100%" size="2">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="setFillColor">setFillColor</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void setFillColor (<a href="CColor.html">CColor</a> color);</div>
+			</p>
+			<p>Sets the fill color (Note that with MOTIF, this affect the frame color!).</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="getFillColor">getFillColor</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp"><a href="CColor.html">CColor</a> getFillColor ();</div>
+			</p>
+			<p>Gets the current fill color.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="setFrameColor">setFrameColor</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void setFrameColor (<a href="CColor.html">CColor</a> color);</div>
+			</p>
+			<p>Sets the frame color (Note that with MOTIF, this affect the fill color and the 
+				font color!).</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="getFrameColor">getFrameColor</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp"><a href="CColor.html">CColor</a> getFrameColor ();</div>
+			</p>
+			<p>Gets the current frame color.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="setFontColor">setFontColor</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void setFontColor (<a href="CColor.html">CColor</a> color);</div>
+			</p>
+			<p>Sets the font color (Note that with MOTIF, this affect the frame color!).</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="getFontColor"></a>getFontColor</h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp"><a href="CColor.html">CColor</a> getFontColor ();</div>
+			</p>
+			<p>Gets the current font color.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="setFont">setFont</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void setFont (<a href="CFont.html">CFont</a> fontID, const long size = 0, long style = 0);</div>
+			</p>
+			<table width="100%" cellpadding="0" cellspacing="0" border="1" bordercolor="#000000">
+				<tbody>
+					<tr>
+						<th align="right" valign="top">
+							<code>style</code></th>
+						<td>A constant from <code><a href="CTxtFace.html">CTxtFace</a></code>.</td>
+					</tr>
+				</tbody>
+			</table>
+			<p>Sets the current font.</p>
+			<hr width="100%" size="2">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="getFont">getFont</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.1</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp"><a href="CFont.html">CFont</a>getFont ();</div>
+			</p>
+			<p>Gets the current font.</p>
+			<hr width="100%" size="2">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="getStringWidth">getStringWidth</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">long getStringWidth (const char *pStr);</div>
+			</p>
+			<p>Returns the string width (pixels) of the given text in the current font.</p>
+			<hr width="100%" size="2">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="drawString">drawString</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void drawString (const char *string, <a href="CRect.html">CRect</a>&amp; rect, <br>const short opaque = false, const <a href="CHoriTxtAlign.html">CHoriTxtAlign</a>hAlign = kCenterText));</div>
+			</p>
+			<p>The string is drawn within the rectangle using a given alignment. The opaque 
+				function allows to draw or not a background.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="getMouseButtons">getMouseButtons</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">long getMouseButtons ();</div>
+			</p>
+			<p>Returns the current mouse button used with Modifiers (see <a href="CButton.html">CButton</a>).</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="getMouseLocation">getMouseLocation</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void getMouseLocation (<a href="CPoint.html">CPoint</a>&amp; point);</div>
+			</p>
+			<p>Returns the current position of the mouse.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="WaitDoubleClick">WaitDoubleClick</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">bool waitDoubleClick ();</div>
+			</p>
+			<p>Returns true if a double-click occurs.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="waitDrag">waitDrag</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">bool waitDrag ();</div>
+			</p>
+			<p>Actually dragging into the context.<br>
+			</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="getWindow">getWindow</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void *getWindow ();</div>
+			</p>
+			<p>Returns the window of the frame.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="setWindow">setWindow</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void setWindow (void *ptr);</div>
+			</p>
+			<p>Sets the window of the frame.</p>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="getLoc">getLoc</a></h4>
+						</td>
+						<td align="right">
+							<h4>1.0</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void getLoc (<a href="CPoint.html">CPoint</a>&amp; where);</div>
+			</p>
+			<p>Returns the current position of the pen.</p>
+			<h4>Example :</h4>
+			<code>
+				<pre>void ScoView::update (CDrawContext *context)	 {<br>    long x, y;<br>    CPoint p;<br>    CColor&nbsp; greenColor = {0, 255, 0, 0};<br>    context-&gt;setFrameColor (greenColor);<br>    context-&gt;moveTo (p(x, y));<br>    ...<br>    // draw the line<br>    context-&gt;lineTo (p(x, y));<br>}</pre>
+			</code>
+			<hr noshade="noshade" size="4">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="getFrame">getFrame</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp"><a href="CFrame.html">CFrame</a> *getFrame ();</div>
+			</p>
+			<p>Returns the frame for the context.<br>
+			</p>
+			<hr width="100%" size="2">
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="left">
+							<h4><a name="getSystemContext">getSystemContext</a></h4>
+						</td>
+						<td align="right">
+							<h4>2.2</h4>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p><div class="cpp">void *getSystemContext ();</div>
+			</p>
+			<hr noshade="noshade" size="4">
+			<div align="center">Copyright &copy;2003 <a href="http://www.steinberg.net" target="_blank">
+					<u>Steinberg Media Technologies GmbH</u></a>.
+			</div>
+			<DIV align=center><FONT size=1>Last Modified:
+			<SCRIPT language=Javascript %>document.writeln(document.lastModified);</SCRIPT>
+			</FONT></DIV>
+			<br>
+		</div>
+		<br>
+	</body>
+</html>

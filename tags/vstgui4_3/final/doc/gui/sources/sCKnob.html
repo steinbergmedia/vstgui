@@ -1,0 +1,362 @@
+<html>
+<head>
+	<base target="vstdoc">
+	<title>CKnob</title>
+	
+<link rel="stylesheet" href="../../formate.txt" type="text/css">
+</head>
+<body>
+
+
+<code><pre>//------------------------------------------------------------------------
+// CKnob
+//------------------------------------------------------------------------
+CKnob::CKnob (const CRect &size, CControlListener *listener, long tag,
+              CBitmap *background, CBitmap *handle, const CPoint &offset)
+:	CControl (size, listener, tag, background), pHandle (handle), offset (offset)
+{
+	if (pHandle)
+	{
+		pHandle->remember ();
+		inset = (long)((float)pHandle->getWidth () / 2.f + 2.5f);
+	}
+	else
+		inset = 3;
+	
+	colorShadowHandle = kGreyCColor;
+	colorHandle = kWhiteCColor;
+	radius = (float)(size.right - size.left) / 2.f;
+
+	rangeAngle = 1.f;
+	setStartAngle ((float)(5.f * kPI / 4.f));
+	setRangeAngle ((float)(-3.f * kPI / 2.f));
+	zoomFactor = 1.5f;
+}
+
+//------------------------------------------------------------------------
+CKnob::~CKnob ()
+{
+	if (pHandle)
+		pHandle->forget ();
+}
+
+//------------------------------------------------------------------------
+void CKnob::draw (CDrawContext *pContext)
+{
+	if (pBackground)
+	{
+		if (bTransparencyEnabled)
+			pBackground->drawTransparent (pContext, size, offset);
+		else
+			pBackground->draw (pContext, size, offset);
+	}
+	drawHandle (pContext);
+	setDirty (false);
+}
+
+//------------------------------------------------------------------------
+void CKnob::drawHandle (CDrawContext *pContext)
+{
+	CPoint where;
+	valueToPoint (where);
+
+	if (pHandle)
+	{
+		long width  = pHandle->getWidth ();
+		long height = pHandle->getHeight ();
+		where.offset (size.left - width / 2, size.top - height / 2);
+
+		CRect handleSize (0, 0, width, height);
+		handleSize.offset (where.h, where.v);
+		pHandle->drawTransparent (pContext, handleSize);
+	}
+	else
+	{
+		CPoint origin (size.width () / 2, size.height () / 2);
+		
+		where.offset (size.left - 1, size.top);
+		origin.offset (size.left - 1, size.top);
+		pContext->setFrameColor (colorShadowHandle);
+		pContext->moveTo (where);
+		pContext->lineTo (origin);
+		
+		where.offset (1, -1);
+		origin.offset (1, -1);
+		pContext->setFrameColor (colorHandle);
+		pContext->moveTo (where);
+		pContext->lineTo (origin);
+	}
+}
+
+//------------------------------------------------------------------------
+void CKnob::mouse (CDrawContext *pContext, CPoint &where)
+{
+	if (!bMouseEnabled)
+		return;
+
+	long button = pContext->getMouseButtons ();
+	if (!(button & kLButton))
+		return;
+
+	// set the default value
+	if (button == (kControl|kLButton))
+	{
+		value = getDefaultValue ();
+		if (isDirty () && listener)
+			listener->valueChanged (pContext, this);
+		return;
+	}
+
+	float old = oldValue;
+	CPoint firstPoint;
+	bool  modeLinear = false;
+	float fEntryState = value;
+	float middle = (vmax - vmin) / 2.f;
+	float range = 200.f;
+	float coef = (vmax - vmin) / range;
+	long  oldButton = button;
+
+	long mode    = kCircularMode;
+	long newMode = getParent ()->getKnobMode ();
+	if (kLinearMode == newMode)
+	{
+		if (!(button & kAlt))
+			mode = newMode;
+	}
+	else if (button & kAlt) 
+		mode = kLinearMode;
+
+	if (mode == kLinearMode && (button & kLButton))
+	{
+		if (button & kShift)
+			range *= zoomFactor;
+		firstPoint = where;
+		modeLinear = true;
+		coef = (vmax - vmin) / range;
+	}
+	else
+	{
+		CPoint where2 (where);
+		where2.offset (-size.left, -size.top);
+		old = valueFromPoint (where2);
+	}
+
+	CPoint oldWhere (-1, -1);
+
+	// begin of edit parameter
+	getParent ()->beginEdit (tag);
+	getParent ()->setEditView (this);
+	do
+	{
+		button = pContext->getMouseButtons ();
+		if (where != oldWhere)
+		{
+			oldWhere = where;
+			if (modeLinear)
+			{
+				long diff = (firstPoint.v - where.v) + (where.h - firstPoint.h);
+				if (button != oldButton)
+				{
+					range = 200.f;
+					if (button & kShift)
+						range *= zoomFactor;
+	
+					float coef2 = (vmax - vmin) / range;
+					fEntryState += diff * (coef - coef2);
+					coef = coef2;
+					oldButton = button;
+				}
+				value = fEntryState + diff * coef;
+				bounceValue ();
+			}
+			else
+			{
+				where.offset (-size.left, -size.top);
+				value = valueFromPoint (where);
+				if (old - value > middle)
+					value = vmax;
+				else if (value - old > middle)
+					value = vmin;
+				else
+					old = value;
+			}
+			if (isDirty () && listener)
+				listener->valueChanged (pContext, this);
+		}
+
+		pContext->getMouseLocation (where);
+		doIdleStuff ();
+	
+	} while (button & kLButton);
+
+	// end of edit parameter
+	getParent ()->endEdit (tag);
+}
+
+//------------------------------------------------------------------------
+bool CKnob::onWheel (CDrawContext *pContext, const CPoint &where, float distance)
+{
+	if (!bMouseEnabled)
+		return false;
+
+	long buttons = pContext->getMouseButtons ();
+	if (buttons & kShift)
+		value += 0.1f * distance * wheelInc;
+	else
+		value += distance * wheelInc;
+	bounceValue ();
+
+	if (isDirty () && listener)
+		listener->valueChanged (pContext, this);
+	return true;
+}
+
+//------------------------------------------------------------------------
+long CKnob::onKeyDown (VstKeyCode& keyCode)
+{
+	switch (keyCode.virt)
+	{
+	case VKEY_UP :
+	case VKEY_RIGHT :
+	case VKEY_DOWN :
+	case VKEY_LEFT :
+		{
+			float distance = 1.f;
+			if (keyCode.virt == VKEY_DOWN || keyCode.virt == VKEY_LEFT)
+				distance = -distance;
+
+			if (keyCode.modifier & MODIFIER_SHIFT)
+				value += 0.1f * distance * wheelInc;
+			else
+				value += distance * wheelInc;
+			bounceValue ();
+
+			if (isDirty () && listener)
+				listener->valueChanged (0, this);
+		} return 1;
+	}
+
+	return -1;
+}
+
+//------------------------------------------------------------------------
+void CKnob::setStartAngle (float val)
+{
+	startAngle = val;
+	compute ();
+}
+
+//------------------------------------------------------------------------
+void CKnob::setRangeAngle (float val)
+{
+	rangeAngle = val;
+	compute ();
+}
+
+//------------------------------------------------------------------------
+void CKnob::compute ()
+{
+	aCoef = (vmax - vmin) / rangeAngle;
+	bCoef = vmin - aCoef * startAngle;
+	halfAngle = ((float)k2PI - fabsf (rangeAngle)) / 2.f;
+	setDirty ();
+}
+
+//------------------------------------------------------------------------
+void CKnob::valueToPoint (CPoint &point)
+{
+	float alpha = (value - bCoef) / aCoef;
+	point.h = (long)(radius + cosf (alpha) * (radius - inset) + 0.5f);
+	point.v = (long)(radius - sinf (alpha) * (radius - inset) + 0.5f);
+}
+
+//------------------------------------------------------------------------
+float CKnob::valueFromPoint (CPoint &point)
+{
+	float v;
+	float alpha = (float)atan2 (radius - point.v, point.h - radius);
+	if (alpha < 0.f)
+		alpha += (float)k2PI;
+
+	float alpha2 = alpha - startAngle;
+	if (rangeAngle < 0)
+	{
+		alpha2 -= rangeAngle;
+		float alpha3 = alpha2;
+		if (alpha3 < 0.f)
+			alpha3 += (float)k2PI;
+		else if (alpha3 > k2PI)
+			alpha3 -= (float)k2PI;
+		if (alpha3 > halfAngle - rangeAngle)
+			v = vmax;
+		else if (alpha3 > -rangeAngle)
+			v = vmin;
+		else
+		{
+			if (alpha2 > halfAngle - rangeAngle)
+				alpha2 -= (float)k2PI;
+			else if (alpha2 < -halfAngle)
+				alpha2 += (float)k2PI;
+			v = aCoef * alpha2 + vmax;
+		}
+	}
+	else
+	{
+		float alpha3 = alpha2;
+		if (alpha3 < 0.f)
+			alpha3 += (float)k2PI;
+		else if (alpha3 > k2PI)
+			alpha3 -= (float)k2PI;
+		if (alpha3 > rangeAngle + halfAngle)
+			v = vmin;
+		else if (alpha3 > rangeAngle)
+			v = vmax;
+		else
+		{
+			if (alpha2 > rangeAngle + halfAngle)
+				alpha2 -= (float)k2PI;
+			else if (alpha2 < -halfAngle)
+				alpha2 += (float)k2PI;
+			v = aCoef * alpha2 + vmin;
+		}
+	}
+
+	return v;
+}
+
+//------------------------------------------------------------------------
+void CKnob::setColorShadowHandle (CColor color)
+{
+	colorShadowHandle = color;
+	setDirty ();
+}
+
+//------------------------------------------------------------------------
+void CKnob::setColorHandle (CColor color)
+{
+	colorHandle = color;
+	setDirty ();
+}
+
+//------------------------------------------------------------------------
+void CKnob::setHandleBitmap (CBitmap *bitmap)
+{
+	if (pHandle)
+	{
+		pHandle->forget ();
+		pHandle = 0;
+	}
+
+	if (bitmap)
+	{
+		pHandle = bitmap;
+		pHandle->remember ();
+		inset = (long)((float)pHandle->getWidth () / 2.f + 2.5f);
+	}
+}
+
+</pre></code>
+
+
+</body>
+</html>

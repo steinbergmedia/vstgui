@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vstgui-ui-description version="1">
+	<fonts>
+	</fonts>
+	<colors>
+		<color name="Background" rgba="#d9d9d9ff"/>
+	</colors>
+	<variables/>
+	<bitmaps/>
+	<gradients>
+		<gradient name="Default TextButton Gradient">
+			<color-stop rgba="#dcdcdcff" start="0"/>
+			<color-stop rgba="#b4b4b4ff" start="1"/>
+		</gradient>
+		<gradient name="Default TextButton Gradient Highlighted">
+			<color-stop rgba="#b4b4b4ff" start="0"/>
+			<color-stop rgba="#646464ff" start="1"/>
+		</gradient>
+	</gradients>
+	<custom>
+		<attributes name="UIGridController"/>
+		<attributes SelectedTemplate="1024x768" name="UITemplateController"/>
+		<attributes name="UIAttributesController"/>
+		<attributes EditorSize="0, 0, 1036, 961" SplitViewSize_0_0="0.7904255319148936198558885735110379755497" SplitViewSize_0_1="0.1882978723404255261275608290816307999194" SplitViewSize_1_0="0.5" SplitViewSize_1_1="0.4946808510638298073125440623698523268104" SplitViewSize_2_0="0.8262548262548262689719535956101026386023" SplitViewSize_2_1="0.1689189189189189144180147650331491604447" TabSwitchValue="0" Version="1" name="UIEditController"/>
+		<attributes SelectedRow="22" name="UIViewCreatorDataSource"/>
+		<attributes SelectedRow="0" name="UIColorsDataSource"/>
+	</custom>
+	<template autosize="left right top bottom " background-color="Background" background-color-draw-style="filled and stroked" class="CViewContainer" mouse-enabled="true" name="320x480" opacity="1" origin="0, 0" size="320, 480" transparent="false">
+		<view autosize="left right top " background-offset="0, 0" class="CSegmentButton" default-value="0.5" font="~ NormalFont" frame-color="~ BlackCColor" frame-width="1" gradient="Default TextButton Gradient" gradient-highlighted="Default TextButton Gradient Highlighted" icon-text-margin="0" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="10, 20" round-radius="5" segment-names="Segment 1,Segment 2,Segment 3,Segment 4" size="300, 60" style="horizontal" text-alignment="center" text-color="~ BlackCColor" text-color-highlighted="~ WhiteCColor" transparent="false" wheel-inc-value="0.1"/>
+		<view back-color="~ BlackCColor" background-offset="0, 0" class="CTextEdit" default-value="0.5" font="~ NormalFont" font-antialias="true" font-color="~ WhiteCColor" frame-color="~ BlackCColor" frame-width="1" immediate-text-change="false" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="40, 90" round-rect-radius="6" shadow-color="~ RedCColor" size="240, 80" style-3D-in="false" style-3D-out="false" style-doubleclick="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" transparent="false" value-precision="2" wheel-inc-value="0.1"/>
+		<view background-color="~ BlackCColor" background-color-draw-style="filled and stroked" class="CLayeredViewContainer" mouse-enabled="true" opacity="1" origin="70, 210" size="180, 170" transparent="true" z-index="0">
+			<view angle-range="270" angle-start="135" autosize="bottom " background-offset="0, 0" circle-drawing="true" class="CKnob" corona-color="~ WhiteCColor" corona-dash-dot="false" corona-drawing="true" corona-from-center="false" corona-inset="10" corona-inverted="false" corona-outline="true" default-value="0.5" handle-color="~ WhiteCColor" handle-line-width="10" handle-shadow-color="~ GreyCColor" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="10, 10" size="160, 150" transparent="false" value-inset="10" wheel-inc-value="0.1" zoom-factor="1.5"/>
+		</view>
+	</template>
+	<template background-color="Background" background-color-draw-style="filled and stroked" class="CViewContainer" mouse-enabled="true" name="768x1024" opacity="1" origin="0, 0" size="768, 1024" transparent="false"/>
+	<template background-color="Background" background-color-draw-style="filled and stroked" class="CViewContainer" mouse-enabled="true" name="1024x768" opacity="1" origin="0, 0" size="1024, 768" transparent="false"/>
+	<template autosize="left right top bottom " background-color="Background" background-color-draw-style="filled and stroked" class="CViewContainer" mouse-enabled="true" name="480x320" opacity="1" origin="0, 0" size="480, 320" transparent="false">
+		<view autosize="left right top " background-offset="0, 0" class="CSegmentButton" default-value="0.5" font="~ NormalFont" frame-color="~ BlackCColor" frame-width="1" gradient="Default TextButton Gradient" gradient-highlighted="Default TextButton Gradient Highlighted" icon-text-margin="0" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="10, 20" round-radius="5" segment-names="Segment 1,Segment 2,Segment 3,Segment 4" size="460, 60" style="horizontal" text-alignment="center" text-color="~ BlackCColor" text-color-highlighted="~ WhiteCColor" transparent="false" wheel-inc-value="0.1"/>
+		<view back-color="~ BlackCColor" background-offset="0, 0" class="CTextEdit" default-value="0.5" font="~ NormalFont" font-antialias="true" font-color="~ WhiteCColor" frame-color="~ BlackCColor" frame-width="1" immediate-text-change="false" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="40, 90" round-rect-radius="6" shadow-color="~ RedCColor" size="400, 80" style-3D-in="false" style-3D-out="false" style-doubleclick="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" transparent="false" value-precision="2" wheel-inc-value="0.1"/>
+		<view background-color="~ BlackCColor" background-color-draw-style="filled and stroked" class="CLayeredViewContainer" mouse-enabled="true" opacity="1" origin="150, 160" size="180, 170" transparent="true" z-index="0">
+			<view angle-range="270" angle-start="135" autosize="bottom " background-offset="0, 0" circle-drawing="true" class="CKnob" corona-color="~ WhiteCColor" corona-dash-dot="false" corona-drawing="true" corona-from-center="false" corona-inset="10" corona-inverted="false" corona-outline="true" default-value="0.5" handle-color="~ WhiteCColor" handle-line-width="10" handle-shadow-color="~ GreyCColor" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="10, 10" size="160, 150" transparent="false" value-inset="10" wheel-inc-value="0.1" zoom-factor="1.5"/>
+		</view>
+	</template>
+	<template autosize="left right top bottom " background-color="Background" background-color-draw-style="filled and stroked" class="CViewContainer" mouse-enabled="true" name="320x568" opacity="1" origin="0, 0" size="320, 568" transparent="false">
+		<view autosize="left right top " background-offset="0, 0" class="CSegmentButton" default-value="0.5" font="~ NormalFont" frame-color="~ BlackCColor" frame-width="1" gradient="Default TextButton Gradient" gradient-highlighted="Default TextButton Gradient Highlighted" icon-text-margin="0" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="10, 20" round-radius="5" segment-names="Segment 1,Segment 2,Segment 3,Segment 4" size="300, 60" style="horizontal" text-alignment="center" text-color="~ BlackCColor" text-color-highlighted="~ WhiteCColor" transparent="false" wheel-inc-value="0.1"/>
+		<view back-color="~ BlackCColor" background-offset="0, 0" class="CTextEdit" default-value="0.5" font="~ NormalFont" font-antialias="true" font-color="~ WhiteCColor" frame-color="~ BlackCColor" frame-width="1" immediate-text-change="false" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="40, 90" round-rect-radius="6" shadow-color="~ RedCColor" size="240, 80" style-3D-in="false" style-3D-out="false" style-doubleclick="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" transparent="false" value-precision="2" wheel-inc-value="0.1"/>
+		<view background-color="~ BlackCColor" background-color-draw-style="filled and stroked" class="CLayeredViewContainer" mouse-enabled="true" opacity="1" origin="70, 210" size="180, 170" transparent="true" z-index="0">
+			<view angle-range="270" angle-start="135" autosize="bottom " background-offset="0, 0" circle-drawing="true" class="CKnob" corona-color="~ WhiteCColor" corona-dash-dot="false" corona-drawing="true" corona-from-center="false" corona-inset="10" corona-inverted="false" corona-outline="true" default-value="0.5" handle-color="~ WhiteCColor" handle-line-width="10" handle-shadow-color="~ GreyCColor" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="10, 10" size="160, 150" transparent="false" value-inset="10" wheel-inc-value="0.1" zoom-factor="1.5"/>
+		</view>
+	</template>
+	<template autosize="left right top bottom " background-color="Background" background-color-draw-style="filled and stroked" class="CViewContainer" mouse-enabled="true" name="568x320" opacity="1" origin="0, 0" size="568, 320" transparent="false">
+		<view autosize="left right top " background-offset="0, 0" class="CSegmentButton" default-value="0.5" font="~ NormalFont" frame-color="~ BlackCColor" frame-width="1" gradient="Default TextButton Gradient" gradient-highlighted="Default TextButton Gradient Highlighted" icon-text-margin="0" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="10, 20" round-radius="5" segment-names="Segment 1,Segment 2,Segment 3,Segment 4" size="548, 60" style="horizontal" text-alignment="center" text-color="~ BlackCColor" text-color-highlighted="~ WhiteCColor" transparent="false" wheel-inc-value="0.1"/>
+		<view back-color="~ BlackCColor" background-offset="0, 0" class="CTextEdit" default-value="0.5" font="~ NormalFont" font-antialias="true" font-color="~ WhiteCColor" frame-color="~ BlackCColor" frame-width="1" immediate-text-change="false" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="40, 90" round-rect-radius="6" shadow-color="~ RedCColor" size="490, 80" style-3D-in="false" style-3D-out="false" style-doubleclick="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" transparent="false" value-precision="2" wheel-inc-value="0.1"/>
+		<view background-color="~ BlackCColor" background-color-draw-style="filled and stroked" class="CLayeredViewContainer" mouse-enabled="true" opacity="1" origin="200, 160" size="180, 170" transparent="true" z-index="0">
+			<view angle-range="270" angle-start="135" autosize="bottom " background-offset="0, 0" circle-drawing="true" class="CKnob" corona-color="~ WhiteCColor" corona-dash-dot="false" corona-drawing="true" corona-from-center="false" corona-inset="10" corona-inverted="false" corona-outline="true" default-value="0.5" handle-color="~ WhiteCColor" handle-line-width="10" handle-shadow-color="~ GreyCColor" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="10, 10" size="160, 150" transparent="false" value-inset="10" wheel-inc-value="0.1" zoom-factor="1.5"/>
+		</view>
+	</template>
+</vstgui-ui-description>
