@@ -1,5 +1,0 @@
-//
-// Prefix header for all source files of the 'gui_tester' target in the 'gui_tester' project.
-//
-
-#include <Carbon/Carbon.h>
