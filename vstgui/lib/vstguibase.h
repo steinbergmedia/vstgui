@@ -206,7 +206,7 @@
 #endif
 
 #ifndef VSTGUI_FINAL_VMETHOD
-	#define VSTGUI_FINAL_VMETHOD
+	"c++11 compiler needed !"
 #endif
 
 #ifndef VSTGUI_RANGE_BASED_FOR_LOOP_SUPPORT
