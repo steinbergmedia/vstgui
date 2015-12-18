@@ -37,9 +37,7 @@
 
 #include "cparamdisplay.h"
 #include <vector>
-#if VSTGUI_HAS_FUNCTIONAL
 #include <functional>
-#endif
 
 namespace VSTGUI {
 
@@ -136,12 +134,10 @@ public:
 	void setTarget (CBaseObject* target);
 	CBaseObject* getTarget () const { return target; }
 
-#if VSTGUI_HAS_FUNCTIONAL
 	typedef std::function<void(CCommandMenuItem* item)> ValidateCallbackFunction;
 	typedef std::function<void(CCommandMenuItem* item)> SelectedCallbackFunction;
 
 	void setActions (SelectedCallbackFunction&& selected, ValidateCallbackFunction&& validate = [](CCommandMenuItem*){});
-#endif
 	//@}
 
 	void execute ();
@@ -150,10 +146,8 @@ public:
 	static IdStringPtr kMsgMenuItemValidate;	///< message send to the target before the item is shown
 	static IdStringPtr kMsgMenuItemSelected;	///< message send to the target when this item was selected
 protected:
-#if VSTGUI_HAS_FUNCTIONAL
 	ValidateCallbackFunction validateFunc;
 	SelectedCallbackFunction selectedFunc;
-#endif
 	CBaseObject* target;
 	char* commandCategory;
 	char* commandName;

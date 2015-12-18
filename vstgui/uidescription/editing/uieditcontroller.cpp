@@ -274,7 +274,6 @@ public:
 			{
 				zoomValueControl->setMin (50.f);
 				zoomValueControl->setMax (1000.f);
-#if VSTGUI_HAS_FUNCTIONAL
 				zoomValueControl->setStringToValueFunction ([] (UTF8StringPtr txt, float& result, CTextEdit*) {
 					int32_t intValue = static_cast<int32_t> (strtol (txt, 0, 10));
 					if (intValue > 0)
@@ -289,9 +288,6 @@ public:
 					snprintf (utf8String, 255, "%d %%", static_cast<uint32_t> (value));
 					return true;
 				});
-#else
-				// TODO: support non c++11 compilation
-#endif
 				zoomValueControl->setValue (100.f);
 				CFontRef font = description->getFont ("control.font");
 				CColor fontColor = kWhiteCColor, frameColor = kBlackCColor, backColor = kBlackCColor;

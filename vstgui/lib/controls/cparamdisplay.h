@@ -39,9 +39,7 @@
 #include "../cfont.h"
 #include "../ccolor.h"
 #include "../cdrawdefs.h"
-#if VSTGUI_HAS_FUNCTIONAL
 #include <functional>
-#endif
 
 namespace VSTGUI {
 
@@ -96,18 +94,12 @@ public:
 	virtual void setFrameWidth (const CCoord& width);
 	CCoord getFrameWidth () const { return frameWidth; }
 
-#if VSTGUI_HAS_FUNCTIONAL
 	typedef CParamDisplay	ValueToStringUserData;
-#else
-	typedef void			ValueToStringUserData;
-#endif
 
-#if VSTGUI_HAS_FUNCTIONAL
 	typedef std::function<bool(float value, char utf8String[256], CParamDisplay* display)> ValueToStringFunction;
 	
 	void setValueToStringFunction (const ValueToStringFunction& valueToStringFunc);
 	void setValueToStringFunction (ValueToStringFunction&& valueToStringFunc);
-#endif
 
 	virtual void setStyle (int32_t val);
 	int32_t getStyle () const { return style; }
@@ -131,12 +123,7 @@ protected:
 
 	virtual void drawStyleChanged ();
 
-#if VSTGUI_HAS_FUNCTIONAL
 	ValueToStringFunction valueToStringFunction;
-#else
-	CParamDisplayValueToStringProc valueToString;
-	void* valueToStringUserData;
-#endif
 
 	CHoriTxtAlign horiTxtAlign;
 	int32_t		style;

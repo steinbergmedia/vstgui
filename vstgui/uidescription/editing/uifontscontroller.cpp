@@ -177,13 +177,8 @@ CView* UIFontsController::verifyView (CView* view, const UIAttributes& attribute
 				sizeTextEdit = dynamic_cast<CTextEdit*>(control);
 				if (sizeTextEdit)
 				{
-				#if VSTGUI_HAS_FUNCTIONAL
 					sizeTextEdit->setValueToStringFunction (valueToString);
 					sizeTextEdit->setStringToValueFunction (stringToValue);
-				#else
-					sizeTextEdit->setValueToStringProc (valueToString, sizeTextEdit);
-					sizeTextEdit->setStringToValueProc (stringToValue);
-				#endif
 				}
 				control->setMouseEnabled (false);
 				break;

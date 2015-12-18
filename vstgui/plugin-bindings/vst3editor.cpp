@@ -148,13 +148,9 @@ public:
 		}
 		CParamDisplay* display = dynamic_cast<CParamDisplay*> (control);
 		if (display)
-	#if VSTGUI_HAS_FUNCTIONAL
 			display->setValueToStringFunction([this](float value, char utf8String[256], CParamDisplay* display) {
 				return convertValueToString (value, utf8String);
 			});
-	#else
-			display->setValueToStringProc (valueToString, this);
-	#endif
 
 		if (parameter)
 			parameter->deferUpdate ();
@@ -242,14 +238,6 @@ protected:
 		}
 		return false;
 	}
-
-#if !VSTGUI_HAS_FUNCTIONAL
-	static bool valueToString (float value, char utf8String[256], void* userData)
-	{
-		ParameterChangeListener* This = (ParameterChangeListener*)userData;
-		return This->convertValueToString (value, utf8String);
-	}
-#endif
 
 	void updateControlValue (Steinberg::Vst::ParamValue value)
 	{

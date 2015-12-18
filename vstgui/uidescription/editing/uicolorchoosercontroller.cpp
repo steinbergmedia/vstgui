@@ -215,13 +215,8 @@ CView* UIColorChooserController::verifyView (CView* view, const UIAttributes& at
 		CTextEdit* textEdit = dynamic_cast<CTextEdit*> (control);
 		if (textEdit)
 		{
-		#if VSTGUI_HAS_FUNCTIONAL
 			textEdit->setValueToStringFunction (valueToString);
 			textEdit->setStringToValueFunction (stringToValue);
-		#else
-			textEdit->setValueToStringProc (valueToString, textEdit);
-			textEdit->setStringToValueProc (stringToValue, textEdit);
-		#endif
 		}
 		updateColorSlider (control);
 	}

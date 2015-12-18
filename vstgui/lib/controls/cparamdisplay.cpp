@@ -52,10 +52,6 @@ The text-value is centered in the given rect.
 */
 CParamDisplay::CParamDisplay (const CRect& size, CBitmap* background, const int32_t style)
 : CControl (size, 0, -1, background)
-#if !VSTGUI_HAS_FUNCTIONAL
-, valueToString (0)
-, valueToStringUserData (0)
-#endif
 , horiTxtAlign (kCenterText)
 , style (style)
 , valuePrecision (2)
@@ -78,12 +74,7 @@ CParamDisplay::CParamDisplay (const CRect& size, CBitmap* background, const int3
 //------------------------------------------------------------------------
 CParamDisplay::CParamDisplay (const CParamDisplay& v)
 : CControl (v)
-#if VSTGUI_HAS_FUNCTIONAL
 , valueToStringFunction (v.valueToStringFunction)
-#else
-, valueToString (v.valueToString)
-, valueToStringUserData (v.valueToStringUserData)
-#endif
 , horiTxtAlign (v.horiTxtAlign)
 , style (v.style)
 , valuePrecision (v.valuePrecision)
@@ -134,7 +125,6 @@ void CParamDisplay::setPrecision (uint8_t precision)
 	}
 }
 
-#if VSTGUI_HAS_FUNCTIONAL
 //------------------------------------------------------------------------
 void CParamDisplay::setValueToStringFunction (const ValueToStringFunction& valueToStringFunc)
 {
@@ -146,7 +136,6 @@ void CParamDisplay::setValueToStringFunction (ValueToStringFunction&& valueToStr
 {
 	valueToStringFunction = std::move (valueToStringFunc);
 }
-#endif
 
 //------------------------------------------------------------------------
 bool CParamDisplay::getFocusPath (CGraphicsPath& outPath)
@@ -183,13 +172,8 @@ void CParamDisplay::draw (CDrawContext *pContext)
 	string[0] = 0;
 
 	bool converted = false;
-#if VSTGUI_HAS_FUNCTIONAL
 	if (valueToStringFunction)
 		converted = valueToStringFunction (value, string, this);
-#else
-	if (valueToString)
-		converted = valueToString (value, string, valueToStringUserData);
-#endif
 	if (!converted)
 	{
 		char precisionStr[10];

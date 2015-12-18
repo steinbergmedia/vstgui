@@ -452,7 +452,6 @@ public:
 
 	void viewLostFocus (CView* view) override
 	{
-	#if VSTGUI_HAS_FUNCTIONAL
 		if (view == textLabel)
 		{
 			SharedPointer<CTextEdit> textEdit = textLabel.cast<CTextEdit> ();
@@ -463,7 +462,6 @@ public:
 				});
 			}
 		}
-	#endif
 	}
 	
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override

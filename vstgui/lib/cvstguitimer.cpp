@@ -46,21 +46,15 @@ IdStringPtr CVSTGUITimer::kMsgTimer = "timer fired";
 //-----------------------------------------------------------------------------
 CVSTGUITimer::CVSTGUITimer (CBaseObject* timerObject, uint32_t fireTime, bool doStart)
 : fireTime (fireTime)
-#if !VSTGUI_HAS_FUNCTIONAL
-, timerObject (timerObject)
-#endif
 , platformTimer (0)
 {
-#if VSTGUI_HAS_FUNCTIONAL
 	callbackFunc = [timerObject](CVSTGUITimer* timer) {
 		timerObject->notify (timer, kMsgTimer);
 	};
-#endif
 	if (doStart)
 		start ();
 }
 
-#if VSTGUI_HAS_FUNCTIONAL
 //-----------------------------------------------------------------------------
 CVSTGUITimer::CVSTGUITimer (const CallbackFunc& callback, uint32_t fireTime, bool doStart)
 : fireTime (fireTime)
@@ -80,7 +74,6 @@ CVSTGUITimer::CVSTGUITimer (CallbackFunc&& callback, uint32_t fireTime, bool doS
 	if (doStart)
 		start ();
 }
-#endif
 
 //-----------------------------------------------------------------------------
 CVSTGUITimer::~CVSTGUITimer ()
@@ -139,13 +132,8 @@ bool CVSTGUITimer::setFireTime (uint32_t newFireTime)
 void CVSTGUITimer::fire ()
 {
 	CBaseObjectGuard guard (this);
-#if VSTGUI_HAS_FUNCTIONAL
 	if (callbackFunc)
 		callbackFunc (this);
-#else
-	if (timerObject)
-		timerObject->notify (this, kMsgTimer);
-#endif
 }
 
 } // namespace

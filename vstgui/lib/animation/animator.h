@@ -38,9 +38,7 @@
 #include "../vstguifwd.h"
 #include <list>
 #include <string>
-#if VSTGUI_HAS_FUNCTIONAL
 #include <functional>
-#endif
 
 namespace VSTGUI {
 namespace Animation {
@@ -63,7 +61,6 @@ public:
 	*/
 	void addAnimation (CView* view, IdStringPtr name, IAnimationTarget* target, ITimingFunction* timingFunction, CBaseObject* notificationObject = 0);
 
-#if VSTGUI_HAS_FUNCTIONAL
 	typedef std::function<void (CView*, const IdStringPtr, IAnimationTarget*)> NotificationFunction;
 
 	/** adds an animation.
@@ -72,7 +69,7 @@ public:
 		The notification function will be called when the animation has finished.
 	*/
 	void addAnimation (CView* view, IdStringPtr name, IAnimationTarget* target, ITimingFunction* timingFunction, NotificationFunction notification);
-#endif
+
 	/** removes an animation.
 		If animation is a CBaseObject forget() will be called otherwise it is deleted.
 		The same will be done with the timingFunction.
@@ -96,22 +93,14 @@ protected:
 	class Animation : public CBaseObject
 	{
 	public:
-	#if VSTGUI_HAS_FUNCTIONAL
 		Animation (CView* view, const std::string& name, IAnimationTarget* at, ITimingFunction* t, NotificationFunction notification);
-	#else
-		Animation (CView* view, const std::string& name, IAnimationTarget* at, ITimingFunction* t, CBaseObject* notificationObject);
-	#endif
 		~Animation ();
 
 		std::string name;
 		SharedPointer<CView> view;
 		IAnimationTarget* target;
 		ITimingFunction* timingFunction;
-	#if VSTGUI_HAS_FUNCTIONAL
 		NotificationFunction notification;
-	#else
-		SharedPointer<CBaseObject> notificationObject;
-	#endif
 		uint32_t startTime;
 		float lastPos;
 		bool done;

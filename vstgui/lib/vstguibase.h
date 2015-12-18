@@ -214,7 +214,7 @@
 #endif
 
 #ifndef VSTGUI_HAS_FUNCTIONAL
-	#define VSTGUI_HAS_FUNCTIONAL 0
+	"c++11 compiler needed !"
 #endif
 
 //----------------------------------------------------

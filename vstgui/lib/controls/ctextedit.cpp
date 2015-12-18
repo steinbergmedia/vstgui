@@ -60,10 +60,6 @@ A bitmap can be used as background.
 CTextEdit::CTextEdit (const CRect& size, IControlListener* listener, int32_t tag, UTF8StringPtr txt, CBitmap* background, const int32_t style)
 : CTextLabel (size, txt, background, style)
 , platformControl (0)
-#if !VSTGUI_HAS_FUNCTIONAL
-, textToValue (0)
-, textToValueUserData (0)
-#endif
 , immediateTextChange (false)
 {
 	this->listener = listener;
@@ -76,12 +72,7 @@ CTextEdit::CTextEdit (const CRect& size, IControlListener* listener, int32_t tag
 CTextEdit::CTextEdit (const CTextEdit& v)
 : CTextLabel (v)
 , platformControl (0)
-#if VSTGUI_HAS_FUNCTIONAL
 , stringToValueFunction (v.stringToValueFunction)
-#else
-, textToValue (v.textToValue)
-, textToValueUserData (v.textToValueUserData)
-#endif
 , immediateTextChange (v.immediateTextChange)
 {
 	setWantsFocus (true);
@@ -94,7 +85,6 @@ CTextEdit::~CTextEdit ()
 	vstgui_assert (platformControl == 0);
 }
 
-#if VSTGUI_HAS_FUNCTIONAL
 //------------------------------------------------------------------------
 void CTextEdit::setStringToValueFunction (const StringToValueFunction& stringToValueFunc)
 {
@@ -106,7 +96,6 @@ void CTextEdit::setStringToValueFunction (StringToValueFunction&& stringToValueF
 {
 	stringToValueFunction = std::move (stringToValueFunc);
 }
-#endif
 
 //------------------------------------------------------------------------
 void CTextEdit::setImmediateTextChange (bool state)
@@ -120,13 +109,8 @@ void CTextEdit::setValue (float val)
 	CTextLabel::setValue (val);
 	bool converted = false;
 	char string[256] = {0};
-#if VSTGUI_HAS_FUNCTIONAL
 	if (valueToStringFunction)
 		converted = valueToStringFunction (getValue (), string, this);
-#else
-	if (valueToString)
-		converted = valueToString (getValue (), string, valueToStringUserData);
-#endif
 	if (!converted)
 	{
 		char precisionStr[10];
@@ -140,7 +124,6 @@ void CTextEdit::setValue (float val)
 //------------------------------------------------------------------------
 void CTextEdit::setText (UTF8StringPtr txt)
 {
-#if VSTGUI_HAS_FUNCTIONAL
 	if (stringToValueFunction)
 	{
 		float val = getValue ();
@@ -158,25 +141,6 @@ void CTextEdit::setText (UTF8StringPtr txt)
 			}
 		}
 	}
-#else
-	if (textToValue)
-	{
-		float val = getValue ();
-		if (textToValue (txt, val, textToValueUserData))
-		{
-			CTextLabel::setValue (val);
-			if (valueToString)
-			{
-				char string[256] = {0};
-				valueToString (getValue (), string, valueToStringUserData);
-				CTextLabel::setText (string);
-				if (platformControl)
-					platformControl->setText (getText ());
-				return;
-			}
-		}
-	}
-#endif
 	CTextLabel::setText (txt);
 	if (platformControl)
 		platformControl->setText (getText ());

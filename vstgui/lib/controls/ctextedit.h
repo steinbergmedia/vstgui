@@ -37,9 +37,7 @@
 
 #include "ctextlabel.h"
 #include "../platform/iplatformtextedit.h"
-#if VSTGUI_HAS_FUNCTIONAL
 #include <functional>
-#endif
 
 namespace VSTGUI {
 
@@ -60,18 +58,12 @@ public:
 	/// @name CTextEdit Methods
 	//-----------------------------------------------------------------------------
 	//@{
-#if VSTGUI_HAS_FUNCTIONAL
 	typedef CTextEdit		StringToValueUserData;
-#else
-	typedef void			StringToValueUserData;
-#endif
 
-#if VSTGUI_HAS_FUNCTIONAL
 	typedef std::function<bool(UTF8StringPtr txt, float& result, CTextEdit* textEdit)> StringToValueFunction;
 	
 	void setStringToValueFunction (const StringToValueFunction& stringToValueFunc);
 	void setStringToValueFunction (StringToValueFunction&& stringToValueFunc);
-#endif
 	
 	virtual void setImmediateTextChange (bool state);	///< enable/disable immediate text change behaviour.
 	bool getImmediateTextChange () const { return immediateTextChange; }	///< get immediate text change behaviour
@@ -118,12 +110,7 @@ protected:
 
 	IPlatformTextEdit* platformControl;
 
-#if VSTGUI_HAS_FUNCTIONAL
 	StringToValueFunction stringToValueFunction;
-#else
-	CTextEditStringToValueProc textToValue;
-	void* textToValueUserData;
-#endif
 
 	bool immediateTextChange;
 	mutable SharedPointer<CFontDesc> platformFont;

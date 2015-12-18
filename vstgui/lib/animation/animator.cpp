@@ -246,7 +246,6 @@ Animator::~Animator ()
 	Timer::removeAnimator (this);
 }
 
-#if VSTGUI_HAS_FUNCTIONAL
 //-----------------------------------------------------------------------------
 void Animator::addAnimation (CView* view, IdStringPtr name, IAnimationTarget* target, ITimingFunction* timingFunction, NotificationFunction notification)
 {
@@ -259,12 +258,10 @@ void Animator::addAnimation (CView* view, IdStringPtr name, IAnimationTarget* ta
 	DebugPrint ("new animation added: %p - %s\n", view, name);
 	#endif
 }
-#endif
 
 //-----------------------------------------------------------------------------
 void Animator::addAnimation (CView* view, IdStringPtr name, IAnimationTarget* target, ITimingFunction* timingFunction, CBaseObject* notificationObject)
 {
-#if VSTGUI_HAS_FUNCTIONAL
 	NotificationFunction notification;
 	if (notificationObject)
 	{
@@ -275,16 +272,6 @@ void Animator::addAnimation (CView* view, IdStringPtr name, IAnimationTarget* ta
 		};
 	}
 	addAnimation (view, name, target, timingFunction, std::move (notification));
-#else
-	if (animations.empty ())
-		Timer::addAnimator (this);
-	removeAnimation (view, name); // cancel animation with same view and name
-	SharedPointer<Animation> anim = owned (new Animation (view, name, target, timingFunction, notificationObject));
-	animations.push_back (anim);
-	#if DEBUG_LOG
-	DebugPrint ("new animation added: %p - %s\n", view, name);
-	#endif
-#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -398,7 +385,6 @@ CMessageResult Animator::notify (CBaseObject* sender, IdStringPtr message)
 
 IdStringPtr kMsgAnimationFinished = "kMsgAnimationFinished";
 
-#if VSTGUI_HAS_FUNCTIONAL
 //-----------------------------------------------------------------------------
 Animator::Animation::Animation (CView* view, const std::string& name, IAnimationTarget* at, ITimingFunction* t, NotificationFunction notification)
 : view (view)
@@ -411,34 +397,12 @@ Animator::Animation::Animation (CView* view, const std::string& name, IAnimation
 , done (false)
 {
 }
-#else
-//-----------------------------------------------------------------------------
-Animator::Animation::Animation (CView* view, const std::string& name, IAnimationTarget* at, ITimingFunction* t, CBaseObject* notificationObject)
-: view (view)
-, name (name)
-, target (at)
-, timingFunction (t)
-, notificationObject (notificationObject)
-, startTime (0)
-, lastPos (-1)
-, done (false)
-{
-}
-#endif
 
 //-----------------------------------------------------------------------------
 Animator::Animation::~Animation ()
 {
-#if VSTGUI_HAS_FUNCTIONAL
 	if (notification)
 		notification (view, name.c_str (), target);
-#else
-	if (notificationObject)
-	{
-		FinishedMessage fmsg (view, name, target);
-		notificationObject->notify (&fmsg, kMsgAnimationFinished);
-	}
-#endif
 	CBaseObject* obj = dynamic_cast<CBaseObject*> (target);
 	if (obj)
 		obj->forget ();

@@ -192,7 +192,6 @@ bool CNewFileSelector::runModal ()
 	return runModalInternal ();
 }
 
-#if VSTGUI_HAS_FUNCTIONAL
 //-----------------------------------------------------------------------------
 class CNewFileSelectorCallback : public CBaseObject
 {
@@ -221,8 +220,6 @@ bool CNewFileSelector::run (CallbackFunc&& callback)
 	OwningPointer<CNewFileSelectorCallback> fsCallback = new CNewFileSelectorCallback (std::move (callback));
 	return runInternal (fsCallback);
 }
-
-#endif
 
 //-----------------------------------------------------------------------------
 void CNewFileSelector::setTitle (UTF8StringPtr inTitle)

@@ -125,52 +125,32 @@ CView* UITemplateSettingsController::verifyView (CView* view, const UIAttributes
 			case kMinWidthTag:
 			{
 				controls[kMinWidthTag] = control;
-			#if VSTGUI_HAS_FUNCTIONAL
 				control->setStringToValueFunction (stringToValue);
 				control->setValueToStringFunction (valueToString);
-			#else
-				control->setStringToValueProc (stringToValue);
-				control->setValueToStringProc (valueToString);
-			#endif
 				control->setValue ((float)minSize.x);
 				break;
 			}
 			case kMinHeightTag:
 			{
 				controls[kMinHeightTag] = control;
-			#if VSTGUI_HAS_FUNCTIONAL
 				control->setStringToValueFunction (stringToValue);
 				control->setValueToStringFunction (valueToString);
-			#else
-				control->setStringToValueProc (stringToValue);
-				control->setValueToStringProc (valueToString);
-			#endif
 				control->setValue ((float)minSize.y);
 				break;
 			}
 			case kMaxWidthTag:
 			{
 				controls[kMaxWidthTag] = control;
-			#if VSTGUI_HAS_FUNCTIONAL
 				control->setStringToValueFunction (stringToValue);
 				control->setValueToStringFunction (valueToString);
-			#else
-				control->setStringToValueProc (stringToValue);
-				control->setValueToStringProc (valueToString);
-			#endif
 				control->setValue ((float)maxSize.x);
 				break;
 			}
 			case kMaxHeightTag:
 			{
 				controls[kMaxHeightTag] = control;
-			#if VSTGUI_HAS_FUNCTIONAL
 				control->setStringToValueFunction (stringToValue);
 				control->setValueToStringFunction (valueToString);
-			#else
-				control->setStringToValueProc (stringToValue);
-				control->setValueToStringProc (valueToString);
-			#endif
 				control->setValue ((float)maxSize.y);
 				break;
 			}

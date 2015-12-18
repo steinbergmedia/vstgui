@@ -543,7 +543,6 @@ void UIBitmapSettingsController::valueChanged (CControl* control)
 			bitmap = editDescription->getBitmap (bitmapName.c_str ());
 			bitmapView->setBackground (bitmap);
 			updateNinePartTiledControls ();
-#if VSTGUI_HAS_FUNCTIONAL
 			SharedPointer<CTextEdit> textEdit = SharedPointer<CControl> (control).cast<CTextEdit> ();
 			if (textEdit && textEdit->bWasReturnPressed)
 			{
@@ -551,7 +550,6 @@ void UIBitmapSettingsController::valueChanged (CControl* control)
 					textEdit->takeFocus();
 				});
 			}
-#endif
 			break;
 		}
 		case kZoomTag:
@@ -657,11 +655,7 @@ CView* UIBitmapSettingsController::verifyView (CView* view, const UIAttributes& 
 				if (textEdit)
 				{
 					textEdit->setPrecision (0);
-				#if VSTGUI_HAS_FUNCTIONAL
 					textEdit->setStringToValueFunction (stringToValue);
-				#else
-					textEdit->setStringToValueProc (stringToValue);
-				#endif
 				}
 				control->setMax ((float)bitmap->getWidth ());
 				break;
@@ -673,11 +667,7 @@ CView* UIBitmapSettingsController::verifyView (CView* view, const UIAttributes& 
 				if (textEdit)
 				{
 					textEdit->setPrecision (0);
-				#if VSTGUI_HAS_FUNCTIONAL
 					textEdit->setStringToValueFunction (stringToValue);
-				#else
-					textEdit->setStringToValueProc (stringToValue);
-				#endif
 				}
 				control->setMax ((float)bitmap->getHeight ());
 				break;
@@ -692,11 +682,7 @@ CView* UIBitmapSettingsController::verifyView (CView* view, const UIAttributes& 
 				CTextLabel* label = dynamic_cast<CTextLabel*>(control);
 				if (label)
 				{
-				#if VSTGUI_HAS_FUNCTIONAL
 					label->setValueToStringFunction (valueToString);
-				#else
-					label->setValueToStringProc (valueToString);
-				#endif
 				}
 				control->setValue (100);
 			}
