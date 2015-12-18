@@ -1,0 +1,17 @@
+vstgui/ide/xcode4/build
+vstgui/ide/xcode4/DerivedData
+vstgui/ide/xcode4/vstgui.xcodeproj/xcuserdata
+vstgui/tests/uidescription vst3/mac/build
+vstgui/tests/uidescription vst3/mac/DerivedData
+vstgui/tests/uidescription vst3/mac/uidescription test.xcodeproj/xcuserdata
+vstgui/tests/unittest/lcov/out
+vstgui-coverage.info
+vstgui/tests/uidescription vst3/mac/uidescription test.xcodeproj/project.xcworkspace
+vstgui/tests/ios standalone/build
+vstgui/tests/ios standalone/DerivedData
+vstgui/tests/ios standalone/iOS Standalone.xcodeproj/project.xcworkspace
+vstgui/tests/ios standalone/iOS Standalone.xcodeproj/xcuserdata
+vstgui/ide/visualstudio/vs2015/build
+*.VC.opendb
+vstgui/tests/uidescription vst3/win/x64
+vstgui/tests/uidescription vst3/win/Win32
