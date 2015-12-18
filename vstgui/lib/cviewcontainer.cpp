@@ -53,60 +53,6 @@ namespace VSTGUI {
 
 IdStringPtr kMsgLooseFocus = "LooseFocus";
 
-namespace CViewContainerPrivate {
-
-//-----------------------------------------------------------------------------
-struct ViewContainerListenerCall
-{
-	CViewContainer* container;
-	ViewContainerListenerCall (CViewContainer* container) : container (container) {}
-};
-
-//-----------------------------------------------------------------------------
-struct ViewContainerTransformChanged : ViewContainerListenerCall
-{
-	ViewContainerTransformChanged (CViewContainer* container) : ViewContainerListenerCall (container) {}
-	void operator () (IViewContainerListener* listener) const
-	{
-		listener->viewContainerTransformChanged (container);
-	}
-};
-
-//-----------------------------------------------------------------------------
-struct ViewContainerViewAdded : ViewContainerListenerCall
-{
-	CView* view;
-	ViewContainerViewAdded (CViewContainer* container, CView* view) : ViewContainerListenerCall (container), view (view) {}
-	void operator () (IViewContainerListener* listener) const
-	{
-		listener->viewContainerViewAdded (container, view);
-	}
-};
-
-//-----------------------------------------------------------------------------
-struct ViewContainerViewRemoved : ViewContainerListenerCall
-{
-	CView* view;
-	ViewContainerViewRemoved (CViewContainer* container, CView* view) : ViewContainerListenerCall (container), view (view) {}
-	void operator () (IViewContainerListener* listener) const
-	{
-		listener->viewContainerViewRemoved (container, view);
-	}
-};
-
-//-----------------------------------------------------------------------------
-struct ViewContainerViewZOrderChanged : ViewContainerListenerCall
-{
-	CView* view;
-	ViewContainerViewZOrderChanged (CViewContainer* container, CView* view) : ViewContainerListenerCall (container), view (view) {}
-	void operator () (IViewContainerListener* listener) const
-	{
-		listener->viewContainerViewZOrderChanged (container, view);
-	}
-};
-
-}
-
 //-----------------------------------------------------------------------------
 // CViewContainer Implementation
 //-----------------------------------------------------------------------------
@@ -176,7 +122,9 @@ void CViewContainer::setTransform (const CGraphicsTransform& t)
 	if (transform != t)
 	{
 		transform = t;
-		viewContainerListeners.forEach (CViewContainerPrivate::ViewContainerTransformChanged (this));
+		viewContainerListeners.forEach ([this] (IViewContainerListener* listener) {
+			listener->viewContainerTransformChanged (this);
+		});
 	}
 }
 
@@ -406,7 +354,9 @@ bool CViewContainer::addView (CView *pView, CView* pBefore)
 
 	pView->setSubviewState (true);
 
-	viewContainerListeners.forEach (CViewContainerPrivate::ViewContainerViewAdded (this, pView));
+	viewContainerListeners.forEach ([&] (IViewContainerListener* listener) {
+		listener->viewContainerViewAdded (this, pView);
+	});
 
 	if (isAttached ())
 	{
@@ -453,7 +403,9 @@ bool CViewContainer::removeAll (bool withForget)
 		if (isAttached ())
 			view->removed (this);
 		view->setSubviewState (false);
-		viewContainerListeners.forEach (CViewContainerPrivate::ViewContainerViewRemoved (this, view));
+		viewContainerListeners.forEach ([&] (IViewContainerListener* listener) {
+			listener->viewContainerViewRemoved (this, view);
+		});
 		if (withForget)
 			view->forget ();
 		it = children.begin ();
@@ -481,7 +433,9 @@ bool CViewContainer::removeView (CView *pView, bool withForget)
 		if (isAttached ())
 			pView->removed (this);
 		pView->setSubviewState (false);
-		viewContainerListeners.forEach (CViewContainerPrivate::ViewContainerViewRemoved (this, pView));
+		viewContainerListeners.forEach ([&] (IViewContainerListener* listener) {
+			listener->viewContainerViewRemoved (this, pView);
+		});
 		if (withForget)
 			pView->forget ();
 		return true;
@@ -574,7 +528,11 @@ bool CViewContainer::changeViewZOrder (CView* view, uint32_t newIndex)
 			std::advance (it, newIndex);
 			bool result = children.insert (it, view) != children.end ();
 			if (result)
-				viewContainerListeners.forEach (CViewContainerPrivate::ViewContainerViewZOrderChanged (this, view));
+			{
+				viewContainerListeners.forEach ([&] (IViewContainerListener* listener) {
+					listener->viewContainerViewZOrderChanged (this, view);
+				});
+			}
 			return result;
 		}
 	}
