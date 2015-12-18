@@ -70,9 +70,8 @@ public:
 		if (gNbCView > 0)
 		{
 			DebugPrint ("Warning: There are %d unreleased CView objects.\n", gNbCView);
-			VSTGUI_RANGE_BASED_FOR_LOOP(ViewList, gViewList, CView*, view)
+			for (const auto& view : gViewList)
 				DebugPrint ("%s\n", typeid(view).name ());
-			VSTGUI_RANGE_BASED_FOR_LOOP_END
 		}
 	}
 };
@@ -584,11 +583,12 @@ CGraphicsTransform CView::getGlobalTransform () const
 		parents.push_front (parent);
 		parent = dynamic_cast<CViewContainer*>(parent->getParentView ());
 	}
-	VSTGUI_RANGE_BASED_FOR_LOOP (ParentViews, parents, CViewContainer*, parent)
+	for (const auto& parent : parents)
+	{
 		CGraphicsTransform t = parent->getTransform ();
 		t.translate (parent->getViewSize ().getTopLeft ());
 		transform = transform * t;
-	VSTGUI_RANGE_BASED_FOR_LOOP_END
+	}
 
 	const CViewContainer* This = dynamic_cast<const CViewContainer*> (this);
 	if (This)

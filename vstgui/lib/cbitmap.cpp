@@ -153,13 +153,14 @@ bool CBitmap::addBitmap (IPlatformBitmap* platformBitmap)
 		vstgui_assert (size == bitmapSize, "wrong bitmap size");
 		return false;
 	}
-	VSTGUI_RANGE_BASED_FOR_LOOP (BitmapVector, bitmaps, BitmapPointer, bitmap)
+	for (const auto& bitmap : bitmaps)
+	{
 		if (bitmap->getScaleFactor () == scaleFactor || bitmap == platformBitmap)
 		{
 			vstgui_assert (bitmap->getScaleFactor () != scaleFactor && bitmap != platformBitmap);
 			return false;
 		}
-	VSTGUI_RANGE_BASED_FOR_LOOP_END
+	}
 	bitmaps.push_back (platformBitmap);
 	return true;
 }
@@ -171,7 +172,8 @@ IPlatformBitmap* CBitmap::getBestPlatformBitmapForScaleFactor (double scaleFacto
 		return 0;
 	IPlatformBitmap* bestBitmap = bitmaps[0];
 	double bestDiff = std::abs (scaleFactor - bestBitmap->getScaleFactor ());
-	VSTGUI_RANGE_BASED_FOR_LOOP (BitmapVector, bitmaps, BitmapPointer, bitmap)
+	for (const auto& bitmap : bitmaps)
+	{
 		if (bitmap->getScaleFactor () == scaleFactor)
 			return bitmap;
 		else if (std::abs (scaleFactor - bitmap->getScaleFactor ()) <= bestDiff && bitmap->getScaleFactor () > bestBitmap->getScaleFactor ())
@@ -179,7 +181,7 @@ IPlatformBitmap* CBitmap::getBestPlatformBitmapForScaleFactor (double scaleFacto
 			bestBitmap = bitmap;
 			bestDiff = std::abs (scaleFactor - bitmap->getScaleFactor ());
 		}
-	VSTGUI_RANGE_BASED_FOR_LOOP_END
+	}
 
 	return bestBitmap;
 }

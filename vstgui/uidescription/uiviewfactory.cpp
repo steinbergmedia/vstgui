@@ -268,8 +268,8 @@ IdStringPtr UIViewFactory::getViewName (CView* view) const
 void UIViewFactory::evaluateAttributesAndRemember (CView* view, const UIAttributes& attributes, UIAttributes& evaluatedAttributes, const IUIDescription* description) const
 {
 	std::string evaluatedValue;
-	typedef std::pair<std::string, std::string> StringPair;
-	VSTGUI_RANGE_BASED_FOR_LOOP (UIAttributesMap, attributes, StringPair, attr)
+	for (const auto& attr : attributes)
+	{
 		const std::string& value = attr.second;
 		if (description && description->getVariable (value.c_str (), evaluatedValue))
 		{
@@ -296,7 +296,7 @@ void UIViewFactory::evaluateAttributesAndRemember (CView* view, const UIAttribut
 		#endif
 			evaluatedAttributes.setAttribute (attr.first, value);
 		}
-	VSTGUI_RANGE_BASED_FOR_LOOP_END
+	}
 }
 
 #if VSTGUI_LIVE_EDITING

@@ -389,21 +389,23 @@ void UIDescList::removeAll ()
 //-----------------------------------------------------------------------------
 UINode* UIDescList::findChildNode (const std::string& nodeName) const
 {
-	VSTGUI_RANGE_BASED_FOR_LOOP (UIDescList, *this, UINode*, node)
+	for (const auto& node : *this)
+	{
 		if (node->getName () == nodeName)
 			return node;
-	VSTGUI_RANGE_BASED_FOR_LOOP_END
+	}
 	return 0;
 }
 
 //-----------------------------------------------------------------------------
 UINode* UIDescList::findChildNodeWithAttributeValue (const std::string& attributeName, const std::string& attributeValue) const
 {
-	VSTGUI_RANGE_BASED_FOR_LOOP (UIDescList, *this, UINode*, node)
+	for (const auto& node : *this)
+	{
 		const std::string* attributeValuePtr = node->getAttributes ()->getAttributeValue (attributeName);
 		if (attributeValuePtr && *attributeValuePtr == attributeValue)
 			return node;
-	VSTGUI_RANGE_BASED_FOR_LOOP_END
+	}
 	return 0;
 }
 
@@ -932,7 +934,8 @@ UINode* UIDescription::findNodeForView (CView* view) const
 	if (parentView)
 	{
 		UINode* node = 0;
-		VSTGUI_RANGE_BASED_FOR_LOOP (UIDescList, nodes->getChildren (), UINode*, itNode)
+		for (const auto& itNode : nodes->getChildren ())
+		{
 			if (itNode->getName () == MainNodeNames::kTemplate)
 			{
 				const std::string* nodeName = itNode->getAttributes ()->getAttributeValue ("name");
@@ -942,7 +945,7 @@ UINode* UIDescription::findNodeForView (CView* view) const
 					break;
 				}
 			}
-		VSTGUI_RANGE_BASED_FOR_LOOP_END
+		}
 		if (node)
 		{
 			while (view != parentView)
@@ -1119,7 +1122,8 @@ CView* UIDescription::createViewFromNode (UINode* node) const
 	if (result && node->hasChildren ())
 	{
 		CViewContainer* viewContainer = dynamic_cast<CViewContainer*> (result);
-		VSTGUI_RANGE_BASED_FOR_LOOP (UIDescList, node->getChildren (), UINode*, itNode)
+		for (const auto& itNode : node->getChildren ())
+		{
 			if (viewContainer)
 			{
 				if (itNode->getName () == "view")
@@ -1153,7 +1157,7 @@ CView* UIDescription::createViewFromNode (UINode* node) const
 						result->setAttribute (attrId, static_cast<uint32_t> (attrValue->size () + 1), attrValue->c_str ());
 				}
 			}
-		VSTGUI_RANGE_BASED_FOR_LOOP_END
+		}
 	}
 	if (result && controller)
 		result = controller->verifyView (result, *node->getAttributes (), this);
@@ -1184,7 +1188,8 @@ CView* UIDescription::createView (UTF8StringPtr name, IController* _controller) 
 	ScopePointer<IController> sp (&controller, _controller);
 	if (nodes)
 	{
-		VSTGUI_RANGE_BASED_FOR_LOOP (UIDescList, nodes->getChildren (), UINode*, itNode)
+		for (const auto& itNode : nodes->getChildren ())
+		{
 			if (itNode->getName () == MainNodeNames::kTemplate)
 			{
 				const std::string* nodeName = itNode->getAttributes ()->getAttributeValue ("name");
@@ -1196,7 +1201,7 @@ CView* UIDescription::createView (UTF8StringPtr name, IController* _controller) 
 					return view;
 				}
 			}
-		VSTGUI_RANGE_BASED_FOR_LOOP_END
+		}
 	}
 	return 0;
 }
@@ -1224,14 +1229,15 @@ const UIAttributes* UIDescription::getViewAttributes (UTF8StringPtr name) const
 {
 	if (nodes)
 	{
-		VSTGUI_RANGE_BASED_FOR_LOOP (UIDescList, nodes->getChildren (), UINode*, itNode)
+		for (const auto& itNode : nodes->getChildren ())
+		{
 			if (itNode->getName () == MainNodeNames::kTemplate)
 			{
 				const std::string* nodeName = itNode->getAttributes ()->getAttributeValue ("name");
 				if (nodeName && *nodeName == name)
 					return itNode->getAttributes ();
 			}
-		VSTGUI_RANGE_BASED_FOR_LOOP_END
+		}
 	}
 	return 0;
 }
@@ -1508,14 +1514,15 @@ template<typename NodeType, typename ObjType, typename CompareFunction> UTF8Stri
 	if (baseNode)
 	{
 		UIDescList& children = baseNode->getChildren ();
-		VSTGUI_RANGE_BASED_FOR_LOOP (UIDescList, children, UINode*, itNode)
+		for (const auto& itNode : children)
+		{
 			NodeType* node = dynamic_cast<NodeType*>(itNode);
 			if (node && compare (this, node, obj))
 			{
 				const std::string* name = node->getAttributes ()->getAttributeValue ("name");
 				return name ? name->c_str () : 0;
 			}
-		VSTGUI_RANGE_BASED_FOR_LOOP_END
+		}
 	}
 	return 0;
 }
@@ -1811,7 +1818,8 @@ void UIDescription::collectBitmapFilters (UTF8StringPtr bitmapName, std::list<Sh
 static void removeChildNode (UINode* baseNode, UTF8StringPtr nodeName)
 {
 	UIDescList& children = baseNode->getChildren ();
-	VSTGUI_RANGE_BASED_FOR_LOOP (UIDescList, children, UINode*, itNode)
+	for (const auto& itNode : children)
+	{
 		const std::string* name = itNode->getAttributes ()->getAttributeValue ("name");
 		if (name && *name == nodeName)
 		{
@@ -1819,7 +1827,7 @@ static void removeChildNode (UINode* baseNode, UTF8StringPtr nodeName)
 				children.remove (itNode);
 			return;
 		}
-	VSTGUI_RANGE_BASED_FOR_LOOP_END
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -1889,14 +1897,15 @@ bool UIDescription::getAlternativeFontNames (UTF8StringPtr name, std::string& al
 //-----------------------------------------------------------------------------
 void UIDescription::collectTemplateViewNames (std::list<const std::string*>& names) const
 {
-	VSTGUI_RANGE_BASED_FOR_LOOP (UIDescList, nodes->getChildren (), UINode*, itNode)
+	for (const auto& itNode : nodes->getChildren ())
+	{
 		if (itNode->getName () == MainNodeNames::kTemplate)
 		{
 			const std::string* nodeName = itNode->getAttributes ()->getAttributeValue ("name");
 			if (nodeName)
 				names.push_back (nodeName);
 		}
-	VSTGUI_RANGE_BASED_FOR_LOOP_END
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -1906,7 +1915,8 @@ template<typename NodeType> void UIDescription::collectNamesFromNode (IdStringPt
 	if (node)
 	{
 		UIDescList& children = node->getChildren ();
-		VSTGUI_RANGE_BASED_FOR_LOOP (UIDescList, children, UINode*, itNode)
+		for (const auto& itNode : children)
+		{
 			NodeType* node = dynamic_cast<NodeType*>(itNode);
 			if (node)
 			{
@@ -1914,7 +1924,7 @@ template<typename NodeType> void UIDescription::collectNamesFromNode (IdStringPt
 				if (name)
 					names.push_back (name);
 			}
-		VSTGUI_RANGE_BASED_FOR_LOOP_END
+		}
 	}
 }
 

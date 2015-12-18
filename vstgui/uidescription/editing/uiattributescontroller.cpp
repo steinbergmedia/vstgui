@@ -539,9 +539,8 @@ public:
 				names.sort (UIEditController::std__stringCompare);
 			if (addNoneItem && !names.empty ())
 				menu->addSeparator ();
-			VSTGUI_RANGE_BASED_FOR_LOOP(StringPtrList, names, const std::string*, name)
+			for (const auto& name : names)
 				addMenuEntry (name);
-			VSTGUI_RANGE_BASED_FOR_LOOP_END
 			return kMessageNotified;
 		}
 		else if (message == CCommandMenuItem::kMsgMenuItemSelected)

@@ -218,12 +218,6 @@
 #endif
 
 //----------------------------------------------------
-// Helper Macro for range based for loops
-//----------------------------------------------------
-#define VSTGUI_RANGE_BASED_FOR_LOOP(ContainerType, container, varType, varName) for (const auto& varName : container) {
-#define VSTGUI_RANGE_BASED_FOR_LOOP_END }
-
-//----------------------------------------------------
 // Deprecation setting
 //----------------------------------------------------
 #ifndef VSTGUI_ENABLE_DEPRECATED_METHODS
@@ -238,12 +232,6 @@
 	#define VSTGUI_DEPRECATED(x)	DEPRECATED_ATTRIBUTE	x
 #else
 	#define VSTGUI_DEPRECATED(x)
-#endif
-
-#if VSTGUI_HAS_FUNCTIONAL
-	#define VSTGUI_DEPRECATED_FUNCTIONAL(x)	VSTGUI_DEPRECATED(x)
-#else
-	#define VSTGUI_DEPRECATED_FUNCTIONAL(x)	x
 #endif
 
 //----------------------------------------------------

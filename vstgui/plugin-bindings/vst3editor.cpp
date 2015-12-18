@@ -124,9 +124,8 @@ public:
 			parameter->removeDependent (this);
 			parameter->release ();
 		}
-		VSTGUI_RANGE_BASED_FOR_LOOP(ControlList, controls, CControl*, c)
+		for (const auto& c : controls)
 			c->forget ();
-		VSTGUI_RANGE_BASED_FOR_LOOP_END
 	}
 
 	void addControl (CControl* control)
@@ -160,14 +159,15 @@ public:
 	
 	void removeControl (CControl* control)
 	{
-		VSTGUI_RANGE_BASED_FOR_LOOP(ControlList, controls, CControl*, c)
+		for (const auto& c : controls)
+		{
 			if (c == control)
 			{
 				controls.remove (control);
 				control->forget ();
 				return;
 			}
-		VSTGUI_RANGE_BASED_FOR_LOOP_END
+		}
 	}
 	
 	bool containsControl (CControl* control)
@@ -260,7 +260,8 @@ protected:
 				maxValue = (float)parameter->toPlain ((Steinberg::Vst::ParamValue)maxValue);
 			}
 		}
-		VSTGUI_RANGE_BASED_FOR_LOOP(ControlList, controls, CControl*, c)
+		for (const auto& c : controls)
+		{
 			c->setMouseEnabled (mouseEnabled);
 			if (parameter)
 				c->setDefaultValue ((float)defaultValue);
@@ -306,7 +307,7 @@ protected:
 					c->setValueNormalized ((float)value);
 			}
 			c->invalid ();
-		VSTGUI_RANGE_BASED_FOR_LOOP_END
+		}
 	}
 	Steinberg::Vst::EditController* editController;
 	Steinberg::Vst::Parameter* parameter;
@@ -845,7 +846,8 @@ CMouseEventResult VST3Editor::onMouseDown (CFrame* frame, const CPoint& where, c
 		CViewContainer::ViewList views;
 		if (editingEnabled == false && getFrame ()->getViewsAt (where, views, GetViewOptions (GetViewOptions::kDeep|GetViewOptions::kIncludeViewContainer)))
 		{
-			VSTGUI_RANGE_BASED_FOR_LOOP(CViewContainer::ViewList, views, SharedPointer<CView>, view)
+			for (const auto& view : views)
+			{
 				IContextMenuController* contextMenuController = dynamic_cast<IContextMenuController*> (getViewController (view));
 				if (contextMenuController == 0)
 					continue;
@@ -856,7 +858,7 @@ CMouseEventResult VST3Editor::onMouseDown (CFrame* frame, const CPoint& where, c
 				CPoint p (where);
 				view->frameToLocal (p);
 				contextMenuController->appendContextMenuItems (*controllerMenu, p);
-			VSTGUI_RANGE_BASED_FOR_LOOP_END
+			}
 		}
 	#if VST3_SUPPORTS_CONTEXTMENU
 		Steinberg::FUnknownPtr<Steinberg::Vst::IComponentHandler3> handler (getController ()->getComponentHandler ());
