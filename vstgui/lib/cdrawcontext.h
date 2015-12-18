@@ -77,12 +77,6 @@ public:
 	/// @name Draw primitives
 	//-----------------------------------------------------------------------------
 	//@{
-	VSTGUI_DEPRECATED(void moveTo (const CPoint &point);)	///< \deprecated use drawLine
-	VSTGUI_DEPRECATED(void lineTo (const CPoint &point);)	///< \deprecated use drawLine
-	VSTGUI_DEPRECATED(void getLoc (CPoint &where) const { where = currentState.penLoc; })
-	VSTGUI_DEPRECATED(void drawLines (const CPoint* points, const int32_t& numberOfLines);) ///< \deprecated use drawLines (const LineList&)
-	VSTGUI_DEPRECATED(void drawPolygon (const CPoint* pPoints, int32_t numberOfPoints, const CDrawStyle drawStyle = kDrawStroked)); ///< \deprecated use drawPolygon (const PointList&)
-
 	typedef std::pair<CPoint, CPoint> LinePair;
 	typedef std::vector<LinePair> LineList;
 	typedef std::vector<CPoint> PointList;

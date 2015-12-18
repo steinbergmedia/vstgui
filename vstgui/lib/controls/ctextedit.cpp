@@ -94,21 +94,6 @@ CTextEdit::~CTextEdit ()
 	vstgui_assert (platformControl == 0);
 }
 
-#if VSTGUI_ENABLE_DEPRECATED_METHODS || !VSTGUI_HAS_FUNCTIONAL
-//------------------------------------------------------------------------
-void CTextEdit::setStringToValueProc (CTextEditStringToValueProc proc, void* userData)
-{
-#if VSTGUI_HAS_FUNCTIONAL
-	setStringToValueFunction ([proc, userData] (UTF8StringPtr txt, float& result, CTextEdit* textEdit) {
-		return proc (txt, result, userData);
-	});
-#else
-	textToValue = proc;
-	textToValueUserData = userData;
-#endif
-}
-#endif
-
 #if VSTGUI_HAS_FUNCTIONAL
 //------------------------------------------------------------------------
 void CTextEdit::setStringToValueFunction (const StringToValueFunction& stringToValueFunc)

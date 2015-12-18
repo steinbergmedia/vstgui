@@ -47,9 +47,6 @@
 namespace VSTGUI {
 class CCView;
 
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-extern IdStringPtr kMsgCheckIfViewContainer;	///< Message to check if View is a CViewContainer	@deprecated use dynamic_cast
-#endif
 extern IdStringPtr kMsgLooseFocus;				///< Message of a view loosing focus (only CTextEdit and COptionMenu send this yet)
 
 //-----------------------------------------------------------------------------
@@ -84,7 +81,6 @@ public:
 	typedef std::list<SharedPointer<CView> > ViewList;
 
 	CViewContainer (const CRect& size);
-	VSTGUI_DEPRECATED(CViewContainer (const CRect& size, CFrame* pParent, CBitmap* pBackground = 0);)
 	CViewContainer (const CViewContainer& viewContainer);
 
 	//-----------------------------------------------------------------------------

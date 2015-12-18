@@ -61,11 +61,6 @@ public:
 	virtual Type getDataType (uint32_t index) const VSTGUI_FINAL_VMETHOD;
 	virtual uint32_t getData (uint32_t index, const void*& buffer, Type& type) const VSTGUI_FINAL_VMETHOD;
 
-	// old interface
-	VSTGUI_DEPRECATED(int32_t getEntrySize (int32_t index) const;) ///< \deprecated
-	VSTGUI_DEPRECATED(Type getEntryType (int32_t index) const;) ///< \deprecated
-	VSTGUI_DEPRECATED(int32_t getEntry (int32_t index, const void*& buffer, Type& type) const;) ///< \deprecated
-
 	//-------------------------------------------
 	CLASS_METHODS_NOCOPY(CDropSource, IDataPackage)
 protected:

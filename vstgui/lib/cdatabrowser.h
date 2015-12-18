@@ -109,10 +109,6 @@ public:
 	};
 };
 
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-typedef IDataBrowserDelegate IDataBrowser;	///< \deprecated
-#endif
-
 // forward private internal views
 class CDataBrowserView;
 class CDataBrowserHeader;
@@ -135,7 +131,6 @@ protected:
 	
 public:
 	CDataBrowser (const CRect& size, IDataBrowserDelegate* db, int32_t style = 0, CCoord scrollbarWidth = 16, CBitmap* pBackground = 0);
-	VSTGUI_DEPRECATED(CDataBrowser (const CRect& size, CFrame* pParent, IDataBrowserDelegate* db, int32_t style = 0, CCoord scrollbarWidth = 16, CBitmap* pBackground = 0);)
 
 	enum CDataBrowserStyle 
 	{
@@ -186,11 +181,6 @@ public:
 
 	IDataBrowserDelegate* getDelegate () const { return db; }								///< get delegate object
 	//@}
-
-	VSTGUI_DEPRECATED (inline IDataBrowserDelegate* getDataSource () const { return getDelegate (); })	///< \deprecated, use CDataBrowser::getDelegate ()
-	VSTGUI_DEPRECATED (inline CRect getCellBounds (int32_t row, int32_t column) { return getCellBounds (CDataBrowser::Cell (row, column)); }) ///< \deprecated, use CDataBrowser::getCellBounds (const Cell& cell)
-	VSTGUI_DEPRECATED (inline void invalidate (int32_t row, int32_t column) { invalidate (CDataBrowser::Cell (row, column)); }) ///< \deprecated, use CDataBrowser::invalidate (const Cell& cell)
-	VSTGUI_DEPRECATED (inline void beginTextEdit (int32_t row, int32_t column, UTF8StringPtr initialText) { beginTextEdit (CDataBrowser::Cell (row, column), initialText); }) ///< \deprecated, use CDataBrowser::beginTextEdit (const Cell& cell, UTF8StringPtr initialText)
 
 	void setAutosizeFlags (int32_t flags) VSTGUI_OVERRIDE_VMETHOD;
 	void setViewSize (const CRect& size, bool invalid) VSTGUI_OVERRIDE_VMETHOD;

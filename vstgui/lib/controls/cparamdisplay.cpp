@@ -134,21 +134,6 @@ void CParamDisplay::setPrecision (uint8_t precision)
 	}
 }
 
-#if VSTGUI_ENABLE_DEPRECATED_METHODS || !VSTGUI_HAS_FUNCTIONAL
-//------------------------------------------------------------------------
-void CParamDisplay::setValueToStringProc (CParamDisplayValueToStringProc proc, void* userData)
-{
-#if VSTGUI_HAS_FUNCTIONAL
-	setValueToStringFunction ([proc, userData] (float value, char utf8String[256], CParamDisplay* display) {
-		return proc (value, utf8String, userData);
-	});
-#else
-	valueToString = proc;
-	valueToStringUserData = userData;
-#endif
-}
-#endif
-
 #if VSTGUI_HAS_FUNCTIONAL
 //------------------------------------------------------------------------
 void CParamDisplay::setValueToStringFunction (const ValueToStringFunction& valueToStringFunc)
@@ -381,23 +366,6 @@ void CParamDisplay::drawPlatformText (CDrawContext* pContext, IPlatformString* s
 		pContext->restoreGlobalState ();
 	}
 }
-
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-//------------------------------------------------------------------------
-void CParamDisplay::drawText (CDrawContext* pContext, UTF8StringPtr string, const CRect& size)
-{
-	if (!(style & kNoTextStyle) && UTF8StringView (string).calculateByteCount () > 1)
-	{
-		drawPlatformText (pContext, CString (string).getPlatformString (), size);
-	}
-}
-
-//------------------------------------------------------------------------
-void CParamDisplay::drawText (CDrawContext *pContext, UTF8StringPtr string)
-{
-	drawText (pContext, string, getViewSize ());
-}
-#endif
 
 //------------------------------------------------------------------------
 void CParamDisplay::setFont (CFontRef fontID)

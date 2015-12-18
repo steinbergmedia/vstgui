@@ -63,7 +63,6 @@ extern IdStringPtr kMsgOldFocusView;			///< Message send to all parents of the o
 class CFrame : public CViewContainer, public IPlatformFrameCallback 
 {
 public:
-	VSTGUI_DEPRECATED(CFrame (const CRect& size, void* pSystemWindow, VSTGUIEditorInterface* pEditor);)	///< \deprecated, use the other constructor and CFrame::open
 	CFrame (const CRect& size, VSTGUIEditorInterface* pEditor);
 
 	//-----------------------------------------------------------------------------
@@ -76,7 +75,6 @@ public:
 	bool setZoom (double zoomFactor);				///< set zoom factor
 
 	virtual void idle ();
-	VSTGUI_DEPRECATED(virtual void doIdleStuff ();)
 
 	virtual uint32_t getTicks () const;				///< get the current time (in ms)
 
@@ -108,8 +106,6 @@ public:
 	virtual void onViewRemoved (CView* pView);
 
 	virtual void onActivate (bool state);									///< called when the platform view/window is activated/deactivated
-
-	VSTGUI_DEPRECATED(CDrawContext* createDrawContext ();)					///< \deprecated and currently not implemented
 
 	virtual void invalidate (const CRect& rect);
 
@@ -155,11 +151,6 @@ public:
 
 	void invalid () VSTGUI_OVERRIDE_VMETHOD { invalidRect (getViewSize ()); setDirty (false); }
 	void invalidRect (const CRect& rect) VSTGUI_OVERRIDE_VMETHOD;
-
-	#if MAC_COCOA && MAC_CARBON
-	VSTGUI_DEPRECATED(static void setCocoaMode (bool state);)		///< \deprecated see PlatformType
-	VSTGUI_DEPRECATED(static bool getCocoaMode ();)					///< \deprecated see PlatformType
-	#endif
 
 	IPlatformFrame* getPlatformFrame () const { return platformFrame; }
 

@@ -45,10 +45,6 @@
 
 namespace VSTGUI {
 
-#if MAC_CARBON && MAC_COCOA && VSTGUI_ENABLE_DEPRECATED_METHODS
-	static bool createNSViewMode = false;
-#endif
-
 IdStringPtr kMsgNewFocusView = "kMsgNewFocusView";
 IdStringPtr kMsgOldFocusView = "kMsgOldFocusView";
 
@@ -64,34 +60,6 @@ On Mac OS X it is a HIView or NSView.\n
 On Windows it's a WS_CHILD Window.
 
 */
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-//-----------------------------------------------------------------------------
-/**
- * @param inSize size of frame
- * @param inSystemWindow parent platform window
- * @param inEditor editor
- */
-CFrame::CFrame (const CRect &inSize, void* inSystemWindow, VSTGUIEditorInterface* inEditor)
-: CViewContainer (inSize)
-, pEditor (inEditor)
-, pMouseObservers (0)
-, pKeyboardHooks (0)
-, pViewAddedRemovedObserver (0)
-, pScaleFactorChangedListenerList (0)
-, pTooltips (0)
-, pAnimator (0)
-, pModalView (0)
-, pFocusView (0)
-, pActiveFocusView (0)
-, bActive (true)
-, platformFrame (0)
-, collectInvalidRects (0)
-{
-	pParentFrame = this;
-	open (inSystemWindow);
-}
-#endif
-
 //-----------------------------------------------------------------------------
 CFrame::CFrame (const CRect& inSize, VSTGUIEditorInterface* inEditor)
 : CViewContainer (inSize)
@@ -164,18 +132,6 @@ CFrame::~CFrame ()
 
 	viewFlags &= ~kIsAttached;
 }
-
-#if MAC_COCOA && MAC_CARBON && VSTGUI_ENABLE_DEPRECATED_METHODS
-//-----------------------------------------------------------------------------
-void CFrame::setCocoaMode (bool state)
-{
-	createNSViewMode = state;
-}
-bool CFrame::getCocoaMode ()
-{
-	return createNSViewMode;
-}
-#endif
 
 //-----------------------------------------------------------------------------
 void CFrame::close ()
@@ -270,16 +226,6 @@ void CFrame::enableTooltips (bool state)
 		pTooltips = 0;
 	}
 }
-
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-//-----------------------------------------------------------------------------
-CDrawContext* CFrame::createDrawContext ()
-{
-	CDrawContext* pContext = 0;
-	
-	return pContext;
-}
-#endif
 
 //-----------------------------------------------------------------------------
 void CFrame::draw (CDrawContext* pContext)
@@ -690,15 +636,6 @@ void CFrame::idle ()
 		return;
 	invalidateDirtyViews ();
 }
-
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-//-----------------------------------------------------------------------------
-void CFrame::doIdleStuff ()
-{
-	if (pEditor)
-		pEditor->doIdleStuff ();
-}
-#endif
 
 //-----------------------------------------------------------------------------
 Animation::Animator* CFrame::getAnimator ()

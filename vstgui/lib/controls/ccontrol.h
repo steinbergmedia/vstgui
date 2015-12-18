@@ -164,8 +164,6 @@ public:
 
 	virtual void setWheelInc (float val) { wheelInc = val; }
 	virtual float getWheelInc () const { return wheelInc; }
-
-	VSTGUI_DEPRECATED(virtual void doIdleStuff ();)
 	//@}
 
 	// overrides

@@ -171,47 +171,6 @@ CTabView::CTabView (const CRect& size, const CRect& tabSize, CBitmap* background
 	setTransparency (true);
 }
 
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-//-----------------------------------------------------------------------------
-CTabView::CTabView (const CRect& size, CFrame* parent, CBitmap* tabBitmap, CBitmap* background, TabPosition tabPosition, int32_t style)
-: CViewContainer (size)
-, numberOfChilds (0)
-, tabPosition (tabPosition)
-, style (style)
-, tabSize (CRect (0, 0, 0, 0))
-, tabBitmap (tabBitmap)
-, firstChild (0)
-, lastChild (0)
-, currentChild (0)
-{
-	setBackground (background);
-	if (tabBitmap)
-	{
-		tabBitmap->remember ();
-		tabSize.right = tabBitmap->getWidth ();
-		tabSize.bottom = tabBitmap->getHeight ();
-	}
-	setTransparency (true);
-}
-
-//-----------------------------------------------------------------------------
-CTabView::CTabView (const CRect& size, CFrame* parent, const CRect& tabSize, CBitmap* background, TabPosition tabPosition, int32_t style)
-: CViewContainer (size)
-, numberOfChilds (0)
-, currentTab (-1)
-, tabPosition (tabPosition)
-, style (style)
-, tabSize (tabSize)
-, tabBitmap (0)
-, firstChild (0)
-, lastChild (0)
-, currentChild (0)
-{
-	setBackground (background);
-	setTransparency (true);
-}
-#endif
-
 //-----------------------------------------------------------------------------
 CTabView::~CTabView ()
 {

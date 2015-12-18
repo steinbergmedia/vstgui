@@ -65,7 +65,6 @@ protected:
 
 public:
 	CScrollView (const CRect& size, const CRect& containerSize, int32_t style, CCoord scrollbarWidth = 16, CBitmap* pBackground = 0);
-	VSTGUI_DEPRECATED(CScrollView (const CRect& size, const CRect& containerSize, CFrame* pParent, int32_t style, CCoord scrollbarWidth = 16, CBitmap* pBackground = 0);)
 	CScrollView (const CScrollView& scrollView);
 
 	/** Scroll View Style Flags */

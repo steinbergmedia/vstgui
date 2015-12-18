@@ -134,33 +134,6 @@ CDataBrowser::CDataBrowser (const CRect& size, IDataBrowserDelegate* db, int32_t
 		obj->remember ();
 }
 
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-//-----------------------------------------------------------------------------------------------
-/**
- * @param size size of data browser
- * @param pParent frame
- * @param db data browser interface. If db is inheritated from CBaseObject it will be remembered and released if data browser is destroyed
- * @param style data browser and scroll view style see #CDataBrowserStyle and #CScrollViewStyle
- * @param scrollbarWidth width of scrollbars
- * @param pBackground background bitmap
- */
-CDataBrowser::CDataBrowser (const CRect& size, CFrame* pParent, IDataBrowserDelegate* db, int32_t style, CCoord scrollbarWidth, CBitmap* pBackground)
-: CScrollView (size, CRect (0, 0, 0, 0), style, scrollbarWidth, pBackground)
-, db (db)
-, dbView (0)
-, dbHeader (0)
-, dbHeaderContainer (0)
-{
-	setTransparency (true);
-	dbView = new CDataBrowserView (CRect (0, 0, 0, 0), db, this);
-	dbView->setAutosizeFlags (kAutosizeLeft|kAutosizeRight|kAutosizeBottom);
-	addView (dbView);
-	CBaseObject* obj = dynamic_cast<CBaseObject*>(db);
-	if (obj)
-		obj->remember ();
-}
-#endif
-
 //-----------------------------------------------------------------------------------------------
 CDataBrowser::~CDataBrowser ()
 {

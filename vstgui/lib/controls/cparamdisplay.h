@@ -102,7 +102,6 @@ public:
 	typedef void			ValueToStringUserData;
 #endif
 
-	VSTGUI_DEPRECATED_FUNCTIONAL(virtual void setValueToStringProc (CParamDisplayValueToStringProc proc, void* userData = 0);) ///< deprecated use setValueToStringFunction instead if you use c++11
 #if VSTGUI_HAS_FUNCTIONAL
 	typedef std::function<bool(float value, char utf8String[256], CParamDisplay* display)> ValueToStringFunction;
 	
@@ -126,8 +125,6 @@ public:
 protected:
 	~CParamDisplay ();
 	virtual void drawBack (CDrawContext* pContext, CBitmap* newBack = 0);
-	VSTGUI_DEPRECATED (void drawText (CDrawContext* pContext, UTF8StringPtr string);)
-	VSTGUI_DEPRECATED (void drawText (CDrawContext* pContext, UTF8StringPtr string, const CRect& size);)
 
 	virtual void drawPlatformText (CDrawContext* pContext, IPlatformString* string);
 	virtual void drawPlatformText (CDrawContext* pContext, IPlatformString* string, const CRect& size);

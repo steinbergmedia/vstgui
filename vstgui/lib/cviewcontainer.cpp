@@ -51,9 +51,6 @@ namespace VSTGUI {
 	#define FOREACHSUBVIEW_REVERSE(reverse) ChildViewConstIterator it; ChildViewConstReverseIterator rit; if (reverse) rit = children.rbegin (); else it = children.begin (); while (reverse ? rit != children.rend () : it != children.end ()) { CView* pV; if (reverse) {	pV = (*rit); rit++; } else { pV = (*it); it++; } {
 #endif
 
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-IdStringPtr kMsgCheckIfViewContainer	= "kMsgCheckIfViewContainer";
-#endif
 IdStringPtr kMsgLooseFocus = "LooseFocus";
 
 namespace CViewContainerPrivate {
@@ -127,26 +124,6 @@ CViewContainer::CViewContainer (const CRect &rect)
 	backgroundColor = kBlackCColor;
 	setAutosizingEnabled (true);
 }
-
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-/**
- * CViewContainer constructor.
- * @param rect the size of the container
- * @param pParent (unused)
- * @param pBackground the background bitmap, can be NULL
- */
-CViewContainer::CViewContainer (const CRect &rect, CFrame* pParent, CBitmap* pBackground)
-: CView (rect)
-, currentDragView (0)
-, mouseDownView (0)
-, backgroundColorDrawStyle (kDrawFilledAndStroked)
-{
-	backgroundOffset (0, 0);
-	setBackground (pBackground);
-	backgroundColor = kBlackCColor;
-	setAutosizingEnabled (true);
-}
-#endif
 
 //-----------------------------------------------------------------------------
 CViewContainer::CViewContainer (const CViewContainer& v)
@@ -373,11 +350,6 @@ void CViewContainer::setBackgroundColorDrawStyle (CDrawStyle style)
 //------------------------------------------------------------------------------
 CMessageResult CViewContainer::notify (CBaseObject* sender, IdStringPtr message)
 {
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	if (message == kMsgCheckIfViewContainer)
-		return kMessageNotified;
-	else 
-#endif
 	if (message == kMsgNewFocusView)
 	{
 		CView* view = dynamic_cast<CView*> (sender);

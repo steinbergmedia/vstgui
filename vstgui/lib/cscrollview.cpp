@@ -309,23 +309,6 @@ CScrollView::CScrollView (const CRect &size, const CRect &containerSize, int32_t
 	recalculateSubViews ();
 }
 
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-//-----------------------------------------------------------------------------
-CScrollView::CScrollView (const CRect &size, const CRect &containerSize, CFrame* pParent, int32_t style, CCoord scrollbarWidth, CBitmap* pBackground)
-: CViewContainer (size)
-, sc (0)
-, vsb (0)
-, hsb (0)
-, containerSize (containerSize)
-, scrollbarWidth (scrollbarWidth)
-, style (style)
-, activeScrollbarStyle (0)
-{
-	setBackground (pBackground);
-	recalculateSubViews ();
-}
-#endif
-
 //-----------------------------------------------------------------------------
 CScrollView::CScrollView (const CScrollView& v)
 : CViewContainer (v)
