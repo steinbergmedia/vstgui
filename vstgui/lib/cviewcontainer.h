@@ -263,15 +263,6 @@ private:
 	CGraphicsTransform transform;
 };
 
-/// @cond ignore
-#ifndef FOREACHSUBVIEW
-	#define FOREACHSUBVIEW ChildViewConstIterator it = children.begin (); while (it != children.end ()) { CView* pV = (*it); it++; {
-#endif
-#ifndef ENDFOREACHSUBVIEW
-	#define ENDFOREACHSUBVIEW } }
-#endif
-/// @endcond
-
 typedef CViewContainer::Iterator<false> ViewIterator;
 typedef CViewContainer::Iterator<true> ReverseViewIterator;
 

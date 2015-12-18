@@ -178,9 +178,8 @@ bool CFrame::attached (CView* parent)
 	{
 		pParentView = 0;
 
-		FOREACHSUBVIEW
+		for (const auto& pV : children)
 			pV->attached (this);
-		ENDFOREACHSUBVIEW
 		
 		return true;
 	}
@@ -1201,14 +1200,12 @@ void CFrame::scrollRect (const CRect& src, const CPoint& distance)
 void CFrame::invalidate (const CRect &rect)
 {
 	CRect rectView;
-	FOREACHSUBVIEW
-	if (pV)
+	for (const auto& pV : children)
 	{
 		pV->getViewSize (rectView);
 		if (rect.rectOverlap (rectView))
 			pV->setDirty (true);
 	}
-	ENDFOREACHSUBVIEW
 }
 
 //-----------------------------------------------------------------------------

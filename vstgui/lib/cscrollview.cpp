@@ -138,7 +138,8 @@ void CScrollContainer::setScrollOffset (CPoint newOffset, bool redraw)
 	if (diff.x == 0 && diff.y == 0)
 		return;
 	inScrolling = true;
-	FOREACHSUBVIEW
+	for (const auto& pV : children)
+	{
 		CRect r, mr;
 		pV->getViewSize (r);
 		pV->getMouseableArea (mr);
@@ -146,7 +147,7 @@ void CScrollContainer::setScrollOffset (CPoint newOffset, bool redraw)
 		pV->setViewSize (r, false);
 		mr.offset (diff.x , diff.y);
 		pV->setMouseableArea (mr);
-	ENDFOREACHSUBVIEW
+	}
 	inScrolling = false;
 	offset = newOffset;
 	if (!isAttached ())
@@ -185,7 +186,8 @@ bool CScrollContainer::isDirty () const
 	if (CView::isDirty ())
 		return true;
 
-	FOREACHSUBVIEW
+	for (const auto& pV : children)
+	{
 		if (pV->isDirty () && pV->isVisible ())
 		{
 			CRect r = pV->getVisibleViewSize ();
@@ -194,7 +196,7 @@ bool CScrollContainer::isDirty () const
 			else
 				pV->setDirty (false);
 		}
-	ENDFOREACHSUBVIEW
+	}
 	return false;
 }
 

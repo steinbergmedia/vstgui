@@ -271,7 +271,8 @@ void CDataBrowser::recalculateLayout (bool rememberSelection)
 		allColumnsWidth += numColumns * lineWidth;
 	if (style & kDrawHeader)
 	{
-		FOREACHSUBVIEW
+		for (const auto& pV : children)
+		{
 			CRect viewSize;
 			pV->getViewSize (viewSize);
 			if (pV != dbHeaderContainer && viewSize.top < rowHeight+lineWidth)
@@ -280,7 +281,7 @@ void CDataBrowser::recalculateLayout (bool rememberSelection)
 				pV->setViewSize (viewSize);
 				pV->setMouseableArea (viewSize);
 			}
-		ENDFOREACHSUBVIEW
+		}
 	}
 
 	CRect newContainerSize (0, 0, allColumnsWidth, allRowsHeight);
