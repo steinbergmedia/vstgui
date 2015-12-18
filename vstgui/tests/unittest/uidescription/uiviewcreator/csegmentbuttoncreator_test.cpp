@@ -144,13 +144,13 @@ TESTCASE(CSegmentButtonCreatorTest,
 	TEST(truncateMode,
 		DummyUIDescription uidesc;
 		testAttribute<CSegmentButton>(kCSegmentButton, kAttrTruncateMode, "head", &uidesc, [] (CSegmentButton* v) {
-			return v->getTextTruncateMode () == CDrawMethods::kHead;
+			return v->getTextTruncateMode () == CDrawMethods::kTextTruncateHead;
 		});
 		testAttribute<CSegmentButton>(kCSegmentButton, kAttrTruncateMode, "tail", &uidesc, [] (CSegmentButton* v) {
-			return v->getTextTruncateMode () == CDrawMethods::kTail;
+			return v->getTextTruncateMode () == CDrawMethods::kTextTruncateTail;
 		});
 		testAttribute<CSegmentButton>(kCSegmentButton, kAttrTruncateMode, "", &uidesc, [] (CSegmentButton* v) {
-			return v->getTextTruncateMode () == CDrawMethods::kNone;
+			return v->getTextTruncateMode () == CDrawMethods::kTextTruncateNone;
 		});
 	);
 	

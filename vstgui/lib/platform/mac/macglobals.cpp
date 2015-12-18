@@ -42,7 +42,7 @@
 
 #define USE_MAIN_DISPLAY_COLORSPACE	1
 
-#if MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_7
+#if !TARGET_OS_IPHONE && MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_7
 // forward declare functions Apple removed from OSX SDK 10.11
 extern CMError CMGetSystemProfile (CMProfileRef * prof);
 extern CMError CMCloseProfile (CMProfileRef prof);
