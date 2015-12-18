@@ -160,10 +160,8 @@ protected:
 		bool operator==(const Template& t) { return name == t.name && view == t.view; }
 		bool operator==(const std::string& n) { return name == n; }
 		Template& operator=(const Template& t) { name = t.name; view = t.view; return *this; }
-	#if VSTGUI_RVALUE_REF_SUPPORT
 		Template (Template&& t) noexcept { *this = std::move (t); }
 		Template& operator=(Template&& t) noexcept { name = std::move (t.name); view = std::move (t.view); return *this; }
-	#endif
 	};
 	void updateTemplate (UTF8StringPtr name);
 	void updateTemplate (const std::vector<Template>::const_iterator& it);

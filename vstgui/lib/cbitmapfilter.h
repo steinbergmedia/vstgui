@@ -73,10 +73,9 @@ public:
 	Property (const Property& p);
 	~Property ();
 
-#if VSTGUI_RVALUE_REF_SUPPORT
 	Property (Property&& p) noexcept;
 	Property& operator=(Property&& p) noexcept;
-#endif
+
 	Type getType () const { return type; }
 
 	int32_t getInteger () const;

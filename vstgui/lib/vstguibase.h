@@ -198,11 +198,11 @@
 // C++11 features
 //----------------------------------------------------
 #ifndef VSTGUI_RVALUE_REF_SUPPORT
-	#define VSTGUI_RVALUE_REF_SUPPORT 0
+	"c++11 compiler needed !"
 #endif
 
 #ifndef VSTGUI_OVERRIDE_VMETHOD
-	#define VSTGUI_OVERRIDE_VMETHOD
+	"c++11 compiler needed !"
 #endif
 
 #ifndef VSTGUI_FINAL_VMETHOD
@@ -374,10 +374,8 @@ public:
 
 	template<class T> T* cast () const { return dynamic_cast<T*> (ptr); }
 
-#if VSTGUI_RVALUE_REF_SUPPORT
 	inline SharedPointer (SharedPointer<I>&& mp) noexcept;
 	inline SharedPointer<I>& operator=(SharedPointer<I>&& mp) noexcept;
-#endif
 //------------------------------------------------------------------------
 protected:
 	I* ptr;
@@ -415,7 +413,6 @@ inline SharedPointer<I>::~SharedPointer ()
 		ptr->forget ();
 }
 
-#if VSTGUI_RVALUE_REF_SUPPORT
 //------------------------------------------------------------------------
 template <class I>
 inline SharedPointer<I>::SharedPointer (SharedPointer<I>&& mp) noexcept
@@ -434,7 +431,6 @@ inline SharedPointer<I>& SharedPointer<I>::operator=(SharedPointer<I>&& mp) noex
 	mp.ptr = nullptr;
 	return *this;
 }
-#endif
 
 //------------------------------------------------------------------------
 template <class I>

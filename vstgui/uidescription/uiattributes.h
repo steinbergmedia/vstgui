@@ -64,10 +64,8 @@ public:
 	bool hasAttribute (const std::string& name) const;
 	const std::string* getAttributeValue (const std::string& name) const;
 	void setAttribute (const std::string& name, const std::string& value);
-#if VSTGUI_RVALUE_REF_SUPPORT
 	void setAttribute (const std::string& name, std::string&& value);
 	void setAttribute (std::string&& name, std::string&& value);
-#endif
 	void removeAttribute (const std::string& name);
 
 	void setBooleanAttribute (const std::string& name, bool value);

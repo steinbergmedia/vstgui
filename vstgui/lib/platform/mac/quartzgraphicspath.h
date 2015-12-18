@@ -90,9 +90,7 @@ public:
 	operator CGGradientRef () const;
 
 	void addColorStop (const std::pair<double, CColor>& colorStop) override;
-#if VSTGUI_RVALUE_REF_SUPPORT
 	void addColorStop (std::pair<double, CColor>&& colorStop) override;
-#endif
 
 protected:
 	void createCGGradient () const;

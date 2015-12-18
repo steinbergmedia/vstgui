@@ -72,9 +72,7 @@ protected:
 		
 		CDropEntry (const void* buffer, uint32_t bufferSize, Type type);
 		CDropEntry (const CDropEntry& entry);
-	#if VSTGUI_RVALUE_REF_SUPPORT
 		CDropEntry (CDropEntry&& entry) noexcept;
-	#endif
 		~CDropEntry ();
 	};
 	/// @endcond

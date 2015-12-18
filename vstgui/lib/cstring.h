@@ -96,10 +96,8 @@ public:
 
 	IPlatformString* getPlatformString () const;
 
-#if VSTGUI_RVALUE_REF_SUPPORT
 	UTF8String (UTF8String&& other);
 	UTF8String& operator=(UTF8String&& other);
-#endif
 //-----------------------------------------------------------------------------
 private:
 	std::string string;

@@ -355,14 +355,12 @@ void QuartzGradient::addColorStop (const std::pair<double, CColor>& colorStop)
 	releaseCGGradient ();
 }
 
-#if VSTGUI_RVALUE_REF_SUPPORT
 //-----------------------------------------------------------------------------
 void QuartzGradient::addColorStop (std::pair<double, CColor>&& colorStop)
 {
 	CGradient::addColorStop (colorStop);
 	releaseCGGradient ();
 }
-#endif
 
 //-----------------------------------------------------------------------------
 void QuartzGradient::createCGGradient () const

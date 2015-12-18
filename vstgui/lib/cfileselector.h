@@ -65,10 +65,8 @@ public:
 //-----------------------------------------------------------------------------
 	CLASS_METHODS(CFileExtension, CBaseObject)
 //-----------------------------------------------------------------------------
-#if VSTGUI_RVALUE_REF_SUPPORT
 	CFileExtension (CFileExtension&& ext) noexcept;
 	CFileExtension& operator=(CFileExtension&& ext) noexcept;
-#endif
 protected:
 	void init (UTF8StringPtr description, UTF8StringPtr extension, UTF8StringPtr mimeType, UTF8StringPtr uti);
 	
@@ -151,9 +149,7 @@ public:
 	void setDefaultExtension (const CFileExtension& extension);	///< set default file extension
 	void setAllowMultiFileSelection (bool state);				///< set allow multi file selection (only valid for kSelectFile selector style)
 	void addFileExtension (const CFileExtension& extension);	///< add a file extension
-#if VSTGUI_RVALUE_REF_SUPPORT
 	void addFileExtension (CFileExtension&& extension);			///< add a file extension
-#endif
 	//@}
 
 	//-----------------------------------------------------------------------------

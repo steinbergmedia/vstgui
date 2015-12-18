@@ -117,7 +117,6 @@ public:
 		}
 	}
 
-#if VSTGUI_RVALUE_REF_SUPPORT
 	CViewAttributeEntry (CViewAttributeEntry&& me) noexcept
 	: size (0)
 	, data (0)
@@ -135,7 +134,6 @@ public:
 		me.data = nullptr;
 		return *this;
 	}
-#endif
 
 protected:
 	uint32_t size;

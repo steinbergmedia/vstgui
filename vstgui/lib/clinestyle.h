@@ -67,11 +67,9 @@ public:
 	CLineStyle (const CLineStyle& lineStyle);
 	~CLineStyle ();
 
-#if VSTGUI_RVALUE_REF_SUPPORT
 	CLineStyle (LineCap cap, LineJoin join, CCoord dashPhase, CoordVector&& dashLengths) noexcept;
 	CLineStyle (CLineStyle&& cls) noexcept;
 	CLineStyle& operator= (CLineStyle&& cls) noexcept;
-#endif
 	
 	LineCap getLineCap () const { return cap; }
 	LineJoin getLineJoin () const { return join; }

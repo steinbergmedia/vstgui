@@ -127,7 +127,6 @@ Property::~Property ()
 	}
 }
 
-#if VSTGUI_RVALUE_REF_SUPPORT
 //----------------------------------------------------------------------------------------------------
 Property::Property (Property&& p) noexcept
 : value (nullptr)
@@ -150,7 +149,6 @@ Property& Property::operator=(Property&& p) noexcept
 	p.type = kUnknown;
 	return *this;
 }
-#endif
 
 //----------------------------------------------------------------------------------------------------
 Property& Property::operator=(const Property& p)

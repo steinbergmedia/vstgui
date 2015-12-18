@@ -70,7 +70,6 @@ CFileExtension::~CFileExtension ()
 	String::free (uti);
 }
 
-#if VSTGUI_RVALUE_REF_SUPPORT
 //-----------------------------------------------------------------------------
 CFileExtension::CFileExtension (CFileExtension&& ext) noexcept
 : description (nullptr)
@@ -100,7 +99,6 @@ CFileExtension& CFileExtension::operator=(CFileExtension&& ext) noexcept
 	ext.macType = 0;
 	return *this;
 }
-#endif
 
 //-----------------------------------------------------------------------------
 void CFileExtension::init (UTF8StringPtr inDescription, UTF8StringPtr inExtension, UTF8StringPtr inMimeType, UTF8StringPtr inUti)
@@ -289,13 +287,11 @@ void CNewFileSelector::addFileExtension (const CFileExtension& extension)
 	extensions.push_back (extension);
 }
 
-#if VSTGUI_RVALUE_REF_SUPPORT
 //-----------------------------------------------------------------------------
 void CNewFileSelector::addFileExtension (CFileExtension&& extension)
 {
 	extensions.push_back (std::move (extension));
 }
-#endif
 
 //-----------------------------------------------------------------------------
 uint32_t CNewFileSelector::getNumSelectedFiles () const

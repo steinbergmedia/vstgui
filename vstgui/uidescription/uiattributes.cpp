@@ -89,7 +89,6 @@ void UIAttributes::setAttribute (const std::string& name, const std::string& val
 	insert (std::make_pair (name, value));
 }
 
-#if VSTGUI_RVALUE_REF_SUPPORT
 //-----------------------------------------------------------------------------
 void UIAttributes::setAttribute (const std::string& name, std::string&& value)
 {
@@ -107,7 +106,6 @@ void UIAttributes::setAttribute (std::string&& name, std::string&& value)
 		erase (iter);
 	insert (std::make_pair (std::move (name), std::move (value)));
 }
-#endif
 
 //-----------------------------------------------------------------------------
 void UIAttributes::removeAttribute (const std::string& name)

@@ -58,7 +58,6 @@ CDropSource::CDropEntry::CDropEntry (const CDropEntry& entry)
 		memcpy (buffer, entry.buffer, bufferSize);
 }
 
-#if VSTGUI_RVALUE_REF_SUPPORT
 //-----------------------------------------------------------------------------
 CDropSource::CDropEntry::CDropEntry (CDropEntry&& entry) noexcept
 {
@@ -70,7 +69,6 @@ CDropSource::CDropEntry::CDropEntry (CDropEntry&& entry) noexcept
 	entry.type = kError;
 }
 
-#endif
 //-----------------------------------------------------------------------------
 CDropSource::CDropEntry::~CDropEntry ()
 {

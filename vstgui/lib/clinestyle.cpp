@@ -71,7 +71,6 @@ CLineStyle::~CLineStyle ()
 {
 }
 
-#if VSTGUI_RVALUE_REF_SUPPORT
 //-----------------------------------------------------------------------------
 CLineStyle::CLineStyle (LineCap _cap, LineJoin _join, CCoord _dashPhase, CoordVector&& _dashLengths) noexcept
 : cap (_cap)
@@ -97,7 +96,6 @@ CLineStyle& CLineStyle::operator= (CLineStyle&& cls) noexcept
 	dashLengths = std::move (cls.dashLengths);
 	return *this;
 }
-#endif
 
 //-----------------------------------------------------------------------------
 bool CLineStyle::operator== (const CLineStyle& cls) const

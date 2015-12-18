@@ -238,10 +238,8 @@ protected:
 		CDrawContextState ();
 		CDrawContextState (const CDrawContextState& state);
 		CDrawContextState& operator= (const CDrawContextState& state);
-	#if VSTGUI_RVALUE_REF_SUPPORT
 		CDrawContextState (CDrawContextState&& state) noexcept;
 		CDrawContextState& operator= (CDrawContextState&& state) noexcept;
-	#endif
 	};
 	/// @endcond
 

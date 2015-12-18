@@ -76,7 +76,6 @@ CDrawContext::CDrawContextState& CDrawContext::CDrawContextState::operator= (con
 	return *this;
 }
 
-#if VSTGUI_RVALUE_REF_SUPPORT
 //-----------------------------------------------------------------------------
 CDrawContext::CDrawContextState::CDrawContextState (CDrawContextState&& state) noexcept
 {
@@ -98,7 +97,6 @@ CDrawContext::CDrawContextState& CDrawContext::CDrawContextState::operator= (CDr
 	globalAlpha = std::move (state.globalAlpha);
 	return *this;
 }
-#endif
 
 //-----------------------------------------------------------------------------
 CDrawContext::Transform::Transform (CDrawContext& context, const CGraphicsTransform& transformation)
@@ -160,11 +158,7 @@ void CDrawContext::restoreGlobalState ()
 {
 	if (!globalStatesStack.empty ())
 	{
-	#if VSTGUI_RVALUE_REF_SUPPORT
 		currentState = std::move (globalStatesStack.top ());
-	#else
-		currentState = globalStatesStack.top ();
-	#endif
 		globalStatesStack.pop ();
 	}
 	else
