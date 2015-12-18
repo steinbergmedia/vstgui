@@ -45,7 +45,6 @@
 #include <list>
 
 namespace VSTGUI {
-class CCView;
 
 extern IdStringPtr kMsgLooseFocus;				///< Message of a view loosing focus (only CTextEdit and COptionMenu send this yet)
 
