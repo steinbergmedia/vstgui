@@ -261,10 +261,6 @@
 	#define VSTGUI_TOUCH_EVENT_HANDLING 0
 #endif
 
-#ifndef VSTGUI_ENABLE_OLD_CLASS_TYPE_INFO
-	#define VSTGUI_ENABLE_OLD_CLASS_TYPE_INFO VSTGUI_ENABLE_DEPRECATED_METHODS
-#endif
-
 //----------------------------------------------------
 // Helper makros
 //----------------------------------------------------
@@ -283,37 +279,9 @@
 #endif
 
 //----------------------------------------------------
-#if VSTGUI_ENABLE_OLD_CLASS_TYPE_INFO
-	#if DEBUG
-		#define CLASS_METHODS(name, parent)             \
-			virtual bool isTypeOf (IdStringPtr s) const \
-				{ return (!std::strcmp (s, (#name))) ? true : parent::isTypeOf (s); }\
-			virtual IdStringPtr getClassName () const { return (#name); } \
-			virtual CBaseObject* newCopy () const { return new name (*this); }
-		#define CLASS_METHODS_NOCOPY(name, parent)             \
-			virtual bool isTypeOf (IdStringPtr s) const \
-				{ return (!std::strcmp (s, (#name))) ? true : parent::isTypeOf (s); }\
-			virtual IdStringPtr getClassName () const { return (#name); } \
-			virtual CBaseObject* newCopy () const { return 0; }
-	#else
-		#define CLASS_METHODS(name, parent)             \
-			virtual bool isTypeOf (IdStringPtr s) const \
-				{ return (!std::strcmp (s, (#name))) ? true : parent::isTypeOf (s); } \
-			virtual CBaseObject* newCopy () const { return (CBaseObject*)new name (*this); }
-		#define CLASS_METHODS_NOCOPY(name, parent)             \
-			virtual bool isTypeOf (IdStringPtr s) const \
-				{ return (!std::strcmp (s, (#name))) ? true : parent::isTypeOf (s); } \
-			virtual CBaseObject* newCopy () const { return 0; }
-	#endif // DEBUG
-	#define CLASS_METHODS_VIRTUAL(name, parent)             \
-		virtual bool isTypeOf (IdStringPtr s) const \
-			{ return (!std::strcmp (s, (#name))) ? true : parent::isTypeOf (s); } \
-		virtual CBaseObject* newCopy () const = 0;
-#else
-	#define CLASS_METHODS(name, parent) CBaseObject* newCopy () const VSTGUI_OVERRIDE_VMETHOD { return new name (*this); }
-	#define CLASS_METHODS_NOCOPY(name, parent) CBaseObject* newCopy () const VSTGUI_OVERRIDE_VMETHOD { return 0; }
-	#define CLASS_METHODS_VIRTUAL(name, parent) CBaseObject* newCopy () const VSTGUI_OVERRIDE_VMETHOD = 0;
-#endif // VSTGUI_ENABLE_OLD_CLASS_TYPE_INFO
+#define CLASS_METHODS(name, parent) CBaseObject* newCopy () const VSTGUI_OVERRIDE_VMETHOD { return new name (*this); }
+#define CLASS_METHODS_NOCOPY(name, parent) CBaseObject* newCopy () const VSTGUI_OVERRIDE_VMETHOD { return 0; }
+#define CLASS_METHODS_VIRTUAL(name, parent) CBaseObject* newCopy () const VSTGUI_OVERRIDE_VMETHOD = 0;
 
 //----------------------------------------------------
 namespace VSTGUI {
@@ -374,12 +342,6 @@ public:
 	virtual void beforeDelete () {}
 
 	/// @cond ignore
-#if VSTGUI_ENABLE_OLD_CLASS_TYPE_INFO
-	virtual bool isTypeOf (IdStringPtr s) const { return (!std::strcmp (s, "CBaseObject")); }
-	#if DEBUG
-	virtual IdStringPtr getClassName () const { return "CBaseObject"; }
-	#endif
-#endif // VSTGUI_ENABLE_OLD_CLASS_TYPE_INFO
 	virtual CBaseObject* newCopy () const { return 0; }
 	/// @endcond
 
