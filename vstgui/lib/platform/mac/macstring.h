@@ -50,7 +50,7 @@ public:
 	MacString (UTF8StringPtr utf8String);
 	~MacString ();
 	
-	void setUTF8String (UTF8StringPtr utf8String) VSTGUI_OVERRIDE_VMETHOD;
+	void setUTF8String (UTF8StringPtr utf8String) override;
 
 	CFStringRef getCFString () const { return cfString; }
 

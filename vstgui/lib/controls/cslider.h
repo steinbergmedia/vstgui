@@ -107,24 +107,24 @@ public:
 	//@}
 
 	// overrides
-	virtual void draw (CDrawContext*) VSTGUI_OVERRIDE_VMETHOD;
+	virtual void draw (CDrawContext*) override;
 
-	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
-	virtual CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
-	virtual CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
-	virtual CMouseEventResult onMouseCancel () VSTGUI_OVERRIDE_VMETHOD;
+	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
+	virtual CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
+	virtual CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
+	virtual CMouseEventResult onMouseCancel () override;
 
-	virtual bool onWheel (const CPoint& where, const float& distance, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
-	virtual int32_t onKeyDown (VstKeyCode& keyCode) VSTGUI_OVERRIDE_VMETHOD;
+	virtual bool onWheel (const CPoint& where, const float& distance, const CButtonState& buttons) override;
+	virtual int32_t onKeyDown (VstKeyCode& keyCode) override;
 
-	virtual bool sizeToFit () VSTGUI_OVERRIDE_VMETHOD;
+	virtual bool sizeToFit () override;
 
 	static bool kAlwaysUseZoomFactor;
 
 	CLASS_METHODS(CSlider, CControl)
 protected:
 	~CSlider ();
-	void setViewSize (const CRect& rect, bool invalid) VSTGUI_OVERRIDE_VMETHOD;
+	void setViewSize (const CRect& rect, bool invalid) override;
 	
 	float calculateDelta (const CPoint& where, CRect* handleRect = 0) const;
 	

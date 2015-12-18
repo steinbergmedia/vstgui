@@ -47,8 +47,8 @@ public:
 	WinTimer (IPlatformTimerCallback* callback);
 	~WinTimer ();
 
-	bool start (uint32_t fireTime) VSTGUI_OVERRIDE_VMETHOD;
-	bool stop () VSTGUI_OVERRIDE_VMETHOD;
+	bool start (uint32_t fireTime) override;
+	bool stop () override;
 private:
 	typedef std::map<UINT_PTR, IPlatformTimerCallback*> TimerMap;
 	static TimerMap gTimerMap;

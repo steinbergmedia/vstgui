@@ -64,7 +64,7 @@ public:
 		invalid ();
 	}
 
-	void draw (CDrawContext *context) VSTGUI_OVERRIDE_VMETHOD
+	void draw (CDrawContext *context) override
 	{
 		context->setFontColor (fontColor);
 		context->setFont (font);

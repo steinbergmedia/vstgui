@@ -56,9 +56,9 @@ public:
 	CocoaTextEdit (NSView* parent, IPlatformTextEditCallback* textEdit);
 	~CocoaTextEdit ();
 	
-	UTF8StringPtr getText () VSTGUI_OVERRIDE_VMETHOD;
-	bool setText (UTF8StringPtr text) VSTGUI_OVERRIDE_VMETHOD;
-	bool updateSize () VSTGUI_OVERRIDE_VMETHOD;
+	UTF8StringPtr getText () override;
+	bool setText (UTF8StringPtr text) override;
+	bool updateSize () override;
 
 	NSTextField* getPlatformControl () const { return platformControl; }
 	NSView* getParent () const { return parent; }

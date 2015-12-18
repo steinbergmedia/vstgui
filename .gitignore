@@ -15,3 +15,4 @@ vstgui/ide/visualstudio/vs2015/build
 *.VC.opendb
 vstgui/tests/uidescription vst3/win/x64
 vstgui/tests/uidescription vst3/win/Win32
+vstgui/ide/xcode4/vstgui.xcodeproj/project.xcworkspace

@@ -170,7 +170,7 @@ protected:
 		setStringList (&names);
 	}
 	
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override
 	{
 		if (message == descriptionMessage)
 		{
@@ -230,7 +230,7 @@ protected:
 		}
 	}
 
-	void dbAttached (CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD
+	void dbAttached (CDataBrowser* browser) override
 	{
 		GenericStringListDataBrowserSource::dbAttached (browser);
 		update ();
@@ -239,13 +239,13 @@ protected:
 			searchField->setText (filterString.c_str ());
 	}
 
-	void dbRemoved (CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD
+	void dbRemoved (CDataBrowser* browser) override
 	{
 		saveDefaults ();
 		GenericStringListDataBrowserSource::dbRemoved (browser);
 	}
 
-	void valueChanged (CControl* control) VSTGUI_OVERRIDE_VMETHOD
+	void valueChanged (CControl* control) override
 	{
 		CTextEdit* edit = dynamic_cast<CTextEdit*>(control);
 		if (edit)
@@ -270,7 +270,7 @@ protected:
 		return true;
 	}
 
-	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD
+	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) override
 	{
 		if (buttons.isLeftButton () && buttons.isDoubleClick ())
 		{
@@ -279,7 +279,7 @@ protected:
 		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 	}
 
-	void dbCellTextChanged (int32_t row, int32_t column, UTF8StringPtr newText, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD
+	void dbCellTextChanged (int32_t row, int32_t column, UTF8StringPtr newText, CDataBrowser* browser) override
 	{
 		if (row < (int32_t)names.size () && names.at (static_cast<uint32_t> (row)) != newText)
 		{
@@ -292,7 +292,7 @@ protected:
 		textEditControl = 0;
 	}
 
-	void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* control, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD
+	void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* control, CDataBrowser* browser) override
 	{
 		textEditControl = control;
 		textEditControl->setBackColor (kWhiteCColor);

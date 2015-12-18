@@ -59,13 +59,13 @@ public:
 	CRect getContainerSize () const { return containerSize; }
 	void setContainerSize (const CRect& cs);
 
-	bool isDirty () const VSTGUI_OVERRIDE_VMETHOD;
+	bool isDirty () const override;
 
-	void onDragMove (IDataPackage* drag, const CPoint& where) VSTGUI_OVERRIDE_VMETHOD;
+	void onDragMove (IDataPackage* drag, const CPoint& where) override;
 	void setAutoDragScroll (bool state) { autoDragScroll = state; }
 
-	bool attached (CView* parent) VSTGUI_OVERRIDE_VMETHOD;
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
+	bool attached (CView* parent) override;
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 
 	CLASS_METHODS(CScrollContainer, CViewContainer)
 //-----------------------------------------------------------------------------

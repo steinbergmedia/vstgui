@@ -193,7 +193,7 @@ protected:
 		gInstance = 0;
 	}
 	
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override
 	{
 		if (message == CVSTGUITimer::kMsgTimer)
 		{

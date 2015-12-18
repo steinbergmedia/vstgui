@@ -167,12 +167,12 @@ public:
 	//@}
 
 	// overrides
-	void draw (CDrawContext* pContext) VSTGUI_OVERRIDE_VMETHOD = 0;
-	bool isDirty () const VSTGUI_OVERRIDE_VMETHOD;
-	void setDirty (bool val = true) VSTGUI_OVERRIDE_VMETHOD;
+	void draw (CDrawContext* pContext) override = 0;
+	bool isDirty () const override;
+	void setDirty (bool val = true) override;
 
-	bool drawFocusOnTop () VSTGUI_OVERRIDE_VMETHOD;
-	bool getFocusPath (CGraphicsPath& outPath) VSTGUI_OVERRIDE_VMETHOD;
+	bool drawFocusOnTop () override;
+	bool getFocusPath (CGraphicsPath& outPath) override;
 
 	static int32_t kZoomModifier;			///< zoom modifier key, per default is the shift key
 	static int32_t kDefaultValueModifier;	///< default value modifier key, per default is the control key

@@ -279,8 +279,8 @@ public:
 	#endif
 
 	// overwrites
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
-	void beforeDelete () VSTGUI_OVERRIDE_VMETHOD;
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
+	void beforeDelete () override;
 
 	//-------------------------------------------
 	CLASS_METHODS(CView, CBaseObject)

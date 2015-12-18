@@ -83,9 +83,9 @@ public:
 	static IdStringPtr kMsgEndColorChange;
 //-----------------------------------------------------------------------------
 protected:
-	void valueChanged (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
-	void controlBeginEdit (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
-	void controlEndEdit (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
+	void valueChanged (CControl* pControl) override;
+	void controlBeginEdit (CControl* pControl) override;
+	void controlEndEdit (CControl* pControl) override;
 	void updateState ();
 
 	/// @cond ignore

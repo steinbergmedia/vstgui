@@ -281,14 +281,14 @@ template <int32_t redPosition, int32_t greenPosition, int32_t bluePosition, int3
 class CBitmapPixelAccessOrder : public CBitmapPixelAccess
 {
 public:
-	void getColor (CColor& c) const VSTGUI_OVERRIDE_VMETHOD
+	void getColor (CColor& c) const override
 	{
 		c.red = currentPos[redPosition];
 		c.green = currentPos[greenPosition];
 		c.blue = currentPos[bluePosition];
 		c.alpha = currentPos[alphaPosition];
 	}
-	void setColor (const CColor& c) VSTGUI_OVERRIDE_VMETHOD
+	void setColor (const CColor& c) override
 	{
 		currentPos[redPosition] = c.red;
 		currentPos[greenPosition] = c.green;

@@ -284,7 +284,7 @@ private:
 public:
 	UIDescListWithFastFindAttributeNameChild () {}
 	
-	void add (UINode* obj) VSTGUI_OVERRIDE_VMETHOD
+	void add (UINode* obj) override
 	{
 		UIDescList::add (obj);
 		const std::string* nameAttributeValue = obj->getAttributes ()->getAttributeValue ("name");
@@ -292,7 +292,7 @@ public:
 			childMap.insert (std::make_pair (*nameAttributeValue, obj));
 	}
 
-	void remove (UINode* obj) VSTGUI_OVERRIDE_VMETHOD
+	void remove (UINode* obj) override
 	{
 		const std::string* nameAttributeValue = obj->getAttributes ()->getAttributeValue ("name");
 		if (nameAttributeValue)
@@ -304,13 +304,13 @@ public:
 		UIDescList::remove (obj);
 	}
 
-	void removeAll () VSTGUI_OVERRIDE_VMETHOD
+	void removeAll () override
 	{
 		childMap.clear ();
 		UIDescList::removeAll ();
 	}
 
-	UINode* findChildNodeWithAttributeValue (const std::string& attributeName, const std::string& attributeValue) const VSTGUI_OVERRIDE_VMETHOD
+	UINode* findChildNodeWithAttributeValue (const std::string& attributeName, const std::string& attributeValue) const override
 	{
 		if (attributeName != "name")
 			return UIDescList::findChildNodeWithAttributeValue (attributeName, attributeValue);
@@ -320,7 +320,7 @@ public:
 		return 0;
 	}
 
-	void nodeAttributeChanged (UINode* node, const std::string& attributeName, const std::string& oldAttributeValue) VSTGUI_OVERRIDE_VMETHOD
+	void nodeAttributeChanged (UINode* node, const std::string& attributeName, const std::string& oldAttributeValue) override
 	{
 		if (attributeName != "name")
 			return;

@@ -66,7 +66,7 @@ public:
 		String::free (name);
 	}	
 
-	virtual void draw (CDrawContext *pContext) VSTGUI_OVERRIDE_VMETHOD
+	virtual void draw (CDrawContext *pContext) override
 	{
 		COnOffButton::draw (pContext);
 		if (name)
@@ -77,7 +77,7 @@ public:
 		}
 	}
 
-	CMouseEventResult onMouseDown (CPoint &where, const CButtonState& button) VSTGUI_OVERRIDE_VMETHOD
+	CMouseEventResult onMouseDown (CPoint &where, const CButtonState& button) override
 	{
 		value = ((int32_t)value) ? 0.f : 1.f;
 		
@@ -86,7 +86,7 @@ public:
 		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 	}
 
-	virtual void onDragEnter (IDataPackage* drag, const CPoint& where) VSTGUI_OVERRIDE_VMETHOD
+	virtual void onDragEnter (IDataPackage* drag, const CPoint& where) override
 	{
 		if (value == 0.f)
 		{

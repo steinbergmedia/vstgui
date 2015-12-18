@@ -210,7 +210,7 @@
 #endif
 
 #ifndef VSTGUI_RANGE_BASED_FOR_LOOP_SUPPORT
-	#define VSTGUI_RANGE_BASED_FOR_LOOP_SUPPORT 0
+	"c++11 compiler needed !"
 #endif
 
 #ifndef VSTGUI_HAS_FUNCTIONAL
@@ -220,11 +220,7 @@
 //----------------------------------------------------
 // Helper Macro for range based for loops
 //----------------------------------------------------
-#if VSTGUI_RANGE_BASED_FOR_LOOP_SUPPORT
-	#define VSTGUI_RANGE_BASED_FOR_LOOP(ContainerType, container, varType, varName) for (const auto& varName : container) {
-#else
-	#define VSTGUI_RANGE_BASED_FOR_LOOP(ContainerType, container, varType, varName) for (ContainerType::const_iterator it = (container).begin (), end = (container).end (); it != end; ++it) { varType varName = (*it);
-#endif
+#define VSTGUI_RANGE_BASED_FOR_LOOP(ContainerType, container, varType, varName) for (const auto& varName : container) {
 #define VSTGUI_RANGE_BASED_FOR_LOOP_END }
 
 //----------------------------------------------------
@@ -279,9 +275,9 @@
 #endif
 
 //----------------------------------------------------
-#define CLASS_METHODS(name, parent) CBaseObject* newCopy () const VSTGUI_OVERRIDE_VMETHOD { return new name (*this); }
-#define CLASS_METHODS_NOCOPY(name, parent) CBaseObject* newCopy () const VSTGUI_OVERRIDE_VMETHOD { return 0; }
-#define CLASS_METHODS_VIRTUAL(name, parent) CBaseObject* newCopy () const VSTGUI_OVERRIDE_VMETHOD = 0;
+#define CLASS_METHODS(name, parent) CBaseObject* newCopy () const override { return new name (*this); }
+#define CLASS_METHODS_NOCOPY(name, parent) CBaseObject* newCopy () const override { return 0; }
+#define CLASS_METHODS_VIRTUAL(name, parent) CBaseObject* newCopy () const override = 0;
 
 //----------------------------------------------------
 namespace VSTGUI {

@@ -86,7 +86,7 @@ public:
 	/// @cond ignore
 
 	Animator ();	// do not use this, instead use CFrame::getAnimator()
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 
 	CLASS_METHODS_NOCOPY(Animator, CBaseObject)
 protected:

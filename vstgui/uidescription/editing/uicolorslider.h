@@ -65,9 +65,9 @@ public:
 	~UIColorSlider ();
 
 protected:
-	void draw (CDrawContext* context) VSTGUI_OVERRIDE_VMETHOD;
-	void setViewSize (const CRect& rect, bool invalid = true) VSTGUI_OVERRIDE_VMETHOD;
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
+	void draw (CDrawContext* context) override;
+	void setViewSize (const CRect& rect, bool invalid = true) override;
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 	void updateBackground (CDrawContext* context);
 	void updateHandle (CDrawContext* context);
 

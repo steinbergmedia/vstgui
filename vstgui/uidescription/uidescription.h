@@ -85,31 +85,31 @@ public:
 
 	void setController (IController* controller) const;
 
-	CView* createView (UTF8StringPtr name, IController* controller) const VSTGUI_OVERRIDE_VMETHOD;
-	CBitmap* getBitmap (UTF8StringPtr name) const VSTGUI_OVERRIDE_VMETHOD;
-	CFontRef getFont (UTF8StringPtr name) const VSTGUI_OVERRIDE_VMETHOD;
-	bool getColor (UTF8StringPtr name, CColor& color) const VSTGUI_OVERRIDE_VMETHOD;
-	CGradient* getGradient (UTF8StringPtr name) const VSTGUI_OVERRIDE_VMETHOD;
-	int32_t getTagForName (UTF8StringPtr name) const VSTGUI_OVERRIDE_VMETHOD;
-	IControlListener* getControlListener (UTF8StringPtr name) const VSTGUI_OVERRIDE_VMETHOD;
-	IController* getController () const VSTGUI_OVERRIDE_VMETHOD { return controller; }
-	const IViewFactory* getViewFactory () const VSTGUI_OVERRIDE_VMETHOD { return viewFactory; }
+	CView* createView (UTF8StringPtr name, IController* controller) const override;
+	CBitmap* getBitmap (UTF8StringPtr name) const override;
+	CFontRef getFont (UTF8StringPtr name) const override;
+	bool getColor (UTF8StringPtr name, CColor& color) const override;
+	CGradient* getGradient (UTF8StringPtr name) const override;
+	int32_t getTagForName (UTF8StringPtr name) const override;
+	IControlListener* getControlListener (UTF8StringPtr name) const override;
+	IController* getController () const override { return controller; }
+	const IViewFactory* getViewFactory () const override { return viewFactory; }
 	
-	UTF8StringPtr lookupColorName (const CColor& color) const VSTGUI_OVERRIDE_VMETHOD;
-	UTF8StringPtr lookupFontName (const CFontRef font) const VSTGUI_OVERRIDE_VMETHOD;
-	UTF8StringPtr lookupBitmapName (const CBitmap* bitmap) const VSTGUI_OVERRIDE_VMETHOD;
-	UTF8StringPtr lookupGradientName (const CGradient* gradient) const VSTGUI_OVERRIDE_VMETHOD;
-	UTF8StringPtr lookupControlTagName (const int32_t tag) const VSTGUI_OVERRIDE_VMETHOD;
+	UTF8StringPtr lookupColorName (const CColor& color) const override;
+	UTF8StringPtr lookupFontName (const CFontRef font) const override;
+	UTF8StringPtr lookupBitmapName (const CBitmap* bitmap) const override;
+	UTF8StringPtr lookupGradientName (const CGradient* gradient) const override;
+	UTF8StringPtr lookupControlTagName (const int32_t tag) const override;
 
-	bool getVariable (UTF8StringPtr name, double& value) const VSTGUI_OVERRIDE_VMETHOD;
-	bool getVariable (UTF8StringPtr name, std::string& value) const VSTGUI_OVERRIDE_VMETHOD;
+	bool getVariable (UTF8StringPtr name, double& value) const override;
+	bool getVariable (UTF8StringPtr name, std::string& value) const override;
 
-	void collectTemplateViewNames (std::list<const std::string*>& names) const VSTGUI_OVERRIDE_VMETHOD;
-	void collectColorNames (std::list<const std::string*>& names) const VSTGUI_OVERRIDE_VMETHOD;
-	void collectFontNames (std::list<const std::string*>& names) const VSTGUI_OVERRIDE_VMETHOD;
-	void collectBitmapNames (std::list<const std::string*>& names) const VSTGUI_OVERRIDE_VMETHOD;
-	void collectGradientNames (std::list<const std::string*>& names) const VSTGUI_OVERRIDE_VMETHOD;
-	void collectControlTagNames (std::list<const std::string*>& names) const VSTGUI_OVERRIDE_VMETHOD;
+	void collectTemplateViewNames (std::list<const std::string*>& names) const override;
+	void collectColorNames (std::list<const std::string*>& names) const override;
+	void collectFontNames (std::list<const std::string*>& names) const override;
+	void collectBitmapNames (std::list<const std::string*>& names) const override;
+	void collectGradientNames (std::list<const std::string*>& names) const override;
+	void collectControlTagNames (std::list<const std::string*>& names) const override;
 	
 	void changeColorName (UTF8StringPtr oldName, UTF8StringPtr newName);
 	void changeTagName (UTF8StringPtr oldName, UTF8StringPtr newName);
@@ -183,10 +183,10 @@ protected:
 	bool saveToStream (OutputStream& stream, int32_t flags);
 
 	// Xml::IHandler
-	void startXmlElement (Xml::Parser* parser, IdStringPtr elementName, UTF8StringPtr* elementAttributes) VSTGUI_OVERRIDE_VMETHOD;
-	void endXmlElement (Xml::Parser* parser, IdStringPtr name) VSTGUI_OVERRIDE_VMETHOD;
-	void xmlCharData (Xml::Parser* parser, const int8_t* data, int32_t length) VSTGUI_OVERRIDE_VMETHOD;
-	void xmlComment (Xml::Parser* parser, IdStringPtr comment) VSTGUI_OVERRIDE_VMETHOD;
+	void startXmlElement (Xml::Parser* parser, IdStringPtr elementName, UTF8StringPtr* elementAttributes) override;
+	void endXmlElement (Xml::Parser* parser, IdStringPtr name) override;
+	void xmlCharData (Xml::Parser* parser, const int8_t* data, int32_t length) override;
+	void xmlComment (Xml::Parser* parser, IdStringPtr comment) override;
 
 	CResourceDescription xmlFile;
 	std::string filePath;

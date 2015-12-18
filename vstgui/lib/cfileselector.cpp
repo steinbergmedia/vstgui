@@ -202,7 +202,7 @@ public:
 	CNewFileSelectorCallback (CNewFileSelector::CallbackFunc&& callback) : callbackFunc (std::move (callback)) {}
 	~CNewFileSelectorCallback () {}
 private:
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override
 	{
 		if (message == CNewFileSelector::kSelectEndMessage)
 		{

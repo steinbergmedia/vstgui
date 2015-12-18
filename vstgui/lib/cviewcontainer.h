@@ -135,45 +135,45 @@ public:
 	void unregisterViewContainerListener (IViewContainerListener* listener);
 	
 	// CView
-	virtual void draw (CDrawContext* pContext) VSTGUI_OVERRIDE_VMETHOD;
-	virtual void drawRect (CDrawContext* pContext, const CRect& updateRect) VSTGUI_OVERRIDE_VMETHOD;
-	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
-	virtual CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
-	virtual CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
-	virtual CMouseEventResult onMouseCancel () VSTGUI_OVERRIDE_VMETHOD;
-	virtual bool onWheel (const CPoint& where, const float& distance, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
-	virtual bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
-	virtual bool hitTest (const CPoint& where, const CButtonState& buttons = -1) VSTGUI_OVERRIDE_VMETHOD;
-	virtual CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
+	virtual void draw (CDrawContext* pContext) override;
+	virtual void drawRect (CDrawContext* pContext, const CRect& updateRect) override;
+	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
+	virtual CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
+	virtual CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
+	virtual CMouseEventResult onMouseCancel () override;
+	virtual bool onWheel (const CPoint& where, const float& distance, const CButtonState& buttons) override;
+	virtual bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons) override;
+	virtual bool hitTest (const CPoint& where, const CButtonState& buttons = -1) override;
+	virtual CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 
 #if VSTGUI_TOUCH_EVENT_HANDLING
-	virtual void onTouchEvent (ITouchEvent& event) VSTGUI_OVERRIDE_VMETHOD;
-	virtual bool wantsMultiTouchEvents () const VSTGUI_OVERRIDE_VMETHOD { return true; }
+	virtual void onTouchEvent (ITouchEvent& event) override;
+	virtual bool wantsMultiTouchEvents () const override { return true; }
 	virtual void findSingleTouchEventTarget (ITouchEvent::Touch& event);
 #endif
 
-	virtual bool onDrop (IDataPackage* drag, const CPoint& where) VSTGUI_OVERRIDE_VMETHOD;
-	virtual void onDragEnter (IDataPackage* drag, const CPoint& where) VSTGUI_OVERRIDE_VMETHOD;
-	virtual void onDragLeave (IDataPackage* drag, const CPoint& where) VSTGUI_OVERRIDE_VMETHOD;
-	virtual void onDragMove (IDataPackage* drag, const CPoint& where) VSTGUI_OVERRIDE_VMETHOD;
+	virtual bool onDrop (IDataPackage* drag, const CPoint& where) override;
+	virtual void onDragEnter (IDataPackage* drag, const CPoint& where) override;
+	virtual void onDragLeave (IDataPackage* drag, const CPoint& where) override;
+	virtual void onDragMove (IDataPackage* drag, const CPoint& where) override;
 
-	virtual void looseFocus () VSTGUI_OVERRIDE_VMETHOD;
-	virtual void takeFocus () VSTGUI_OVERRIDE_VMETHOD;
+	virtual void looseFocus () override;
+	virtual void takeFocus () override;
 
-	virtual bool isDirty () const VSTGUI_OVERRIDE_VMETHOD;
+	virtual bool isDirty () const override;
 
-	virtual void invalid () VSTGUI_OVERRIDE_VMETHOD;
-	virtual void invalidRect (const CRect& rect) VSTGUI_OVERRIDE_VMETHOD;
+	virtual void invalid () override;
+	virtual void invalidRect (const CRect& rect) override;
 	
-	virtual void setViewSize (const CRect& rect, bool invalid = true) VSTGUI_OVERRIDE_VMETHOD;
-	virtual void parentSizeChanged () VSTGUI_OVERRIDE_VMETHOD;
-	virtual bool sizeToFit () VSTGUI_OVERRIDE_VMETHOD;
+	virtual void setViewSize (const CRect& rect, bool invalid = true) override;
+	virtual void parentSizeChanged () override;
+	virtual bool sizeToFit () override;
 
-	virtual bool removed (CView* parent) VSTGUI_OVERRIDE_VMETHOD;
-	virtual bool attached (CView* parent) VSTGUI_OVERRIDE_VMETHOD;
+	virtual bool removed (CView* parent) override;
+	virtual bool attached (CView* parent) override;
 		
-	virtual CPoint& frameToLocal (CPoint& point) const VSTGUI_OVERRIDE_VMETHOD;
-	virtual CPoint& localToFrame (CPoint& point) const VSTGUI_OVERRIDE_VMETHOD;
+	virtual CPoint& frameToLocal (CPoint& point) const override;
+	virtual CPoint& localToFrame (CPoint& point) const override;
 
 	//-----------------------------------------------------------------------------
 	typedef ViewList::const_iterator ChildViewConstIterator;
@@ -232,7 +232,7 @@ public:
 	CLASS_METHODS(CViewContainer, CView)
 
 	#if DEBUG
-	virtual void dumpInfo () VSTGUI_OVERRIDE_VMETHOD;
+	virtual void dumpInfo () override;
 	virtual void dumpHierarchy ();
 	#endif
 

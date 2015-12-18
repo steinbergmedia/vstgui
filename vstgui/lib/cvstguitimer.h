@@ -72,7 +72,7 @@ public:
 protected:
 	~CVSTGUITimer ();
 	
-	void fire () VSTGUI_OVERRIDE_VMETHOD;
+	void fire () override;
 	
 	uint32_t fireTime;
 #if VSTGUI_HAS_FUNCTIONAL

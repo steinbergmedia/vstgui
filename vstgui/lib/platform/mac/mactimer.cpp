@@ -46,8 +46,8 @@ public:
 	MacTimer (IPlatformTimerCallback* callback);
 	~MacTimer ();
 
-	bool start (uint32_t fireTime) VSTGUI_OVERRIDE_VMETHOD;
-	bool stop () VSTGUI_OVERRIDE_VMETHOD;
+	bool start (uint32_t fireTime) override;
+	bool stop () override;
 private:
 	static void timerCallback (CFRunLoopTimerRef timer, void *info);
 

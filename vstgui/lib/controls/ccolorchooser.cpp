@@ -62,7 +62,7 @@ public:
 		setWheelInc (10.f/255.f);
 	}
 
-	void draw (CDrawContext* context) VSTGUI_OVERRIDE_VMETHOD
+	void draw (CDrawContext* context) override
 	{
 		CColor handleFillColor (kWhiteCColor);
 		CColor handleFrameColor (kBlackCColor);
@@ -151,7 +151,7 @@ public:
 	{
 	}
 	
-	void draw (CDrawContext* context) VSTGUI_OVERRIDE_VMETHOD
+	void draw (CDrawContext* context) override
 	{
 		context->setDrawMode (kAliasing);
 		if (checkerBoardBack && color.alpha != 255)
@@ -236,7 +236,7 @@ public:
 		return false;
 	}
 
-	bool onDrop (IDataPackage* drag, const CPoint& where) VSTGUI_OVERRIDE_VMETHOD
+	bool onDrop (IDataPackage* drag, const CPoint& where) override
 	{
 		CColor color;
 		if (dragContainerHasColor (drag, &color))
@@ -248,7 +248,7 @@ public:
 		return false;
 	}
 	
-	void onDragEnter (IDataPackage* drag, const CPoint& where) VSTGUI_OVERRIDE_VMETHOD
+	void onDragEnter (IDataPackage* drag, const CPoint& where) override
 	{
 		if (dragContainerHasColor (drag, 0))
 			getFrame ()->setCursor (kCursorCopy);
@@ -256,7 +256,7 @@ public:
 			getFrame ()->setCursor (kCursorNotAllowed);
 	}
 	
-	void onDragLeave (IDataPackage* drag, const CPoint& where) VSTGUI_OVERRIDE_VMETHOD
+	void onDragLeave (IDataPackage* drag, const CPoint& where) override
 	{
 		getFrame ()->setCursor (kCursorNotAllowed);
 	}

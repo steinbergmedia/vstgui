@@ -154,7 +154,7 @@ public:
 	, drawBottomLine (drawBottomLine)
 	{}
 
-	void draw (CDrawContext* context) VSTGUI_OVERRIDE_VMETHOD
+	void draw (CDrawContext* context) override
 	{
 		drawGradient (context, getViewSize (), horizontal, drawTopLine, drawBottomLine);
 	}
@@ -265,7 +265,7 @@ public:
 		updateZoom (100.f);
 	}
 	
-	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD
+	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override
 	{
 		if (!zoomValueControl)
 		{
@@ -308,7 +308,7 @@ public:
 		return view;
 	}
 
-	int32_t controlModifierClicked (CControl* pControl, CButtonState button) VSTGUI_OVERRIDE_VMETHOD
+	int32_t controlModifierClicked (CControl* pControl, CButtonState button) override
 	{
 		if (pControl == zoomValueControl && button.isRightButton ())
 		{
@@ -318,7 +318,7 @@ public:
 		return 0;
 	}
 
-	void valueChanged (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD
+	void valueChanged (CControl* pControl) override
 	{
 		if (pControl == zoomValueControl)
 			editController->onZoomChanged (pControl->getValue () / 100.f);

@@ -60,7 +60,7 @@ public:
 		setBackground (bitmap);
 	}
 	
-	void draw (CDrawContext* context) VSTGUI_OVERRIDE_VMETHOD
+	void draw (CDrawContext* context) override
 	{
 		if (CBitmap* bitmap = getBackground ())
 		{
@@ -137,7 +137,7 @@ public:
 		}
 	}
 
-	void setBackground (CBitmap *background) VSTGUI_OVERRIDE_VMETHOD
+	void setBackground (CBitmap *background) override
 	{
 		IPlatformBitmap* platformBitmap = background ? background->getPlatformBitmap () : 0;
 		if (platformBitmap && platformBitmap->getScaleFactor () != 1.)
@@ -170,21 +170,21 @@ public:
 	CBitmap* getSelectedBitmap ();
 	UTF8StringPtr getSelectedBitmapName ();
 
-	bool add () VSTGUI_OVERRIDE_VMETHOD;
+	bool add () override;
 protected:
-	void getNames (std::list<const std::string*>& names) VSTGUI_OVERRIDE_VMETHOD;
-	bool addItem (UTF8StringPtr name) VSTGUI_OVERRIDE_VMETHOD;
-	bool removeItem (UTF8StringPtr name) VSTGUI_OVERRIDE_VMETHOD;
-	bool performNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) VSTGUI_OVERRIDE_VMETHOD;
-	UTF8StringPtr getDefaultsName () VSTGUI_OVERRIDE_VMETHOD { return "UIBitmapsDataSource"; }
+	void getNames (std::list<const std::string*>& names) override;
+	bool addItem (UTF8StringPtr name) override;
+	bool removeItem (UTF8StringPtr name) override;
+	bool performNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) override;
+	UTF8StringPtr getDefaultsName () override { return "UIBitmapsDataSource"; }
 
 	bool addBitmap (UTF8StringPtr path, std::string& outName);
 
-	void dbOnDragEnterBrowser (IDataPackage* drag, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
-	void dbOnDragExitBrowser (IDataPackage* drag, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
-	void dbOnDragEnterCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
-	void dbOnDragExitCell (int32_t row, int32_t column, IDataPackage* drag, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
-	bool dbOnDropInCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
+	void dbOnDragEnterBrowser (IDataPackage* drag, CDataBrowser* browser) override;
+	void dbOnDragExitBrowser (IDataPackage* drag, CDataBrowser* browser) override;
+	void dbOnDragEnterCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser) override;
+	void dbOnDragExitCell (int32_t row, int32_t column, IDataPackage* drag, CDataBrowser* browser) override;
+	bool dbOnDropInCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser) override;
 
 	SharedPointer<CColorChooser> colorChooser;
 	bool dragContainsBitmaps;
@@ -415,12 +415,12 @@ public:
 	UIBitmapSettingsController (CBitmap* bitmap, const std::string& bitmapName, UIDescription* description, IActionPerformer* actionPerformer);
 	~UIBitmapSettingsController ();
 
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
-	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
-	CView* createView (const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
-	void valueChanged (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
-	void controlBeginEdit (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
-	void controlEndEdit (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
+	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;
+	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override;
+	void valueChanged (CControl* pControl) override;
+	void controlBeginEdit (CControl* pControl) override;
+	void controlEndEdit (CControl* pControl) override;
 protected:
 	void updateNinePartTiledControls ();
 	static bool stringToValue (UTF8StringPtr txt, float& result, CTextEdit::StringToValueUserData* userData);

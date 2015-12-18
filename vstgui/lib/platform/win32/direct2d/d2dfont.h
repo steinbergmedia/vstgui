@@ -57,15 +57,15 @@ public:
 protected:
 	~D2DFont ();
 	
-	double getAscent () const VSTGUI_OVERRIDE_VMETHOD { return ascent; }
-	double getDescent () const VSTGUI_OVERRIDE_VMETHOD { return descent; }
-	double getLeading () const VSTGUI_OVERRIDE_VMETHOD { return leading; }
-	double getCapHeight () const VSTGUI_OVERRIDE_VMETHOD { return capHeight; }
+	double getAscent () const override { return ascent; }
+	double getDescent () const override { return descent; }
+	double getLeading () const override { return leading; }
+	double getCapHeight () const override { return capHeight; }
 
-	IFontPainter* getPainter () VSTGUI_OVERRIDE_VMETHOD { return this; }
+	IFontPainter* getPainter () override { return this; }
 
-	void drawString (CDrawContext* context, IPlatformString* string, const CPoint& p, bool antialias = true) VSTGUI_OVERRIDE_VMETHOD;
-	CCoord getStringWidth (CDrawContext* context, IPlatformString* string, bool antialias = true) VSTGUI_OVERRIDE_VMETHOD;
+	void drawString (CDrawContext* context, IPlatformString* string, const CPoint& p, bool antialias = true) override;
+	CCoord getStringWidth (CDrawContext* context, IPlatformString* string, bool antialias = true) override;
 
 	IDWriteTextFormat* textFormat;
 	double ascent;

@@ -117,9 +117,9 @@ public:
 
 	//@}
 
-	void draw (CDrawContext* pContext) VSTGUI_OVERRIDE_VMETHOD;
-	bool getFocusPath (CGraphicsPath& outPath) VSTGUI_OVERRIDE_VMETHOD;
-	bool removed (CView* parent) VSTGUI_OVERRIDE_VMETHOD;
+	void draw (CDrawContext* pContext) override;
+	bool getFocusPath (CGraphicsPath& outPath) override;
+	bool removed (CView* parent) override;
 
 	CLASS_METHODS(CParamDisplay, CControl)
 protected:

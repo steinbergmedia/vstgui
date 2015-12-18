@@ -51,10 +51,10 @@ public:
 	WinDragContainer (IDataObject* platformDrag);
 	~WinDragContainer ();
 
-	uint32_t getCount () const VSTGUI_OVERRIDE_VMETHOD;
-	uint32_t getDataSize (uint32_t index) const VSTGUI_OVERRIDE_VMETHOD;
-	Type getDataType (uint32_t index) const VSTGUI_OVERRIDE_VMETHOD;
-	uint32_t getData (uint32_t index, const void*& buffer, Type& type) const VSTGUI_OVERRIDE_VMETHOD;
+	uint32_t getCount () const override;
+	uint32_t getDataSize (uint32_t index) const override;
+	Type getDataType (uint32_t index) const override;
+	uint32_t getData (uint32_t index, const void*& buffer, Type& type) const override;
 
 protected:
 	static bool checkResolveLink (const TCHAR* nativePath, TCHAR* resolved);

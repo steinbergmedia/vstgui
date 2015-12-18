@@ -181,7 +181,7 @@ protected:
 		gInstance = 0;
 	}
 
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override
 	{
 		CBaseObjectGuard guard (this);
 		for (ViewContainer::const_iterator it = views.begin (); it != views.end ();)

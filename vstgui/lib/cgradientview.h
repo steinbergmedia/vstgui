@@ -84,8 +84,8 @@ public:
 	//@}
 
 	// override
-	virtual void setViewSize (const CRect& rect, bool invalid = true) VSTGUI_OVERRIDE_VMETHOD;
-	void draw (CDrawContext* context) VSTGUI_OVERRIDE_VMETHOD;
+	virtual void setViewSize (const CRect& rect, bool invalid = true) override;
+	void draw (CDrawContext* context) override;
 protected:
 	GradientStyle gradientStyle;
 	CColor frameColor;

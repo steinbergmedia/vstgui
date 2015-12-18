@@ -182,20 +182,20 @@ public:
 	IDataBrowserDelegate* getDelegate () const { return db; }								///< get delegate object
 	//@}
 
-	void setAutosizeFlags (int32_t flags) VSTGUI_OVERRIDE_VMETHOD;
-	void setViewSize (const CRect& size, bool invalid) VSTGUI_OVERRIDE_VMETHOD;
-	void setWantsFocus (bool state) VSTGUI_OVERRIDE_VMETHOD;
+	void setAutosizeFlags (int32_t flags) override;
+	void setViewSize (const CRect& size, bool invalid) override;
+	void setWantsFocus (bool state) override;
 
-	int32_t onKeyDown (VstKeyCode& keyCode) VSTGUI_OVERRIDE_VMETHOD;
-	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
+	int32_t onKeyDown (VstKeyCode& keyCode) override;
+	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
 protected:
 	~CDataBrowser ();
-	void valueChanged (CControl *pControl) VSTGUI_OVERRIDE_VMETHOD;
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
-	bool attached (CView *parent) VSTGUI_OVERRIDE_VMETHOD;
-	bool removed (CView* parent) VSTGUI_OVERRIDE_VMETHOD;
+	void valueChanged (CControl *pControl) override;
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
+	bool attached (CView *parent) override;
+	bool removed (CView* parent) override;
 
-	void recalculateSubViews () VSTGUI_OVERRIDE_VMETHOD;
+	void recalculateSubViews () override;
 	void validateSelection ();
 
 	IDataBrowserDelegate* db;
@@ -231,32 +231,32 @@ public:
 	void setupUI (const CColor& selectionColor, const CColor& fontColor, const CColor& rowlineColor, const CColor& rowBackColor, const CColor& rowAlteranteBackColor, CFontRef font = 0, int32_t rowHeight = -1, CCoord textInset = 2.);
 
 protected:
-	int32_t dbGetNumRows (CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
-	int32_t dbGetNumColumns (CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD { return 1; }
-	bool dbGetColumnDescription (int32_t index, CCoord& minWidth, CCoord& maxWidth, CDataBrowser* browser)  VSTGUI_OVERRIDE_VMETHOD{ return false; }
-	CCoord dbGetCurrentColumnWidth (int32_t index, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
-	void dbSetCurrentColumnWidth (int32_t index, const CCoord& width, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD {}
-	CCoord dbGetRowHeight (CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
-	bool dbGetLineWidthAndColor (CCoord& width, CColor& color, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
+	int32_t dbGetNumRows (CDataBrowser* browser) override;
+	int32_t dbGetNumColumns (CDataBrowser* browser) override { return 1; }
+	bool dbGetColumnDescription (int32_t index, CCoord& minWidth, CCoord& maxWidth, CDataBrowser* browser)  override{ return false; }
+	CCoord dbGetCurrentColumnWidth (int32_t index, CDataBrowser* browser) override;
+	void dbSetCurrentColumnWidth (int32_t index, const CCoord& width, CDataBrowser* browser) override {}
+	CCoord dbGetRowHeight (CDataBrowser* browser) override;
+	bool dbGetLineWidthAndColor (CCoord& width, CColor& color, CDataBrowser* browser) override;
 
-	void dbDrawHeader (CDrawContext* context, const CRect& size, int32_t column, int32_t flags, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
-	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
+	void dbDrawHeader (CDrawContext* context, const CRect& size, int32_t column, int32_t flags, CDataBrowser* browser) override;
+	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser) override;
 
-	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
-	CMouseEventResult dbOnMouseMoved (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD { return kMouseEventNotHandled; }
-	CMouseEventResult dbOnMouseUp (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD { return kMouseEventNotHandled; }
+	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) override;
+	CMouseEventResult dbOnMouseMoved (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) override { return kMouseEventNotHandled; }
+	CMouseEventResult dbOnMouseUp (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) override { return kMouseEventNotHandled; }
 
-	void dbSelectionChanged (CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
+	void dbSelectionChanged (CDataBrowser* browser) override;
 
-	void dbCellTextChanged (int32_t row, int32_t column, UTF8StringPtr newText, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD {}
-	void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* textEditControl, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD {}
+	void dbCellTextChanged (int32_t row, int32_t column, UTF8StringPtr newText, CDataBrowser* browser) override {}
+	void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* textEditControl, CDataBrowser* browser) override {}
 
-	int32_t dbOnKeyDown (const VstKeyCode& key, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
+	int32_t dbOnKeyDown (const VstKeyCode& key, CDataBrowser* browser) override;
 
-	void dbAttached (CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
-	void dbRemoved (CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
+	void dbAttached (CDataBrowser* browser) override;
+	void dbRemoved (CDataBrowser* browser) override;
 
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 
 	const StringVector* stringList;
 	int32_t rowHeight;

@@ -72,12 +72,12 @@ protected:
 	CView* createValueViewForAttributeType (const UIViewFactory* viewFactory, CView* view, const std::string& attrName, IViewCreator::AttrType attrType);
 	void getConsolidatedAttributeNames (StringList& result, const std::string& filter);
 
-	void valueChanged (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
-	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
-	IController* createSubController (IdStringPtr name, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
-	IControlListener* getControlListener (UTF8StringPtr name) VSTGUI_OVERRIDE_VMETHOD;
+	void valueChanged (CControl* pControl) override;
+	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;
+	IController* createSubController (IdStringPtr name, const IUIDescription* description) override;
+	IControlListener* getControlListener (UTF8StringPtr name) override;
 
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 
 	SharedPointer<UISelection> selection;
 	SharedPointer<UIUndoManager> undoManager;
