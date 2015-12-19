@@ -63,9 +63,9 @@ public:
 	TestAnimationController (IController* controller, Parameter* switchParameter);
 	~TestAnimationController ();
 
-	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
+	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;
 	
-	void PLUGIN_API update (FUnknown* changedUnknown, int32 message) VSTGUI_OVERRIDE_VMETHOD;
+	void PLUGIN_API update (FUnknown* changedUnknown, int32 message) override;
 	OBJ_METHODS(TestAnimationController, FObject)
 protected:
 	Parameter* switchParameter;
@@ -78,8 +78,8 @@ class ScaleView : public CViewContainer
 {
 public:
 	ScaleView ();
-	CMouseEventResult onMouseEntered (CPoint &where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
-	CMouseEventResult onMouseExited (CPoint &where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
+	CMouseEventResult onMouseEntered (CPoint &where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseExited (CPoint &where, const CButtonState& buttons) override;
 protected:
 	CRect origRect;
 };

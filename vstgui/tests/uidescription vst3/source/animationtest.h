@@ -54,11 +54,11 @@ public:
 class AnimationTestController : public UIDescriptionBaseController
 {
 public:
-	Steinberg::tresult PLUGIN_API initialize (Steinberg::FUnknown* context) VSTGUI_OVERRIDE_VMETHOD;
-	Steinberg::IPlugView* PLUGIN_API createView (Steinberg::FIDString name) VSTGUI_OVERRIDE_VMETHOD;
+	Steinberg::tresult PLUGIN_API initialize (Steinberg::FUnknown* context) override;
+	Steinberg::IPlugView* PLUGIN_API createView (Steinberg::FIDString name) override;
 
-	IController* createSubController (const char* name, const IUIDescription* description, VST3Editor* editor) VSTGUI_OVERRIDE_VMETHOD;
-	CView* createCustomView (const char* name, const UIAttributes& attributes, const IUIDescription* description, VST3Editor* editor) VSTGUI_OVERRIDE_VMETHOD;
+	IController* createSubController (const char* name, const IUIDescription* description, VST3Editor* editor) override;
+	CView* createCustomView (const char* name, const UIAttributes& attributes, const IUIDescription* description, VST3Editor* editor) override;
 
 	static Steinberg::FUnknown* createInstance (void*) { return (Steinberg::Vst::IEditController*)new AnimationTestController; }
 	static Steinberg::FUID cid;
