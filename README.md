@@ -13,7 +13,7 @@ VSTGUI is a user interface toolkit mainly for audio plug-ins (VST, AudioUnit, et
 - Apple iOS 8-9
 
 ##Requirements
-- Visual Studio 2012/2015 or Xcode 6/7
+- Visual Studio 2013/2015 or Xcode 6/7
 
 ##License
 BSD style
