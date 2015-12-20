@@ -17,7 +17,7 @@ namespace VSTGUI {
 class EditEditorController : public UIDescriptionBaseController
 {
 public:
-	Steinberg::IPlugView* PLUGIN_API createView (Steinberg::FIDString name) VSTGUI_OVERRIDE_VMETHOD;
+	Steinberg::IPlugView* PLUGIN_API createView (Steinberg::FIDString name) override;
 
 	static Steinberg::FUnknown* createInstance (void*) { return (Steinberg::Vst::IEditController*)new EditEditorController; }
 	static Steinberg::FUID cid;

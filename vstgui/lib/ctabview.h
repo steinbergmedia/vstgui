@@ -69,9 +69,6 @@ public:
 	CTabView (const CRect& size, CBitmap* tabBitmap, CBitmap* background = 0, TabPosition tabPosition = kPositionTop, int32_t style = 0);
 	CTabView (const CRect& size, const CRect& tabSize, CBitmap* background = 0, TabPosition tabPosition = kPositionTop, int32_t style = 0);
 
-	VSTGUI_DEPRECATED(CTabView (const CRect& size, CFrame* parent, CBitmap* tabBitmap, CBitmap* background = 0, TabPosition tabPosition = kPositionTop, int32_t style = 0);)
-	VSTGUI_DEPRECATED(CTabView (const CRect& size, CFrame* parent, const CRect& tabSize, CBitmap* background = 0, TabPosition tabPosition = kPositionTop, int32_t style = 0);)
-	
 	//-----------------------------------------------------------------------------
 	/// @name Tab View Functions
 	//-----------------------------------------------------------------------------
@@ -92,10 +89,10 @@ public:
 	virtual void setTabViewInsets (const CPoint& inset);
 	//@}
 
-	virtual void drawBackgroundRect (CDrawContext *pContext, const CRect& _updateRect) VSTGUI_OVERRIDE_VMETHOD;
-	virtual void valueChanged (CControl *pControl) VSTGUI_OVERRIDE_VMETHOD;
-	virtual void setViewSize (const CRect &rect, bool invalid = true) VSTGUI_OVERRIDE_VMETHOD;
-	virtual void setAutosizeFlags (int32_t flags) VSTGUI_OVERRIDE_VMETHOD;
+	virtual void drawBackgroundRect (CDrawContext *pContext, const CRect& _updateRect) override;
+	virtual void valueChanged (CControl *pControl) override;
+	virtual void setViewSize (const CRect &rect, bool invalid = true) override;
+	virtual void setAutosizeFlags (int32_t flags) override;
 //-----------------------------------------------------------------------------
 	CLASS_METHODS (CTabView, CViewContainer)
 protected:

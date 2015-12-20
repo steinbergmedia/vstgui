@@ -46,12 +46,6 @@ enum CDrawModeFlags
 {
 	kAliasing = 0,					///< aliased drawing
 	kAntiAliasing = 1,				///< antialised drawing
-
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	kCopyMode = kAliasing,			///< \deprecated use kAliasing
-	kAntialias = kAntiAliasing,		///< \deprecated use kAntiAliasing
-#endif
-
 	kNonIntegralMode = 0xF0000000		///< do not round coordinates to pixel aligned values
 };
 

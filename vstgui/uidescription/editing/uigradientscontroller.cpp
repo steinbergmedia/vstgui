@@ -63,14 +63,14 @@ public:
 
 	static IdStringPtr kChanged;
 private:
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
-	void draw (CDrawContext* context) VSTGUI_OVERRIDE_VMETHOD;
-	bool drawFocusOnTop () VSTGUI_OVERRIDE_VMETHOD;
-	bool getFocusPath (CGraphicsPath& outPath) VSTGUI_OVERRIDE_VMETHOD;
-	int32_t onKeyDown (VstKeyCode& keyCode) VSTGUI_OVERRIDE_VMETHOD;
-	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
-	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
-	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
+	void draw (CDrawContext* context) override;
+	bool drawFocusOnTop () override;
+	bool getFocusPath (CGraphicsPath& outPath) override;
+	int32_t onKeyDown (VstKeyCode& keyCode) override;
+	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
 
 	double gradientStartPosFromMousePos (const CPoint& where) const;
 
@@ -387,11 +387,11 @@ public:
 	UIGradientEditorController (const std::string& gradientName, CGradient* gradient, UIDescription* description, IActionPerformer* actionPerformer);
 	~UIGradientEditorController ();
 
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
-	void valueChanged (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
-	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
-	CView* createView (const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
-	IController* createSubController (UTF8StringPtr name, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
+	void valueChanged (CControl* pControl) override;
+	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;
+	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override;
+	IController* createSubController (UTF8StringPtr name, const IUIDescription* description) override;
 protected:
 	void apply ();
 	
@@ -512,15 +512,15 @@ public:
 	std::string getSelectedGradientName ();
 	
 protected:
-	virtual void update () VSTGUI_OVERRIDE_VMETHOD;
-	virtual void getNames (std::list<const std::string*>& names) VSTGUI_OVERRIDE_VMETHOD;
-	virtual bool addItem (UTF8StringPtr name) VSTGUI_OVERRIDE_VMETHOD;
-	virtual bool removeItem (UTF8StringPtr name) VSTGUI_OVERRIDE_VMETHOD;
-	virtual bool performNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) VSTGUI_OVERRIDE_VMETHOD;
-	virtual UTF8StringPtr getDefaultsName () VSTGUI_OVERRIDE_VMETHOD { return "UIGradientsDataSource"; }
+	virtual void update () override;
+	virtual void getNames (std::list<const std::string*>& names) override;
+	virtual bool addItem (UTF8StringPtr name) override;
+	virtual bool removeItem (UTF8StringPtr name) override;
+	virtual bool performNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) override;
+	virtual UTF8StringPtr getDefaultsName () override { return "UIGradientsDataSource"; }
 
-	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
-	void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* control, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
+	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser) override;
+	void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* control, CDataBrowser* browser) override;
 };
 
 //----------------------------------------------------------------------------------------------------

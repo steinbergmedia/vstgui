@@ -75,12 +75,10 @@ public:
 		colorStops.insert (colorStop);
 	}
 
-#if VSTGUI_RVALUE_REF_SUPPORT
 	virtual void addColorStop (std::pair<double, CColor>&& colorStop)
 	{
 		colorStops.insert (std::move (colorStop));
 	}
-#endif
 	
 	const ColorStopMap& getColorStops () const { return colorStops; }
 	//@}

@@ -71,11 +71,11 @@ public:
 
 
 	// overrides
-	virtual void setDirty (bool state) VSTGUI_OVERRIDE_VMETHOD;
-	virtual void draw (CDrawContext* pContext) VSTGUI_OVERRIDE_VMETHOD;
-	virtual void setViewSize (const CRect& newSize, bool invalid = true) VSTGUI_OVERRIDE_VMETHOD;
-	virtual bool sizeToFit () VSTGUI_OVERRIDE_VMETHOD;
-	virtual void onIdle () VSTGUI_OVERRIDE_VMETHOD;
+	virtual void setDirty (bool state) override;
+	virtual void draw (CDrawContext* pContext) override;
+	virtual void setViewSize (const CRect& newSize, bool invalid = true) override;
+	virtual bool sizeToFit () override;
+	virtual void onIdle () override;
 	
 	CLASS_METHODS(CVuMeter, CControl)
 protected:

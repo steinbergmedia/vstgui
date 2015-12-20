@@ -284,9 +284,8 @@ void GdiplusDrawContext::drawLines (const LineList& lines)
 {
 	if (lines.size () == 0)
 		return;
-	VSTGUI_RANGE_BASED_FOR_LOOP(LineList, lines, LinePair, line)
+	for (const auto& line : lines)
 		drawLine (line);
-	VSTGUI_RANGE_BASED_FOR_LOOP_END
 }
 
 //-----------------------------------------------------------------------------

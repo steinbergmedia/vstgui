@@ -284,7 +284,7 @@ private:
 public:
 	UIDescListWithFastFindAttributeNameChild () {}
 	
-	void add (UINode* obj) VSTGUI_OVERRIDE_VMETHOD
+	void add (UINode* obj) override
 	{
 		UIDescList::add (obj);
 		const std::string* nameAttributeValue = obj->getAttributes ()->getAttributeValue ("name");
@@ -292,7 +292,7 @@ public:
 			childMap.insert (std::make_pair (*nameAttributeValue, obj));
 	}
 
-	void remove (UINode* obj) VSTGUI_OVERRIDE_VMETHOD
+	void remove (UINode* obj) override
 	{
 		const std::string* nameAttributeValue = obj->getAttributes ()->getAttributeValue ("name");
 		if (nameAttributeValue)
@@ -304,13 +304,13 @@ public:
 		UIDescList::remove (obj);
 	}
 
-	void removeAll () VSTGUI_OVERRIDE_VMETHOD
+	void removeAll () override
 	{
 		childMap.clear ();
 		UIDescList::removeAll ();
 	}
 
-	UINode* findChildNodeWithAttributeValue (const std::string& attributeName, const std::string& attributeValue) const VSTGUI_OVERRIDE_VMETHOD
+	UINode* findChildNodeWithAttributeValue (const std::string& attributeName, const std::string& attributeValue) const override
 	{
 		if (attributeName != "name")
 			return UIDescList::findChildNodeWithAttributeValue (attributeName, attributeValue);
@@ -320,7 +320,7 @@ public:
 		return 0;
 	}
 
-	void nodeAttributeChanged (UINode* node, const std::string& attributeName, const std::string& oldAttributeValue) VSTGUI_OVERRIDE_VMETHOD
+	void nodeAttributeChanged (UINode* node, const std::string& attributeName, const std::string& oldAttributeValue) override
 	{
 		if (attributeName != "name")
 			return;
@@ -389,40 +389,38 @@ void UIDescList::removeAll ()
 //-----------------------------------------------------------------------------
 UINode* UIDescList::findChildNode (const std::string& nodeName) const
 {
-	VSTGUI_RANGE_BASED_FOR_LOOP (UIDescList, *this, UINode*, node)
+	for (const auto& node : *this)
+	{
 		if (node->getName () == nodeName)
 			return node;
-	VSTGUI_RANGE_BASED_FOR_LOOP_END
+	}
 	return 0;
 }
 
 //-----------------------------------------------------------------------------
 UINode* UIDescList::findChildNodeWithAttributeValue (const std::string& attributeName, const std::string& attributeValue) const
 {
-	VSTGUI_RANGE_BASED_FOR_LOOP (UIDescList, *this, UINode*, node)
+	for (const auto& node : *this)
+	{
 		const std::string* attributeValuePtr = node->getAttributes ()->getAttributeValue (attributeName);
 		if (attributeValuePtr && *attributeValuePtr == attributeValue)
 			return node;
-	VSTGUI_RANGE_BASED_FOR_LOOP_END
+	}
 	return 0;
 }
 
 //-----------------------------------------------------------------------------
 void UIDescList::sort ()
 {
-	struct Compare {
-		bool operator () (const UINode* n1, const UINode* n2) const
-		{
-			const std::string* str1 = n1->getAttributes ()->getAttributeValue ("name");
-			const std::string* str2 = n2->getAttributes ()->getAttributeValue ("name");
-			if (str1 && str2)
-				return *str1 < *str2;
-			else if (str1)
-				return true;
-			return false;
-		}
-	};
-	std::sort (begin (), end (), Compare ());
+	std::sort (begin (), end (), [] (const UINode* n1, const UINode* n2) {
+		const std::string* str1 = n1->getAttributes ()->getAttributeValue ("name");
+		const std::string* str2 = n2->getAttributes ()->getAttributeValue ("name");
+		if (str1 && str2)
+			return *str1 < *str2;
+		else if (str1)
+			return true;
+		return false;
+	});
 }
 
 //-----------------------------------------------------------------------------
@@ -932,7 +930,8 @@ UINode* UIDescription::findNodeForView (CView* view) const
 	if (parentView)
 	{
 		UINode* node = 0;
-		VSTGUI_RANGE_BASED_FOR_LOOP (UIDescList, nodes->getChildren (), UINode*, itNode)
+		for (const auto& itNode : nodes->getChildren ())
+		{
 			if (itNode->getName () == MainNodeNames::kTemplate)
 			{
 				const std::string* nodeName = itNode->getAttributes ()->getAttributeValue ("name");
@@ -942,7 +941,7 @@ UINode* UIDescription::findNodeForView (CView* view) const
 					break;
 				}
 			}
-		VSTGUI_RANGE_BASED_FOR_LOOP_END
+		}
 		if (node)
 		{
 			while (view != parentView)
@@ -1119,7 +1118,8 @@ CView* UIDescription::createViewFromNode (UINode* node) const
 	if (result && node->hasChildren ())
 	{
 		CViewContainer* viewContainer = dynamic_cast<CViewContainer*> (result);
-		VSTGUI_RANGE_BASED_FOR_LOOP (UIDescList, node->getChildren (), UINode*, itNode)
+		for (const auto& itNode : node->getChildren ())
+		{
 			if (viewContainer)
 			{
 				if (itNode->getName () == "view")
@@ -1153,7 +1153,7 @@ CView* UIDescription::createViewFromNode (UINode* node) const
 						result->setAttribute (attrId, static_cast<uint32_t> (attrValue->size () + 1), attrValue->c_str ());
 				}
 			}
-		VSTGUI_RANGE_BASED_FOR_LOOP_END
+		}
 	}
 	if (result && controller)
 		result = controller->verifyView (result, *node->getAttributes (), this);
@@ -1184,7 +1184,8 @@ CView* UIDescription::createView (UTF8StringPtr name, IController* _controller) 
 	ScopePointer<IController> sp (&controller, _controller);
 	if (nodes)
 	{
-		VSTGUI_RANGE_BASED_FOR_LOOP (UIDescList, nodes->getChildren (), UINode*, itNode)
+		for (const auto& itNode : nodes->getChildren ())
+		{
 			if (itNode->getName () == MainNodeNames::kTemplate)
 			{
 				const std::string* nodeName = itNode->getAttributes ()->getAttributeValue ("name");
@@ -1196,7 +1197,7 @@ CView* UIDescription::createView (UTF8StringPtr name, IController* _controller) 
 					return view;
 				}
 			}
-		VSTGUI_RANGE_BASED_FOR_LOOP_END
+		}
 	}
 	return 0;
 }
@@ -1224,14 +1225,15 @@ const UIAttributes* UIDescription::getViewAttributes (UTF8StringPtr name) const
 {
 	if (nodes)
 	{
-		VSTGUI_RANGE_BASED_FOR_LOOP (UIDescList, nodes->getChildren (), UINode*, itNode)
+		for (const auto& itNode : nodes->getChildren ())
+		{
 			if (itNode->getName () == MainNodeNames::kTemplate)
 			{
 				const std::string* nodeName = itNode->getAttributes ()->getAttributeValue ("name");
 				if (nodeName && *nodeName == name)
 					return itNode->getAttributes ();
 			}
-		VSTGUI_RANGE_BASED_FOR_LOOP_END
+		}
 	}
 	return 0;
 }
@@ -1508,14 +1510,15 @@ template<typename NodeType, typename ObjType, typename CompareFunction> UTF8Stri
 	if (baseNode)
 	{
 		UIDescList& children = baseNode->getChildren ();
-		VSTGUI_RANGE_BASED_FOR_LOOP (UIDescList, children, UINode*, itNode)
+		for (const auto& itNode : children)
+		{
 			NodeType* node = dynamic_cast<NodeType*>(itNode);
 			if (node && compare (this, node, obj))
 			{
 				const std::string* name = node->getAttributes ()->getAttributeValue ("name");
 				return name ? name->c_str () : 0;
 			}
-		VSTGUI_RANGE_BASED_FOR_LOOP_END
+		}
 	}
 	return 0;
 }
@@ -1523,63 +1526,48 @@ template<typename NodeType, typename ObjType, typename CompareFunction> UTF8Stri
 //-----------------------------------------------------------------------------
 UTF8StringPtr UIDescription::lookupColorName (const CColor& color) const
 {
-	struct Compare {
-		bool operator () (const UIDescription* desc, UIColorNode* node, const CColor& color) const {
-			return node->getColor() == color;
-		}
-	};
-	return lookupName<UIColorNode> (color, MainNodeNames::kColor, Compare ());
+	return lookupName<UIColorNode> (color, MainNodeNames::kColor, [] (const UIDescription* desc, UIColorNode* node, const CColor& color) {
+		return node->getColor() == color;
+	});
 }
 
 //-----------------------------------------------------------------------------
 UTF8StringPtr UIDescription::lookupFontName (const CFontRef font) const
 {
-	struct Compare {
-		bool operator () (const UIDescription* desc, UIFontNode* node, const CFontRef& font) const {
-			return node->getFont () && node->getFont () == font;
-		}
-	};
-	return font ? lookupName<UIFontNode> (font, MainNodeNames::kFont, Compare ()) : 0;
+	return font ? lookupName<UIFontNode> (font, MainNodeNames::kFont, [] (const UIDescription* desc, UIFontNode* node, const CFontRef& font) {
+		return node->getFont () && node->getFont () == font;
+	}) : 0;
 }
 
 //-----------------------------------------------------------------------------
 UTF8StringPtr UIDescription::lookupBitmapName (const CBitmap* bitmap) const
 {
-	struct Compare {
-		bool operator () (const UIDescription* desc, UIBitmapNode* node, const CBitmap* bitmap) const {
-			return node->getBitmap (desc->filePath) == bitmap;
-		}
-	};
-	return bitmap ? lookupName<UIBitmapNode> (bitmap, MainNodeNames::kBitmap, Compare ()) : 0;
+	return bitmap ? lookupName<UIBitmapNode> (bitmap, MainNodeNames::kBitmap, [] (const UIDescription* desc, UIBitmapNode* node, const CBitmap* bitmap) {
+		return node->getBitmap (desc->filePath) == bitmap;
+	}) : 0;
 }
 
 //-----------------------------------------------------------------------------
 UTF8StringPtr UIDescription::lookupGradientName (const CGradient* gradient) const
 {
-	struct Compare {
-		bool operator () (const UIDescription* desc, UIGradientNode* node, const CGradient* gradient) const {
-			return node->getGradient() == gradient || (node->getGradient () && gradient->getColorStops () == node->getGradient ()->getColorStops ());
-		}
-	};
-	return gradient ? lookupName<UIGradientNode> (gradient, MainNodeNames::kGradient, Compare ()) : 0;
+	return gradient ? lookupName<UIGradientNode> (gradient, MainNodeNames::kGradient, [] (const UIDescription* desc, UIGradientNode* node, const CGradient* gradient) {
+		return node->getGradient() == gradient || (node->getGradient () && gradient->getColorStops () == node->getGradient ()->getColorStops ());
+	}) : 0;
 }
 	
 //-----------------------------------------------------------------------------
 UTF8StringPtr UIDescription::lookupControlTagName (const int32_t tag) const
 {
-	struct Compare {
-		bool operator () (const UIDescription* desc, UIControlTagNode* node, const int32_t tag) const {
-			int32_t nodeTag = node->getTag ();
-			if (nodeTag == -1 && node->getTagString ())
-			{
-				double v;
-				if (desc->calculateStringValue (node->getTagString ()->c_str (), v))
-					nodeTag = (int32_t)v;
-			}
-			return nodeTag == tag;
+	return lookupName<UIControlTagNode> (tag, MainNodeNames::kControlTag, [] (const UIDescription* desc, UIControlTagNode* node, const int32_t tag) {
+		int32_t nodeTag = node->getTag ();
+		if (nodeTag == -1 && node->getTagString ())
+		{
+			double v;
+			if (desc->calculateStringValue (node->getTagString ()->c_str (), v))
+				nodeTag = (int32_t)v;
 		}
-	};
-	return lookupName<UIControlTagNode> (tag, MainNodeNames::kControlTag, Compare ());
+		return nodeTag == tag;
+	});
 }
 
 //-----------------------------------------------------------------------------
@@ -1811,7 +1799,8 @@ void UIDescription::collectBitmapFilters (UTF8StringPtr bitmapName, std::list<Sh
 static void removeChildNode (UINode* baseNode, UTF8StringPtr nodeName)
 {
 	UIDescList& children = baseNode->getChildren ();
-	VSTGUI_RANGE_BASED_FOR_LOOP (UIDescList, children, UINode*, itNode)
+	for (const auto& itNode : children)
+	{
 		const std::string* name = itNode->getAttributes ()->getAttributeValue ("name");
 		if (name && *name == nodeName)
 		{
@@ -1819,7 +1808,7 @@ static void removeChildNode (UINode* baseNode, UTF8StringPtr nodeName)
 				children.remove (itNode);
 			return;
 		}
-	VSTGUI_RANGE_BASED_FOR_LOOP_END
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -1889,14 +1878,15 @@ bool UIDescription::getAlternativeFontNames (UTF8StringPtr name, std::string& al
 //-----------------------------------------------------------------------------
 void UIDescription::collectTemplateViewNames (std::list<const std::string*>& names) const
 {
-	VSTGUI_RANGE_BASED_FOR_LOOP (UIDescList, nodes->getChildren (), UINode*, itNode)
+	for (const auto& itNode : nodes->getChildren ())
+	{
 		if (itNode->getName () == MainNodeNames::kTemplate)
 		{
 			const std::string* nodeName = itNode->getAttributes ()->getAttributeValue ("name");
 			if (nodeName)
 				names.push_back (nodeName);
 		}
-	VSTGUI_RANGE_BASED_FOR_LOOP_END
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -1906,7 +1896,8 @@ template<typename NodeType> void UIDescription::collectNamesFromNode (IdStringPt
 	if (node)
 	{
 		UIDescList& children = node->getChildren ();
-		VSTGUI_RANGE_BASED_FOR_LOOP (UIDescList, children, UINode*, itNode)
+		for (const auto& itNode : children)
+		{
 			NodeType* node = dynamic_cast<NodeType*>(itNode);
 			if (node)
 			{
@@ -1914,7 +1905,7 @@ template<typename NodeType> void UIDescription::collectNamesFromNode (IdStringPt
 				if (name)
 					names.push_back (name);
 			}
-		VSTGUI_RANGE_BASED_FOR_LOOP_END
+		}
 	}
 }
 

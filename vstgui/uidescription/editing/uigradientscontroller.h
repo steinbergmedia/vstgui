@@ -55,11 +55,11 @@ public:
 	~UIGradientsController ();
 
 protected:
-	CView* createView (const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
-	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
-	IControlListener* getControlListener (UTF8StringPtr name) VSTGUI_OVERRIDE_VMETHOD;
-	void valueChanged (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
-	void dbSelectionChanged (int32_t selectedRow, GenericStringListDataBrowserSource* source) VSTGUI_OVERRIDE_VMETHOD;
+	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override;
+	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;
+	IControlListener* getControlListener (UTF8StringPtr name) override;
+	void valueChanged (CControl* pControl) override;
+	void dbSelectionChanged (int32_t selectedRow, GenericStringListDataBrowserSource* source) override;
 
 	void showEditDialog ();
 

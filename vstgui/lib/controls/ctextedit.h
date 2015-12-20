@@ -37,9 +37,7 @@
 
 #include "ctextlabel.h"
 #include "../platform/iplatformtextedit.h"
-#if VSTGUI_HAS_FUNCTIONAL
 #include <functional>
-#endif
 
 namespace VSTGUI {
 
@@ -60,39 +58,32 @@ public:
 	/// @name CTextEdit Methods
 	//-----------------------------------------------------------------------------
 	//@{
-#if VSTGUI_HAS_FUNCTIONAL
 	typedef CTextEdit		StringToValueUserData;
-#else
-	typedef void			StringToValueUserData;
-#endif
 
-	VSTGUI_DEPRECATED_FUNCTIONAL(virtual void setStringToValueProc (CTextEditStringToValueProc proc, void* userData = 0);) ///< deprecated use setStringToValueFunction instead if you use c++11
-#if VSTGUI_HAS_FUNCTIONAL
 	typedef std::function<bool(UTF8StringPtr txt, float& result, CTextEdit* textEdit)> StringToValueFunction;
 	
 	void setStringToValueFunction (const StringToValueFunction& stringToValueFunc);
 	void setStringToValueFunction (StringToValueFunction&& stringToValueFunc);
-#endif
 	
 	virtual void setImmediateTextChange (bool state);	///< enable/disable immediate text change behaviour.
 	bool getImmediateTextChange () const { return immediateTextChange; }	///< get immediate text change behaviour
 	//@}
 
 	// overrides
-	virtual void setText (UTF8StringPtr txt) VSTGUI_OVERRIDE_VMETHOD;
-	virtual void setValue (float val) VSTGUI_OVERRIDE_VMETHOD;
-	virtual void setTextRotation (double angle) VSTGUI_OVERRIDE_VMETHOD { return; } ///< not supported
+	virtual void setText (UTF8StringPtr txt) override;
+	virtual void setValue (float val) override;
+	virtual void setTextRotation (double angle) override { return; } ///< not supported
 
-	virtual	void draw (CDrawContext* pContext) VSTGUI_OVERRIDE_VMETHOD;
-	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
-	virtual int32_t onKeyDown (VstKeyCode& keyCode) VSTGUI_OVERRIDE_VMETHOD;
+	virtual	void draw (CDrawContext* pContext) override;
+	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
+	virtual int32_t onKeyDown (VstKeyCode& keyCode) override;
 
-	virtual	void takeFocus () VSTGUI_OVERRIDE_VMETHOD;
-	virtual	void looseFocus () VSTGUI_OVERRIDE_VMETHOD;
-	virtual bool wantsFocus () const VSTGUI_OVERRIDE_VMETHOD;		///< check if view supports focus
+	virtual	void takeFocus () override;
+	virtual	void looseFocus () override;
+	virtual bool wantsFocus () const override;		///< check if view supports focus
 
-	virtual void setViewSize (const CRect& newSize, bool invalid = true) VSTGUI_OVERRIDE_VMETHOD;
-	virtual void parentSizeChanged () VSTGUI_OVERRIDE_VMETHOD;
+	virtual void setViewSize (const CRect& newSize, bool invalid = true) override;
+	virtual void parentSizeChanged () override;
 
 	bool bWasReturnPressed;
 
@@ -105,26 +96,21 @@ protected:
 	void createPlatformTextEdit ();
 	void updateText (IPlatformTextEdit* pte);
 
-	CColor platformGetBackColor () const VSTGUI_OVERRIDE_VMETHOD { return getBackColor (); }
-	CColor platformGetFontColor () const VSTGUI_OVERRIDE_VMETHOD { return getFontColor (); }
-	CFontRef platformGetFont () const VSTGUI_OVERRIDE_VMETHOD;
-	CHoriTxtAlign platformGetHoriTxtAlign () const VSTGUI_OVERRIDE_VMETHOD { return getHoriAlign (); }
-	UTF8StringPtr platformGetText () const VSTGUI_OVERRIDE_VMETHOD { return text; }
-	CRect platformGetSize () const VSTGUI_OVERRIDE_VMETHOD;
-	CRect platformGetVisibleSize () const VSTGUI_OVERRIDE_VMETHOD;
-	CPoint platformGetTextInset () const VSTGUI_OVERRIDE_VMETHOD { return getTextInset (); }
-	void platformLooseFocus (bool returnPressed) VSTGUI_OVERRIDE_VMETHOD;
-	bool platformOnKeyDown (const VstKeyCode& key) VSTGUI_OVERRIDE_VMETHOD;
-	void platformTextDidChange () VSTGUI_OVERRIDE_VMETHOD;
+	CColor platformGetBackColor () const override { return getBackColor (); }
+	CColor platformGetFontColor () const override { return getFontColor (); }
+	CFontRef platformGetFont () const override;
+	CHoriTxtAlign platformGetHoriTxtAlign () const override { return getHoriAlign (); }
+	UTF8StringPtr platformGetText () const override { return text; }
+	CRect platformGetSize () const override;
+	CRect platformGetVisibleSize () const override;
+	CPoint platformGetTextInset () const override { return getTextInset (); }
+	void platformLooseFocus (bool returnPressed) override;
+	bool platformOnKeyDown (const VstKeyCode& key) override;
+	void platformTextDidChange () override;
 
 	IPlatformTextEdit* platformControl;
 
-#if VSTGUI_HAS_FUNCTIONAL
 	StringToValueFunction stringToValueFunction;
-#else
-	CTextEditStringToValueProc textToValue;
-	void* textToValueUserData;
-#endif
 
 	bool immediateTextChange;
 	mutable SharedPointer<CFontDesc> platformFont;

@@ -50,65 +50,11 @@ namespace VSTGUI {
 #ifndef FOREACHSUBVIEW_REVERSE
 	#define FOREACHSUBVIEW_REVERSE(reverse) ChildViewConstIterator it; ChildViewConstReverseIterator rit; if (reverse) rit = children.rbegin (); else it = children.begin (); while (reverse ? rit != children.rend () : it != children.end ()) { CView* pV; if (reverse) {	pV = (*rit); rit++; } else { pV = (*it); it++; } {
 #endif
-
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-IdStringPtr kMsgCheckIfViewContainer	= "kMsgCheckIfViewContainer";
+#ifndef ENDFOREACHSUBVIEW
+	#define ENDFOREACHSUBVIEW } }
 #endif
+
 IdStringPtr kMsgLooseFocus = "LooseFocus";
-
-namespace CViewContainerPrivate {
-
-//-----------------------------------------------------------------------------
-struct ViewContainerListenerCall
-{
-	CViewContainer* container;
-	ViewContainerListenerCall (CViewContainer* container) : container (container) {}
-};
-
-//-----------------------------------------------------------------------------
-struct ViewContainerTransformChanged : ViewContainerListenerCall
-{
-	ViewContainerTransformChanged (CViewContainer* container) : ViewContainerListenerCall (container) {}
-	void operator () (IViewContainerListener* listener) const
-	{
-		listener->viewContainerTransformChanged (container);
-	}
-};
-
-//-----------------------------------------------------------------------------
-struct ViewContainerViewAdded : ViewContainerListenerCall
-{
-	CView* view;
-	ViewContainerViewAdded (CViewContainer* container, CView* view) : ViewContainerListenerCall (container), view (view) {}
-	void operator () (IViewContainerListener* listener) const
-	{
-		listener->viewContainerViewAdded (container, view);
-	}
-};
-
-//-----------------------------------------------------------------------------
-struct ViewContainerViewRemoved : ViewContainerListenerCall
-{
-	CView* view;
-	ViewContainerViewRemoved (CViewContainer* container, CView* view) : ViewContainerListenerCall (container), view (view) {}
-	void operator () (IViewContainerListener* listener) const
-	{
-		listener->viewContainerViewRemoved (container, view);
-	}
-};
-
-//-----------------------------------------------------------------------------
-struct ViewContainerViewZOrderChanged : ViewContainerListenerCall
-{
-	CView* view;
-	ViewContainerViewZOrderChanged (CViewContainer* container, CView* view) : ViewContainerListenerCall (container), view (view) {}
-	void operator () (IViewContainerListener* listener) const
-	{
-		listener->viewContainerViewZOrderChanged (container, view);
-	}
-};
-
-}
 
 //-----------------------------------------------------------------------------
 // CViewContainer Implementation
@@ -127,26 +73,6 @@ CViewContainer::CViewContainer (const CRect &rect)
 	backgroundColor = kBlackCColor;
 	setAutosizingEnabled (true);
 }
-
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-/**
- * CViewContainer constructor.
- * @param rect the size of the container
- * @param pParent (unused)
- * @param pBackground the background bitmap, can be NULL
- */
-CViewContainer::CViewContainer (const CRect &rect, CFrame* pParent, CBitmap* pBackground)
-: CView (rect)
-, currentDragView (0)
-, mouseDownView (0)
-, backgroundColorDrawStyle (kDrawFilledAndStroked)
-{
-	backgroundOffset (0, 0);
-	setBackground (pBackground);
-	backgroundColor = kBlackCColor;
-	setAutosizingEnabled (true);
-}
-#endif
 
 //-----------------------------------------------------------------------------
 CViewContainer::CViewContainer (const CViewContainer& v)
@@ -188,9 +114,8 @@ void CViewContainer::unregisterViewContainerListener (IViewContainerListener* li
 //-----------------------------------------------------------------------------
 void CViewContainer::parentSizeChanged ()
 {
-	FOREACHSUBVIEW
+	for (const auto& pV : children)
 		pV->parentSizeChanged ();	// notify children that the size of the parent or this container has changed
-	ENDFOREACHSUBVIEW
 }
 
 //-----------------------------------------------------------------------------
@@ -199,7 +124,9 @@ void CViewContainer::setTransform (const CGraphicsTransform& t)
 	if (transform != t)
 	{
 		transform = t;
-		viewContainerListeners.forEach (CViewContainerPrivate::ViewContainerTransformChanged (this));
+		viewContainerListeners.forEach ([this] (IViewContainerListener* listener) {
+			listener->viewContainerTransformChanged (this);
+		});
 	}
 }
 
@@ -237,7 +164,8 @@ void CViewContainer::setViewSize (const CRect &rect, bool invalid)
 			uint32_t counter = 0;
 			bool treatAsColumn = (getAutosizeFlags () & kAutosizeColumn) != 0;
 			bool treatAsRow = (getAutosizeFlags () & kAutosizeRow) != 0;
-			FOREACHSUBVIEW
+			for (const auto& pV : children)
+			{
 				int32_t autosize = pV->getAutosizeFlags ();
 				CRect viewSize (pV->getViewSize ());
 				CRect mouseSize (pV->getMouseableArea ());
@@ -287,7 +215,7 @@ void CViewContainer::setViewSize (const CRect &rect, bool invalid)
 					pV->setMouseableArea (mouseSize);
 				}
 				counter++;
-			ENDFOREACHSUBVIEW
+			}
 		}
 	}
 	parentSizeChanged ();
@@ -322,7 +250,8 @@ bool CViewContainer::sizeToFit ()
 		return false;
 
 	CRect bounds (50000, 50000, -50000, -50000);
-	FOREACHSUBVIEW
+	for (const auto& pV : children)
+	{
 		if (pV->isVisible ())
 		{
 			CRect vs (pV->getViewSize ());
@@ -335,7 +264,7 @@ bool CViewContainer::sizeToFit ()
 			if (vs.bottom > bounds.bottom)
 				bounds.bottom = vs.bottom;
 		}
-	ENDFOREACHSUBVIEW
+	}
 	
 	CRect vs (getViewSize ());
 	vs.right = vs.left + bounds.right + bounds.left;
@@ -373,11 +302,6 @@ void CViewContainer::setBackgroundColorDrawStyle (CDrawStyle style)
 //------------------------------------------------------------------------------
 CMessageResult CViewContainer::notify (CBaseObject* sender, IdStringPtr message)
 {
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	if (message == kMsgCheckIfViewContainer)
-		return kMessageNotified;
-	else 
-#endif
 	if (message == kMsgNewFocusView)
 	{
 		CView* view = dynamic_cast<CView*> (sender);
@@ -434,7 +358,9 @@ bool CViewContainer::addView (CView *pView, CView* pBefore)
 
 	pView->setSubviewState (true);
 
-	viewContainerListeners.forEach (CViewContainerPrivate::ViewContainerViewAdded (this, pView));
+	viewContainerListeners.forEach ([&] (IViewContainerListener* listener) {
+		listener->viewContainerViewAdded (this, pView);
+	});
 
 	if (isAttached ())
 	{
@@ -481,7 +407,9 @@ bool CViewContainer::removeAll (bool withForget)
 		if (isAttached ())
 			view->removed (this);
 		view->setSubviewState (false);
-		viewContainerListeners.forEach (CViewContainerPrivate::ViewContainerViewRemoved (this, view));
+		viewContainerListeners.forEach ([&] (IViewContainerListener* listener) {
+			listener->viewContainerViewRemoved (this, view);
+		});
 		if (withForget)
 			view->forget ();
 		it = children.begin ();
@@ -509,7 +437,9 @@ bool CViewContainer::removeView (CView *pView, bool withForget)
 		if (isAttached ())
 			pView->removed (this);
 		pView->setSubviewState (false);
-		viewContainerListeners.forEach (CViewContainerPrivate::ViewContainerViewRemoved (this, pView));
+		viewContainerListeners.forEach ([&] (IViewContainerListener* listener) {
+			listener->viewContainerViewRemoved (this, pView);
+		});
 		if (withForget)
 			pView->forget ();
 		return true;
@@ -602,7 +532,11 @@ bool CViewContainer::changeViewZOrder (CView* view, uint32_t newIndex)
 			std::advance (it, newIndex);
 			bool result = children.insert (it, view) != children.end ();
 			if (result)
-				viewContainerListeners.forEach (CViewContainerPrivate::ViewContainerViewZOrderChanged (this, view));
+			{
+				viewContainerListeners.forEach ([&] (IViewContainerListener* listener) {
+					listener->viewContainerViewZOrderChanged (this, view);
+				});
+			}
 			return result;
 		}
 	}
@@ -620,15 +554,16 @@ bool CViewContainer::invalidateDirtyViews ()
 			pParentView->invalidRect (getViewSize ());
 		return true;
 	}
-	FOREACHSUBVIEW
+	for (const auto& pV : children)
+	{
 		if (pV->isDirty () && pV->isVisible ())
 		{
-			if (CViewContainer* container = dynamic_cast<CViewContainer*> (pV))
+			if (CViewContainer* container = pV.cast<CViewContainer> ())
 				container->invalidateDirtyViews ();
 			else
 				pV->invalid ();
 		}
-	ENDFOREACHSUBVIEW
+	}
 	return true;
 }
 
@@ -742,52 +677,53 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 	}
 
 	{
-	CDrawContext::Transform tr (*pContext, transform);
-	transform.inverse ().transform (newClip);
-	transform.inverse ().transform (clientRect);
-	transform.transform (oldClip2);
-	
-	// draw each view
-	FOREACHSUBVIEW
-		if (pV->isVisible ())
+		CDrawContext::Transform tr (*pContext, transform);
+		transform.inverse ().transform (newClip);
+		transform.inverse ().transform (clientRect);
+		transform.transform (oldClip2);
+		
+		// draw each view
+		for (const auto& pV : children)
 		{
-			if (_focusDrawing && _focusView == pV && !_focusDrawing->drawFocusOnTop ())
+			if (pV->isVisible ())
 			{
-				SharedPointer<CGraphicsPath> focusPath = owned (pContext->createGraphicsPath ());
-				if (focusPath)
+				if (_focusDrawing && _focusView == pV && !_focusDrawing->drawFocusOnTop ())
 				{
-					if (_focusDrawing->getFocusPath (*focusPath))
+					SharedPointer<CGraphicsPath> focusPath = owned (pContext->createGraphicsPath ());
+					if (focusPath)
 					{
-						lastDrawnFocus = focusPath->getBoundingBox ();
-						if (!lastDrawnFocus.isEmpty ())
+						if (_focusDrawing->getFocusPath (*focusPath))
 						{
-							pContext->setClipRect (oldClip2);
-							pContext->setDrawMode (kAntiAliasing|kNonIntegralMode);
-							pContext->setFillColor (getFrame ()->getFocusColor ());
-							pContext->drawGraphicsPath (focusPath, CDrawContext::kPathFilledEvenOdd);
 							lastDrawnFocus = focusPath->getBoundingBox ();
-							lastDrawnFocus.extend (1, 1);
+							if (!lastDrawnFocus.isEmpty ())
+							{
+								pContext->setClipRect (oldClip2);
+								pContext->setDrawMode (kAntiAliasing|kNonIntegralMode);
+								pContext->setFillColor (getFrame ()->getFocusColor ());
+								pContext->drawGraphicsPath (focusPath, CDrawContext::kPathFilledEvenOdd);
+								lastDrawnFocus = focusPath->getBoundingBox ();
+								lastDrawnFocus.extend (1, 1);
+							}
+							_focusDrawing = 0;
+							_focusView = 0;
 						}
-						_focusDrawing = 0;
-						_focusView = 0;
 					}
 				}
-			}
 
-			if (checkUpdateRect (pV, clientRect))
-			{
-				CRect viewSize = pV->getViewSize (viewSize);
-				viewSize.bound (newClip);
-				if (viewSize.getWidth () == 0 || viewSize.getHeight () == 0)
-					continue;
-				pContext->setClipRect (viewSize);
-				float globalContextAlpha = pContext->getGlobalAlpha ();
-				pContext->setGlobalAlpha (globalContextAlpha * pV->getAlphaValue ());
-				pV->drawRect (pContext, viewSize);
-				pContext->setGlobalAlpha (globalContextAlpha);
+				if (checkUpdateRect (pV, clientRect))
+				{
+					CRect viewSize = pV->getViewSize (viewSize);
+					viewSize.bound (newClip);
+					if (viewSize.getWidth () == 0 || viewSize.getHeight () == 0)
+						continue;
+					pContext->setClipRect (viewSize);
+					float globalContextAlpha = pContext->getGlobalAlpha ();
+					pContext->setGlobalAlpha (globalContextAlpha * pV->getAlphaValue ());
+					pV->drawRect (pContext, viewSize);
+					pContext->setGlobalAlpha (globalContextAlpha);
+				}
 			}
 		}
-	ENDFOREACHSUBVIEW
 	}
 	
 	pContext->setClipRect (oldClip2);
@@ -1128,17 +1064,15 @@ void CViewContainer::findSingleTouchEventTarget (ITouchEvent::Touch& event)
 //-----------------------------------------------------------------------------
 void CViewContainer::looseFocus ()
 {
-	FOREACHSUBVIEW
+	for (const auto& pV : children)
 		pV->looseFocus ();
-	ENDFOREACHSUBVIEW
 }
 
 //-----------------------------------------------------------------------------
 void CViewContainer::takeFocus ()
 {
-	FOREACHSUBVIEW
+	for (const auto& pV : children)
 		pV->takeFocus ();
-	ENDFOREACHSUBVIEW
 }
 
 //-----------------------------------------------------------------------------
@@ -1188,7 +1122,8 @@ bool CViewContainer::isDirty () const
 	CRect viewSize (getViewSize ());
 	viewSize.offset (-getViewSize ().left, -getViewSize ().top);
 
-	FOREACHSUBVIEW
+	for (const auto& pV : children)
+	{
 		if (pV->isDirty () && pV->isVisible ())
 		{
 			CRect r = pV->getViewSize (r);
@@ -1196,7 +1131,7 @@ bool CViewContainer::isDirty () const
 			if (r.getWidth () > 0 && r.getHeight () > 0)
 				return true;
 		}
-	ENDFOREACHSUBVIEW
+	}
 	return false;
 }
 
@@ -1340,9 +1275,8 @@ bool CViewContainer::removed (CView* parent)
 	if (!isAttached ())
 		return false;
 
-	FOREACHSUBVIEW
+	for (const auto& pV : children)
 		pV->removed (this);
-	ENDFOREACHSUBVIEW
 	
 	return CView::removed (parent);
 }
@@ -1358,9 +1292,8 @@ bool CViewContainer::attached (CView* parent)
 	bool result = CView::attached (parent);
 	if (result)
 	{
-		FOREACHSUBVIEW
+		for (const auto& pV : children)
 			pV->attached (this);
-		ENDFOREACHSUBVIEW
 	}
 	return result;
 }
@@ -1377,14 +1310,15 @@ void CViewContainer::dumpInfo ()
 void CViewContainer::dumpHierarchy ()
 {
 	_debugDumpLevel++;
-	FOREACHSUBVIEW
+	for (auto& pV : children)
+	{
 		for (int32_t i = 0; i < _debugDumpLevel; i++)
 			DebugPrint ("\t");
 		pV->dumpInfo ();
 		DebugPrint ("\n");
-		if (CViewContainer* container = dynamic_cast<CViewContainer*> (pV))
+		if (CViewContainer* container = pV.cast<CViewContainer> ())
 			container->dumpHierarchy ();
-	ENDFOREACHSUBVIEW
+	}
 	_debugDumpLevel--;
 }
 

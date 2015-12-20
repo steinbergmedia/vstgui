@@ -83,8 +83,8 @@ class MemoryContentProvider : public CMemoryStream, public IContentProvider
 {
 public:
 	MemoryContentProvider (const void* data, uint32_t dataSize);		// data must be valid the whole lifetime of this object
-	uint32_t readRawXmlData (int8_t* buffer, uint32_t size) VSTGUI_OVERRIDE_VMETHOD;
-	void rewind () VSTGUI_OVERRIDE_VMETHOD;
+	uint32_t readRawXmlData (int8_t* buffer, uint32_t size) override;
+	void rewind () override;
 };
 
 //-----------------------------------------------------------------------------
@@ -93,8 +93,8 @@ class InputStreamContentProvider : public IContentProvider
 public:
 	InputStreamContentProvider (InputStream& stream);
 
-	uint32_t readRawXmlData (int8_t* buffer, uint32_t size) VSTGUI_OVERRIDE_VMETHOD;
-	void rewind () VSTGUI_OVERRIDE_VMETHOD;
+	uint32_t readRawXmlData (int8_t* buffer, uint32_t size) override;
+	void rewind () override;
 protected:
 	InputStream& stream;
 	int64_t startPos;

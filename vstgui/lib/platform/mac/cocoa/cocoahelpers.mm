@@ -243,27 +243,11 @@ HIDDEN void convertPointToGlobal (NSView* view, NSPoint& p)
 	p = [view convertPoint:p toView:nil];
 	if ([view window] == nil)
 		return;
-#if MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_6
-	p = [[view window] convertBaseToScreen:p];
-#else
-	#if MAC_OS_X_VERSION_MIN_REQUIRED <= MAC_OS_X_VERSION_10_6
-	if ([NSWindow instancesRespondToSelector:@selector(convertRectToScreen:)])
-	{
-	#endif
 
-		NSRect r = {};
-		r.origin = p;
-		r = [[view window] convertRectToScreen:r];
-		p = r.origin;
-
-	#if MAC_OS_X_VERSION_MIN_REQUIRED <= MAC_OS_X_VERSION_10_6
-	}
-	else
-	{
-		p = [[view window] convertBaseToScreen:p];
-	}
-	#endif
-#endif
+	NSRect r = {};
+	r.origin = p;
+	r = [[view window] convertRectToScreen:r];
+	p = r.origin;
 }
 
 

@@ -153,13 +153,14 @@ bool CBitmap::addBitmap (IPlatformBitmap* platformBitmap)
 		vstgui_assert (size == bitmapSize, "wrong bitmap size");
 		return false;
 	}
-	VSTGUI_RANGE_BASED_FOR_LOOP (BitmapVector, bitmaps, BitmapPointer, bitmap)
+	for (const auto& bitmap : bitmaps)
+	{
 		if (bitmap->getScaleFactor () == scaleFactor || bitmap == platformBitmap)
 		{
 			vstgui_assert (bitmap->getScaleFactor () != scaleFactor && bitmap != platformBitmap);
 			return false;
 		}
-	VSTGUI_RANGE_BASED_FOR_LOOP_END
+	}
 	bitmaps.push_back (platformBitmap);
 	return true;
 }
@@ -171,7 +172,8 @@ IPlatformBitmap* CBitmap::getBestPlatformBitmapForScaleFactor (double scaleFacto
 		return 0;
 	IPlatformBitmap* bestBitmap = bitmaps[0];
 	double bestDiff = std::abs (scaleFactor - bestBitmap->getScaleFactor ());
-	VSTGUI_RANGE_BASED_FOR_LOOP (BitmapVector, bitmaps, BitmapPointer, bitmap)
+	for (const auto& bitmap : bitmaps)
+	{
 		if (bitmap->getScaleFactor () == scaleFactor)
 			return bitmap;
 		else if (std::abs (scaleFactor - bitmap->getScaleFactor ()) <= bestDiff && bitmap->getScaleFactor () > bestBitmap->getScaleFactor ())
@@ -179,7 +181,7 @@ IPlatformBitmap* CBitmap::getBestPlatformBitmapForScaleFactor (double scaleFacto
 			bestBitmap = bitmap;
 			bestDiff = std::abs (scaleFactor - bitmap->getScaleFactor ());
 		}
-	VSTGUI_RANGE_BASED_FOR_LOOP_END
+	}
 
 	return bestBitmap;
 }
@@ -281,14 +283,14 @@ template <int32_t redPosition, int32_t greenPosition, int32_t bluePosition, int3
 class CBitmapPixelAccessOrder : public CBitmapPixelAccess
 {
 public:
-	void getColor (CColor& c) const VSTGUI_OVERRIDE_VMETHOD
+	void getColor (CColor& c) const override
 	{
 		c.red = currentPos[redPosition];
 		c.green = currentPos[greenPosition];
 		c.blue = currentPos[bluePosition];
 		c.alpha = currentPos[alphaPosition];
 	}
-	void setColor (const CColor& c) VSTGUI_OVERRIDE_VMETHOD
+	void setColor (const CColor& c) override
 	{
 		currentPos[redPosition] = c.red;
 		currentPos[greenPosition] = c.green;

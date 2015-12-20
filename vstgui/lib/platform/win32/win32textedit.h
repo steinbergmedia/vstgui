@@ -56,9 +56,9 @@ public:
 	Win32TextEdit (HWND parent, IPlatformTextEditCallback* textEdit);
 	~Win32TextEdit ();
 	
-	UTF8StringPtr getText () VSTGUI_OVERRIDE_VMETHOD;
-	bool setText (UTF8StringPtr text) VSTGUI_OVERRIDE_VMETHOD;
-	bool updateSize () VSTGUI_OVERRIDE_VMETHOD;
+	UTF8StringPtr getText () override;
+	bool setText (UTF8StringPtr text) override;
+	bool updateSize () override;
 
 	HWND getPlatformControl () const { return platformControl; }
 	HBRUSH getPlatformBackColor () const { return platformBackColor; }

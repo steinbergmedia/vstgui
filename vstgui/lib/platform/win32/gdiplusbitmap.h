@@ -54,11 +54,11 @@ public:
 	GdiplusBitmap (const CPoint& size);
 	~GdiplusBitmap ();
 
-	bool load (const CResourceDescription& desc) VSTGUI_OVERRIDE_VMETHOD;
-	const CPoint& getSize () const VSTGUI_OVERRIDE_VMETHOD { return size; }
-	IPlatformBitmapPixelAccess* lockPixels (bool alphaPremultiplied) VSTGUI_OVERRIDE_VMETHOD;
-	void setScaleFactor (double factor) VSTGUI_OVERRIDE_VMETHOD {}
-	double getScaleFactor () const VSTGUI_OVERRIDE_VMETHOD { return 1.; }
+	bool load (const CResourceDescription& desc) override;
+	const CPoint& getSize () const override { return size; }
+	IPlatformBitmapPixelAccess* lockPixels (bool alphaPremultiplied) override;
+	void setScaleFactor (double factor) override {}
+	double getScaleFactor () const override { return 1.; }
 
 	Gdiplus::Bitmap* getBitmap () const { return bitmap; }
 	HBITMAP createHBitmap ();

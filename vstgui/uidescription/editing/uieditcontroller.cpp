@@ -154,7 +154,7 @@ public:
 	, drawBottomLine (drawBottomLine)
 	{}
 
-	void draw (CDrawContext* context) VSTGUI_OVERRIDE_VMETHOD
+	void draw (CDrawContext* context) override
 	{
 		drawGradient (context, getViewSize (), horizontal, drawTopLine, drawBottomLine);
 	}
@@ -265,7 +265,7 @@ public:
 		updateZoom (100.f);
 	}
 	
-	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD
+	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override
 	{
 		if (!zoomValueControl)
 		{
@@ -274,7 +274,6 @@ public:
 			{
 				zoomValueControl->setMin (50.f);
 				zoomValueControl->setMax (1000.f);
-#if VSTGUI_HAS_FUNCTIONAL
 				zoomValueControl->setStringToValueFunction ([] (UTF8StringPtr txt, float& result, CTextEdit*) {
 					int32_t intValue = static_cast<int32_t> (strtol (txt, 0, 10));
 					if (intValue > 0)
@@ -289,9 +288,6 @@ public:
 					snprintf (utf8String, 255, "%d %%", static_cast<uint32_t> (value));
 					return true;
 				});
-#else
-				// TODO: support non c++11 compilation
-#endif
 				zoomValueControl->setValue (100.f);
 				CFontRef font = description->getFont ("control.font");
 				CColor fontColor = kWhiteCColor, frameColor = kBlackCColor, backColor = kBlackCColor;
@@ -308,7 +304,7 @@ public:
 		return view;
 	}
 
-	int32_t controlModifierClicked (CControl* pControl, CButtonState button) VSTGUI_OVERRIDE_VMETHOD
+	int32_t controlModifierClicked (CControl* pControl, CButtonState button) override
 	{
 		if (pControl == zoomValueControl && button.isRightButton ())
 		{
@@ -318,7 +314,7 @@ public:
 		return 0;
 	}
 
-	void valueChanged (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD
+	void valueChanged (CControl* pControl) override
 	{
 		if (pControl == zoomValueControl)
 			editController->onZoomChanged (pControl->getValue () / 100.f);

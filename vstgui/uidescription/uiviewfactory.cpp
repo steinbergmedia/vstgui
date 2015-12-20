@@ -268,8 +268,8 @@ IdStringPtr UIViewFactory::getViewName (CView* view) const
 void UIViewFactory::evaluateAttributesAndRemember (CView* view, const UIAttributes& attributes, UIAttributes& evaluatedAttributes, const IUIDescription* description) const
 {
 	std::string evaluatedValue;
-	typedef std::pair<std::string, std::string> StringPair;
-	VSTGUI_RANGE_BASED_FOR_LOOP (UIAttributesMap, attributes, StringPair, attr)
+	for (const auto& attr : attributes)
+	{
 		const std::string& value = attr.second;
 		if (description && description->getVariable (value.c_str (), evaluatedValue))
 		{
@@ -296,7 +296,7 @@ void UIViewFactory::evaluateAttributesAndRemember (CView* view, const UIAttribut
 		#endif
 			evaluatedAttributes.setAttribute (attr.first, value);
 		}
-	VSTGUI_RANGE_BASED_FOR_LOOP_END
+	}
 }
 
 #if VSTGUI_LIVE_EDITING
@@ -431,17 +431,8 @@ void UIViewFactory::collectRegisteredViewNames (StringPtrList& viewNames, IdStri
 //-----------------------------------------------------------------------------
 size_t UIViewFactory::createHash (const std::string& str)
 {
-#if VSTGUI_HAS_FUNCTIONAL
 	static std::hash<std::string> hashFunc;
 	return hashFunc (str);
-#else
-	size_t hash = 5381;
-	for (std::size_t i = 0; i < str.length (); i++)
-	{
-		hash = ((hash << 5) + hash) + static_cast<size_t> (str[i]);
-	}
-	return hash;
-#endif
 }
 
 //-----------------------------------------------------------------------------

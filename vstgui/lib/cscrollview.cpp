@@ -59,13 +59,13 @@ public:
 	CRect getContainerSize () const { return containerSize; }
 	void setContainerSize (const CRect& cs);
 
-	bool isDirty () const VSTGUI_OVERRIDE_VMETHOD;
+	bool isDirty () const override;
 
-	void onDragMove (IDataPackage* drag, const CPoint& where) VSTGUI_OVERRIDE_VMETHOD;
+	void onDragMove (IDataPackage* drag, const CPoint& where) override;
 	void setAutoDragScroll (bool state) { autoDragScroll = state; }
 
-	bool attached (CView* parent) VSTGUI_OVERRIDE_VMETHOD;
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
+	bool attached (CView* parent) override;
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 
 	CLASS_METHODS(CScrollContainer, CViewContainer)
 //-----------------------------------------------------------------------------
@@ -138,7 +138,8 @@ void CScrollContainer::setScrollOffset (CPoint newOffset, bool redraw)
 	if (diff.x == 0 && diff.y == 0)
 		return;
 	inScrolling = true;
-	FOREACHSUBVIEW
+	for (const auto& pV : children)
+	{
 		CRect r, mr;
 		pV->getViewSize (r);
 		pV->getMouseableArea (mr);
@@ -146,7 +147,7 @@ void CScrollContainer::setScrollOffset (CPoint newOffset, bool redraw)
 		pV->setViewSize (r, false);
 		mr.offset (diff.x , diff.y);
 		pV->setMouseableArea (mr);
-	ENDFOREACHSUBVIEW
+	}
 	inScrolling = false;
 	offset = newOffset;
 	if (!isAttached ())
@@ -185,7 +186,8 @@ bool CScrollContainer::isDirty () const
 	if (CView::isDirty ())
 		return true;
 
-	FOREACHSUBVIEW
+	for (const auto& pV : children)
+	{
 		if (pV->isDirty () && pV->isVisible ())
 		{
 			CRect r = pV->getVisibleViewSize ();
@@ -194,7 +196,7 @@ bool CScrollContainer::isDirty () const
 			else
 				pV->setDirty (false);
 		}
-	ENDFOREACHSUBVIEW
+	}
 	return false;
 }
 
@@ -308,23 +310,6 @@ CScrollView::CScrollView (const CRect &size, const CRect &containerSize, int32_t
 		setBackground(pBackground);
 	recalculateSubViews ();
 }
-
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-//-----------------------------------------------------------------------------
-CScrollView::CScrollView (const CRect &size, const CRect &containerSize, CFrame* pParent, int32_t style, CCoord scrollbarWidth, CBitmap* pBackground)
-: CViewContainer (size)
-, sc (0)
-, vsb (0)
-, hsb (0)
-, containerSize (containerSize)
-, scrollbarWidth (scrollbarWidth)
-, style (style)
-, activeScrollbarStyle (0)
-{
-	setBackground (pBackground);
-	recalculateSubViews ();
-}
-#endif
 
 //-----------------------------------------------------------------------------
 CScrollView::CScrollView (const CScrollView& v)

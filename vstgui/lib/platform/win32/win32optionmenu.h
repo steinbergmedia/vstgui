@@ -50,7 +50,7 @@ class Win32OptionMenu : public IPlatformOptionMenu
 public:
 	Win32OptionMenu (HWND windowHandle);
 	
-	PlatformOptionMenuResult popup (COptionMenu* optionMenu) VSTGUI_OVERRIDE_VMETHOD;
+	PlatformOptionMenuResult popup (COptionMenu* optionMenu) override;
 
 protected:
 	HMENU createMenu (COptionMenu* menu, int32_t& offsetIdx);

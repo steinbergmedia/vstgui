@@ -70,7 +70,6 @@ CFileExtension::~CFileExtension ()
 	String::free (uti);
 }
 
-#if VSTGUI_RVALUE_REF_SUPPORT
 //-----------------------------------------------------------------------------
 CFileExtension::CFileExtension (CFileExtension&& ext) noexcept
 : description (nullptr)
@@ -100,7 +99,6 @@ CFileExtension& CFileExtension::operator=(CFileExtension&& ext) noexcept
 	ext.macType = 0;
 	return *this;
 }
-#endif
 
 //-----------------------------------------------------------------------------
 void CFileExtension::init (UTF8StringPtr inDescription, UTF8StringPtr inExtension, UTF8StringPtr inMimeType, UTF8StringPtr inUti)
@@ -194,7 +192,6 @@ bool CNewFileSelector::runModal ()
 	return runModalInternal ();
 }
 
-#if VSTGUI_HAS_FUNCTIONAL
 //-----------------------------------------------------------------------------
 class CNewFileSelectorCallback : public CBaseObject
 {
@@ -202,7 +199,7 @@ public:
 	CNewFileSelectorCallback (CNewFileSelector::CallbackFunc&& callback) : callbackFunc (std::move (callback)) {}
 	~CNewFileSelectorCallback () {}
 private:
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override
 	{
 		if (message == CNewFileSelector::kSelectEndMessage)
 		{
@@ -223,8 +220,6 @@ bool CNewFileSelector::run (CallbackFunc&& callback)
 	OwningPointer<CNewFileSelectorCallback> fsCallback = new CNewFileSelectorCallback (std::move (callback));
 	return runInternal (fsCallback);
 }
-
-#endif
 
 //-----------------------------------------------------------------------------
 void CNewFileSelector::setTitle (UTF8StringPtr inTitle)
@@ -289,13 +284,11 @@ void CNewFileSelector::addFileExtension (const CFileExtension& extension)
 	extensions.push_back (extension);
 }
 
-#if VSTGUI_RVALUE_REF_SUPPORT
 //-----------------------------------------------------------------------------
 void CNewFileSelector::addFileExtension (CFileExtension&& extension)
 {
 	extensions.push_back (std::move (extension));
 }
-#endif
 
 //-----------------------------------------------------------------------------
 uint32_t CNewFileSelector::getNumSelectedFiles () const

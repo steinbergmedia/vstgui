@@ -52,7 +52,7 @@ public:
 	TimingFunctionBase (uint32_t length) : length (length) {}
 
 	uint32_t getLength () const { return length; }
-	bool isDone (uint32_t milliseconds) VSTGUI_OVERRIDE_VMETHOD { return milliseconds >= length; }
+	bool isDone (uint32_t milliseconds) override { return milliseconds >= length; }
 protected:
 	uint32_t length; // in milliseconds
 };
@@ -67,7 +67,7 @@ public:
 	LinearTimingFunction (uint32_t length);
 
 protected:
-	float getPosition (uint32_t milliseconds) VSTGUI_OVERRIDE_VMETHOD;
+	float getPosition (uint32_t milliseconds) override;
 };
 
 //-----------------------------------------------------------------------------
@@ -80,7 +80,7 @@ public:
 	PowerTimingFunction (uint32_t length, float factor);
 
 protected:
-	float getPosition (uint32_t milliseconds) VSTGUI_OVERRIDE_VMETHOD;
+	float getPosition (uint32_t milliseconds) override;
 
 	float factor;
 };
@@ -97,7 +97,7 @@ public:
 	void addPoint (float time, float pos); ///< both values are normalized ones
 
 protected:
-	float getPosition (uint32_t milliseconds) VSTGUI_OVERRIDE_VMETHOD;
+	float getPosition (uint32_t milliseconds) override;
 
 	typedef std::map<uint32_t, float> PointMap;
 	PointMap points;
@@ -113,8 +113,8 @@ public:
 	RepeatTimingFunction (TimingFunctionBase* tf, int32_t repeatCount, bool autoReverse = true);
 	~RepeatTimingFunction ();
 
-	float getPosition (uint32_t milliseconds) VSTGUI_OVERRIDE_VMETHOD;
-	bool isDone (uint32_t milliseconds) VSTGUI_OVERRIDE_VMETHOD;
+	float getPosition (uint32_t milliseconds) override;
+	bool isDone (uint32_t milliseconds) override;
 protected:
 	TimingFunctionBase* tf;
 	int32_t repeatCount;

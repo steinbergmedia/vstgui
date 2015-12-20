@@ -76,9 +76,9 @@ PlatformOptionMenuResult HIViewOptionMenu::popup (COptionMenu* optionMenu)
 		CalcMenuSize (menuRef);
 		SInt16 menuWidth = GetMenuWidth (menuRef);
 		if (menuWidth < optionMenu->getViewSize ().getWidth ())
-			SetMenuWidth (menuRef, optionMenu->getViewSize ().getWidth ());
-		int32_t popUpItem = optionMenu->getStyle () & kPopupStyle ? (optionMenu->getValue () + 1) : 1;
-		int32_t PopUpMenuItem = PopUpMenuItem = PopUpMenuSelect (menuRef, gy, gx, popUpItem);
+			SetMenuWidth (menuRef, static_cast<SInt16> (optionMenu->getViewSize ().getWidth ()));
+		int32_t popUpItem = optionMenu->getStyle () & kPopupStyle ? (static_cast<int32_t> (optionMenu->getValue ()) + 1) : 1;
+		int32_t PopUpMenuItem = PopUpMenuItem = PopUpMenuSelect (menuRef, static_cast<short> (gy), static_cast<short> (gx), static_cast<MenuItemIndex> (popUpItem));
 		
 		short result = LoWord (PopUpMenuItem) - 1;	
 		short menuIDResult = HiWord (PopUpMenuItem);
@@ -111,7 +111,7 @@ MenuRef HIViewOptionMenu::createMenu (COptionMenu* menu)
 	{
 		bool multipleCheck = menu->getStyle () & (kMultipleCheckStyle & ~kCheckStyle);
 		CConstMenuItemIterator it = menuItems->begin ();
-		int32_t i = 0;
+		MenuItemIndex i = 0;
 		while (it != menuItems->end ())
 		{
 			i++;
@@ -173,7 +173,7 @@ MenuRef HIViewOptionMenu::createMenu (COptionMenu* menu)
 				}
 				if (item->getKeycode ())
 				{
-					SetItemCmd (menuRef, i, toupper (item->getKeycode ()[0]));
+					SetItemCmd (menuRef, i, static_cast<CharParameter> (toupper (item->getKeycode ()[0])));
 					UInt8 keyModifiers = 0;
 					int32_t itemModifiers = item->getKeyModifiers ();
 					if (itemModifiers & kShift)
@@ -192,8 +192,8 @@ MenuRef HIViewOptionMenu::createMenu (COptionMenu* menu)
 			it++;
 		}
 		if (menu->getStyle () & kCheckStyle && !multipleCheck)
-			CheckMenuItem (menuRef, menu->getCurrentIndex (true) + 1, true);
-		SetMenuItemRefCon (menuRef, 0, (int32_t)menu);
+			CheckMenuItem (menuRef, static_cast<MenuItemIndex> (menu->getCurrentIndex (true) + 1), true);
+		SetMenuItemRefCon (menuRef, 0, (URefCon)menu);
 		InsertMenu (menuRef, kInsertHierarchicalMenu);
 	}
 	return menuRef;

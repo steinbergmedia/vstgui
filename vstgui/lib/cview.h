@@ -279,8 +279,8 @@ public:
 	#endif
 
 	// overwrites
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
-	void beforeDelete () VSTGUI_OVERRIDE_VMETHOD;
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
+	void beforeDelete () override;
 
 	//-------------------------------------------
 	CLASS_METHODS(CView, CBaseObject)
@@ -323,18 +323,6 @@ private:
 	typedef DispatchList<IViewListener> ViewListenerDispatcher;
 	ViewListenerDispatcher viewListeners;
 
-#if DEBUG && VSTGUI_ENABLE_DEPRECATED_METHODS
-public:
-	// these are here so that inherited classes which have not changed the buttons parameter type will fail on compilation
-	virtual char onMouseDown (CPoint &where, const long& buttons) {return kMouseEventNotImplemented;}
-	virtual char onMouseUp (CPoint &where, const long& buttons) {return kMouseEventNotImplemented;}
-	virtual char onMouseMoved (CPoint &where, const long& buttons) {return kMouseEventNotImplemented;}
-	virtual char onMouseEntered (CPoint &where, const long& buttons) {return kMouseEventNotImplemented;}
-	virtual char onMouseExited (CPoint &where, const long& buttons) {return kMouseEventNotImplemented;}
-	virtual long hitTest (const CPoint& where, const long buttons = -1) { return false;}
-	virtual long onWheel (const CPoint &where, const float &distance, const long &buttons) { return false; }
-	virtual long onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const long &buttons) { return false; }
-#endif
 };
 
 //-----------------------------------------------------------------------------

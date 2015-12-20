@@ -37,9 +37,7 @@
 
 #include "cparamdisplay.h"
 #include <vector>
-#if VSTGUI_HAS_FUNCTIONAL
 #include <functional>
-#endif
 
 namespace VSTGUI {
 
@@ -136,12 +134,10 @@ public:
 	void setTarget (CBaseObject* target);
 	CBaseObject* getTarget () const { return target; }
 
-#if VSTGUI_HAS_FUNCTIONAL
 	typedef std::function<void(CCommandMenuItem* item)> ValidateCallbackFunction;
 	typedef std::function<void(CCommandMenuItem* item)> SelectedCallbackFunction;
 
 	void setActions (SelectedCallbackFunction&& selected, ValidateCallbackFunction&& validate = [](CCommandMenuItem*){});
-#endif
 	//@}
 
 	void execute ();
@@ -150,10 +146,8 @@ public:
 	static IdStringPtr kMsgMenuItemValidate;	///< message send to the target before the item is shown
 	static IdStringPtr kMsgMenuItemSelected;	///< message send to the target when this item was selected
 protected:
-#if VSTGUI_HAS_FUNCTIONAL
 	ValidateCallbackFunction validateFunc;
 	SelectedCallbackFunction selectedFunc;
-#endif
 	CBaseObject* target;
 	char* commandCategory;
 	char* commandName;
@@ -214,18 +208,18 @@ public:
 	//@}
 
 	// overrides
-	virtual void setValue (float val) VSTGUI_OVERRIDE_VMETHOD;
-	virtual void setMin (float val) VSTGUI_OVERRIDE_VMETHOD {}
-	virtual float getMin () const VSTGUI_OVERRIDE_VMETHOD { return 0; }
-	virtual void setMax (float val) VSTGUI_OVERRIDE_VMETHOD {}
-	virtual float getMax () const VSTGUI_OVERRIDE_VMETHOD { return (float)(menuItems->size () - 1); }
+	virtual void setValue (float val) override;
+	virtual void setMin (float val) override {}
+	virtual float getMin () const override { return 0; }
+	virtual void setMax (float val) override {}
+	virtual float getMax () const override { return (float)(menuItems->size () - 1); }
 
-	virtual	void draw (CDrawContext* pContext) VSTGUI_OVERRIDE_VMETHOD;
-	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
-	virtual int32_t onKeyDown (VstKeyCode& keyCode) VSTGUI_OVERRIDE_VMETHOD;
+	virtual	void draw (CDrawContext* pContext) override;
+	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
+	virtual int32_t onKeyDown (VstKeyCode& keyCode) override;
 
-	virtual	void takeFocus () VSTGUI_OVERRIDE_VMETHOD;
-	virtual	void looseFocus () VSTGUI_OVERRIDE_VMETHOD;
+	virtual	void takeFocus () override;
+	virtual	void looseFocus () override;
 
 	static IdStringPtr kMsgBeforePopup;
 	

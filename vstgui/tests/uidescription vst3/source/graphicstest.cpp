@@ -56,15 +56,15 @@ public:
 	void setPathOne (int32_t index);
 	void setPathTwo (int32_t index);
 	
-	void draw (CDrawContext *pContext) VSTGUI_OVERRIDE_VMETHOD;
+	void draw (CDrawContext *pContext) override;
 
-	bool attached (CView* parent) VSTGUI_OVERRIDE_VMETHOD;
-	bool removed (CView* parent) VSTGUI_OVERRIDE_VMETHOD;
+	bool attached (CView* parent) override;
+	bool removed (CView* parent) override;
 
 	// IAnimationTarget
-	void animationStart (CView* view, const char* name) VSTGUI_OVERRIDE_VMETHOD;
-	void animationTick (CView* view, const char* name, float pos) VSTGUI_OVERRIDE_VMETHOD;
-	void animationFinished (CView* view, const char* name, bool wasCanceled) VSTGUI_OVERRIDE_VMETHOD;
+	void animationStart (CView* view, const char* name) override;
+	void animationTick (CView* view, const char* name, float pos) override;
+	void animationFinished (CView* view, const char* name, bool wasCanceled) override;
 	
 	enum PathType {
 		kType1,
@@ -94,13 +94,13 @@ class FadeViewContainer : public CViewContainer
 public:
 	FadeViewContainer () : CViewContainer (CRect (0, 0, 0, 0)) { setAlphaValue (0.3f); }
 	
-	CMouseEventResult onMouseEntered (CPoint &where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD
+	CMouseEventResult onMouseEntered (CPoint &where, const CButtonState& buttons) override
 	{
 		addAnimation ("AlphaAnimation", new Animation::AlphaValueAnimation (1.f), new Animation::LinearTimingFunction (100));
 		return kMouseEventHandled;
 	}
 
-	CMouseEventResult onMouseExited (CPoint &where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD
+	CMouseEventResult onMouseExited (CPoint &where, const CButtonState& buttons) override
 	{
 		addAnimation ("AlphaAnimation", new Animation::AlphaValueAnimation (0.3f), new Animation::LinearTimingFunction (100));
 		return kMouseEventHandled;
@@ -114,11 +114,11 @@ public:
 	GraphicsViewController (IController* controller) : DelegationController (controller), graphicsView (0) {}
 	~GraphicsViewController ();
 
-	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
-	IControlListener* getControlListener (const char* controlTagName) VSTGUI_OVERRIDE_VMETHOD;
-	void valueChanged (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
+	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;
+	IControlListener* getControlListener (const char* controlTagName) override;
+	void valueChanged (CControl* pControl) override;
 
-	CMessageResult notify (CBaseObject* object, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
+	CMessageResult notify (CBaseObject* object, IdStringPtr message) override;
 protected:
 	GraphicsView* graphicsView;
 	std::list<CControl*> controls;

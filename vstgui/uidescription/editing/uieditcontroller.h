@@ -83,56 +83,56 @@ protected:
 	int32_t getSplitViewIndex (CSplitView* splitView);
 	void setDirty (bool state);
 
-	virtual void valueChanged (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
-	virtual CView* createView (const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
-	virtual CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
-	virtual IController* createSubController (UTF8StringPtr name, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
+	virtual void valueChanged (CControl* pControl) override;
+	virtual CView* createView (const UIAttributes& attributes, const IUIDescription* description) override;
+	virtual CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;
+	virtual IController* createSubController (UTF8StringPtr name, const IUIDescription* description) override;
 
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 
 	// ISplitViewController
-	virtual bool getSplitViewSizeConstraint (int32_t index, CCoord& minSize, CCoord& maxSize, CSplitView* splitView) VSTGUI_OVERRIDE_VMETHOD;
-	virtual ISplitViewSeparatorDrawer* getSplitViewSeparatorDrawer (CSplitView* splitView) VSTGUI_OVERRIDE_VMETHOD;
-	virtual bool storeViewSize (int32_t index, const CCoord& size, CSplitView* splitView) VSTGUI_OVERRIDE_VMETHOD;
-	virtual bool restoreViewSize (int32_t index, CCoord& size, CSplitView* splitView) VSTGUI_OVERRIDE_VMETHOD;
+	virtual bool getSplitViewSizeConstraint (int32_t index, CCoord& minSize, CCoord& maxSize, CSplitView* splitView) override;
+	virtual ISplitViewSeparatorDrawer* getSplitViewSeparatorDrawer (CSplitView* splitView) override;
+	virtual bool storeViewSize (int32_t index, const CCoord& size, CSplitView* splitView) override;
+	virtual bool restoreViewSize (int32_t index, CCoord& size, CSplitView* splitView) override;
 
 	// ISplitViewSeparatorDrawer
-	virtual void drawSplitViewSeparator (CDrawContext* context, const CRect& size, int32_t flags, int32_t index, CSplitView* splitView) VSTGUI_OVERRIDE_VMETHOD;
+	virtual void drawSplitViewSeparator (CDrawContext* context, const CRect& size, int32_t flags, int32_t index, CSplitView* splitView) override;
 
 	// IActionPerformer
-	virtual void performAction (IAction* action) VSTGUI_OVERRIDE_VMETHOD;
-	virtual void performColorChange (UTF8StringPtr colorName, const CColor& newColor, bool remove = false) VSTGUI_OVERRIDE_VMETHOD;
-	virtual void performTagChange (UTF8StringPtr tagName, UTF8StringPtr tagString, bool remove = false) VSTGUI_OVERRIDE_VMETHOD;
-	virtual void performBitmapChange (UTF8StringPtr bitmapName, UTF8StringPtr bitmapPath, bool remove = false) VSTGUI_OVERRIDE_VMETHOD;
-	virtual void performGradientChange (UTF8StringPtr gradientName, CGradient* newGradient, bool remove = false) VSTGUI_OVERRIDE_VMETHOD;
-	virtual void performFontChange (UTF8StringPtr fontName, CFontRef newFont, bool remove = false) VSTGUI_OVERRIDE_VMETHOD;
-	virtual void performColorNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) VSTGUI_OVERRIDE_VMETHOD;
-	virtual void performTagNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) VSTGUI_OVERRIDE_VMETHOD;
-	virtual void performFontNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) VSTGUI_OVERRIDE_VMETHOD;
-	virtual void performGradientNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) VSTGUI_OVERRIDE_VMETHOD;
-	virtual void performBitmapNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) VSTGUI_OVERRIDE_VMETHOD;
-	virtual void performBitmapNinePartTiledChange (UTF8StringPtr bitmapName, const CRect* offsets) VSTGUI_OVERRIDE_VMETHOD;
-	virtual void performBitmapFiltersChange (UTF8StringPtr bitmapName, const std::list<SharedPointer<UIAttributes> >& filterDescription) VSTGUI_OVERRIDE_VMETHOD;
-	virtual void performAlternativeFontChange (UTF8StringPtr fontName, UTF8StringPtr newAlternativeFonts) VSTGUI_OVERRIDE_VMETHOD;
+	virtual void performAction (IAction* action) override;
+	virtual void performColorChange (UTF8StringPtr colorName, const CColor& newColor, bool remove = false) override;
+	virtual void performTagChange (UTF8StringPtr tagName, UTF8StringPtr tagString, bool remove = false) override;
+	virtual void performBitmapChange (UTF8StringPtr bitmapName, UTF8StringPtr bitmapPath, bool remove = false) override;
+	virtual void performGradientChange (UTF8StringPtr gradientName, CGradient* newGradient, bool remove = false) override;
+	virtual void performFontChange (UTF8StringPtr fontName, CFontRef newFont, bool remove = false) override;
+	virtual void performColorNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) override;
+	virtual void performTagNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) override;
+	virtual void performFontNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) override;
+	virtual void performGradientNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) override;
+	virtual void performBitmapNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) override;
+	virtual void performBitmapNinePartTiledChange (UTF8StringPtr bitmapName, const CRect* offsets) override;
+	virtual void performBitmapFiltersChange (UTF8StringPtr bitmapName, const std::list<SharedPointer<UIAttributes> >& filterDescription) override;
+	virtual void performAlternativeFontChange (UTF8StringPtr fontName, UTF8StringPtr newAlternativeFonts) override;
 
-	virtual void beginLiveColorChange (UTF8StringPtr colorName) VSTGUI_OVERRIDE_VMETHOD;
-	virtual void performLiveColorChange (UTF8StringPtr colorName, const CColor& newColor) VSTGUI_OVERRIDE_VMETHOD;
-	virtual void endLiveColorChange (UTF8StringPtr colorName) VSTGUI_OVERRIDE_VMETHOD;
+	virtual void beginLiveColorChange (UTF8StringPtr colorName) override;
+	virtual void performLiveColorChange (UTF8StringPtr colorName, const CColor& newColor) override;
+	virtual void endLiveColorChange (UTF8StringPtr colorName) override;
 
-	virtual void performTemplateNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) VSTGUI_OVERRIDE_VMETHOD;
-	virtual void performCreateNewTemplate (UTF8StringPtr name, UTF8StringPtr baseViewClassName) VSTGUI_OVERRIDE_VMETHOD;
-	virtual void performDeleteTemplate (UTF8StringPtr name) VSTGUI_OVERRIDE_VMETHOD;
-	virtual void performDuplicateTemplate (UTF8StringPtr name, UTF8StringPtr dupName) VSTGUI_OVERRIDE_VMETHOD;
+	virtual void performTemplateNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) override;
+	virtual void performCreateNewTemplate (UTF8StringPtr name, UTF8StringPtr baseViewClassName) override;
+	virtual void performDeleteTemplate (UTF8StringPtr name) override;
+	virtual void performDuplicateTemplate (UTF8StringPtr name, UTF8StringPtr dupName) override;
 
-	virtual void onTemplateCreation (UTF8StringPtr name, CView* view) VSTGUI_OVERRIDE_VMETHOD;
-	virtual void onTemplateNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) VSTGUI_OVERRIDE_VMETHOD;
+	virtual void onTemplateCreation (UTF8StringPtr name, CView* view) override;
+	virtual void onTemplateNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) override;
 
-	virtual void beginGroupAction (UTF8StringPtr name) VSTGUI_OVERRIDE_VMETHOD;
-	virtual void finishGroupAction () VSTGUI_OVERRIDE_VMETHOD;
+	virtual void beginGroupAction (UTF8StringPtr name) override;
+	virtual void finishGroupAction () override;
 
 	// IKeyboardHook
-	virtual int32_t onKeyDown (const VstKeyCode& code, CFrame* frame) VSTGUI_OVERRIDE_VMETHOD;
-	virtual int32_t onKeyUp (const VstKeyCode& code, CFrame* frame) VSTGUI_OVERRIDE_VMETHOD;
+	virtual int32_t onKeyDown (const VstKeyCode& code, CFrame* frame) override;
+	virtual int32_t onKeyUp (const VstKeyCode& code, CFrame* frame) override;
 
 	SharedPointer<UIDescription> editDescription;
 	OwningPointer<UISelection> selection;
@@ -160,10 +160,8 @@ protected:
 		bool operator==(const Template& t) { return name == t.name && view == t.view; }
 		bool operator==(const std::string& n) { return name == n; }
 		Template& operator=(const Template& t) { name = t.name; view = t.view; return *this; }
-	#if VSTGUI_RVALUE_REF_SUPPORT
 		Template (Template&& t) noexcept { *this = std::move (t); }
 		Template& operator=(Template&& t) noexcept { name = std::move (t.name); view = std::move (t.view); return *this; }
-	#endif
 	};
 	void updateTemplate (UTF8StringPtr name);
 	void updateTemplate (const std::vector<Template>::const_iterator& it);

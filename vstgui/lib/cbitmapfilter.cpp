@@ -127,7 +127,6 @@ Property::~Property ()
 	}
 }
 
-#if VSTGUI_RVALUE_REF_SUPPORT
 //----------------------------------------------------------------------------------------------------
 Property::Property (Property&& p) noexcept
 : value (nullptr)
@@ -150,7 +149,6 @@ Property& Property::operator=(Property&& p) noexcept
 	p.type = kUnknown;
 	return *this;
 }
-#endif
 
 //----------------------------------------------------------------------------------------------------
 Property& Property::operator=(const Property& p)
@@ -416,7 +414,7 @@ private:
 		registerProperty (Property::kRadius, BitmapFilter::Property ((int32_t)2));
 	}
 
-	bool run (bool replace) VSTGUI_OVERRIDE_VMETHOD
+	bool run (bool replace) override
 	{
 		CBitmap* inputBitmap = getInputBitmap ();
 		uint32_t radius = static_cast<uint32_t>(static_cast<double>(getProperty (Property::kRadius).getInteger ()) * inputBitmap->getPlatformBitmap ()->getScaleFactor ());
@@ -549,7 +547,7 @@ protected:
 		registerProperty (Property::kOutputRect, CRect (0, 0, 10, 10));
 	}
 	
-	bool run (bool replace) VSTGUI_OVERRIDE_VMETHOD
+	bool run (bool replace) override
 	{
 		if (replace)
 			return false;
@@ -588,7 +586,7 @@ public:
 private:
 	ScaleLinear () : ScaleBase ("A Linear Scale Filter") {}
 
-	void process (CBitmapPixelAccess& originalBitmap, CBitmapPixelAccess& copyBitmap) VSTGUI_OVERRIDE_VMETHOD
+	void process (CBitmapPixelAccess& originalBitmap, CBitmapPixelAccess& copyBitmap) override
 	{
 		originalBitmap.setPosition (0, 0);
 		copyBitmap.setPosition (0, 0);
@@ -645,7 +643,7 @@ public:
 private:
 	ScaleBiliniear () : ScaleBase ("A Biliniear Scale Filter") {}
 
-	void process (CBitmapPixelAccess& originalBitmap, CBitmapPixelAccess& copyBitmap) VSTGUI_OVERRIDE_VMETHOD
+	void process (CBitmapPixelAccess& originalBitmap, CBitmapPixelAccess& copyBitmap) override
 	{
 		originalBitmap.setPosition (0, 0);
 		copyBitmap.setPosition (0, 0);
@@ -710,7 +708,7 @@ protected:
 		registerProperty (Property::kInputBitmap, BitmapFilter::Property (BitmapFilter::Property::kObject));
 	}
 
-	bool run (bool replace) VSTGUI_OVERRIDE_VMETHOD
+	bool run (bool replace) override
 	{
 		SharedPointer<CBitmap> inputBitmap = getInputBitmap ();
 		if (inputBitmap == 0)
@@ -799,7 +797,7 @@ private:
 	bool ignoreAlpha;
 	CColor inputColor;
 
-	bool run (bool replace) VSTGUI_OVERRIDE_VMETHOD
+	bool run (bool replace) override
 	{
 		inputColor = getProperty (Property::kInputColor).getColor ();
 		ignoreAlpha = getProperty (Property::kIgnoreAlphaColorValue).getInteger () > 0;
@@ -860,7 +858,7 @@ private:
 	CColor inputColor;
 	CColor outputColor;
 
-	bool run (bool replace) VSTGUI_OVERRIDE_VMETHOD
+	bool run (bool replace) override
 	{
 		inputColor = getProperty (Property::kInputColor).getColor ();
 		outputColor = getProperty (Property::kOutputColor).getColor ();

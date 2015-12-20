@@ -100,13 +100,11 @@ bool CocoaOpenGLView::init (IOpenGLView* view, PixelFormat* _pixelFormat)
 				formatAttributes.push_back (NSOpenGLPFASamples);
 				formatAttributes.push_back (pixelFormat.samples);
 			}
-		#if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_7
 			if (pixelFormat.flags & PixelFormat::kModernOpenGL)
 			{
 				formatAttributes.push_back (NSOpenGLPFAOpenGLProfile);
 				formatAttributes.push_back (NSOpenGLProfileVersion3_2Core);
 			}
-		#endif
 		}
 		else
 		{
@@ -116,10 +114,8 @@ bool CocoaOpenGLView::init (IOpenGLView* view, PixelFormat* _pixelFormat)
 			formatAttributes.push_back (NSOpenGLPFABackingStore);
 			formatAttributes.push_back (NSOpenGLPFADepthSize);
 			formatAttributes.push_back (32);
-		#if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_7
 			formatAttributes.push_back (NSOpenGLPFAOpenGLProfile);
 			formatAttributes.push_back (NSOpenGLProfileVersionLegacy);
-		#endif
 		}
 		formatAttributes.push_back (0);
 		NSOpenGLPixelFormat* nsPixelFormat = [[[NSOpenGLPixelFormat alloc] initWithAttributes:&formatAttributes.front ()] autorelease];
@@ -130,7 +126,7 @@ bool CocoaOpenGLView::init (IOpenGLView* view, PixelFormat* _pixelFormat)
 			GLint swapInterval = 1;
 			[context setValues:&swapInterval forParameter:NSOpenGLCPSwapInterval];
 
-		#if DEBUG && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_7
+		#if DEBUG
 			if (pixelFormat.flags & PixelFormat::kModernOpenGL)
 				CGLEnable (static_cast<CGLContextObj> ([context CGLContextObj]), kCGLCECrashOnRemovedFunctions);
 		#endif

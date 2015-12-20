@@ -163,15 +163,6 @@ void CControl::setTag (int32_t val)
 	changed (kMessageTagDidChange);
 }
 
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-//------------------------------------------------------------------------
-void CControl::doIdleStuff ()
-{
-	if (pParentFrame)
-		pParentFrame->doIdleStuff ();
-}
-#endif
-
 //------------------------------------------------------------------------
 void CControl::beginEdit ()
 {

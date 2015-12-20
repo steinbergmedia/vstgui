@@ -59,12 +59,12 @@ public:
 	
 	ID2D1Geometry* createPath (int32_t fillMode, D2DDrawContext* context = 0, CGraphicsTransform* transform = 0);
 
-	CGradient* createGradient (double color1Start, double color2Start, const CColor& color1, const CColor& color2) VSTGUI_OVERRIDE_VMETHOD;
+	CGradient* createGradient (double color1Start, double color2Start, const CColor& color1, const CColor& color2) override;
 
-	bool hitTest (const CPoint& p, bool evenOddFilled = false, CGraphicsTransform* transform = 0) VSTGUI_OVERRIDE_VMETHOD;
-	CPoint getCurrentPosition () VSTGUI_OVERRIDE_VMETHOD;
-	CRect getBoundingBox () VSTGUI_OVERRIDE_VMETHOD;
-	void dirty () VSTGUI_OVERRIDE_VMETHOD;
+	bool hitTest (const CPoint& p, bool evenOddFilled = false, CGraphicsTransform* transform = 0) override;
+	CPoint getCurrentPosition () override;
+	CRect getBoundingBox () override;
+	void dirty () override;
 protected:
 	ID2D1Geometry* path;
 	int32_t currentPathFillMode;

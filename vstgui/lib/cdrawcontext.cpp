@@ -76,7 +76,6 @@ CDrawContext::CDrawContextState& CDrawContext::CDrawContextState::operator= (con
 	return *this;
 }
 
-#if VSTGUI_RVALUE_REF_SUPPORT
 //-----------------------------------------------------------------------------
 CDrawContext::CDrawContextState::CDrawContextState (CDrawContextState&& state) noexcept
 {
@@ -98,7 +97,6 @@ CDrawContext::CDrawContextState& CDrawContext::CDrawContextState::operator= (CDr
 	globalAlpha = std::move (state.globalAlpha);
 	return *this;
 }
-#endif
 
 //-----------------------------------------------------------------------------
 CDrawContext::Transform::Transform (CDrawContext& context, const CGraphicsTransform& transformation)
@@ -160,11 +158,7 @@ void CDrawContext::restoreGlobalState ()
 {
 	if (!globalStatesStack.empty ())
 	{
-	#if VSTGUI_RVALUE_REF_SUPPORT
 		currentState = std::move (globalStatesStack.top ());
-	#else
-		currentState = globalStatesStack.top ();
-	#endif
 		globalStatesStack.pop ();
 	}
 	else
@@ -174,46 +168,6 @@ void CDrawContext::restoreGlobalState ()
 		#endif
 	}
 }
-
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-//-----------------------------------------------------------------------------
-void CDrawContext::moveTo (const CPoint& point)
-{
-	currentState.penLoc = point;
-}
-
-//-----------------------------------------------------------------------------
-void CDrawContext::lineTo (const CPoint &point)
-{
-	drawLine (std::make_pair (currentState.penLoc, point));
-	currentState.penLoc = point;
-}
-
-//-----------------------------------------------------------------------------
-void CDrawContext::drawLines (const CPoint* points, const int32_t& numberOfLines)
-{
-	vstgui_assert (numberOfLines > 0);
-	LineList list (static_cast<uint32_t> (numberOfLines));
-	for (int32_t i = 0; i < numberOfLines * 2; i += 2)
-	{
-		list.push_back (std::make_pair (points[i], points[i+1]));
-	}
-	drawLines (list);
-}
-
-//-----------------------------------------------------------------------------
-void CDrawContext::drawPolygon (const CPoint* pPoints, int32_t numberOfPoints, const CDrawStyle drawStyle)
-{
-	vstgui_assert (numberOfPoints > 0);
-	PointList list (static_cast<uint32_t> (numberOfPoints));
-	for (int32_t i = 0; i < numberOfPoints; i++)
-	{
-		list.push_back (pPoints[i]);
-	}
-	drawPolygon (list, drawStyle);
-}
-
-#endif
 
 //-----------------------------------------------------------------------------
 void CDrawContext::setLineStyle (const CLineStyle& style)

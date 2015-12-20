@@ -55,24 +55,24 @@ public:
 	~UIColorsDataSource ();
 	
 protected:
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
-	void update () VSTGUI_OVERRIDE_VMETHOD;
-	void getNames (std::list<const std::string*>& names) VSTGUI_OVERRIDE_VMETHOD;
-	bool addItem (UTF8StringPtr name) VSTGUI_OVERRIDE_VMETHOD;
-	bool removeItem (UTF8StringPtr name) VSTGUI_OVERRIDE_VMETHOD;
-	bool performNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) VSTGUI_OVERRIDE_VMETHOD;
-	UTF8StringPtr getDefaultsName () VSTGUI_OVERRIDE_VMETHOD { return "UIColorsDataSource"; }
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
+	void update () override;
+	void getNames (std::list<const std::string*>& names) override;
+	bool addItem (UTF8StringPtr name) override;
+	bool removeItem (UTF8StringPtr name) override;
+	bool performNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) override;
+	UTF8StringPtr getDefaultsName () override { return "UIColorsDataSource"; }
 
-	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
-	void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* control, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
-	void dbSelectionChanged (CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
+	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser) override;
+	void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* control, CDataBrowser* browser) override;
+	void dbSelectionChanged (CDataBrowser* browser) override;
 
-	void dbOnDragEnterBrowser (IDataPackage* drag, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
-	void dbOnDragExitBrowser (IDataPackage* drag, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
-	void dbOnDragEnterCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
-	void dbOnDragMoveInCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
-	void dbOnDragExitCell (int32_t row, int32_t column, IDataPackage* drag, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
-	bool dbOnDropInCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
+	void dbOnDragEnterBrowser (IDataPackage* drag, CDataBrowser* browser) override;
+	void dbOnDragExitBrowser (IDataPackage* drag, CDataBrowser* browser) override;
+	void dbOnDragEnterCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser) override;
+	void dbOnDragMoveInCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser) override;
+	void dbOnDragExitCell (int32_t row, int32_t column, IDataPackage* drag, CDataBrowser* browser) override;
+	bool dbOnDropInCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser) override;
 
 	SharedPointer<UIColor> color;
 	bool editing;

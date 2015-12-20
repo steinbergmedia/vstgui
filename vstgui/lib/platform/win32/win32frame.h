@@ -56,28 +56,28 @@ public:
 	IPlatformFrameCallback* getFrame () const { return frame; }
 	
 	// IPlatformFrame
-	bool getGlobalPosition (CPoint& pos) const VSTGUI_OVERRIDE_VMETHOD;
-	bool setSize (const CRect& newSize) VSTGUI_OVERRIDE_VMETHOD;
-	bool getSize (CRect& size) const VSTGUI_OVERRIDE_VMETHOD;
-	bool getCurrentMousePosition (CPoint& mousePosition) const VSTGUI_OVERRIDE_VMETHOD;
-	bool getCurrentMouseButtons (CButtonState& buttons) const VSTGUI_OVERRIDE_VMETHOD;
-	bool setMouseCursor (CCursorType type) VSTGUI_OVERRIDE_VMETHOD;
-	bool invalidRect (const CRect& rect) VSTGUI_OVERRIDE_VMETHOD;
-	bool scrollRect (const CRect& src, const CPoint& distance) VSTGUI_OVERRIDE_VMETHOD;
-	bool showTooltip (const CRect& rect, const char* utf8Text) VSTGUI_OVERRIDE_VMETHOD;
-	bool hideTooltip () VSTGUI_OVERRIDE_VMETHOD;
-	void* getPlatformRepresentation () const VSTGUI_OVERRIDE_VMETHOD { return windowHandle; }
-	IPlatformTextEdit* createPlatformTextEdit (IPlatformTextEditCallback* textEdit) VSTGUI_OVERRIDE_VMETHOD;
-	IPlatformOptionMenu* createPlatformOptionMenu () VSTGUI_OVERRIDE_VMETHOD;
+	bool getGlobalPosition (CPoint& pos) const override;
+	bool setSize (const CRect& newSize) override;
+	bool getSize (CRect& size) const override;
+	bool getCurrentMousePosition (CPoint& mousePosition) const override;
+	bool getCurrentMouseButtons (CButtonState& buttons) const override;
+	bool setMouseCursor (CCursorType type) override;
+	bool invalidRect (const CRect& rect) override;
+	bool scrollRect (const CRect& src, const CPoint& distance) override;
+	bool showTooltip (const CRect& rect, const char* utf8Text) override;
+	bool hideTooltip () override;
+	void* getPlatformRepresentation () const override { return windowHandle; }
+	IPlatformTextEdit* createPlatformTextEdit (IPlatformTextEditCallback* textEdit) override;
+	IPlatformOptionMenu* createPlatformOptionMenu () override;
 #if VSTGUI_OPENGL_SUPPORT
-	IPlatformOpenGLView* createPlatformOpenGLView () VSTGUI_OVERRIDE_VMETHOD;
+	IPlatformOpenGLView* createPlatformOpenGLView () override;
 #endif
-	IPlatformViewLayer* createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer = 0) VSTGUI_OVERRIDE_VMETHOD { return 0; } // not yet supported
-	COffscreenContext* createOffscreenContext (CCoord width, CCoord height, double scaleFactor = 1.) VSTGUI_OVERRIDE_VMETHOD;
-	DragResult doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap) VSTGUI_OVERRIDE_VMETHOD;
+	IPlatformViewLayer* createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer = 0) override { return 0; } // not yet supported
+	COffscreenContext* createOffscreenContext (CCoord width, CCoord height, double scaleFactor = 1.) override;
+	DragResult doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap) override;
 
-	void setClipboard (IDataPackage* data) VSTGUI_OVERRIDE_VMETHOD;
-	IDataPackage* getClipboard () VSTGUI_OVERRIDE_VMETHOD;
+	void setClipboard (IDataPackage* data) override;
+	IDataPackage* getClipboard () override;
 
 //-----------------------------------------------------------------------------
 protected:

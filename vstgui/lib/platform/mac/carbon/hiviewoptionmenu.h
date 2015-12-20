@@ -48,7 +48,7 @@ class HIViewOptionMenu : public IPlatformOptionMenu
 {
 public:
 
-	PlatformOptionMenuResult popup (COptionMenu* optionMenu) VSTGUI_OVERRIDE_VMETHOD;
+	PlatformOptionMenuResult popup (COptionMenu* optionMenu) override;
 
 protected:
 	MenuRef createMenu (COptionMenu* menu);

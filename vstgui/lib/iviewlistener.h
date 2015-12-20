@@ -73,12 +73,12 @@ class IViewListenerAdapter : public IViewListener
 public:
 	virtual ~IViewListenerAdapter () {}
 
-	void viewSizeChanged (CView* view, const CRect& oldSize) VSTGUI_OVERRIDE_VMETHOD {}
-	void viewAttached (CView* view) VSTGUI_OVERRIDE_VMETHOD {}
-	void viewRemoved (CView* view) VSTGUI_OVERRIDE_VMETHOD {}
-	void viewLostFocus (CView* view) VSTGUI_OVERRIDE_VMETHOD {}
-	void viewTookFocus (CView* view) VSTGUI_OVERRIDE_VMETHOD {}
-	void viewWillDelete (CView* view) VSTGUI_OVERRIDE_VMETHOD {}
+	void viewSizeChanged (CView* view, const CRect& oldSize) override {}
+	void viewAttached (CView* view) override {}
+	void viewRemoved (CView* view) override {}
+	void viewLostFocus (CView* view) override {}
+	void viewTookFocus (CView* view) override {}
+	void viewWillDelete (CView* view) override {}
 };
 
 //-----------------------------------------------------------------------------
@@ -87,10 +87,10 @@ public:
 class IViewContainerListenerAdapter : public IViewContainerListener
 {
 public:
-	void viewContainerViewAdded (CViewContainer* container, CView* view) VSTGUI_OVERRIDE_VMETHOD {}
-	void viewContainerViewRemoved (CViewContainer* container, CView* view) VSTGUI_OVERRIDE_VMETHOD {}
-	void viewContainerViewZOrderChanged (CViewContainer* container, CView* view) VSTGUI_OVERRIDE_VMETHOD {}
-	void viewContainerTransformChanged (CViewContainer* container) VSTGUI_OVERRIDE_VMETHOD {}
+	void viewContainerViewAdded (CViewContainer* container, CView* view) override {}
+	void viewContainerViewRemoved (CViewContainer* container, CView* view) override {}
+	void viewContainerViewZOrderChanged (CViewContainer* container, CView* view) override {}
+	void viewContainerTransformChanged (CViewContainer* container) override {}
 };
 
 }

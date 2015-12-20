@@ -79,7 +79,6 @@ UTF8String& UTF8String::operator=(const UTF8String& other)
 	return *this;
 }
 
-#if VSTGUI_RVALUE_REF_SUPPORT
 //-----------------------------------------------------------------------------
 UTF8String::UTF8String (UTF8String&& other)
 {
@@ -93,7 +92,6 @@ UTF8String& UTF8String::operator=(UTF8String&& other)
 	platformString = std::move (other.platformString);
 	return *this;
 }
-#endif
 
 //-----------------------------------------------------------------------------
 void UTF8String::set (UTF8StringPtr str)

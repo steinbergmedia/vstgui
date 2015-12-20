@@ -131,17 +131,17 @@ public:
 	CMemoryStream (const int8_t* buffer, uint32_t bufferSize, bool binaryMode = true, ByteOrder byteOrder = kNativeByteOrder);
 	~CMemoryStream ();
 
-	uint32_t writeRaw (const void* buffer, uint32_t size) VSTGUI_OVERRIDE_VMETHOD;
-	uint32_t readRaw (void* buffer, uint32_t size) VSTGUI_OVERRIDE_VMETHOD;
+	uint32_t writeRaw (const void* buffer, uint32_t size) override;
+	uint32_t readRaw (void* buffer, uint32_t size) override;
 
-	int64_t seek (int64_t pos, SeekMode mode) VSTGUI_OVERRIDE_VMETHOD;
-	int64_t tell () const VSTGUI_OVERRIDE_VMETHOD { return static_cast<int64_t> (pos); }
-	void rewind () VSTGUI_OVERRIDE_VMETHOD { pos = 0; }
+	int64_t seek (int64_t pos, SeekMode mode) override;
+	int64_t tell () const override { return static_cast<int64_t> (pos); }
+	void rewind () override { pos = 0; }
 
 	const int8_t* getBuffer () const { return buffer; }
 
-	virtual bool operator<< (const std::string& str) VSTGUI_OVERRIDE_VMETHOD;
-	virtual bool operator>> (std::string& string) VSTGUI_OVERRIDE_VMETHOD;
+	virtual bool operator<< (const std::string& str) override;
+	virtual bool operator>> (std::string& string) override;
 
 	bool end (); // write a zero byte if binaryMode is false
 protected:
@@ -174,15 +174,15 @@ public:
 
 	bool open (UTF8StringPtr path, int32_t mode, ByteOrder byteOrder = kNativeByteOrder);
 
-	uint32_t writeRaw (const void* buffer, uint32_t size) VSTGUI_OVERRIDE_VMETHOD;
-	uint32_t readRaw (void* buffer, uint32_t size) VSTGUI_OVERRIDE_VMETHOD;
+	uint32_t writeRaw (const void* buffer, uint32_t size) override;
+	uint32_t readRaw (void* buffer, uint32_t size) override;
 
-	int64_t seek (int64_t pos, SeekMode mode) VSTGUI_OVERRIDE_VMETHOD;
-	int64_t tell () const VSTGUI_OVERRIDE_VMETHOD;
-	void rewind () VSTGUI_OVERRIDE_VMETHOD;
+	int64_t seek (int64_t pos, SeekMode mode) override;
+	int64_t tell () const override;
+	void rewind () override;
 
-	virtual bool operator<< (const std::string& str) VSTGUI_OVERRIDE_VMETHOD;
-	virtual bool operator>> (std::string& string) VSTGUI_OVERRIDE_VMETHOD;
+	virtual bool operator<< (const std::string& str) override;
+	virtual bool operator>> (std::string& string) override;
 protected:
 	FILE* stream;
 	int32_t openMode;
@@ -233,11 +233,11 @@ public:
 
 	bool open (const CResourceDescription& res);
 
-	virtual bool operator>> (std::string& string) VSTGUI_OVERRIDE_VMETHOD { return false; }
-	virtual uint32_t readRaw (void* buffer, uint32_t size) VSTGUI_OVERRIDE_VMETHOD;
-	virtual int64_t seek (int64_t pos, SeekMode mode) VSTGUI_OVERRIDE_VMETHOD;
-	virtual int64_t tell () const VSTGUI_OVERRIDE_VMETHOD;
-	virtual void rewind () VSTGUI_OVERRIDE_VMETHOD;
+	virtual bool operator>> (std::string& string) override { return false; }
+	virtual uint32_t readRaw (void* buffer, uint32_t size) override;
+	virtual int64_t seek (int64_t pos, SeekMode mode) override;
+	virtual int64_t tell () const override;
+	virtual void rewind () override;
 protected:
 	void* platformHandle;
 };

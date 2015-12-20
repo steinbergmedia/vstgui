@@ -62,13 +62,13 @@ public:
 
 	void pixelAlign (CDrawContext* context);
 	CGPathRef getCGPathRef ();
-	void dirty () VSTGUI_OVERRIDE_VMETHOD;
+	void dirty () override;
 
-	bool hitTest (const CPoint& p, bool evenOddFilled = false, CGraphicsTransform* transform = 0) VSTGUI_OVERRIDE_VMETHOD;
-	CPoint getCurrentPosition () VSTGUI_OVERRIDE_VMETHOD;
-	CRect getBoundingBox () VSTGUI_OVERRIDE_VMETHOD;
+	bool hitTest (const CPoint& p, bool evenOddFilled = false, CGraphicsTransform* transform = 0) override;
+	CPoint getCurrentPosition () override;
+	CRect getBoundingBox () override;
 
-	CGradient* createGradient (double color1Start, double color2Start, const CColor& color1, const CColor& color2) VSTGUI_OVERRIDE_VMETHOD;
+	CGradient* createGradient (double color1Start, double color2Start, const CColor& color1, const CColor& color2) override;
 
 	static CGAffineTransform createCGAffineTransform (const CGraphicsTransform& t);
 
@@ -89,10 +89,8 @@ public:
 
 	operator CGGradientRef () const;
 
-	void addColorStop (const std::pair<double, CColor>& colorStop) VSTGUI_OVERRIDE_VMETHOD;
-#if VSTGUI_RVALUE_REF_SUPPORT
-	void addColorStop (std::pair<double, CColor>&& colorStop) VSTGUI_OVERRIDE_VMETHOD;
-#endif
+	void addColorStop (const std::pair<double, CColor>& colorStop) override;
+	void addColorStop (std::pair<double, CColor>&& colorStop) override;
 
 protected:
 	void createCGGradient () const;
