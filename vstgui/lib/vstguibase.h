@@ -44,7 +44,7 @@
 // VSTGUI Version
 //-----------------------------------------------------------------------------
 #define VSTGUI_VERSION_MAJOR  4
-#define VSTGUI_VERSION_MINOR  3
+#define VSTGUI_VERSION_MINOR  4
 
 //-----------------------------------------------------------------------------
 // Platform definitions
@@ -135,9 +135,6 @@
 		#error unsupported Platform SDK you need at least the Vista Platform SDK to compile VSTGUI
 	#endif
 
-	#if defined (_WIN32_WINNT_WIN7) && !defined (VSTGUI_DIRECT2D_SUPPORT)
-		#define VSTGUI_DIRECT2D_SUPPORT	1
-	#endif
 	#ifdef __GNUC__
 		#if __cplusplus >= 201103L
 			#define VSTGUI_OVERRIDE_VMETHOD	override
@@ -149,25 +146,16 @@
 			#define noexcept
 		#endif
 		#include <stdint.h>
-	#elif _MSC_VER >=	1600
+	#elif _MSC_VER <	1800
+		#error Visual Studio 2013 or newer needed
+	#elif _MSC_VER >=	1800
 		#define VSTGUI_OVERRIDE_VMETHOD	override
 		#define VSTGUI_RVALUE_REF_SUPPORT 1
-		#if _MSC_VER >= 1800
-			#define VSTGUI_RANGE_BASED_FOR_LOOP_SUPPORT 1
-			#define VSTGUI_HAS_FUNCTIONAL 1
-			#define VSTGUI_FINAL_VMETHOD final
-		#endif
+		#define VSTGUI_RANGE_BASED_FOR_LOOP_SUPPORT 1
+		#define VSTGUI_HAS_FUNCTIONAL 1
+		#define VSTGUI_FINAL_VMETHOD final
 		#include <type_traits>
 		#include <stdint.h>
-	#else
-		typedef char				int8_t;
-		typedef unsigned char		uint8_t;
-		typedef short				int16_t;
-		typedef unsigned short		uint16_t;
-		typedef long				int32_t;
-		typedef unsigned long		uint32_t;
-		typedef __int64				int64_t;
-		typedef unsigned __int64	uint64_t;
 	#endif
 	#ifndef WINDOWS
 		#define WINDOWS 1
@@ -175,6 +163,7 @@
 	#if !defined(__GNUC__) && _MSC_VER <= 1800
 		#define noexcept		// only supported since VS 2015
 	#endif
+	#define VSTGUI_DIRECT2D_SUPPORT	1
 	#define DEPRECATED_ATTRIBUTE __declspec(deprecated)
 	#pragma warning(3 : 4189) // local variable is initialized but not referenced
 	#pragma warning(3 : 4702) // unreachable code
@@ -198,23 +187,23 @@
 // C++11 features
 //----------------------------------------------------
 #ifndef VSTGUI_RVALUE_REF_SUPPORT
-	"c++11 compiler needed !"
+	#error "c++11 compiler needed !"
 #endif
 
 #ifndef VSTGUI_OVERRIDE_VMETHOD
-	"c++11 compiler needed !"
+	#error "c++11 compiler needed !"
 #endif
 
 #ifndef VSTGUI_FINAL_VMETHOD
-	"c++11 compiler needed !"
+	#error "c++11 compiler needed !"
 #endif
 
 #ifndef VSTGUI_RANGE_BASED_FOR_LOOP_SUPPORT
-	"c++11 compiler needed !"
+	#error "c++11 compiler needed !"
 #endif
 
 #ifndef VSTGUI_HAS_FUNCTIONAL
-	"c++11 compiler needed !"
+	#error "c++11 compiler needed !"
 #endif
 
 //----------------------------------------------------
