@@ -18,3 +18,4 @@ vstgui/tests/uidescription vst3/win/Win32
 vstgui/ide/xcode4/vstgui.xcodeproj/project.xcworkspace
 vstgui/ide/visualstudio/vs2013/build
 VST3SDK
+vstgui.opensdf
