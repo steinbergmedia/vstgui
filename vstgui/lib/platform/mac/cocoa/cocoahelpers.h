@@ -132,29 +132,7 @@ HIDDEN inline NSColor* nsColorFromCColor (const VSTGUI::CColor& color)
 //------------------------------------------------------------------------------------
 HIDDEN inline NSImage* imageFromCGImageRef (CGImageRef image)
 {
-	#if MAC_OS_X_VERSION_MIN_REQUIRED > MAC_OS_X_VERSION_10_5
 	return [[NSImage alloc] initWithCGImage:image size:NSZeroSize];
-
-	#else
-    NSRect imageRect = NSMakeRect (0.0, 0.0, 0.0, 0.0);
-    CGContextRef imageContext = nil;
-    NSImage* newImage = nil;
- 
-    // Get the image dimensions.
-    imageRect.size.height = CGImageGetHeight (image);
-    imageRect.size.width = CGImageGetWidth (image);
- 
-    // Create a new image to receive the Quartz image data.
-    newImage = [[NSImage alloc] initWithSize:imageRect.size];
-    [newImage lockFocus];
- 
-    // Get the Quartz context and draw.
-    imageContext = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
-    CGContextDrawImage(imageContext, NSRectToCGRect (imageRect), image);
-    [newImage unlockFocus];
- 
-    return newImage;
-	#endif
 }
 
 #endif // MAC_COCOA

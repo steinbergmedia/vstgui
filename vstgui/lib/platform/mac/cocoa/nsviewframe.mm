@@ -852,7 +852,6 @@ bool NSViewFrame::getCurrentMousePosition (CPoint& mousePosition) const
 //-----------------------------------------------------------------------------
 bool NSViewFrame::getCurrentMouseButtons (CButtonState& buttons) const
 {
-#if MAC_OS_X_VERSION_MIN_REQUIRED > MAC_OS_X_VERSION_10_5
 	NSUInteger modifiers = [NSEvent modifierFlags];
 	mapModifiers (modifiers, buttons);
 
@@ -876,35 +875,6 @@ bool NSViewFrame::getCurrentMouseButtons (CButtonState& buttons) const
 	if (mouseButtons & (1 << 4))
 		buttons |= kButton5;
 	
-#else
-	UInt32 state = GetCurrentButtonState ();
-	if (state == kEventMouseButtonPrimary)
-		buttons |= kLButton;
-	if (state == kEventMouseButtonSecondary)
-		buttons |= kRButton;
-	if (state == kEventMouseButtonTertiary)
-		buttons |= kMButton;
-	if (state == 4)
-		buttons |= kButton4;
-	if (state == 5)
-		buttons |= kButton5;
-
-	state = GetCurrentKeyModifiers ();
-	if (state & cmdKey)
-		buttons |= kControl;
-	if (state & shiftKey)
-		buttons |= kShift;
-	if (state & optionKey)
-		buttons |= kAlt;
-	if (state & controlKey)
-		buttons |= kApple;
-	// for the one buttons
-	if (buttons & kApple && buttons & kLButton)
-	{
-		buttons &= ~(kApple | kLButton);
-		buttons |= kRButton;
-	}
-#endif
 	return true;
 }
 
