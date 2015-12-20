@@ -123,7 +123,7 @@ bool IPlatformBitmap::createMemoryPNGRepresentation (IPlatformBitmap* bitmap, vo
 					{
 						size = (uint32_t)CFDataGetLength (data);
 						*ptr = std::malloc (size);
-						CFDataGetBytes (data, CFRangeMake (0, size), (UInt8*)*ptr);
+						CFDataGetBytes (data, CFRangeMake (0, static_cast<CFIndex> (size)), static_cast<UInt8*> (*ptr));
 						result = true;
 					}
 					CFRelease (dest);

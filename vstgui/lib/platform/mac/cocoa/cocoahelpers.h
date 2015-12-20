@@ -93,10 +93,10 @@ extern HIDDEN void convertPointToGlobal (NSView* view, NSPoint& p);
 HIDDEN inline NSRect nsRectFromCRect (const VSTGUI::CRect& rect)
 {
 	NSRect r;
-	r.origin.x = rect.left;
-	r.origin.y = rect.top;
-	r.size.width = rect.getWidth ();
-	r.size.height = rect.getHeight ();
+	r.origin.x = static_cast<CGFloat> (rect.left);
+	r.origin.y = static_cast<CGFloat> (rect.top);
+	r.size.width = static_cast<CGFloat> (rect.getWidth ());
+	r.size.height = static_cast<CGFloat> (rect.getHeight ());
 	return r;
 }
 
@@ -126,7 +126,7 @@ HIDDEN inline VSTGUI::CPoint pointFromNSPoint (const NSPoint& point)
 //------------------------------------------------------------------------------------
 HIDDEN inline NSColor* nsColorFromCColor (const VSTGUI::CColor& color)
 {
-	return [NSColor colorWithDeviceRed:color.red/255. green:color.green/255. blue:color.blue/255. alpha:color.alpha/255.];
+	return [NSColor colorWithDeviceRed:static_cast<CGFloat> (color.red/255.) green:static_cast<CGFloat> (color.green/255.) blue:static_cast<CGFloat> (color.blue/255.) alpha:static_cast<CGFloat> (color.alpha/255.)];
 }
 
 //------------------------------------------------------------------------------------
