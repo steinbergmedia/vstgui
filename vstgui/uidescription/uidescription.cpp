@@ -412,19 +412,15 @@ UINode* UIDescList::findChildNodeWithAttributeValue (const std::string& attribut
 //-----------------------------------------------------------------------------
 void UIDescList::sort ()
 {
-	struct Compare {
-		bool operator () (const UINode* n1, const UINode* n2) const
-		{
-			const std::string* str1 = n1->getAttributes ()->getAttributeValue ("name");
-			const std::string* str2 = n2->getAttributes ()->getAttributeValue ("name");
-			if (str1 && str2)
-				return *str1 < *str2;
-			else if (str1)
-				return true;
-			return false;
-		}
-	};
-	std::sort (begin (), end (), Compare ());
+	std::sort (begin (), end (), [] (const UINode* n1, const UINode* n2) {
+		const std::string* str1 = n1->getAttributes ()->getAttributeValue ("name");
+		const std::string* str2 = n2->getAttributes ()->getAttributeValue ("name");
+		if (str1 && str2)
+			return *str1 < *str2;
+		else if (str1)
+			return true;
+		return false;
+	});
 }
 
 //-----------------------------------------------------------------------------
@@ -1530,63 +1526,48 @@ template<typename NodeType, typename ObjType, typename CompareFunction> UTF8Stri
 //-----------------------------------------------------------------------------
 UTF8StringPtr UIDescription::lookupColorName (const CColor& color) const
 {
-	struct Compare {
-		bool operator () (const UIDescription* desc, UIColorNode* node, const CColor& color) const {
-			return node->getColor() == color;
-		}
-	};
-	return lookupName<UIColorNode> (color, MainNodeNames::kColor, Compare ());
+	return lookupName<UIColorNode> (color, MainNodeNames::kColor, [] (const UIDescription* desc, UIColorNode* node, const CColor& color) {
+		return node->getColor() == color;
+	});
 }
 
 //-----------------------------------------------------------------------------
 UTF8StringPtr UIDescription::lookupFontName (const CFontRef font) const
 {
-	struct Compare {
-		bool operator () (const UIDescription* desc, UIFontNode* node, const CFontRef& font) const {
-			return node->getFont () && node->getFont () == font;
-		}
-	};
-	return font ? lookupName<UIFontNode> (font, MainNodeNames::kFont, Compare ()) : 0;
+	return font ? lookupName<UIFontNode> (font, MainNodeNames::kFont, [] (const UIDescription* desc, UIFontNode* node, const CFontRef& font) {
+		return node->getFont () && node->getFont () == font;
+	}) : 0;
 }
 
 //-----------------------------------------------------------------------------
 UTF8StringPtr UIDescription::lookupBitmapName (const CBitmap* bitmap) const
 {
-	struct Compare {
-		bool operator () (const UIDescription* desc, UIBitmapNode* node, const CBitmap* bitmap) const {
-			return node->getBitmap (desc->filePath) == bitmap;
-		}
-	};
-	return bitmap ? lookupName<UIBitmapNode> (bitmap, MainNodeNames::kBitmap, Compare ()) : 0;
+	return bitmap ? lookupName<UIBitmapNode> (bitmap, MainNodeNames::kBitmap, [] (const UIDescription* desc, UIBitmapNode* node, const CBitmap* bitmap) {
+		return node->getBitmap (desc->filePath) == bitmap;
+	}) : 0;
 }
 
 //-----------------------------------------------------------------------------
 UTF8StringPtr UIDescription::lookupGradientName (const CGradient* gradient) const
 {
-	struct Compare {
-		bool operator () (const UIDescription* desc, UIGradientNode* node, const CGradient* gradient) const {
-			return node->getGradient() == gradient || (node->getGradient () && gradient->getColorStops () == node->getGradient ()->getColorStops ());
-		}
-	};
-	return gradient ? lookupName<UIGradientNode> (gradient, MainNodeNames::kGradient, Compare ()) : 0;
+	return gradient ? lookupName<UIGradientNode> (gradient, MainNodeNames::kGradient, [] (const UIDescription* desc, UIGradientNode* node, const CGradient* gradient) {
+		return node->getGradient() == gradient || (node->getGradient () && gradient->getColorStops () == node->getGradient ()->getColorStops ());
+	}) : 0;
 }
 	
 //-----------------------------------------------------------------------------
 UTF8StringPtr UIDescription::lookupControlTagName (const int32_t tag) const
 {
-	struct Compare {
-		bool operator () (const UIDescription* desc, UIControlTagNode* node, const int32_t tag) const {
-			int32_t nodeTag = node->getTag ();
-			if (nodeTag == -1 && node->getTagString ())
-			{
-				double v;
-				if (desc->calculateStringValue (node->getTagString ()->c_str (), v))
-					nodeTag = (int32_t)v;
-			}
-			return nodeTag == tag;
+	return lookupName<UIControlTagNode> (tag, MainNodeNames::kControlTag, [] (const UIDescription* desc, UIControlTagNode* node, const int32_t tag) {
+		int32_t nodeTag = node->getTag ();
+		if (nodeTag == -1 && node->getTagString ())
+		{
+			double v;
+			if (desc->calculateStringValue (node->getTagString ()->c_str (), v))
+				nodeTag = (int32_t)v;
 		}
-	};
-	return lookupName<UIControlTagNode> (tag, MainNodeNames::kControlTag, Compare ());
+		return nodeTag == tag;
+	});
 }
 
 //-----------------------------------------------------------------------------
