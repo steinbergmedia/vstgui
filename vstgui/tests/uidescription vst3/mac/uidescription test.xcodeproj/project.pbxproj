@@ -10,7 +10,6 @@
 		F40E268A1813FEC4001CAC0D /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F40E26891813FEC4001CAC0D /* QuartzCore.framework */; };
 		F41CA1C8112E99F000D425D7 /* animationtest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F41CA1C7112E99F000D425D7 /* animationtest.cpp */; };
 		F41CA21F112E9E6B00D425D7 /* AnimationTest.uidesc in Resources */ = {isa = PBXBuildFile; fileRef = F41CA21E112E9E6B00D425D7 /* AnimationTest.uidesc */; };
-		F420E6DB1906D45300AFD962 /* libvstgui c++11.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F481925C165D3C050035058F /* libvstgui c++11.a */; };
 		F420F3B51BD8DAB500F4CBAF /* edituidescriptioneditor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F420F3B31BD8DAB500F4CBAF /* edituidescriptioneditor.cpp */; };
 		F42731DE1125507F00BE2194 /* factory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F42731DD1125507F00BE2194 /* factory.cpp */; };
 		F42731E51125516A00BE2194 /* subcontrollertest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F42731E41125516A00BE2194 /* subcontrollertest.cpp */; };
@@ -51,6 +50,7 @@
 		F49A667F195C417600CF5163 /* Foreground#0.5x.png in Resources */ = {isa = PBXBuildFile; fileRef = F49A667C195C417600CF5163 /* Foreground#0.5x.png */; };
 		F49A6680195C417600CF5163 /* Foreground#2x.png in Resources */ = {isa = PBXBuildFile; fileRef = F49A667D195C417600CF5163 /* Foreground#2x.png */; };
 		F49A6683195C43AA00CF5163 /* vst3groupcontroller.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F49A6681195C43AA00CF5163 /* vst3groupcontroller.cpp */; };
+		F4BBA30D1C26D6B4006C1541 /* libvstgui.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F40DCF9E13119C240084A8AE /* libvstgui.a */; };
 		F4C04ECE123B8E450082BA28 /* vst3sdksources.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4C04ECD123B8E450082BA28 /* vst3sdksources.cpp */; };
 		F4CF0E1B13B5E17A0027351A /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F4CF0E1A13B5E17A0027351A /* OpenGL.framework */; };
 		F4F5DA8A10BFD28900DB6C33 /* TabController.png in Resources */ = {isa = PBXBuildFile; fileRef = F4F5DA8910BFD28900DB6C33 /* TabController.png */; };
@@ -78,19 +78,12 @@
 			remoteGlobalIDString = F4E9C69317A8266200F42EF8;
 			remoteInfo = "vstgui-ios";
 		};
-		F420E6D91906D45000AFD962 /* PBXContainerItemProxy */ = {
+		F4BBA30B1C26D6AF006C1541 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = F40DCF9913119C240084A8AE /* vstgui.xcodeproj */;
 			proxyType = 1;
 			remoteGlobalIDString = F4F953F516510E61006EE1D1;
-			remoteInfo = "vstgui c++11";
-		};
-		F481925B165D3C050035058F /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = F40DCF9913119C240084A8AE /* vstgui.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = F4F953F616510E61006EE1D1;
-			remoteInfo = "vstgui c++11";
+			remoteInfo = vstgui;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -164,7 +157,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F420E6DB1906D45300AFD962 /* libvstgui c++11.a in Frameworks */,
+				F4BBA30D1C26D6B4006C1541 /* libvstgui.a in Frameworks */,
 				F40E268A1813FEC4001CAC0D /* QuartzCore.framework in Frameworks */,
 				F4CF0E1B13B5E17A0027351A /* OpenGL.framework in Frameworks */,
 				F440754A10BE6D00003C59F6 /* Carbon.framework in Frameworks */,
@@ -239,7 +232,6 @@
 			isa = PBXGroup;
 			children = (
 				F40DCF9E13119C240084A8AE /* libvstgui.a */,
-				F481925C165D3C050035058F /* libvstgui c++11.a */,
 				F40E26911813FEC4001CAC0D /* libvstgui-ios.a */,
 				F40E268F1813FEC4001CAC0D /* unittests */,
 			);
@@ -326,7 +318,7 @@
 			buildRules = (
 			);
 			dependencies = (
-				F420E6DA1906D45000AFD962 /* PBXTargetDependency */,
+				F4BBA30C1C26D6AF006C1541 /* PBXTargetDependency */,
 			);
 			name = "uidescription test";
 			productName = "uidescription test";
@@ -384,13 +376,6 @@
 			fileType = archive.ar;
 			path = "libvstgui-ios.a";
 			remoteRef = F40E26901813FEC4001CAC0D /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		F481925C165D3C050035058F /* libvstgui c++11.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = "libvstgui c++11.a";
-			remoteRef = F481925B165D3C050035058F /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */
@@ -473,10 +458,10 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		F420E6DA1906D45000AFD962 /* PBXTargetDependency */ = {
+		F4BBA30C1C26D6AF006C1541 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			name = "vstgui c++11";
-			targetProxy = F420E6D91906D45000AFD962 /* PBXContainerItemProxy */;
+			name = vstgui;
+			targetProxy = F4BBA30B1C26D6AF006C1541 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -484,6 +469,7 @@
 		508817C609F0C9740071BF1A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
@@ -521,6 +507,7 @@
 		508817C709F0C9740071BF1A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
