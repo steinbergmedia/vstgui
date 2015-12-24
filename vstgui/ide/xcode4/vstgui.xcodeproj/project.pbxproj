@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		F408C5B71C2AA19700F46C6A /* VSTGUICommand.mm in Sources */ = {isa = PBXBuildFile; fileRef = F408C5B51C2AA0DA00F46C6A /* VSTGUICommand.mm */; };
 		F40E63FE16821A6300426847 /* cgradientview.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F40E63FB16821A6300426847 /* cgradientview.cpp */; };
 		F40E640016821A6300426847 /* cgradientview.h in Headers */ = {isa = PBXBuildFile; fileRef = F40E63FC16821A6300426847 /* cgradientview.h */; };
 		F41F03381BE7DC0A00C47DEA /* uiviewswitchcontainer_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F41F03371BE7DC0A00C47DEA /* uiviewswitchcontainer_test.cpp */; };
@@ -41,6 +42,7 @@
 		F4762E8A1BDA958800810447 /* vstgui_mac.mm in Sources */ = {isa = PBXBuildFile; fileRef = F4462D2F175646EE00E6835D /* vstgui_mac.mm */; };
 		F4762E8B1BDA958C00810447 /* vstgui_uidescription_mac.mm in Sources */ = {isa = PBXBuildFile; fileRef = F4462D30175646EE00E6835D /* vstgui_uidescription_mac.mm */; };
 		F4762E8F1BDAADA700810447 /* animations_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4762E8D1BDAAD4E00810447 /* animations_test.cpp */; };
+		F478633A1C28654100C76167 /* macwindow.mm in Sources */ = {isa = PBXBuildFile; fileRef = F47863391C28654100C76167 /* macwindow.mm */; };
 		F47883A518045A300054ED06 /* caviewlayer.mm in Sources */ = {isa = PBXBuildFile; fileRef = F47883A218045A300054ED06 /* caviewlayer.mm */; };
 		F47883A618045A300054ED06 /* caviewlayer.mm in Sources */ = {isa = PBXBuildFile; fileRef = F47883A218045A300054ED06 /* caviewlayer.mm */; };
 		F47883A818045A300054ED06 /* caviewlayer.h in Headers */ = {isa = PBXBuildFile; fileRef = F47883A318045A300054ED06 /* caviewlayer.h */; };
@@ -50,6 +52,7 @@
 		F47D201918A6648C00487CDB /* uiattributes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F47D201618A6648C00487CDB /* uiattributes.cpp */; };
 		F47D201A18A6648C00487CDB /* uiattributes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F47D201618A6648C00487CDB /* uiattributes.cpp */; };
 		F47D201D18A6648C00487CDB /* uiattributes.h in Headers */ = {isa = PBXBuildFile; fileRef = F47D201718A6648C00487CDB /* uiattributes.h */; };
+		F48069331C2734E300356894 /* macapplication.mm in Sources */ = {isa = PBXBuildFile; fileRef = F48069321C2734E300356894 /* macapplication.mm */; };
 		F48E9CF419C2D1000082B06D /* cgradient.h in Headers */ = {isa = PBXBuildFile; fileRef = F48E9CEF19C2D1000082B06D /* cgradient.h */; };
 		F490FDD41BE2C5F000386A09 /* clinestyle_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F490FDD31BE2C5F000386A09 /* clinestyle_test.cpp */; };
 		F490FDD61BE3C82F00386A09 /* utf8string_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F490FDD51BE3C82F00386A09 /* utf8string_test.cpp */; };
@@ -99,6 +102,8 @@
 		F4B0AF811BDD25DF0033C579 /* cstream_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4B0AF801BDD25DF0033C579 /* cstream_test.cpp */; };
 		F4B0AF891BDD378F0033C579 /* uiattributes_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4B0AF881BDD378F0033C579 /* uiattributes_test.cpp */; };
 		F4B1D4EF1BE0E6A600EE6BDA /* delegationcontroller_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4B1D4EE1BE0E6A600EE6BDA /* delegationcontroller_test.cpp */; };
+		F4B5B5C61C26F2C500450324 /* window.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4B5B5C51C26F2C500450324 /* window.cpp */; };
+		F4B5B5CA1C26FA9C00450324 /* application.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4B5B5C91C26FA9C00450324 /* application.cpp */; };
 		F4B627971C01AFC4000A7D6C /* platform_helper_mac.mm in Sources */ = {isa = PBXBuildFile; fileRef = F4B627961C01AFC4000A7D6C /* platform_helper_mac.mm */; };
 		F4C0F1F4197AA20700A48B02 /* uicolorslider.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4C0F1F1197AA20700A48B02 /* uicolorslider.cpp */; };
 		F4C0F1F7197AA20700A48B02 /* uicolorslider.h in Headers */ = {isa = PBXBuildFile; fileRef = F4C0F1F2197AA20700A48B02 /* uicolorslider.h */; };
@@ -295,11 +300,14 @@
 		F40329C713FE499D00466973 /* doc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = doc.h; sourceTree = "<group>"; };
 		F406E37E140426A700F550B7 /* uidialogcontroller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uidialogcontroller.h; sourceTree = "<group>"; };
 		F406E380140426B100F550B7 /* uidialogcontroller.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uidialogcontroller.cpp; sourceTree = "<group>"; };
+		F408C5B51C2AA0DA00F46C6A /* VSTGUICommand.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = VSTGUICommand.mm; sourceTree = "<group>"; };
+		F408C5B61C2AA0EA00F46C6A /* VSTGUICommand.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = VSTGUICommand.h; sourceTree = "<group>"; };
 		F409D6161A38C6A200361C3D /* uidescriptionfwd.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = uidescriptionfwd.h; sourceTree = "<group>"; };
 		F40B7833140E105800E2BF16 /* macclipboard.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = macclipboard.h; sourceTree = "<group>"; };
 		F40B7835140E106600E2BF16 /* macclipboard.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = macclipboard.mm; sourceTree = "<group>"; };
 		F40E63FB16821A6300426847 /* cgradientview.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cgradientview.cpp; sourceTree = "<group>"; };
 		F40E63FC16821A6300426847 /* cgradientview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cgradientview.h; sourceTree = "<group>"; };
+		F418EE6F1C29E22400D0F39F /* icommand.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = icommand.h; sourceTree = "<group>"; };
 		F41DA9311406860300EDAB4B /* uifocussettingscontroller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uifocussettingscontroller.h; sourceTree = "<group>"; };
 		F41DA9331406860B00EDAB4B /* uifocussettingscontroller.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uifocussettingscontroller.cpp; sourceTree = "<group>"; };
 		F41F03371BE7DC0A00C47DEA /* uiviewswitchcontainer_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uiviewswitchcontainer_test.cpp; sourceTree = "<group>"; };
@@ -368,6 +376,7 @@
 		F46B06B31902D29F006189B9 /* iscalefactorchangedlistener.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iscalefactorchangedlistener.h; sourceTree = "<group>"; };
 		F4762E8D1BDAAD4E00810447 /* animations_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = animations_test.cpp; sourceTree = "<group>"; };
 		F476BEA518EC2E7500230A63 /* std_unorderedmap.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = std_unorderedmap.h; sourceTree = "<group>"; };
+		F47863391C28654100C76167 /* macwindow.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = macwindow.mm; sourceTree = "<group>"; };
 		F47883A1180457E70054ED06 /* iplatformviewlayer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iplatformviewlayer.h; sourceTree = "<group>"; };
 		F47883A218045A300054ED06 /* caviewlayer.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = caviewlayer.mm; sourceTree = "<group>"; };
 		F47883A318045A300054ED06 /* caviewlayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = caviewlayer.h; sourceTree = "<group>"; };
@@ -379,6 +388,7 @@
 		F47D201718A6648C00487CDB /* uiattributes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uiattributes.h; sourceTree = "<group>"; };
 		F47D201E18A6677700487CDB /* iviewfactory.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iviewfactory.h; sourceTree = "<group>"; };
 		F47D201F18A66A2600487CDB /* delegationcontroller.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = delegationcontroller.h; sourceTree = "<group>"; };
+		F48069321C2734E300356894 /* macapplication.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = macapplication.mm; sourceTree = "<group>"; };
 		F485F11213F8F76C0001A913 /* uitagscontroller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uitagscontroller.h; sourceTree = "<group>"; };
 		F485F11413F8F7770001A913 /* uitagscontroller.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uitagscontroller.cpp; sourceTree = "<group>"; };
 		F485F11613F97FF70001A913 /* uicolorscontroller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uicolorscontroller.h; sourceTree = "<group>"; };
@@ -557,6 +567,17 @@
 		F4B0AF801BDD25DF0033C579 /* cstream_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cstream_test.cpp; sourceTree = "<group>"; };
 		F4B0AF881BDD378F0033C579 /* uiattributes_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uiattributes_test.cpp; sourceTree = "<group>"; };
 		F4B1D4EE1BE0E6A600EE6BDA /* delegationcontroller_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = delegationcontroller_test.cpp; sourceTree = "<group>"; };
+		F4B5B5B11C26E35B00450324 /* libvstgui_standalone.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libvstgui_standalone.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		F4B5B5BD1C26E6DB00450324 /* iappdelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = iappdelegate.h; sourceTree = "<group>"; };
+		F4B5B5BE1C26E6DB00450324 /* interface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = interface.h; sourceTree = "<group>"; };
+		F4B5B5C21C26E87C00450324 /* iwindow.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iwindow.h; sourceTree = "<group>"; };
+		F4B5B5C31C26EB5D00450324 /* fwd.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = fwd.h; sourceTree = "<group>"; };
+		F4B5B5C41C26F27100450324 /* iapplication.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iapplication.h; sourceTree = "<group>"; };
+		F4B5B5C51C26F2C500450324 /* window.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = window.cpp; sourceTree = "<group>"; };
+		F4B5B5C81C26F49D00450324 /* iplatformwindow.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iplatformwindow.h; sourceTree = "<group>"; };
+		F4B5B5C91C26FA9C00450324 /* application.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = application.cpp; sourceTree = "<group>"; };
+		F4B5B5CB1C26FACF00450324 /* application.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = application.h; sourceTree = "<group>"; };
+		F4B5B5CC1C26FD4E00450324 /* window.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = window.h; sourceTree = "<group>"; };
 		F4B627951C01AEDA000A7D6C /* platform_helper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = platform_helper.h; sourceTree = "<group>"; };
 		F4B627961C01AFC4000A7D6C /* platform_helper_mac.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = platform_helper_mac.mm; sourceTree = "<group>"; };
 		F4C0F1F1197AA20700A48B02 /* uicolorslider.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uicolorslider.cpp; sourceTree = "<group>"; };
@@ -638,6 +659,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		F4B5B5AE1C26E35B00450324 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		F4CC1E7E1709F2EC008F07FD /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -746,6 +774,17 @@
 			path = animation;
 			sourceTree = "<group>";
 		};
+		F48069311C2734AE00356894 /* mac */ = {
+			isa = PBXGroup;
+			children = (
+				F48069321C2734E300356894 /* macapplication.mm */,
+				F47863391C28654100C76167 /* macwindow.mm */,
+				F408C5B51C2AA0DA00F46C6A /* VSTGUICommand.mm */,
+				F408C5B61C2AA0EA00F46C6A /* VSTGUICommand.h */,
+			);
+			path = mac;
+			sourceTree = "<group>";
+		};
 		F490FDD71BE3CF8000386A09 /* uiviewcreator */ = {
 			isa = PBXGroup;
 			children = (
@@ -823,6 +862,7 @@
 				F4462D35175646EE00E6835D /* vstgui.cpp */,
 				F42D5F6817B0197500B85FE8 /* plugin-bindings */,
 				F497F0BA130809B100F0A613 /* lib */,
+				F4B5B5B81C26E37A00450324 /* standalone */,
 				F4E3901713080EC000615042 /* uidescription */,
 				F4CC1E7A1709F258008F07FD /* tests */,
 				F4CC1E98170A0A58008F07FD /* Frameworks */,
@@ -836,6 +876,7 @@
 				F4F953F616510E61006EE1D1 /* libvstgui.a */,
 				F4CC1E811709F2EC008F07FD /* unittests */,
 				F4E9C69317A8266200F42EF8 /* libvstgui-ios.a */,
+				F4B5B5B11C26E35B00450324 /* libvstgui_standalone.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1083,6 +1124,42 @@
 			path = uidescription;
 			sourceTree = "<group>";
 		};
+		F4B5B5B81C26E37A00450324 /* standalone */ = {
+			isa = PBXGroup;
+			children = (
+				F4B5B5B91C26E39700450324 /* detail */,
+				F4B5B5C31C26EB5D00450324 /* fwd.h */,
+				F4B5B5BD1C26E6DB00450324 /* iappdelegate.h */,
+				F4B5B5C41C26F27100450324 /* iapplication.h */,
+				F418EE6F1C29E22400D0F39F /* icommand.h */,
+				F4B5B5BE1C26E6DB00450324 /* interface.h */,
+				F4B5B5C21C26E87C00450324 /* iwindow.h */,
+			);
+			name = standalone;
+			path = ../../standalone;
+			sourceTree = "<group>";
+		};
+		F4B5B5B91C26E39700450324 /* detail */ = {
+			isa = PBXGroup;
+			children = (
+				F4B5B5C71C26F47C00450324 /* platform */,
+				F4B5B5C51C26F2C500450324 /* window.cpp */,
+				F4B5B5CC1C26FD4E00450324 /* window.h */,
+				F4B5B5C91C26FA9C00450324 /* application.cpp */,
+				F4B5B5CB1C26FACF00450324 /* application.h */,
+			);
+			path = detail;
+			sourceTree = "<group>";
+		};
+		F4B5B5C71C26F47C00450324 /* platform */ = {
+			isa = PBXGroup;
+			children = (
+				F48069311C2734AE00356894 /* mac */,
+				F4B5B5C81C26F49D00450324 /* iplatformwindow.h */,
+			);
+			path = platform;
+			sourceTree = "<group>";
+		};
 		F4CC1E7A1709F258008F07FD /* tests */ = {
 			isa = PBXGroup;
 			children = (
@@ -1194,6 +1271,13 @@
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
+		F4B5B5AF1C26E35B00450324 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		F4F953F416510E61006EE1D1 /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
@@ -1219,6 +1303,23 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
+		F4B5B5B01C26E35B00450324 /* vstgui_standalone */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F4B5B5B41C26E35B00450324 /* Build configuration list for PBXNativeTarget "vstgui_standalone" */;
+			buildPhases = (
+				F4B5B5AD1C26E35B00450324 /* Sources */,
+				F4B5B5AE1C26E35B00450324 /* Frameworks */,
+				F4B5B5AF1C26E35B00450324 /* Headers */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = vstgui_standalone;
+			productName = vstgui_standalone;
+			productReference = F4B5B5B11C26E35B00450324 /* libvstgui_standalone.a */;
+			productType = "com.apple.product-type.library.static";
+		};
 		F4CC1E801709F2EC008F07FD /* unittests */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = F4CC1E871709F2EC008F07FD /* Build configuration list for PBXNativeTarget "unittests" */;
@@ -1279,6 +1380,11 @@
 			attributes = {
 				LastUpgradeCheck = 0510;
 				ORGANIZATIONNAME = "";
+				TargetAttributes = {
+					F4B5B5B01C26E35B00450324 = {
+						CreatedOnToolsVersion = 7.1.1;
+					};
+				};
 			};
 			buildConfigurationList = F497F0A71308094300F0A613 /* Build configuration list for PBXProject "vstgui" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -1295,6 +1401,7 @@
 				F4F953F516510E61006EE1D1 /* vstgui */,
 				F4E9C69217A8266200F42EF8 /* vstgui-ios */,
 				F4CC1E801709F2EC008F07FD /* unittests */,
+				F4B5B5B01C26E35B00450324 /* vstgui_standalone */,
 			);
 		};
 /* End PBXProject section */
@@ -1318,6 +1425,18 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		F4B5B5AD1C26E35B00450324 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F4B5B5CA1C26FA9C00450324 /* application.cpp in Sources */,
+				F48069331C2734E300356894 /* macapplication.mm in Sources */,
+				F4B5B5C61C26F2C500450324 /* window.cpp in Sources */,
+				F478633A1C28654100C76167 /* macwindow.mm in Sources */,
+				F408C5B71C2AA19700F46C6A /* VSTGUICommand.mm in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		F4CC1E7D1709F2EC008F07FD /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1583,9 +1702,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_LINK_OBJC_RUNTIME = NO;
 				CLANG_WARN_CXX0X_EXTENSIONS = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = NO;
+				GCC_C_LANGUAGE_STANDARD = c11;
 				GCC_INLINES_ARE_PRIVATE_EXTERN = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -1603,7 +1726,7 @@
 				GCC_WARN_SIGN_COMPARE = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = NO;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.5;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
@@ -1618,9 +1741,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_LINK_OBJC_RUNTIME = NO;
 				CLANG_WARN_CXX0X_EXTENSIONS = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = NO;
+				GCC_C_LANGUAGE_STANDARD = c11;
 				GCC_INLINES_ARE_PRIVATE_EXTERN = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -1636,13 +1763,74 @@
 				GCC_WARN_SIGN_COMPARE = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = NO;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.5;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				OTHER_CPLUSPLUSFLAGS = (
 					"$(OTHER_CFLAGS)",
 					"-fdiagnostics-show-option",
 				);
 				SDKROOT = macosx;
 				SHARED_PRECOMPS_DIR = "$(PROJECT_TEMP_DIR)/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)/SharedPrecompiledHeaders";
+			};
+			name = Release;
+		};
+		F4B5B5B21C26E35B00450324 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				EXECUTABLE_PREFIX = lib;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		F4B5B5B31C26E35B00450324 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				EXECUTABLE_PREFIX = lib;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
 		};
@@ -1753,11 +1941,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
-				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_WARN_CXX0X_EXTENSIONS = NO;
 				EXECUTABLE_PREFIX = lib;
-				GCC_C_LANGUAGE_STANDARD = c11;
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -1767,11 +1952,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
-				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_WARN_CXX0X_EXTENSIONS = NO;
 				EXECUTABLE_PREFIX = lib;
-				GCC_C_LANGUAGE_STANDARD = c11;
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -1785,6 +1967,15 @@
 			buildConfigurations = (
 				F497F0AF1308094300F0A613 /* Debug */,
 				F497F0B01308094300F0A613 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F4B5B5B41C26E35B00450324 /* Build configuration list for PBXNativeTarget "vstgui_standalone" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F4B5B5B21C26E35B00450324 /* Debug */,
+				F4B5B5B31C26E35B00450324 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

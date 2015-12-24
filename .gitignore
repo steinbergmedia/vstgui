@@ -19,3 +19,7 @@ vstgui/ide/xcode4/vstgui.xcodeproj/project.xcworkspace
 vstgui/ide/visualstudio/vs2013/build
 VST3SDK
 vstgui.opensdf
+vstgui/tests/standalone/mac/build
+vstgui/tests/standalone/mac/DerivedData
+vstgui/tests/standalone/mac/VSTGUIStandalone.xcodeproj/project.xcworkspace
+vstgui/tests/standalone/mac/VSTGUIStandalone.xcodeproj/xcuserdata

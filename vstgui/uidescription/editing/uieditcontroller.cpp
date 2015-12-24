@@ -1212,6 +1212,23 @@ UIAttributes* UIEditController::getSettings ()
 }
 
 //----------------------------------------------------------------------------------------------------
+int32_t UIEditController::getSaveOptions ()
+{
+	int32_t flags = 0;
+	UIAttributes* attributes = getSettings ();
+	bool val;
+	if (attributes->getBooleanAttribute (UIEditController::kEncodeBitmapsSettingsKey, val) && val == true)
+	{
+		flags |= UIDescription::kWriteImagesIntoXMLFile;
+	}
+	if (attributes->getBooleanAttribute (UIEditController::kWriteWindowsRCFileSettingsKey, val) && val == true)
+	{
+		flags |= UIDescription::kWriteWindowsResourceFile;
+	}
+	return flags;
+}
+
+//----------------------------------------------------------------------------------------------------
 int32_t UIEditController::getSplitViewIndex (CSplitView* splitView)
 {
 	int32_t index = 0;
