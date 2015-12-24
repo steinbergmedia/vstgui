@@ -1878,6 +1878,8 @@ bool UIDescription::getAlternativeFontNames (UTF8StringPtr name, std::string& al
 //-----------------------------------------------------------------------------
 void UIDescription::collectTemplateViewNames (std::list<const std::string*>& names) const
 {
+	if (!nodes)
+		return;
 	for (const auto& itNode : nodes->getChildren ())
 	{
 		if (itNode->getName () == MainNodeNames::kTemplate)
@@ -2122,6 +2124,8 @@ bool UIDescription::setCustomAttributes (UTF8StringPtr name, UIAttributes* attr)
 	attr->setAttribute ("name", name);
 	customNode = new UINode ("attributes", attr);
 	UINode* parent = getBaseNode (MainNodeNames::kCustom);
+	if (!parent)
+		return false;
 	parent->getChildren ().add (customNode);
 	return true;
 }
