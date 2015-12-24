@@ -92,7 +92,7 @@ struct WindowController::Impl : public IController, public ICommandHandler
 };
 
 #if VSTGUI_LIVE_EDITING
-static Command ToggleEditingCommand {"Debug", "Toggle Inline Editor"};
+static const Command ToggleEditingCommand {"Debug", "Toggle Inline Editor"};
 	
 //------------------------------------------------------------------------
 struct WindowController::EditImpl : WindowController::Impl
@@ -217,6 +217,12 @@ WindowController::WindowController ()
 #else
 	impl = std::unique_ptr<Impl> (new Impl (*this));
 #endif
+}
+
+//------------------------------------------------------------------------
+void WindowController::onClosed (const IWindow& window)
+{
+	impl = nullptr;
 }
 
 //------------------------------------------------------------------------

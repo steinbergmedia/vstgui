@@ -11,11 +11,15 @@ class WindowController : public VSTGUI::Standalone::WindowControllerAdapter, pub
 {
 public:
 	using WindowPtr = VSTGUI::Standalone::WindowPtr;
+	using IWindow = VSTGUI::Standalone::IWindow;
 	using Command = VSTGUI::Standalone::Command;
 	
 	static WindowPtr makeWindow ();
 
 	WindowController ();
+
+	void onClosed (const IWindow& window) override;
+
 	bool canHandleCommand (const Command& command) override;
 	bool handleCommand (const Command& command) override;
 private:
