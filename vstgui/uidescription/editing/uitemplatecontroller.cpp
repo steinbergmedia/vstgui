@@ -298,10 +298,12 @@ void UITemplateController::dbSelectionChanged (int32_t selectedRow, GenericStrin
 
 			changed (kMsgTemplateChanged);
 		}
-		else
+		else if (templateView)
 		{
 			selection->setExclusive (templateView);
 		}
+		else
+			selection->empty ();
 		return;
 	}
 }
@@ -318,7 +320,7 @@ CMessageResult UITemplateController::notify (CBaseObject* sender, IdStringPtr me
 			int32_t rowToSelect = templateDataBrowser->getSelectedRow ();
 			int32_t index = 0;
 			templateNames.clear ();
-			std::string selectedTemplateStr = *selectedTemplateName;
+			std::string selectedTemplateStr = selectedTemplateName ? *selectedTemplateName : "";
 			dataSource->setStringList (&templateNames);
 			std::list<const std::string*> tmp;
 			editDescription->collectTemplateViewNames (tmp);
@@ -329,6 +331,8 @@ CMessageResult UITemplateController::notify (CBaseObject* sender, IdStringPtr me
 				if (*(*it) == selectedTemplateStr)
 					rowToSelect = index;
 			}
+			if (rowToSelect < 0)
+				rowToSelect = 0;
 			dataSource->setStringList (&templateNames);
 			templateDataBrowser->setSelectedRow (rowToSelect, true);
 		}
