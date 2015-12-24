@@ -2,6 +2,7 @@
 #include "platform/iplatformwindow.h"
 #include "../../lib/cframe.h"
 #include "../icommand.h"
+#include "../iwindowcontroller.h"
 
 //------------------------------------------------------------------------
 namespace VSTGUI {

@@ -43,28 +43,6 @@ struct WindowConfiguration
 };
 
 //------------------------------------------------------------------------
-class IWindowListener : public Interface
-{
-public:
-	virtual void onSizeChanged (const IWindow& window, const CPoint& newSize) = 0;
-	virtual void onPositionChanged (const IWindow& window, const CPoint& newPosition) = 0;
-	virtual void onShow (const IWindow& window) = 0;
-	virtual void onHide (const IWindow& window) = 0;
-	virtual void onClosed (const IWindow& window) = 0;
-};
-
-//------------------------------------------------------------------------
-class IWindowController : public IWindowListener
-{
-public:
-	virtual CPoint constraintSize (const IWindow& window, const CPoint& newSize) = 0;
-	virtual bool canClose (const IWindow& window) const = 0;
-};
-
-//------------------------------------------------------------------------
-using WindowControllerPtr = std::shared_ptr<IWindowController>;
-
-//------------------------------------------------------------------------
 class IWindow : public Interface
 {
 public:
@@ -90,18 +68,6 @@ public:
 //------------------------------------------------------------------------
 using WindowPtr = std::shared_ptr<IWindow>;
 
-//------------------------------------------------------------------------
-class WindowControllerAdapter : public IWindowController
-{
-public:
-	void onSizeChanged (const IWindow& window, const CPoint& newSize) {}
-	void onPositionChanged (const IWindow& window, const CPoint& newPosition) {}
-	void onShow (const IWindow& window) {}
-	void onHide (const IWindow& window) {}
-	void onClosed (const IWindow& window) {}
-	CPoint constraintSize (const IWindow& window, const CPoint& newSize) { return newSize; }
-	bool canClose (const IWindow& window) const { return true; }
-};
 //------------------------------------------------------------------------
 } // Standalone
 } // VSTGUI

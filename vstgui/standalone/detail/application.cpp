@@ -1,6 +1,7 @@
 #include "application.h"
 #include "../iappdelegate.h"
 #include "../iapplication.h"
+#include "../iwindowcontroller.h"
 #include "window.h"
 #include "../icommand.h"
 #include "../../lib/cview.h"

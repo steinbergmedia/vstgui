@@ -370,6 +370,7 @@
 		F4550AAD18AF7CD300472548 /* iviewcreator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iviewcreator.h; sourceTree = "<group>"; };
 		F45BD677131817CD00C46C02 /* csplitview.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = csplitview.cpp; sourceTree = "<group>"; };
 		F45BD678131817CD00C46C02 /* csplitview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = csplitview.h; sourceTree = "<group>"; };
+		F465515C1C2C10F300BD1D54 /* iwindowcontroller.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iwindowcontroller.h; sourceTree = "<group>"; };
 		F466318219BA0EF20063536E /* icontrollistener.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = icontrollistener.h; sourceTree = "<group>"; };
 		F466318319BA11C20063536E /* cbuttonstate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = cbuttonstate.h; sourceTree = "<group>"; };
 		F466318619BA1B3A0063536E /* vstguifwd.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = vstguifwd.h; sourceTree = "<group>"; };
@@ -1134,6 +1135,7 @@
 				F418EE6F1C29E22400D0F39F /* icommand.h */,
 				F4B5B5BE1C26E6DB00450324 /* interface.h */,
 				F4B5B5C21C26E87C00450324 /* iwindow.h */,
+				F465515C1C2C10F300BD1D54 /* iwindowcontroller.h */,
 			);
 			name = standalone;
 			path = ../../standalone;

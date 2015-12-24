@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 //------------------------------------------------------------------------
 namespace VSTGUI {
 namespace Standalone {
@@ -11,8 +13,11 @@ class IDelegate;
 } // Application
 
 class IWindow;
-class IWindowDelegate;
+class IWindowController;
+class IWindowListener;
 class ICommandHandler;
+
+using WindowControllerPtr = std::shared_ptr<IWindowController>;
 
 struct Command;
 

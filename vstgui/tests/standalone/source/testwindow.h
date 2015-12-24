@@ -1,6 +1,7 @@
 #pragma once
 
 #include "vstgui/standalone/iwindow.h"
+#include "vstgui/standalone/iwindowcontroller.h"
 #include "vstgui/standalone/icommand.h"
 
 //------------------------------------------------------------------------
