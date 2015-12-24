@@ -71,6 +71,7 @@ void UISelection::setStyle (int32_t _style)
 //----------------------------------------------------------------------------------------------------
 void UISelection::add (CView* view)
 {
+	vstgui_assert (view, "view cannot be nullptr");
 	changed (kMsgSelectionWillChange);
 	if (style == kSingleSelectionStyle)
 		empty ();
@@ -81,6 +82,7 @@ void UISelection::add (CView* view)
 //----------------------------------------------------------------------------------------------------
 void UISelection::remove (CView* view)
 {
+	vstgui_assert (view, "view cannot be nullptr");
 	if (contains (view))
 	{
 		changed (kMsgSelectionWillChange);
@@ -92,6 +94,7 @@ void UISelection::remove (CView* view)
 //----------------------------------------------------------------------------------------------------
 void UISelection::setExclusive (CView* view)
 {
+	vstgui_assert (view, "view cannot be nullptr");
 	changed (kMsgSelectionWillChange);
 	DeferChanges dc (this);
 	erase (std::list<SharedPointer<CView> >::begin (), std::list<SharedPointer<CView> >::end ());
