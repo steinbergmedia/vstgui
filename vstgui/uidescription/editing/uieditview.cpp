@@ -85,7 +85,6 @@ UIEditViewOverlay::UIEditViewOverlay (CViewContainer* editView)
 , editView (editView)
 {
 	setMouseEnabled (false);
-	viewSizeChanged (editView, CRect (0, 0, 0, 0));
 	editView->getParentView ()->registerViewListener (this);
 	editView->registerViewListener (this);
 }
