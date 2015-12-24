@@ -120,6 +120,12 @@ void Window::onClosed ()
 	}, this);
 	if (controller)
 		controller->onClosed (*this);
+	if (frame)
+	{
+		frame->remember ();
+		frame->close ();
+		frame = nullptr;
+	}
 	platformWindow = nullptr;
 }
 
