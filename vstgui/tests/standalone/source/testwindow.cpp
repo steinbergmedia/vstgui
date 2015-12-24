@@ -44,6 +44,24 @@ struct WindowController::Impl : public IController, public ICommandHandler
 		return true;
 	}
 
+	virtual CPoint constraintSize (const CPoint& newSize)
+	{
+		CPoint p (newSize);
+		if (minSize.x > 0 && minSize.y > 0)
+		{
+			p.x = std::max (p.x, minSize.x);
+			p.y = std::max (p.y, minSize.y);
+		}
+		if (maxSize.x > 0 && maxSize.y > 0)
+		{
+			p.x = std::min (p.x, maxSize.x);
+			p.y = std::min (p.y, maxSize.y);
+		}
+		return p;
+	}
+	
+	virtual bool canClose () { return true; }
+
 	bool initUIDesc (const char* fileName)
 	{
 		uiDesc = owned (new UIDescription (fileName));
@@ -54,8 +72,25 @@ struct WindowController::Impl : public IController, public ICommandHandler
 		return true;
 	}
 
+	void updateMinMaxSizes ()
+	{
+		const UIAttributes* attr = uiDesc->getViewAttributes (templateName);
+		if (!attr)
+			return;
+		CPoint p;
+		if (attr->getPointAttribute ("minSize", p))
+			minSize = p;
+		else
+			minSize = {};
+		if (attr->getPointAttribute ("maxSize", p))
+			maxSize = p;
+		else
+			maxSize = {};
+	}
+
 	void showView ()
 	{
+		updateMinMaxSizes ();
 		auto view = uiDesc->createView (templateName, this);
 		if (!view)
 		{
@@ -89,6 +124,8 @@ struct WindowController::Impl : public IController, public ICommandHandler
 	SharedPointer<UIDescription> uiDesc;
 	SharedPointer<CFrame> frame;
 	UTF8String templateName;
+	CPoint minSize;
+	CPoint maxSize;
 };
 
 #if VSTGUI_LIVE_EDITING
@@ -102,15 +139,10 @@ struct WindowController::EditImpl : WindowController::Impl
 		IApplication::instance ().registerCommand (ToggleEditingCommand, 'e');
 	}
 	
-	~EditImpl ()
-	{
-		save ();
-	}
-
 	bool init (WindowPtr& inWindow, const char* fileName, const char* templateName) override
 	{
 		window = inWindow.get ();
-		if (!initUIDesc(fileName))
+		if (!initUIDesc (fileName))
 		{
 			UIAttributes* attr = new UIAttributes ();
 			attr->setAttribute (UIViewCreator::kAttrClass, "CViewContainer");
@@ -145,6 +177,19 @@ struct WindowController::EditImpl : WindowController::Impl
 		return true;
 	}
 	
+	CPoint constraintSize (const CPoint& newSize) override
+	{
+		if (isEditing)
+			return newSize;
+		return Impl::constraintSize (newSize);
+	}
+
+	bool canClose () override
+	{
+		enableEditing (false);
+		return true;
+	}
+
 	void save (bool force = false)
 	{
 		if (uiEditController)
@@ -220,6 +265,18 @@ WindowController::WindowController ()
 }
 
 //------------------------------------------------------------------------
+CPoint WindowController::constraintSize (const IWindow& window, const CPoint& newSize)
+{
+	return impl->constraintSize (newSize);
+}
+
+//------------------------------------------------------------------------
+bool WindowController::canClose (const IWindow& window) const
+{
+	return impl->canClose ();
+}
+
+//------------------------------------------------------------------------
 void WindowController::onClosed (const IWindow& window)
 {
 	impl = nullptr;
@@ -245,6 +302,9 @@ WindowPtr WindowController::makeWindow ()
 	WindowConfiguration config;
 	config.title = "Test Window";
 	config.flags.border ().close ().size ();
+#if VSTGUI_LIVE_EDITING
+	config.flags.size ();
+#endif
 	config.size = {100, 100};
 	auto window = IApplication::instance ().createWindow (config, controller);
 	if (window)

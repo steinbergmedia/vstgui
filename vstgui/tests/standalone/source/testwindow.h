@@ -14,12 +14,15 @@ public:
 	using WindowPtr = VSTGUI::Standalone::WindowPtr;
 	using IWindow = VSTGUI::Standalone::IWindow;
 	using Command = VSTGUI::Standalone::Command;
+	using CPoint = VSTGUI::CPoint;
 	
 	static WindowPtr makeWindow ();
 
 	WindowController ();
 
+	CPoint constraintSize (const IWindow& window, const CPoint& newSize) override;
 	void onClosed (const IWindow& window) override;
+	bool canClose (const IWindow& window) const override;
 
 	bool canHandleCommand (const Command& command) override;
 	bool handleCommand (const Command& command) override;
