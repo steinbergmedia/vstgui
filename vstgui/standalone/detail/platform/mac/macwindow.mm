@@ -89,6 +89,7 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 		nsWindow.title = (__bridge NSString*)titleMacStr->getCFString();
 	}
 	[nsWindow setReleasedWhenClosed:NO];
+	[nsWindow center];
 
 	return true;
 }
@@ -114,12 +115,20 @@ CPoint Window::getSize () const
 }
 
 //------------------------------------------------------------------------
+static NSRect getMainScreenRect ()
+{
+	NSScreen* mainScreen = [NSScreen screens][0];
+	return mainScreen.frame;
+}
+
+//------------------------------------------------------------------------
 CPoint Window::getPosition () const
 {
 	CPoint p;
-	NSPoint origin = [nsWindow contentRectForFrameRect:nsWindow.frame].origin;
-	p.x = origin.x;
-	p.y = origin.y;
+	NSRect windowRect = [nsWindow contentRectForFrameRect:nsWindow.frame];
+	p.x = windowRect.origin.x;
+	p.y = windowRect.origin.y;
+	p.y = getMainScreenRect ().size.height - (p.y + windowRect.size.height);
 	return p;
 }
 
@@ -130,15 +139,17 @@ void Window::setSize (const CPoint& newSize)
 	CGFloat diff = newSize.y - r.size.height;
 	r.size.width = newSize.x;
 	r.size.height = newSize.y;
-	if ([nsWindow isVisible])
-		r.origin.y -= diff;
+	r.origin.y -= diff;
 	[nsWindow setFrame:[nsWindow frameRectForContentRect:r] display:YES animate:NO];
 }
 
 //------------------------------------------------------------------------
 void Window::setPosition (const CPoint& newPosition)
 {
-	assert (false && "Not yet implemented");
+	NSRect r = [nsWindow contentRectForFrameRect:nsWindow.frame];
+	r.origin.x = newPosition.x;
+	r.origin.y = getMainScreenRect ().size.height - (newPosition.y + r.size.height);
+	[nsWindow setFrame:[nsWindow frameRectForContentRect:r] display:YES animate:NO];
 }
 
 //------------------------------------------------------------------------
@@ -157,8 +168,6 @@ void Window::show ()
 	if (![nsWindow isVisible])
 	{
 		delegate->onShow ();
-		if (nsWindow.frame.origin.y == 0)
-			[nsWindow center];
 		[nsWindow makeKeyAndOrderFront:nil];
 	}
 }
