@@ -89,7 +89,7 @@ static void deleteUndoManagerAction (IAction* action) { delete action; }
 UIUndoManager::UIUndoManager ()
 {
 	push_back (new UndoStackTop);
-	position = end ();
+	position = begin ();
 	savePosition = begin ();
 }
 
