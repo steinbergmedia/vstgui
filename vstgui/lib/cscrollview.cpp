@@ -462,7 +462,11 @@ void CScrollView::recalculateSubViews ()
 //-----------------------------------------------------------------------------
 void CScrollView::setViewSize (const CRect &rect, bool invalid)
 {
+	bool autoHideScrollbars = style & kAutoHideScrollbars;
+	style &= ~ kAutoHideScrollbars;
 	CViewContainer::setViewSize (rect, invalid);
+	if (autoHideScrollbars)
+		style |= kAutoHideScrollbars;
 	setContainerSize (containerSize, true);
 }
 
