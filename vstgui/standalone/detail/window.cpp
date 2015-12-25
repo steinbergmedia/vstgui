@@ -109,7 +109,8 @@ void Window::onPositionChanged (const CPoint& newPosition)
 	forEachWindowListener ([] (IWindowListener* listener, const IWindow* window, const CPoint& newPosition) {
 		listener->onPositionChanged (*window, newPosition);
 	}, this, newPosition);
-	controller->onPositionChanged (*this, newPosition);
+	if (controller)
+		controller->onPositionChanged (*this, newPosition);
 }
 
 //------------------------------------------------------------------------
@@ -173,15 +174,17 @@ void Window::removeWindowListener (IWindowListener* listener)
 //------------------------------------------------------------------------
 bool Window::canHandleCommand (const Command& command)
 {
-	ICommandHandler* commandHandler = controller ? dynamic_cast<ICommandHandler*>(controller.get ()) : nullptr;
-	return commandHandler ? commandHandler->canHandleCommand (command) : false;
+	if (auto commandHandler = controller->dynamicCast<ICommandHandler> ())
+		return commandHandler->canHandleCommand (command);
+	return false;
 }
 
 //------------------------------------------------------------------------
 bool Window::handleCommand (const Command& command)
 {
-	ICommandHandler* commandHandler = controller ? dynamic_cast<ICommandHandler*>(controller.get ()) : nullptr;
-	return commandHandler ? commandHandler->handleCommand (command) : false;
+	if (auto commandHandler = controller->dynamicCast<ICommandHandler> ())
+		return commandHandler->handleCommand (command);
+	return false;
 }
 
 //------------------------------------------------------------------------

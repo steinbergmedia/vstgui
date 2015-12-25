@@ -25,7 +25,7 @@ using CommandWithKeyList = VSTGUI::Standalone::Detail::IApplicationPlatformAcces
 //------------------------------------------------------------------------
 static IApplicationPlatformAccess* getApplicationPlatformAccess ()
 {
-	return dynamic_cast<IApplicationPlatformAccess*> (&IApplication::instance ());
+	return IApplication::instance ().dynamicCast<IApplicationPlatformAccess> ();
 }
 
 //------------------------------------------------------------------------
@@ -94,8 +94,7 @@ static NSString* stringFromUTF8String (const VSTGUI::UTF8String& str)
 	VSTGUICommand* command = [sender representedObject];
 	if (command)
 	{
-		auto commandHandler = dynamic_cast<VSTGUI::Standalone::ICommandHandler*> (IApplication::instance ().getDelegate ());
-		if (commandHandler)
+		if (auto commandHandler = IApplication::instance().getDelegate()->dynamicCast<ICommandHandler> ())
 			commandHandler->handleCommand ([command command]);
 	}
 }
@@ -116,8 +115,7 @@ static NSString* stringFromUTF8String (const VSTGUI::UTF8String& str)
 	}
 	else if (VSTGUICommand* command = menuItem.representedObject)
 	{
-		auto commandHandler = dynamic_cast<VSTGUI::Standalone::ICommandHandler*> (IApplication::instance ().getDelegate ());
-		if (commandHandler)
+		if (auto commandHandler = IApplication::instance().getDelegate()->dynamicCast<ICommandHandler> ())
 			return commandHandler->canHandleCommand ([command command]);
 	}
 	return NO;

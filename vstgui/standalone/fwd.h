@@ -16,8 +16,12 @@ class IWindow;
 class IWindowController;
 class IWindowListener;
 class ICommandHandler;
+class IValue;
+class IValueListener;
+class IValueStringConverter;
 
 using WindowControllerPtr = std::shared_ptr<IWindowController>;
+using ValuePtr = std::shared_ptr<IValue>;
 
 struct Command;
 

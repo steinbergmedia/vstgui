@@ -1,35 +1,38 @@
 #pragma once
 
-#include "vstgui/standalone/iwindow.h"
-#include "vstgui/standalone/iwindowcontroller.h"
-#include "vstgui/standalone/icommand.h"
+#include "vstgui/standalone/iuidescwindow.h"
 
 //------------------------------------------------------------------------
 namespace MyApp {
 
+using VSTGUI::Standalone::UIDescription::IModelHandler;
+using VSTGUI::Standalone::IValueListener;
+
 //------------------------------------------------------------------------
-class WindowController : public VSTGUI::Standalone::WindowControllerAdapter, public VSTGUI::Standalone::ICommandHandler
+class TestModelHandler : public IModelHandler, public IValueListener
 {
 public:
-	using WindowPtr = VSTGUI::Standalone::WindowPtr;
-	using IWindow = VSTGUI::Standalone::IWindow;
+	using UTF8String = VSTGUI::UTF8String;
 	using Command = VSTGUI::Standalone::Command;
-	using CPoint = VSTGUI::CPoint;
+	using ValuePtr = VSTGUI::Standalone::ValuePtr;
+	using IValue = VSTGUI::Standalone::IValue;
 	
-	static WindowPtr makeWindow ();
-
-	WindowController ();
-
-	CPoint constraintSize (const IWindow& window, const CPoint& newSize) override;
-	void onClosed (const IWindow& window) override;
-	bool canClose (const IWindow& window) const override;
+	TestModelHandler ();
+	
+	const CommandList& getCommands () const override { return commands; }
+	const ValueList& getValues () const override { return values; }
 
 	bool canHandleCommand (const Command& command) override;
 	bool handleCommand (const Command& command) override;
+
+	void onBeginEdit (const IValue& value) override;
+	void onPerformEdit (const IValue& value, IValue::Type newValue) override;
+	void onEndEdit (const IValue& value) override;
+	void onStateChange (const IValue& value) override;
 private:
-	struct Impl;
-	struct EditImpl;
-	std::unique_ptr<Impl> impl;
+	void addValue (const ValuePtr& value);
+	CommandList commands;
+	ValueList values;
 };
 
 //------------------------------------------------------------------------

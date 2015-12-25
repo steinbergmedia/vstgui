@@ -165,11 +165,8 @@ bool Application::handleCommand (const Command& command)
 bool Application::doCommandHandling (const Command& command, bool checkOnly)
 {
 	bool result = false;
-	ICommandHandler* commandHandler = nullptr;
-	if ((commandHandler = dynamic_cast<ICommandHandler*>(delegate.get ())))
-	{
+	if (auto commandHandler = delegate->dynamicCast<ICommandHandler> ())
 		result = checkOnly ? commandHandler->canHandleCommand (command) : commandHandler->handleCommand (command);
-	}
 	return result;
 }
 

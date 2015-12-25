@@ -66,6 +66,20 @@ UTF8String::UTF8String (UTF8StringPtr str)
 }
 
 //-----------------------------------------------------------------------------
+UTF8String::UTF8String (std::string&& str)
+{
+	*this = std::move (str);
+}
+
+//-----------------------------------------------------------------------------
+UTF8String& UTF8String::operator= (std::string&& str)
+{
+	string = std::move (str);
+	platformString = nullptr;
+	return *this;
+}
+
+//-----------------------------------------------------------------------------
 UTF8String::UTF8String (const UTF8String& other)
 {
 	*this = other;

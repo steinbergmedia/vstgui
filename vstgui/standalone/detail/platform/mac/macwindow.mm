@@ -260,6 +260,12 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 }
 
 //------------------------------------------------------------------------
+- (void)windowDidMove:(NSNotification *)notification
+{
+	self.macWindow->getDelegate ().onPositionChanged (self.macWindow->getPosition ());
+}
+
+//------------------------------------------------------------------------
 - (void)windowWillClose:(NSNotification*)notification
 {
 	self.macWindow->windowWillClose ();

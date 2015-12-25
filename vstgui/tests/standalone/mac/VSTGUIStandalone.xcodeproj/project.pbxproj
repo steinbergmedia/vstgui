@@ -15,6 +15,7 @@
 		F478633C1C286F1900C76167 /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F478633B1C286F1900C76167 /* Accelerate.framework */; };
 		F47863401C286F3200C76167 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F478633F1C286F3200C76167 /* QuartzCore.framework */; };
 		F47863421C286F3C00C76167 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F47863411C286F3C00C76167 /* OpenGL.framework */; };
+		F4975FE71C2DA865001D489E /* test.uidesc in Resources */ = {isa = PBXBuildFile; fileRef = F4975FE61C2DA865001D489E /* test.uidesc */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -66,7 +67,7 @@
 		F408C5B81C2ABD5500F46C6A /* testwindow.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = testwindow.cpp; sourceTree = "<group>"; };
 		F408C5B91C2ABD5500F46C6A /* testwindow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = testwindow.h; sourceTree = "<group>"; };
 		F478630C1C28629400C76167 /* VSTGUIStandalone.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VSTGUIStandalone.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		F478631A1C28629400C76167 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		F478631A1C28629400C76167 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = Info.plist; path = ../mac/Info.plist; sourceTree = "<group>"; };
 		F47863201C2862E400C76167 /* vstgui.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = vstgui.xcodeproj; path = ../../../ide/xcode4/vstgui.xcodeproj; sourceTree = "<group>"; };
 		F47863321C28630300C76167 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		F47863361C28633C00C76167 /* testappdelegate.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = testappdelegate.cpp; sourceTree = "<group>"; };
@@ -74,6 +75,7 @@
 		F478633B1C286F1900C76167 /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
 		F478633F1C286F3200C76167 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		F47863411C286F3C00C76167 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
+		F4975FE61C2DA865001D489E /* test.uidesc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = test.uidesc; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -115,10 +117,11 @@
 		F478630E1C28629400C76167 /* resources */ = {
 			isa = PBXGroup;
 			children = (
+				F4975FE61C2DA865001D489E /* test.uidesc */,
 				F478631A1C28629400C76167 /* Info.plist */,
 			);
 			name = resources;
-			path = VSTGUIStandalone;
+			path = ../resources;
 			sourceTree = "<group>";
 		};
 		F47863211C2862E400C76167 /* Products */ = {
@@ -251,6 +254,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F4975FE71C2DA865001D489E /* test.uidesc in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

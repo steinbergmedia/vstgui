@@ -81,6 +81,9 @@ public:
 	UTF8String (const UTF8String& other);
 	UTF8String& operator=(const UTF8String& other);
 
+	UTF8String (std::string&& str);
+	UTF8String& operator=(std::string&& str);
+
 	void set (UTF8StringPtr str);
 	UTF8StringPtr get () const { return string.c_str (); }
 	size_t getByteCount () const { return string.length (); }
