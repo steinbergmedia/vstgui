@@ -1,8 +1,9 @@
 #include "window.h"
-#include "platform/iplatformwindow.h"
 #include "../../lib/cframe.h"
+#include "../../lib/dispatchlist.h"
 #include "../icommand.h"
 #include "../iwindowcontroller.h"
+#include "platform/iplatformwindow.h"
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -42,14 +43,11 @@ public:
 	bool canHandleCommand (const Command& command) override;
 	bool handleCommand (const Command& command) override;
 private:
-	template<typename Proc, typename ...Args>
-	void forEachWindowListener (const Proc& proc, Args... args);
-
 	WindowControllerPtr controller;
 	Platform::WindowPtr platformWindow;
 	SharedPointer<CFrame> frame;
 	UTF8String autoSaveFrameName;
-	std::vector<IWindowListener*> windowListeners;
+	DispatchList<IWindowListener> windowListeners;
 };
 
 //------------------------------------------------------------------------
@@ -77,15 +75,6 @@ void Window::setContentView (const SharedPointer<CFrame>& newFrame)
 }
 
 //------------------------------------------------------------------------
-template<typename Proc, typename ...Args>
-void Window::forEachWindowListener (const Proc& proc, Args... args)
-{
-	std::for_each (windowListeners.begin (), windowListeners.end (), [&] (IWindowListener* listener) {
-		proc (listener, std::forward<Args> (args)...);
-	});
-}
-
-//------------------------------------------------------------------------
 CPoint Window::constraintSize (const CPoint& newSize)
 {
 	return controller ? controller->constraintSize (*this, newSize) : newSize;
@@ -94,9 +83,9 @@ CPoint Window::constraintSize (const CPoint& newSize)
 //------------------------------------------------------------------------
 void Window::onSizeChanged (const CPoint& newSize)
 {
-	forEachWindowListener ([] (IWindowListener* listener, const IWindow* window, const CPoint& newSize) {
-		listener->onSizeChanged (*window, newSize);
-	}, this, newSize);
+	windowListeners.forEach ([&] (IWindowListener* listener) {
+		listener->onSizeChanged (*this, newSize);
+	});
 	if (controller)
 		controller->onSizeChanged (*this, newSize);
 	if (frame)
@@ -106,9 +95,9 @@ void Window::onSizeChanged (const CPoint& newSize)
 //------------------------------------------------------------------------
 void Window::onPositionChanged (const CPoint& newPosition)
 {
-	forEachWindowListener ([] (IWindowListener* listener, const IWindow* window, const CPoint& newPosition) {
-		listener->onPositionChanged (*window, newPosition);
-	}, this, newPosition);
+	windowListeners.forEach ([&] (IWindowListener* listener) {
+		listener->onPositionChanged (*this, newPosition);
+	});
 	if (controller)
 		controller->onPositionChanged (*this, newPosition);
 }
@@ -116,10 +105,11 @@ void Window::onPositionChanged (const CPoint& newPosition)
 //------------------------------------------------------------------------
 void Window::onClosed ()
 {
-	auto self = shared_from_this (); // make sure we live as long as the methos executes
-	forEachWindowListener ([] (IWindowListener* listener, const IWindow* window) {
-		listener->onClosed (*window);
-	}, this);
+	auto self = shared_from_this (); // make sure we live as long as this method executes
+	windowListeners.forEach ([&] (IWindowListener* listener) {
+		listener->onClosed (*this);
+		windowListeners.remove (listener);
+	});
 	if (controller)
 		controller->onClosed (*this);
 	if (frame)
@@ -134,9 +124,9 @@ void Window::onClosed ()
 //------------------------------------------------------------------------
 void Window::onShow ()
 {
-	forEachWindowListener ([] (IWindowListener* listener, const IWindow* window) {
-		listener->onShow (*window);
-	}, this);
+	windowListeners.forEach ([&] (IWindowListener* listener) {
+		listener->onShow (*this);
+	});
 	if (controller)
 		controller->onShow (*this);
 }
@@ -144,9 +134,9 @@ void Window::onShow ()
 //------------------------------------------------------------------------
 void Window::onHide ()
 {
-	forEachWindowListener ([] (IWindowListener* listener, const IWindow* window) {
-		listener->onHide (*window);
-	}, this);
+	windowListeners.forEach ([&] (IWindowListener* listener) {
+		listener->onHide (*this);
+	});
 	if (controller)
 		controller->onHide (*this);
 }
@@ -160,15 +150,13 @@ bool Window::canClose ()
 //------------------------------------------------------------------------
 void Window::addWindowListener (IWindowListener* listener)
 {
-	windowListeners.push_back (listener);
+	windowListeners.add (listener);
 }
 
 //------------------------------------------------------------------------
 void Window::removeWindowListener (IWindowListener* listener)
 {
-	auto it = std::find (windowListeners.begin (), windowListeners.end (), listener);
-	if (it != windowListeners.end ())
-		windowListeners.erase (it);
+	windowListeners.remove (listener);
 }
 
 //------------------------------------------------------------------------
