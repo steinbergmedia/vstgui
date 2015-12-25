@@ -50,8 +50,6 @@ public:
 	virtual IValue::Type stepToValue (StepType step) const = 0;
 	virtual StepType valueToStep (IValue::Type) const = 0;
 
-	virtual bool isList () const = 0;
-
 	static ValuePtr make (const IdStringPtr id, StepType initialSteps, IValue::Type initialValue, const IValueStringConverter* stringConverter = nullptr);
 };
 

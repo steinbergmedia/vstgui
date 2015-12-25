@@ -33,8 +33,13 @@ bool TestModelHandler::handleCommand (const Command& command)
 	return false;
 }
 
+//------------------------------------------------------------------------
 void TestModelHandler::onBeginEdit (const IValue& value) {}
+
+//------------------------------------------------------------------------
 void TestModelHandler::onPerformEdit (const IValue& value, IValue::Type newValue) {}
+
+//------------------------------------------------------------------------
 void TestModelHandler::onEndEdit (const IValue& value)
 {
 	auto activeValue = values[0];
@@ -43,10 +48,12 @@ void TestModelHandler::onEndEdit (const IValue& value)
 		for (auto& v : values)
 		{
 			if (v != values[0])
-				v->setActive(activeValue->getValue () == 1.);
+				v->setActive (activeValue->getValue () == 1.);
 		}
 	}
 }
+
+//------------------------------------------------------------------------
 void TestModelHandler::onStateChange (const IValue& value) {}
 
 //------------------------------------------------------------------------

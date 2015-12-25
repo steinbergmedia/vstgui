@@ -81,7 +81,6 @@ public:
 	StepType getSteps () const override;
 	IValue::Type stepToValue (StepType step) const override;
 	StepType valueToStep (IValue::Type) const override;
-	bool isList () const override;
 
 	UTF8String valueAsString (IValue::Type value) const override;
 	IValue::Type stringAsValue (const UTF8String& string) const override;
@@ -126,7 +125,7 @@ bool Value::performEdit (Type newValue)
 //------------------------------------------------------------------------
 void Value::endEdit ()
 {
-	assert (editCount > 0);
+	vstgui_assert (editCount > 0);
 	--editCount;
 	
 	listeners.forEach ([this] (IValueListener* l) {
@@ -222,12 +221,6 @@ StepValue::StepType StepValue::valueToStep (IValue::Type value) const
 }
 
 //------------------------------------------------------------------------
-bool StepValue::isList () const
-{
-	return false;
-}
-
-//------------------------------------------------------------------------
 UTF8String StepValue::valueAsString (IValue::Type value) const
 {
 	auto v = valueToStep (value);
@@ -251,14 +244,14 @@ IValue::Type StepValue::stringAsValue (const UTF8String& string) const
 //------------------------------------------------------------------------
 ValuePtr IValue::make (const IdStringPtr id, Type initialValue, const IValueStringConverter* stringConverter)
 {
-	assert (id != nullptr);
+	vstgui_assert (id != nullptr);
 	return std::make_shared<Value>(id, initialValue, stringConverter ? *stringConverter : DefaultValueStringConverter::instance ());
 }
 
 //------------------------------------------------------------------------
 ValuePtr IStepValue::make (const IdStringPtr id, StepType initialSteps, IValue::Type initialValue, const IValueStringConverter* stringConverter)
 {
-	assert (id != nullptr);
+	vstgui_assert (id != nullptr);
 	return std::make_shared<StepValue>(id, initialSteps, initialValue, stringConverter);
 }
 

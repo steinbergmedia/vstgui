@@ -83,8 +83,8 @@ public:
 	{
 		control->setMin (0.f);
 		control->setMax (1.f);
-		auto stepValue = value->dynamicCast<const IStepValue> ();
 		control->setMouseEnabled (value->isActive ());
+		auto stepValue = value->dynamicCast<const IStepValue> ();
 		if (!stepValue)
 			return;
 		if (auto menu = dynamic_cast<COptionMenu*>(control))
@@ -94,7 +94,7 @@ public:
 			{
 				for (IStepValue::StepType i = 0; i < stepValue->getSteps (); ++i)
 				{
-					auto title = value->getStringConverter ().valueAsString(stepValue->stepToValue (i));
+					auto title = value->getStringConverter ().valueAsString (stepValue->stepToValue (i));
 					menu->addEntry (title);
 				}
 			}
@@ -540,7 +540,12 @@ WindowPtr makeWindow (const Config& config)
 
 	auto controller = std::make_shared<WindowController> ();
 
-	auto window = IApplication::instance ().createWindow (config.windowConfig, controller);
+	WindowConfiguration windowConfig = config.windowConfig;
+#if VSTGUI_LIVE_EDITING
+	windowConfig.flags.size ();
+#endif
+
+	auto window = IApplication::instance ().createWindow (windowConfig, controller);
 	if (!window)
 		return nullptr;
 
