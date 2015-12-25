@@ -17,6 +17,7 @@ class IWindowController;
 class IWindowListener;
 class ICommandHandler;
 class IValue;
+class IStepValue;
 class IValueListener;
 class IValueStringConverter;
 
