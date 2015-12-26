@@ -217,41 +217,51 @@ static const CommandWithKeyList* getCommandList (const char* group)
 - (void)setupMainMenu
 {
 	NSMenu* mainMenu = NSApp.mainMenu;
+	NSMenuItem* appMenuItem = nil;
 	if (mainMenu == nil)
+	{
 		mainMenu = [NSMenu new];
+		NSApp.mainMenu = mainMenu;
+
+		appMenuItem = [[NSMenuItem alloc] initWithTitle:@"App" action:nil keyEquivalent:@""];
+		[mainMenu addItem:appMenuItem];
+
+		NSMenuItem* item = [[NSMenuItem alloc] initWithTitle:@"Windows" action:NULL keyEquivalent:@""];
+		NSApp.windowsMenu = [self createWindowsMenu];
+		item.submenu = NSApp.windowsMenu;
+		[mainMenu addItem:item];
+	}
 	else
-		[mainMenu removeAllItems];
+	{
+		appMenuItem = [mainMenu itemAtIndex:0];
+	}
 
-	NSMenuItem* appMenuItem = [[NSMenuItem alloc] initWithTitle:@"App" action:nil keyEquivalent:@""];
 	appMenuItem.submenu = [self createAppMenu];
-	[mainMenu addItem:appMenuItem];
 
-
-	for (auto& e : getApplicationPlatformAccess ()->getCommandList ())
+	auto& commandList = getApplicationPlatformAccess ()->getCommandList ();
+	for (auto& e : commandList)
 	{
 		if (e.first != CommandGroup::Application)
 		{
-			NSMenu* menu = [[NSMenu alloc] initWithTitle:[NSString stringWithUTF8String:e.first.data ()]];
-			[self fillMenu:menu fromCommandList:e.second];
-			NSMenuItem* item = [NSMenuItem new];
-			item.submenu = menu;
-			[mainMenu addItem:item];
+			NSString* title = [NSString stringWithUTF8String:e.first.data ()];
+			NSMenuItem* item = [mainMenu itemWithTitle:title];
+			if (!item)
+			{
+				item = [[NSMenuItem alloc] initWithTitle:title action:nil keyEquivalent:@""];
+				[mainMenu addItem:item];
+				NSMenu* menu = [[NSMenu alloc] initWithTitle:title];
+				item.submenu = menu;
+			}
+			else
+				[item.submenu removeAllItems];
+			[self fillMenu:item.submenu fromCommandList:e.second];
 		}
 	}
-
-	NSMenuItem* item = [[NSMenuItem alloc] initWithTitle:@"Windows" action:NULL keyEquivalent:@""];
-	[mainMenu addItem:item];
-
-	NSApp.windowsMenu = [self createWindowsMenu];
-	item.submenu = NSApp.windowsMenu;
-	NSApp.mainMenu = mainMenu;
 	
-}
-
-//------------------------------------------------------------------------
-- (void)updateCommands
-{
-	[self setupMainMenu];
+	// move Windows menu to the end
+	NSMenuItem* windowsMenuItem = [mainMenu itemWithTitle:@"Windows"];
+	[mainMenu removeItem:windowsMenuItem];
+	[mainMenu addItem:windowsMenuItem];
 }
 
 //------------------------------------------------------------------------
@@ -316,14 +326,11 @@ static const CommandWithKeyList* getCommandList (const char* group)
 	auto app = getApplicationPlatformAccess ();
 	vstgui_assert (app);
 
-	IApplication::instance ().getDelegate ()->finishLaunching ();
-	[self setupMainMenu];
-
 	VSTGUIApplicationDelegate* Self = self;
 	PlatformCallbacks callbacks;
 	callbacks.quit = [] () { [NSApp terminate:nil]; };
 	callbacks.onCommandUpdate = [Self] () {
-		[Self updateCommands];
+		[Self setupMainMenu];
 	};
 	callbacks.showAlert = [Self] (const AlertBoxConfig& config) {
 		return [Self showAlert:config];
@@ -332,6 +339,9 @@ static const CommandWithKeyList* getCommandList (const char* group)
 		return [Self showAlertForWindow:config];
 	};
 	app->setPlatformCallbacks (std::move (callbacks));
+
+	IApplication::instance ().getDelegate ()->finishLaunching ();
+	[self setupMainMenu];
 }
 
 @end
