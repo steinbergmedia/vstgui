@@ -230,7 +230,7 @@ StepValue::StepType StepValue::valueToStep (IValue::Type value) const
 UTF8String StepValue::valueAsString (IValue::Type value) const
 {
 	auto v = valueToStep (value);
-	return {std::to_string (v)};
+	return UTF8String (std::to_string (v));
 }
 
 //------------------------------------------------------------------------

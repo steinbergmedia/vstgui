@@ -8,15 +8,19 @@
 
 #import <Cocoa/Cocoa.h>
 #import "VSTGUICommand.h"
+#import "macpreference.h"
 #import "macwindow.h"
+#import "macutilities.h"
 #import "../../application.h"
 #import "../../window.h"
 #import "../../../iappdelegate.h"
 #import "../../../iapplication.h"
-#import "../../../../lib/platform/mac/macstring.h"
 
 //------------------------------------------------------------------------
 @interface VSTGUIApplicationDelegate : NSObject<NSApplicationDelegate>
+{
+	VSTGUI::Standalone::Platform::Mac::MacPreference prefs;
+}
 @end
 
 using namespace VSTGUI::Standalone;
@@ -45,17 +49,6 @@ static const CommandWithKeyList* getCommandList (const char* group)
 }
 
 //------------------------------------------------------------------------
-static NSString* stringFromUTF8String (const VSTGUI::UTF8String& str)
-{
-	auto macStr = dynamic_cast<VSTGUI::MacString*> (str.getPlatformString ());
-	if (macStr && macStr->getCFString ())
-	{
-		return (__bridge NSString*)macStr->getCFString();
-	}
-	return [NSString stringWithUTF8String:str.get ()];
-}
-
-//------------------------------------------------------------------------
 @implementation VSTGUIApplicationDelegate
 
 //------------------------------------------------------------------------
@@ -65,7 +58,7 @@ static NSString* stringFromUTF8String (const VSTGUI::UTF8String& str)
 	if (self)
 	{
 		auto app = getApplicationPlatformAccess ();
-		app->init ();
+		app->init (prefs);
 	}
 	return self;
 }

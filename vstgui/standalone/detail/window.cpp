@@ -2,13 +2,58 @@
 #include "../../lib/cframe.h"
 #include "../../lib/dispatchlist.h"
 #include "../icommand.h"
+#include "../iapplication.h"
+#include "../ipreference.h"
 #include "../iwindowcontroller.h"
 #include "platform/iplatformwindow.h"
+
+#include <vector>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
 namespace Standalone {
 namespace Detail {
+namespace /*anonymous*/ {
+
+//------------------------------------------------------------------------
+UTF8String strFromPositionAndSize (const CPoint& pos, const CPoint& size)
+{
+	std::stringstream str;
+	str << pos.x << "," << pos.y << "," << size.x << "," << size.y;
+	return UTF8String (str.str ());
+}
+
+//------------------------------------------------------------------------
+struct PosAndSize
+{
+	CPoint pos;
+	CPoint size;
+};
+
+static CPoint nullPoint {0, 0};
+
+//------------------------------------------------------------------------
+PosAndSize positionAndSizeFromString (const UTF8String& str)
+{
+	PosAndSize r;
+	std::vector<std::string> elements;
+	std::stringstream stream (str.getString ());
+	std::string item;
+	while (std::getline (stream, item, ','))
+		elements.emplace_back (item);
+	
+	if (elements.size () != 4)
+		return r;
+	r.pos.x = UTF8StringView (elements[0].data ()).toDouble ();
+	r.pos.y = UTF8StringView (elements[1].data ()).toDouble ();
+	r.size.x = UTF8StringView (elements[2].data ()).toDouble ();
+	r.size.y = UTF8StringView (elements[3].data ()).toDouble ();
+	
+	return r;
+}
+	
+//------------------------------------------------------------------------
+} // anonymous
 
 //------------------------------------------------------------------------
 class Window : public IWindow, public IPlatformWindowAccess, public Platform::IWindowDelegate, public std::enable_shared_from_this<Window>
@@ -59,8 +104,20 @@ bool Window::init (const WindowConfiguration& config, const WindowControllerPtr&
 	platformWindow = Platform::makeWindow (config, *this);
 	if (platformWindow)
 	{
-		if (config.flags.doesAutoSaveFrame ())
+		if (!config.autoSaveFrameName.empty ())
+		{
 			autoSaveFrameName = config.autoSaveFrameName;
+			auto frame = IApplication::instance().getPreferences().get (autoSaveFrameName);
+			if (!frame.empty ())
+			{
+				auto ps = positionAndSizeFromString (frame);
+				if (ps.pos != nullPoint && ps.size != nullPoint)
+				{
+					setPosition (ps.pos);
+					setSize (ps.size);
+				}
+			}
+		}
 		controller = inController;
 	}
 	return platformWindow != nullptr;
@@ -109,6 +166,10 @@ void Window::onPositionChanged (const CPoint& newPosition)
 void Window::onClosed ()
 {
 	auto self = shared_from_this (); // make sure we live as long as this method executes
+
+	if (!autoSaveFrameName.empty ())
+		IApplication::instance ().getPreferences ().set (autoSaveFrameName, strFromPositionAndSize (getPosition (), getSize ()));
+
 	windowListeners.forEach ([&] (IWindowListener* listener) {
 		listener->onClosed (*this);
 		windowListeners.remove (listener);

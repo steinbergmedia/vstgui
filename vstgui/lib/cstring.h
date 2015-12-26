@@ -97,6 +97,7 @@ public:
 	void operator= (UTF8StringPtr str) { set (str); }
 	operator UTF8StringPtr () const { return get (); }
 
+	const std::string& getString () const { return string; }
 	IPlatformString* getPlatformString () const;
 
 	UTF8String (UTF8String&& other);

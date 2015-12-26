@@ -53,6 +53,7 @@ bool Delegate::handleCommand (const Command& command)
 	{
 		UIDescription::Config config;
 		config.windowConfig.title = "Test Window";
+		config.windowConfig.autoSaveFrameName = "TestWindowFrame";
 		config.windowConfig.flags.border ().close ();
 		config.windowConfig.size = {100, 100};
 		config.fileName = "test.uidesc";

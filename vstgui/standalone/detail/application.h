@@ -39,7 +39,7 @@ public:
 	using CommandListPair = std::pair<std::string, CommandWithKeyList>;
 	using CommandList = std::vector<CommandListPair>;
 
-	virtual void init () = 0;
+	virtual void init (IPreference& preferences) = 0;
 
 	virtual void setPlatformCallbacks (PlatformCallbacks&& callbacks) = 0;
 	virtual const CommandList& getCommandList () = 0;

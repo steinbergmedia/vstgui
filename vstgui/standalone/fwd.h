@@ -9,6 +9,7 @@ namespace Standalone {
 class IWindow;
 class IWindowController;
 class IWindowListener;
+class IPreference;
 class ICommandHandler;
 class IValue;
 class IStepValue;

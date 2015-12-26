@@ -19,6 +19,7 @@ public:
 	
 	// IApplication
 	void setDelegate (const Standalone::Application::DelegatePtr& delegate);
+	IPreference& getPreferences () const override;
 	Standalone::Application::IDelegate* getDelegate () const override;
 	WindowPtr createWindow (const WindowConfiguration& config, const WindowControllerPtr& controller) override;
 	const WindowList& getWindows () const override { return windows; }
@@ -39,7 +40,7 @@ public:
 	bool handleCommand (const Command& command) override;
 
 	// IApplicationPlatformAccess
-	void init () override;
+	void init (IPreference& preferences) override;
 	void setPlatformCallbacks (PlatformCallbacks&& callbacks) override;
 	const CommandList& getCommandList () override;
 private:
@@ -47,6 +48,7 @@ private:
 
 	WindowList windows;
 	Standalone::Application::DelegatePtr delegate;
+	IPreference* preferences {nullptr};
 	PlatformCallbacks platform;
 	CommandList commandList;
 };
@@ -59,8 +61,10 @@ Application& Application::instance ()
 }
 
 //------------------------------------------------------------------------
-void Application::init ()
+void Application::init (IPreference& preferences)
 {
+	this->preferences = &preferences;
+
 	registerCommand (Commands::About);
 	registerCommand (Commands::Quit, 'q');
 	registerCommand (Commands::CloseWindow, 'w');
@@ -82,6 +86,13 @@ void Application::setDelegate (const Standalone::Application::DelegatePtr& inDel
 Standalone::Application::IDelegate* Application::getDelegate () const
 {
 	return delegate.get ();
+}
+
+//------------------------------------------------------------------------
+IPreference& Application::getPreferences () const
+{
+	vstgui_assert (preferences);
+	return *preferences;
 }
 
 //------------------------------------------------------------------------

@@ -16,18 +16,15 @@ struct WindowFlags
 		kBorder = 1 << 0,
 		kClose = 1 << 1,
 		kSize = 1 << 2,
-		kAutoSaveFrame = 1 << 4,
 	};
 	
 	WindowFlags& border () { flags |= Style::kBorder; return *this; }
 	WindowFlags& close () { flags |= Style::kClose; return *this; }
 	WindowFlags& size () { flags |= Style::kSize; return *this; }
-	WindowFlags& autoSaveFrame () { flags |= Style::kAutoSaveFrame; return *this; }
 
 	bool hasBorder () const { return flags & Style::kBorder; }
 	bool canClose () const { return flags & Style::kClose; }
 	bool canSize () const { return flags & Style::kSize; }
-	bool doesAutoSaveFrame () const { return flags & Style::kAutoSaveFrame; }
 
 private:
 	uint32_t flags {0};

@@ -19,6 +19,8 @@ public:
 	static IApplication& instance ();
 
 	virtual Application::IDelegate* getDelegate () const = 0;
+	virtual IPreference& getPreferences () const = 0;
+
 	virtual WindowPtr createWindow (const WindowConfiguration& config, const WindowControllerPtr& controller) = 0;
 	virtual const WindowList& getWindows () const = 0;
 
@@ -26,6 +28,7 @@ public:
 	virtual void showAlertBoxForWindow (const AlertBoxForWindowConfig& config) = 0;
 	
 	virtual void registerCommand (const Command& command, char16_t defaultCommandKey) = 0;
+
 	virtual void quit () = 0;
 };
 

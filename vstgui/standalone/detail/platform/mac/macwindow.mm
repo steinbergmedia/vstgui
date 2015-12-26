@@ -98,11 +98,12 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 //------------------------------------------------------------------------
 void Window::windowWillClose ()
 {
-	nsWindow.delegate = nil;
+	NSWindow* temp = nsWindow;
 	nsWindowDelegate = nil;
-	nsWindow = nil;
 	delegate->onClosed ();
 	// we are now destroyed ! at least we should !
+	temp.delegate = nil;
+	temp = nil;
 }
 
 //------------------------------------------------------------------------
