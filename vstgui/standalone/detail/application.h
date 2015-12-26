@@ -22,10 +22,12 @@ struct PlatformCallbacks
 	using OnCommandUpdateFunc = std::function<void ()>;
 	using QuitFunc = std::function<void ()>;
 	using AlertFunc = std::function<AlertResult (const AlertBoxConfig&)>;
+	using AlertForWindowFunc = std::function<void (const AlertBoxForWindowConfig&)>;
 	
 	QuitFunc quit;
 	OnCommandUpdateFunc onCommandUpdate;
 	AlertFunc showAlert;
+	AlertForWindowFunc showAlertForWindow;
 };
 
 //------------------------------------------------------------------------

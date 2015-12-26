@@ -23,6 +23,7 @@ public:
 	virtual const WindowList& getWindows () const = 0;
 
 	virtual AlertResult showAlertBox (const AlertBoxConfig& config) = 0;
+	virtual void showAlertBoxForWindow (const AlertBoxForWindowConfig& config) = 0;
 	
 	virtual void registerCommand (const Command& command, char16_t defaultCommandKey) = 0;
 	virtual void quit () = 0;

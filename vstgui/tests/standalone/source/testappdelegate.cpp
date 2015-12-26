@@ -5,6 +5,7 @@
 #include "vstgui/standalone/iwindow.h"
 #include "vstgui/standalone/icommand.h"
 #include "vstgui/standalone/iuidescwindow.h"
+#include "vstgui/standalone/ialertbox.h"
 #include "vstgui/lib/cframe.h"
 #include "vstgui/lib/crect.h"
 #include <memory>
@@ -58,7 +59,14 @@ bool Delegate::handleCommand (const Command& command)
 		config.viewName = "view";
 		config.modelBinding = model;
 		if (auto window = UIDescription::makeWindow (config))
+		{
 			window->show ();
+			AlertBoxForWindowConfig alert;
+			alert.window = window;
+			alert.callback = [] (AlertResult result) {};
+			alert.headline = "Test";
+			IApplication::instance ().showAlertBoxForWindow (alert);
+		}
 		return true;
 	}
 	return false;

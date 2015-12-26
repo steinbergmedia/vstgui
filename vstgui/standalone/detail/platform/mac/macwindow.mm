@@ -7,6 +7,7 @@
 //
 
 #import <Cocoa/Cocoa.h>
+#import "macwindow.h"
 #import "../iplatformwindow.h"
 #import "../../../../lib/platform/mac/macstring.h"
 #import "VSTGUICommand.h"
@@ -31,7 +32,7 @@ namespace Platform {
 namespace Mac {
 
 //------------------------------------------------------------------------
-class Window : public IWindow
+class Window : public IWindow, public IMacWindow
 {
 public:
 	bool init (const WindowConfiguration& config, IWindowDelegate& delegate);
@@ -51,7 +52,7 @@ public:
 
 	void windowWillClose ();
 	IWindowDelegate& getDelegate () const { return *delegate; }
-	NSWindow* getNSWindow () const { return nsWindow; }
+	NSWindow* getNSWindow () const override { return nsWindow; }
 private:
 	NSWindow* nsWindow {nullptr};
 	VSTGUIWindowDelegate* nsWindowDelegate {nullptr};

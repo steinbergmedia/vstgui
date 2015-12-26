@@ -23,6 +23,7 @@ public:
 	WindowPtr createWindow (const WindowConfiguration& config, const WindowControllerPtr& controller) override;
 	const WindowList& getWindows () const override { return windows; }
 	AlertResult showAlertBox (const AlertBoxConfig& config) override;
+	void showAlertBoxForWindow (const AlertBoxForWindowConfig& config) override;
 	void registerCommand (const Command& command, char16_t defaultCommandKey = 0) override;
 	void quit () override;
 
@@ -101,6 +102,14 @@ AlertResult Application::showAlertBox (const AlertBoxConfig& config)
 	if (platform.showAlert)
 		return platform.showAlert (config);
 	return AlertResult::error;
+}
+
+//------------------------------------------------------------------------
+void Application::showAlertBoxForWindow (const AlertBoxForWindowConfig& config)
+{
+	vstgui_assert (config.window);
+	if (platform.showAlertForWindow)
+		platform.showAlertForWindow (config);
 }
 
 //------------------------------------------------------------------------

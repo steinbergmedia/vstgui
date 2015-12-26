@@ -8,6 +8,15 @@ namespace VSTGUI {
 namespace Standalone {
 
 //------------------------------------------------------------------------
+enum class AlertResult
+{
+	defaultButton,
+	secondButton,
+	thirdButton,
+	error,
+};
+
+//------------------------------------------------------------------------
 struct AlertBoxConfig
 {
 	UTF8String headline;
@@ -18,12 +27,12 @@ struct AlertBoxConfig
 };
 
 //------------------------------------------------------------------------
-enum class AlertResult
+struct AlertBoxForWindowConfig : AlertBoxConfig
 {
-	defaultButton,
-	secondButton,
-	thirdButton,
-	error,
+	using Callback = std::function<void (AlertResult)>;
+
+	WindowPtr window;
+	Callback callback;
 };
 
 //------------------------------------------------------------------------

@@ -8,7 +8,9 @@
 
 #import <Cocoa/Cocoa.h>
 #import "VSTGUICommand.h"
+#import "macwindow.h"
 #import "../../application.h"
+#import "../../window.h"
 #import "../../../iappdelegate.h"
 #import "../../../iapplication.h"
 #import "../../../../lib/platform/mac/macstring.h"
@@ -18,8 +20,10 @@
 @end
 
 using namespace VSTGUI::Standalone;
+using VSTGUI::Standalone::Platform::Mac::IMacWindow;
 using VSTGUI::Standalone::Detail::IApplicationPlatformAccess;
 using VSTGUI::Standalone::Detail::CommandWithKey;
+using VSTGUI::Standalone::Detail::IPlatformWindowAccess;
 using CommandWithKeyList = VSTGUI::Standalone::Detail::IApplicationPlatformAccess::CommandWithKeyList;
 using VSTGUI::Standalone::Detail::PlatformCallbacks;
 
@@ -258,7 +262,7 @@ static NSString* stringFromUTF8String (const VSTGUI::UTF8String& str)
 }
 
 //------------------------------------------------------------------------
-- (AlertResult)showAlert: (const AlertBoxConfig&)config
+- (NSAlert*)createAlert:(const AlertBoxConfig&)config
 {
 	NSAlert* alert = [NSAlert new];
 	if (!config.headline.empty ())
@@ -270,12 +274,47 @@ static NSString* stringFromUTF8String (const VSTGUI::UTF8String& str)
 		[alert addButtonWithTitle:stringFromUTF8String (config.secondButton)];
 	if (!config.thirdButton.empty ())
 		[alert addButtonWithTitle:stringFromUTF8String (config.thirdButton)];
+	return alert;
+}
+
+//------------------------------------------------------------------------
+- (AlertResult)showAlert:(const AlertBoxConfig&)config
+{
+	NSAlert* alert = [self createAlert:config];
 	NSModalResponse response = [alert runModal];
 	if (response == NSAlertSecondButtonReturn)
 		return AlertResult::secondButton;
 	if (response == NSAlertThirdButtonReturn)
 		return AlertResult::thirdButton;
 	return AlertResult::defaultButton;
+}
+
+//------------------------------------------------------------------------
+- (void)showAlertForWindow:(const AlertBoxForWindowConfig&)config
+{
+	auto platformWindowAccess = config.window->dynamicCast<IPlatformWindowAccess> ();
+	if (!platformWindowAccess)
+		return;
+	auto platformWindow = platformWindowAccess->getPlatformWindow ();
+	if (!platformWindow)
+		return;
+	auto macWindow = platformWindow->dynamicCast<IMacWindow>();
+	if (!macWindow)
+		return;
+
+	auto callback = config.callback;
+
+	NSAlert* alert = [self createAlert:config];
+	[alert beginSheetModalForWindow:macWindow->getNSWindow () completionHandler:^(NSModalResponse returnCode) {
+		AlertResult result = AlertResult::error;
+		if (returnCode == NSAlertFirstButtonReturn)
+			result = AlertResult::defaultButton;
+		else if (returnCode == NSAlertSecondButtonReturn)
+			result = AlertResult::secondButton;
+		else if (returnCode == NSAlertThirdButtonReturn)
+			result = AlertResult::thirdButton;
+		callback (result);
+	}];
 }
 
 //------------------------------------------------------------------------
@@ -295,6 +334,9 @@ static NSString* stringFromUTF8String (const VSTGUI::UTF8String& str)
 	};
 	callbacks.showAlert = [Self] (const AlertBoxConfig& config) {
 		return [Self showAlert:config];
+	};
+	callbacks.showAlertForWindow = [Self] (const AlertBoxForWindowConfig& config) {
+		return [Self showAlertForWindow:config];
 	};
 	app->setPlatformCallbacks (std::move (callbacks));
 }

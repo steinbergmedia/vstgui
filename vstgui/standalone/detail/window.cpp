@@ -11,7 +11,7 @@ namespace Standalone {
 namespace Detail {
 
 //------------------------------------------------------------------------
-class Window : public IWindow, public Platform::IWindowDelegate, public std::enable_shared_from_this<Window>
+class Window : public IWindow, public IPlatformWindowAccess, public Platform::IWindowDelegate, public std::enable_shared_from_this<Window>
 {
 public:
 	bool init (const WindowConfiguration& config, const WindowControllerPtr& controller);
@@ -30,6 +30,9 @@ public:
 	void close () override { platformWindow->close (); }
 	void registerWindowListener (IWindowListener* listener) override;
 	void unregisterWindowListener (IWindowListener* listener) override;
+
+	// IPlatformWindowAccess
+	Interface* getPlatformWindow () const override { return platformWindow.get (); }
 
 	// Platform::IWindowDelegate
 	CPoint constraintSize (const CPoint& newSize) override;

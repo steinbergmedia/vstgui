@@ -24,10 +24,8 @@ public:
 };
 
 //------------------------------------------------------------------------
-using ModelBindingPtr = std::shared_ptr<IModelBinding>;
-
-//------------------------------------------------------------------------
-struct Config {
+struct Config
+{
 	UTF8String fileName;
 	UTF8String viewName;
 	ModelBindingPtr modelBinding;
