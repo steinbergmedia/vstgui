@@ -163,7 +163,7 @@ public:
 		control->unregisterViewListener (this);
 		control->unregisterControlListener (this);
 		auto it = std::find (controls.begin (), controls.end (), control);
-		assert (it != controls.end ());
+		vstgui_assert (it != controls.end ());
 		controls.erase (it);
 	}
 	
@@ -545,9 +545,9 @@ namespace UIDescription {
 //------------------------------------------------------------------------
 WindowPtr makeWindow (const Config& config)
 {
-	assert (config.modelBinding);
-	assert (config.viewName.empty () == false);
-	assert (config.fileName.empty () == false);
+	vstgui_assert (config.modelBinding);
+	vstgui_assert (config.viewName.empty () == false);
+	vstgui_assert (config.fileName.empty () == false);
 
 	auto controller = std::make_shared<WindowController> ();
 

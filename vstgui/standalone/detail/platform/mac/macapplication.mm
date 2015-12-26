@@ -282,7 +282,7 @@ static NSString* stringFromUTF8String (const VSTGUI::UTF8String& str)
 - (void)applicationDidFinishLaunching:(NSNotification *)notification
 {
 	auto app = getApplicationPlatformAccess ();
-	assert (app);
+	vstgui_assert (app);
 
 	IApplication::instance ().getDelegate ()->finishLaunching ();
 	[self setupMainMenu];
