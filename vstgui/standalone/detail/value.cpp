@@ -101,9 +101,12 @@ void Value::beginEdit ()
 {
 	++editCount;
 	
-	listeners.forEach ([this] (IValueListener* l) {
-		l->onBeginEdit (*this);
-	});
+	if (editCount == 1)
+	{
+		listeners.forEach ([this] (IValueListener* l) {
+			l->onBeginEdit (*this);
+		});
+	}
 }
 
 //------------------------------------------------------------------------
@@ -127,10 +130,13 @@ void Value::endEdit ()
 {
 	vstgui_assert (editCount > 0);
 	--editCount;
-	
-	listeners.forEach ([this] (IValueListener* l) {
-		l->onEndEdit (*this);
-	});
+
+	if (editCount == 0)
+	{
+		listeners.forEach ([this] (IValueListener* l) {
+			l->onEndEdit (*this);
+		});
+	}
 }
 
 //------------------------------------------------------------------------
