@@ -28,9 +28,6 @@ public:
 };
 
 //------------------------------------------------------------------------
-using WindowControllerPtr = std::shared_ptr<IWindowController>;
-
-//------------------------------------------------------------------------
 class WindowControllerAdapter : public IWindowController
 {
 public:

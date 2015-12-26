@@ -23,9 +23,6 @@ public:
 };
 
 //------------------------------------------------------------------------
-using DelegatePtr = std::shared_ptr<IDelegate>;
-
-//------------------------------------------------------------------------
 struct Init
 {
 	Init (const DelegatePtr& delegate);

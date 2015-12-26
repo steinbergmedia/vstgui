@@ -41,6 +41,7 @@ struct Config;
 namespace Application {
 
 class IDelegate;
+using DelegatePtr = std::shared_ptr<IDelegate>;
 
 //------------------------------------------------------------------------
 } // Application
