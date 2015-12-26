@@ -29,13 +29,13 @@ public:
 	bool canHandleCommand (const Command& command) override;
 	bool handleCommand (const Command& command) override;
 private:
-	std::shared_ptr<TestModelHandler> model;
+	std::shared_ptr<TestModel> model;
 };
 
 //------------------------------------------------------------------------
 void Delegate::finishLaunching ()
 {
-	model = std::make_shared<TestModelHandler> ();
+	model = std::make_shared<TestModel> ();
 	IApplication::instance ().registerCommand (Commands::NewDocument, 'n');
 }
 
@@ -56,7 +56,7 @@ bool Delegate::handleCommand (const Command& command)
 		config.windowConfig.size = {100, 100};
 		config.fileName = "test.uidesc";
 		config.viewName = "view";
-		config.modelHandler = model;
+		config.modelBinding = model;
 		if (auto window = UIDescription::makeWindow (config))
 			window->show ();
 		return true;

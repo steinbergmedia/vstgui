@@ -7,7 +7,7 @@ using namespace VSTGUI;
 using namespace VSTGUI::Standalone;
 
 //------------------------------------------------------------------------
-TestModelHandler::TestModelHandler ()
+TestModel::TestModel ()
 {
 	addValue (IValue::make ("Activate", 1.));
 	addValue (IValue::make ("Test", 0.));
@@ -15,32 +15,20 @@ TestModelHandler::TestModelHandler ()
 }
 
 //------------------------------------------------------------------------
-void TestModelHandler::addValue (const ValuePtr& value)
+void TestModel::addValue (const ValuePtr& value)
 {
 	value->registerListener (this);
 	values.push_back (value);
 }
 
 //------------------------------------------------------------------------
-bool TestModelHandler::canHandleCommand (const Command& command)
-{
-	return false;
-}
+void TestModel::onBeginEdit (const IValue& value) {}
 
 //------------------------------------------------------------------------
-bool TestModelHandler::handleCommand (const Command& command)
-{
-	return false;
-}
+void TestModel::onPerformEdit (const IValue& value, IValue::Type newValue) {}
 
 //------------------------------------------------------------------------
-void TestModelHandler::onBeginEdit (const IValue& value) {}
-
-//------------------------------------------------------------------------
-void TestModelHandler::onPerformEdit (const IValue& value, IValue::Type newValue) {}
-
-//------------------------------------------------------------------------
-void TestModelHandler::onEndEdit (const IValue& value)
+void TestModel::onEndEdit (const IValue& value)
 {
 	auto activeValue = values[0];
 	if (&value == activeValue.get ())
@@ -54,7 +42,7 @@ void TestModelHandler::onEndEdit (const IValue& value)
 }
 
 //------------------------------------------------------------------------
-void TestModelHandler::onStateChange (const IValue& value) {}
+void TestModel::onStateChange (const IValue& value) {}
 
 //------------------------------------------------------------------------
 } // MyApp

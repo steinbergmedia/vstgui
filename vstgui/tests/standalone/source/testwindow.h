@@ -5,11 +5,11 @@
 //------------------------------------------------------------------------
 namespace MyApp {
 
-using VSTGUI::Standalone::UIDescription::IModelHandler;
+using VSTGUI::Standalone::UIDescription::IModelBinding;
 using VSTGUI::Standalone::IValueListener;
 
 //------------------------------------------------------------------------
-class TestModelHandler : public IModelHandler, public IValueListener
+class TestModel : public IModelBinding, public IValueListener
 {
 public:
 	using UTF8String = VSTGUI::UTF8String;
@@ -17,13 +17,10 @@ public:
 	using ValuePtr = VSTGUI::Standalone::ValuePtr;
 	using IValue = VSTGUI::Standalone::IValue;
 	
-	TestModelHandler ();
+	TestModel ();
 	
 	const CommandList& getCommands () const override { return commands; }
 	const ValueList& getValues () const override { return values; }
-
-	bool canHandleCommand (const Command& command) override;
-	bool handleCommand (const Command& command) override;
 
 	void onBeginEdit (const IValue& value) override;
 	void onPerformEdit (const IValue& value, IValue::Type newValue) override;

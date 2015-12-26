@@ -19,7 +19,7 @@ namespace VSTGUI {
 namespace Standalone {
 namespace /* Anonymous */ {
 
-using UIDescription::ModelHandlerPtr;
+using UIDescription::ModelBindingPtr;
 
 //------------------------------------------------------------------------
 class WindowController : public WindowControllerAdapter, public ICommandHandler
@@ -187,8 +187,8 @@ struct WindowController::Impl : public IController, public ICommandHandler
 {
 	using ValueWrapperList = std::vector<ValueWrapperPtr>;
 	
-	Impl (WindowController& controller, const ModelHandlerPtr& modelHandler)
-	: controller (controller), modelHandler (modelHandler)
+	Impl (WindowController& controller, const ModelBindingPtr& modelHandler)
+	: controller (controller), modelBinding (modelHandler)
 	{
 		initModelValues (modelHandler);
 	}
@@ -267,10 +267,21 @@ struct WindowController::Impl : public IController, public ICommandHandler
 		window->setSize (frame->getViewSize ().getSize ());
 	}
 	
-	bool canHandleCommand (const Command& command) override { return false; }
-	bool handleCommand (const Command& command) override { return false; }
+	bool canHandleCommand (const Command& command) override
+	{
+		if (auto commandHandler = modelBinding->dynamicCast<ICommandHandler> ())
+			return commandHandler->canHandleCommand (command);
+		return false;
+	}
 	
-	void initModelValues (const ModelHandlerPtr& modelHandler)
+	bool handleCommand (const Command& command) override
+	{
+		if (auto commandHandler = modelBinding->dynamicCast<ICommandHandler> ())
+			return commandHandler->handleCommand (command);
+		return false;
+	}
+	
+	void initModelValues (const ModelBindingPtr& modelHandler)
 	{
 		for (auto& value : modelHandler->getValues ())
 		{
@@ -322,7 +333,7 @@ struct WindowController::Impl : public IController, public ICommandHandler
 	UTF8String templateName;
 	CPoint minSize;
 	CPoint maxSize;
-	ModelHandlerPtr modelHandler;
+	ModelBindingPtr modelBinding;
 	ValueWrapperList valueWrappers;
 };
 
@@ -332,7 +343,7 @@ static const Command ToggleEditingCommand {"Debug", "Toggle Inline Editor"};
 //------------------------------------------------------------------------
 struct WindowController::EditImpl : WindowController::Impl
 {
-	EditImpl (WindowController& controller, const ModelHandlerPtr& modelHandler) : Impl (controller, modelHandler)
+	EditImpl (WindowController& controller, const ModelBindingPtr& modelBinding) : Impl (controller, modelBinding)
 	{
 		IApplication::instance ().registerCommand (ToggleEditingCommand, 'e');
 	}
@@ -465,7 +476,7 @@ struct WindowController::EditImpl : WindowController::Impl
 	{
 		if (command == ToggleEditingCommand)
 			return true;
-		return false;
+		return Impl::canHandleCommand (command);
 	}
 	
 	bool handleCommand (const Command& command) override
@@ -475,7 +486,7 @@ struct WindowController::EditImpl : WindowController::Impl
 			enableEditing (!isEditing);
 			return true;
 		}
-		return false;
+		return Impl::handleCommand (command);
 	}
 	
 	SharedPointer<UIEditController> uiEditController;
@@ -487,9 +498,9 @@ struct WindowController::EditImpl : WindowController::Impl
 bool WindowController::init (const UIDescription::Config &config, WindowPtr &window)
 {
 #if VSTGUI_LIVE_EDITING
-	impl = std::unique_ptr<Impl> (new EditImpl (*this, config.modelHandler));
+	impl = std::unique_ptr<Impl> (new EditImpl (*this, config.modelBinding));
 #else
-	impl = std::unique_ptr<Impl> (new Impl (*this, config.modelHandler));
+	impl = std::unique_ptr<Impl> (new Impl (*this, config.modelBinding));
 #endif
 	return impl->init (window, config.fileName, config.viewName);
 }
@@ -534,7 +545,7 @@ namespace UIDescription {
 //------------------------------------------------------------------------
 WindowPtr makeWindow (const Config& config)
 {
-	assert (config.modelHandler);
+	assert (config.modelBinding);
 	assert (config.viewName.empty () == false);
 	assert (config.fileName.empty () == false);
 

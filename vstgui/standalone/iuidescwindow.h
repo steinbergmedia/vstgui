@@ -13,7 +13,7 @@ namespace Standalone {
 namespace UIDescription {
 
 //------------------------------------------------------------------------
-class IModelHandler : public ICommandHandler
+class IModelBinding : public Interface
 {
 public:
 	using CommandList = std::vector<Command>;
@@ -24,13 +24,13 @@ public:
 };
 
 //------------------------------------------------------------------------
-using ModelHandlerPtr = std::shared_ptr<IModelHandler>;
+using ModelBindingPtr = std::shared_ptr<IModelBinding>;
 
 //------------------------------------------------------------------------
 struct Config {
 	UTF8String fileName;
 	UTF8String viewName;
-	ModelHandlerPtr modelHandler;
+	ModelBindingPtr modelBinding;
 	WindowConfiguration windowConfig;
 };
 
