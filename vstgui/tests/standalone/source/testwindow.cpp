@@ -1,4 +1,6 @@
 #include "testwindow.h"
+#include "vstgui/standalone/iapplication.h"
+#include "vstgui/standalone/ialertbox.h"
 
 //------------------------------------------------------------------------
 namespace MyApp {
@@ -12,6 +14,7 @@ TestModel::TestModel ()
 	addValue (IValue::make ("Activate", 1.));
 	addValue (IValue::make ("Test", 0.));
 	addValue (IStepValue::make ("StepTest", 5, 0));
+	addValue (IValue::make ("ShowAlert", 0.));
 }
 
 //------------------------------------------------------------------------
@@ -38,6 +41,15 @@ void TestModel::onEndEdit (const IValue& value)
 			if (v != values[0])
 				v->setActive (activeValue->getValue () == 1.);
 		}
+	}
+	else if (strcmp (value.getID (), "ShowAlert") == 0)
+	{
+		AlertBoxConfig config;
+		config.headline = "Test Alert";
+		config.description = "This is an example alert box.";
+		config.secondButton = "Cancel";
+		config.thirdButton = "Really";
+		IApplication::instance ().showAlertBox (config);
 	}
 }
 

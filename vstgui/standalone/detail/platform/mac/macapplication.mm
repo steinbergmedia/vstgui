@@ -21,6 +21,7 @@ using namespace VSTGUI::Standalone;
 using VSTGUI::Standalone::Detail::IApplicationPlatformAccess;
 using VSTGUI::Standalone::Detail::CommandWithKey;
 using CommandWithKeyList = VSTGUI::Standalone::Detail::IApplicationPlatformAccess::CommandWithKeyList;
+using VSTGUI::Standalone::Detail::PlatformCallbacks;
 
 //------------------------------------------------------------------------
 static IApplicationPlatformAccess* getApplicationPlatformAccess ()
@@ -257,21 +258,45 @@ static NSString* stringFromUTF8String (const VSTGUI::UTF8String& str)
 }
 
 //------------------------------------------------------------------------
+- (AlertResult)showAlert: (const AlertBoxConfig&)config
+{
+	NSAlert* alert = [NSAlert new];
+	if (!config.headline.empty ())
+		alert.messageText = stringFromUTF8String (config.headline);
+	if (!config.description.empty ())
+		alert.informativeText = stringFromUTF8String (config.description);
+	[alert addButtonWithTitle:stringFromUTF8String (config.defaultButton)];
+	if (!config.secondButton.empty ())
+		[alert addButtonWithTitle:stringFromUTF8String (config.secondButton)];
+	if (!config.thirdButton.empty ())
+		[alert addButtonWithTitle:stringFromUTF8String (config.thirdButton)];
+	NSModalResponse response = [alert runModal];
+	if (response == NSAlertSecondButtonReturn)
+		return AlertResult::secondButton;
+	if (response == NSAlertThirdButtonReturn)
+		return AlertResult::thirdButton;
+	return AlertResult::defaultButton;
+}
+
+//------------------------------------------------------------------------
 - (void)applicationDidFinishLaunching:(NSNotification *)notification
 {
 	auto app = getApplicationPlatformAccess ();
 	assert (app);
 
-	app->setQuitFunction ([] () {
-		[NSApp terminate:nil];
-	});
-	
 	IApplication::instance ().getDelegate ()->finishLaunching ();
 	[self setupMainMenu];
+
 	VSTGUIApplicationDelegate* Self = self;
-	app->setOnCommandUpdate ([Self] () {
+	PlatformCallbacks callbacks;
+	callbacks.quit = [] () { [NSApp terminate:nil]; };
+	callbacks.onCommandUpdate = [Self] () {
 		[Self updateCommands];
-	});
+	};
+	callbacks.showAlert = [Self] (const AlertBoxConfig& config) {
+		return [Self showAlert:config];
+	};
+	app->setPlatformCallbacks (std::move (callbacks));
 }
 
 @end

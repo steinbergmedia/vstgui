@@ -22,6 +22,7 @@ public:
 	Standalone::Application::IDelegate* getDelegate () const override;
 	WindowPtr createWindow (const WindowConfiguration& config, const WindowControllerPtr& controller) override;
 	const WindowList& getWindows () const override { return windows; }
+	AlertResult showAlertBox (const AlertBoxConfig& config) override;
 	void registerCommand (const Command& command, char16_t defaultCommandKey = 0) override;
 	void quit () override;
 
@@ -38,16 +39,14 @@ public:
 
 	// IApplicationPlatformAccess
 	void init () override;
-	void setOnCommandUpdate (const OnCommandUpdateFunc& func) override;
-	void setQuitFunction (const QuitFunc& func) override;
+	void setPlatformCallbacks (PlatformCallbacks&& callbacks) override;
 	const CommandList& getCommandList () override;
 private:
 	bool doCommandHandling (const Command& command, bool checkOnly);
 
 	WindowList windows;
 	Standalone::Application::DelegatePtr delegate;
-	OnCommandUpdateFunc onCommandUpdate;
-	QuitFunc quitFunc;
+	PlatformCallbacks platform;
 	CommandList commandList;
 };
 
@@ -91,28 +90,30 @@ WindowPtr Application::createWindow (const WindowConfiguration& config, const Wi
 	if (window)
 	{
 		windows.push_back (window);
-		window->addWindowListener (this);
+		window->registerWindowListener (this);
 	}
 	return window;
 }
 
 //------------------------------------------------------------------------
+AlertResult Application::showAlertBox (const AlertBoxConfig& config)
+{
+	if (platform.showAlert)
+		return platform.showAlert (config);
+	return AlertResult::error;
+}
+
+//------------------------------------------------------------------------
 void Application::quit ()
 {
-	if (quitFunc)
-		quitFunc ();
+	if (platform.quit)
+		platform.quit ();
 }
 
 //------------------------------------------------------------------------
-void Application::setOnCommandUpdate (const OnCommandUpdateFunc& func)
+void Application::setPlatformCallbacks (PlatformCallbacks&& callbacks)
 {
-	onCommandUpdate = func;
-}
-
-//------------------------------------------------------------------------
-void Application::setQuitFunction (const QuitFunc& func)
-{
-	quitFunc = func;
+	platform = std::move (callbacks);
 }
 
 //------------------------------------------------------------------------
@@ -145,8 +146,8 @@ void Application::registerCommand (const Command& command, char16_t defaultComma
 	}
 	if (!added)
 		commandList.push_back ({command.group.get (), {c}});
-	if (onCommandUpdate)
-		onCommandUpdate ();
+	if (platform.onCommandUpdate)
+		platform.onCommandUpdate ();
 }
 
 //------------------------------------------------------------------------

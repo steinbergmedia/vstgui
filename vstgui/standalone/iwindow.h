@@ -61,8 +61,8 @@ public:
 	virtual void close () = 0;
 
 	// window listeners are removed automatically when window is closed
-	virtual void addWindowListener (IWindowListener* listener) = 0;
-	virtual void removeWindowListener (IWindowListener* listener) = 0;
+	virtual void registerWindowListener (IWindowListener* listener) = 0;
+	virtual void unregisterWindowListener (IWindowListener* listener) = 0;
 };
 
 //------------------------------------------------------------------------

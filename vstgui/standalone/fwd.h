@@ -25,6 +25,9 @@ using WindowControllerPtr = std::shared_ptr<IWindowController>;
 using ValuePtr = std::shared_ptr<IValue>;
 
 struct Command;
+struct AlertBoxConfig;
+
+enum class AlertResult;
 
 //------------------------------------------------------------------------
 } // Standalone

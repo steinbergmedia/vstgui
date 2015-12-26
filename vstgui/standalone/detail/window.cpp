@@ -28,8 +28,8 @@ public:
 	void show () override { platformWindow->show (); }
 	void hide () override { platformWindow->hide (); }
 	void close () override { platformWindow->close (); }
-	void addWindowListener (IWindowListener* listener) override;
-	void removeWindowListener (IWindowListener* listener) override;
+	void registerWindowListener (IWindowListener* listener) override;
+	void unregisterWindowListener (IWindowListener* listener) override;
 
 	// Platform::IWindowDelegate
 	CPoint constraintSize (const CPoint& newSize) override;
@@ -148,13 +148,13 @@ bool Window::canClose ()
 }
 
 //------------------------------------------------------------------------
-void Window::addWindowListener (IWindowListener* listener)
+void Window::registerWindowListener (IWindowListener* listener)
 {
 	windowListeners.add (listener);
 }
 
 //------------------------------------------------------------------------
-void Window::removeWindowListener (IWindowListener* listener)
+void Window::unregisterWindowListener (IWindowListener* listener)
 {
 	windowListeners.remove (listener);
 }
