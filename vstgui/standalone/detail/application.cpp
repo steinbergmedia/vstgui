@@ -70,10 +70,10 @@ void Application::init (IPreference& preferences)
 	registerCommand (Commands::CloseWindow, 'w');
 	registerCommand (Commands::Undo, 'z');
 	registerCommand (Commands::Redo, 'Z');
-	registerCommand ({CommandGroup::Edit, CommandName::MenuSeparator});
 	registerCommand (Commands::Cut, 'x');
 	registerCommand (Commands::Copy, 'c');
-	registerCommand (Commands::Paste, 'p');
+	registerCommand (Commands::Paste, 'v');
+	registerCommand (Commands::SelectAll, 'a');
 }
 
 //------------------------------------------------------------------------

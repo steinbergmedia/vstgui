@@ -134,6 +134,8 @@ static const CommandWithKeyList* getCommandList (const char* group)
 		return @selector(copy:);
 	else if (command == Commands::Paste)
 		return @selector(paste:);
+	else if (command == Commands::SelectAll)
+		return @selector(selectAll:);
 	return @selector(processCommand:);
 }
 

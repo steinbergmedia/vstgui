@@ -63,6 +63,7 @@ static constexpr IdStringPtr Redo = "Redo";
 static constexpr IdStringPtr Cut = "Cut";
 static constexpr IdStringPtr Copy = "Copy";
 static constexpr IdStringPtr Paste = "Paste";
+static constexpr IdStringPtr SelectAll = "Select All";
 
 static constexpr IdStringPtr MenuSeparator = "~";
 	
@@ -87,6 +88,7 @@ static const Command Redo {CommandGroup::Edit, CommandName::Redo};
 static const Command Cut {CommandGroup::Edit, CommandName::Cut};
 static const Command Copy {CommandGroup::Edit, CommandName::Copy};
 static const Command Paste {CommandGroup::Edit, CommandName::Paste};
+static const Command SelectAll {CommandGroup::Edit, CommandName::SelectAll};
 
 //------------------------------------------------------------------------
 } // Commands
