@@ -55,14 +55,14 @@ public:
 	Type getValue () const override;
 	bool isEditing () const override;
 	
-	const IdStringPtr getID () const override;
+	const UTF8String& getID () const override;
 
 	const IValueStringConverter& getStringConverter () const override;
 	
 	void registerListener (IValueListener* listener) override;
 	void unregisterListener (IValueListener* listener) override;
 private:
-	std::string idString;
+	UTF8String idString;
 	Type value;
 	bool active {true};
 	uint32_t editCount {0};
@@ -170,9 +170,9 @@ bool Value::isEditing () const
 }
 
 //------------------------------------------------------------------------
-const IdStringPtr Value::getID () const
+const UTF8String& Value::getID () const
 {
-	return idString.data ();
+	return idString;
 }
 
 //------------------------------------------------------------------------
@@ -248,16 +248,16 @@ IValue::Type StepValue::stringAsValue (const UTF8String& string) const
 } // Anonymous
 
 //------------------------------------------------------------------------
-ValuePtr IValue::make (const IdStringPtr id, Type initialValue, const IValueStringConverter* stringConverter)
+ValuePtr IValue::make (const UTF8String& id, Type initialValue, const IValueStringConverter* stringConverter)
 {
-	vstgui_assert (id != nullptr);
+	vstgui_assert (id.empty () == false);
 	return std::make_shared<Value>(id, initialValue, stringConverter ? *stringConverter : DefaultValueStringConverter::instance ());
 }
 
 //------------------------------------------------------------------------
-ValuePtr IStepValue::make (const IdStringPtr id, StepType initialSteps, IValue::Type initialValue, const IValueStringConverter* stringConverter)
+ValuePtr IStepValue::make (const UTF8String& id, StepType initialSteps, IValue::Type initialValue, const IValueStringConverter* stringConverter)
 {
-	vstgui_assert (id != nullptr);
+	vstgui_assert (id.empty () == false);
 	return std::make_shared<StepValue>(id, initialSteps, initialValue, stringConverter);
 }
 

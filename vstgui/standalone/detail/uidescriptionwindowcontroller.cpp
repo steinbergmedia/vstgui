@@ -61,13 +61,8 @@ public:
 		}
 	}
 
-	IdStringPtr getID () const { return value->getID (); }
+	const UTF8String& getID () const { return value->getID (); }
 	
-	bool hasID (UTF8StringPtr id) const
-	{
-		return strcmp (getID (), id) == 0;
-	}
-
 	void onBeginEdit (const IValue& value) override {}
 	void onPerformEdit (const IValue& value, IValue::Type newValue) override
 	{
@@ -314,7 +309,7 @@ struct WindowController::Impl : public IController, public ICommandHandler
 	int32_t getTagForName (UTF8StringPtr name, int32_t registeredTag) const override
 	{
 		auto it = std::find_if(valueWrappers.begin(), valueWrappers.end(), [&] (const ValueWrapperPtr& v) {
-			return v->hasID (name);
+			return v->getID () == name;
 		});
 		if (it != valueWrappers.end())
 			return static_cast<int32_t> (std::distance (valueWrappers.begin (), it));
@@ -431,7 +426,7 @@ struct WindowController::EditImpl : WindowController::Impl
 		for (auto& v : valueWrappers)
 		{
 			auto it = std::find_if (tagNames.begin(), tagNames.end(), [&] (const std::string* name) {
-				return v->hasID (name->data ());
+				return v->getID () == *name;
 			});
 			auto create = it == tagNames.end ();
 			uiDesc->changeControlTagString (v->getID (), std::to_string (index), create);

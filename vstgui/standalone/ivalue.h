@@ -28,14 +28,14 @@ public:
 	virtual Type getValue () const = 0;
 	virtual bool isEditing () const = 0;
 
-	virtual const IdStringPtr getID () const = 0;
+	virtual const UTF8String& getID () const = 0;
 
 	virtual const IValueStringConverter& getStringConverter () const = 0;
 
 	virtual void registerListener (IValueListener* listener) = 0;
 	virtual void unregisterListener (IValueListener* listener) = 0;
 
-	static ValuePtr make (const IdStringPtr id, Type initialValue, const IValueStringConverter* stringConverter = nullptr);
+	static ValuePtr make (const UTF8String& id, Type initialValue, const IValueStringConverter* stringConverter = nullptr);
 };
 
 //------------------------------------------------------------------------
@@ -50,7 +50,7 @@ public:
 	virtual IValue::Type stepToValue (StepType step) const = 0;
 	virtual StepType valueToStep (IValue::Type) const = 0;
 
-	static ValuePtr make (const IdStringPtr id, StepType initialSteps, IValue::Type initialValue, const IValueStringConverter* stringConverter = nullptr);
+	static ValuePtr make (const UTF8String& id, StepType initialSteps, IValue::Type initialValue, const IValueStringConverter* stringConverter = nullptr);
 };
 
 //------------------------------------------------------------------------

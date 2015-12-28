@@ -42,7 +42,7 @@ void TestModel::onEndEdit (const IValue& value)
 				v->setActive (activeValue->getValue () == 1.);
 		}
 	}
-	else if (strcmp (value.getID (), "ShowAlert") == 0)
+	else if (value.getID () == "ShowAlert")
 	{
 		AlertBoxConfig config;
 		config.headline = "Test Alert";
