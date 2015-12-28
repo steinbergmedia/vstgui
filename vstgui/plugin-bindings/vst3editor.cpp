@@ -264,7 +264,11 @@ protected:
 		{
 			c->setMouseEnabled (mouseEnabled);
 			if (parameter)
+			{
 				c->setDefaultValue ((float)defaultValue);
+				c->setMin (minValue);
+				c->setMax (maxValue);
+			}
 			CTextLabel* label = dynamic_cast<CTextLabel*>(c);
 			if (label)
 			{
