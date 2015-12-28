@@ -19,6 +19,7 @@ using namespace VSTGUI::Standalone;
 class Delegate : public Application::IDelegate, public ICommandHandler
 {
 public:
+	// Application::IDelegate
 	void finishLaunching () override;
 	void onQuit () override;
 	bool canQuit () override;
@@ -27,6 +28,7 @@ public:
 	void showPreferenceDialog () override;
 	bool hasPreferenceDialog () override;
 
+	// ICommandHandler
 	bool canHandleCommand (const Command& command) override;
 	bool handleCommand (const Command& command) override;
 private:
@@ -38,6 +40,7 @@ void Delegate::finishLaunching ()
 {
 	model = std::make_shared<TestModel> ();
 	IApplication::instance ().registerCommand (Commands::NewDocument, 'n');
+	handleCommand (Commands::NewDocument);
 }
 
 //------------------------------------------------------------------------
