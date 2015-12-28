@@ -275,7 +275,11 @@ protected:
 		VSTGUI_RANGE_BASED_FOR_LOOP(ControlList, controls, CControl*, c)
 			c->setMouseEnabled (mouseEnabled);
 			if (parameter)
+			{
 				c->setDefaultValue ((float)defaultValue);
+				c->setMin (minValue);
+				c->setMax (maxValue);
+			}
 			CTextLabel* label = dynamic_cast<CTextLabel*>(c);
 			if (label)
 			{
