@@ -4,7 +4,8 @@
 	</fonts>
 	<colors>
 	</colors>
-	<template background-color="~ WhiteCColor" background-color-draw-style="filled and stroked" class="CViewContainer" mouse-enabled="true" name="view" opacity="1" origin="0, 0" size="300, 300" transparent="true">
+	<template background-color-draw-style="filled and stroked" class="CViewContainer" mouse-enabled="true" name="view" opacity="1" origin="0, 0" size="300, 300" transparent="true">
+		<view class="CGradientView" draw-antialiased="true" frame-color="~ BlackCColor" frame-width="0" gradient="New" gradient-angle="0" gradient-style="linear" mouse-enabled="true" opacity="1" origin="0, 0" radial-center="0.5, 0.5" radial-radius="1" round-rect-radius="15" size="300, 300" transparent="false"/>
 		<view background-offset="0, 0" bitmap-offset="0, 0" class="CSlider" control-tag="Test" default-value="0.5" draw-back="true" draw-back-color="~ WhiteCColor" draw-frame="true" draw-frame-color="~ GreyCColor" draw-value="true" draw-value-color="~ RedCColor" draw-value-from-center="false" draw-value-inverted="true" handle-offset="0, 0" max-value="1" min-value="0" mode="free click" mouse-enabled="true" opacity="1" orientation="vertical" origin="10, 50" reverse-orientation="true" size="20, 140" transparent="false" transparent-handle="true" wheel-inc-value="0.05" zoom-factor="10"/>
 		<view background-offset="0, 0" bitmap-offset="0, 0" class="CSlider" control-tag="Test" default-value="0.5" draw-back="true" draw-back-color="~ WhiteCColor" draw-frame="true" draw-frame-color="~ GreyCColor" draw-value="true" draw-value-color="~ RedCColor" draw-value-from-center="false" draw-value-inverted="false" handle-offset="0, 0" max-value="1" min-value="0" mode="free click" mouse-enabled="true" opacity="1" orientation="horizontal" origin="40, 80" reverse-orientation="false" size="140, 20" transparent="false" transparent-handle="true" wheel-inc-value="0.1" zoom-factor="10"/>
 		<view background-offset="0, 0" class="CSegmentButton" control-tag="StepTest" default-value="0.5" font="~ NormalFont" frame-color="~ BlackCColor" frame-width="1" gradient="Default TextButton Gradient" gradient-highlighted="Default TextButton Gradient Highlighted" icon-text-margin="0" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="40, 110" round-radius="3" segment-names="0,1,2,3,4" size="140, 20" style="horizontal" text-alignment="center" text-color="~ BlackCColor" text-color-highlighted="~ WhiteCColor" transparent="false" wheel-inc-value="0.1"/>
@@ -26,12 +27,13 @@
 	<custom>
 		<attributes Size="10, 10" name="UIGridController"/>
 		<attributes SelectedTemplate="view" name="UITemplateController"/>
-		<attributes EditViewScale="1" EditorSize="0, 0, 812, 870" SplitViewSize_0_0="0.8468786808009423072718391267699189484119" SplitViewSize_0_1="0.1295641931684334557939308751883800141513" SplitViewSize_1_0="0.4888103651354534506801030602218816056848" SplitViewSize_1_1="0.5053003533568904970252333441749215126038" SplitViewSize_2_0="0.6551724137931034253057305249967612326145" SplitViewSize_2_1="0.3386699507389162588921749375003855675459" TabSwitchValue="0" Version="1" name="UIEditController"/>
+		<attributes EditViewScale="1" EditorSize="0, 0, 1086, 951" SplitViewSize_0_0="0.7279569892473117809217342255578842014074" SplitViewSize_0_1="0.2505376344086021611623493754450464621186" SplitViewSize_1_0="0.5215053763440860024047651677392423152924" SplitViewSize_1_1="0.4731182795698924969940435403259471058846" SplitViewSize_2_0="0.7127071823204419454000912992341909557581" SplitViewSize_2_1="0.2826887661141804786169018370856065303087" TabSwitchValue="3" Version="1" name="UIEditController"/>
 		<attributes name="UIAttributesController"/>
-		<attributes SelectedRow="21" name="UIViewCreatorDataSource"/>
+		<attributes SelectedRow="4" name="UIViewCreatorDataSource"/>
 		<attributes name="UIDescFilePath" path="/Users/scheffle/git/vstgui-standalone/vstgui/tests/standalone/resources/test.uidesc"/>
 		<attributes SelectedRow="-1" name="UITagsDataSource"/>
-		<attributes SelectedRow="-1" name="UIGradientsDataSource"/>
+		<attributes SelectedRow="2" name="UIGradientsDataSource"/>
+		<attributes SelectedRow="-1" name="UIColorsDataSource"/>
 	</custom>
 	<variables/>
 	<bitmaps/>
@@ -43,6 +45,10 @@
 		<gradient name="Default TextButton Gradient Highlighted">
 			<color-stop rgba="#b4b4b4ff" start="0"/>
 			<color-stop rgba="#646464ff" start="1"/>
+		</gradient>
+		<gradient name="New">
+			<color-stop rgba="#a0a0a0d2" start="0"/>
+			<color-stop rgba="#b9b9b9d2" start="0.9807874177631579204472700439509935677052"/>
 		</gradient>
 	</gradients>
 </vstgui-ui-description>

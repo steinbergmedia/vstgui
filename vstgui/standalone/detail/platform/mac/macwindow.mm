@@ -26,6 +26,14 @@ class Window;
 @end
 
 //------------------------------------------------------------------------
+@interface VSTGUIPopup : NSPanel
+@end
+
+//------------------------------------------------------------------------
+@interface VSTGUIPopupDelegate : VSTGUIWindowDelegate
+@end
+
+//------------------------------------------------------------------------
 namespace VSTGUI {
 namespace Standalone {
 namespace Platform {
@@ -36,6 +44,7 @@ class Window : public IWindow, public IMacWindow
 {
 public:
 	bool init (const WindowConfiguration& config, IWindowDelegate& delegate);
+
 	CPoint getSize () const override;
 	CPoint getPosition () const override;
 	
@@ -74,15 +83,39 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 
 	NSRect contentRect = NSMakeRect (0, 0,
 									 config.size.x, config.size.y);
-	nsWindow = [[NSWindow alloc] initWithContentRect:contentRect
-										 styleMask:styleMask
-										   backing:NSBackingStoreBuffered
-											 defer:YES];
+	if (config.flags.isPopup())
+	{
+		styleMask |= NSUtilityWindowMask;
 
-	nsWindowDelegate = [VSTGUIWindowDelegate new];
-	nsWindowDelegate.macWindow = this;
+		NSPanel* panel = [[VSTGUIPopup alloc] initWithContentRect:contentRect
+											  styleMask:styleMask
+												backing:NSBackingStoreBuffered
+												  defer:YES];
+
+		panel.becomesKeyOnlyIfNeeded = NO;
+		panel.level = NSFloatingWindowLevel;
+		
+		nsWindow = panel;
+		nsWindowDelegate = [VSTGUIPopupDelegate new];
+		nsWindowDelegate.macWindow = this;
+	}
+	else
+	{
+		nsWindow = [[NSWindow alloc] initWithContentRect:contentRect
+											   styleMask:styleMask
+												 backing:NSBackingStoreBuffered
+												   defer:YES];
+
+		nsWindowDelegate = [VSTGUIWindowDelegate new];
+		nsWindowDelegate.macWindow = this;
+	}
 	[nsWindow setDelegate:nsWindowDelegate];
 	[nsWindow setAnimationBehavior:NSWindowAnimationBehaviorNone];
+
+	if (config.flags.isTransparent ())
+	{
+		nsWindow.backgroundColor = [NSColor clearColor];
+	}
 	
 	auto titleMacStr = dynamic_cast<MacString*> (config.title.getPlatformString ());
 	if (titleMacStr && titleMacStr->getCFString ())
@@ -277,6 +310,28 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 - (BOOL)windowShouldClose:(id)sender
 {
 	return self.macWindow->getDelegate ().canClose ();
+}
+
+@end
+
+//------------------------------------------------------------------------
+@implementation VSTGUIPopup
+
+//------------------------------------------------------------------------
+- (BOOL)canBecomeKeyWindow
+{
+	return YES;
+}
+
+@end
+
+//------------------------------------------------------------------------
+@implementation VSTGUIPopupDelegate
+
+//------------------------------------------------------------------------
+- (void)windowDidResignKey:(NSNotification *)notification
+{
+	[self.macWindow->getNSWindow () close];
 }
 
 @end

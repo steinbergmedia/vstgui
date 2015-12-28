@@ -35,18 +35,20 @@ private:
 	std::shared_ptr<TestModel> model;
 };
 
+static Command NewPopup {CommandGroup::File, "New Popup"};
 //------------------------------------------------------------------------
 void Delegate::finishLaunching ()
 {
 	model = std::make_shared<TestModel> ();
 	IApplication::instance ().registerCommand (Commands::NewDocument, 'n');
+	IApplication::instance ().registerCommand (NewPopup, 'N');
 	handleCommand (Commands::NewDocument);
 }
 
 //------------------------------------------------------------------------
 bool Delegate::canHandleCommand (const Command& command)
 {
-	return command == Commands::NewDocument;
+	return command == Commands::NewDocument || command == NewPopup;
 }
 
 //------------------------------------------------------------------------
@@ -70,6 +72,20 @@ bool Delegate::handleCommand (const Command& command)
 			alert.callback = [] (AlertResult result) {};
 			alert.headline = "Test";
 			IApplication::instance ().showAlertBoxForWindow (alert);
+		}
+		return true;
+	}
+	else if (command == NewPopup)
+	{
+		UIDescription::Config config;
+		config.windowConfig.flags.popup ().transparent ();
+		config.windowConfig.size = {100, 100};
+		config.fileName = "test.uidesc";
+		config.viewName = "view";
+		config.modelBinding = model;
+		if (auto window = UIDescription::makeWindow (config))
+		{
+			window->show ();
 		}
 		return true;
 	}

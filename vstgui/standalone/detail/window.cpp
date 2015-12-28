@@ -61,9 +61,8 @@ class Window : public IWindow, public IPlatformWindowAccess, public Platform::IW
 public:
 	bool init (const WindowConfiguration& config, const WindowControllerPtr& controller);
 
-	const WindowControllerPtr& getController () const override { return controller; }
-
 	// IWindow
+	const WindowControllerPtr& getController () const override { return controller; }
 	CPoint getSize () const override { return platformWindow->getSize (); }
 	CPoint getPosition () const override { return platformWindow->getPosition (); }
 	void setSize (const CPoint& newSize) override { platformWindow->setSize (newSize); }

@@ -12,22 +12,29 @@ namespace Standalone {
 //------------------------------------------------------------------------
 struct WindowFlags
 {
+private:
+	uint32_t flags {0};
+
 	enum Style {
 		kBorder = 1 << 0,
 		kClose = 1 << 1,
 		kSize = 1 << 2,
+
+		kPopup = 1 << 8,
+		kTransparent = 1 << 9,
 	};
-	
+public:
 	WindowFlags& border () { flags |= Style::kBorder; return *this; }
 	WindowFlags& close () { flags |= Style::kClose; return *this; }
 	WindowFlags& size () { flags |= Style::kSize; return *this; }
+	WindowFlags& popup () { flags |= Style::kPopup; return *this; }
+	WindowFlags& transparent () { flags |= Style::kTransparent; return *this; }
 
 	bool hasBorder () const { return flags & Style::kBorder; }
 	bool canClose () const { return flags & Style::kClose; }
 	bool canSize () const { return flags & Style::kSize; }
-
-private:
-	uint32_t flags {0};
+	bool isPopup () const { return flags & Style::kPopup; }
+	bool isTransparent () const { return flags & Style::kTransparent; }
 };
 
 //------------------------------------------------------------------------
