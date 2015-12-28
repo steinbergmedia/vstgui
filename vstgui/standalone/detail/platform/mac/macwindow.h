@@ -13,6 +13,7 @@ class IMacWindow : public Interface
 {
 public:
 	virtual NSWindow* getNSWindow () const = 0;
+	virtual bool isPopup () const = 0;
 };
 
 //------------------------------------------------------------------------

@@ -34,6 +34,8 @@ public:
 	void onShow (const IWindow& window) override {};
 	void onHide (const IWindow& window) override {};
 	void onClosed (const IWindow& window) override;
+	void onActivated (const IWindow& window) override;
+	void onDeactivated (const IWindow& window) override {};
 
 	// ICommandHandler
 	bool canHandleCommand (const Command& command) override;
@@ -201,6 +203,23 @@ void Application::onClosed (const IWindow& window)
 	});
 	if (it != windows.end ())
 		windows.erase (it);
+}
+
+//------------------------------------------------------------------------
+void Application::onActivated (const IWindow& window)
+{
+	// move the window in the window list to the first position
+	auto it = std::find_if (windows.begin (), windows.end (), [&] (const WindowPtr& w) {
+		if (&window == w.get ())
+			return true;
+		return false;
+	});
+	if (it != windows.begin ())
+	{
+		auto window = *it;
+		windows.erase (it);
+		windows.insert (windows.begin (), window);
+	}
 }
 
 //------------------------------------------------------------------------

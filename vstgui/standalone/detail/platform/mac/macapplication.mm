@@ -161,7 +161,7 @@ static const CommandWithKeyList* getCommandList (const char* group)
 //------------------------------------------------------------------------
 - (NSMenu*)createAppMenu
 {
-	NSDictionary<NSString *, id>* dict = [[NSBundle mainBundle] infoDictionary];
+	NSDictionary* dict = [[NSBundle mainBundle] infoDictionary];
 	NSString* appName = dict[(@"CFBundleName")];
 	NSMenu* menu = [[NSMenu alloc] initWithTitle:appName];
 	auto commandList = getCommandList (CommandGroup::Application);
@@ -218,19 +218,19 @@ static const CommandWithKeyList* getCommandList (const char* group)
 //------------------------------------------------------------------------
 - (void)setupMainMenu
 {
-	NSMenu* mainMenu = NSApp.mainMenu;
+	NSMenu* mainMenu = [NSApp mainMenu];
 	NSMenuItem* appMenuItem = nil;
 	if (mainMenu == nil)
 	{
 		mainMenu = [NSMenu new];
-		NSApp.mainMenu = mainMenu;
+		[NSApp setMainMenu:mainMenu];
 
 		appMenuItem = [[NSMenuItem alloc] initWithTitle:@"App" action:nil keyEquivalent:@""];
 		[mainMenu addItem:appMenuItem];
 
 		NSMenuItem* item = [[NSMenuItem alloc] initWithTitle:@"Windows" action:NULL keyEquivalent:@""];
-		NSApp.windowsMenu = [self createWindowsMenu];
-		item.submenu = NSApp.windowsMenu;
+		[NSApp setWindowsMenu:[self createWindowsMenu]];
+		item.submenu = [NSApp windowsMenu];
 		[mainMenu addItem:item];
 	}
 	else
@@ -307,18 +307,29 @@ static const CommandWithKeyList* getCommandList (const char* group)
 	if (!macWindow)
 		return;
 
+	if (macWindow->isPopup ())
+	{
+		auto result = [self showAlert:config];
+		if (config.callback)
+			config.callback (result);
+		return;
+	}
+
 	auto callback = config.callback;
 
 	NSAlert* alert = [self createAlert:config];
 	[alert beginSheetModalForWindow:macWindow->getNSWindow () completionHandler:^(NSModalResponse returnCode) {
-		AlertResult result = AlertResult::error;
-		if (returnCode == NSAlertFirstButtonReturn)
-			result = AlertResult::defaultButton;
-		else if (returnCode == NSAlertSecondButtonReturn)
-			result = AlertResult::secondButton;
-		else if (returnCode == NSAlertThirdButtonReturn)
-			result = AlertResult::thirdButton;
-		callback (result);
+		if (callback)
+		{
+			AlertResult result = AlertResult::error;
+			if (returnCode == NSAlertFirstButtonReturn)
+				result = AlertResult::defaultButton;
+			else if (returnCode == NSAlertSecondButtonReturn)
+				result = AlertResult::secondButton;
+			else if (returnCode == NSAlertThirdButtonReturn)
+				result = AlertResult::thirdButton;
+			callback (result);
+		}
 	}];
 }
 
@@ -354,7 +365,7 @@ void* gBundleRef = nullptr;
 }
 
 //------------------------------------------------------------------------
-int main (int argc, const char* _Nonnull *argv)
+int main (int argc, const char** argv)
 {
 	VSTGUI::gBundleRef = CFBundleGetMainBundle ();
 	VSTGUIApplicationDelegate* delegate = [VSTGUIApplicationDelegate new];

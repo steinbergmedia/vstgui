@@ -27,6 +27,9 @@ class Window;
 
 //------------------------------------------------------------------------
 @interface VSTGUIPopup : NSPanel
+@property BOOL inSendEvent;
+@property NSInteger doResignKey;
+@property NSInteger doResignKeyStackDepth;
 @end
 
 //------------------------------------------------------------------------
@@ -62,6 +65,7 @@ public:
 	void windowWillClose ();
 	IWindowDelegate& getDelegate () const { return *delegate; }
 	NSWindow* getNSWindow () const override { return nsWindow; }
+	bool isPopup () const override;
 private:
 	NSWindow* nsWindow {nullptr};
 	VSTGUIWindowDelegate* nsWindowDelegate {nullptr};
@@ -115,6 +119,7 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 	if (config.flags.isTransparent ())
 	{
 		nsWindow.backgroundColor = [NSColor clearColor];
+		nsWindow.opaque = NO;
 	}
 	
 	auto titleMacStr = dynamic_cast<MacString*> (config.title.getPlatformString ());
@@ -126,6 +131,12 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 	[nsWindow center];
 
 	return true;
+}
+
+//------------------------------------------------------------------------
+bool Window::isPopup () const
+{
+	return [nsWindow isKindOfClass:[NSPanel class]];
 }
 
 //------------------------------------------------------------------------
@@ -248,7 +259,7 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 		res = self.macWindow->getDelegate ().handleCommand ([command command]);
 	if (!res)
 	{
-		id delegate = NSApp.delegate;
+		id delegate = [NSApp delegate];
 		if ([delegate respondsToSelector:@selector(processCommand:)])
 			return [delegate processCommand:sender];
 	}
@@ -262,7 +273,7 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 		res = self.macWindow->getDelegate ().canHandleCommand ([command command]);
 	if (!res)
 	{
-		id delegate = NSApp.delegate;
+		id delegate = [NSApp delegate];
 		if ([delegate respondsToSelector:@selector(validateMenuItem:)])
 			return [delegate validateMenuItem:menuItem];
 	}
@@ -312,7 +323,29 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 	return self.macWindow->getDelegate ().canClose ();
 }
 
+//------------------------------------------------------------------------
+- (void)windowDidBecomeKey:(NSNotification *)notification
+{
+	self.macWindow->getDelegate ().onActivated ();
+}
+
+//------------------------------------------------------------------------
+- (void)windowDidResignKey:(NSNotification *)notification
+{
+	self.macWindow->getDelegate ().onDeactivated ();
+}
+
 @end
+
+#ifndef MAC_OS_X_VERSION_10_11
+#define MAC_OS_X_VERSION_10_11      101100
+#endif
+
+#if MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_11
+@interface NSWindow (BackwardsCompatibility)
+-(void)performWindowDragWithEvent:(NSEvent*)event;
+@end
+#endif
 
 //------------------------------------------------------------------------
 @implementation VSTGUIPopup
@@ -321,6 +354,41 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 - (BOOL)canBecomeKeyWindow
 {
 	return YES;
+}
+
+//------------------------------------------------------------------------
+- (void)mouseDown:(NSEvent *)theEvent
+{
+	if ([super respondsToSelector:@selector(performWindowDragWithEvent:)])
+		[super performWindowDragWithEvent:theEvent];
+}
+
+//------------------------------------------------------------------------
+- (void)sendEvent:(NSEvent *)theEvent
+{
+	self.doResignKeyStackDepth++;
+	self.inSendEvent = YES;
+	[super sendEvent:theEvent];
+	self.inSendEvent = NO;
+	if (self.doResignKey == self.doResignKeyStackDepth)
+	{
+		self.doResignKey = NO;
+		[super resignKeyWindow];
+	}
+	self.doResignKeyStackDepth--;
+}
+
+//------------------------------------------------------------------------
+- (void)resignKeyWindow
+{
+	if (self.inSendEvent)
+	{
+		self.doResignKey = self.doResignKeyStackDepth;
+	}
+	else
+	{
+		[super resignKeyWindow];
+	}
 }
 
 @end

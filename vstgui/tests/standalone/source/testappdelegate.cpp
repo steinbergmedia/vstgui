@@ -78,7 +78,7 @@ bool Delegate::handleCommand (const Command& command)
 	else if (command == NewPopup)
 	{
 		UIDescription::Config config;
-		config.windowConfig.flags.popup ().transparent ();
+		config.windowConfig.flags.popup ().transparent ().size();
 		config.windowConfig.size = {100, 100};
 		config.fileName = "test.uidesc";
 		config.viewName = "view";

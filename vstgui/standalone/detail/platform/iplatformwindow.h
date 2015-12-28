@@ -20,7 +20,8 @@ public:
 	virtual void onHide () = 0;
 	virtual void onClosed () = 0;
 	virtual bool canClose () = 0;
-	
+	virtual void onActivated () = 0;
+	virtual void onDeactivated () = 0;
 };
 
 //------------------------------------------------------------------------

@@ -86,6 +86,8 @@ public:
 	void onHide () override;
 	void onClosed () override;
 	bool canClose () override;
+	void onActivated () override;
+	void onDeactivated () override;
 	// ICommandHandler
 	bool canHandleCommand (const Command& command) override;
 	bool handleCommand (const Command& command) override;
@@ -208,6 +210,24 @@ void Window::onHide ()
 bool Window::canClose ()
 {
 	return controller ? controller->canClose (*this) : true;
+}
+
+//------------------------------------------------------------------------
+void Window::onActivated ()
+{
+	windowListeners.forEach ([&] (IWindowListener* listener) {
+		listener->onActivated (*this);
+	});
+	controller->onActivated (*this);
+}
+
+//------------------------------------------------------------------------
+void Window::onDeactivated ()
+{
+	windowListeners.forEach ([&] (IWindowListener* listener) {
+		listener->onDeactivated (*this);
+	});
+	controller->onDeactivated (*this);
 }
 
 //------------------------------------------------------------------------

@@ -44,12 +44,20 @@ void TestModel::onEndEdit (const IValue& value)
 	}
 	else if (value.getID () == "ShowAlert")
 	{
-		AlertBoxConfig config;
+		AlertBoxForWindowConfig config;
 		config.headline = "Test Alert";
 		config.description = "This is an example alert box.";
 		config.secondButton = "Cancel";
-		config.thirdButton = "Really";
-		IApplication::instance ().showAlertBox (config);
+		config.thirdButton = "Do Quit";
+		config.window = IApplication::instance ().getWindows ().front ();
+		config.callback = [] (AlertResult res) {
+			if (res == AlertResult::thirdButton)
+				IApplication::instance ().quit ();
+		};
+		if (config.window)
+			IApplication::instance ().showAlertBoxForWindow (config);
+		else
+			IApplication::instance ().showAlertBox (config);
 	}
 }
 
