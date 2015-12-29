@@ -104,12 +104,12 @@ public:
 	~D2DFactory ()
 	{
 		CFontDesc::cleanup ();
-		if (writeFactory)
-			writeFactory->Release ();
-		if (dwriteDll)
-			FreeLibrary (dwriteDll);
-		if (d2d1Dll)
-			FreeLibrary (d2d1Dll);
+//		if (writeFactory)
+//			writeFactory->Release ();
+//		if (dwriteDll)
+//			FreeLibrary (dwriteDll);
+//		if (d2d1Dll)
+//			FreeLibrary (d2d1Dll);
 	}
 	ID2D1Factory* getFactory () const
 	{
