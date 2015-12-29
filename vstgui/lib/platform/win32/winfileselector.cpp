@@ -198,7 +198,7 @@ VistaFileSelector::~VistaFileSelector ()
 bool VistaFileSelector::runInternal (CBaseObject* delegate)
 {
 	bool result = runModalInternal ();
-	if (result && delegate)
+	if (delegate)
 	{
 		delegate->notify (this, kSelectEndMessage);
 	}
