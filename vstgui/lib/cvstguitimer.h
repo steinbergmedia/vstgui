@@ -83,6 +83,7 @@ namespace Call
 	inline void later (FunctionCallback callback, uint32_t delayInMilliseconds = 10)
 	{
 		new CVSTGUITimer ([callback] (CVSTGUITimer* timer) {
+			timer->stop ();
 			callback ();
 			timer->forget ();
 		}, delayInMilliseconds, true);
