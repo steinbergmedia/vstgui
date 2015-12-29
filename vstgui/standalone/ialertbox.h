@@ -2,6 +2,7 @@
 
 #include "fwd.h"
 #include "interface.h"
+#include <functional>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {

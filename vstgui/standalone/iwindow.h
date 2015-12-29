@@ -30,11 +30,11 @@ public:
 	WindowFlags& popup () { flags |= Style::kPopup; return *this; }
 	WindowFlags& transparent () { flags |= Style::kTransparent; return *this; }
 
-	bool hasBorder () const { return flags & Style::kBorder; }
-	bool canClose () const { return flags & Style::kClose; }
-	bool canSize () const { return flags & Style::kSize; }
-	bool isPopup () const { return flags & Style::kPopup; }
-	bool isTransparent () const { return flags & Style::kTransparent; }
+	bool hasBorder () const { return (flags & Style::kBorder) != 0; }
+	bool canClose () const { return (flags & Style::kClose) != 0; }
+	bool canSize () const { return (flags & Style::kSize) != 0; }
+	bool isPopup () const { return (flags & Style::kPopup) != 0; }
+	bool isTransparent () const { return (flags & Style::kTransparent) != 0; }
 };
 
 //------------------------------------------------------------------------

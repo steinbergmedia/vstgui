@@ -67,11 +67,6 @@ bool Delegate::handleCommand (const Command& command)
 		if (auto window = UIDescription::makeWindow (config))
 		{
 			window->show ();
-			AlertBoxForWindowConfig alert;
-			alert.window = window;
-			alert.callback = [] (AlertResult result) {};
-			alert.headline = "Test";
-			IApplication::instance ().showAlertBoxForWindow (alert);
 		}
 		return true;
 	}

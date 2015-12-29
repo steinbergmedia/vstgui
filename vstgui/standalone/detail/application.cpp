@@ -128,6 +128,8 @@ void Application::showAlertBoxForWindow (const AlertBoxForWindowConfig& config)
 //------------------------------------------------------------------------
 void Application::quit ()
 {
+	while (!windows.empty ())
+		windows.front ()->close ();
 	if (platform.quit)
 		platform.quit ();
 }
@@ -190,6 +192,18 @@ bool Application::doCommandHandling (const Command& command, bool checkOnly)
 	bool result = false;
 	if (auto commandHandler = delegate->dynamicCast<ICommandHandler> ())
 		result = checkOnly ? commandHandler->canHandleCommand (command) : commandHandler->handleCommand (command);
+	if (!result)
+	{
+		if (command == Commands::Quit)
+		{
+			if (!checkOnly)
+			{
+				quit ();
+				return true;
+			}
+			return delegate->canQuit ();
+		}
+	}
 	return result;
 }
 

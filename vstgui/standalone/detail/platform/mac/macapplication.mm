@@ -245,7 +245,7 @@ static const CommandWithKeyList* getCommandList (const char* group)
 	{
 		if (e.first != CommandGroup::Application)
 		{
-			NSString* title = [NSString stringWithUTF8String:e.first.data ()];
+			NSString* title = stringFromUTF8String (e.first);
 			NSMenuItem* item = [mainMenu itemWithTitle:title];
 			if (!item)
 			{

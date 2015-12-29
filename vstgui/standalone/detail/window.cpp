@@ -245,6 +245,8 @@ void Window::unregisterWindowListener (IWindowListener* listener)
 //------------------------------------------------------------------------
 bool Window::canHandleCommand (const Command& command)
 {
+	if (command == Commands::CloseWindow)
+		return controller->canClose (*this);
 	if (auto commandHandler = controller->dynamicCast<ICommandHandler> ())
 		return commandHandler->canHandleCommand (command);
 	return false;
@@ -253,6 +255,11 @@ bool Window::canHandleCommand (const Command& command)
 //------------------------------------------------------------------------
 bool Window::handleCommand (const Command& command)
 {
+	if (command == Commands::CloseWindow)
+	{
+		close ();
+		return true;
+	}
 	if (auto commandHandler = controller->dynamicCast<ICommandHandler> ())
 		return commandHandler->handleCommand (command);
 	return false;

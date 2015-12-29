@@ -570,6 +570,7 @@
 		F497F1A413080B4800F0A613 /* nsviewframe.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = nsviewframe.mm; sourceTree = "<group>"; };
 		F497F1A513080B4800F0A613 /* nsviewoptionmenu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = nsviewoptionmenu.h; sourceTree = "<group>"; };
 		F497F1A613080B4800F0A613 /* nsviewoptionmenu.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = nsviewoptionmenu.mm; sourceTree = "<group>"; };
+		F49D7C7A1C32C2A600277020 /* win32 */ = {isa = PBXFileReference; lastKnownFileType = folder; path = win32; sourceTree = "<group>"; };
 		F4A63DE514023EAD00023102 /* uifontscontroller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uifontscontroller.h; sourceTree = "<group>"; };
 		F4A63DE714023EB300023102 /* uifontscontroller.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uifontscontroller.cpp; sourceTree = "<group>"; };
 		F4A734DC19C6D309006D7CD5 /* iplatformfont.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iplatformfont.h; sourceTree = "<group>"; };
@@ -1180,6 +1181,7 @@
 		F4B5B5C71C26F47C00450324 /* platform */ = {
 			isa = PBXGroup;
 			children = (
+				F49D7C7A1C32C2A600277020 /* win32 */,
 				F48069311C2734AE00356894 /* mac */,
 				F4B5B5C81C26F49D00450324 /* iplatformwindow.h */,
 			);

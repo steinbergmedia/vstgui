@@ -36,7 +36,7 @@ class IApplicationPlatformAccess : public Interface
 public:
 	
 	using CommandWithKeyList = std::vector<CommandWithKey>;
-	using CommandListPair = std::pair<std::string, CommandWithKeyList>;
+	using CommandListPair = std::pair<UTF8String, CommandWithKeyList>;
 	using CommandList = std::vector<CommandListPair>;
 
 	virtual void init (IPreference& preferences) = 0;

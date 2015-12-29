@@ -87,7 +87,7 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 
 	NSRect contentRect = NSMakeRect (0, 0,
 									 config.size.x, config.size.y);
-	if (config.flags.isPopup())
+	if (config.flags.isPopup ())
 	{
 		styleMask |= NSUtilityWindowMask;
 
@@ -389,6 +389,12 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 	{
 		[super resignKeyWindow];
 	}
+}
+
+//------------------------------------------------------------------------
+- (void)cancelOperation:(nullable id)sender
+{
+	[self resignKeyWindow];
 }
 
 @end
