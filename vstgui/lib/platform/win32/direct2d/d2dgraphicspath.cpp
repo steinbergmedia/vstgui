@@ -301,6 +301,7 @@ D2DGraphicsPath::D2DGraphicsPath ()
 
 //-----------------------------------------------------------------------------
 D2DGraphicsPath::D2DGraphicsPath (const D2DFont* font, UTF8StringPtr text)
+: path (0)
 {
 	ID2D1PathGeometry* localPath = 0;
 	getD2DFactory ()->CreatePathGeometry (&localPath);
