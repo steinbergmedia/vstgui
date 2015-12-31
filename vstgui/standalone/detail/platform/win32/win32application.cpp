@@ -57,7 +57,7 @@ void Application::init ()
 	callbacks.showAlertForWindow = [this] (const AlertBoxForWindowConfig& config) { showAlertForWindow (config); };
 	
 	app->setPlatformCallbacks (std::move (callbacks));
-	IApplication::instance ().getDelegate ()->finishLaunching ();
+	IApplication::instance ().getDelegate ().finishLaunching ();
 }
 
 //------------------------------------------------------------------------

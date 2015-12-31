@@ -20,7 +20,7 @@ public:
 	// IApplication
 	void setDelegate (const Standalone::Application::DelegatePtr& delegate);
 	IPreference& getPreferences () const override;
-	Standalone::Application::IDelegate* getDelegate () const override;
+	Standalone::Application::IDelegate& getDelegate () const override;
 	WindowPtr createWindow (const WindowConfiguration& config, const WindowControllerPtr& controller) override;
 	const WindowList& getWindows () const override { return windows; }
 	AlertResult showAlertBox (const AlertBoxConfig& config) override;
@@ -85,9 +85,10 @@ void Application::setDelegate (const Standalone::Application::DelegatePtr& inDel
 }
 
 //------------------------------------------------------------------------
-Standalone::Application::IDelegate* Application::getDelegate () const
+Standalone::Application::IDelegate& Application::getDelegate () const
 {
-	return delegate.get ();
+	vstgui_assert (delegate, "Delegate cannot be nullptr");
+	return *(delegate.get ());
 }
 
 //------------------------------------------------------------------------

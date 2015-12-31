@@ -18,7 +18,7 @@ public:
 
 	static IApplication& instance ();
 
-	virtual Application::IDelegate* getDelegate () const = 0;
+	virtual Application::IDelegate& getDelegate () const = 0;
 	virtual IPreference& getPreferences () const = 0;
 
 	virtual WindowPtr createWindow (const WindowConfiguration& config, const WindowControllerPtr& controller) = 0;

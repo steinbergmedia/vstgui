@@ -58,7 +58,7 @@ static const CommandWithKeyList* getCommandList (const char* group)
 //------------------------------------------------------------------------
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
 {
-	if (IApplication::instance ().getDelegate ()->canQuit ())
+	if (IApplication::instance ().getDelegate ().canQuit ())
 		return NSTerminateNow;
 	return NSTerminateCancel;
 }
@@ -66,8 +66,8 @@ static const CommandWithKeyList* getCommandList (const char* group)
 //------------------------------------------------------------------------
 - (IBAction)showAboutDialog:(id)sender
 {
-	if (IApplication::instance ().getDelegate ()->hasAboutDialog ())
-		IApplication::instance ().getDelegate ()->showAboutDialog ();
+	if (IApplication::instance ().getDelegate ().hasAboutDialog ())
+		IApplication::instance ().getDelegate ().showAboutDialog ();
 	else
 		[NSApp orderFrontStandardAboutPanel:sender];
 }
@@ -75,7 +75,7 @@ static const CommandWithKeyList* getCommandList (const char* group)
 //------------------------------------------------------------------------
 - (IBAction)showPreferenceDialog:(id)sender
 {
-	IApplication::instance ().getDelegate ()->showPreferenceDialog ();
+	IApplication::instance ().getDelegate ().showPreferenceDialog ();
 }
 
 //------------------------------------------------------------------------
@@ -84,7 +84,7 @@ static const CommandWithKeyList* getCommandList (const char* group)
 	VSTGUICommand* command = [sender representedObject];
 	if (command)
 	{
-		if (auto commandHandler = IApplication::instance().getDelegate()->dynamicCast<ICommandHandler> ())
+		if (auto commandHandler = IApplication::instance().getDelegate().dynamicCast<ICommandHandler> ())
 			commandHandler->handleCommand ([command command]);
 	}
 }
@@ -94,7 +94,7 @@ static const CommandWithKeyList* getCommandList (const char* group)
 {
 	if (menuItem.action == @selector(showPreferenceDialog:))
 	{
-		if (!IApplication::instance ().getDelegate ()->hasPreferenceDialog ())
+		if (!IApplication::instance ().getDelegate ().hasPreferenceDialog ())
 		{
 			return NO;
 		}
@@ -105,7 +105,7 @@ static const CommandWithKeyList* getCommandList (const char* group)
 	}
 	else if (VSTGUICommand* command = menuItem.representedObject)
 	{
-		if (auto commandHandler = IApplication::instance().getDelegate()->dynamicCast<ICommandHandler> ())
+		if (auto commandHandler = IApplication::instance().getDelegate().dynamicCast<ICommandHandler> ())
 			return commandHandler->canHandleCommand ([command command]);
 	}
 	return NO;
@@ -347,7 +347,7 @@ static const CommandWithKeyList* getCommandList (const char* group)
 	};
 	app->setPlatformCallbacks (std::move (callbacks));
 
-	IApplication::instance ().getDelegate ()->finishLaunching ();
+	IApplication::instance ().getDelegate ().finishLaunching ();
 	[self setupMainMenu];
 }
 
