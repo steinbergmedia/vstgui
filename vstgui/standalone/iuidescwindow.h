@@ -4,29 +4,27 @@
 #include "iwindow.h"
 #include "icommand.h"
 #include "ivalue.h"
-
+#include "../uidescription/uidescriptionfwd.h"
 #include <vector>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
 namespace Standalone {
-namespace UIDescription {
+namespace UIDesc {
 
 //------------------------------------------------------------------------
 class IModelBinding : public Interface
 {
 public:
-	using CommandList = std::vector<Command>;
 	using ValueList = std::vector<ValuePtr>;
 	
-	virtual const CommandList& getCommands () const = 0;
 	virtual const ValueList& getValues () const = 0;
 };
 
 //------------------------------------------------------------------------
 struct Config
 {
-	UTF8String fileName;
+	UTF8String uiDescFileName;
 	UTF8String viewName;
 	ModelBindingPtr modelBinding;
 	WindowConfiguration windowConfig;
@@ -36,6 +34,17 @@ struct Config
 WindowPtr makeWindow (const Config& config);
 
 //------------------------------------------------------------------------
-} // UIDescription
+class ValueList : public IModelBinding
+{
+public:
+	const IModelBinding::ValueList& getValues () const { return list; }
+
+	void addValue (const ValuePtr& value) { list.push_back (value); }
+private:
+	IModelBinding::ValueList list;
+};
+
+//------------------------------------------------------------------------
+} // UIDesc
 } // Standalone
 } // VSTGUI

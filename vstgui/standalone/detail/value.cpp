@@ -7,6 +7,18 @@ namespace Standalone {
 namespace /*Anonymous*/ {
 
 //------------------------------------------------------------------------
+IValue::Type convertStepToValue (IStepValue::StepType step, IStepValue::StepType steps)
+{
+	return static_cast<IValue::Type> (step) / static_cast<IValue::Type> (steps);
+}
+
+//------------------------------------------------------------------------
+IStepValue::StepType convertValueToStep (IValue::Type value, IStepValue::StepType steps)
+{
+	return std::min (steps, static_cast<IStepValue::StepType> (value * static_cast<IValue::Type> (steps + 1)));
+}
+
+//------------------------------------------------------------------------
 class DefaultValueStringConverter : public IValueStringConverter
 {
 public:
@@ -37,6 +49,34 @@ public:
 			return IValue::InvalidValue;
 		return value;
 	}
+};
+
+//------------------------------------------------------------------------
+class StringListValueStringConverter : public IValueStringConverter
+{
+public:
+	StringListValueStringConverter (const std::initializer_list<UTF8String>& list) : strings (list)
+	{
+	}
+	
+	UTF8String valueAsString (IValue::Type value) const override
+	{
+		auto index =
+		convertValueToStep (value, static_cast<IStepValue::StepType> (strings.size () - 1));
+		return strings[index];
+	}
+	
+	IValue::Type stringAsValue (const UTF8String& string) const override
+	{
+		auto it = std::find (strings.begin (), strings.end (), string);
+		if (it != strings.end ())
+			return convertStepToValue (static_cast<IStepValue::StepType> (std::distance (strings.begin (), it)),
+									   static_cast<IStepValue::StepType> (strings.size () - 1));
+			return IValue::InvalidValue;
+	}
+	
+private:
+	std::vector<UTF8String> strings;
 };
 
 //------------------------------------------------------------------------
@@ -75,6 +115,7 @@ class StepValue : public Value, public IStepValue, public IValueStringConverter
 {
 public:
 	StepValue (const IdStringPtr id, StepType initialSteps, Type initialValue, const IValueStringConverter* stringConverter);
+	StepValue (const IdStringPtr id, StepType initialSteps, Type initialValue, const ValueStringConverterPtr& stringConverter);
 
 	bool performEdit (Type newValue) override;
 
@@ -85,6 +126,7 @@ public:
 	UTF8String valueAsString (IValue::Type value) const override;
 	IValue::Type stringAsValue (const UTF8String& string) const override;
 private:
+	ValueStringConverterPtr stringConverterPtr;
 	StepType steps;
 };
 
@@ -196,8 +238,17 @@ void Value::unregisterListener (IValueListener* listener)
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
-StepValue::StepValue (const IdStringPtr id, StepType initialSteps, Type initialValue, const IValueStringConverter* stringConverter)
-: Value (id, initialValue, stringConverter ? *stringConverter : *this)
+StepValue::StepValue (const IdStringPtr id, StepType initialSteps, Type initialValue,
+                      const IValueStringConverter* stringConverter)
+: Value (id, initialValue, stringConverter ? *stringConverter : *this), steps (initialSteps - 1)
+{
+}
+
+//------------------------------------------------------------------------
+StepValue::StepValue (const IdStringPtr id, StepType initialSteps, Type initialValue,
+                      const ValueStringConverterPtr& stringConverter)
+: Value (id, initialValue, *(stringConverter.get ()))
+, stringConverterPtr (stringConverter)
 , steps (initialSteps - 1)
 {
 }
@@ -217,13 +268,13 @@ StepValue::StepType StepValue::getSteps () const
 //------------------------------------------------------------------------
 IValue::Type StepValue::stepToValue (StepType step) const
 {
-	return static_cast<IValue::Type> (step) / static_cast<IValue::Type> (steps);
+	return convertStepToValue(step, steps);
 }
 
 //------------------------------------------------------------------------
 StepValue::StepType StepValue::valueToStep (IValue::Type value) const
 {
-	return std::min (steps, static_cast<StepType> (value * static_cast<IValue::Type> (steps + 1)));
+	return convertValueToStep (value, steps);
 }
 
 //------------------------------------------------------------------------
@@ -259,6 +310,15 @@ ValuePtr IStepValue::make (const UTF8String& id, StepType initialSteps, IValue::
 {
 	vstgui_assert (id.empty () == false);
 	return std::make_shared<StepValue>(id, initialSteps, initialValue, stringConverter);
+}
+
+//------------------------------------------------------------------------
+ValuePtr IStepValue::makeStringListValue (const UTF8String& id,
+                                          const std::initializer_list<UTF8String>& strings)
+{
+	vstgui_assert (id.empty () == false);
+	return std::make_shared<StepValue> (id, strings.size (), 0,
+	                                    std::make_shared<StringListValueStringConverter> (strings));
 }
 
 //------------------------------------------------------------------------

@@ -1,11 +1,3 @@
-//
-//  application.mm
-//  vstgui
-//
-//  Created by Arne Scheffler on 20.12.15.
-//
-//
-
 #import <Cocoa/Cocoa.h>
 #import "VSTGUICommand.h"
 #import "macpreference.h"
@@ -341,7 +333,9 @@ static const CommandWithKeyList* getCommandList (const char* group)
 
 	VSTGUIApplicationDelegate* Self = self;
 	PlatformCallbacks callbacks;
-	callbacks.quit = [] () { [NSApp terminate:nil]; };
+	callbacks.quit = [] () {
+		[NSApp terminate:nil];
+	};
 	callbacks.onCommandUpdate = [Self] () {
 		[Self setupMainMenu];
 	};

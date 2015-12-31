@@ -1,15 +1,8 @@
-//
-//  window.m
-//  vstgui
-//
-//  Created by Arne Scheffler on 21.12.15.
-//
-//
-
 #import <Cocoa/Cocoa.h>
 #import "macwindow.h"
 #import "../iplatformwindow.h"
 #import "../../../../lib/platform/mac/macstring.h"
+#import "../../../../lib/cvstguitimer.h"
 #import "VSTGUICommand.h"
 
 //------------------------------------------------------------------------
@@ -58,6 +51,7 @@ public:
 	void show () override;
 	void hide () override;
 	void close () override;
+	void activate () override;
 	
 	PlatformType getPlatformType () const override { return kNSView; };
 	void* getPlatformHandle () const override { return static_cast<void*> ((__bridge void*) nsWindow.contentView); }
@@ -76,18 +70,18 @@ private:
 bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegate)
 {
 	NSUInteger styleMask = 0;
-	if (config.flags.hasBorder ())
+	if (config.style.hasBorder ())
 		styleMask |= NSTitledWindowMask;
-	if (config.flags.canSize ())
+	if (config.style.canSize ())
 		styleMask |= NSResizableWindowMask;
-	if (config.flags.canClose ())
+	if (config.style.canClose ())
 		styleMask |= NSClosableWindowMask;
 
 	delegate = &inDelegate;
 
 	NSRect contentRect = NSMakeRect (0, 0,
 									 config.size.x, config.size.y);
-	if (config.flags.isPopup ())
+	if (config.type == WindowType::Popup)
 	{
 		styleMask |= NSUtilityWindowMask;
 
@@ -102,6 +96,7 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 		nsWindow = panel;
 		nsWindowDelegate = [VSTGUIPopupDelegate new];
 		nsWindowDelegate.macWindow = this;
+		[nsWindow setAnimationBehavior:NSWindowAnimationBehaviorUtilityWindow];
 	}
 	else
 	{
@@ -112,11 +107,11 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 
 		nsWindowDelegate = [VSTGUIWindowDelegate new];
 		nsWindowDelegate.macWindow = this;
+		[nsWindow setAnimationBehavior:NSWindowAnimationBehaviorNone];
 	}
 	[nsWindow setDelegate:nsWindowDelegate];
-	[nsWindow setAnimationBehavior:NSWindowAnimationBehaviorNone];
 
-	if (config.flags.isTransparent ())
+	if (config.style.isTransparent ())
 	{
 		nsWindow.backgroundColor = [NSColor clearColor];
 		nsWindow.opaque = NO;
@@ -187,6 +182,8 @@ void Window::setSize (const CPoint& newSize)
 	r.size.height = newSize.y;
 	r.origin.y -= diff;
 	[nsWindow setFrame:[nsWindow frameRectForContentRect:r] display:YES animate:NO];
+	if (!nsWindow.opaque)
+		[nsWindow invalidateShadow];
 }
 
 //------------------------------------------------------------------------
@@ -229,6 +226,12 @@ void Window::hide ()
 void Window::close ()
 {
 	[nsWindow performClose:nil];
+}
+
+//------------------------------------------------------------------------
+void Window::activate ()
+{
+	[nsWindow makeKeyAndOrderFront:nil];
 }
 
 } // Mac
@@ -395,6 +398,15 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 - (void)cancelOperation:(nullable id)sender
 {
 	[self resignKeyWindow];
+}
+
+//------------------------------------------------------------------------
+- (void)performClose:(id)sender
+{
+	VSTGUIPopup* popup = self;
+	VSTGUI::Call::later ([=] () {
+		[popup close];
+	});
 }
 
 @end

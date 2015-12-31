@@ -128,8 +128,10 @@ void Application::showAlertBoxForWindow (const AlertBoxForWindowConfig& config)
 //------------------------------------------------------------------------
 void Application::quit ()
 {
-	while (!windows.empty ())
-		windows.front ()->close ();
+	if (!delegate->canQuit ())
+		return;
+	for (auto it = windows.rbegin (), end = windows.rend (); it != end; ++it)
+		(*it)->close ();
 	if (platform.quit)
 		platform.quit ();
 }

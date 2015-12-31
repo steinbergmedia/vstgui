@@ -15,6 +15,7 @@ TestModel::TestModel ()
 	addValue (IValue::make ("Test", 0.));
 	addValue (IStepValue::make ("StepTest", 5, 0));
 	addValue (IValue::make ("ShowAlert", 0.));
+	addValue (IStepValue::makeStringListValue ("StringList", {"one","two","three","four","five"}));
 }
 
 //------------------------------------------------------------------------

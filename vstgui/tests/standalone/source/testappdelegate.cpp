@@ -1,5 +1,6 @@
 #include "testappdelegate.h"
 #include "testwindow.h"
+#include "testabout.h"
 #include "vstgui/standalone/iappdelegate.h"
 #include "vstgui/standalone/iapplication.h"
 #include "vstgui/standalone/iwindow.h"
@@ -54,31 +55,27 @@ bool Delegate::canHandleCommand (const Command& command)
 //------------------------------------------------------------------------
 bool Delegate::handleCommand (const Command& command)
 {
-	if (command == Commands::NewDocument)
+	if (command == Commands::NewDocument || command == NewPopup)
 	{
-		UIDescription::Config config;
+		UIDesc::Config config;
 		config.windowConfig.title = "Test Window";
 		config.windowConfig.autoSaveFrameName = "TestWindowFrame";
-		config.windowConfig.flags.border ().close ();
+		config.windowConfig.style.close ();
 		config.windowConfig.size = {100, 100};
-		config.fileName = "test.uidesc";
 		config.viewName = "view";
 		config.modelBinding = model;
-		if (auto window = UIDescription::makeWindow (config))
+		if (command == NewPopup)
 		{
-			window->show ();
+			config.uiDescFileName = "testpopup.uidesc";
+			config.windowConfig.type = WindowType::Popup;
+			config.windowConfig.style.transparent ();
 		}
-		return true;
-	}
-	else if (command == NewPopup)
-	{
-		UIDescription::Config config;
-		config.windowConfig.flags.popup ().transparent ().size();
-		config.windowConfig.size = {100, 100};
-		config.fileName = "test.uidesc";
-		config.viewName = "view";
-		config.modelBinding = model;
-		if (auto window = UIDescription::makeWindow (config))
+		else
+		{
+			config.uiDescFileName = "test.uidesc";
+			config.windowConfig.style.border ();
+		}
+		if (auto window = UIDesc::makeWindow (config))
 		{
 			window->show ();
 		}
@@ -101,13 +98,13 @@ bool Delegate::canQuit ()
 //------------------------------------------------------------------------
 void Delegate::showAboutDialog ()
 {
-	
+	About::show ();
 }
 
 //------------------------------------------------------------------------
 bool Delegate::hasAboutDialog ()
 {
-	return false;
+	return true;
 }
 
 //------------------------------------------------------------------------

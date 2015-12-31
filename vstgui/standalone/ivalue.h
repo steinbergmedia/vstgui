@@ -9,7 +9,7 @@ namespace VSTGUI {
 namespace Standalone {
 
 //------------------------------------------------------------------------
-/** value object */
+/** value interface */
 class IValue : public Interface
 {
 public:
@@ -51,6 +51,7 @@ public:
 	virtual StepType valueToStep (IValue::Type) const = 0;
 
 	static ValuePtr make (const UTF8String& id, StepType initialSteps, IValue::Type initialValue, const IValueStringConverter* stringConverter = nullptr);
+	static ValuePtr makeStringListValue (const UTF8String& id, const std::initializer_list<UTF8String>& strings);
 };
 
 //------------------------------------------------------------------------
@@ -61,6 +62,16 @@ public:
 	virtual void onPerformEdit (const IValue& value, IValue::Type newValue) = 0;
 	virtual void onEndEdit (const IValue& value) = 0;
 	virtual void onStateChange (const IValue& value) = 0;
+};
+
+//------------------------------------------------------------------------
+class ValueListenerAdapter : public IValueListener
+{
+public:
+	void onBeginEdit (const IValue& value) override {}
+	void onPerformEdit (const IValue& value, IValue::Type newValue) override {}
+	void onEndEdit (const IValue& value) override {}
+	void onStateChange (const IValue& value) override {}
 };
 
 //------------------------------------------------------------------------

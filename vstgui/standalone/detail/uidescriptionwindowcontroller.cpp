@@ -1,6 +1,7 @@
 #include "../iuidescwindow.h"
 #include "../iwindowcontroller.h"
 #include "../iapplication.h"
+#include "../ialertbox.h"
 #include "../../lib/iviewlistener.h"
 #include "../../lib/cframe.h"
 #include "../../lib/crect.h"
@@ -10,6 +11,7 @@
 #include "../../lib/controls/ctextedit.h"
 #include "../../uidescription/uidescription.h"
 #include "../../uidescription/uiattributes.h"
+#include "../../uidescription/cstream.h"
 #include "../../uidescription/detail/uiviewcreatorattributes.h"
 #include "../../uidescription/editing/uieditcontroller.h"
 #include "../../uidescription/editing/uieditmenucontroller.h"
@@ -19,13 +21,13 @@ namespace VSTGUI {
 namespace Standalone {
 namespace /* Anonymous */ {
 
-using UIDescription::ModelBindingPtr;
+using UIDesc::ModelBindingPtr;
 
 //------------------------------------------------------------------------
 class WindowController : public WindowControllerAdapter, public ICommandHandler
 {
 public:
-	bool init (const UIDescription::Config& config, WindowPtr& window);
+	bool init (const UIDesc::Config& config, WindowPtr& window);
 	
 	CPoint constraintSize (const IWindow& window, const CPoint& newSize) override;
 	void onClosed (const IWindow& window) override;
@@ -226,7 +228,7 @@ struct WindowController::Impl : public IController, public ICommandHandler
 	
 	bool initUIDesc (const char* fileName)
 	{
-		uiDesc = owned (new VSTGUI::UIDescription (fileName));
+		uiDesc = owned (new UIDescription (fileName));
 		if (!uiDesc->parse ())
 		{
 			return false;
@@ -281,6 +283,8 @@ struct WindowController::Impl : public IController, public ICommandHandler
 	
 	void initModelValues (const ModelBindingPtr& modelHandler)
 	{
+		if (!modelHandler)
+			return;
 		for (auto& value : modelHandler->getValues ())
 		{
 			valueWrappers.emplace_back (std::make_shared<ValueWrapper> (value));
@@ -339,6 +343,34 @@ struct WindowController::Impl : public IController, public ICommandHandler
 static const Command ToggleEditingCommand {"Debug", "Toggle Inline Editor"};
 
 //------------------------------------------------------------------------
+struct EditFileMap
+{
+private:
+	using Map = std::unordered_map<std::string, std::string>;
+	Map fileMap;
+	static EditFileMap& instance ()
+	{
+		static EditFileMap gInstance;
+		return gInstance;
+	}
+public:
+	static void set (const std::string& filename, const std::string& absolutePath)
+	{
+		instance().fileMap.insert ({filename, absolutePath});
+	}
+	static const std::string& get (const std::string& filename)
+	{
+		auto it = instance().fileMap.find (filename);
+		if (it == instance().fileMap.end())
+		{
+			static std::string empty;
+			return empty;
+		}
+		return it->second;
+	}
+};
+
+//------------------------------------------------------------------------
 struct WindowController::EditImpl : WindowController::Impl
 {
 	EditImpl (WindowController& controller, const ModelBindingPtr& modelBinding) : Impl (controller, modelBinding)
@@ -348,35 +380,22 @@ struct WindowController::EditImpl : WindowController::Impl
 	
 	bool init (WindowPtr& inWindow, const char* fileName, const char* templateName) override
 	{
+		this->filename = fileName;
+		auto& absPath = EditFileMap::get (fileName);
+		if (!absPath.empty ())
+			fileName = absPath.data ();
 		window = inWindow.get ();
-		bool initialEditing = false;
+		frame = owned (new CFrame ({}, nullptr));
+		frame->setTransparency (true);
+
 		if (!initUIDesc (fileName))
 		{
-			initialEditing = true;
 			UIAttributes* attr = new UIAttributes ();
 			attr->setAttribute (UIViewCreator::kAttrClass, "CViewContainer");
 			attr->setAttribute ("size", "300, 300");
 			uiDesc->addNewTemplate (templateName, attr);
 			
-			Call::later ([this] () {
-				auto fs = owned (CNewFileSelector::create (frame, CNewFileSelector::kSelectSaveFile));
-				fs->setDefaultSaveName (uiDesc->getFilePath ());
-				fs->setTitle ("Save UIDescription File");
-				fs->run ([this] (CNewFileSelector* fileSelector) {
-					if (fileSelector->getNumSelectedFiles () == 0)
-					{
-						Call::later ([this] () {
-							window->close ();
-						});
-						return;
-					}
-					auto path = fileSelector->getSelectedFile (0);
-					uiDesc->setFilePath (path);
-					auto settings = uiDesc->getCustomAttributes ("UIDescFilePath", true);
-					settings->setAttribute ("path", path);
-					save (true);
-				});
-			});
+			initAsNew ();
 		}
 		else
 		{
@@ -385,15 +404,10 @@ struct WindowController::EditImpl : WindowController::Impl
 			if (filePath)
 				uiDesc->setFilePath (filePath->data ());
 		}
-		frame = owned (new CFrame ({}, nullptr));
-		frame->setTransparency (true);
 		this->templateName = templateName;
 		
 		syncTags ();
-		if (initialEditing)
-			enableEditing (true);
-		else
-			showView ();
+		showView ();
 		
 		window->setContentView (frame);
 		return true;
@@ -412,12 +426,75 @@ struct WindowController::EditImpl : WindowController::Impl
 		return true;
 	}
 	
+	void initAsNew ()
+	{
+		auto fs = owned (CNewFileSelector::create (frame, CNewFileSelector::kSelectSaveFile));
+		fs->setDefaultSaveName (uiDesc->getFilePath ());
+		fs->setDefaultExtension (CFileExtension ("UIDescription File", "uidesc"));
+		fs->setTitle ("Save UIDescription File");
+		if (fs->runModal ())
+		{
+			if (fs->getNumSelectedFiles () == 0)
+			{
+				Call::later ([this] () {
+					window->close ();
+				});
+				return;
+			}
+			auto path = fs->getSelectedFile (0);
+			uiDesc->setFilePath (path);
+			auto settings = uiDesc->getCustomAttributes ("UIDescFilePath", true);
+			settings->setAttribute ("path", path);
+			enableEditing (true, true);
+			save (true);
+			enableEditing (false);
+		}
+	}
+	
+	void checkFileExists ()
+	{
+		CFileStream stream;
+		if (stream.open (uiDesc->getFilePath (), CFileStream::kReadMode))
+			return;
+		AlertBoxConfig alertConfig;
+		alertConfig.headline = "The uidesc file location cannot be found.";
+		alertConfig.defaultButton = "Locate";
+		alertConfig.secondButton = "Close";
+		auto alertResult = IApplication::instance().showAlertBox (alertConfig);
+		if (alertResult == AlertResult::secondButton)
+		{
+			enableEditing (false);
+			return;
+		}
+		auto fs = owned (CNewFileSelector::create (frame, CNewFileSelector::kSelectFile));
+		fs->setDefaultExtension (CFileExtension ("UIDescription File", "uidesc"));
+		fs->run ([this] (CNewFileSelector* fileSelector) {
+			if (fileSelector->getNumSelectedFiles () == 0)
+			{
+				enableEditing (false);
+				return;
+			}
+			uiDesc->setFilePath (fileSelector->getSelectedFile (0));
+			auto settings = uiDesc->getCustomAttributes ("UIDescFilePath", true);
+			settings->setAttribute ("path", uiDesc->getFilePath ());
+			save (true);
+		});
+	}
+	
 	void save (bool force = false)
 	{
-		if (uiEditController)
+		if (!uiEditController)
+			return;
+		if (force || uiEditController->getUndoManager ()->isSavePosition () == false)
 		{
-			if (force || uiEditController->getUndoManager ()->isSavePosition () == false)
-				uiDesc->save (uiDesc->getFilePath (), uiEditController->getSaveOptions ());
+			if (!uiDesc->save (uiDesc->getFilePath (), uiEditController->getSaveOptions ()))
+			{
+				AlertBoxConfig config;
+				config.headline = "Saving the uidesc file failed.";
+				IApplication::instance ().showAlertBox (config);
+			}
+			else
+				EditFileMap::set (filename, uiDesc->getFilePath ());
 		}
 	}
 
@@ -437,7 +514,7 @@ struct WindowController::EditImpl : WindowController::Impl
 		}
 	}
 	
-	void enableEditing (bool state)
+	void enableEditing (bool state, bool ignoreCheckFileExist = false)
 	{
 		if (isEditing == state && frame->getNbViews () != 0)
 			return;
@@ -463,6 +540,8 @@ struct WindowController::EditImpl : WindowController::Impl
 			frame->setFocusDrawingEnabled (true);
 			frame->setFocusWidth (1);
 			window->setSize (frame->getViewSize ().getSize ());
+			if (!ignoreCheckFileExist)
+				checkFileExists ();
 		}
 		else
 		{
@@ -489,18 +568,19 @@ struct WindowController::EditImpl : WindowController::Impl
 	
 	SharedPointer<UIEditController> uiEditController;
 	bool isEditing {false};
+	std::string filename;
 };
 #endif
 
 //------------------------------------------------------------------------
-bool WindowController::init (const UIDescription::Config &config, WindowPtr &window)
+bool WindowController::init (const UIDesc::Config &config, WindowPtr &window)
 {
 #if VSTGUI_LIVE_EDITING
 	impl = std::unique_ptr<Impl> (new EditImpl (*this, config.modelBinding));
 #else
 	impl = std::unique_ptr<Impl> (new Impl (*this, config.modelBinding));
 #endif
-	return impl->init (window, config.fileName, config.viewName);
+	return impl->init (window, config.uiDescFileName, config.viewName);
 }
 
 //------------------------------------------------------------------------
@@ -538,20 +618,19 @@ bool WindowController::handleCommand (const Command& command)
 } // Anonymous
 
 //------------------------------------------------------------------------
-namespace UIDescription {
+namespace UIDesc {
 
 //------------------------------------------------------------------------
 WindowPtr makeWindow (const Config& config)
 {
-	vstgui_assert (config.modelBinding);
 	vstgui_assert (config.viewName.empty () == false);
-	vstgui_assert (config.fileName.empty () == false);
+	vstgui_assert (config.uiDescFileName.empty () == false);
 
 	auto controller = std::make_shared<WindowController> ();
 
 	WindowConfiguration windowConfig = config.windowConfig;
 #if VSTGUI_LIVE_EDITING
-	windowConfig.flags.size ();
+	windowConfig.style.size ();
 #endif
 
 	auto window = IApplication::instance ().createWindow (windowConfig, controller);
@@ -565,6 +644,6 @@ WindowPtr makeWindow (const Config& config)
 }
 
 //------------------------------------------------------------------------
-} // UIDescription
+} // UIDesc
 } // Standalone
 } // VSTGUI

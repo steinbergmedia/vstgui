@@ -19,6 +19,7 @@ class IValueStringConverter;
 using WindowPtr = std::shared_ptr<IWindow>;
 using WindowControllerPtr = std::shared_ptr<IWindowController>;
 using ValuePtr = std::shared_ptr<IValue>;
+using ValueStringConverterPtr = std::shared_ptr<IValueStringConverter>;
 
 struct Command;
 struct AlertBoxConfig;
@@ -27,7 +28,7 @@ struct AlertBoxForWindowConfig;
 enum class AlertResult;
 
 //------------------------------------------------------------------------
-namespace UIDescription {
+namespace UIDesc {
 
 class IModelBinding;
 using ModelBindingPtr = std::shared_ptr<IModelBinding>;
@@ -35,7 +36,7 @@ using ModelBindingPtr = std::shared_ptr<IModelBinding>;
 struct Config;
 
 //------------------------------------------------------------------------
-} // UIDescription
+} // UIDesc
 
 //------------------------------------------------------------------------
 namespace Application {

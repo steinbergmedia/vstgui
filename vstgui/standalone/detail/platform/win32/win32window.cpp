@@ -231,9 +231,7 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 		}
 		case WM_SIZE:
 		{
-			RECT clientSize;
-			GetClientRect (hwnd, &clientSize);
-			delegate->onSizeChanged (getRectSize (clientSize));
+			delegate->onSizeChanged (getSize ());
 			break;
 		}
 		case WM_SIZING:

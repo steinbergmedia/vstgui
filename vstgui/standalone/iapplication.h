@@ -22,6 +22,10 @@ public:
 	virtual IPreference& getPreferences () const = 0;
 
 	virtual WindowPtr createWindow (const WindowConfiguration& config, const WindowControllerPtr& controller) = 0;
+	/** Get all application windows
+	 *
+	 *	@note The active window will be the first in the list.
+	 */
 	virtual const WindowList& getWindows () const = 0;
 
 	virtual AlertResult showAlertBox (const AlertBoxConfig& config) = 0;

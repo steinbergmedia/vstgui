@@ -72,6 +72,7 @@ public:
 	void show () override { platformWindow->show (); }
 	void hide () override { platformWindow->hide (); }
 	void close () override { platformWindow->close (); }
+	void activate () override { platformWindow->activate (); }
 	void registerWindowListener (IWindowListener* listener) override;
 	void unregisterWindowListener (IWindowListener* listener) override;
 
@@ -183,6 +184,7 @@ void Window::onClosed ()
 		frame->close ();
 		frame = nullptr;
 	}
+	controller = nullptr;
 	platformWindow = nullptr;
 }
 
