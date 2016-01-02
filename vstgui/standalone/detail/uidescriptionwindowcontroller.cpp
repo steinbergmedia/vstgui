@@ -325,7 +325,19 @@ struct WindowController::Impl : public IController, public ICommandHandler
 	
 	IControlListener* getControlListener (UTF8StringPtr controlTagName) override { return this; }
 	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override { return nullptr; }
-	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override { return view; }
+	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override
+	{
+		auto control = dynamic_cast<CControl*> (view);
+		if (control)
+		{
+			auto index = static_cast<ValueWrapperList::size_type>(control->getTag ());
+			if (index < valueWrappers.size ())
+			{
+				valueWrappers[index]->updateControlOnStateChange (control);
+			}
+		}
+		return view;
+	}
 	IController* createSubController (UTF8StringPtr name, const IUIDescription* description) override { return nullptr; }
 	
 	WindowController& controller;
