@@ -43,7 +43,7 @@ private:
 };
 
 //------------------------------------------------------------------------
-class ValueWrapper : public IValueListener, public IControlListener, public IViewListenerAdapter
+class ValueWrapper : public ValueListenerAdapter, public IControlListener, public IViewListenerAdapter
 {
 public:
 	ValueWrapper (const ValuePtr& value = nullptr)
@@ -65,7 +65,6 @@ public:
 
 	const UTF8String& getID () const { return value->getID (); }
 	
-	void onBeginEdit (const IValue& value) override {}
 	void onPerformEdit (const IValue& value, IValue::Type newValue) override
 	{
 		for (auto& c : controls)
@@ -74,7 +73,6 @@ public:
 			c->invalid ();
 		}
 	}
-	void onEndEdit (const IValue& value) override {}
 
 	void updateControlOnStateChange (CControl* control) const
 	{

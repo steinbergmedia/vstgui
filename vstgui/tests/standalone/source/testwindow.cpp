@@ -26,12 +26,6 @@ void TestModel::addValue (const ValuePtr& value)
 }
 
 //------------------------------------------------------------------------
-void TestModel::onBeginEdit (const IValue& value) {}
-
-//------------------------------------------------------------------------
-void TestModel::onPerformEdit (const IValue& value, IValue::Type newValue) {}
-
-//------------------------------------------------------------------------
 void TestModel::onEndEdit (const IValue& value)
 {
 	auto activeValue = values[0];
@@ -61,9 +55,6 @@ void TestModel::onEndEdit (const IValue& value)
 			IApplication::instance ().showAlertBox (config);
 	}
 }
-
-//------------------------------------------------------------------------
-void TestModel::onStateChange (const IValue& value) {}
 
 //------------------------------------------------------------------------
 } // MyApp

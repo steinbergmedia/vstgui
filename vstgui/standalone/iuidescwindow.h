@@ -34,17 +34,6 @@ struct Config
 WindowPtr makeWindow (const Config& config);
 
 //------------------------------------------------------------------------
-class ValueList : public IModelBinding
-{
-public:
-	const IModelBinding::ValueList& getValues () const { return list; }
-
-	void addValue (const ValuePtr& value) { list.push_back (value); }
-private:
-	IModelBinding::ValueList list;
-};
-
-//------------------------------------------------------------------------
 } // UIDesc
 } // Standalone
 } // VSTGUI

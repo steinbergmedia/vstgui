@@ -6,10 +6,10 @@
 namespace MyApp {
 
 using VSTGUI::Standalone::UIDesc::IModelBinding;
-using VSTGUI::Standalone::IValueListener;
+using VSTGUI::Standalone::ValueListenerAdapter;
 
 //------------------------------------------------------------------------
-class TestModel : public IModelBinding, public IValueListener
+class TestModel : public IModelBinding, public ValueListenerAdapter
 {
 public:
 	using ValuePtr = VSTGUI::Standalone::ValuePtr;
@@ -19,10 +19,7 @@ public:
 	
 	const ValueList& getValues () const override { return values; }
 
-	void onBeginEdit (const IValue& value) override;
-	void onPerformEdit (const IValue& value, IValue::Type newValue) override;
 	void onEndEdit (const IValue& value) override;
-	void onStateChange (const IValue& value) override;
 private:
 	void addValue (const ValuePtr& value);
 	ValueList values;

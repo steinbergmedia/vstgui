@@ -35,7 +35,7 @@ public:
 	virtual void registerListener (IValueListener* listener) = 0;
 	virtual void unregisterListener (IValueListener* listener) = 0;
 
-	static ValuePtr make (const UTF8String& id, Type initialValue, const IValueStringConverter* stringConverter = nullptr);
+	static ValuePtr make (const UTF8String& id, Type initialValue = 0., const IValueStringConverter* stringConverter = nullptr);
 };
 
 //------------------------------------------------------------------------
