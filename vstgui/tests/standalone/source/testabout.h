@@ -4,19 +4,35 @@
 #include "vstgui/standalone/ivalue.h"
 #include "vstgui/standalone/iuidescwindow.h"
 #include <unordered_map>
+#include <functional>
 
 //------------------------------------------------------------------------
 namespace MyApp {
 
 //------------------------------------------------------------------------
-struct ValueCallbacks
+struct ValueCalls
 {
 	using IValue = VSTGUI::Standalone::IValue;
+	using Call = std::function<void (const IValue&)>;
 	
-	std::function<void (const IValue&)> onBeginEditCall;
-	std::function<void (const IValue&)> onPerformEditCall;
-	std::function<void (const IValue&)> onEndEditCall;
-	std::function<void (const IValue&)> onStateChangeCall;
+	Call onBeginEditCall;
+	Call onPerformEditCall;
+	Call onEndEditCall;
+	Call onStateChangeCall;
+
+	static ValueCalls onPerformEdit (Call&& call)
+	{
+		ValueCalls c;
+		c.onPerformEditCall = std::move (call);
+		return c;
+	}
+
+	static ValueCalls onEndEdit (Call&& call)
+	{
+		ValueCalls c;
+		c.onEndEditCall = std::move (call);
+		return c;
+	}
 };
 
 //------------------------------------------------------------------------
@@ -28,7 +44,8 @@ public:
 	
 	~ModelBindingCallbacks ();
 	
-	void addValue (ValuePtr value, const ValueCallbacks& callbacks = {});
+	void addValue (ValuePtr value, const ValueCalls& callbacks = {});
+	void addValue (ValuePtr value, ValueCalls&& callbacks);
 private:
 	const ValueList& getValues () const override { return valueList; }
 
@@ -37,7 +54,7 @@ private:
 	void onEndEdit (const IValue& value) override;
 	void onStateChange (const IValue& value) override;
 	
-	using ValueMap = std::unordered_map<const IValue*, ValueCallbacks>;
+	using ValueMap = std::unordered_map<const IValue*, ValueCalls>;
 	ValueList valueList;
 	ValueMap values;
 };

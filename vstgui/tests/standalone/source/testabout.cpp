@@ -24,13 +24,14 @@ void About::show ()
 		if (gInstance && value.getValue () > 0.)
 			gInstance->window->close ();
 	};
-	modelBinding->addValue (IValue::make ("Close"), {{}, {}, close, {}});
+	modelBinding->addValue (IValue::make ("Close"), ValueCalls::onEndEdit (close));
 
 	UIDesc::Config config;
 	config.uiDescFileName = "about.uidesc";
 	config.viewName = "view";
 	config.modelBinding = modelBinding;
-	config.windowConfig.type = WindowType::Popup;
+	config.windowConfig.type = WindowType::Document;
+	config.windowConfig.title = "About";
 	config.windowConfig.style.close ().transparent ();
 	config.windowConfig.autoSaveFrameName = "AboutDialogFrame";
 	gInstance->window = UIDesc::makeWindow (config);
@@ -55,9 +56,17 @@ ModelBindingCallbacks::~ModelBindingCallbacks ()
 }
 
 //------------------------------------------------------------------------
-void ModelBindingCallbacks::addValue (ValuePtr value, const ValueCallbacks& callbacks)
+void ModelBindingCallbacks::addValue (ValuePtr value, const ValueCalls& callbacks)
 {
 	values.emplace (value.get (), callbacks);
+	valueList.emplace_back (value);
+	value->registerListener (this);
+}
+
+//------------------------------------------------------------------------
+void ModelBindingCallbacks::addValue (ValuePtr value, ValueCalls&& callbacks)
+{
+	values.emplace (value.get (), std::move (callbacks));
 	valueList.emplace_back (value);
 	value->registerListener (this);
 }
