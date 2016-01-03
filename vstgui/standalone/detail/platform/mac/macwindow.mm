@@ -19,6 +19,10 @@ class Window;
 @end
 
 //------------------------------------------------------------------------
+@interface VSTGUITransparentWindow : NSWindow
+@end
+
+//------------------------------------------------------------------------
 @interface VSTGUIPopup : NSPanel
 @property BOOL inSendEvent;
 @property NSInteger doResignKey;
@@ -100,10 +104,20 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 	}
 	else
 	{
-		nsWindow = [[NSWindow alloc] initWithContentRect:contentRect
-											   styleMask:styleMask
-												 backing:NSBackingStoreBuffered
-												   defer:YES];
+		if (config.style.isTransparent())
+		{
+			nsWindow = [[VSTGUITransparentWindow alloc] initWithContentRect:contentRect
+			                                                      styleMask:styleMask
+			                                                        backing:NSBackingStoreBuffered
+			                                                          defer:YES];
+		}
+		else
+		{
+			nsWindow = [[NSWindow alloc] initWithContentRect:contentRect
+												   styleMask:styleMask
+													 backing:NSBackingStoreBuffered
+													   defer:YES];
+		}
 
 		nsWindowDelegate = [VSTGUIWindowDelegate new];
 		nsWindowDelegate.macWindow = this;
@@ -349,6 +363,43 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 -(void)performWindowDragWithEvent:(NSEvent*)event;
 @end
 #endif
+
+//------------------------------------------------------------------------
+@implementation VSTGUITransparentWindow
+
+//------------------------------------------------------------------------
+- (void)makeKeyAndOrderFront:(id)sender
+{
+	if (!self.visible && [self.title length] > 0)
+	{
+		[NSApp addWindowsItem:self title:self.title filename:NO];
+	}
+	[super makeKeyAndOrderFront:sender];
+}
+
+//------------------------------------------------------------------------
+- (BOOL)canBecomeKeyWindow
+{
+	return YES;
+}
+
+//------------------------------------------------------------------------
+- (void)mouseDown:(NSEvent *)theEvent
+{
+	if ([super respondsToSelector:@selector(performWindowDragWithEvent:)])
+		[super performWindowDragWithEvent:theEvent];
+}
+
+//------------------------------------------------------------------------
+- (void)performClose:(id)sender
+{
+	VSTGUITransparentWindow* window = self;
+	VSTGUI::Call::later ([=] () {
+		[window close];
+	});
+}
+
+@end
 
 //------------------------------------------------------------------------
 @implementation VSTGUIPopup
