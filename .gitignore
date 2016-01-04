@@ -25,3 +25,4 @@ vstgui/tests/standalone/mac/VSTGUIStandalone.xcodeproj/project.xcworkspace
 vstgui/tests/standalone/mac/VSTGUIStandalone.xcodeproj/xcuserdata
 vstgui/tests/standalone/win/vs2015/x64
 *.vcxproj.user
+vstgui/tests/standalone/win/vs2015/.vs

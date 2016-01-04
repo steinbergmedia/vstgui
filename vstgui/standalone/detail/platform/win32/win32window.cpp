@@ -53,6 +53,7 @@ public:
 	void* getPlatformHandle () const override { return hwnd; }
 
 	void updateCommands () const override;
+	void onQuit () override;
 	LRESULT CALLBACK proc (UINT message, WPARAM wParam, LPARAM lParam);
 private:
 	void handleMenuCommand (const UTF8String& group, UINT index);
@@ -62,7 +63,9 @@ private:
 	HWND hwnd {nullptr};
 	mutable HMENU mainMenu {nullptr};
 	IWindowDelegate* delegate {nullptr};
+	bool hasBorder {false};
 	bool isTransparent {false};
+	bool isPopup {false};
 };
 
 //------------------------------------------------------------------------
@@ -111,14 +114,21 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 {
 	registerWindowClasses ();
 
+	if (config.style.hasBorder ())
+		hasBorder = true;
+	if (config.style.isTransparent ())
+		isTransparent = true;
+
 	DWORD exStyle = 0;
 	DWORD dwStyle = 0;
 	if (config.type == WindowType::Popup)
 	{
+		isPopup = true;
+		exStyle = WS_EX_APPWINDOW;
 		dwStyle = WS_POPUP;
-		if (config.style.canSize ())
+		if (hasBorder && config.style.canSize ())
 			dwStyle |= WS_SIZEBOX | WS_MAXIMIZEBOX;
-		if (config.style.canClose ())
+		if (hasBorder && config.style.canClose ())
 			dwStyle |= WS_CAPTION | WS_SYSMENU;
 	}
 	else
@@ -127,9 +137,9 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 		dwStyle = 0;
 		if (!config.style.isTransparent ())
 		{
-			if (config.style.canSize ())
+			if (hasBorder && config.style.canSize ())
 				dwStyle |= WS_SIZEBOX | WS_MAXIMIZEBOX;
-			if (config.style.canClose ())
+			if (hasBorder && config.style.canClose ())
 				dwStyle |= WS_CAPTION | WS_SYSMENU;
 		}
 		else
@@ -148,11 +158,7 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 		return false;
 	delegate = &inDelegate;
 	SetWindowLongPtr (hwnd, GWLP_USERDATA, (__int3264) (LONG_PTR) this);
-	if (config.style.isTransparent ())
-	{
-		isTransparent = true;
-	}
-	else
+	if (hasBorder)
 		updateCommands ();
 	return true;
 }
@@ -284,12 +290,15 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 		}
 		case WM_ACTIVATE:
 		{
-			if (isTransparent)
+			if (!hasBorder)
 			{
-				DWM_BLURBEHIND bb = {};
-				bb.dwFlags = DWM_BB_ENABLE;
-				bb.fEnable = true;
-				DwmEnableBlurBehindWindow (hwnd, &bb);
+				if (isTransparent)
+				{
+					DWM_BLURBEHIND bb = {};
+					bb.dwFlags = DWM_BB_ENABLE;
+					bb.fEnable = true;
+					DwmEnableBlurBehindWindow (hwnd, &bb);
+				}
 
 				MARGINS margins = {0, 0, 0, 0};
 				auto res = DwmExtendFrameIntoClientArea (hwnd, &margins);
@@ -304,12 +313,16 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 			else
 			{
 				delegate->onDeactivated ();
+				if (isPopup)
+				{
+					close ();
+				}
 			}
 			return 0;
 		}
 		case WM_NCCALCSIZE:
 		{
-			if (isTransparent)
+			if (!hasBorder)
 			{
 				return 0;
 			}
@@ -358,7 +371,7 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 				auto group = reinterpret_cast<UTF8String*> (info.dwMenuData);
 				if (group)
 				{
-					handleMenuCommand (*group, wParam);
+					handleMenuCommand (*group, static_cast<UINT> (wParam));
 				}
 			}
 			break;
@@ -395,8 +408,8 @@ void Window::setSize (const CPoint& newSize)
 	GetWindowRect (hwnd, &frameRect);
 	GetClientRect (hwnd, &clientRect);
 	
-	LONG width = newSize.x + ((frameRect.right - frameRect.left) - clientRect.right);
-	LONG height = newSize.y + ((frameRect.bottom - frameRect.top) - clientRect.bottom);
+	LONG width = static_cast<LONG> (newSize.x) + ((frameRect.right - frameRect.left) - clientRect.right);
+	LONG height = static_cast<LONG> (newSize.y) + ((frameRect.bottom - frameRect.top) - clientRect.bottom);
 	
 	SetWindowPos (hwnd, HWND_TOP, 0, 0, width, height,
 				  SWP_NOMOVE | SWP_NOCOPYBITS | SWP_NOACTIVATE);
@@ -408,8 +421,8 @@ void Window::setPosition (const CPoint& newPosition)
 	RECT frameRect, clientRect;
 	GetWindowRect (hwnd, &frameRect);
 	GetClientRect (hwnd, &clientRect);
-	LONG x = newPosition.x + (frameRect.left - clientRect.left);
-	LONG y = newPosition.y + (frameRect.top - clientRect.top);
+	LONG x = static_cast<LONG> (newPosition.x) + (frameRect.left - clientRect.left);
+	LONG y = static_cast<LONG> (newPosition.y) + (frameRect.top - clientRect.top);
 	SetWindowPos (hwnd, HWND_TOP, x, y, 0, 0, SWP_NOSIZE | SWP_NOACTIVATE);
 }
 
@@ -436,16 +449,26 @@ void Window::hide ()
 //------------------------------------------------------------------------
 void Window::close ()
 {
-	Call::later ([this] () {
+	auto call = [this] () {
 		HWND temp = hwnd;
 		windowWillClose ();
 		CloseWindow (temp);
-	});
+	};
+	Call::later (call);
+}
+
+//------------------------------------------------------------------------
+void Window::onQuit ()
+{
+	HWND temp = hwnd;
+	windowWillClose ();
+	CloseWindow (temp);
 }
 
 //------------------------------------------------------------------------
 void Window::activate ()
 {
+	BringWindowToTop (hwnd);
 }
 
 //------------------------------------------------------------------------

@@ -77,6 +77,15 @@ void Application::onCommandUpdate ()
 //------------------------------------------------------------------------
 void Application::quit ()
 {
+	auto windows = IApplication::instance ().getWindows (); // Yes, copy the window list
+	for (auto& w : windows)
+	{
+		auto platformWindow = w->dynamicCast<Detail::IPlatformWindowAccess> ();
+		vstgui_assert (platformWindow);
+		auto winWindow = platformWindow->getPlatformWindow ()->dynamicCast<IWin32Window> ();
+		vstgui_assert (winWindow);
+		winWindow->onQuit ();
+	}
 	PostQuitMessage (0);
 }
 

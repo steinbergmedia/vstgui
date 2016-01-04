@@ -132,13 +132,8 @@ void Application::quit ()
 {
 	if (!delegate->canQuit ())
 		return;
-	auto tempWindows = windows;
-	for (auto& window : tempWindows)
-		window->close ();
 	if (platform.quit)
-	VSTGUI::Call::later ([this] () {
 		platform.quit ();
-	});
 }
 
 //------------------------------------------------------------------------
