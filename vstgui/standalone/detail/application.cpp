@@ -5,6 +5,7 @@
 #include "window.h"
 #include "../icommand.h"
 #include "../../lib/cview.h"
+#include "../../lib/cvstguitimer.h"
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -135,7 +136,9 @@ void Application::quit ()
 	for (auto& window : tempWindows)
 		window->close ();
 	if (platform.quit)
+	VSTGUI::Call::later ([this] () {
 		platform.quit ();
+	});
 }
 
 //------------------------------------------------------------------------
