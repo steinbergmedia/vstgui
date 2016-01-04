@@ -4,7 +4,13 @@
 #include "../../../iapplication.h"
 #include "../../../iappdelegate.h"
 #include "../../../../lib/platform/win32/winstring.h"
+#include "../../../../lib/cvstguitimer.h"
+#include "../../../../lib/platform/win32/direct2d/d2ddrawcontext.h"
 #include <Windows.h>
+#include <Dwmapi.h>
+#include <d2d1.h>
+
+#pragma comment(lib, "Dwmapi.lib")
 
 extern void* hInstance;
 
@@ -41,6 +47,7 @@ public:
 	void show () override;
 	void hide () override;
 	void close () override;
+	void activate () override;
 	
 	PlatformType getPlatformType () const override { return PlatformType::kHWND; }
 	void* getPlatformHandle () const override { return hwnd; }
@@ -55,6 +62,7 @@ private:
 	HWND hwnd {nullptr};
 	mutable HMENU mainMenu {nullptr};
 	IWindowDelegate* delegate {nullptr};
+	bool isTransparent {false};
 };
 
 //------------------------------------------------------------------------
@@ -74,21 +82,16 @@ void Window::registerWindowClasses ()
 		return;
 	once = true;
 
-	WNDCLASSEX wcex;
+	WNDCLASSEX wcex{};
 
 	wcex.cbSize = sizeof (WNDCLASSEX);
 
 	wcex.style = 0; // Don't use CS_HREDRAW or CS_VREDRAW with a Ribbon
 	wcex.lpfnWndProc = WndProc;
-	wcex.cbClsExtra = 0;
-	wcex.cbWndExtra = 0;
 	wcex.hInstance = getHInstance ();
-	wcex.hIcon = NULL;
-	wcex.hCursor = LoadCursor (NULL, IDC_ARROW);
-	wcex.hbrBackground = NULL; // (HBRUSH) (COLOR_WINDOW + 1);
-	wcex.lpszMenuName = NULL;
+	wcex.hCursor = LoadCursor (getHInstance (), IDC_ARROW);
+	wcex.hbrBackground = nullptr; // (HBRUSH) (COLOR_WINDOW + 1);
 	wcex.lpszClassName = gWindowClassName;
-	wcex.hIconSm = NULL;
 
 	RegisterClassEx (&wcex);
 }
@@ -110,18 +113,30 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 
 	DWORD exStyle = 0;
 	DWORD dwStyle = 0;
-	if (config.flags.isPopup ())
+	if (config.type == WindowType::Popup)
 	{
-		return false; // TODO: implement me 
+		dwStyle = WS_POPUP;
+		if (config.style.canSize ())
+			dwStyle |= WS_SIZEBOX | WS_MAXIMIZEBOX;
+		if (config.style.canClose ())
+			dwStyle |= WS_CAPTION | WS_SYSMENU;
 	}
 	else
 	{
 		exStyle = WS_EX_APPWINDOW;
 		dwStyle = 0;
-		if (config.flags.canSize ())
-			dwStyle |= WS_SIZEBOX | WS_MAXIMIZEBOX;
-		if (config.flags.canClose ())
-			dwStyle |= WS_CAPTION | WS_SYSMENU;
+		if (!config.style.isTransparent ())
+		{
+			if (config.style.canSize ())
+				dwStyle |= WS_SIZEBOX | WS_MAXIMIZEBOX;
+			if (config.style.canClose ())
+				dwStyle |= WS_CAPTION | WS_SYSMENU;
+		}
+		else
+		{
+			dwStyle = WS_POPUP | WS_THICKFRAME | WS_CAPTION | WS_SYSMENU | WS_MAXIMIZEBOX | WS_MINIMIZEBOX;
+			exStyle = WS_EX_COMPOSITED | WS_EX_TRANSPARENT;
+		}
 	}
 
 	auto winStr = dynamic_cast<WinString*> (config.title.getPlatformString ());
@@ -129,12 +144,16 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 	hwnd = CreateWindowEx (exStyle, gWindowClassName, winStr ? winStr->getWideString () : nullptr, dwStyle, 0, 0,
 						   static_cast<int> (config.size.x), static_cast<int> (config.size.y),
 						   nullptr, nullptr, getHInstance (), nullptr);
-	if (hwnd)
-	{
-		SetWindowLongPtr (hwnd, GWLP_USERDATA, (__int3264) (LONG_PTR) this);
-	}
+	if (!hwnd)
+		return false;
 	delegate = &inDelegate;
-	updateCommands ();
+	SetWindowLongPtr (hwnd, GWLP_USERDATA, (__int3264) (LONG_PTR) this);
+	if (config.style.isTransparent ())
+	{
+		isTransparent = true;
+	}
+	else
+		updateCommands ();
 	return true;
 }
 
@@ -197,6 +216,14 @@ void Window::handleMenuCommand (const UTF8String& group, UINT index)
 			std::advance (it, index);
 			if (it != e.second.end ())
 			{
+				if (*it == Commands::About)
+				{
+					if (IApplication::instance ().getDelegate ().hasAboutDialog ())
+					{
+						IApplication::instance ().getDelegate ().showAboutDialog ();
+						return;
+					}
+				}
 				if (delegate->canHandleCommand (*it))
 					delegate->handleCommand (*it);
 				else
@@ -249,14 +276,26 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 			if (constraintSize != newClientSize)
 			{
 				CPoint clientFrameDiff = getRectSize (oldSize) - getRectSize (clientSize);
-				newSize->right = newSize->left + constraintSize.x + clientFrameDiff.x;
-				newSize->bottom = newSize->top + constraintSize.y + clientFrameDiff.y;
+				newSize->right = newSize->left + static_cast<LONG> (constraintSize.x + clientFrameDiff.x);
+				newSize->bottom = newSize->top + static_cast<LONG> (constraintSize.y + clientFrameDiff.y);
 				return TRUE;
 			}
 			break;
 		}
 		case WM_ACTIVATE:
 		{
+			if (isTransparent)
+			{
+				DWM_BLURBEHIND bb = {};
+				bb.dwFlags = DWM_BB_ENABLE;
+				bb.fEnable = true;
+				DwmEnableBlurBehindWindow (hwnd, &bb);
+
+				MARGINS margins = {0, 0, 0, 0};
+				auto res = DwmExtendFrameIntoClientArea (hwnd, &margins);
+				vstgui_assert (res == S_OK);
+			}
+
 			WORD action = LOWORD (wParam);
 			if (action == WA_ACTIVE || action == WA_CLICKACTIVE)
 			{
@@ -268,6 +307,14 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 			}
 			return 0;
 		}
+		case WM_NCCALCSIZE:
+		{
+			if (isTransparent)
+			{
+				return 0;
+			}
+			break;
+		}
 		case WM_CLOSE:
 		{
 			windowWillClose ();
@@ -275,6 +322,28 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 		}
 		case WM_DESTROY:
 		{
+			break;
+		}
+		case WM_ERASEBKGND:
+		{
+			if (isTransparent)
+			{
+				CRect r;
+				r.setSize (getSize ());
+				D2DDrawContext context (hwnd, r);
+				context.beginDraw ();
+				context.clearRect (r);
+				context.endDraw ();
+				return true;
+			}
+			break;
+		}
+		case WM_PAINT:
+		{
+			if (isTransparent)
+			{
+				return true;
+			}
 			break;
 		}
 		case WM_MENUCOMMAND:
@@ -297,7 +366,6 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 
 	}
 	return DefWindowProc (hwnd, message, wParam, lParam);
-	
 }
 
 //------------------------------------------------------------------------
@@ -368,9 +436,16 @@ void Window::hide ()
 //------------------------------------------------------------------------
 void Window::close ()
 {
-	HWND temp = hwnd;
-	windowWillClose ();
-	CloseWindow (temp);
+	Call::later ([this] () {
+		HWND temp = hwnd;
+		windowWillClose ();
+		CloseWindow (temp);
+	});
+}
+
+//------------------------------------------------------------------------
+void Window::activate ()
+{
 }
 
 //------------------------------------------------------------------------
