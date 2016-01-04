@@ -131,8 +131,9 @@ void Application::quit ()
 {
 	if (!delegate->canQuit ())
 		return;
-	for (auto it = windows.rbegin (), end = windows.rend (); it != end; ++it)
-		(*it)->close ();
+	auto tempWindows = windows;
+	for (auto& window : tempWindows)
+		window->close ();
 	if (platform.quit)
 		platform.quit ();
 }
