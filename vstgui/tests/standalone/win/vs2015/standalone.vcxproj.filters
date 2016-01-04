@@ -84,6 +84,9 @@
     <ClInclude Include="..\..\..\..\standalone\detail\platform\win32\win32preference.h">
       <Filter>Source Files\vstgui\standalone\detail\platform\win32</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\source\testabout.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\standalone\detail\application.cpp">
@@ -119,5 +122,13 @@
     <ClCompile Include="..\..\..\..\standalone\detail\platform\win32\win32preference.cpp">
       <Filter>Source Files\vstgui\standalone\detail\platform\win32</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\source\testabout.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\standalone.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

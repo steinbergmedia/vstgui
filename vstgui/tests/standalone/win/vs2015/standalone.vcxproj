@@ -102,7 +102,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>VSTGUI_LIVE_EDITING;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>VSTGUI_LIVE_EDITING;DEBUG;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>false</SDLCheck>
       <PrecompiledHeaderFile />
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
@@ -170,6 +170,7 @@
     <ClInclude Include="..\..\..\..\standalone\ivalue.h" />
     <ClInclude Include="..\..\..\..\standalone\iwindow.h" />
     <ClInclude Include="..\..\..\..\standalone\iwindowcontroller.h" />
+    <ClInclude Include="..\..\source\testabout.h" />
     <ClInclude Include="..\..\source\testappdelegate.h" />
     <ClInclude Include="..\..\source\testwindow.h" />
   </ItemGroup>
@@ -183,8 +184,12 @@
     <ClCompile Include="..\..\..\..\standalone\detail\window.cpp" />
     <ClCompile Include="..\..\..\..\vstgui_uidescription_win32.cpp" />
     <ClCompile Include="..\..\..\..\vstgui_win32.cpp" />
+    <ClCompile Include="..\..\source\testabout.cpp" />
     <ClCompile Include="..\..\source\testappdelegate.cpp" />
     <ClCompile Include="..\..\source\testwindow.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\standalone.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
