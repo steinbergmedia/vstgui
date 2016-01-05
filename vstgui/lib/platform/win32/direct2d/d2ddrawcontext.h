@@ -132,9 +132,9 @@ template<typename T> void D2DDrawContext::pixelAllign (T& obj) const
 {
 	const CGraphicsTransform& t = getCurrentTransform ();
 	CGraphicsTransform tInv = t.inverse ();
+	t.transform (obj);
 	if (currentState.drawMode.integralMode ())
 		obj.offset (-0.5, -0.5);
-	t.transform (obj);
 	obj.makeIntegral ();
 	tInv.transform (obj);
 }

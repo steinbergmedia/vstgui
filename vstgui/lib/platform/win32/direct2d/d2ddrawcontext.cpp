@@ -64,7 +64,7 @@ D2DDrawContext::D2DApplyClip::D2DApplyClip (D2DDrawContext* drawContext, bool ha
 	{
 		CRect clip = drawContext->currentState.clipRect;
 		if (drawContext->getDrawMode ().integralMode ())
-			clip.makeIntegral ();
+			drawContext->pixelAllign (clip);
 		if (drawContext->currentClip.isEmpty () == false)
 			drawContext->getRenderTarget ()->PopAxisAlignedClip ();
 		if (clip.isEmpty () == false)
@@ -80,7 +80,10 @@ D2DDrawContext::D2DApplyClip::D2DApplyClip (D2DDrawContext* drawContext, bool ha
 	{
 		CGraphicsTransform transform = drawContext->getCurrentTransform ();
 		if (halfPointOffset)
-			transform.translate (0.5, 0.5);
+		{
+			CPoint offset (0.5 * transform.m11, 0.5 * transform.m22);
+			transform.translate (offset);
+		}
 		drawContext->getRenderTarget ()->SetTransform (convert (transform));
 	}
 	else if (halfPointOffset)

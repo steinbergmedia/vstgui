@@ -186,7 +186,7 @@ public:
 
 	D2D1_POINT_2F alignPoint (const D2D1_POINT_2F& p)
 	{
-		CPoint point (p.x, p.y); 
+		CPoint point (p.x - 0.5, p.y - 0.5);
 		if (context)
 			context->pixelAllign (point);
 		return D2D1::Point2F (static_cast<FLOAT> (point.x), static_cast<FLOAT> (point.y));

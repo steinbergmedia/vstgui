@@ -89,11 +89,14 @@ D2DBitmap::D2DBitmap (const CPoint& size)
 //-----------------------------------------------------------------------------
 D2DBitmap::~D2DBitmap ()
 {
-	D2DBitmapCache* gCache = D2DBitmapCache::instance ();
-	if (gCache)
-		gCache->removeBitmap (this);
 	if (source)
-		source->Release ();
+	{
+		D2DBitmapCache* gCache = D2DBitmapCache::instance ();
+		if (gCache)
+			gCache->removeBitmap (this);
+		if (source)
+			source->Release ();
+	}
 }
 
 //-----------------------------------------------------------------------------
