@@ -495,7 +495,7 @@ CMouseEventResult CFrame::onMouseMoved (CPoint &where, const CButtonState& butto
 			ViewList::const_reverse_iterator it = pMouseViews.rbegin ();
 			while (it != pMouseViews.rend ())
 			{
-				p = where;
+				p = where2;
 				(*it)->getParentView ()->frameToLocal (p);
 				result = (*it)->onMouseMoved (p, buttons2);
 				if (result == kMouseEventHandled)
