@@ -216,6 +216,7 @@ Win32Frame::Win32Frame (IPlatformFrameCallback* frame, const CRect& size, HWND p
 			RegisterDragDrop (windowHandle, new CDropTarget (this));
 		}
 	}
+	setMouseCursor (kCursorDefault);
 }
 
 //-----------------------------------------------------------------------------
