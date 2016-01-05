@@ -134,6 +134,7 @@ void Window::setContentView (const SharedPointer<CFrame>& newFrame)
 	if (!frame)
 		return;
 	frame->open (platformWindow->getPlatformHandle (), platformWindow->getPlatformType ());
+	platformWindow->onSetContentView (frame);
 }
 
 //------------------------------------------------------------------------

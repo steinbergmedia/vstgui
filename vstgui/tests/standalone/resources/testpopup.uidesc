@@ -5,7 +5,7 @@
 	<colors>
 	</colors>
 	<template background-color="~ BlackCColor" background-color-draw-style="filled and stroked" class="CViewContainer" mouse-enabled="true" name="view" opacity="1" origin="0, 0" size="260, 40" transparent="true">
-		<view class="CGradientView" draw-antialiased="true" frame-color="~ BlackCColor" frame-width="0" gradient="Background" gradient-angle="0" gradient-style="linear" mouse-enabled="true" opacity="1" origin="0, 0" radial-center="0.5, 0.5" radial-radius="0.5" round-rect-radius="0" size="300, 300" transparent="false"/>
+		<view class="CGradientView" draw-antialiased="true" frame-color="~ BlackCColor" frame-width="0" gradient="Background" gradient-angle="0" gradient-style="linear" mouse-enabled="false" opacity="1" origin="0, 0" radial-center="0.5, 0.5" radial-radius="0.5" round-rect-radius="0" size="300, 300" transparent="false"/>
 		<view background-offset="0, 0" bitmap-offset="0, 0" class="CSlider" control-tag="Test" default-value="0.5" draw-back="true" draw-back-color="~ WhiteCColor" draw-frame="true" draw-frame-color="~ GreyCColor" draw-value="true" draw-value-color="~ RedCColor" draw-value-from-center="false" draw-value-inverted="false" handle-offset="0, 0" max-value="1" min-value="0" mode="free click" mouse-enabled="true" opacity="1" orientation="horizontal" origin="10, 10" reverse-orientation="false" size="140, 20" transparent="false" transparent-handle="true" wheel-inc-value="0.1" zoom-factor="10"/>
 		<view back-color="~ BlackCColor" background-offset="0, 0" class="CTextEdit" control-tag="Test" default-value="0.5" font="~ NormalFont" font-antialias="true" font-color="~ WhiteCColor" frame-color="~ BlackCColor" frame-width="1" immediate-text-change="false" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="160, 10" round-rect-radius="6" shadow-color="~ RedCColor" size="90, 20" style-3D-in="false" style-3D-out="false" style-doubleclick="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" title="0.000000" transparent="false" value-precision="2" wheel-inc-value="0.1"/>
 	</template>
@@ -25,6 +25,7 @@
 		<control-tag name="Activate" tag="0"/>
 		<control-tag name="ShowAlert" tag="3"/>
 		<control-tag name="StepTest" tag="2"/>
+		<control-tag name="StringList" tag="4"/>
 		<control-tag name="Test" tag="1"/>
 	</control-tags>
 	<gradients>

@@ -59,6 +59,7 @@ public:
 	
 	PlatformType getPlatformType () const override { return kNSView; };
 	void* getPlatformHandle () const override { return static_cast<void*> ((__bridge void*) nsWindow.contentView); }
+	void onSetContentView (CFrame* frame) override {}
 
 	void windowWillClose ();
 	IWindowDelegate& getDelegate () const { return *delegate; }

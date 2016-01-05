@@ -334,7 +334,7 @@ static const CommandWithKeyList* getCommandList (const char* group)
 	VSTGUIApplicationDelegate* Self = self;
 	PlatformCallbacks callbacks;
 	callbacks.quit = [] () {
-		[NSApp terminate:nil];
+		[NSApp performSelector:@selector(terminate:) withObject:nil afterDelay:0];
 	};
 	callbacks.onCommandUpdate = [Self] () {
 		[Self setupMainMenu];
@@ -349,6 +349,12 @@ static const CommandWithKeyList* getCommandList (const char* group)
 
 	IApplication::instance ().getDelegate ().finishLaunching ();
 	[self setupMainMenu];
+}
+
+//------------------------------------------------------------------------
+- (void)applicationWillTerminate:(NSNotification *)notification
+{
+	IApplication::instance ().getDelegate ().onQuit ();
 }
 
 @end

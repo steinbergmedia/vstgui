@@ -6,7 +6,9 @@
 #include "../../../../lib/platform/win32/winstring.h"
 #include "../../../../lib/cvstguitimer.h"
 #include "../../../../lib/platform/win32/direct2d/d2ddrawcontext.h"
+#include "../../../../lib/platform/win32/win32frame.h"
 #include <Windows.h>
+#include <windowsx.h>
 #include <Dwmapi.h>
 #include <d2d1.h>
 
@@ -31,7 +33,7 @@ static Detail::IApplicationPlatformAccess* getApplicationPlatformAccess ()
 }
 
 //------------------------------------------------------------------------
-class Window : public IWindow, public IWin32Window
+class Window : public IWindow, public IWin32Window, public std::enable_shared_from_this<Window>
 {
 public:
 	~Window ();
@@ -49,8 +51,9 @@ public:
 	void close () override;
 	void activate () override;
 	
-	PlatformType getPlatformType () const override { return PlatformType::kHWND; }
+	PlatformType getPlatformType () const override { return PlatformType::kHWNDTopLevel; }
 	void* getPlatformHandle () const override { return hwnd; }
+	void onSetContentView (CFrame* frame) override;
 
 	void updateCommands () const override;
 	void onQuit () override;
@@ -63,9 +66,11 @@ private:
 	HWND hwnd {nullptr};
 	mutable HMENU mainMenu {nullptr};
 	IWindowDelegate* delegate {nullptr};
+	CFrame* frame {nullptr};
 	bool hasBorder {false};
 	bool isTransparent {false};
 	bool isPopup {false};
+	std::function<LRESULT (HWND, UINT, WPARAM, LPARAM)> frameWindowProc;
 };
 
 //------------------------------------------------------------------------
@@ -135,7 +140,7 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 	{
 		exStyle = WS_EX_APPWINDOW;
 		dwStyle = 0;
-		if (!config.style.isTransparent ())
+		if (config.style.hasBorder ())
 		{
 			if (hasBorder && config.style.canSize ())
 				dwStyle |= WS_SIZEBOX | WS_MAXIMIZEBOX;
@@ -144,7 +149,7 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 		}
 		else
 		{
-			dwStyle = WS_POPUP | WS_THICKFRAME | WS_CAPTION | WS_SYSMENU | WS_MAXIMIZEBOX | WS_MINIMIZEBOX;
+			dwStyle = WS_POPUP;// | WS_THICKFRAME | WS_CAPTION | WS_MAXIMIZEBOX | WS_MINIMIZEBOX;
 			exStyle = WS_EX_COMPOSITED | WS_EX_TRANSPARENT;
 		}
 	}
@@ -161,6 +166,16 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 	if (hasBorder)
 		updateCommands ();
 	return true;
+}
+
+//------------------------------------------------------------------------
+void Window::onSetContentView (CFrame* inFrame)
+{
+	frame = inFrame;
+	auto win32Frame = dynamic_cast<Win32Frame*> (frame->getPlatformFrame ());
+	frameWindowProc = [win32Frame] (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
+		return win32Frame->proc (hwnd, message, wParam, lParam);
+	};
 }
 
 //------------------------------------------------------------------------
@@ -255,6 +270,7 @@ static CPoint getRectSize (const RECT& r)
 //------------------------------------------------------------------------
 LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 {
+	auto self = shared_from_this (); // make sure we live as long as this method executes
 	switch (message)
 	{
 		case WM_MOVE:
@@ -331,33 +347,11 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 		case WM_CLOSE:
 		{
 			windowWillClose ();
-			break;
+			return 1;
 		}
 		case WM_DESTROY:
 		{
-			break;
-		}
-		case WM_ERASEBKGND:
-		{
-			if (isTransparent)
-			{
-				CRect r;
-				r.setSize (getSize ());
-				D2DDrawContext context (hwnd, r);
-				context.beginDraw ();
-				context.clearRect (r);
-				context.endDraw ();
-				return true;
-			}
-			break;
-		}
-		case WM_PAINT:
-		{
-			if (isTransparent)
-			{
-				return true;
-			}
-			break;
+			return 1;
 		}
 		case WM_MENUCOMMAND:
 		{
@@ -376,8 +370,22 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 			}
 			break;
 		}
-
+		case WM_NCHITTEST:
+		{
+			if (!hasBorder)
+			{
+				LONG x = GET_X_LPARAM (lParam);
+				LONG y = GET_Y_LPARAM (lParam);
+				CPoint where {static_cast<CCoord> (x), static_cast<CCoord> (y)};
+				where -= getPosition ();
+				if (!frame->hitTestSubViews (where))
+					return HTCAPTION;
+			}
+			break;
+		}
 	}
+	if (frameWindowProc)
+		return frameWindowProc (hwnd, message, wParam, lParam);
 	return DefWindowProc (hwnd, message, wParam, lParam);
 }
 
@@ -450,9 +458,7 @@ void Window::hide ()
 void Window::close ()
 {
 	auto call = [this] () {
-		HWND temp = hwnd;
-		windowWillClose ();
-		CloseWindow (temp);
+		onQuit (); // TODO: rename method !
 	};
 	Call::later (call);
 }
@@ -460,6 +466,7 @@ void Window::close ()
 //------------------------------------------------------------------------
 void Window::onQuit ()
 {
+	frameWindowProc = nullptr;
 	HWND temp = hwnd;
 	windowWillClose ();
 	CloseWindow (temp);

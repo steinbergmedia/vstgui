@@ -42,6 +42,8 @@ public:
 
 	virtual PlatformType getPlatformType () const = 0;
 	virtual void* getPlatformHandle () const = 0;
+	
+	virtual void onSetContentView (CFrame* frame) = 0;
 };
 
 //------------------------------------------------------------------------

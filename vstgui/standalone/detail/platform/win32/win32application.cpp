@@ -4,6 +4,7 @@
 #include "../../window.h"
 #include "../../../iappdelegate.h"
 #include "../../../iapplication.h"
+#include "../../../../lib/platform/win32/win32support.h"
 
 #include <Windows.h>
 
@@ -86,6 +87,7 @@ void Application::quit ()
 		vstgui_assert (winWindow);
 		winWindow->onQuit ();
 	}
+	IApplication::instance ().getDelegate ().onQuit ();
 	PostQuitMessage (0);
 }
 
@@ -100,6 +102,7 @@ void Application::run ()
 	}
 }
 
+//------------------------------------------------------------------------
 } // Win32
 } // Platform
 } // Standalone
@@ -119,6 +122,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance,
 
 	hInstance = instance;
 
+	VSTGUI::useD2DHardwareRenderer (true);
 	VSTGUI::Standalone::Platform::Win32::Application app;
 	app.init ();
 	app.run ();
