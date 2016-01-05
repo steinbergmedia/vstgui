@@ -786,8 +786,16 @@ bool CViewContainer::hitTestSubViews (const CPoint& where, const CButtonState bu
 	where2.offset (-getViewSize ().left, -getViewSize ().top);
 
 	FOREACHSUBVIEW_REVERSE(true)
-		if (pV && pV->isVisible () && pV->getMouseEnabled () && pV->hitTest (where2, buttons))
-			return true;
+		if (pV && pV->isVisible () && pV->getMouseEnabled ())
+		{
+			if (auto container = dynamic_cast<CViewContainer*>(pV))
+			{
+				if (container->hitTestSubViews (where, buttons))
+					return true;
+			}
+			else if (pV->hitTest (where2, buttons))
+				return true;
+		}
 	ENDFOREACHSUBVIEW
 	return false;
 }

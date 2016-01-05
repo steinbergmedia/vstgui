@@ -101,6 +101,8 @@ public:
 	virtual bool getViewsAt (const CPoint& where, ViewList& views, const GetViewOptions& options = GetViewOptions (GetViewOptions::kDeep)) const;	///< get all views at point where, top->down
 	virtual bool changeViewZOrder (CView* view, uint32_t newIndex);	///< change view z order position
 
+	virtual bool hitTestSubViews (const CPoint& where, const CButtonState buttons = -1);
+
 	virtual void setAutosizingEnabled (bool state);					///< enable or disable autosizing subviews. Per default this is enabled.
 	bool getAutosizingEnabled () const { return (viewFlags & kAutosizeSubviews) ? true : false; }
 
@@ -238,7 +240,6 @@ public:
 protected:
 	~CViewContainer ();
 	virtual bool checkUpdateRect (CView* view, const CRect& rect);
-	virtual bool hitTestSubViews (const CPoint& where, const CButtonState buttons = -1);
 
 	enum {
 		kAutosizeSubviews = 1 << (CView::kLastCViewFlag + 1)
