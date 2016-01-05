@@ -3,6 +3,7 @@
 #import "../iplatformwindow.h"
 #import "../../../../lib/platform/mac/macstring.h"
 #import "../../../../lib/cvstguitimer.h"
+#import "../../../../lib/cframe.h"
 #import "VSTGUICommand.h"
 
 //------------------------------------------------------------------------
@@ -59,8 +60,9 @@ public:
 	
 	PlatformType getPlatformType () const override { return kNSView; };
 	void* getPlatformHandle () const override { return static_cast<void*> ((__bridge void*) nsWindow.contentView); }
-	void onSetContentView (CFrame* frame) override {}
+	void onSetContentView (CFrame* newFrame) override;
 
+	void windowDidResize (const CPoint& newSize);
 	void windowWillClose ();
 	IWindowDelegate& getDelegate () const { return *delegate; }
 	NSWindow* getNSWindow () const override { return nsWindow; }
@@ -69,6 +71,7 @@ private:
 	NSWindow* nsWindow {nullptr};
 	VSTGUIWindowDelegate* nsWindowDelegate {nullptr};
 	IWindowDelegate* delegate {nullptr};
+	CFrame* frame {nullptr};
 };
 	
 //------------------------------------------------------------------------
@@ -147,6 +150,20 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 bool Window::isPopup () const
 {
 	return [nsWindow isKindOfClass:[NSPanel class]];
+}
+
+//------------------------------------------------------------------------
+void Window::onSetContentView (CFrame* newFrame)
+{
+	frame = newFrame;
+}
+
+//------------------------------------------------------------------------
+void Window::windowDidResize (const CPoint& newSize)
+{
+	delegate->onSizeChanged (newSize);
+	if (frame)
+		frame->setSize (newSize.x, newSize.y);
 }
 
 //------------------------------------------------------------------------
@@ -320,7 +337,7 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 	VSTGUI::CPoint size;
 	size.x = r.size.width;
 	size.y = r.size.height;
-	self.macWindow->getDelegate ().onSizeChanged (size);
+	self.macWindow->windowDidResize (size);
 }
 
 //------------------------------------------------------------------------

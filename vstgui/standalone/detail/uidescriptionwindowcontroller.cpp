@@ -541,7 +541,9 @@ struct WindowController::EditImpl : WindowController::Impl
 			uiDesc->setController (this);
 			uiEditController = new UIEditController (uiDesc);
 			auto view = uiEditController->createEditView ();
-			frame->setSize (view->getWidth (), view->getHeight ());
+			auto viewSize = view->getViewSize ().getSize ();
+			frame->getTransform ().transform (viewSize);
+			frame->setSize (viewSize.x, viewSize.y);
 			frame->addView (view);
 			frame->enableTooltips (true);
 			CColor focusColor = kBlueCColor;
@@ -549,7 +551,7 @@ struct WindowController::EditImpl : WindowController::Impl
 			frame->setFocusColor (focusColor);
 			frame->setFocusDrawingEnabled (true);
 			frame->setFocusWidth (1);
-			window->setSize (frame->getViewSize ().getSize ());
+			window->setSize (view->getViewSize ().getSize ());
 			if (!ignoreCheckFileExist)
 				checkFileExists ();
 		}

@@ -11,6 +11,7 @@
 #include <windowsx.h>
 #include <Dwmapi.h>
 #include <d2d1.h>
+#include <ShellScalingAPI.h>
 
 #pragma comment(lib, "Dwmapi.lib")
 
@@ -59,6 +60,7 @@ public:
 	void onQuit () override;
 	LRESULT CALLBACK proc (UINT message, WPARAM wParam, LPARAM lParam);
 private:
+	void setNewDPI (uint32_t newDpi);
 	void handleMenuCommand (const UTF8String& group, UINT index);
 	void windowWillClose ();
 	void registerWindowClasses ();
@@ -67,6 +69,7 @@ private:
 	mutable HMENU mainMenu {nullptr};
 	IWindowDelegate* delegate {nullptr};
 	CFrame* frame {nullptr};
+	double dpiScale {1.};
 	bool hasBorder {false};
 	bool isTransparent {false};
 	bool isPopup {false};
@@ -157,10 +160,12 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 	auto winStr = dynamic_cast<WinString*> (config.title.getPlatformString ());
 
 	hwnd = CreateWindowEx (exStyle, gWindowClassName, winStr ? winStr->getWideString () : nullptr, dwStyle, 0, 0,
-						   static_cast<int> (config.size.x), static_cast<int> (config.size.y),
+						   500, 500,
 						   nullptr, nullptr, getHInstance (), nullptr);
 	if (!hwnd)
 		return false;
+
+
 	delegate = &inDelegate;
 	SetWindowLongPtr (hwnd, GWLP_USERDATA, (__int3264) (LONG_PTR) this);
 	if (hasBorder)
@@ -172,10 +177,25 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 void Window::onSetContentView (CFrame* inFrame)
 {
 	frame = inFrame;
-	auto win32Frame = dynamic_cast<Win32Frame*> (frame->getPlatformFrame ());
-	frameWindowProc = [win32Frame] (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
-		return win32Frame->proc (hwnd, message, wParam, lParam);
-	};
+	if (frame)
+	{
+		auto win32Frame = dynamic_cast<Win32Frame*> (frame->getPlatformFrame ());
+		frameWindowProc = [win32Frame] (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
+			return win32Frame->proc (hwnd, message, wParam, lParam);
+		};
+	}
+	else
+		frameWindowProc = nullptr;
+}
+
+//------------------------------------------------------------------------
+void Window::setNewDPI (uint32_t newDpi)
+{
+	CPoint size = getSize ();
+	dpiScale = static_cast<double> (newDpi) * (100. / 96.) / 100.;
+	setSize (size);
+	if (frame)
+		frame->setZoom (dpiScale);
 }
 
 //------------------------------------------------------------------------
@@ -281,6 +301,13 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 		case WM_SIZE:
 		{
 			delegate->onSizeChanged (getSize ());
+			if (frame)
+			{
+				RECT r;
+				GetClientRect (hwnd, &r);
+				auto size = getRectSize (r);
+				frame->setSize (size.x, size.y);
+			}
 			break;
 		}
 		case WM_SIZING:
@@ -351,6 +378,7 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 		}
 		case WM_DESTROY:
 		{
+			vstgui_assert (false, "Should not be called!");
 			return 1;
 		}
 		case WM_MENUCOMMAND:
@@ -383,6 +411,11 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 			}
 			break;
 		}
+		case WM_DPICHANGED:
+		{
+			setNewDPI (static_cast<uint32_t> (LOWORD (wParam)));
+			break;
+		}
 	}
 	if (frameWindowProc)
 		return frameWindowProc (hwnd, message, wParam, lParam);
@@ -394,7 +427,7 @@ CPoint Window::getSize () const
 {
 	RECT r;
 	GetClientRect (hwnd, &r);
-	return CPoint (r.right - r.left, r.bottom - r.top);
+	return CPoint ((r.right - r.left) / dpiScale, (r.bottom - r.top) / dpiScale);
 }
 
 //------------------------------------------------------------------------
@@ -416,8 +449,8 @@ void Window::setSize (const CPoint& newSize)
 	GetWindowRect (hwnd, &frameRect);
 	GetClientRect (hwnd, &clientRect);
 	
-	LONG width = static_cast<LONG> (newSize.x) + ((frameRect.right - frameRect.left) - clientRect.right);
-	LONG height = static_cast<LONG> (newSize.y) + ((frameRect.bottom - frameRect.top) - clientRect.bottom);
+	LONG width = static_cast<LONG> (newSize.x * dpiScale) + ((frameRect.right - frameRect.left) - (clientRect.right - clientRect.left));
+	LONG height = static_cast<LONG> (newSize.y * dpiScale) + ((frameRect.bottom - frameRect.top) - (clientRect.bottom - clientRect.top));
 	
 	SetWindowPos (hwnd, HWND_TOP, 0, 0, width, height,
 				  SWP_NOMOVE | SWP_NOCOPYBITS | SWP_NOACTIVATE);
@@ -442,10 +475,12 @@ void Window::setTitle (const UTF8String& newTitle)
 //------------------------------------------------------------------------
 void Window::show ()
 {
+	auto monitor = MonitorFromWindow (hwnd, MONITOR_DEFAULTTONEAREST);
+	UINT x,y;
+	GetDpiForMonitor (monitor, MDT_EFFECTIVE_DPI, &x, &y);
+	setNewDPI (x);
+
 	ShowWindow (hwnd, true);
-	HWND childWindow = GetWindow (hwnd, GW_CHILD);
-	if (childWindow)
-		SetFocus (childWindow);
 }
 
 //------------------------------------------------------------------------
@@ -466,7 +501,6 @@ void Window::close ()
 //------------------------------------------------------------------------
 void Window::onQuit ()
 {
-	frameWindowProc = nullptr;
 	HWND temp = hwnd;
 	windowWillClose ();
 	CloseWindow (temp);

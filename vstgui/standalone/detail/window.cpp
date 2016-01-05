@@ -151,8 +151,6 @@ void Window::onSizeChanged (const CPoint& newSize)
 	});
 	if (controller)
 		controller->onSizeChanged (*this, newSize);
-	if (frame)
-		frame->setSize (newSize.x, newSize.y);
 }
 
 //------------------------------------------------------------------------
@@ -179,6 +177,7 @@ void Window::onClosed ()
 	});
 	if (controller)
 		controller->onClosed (*this);
+	platformWindow->onSetContentView (nullptr);
 	if (frame)
 	{
 		frame->remember ();

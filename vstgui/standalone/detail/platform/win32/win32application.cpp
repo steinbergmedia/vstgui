@@ -7,6 +7,11 @@
 #include "../../../../lib/platform/win32/win32support.h"
 
 #include <Windows.h>
+#include <ShellScalingAPI.h>
+
+#pragma comment(lib, "Shcore.lib")
+#pragma comment(lib, "d2d1.lib")
+#pragma comment(lib, "dwrite.lib")
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -46,6 +51,9 @@ private:
 //------------------------------------------------------------------------
 void Application::init ()
 {
+	useD2DHardwareRenderer (true);
+	SetProcessDpiAwareness (PROCESS_PER_MONITOR_DPI_AWARE);
+
 	auto app = getApplicationPlatformAccess ();
 	vstgui_assert (app);
 
@@ -122,7 +130,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance,
 
 	hInstance = instance;
 
-	VSTGUI::useD2DHardwareRenderer (true);
 	VSTGUI::Standalone::Platform::Win32::Application app;
 	app.init ();
 	app.run ();
