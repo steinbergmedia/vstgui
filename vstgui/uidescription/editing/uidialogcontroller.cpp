@@ -90,6 +90,7 @@ void UIDialogController::run (UTF8StringPtr _templateName, UTF8StringPtr _dialog
 		size.right += sizeDiff.x;
 		size.bottom += sizeDiff.y;
 		CRect frameSize = frame->getViewSize ();
+		frame->getTransform ().inverse ().transform (frameSize);
 		size.centerInside (frameSize);
 		size.makeIntegral ();
 		view->setViewSize (size);
