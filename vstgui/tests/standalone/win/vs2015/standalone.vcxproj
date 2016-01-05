@@ -184,8 +184,12 @@
     <ClCompile Include="..\..\..\..\standalone\detail\uidescriptionwindowcontroller.cpp" />
     <ClCompile Include="..\..\..\..\standalone\detail\value.cpp" />
     <ClCompile Include="..\..\..\..\standalone\detail\window.cpp" />
-    <ClCompile Include="..\..\..\..\vstgui_uidescription_win32.cpp" />
-    <ClCompile Include="..\..\..\..\vstgui_win32.cpp" />
+    <ClCompile Include="..\..\..\..\vstgui_uidescription_win32.cpp">
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Default</BasicRuntimeChecks>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\vstgui_win32.cpp">
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Default</BasicRuntimeChecks>
+    </ClCompile>
     <ClCompile Include="..\..\source\testabout.cpp" />
     <ClCompile Include="..\..\source\testappdelegate.cpp" />
     <ClCompile Include="..\..\source\testwindow.cpp" />
