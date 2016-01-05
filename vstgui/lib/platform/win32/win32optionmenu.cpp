@@ -92,10 +92,10 @@ PlatformOptionMenuResult Win32OptionMenu::popup (COptionMenu* optionMenu)
 	else
 		offset = static_cast<int32_t> (rect.getHeight ());
 
-	CCoord gx = 0, gy = 0;
-	optionMenu->getFrame ()->getPosition (gx, gy);
-	gx += rect.left;
-	gy += rect.top + offset;
+	POINT p;
+	p.x = static_cast<LONG> (rect.left);
+	p.y = static_cast<LONG> (rect.top + offset);
+	ClientToScreen (windowHandle, &p);
 
 	int32_t offsetIndex = 0;
 	HMENU menu = createMenu (optionMenu, offsetIndex);
@@ -107,7 +107,7 @@ PlatformOptionMenuResult Win32OptionMenu::popup (COptionMenu* optionMenu)
 //		if (lastButton & kRButton)
 //			flags |= TPM_RIGHTBUTTON;
 
-		if (TrackPopupMenu (menu, flags, (int)gx, (int)gy, 0, windowHandle, 0))
+		if (TrackPopupMenu (menu, flags, p.x, p.y, 0, windowHandle, 0))
 		{
 			MSG msg;
 			if (PeekMessage (&msg, windowHandle, WM_COMMAND, WM_COMMAND, PM_REMOVE))
