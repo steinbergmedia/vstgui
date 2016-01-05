@@ -137,7 +137,7 @@ bool UIEditController::std__stringCompare (const std::string* lhs, const std::st
 		if (c1 != c2)
 			return c1 < c2;
 	}
-	return true;
+	return false;
 }
 
 const UTF8StringPtr UIEditController::kEncodeBitmapsSettingsKey = "EncodeBitmaps";
