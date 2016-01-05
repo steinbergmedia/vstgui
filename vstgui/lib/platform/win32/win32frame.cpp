@@ -56,6 +56,8 @@
 #include "win32openglview.h"
 #endif
 
+#include <windowsx.h>
+
 // windows libraries VSTGUI depends on
 #pragma comment(lib, "Shlwapi.lib")
 #pragma comment(lib, "gdiplus.lib")
@@ -813,11 +815,10 @@ LONG_PTR WINAPI Win32Frame::proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 				buttons |= kControl;
 			if (GetKeyState (VK_MENU)    < 0)
 				buttons |= kAlt;
-			CPoint where (LOWORD (lParam), HIWORD (lParam));
-			short zDelta = (short) HIWORD(wParam);
-			RECT rctWnd;
-			GetWindowRect (hwnd, &rctWnd);
-			where.offset ((CCoord)-rctWnd.left, (CCoord)-rctWnd.top);
+			short zDelta = (short) GET_WHEEL_DELTA_WPARAM(wParam);
+			POINT p {GET_X_LPARAM (lParam), GET_Y_LPARAM (lParam)};
+			ScreenToClient (windowHandle, &p);
+			CPoint where (p.x, p.y);
 			pFrame->platformOnMouseWheel (where, kMouseWheelAxisY, ((float)zDelta / WHEEL_DELTA), buttons);
 			break;
 		}
@@ -830,11 +831,10 @@ LONG_PTR WINAPI Win32Frame::proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 				buttons |= kControl;
 			if (GetKeyState (VK_MENU)    < 0)
 				buttons |= kAlt;
-			CPoint where (LOWORD (lParam), HIWORD (lParam));
-			short zDelta = (short) HIWORD(wParam);
-			RECT rctWnd;
-			GetWindowRect (hwnd, &rctWnd);
-			where.offset ((CCoord)-rctWnd.left, (CCoord)-rctWnd.top);
+			short zDelta = (short) GET_WHEEL_DELTA_WPARAM(wParam);
+			POINT p {GET_X_LPARAM (lParam), GET_Y_LPARAM (lParam)};
+			ScreenToClient (windowHandle, &p);
+			CPoint where (p.x, p.y);
 			pFrame->platformOnMouseWheel (where, kMouseWheelAxisX, ((float)-zDelta / WHEEL_DELTA), buttons);
 			break;
 		}
