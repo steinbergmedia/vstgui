@@ -47,7 +47,7 @@ namespace VSTGUI {
 class Win32Frame : public IPlatformFrame
 {
 public:
-	Win32Frame (IPlatformFrameCallback* frame, const CRect& size, HWND parent);
+	Win32Frame (IPlatformFrameCallback* frame, const CRect& size, HWND parent, PlatformType parentType);
 	~Win32Frame ();
 
 	HWND getPlatformWindow () const { return windowHandle; }
@@ -79,6 +79,7 @@ public:
 	void setClipboard (IDataPackage* data) override;
 	IDataPackage* getClipboard () override;
 
+	LONG_PTR WINAPI proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 //-----------------------------------------------------------------------------
 protected:
 	void initTooltip ();

@@ -54,6 +54,7 @@ enum PlatformType {
 	kWindowRef,
 	kNSView,
 	kUIView,
+	kHWNDTopLevel,
 	
 	kDefaultNative = -1
 };
