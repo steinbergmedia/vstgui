@@ -132,12 +132,15 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 	if (config.type == WindowType::Popup)
 	{
 		isPopup = true;
-		exStyle = WS_EX_APPWINDOW;
+		exStyle = WS_EX_COMPOSITED | WS_EX_TRANSPARENT;
 		dwStyle = WS_POPUP;
-		if (hasBorder && config.style.canSize ())
-			dwStyle |= WS_SIZEBOX | WS_MAXIMIZEBOX;
-		if (hasBorder && config.style.canClose ())
-			dwStyle |= WS_CAPTION | WS_SYSMENU;
+		if (config.style.hasBorder ())
+		{
+			if (config.style.canSize ())
+				dwStyle |= WS_SIZEBOX | WS_MAXIMIZEBOX;
+			if (config.style.canClose ())
+				dwStyle |= WS_CAPTION | WS_SYSMENU;
+		}
 	}
 	else
 	{
@@ -145,9 +148,9 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 		dwStyle = 0;
 		if (config.style.hasBorder ())
 		{
-			if (hasBorder && config.style.canSize ())
+			if (config.style.canSize ())
 				dwStyle |= WS_SIZEBOX | WS_MAXIMIZEBOX;
-			if (hasBorder && config.style.canClose ())
+			if (config.style.canClose ())
 				dwStyle |= WS_CAPTION | WS_SYSMENU;
 		}
 		else
@@ -404,10 +407,16 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 			{
 				LONG x = GET_X_LPARAM (lParam);
 				LONG y = GET_Y_LPARAM (lParam);
-				CPoint where {static_cast<CCoord> (x), static_cast<CCoord> (y)};
-				where -= getPosition ();
+				POINT p {x, y};
+				ScreenToClient (hwnd, &p);
+				CPoint where {static_cast<CCoord> (p.x), static_cast<CCoord> (p.y)};
+				frame->getTransform ().inverse ().transform (where);
 				if (!frame->hitTestSubViews (where))
+				{
+					DebugPrint ("HTCaption(%d-%d)\n", p.x, p.y);
 					return HTCAPTION;
+				}
+				return HTCLIENT;
 			}
 			break;
 		}
