@@ -28,11 +28,14 @@ public:
 	bool hasAboutDialog () override;
 	void showPreferenceDialog () override;
 	bool hasPreferenceDialog () override;
+	const Application::Info& getInfo () const override { return appInfo; }
 
 	// ICommandHandler
 	bool canHandleCommand (const Command& command) override;
 	bool handleCommand (const Command& command) override;
 private:
+	Application::Info appInfo {"VSTGUIStandalone", "1.0.0",
+	                           "net.sourceforge.vstgui.VSTGUIStandalone"};
 	std::shared_ptr<TestModel> model;
 };
 

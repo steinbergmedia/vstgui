@@ -326,8 +326,40 @@ static const CommandWithKeyList* getCommandList (const char* group)
 }
 
 //------------------------------------------------------------------------
+- (BOOL)verifyInfoPlistEntries
+{
+	NSDictionary* dict = [[NSBundle mainBundle] infoDictionary];
+	const auto& appInfo = IApplication::instance ().getDelegate ().getInfo ();
+	NSString* infoPlistString = dict[(@"CFBundleName")];
+	if (![stringFromUTF8String (appInfo.name) isEqualToString:infoPlistString])
+	{
+		NSLog (@"CFBundleName is not equal to Application::Info::name");
+		return NO;
+	}
+	infoPlistString = dict[(@"CFBundleShortVersionString")];
+	if (![stringFromUTF8String (appInfo.version) isEqualToString:infoPlistString])
+	{
+		NSLog (@"CFBundleShortVersionString is not equal to Application::Info::version");
+		return NO;
+	}
+	infoPlistString = dict[(@"CFBundleIdentifier")];
+	if (![stringFromUTF8String (appInfo.uri) isEqualToString:infoPlistString])
+	{
+		NSLog (@"CFBundleIdentifier is not equal to Application::Info::uri");
+		return NO;
+	}
+	return YES;
+}
+
+//------------------------------------------------------------------------
 - (void)applicationDidFinishLaunching:(NSNotification *)notification
 {
+	if ([self verifyInfoPlistEntries] == NO)
+	{
+		[NSApp terminate:nil];
+		return;
+	}
+
 	auto app = getApplicationPlatformAccess ();
 	vstgui_assert (app);
 
