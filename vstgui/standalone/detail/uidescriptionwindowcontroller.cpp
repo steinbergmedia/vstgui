@@ -23,6 +23,7 @@ namespace Standalone {
 namespace /* Anonymous */ {
 
 using UIDesc::ModelBindingPtr;
+using UIDesc::CustomizationPtr;
 
 //------------------------------------------------------------------------
 class WindowController : public WindowControllerAdapter, public ICommandHandler
@@ -192,8 +193,8 @@ struct WindowController::Impl : public IController, public ICommandHandler
 {
 	using ValueWrapperList = std::vector<ValueWrapperPtr>;
 	
-	Impl (WindowController& controller, const ModelBindingPtr& modelHandler)
-	: controller (controller), modelBinding (modelHandler)
+	Impl (WindowController& controller, const ModelBindingPtr& modelHandler, const CustomizationPtr& customization)
+	: controller (controller), modelBinding (modelHandler), customization (customization)
 	{
 		initModelValues (modelHandler);
 	}
@@ -345,7 +346,12 @@ struct WindowController::Impl : public IController, public ICommandHandler
 		}
 		return view;
 	}
-	IController* createSubController (UTF8StringPtr name, const IUIDescription* description) override { return nullptr; }
+	IController* createSubController (UTF8StringPtr name, const IUIDescription* description) override
+	{
+		if (customization)
+			return customization->createController (name, this, description);
+		return nullptr;
+	}
 	
 	WindowController& controller;
 	IWindow* window {nullptr};
@@ -355,6 +361,7 @@ struct WindowController::Impl : public IController, public ICommandHandler
 	CPoint minSize;
 	CPoint maxSize;
 	ModelBindingPtr modelBinding;
+	CustomizationPtr customization;
 	ValueWrapperList valueWrappers;
 };
 
@@ -392,7 +399,9 @@ public:
 //------------------------------------------------------------------------
 struct WindowController::EditImpl : WindowController::Impl
 {
-	EditImpl (WindowController& controller, const ModelBindingPtr& modelBinding) : Impl (controller, modelBinding)
+	EditImpl (WindowController& controller, const ModelBindingPtr& modelBinding,
+	          const CustomizationPtr& customization)
+	: Impl (controller, modelBinding, customization)
 	{
 		IApplication::instance ().registerCommand (ToggleEditingCommand, 'e');
 	}
@@ -597,9 +606,9 @@ struct WindowController::EditImpl : WindowController::Impl
 bool WindowController::init (const UIDesc::Config &config, WindowPtr &window)
 {
 #if VSTGUI_LIVE_EDITING
-	impl = std::unique_ptr<Impl> (new EditImpl (*this, config.modelBinding));
+	impl = std::unique_ptr<Impl> (new EditImpl (*this, config.modelBinding, config.customization));
 #else
-	impl = std::unique_ptr<Impl> (new Impl (*this, config.modelBinding));
+	impl = std::unique_ptr<Impl> (new Impl (*this, config.modelBinding, config.customization));
 #endif
 	return impl->init (window, config.uiDescFileName, config.viewName);
 }

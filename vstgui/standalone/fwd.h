@@ -31,7 +31,9 @@ enum class AlertResult;
 namespace UIDesc {
 
 class IModelBinding;
+class ICustomization;
 using ModelBindingPtr = std::shared_ptr<IModelBinding>;
+using CustomizationPtr = std::shared_ptr<ICustomization>;
 
 struct Config;
 

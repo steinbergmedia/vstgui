@@ -26,6 +26,14 @@ public:
 };
 
 //------------------------------------------------------------------------
+class ICustomization : public Interface
+{
+public:
+	virtual IController* createController (const UTF8StringView& name, IController* parent,
+	                                       const IUIDescription* uiDesc) = 0;
+};
+
+//------------------------------------------------------------------------
 /** Configuration for a UIDescription window */
 struct Config
 {
@@ -33,10 +41,12 @@ struct Config
 	UTF8String uiDescFileName;
 	/** view to show in the window */
 	UTF8String viewName;
-	/** model binding */
-	ModelBindingPtr modelBinding;
 	/** window configuration */
 	WindowConfiguration windowConfig;
+	/** model binding */
+	ModelBindingPtr modelBinding;
+	/** optional UI customization */
+	CustomizationPtr customization;
 };
 
 //------------------------------------------------------------------------
