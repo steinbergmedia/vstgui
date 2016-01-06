@@ -511,8 +511,15 @@ void Window::show ()
 	GetDpiForMonitor (monitor, MDT_EFFECTIVE_DPI, &x, &y);
 	setNewDPI (x);
 
-	ShowWindow (hwnd, true);
-	setSize (initialSize);
+	RECT clientRect {};
+	clientRect.right = static_cast<LONG> (initialSize.x * dpiScale);
+	clientRect.bottom = static_cast<LONG> (initialSize.y * dpiScale);
+	AdjustWindowRectEx (&clientRect, dwStyle, hasMenu, exStyle);
+	
+	LONG width = clientRect.right - clientRect.left;
+	LONG height = clientRect.bottom - clientRect.top;	
+	SetWindowPos (hwnd, HWND_TOP, 0, 0, width, height,
+				  SWP_NOMOVE | SWP_NOCOPYBITS | SWP_SHOWWINDOW);
 }
 
 //------------------------------------------------------------------------
