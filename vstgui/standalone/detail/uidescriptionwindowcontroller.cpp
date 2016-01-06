@@ -258,11 +258,13 @@ struct WindowController::Impl : public IController, public ICommandHandler
 		{
 			return;
 		}
-		frame->setSize (view->getWidth (), view->getHeight ());
+		auto viewSize = view->getViewSize ().getSize ();
+		frame->getTransform ().transform (viewSize);
+		frame->setSize (viewSize.x, viewSize.y);
 		frame->addView (view);
 		
 		frame->setFocusDrawingEnabled (false);
-		window->setSize (frame->getViewSize ().getSize ());
+		window->setSize (view->getViewSize ().getSize ());
 	}
 	
 	bool canHandleCommand (const Command& command) override
