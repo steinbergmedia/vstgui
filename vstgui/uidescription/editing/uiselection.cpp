@@ -165,7 +165,7 @@ CRect UISelection::getBounds () const
 CRect UISelection::getGlobalViewCoordinates (CView* view)
 {
 	CRect result = view->translateToGlobal (view->getViewSize ());
-	return view->getFrame ()->getTransform ().inverse ().transform (result);
+	return view->getFrame () ? view->getFrame ()->getTransform ().inverse ().transform (result) : result;
 }
 
 //----------------------------------------------------------------------------------------------------
