@@ -93,8 +93,7 @@ public:
 	 *
 	 *	There is no ownership involved here, so you have to make sure the listener is alive
 	 *	as long as the window lives.
-	 *	Listeners are automatically removed when the window is closed, so you should not do this
-	 *	yourself.
+	 *	Listeners are automatically removed when the window is closed.
 	 */
 	virtual void registerWindowListener (IWindowListener* listener) = 0;
 	/** Unregister a window listener */
