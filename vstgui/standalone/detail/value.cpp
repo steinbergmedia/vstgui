@@ -317,7 +317,7 @@ ValuePtr IStepValue::makeStringListValue (const UTF8String& id,
                                           const std::initializer_list<UTF8String>& strings)
 {
 	vstgui_assert (id.empty () == false);
-	return std::make_shared<StepValue> (id, strings.size (), 0,
+	return std::make_shared<StepValue> (id, static_cast<IStepValue::StepType> (strings.size ()), 0,
 	                                    std::make_shared<StringListValueStringConverter> (strings));
 }
 
