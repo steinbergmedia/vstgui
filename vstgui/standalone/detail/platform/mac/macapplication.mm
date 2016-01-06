@@ -64,7 +64,7 @@ static const CommandWithKeyList* getCommandList (const char* group)
 }
 
 //------------------------------------------------------------------------
-- (IBAction)showAboutDialog:(id)sender
+- (IBAction)showAboutDialog:(nullable id)sender
 {
 	if (IApplication::instance ().getDelegate ().hasAboutDialog ())
 		IApplication::instance ().getDelegate ().showAboutDialog ();
@@ -73,13 +73,13 @@ static const CommandWithKeyList* getCommandList (const char* group)
 }
 
 //------------------------------------------------------------------------
-- (IBAction)showPreferenceDialog:(id)sender
+- (IBAction)showPreferenceDialog:(nullable id)sender
 {
 	IApplication::instance ().getDelegate ().showPreferenceDialog ();
 }
 
 //------------------------------------------------------------------------
-- (IBAction)processCommand:(id)sender
+- (IBAction)processCommand:(nullable id)sender
 {
 	VSTGUICommand* command = [sender representedObject];
 	if (command)

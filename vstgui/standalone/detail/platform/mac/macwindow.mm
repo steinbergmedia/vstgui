@@ -386,7 +386,7 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 @implementation VSTGUITransparentWindow
 
 //------------------------------------------------------------------------
-- (void)makeKeyAndOrderFront:(id)sender
+- (void)makeKeyAndOrderFront:(nullable id)sender
 {
 	if (!self.visible && [self.title length] > 0)
 	{
@@ -409,12 +409,20 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 }
 
 //------------------------------------------------------------------------
-- (void)performClose:(id)sender
+- (void)performClose:(nullable id)sender
 {
 	VSTGUITransparentWindow* window = self;
 	VSTGUI::Call::later ([=] () {
 		[window close];
 	});
+}
+
+//------------------------------------------------------------------------
+- (BOOL)validateMenuItem:(NSMenuItem *)menuItem
+{
+	if ([menuItem action] == @selector(performClose:))
+		return YES;
+	return [super validateMenuItem:menuItem];
 }
 
 @end
@@ -470,7 +478,7 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 }
 
 //------------------------------------------------------------------------
-- (void)performClose:(id)sender
+- (void)performClose:(nullable id)sender
 {
 	VSTGUIPopup* popup = self;
 	VSTGUI::Call::later ([=] () {
