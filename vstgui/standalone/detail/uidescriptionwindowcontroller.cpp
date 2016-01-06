@@ -9,6 +9,7 @@
 #include "../../lib/cvstguitimer.h"
 #include "../../lib/controls/coptionmenu.h"
 #include "../../lib/controls/ctextedit.h"
+#include "../../lib/controls/csegmentbutton.h"
 #include "../../uidescription/uidescription.h"
 #include "../../uidescription/uiattributes.h"
 #include "../../uidescription/cstream.h"
@@ -85,13 +86,19 @@ public:
 		if (auto menu = dynamic_cast<COptionMenu*>(control))
 		{
 			menu->removeAllEntry ();
-			if (stepValue)
+			for (IStepValue::StepType i = 0; i < stepValue->getSteps (); ++i)
 			{
-				for (IStepValue::StepType i = 0; i < stepValue->getSteps (); ++i)
-				{
-					auto title = value->getStringConverter ().valueAsString (stepValue->stepToValue (i));
-					menu->addEntry (title);
-				}
+				auto title = value->getStringConverter ().valueAsString (stepValue->stepToValue (i));
+				menu->addEntry (title);
+			}
+		}
+		if (auto segmentButton = dynamic_cast<CSegmentButton*>(control))
+		{
+			segmentButton->removeAllSegments ();
+			for (IStepValue::StepType i = 0; i < stepValue->getSteps (); ++i)
+			{
+				auto title = value->getStringConverter ().valueAsString (stepValue->stepToValue (i));
+				segmentButton->addSegment ({title});
 			}
 		}
 	}
