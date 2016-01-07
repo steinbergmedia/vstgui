@@ -56,8 +56,11 @@ public:
 };
 
 //------------------------------------------------------------------------
-bool initUIDescAsNew (UIDescription& uiDesc, CFrame* frame)
+bool initUIDescAsNew (UIDescription& uiDesc, CFrame* _frame)
 {
+	SharedPointer<CFrame> frame (_frame);
+	if (!frame)
+		frame = owned (new CFrame ({0, 0, 0, 0}, nullptr));
 	auto fs = owned (CNewFileSelector::create (frame, CNewFileSelector::kSelectSaveFile));
 	fs->setDefaultSaveName (uiDesc.getFilePath ());
 	fs->setDefaultExtension (CFileExtension ("UIDescription File", "uidesc"));
@@ -86,8 +89,12 @@ enum class UIDescCheckFilePathResult
 };
 
 //------------------------------------------------------------------------
-UIDescCheckFilePathResult checkAndUpdateUIDescFilePath (UIDescription& uiDesc, CFrame* frame, UTF8StringPtr notFoundText = "The uidesc file location cannot be found.")
+UIDescCheckFilePathResult checkAndUpdateUIDescFilePath (UIDescription& uiDesc, CFrame* _frame, UTF8StringPtr notFoundText = "The uidesc file location cannot be found.")
 {
+	SharedPointer<CFrame> frame (_frame);
+	if (!frame)
+		frame = owned (new CFrame ({0, 0, 0, 0}, nullptr));
+
 	CFileStream stream;
 	if (stream.open (uiDesc.getFilePath (), CFileStream::kReadMode))
 		return UIDescCheckFilePathResult::exists;
