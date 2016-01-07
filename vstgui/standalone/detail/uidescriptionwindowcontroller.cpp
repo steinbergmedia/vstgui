@@ -26,6 +26,71 @@ namespace /* Anonymous */ {
 using UIDesc::ModelBindingPtr;
 using UIDesc::CustomizationPtr;
 
+#if VSTGUI_LIVE_EDITING
+//------------------------------------------------------------------------
+bool initUIDescAsNew (UIDescription& uiDesc, CFrame* frame)
+{
+	auto fs = owned (CNewFileSelector::create (frame, CNewFileSelector::kSelectSaveFile));
+	fs->setDefaultSaveName (uiDesc.getFilePath ());
+	fs->setDefaultExtension (CFileExtension ("UIDescription File", "uidesc"));
+	fs->setTitle ("Save UIDescription File");
+	if (fs->runModal ())
+	{
+		if (fs->getNumSelectedFiles () == 0)
+		{
+			return false;
+		}
+		auto path = fs->getSelectedFile (0);
+		uiDesc.setFilePath (path);
+		auto settings = uiDesc.getCustomAttributes ("UIDescFilePath", true);
+		settings->setAttribute ("path", path);
+		return true;
+	}
+	return false;
+}
+
+//------------------------------------------------------------------------
+enum class UIDescCheckFilePathResult
+{
+	exists,
+	newPathSet,
+	cancel
+};
+
+//------------------------------------------------------------------------
+UIDescCheckFilePathResult checkAndUpdateUIDescFilePath (UIDescription& uiDesc, CFrame* frame, UTF8StringPtr notFoundText = "The uidesc file location cannot be found.")
+{
+	CFileStream stream;
+	if (stream.open (uiDesc.getFilePath (), CFileStream::kReadMode))
+		return UIDescCheckFilePathResult::exists;
+	AlertBoxConfig alertConfig;
+	alertConfig.headline = notFoundText;
+	alertConfig.description = uiDesc.getFilePath ();
+	alertConfig.defaultButton = "Locate";
+	alertConfig.secondButton = "Close";
+	auto alertResult = IApplication::instance ().showAlertBox (alertConfig);
+	if (alertResult == AlertResult::secondButton)
+	{
+		return UIDescCheckFilePathResult::cancel;
+	}
+	auto fs = owned (CNewFileSelector::create (frame, CNewFileSelector::kSelectFile));
+	fs->setDefaultExtension (CFileExtension ("UIDescription File", "uidesc"));
+	if (fs->runModal ())
+	{
+		if (fs->getNumSelectedFiles () == 0)
+		{
+			return UIDescCheckFilePathResult::cancel;
+		}
+		uiDesc.setFilePath (fs->getSelectedFile (0));
+		auto settings = uiDesc.getCustomAttributes ("UIDescFilePath", true);
+		settings->setAttribute ("path", uiDesc.getFilePath ());
+		return UIDescCheckFilePathResult::newPathSet;
+	}
+	return UIDescCheckFilePathResult::cancel;
+}
+
+#endif
+
 //------------------------------------------------------------------------
 struct SharedResources
 {
@@ -62,19 +127,8 @@ private:
 		if (!uiDesc->parse ())
 		{
 #if VSTGUI_LIVE_EDITING
-			auto fs = owned (CNewFileSelector::create (nullptr, CNewFileSelector::kSelectSaveFile));
-			fs->setDefaultSaveName (uiDesc->getFilePath ());
-			fs->setDefaultExtension (CFileExtension ("UIDescription File", "uidesc"));
-			fs->setTitle ("Save UIDescription File");
-			if (fs->runModal ())
-			{
-				if (fs->getNumSelectedFiles () == 0)
-					return false;
-				auto path = fs->getSelectedFile (0);
-				uiDesc->setFilePath (path);
-				auto settings = uiDesc->getCustomAttributes ("UIDescFilePath", true);
-				settings->setAttribute ("path", path);
-			}
+			if (!initUIDescAsNew (*uiDesc, nullptr))
+				return false;
 			else
 #endif
 			return false;
@@ -83,22 +137,28 @@ private:
 		auto filePath = settings->getAttributeValue ("path");
 		if (filePath)
 			uiDesc->setFilePath (filePath->data ());
+
+#if VSTGUI_LIVE_EDITING
+		checkAndUpdateUIDescFilePath (*uiDesc, nullptr, "The resource ui desc file location cannot be found.");
+#endif
 		return true;
 	}
 	
 	bool save ()
 	{
+#if VSTGUI_LIVE_EDITING
 		if (uiDesc == nullptr)
 			return true;
 
-#if VSTGUI_LIVE_EDITING
-		if (uiDesc->save (uiDesc->getFilePath ()))
+		if (uiDesc->save (uiDesc->getFilePath (), UIDescription::kWriteImagesIntoXMLFile))
 			return true;
 		AlertBoxConfig config;
 		config.headline = "Saving the shared resources uidesc file failed.";
 		IApplication::instance ().showAlertBox (config);
-#endif
 		return false;
+#else
+		return true;
+#endif
 	}
 	SharedPointer<UIDescription> uiDesc;
 };
@@ -544,57 +604,31 @@ struct WindowController::EditImpl : WindowController::Impl
 	
 	void initAsNew ()
 	{
-		auto fs = owned (CNewFileSelector::create (frame, CNewFileSelector::kSelectSaveFile));
-		fs->setDefaultSaveName (uiDesc->getFilePath ());
-		fs->setDefaultExtension (CFileExtension ("UIDescription File", "uidesc"));
-		fs->setTitle ("Save UIDescription File");
-		if (fs->runModal ())
+		if (initUIDescAsNew (*uiDesc, frame))
 		{
-			if (fs->getNumSelectedFiles () == 0)
-			{
-				Call::later ([this] () {
-					window->close ();
-				});
-				return;
-			}
-			auto path = fs->getSelectedFile (0);
-			uiDesc->setFilePath (path);
-			auto settings = uiDesc->getCustomAttributes ("UIDescFilePath", true);
-			settings->setAttribute ("path", path);
 			enableEditing (true, true);
 			save (true);
 			enableEditing (false);
+		}
+		else
+		{
+			Call::later ([this] () {
+				window->close ();
+			});
 		}
 	}
 	
 	void checkFileExists ()
 	{
-		CFileStream stream;
-		if (stream.open (uiDesc->getFilePath (), CFileStream::kReadMode))
+		auto result = checkAndUpdateUIDescFilePath (*uiDesc, frame);
+		if (result == UIDescCheckFilePathResult::exists)
 			return;
-		AlertBoxConfig alertConfig;
-		alertConfig.headline = "The uidesc file location cannot be found.";
-		alertConfig.defaultButton = "Locate";
-		alertConfig.secondButton = "Close";
-		auto alertResult = IApplication::instance ().showAlertBox (alertConfig);
-		if (alertResult == AlertResult::secondButton)
+		if (result == UIDescCheckFilePathResult::newPathSet)
 		{
-			enableEditing (false);
+			save (true);
 			return;
 		}
-		auto fs = owned (CNewFileSelector::create (frame, CNewFileSelector::kSelectFile));
-		fs->setDefaultExtension (CFileExtension ("UIDescription File", "uidesc"));
-		fs->run ([this] (CNewFileSelector* fileSelector) {
-			if (fileSelector->getNumSelectedFiles () == 0)
-			{
-				enableEditing (false);
-				return;
-			}
-			uiDesc->setFilePath (fileSelector->getSelectedFile (0));
-			auto settings = uiDesc->getCustomAttributes ("UIDescFilePath", true);
-			settings->setAttribute ("path", uiDesc->getFilePath ());
-			save (true);
-		});
+		enableEditing (false);
 	}
 	
 	void save (bool force = false)
@@ -730,7 +764,6 @@ bool WindowController::handleCommand (const Command& command)
 {
 	return impl->handleCommand (command);
 }
-
 
 //------------------------------------------------------------------------
 } // Anonymous
