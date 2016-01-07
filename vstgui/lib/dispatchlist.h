@@ -82,16 +82,20 @@ void DispatchList<T>::forEach (Procedure proc)
 	if (entries.empty ())
 		return;
 
+	bool wasInForEach = inForEach;
 	inForEach = true;
 	for (typename Array::const_iterator it = entries.begin (), end = entries.end (); it != end; ++it)
 		proc (*it);
-	inForEach = false;
-	for (typename Array::const_iterator it = toAdd.begin (), end = toAdd.end (); it != end; ++it)
-		add (*it);
-	for (typename Array::const_iterator it = toRemove.begin (), end = toRemove.end (); it != end; ++it)
-		remove (*it);
-	toAdd.clear ();
-	toRemove.clear ();
+	inForEach = wasInForEach;
+	if (!inForEach)
+	{
+		for (typename Array::const_iterator it = toAdd.begin (), end = toAdd.end (); it != end; ++it)
+			add (*it);
+		for (typename Array::const_iterator it = toRemove.begin (), end = toRemove.end (); it != end; ++it)
+			remove (*it);
+		toAdd.clear ();
+		toRemove.clear ();
+	}
 }
 
 //------------------------------------------------------------------------
