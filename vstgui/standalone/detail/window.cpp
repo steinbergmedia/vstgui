@@ -65,6 +65,7 @@ public:
 	const WindowControllerPtr& getController () const override { return controller; }
 	CPoint getSize () const override { return platformWindow->getSize (); }
 	CPoint getPosition () const override { return platformWindow->getPosition (); }
+	CRect getFocusViewRect () const override;
 	void setSize (const CPoint& newSize) override { platformWindow->setSize (newSize); }
 	void setPosition (const CPoint& newPosition) override { platformWindow->setPosition (newPosition); }
 	void setTitle (const UTF8String& newTitle) override { platformWindow->setTitle (newTitle); }
@@ -135,6 +136,21 @@ void Window::setContentView (const SharedPointer<CFrame>& newFrame)
 		return;
 	frame->open (platformWindow->getPlatformHandle (), platformWindow->getPlatformType ());
 	platformWindow->onSetContentView (frame);
+}
+
+//------------------------------------------------------------------------
+CRect Window::getFocusViewRect () const
+{
+	CRect result;
+	if (frame)
+	{
+		if (auto focusView = frame->getFocusView ())
+		{
+			result = focusView->getViewSize ();
+			focusView->translateToGlobal (result);
+		}
+	}
+	return result;
 }
 
 //------------------------------------------------------------------------
