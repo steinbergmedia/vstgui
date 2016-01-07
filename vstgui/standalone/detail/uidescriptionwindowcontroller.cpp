@@ -698,6 +698,14 @@ struct WindowController::EditImpl : WindowController::Impl
 			frame->setFocusDrawingEnabled (true);
 			frame->setFocusWidth (1);
 			window->setSize (view->getViewSize ().getSize ());
+			if (auto menuController = uiEditController->getMenuController ())
+			{
+				if (auto menu = menuController->getFileMenu ())
+				{
+					menu->removeAllEntry ();
+					menu->setMouseEnabled (false);
+				}
+			}
 			if (!ignoreCheckFileExist)
 				checkFileExists ();
 		}
