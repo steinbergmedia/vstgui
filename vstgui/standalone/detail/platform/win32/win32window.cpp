@@ -459,13 +459,9 @@ CPoint Window::getSize () const
 //------------------------------------------------------------------------
 CPoint Window::getPosition () const
 {
-	RECT frameRect, clientRect;
-	GetWindowRect (hwnd, &frameRect);
-	GetClientRect (hwnd, &clientRect);
-	CPoint result;
-	result.x = frameRect.left - clientRect.left;
-	result.y = frameRect.top - clientRect.top;
-	return result;
+	POINT p {0, 0};
+	MapWindowPoints (hwnd, nullptr, &p, 1);
+	return {static_cast<CCoord> (p.x), static_cast<CCoord> (p.y)};
 }
 
 //------------------------------------------------------------------------
@@ -490,12 +486,14 @@ void Window::setSize (const CPoint& newSize)
 //------------------------------------------------------------------------
 void Window::setPosition (const CPoint& newPosition)
 {
-	RECT frameRect, clientRect;
-	GetWindowRect (hwnd, &frameRect);
-	GetClientRect (hwnd, &clientRect);
-	LONG x = static_cast<LONG> (newPosition.x) + (frameRect.left - clientRect.left);
-	LONG y = static_cast<LONG> (newPosition.y) + (frameRect.top - clientRect.top);
-	SetWindowPos (hwnd, HWND_TOP, x, y, 0, 0, SWP_NOSIZE | SWP_NOACTIVATE);
+	RECT clientRect {};
+	clientRect.right = 100;
+	clientRect.bottom = 100;
+	AdjustWindowRectEx (&clientRect, dwStyle, hasMenu, exStyle);
+
+	clientRect.left += static_cast<LONG> (newPosition.x);
+	clientRect.top += static_cast<LONG> (newPosition.y);
+	SetWindowPos (hwnd, HWND_TOP, clientRect.left, clientRect.top, 0, 0, SWP_NOSIZE | SWP_NOACTIVATE);
 }
 
 //------------------------------------------------------------------------
