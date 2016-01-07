@@ -29,6 +29,7 @@ public:
 	virtual void showPreferenceDialog () = 0;
 	virtual bool hasPreferenceDialog () = 0;
 	virtual const Info& getInfo () const = 0;
+	virtual UTF8StringPtr getSharedUIResourceFilename () const = 0;
 };
 
 //------------------------------------------------------------------------

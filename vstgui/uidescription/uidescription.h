@@ -81,6 +81,9 @@ public:
 	UTF8StringPtr getFilePath () const { return filePath.c_str (); }
 	void setFilePath (UTF8StringPtr path);
 	
+	void setSharedResources (const SharedPointer<UIDescription>& resources);
+	const SharedPointer<UIDescription>& getSharedResources () const { return sharedResources; }
+	
 	const UIAttributes* getViewAttributes (UTF8StringPtr name) const;
 
 	void setController (IController* controller) const;
@@ -196,6 +199,7 @@ protected:
 	IViewFactory* viewFactory;
 	Xml::IContentProvider* xmlContentProvider;
 	IBitmapCreator* bitmapCreator;
+	SharedPointer<UIDescription> sharedResources;
 
 	mutable std::deque<IController*> subControllerStack;
 

@@ -1,6 +1,7 @@
 #include "../iuidescwindow.h"
 #include "../iwindowcontroller.h"
 #include "../iapplication.h"
+#include "../iappdelegate.h"
 #include "../ialertbox.h"
 #include "../../lib/iviewlistener.h"
 #include "../../lib/cframe.h"
@@ -24,6 +25,83 @@ namespace /* Anonymous */ {
 
 using UIDesc::ModelBindingPtr;
 using UIDesc::CustomizationPtr;
+
+//------------------------------------------------------------------------
+struct SharedResources
+{
+	static SharedResources& instance ()
+	{
+		static SharedResources gInstance;
+		return gInstance;
+	}
+	
+	const SharedPointer<UIDescription>& get ()
+	{
+		auto res = load ();
+		vstgui_assert (res);
+		return uiDesc;
+	}
+	
+	void unuse ()
+	{
+		auto res = save ();
+		vstgui_assert (res);
+		if (uiDesc && uiDesc->getNbReference () == 1)
+			uiDesc = nullptr;
+	}
+
+private:
+	bool load ()
+	{
+		if (uiDesc)
+			return true;
+		auto filename = IApplication::instance ().getDelegate ().getSharedUIResourceFilename ();
+		if (!filename)
+			return true;
+		uiDesc = owned (new UIDescription (filename));
+		if (!uiDesc->parse ())
+		{
+#if VSTGUI_LIVE_EDITING
+			auto fs = owned (CNewFileSelector::create (nullptr, CNewFileSelector::kSelectSaveFile));
+			fs->setDefaultSaveName (uiDesc->getFilePath ());
+			fs->setDefaultExtension (CFileExtension ("UIDescription File", "uidesc"));
+			fs->setTitle ("Save UIDescription File");
+			if (fs->runModal ())
+			{
+				if (fs->getNumSelectedFiles () == 0)
+					return false;
+				auto path = fs->getSelectedFile (0);
+				uiDesc->setFilePath (path);
+				auto settings = uiDesc->getCustomAttributes ("UIDescFilePath", true);
+				settings->setAttribute ("path", path);
+			}
+			else
+#endif
+			return false;
+		}
+		auto settings = uiDesc->getCustomAttributes ("UIDescFilePath", true);
+		auto filePath = settings->getAttributeValue ("path");
+		if (filePath)
+			uiDesc->setFilePath (filePath->data ());
+		return true;
+	}
+	
+	bool save ()
+	{
+		if (uiDesc == nullptr)
+			return true;
+
+#if VSTGUI_LIVE_EDITING
+		if (uiDesc->save (uiDesc->getFilePath ()))
+			return true;
+		AlertBoxConfig config;
+		config.headline = "Saving the shared resources uidesc file failed.";
+		IApplication::instance ().showAlertBox (config);
+#endif
+		return false;
+	}
+	SharedPointer<UIDescription> uiDesc;
+};
 
 //------------------------------------------------------------------------
 class WindowController : public WindowControllerAdapter, public ICommandHandler
@@ -199,6 +277,15 @@ struct WindowController::Impl : public IController, public ICommandHandler
 		initModelValues (modelHandler);
 	}
 	
+	~Impl ()
+	{
+		if (uiDesc)
+		{
+			uiDesc->setSharedResources (nullptr);
+			SharedResources::instance ().unuse ();
+		}
+	}
+	
 	virtual bool init (WindowPtr& inWindow, const char* fileName, const char* templateName)
 	{
 		window = inWindow.get ();
@@ -235,6 +322,7 @@ struct WindowController::Impl : public IController, public ICommandHandler
 	bool initUIDesc (const char* fileName)
 	{
 		uiDesc = owned (new UIDescription (fileName));
+		uiDesc->setSharedResources (SharedResources::instance ().get ());
 		if (!uiDesc->parse ())
 		{
 			return false;
@@ -488,7 +576,7 @@ struct WindowController::EditImpl : WindowController::Impl
 		alertConfig.headline = "The uidesc file location cannot be found.";
 		alertConfig.defaultButton = "Locate";
 		alertConfig.secondButton = "Close";
-		auto alertResult = IApplication::instance().showAlertBox (alertConfig);
+		auto alertResult = IApplication::instance ().showAlertBox (alertConfig);
 		if (alertResult == AlertResult::secondButton)
 		{
 			enableEditing (false);

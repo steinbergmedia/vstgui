@@ -698,6 +698,8 @@ void UIDescription::setFilePath (UTF8StringPtr path)
 //-----------------------------------------------------------------------------
 void UIDescription::addDefaultNodes ()
 {
+	if (sharedResources)
+		return;
 	UINode* fontsNode = getBaseNode (MainNodeNames::kFont);
 	if (fontsNode)
 	{
@@ -807,6 +809,11 @@ bool UIDescription::parse ()
 			}
 		}
 	}
+	if (!nodes)
+	{
+		nodes = new UINode ("vstgui-ui-description");
+		addDefaultNodes ();
+	}
 	return false;
 }
 
@@ -825,6 +832,8 @@ void UIDescription::setBitmapCreator (IBitmapCreator* creator)
 //-----------------------------------------------------------------------------
 bool UIDescription::saveWindowsRCFile (UTF8StringPtr filename)
 {
+	if (sharedResources)
+		return true;
 	bool result = false;
 	UINode* bitmapNodes = getBaseNode (MainNodeNames::kBitmap);
 	if (bitmapNodes && !bitmapNodes->getChildren().empty ())
@@ -899,25 +908,34 @@ bool UIDescription::save (UTF8StringPtr filename, int32_t flags)
 bool UIDescription::saveToStream (OutputStream& stream, int32_t flags)
 {
 	changed (kMessageBeforeSave);
-	UINode* bitmapNodes = getBaseNode (MainNodeNames::kBitmap);
-	if (bitmapNodes)
+	if (!sharedResources)
 	{
-		for (UIDescList::iterator it = bitmapNodes->getChildren ().begin (); it != bitmapNodes->getChildren ().end (); it++)
+		UINode* bitmapNodes = getBaseNode (MainNodeNames::kBitmap);
+		if (bitmapNodes)
 		{
-			UIBitmapNode* bitmapNode = dynamic_cast<UIBitmapNode*> (*it);
-			if (bitmapNode)
+			for (UIDescList::iterator it = bitmapNodes->getChildren ().begin (); it != bitmapNodes->getChildren ().end (); it++)
 			{
-				if (flags & kWriteImagesIntoXMLFile)
-					bitmapNode->createXMLData (filePath);
-				else
-					bitmapNode->removeXMLData ();
-				
+				UIBitmapNode* bitmapNode = dynamic_cast<UIBitmapNode*> (*it);
+				if (bitmapNode)
+				{
+					if (flags & kWriteImagesIntoXMLFile)
+						bitmapNode->createXMLData (filePath);
+					else
+						bitmapNode->removeXMLData ();
+					
+				}
 			}
 		}
 	}
 	nodes->getAttributes ()->setAttribute ("version", "1");
 	UIDescWriter writer;
 	return writer.write (stream, nodes);
+}
+
+//-----------------------------------------------------------------------------
+void UIDescription::setSharedResources (const SharedPointer<UIDescription>& resources)
+{
+	sharedResources = resources;
 }
 
 //-----------------------------------------------------------------------------
@@ -1241,6 +1259,14 @@ const UIAttributes* UIDescription::getViewAttributes (UTF8StringPtr name) const
 //-----------------------------------------------------------------------------
 UINode* UIDescription::getBaseNode (UTF8StringPtr name) const
 {
+	if (sharedResources)
+	{
+		UTF8StringView nameView (name);
+		if (nameView == MainNodeNames::kBitmap || nameView == MainNodeNames::kFont || nameView == MainNodeNames::kColor || nameView == MainNodeNames::kGradient)
+		{
+			return sharedResources->getBaseNode (name);
+		}
+	}
 	if (nodes)
 	{
 		UINode* node = nodes->getChildren ().findChildNode (name);
@@ -2029,6 +2055,7 @@ void UIDescription::updateViewDescription (UTF8StringPtr name, CView* view)
 				if (*nodeName == name)
 				{
 					node = (*it);
+					break;
 				}
 			}
 		}
@@ -2046,11 +2073,7 @@ void UIDescription::updateViewDescription (UTF8StringPtr name, CView* view)
 bool UIDescription::addNewTemplate (UTF8StringPtr name, UIAttributes* attr)
 {
 #if VSTGUI_LIVE_EDITING
-	if (!nodes)
-	{
-		nodes = new UINode ("vstgui-ui-description");
-		addDefaultNodes ();
-	}
+	vstgui_assert (nodes);
 	UINode* templateNode = findChildNodeByNameAttribute (nodes, name);
 	if (templateNode == 0)
 	{

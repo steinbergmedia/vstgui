@@ -29,6 +29,7 @@ public:
 	void showPreferenceDialog () override;
 	bool hasPreferenceDialog () override;
 	const Application::Info& getInfo () const override { return appInfo; }
+	VSTGUI::UTF8StringPtr getSharedUIResourceFilename () const override { return "resources.uidesc"; }
 
 	// ICommandHandler
 	bool canHandleCommand (const Command& command) override;
