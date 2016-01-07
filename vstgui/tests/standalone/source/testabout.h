@@ -41,11 +41,14 @@ class ModelBindingCallbacks : public VSTGUI::Standalone::ValueListenerAdapter, p
 public:
 	using ValuePtr = VSTGUI::Standalone::ValuePtr;
 	using IValue = VSTGUI::Standalone::IValue;
+	using UTF8String = VSTGUI::UTF8String;
 	
 	~ModelBindingCallbacks ();
 	
 	void addValue (ValuePtr value, const ValueCalls& callbacks = {});
 	void addValue (ValuePtr value, ValueCalls&& callbacks);
+	
+	ValuePtr getValue (const UTF8String& valueID) const;
 private:
 	const ValueList& getValues () const override { return valueList; }
 

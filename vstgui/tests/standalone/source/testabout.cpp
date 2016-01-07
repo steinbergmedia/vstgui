@@ -53,6 +53,8 @@ ModelBindingCallbacks::~ModelBindingCallbacks ()
 {
 	for (auto& v : valueList)
 		v->unregisterListener (this);
+	values.clear ();
+	valueList.clear ();
 }
 
 //------------------------------------------------------------------------
@@ -69,6 +71,17 @@ void ModelBindingCallbacks::addValue (ValuePtr value, ValueCalls&& callbacks)
 	values.emplace (value.get (), std::move (callbacks));
 	valueList.emplace_back (value);
 	value->registerListener (this);
+}
+
+//------------------------------------------------------------------------
+ValuePtr ModelBindingCallbacks::getValue (const UTF8String& valueID) const
+{
+	for (auto& v : valueList)
+	{
+		if (v->getID () == valueID)
+			return v;
+	}
+	return nullptr;
 }
 
 //------------------------------------------------------------------------

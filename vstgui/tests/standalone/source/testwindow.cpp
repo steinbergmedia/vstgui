@@ -69,19 +69,18 @@ void TestModel::onEndEdit (const IValue& value)
 			return;
 		rect.offset (window->getPosition ());
 		UIDesc::Config config;
-		config.windowConfig.size = {100, 100};
 		config.viewName = "view";
 		config.modelBinding = shared_from_this ();
 		config.uiDescFileName = "testpopup.uidesc";
 		config.windowConfig.type = WindowType::Popup;
 		if (auto popup = UIDesc::makeWindow (config))
 		{
-				auto size = popup->getSize ();
-				CRect r;
-				r.setSize (size);
-				r.centerInside (rect);
-				popup->setPosition (r.getTopLeft ());
-				popup->show ();
+			auto size = popup->getSize ();
+			CRect r;
+			r.setSize (size);
+			r.centerInside (rect);
+			popup->setPosition (r.getTopLeft ());
+			popup->show ();
 		}
 		
 	}
