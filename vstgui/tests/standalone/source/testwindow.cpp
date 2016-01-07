@@ -1,6 +1,9 @@
 #include "testwindow.h"
 #include "vstgui/standalone/iapplication.h"
 #include "vstgui/standalone/ialertbox.h"
+#include "vstgui/standalone/iuidescwindow.h"
+#include "vstgui/lib/cframe.h"
+#include "vstgui/lib/cvstguitimer.h"
 
 //------------------------------------------------------------------------
 namespace MyApp {
@@ -12,10 +15,11 @@ using namespace VSTGUI::Standalone;
 TestModel::TestModel ()
 {
 	addValue (IValue::make ("Activate", 1.));
-	addValue (IValue::make ("Test", 0.));
+	addValue (IValue::make ("Test"));
 	addValue (IStepValue::make ("StepTest", 5, 0));
-	addValue (IValue::make ("ShowAlert", 0.));
+	addValue (IValue::make ("ShowAlert"));
 	addValue (IStepValue::makeStringListValue ("StringList", {"one","two","three","four","five"}));
+	addValue (IValue::make ("ShowPopup"));
 }
 
 //------------------------------------------------------------------------
@@ -53,6 +57,33 @@ void TestModel::onEndEdit (const IValue& value)
 			IApplication::instance ().showAlertBoxForWindow (config);
 		else
 			IApplication::instance ().showAlertBox (config);
+	}
+	else if (value.getID () == "ShowPopup" && value.getValue () > 0.5)
+	{
+		auto v = values[5];
+		v->performEdit (0.);
+		auto window = IApplication::instance ().getWindows ().front ();
+		vstgui_assert (window);
+		auto rect = window->getFocusViewRect ();
+		if (rect.isEmpty ())
+			return;
+		rect.offset (window->getPosition ());
+		UIDesc::Config config;
+		config.windowConfig.size = {100, 100};
+		config.viewName = "view";
+		config.modelBinding = shared_from_this ();
+		config.uiDescFileName = "testpopup.uidesc";
+		config.windowConfig.type = WindowType::Popup;
+		if (auto popup = UIDesc::makeWindow (config))
+		{
+				auto size = popup->getSize ();
+				CRect r;
+				r.setSize (size);
+				r.centerInside (rect);
+				popup->setPosition (r.getTopLeft ());
+				popup->show ();
+		}
+		
 	}
 }
 
