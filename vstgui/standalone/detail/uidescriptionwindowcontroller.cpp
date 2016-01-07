@@ -28,6 +28,34 @@ using UIDesc::CustomizationPtr;
 
 #if VSTGUI_LIVE_EDITING
 //------------------------------------------------------------------------
+struct EditFileMap
+{
+private:
+	using Map = std::unordered_map<std::string, std::string>;
+	Map fileMap;
+	static EditFileMap& instance ()
+	{
+		static EditFileMap gInstance;
+		return gInstance;
+	}
+public:
+	static void set (const std::string& filename, const std::string& absolutePath)
+	{
+		instance ().fileMap.insert ({filename, absolutePath});
+	}
+	static const std::string& get (const std::string& filename)
+	{
+		auto it = instance ().fileMap.find (filename);
+		if (it == instance ().fileMap.end ())
+		{
+			static std::string empty;
+			return empty;
+		}
+		return it->second;
+	}
+};
+
+//------------------------------------------------------------------------
 bool initUIDescAsNew (UIDescription& uiDesc, CFrame* frame)
 {
 	auto fs = owned (CNewFileSelector::create (frame, CNewFileSelector::kSelectSaveFile));
@@ -102,15 +130,13 @@ struct SharedResources
 	
 	const SharedPointer<UIDescription>& get ()
 	{
-		auto res = load ();
-		vstgui_assert (res);
+		load ();
 		return uiDesc;
 	}
 	
 	void unuse ()
 	{
-		auto res = save ();
-		vstgui_assert (res);
+		save ();
 		if (uiDesc && uiDesc->getNbReference () == 1)
 			uiDesc = nullptr;
 	}
@@ -123,6 +149,13 @@ private:
 		auto filename = IApplication::instance ().getDelegate ().getSharedUIResourceFilename ();
 		if (!filename)
 			return true;
+
+#if VSTGUI_LIVE_EDITING
+		auto& absPath = EditFileMap::get (filename);
+		if (!absPath.empty ())
+			filename = absPath.data ();
+#endif
+
 		uiDesc = owned (new UIDescription (filename));
 		if (!uiDesc->parse ())
 		{
@@ -140,6 +173,7 @@ private:
 
 #if VSTGUI_LIVE_EDITING
 		checkAndUpdateUIDescFilePath (*uiDesc, nullptr, "The resource ui desc file location cannot be found.");
+		EditFileMap::set (IApplication::instance ().getDelegate ().getSharedUIResourceFilename (), uiDesc->getFilePath ());
 #endif
 		return true;
 	}
@@ -515,34 +549,6 @@ struct WindowController::Impl : public IController, public ICommandHandler
 
 #if VSTGUI_LIVE_EDITING
 static const Command ToggleEditingCommand {"Debug", "Toggle Inline Editor"};
-
-//------------------------------------------------------------------------
-struct EditFileMap
-{
-private:
-	using Map = std::unordered_map<std::string, std::string>;
-	Map fileMap;
-	static EditFileMap& instance ()
-	{
-		static EditFileMap gInstance;
-		return gInstance;
-	}
-public:
-	static void set (const std::string& filename, const std::string& absolutePath)
-	{
-		instance().fileMap.insert ({filename, absolutePath});
-	}
-	static const std::string& get (const std::string& filename)
-	{
-		auto it = instance().fileMap.find (filename);
-		if (it == instance().fileMap.end())
-		{
-			static std::string empty;
-			return empty;
-		}
-		return it->second;
-	}
-};
 
 //------------------------------------------------------------------------
 struct WindowController::EditImpl : WindowController::Impl
