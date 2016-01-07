@@ -22,12 +22,6 @@ IStepValue::StepType convertValueToStep (IValue::Type value, IStepValue::StepTyp
 class DefaultValueStringConverter : public IValueStringConverter
 {
 public:
-	static IValueStringConverter& instance ()
-	{
-		static DefaultValueStringConverter gInstance;
-		return gInstance;
-	}
-
 	UTF8String valueAsString (IValue::Type value) const override
 	{
 		UTF8String result;
@@ -83,7 +77,7 @@ private:
 class Value : public IValue
 {
 public:
-	Value (const IdStringPtr id, Type initialValue, const IValueStringConverter& stringConverter);
+	Value (const IdStringPtr id, Type initialValue, const ValueStringConverterPtr& stringConverter);
 
 	void beginEdit () override;
 	bool performEdit (Type newValue) override;
@@ -101,12 +95,14 @@ public:
 	
 	void registerListener (IValueListener* listener) override;
 	void unregisterListener (IValueListener* listener) override;
+
+	bool hasStringConverter () const { return stringConverter != nullptr; }
 private:
 	UTF8String idString;
 	Type value;
 	bool active {true};
 	uint32_t editCount {0};
-	const IValueStringConverter& stringConverter;
+	ValueStringConverterPtr stringConverter;
 	DispatchList<IValueListener> listeners;
 };
 
@@ -114,7 +110,6 @@ private:
 class StepValue : public Value, public IStepValue, public IValueStringConverter
 {
 public:
-	StepValue (const IdStringPtr id, StepType initialSteps, Type initialValue, const IValueStringConverter* stringConverter);
 	StepValue (const IdStringPtr id, StepType initialSteps, Type initialValue, const ValueStringConverterPtr& stringConverter);
 
 	bool performEdit (Type newValue) override;
@@ -125,13 +120,14 @@ public:
 
 	UTF8String valueAsString (IValue::Type value) const override;
 	IValue::Type stringAsValue (const UTF8String& string) const override;
+
+	const IValueStringConverter& getStringConverter () const override;
 private:
-	ValueStringConverterPtr stringConverterPtr;
 	StepType steps;
 };
 
 //------------------------------------------------------------------------
-Value::Value (const IdStringPtr id, Type initialValue, const IValueStringConverter& stringConverter)
+Value::Value (const IdStringPtr id, Type initialValue, const ValueStringConverterPtr& stringConverter)
 : idString (id)
 , value (initialValue)
 , stringConverter (stringConverter)
@@ -220,7 +216,7 @@ const UTF8String& Value::getID () const
 //------------------------------------------------------------------------
 const IValueStringConverter& Value::getStringConverter () const
 {
-	return stringConverter;
+	return *stringConverter.get ();
 }
 
 //------------------------------------------------------------------------
@@ -239,16 +235,8 @@ void Value::unregisterListener (IValueListener* listener)
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 StepValue::StepValue (const IdStringPtr id, StepType initialSteps, Type initialValue,
-                      const IValueStringConverter* stringConverter)
-: Value (id, initialValue, stringConverter ? *stringConverter : *this), steps (initialSteps - 1)
-{
-}
-
-//------------------------------------------------------------------------
-StepValue::StepValue (const IdStringPtr id, StepType initialSteps, Type initialValue,
                       const ValueStringConverterPtr& stringConverter)
-: Value (id, initialValue, *(stringConverter.get ()))
-, stringConverterPtr (stringConverter)
+: Value (id, initialValue, stringConverter)
 , steps (initialSteps - 1)
 {
 }
@@ -296,17 +284,26 @@ IValue::Type StepValue::stringAsValue (const UTF8String& string) const
 	return stepToValue (v);
 }
 
-} // Anonymous
-
 //------------------------------------------------------------------------
-ValuePtr IValue::make (const UTF8String& id, Type initialValue, const IValueStringConverter* stringConverter)
+const IValueStringConverter& StepValue::getStringConverter () const
 {
-	vstgui_assert (id.empty () == false);
-	return std::make_shared<Value>(id, initialValue, stringConverter ? *stringConverter : DefaultValueStringConverter::instance ());
+	if (!hasStringConverter ())
+		return *this;
+	return Value::getStringConverter ();
 }
 
 //------------------------------------------------------------------------
-ValuePtr IStepValue::make (const UTF8String& id, StepType initialSteps, IValue::Type initialValue, const IValueStringConverter* stringConverter)
+} // Anonymous
+
+//------------------------------------------------------------------------
+ValuePtr IValue::make (const UTF8String& id, Type initialValue, const ValueStringConverterPtr& stringConverter)
+{
+	vstgui_assert (id.empty () == false);
+	return std::make_shared<Value>(id, initialValue, stringConverter.get () ? stringConverter : std::make_shared<DefaultValueStringConverter> ());
+}
+
+//------------------------------------------------------------------------
+ValuePtr IStepValue::make (const UTF8String& id, StepType initialSteps, IValue::Type initialValue, const ValueStringConverterPtr& stringConverter)
 {
 	vstgui_assert (id.empty () == false);
 	return std::make_shared<StepValue>(id, initialSteps, initialValue, stringConverter);
