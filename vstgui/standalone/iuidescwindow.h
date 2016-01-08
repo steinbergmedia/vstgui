@@ -29,6 +29,18 @@ public:
 class ICustomization : public Interface
 {
 public:
+	/** Create a sub controller
+	 *
+	 *	A sub controller can be defined in the UI editor for a view and will be responsible
+	 *	as a controller for the view and its children.
+	 *
+	 *	The controller will be automatically destroyed when the view is destroyed. You should
+	 *	always create a new controller instance here and do not cache it.
+	 *
+	 *	@param name name of the sub controller
+	 *	@param parent the parent controller
+	 *	@param uiDesc the UIDescription instance
+	 */
 	virtual IController* createController (const UTF8StringView& name, IController* parent,
 	                                       const IUIDescription* uiDesc) = 0;
 };
