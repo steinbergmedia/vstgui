@@ -46,6 +46,7 @@ public:
 private:
 	bool running {true};
 	Win32Preference prefs;
+	HACCEL keyboardAccelerators {nullptr};
 };
 
 //------------------------------------------------------------------------
@@ -72,6 +73,11 @@ void Application::init ()
 //------------------------------------------------------------------------
 void Application::onCommandUpdate ()
 {
+	if (keyboardAccelerators)
+	{
+		DestroyAcceleratorTable (keyboardAccelerators);
+		keyboardAccelerators = nullptr;
+	}
 	auto& windows = IApplication::instance ().getWindows ();
 	for (auto& w : windows)
 	{
@@ -81,6 +87,27 @@ void Application::onCommandUpdate ()
 		vstgui_assert (winWindow);
 		winWindow->updateCommands ();
 	}
+	auto app = getApplicationPlatformAccess ();
+	std::vector<ACCEL> accels;
+	WORD cmd = 0;
+	for (auto& grp : app->getCommandList ())
+	{
+		for (auto& e : grp.second)
+		{
+			if (e.defaultKey)
+			{
+				BYTE virt = FVIRTKEY | FCONTROL;
+				auto upperKey = toupper (e.defaultKey);
+				if (upperKey == e.defaultKey)
+					virt |= FSHIFT;
+				accels.push_back ({virt, static_cast<WORD> (upperKey), cmd});
+			}
+			++cmd;
+		}
+	}
+	if (!accels.empty ())
+		keyboardAccelerators = CreateAcceleratorTable (accels.data (), static_cast<int> (accels.size ()));
+
 }
 
 //------------------------------------------------------------------------
@@ -105,6 +132,9 @@ void Application::run ()
 	MSG msg;
 	while (GetMessage (&msg, NULL, 0, 0))
 	{
+		if (TranslateAccelerator (msg.hwnd, keyboardAccelerators, &msg))
+			continue;
+
 		TranslateMessage (&msg);
 		DispatchMessage (&msg);
 	}

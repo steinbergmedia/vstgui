@@ -228,7 +228,6 @@ static HMENU createSubMenu (const UTF8String& group, const Detail::IApplicationP
 	{
 		auto itemTitle = dynamic_cast<WinString*> (e.name.getPlatformString ());
 		AppendMenu (menu, MF_STRING, index, itemTitle->getWideString ());
-
 		++index;
 	}
 	return menu;
@@ -422,6 +421,42 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 					handleMenuCommand (*group, static_cast<UINT> (wParam));
 				}
 			}
+			break;
+		}
+		case WM_COMMAND:
+		{
+			auto app = getApplicationPlatformAccess ();
+			auto cmdID = LOWORD (wParam);
+			WORD cmd = 0;
+			for (auto& grp : app->getCommandList ())
+			{
+				for (auto& e : grp.second)
+				{
+					if (cmd == cmdID)
+					{
+						if (delegate->canHandleCommand (e))
+						{
+							if (delegate->handleCommand (e))
+								return 1;
+						}
+						else
+						{
+							if (auto commandHandler = getApplicationPlatformAccess ()->dynamicCast<ICommandHandler> ())
+							{
+								if (commandHandler->canHandleCommand (e))
+								{
+									if (commandHandler->handleCommand (e))
+										return 1;
+								}
+							}
+						}
+						return 0;
+					}
+					++cmd;
+				}
+			}
+			
+			DebugPrint ("\n");
 			break;
 		}
 		case WM_NCHITTEST:
