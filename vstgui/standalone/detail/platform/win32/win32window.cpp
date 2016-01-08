@@ -78,6 +78,8 @@ private:
 	bool hasBorder {false};
 	bool isTransparent {false};
 	bool isPopup {false};
+	bool movableByWindowBackground {false};
+	bool sizable {false};
 	std::function<LRESULT (HWND, UINT, WPARAM, LPARAM)> frameWindowProc;
 };
 
@@ -131,6 +133,10 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 		hasBorder = true;
 	if (config.style.isTransparent ())
 		isTransparent = true;
+	if (config.style.isMovableByWindowBackground ())
+		movableByWindowBackground = true;
+	if (config.style.canSize ())
+		sizable = true;
 
 	if (config.type == WindowType::Popup)
 	{
@@ -339,9 +345,11 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 			CPoint diff = getRectSize (*newSize) - getRectSize (oldSize);
 			CPoint newClientSize = getRectSize (clientSize) + diff;
 
+			frame->getTransform ().inverse ().transform (newClientSize);
 			CPoint constraintSize = delegate->constraintSize (newClientSize);
 			if (constraintSize != newClientSize)
 			{
+				frame->getTransform ().transform (constraintSize);
 				CPoint clientFrameDiff = getRectSize (oldSize) - getRectSize (clientSize);
 				newSize->right = newSize->left + static_cast<LONG> (constraintSize.x + clientFrameDiff.x);
 				newSize->bottom = newSize->top + static_cast<LONG> (constraintSize.y + clientFrameDiff.y);
@@ -418,20 +426,31 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 		}
 		case WM_NCHITTEST:
 		{
-			if (!hasBorder)
+			if (movableByWindowBackground)
 			{
 				LONG x = GET_X_LPARAM (lParam);
 				LONG y = GET_Y_LPARAM (lParam);
 				POINT p {x, y};
-				ScreenToClient (hwnd, &p);
-				CPoint where {static_cast<CCoord> (p.x), static_cast<CCoord> (p.y)};
-				frame->getTransform ().inverse ().transform (where);
-				if (!frame->hitTestSubViews (where))
+				auto size = getSize ();
+				frame->getTransform ().transform (size);
+				if (ScreenToClient (hwnd, &p) && p.y > 0 && p.x > 0 && p.y < size.y && p.x < size.x)
 				{
-					DebugPrint ("HTCaption(%d-%d)\n", p.x, p.y);
-					return HTCAPTION;
+					if (sizable && !hasBorder)
+					{
+						const auto edgeSizeWidth = 10;
+						if (p.x > size.x - edgeSizeWidth && p.y > size.y - edgeSizeWidth)
+							return HTBOTTOMRIGHT;
+						// TODO: add other edges
+					}
+					CPoint where {static_cast<CCoord> (p.x), static_cast<CCoord> (p.y)};
+					frame->getTransform ().inverse ().transform (where);
+					if (!frame->hitTestSubViews (where))
+					{
+						DebugPrint ("HTCaption(%d-%d)\n", p.x, p.y);
+						return HTCAPTION;
+					}
+					return HTCLIENT;
 				}
-				return HTCLIENT;
 			}
 			break;
 		}
