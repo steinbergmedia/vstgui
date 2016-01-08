@@ -419,6 +419,26 @@ void CFrame::checkMouseViews (const CPoint& where, const CButtonState& buttons)
 	}
 }
 
+//------------------------------------------------------------------------
+bool CFrame::hitTestSubViews (const CPoint& where, const CButtonState buttons)
+{
+	if (pModalView)
+	{
+		CPoint where2 (where);
+		getTransform ().inverse ().transform (where2);
+		if (pModalView->isVisible () && pModalView->getMouseEnabled () && pModalView->hitTest (where2, buttons))
+		{
+			if (auto viewContainer = dynamic_cast<CViewContainer*> (pModalView))
+			{
+				return viewContainer->hitTestSubViews (where2, buttons);
+			}
+			return true;
+		}
+		return false;
+	}
+	return CViewContainer::hitTestSubViews (where, buttons);
+}
+
 //-----------------------------------------------------------------------------
 CMouseEventResult CFrame::onMouseDown (CPoint &where, const CButtonState& buttons)
 {

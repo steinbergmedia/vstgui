@@ -55,6 +55,7 @@ public:
 
 	CMouseEventResult onMouseEntered (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseExited (CPoint& where, const CButtonState& buttons) override;
+	bool hitTestSubViews (const CPoint& where, const CButtonState buttons = -1) override;
 
 	bool removed (CView* parent) override;
 protected:
@@ -803,10 +804,16 @@ void CSplitViewSeparatorView::drawRect (CDrawContext *pContext, const CRect& r)
 	CViewContainer::drawRect (pContext, r);
 }
 
+//------------------------------------------------------------------------
+bool CSplitViewSeparatorView::hitTestSubViews (const CPoint& where, const CButtonState buttons)
+{
+	return hitTest (where, buttons);
+}
+
 //-----------------------------------------------------------------------------
 CMouseEventResult CSplitViewSeparatorView::onMouseDown (CPoint& where, const CButtonState& buttons)
 {
-	if (hitTestSubViews (where, buttons))
+	if (CViewContainer::hitTestSubViews (where, buttons))
 	{
 		return CViewContainer::onMouseDown (where, buttons);
 	}
@@ -855,12 +862,12 @@ CMouseEventResult CSplitViewSeparatorView::onMouseMoved (CPoint& where, const CB
 	}
 	else if (!(flags & ISplitViewSeparatorDrawer::kMouseOver))
 	{
-		if (!hitTestSubViews (where, buttons) && hitTest (where))
+		if (!CViewContainer::hitTestSubViews (where, buttons) && hitTest (where))
 			onMouseEntered (where, buttons);
 	}
 	else if (flags & ISplitViewSeparatorDrawer::kMouseOver)
 	{
-		if (hitTestSubViews (where, buttons))
+		if (CViewContainer::hitTestSubViews (where, buttons))
 			onMouseExited (where, buttons);
 	}
 	return kMouseEventHandled;
@@ -869,7 +876,7 @@ CMouseEventResult CSplitViewSeparatorView::onMouseMoved (CPoint& where, const CB
 //-----------------------------------------------------------------------------
 CMouseEventResult CSplitViewSeparatorView::onMouseEntered (CPoint& where, const CButtonState& buttons)
 {
-	if (hitTestSubViews (where, buttons))
+	if (CViewContainer::hitTestSubViews (where, buttons))
 		return kMouseEventHandled;
 	flags |= ISplitViewSeparatorDrawer::kMouseOver;
 	invalid ();

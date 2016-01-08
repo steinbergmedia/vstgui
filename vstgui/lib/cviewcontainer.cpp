@@ -782,18 +782,18 @@ bool CViewContainer::checkUpdateRect (CView* view, const CRect& rect)
 bool CViewContainer::hitTestSubViews (const CPoint& where, const CButtonState buttons)
 {
 	CPoint where2 (where);
-	transform.transform (where2);
 	where2.offset (-getViewSize ().left, -getViewSize ().top);
+	transform.inverse ().transform (where2);
 
 	FOREACHSUBVIEW_REVERSE(true)
-		if (pV && pV->isVisible () && pV->getMouseEnabled ())
+		if (pV && pV->isVisible () && pV->getMouseEnabled () && pV->hitTest (where2, buttons))
 		{
 			if (auto container = dynamic_cast<CViewContainer*>(pV))
 			{
-				if (container->hitTestSubViews (where, buttons))
+				if (container->hitTestSubViews (where2, buttons))
 					return true;
 			}
-			else if (pV->hitTest (where2, buttons))
+			else
 				return true;
 		}
 	ENDFOREACHSUBVIEW
