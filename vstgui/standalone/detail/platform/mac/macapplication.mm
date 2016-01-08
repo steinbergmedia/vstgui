@@ -221,8 +221,9 @@ static const CommandWithKeyList* getCommandList (const char* group)
 		[mainMenu addItem:appMenuItem];
 
 		NSMenuItem* item = [[NSMenuItem alloc] initWithTitle:@"Windows" action:NULL keyEquivalent:@""];
-		[NSApp setWindowsMenu:[self createWindowsMenu]];
-		item.submenu = [NSApp windowsMenu];
+		NSMenu* windowsMenu = [self createWindowsMenu];
+		[NSApp setWindowsMenu:windowsMenu];
+		item.submenu = windowsMenu;
 		[mainMenu addItem:item];
 	}
 	else
