@@ -299,6 +299,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		BCF5786E1C401C4A006ECB5E /* value.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = value.h; sourceTree = "<group>"; };
 		F40329C313FE3AA800466973 /* uigridcontroller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uigridcontroller.h; sourceTree = "<group>"; };
 		F40329C513FE3AB100466973 /* uigridcontroller.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uigridcontroller.cpp; sourceTree = "<group>"; };
 		F40329C713FE499D00466973 /* doc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = doc.h; sourceTree = "<group>"; };
@@ -713,6 +714,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		BCF5786D1C401C1A006ECB5E /* helpers */ = {
+			isa = PBXGroup;
+			children = (
+				F4975FE41C2D8025001D489E /* value.cpp */,
+				BCF5786E1C401C4A006ECB5E /* value.h */,
+			);
+			path = helpers;
+			sourceTree = "<group>";
+		};
 		F434EECE17DF059400FC7603 /* ios */ = {
 			isa = PBXGroup;
 			children = (
@@ -1149,6 +1159,7 @@
 			children = (
 				F4B5B5B91C26E39700450324 /* detail */,
 				F4B5B5C31C26EB5D00450324 /* fwd.h */,
+				BCF5786D1C401C1A006ECB5E /* helpers */,
 				F41CEBEE1C2E9A0300697722 /* ialertbox.h */,
 				F4B5B5BD1C26E6DB00450324 /* iappdelegate.h */,
 				F4B5B5C41C26F27100450324 /* iapplication.h */,
@@ -1173,7 +1184,6 @@
 				F4975FE21C2D7AB8001D489E /* uidescriptionwindowcontroller.cpp */,
 				F4B5B5C51C26F2C500450324 /* window.cpp */,
 				F4B5B5CC1C26FD4E00450324 /* window.h */,
-				F4975FE41C2D8025001D489E /* value.cpp */,
 			);
 			path = detail;
 			sourceTree = "<group>";

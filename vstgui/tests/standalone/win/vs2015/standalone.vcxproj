@@ -162,6 +162,7 @@
     <ClInclude Include="..\..\..\..\standalone\detail\platform\win32\win32window.h" />
     <ClInclude Include="..\..\..\..\standalone\detail\window.h" />
     <ClInclude Include="..\..\..\..\standalone\fwd.h" />
+    <ClInclude Include="..\..\..\..\standalone\helpers\value.h" />
     <ClInclude Include="..\..\..\..\standalone\ialertbox.h" />
     <ClInclude Include="..\..\..\..\standalone\iappdelegate.h" />
     <ClInclude Include="..\..\..\..\standalone\iapplication.h" />
@@ -182,8 +183,8 @@
     <ClCompile Include="..\..\..\..\standalone\detail\platform\win32\win32preference.cpp" />
     <ClCompile Include="..\..\..\..\standalone\detail\platform\win32\win32window.cpp" />
     <ClCompile Include="..\..\..\..\standalone\detail\uidescriptionwindowcontroller.cpp" />
-    <ClCompile Include="..\..\..\..\standalone\detail\value.cpp" />
     <ClCompile Include="..\..\..\..\standalone\detail\window.cpp" />
+    <ClCompile Include="..\..\..\..\standalone\helpers\value.cpp" />
     <ClCompile Include="..\..\..\..\vstgui_uidescription_win32.cpp">
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Default</BasicRuntimeChecks>
     </ClCompile>

@@ -1,10 +1,11 @@
-#include "../ivalue.h"
+#include "value.h"
 #include "../../lib/dispatchlist.h"
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
 namespace Standalone {
-namespace /*Anonymous*/ {
+namespace Detail {
+namespace /* anonymous */ {
 
 //------------------------------------------------------------------------
 IValue::Type convertStepToValue (IStepValue::StepType step, IStepValue::StepType steps)
@@ -17,6 +18,9 @@ IStepValue::StepType convertValueToStep (IValue::Type value, IStepValue::StepTyp
 {
 	return std::min (steps, static_cast<IStepValue::StepType> (value * static_cast<IValue::Type> (steps + 1)));
 }
+
+//------------------------------------------------------------------------
+} // anonymous
 
 //------------------------------------------------------------------------
 class DefaultValueStringConverter : public IValueStringConverter
@@ -293,31 +297,41 @@ const IValueStringConverter& StepValue::getStringConverter () const
 }
 
 //------------------------------------------------------------------------
-} // Anonymous
+} // Detail
 
 //------------------------------------------------------------------------
-ValuePtr IValue::make (const UTF8String& id, Type initialValue, const ValueStringConverterPtr& stringConverter)
+namespace Value {
+
+//------------------------------------------------------------------------
+ValuePtr make (const UTF8String& id, IValue::Type initialValue,
+               const ValueStringConverterPtr& stringConverter)
 {
 	vstgui_assert (id.empty () == false);
-	return std::make_shared<Value>(id, initialValue, stringConverter.get () ? stringConverter : std::make_shared<DefaultValueStringConverter> ());
+	return std::make_shared<Detail::Value> (
+	    id, initialValue, stringConverter.get () ?
+	                          stringConverter :
+	                          std::make_shared<Detail::DefaultValueStringConverter> ());
 }
 
 //------------------------------------------------------------------------
-ValuePtr IStepValue::make (const UTF8String& id, StepType initialSteps, IValue::Type initialValue, const ValueStringConverterPtr& stringConverter)
+ValuePtr makeStepValue (const UTF8String& id, IStepValue::StepType initialSteps,
+                        IValue::Type initialValue, const ValueStringConverterPtr& stringConverter)
 {
 	vstgui_assert (id.empty () == false);
-	return std::make_shared<StepValue>(id, initialSteps, initialValue, stringConverter);
+	return std::make_shared<Detail::StepValue> (id, initialSteps, initialValue, stringConverter);
 }
 
 //------------------------------------------------------------------------
-ValuePtr IStepValue::makeStringListValue (const UTF8String& id,
-                                          const std::initializer_list<UTF8String>& strings)
+ValuePtr makeStringListValue (const UTF8String& id,
+                              const std::initializer_list<UTF8String>& strings)
 {
 	vstgui_assert (id.empty () == false);
-	return std::make_shared<StepValue> (id, static_cast<IStepValue::StepType> (strings.size ()), 0,
-	                                    std::make_shared<StringListValueStringConverter> (strings));
+	return std::make_shared<Detail::StepValue> (
+	    id, static_cast<IStepValue::StepType> (strings.size ()), 0,
+	    std::make_shared<Detail::StringListValueStringConverter> (strings));
 }
 
 //------------------------------------------------------------------------
+} // Value
 } // Standalone
 } // VSTGUI

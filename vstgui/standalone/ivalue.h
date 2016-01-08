@@ -34,8 +34,6 @@ public:
 
 	virtual void registerListener (IValueListener* listener) = 0;
 	virtual void unregisterListener (IValueListener* listener) = 0;
-
-	static ValuePtr make (const UTF8String& id, Type initialValue = 0., const ValueStringConverterPtr& stringConverter = nullptr);
 };
 
 //------------------------------------------------------------------------
@@ -50,8 +48,6 @@ public:
 	virtual IValue::Type stepToValue (StepType step) const = 0;
 	virtual StepType valueToStep (IValue::Type) const = 0;
 
-	static ValuePtr make (const UTF8String& id, StepType initialSteps, IValue::Type initialValue, const ValueStringConverterPtr& stringConverter = nullptr);
-	static ValuePtr makeStringListValue (const UTF8String& id, const std::initializer_list<UTF8String>& strings);
 };
 
 //------------------------------------------------------------------------

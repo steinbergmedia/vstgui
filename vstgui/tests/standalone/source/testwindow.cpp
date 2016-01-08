@@ -2,6 +2,7 @@
 #include "vstgui/standalone/iapplication.h"
 #include "vstgui/standalone/ialertbox.h"
 #include "vstgui/standalone/iuidescwindow.h"
+#include "vstgui/standalone/helpers/value.h"
 #include "vstgui/lib/cframe.h"
 #include "vstgui/lib/cvstguitimer.h"
 
@@ -14,12 +15,12 @@ using namespace VSTGUI::Standalone;
 //------------------------------------------------------------------------
 TestModel::TestModel ()
 {
-	addValue (IValue::make ("Activate", 1.));
-	addValue (IValue::make ("Test"));
-	addValue (IStepValue::make ("StepTest", 5, 0));
-	addValue (IValue::make ("ShowAlert"));
-	addValue (IStepValue::makeStringListValue ("StringList", {"one","two","three","four","five"}));
-	addValue (IValue::make ("ShowPopup"));
+	addValue (Value::make ("Activate", 1.));
+	addValue (Value::make ("Test"));
+	addValue (Value::makeStepValue ("StepTest", 5, 0));
+	addValue (Value::make ("ShowAlert"));
+	addValue (Value::makeStringListValue ("StringList", {"one","two","three","four","five"}));
+	addValue (Value::make ("ShowPopup"));
 }
 
 //------------------------------------------------------------------------

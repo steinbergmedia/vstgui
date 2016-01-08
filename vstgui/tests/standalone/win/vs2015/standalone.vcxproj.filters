@@ -28,6 +28,9 @@
     <Filter Include="Source Files\vstgui\standalone\detail\platform\win32">
       <UniqueIdentifier>{7778b84f-dd69-41f5-8211-6f46b5764b67}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\vstgui\standalone\helpers">
+      <UniqueIdentifier>{6cad4360-b29d-4220-b647-867b4a922254}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\standalone\fwd.h">
@@ -87,15 +90,15 @@
     <ClInclude Include="..\..\source\testabout.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\standalone\helpers\value.h">
+      <Filter>Source Files\vstgui\standalone\helpers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\standalone\detail\application.cpp">
       <Filter>Source Files\vstgui\standalone\detail</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\standalone\detail\uidescriptionwindowcontroller.cpp">
-      <Filter>Source Files\vstgui\standalone\detail</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\standalone\detail\value.cpp">
       <Filter>Source Files\vstgui\standalone\detail</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\standalone\detail\window.cpp">
@@ -124,6 +127,9 @@
     </ClCompile>
     <ClCompile Include="..\..\source\testabout.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\standalone\helpers\value.cpp">
+      <Filter>Source Files\vstgui\standalone\helpers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

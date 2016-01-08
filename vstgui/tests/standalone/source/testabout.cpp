@@ -1,6 +1,7 @@
 #include "testabout.h"
 #include "vstgui/standalone/iapplication.h"
 #include "vstgui/standalone/iuidescwindow.h"
+#include "vstgui/standalone/helpers/value.h"
 
 //------------------------------------------------------------------------
 namespace MyApp {
@@ -24,7 +25,7 @@ void About::show ()
 		if (gInstance && value.getValue () > 0.)
 			gInstance->window->close ();
 	};
-	modelBinding->addValue (IValue::make ("Close"), ValueCalls::onEndEdit (close));
+	modelBinding->addValue (Value::make ("Close"), ValueCalls::onEndEdit (close));
 
 	UIDesc::Config config;
 	config.uiDescFileName = "about.uidesc";
