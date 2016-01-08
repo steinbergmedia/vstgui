@@ -12,8 +12,11 @@ namespace Application {
 //------------------------------------------------------------------------
 struct Info
 {
+	/** Name of the application */
 	UTF8String name;
+	/** Version of the application */
 	UTF8String version;
+	/** Uniform resource identifier for the application */
 	UTF8String uri;
 };
 
