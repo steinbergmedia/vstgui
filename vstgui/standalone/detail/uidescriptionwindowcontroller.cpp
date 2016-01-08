@@ -800,9 +800,11 @@ WindowPtr makeWindow (const Config& config)
 
 	auto controller = std::make_shared<WindowController> ();
 
-	WindowConfiguration windowConfig = config.windowConfig;
 #if VSTGUI_LIVE_EDITING
+	WindowConfiguration windowConfig = config.windowConfig;
 	windowConfig.style.size ();
+#else
+	auto& windowConfig = config.windowConfig;
 #endif
 
 	auto window = IApplication::instance ().createWindow (windowConfig, controller);
