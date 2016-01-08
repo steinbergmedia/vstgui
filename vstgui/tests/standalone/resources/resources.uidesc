@@ -3,12 +3,23 @@
 	<fonts>
 	</fonts>
 	<colors>
+		<color name="Black Alpha 140" rgba="#0000008c"/>
 		<color name="Focus" rgba="#78c8ffff"/>
 	</colors>
 	<custom>
 		<attributes name="UIDescFilePath" path="/Users/AScheffler/Sources/vstgui/vstgui/tests/standalone/resources/resources.uidesc"/>
 	</custom>
 	<gradients>
+		<gradient name="About Background">
+			<color-stop rgba="#dcdcdcf5" start="0"/>
+			<color-stop rgba="#b4b4b4f5" start="1"/>
+		</gradient>
+		<gradient name="Background">
+			<color-stop rgba="#393939fa" start="0"/>
+			<color-stop rgba="#050505ff" start="0.1064041940789473422723787621180235873908"/>
+			<color-stop rgba="#393939fa" start="0.2044921874999999500399638918679556809366"/>
+			<color-stop rgba="#c8c8c8fa" start="1"/>
+		</gradient>
 		<gradient name="Default TextButton Gradient">
 			<color-stop rgba="#dcdcdcff" start="0"/>
 			<color-stop rgba="#b4b4b4ff" start="1"/>
@@ -20,10 +31,6 @@
 		<gradient name="New">
 			<color-stop rgba="#a0a0a0d2" start="0"/>
 			<color-stop rgba="#b9b9b9d2" start="0.9807874177631579204472700439509935677052"/>
-		</gradient>
-		<gradient name="Background">
-			<color-stop rgba="#393939fa" start="0"/>
-			<color-stop rgba="#c8c8c8fa" start="1"/>
 		</gradient>
 	</gradients>
 	<bitmaps/>

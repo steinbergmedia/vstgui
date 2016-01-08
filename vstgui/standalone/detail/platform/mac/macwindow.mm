@@ -1,10 +1,22 @@
 #import <Cocoa/Cocoa.h>
+
 #import "macwindow.h"
+#import "VSTGUICommand.h"
 #import "../iplatformwindow.h"
 #import "../../../../lib/platform/mac/macstring.h"
 #import "../../../../lib/cvstguitimer.h"
 #import "../../../../lib/cframe.h"
-#import "VSTGUICommand.h"
+
+#ifndef MAC_OS_X_VERSION_10_11
+#define MAC_OS_X_VERSION_10_11      101100
+#endif
+
+//------------------------------------------------------------------------
+#if MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_11
+@interface NSWindow (BackwardsCompatibility)
+-(void)performWindowDragWithEvent:(NSEvent*)event;
+@end
+#endif
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -20,11 +32,13 @@ class Window;
 @end
 
 //------------------------------------------------------------------------
-@interface VSTGUITransparentWindow : NSWindow
+@interface VSTGUIWindow : NSWindow
+@property BOOL supportMovableByWindowBackground;
 @end
 
 //------------------------------------------------------------------------
 @interface VSTGUIPopup : NSPanel
+@property BOOL supportMovableByWindowBackground;
 @property BOOL inSendEvent;
 @property NSInteger doResignKey;
 @property NSInteger doResignKeyStackDepth;
@@ -59,7 +73,10 @@ public:
 	void activate () override;
 	
 	PlatformType getPlatformType () const override { return kNSView; };
-	void* getPlatformHandle () const override { return static_cast<void*> ((__bridge void*) nsWindow.contentView); }
+	void* getPlatformHandle () const override
+	{
+		return static_cast<void*> ((__bridge void*)nsWindow.contentView);
+	}
 	void onSetContentView (CFrame* newFrame) override;
 
 	void windowDidResize (const CPoint& newSize);
@@ -93,35 +110,28 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 	{
 		styleMask |= NSUtilityWindowMask;
 
-		NSPanel* panel = [[VSTGUIPopup alloc] initWithContentRect:contentRect
+		VSTGUIPopup* popup = [[VSTGUIPopup alloc] initWithContentRect:contentRect
 											  styleMask:styleMask
 												backing:NSBackingStoreBuffered
 												  defer:YES];
 
-		panel.becomesKeyOnlyIfNeeded = NO;
-		panel.level = NSFloatingWindowLevel;
+		popup.becomesKeyOnlyIfNeeded = NO;
+		popup.level = NSFloatingWindowLevel;
+		popup.supportMovableByWindowBackground = config.style.isMovableByWindowBackground ();
 		
-		nsWindow = panel;
+		nsWindow = popup;
 		nsWindowDelegate = [VSTGUIPopupDelegate new];
 		nsWindowDelegate.macWindow = this;
 		[nsWindow setAnimationBehavior:NSWindowAnimationBehaviorUtilityWindow];
 	}
 	else
 	{
-		if (config.style.isTransparent())
-		{
-			nsWindow = [[VSTGUITransparentWindow alloc] initWithContentRect:contentRect
-			                                                      styleMask:styleMask
-			                                                        backing:NSBackingStoreBuffered
-			                                                          defer:YES];
-		}
-		else
-		{
-			nsWindow = [[NSWindow alloc] initWithContentRect:contentRect
-												   styleMask:styleMask
-													 backing:NSBackingStoreBuffered
-													   defer:YES];
-		}
+		VSTGUIWindow* window = [[VSTGUIWindow alloc] initWithContentRect:contentRect
+		                                                       styleMask:styleMask
+		                                                         backing:NSBackingStoreBuffered
+		                                                           defer:YES];
+		window.supportMovableByWindowBackground = config.style.isMovableByWindowBackground ();
+		nsWindow = window;
 
 		nsWindowDelegate = [VSTGUIWindowDelegate new];
 		nsWindowDelegate.macWindow = this;
@@ -213,7 +223,9 @@ void Window::setSize (const CPoint& newSize)
 	r.size.width = newSize.x;
 	r.size.height = newSize.y;
 	r.origin.y -= diff;
-	[nsWindow setFrame:[nsWindow frameRectForContentRect:r] display:YES animate:NO];
+	[nsWindow setFrame:[nsWindow frameRectForContentRect:r]
+	           display:[nsWindow isVisible]
+	           animate:NO];
 	if (!nsWindow.opaque)
 		[nsWindow invalidateShadow];
 }
@@ -224,7 +236,9 @@ void Window::setPosition (const CPoint& newPosition)
 	NSRect r = [nsWindow contentRectForFrameRect:nsWindow.frame];
 	r.origin.x = newPosition.x;
 	r.origin.y = getMainScreenRect ().size.height - (newPosition.y + r.size.height);
-	[nsWindow setFrame:[nsWindow frameRectForContentRect:r] display:YES animate:NO];
+	[nsWindow setFrame:[nsWindow frameRectForContentRect:r]
+	           display:[nsWindow isVisible]
+	           animate:NO];
 }
 
 //------------------------------------------------------------------------
@@ -372,27 +386,17 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 
 @end
 
-#ifndef MAC_OS_X_VERSION_10_11
-#define MAC_OS_X_VERSION_10_11      101100
-#endif
-
-#if MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_11
-@interface NSWindow (BackwardsCompatibility)
--(void)performWindowDragWithEvent:(NSEvent*)event;
-@end
-#endif
+//------------------------------------------------------------------------
+@implementation VSTGUIWindow
 
 //------------------------------------------------------------------------
-@implementation VSTGUITransparentWindow
-
-//------------------------------------------------------------------------
-- (void)makeKeyAndOrderFront:(nullable id)sender
+- (void)mouseDown:(NSEvent *)theEvent
 {
-	if (!self.visible && [self.title length] > 0)
+	if (self.supportMovableByWindowBackground &&
+		[super respondsToSelector:@selector (performWindowDragWithEvent:)])
 	{
-		[NSApp addWindowsItem:self title:self.title filename:NO];
+		[super performWindowDragWithEvent:theEvent];
 	}
-	[super makeKeyAndOrderFront:sender];
 }
 
 //------------------------------------------------------------------------
@@ -402,16 +406,9 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 }
 
 //------------------------------------------------------------------------
-- (void)mouseDown:(NSEvent *)theEvent
-{
-	if ([super respondsToSelector:@selector(performWindowDragWithEvent:)])
-		[super performWindowDragWithEvent:theEvent];
-}
-
-//------------------------------------------------------------------------
 - (void)performClose:(nullable id)sender
 {
-	VSTGUITransparentWindow* window = self;
+	VSTGUIWindow* window = self;
 	VSTGUI::Call::later ([=] () {
 		[window close];
 	});
@@ -423,6 +420,16 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 	if ([menuItem action] == @selector(performClose:))
 		return YES;
 	return [super validateMenuItem:menuItem];
+}
+
+//------------------------------------------------------------------------
+- (void)makeKeyAndOrderFront:(nullable id)sender
+{
+	if (!self.visible && [self.title length] > 0)
+	{
+		[NSApp addWindowsItem:self title:self.title filename:NO];
+	}
+	[super makeKeyAndOrderFront:sender];
 }
 
 @end
@@ -439,8 +446,11 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 //------------------------------------------------------------------------
 - (void)mouseDown:(NSEvent *)theEvent
 {
-	if ([super respondsToSelector:@selector(performWindowDragWithEvent:)])
+	if (self.supportMovableByWindowBackground &&
+	    [super respondsToSelector:@selector (performWindowDragWithEvent:)])
+	{
 		[super performWindowDragWithEvent:theEvent];
+	}
 }
 
 //------------------------------------------------------------------------

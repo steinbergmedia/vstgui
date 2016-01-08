@@ -72,6 +72,7 @@ bool Delegate::handleCommand (const Command& command)
 		{
 			config.uiDescFileName = "testpopup.uidesc";
 			config.windowConfig.type = WindowType::Popup;
+			config.windowConfig.style.movableByWindowBackground ();
 		}
 		else
 		{

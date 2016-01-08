@@ -32,7 +32,7 @@ void About::show ()
 	config.modelBinding = modelBinding;
 	config.windowConfig.type = WindowType::Document;
 	config.windowConfig.title = "About";
-	config.windowConfig.style.close ().transparent ();
+	config.windowConfig.style.close ().transparent ().movableByWindowBackground ();
 	config.windowConfig.autoSaveFrameName = "AboutDialogFrame";
 	gInstance->window = UIDesc::makeWindow (config);
 	if (gInstance->window)

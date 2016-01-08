@@ -39,17 +39,20 @@ private:
 		Close = 1 << 1,
 		Size = 1 << 2,
 		Transparent = 1 << 3,
+		MovableByWindowBackground = 1 << 4,
 	};
 public:
 	WindowStyle& border () { flags |= Style::Border; return *this; }
 	WindowStyle& close () { flags |= Style::Close; return *this; }
 	WindowStyle& size () { flags |= Style::Size; return *this; }
 	WindowStyle& transparent () { flags |= Style::Transparent; return *this; }
+	WindowStyle& movableByWindowBackground () { flags |= Style::MovableByWindowBackground; return *this; }
 
 	bool hasBorder () const { return (flags & Style::Border) != 0; }
 	bool canClose () const { return (flags & Style::Close) != 0; }
 	bool canSize () const { return (flags & Style::Size) != 0; }
 	bool isTransparent () const { return (flags & Style::Transparent) != 0; }
+	bool isMovableByWindowBackground () const { return (flags & Style::MovableByWindowBackground) != 0; }
 };
 
 //------------------------------------------------------------------------

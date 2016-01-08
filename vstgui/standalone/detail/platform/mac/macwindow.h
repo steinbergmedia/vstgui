@@ -2,6 +2,8 @@
 
 #import "../../../interface.h"
 
+@class NSWindow;
+
 //------------------------------------------------------------------------
 namespace VSTGUI {
 namespace Standalone {
