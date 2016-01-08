@@ -443,7 +443,6 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 						// TODO: add other edges
 					}
 					CPoint where {static_cast<CCoord> (p.x), static_cast<CCoord> (p.y)};
-					frame->getTransform ().inverse ().transform (where);
 					if (!frame->hitTestSubViews (where))
 					{
 						DebugPrint ("HTCaption(%d-%d)\n", p.x, p.y);
