@@ -101,6 +101,7 @@ protected:
 
 	void invalidSelection ();
 	MouseSizeMode selectionHitTest (const CPoint& where, CView** resultView);
+	bool hitTestSubViews (const CPoint& where, const CButtonState buttons = -1) override;
 	CMouseEventResult onMouseDown (CPoint &where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseUp (CPoint &where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseMoved (CPoint &where, const CButtonState& buttons) override;

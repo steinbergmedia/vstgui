@@ -676,6 +676,12 @@ UIEditView::MouseSizeMode UIEditView::selectionHitTest (const CPoint& _where, CV
 }
 
 //----------------------------------------------------------------------------------------------------
+bool UIEditView::hitTestSubViews (const CPoint& where, const CButtonState buttons)
+{
+	return hitTest (where, buttons);
+}
+
+//----------------------------------------------------------------------------------------------------
 CMouseEventResult UIEditView::onMouseDown (CPoint &where, const CButtonState& buttons)
 {
 	if (editing)
