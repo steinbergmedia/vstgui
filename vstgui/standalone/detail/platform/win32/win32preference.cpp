@@ -14,6 +14,7 @@ namespace Win32 {
 Win32Preference::Win32Preference ()
 {
 	auto& appInfo = IApplication::instance ().getDelegate ().getInfo ();
+	vstgui_assert (!appInfo.uri.empty (), "need uri for preferences");
 	UTF8String path ("SOFTWARE\\" + appInfo.uri.getString ());
 	auto winStr = dynamic_cast<WinString*> (path.getPlatformString ());
 	vstgui_assert (winStr);
