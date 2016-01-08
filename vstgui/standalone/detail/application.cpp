@@ -13,16 +13,20 @@ namespace Standalone {
 namespace Detail {
 
 //------------------------------------------------------------------------
-class Application : public IApplication, public IWindowListener, public ICommandHandler, public IApplicationPlatformAccess
+class Application : public IApplication,
+                    public IWindowListener,
+                    public ICommandHandler,
+                    public IApplicationPlatformAccess
 {
 public:
 	static Application& instance ();
-	
+
 	// IApplication
 	void setDelegate (const Standalone::Application::DelegatePtr& delegate);
 	IPreference& getPreferences () const override;
 	Standalone::Application::IDelegate& getDelegate () const override;
-	WindowPtr createWindow (const WindowConfiguration& config, const WindowControllerPtr& controller) override;
+	WindowPtr createWindow (const WindowConfiguration& config,
+	                        const WindowControllerPtr& controller) override;
 	const WindowList& getWindows () const override { return windows; }
 	AlertResult showAlertBox (const AlertBoxConfig& config) override;
 	void showAlertBoxForWindow (const AlertBoxForWindowConfig& config) override;
@@ -46,6 +50,7 @@ public:
 	void init (IPreference& preferences) override;
 	void setPlatformCallbacks (PlatformCallbacks&& callbacks) override;
 	const CommandList& getCommandList () override;
+
 private:
 	bool doCommandHandling (const Command& command, bool checkOnly);
 
@@ -100,7 +105,8 @@ IPreference& Application::getPreferences () const
 }
 
 //------------------------------------------------------------------------
-WindowPtr Application::createWindow (const WindowConfiguration& config, const WindowControllerPtr& controller)
+WindowPtr Application::createWindow (const WindowConfiguration& config,
+                                     const WindowControllerPtr& controller)
 {
 	auto window = makeWindow (config, controller);
 	if (window)
@@ -143,10 +149,7 @@ void Application::setPlatformCallbacks (PlatformCallbacks&& callbacks)
 }
 
 //------------------------------------------------------------------------
-const Application::CommandList& Application::getCommandList ()
-{
-	return commandList;
-}
+const Application::CommandList& Application::getCommandList () { return commandList; }
 
 //------------------------------------------------------------------------
 void Application::registerCommand (const Command& command, char16_t defaultCommandKey)
@@ -193,7 +196,8 @@ bool Application::doCommandHandling (const Command& command, bool checkOnly)
 {
 	bool result = false;
 	if (auto commandHandler = delegate->dynamicCast<ICommandHandler> ())
-		result = checkOnly ? commandHandler->canHandleCommand (command) : commandHandler->handleCommand (command);
+		result = checkOnly ? commandHandler->canHandleCommand (command) :
+		                     commandHandler->handleCommand (command);
 	if (!result)
 	{
 		if (command == Commands::Quit)
@@ -242,10 +246,7 @@ void Application::onActivated (const IWindow& window)
 } // Detail
 
 //------------------------------------------------------------------------
-IApplication& IApplication::instance ()
-{
-	return Detail::Application::instance ();
-}
+IApplication& IApplication::instance () { return Detail::Application::instance (); }
 
 //------------------------------------------------------------------------
 namespace Application {

@@ -66,7 +66,7 @@ static constexpr IdStringPtr Paste = "Paste";
 static constexpr IdStringPtr SelectAll = "Select All";
 
 static constexpr IdStringPtr MenuSeparator = "~";
-	
+
 } // CommandName
 
 //------------------------------------------------------------------------

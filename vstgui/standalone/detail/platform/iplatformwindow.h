@@ -30,7 +30,7 @@ class IWindow : public Interface
 public:
 	virtual CPoint getSize () const = 0;
 	virtual CPoint getPosition () const = 0;
-	
+
 	virtual void setSize (const CPoint& newSize) = 0;
 	virtual void setPosition (const CPoint& newPosition) = 0;
 	virtual void setTitle (const UTF8String& newTitle) = 0;
@@ -42,7 +42,7 @@ public:
 
 	virtual PlatformType getPlatformType () const = 0;
 	virtual void* getPlatformHandle () const = 0;
-	
+
 	virtual void onSetContentView (CFrame* frame) = 0;
 };
 

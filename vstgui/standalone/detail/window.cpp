@@ -41,22 +41,25 @@ PosAndSize positionAndSizeFromString (const UTF8String& str)
 	std::string item;
 	while (std::getline (stream, item, ','))
 		elements.emplace_back (item);
-	
+
 	if (elements.size () != 4)
 		return r;
 	r.pos.x = UTF8StringView (elements[0].data ()).toDouble ();
 	r.pos.y = UTF8StringView (elements[1].data ()).toDouble ();
 	r.size.x = UTF8StringView (elements[2].data ()).toDouble ();
 	r.size.y = UTF8StringView (elements[3].data ()).toDouble ();
-	
+
 	return r;
 }
-	
+
 //------------------------------------------------------------------------
 } // anonymous
 
 //------------------------------------------------------------------------
-class Window : public IWindow, public IPlatformWindowAccess, public Platform::IWindowDelegate, public std::enable_shared_from_this<Window>
+class Window : public IWindow,
+               public IPlatformWindowAccess,
+               public Platform::IWindowDelegate,
+               public std::enable_shared_from_this<Window>
 {
 public:
 	bool init (const WindowConfiguration& config, const WindowControllerPtr& controller);
@@ -67,7 +70,10 @@ public:
 	CPoint getPosition () const override { return platformWindow->getPosition (); }
 	CRect getFocusViewRect () const override;
 	void setSize (const CPoint& newSize) override { platformWindow->setSize (newSize); }
-	void setPosition (const CPoint& newPosition) override { platformWindow->setPosition (newPosition); }
+	void setPosition (const CPoint& newPosition) override
+	{
+		platformWindow->setPosition (newPosition);
+	}
 	void setTitle (const UTF8String& newTitle) override { platformWindow->setTitle (newTitle); }
 	void setContentView (const SharedPointer<CFrame>& newFrame) override;
 	void show () override { platformWindow->show (); }
@@ -93,6 +99,7 @@ public:
 	// ICommandHandler
 	bool canHandleCommand (const Command& command) override;
 	bool handleCommand (const Command& command) override;
+
 private:
 	WindowControllerPtr controller;
 	Platform::WindowPtr platformWindow;
@@ -110,7 +117,7 @@ bool Window::init (const WindowConfiguration& config, const WindowControllerPtr&
 		if (!config.autoSaveFrameName.empty ())
 		{
 			autoSaveFrameName = config.autoSaveFrameName;
-			auto frame = IApplication::instance().getPreferences().get (autoSaveFrameName);
+			auto frame = IApplication::instance ().getPreferences ().get (autoSaveFrameName);
 			if (!frame.empty ())
 			{
 				auto ps = positionAndSizeFromString (frame);
@@ -162,9 +169,8 @@ CPoint Window::constraintSize (const CPoint& newSize)
 //------------------------------------------------------------------------
 void Window::onSizeChanged (const CPoint& newSize)
 {
-	windowListeners.forEach ([&] (IWindowListener* listener) {
-		listener->onSizeChanged (*this, newSize);
-	});
+	windowListeners.forEach (
+	    [&] (IWindowListener* listener) { listener->onSizeChanged (*this, newSize); });
 	if (controller)
 		controller->onSizeChanged (*this, newSize);
 }
@@ -172,9 +178,8 @@ void Window::onSizeChanged (const CPoint& newSize)
 //------------------------------------------------------------------------
 void Window::onPositionChanged (const CPoint& newPosition)
 {
-	windowListeners.forEach ([&] (IWindowListener* listener) {
-		listener->onPositionChanged (*this, newPosition);
-	});
+	windowListeners.forEach (
+	    [&] (IWindowListener* listener) { listener->onPositionChanged (*this, newPosition); });
 	if (controller)
 		controller->onPositionChanged (*this, newPosition);
 }
@@ -185,7 +190,8 @@ void Window::onClosed ()
 	auto self = shared_from_this (); // make sure we live as long as this method executes
 
 	if (!autoSaveFrameName.empty ())
-		IApplication::instance ().getPreferences ().set (autoSaveFrameName, strFromPositionAndSize (getPosition (), getSize ()));
+		IApplication::instance ().getPreferences ().set (
+		    autoSaveFrameName, strFromPositionAndSize (getPosition (), getSize ()));
 
 	windowListeners.forEach ([&] (IWindowListener* listener) {
 		listener->onClosed (*this);
@@ -207,9 +213,7 @@ void Window::onClosed ()
 //------------------------------------------------------------------------
 void Window::onShow ()
 {
-	windowListeners.forEach ([&] (IWindowListener* listener) {
-		listener->onShow (*this);
-	});
+	windowListeners.forEach ([&] (IWindowListener* listener) { listener->onShow (*this); });
 	if (controller)
 		controller->onShow (*this);
 }
@@ -217,42 +221,30 @@ void Window::onShow ()
 //------------------------------------------------------------------------
 void Window::onHide ()
 {
-	windowListeners.forEach ([&] (IWindowListener* listener) {
-		listener->onHide (*this);
-	});
+	windowListeners.forEach ([&] (IWindowListener* listener) { listener->onHide (*this); });
 	if (controller)
 		controller->onHide (*this);
 }
 
 //------------------------------------------------------------------------
-bool Window::canClose ()
-{
-	return controller ? controller->canClose (*this) : true;
-}
+bool Window::canClose () { return controller ? controller->canClose (*this) : true; }
 
 //------------------------------------------------------------------------
 void Window::onActivated ()
 {
-	windowListeners.forEach ([&] (IWindowListener* listener) {
-		listener->onActivated (*this);
-	});
+	windowListeners.forEach ([&] (IWindowListener* listener) { listener->onActivated (*this); });
 	controller->onActivated (*this);
 }
 
 //------------------------------------------------------------------------
 void Window::onDeactivated ()
 {
-	windowListeners.forEach ([&] (IWindowListener* listener) {
-		listener->onDeactivated (*this);
-	});
+	windowListeners.forEach ([&] (IWindowListener* listener) { listener->onDeactivated (*this); });
 	controller->onDeactivated (*this);
 }
 
 //------------------------------------------------------------------------
-void Window::registerWindowListener (IWindowListener* listener)
-{
-	windowListeners.add (listener);
-}
+void Window::registerWindowListener (IWindowListener* listener) { windowListeners.add (listener); }
 
 //------------------------------------------------------------------------
 void Window::unregisterWindowListener (IWindowListener* listener)

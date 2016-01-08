@@ -42,16 +42,16 @@ public:
 
 	CPoint getSize () const override;
 	CPoint getPosition () const override;
-	
+
 	void setSize (const CPoint& newSize) override;
 	void setPosition (const CPoint& newPosition) override;
 	void setTitle (const UTF8String& newTitle) override;
-	
+
 	void show () override;
 	void hide () override;
 	void close () override;
 	void activate () override;
-	
+
 	PlatformType getPlatformType () const override { return PlatformType::kHWNDTopLevel; }
 	void* getPlatformHandle () const override { return hwnd; }
 	void onSetContentView (CFrame* frame) override;
@@ -59,6 +59,7 @@ public:
 	void updateCommands () const override;
 	void onQuit () override;
 	LRESULT CALLBACK proc (UINT message, WPARAM wParam, LPARAM lParam);
+
 private:
 	void setNewDPI (uint32_t newDpi);
 	void handleMenuCommand (const UTF8String& group, UINT index);
@@ -100,7 +101,7 @@ void Window::registerWindowClasses ()
 		return;
 	once = true;
 
-	WNDCLASSEX wcex{};
+	WNDCLASSEX wcex {};
 
 	wcex.cbSize = sizeof (WNDCLASSEX);
 
@@ -164,18 +165,16 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 		}
 		else
 		{
-			dwStyle = WS_POPUP;// | WS_THICKFRAME | WS_CAPTION | WS_MAXIMIZEBOX | WS_MINIMIZEBOX;
+			dwStyle = WS_POPUP; // | WS_THICKFRAME | WS_CAPTION | WS_MAXIMIZEBOX | WS_MINIMIZEBOX;
 			exStyle = WS_EX_COMPOSITED | WS_EX_TRANSPARENT;
 		}
 	}
 	initialSize = config.size;
 	auto winStr = dynamic_cast<WinString*> (config.title.getPlatformString ());
-	hwnd = CreateWindowEx (exStyle, gWindowClassName, winStr ? winStr->getWideString () : nullptr, dwStyle, 0, 0,
-						   500, 500,
-						   nullptr, nullptr, getHInstance (), nullptr);
+	hwnd = CreateWindowEx (exStyle, gWindowClassName, winStr ? winStr->getWideString () : nullptr,
+	                       dwStyle, 0, 0, 500, 500, nullptr, nullptr, getHInstance (), nullptr);
 	if (!hwnd)
 		return false;
-
 
 	delegate = &inDelegate;
 	SetWindowLongPtr (hwnd, GWLP_USERDATA, (__int3264) (LONG_PTR) this);
@@ -213,7 +212,8 @@ void Window::setNewDPI (uint32_t newDpi)
 }
 
 //------------------------------------------------------------------------
-static HMENU createSubMenu (const UTF8String& group, const Detail::IApplicationPlatformAccess::CommandWithKeyList& commands)
+static HMENU createSubMenu (const UTF8String& group,
+                            const Detail::IApplicationPlatformAccess::CommandWithKeyList& commands)
 {
 	// TODO: cleanup memory leaks
 	HMENU menu = CreateMenu ();
@@ -259,7 +259,7 @@ void Window::updateCommands () const
 		{
 			auto isAppGroup = e.first == CommandGroup::Application;
 			auto menuTitle = dynamic_cast<WinString*> (
-			    isAppGroup ? appInfo.name.getPlatformString () :e.first.getPlatformString ());
+			    isAppGroup ? appInfo.name.getPlatformString () : e.first.getPlatformString ());
 			AppendMenu (mainMenu, MF_STRING | MF_POPUP | MF_ENABLED, (UINT_PTR)subMenu,
 			            menuTitle->getWideString ());
 		}
@@ -292,7 +292,8 @@ void Window::handleMenuCommand (const UTF8String& group, UINT index)
 					delegate->handleCommand (*it);
 				else
 				{
-					if (auto commandHandler = getApplicationPlatformAccess ()->dynamicCast<ICommandHandler> ())
+					if (auto commandHandler =
+					        getApplicationPlatformAccess ()->dynamicCast<ICommandHandler> ())
 					{
 						if (commandHandler->canHandleCommand (*it))
 							commandHandler->handleCommand (*it);
@@ -340,7 +341,7 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 			GetWindowRect (hwnd, &oldSize);
 			RECT clientSize;
 			GetClientRect (hwnd, &clientSize);
-			
+
 			CPoint diff = getRectSize (*newSize) - getRectSize (oldSize);
 			CPoint newClientSize = getRectSize (clientSize) + diff;
 
@@ -350,8 +351,10 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 			{
 				frame->getTransform ().transform (constraintSize);
 				CPoint clientFrameDiff = getRectSize (oldSize) - getRectSize (clientSize);
-				newSize->right = newSize->left + static_cast<LONG> (constraintSize.x + clientFrameDiff.x);
-				newSize->bottom = newSize->top + static_cast<LONG> (constraintSize.y + clientFrameDiff.y);
+				newSize->right =
+				    newSize->left + static_cast<LONG> (constraintSize.x + clientFrameDiff.x);
+				newSize->bottom =
+				    newSize->top + static_cast<LONG> (constraintSize.y + clientFrameDiff.y);
 				return TRUE;
 			}
 			break;
@@ -441,7 +444,8 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 						}
 						else
 						{
-							if (auto commandHandler = getApplicationPlatformAccess ()->dynamicCast<ICommandHandler> ())
+							if (auto commandHandler = getApplicationPlatformAccess ()
+							                              ->dynamicCast<ICommandHandler> ())
 							{
 								if (commandHandler->canHandleCommand (e))
 								{
@@ -455,7 +459,7 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 					++cmd;
 				}
 			}
-			
+
 			DebugPrint ("\n");
 			break;
 		}
@@ -529,11 +533,11 @@ void Window::setSize (const CPoint& newSize)
 	clientRect.right = static_cast<LONG> (newSize.x * dpiScale);
 	clientRect.bottom = static_cast<LONG> (newSize.y * dpiScale);
 	AdjustWindowRectEx (&clientRect, dwStyle, hasMenu, exStyle);
-	
+
 	LONG width = clientRect.right - clientRect.left;
-	LONG height = clientRect.bottom - clientRect.top;	
+	LONG height = clientRect.bottom - clientRect.top;
 	SetWindowPos (hwnd, HWND_TOP, 0, 0, width, height,
-				  SWP_NOMOVE | SWP_NOCOPYBITS | SWP_NOACTIVATE);
+	              SWP_NOMOVE | SWP_NOCOPYBITS | SWP_NOACTIVATE);
 }
 
 //------------------------------------------------------------------------
@@ -546,19 +550,18 @@ void Window::setPosition (const CPoint& newPosition)
 
 	clientRect.left += static_cast<LONG> (newPosition.x);
 	clientRect.top += static_cast<LONG> (newPosition.y);
-	SetWindowPos (hwnd, HWND_TOP, clientRect.left, clientRect.top, 0, 0, SWP_NOSIZE | SWP_NOACTIVATE);
+	SetWindowPos (hwnd, HWND_TOP, clientRect.left, clientRect.top, 0, 0,
+	              SWP_NOSIZE | SWP_NOACTIVATE);
 }
 
 //------------------------------------------------------------------------
-void Window::setTitle (const UTF8String& newTitle)
-{
-}
+void Window::setTitle (const UTF8String& newTitle) {}
 
 //------------------------------------------------------------------------
 void Window::show ()
 {
 	auto monitor = MonitorFromWindow (hwnd, MONITOR_DEFAULTTONEAREST);
-	UINT x,y;
+	UINT x, y;
 	GetDpiForMonitor (monitor, MDT_EFFECTIVE_DPI, &x, &y);
 	setNewDPI (x);
 
@@ -566,18 +569,15 @@ void Window::show ()
 	clientRect.right = static_cast<LONG> (initialSize.x * dpiScale);
 	clientRect.bottom = static_cast<LONG> (initialSize.y * dpiScale);
 	AdjustWindowRectEx (&clientRect, dwStyle, hasMenu, exStyle);
-	
+
 	LONG width = clientRect.right - clientRect.left;
-	LONG height = clientRect.bottom - clientRect.top;	
+	LONG height = clientRect.bottom - clientRect.top;
 	SetWindowPos (hwnd, HWND_TOP, 0, 0, width, height,
-				  SWP_NOMOVE | SWP_NOCOPYBITS | SWP_SHOWWINDOW);
+	              SWP_NOMOVE | SWP_NOCOPYBITS | SWP_SHOWWINDOW);
 }
 
 //------------------------------------------------------------------------
-void Window::hide ()
-{
-	ShowWindow (hwnd, false);
-}
+void Window::hide () { ShowWindow (hwnd, false); }
 
 //------------------------------------------------------------------------
 void Window::close ()
@@ -597,10 +597,7 @@ void Window::onQuit ()
 }
 
 //------------------------------------------------------------------------
-void Window::activate ()
-{
-	BringWindowToTop (hwnd);
-}
+void Window::activate () { BringWindowToTop (hwnd); }
 
 //------------------------------------------------------------------------
 void Window::windowWillClose ()

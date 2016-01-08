@@ -12,8 +12,8 @@ ValuePtr make (const UTF8String& id, IValue::Type initialValue = 0.,
                const ValueStringConverterPtr& stringConverter = nullptr);
 
 //------------------------------------------------------------------------
-ValuePtr makeStepValue (const UTF8String& id, IStepValue::StepType initialSteps,
-                        IValue::Type initialValue,
+ValuePtr makeStepValue (const UTF8String& id, IStepValue::StepType numSteps,
+                        IValue::Type initialValue = 0.,
                         const ValueStringConverterPtr& stringConverter = nullptr);
 
 //------------------------------------------------------------------------

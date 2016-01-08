@@ -9,7 +9,7 @@
 #import "../../../iapplication.h"
 
 //------------------------------------------------------------------------
-@interface VSTGUIApplicationDelegate : NSObject<NSApplicationDelegate>
+@interface VSTGUIApplicationDelegate : NSObject <NSApplicationDelegate>
 {
 	VSTGUI::Standalone::Platform::Mac::MacPreference prefs;
 }
@@ -20,7 +20,8 @@ using VSTGUI::Standalone::Platform::Mac::IMacWindow;
 using VSTGUI::Standalone::Detail::IApplicationPlatformAccess;
 using VSTGUI::Standalone::Detail::CommandWithKey;
 using VSTGUI::Standalone::Detail::IPlatformWindowAccess;
-using CommandWithKeyList = VSTGUI::Standalone::Detail::IApplicationPlatformAccess::CommandWithKeyList;
+using CommandWithKeyList =
+    VSTGUI::Standalone::Detail::IApplicationPlatformAccess::CommandWithKeyList;
 using VSTGUI::Standalone::Detail::PlatformCallbacks;
 
 //------------------------------------------------------------------------
@@ -44,9 +45,9 @@ static const CommandWithKeyList* getCommandList (const char* group)
 @implementation VSTGUIApplicationDelegate
 
 //------------------------------------------------------------------------
-- (instancetype) init
+- (instancetype)init
 {
-	self =[super init];
+	self = [super init];
 	if (self)
 	{
 		auto app = getApplicationPlatformAccess ();
@@ -56,7 +57,7 @@ static const CommandWithKeyList* getCommandList (const char* group)
 }
 
 //------------------------------------------------------------------------
-- (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
+- (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication*)sender
 {
 	if (IApplication::instance ().getDelegate ().canQuit ())
 		return NSTerminateNow;
@@ -84,28 +85,30 @@ static const CommandWithKeyList* getCommandList (const char* group)
 	VSTGUICommand* command = [sender representedObject];
 	if (command)
 	{
-		if (auto commandHandler = IApplication::instance().getDelegate().dynamicCast<ICommandHandler> ())
+		if (auto commandHandler =
+		        IApplication::instance ().getDelegate ().dynamicCast<ICommandHandler> ())
 			commandHandler->handleCommand ([command command]);
 	}
 }
 
 //------------------------------------------------------------------------
-- (BOOL)validateMenuItem:(NSMenuItem *)menuItem
+- (BOOL)validateMenuItem:(NSMenuItem*)menuItem
 {
-	if (menuItem.action == @selector(showPreferenceDialog:))
+	if (menuItem.action == @selector (showPreferenceDialog:))
 	{
 		if (!IApplication::instance ().getDelegate ().hasPreferenceDialog ())
 		{
 			return NO;
 		}
 	}
-	else if (menuItem.action == @selector(showAboutDialog:))
+	else if (menuItem.action == @selector (showAboutDialog:))
 	{
 		return YES;
 	}
 	else if (VSTGUICommand* command = menuItem.representedObject)
 	{
-		if (auto commandHandler = IApplication::instance().getDelegate().dynamicCast<ICommandHandler> ())
+		if (auto commandHandler =
+		        IApplication::instance ().getDelegate ().dynamicCast<ICommandHandler> ())
 			return commandHandler->canHandleCommand ([command command]);
 	}
 	return NO;
@@ -115,20 +118,20 @@ static const CommandWithKeyList* getCommandList (const char* group)
 - (SEL)selectorForCommand:(const CommandWithKey&)command
 {
 	if (command == Commands::CloseWindow)
-		return @selector(performClose:);
+		return @selector (performClose:);
 	else if (command == Commands::Undo)
-		return @selector(undo);
+		return @selector (undo);
 	else if (command == Commands::Redo)
-		return @selector(redo);
+		return @selector (redo);
 	else if (command == Commands::Cut)
-		return @selector(cut:);
+		return @selector (cut:);
 	else if (command == Commands::Copy)
-		return @selector(copy:);
+		return @selector (copy:);
 	else if (command == Commands::Paste)
-		return @selector(paste:);
+		return @selector (paste:);
 	else if (command == Commands::SelectAll)
-		return @selector(selectAll:);
-	return @selector(processCommand:);
+		return @selector (selectAll:);
+	return @selector (processCommand:);
 }
 
 //------------------------------------------------------------------------
@@ -142,7 +145,9 @@ static const CommandWithKeyList* getCommandList (const char* group)
 	item.action = [self selectorForCommand:command];
 	if (command.defaultKey)
 	{
-		item.keyEquivalent = [NSString stringWithCharacters:reinterpret_cast<const unichar*>(&command.defaultKey) length:1];
+		item.keyEquivalent =
+		    [NSString stringWithCharacters:reinterpret_cast<const unichar*> (&command.defaultKey)
+		                            length:1];
 	}
 	VSTGUICommand* representedObject = [VSTGUICommand new];
 	representedObject.cmd = command;
@@ -163,19 +168,31 @@ static const CommandWithKeyList* getCommandList (const char* group)
 		{
 			if (command == Commands::About)
 			{
-				[menu addItemWithTitle:[NSString stringWithFormat:@"About %@", appName] action:@selector(showAboutDialog:) keyEquivalent:@""];
+				[menu addItemWithTitle:[NSString stringWithFormat:@"About %@", appName]
+				                action:@selector (showAboutDialog:)
+				         keyEquivalent:@""];
 				[menu addItem:[NSMenuItem separatorItem]];
 			}
 			else if (command == Commands::Preferences)
-				[menu addItemWithTitle:@"Preferences..." action:@selector(showPreferenceDialog:) keyEquivalent:@","];
+				[menu addItemWithTitle:@"Preferences..."
+				                action:@selector (showPreferenceDialog:)
+				         keyEquivalent:@","];
 			else if (command == Commands::Quit)
 			{
 				[menu addItem:[NSMenuItem separatorItem]];
-				[menu addItemWithTitle:[NSString stringWithFormat:@"Hide %@", appName] action:@selector(hide:) keyEquivalent:@"h"];
-				[menu addItemWithTitle:@"Hide Others" action:@selector(hideOtherApplications:) keyEquivalent:@""];
-				[menu addItemWithTitle:@"Show All" action:@selector(unhideAllApplications:) keyEquivalent:@""];
+				[menu addItemWithTitle:[NSString stringWithFormat:@"Hide %@", appName]
+				                action:@selector (hide:)
+				         keyEquivalent:@"h"];
+				[menu addItemWithTitle:@"Hide Others"
+				                action:@selector (hideOtherApplications:)
+				         keyEquivalent:@""];
+				[menu addItemWithTitle:@"Show All"
+				                action:@selector (unhideAllApplications:)
+				         keyEquivalent:@""];
 				[menu addItem:[NSMenuItem separatorItem]];
-				[menu addItemWithTitle:[NSString stringWithFormat:@"Quit %@", appName] action:@selector(terminate:) keyEquivalent:@"q"];
+				[menu addItemWithTitle:[NSString stringWithFormat:@"Quit %@", appName]
+				                action:@selector (terminate:)
+				         keyEquivalent:@"q"];
 			}
 			else
 			{
@@ -199,9 +216,11 @@ static const CommandWithKeyList* getCommandList (const char* group)
 - (NSMenu*)createWindowsMenu
 {
 	NSMenu* menu = [[NSMenu alloc] initWithTitle:@"Windows"];
-	[menu addItemWithTitle:@"Minimize" action:@selector(performMiniaturize:) keyEquivalent:@"m"];
-	[menu addItemWithTitle:@"Zoom" action:@selector(performZoom:) keyEquivalent:@""];
-	NSMenuItem* item = [menu addItemWithTitle:@"Fullscreen" action:@selector(toggleFullScreen:) keyEquivalent:@"f"];
+	[menu addItemWithTitle:@"Minimize" action:@selector (performMiniaturize:) keyEquivalent:@"m"];
+	[menu addItemWithTitle:@"Zoom" action:@selector (performZoom:) keyEquivalent:@""];
+	NSMenuItem* item = [menu addItemWithTitle:@"Fullscreen"
+	                                   action:@selector (toggleFullScreen:)
+	                            keyEquivalent:@"f"];
 	item.keyEquivalentModifierMask = NSCommandKeyMask | NSControlKeyMask;
 	[menu addItem:[NSMenuItem separatorItem]];
 	return menu;
@@ -220,7 +239,8 @@ static const CommandWithKeyList* getCommandList (const char* group)
 		appMenuItem = [[NSMenuItem alloc] initWithTitle:@"App" action:nil keyEquivalent:@""];
 		[mainMenu addItem:appMenuItem];
 
-		NSMenuItem* item = [[NSMenuItem alloc] initWithTitle:@"Windows" action:NULL keyEquivalent:@""];
+		NSMenuItem* item =
+		    [[NSMenuItem alloc] initWithTitle:@"Windows" action:NULL keyEquivalent:@""];
 		NSMenu* windowsMenu = [self createWindowsMenu];
 		[NSApp setWindowsMenu:windowsMenu];
 		item.submenu = windowsMenu;
@@ -252,7 +272,7 @@ static const CommandWithKeyList* getCommandList (const char* group)
 			[self fillMenu:item.submenu fromCommandList:e.second];
 		}
 	}
-	
+
 	// move Windows menu to the end
 	NSMenuItem* windowsMenuItem = [mainMenu itemWithTitle:@"Windows"];
 	[mainMenu removeItem:windowsMenuItem];
@@ -296,7 +316,7 @@ static const CommandWithKeyList* getCommandList (const char* group)
 	auto platformWindow = platformWindowAccess->getPlatformWindow ();
 	if (!platformWindow)
 		return;
-	auto macWindow = platformWindow->dynamicCast<IMacWindow>();
+	auto macWindow = platformWindow->dynamicCast<IMacWindow> ();
 	if (!macWindow)
 		return;
 
@@ -311,19 +331,20 @@ static const CommandWithKeyList* getCommandList (const char* group)
 	auto callback = config.callback;
 
 	NSAlert* alert = [self createAlert:config];
-	[alert beginSheetModalForWindow:macWindow->getNSWindow () completionHandler:^(NSModalResponse returnCode) {
-		if (callback)
-		{
-			AlertResult result = AlertResult::error;
-			if (returnCode == NSAlertFirstButtonReturn)
-				result = AlertResult::defaultButton;
-			else if (returnCode == NSAlertSecondButtonReturn)
-				result = AlertResult::secondButton;
-			else if (returnCode == NSAlertThirdButtonReturn)
-				result = AlertResult::thirdButton;
-			callback (result);
-		}
-	}];
+	[alert beginSheetModalForWindow:macWindow->getNSWindow ()
+	              completionHandler:^(NSModalResponse returnCode) {
+		            if (callback)
+		            {
+			            AlertResult result = AlertResult::error;
+			            if (returnCode == NSAlertFirstButtonReturn)
+				            result = AlertResult::defaultButton;
+			            else if (returnCode == NSAlertSecondButtonReturn)
+				            result = AlertResult::secondButton;
+			            else if (returnCode == NSAlertThirdButtonReturn)
+				            result = AlertResult::thirdButton;
+			            callback (result);
+		            }
+		          }];
 }
 
 //------------------------------------------------------------------------
@@ -353,7 +374,7 @@ static const CommandWithKeyList* getCommandList (const char* group)
 }
 
 //------------------------------------------------------------------------
-- (void)applicationDidFinishLaunching:(NSNotification *)notification
+- (void)applicationDidFinishLaunching:(NSNotification*)notification
 {
 	if ([self verifyInfoPlistEntries] == NO)
 	{
@@ -367,14 +388,10 @@ static const CommandWithKeyList* getCommandList (const char* group)
 	VSTGUIApplicationDelegate* Self = self;
 	PlatformCallbacks callbacks;
 	callbacks.quit = [] () {
-		[NSApp performSelector:@selector(terminate:) withObject:nil afterDelay:0];
+		[NSApp performSelector:@selector (terminate:) withObject:nil afterDelay:0];
 	};
-	callbacks.onCommandUpdate = [Self] () {
-		[Self setupMainMenu];
-	};
-	callbacks.showAlert = [Self] (const AlertBoxConfig& config) {
-		return [Self showAlert:config];
-	};
+	callbacks.onCommandUpdate = [Self] () { [Self setupMainMenu]; };
+	callbacks.showAlert = [Self] (const AlertBoxConfig& config) { return [Self showAlert:config]; };
 	callbacks.showAlertForWindow = [Self] (const AlertBoxForWindowConfig& config) {
 		return [Self showAlertForWindow:config];
 	};
@@ -385,7 +402,7 @@ static const CommandWithKeyList* getCommandList (const char* group)
 }
 
 //------------------------------------------------------------------------
-- (void)applicationWillTerminate:(NSNotification *)notification
+- (void)applicationWillTerminate:(NSNotification*)notification
 {
 	IApplication::instance ().getDelegate ().onQuit ();
 }

@@ -47,7 +47,6 @@ public:
 	virtual StepType getSteps () const = 0;
 	virtual IValue::Type stepToValue (StepType step) const = 0;
 	virtual StepType valueToStep (IValue::Type) const = 0;
-
 };
 
 //------------------------------------------------------------------------

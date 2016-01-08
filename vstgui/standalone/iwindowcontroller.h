@@ -53,7 +53,10 @@ public:
 	void onClosed (const IWindow& window) override {}
 	void onActivated (const IWindow& window) override {}
 	void onDeactivated (const IWindow& window) override {}
-	CPoint constraintSize (const IWindow& window, const CPoint& newSize) override { return newSize; }
+	CPoint constraintSize (const IWindow& window, const CPoint& newSize) override
+	{
+		return newSize;
+	}
 	bool canClose (const IWindow& window) const override { return true; }
 };
 

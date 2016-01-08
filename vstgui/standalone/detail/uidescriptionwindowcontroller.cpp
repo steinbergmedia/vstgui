@@ -38,6 +38,7 @@ private:
 		static EditFileMap gInstance;
 		return gInstance;
 	}
+
 public:
 	static void set (const std::string& filename, const std::string& absolutePath)
 	{
@@ -89,7 +90,9 @@ enum class UIDescCheckFilePathResult
 };
 
 //------------------------------------------------------------------------
-UIDescCheckFilePathResult checkAndUpdateUIDescFilePath (UIDescription& uiDesc, CFrame* _frame, UTF8StringPtr notFoundText = "The uidesc file location cannot be found.")
+UIDescCheckFilePathResult checkAndUpdateUIDescFilePath (
+    UIDescription& uiDesc, CFrame* _frame,
+    UTF8StringPtr notFoundText = "The uidesc file location cannot be found.")
 {
 	SharedPointer<CFrame> frame (_frame);
 	if (!frame)
@@ -134,13 +137,13 @@ struct SharedResources
 		static SharedResources gInstance;
 		return gInstance;
 	}
-	
+
 	const SharedPointer<UIDescription>& get ()
 	{
 		load ();
 		return uiDesc;
 	}
-	
+
 	void unuse ()
 	{
 		save ();
@@ -171,7 +174,7 @@ private:
 				return false;
 			else
 #endif
-			return false;
+				return false;
 		}
 		auto settings = uiDesc->getCustomAttributes ("UIDescFilePath", true);
 		auto filePath = settings->getAttributeValue ("path");
@@ -179,12 +182,14 @@ private:
 			uiDesc->setFilePath (filePath->data ());
 
 #if VSTGUI_LIVE_EDITING
-		checkAndUpdateUIDescFilePath (*uiDesc, nullptr, "The resource ui desc file location cannot be found.");
-		EditFileMap::set (IApplication::instance ().getDelegate ().getSharedUIResourceFilename (), uiDesc->getFilePath ());
+		checkAndUpdateUIDescFilePath (*uiDesc, nullptr,
+		                              "The resource ui desc file location cannot be found.");
+		EditFileMap::set (IApplication::instance ().getDelegate ().getSharedUIResourceFilename (),
+		                  uiDesc->getFilePath ());
 #endif
 		return true;
 	}
-	
+
 	bool save ()
 	{
 #if VSTGUI_LIVE_EDITING
@@ -209,26 +214,27 @@ class WindowController : public WindowControllerAdapter, public ICommandHandler
 {
 public:
 	bool init (const UIDesc::Config& config, WindowPtr& window);
-	
+
 	CPoint constraintSize (const IWindow& window, const CPoint& newSize) override;
 	void onClosed (const IWindow& window) override;
 	bool canClose (const IWindow& window) const override;
-	
+
 	bool canHandleCommand (const Command& command) override;
 	bool handleCommand (const Command& command) override;
+
 private:
-	
 	struct Impl;
 	struct EditImpl;
 	std::unique_ptr<Impl> impl;
 };
 
 //------------------------------------------------------------------------
-class ValueWrapper : public ValueListenerAdapter, public IControlListener, public IViewListenerAdapter
+class ValueWrapper : public ValueListenerAdapter,
+                     public IControlListener,
+                     public IViewListenerAdapter
 {
 public:
-	ValueWrapper (const ValuePtr& value = nullptr)
-	: value (value)
+	ValueWrapper (const ValuePtr& value = nullptr) : value (value)
 	{
 		if (value)
 			value->registerListener (this);
@@ -245,7 +251,7 @@ public:
 	}
 
 	const UTF8String& getID () const { return value->getID (); }
-	
+
 	void onPerformEdit (const IValue& value, IValue::Type newValue) override
 	{
 		for (auto& c : controls)
@@ -263,21 +269,23 @@ public:
 		auto stepValue = value->dynamicCast<const IStepValue> ();
 		if (!stepValue)
 			return;
-		if (auto menu = dynamic_cast<COptionMenu*>(control))
+		if (auto menu = dynamic_cast<COptionMenu*> (control))
 		{
 			menu->removeAllEntry ();
 			for (IStepValue::StepType i = 0; i < stepValue->getSteps (); ++i)
 			{
-				auto title = value->getStringConverter ().valueAsString (stepValue->stepToValue (i));
+				auto title =
+				    value->getStringConverter ().valueAsString (stepValue->stepToValue (i));
 				menu->addEntry (title);
 			}
 		}
-		if (auto segmentButton = dynamic_cast<CSegmentButton*>(control))
+		if (auto segmentButton = dynamic_cast<CSegmentButton*> (control))
 		{
 			segmentButton->removeAllSegments ();
 			for (IStepValue::StepType i = 0; i < stepValue->getSteps (); ++i)
 			{
-				auto title = value->getStringConverter ().valueAsString (stepValue->stepToValue (i));
+				auto title =
+				    value->getStringConverter ().valueAsString (stepValue->stepToValue (i));
 				segmentButton->addSegment ({title});
 			}
 		}
@@ -306,27 +314,29 @@ public:
 	{
 		if (auto paramDisplay = dynamic_cast<CParamDisplay*> (control))
 		{
-			paramDisplay->setValueToStringFunction ([this] (float value, char utf8String[256], CParamDisplay* display) {
-				auto string = this->value->getStringConverter ().valueAsString (value);
-				auto numBytes = std::min<size_t> (string.getByteCount (), 255);
-				if (numBytes)
-				{
-					strncpy (utf8String, string.get (), numBytes);
-					utf8String[numBytes] = 0;
-				}
-				else
-					utf8String[0] = 0;
-				return true;
-			});
-			if (auto textEdit = dynamic_cast<CTextEdit*>(paramDisplay))
-			{
-				textEdit->setStringToValueFunction ([&] (UTF8StringPtr txt, float& result, CTextEdit* textEdit) {
-					auto v = value->getStringConverter ().stringAsValue (txt);
-					if (v == IValue::InvalidValue)
-						v = value->getValue ();
-					result = static_cast<float> (v);
-					return true;
+			paramDisplay->setValueToStringFunction (
+			    [this] (float value, char utf8String[256], CParamDisplay* display) {
+				    auto string = this->value->getStringConverter ().valueAsString (value);
+				    auto numBytes = std::min<size_t> (string.getByteCount (), 255);
+				    if (numBytes)
+				    {
+					    strncpy (utf8String, string.get (), numBytes);
+					    utf8String[numBytes] = 0;
+				    }
+				    else
+					    utf8String[0] = 0;
+				    return true;
 				});
+			if (auto textEdit = dynamic_cast<CTextEdit*> (paramDisplay))
+			{
+				textEdit->setStringToValueFunction (
+				    [&] (UTF8StringPtr txt, float& result, CTextEdit* textEdit) {
+					    auto v = value->getStringConverter ().stringAsValue (txt);
+					    if (v == IValue::InvalidValue)
+						    v = value->getValue ();
+					    result = static_cast<float> (v);
+					    return true;
+					});
 			}
 		}
 		updateControlOnStateChange (control);
@@ -342,7 +352,7 @@ public:
 		if (auto paramDisplay = dynamic_cast<CParamDisplay*> (control))
 		{
 			paramDisplay->setValueToStringFunction (nullptr);
-			if (auto textEdit = dynamic_cast<CTextEdit*>(paramDisplay))
+			if (auto textEdit = dynamic_cast<CTextEdit*> (paramDisplay))
 				textEdit->setStringToValueFunction (nullptr);
 		}
 		control->unregisterViewListener (this);
@@ -351,16 +361,12 @@ public:
 		vstgui_assert (it != controls.end ());
 		controls.erase (it);
 	}
-	
-	void viewWillDelete (CView* view) override
-	{
-		removeControl (dynamic_cast<CControl*> (view));
-	}
+
+	void viewWillDelete (CView* view) override { removeControl (dynamic_cast<CControl*> (view)); }
 
 protected:
-
 	using ControlList = std::vector<CControl*>;
-	
+
 	ValuePtr value;
 	ControlList controls;
 };
@@ -371,13 +377,14 @@ using ValueWrapperPtr = std::shared_ptr<ValueWrapper>;
 struct WindowController::Impl : public IController, public ICommandHandler
 {
 	using ValueWrapperList = std::vector<ValueWrapperPtr>;
-	
-	Impl (WindowController& controller, const ModelBindingPtr& modelHandler, const CustomizationPtr& customization)
+
+	Impl (WindowController& controller, const ModelBindingPtr& modelHandler,
+	      const CustomizationPtr& customization)
 	: controller (controller), modelBinding (modelHandler), customization (customization)
 	{
 		initModelValues (modelHandler);
 	}
-	
+
 	~Impl ()
 	{
 		if (uiDesc)
@@ -386,7 +393,7 @@ struct WindowController::Impl : public IController, public ICommandHandler
 			SharedResources::instance ().unuse ();
 		}
 	}
-	
+
 	virtual bool init (WindowPtr& inWindow, const char* fileName, const char* templateName)
 	{
 		window = inWindow.get ();
@@ -395,13 +402,13 @@ struct WindowController::Impl : public IController, public ICommandHandler
 		frame = owned (new CFrame ({}, nullptr));
 		frame->setTransparency (true);
 		this->templateName = templateName;
-		
+
 		showView ();
-		
+
 		window->setContentView (frame);
 		return true;
 	}
-	
+
 	virtual CPoint constraintSize (const CPoint& newSize)
 	{
 		CPoint p (newSize);
@@ -417,9 +424,9 @@ struct WindowController::Impl : public IController, public ICommandHandler
 		}
 		return p;
 	}
-	
+
 	virtual bool canClose () { return true; }
-	
+
 	bool initUIDesc (const char* fileName)
 	{
 		uiDesc = owned (new UIDescription (fileName));
@@ -430,7 +437,7 @@ struct WindowController::Impl : public IController, public ICommandHandler
 		}
 		return true;
 	}
-	
+
 	void updateMinMaxSizes ()
 	{
 		const UIAttributes* attr = uiDesc->getViewAttributes (templateName);
@@ -446,7 +453,7 @@ struct WindowController::Impl : public IController, public ICommandHandler
 		else
 			maxSize = {};
 	}
-	
+
 	void showView ()
 	{
 		updateMinMaxSizes ();
@@ -459,25 +466,25 @@ struct WindowController::Impl : public IController, public ICommandHandler
 		frame->getTransform ().transform (viewSize);
 		frame->setSize (viewSize.x, viewSize.y);
 		frame->addView (view);
-		
+
 		frame->setFocusDrawingEnabled (false);
 		window->setSize (view->getViewSize ().getSize ());
 	}
-	
+
 	bool canHandleCommand (const Command& command) override
 	{
 		if (auto commandHandler = modelBinding->dynamicCast<ICommandHandler> ())
 			return commandHandler->canHandleCommand (command);
 		return false;
 	}
-	
+
 	bool handleCommand (const Command& command) override
 	{
 		if (auto commandHandler = modelBinding->dynamicCast<ICommandHandler> ())
 			return commandHandler->handleCommand (command);
 		return false;
 	}
-	
+
 	void initModelValues (const ModelBindingPtr& modelHandler)
 	{
 		if (!modelHandler)
@@ -497,7 +504,7 @@ struct WindowController::Impl : public IController, public ICommandHandler
 	{
 		if (control->getTag () < 0)
 			return;
-		auto index = static_cast<ValueWrapperList::size_type>(control->getTag ());
+		auto index = static_cast<ValueWrapperList::size_type> (control->getTag ());
 		if (index < valueWrappers.size ())
 			valueWrappers[index]->removeControl (control);
 	}
@@ -505,29 +512,32 @@ struct WindowController::Impl : public IController, public ICommandHandler
 	{
 		if (control->getTag () < 0)
 			return;
-		auto index = static_cast<ValueWrapperList::size_type>(control->getTag ());
+		auto index = static_cast<ValueWrapperList::size_type> (control->getTag ());
 		if (index < valueWrappers.size ())
 			valueWrappers[index]->addControl (control);
 	}
-	
+
 	int32_t getTagForName (UTF8StringPtr name, int32_t registeredTag) const override
 	{
-		auto it = std::find_if(valueWrappers.begin(), valueWrappers.end(), [&] (const ValueWrapperPtr& v) {
-			return v->getID () == name;
-		});
-		if (it != valueWrappers.end())
+		auto it = std::find_if (valueWrappers.begin (), valueWrappers.end (),
+		                        [&] (const ValueWrapperPtr& v) { return v->getID () == name; });
+		if (it != valueWrappers.end ())
 			return static_cast<int32_t> (std::distance (valueWrappers.begin (), it));
 		return registeredTag;
 	}
-	
+
 	IControlListener* getControlListener (UTF8StringPtr controlTagName) override { return this; }
-	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override { return nullptr; }
-	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override
+	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override
+	{
+		return nullptr;
+	}
+	CView* verifyView (CView* view, const UIAttributes& attributes,
+	                   const IUIDescription* description) override
 	{
 		auto control = dynamic_cast<CControl*> (view);
 		if (control)
 		{
-			auto index = static_cast<ValueWrapperList::size_type>(control->getTag ());
+			auto index = static_cast<ValueWrapperList::size_type> (control->getTag ());
 			if (index < valueWrappers.size ())
 			{
 				valueWrappers[index]->updateControlOnStateChange (control);
@@ -535,13 +545,14 @@ struct WindowController::Impl : public IController, public ICommandHandler
 		}
 		return view;
 	}
-	IController* createSubController (UTF8StringPtr name, const IUIDescription* description) override
+	IController* createSubController (UTF8StringPtr name,
+	                                  const IUIDescription* description) override
 	{
 		if (customization)
 			return customization->createController (name, this, description);
 		return nullptr;
 	}
-	
+
 	WindowController& controller;
 	IWindow* window {nullptr};
 	SharedPointer<VSTGUI::UIDescription> uiDesc;
@@ -566,7 +577,7 @@ struct WindowController::EditImpl : WindowController::Impl
 	{
 		IApplication::instance ().registerCommand (ToggleEditingCommand, 'e');
 	}
-	
+
 	bool init (WindowPtr& inWindow, const char* fileName, const char* templateName) override
 	{
 		this->filename = fileName;
@@ -583,7 +594,7 @@ struct WindowController::EditImpl : WindowController::Impl
 			attr->setAttribute (UIViewCreator::kAttrClass, "CViewContainer");
 			attr->setAttribute ("size", "300, 300");
 			uiDesc->addNewTemplate (templateName, attr);
-			
+
 			initAsNew ();
 		}
 		else
@@ -594,27 +605,27 @@ struct WindowController::EditImpl : WindowController::Impl
 				uiDesc->setFilePath (filePath->data ());
 		}
 		this->templateName = templateName;
-		
+
 		syncTags ();
 		showView ();
-		
+
 		window->setContentView (frame);
 		return true;
 	}
-	
+
 	CPoint constraintSize (const CPoint& newSize) override
 	{
 		if (isEditing)
 			return newSize;
 		return Impl::constraintSize (newSize);
 	}
-	
+
 	bool canClose () override
 	{
 		enableEditing (false);
 		return true;
 	}
-	
+
 	void initAsNew ()
 	{
 		if (initUIDescAsNew (*uiDesc, frame))
@@ -625,12 +636,10 @@ struct WindowController::EditImpl : WindowController::Impl
 		}
 		else
 		{
-			Call::later ([this] () {
-				window->close ();
-			});
+			Call::later ([this] () { window->close (); });
 		}
 	}
-	
+
 	void checkFileExists ()
 	{
 		auto result = checkAndUpdateUIDescFilePath (*uiDesc, frame);
@@ -643,7 +652,7 @@ struct WindowController::EditImpl : WindowController::Impl
 		}
 		enableEditing (false);
 	}
-	
+
 	void save (bool force = false)
 	{
 		if (!uiEditController)
@@ -668,15 +677,14 @@ struct WindowController::EditImpl : WindowController::Impl
 		int32_t index = 0;
 		for (auto& v : valueWrappers)
 		{
-			auto it = std::find_if (tagNames.begin(), tagNames.end(), [&] (const std::string* name) {
-				return v->getID () == *name;
-			});
+			auto it = std::find_if (tagNames.begin (), tagNames.end (),
+			                        [&] (const std::string* name) { return v->getID () == *name; });
 			auto create = it == tagNames.end ();
 			uiDesc->changeControlTagString (v->getID (), std::to_string (index), create);
 			++index;
 		}
 	}
-	
+
 	void enableEditing (bool state, bool ignoreCheckFileExist = false)
 	{
 		if (isEditing == state && frame->getNbViews () != 0)
@@ -687,7 +695,7 @@ struct WindowController::EditImpl : WindowController::Impl
 			save ();
 			uiEditController = nullptr;
 		}
-		
+
 		frame->removeAll ();
 		if (state)
 		{
@@ -721,14 +729,14 @@ struct WindowController::EditImpl : WindowController::Impl
 			showView ();
 		}
 	}
-	
+
 	bool canHandleCommand (const Command& command) override
 	{
 		if (command == ToggleEditingCommand)
 			return true;
 		return Impl::canHandleCommand (command);
 	}
-	
+
 	bool handleCommand (const Command& command) override
 	{
 		if (command == ToggleEditingCommand)
@@ -738,7 +746,7 @@ struct WindowController::EditImpl : WindowController::Impl
 		}
 		return Impl::handleCommand (command);
 	}
-	
+
 	SharedPointer<UIEditController> uiEditController;
 	bool isEditing {false};
 	std::string filename;
@@ -746,7 +754,7 @@ struct WindowController::EditImpl : WindowController::Impl
 #endif
 
 //------------------------------------------------------------------------
-bool WindowController::init (const UIDesc::Config &config, WindowPtr &window)
+bool WindowController::init (const UIDesc::Config& config, WindowPtr& window)
 {
 #if VSTGUI_LIVE_EDITING
 	impl = std::unique_ptr<Impl> (new EditImpl (*this, config.modelBinding, config.customization));
@@ -763,16 +771,10 @@ CPoint WindowController::constraintSize (const IWindow& window, const CPoint& ne
 }
 
 //------------------------------------------------------------------------
-bool WindowController::canClose (const IWindow& window) const
-{
-	return impl->canClose ();
-}
+bool WindowController::canClose (const IWindow& window) const { return impl->canClose (); }
 
 //------------------------------------------------------------------------
-void WindowController::onClosed (const IWindow& window)
-{
-	impl = nullptr;
-}
+void WindowController::onClosed (const IWindow& window) { impl = nullptr; }
 
 //------------------------------------------------------------------------
 bool WindowController::canHandleCommand (const Command& command)

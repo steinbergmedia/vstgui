@@ -27,13 +27,14 @@ public:
 	 *	@param config window configuration
 	 *	@param controller window controller (can be nullptr)
 	 */
-	virtual WindowPtr createWindow (const WindowConfiguration& config, const WindowControllerPtr& controller) = 0;
+	virtual WindowPtr createWindow (const WindowConfiguration& config,
+	                                const WindowControllerPtr& controller) = 0;
 	/** Get all application windows
 	 *
 	 *	@note The active window will be the first in the list.
 	 */
 	virtual const WindowList& getWindows () const = 0;
-	/** Show an application wide modal alert box 
+	/** Show an application wide modal alert box
 	 *
 	 *	@param config alert box configuration
 	 */
@@ -45,7 +46,8 @@ public:
 	virtual void showAlertBoxForWindow (const AlertBoxForWindowConfig& config) = 0;
 	/** Register a command
 	 *
-	 *	The command will be added to the application menu. When the menu item is selected the command
+	 *	The command will be added to the application menu. When the menu item is selected the
+	 *command
 	 *	is first dispatched to the active window and then to the application delegate.
 	 *
 	 *	@param command command name and group

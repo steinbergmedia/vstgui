@@ -23,7 +23,7 @@ struct PlatformCallbacks
 	using QuitFunc = std::function<void ()>;
 	using AlertFunc = std::function<AlertResult (const AlertBoxConfig&)>;
 	using AlertForWindowFunc = std::function<void (const AlertBoxForWindowConfig&)>;
-	
+
 	QuitFunc quit;
 	OnCommandUpdateFunc onCommandUpdate;
 	AlertFunc showAlert;
@@ -34,7 +34,6 @@ struct PlatformCallbacks
 class IApplicationPlatformAccess : public Interface
 {
 public:
-	
 	using CommandWithKeyList = std::vector<CommandWithKey>;
 	using CommandListPair = std::pair<UTF8String, CommandWithKeyList>;
 	using CommandList = std::vector<CommandListPair>;

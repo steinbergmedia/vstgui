@@ -7,5 +7,5 @@
 @interface VSTGUICommand : NSObject
 @property VSTGUI::Standalone::Detail::CommandWithKey cmd;
 
-- (const VSTGUI::Standalone::Detail::CommandWithKey&) command;
+- (const VSTGUI::Standalone::Detail::CommandWithKey&)command;
 @end

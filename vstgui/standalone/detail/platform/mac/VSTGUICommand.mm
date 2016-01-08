@@ -3,10 +3,6 @@
 //------------------------------------------------------------------------
 @implementation VSTGUICommand
 
-- (const VSTGUI::Standalone::Detail::CommandWithKey&) command
-{
-	return self->_cmd;
-}
+- (const VSTGUI::Standalone::Detail::CommandWithKey&)command { return self->_cmd; }
 
 @end
-

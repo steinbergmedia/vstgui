@@ -13,12 +13,13 @@ namespace Standalone {
 /** About window types:
  *
  *	There are two types of windows :
- *	
+ *
  *	- Document
- *	
+ *
  *	- Popup
  *
- *	There can be as many document windows visible as you wish, but only one popup can be visible at a time.
+ *	There can be as many document windows visible as you wish, but only one popup can be visible at
+ *	a time.
  *	Popup windows will be closed when they get deactivated.
  *
  */
@@ -34,25 +35,50 @@ struct WindowStyle
 private:
 	uint32_t flags {0};
 
-	enum Style {
+	enum Style
+	{
 		Border = 1 << 0,
 		Close = 1 << 1,
 		Size = 1 << 2,
 		Transparent = 1 << 3,
 		MovableByWindowBackground = 1 << 4,
 	};
+
 public:
-	WindowStyle& border () { flags |= Style::Border; return *this; }
-	WindowStyle& close () { flags |= Style::Close; return *this; }
-	WindowStyle& size () { flags |= Style::Size; return *this; }
-	WindowStyle& transparent () { flags |= Style::Transparent; return *this; }
-	WindowStyle& movableByWindowBackground () { flags |= Style::MovableByWindowBackground; return *this; }
+	WindowStyle& border ()
+	{
+		flags |= Style::Border;
+		return *this;
+	}
+	WindowStyle& close ()
+	{
+		flags |= Style::Close;
+		return *this;
+	}
+	WindowStyle& size ()
+	{
+		flags |= Style::Size;
+		return *this;
+	}
+	WindowStyle& transparent ()
+	{
+		flags |= Style::Transparent;
+		return *this;
+	}
+	WindowStyle& movableByWindowBackground ()
+	{
+		flags |= Style::MovableByWindowBackground;
+		return *this;
+	}
 
 	bool hasBorder () const { return (flags & Style::Border) != 0; }
 	bool canClose () const { return (flags & Style::Close) != 0; }
 	bool canSize () const { return (flags & Style::Size) != 0; }
 	bool isTransparent () const { return (flags & Style::Transparent) != 0; }
-	bool isMovableByWindowBackground () const { return (flags & Style::MovableByWindowBackground) != 0; }
+	bool isMovableByWindowBackground () const
+	{
+		return (flags & Style::MovableByWindowBackground) != 0;
+	}
 };
 
 //------------------------------------------------------------------------
@@ -77,7 +103,7 @@ class IWindow : public Interface
 {
 public:
 	virtual const WindowControllerPtr& getController () const = 0;
-	
+
 	virtual CPoint getSize () const = 0;
 	virtual CPoint getPosition () const = 0;
 	virtual CRect getFocusViewRect () const = 0;

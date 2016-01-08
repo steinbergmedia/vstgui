@@ -18,6 +18,7 @@ public:
 
 	bool set (const UTF8String& key, const UTF8String& value) override;
 	UTF8String get (const UTF8String& key) override;
+
 private:
 	HKEY hKey;
 };

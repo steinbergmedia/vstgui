@@ -23,7 +23,8 @@ using namespace VSTGUI::Standalone;
 using VSTGUI::Standalone::Detail::IApplicationPlatformAccess;
 using VSTGUI::Standalone::Detail::CommandWithKey;
 using VSTGUI::Standalone::Detail::IPlatformWindowAccess;
-using CommandWithKeyList = VSTGUI::Standalone::Detail::IApplicationPlatformAccess::CommandWithKeyList;
+using CommandWithKeyList =
+    VSTGUI::Standalone::Detail::IApplicationPlatformAccess::CommandWithKeyList;
 using VSTGUI::Standalone::Detail::PlatformCallbacks;
 
 //------------------------------------------------------------------------
@@ -59,13 +60,15 @@ void Application::init ()
 	vstgui_assert (app);
 
 	app->init (prefs);
-	
+
 	PlatformCallbacks callbacks;
 	callbacks.quit = [this] () { quit (); };
 	callbacks.onCommandUpdate = [this] () { onCommandUpdate (); };
 	callbacks.showAlert = [this] (const AlertBoxConfig& config) { return showAlert (config); };
-	callbacks.showAlertForWindow = [this] (const AlertBoxForWindowConfig& config) { showAlertForWindow (config); };
-	
+	callbacks.showAlertForWindow = [this] (const AlertBoxForWindowConfig& config) {
+		showAlertForWindow (config);
+	};
+
 	app->setPlatformCallbacks (std::move (callbacks));
 	IApplication::instance ().getDelegate ().finishLaunching ();
 }
@@ -106,8 +109,8 @@ void Application::onCommandUpdate ()
 		}
 	}
 	if (!accels.empty ())
-		keyboardAccelerators = CreateAcceleratorTable (accels.data (), static_cast<int> (accels.size ()));
-
+		keyboardAccelerators =
+		    CreateAcceleratorTable (accels.data (), static_cast<int> (accels.size ()));
 }
 
 //------------------------------------------------------------------------
@@ -149,10 +152,8 @@ void Application::run ()
 void* hInstance = nullptr; // for VSTGUI
 
 //------------------------------------------------------------------------
-int APIENTRY wWinMain(_In_ HINSTANCE instance,
-					  _In_opt_ HINSTANCE prevInstance,
-					  _In_ LPWSTR    lpCmdLine,
-					  _In_ int       nCmdShow)
+int APIENTRY wWinMain (_In_ HINSTANCE instance, _In_opt_ HINSTANCE prevInstance,
+                       _In_ LPWSTR lpCmdLine, _In_ int nCmdShow)
 {
 	HRESULT hr = CoInitialize (NULL);
 	if (FAILED (hr))

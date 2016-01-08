@@ -21,7 +21,7 @@ class IModelBinding : public Interface
 {
 public:
 	using ValueList = std::vector<ValuePtr>;
-	
+
 	virtual const ValueList& getValues () const = 0;
 };
 
