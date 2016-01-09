@@ -2,6 +2,7 @@
 
 #include "fwd.h"
 #include "interface.h"
+#include "../lib/cstring.h"
 #include <functional>
 
 //------------------------------------------------------------------------

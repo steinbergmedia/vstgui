@@ -42,6 +42,7 @@ private:
 		Size = 1 << 2,
 		Transparent = 1 << 3,
 		MovableByWindowBackground = 1 << 4,
+		Centered = 1 << 5,
 	};
 
 public:
@@ -70,6 +71,11 @@ public:
 		flags |= Style::MovableByWindowBackground;
 		return *this;
 	}
+	WindowStyle& centered ()
+	{
+		flags |= Style::Centered;
+		return *this;
+	}
 
 	bool hasBorder () const { return (flags & Style::Border) != 0; }
 	bool canClose () const { return (flags & Style::Close) != 0; }
@@ -79,6 +85,7 @@ public:
 	{
 		return (flags & Style::MovableByWindowBackground) != 0;
 	}
+	bool isCentered () const { return (flags & Style::Centered) != 0; }
 };
 
 //------------------------------------------------------------------------

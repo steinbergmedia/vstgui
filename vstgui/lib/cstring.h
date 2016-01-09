@@ -138,6 +138,9 @@ public:
 	/** checks this string if it contains a subString */
 	bool contains (const UTF8StringPtr subString) const;
 
+	/** checks this string if it starts with startString */
+	bool startsWith (const UTF8StringView& startString) const;
+
 	/** checks this string if it ends with endString */
 	bool endsWith (const UTF8StringView& endString) const;
 
@@ -284,6 +287,18 @@ inline size_t UTF8StringView::calculateByteCount () const
 inline bool UTF8StringView::contains (const UTF8StringPtr subString) const
 {
 	return (!str || !subString || std::strstr (str, subString) == 0) ? false : true;
+}
+
+//-----------------------------------------------------------------------------
+inline bool UTF8StringView::startsWith (const UTF8StringView& startString) const
+{
+	if (!str || !startString.str)
+		return false;
+	uint64_t startStringLen = startString.calculateByteCount () - 1;
+	uint64_t thisLen = calculateByteCount () - 1;
+	if (startStringLen > thisLen)
+		return false;
+	return strncmp (str, startString.str, startStringLen) == 0;
 }
 
 //-----------------------------------------------------------------------------

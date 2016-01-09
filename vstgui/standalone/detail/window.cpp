@@ -76,7 +76,7 @@ public:
 	}
 	void setTitle (const UTF8String& newTitle) override { platformWindow->setTitle (newTitle); }
 	void setContentView (const SharedPointer<CFrame>& newFrame) override;
-	void show () override { platformWindow->show (); }
+	void show () override;
 	void hide () override { platformWindow->hide (); }
 	void close () override { platformWindow->close (); }
 	void activate () override { platformWindow->activate (); }
@@ -102,6 +102,7 @@ public:
 
 private:
 	WindowControllerPtr controller;
+	WindowStyle windowStyle;
 	Platform::WindowPtr platformWindow;
 	SharedPointer<CFrame> frame;
 	UTF8String autoSaveFrameName;
@@ -111,26 +112,40 @@ private:
 //------------------------------------------------------------------------
 bool Window::init (const WindowConfiguration& config, const WindowControllerPtr& inController)
 {
+	windowStyle = config.style;
 	platformWindow = Platform::makeWindow (config, *this);
 	if (platformWindow)
 	{
 		if (!config.autoSaveFrameName.empty ())
 		{
 			autoSaveFrameName = config.autoSaveFrameName;
-			auto frame = IApplication::instance ().getPreferences ().get (autoSaveFrameName);
-			if (!frame.empty ())
-			{
-				auto ps = positionAndSizeFromString (frame);
-				if (ps.pos != nullPoint && ps.size != nullPoint)
-				{
-					setPosition (ps.pos);
-					setSize (ps.size);
-				}
-			}
 		}
 		controller = inController;
 	}
 	return platformWindow != nullptr;
+}
+
+//------------------------------------------------------------------------
+void Window::show ()
+{
+	bool positionChanged = false;
+	if (!autoSaveFrameName.empty ())
+	{
+		auto frame = IApplication::instance ().getPreferences ().get (autoSaveFrameName);
+		if (!frame.empty ())
+		{
+			auto ps = positionAndSizeFromString (frame);
+			if (ps.pos != nullPoint && ps.size != nullPoint)
+			{
+				setPosition (ps.pos);
+				setSize (ps.size);
+				positionChanged = true;
+			}
+		}
+	}
+	if (!positionChanged && windowStyle.isCentered ())
+		platformWindow->center ();
+	platformWindow->show ();
 }
 
 //------------------------------------------------------------------------
@@ -233,14 +248,16 @@ bool Window::canClose () { return controller ? controller->canClose (*this) : tr
 void Window::onActivated ()
 {
 	windowListeners.forEach ([&] (IWindowListener* listener) { listener->onActivated (*this); });
-	controller->onActivated (*this);
+	if (controller)
+		controller->onActivated (*this);
 }
 
 //------------------------------------------------------------------------
 void Window::onDeactivated ()
 {
 	windowListeners.forEach ([&] (IWindowListener* listener) { listener->onDeactivated (*this); });
-	controller->onDeactivated (*this);
+	if (controller)
+		controller->onDeactivated (*this);
 }
 
 //------------------------------------------------------------------------

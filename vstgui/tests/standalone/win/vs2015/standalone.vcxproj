@@ -157,6 +157,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\standalone\detail\application.h" />
+    <ClInclude Include="..\..\..\..\standalone\detail\genericalertbox.h" />
     <ClInclude Include="..\..\..\..\standalone\detail\platform\iplatformwindow.h" />
     <ClInclude Include="..\..\..\..\standalone\detail\platform\win32\win32preference.h" />
     <ClInclude Include="..\..\..\..\standalone\detail\platform\win32\win32window.h" />
@@ -179,6 +180,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\standalone\detail\application.cpp" />
+    <ClCompile Include="..\..\..\..\standalone\detail\genericalertbox.cpp" />
     <ClCompile Include="..\..\..\..\standalone\detail\platform\win32\win32application.cpp" />
     <ClCompile Include="..\..\..\..\standalone\detail\platform\win32\win32preference.cpp" />
     <ClCompile Include="..\..\..\..\standalone\detail\platform\win32\win32window.cpp" />

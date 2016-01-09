@@ -3,6 +3,7 @@
 	<fonts>
 	</fonts>
 	<colors>
+		<color name="AlertBox.background" rgba="#ecececff"/>
 		<color name="Black Alpha 140" rgba="#0000008c"/>
 		<color name="Focus" rgba="#78c8ffff"/>
 	</colors>

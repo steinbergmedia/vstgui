@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		BC2FFED21C4147CA0073D566 /* genericalertbox.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BC2FFED01C4147CA0073D566 /* genericalertbox.cpp */; };
+		BC2FFED31C4147CA0073D566 /* genericalertbox.h in Headers */ = {isa = PBXBuildFile; fileRef = BC2FFED11C4147CA0073D566 /* genericalertbox.h */; };
 		F408C5B71C2AA19700F46C6A /* VSTGUICommand.mm in Sources */ = {isa = PBXBuildFile; fileRef = F408C5B51C2AA0DA00F46C6A /* VSTGUICommand.mm */; };
 		F40E63FE16821A6300426847 /* cgradientview.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F40E63FB16821A6300426847 /* cgradientview.cpp */; };
 		F40E640016821A6300426847 /* cgradientview.h in Headers */ = {isa = PBXBuildFile; fileRef = F40E63FC16821A6300426847 /* cgradientview.h */; };
@@ -299,6 +301,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		BC2FFED01C4147CA0073D566 /* genericalertbox.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = genericalertbox.cpp; sourceTree = "<group>"; };
+		BC2FFED11C4147CA0073D566 /* genericalertbox.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = genericalertbox.h; sourceTree = "<group>"; };
 		BCF5786E1C401C4A006ECB5E /* value.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = value.h; sourceTree = "<group>"; };
 		F40329C313FE3AA800466973 /* uigridcontroller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uigridcontroller.h; sourceTree = "<group>"; };
 		F40329C513FE3AB100466973 /* uigridcontroller.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uigridcontroller.cpp; sourceTree = "<group>"; };
@@ -1184,6 +1188,8 @@
 				F4975FE21C2D7AB8001D489E /* uidescriptionwindowcontroller.cpp */,
 				F4B5B5C51C26F2C500450324 /* window.cpp */,
 				F4B5B5CC1C26FD4E00450324 /* window.h */,
+				BC2FFED01C4147CA0073D566 /* genericalertbox.cpp */,
+				BC2FFED11C4147CA0073D566 /* genericalertbox.h */,
 			);
 			path = detail;
 			sourceTree = "<group>";
@@ -1314,6 +1320,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F41CEBF51C2EB0FA00697722 /* macpreference.h in Headers */,
+				BC2FFED31C4147CA0073D566 /* genericalertbox.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1473,6 +1480,7 @@
 				F41CEBF41C2EB0FA00697722 /* macpreference.mm in Sources */,
 				F4B5B5CA1C26FA9C00450324 /* application.cpp in Sources */,
 				F48069331C2734E300356894 /* macapplication.mm in Sources */,
+				BC2FFED21C4147CA0073D566 /* genericalertbox.cpp in Sources */,
 				F4B5B5C61C26F2C500450324 /* window.cpp in Sources */,
 				F478633A1C28654100C76167 /* macwindow.mm in Sources */,
 				F408C5B71C2AA19700F46C6A /* VSTGUICommand.mm in Sources */,

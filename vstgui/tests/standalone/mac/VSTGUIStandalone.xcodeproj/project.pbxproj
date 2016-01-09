@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		BC2FFECD1C4146070073D566 /* alertbox.uidesc in Resources */ = {isa = PBXBuildFile; fileRef = BC2FFECC1C4146070073D566 /* alertbox.uidesc */; };
 		BC58A5391C33F3D800F340EF /* testabout.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BC58A5371C33F3D800F340EF /* testabout.cpp */; };
 		BC58A53D1C33FA1E00F340EF /* about.uidesc in Resources */ = {isa = PBXBuildFile; fileRef = BC58A53C1C33FA1E00F340EF /* about.uidesc */; };
 		BC58A53F1C342AC000F340EF /* testpopup.uidesc in Resources */ = {isa = PBXBuildFile; fileRef = BC58A53E1C342AC000F340EF /* testpopup.uidesc */; };
@@ -68,6 +69,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		BC2FFECC1C4146070073D566 /* alertbox.uidesc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = alertbox.uidesc; sourceTree = "<group>"; };
 		BC58A5371C33F3D800F340EF /* testabout.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = testabout.cpp; sourceTree = "<group>"; };
 		BC58A5381C33F3D800F340EF /* testabout.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = testabout.h; sourceTree = "<group>"; };
 		BC58A53C1C33FA1E00F340EF /* about.uidesc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = about.uidesc; sourceTree = "<group>"; };
@@ -127,6 +129,7 @@
 			isa = PBXGroup;
 			children = (
 				BC58A53C1C33FA1E00F340EF /* about.uidesc */,
+				BC2FFECC1C4146070073D566 /* alertbox.uidesc */,
 				BC8FE3371C3E910A00577DB0 /* resources.uidesc */,
 				F4975FE61C2DA865001D489E /* test.uidesc */,
 				BC58A53E1C342AC000F340EF /* testpopup.uidesc */,
@@ -269,6 +272,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				BC58A53D1C33FA1E00F340EF /* about.uidesc in Resources */,
+				BC2FFECD1C4146070073D566 /* alertbox.uidesc in Resources */,
 				F4975FE71C2DA865001D489E /* test.uidesc in Resources */,
 				BC8FE3381C3E910A00577DB0 /* resources.uidesc in Resources */,
 				BC58A53F1C342AC000F340EF /* testpopup.uidesc in Resources */,

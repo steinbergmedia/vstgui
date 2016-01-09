@@ -51,6 +51,7 @@ public:
 	void hide () override;
 	void close () override;
 	void activate () override;
+	void center () override;
 
 	PlatformType getPlatformType () const override { return PlatformType::kHWNDTopLevel; }
 	void* getPlatformHandle () const override { return hwnd; }
@@ -598,6 +599,9 @@ void Window::onQuit ()
 
 //------------------------------------------------------------------------
 void Window::activate () { BringWindowToTop (hwnd); }
+
+//------------------------------------------------------------------------
+void Window::center () {}
 
 //------------------------------------------------------------------------
 void Window::windowWillClose ()

@@ -24,10 +24,10 @@ namespace Standalone {
 namespace Platform {
 namespace Mac {
 class Window;
-}
-}
-}
-}
+} // Mac
+} // Platform
+} // Standalone
+} // VSTGUI
 
 //------------------------------------------------------------------------
 @interface VSTGUIWindowDelegate : NSObject <NSWindowDelegate>
@@ -74,6 +74,7 @@ public:
 	void hide () override;
 	void close () override;
 	void activate () override;
+	void center () override;
 
 	PlatformType getPlatformType () const override { return kNSView; };
 	void* getPlatformHandle () const override
@@ -270,6 +271,9 @@ void Window::close () { [nsWindow performClose:nil]; }
 
 //------------------------------------------------------------------------
 void Window::activate () { [nsWindow makeKeyAndOrderFront:nil]; }
+
+//------------------------------------------------------------------------
+void Window::center () { [nsWindow center]; }
 
 } // Mac
 

@@ -93,6 +93,9 @@
     <ClInclude Include="..\..\..\..\standalone\helpers\value.h">
       <Filter>Source Files\vstgui\standalone\helpers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\standalone\detail\genericalertbox.h">
+      <Filter>Source Files\vstgui\standalone\detail</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\standalone\detail\application.cpp">
@@ -130,6 +133,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\..\standalone\helpers\value.cpp">
       <Filter>Source Files\vstgui\standalone\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\standalone\detail\genericalertbox.cpp">
+      <Filter>Source Files\vstgui\standalone\detail</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

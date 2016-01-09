@@ -39,6 +39,7 @@ public:
 	virtual void hide () = 0;
 	virtual void close () = 0;
 	virtual void activate () = 0;
+	virtual void center () = 0;
 
 	virtual PlatformType getPlatformType () const = 0;
 	virtual void* getPlatformHandle () const = 0;

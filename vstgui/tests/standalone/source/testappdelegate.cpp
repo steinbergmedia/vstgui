@@ -9,6 +9,9 @@
 #include "vstgui/standalone/ialertbox.h"
 #include "vstgui/lib/cframe.h"
 #include "vstgui/lib/crect.h"
+
+#include "vstgui/standalone/detail/genericalertbox.h"
+
 #include <memory>
 
 //------------------------------------------------------------------------
@@ -29,16 +32,23 @@ public:
 	void showPreferenceDialog () override;
 	bool hasPreferenceDialog () override;
 	const Application::Info& getInfo () const override { return appInfo; }
-	VSTGUI::UTF8StringPtr getSharedUIResourceFilename () const override { return "resources.uidesc"; }
+	VSTGUI::UTF8StringPtr getSharedUIResourceFilename () const override
+	{
+		return "resources.uidesc";
+	}
 
 	// ICommandHandler
 	bool canHandleCommand (const Command& command) override;
 	bool handleCommand (const Command& command) override;
+
 private:
 	Application::Info appInfo {"VSTGUIStandalone", "1.0.0",
 	                           "net.sourceforge.vstgui.VSTGUIStandalone"};
 	std::shared_ptr<TestModel> model;
 };
+
+//------------------------------------------------------------------------
+Application::Init gAppDelegate (std::make_shared<Delegate> ());
 
 static Command NewPopup {CommandGroup::File, "New Popup"};
 //------------------------------------------------------------------------
@@ -89,42 +99,21 @@ bool Delegate::handleCommand (const Command& command)
 }
 
 //------------------------------------------------------------------------
-void Delegate::onQuit ()
-{
-}
+void Delegate::onQuit () {}
 
 //------------------------------------------------------------------------
-bool Delegate::canQuit ()
-{
-	return true;
-}
+bool Delegate::canQuit () { return true; }
 
 //------------------------------------------------------------------------
-void Delegate::showAboutDialog ()
-{
-	About::show ();
-}
+void Delegate::showAboutDialog () { About::show (); }
 
 //------------------------------------------------------------------------
-bool Delegate::hasAboutDialog ()
-{
-	return true;
-}
+bool Delegate::hasAboutDialog () { return true; }
 
 //------------------------------------------------------------------------
-void Delegate::showPreferenceDialog ()
-{
-	
-}
+void Delegate::showPreferenceDialog () {}
 
 //------------------------------------------------------------------------
-bool Delegate::hasPreferenceDialog ()
-{
-	return false;
-}
-
-//------------------------------------------------------------------------
-Application::Init gAppDelegate (std::make_shared<Delegate> ());
+bool Delegate::hasPreferenceDialog () { return false; }
 
 } // MyApp
-

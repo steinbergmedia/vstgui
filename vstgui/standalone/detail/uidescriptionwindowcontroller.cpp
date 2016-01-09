@@ -214,6 +214,7 @@ class WindowController : public WindowControllerAdapter, public ICommandHandler
 {
 public:
 	bool init (const UIDesc::Config& config, WindowPtr& window);
+	bool initStatic (const UIDesc::Config& config, WindowPtr& window);
 
 	CPoint constraintSize (const IWindow& window, const CPoint& newSize) override;
 	void onClosed (const IWindow& window) override;
@@ -387,7 +388,7 @@ struct WindowController::Impl : public IController, public ICommandHandler
 
 	~Impl ()
 	{
-		if (uiDesc)
+		if (uiDesc && uiDesc->getSharedResources ())
 		{
 			uiDesc->setSharedResources (nullptr);
 			SharedResources::instance ().unuse ();
@@ -398,6 +399,24 @@ struct WindowController::Impl : public IController, public ICommandHandler
 	{
 		window = inWindow.get ();
 		if (!initUIDesc (fileName))
+			return false;
+		frame = owned (new CFrame ({}, nullptr));
+		frame->setTransparency (true);
+		this->templateName = templateName;
+
+		showView ();
+
+		window->setContentView (frame);
+		return true;
+	}
+
+	bool initStatic (WindowPtr& inWindow, UTF8String xml, const char* templateName)
+	{
+		window = inWindow.get ();
+		Xml::MemoryContentProvider xmlContentProvider (xml,
+		                                               static_cast<uint32_t> (xml.getByteCount ()));
+		uiDesc = owned (new UIDescription (&xmlContentProvider));
+		if (!uiDesc->parse ())
 			return false;
 		frame = owned (new CFrame ({}, nullptr));
 		frame->setTransparency (true);
@@ -754,6 +773,12 @@ struct WindowController::EditImpl : WindowController::Impl
 #endif
 
 //------------------------------------------------------------------------
+bool WindowController::initStatic (const UIDesc::Config& config, WindowPtr& window)
+{
+	impl = std::unique_ptr<Impl> (new Impl (*this, config.modelBinding, config.customization));
+	return impl->initStatic (window, config.uiDescFileName, config.viewName);
+}
+
 bool WindowController::init (const UIDesc::Config& config, WindowPtr& window)
 {
 #if VSTGUI_LIVE_EDITING
@@ -801,6 +826,19 @@ WindowPtr makeWindow (const Config& config)
 	vstgui_assert (config.uiDescFileName.empty () == false);
 
 	auto controller = std::make_shared<WindowController> ();
+
+	if (UTF8StringView (config.uiDescFileName)
+	        .startsWith ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"))
+	{
+		auto window = IApplication::instance ().createWindow (config.windowConfig, controller);
+		if (!window)
+			return nullptr;
+
+		if (!controller->initStatic (config, window))
+			return nullptr;
+
+		return window;
+	}
 
 #if VSTGUI_LIVE_EDITING
 	WindowConfiguration windowConfig = config.windowConfig;

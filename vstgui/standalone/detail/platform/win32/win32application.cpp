@@ -2,6 +2,7 @@
 #include "win32window.h"
 #include "../../application.h"
 #include "../../window.h"
+#include "../../genericalertbox.h"
 #include "../../../iappdelegate.h"
 #include "../../../iapplication.h"
 #include "../../../../lib/platform/win32/win32support.h"
@@ -42,8 +43,9 @@ public:
 
 	void quit ();
 	void onCommandUpdate ();
-	AlertResult showAlert (const AlertBoxConfig& config) { return AlertResult::error; }
-	void showAlertForWindow (const AlertBoxForWindowConfig& config) {}
+	AlertResult showAlert (const AlertBoxConfig& config);
+	void showAlertForWindow (const AlertBoxForWindowConfig& config);
+
 private:
 	bool running {true};
 	Win32Preference prefs;
@@ -72,6 +74,27 @@ void Application::init ()
 	app->setPlatformCallbacks (std::move (callbacks));
 	IApplication::instance ().getDelegate ().finishLaunching ();
 }
+
+//------------------------------------------------------------------------
+AlertResult Application::showAlert (const AlertBoxConfig& config)
+{
+	AlertResult result = AlertResult::error;
+	if (auto window = Detail::createAlertBox (config, [&] (AlertResult r) { result = r; }))
+	{
+		window->show ();
+		MSG msg;
+		while (result == AlertResult::error && GetMessage (&msg, NULL, 0, 0))
+		{
+			TranslateMessage (&msg);
+			DispatchMessage (&msg);
+		}
+		window->close ();
+	}
+	return result;
+}
+
+//------------------------------------------------------------------------
+void Application::showAlertForWindow (const AlertBoxForWindowConfig& config) {}
 
 //------------------------------------------------------------------------
 void Application::onCommandUpdate ()
