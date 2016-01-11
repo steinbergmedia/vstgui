@@ -113,11 +113,11 @@ void Window::registerWindowClasses ()
 
 	wcex.cbSize = sizeof (WNDCLASSEX);
 
-	wcex.style = CS_DBLCLKS; // Don't use CS_HREDRAW or CS_VREDRAW with a Ribbon
+	wcex.style = CS_DBLCLKS;
 	wcex.lpfnWndProc = WndProc;
 	wcex.hInstance = getHInstance ();
 	wcex.hCursor = LoadCursor (getHInstance (), IDC_ARROW);
-	wcex.hbrBackground = nullptr; // (HBRUSH) (COLOR_WINDOW + 1);
+	wcex.hbrBackground = nullptr;
 	wcex.lpszClassName = gWindowClassName;
 
 	RegisterClassEx (&wcex);
