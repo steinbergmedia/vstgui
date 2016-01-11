@@ -1,8 +1,8 @@
 #include "genericalertbox.h"
-#include "../helpers/value.h"
+#include "../../lib/controls/cbuttons.h"
 #include "../../uidescription/delegationcontroller.h"
 #include "../../uidescription/iuidescription.h"
-#include "../../lib/controls/cbuttons.h"
+#include "../helpers/value.h"
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -50,7 +50,8 @@ const auto xmlText = R"(<?xml version="1.0" encoding="UTF-8"?>
 //------------------------------------------------------------------------
 class AlertBoxController : public UIDesc::IModelBinding,
                            public UIDesc::ICustomization,
-                           public ValueListenerAdapter
+                           public ValueListenerAdapter,
+                           public std::enable_shared_from_this<AlertBoxController>
 {
 public:
 	AlertBoxController (const AlertBoxConfig& config, const AlertBoxCallback& callback)
@@ -63,9 +64,11 @@ public:
 		addValue (Value::make ("AlertBox.firstButton"));
 		addValue (Value::make ("AlertBox.secondButton"));
 		addValue (Value::make ("AlertBox.thirdButton"));
-		addValue (Value::makeStringListValue ("AlertBox.headline", {config.headline}));
-		addValue (Value::makeStringListValue ("AlertBox.description", {config.description}));
+		addValue (Value::makeStringListValue ("AlertBox.headline", {config.headline}))->setActive (false);
+		addValue (Value::makeStringListValue ("AlertBox.description", {config.description}))->setActive (false);
 	}
+
+	void setWindow (const WindowPtr& w) { window = w; }
 
 	const ValueList& getValues () const override { return values; }
 
@@ -83,16 +86,20 @@ public:
 	{
 		if (value.getValue () < 0.5)
 			return;
+		auto self = shared_from_this ();
 		if (value.getID () == "AlertBox.firstButton")
 		{
+			window->close ();
 			callback (AlertResult::defaultButton);
 		}
 		else if (value.getID () == "AlertBox.secondButton")
 		{
+			window->close ();
 			callback (AlertResult::secondButton);
 		}
 		else if (value.getID () == "AlertBox.thirdButton")
 		{
+			window->close ();
 			callback (AlertResult::thirdButton);
 		}
 	}
@@ -137,11 +144,14 @@ private:
 		AlertBoxController& alertBoxController;
 	};
 
-	void addValue (ValuePtr&& value)
+	ValuePtr addValue (ValuePtr&& value)
 	{
 		value->registerListener (this);
-		values.push_back (value);
+		values.push_back (std::move (value));
+		return values.back ();
 	}
+
+	WindowPtr window;
 	AlertBoxCallback callback;
 	ValueList values;
 	UTF8String firstButtonTitle;
@@ -162,7 +172,9 @@ WindowPtr createAlertBox (const AlertBoxConfig& alertBoxConfig, const AlertBoxCa
 	config.uiDescFileName = xmlText;
 	config.modelBinding = std::static_pointer_cast<UIDesc::IModelBinding> (controller);
 	config.customization = std::static_pointer_cast<UIDesc::ICustomization> (controller);
-	return UIDesc::makeWindow (config);
+	auto window = UIDesc::makeWindow (config);
+	controller->setWindow (window);
+	return window;
 }
 
 //------------------------------------------------------------------------

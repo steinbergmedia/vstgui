@@ -6,6 +6,7 @@
 #include "../../../iappdelegate.h"
 #include "../../../iapplication.h"
 #include "../../../../lib/platform/win32/win32support.h"
+#include "../../../../lib/cvstguitimer.h"
 
 #include <Windows.h>
 #include <ShellScalingAPI.h>
@@ -32,6 +33,15 @@ using VSTGUI::Standalone::Detail::PlatformCallbacks;
 static IApplicationPlatformAccess* getApplicationPlatformAccess ()
 {
 	return IApplication::instance ().dynamicCast<IApplicationPlatformAccess> ();
+}
+
+//------------------------------------------------------------------------
+static IWin32Window* toWin32Window (const VSTGUI::Standalone::WindowPtr& window)
+{
+	auto platformWindow = window->dynamicCast<Detail::IPlatformWindowAccess> ();
+	if (!platformWindow)
+		return nullptr;
+	return platformWindow->getPlatformWindow ()->dynamicCast<IWin32Window> ();
 }
 
 //------------------------------------------------------------------------
@@ -81,20 +91,53 @@ AlertResult Application::showAlert (const AlertBoxConfig& config)
 	AlertResult result = AlertResult::error;
 	if (auto window = Detail::createAlertBox (config, [&] (AlertResult r) { result = r; }))
 	{
+		auto winModalWindow = toWin32Window (window);
+		vstgui_assert (winModalWindow);
+		for (auto& w : IApplication::instance ().getWindows ())
+		{
+			if (w == window)
+				continue;
+			if (auto winWindow = toWin32Window (w))
+				winWindow->setModalWindow (window);
+		}
+		
 		window->show ();
 		MSG msg;
-		while (result == AlertResult::error && GetMessage (&msg, NULL, 0, 0))
+		BOOL gmResult;
+		while (result == AlertResult::error && (gmResult = GetMessage (&msg, NULL, 0, 0)))
 		{
 			TranslateMessage (&msg);
 			DispatchMessage (&msg);
 		}
-		window->close ();
+		for (auto& w : IApplication::instance ().getWindows ())
+		{
+			if (auto winWindow = toWin32Window (w))
+				winWindow->setModalWindow (nullptr);
+		}
 	}
 	return result;
 }
 
 //------------------------------------------------------------------------
-void Application::showAlertForWindow (const AlertBoxForWindowConfig& config) {}
+void Application::showAlertForWindow (const AlertBoxForWindowConfig& config)
+{
+	auto callback = config.callback;
+	auto parentWindow = config.window;
+	if (auto window = Detail::createAlertBox (config, [=] (AlertResult r) {
+		auto parentWinWindow = toWin32Window (parentWindow);
+		vstgui_assert (parentWinWindow);
+		parentWinWindow->setModalWindow (nullptr);
+		Call::later ([callback, r] () {
+			callback (r);
+		});
+	}))
+	{
+		auto parentWinWindow = toWin32Window (config.window);
+		vstgui_assert (parentWinWindow);
+		parentWinWindow->setModalWindow (window);
+		window->show ();
+	}
+}
 
 //------------------------------------------------------------------------
 void Application::onCommandUpdate ()
@@ -107,11 +150,8 @@ void Application::onCommandUpdate ()
 	auto& windows = IApplication::instance ().getWindows ();
 	for (auto& w : windows)
 	{
-		auto platformWindow = w->dynamicCast<Detail::IPlatformWindowAccess> ();
-		vstgui_assert (platformWindow);
-		auto winWindow = platformWindow->getPlatformWindow ()->dynamicCast<IWin32Window> ();
-		vstgui_assert (winWindow);
-		winWindow->updateCommands ();
+		if (auto winWindow = toWin32Window (w))
+			winWindow->updateCommands ();
 	}
 	auto app = getApplicationPlatformAccess ();
 	std::vector<ACCEL> accels;
@@ -142,11 +182,8 @@ void Application::quit ()
 	auto windows = IApplication::instance ().getWindows (); // Yes, copy the window list
 	for (auto& w : windows)
 	{
-		auto platformWindow = w->dynamicCast<Detail::IPlatformWindowAccess> ();
-		vstgui_assert (platformWindow);
-		auto winWindow = platformWindow->getPlatformWindow ()->dynamicCast<IWin32Window> ();
-		vstgui_assert (winWindow);
-		winWindow->onQuit ();
+		if (auto winWindow = toWin32Window (w))
+			winWindow->onQuit ();
 	}
 	IApplication::instance ().getDelegate ().onQuit ();
 	PostQuitMessage (0);

@@ -59,6 +59,9 @@ public:
 
 	void updateCommands () const override;
 	void onQuit () override;
+	HWND getHWND () const override { return hwnd; }
+	void setModalWindow (const VSTGUI::Standalone::WindowPtr& window) override { modalWindow = window; }
+
 	LRESULT CALLBACK proc (UINT message, WPARAM wParam, LPARAM lParam);
 
 private:
@@ -69,6 +72,7 @@ private:
 	bool isVisible () const { return IsWindowVisible (hwnd) != 0; }
 
 	HWND hwnd {nullptr};
+	VSTGUI::Standalone::WindowPtr modalWindow;
 	mutable HMENU mainMenu {nullptr};
 	IWindowDelegate* delegate {nullptr};
 	CFrame* frame {nullptr};
@@ -315,6 +319,8 @@ static CPoint getRectSize (const RECT& r)
 //------------------------------------------------------------------------
 LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 {
+	if (!delegate)
+		return DefWindowProc (hwnd, message, wParam, lParam);
 	auto self = shared_from_this (); // make sure we live as long as this method executes
 	switch (message)
 	{
@@ -360,8 +366,22 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 			}
 			break;
 		}
+		case WM_MOUSEACTIVATE:
+		{
+			if (modalWindow)
+			{
+				return MA_NOACTIVATEANDEAT;
+			}
+			break;
+		}
 		case WM_ACTIVATE:
 		{
+			WORD action = LOWORD (wParam);
+			if (modalWindow && (action == WA_ACTIVE || action == WA_CLICKACTIVE))
+			{
+				modalWindow->activate ();
+				return 0;
+			}
 			if (!hasBorder)
 			{
 				if (isTransparent)
@@ -377,7 +397,6 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 				vstgui_assert (res == S_OK);
 			}
 
-			WORD action = LOWORD (wParam);
 			if (action == WA_ACTIVE || action == WA_CLICKACTIVE)
 			{
 				delegate->onActivated ();
@@ -583,8 +602,9 @@ void Window::hide () { ShowWindow (hwnd, false); }
 //------------------------------------------------------------------------
 void Window::close ()
 {
-	auto call = [this] () {
-		onQuit (); // TODO: rename method !
+	auto self = shared_from_this ();
+	auto call = [self] () {
+		self->onQuit (); // TODO: rename method !
 	};
 	Call::later (call);
 }
@@ -606,7 +626,10 @@ void Window::center () {}
 //------------------------------------------------------------------------
 void Window::windowWillClose ()
 {
-	delegate->onClosed ();
+	auto d = delegate;
+	delegate = nullptr;
+	if (d)
+		d->onClosed ();
 	// we are now destroyed ! at least we should !
 }
 
