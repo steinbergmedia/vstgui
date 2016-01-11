@@ -1,5 +1,6 @@
 #include "win32preference.h"
 #include "win32window.h"
+#include "../iplatformwindow.h"
 #include "../../application.h"
 #include "../../window.h"
 #include "../../genericalertbox.h"
@@ -100,6 +101,10 @@ AlertResult Application::showAlert (const AlertBoxConfig& config)
 			if (auto winWindow = toWin32Window (w))
 				winWindow->setModalWindow (window);
 		}
+		auto platformWindow = window->dynamicCast<Detail::IPlatformWindowAccess> ()
+		                          ->getPlatformWindow ()
+		                          ->dynamicCast<IWindow> ();
+		platformWindow->center ();
 
 		window->show ();
 		MSG msg;
@@ -133,6 +138,13 @@ void Application::showAlertForWindow (const AlertBoxForWindowConfig& config)
 		auto parentWinWindow = toWin32Window (config.window);
 		vstgui_assert (parentWinWindow);
 		parentWinWindow->setModalWindow (window);
+		CRect r;
+		r.setTopLeft (parentWindow->getPosition ());
+		r.setSize (parentWindow->getSize ());
+		CRect r2;
+		r2.setSize (window->getSize ());
+		r2.centerInside (r);
+		window->setPosition (r2.getTopLeft ());
 		window->show ();
 	}
 }

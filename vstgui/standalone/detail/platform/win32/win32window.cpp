@@ -234,7 +234,20 @@ static HMENU createSubMenu (const UTF8String& group,
 	UINT index = 0;
 	for (auto& e : commands)
 	{
-		auto itemTitle = dynamic_cast<WinString*> (e.name.getPlatformString ());
+		SharedPointer<WinString> itemTitle;
+		if (e.defaultKey != 0)
+		{
+			auto title = e.name.getString ();
+			auto upper = toupper (e.defaultKey);
+			title += "\tCtrl+";
+			if (upper == e.defaultKey)
+				title += "Shift+";
+			title += upper;
+			UTF8String titleStr (title.data ());
+			itemTitle = dynamic_cast<WinString*> (titleStr.getPlatformString ());
+		}
+		else
+			itemTitle = dynamic_cast<WinString*> (e.name.getPlatformString ());
 		AppendMenu (menu, MF_STRING, index, itemTitle->getWideString ());
 		++index;
 	}
@@ -624,7 +637,20 @@ void Window::onQuit ()
 void Window::activate () { BringWindowToTop (hwnd); }
 
 //------------------------------------------------------------------------
-void Window::center () {}
+void Window::center ()
+{
+	auto monitor = MonitorFromWindow (hwnd, MONITOR_DEFAULTTONEAREST);
+	MONITORINFO info;
+	info.cbSize = sizeof (MONITORINFO);
+	GetMonitorInfo (monitor, &info);
+	CRect monitorRect {
+	    static_cast<CCoord> (info.rcWork.left), static_cast<CCoord> (info.rcWork.top),
+	    static_cast<CCoord> (info.rcWork.right), static_cast<CCoord> (info.rcWork.bottom)};
+	CRect windowRect;
+	windowRect.setSize (getSize ());
+	windowRect.centerInside (monitorRect);
+	setPosition (windowRect.getTopLeft ());
+}
 
 //------------------------------------------------------------------------
 void Window::windowWillClose ()
