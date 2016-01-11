@@ -60,7 +60,10 @@ public:
 	void updateCommands () const override;
 	void onQuit () override;
 	HWND getHWND () const override { return hwnd; }
-	void setModalWindow (const VSTGUI::Standalone::WindowPtr& window) override { modalWindow = window; }
+	void setModalWindow (const VSTGUI::Standalone::WindowPtr& window) override
+	{
+		modalWindow = window;
+	}
 
 	LRESULT CALLBACK proc (UINT message, WPARAM wParam, LPARAM lParam);
 

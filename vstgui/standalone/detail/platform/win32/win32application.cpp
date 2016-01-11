@@ -100,7 +100,7 @@ AlertResult Application::showAlert (const AlertBoxConfig& config)
 			if (auto winWindow = toWin32Window (w))
 				winWindow->setModalWindow (window);
 		}
-		
+
 		window->show ();
 		MSG msg;
 		BOOL gmResult;
@@ -124,13 +124,11 @@ void Application::showAlertForWindow (const AlertBoxForWindowConfig& config)
 	auto callback = config.callback;
 	auto parentWindow = config.window;
 	if (auto window = Detail::createAlertBox (config, [=] (AlertResult r) {
-		auto parentWinWindow = toWin32Window (parentWindow);
-		vstgui_assert (parentWinWindow);
-		parentWinWindow->setModalWindow (nullptr);
-		Call::later ([callback, r] () {
-			callback (r);
-		});
-	}))
+		    auto parentWinWindow = toWin32Window (parentWindow);
+		    vstgui_assert (parentWinWindow);
+		    parentWinWindow->setModalWindow (nullptr);
+		    Call::later ([callback, r] () { callback (r); });
+		}))
 	{
 		auto parentWinWindow = toWin32Window (config.window);
 		vstgui_assert (parentWinWindow);

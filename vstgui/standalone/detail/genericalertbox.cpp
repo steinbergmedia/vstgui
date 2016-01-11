@@ -64,8 +64,10 @@ public:
 		addValue (Value::make ("AlertBox.firstButton"));
 		addValue (Value::make ("AlertBox.secondButton"));
 		addValue (Value::make ("AlertBox.thirdButton"));
-		addValue (Value::makeStringListValue ("AlertBox.headline", {config.headline}))->setActive (false);
-		addValue (Value::makeStringListValue ("AlertBox.description", {config.description}))->setActive (false);
+		addValue (Value::makeStringListValue ("AlertBox.headline", {config.headline}))
+		    ->setActive (false);
+		addValue (Value::makeStringListValue ("AlertBox.description", {config.description}))
+		    ->setActive (false);
 	}
 
 	void setWindow (const WindowPtr& w) { window = w; }
