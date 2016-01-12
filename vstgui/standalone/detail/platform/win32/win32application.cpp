@@ -132,7 +132,11 @@ void Application::showAlertForWindow (const AlertBoxForWindowConfig& config)
 		    auto parentWinWindow = toWin32Window (parentWindow);
 		    vstgui_assert (parentWinWindow);
 		    parentWinWindow->setModalWindow (nullptr);
-		    Call::later ([callback, r] () { callback (r); });
+		    Call::later ([callback, r, parentWindow] () { 
+				callback (r); 
+				if (auto winWindow = toWin32Window (parentWindow))
+					winWindow->dynamicCast<IWindow> ()->activate ();
+			});
 		}))
 	{
 		auto parentWinWindow = toWin32Window (config.window);
