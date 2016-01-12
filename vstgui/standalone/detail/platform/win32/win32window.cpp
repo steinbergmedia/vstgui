@@ -464,6 +464,8 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 		}
 		case WM_COMMAND:
 		{
+			if (HIWORD (wParam) == EN_CHANGE)
+				break;
 			auto app = getApplicationPlatformAccess ();
 			auto cmdID = LOWORD (wParam);
 			WORD cmd = 0;
