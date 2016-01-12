@@ -462,7 +462,7 @@ void CScrollView::recalculateSubViews ()
 //-----------------------------------------------------------------------------
 void CScrollView::setViewSize (const CRect &rect, bool invalid)
 {
-	bool autoHideScrollbars = style & kAutoHideScrollbars;
+	bool autoHideScrollbars = (style & kAutoHideScrollbars) != 0;
 	style &= ~ kAutoHideScrollbars;
 	CViewContainer::setViewSize (rect, invalid);
 	if (autoHideScrollbars)
@@ -483,6 +483,8 @@ void CScrollView::setStyle (int32_t newStyle)
 {
 	if (style != newStyle)
 	{
+		if ((style & kDontDrawFrame) != (newStyle & kDontDrawFrame))
+			setBackgroundColorDrawStyle ((style & kDontDrawFrame) ? kDrawFilled : kDrawFilledAndStroked);
 		style = newStyle;
 		recalculateSubViews ();
 	}
@@ -740,19 +742,7 @@ void CScrollView::drawBackgroundRect (CDrawContext *pContext, const CRect& _upda
 {
 	CRect r (getViewSize ());
 	r.originize ();
-	if ((backgroundColor.alpha != 255 && getTransparency ()) || !getTransparency ())
-	{
-		pContext->setDrawMode (kAliasing);
-		pContext->setFillColor (backgroundColor);
-		pContext->drawRect (_updateRect, kDrawFilled);
-	}
-	if (!(style & kDontDrawFrame))
-	{
-		pContext->setDrawMode (kAliasing);
-		pContext->setFrameColor (backgroundColor);
-		pContext->setLineWidth (1);
-		pContext->drawRect (r);
-	}
+	CViewContainer::drawBackgroundRect (pContext, r);
 }
 
 //-----------------------------------------------------------------------------
