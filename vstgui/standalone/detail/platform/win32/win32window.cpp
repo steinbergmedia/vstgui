@@ -497,8 +497,6 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 					++cmd;
 				}
 			}
-
-			DebugPrint ("\n");
 			break;
 		}
 		case WM_NCHITTEST:
@@ -522,7 +520,6 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 					CPoint where {static_cast<CCoord> (p.x), static_cast<CCoord> (p.y)};
 					if (!frame->hitTestSubViews (where))
 					{
-						DebugPrint ("HTCaption(%d-%d)\n", p.x, p.y);
 						return HTCAPTION;
 					}
 					return HTCLIENT;
