@@ -15,6 +15,7 @@ class IApplication : public Interface
 {
 public:
 	using WindowList = std::vector<WindowPtr>;
+	using CommandLineArguments = std::vector<UTF8String>;
 
 	/** Get the global instance of the application*/
 	static IApplication& instance ();
@@ -22,6 +23,8 @@ public:
 	virtual Application::IDelegate& getDelegate () const = 0;
 	/** Get the application preferences */
 	virtual IPreference& getPreferences () const = 0;
+	virtual const CommandLineArguments& getCommandLineArguments () const = 0;
+
 	/** Create a new window
 	 *
 	 *	@param config window configuration

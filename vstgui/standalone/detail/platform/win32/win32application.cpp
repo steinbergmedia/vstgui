@@ -69,10 +69,16 @@ void Application::init ()
 	useD2DHardwareRenderer (true);
 	SetProcessDpiAwareness (PROCESS_PER_MONITOR_DPI_AWARE);
 
-	auto app = getApplicationPlatformAccess ();
-	vstgui_assert (app);
-
-	app->init (prefs);
+	IApplication::CommandLineArguments cmdArgs;
+	auto commandLine = GetCommandLine ();
+	int numArgs = 0;
+	auto cmdArgsArray = CommandLineToArgvW (commandLine, &numArgs);
+	for (int i = 0; i < numArgs; ++i)
+	{
+		UTF8StringHelper str (cmdArgsArray[i]);
+		cmdArgs.push_back (str.getUTF8String ());
+	}
+	LocalFree (cmdArgsArray);
 
 	PlatformCallbacks callbacks;
 	callbacks.quit = [this] () { quit (); };
@@ -82,8 +88,9 @@ void Application::init ()
 		showAlertForWindow (config);
 	};
 
-	app->setPlatformCallbacks (std::move (callbacks));
-	IApplication::instance ().getDelegate ().finishLaunching ();
+	auto app = getApplicationPlatformAccess ();
+	vstgui_assert (app);
+	app->init (prefs, std::move (cmdArgs), std::move (callbacks));
 }
 
 //------------------------------------------------------------------------

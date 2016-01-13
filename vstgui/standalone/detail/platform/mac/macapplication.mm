@@ -50,8 +50,6 @@ static const CommandWithKeyList* getCommandList (const char* group)
 	self = [super init];
 	if (self)
 	{
-		auto app = getApplicationPlatformAccess ();
-		app->init (prefs);
 	}
 	return self;
 }
@@ -382,8 +380,12 @@ static const CommandWithKeyList* getCommandList (const char* group)
 		return;
 	}
 
-	auto app = getApplicationPlatformAccess ();
-	vstgui_assert (app);
+	IApplication::CommandLineArguments cmdArgs;
+	NSArray *args = [[NSProcessInfo processInfo] arguments];
+	for (NSString* str in args)
+	{
+		cmdArgs.push_back ([str UTF8String]);
+	}
 
 	VSTGUIApplicationDelegate* Self = self;
 	PlatformCallbacks callbacks;
@@ -395,9 +397,9 @@ static const CommandWithKeyList* getCommandList (const char* group)
 	callbacks.showAlertForWindow = [Self] (const AlertBoxForWindowConfig& config) {
 		return [Self showAlertForWindow:config];
 	};
-	app->setPlatformCallbacks (std::move (callbacks));
-
-	IApplication::instance ().getDelegate ().finishLaunching ();
+	auto app = getApplicationPlatformAccess ();
+	vstgui_assert (app);
+	app->init (prefs, std::move (cmdArgs), std::move (callbacks));
 	[self setupMainMenu];
 }
 

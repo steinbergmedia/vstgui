@@ -24,6 +24,7 @@ public:
 	// IApplication
 	void setDelegate (const Standalone::Application::DelegatePtr& delegate);
 	IPreference& getPreferences () const override;
+	const CommandLineArguments& getCommandLineArguments () const override;
 	Standalone::Application::IDelegate& getDelegate () const override;
 	WindowPtr createWindow (const WindowConfiguration& config,
 	                        const WindowControllerPtr& controller) override;
@@ -47,8 +48,8 @@ public:
 	bool handleCommand (const Command& command) override;
 
 	// IApplicationPlatformAccess
-	void init (IPreference& preferences) override;
-	void setPlatformCallbacks (PlatformCallbacks&& callbacks) override;
+	void init (IPreference& preferences, IApplication::CommandLineArguments&& cmdArgs,
+	           PlatformCallbacks&& callbacks) override;
 	const CommandList& getCommandList () override;
 
 private:
@@ -59,6 +60,7 @@ private:
 	IPreference* preferences {nullptr};
 	PlatformCallbacks platform;
 	CommandList commandList;
+	CommandLineArguments commandLineArguments;
 };
 
 //------------------------------------------------------------------------
@@ -69,9 +71,12 @@ Application& Application::instance ()
 }
 
 //------------------------------------------------------------------------
-void Application::init (IPreference& preferences)
+void Application::init (IPreference& preferences, IApplication::CommandLineArguments&& cmdArgs,
+                        PlatformCallbacks&& callbacks)
 {
 	this->preferences = &preferences;
+	commandLineArguments = std::move (cmdArgs);
+	platform = std::move (callbacks);
 
 	registerCommand (Commands::About);
 	registerCommand (Commands::Quit, 'q');
@@ -82,6 +87,8 @@ void Application::init (IPreference& preferences)
 	registerCommand (Commands::Copy, 'c');
 	registerCommand (Commands::Paste, 'v');
 	registerCommand (Commands::SelectAll, 'a');
+	
+	getDelegate ().finishLaunching ();
 }
 
 //------------------------------------------------------------------------
@@ -102,6 +109,12 @@ IPreference& Application::getPreferences () const
 {
 	vstgui_assert (preferences);
 	return *preferences;
+}
+
+//------------------------------------------------------------------------
+const Application::CommandLineArguments& Application::getCommandLineArguments () const
+{
+	return commandLineArguments;
 }
 
 //------------------------------------------------------------------------
@@ -140,12 +153,6 @@ void Application::quit ()
 		return;
 	if (platform.quit)
 		platform.quit ();
-}
-
-//------------------------------------------------------------------------
-void Application::setPlatformCallbacks (PlatformCallbacks&& callbacks)
-{
-	platform = std::move (callbacks);
 }
 
 //------------------------------------------------------------------------

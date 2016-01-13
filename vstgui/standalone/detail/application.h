@@ -3,6 +3,7 @@
 #include "../interface.h"
 #include "../icommand.h"
 #include "../ialertbox.h"
+#include "../iapplication.h"
 #include <functional>
 #include <vector>
 
@@ -38,9 +39,9 @@ public:
 	using CommandListPair = std::pair<UTF8String, CommandWithKeyList>;
 	using CommandList = std::vector<CommandListPair>;
 
-	virtual void init (IPreference& preferences) = 0;
+	virtual void init (IPreference& preferences, IApplication::CommandLineArguments&& cmdArgs,
+	                   PlatformCallbacks&& callbacks) = 0;
 
-	virtual void setPlatformCallbacks (PlatformCallbacks&& callbacks) = 0;
 	virtual const CommandList& getCommandList () = 0;
 };
 
