@@ -352,6 +352,8 @@
 		F440F8D317A9117500616683 /* vstgui_ios.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = vstgui_ios.mm; path = ../../vstgui_ios.mm; sourceTree = "<group>"; };
 		F440F8D417A9117500616683 /* vstgui_uidescription_ios.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = vstgui_uidescription_ios.mm; path = ../../vstgui_uidescription_ios.mm; sourceTree = "<group>"; };
 		F442AF8F18FEFBE800E7BC3A /* cgraphicstransform.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = cgraphicstransform.h; sourceTree = "<group>"; };
+		F44524351C46E8ED00CB4EB5 /* appdelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = appdelegate.h; sourceTree = "<group>"; };
+		F44524361C46EB8600CB4EB5 /* modelbinding.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = modelbinding.h; sourceTree = "<group>"; };
 		F4462D2B17563BD900E6835D /* ccolor_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ccolor_test.cpp; sourceTree = "<group>"; };
 		F4462D2D1756444800E6835D /* idependency_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = idependency_test.cpp; sourceTree = "<group>"; };
 		F4462D2F175646EE00E6835D /* vstgui_mac.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = vstgui_mac.mm; path = ../../vstgui_mac.mm; sourceTree = "<group>"; };
@@ -726,11 +728,13 @@
 		BCF5786D1C401C1A006ECB5E /* helpers */ = {
 			isa = PBXGroup;
 			children = (
+				F44524351C46E8ED00CB4EB5 /* appdelegate.h */,
+				F44524361C46EB8600CB4EB5 /* modelbinding.h */,
 				F4975FE41C2D8025001D489E /* value.cpp */,
 				BCF5786E1C401C4A006ECB5E /* value.h */,
-				F459BCF31C4688CC004001A4 /* windowlistener.h */,
-				F459BCF41C46892E004001A4 /* windowcontroller.h */,
 				F459BCF71C468A5C004001A4 /* valuelistener.h */,
+				F459BCF41C46892E004001A4 /* windowcontroller.h */,
+				F459BCF31C4688CC004001A4 /* windowlistener.h */,
 			);
 			path = helpers;
 			sourceTree = "<group>";

@@ -75,9 +75,6 @@
     <ClInclude Include="..\..\source\testappdelegate.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\source\testwindow.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\..\standalone\detail\platform\iplatformwindow.h">
       <Filter>Source Files\vstgui\standalone\detail\platform</Filter>
     </ClInclude>
@@ -111,6 +108,15 @@
     <ClInclude Include="..\..\..\..\standalone\iwindowlistener.h">
       <Filter>Source Files\vstgui\standalone</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\source\testmodel.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\standalone\helpers\appdelegate.h">
+      <Filter>Source Files\vstgui\standalone\helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\standalone\helpers\modelbinding.h">
+      <Filter>Source Files\vstgui\standalone\helpers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\standalone\detail\application.cpp">
@@ -131,9 +137,6 @@
     <ClCompile Include="..\..\source\testappdelegate.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\source\testwindow.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\..\standalone\detail\platform\win32\win32application.cpp">
       <Filter>Source Files\vstgui\standalone\detail\platform\win32</Filter>
     </ClCompile>
@@ -151,6 +154,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\..\standalone\detail\genericalertbox.cpp">
       <Filter>Source Files\vstgui\standalone\detail</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\testmodel.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

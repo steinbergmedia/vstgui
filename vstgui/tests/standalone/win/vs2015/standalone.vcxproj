@@ -164,6 +164,8 @@
     <ClInclude Include="..\..\..\..\standalone\detail\platform\win32\win32window.h" />
     <ClInclude Include="..\..\..\..\standalone\detail\window.h" />
     <ClInclude Include="..\..\..\..\standalone\fwd.h" />
+    <ClInclude Include="..\..\..\..\standalone\helpers\appdelegate.h" />
+    <ClInclude Include="..\..\..\..\standalone\helpers\modelbinding.h" />
     <ClInclude Include="..\..\..\..\standalone\helpers\value.h" />
     <ClInclude Include="..\..\..\..\standalone\helpers\valuelistener.h" />
     <ClInclude Include="..\..\..\..\standalone\helpers\windowcontroller.h" />
@@ -182,7 +184,7 @@
     <ClInclude Include="..\..\..\..\standalone\iwindowlistener.h" />
     <ClInclude Include="..\..\source\testabout.h" />
     <ClInclude Include="..\..\source\testappdelegate.h" />
-    <ClInclude Include="..\..\source\testwindow.h" />
+    <ClInclude Include="..\..\source\testmodel.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\standalone\detail\application.cpp" />
@@ -201,7 +203,7 @@
     </ClCompile>
     <ClCompile Include="..\..\source\testabout.cpp" />
     <ClCompile Include="..\..\source\testappdelegate.cpp" />
-    <ClCompile Include="..\..\source\testwindow.cpp" />
+    <ClCompile Include="..\..\source\testmodel.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\standalone.rc" />

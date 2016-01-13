@@ -12,7 +12,7 @@
 		BC58A53D1C33FA1E00F340EF /* about.uidesc in Resources */ = {isa = PBXBuildFile; fileRef = BC58A53C1C33FA1E00F340EF /* about.uidesc */; };
 		BC58A53F1C342AC000F340EF /* testpopup.uidesc in Resources */ = {isa = PBXBuildFile; fileRef = BC58A53E1C342AC000F340EF /* testpopup.uidesc */; };
 		BC8FE3381C3E910A00577DB0 /* resources.uidesc in Resources */ = {isa = PBXBuildFile; fileRef = BC8FE3371C3E910A00577DB0 /* resources.uidesc */; };
-		F408C5BA1C2ABD5500F46C6A /* testwindow.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F408C5B81C2ABD5500F46C6A /* testwindow.cpp */; };
+		F408C5BA1C2ABD5500F46C6A /* testmodel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F408C5B81C2ABD5500F46C6A /* testmodel.cpp */; };
 		F465515B1C2BF15100BD1D54 /* libvstgui.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F47863281C2862E400C76167 /* libvstgui.a */; };
 		F47863311C2862FD00C76167 /* libvstgui_standalone.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F478632E1C2862E400C76167 /* libvstgui_standalone.a */; };
 		F47863331C28630300C76167 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F47863321C28630300C76167 /* Cocoa.framework */; };
@@ -75,8 +75,8 @@
 		BC58A53C1C33FA1E00F340EF /* about.uidesc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = about.uidesc; sourceTree = "<group>"; };
 		BC58A53E1C342AC000F340EF /* testpopup.uidesc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = testpopup.uidesc; sourceTree = "<group>"; };
 		BC8FE3371C3E910A00577DB0 /* resources.uidesc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = resources.uidesc; sourceTree = "<group>"; };
-		F408C5B81C2ABD5500F46C6A /* testwindow.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = testwindow.cpp; sourceTree = "<group>"; };
-		F408C5B91C2ABD5500F46C6A /* testwindow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = testwindow.h; sourceTree = "<group>"; };
+		F408C5B81C2ABD5500F46C6A /* testmodel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = testmodel.cpp; sourceTree = "<group>"; };
+		F408C5B91C2ABD5500F46C6A /* testmodel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = testmodel.h; sourceTree = "<group>"; };
 		F478630C1C28629400C76167 /* VSTGUIStandalone.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VSTGUIStandalone.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F478631A1C28629400C76167 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = Info.plist; path = ../mac/Info.plist; sourceTree = "<group>"; };
 		F47863201C2862E400C76167 /* vstgui.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = vstgui.xcodeproj; path = ../../../ide/xcode4/vstgui.xcodeproj; sourceTree = "<group>"; };
@@ -166,8 +166,8 @@
 			children = (
 				F47863361C28633C00C76167 /* testappdelegate.cpp */,
 				F47863371C28633C00C76167 /* testappdelegate.h */,
-				F408C5B81C2ABD5500F46C6A /* testwindow.cpp */,
-				F408C5B91C2ABD5500F46C6A /* testwindow.h */,
+				F408C5B81C2ABD5500F46C6A /* testmodel.cpp */,
+				F408C5B91C2ABD5500F46C6A /* testmodel.h */,
 				BC58A5371C33F3D800F340EF /* testabout.cpp */,
 				BC58A5381C33F3D800F340EF /* testabout.h */,
 			);
@@ -287,7 +287,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F47863381C28633C00C76167 /* testappdelegate.cpp in Sources */,
-				F408C5BA1C2ABD5500F46C6A /* testwindow.cpp in Sources */,
+				F408C5BA1C2ABD5500F46C6A /* testmodel.cpp in Sources */,
 				BC58A5391C33F3D800F340EF /* testabout.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

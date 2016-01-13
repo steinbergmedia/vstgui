@@ -1,4 +1,4 @@
-#include "testwindow.h"
+#include "testmodel.h"
 #include "vstgui/standalone/iapplication.h"
 #include "vstgui/standalone/ialertbox.h"
 #include "vstgui/standalone/iuidescwindow.h"

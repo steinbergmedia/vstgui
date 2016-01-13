@@ -1,7 +1,7 @@
 #include "testappdelegate.h"
-#include "testwindow.h"
+#include "testmodel.h"
 #include "testabout.h"
-#include "vstgui/standalone/iappdelegate.h"
+#include "vstgui/standalone/helpers/appdelegate.h"
 #include "vstgui/standalone/iapplication.h"
 #include "vstgui/standalone/iwindow.h"
 #include "vstgui/standalone/icommand.h"
@@ -20,30 +20,22 @@ namespace MyApp {
 using namespace VSTGUI::Standalone;
 
 //------------------------------------------------------------------------
-class Delegate : public Application::IDelegate, public ICommandHandler
+class Delegate : public Application::DelegateAdapter, public ICommandHandler
 {
 public:
+	Delegate ();
+
 	// Application::IDelegate
 	void finishLaunching () override;
-	void onQuit () override;
-	bool canQuit () override;
 	void showAboutDialog () override;
 	bool hasAboutDialog () override;
-	void showPreferenceDialog () override;
-	bool hasPreferenceDialog () override;
-	const Application::Info& getInfo () const override { return appInfo; }
-	VSTGUI::UTF8StringPtr getSharedUIResourceFilename () const override
-	{
-		return "resources.uidesc";
-	}
+	VSTGUI::UTF8StringPtr getSharedUIResourceFilename () const override;
 
 	// ICommandHandler
 	bool canHandleCommand (const Command& command) override;
 	bool handleCommand (const Command& command) override;
 
 private:
-	Application::Info appInfo {"VSTGUIStandalone", "1.0.0",
-	                           "net.sourceforge.vstgui.VSTGUIStandalone"};
 	std::shared_ptr<TestModel> model;
 };
 
@@ -51,6 +43,14 @@ private:
 Application::Init gAppDelegate (std::make_shared<Delegate> ());
 
 static Command NewPopup {CommandGroup::File, "New Popup"};
+
+//------------------------------------------------------------------------
+Delegate::Delegate ()
+: Application::DelegateAdapter (
+      {"VSTGUIStandalone", "1.0.0", "net.sourceforge.vstgui.VSTGUIStandalone"})
+{
+}
+
 //------------------------------------------------------------------------
 void Delegate::finishLaunching ()
 {
@@ -99,21 +99,12 @@ bool Delegate::handleCommand (const Command& command)
 }
 
 //------------------------------------------------------------------------
-void Delegate::onQuit () {}
-
-//------------------------------------------------------------------------
-bool Delegate::canQuit () { return true; }
-
-//------------------------------------------------------------------------
 void Delegate::showAboutDialog () { About::show (); }
 
 //------------------------------------------------------------------------
 bool Delegate::hasAboutDialog () { return true; }
 
 //------------------------------------------------------------------------
-void Delegate::showPreferenceDialog () {}
-
-//------------------------------------------------------------------------
-bool Delegate::hasPreferenceDialog () { return false; }
+VSTGUI::UTF8StringPtr Delegate::getSharedUIResourceFilename () const { return "resources.uidesc"; }
 
 } // MyApp

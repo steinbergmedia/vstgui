@@ -23,6 +23,7 @@ public:
 	virtual Application::IDelegate& getDelegate () const = 0;
 	/** Get the application preferences */
 	virtual IPreference& getPreferences () const = 0;
+	/** Get the command line arguments */
 	virtual const CommandLineArguments& getCommandLineArguments () const = 0;
 
 	/** Create a new window
@@ -50,8 +51,7 @@ public:
 	/** Register a command
 	 *
 	 *	The command will be added to the application menu. When the menu item is selected the
-	 *command
-	 *	is first dispatched to the active window and then to the application delegate.
+	 *	command is first dispatched to the active window and then to the application delegate.
 	 *
 	 *	@param command command name and group
 	 *	@param defaultCommandKey default command key

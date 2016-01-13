@@ -21,17 +21,38 @@ struct Info
 };
 
 //------------------------------------------------------------------------
+/** Application delegate interface
+ *
+ *	Every VSTGUI application needs a delegate. It's a global instance which handles
+ *	custom application behaviour.
+ *
+ *	You define it via Application::Init (std::make_shared<YourDelegateClassType> ())
+ */
 class IDelegate : public Interface
 {
 public:
+	/** Called when the application has finished launching. */
 	virtual void finishLaunching () = 0;
+	/** Called when the application is terminated. */
 	virtual void onQuit () = 0;
+	/** Called to check if it is currently possible to quit. */
 	virtual bool canQuit () = 0;
+	/** The delegate should show the about dialog. */
 	virtual void showAboutDialog () = 0;
+	/** Is there an about dialog ? */
 	virtual bool hasAboutDialog () = 0;
+	/** The delegate should show the preference dialog. */
 	virtual void showPreferenceDialog () = 0;
+	/** Is there a preference dialog ? */
 	virtual bool hasPreferenceDialog () = 0;
+	/** Get the application info. */
 	virtual const Info& getInfo () const = 0;
+	/** Get the filename of the shared UI resources.
+	 *
+	 *	If this returns a name than all the UI resources are shared between
+	 *	different uidesc files. If this returns a nullptr, every uidesc file
+	 *	has its own resources.
+	 */
 	virtual UTF8StringPtr getSharedUIResourceFilename () const = 0;
 };
 
