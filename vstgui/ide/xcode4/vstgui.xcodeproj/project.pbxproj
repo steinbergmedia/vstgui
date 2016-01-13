@@ -383,6 +383,11 @@
 		F453B22613F19BBC0067C1C2 /* uieditview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uieditview.h; sourceTree = "<group>"; };
 		F453B22813F19BC30067C1C2 /* uieditview.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 0; path = uieditview.cpp; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
 		F4550AAD18AF7CD300472548 /* iviewcreator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iviewcreator.h; sourceTree = "<group>"; };
+		F459BCF31C4688CC004001A4 /* windowlistener.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = windowlistener.h; sourceTree = "<group>"; };
+		F459BCF41C46892E004001A4 /* windowcontroller.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = windowcontroller.h; sourceTree = "<group>"; };
+		F459BCF51C468981004001A4 /* iwindowlistener.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iwindowlistener.h; sourceTree = "<group>"; };
+		F459BCF61C4689FA004001A4 /* ivaluelistener.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ivaluelistener.h; sourceTree = "<group>"; };
+		F459BCF71C468A5C004001A4 /* valuelistener.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = valuelistener.h; sourceTree = "<group>"; };
 		F45BD677131817CD00C46C02 /* csplitview.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = csplitview.cpp; sourceTree = "<group>"; };
 		F45BD678131817CD00C46C02 /* csplitview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = csplitview.h; sourceTree = "<group>"; };
 		F465515C1C2C10F300BD1D54 /* iwindowcontroller.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = iwindowcontroller.h; sourceTree = "<group>"; };
@@ -723,6 +728,9 @@
 			children = (
 				F4975FE41C2D8025001D489E /* value.cpp */,
 				BCF5786E1C401C4A006ECB5E /* value.h */,
+				F459BCF31C4688CC004001A4 /* windowlistener.h */,
+				F459BCF41C46892E004001A4 /* windowcontroller.h */,
+				F459BCF71C468A5C004001A4 /* valuelistener.h */,
 			);
 			path = helpers;
 			sourceTree = "<group>";
@@ -1172,8 +1180,10 @@
 				F41CEBF11C2EAEED00697722 /* ipreference.h */,
 				F4975FE11C2D7981001D489E /* iuidescwindow.h */,
 				F4975FE01C2D631F001D489E /* ivalue.h */,
+				F459BCF61C4689FA004001A4 /* ivaluelistener.h */,
 				F4B5B5C21C26E87C00450324 /* iwindow.h */,
 				F465515C1C2C10F300BD1D54 /* iwindowcontroller.h */,
+				F459BCF51C468981004001A4 /* iwindowlistener.h */,
 			);
 			name = standalone;
 			path = ../../standalone;

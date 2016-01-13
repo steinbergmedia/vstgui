@@ -50,26 +50,6 @@ public:
 };
 
 //------------------------------------------------------------------------
-class IValueListener : public Interface
-{
-public:
-	virtual void onBeginEdit (const IValue& value) = 0;
-	virtual void onPerformEdit (const IValue& value, IValue::Type newValue) = 0;
-	virtual void onEndEdit (const IValue& value) = 0;
-	virtual void onStateChange (const IValue& value) = 0;
-};
-
-//------------------------------------------------------------------------
-class ValueListenerAdapter : public IValueListener
-{
-public:
-	void onBeginEdit (const IValue& value) override {}
-	void onPerformEdit (const IValue& value, IValue::Type newValue) override {}
-	void onEndEdit (const IValue& value) override {}
-	void onStateChange (const IValue& value) override {}
-};
-
-//------------------------------------------------------------------------
 class IValueStringConverter : public Interface
 {
 public:

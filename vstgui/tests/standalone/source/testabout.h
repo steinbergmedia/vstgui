@@ -1,7 +1,7 @@
 #pragma once
 
-#include "vstgui/standalone/iwindowcontroller.h"
-#include "vstgui/standalone/ivalue.h"
+#include "vstgui/standalone/helpers/windowlistener.h"
+#include "vstgui/standalone/helpers/valuelistener.h"
 #include "vstgui/standalone/iuidescwindow.h"
 #include <unordered_map>
 #include <functional>

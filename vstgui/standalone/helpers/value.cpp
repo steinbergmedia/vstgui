@@ -1,4 +1,5 @@
 #include "value.h"
+#include "../ivaluelistener.h"
 #include "../../lib/dispatchlist.h"
 
 //------------------------------------------------------------------------

@@ -3,6 +3,7 @@
 #include "../../uidescription/delegationcontroller.h"
 #include "../../uidescription/iuidescription.h"
 #include "../helpers/value.h"
+#include "../helpers/valuelistener.h"
 
 //------------------------------------------------------------------------
 namespace VSTGUI {

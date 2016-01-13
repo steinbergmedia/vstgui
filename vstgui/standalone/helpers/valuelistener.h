@@ -1,17 +1,19 @@
 #pragma once
 
-#include "iwindowlistener.h"
+#include "../ivaluelistener.h"
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
 namespace Standalone {
 
 //------------------------------------------------------------------------
-class IWindowController : public IWindowListener
+class ValueListenerAdapter : public IValueListener
 {
 public:
-	virtual CPoint constraintSize (const IWindow& window, const CPoint& newSize) = 0;
-	virtual bool canClose (const IWindow& window) const = 0;
+	void onBeginEdit (const IValue& value) override {}
+	void onPerformEdit (const IValue& value, IValue::Type newValue) override {}
+	void onEndEdit (const IValue& value) override {}
+	void onStateChange (const IValue& value) override {}
 };
 
 //------------------------------------------------------------------------

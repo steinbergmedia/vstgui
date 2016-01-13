@@ -96,6 +96,21 @@
     <ClInclude Include="..\..\..\..\standalone\detail\genericalertbox.h">
       <Filter>Source Files\vstgui\standalone\detail</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\standalone\helpers\valuelistener.h">
+      <Filter>Source Files\vstgui\standalone\helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\standalone\helpers\windowcontroller.h">
+      <Filter>Source Files\vstgui\standalone\helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\standalone\helpers\windowlistener.h">
+      <Filter>Source Files\vstgui\standalone\helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\standalone\ivaluelistener.h">
+      <Filter>Source Files\vstgui\standalone</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\standalone\iwindowlistener.h">
+      <Filter>Source Files\vstgui\standalone</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\standalone\detail\application.cpp">

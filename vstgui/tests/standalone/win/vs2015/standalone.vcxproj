@@ -165,6 +165,9 @@
     <ClInclude Include="..\..\..\..\standalone\detail\window.h" />
     <ClInclude Include="..\..\..\..\standalone\fwd.h" />
     <ClInclude Include="..\..\..\..\standalone\helpers\value.h" />
+    <ClInclude Include="..\..\..\..\standalone\helpers\valuelistener.h" />
+    <ClInclude Include="..\..\..\..\standalone\helpers\windowcontroller.h" />
+    <ClInclude Include="..\..\..\..\standalone\helpers\windowlistener.h" />
     <ClInclude Include="..\..\..\..\standalone\ialertbox.h" />
     <ClInclude Include="..\..\..\..\standalone\iappdelegate.h" />
     <ClInclude Include="..\..\..\..\standalone\iapplication.h" />
@@ -173,8 +176,10 @@
     <ClInclude Include="..\..\..\..\standalone\ipreference.h" />
     <ClInclude Include="..\..\..\..\standalone\iuidescwindow.h" />
     <ClInclude Include="..\..\..\..\standalone\ivalue.h" />
+    <ClInclude Include="..\..\..\..\standalone\ivaluelistener.h" />
     <ClInclude Include="..\..\..\..\standalone\iwindow.h" />
     <ClInclude Include="..\..\..\..\standalone\iwindowcontroller.h" />
+    <ClInclude Include="..\..\..\..\standalone\iwindowlistener.h" />
     <ClInclude Include="..\..\source\testabout.h" />
     <ClInclude Include="..\..\source\testappdelegate.h" />
     <ClInclude Include="..\..\source\testwindow.h" />
