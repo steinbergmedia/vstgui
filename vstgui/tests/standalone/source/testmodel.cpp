@@ -24,14 +24,14 @@ TestModel::TestModel ()
 }
 
 //------------------------------------------------------------------------
-void TestModel::addValue (const ValuePtr& value)
+void TestModel::addValue (ValuePtr&& value)
 {
 	value->registerListener (this);
-	values.push_back (value);
+	values.push_back (std::move (value));
 }
 
 //------------------------------------------------------------------------
-void TestModel::onEndEdit (const IValue& value)
+void TestModel::onEndEdit (IValue& value)
 {
 	auto activeValue = values[0];
 	if (&value == activeValue.get ())

@@ -22,10 +22,10 @@ public:
 
 	const ValueList& getValues () const override { return values; }
 
-	void onEndEdit (const IValue& value) override;
+	void onEndEdit (IValue& value) override;
 
 private:
-	void addValue (const ValuePtr& value);
+	void addValue (ValuePtr&& value);
 	ValueList values;
 };
 

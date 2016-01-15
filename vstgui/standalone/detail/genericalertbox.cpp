@@ -85,7 +85,7 @@ public:
 		return nullptr;
 	}
 
-	void onEndEdit (const IValue& value) override
+	void onEndEdit (IValue& value) override
 	{
 		if (value.getValue () < 0.5)
 			return;

@@ -10,10 +10,10 @@ namespace Standalone {
 class ValueListenerAdapter : public IValueListener
 {
 public:
-	void onBeginEdit (const IValue& value) override {}
-	void onPerformEdit (const IValue& value, IValue::Type newValue) override {}
-	void onEndEdit (const IValue& value) override {}
-	void onStateChange (const IValue& value) override {}
+	void onBeginEdit (IValue& value) override {}
+	void onPerformEdit (IValue& value, IValue::Type newValue) override {}
+	void onEndEdit (IValue& value) override {}
+	void onStateChange (IValue& value) override {}
 };
 
 //------------------------------------------------------------------------

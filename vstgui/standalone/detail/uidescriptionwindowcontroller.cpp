@@ -254,7 +254,7 @@ public:
 
 	const UTF8String& getID () const { return value->getID (); }
 
-	void onPerformEdit (const IValue& value, IValue::Type newValue) override
+	void onPerformEdit (IValue& value, IValue::Type newValue) override
 	{
 		for (auto& c : controls)
 		{
@@ -293,7 +293,7 @@ public:
 		}
 	}
 
-	void onStateChange (const IValue& value) override
+	void onStateChange (IValue& value) override
 	{
 		for (auto& c : controls)
 		{

@@ -16,7 +16,7 @@ public:
 	template <typename T>
 	const T* dynamicCast () const
 	{
-		return dynamic_cast<T*> (this);
+		return dynamic_cast<const T*> (this);
 	}
 
 	template <typename T>

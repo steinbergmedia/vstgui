@@ -13,7 +13,7 @@ namespace UIDesc {
 //------------------------------------------------------------------------
 struct ValueCalls
 {
-	using Call = std::function<void (const IValue&)>;
+	using Call = std::function<void (IValue&)>;
 
 	Call onBeginEditCall;
 	Call onPerformEditCall;
@@ -49,10 +49,10 @@ public:
 private:
 	const ValueList& getValues () const override { return valueList; }
 
-	void onBeginEdit (const IValue& value) override;
-	void onPerformEdit (const IValue& value, IValue::Type newValue) override;
-	void onEndEdit (const IValue& value) override;
-	void onStateChange (const IValue& value) override;
+	void onBeginEdit (IValue& value) override;
+	void onPerformEdit (IValue& value, IValue::Type newValue) override;
+	void onEndEdit (IValue& value) override;
+	void onStateChange (IValue& value) override;
 
 	using ValueMap = std::unordered_map<const IValue*, ValueCalls>;
 	ValueList valueList;
@@ -96,7 +96,7 @@ inline ValuePtr ModelBindingCallbacks::getValue (const UTF8String& valueID) cons
 }
 
 //------------------------------------------------------------------------
-inline void ModelBindingCallbacks::onBeginEdit (const IValue& value)
+inline void ModelBindingCallbacks::onBeginEdit (IValue& value)
 {
 	auto it = values.find (&value);
 	if (it != values.end () && it->second.onBeginEditCall)
@@ -104,7 +104,7 @@ inline void ModelBindingCallbacks::onBeginEdit (const IValue& value)
 }
 
 //------------------------------------------------------------------------
-inline void ModelBindingCallbacks::onPerformEdit (const IValue& value, IValue::Type newValue)
+inline void ModelBindingCallbacks::onPerformEdit (IValue& value, IValue::Type newValue)
 {
 	auto it = values.find (&value);
 	if (it != values.end () && it->second.onPerformEditCall)
@@ -112,7 +112,7 @@ inline void ModelBindingCallbacks::onPerformEdit (const IValue& value, IValue::T
 }
 
 //------------------------------------------------------------------------
-inline void ModelBindingCallbacks::onEndEdit (const IValue& value)
+inline void ModelBindingCallbacks::onEndEdit (IValue& value)
 {
 	auto it = values.find (&value);
 	if (it != values.end () && it->second.onEndEditCall)
@@ -120,7 +120,7 @@ inline void ModelBindingCallbacks::onEndEdit (const IValue& value)
 }
 
 //------------------------------------------------------------------------
-inline void ModelBindingCallbacks::onStateChange (const IValue& value)
+inline void ModelBindingCallbacks::onStateChange (IValue& value)
 {
 	auto it = values.find (&value);
 	if (it != values.end () && it->second.onStateChangeCall)

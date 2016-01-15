@@ -2,6 +2,7 @@
 
 #include "interface.h"
 #include "fwd.h"
+#include "../lib/cstring.h"
 #include <memory>
 
 //------------------------------------------------------------------------
