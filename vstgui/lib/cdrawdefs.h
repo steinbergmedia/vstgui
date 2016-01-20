@@ -60,7 +60,7 @@ public:
 
 	uint32_t modeIgnoringIntegralMode () const { return (mode & ~kNonIntegralMode); }
 
-	bool integralMode () const { return mode & kNonIntegralMode ? false : true; }
+	bool integralMode () const { return (mode & kNonIntegralMode) ? false : true; }
 
 	CDrawMode& operator= (uint32_t m) { mode = m; return *this; }
 
