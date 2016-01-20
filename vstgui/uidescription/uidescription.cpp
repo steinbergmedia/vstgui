@@ -345,7 +345,7 @@ UIDescList::UIDescList (bool ownsObjects)
 //-----------------------------------------------------------------------------
 UIDescList::UIDescList (const UIDescList& descList)
 {
-	for (const_iterator it = descList.begin (); it != descList.end (); it++)
+	for (const_iterator it = descList.begin (); it != descList.end (); ++it)
 	{
 		UINode* node = static_cast<UINode*> ((*it)->newCopy ());
 		vstgui_assert (node);
@@ -841,7 +841,7 @@ bool UIDescription::saveWindowsRCFile (UTF8StringPtr filename)
 		CFileStream stream;
 		if (stream.open (filename, CFileStream::kWriteMode|CFileStream::kTruncateMode))
 		{
-			for (UIDescList::iterator it = bitmapNodes->getChildren ().begin (); it != bitmapNodes->getChildren ().end (); it++)
+			for (UIDescList::iterator it = bitmapNodes->getChildren ().begin (); it != bitmapNodes->getChildren ().end (); ++it)
 			{
 				UIAttributes* attr = (*it)->getAttributes ();
 				if (attr)
@@ -913,7 +913,7 @@ bool UIDescription::saveToStream (OutputStream& stream, int32_t flags)
 		UINode* bitmapNodes = getBaseNode (MainNodeNames::kBitmap);
 		if (bitmapNodes)
 		{
-			for (UIDescList::iterator it = bitmapNodes->getChildren ().begin (); it != bitmapNodes->getChildren ().end (); it++)
+			for (UIDescList::iterator it = bitmapNodes->getChildren ().begin (); it != bitmapNodes->getChildren ().end (); ++it)
 			{
 				UIBitmapNode* bitmapNode = dynamic_cast<UIBitmapNode*> (*it);
 				if (bitmapNode)
@@ -985,8 +985,8 @@ UINode* UIDescription::findNodeForView (CView* view) const
 						break;
 					}
 					childContainer = 0;
-					nodeIterator++;
-					it++;
+					++nodeIterator;
+					++it;
 				}
 				if (childContainer)
 				{
@@ -1009,7 +1009,7 @@ UINode* UIDescription::findNodeForView (CView* view) const
 bool UIDescription::storeViews (const std::list<CView*> views, OutputStream& stream, UIAttributes* customData) const
 {
 	UIDescList nodeList (false);
-	for (std::list<CView*>::const_iterator it = views.begin (); it != views.end (); it++)
+	for (std::list<CView*>::const_iterator it = views.begin (); it != views.end (); ++it)
 	{
 		UINode* node = findNodeForView (*it);
 		if (node)
@@ -1065,7 +1065,7 @@ bool UIDescription::restoreViews (InputStream& stream, std::list<SharedPointer<C
 	if (baseNode)
 	{
 		UIDescList& children = baseNode->getChildren ();
-		for (UIDescList::iterator it = children.begin (); it != children.end (); it++)
+		for (UIDescList::iterator it = children.begin (); it != children.end (); ++it)
 		{
 			if ((*it)->getName() == MainNodeNames::kCustom)
 			{
@@ -1380,7 +1380,7 @@ CBitmap* UIDescription::getBitmap (UTF8StringPtr name) const
 		if (bitmap && bitmapNode->getFilterProcessed () == false)
 		{
 			std::list<OwningPointer<BitmapFilter::IFilter> > filters;
-			for (UIDescList::iterator it = bitmapNode->getChildren ().begin (); it != bitmapNode->getChildren ().end (); it++)
+			for (UIDescList::iterator it = bitmapNode->getChildren ().begin (); it != bitmapNode->getChildren ().end (); ++it)
 			{
 				const std::string* filterName = 0;
 				if ((*it)->getName () == "filter" && (filterName = (*it)->getAttributes ()->getAttributeValue ("name")))
@@ -1389,7 +1389,7 @@ CBitmap* UIDescription::getBitmap (UTF8StringPtr name) const
 					if (filter == 0)
 						continue;
 					filters.push_back (filter);
-					for (UIDescList::iterator it2 = (*it)->getChildren ().begin (); it2 != (*it)->getChildren ().end (); it2++)
+					for (UIDescList::iterator it2 = (*it)->getChildren ().begin (); it2 != (*it)->getChildren ().end (); ++it2)
 					{
 						if ((*it2)->getName () != "property")
 							continue;
@@ -1449,7 +1449,7 @@ CBitmap* UIDescription::getBitmap (UTF8StringPtr name) const
 					}
 				}
 			}
-			for (std::list<OwningPointer<BitmapFilter::IFilter> >::const_iterator it = filters.begin (); it != filters.end (); it++)
+			for (std::list<OwningPointer<BitmapFilter::IFilter> >::const_iterator it = filters.begin (); it != filters.end (); ++it)
 			{
 				(*it)->setProperty (BitmapFilter::Standard::Property::kInputBitmap, bitmap);
 				if ((*it)->run ())
@@ -1764,14 +1764,14 @@ void UIDescription::changeBitmapFilters (UTF8StringPtr bitmapName, const std::li
 	if (bitmapNode)
 	{
 		bitmapNode->getChildren().removeAll ();
-		for (std::list<SharedPointer<UIAttributes> >::const_iterator it = filters.begin (); it != filters.end (); it++)
+		for (std::list<SharedPointer<UIAttributes> >::const_iterator it = filters.begin (); it != filters.end (); ++it)
 		{
 			const std::string* filterName = (*it)->getAttributeValue ("name");
 			if (filterName == 0)
 				continue;
 			UINode* filterNode = new UINode ("filter");
 			filterNode->getAttributes ()->setAttribute ("name", *filterName);
-			for (UIAttributes::const_iterator it2 = (*it)->begin (); it2 != (*it)->end (); it2++)
+			for (UIAttributes::const_iterator it2 = (*it)->begin (); it2 != (*it)->end (); ++it2)
 			{
 				if ((*it2).first == "name")
 					continue;
@@ -1793,7 +1793,7 @@ void UIDescription::collectBitmapFilters (UTF8StringPtr bitmapName, std::list<Sh
 	UIBitmapNode* bitmapNode = dynamic_cast<UIBitmapNode*> (findChildNodeByNameAttribute (getBaseNode (MainNodeNames::kBitmap), bitmapName));
 	if (bitmapNode)
 	{
-		for (UIDescList::iterator it = bitmapNode->getChildren ().begin (); it != bitmapNode->getChildren ().end (); it++)
+		for (UIDescList::iterator it = bitmapNode->getChildren ().begin (); it != bitmapNode->getChildren ().end (); ++it)
 		{
 			if ((*it)->getName () == "filter")
 			{
@@ -1802,7 +1802,7 @@ void UIDescription::collectBitmapFilters (UTF8StringPtr bitmapName, std::list<Sh
 					continue;
 				UIAttributes* attributes = new UIAttributes ();
 				attributes->setAttribute ("name", *filterName);
-				for (UIDescList::iterator it2 = (*it)->getChildren ().begin (); it2 != (*it)->getChildren ().end (); it2++)
+				for (UIDescList::iterator it2 = (*it)->getChildren ().begin (); it2 != (*it)->getChildren ().end (); ++it2)
 				{
 					if ((*it2)->getName () == "property")
 					{
@@ -2023,7 +2023,7 @@ bool UIDescription::updateAttributesForView (UINode* node, CView* view, bool dee
 					// if it is not, we check if it has children. This can happen per example for a CScrollView for its container view.
 					if (!subNode->getChildren ().empty ())
 					{
-						for (UIDescList::iterator it = subNode->getChildren ().begin (); it != subNode->getChildren ().end (); it++)
+						for (UIDescList::iterator it = subNode->getChildren ().begin (); it != subNode->getChildren ().end (); ++it)
 						{
 							(*it)->remember ();
 							node->getChildren ().add (*it);
@@ -2400,7 +2400,7 @@ static bool computeTokens (StringTokenList& tokens, double& result)
 	int32_t openCount = 0;
 	StringTokenList::iterator openPosition = tokens.end ();
 	// first check parentheses
-	for (StringTokenList::iterator it = tokens.begin (); it != tokens.end (); it++)
+	for (StringTokenList::iterator it = tokens.begin (); it != tokens.end (); ++it)
 	{
 		if ((*it).type == StringToken::kOpenParenthesis)
 		{
@@ -2417,8 +2417,8 @@ static bool computeTokens (StringTokenList& tokens, double& result)
 				double value = 0;
 				if (computeTokens (tmp, value))
 				{
-					openPosition--;
-					it++;
+					--openPosition;
+					++it;
 					tokens.erase (openPosition, it);
 					tokens.insert (it, StringToken (StringToken::kResult, value));
 					if (it == tokens.end ())
@@ -2434,7 +2434,7 @@ static bool computeTokens (StringTokenList& tokens, double& result)
 	}
 	// now multiply and divide
 	StringTokenList::iterator prevToken = tokens.begin ();
-	for (StringTokenList::iterator it = tokens.begin (); it != tokens.end (); it++)
+	for (StringTokenList::iterator it = tokens.begin (); it != tokens.end (); ++it)
 	{
 		if (prevToken != it)
 		{
@@ -2442,14 +2442,14 @@ static bool computeTokens (StringTokenList& tokens, double& result)
 			{
 				if ((*prevToken).type == StringToken::kResult)
 				{
-					it++;
+					++it;
 					if ((*it).type == StringToken::kResult)
 					{
 						double value = (*prevToken).result * (*it).result;
-						it++;
+						++it;
 						tokens.erase (prevToken, it);
 						tokens.insert (it, StringToken (StringToken::kResult, value));
-						it--;
+						--it;
 						prevToken = it;
 					}
 					else
@@ -2466,14 +2466,14 @@ static bool computeTokens (StringTokenList& tokens, double& result)
 			{
 				if ((*prevToken).type == StringToken::kResult)
 				{
-					it++;
+					++it;
 					if ((*it).type == StringToken::kResult)
 					{
 						double value = (*prevToken).result / (*it).result;
-						it++;
+						++it;
 						tokens.erase (prevToken, it);
 						tokens.insert (it, StringToken (StringToken::kResult, value));
-						it--;
+						--it;
 						prevToken = it;
 					}
 					else
@@ -2494,7 +2494,7 @@ static bool computeTokens (StringTokenList& tokens, double& result)
 	}
 	// now add and subtract
 	int32_t lastType = -1;
-	for (StringTokenList::const_iterator it = tokens.begin (); it != tokens.end (); it++)
+	for (StringTokenList::const_iterator it = tokens.begin (); it != tokens.end (); ++it)
 	{
 		if ((*it).type == UIDescriptionPrivate::StringToken::kResult)
 		{
@@ -2547,7 +2547,7 @@ bool UIDescription::calculateStringValue (UTF8StringPtr _str, double& result) co
 		return false;
 	}
 	// first make substituation
-	for (UIDescriptionPrivate::StringTokenList::iterator it = tokens.begin (); it != tokens.end (); it++)
+	for (UIDescriptionPrivate::StringTokenList::iterator it = tokens.begin (); it != tokens.end (); ++it)
 	{
 		if ((*it).type == UIDescriptionPrivate::StringToken::kString)
 		{
@@ -3156,7 +3156,7 @@ CFontRef UIFontNode::getFont ()
 					{
 						std::vector<std::string> alternativeFontNames;
 						attributes->getStringArrayAttribute ("alternative-font-names", alternativeFontNames);
-						for (std::vector<std::string>::const_iterator it = alternativeFontNames.begin (); it != alternativeFontNames.end (); it++)
+						for (std::vector<std::string>::const_iterator it = alternativeFontNames.begin (); it != alternativeFontNames.end (); ++it)
 						{
 							if (std::find (fontNames.begin (), fontNames.end (), *it) != fontNames.end ())
 							{

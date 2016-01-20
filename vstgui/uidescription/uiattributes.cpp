@@ -321,7 +321,7 @@ bool UIAttributes::store (OutputStream& stream) const
 	{
 		if (!(stream << (*it).first)) return false;
 		if (!(stream << (*it).second)) return false;
-		it++;
+		++it;
 	}
 	return true;
 }
