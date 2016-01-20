@@ -191,9 +191,9 @@ public:
 		Iterator<reverse>& operator++ ()
 		{
 			if (reverse)
-				riterator++;
+				++riterator;
 			else
-				iterator++;
+				++iterator;
 			return *this;
 		}
 		
@@ -201,18 +201,18 @@ public:
 		{
 			Iterator<reverse> old (*this);
 			if (reverse)
-				riterator++;
+				++riterator;
 			else
-				iterator++;
+				++iterator;
 			return old;
 		}
 		
 		Iterator<reverse>& operator-- ()
 		{
 			if (reverse)
-				riterator--;
+				--riterator;
 			else
-				iterator--;
+				--iterator;
 			return *this;
 		}
 		
@@ -285,7 +285,7 @@ uint32_t CViewContainer::getChildViewsOfType (ContainerClass& result, bool deep)
 				container->getChildViewsOfType<ViewClass, ContainerClass> (result);
 			}
 		}
-		it++;
+		++it;
 	}
 	return static_cast<uint32_t> (result.size ());
 }
