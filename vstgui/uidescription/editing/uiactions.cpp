@@ -442,7 +442,7 @@ DeleteOperation::DeleteOperation (UISelection* selection)
 				}
 				++it;
 			}
-			insert (std::make_pair (container, new DeleteOperationViewAndNext (view, nextView)));
+			insert (std::make_pair (container, DeleteOperationViewAndNext (view, nextView)));
 		}
 	FOREACH_IN_SELECTION_END
 }
@@ -467,7 +467,7 @@ void DeleteOperation::perform ()
 	const_iterator it = begin ();
 	while (it != end ())
 	{
-		(*it).first->removeView ((*it).second->view);
+		(*it).first->removeView ((*it).second.view);
 		it++;
 	}
 }
@@ -480,12 +480,12 @@ void DeleteOperation::undo ()
 	const_iterator it = begin ();
 	while (it != end ())
 	{
-		if ((*it).second->nextView)
-			(*it).first->addView ((*it).second->view, (*it).second->nextView);
+		if ((*it).second.nextView)
+			(*it).first->addView ((*it).second.view, (*it).second.nextView);
 		else
-			(*it).first->addView ((*it).second->view);
-		(*it).second->view->remember ();
-		selection->add ((*it).second->view);
+			(*it).first->addView ((*it).second.view);
+		(*it).second.view->remember ();
+		selection->add ((*it).second.view);
 		it++;
 	}
 }

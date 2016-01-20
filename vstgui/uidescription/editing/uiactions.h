@@ -158,7 +158,7 @@ struct DeleteOperationViewAndNext
 };
 
 //----------------------------------------------------------------------------------------------------
-class DeleteOperation : public IAction, protected std::multimap<SharedPointer<CViewContainer>, DeleteOperationViewAndNext*>
+class DeleteOperation : public IAction, protected std::multimap<SharedPointer<CViewContainer>, DeleteOperationViewAndNext>
 {
 public:
 	DeleteOperation (UISelection* selection);
