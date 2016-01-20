@@ -1006,7 +1006,7 @@ UINode* UIDescription::findNodeForView (CView* view) const
 }
 
 //-----------------------------------------------------------------------------
-bool UIDescription::storeViews (const std::list<CView*> views, OutputStream& stream, UIAttributes* customData) const
+bool UIDescription::storeViews (const std::list<CView*>& views, OutputStream& stream, UIAttributes* customData) const
 {
 	UIDescList nodeList (false);
 	for (std::list<CView*>::const_iterator it = views.begin (); it != views.end (); ++it)

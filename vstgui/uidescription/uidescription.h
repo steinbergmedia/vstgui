@@ -75,7 +75,7 @@ public:
 	virtual bool save (UTF8StringPtr filename, int32_t flags = kWriteWindowsResourceFile);
 	virtual bool saveWindowsRCFile (UTF8StringPtr filename);
 
-	bool storeViews (const std::list<CView*> views, OutputStream& stream, UIAttributes* customData = 0) const;
+	bool storeViews (const std::list<CView*>& views, OutputStream& stream, UIAttributes* customData = 0) const;
 	bool restoreViews (InputStream& stream, std::list<SharedPointer<CView> >& views, UIAttributes** customData = 0);
 
 	UTF8StringPtr getFilePath () const { return filePath.c_str (); }
