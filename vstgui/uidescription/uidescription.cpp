@@ -1514,7 +1514,6 @@ bool UIDescription::getColor (UTF8StringPtr name, CColor& color) const
 		color = colorNode->getColor ();
 		return true;
 	}
-	std::string colorName (name);
 	if (parseColor (name, color))
 		return true;
 	return false;
