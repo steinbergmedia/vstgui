@@ -779,7 +779,7 @@ bool CViewContainer::checkUpdateRect (CView* view, const CRect& rect)
  * @param buttons mouse button and modifier state
  * @return true if any sub view accepts the hit
  */
-bool CViewContainer::hitTestSubViews (const CPoint& where, const CButtonState buttons)
+bool CViewContainer::hitTestSubViews (const CPoint& where, const CButtonState& buttons)
 {
 	CPoint where2 (where);
 	where2.offset (-getViewSize ().left, -getViewSize ().top);

@@ -420,7 +420,7 @@ void CFrame::checkMouseViews (const CPoint& where, const CButtonState& buttons)
 }
 
 //------------------------------------------------------------------------
-bool CFrame::hitTestSubViews (const CPoint& where, const CButtonState buttons)
+bool CFrame::hitTestSubViews (const CPoint& where, const CButtonState& buttons)
 {
 	if (pModalView)
 	{

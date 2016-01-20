@@ -55,7 +55,7 @@ public:
 
 	CMouseEventResult onMouseEntered (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseExited (CPoint& where, const CButtonState& buttons) override;
-	bool hitTestSubViews (const CPoint& where, const CButtonState buttons = -1) override;
+	bool hitTestSubViews (const CPoint& where, const CButtonState& buttons = -1) override;
 
 	bool removed (CView* parent) override;
 protected:
@@ -805,7 +805,7 @@ void CSplitViewSeparatorView::drawRect (CDrawContext *pContext, const CRect& r)
 }
 
 //------------------------------------------------------------------------
-bool CSplitViewSeparatorView::hitTestSubViews (const CPoint& where, const CButtonState buttons)
+bool CSplitViewSeparatorView::hitTestSubViews (const CPoint& where, const CButtonState& buttons)
 {
 	return hitTest (where, buttons);
 }
