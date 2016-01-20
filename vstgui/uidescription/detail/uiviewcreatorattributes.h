@@ -173,6 +173,7 @@ static const std::string kAttrTruncateMode = "truncate-mode";
 //-----------------------------------------------------------------------------
 static const std::string kAttrImmediateTextChange = "immediate-text-change";
 static const std::string kAttrStyleDoubleClick = "style-doubleclick";
+static const std::string kAttrPlaceholderTitle = "placeholder-title";
 
 //-----------------------------------------------------------------------------
 // CTextButtonCreator attributes

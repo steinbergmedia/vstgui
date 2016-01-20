@@ -147,6 +147,12 @@ void CTextEdit::setText (UTF8StringPtr txt)
 }
 
 //------------------------------------------------------------------------
+void CTextEdit::setPlaceholderString (UTF8StringPtr str)
+{
+	placeholderString = str;
+}
+
+//------------------------------------------------------------------------
 void CTextEdit::draw (CDrawContext *pContext)
 {
 	if (platformControl)
@@ -155,8 +161,17 @@ void CTextEdit::draw (CDrawContext *pContext)
 		setDirty (false);
 		return;
 	}
-
-	CTextLabel::draw (pContext);
+	if (text.empty () && !placeholderString.empty ())
+	{
+		drawBack (pContext);
+		pContext->saveGlobalState ();
+		pContext->setGlobalAlpha (pContext->getGlobalAlpha () * 0.5f);
+		drawPlatformText (pContext, placeholderString.getPlatformString ());
+		pContext->restoreGlobalState ();
+		setDirty (false);
+	}
+	else
+		CTextLabel::draw (pContext);
 }
 
 //------------------------------------------------------------------------

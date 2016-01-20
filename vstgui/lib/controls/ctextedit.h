@@ -67,6 +67,9 @@ public:
 	
 	virtual void setImmediateTextChange (bool state);	///< enable/disable immediate text change behaviour.
 	bool getImmediateTextChange () const { return immediateTextChange; }	///< get immediate text change behaviour
+
+	virtual void setPlaceholderString (UTF8StringPtr str);
+	UTF8StringPtr getPlaceholderString () const { return placeholderString; }
 	//@}
 
 	// overrides
@@ -114,6 +117,7 @@ protected:
 
 	bool immediateTextChange;
 	mutable SharedPointer<CFontDesc> platformFont;
+	UTF8String placeholderString;
 };
 
 } // namespace

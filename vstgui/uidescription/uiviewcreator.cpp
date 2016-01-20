@@ -1766,18 +1766,23 @@ public:
 		applyStyleMask (attributes.getAttributeValue (kAttrStyleDoubleClick), kDoubleClickStyle, style);
 		label->setStyle (style);
 
+		if (auto placeholder = attributes.getAttributeValue (kAttrPlaceholderTitle))
+			label->setPlaceholderString (placeholder->c_str ());
+
 		return true;
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const override
 	{
 		attributeNames.push_back (kAttrImmediateTextChange);
 		attributeNames.push_back (kAttrStyleDoubleClick);
+		attributeNames.push_back (kAttrPlaceholderTitle);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const override
 	{
 		if (attributeName == kAttrImmediateTextChange) return kBooleanType;
 		if (attributeName == kAttrStyleDoubleClick) return kBooleanType;
+		if (attributeName == kAttrPlaceholderTitle) return kStringType;
 		return kUnknownType;
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const override
@@ -1793,6 +1798,11 @@ public:
 		if (attributeName == kAttrStyleDoubleClick)
 		{
 			stringValue = label->getStyle () & kDoubleClickStyle ? "true" : "false";
+			return true;
+		}
+		if (attributeName == kAttrPlaceholderTitle)
+		{
+			stringValue = label->getPlaceholderString ();
 			return true;
 		}
 		
