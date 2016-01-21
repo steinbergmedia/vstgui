@@ -43,7 +43,7 @@ namespace VSTGUI {
 class DelegationController : public IController
 {
 public:
-	DelegationController (IController* controller) : controller (controller) {}
+	explicit DelegationController (IController* controller) : controller (controller) {}
 
 	// IControlListener
 	void valueChanged (CControl* pControl) override { controller->valueChanged (pControl); }
