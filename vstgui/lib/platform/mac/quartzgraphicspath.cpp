@@ -269,7 +269,7 @@ void QuartzGraphicsPath::pixelAlign (CDrawContext* context)
 		CGMutablePathRef path;
 		const CGDrawContext& context;
 		
-		PathIterator (const CGDrawContext& context)
+		explicit PathIterator (const CGDrawContext& context)
 		: context (context)
 		{
 			path = CGPathCreateMutable ();

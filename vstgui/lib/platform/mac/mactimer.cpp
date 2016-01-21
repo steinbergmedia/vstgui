@@ -43,7 +43,7 @@ namespace VSTGUI {
 class MacTimer : public IPlatformTimer
 {
 public:
-	MacTimer (IPlatformTimerCallback* callback);
+	explicit MacTimer (IPlatformTimerCallback* callback);
 	~MacTimer ();
 
 	bool start (uint32_t fireTime) override;
