@@ -2152,11 +2152,18 @@ bool UIDescription::setCustomAttributes (UTF8StringPtr name, UIAttributes* attr)
 }
 
 //-----------------------------------------------------------------------------
+UIAttributes* UIDescription::getCustomAttributes (UTF8StringPtr name) const
+{
+	auto node = findChildNodeByNameAttribute (getBaseNode (MainNodeNames::kCustom), name);
+	return node ? node->getAttributes () : nullptr;
+}
+
+//-----------------------------------------------------------------------------
 UIAttributes* UIDescription::getCustomAttributes (UTF8StringPtr name, bool create)
 {
-	UINode* customNode = findChildNodeByNameAttribute (getBaseNode (MainNodeNames::kCustom), name);
-	if (customNode)
-		return customNode->getAttributes ();
+	auto attributes = getCustomAttributes (name);
+	if (attributes)
+		return attributes;
 	if (create)
 	{
 		UIAttributes* attributes = new UIAttributes ();
@@ -2164,6 +2171,32 @@ UIAttributes* UIDescription::getCustomAttributes (UTF8StringPtr name, bool creat
 		return attributes;
 	}
 	return 0;
+}
+
+//-----------------------------------------------------------------------------
+UIDescription::FocusDrawing UIDescription::getFocusDrawingSettings () const
+{
+	FocusDrawing fd;
+	auto attributes = getCustomAttributes ("FocusDrawing");
+	if (attributes)
+	{
+		attributes->getBooleanAttribute ("enabled", fd.enabled);
+		attributes->getDoubleAttribute ("width", fd.width);
+		if (auto colorAttr = attributes->getAttributeValue ("color"))
+			fd.colorName = *colorAttr;
+	}
+	return fd;
+}
+
+//-----------------------------------------------------------------------------
+void UIDescription::setFocusDrawingSettings (const FocusDrawing& fd)
+{
+	auto attributes = getCustomAttributes ("FocusDrawing", true);
+	if (!attributes)
+		return;
+	attributes->setBooleanAttribute ("enabled", fd.enabled);
+	attributes->setDoubleAttribute ("width", fd.width);
+	attributes->setAttribute ("color", fd.colorName);
 }
 
 //-----------------------------------------------------------------------------

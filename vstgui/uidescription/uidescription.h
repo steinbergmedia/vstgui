@@ -151,7 +151,8 @@ public:
 	bool duplicateTemplate (UTF8StringPtr name, UTF8StringPtr duplicateName);
 
 	bool setCustomAttributes (UTF8StringPtr name, UIAttributes* attr); //owns attributes
-	UIAttributes* getCustomAttributes (UTF8StringPtr name, bool create = false);
+	UIAttributes* getCustomAttributes (UTF8StringPtr name) const;
+	UIAttributes* getCustomAttributes (UTF8StringPtr name, bool create);
 
 	bool getControlTagString (UTF8StringPtr tagName, std::string& tagString) const;
 	bool changeControlTagString  (UTF8StringPtr tagName, const std::string& newTagString, bool create = false);
@@ -159,6 +160,15 @@ public:
 	bool calculateStringValue (UTF8StringPtr str, double& result) const;
 	
 	void setBitmapCreator (IBitmapCreator* bitmapCreator);
+
+	struct FocusDrawing
+	{
+		bool enabled {false};
+		CCoord width {1};
+		std::string colorName;
+	};
+	FocusDrawing getFocusDrawingSettings () const;
+	void setFocusDrawingSettings (const FocusDrawing& fd);
 	
 	static bool parseColor (const std::string& colorString, CColor& color);
 	static CViewAttributeID kTemplateNameAttributeID;

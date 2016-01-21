@@ -59,7 +59,6 @@ protected:
 	static bool stringToValue (UTF8StringPtr txt, float& result, CTextEdit::StringToValueUserData* userData);
 
 	SharedPointer<UIDescription> editDescription;
-	UIAttributes* settings;
 
 	enum {
 		kEnabledTag = 0,

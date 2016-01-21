@@ -51,7 +51,6 @@ namespace VSTGUI {
 UIFocusSettingsController::UIFocusSettingsController (UIDescription* description)
 : editDescription (description)
 {
-	settings = description->getCustomAttributes ("FocusDrawing", true);
 	for (int32_t i = 0; i < kNumTags; i++)
 		controls[i] = 0;
 }
@@ -66,21 +65,20 @@ CMessageResult UIFocusSettingsController::notify (CBaseObject* sender, IdStringP
 {
 	if (message == UIDialogController::kMsgDialogButton1Clicked)
 	{
+		UIDescription::FocusDrawing fd;
+		
 		if (controls[kEnabledTag])
-		{
-			settings->setBooleanAttribute ("enabled", controls[kEnabledTag]->getValue () == controls[kEnabledTag]->getMax () ? true : false);
-		}
+			fd.enabled = (controls[kEnabledTag]->getValue () == controls[kEnabledTag]->getMax ()) ? true : false;
 		if (controls[kColorTag])
 		{
 			COptionMenu* menu = dynamic_cast<COptionMenu*>(controls[kColorTag]);
 			CMenuItem* item = menu->getCurrent ();
 			if (item)
-				settings->setAttribute ("color", item->getTitle ());
+				fd.colorName = item->getTitle ();
 		}
 		if (controls[kWidthTag])
-		{
-			settings->setDoubleAttribute ("width", controls[kWidthTag]->getValue ());
-		}
+			fd.width = controls[kWidthTag]->getValue ();
+		editDescription->setFocusDrawingSettings (fd);
 		return kMessageNotified;
 	}
 	return kMessageUnknown;
@@ -96,9 +94,8 @@ CView* UIFocusSettingsController::verifyView (CView* view, const UIAttributes& a
 		{
 			case kEnabledTag:
 			{
-				bool value = false;
-				settings->getBooleanAttribute ("enabled", value);
-				control->setValue (value ? control->getMax () : control->getMin ());
+				auto settings = editDescription->getFocusDrawingSettings ();
+				control->setValue (settings.enabled ? control->getMax () : control->getMin ());
 				controls[kEnabledTag] = control;
 				break;
 			}
@@ -108,7 +105,7 @@ CView* UIFocusSettingsController::verifyView (CView* view, const UIAttributes& a
 				if (menu)
 				{
 					controls[kColorTag] = control;
-					const std::string* current = settings->getAttributeValue ("color");
+					auto settings = editDescription->getFocusDrawingSettings ();
 					std::list<const std::string*> names;
 					editDescription->collectColorNames (names);
 					names.sort (UIEditController::std__stringCompare);
@@ -116,7 +113,7 @@ CView* UIFocusSettingsController::verifyView (CView* view, const UIAttributes& a
 					for (std::list<const std::string*>::const_iterator it = names.begin (); it != names.end (); it++, index++)
 					{
 						menu->addEntry (new CMenuItem ((*it)->c_str ()));
-						if (current && *current == *(*it))
+						if (settings.colorName == *(*it))
 						{
 							menu->setValue ((float)index);
 						}
@@ -133,9 +130,8 @@ CView* UIFocusSettingsController::verifyView (CView* view, const UIAttributes& a
 					edit->setStringToValueFunction (stringToValue);
 					edit->setValueToStringFunction (valueToString);
 				}
-				double current = 1.;
-				settings->getDoubleAttribute ("width", current);
-				control->setValue ((float)current);
+				auto settings = editDescription->getFocusDrawingSettings ();
+				control->setValue (static_cast<float> (settings.width));
 				break;
 			}
 		}

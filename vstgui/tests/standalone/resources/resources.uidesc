@@ -5,7 +5,7 @@
 	<colors>
 		<color name="AlertBox.background" rgba="#ecececff"/>
 		<color name="Black Alpha 140" rgba="#0000008c"/>
-		<color name="Focus" rgba="#78c8ffff"/>
+		<color name="Focus" rgba="#3bafffff"/>
 	</colors>
 	<custom>
 		<attributes name="UIDescFilePath" path="/Users/AScheffler/Sources/vstgui/vstgui/tests/standalone/resources/resources.uidesc"/>

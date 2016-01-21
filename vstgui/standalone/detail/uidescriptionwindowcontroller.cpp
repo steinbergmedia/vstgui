@@ -487,7 +487,16 @@ struct WindowController::Impl : public IController, public ICommandHandler
 		frame->setSize (viewSize.x, viewSize.y);
 		frame->addView (view);
 
-		frame->setFocusDrawingEnabled (false);
+		auto focusDrawing = uiDesc->getFocusDrawingSettings ();
+		frame->setFocusDrawingEnabled (focusDrawing.enabled);
+		if (focusDrawing.enabled)
+		{
+			frame->setFocusWidth (focusDrawing.width);
+			CColor focusColor;
+			if (uiDesc->getColor (focusDrawing.colorName.data (), focusColor))
+				frame->setFocusColor (focusColor);
+		}
+
 		window->setSize (view->getViewSize ().getSize ());
 	}
 
