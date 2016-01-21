@@ -103,12 +103,13 @@ struct CNinePartTiledDescription
 		kPartCount
 	};
 	
-	CCoord left;
-	CCoord top;
-	CCoord right;
-	CCoord bottom;
-	
-	CNinePartTiledDescription (CCoord left = 0, CCoord top = 0, CCoord right = 0, CCoord bottom = 0)
+	CCoord left {0.};
+	CCoord top {0.};
+	CCoord right {0.};
+	CCoord bottom {0.};
+
+	CNinePartTiledDescription () = default;
+	CNinePartTiledDescription (CCoord left, CCoord top, CCoord right, CCoord bottom)
 	: left (left), top (top), right (right), bottom (bottom) {}
 
 	//-----------------------------------------------------------------------------

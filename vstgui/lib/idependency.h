@@ -77,16 +77,17 @@ public:
 
 //----------------------------------------------------------------------------------------------------
 protected:
-	IDependency ();
+	IDependency () = default;
 	virtual ~IDependency ();
 
 	static void rememberObject (CBaseObject* obj) { obj->remember (); }
 	static void forgetObject (CBaseObject* obj) { obj->forget (); }
 
-	int32_t deferChangeCount;
 	typedef std::set<IdStringPtr> DeferedChangesSet;
-	DeferedChangesSet deferedChanges;
 	typedef std::list<CBaseObject*> DependentList;
+
+	int32_t deferChangeCount {0};
+	DeferedChangesSet deferedChanges;
 	DependentList dependents;
 };
 
@@ -136,12 +137,6 @@ inline void IDependency::deferChanges (bool state)
 			changed (*it);
 		deferedChanges.clear ();
 	}
-}
-
-//----------------------------------------------------------------------------------------------------
-inline IDependency::IDependency ()
-: deferChangeCount (0)
-{
 }
 
 //----------------------------------------------------------------------------------------------------

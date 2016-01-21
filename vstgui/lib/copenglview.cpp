@@ -44,14 +44,13 @@ namespace VSTGUI {
 //-----------------------------------------------------------------------------
 COpenGLView::COpenGLView (const CRect& size)
 : CView (size)
-, platformOpenGLView (0)
 {
 }
 
 //-----------------------------------------------------------------------------
 COpenGLView::~COpenGLView ()
 {
-	vstgui_assert (platformOpenGLView == 0);
+	vstgui_assert (platformOpenGLView == nullptr);
 }
 
 //-----------------------------------------------------------------------------
@@ -73,7 +72,7 @@ bool COpenGLView::createPlatformOpenGLView ()
 {
 	vstgui_assert (platformOpenGLView == 0);
 	IPlatformFrame* platformFrame = getFrame ()->getPlatformFrame ();
-	platformOpenGLView = platformFrame ? platformFrame->createPlatformOpenGLView () : 0;
+	platformOpenGLView = owned (platformFrame ? platformFrame->createPlatformOpenGLView () : 0);
 	if (platformOpenGLView)
 	{
 		if (platformOpenGLView->init (this, getPixelFormat ()))
@@ -84,8 +83,7 @@ bool COpenGLView::createPlatformOpenGLView ()
 			platformOpenGLViewSizeChanged ();
 			return true;
 		}
-		platformOpenGLView->forget ();
-		platformOpenGLView = 0;
+		platformOpenGLView = nullptr;
 	}
 	return false;
 }
@@ -97,8 +95,7 @@ bool COpenGLView::destroyPlatformOpenGLView ()
 	{
 		platformOpenGLViewWillDestroy ();
 		platformOpenGLView->remove ();
-		platformOpenGLView->forget ();
-		platformOpenGLView = 0;
+		platformOpenGLView = nullptr;
 		return true;
 	}
 	return false;
@@ -170,11 +167,11 @@ void COpenGLView::setVisible (bool state)
 		CView::setVisible (state);
 		if (isAttached ())
 		{
-			if (state && platformOpenGLView == 0)
+			if (state && platformOpenGLView)
 			{
 				createPlatformOpenGLView ();
 			}
-			else if (state == false && platformOpenGLView != 0)
+			else if (state == false && platformOpenGLView != nullptr)
 			{
 				destroyPlatformOpenGLView ();
 			}

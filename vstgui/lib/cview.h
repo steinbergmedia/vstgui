@@ -333,6 +333,7 @@ class CDragContainerHelper
 {
 public:
 	explicit CDragContainerHelper (IDataPackage* drag);
+	CDragContainerHelper () = delete;
 
 	void* first (int32_t& size, int32_t& type);
 	void* next (int32_t& size, int32_t& type);
@@ -350,8 +351,8 @@ public:
 	};
 protected:
 	
-	IDataPackage* drag;
-	int32_t index;
+	IDataPackage* drag {nullptr};
+	int32_t index {0};
 };
 
 } // namespace

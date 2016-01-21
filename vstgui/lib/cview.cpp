@@ -884,9 +884,8 @@ void CView::unregisterViewListener (IViewListener* listener)
 //-----------------------------------------------------------------------------
 CDragContainerHelper::CDragContainerHelper (IDataPackage* drag)
 : drag (drag)
-, index (0)
 {
-	
+	vstgui_assert (drag, "drag cannot be nullptr");
 }
 
 //-----------------------------------------------------------------------------

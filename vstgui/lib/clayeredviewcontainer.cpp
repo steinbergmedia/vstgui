@@ -41,8 +41,6 @@ namespace VSTGUI {
 //-----------------------------------------------------------------------------
 CLayeredViewContainer::CLayeredViewContainer (const CRect& r)
 : CViewContainer (r)
-, parentLayerView (0)
-, zIndex (0)
 {
 }
 

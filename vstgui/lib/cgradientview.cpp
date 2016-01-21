@@ -41,14 +41,6 @@ namespace VSTGUI {
 //-----------------------------------------------------------------------------
 CGradientView::CGradientView (const CRect& size)
 : CView (size)
-, gradientStyle (kLinearGradient)
-, frameColor (kBlackCColor)
-, gradientAngle (0.)
-, roundRectRadius (5.)
-, frameWidth (1.)
-, drawAntialiased (true)
-, radialRadius (1.)
-, radialCenter (CPoint (0.5, 0.5))
 {
 }
 

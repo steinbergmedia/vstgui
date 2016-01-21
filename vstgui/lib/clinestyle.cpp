@@ -120,7 +120,7 @@ CLineStyle& CLineStyle::operator= (const CLineStyle& cls)
 
 //-----------------------------------------------------------------------------
 static const CCoord kDefaultOnOffDashLength[] = {1, 1};
-const CLineStyle kLineSolid;
+const CLineStyle kLineSolid {};
 const CLineStyle kLineOnOffDash (CLineStyle::kLineCapButt, CLineStyle::kLineJoinMiter, 0, 2, kDefaultOnOffDashLength);
 
 }

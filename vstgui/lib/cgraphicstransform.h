@@ -52,14 +52,15 @@ static inline double radians (double degrees) { return degrees * M_PI / 180; }
 //-----------------------------------------------------------------------------
 struct CGraphicsTransform
 {
-	double m11;
-	double m12;
-	double m21;
-	double m22;
-	double dx;
-	double dy;
+	double m11 {1.};
+	double m12 {0.};
+	double m21 {0.};
+	double m22 {1.};
+	double dx {0.};
+	double dy {0.};
 	
-	CGraphicsTransform (double _m11 = 1., double _m12 = 0., double _m21 = 0., double _m22 = 1., double _dx = 0., double _dy = 0.)
+	CGraphicsTransform () = default;
+	CGraphicsTransform (double _m11, double _m12, double _m21, double _m22, double _dx, double _dy)
 	: m11 (_m11), m12 (_m12), m21 (_m21), m22 (_m22), dx (_dx), dy (_dy)
 	{}
 	

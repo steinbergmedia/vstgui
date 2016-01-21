@@ -43,21 +43,12 @@ COffscreenContext::COffscreenContext (CBitmap* bitmap)
 : CDrawContext (CRect (0, 0, bitmap->getWidth (), bitmap->getHeight ()))
 , bitmap (bitmap)
 {
-	bitmap->remember ();
 }
 
 //-----------------------------------------------------------------------------
 COffscreenContext::COffscreenContext (const CRect& surfaceRect)
 : CDrawContext (surfaceRect)
-, bitmap (0)
 {
-}
-
-//-----------------------------------------------------------------------------
-COffscreenContext::~COffscreenContext ()
-{
-	if (bitmap)
-		bitmap->forget ();
 }
 
 //-----------------------------------------------------------------------------

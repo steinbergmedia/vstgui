@@ -77,8 +77,8 @@ protected:
 	void registerListeners (bool state);
 
 	SharedPointer<IPlatformViewLayer>layer;
-	CLayeredViewContainer* parentLayerView;
-	uint32_t zIndex;
+	CLayeredViewContainer* parentLayerView {nullptr};
+	uint32_t zIndex {0};
 };
 
 } // namespace

@@ -148,10 +148,11 @@ public:
 
 	/// @brief CDataBrowser Cell position description
 	struct Cell {
-		int32_t row;
-		int32_t column;
+		int32_t row {-1};
+		int32_t column {-1};
 		
-		Cell (int32_t row = -1, int32_t column = -1) : row (row), column (column) {}
+		Cell () = default;
+		Cell (int32_t row, int32_t column) : row (row), column (column) {}
 		bool isValid () const { return row > -1 && column > -1; }
 	};
 

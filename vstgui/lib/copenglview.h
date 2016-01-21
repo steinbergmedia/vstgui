@@ -94,7 +94,7 @@ private:
 	bool createPlatformOpenGLView ();
 	bool destroyPlatformOpenGLView ();
 
-	IPlatformOpenGLView* platformOpenGLView;
+	SharedPointer<IPlatformOpenGLView> platformOpenGLView;
 };
 
 } // namespace

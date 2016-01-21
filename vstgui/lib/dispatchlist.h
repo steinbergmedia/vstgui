@@ -33,13 +33,12 @@ private:
 	Array entries;
 	Array toRemove;
 	Array toAdd;
-	bool inForEach;
+	bool inForEach {false};
 };
 
 //------------------------------------------------------------------------
 template <typename T>
 DispatchList<T>::DispatchList ()
-: inForEach (false)
 {
 }
 

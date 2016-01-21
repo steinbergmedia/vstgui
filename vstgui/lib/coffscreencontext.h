@@ -109,9 +109,8 @@ public:
 protected:
 	explicit COffscreenContext (CBitmap* bitmap);
 	explicit COffscreenContext (const CRect& surfaceRect);
-	~COffscreenContext ();
 
-	CBitmap* bitmap;
+	SharedPointer<CBitmap> bitmap;
 };
 
 } // namespace
