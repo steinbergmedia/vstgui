@@ -68,7 +68,7 @@ namespace Xml {
 //------------------------------------------------------------------------
 static void XMLCALL gStartElementHandler (void* userData, const char* name, const char** atts)
 {
-	Parser* parser = (Parser*)userData;
+	auto parser = static_cast<Parser*> (userData);
 	IHandler* handler = parser ? parser->getHandler () : 0;
 	if (handler)
 		handler->startXmlElement (parser, name, atts);
@@ -77,7 +77,7 @@ static void XMLCALL gStartElementHandler (void* userData, const char* name, cons
 //------------------------------------------------------------------------
 static void XMLCALL gEndElementHandler (void* userData, const char* name)
 {
-	Parser* parser = (Parser*)userData;
+	auto parser = static_cast<Parser*> (userData);
 	IHandler* handler = parser ? parser->getHandler () : 0;
 	if (handler)
 		handler->endXmlElement (parser, name);
@@ -86,7 +86,7 @@ static void XMLCALL gEndElementHandler (void* userData, const char* name)
 //------------------------------------------------------------------------
 static void XMLCALL gCharacterDataHandler (void* userData, const char* s, int len)
 {
-	Parser* parser = (Parser*)userData;
+	auto parser = static_cast<Parser*> (userData);
 	IHandler* handler = parser ? parser->getHandler () : 0;
 	if (handler)
 		handler->xmlCharData (parser, (const int8_t*)s, len);
@@ -95,7 +95,7 @@ static void XMLCALL gCharacterDataHandler (void* userData, const char* s, int le
 //------------------------------------------------------------------------
 static void XMLCALL gCommentHandler (void* userData, const char* string)
 {
-	Parser* parser = (Parser*)userData;
+	auto parser = static_cast<Parser*> (userData);
 	IHandler* handler = parser ? parser->getHandler () : 0;
 	if (handler)
 		handler->xmlComment (parser, string);

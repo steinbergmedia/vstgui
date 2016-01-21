@@ -157,11 +157,11 @@ bool CMemoryStream::operator>> (std::string& string)
 	if (binaryMode)
 	{
 		int32_t identifier;
-		if (!(*(InputStream*)this >> identifier)) return false;
+		if (!(*static_cast<InputStream*> (this) >> identifier)) return false;
 		if (identifier == 'str ')
 		{
 			uint32_t length;
-			if (!(*(InputStream*)this >> length)) return false;
+			if (!(*static_cast<InputStream*> (this) >> length)) return false;
 			int8_t* buffer = (int8_t*)std::malloc (length);
 			uint32_t read = readRaw (buffer, length);
 			if (read == length)
@@ -342,7 +342,7 @@ bool CFileStream::operator<< (const std::string& str)
 	{
 		if (openMode & kBinaryMode)
 		{
-			if (!(*(OutputStream*)this << (int8_t)0))
+			if (!(*static_cast<OutputStream*> (this) << (int8_t)0))
 				return false;
 		}
 		return true;
