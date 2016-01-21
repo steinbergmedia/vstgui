@@ -132,7 +132,7 @@ CGPathRef QuartzGraphicsPath::getCGPathRef ()
 			return path;
 		}
 		path = CGPathCreateMutable ();
-		for (ElementList::const_iterator it = elements.begin (); it != elements.end (); it++)
+		for (ElementList::const_iterator it = elements.begin (); it != elements.end (); ++it)
 		{
 			const Element& e = (*it);
 			switch (e.type)
