@@ -437,6 +437,13 @@ template <class I>
 SharedPointer<I> owned (I* p) { return SharedPointer<I> (p, false); }
 
 //------------------------------------------------------------------------
+template <class I, typename ...Args>
+SharedPointer<I> makeOwned (Args&& ...args)
+{
+	return SharedPointer<I> (new I (std::forward<Args>(args)...), false);
+}
+
+//------------------------------------------------------------------------
 template <class I>
 class OwningPointer : public SharedPointer<I>
 {

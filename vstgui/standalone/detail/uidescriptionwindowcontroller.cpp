@@ -62,7 +62,7 @@ bool initUIDescAsNew (UIDescription& uiDesc, CFrame* _frame)
 {
 	SharedPointer<CFrame> frame (_frame);
 	if (!frame)
-		frame = owned (new CFrame ({0, 0, 0, 0}, nullptr));
+		frame = makeOwned<CFrame> (CRect (), nullptr);
 	auto fs = owned (CNewFileSelector::create (frame, CNewFileSelector::kSelectSaveFile));
 	fs->setDefaultSaveName (uiDesc.getFilePath ());
 	fs->setDefaultExtension (CFileExtension ("UIDescription File", "uidesc"));
@@ -97,7 +97,7 @@ UIDescCheckFilePathResult checkAndUpdateUIDescFilePath (
 {
 	SharedPointer<CFrame> frame (_frame);
 	if (!frame)
-		frame = owned (new CFrame ({0, 0, 0, 0}, nullptr));
+		frame = makeOwned<CFrame> (CRect (), nullptr);
 
 	CFileStream stream;
 	if (stream.open (uiDesc.getFilePath (), CFileStream::kReadMode))
@@ -167,7 +167,7 @@ private:
 			filename = absPath.data ();
 #endif
 
-		uiDesc = owned (new UIDescription (filename));
+		uiDesc = makeOwned<UIDescription> (filename);
 		if (!uiDesc->parse ())
 		{
 #if VSTGUI_LIVE_EDITING
@@ -401,7 +401,7 @@ struct WindowController::Impl : public IController, public ICommandHandler
 		window = inWindow.get ();
 		if (!initUIDesc (fileName))
 			return false;
-		frame = owned (new CFrame ({}, nullptr));
+		frame = makeOwned<CFrame> (CRect (), nullptr);
 		frame->setTransparency (true);
 		this->templateName = templateName;
 
@@ -416,10 +416,10 @@ struct WindowController::Impl : public IController, public ICommandHandler
 		window = inWindow.get ();
 		Xml::MemoryContentProvider xmlContentProvider (xml,
 		                                               static_cast<uint32_t> (xml.getByteCount ()));
-		uiDesc = owned (new UIDescription (&xmlContentProvider));
+		uiDesc = makeOwned<UIDescription> (&xmlContentProvider);
 		if (!uiDesc->parse ())
 			return false;
-		frame = owned (new CFrame ({}, nullptr));
+		frame = makeOwned<CFrame> (CRect (), nullptr);
 		frame->setTransparency (true);
 		this->templateName = templateName;
 
@@ -449,7 +449,7 @@ struct WindowController::Impl : public IController, public ICommandHandler
 
 	bool initUIDesc (const char* fileName)
 	{
-		uiDesc = owned (new UIDescription (fileName));
+		uiDesc = makeOwned<UIDescription> (fileName);
 		uiDesc->setSharedResources (SharedResources::instance ().get ());
 		if (!uiDesc->parse ())
 		{
@@ -605,7 +605,7 @@ struct WindowController::EditImpl : WindowController::Impl
 		if (!absPath.empty ())
 			fileName = absPath.data ();
 		window = inWindow.get ();
-		frame = owned (new CFrame ({}, nullptr));
+		frame = makeOwned<CFrame> (CRect (), nullptr);
 		frame->setTransparency (true);
 
 		if (!initUIDesc (fileName))
