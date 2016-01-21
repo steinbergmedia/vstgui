@@ -59,6 +59,7 @@ A bitmap can be used as background.
 //------------------------------------------------------------------------
 CTextEdit::CTextEdit (const CRect& size, IControlListener* listener, int32_t tag, UTF8StringPtr txt, CBitmap* background, const int32_t style)
 : CTextLabel (size, txt, background, style)
+, bWasReturnPressed (false)
 , platformControl (0)
 , immediateTextChange (false)
 {
@@ -71,9 +72,12 @@ CTextEdit::CTextEdit (const CRect& size, IControlListener* listener, int32_t tag
 //------------------------------------------------------------------------
 CTextEdit::CTextEdit (const CTextEdit& v)
 : CTextLabel (v)
+, bWasReturnPressed (false)
 , platformControl (0)
 , stringToValueFunction (v.stringToValueFunction)
 , immediateTextChange (v.immediateTextChange)
+, platformFont (v.platformFont)
+, placeholderString (v.placeholderString)
 {
 	setWantsFocus (true);
 }

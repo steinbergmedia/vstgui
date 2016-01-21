@@ -338,17 +338,6 @@ bool CColorChooser::convertAngle (UTF8StringPtr string, float& output, CTextEdit
 }
 
 //-----------------------------------------------------------------------------
-CColorChooserUISettings::CColorChooserUISettings ()
-{
-	font = kNormalFont;
-	fontColor = kWhiteCColor;
-	checkerBoardColor1 = kWhiteCColor;
-	checkerBoardColor2 = kBlackCColor;
-	margin = CPoint (5, 5);
-	checkerBoardBack = true;
-}
-
-//-----------------------------------------------------------------------------
 IdStringPtr CColorChooser::kMsgBeginColorChange = "CColorChooser::kMsgBeginColorChange";
 IdStringPtr CColorChooser::kMsgEndColorChange = "CColorChooser::kMsgEndColorChange";
 

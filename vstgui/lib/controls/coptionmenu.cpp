@@ -717,7 +717,7 @@ bool COptionMenu::setCurrent (int32_t index, bool countSeparator)
 	if (countSeparator)
 	{
 		item = getEntry (index);
-		if (!item || (item && item->isSeparator ()))
+		if (!item || item->isSeparator ())
 			return false;
 		currentIndex = index;
 	}

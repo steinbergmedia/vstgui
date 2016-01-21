@@ -544,9 +544,7 @@ CMouseEventResult CFrame::onMouseExited (CPoint &where, const CButtonState& butt
 //-----------------------------------------------------------------------------
 int32_t CFrame::onKeyDown (VstKeyCode& keyCode)
 {
-	int32_t result = -1;
-
-	result = keyboardHooksOnKeyDown (keyCode);
+	int32_t result = keyboardHooksOnKeyDown (keyCode);
 
 	if (result == -1 && pFocusView)
 	{
@@ -580,9 +578,7 @@ int32_t CFrame::onKeyDown (VstKeyCode& keyCode)
 //-----------------------------------------------------------------------------
 int32_t CFrame::onKeyUp (VstKeyCode& keyCode)
 {
-	int32_t result = -1;
-
-	result = keyboardHooksOnKeyUp (keyCode);
+	int32_t result = keyboardHooksOnKeyUp (keyCode);
 
 	if (result == -1 && pFocusView)
 	{

@@ -138,7 +138,8 @@ bool IPlatformBitmap::createMemoryPNGRepresentation (IPlatformBitmap* bitmap, vo
 
 //-----------------------------------------------------------------------------
 CGBitmap::CGBitmap (const CPoint& inSize)
-: image (0)
+: size (inSize)
+, image (0)
 , imageSource (0)
 , layer (0)
 , bits (0)
@@ -146,7 +147,6 @@ CGBitmap::CGBitmap (const CPoint& inSize)
 , bytesPerRow (0)
 , scaleFactor (1.)
 {
-	size = inSize;
 	allocBits ();
 }
 
