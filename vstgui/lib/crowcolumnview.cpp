@@ -124,7 +124,7 @@ void CRowColumnView::getMaxChildViewSize (CPoint& maxSize)
 			maxSize.x = viewSize.getWidth ();
 		if (viewSize.getHeight () > maxSize.y)
 			maxSize.y = viewSize.getHeight ();
-		it++;
+		++it;
 	}
 }
 
@@ -181,7 +181,7 @@ void CRowColumnView::layoutViewsEqualSize ()
 			location.x += spacing;
 			location.x += viewSize.getWidth ();
 		}
-		it++;
+		++it;
 	}
 }
 
@@ -212,7 +212,7 @@ bool CRowColumnView::sizeToFit ()
 				if (size.getWidth () > maxSize.x)
 					maxSize.x = size.getWidth ();
 				maxSize.y += size.getHeight () + spacing;
-				it++;
+				++it;
 			}
 		}
 		else
@@ -223,7 +223,7 @@ bool CRowColumnView::sizeToFit ()
 				maxSize.x += size.getWidth () + spacing;
 				if (size.bottom > maxSize.y)
 					maxSize.y = size.getHeight ();
-				it++;
+				++it;
 			}
 		}
 		viewSize.setWidth (maxSize.x + margin.left + margin.right);

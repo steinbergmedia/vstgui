@@ -122,7 +122,7 @@ CFontChooser::CFontChooser (IFontChooserDelegate* delegate, CFontRef initialFont
 	while (it != fnList.end ())
 	{
 		fontNames.push_back (*it);
-		it++;
+		++it;
 	}
 	GenericStringListDataBrowserSource* dbSource = new GenericStringListDataBrowserSource (&fontNames, this);
 	dbSource->setupUI (uiDef.selectionColor, uiDef.fontColor, uiDef.rowlineColor, uiDef.rowBackColor, uiDef.rowAlternateBackColor, uiDef.font, uiDef.rowHeight);
@@ -237,7 +237,7 @@ void CFontChooser::setFont (CFontRef font)
 				fontBrowser->setSelectedRow (row, true);
 				break;
 			}
-			it++;
+			++it;
 			row++;
 		}
 		static_cast<CFontChooserInternal::FontPreviewView*> (fontPreviewView)->setFont (selFont);

@@ -120,7 +120,7 @@ float InterpolationTimingFunction::getPosition (uint32_t milliseconds)
 		}
 		prevTime = time;
 		prevPos = pos;
-		it++;
+		++it;
 	}
 	return 1.f;
 }

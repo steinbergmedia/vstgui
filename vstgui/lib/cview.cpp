@@ -184,7 +184,7 @@ protected:
 		for (ViewContainer::const_iterator it = views.begin (); it != views.end ();)
 		{
 			CView* view = (*it);
-			it++;
+			++it;
 			view->onIdle ();
 		}
 		return kMessageNotified;
@@ -243,7 +243,7 @@ CView::CView (const CView& v)
 , autosizeFlags (v.autosizeFlags)
 , alphaValue (v.alphaValue)
 {
-	for (ViewAttributes::iterator it = attributes.begin (); it != attributes.end (); it++)
+	for (ViewAttributes::iterator it = attributes.begin (); it != attributes.end (); ++it)
 		setAttribute (it->first, it->second->getSize (), it->second->getData ());
 }
 

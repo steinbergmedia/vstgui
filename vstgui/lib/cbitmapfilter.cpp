@@ -344,7 +344,7 @@ uint32_t FilterBase::getNumProperties () const
 //----------------------------------------------------------------------------------------------------
 IdStringPtr FilterBase::getPropertyName (uint32_t index) const
 {
-	for (const_iterator it = begin (); it != end (); it++, index--)
+	for (const_iterator it = begin (); it != end (); ++it, index--)
 	{
 		if (index == 0)
 			return (*it).first.c_str ();
@@ -355,7 +355,7 @@ IdStringPtr FilterBase::getPropertyName (uint32_t index) const
 //----------------------------------------------------------------------------------------------------
 Property::Type FilterBase::getPropertyType (uint32_t index) const
 {
-	for (const_iterator it = begin (); it != end (); it++, index--)
+	for (const_iterator it = begin (); it != end (); ++it, index--)
 	{
 		if (index == 0)
 			return (*it).second.getType ();

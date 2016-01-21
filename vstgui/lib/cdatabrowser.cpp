@@ -402,7 +402,7 @@ void CDataBrowser::setSelectedRow (int32_t index, bool makeVisible)
 		invalidateRow (index);
 	}
 	
-	for (Selection::iterator it = selection.begin (); it != selection.end (); it++)
+	for (Selection::iterator it = selection.begin (); it != selection.end (); ++it)
 	{
 		dbView->invalidateRow (*it);
 	}
@@ -471,7 +471,7 @@ void CDataBrowser::unselectAll ()
 {
 	if (selection.size () > 0)
 	{
-		for (Selection::iterator it = selection.begin (); it != selection.end (); it++)
+		for (Selection::iterator it = selection.begin (); it != selection.end (); ++it)
 		{
 			dbView->invalidateRow (*it);
 		}
@@ -494,7 +494,7 @@ void CDataBrowser::validateSelection ()
 		}
 		else
 		{
-			it++;
+			++it;
 		}
 	}
 	if (selectionChanged)
@@ -1312,7 +1312,7 @@ int32_t GenericStringListDataBrowserSource::dbOnKeyDown (const VstKeyCode& _key,
 				return 1;
 			}
 			row++;
-			it++;
+			++it;
 		}
 	}
 	return -1;

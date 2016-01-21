@@ -269,7 +269,7 @@ void CNewFileSelector::setDefaultExtension (const CFileExtension& extension)
 			found = true;
 			break;
 		}
-		it++;
+		++it;
 	}
 	if (!found)
 	{

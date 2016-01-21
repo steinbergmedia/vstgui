@@ -48,7 +48,7 @@
 namespace VSTGUI {
 
 #ifndef FOREACHSUBVIEW_REVERSE
-	#define FOREACHSUBVIEW_REVERSE(reverse) ChildViewConstIterator it; ChildViewConstReverseIterator rit; if (reverse) rit = children.rbegin (); else it = children.begin (); while (reverse ? rit != children.rend () : it != children.end ()) { CView* pV; if (reverse) {	pV = (*rit); rit++; } else { pV = (*it); it++; } {
+	#define FOREACHSUBVIEW_REVERSE(reverse) ChildViewConstIterator it; ChildViewConstReverseIterator rit; if (reverse) rit = children.rbegin (); else it = children.begin (); while (reverse ? rit != children.rend () : it != children.end ()) { CView* pV; if (reverse) {	pV = (*rit); ++rit; } else { pV = (*it); ++it; } {
 #endif
 #ifndef ENDFOREACHSUBVIEW
 	#define ENDFOREACHSUBVIEW } }
@@ -475,7 +475,7 @@ bool CViewContainer::isChild (CView *pView, bool deep) const
 			}
 			if (CViewContainer* container = dynamic_cast<CViewContainer*>(v))
 				found = container->isChild (pView, true);
-			it++;
+			++it;
 		}
 	}
 	else

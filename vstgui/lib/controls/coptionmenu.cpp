@@ -535,7 +535,7 @@ int32_t COptionMenu::onKeyDown (VstKeyCode& keyCode)
 void COptionMenu::beforePopup ()
 {
 	changed (kMsgBeforePopup);
-	for (CMenuItemIterator it = menuItems->begin (); it != menuItems->end (); it++)
+	for (CMenuItemIterator it = menuItems->begin (); it != menuItems->end (); ++it)
 	{
 		CCommandMenuItem* commandItem = (*it).cast<CCommandMenuItem> ();
 		if (commandItem)
@@ -704,7 +704,7 @@ int32_t COptionMenu::getCurrentIndex (bool countSeparator) const
 			numSeparators++;
 		if (i == currentIndex)
 			break;
-		it++;
+		++it;
 		i++;
 	}
 	return currentIndex - numSeparators;
@@ -731,7 +731,7 @@ bool COptionMenu::setCurrent (int32_t index, bool countSeparator)
 				break;
 			if ((*it)->isSeparator ())
 				index++;
-			it++;
+			++it;
 			i++;
 		}
 		currentIndex = index;
@@ -782,7 +782,7 @@ bool COptionMenu::checkEntryAlone (int32_t index)
 	while (it != menuItems->end ())
 	{
 		(*it)->setChecked (pos == index);
-		it++;
+		++it;
 		pos++;
 	}
 	return true;
