@@ -161,7 +161,6 @@ SET(vstgui_uidescription_common_sources
 	uidescription/xmlparser.h
 	uidescription/editing/doc.h
 	uidescription/editing/iaction.h
-	uidescription/editing/resources
 	uidescription/editing/uiactions.cpp
 	uidescription/editing/uiactions.h
 	uidescription/editing/uiattributescontroller.cpp
@@ -214,7 +213,6 @@ SET(vstgui_uidescription_common_sources
 )
 
 SET(vstgui_mac_sources
-	lib/platform/mac/
 	lib/platform/mac/caviewlayer.h
 	lib/platform/mac/caviewlayer.mm
 	lib/platform/mac/cfontmac.h
@@ -251,6 +249,7 @@ SET(vstgui_mac_sources
 	lib/platform/mac/carbon/hiviewoptionmenu.h
 	lib/platform/mac/carbon/hiviewtextedit.cpp
 	lib/platform/mac/carbon/hiviewtextedit.h
+	lib/platform/win32
 )
 SET(vstgui_win32_sources
 	lib/platform/win32/cfontwin32.cpp
