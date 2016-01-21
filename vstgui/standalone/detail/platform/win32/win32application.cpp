@@ -49,6 +49,8 @@ static IWin32Window* toWin32Window (const VSTGUI::Standalone::WindowPtr& window)
 class Application
 {
 public:
+	Application () = default;
+
 	void init ();
 	void run ();
 

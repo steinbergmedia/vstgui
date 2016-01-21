@@ -54,7 +54,7 @@ public:
 class StringListValueStringConverter : public IValueStringConverter
 {
 public:
-	StringListValueStringConverter (const std::initializer_list<UTF8String>& list) : strings (list)
+	explicit StringListValueStringConverter (const std::initializer_list<UTF8String>& list) : strings (list)
 	{
 	}
 	

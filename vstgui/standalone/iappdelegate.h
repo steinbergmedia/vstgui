@@ -60,7 +60,7 @@ public:
 //------------------------------------------------------------------------
 struct Init
 {
-	Init (const DelegatePtr& delegate);
+	explicit Init (const DelegatePtr& delegate);
 };
 
 //------------------------------------------------------------------------

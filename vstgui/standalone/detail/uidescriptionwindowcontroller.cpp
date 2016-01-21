@@ -236,7 +236,7 @@ class ValueWrapper : public ValueListenerAdapter,
                      public IViewListenerAdapter
 {
 public:
-	ValueWrapper (const ValuePtr& value = nullptr) : value (value)
+	explicit ValueWrapper (const ValuePtr& value = nullptr) : value (value)
 	{
 		if (value)
 			value->registerListener (this);

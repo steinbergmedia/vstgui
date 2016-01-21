@@ -46,6 +46,8 @@ private:
 	};
 
 public:
+	WindowStyle () = default;
+
 	WindowStyle& border ()
 	{
 		flags |= Style::Border;

@@ -37,6 +37,7 @@ static Detail::IApplicationPlatformAccess* getApplicationPlatformAccess ()
 class Window : public IWindow, public IWin32Window, public std::enable_shared_from_this<Window>
 {
 public:
+	Window () = default;
 	~Window ();
 	bool init (const WindowConfiguration& config, IWindowDelegate& delegate);
 

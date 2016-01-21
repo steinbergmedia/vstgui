@@ -57,11 +57,10 @@ class AlertBoxController : public UIDesc::IModelBinding,
 public:
 	AlertBoxController (const AlertBoxConfig& config, const AlertBoxCallback& callback)
 	: callback (callback)
+	, firstButtonTitle (config.defaultButton)
+	, secondButtonTitle (config.secondButton)
+	, thirdButtonTitle (config.thirdButton)
 	{
-		firstButtonTitle = config.defaultButton;
-		secondButtonTitle = config.secondButton;
-		thirdButtonTitle = config.thirdButton;
-
 		addValue (Value::make ("AlertBox.firstButton"));
 		addValue (Value::make ("AlertBox.secondButton"));
 		addValue (Value::make ("AlertBox.thirdButton"));

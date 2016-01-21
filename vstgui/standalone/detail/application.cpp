@@ -20,6 +20,7 @@ class Application : public IApplication,
 {
 public:
 	static Application& instance ();
+	Application () = default;
 
 	// IApplication
 	void setDelegate (const Standalone::Application::DelegatePtr& delegate);
