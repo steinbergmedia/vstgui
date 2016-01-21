@@ -182,7 +182,7 @@ bool CocoaFileSelector::runInternal (CBaseObject* _delegate)
 				}
 			}
 			if (uti == 0 && (*it).getExtension ())
-				uti = [NSString stringWithUTF8String:(*it).getExtension ()];
+				uti = [[NSString alloc] initWithUTF8String:(*it).getExtension ()];
 			if (uti)
 			{
 				[typesArray addObject:uti];
