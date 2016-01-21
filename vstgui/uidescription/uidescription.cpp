@@ -2143,11 +2143,10 @@ bool UIDescription::setCustomAttributes (UTF8StringPtr name, UIAttributes* attr)
 	UINode* customNode = findChildNodeByNameAttribute (getBaseNode (MainNodeNames::kCustom), name);
 	if (customNode)
 		return false;
+	UINode* parent = getBaseNode (MainNodeNames::kCustom);
+	vstgui_assert (parent != nullptr);
 	attr->setAttribute ("name", name);
 	customNode = new UINode ("attributes", attr);
-	UINode* parent = getBaseNode (MainNodeNames::kCustom);
-	if (!parent)
-		return false;
 	parent->getChildren ().add (customNode);
 	return true;
 }
