@@ -45,7 +45,7 @@ namespace VSTGUI {
 class CAutoLayoutContainerView : public CViewContainer
 {
 public:
-	CAutoLayoutContainerView (const CRect& size);
+	explicit CAutoLayoutContainerView (const CRect& size);
 
 	virtual void layoutViews () = 0;
 

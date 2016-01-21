@@ -60,7 +60,7 @@ class CGDrawContext : public COffscreenContext
 {
 public:
 	CGDrawContext (CGContextRef cgContext, const CRect& rect);
-	CGDrawContext (CGBitmap* bitmap);
+	explicit CGDrawContext (CGBitmap* bitmap);
 	~CGDrawContext ();
 	
 	void drawLine (const LinePair& line) override;

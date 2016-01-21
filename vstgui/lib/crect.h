@@ -46,7 +46,8 @@ namespace VSTGUI {
 //-----------------------------------------------------------------------------
 struct CRect
 {
-	inline CRect (CCoord left = 0, CCoord top = 0, CCoord right = 0, CCoord bottom = 0);
+	CRect () = default;
+	inline CRect (CCoord left, CCoord top, CCoord right, CCoord bottom);
 	inline CRect (const CRect& r);
 	inline CRect (const CPoint& origin, const CPoint& size);
 
@@ -95,10 +96,10 @@ struct CRect
 	inline CRect& centerInside (const CRect& r); ///< moves this rect to the center of r
 	inline CRect& makeIntegral ();
 
-	CCoord left;
-	CCoord top;
-	CCoord right;
-	CCoord bottom;
+	CCoord left {0.};
+	CCoord top {0.};
+	CCoord right {0.};
+	CCoord bottom {0.};
 };
 
 //------------------------------------------------------------------------

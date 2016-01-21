@@ -46,7 +46,8 @@ struct CRect;
 //-----------------------------------------------------------------------------
 struct CPoint
 {
-	CPoint (CCoord x = 0, CCoord y = 0) : x (x), y (y) {}
+	CPoint () = default;
+	CPoint (CCoord x, CCoord y) : x (x), y (y) {}
 	CPoint& operator () (CCoord x, CCoord y) { this->x = x; this->y = y; return *this; }
 
 	bool operator!= (const CPoint &other) const { return (x != other.x || y != other.y); }
@@ -64,8 +65,8 @@ struct CPoint
 
 	inline CPoint& makeIntegral ();
 
-	CCoord x;
-	CCoord y;
+	CCoord x {0.};
+	CCoord y {0.};
 };
 
 //-----------------------------------------------------------------------------

@@ -75,7 +75,7 @@ public:
 
 //-----------------------------------------------------------------------------
 protected:
-	IPlatformTextEdit (IPlatformTextEditCallback* textEdit) : textEdit (textEdit) {}
+	explicit IPlatformTextEdit (IPlatformTextEditCallback* textEdit) : textEdit (textEdit) {}
 	IPlatformTextEditCallback* textEdit;
 };
 

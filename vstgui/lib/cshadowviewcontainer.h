@@ -50,7 +50,7 @@ namespace VSTGUI {
 class CShadowViewContainer : public CViewContainer, public IScaleFactorChangedListener, public IViewContainerListenerAdapter
 {
 public:
-	CShadowViewContainer (const CRect& size);
+	explicit CShadowViewContainer (const CRect& size);
 	CShadowViewContainer (const CShadowViewContainer& copy);
 	~CShadowViewContainer ();
 

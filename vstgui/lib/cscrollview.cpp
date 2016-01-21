@@ -96,6 +96,7 @@ CScrollContainer::CScrollContainer (const CScrollContainer& v)
 : CViewContainer (v)
 , containerSize (v.containerSize)
 , offset (v.offset)
+, autoDragScroll (v.autoDragScroll)
 , inScrolling (false)
 {
 }

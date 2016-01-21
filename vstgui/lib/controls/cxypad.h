@@ -44,7 +44,7 @@ namespace VSTGUI {
 class CXYPad : public CParamDisplay
 {
 public:
-	CXYPad (const CRect& size = CRect (0, 0, 0, 0));
+	explicit CXYPad (const CRect& size = CRect (0, 0, 0, 0));
 
 	void setStopTrackingOnMouseExit (bool state) { stopTrackingOnMouseExit = state; }
 	bool getStopTrackingOnMouseExit () const { return stopTrackingOnMouseExit; }

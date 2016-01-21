@@ -79,7 +79,7 @@ extern const CViewAttributeID kCViewControllerAttribute;		// 'ictr' ///< see @re
 class CView : public CBaseObject
 {
 public:
-	CView (const CRect& size);
+	explicit CView (const CRect& size);
 	CView (const CView& view);
 
 	//-----------------------------------------------------------------------------
@@ -332,7 +332,7 @@ private:
 class CDragContainerHelper
 {
 public:
-	CDragContainerHelper (IDataPackage* drag);
+	explicit CDragContainerHelper (IDataPackage* drag);
 
 	void* first (int32_t& size, int32_t& type);
 	void* next (int32_t& size, int32_t& type);

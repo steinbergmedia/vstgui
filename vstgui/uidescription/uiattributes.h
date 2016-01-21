@@ -53,7 +53,7 @@ class UIAttributes : public CBaseObject, private UIAttributesMap
 public:
 	typedef std::vector<std::string> StringArray;
 	
-	UIAttributes (UTF8StringPtr* attributes = 0);
+	explicit UIAttributes (UTF8StringPtr* attributes = nullptr);
 	~UIAttributes ();
 
 	using UIAttributesMap::begin;

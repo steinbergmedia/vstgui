@@ -108,7 +108,7 @@ public:
 	using UIDescListContainerType::empty;
 	using UIDescListContainerType::size;
 	
-	UIDescList (bool ownsObjects = true);
+	explicit UIDescList (bool ownsObjects = true);
 	UIDescList (const UIDescList& descList);
 	virtual ~UIDescList ();
 
@@ -169,7 +169,7 @@ protected:
 class UICommentNode : public UINode
 {
 public:
-	UICommentNode (const std::string& comment);
+	explicit UICommentNode (const std::string& comment);
 	CLASS_METHODS_NOCOPY(UICommentNode, UINode)
 };
 
@@ -2283,7 +2283,7 @@ public:
 		kResult
 	};
 	
-	StringToken (const std::string& str) : std::string (str), type (kString), result (0) {}
+	explicit StringToken (const std::string& str) : std::string (str), type (kString), result (0) {}
 	StringToken (const StringToken& token) : std::string (token), type (token.type), result (token.result) {}
 	StringToken (Type type, double value = 0) : type (type), result (value) {}
 	
@@ -2307,7 +2307,7 @@ static bool tokenizeString (std::string& str, StringTokenList& tokens)
 				if (tokenStart != iterator)
 				{
 					std::string token ((const char*)tokenStart, static_cast<size_t> (iterator - tokenStart));
-					tokens.push_back (token);
+					tokens.emplace_back (token);
 				}
 				tokenStart = iterator + 1;
 			}
@@ -2320,7 +2320,7 @@ static bool tokenizeString (std::string& str, StringTokenList& tokens)
 						if (tokenStart != iterator)
 						{
 							std::string token ((const char*)tokenStart, static_cast<size_t> (iterator - tokenStart));
-							tokens.push_back (token);
+							tokens.emplace_back (token);
 						}
 						tokens.push_back (StringToken (StringToken::kAdd));
 						tokenStart = iterator + 1;
@@ -2331,7 +2331,7 @@ static bool tokenizeString (std::string& str, StringTokenList& tokens)
 						if (tokenStart != iterator)
 						{
 							std::string token ((const char*)tokenStart, static_cast<size_t> (iterator - tokenStart));
-							tokens.push_back (token);
+							tokens.emplace_back (token);
 						}
 						tokens.push_back (StringToken (StringToken::kSubtract));
 						tokenStart = iterator + 1;
@@ -2342,7 +2342,7 @@ static bool tokenizeString (std::string& str, StringTokenList& tokens)
 						if (tokenStart != iterator)
 						{
 							std::string token ((const char*)tokenStart, static_cast<size_t> (iterator - tokenStart));
-							tokens.push_back (token);
+							tokens.emplace_back (token);
 						}
 						tokens.push_back (StringToken (StringToken::kMulitply));
 						tokenStart = iterator + 1;
@@ -2353,7 +2353,7 @@ static bool tokenizeString (std::string& str, StringTokenList& tokens)
 						if (tokenStart != iterator)
 						{
 							std::string token ((const char*)tokenStart, static_cast<size_t> (iterator - tokenStart));
-							tokens.push_back (token);
+							tokens.emplace_back (token);
 						}
 						tokens.push_back (StringToken (StringToken::kDivide));
 						tokenStart = iterator + 1;
@@ -2364,7 +2364,7 @@ static bool tokenizeString (std::string& str, StringTokenList& tokens)
 						if (tokenStart != iterator)
 						{
 							std::string token ((const char*)tokenStart, static_cast<size_t> (iterator - tokenStart));
-							tokens.push_back (token);
+							tokens.emplace_back (token);
 						}
 						tokens.push_back (StringToken (StringToken::kOpenParenthesis));
 						tokenStart = iterator + 1;
@@ -2375,7 +2375,7 @@ static bool tokenizeString (std::string& str, StringTokenList& tokens)
 						if (tokenStart != iterator)
 						{
 							std::string token ((const char*)tokenStart, static_cast<size_t> (iterator - tokenStart));
-							tokens.push_back (token);
+							tokens.emplace_back (token);
 						}
 						tokens.push_back (StringToken (StringToken::kCloseParenthesis));
 						tokenStart = iterator + 1;
@@ -2388,7 +2388,7 @@ static bool tokenizeString (std::string& str, StringTokenList& tokens)
 	if (tokenStart != iterator)
 	{
 		std::string token ((const char*)tokenStart, static_cast<size_t> (iterator - tokenStart));
-		tokens.push_back (token);
+		tokens.emplace_back (token);
 	}
 	return true;	
 }
@@ -2555,8 +2555,7 @@ bool UIDescription::calculateStringValue (UTF8StringPtr _str, double& result) co
 			if (endPtr != tokenStr + (*it).length ())
 			{
 				// if it is not pure numeric try to substitute the string with a control tag or variable
-				size_t pos;
-				if ((pos = (*it).find ("tag.")) == 0)
+				if ((*it).find ("tag.") == 0)
 				{
 					value = getTagForName ((*it).c_str () + 4);
 					if (value == -1)
@@ -2567,7 +2566,7 @@ bool UIDescription::calculateStringValue (UTF8StringPtr _str, double& result) co
 						return false;
 					}
 				}
-				else if ((pos = (*it).find ("var.")) == 0)
+				else if ((*it).find ("var.") == 0)
 				{
 					double v;
 					if (getVariable ((*it).c_str () + 4, v))

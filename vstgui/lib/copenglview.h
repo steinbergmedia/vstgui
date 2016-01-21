@@ -61,7 +61,7 @@ TODO: Documentation
 class COpenGLView : public CView, public IOpenGLView
 {
 public:
-	COpenGLView (const CRect& size);
+	explicit COpenGLView (const CRect& size);
 	~COpenGLView ();
 
 	// IOpenGLView	

@@ -79,7 +79,7 @@ class CViewContainer : public CView
 public:
 	typedef std::list<SharedPointer<CView> > ViewList;
 
-	CViewContainer (const CRect& size);
+	explicit CViewContainer (const CRect& size);
 	CViewContainer (const CViewContainer& viewContainer);
 
 	//-----------------------------------------------------------------------------
@@ -185,7 +185,7 @@ public:
 	class Iterator
 	{
 	public:
-		Iterator<reverse> (const CViewContainer* container) : children (container->children) { if (reverse) riterator = children.rbegin (); else iterator = children.begin (); }
+		explicit Iterator<reverse> (const CViewContainer* container) : children (container->children) { if (reverse) riterator = children.rbegin (); else iterator = children.begin (); }
 		Iterator<reverse> (const Iterator& vi) : children (vi.children), iterator (vi.iterator), riterator (vi.riterator) {}
 		
 		Iterator<reverse>& operator++ ()

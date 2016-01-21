@@ -112,7 +112,7 @@ class CTabChildView : public CBaseObject
 //-----------------------------------------------------------------------------
 {
 public:
-	CTabChildView (CView* view)
+	explicit CTabChildView (CView* view)
 	: view (view)
 	, previous (0)
 	, next (0)

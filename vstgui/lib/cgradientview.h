@@ -50,7 +50,7 @@ namespace VSTGUI {
 class CGradientView : public CView
 {
 public:
-	CGradientView (const CRect& size);
+	explicit CGradientView (const CRect& size);
 	~CGradientView ();
 
 	//-----------------------------------------------------------------------------

@@ -53,8 +53,8 @@ namespace VSTGUI {
 class CGBitmap : public IPlatformBitmap
 {
 public:
-	CGBitmap (const CPoint& size);
-	CGBitmap (CGImageRef image);
+	explicit CGBitmap (const CPoint& size);
+	explicit CGBitmap (CGImageRef image);
 	CGBitmap ();
 	~CGBitmap ();
 	

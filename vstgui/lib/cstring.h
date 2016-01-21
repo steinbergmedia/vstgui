@@ -52,7 +52,7 @@ namespace VSTGUI {
 class CString : public CBaseObject
 {
 public:
-	CString (UTF8StringPtr string = 0);
+	explicit CString (UTF8StringPtr string = nullptr);
 	~CString ();
 
 	void setUTF8String (UTF8StringPtr string);
@@ -77,7 +77,7 @@ protected:
 class UTF8String
 {
 public:
-	UTF8String (UTF8StringPtr str = 0);
+	UTF8String (UTF8StringPtr str = nullptr);
 	UTF8String (const UTF8String& other);
 	UTF8String& operator=(const UTF8String& other);
 

@@ -47,7 +47,7 @@ class IViewSwitchController;
 class UIViewSwitchContainer : public CViewContainer
 {
 public:
-	UIViewSwitchContainer (const CRect& size);
+	explicit UIViewSwitchContainer (const CRect& size);
 	~UIViewSwitchContainer ();
 
 	IViewSwitchController* getController () const { return controller; }
@@ -83,7 +83,7 @@ protected:
 class IViewSwitchController
 {
 public:
-	IViewSwitchController (UIViewSwitchContainer* viewSwitch) : viewSwitch (viewSwitch) {}
+	explicit IViewSwitchController (UIViewSwitchContainer* viewSwitch) : viewSwitch (viewSwitch) {}
 	virtual ~IViewSwitchController () {}
 
 	void init () { viewSwitch->setController (this); }

@@ -52,7 +52,7 @@ namespace VSTGUI {
 class CLayeredViewContainer : public CViewContainer, public IPlatformViewLayerDelegate, public IViewContainerListenerAdapter
 {
 public:
-	CLayeredViewContainer (const CRect& r = CRect (0, 0, 0, 0));
+	explicit CLayeredViewContainer (const CRect& r = CRect (0, 0, 0, 0));
 	~CLayeredViewContainer ();
 	
 	IPlatformViewLayer* getPlatformLayer () const { return layer; }

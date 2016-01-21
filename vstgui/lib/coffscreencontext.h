@@ -107,8 +107,8 @@ public:
 	CBitmap* getBitmap () const { return bitmap; }
 
 protected:
-	COffscreenContext (CBitmap* bitmap);
-	COffscreenContext (const CRect& surfaceRect);
+	explicit COffscreenContext (CBitmap* bitmap);
+	explicit COffscreenContext (const CRect& surfaceRect);
 	~COffscreenContext ();
 
 	CBitmap* bitmap;

@@ -83,7 +83,7 @@ protected:
 class QuartzGradient : public CGradient
 {
 public:
-	QuartzGradient (const ColorStopMap& map);
+	explicit QuartzGradient (const ColorStopMap& map);
 	QuartzGradient (double _color1Start, double _color2Start, const CColor& _color1, const CColor& _color2);
 	~QuartzGradient ();
 

@@ -210,7 +210,7 @@ public:
 
 	CLASS_METHODS_NOCOPY(CDrawContext, CBaseObject)
 protected:
-	CDrawContext (const CRect& surfaceRect);
+	explicit CDrawContext (const CRect& surfaceRect);
 	~CDrawContext ();
 
 	virtual void init ();

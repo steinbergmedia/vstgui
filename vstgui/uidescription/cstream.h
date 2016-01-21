@@ -51,7 +51,7 @@ static const int64_t kStreamSeekError = -1;
 class OutputStream
 {
 public:
-	OutputStream (ByteOrder byteOrder = kNativeByteOrder) : byteOrder (byteOrder) {}
+	explicit OutputStream (ByteOrder byteOrder = kNativeByteOrder) : byteOrder (byteOrder) {}
 	virtual ~OutputStream () {}
 
 	ByteOrder getByteOrder () const { return byteOrder; }
@@ -80,7 +80,7 @@ private:
 class InputStream
 {
 public:
-	InputStream (ByteOrder byteOrder = kNativeByteOrder) : byteOrder (byteOrder) {}
+	explicit InputStream (ByteOrder byteOrder = kNativeByteOrder) : byteOrder (byteOrder) {}
 	virtual ~InputStream () {}
 
 	ByteOrder getByteOrder () const { return byteOrder; }
@@ -228,7 +228,7 @@ inline bool pathIsAbsolute (const std::string& path)
 class CResourceInputStream : public InputStream, public SeekableStream
 {
 public:
-	CResourceInputStream (ByteOrder byteOrder = kNativeByteOrder);
+	explicit CResourceInputStream (ByteOrder byteOrder = kNativeByteOrder);
 	~CResourceInputStream ();
 
 	bool open (const CResourceDescription& res);

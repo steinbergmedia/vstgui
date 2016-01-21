@@ -1190,7 +1190,7 @@ void GenericStringListDataBrowserSource::setupUI (const CColor& _selectionColor,
 		drawFont = _font;
 		drawFont->remember ();
 	}
-	textInset = _textInset;
+	textInset = CPoint (_textInset, 0);
 	rowHeight = _rowHeight;
 	selectionColor = _selectionColor;
 	fontColor = _fontColor;

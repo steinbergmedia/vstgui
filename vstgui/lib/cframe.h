@@ -244,7 +244,7 @@ protected:
 
 	struct CollectInvalidRects : public CBaseObject
 	{
-		CollectInvalidRects (CFrame* frame);
+		explicit CollectInvalidRects (CFrame* frame);
 		~CollectInvalidRects ();
 		
 		void addRect (const CRect& rect);

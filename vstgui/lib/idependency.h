@@ -69,7 +69,7 @@ public:
 	class DeferChanges
 	{
 	public:
-		DeferChanges (IDependency* dep) : dep (dep) { dep->deferChanges (true); }
+		explicit DeferChanges (IDependency* dep) : dep (dep) { dep->deferChanges (true); }
 		~DeferChanges () { dep->deferChanges (false); }
 	protected:
 		IDependency* dep;

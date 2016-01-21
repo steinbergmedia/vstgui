@@ -50,9 +50,9 @@ namespace VSTGUI {
 class CBitmap : public CBaseObject
 {
 public:
-	CBitmap (const CResourceDescription& desc);				///< Create a pixmap from a resource identifier.
+	explicit CBitmap (const CResourceDescription& desc);				///< Create a pixmap from a resource identifier.
 	CBitmap (CCoord width, CCoord height);					///< Create a pixmap with a given size.
-	CBitmap (IPlatformBitmap* platformBitmap);
+	explicit CBitmap (IPlatformBitmap* platformBitmap);
 	~CBitmap ();
 
 	//-----------------------------------------------------------------------------

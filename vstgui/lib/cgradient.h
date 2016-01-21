@@ -90,7 +90,7 @@ protected:
 		addColorStop (color1Start, color1);
 		addColorStop (color2Start, color2);
 	}
-	CGradient (const ColorStopMap& colorStopMap) : colorStops (colorStopMap) {}
+	explicit CGradient (const ColorStopMap& colorStopMap) : colorStops (colorStopMap) {}
 
 	ColorStopMap colorStops;
 };
