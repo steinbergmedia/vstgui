@@ -48,7 +48,7 @@ namespace VSTGUI {
 class CTextLabel : public CParamDisplay
 {
 public:
-	CTextLabel (const CRect& size, UTF8StringPtr txt = 0, CBitmap* background = 0, const int32_t style = 0);
+	CTextLabel (const CRect& size, UTF8StringPtr txt = nullptr, CBitmap* background = nullptr, const int32_t style = 0);
 	CTextLabel (const CTextLabel& textLabel);
 	
 	//-----------------------------------------------------------------------------

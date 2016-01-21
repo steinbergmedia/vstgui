@@ -72,7 +72,7 @@ public:
 #if VSTGUI_OPENGL_SUPPORT
 	IPlatformOpenGLView* createPlatformOpenGLView () override;
 #endif
-	IPlatformViewLayer* createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer = 0) override { return 0; } // not yet supported
+	IPlatformViewLayer* createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer = nullptr) override { return 0; } // not yet supported
 	COffscreenContext* createOffscreenContext (CCoord width, CCoord height, double scaleFactor = 1.) override;
 	DragResult doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap) override;
 

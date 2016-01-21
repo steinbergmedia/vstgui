@@ -59,7 +59,7 @@ public:
 
 	CGradient* createGradient (double color1Start, double color2Start, const CColor& color1, const CColor& color2) override;
 	void dirty () override;
-	bool hitTest (const CPoint& p, bool evenOddFilled = false, CGraphicsTransform* transform = 0) override;
+	bool hitTest (const CPoint& p, bool evenOddFilled = false, CGraphicsTransform* transform = nullptr) override;
 	CPoint getCurrentPosition () override;
 	CRect getBoundingBox () override;
 protected:

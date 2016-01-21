@@ -54,7 +54,7 @@ typedef bool (*CParamDisplayValueToStringProc) (float value, char utf8String[256
 class CParamDisplay : public CControl
 {
 public:
-	CParamDisplay (const CRect& size, CBitmap* background = 0, const int32_t style = 0);
+	CParamDisplay (const CRect& size, CBitmap* background = nullptr, const int32_t style = 0);
 	CParamDisplay (const CParamDisplay& paramDisplay);
 	
 	//-----------------------------------------------------------------------------
@@ -116,7 +116,7 @@ public:
 	CLASS_METHODS(CParamDisplay, CControl)
 protected:
 	~CParamDisplay ();
-	virtual void drawBack (CDrawContext* pContext, CBitmap* newBack = 0);
+	virtual void drawBack (CDrawContext* pContext, CBitmap* newBack = nullptr);
 
 	virtual void drawPlatformText (CDrawContext* pContext, IPlatformString* string);
 	virtual void drawPlatformText (CDrawContext* pContext, IPlatformString* string, const CRect& size);

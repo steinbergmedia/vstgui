@@ -71,7 +71,7 @@ public:
 	typedef std::vector<Segment> Segments;
 	static uint32_t kPushBack;
 
-	CSegmentButton (const CRect& size, IControlListener* listener = 0, int32_t tag = -1);
+	CSegmentButton (const CRect& size, IControlListener* listener = nullptr, int32_t tag = -1);
 
 	//-----------------------------------------------------------------------------
 	/// @name Segment Methods

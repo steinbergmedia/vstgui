@@ -49,7 +49,7 @@ namespace VSTGUI {
 class CFileExtension : public CBaseObject
 {
 public:
-	CFileExtension (UTF8StringPtr description, UTF8StringPtr extension, UTF8StringPtr mimeType = 0, int32_t macType = 0, UTF8StringPtr uti = 0);
+	CFileExtension (UTF8StringPtr description, UTF8StringPtr extension, UTF8StringPtr mimeType = nullptr, int32_t macType = 0, UTF8StringPtr uti = nullptr);
 	CFileExtension (const CFileExtension& ext);
 	~CFileExtension ();
 
@@ -126,7 +126,7 @@ public:
 	/// @name CFileSelector running
 	//-----------------------------------------------------------------------------
 	//@{
-	static CNewFileSelector* create (CFrame* parent = 0, Style style = kSelectFile); ///< create a new instance
+	static CNewFileSelector* create (CFrame* parent = nullptr, Style style = kSelectFile); ///< create a new instance
 
 	typedef std::function<void(CNewFileSelector*)> CallbackFunc;
 	bool run (CallbackFunc&& callback);

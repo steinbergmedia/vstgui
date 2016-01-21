@@ -130,7 +130,7 @@ protected:
 	};
 	
 public:
-	CDataBrowser (const CRect& size, IDataBrowserDelegate* db, int32_t style = 0, CCoord scrollbarWidth = 16, CBitmap* pBackground = 0);
+	CDataBrowser (const CRect& size, IDataBrowserDelegate* db, int32_t style = 0, CCoord scrollbarWidth = 16, CBitmap* pBackground = nullptr);
 
 	enum CDataBrowserStyle 
 	{
@@ -223,13 +223,13 @@ class GenericStringListDataBrowserSource : public IDataBrowserDelegate, public C
 public:
 	typedef std::vector<std::string> StringVector;
 
-	GenericStringListDataBrowserSource (const StringVector* stringList, IGenericStringListDataBrowserSourceSelectionChanged* delegate = 0);
+	GenericStringListDataBrowserSource (const StringVector* stringList, IGenericStringListDataBrowserSourceSelectionChanged* delegate = nullptr);
 	~GenericStringListDataBrowserSource ();
 
 	void setStringList (const StringVector* stringList);
 	const StringVector* getStringList () const { return stringList; }
 
-	void setupUI (const CColor& selectionColor, const CColor& fontColor, const CColor& rowlineColor, const CColor& rowBackColor, const CColor& rowAlteranteBackColor, CFontRef font = 0, int32_t rowHeight = -1, CCoord textInset = 2.);
+	void setupUI (const CColor& selectionColor, const CColor& fontColor, const CColor& rowlineColor, const CColor& rowBackColor, const CColor& rowAlteranteBackColor, CFontRef font = nullptr, int32_t rowHeight = -1, CCoord textInset = 2.);
 
 protected:
 	int32_t dbGetNumRows (CDataBrowser* browser) override;

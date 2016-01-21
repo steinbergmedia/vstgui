@@ -53,7 +53,7 @@ class UIBaseDataSource : public GenericStringListDataBrowserSource, public ICont
 public:
 	typedef std::vector<std::string> StringVector;
 
-	UIBaseDataSource (UIDescription* description, IActionPerformer* actionPerformer, IdStringPtr descriptionMessage, IGenericStringListDataBrowserSourceSelectionChanged* delegate = 0)
+	UIBaseDataSource (UIDescription* description, IActionPerformer* actionPerformer, IdStringPtr descriptionMessage, IGenericStringListDataBrowserSourceSelectionChanged* delegate = nullptr)
 	: GenericStringListDataBrowserSource (0, delegate) , description (description), actionPerformer (actionPerformer), descriptionMessage (descriptionMessage)
 	{
 		description->addDependency (this);
@@ -289,7 +289,7 @@ protected:
 					selectName (names.at (static_cast<uint32_t> (row)).c_str ());
 			}
 		}
-		textEditControl = 0;
+		textEditControl = nullptr;
 	}
 
 	void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* control, CDataBrowser* browser) override

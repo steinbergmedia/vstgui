@@ -59,7 +59,7 @@ public:
 		An already running animation for view with name will be canceled.
 		If a notificationObject is supplied, it will be notified when the animation has finished @see FinishedMessage.
 	*/
-	void addAnimation (CView* view, IdStringPtr name, IAnimationTarget* target, ITimingFunction* timingFunction, CBaseObject* notificationObject = 0);
+	void addAnimation (CView* view, IdStringPtr name, IAnimationTarget* target, ITimingFunction* timingFunction, CBaseObject* notificationObject = nullptr);
 
 	typedef std::function<void (CView*, const IdStringPtr, IAnimationTarget*)> NotificationFunction;
 

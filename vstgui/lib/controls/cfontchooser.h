@@ -94,7 +94,7 @@ struct CFontChooserUIDefinition
 class CFontChooser : public CViewContainer, public IControlListener, public IGenericStringListDataBrowserSourceSelectionChanged
 {
 public:
-	CFontChooser (IFontChooserDelegate* delegate, CFontRef initialFont = 0, const CFontChooserUIDefinition& uiDef = CFontChooserUIDefinition ());
+	CFontChooser (IFontChooserDelegate* delegate, CFontRef initialFont = nullptr, const CFontChooserUIDefinition& uiDef = CFontChooserUIDefinition ());
 	~CFontChooser ();
 
 	void setFont (CFontRef font);

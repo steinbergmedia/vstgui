@@ -106,7 +106,7 @@ enum CControlEnum
 class CControl : public CView, public IFocusDrawing, public IDependency
 {
 public:
-	CControl (const CRect& size, IControlListener* listener = 0, int32_t tag = 0, CBitmap* pBackground = 0);
+	CControl (const CRect& size, IControlListener* listener = nullptr, int32_t tag = 0, CBitmap* pBackground = nullptr);
 	CControl (const CControl& c);
 
 	//-----------------------------------------------------------------------------

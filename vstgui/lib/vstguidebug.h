@@ -53,7 +53,7 @@ void vstgui_assert (Expect expect, const char* str = nullptr)
 }
 #else
 template<typename Expect>
-void vstgui_assert (Expect expect, const char* = 0)
+void vstgui_assert (Expect expect, const char* = nullptr)
 {
 	assert (expect);
 }
@@ -69,7 +69,7 @@ extern void DebugPrint (const char *format, ...);
 class TimeWatch
 {
 public:
-	TimeWatch (UTF8StringPtr name = 0, bool startNow = true);
+	TimeWatch (UTF8StringPtr name = nullptr, bool startNow = true);
 	~TimeWatch ();
 	
 	void start ();
@@ -86,7 +86,7 @@ protected:
 
 #if ENABLE_UNIT_TESTS
 template<typename Expect>
-void vstgui_assert (Expect expect, const char* str = 0)
+void vstgui_assert (Expect expect, const char* str = nullptr)
 {
 	if (!expect)
 		throw std::logic_error (str ? str : "unknown");

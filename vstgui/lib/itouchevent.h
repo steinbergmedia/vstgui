@@ -102,7 +102,7 @@ public:
 		TouchMap::iterator it = touches.find (identifier);
 		if (it != touches.end () && it->second.target == view)
 		{
-			it->second.target = 0;
+			it->second.target = nullptr;
 			return true;
 		}
 		return false;

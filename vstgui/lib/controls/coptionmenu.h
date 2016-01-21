@@ -56,8 +56,8 @@ public:
 		kSeparator	= 1 << 3	///< item is a separator
 	};
 
-	CMenuItem (UTF8StringPtr title, UTF8StringPtr keycode = 0, int32_t keyModifiers = 0, CBitmap* icon = 0, int32_t flags = kNoFlags);
-	CMenuItem (UTF8StringPtr title, COptionMenu* submenu, CBitmap* icon = 0);
+	CMenuItem (UTF8StringPtr title, UTF8StringPtr keycode = nullptr, int32_t keyModifiers = 0, CBitmap* icon = nullptr, int32_t flags = kNoFlags);
+	CMenuItem (UTF8StringPtr title, COptionMenu* submenu, CBitmap* icon = nullptr);
 	CMenuItem (UTF8StringPtr title, int32_t tag);
 	CMenuItem (const CMenuItem& item);
 
@@ -112,10 +112,10 @@ protected:
 class CCommandMenuItem : public CMenuItem
 {
 public:
-	CCommandMenuItem (UTF8StringPtr title, UTF8StringPtr keycode = 0, int32_t keyModifiers = 0, CBitmap* icon = 0, int32_t flags = kNoFlags, CBaseObject* target = 0, IdStringPtr commandCategory = 0, IdStringPtr commandName = 0);
-	CCommandMenuItem (UTF8StringPtr title, COptionMenu* submenu, CBitmap* icon = 0, CBaseObject* target = 0, IdStringPtr commandCategory = 0, IdStringPtr commandName = 0);
-	CCommandMenuItem (UTF8StringPtr title, int32_t tag, CBaseObject* target = 0, IdStringPtr commandCategory = 0, IdStringPtr commandName = 0);
-	CCommandMenuItem (UTF8StringPtr title, CBaseObject* target = 0, IdStringPtr commandCategory = 0, IdStringPtr commandName = 0);
+	CCommandMenuItem (UTF8StringPtr title, UTF8StringPtr keycode = nullptr, int32_t keyModifiers = 0, CBitmap* icon = nullptr, int32_t flags = kNoFlags, CBaseObject* target = nullptr, IdStringPtr commandCategory = nullptr, IdStringPtr commandName = nullptr);
+	CCommandMenuItem (UTF8StringPtr title, COptionMenu* submenu, CBitmap* icon = nullptr, CBaseObject* target = nullptr, IdStringPtr commandCategory = nullptr, IdStringPtr commandName = nullptr);
+	CCommandMenuItem (UTF8StringPtr title, int32_t tag, CBaseObject* target = nullptr, IdStringPtr commandCategory = nullptr, IdStringPtr commandName = nullptr);
+	CCommandMenuItem (UTF8StringPtr title, CBaseObject* target = nullptr, IdStringPtr commandCategory = nullptr, IdStringPtr commandName = nullptr);
 	CCommandMenuItem (const CCommandMenuItem& item);
 	~CCommandMenuItem ();
 
@@ -167,7 +167,7 @@ class COptionMenu : public CParamDisplay
 {
 public:
 	COptionMenu ();
-	COptionMenu (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background = 0, CBitmap* bgWhenClick = 0, const int32_t style = 0);
+	COptionMenu (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background = nullptr, CBitmap* bgWhenClick = nullptr, const int32_t style = 0);
 	COptionMenu (const COptionMenu& menu);
 	~COptionMenu ();
 

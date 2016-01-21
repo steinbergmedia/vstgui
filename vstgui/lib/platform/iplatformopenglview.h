@@ -79,7 +79,7 @@ class IPlatformOpenGLView : public CBaseObject
 {
 public:
 
-	virtual bool init (IOpenGLView* view, PixelFormat* pixelFormat = 0) = 0;
+	virtual bool init (IOpenGLView* view, PixelFormat* pixelFormat = nullptr) = 0;
 	virtual void remove () = 0;
 
 	virtual void invalidRect (const CRect& rect) = 0;

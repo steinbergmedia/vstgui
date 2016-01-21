@@ -52,7 +52,7 @@ public:
 	Win32OpenGLView (Win32Frame* win32Frame);
 	~Win32OpenGLView ();
 
-	virtual bool init (IOpenGLView* view, PixelFormat* pixelFormat = 0) override;
+	virtual bool init (IOpenGLView* view, PixelFormat* pixelFormat = nullptr) override;
 	virtual void remove () override;
 
 	virtual void invalidRect (const CRect& rect) override;

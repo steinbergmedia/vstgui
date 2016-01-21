@@ -64,7 +64,7 @@ public:
 	CGPathRef getCGPathRef ();
 	void dirty () override;
 
-	bool hitTest (const CPoint& p, bool evenOddFilled = false, CGraphicsTransform* transform = 0) override;
+	bool hitTest (const CPoint& p, bool evenOddFilled = false, CGraphicsTransform* transform = nullptr) override;
 	CPoint getCurrentPosition () override;
 	CRect getBoundingBox () override;
 

@@ -71,7 +71,7 @@ protected:
 
 	void drawString (CDrawContext* context, IPlatformString* string, const CPoint& p, bool antialias = true) override;
 	CCoord getStringWidth (CDrawContext* context, IPlatformString* string, bool antialias = true) override;
-	CFDictionaryRef getStringAttributes (const CGColorRef color = 0);
+	CFDictionaryRef getStringAttributes (const CGColorRef color = nullptr);
 
 	CTLineRef createCTLine (CDrawContext* context, MacString* macString);
 

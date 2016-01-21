@@ -68,7 +68,7 @@ public:
 	bool getAttributeNamesForView (CView* view, StringList& attributeNames) const;
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const;
 	IViewCreator::AttrType getAttributeType (CView* view, const std::string& attributeName) const;
-	void collectRegisteredViewNames (StringPtrList& viewNames, IdStringPtr baseClassNameFilter = 0) const;
+	void collectRegisteredViewNames (StringPtrList& viewNames, IdStringPtr baseClassNameFilter = nullptr) const;
 	bool getAttributesForView (CView* view, const IUIDescription* desc, UIAttributes& attr) const;
 	// list type support
 	bool getPossibleAttributeListValues (CView* view, const std::string& attributeName, StringPtrList& values) const;

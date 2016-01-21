@@ -126,7 +126,7 @@ protected:
 	~CSlider ();
 	void setViewSize (const CRect& rect, bool invalid) override;
 	
-	float calculateDelta (const CPoint& where, CRect* handleRect = 0) const;
+	float calculateDelta (const CPoint& where, CRect* handleRect = nullptr) const;
 	
 	CPoint	offset;
 	CPoint	offsetHandle;

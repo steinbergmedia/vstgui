@@ -45,7 +45,7 @@ namespace VSTGUI {
 class IPlatformString : public CBaseObject
 {
 public:
-	static IPlatformString* createWithUTF8String (UTF8StringPtr utf8String = 0);
+	static IPlatformString* createWithUTF8String (UTF8StringPtr utf8String = nullptr);
 	
 	virtual void setUTF8String (UTF8StringPtr utf8String) = 0;
 };

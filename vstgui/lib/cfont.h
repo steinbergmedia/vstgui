@@ -60,7 +60,7 @@ enum CTxtFace
 class CFontDesc : public CBaseObject
 {
 public:
-	CFontDesc (UTF8StringPtr name = 0, const CCoord& size = 0, const int32_t style = 0);
+	CFontDesc (UTF8StringPtr name = nullptr, const CCoord& size = 0, const int32_t style = 0);
 	CFontDesc (const CFontDesc& font);
 	~CFontDesc ();
 

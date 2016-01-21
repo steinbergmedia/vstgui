@@ -61,8 +61,8 @@ class OutputStream;
 class UIDescription : public CBaseObject, public IUIDescription, public Xml::IHandler, public IDependency
 {
 public:
-	UIDescription (const CResourceDescription& xmlFile, IViewFactory* viewFactory = 0);
-	UIDescription (Xml::IContentProvider* xmlContentProvider, IViewFactory* viewFactory = 0);
+	UIDescription (const CResourceDescription& xmlFile, IViewFactory* viewFactory = nullptr);
+	UIDescription (Xml::IContentProvider* xmlContentProvider, IViewFactory* viewFactory = nullptr);
 	~UIDescription ();
 
 	virtual bool parse ();
@@ -75,8 +75,8 @@ public:
 	virtual bool save (UTF8StringPtr filename, int32_t flags = kWriteWindowsResourceFile);
 	virtual bool saveWindowsRCFile (UTF8StringPtr filename);
 
-	bool storeViews (const std::list<CView*>& views, OutputStream& stream, UIAttributes* customData = 0) const;
-	bool restoreViews (InputStream& stream, std::list<SharedPointer<CView> >& views, UIAttributes** customData = 0);
+	bool storeViews (const std::list<CView*>& views, OutputStream& stream, UIAttributes* customData = nullptr) const;
+	bool restoreViews (InputStream& stream, std::list<SharedPointer<CView> >& views, UIAttributes** customData = nullptr);
 
 	UTF8StringPtr getFilePath () const { return filePath.c_str (); }
 	void setFilePath (UTF8StringPtr path);
@@ -123,7 +123,7 @@ public:
 	void changeColor (UTF8StringPtr name, const CColor& newColor);
 	void changeFont (UTF8StringPtr name, CFontRef newFont);
 	void changeGradient (UTF8StringPtr name, CGradient* newGradient);
-	void changeBitmap (UTF8StringPtr name, UTF8StringPtr newName, const CRect* nineparttiledOffset = 0);
+	void changeBitmap (UTF8StringPtr name, UTF8StringPtr newName, const CRect* nineparttiledOffset = nullptr);
 
 	void changeBitmapFilters (UTF8StringPtr bitmapName, const std::list<SharedPointer<UIAttributes> >& filters);
 	void collectBitmapFilters (UTF8StringPtr bitmapName, std::list<SharedPointer<UIAttributes> >& filters) const;

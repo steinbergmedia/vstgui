@@ -75,7 +75,7 @@ public:
 /* helper method to get the controller of a view */
 inline IController* getViewController (const CView* view, bool deep = false)
 {
-	IController* controller = 0;
+	IController* controller = nullptr;
 	uint32_t size = sizeof (IController*);
 	if (view->getAttribute (kCViewControllerAttribute, sizeof (IController*), &controller, size) == false && deep)
 	{

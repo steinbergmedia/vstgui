@@ -64,7 +64,7 @@ protected:
 	};
 
 public:
-	CScrollView (const CRect& size, const CRect& containerSize, int32_t style, CCoord scrollbarWidth = 16, CBitmap* pBackground = 0);
+	CScrollView (const CRect& size, const CRect& containerSize, int32_t style, CCoord scrollbarWidth = 16, CBitmap* pBackground = nullptr);
 	CScrollView (const CScrollView& scrollView);
 
 	/** Scroll View Style Flags */

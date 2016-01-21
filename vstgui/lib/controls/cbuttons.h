@@ -54,7 +54,7 @@ namespace VSTGUI {
 class COnOffButton : public CControl
 {
 public:
-	COnOffButton (const CRect& size, IControlListener* listener = 0, int32_t tag = -1, CBitmap* background = 0, int32_t style = 0);
+	COnOffButton (const CRect& size, IControlListener* listener = nullptr, int32_t tag = -1, CBitmap* background = nullptr, int32_t style = 0);
 	COnOffButton (const COnOffButton& onOffButton);
 
 	//-----------------------------------------------------------------------------
@@ -89,7 +89,7 @@ protected:
 class CCheckBox : public CControl
 {
 public:
-	CCheckBox (const CRect& size, IControlListener* listener = 0, int32_t tag = -1, UTF8StringPtr title = 0, CBitmap* bitmap = 0, int32_t style = 0);
+	CCheckBox (const CRect& size, IControlListener* listener = nullptr, int32_t tag = -1, UTF8StringPtr title = nullptr, CBitmap* bitmap = nullptr, int32_t style = 0);
 	CCheckBox (const CCheckBox& checkbox);
 
 	enum Styles {
@@ -197,7 +197,7 @@ public:
 		kOnOffStyle
 	};
 
-	CTextButton (const CRect& size, IControlListener* listener = 0, int32_t tag = -1, UTF8StringPtr title = 0, Style = kKickStyle);
+	CTextButton (const CRect& size, IControlListener* listener = nullptr, int32_t tag = -1, UTF8StringPtr title = nullptr, Style = kKickStyle);
 
 	//-----------------------------------------------------------------------------
 	/// @name CTextButton Methods

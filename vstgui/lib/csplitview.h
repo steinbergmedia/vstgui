@@ -63,7 +63,7 @@ public:
 		kResizeAllViews			///< all views will be resized equally
 	};
 	
-	CSplitView (const CRect& size, Style style = kHorizontal, CCoord separatorWidth = 10., ISplitViewSeparatorDrawer* drawer = 0);
+	CSplitView (const CRect& size, Style style = kHorizontal, CCoord separatorWidth = 10., ISplitViewSeparatorDrawer* drawer = nullptr);
 	~CSplitView ();
 
 	//-----------------------------------------------------------------------------

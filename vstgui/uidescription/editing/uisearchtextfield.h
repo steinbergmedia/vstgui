@@ -45,7 +45,7 @@ namespace VSTGUI {
 class UISearchTextField : public CTextEdit
 {
 public:
-	UISearchTextField (const CRect& size, IControlListener* listener, int32_t tag, UTF8StringPtr txt = 0, CBitmap* background = 0, const int32_t style = 0);
+	UISearchTextField (const CRect& size, IControlListener* listener, int32_t tag, UTF8StringPtr txt = nullptr, CBitmap* background = nullptr, const int32_t style = 0);
 	
 	void draw (CDrawContext *pContext) override;
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;

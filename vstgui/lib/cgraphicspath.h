@@ -75,7 +75,7 @@ public:
 	/** add a rectangle to the path. Begins a new subpath if no elements were added before. */
 	virtual void addRect (const CRect& rect);
 	/** add another path to the path. Begins a new subpath if no elements were added before. */
-	virtual void addPath (const CGraphicsPath& path, CGraphicsTransform* transformation = 0);
+	virtual void addPath (const CGraphicsPath& path, CGraphicsTransform* transformation = nullptr);
 	/** add a line to the path. A subpath must begin before */
 	virtual void addLine (const CPoint& to);
 	/** add a bezier curve to the path. A subpath must begin before */
@@ -110,7 +110,7 @@ public:
 	/// @name Hit Testing
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual bool hitTest (const CPoint& p, bool evenOddFilled = false, CGraphicsTransform* transform = 0) = 0;
+	virtual bool hitTest (const CPoint& p, bool evenOddFilled = false, CGraphicsTransform* transform = nullptr) = 0;
 	//@}
 	
 	//-----------------------------------------------------------------------------

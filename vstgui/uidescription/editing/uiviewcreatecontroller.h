@@ -60,7 +60,7 @@ protected:
 	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;
 	IControlListener* getControlListener (UTF8StringPtr name) override;
 
-	void setupDataSource (UTF8StringPtr filter = 0);
+	void setupDataSource (UTF8StringPtr filter = nullptr);
 	
 	UIViewCreatorDataSource* dataSource;
 	SharedPointer<UIDescription> description;
