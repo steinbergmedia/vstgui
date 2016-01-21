@@ -318,7 +318,7 @@ UIColorsController::UIColorsController (IController* baseController, UIDescripti
 , editDescription (description)
 , actionPerformer (actionPerformer)
 , dataSource (0)
-, color (new UIColor)
+, color (makeOwned<UIColor> ())
 {
 	dataSource = new UIColorsDataSource (editDescription, actionPerformer, color);
 	UIEditController::setupDataSource (dataSource);

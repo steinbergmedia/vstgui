@@ -190,7 +190,7 @@ void UnembedViewOperation::undo ()
 //-----------------------------------------------------------------------------
 EmbedViewOperation::EmbedViewOperation (UISelection* selection, CViewContainer* newContainer)
 : BaseSelectionOperation<std::pair<SharedPointer<CView>, CRect> > (selection)
-, newContainer (newContainer)
+, newContainer (owned (newContainer))
 {
 	parent = dynamic_cast<CViewContainer*> (selection->first ()->getParentView ());
 	FOREACH_IN_SELECTION(selection, view)

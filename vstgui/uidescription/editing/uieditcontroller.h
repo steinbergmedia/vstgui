@@ -137,9 +137,9 @@ protected:
 	virtual int32_t onKeyUp (const VstKeyCode& code, CFrame* frame) override;
 
 	SharedPointer<UIDescription> editDescription;
-	OwningPointer<UISelection> selection;
-	OwningPointer<UIUndoManager> undoManager;
-	OwningPointer<UIGridController> gridController;
+	SharedPointer<UISelection> selection;
+	SharedPointer<UIUndoManager> undoManager;
+	SharedPointer<UIGridController> gridController;
 	UIEditView* editView;
 	SharedPointer<UITemplateController> templateController;
 	SharedPointer<UIEditMenuController> menuController;

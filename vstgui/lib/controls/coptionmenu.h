@@ -153,7 +153,7 @@ protected:
 	char* commandName;
 };
 
-typedef std::vector<OwningPointer<CMenuItem> > CMenuItemList;
+typedef std::vector<SharedPointer<CMenuItem> > CMenuItemList;
 typedef CMenuItemList::iterator CMenuItemIterator;
 typedef CMenuItemList::const_iterator CConstMenuItemIterator;
 

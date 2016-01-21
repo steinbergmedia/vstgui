@@ -397,8 +397,8 @@ void UIEditView::setUndoManager (UIUndoManager* manager)
 //----------------------------------------------------------------------------------------------------
 UIUndoManager* UIEditView::getUndoManager ()
 {
-	if (undoManger == 0)
-		undoManger = OwningPointer<UIUndoManager> (new UIUndoManager ());
+	if (undoManger == nullptr)
+		undoManger = makeOwned<UIUndoManager> ();
 	return undoManger;
 }
 
@@ -419,9 +419,9 @@ void UIEditView::setSelection (UISelection* inSelection)
 //----------------------------------------------------------------------------------------------------
 UISelection* UIEditView::getSelection ()
 {
-	if (selection == 0)
+	if (selection == nullptr)
 	{
-		selection = OwningPointer<UISelection> (new UISelection ());
+		selection = makeOwned<UISelection> ();
 		selection->addDependency (this);
 	}
 	return selection;

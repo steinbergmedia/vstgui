@@ -208,7 +208,7 @@ TESTCASE(CViewContainerTest,
 	);
 
 	TEST(removeView,
-		OwningPointer<CView> view = new CView (CRect (0, 0, 10, 10));
+		auto view = makeOwned<CView> (CRect (0, 0, 10, 10));
 		CView* view2 = new CView (CRect (0, 0, 10, 10));
 		
 		container->addView (view);
@@ -220,8 +220,8 @@ TESTCASE(CViewContainerTest,
 	);
 
 	TEST(removeAllViews,
-		OwningPointer<CView> view = new CView (CRect (0, 0, 10, 10));
-		OwningPointer<CView> view2 = new CView (CRect (0, 0, 10, 10));
+		auto view = makeOwned<CView> (CRect (0, 0, 10, 10));
+		auto view2 = makeOwned<CView> (CRect (0, 0, 10, 10));
 		
 		container->addView (view);
 		container->addView (view2);

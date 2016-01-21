@@ -371,7 +371,7 @@ bool UIBitmapsDataSource::addBitmap (UTF8StringPtr path, std::string& outName)
 bool UIBitmapsDataSource::add ()
 {
 	bool result = false;
-	OwningPointer<CNewFileSelector> fs = CNewFileSelector::create (dataBrowser->getFrame ());
+	auto fs = owned (CNewFileSelector::create (dataBrowser->getFrame ()));
 	if (fs)
 	{
 		fs->addFileExtension (CFileExtension ("PNG", "PNG"));

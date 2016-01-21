@@ -217,7 +217,7 @@ bool CNewFileSelector::run (CallbackFunc&& callback)
 {
 	if (frame)
 		frame->onStartLocalEventLoop ();
-	OwningPointer<CNewFileSelectorCallback> fsCallback = new CNewFileSelectorCallback (std::move (callback));
+	auto fsCallback = makeOwned<CNewFileSelectorCallback> (std::move (callback));
 	return runInternal (fsCallback);
 }
 

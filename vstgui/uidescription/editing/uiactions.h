@@ -110,7 +110,7 @@ public:
 	void undo () override;
 
 protected:
-	OwningPointer<CViewContainer> newContainer;
+	SharedPointer<CViewContainer> newContainer;
 	CViewContainer* parent;
 };
 

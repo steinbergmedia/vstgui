@@ -66,10 +66,7 @@ UIEditMenuController::UIEditMenuController (IController* baseController, UISelec
 //----------------------------------------------------------------------------------------------------
 UIEditMenuController::~UIEditMenuController ()
 {
-	if (highlightTimer)
-	{
-		highlightTimer = 0;
-	}
+	highlightTimer = nullptr;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -85,7 +82,7 @@ static void addEntriesToMenu (const UIEditing::MenuEntry* entries, COptionMenu* 
 			menu->addSeparator ();
 		else if (entries[index].menuFlags & UIEditing::MenuEntry::kSubMenu)
 		{
-			OwningPointer<COptionMenu> subMenu = new COptionMenu ();
+			auto subMenu = makeOwned<COptionMenu> ();
 			if (entries[index].menuFlags & UIEditing::MenuEntry::kSubMenuCheckStyle)
 				subMenu->setStyle (kMultipleCheckStyle|kCheckStyle);
 			menu->addEntry (new CMenuItem (entries[index].name, subMenu));
@@ -228,7 +225,7 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 				std::list<const std::string*> containerViewNames;
 				const UIViewFactory* factory = dynamic_cast<const UIViewFactory*> (description->getViewFactory ());
 				factory->collectRegisteredViewNames (containerViewNames, "CViewContainer");
-				OwningPointer<COptionMenu> submenu = new COptionMenu ();
+				auto submenu = makeOwned<COptionMenu> ();
 				for (std::list<const std::string*>::const_iterator it = containerViewNames.begin (); it != containerViewNames.end (); it++)
 				{
 					submenu->addEntry (new CCommandMenuItem ((*it)->c_str (), this, "AddTemplate", (*it)->c_str ()));
@@ -245,7 +242,7 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 				if (templateNames.empty () == false)
 				{
 					templateNames.sort (UIEditController::std__stringCompare);
-					OwningPointer<COptionMenu> submenu = new COptionMenu ();
+					auto submenu = makeOwned<COptionMenu> ();
 					item->setSubmenu (submenu);
 					for (std::list<const std::string*>::const_iterator it = templateNames.begin (); it != templateNames.end (); it++)
 					{
@@ -263,7 +260,7 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 				if (templateNames.empty () == false)
 				{
 					templateNames.sort (UIEditController::std__stringCompare);
-					OwningPointer<COptionMenu> submenu = new COptionMenu ();
+					auto submenu = makeOwned<COptionMenu> ();
 					item->setSubmenu (submenu);
 					for (std::list<const std::string*>::const_iterator it = templateNames.begin (); it != templateNames.end (); it++)
 					{
@@ -286,7 +283,7 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 				item->setEnabled (enable);
 				if (enable == false)
 					return kMessageNotified;
-				OwningPointer<COptionMenu> submenu = new COptionMenu ();
+				auto submenu = makeOwned<COptionMenu> ();
 				item->setSubmenu (submenu);
 				std::list<const std::string*> containerViewNames;
 				const UIViewFactory* factory = dynamic_cast<const UIViewFactory*> (description->getViewFactory ());
@@ -327,7 +324,7 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 				item->setEnabled (enabled);
 				if (enabled == false)
 					return kMessageNotified;
-				OwningPointer<COptionMenu> submenu = new COptionMenu ();
+				auto submenu = makeOwned<COptionMenu> ();
 				item->setSubmenu (submenu);
 				std::list<const std::string*> containerViewNames;
 				const UIViewFactory* factory = dynamic_cast<const UIViewFactory*> (description->getViewFactory ());
@@ -350,7 +347,7 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 				if (templateNames.empty () == false)
 				{
 					templateNames.sort (UIEditController::std__stringCompare);
-					OwningPointer<COptionMenu> submenu = new COptionMenu ();
+					auto submenu = makeOwned<COptionMenu> ();
 					item->setSubmenu (submenu);
 					for (std::list<const std::string*>::const_iterator it = templateNames.begin (); it != templateNames.end (); it++)
 					{
@@ -471,7 +468,7 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 	{
 		editLabel->setTransparency (true);
 		fileLabel->setTransparency (true);
-		highlightTimer = 0;
+		highlightTimer = nullptr;
 	}
 	return kMessageUnknown;
 }
@@ -551,7 +548,7 @@ int32_t UIEditMenuController::processKeyCommand (const VstKeyCode& key)
 			item->getTarget ()->notify (item, CCommandMenuItem::kMsgMenuItemSelected);
 			if (label)
 			{
-				highlightTimer = new CVSTGUITimer (this, 90, true);
+				highlightTimer = makeOwned<CVSTGUITimer> (this, 90u, true);
 			}
 			return 1;
 		}

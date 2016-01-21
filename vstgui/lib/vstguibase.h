@@ -443,6 +443,7 @@ SharedPointer<I> makeOwned (Args&& ...args)
 	return SharedPointer<I> (new I (std::forward<Args>(args)...), false);
 }
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //------------------------------------------------------------------------
 template <class I>
 class OwningPointer : public SharedPointer<I>
@@ -464,6 +465,7 @@ public:
 		return this->ptr;
 	}
 };
+#endif
 
 } // namespace
 

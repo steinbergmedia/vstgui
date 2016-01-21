@@ -124,9 +124,9 @@ public:
 		context->drawLine (CPoint (size.left, size.bottom-1), CPoint (size.right, size.bottom-1));
 		if (!getHeaderTitle ().empty ())
 		{
-			if (headerFont == 0)
+			if (headerFont == nullptr)
 			{
-				headerFont = new CFontDesc (*drawFont);
+				headerFont = makeOwned<CFontDesc> (*drawFont);
 				headerFont->setStyle (kBoldFace);
 				headerFont->setSize (headerFont->getSize ()-1);
 			}
@@ -138,7 +138,7 @@ public:
 protected:
 	mutable UTF8String headerTitle;
 	CColor headerBackgroundColor;
-	OwningPointer<CFontDesc> headerFont;
+	SharedPointer<CFontDesc> headerFont;
 };
 
 //----------------------------------------------------------------------------------------------------

@@ -984,7 +984,7 @@ CMessageResult UIAttributesController::notify (CBaseObject* sender, IdStringPtr 
 	{
 		if (timer == 0)
 		{
-			timer = new CVSTGUITimer (this, 10);
+			timer = makeOwned<CVSTGUITimer> (this, 10u);
 			timer->start ();
 		}
 		return kMessageNotified;

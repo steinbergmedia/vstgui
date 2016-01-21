@@ -65,7 +65,7 @@ protected:
 	SharedPointer<UIDescription> editDescription;
 	IActionPerformer* actionPerformer;
 	UIColorsDataSource* dataSource;
-	OwningPointer<UIColor> color;
+	SharedPointer<UIColor> color;
 	
 	enum {
 		kAddTag = 0,

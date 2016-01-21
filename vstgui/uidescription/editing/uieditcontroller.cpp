@@ -357,13 +357,13 @@ private:
 //----------------------------------------------------------------------------------------------------
 UIEditController::UIEditController (UIDescription* description)
 : editDescription (description)
-, selection (new UISelection ())
-, undoManager (new UIUndoManager ())
+, selection (makeOwned<UISelection> ())
+, undoManager (makeOwned<UIUndoManager> ())
+, gridController (makeOwned<UIGridController> (this, description))
 , editView (0)
 , templateController (0)
 , dirty (false)
 {
-	gridController = new UIGridController (this, description);
 	description->addDependency (this);
 	undoManager->addDependency (this);
 	menuController = new UIEditMenuController (this, selection, undoManager, editDescription, this);
@@ -1613,7 +1613,7 @@ void UIEditController::onTemplatesChanged ()
 	{
 		if (std::find (templates.begin (), templates.end (), *(*it)) == templates.end ())
 		{
-			OwningPointer<CView> view = editDescription->createView ((*it)->c_str (), editDescription->getController ());
+			auto view = owned (editDescription->createView ((*it)->c_str (), editDescription->getController ()));
 			templates.push_back (Template (*(*it), view));
 		}
 	}

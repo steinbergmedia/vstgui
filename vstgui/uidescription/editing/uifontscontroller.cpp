@@ -260,7 +260,7 @@ void UIFontsController::valueChanged (CControl* pControl)
 					style |= kUnderlineFace;
 				if (strikethroughControl && strikethroughControl->getValue () > 0)
 					style |= kStrikethroughFace;
-				OwningPointer<CFontDesc> font (new CFontDesc (menuItem->getTitle (), sizeTextEdit->getValue (), style));
+				auto font = makeOwned<CFontDesc> (menuItem->getTitle (), sizeTextEdit->getValue (), style);
 				actionPerformer->performFontChange (selectedFont.c_str (), font);
 			}
 			break;

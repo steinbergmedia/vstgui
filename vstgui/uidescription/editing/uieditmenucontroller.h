@@ -186,7 +186,7 @@ protected:
 	SharedPointer<UISelection> selection;
 	SharedPointer<UIUndoManager> undoManager;
 	SharedPointer<UIDescription> description;
-	OwningPointer<CVSTGUITimer> highlightTimer;
+	SharedPointer<CVSTGUITimer> highlightTimer;
 	IActionPerformer* actionPerformer;
 
 	COptionMenu* fileMenu;

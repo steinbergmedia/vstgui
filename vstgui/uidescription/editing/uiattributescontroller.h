@@ -82,7 +82,7 @@ protected:
 	SharedPointer<UISelection> selection;
 	SharedPointer<UIUndoManager> undoManager;
 	SharedPointer<UIDescription> editDescription;
-	OwningPointer<CVSTGUITimer> timer;
+	SharedPointer<CVSTGUITimer> timer;
 	IAction* liveAction;
 
 	typedef std::list<UIAttributeControllers::Controller*> UIAttributeControllerList;

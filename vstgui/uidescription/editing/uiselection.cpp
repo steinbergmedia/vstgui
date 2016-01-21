@@ -215,7 +215,7 @@ bool UISelection::store (OutputStream& stream, IUIDescription* uiDescription)
 			}
 		FOREACH_IN_SELECTION_END
 		
-		OwningPointer<UIAttributes> attr = new UIAttributes ();
+		auto attr = makeOwned<UIAttributes> ();
 		attr->setPointAttribute ("selection-drag-offset", dragOffset);
 		return desc->storeViews (views, stream, attr);
 	}

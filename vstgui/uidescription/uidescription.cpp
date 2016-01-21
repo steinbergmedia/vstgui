@@ -1379,13 +1379,13 @@ CBitmap* UIDescription::getBitmap (UTF8StringPtr name) const
 		}
 		if (bitmap && bitmapNode->getFilterProcessed () == false)
 		{
-			std::list<OwningPointer<BitmapFilter::IFilter> > filters;
+			std::list<SharedPointer<BitmapFilter::IFilter> > filters;
 			for (UIDescList::iterator it = bitmapNode->getChildren ().begin (); it != bitmapNode->getChildren ().end (); ++it)
 			{
 				const std::string* filterName = 0;
 				if ((*it)->getName () == "filter" && (filterName = (*it)->getAttributes ()->getAttributeValue ("name")))
 				{
-					BitmapFilter::IFilter* filter = BitmapFilter::Factory::getInstance().createFilter (filterName->c_str ());
+					auto filter = owned (BitmapFilter::Factory::getInstance().createFilter (filterName->c_str ()));
 					if (filter == 0)
 						continue;
 					filters.push_back (filter);
@@ -1449,7 +1449,7 @@ CBitmap* UIDescription::getBitmap (UTF8StringPtr name) const
 					}
 				}
 			}
-			for (std::list<OwningPointer<BitmapFilter::IFilter> >::const_iterator it = filters.begin (); it != filters.end (); ++it)
+			for (std::list<SharedPointer<BitmapFilter::IFilter> >::const_iterator it = filters.begin (); it != filters.end (); ++it)
 			{
 				(*it)->setProperty (BitmapFilter::Standard::Property::kInputBitmap, bitmap);
 				if ((*it)->run ())
@@ -3036,7 +3036,7 @@ CBitmap* UIBitmapNode::getBitmap (const std::string& pathHint)
 					Base64Codec bd;
 					if (bd.init (node->getData ().str ()))
 					{
-						OwningPointer<IPlatformBitmap> platformBitmap = IPlatformBitmap::createFromMemory (bd.getData (), bd.getDataSize ());
+						auto platformBitmap = owned (IPlatformBitmap::createFromMemory (bd.getData (), bd.getDataSize ()));
 						if (platformBitmap)
 						{
 							double scaleFactor = 1.;
