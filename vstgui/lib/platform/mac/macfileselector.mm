@@ -188,7 +188,7 @@ bool CocoaFileSelector::runInternal (CBaseObject* _delegate)
 				[typesArray addObject:uti];
 				[uti release];
 			}
-			it++;
+			++it;
 		}
 	}
 	if (style == kSelectSaveFile)
