@@ -322,16 +322,6 @@ private:
 	int32_t nbReference;
 };
 
-//-----------------------------------------------------------------------------
-class CBaseObjectGuard
-{
-public:
-	CBaseObjectGuard (CBaseObject* _obj) : obj (_obj) { if (obj) obj->remember (); }
-	~CBaseObjectGuard () { if (obj) obj->forget (); }
-protected:
-	CBaseObject* obj;
-};
-
 //------------------------------------------------------------------------
 template <class I>
 class SharedPointer
@@ -357,6 +347,16 @@ public:
 protected:
 	I* ptr;
 };
+
+//-----------------------------------------------------------------------------
+class CBaseObjectGuard
+{
+public:
+	explicit CBaseObjectGuard (CBaseObject* _obj) : obj (_obj) {}
+protected:
+	SharedPointer<CBaseObject> obj;
+};
+
 
 //------------------------------------------------------------------------
 template <class I>

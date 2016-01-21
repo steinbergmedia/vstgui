@@ -62,7 +62,7 @@ public:
 
 //-----------------------------------------------------------------------------
 protected:
-	CString (const CString&) {}
+	CString (const CString&) = delete;
 	UTF8StringPtr utf8String;
 	IPlatformString* platformString;
 };

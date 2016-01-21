@@ -225,17 +225,17 @@ protected:
 	struct CDrawContextState
 	{
 		SharedPointer<CFontDesc> font;
-		CColor frameColor;
-		CColor fillColor;
-		CColor fontColor;
-		CCoord frameWidth;
-		CPoint penLoc;
-		CRect clipRect;
-		CLineStyle lineStyle;
-		CDrawMode drawMode;
-		float globalAlpha;
+		CColor frameColor {kTransparentCColor};
+		CColor fillColor {kTransparentCColor};
+		CColor fontColor {kTransparentCColor};
+		CCoord frameWidth {0.};
+		CPoint penLoc {};
+		CRect clipRect {};
+		CLineStyle lineStyle {kLineOnOffDash};
+		CDrawMode drawMode {kAntiAliasing};
+		float globalAlpha {1.f};
 
-		CDrawContextState ();
+		CDrawContextState () = default;
 		CDrawContextState (const CDrawContextState& state);
 		CDrawContextState& operator= (const CDrawContextState& state);
 		CDrawContextState (CDrawContextState&& state) noexcept;

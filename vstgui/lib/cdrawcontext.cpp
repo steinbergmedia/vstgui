@@ -42,19 +42,6 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-CDrawContext::CDrawContextState::CDrawContextState ()
-{
-	font = 0;
-	fontColor = kTransparentCColor;
-	frameWidth = 0;
-	frameColor = kTransparentCColor;
-	fillColor = kTransparentCColor;
-	lineStyle = kLineOnOffDash;
-	drawMode = kAntiAliasing;
-	globalAlpha = 1;
-}
-
-//-----------------------------------------------------------------------------
 CDrawContext::CDrawContextState::CDrawContextState (const CDrawContextState& state)
 {
 	*this = state;
