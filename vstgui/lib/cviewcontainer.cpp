@@ -827,7 +827,7 @@ CMouseEventResult CViewContainer::onMouseDown (CPoint &where, const CButtonState
 			CControl* control = dynamic_cast<CControl*> (pV);
 			if (control && control->getListener () && buttons & (kAlt | kShift | kControl | kApple | kRButton))
 			{
-				if (control->getListener ()->controlModifierClicked ((CControl*)pV, buttons) != 0)
+				if (control->getListener ()->controlModifierClicked (control, buttons) != 0)
 					return kMouseEventHandled;
 			}
 			CBaseObjectGuard crg (pV);

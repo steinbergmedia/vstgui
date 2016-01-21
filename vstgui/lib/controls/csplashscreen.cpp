@@ -119,7 +119,7 @@ CSplashScreen::CSplashScreen (const CSplashScreen& v)
 , keepSize (v.keepSize)
 , offset (v.offset)
 {
-	modalView = (CView*)v.modalView->newCopy ();
+	modalView = static_cast<CView*> (v.modalView->newCopy ());
 }
 
 //------------------------------------------------------------------------

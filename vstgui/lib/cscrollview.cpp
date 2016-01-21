@@ -260,7 +260,7 @@ bool CScrollContainer::attached (CView* parent)
 			newContainerSize.setHeight (r.getHeight ());
 			if (newContainerSize != containerSize)
 			{
-				CScrollView* scrollView = (CScrollView*)getParentView ();
+				CScrollView* scrollView = static_cast<CScrollView*> (getParentView ());
 				scrollView->setContainerSize (newContainerSize);
 			}
 		}
@@ -283,7 +283,7 @@ CMessageResult CScrollContainer::notify (CBaseObject* sender, IdStringPtr messag
 			newContainerSize.setHeight (r.getHeight ());
 			if (newContainerSize != containerSize)
 			{
-				CScrollView* scrollView = (CScrollView*)getParentView ();
+				CScrollView* scrollView = static_cast<CScrollView*> (getParentView ());
 				scrollView->setContainerSize (newContainerSize);
 			}
 		}
@@ -322,17 +322,17 @@ CScrollView::CScrollView (const CScrollView& v)
 	CViewContainer::removeAll ();
 	if (activeScrollbarStyle & kHorizontalScrollbar && v.hsb)
 	{
-		hsb = (CScrollbar*)v.hsb->newCopy ();
+		hsb = static_cast<CScrollbar*> (v.hsb->newCopy ());
 		hsb->setListener (this);
 		CViewContainer::addView (hsb, 0);
 	}
 	if (activeScrollbarStyle & kVerticalScrollbar && v.vsb)
 	{
-		vsb = (CScrollbar*)v.vsb->newCopy ();
+		vsb = static_cast<CScrollbar*> (v.vsb->newCopy ());
 		vsb->setListener (this);
 		CViewContainer::addView (vsb, 0);
 	}
-	sc = (CScrollContainer*)v.sc->newCopy ();
+	sc = static_cast<CScrollContainer*> (v.sc->newCopy ());
 	CViewContainer::addView (sc, 0);
 }
 
@@ -764,7 +764,7 @@ CMessageResult CScrollView::notify (CBaseObject* sender, IdStringPtr message)
 {
 	if (message == kMsgNewFocusView && getStyle () & kFollowFocusView)
 	{
-		CView* focusView = (CView*)sender;
+		CView* focusView = static_cast<CView*> (sender);
 		if (sc->isChild (focusView, true))
 		{
 			CRect r = focusView->getViewSize ();
