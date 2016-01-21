@@ -223,10 +223,10 @@ void CFontChooser::setFont (CFontRef font)
 			selFont->forget ();
 		selFont = new CFontDesc (*font);
 		sizeEdit->setValue ((float)font->getSize ());
-		boldBox->setValue (font->getStyle () & kBoldFace ? 1.f : 0.f);
-		italicBox->setValue (font->getStyle () & kItalicFace ? 1.f : 0.f);
-		underlineBox->setValue (font->getStyle () & kUnderlineFace ? 1.f : 0.f);
-		strikeoutBox->setValue (font->getStyle () & kStrikethroughFace ? 1.f : 0.f);
+		boldBox->setValue ((font->getStyle () & kBoldFace) ? 1.f : 0.f);
+		italicBox->setValue ((font->getStyle () & kItalicFace) ? 1.f : 0.f);
+		underlineBox->setValue ((font->getStyle () & kUnderlineFace) ? 1.f : 0.f);
+		strikeoutBox->setValue ((font->getStyle () & kStrikethroughFace) ? 1.f : 0.f);
 
 		std::vector<std::string>::const_iterator it = fontNames.begin ();
 		int32_t row = 0;

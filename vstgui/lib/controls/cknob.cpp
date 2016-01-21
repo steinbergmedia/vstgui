@@ -244,7 +244,7 @@ void CKnob::drawCorona (CDrawContext* pContext) const
 			addArc (path, corona, startAngle, rangeAngle * coronaValue);
 	}
 	pContext->setFrameColor (coronaColor);
-	CLineStyle lineStyle (drawStyle & kCoronaLineDashDot ? kLineOnOffDash : kLineSolid);
+	CLineStyle lineStyle ((drawStyle & kCoronaLineDashDot) ? kLineOnOffDash : kLineSolid);
 	lineStyle.setLineCap (CLineStyle::kLineCapRound);
 	if (drawStyle & kCoronaLineDashDot)
 		lineStyle.getDashLengths ()[1] = 2;

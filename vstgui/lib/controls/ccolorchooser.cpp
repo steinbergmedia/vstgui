@@ -163,7 +163,7 @@ public:
 			for (int32_t x = 0; x < getViewSize ().getWidth (); x+=5)
 			{
 				r.left = getViewSize ().left + x;
-				r.top = x % 2 ? getViewSize ().top : getViewSize ().top + 5;
+				r.top = (x % 2) ? getViewSize ().top : getViewSize ().top + 5;
 				r.right = r.left + 5;
 				r.bottom = r.top + 5;
 				for (int32_t y = 0; y < getViewSize ().getHeight (); y+=10)

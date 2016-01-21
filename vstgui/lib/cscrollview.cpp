@@ -405,7 +405,7 @@ void CScrollView::recalculateSubViews ()
 		}
 		if (!(style & kOverlayScrollbars))
 			scsize.bottom = sbr.top;
-		hsb->setOverlayStyle (style & kOverlayScrollbars ? true : false);
+		hsb->setOverlayStyle ((style & kOverlayScrollbars) ? true : false);
 	}
 	else if (hsb)
 	{
@@ -436,7 +436,7 @@ void CScrollView::recalculateSubViews ()
 		}
 		if (!(style & kOverlayScrollbars))
 			scsize.right = sbr.left;
-		vsb->setOverlayStyle (style & kOverlayScrollbars ? true : false);
+		vsb->setOverlayStyle ((style & kOverlayScrollbars) ? true : false);
 	}
 	else if (vsb)
 	{
@@ -456,7 +456,7 @@ void CScrollView::recalculateSubViews ()
 	}
 	if (style & kOverlayScrollbars)
 		CViewContainer::changeViewZOrder (sc, 0);
-	sc->setAutoDragScroll (style & kAutoDragScrolling ? true : false);
+	sc->setAutoDragScroll ((style & kAutoDragScrolling) ? true : false);
 }
 
 //-----------------------------------------------------------------------------

@@ -1255,7 +1255,7 @@ void GenericStringListDataBrowserSource::dbDrawCell (CDrawContext* context, cons
 {
 	context->setDrawMode (kAliasing|kNonIntegralMode);
 	context->setLineWidth (1.);
-	context->setFillColor (row % 2 ? rowBackColor : rowAlternateBackColor);
+	context->setFillColor ((row % 2) ? rowBackColor : rowAlternateBackColor);
 	context->drawRect (size, kDrawFilled);
 	if (flags & kRowSelected)
 	{
