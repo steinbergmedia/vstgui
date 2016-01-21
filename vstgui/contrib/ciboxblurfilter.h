@@ -20,7 +20,7 @@ class CIBoxBlurFilter : public BitmapFilter::FilterBase
 public:
 	CIBoxBlurFilter ();
 
-	bool run (bool replace) VSTGUI_OVERRIDE_VMETHOD;
+	bool run (bool replace) override;
 
 	static IFilter* CreateFunction (IdStringPtr _name) { return new CIBoxBlurFilter (); }
 };

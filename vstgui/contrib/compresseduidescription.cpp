@@ -25,8 +25,8 @@ public:
 
 	bool open (InputStream& stream);
 
-	bool operator>> (std::string& string) VSTGUI_OVERRIDE_VMETHOD { return false; }
-	uint32_t readRaw (void* buffer, uint32_t size) VSTGUI_OVERRIDE_VMETHOD;
+	bool operator>> (std::string& string) override { return false; }
+	uint32_t readRaw (void* buffer, uint32_t size) override;
 
 protected:
 	z_streamp zstream;
@@ -45,11 +45,11 @@ public:
 	bool open (OutputStream& stream, int32_t compressionLevel = 6);
 	bool close ();
 
-	bool operator<< (const std::string& str) VSTGUI_OVERRIDE_VMETHOD
+	bool operator<< (const std::string& str) override
 	{
 		return writeRaw (str.c_str (), static_cast<uint32_t> (str.size ())) == str.size ();
 	}
-	uint32_t writeRaw (const void* buffer, uint32_t size) VSTGUI_OVERRIDE_VMETHOD;
+	uint32_t writeRaw (const void* buffer, uint32_t size) override;
 
 protected:
 	z_streamp zstream;
