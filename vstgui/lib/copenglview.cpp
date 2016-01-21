@@ -70,9 +70,9 @@ void COpenGLView::updatePlatformOpenGLViewSize ()
 //-----------------------------------------------------------------------------
 bool COpenGLView::createPlatformOpenGLView ()
 {
-	vstgui_assert (platformOpenGLView == 0);
+	vstgui_assert (platformOpenGLView == nullptr);
 	IPlatformFrame* platformFrame = getFrame ()->getPlatformFrame ();
-	platformOpenGLView = owned (platformFrame ? platformFrame->createPlatformOpenGLView () : 0);
+	platformOpenGLView = owned (platformFrame ? platformFrame->createPlatformOpenGLView () : nullptr);
 	if (platformOpenGLView)
 	{
 		if (platformOpenGLView->init (this, getPixelFormat ()))

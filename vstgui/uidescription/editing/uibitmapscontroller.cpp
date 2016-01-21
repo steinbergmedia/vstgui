@@ -53,7 +53,7 @@ namespace VSTGUI {
 class UIBitmapView : public CView
 {
 public:
-	UIBitmapView (CBitmap* bitmap = 0)
+	UIBitmapView (CBitmap* bitmap = nullptr)
 	: CView (CRect (0, 0, 0, 0))
 	, zoom (1.)
 	{
@@ -139,7 +139,7 @@ public:
 
 	void setBackground (CBitmap *background) override
 	{
-		IPlatformBitmap* platformBitmap = background ? background->getPlatformBitmap () : 0;
+		IPlatformBitmap* platformBitmap = background ? background->getPlatformBitmap () : nullptr;
 		if (platformBitmap && platformBitmap->getScaleFactor () != 1.)
 		{
 			// get rid of the scale factor
@@ -202,7 +202,7 @@ void UIBitmapsDataSource::dbOnDragEnterBrowser (IDataPackage* drag, CDataBrowser
 {
 	uint32_t index = 0;
 	IDataPackage::Type type;
-	const void* item = 0;
+	const void* item = nullptr;
 	while (drag->getData (index, item, type) > 0)
 	{
 		if (type == IDataPackage::kFilePath)
@@ -256,7 +256,7 @@ bool UIBitmapsDataSource::dbOnDropInCell (int32_t row, int32_t column, const CPo
 		bool didBeganGroupAction = false;
 		uint32_t index = 0;
 		IDataPackage::Type type;
-		const void* item = 0;
+		const void* item = nullptr;
 		while (drag->getData (index++, item, type) > 0)
 		{
 			if (type == IDataPackage::kFilePath)
@@ -296,14 +296,14 @@ void UIBitmapsDataSource::getNames (std::list<const std::string*>& names)
 //----------------------------------------------------------------------------------------------------
 bool UIBitmapsDataSource::addItem (UTF8StringPtr name)
 {
-	actionPerformer->performBitmapChange (name, 0);
+	actionPerformer->performBitmapChange (name, nullptr);
 	return true;
 }
 
 //----------------------------------------------------------------------------------------------------
 bool UIBitmapsDataSource::removeItem (UTF8StringPtr name)
 {
-	actionPerformer->performBitmapChange (name, 0, true);
+	actionPerformer->performBitmapChange (name, nullptr, true);
 	return true;
 }
 
@@ -320,7 +320,7 @@ CBitmap* UIBitmapsDataSource::getSelectedBitmap ()
 	int32_t selectedRow = dataBrowser ? dataBrowser->getSelectedRow() : CDataBrowser::kNoSelection;
 	if (selectedRow != CDataBrowser::kNoSelection && selectedRow < (int32_t)names.size ())
 		return description->getBitmap (names.at (static_cast<uint32_t> (selectedRow)).c_str ());
-	return 0;
+	return nullptr;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -329,7 +329,7 @@ UTF8StringPtr UIBitmapsDataSource::getSelectedBitmapName ()
 	int32_t selectedRow = dataBrowser ? dataBrowser->getSelectedRow() : CDataBrowser::kNoSelection;
 	if (selectedRow != CDataBrowser::kNoSelection && selectedRow < (int32_t)names.size ())
 		return names.at (static_cast<uint32_t> (selectedRow)).c_str ();
-	return 0;
+	return nullptr;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -458,7 +458,7 @@ UIBitmapSettingsController::UIBitmapSettingsController (CBitmap* bitmap, const s
 , origOffsets (10, 10, 10, 10)
 {
 	for (int32_t i = 0; i < kNumTags; i++)
-		controls[i] = 0;
+		controls[i] = nullptr;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -523,7 +523,7 @@ void UIBitmapSettingsController::valueChanged (CControl* control)
 				origOffsets.bottom = nptb->getPartOffsets ().bottom;
 			}
 			bool checked = control->getValue () == control->getMax ();
-			actionPerformer->performBitmapNinePartTiledChange (bitmapName.c_str (), checked ? &origOffsets : 0);
+			actionPerformer->performBitmapNinePartTiledChange (bitmapName.c_str (), checked ? &origOffsets : nullptr);
 			bitmap = editDescription->getBitmap (bitmapName.c_str ());
 			bitmapView->setBackground (bitmap);
 			updateNinePartTiledControls ();
@@ -703,7 +703,7 @@ CView* UIBitmapSettingsController::createView (const UIAttributes& attributes, c
 			return bitmapView;
 		}
 	}
-	return 0;
+	return nullptr;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -721,7 +721,7 @@ bool UIBitmapSettingsController::valueToString (float value, char utf8String[256
 //----------------------------------------------------------------------------------------------------
 bool UIBitmapSettingsController::stringToValue (UTF8StringPtr txt, float& result, CTextEdit::StringToValueUserData* userData)
 {
-	int32_t value = txt ? (int32_t)strtol (txt, 0, 10) : 0;
+	int32_t value = txt ? (int32_t)strtol (txt, nullptr, 10) : 0;
 	result = (float)value;
 	return true;
 }
@@ -733,7 +733,7 @@ UIBitmapsController::UIBitmapsController (IController* baseController, UIDescrip
 : DelegationController (baseController)
 , editDescription (description)
 , actionPerformer (actionPerformer)
-, dataSource (0)
+, dataSource (nullptr)
 {
 	dataSource = new UIBitmapsDataSource (editDescription, actionPerformer, this);
 	UIEditController::setupDataSource (dataSource);
@@ -750,7 +750,7 @@ void UIBitmapsController::showSettingsDialog ()
 {
 	UIDialogController* dc = new UIDialogController (this, bitmapPathEdit->getFrame ());
 	UIBitmapSettingsController* fsController = new UIBitmapSettingsController (dataSource->getSelectedBitmap (), dataSource->getSelectedBitmapName (), editDescription, actionPerformer);
-	dc->run ("bitmap.settings", "Bitmap Settings", "Close", 0, fsController, &UIEditController::getEditorDescription ());
+	dc->run ("bitmap.settings", "Bitmap Settings", "Close", nullptr, fsController, &UIEditController::getEditorDescription ());
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -874,7 +874,7 @@ void UIBitmapsController::dbSelectionChanged (int32_t selectedRow, GenericString
 		}
 		if (bitmapPathEdit)
 		{
-			bitmapPathEdit->setText (bitmap ? bitmap->getResourceDescription ().u.name : 0);
+			bitmapPathEdit->setText (bitmap ? bitmap->getResourceDescription ().u.name : nullptr);
 			bitmapPathEdit->setMouseEnabled (selectedBitmapName ? true : false);
 		}
 		if (settingButton)
@@ -897,7 +897,7 @@ bool UIBitmapsController::valueToString (float value, char utf8String[256], void
 //----------------------------------------------------------------------------------------------------
 bool UIBitmapsController::stringToValue (UTF8StringPtr txt, float& result, void* userData)
 {
-	int32_t value = txt ? (int32_t)strtol (txt, 0, 10) : 0;
+	int32_t value = txt ? (int32_t)strtol (txt, nullptr, 10) : 0;
 	result = (float)value;
 	return true;
 }

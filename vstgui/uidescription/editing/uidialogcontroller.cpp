@@ -76,7 +76,7 @@ void UIDialogController::run (UTF8StringPtr _templateName, UTF8StringPtr _dialog
 	templateName = _templateName;
 	dialogTitle = _dialogTitle;
 	dialogButton1 = _button1;
-	dialogButton2 = _button2 != 0 ? _button2 : "";
+	dialogButton2 = _button2 != nullptr ? _button2 : "";
 	dialogController = dynamic_cast<CBaseObject*> (_dialogController);
 	dialogDescription = _description;
 	CView* view = UIEditController::getEditorDescription ().createView ("dialog", this);
@@ -132,16 +132,16 @@ void UIDialogController::close ()
 	frame->unregisterKeyboardHook (this);
 	frame->unregisterViewListener (this);
 	if (button1)
-		button1->setListener (0);
+		button1->setListener (nullptr);
 	if (button2)
-		button2->setListener (0);
+		button2->setListener (nullptr);
 	setOpenGLViewsVisible (true);
 
 	CView* dialog = frame->getModalView ();
 	if (dialog)
 	{
 		dialog->unregisterViewListener (this);
-		frame->setModalView (0);
+		frame->setModalView (nullptr);
 		dialog->forget ();
 	}
 	forget ();

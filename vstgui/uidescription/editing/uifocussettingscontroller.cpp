@@ -52,7 +52,7 @@ UIFocusSettingsController::UIFocusSettingsController (UIDescription* description
 : editDescription (description)
 {
 	for (int32_t i = 0; i < kNumTags; i++)
-		controls[i] = 0;
+		controls[i] = nullptr;
 }
 
 //----------------------------------------------------------------------------------------------------

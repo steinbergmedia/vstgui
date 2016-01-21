@@ -71,7 +71,7 @@ IPlatformFont* IPlatformFont::create (UTF8StringPtr name, const CCoord& size, co
 	if (font->getFontRef ())
 		return font;
 	font->forget ();
-	return 0;
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -93,7 +93,7 @@ bool IPlatformFont::getAllPlatformFontFamilies (std::list<std::string>& fontFami
 //-----------------------------------------------------------------------------
 static CTFontRef CoreTextCreateTraitsVariant (CTFontRef fontRef, CTFontSymbolicTraits trait)
 {
-	CTFontRef traitsFontRef = CTFontCreateCopyWithSymbolicTraits (fontRef, CTFontGetSize (fontRef), NULL, trait, trait);
+	CTFontRef traitsFontRef = CTFontCreateCopyWithSymbolicTraits (fontRef, CTFontGetSize (fontRef), nullptr, trait, trait);
 	if (traitsFontRef)
 	{
 		CFRelease (fontRef);
@@ -102,7 +102,7 @@ static CTFontRef CoreTextCreateTraitsVariant (CTFontRef fontRef, CTFontSymbolicT
 	else if (trait == kCTFontItalicTrait)
 	{
 		CGAffineTransform transform = { 1, 0, -0.5, 1, 0, 0 };
-		traitsFontRef = CTFontCreateCopyWithAttributes (fontRef, CTFontGetSize (fontRef), &transform, NULL);
+		traitsFontRef = CTFontCreateCopyWithAttributes (fontRef, CTFontGetSize (fontRef), &transform, nullptr);
 		if (traitsFontRef)
 		{
 			CFRelease (fontRef);
@@ -114,11 +114,11 @@ static CTFontRef CoreTextCreateTraitsVariant (CTFontRef fontRef, CTFontSymbolicT
 
 //-----------------------------------------------------------------------------
 CoreTextFont::CoreTextFont (UTF8StringPtr name, const CCoord& size, const int32_t& style)
-: fontRef (0)
+: fontRef (nullptr)
 , style (style)
 , underlineStyle (false)
 , lastColor (MakeCColor (0,0,0,0))
-, stringAttributes (0)
+, stringAttributes (nullptr)
 , ascent (0.)
 , descent (0.)
 , leading (0.)
@@ -132,13 +132,13 @@ CoreTextFont::CoreTextFont (UTF8StringPtr name, const CCoord& size, const int32_
 			CFMutableDictionaryRef attributes = CFDictionaryCreateMutable (kCFAllocatorDefault, 1, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
 			CFDictionaryAddValue (attributes, kCTFontFamilyNameAttribute, fontNameRef);
 			CTFontDescriptorRef descriptor = CTFontDescriptorCreateWithAttributes (attributes);
-			fontRef = CTFontCreateWithFontDescriptor (descriptor, static_cast<CGFloat> (size), 0);
+			fontRef = CTFontCreateWithFontDescriptor (descriptor, static_cast<CGFloat> (size), nullptr);
 			CFRelease (attributes);
 			CFRelease (descriptor);
 		}
 		else
 		{
-			fontRef = CTFontCreateWithName (fontNameRef, static_cast<CGFloat> (size), 0);
+			fontRef = CTFontCreateWithName (fontNameRef, static_cast<CGFloat> (size), nullptr);
 		}
 
 		if (style & kBoldFace)
@@ -192,7 +192,7 @@ double CoreTextFont::getCapHeight () const
 //-----------------------------------------------------------------------------
 CFDictionaryRef CoreTextFont::getStringAttributes (const CGColorRef color)
 {
-	if (stringAttributes == 0)
+	if (stringAttributes == nullptr)
 	{
 		stringAttributes = CFDictionaryCreateMutable (kCFAllocatorDefault, 2, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
 		CFDictionarySetValue (stringAttributes, kCTFontAttributeName, fontRef);
@@ -218,15 +218,15 @@ CTLineRef CoreTextFont::createCTLine (CDrawContext* context, MacString* macStrin
 		}
 	}
 	CFStringRef cfStr = macString->getCFString ();
-	if (cfStr == 0)
+	if (cfStr == nullptr)
 	{
 	#if DEBUG
 		DebugPrint ("Empty CFStringRef in MacString. This is unexpected !\n");
 	#endif
-		return NULL;
+		return nullptr;
 	}
 
-	CGColorRef cgColorRef = 0;
+	CGColorRef cgColorRef = nullptr;
 	if (fontColor != lastColor)
 	{
 		cgColorRef = getCGColor (fontColor);
@@ -244,14 +244,14 @@ CTLineRef CoreTextFont::createCTLine (CDrawContext* context, MacString* macStrin
 		return line;
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------
 void CoreTextFont::drawString (CDrawContext* context, IPlatformString* string, const CPoint& point, bool antialias)
 {
 	MacString* macString = dynamic_cast<MacString*> (string);
-	if (macString == 0)
+	if (macString == nullptr)
 		return;
 
 	CTLineRef line = createCTLine (context, macString);
@@ -259,7 +259,7 @@ void CoreTextFont::drawString (CDrawContext* context, IPlatformString* string, c
 	{
 		bool integralMode = context->getDrawMode ().integralMode ();
 		CGDrawContext* cgDrawContext = dynamic_cast<CGDrawContext*> (context);
-		CGContextRef cgContext = cgDrawContext ? cgDrawContext->beginCGContext (true, integralMode) : 0;
+		CGContextRef cgContext = cgDrawContext ? cgDrawContext->beginCGContext (true, integralMode) : nullptr;
 		if (cgContext)
 		{
 			CGPoint cgPoint = CGPointFromCPoint (point);
@@ -308,13 +308,13 @@ CCoord CoreTextFont::getStringWidth (CDrawContext* context, IPlatformString* str
 {
 	CCoord result = 0;
 	MacString* macString = dynamic_cast<MacString*> (string);
-	if (macString == 0)
+	if (macString == nullptr)
 		return result;
 	
 	CTLineRef line = createCTLine (context, macString);
 	if (line)
 	{
-		result = CTLineGetTypographicBounds (line, NULL, NULL, NULL);
+		result = CTLineGetTypographicBounds (line, nullptr, nullptr, nullptr);
 		CFRelease (line);
 	}
 	return result;

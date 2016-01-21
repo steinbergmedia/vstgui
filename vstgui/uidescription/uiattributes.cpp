@@ -50,7 +50,7 @@ UIAttributes::UIAttributes (UTF8StringPtr* attributes)
 	if (attributes)
 	{
 		int32_t i = 0;
-		while (attributes[i] != NULL && attributes[i+1] != NULL)
+		while (attributes[i] != nullptr && attributes[i+1] != nullptr)
 		{
 			insert (std::make_pair (attributes[i], attributes[i+1]));
 			i += 2;
@@ -66,7 +66,7 @@ UIAttributes::~UIAttributes ()
 //-----------------------------------------------------------------------------
 bool UIAttributes::hasAttribute (const std::string& name) const
 {
-	if (getAttributeValue (name) != 0)
+	if (getAttributeValue (name) != nullptr)
 		return true;
 	return false;
 }
@@ -77,7 +77,7 @@ const std::string* UIAttributes::getAttributeValue (const std::string& name) con
 	const_iterator iter = find (name);
 	if (iter != end ())
 		return &iter->second;
-	return 0;
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -180,7 +180,7 @@ bool UIAttributes::getIntegerAttribute (const std::string& name, int32_t& value)
 	const std::string* str = getAttributeValue (name);
 	if (str)
 	{
-		value = (int32_t)strtol (str->c_str (), 0, 10);
+		value = (int32_t)strtol (str->c_str (), nullptr, 10);
 		return true;
 	}
 	return false;

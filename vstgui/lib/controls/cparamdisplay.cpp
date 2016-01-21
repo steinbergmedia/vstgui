@@ -51,7 +51,7 @@ The user can specify its convert function (from float to char) by default the st
 The text-value is centered in the given rect.
 */
 CParamDisplay::CParamDisplay (const CRect& size, CBitmap* background, const int32_t style)
-: CControl (size, 0, -1, background)
+: CControl (size, nullptr, -1, background)
 , horiTxtAlign (kCenterText)
 , style (style)
 , valuePrecision (2)

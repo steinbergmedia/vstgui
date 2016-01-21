@@ -45,7 +45,7 @@ namespace VSTGUI {
 //-----------------------------------------------------------------------------
 UIViewSwitchContainer::UIViewSwitchContainer (const CRect& size)
 : CViewContainer (size)
-, controller (0)
+, controller (nullptr)
 , currentViewIndex (-1)
 , animationTime (120)
 , animationStyle (kFadeInOut)
@@ -55,7 +55,7 @@ UIViewSwitchContainer::UIViewSwitchContainer (const CRect& size)
 //-----------------------------------------------------------------------------
 UIViewSwitchContainer::~UIViewSwitchContainer ()
 {
-	setController (0);
+	setController (nullptr);
 }
 
 //-----------------------------------------------------------------------------
@@ -92,7 +92,7 @@ void UIViewSwitchContainer::setCurrentViewIndex (int32_t viewIndex)
 				CView* oldView = getView (0);
 				if (isAttached () && oldView && getFrame ())
 				{
-					Animation::IAnimationTarget* animation = 0;
+					Animation::IAnimationTarget* animation = nullptr;
 					switch (animationStyle)
 					{
 						case kFadeInOut:
@@ -189,7 +189,7 @@ UIDescriptionViewSwitchController::UIDescriptionViewSwitchController (UIViewSwit
 , uiController (uiController)
 , switchControlTag (-1)
 , currentIndex (-1)
-, switchControl (0)
+, switchControl (nullptr)
 {
 	init ();
 }
@@ -201,13 +201,13 @@ CView* UIDescriptionViewSwitchController::createViewForIndex (int32_t index)
 	{
 		return uiDescription->createView (templateNames[static_cast<uint32_t> (index)].c_str (), uiController);
 	}
-	return 0;
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------
 static CControl* findControlTag (CViewContainer* parent, int32_t tag, bool reverse = true)
 {
-	CControl* result = 0;
+	CControl* result = nullptr;
 	ViewIterator it (parent);
 	while (*it)
 	{
@@ -228,7 +228,7 @@ static CControl* findControlTag (CViewContainer* parent, int32_t tag, bool rever
 			break;
 		++it;
 	}
-	if (result == 0 && !reverse)
+	if (result == nullptr && !reverse)
 		return findControlTag (dynamic_cast<CViewContainer*> (parent->getParentView ()), reverse);
 	return result;
 }
@@ -240,7 +240,7 @@ void UIDescriptionViewSwitchController::switchContainerAttached ()
 	{
 		// find the switch Control
 		switchControl = findControlTag (dynamic_cast<CViewContainer*> (viewSwitch->getParentView ()), switchControlTag, false);
-		if (switchControl == 0)
+		if (switchControl == nullptr)
 		{
 			switchControl = findControlTag (viewSwitch->getFrame (), switchControlTag, true);
 		}
@@ -260,7 +260,7 @@ void UIDescriptionViewSwitchController::switchContainerRemoved ()
 	{
 		switchControl->removeDependency (this);
 		switchControl->forget ();
-		switchControl = 0;
+		switchControl = nullptr;
 		currentIndex = -1;
 	}
 }

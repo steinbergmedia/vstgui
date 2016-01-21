@@ -64,7 +64,7 @@ IPlatformTimer* IPlatformTimer::create (IPlatformTimerCallback* callback)
 //-----------------------------------------------------------------------------
 MacTimer::MacTimer (IPlatformTimerCallback* callback)
 : callback (callback)
-, timer (0)
+, timer (nullptr)
 {
 }
 
@@ -103,7 +103,7 @@ bool MacTimer::stop ()
 	{
 		CFRunLoopTimerInvalidate (timer);
 		CFRelease (timer);
-		timer = 0;
+		timer = nullptr;
 		return true;
 	}
 	return false;

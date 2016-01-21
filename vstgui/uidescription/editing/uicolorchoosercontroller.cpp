@@ -162,7 +162,7 @@ bool UIColorChooserController::stringToValue (UTF8StringPtr txt, float& result, 
 	std::locale origLocale;
 	std::locale::global (std::locale::classic ());
 	
-	char* endptr = 0;
+	char* endptr = nullptr;
 	result = (float)strtod (txt, &endptr);
 
 	std::locale::global (origLocale);

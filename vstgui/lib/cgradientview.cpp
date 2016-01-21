@@ -96,7 +96,7 @@ void CGradientView::setRoundRectRadius (CCoord radius)
 	if (radius != roundRectRadius)
 	{
 		roundRectRadius = radius;
-		path = 0;
+		path = nullptr;
 		invalid ();
 	}
 }
@@ -107,7 +107,7 @@ void CGradientView::setFrameWidth (CCoord width)
 	if (width != frameWidth)
 	{
 		frameWidth = width;
-		path = 0;
+		path = nullptr;
 		invalid ();
 	}
 }
@@ -148,14 +148,14 @@ void CGradientView::setViewSize (const CRect& rect, bool invalid)
 	if (rect != getViewSize ())
 	{
 		CView::setViewSize (rect, invalid);
-		path = 0;
+		path = nullptr;
 	}
 }
 
 //-----------------------------------------------------------------------------
 void CGradientView::draw (CDrawContext* context)
 {
-	if (path == 0)
+	if (path == nullptr)
 	{
 		CRect r = getViewSize ();
 		r.inset (frameWidth / 2., frameWidth / 2.);

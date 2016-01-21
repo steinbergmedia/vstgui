@@ -38,7 +38,7 @@ namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
 CDropSource::CDropEntry::CDropEntry (const void* inBuffer, uint32_t inBufferSize, Type inType)
-: buffer (0)
+: buffer (nullptr)
 , bufferSize (inBufferSize)
 , type (inType)
 {
@@ -49,7 +49,7 @@ CDropSource::CDropEntry::CDropEntry (const void* inBuffer, uint32_t inBufferSize
 
 //-----------------------------------------------------------------------------
 CDropSource::CDropEntry::CDropEntry (const CDropEntry& entry)
-: buffer (0)
+: buffer (nullptr)
 , bufferSize (entry.bufferSize)
 , type (entry.type)
 {

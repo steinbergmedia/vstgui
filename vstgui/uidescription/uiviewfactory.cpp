@@ -192,7 +192,7 @@ CView* UIViewFactory::createViewByName (const std::string* className, const UIAt
 			evaluateAttributesAndRemember (view, attributes, evaluatedAttributes, description);
 			while (iter != registry.end () && (*iter).second->apply (view, evaluatedAttributes, description))
 			{
-				if ((*iter).second->getBaseViewName () == 0)
+				if ((*iter).second->getBaseViewName () == nullptr)
 					break;
 				iter = registry.find ((*iter).second->getBaseViewName ());
 			}
@@ -205,7 +205,7 @@ CView* UIViewFactory::createViewByName (const std::string* className, const UIAt
 		DebugPrint ("UIViewFactory::createView(..): Could not find view of class: %s\n", className->c_str ());
 	#endif
 	}
-	return 0;
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -258,7 +258,7 @@ bool UIViewFactory::applyCustomViewAttributeValues (CView* customView, IdStringP
 //-----------------------------------------------------------------------------
 IdStringPtr UIViewFactory::getViewName (CView* view) const
 {
-	IdStringPtr viewName = 0;
+	IdStringPtr viewName = nullptr;
 	uint32_t size = sizeof (IdStringPtr);
 	view->getAttribute (kViewNameAttribute, size, &viewName, size);
 	return viewName;

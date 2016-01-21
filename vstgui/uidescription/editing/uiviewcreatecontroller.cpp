@@ -72,7 +72,7 @@ protected:
 UIViewCreatorController::UIViewCreatorController (IController* baseController, UIDescription* description)
 : DelegationController (baseController)
 , description (description)
-, dataSource (0)
+, dataSource (nullptr)
 {
 }
 
@@ -129,7 +129,7 @@ void UIViewCreatorController::valueChanged (CControl* control)
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 UIViewCreatorDataSource::UIViewCreatorDataSource (const UIViewFactory* factory, UIDescription* description)
-: UIBaseDataSource (description, 0, 0)
+: UIBaseDataSource (description, nullptr, nullptr)
 , factory (factory)
 {
 }

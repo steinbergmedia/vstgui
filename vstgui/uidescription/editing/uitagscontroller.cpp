@@ -62,7 +62,7 @@ bool UITagsDataSource::addItem (UTF8StringPtr name)
 //----------------------------------------------------------------------------------------------------
 bool UITagsDataSource::removeItem (UTF8StringPtr name)
 {
-	actionPerformer->performTagChange (name, 0, true);
+	actionPerformer->performTagChange (name, nullptr, true);
 	return true;
 }
 
@@ -159,7 +159,7 @@ UITagsController::UITagsController (IController* baseController, UIDescription* 
 : DelegationController (baseController)
 , editDescription (description)
 , actionPerformer (actionPerformer)
-, dataSource (0)
+, dataSource (nullptr)
 {
 }
 

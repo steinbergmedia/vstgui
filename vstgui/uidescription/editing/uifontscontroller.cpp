@@ -102,14 +102,14 @@ UIFontsController::UIFontsController (IController* baseController, UIDescription
 : DelegationController (baseController)
 , editDescription (description)
 , actionPerformer (actionPerformer)
-, dataSource (0)
-, fontMenu (0)
-, altTextEdit (0)
-, sizeTextEdit (0)
-, boldControl (0)
-, italicControl (0)
-, strikethroughControl (0)
-, underlineControl (0)
+, dataSource (nullptr)
+, fontMenu (nullptr)
+, altTextEdit (nullptr)
+, sizeTextEdit (nullptr)
+, boldControl (nullptr)
+, italicControl (nullptr)
+, strikethroughControl (nullptr)
+, underlineControl (nullptr)
 {
 	dataSource = new UIFontsDataSource (editDescription, actionPerformer, this);
 	UIEditController::setupDataSource (dataSource);
@@ -246,7 +246,7 @@ void UIFontsController::valueChanged (CControl* pControl)
 		case kFontStyleStrikethroughTag:
 		case kFontStyleUnderlineTag:
 		{
-			if (fontMenu == 0 || sizeTextEdit == 0 || selectedFont.empty ())
+			if (fontMenu == nullptr || sizeTextEdit == nullptr || selectedFont.empty ())
 				break;
 			CMenuItem* menuItem = fontMenu->getCurrent ();
 			if (menuItem)
@@ -353,12 +353,12 @@ void UIFontsController::dbSelectionChanged (int32_t selectedRow, GenericStringLi
 		if (altTextEdit)
 		{
 			altTextEdit->setMouseEnabled (false);
-			altTextEdit->setText (0);
+			altTextEdit->setText (nullptr);
 		}
 		if (sizeTextEdit)
 		{
 			sizeTextEdit->setMouseEnabled (false);
-			sizeTextEdit->setText (0);
+			sizeTextEdit->setText (nullptr);
 		}
 	}
 }
@@ -380,7 +380,7 @@ bool UIFontsController::valueToString (float value, char utf8String[256], CParam
 //----------------------------------------------------------------------------------------------------
 bool UIFontsController::stringToValue (UTF8StringPtr txt, float& result, CTextEdit::StringToValueUserData* userData)
 {
-	int32_t value = txt ? (int32_t)strtol (txt, 0, 10) : 0;
+	int32_t value = txt ? (int32_t)strtol (txt, nullptr, 10) : 0;
 	result = (float)value;
 	return true;
 }

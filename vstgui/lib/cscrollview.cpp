@@ -299,9 +299,9 @@ CMessageResult CScrollContainer::notify (CBaseObject* sender, IdStringPtr messag
 //-----------------------------------------------------------------------------
 CScrollView::CScrollView (const CRect &size, const CRect &containerSize, int32_t style, CCoord scrollbarWidth, CBitmap* pBackground)
 : CViewContainer (size)
-, sc (0)
-, vsb (0)
-, hsb (0)
+, sc (nullptr)
+, vsb (nullptr)
+, hsb (nullptr)
 , containerSize (containerSize)
 , scrollbarWidth (scrollbarWidth)
 , style (style)
@@ -325,16 +325,16 @@ CScrollView::CScrollView (const CScrollView& v)
 	{
 		hsb = static_cast<CScrollbar*> (v.hsb->newCopy ());
 		hsb->setListener (this);
-		CViewContainer::addView (hsb, 0);
+		CViewContainer::addView (hsb, nullptr);
 	}
 	if (activeScrollbarStyle & kVerticalScrollbar && v.vsb)
 	{
 		vsb = static_cast<CScrollbar*> (v.vsb->newCopy ());
 		vsb->setListener (this);
-		CViewContainer::addView (vsb, 0);
+		CViewContainer::addView (vsb, nullptr);
 	}
 	sc = static_cast<CScrollContainer*> (v.sc->newCopy ());
-	CViewContainer::addView (sc, 0);
+	CViewContainer::addView (sc, nullptr);
 }
 
 //-----------------------------------------------------------------------------
@@ -402,7 +402,7 @@ void CScrollView::recalculateSubViews ()
 		{
 			hsb = new CScrollbar (sbr, this, kHSBTag, CScrollbar::kHorizontal, containerSize);
 			hsb->setAutosizeFlags (kAutosizeLeft | kAutosizeRight | kAutosizeBottom);
-			CViewContainer::addView (hsb, 0);
+			CViewContainer::addView (hsb, nullptr);
 		}
 		if (!(style & kOverlayScrollbars))
 			scsize.bottom = sbr.top;
@@ -433,7 +433,7 @@ void CScrollView::recalculateSubViews ()
 		{
 			vsb = new CScrollbar (sbr, this, kVSBTag, CScrollbar::kVertical, containerSize);
 			vsb->setAutosizeFlags (kAutosizeTop | kAutosizeRight | kAutosizeBottom);
-			CViewContainer::addView (vsb, 0);
+			CViewContainer::addView (vsb, nullptr);
 		}
 		if (!(style & kOverlayScrollbars))
 			scsize.right = sbr.left;
@@ -448,7 +448,7 @@ void CScrollView::recalculateSubViews ()
 	{
 		sc = new CScrollContainer (scsize, containerSize);
 		sc->setAutosizeFlags (kAutosizeAll);
-		CViewContainer::addView (sc, 0);
+		CViewContainer::addView (sc, nullptr);
 	}
 	else
 	{

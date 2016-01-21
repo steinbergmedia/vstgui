@@ -398,7 +398,7 @@ void ViewSizeChangeOperation::undo ()
 		CRect size ((*it).second);
 		view->invalid ();
 		(*it).second = view->getViewSize ();
-		CViewContainer* container = 0;
+		CViewContainer* container = nullptr;
 		bool oldAutosizing = false;
 		if (!autosizing)
 		{
@@ -429,9 +429,9 @@ DeleteOperation::DeleteOperation (UISelection* selection)
 {
 	FOREACH_IN_SELECTION(selection, view)
 		CViewContainer* container = dynamic_cast<CViewContainer*> (view->getParentView ());
-		if (dynamic_cast<UIEditView*>(container) == 0)
+		if (dynamic_cast<UIEditView*>(container) == nullptr)
 		{
-			CView* nextView = 0;
+			CView* nextView = nullptr;
 			ViewIterator it (container);
 			while (*it)
 			{
@@ -532,8 +532,8 @@ void InsertViewOperation::undo ()
 //-----------------------------------------------------------------------------
 TransformViewTypeOperation::TransformViewTypeOperation (UISelection* selection, IdStringPtr viewClassName, UIDescription* desc, const UIViewFactory* factory)
 : view (selection->first ())
-, newView (0)
-, beforeView (0)
+, newView (nullptr)
+, beforeView (nullptr)
 , parent (dynamic_cast<CViewContainer*> (view->getParentView ()))
 , selection (selection)
 , factory (factory)
@@ -1044,8 +1044,8 @@ void BitmapNameChangeAction::undo ()
 NinePartTiledBitmapChangeAction::NinePartTiledBitmapChangeAction (UIDescription* description, UTF8StringPtr name, const CRect* rect, bool performOrUndo)
 : description (description)
 , name (name)
-, oldRect (0)
-, newRect (0)
+, oldRect (nullptr)
+, newRect (nullptr)
 , performOrUndo (performOrUndo)
 {
 	if (rect)
@@ -1341,7 +1341,7 @@ void AlternateFontChangeAction::undo ()
 //----------------------------------------------------------------------------------------------------
 HierarchyMoveViewOperation::HierarchyMoveViewOperation (CView* view, UISelection* selection, bool up)
 : view (view)
-, parent (0)
+, parent (nullptr)
 , selection (selection)
 , up (up)
 {
@@ -1440,7 +1440,7 @@ void CreateNewTemplateAction::perform ()
 	attr->setAttribute (UIViewCreator::kAttrClass, baseViewClassName);
 	attr->setAttribute ("size", "400,400");
 	description->addNewTemplate (name.c_str (), attr);
-	if (view == 0)
+	if (view == nullptr)
 		view = description->createView (name.c_str (), description->getController ());
 	actionPerformer->onTemplateCreation (name.c_str (), view);
 }
@@ -1473,7 +1473,7 @@ void DuplicateTemplateAction::perform ()
 {
 	IDependency::DeferChanges dc (description);
 	description->duplicateTemplate (name.c_str (), dupName.c_str ());
-	if (view == 0)
+	if (view == nullptr)
 		view = description->createView (dupName.c_str (), description->getController ());
 	actionPerformer->onTemplateCreation (dupName.c_str (), view);
 }

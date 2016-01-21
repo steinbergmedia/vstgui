@@ -64,18 +64,18 @@ On Windows it's a WS_CHILD Window.
 CFrame::CFrame (const CRect& inSize, VSTGUIEditorInterface* inEditor)
 : CViewContainer (inSize)
 , pEditor (inEditor)
-, pMouseObservers (0)
-, pKeyboardHooks (0)
-, pViewAddedRemovedObserver (0)
-, pScaleFactorChangedListenerList (0)
-, pTooltips (0)
-, pAnimator (0)
-, pModalView (0)
-, pFocusView (0)
-, pActiveFocusView (0)
+, pMouseObservers (nullptr)
+, pKeyboardHooks (nullptr)
+, pViewAddedRemovedObserver (nullptr)
+, pScaleFactorChangedListenerList (nullptr)
+, pTooltips (nullptr)
+, pAnimator (nullptr)
+, pModalView (nullptr)
+, pFocusView (nullptr)
+, pActiveFocusView (nullptr)
 , bActive (true)
-, platformFrame (0)
-, collectInvalidRects (0)
+, platformFrame (nullptr)
+, collectInvalidRects (nullptr)
 {
 	pParentFrame = this;
 }
@@ -85,22 +85,22 @@ CFrame::~CFrame ()
 {
 	clearMouseViews (CPoint (0, 0), 0, false);
 
-	setModalView (0);
+	setModalView (nullptr);
 
 	setCursor (kCursorDefault);
 
-	pParentFrame = 0;
+	pParentFrame = nullptr;
 	removeAll ();
 
 	if (pTooltips)
 	{
 		pTooltips->forget ();
-		pTooltips = 0;
+		pTooltips = nullptr;
 	}
 	if (pAnimator)
 	{
 		pAnimator->forget ();
-		pAnimator = 0;
+		pAnimator = nullptr;
 	}
 
 	if (pScaleFactorChangedListenerList)
@@ -141,12 +141,12 @@ void CFrame::close ()
 	if (pModalView)
 		removeView (pModalView, false);
 	setCursor (kCursorDefault);
-	pParentFrame = 0;
+	pParentFrame = nullptr;
 	removeAll ();
 	if (platformFrame)
 	{
 		platformFrame->forget ();
-		platformFrame = 0;
+		platformFrame = nullptr;
 	}
 	forget ();
 }
@@ -163,7 +163,7 @@ bool CFrame::open (void* systemWin, PlatformType systemWindowType)
 
 	attached (this);
 
-	pParentView = 0;
+	pParentView = nullptr;
 
 	return true;
 }
@@ -176,7 +176,7 @@ bool CFrame::attached (CView* parent)
 	vstgui_assert (parent == this);
 	if (CView::attached (parent))
 	{
-		pParentView = 0;
+		pParentView = nullptr;
 
 		for (const auto& pV : children)
 			pV->attached (this);
@@ -216,13 +216,13 @@ void CFrame::enableTooltips (bool state)
 {
 	if (state)
 	{
-		if (pTooltips == 0)
+		if (pTooltips == nullptr)
 			pTooltips = new CTooltipSupport (this);
 	}
 	else if (pTooltips)
 	{
 		pTooltips->forget ();
-		pTooltips = 0;
+		pTooltips = nullptr;
 	}
 }
 
@@ -235,7 +235,7 @@ void CFrame::draw (CDrawContext* pContext)
 //-----------------------------------------------------------------------------
 void CFrame::drawRect (CDrawContext* pContext, const CRect& updateRect)
 {
-	if (updateRect.getWidth () <= 0 || updateRect.getHeight () <= 0 || pContext == 0)
+	if (updateRect.getWidth () <= 0 || updateRect.getHeight () <= 0 || pContext == nullptr)
 		return;
 
 	if (pContext)
@@ -312,7 +312,7 @@ void CFrame::checkMouseViews (const CPoint& where, const CButtonState& buttons)
 		return;
 	CPoint lp;
 	CView* mouseView = getViewAt (where, GetViewOptions (GetViewOptions::kDeep|GetViewOptions::kMouseEnabled|GetViewOptions::kIncludeViewContainer));
-	CView* currentMouseView = pMouseViews.empty () == false ? pMouseViews.back () : 0;
+	CView* currentMouseView = pMouseViews.empty () == false ? pMouseViews.back () : nullptr;
 	if (currentMouseView == mouseView)
 		return; // no change
 
@@ -324,15 +324,15 @@ void CFrame::checkMouseViews (const CPoint& where, const CButtonState& buttons)
 			pTooltips->onMouseEntered (mouseView);
 	}
 
-	if (mouseView == 0 || mouseView == this)
+	if (mouseView == nullptr || mouseView == this)
 	{
 		clearMouseViews (where, buttons);
 		return;
 	}
-	CViewContainer* vc = currentMouseView ? dynamic_cast<CViewContainer*> (currentMouseView) : 0;
+	CViewContainer* vc = currentMouseView ? dynamic_cast<CViewContainer*> (currentMouseView) : nullptr;
 	// if the currentMouseView is not a view container, we know that the new mouseView won't be a child of it and that all other
 	// views in the list are viewcontainers
-	if (vc == 0 && currentMouseView)
+	if (vc == nullptr && currentMouseView)
 	{
 		lp = where;
 		currentMouseView->frameToLocal (lp);
@@ -365,7 +365,7 @@ void CFrame::checkMouseViews (const CPoint& where, const CButtonState& buttons)
 		else
 			break;
 	}
-	vc = pMouseViews.empty () == false ? dynamic_cast<CViewContainer*> (pMouseViews.back ()) : 0;
+	vc = pMouseViews.empty () == false ? dynamic_cast<CViewContainer*> (pMouseViews.back ()) : nullptr;
 	if (vc)
 	{
 		ViewList::iterator it2 = pMouseViews.end ();
@@ -446,9 +446,9 @@ CMouseEventResult CFrame::onMouseDown (CPoint &where, const CButtonState& button
 	getTransform ().inverse ().transform (where2);
 
 	// reset views
-	mouseDownView = 0;
+	mouseDownView = nullptr;
 	if (pFocusView && dynamic_cast<CTextEdit*> (pFocusView))
-		setFocusView (0);
+		setFocusView (nullptr);
 
 	if (pTooltips)
 		pTooltips->onMouseDown (where2);
@@ -531,7 +531,7 @@ CMouseEventResult CFrame::onMouseMoved (CPoint &where, const CButtonState& butto
 CMouseEventResult CFrame::onMouseExited (CPoint &where, const CButtonState& buttons)
 { // this should only get called from the platform implementation
 
-	if (mouseDownView == 0)
+	if (mouseDownView == nullptr)
 	{
 		clearMouseViews (where, buttons);
 		if (pTooltips)
@@ -607,7 +607,7 @@ bool CFrame::onWheel (const CPoint &where, const CMouseWheelAxis &axis, const fl
 {
 	bool result = false;
 
-	if (mouseDownView == 0)
+	if (mouseDownView == nullptr)
 	{
 		result = CViewContainer::onWheel (where, axis, distance, buttons);
 		checkMouseViews (where, buttons);
@@ -634,7 +634,7 @@ IDataPackage* CFrame::getClipboard ()
 {
 	if (platformFrame)
 		return platformFrame->getClipboard ();
-	return 0;
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -655,7 +655,7 @@ void CFrame::idle ()
 //-----------------------------------------------------------------------------
 Animation::Animator* CFrame::getAnimator ()
 {
-	if (pAnimator == 0)
+	if (pAnimator == nullptr)
 		pAnimator = new Animation::Animator;
 	return pAnimator;
 }
@@ -793,7 +793,7 @@ bool CFrame::getSize (CRect& outSize) const
  */
 bool CFrame::setModalView (CView* pView)
 {
-	if (pView == 0 && pModalView == 0)
+	if (pView == nullptr && pModalView == nullptr)
 		return true;
 
 	// If there is a modal view or the view 
@@ -815,9 +815,9 @@ bool CFrame::setModalView (CView* pView)
 			clearMouseViews (CPoint (0, 0), 0, true);
 			CViewContainer* container = dynamic_cast<CViewContainer*> (pModalView);
 			if (container)
-				container->advanceNextFocusView (0, false);
+				container->advanceNextFocusView (nullptr, false);
 			else
-				setFocusView (pModalView->wantsFocus () ? pModalView : 0);
+				setFocusView (pModalView->wantsFocus () ? pModalView : nullptr);
 		}
 		return result;
 	}
@@ -896,14 +896,14 @@ void CFrame::onViewRemoved (CView* pView)
 	removeFromMouseViews (pView);
 
 	if (pActiveFocusView == pView)
-		pActiveFocusView = 0;
+		pActiveFocusView = nullptr;
 	if (pFocusView == pView)
-		setFocusView (0);
+		setFocusView (nullptr);
 	CViewContainer* container = dynamic_cast<CViewContainer*> (pView);
 	if (container)
 	{
 		if (container->isChild (pFocusView, true))
-			setFocusView (0);
+			setFocusView (nullptr);
 	}
 	if (getViewAddedRemovedObserver ())
 		getViewAddedRemovedObserver ()->onViewRemoved (this, pView);
@@ -928,7 +928,7 @@ void CFrame::onViewAdded (CView* pView)
 void CFrame::setFocusView (CView *pView)
 {
 	static bool recursion = false;
-	if (pView == pFocusView || (recursion && pFocusView != 0))
+	if (pView == pFocusView || (recursion && pFocusView != nullptr))
 		return;
 
 	if (!bActive)
@@ -940,8 +940,8 @@ void CFrame::setFocusView (CView *pView)
 	recursion = true;
 
 	CView *pOldFocusView = pFocusView;
-	if (pView == 0  || (pView && pView->isAttached () == false))
-		pFocusView = 0;
+	if (pView == nullptr  || (pView && pView->isAttached () == false))
+		pFocusView = nullptr;
 	else
 		pFocusView = pView;
 	if (pFocusView && pFocusView->wantsFocus ())
@@ -949,7 +949,7 @@ void CFrame::setFocusView (CView *pView)
 		pFocusView->invalid ();
 
 		CView* receiver = pFocusView->getParentView ();
-		while (receiver != this && receiver != 0)
+		while (receiver != this && receiver != nullptr)
 		{
 			receiver->notify (pFocusView, kMsgNewFocusView);
 			receiver = receiver->getParentView ();
@@ -964,7 +964,7 @@ void CFrame::setFocusView (CView *pView)
 			pOldFocusView->invalid ();
 
 			CView* receiver = pOldFocusView->getParentView ();
-			while (receiver != this && receiver != 0)
+			while (receiver != this && receiver != nullptr)
 			{
 				receiver->notify (pOldFocusView, kMsgOldFocusView);
 				receiver = receiver->getParentView ();
@@ -986,8 +986,8 @@ bool CFrame::advanceNextFocusView (CView* oldFocus, bool reverse)
 		CViewContainer* container = dynamic_cast<CViewContainer*> (pModalView);
 		if (container)
 		{
-			if (oldFocus == 0 || container->isChild (oldFocus, true) == false)
-				return container->advanceNextFocusView (0, reverse);
+			if (oldFocus == nullptr || container->isChild (oldFocus, true) == false)
+				return container->advanceNextFocusView (nullptr, reverse);
 			else
 			{
 				CViewContainer* parentView = static_cast<CViewContainer*> (oldFocus->getParentView ());
@@ -1006,7 +1006,7 @@ bool CFrame::advanceNextFocusView (CView* oldFocus, bool reverse)
 					}
 					if (container->advanceNextFocusView (tempOldFocus, reverse))
 						return true;
-					return container->advanceNextFocusView (0, reverse);
+					return container->advanceNextFocusView (nullptr, reverse);
 				}
 			}
 		}
@@ -1017,10 +1017,10 @@ bool CFrame::advanceNextFocusView (CView* oldFocus, bool reverse)
 		}
 		return false; // currently not supported, but should be done sometime
 	}
-	if (oldFocus == 0)
+	if (oldFocus == nullptr)
 	{
-		if (pFocusView == 0)
-			return CViewContainer::advanceNextFocusView (0, reverse);
+		if (pFocusView == nullptr)
+			return CViewContainer::advanceNextFocusView (nullptr, reverse);
 		oldFocus = pFocusView;
 	}
 	if (isChild (oldFocus))
@@ -1029,7 +1029,7 @@ bool CFrame::advanceNextFocusView (CView* oldFocus, bool reverse)
 			return true;
 		else
 		{
-			setFocusView (0);
+			setFocusView (nullptr);
 			return false;
 		}
 	}
@@ -1055,20 +1055,20 @@ bool CFrame::advanceNextFocusView (CView* oldFocus, bool reverse)
 bool CFrame::removeView (CView* pView, bool withForget)
 {
 	if (pModalView == pView)
-		pModalView = 0;
+		pModalView = nullptr;
 	return CViewContainer::removeView (pView, withForget);
 }
 
 //-----------------------------------------------------------------------------
 bool CFrame::removeAll (bool withForget)
 {
-	setModalView (0);
+	setModalView (nullptr);
 	if (pFocusView)
 	{
 		pFocusView->looseFocus ();
-		pFocusView = 0;
+		pFocusView = nullptr;
 	}
-	pActiveFocusView = 0;
+	pActiveFocusView = nullptr;
 	clearMouseViews (CPoint (0, 0), 0, false);
 	return CViewContainer::removeAll (withForget);
 }
@@ -1092,7 +1092,7 @@ CView* CFrame::getViewAt (const CPoint& where, const GetViewOptions& options) co
 			}
 			return pModalView;
 		}
-		return 0;
+		return nullptr;
 	}
 	return CViewContainer::getViewAt (where, options);
 }
@@ -1114,7 +1114,7 @@ CViewContainer* CFrame::getContainerAt (const CPoint& where, const GetViewOption
 				return container;
 			}
 		}
-		return 0;
+		return nullptr;
 	}
 	return CViewContainer::getContainerAt (where, options);
 }
@@ -1130,17 +1130,17 @@ void CFrame::onActivate (bool state)
 			if (pActiveFocusView)
 			{
 				setFocusView (pActiveFocusView);
-				pActiveFocusView = 0;
+				pActiveFocusView = nullptr;
 			}
 			else
-				advanceNextFocusView (0, false);
+				advanceNextFocusView (nullptr, false);
 		}
 		else
 		{
 			if (pTooltips)
 				pTooltips->hideTooltip ();
 			pActiveFocusView = getFocusView ();
-			setFocusView (0);
+			setFocusView (nullptr);
 			bActive = false;
 		}
 	}
@@ -1241,7 +1241,7 @@ void CFrame::invalidRect (const CRect& rect)
 //-----------------------------------------------------------------------------
 void CFrame::registerKeyboardHook (IKeyboardHook* hook)
 {
-	if (pKeyboardHooks == 0)
+	if (pKeyboardHooks == nullptr)
 		pKeyboardHooks = new KeyboardHookList ();
 	pKeyboardHooks->push_back (hook);
 }
@@ -1255,7 +1255,7 @@ void CFrame::unregisterKeyboardHook (IKeyboardHook* hook)
 		if (pKeyboardHooks->empty ())
 		{
 			delete pKeyboardHooks;
-			pKeyboardHooks = 0;
+			pKeyboardHooks = nullptr;
 		}
 	}
 }
@@ -1297,7 +1297,7 @@ int32_t CFrame::keyboardHooksOnKeyUp (const VstKeyCode& key)
 //-----------------------------------------------------------------------------
 void CFrame::registerScaleFactorChangedListeneer (IScaleFactorChangedListener* listener)
 {
-	if (pScaleFactorChangedListenerList == 0)
+	if (pScaleFactorChangedListenerList == nullptr)
 		pScaleFactorChangedListenerList = new ScaleFactorChangedListenerList ();
 	pScaleFactorChangedListenerList->push_back (listener);
 }
@@ -1311,7 +1311,7 @@ void CFrame::unregisterScaleFactorChangedListeneer (IScaleFactorChangedListener*
 		if (pScaleFactorChangedListenerList->empty ())
 		{
 			delete pScaleFactorChangedListenerList;
-			pScaleFactorChangedListenerList = 0;
+			pScaleFactorChangedListenerList = nullptr;
 		}
 	}
 }
@@ -1319,7 +1319,7 @@ void CFrame::unregisterScaleFactorChangedListeneer (IScaleFactorChangedListener*
 //-----------------------------------------------------------------------------
 void CFrame::registerMouseObserver (IMouseObserver* observer)
 {
-	if (pMouseObservers == 0)
+	if (pMouseObservers == nullptr)
 		pMouseObservers = new MouseObserverList ();
 	pMouseObservers->push_back (observer);
 }
@@ -1333,7 +1333,7 @@ void CFrame::unregisterMouseObserver (IMouseObserver* observer)
 		if (pMouseObservers->empty ())
 		{
 			delete pMouseObservers;
-			pMouseObservers = 0;
+			pMouseObservers = nullptr;
 		}
 	}
 }
@@ -1376,7 +1376,7 @@ CMouseEventResult CFrame::callMouseObserverMouseDown (const CPoint& _where, cons
 			CMouseEventResult result2 = (*it)->onMouseDown (this, where, buttons);
 			if (result2 == kMouseEventHandled)
 				result = kMouseEventHandled;
-			if (pMouseObservers == 0)
+			if (pMouseObservers == nullptr)
 				return kMouseEventHandled;
 		}
 	}
@@ -1509,7 +1509,7 @@ void CFrame::platformOnActivate (bool state)
 //-----------------------------------------------------------------------------
 void CFrame::platformScaleFactorChanged ()
 {
-	if (pScaleFactorChangedListenerList == 0)
+	if (pScaleFactorChangedListenerList == nullptr)
 		return;
 	for (ScaleFactorChangedListenerList::const_iterator it = pScaleFactorChangedListenerList->begin (), end = pScaleFactorChangedListenerList->end (); it != end; ++it)
 	{
@@ -1610,7 +1610,7 @@ void CFrame::onStartLocalEventLoop ()
 	if (collectInvalidRects)
 	{
 		collectInvalidRects->flush ();
-		collectInvalidRects = 0;
+		collectInvalidRects = nullptr;
 	}
 }
 
@@ -1636,7 +1636,7 @@ CFrame::CollectInvalidRects::CollectInvalidRects (CFrame* frame)
 //-----------------------------------------------------------------------------
 CFrame::CollectInvalidRects::~CollectInvalidRects ()
 {
-	frame->setCollectInvalidRects (0);
+	frame->setCollectInvalidRects (nullptr);
 }
 
 //-----------------------------------------------------------------------------

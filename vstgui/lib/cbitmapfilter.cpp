@@ -54,7 +54,7 @@ template<typename T> void Property::assign (T toAssign)
 //----------------------------------------------------------------------------------------------------
 Property::Property (Type type)
 : type (type)
-, value (0)
+, value (nullptr)
 {
 }
 
@@ -111,7 +111,7 @@ Property::Property (const CGraphicsTransform& transformValue)
 //----------------------------------------------------------------------------------------------------
 Property::Property (const Property& p)
 : type (p.type)
-, value (0)
+, value (nullptr)
 {
 	*this = p;
 }
@@ -158,7 +158,7 @@ Property& Property::operator=(const Property& p)
 		if (type == kObject)
 			getObject ()->forget ();
 		std::free (value);
-		value = 0;
+		value = nullptr;
 	}
 	type = p.type;
 	if (p.value)
@@ -266,7 +266,7 @@ IdStringPtr Factory::getFilterName (uint32_t index) const
 		if (index == 0)
 			return it->first.c_str ();
 	}
-	return 0;
+	return nullptr;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -275,7 +275,7 @@ IFilter* Factory::createFilter (IdStringPtr name) const
 	FilterMap::const_iterator it = filters.find (name);
 	if (it != filters.end ())
 		return (*it).second (name);
-	return 0;
+	return nullptr;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -349,7 +349,7 @@ IdStringPtr FilterBase::getPropertyName (uint32_t index) const
 		if (index == 0)
 			return (*it).first.c_str ();
 	}
-	return 0;
+	return nullptr;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -387,9 +387,9 @@ CBitmap* FilterBase::getInputBitmap () const
 	if (it != end ())
 	{
 		CBaseObject* obj = (*it).second.getObject ();
-		return obj ? dynamic_cast<CBitmap*>(obj) : 0;
+		return obj ? dynamic_cast<CBitmap*>(obj) : nullptr;
 	}
-	return 0;
+	return nullptr;
 }
 
 ///@cond ignore
@@ -418,7 +418,7 @@ private:
 	{
 		CBitmap* inputBitmap = getInputBitmap ();
 		uint32_t radius = static_cast<uint32_t>(static_cast<double>(getProperty (Property::kRadius).getInteger ()) * inputBitmap->getPlatformBitmap ()->getScaleFactor ());
-		if (inputBitmap == 0 || radius == UINT_MAX)
+		if (inputBitmap == nullptr || radius == UINT_MAX)
 			return false;
 		if (radius < 2)
 		{
@@ -429,7 +429,7 @@ private:
 		if (replace)
 		{
 			SharedPointer<CBitmapPixelAccess> inputAccessor = owned (CBitmapPixelAccess::create (inputBitmap));
-			if (inputAccessor == 0)
+			if (inputAccessor == nullptr)
 				return false;
 			run (*inputAccessor, *inputAccessor, radius);
 			return registerProperty (Property::kOutputBitmap, BitmapFilter::Property (inputBitmap));
@@ -439,7 +439,7 @@ private:
 		{
 			SharedPointer<CBitmapPixelAccess> inputAccessor = owned (CBitmapPixelAccess::create (inputBitmap));
 			SharedPointer<CBitmapPixelAccess> outputAccessor = owned (CBitmapPixelAccess::create (outputBitmap));
-			if (inputAccessor == 0 || outputAccessor == 0)
+			if (inputAccessor == nullptr || outputAccessor == nullptr)
 				return false;
 
 			run (*inputAccessor, *outputAccessor, radius);
@@ -556,15 +556,15 @@ protected:
 		if (outSize.getWidth () <= 0 || outSize.getHeight () <= 0)
 			return false;
 		CBitmap* inputBitmap = getInputBitmap ();
-		if (inputBitmap == 0)
+		if (inputBitmap == nullptr)
 			return false;
 		SharedPointer<CBitmap> outputBitmap = owned (new CBitmap (outSize.getWidth (), outSize.getHeight ()));
-		if (outputBitmap == 0)
+		if (outputBitmap == nullptr)
 			return false;
 		
 		SharedPointer<CBitmapPixelAccess> inputAccessor = owned (CBitmapPixelAccess::create (inputBitmap));
 		SharedPointer<CBitmapPixelAccess> outputAccessor = owned (CBitmapPixelAccess::create (outputBitmap));
-		if (inputAccessor == 0 || outputAccessor == 0)
+		if (inputAccessor == nullptr || outputAccessor == nullptr)
 			return false;
 		process (*inputAccessor, *outputAccessor);
 		return registerProperty (Property::kOutputBitmap, BitmapFilter::Property (outputBitmap));
@@ -607,7 +607,7 @@ private:
 		CColor c;
 		int32_t ix;
 		int32_t iy = -1;
-		int32_t* origPixel = 0;
+		int32_t* origPixel = nullptr;
 		float origY = 0;
 		float origX = 0;
 		for (uint32_t y = 0; y < newHeight; y++, origY += yRatio)
@@ -619,7 +619,7 @@ private:
 			origX = 0;
 			for (uint32_t x = 0; x < newWidth; x++, origX += xRatio, copyPixel++)
 			{
-				if (ix != (int32_t)origX || origPixel == 0)
+				if (ix != (int32_t)origX || origPixel == nullptr)
 				{
 					ix = (int32_t)origX;
 					vstgui_assert (iy >= 0);
@@ -711,20 +711,20 @@ protected:
 	bool run (bool replace) override
 	{
 		SharedPointer<CBitmap> inputBitmap = getInputBitmap ();
-		if (inputBitmap == 0)
+		if (inputBitmap == nullptr)
 			return false;
 		SharedPointer<CBitmapPixelAccess> inputAccessor = owned (CBitmapPixelAccess::create (inputBitmap));
-		if (inputAccessor == 0)
+		if (inputAccessor == nullptr)
 			return false;
 		SharedPointer<CBitmap> outputBitmap;
 		SharedPointer<CBitmapPixelAccess> outputAccessor;
 		if (replace == false)
 		{
 			outputBitmap = owned (new CBitmap (inputBitmap->getWidth (), inputBitmap->getHeight ()));
-			if (outputBitmap == 0)
+			if (outputBitmap == nullptr)
 				return false;
 			outputAccessor = owned (CBitmapPixelAccess::create (outputBitmap));
-			if (outputAccessor == 0)
+			if (outputAccessor == nullptr)
 				return false;
 		}
 		else

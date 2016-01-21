@@ -101,20 +101,20 @@ as long as it is available on the system. You should cache your own CFontDesc as
 */
 //-----------------------------------------------------------------------------
 CFontDesc::CFontDesc (UTF8StringPtr inName, const CCoord& inSize, const int32_t inStyle)
-: name (0)
+: name (nullptr)
 , size (inSize)
 , style (inStyle)
-, platformFont (0)
+, platformFont (nullptr)
 {
 	setName (inName);
 }
 
 //-----------------------------------------------------------------------------
 CFontDesc::CFontDesc (const CFontDesc& font)
-: name (0)
+: name (nullptr)
 , size (0)
 , style (0)
-, platformFont (0)
+, platformFont (nullptr)
 {
 	*this = font;
 }
@@ -123,13 +123,13 @@ CFontDesc::CFontDesc (const CFontDesc& font)
 CFontDesc::~CFontDesc ()
 {
 	freePlatformFont ();
-	setName (0);
+	setName (nullptr);
 }
 
 //-----------------------------------------------------------------------------
 IPlatformFont* CFontDesc::getPlatformFont ()
 {
-	if (platformFont == 0)
+	if (platformFont == nullptr)
 		platformFont = IPlatformFont::create (name, size, style);
 	return platformFont;
 }
@@ -140,7 +140,7 @@ IFontPainter* CFontDesc::getFontPainter ()
 	IPlatformFont* pf = getPlatformFont ();
 	if (pf)
 		return pf->getPainter ();
-	return 0;
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -149,7 +149,7 @@ void CFontDesc::freePlatformFont ()
 	if (platformFont)
 	{
 		platformFont->forget ();
-		platformFont = 0;
+		platformFont = nullptr;
 	}
 }
 

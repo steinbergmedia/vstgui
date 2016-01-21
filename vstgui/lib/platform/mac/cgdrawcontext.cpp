@@ -160,14 +160,14 @@ CGraphicsPath* CGDrawContext::createGraphicsPath ()
 CGraphicsPath* CGDrawContext::createTextPath (const CFontRef font, UTF8StringPtr text)
 {
 	const CoreTextFont* ctFont = dynamic_cast<const CoreTextFont*>(font->getPlatformFont ());
-	return ctFont ? new QuartzGraphicsPath (ctFont, text) : 0;
+	return ctFont ? new QuartzGraphicsPath (ctFont, text) : nullptr;
 }
 
 //-----------------------------------------------------------------------------
 void CGDrawContext::drawGraphicsPath (CGraphicsPath* _path, PathDrawMode mode, CGraphicsTransform* t)
 {
 	QuartzGraphicsPath* path = dynamic_cast<QuartzGraphicsPath*> (_path);
-	if (path == 0)
+	if (path == nullptr)
 		return;
 
 	CGContextRef context = beginCGContext (true, getDrawMode ().integralMode ());
@@ -222,11 +222,11 @@ void CGDrawContext::drawGraphicsPath (CGraphicsPath* _path, PathDrawMode mode, C
 void CGDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradient& gradient, const CPoint& startPoint, const CPoint& endPoint, bool evenOdd, CGraphicsTransform* t)
 {
 	QuartzGraphicsPath* path = dynamic_cast<QuartzGraphicsPath*> (_path);
-	if (path == 0)
+	if (path == nullptr)
 		return;
 
 	const QuartzGradient* cgGradient = dynamic_cast<const QuartzGradient*> (&gradient);
-	if (cgGradient == 0)
+	if (cgGradient == nullptr)
 		return;
 
 	CGContextRef context = beginCGContext (true, getDrawMode ().integralMode ());
@@ -266,11 +266,11 @@ void CGDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradient& g
 void CGDrawContext::fillRadialGradient (CGraphicsPath* _path, const CGradient& gradient, const CPoint& center, CCoord radius, const CPoint& originOffset, bool evenOdd, CGraphicsTransform* t)
 {
 	QuartzGraphicsPath* path = dynamic_cast<QuartzGraphicsPath*> (_path);
-	if (path == 0)
+	if (path == nullptr)
 		return;
 
 	const QuartzGradient* cgGradient = dynamic_cast<const QuartzGradient*> (&gradient);
-	if (cgGradient == 0)
+	if (cgGradient == nullptr)
 		return;
 
 	CGContextRef context = beginCGContext (true, getDrawMode ().integralMode ());
@@ -592,7 +592,7 @@ void CGDrawContext::drawBitmapNinePartTiled (CBitmap* bitmap, const CRect& inRec
 //-----------------------------------------------------------------------------
 void CGDrawContext::fillRectWithBitmap (CBitmap* bitmap, const CRect& srcRect, const CRect& dstRect, float alpha)
 {
-	if (bitmap == 0 || alpha == 0.f || srcRect.isEmpty () || dstRect.isEmpty ())
+	if (bitmap == nullptr || alpha == 0.f || srcRect.isEmpty () || dstRect.isEmpty ())
 		return;
 
 	if (!(srcRect.left == 0 && srcRect.right == 0 && srcRect.right == bitmap->getWidth () && srcRect.bottom == bitmap->getHeight ()))
@@ -607,8 +607,8 @@ void CGDrawContext::fillRectWithBitmap (CBitmap* bitmap, const CRect& srcRect, c
 	if (srcRect.right > bitmapSize.x || srcRect.bottom > bitmapSize.y)
 		return;
 
-	CGBitmap* cgBitmap = platformBitmap ? dynamic_cast<CGBitmap*> (platformBitmap) : 0;
-	CGImageRef image = cgBitmap ? cgBitmap->getCGImage () : 0;
+	CGBitmap* cgBitmap = platformBitmap ? dynamic_cast<CGBitmap*> (platformBitmap) : nullptr;
+	CGImageRef image = cgBitmap ? cgBitmap->getCGImage () : nullptr;
 	if (image)
 	{
 		CGContextRef context = beginCGContext (false, true);
@@ -634,22 +634,22 @@ void CGDrawContext::fillRectWithBitmap (CBitmap* bitmap, const CRect& srcRect, c
 //-----------------------------------------------------------------------------
 void CGDrawContext::drawBitmap (CBitmap* bitmap, const CRect& inRect, const CPoint& inOffset, float alpha)
 {
-	if (bitmap == 0 || alpha == 0.f)
+	if (bitmap == nullptr || alpha == 0.f)
 		return;
 	double transformedScaleFactor = scaleFactor;
 	CGraphicsTransform t = getCurrentTransform ();
 	if (t.m11 == t.m22 && t.m12 == 0 && t.m21 == 0)
 		transformedScaleFactor *= t.m11;
 	IPlatformBitmap* platformBitmap = bitmap->getBestPlatformBitmapForScaleFactor (transformedScaleFactor);
-	CGBitmap* cgBitmap = platformBitmap ? dynamic_cast<CGBitmap*> (platformBitmap) : 0;
-	CGImageRef image = cgBitmap ? cgBitmap->getCGImage () : 0;
+	CGBitmap* cgBitmap = platformBitmap ? dynamic_cast<CGBitmap*> (platformBitmap) : nullptr;
+	CGImageRef image = cgBitmap ? cgBitmap->getCGImage () : nullptr;
 	if (image)
 	{
 		CGContextRef context = beginCGContext (false, false);
 		if (context)
 		{
 			CGLayerRef layer = cgBitmap->getCGLayer ();
-			if (layer == 0)
+			if (layer == nullptr)
 			{
 				BitmapDrawCountMap::iterator it = bitmapDrawCount.find (cgBitmap);
 				if (it == bitmapDrawCount.end ())
@@ -774,7 +774,7 @@ CGContextRef CGDrawContext::beginCGContext (bool swapYAxis, bool integralOffset)
 	if (cgContext)
 	{
 		if (currentState.clipRect.isEmpty ())
-			return 0;
+			return nullptr;
 
 		CGContextSaveGState (cgContext);
 
@@ -807,7 +807,7 @@ CGContextRef CGDrawContext::beginCGContext (bool swapYAxis, bool integralOffset)
 		
 		return cgContext;
 	}
-	return 0;
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------

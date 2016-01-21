@@ -56,11 +56,11 @@ IPlatformBitmap* IPlatformBitmap::create (CPoint* size)
 //-----------------------------------------------------------------------------
 IPlatformBitmap* IPlatformBitmap::createFromPath (UTF8StringPtr absolutePath)
 {
-	CGBitmap* bitmap = 0;
-	CFURLRef url = CFURLCreateFromFileSystemRepresentation (0, (const UInt8*)absolutePath, static_cast<CFIndex> (strlen (absolutePath)), false);
+	CGBitmap* bitmap = nullptr;
+	CFURLRef url = CFURLCreateFromFileSystemRepresentation (nullptr, (const UInt8*)absolutePath, static_cast<CFIndex> (strlen (absolutePath)), false);
 	if (url)
 	{
-		CGImageSourceRef source = CGImageSourceCreateWithURL (url, NULL);
+		CGImageSourceRef source = CGImageSourceCreateWithURL (url, nullptr);
 		if (source)
 		{
 			bitmap = new CGBitmap ();
@@ -68,7 +68,7 @@ IPlatformBitmap* IPlatformBitmap::createFromPath (UTF8StringPtr absolutePath)
 			if (result == false)
 			{
 				bitmap->forget ();
-				bitmap = 0;
+				bitmap = nullptr;
 			}
 			CFRelease (source);
 		}
@@ -80,11 +80,11 @@ IPlatformBitmap* IPlatformBitmap::createFromPath (UTF8StringPtr absolutePath)
 //-----------------------------------------------------------------------------
 IPlatformBitmap* IPlatformBitmap::createFromMemory (const void* ptr, uint32_t memSize)
 {
-	CGBitmap* bitmap = 0;
-	CFDataRef data = CFDataCreate (0, (const UInt8*)ptr, static_cast<CFIndex> (memSize));
+	CGBitmap* bitmap = nullptr;
+	CFDataRef data = CFDataCreate (nullptr, (const UInt8*)ptr, static_cast<CFIndex> (memSize));
 	if (data)
 	{
-		CGImageSourceRef source = CGImageSourceCreateWithData (data, NULL);
+		CGImageSourceRef source = CGImageSourceCreateWithData (data, nullptr);
 		if (source)
 		{
 			bitmap = new CGBitmap ();
@@ -92,7 +92,7 @@ IPlatformBitmap* IPlatformBitmap::createFromMemory (const void* ptr, uint32_t me
 			if (result == false)
 			{
 				bitmap->forget ();
-				bitmap = 0;
+				bitmap = nullptr;
 			}
 			CFRelease (source);
 		}
@@ -112,13 +112,13 @@ bool IPlatformBitmap::createMemoryPNGRepresentation (IPlatformBitmap* bitmap, vo
 		CGImageRef image = cgBitmap->getCGImage ();
 		if (image)
 		{
-			CFMutableDataRef data = CFDataCreateMutable (NULL, 0);
+			CFMutableDataRef data = CFDataCreateMutable (nullptr, 0);
 			if (data)
 			{
-				CGImageDestinationRef dest = CGImageDestinationCreateWithData (data, kUTTypePNG, 1, 0);
+				CGImageDestinationRef dest = CGImageDestinationCreateWithData (data, kUTTypePNG, 1, nullptr);
 				if (dest)
 				{
-					CGImageDestinationAddImage (dest, image, 0);
+					CGImageDestinationAddImage (dest, image, nullptr);
 					if (CGImageDestinationFinalize (dest))
 					{
 						size = (uint32_t)CFDataGetLength (data);
@@ -139,10 +139,10 @@ bool IPlatformBitmap::createMemoryPNGRepresentation (IPlatformBitmap* bitmap, vo
 //-----------------------------------------------------------------------------
 CGBitmap::CGBitmap (const CPoint& inSize)
 : size (inSize)
-, image (0)
-, imageSource (0)
-, layer (0)
-, bits (0)
+, image (nullptr)
+, imageSource (nullptr)
+, layer (nullptr)
+, bits (nullptr)
 , dirty (false)
 , bytesPerRow (0)
 , scaleFactor (1.)
@@ -153,9 +153,9 @@ CGBitmap::CGBitmap (const CPoint& inSize)
 //-----------------------------------------------------------------------------
 CGBitmap::CGBitmap (CGImageRef image)
 : image (image)
-, imageSource (0)
-, layer (0)
-, bits (0)
+, imageSource (nullptr)
+, layer (nullptr)
+, bits (nullptr)
 , dirty (false)
 , bytesPerRow (0)
 , scaleFactor (1.)
@@ -167,10 +167,10 @@ CGBitmap::CGBitmap (CGImageRef image)
 
 //-----------------------------------------------------------------------------
 CGBitmap::CGBitmap ()
-: image (0)
-, imageSource (0)
-, layer (0)
-, bits (0)
+: image (nullptr)
+, imageSource (nullptr)
+, layer (nullptr)
+, bits (nullptr)
 , dirty (false)
 , bytesPerRow (0)
 , scaleFactor (1.)
@@ -207,24 +207,24 @@ bool CGBitmap::load (const CResourceDescription& desc)
 			sprintf (filename, "bmp%05d", (int32_t)desc.u.id);
 		else
 			std::strcpy (filename, desc.u.name);
-		CFStringRef cfStr = CFStringCreateWithCString (NULL, filename, kCFStringEncodingUTF8);
+		CFStringRef cfStr = CFStringCreateWithCString (nullptr, filename, kCFStringEncodingUTF8);
 		if (cfStr)
 		{
-			CFURLRef url = NULL;
+			CFURLRef url = nullptr;
 			if (filename[0] == '/')
-				url = CFURLCreateFromFileSystemRepresentation (0, (const UInt8*)filename, static_cast<CFIndex> (strlen (filename)), false);
+				url = CFURLCreateFromFileSystemRepresentation (nullptr, (const UInt8*)filename, static_cast<CFIndex> (strlen (filename)), false);
 			int32_t i = 0;
-			while (url == NULL)
+			while (url == nullptr)
 			{
-				static CFStringRef resTypes [] = { CFSTR("png"), CFSTR("bmp"), CFSTR("jpg"), CFSTR("pict"), NULL };
-				url = CFBundleCopyResourceURL (getBundleRef (), cfStr, desc.type == CResourceDescription::kIntegerType ? resTypes[i] : 0, NULL);
-				if (resTypes[++i] == NULL)
+				static CFStringRef resTypes [] = { CFSTR("png"), CFSTR("bmp"), CFSTR("jpg"), CFSTR("pict"), nullptr };
+				url = CFBundleCopyResourceURL (getBundleRef (), cfStr, desc.type == CResourceDescription::kIntegerType ? resTypes[i] : nullptr, nullptr);
+				if (resTypes[++i] == nullptr)
 					break;
 			}
 			CFRelease (cfStr);
 			if (url)
 			{
-				CGImageSourceRef source = CGImageSourceCreateWithURL (url, NULL);
+				CGImageSourceRef source = CGImageSourceCreateWithURL (url, nullptr);
 				if (source)
 				{
 					result = loadFromImageSource (source);
@@ -258,8 +258,8 @@ bool CGBitmap::loadFromImageSource (CGImageSourceRef source)
 	if (imageSource)
 	{
 		CFRetain (imageSource);
-		CFDictionaryRef properties = CGImageSourceCopyPropertiesAtIndex (imageSource, 0, 0);
-		if (properties == 0)
+		CFDictionaryRef properties = CGImageSourceCopyPropertiesAtIndex (imageSource, 0, nullptr);
+		if (properties == nullptr)
 		{
 			return false;
 		}
@@ -300,17 +300,17 @@ bool CGBitmap::loadFromImageSource (CGImageSourceRef source)
 //-----------------------------------------------------------------------------
 CGImageRef CGBitmap::getCGImage ()
 {
-	if (image == 0 && imageSource)
+	if (image == nullptr && imageSource)
 	{
 		const void* keys[] = {kCGImageSourceShouldCache, kCGImageSourceShouldPreferRGB32};
 		const void* values[] = {kCFBooleanTrue, kCFBooleanTrue};
-		CFDictionaryRef options = CFDictionaryCreate (NULL, keys, values, 2, NULL, NULL);
+		CFDictionaryRef options = CFDictionaryCreate (nullptr, keys, values, 2, nullptr, nullptr);
 		image = CGImageSourceCreateImageAtIndex (imageSource, 0, options);
 		CFRelease (imageSource);
 		CFRelease (options);
-		imageSource = 0;
+		imageSource = nullptr;
 	}
-	if ((dirty || image == 0) && bits)
+	if ((dirty || image == nullptr) && bits)
 	{
 		freeCGImage ();
 
@@ -318,9 +318,9 @@ CGImageRef CGBitmap::getCGImage ()
 		size_t byteCount = rowBytes * static_cast<size_t> (size.y);
 		size_t bitDepth = 32;
 
-		CGDataProviderRef provider = CGDataProviderCreateWithData (NULL, bits, byteCount, NULL);
+		CGDataProviderRef provider = CGDataProviderCreateWithData (nullptr, bits, byteCount, nullptr);
 		CGBitmapInfo bitmapInfo = kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Big;
-		image = CGImageCreate (static_cast<size_t> (size.x), static_cast<size_t> (size.y), 8, bitDepth, rowBytes, GetCGColorSpace (), bitmapInfo, provider, NULL, false, kCGRenderingIntentDefault);
+		image = CGImageCreate (static_cast<size_t> (size.x), static_cast<size_t> (size.y), 8, bitDepth, rowBytes, GetCGColorSpace (), bitmapInfo, provider, nullptr, false, kCGRenderingIntentDefault);
 		CGDataProviderRelease (provider);
 		dirty = false;
 	}
@@ -330,8 +330,8 @@ CGImageRef CGBitmap::getCGImage ()
 //-----------------------------------------------------------------------------
 CGContextRef CGBitmap::createCGContext ()
 {
-	CGContextRef context = 0;
-	if (bits == 0)
+	CGContextRef context = nullptr;
+	if (bits == nullptr)
 	{
 		allocBits ();
 		if (imageSource)
@@ -370,7 +370,7 @@ CGLayerRef CGBitmap::createCGLayer (CGContextRef context)
 	if (layer && !dirty)
 		return layer;
 	CGImageRef image = getCGImage ();
-	layer = image ? CGLayerCreateWithContext (context, CGSizeFromCPoint (size), 0) : 0;
+	layer = image ? CGLayerCreateWithContext (context, CGSizeFromCPoint (size), nullptr) : nullptr;
 	if (layer)
 	{
 		CGContextRef layerContext = CGLayerGetContext (layer);
@@ -382,7 +382,7 @@ CGLayerRef CGBitmap::createCGLayer (CGContextRef context)
 //-----------------------------------------------------------------------------
 void CGBitmap::allocBits ()
 {
-	if (bits == 0)
+	if (bits == nullptr)
 	{
 		bytesPerRow = static_cast<uint32_t> (size.x * 4);
 		if (bytesPerRow % 16)
@@ -397,10 +397,10 @@ void CGBitmap::freeCGImage ()
 {
 	if (image)
 		CFRelease (image);
-	image = 0;
+	image = nullptr;
 	if (layer)
 		CFRelease (layer);
-	layer = 0;
+	layer = nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -467,7 +467,7 @@ protected:
 //-----------------------------------------------------------------------------
 IPlatformBitmapPixelAccess* CGBitmap::lockPixels (bool alphaPremultiplied)
 {
-	if (bits == 0)
+	if (bits == nullptr)
 	{
 		CGContextRef context = createCGContext ();
 		if (context)
@@ -477,7 +477,7 @@ IPlatformBitmapPixelAccess* CGBitmap::lockPixels (bool alphaPremultiplied)
 	{
 		return new CGBitmapPixelAccess (this, alphaPremultiplied);
 	}
-	return 0;
+	return nullptr;
 }
 
 } // namespace

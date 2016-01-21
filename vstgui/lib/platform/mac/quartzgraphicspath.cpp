@@ -56,8 +56,8 @@ CGAffineTransform QuartzGraphicsPath::createCGAffineTransform (const CGraphicsTr
 
 //-----------------------------------------------------------------------------
 QuartzGraphicsPath::QuartzGraphicsPath ()
-: path (0)
-, originalTextPath (0)
+: path (nullptr)
+, originalTextPath (nullptr)
 , isPixelAlligned (false)
 {
 }
@@ -77,7 +77,7 @@ QuartzGraphicsPath::QuartzGraphicsPath (const CoreTextFont* font, UTF8StringPtr 
 	CFRelease (str);
 
     CTLineRef line = CTLineCreateWithAttributedString (attrString);
-	if (line != 0)
+	if (line != nullptr)
 	{
 		CCoord capHeight = font->getCapHeight ();
 		CFArrayRef runArray = CTLineGetGlyphRuns (line);
@@ -93,7 +93,7 @@ QuartzGraphicsPath::QuartzGraphicsPath (const CoreTextFont* font, UTF8StringPtr 
 				CTRunGetGlyphs (run, glyphRange, &glyph);
 				CTRunGetPositions (run, glyphRange, &position);
 				
-				CGPathRef letter = CTFontCreatePathForGlyph (runFont, glyph, NULL);
+				CGPathRef letter = CTFontCreatePathForGlyph (runFont, glyph, nullptr);
 				CGAffineTransform t = CGAffineTransformMakeTranslation (position.x, position.y);
 				t = CGAffineTransformScale (t, 1, -1);
 				t = CGAffineTransformTranslate (t, 0, static_cast<CGFloat> (-capHeight));
@@ -124,7 +124,7 @@ CGradient* QuartzGraphicsPath::createGradient (double color1Start, double color2
 //-----------------------------------------------------------------------------
 CGPathRef QuartzGraphicsPath::getCGPathRef ()
 {
-	if (path == 0)
+	if (path == nullptr)
 	{
 		if (originalTextPath)
 		{
@@ -165,29 +165,29 @@ CGPathRef QuartzGraphicsPath::getCGPathRef ()
 				{
 					CCoord width = e.instruction.rect.right - e.instruction.rect.left;
 					CCoord height = e.instruction.rect.bottom - e.instruction.rect.top;
-					CGPathAddEllipseInRect (path, 0, CGRectMake (static_cast<CGFloat> (e.instruction.rect.left), static_cast<CGFloat> (e.instruction.rect.top), static_cast<CGFloat> (width), static_cast<CGFloat> (height)));
+					CGPathAddEllipseInRect (path, nullptr, CGRectMake (static_cast<CGFloat> (e.instruction.rect.left), static_cast<CGFloat> (e.instruction.rect.top), static_cast<CGFloat> (width), static_cast<CGFloat> (height)));
 					break;
 				}
 				case Element::kRect:
 				{
 					CCoord width = e.instruction.rect.right - e.instruction.rect.left;
 					CCoord height = e.instruction.rect.bottom - e.instruction.rect.top;
-					CGPathAddRect (path, 0, CGRectMake (static_cast<CGFloat> (e.instruction.rect.left), static_cast<CGFloat> (e.instruction.rect.top), static_cast<CGFloat> (width), static_cast<CGFloat> (height)));
+					CGPathAddRect (path, nullptr, CGRectMake (static_cast<CGFloat> (e.instruction.rect.left), static_cast<CGFloat> (e.instruction.rect.top), static_cast<CGFloat> (width), static_cast<CGFloat> (height)));
 					break;
 				}
 				case Element::kLine:
 				{
-					CGPathAddLineToPoint (path, 0, static_cast<CGFloat> (e.instruction.point.x), static_cast<CGFloat> (e.instruction.point.y));
+					CGPathAddLineToPoint (path, nullptr, static_cast<CGFloat> (e.instruction.point.x), static_cast<CGFloat> (e.instruction.point.y));
 					break;
 				}
 				case Element::kBezierCurve:
 				{
-					CGPathAddCurveToPoint (path, 0, static_cast<CGFloat> (e.instruction.curve.control1.x), static_cast<CGFloat> (e.instruction.curve.control1.y), static_cast<CGFloat> (e.instruction.curve.control2.x), static_cast<CGFloat> (e.instruction.curve.control2.y), static_cast<CGFloat> (e.instruction.curve.end.x), static_cast<CGFloat> (e.instruction.curve.end.y));
+					CGPathAddCurveToPoint (path, nullptr, static_cast<CGFloat> (e.instruction.curve.control1.x), static_cast<CGFloat> (e.instruction.curve.control1.y), static_cast<CGFloat> (e.instruction.curve.control2.x), static_cast<CGFloat> (e.instruction.curve.control2.y), static_cast<CGFloat> (e.instruction.curve.end.x), static_cast<CGFloat> (e.instruction.curve.end.y));
 					break;
 				}
 				case Element::kBeginSubpath:
 				{
-					CGPathMoveToPoint (path, 0, static_cast<CGFloat> (e.instruction.point.x), static_cast<CGFloat> (e.instruction.point.y));
+					CGPathMoveToPoint (path, nullptr, static_cast<CGFloat> (e.instruction.point.x), static_cast<CGFloat> (e.instruction.point.y));
 					break;
 				}
 				case Element::kCloseSubpath:
@@ -208,7 +208,7 @@ void QuartzGraphicsPath::dirty ()
 	{
 		if (originalTextPath != path)
 			CFRelease (path);
-		path = 0;
+		path = nullptr;
 	}
 }
 
@@ -222,7 +222,7 @@ bool QuartzGraphicsPath::hitTest (const CPoint& p, bool evenOddFilled, CGraphics
 		CGAffineTransform cgTransform;
 		if (transform)
 			cgTransform = createCGAffineTransform (*transform);
-		return CGPathContainsPoint (cgPath, transform ? &cgTransform : 0, cgPoint, evenOddFilled);
+		return CGPathContainsPoint (cgPath, transform ? &cgTransform : nullptr, cgPoint, evenOddFilled);
 	}
 	return false;
 }
@@ -258,7 +258,7 @@ CRect QuartzGraphicsPath::getBoundingBox ()
 void QuartzGraphicsPath::pixelAlign (CDrawContext* context)
 {
 	CGDrawContext* cgDrawContext = dynamic_cast<CGDrawContext*>(context);
-	if (cgDrawContext == 0)
+	if (cgDrawContext == nullptr)
 		return;
 
 	if (isPixelAlligned)
@@ -281,20 +281,20 @@ void QuartzGraphicsPath::pixelAlign (CDrawContext* context)
 				case kCGPathElementMoveToPoint:
 				{
 					element->points[0] = context.pixelAlligned (element->points[0]);
-					CGPathMoveToPoint (path, 0, element->points[0].x, element->points[0].y);
+					CGPathMoveToPoint (path, nullptr, element->points[0].x, element->points[0].y);
 					break;
 				}
 				case kCGPathElementAddLineToPoint:
 				{
 					element->points[0] = context.pixelAlligned (element->points[0]);
-					CGPathAddLineToPoint (path, 0, element->points[0].x, element->points[0].y);
+					CGPathAddLineToPoint (path, nullptr, element->points[0].x, element->points[0].y);
 					break;
 				}
 				case kCGPathElementAddQuadCurveToPoint:
 				{
 					element->points[0] = context.pixelAlligned (element->points[0]);
 					element->points[1] = context.pixelAlligned (element->points[1]);
-					CGPathAddQuadCurveToPoint (path, 0, element->points[0].x, element->points[0].y, element->points[1].x, element->points[1].y);
+					CGPathAddQuadCurveToPoint (path, nullptr, element->points[0].x, element->points[0].y, element->points[1].x, element->points[1].y);
 					break;
 				}
 				case kCGPathElementAddCurveToPoint:
@@ -302,7 +302,7 @@ void QuartzGraphicsPath::pixelAlign (CDrawContext* context)
 					element->points[0] = context.pixelAlligned (element->points[0]);
 					element->points[1] = context.pixelAlligned (element->points[1]);
 					element->points[2] = context.pixelAlligned (element->points[2]);
-					CGPathAddCurveToPoint (path, 0, element->points[0].x, element->points[0].y, element->points[1].x, element->points[1].y, element->points[2].x, element->points[2].y);
+					CGPathAddCurveToPoint (path, nullptr, element->points[0].x, element->points[0].y, element->points[1].x, element->points[1].y, element->points[2].x, element->points[2].y);
 					break;
 				}
 				case kCGPathElementCloseSubpath:
@@ -331,14 +331,14 @@ void QuartzGraphicsPath::pixelAlign (CDrawContext* context)
 //-----------------------------------------------------------------------------
 QuartzGradient::QuartzGradient (const ColorStopMap& map)
 : CGradient (map)
-, gradient (0)
+, gradient (nullptr)
 {
 }
 
 //-----------------------------------------------------------------------------
 QuartzGradient::QuartzGradient (double _color1Start, double _color2Start, const CColor& _color1, const CColor& _color2)
 : CGradient (_color1Start, _color2Start, _color1, _color2)
-, gradient (0)
+, gradient (nullptr)
 {
 }
 
@@ -388,14 +388,14 @@ void QuartzGradient::releaseCGGradient ()
 	if (gradient)
 	{
 		CFRelease (gradient);
-		gradient = 0;
+		gradient = nullptr;
 	}
 }
 
 //-----------------------------------------------------------------------------
 QuartzGradient::operator CGGradientRef () const
 {
-	if (gradient == 0)
+	if (gradient == nullptr)
 	{
 		createCGGradient ();
 	}

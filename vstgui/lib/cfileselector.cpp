@@ -41,10 +41,10 @@ namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
 CFileExtension::CFileExtension (UTF8StringPtr inDescription, UTF8StringPtr inExtension, UTF8StringPtr inMimeType, int32_t inMacType, UTF8StringPtr inUti)
-: description (0)
-, extension (0)
-, mimeType (0)
-, uti (0)
+: description (nullptr)
+, extension (nullptr)
+, mimeType (nullptr)
+, uti (nullptr)
 , macType (inMacType)
 {
 	init (inDescription, inExtension, inMimeType, inUti);
@@ -52,10 +52,10 @@ CFileExtension::CFileExtension (UTF8StringPtr inDescription, UTF8StringPtr inExt
 
 //-----------------------------------------------------------------------------
 CFileExtension::CFileExtension (const CFileExtension& ext)
-: description (0)
-, extension (0)
-, mimeType (0)
-, uti (0)
+: description (nullptr)
+, extension (nullptr)
+, mimeType (nullptr)
+, uti (nullptr)
 , macType (ext.macType)
 {
 	init (ext.description, ext.extension, ext.mimeType, ext.uti);
@@ -108,7 +108,7 @@ void CFileExtension::init (UTF8StringPtr inDescription, UTF8StringPtr inExtensio
 	mimeType = String::newWithString (inMimeType);
 	uti = String::newWithString (inUti);
 
-	if (description == 0 && extension)
+	if (description == nullptr && extension)
 	{
 		// TODO: query system for file type description
 		// Win32: AssocGetPerceivedType
@@ -146,10 +146,10 @@ IdStringPtr CNewFileSelector::kSelectEndMessage = "CNewFileSelector Select End M
 //-----------------------------------------------------------------------------
 CNewFileSelector::CNewFileSelector (CFrame* frame)
 : frame (frame)
-, defaultExtension (0)
-, title (0)
-, initialPath (0)
-, defaultSaveName (0)
+, defaultExtension (nullptr)
+, title (nullptr)
+, initialPath (nullptr)
+, defaultSaveName (nullptr)
 , allowMultiFileSelection (false)
 {
 }
@@ -157,16 +157,16 @@ CNewFileSelector::CNewFileSelector (CFrame* frame)
 //-----------------------------------------------------------------------------
 CNewFileSelector::~CNewFileSelector ()
 {
-	setTitle (0);
-	setInitialDirectory (0);
-	setDefaultSaveName (0);
+	setTitle (nullptr);
+	setInitialDirectory (nullptr);
+	setDefaultSaveName (nullptr);
 	std::for_each (result.begin (), result.end (), String::free);
 }
 
 //-----------------------------------------------------------------------------
 bool CNewFileSelector::run (CBaseObject* delegate)
 {
-	if (delegate == 0)
+	if (delegate == nullptr)
 	{
 		#if DEBUG
 		DebugPrint ("You need to specify a delegate in CNewFileSelector::run (CBaseObject* delegate, void* parentWindow)\n");
@@ -301,7 +301,7 @@ UTF8StringPtr CNewFileSelector::getSelectedFile (uint32_t index) const
 {
 	if (index < result.size ())
 		return result[index];
-	return 0;
+	return nullptr;
 }
 
 } // namespace

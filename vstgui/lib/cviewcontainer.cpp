@@ -65,8 +65,8 @@ IdStringPtr kMsgLooseFocus = "LooseFocus";
  */
 CViewContainer::CViewContainer (const CRect &rect)
 : CView (rect)
-, currentDragView (0)
-, mouseDownView (0)
+, currentDragView (nullptr)
+, mouseDownView (nullptr)
 , backgroundColorDrawStyle (kDrawFilledAndStroked)
 {
 	backgroundOffset (0, 0);
@@ -80,8 +80,8 @@ CViewContainer::CViewContainer (const CViewContainer& v)
 , backgroundColor (v.backgroundColor)
 , backgroundOffset (v.backgroundOffset)
 , backgroundColorDrawStyle (v.backgroundColorDrawStyle)
-, currentDragView (0)
-, mouseDownView (0)
+, currentDragView (nullptr)
+, mouseDownView (nullptr)
 {
 	ViewIterator it (&v);
 	while (*it)
@@ -329,7 +329,7 @@ CMessageResult CViewContainer::notify (CBaseObject* sender, IdStringPtr message)
  */
 bool CViewContainer::addView (CView* pView)
 {
-	return addView (pView, 0);
+	return addView (pView, nullptr);
 }
 
 //-----------------------------------------------------------------------------
@@ -379,7 +379,7 @@ bool CViewContainer::addView (CView *pView, CView* pBefore)
  */
 bool CViewContainer::addView (CView* pView, const CRect &mouseableArea, bool mouseEnabled)
 {
-	if (addView (pView, 0))
+	if (addView (pView, nullptr))
 	{
 		pView->setMouseEnabled (mouseEnabled);
 		pView->setMouseableArea (mouseableArea);
@@ -396,8 +396,8 @@ bool CViewContainer::addView (CView* pView, const CRect &mouseableArea, bool mou
 bool CViewContainer::removeAll (bool withForget)
 {
 	if (mouseDownView)
-		mouseDownView = 0;
-	currentDragView = 0;
+		mouseDownView = nullptr;
+	currentDragView = nullptr;
 	
 	ViewList::iterator it = children.begin ();
 	while (it != children.end ())
@@ -430,9 +430,9 @@ bool CViewContainer::removeView (CView *pView, bool withForget)
 	{
 		pView->invalid ();
 		if (pView == mouseDownView)
-			mouseDownView = 0;
+			mouseDownView = nullptr;
 		if (pView == currentDragView)
-			currentDragView = 0;
+			currentDragView = nullptr;
 		children.erase (it);
 		if (isAttached ())
 			pView->removed (this);
@@ -511,7 +511,7 @@ CView* CViewContainer::getView (uint32_t index) const
 	std::advance (it, index);
 	if (it != children.end ())
 		return *it;
-	return 0;
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -668,8 +668,8 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 	// draw the background
 	drawBackgroundRect (pContext, clientRect);
 	
-	CView* _focusView = 0;
-	IFocusDrawing* _focusDrawing = 0;
+	CView* _focusView = nullptr;
+	IFocusDrawing* _focusDrawing = nullptr;
 	if (getFrame ()->focusDrawingEnabled () && isChild (getFrame ()->getFocusView (), false) && getFrame ()->getFocusView ()->isVisible () && getFrame ()->getFocusView ()->wantsFocus ())
 	{
 		_focusView = getFrame ()->getFocusView ();
@@ -704,8 +704,8 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 								lastDrawnFocus = focusPath->getBoundingBox ();
 								lastDrawnFocus.extend (1, 1);
 							}
-							_focusDrawing = 0;
-							_focusView = 0;
+							_focusDrawing = nullptr;
+							_focusView = nullptr;
 						}
 					}
 				}
@@ -860,7 +860,7 @@ CMouseEventResult CViewContainer::onMouseUp (CPoint &where, const CButtonState& 
 		where2.offset (-getViewSize ().left, -getViewSize ().top);
 		transform.inverse ().transform (where2);
 		mouseDownView->onMouseUp (where2, buttons);
-		mouseDownView = 0;
+		mouseDownView = nullptr;
 		return kMouseEventHandled;
 	}
 	return kMouseEventNotHandled;
@@ -879,7 +879,7 @@ CMouseEventResult CViewContainer::onMouseMoved (CPoint &where, const CButtonStat
 		CMouseEventResult mouseResult = mouseDownView->onMouseMoved (where2, buttons);
 		if (mouseResult != kMouseEventHandled && mouseResult != kMouseEventNotImplemented)
 		{
-			mouseDownView = 0;
+			mouseDownView = nullptr;
 			return kMouseEventNotHandled;
 		}
 		return kMouseEventHandled;
@@ -943,7 +943,7 @@ bool CViewContainer::onDrop (IDataPackage* drag, const CPoint& where)
 		result = currentDragView->onDrop (drag, where2);
 		currentDragView->onDragLeave (drag, where2);
 	}
-	currentDragView = 0;
+	currentDragView = nullptr;
 	
 	return result;
 }
@@ -972,7 +972,7 @@ void CViewContainer::onDragLeave (IDataPackage* drag, const CPoint& where)
 
 	if (currentDragView)
 		currentDragView->onDragLeave (drag, where2);
-	currentDragView = 0;
+	currentDragView = nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -1112,7 +1112,7 @@ bool CViewContainer::advanceNextFocusView (CView* oldFocus, bool reverse)
 				}
 				else if (CViewContainer* container = dynamic_cast<CViewContainer*> (pV))
 				{
-					if (container->advanceNextFocusView (0, reverse))
+					if (container->advanceNextFocusView (nullptr, reverse))
 						return true;
 				}
 			}
@@ -1179,7 +1179,7 @@ CView* CViewContainer::getViewAt (const CPoint& p, const GetViewOptions& options
 		}
 	ENDFOREACHSUBVIEW
 
-	return 0;
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------

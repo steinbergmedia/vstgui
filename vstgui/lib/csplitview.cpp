@@ -77,7 +77,7 @@ static ISplitViewController* getSplitViewController (const CView* view)
 	{
 		return dynamic_cast<ISplitViewController*> (controller);
 	}
-	return 0;
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -197,7 +197,7 @@ void CSplitView::resizeSecondView (CPoint diff)
 		else
 			viewIndex++;
 		r = view->getViewSize ();
-		if (separatorView == 0 && viewIndex == 2)
+		if (separatorView == nullptr && viewIndex == 2)
 		{
 			r.right += diff.x;
 			r.bottom += diff.y;
@@ -414,11 +414,11 @@ bool CSplitView::addView (CView* pView)
 			viewSize.offset (0, r.bottom);
 		}
 		CSplitViewSeparatorView* separator = new CSplitViewSeparatorView (r, getStyle (), (getNbViews () - 1) / 2);
-		CViewContainer::addView (separator, 0);
+		CViewContainer::addView (separator, nullptr);
 	}
 	pView->setViewSize (viewSize);
 	pView->setMouseableArea (viewSize);
-	return CViewContainer::addView (pView, 0);
+	return CViewContainer::addView (pView, nullptr);
 }
 
 //-----------------------------------------------------------------------------
@@ -488,7 +488,7 @@ void CSplitView::storeViewSizes ()
 		while (*it)
 		{
 			CSplitViewSeparatorView* sepView = dynamic_cast<CSplitViewSeparatorView*> (*it);
-			if (sepView == 0)
+			if (sepView == nullptr)
 			{
 				CRect r ((*it)->getViewSize ());
 				controller->storeViewSize (index, style == kHorizontal ? r.getWidth () : r.getHeight (), this);
@@ -562,8 +562,8 @@ bool CSplitView::requestNewSeparatorSize (CSplitViewSeparatorView* separatorView
 	bool result = false;
 	ViewIterator it (this);
 	uint32_t sepIndex = 0;
-	CView* view1 = 0;
-	CView* view2 = 0;
+	CView* view1 = nullptr;
+	CView* view2 = nullptr;
 	while (*it)
 	{
 		if (*it == separatorView)
@@ -587,7 +587,7 @@ bool CSplitView::requestNewSeparatorSize (CSplitViewSeparatorView* separatorView
 		CRect constrainSize (getViewSize ());
 		constrainSize.originize ();
 
-		CView* prevSeparator = sepIndex > 2 ? getView (sepIndex - 2) : 0;
+		CView* prevSeparator = sepIndex > 2 ? getView (sepIndex - 2) : nullptr;
 		CView* nextSeparator = getView (sepIndex + 2);
 		if (prevSeparator)
 		{
@@ -752,7 +752,7 @@ bool CSplitView::requestNewSeparatorSize (CSplitViewSeparatorView* separatorView
 //-----------------------------------------------------------------------------
 ISplitViewSeparatorDrawer* CSplitView::getDrawer ()
 {
-	ISplitViewSeparatorDrawer* drawer = 0;
+	ISplitViewSeparatorDrawer* drawer = nullptr;
 	ISplitViewController* controller = getSplitViewController (this);
 	if (controller)
 		drawer = controller->getSplitViewSeparatorDrawer (this);
@@ -796,7 +796,7 @@ CSplitViewSeparatorView::CSplitViewSeparatorView (const CRect& size, CSplitView:
 void CSplitViewSeparatorView::drawRect (CDrawContext *pContext, const CRect& r)
 {
 	CSplitView* splitView = static_cast<CSplitView*> (getParentView ());
-	ISplitViewSeparatorDrawer* drawer = splitView ? splitView->getDrawer () : 0;
+	ISplitViewSeparatorDrawer* drawer = splitView ? splitView->getDrawer () : nullptr;
 	if (drawer)
 	{
 		drawer->drawSplitViewSeparator (pContext, getViewSize (), flags, index, splitView);

@@ -59,7 +59,7 @@ class UINavigationDataSource : public GenericStringListDataBrowserSource
 {
 public:
 	UINavigationDataSource (IGenericStringListDataBrowserSourceSelectionChanged* delegate)
-	: GenericStringListDataBrowserSource (0, delegate) { textInset.x = 4.; headerBackgroundColor = kTransparentCColor; }
+	: GenericStringListDataBrowserSource (nullptr, delegate) { textInset.x = 4.; headerBackgroundColor = kTransparentCColor; }
 
 	int32_t dbOnKeyDown (const VstKeyCode& key, CDataBrowser* browser) override
 	{
@@ -212,10 +212,10 @@ UITemplateController::UITemplateController (IController* baseController, UIDescr
 , selection (selection)
 , undoManager (undoManager)
 , actionPerformer (actionPerformer)
-, templateView (0)
-, templateDataBrowser (0)
-, mainViewDataSource (0)
-, selectedTemplateName (0)
+, templateView (nullptr)
+, templateDataBrowser (nullptr)
+, mainViewDataSource (nullptr)
+, selectedTemplateName (nullptr)
 {
 	editDescription->addDependency (this);
 }
@@ -279,14 +279,14 @@ void UITemplateController::dbSelectionChanged (int32_t selectedRow, GenericStrin
 {
 	if (source->getStringList () == &templateNames)
 	{
-		std::string* newName = 0;
+		std::string* newName = nullptr;
 		if (selectedRow == CDataBrowser::kNoSelection)
-			newName = 0;
+			newName = nullptr;
 		else
 			newName = &templateNames[static_cast<uint32_t> (selectedRow)];
 
-		if ((newName == 0 && selectedTemplateName != 0)
-		 || (newName != 0 && selectedTemplateName == 0)
+		if ((newName == nullptr && selectedTemplateName != nullptr)
+		 || (newName != nullptr && selectedTemplateName == nullptr)
 		 || (newName != selectedTemplateName && *newName != *selectedTemplateName))
 		{
 			selectedTemplateName = newName;
@@ -351,7 +351,7 @@ void UITemplateController::setTemplateView (CViewContainer* view)
 		{
 			mainViewDataSource->remove ();
 			mainViewDataSource->forget ();
-			mainViewDataSource = 0;
+			mainViewDataSource = nullptr;
 		}
 		if (templateView && templateDataBrowser)
 		{
@@ -379,7 +379,7 @@ CView* UITemplateController::createView (const UIAttributes& attributes, const I
 	{
 		if (*name == "TemplateBrowser")
 		{
-			vstgui_assert (templateDataBrowser == 0);
+			vstgui_assert (templateDataBrowser == nullptr);
 			std::list<const std::string*> tmp;
 			editDescription->collectTemplateViewNames (tmp);
 			tmp.sort (UIEditController::std__stringCompare);
@@ -387,7 +387,7 @@ CView* UITemplateController::createView (const UIAttributes& attributes, const I
 				templateNames.push_back ((*it)->c_str ());
 			
 			UIAttributes* attr = editDescription->getCustomAttributes ("UITemplateController", true);
-			const std::string* templateName = attr ? attr->getAttributeValue ("SelectedTemplate") : 0;
+			const std::string* templateName = attr ? attr->getAttributeValue ("SelectedTemplate") : nullptr;
 			UITemplatesDataSource* dataSource = new UITemplatesDataSource (this, editDescription, actionPerformer, templateName);
 			dataSource->setStringList (&templateNames);
 			UIEditController::setupDataSource (dataSource);
@@ -418,10 +418,10 @@ UIViewListDataSource::UIViewListDataSource (CViewContainer* view, const IViewFac
 : UINavigationDataSource (delegate)
 , view (view)
 , viewFactory (viewFactory)
-, next (0)
+, next (nullptr)
 , selection (selection)
 , undoManager (undoManager)
-, selectedView (0)
+, selectedView (nullptr)
 , inUpdate (false)
 {
 	update (view);
@@ -439,7 +439,7 @@ CView* UIViewListDataSource::getSubview (int32_t index)
 {
 	if (index >= 0 && index < (int32_t)subviews.size ())
 		return subviews[static_cast<uint32_t> (index)];
-	return 0;
+	return nullptr;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -509,7 +509,7 @@ void UIViewListDataSource::dbSelectionChanged (CDataBrowser* browser)
 	if (next)
 	{
 		next->remove ();
-		next = 0;
+		next = nullptr;
 	}
 	GenericStringListDataBrowserSource::dbSelectionChanged (browser);
 	CViewContainer* container = dynamic_cast<CViewContainer*>(subview);
@@ -541,7 +541,7 @@ void UIViewListDataSource::remove ()
 	if (next)
 	{
 		next->remove ();
-		next = 0;
+		next = nullptr;
 	}
 	if (dataBrowser)
 	{
@@ -596,11 +596,11 @@ CMessageResult UIViewListDataSource::notify (CBaseObject* sender, IdStringPtr me
 					return kMessageNotified;
 				}
 			}
-			selectedView = 0;
+			selectedView = nullptr;
 			if (next)
 			{
 				next->remove ();
-				next = 0;
+				next = nullptr;
 			}
 		}
 		return kMessageNotified;

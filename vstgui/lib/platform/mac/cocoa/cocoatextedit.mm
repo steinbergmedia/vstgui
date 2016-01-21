@@ -43,7 +43,7 @@
 
 using namespace VSTGUI;
 
-static Class textFieldClass = 0;
+static Class textFieldClass = nullptr;
 
 @interface NSObject (VSTGUI_NSTextField_Private)
 -(id)initWithTextEdit:(id)textEit;
@@ -167,7 +167,7 @@ static void VSTGUI_NSTextField_SyncSize (id self, SEL _cmd)
 //------------------------------------------------------------------------------------
 static void VSTGUI_NSTextField_RemoveFromSuperview (id self, SEL _cmd)
 {
-	OBJC_SET_VALUE (self, _textEdit, 0);
+	OBJC_SET_VALUE (self, _textEdit, nullptr);
 	NSView* containerView = [self superview];
 	if (containerView)
 	{
@@ -252,7 +252,7 @@ __attribute__((__destructor__)) static void cleanup_VSTGUI_NSTextField ()
 //-----------------------------------------------------------------------------
 void CocoaTextEdit::initClass ()
 {
-	if (textFieldClass == 0)
+	if (textFieldClass == nullptr)
 	{
 		AutoreleasePool ap;
 		NSMutableString* textFieldClassName = [[[NSMutableString alloc] initWithString:@"VSTGUI_NSTextField"] autorelease];
@@ -270,7 +270,7 @@ void CocoaTextEdit::initClass ()
 //-----------------------------------------------------------------------------
 CocoaTextEdit::CocoaTextEdit (NSView* parent, IPlatformTextEditCallback* textEdit)
 : IPlatformTextEdit (textEdit)
-, platformControl (0)
+, platformControl (nullptr)
 , parent (parent)
 {
 	initClass ();

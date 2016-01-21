@@ -53,8 +53,8 @@ namespace VSTGUI {
  */
 //------------------------------------------------------------------------
 CVuMeter::CVuMeter (const CRect& size, CBitmap* onBitmap, CBitmap* offBitmap, int32_t nbLed, int32_t style)
-: CControl (size, 0, 0)
-, offBitmap (0)
+: CControl (size, nullptr, 0)
+, offBitmap (nullptr)
 , nbLed (nbLed)
 , style (style)
 {
@@ -72,7 +72,7 @@ CVuMeter::CVuMeter (const CRect& size, CBitmap* onBitmap, CBitmap* offBitmap, in
 //------------------------------------------------------------------------
 CVuMeter::CVuMeter (const CVuMeter& v)
 : CControl (v)
-, offBitmap (0)
+, offBitmap (nullptr)
 , nbLed (v.nbLed)
 , style (v.style)
 , decreaseValue (v.decreaseValue)
@@ -86,8 +86,8 @@ CVuMeter::CVuMeter (const CVuMeter& v)
 //------------------------------------------------------------------------
 CVuMeter::~CVuMeter ()
 {
-	setOnBitmap (0);
-	setOffBitmap (0);
+	setOnBitmap (nullptr);
+	setOffBitmap (nullptr);
 }
 
 //------------------------------------------------------------------------

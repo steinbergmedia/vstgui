@@ -103,7 +103,7 @@ CDrawContext::Transform::~Transform ()
 
 //-----------------------------------------------------------------------------
 CDrawContext::CDrawContext (const CRect& surfaceRect)
-: drawStringHelper (0)
+: drawStringHelper (nullptr)
 , surfaceRect (surfaceRect)
 {
 	transformStack.push (CGraphicsTransform ());
@@ -216,7 +216,7 @@ void CDrawContext::setFontColor (const CColor& color)
 //-----------------------------------------------------------------------------
 void CDrawContext::setFont (const CFontRef newFont, const CCoord& size, const int32_t& style)
 {
-	if (newFont == 0)
+	if (newFont == nullptr)
 		return;
 	if ((size > 0 && newFont->getSize () != size) || (style != -1 && newFont->getStyle () != style))
 	{
@@ -241,7 +241,7 @@ void CDrawContext::setGlobalAlpha (float newAlpha)
 //-----------------------------------------------------------------------------
 const CString& CDrawContext::getDrawString (UTF8StringPtr string)
 {
-	if (drawStringHelper == 0)
+	if (drawStringHelper == nullptr)
 		drawStringHelper = new CString (string);
 	else
 		drawStringHelper->setUTF8String (string);
@@ -252,14 +252,14 @@ const CString& CDrawContext::getDrawString (UTF8StringPtr string)
 void CDrawContext::clearDrawString ()
 {
 	if (drawStringHelper)
-		drawStringHelper->setUTF8String (0);
+		drawStringHelper->setUTF8String (nullptr);
 }
 
 //------------------------------------------------------------------------
 CCoord CDrawContext::getStringWidth (IPlatformString* string)
 {
 	CCoord result = -1;
-	if (currentState.font == 0 || string == 0)
+	if (currentState.font == nullptr || string == nullptr)
 		return result;
 	
 	IFontPainter* painter = currentState.font->getFontPainter ();
@@ -274,10 +274,10 @@ CCoord CDrawContext::getStringWidth (IPlatformString* string)
 //------------------------------------------------------------------------
 void CDrawContext::drawString (IPlatformString* string, const CRect& _rect, const CHoriTxtAlign hAlign, bool antialias)
 {
-	if (!string || currentState.font == 0)
+	if (!string || currentState.font == nullptr)
 		return;
 	IFontPainter* painter = currentState.font->getFontPainter ();
-	if (painter == 0)
+	if (painter == nullptr)
 		return;
 	
 	CRect rect (_rect);
@@ -306,7 +306,7 @@ void CDrawContext::drawString (IPlatformString* string, const CRect& _rect, cons
 //------------------------------------------------------------------------
 void CDrawContext::drawString (IPlatformString* string, const CPoint& point, bool antialias)
 {
-	if (string == 0 || currentState.font == 0)
+	if (string == nullptr || currentState.font == nullptr)
 		return;
 	
 	IFontPainter* painter = currentState.font->getFontPainter ();

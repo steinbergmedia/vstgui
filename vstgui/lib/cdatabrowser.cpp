@@ -121,9 +121,9 @@ protected:
 CDataBrowser::CDataBrowser (const CRect& size, IDataBrowserDelegate* db, int32_t style, CCoord scrollbarWidth, CBitmap* pBackground)
 : CScrollView (size, CRect (0, 0, 0, 0), style, scrollbarWidth, pBackground)
 , db (db)
-, dbView (0)
-, dbHeader (0)
-, dbHeaderContainer (0)
+, dbView (nullptr)
+, dbHeader (nullptr)
+, dbHeaderContainer (nullptr)
 {
 	setTransparency (true);
 	dbView = new CDataBrowserView (CRect (0, 0, 0, 0), db, this);
@@ -228,7 +228,7 @@ void CDataBrowser::valueChanged (CControl *pControl)
 				break;
 			}
 		}
-		if (isAttached () && (mouseDownView == dbView || mouseDownView == 0))
+		if (isAttached () && (mouseDownView == dbView || mouseDownView == nullptr))
 		{
 			CPoint where;
 			getFrame ()->getCurrentMouseLocation (where);
@@ -292,7 +292,7 @@ void CDataBrowser::recalculateLayout (bool rememberSelection)
 		CRect headerSize (0, 0, newContainerSize.getWidth (), rowHeight+lineWidth);
 		if (style & kHorizontalScrollbar && hsb)
 			headerSize.right += hsb->getWidth ();
-		if (dbHeader == 0)
+		if (dbHeader == nullptr)
 		{
 			CRect hcs (headerSize);
 			if (!(style & kDontDrawFrame))
@@ -305,7 +305,7 @@ void CDataBrowser::recalculateLayout (bool rememberSelection)
 			dbHeader = new CDataBrowserHeader (headerSize, db, this);
 			dbHeader->setAutosizeFlags (kAutosizeLeft|kAutosizeRight|kAutosizeTop);
 			dbHeaderContainer->addView (dbHeader);
-			CViewContainer::addView (dbHeaderContainer, 0);
+			CViewContainer::addView (dbHeaderContainer, nullptr);
 		}
 		else
 		{
@@ -557,7 +557,7 @@ void CDataBrowser::beginTextEdit (const Cell& cell, UTF8StringPtr initialText)
 	CRect r = getCellBounds (cell);
 	makeRectVisible (r);
 	CRect cellRect = getCellBounds (cell);
-	CTextEdit* te = new CTextEdit (cellRect, 0, -1, initialText);
+	CTextEdit* te = new CTextEdit (cellRect, nullptr, -1, initialText);
 	db->dbCellSetupTextEdit (cell.row, cell.column, te, this);
 	addView (te);
 	getFrame ()->setFocusView (te);
@@ -1145,9 +1145,9 @@ GenericStringListDataBrowserSource::GenericStringListDataBrowserSource (const St
 , textInset (2., 0.)
 , textAlignment (kLeftText)
 , drawFont (kSystemFont)
-, dataBrowser (0)
+, dataBrowser (nullptr)
 , delegate (delegate)
-, timer (0)
+, timer (nullptr)
 {
 	drawFont->remember ();
 }
@@ -1169,7 +1169,7 @@ void GenericStringListDataBrowserSource::dbAttached (CDataBrowser* browser)
 //-----------------------------------------------------------------------------
 void GenericStringListDataBrowserSource::dbRemoved (CDataBrowser* browser)
 {
-	dataBrowser = 0;
+	dataBrowser = nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -1289,7 +1289,7 @@ int32_t GenericStringListDataBrowserSource::dbOnKeyDown (const VstKeyCode& _key,
 	}
 	if (dataBrowser && key.virt == 0 && key.modifier == 0)
 	{
-		if (timer == 0)
+		if (timer == nullptr)
 		{
 			timer = new CVSTGUITimer (this, 1000);
 			timer->start ();
@@ -1333,7 +1333,7 @@ CMessageResult GenericStringListDataBrowserSource::notify (CBaseObject* sender, 
 	{
 		keyDownFindString = "";
 		timer->forget ();
-		timer = 0;
+		timer = nullptr;
 		return kMessageNotified;
 	}
 	return kMessageUnknown;

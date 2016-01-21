@@ -56,7 +56,7 @@ IdStringPtr CTextLabel::kMsgTruncatedTextChanged = "CTextLabel::kMsgTruncatedTex
 //------------------------------------------------------------------------
 CTextLabel::CTextLabel (const CRect& size, UTF8StringPtr txt, CBitmap* background, const int32_t style)
 : CParamDisplay (size, background, style)
-, text (0)
+, text (nullptr)
 , textTruncateMode (kTruncateNone)
 {
 	setText (txt);
@@ -65,7 +65,7 @@ CTextLabel::CTextLabel (const CRect& size, UTF8StringPtr txt, CBitmap* backgroun
 //------------------------------------------------------------------------
 CTextLabel::CTextLabel (const CTextLabel& v)
 : CParamDisplay (v)
-, text (0)
+, text (nullptr)
 , textTruncateMode (v.textTruncateMode)
 {
 	setText (v.getText ());
@@ -105,12 +105,12 @@ void CTextLabel::calculateTruncatedText ()
 		truncatedText = "";
 		return;
 	}
-	if (!(textTruncateMode == kTruncateNone || text.getByteCount () == 0 || fontID == 0 || fontID->getPlatformFont () == 0 || fontID->getPlatformFont ()->getPainter () == 0))
+	if (!(textTruncateMode == kTruncateNone || text.getByteCount () == 0 || fontID == nullptr || fontID->getPlatformFont () == nullptr || fontID->getPlatformFont ()->getPainter () == nullptr))
 	{
 		CDrawMethods::TextTruncateMode mode = textTruncateMode == kTruncateHead ? CDrawMethods::kTextTruncateHead : CDrawMethods::kTextTruncateTail;
 		truncatedText = CDrawMethods::createTruncatedText (mode, text, fontID, getWidth ());
 		if (truncatedText == text)
-			truncatedText.set (0);
+			truncatedText.set (nullptr);
 		changed (kMsgTruncatedTextChanged);
 	}
 }
@@ -132,9 +132,9 @@ void CTextLabel::draw (CDrawContext *pContext)
 //------------------------------------------------------------------------
 bool CTextLabel::sizeToFit ()
 {
-	if (fontID == 0 || fontID->getPlatformFont () == 0 || fontID->getPlatformFont ()->getPainter () == 0)
+	if (fontID == nullptr || fontID->getPlatformFont () == nullptr || fontID->getPlatformFont ()->getPainter () == nullptr)
 		return false;
-	CCoord width = fontID->getPlatformFont ()->getPainter ()->getStringWidth (0, text.getPlatformString (), true);
+	CCoord width = fontID->getPlatformFont ()->getPainter ()->getStringWidth (nullptr, text.getPlatformString (), true);
 	if (width > 0)
 	{
 		width += (getTextInset ().x * 2.);

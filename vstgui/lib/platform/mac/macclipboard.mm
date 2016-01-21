@@ -70,7 +70,7 @@ Pasteboard::Pasteboard (NSPasteboard* pb)
 : pb (pb)
 , nbItems (0)
 , stringsAreFiles (false)
-, dataArray (0)
+, dataArray (nullptr)
 {
 	NSArray *supportedTypes = [NSArray arrayWithObjects: NSStringPboardType, nil];
 	NSString* hasString = [pb availableTypeFromArray: supportedTypes];
@@ -225,7 +225,7 @@ void setClipboard (IDataPackage* dataSource)
 	if (dataSource)
 	{
 		uint32_t nbItems = dataSource->getCount ();
-		NSMutableArray* fileArray = 0;
+		NSMutableArray* fileArray = nullptr;
 		IDataPackage::Type type;
 		const void* data;
 		uint32_t length;
@@ -249,7 +249,7 @@ void setClipboard (IDataPackage* dataSource)
 					}
 					case IDataPackage::kFilePath:
 					{
-						if (fileArray == 0)
+						if (fileArray == nullptr)
 							fileArray = [[[NSMutableArray alloc] init] autorelease];
 						[fileArray addObject:[NSString stringWithCString:(const char*)data encoding:NSUTF8StringEncoding]];
 						break;

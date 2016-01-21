@@ -140,7 +140,7 @@ CView* UISelection::first () const
 {
 	if (size () > 0)
 		return *begin ();
-	return 0;
+	return nullptr;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -229,7 +229,7 @@ bool UISelection::restore (InputStream& stream, IUIDescription* uiDescription)
 	UIDescription* desc = dynamic_cast<UIDescription*>(uiDescription);
 	if (desc)
 	{
-		UIAttributes* attr = 0;
+		UIAttributes* attr = nullptr;
 		if (desc->restoreViews (stream, *this, &attr))
 		{
 			if (attr)

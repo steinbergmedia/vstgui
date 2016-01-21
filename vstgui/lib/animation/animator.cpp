@@ -160,7 +160,7 @@ public:
 				if (gInstance->animators.empty ())
 				{
 					gInstance->forget ();
-					gInstance = 0;
+					gInstance = nullptr;
 				}
 			}
 		}
@@ -169,7 +169,7 @@ public:
 protected:
 	static Timer* getInstance ()
 	{
-		if (gInstance == 0)
+		if (gInstance == nullptr)
 			gInstance = new Timer;
 		return gInstance;
 	}
@@ -190,7 +190,7 @@ protected:
 		DebugPrint ("Animation timer stopped\n");
 		#endif
 		timer->forget ();
-		gInstance = 0;
+		gInstance = nullptr;
 	}
 	
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override
@@ -229,7 +229,7 @@ protected:
 	bool inTimer;
 	static Timer* gInstance;
 };
-Timer* Timer::gInstance = 0;
+Timer* Timer::gInstance = nullptr;
 ///@endcond
 
 /** @class Animator

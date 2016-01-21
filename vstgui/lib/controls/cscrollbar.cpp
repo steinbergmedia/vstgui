@@ -18,7 +18,7 @@ namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
 CScrollbar::CScrollbar (const CRect& size, IControlListener* listener, int32_t tag, ScrollbarDirection direction, const CRect& scrollSize)
-: CControl (size, listener, tag, 0)
+: CControl (size, listener, tag, nullptr)
 , direction (direction)
 , scrollSize (scrollSize)
 , scrollerArea (size)
@@ -26,8 +26,8 @@ CScrollbar::CScrollbar (const CRect& size, IControlListener* listener, int32_t t
 , scrollerLength (0)
 , overlayStyle (false)
 , mouseIsInside (false)
-, drawer (0)
-, timer (0)
+, drawer (nullptr)
+, timer (nullptr)
 {
 	setTransparency (true);
 	setWheelInc (0.05f);
@@ -52,7 +52,7 @@ CScrollbar::CScrollbar (const CScrollbar& v)
 , overlayStyle (v.overlayStyle)
 , mouseIsInside (false)
 , drawer (v.drawer)
-, timer (0)
+, timer (nullptr)
 {
 	calculateScrollerLength ();
 }
@@ -201,7 +201,7 @@ CMouseEventResult CScrollbar::onMouseExited (CPoint& where, const CButtonState& 
 {
 	if (overlayStyle)
 	{
-		Animation::ITimingFunction* timingFunction = 0;
+		Animation::ITimingFunction* timingFunction = nullptr;
 		if (getAlphaValue () == 1.f)
 		{
 			Animation::InterpolationTimingFunction* interpolTimingFunction = new Animation::InterpolationTimingFunction (400);
@@ -246,7 +246,7 @@ CMouseEventResult CScrollbar::onMouseUp (CPoint &where, const CButtonState& butt
 	if (timer)
 	{
 		timer->forget ();
-		timer = 0;
+		timer = nullptr;
 	}
 	return kMouseEventHandled;
 }

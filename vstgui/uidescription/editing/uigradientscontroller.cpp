@@ -466,7 +466,7 @@ IController* UIGradientEditorController::createSubController (UTF8StringPtr name
 	{
 		return new UIColorChooserController (this, editColor);
 	}
-	return 0;
+	return nullptr;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -498,7 +498,7 @@ CView* UIGradientEditorController::createView (const UIAttributes& attributes, c
 			return colorStopEditView;
 		}
 	}
-	return 0;
+	return nullptr;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -540,7 +540,7 @@ CGradient* UIGradientsDataSource::getSelectedGradient ()
 	int32_t selectedRow = dataBrowser ? dataBrowser->getSelectedRow() : CDataBrowser::kNoSelection;
 	if (selectedRow != CDataBrowser::kNoSelection && selectedRow < (int32_t)names.size ())
 		return description->getGradient (names.at (static_cast<uint32_t> (selectedRow)).c_str ());
-	return 0;
+	return nullptr;
 }
 
 //------------------------------------------------------------------------
@@ -568,7 +568,7 @@ bool UIGradientsDataSource::addItem (UTF8StringPtr name)
 //----------------------------------------------------------------------------------------------------
 bool UIGradientsDataSource::removeItem (UTF8StringPtr name)
 {
-	actionPerformer->performGradientChange (name, 0, true);
+	actionPerformer->performGradientChange (name, nullptr, true);
 	return true;
 }
 
@@ -587,7 +587,7 @@ void UIGradientsDataSource::update ()
 void UIGradientsDataSource::dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser)
 {
 	GenericStringListDataBrowserSource::dbDrawCell (context, size, row, column, flags, browser);
-	CGradient* gradient = 0;
+	CGradient* gradient = nullptr;
 	if ((gradient = description->getGradient (names.at (static_cast<uint32_t> (row)).c_str ())))
 	{
 		context->setFrameColor (kBlackCColor);
@@ -630,7 +630,7 @@ UIGradientsController::UIGradientsController (IController* baseController, UIDes
 : DelegationController (baseController)
 , editDescription (description)
 , actionPerformer (actionPerformer)
-, dataSource (0)
+, dataSource (nullptr)
 {
 	dataSource = new UIGradientsDataSource (editDescription, actionPerformer, this);
 	UIEditController::setupDataSource (dataSource);

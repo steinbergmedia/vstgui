@@ -51,7 +51,7 @@ namespace CFontChooserInternal {
 class FontPreviewView : public CView
 {
 public:
-	FontPreviewView (const CRect& size, const CColor& color = kWhiteCColor) : CView (size), font (0), fontColor (color) {}
+	FontPreviewView (const CRect& size, const CColor& color = kWhiteCColor) : CView (size), font (nullptr), fontColor (color) {}
 	~FontPreviewView () { if (font) font->forget (); }
 	
 	void setFont (CFontRef newFont)
@@ -111,9 +111,9 @@ enum {
 //-----------------------------------------------------------------------------
 CFontChooser::CFontChooser (IFontChooserDelegate* delegate, CFontRef initialFont, const CFontChooserUIDefinition& uiDef)
 : CViewContainer (CRect (0, 0, 300, 500))
-, delegate (0)
-, selFont (0)
-, fontBrowser (0)
+, delegate (nullptr)
+, selFont (nullptr)
+, fontBrowser (nullptr)
 {
 	std::list<std::string> fnList;
 	IPlatformFont::getAllPlatformFontFamilies (fnList);
@@ -248,7 +248,7 @@ void CFontChooser::setFont (CFontRef font)
 //-----------------------------------------------------------------------------
 void CFontChooser::valueChanged (CControl* pControl)
 {
-	if (selFont == 0)
+	if (selFont == nullptr)
 		return;
 
 	switch (pControl->getTag ())

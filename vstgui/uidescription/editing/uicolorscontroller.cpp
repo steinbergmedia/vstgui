@@ -288,10 +288,10 @@ bool UIColorsDataSource::dbOnDropInCell (int32_t row, int32_t column, const CPoi
 		std::string gv (colorString.substr (3, 2));
 		std::string bv (colorString.substr (5, 2));
 		std::string av (colorString.substr (7, 2));
-		dragColor.red = (uint8_t)strtol (rv.c_str (), 0, 16);
-		dragColor.green = (uint8_t)strtol (gv.c_str (), 0, 16);
-		dragColor.blue = (uint8_t)strtol (bv.c_str (), 0, 16);
-		dragColor.alpha = (uint8_t)strtol (av.c_str (), 0, 16);
+		dragColor.red = (uint8_t)strtol (rv.c_str (), nullptr, 16);
+		dragColor.green = (uint8_t)strtol (gv.c_str (), nullptr, 16);
+		dragColor.blue = (uint8_t)strtol (bv.c_str (), nullptr, 16);
+		dragColor.alpha = (uint8_t)strtol (av.c_str (), nullptr, 16);
 		
 		if (row >= 0)
 		{
@@ -317,7 +317,7 @@ UIColorsController::UIColorsController (IController* baseController, UIDescripti
 : DelegationController (baseController)
 , editDescription (description)
 , actionPerformer (actionPerformer)
-, dataSource (0)
+, dataSource (nullptr)
 , color (makeOwned<UIColor> ())
 {
 	dataSource = new UIColorsDataSource (editDescription, actionPerformer, color);

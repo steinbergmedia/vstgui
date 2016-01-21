@@ -86,7 +86,7 @@ class CViewAttributeEntry
 public:
 	CViewAttributeEntry (uint32_t _size, const void* _data)
 	: size (0)
-	, data (0)
+	, data (nullptr)
 	{
 		updateData (_size, _data);
 	}
@@ -105,12 +105,12 @@ public:
 		if (data && size != _size)
 		{
 			std::free (data);
-			data = 0;
+			data = nullptr;
 		}
 		size = _size;
 		if (size)
 		{
-			if (data == 0)
+			if (data == nullptr)
 				data = std::malloc (size);
 			std::memcpy (data, _data, size);
 		}
@@ -118,7 +118,7 @@ public:
 
 	CViewAttributeEntry (CViewAttributeEntry&& me) noexcept
 	: size (0)
-	, data (0)
+	, data (nullptr)
 	{
 		*this = std::move (me);
 	}
@@ -145,7 +145,7 @@ class IdleViewUpdater : public CBaseObject
 public:
 	static void add (CView* view)
 	{
-		if (gInstance == 0)
+		if (gInstance == nullptr)
 			new IdleViewUpdater ();
 		gInstance->views.push_back (view);
 	}
@@ -167,7 +167,7 @@ protected:
 
 	IdleViewUpdater ()
 	{
-		vstgui_assert (gInstance == 0);
+		vstgui_assert (gInstance == nullptr);
 		gInstance = this;
 		timer = new CVSTGUITimer (this, 1000/CView::idleRate, true);
 	}
@@ -175,7 +175,7 @@ protected:
 	~IdleViewUpdater ()
 	{
 		timer->forget ();
-		gInstance = 0;
+		gInstance = nullptr;
 	}
 
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override
@@ -194,7 +194,7 @@ protected:
 
 	static IdleViewUpdater* gInstance;
 };
-IdleViewUpdater* IdleViewUpdater::gInstance = 0;
+IdleViewUpdater* IdleViewUpdater::gInstance = nullptr;
 uint32_t CView::idleRate = 30;
 /// @endcond
 
@@ -217,9 +217,9 @@ bool CView::kDirtyCallAlwaysOnMainThread = false;
 CView::CView (const CRect& size)
 : size (size)
 , mouseableArea (size)
-, pParentFrame (0)
-, pParentView (0)
-, pBackground (0)
+, pParentFrame (nullptr)
+, pParentView (nullptr)
+, pBackground (nullptr)
 , autosizeFlags (kAutosizeNone)
 , alphaValue (1.f)
 {
@@ -236,8 +236,8 @@ CView::CView (const CRect& size)
 CView::CView (const CView& v)
 : size (v.size)
 , mouseableArea (v.mouseableArea)
-, pParentFrame (0)
-, pParentView (0)
+, pParentFrame (nullptr)
+, pParentView (nullptr)
 , pBackground (v.pBackground)
 , pDisabledBackground (v.pDisabledBackground)
 , pHitTestPath (v.pHitTestPath)
@@ -255,7 +255,7 @@ CView::~CView ()
 	vstgui_assert (isAttached () == false, "View is still attached");
 	vstgui_assert (viewListeners.empty (), "View listeners not empty");
 
-	IController* controller = 0;
+	IController* controller = nullptr;
 	uint32_t size = sizeof (IController*);
 	if (getAttribute (kCViewControllerAttribute, sizeof (IController*), &controller, size) == true)
 	{
@@ -378,7 +378,7 @@ bool CView::attached (CView* parent)
 {
 	if (isAttached ())
 		return false;
-	vstgui_assert (dynamic_cast<CViewContainer*> (parent) != 0);
+	vstgui_assert (dynamic_cast<CViewContainer*> (parent) != nullptr);
 	pParentView = parent;
 	pParentFrame = parent->getFrame ();
 	viewFlags |= kIsAttached;
@@ -408,8 +408,8 @@ bool CView::removed (CView* parent)
 	});
 	if (pParentFrame)
 		pParentFrame->onViewRemoved (this);
-	pParentView = 0;
-	pParentFrame = 0;
+	pParentView = nullptr;
+	pParentFrame = nullptr;
 	viewFlags &= ~kIsAttached;
 	return true;
 }
@@ -719,7 +719,7 @@ void CView::setAlphaValue (float alpha)
 //-----------------------------------------------------------------------------
 VSTGUIEditorInterface* CView::getEditor () const
 {
-	return pParentFrame ? pParentFrame->getEditor () : 0;
+	return pParentFrame ? pParentFrame->getEditor () : nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -800,7 +800,7 @@ bool CView::getAttribute (const CViewAttributeID aId, const uint32_t inSize, voi
  */
 bool CView::setAttribute (const CViewAttributeID aId, const uint32_t inSize, const void* inData)
 {
-	if (inData == 0 || inSize <= 0)
+	if (inData == nullptr || inSize <= 0)
 		return false;
 	ViewAttributes::const_iterator it = attributes.find (aId);
 	if (it != attributes.end ())
@@ -899,7 +899,7 @@ void* CDragContainerHelper::first (int32_t& outSize, int32_t& outType)
 void* CDragContainerHelper::next (int32_t& outSize, int32_t& outType)
 {
 	IDataPackage::Type type;
-	const void* data = 0;
+	const void* data = nullptr;
 	outSize = static_cast<int32_t> (drag->getData (static_cast<uint32_t> (index), data, type));
 	switch (type)
 	{

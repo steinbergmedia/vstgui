@@ -64,7 +64,7 @@ HIDDEN inline IPlatformFrameCallback* getFrame (id obj)
 	NSViewFrame* nsViewFrame = (NSViewFrame*)OBJC_GET_VALUE(obj, _nsViewFrame);
 	if (nsViewFrame)
 		return nsViewFrame->getFrame ();
-	return 0;
+	return nullptr;
 }
 
 //------------------------------------------------------------------------------------
@@ -73,8 +73,8 @@ HIDDEN inline NSViewFrame* getNSViewFrame (id obj)
 	return (NSViewFrame*)OBJC_GET_VALUE(obj, _nsViewFrame);
 }
 
-static Class viewClass = 0;
-static IDataPackage* gCocoaDragContainer = 0;
+static Class viewClass = nullptr;
+static IDataPackage* gCocoaDragContainer = nullptr;
 
 #ifndef __MAC_10_7
 //------------------------------------------------------------------------------------
@@ -595,7 +595,7 @@ static void VSTGUI_NSView_draggingExited (id self, SEL _cmd, id sender)
 	[[NSCursor arrowCursor] set];
 
 	gCocoaDragContainer->forget ();
-	gCocoaDragContainer = 0;
+	gCocoaDragContainer = nullptr;
 }
 
 //------------------------------------------------------------------------------------
@@ -610,7 +610,7 @@ static BOOL VSTGUI_NSView_performDragOperation (id self, SEL _cmd, id sender)
 	bool result = _vstguiframe->platformOnDrop (gCocoaDragContainer, where);
 	getNSViewFrame (self)->setMouseCursor (kCursorDefault);
 	gCocoaDragContainer->forget ();
-	gCocoaDragContainer = 0;
+	gCocoaDragContainer = nullptr;
 	return result;
 }
 
@@ -664,7 +664,7 @@ __attribute__((__destructor__)) static void cleanup_VSTGUI_NSView ()
 //-----------------------------------------------------------------------------
 void NSViewFrame::initClass ()
 {
-	if (viewClass == 0)
+	if (viewClass == nullptr)
 	{
 		AutoreleasePool ap;
 
@@ -733,8 +733,8 @@ void NSViewFrame::initClass ()
 //-----------------------------------------------------------------------------
 NSViewFrame::NSViewFrame (IPlatformFrameCallback* frame, const CRect& size, NSView* parent)
 : IPlatformFrame (frame)
-, nsView (0)
-, tooltipWindow (0)
+, nsView (nullptr)
+, tooltipWindow (nullptr)
 , ignoreNextResignFirstResponder (false)
 , trackingAreaInitialized (false)
 , inDraw (false)
@@ -883,7 +883,7 @@ bool NSViewFrame::setMouseCursor (CCursorType type)
 {
 	cursor = type;
 	@try {
-	NSCursor* cur = 0;
+	NSCursor* cur = nullptr;
 	switch (type)
 	{
 		case kCursorWait: cur = [NSCursor arrowCursor]; break;
@@ -970,7 +970,7 @@ bool NSViewFrame::scrollRect (const CRect& src, const CPoint& distance)
 //-----------------------------------------------------------------------------
 bool NSViewFrame::showTooltip (const CRect& rect, const char* utf8Text)
 {
-	if (tooltipWindow == 0)
+	if (tooltipWindow == nullptr)
 		tooltipWindow = new CocoaTooltipWindow;
 	tooltipWindow->set (this, rect, utf8Text);
 	return true;
@@ -1011,7 +1011,7 @@ IPlatformOpenGLView* NSViewFrame::createPlatformOpenGLView ()
 IPlatformViewLayer* NSViewFrame::createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer)
 {
 	CAViewLayer* parentViewLayer = dynamic_cast<CAViewLayer*> (parentLayer);
-	if (parentViewLayer == 0 || parentViewLayer->getLayer () == 0)
+	if (parentViewLayer == nullptr || parentViewLayer->getLayer () == nullptr)
 	{
 		// after this is called, 'Quartz Debug' will not work as before. So when using 'Quartz Debug' comment the following two lines.
 		[nsView setWantsLayer:YES];
@@ -1033,22 +1033,22 @@ COffscreenContext* NSViewFrame::createOffscreenContext (CCoord width, CCoord hei
 	if (context->getCGContext ())
 		return context;
 	context->forget ();
-	return 0;
+	return nullptr;
 }
 
 //------------------------------------------------------------------------------------
 DragResult NSViewFrame::doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap)
 {
 	lastDragOperationResult = kDragError;
-	CGBitmap* cgBitmap = dragBitmap ? dynamic_cast<CGBitmap*> (dragBitmap->getPlatformBitmap ()) : 0;
-	CGImageRef cgImage = cgBitmap ? cgBitmap->getCGImage () : 0;
+	CGBitmap* cgBitmap = dragBitmap ? dynamic_cast<CGBitmap*> (dragBitmap->getPlatformBitmap ()) : nullptr;
+	CGImageRef cgImage = cgBitmap ? cgBitmap->getCGImage () : nullptr;
 	if (nsView)
 	{
 		NSPoint bitmapOffset = { static_cast<CGFloat>(offset.x), static_cast<CGFloat>(offset.y) };
 		NSPasteboard* nsPasteboard = [NSPasteboard pasteboardWithName:NSDragPboard];
 		NSImage* nsImage = nil;
 		NSEvent* event = [NSApp currentEvent];
-		if (event == 0 || !([event type] == NSLeftMouseDown || [event type] == NSLeftMouseDragged))
+		if (event == nullptr || !([event type] == NSLeftMouseDown || [event type] == NSLeftMouseDragged))
 			return kDragRefused;
 		NSPoint nsLocation = [event locationInWindow];
 		if (cgImage)
@@ -1079,7 +1079,7 @@ DragResult NSViewFrame::doDrag (IDataPackage* source, const CPoint& offset, CBit
 				// we allow more than one file
 				for (uint32_t i = 0; i < source->getCount (); i++)
 				{
-					const void* buffer = 0;
+					const void* buffer = nullptr;
 					uint32_t bufferSize = source->getData (i, buffer, type);
 					if (type == IDataPackage::kFilePath && bufferSize > 0 && ((const char*)buffer)[bufferSize-1] == 0)
 					{
@@ -1092,7 +1092,7 @@ DragResult NSViewFrame::doDrag (IDataPackage* source, const CPoint& offset, CBit
 			}
 			case IDataPackage::kText:
 			{
-				const void* buffer = 0;
+				const void* buffer = nullptr;
 				uint32_t bufferSize = source->getData (0, buffer, type);
 				if (bufferSize > 0)
 				{
@@ -1103,7 +1103,7 @@ DragResult NSViewFrame::doDrag (IDataPackage* source, const CPoint& offset, CBit
 			}
 			case IDataPackage::kBinary:
 			{
-				const void* buffer = 0;
+				const void* buffer = nullptr;
 				uint32_t bufferSize = source->getData (0, buffer, type);
 				if (bufferSize > 0)
 				{
@@ -1150,10 +1150,10 @@ IPlatformFrame* IPlatformFrame::createPlatformFrame (IPlatformFrameCallback* fra
 //------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------
 CocoaTooltipWindow::CocoaTooltipWindow ()
-: timer (0)
-, frame (0)
-, window (0)
-, textfield (0)
+: timer (nullptr)
+, frame (nullptr)
+, window (nullptr)
+, textfield (nullptr)
 {
 }
 
@@ -1175,7 +1175,7 @@ void CocoaTooltipWindow::set (NSViewFrame* nsViewFrame, const CRect& rect, const
 	if (timer)
 	{
 		timer->forget ();
-		timer = 0;
+		timer = nullptr;
 	}
 	NSView* nsView = nsViewFrame->getPlatformControl ();
 	if (!window)
@@ -1230,7 +1230,7 @@ void CocoaTooltipWindow::set (NSViewFrame* nsViewFrame, const CRect& rect, const
 //------------------------------------------------------------------------------------
 void CocoaTooltipWindow::hide ()
 {
-	if (timer == 0 && [window isVisible])
+	if (timer == nullptr && [window isVisible])
 	{
 		timer = new CVSTGUITimer (this, 17);
 		timer->start ();
@@ -1248,7 +1248,7 @@ CMessageResult CocoaTooltipWindow::notify (CBaseObject* sender, IdStringPtr mess
 		{
 			[window orderOut:nil];
 			timer->forget ();
-			timer = 0;
+			timer = nullptr;
 		}
 		else
 			[window setAlphaValue:newAlpha];

@@ -361,9 +361,9 @@ If the bitmap is set, the bitmap must contain 6 states of the checkbox in the fo
 //------------------------------------------------------------------------
 CCheckBox::CCheckBox (const CRect& size, IControlListener* listener, int32_t tag, UTF8StringPtr title, CBitmap* bitmap, int32_t style)
 : CControl (size, listener, tag, bitmap)
-, title (0)
+, title (nullptr)
 , style (style)
-, font (0)
+, font (nullptr)
 , fontColor (kWhiteCColor)
 , hilight (false)
 {
@@ -381,9 +381,9 @@ CCheckBox::CCheckBox (const CRect& size, IControlListener* listener, int32_t tag
 //------------------------------------------------------------------------
 CCheckBox::CCheckBox (const CCheckBox& checkbox)
 : CControl (checkbox)
-, title (0)
+, title (nullptr)
 , style (checkbox.style)
-, font (0)
+, font (nullptr)
 , fontColor (checkbox.fontColor)
 , hilight (false)
 {
@@ -399,7 +399,7 @@ CCheckBox::CCheckBox (const CCheckBox& checkbox)
 //------------------------------------------------------------------------
 CCheckBox::~CCheckBox ()
 {
-	setFont (0);
+	setFont (nullptr);
 }
 
 //------------------------------------------------------------------------
@@ -468,7 +468,7 @@ bool CCheckBox::sizeToFit ()
 {
 	if (title.empty ())
 		return false;
-	IFontPainter* painter = font ? font->getFontPainter () : 0;
+	IFontPainter* painter = font ? font->getFontPainter () : nullptr;
 	if (painter)
 	{
 		CRect fitSize (getViewSize ());
@@ -482,7 +482,7 @@ bool CCheckBox::sizeToFit ()
 			fitSize.setWidth (fitSize.getHeight ());
 		}
 		fitSize.right += kCheckBoxTitleMargin;
-		fitSize.right += painter->getStringWidth (0, CString (title).getPlatformString (), true);
+		fitSize.right += painter->getStringWidth (nullptr, CString (title).getPlatformString (), true);
 		setViewSize (fitSize);
 		setMouseableArea (fitSize);
 		return true;
@@ -694,10 +694,10 @@ int32_t CCheckBox::onKeyDown (VstKeyCode& keyCode)
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 CTextButton::CTextButton (const CRect& size, IControlListener* listener, int32_t tag, UTF8StringPtr title, Style style)
-: CControl (size, listener, tag, 0)
+: CControl (size, listener, tag, nullptr)
 , title (title)
-, font (0)
-, _path (0)
+, font (nullptr)
+, _path (nullptr)
 , frameWidth (1.)
 , roundRadius (6.)
 , textMargin (0.)
@@ -765,7 +765,7 @@ void CTextButton::setTitle (UTF8StringPtr newTitle)
 //------------------------------------------------------------------------
 void CTextButton::setFont (CFontRef newFont)
 {
-	if (newFont == 0)
+	if (newFont == nullptr)
 		return;
 	if (font)
 		font->forget ();
@@ -895,12 +895,12 @@ bool CTextButton::sizeToFit ()
 {
 	if (title.empty ())
 		return false;
-	IFontPainter* painter = font ? font->getFontPainter () : 0;
+	IFontPainter* painter = font ? font->getFontPainter () : nullptr;
 	if (painter)
 	{
 		CRect fitSize (getViewSize ());
 		fitSize.right = fitSize.left + (roundRadius + 1.) * 4.;
-		fitSize.right += painter->getStringWidth (0, title.getPlatformString (), true);
+		fitSize.right += painter->getStringWidth (nullptr, title.getPlatformString (), true);
 		setViewSize (fitSize);
 		setMouseableArea (fitSize);
 		return true;
@@ -959,7 +959,7 @@ bool CTextButton::drawFocusOnTop ()
 //------------------------------------------------------------------------
 CGraphicsPath* CTextButton::getPath (CDrawContext* context)
 {
-	if (_path == 0)
+	if (_path == nullptr)
 	{
 		CRect r (getViewSize ());
 		r.inset (frameWidth / 2., frameWidth / 2.);
@@ -974,7 +974,7 @@ void CTextButton::invalidPath ()
 	if (_path)
 	{
 		_path->forget ();
-		_path = 0;
+		_path = nullptr;
 	}
 }
 

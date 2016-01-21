@@ -110,9 +110,9 @@ UTF8String& UTF8String::operator=(UTF8String&& other)
 //-----------------------------------------------------------------------------
 void UTF8String::set (UTF8StringPtr str)
 {
-	if (str == 0 || string != str)
+	if (str == nullptr || string != str)
 	{
-		platformString = 0;
+		platformString = nullptr;
 		string = str ? str : "";
 	}
 }
@@ -120,7 +120,7 @@ void UTF8String::set (UTF8StringPtr str)
 //-----------------------------------------------------------------------------
 IPlatformString* UTF8String::getPlatformString () const
 {
-	if (platformString == 0)
+	if (platformString == nullptr)
 		platformString = owned (IPlatformString::createWithUTF8String (get ()));
 	return platformString;
 }
@@ -130,8 +130,8 @@ namespace String {
 //-----------------------------------------------------------------------------
 UTF8StringBuffer newWithString (UTF8StringPtr string)
 {
-	if (string == 0)
-		return 0;
+	if (string == nullptr)
+		return nullptr;
 	UTF8StringBuffer buffer = (UTF8StringBuffer)std::malloc (UTF8StringView (string).calculateByteCount ());
 	std::strcpy (buffer, string);
 	return buffer;

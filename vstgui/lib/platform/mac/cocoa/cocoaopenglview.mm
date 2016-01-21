@@ -43,7 +43,7 @@
 
 #import <OpenGL/OpenGL.h>
 
-static Class openGLViewClass = 0;
+static Class openGLViewClass = nullptr;
 
 //-----------------------------------------------------------------------------
 @interface NSObject (VSTGUI_NSOpenGLView)
@@ -55,8 +55,8 @@ namespace VSTGUI {
 //-----------------------------------------------------------------------------
 CocoaOpenGLView::CocoaOpenGLView (NSView* parent)
 : parent (parent)
-, platformView (0)
-, view (0)
+, platformView (nullptr)
+, view (nullptr)
 {
 	initClass ();
 }
@@ -69,7 +69,7 @@ CocoaOpenGLView::~CocoaOpenGLView ()
 //-----------------------------------------------------------------------------
 bool CocoaOpenGLView::init (IOpenGLView* view, PixelFormat* _pixelFormat)
 {
-	if (platformView || openGLViewClass == 0)
+	if (platformView || openGLViewClass == nullptr)
 		return false;
 	if (parent)
 	{
@@ -146,7 +146,7 @@ void CocoaOpenGLView::remove ()
 		[platformView removeFromSuperview];
 		[platformView release];
 		platformView = nil;
-		view = 0;
+		view = nullptr;
 	}
 }
 

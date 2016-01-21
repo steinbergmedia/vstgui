@@ -94,8 +94,8 @@ bool CLayeredViewContainer::removed (CView* parent)
 	registerListeners (false);
 	if (layer)
 	{
-		layer = 0;
-		parentLayerView = 0;
+		layer = nullptr;
+		parentLayerView = nullptr;
 	}
 	return CViewContainer::removed (parent);
 }
@@ -110,7 +110,7 @@ bool CLayeredViewContainer::attached (CView* parent)
 	pParentFrame = parent->getFrame ();
 	if (pParentFrame)
 	{
-		while (parent && dynamic_cast<CFrame*>(parent) == 0)
+		while (parent && dynamic_cast<CFrame*>(parent) == nullptr)
 		{
 			parentLayerView = dynamic_cast<CLayeredViewContainer*>(parent);
 			if (parentLayerView)
@@ -119,7 +119,7 @@ bool CLayeredViewContainer::attached (CView* parent)
 			}
 			parent = parent->getParentView ();
 		}
-		layer = owned (pParentFrame->getPlatformFrame ()->createPlatformViewLayer (this, parentLayerView ? parentLayerView->layer : 0));
+		layer = owned (pParentFrame->getPlatformFrame ()->createPlatformViewLayer (this, parentLayerView ? parentLayerView->layer : nullptr));
 		if (layer)
 		{
 			layer->setZIndex (zIndex);
@@ -131,8 +131,8 @@ bool CLayeredViewContainer::attached (CView* parent)
 	
 	registerListeners (true);
 	
-	pParentView = 0;
-	pParentFrame = 0;
+	pParentView = nullptr;
+	pParentFrame = nullptr;
 
 	return CViewContainer::attached (parent);
 }

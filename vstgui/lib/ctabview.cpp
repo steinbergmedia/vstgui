@@ -51,7 +51,7 @@ class CTabButton : public COnOffButton
 public:
 	CTabButton (const CRect &size, IControlListener *listener, int32_t tag, CBitmap *background, UTF8StringPtr inName)
 	: COnOffButton (size, listener, tag, background)
-	, name (0)
+	, name (nullptr)
 	{
 		name = String::newWithString (inName);
 		activeTextColor = kBlackCColor;
@@ -114,9 +114,9 @@ class CTabChildView : public CBaseObject
 public:
 	explicit CTabChildView (CView* view)
 	: view (view)
-	, previous (0)
-	, next (0)
-	, button (0)
+	, previous (nullptr)
+	, next (nullptr)
+	, button (nullptr)
 	{
 	}
 
@@ -140,9 +140,9 @@ CTabView::CTabView (const CRect& size, CBitmap* tabBitmap, CBitmap* background, 
 , style (style)
 , tabSize (CRect (0, 0, 0, 0))
 , tabBitmap (tabBitmap)
-, firstChild (0)
-, lastChild (0)
-, currentChild (0)
+, firstChild (nullptr)
+, lastChild (nullptr)
+, currentChild (nullptr)
 {
 	setBackground (background);
 	if (tabBitmap)
@@ -162,10 +162,10 @@ CTabView::CTabView (const CRect& size, const CRect& tabSize, CBitmap* background
 , tabPosition (tabPosition)
 , style (style)
 , tabSize (tabSize)
-, tabBitmap (0)
-, firstChild (0)
-, lastChild (0)
-, currentChild (0)
+, tabBitmap (nullptr)
+, firstChild (nullptr)
+, lastChild (nullptr)
+, currentChild (nullptr)
 {
 	setBackground (background);
 	setTransparency (true);
@@ -174,8 +174,8 @@ CTabView::CTabView (const CRect& size, const CRect& tabSize, CBitmap* background
 //-----------------------------------------------------------------------------
 CTabView::~CTabView ()
 {
-	pParentView = 0;
-	pParentFrame = 0;
+	pParentView = nullptr;
+	pParentFrame = nullptr;
 	removeAllTabs ();
 	if (tabBitmap)
 		tabBitmap->forget ();
@@ -192,10 +192,10 @@ bool CTabView::addTab (CView* view, UTF8StringPtr name, CBitmap* tabBitmap)
 {
 	if (!view)
 		return false;
-	if (tabBitmap == 0)
+	if (tabBitmap == nullptr)
 		tabBitmap = this->tabBitmap;
 
-	CTabButton* b = new CTabButton (CRect (0, 0, 0, 0), 0, 0, tabBitmap, name);
+	CTabButton* b = new CTabButton (CRect (0, 0, 0, 0), nullptr, 0, tabBitmap, name);
 	b->setTransparency (true);
 
 	return addTab (view, b);
@@ -208,7 +208,7 @@ bool CTabView::addTab (CView* view, CControl* button)
 		return false;
 
 	CViewContainer* tabContainer = dynamic_cast<CViewContainer*>(getView (0));
-	if (tabContainer == 0)
+	if (tabContainer == nullptr)
 	{
 		int32_t asf = kAutosizeLeft | kAutosizeTop | kAutosizeRight | kAutosizeColumn;
 		CRect tsc (0, 0, getViewSize ().getWidth (), tabSize.getHeight () / 2);
@@ -306,7 +306,7 @@ bool CTabView::removeTab (CView* view)
 			if (v == currentChild)
 			{
 				setCurrentChild (v->previous ? v->previous : v->next);
-				if (v->previous == 0 && v->next == 0)
+				if (v->previous == nullptr && v->next == nullptr)
 					currentTab = -1;
 			}
 			tabContainer->removeView (v->button, true);
@@ -322,7 +322,7 @@ bool CTabView::removeTab (CView* view)
 //-----------------------------------------------------------------------------
 bool CTabView::removeAllTabs ()
 {
-	setCurrentChild (0);
+	setCurrentChild (nullptr);
 	CTabChildView* v = lastChild;
 	while (v)
 	{
@@ -330,8 +330,8 @@ bool CTabView::removeAllTabs ()
 		removeTab (v->view);
 		v = next;
 	}
-	firstChild = 0;
-	lastChild = 0;
+	firstChild = nullptr;
+	lastChild = nullptr;
 	numberOfChilds = 0;
 	currentTab = -1;
 	return true;

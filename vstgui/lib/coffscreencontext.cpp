@@ -63,11 +63,11 @@ COffscreenContext* COffscreenContext::create (CFrame* frame, CCoord width, CCoor
 {
 	if (width >= 1. && height >= 1.)
 	{
-		IPlatformFrame* pf = frame ? frame->getPlatformFrame () : 0;
+		IPlatformFrame* pf = frame ? frame->getPlatformFrame () : nullptr;
 		if (pf)
 			return pf->createOffscreenContext (width, height, scaleFactor);
 	}
-	return 0;
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------

@@ -72,7 +72,7 @@ CSpecialDigit::CSpecialDigit (const CRect& size, IControlListener* listener, int
 	if (iNumbers > 7)
 		iNumbers = 7;
 
-	if (xpos == NULL)
+	if (xpos == nullptr)
 	{
 		// automatically init xpos/ypos if not provided by caller
 		const int32_t numw = (const int32_t)background->getWidth();

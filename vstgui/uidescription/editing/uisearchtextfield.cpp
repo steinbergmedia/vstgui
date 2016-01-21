@@ -43,7 +43,7 @@ namespace VSTGUI {
 
 //----------------------------------------------------------------------------------------------------
 UISearchTextField::UISearchTextField (const CRect& size, IControlListener* listener, int32_t tag, UTF8StringPtr txt, CBitmap* background, const int32_t style)
-: CTextEdit (size, listener, tag, 0, background, style)
+: CTextEdit (size, listener, tag, nullptr, background, style)
 {
 }
 
@@ -83,7 +83,7 @@ void UISearchTextField::drawClearMark (CDrawContext* context) const
 		return;
 
 	SharedPointer<CGraphicsPath> path = owned (context->createGraphicsPath ());
-	if (path == 0)
+	if (path == nullptr)
 		return;
 
 	CRect r = getClearMarkRect ();

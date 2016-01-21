@@ -128,7 +128,7 @@ CCoord CBitmap::getHeight () const
 //-----------------------------------------------------------------------------
 IPlatformBitmap* CBitmap::getPlatformBitmap () const
 {
-	return bitmaps.empty () ? 0 : bitmaps[0];
+	return bitmaps.empty () ? nullptr : bitmaps[0];
 }
 
 //-----------------------------------------------------------------------------
@@ -169,7 +169,7 @@ bool CBitmap::addBitmap (IPlatformBitmap* platformBitmap)
 IPlatformBitmap* CBitmap::getBestPlatformBitmapForScaleFactor (double scaleFactor) const
 {
 	if (bitmaps.empty ())
-		return 0;
+		return nullptr;
 	IPlatformBitmap* bestBitmap = bitmaps[0];
 	double bestDiff = std::abs (scaleFactor - bestBitmap->getScaleFactor ());
 	for (const auto& bitmap : bitmaps)
@@ -245,10 +245,10 @@ void CNinePartTiledBitmap::draw (CDrawContext* inContext, const CRect& inDestRec
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 CBitmapPixelAccess::CBitmapPixelAccess ()
-: bitmap (0)
-, pixelAccess (0)
-, currentPos (0)
-, address (0)
+: bitmap (nullptr)
+, pixelAccess (nullptr)
+, currentPos (nullptr)
+, address (nullptr)
 , bytesPerRow (0)
 , maxX (0)
 , maxY (0)
@@ -303,12 +303,12 @@ public:
 //------------------------------------------------------------------------
 CBitmapPixelAccess* CBitmapPixelAccess::create (CBitmap* bitmap, bool alphaPremultiplied)
 {
-	if (bitmap == 0 || bitmap->getPlatformBitmap () == 0)
-		return 0;
+	if (bitmap == nullptr || bitmap->getPlatformBitmap () == nullptr)
+		return nullptr;
 	IPlatformBitmapPixelAccess* pixelAccess = bitmap->getPlatformBitmap ()->lockPixels (alphaPremultiplied);
-	if (pixelAccess == 0)
-		return 0;
-	CBitmapPixelAccess* result = 0;
+	if (pixelAccess == nullptr)
+		return nullptr;
+	CBitmapPixelAccess* result = nullptr;
 	switch (pixelAccess->getPixelFormat ())
 	{
 		case IPlatformBitmapPixelAccess::kARGB: result = new CBitmapPixelAccessOrder<1,2,3,0> (); break;

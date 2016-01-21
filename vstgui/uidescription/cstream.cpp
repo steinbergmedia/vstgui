@@ -51,7 +51,7 @@ namespace VSTGUI {
 CMemoryStream::CMemoryStream (uint32_t initialSize, uint32_t inDelta, bool binaryMode, ByteOrder byteOrder)
 : OutputStream (byteOrder)
 , InputStream (byteOrder)
-, buffer (0)
+, buffer (nullptr)
 , bufferSize (0)
 , size (0)
 , pos (0)
@@ -104,7 +104,7 @@ bool CMemoryStream::resize (uint32_t inSize)
 	buffer = newBuffer;
 	bufferSize = newSize;
 	
-	return buffer != 0;
+	return buffer != nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -210,7 +210,7 @@ bool CMemoryStream::end ()
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 CFileStream::CFileStream ()
-: stream (0)
+: stream (nullptr)
 {
 }
 
@@ -260,7 +260,7 @@ bool CFileStream::open (UTF8StringPtr path, int32_t mode, ByteOrder byteOrder)
 	stream = fopen (path, fmode.str ().c_str ());
 	openMode = mode;
 
-	return stream != 0;
+	return stream != nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -355,7 +355,7 @@ bool CFileStream::operator<< (const std::string& str)
 //-----------------------------------------------------------------------------
 CResourceInputStream::CResourceInputStream (ByteOrder byteOrder)
 : InputStream (byteOrder)
-, platformHandle (0)
+, platformHandle (nullptr)
 {
 }
 
@@ -375,7 +375,7 @@ CResourceInputStream::~CResourceInputStream ()
 //-----------------------------------------------------------------------------
 bool CResourceInputStream::open (const CResourceDescription& res)
 {
-	if (platformHandle != 0)
+	if (platformHandle != nullptr)
 		return false;
 #if MAC
 	if (res.type == CResourceDescription::kIntegerType)
@@ -385,12 +385,12 @@ bool CResourceInputStream::open (const CResourceDescription& res)
 		// it's an absolute path, we can use it as is
 //		platformHandle = fopen (res.u.name, "rb");
 	}
-	if (platformHandle == 0 && getBundleRef ())
+	if (platformHandle == nullptr && getBundleRef ())
 	{
-		CFStringRef cfStr = CFStringCreateWithCString (NULL, res.u.name, kCFStringEncodingUTF8);
+		CFStringRef cfStr = CFStringCreateWithCString (nullptr, res.u.name, kCFStringEncodingUTF8);
 		if (cfStr)
 		{
-			CFURLRef url = CFBundleCopyResourceURL (getBundleRef (), cfStr, 0, NULL);
+			CFURLRef url = CFBundleCopyResourceURL (getBundleRef (), cfStr, nullptr, nullptr);
 			if (url)
 			{
 				char filePath[PATH_MAX];
@@ -411,7 +411,7 @@ bool CResourceInputStream::open (const CResourceDescription& res)
 		platformHandle = 0;
 	}
 #endif
-	return platformHandle != 0;
+	return platformHandle != nullptr;
 }
 
 //-----------------------------------------------------------------------------

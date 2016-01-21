@@ -73,7 +73,7 @@ CShadowViewContainer::~CShadowViewContainer ()
 bool CShadowViewContainer::removed (CView* parent)
 {
 	getFrame ()->unregisterScaleFactorChangedListeneer (this);
-	setBackground (0);
+	setBackground (nullptr);
 	return CViewContainer::removed (parent);
 }
 

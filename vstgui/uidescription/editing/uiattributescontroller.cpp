@@ -186,7 +186,7 @@ public:
 			if (tag >= kRowTag && tag <= kColTag)
 			{
 				FOREACH_IN_SELECTION(selection, view)
-					if (dynamic_cast<CViewContainer*>(view) == 0)
+					if (dynamic_cast<CViewContainer*>(view) == nullptr)
 					{
 						controls[tag]->setVisible (false);
 						break;
@@ -293,11 +293,11 @@ class BooleanController : public Controller
 {
 public:
 	BooleanController (IController* baseController, const std::string& attrName)
-	: Controller (baseController, attrName), control (0) {}
+	: Controller (baseController, attrName), control (nullptr) {}
 
 	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override
 	{
-		if (control == 0)
+		if (control == nullptr)
 		{
 			control = dynamic_cast<CControl*>(view);
 		}
@@ -350,7 +350,7 @@ public:
 	
 	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override
 	{
-		if (textLabel == 0)
+		if (textLabel == nullptr)
 		{
 			CTextLabel* edit = dynamic_cast<CTextLabel*>(view);
 			if (edit)
@@ -361,7 +361,7 @@ public:
 				textLabel->registerViewListener (this);
 			}
 		}
-		if (slider == 0)
+		if (slider == nullptr)
 		{
 			CSlider* sliderView = dynamic_cast<CSlider*>(view);
 			if (sliderView)
@@ -495,7 +495,7 @@ public:
 	
 	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override
 	{
-		if (menu == 0)
+		if (menu == nullptr)
 		{
 			menu = dynamic_cast<COptionMenu*>(view);
 			if (menu)
@@ -639,7 +639,7 @@ public:
 			colorView = new ColorView ();
 			return colorView;
 		}
-		return 0;
+		return nullptr;
 	}
 protected:
 	class ColorView : public CView
@@ -695,7 +695,7 @@ public:
 		{
 			if (hasDifferentValues ())
 			{
-				gradientView->gradient = 0;
+				gradientView->gradient = nullptr;
 			}
 			else
 			{
@@ -713,7 +713,7 @@ public:
 			gradientView = new GradientView ();
 			return gradientView;
 		}
-		return 0;
+		return nullptr;
 	}
 protected:
 	class GradientView : public CView
@@ -722,7 +722,7 @@ protected:
 		GradientView () : CView (CRect (0, 0, 0, 0)) {}
 		void draw (CDrawContext* context) override
 		{
-			if (gradient == 0)
+			if (gradient == nullptr)
 				return;
 			CRect r = getViewSize ();
 			SharedPointer<CGraphicsPath> path = owned (context->createGraphicsPath ());
@@ -806,10 +806,10 @@ UIAttributesController::UIAttributesController (IController* baseController, UIS
 , selection (selection)
 , undoManager (undoManager)
 , editDescription (description)
-, attributeView (0)
-, viewNameLabel (0)
-, currentAttributeName (0)
-, liveAction (0)
+, attributeView (nullptr)
+, viewNameLabel (nullptr)
+, currentAttributeName (nullptr)
+, liveAction (nullptr)
 {
 	selection->addDependency (this);
 	undoManager->addDependency (this);
@@ -839,7 +839,7 @@ void UIAttributesController::endLiveAttributeChange ()
 	{
 		liveAction->undo ();
 		undoManager->pushAndPerform (liveAction);
-		liveAction = 0;
+		liveAction = nullptr;
 		undoManager->endGroupAction ();
 	}
 }
@@ -884,7 +884,7 @@ void UIAttributesController::valueChanged (CControl* control)
 //----------------------------------------------------------------------------------------------------
 CView* UIAttributesController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
 {
-	if (attributeView == 0)
+	if (attributeView == nullptr)
 	{
 		CRowColumnView* rcv = dynamic_cast<CRowColumnView*>(view);
 		if (rcv)
@@ -892,7 +892,7 @@ CView* UIAttributesController::verifyView (CView* view, const UIAttributes& attr
 			attributeView = rcv;
 		}
 	}
-	if (searchField == 0)
+	if (searchField == nullptr)
 	{
 		CTextEdit* textEdit = dynamic_cast<CTextEdit*>(view);
 		if (textEdit && textEdit->getTag () == kSearchFieldTag)
@@ -909,7 +909,7 @@ CView* UIAttributesController::verifyView (CView* view, const UIAttributes& attr
 			}
 		}
 	}
-	if (viewNameLabel == 0)
+	if (viewNameLabel == nullptr)
 	{
 		CTextLabel* textLabel = dynamic_cast<CTextLabel*>(view);
 		if (textLabel && textLabel->getTag () == kViewNameTag)
@@ -982,7 +982,7 @@ CMessageResult UIAttributesController::notify (CBaseObject* sender, IdStringPtr 
 {
 	if (message == UISelection::kMsgSelectionChanged)
 	{
-		if (timer == 0)
+		if (timer == nullptr)
 		{
 			timer = makeOwned<CVSTGUITimer> (this, 10u);
 			timer->start ();
@@ -1006,7 +1006,7 @@ CMessageResult UIAttributesController::notify (CBaseObject* sender, IdStringPtr 
 	else if (message == CVSTGUITimer::kMsgTimer)
 	{
 		rebuildAttributesView ();
-		timer = 0;
+		timer = nullptr;
 		return kMessageNotified;
 	}
 	return kMessageUnknown;
@@ -1120,7 +1120,7 @@ CView* UIAttributesController::createViewForAttribute (const std::string& attrNa
 	FOREACH_IN_SELECTION_END
 
 	CRect r (middle+margin, 1, width-5, height+1);
-	CView* valueView = 0;
+	CView* valueView = nullptr;
 	
 	if (attrName == "text-alignment")
 	{
@@ -1131,13 +1131,13 @@ CView* UIAttributesController::createViewForAttribute (const std::string& attrNa
 		valueView = UIEditController::getEditorDescription ().createView ("attributes.view.autosize", this);
 	}
 	
-	if (valueView == 0)
+	if (valueView == nullptr)
 	{
 		CView* firstView = selection->first ();
 		IViewCreator::AttrType attrType = viewFactory->getAttributeType (firstView, attrName);
 		valueView = createValueViewForAttributeType (viewFactory, firstView, attrName, attrType);
 	}
-	if (valueView == 0) // fallcack if attributes.text template not defined
+	if (valueView == nullptr) // fallcack if attributes.text template not defined
 	{
 		IController* controller = new UIAttributeControllers::TextController (this, *currentAttributeName);
 		CTextEdit* textEdit = new CTextEdit (r, this, -1);
@@ -1222,7 +1222,7 @@ void UIAttributesController::getConsolidatedAttributeNames (StringList& attrName
 void UIAttributesController::rebuildAttributesView ()
 {
 	const IViewFactory* viewFactory = editDescription->getViewFactory ();
-	if (attributeView == 0 || viewFactory == 0)
+	if (attributeView == nullptr || viewFactory == nullptr)
 		return;
 
 	attributeView->invalid ();
@@ -1237,17 +1237,17 @@ void UIAttributesController::rebuildAttributesView ()
 		int32_t selectedViews = selection->total ();
 		if (selectedViews > 0)
 		{
-			UTF8StringPtr viewname = 0;
+			UTF8StringPtr viewname = nullptr;
 			FOREACH_IN_SELECTION(selection, view)
 				UTF8StringPtr name = viewFactory->getViewName (view);
-				if (viewname != 0 && UTF8StringView (name) != viewname)
+				if (viewname != nullptr && UTF8StringView (name) != viewname)
 				{
-					viewname = 0;
+					viewname = nullptr;
 					break;
 				}
 				viewname = name;
 			FOREACH_IN_SELECTION_END
-			if (viewname != 0)
+			if (viewname != nullptr)
 			{
 				if (selectedViews == 1)
 					viewNameLabel->setText (viewname);
@@ -1299,7 +1299,7 @@ void UIAttributesController::rebuildAttributesView ()
 			}
 			it++;
 		}
-		currentAttributeName = 0;
+		currentAttributeName = nullptr;
 		attributeView->sizeToFit ();
 		attributeView->setMouseableArea (attributeView->getViewSize ());
 	}

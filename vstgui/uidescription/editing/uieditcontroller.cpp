@@ -78,7 +78,7 @@ class UIEditControllerDescription
 public:
 	UIDescription& get () const
 	{
-		if (uiDesc == 0)
+		if (uiDesc == nullptr)
 		{
 			std::string descPath (__FILE__);
 			unixfyPath (descPath);
@@ -210,7 +210,7 @@ class UIZoomSettingController : public IController, public CBaseObject
 public:
 	UIZoomSettingController (UIEditController* editController)
 	: editController (editController)
-	, zoomValueControl (0)
+	, zoomValueControl (nullptr)
 	{}
 
 	~UIZoomSettingController ()
@@ -275,7 +275,7 @@ public:
 				zoomValueControl->setMin (50.f);
 				zoomValueControl->setMax (1000.f);
 				zoomValueControl->setStringToValueFunction ([] (UTF8StringPtr txt, float& result, CTextEdit*) {
-					int32_t intValue = static_cast<int32_t> (strtol (txt, 0, 10));
+					int32_t intValue = static_cast<int32_t> (strtol (txt, nullptr, 10));
 					if (intValue > 0)
 					{
 						result = static_cast<float> (intValue);
@@ -360,8 +360,8 @@ UIEditController::UIEditController (UIDescription* description)
 , selection (makeOwned<UISelection> ())
 , undoManager (makeOwned<UIUndoManager> ())
 , gridController (makeOwned<UIGridController> (this, description))
-, editView (0)
-, templateController (0)
+, editView (nullptr)
+, templateController (nullptr)
 , dirty (false)
 {
 	description->addDependency (this);
@@ -400,7 +400,7 @@ CView* UIEditController::createEditView ()
 			return view;
 		}
 	}
-	return 0;
+	return nullptr;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -411,7 +411,7 @@ CView* UIEditController::createView (const UIAttributes& attributes, const IUIDe
 	{
 		if (*name == "UIEditView")
 		{
-			vstgui_assert (editView == 0);
+			vstgui_assert (editView == nullptr);
 			editView = new UIEditView (CRect (0, 0, 0, 0), editDescription);
 			editView->setSelection (selection);
 			editView->setUndoManager (undoManager);
@@ -433,10 +433,10 @@ CView* UIEditController::createView (const UIAttributes& attributes, const IUIDe
 		}
 		else if (*name == "UISearchTextField")
 		{
-			return new UISearchTextField (CRect (0, 0, 0, 0), 0, -2);
+			return new UISearchTextField (CRect (0, 0, 0, 0), nullptr, -2);
 		}
 	}
-	return 0;
+	return nullptr;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -530,7 +530,7 @@ CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes
 					int32_t value = 0;
 					getSettings ()->getIntegerAttribute ("TabSwitchValue", value);
 					button->setSelectedSegment (static_cast<uint32_t> (value));
-					static const char* segmentBitmapNames[] = {"segment-views", "segment-tags", "segment-colors", "segment-gradients", "segment-bitmaps", "segment-fonts", 0};
+					static const char* segmentBitmapNames[] = {"segment-views", "segment-tags", "segment-colors", "segment-gradients", "segment-bitmaps", "segment-fonts", nullptr};
 					size_t segmentBitmapNameIndex = 0;
 					for (CSegmentButton::Segments::const_iterator it = button->getSegments().begin(), end = button->getSegments().end (); it != end; ++it)
 					{
@@ -558,7 +558,7 @@ IController* UIEditController::createSubController (UTF8StringPtr name, const IU
 	UTF8StringView subControllerName (name);
 	if (subControllerName == "TemplatesController")
 	{
-		vstgui_assert (templateController == 0);
+		vstgui_assert (templateController == nullptr);
 		templateController = new UITemplateController (this, editDescription, selection, undoManager, this);
 		templateController->addDependency (this);
 		return templateController;
@@ -600,7 +600,7 @@ IController* UIEditController::createSubController (UTF8StringPtr name, const IU
 		gridController->remember ();
 		return gridController;
 	}
-	return 0;
+	return nullptr;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -613,7 +613,7 @@ void UIEditController::valueChanged (CControl* control)
 			case kEditingTag:
 			{
 				selection->empty ();
-				CViewContainer* container = editView->getEditView () ? dynamic_cast<CViewContainer*>(editView->getEditView ()) : 0;
+				CViewContainer* container = editView->getEditView () ? dynamic_cast<CViewContainer*>(editView->getEditView ()) : nullptr;
 				if (container)
 					resetScrollViewOffsets (container);
 				editView->enableEditing (control->getValue () == control->getMax () ? true : false);
@@ -726,7 +726,7 @@ void UIEditController::onTemplateSelectionChanged ()
 	if (editView && templateController)
 	{
 		const std::string* name = templateController->getSelectedTemplateName ();
-		if ((name && *name != editTemplateName) || name == 0)
+		if ((name && *name != editTemplateName) || name == nullptr)
 		{
 			if (undoManager->canUndo () && !editTemplateName.empty ())
 				updateTemplate (editTemplateName.c_str ());
@@ -748,8 +748,8 @@ void UIEditController::onTemplateSelectionChanged ()
 			else
 			{
 				selection->empty ();
-				editView->setEditView (0);
-				templateController->setTemplateView (0);
+				editView->setEditView (nullptr);
+				templateController->setTemplateView (nullptr);
 				editTemplateName = "";
 			}
 		}
@@ -784,7 +784,7 @@ void UIEditController::addSelectionToCurrentView (UISelection* copySelection)
 		return;
 	CPoint offset;
 	CViewContainer* container = dynamic_cast<CViewContainer*> (selection->first ());
-	if (container == 0)
+	if (container == nullptr)
 	{
 		container = dynamic_cast<CViewContainer*> (selection->first ()->getParentView ());
 		offset = selection->first ()->getViewSize ().getTopLeft ();
@@ -1186,7 +1186,7 @@ void UIEditController::resetScrollViewOffsets (CViewContainer* view)
 //----------------------------------------------------------------------------------------------------
 int32_t UIEditController::onKeyDown (const VstKeyCode& code, CFrame* frame)
 {
-	if (frame->getModalView () == 0)
+	if (frame->getModalView () == nullptr)
 	{
 		if (frame->getFocusView ())
 		{
@@ -1254,7 +1254,7 @@ ISplitViewSeparatorDrawer* UIEditController::getSplitViewSeparatorDrawer (CSplit
 	{
 		return this;
 	}
-	return 0;
+	return nullptr;
 }
 
 //----------------------------------------------------------------------------------------------------

@@ -146,7 +146,7 @@ public:
 			CFRelease (csProfileRef);
 			return colorSpace;
 		}
-		return 0;
+		return nullptr;
 	#endif
 	}
 

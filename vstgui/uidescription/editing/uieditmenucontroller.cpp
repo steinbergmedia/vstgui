@@ -56,10 +56,10 @@ UIEditMenuController::UIEditMenuController (IController* baseController, UISelec
 , undoManager (undoManager)
 , description (description)
 , actionPerformer (actionPerformer)
-, editMenu (0)
-, fileMenu (0)
-, editLabel (0)
-, fileLabel (0)
+, editMenu (nullptr)
+, fileMenu (nullptr)
+, editLabel (nullptr)
+, fileLabel (nullptr)
 {
 }
 
@@ -72,7 +72,7 @@ UIEditMenuController::~UIEditMenuController ()
 //----------------------------------------------------------------------------------------------------
 static void addEntriesToMenu (const UIEditing::MenuEntry* entries, COptionMenu* menu, CBaseObject* menuItemTarget, int32_t& index)
 {
-	while (entries[index].category != 0)
+	while (entries[index].category != nullptr)
 	{
 		if (entries[index].menuFlags & UIEditing::MenuEntry::kSubMenuEnd)
 		{
@@ -138,7 +138,7 @@ bool UIEditMenuController::createUniqueTemplateName (std::list<const std::string
 			if (pos != std::string::npos && pos != name.length () - 1)
 			{
 				std::string numberStr = name.substr (pos);
-				count = static_cast<int32_t> (strtol (numberStr.c_str (), NULL, 10)) + 1;
+				count = static_cast<int32_t> (strtol (numberStr.c_str (), nullptr, 10)) + 1;
 				name.erase (pos+1);
 			}
 			else
@@ -216,7 +216,7 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 			{
 				CView* view = selection->first ();
 				int32_t selectionCount = selection->total ();
-				bool enable = view ? (selectionCount > 1 ? true : dynamic_cast<UIEditView*> (view->getParentView ()) == 0) : false;
+				bool enable = view ? (selectionCount > 1 ? true : dynamic_cast<UIEditView*> (view->getParentView ()) == nullptr) : false;
 				item->setEnabled (enable);
 				return kMessageNotified;
 			}
@@ -235,7 +235,7 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 			}
 			else if (cmdName == "Delete Template")
 			{
-				item->setSubmenu (0);
+				item->setSubmenu (nullptr);
 				std::list<const std::string*> templateNames;
 				description->collectTemplateViewNames (templateNames);
 				item->setEnabled (templateNames.empty () == false);
@@ -253,7 +253,7 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 			}
 			else if (cmdName == "Duplicate Template")
 			{
-				item->setSubmenu (0);
+				item->setSubmenu (nullptr);
 				std::list<const std::string*> templateNames;
 				description->collectTemplateViewNames (templateNames);
 				item->setEnabled (templateNames.empty () == false);
@@ -271,10 +271,10 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 			}
 			else if (cmdName == "Embed Into")
 			{
-				item->setSubmenu (0);
+				item->setSubmenu (nullptr);
 				bool enable = selection->total () > 0;
 				FOREACH_IN_SELECTION(selection, view)
-					if (dynamic_cast<UIEditView*>(view->getParentView()) != 0)
+					if (dynamic_cast<UIEditView*>(view->getParentView()) != nullptr)
 					{
 						enable = false;
 						break;
@@ -300,7 +300,7 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 				if (selection->total () == 1)
 				{
 					CViewContainer* container = dynamic_cast<CViewContainer*>(selection->first());
-					if (container && container->hasChildren () && dynamic_cast<UIEditView*>(container->getParentView ()) == 0)
+					if (container && container->hasChildren () && dynamic_cast<UIEditView*>(container->getParentView ()) == nullptr)
 						enabled = true;
 				}
 				item->setEnabled (enabled);
@@ -313,12 +313,12 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 			}
 			else if (cmdName == "Transform View Type")
 			{
-				item->setSubmenu (0);
+				item->setSubmenu (nullptr);
 				bool enabled = false;
 				if (selection->total () == 1)
 				{
 					CViewContainer* container = dynamic_cast<CViewContainer*>(selection->first());
-					if (container == 0 || (container && dynamic_cast<UIEditView*>(container->getParentView ()) == 0))
+					if (container == nullptr || (container && dynamic_cast<UIEditView*>(container->getParentView ()) == nullptr))
 						enabled = true;
 				}
 				item->setEnabled (enabled);
@@ -337,7 +337,7 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 			}
 			else if (cmdName == "Insert Template")
 			{
-				item->setSubmenu (0);
+				item->setSubmenu (nullptr);
 				item->setEnabled (selection->total () == 1 && dynamic_cast<CViewContainer*> (selection->first ()));
 				if (item->isEnabled () == false)
 					return kMessageNotified;
@@ -506,15 +506,15 @@ CCommandMenuItem* UIEditMenuController::findKeyCommandItem (COptionMenu* menu, c
 			}
 		}
 	}
-	return 0;
+	return nullptr;
 }
 
 //----------------------------------------------------------------------------------------------------
 int32_t UIEditMenuController::processKeyCommand (const VstKeyCode& key)
 {
 	COptionMenu* baseMenu = editMenu;
-	CCommandMenuItem* item = baseMenu ? findKeyCommandItem (baseMenu, key) : 0;
-	if (item == 0 && fileMenu)
+	CCommandMenuItem* item = baseMenu ? findKeyCommandItem (baseMenu, key) : nullptr;
+	if (item == nullptr && fileMenu)
 	{
 		baseMenu = fileMenu;
 		item = findKeyCommandItem (baseMenu, key);
@@ -524,7 +524,7 @@ int32_t UIEditMenuController::processKeyCommand (const VstKeyCode& key)
 		item->getTarget ()->notify (item, CCommandMenuItem::kMsgMenuItemValidate);
 		if (item->isEnabled ())
 		{
-			CTextLabel* label = 0;
+			CTextLabel* label = nullptr;
 			if (baseMenu)
 			{
 				switch (baseMenu->getTag ())
@@ -634,7 +634,7 @@ void UIEditMenuController::valueChanged (CControl* control)
 //----------------------------------------------------------------------------------------------------
 void UIEditMenuController::controlBeginEdit (CControl* pControl)
 {
-	CTextLabel* label = 0;
+	CTextLabel* label = nullptr;
 	switch (pControl->getTag ())
 	{
 		case kMenuFileTag:
@@ -655,7 +655,7 @@ void UIEditMenuController::controlBeginEdit (CControl* pControl)
 //----------------------------------------------------------------------------------------------------
 void UIEditMenuController::controlEndEdit (CControl* pControl)
 {
-	CTextLabel* label = 0;
+	CTextLabel* label = nullptr;
 	switch (pControl->getTag ())
 	{
 		case kMenuFileTag:

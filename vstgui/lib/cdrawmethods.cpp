@@ -47,7 +47,7 @@ UTF8String createTruncatedText (TextTruncateMode mode, const UTF8String& text, C
 	if (mode == kTextTruncateNone)
 		return text;
 	IFontPainter* painter = font->getPlatformFont ()->getPainter ();
-	CCoord width = painter->getStringWidth (0, text.getPlatformString (), true);
+	CCoord width = painter->getStringWidth (nullptr, text.getPlatformString (), true);
 	width += textInset.x * 2;
 	if (width > maxWidth)
 	{
@@ -70,7 +70,7 @@ UTF8String createTruncatedText (TextTruncateMode mode, const UTF8String& text, C
 				}
 				_truncatedText.erase (_truncatedText.size () - (2 + it.getByteLength ()), it.getByteLength ());
 				utf8Str.set (_truncatedText.c_str ());
-				width = painter->getStringWidth (0, utf8Str.getPlatformString (), true);
+				width = painter->getStringWidth (nullptr, utf8Str.getPlatformString (), true);
 				width += textInset.x * 2;
 			}
 		}
@@ -90,7 +90,7 @@ UTF8String createTruncatedText (TextTruncateMode mode, const UTF8String& text, C
 				}
 				_truncatedText.erase (2, it.getByteLength ());
 				utf8Str.set (_truncatedText.c_str ());
-				width = painter->getStringWidth (0, utf8Str.getPlatformString (), true);
+				width = painter->getStringWidth (nullptr, utf8Str.getPlatformString (), true);
 				width += textInset.x * 2;
 			}
 		}

@@ -432,7 +432,7 @@ CMouseEventResult CSlider::onMouseDown (CPoint& where, const CButtonState& butto
 		return kMouseEventNotHandled;
 
 	CRect handleRect;
-	delta = calculateDelta (where, getMode () != kFreeClickMode ? &handleRect : 0);
+	delta = calculateDelta (where, getMode () != kFreeClickMode ? &handleRect : nullptr);
 	if (getMode () == kTouchMode && !handleRect.pointInside (where))
 		return kMouseEventNotHandled;
 

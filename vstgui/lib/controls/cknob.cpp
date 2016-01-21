@@ -209,7 +209,7 @@ void CKnob::addArc (CGraphicsPath* path, const CRect& r, double startAngle, doub
 void CKnob::drawCoronaOutline (CDrawContext* pContext) const
 {
 	auto path = owned (pContext->createGraphicsPath ());
-	if (path == 0)
+	if (path == nullptr)
 		return;
 	CRect corona (getViewSize ());
 	corona.inset (coronaInset, coronaInset);
@@ -227,7 +227,7 @@ void CKnob::drawCoronaOutline (CDrawContext* pContext) const
 void CKnob::drawCorona (CDrawContext* pContext) const
 {
 	auto path = owned (pContext->createGraphicsPath ());
-	if (path == 0)
+	if (path == nullptr)
 		return;
 	float coronaValue = getValueNormalized ();
 	if (drawStyle & kCoronaInverted)
@@ -622,7 +622,7 @@ void CKnob::setHandleBitmap (CBitmap* bitmap)
 	if (pHandle)
 	{
 		pHandle->forget ();
-		pHandle = 0;
+		pHandle = nullptr;
 	}
 
 	if (bitmap)
@@ -670,7 +670,7 @@ According to the value, a specific subbitmap is displayed. The different subbitm
  */
 //------------------------------------------------------------------------
 CAnimKnob::CAnimKnob (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background, const CPoint &offset)
-: CKnob (size, listener, tag, background, 0, offset)
+: CKnob (size, listener, tag, background, nullptr, offset)
 , bInverseBitmap (false)
 {
 	heightOfOneImage = size.getHeight ();
@@ -691,7 +691,7 @@ CAnimKnob::CAnimKnob (const CRect& size, IControlListener* listener, int32_t tag
  */
 //------------------------------------------------------------------------
 CAnimKnob::CAnimKnob (const CRect& size, IControlListener* listener, int32_t tag, int32_t subPixmaps, CCoord heightOfOneImage, CBitmap* background, const CPoint &offset)
-: CKnob (size, listener, tag, background, 0, offset)
+: CKnob (size, listener, tag, background, nullptr, offset)
 , bInverseBitmap (false)
 {
 	setNumSubPixmaps (subPixmaps);

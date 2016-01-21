@@ -60,7 +60,7 @@ A bitmap can be used as background.
 CTextEdit::CTextEdit (const CRect& size, IControlListener* listener, int32_t tag, UTF8StringPtr txt, CBitmap* background, const int32_t style)
 : CTextLabel (size, txt, background, style)
 , bWasReturnPressed (false)
-, platformControl (0)
+, platformControl (nullptr)
 , immediateTextChange (false)
 {
 	this->listener = listener;
@@ -73,7 +73,7 @@ CTextEdit::CTextEdit (const CRect& size, IControlListener* listener, int32_t tag
 CTextEdit::CTextEdit (const CTextEdit& v)
 : CTextLabel (v)
 , bWasReturnPressed (false)
-, platformControl (0)
+, platformControl (nullptr)
 , stringToValueFunction (v.stringToValueFunction)
 , immediateTextChange (v.immediateTextChange)
 , platformFont (v.platformFont)
@@ -85,8 +85,8 @@ CTextEdit::CTextEdit (const CTextEdit& v)
 //------------------------------------------------------------------------
 CTextEdit::~CTextEdit ()
 {
-	listener = 0;
-	vstgui_assert (platformControl == 0);
+	listener = nullptr;
+	vstgui_assert (platformControl == nullptr);
 }
 
 //------------------------------------------------------------------------
@@ -207,14 +207,14 @@ int32_t CTextEdit::onKeyDown (VstKeyCode& keyCode)
 		{
 			bWasReturnPressed = false;
 			platformControl->setText (text);
-			getFrame ()->setFocusView (0);
+			getFrame ()->setFocusView (nullptr);
 			looseFocus ();
 			return 1;
 		}
 		else if (keyCode.virt == VKEY_RETURN)
 		{
 			bWasReturnPressed = true;
-			getFrame ()->setFocusView (0);
+			getFrame ()->setFocusView (nullptr);
 			looseFocus ();
 			return 1;
 		}
@@ -252,7 +252,7 @@ void CTextEdit::platformLooseFocus (bool returnPressed)
 {
 	remember ();
 	bWasReturnPressed = returnPressed;
-	getFrame ()->setFocusView (0);
+	getFrame ()->setFocusView (nullptr);
 	forget ();
 }
 
@@ -317,13 +317,13 @@ void CTextEdit::takeFocus ()
 //------------------------------------------------------------------------
 void CTextEdit::looseFocus ()
 {
-	if (platformControl == 0)
+	if (platformControl == nullptr)
 		return;
 
 	CBaseObjectGuard guard (this);
 
 	IPlatformTextEdit* _platformControl = platformControl;
-	platformControl = 0;
+	platformControl = nullptr;
 	
 	updateText (_platformControl);
 	

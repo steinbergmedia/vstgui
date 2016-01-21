@@ -104,7 +104,7 @@
 - (void)setDrawDelegate:(VSTGUI::IPlatformViewLayerDelegate*)viewLayerDelegate;
 @end
 
-static Class viewLayerClass = 0;
+static Class viewLayerClass = nullptr;
 
 //-----------------------------------------------------------------------------
 static id VSTGUI_CALayer_Init (id self, SEL _cmd)
@@ -197,7 +197,7 @@ static void initCALayerClass ()
 
 //-----------------------------------------------------------------------------
 CAViewLayer::CAViewLayer (CALayer* parent)
-: layer (0)
+: layer (nullptr)
 {
 #if !TARGET_OS_IPHONE
 	initCALayerClass ();

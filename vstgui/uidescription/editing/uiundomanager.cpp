@@ -45,7 +45,7 @@ namespace VSTGUI {
 class UndoStackTop : public IAction
 {
 public:
-	UTF8StringPtr getName () override { return 0; }
+	UTF8StringPtr getName () override { return nullptr; }
 	void perform () override {}
 	void undo () override {}
 };
@@ -174,13 +174,13 @@ UTF8StringPtr UIUndoManager::getUndoName ()
 {
 	if (position != end () && position != begin ())
 		return (*position)->getName ();
-	return 0;
+	return nullptr;
 }
 
 //----------------------------------------------------------------------------------------------------
 UTF8StringPtr UIUndoManager::getRedoName ()
 {
-	UTF8StringPtr redoName = 0;
+	UTF8StringPtr redoName = nullptr;
 	if (position != end ())
 	{
 		position++;
