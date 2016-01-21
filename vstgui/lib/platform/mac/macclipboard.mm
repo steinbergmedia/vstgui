@@ -51,7 +51,7 @@ class Pasteboard : public IDataPackage
 {
 public:
 	Pasteboard (NSPasteboard* pb);
-	~Pasteboard ();
+	~Pasteboard () override;
 
 	uint32_t getCount () const override;
 	uint32_t getDataSize (uint32_t index) const override;

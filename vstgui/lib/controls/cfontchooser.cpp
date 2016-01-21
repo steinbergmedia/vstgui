@@ -52,7 +52,7 @@ class FontPreviewView : public CView
 {
 public:
 	FontPreviewView (const CRect& size, const CColor& color = kWhiteCColor) : CView (size), font (nullptr), fontColor (color) {}
-	~FontPreviewView () { if (font) font->forget (); }
+	~FontPreviewView () override { if (font) font->forget (); }
 	
 	void setFont (CFontRef newFont)
 	{

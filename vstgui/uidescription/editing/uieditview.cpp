@@ -72,7 +72,7 @@ class UIEditViewOverlay : public CView, public IViewListenerAdapter
 {
 public:
 	UIEditViewOverlay (CViewContainer* editView);
-	~UIEditViewOverlay ();
+	~UIEditViewOverlay () override;
 	
 	void viewSizeChanged (CView* view, const CRect& oldSize) override;
 protected:
@@ -115,7 +115,7 @@ class UISelectionView : public UIEditViewOverlay
 {
 public:
 	UISelectionView (CViewContainer* editView, UISelection* selection, const CColor& selectionColor, CCoord handleSize);
-	~UISelectionView ();
+	~UISelectionView () override;
 
 private:
 	void draw (CDrawContext* pContext) override;

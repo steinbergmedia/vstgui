@@ -641,7 +641,7 @@ class CocoaTooltipWindow : public CBaseObject
 {
 public:
 	CocoaTooltipWindow ();
-	~CocoaTooltipWindow ();
+	~CocoaTooltipWindow () override;
 
 	void set (NSViewFrame* nsViewFrame, const CRect& rect, const char* tooltip);
 	void hide ();

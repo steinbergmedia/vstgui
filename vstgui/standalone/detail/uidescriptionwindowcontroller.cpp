@@ -241,7 +241,7 @@ public:
 		if (value)
 			value->registerListener (this);
 	}
-	~ValueWrapper ()
+	~ValueWrapper () override
 	{
 		if (value)
 			value->unregisterListener (this);
@@ -387,7 +387,7 @@ struct WindowController::Impl : public IController, public ICommandHandler
 		initModelValues (modelHandler);
 	}
 
-	~Impl ()
+	~Impl () override
 	{
 		if (uiDesc && uiDesc->getSharedResources ())
 		{

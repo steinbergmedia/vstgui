@@ -52,7 +52,7 @@ class UIColorsDataSource : public UIBaseDataSource
 {
 public:
 	UIColorsDataSource (UIDescription* description, IActionPerformer* actionPerformer, UIColor* color);
-	~UIColorsDataSource ();
+	~UIColorsDataSource () override;
 	
 protected:
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;

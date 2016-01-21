@@ -44,7 +44,7 @@ class MacTimer : public IPlatformTimer
 {
 public:
 	explicit MacTimer (IPlatformTimerCallback* callback);
-	~MacTimer ();
+	~MacTimer () override;
 
 	bool start (uint32_t fireTime) override;
 	bool stop () override;

@@ -55,7 +55,7 @@ class CocoaFileSelector : public CNewFileSelector
 {
 public:
 	CocoaFileSelector (CFrame* frame, Style style);
-	~CocoaFileSelector ();
+	~CocoaFileSelector () override;
 
 	void openPanelDidEnd (NSSavePanel* panel, NSInteger resultCode);
 protected:

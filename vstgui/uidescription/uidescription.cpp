@@ -110,7 +110,7 @@ public:
 	
 	explicit UIDescList (bool ownsObjects = true);
 	UIDescList (const UIDescList& descList);
-	virtual ~UIDescList ();
+	~UIDescList () override;
 
 	virtual void add (UINode* obj);
 	virtual void remove (UINode* obj);
@@ -134,7 +134,7 @@ public:
 	UINode (const std::string& name, UIAttributes* attributes = nullptr, bool needsFastChildNameAttributeLookup = false);
 	UINode (const std::string& name, UIDescList* children, UIAttributes* attributes = nullptr);
 	UINode (const UINode& n);
-	~UINode ();
+	~UINode () override;
 
 	const std::string& getName () const { return name; }
 	std::stringstream& getData () { return data; }
@@ -229,7 +229,7 @@ public:
 	void removeXMLData ();
 	CLASS_METHODS_NOCOPY(UIBitmapNode, UINode)
 protected:
-	~UIBitmapNode ();
+	~UIBitmapNode () override;
 	CBitmap* createBitmap (const std::string& str, CNinePartTiledDescription* partDesc) const;
 	CBitmap* bitmap;
 	bool filterProcessed;
@@ -247,7 +247,7 @@ public:
 	bool getAlternativeFontNames (std::string& fontNames);
 	CLASS_METHODS_NOCOPY(UIFontNode, UINode)
 protected:
-	~UIFontNode ();
+	~UIFontNode () override;
 	CFontRef font;
 };
 

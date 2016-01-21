@@ -213,7 +213,7 @@ public:
 	, zoomValueControl (nullptr)
 	{}
 
-	~UIZoomSettingController ()
+	~UIZoomSettingController () override
 	{
 	}
 

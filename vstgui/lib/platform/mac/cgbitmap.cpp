@@ -424,7 +424,7 @@ public:
 		bitmap->remember ();
 	}
 	
-	~CGBitmapPixelAccess ()
+	~CGBitmapPixelAccess () override
 	{
 		if (!alphaPremultiplied)
 		{

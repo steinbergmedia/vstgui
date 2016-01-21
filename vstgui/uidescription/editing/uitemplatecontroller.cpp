@@ -162,7 +162,7 @@ class UIViewListDataSource : public UINavigationDataSource
 {
 public:
 	UIViewListDataSource (CViewContainer* view, const IViewFactory* viewFactory, UISelection* selection, UIUndoManager* undoManager ,IGenericStringListDataBrowserSourceSelectionChanged* delegate);
-	~UIViewListDataSource ();
+	~UIViewListDataSource () override;
 
 	CViewContainer* getView () const { return view; }
 	CView* getSubview (int32_t index);

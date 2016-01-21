@@ -59,7 +59,7 @@ public:
 	static void doDelete (IAction* action) { delete action; }
 
 	UIGroupAction (UTF8StringPtr name) : name (name) {}
-	~UIGroupAction ()
+	~UIGroupAction () override
 	{
 		std::for_each (begin (), end (), doDelete);
 	}

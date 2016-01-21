@@ -59,14 +59,14 @@ public:
 		textFont = kSystemFont; textFont->remember ();
 	}
 
-	virtual ~CTabButton ()
+	~CTabButton () override
 	{
 		if (textFont)
 			textFont->forget ();
 		String::free (name);
 	}	
 
-	virtual void draw (CDrawContext *pContext) override
+	void draw (CDrawContext *pContext) override
 	{
 		COnOffButton::draw (pContext);
 		if (name)
@@ -86,7 +86,7 @@ public:
 		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 	}
 
-	virtual void onDragEnter (IDataPackage* drag, const CPoint& where) override
+	void onDragEnter (IDataPackage* drag, const CPoint& where) override
 	{
 		if (value == 0.f)
 		{
@@ -120,7 +120,7 @@ public:
 	{
 	}
 
-	virtual ~CTabChildView ()
+	~CTabChildView () override
 	{
 		view->forget ();
 	}

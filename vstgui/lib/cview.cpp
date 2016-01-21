@@ -172,7 +172,7 @@ protected:
 		timer = new CVSTGUITimer (this, 1000/CView::idleRate, true);
 	}
 
-	~IdleViewUpdater ()
+	~IdleViewUpdater () override
 	{
 		timer->forget ();
 		gInstance = nullptr;

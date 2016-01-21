@@ -337,7 +337,7 @@ public:
 	TextController (IController* baseController, const std::string& attrName)
 	: Controller (baseController, attrName) {}
 
-	~TextController ()
+	~TextController () override
 	{
 		if (textLabel)
 		{
@@ -487,7 +487,7 @@ public:
 	MenuController (IController* baseController, const std::string& attrName, UIDescription* description, bool addNoneItem = true, bool sortItems = true)
 	: TextController (baseController, attrName), description (description), addNoneItem (addNoneItem), sortItems (sortItems) {}
 
-	~MenuController ()
+	~MenuController () override
 	{
 		if (menu)
 			menu->removeDependency (this);

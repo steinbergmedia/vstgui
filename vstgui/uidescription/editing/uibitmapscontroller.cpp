@@ -413,7 +413,7 @@ class UIBitmapSettingsController : public CBaseObject, public IController
 {
 public:
 	UIBitmapSettingsController (CBitmap* bitmap, const std::string& bitmapName, UIDescription* description, IActionPerformer* actionPerformer);
-	~UIBitmapSettingsController ();
+	~UIBitmapSettingsController () override;
 
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;

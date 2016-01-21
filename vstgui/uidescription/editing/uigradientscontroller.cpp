@@ -54,7 +54,7 @@ class UIColorStopEditView : public CView, public IDependency, public IFocusDrawi
 {
 public:
 	UIColorStopEditView (UIColor* editColor);
-	~UIColorStopEditView ();
+	~UIColorStopEditView () override;
 
 	void setGradient (CGradient* gradient);
 	
@@ -385,7 +385,7 @@ class UIGradientEditorController : public CBaseObject, public IController
 {
 public:
 	UIGradientEditorController (const std::string& gradientName, CGradient* gradient, UIDescription* description, IActionPerformer* actionPerformer);
-	~UIGradientEditorController ();
+	~UIGradientEditorController () override;
 
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 	void valueChanged (CControl* pControl) override;
@@ -506,18 +506,18 @@ class UIGradientsDataSource : public UIBaseDataSource
 {
 public:
 	UIGradientsDataSource (UIDescription* description, IActionPerformer* actionPerformer, IGenericStringListDataBrowserSourceSelectionChanged* delegate);
-	~UIGradientsDataSource ();
+	~UIGradientsDataSource () override;
 
 	CGradient* getSelectedGradient ();
 	std::string getSelectedGradientName ();
 	
 protected:
-	virtual void update () override;
-	virtual void getNames (std::list<const std::string*>& names) override;
-	virtual bool addItem (UTF8StringPtr name) override;
-	virtual bool removeItem (UTF8StringPtr name) override;
-	virtual bool performNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) override;
-	virtual UTF8StringPtr getDefaultsName () override { return "UIGradientsDataSource"; }
+	void update () override;
+	void getNames (std::list<const std::string*>& names) override;
+	bool addItem (UTF8StringPtr name) override;
+	bool removeItem (UTF8StringPtr name) override;
+	bool performNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) override;
+	UTF8StringPtr getDefaultsName () override { return "UIGradientsDataSource"; }
 
 	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser) override;
 	void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* control, CDataBrowser* browser) override;
