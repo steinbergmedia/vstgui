@@ -95,13 +95,14 @@ UIDescCheckFilePathResult checkAndUpdateUIDescFilePath (
     UIDescription& uiDesc, CFrame* _frame,
     UTF8StringPtr notFoundText = "The uidesc file location cannot be found.")
 {
-	SharedPointer<CFrame> frame (_frame);
-	if (!frame)
-		frame = makeOwned<CFrame> (CRect (), nullptr);
-
 	CFileStream stream;
 	if (stream.open (uiDesc.getFilePath (), CFileStream::kReadMode))
 		return UIDescCheckFilePathResult::exists;
+
+	SharedPointer<CFrame> frame (_frame);
+	if (!frame)
+		frame = makeOwned<CFrame> (CRect (), nullptr);
+	
 	AlertBoxConfig alertConfig;
 	alertConfig.headline = notFoundText;
 	alertConfig.description = uiDesc.getFilePath ();
