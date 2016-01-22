@@ -76,7 +76,7 @@ public:
 
 	CLASS_METHODS(COnOffButton, CControl)
 protected:
-	~COnOffButton ();
+	~COnOffButton () = default;
 	int32_t style;
 };
 
@@ -175,7 +175,7 @@ public:
 
 	CLASS_METHODS(CKickButton, CControl)
 protected:
-	~CKickButton ();	
+	~CKickButton () = default;
 	CPoint	offset;
 
 private:

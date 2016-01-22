@@ -53,7 +53,7 @@ public:
 	explicit CBitmap (const CResourceDescription& desc);				///< Create a pixmap from a resource identifier.
 	CBitmap (CCoord width, CCoord height);					///< Create a pixmap with a given size.
 	explicit CBitmap (IPlatformBitmap* platformBitmap);
-	~CBitmap ();
+	~CBitmap () = default;
 
 	//-----------------------------------------------------------------------------
 	/// @name CBitmap Methods

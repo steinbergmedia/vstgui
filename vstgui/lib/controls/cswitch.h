@@ -64,7 +64,7 @@ public:
 
 	CLASS_METHODS(CVerticalSwitch, CControl)
 protected:
-	~CVerticalSwitch ();
+	~CVerticalSwitch () = default;
 	CPoint	offset;
 
 private:
@@ -97,7 +97,7 @@ public:
 
 	CLASS_METHODS(CHorizontalSwitch, CControl)
 protected:
-	~CHorizontalSwitch ();
+	~CHorizontalSwitch () = default;
 	CPoint	offset;
 
 private:

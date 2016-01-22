@@ -63,7 +63,7 @@ public:
 
 	CLASS_METHODS(CMovieButton, CControl)
 protected:
-	~CMovieButton ();	
+	~CMovieButton () = default;
 	CPoint   offset;
 	float    buttonState;
 

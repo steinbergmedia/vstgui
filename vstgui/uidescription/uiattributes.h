@@ -54,7 +54,7 @@ public:
 	typedef std::vector<std::string> StringArray;
 	
 	explicit UIAttributes (UTF8StringPtr* attributes = nullptr);
-	~UIAttributes ();
+	~UIAttributes () = default;
 
 	using UIAttributesMap::begin;
 	using UIAttributesMap::end;

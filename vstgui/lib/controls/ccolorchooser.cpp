@@ -525,11 +525,6 @@ CColorChooser::CColorChooser (IColorChooserDelegate* delegate, const CColor& ini
 }
 
 //-----------------------------------------------------------------------------
-CColorChooser::~CColorChooser ()
-{
-}
-
-//-----------------------------------------------------------------------------
 void CColorChooser::valueChanged (CControl* control)
 {
 	switch (control->getTag ())

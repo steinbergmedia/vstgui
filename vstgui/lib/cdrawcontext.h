@@ -237,7 +237,7 @@ protected:
 
 		CDrawContextState () = default;
 		CDrawContextState (const CDrawContextState& state);
-		CDrawContextState& operator= (const CDrawContextState& state);
+		CDrawContextState& operator= (const CDrawContextState& state) = default;
 		CDrawContextState (CDrawContextState&& state) noexcept;
 		CDrawContextState& operator= (CDrawContextState&& state) noexcept;
 	};

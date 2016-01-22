@@ -63,12 +63,6 @@ UIDialogController::UIDialogController (IController* baseController, CFrame* fra
 }
 
 //----------------------------------------------------------------------------------------------------
-UIDialogController::~UIDialogController ()
-{
-	
-}
-
-//----------------------------------------------------------------------------------------------------
 void UIDialogController::run (UTF8StringPtr _templateName, UTF8StringPtr _dialogTitle, UTF8StringPtr _button1, UTF8StringPtr _button2, IController* _dialogController, UIDescription* _description)
 {
 	collectOpenGLViews (frame);

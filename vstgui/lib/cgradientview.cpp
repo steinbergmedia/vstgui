@@ -45,12 +45,6 @@ CGradientView::CGradientView (const CRect& size)
 }
 
 //-----------------------------------------------------------------------------
-CGradientView::~CGradientView ()
-{
-	
-}
-
-//-----------------------------------------------------------------------------
 void CGradientView::setGradientStyle (GradientStyle style)
 {
 	if (gradientStyle != style)

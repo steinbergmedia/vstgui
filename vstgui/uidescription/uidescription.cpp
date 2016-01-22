@@ -2316,7 +2316,7 @@ public:
 	};
 	
 	explicit StringToken (const std::string& str) : std::string (str), type (kString), result (0) {}
-	StringToken (const StringToken& token) : std::string (token), type (token.type), result (token.result) {}
+	StringToken (const StringToken& token) = default;
 	StringToken (Type type, double value = 0) : type (type), result (value) {}
 	
 	Type type;

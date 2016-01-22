@@ -45,12 +45,6 @@ CLayeredViewContainer::CLayeredViewContainer (const CRect& r)
 }
 
 //-----------------------------------------------------------------------------
-CLayeredViewContainer::~CLayeredViewContainer ()
-{
-	
-}
-
-//-----------------------------------------------------------------------------
 void CLayeredViewContainer::setZIndex (uint32_t _zIndex)
 {
 	if (_zIndex != zIndex)

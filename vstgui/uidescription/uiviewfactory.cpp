@@ -172,11 +172,6 @@ UIViewFactory::UIViewFactory ()
 }
 
 //-----------------------------------------------------------------------------
-UIViewFactory::~UIViewFactory ()
-{
-}
-
-//-----------------------------------------------------------------------------
 CView* UIViewFactory::createViewByName (const std::string* className, const UIAttributes& attributes, const IUIDescription* description) const
 {
 	ViewCreatorRegistry& registry = getCreatorRegistry ();

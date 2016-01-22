@@ -50,7 +50,7 @@ class CScrollContainer : public CViewContainer
 public:
 	CScrollContainer (const CRect &size, const CRect &containerSize);
 	CScrollContainer (const CScrollContainer& v);
-	~CScrollContainer () override;
+	~CScrollContainer () = default;
 
 	void setScrollOffset (CPoint offset, bool withRedraw = false);
 	void getScrollOffset (CPoint& off) const { off = offset; }
@@ -100,12 +100,6 @@ CScrollContainer::CScrollContainer (const CScrollContainer& v)
 , inScrolling (false)
 {
 }
-
-//-----------------------------------------------------------------------------
-CScrollContainer::~CScrollContainer ()
-{
-}
-
 
 //-----------------------------------------------------------------------------
 void CScrollContainer::setContainerSize (const CRect& cs)
@@ -335,11 +329,6 @@ CScrollView::CScrollView (const CScrollView& v)
 	}
 	sc = static_cast<CScrollContainer*> (v.sc->newCopy ());
 	CViewContainer::addView (sc, nullptr);
-}
-
-//-----------------------------------------------------------------------------
-CScrollView::~CScrollView ()
-{
 }
 
 //-----------------------------------------------------------------------------

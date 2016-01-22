@@ -723,11 +723,6 @@ CVerticalSlider::CVerticalSlider (const CRect &rect, IControlListener* listener,
 {}
 
 //------------------------------------------------------------------------
-CVerticalSlider::CVerticalSlider (const CVerticalSlider& slider)
-: CSlider (slider)
-{}
-
-//------------------------------------------------------------------------
 // CHorizontalSlider
 //------------------------------------------------------------------------
 /*! @class CHorizontalSlider
@@ -767,11 +762,6 @@ CHorizontalSlider::CHorizontalSlider (const CRect &rect, IControlListener* liste
 //------------------------------------------------------------------------
 CHorizontalSlider::CHorizontalSlider (const CRect &rect, IControlListener* listener, int32_t tag, const CPoint& offsetHandle, int32_t rangeHandle, CBitmap* handle, CBitmap* background, const CPoint& offset, const int32_t style)
 : CSlider (rect, listener, tag, offsetHandle, rangeHandle, handle, background, offset, style|kHorizontal)
-{}
-
-//------------------------------------------------------------------------
-CHorizontalSlider::CHorizontalSlider (const CHorizontalSlider& slider)
-: CSlider (slider)
 {}
 
 } // namespace

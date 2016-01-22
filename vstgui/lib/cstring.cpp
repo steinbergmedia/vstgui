@@ -86,14 +86,6 @@ UTF8String::UTF8String (const UTF8String& other)
 }
 
 //-----------------------------------------------------------------------------
-UTF8String& UTF8String::operator=(const UTF8String& other)
-{
-	string = other.string;
-	platformString = other.platformString;
-	return *this;
-}
-
-//-----------------------------------------------------------------------------
 UTF8String::UTF8String (UTF8String&& other)
 {
 	*this = std::move (other);

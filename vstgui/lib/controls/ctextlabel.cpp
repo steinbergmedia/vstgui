@@ -72,11 +72,6 @@ CTextLabel::CTextLabel (const CTextLabel& v)
 }
 
 //------------------------------------------------------------------------
-CTextLabel::~CTextLabel ()
-{
-}
-
-//------------------------------------------------------------------------
 void CTextLabel::setText (UTF8StringPtr txt)
 {
 	if (txt && UTF8StringView (txt) == text)

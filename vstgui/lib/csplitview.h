@@ -64,7 +64,7 @@ public:
 	};
 	
 	CSplitView (const CRect& size, Style style = kHorizontal, CCoord separatorWidth = 10., ISplitViewSeparatorDrawer* drawer = nullptr);
-	~CSplitView ();
+	~CSplitView () = default;
 
 	//-----------------------------------------------------------------------------
 	/// @name CSplitView Methods

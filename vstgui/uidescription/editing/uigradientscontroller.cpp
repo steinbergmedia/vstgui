@@ -506,7 +506,7 @@ class UIGradientsDataSource : public UIBaseDataSource
 {
 public:
 	UIGradientsDataSource (UIDescription* description, IActionPerformer* actionPerformer, IGenericStringListDataBrowserSourceSelectionChanged* delegate);
-	~UIGradientsDataSource () override;
+	~UIGradientsDataSource () = default;
 
 	CGradient* getSelectedGradient ();
 	std::string getSelectedGradientName ();
@@ -526,11 +526,6 @@ protected:
 //----------------------------------------------------------------------------------------------------
 UIGradientsDataSource::UIGradientsDataSource (UIDescription* description, IActionPerformer* actionPerformer, IGenericStringListDataBrowserSourceSelectionChanged* delegate)
 : UIBaseDataSource (description, actionPerformer, UIDescription::kMessageGradientChanged, delegate)
-{
-}
-
-//----------------------------------------------------------------------------------------------------
-UIGradientsDataSource::~UIGradientsDataSource ()
 {
 }
 

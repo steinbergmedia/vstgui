@@ -197,7 +197,7 @@ class CNewFileSelectorCallback : public CBaseObject
 {
 public:
 	CNewFileSelectorCallback (CNewFileSelector::CallbackFunc&& callback) : callbackFunc (std::move (callback)) {}
-	~CNewFileSelectorCallback () override {}
+	~CNewFileSelectorCallback () override = default;
 private:
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override
 	{

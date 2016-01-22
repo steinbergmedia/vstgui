@@ -93,11 +93,6 @@ CSplitView::CSplitView (const CRect& size, Style style, CCoord separatorWidth, I
 }
 
 //-----------------------------------------------------------------------------
-CSplitView::~CSplitView ()
-{
-}
-
-//-----------------------------------------------------------------------------
 void CSplitView::setStyle (Style s)
 {
 	if (style != s)

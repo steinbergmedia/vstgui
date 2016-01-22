@@ -180,7 +180,7 @@ public:
 
 	CLASS_METHODS(CAnimKnob, CKnob)
 protected:
-	~CAnimKnob ();
+	~CAnimKnob () = default;
 	bool	bInverseBitmap;
 };
 

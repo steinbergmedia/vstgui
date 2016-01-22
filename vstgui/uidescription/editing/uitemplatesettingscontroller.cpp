@@ -70,11 +70,6 @@ UITemplateSettingsController::UITemplateSettingsController (const std::string& t
 }
 
 //----------------------------------------------------------------------------------------------------
-UITemplateSettingsController::~UITemplateSettingsController ()
-{
-}
-
-//----------------------------------------------------------------------------------------------------
 CMessageResult UITemplateSettingsController::notify (CBaseObject* sender, IdStringPtr message)
 {
 	if (message == UIDialogController::kMsgDialogButton1Clicked)

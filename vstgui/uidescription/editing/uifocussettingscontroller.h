@@ -49,7 +49,7 @@ class UIFocusSettingsController : public CBaseObject, public IController
 {
 public:
 	UIFocusSettingsController (UIDescription* description);
-	~UIFocusSettingsController ();
+	~UIFocusSettingsController () = default;
 
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;

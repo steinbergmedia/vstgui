@@ -79,7 +79,7 @@ class UTF8String
 public:
 	UTF8String (UTF8StringPtr str = nullptr);
 	UTF8String (const UTF8String& other);
-	UTF8String& operator=(const UTF8String& other);
+	UTF8String& operator=(const UTF8String& other) = default;
 
 	UTF8String (std::string&& str);
 	UTF8String& operator=(std::string&& str);

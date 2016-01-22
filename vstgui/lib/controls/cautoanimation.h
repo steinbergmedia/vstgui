@@ -71,7 +71,7 @@ public:
 
 	CLASS_METHODS(CAutoAnimation, CControl)
 protected:
-	~CAutoAnimation ();
+	~CAutoAnimation () = default;
 
 	CPoint	offset;
 

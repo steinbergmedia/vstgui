@@ -55,7 +55,7 @@ class CocoaOpenGLView : public IPlatformOpenGLView
 {
 public:
 	CocoaOpenGLView (NSView* parent);
-	~CocoaOpenGLView ();
+	~CocoaOpenGLView () = default;
 
 	virtual bool init (IOpenGLView* view, PixelFormat* pixelFormat = nullptr) override;
 	virtual void remove () override;

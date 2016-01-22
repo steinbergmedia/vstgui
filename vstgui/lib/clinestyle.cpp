@@ -67,11 +67,6 @@ CLineStyle::CLineStyle (const CLineStyle& lineStyle)
 }
 
 //-----------------------------------------------------------------------------
-CLineStyle::~CLineStyle ()
-{
-}
-
-//-----------------------------------------------------------------------------
 CLineStyle::CLineStyle (LineCap _cap, LineJoin _join, CCoord _dashPhase, CoordVector&& _dashLengths) noexcept
 : cap (_cap)
 , join (_join)

@@ -708,10 +708,6 @@ CAnimKnob::CAnimKnob (const CAnimKnob& v)
 	setHeightOfOneImage (v.heightOfOneImage);
 }
 
-//------------------------------------------------------------------------
-CAnimKnob::~CAnimKnob ()
-{}
-
 //-----------------------------------------------------------------------------------------------
 bool CAnimKnob::sizeToFit ()
 {

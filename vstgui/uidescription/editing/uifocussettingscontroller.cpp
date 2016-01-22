@@ -56,11 +56,6 @@ UIFocusSettingsController::UIFocusSettingsController (UIDescription* description
 }
 
 //----------------------------------------------------------------------------------------------------
-UIFocusSettingsController::~UIFocusSettingsController ()
-{
-}
-
-//----------------------------------------------------------------------------------------------------
 CMessageResult UIFocusSettingsController::notify (CBaseObject* sender, IdStringPtr message)
 {
 	if (message == UIDialogController::kMsgDialogButton1Clicked)

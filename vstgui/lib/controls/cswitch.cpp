@@ -103,10 +103,6 @@ CVerticalSwitch::CVerticalSwitch (const CVerticalSwitch& v)
 }
 
 //------------------------------------------------------------------------
-CVerticalSwitch::~CVerticalSwitch ()
-{}
-
-//------------------------------------------------------------------------
 void CVerticalSwitch::draw (CDrawContext *pContext)
 {
 	if (getDrawBackground ())
@@ -272,10 +268,6 @@ CHorizontalSwitch::CHorizontalSwitch (const CHorizontalSwitch& v)
 	setHeightOfOneImage (v.heightOfOneImage);
 	setWantsFocus (true);
 }
-
-//------------------------------------------------------------------------
-CHorizontalSwitch::~CHorizontalSwitch ()
-{}
 
 //------------------------------------------------------------------------
 void CHorizontalSwitch::draw (CDrawContext *pContext)

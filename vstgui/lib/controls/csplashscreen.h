@@ -89,7 +89,7 @@ class CAnimationSplashScreen : public CSplashScreen
 {
 public:
 	CAnimationSplashScreen (const CRect& size, int32_t tag, CBitmap* background, CBitmap* splashBitmap);
-	CAnimationSplashScreen (const CAnimationSplashScreen& splashScreen);
+	CAnimationSplashScreen (const CAnimationSplashScreen& splashScreen) = default;
 
 	//-----------------------------------------------------------------------------
 	/// @name CAnimationSplashScreen Methods
@@ -118,7 +118,7 @@ public:
 	virtual CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 
 protected:
-	~CAnimationSplashScreen ();
+	~CAnimationSplashScreen () = default;
 
 	uint32_t animationIndex;
 	uint32_t animationTime;

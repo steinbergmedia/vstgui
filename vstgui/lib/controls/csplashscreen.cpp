@@ -200,19 +200,6 @@ CAnimationSplashScreen::CAnimationSplashScreen (const CRect& size, int32_t tag, 
 }
 
 //------------------------------------------------------------------------
-CAnimationSplashScreen::CAnimationSplashScreen (const CAnimationSplashScreen& splashScreen)
-: CSplashScreen (splashScreen)
-, animationIndex (splashScreen.animationIndex)
-, animationTime (splashScreen.animationTime)
-{
-}
-
-//------------------------------------------------------------------------
-CAnimationSplashScreen::~CAnimationSplashScreen ()
-{
-}
-
-//------------------------------------------------------------------------
 void CAnimationSplashScreen::setSplashBitmap (CBitmap* bitmap)
 {
 	if (modalView)

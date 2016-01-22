@@ -14,7 +14,7 @@ class UITagsDataSource : public UIBaseDataSource
 {
 public:
 	UITagsDataSource (UIDescription* description, IActionPerformer* actionPerformer);
-	~UITagsDataSource () override;
+	~UITagsDataSource () = default;
 
 protected:
 	void getNames (std::list<const std::string*>& names) override;
@@ -38,11 +38,6 @@ protected:
 //----------------------------------------------------------------------------------------------------
 UITagsDataSource::UITagsDataSource (UIDescription* description, IActionPerformer* actionPerformer)
 : UIBaseDataSource (description, actionPerformer, UIDescription::kMessageTagChanged)
-{
-}
-
-//----------------------------------------------------------------------------------------------------
-UITagsDataSource::~UITagsDataSource ()
 {
 }
 

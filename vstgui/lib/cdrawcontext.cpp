@@ -48,22 +48,6 @@ CDrawContext::CDrawContextState::CDrawContextState (const CDrawContextState& sta
 }
 
 //-----------------------------------------------------------------------------
-CDrawContext::CDrawContextState& CDrawContext::CDrawContextState::operator= (const CDrawContextState& state)
-{
-	font = state.font;
-	frameColor = state.frameColor;
-	fillColor = state.fillColor;
-	fontColor = state.fontColor;
-	frameWidth = state.frameWidth;
-	penLoc = state.penLoc;
-	clipRect = state.clipRect;
-	lineStyle = state.lineStyle;
-	drawMode = state.drawMode;
-	globalAlpha = state.globalAlpha;
-	return *this;
-}
-
-//-----------------------------------------------------------------------------
 CDrawContext::CDrawContextState::CDrawContextState (CDrawContextState&& state) noexcept
 {
 	*this = std::move (state);

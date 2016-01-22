@@ -57,11 +57,6 @@ SizeToFitOperation::SizeToFitOperation (UISelection* selection)
 }
 
 //----------------------------------------------------------------------------------------------------
-SizeToFitOperation::~SizeToFitOperation ()
-{
-}
-
-//----------------------------------------------------------------------------------------------------
 UTF8StringPtr SizeToFitOperation::getName ()
 {
 	return "Size To Fit";
@@ -108,11 +103,6 @@ UnembedViewOperation::UnembedViewOperation (UISelection* selection, const IViewF
 	containerView = dynamic_cast<CViewContainer*> (selection->first ());
 	collectSubviews (containerView, true);
 	parent = dynamic_cast<CViewContainer*> (containerView->getParentView ());
-}
-
-//----------------------------------------------------------------------------------------------------
-UnembedViewOperation::~UnembedViewOperation ()
-{
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -222,11 +212,6 @@ EmbedViewOperation::EmbedViewOperation (UISelection* selection, CViewContainer* 
 }
 
 //-----------------------------------------------------------------------------
-EmbedViewOperation::~EmbedViewOperation ()
-{
-}
-
-//-----------------------------------------------------------------------------
 UTF8StringPtr EmbedViewOperation::getName ()
 {
 	return "Embed Views";
@@ -302,11 +287,6 @@ ViewCopyOperation::ViewCopyOperation (UISelection* copySelection, UISelection* w
 }
 
 //-----------------------------------------------------------------------------
-ViewCopyOperation::~ViewCopyOperation ()
-{
-}
-
-//-----------------------------------------------------------------------------
 UTF8StringPtr ViewCopyOperation::getName () 
 {
 	if (size () > 0)
@@ -361,11 +341,6 @@ ViewSizeChangeOperation::ViewSizeChangeOperation (UISelection* selection, bool s
 	FOREACH_IN_SELECTION(selection, view)
 		push_back (std::make_pair (view, view->getViewSize ()));
 	FOREACH_IN_SELECTION_END
-}
-
-//-----------------------------------------------------------------------------
-ViewSizeChangeOperation::~ViewSizeChangeOperation ()
-{
 }
 
 //-----------------------------------------------------------------------------
@@ -448,11 +423,6 @@ DeleteOperation::DeleteOperation (UISelection* selection)
 }
 
 //----------------------------------------------------------------------------------------------------
-DeleteOperation::~DeleteOperation ()
-{
-}
-
-//----------------------------------------------------------------------------------------------------
 UTF8StringPtr DeleteOperation::getName ()
 {
 	if (size () > 1)
@@ -497,11 +467,6 @@ InsertViewOperation::InsertViewOperation (CViewContainer* parent, CView* view, U
 : parent (parent)
 , view (view)
 , selection (selection)
-{
-}
-
-//-----------------------------------------------------------------------------
-InsertViewOperation::~InsertViewOperation ()
 {
 }
 
@@ -647,11 +612,6 @@ AttributeChangeAction::AttributeChangeAction (UIDescription* desc, UISelection* 
 		insert (std::make_pair (view, attrOldValue));
 	FOREACH_IN_SELECTION_END
 	name = "'" + attrName + "' change";
-}
-
-//-----------------------------------------------------------------------------
-AttributeChangeAction::~AttributeChangeAction ()
-{
 }
 
 //-----------------------------------------------------------------------------
@@ -1116,11 +1076,6 @@ BitmapFilterChangeAction::BitmapFilterChangeAction (UIDescription* description, 
 }
 
 //----------------------------------------------------------------------------------------------------
-BitmapFilterChangeAction::~BitmapFilterChangeAction ()
-{
-}
-
-//----------------------------------------------------------------------------------------------------
 UTF8StringPtr BitmapFilterChangeAction::getName ()
 {
 	return "Change Bitmap Filter";
@@ -1346,11 +1301,6 @@ HierarchyMoveViewOperation::HierarchyMoveViewOperation (CView* view, UISelection
 , up (up)
 {
 	parent = dynamic_cast<CViewContainer*> (view->getParentView ());
-}
-
-//----------------------------------------------------------------------------------------------------
-HierarchyMoveViewOperation::~HierarchyMoveViewOperation ()
-{
 }
 
 //----------------------------------------------------------------------------------------------------

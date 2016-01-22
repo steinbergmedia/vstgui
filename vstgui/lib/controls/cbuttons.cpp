@@ -76,10 +76,6 @@ COnOffButton::COnOffButton (const COnOffButton& v)
 }
 
 //------------------------------------------------------------------------
-COnOffButton::~COnOffButton ()
-{}
-
-//------------------------------------------------------------------------
 void COnOffButton::draw (CDrawContext *pContext)
 {
 	if (getDrawBackground ())
@@ -218,10 +214,6 @@ CKickButton::CKickButton (const CKickButton& v)
 	setHeightOfOneImage (v.heightOfOneImage);
 	setWantsFocus (true);
 }
-
-//------------------------------------------------------------------------
-CKickButton::~CKickButton ()
-{}
 
 //------------------------------------------------------------------------
 void CKickButton::draw (CDrawContext *pContext)

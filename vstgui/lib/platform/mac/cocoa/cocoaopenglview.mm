@@ -62,11 +62,6 @@ CocoaOpenGLView::CocoaOpenGLView (NSView* parent)
 }
 
 //-----------------------------------------------------------------------------
-CocoaOpenGLView::~CocoaOpenGLView ()
-{
-}
-
-//-----------------------------------------------------------------------------
 bool CocoaOpenGLView::init (IOpenGLView* view, PixelFormat* _pixelFormat)
 {
 	if (platformView || openGLViewClass == nullptr)

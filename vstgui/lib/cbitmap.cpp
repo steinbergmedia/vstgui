@@ -95,11 +95,6 @@ CBitmap::CBitmap (IPlatformBitmap* platformBitmap)
 }
 
 //-----------------------------------------------------------------------------
-CBitmap::~CBitmap ()
-{
-}
-
-//-----------------------------------------------------------------------------
 void CBitmap::draw (CDrawContext* context, const CRect& rect, const CPoint& offset, float alpha)
 {
 	CRect clipRect;
@@ -232,8 +227,7 @@ CNinePartTiledBitmap::CNinePartTiledBitmap (IPlatformBitmap* platformBitmap, con
 
 //-----------------------------------------------------------------------------
 CNinePartTiledBitmap::~CNinePartTiledBitmap ()
-{
-}
+= default;
 
 //-----------------------------------------------------------------------------
 void CNinePartTiledBitmap::draw (CDrawContext* inContext, const CRect& inDestRect, const CPoint& offset, float inAlpha)

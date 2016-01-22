@@ -88,10 +88,6 @@ CMovieBitmap::CMovieBitmap (const CMovieBitmap& v)
 }
 
 //------------------------------------------------------------------------
-CMovieBitmap::~CMovieBitmap ()
-{}
-
-//------------------------------------------------------------------------
 void CMovieBitmap::draw (CDrawContext *pContext)
 {
 	CPoint where (offset.x, offset.y);

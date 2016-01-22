@@ -58,11 +58,6 @@ CScrollbar::CScrollbar (const CScrollbar& v)
 }
 
 //-----------------------------------------------------------------------------
-CScrollbar::~CScrollbar ()
-{
-}
-
-//-----------------------------------------------------------------------------
 void CScrollbar::setViewSize (const CRect &newSize, bool invalid)
 {
 	scrollerArea = newSize;

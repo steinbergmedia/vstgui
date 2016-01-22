@@ -113,10 +113,6 @@ CSpecialDigit::CSpecialDigit (const CSpecialDigit& v)
 }
 
 //------------------------------------------------------------------------
-CSpecialDigit::~CSpecialDigit ()
-{}
-
-//------------------------------------------------------------------------
 void CSpecialDigit::draw (CDrawContext *pContext)
 {
 	CPoint  where;

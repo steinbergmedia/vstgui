@@ -53,7 +53,7 @@ class CLayeredViewContainer : public CViewContainer, public IPlatformViewLayerDe
 {
 public:
 	explicit CLayeredViewContainer (const CRect& r = CRect (0, 0, 0, 0));
-	~CLayeredViewContainer ();
+	~CLayeredViewContainer () = default;
 	
 	IPlatformViewLayer* getPlatformLayer () const { return layer; }
 

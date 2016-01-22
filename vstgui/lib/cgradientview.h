@@ -51,7 +51,7 @@ class CGradientView : public CView
 {
 public:
 	explicit CGradientView (const CRect& size);
-	~CGradientView ();
+	~CGradientView () = default;
 
 	//-----------------------------------------------------------------------------
 	/// @name Gradient Style Methods

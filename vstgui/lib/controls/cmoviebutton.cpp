@@ -88,10 +88,6 @@ CMovieButton::CMovieButton (const CMovieButton& v)
 }
 
 //------------------------------------------------------------------------
-CMovieButton::~CMovieButton ()
-{}
-
-//------------------------------------------------------------------------
 void CMovieButton::draw (CDrawContext *pContext)
 {
 	CPoint where;

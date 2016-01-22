@@ -413,7 +413,7 @@ class UIBitmapSettingsController : public CBaseObject, public IController
 {
 public:
 	UIBitmapSettingsController (CBitmap* bitmap, const std::string& bitmapName, UIDescription* description, IActionPerformer* actionPerformer);
-	~UIBitmapSettingsController () override;
+	~UIBitmapSettingsController () = default;
 
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;
@@ -459,11 +459,6 @@ UIBitmapSettingsController::UIBitmapSettingsController (CBitmap* bitmap, const s
 {
 	for (auto& control : controls)
 		control = nullptr;
-}
-
-//----------------------------------------------------------------------------------------------------
-UIBitmapSettingsController::~UIBitmapSettingsController ()
-{
 }
 
 //----------------------------------------------------------------------------------------------------

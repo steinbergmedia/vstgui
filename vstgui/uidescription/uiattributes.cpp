@@ -59,11 +59,6 @@ UIAttributes::UIAttributes (UTF8StringPtr* attributes)
 }
 
 //-----------------------------------------------------------------------------
-UIAttributes::~UIAttributes ()
-{
-}
-
-//-----------------------------------------------------------------------------
 bool UIAttributes::hasAttribute (const std::string& name) const
 {
 	if (getAttributeValue (name) != nullptr)
