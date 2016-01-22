@@ -43,7 +43,7 @@
 #include "d2dfont.h"
 #include <dwrite.h>
 
-#ifdef __GNUC__
+#if defined (__GNUC__) && !defined (__clang__)
 #define __maybenull
 #define __out
 #endif

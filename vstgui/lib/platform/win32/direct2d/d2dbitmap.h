@@ -65,12 +65,12 @@ public:
 	void setScaleFactor (double factor) override { scaleFactor = factor; }
 	double getScaleFactor () const override { return scaleFactor; }
 
-	HBITMAP createHBitmap ();
-	bool loadFromStream (IStream* stream);
+	HBITMAP createHBitmap () override;
+	bool loadFromStream (IStream* stream) override;
 
 	IWICBitmapSource* getSource () const { return source; }
 	IWICBitmap* getBitmap ();
-	bool createMemoryPNGRepresentation (void** ptr, uint32_t& size);
+	bool createMemoryPNGRepresentation (void** ptr, uint32_t& size) override;
 //-----------------------------------------------------------------------------
 protected:
 	void replaceBitmapSource (IWICBitmapSource* newSourceBitmap);

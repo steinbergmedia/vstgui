@@ -174,6 +174,16 @@
 	#include <algorithm>
 	using std::min;
 	using std::max;
+
+	#if defined (__clang__) && __clang__
+		#if defined (VSTGUI_WARN_EVERYTHING) && VSTGUI_WARN_EVERYTHING == 1
+			#pragma clang diagnostic warning "-Wconversion"
+			#pragma clang diagnostic ignored "-Wreorder"
+		#else
+			#pragma clang diagnostic warning "-Wunreachable-code"
+		#endif
+	#endif
+
 #else
 	#error unsupported compiler
 #endif

@@ -101,7 +101,7 @@ PlatformOptionMenuResult Win32OptionMenu::popup (COptionMenu* optionMenu)
 	HMENU menu = createMenu (optionMenu, offsetIndex);
 	if (menu)
 	{
-		int flags = TPM_LEFTALIGN;
+		UINT flags = TPM_LEFTALIGN;
 
 // do we need the following ?
 //		if (lastButton & kRButton)

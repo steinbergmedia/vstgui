@@ -91,7 +91,6 @@ public:
 	STDMETHOD (Drop) (IDataObject* dataObject, DWORD keyState, POINTL pt, DWORD* effect);
 private:
 	int32_t refCount;
-	bool accept;
 	Win32Frame* pFrame;
 	WinDragContainer* gDragContainer;
 };
@@ -106,8 +105,8 @@ public:
 
 	// IUnknown
 	STDMETHOD (QueryInterface) (REFIID riid, void** object);
-	STDMETHOD_ (ULONG, AddRef) (void) { remember (); return getNbReference ();}
-	STDMETHOD_ (ULONG, Release) (void) { ULONG refCount = getNbReference () - 1; forget (); return refCount; }
+	STDMETHOD_ (ULONG, AddRef) (void) { remember (); return static_cast<ULONG> (getNbReference ());}
+	STDMETHOD_ (ULONG, Release) (void) { ULONG refCount = static_cast<ULONG> (getNbReference ()) - 1; forget (); return refCount; }
 	
 	// IDropSource
 	STDMETHOD (QueryContinueDrag) (BOOL escapePressed, DWORD keyState);
@@ -125,8 +124,8 @@ public:
 
 	// IUnknown
 	STDMETHOD (QueryInterface) (REFIID riid, void** object);
-	STDMETHOD_ (ULONG, AddRef) (void) { remember (); return getNbReference ();}
-	STDMETHOD_ (ULONG, Release) (void) { ULONG refCount = getNbReference () - 1; forget (); return refCount; }
+	STDMETHOD_ (ULONG, AddRef) (void) { remember (); return static_cast<ULONG> (getNbReference ());}
+	STDMETHOD_ (ULONG, Release) (void) { ULONG refCount = static_cast<ULONG> (getNbReference ()) - 1; forget (); return refCount; }
 
 	// IDataObject
 	STDMETHOD (GetData) (FORMATETC *format, STGMEDIUM *medium);
@@ -1074,7 +1073,7 @@ STDMETHODIMP CDropTarget::QueryInterface (REFIID riid, void** object)
 //-----------------------------------------------------------------------------
 STDMETHODIMP_(ULONG) CDropTarget::AddRef (void)
 {
-	return ++refCount;
+	return static_cast<ULONG> (++refCount);
 }
 
 //-----------------------------------------------------------------------------
@@ -1086,7 +1085,7 @@ STDMETHODIMP_(ULONG) CDropTarget::Release (void)
 		delete this;
 		return 0;
 	}
-	return refCount;
+	return static_cast<ULONG> (refCount);
 }
 
 //-----------------------------------------------------------------------------

@@ -243,7 +243,7 @@ static HMENU createSubMenu (const UTF8String& group,
 			title += "\tCtrl+";
 			if (upper == e.defaultKey)
 				title += "Shift+";
-			title += upper;
+			title += static_cast<char> (upper);
 			UTF8String titleStr (title.data ());
 			itemTitle = dynamic_cast<WinString*> (titleStr.getPlatformString ());
 		}

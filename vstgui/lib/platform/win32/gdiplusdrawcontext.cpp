@@ -187,7 +187,7 @@ void GdiplusDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradie
 		for (CGradient::ColorStopMap::const_iterator it = gradient.getColorStops ().begin (); it != gradient.getColorStops ().end (); ++it, ++index)
 		{
 			CColor color = it->second;
-			color.alpha = (int8_t)((float)color.alpha * currentState.globalAlpha);
+			color.alpha = static_cast<uint8_t> ((float)color.alpha * currentState.globalAlpha);
 			colors[index] = createGdiPlusColor (color);
 			positions[index] = (Gdiplus::REAL)it->first;
 		}
@@ -247,7 +247,7 @@ void GdiplusDrawContext::fillRadialGradient (CGraphicsPath* _path, const CGradie
 		for (CGradient::ColorStopMap::const_iterator it = gradient.getColorStops ().begin (); it != gradient.getColorStops ().end (); ++it, ++index)
 		{
 			CColor color = it->second;
-			color.alpha = (int8_t)((float)color.alpha * currentState.globalAlpha);
+			color.alpha = static_cast<uint8_t>((float)color.alpha * currentState.globalAlpha);
 			colors[index] = createGdiPlusColor (color);
 			positions[index] = (Gdiplus::REAL)it->first;
 		}
@@ -555,7 +555,7 @@ void GdiplusDrawContext::setLineStyleInternal (const CLineStyle& style)
 			Gdiplus::REAL* dashes = new Gdiplus::REAL [style.getDashCount ()];
 			for (uint32_t i = 0; i < style.getDashCount (); i++)
 				dashes[i] = (Gdiplus::REAL)style.getDashLengths ()[i];
-			pPen->SetDashPattern (dashes, style.getDashCount ());
+			pPen->SetDashPattern (dashes, static_cast<INT> (style.getDashCount ()));
 			delete [] dashes; 
 		}
 	}

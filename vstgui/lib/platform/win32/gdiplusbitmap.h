@@ -61,9 +61,9 @@ public:
 	double getScaleFactor () const override { return 1.; }
 
 	Gdiplus::Bitmap* getBitmap () const { return bitmap; }
-	HBITMAP createHBitmap ();
-	bool loadFromStream (IStream* stream);
-	bool createMemoryPNGRepresentation (void** ptr, uint32_t& size);
+	HBITMAP createHBitmap () override;
+	bool loadFromStream (IStream* stream) override;
+	bool createMemoryPNGRepresentation (void** ptr, uint32_t& size) override;
 
 //-----------------------------------------------------------------------------
 protected:
@@ -76,7 +76,7 @@ protected:
 		bool init (GdiplusBitmap* bitmap, bool alphaPremulitplied);
 
 		uint8_t* getAddress () const { return (uint8_t*)data.Scan0; }
-		uint32_t getBytesPerRow () const { return data.Stride; }
+		uint32_t getBytesPerRow () const { return static_cast<uint32_t> (data.Stride); }
 		PixelFormat getPixelFormat () const { return kBGRA; }
 	protected:
 		GdiplusBitmap* bitmap;

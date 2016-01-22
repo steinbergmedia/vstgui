@@ -251,7 +251,7 @@ HBITMAP D2DBitmap::createHBitmap ()
 	if (getSource () == 0)
 		return 0;
 
-	BITMAPINFO pbmi = {0};
+	BITMAPINFO pbmi {};
 	pbmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
 	pbmi.bmiHeader.biPlanes = 1;
 	pbmi.bmiHeader.biCompression = BI_RGB;
@@ -266,7 +266,7 @@ HBITMAP D2DBitmap::createHBitmap ()
 	HBITMAP result = CreateDIBSection (hdc, &pbmi, DIB_RGB_COLORS, reinterpret_cast<void**> (&bits), 0, 0);
 	if (result)
 	{
-		getSource ()->CopyPixels (NULL, (INT)size.x * sizeof (DWORD), (INT)size.x * sizeof (DWORD) * (INT)size.y, bits);
+		getSource ()->CopyPixels (NULL, (UINT)size.x * sizeof (DWORD), (UINT)size.x * sizeof (DWORD) * (UINT)size.y, bits);
 	}
 	return result;
 }

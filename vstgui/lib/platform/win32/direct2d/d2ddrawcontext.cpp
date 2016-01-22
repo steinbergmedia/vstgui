@@ -137,7 +137,7 @@ void D2DDrawContext::createRenderTarget ()
 		RECT rc;
 		GetClientRect (window, &rc);
 
-		D2D1_SIZE_U size = D2D1::SizeU (rc.right - rc.left, rc.bottom - rc.top);
+		D2D1_SIZE_U size = D2D1::SizeU (static_cast<UINT32> (rc.right - rc.left), static_cast<UINT32> (rc.bottom - rc.top));
 		ID2D1HwndRenderTarget* hwndRenderTarget = 0;
 		D2D1_PIXEL_FORMAT pixelFormat = D2D1::PixelFormat (DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_PREMULTIPLIED);
 		HRESULT hr = getD2DFactory ()->CreateHwndRenderTarget (D2D1::RenderTargetProperties (gRenderTargetType, pixelFormat), D2D1::HwndRenderTargetProperties (window, size, D2D1_PRESENT_OPTIONS_RETAIN_CONTENTS), &hwndRenderTarget);

@@ -60,7 +60,6 @@ public:
 	void showAlertForWindow (const AlertBoxForWindowConfig& config);
 
 private:
-	bool running {true};
 	Win32Preference prefs;
 	HACCEL keyboardAccelerators {nullptr};
 };

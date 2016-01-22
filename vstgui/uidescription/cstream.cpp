@@ -480,7 +480,7 @@ int64_t CResourceInputStream::tell () const
 		return ftello ((FILE*)platformHandle);
 	#elif WINDOWS
 		ULARGE_INTEGER pos;
-		LARGE_INTEGER dummy = {0};
+		LARGE_INTEGER dummy = {};
 		if (((ResourceStream*)platformHandle)->Seek (dummy, STREAM_SEEK_CUR, &pos) == S_OK)
 			return (int64_t)pos.QuadPart;
 	#endif

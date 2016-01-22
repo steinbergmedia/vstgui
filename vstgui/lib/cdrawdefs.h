@@ -42,7 +42,7 @@ namespace VSTGUI {
 //-----------
 // @brief Draw Mode Flags
 //-----------
-enum CDrawModeFlags
+enum CDrawModeFlags : uint32_t
 {
 	kAliasing = 0,					///< aliased drawing
 	kAntiAliasing = 1,				///< antialised drawing

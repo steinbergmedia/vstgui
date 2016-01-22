@@ -410,13 +410,13 @@ bool ResourceStream::open (const CResourceDescription& resourceDesc, const char*
 //-----------------------------------------------------------------------------
 HRESULT STDMETHODCALLTYPE ResourceStream::Read (void *pv, ULONG cb, ULONG *pcbRead)
 {
-	int readSize = std::min<int> (resSize - streamPos, cb);
+	int readSize = std::min<int> (static_cast<int> (resSize - streamPos), static_cast<int> (cb));
 	if (readSize > 0)
 	{
-		memcpy (pv, ((uint8_t*)resData+streamPos), readSize);
-		streamPos += readSize;
+		memcpy (pv, ((uint8_t*)resData+streamPos), static_cast<size_t> (readSize));
+		streamPos += static_cast<uint32_t> (readSize);
 		if (pcbRead)
-			*pcbRead = readSize;
+			*pcbRead = static_cast<ULONG> (readSize);
 		return S_OK;
 	}
 	if (pcbRead)
@@ -447,7 +447,7 @@ HRESULT STDMETHODCALLTYPE ResourceStream::Seek (LARGE_INTEGER dlibMove, DWORD dw
 		{
 			if (streamPos + dlibMove.QuadPart < resSize && streamPos + dlibMove.QuadPart >= 0)
 			{
-				streamPos += (int32_t)dlibMove.QuadPart;
+				streamPos += static_cast<uint32_t> (dlibMove.QuadPart);
 				if (plibNewPosition)
 					plibNewPosition->QuadPart = streamPos;
 				return S_OK;
