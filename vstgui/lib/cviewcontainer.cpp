@@ -95,7 +95,7 @@ CViewContainer::CViewContainer (const CViewContainer& v)
 CViewContainer::~CViewContainer ()
 {
 	// remove all views
-	removeAll (true);
+	CViewContainer::removeAll (true);
 	vstgui_assert (viewContainerListeners.empty ());
 }
 

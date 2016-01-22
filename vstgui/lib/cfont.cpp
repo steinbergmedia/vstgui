@@ -120,7 +120,7 @@ CFontDesc::CFontDesc (const CFontDesc& font)
 }
 
 //-----------------------------------------------------------------------------
-CFontDesc::~CFontDesc ()
+void CFontDesc::beforeDelete ()
 {
 	freePlatformFont ();
 	setName (nullptr);

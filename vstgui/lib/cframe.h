@@ -185,7 +185,9 @@ public:
 
 	//-------------------------------------------
 protected:
-	~CFrame ();
+	~CFrame () = default;
+	void beforeDelete () override;
+	
 	void checkMouseViews (const CPoint& where, const CButtonState& buttons);
 	void clearMouseViews (const CPoint& where, const CButtonState& buttons, bool callMouseExit = true);
 	void removeFromMouseViews (CView* view);

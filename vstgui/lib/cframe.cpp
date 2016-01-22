@@ -81,7 +81,7 @@ CFrame::CFrame (const CRect& inSize, VSTGUIEditorInterface* inEditor)
 }
 
 //-----------------------------------------------------------------------------
-CFrame::~CFrame ()
+void CFrame::beforeDelete ()
 {
 	clearMouseViews (CPoint (0, 0), 0, false);
 

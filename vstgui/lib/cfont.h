@@ -62,7 +62,7 @@ class CFontDesc : public CBaseObject
 public:
 	CFontDesc (UTF8StringPtr name = nullptr, const CCoord& size = 0, const int32_t style = 0);
 	CFontDesc (const CFontDesc& font);
-	~CFontDesc ();
+	~CFontDesc () = default;
 
 	//-----------------------------------------------------------------------------
 	/// @name Size, Name and Style Methods
@@ -90,6 +90,7 @@ public:
 protected:
 	IPlatformFont* platformFont;
 	
+	void beforeDelete () override;
 	virtual void freePlatformFont ();
 	UTF8StringBuffer name;
 	CCoord size;
