@@ -532,16 +532,16 @@ CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes
 					button->setSelectedSegment (static_cast<uint32_t> (value));
 					static const char* segmentBitmapNames[] = {"segment-views", "segment-tags", "segment-colors", "segment-gradients", "segment-bitmaps", "segment-fonts", nullptr};
 					size_t segmentBitmapNameIndex = 0;
-					for (CSegmentButton::Segments::const_iterator it = button->getSegments().begin(), end = button->getSegments().end (); it != end; ++it)
+					for (const auto& segment : button->getSegments())
 					{
 						if (segmentBitmapNames[segmentBitmapNameIndex])
 						{
 							CBitmap* bitmap = getEditorDescription().getBitmap (segmentBitmapNames[segmentBitmapNameIndex++]);
 							if (!bitmap)
 								continue;
-							(*it).icon = bitmap;
-							(*it).iconHighlighted = bitmap;
-							(*it).iconPosition = CDrawMethods::kIconLeft;
+							segment.icon = bitmap;
+							segment.iconHighlighted = bitmap;
+							segment.iconPosition = CDrawMethods::kIconLeft;
 						}
 					}
 				}
@@ -1356,8 +1356,8 @@ void UIEditController::finishGroupAction ()
 //----------------------------------------------------------------------------------------------------
 void UIEditController::getTemplateViews (std::list<CView*>& views) const
 {
-	for (std::vector<Template>::const_iterator it = templates.begin (); it != templates.end (); it++)
-		views.push_back ((*it).view);
+	for (const auto& templateDesc : templates)
+		views.push_back (templateDesc.view);
 }
 
 //----------------------------------------------------------------------------------------------------

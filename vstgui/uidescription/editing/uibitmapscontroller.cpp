@@ -457,8 +457,8 @@ UIBitmapSettingsController::UIBitmapSettingsController (CBitmap* bitmap, const s
 , actionPerformer (actionPerformer)
 , origOffsets (10, 10, 10, 10)
 {
-	for (int32_t i = 0; i < kNumTags; i++)
-		controls[i] = nullptr;
+	for (auto& control : controls)
+		control = nullptr;
 }
 
 //----------------------------------------------------------------------------------------------------

@@ -1341,44 +1341,38 @@ void CFrame::unregisterMouseObserver (IMouseObserver* observer)
 //-----------------------------------------------------------------------------
 void CFrame::callMouseObserverMouseEntered (CView* view)
 {
-	if (pMouseObservers)
-	{
-		for (MouseObserverList::const_iterator it = pMouseObservers->begin (), end = pMouseObservers->end (); it != end; ++it)
-		{
-			(*it)->onMouseEntered (view, this);
-		}
-	}
+	if (pMouseObservers == nullptr)
+		return;
+	for (auto& observer : *pMouseObservers)
+		observer->onMouseEntered (view, this);
 }
 
 //-----------------------------------------------------------------------------
 void CFrame::callMouseObserverMouseExited (CView* view)
 {
-	if (pMouseObservers)
-	{
-		for (MouseObserverList::const_iterator it = pMouseObservers->begin (), end = pMouseObservers->end (); it != end; ++it)
-		{
-			(*it)->onMouseExited (view, this);
-		}
-	}
+	if (pMouseObservers == nullptr)
+		return;
+	for (auto& observer : *pMouseObservers)
+		observer->onMouseExited (view, this);
 }
 
 //-----------------------------------------------------------------------------
 CMouseEventResult CFrame::callMouseObserverMouseDown (const CPoint& _where, const CButtonState& buttons)
 {
+	if (pMouseObservers == nullptr)
+		return kMouseEventNotHandled;
+
 	CMouseEventResult result = kMouseEventNotHandled;
-	if (pMouseObservers)
+	CPoint where (_where);
+	getTransform ().inverse ().transform (where);
+	
+	for (auto& observer : *pMouseObservers)
 	{
-		CPoint where (_where);
-		getTransform ().inverse ().transform (where);
-		
-		for (MouseObserverList::const_iterator it = pMouseObservers->begin (), end = pMouseObservers->end (); it != end; ++it)
-		{
-			CMouseEventResult result2 = (*it)->onMouseDown (this, where, buttons);
-			if (result2 == kMouseEventHandled)
-				result = kMouseEventHandled;
-			if (pMouseObservers == nullptr)
-				return kMouseEventHandled;
-		}
+		CMouseEventResult result2 = observer->onMouseDown (this, where, buttons);
+		if (result2 == kMouseEventHandled)
+			result = kMouseEventHandled;
+		if (pMouseObservers == nullptr)
+			return kMouseEventHandled;
 	}
 	return result;
 }
@@ -1386,18 +1380,18 @@ CMouseEventResult CFrame::callMouseObserverMouseDown (const CPoint& _where, cons
 //-----------------------------------------------------------------------------
 CMouseEventResult CFrame::callMouseObserverMouseMoved (const CPoint& _where, const CButtonState& buttons)
 {
+	if (pMouseObservers == nullptr)
+		return kMouseEventNotHandled;
+
 	CMouseEventResult result = kMouseEventNotHandled;
-	if (pMouseObservers)
+	CPoint where (_where);
+	getTransform ().inverse ().transform (where);
+	
+	for (auto& observer : *pMouseObservers)
 	{
-		CPoint where (_where);
-		getTransform ().inverse ().transform (where);
-		
-		for (MouseObserverList::const_iterator it = pMouseObservers->begin (), end = pMouseObservers->end (); it != end; ++it)
-		{
-			CMouseEventResult result2 = (*it)->onMouseMoved (this, where, buttons);
-			if (result2 == kMouseEventHandled)
-				result = kMouseEventHandled;
-		}
+		CMouseEventResult result2 = observer->onMouseMoved (this, where, buttons);
+		if (result2 == kMouseEventHandled)
+			result = kMouseEventHandled;
 	}
 	return result;
 }
@@ -1511,10 +1505,8 @@ void CFrame::platformScaleFactorChanged ()
 {
 	if (pScaleFactorChangedListenerList == nullptr)
 		return;
-	for (ScaleFactorChangedListenerList::const_iterator it = pScaleFactorChangedListenerList->begin (), end = pScaleFactorChangedListenerList->end (); it != end; ++it)
-	{
-		(*it)->onScaleFactorChanged (this);
-	}
+	for (auto& listener : *pScaleFactorChangedListenerList)
+		listener->onScaleFactorChanged (this);
 }
 
 #if VSTGUI_TOUCH_EVENT_HANDLING
@@ -1646,8 +1638,8 @@ void CFrame::CollectInvalidRects::flush ()
 	{
 		if (frame->isVisible () && frame->platformFrame)
 		{
-			for (InvalidRects::const_iterator it = invalidRects.begin (), end = invalidRects.end (); it != end; ++it)
-				frame->platformFrame->invalidRect (*it);
+			for (auto& rect : invalidRects)
+				frame->platformFrame->invalidRect (rect);
 		#if VSTGUI_LOG_COLLECT_INVALID_RECTS
 			DebugPrint ("%d -> %d\n", numAddedRects, invalidRects.size ());
 			numAddedRects = 0;

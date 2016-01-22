@@ -723,8 +723,8 @@ MultipleAttributeChangeAction::MultipleAttributeChangeAction (UIDescription* des
 , newValue (newValue)
 {
 	const UIViewFactory* viewFactory = dynamic_cast<const UIViewFactory*>(description->getViewFactory ());
-	for (std::list<CView*>::const_iterator it = views.begin (); it != views.end (); it++)
-		collectViewsWithAttributeValue (viewFactory, description, *it, attrType, oldValue);
+	for (auto& view : views)
+		collectViewsWithAttributeValue (viewFactory, description, view, attrType, oldValue);
 }
 
 //----------------------------------------------------------------------------------------------------

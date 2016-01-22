@@ -51,8 +51,8 @@ namespace VSTGUI {
 UIFocusSettingsController::UIFocusSettingsController (UIDescription* description)
 : editDescription (description)
 {
-	for (int32_t i = 0; i < kNumTags; i++)
-		controls[i] = nullptr;
+	for (auto& control : controls)
+		control = nullptr;
 }
 
 //----------------------------------------------------------------------------------------------------

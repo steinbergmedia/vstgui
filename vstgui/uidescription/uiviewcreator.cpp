@@ -2170,10 +2170,10 @@ public:
 	void updateSegments (CSegmentButton* button, const UIAttributes::StringArray& names) const
 	{
 		button->removeAllSegments ();
-		for (UIAttributes::StringArray::const_iterator it = names.begin (), end = names.end (); it != end; ++it)
+		for (const auto& name : names)
 		{
 			CSegmentButton::Segment segment;
-			segment.name = (*it).c_str ();
+			segment.name = name.c_str ();
 			button->addSegment (segment);
 		}
 	}
@@ -2311,8 +2311,8 @@ public:
 		{
 			const CSegmentButton::Segments& segments = button->getSegments ();
 			UIAttributes::StringArray stringArray;
-			for (CSegmentButton::Segments::const_iterator it = segments.begin (), end = segments.end (); it != end; ++it)
-				stringArray.push_back (std::string ((*it).name));
+			for (const auto& segment : segments)
+				stringArray.push_back (std::string (segment.name));
 			stringValue = UIAttributes::createStringArrayValue (stringArray);
 			return true;
 		}

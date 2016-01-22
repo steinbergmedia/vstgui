@@ -65,8 +65,8 @@ UITemplateSettingsController::UITemplateSettingsController (const std::string& t
 			maxSize.y = -1.;
 		}
 	}
-	for (int32_t i = 0; i < kNumTags; i++)
-		controls[i] = nullptr;
+	for (auto& control : controls)
+		control = nullptr;
 }
 
 //----------------------------------------------------------------------------------------------------

@@ -403,9 +403,9 @@ void CSegmentButton::updateSegmentSizes ()
 			CCoord width = getWidth () / segments.size ();
 			CRect r (getViewSize ());
 			r.setWidth (width);
-			for (Segments::iterator it = segments.begin (), end = segments.end (); it != end; ++it)
+			for (auto& segment : segments)
 			{
-				(*it).rect = r;
+				segment.rect = r;
 				r.offset (width, 0);
 			}
 		}
@@ -414,9 +414,9 @@ void CSegmentButton::updateSegmentSizes ()
 			CCoord height = getHeight () / segments.size ();
 			CRect r (getViewSize ());
 			r.setHeight (height);
-			for (Segments::iterator it = segments.begin (), end = segments.end (); it != end; ++it)
+			for (auto& segment : segments)
 			{
-				(*it).rect = r;
+				segment.rect = r;
 				r.offset (0, height);
 			}
 		}

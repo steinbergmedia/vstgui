@@ -245,8 +245,8 @@ CView::CView (const CView& v)
 , autosizeFlags (v.autosizeFlags)
 , alphaValue (v.alphaValue)
 {
-	for (ViewAttributes::iterator it = attributes.begin (); it != attributes.end (); ++it)
-		setAttribute (it->first, it->second->getSize (), it->second->getData ());
+	for (auto& attribute : attributes)
+		setAttribute (attribute.first, attribute.second->getSize (), attribute.second->getData ());
 }
 
 //-----------------------------------------------------------------------------
@@ -266,8 +266,8 @@ CView::~CView ()
 			delete controller;
 	}
 
-	for (ViewAttributes::iterator it = attributes.begin (), end = attributes.end (); it != end; ++it)
-		delete it->second;
+	for (auto& attribute : attributes)
+		delete attribute.second;
 
 	#if VSTGUI_CHECK_VIEW_RELEASING
 	CViewInternal::gNbCView--;

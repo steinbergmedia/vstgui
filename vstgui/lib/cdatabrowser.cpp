@@ -402,9 +402,9 @@ void CDataBrowser::setSelectedRow (int32_t index, bool makeVisible)
 		invalidateRow (index);
 	}
 	
-	for (Selection::iterator it = selection.begin (); it != selection.end (); ++it)
+	for (auto row : selection)
 	{
-		dbView->invalidateRow (*it);
+		dbView->invalidateRow (row);
 	}
 	selection.clear ();
 	
@@ -471,9 +471,9 @@ void CDataBrowser::unselectAll ()
 {
 	if (selection.size () > 0)
 	{
-		for (Selection::iterator it = selection.begin (); it != selection.end (); ++it)
+		for (auto row : selection)
 		{
-			dbView->invalidateRow (*it);
+			dbView->invalidateRow (row);
 		}
 		selection.clear ();
 		db->dbSelectionChanged (this);

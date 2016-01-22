@@ -535,13 +535,13 @@ int32_t COptionMenu::onKeyDown (VstKeyCode& keyCode)
 void COptionMenu::beforePopup ()
 {
 	changed (kMsgBeforePopup);
-	for (CMenuItemIterator it = menuItems->begin (); it != menuItems->end (); ++it)
+	for (auto& menuItem : *menuItems)
 	{
-		CCommandMenuItem* commandItem = (*it).cast<CCommandMenuItem> ();
+		CCommandMenuItem* commandItem = menuItem.cast<CCommandMenuItem> ();
 		if (commandItem)
 			commandItem->validate ();
-		if ((*it)->getSubmenu ())
-			(*it)->getSubmenu ()->beforePopup ();
+		if (menuItem->getSubmenu ())
+			menuItem->getSubmenu ()->beforePopup ();
 	}
 }
 

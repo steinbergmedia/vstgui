@@ -64,9 +64,8 @@ void CGraphicsPath::addRoundRect (const CRect& size, CCoord radius)
 //-----------------------------------------------------------------------------
 void CGraphicsPath::addPath (const CGraphicsPath& path, CGraphicsTransform* transformation)
 {
-	for (ElementList::const_iterator it = path.elements.begin (); it != path.elements.end (); ++it)
+	for (auto e : path.elements)
 	{
-		Element e = (*it);
 		if (transformation)
 		{
 			switch (e.type)
