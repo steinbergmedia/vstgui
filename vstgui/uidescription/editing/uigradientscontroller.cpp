@@ -240,19 +240,19 @@ CMouseEventResult UIColorStopEditView::onMouseDown (CPoint& where, const CButton
 	{
 		double pos = gradientStartPosFromMousePos (where);
 		double range = (stopWidth / getWidth ()) / 2.;
-		for (CGradient::ColorStopMap::const_iterator it = colorStopMap.begin (), end = colorStopMap.end (); it != end; ++it)
+		for (auto& colorStop : colorStopMap)
 		{
-			if (pos >= it->first - range && pos <= it->first + range)
+			if (pos >= colorStop.first - range && pos <= colorStop.first + range)
 			{
 				if (buttons.getModifierState () == kAlt)
 				{
-					removeColorStop (it->first);
+					removeColorStop (colorStop.first);
 					return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 				}
-				if (editStartOffset != it->first)
+				if (editStartOffset != colorStop.first)
 				{
-					editStartOffset = it->first;
-					*editColor = it->second;
+					editStartOffset = colorStop.first;
+					*editColor = colorStop.second;
 				}
 				mouseDownStartPosOffset = pos - editStartOffset;
 				return kMouseEventHandled;
@@ -328,17 +328,17 @@ void UIColorStopEditView::draw (CDrawContext* context)
 	CColor selectedColor;
 
 	context->setGlobalAlpha (0.5f);
-	for (CGradient::ColorStopMap::const_iterator it = colorStopMap.begin (), end = colorStopMap.end (); it != end; it++)
+	for (auto& colorStop : colorStopMap)
 	{
-		if (it->first == getSelectedColorStart ())
+		if (colorStop.first == getSelectedColorStart ())
 		{
-			selectedColor = it->second;
+			selectedColor = colorStop.second;
 		}
 		else
 		{
 			CGraphicsTransform offset;
-			offset.translate (it->first * width, getHeight () / 4.);
-			if (it->second.getLuma () < 127)
+			offset.translate (colorStop.first * width, getHeight () / 4.);
+			if (colorStop.second.getLuma () < 127)
 				context->setFrameColor (kWhiteCColor);
 			else
 				context->setFrameColor (kBlackCColor);

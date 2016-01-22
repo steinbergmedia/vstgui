@@ -60,7 +60,7 @@ void DispatchList<T>::remove (T* obj)
 		toRemove.push_back (obj);
 	else
 	{
-		typename Array::iterator it = std::find (entries.begin (), entries.end (), obj);
+		auto it = std::find (entries.begin (), entries.end (), obj);
 		if (it != entries.end ())
 			entries.erase (it);
 	}
@@ -83,15 +83,15 @@ void DispatchList<T>::forEach (Procedure proc)
 
 	bool wasInForEach = inForEach;
 	inForEach = true;
-	for (typename Array::const_iterator it = entries.begin (), end = entries.end (); it != end; ++it)
-		proc (*it);
+	for (auto& it : entries)
+		proc (it);
 	inForEach = wasInForEach;
 	if (!inForEach)
 	{
-		for (typename Array::const_iterator it = toAdd.begin (), end = toAdd.end (); it != end; ++it)
-			add (*it);
-		for (typename Array::const_iterator it = toRemove.begin (), end = toRemove.end (); it != end; ++it)
-			remove (*it);
+		for (auto& it : toAdd)
+			add (it);
+		for (auto& it : toRemove)
+			remove (it);
 		toAdd.clear ();
 		toRemove.clear ();
 	}

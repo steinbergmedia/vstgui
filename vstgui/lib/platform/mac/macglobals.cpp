@@ -77,8 +77,8 @@ class CGColorMapImpl
 public:
 	~CGColorMapImpl ()
 	{
-		for (CGColorMap::const_iterator it = map.begin (), end = map.end (); it != end; ++it)
-			CFRelease (it->second);
+		for (auto& it : map)
+			CFRelease (it.second);
 	}
 	
 	CGColorMap map;

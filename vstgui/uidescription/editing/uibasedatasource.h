@@ -124,9 +124,10 @@ public:
 	virtual int32_t selectName (UTF8StringPtr name)
 	{
 		int32_t index = 0;
-		for (StringVector::const_iterator it = names.begin (); it != names.end (); it++, index++)
+		for (auto& it : names)
 		{
-			if (*it == name)
+			++index;
+			if (it == name)
 			{
 				dataBrowser->setSelectedRow (index, true);
 				if (delegate)
@@ -154,7 +155,7 @@ protected:
 		std::string filter = filterString;
 		std::transform (filter.begin (), filter.end (), filter.begin (), ::tolower);
 
-		for (std::list<const std::string*>::const_iterator it = tmpNames.begin (); it != tmpNames.end (); it++)
+		for (auto it = tmpNames.begin (); it != tmpNames.end (); it++)
 		{
 			if (!filter.empty ())
 			{
@@ -261,9 +262,9 @@ protected:
 			str << ' ';
 			str << count;
 		}
-		for (StringVector::const_iterator it = names.begin (); it != names.end (); it++)
+		for (auto& it : names)
 		{
-			if (*it == str.str ())
+			if (it == str.str ())
 				return createUniqueName (name, count+1);
 		}
 		name = str.str ();

@@ -696,8 +696,8 @@ void UIEditController::beforeSave ()
 			for (std::vector<Template>::const_iterator it = templates.begin (); it != templates.end (); it++)
 				updateTemplate (it);
 		}
-		for (std::list<SharedPointer<CSplitView> >::const_iterator it = splitViews.begin (); it != splitViews.end (); it++)
-			(*it)->storeViewSizes ();
+		for (auto& splitView : splitViews)
+			splitView->storeViewSizes ();
 		
 		getSettings ()->setIntegerAttribute ("Version", 1);
 		// find the view of this controller
@@ -730,11 +730,11 @@ void UIEditController::onTemplateSelectionChanged ()
 				updateTemplate (editTemplateName.c_str ());
 			if (name)
 			{
-				for (std::vector<Template>::const_iterator it = templates.begin (); it != templates.end (); it++)
+				for (auto& it : templates)
 				{
-					if (*name == (*it).name)
+					if (*name == it.name)
 					{
-						CView* view = (*it).view;
+						CView* view = it.view;
 						editView->setEditView (view);
 						templateController->setTemplateView (static_cast<CViewContainer*> (view));
 						editTemplateName = *templateController->getSelectedTemplateName ();
@@ -1150,12 +1150,12 @@ void UIEditController::onUndoManagerChanged ()
 				return;
 			}
 		}
-		for (std::vector<Template>::const_iterator it = templates.begin (); it != templates.end (); it++)
+		for (auto& it : templates)
 		{
-			CViewContainer* container = dynamic_cast<CViewContainer*>((CView*)(*it).view);
+			CViewContainer* container = it.view.cast<CViewContainer> ();
 			if (container && (view == container || container->isChild (view, true)))
 			{
-				templateController->selectTemplate ((*it).name.c_str ());
+				templateController->selectTemplate (it.name.c_str ());
 				return;
 			}
 		}
@@ -1230,10 +1230,11 @@ int32_t UIEditController::getSaveOptions ()
 int32_t UIEditController::getSplitViewIndex (CSplitView* splitView)
 {
 	int32_t index = 0;
-	for (std::list<SharedPointer<CSplitView> >::const_iterator it = splitViews.begin (); it != splitViews.end (); it++, index++)
+	for (auto& sv : splitViews)
 	{
-		if ((*it) == splitView)
+		if (sv == splitView)
 			return index;
+		index++;
 	}
 	return -1;
 }
@@ -1607,21 +1608,21 @@ void UIEditController::onTemplatesChanged ()
 {
 	std::list<const std::string*> templateNames;
 	editDescription->collectTemplateViewNames (templateNames);
-	for (std::list<const std::string*>::const_iterator it = templateNames.begin (); it != templateNames.end (); it++)
+	for (auto& it : templateNames)
 	{
-		if (std::find (templates.begin (), templates.end (), *(*it)) == templates.end ())
+		if (std::find (templates.begin (), templates.end (), *it) == templates.end ())
 		{
-			auto view = owned (editDescription->createView ((*it)->c_str (), editDescription->getController ()));
-			templates.push_back (Template (*(*it), view));
+			auto view = owned (editDescription->createView (it->c_str (), editDescription->getController ()));
+			templates.push_back (Template (*it, view));
 		}
 	}
 	for (std::vector<Template>::iterator it = templates.begin (); it != templates.end ();)
 	{
 		Template& t = (*it);
 		bool found = false;
-		for (std::list<const std::string*>::const_iterator it2 = templateNames.begin (); it2 != templateNames.end (); it2++)
+		for (auto& it2 : templateNames)
 		{
-			if (t.name == *(*it2))
+			if (t.name == *it2)
 			{
 				found = true;
 				it++;

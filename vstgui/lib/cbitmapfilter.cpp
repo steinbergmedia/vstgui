@@ -261,10 +261,11 @@ uint32_t Factory::getNumFilters () const
 //----------------------------------------------------------------------------------------------------
 IdStringPtr Factory::getFilterName (uint32_t index) const
 {
-	for (FilterMap::const_iterator it = filters.begin (), end = filters.end (); it != end; ++it, --index)
+	for (const auto& filter : filters)
 	{
 		if (index == 0)
-			return it->first.c_str ();
+			return filter.first.c_str ();
+		--index;
 	}
 	return nullptr;
 }
@@ -344,10 +345,11 @@ uint32_t FilterBase::getNumProperties () const
 //----------------------------------------------------------------------------------------------------
 IdStringPtr FilterBase::getPropertyName (uint32_t index) const
 {
-	for (const_iterator it = begin (); it != end (); ++it, index--)
+	for (const auto & it : *this)
 	{
 		if (index == 0)
-			return (*it).first.c_str ();
+			return it.first.c_str ();
+		index--;
 	}
 	return nullptr;
 }
@@ -355,10 +357,11 @@ IdStringPtr FilterBase::getPropertyName (uint32_t index) const
 //----------------------------------------------------------------------------------------------------
 Property::Type FilterBase::getPropertyType (uint32_t index) const
 {
-	for (const_iterator it = begin (); it != end (); ++it, index--)
+	for (const auto & it : *this)
 	{
 		if (index == 0)
-			return (*it).second.getType ();
+			return it.second.getType ();
+		index--;
 	}
 	return Property::kUnknown;
 }

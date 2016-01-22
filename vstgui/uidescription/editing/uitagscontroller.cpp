@@ -79,10 +79,10 @@ void UITagsDataSource::update ()
 {
 	UIBaseDataSource::update ();
 	tags.clear ();
-	for (StringVector::const_iterator it = names.begin (); it != names.end (); it++)
+	for (auto& name : names)
 	{
 		std::string tagString;
-		description->getControlTagString ((*it).c_str (), tagString);
+		description->getControlTagString (name.c_str (), tagString);
 		tags.push_back (tagString);
 	}
 }

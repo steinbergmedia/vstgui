@@ -1017,21 +1017,21 @@ void UIAttributesController::validateAttributeViews ()
 {
 	const UIViewFactory* viewFactory = static_cast<const UIViewFactory*> (editDescription->getViewFactory ());
 
-	for (UIAttributeControllerList::const_iterator it = attributeControllers.begin (); it != attributeControllers.end (); it++)
+	for (auto& controller : attributeControllers)
 	{
 		std::string attrValue;
 		bool first = true;
 		bool hasDifferentValues = false;
 		FOREACH_IN_SELECTION (selection, view)
 			std::string temp;
-			viewFactory->getAttributeValue (view, (*it)->getAttributeName (), temp, editDescription);
+			viewFactory->getAttributeValue (view, controller->getAttributeName (), temp, editDescription);
 			if (temp != attrValue && !first)
 				hasDifferentValues = true;
 			attrValue = temp;
 			first = false;
 		FOREACH_IN_SELECTION_END
-		(*it)->hasDifferentValues (hasDifferentValues);
-		(*it)->setValue (attrValue);
+		controller->hasDifferentValues (hasDifferentValues);
+		controller->setValue (attrValue);
 	}
 }
 

@@ -109,10 +109,8 @@ void UIColorChooserController::updateColorSlider (CControl* control)
 //----------------------------------------------------------------------------------------------------
 void UIColorChooserController::updateColorSliders ()
 {
-	for (ControlList::const_iterator it = controls.begin (); it != controls.end (); it++)
-	{
-		updateColorSlider (*it);
-	}
+	for (auto& control : controls)
+		updateColorSlider (control);
 }
 
 //----------------------------------------------------------------------------------------------------

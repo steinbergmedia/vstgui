@@ -157,9 +157,9 @@ CView* UIFontsController::verifyView (CView* view, const UIAttributes& attribute
 				if (IPlatformFont::getAllPlatformFontFamilies (fontFamilyNames))
 				{
 					fontFamilyNames.sort ();
-					for (std::list<std::string>::const_iterator it = fontFamilyNames.begin (); it != fontFamilyNames.end (); it++)
+					for (auto& name : fontFamilyNames)
 					{
-						fontMenu->addEntry ((*it).c_str ());
+						fontMenu->addEntry (name.c_str ());
 					}
 				}
 				fontMenu->setStyle (fontMenu->getStyle () | kNoTextStyle);
@@ -285,13 +285,14 @@ void UIFontsController::dbSelectionChanged (int32_t selectedRow, GenericStringLi
 			std::string fontName = font->getName ();
 			CMenuItemList* items = fontMenu->getItems ();
 			int32_t index = 0;
-			for (CConstMenuItemIterator it = items->begin (); it != items->end (); it++, index++)
+			for (auto& item : *items)
 			{
-				if (fontName == (*it)->getTitle ())
+				if (fontName == item->getTitle ())
 				{
 					fontMenu->setValue ((float)index);
 					break;
 				}
+				index++;
 			}
 			fontMenu->setStyle (fontMenu->getStyle () & ~kNoTextStyle);
 			fontMenu->setMouseEnabled (true);

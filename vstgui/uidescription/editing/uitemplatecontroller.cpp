@@ -263,13 +263,14 @@ void UITemplateController::selectTemplate (UTF8StringPtr name)
 	if (templateDataBrowser)
 	{
 		int32_t index = 0;
-		for (StringVector::const_iterator it = templateNames.begin (); it != templateNames.end (); it++, index++)
+		for (auto& templName : templateNames)
 		{
-			if (*it == name)
+			if (templName == name)
 			{
 				templateDataBrowser->setSelectedRow (index, true);
 				break;
 			}
+			index++;
 		}
 	}
 }
@@ -325,11 +326,12 @@ CMessageResult UITemplateController::notify (CBaseObject* sender, IdStringPtr me
 			std::list<const std::string*> tmp;
 			editDescription->collectTemplateViewNames (tmp);
 			tmp.sort (UIEditController::std__stringCompare);
-			for (std::list<const std::string*>::const_iterator it = tmp.begin (), end = tmp.end (); it != end; ++it, ++index)
+			for (auto& name : tmp)
 			{
-				templateNames.push_back ((*it)->c_str ());
-				if (*(*it) == selectedTemplateStr)
+				templateNames.push_back (name->c_str ());
+				if (*name == selectedTemplateStr)
 					rowToSelect = index;
+				++index;
 			}
 			if (rowToSelect < 0)
 				rowToSelect = 0;
@@ -383,8 +385,8 @@ CView* UITemplateController::createView (const UIAttributes& attributes, const I
 			std::list<const std::string*> tmp;
 			editDescription->collectTemplateViewNames (tmp);
 			tmp.sort (UIEditController::std__stringCompare);
-			for (std::list<const std::string*>::const_iterator it = tmp.begin (); it != tmp.end (); it++)
-				templateNames.push_back ((*it)->c_str ());
+			for (auto& name : tmp)
+				templateNames.push_back (*name);
 			
 			UIAttributes* attr = editDescription->getCustomAttributes ("UITemplateController", true);
 			const std::string* templateName = attr ? attr->getAttributeValue ("SelectedTemplate") : nullptr;
@@ -717,13 +719,14 @@ void UITemplatesDataSource::dbAttached (CDataBrowser* browser)
 		else
 		{
 			uint32_t index = 0;
-			for (StringVector::const_iterator it = getStringList ()->begin (); it != getStringList ()->end (); it++, index++)
+			for (auto& name : *getStringList ())
 			{
-				if (getStringList()->at (index) == firstSelectedTemplateName)
+				if (name == firstSelectedTemplateName)
 				{
 					browser->setSelectedRow (static_cast<int32_t> (index), true);
 					break;
 				}
+				index++;
 			}
 		}
 	}

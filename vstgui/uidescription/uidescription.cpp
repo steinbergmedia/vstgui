@@ -470,14 +470,14 @@ bool UIDescWriter::writeAttributes (UIAttributes* attr, OutputStream& stream)
 	bool result = true;
 	typedef std::map<std::string,std::string> SortedAttributes;
 	SortedAttributes sortedAttributes (attr->begin (), attr->end ());
-	for (SortedAttributes::const_iterator it = sortedAttributes.begin (), end = sortedAttributes.end (); it != end; ++it)
+	for (auto& sa : sortedAttributes)
 	{
-		if ((*it).second.length () > 0)
+		if (sa.second.length () > 0)
 		{
 			stream << " ";
-			stream << (*it).first;
+			stream << sa.first;
 			stream << "=\"";
-			std::string value ((*it).second);
+			std::string value (sa.second);
 			encodeAttributeString (value);
 			stream << value;
 			stream << "\"";
@@ -1389,11 +1389,11 @@ CBitmap* UIDescription::getBitmap (UTF8StringPtr name) const
 					if (filter == nullptr)
 						continue;
 					filters.push_back (filter);
-					for (UIDescList::iterator it2 = childNode->getChildren ().begin (); it2 != childNode->getChildren ().end (); ++it2)
+					for (auto& propertyNode : childNode->getChildren ())
 					{
-						if ((*it2)->getName () != "property")
+						if (propertyNode->getName () != "property")
 							continue;
-						const std::string* name = (*it2)->getAttributes ()->getAttributeValue ("name");
+						const std::string* name = propertyNode->getAttributes ()->getAttributeValue ("name");
 						if (name == nullptr)
 							continue;
 						switch (filter->getProperty (name->c_str ()).getType ())
@@ -1401,34 +1401,34 @@ CBitmap* UIDescription::getBitmap (UTF8StringPtr name) const
 							case BitmapFilter::Property::kInteger:
 							{
 								int32_t intValue;
-								if ((*it2)->getAttributes ()->getIntegerAttribute ("value", intValue))
+								if (propertyNode->getAttributes ()->getIntegerAttribute ("value", intValue))
 									filter->setProperty (name->c_str (), intValue);
 								break;
 							}
 							case BitmapFilter::Property::kFloat:
 							{
 								double floatValue;
-								if ((*it2)->getAttributes ()->getDoubleAttribute ("value", floatValue))
+								if (propertyNode->getAttributes ()->getDoubleAttribute ("value", floatValue))
 									filter->setProperty (name->c_str (), floatValue);
 								break;
 							}
 							case BitmapFilter::Property::kPoint:
 							{
 								CPoint pointValue;
-								if ((*it2)->getAttributes ()->getPointAttribute ("value", pointValue))
+								if (propertyNode->getAttributes ()->getPointAttribute ("value", pointValue))
 									filter->setProperty (name->c_str (), pointValue);
 								break;
 							}
 							case BitmapFilter::Property::kRect:
 							{
 								CRect rectValue;
-								if ((*it2)->getAttributes ()->getRectAttribute ("value", rectValue))
+								if (propertyNode->getAttributes ()->getRectAttribute ("value", rectValue))
 									filter->setProperty (name->c_str (), rectValue);
 								break;
 							}
 							case BitmapFilter::Property::kColor:
 							{
-								const std::string* colorString = (*it2)->getAttributes()->getAttributeValue ("value");
+								const std::string* colorString = propertyNode->getAttributes()->getAttributeValue ("value");
 								if (colorString)
 								{
 									CColor color;
@@ -1449,12 +1449,12 @@ CBitmap* UIDescription::getBitmap (UTF8StringPtr name) const
 					}
 				}
 			}
-			for (std::list<SharedPointer<BitmapFilter::IFilter> >::const_iterator it = filters.begin (); it != filters.end (); ++it)
+			for (auto& filter : filters)
 			{
-				(*it)->setProperty (BitmapFilter::Standard::Property::kInputBitmap, bitmap);
-				if ((*it)->run ())
+				filter->setProperty (BitmapFilter::Standard::Property::kInputBitmap, bitmap);
+				if (filter->run ())
 				{
-					CBaseObject* obj = (*it)->getProperty (BitmapFilter::Standard::Property::kOutputBitmap).getObject ();
+					CBaseObject* obj = filter->getProperty (BitmapFilter::Standard::Property::kOutputBitmap).getObject ();
 					CBitmap* outputBitmap = dynamic_cast<CBitmap*>(obj);
 					if (outputBitmap)
 					{
@@ -1471,9 +1471,9 @@ CBitmap* UIDescription::getBitmap (UTF8StringPtr name) const
 			{
 				// find scaled versions for this bitmap
 				UINode* bitmapsNode = getBaseNode (MainNodeNames::kBitmap);
-				for (UIDescList::const_iterator it = bitmapsNode->getChildren ().begin (), end = bitmapsNode->getChildren ().end (); it != end; ++it)
+				for (auto& it : bitmapsNode->getChildren ())
 				{
-					UIBitmapNode* childNode = dynamic_cast<UIBitmapNode*>(*it);
+					UIBitmapNode* childNode = dynamic_cast<UIBitmapNode*>(it);
 					if (childNode == nullptr || childNode == bitmapNode)
 						continue;
 					const std::string* childNodeBitmapName = childNode->getAttributes()->getAttributeValue ("name");
@@ -1763,20 +1763,20 @@ void UIDescription::changeBitmapFilters (UTF8StringPtr bitmapName, const std::li
 	if (bitmapNode)
 	{
 		bitmapNode->getChildren().removeAll ();
-		for (const auto & filter : filters)
+		for (const auto& filter : filters)
 		{
 			const std::string* filterName = filter->getAttributeValue ("name");
 			if (filterName == nullptr)
 				continue;
 			UINode* filterNode = new UINode ("filter");
 			filterNode->getAttributes ()->setAttribute ("name", *filterName);
-			for (UIAttributes::const_iterator it2 = filter->begin (); it2 != filter->end (); ++it2)
+			for (auto& it2 : *filter)
 			{
-				if ((*it2).first == "name")
+				if (it2.first == "name")
 					continue;
 				UINode* propertyNode = new UINode ("property");
-				propertyNode->getAttributes ()->setAttribute("name", (*it2).first);
-				propertyNode->getAttributes ()->setAttribute("value", (*it2).second);
+				propertyNode->getAttributes ()->setAttribute("name", it2.first);
+				propertyNode->getAttributes ()->setAttribute("value", it2.second);
 				filterNode->getChildren ().add (propertyNode);
 			}
 			bitmapNode->getChildren ().add (filterNode);
@@ -1801,12 +1801,12 @@ void UIDescription::collectBitmapFilters (UTF8StringPtr bitmapName, std::list<Sh
 					continue;
 				UIAttributes* attributes = new UIAttributes ();
 				attributes->setAttribute ("name", *filterName);
-				for (UIDescList::iterator it2 = childNode->getChildren ().begin (); it2 != childNode->getChildren ().end (); ++it2)
+				for (auto& it2 : childNode->getChildren ())
 				{
-					if ((*it2)->getName () == "property")
+					if (it2->getName () == "property")
 					{
-						const std::string* name = (*it2)->getAttributes ()->getAttributeValue ("name");
-						const std::string* value = (*it2)->getAttributes ()->getAttributeValue ("value");
+						const std::string* name = it2->getAttributes ()->getAttributeValue ("name");
+						const std::string* value = it2->getAttributes ()->getAttributeValue ("value");
 						if (name && value)
 						{
 							attributes->setAttribute (*name, *value);
@@ -1976,11 +1976,11 @@ bool UIDescription::updateAttributesForView (UINode* node, CView* view, bool dee
 	CViewContainer* container = dynamic_cast<CViewContainer*> (view);
 	if (factory->getAttributeNamesForView (view, attributeNames))
 	{
-		for (std::list<std::string>::const_iterator it = attributeNames.begin (), end = attributeNames.end (); it != end; ++it)
+		for (auto& name : attributeNames)
 		{
 			std::string value;
-			if (factory->getAttributeValue (view, (*it), value, this))
-				node->getAttributes ()->setAttribute ((*it), value);
+			if (factory->getAttributeValue (view, name, value, this))
+				node->getAttributes ()->setAttribute (name, value);
 		}
 		node->getAttributes ()->setAttribute (UIViewCreator::kAttrClass, factory->getViewName (view));
 		result = true;
@@ -2046,14 +2046,14 @@ void UIDescription::updateViewDescription (UTF8StringPtr name, CView* view)
 	if (factory && nodes)
 	{
 		UINode* node = nullptr;
-		for (UIDescList::iterator it = nodes->getChildren ().begin (), end = nodes->getChildren ().end (); it != end && node == nullptr; ++it)
+		for (auto& childNode : nodes->getChildren ())
 		{
-			if ((*it)->getName () == MainNodeNames::kTemplate)
+			if (childNode->getName () == MainNodeNames::kTemplate)
 			{
-				const std::string* nodeName = (*it)->getAttributes ()->getAttributeValue ("name");
+				const std::string* nodeName = childNode->getAttributes ()->getAttributeValue ("name");
 				if (*nodeName == name)
 				{
-					node = (*it);
+					node = childNode;
 					break;
 				}
 			}
@@ -3186,11 +3186,11 @@ CFontRef UIFontNode::getFont ()
 					{
 						std::vector<std::string> alternativeFontNames;
 						attributes->getStringArrayAttribute ("alternative-font-names", alternativeFontNames);
-						for (std::vector<std::string>::const_iterator it = alternativeFontNames.begin (); it != alternativeFontNames.end (); ++it)
+						for (auto& alternateFontName : alternativeFontNames)
 						{
-							if (std::find (fontNames.begin (), fontNames.end (), *it) != fontNames.end ())
+							if (std::find (fontNames.begin (), fontNames.end (), alternateFontName) != fontNames.end ())
 							{
-								font = new CFontDesc ((*it).c_str (), size, fontStyle);
+								font = new CFontDesc (alternateFontName.c_str (), size, fontStyle);
 								break;
 							}
 						}
@@ -3311,9 +3311,8 @@ CGradient* UIGradientNode::getGradient ()
 		CGradient::ColorStopMap colorStops;
 		double start;
 		CColor color;
-		for (UIDescList::const_iterator it = getChildren ().begin (), end = getChildren ().end (); it != end; ++it)
+		for (auto& colorNode : getChildren ())
 		{
-			UINode* colorNode = *it;
 			if (colorNode->getName () == "color-stop")
 			{
 				const std::string* rgba = colorNode->getAttributes ()->getAttributeValue ("rgba");

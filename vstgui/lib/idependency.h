@@ -115,11 +115,8 @@ inline void IDependency::changed (IdStringPtr message)
 		CBaseObject* This = dynamic_cast<CBaseObject*> (this);
 		DependentList localList (dependents);
 		std::for_each (localList.begin (), localList.end (), rememberObject);
-		for (DependentList::const_iterator it = localList.begin (); it != localList.end (); ++it)
-		{
-			CBaseObject* obj = (*it);
+		for (auto& obj : localList)
 			obj->notify (This, message);
-		}
 		std::for_each (localList.begin (), localList.end (), forgetObject);
 	}
 }
@@ -133,8 +130,8 @@ inline void IDependency::deferChanges (bool state)
 	}
 	else if (--deferChangeCount == 0)
 	{
-		for (DeferedChangesSet::const_iterator it = deferedChanges.begin (); it != deferedChanges.end (); ++it)
-			changed (*it);
+		for (auto& msg : deferedChanges)
+			changed (msg);
 		deferedChanges.clear ();
 	}
 }

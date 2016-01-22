@@ -169,10 +169,10 @@ void CSplitView::resizeFirstView (CPoint diff)
 		view->setMouseableArea (r);
 		++it;
 	}
-	for (std::list<CSplitViewSeparatorView*>::const_iterator sit = separators.begin (); sit != separators.end (); ++sit)
+	for (auto& seperatorView : separators)
 	{
-		CRect r ((*sit)->getViewSize ());
-		requestNewSeparatorSize (*sit, r);
+		CRect r (seperatorView->getViewSize ());
+		requestNewSeparatorSize (seperatorView, r);
 	}
 }
 
@@ -225,10 +225,10 @@ void CSplitView::resizeSecondView (CPoint diff)
 		view->setMouseableArea (r);
 		++it;
 	}
-	for (std::list<CSplitViewSeparatorView*>::const_iterator sit = separators.begin (); sit != separators.end (); ++sit)
+	for (auto& seperatorView : separators)
 	{
-		CRect r ((*sit)->getViewSize ());
-		requestNewSeparatorSize (*sit, r);
+		CRect r (seperatorView->getViewSize ());
+		requestNewSeparatorSize (seperatorView, r);
 	}
 }
 
@@ -267,10 +267,10 @@ void CSplitView::resizeLastView (CPoint diff)
 		view->setMouseableArea (r);
 		++it;
 	}
-	for (std::list<CSplitViewSeparatorView*>::const_iterator sit = separators.begin (); sit != separators.end (); ++sit)
+	for (auto& seperatorView : separators)
 	{
-		CRect r ((*sit)->getViewSize ());
-		requestNewSeparatorSize (*sit, r);
+		CRect r (seperatorView->getViewSize ());
+		requestNewSeparatorSize (seperatorView, r);
 	}
 }
 
@@ -342,10 +342,10 @@ void CSplitView::resizeViewsEqual (CPoint diff)
 		}
 		++it;
 	}
-	for (std::list<CSplitViewSeparatorView*>::const_iterator sit = separators.begin (); sit != separators.end (); ++sit)
+	for (auto& seperatorView : separators)
 	{
-		CRect r ((*sit)->getViewSize ());
-		requestNewSeparatorSize (*sit, r);
+		CRect r (seperatorView->getViewSize ());
+		requestNewSeparatorSize (seperatorView, r);
 	}
 }
 

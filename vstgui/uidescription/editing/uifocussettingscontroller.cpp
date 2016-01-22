@@ -105,13 +105,14 @@ CView* UIFocusSettingsController::verifyView (CView* view, const UIAttributes& a
 					editDescription->collectColorNames (names);
 					names.sort (UIEditController::std__stringCompare);
 					int32_t index = 0;
-					for (std::list<const std::string*>::const_iterator it = names.begin (); it != names.end (); it++, index++)
+					for (auto& name : names)
 					{
-						menu->addEntry (new CMenuItem ((*it)->c_str ()));
-						if (settings.colorName == *(*it))
+						menu->addEntry (new CMenuItem (name->c_str ()));
+						if (settings.colorName == *name)
 						{
 							menu->setValue ((float)index);
 						}
+						index++;
 					}
 				}
 				break;

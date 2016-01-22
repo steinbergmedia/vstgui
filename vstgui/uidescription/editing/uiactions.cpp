@@ -556,10 +556,10 @@ void TransformViewTypeOperation::exchangeSubViews (CViewContainer* src, CViewCon
 			}
 			++it;
 		}
-		for (std::list<CView*>::const_iterator it = temp.begin (); it != temp.end (); it++)
+		for (auto& view : temp)
 		{
-			src->removeView (*it, false);
-			dst->addView (*it);
+			src->removeView (view, false);
+			dst->addView (view);
 		}
 	}
 }

@@ -132,9 +132,8 @@ CGPathRef QuartzGraphicsPath::getCGPathRef ()
 			return path;
 		}
 		path = CGPathCreateMutable ();
-		for (ElementList::const_iterator it = elements.begin (); it != elements.end (); ++it)
+		for (const auto& e : elements)
 		{
-			const Element& e = (*it);
 			switch (e.type)
 			{
 				case Element::kArc:
@@ -369,11 +368,12 @@ void QuartzGradient::createCGGradient () const
 	CFMutableArrayRef colors = CFArrayCreateMutable (kCFAllocatorDefault, static_cast<CFIndex> (colorStops.size ()), &kCFTypeArrayCallBacks);
 
 	uint32_t index = 0;
-	for (ColorStopMap::const_iterator it = colorStops.begin (); it != colorStops.end (); ++it, ++index)
+	for (const auto& it : colorStops)
 	{
-		locations[index] = static_cast<CGFloat> (it->first);
-		CColor color = it->second;
+		locations[index] = static_cast<CGFloat> (it.first);
+		CColor color = it.second;
 		CFArrayAppendValue (colors, getCGColor (color));
+		++index;
 	}
 
 	gradient = CGGradientCreateWithColors (GetCGColorSpace (), colors, locations);

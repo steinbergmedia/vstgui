@@ -129,9 +129,9 @@ void UIEditMenuController::createEditMenu (COptionMenu* menu)
 //----------------------------------------------------------------------------------------------------
 bool UIEditMenuController::createUniqueTemplateName (std::list<const std::string*>& names, std::string& name)
 {
-	for (std::list<const std::string*>::const_iterator it = names.begin (); it != names.end (); ++it)
+	for (auto& it : names)
 	{
-		if (*(*it) == name)
+		if (*it == name)
 		{
 			int32_t count = 0;
 			size_t pos = name.find_last_not_of ("0123456789");
@@ -226,9 +226,9 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 				const UIViewFactory* factory = dynamic_cast<const UIViewFactory*> (description->getViewFactory ());
 				factory->collectRegisteredViewNames (containerViewNames, "CViewContainer");
 				auto submenu = makeOwned<COptionMenu> ();
-				for (std::list<const std::string*>::const_iterator it = containerViewNames.begin (); it != containerViewNames.end (); it++)
+				for (auto& name : containerViewNames)
 				{
-					submenu->addEntry (new CCommandMenuItem ((*it)->c_str (), this, "AddTemplate", (*it)->c_str ()));
+					submenu->addEntry (new CCommandMenuItem (name->c_str (), this, "AddTemplate", name->c_str ()));
 				}
 				item->setSubmenu (submenu);
 				return kMessageNotified;
@@ -244,9 +244,9 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 					templateNames.sort (UIEditController::std__stringCompare);
 					auto submenu = makeOwned<COptionMenu> ();
 					item->setSubmenu (submenu);
-					for (std::list<const std::string*>::const_iterator it = templateNames.begin (); it != templateNames.end (); it++)
+					for (auto& name : templateNames)
 					{
-						submenu->addEntry (new CCommandMenuItem ((*it)->c_str (), this, "RemoveTemplate", (*it)->c_str ()));
+						submenu->addEntry (new CCommandMenuItem (name->c_str (), this, "RemoveTemplate", name->c_str ()));
 					}
 				}
 				return kMessageNotified;
@@ -262,9 +262,9 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 					templateNames.sort (UIEditController::std__stringCompare);
 					auto submenu = makeOwned<COptionMenu> ();
 					item->setSubmenu (submenu);
-					for (std::list<const std::string*>::const_iterator it = templateNames.begin (); it != templateNames.end (); it++)
+					for (auto& name : templateNames)
 					{
-						submenu->addEntry (new CCommandMenuItem ((*it)->c_str (), this, "DuplicateTemplate", (*it)->c_str ()));
+						submenu->addEntry (new CCommandMenuItem (name->c_str (), this, "DuplicateTemplate", name->c_str ()));
 					}
 				}
 				return kMessageNotified;
@@ -288,9 +288,9 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 				std::list<const std::string*> containerViewNames;
 				const UIViewFactory* factory = dynamic_cast<const UIViewFactory*> (description->getViewFactory ());
 				factory->collectRegisteredViewNames (containerViewNames, "CViewContainer");
-				for (std::list<const std::string*>::const_iterator it = containerViewNames.begin (); it != containerViewNames.end (); it++)
+				for (auto& name : containerViewNames)
 				{
-					submenu->addEntry (new CCommandMenuItem ((*it)->c_str (), this, "Embed", (*it)->c_str ()));
+					submenu->addEntry (new CCommandMenuItem (name->c_str (), this, "Embed", name->c_str ()));
 				}
 				return kMessageNotified;
 			}
@@ -329,9 +329,9 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 				std::list<const std::string*> containerViewNames;
 				const UIViewFactory* factory = dynamic_cast<const UIViewFactory*> (description->getViewFactory ());
 				factory->collectRegisteredViewNames (containerViewNames);
-				for (std::list<const std::string*>::const_iterator it = containerViewNames.begin (); it != containerViewNames.end (); it++)
+				for (auto& name : containerViewNames)
 				{
-					submenu->addEntry (new CCommandMenuItem ((*it)->c_str (), this, "Transform View Type", (*it)->c_str ()));
+					submenu->addEntry (new CCommandMenuItem (name->c_str (), this, "Transform View Type", name->c_str ()));
 				}
 				return kMessageNotified;
 			}
@@ -349,9 +349,9 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 					templateNames.sort (UIEditController::std__stringCompare);
 					auto submenu = makeOwned<COptionMenu> ();
 					item->setSubmenu (submenu);
-					for (std::list<const std::string*>::const_iterator it = templateNames.begin (); it != templateNames.end (); it++)
+					for (auto& name : templateNames)
 					{
-						submenu->addEntry (new CCommandMenuItem ((*it)->c_str (), this, "InsertTemplate", (*it)->c_str ()));
+						submenu->addEntry (new CCommandMenuItem (name->c_str (), this, "InsertTemplate", name->c_str ()));
 					}
 				}
 				return kMessageNotified;
@@ -476,16 +476,16 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 //----------------------------------------------------------------------------------------------------
 CCommandMenuItem* UIEditMenuController::findKeyCommandItem (COptionMenu* menu, const VstKeyCode& key)
 {
-	for (CConstMenuItemIterator it = menu->getItems ()->begin (), end = menu->getItems ()->end (); it != end; ++it)
+	for (auto& item : *menu->getItems ())
 	{
-		COptionMenu* subMenu = (*it)->getSubmenu ();
+		COptionMenu* subMenu = item->getSubmenu ();
 		if (subMenu)
 		{
 			CCommandMenuItem* result = findKeyCommandItem (subMenu, key);
 			if (result)
 				return result;
 		}
-		CCommandMenuItem* result = (*it).cast<CCommandMenuItem>();
+		CCommandMenuItem* result = item.cast<CCommandMenuItem>();
 		if (result)
 		{
 			int32_t modifier = 0;
