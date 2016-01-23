@@ -179,7 +179,7 @@ protected:
 
 	typedef std::list<CFileExtension> FileExtensionList;
 	FileExtensionList extensions;
-	std::vector<UTF8StringBuffer> result;
+	std::vector<UTF8String> result;
 };
 
 } // namespace

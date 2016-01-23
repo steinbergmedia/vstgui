@@ -101,6 +101,7 @@ inline UTF8String toString (const T& value)
 	return UTF8String (std::to_string (value));
 }
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //-----------------------------------------------------------------------------
 namespace String {
 	/** Allocates a new UTF8StringBuffer with enough size for string and copy the string into it. Returns nullptr if string is a nullptr. */
@@ -108,6 +109,7 @@ namespace String {
 	/** Frees an UTF8StringBuffer. If buffer is a nullptr it does nothing. */
 	void free (UTF8StringBuffer buffer);
 }
+#endif
 
 //-----------------------------------------------------------------------------
 /** @brief a view on an UTF-8 String

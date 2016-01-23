@@ -130,6 +130,8 @@ IPlatformString* UTF8String::getPlatformString () const
 	return platformString;
 }
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+
 namespace String {
 
 //-----------------------------------------------------------------------------
@@ -150,5 +152,7 @@ void free (UTF8StringBuffer buffer)
 }
 
 } // StringCreate
+
+#endif // VSTGUI_ENABLE_DEPRECATED_METHODS
 
 } // namespace

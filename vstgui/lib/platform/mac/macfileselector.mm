@@ -105,8 +105,7 @@ void CocoaFileSelector::openPanelDidEnd (NSSavePanel* savePanel, NSInteger res)
 			const char* utf8Path = url ? [[url path] UTF8String] : nullptr;
 			if (utf8Path)
 			{
-				UTF8StringBuffer path = String::newWithString (utf8Path);
-				result.push_back (path);
+				result.push_back (utf8Path);
 			}
 		}
 		else
@@ -121,8 +120,7 @@ void CocoaFileSelector::openPanelDidEnd (NSSavePanel* savePanel, NSInteger res)
 				const char* utf8Path = [[url path] UTF8String];
 				if (utf8Path)
 				{
-					UTF8StringBuffer path = String::newWithString (utf8Path);
-					result.push_back (path);
+					result.push_back (utf8Path);
 				}
 			}
 		}

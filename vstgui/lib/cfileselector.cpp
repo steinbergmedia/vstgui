@@ -135,7 +135,6 @@ CNewFileSelector::~CNewFileSelector ()
 	setTitle (nullptr);
 	setInitialDirectory (nullptr);
 	setDefaultSaveName (nullptr);
-	std::for_each (result.begin (), result.end (), String::free);
 }
 
 //-----------------------------------------------------------------------------
