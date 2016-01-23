@@ -51,7 +51,7 @@ namespace VSTGUI {
 TimeWatch::TimeWatch (UTF8StringPtr name, bool startNow)
 : startTime (0)
 {
-	this->name = name ? name : 0;
+	this->name = name ? name : "";
 	if (startNow)
 		start ();
 }
