@@ -56,8 +56,8 @@ public:
 	Win32TextEdit (HWND parent, IPlatformTextEditCallback* textEdit);
 	~Win32TextEdit ();
 	
-	UTF8StringPtr getText () override;
-	bool setText (UTF8StringPtr text) override;
+	UTF8String getText () override;
+	bool setText (const UTF8String& text) override;
 	bool updateSize () override;
 
 	HWND getPlatformControl () const { return platformControl; }

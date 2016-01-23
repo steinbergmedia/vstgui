@@ -35,6 +35,7 @@
 #include "hiviewtextedit.h"
 #include "hiviewframe.h"
 #include "../cfontmac.h"
+#include "../macstring.h"
 
 #if MAC_CARBON
 
@@ -147,23 +148,19 @@ void HIViewTextEdit::freeText ()
 }
 
 //-----------------------------------------------------------------------------
-bool HIViewTextEdit::setText (UTF8StringPtr text)
+bool HIViewTextEdit::setText (const UTF8String& text)
 {
 	if (platformControl)
 	{
-		CFStringRef textString = CFStringCreateWithCString (NULL, text, kCFStringEncodingUTF8);
-		if (textString)
-		{
-			SetControlData (platformControl, kControlEditTextPart, kControlEditTextCFStringTag, sizeof (CFStringRef), &textString);
-			CFRelease (textString);
-		}
+		CFStringRef textString = fromUTF8String<CFStringRef> (text);
+		SetControlData (platformControl, kControlEditTextPart, kControlEditTextCFStringTag, sizeof (CFStringRef), &textString);
 		return true;
 	}
 	return false;
 }
 
 //-----------------------------------------------------------------------------
-UTF8StringPtr HIViewTextEdit::getText ()
+UTF8String HIViewTextEdit::getText ()
 {
 	if (platformControl)
 	{

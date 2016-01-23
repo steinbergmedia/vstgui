@@ -131,7 +131,7 @@ Win32TextEdit::~Win32TextEdit ()
 }
 
 //-----------------------------------------------------------------------------
-UTF8StringPtr Win32TextEdit::getText ()
+UTF8String Win32TextEdit::getText ()
 {
 #if 1
 	return text.c_str ();
@@ -151,7 +151,7 @@ UTF8StringPtr Win32TextEdit::getText ()
 }
 
 //-----------------------------------------------------------------------------
-bool Win32TextEdit::setText (UTF8StringPtr _text)
+bool Win32TextEdit::setText (const UTF8String& _text)
 {
 	if (platformControl && text != _text)
 	{

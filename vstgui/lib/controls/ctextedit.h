@@ -103,7 +103,7 @@ protected:
 	CColor platformGetFontColor () const override { return getFontColor (); }
 	CFontRef platformGetFont () const override;
 	CHoriTxtAlign platformGetHoriTxtAlign () const override { return getHoriAlign (); }
-	UTF8StringPtr platformGetText () const override { return text.data (); }
+	const UTF8String& platformGetText () const override { return text; }
 	CRect platformGetSize () const override;
 	CRect platformGetVisibleSize () const override;
 	CPoint platformGetTextInset () const override { return getTextInset (); }

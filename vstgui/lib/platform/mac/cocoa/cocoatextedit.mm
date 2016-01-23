@@ -39,6 +39,7 @@
 #import "cocoahelpers.h"
 #import "autoreleasepool.h"
 #import "../cfontmac.h"
+#import "../macstring.h"
 #import "../../../vstkeycode.h"
 
 using namespace VSTGUI;
@@ -91,7 +92,7 @@ static id VSTGUI_NSTextField_Init (id self, SEL _cmd, void* textEdit)
 			}
 		}
 		
-		NSString* text = [NSString stringWithCString:tec->platformGetText () encoding:NSUTF8StringEncoding];
+		NSString* text = fromUTF8String<NSString*> (tec->platformGetText ());
 
 		[self setTextColor:nsColorFromCColor (tec->platformGetFontColor ())];
 		[self setBordered:NO];
@@ -285,7 +286,7 @@ CocoaTextEdit::~CocoaTextEdit ()
 }
 
 //-----------------------------------------------------------------------------
-UTF8StringPtr CocoaTextEdit::getText ()
+UTF8String CocoaTextEdit::getText ()
 {
 	return [[platformControl stringValue] UTF8String];
 }
@@ -298,10 +299,9 @@ bool CocoaTextEdit::updateSize ()
 }
 
 //-----------------------------------------------------------------------------
-bool CocoaTextEdit::setText (UTF8StringPtr text)
+bool CocoaTextEdit::setText (const UTF8String& text)
 {
-	NSString* nsText = [NSString stringWithCString:text encoding:NSUTF8StringEncoding];
-	[platformControl setStringValue:nsText];
+	[platformControl setStringValue:fromUTF8String<NSString*> (text)];
 	return true;
 }
 
