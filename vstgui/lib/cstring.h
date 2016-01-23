@@ -68,8 +68,8 @@ public:
 
 	void copy (UTF8StringBuffer dst, size_t dstSize) const;
 
-	bool operator== (UTF8StringPtr str) const { return str ? string == str : string.empty (); }
-	bool operator!= (UTF8StringPtr str) const { return str ? string != str : !string.empty (); }
+	bool operator== (UTF8StringPtr str) const { return str ? string == str : false; }
+	bool operator!= (UTF8StringPtr str) const { return str ? string != str : true; }
 	bool operator== (const UTF8String& str) const { return string == str.getString (); }
 	bool operator!= (const UTF8String& str) const { return string != str.getString (); }
 	bool operator== (const std::string& str) const { return string == str; }
