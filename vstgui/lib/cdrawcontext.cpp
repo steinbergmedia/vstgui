@@ -101,7 +101,7 @@ CDrawContext::~CDrawContext ()
 		DebugPrint ("Global state stack not empty. Save and restore global state must be called in sequence !\n");
 	#endif
 	if (drawStringHelper)
-		drawStringHelper->forget ();
+		delete drawStringHelper;
 }
 
 //-----------------------------------------------------------------------------
@@ -223,12 +223,12 @@ void CDrawContext::setGlobalAlpha (float newAlpha)
 }
 
 //-----------------------------------------------------------------------------
-const CString& CDrawContext::getDrawString (UTF8StringPtr string)
+const UTF8String& CDrawContext::getDrawString (UTF8StringPtr string)
 {
 	if (drawStringHelper == nullptr)
-		drawStringHelper = new CString (string);
+		drawStringHelper = new UTF8String (string);
 	else
-		drawStringHelper->setUTF8String (string);
+		drawStringHelper->set (string);
 	return *drawStringHelper;
 }
 
@@ -236,7 +236,7 @@ const CString& CDrawContext::getDrawString (UTF8StringPtr string)
 void CDrawContext::clearDrawString ()
 {
 	if (drawStringHelper)
-		drawStringHelper->setUTF8String (nullptr);
+		drawStringHelper->clear ();
 }
 
 //------------------------------------------------------------------------

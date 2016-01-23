@@ -803,7 +803,7 @@ void COptionMenu::draw (CDrawContext *pContext)
 	CMenuItem* item = getEntry (currentIndex);
 	drawBack (pContext, inPopup ? bgWhenClick : nullptr);
 	if (item)
-		drawPlatformText (pContext, CString (item->getTitle ()).getPlatformString ());
+		drawPlatformText (pContext, UTF8String (item->getTitle ()).getPlatformString ());
 	setDirty (false);
 }
 

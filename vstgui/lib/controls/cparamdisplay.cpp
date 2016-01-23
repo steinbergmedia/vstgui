@@ -182,7 +182,7 @@ void CParamDisplay::draw (CDrawContext *pContext)
 	}
 
 	drawBack (pContext);
-	drawPlatformText (pContext, CString (string).getPlatformString ());
+	drawPlatformText (pContext, UTF8String (string).getPlatformString ());
 	setDirty (false);
 }
 

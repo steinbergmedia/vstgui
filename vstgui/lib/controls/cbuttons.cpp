@@ -474,7 +474,7 @@ bool CCheckBox::sizeToFit ()
 			fitSize.setWidth (fitSize.getHeight ());
 		}
 		fitSize.right += kCheckBoxTitleMargin;
-		fitSize.right += painter->getStringWidth (nullptr, CString (title).getPlatformString (), true);
+		fitSize.right += painter->getStringWidth (nullptr, UTF8String (title).getPlatformString (), true);
 		setViewSize (fitSize);
 		setMouseableArea (fitSize);
 		return true;

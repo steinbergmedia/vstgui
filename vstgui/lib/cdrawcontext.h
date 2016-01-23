@@ -50,7 +50,6 @@
 
 namespace VSTGUI {
 
-class CString;
 struct CNinePartTiledDescription;
 
 //-----------------------------------------------------------------------------
@@ -218,7 +217,7 @@ protected:
 	void pushTransform (const CGraphicsTransform& transformation);
 	void popTransform ();
 
-	const CString& getDrawString (UTF8StringPtr string);
+	const UTF8String& getDrawString (UTF8StringPtr string);
 	void clearDrawString ();
 
 	/// @cond ignore
@@ -243,7 +242,7 @@ protected:
 	};
 	/// @endcond
 
-	CString* drawStringHelper;
+	UTF8String* drawStringHelper;
 	CRect surfaceRect;
 
 	CDrawContextState currentState;

@@ -69,7 +69,7 @@ UTF8String createTruncatedText (TextTruncateMode mode, const UTF8String& text, C
 					}
 				}
 				_truncatedText.erase (_truncatedText.size () - (2 + it.getByteLength ()), it.getByteLength ());
-				utf8Str.set (_truncatedText.c_str ());
+				utf8Str = _truncatedText;
 				width = painter->getStringWidth (nullptr, utf8Str.getPlatformString (), true);
 				width += textInset.x * 2;
 			}
@@ -89,13 +89,13 @@ UTF8String createTruncatedText (TextTruncateMode mode, const UTF8String& text, C
 					}
 				}
 				_truncatedText.erase (2, it.getByteLength ());
-				utf8Str.set (_truncatedText.c_str ());
+				utf8Str = _truncatedText;
 				width = painter->getStringWidth (nullptr, utf8Str.getPlatformString (), true);
 				width += textInset.x * 2;
 			}
 		}
 		if (width > maxWidth && flags & kReturnEmptyIfTruncationIsPlaceholderOnly)
-			utf8Str.set ("");
+			utf8Str = "";
 		return utf8Str;
 	}
 	return text;

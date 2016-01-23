@@ -127,7 +127,7 @@ void UISearchTextField::draw (CDrawContext *pContext)
 		CColor color (fontColor);
 		color.alpha /= 2;
 		setFontColor (color);
-		drawPlatformText(pContext, CString ("Search").getPlatformString ());
+		drawPlatformText (pContext, UTF8String ("Search").getPlatformString ());
 	}
 	else
 		drawPlatformText (pContext, getText ().getPlatformString ());

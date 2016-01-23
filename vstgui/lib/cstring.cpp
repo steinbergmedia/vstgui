@@ -38,32 +38,16 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-CString::CString (UTF8StringPtr string)
-: utf8String (string)
-{
-	platformString = IPlatformString::createWithUTF8String (string);
-}
-
-//-----------------------------------------------------------------------------
-CString::~CString ()
-{
-	if (platformString)
-		platformString->forget ();
-}
-
-//-----------------------------------------------------------------------------
-void CString::setUTF8String (UTF8StringPtr string)
-{
-	utf8String = string;
-	if (platformString)
-		platformString->setUTF8String (string);
-}
-
-//-----------------------------------------------------------------------------
 UTF8String::UTF8String (UTF8StringPtr str)
 {
 	if (str)
 		string = str;
+}
+
+//-----------------------------------------------------------------------------
+UTF8String::UTF8String (const std::string& str)
+: string (str)
+{
 }
 
 //-----------------------------------------------------------------------------
@@ -101,6 +85,17 @@ UTF8String& UTF8String::operator=(UTF8String&& other)
 }
 
 //-----------------------------------------------------------------------------
+UTF8String& UTF8String::operator=(const std::string& other)
+{
+	if (string != other)
+	{
+		string = other;
+		platformString = nullptr;
+	}
+	return *this;
+}
+
+//-----------------------------------------------------------------------------
 void UTF8String::set (UTF8StringPtr str)
 {
 	if (str == nullptr || string != str)
@@ -108,6 +103,13 @@ void UTF8String::set (UTF8StringPtr str)
 		platformString = nullptr;
 		string = str ? str : "";
 	}
+}
+
+//-----------------------------------------------------------------------------
+void UTF8String::clear ()
+{
+	string.clear ();
+	platformString = nullptr;
 }
 
 //-----------------------------------------------------------------------------

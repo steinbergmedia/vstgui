@@ -42,31 +42,6 @@
 
 namespace VSTGUI {
 
-//-----------------------------------------------------------------------------
-/** @brief a string holder class
-
-	It's main propose is to hold a platform dependent string represenation when the string is used more than once.
-	You should currently don't use this, it's used internally.
-*/
-//-----------------------------------------------------------------------------
-class CString : public CBaseObject
-{
-public:
-	explicit CString (UTF8StringPtr string = nullptr);
-	~CString ();
-
-	void setUTF8String (UTF8StringPtr string);
-	UTF8StringPtr getUTF8String () const { return utf8String; }
-
-	IPlatformString* getPlatformString () const { return platformString; }
-
-//-----------------------------------------------------------------------------
-protected:
-	CString (const CString&) = delete;
-	UTF8StringPtr utf8String;
-	IPlatformString* platformString;
-};
-
 /**
  *  @brief holds an UTF8 encoded string and a platform representation of it
  *
@@ -79,13 +54,15 @@ class UTF8String
 public:
 	UTF8String (UTF8StringPtr str = nullptr);
 	UTF8String (const UTF8String& other);
-	UTF8String& operator=(const UTF8String& other) = default;
-
+	explicit UTF8String (const std::string& str);
+	UTF8String (UTF8String&& other);
 	UTF8String (std::string&& str);
-	UTF8String& operator=(std::string&& str);
 
-	void set (UTF8StringPtr str);
-	UTF8StringPtr get () const { return string.c_str (); }
+	UTF8String& operator= (const UTF8String& other) = default;
+	UTF8String& operator= (const std::string& other);
+	UTF8String& operator= (UTF8String&& other);
+	UTF8String& operator= (std::string&& str);
+
 	size_t getByteCount () const { return string.length (); }
 	bool empty () const { return string.empty (); }
 
@@ -96,19 +73,26 @@ public:
 	bool operator== (const std::string& str) const { return string == str; }
 	bool operator!= (const std::string& str) const { return string != str; }
 
+	void set (UTF8StringPtr str);
 	void operator= (UTF8StringPtr str) { set (str); }
-	operator UTF8StringPtr () const { return get (); }
+	void clear ();
 
+	const UTF8StringPtr get () const { return string.c_str (); }
+	operator const UTF8StringPtr () const { return get (); }
 	const std::string& getString () const { return string; }
 	IPlatformString* getPlatformString () const;
-
-	UTF8String (UTF8String&& other);
-	UTF8String& operator=(UTF8String&& other);
 //-----------------------------------------------------------------------------
 private:
 	std::string string;
 	mutable SharedPointer<IPlatformString> platformString;
 };
+
+//-----------------------------------------------------------------------------
+template<typename T>
+inline UTF8String toString (const T& value)
+{
+	return UTF8String (std::to_string (value));
+}
 
 //-----------------------------------------------------------------------------
 namespace String {
@@ -130,7 +114,8 @@ class UTF8StringView
 {
 public:
 	UTF8StringView (const UTF8StringPtr string) : str (string) {}
-	
+	explicit UTF8StringView (const UTF8String& string) : str (string.get ()) {}
+
 	/** calculates the bytes used by this string, including null-character */
 	size_t calculateByteCount () const;
 
