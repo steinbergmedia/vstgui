@@ -156,6 +156,7 @@ static const std::string kAttrStyleRoundRect = "style-round-rect";
 static const std::string kAttrTextInset = "text-inset";
 static const std::string kAttrValuePrecision = "value-precision";
 static const std::string kAttrTextRotation = "text-rotation";
+static const std::string kAttrTextShadowOffset = "text-shadow-offset";
 
 //-----------------------------------------------------------------------------
 // COptionMenuCreator attributes

@@ -1399,6 +1399,8 @@ public:
 		CPoint p;
 		if (attributes.getPointAttribute (kAttrTextInset, p))
 			display->setTextInset (p);
+		if (attributes.getPointAttribute (kAttrTextShadowOffset, p))
+			display->setShadowTextOffset (p);
 		bool b;
 		if (attributes.getBooleanAttribute(kAttrFontAntialias, b))
 			display->setAntialias (b);
@@ -1451,6 +1453,7 @@ public:
 		attributeNames.push_back (kAttrFrameWidth);
 		attributeNames.push_back (kAttrTextAlignment);
 		attributeNames.push_back (kAttrTextInset);
+		attributeNames.push_back (kAttrTextShadowOffset);
 		attributeNames.push_back (kAttrValuePrecision);
 		attributeNames.push_back (kAttrFontAntialias);
 		attributeNames.push_back (kAttrStyle3DIn);
@@ -1482,6 +1485,7 @@ public:
 		else if (attributeName == kAttrFrameWidth) return kFloatType;
 		else if (attributeName == kAttrTextAlignment) return kStringType;
 		else if (attributeName == kAttrTextInset) return kPointType;
+		else if (attributeName == kAttrTextShadowOffset) return kPointType;
 		else if (attributeName == kAttrValuePrecision) return kIntegerType;
 		else if (attributeName == kAttrTextRotation) return kFloatType;
 		return kUnknownType;
@@ -1524,6 +1528,11 @@ public:
 		else if (attributeName == kAttrTextInset)
 		{
 			pointToString (pd->getTextInset (), stringValue);
+			return true;
+		}
+		else if (attributeName == kAttrTextShadowOffset)
+		{
+			pointToString (pd->getShadowTextOffset (), stringValue);
 			return true;
 		}
 		else if (attributeName == kAttrFontAntialias)

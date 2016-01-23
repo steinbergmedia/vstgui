@@ -76,6 +76,9 @@ public:
 	virtual void setShadowColor (CColor color);
 	CColor getShadowColor () const { return shadowColor; }
 
+	virtual void setShadowTextOffset (const CPoint& offset);
+	CPoint getShadowTextOffset () const { return shadowTextOffset; }
+
 	virtual void setAntialias (bool state) { bAntialias = state; }
 	bool getAntialias () const { return bAntialias; }
 
@@ -135,6 +138,7 @@ protected:
 	CColor		frameColor;
 	CColor		shadowColor;
 	CPoint		textInset;
+	CPoint		shadowTextOffset {1., 1.};
 	CCoord		roundRectRadius;
 	CCoord		frameWidth;
 	double		textRotation;

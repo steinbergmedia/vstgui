@@ -341,7 +341,7 @@ void CParamDisplay::drawPlatformText (CDrawContext* pContext, IPlatformString* s
 		if (style & kShadowText)
 		{
 			CRect newSize (textRect);
-			newSize.offset (1, 1);
+			newSize.offset (shadowTextOffset);
 			pContext->setFontColor (shadowColor);
 			pContext->drawString (string, newSize, horiTxtAlign, bAntialias);
 		}
@@ -401,6 +401,16 @@ void CParamDisplay::setShadowColor (CColor color)
 	if (shadowColor != color)
 	{
 		shadowColor = color;
+		drawStyleChanged ();
+	}
+}
+
+//------------------------------------------------------------------------
+void CParamDisplay::setShadowTextOffset (const CPoint& offset)
+{
+	if (shadowTextOffset != offset)
+	{
+		shadowTextOffset = offset;
 		drawStyleChanged ();
 	}
 }
