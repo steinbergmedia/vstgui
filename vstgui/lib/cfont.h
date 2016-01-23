@@ -36,6 +36,7 @@
 #define __cfont__
 
 #include "vstguifwd.h"
+#include "cstring.h"
 #include <string>
 #include <list>
 
@@ -60,7 +61,7 @@ enum CTxtFace
 class CFontDesc : public CBaseObject
 {
 public:
-	CFontDesc (UTF8StringPtr name = nullptr, const CCoord& size = 0, const int32_t style = 0);
+	CFontDesc (const UTF8String& name = "", const CCoord& size = 0, const int32_t style = 0);
 	CFontDesc (const CFontDesc& font);
 	~CFontDesc () = default;
 
@@ -68,12 +69,12 @@ public:
 	/// @name Size, Name and Style Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	UTF8StringPtr getName () const { return name; }		///< get the name of the font
-	const CCoord& getSize () const { return size; }		///< get the height of the font
+	const UTF8String& getName () const { return name; }		///< get the name of the font
+	const CCoord& getSize () const { return size; }			///< get the height of the font
 	const int32_t& getStyle () const { return style; }		///< get the style of the font
 
-	virtual void setName (UTF8StringPtr newName);			///< set the name of the font
-	virtual void setSize (CCoord newSize);				///< set the height of the font
+	virtual void setName (const UTF8String& newName);		///< set the name of the font
+	virtual void setSize (CCoord newSize);					///< set the height of the font
 	virtual void setStyle (int32_t newStyle);				///< set the style of the font @sa CTxtFace
 	//@}
 
@@ -92,7 +93,7 @@ protected:
 	
 	void beforeDelete () override;
 	virtual void freePlatformFont ();
-	UTF8StringBuffer name;
+	UTF8String name;
 	CCoord size;
 	int32_t style;
 };

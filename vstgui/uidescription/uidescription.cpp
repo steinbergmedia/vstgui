@@ -3218,7 +3218,7 @@ void UIFontNode::setFont (CFontRef newFont)
 
 	attributes->removeAll ();
 	attributes->setAttribute ("name", name);
-	attributes->setAttribute ("font-name", newFont->getName ());
+	attributes->setAttribute ("font-name", newFont->getName ().getString ());
 	std::stringstream str;
 	str << newFont->getSize ();
 	attributes->setAttribute ("size", str.str ());

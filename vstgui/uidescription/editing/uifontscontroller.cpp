@@ -280,9 +280,9 @@ void UIFontsController::dbSelectionChanged (int32_t selectedRow, GenericStringLi
 	CFontRef font = editDescription->getFont (selectedFont.c_str ());
 	if (font)
 	{
-		if (fontMenu && font->getName ())
+		if (fontMenu && !font->getName ().empty ())
 		{
-			std::string fontName = font->getName ();
+			auto fontName = font->getName ();
 			CMenuItemList* items = fontMenu->getItems ();
 			int32_t index = 0;
 			for (auto& item : *items)
