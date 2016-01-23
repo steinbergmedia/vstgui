@@ -140,9 +140,9 @@ public:
 	/// @name CFileSelector setup
 	//-----------------------------------------------------------------------------
 	//@{
-	void setTitle (UTF8StringPtr title);						///< set title of file selector
-	void setInitialDirectory (UTF8StringPtr path);				///< set initial directory (UTF8 string)
-	void setDefaultSaveName (UTF8StringPtr name);				///< set initial save name (UTF8 string)
+	void setTitle (const UTF8String& title);					///< set title of file selector
+	void setInitialDirectory (const UTF8String& path);			///< set initial directory (UTF8 string)
+	void setDefaultSaveName (const UTF8String& name);			///< set initial save name (UTF8 string)
 	void setDefaultExtension (const CFileExtension& extension);	///< set default file extension
 	void setAllowMultiFileSelection (bool state);				///< set allow multi file selection (only valid for kSelectFile selector style)
 	void addFileExtension (const CFileExtension& extension);	///< add a file extension
@@ -171,9 +171,9 @@ protected:
 	virtual bool runModalInternal () = 0;
 
 	CFrame* frame;
-	UTF8StringBuffer title;
-	UTF8StringBuffer initialPath;
-	UTF8StringBuffer defaultSaveName;
+	UTF8String title;
+	UTF8String initialPath;
+	UTF8String defaultSaveName;
 	const CFileExtension* defaultExtension;
 	bool allowMultiFileSelection;
 

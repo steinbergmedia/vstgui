@@ -220,7 +220,7 @@ bool VistaFileSelector::runModalInternal ()
 	if (style == kSelectSaveFile)
 	{
 		hr = CoCreateInstance (CLSID_FileSaveDialog, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARG(IFileDialog, &fileDialog));
-		if (defaultSaveName)
+		if (!defaultSaveName.empty ())
 		{
 			fileDialog->SetFileName (UTF8StringHelper (defaultSaveName));
 		}
@@ -264,7 +264,7 @@ bool VistaFileSelector::runModalInternal ()
 		return false;
 	}
 
-	if (title)
+	if (!title.empty ())
 		hr = fileDialog->SetTitle (UTF8StringHelper (title));
 
 	DWORD numExtensions = 0;
@@ -276,7 +276,7 @@ bool VistaFileSelector::runModalInternal ()
 		if (defaultFileTypeIndex)
 			fileDialog->SetFileTypeIndex (defaultFileTypeIndex);
 	}
-	if (initialPath && _SHCreateItemFromParsingName)
+	if (!initialPath.empty () && _SHCreateItemFromParsingName)
 	{
 		IShellItem* shellItem;
 		hr = _SHCreateItemFromParsingName (UTF8StringHelper (initialPath), 0, IID_PPV_ARG (IShellItem, &shellItem));
@@ -433,7 +433,7 @@ bool XPFileSelector::runModalInternal ()
 	*filePathBuffer=0;
 
 	UTF8StringHelper defaultSaveNameW (defaultSaveName);
-	if (defaultSaveName)
+	if (!defaultSaveName.empty ())
 	{
 		wcscpy (filePathBuffer, defaultSaveNameW.getWideString ());
 	}
@@ -443,7 +443,7 @@ bool XPFileSelector::runModalInternal ()
 	ofn.lpstrFileTitle = NULL;
 
 	UTF8StringHelper initialPathW (initialPath);
-	if (initialPath)
+	if (!initialPath.empty ())
 	{
 		ofn.lpstrInitialDir = initialPathW.getWideString ();
 	}
@@ -453,7 +453,7 @@ bool XPFileSelector::runModalInternal ()
 	}
 	
 	UTF8StringHelper titleW (title);
-	if (title)
+	if (!title.empty ())
 	{
 		ofn.lpstrTitle = titleW.getWideString ();
 	}

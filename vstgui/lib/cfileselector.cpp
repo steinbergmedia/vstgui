@@ -197,24 +197,21 @@ bool CNewFileSelector::run (CallbackFunc&& callback)
 }
 
 //-----------------------------------------------------------------------------
-void CNewFileSelector::setTitle (UTF8StringPtr inTitle)
+void CNewFileSelector::setTitle (const UTF8String& inTitle)
 {
-	String::free (title);
-	title = String::newWithString (inTitle);
+	title = inTitle;
 }
 
 //-----------------------------------------------------------------------------
-void CNewFileSelector::setInitialDirectory (UTF8StringPtr path)
+void CNewFileSelector::setInitialDirectory (const UTF8String& path)
 {
-	String::free (initialPath);
-	initialPath = String::newWithString (path);
+	initialPath = path;
 }
 
 //-----------------------------------------------------------------------------
-void CNewFileSelector::setDefaultSaveName (UTF8StringPtr name)
+void CNewFileSelector::setDefaultSaveName (const UTF8String& name)
 {
-	String::free (defaultSaveName);
-	defaultSaveName = String::newWithString (name);
+	defaultSaveName = name;
 }
 
 //-----------------------------------------------------------------------------

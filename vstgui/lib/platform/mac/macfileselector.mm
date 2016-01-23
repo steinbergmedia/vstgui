@@ -41,6 +41,7 @@
 // the cocoa fileselector is also used for carbon
 #import <Cocoa/Cocoa.h>
 #import "cocoa/cocoahelpers.h"
+#import "macstring.h"
 
 #if MAC_COCOA
 #import "cocoa/nsviewframe.h"
@@ -159,31 +160,29 @@ bool CocoaFileSelector::runInternal (CBaseObject* _delegate)
 	if (extensions.empty () == false)
 	{
 		typesArray = [[[NSMutableArray alloc] init] autorelease];
-		std::list<CFileExtension>::const_iterator it = extensions.begin ();
-		while (it != extensions.end ())
+		for (auto& ext : extensions)
 		{
 			NSString* uti = nullptr;
-			if ((*it).getUTI ().empty () == false)
-				uti = [[NSString stringWithCString: (*it).getUTI () encoding:NSUTF8StringEncoding] retain];
-			if (uti == nullptr && (*it).getMimeType ().empty () == false)
-				uti = (NSString*)UTTypeCreatePreferredIdentifierForTag (kUTTagClassMIMEType, (CFStringRef)[NSString stringWithCString: (*it).getMimeType () encoding:NSUTF8StringEncoding], kUTTypeData);
-			if (uti == nullptr && (*it).getMacType ())
+			if (ext.getUTI ().empty () == false)
+				uti = [fromUTF8String<NSString*> (ext.getUTI ()) retain];
+			if (uti == nullptr && ext.getMimeType ().empty () == false)
+				uti = (NSString*)UTTypeCreatePreferredIdentifierForTag (kUTTagClassMIMEType, fromUTF8String<CFStringRef> (ext.getMimeType ()), kUTTypeData);
+			if (uti == nullptr && ext.getMacType ())
 			{
-				NSString* osType = (NSString*)UTCreateStringForOSType (static_cast<OSType> ((*it).getMacType ()));
+				NSString* osType = (NSString*)UTCreateStringForOSType (static_cast<OSType> (ext.getMacType ()));
 				if (osType)
 				{
 					uti = (NSString*)UTTypeCreatePreferredIdentifierForTag (kUTTagClassOSType, (CFStringRef)osType, kUTTypeData);
 					[osType release];
 				}
 			}
-			if (uti == nullptr && (*it).getExtension ().empty () == false)
-				uti = [[NSString alloc] initWithUTF8String:(*it).getExtension ()];
+			if (uti == nullptr && ext.getExtension ().empty () == false)
+				uti = [fromUTF8String<NSString*> (ext.getExtension ()) retain];
 			if (uti)
 			{
 				[typesArray addObject:uti];
 				[uti release];
 			}
-			++it;
 		}
 	}
 	if (style == kSelectSaveFile)
@@ -204,7 +203,7 @@ bool CocoaFileSelector::runInternal (CBaseObject* _delegate)
 			[openPanel setCanChooseDirectories:YES];
 		}
 	}
-	if (title && savePanel)
+	if (!title.empty () && savePanel)
 		[savePanel setTitle:[NSString stringWithCString: title encoding:NSUTF8StringEncoding]];
 	if (openPanel)
 	{
@@ -259,9 +258,9 @@ bool CocoaFileSelector::runInternal (CBaseObject* _delegate)
 //-----------------------------------------------------------------------------
 void CocoaFileSelector::setupInitalDir ()
 {
-	if (initialPath)
+	if (!initialPath.empty ())
 	{
-		NSURL* dirURL = [NSURL fileURLWithPath:[NSString stringWithCString:initialPath encoding:NSUTF8StringEncoding]];
+		NSURL* dirURL = [NSURL fileURLWithPath:fromUTF8String<NSString*> (initialPath)];
 		NSNumber* isDir;
 		if ([dirURL getResourceValue:&isDir forKey:NSURLIsDirectoryKey error:nil])
 		{
@@ -273,9 +272,9 @@ void CocoaFileSelector::setupInitalDir ()
 			savePanel.directoryURL = dirURL;
 		}
 	}
-	if (defaultSaveName)
+	if (!defaultSaveName.empty ())
 	{
-		savePanel.nameFieldStringValue = [NSString stringWithCString:defaultSaveName encoding:NSUTF8StringEncoding];
+		savePanel.nameFieldStringValue = fromUTF8String<NSString*> (defaultSaveName);
 	}
 }
 
