@@ -186,17 +186,17 @@ HMENU Win32OptionMenu::createMenu (COptionMenu* _menu, int32_t& offsetIdx)
 				{
 					case 2:
 					{
-						sprintf (titleWithPrefixNumbers, "%1d %s", inc+1, item->getTitle ());
+						sprintf (titleWithPrefixNumbers, "%1d %s", inc+1, item->getTitle ().data ());
 						break;
 					}
 					case 3:
 					{
-						sprintf (titleWithPrefixNumbers, "%02d %s", inc+1, item->getTitle ());
+						sprintf (titleWithPrefixNumbers, "%02d %s", inc+1, item->getTitle ().data ());
 						break;
 					}
 					case 4:
 					{
-						sprintf (titleWithPrefixNumbers, "%03d %s", inc+1, item->getTitle ());
+						sprintf (titleWithPrefixNumbers, "%03d %s", inc+1, item->getTitle ().data ());
 						break;
 					}
 				}
