@@ -57,9 +57,9 @@ public:
 		kSeparator	= 1 << 3	///< item is a separator
 	};
 
-	CMenuItem (UTF8StringPtr title, UTF8StringPtr keycode = nullptr, int32_t keyModifiers = 0, CBitmap* icon = nullptr, int32_t flags = kNoFlags);
-	CMenuItem (UTF8StringPtr title, COptionMenu* submenu, CBitmap* icon = nullptr);
-	CMenuItem (UTF8StringPtr title, int32_t tag);
+	CMenuItem (const UTF8String& title, const UTF8String& keycode = "", int32_t keyModifiers = 0, CBitmap* icon = nullptr, int32_t flags = kNoFlags);
+	CMenuItem (const UTF8String& title, COptionMenu* submenu, CBitmap* icon = nullptr);
+	CMenuItem (const UTF8String& title, int32_t tag);
 	CMenuItem (const CMenuItem& item);
 
 	//-----------------------------------------------------------------------------
@@ -113,10 +113,10 @@ protected:
 class CCommandMenuItem : public CMenuItem
 {
 public:
-	CCommandMenuItem (UTF8StringPtr title, UTF8StringPtr keycode = nullptr, int32_t keyModifiers = 0, CBitmap* icon = nullptr, int32_t flags = kNoFlags, CBaseObject* target = nullptr, IdStringPtr commandCategory = nullptr, IdStringPtr commandName = nullptr);
-	CCommandMenuItem (UTF8StringPtr title, COptionMenu* submenu, CBitmap* icon = nullptr, CBaseObject* target = nullptr, IdStringPtr commandCategory = nullptr, IdStringPtr commandName = nullptr);
-	CCommandMenuItem (UTF8StringPtr title, int32_t tag, CBaseObject* target = nullptr, IdStringPtr commandCategory = nullptr, IdStringPtr commandName = nullptr);
-	CCommandMenuItem (UTF8StringPtr title, CBaseObject* target = nullptr, IdStringPtr commandCategory = nullptr, IdStringPtr commandName = nullptr);
+	CCommandMenuItem (const UTF8String& title, const UTF8String& keycode = nullptr, int32_t keyModifiers = 0, CBitmap* icon = nullptr, int32_t flags = kNoFlags, CBaseObject* target = nullptr, IdStringPtr commandCategory = nullptr, IdStringPtr commandName = nullptr);
+	CCommandMenuItem (const UTF8String& title, COptionMenu* submenu, CBitmap* icon = nullptr, CBaseObject* target = nullptr, IdStringPtr commandCategory = nullptr, IdStringPtr commandName = nullptr);
+	CCommandMenuItem (const UTF8String& title, int32_t tag, CBaseObject* target = nullptr, IdStringPtr commandCategory = nullptr, IdStringPtr commandName = nullptr);
+	CCommandMenuItem (const UTF8String& title, CBaseObject* target = nullptr, IdStringPtr commandCategory = nullptr, IdStringPtr commandName = nullptr);
 	CCommandMenuItem (const CCommandMenuItem& item);
 	~CCommandMenuItem ();
 
@@ -177,8 +177,8 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual CMenuItem* addEntry (CMenuItem* item, int32_t index = -1);											///< add a new entry
-	virtual CMenuItem* addEntry (COptionMenu* submenu, UTF8StringPtr title);									///< add a new submenu entry
-	virtual CMenuItem* addEntry (UTF8StringPtr title, int32_t index = -1, int32_t itemFlags = CMenuItem::kNoFlags);	///< add a new entry
+	virtual CMenuItem* addEntry (COptionMenu* submenu, const UTF8String& title);									///< add a new submenu entry
+	virtual CMenuItem* addEntry (const UTF8String& title, int32_t index = -1, int32_t itemFlags = CMenuItem::kNoFlags);	///< add a new entry
 	virtual CMenuItem* addSeparator (int32_t index = -1);														///< add a new separator entry
 	virtual CMenuItem* getCurrent () const;																	///< get current entry
 	virtual int32_t getCurrentIndex (bool countSeparator = false) const;

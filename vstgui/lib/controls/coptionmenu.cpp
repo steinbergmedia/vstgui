@@ -57,7 +57,7 @@ Defines an item of a VSTGUI::COptionMenu
  * @param inIcon icon of item
  */
 //------------------------------------------------------------------------
-CMenuItem::CMenuItem (UTF8StringPtr inTitle, UTF8StringPtr inKeycode, int32_t inKeyModifiers, CBitmap* inIcon, int32_t inFlags)
+CMenuItem::CMenuItem (const UTF8String& inTitle, const UTF8String& inKeycode, int32_t inKeyModifiers, CBitmap* inIcon, int32_t inFlags)
 : flags (inFlags)
 , keyModifiers (0)
 , virtualKeyCode (0)
@@ -78,7 +78,7 @@ CMenuItem::CMenuItem (UTF8StringPtr inTitle, UTF8StringPtr inKeycode, int32_t in
  * @param inIcon icon of item
  */
 //------------------------------------------------------------------------
-CMenuItem::CMenuItem (UTF8StringPtr inTitle, COptionMenu* inSubmenu, CBitmap* inIcon)
+CMenuItem::CMenuItem (const UTF8String& inTitle, COptionMenu* inSubmenu, CBitmap* inIcon)
 : flags (0)
 , keyModifiers (0)
 , virtualKeyCode (0)
@@ -98,7 +98,7 @@ CMenuItem::CMenuItem (UTF8StringPtr inTitle, COptionMenu* inSubmenu, CBitmap* in
  * @param inTag tag of item
  */
 //------------------------------------------------------------------------
-CMenuItem::CMenuItem (UTF8StringPtr inTitle, int32_t inTag)
+CMenuItem::CMenuItem (const UTF8String& inTitle, int32_t inTag)
 : flags (0)
 , keyModifiers (0)
 , virtualKeyCode (0)
@@ -236,7 +236,7 @@ IdStringPtr CCommandMenuItem::kMsgMenuItemValidate = "kMsgMenuItemValidate";
 IdStringPtr CCommandMenuItem::kMsgMenuItemSelected = "kMsgMenuItemSelected";
 
 //------------------------------------------------------------------------
-CCommandMenuItem::CCommandMenuItem (UTF8StringPtr title, UTF8StringPtr keycode, int32_t keyModifiers, CBitmap* icon, int32_t flags, CBaseObject* _target, IdStringPtr _commandCategory, IdStringPtr _commandName)
+CCommandMenuItem::CCommandMenuItem (const UTF8String& title, const UTF8String& keycode, int32_t keyModifiers, CBitmap* icon, int32_t flags, CBaseObject* _target, IdStringPtr _commandCategory, IdStringPtr _commandName)
 : CMenuItem (title, keycode, keyModifiers, icon, flags)
 , target (nullptr)
 , commandCategory (nullptr)
@@ -248,7 +248,7 @@ CCommandMenuItem::CCommandMenuItem (UTF8StringPtr title, UTF8StringPtr keycode, 
 }
 
 //------------------------------------------------------------------------
-CCommandMenuItem::CCommandMenuItem (UTF8StringPtr title, COptionMenu* submenu, CBitmap* icon, CBaseObject* _target, IdStringPtr _commandCategory, IdStringPtr _commandName)
+CCommandMenuItem::CCommandMenuItem (const UTF8String& title, COptionMenu* submenu, CBitmap* icon, CBaseObject* _target, IdStringPtr _commandCategory, IdStringPtr _commandName)
 : CMenuItem (title, submenu, icon)
 , target (nullptr)
 , commandCategory (nullptr)
@@ -260,7 +260,7 @@ CCommandMenuItem::CCommandMenuItem (UTF8StringPtr title, COptionMenu* submenu, C
 }
 
 //------------------------------------------------------------------------
-CCommandMenuItem::CCommandMenuItem (UTF8StringPtr title, int32_t tag, CBaseObject* _target, IdStringPtr _commandCategory, IdStringPtr _commandName)
+CCommandMenuItem::CCommandMenuItem (const UTF8String& title, int32_t tag, CBaseObject* _target, IdStringPtr _commandCategory, IdStringPtr _commandName)
 : CMenuItem (title, tag)
 , target (nullptr)
 , commandCategory (nullptr)
@@ -272,7 +272,7 @@ CCommandMenuItem::CCommandMenuItem (UTF8StringPtr title, int32_t tag, CBaseObjec
 }
 
 //------------------------------------------------------------------------
-CCommandMenuItem::CCommandMenuItem (UTF8StringPtr title, CBaseObject* _target, IdStringPtr _commandCategory, IdStringPtr _commandName)
+CCommandMenuItem::CCommandMenuItem (const UTF8String& title, CBaseObject* _target, IdStringPtr _commandCategory, IdStringPtr _commandName)
 : CMenuItem (title, -1)
 , target (nullptr)
 , commandCategory (nullptr)
@@ -628,16 +628,16 @@ CMenuItem* COptionMenu::addEntry (CMenuItem* item, int32_t index)
 }
 
 //-----------------------------------------------------------------------------
-CMenuItem* COptionMenu::addEntry (COptionMenu* submenu, UTF8StringPtr title)
+CMenuItem* COptionMenu::addEntry (COptionMenu* submenu, const UTF8String& title)
 {
 	CMenuItem* item = new CMenuItem (title, submenu);
 	return addEntry (item);
 }
 
 //-----------------------------------------------------------------------------
-CMenuItem* COptionMenu::addEntry (UTF8StringPtr title, int32_t index, int32_t itemFlags)
+CMenuItem* COptionMenu::addEntry (const UTF8String& title, int32_t index, int32_t itemFlags)
 {
-	if (UTF8StringView (title) == "-")
+	if (title == "-")
 		return addSeparator (index);
 	CMenuItem* item = new CMenuItem (title, nullptr, 0, nullptr, itemFlags);
 	return addEntry (item, index);
