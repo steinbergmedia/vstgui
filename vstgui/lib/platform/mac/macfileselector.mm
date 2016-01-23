@@ -202,7 +202,7 @@ bool CocoaFileSelector::runInternal (CBaseObject* _delegate)
 		}
 	}
 	if (!title.empty () && savePanel)
-		[savePanel setTitle:[NSString stringWithCString: title encoding:NSUTF8StringEncoding]];
+		[savePanel setTitle:fromUTF8String<NSString*>(title)];
 	if (openPanel)
 	{
 	#if MAC_COCOA

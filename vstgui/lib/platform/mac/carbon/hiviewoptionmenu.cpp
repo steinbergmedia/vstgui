@@ -171,7 +171,7 @@ MenuRef HIViewOptionMenu::createMenu (COptionMenu* menu)
 						SetMenuItemIconHandle (menuRef, i, kMenuCGImageRefType, (Handle)image);
 					}
 				}
-				if (item->getKeycode ())
+				if (item->getKeycode ().empty () == false)
 				{
 					SetItemCmd (menuRef, i, static_cast<CharParameter> (toupper (item->getKeycode ()[0])));
 					UInt8 keyModifiers = 0;

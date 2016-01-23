@@ -1093,7 +1093,7 @@ static OSStatus HIShapeEnumerateProc (int inMessage, HIShapeRef inShape, const C
 	if (inMessage == kHIShapeEnumerateRect)
 	{
 		CFrameAndCDrawContext* tmp = (CFrameAndCDrawContext*)inRefcon;
-		CRect r (inRect->origin.x, inRect->origin.y);
+		CRect r (inRect->origin.x, inRect->origin.y, 0, 0);
 		r.setWidth (inRect->size.width);
 		r.setHeight (inRect->size.height);
 		tmp->context->saveGlobalState ();
