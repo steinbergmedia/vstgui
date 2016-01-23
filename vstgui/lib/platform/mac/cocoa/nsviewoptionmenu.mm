@@ -42,6 +42,7 @@
 #import "../../../cframe.h"
 #import "../../../controls/coptionmenu.h"
 #import "../cgbitmap.h"
+#import "../macstring.h"
 
 @interface NSObject (VSTGUI_NSMenu_Private)
 -(id)initWithOptionMenu:(id)menu;
@@ -92,7 +93,7 @@ static id VSTGUI_NSMenu_Init (id self, SEL _cmd, void* _menu)
 			it++;
 			index++;
 			NSMenuItem* nsItem = nullptr;
-			NSMutableString* itemTitle = [[[NSMutableString alloc] initWithCString:item->getTitle () encoding:NSUTF8StringEncoding] autorelease];
+			NSMutableString* itemTitle = [[[NSMutableString alloc] initWithString:fromUTF8String<NSString*> (item->getTitle ())] autorelease];
 			if (menu->getPrefixNumbers ())
 			{
 				NSString* prefixString = nullptr;
@@ -130,9 +131,9 @@ static id VSTGUI_NSMenu_Init (id self, SEL _cmd, void* _menu)
 				else
 					[nsItem setState:NSOffState];
 				NSString* keyEquivalent = nil;
-				if (item->getKeycode ())
+				if (!item->getKeycode ().empty ())
 				{
-					keyEquivalent = [NSString stringWithCString:item->getKeycode () encoding:NSUTF8StringEncoding];
+					keyEquivalent = fromUTF8String<NSString*> (item->getKeycode ());
 				}
 				else if (item->getVirtualKeyCode ())
 				{

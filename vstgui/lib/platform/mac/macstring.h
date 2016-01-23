@@ -38,8 +38,15 @@
 #include "../iplatformstring.h"
 
 #if MAC
+#include "../../cstring.h"
 #include <CoreFoundation/CoreFoundation.h>
 #include "cfontmac.h"
+
+#ifdef __OBJC__
+#import <Cocoa/Cocoa.h>
+#else
+struct NSString;
+#endif
 
 namespace VSTGUI {
 
@@ -66,6 +73,34 @@ protected:
 	const void* ctLineFontRef;
 	CColor ctLineColor;
 };
+
+//-----------------------------------------------------------------------------
+template <typename T>
+inline T fromUTF8String (const UTF8String& str)
+{
+	vstgui_assert (false);
+	return nullptr;
+}
+
+//-----------------------------------------------------------------------------
+template <>
+inline CFStringRef fromUTF8String (const UTF8String& str)
+{
+	if (auto macString = dynamic_cast<MacString*> (str.getPlatformString ()))
+		return macString->getCFString ();
+	return nullptr;
+}
+
+#ifdef __OBJC__
+//-----------------------------------------------------------------------------
+template <>
+inline NSString* fromUTF8String (const UTF8String& str)
+{
+	if (auto macString = dynamic_cast<MacString*> (str.getPlatformString ()))
+		return (__bridge NSString*) (macString->getCFString ());
+	return nil;
+}
+#endif // __OBJC__
 
 } // namespace
 
