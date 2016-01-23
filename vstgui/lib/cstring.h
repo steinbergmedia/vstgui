@@ -89,6 +89,8 @@ public:
 	size_t getByteCount () const { return string.length (); }
 	bool empty () const { return string.empty (); }
 
+	void copy (UTF8StringBuffer dst, size_t dstSize) const;
+
 	bool operator== (UTF8StringPtr str) const { return string == str; }
 	bool operator!= (UTF8StringPtr str) const { return string != str; }
 	bool operator== (const std::string& str) const { return string == str; }

@@ -320,14 +320,8 @@ public:
 			paramDisplay->setValueToStringFunction (
 			    [this] (float value, char utf8String[256], CParamDisplay* display) {
 				    auto string = this->value->getStringConverter ().valueAsString (value);
-				    auto numBytes = std::min<size_t> (string.getByteCount (), 255);
-				    if (numBytes)
-				    {
-					    strncpy (utf8String, string.get (), numBytes);
-					    utf8String[numBytes] = 0;
-				    }
-				    else
-					    utf8String[0] = 0;
+				    auto numBytes = std::min<size_t> (string.getByteCount () + 1, 255);
+					string.copy (utf8String, numBytes);
 				    return true;
 				});
 			if (auto textEdit = dynamic_cast<CTextEdit*> (paramDisplay))

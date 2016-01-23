@@ -33,6 +33,7 @@
 //-----------------------------------------------------------------------------
 
 #include "cstring.h"
+#include <string.h>
 
 namespace VSTGUI {
 
@@ -107,6 +108,16 @@ void UTF8String::set (UTF8StringPtr str)
 		platformString = nullptr;
 		string = str ? str : "";
 	}
+}
+
+//-----------------------------------------------------------------------------
+void UTF8String::copy (UTF8StringBuffer dst, size_t dstSize) const
+{
+#if WINDOWS
+	strcpy_s (dst, dstSize, string.data ());
+#else
+	strlcpy (dst, string.data (), dstSize);
+#endif
 }
 
 //-----------------------------------------------------------------------------
