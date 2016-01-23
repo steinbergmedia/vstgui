@@ -66,14 +66,8 @@
 		#define VSTGUI_OPENGL_SUPPORT 0	// there's an implementation, but not yet tested, so this is zero
 		#define VSTGUI_TOUCH_EVENT_HANDLING 1
 	#else
-		#ifndef MAC_OS_X_VERSION_10_5
-			#error unsupported Mac OS X SDK
-		#endif
-		#ifndef MAC_OS_X_VERSION_10_6
-			#define MAC_OS_X_VERSION_10_6 1060
-		#endif
 		#ifndef MAC_OS_X_VERSION_10_7
-			#define MAC_OS_X_VERSION_10_7 1070
+			#error you need at least OSX SDK 10.7 to build vstgui
 		#endif
 		#ifndef MAC_OS_X_VERSION_10_8
 			#define MAC_OS_X_VERSION_10_8 1080
@@ -97,24 +91,17 @@
 			#endif
 		#endif
 	#endif
-	#ifdef __has_feature
-		#define VSTGUI_RVALUE_REF_SUPPORT __has_feature (cxx_rvalue_references)
-		#define VSTGUI_RANGE_BASED_FOR_LOOP_SUPPORT __has_feature (cxx_range_for)
-		#if VSTGUI_RVALUE_REF_SUPPORT
-			#include <type_traits>
-		#endif
-		#if __has_feature (cxx_override_control)
-			#define VSTGUI_OVERRIDE_VMETHOD	override
-		#endif
+
+	#ifndef __has_feature
+		#error compiler not supported
 	#endif
-	#if __cplusplus >= 201103L
-		#define VSTGUI_FINAL_VMETHOD final
-		#ifdef _LIBCPP_VERSION
-			#define VSTGUI_HAS_FUNCTIONAL 1
-		#endif
-	#else
-		#define noexcept
+	#if __has_feature (cxx_rvalue_references) == 0
+		#error need cxx_rvalue_references support from compiler
 	#endif
+	#if __has_feature (cxx_range_for) == 0
+		#error need cxx_range_for support from compiler
+	#endif
+	#include <type_traits>
 
 	#if defined (__clang__) && __clang_major__ > 4
 		#if defined (VSTGUI_WARN_EVERYTHING) && VSTGUI_WARN_EVERYTHING == 1
@@ -134,33 +121,19 @@
 	#if _WIN32_WINNT < 0x600
 		#error unsupported Platform SDK you need at least the Vista Platform SDK to compile VSTGUI
 	#endif
-
 	#ifdef __GNUC__
-		#if __cplusplus >= 201103L
-			#define VSTGUI_OVERRIDE_VMETHOD	override
-			#define VSTGUI_FINAL_VMETHOD final
-			#define VSTGUI_RVALUE_REF_SUPPORT 1
-			#define VSTGUI_RANGE_BASED_FOR_LOOP_SUPPORT 1
-			#define VSTGUI_HAS_FUNCTIONAL 1
-		#else
-			#define noexcept
+		#if __cplusplus < 201103L
+			#error compiler not supported
 		#endif
-		#include <stdint.h>
-	#elif _MSC_VER <	1800
+	#elif _MSC_VER < 1800
 		#error Visual Studio 2013 or newer needed
-	#elif _MSC_VER >=	1800
-		#define VSTGUI_OVERRIDE_VMETHOD	override
-		#define VSTGUI_RVALUE_REF_SUPPORT 1
-		#define VSTGUI_RANGE_BASED_FOR_LOOP_SUPPORT 1
-		#define VSTGUI_HAS_FUNCTIONAL 1
-		#define VSTGUI_FINAL_VMETHOD final
-		#include <type_traits>
-		#include <stdint.h>
 	#endif
+	#include <type_traits>
+	#include <stdint.h>
 	#ifndef WINDOWS
 		#define WINDOWS 1
 	#endif
-	#if !defined(__GNUC__) && _MSC_VER <= 1800
+	#if !defined(__GNUC__) && _MSC_VER == 1800
 		#define noexcept		// only supported since VS 2015
 	#endif
 	#define VSTGUI_DIRECT2D_SUPPORT	1
@@ -194,29 +167,6 @@
 #define UNICODE 1
 
 //----------------------------------------------------
-// C++11 features
-//----------------------------------------------------
-#ifndef VSTGUI_RVALUE_REF_SUPPORT
-	#error "c++11 compiler needed !"
-#endif
-
-#ifndef VSTGUI_OVERRIDE_VMETHOD
-	#error "c++11 compiler needed !"
-#endif
-
-#ifndef VSTGUI_FINAL_VMETHOD
-	#error "c++11 compiler needed !"
-#endif
-
-#ifndef VSTGUI_RANGE_BASED_FOR_LOOP_SUPPORT
-	#error "c++11 compiler needed !"
-#endif
-
-#ifndef VSTGUI_HAS_FUNCTIONAL
-	#error "c++11 compiler needed !"
-#endif
-
-//----------------------------------------------------
 // Deprecation setting
 //----------------------------------------------------
 #ifndef VSTGUI_ENABLE_DEPRECATED_METHODS
@@ -242,6 +192,14 @@
 
 #ifndef VSTGUI_TOUCH_EVENT_HANDLING
 	#define VSTGUI_TOUCH_EVENT_HANDLING 0
+#endif
+
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+	#define VSTGUI_OVERRIDE_VMETHOD	override
+	#define VSTGUI_FINAL_VMETHOD final
+#else
+	#define VSTGUI_OVERRIDE_VMETHOD	static_assert (false, "VSTGUI_OVERRIDE_VMETHOD is deprecated, just use override!");
+	#define VSTGUI_FINAL_VMETHOD static_assert (false, "VSTGUI_FINAL_VMETHOD is deprecated, just use final!");
 #endif
 
 //----------------------------------------------------
