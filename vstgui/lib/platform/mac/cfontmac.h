@@ -53,7 +53,7 @@ class MacString;
 class CoreTextFont : public IPlatformFont, public IFontPainter
 {
 public:
-	CoreTextFont (UTF8StringPtr name, const CCoord& size, const int32_t& style);
+	CoreTextFont (const UTF8String& name, const CCoord& size, const int32_t& style);
 
 	double getAscent () const override;
 	double getDescent () const override;

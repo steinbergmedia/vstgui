@@ -65,7 +65,7 @@ static uint32_t getCTVersion ()
 }
 
 //-----------------------------------------------------------------------------
-IPlatformFont* IPlatformFont::create (UTF8StringPtr name, const CCoord& size, const int32_t& style)
+IPlatformFont* IPlatformFont::create (const UTF8String& name, const CCoord& size, const int32_t& style)
 {
 	CoreTextFont* font = new CoreTextFont (name, size, style);
 	if (font->getFontRef ())
@@ -113,7 +113,7 @@ static CTFontRef CoreTextCreateTraitsVariant (CTFontRef fontRef, CTFontSymbolicT
 }
 
 //-----------------------------------------------------------------------------
-CoreTextFont::CoreTextFont (UTF8StringPtr name, const CCoord& size, const int32_t& style)
+CoreTextFont::CoreTextFont (const UTF8String& name, const CCoord& size, const int32_t& style)
 : fontRef (nullptr)
 , style (style)
 , underlineStyle (false)
@@ -124,7 +124,7 @@ CoreTextFont::CoreTextFont (UTF8StringPtr name, const CCoord& size, const int32_
 , leading (0.)
 , capHeight (0.)
 {
-	CFStringRef fontNameRef = CFStringCreateWithCString (kCFAllocatorDefault, name, kCFStringEncodingUTF8);
+	CFStringRef fontNameRef = fromUTF8String<CFStringRef> (name);
 	if (fontNameRef)
 	{
 		if (getCTVersion () >= 0x00060000)
@@ -145,7 +145,6 @@ CoreTextFont::CoreTextFont (UTF8StringPtr name, const CCoord& size, const int32_
 			fontRef = CoreTextCreateTraitsVariant (fontRef, kCTFontBoldTrait);
 		if (style & kItalicFace)
 			fontRef = CoreTextCreateTraitsVariant (fontRef, kCTFontItalicTrait);
-		CFRelease (fontNameRef);
 		if (fontRef)
 		{
 			ascent = CTFontGetAscent (fontRef);

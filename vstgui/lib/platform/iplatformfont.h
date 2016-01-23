@@ -62,7 +62,7 @@ public:
 class IPlatformFont : public CBaseObject
 {
 public:
-	static IPlatformFont* create (UTF8StringPtr name, const CCoord& size, const int32_t& style);
+	static IPlatformFont* create (const UTF8String& name, const CCoord& size, const int32_t& style);
 	static bool getAllPlatformFontFamilies (std::list<std::string>& fontFamilyNames);
 	
 	virtual double getAscent () const = 0;		///< returns the ascent line offset of the baseline of this font. If not supported returns -1

@@ -77,7 +77,7 @@ bool D2DFont::getAllPlatformFontFamilies (std::list<std::string>& fontFamilyName
 }
 
 //-----------------------------------------------------------------------------
-D2DFont::D2DFont (const char* name, const CCoord& size, const int32_t& style)
+D2DFont::D2DFont (const UTF8String& name, const CCoord& size, const int32_t& style)
 : textFormat (0)
 , ascent (-1)
 , descent (-1)

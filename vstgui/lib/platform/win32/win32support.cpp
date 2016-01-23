@@ -309,7 +309,7 @@ bool IPlatformBitmap::createMemoryPNGRepresentation (IPlatformBitmap* bitmap, vo
 }
 
 //-----------------------------------------------------------------------------
-IPlatformFont* IPlatformFont::create (const char* name, const CCoord& size, const int32_t& style)
+IPlatformFont* IPlatformFont::create (const UTF8String& name, const CCoord& size, const int32_t& style)
 {
 #if VSTGUI_DIRECT2D_SUPPORT
 	if (getD2DFactory ())

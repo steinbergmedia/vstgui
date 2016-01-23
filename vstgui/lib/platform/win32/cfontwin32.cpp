@@ -84,7 +84,7 @@ static Gdiplus::Brush* getFontBrush (CDrawContext* context)
 	return gpdc ? gpdc->getFontBrush () : 0;
 }
 //-----------------------------------------------------------------------------
-GdiPlusFont::GdiPlusFont (const char* name, const CCoord& size, const int32_t& style)
+GdiPlusFont::GdiPlusFont (const UTF8String& name, const CCoord& size, const int32_t& style)
 : font (0)
 {
 	gdiStyle = Gdiplus::FontStyleRegular;
