@@ -41,19 +41,6 @@
 
 namespace VSTGUI {
 
-TESTCASE(CStringTest,
-
-	TEST(test,
-		CString str ("Test");
-		EXPECT(str.getPlatformString ());
-		EXPECT(UTF8String ("Test") == str.getUTF8String ());
-		str.setUTF8String ("Other");
-		EXPECT(str.getPlatformString ());
-		EXPECT(UTF8String ("Other") == str.getUTF8String ());
-	);
-
-);
-
 TESTCASE(UTF8StringTest,
 
 	TEST(empty,
