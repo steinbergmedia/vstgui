@@ -51,9 +51,8 @@ class CTabButton : public COnOffButton
 public:
 	CTabButton (const CRect &size, IControlListener *listener, int32_t tag, CBitmap *background, UTF8StringPtr inName)
 	: COnOffButton (size, listener, tag, background)
-	, name (nullptr)
+	, name (inName)
 	{
-		name = String::newWithString (inName);
 		activeTextColor = kBlackCColor;
 		inactiveTextColor (90, 90, 90, 255);
 		textFont = kSystemFont; textFont->remember ();
@@ -63,13 +62,12 @@ public:
 	{
 		if (textFont)
 			textFont->forget ();
-		String::free (name);
-	}	
+	}
 
 	void draw (CDrawContext *pContext) override
 	{
 		COnOffButton::draw (pContext);
-		if (name)
+		if (!name.empty ())
 		{
 			pContext->setFont (textFont);
 			pContext->setFontColor (value > 0.f ? activeTextColor : inactiveTextColor);
@@ -101,7 +99,7 @@ public:
 
 	CLASS_METHODS (CTabButton, COnOffButton)
 protected:
-	UTF8StringBuffer name;
+	UTF8String name;
 	CFontRef textFont;
 	CColor activeTextColor;
 	CColor inactiveTextColor;

@@ -76,7 +76,7 @@ public:
 	void stop ();
 
 protected:
-	UTF8StringBuffer name;
+	std::string name;
 	std::clock_t startTime;
 };
 

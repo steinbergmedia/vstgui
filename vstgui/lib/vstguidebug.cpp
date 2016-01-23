@@ -51,7 +51,7 @@ namespace VSTGUI {
 TimeWatch::TimeWatch (UTF8StringPtr name, bool startNow)
 : startTime (0)
 {
-	this->name = String::newWithString (name);
+	this->name = name ? name : 0;
 	if (startNow)
 		start ();
 }
@@ -60,7 +60,6 @@ TimeWatch::TimeWatch (UTF8StringPtr name, bool startNow)
 TimeWatch::~TimeWatch ()
 {
 	stop ();
-	String::free (name);
 }
 
 //-----------------------------------------------------------------------------
@@ -75,7 +74,7 @@ void TimeWatch::stop ()
 	if (startTime > 0)
 	{
 		clock_t stopTime = std::clock ();
-		DebugPrint ("%s took %d\n", name, stopTime - startTime);
+		DebugPrint ("%s took %d\n", name.data (), stopTime - startTime);
 		startTime = 0;
 	}
 }
