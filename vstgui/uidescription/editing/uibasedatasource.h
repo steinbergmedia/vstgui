@@ -126,7 +126,6 @@ public:
 		int32_t index = 0;
 		for (auto& it : names)
 		{
-			++index;
 			if (it == name)
 			{
 				dataBrowser->setSelectedRow (index, true);
@@ -134,6 +133,7 @@ public:
 					delegate->dbSelectionChanged (index, this);
 				return index;
 			}
+			++index;
 		}
 		return -1;
 	}
