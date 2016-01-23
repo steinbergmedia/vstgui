@@ -36,6 +36,7 @@
 #define __cfileselector__
 
 #include "vstguifwd.h"
+#include "cstring.h"
 #include <list>
 #include <vector>
 #include <functional>
@@ -49,14 +50,14 @@ namespace VSTGUI {
 class CFileExtension : public CBaseObject
 {
 public:
-	CFileExtension (UTF8StringPtr description, UTF8StringPtr extension, UTF8StringPtr mimeType = nullptr, int32_t macType = 0, UTF8StringPtr uti = nullptr);
+	CFileExtension (const UTF8String& description, const UTF8String& extension, const UTF8String& mimeType = "", int32_t macType = 0, const UTF8String& uti = "");
 	CFileExtension (const CFileExtension& ext);
 	~CFileExtension ();
 
-	UTF8StringPtr getDescription () const { return description; }
-	UTF8StringPtr getExtension () const { return extension; }
-	UTF8StringPtr getMimeType () const { return mimeType; }
-	UTF8StringPtr getUTI () const { return uti; }
+	const UTF8String& getDescription () const { return description; }
+	const UTF8String& getExtension () const { return extension; }
+	const UTF8String& getMimeType () const { return mimeType; }
+	const UTF8String& getUTI () const { return uti; }
 	int32_t getMacType () const { return macType; }
 
 	bool operator== (const CFileExtension& ext) const;
@@ -66,12 +67,12 @@ public:
 	CFileExtension (CFileExtension&& ext) noexcept;
 	CFileExtension& operator=(CFileExtension&& ext) noexcept;
 protected:
-	void init (UTF8StringPtr description, UTF8StringPtr extension, UTF8StringPtr mimeType, UTF8StringPtr uti);
+	void init (const UTF8String& description, const UTF8String& extension, const UTF8String& mimeType, const UTF8String& uti);
 	
-	UTF8StringBuffer description;
-	UTF8StringBuffer extension;
-	UTF8StringBuffer mimeType;
-	UTF8StringBuffer uti;
+	UTF8String description;
+	UTF8String extension;
+	UTF8String mimeType;
+	UTF8String uti;
 	int32_t macType;
 };
 

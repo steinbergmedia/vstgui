@@ -163,9 +163,9 @@ bool CocoaFileSelector::runInternal (CBaseObject* _delegate)
 		while (it != extensions.end ())
 		{
 			NSString* uti = nullptr;
-			if ((*it).getUTI ())
+			if ((*it).getUTI ().empty () == false)
 				uti = [[NSString stringWithCString: (*it).getUTI () encoding:NSUTF8StringEncoding] retain];
-			if (uti == nullptr && (*it).getMimeType ())
+			if (uti == nullptr && (*it).getMimeType ().empty () == false)
 				uti = (NSString*)UTTypeCreatePreferredIdentifierForTag (kUTTagClassMIMEType, (CFStringRef)[NSString stringWithCString: (*it).getMimeType () encoding:NSUTF8StringEncoding], kUTTypeData);
 			if (uti == nullptr && (*it).getMacType ())
 			{
@@ -176,7 +176,7 @@ bool CocoaFileSelector::runInternal (CBaseObject* _delegate)
 					[osType release];
 				}
 			}
-			if (uti == nullptr && (*it).getExtension ())
+			if (uti == nullptr && (*it).getExtension ().empty () == false)
 				uti = [[NSString alloc] initWithUTF8String:(*it).getExtension ()];
 			if (uti)
 			{

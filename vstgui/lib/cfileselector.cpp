@@ -40,23 +40,15 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-CFileExtension::CFileExtension (UTF8StringPtr inDescription, UTF8StringPtr inExtension, UTF8StringPtr inMimeType, int32_t inMacType, UTF8StringPtr inUti)
-: description (nullptr)
-, extension (nullptr)
-, mimeType (nullptr)
-, uti (nullptr)
-, macType (inMacType)
+CFileExtension::CFileExtension (const UTF8String& inDescription, const UTF8String& inExtension, const UTF8String& inMimeType, int32_t inMacType, const UTF8String& inUti)
+: macType (inMacType)
 {
 	init (inDescription, inExtension, inMimeType, inUti);
 }
 
 //-----------------------------------------------------------------------------
 CFileExtension::CFileExtension (const CFileExtension& ext)
-: description (nullptr)
-, extension (nullptr)
-, mimeType (nullptr)
-, uti (nullptr)
-, macType (ext.macType)
+: macType (ext.macType)
 {
 	init (ext.description, ext.extension, ext.mimeType, ext.uti);
 }
@@ -64,18 +56,10 @@ CFileExtension::CFileExtension (const CFileExtension& ext)
 //-----------------------------------------------------------------------------
 CFileExtension::~CFileExtension ()
 {
-	String::free (description);
-	String::free (extension);
-	String::free (mimeType);
-	String::free (uti);
 }
 
 //-----------------------------------------------------------------------------
 CFileExtension::CFileExtension (CFileExtension&& ext) noexcept
-: description (nullptr)
-, extension (nullptr)
-, mimeType (nullptr)
-, uti (nullptr)
 {
 	*this = std::move (ext);
 }
@@ -83,32 +67,24 @@ CFileExtension::CFileExtension (CFileExtension&& ext) noexcept
 //-----------------------------------------------------------------------------
 CFileExtension& CFileExtension::operator=(CFileExtension&& ext) noexcept
 {
-	String::free (description);
-	String::free (extension);
-	String::free (mimeType);
-	String::free (uti);
-	description = ext.description;
-	extension = ext.extension;
-	mimeType = ext.mimeType;
-	uti = ext.uti;
+	description = std::move (ext.description);
+	extension = std::move (ext.extension);
+	mimeType = std::move (ext.mimeType);
+	uti = std::move (ext.uti);
 	macType = ext.macType;
-	ext.description = nullptr;
-	ext.extension = nullptr;
-	ext.mimeType = nullptr;
-	ext.uti = nullptr;
 	ext.macType = 0;
 	return *this;
 }
 
 //-----------------------------------------------------------------------------
-void CFileExtension::init (UTF8StringPtr inDescription, UTF8StringPtr inExtension, UTF8StringPtr inMimeType, UTF8StringPtr inUti)
+void CFileExtension::init (const UTF8String& inDescription, const UTF8String& inExtension, const UTF8String& inMimeType, const UTF8String& inUti)
 {
-	description = String::newWithString (inDescription);
-	extension = String::newWithString (inExtension);
-	mimeType = String::newWithString (inMimeType);
-	uti = String::newWithString (inUti);
+	description = inDescription;
+	extension = inExtension;
+	mimeType = inMimeType;
+	uti = inUti;
 
-	if (description == nullptr && extension)
+	if (description == nullptr && !extension.empty ())
 	{
 		// TODO: query system for file type description
 		// Win32: AssocGetPerceivedType
@@ -120,12 +96,11 @@ void CFileExtension::init (UTF8StringPtr inDescription, UTF8StringPtr inExtensio
 bool CFileExtension::operator== (const CFileExtension& ext) const
 {
 	bool result = false;
-	if (extension && ext.extension)
-		result = (std::strcmp (extension, ext.extension) == 0);
-	if (!result && mimeType && ext.mimeType)
-		result = (std::strcmp (mimeType, ext.mimeType) == 0);
-	if (!result && uti && ext.uti)
-		result = (std::strcmp (uti, ext.uti) == 0);
+	result = extension == ext.extension;
+	if (!result)
+		result = mimeType == ext.mimeType;
+	if (!result)
+		result = uti == ext.uti;
 	if (!result && macType != 0 && ext.macType != 0)
 		result = (macType == ext.macType);
 	return result;
