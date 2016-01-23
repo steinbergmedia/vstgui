@@ -75,13 +75,12 @@ public:
 	bool operator== (const std::string& str) const { return string == str; }
 	bool operator!= (const std::string& str) const { return string != str; }
 
-	void set (UTF8StringPtr str);
-	void operator= (UTF8StringPtr str) { set (str); }
+	void assign (UTF8StringPtr str);
+	void operator= (UTF8StringPtr str) { assign (str); }
 	void clear ();
 
-	const UTF8StringPtr get () const { return string.data (); }
 	const UTF8StringPtr data () const { return string.data (); }
-	operator const UTF8StringPtr () const { return get (); }
+	operator const UTF8StringPtr () const { return data (); }
 	const std::string& getString () const { return string; }
 	IPlatformString* getPlatformString () const;
 //-----------------------------------------------------------------------------
@@ -123,7 +122,7 @@ class UTF8StringView
 {
 public:
 	UTF8StringView (const UTF8StringPtr string) : str (string) {}
-	explicit UTF8StringView (const UTF8String& string) : str (string.get ()) {}
+	explicit UTF8StringView (const UTF8String& string) : str (string.data ()) {}
 
 	/** calculates the bytes used by this string, including null-character */
 	size_t calculateByteCount () const;

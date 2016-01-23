@@ -105,7 +105,7 @@ void CTextLabel::calculateTruncatedText ()
 		CDrawMethods::TextTruncateMode mode = textTruncateMode == kTruncateHead ? CDrawMethods::kTextTruncateHead : CDrawMethods::kTextTruncateTail;
 		truncatedText = CDrawMethods::createTruncatedText (mode, text, fontID, getWidth ());
 		if (truncatedText == text)
-			truncatedText.set (nullptr);
+			truncatedText.clear ();
 		changed (kMsgTruncatedTextChanged);
 	}
 }

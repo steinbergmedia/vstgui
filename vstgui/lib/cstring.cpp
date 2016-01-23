@@ -96,7 +96,7 @@ UTF8String& UTF8String::operator=(const std::string& other)
 }
 
 //-----------------------------------------------------------------------------
-void UTF8String::set (UTF8StringPtr str)
+void UTF8String::assign (UTF8StringPtr str)
 {
 	if (str == nullptr || string != str)
 	{
@@ -126,7 +126,7 @@ void UTF8String::copy (UTF8StringBuffer dst, size_t dstSize) const
 IPlatformString* UTF8String::getPlatformString () const
 {
 	if (platformString == nullptr)
-		platformString = owned (IPlatformString::createWithUTF8String (get ()));
+		platformString = owned (IPlatformString::createWithUTF8String (data ()));
 	return platformString;
 }
 

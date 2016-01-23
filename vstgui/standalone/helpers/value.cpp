@@ -40,7 +40,7 @@ public:
 	IValue::Type stringAsValue (const UTF8String& string) const override
 	{
 		IValue::Type value;
-		std::istringstream sstream (string.get ());
+		std::istringstream sstream (string.getString ());
 		sstream.imbue (std::locale::classic ());
 		sstream.precision (40);
 		sstream >> value;
@@ -281,7 +281,7 @@ UTF8String StepValue::valueAsString (IValue::Type value) const
 IValue::Type StepValue::stringAsValue (const UTF8String& string) const
 {
 	StepType v;
-	std::istringstream sstream (string.get ());
+	std::istringstream sstream (string.getString ());
 	sstream.imbue (std::locale::classic ());
 	sstream >> v;
 	if (v > steps)

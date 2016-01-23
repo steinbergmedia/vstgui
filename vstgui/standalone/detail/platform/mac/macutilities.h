@@ -12,5 +12,5 @@ inline NSString* stringFromUTF8String (const VSTGUI::UTF8String& str)
 	{
 		return (__bridge NSString*)macStr->getCFString ();
 	}
-	return [NSString stringWithUTF8String:str.get ()];
+	return [NSString stringWithUTF8String:str.data ()];
 }

@@ -228,7 +228,7 @@ const UTF8String& CDrawContext::getDrawString (UTF8StringPtr string)
 	if (drawStringHelper == nullptr)
 		drawStringHelper = new UTF8String (string);
 	else
-		drawStringHelper->set (string);
+		drawStringHelper->assign (string);
 	return *drawStringHelper;
 }
 

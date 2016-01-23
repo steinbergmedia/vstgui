@@ -385,12 +385,12 @@ struct DataPackage : IDataPackage
 		type = kError;
 		if (index == 0)
 		{
-			buffer = str.get ();
+			buffer = str.data ();
 			type = kText;
 		}
 		else if (index == 1)
 		{
-			buffer = path.get ();
+			buffer = path.data ();
 			type = kFilePath;
 		}
 		else if (index == 2)
@@ -428,11 +428,11 @@ TESTCASE(CDragContainerHelperTest,
 		int32_t size;
 		int32_t type;
 		auto res = helper.first (size, type);
-		EXPECT(res == package.str.get ());
+		EXPECT(res == package.str.data ());
 		EXPECT(size == static_cast<int32_t> (package.str.getByteCount ()));
 		EXPECT(type == CDragContainerHelper::kUnicodeText);
 		res = helper.next(size, type);
-		EXPECT(res == package.path.get ());
+		EXPECT(res == package.path.data ());
 		EXPECT(size == static_cast<int32_t> (package.path.getByteCount ()));
 		EXPECT(type == CDragContainerHelper::kFile);
 		res = helper.next(size, type);

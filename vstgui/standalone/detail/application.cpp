@@ -169,7 +169,7 @@ void Application::registerCommand (const Command& command, char16_t defaultComma
 	bool added = false;
 	for (auto& entry : commandList)
 	{
-		if (entry.first == command.group.get ())
+		if (entry.first == command.group)
 		{
 			for (auto& cmd : entry.second)
 			{
@@ -182,7 +182,7 @@ void Application::registerCommand (const Command& command, char16_t defaultComma
 		}
 	}
 	if (!added)
-		commandList.push_back ({command.group.get (), {c}});
+		commandList.push_back ({command.group, {c}});
 	if (platform.onCommandUpdate)
 		platform.onCommandUpdate ();
 }

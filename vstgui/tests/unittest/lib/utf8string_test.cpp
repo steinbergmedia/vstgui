@@ -52,9 +52,9 @@ TESTCASE(UTF8StringTest,
 	TEST(set,
 		UTF8String str;
 		EXPECT (str.empty ());
-		str.set ("Test");
+		str.assign ("Test");
 		EXPECT(str.empty () == false);
-		EXPECT(str.get () == std::string ("Test"));
+		EXPECT(str.data () == std::string ("Test"));
 	);
 
 	TEST(equalOperator,
