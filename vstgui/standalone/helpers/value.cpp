@@ -82,7 +82,7 @@ private:
 class Value : public IValue
 {
 public:
-	Value (const IdStringPtr id, Type initialValue, const ValueStringConverterPtr& stringConverter);
+	Value (const UTF8String& id, Type initialValue, const ValueStringConverterPtr& stringConverter);
 
 	void beginEdit () override;
 	bool performEdit (Type newValue) override;
@@ -115,7 +115,7 @@ private:
 class StepValue : public Value, public IStepValue, public IValueStringConverter
 {
 public:
-	StepValue (const IdStringPtr id, StepType initialSteps, Type initialValue, const ValueStringConverterPtr& stringConverter);
+	StepValue (const UTF8String& id, StepType initialSteps, Type initialValue, const ValueStringConverterPtr& stringConverter);
 
 	bool performEdit (Type newValue) override;
 
@@ -132,7 +132,7 @@ private:
 };
 
 //------------------------------------------------------------------------
-Value::Value (const IdStringPtr id, Type initialValue, const ValueStringConverterPtr& stringConverter)
+Value::Value (const UTF8String& id, Type initialValue, const ValueStringConverterPtr& stringConverter)
 : idString (id)
 , value (initialValue)
 , stringConverter (stringConverter)
@@ -239,7 +239,7 @@ void Value::unregisterListener (IValueListener* listener)
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
-StepValue::StepValue (const IdStringPtr id, StepType initialSteps, Type initialValue,
+StepValue::StepValue (const UTF8String& id, StepType initialSteps, Type initialValue,
                       const ValueStringConverterPtr& stringConverter)
 : Value (id, initialValue, stringConverter)
 , steps (initialSteps - 1)

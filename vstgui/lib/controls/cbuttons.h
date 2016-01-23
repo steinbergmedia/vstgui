@@ -101,7 +101,7 @@ public:
 	/// @name CCheckBox Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual void setTitle (UTF8StringPtr newTitle);
+	virtual void setTitle (const UTF8String& newTitle);
 	const UTF8String& getTitle () const { return title; }
 	
 	virtual void setFont (CFontRef newFont);
@@ -203,7 +203,7 @@ public:
 	/// @name CTextButton Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual void setTitle (UTF8StringPtr newTitle);
+	virtual void setTitle (const UTF8String& newTitle);
 	const UTF8String& getTitle () const { return title; }
 
 	virtual void setFont (CFontRef newFont);

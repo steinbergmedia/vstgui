@@ -2196,7 +2196,7 @@ void UIDescription::setFocusDrawingSettings (const FocusDrawing& fd)
 		return;
 	attributes->setBooleanAttribute ("enabled", fd.enabled);
 	attributes->setDoubleAttribute ("width", fd.width);
-	attributes->setAttribute ("color", fd.colorName);
+	attributes->setAttribute ("color", fd.colorName.getString ());
 }
 
 //-----------------------------------------------------------------------------

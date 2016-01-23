@@ -70,6 +70,8 @@ public:
 
 	bool operator== (UTF8StringPtr str) const { return string == str; }
 	bool operator!= (UTF8StringPtr str) const { return string != str; }
+	bool operator== (const UTF8String& str) const { return string == str.getString (); }
+	bool operator!= (const UTF8String& str) const { return string != str.getString (); }
 	bool operator== (const std::string& str) const { return string == str; }
 	bool operator!= (const std::string& str) const { return string != str; }
 
@@ -77,15 +79,20 @@ public:
 	void operator= (UTF8StringPtr str) { set (str); }
 	void clear ();
 
-	const UTF8StringPtr get () const { return string.c_str (); }
+	const UTF8StringPtr get () const { return string.data (); }
+	const UTF8StringPtr data () const { return string.data (); }
 	operator const UTF8StringPtr () const { return get (); }
 	const std::string& getString () const { return string; }
 	IPlatformString* getPlatformString () const;
 //-----------------------------------------------------------------------------
 private:
+	explicit operator bool () const { return false; }
 	std::string string;
 	mutable SharedPointer<IPlatformString> platformString;
 };
+
+inline bool operator== (const std::string& lhs, const UTF8String& rhs) { return lhs == rhs.getString (); }
+inline bool operator!= (const std::string& lhs, const UTF8String& rhs) { return lhs != rhs.getString (); }
 
 //-----------------------------------------------------------------------------
 template<typename T>

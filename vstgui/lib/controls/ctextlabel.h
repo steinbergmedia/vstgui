@@ -55,7 +55,7 @@ public:
 	/// @name CTextLabel Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual void setText (UTF8StringPtr txt);			///< set text
+	virtual void setText (const UTF8String& txt);			///< set text
 	virtual const UTF8String& getText () const;				///< read only access to text
 
 	enum TextTruncateMode {
@@ -66,7 +66,7 @@ public:
 	
 	virtual void setTextTruncateMode (TextTruncateMode mode);					///< set text truncate mode
 	TextTruncateMode getTextTruncateMode () const { return textTruncateMode; }	///< get text truncate mode
-	UTF8StringPtr getTruncatedText () const { return truncatedText; }			///< get the truncated text
+	const UTF8String& getTruncatedText () const { return truncatedText; }		///< get the truncated text
 	//@}
 
 	static IdStringPtr kMsgTruncatedTextChanged;								///< message which is send to dependent objects when the truncated text changes

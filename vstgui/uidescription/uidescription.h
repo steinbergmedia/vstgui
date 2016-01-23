@@ -37,6 +37,7 @@
 
 #include "../lib/idependency.h"
 #include "../lib/cbitmap.h"
+#include "../lib/cstring.h"
 #include "iuidescription.h"
 #include "icontroller.h"
 #include "xmlparser.h"
@@ -165,7 +166,7 @@ public:
 	{
 		bool enabled {false};
 		CCoord width {1};
-		std::string colorName;
+		UTF8String colorName;
 	};
 	FocusDrawing getFocusDrawingSettings () const;
 	void setFocusDrawingSettings (const FocusDrawing& fd);

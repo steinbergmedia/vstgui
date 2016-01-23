@@ -501,7 +501,7 @@ CCommandMenuItem* UIEditMenuController::findKeyCommandItem (COptionMenu* menu, c
 			{
 				if (key.virt && key.virt == result->getVirtualKeyCode ())
 					return result;
-				else if (result->getKeycode () && result->getKeycode ()[0] == key.character)
+				else if (!result->getKeycode ().empty () && result->getKeycode ().getString ()[0] == key.character)
 					return result;
 			}
 		}

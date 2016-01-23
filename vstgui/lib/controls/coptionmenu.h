@@ -36,6 +36,7 @@
 #define __coptionmenu__
 
 #include "cparamdisplay.h"
+#include "../cstring.h"
 #include <vector>
 #include <functional>
 
@@ -65,9 +66,9 @@ public:
 	/// @name CMenuItem Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual void setTitle (UTF8StringPtr title);							///< set title of menu item
+	virtual void setTitle (const UTF8String& title);							///< set title of menu item
 	virtual void setSubmenu (COptionMenu* submenu);							///< set submenu of menu item
-	virtual void setKey (UTF8StringPtr keyCode, int32_t keyModifiers = 0);	///< set keycode and key modifiers of menu item
+	virtual void setKey (const UTF8String& keyCode, int32_t keyModifiers = 0);	///< set keycode and key modifiers of menu item
 	virtual void setVirtualKey (int32_t virtualKeyCode, int32_t keyModifiers = 0);///< set virtual keycode and key modifiers of menu item
 	virtual void setEnabled (bool state = true);							///< set menu item enabled state
 	virtual void setChecked (bool state = true);							///< set menu item checked state
@@ -81,9 +82,9 @@ public:
 	bool isTitle () const { return (flags & kTitle) != 0; }					///< returns whether the item is a title item or not
 	bool isSeparator () const { return (flags & kSeparator) != 0; }			///< returns whether the item is a separator or not
 
-	UTF8StringPtr getTitle () const { return title; }						///< returns the title of the item
+	const UTF8String& getTitle () const { return title; }					///< returns the title of the item
 	int32_t getKeyModifiers () const { return keyModifiers; }				///< returns the key modifiers of the item
-	UTF8StringPtr getKeycode () const { return keyCode; }					///< returns the keycode of the item
+	const UTF8String& getKeycode () const { return keyCode; }				///< returns the keycode of the item
 	int32_t getVirtualKeyCode () const { return virtualKeyCode; }			///< returns the virtual keycode of the item
 	COptionMenu* getSubmenu () const { return submenu; }					///< returns the submenu of the item
 	CBitmap* getIcon () const { return icon; }								///< returns the icon of the item
@@ -94,8 +95,8 @@ public:
 protected:
 	~CMenuItem ();
 
-	UTF8StringBuffer title;
-	UTF8StringBuffer keyCode;
+	UTF8String title;
+	UTF8String keyCode;
 	COptionMenu* submenu;
 	CBitmap* icon;
 	int32_t flags;

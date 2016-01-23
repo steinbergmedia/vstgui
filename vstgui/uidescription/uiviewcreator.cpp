@@ -1307,7 +1307,7 @@ public:
 		
 		if (attributeName == kAttrTitle)
 		{
-			stringValue = checkbox->getTitle ();
+			stringValue = checkbox->getTitle ().getString ();
 			return true;
 		}
 		else if (attributeName == kAttrFont)
@@ -1716,8 +1716,7 @@ public:
 			return false;
 		if (attributeName == kAttrTitle)
 		{
-			UTF8StringPtr title = label->getText ();
-			stringValue = title ? title : "";
+			stringValue = label->getText ().getString ();
 			return true;
 		}
 		else if (attributeName == kAttrTruncateMode)
@@ -1802,7 +1801,7 @@ public:
 		}
 		if (attributeName == kAttrPlaceholderTitle)
 		{
-			stringValue = label->getPlaceholderString ();
+			stringValue = label->getPlaceholderString ().getString ();
 			return true;
 		}
 		
@@ -2010,8 +2009,7 @@ public:
 			return false;
 		if (attributeName == kAttrTitle)
 		{
-			UTF8StringPtr title = button->getTitle ();
-			stringValue = title ? title : "";
+			stringValue = button->getTitle ().getString ();
 			return true;
 		}
 		else if (attributeName == kAttrFont)
@@ -2312,7 +2310,7 @@ public:
 			const CSegmentButton::Segments& segments = button->getSegments ();
 			UIAttributes::StringArray stringArray;
 			for (const auto& segment : segments)
-				stringArray.push_back (std::string (segment.name));
+				stringArray.push_back (std::string (segment.name.getString ()));
 			stringValue = UIAttributes::createStringArrayValue (stringArray);
 			return true;
 		}

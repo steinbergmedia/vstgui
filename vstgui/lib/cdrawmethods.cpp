@@ -55,7 +55,7 @@ UTF8String createTruncatedText (TextTruncateMode mode, const UTF8String& text, C
 		UTF8String utf8Str;
 		if (mode == kTextTruncateTail)
 		{
-			_truncatedText = text;
+			_truncatedText = text.getString ();
 			_truncatedText += "..";
 			while (width > maxWidth && _truncatedText.size () > 2)
 			{
@@ -77,7 +77,7 @@ UTF8String createTruncatedText (TextTruncateMode mode, const UTF8String& text, C
 		else if (mode == kTextTruncateHead)
 		{
 			_truncatedText = "..";
-			_truncatedText += text;
+			_truncatedText += text.getString ();
 			while (width > maxWidth && _truncatedText.size () > 2)
 			{
 				UTF8CharacterIterator it (_truncatedText);

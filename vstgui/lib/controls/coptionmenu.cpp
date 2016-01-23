@@ -58,9 +58,7 @@ Defines an item of a VSTGUI::COptionMenu
  */
 //------------------------------------------------------------------------
 CMenuItem::CMenuItem (UTF8StringPtr inTitle, UTF8StringPtr inKeycode, int32_t inKeyModifiers, CBitmap* inIcon, int32_t inFlags)
-: title (nullptr)
-, flags (inFlags)
-, keyCode (nullptr)
+: flags (inFlags)
 , keyModifiers (0)
 , virtualKeyCode (0)
 , submenu (nullptr)
@@ -81,9 +79,7 @@ CMenuItem::CMenuItem (UTF8StringPtr inTitle, UTF8StringPtr inKeycode, int32_t in
  */
 //------------------------------------------------------------------------
 CMenuItem::CMenuItem (UTF8StringPtr inTitle, COptionMenu* inSubmenu, CBitmap* inIcon)
-: title (nullptr)
-, flags (0)
-, keyCode (nullptr)
+: flags (0)
 , keyModifiers (0)
 , virtualKeyCode (0)
 , submenu (nullptr)
@@ -103,9 +99,7 @@ CMenuItem::CMenuItem (UTF8StringPtr inTitle, COptionMenu* inSubmenu, CBitmap* in
  */
 //------------------------------------------------------------------------
 CMenuItem::CMenuItem (UTF8StringPtr inTitle, int32_t inTag)
-: title (nullptr)
-, flags (0)
-, keyCode (nullptr)
+: flags (0)
 , keyModifiers (0)
 , virtualKeyCode (0)
 , submenu (nullptr)
@@ -123,9 +117,7 @@ CMenuItem::CMenuItem (UTF8StringPtr inTitle, int32_t inTag)
  */
 //------------------------------------------------------------------------
 CMenuItem::CMenuItem (const CMenuItem& item)
-: title (nullptr)
-, flags (item.flags)
-, keyCode (nullptr)
+: flags (item.flags)
 , keyModifiers (0)
 , virtualKeyCode (0)
 , submenu (nullptr)
@@ -151,17 +143,15 @@ CMenuItem::~CMenuItem ()
 }
 
 //------------------------------------------------------------------------
-void CMenuItem::setTitle (UTF8StringPtr inTitle)
+void CMenuItem::setTitle (const UTF8String& inTitle)
 {
-	String::free (title);
-	title = String::newWithString (inTitle);
+	title = inTitle;
 }
 
 //------------------------------------------------------------------------
-void CMenuItem::setKey (UTF8StringPtr inKeycode, int32_t inKeyModifiers)
+void CMenuItem::setKey (const UTF8String& inKeycode, int32_t inKeyModifiers)
 {
-	String::free (keyCode);
-	keyCode = String::newWithString (inKeycode);
+	keyCode = inKeycode;
 	keyModifiers = inKeyModifiers;
 	virtualKeyCode = 0;
 }

@@ -353,7 +353,6 @@ If the bitmap is set, the bitmap must contain 6 states of the checkbox in the fo
 //------------------------------------------------------------------------
 CCheckBox::CCheckBox (const CRect& size, IControlListener* listener, int32_t tag, UTF8StringPtr title, CBitmap* bitmap, int32_t style)
 : CControl (size, listener, tag, bitmap)
-, title (nullptr)
 , style (style)
 , font (nullptr)
 , fontColor (kWhiteCColor)
@@ -373,7 +372,6 @@ CCheckBox::CCheckBox (const CRect& size, IControlListener* listener, int32_t tag
 //------------------------------------------------------------------------
 CCheckBox::CCheckBox (const CCheckBox& checkbox)
 : CControl (checkbox)
-, title (nullptr)
 , style (checkbox.style)
 , font (nullptr)
 , fontColor (checkbox.fontColor)
@@ -395,7 +393,7 @@ CCheckBox::~CCheckBox ()
 }
 
 //------------------------------------------------------------------------
-void CCheckBox::setTitle (UTF8StringPtr newTitle)
+void CCheckBox::setTitle (const UTF8String& newTitle)
 {
 	title = newTitle;
 	if (style & kAutoSizeToFit)
@@ -748,7 +746,7 @@ CBitmap* CTextButton::getIconHighlighted () const
 }
 
 //------------------------------------------------------------------------
-void CTextButton::setTitle (UTF8StringPtr newTitle)
+void CTextButton::setTitle (const UTF8String& newTitle)
 {
 	title = newTitle;
 	invalid ();

@@ -126,7 +126,7 @@ void CTextEdit::setValue (float val)
 }
 
 //------------------------------------------------------------------------
-void CTextEdit::setText (UTF8StringPtr txt)
+void CTextEdit::setText (const UTF8String& txt)
 {
 	if (stringToValueFunction)
 	{
@@ -151,7 +151,7 @@ void CTextEdit::setText (UTF8StringPtr txt)
 }
 
 //------------------------------------------------------------------------
-void CTextEdit::setPlaceholderString (UTF8StringPtr str)
+void CTextEdit::setPlaceholderString (const UTF8String& str)
 {
 	placeholderString = str;
 }
@@ -348,7 +348,7 @@ void CTextEdit::updateText (IPlatformTextEdit* pte)
 	{
 		beginEdit ();
 
-		setText (newText);
+		setText (UTF8String (newText));
 
 		valueChanged ();
 

@@ -106,11 +106,11 @@ public:
 		return false;
 	}
 
-	virtual void setFilter (UTF8StringPtr filter)
+	virtual void setFilter (const UTF8String& filter)
 	{
 		if (filterString != filter)
 		{
-			filterString = filter ? filter : "";
+			filterString = filter;
 			int32_t selectedRow = dataBrowser ? dataBrowser->getSelectedRow () : CDataBrowser::kNoSelection;
 			std::string selectedName;
 			if (selectedRow != CDataBrowser::kNoSelection)
@@ -152,7 +152,7 @@ protected:
 		std::list<const std::string*> tmpNames;
 		getNames (tmpNames);
 
-		std::string filter = filterString;
+		std::string filter = filterString.getString ();
 		std::transform (filter.begin (), filter.end (), filter.begin (), ::tolower);
 
 		for (auto it = tmpNames.begin (); it != tmpNames.end (); it++)
@@ -200,7 +200,7 @@ protected:
 			UIAttributes* attributes = description->getCustomAttributes (name, true);
 			if (attributes)
 			{
-				attributes->setAttribute ("FilterString", filterString);
+				attributes->setAttribute ("FilterString", filterString.getString ());
 				if (dataBrowser)
 				{
 					int32_t selectedRow = dataBrowser->getSelectedRow ();
@@ -237,7 +237,7 @@ protected:
 		update ();
 		loadDefaults ();
 		if (searchField)
-			searchField->setText (filterString.c_str ());
+			searchField->setText (filterString);
 	}
 
 	void dbRemoved (CDataBrowser* browser) override
@@ -310,7 +310,7 @@ protected:
 	IdStringPtr descriptionMessage;
 
 	StringVector names;
-	std::string filterString;
+	UTF8String filterString;
 };
 
 } // namespace

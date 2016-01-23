@@ -68,12 +68,12 @@ public:
 	virtual void setImmediateTextChange (bool state);	///< enable/disable immediate text change behaviour.
 	bool getImmediateTextChange () const { return immediateTextChange; }	///< get immediate text change behaviour
 
-	virtual void setPlaceholderString (UTF8StringPtr str);
-	UTF8StringPtr getPlaceholderString () const { return placeholderString; }
+	virtual void setPlaceholderString (const UTF8String& str);
+	const UTF8String& getPlaceholderString () const { return placeholderString; }
 	//@}
 
 	// overrides
-	virtual void setText (UTF8StringPtr txt) override;
+	virtual void setText (const UTF8String& txt) override;
 	virtual void setValue (float val) override;
 	virtual void setTextRotation (double angle) override { return; } ///< not supported
 
@@ -103,7 +103,7 @@ protected:
 	CColor platformGetFontColor () const override { return getFontColor (); }
 	CFontRef platformGetFont () const override;
 	CHoriTxtAlign platformGetHoriTxtAlign () const override { return getHoriAlign (); }
-	UTF8StringPtr platformGetText () const override { return text; }
+	UTF8StringPtr platformGetText () const override { return text.data (); }
 	CRect platformGetSize () const override;
 	CRect platformGetVisibleSize () const override;
 	CPoint platformGetTextInset () const override { return getTextInset (); }

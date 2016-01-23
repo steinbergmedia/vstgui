@@ -72,9 +72,9 @@ CTextLabel::CTextLabel (const CTextLabel& v)
 }
 
 //------------------------------------------------------------------------
-void CTextLabel::setText (UTF8StringPtr txt)
+void CTextLabel::setText (const UTF8String& txt)
 {
-	if (txt && UTF8StringView (txt) == text)
+	if (text == txt)
 		return;
 	text = txt;
 	if (textTruncateMode != kTruncateNone)
