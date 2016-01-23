@@ -180,8 +180,8 @@ private:
 	void doPaste ();
 	void showTemplateSettings ();
 	void showFocusSettings ();
-	bool doSelectionMove (const std::string& commandName, bool useGrid) const;
-	bool doSelectionSize (const std::string& commandName, bool useGrid) const;
+	bool doSelectionMove (const UTF8String& commandName, bool useGrid) const;
+	bool doSelectionSize (const UTF8String& commandName, bool useGrid) const;
 	bool doZOrderAction (bool lower);
 	void doSelectAllChildren ();
 	

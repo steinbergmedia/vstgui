@@ -433,7 +433,7 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 		{
 			const IViewFactory* viewFactory = description->getViewFactory ();
 			UIAttributes viewAttr;
-			viewAttr.setAttribute (UIViewCreator::kAttrClass, item->getCommandName ());
+			viewAttr.setAttribute (UIViewCreator::kAttrClass, item->getCommandName ().getString ());
 			CViewContainer* newContainer = dynamic_cast<CViewContainer*> (viewFactory->createView (viewAttr, description));
 			if (newContainer)
 			{

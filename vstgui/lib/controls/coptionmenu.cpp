@@ -236,11 +236,9 @@ IdStringPtr CCommandMenuItem::kMsgMenuItemValidate = "kMsgMenuItemValidate";
 IdStringPtr CCommandMenuItem::kMsgMenuItemSelected = "kMsgMenuItemSelected";
 
 //------------------------------------------------------------------------
-CCommandMenuItem::CCommandMenuItem (const UTF8String& title, const UTF8String& keycode, int32_t keyModifiers, CBitmap* icon, int32_t flags, CBaseObject* _target, IdStringPtr _commandCategory, IdStringPtr _commandName)
+CCommandMenuItem::CCommandMenuItem (const UTF8String& title, const UTF8String& keycode, int32_t keyModifiers, CBitmap* icon, int32_t flags, CBaseObject* _target, const UTF8String& _commandCategory, const UTF8String& _commandName)
 : CMenuItem (title, keycode, keyModifiers, icon, flags)
 , target (nullptr)
-, commandCategory (nullptr)
-, commandName (nullptr)
 {
 	setTarget (_target);
 	setCommandCategory (_commandCategory);
@@ -248,11 +246,9 @@ CCommandMenuItem::CCommandMenuItem (const UTF8String& title, const UTF8String& k
 }
 
 //------------------------------------------------------------------------
-CCommandMenuItem::CCommandMenuItem (const UTF8String& title, COptionMenu* submenu, CBitmap* icon, CBaseObject* _target, IdStringPtr _commandCategory, IdStringPtr _commandName)
+CCommandMenuItem::CCommandMenuItem (const UTF8String& title, COptionMenu* submenu, CBitmap* icon, CBaseObject* _target, const UTF8String& _commandCategory, const UTF8String& _commandName)
 : CMenuItem (title, submenu, icon)
 , target (nullptr)
-, commandCategory (nullptr)
-, commandName (nullptr)
 {
 	setTarget (_target);
 	setCommandCategory (_commandCategory);
@@ -260,11 +256,9 @@ CCommandMenuItem::CCommandMenuItem (const UTF8String& title, COptionMenu* submen
 }
 
 //------------------------------------------------------------------------
-CCommandMenuItem::CCommandMenuItem (const UTF8String& title, int32_t tag, CBaseObject* _target, IdStringPtr _commandCategory, IdStringPtr _commandName)
+CCommandMenuItem::CCommandMenuItem (const UTF8String& title, int32_t tag, CBaseObject* _target, const UTF8String& _commandCategory, const UTF8String& _commandName)
 : CMenuItem (title, tag)
 , target (nullptr)
-, commandCategory (nullptr)
-, commandName (nullptr)
 {
 	setTarget (_target);
 	setCommandCategory (_commandCategory);
@@ -272,11 +266,9 @@ CCommandMenuItem::CCommandMenuItem (const UTF8String& title, int32_t tag, CBaseO
 }
 
 //------------------------------------------------------------------------
-CCommandMenuItem::CCommandMenuItem (const UTF8String& title, CBaseObject* _target, IdStringPtr _commandCategory, IdStringPtr _commandName)
+CCommandMenuItem::CCommandMenuItem (const UTF8String& title, CBaseObject* _target, const UTF8String& _commandCategory, const UTF8String& _commandName)
 : CMenuItem (title, -1)
 , target (nullptr)
-, commandCategory (nullptr)
-, commandName (nullptr)
 {
 	setTarget (_target);
 	setCommandCategory (_commandCategory);
@@ -287,14 +279,12 @@ CCommandMenuItem::CCommandMenuItem (const UTF8String& title, CBaseObject* _targe
 CCommandMenuItem::CCommandMenuItem (const CCommandMenuItem& item)
 : CMenuItem (item)
 , target (nullptr)
-, commandCategory (nullptr)
-, commandName (nullptr)
+, commandCategory (item.commandCategory)
+, commandName (item.commandName)
 , selectedFunc (item.selectedFunc)
 , validateFunc (item.validateFunc)
 {
 	setTarget (item.target);
-	setCommandCategory (item.commandCategory);
-	setCommandName (item.commandName);
 }
 
 //------------------------------------------------------------------------
@@ -306,29 +296,27 @@ CCommandMenuItem::~CCommandMenuItem ()
 }
 
 //------------------------------------------------------------------------
-void CCommandMenuItem::setCommandCategory (IdStringPtr category)
+void CCommandMenuItem::setCommandCategory (const UTF8String& category)
 {
-	String::free (commandCategory);
-	commandCategory = String::newWithString (category);
+	commandCategory = category;
 }
 
 //------------------------------------------------------------------------
-bool CCommandMenuItem::isCommandCategory (IdStringPtr category) const
+bool CCommandMenuItem::isCommandCategory (const UTF8String& category) const
 {
-	return UTF8StringView (commandCategory) == category;
+	return commandCategory == category;
 }
 
 //------------------------------------------------------------------------
-void CCommandMenuItem::setCommandName (IdStringPtr name)
+void CCommandMenuItem::setCommandName (const UTF8String& name)
 {
-	String::free (commandName);
-	commandName = String::newWithString (name);
+	commandName = name;
 }
 
 //------------------------------------------------------------------------
-bool CCommandMenuItem::isCommandName (IdStringPtr name) const
+bool CCommandMenuItem::isCommandName (const UTF8String& name) const
 {
-	return UTF8StringView (commandName) == name;
+	return commandName == name;
 }
 
 //------------------------------------------------------------------------

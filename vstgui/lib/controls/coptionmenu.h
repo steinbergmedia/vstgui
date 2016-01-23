@@ -113,10 +113,10 @@ protected:
 class CCommandMenuItem : public CMenuItem
 {
 public:
-	CCommandMenuItem (const UTF8String& title, const UTF8String& keycode = nullptr, int32_t keyModifiers = 0, CBitmap* icon = nullptr, int32_t flags = kNoFlags, CBaseObject* target = nullptr, IdStringPtr commandCategory = nullptr, IdStringPtr commandName = nullptr);
-	CCommandMenuItem (const UTF8String& title, COptionMenu* submenu, CBitmap* icon = nullptr, CBaseObject* target = nullptr, IdStringPtr commandCategory = nullptr, IdStringPtr commandName = nullptr);
-	CCommandMenuItem (const UTF8String& title, int32_t tag, CBaseObject* target = nullptr, IdStringPtr commandCategory = nullptr, IdStringPtr commandName = nullptr);
-	CCommandMenuItem (const UTF8String& title, CBaseObject* target = nullptr, IdStringPtr commandCategory = nullptr, IdStringPtr commandName = nullptr);
+	CCommandMenuItem (const UTF8String& title, const UTF8String& keycode = nullptr, int32_t keyModifiers = 0, CBitmap* icon = nullptr, int32_t flags = kNoFlags, CBaseObject* target = nullptr, const UTF8String& commandCategory = nullptr, const UTF8String& commandName = nullptr);
+	CCommandMenuItem (const UTF8String& title, COptionMenu* submenu, CBitmap* icon = nullptr, CBaseObject* target = nullptr, const UTF8String& commandCategory = nullptr, const UTF8String& commandName = nullptr);
+	CCommandMenuItem (const UTF8String& title, int32_t tag, CBaseObject* target = nullptr, const UTF8String& commandCategory = nullptr, const UTF8String& commandName = nullptr);
+	CCommandMenuItem (const UTF8String& title, CBaseObject* target = nullptr, const UTF8String& commandCategory = nullptr, const UTF8String& commandName = nullptr);
 	CCommandMenuItem (const CCommandMenuItem& item);
 	~CCommandMenuItem ();
 
@@ -124,13 +124,13 @@ public:
 	/// @name CCommandMenuItem Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	void setCommandCategory (IdStringPtr category);
-	IdStringPtr getCommandCategory () const { return commandCategory; }
-	bool isCommandCategory (IdStringPtr category) const;
+	void setCommandCategory (const UTF8String& category);
+	const UTF8String& getCommandCategory () const { return commandCategory; }
+	bool isCommandCategory (const UTF8String& category) const;
 	
-	void setCommandName (IdStringPtr name);
-	IdStringPtr getCommandName () const { return commandName; }
-	bool isCommandName (IdStringPtr name) const;
+	void setCommandName (const UTF8String& name);
+	const UTF8String& getCommandName () const { return commandName; }
+	bool isCommandName (const UTF8String& name) const;
 
 	void setTarget (CBaseObject* target);
 	CBaseObject* getTarget () const { return target; }
@@ -150,8 +150,8 @@ protected:
 	ValidateCallbackFunction validateFunc;
 	SelectedCallbackFunction selectedFunc;
 	CBaseObject* target;
-	char* commandCategory;
-	char* commandName;
+	UTF8String commandCategory;
+	UTF8String commandName;
 };
 
 typedef std::vector<SharedPointer<CMenuItem> > CMenuItemList;

@@ -1069,7 +1069,7 @@ CMessageResult UIEditController::validateMenuItem (CCommandMenuItem* item)
 }
 
 //----------------------------------------------------------------------------------------------------
-bool UIEditController::doSelectionMove (const std::string& commandName, bool useGrid) const
+bool UIEditController::doSelectionMove (const UTF8String& commandName, bool useGrid) const
 {
 	CPoint diff;
 	if (commandName == "Move Up")
@@ -1089,7 +1089,7 @@ bool UIEditController::doSelectionMove (const std::string& commandName, bool use
 }
 
 //----------------------------------------------------------------------------------------------------
-bool UIEditController::doSelectionSize (const std::string& commandName, bool useGrid) const
+bool UIEditController::doSelectionSize (const UTF8String& commandName, bool useGrid) const
 {
 	CPoint diff;
 	if (commandName == "Increase Size Width")
