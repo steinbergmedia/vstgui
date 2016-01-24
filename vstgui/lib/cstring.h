@@ -62,30 +62,31 @@ public:
 	UTF8String& operator= (const std::string& other);
 	UTF8String& operator= (UTF8String&& other);
 	UTF8String& operator= (std::string&& str);
+	UTF8String& operator= (UTF8StringPtr str) { assign (str); return *this; }
 
 	size_t getByteCount () const { return string.length (); }
 	bool empty () const { return string.empty (); }
 
 	void copy (UTF8StringBuffer dst, size_t dstSize) const;
 
-	bool operator== (UTF8StringPtr str) const { return str ? string == str : false; }
-	bool operator!= (UTF8StringPtr str) const { return str ? string != str : true; }
-	bool operator== (const UTF8String& str) const { return string == str.getString (); }
-	bool operator!= (const UTF8String& str) const { return string != str.getString (); }
-	bool operator== (const std::string& str) const { return string == str; }
-	bool operator!= (const std::string& str) const { return string != str; }
+	bool operator== (UTF8StringPtr str) const;
+	bool operator!= (UTF8StringPtr str) const;
+	bool operator== (const UTF8String& str) const;
+	bool operator!= (const UTF8String& str) const;
+	bool operator== (const std::string& str) const;
+	bool operator!= (const std::string& str) const;
 
 	void assign (UTF8StringPtr str);
-	void operator= (UTF8StringPtr str) { assign (str); }
 	void clear ();
 
 	const UTF8StringPtr data () const { return string.data (); }
 	operator const UTF8StringPtr () const { return data (); }
 	const std::string& getString () const { return string; }
 	IPlatformString* getPlatformString () const;
+
+	explicit operator bool () const = delete;
 //-----------------------------------------------------------------------------
 private:
-	explicit operator bool () const { return false; }
 	std::string string;
 	mutable SharedPointer<IPlatformString> platformString;
 };

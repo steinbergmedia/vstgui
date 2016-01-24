@@ -95,6 +95,13 @@ UTF8String& UTF8String::operator=(const std::string& other)
 	return *this;
 }
 
+bool UTF8String::operator== (UTF8StringPtr str) const { return str ? string == str : false; }
+bool UTF8String::operator!= (UTF8StringPtr str) const { return str ? string != str : true; }
+bool UTF8String::operator== (const UTF8String& str) const { return string == str.getString (); }
+bool UTF8String::operator!= (const UTF8String& str) const { return string != str.getString (); }
+bool UTF8String::operator== (const std::string& str) const { return string == str; }
+bool UTF8String::operator!= (const std::string& str) const { return string != str; }
+
 //-----------------------------------------------------------------------------
 void UTF8String::assign (UTF8StringPtr str)
 {
