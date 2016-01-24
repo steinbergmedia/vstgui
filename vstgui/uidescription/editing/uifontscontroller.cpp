@@ -159,7 +159,7 @@ CView* UIFontsController::verifyView (CView* view, const UIAttributes& attribute
 					fontFamilyNames.sort ();
 					for (auto& name : fontFamilyNames)
 					{
-						fontMenu->addEntry (name.c_str ());
+						fontMenu->addEntry (name.data ());
 					}
 				}
 				fontMenu->setStyle (fontMenu->getStyle () | kNoTextStyle);
@@ -261,13 +261,13 @@ void UIFontsController::valueChanged (CControl* pControl)
 				if (strikethroughControl && strikethroughControl->getValue () > 0)
 					style |= kStrikethroughFace;
 				auto font = makeOwned<CFontDesc> (menuItem->getTitle (), sizeTextEdit->getValue (), style);
-				actionPerformer->performFontChange (selectedFont.c_str (), font);
+				actionPerformer->performFontChange (selectedFont.data (), font);
 			}
 			break;
 		}
 		case kFontAltTag:
 		{
-			actionPerformer->performAlternativeFontChange (selectedFont.c_str (), altTextEdit->getText ());
+			actionPerformer->performAlternativeFontChange (selectedFont.data (), altTextEdit->getText ());
 			break;
 		}
 	}
@@ -276,8 +276,8 @@ void UIFontsController::valueChanged (CControl* pControl)
 //----------------------------------------------------------------------------------------------------
 void UIFontsController::dbSelectionChanged (int32_t selectedRow, GenericStringListDataBrowserSource* source)
 {
-	selectedFont = selectedRow != CDataBrowser::kNoSelection ? dataSource->getStringList ()->at (static_cast<uint32_t> (selectedRow)).c_str () : "";
-	CFontRef font = editDescription->getFont (selectedFont.c_str ());
+	selectedFont = selectedRow != CDataBrowser::kNoSelection ? dataSource->getStringList ()->at (static_cast<uint32_t> (selectedRow)).data () : "";
+	CFontRef font = editDescription->getFont (selectedFont.data ());
 	if (font)
 	{
 		if (fontMenu && !font->getName ().empty ())
@@ -302,7 +302,7 @@ void UIFontsController::dbSelectionChanged (int32_t selectedRow, GenericStringLi
 			sizeTextEdit->setMouseEnabled (true);
 			std::stringstream str;
 			str << font->getSize ();
-			sizeTextEdit->setText (str.str ().c_str ());
+			sizeTextEdit->setText (str.str ().data ());
 		}
 		if (boldControl)
 		{
@@ -331,8 +331,8 @@ void UIFontsController::dbSelectionChanged (int32_t selectedRow, GenericStringLi
 		if (altTextEdit)
 		{
 			std::string alternativeFonts;
-			editDescription->getAlternativeFontNames (selectedFont.c_str (), alternativeFonts);
-			altTextEdit->setText (alternativeFonts.c_str ());
+			editDescription->getAlternativeFontNames (selectedFont.data (), alternativeFonts);
+			altTextEdit->setText (alternativeFonts.data ());
 			altTextEdit->setMouseEnabled (true);
 		}
 	}
@@ -374,7 +374,7 @@ bool UIFontsController::valueToString (float value, char utf8String[256], CParam
 	int32_t intValue = (int32_t)value;
 	std::stringstream str;
 	str << intValue;
-	std::strcpy (utf8String, str.str ().c_str ());
+	std::strcpy (utf8String, str.str ().data ());
 	return true;
 }
 

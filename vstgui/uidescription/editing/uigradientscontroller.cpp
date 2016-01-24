@@ -425,9 +425,9 @@ UIGradientEditorController::~UIGradientEditorController ()
 //----------------------------------------------------------------------------------------------------
 void UIGradientEditorController::apply ()
 {
-	CGradient* g = editDescription->getGradient (gradientName.c_str ());
+	CGradient* g = editDescription->getGradient (gradientName.data ());
 	if (g->getColorStops () != gradient->getColorStops ())
-		actionPerformer->performGradientChange (gradientName.c_str (), gradient);
+		actionPerformer->performGradientChange (gradientName.data (), gradient);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -534,7 +534,7 @@ CGradient* UIGradientsDataSource::getSelectedGradient ()
 {
 	int32_t selectedRow = dataBrowser ? dataBrowser->getSelectedRow() : CDataBrowser::kNoSelection;
 	if (selectedRow != CDataBrowser::kNoSelection && selectedRow < (int32_t)names.size ())
-		return description->getGradient (names.at (static_cast<uint32_t> (selectedRow)).c_str ());
+		return description->getGradient (names.at (static_cast<uint32_t> (selectedRow)).data ());
 	return nullptr;
 }
 
@@ -543,7 +543,7 @@ std::string UIGradientsDataSource::getSelectedGradientName ()
 {
 	int32_t selectedRow = dataBrowser ? dataBrowser->getSelectedRow() : CDataBrowser::kNoSelection;
 	if (selectedRow != CDataBrowser::kNoSelection && selectedRow < (int32_t)names.size ())
-		return names[static_cast<uint32_t> (selectedRow)];
+		return names[static_cast<uint32_t> (selectedRow)].getString ();
 	return "";
 }
 
@@ -583,7 +583,7 @@ void UIGradientsDataSource::dbDrawCell (CDrawContext* context, const CRect& size
 {
 	GenericStringListDataBrowserSource::dbDrawCell (context, size, row, column, flags, browser);
 	CGradient* gradient = nullptr;
-	if ((gradient = description->getGradient (names.at (static_cast<uint32_t> (row)).c_str ())))
+	if ((gradient = description->getGradient (names.at (static_cast<uint32_t> (row)).data ())))
 	{
 		context->setFrameColor (kBlackCColor);
 		context->setLineWidth (1);

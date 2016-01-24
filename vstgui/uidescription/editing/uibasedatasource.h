@@ -51,7 +51,7 @@ namespace VSTGUI {
 class UIBaseDataSource : public GenericStringListDataBrowserSource, public IControlListener
 {
 public:
-	typedef std::vector<std::string> StringVector;
+	using StringVector = GenericStringListDataBrowserSource::StringVector;
 
 	UIBaseDataSource (UIDescription* description, IActionPerformer* actionPerformer, IdStringPtr descriptionMessage, IGenericStringListDataBrowserSourceSelectionChanged* delegate = nullptr)
 	: GenericStringListDataBrowserSource (0, delegate) , description (description), actionPerformer (actionPerformer), descriptionMessage (descriptionMessage)
@@ -78,8 +78,8 @@ public:
 			std::string newName (filterString.empty () ? "New" : filterString);
 			if (createUniqueName (newName))
 			{
-				addItem (newName.c_str ());
-				int32_t row = selectName (newName.c_str ());
+				addItem (newName.data ());
+				int32_t row = selectName (newName.data ());
 				if (row != -1)
 				{
 					dbOnMouseDown (CPoint (0, 0), CButtonState (kLButton|kDoubleClick), row, 0, dataBrowser);
@@ -97,7 +97,7 @@ public:
 			int32_t selectedRow = dataBrowser->getSelectedRow ();
 			if (selectedRow != CDataBrowser::kNoSelection)
 			{
-				removeItem (names.at (static_cast<uint32_t> (selectedRow)).c_str ());
+				removeItem (names.at (static_cast<uint32_t> (selectedRow)).data ());
 				dbSelectionChanged (dataBrowser);
 				dataBrowser->setSelectedRow (selectedRow);
 				return true;
@@ -117,7 +117,7 @@ public:
 				selectedName = names.at (static_cast<uint32_t> (selectedRow));
 			update ();
 			if (selectedRow != CDataBrowser::kNoSelection)
-				selectName (selectedName.c_str ());
+				selectName (selectedName.data ());
 		}
 	}
 
@@ -166,7 +166,7 @@ protected:
 			}
 			if ((*it)->find ("~ ") == 0)
 				continue; // don't show static items
-			names.push_back (*(*it));
+			names.push_back (UTF8String (*(*it)));
 		}
 		setStringList (&names);
 	}
@@ -181,7 +181,7 @@ protected:
 				selectedName = names.at (static_cast<uint32_t> (selectedRow));
 			update ();
 			if (selectedRow != CDataBrowser::kNoSelection)
-				selectName (selectedName.c_str ());
+				selectName (selectedName.data ());
 			return kMessageNotified;
 		}
 		else if (message == UIDescription::kMessageBeforeSave)
@@ -220,7 +220,7 @@ protected:
 			{
 				const std::string* str = attributes->getAttributeValue ("FilterString");
 				if (str)
-					setFilter (str->c_str ());
+					setFilter (str->data ());
 				if (dataBrowser)
 				{
 					int32_t selectedRow;
@@ -275,7 +275,7 @@ protected:
 	{
 		if (buttons.isLeftButton () && buttons.isDoubleClick ())
 		{
-			browser->beginTextEdit (CDataBrowser::Cell (row, column), names.at (static_cast<uint32_t> (row)).c_str ());
+			browser->beginTextEdit (CDataBrowser::Cell (row, column), names.at (static_cast<uint32_t> (row)).data ());
 		}
 		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 	}
@@ -284,10 +284,10 @@ protected:
 	{
 		if (row < (int32_t)names.size () && names.at (static_cast<uint32_t> (row)) != newText)
 		{
-			if (performNameChange (names.at (static_cast<uint32_t> (row)).c_str (), newText))
+			if (performNameChange (names.at (static_cast<uint32_t> (row)).data (), newText))
 			{
 				if (selectName (newText) == -1 && row < (int32_t)names.size ())
-					selectName (names.at (static_cast<uint32_t> (row)).c_str ());
+					selectName (names.at (static_cast<uint32_t> (row)).data ());
 			}
 		}
 		textEditControl = nullptr;

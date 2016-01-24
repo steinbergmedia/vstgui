@@ -1253,6 +1253,9 @@ void GenericStringListDataBrowserSource::dbDrawHeader (CDrawContext* context, co
 //-----------------------------------------------------------------------------
 void GenericStringListDataBrowserSource::dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser)
 {
+	vstgui_assert (row >= 0);
+	vstgui_assert (column >= 0);
+
 	context->setDrawMode (kAliasing|kNonIntegralMode);
 	context->setLineWidth (1.);
 	context->setFillColor ((row % 2) ? rowBackColor : rowAlternateBackColor);
@@ -1275,7 +1278,7 @@ void GenericStringListDataBrowserSource::dbDrawCell (CDrawContext* context, cons
 	stringSize.inset (textInset.x, textInset.y);
 	context->setFont (drawFont);
 	context->setFontColor (fontColor);
-	context->drawString ((*stringList)[static_cast<size_t> (row)].c_str (), stringSize, textAlignment);
+	context->drawString ((*stringList)[static_cast<size_t> (row)].getPlatformString (), stringSize, textAlignment);
 }
 
 //-----------------------------------------------------------------------------
@@ -1304,7 +1307,7 @@ int32_t GenericStringListDataBrowserSource::dbOnKeyDown (const VstKeyCode& _key,
 		int32_t row = 0;
 		while (it != stringList->end ())
 		{
-			std::string str ((*it), 0, keyDownFindString.length ());
+			std::string str ((*it).getString (), 0, keyDownFindString.length ());
 			std::transform (str.begin (), str.end (), str.begin (), ::toupper);
 			if (str == keyDownFindString)
 			{

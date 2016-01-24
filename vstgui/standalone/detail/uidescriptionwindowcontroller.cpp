@@ -102,7 +102,7 @@ UIDescCheckFilePathResult checkAndUpdateUIDescFilePath (
 	SharedPointer<CFrame> frame (_frame);
 	if (!frame)
 		frame = makeOwned<CFrame> (CRect (), nullptr);
-	
+
 	AlertBoxConfig alertConfig;
 	alertConfig.headline = notFoundText;
 	alertConfig.description = uiDesc.getFilePath ();
@@ -320,8 +320,8 @@ public:
 			paramDisplay->setValueToStringFunction (
 			    [this] (float value, char utf8String[256], CParamDisplay* display) {
 				    auto string = this->value->getStringConverter ().valueAsString (value);
-				    auto numBytes = std::min<size_t> (string.getByteCount () + 1, 255);
-					string.copy (utf8String, numBytes);
+				    auto numBytes = std::min<size_t> (string.length () + 1, 255);
+				    string.copy (utf8String, numBytes);
 				    return true;
 				});
 			if (auto textEdit = dynamic_cast<CTextEdit*> (paramDisplay))
@@ -409,8 +409,7 @@ struct WindowController::Impl : public IController, public ICommandHandler
 	bool initStatic (WindowPtr& inWindow, UTF8String xml, const char* templateName)
 	{
 		window = inWindow.get ();
-		Xml::MemoryContentProvider xmlContentProvider (xml,
-		                                               static_cast<uint32_t> (xml.getByteCount ()));
+		Xml::MemoryContentProvider xmlContentProvider (xml, static_cast<uint32_t> (xml.length ()));
 		uiDesc = makeOwned<UIDescription> (&xmlContentProvider);
 		if (!uiDesc->parse ())
 			return false;

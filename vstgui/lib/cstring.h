@@ -52,47 +52,56 @@ namespace VSTGUI {
 class UTF8String
 {
 public:
+	using StringType = std::string;
+	using SizeType = StringType::size_type;
+	
 	UTF8String (UTF8StringPtr str = nullptr);
 	UTF8String (const UTF8String& other);
-	explicit UTF8String (const std::string& str);
+	explicit UTF8String (const StringType& str);
 	UTF8String (UTF8String&& other);
-	UTF8String (std::string&& str);
+	UTF8String (StringType&& str);
 
 	UTF8String& operator= (const UTF8String& other) = default;
-	UTF8String& operator= (const std::string& other);
+	UTF8String& operator= (const StringType& other);
 	UTF8String& operator= (UTF8String&& other);
-	UTF8String& operator= (std::string&& str);
+	UTF8String& operator= (StringType&& str);
 	UTF8String& operator= (UTF8StringPtr str) { assign (str); return *this; }
 
-	size_t getByteCount () const { return string.length (); }
+	SizeType length () const { return string.length (); }
 	bool empty () const { return string.empty (); }
 
-	void copy (UTF8StringBuffer dst, size_t dstSize) const;
+	void copy (UTF8StringBuffer dst, SizeType dstSize) const;
+
 
 	bool operator== (UTF8StringPtr str) const;
 	bool operator!= (UTF8StringPtr str) const;
 	bool operator== (const UTF8String& str) const;
 	bool operator!= (const UTF8String& str) const;
-	bool operator== (const std::string& str) const;
-	bool operator!= (const std::string& str) const;
+	bool operator== (const StringType& str) const;
+	bool operator!= (const StringType& str) const;
+
+	UTF8String& operator+= (const UTF8String& other);
+	UTF8String operator+ (const UTF8String& other);
 
 	void assign (UTF8StringPtr str);
 	void clear ();
 
 	const UTF8StringPtr data () const { return string.data (); }
 	operator const UTF8StringPtr () const { return data (); }
-	const std::string& getString () const { return string; }
+	const StringType& getString () const { return string; }
 	IPlatformString* getPlatformString () const;
 
 	explicit operator bool () const = delete;
 //-----------------------------------------------------------------------------
 private:
-	std::string string;
+	StringType string;
 	mutable SharedPointer<IPlatformString> platformString;
 };
 
-inline bool operator== (const std::string& lhs, const UTF8String& rhs) { return lhs == rhs.getString (); }
-inline bool operator!= (const std::string& lhs, const UTF8String& rhs) { return lhs != rhs.getString (); }
+inline bool operator== (const UTF8String::StringType& lhs, const UTF8String& rhs) { return lhs == rhs.getString (); }
+inline bool operator!= (const UTF8String::StringType& lhs, const UTF8String& rhs) { return lhs != rhs.getString (); }
+
+inline UTF8String operator+ (UTF8StringPtr lhs, const UTF8String& rhs) { return UTF8String (lhs) += rhs; }
 
 //-----------------------------------------------------------------------------
 template<typename T>

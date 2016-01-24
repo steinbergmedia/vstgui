@@ -280,7 +280,7 @@ void UITemplateController::dbSelectionChanged (int32_t selectedRow, GenericStrin
 {
 	if (source->getStringList () == &templateNames)
 	{
-		std::string* newName = nullptr;
+		UTF8String* newName = nullptr;
 		if (selectedRow == CDataBrowser::kNoSelection)
 			newName = nullptr;
 		else
@@ -294,7 +294,7 @@ void UITemplateController::dbSelectionChanged (int32_t selectedRow, GenericStrin
 			UIAttributes* attr = editDescription->getCustomAttributes ("UITemplateController", true);
 			if (attr)
 			{
-				attr->setAttribute ("SelectedTemplate", selectedTemplateName ? *selectedTemplateName : "");
+				attr->setAttribute ("SelectedTemplate", selectedTemplateName ? selectedTemplateName->getString () : "");
 			}
 
 			changed (kMsgTemplateChanged);
@@ -320,15 +320,15 @@ CMessageResult UITemplateController::notify (CBaseObject* sender, IdStringPtr me
 			DeferChanges dc (this);
 			int32_t rowToSelect = templateDataBrowser->getSelectedRow ();
 			int32_t index = 0;
+			auto selectedTemplateStr = selectedTemplateName ? *selectedTemplateName : "";
 			templateNames.clear ();
-			std::string selectedTemplateStr = selectedTemplateName ? *selectedTemplateName : "";
 			dataSource->setStringList (&templateNames);
 			std::list<const std::string*> tmp;
 			editDescription->collectTemplateViewNames (tmp);
 			tmp.sort (UIEditController::std__stringCompare);
 			for (auto& name : tmp)
 			{
-				templateNames.push_back (name->c_str ());
+				templateNames.emplace_back (*name);
 				if (*name == selectedTemplateStr)
 					rowToSelect = index;
 				++index;
@@ -386,7 +386,7 @@ CView* UITemplateController::createView (const UIAttributes& attributes, const I
 			editDescription->collectTemplateViewNames (tmp);
 			tmp.sort (UIEditController::std__stringCompare);
 			for (auto& name : tmp)
-				templateNames.push_back (*name);
+				templateNames.emplace_back (*name);
 			
 			UIAttributes* attr = editDescription->getCustomAttributes ("UITemplateController", true);
 			const std::string* templateName = attr ? attr->getAttributeValue ("SelectedTemplate") : nullptr;
@@ -652,7 +652,7 @@ CMouseEventResult UITemplatesDataSource::dbOnMouseDown (const CPoint& where, con
 	{
 		if (buttons.isDoubleClick ())
 		{
-			browser->beginTextEdit (CDataBrowser::Cell (row, column), getStringList ()->at (static_cast<uint32_t> (row)).c_str ());
+			browser->beginTextEdit (CDataBrowser::Cell (row, column), getStringList ()->at (static_cast<uint32_t> (row)).data ());
 			return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 		}
 		delegate->dbSelectionChanged (row, this);
@@ -673,14 +673,14 @@ CMouseEventResult UITemplatesDataSource::dbOnMouseDown (const CPoint& where, con
 				{
 					std::list<const std::string*> tmp;
 					description->collectTemplateViewNames (tmp);
-					std::string newName (getStringList ()->at (static_cast<uint32_t> (row)).c_str ());
+					std::string newName (getStringList ()->at (static_cast<uint32_t> (row)).data ());
 					UIEditMenuController::createUniqueTemplateName (tmp, newName);
-					actionPerformer->performDuplicateTemplate (getStringList ()->at (static_cast<uint32_t> (row)).c_str (), newName.c_str ());
+					actionPerformer->performDuplicateTemplate (getStringList ()->at (static_cast<uint32_t> (row)).data (), newName.data ());
 					break;
 				}
 				case 1:
 				{
-					actionPerformer->performDeleteTemplate (getStringList ()->at (static_cast<uint32_t> (row)).c_str ());
+					actionPerformer->performDeleteTemplate (getStringList ()->at (static_cast<uint32_t> (row)).data ());
 					break;
 				}
 			}
@@ -693,7 +693,7 @@ CMouseEventResult UITemplatesDataSource::dbOnMouseDown (const CPoint& where, con
 void UITemplatesDataSource::dbCellTextChanged (int32_t row, int32_t column, UTF8StringPtr newText, CDataBrowser* browser)
 {
 	if (getStringList ()->at (static_cast<uint32_t> (row)) != newText)
-		actionPerformer->performTemplateNameChange (getStringList ()->at (static_cast<uint32_t> (row)).c_str (), newText);
+		actionPerformer->performTemplateNameChange (getStringList ()->at (static_cast<uint32_t> (row)).data (), newText);
 }
 
 //----------------------------------------------------------------------------------------------------

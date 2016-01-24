@@ -723,7 +723,7 @@ void UIEditController::onTemplateSelectionChanged ()
 {
 	if (editView && templateController)
 	{
-		const std::string* name = templateController->getSelectedTemplateName ();
+		const auto& name = templateController->getSelectedTemplateName ();
 		if ((name && *name != editTemplateName) || name == nullptr)
 		{
 			if (undoManager->canUndo () && !editTemplateName.empty ())

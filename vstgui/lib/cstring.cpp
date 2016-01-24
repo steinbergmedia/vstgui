@@ -45,19 +45,19 @@ UTF8String::UTF8String (UTF8StringPtr str)
 }
 
 //-----------------------------------------------------------------------------
-UTF8String::UTF8String (const std::string& str)
+UTF8String::UTF8String (const StringType& str)
 : string (str)
 {
 }
 
 //-----------------------------------------------------------------------------
-UTF8String::UTF8String (std::string&& str)
+UTF8String::UTF8String (StringType&& str)
 {
 	*this = std::move (str);
 }
 
 //-----------------------------------------------------------------------------
-UTF8String& UTF8String::operator= (std::string&& str)
+UTF8String& UTF8String::operator= (StringType&& str)
 {
 	string = std::move (str);
 	platformString = nullptr;
@@ -85,7 +85,7 @@ UTF8String& UTF8String::operator=(UTF8String&& other)
 }
 
 //-----------------------------------------------------------------------------
-UTF8String& UTF8String::operator=(const std::string& other)
+UTF8String& UTF8String::operator=(const StringType& other)
 {
 	if (string != other)
 	{
@@ -95,12 +95,30 @@ UTF8String& UTF8String::operator=(const std::string& other)
 	return *this;
 }
 
+//-----------------------------------------------------------------------------
 bool UTF8String::operator== (UTF8StringPtr str) const { return str ? string == str : false; }
 bool UTF8String::operator!= (UTF8StringPtr str) const { return str ? string != str : true; }
 bool UTF8String::operator== (const UTF8String& str) const { return string == str.getString (); }
 bool UTF8String::operator!= (const UTF8String& str) const { return string != str.getString (); }
-bool UTF8String::operator== (const std::string& str) const { return string == str; }
-bool UTF8String::operator!= (const std::string& str) const { return string != str; }
+bool UTF8String::operator== (const StringType& str) const { return string == str; }
+bool UTF8String::operator!= (const StringType& str) const { return string != str; }
+
+//-----------------------------------------------------------------------------
+UTF8String& UTF8String::operator+= (const UTF8String& other)
+{
+	if (!other.empty ())
+	{
+		string += other.getString ();
+		platformString = nullptr;
+	}
+	return *this;
+}
+
+//-----------------------------------------------------------------------------
+UTF8String UTF8String::operator+ (const UTF8String& other)
+{
+	return UTF8String (*this) += other;
+}
 
 //-----------------------------------------------------------------------------
 void UTF8String::assign (UTF8StringPtr str)
@@ -120,7 +138,7 @@ void UTF8String::clear ()
 }
 
 //-----------------------------------------------------------------------------
-void UTF8String::copy (UTF8StringBuffer dst, size_t dstSize) const
+void UTF8String::copy (UTF8StringBuffer dst, SizeType dstSize) const
 {
 #if WINDOWS
 	strcpy_s (dst, dstSize, string.data ());

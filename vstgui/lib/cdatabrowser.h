@@ -40,8 +40,8 @@
 #include "vstguifwd.h"
 #include "cscrollview.h"
 #include "cfont.h"
+#include "cstring.h"
 #include <vector>
-#include <string>
 
 namespace VSTGUI {
 
@@ -221,7 +221,7 @@ public:
 class GenericStringListDataBrowserSource : public IDataBrowserDelegate, public CBaseObject
 {
 public:
-	typedef std::vector<std::string> StringVector;
+	using StringVector = std::vector<UTF8String>;
 
 	GenericStringListDataBrowserSource (const StringVector* stringList, IGenericStringListDataBrowserSourceSelectionChanged* delegate = nullptr);
 	~GenericStringListDataBrowserSource ();

@@ -121,7 +121,7 @@ CFontChooser::CFontChooser (IFontChooserDelegate* delegate, CFontRef initialFont
 	std::list<std::string>::const_iterator it = fnList.begin ();
 	while (it != fnList.end ())
 	{
-		fontNames.push_back (*it);
+		fontNames.push_back (UTF8String (*it));
 		++it;
 	}
 	GenericStringListDataBrowserSource* dbSource = new GenericStringListDataBrowserSource (&fontNames, this);
@@ -228,7 +228,7 @@ void CFontChooser::setFont (CFontRef font)
 		underlineBox->setValue ((font->getStyle () & kUnderlineFace) ? 1.f : 0.f);
 		strikeoutBox->setValue ((font->getStyle () & kStrikethroughFace) ? 1.f : 0.f);
 
-		std::vector<std::string>::const_iterator it = fontNames.begin ();
+		auto it = fontNames.begin ();
 		int32_t row = 0;
 		while (it != fontNames.end ())
 		{
@@ -301,7 +301,7 @@ void CFontChooser::valueChanged (CControl* pControl)
 void CFontChooser::dbSelectionChanged (int32_t selectedRow, GenericStringListDataBrowserSource* source)
 {
 	if (selectedRow >= 0 && static_cast<size_t> (selectedRow) <= fontNames.size ())
-		selFont->setName (fontNames[static_cast<size_t> (selectedRow)].c_str ());
+		selFont->setName (fontNames[static_cast<size_t> (selectedRow)].data ());
 	static_cast<CFontChooserInternal::FontPreviewView*> (fontPreviewView)->setFont (selFont);
 	if (delegate)
 		delegate->fontChanged (this, selFont);

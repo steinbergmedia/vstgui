@@ -113,7 +113,7 @@ protected:
 	CCheckBox* underlineBox;
 	CCheckBox* strikeoutBox;
 	CView* fontPreviewView;
-	std::vector<std::string> fontNames;
+	GenericStringListDataBrowserSource::StringVector fontNames;
 	
 	CFontRef selFont;
 };

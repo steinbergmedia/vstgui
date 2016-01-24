@@ -159,7 +159,7 @@ SharedPointer<UISelection> UIViewCreatorDataSource::createSelection ()
 {
 	SharedPointer<UISelection> selection;
 	UIAttributes viewAttr;
-	viewAttr.setAttribute (UIViewCreator::kAttrClass, getStringList ()->at (static_cast<uint32_t> (mouseDownRow)));
+	viewAttr.setAttribute (UIViewCreator::kAttrClass, getStringList ()->at (static_cast<uint32_t> (mouseDownRow)).getString ());
 	CView* view = factory->createView (viewAttr, description);
 	if (view)
 	{
@@ -188,11 +188,11 @@ CMouseEventResult UIViewCreatorDataSource::dbOnMouseDown (const CPoint& where, c
 	}
 	else if (buttons.isRightButton ())
 	{
-		const std::string& viewName = getStringList ()->at (static_cast<uint32_t> (mouseDownRow));
-		std::string menuEntryName = "Add a new '" + viewName + "'";
+		const auto& viewName = getStringList ()->at (static_cast<uint32_t> (mouseDownRow));
+		UTF8String menuEntryName = "Add a new '" + viewName + "'";
 		COptionMenu menu;
 		menu.setStyle (kPopupStyle);
-		menu.addEntry (menuEntryName.c_str ());
+		menu.addEntry (menuEntryName);
 		CPoint menuLocation (where);
 		browser->localToFrame (menuLocation);
 		if (menu.popup (browser->getFrame (), menuLocation))

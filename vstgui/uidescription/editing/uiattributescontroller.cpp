@@ -443,7 +443,7 @@ public:
 		if (textLabel)
 		{
 			if (txt && *txt != 0)
-				textLabel->setAttribute (kCViewTooltipAttribute, static_cast<uint32_t> (textLabel->getText ().getByteCount () + 1), textLabel->getText ().data ());
+				textLabel->setAttribute (kCViewTooltipAttribute, static_cast<uint32_t> (textLabel->getText ().length () + 1), textLabel->getText ().data ());
 			else
 				textLabel->removeAttribute (kCViewTooltipAttribute);
 		}
@@ -560,7 +560,7 @@ public:
 		if (textLabel && menu)
 		{
 			if (txt && *txt != 0)
-				menu->setAttribute (kCViewTooltipAttribute, static_cast<uint32_t> (textLabel->getText ().getByteCount () + 1), textLabel->getText ().data ());
+				menu->setAttribute (kCViewTooltipAttribute, static_cast<uint32_t> (textLabel->getText ().length () + 1), textLabel->getText ().data ());
 			else
 				menu->removeAttribute (kCViewTooltipAttribute);
 		}

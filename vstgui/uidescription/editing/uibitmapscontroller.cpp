@@ -319,7 +319,7 @@ CBitmap* UIBitmapsDataSource::getSelectedBitmap ()
 {
 	int32_t selectedRow = dataBrowser ? dataBrowser->getSelectedRow() : CDataBrowser::kNoSelection;
 	if (selectedRow != CDataBrowser::kNoSelection && selectedRow < (int32_t)names.size ())
-		return description->getBitmap (names.at (static_cast<uint32_t> (selectedRow)).c_str ());
+		return description->getBitmap (names.at (static_cast<uint32_t> (selectedRow)).data ());
 	return nullptr;
 }
 
@@ -328,7 +328,7 @@ UTF8StringPtr UIBitmapsDataSource::getSelectedBitmapName ()
 {
 	int32_t selectedRow = dataBrowser ? dataBrowser->getSelectedRow() : CDataBrowser::kNoSelection;
 	if (selectedRow != CDataBrowser::kNoSelection && selectedRow < (int32_t)names.size ())
-		return names.at (static_cast<uint32_t> (selectedRow)).c_str ();
+		return names.at (static_cast<uint32_t> (selectedRow)).data ();
 	return nullptr;
 }
 
@@ -361,7 +361,7 @@ bool UIBitmapsDataSource::addBitmap (UTF8StringPtr path, std::string& outName)
 				}
 			}
 		}
-		actionPerformer->performBitmapChange (outName.c_str (), pathStr.c_str ());
+		actionPerformer->performBitmapChange (outName.data (), pathStr.data ());
 		result = true;
 	}
 	return result;
@@ -392,7 +392,7 @@ bool UIBitmapsDataSource::add ()
 					std::string newName;
 					if (addBitmap (path, newName) && i == numFiles - 1)
 					{
-						int32_t row = selectName (newName.c_str ());
+						int32_t row = selectName (newName.data ());
 						if (row != -1)
 							dbOnMouseDown (CPoint (0, 0), CButtonState (kLButton|kDoubleClick), row, 0, dataBrowser);
 						result = true;
@@ -500,8 +500,8 @@ void UIBitmapSettingsController::valueChanged (CControl* control)
 			CTextEdit* edit = dynamic_cast<CTextEdit*>(control);
 			if (edit)
 			{
-				actionPerformer->performBitmapChange (bitmapName.c_str (), edit->getText ());
-				bitmap = editDescription->getBitmap (bitmapName.c_str ());
+				actionPerformer->performBitmapChange (bitmapName.data (), edit->getText ());
+				bitmap = editDescription->getBitmap (bitmapName.data ());
 				bitmapView->setBackground (bitmap);
 				updateNinePartTiledControls ();
 			}
@@ -518,8 +518,8 @@ void UIBitmapSettingsController::valueChanged (CControl* control)
 				origOffsets.bottom = nptb->getPartOffsets ().bottom;
 			}
 			bool checked = control->getValue () == control->getMax ();
-			actionPerformer->performBitmapNinePartTiledChange (bitmapName.c_str (), checked ? &origOffsets : nullptr);
-			bitmap = editDescription->getBitmap (bitmapName.c_str ());
+			actionPerformer->performBitmapNinePartTiledChange (bitmapName.data (), checked ? &origOffsets : nullptr);
+			bitmap = editDescription->getBitmap (bitmapName.data ());
 			bitmapView->setBackground (bitmap);
 			updateNinePartTiledControls ();
 			break;
@@ -534,8 +534,8 @@ void UIBitmapSettingsController::valueChanged (CControl* control)
 			r.top = controls[kNinePartTiledTopTag]->getValue ();
 			r.right = controls[kNinePartTiledRightTag]->getValue ();
 			r.bottom = controls[kNinePartTiledBottomTag]->getValue ();
-			actionPerformer->performBitmapNinePartTiledChange (bitmapName.c_str (), &r);
-			bitmap = editDescription->getBitmap (bitmapName.c_str ());
+			actionPerformer->performBitmapNinePartTiledChange (bitmapName.data (), &r);
+			bitmap = editDescription->getBitmap (bitmapName.data ());
 			bitmapView->setBackground (bitmap);
 			updateNinePartTiledControls ();
 			SharedPointer<CTextEdit> textEdit = SharedPointer<CControl> (control).cast<CTextEdit> ();
@@ -708,7 +708,7 @@ bool UIBitmapSettingsController::valueToString (float value, char utf8String[256
 	std::stringstream str;
 	str << intValue;
 	str << "%";
-	std::strcpy (utf8String, str.str ().c_str ());
+	std::strcpy (utf8String, str.str ().data ());
 	return true;
 }
 
@@ -885,7 +885,7 @@ bool UIBitmapsController::valueToString (float value, char utf8String[256], void
 	int32_t intValue = (int32_t)value;
 	std::stringstream str;
 	str << intValue;
-	std::strcpy (utf8String, str.str ().c_str ());
+	std::strcpy (utf8String, str.str ().data ());
 	return true;
 }
 

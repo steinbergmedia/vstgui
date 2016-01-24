@@ -36,8 +36,8 @@
 #define __uiattributes__
 
 #include "../lib/vstguifwd.h"
+#include "../lib/cstring.h"
 
-#include <string>
 #include <vector>
 #include "../lib/platform/std_unorderedmap.h"
 
@@ -51,7 +51,7 @@ typedef std::unordered_map<std::string,std::string> UIAttributesMap;
 class UIAttributes : public CBaseObject, private UIAttributesMap
 {
 public:
-	typedef std::vector<std::string> StringArray;
+	using StringArray = std::vector<std::string>;
 	
 	explicit UIAttributes (UTF8StringPtr* attributes = nullptr);
 	~UIAttributes () = default;

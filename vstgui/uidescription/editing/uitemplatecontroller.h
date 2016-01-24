@@ -57,7 +57,7 @@ public:
 	UITemplateController (IController* baseController, UIDescription* description, UISelection* selection, UIUndoManager* undoManager, IActionPerformer* actionPerformer);
 	~UITemplateController ();
 
-	const std::string* getSelectedTemplateName () const { return selectedTemplateName; }
+	const UTF8String* getSelectedTemplateName () const { return selectedTemplateName; }
 
 	void selectTemplate (UTF8StringPtr name);
 	void setTemplateView (CViewContainer* view);
@@ -83,9 +83,8 @@ protected:
 	CViewContainer* templateView;
 	CDataBrowser* templateDataBrowser;
 	UIViewListDataSource* mainViewDataSource;
-	typedef std::vector<std::string> StringVector;
-	StringVector templateNames;
-	std::string* selectedTemplateName;
+	GenericStringListDataBrowserSource::StringVector templateNames;
+	const UTF8String* selectedTemplateName;
 };
 
 } // namespace
