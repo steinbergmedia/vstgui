@@ -41,6 +41,7 @@
 #include "uicrosslines.h"
 #include "uigrid.h"
 #include "uiselection.h"
+#include "../uiattributes.h"
 #include "../uidescription.h"
 #include "../uiviewfactory.h"
 #include "../../lib/cvstguitimer.h"

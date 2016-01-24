@@ -39,6 +39,7 @@
 #include "cpoint.h"
 #include "crect.h"
 #include "cresourcedescription.h"
+#include "platform/iplatformbitmap.h"
 #include <vector>
 
 namespace VSTGUI {
