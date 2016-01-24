@@ -343,12 +343,12 @@ void CTextEdit::looseFocus ()
 //------------------------------------------------------------------------
 void CTextEdit::updateText (IPlatformTextEdit* pte)
 {
-	UTF8StringView newText (pte->getText ());
+	auto newText = pte->getText ();
 	if (newText != getText ())
 	{
 		beginEdit ();
 
-		setText (UTF8String (newText));
+		setText (newText);
 
 		valueChanged ();
 
