@@ -114,6 +114,13 @@ inline UTF8String toString (const T& value)
 }
 
 //-----------------------------------------------------------------------------
+/** white-character test
+ *	@param character UTF-32 character
+ *	@return true if character is a white-character
+ */
+bool isspace (char32_t character);
+
+//-----------------------------------------------------------------------------
 class UTF8CodePointIterator : public std::iterator<std::bidirectional_iterator_tag, char32_t, std::string::difference_type>
 {
 public:

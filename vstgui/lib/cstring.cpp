@@ -167,6 +167,40 @@ UTF8String::CodePointIterator UTF8String::end () const
 	return UTF8String::CodePointIterator (string.end ());
 }
 
+//-----------------------------------------------------------------------------
+bool isspace (char32_t character)
+{
+	switch (character)
+	{
+		case 0x0009: // CHARACTER TABULATION
+		case 0x000A: // LINE FEED
+		case 0x000B: // LINE TABULATION
+		case 0x000C: // FORM FEED
+		case 0x000D: // CARRIAGE RETURN
+		case 0x0020: // SPACE
+		case 0x0085: // NEXT LINE (NEL)
+		case 0x00A0: // NO-BREAK SPACE
+		case 0x2000: // EN QUAD
+		case 0x2001: // EM QUAD
+		case 0x2002: // EN SPACE
+		case 0x2003: // EM SPACE
+		case 0x2004: // THREE-PER-EM SPACE
+		case 0x2005: // FOUR-PER-EM SPACE
+		case 0x2006: // SIX-PER-EM SPACE
+		case 0x2007: // FIGURE SPACE
+		case 0x2008: // PUNCTUATION SPACE
+		case 0x2009: // THIN SPACE
+		case 0x200A: // HAIR SPACE
+		case 0x200B: // ZERO WIDTH SPACE
+		case 0x202F: // NARROW NO-BREAK SPACE
+		case 0x205F: // MEDIUM MATHEMATICAL SPACE
+		case 0x3000: // IDEOGRAPHIC SPACE
+		case 0xFEFF: // ZERO WIDTH NO-BREAK SPACE
+			return true;
+	}
+	return false;
+}
+
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 
 namespace String {
