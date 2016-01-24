@@ -71,10 +71,11 @@ UTF8String createTruncatedText (TextTruncateMode mode, const UTF8String& text, C
 				truncatedText += "..";
 
 			result = truncatedText;
+			truncatedText.clear ();
 			width = painter->getStringWidth (nullptr, result.getPlatformString (), true);
 			width += textInset.x * 2;
 		}
-		if (width > maxWidth && flags & kReturnEmptyIfTruncationIsPlaceholderOnly)
+		if (left == right && flags & kReturnEmptyIfTruncationIsPlaceholderOnly)
 			result = "";
 		return result;
 	}
