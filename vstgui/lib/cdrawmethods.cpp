@@ -51,52 +51,32 @@ UTF8String createTruncatedText (TextTruncateMode mode, const UTF8String& text, C
 	width += textInset.x * 2;
 	if (width > maxWidth)
 	{
-		std::string _truncatedText;
-		UTF8String utf8Str;
-		if (mode == kTextTruncateTail)
+		std::string truncatedText;
+		UTF8String result;
+		UTF8CodePointIterator left = UTF8CodePointIterator (text.getString ().begin ());
+		UTF8CodePointIterator right = UTF8CodePointIterator (text.getString ().end ());
+		while (width > maxWidth && left != right)
 		{
-			_truncatedText = text.getString ();
-			_truncatedText += "..";
-			while (width > maxWidth && _truncatedText.size () > 2)
+			if (mode == kTextTruncateHead)
 			{
-				UTF8CharacterIterator it (_truncatedText);
-				it.end ();
-				for (int32_t i = 0; i < 3; i++, --it)
-				{
-					if (it == it.front ())
-					{
-						break;
-					}
-				}
-				_truncatedText.erase (_truncatedText.size () - (2 + it.getByteLength ()), it.getByteLength ());
-				utf8Str = _truncatedText;
-				width = painter->getStringWidth (nullptr, utf8Str.getPlatformString (), true);
-				width += textInset.x * 2;
+				++left;
+				truncatedText = "..";
 			}
-		}
-		else if (mode == kTextTruncateHead)
-		{
-			_truncatedText = "..";
-			_truncatedText += text.getString ();
-			while (width > maxWidth && _truncatedText.size () > 2)
-			{
-				UTF8CharacterIterator it (_truncatedText);
-				for (int32_t i = 0; i < 2; i++, ++it)
-				{
-					if (it == it.back ())
-					{
-						break;
-					}
-				}
-				_truncatedText.erase (2, it.getByteLength ());
-				utf8Str = _truncatedText;
-				width = painter->getStringWidth (nullptr, utf8Str.getPlatformString (), true);
-				width += textInset.x * 2;
-			}
+			else if (mode == kTextTruncateTail)
+				--right;
+
+			truncatedText += {left.base (), right.base ()};
+
+			if (mode == kTextTruncateTail)
+				truncatedText += "..";
+
+			result = truncatedText;
+			width = painter->getStringWidth (nullptr, result.getPlatformString (), true);
+			width += textInset.x * 2;
 		}
 		if (width > maxWidth && flags & kReturnEmptyIfTruncationIsPlaceholderOnly)
-			utf8Str = "";
-		return utf8Str;
+			result = "";
+		return result;
 	}
 	return text;
 }

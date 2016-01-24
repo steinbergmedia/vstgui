@@ -155,6 +155,18 @@ IPlatformString* UTF8String::getPlatformString () const
 	return platformString;
 }
 
+//-----------------------------------------------------------------------------
+UTF8String::CodePointIterator UTF8String::begin () const
+{
+	return UTF8String::CodePointIterator (string.begin ());
+}
+
+//-----------------------------------------------------------------------------
+UTF8String::CodePointIterator UTF8String::end () const
+{
+	return UTF8String::CodePointIterator (string.end ());
+}
+
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 
 namespace String {

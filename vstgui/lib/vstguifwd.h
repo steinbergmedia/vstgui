@@ -143,6 +143,7 @@ class CTooltipSupport;
 class CGraphicsPath;
 class CGradient;
 class UTF8String;
+class UTF8CodePointIterator;
 class UTF8StringView;
 class CVSTGUITimer;
 class CMenuItem;

@@ -54,6 +54,7 @@ class UTF8String
 public:
 	using StringType = std::string;
 	using SizeType = StringType::size_type;
+	using CodePointIterator = UTF8CodePointIterator;
 	
 	UTF8String (UTF8StringPtr str = nullptr);
 	UTF8String (const UTF8String& other);
@@ -72,6 +73,8 @@ public:
 
 	void copy (UTF8StringBuffer dst, SizeType dstSize) const;
 
+	CodePointIterator begin () const;
+	CodePointIterator end () const;
 
 	bool operator== (UTF8StringPtr str) const;
 	bool operator!= (UTF8StringPtr str) const;
@@ -109,6 +112,37 @@ inline UTF8String toString (const T& value)
 {
 	return UTF8String (std::to_string (value));
 }
+
+//-----------------------------------------------------------------------------
+class UTF8CodePointIterator : public std::iterator<std::bidirectional_iterator_tag, char32_t, std::string::difference_type>
+{
+public:
+	using CodePoint = value_type;
+	using BaseIterator = std::string::const_iterator;
+	
+	UTF8CodePointIterator () = default;
+	explicit UTF8CodePointIterator (const BaseIterator& iterator) : it (iterator) {}
+	
+	UTF8CodePointIterator& operator++ ();
+	UTF8CodePointIterator& operator-- ();
+	UTF8CodePointIterator operator++ (int);
+	UTF8CodePointIterator operator-- (int);
+	
+	bool operator== (const UTF8CodePointIterator& other) const;
+	bool operator!= (const UTF8CodePointIterator& other) const;
+	
+	CodePoint operator* () const;
+	
+	BaseIterator base () const { return it; }
+private:
+	BaseIterator it;
+	
+	static constexpr uint8_t kFirstBitMask = 128u; // 1000000
+	static constexpr uint8_t kSecondBitMask = 64u; // 0100000
+	static constexpr uint8_t kThirdBitMask = 32u; // 0010000
+	static constexpr uint8_t kFourthBitMask = 16u; // 0001000
+	static constexpr uint8_t kFifthBitMask = 8u; // 0000100
+};
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 //-----------------------------------------------------------------------------
@@ -350,6 +384,122 @@ inline bool UTF8StringView::operator!= (const UTF8StringPtr otherString) const
 inline UTF8StringView::operator const UTF8StringPtr () const
 {
 	return str;
+}
+
+//-----------------------------------------------------------------------------
+inline UTF8CodePointIterator& UTF8CodePointIterator::operator++ ()
+{
+	auto firstByte = *it;
+ 
+	difference_type offset = 1;
+ 
+	if (firstByte & kFirstBitMask)
+	{
+		if (firstByte & kThirdBitMask)
+		{
+			if (firstByte & kFourthBitMask)
+				offset = 4;
+			else
+				offset = 3;
+		}
+		else
+		{
+			offset = 2;
+		}
+	}
+	it += offset;
+	return *this;
+}
+
+//-----------------------------------------------------------------------------
+inline UTF8CodePointIterator& UTF8CodePointIterator::operator-- ()
+{
+	--it;
+ 	if (*it & kFirstBitMask)
+	{
+		--it;
+		if ((*it & kSecondBitMask) == 0)
+		{
+			--it;
+			if ((*it & kSecondBitMask) == 0)
+			{
+				--it;
+			}
+		}
+	}
+	return *this;
+}
+
+//-----------------------------------------------------------------------------
+inline UTF8CodePointIterator UTF8CodePointIterator::operator++ (int)
+{
+	auto result = *this;
+	++(*this);
+	return result;
+}
+
+//-----------------------------------------------------------------------------
+inline UTF8CodePointIterator UTF8CodePointIterator::operator-- (int)
+{
+	auto result = *this;
+	--(*this);
+	return result;
+}
+
+//-----------------------------------------------------------------------------
+inline bool UTF8CodePointIterator::operator== (const UTF8CodePointIterator& other) const
+{
+	return it == other.it;
+}
+
+//-----------------------------------------------------------------------------
+inline bool UTF8CodePointIterator::operator!= (const UTF8CodePointIterator& other) const
+{
+	return it != other.it;
+}
+
+//-----------------------------------------------------------------------------
+inline UTF8CodePointIterator::CodePoint UTF8CodePointIterator::operator* () const
+{
+	CodePoint codePoint = 0;
+ 
+	auto firstByte = *it;
+ 
+	if (firstByte & kFirstBitMask)
+	{
+		if (firstByte & kThirdBitMask)
+		{
+			if (firstByte & kFourthBitMask)
+			{
+				codePoint = static_cast<CodePoint> ((firstByte & 0x07) << 18);
+				auto secondByte = *(it + 1);
+				codePoint +=  static_cast<CodePoint> ((secondByte & 0x3f) << 12);
+				auto thirdByte = *(it + 2);
+				codePoint +=  static_cast<CodePoint> ((thirdByte & 0x3f) << 6);
+				auto fourthByte = *(it + 3);
+				codePoint += (fourthByte & 0x3f);
+			}
+			else
+			{
+				codePoint = static_cast<CodePoint> ((firstByte & 0x0f) << 12);
+				auto secondByte = *(it + 1);
+				codePoint += static_cast<CodePoint> ((secondByte & 0x3f) << 6);
+				auto thirdByte = *(it + 2);
+				codePoint +=  static_cast<CodePoint> ((thirdByte & 0x3f));
+			}
+		}
+		else
+		{
+			codePoint = static_cast<CodePoint> ((firstByte & 0x1f) << 6);
+			auto secondByte = *(it + 1);
+			codePoint +=  (secondByte & 0x3f);
+		}
+	}
+	else
+	{
+		codePoint = static_cast<CodePoint> (firstByte);
+	}
+	return codePoint;
 }
 
 } // namespace
