@@ -361,9 +361,9 @@ struct DataPackage : IDataPackage
 	uint32_t getDataSize (uint32_t index) const override
 	{
 		if (index == 0)
-			return static_cast<uint32_t> (str.getByteCount ());
+			return static_cast<uint32_t> (str.length ());
 		else if (index == 1)
-			return static_cast<uint32_t> (path.getByteCount ());
+			return static_cast<uint32_t> (path.length ());
 		else if (index == 2)
 			return 3;
 		return 0;
@@ -429,11 +429,11 @@ TESTCASE(CDragContainerHelperTest,
 		int32_t type;
 		auto res = helper.first (size, type);
 		EXPECT(res == package.str.data ());
-		EXPECT(size == static_cast<int32_t> (package.str.getByteCount ()));
+		EXPECT(size == static_cast<int32_t> (package.str.length ()));
 		EXPECT(type == CDragContainerHelper::kUnicodeText);
 		res = helper.next(size, type);
 		EXPECT(res == package.path.data ());
-		EXPECT(size == static_cast<int32_t> (package.path.getByteCount ()));
+		EXPECT(size == static_cast<int32_t> (package.path.length ()));
 		EXPECT(type == CDragContainerHelper::kFile);
 		res = helper.next(size, type);
 		EXPECT(res == package.binary);

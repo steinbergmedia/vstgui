@@ -46,7 +46,7 @@ TESTCASE(UTF8StringTest,
 	TEST(empty,
 		UTF8String str;
 		EXPECT (str.empty ());
-		EXPECT (str.getByteCount () == 0);
+		EXPECT (str.length () == 0);
 	);
 	
 	TEST(set,
@@ -90,6 +90,15 @@ TESTCASE(UTF8StringTest,
 		EXPECT(str1 != str2);
 	);
 
+	TEST(codePointIterator,
+		 UTF8String str (u8"Äॴ𪀚");
+		 auto charCount = 0;
+		 for (auto it = str.begin (); it != str.end (); ++it)
+		 {
+			 charCount++;
+		 }
+		 EXPECT(charCount == 3);
+	);
 );
 
 #if MAC
