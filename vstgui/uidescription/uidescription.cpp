@@ -2328,101 +2328,84 @@ typedef std::list<StringToken> StringTokenList;
 //-----------------------------------------------------------------------------
 static bool tokenizeString (std::string& str, StringTokenList& tokens)
 {
-	UTF8CharacterIterator iterator (str);
-	uint8_t* tokenStart = iterator;
-	do {
-		if (iterator.getByteLength () == 1)
+	UTF8CodePointIterator start (str.begin ());
+	UTF8CodePointIterator end (str.end ());
+	auto iterator = start;
+	while (iterator != end)
+	{
+		auto codePoint = *iterator;
+		if (isspace (codePoint))
 		{
-			uint8_t character = *iterator;
-			if (isspace (character))
+			if (start != iterator)
+				tokens.emplace_back (std::string {start.base (), iterator.base ()});
+			start = iterator;
+			++start;
+		}
+		else
+		{
+			switch (codePoint)
 			{
-				if (tokenStart != iterator)
+				case '+':
 				{
-					std::string token ((const char*)tokenStart, static_cast<size_t> (iterator - tokenStart));
-					tokens.emplace_back (token);
+					if (start != iterator)
+						tokens.emplace_back (std::string {start.base (), iterator.base ()});
+					tokens.push_back (StringToken (StringToken::kAdd));
+					start = iterator;
+					++start;
+					break;
 				}
-				tokenStart = iterator + 1;
-			}
-			else
-			{
-				switch (character)
+				case '-':
 				{
-					case '+':
-					{
-						if (tokenStart != iterator)
-						{
-							std::string token ((const char*)tokenStart, static_cast<size_t> (iterator - tokenStart));
-							tokens.emplace_back (token);
-						}
-						tokens.push_back (StringToken (StringToken::kAdd));
-						tokenStart = iterator + 1;
-						break;
-					}
-					case '-':
-					{
-						if (tokenStart != iterator)
-						{
-							std::string token ((const char*)tokenStart, static_cast<size_t> (iterator - tokenStart));
-							tokens.emplace_back (token);
-						}
-						tokens.push_back (StringToken (StringToken::kSubtract));
-						tokenStart = iterator + 1;
-						break;
-					}
-					case '*':
-					{
-						if (tokenStart != iterator)
-						{
-							std::string token ((const char*)tokenStart, static_cast<size_t> (iterator - tokenStart));
-							tokens.emplace_back (token);
-						}
-						tokens.push_back (StringToken (StringToken::kMulitply));
-						tokenStart = iterator + 1;
-						break;
-					}
-					case '/':
-					{
-						if (tokenStart != iterator)
-						{
-							std::string token ((const char*)tokenStart, static_cast<size_t> (iterator - tokenStart));
-							tokens.emplace_back (token);
-						}
-						tokens.push_back (StringToken (StringToken::kDivide));
-						tokenStart = iterator + 1;
-						break;
-					}
-					case '(':
-					{
-						if (tokenStart != iterator)
-						{
-							std::string token ((const char*)tokenStart, static_cast<size_t> (iterator - tokenStart));
-							tokens.emplace_back (token);
-						}
-						tokens.push_back (StringToken (StringToken::kOpenParenthesis));
-						tokenStart = iterator + 1;
-						break;
-					}
-					case ')':
-					{
-						if (tokenStart != iterator)
-						{
-							std::string token ((const char*)tokenStart, static_cast<size_t> (iterator - tokenStart));
-							tokens.emplace_back (token);
-						}
-						tokens.push_back (StringToken (StringToken::kCloseParenthesis));
-						tokenStart = iterator + 1;
-						break;
-					}
+					if (start != iterator)
+						tokens.emplace_back (std::string {start.base (), iterator.base ()});
+					tokens.push_back (StringToken (StringToken::kSubtract));
+					start = iterator;
+					++start;
+					break;
+				}
+				case '*':
+				{
+					if (start != iterator)
+						tokens.emplace_back (std::string {start.base (), iterator.base ()});
+					tokens.push_back (StringToken (StringToken::kMulitply));
+					start = iterator;
+					++start;
+					break;
+				}
+				case '/':
+				{
+					if (start != iterator)
+						tokens.emplace_back (std::string {start.base (), iterator.base ()});
+					tokens.push_back (StringToken (StringToken::kDivide));
+					start = iterator;
+					++start;
+					break;
+				}
+				case '(':
+				{
+					if (start != iterator)
+						tokens.emplace_back (std::string {start.base (), iterator.base ()});
+					tokens.push_back (StringToken (StringToken::kOpenParenthesis));
+					start = iterator;
+					++start;
+					break;
+				}
+				case ')':
+				{
+					if (start != iterator)
+						tokens.emplace_back (std::string {start.base (), iterator.base ()});
+					tokens.push_back (StringToken (StringToken::kCloseParenthesis));
+					start = iterator;
+					++start;
+					break;
 				}
 			}
 		}
-	} while (iterator.next () != iterator.back ());
-	if (tokenStart != iterator)
-	{
-		std::string token ((const char*)tokenStart, static_cast<size_t> (iterator - tokenStart));
-		tokens.emplace_back (token);
+		++iterator;
 	}
-	return true;	
+	if (start != iterator)
+		tokens.emplace_back (std::string {start.base (), iterator.base ()});
+	return true;
 }
 
 //-----------------------------------------------------------------------------
