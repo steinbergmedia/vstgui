@@ -49,20 +49,21 @@ class UTF8CodePointIterator : public std::iterator<std::bidirectional_iterator_t
 public:
 	using CodePoint = value_type;
 	
-	UTF8CodePointIterator () = default;
-	explicit UTF8CodePointIterator (const BaseIterator& iterator) : it (iterator) {}
+	UTF8CodePointIterator () noexcept = default;
+	UTF8CodePointIterator (const UTF8CodePointIterator& o) noexcept : it (o.it) {}
+	explicit UTF8CodePointIterator (const BaseIterator& iterator) noexcept : it (iterator) {}
 	
-	UTF8CodePointIterator& operator++ ();
-	UTF8CodePointIterator& operator-- ();
-	UTF8CodePointIterator operator++ (int);
-	UTF8CodePointIterator operator-- (int);
+	UTF8CodePointIterator& operator++ () noexcept;
+	UTF8CodePointIterator& operator-- () noexcept;
+	UTF8CodePointIterator operator++ (int) noexcept;
+	UTF8CodePointIterator operator-- (int) noexcept;
 	
-	bool operator== (const UTF8CodePointIterator& other) const;
-	bool operator!= (const UTF8CodePointIterator& other) const;
+	bool operator== (const UTF8CodePointIterator& other) const noexcept;
+	bool operator!= (const UTF8CodePointIterator& other) const noexcept;
 	
-	CodePoint operator* () const;
+	CodePoint operator* () const noexcept;
 	
-	BaseIterator base () const { return it; }
+	BaseIterator base () const noexcept { return it; }
 private:
 	BaseIterator it;
 	
@@ -90,40 +91,40 @@ public:
 	UTF8String (UTF8StringPtr str = nullptr);
 	UTF8String (const UTF8String& other);
 	explicit UTF8String (const StringType& str);
-	UTF8String (UTF8String&& other);
-	UTF8String (StringType&& str);
+	UTF8String (UTF8String&& other) noexcept;
+	UTF8String (StringType&& str) noexcept;
 
 	UTF8String& operator= (const UTF8String& other) = default;
 	UTF8String& operator= (const StringType& other);
-	UTF8String& operator= (UTF8String&& other);
-	UTF8String& operator= (StringType&& str);
+	UTF8String& operator= (UTF8String&& other) noexcept;
+	UTF8String& operator= (StringType&& str) noexcept;
 	UTF8String& operator= (UTF8StringPtr str) { assign (str); return *this; }
 
-	SizeType length () const { return string.length (); }
-	bool empty () const { return string.empty (); }
+	SizeType length () const noexcept { return string.length (); }
+	bool empty () const noexcept { return string.empty (); }
 
-	void copy (UTF8StringBuffer dst, SizeType dstSize) const;
+	void copy (UTF8StringBuffer dst, SizeType dstSize) const noexcept;
 
-	CodePointIterator begin () const;
-	CodePointIterator end () const;
+	CodePointIterator begin () const noexcept;
+	CodePointIterator end () const noexcept;
 
-	bool operator== (UTF8StringPtr str) const;
-	bool operator!= (UTF8StringPtr str) const;
-	bool operator== (const UTF8String& str) const;
-	bool operator!= (const UTF8String& str) const;
-	bool operator== (const StringType& str) const;
-	bool operator!= (const StringType& str) const;
+	bool operator== (UTF8StringPtr str) const noexcept;
+	bool operator!= (UTF8StringPtr str) const noexcept;
+	bool operator== (const UTF8String& str) const noexcept;
+	bool operator!= (const UTF8String& str) const noexcept;
+	bool operator== (const StringType& str) const noexcept;
+	bool operator!= (const StringType& str) const noexcept;
 
 	UTF8String& operator+= (const UTF8String& other);
 	UTF8String operator+ (const UTF8String& other);
 
 	void assign (UTF8StringPtr str);
-	void clear ();
+	void clear () noexcept;
 
-	const UTF8StringPtr data () const { return string.data (); }
-	operator const UTF8StringPtr () const { return data (); }
-	const StringType& getString () const { return string; }
-	IPlatformString* getPlatformString () const;
+	const UTF8StringPtr data () const noexcept { return string.data (); }
+	operator const UTF8StringPtr () const noexcept { return data (); }
+	const StringType& getString () const noexcept { return string; }
+	IPlatformString* getPlatformString () const noexcept;
 
 	explicit operator bool () const = delete;
 //-----------------------------------------------------------------------------
@@ -132,8 +133,8 @@ private:
 	mutable SharedPointer<IPlatformString> platformString;
 };
 
-inline bool operator== (const UTF8String::StringType& lhs, const UTF8String& rhs) { return lhs == rhs.getString (); }
-inline bool operator!= (const UTF8String::StringType& lhs, const UTF8String& rhs) { return lhs != rhs.getString (); }
+inline bool operator== (const UTF8String::StringType& lhs, const UTF8String& rhs) noexcept { return lhs == rhs.getString (); }
+inline bool operator!= (const UTF8String::StringType& lhs, const UTF8String& rhs) noexcept { return lhs != rhs.getString (); }
 
 inline UTF8String operator+ (UTF8StringPtr lhs, const UTF8String& rhs) { return UTF8String (lhs) += rhs; }
 
@@ -149,7 +150,7 @@ inline UTF8String toString (const T& value)
  *	@param character UTF-32 character
  *	@return true if character is a white-character
  */
-bool isspace (char32_t character);
+bool isspace (char32_t character) noexcept;
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 //-----------------------------------------------------------------------------
@@ -395,7 +396,7 @@ inline UTF8StringView::operator const UTF8StringPtr () const
 
 //-----------------------------------------------------------------------------
 template<typename BaseIterator>
-inline UTF8CodePointIterator<BaseIterator>& UTF8CodePointIterator<BaseIterator>::operator++ ()
+inline UTF8CodePointIterator<BaseIterator>& UTF8CodePointIterator<BaseIterator>::operator++ () noexcept
 {
 	auto firstByte = *it;
  
@@ -421,7 +422,7 @@ inline UTF8CodePointIterator<BaseIterator>& UTF8CodePointIterator<BaseIterator>:
 
 //-----------------------------------------------------------------------------
 template<typename BaseIterator>
-inline UTF8CodePointIterator<BaseIterator>& UTF8CodePointIterator<BaseIterator>::operator-- ()
+inline UTF8CodePointIterator<BaseIterator>& UTF8CodePointIterator<BaseIterator>::operator-- () noexcept
 {
 	--it;
  	if (*it & kFirstBitMask)
@@ -441,7 +442,7 @@ inline UTF8CodePointIterator<BaseIterator>& UTF8CodePointIterator<BaseIterator>:
 
 //-----------------------------------------------------------------------------
 template<typename BaseIterator>
-inline UTF8CodePointIterator<BaseIterator> UTF8CodePointIterator<BaseIterator>::operator++ (int)
+inline UTF8CodePointIterator<BaseIterator> UTF8CodePointIterator<BaseIterator>::operator++ (int) noexcept
 {
 	auto result = *this;
 	++(*this);
@@ -450,7 +451,7 @@ inline UTF8CodePointIterator<BaseIterator> UTF8CodePointIterator<BaseIterator>::
 
 //-----------------------------------------------------------------------------
 template<typename BaseIterator>
-inline UTF8CodePointIterator<BaseIterator> UTF8CodePointIterator<BaseIterator>::operator-- (int)
+inline UTF8CodePointIterator<BaseIterator> UTF8CodePointIterator<BaseIterator>::operator-- (int) noexcept
 {
 	auto result = *this;
 	--(*this);
@@ -459,21 +460,21 @@ inline UTF8CodePointIterator<BaseIterator> UTF8CodePointIterator<BaseIterator>::
 
 //-----------------------------------------------------------------------------
 template<typename BaseIterator>
-inline bool UTF8CodePointIterator<BaseIterator>::operator== (const UTF8CodePointIterator<BaseIterator>& other) const
+inline bool UTF8CodePointIterator<BaseIterator>::operator== (const UTF8CodePointIterator<BaseIterator>& other) const noexcept
 {
 	return it == other.it;
 }
 
 //-----------------------------------------------------------------------------
 template<typename BaseIterator>
-inline bool UTF8CodePointIterator<BaseIterator>::operator!= (const UTF8CodePointIterator<BaseIterator>& other) const
+inline bool UTF8CodePointIterator<BaseIterator>::operator!= (const UTF8CodePointIterator<BaseIterator>& other) const noexcept
 {
 	return it != other.it;
 }
 
 //-----------------------------------------------------------------------------
 template<typename BaseIterator>
-inline typename UTF8CodePointIterator<BaseIterator>::CodePoint UTF8CodePointIterator<BaseIterator>::operator* () const
+inline typename UTF8CodePointIterator<BaseIterator>::CodePoint UTF8CodePointIterator<BaseIterator>::operator* () const noexcept
 {
 	CodePoint codePoint = 0;
  

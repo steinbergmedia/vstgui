@@ -51,13 +51,13 @@ UTF8String::UTF8String (const StringType& str)
 }
 
 //-----------------------------------------------------------------------------
-UTF8String::UTF8String (StringType&& str)
+UTF8String::UTF8String (StringType&& str) noexcept
 {
 	*this = std::move (str);
 }
 
 //-----------------------------------------------------------------------------
-UTF8String& UTF8String::operator= (StringType&& str)
+UTF8String& UTF8String::operator= (StringType&& str) noexcept
 {
 	string = std::move (str);
 	platformString = nullptr;
@@ -71,13 +71,13 @@ UTF8String::UTF8String (const UTF8String& other)
 }
 
 //-----------------------------------------------------------------------------
-UTF8String::UTF8String (UTF8String&& other)
+UTF8String::UTF8String (UTF8String&& other) noexcept
 {
 	*this = std::move (other);
 }
 
 //-----------------------------------------------------------------------------
-UTF8String& UTF8String::operator=(UTF8String&& other)
+UTF8String& UTF8String::operator=(UTF8String&& other) noexcept
 {
 	string = std::move (other.string);
 	platformString = std::move (other.platformString);
@@ -96,12 +96,12 @@ UTF8String& UTF8String::operator=(const StringType& other)
 }
 
 //-----------------------------------------------------------------------------
-bool UTF8String::operator== (UTF8StringPtr str) const { return str ? string == str : false; }
-bool UTF8String::operator!= (UTF8StringPtr str) const { return str ? string != str : true; }
-bool UTF8String::operator== (const UTF8String& str) const { return string == str.getString (); }
-bool UTF8String::operator!= (const UTF8String& str) const { return string != str.getString (); }
-bool UTF8String::operator== (const StringType& str) const { return string == str; }
-bool UTF8String::operator!= (const StringType& str) const { return string != str; }
+bool UTF8String::operator== (UTF8StringPtr str) const noexcept { return str ? string == str : false; }
+bool UTF8String::operator!= (UTF8StringPtr str) const noexcept { return str ? string != str : true; }
+bool UTF8String::operator== (const UTF8String& str) const noexcept { return string == str.getString (); }
+bool UTF8String::operator!= (const UTF8String& str) const noexcept { return string != str.getString (); }
+bool UTF8String::operator== (const StringType& str) const noexcept { return string == str; }
+bool UTF8String::operator!= (const StringType& str) const noexcept { return string != str; }
 
 //-----------------------------------------------------------------------------
 UTF8String& UTF8String::operator+= (const UTF8String& other)
@@ -131,14 +131,14 @@ void UTF8String::assign (UTF8StringPtr str)
 }
 
 //-----------------------------------------------------------------------------
-void UTF8String::clear ()
+void UTF8String::clear () noexcept
 {
 	string.clear ();
 	platformString = nullptr;
 }
 
 //-----------------------------------------------------------------------------
-void UTF8String::copy (UTF8StringBuffer dst, SizeType dstSize) const
+void UTF8String::copy (UTF8StringBuffer dst, SizeType dstSize) const noexcept
 {
 #if WINDOWS
 	strcpy_s (dst, dstSize, string.data ());
@@ -148,7 +148,7 @@ void UTF8String::copy (UTF8StringBuffer dst, SizeType dstSize) const
 }
 
 //-----------------------------------------------------------------------------
-IPlatformString* UTF8String::getPlatformString () const
+IPlatformString* UTF8String::getPlatformString () const noexcept
 {
 	if (platformString == nullptr)
 		platformString = owned (IPlatformString::createWithUTF8String (data ()));
@@ -156,19 +156,19 @@ IPlatformString* UTF8String::getPlatformString () const
 }
 
 //-----------------------------------------------------------------------------
-UTF8String::CodePointIterator UTF8String::begin () const
+UTF8String::CodePointIterator UTF8String::begin () const noexcept
 {
 	return UTF8String::CodePointIterator (string.begin ());
 }
 
 //-----------------------------------------------------------------------------
-UTF8String::CodePointIterator UTF8String::end () const
+UTF8String::CodePointIterator UTF8String::end () const noexcept
 {
 	return UTF8String::CodePointIterator (string.end ());
 }
 
 //-----------------------------------------------------------------------------
-bool isspace (char32_t character)
+bool isspace (char32_t character) noexcept
 {
 	switch (character)
 	{
