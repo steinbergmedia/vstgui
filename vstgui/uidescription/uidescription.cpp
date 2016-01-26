@@ -2328,8 +2328,8 @@ typedef std::list<StringToken> StringTokenList;
 //-----------------------------------------------------------------------------
 static bool tokenizeString (std::string& str, StringTokenList& tokens)
 {
-	UTF8CodePointIterator start (str.begin ());
-	UTF8CodePointIterator end (str.end ());
+	UTF8CodePointIterator<std::string::const_iterator> start (str.begin ());
+	UTF8CodePointIterator<std::string::const_iterator> end (str.end ());
 	auto iterator = start;
 	while (iterator != end)
 	{

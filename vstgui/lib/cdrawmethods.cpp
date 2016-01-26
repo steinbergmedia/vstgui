@@ -53,8 +53,8 @@ UTF8String createTruncatedText (TextTruncateMode mode, const UTF8String& text, C
 	{
 		std::string truncatedText;
 		UTF8String result;
-		UTF8CodePointIterator left = UTF8CodePointIterator (text.getString ().begin ());
-		UTF8CodePointIterator right = UTF8CodePointIterator (text.getString ().end ());
+		auto left = text.begin ();
+		auto right = text.end ();
 		while (width > maxWidth && left != right)
 		{
 			if (mode == kTextTruncateHead)
@@ -63,7 +63,10 @@ UTF8String createTruncatedText (TextTruncateMode mode, const UTF8String& text, C
 				truncatedText = "..";
 			}
 			else if (mode == kTextTruncateTail)
+			{
 				--right;
+				truncatedText = "";
+			}
 
 			truncatedText += {left.base (), right.base ()};
 
@@ -71,7 +74,6 @@ UTF8String createTruncatedText (TextTruncateMode mode, const UTF8String& text, C
 				truncatedText += "..";
 
 			result = truncatedText;
-			truncatedText.clear ();
 			width = painter->getStringWidth (nullptr, result.getPlatformString (), true);
 			width += textInset.x * 2;
 		}

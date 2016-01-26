@@ -42,6 +42,37 @@
 
 namespace VSTGUI {
 
+//-----------------------------------------------------------------------------
+template<typename BaseIterator>
+class UTF8CodePointIterator : public std::iterator<std::bidirectional_iterator_tag, char32_t>
+{
+public:
+	using CodePoint = value_type;
+	
+	UTF8CodePointIterator () = default;
+	explicit UTF8CodePointIterator (const BaseIterator& iterator) : it (iterator) {}
+	
+	UTF8CodePointIterator& operator++ ();
+	UTF8CodePointIterator& operator-- ();
+	UTF8CodePointIterator operator++ (int);
+	UTF8CodePointIterator operator-- (int);
+	
+	bool operator== (const UTF8CodePointIterator& other) const;
+	bool operator!= (const UTF8CodePointIterator& other) const;
+	
+	CodePoint operator* () const;
+	
+	BaseIterator base () const { return it; }
+private:
+	BaseIterator it;
+	
+	static constexpr uint8_t kFirstBitMask = 128u; // 1000000
+	static constexpr uint8_t kSecondBitMask = 64u; // 0100000
+	static constexpr uint8_t kThirdBitMask = 32u; // 0010000
+	static constexpr uint8_t kFourthBitMask = 16u; // 0001000
+	static constexpr uint8_t kFifthBitMask = 8u; // 0000100
+};
+
 /**
  *  @brief holds an UTF8 encoded string and a platform representation of it
  *
@@ -54,7 +85,7 @@ class UTF8String
 public:
 	using StringType = std::string;
 	using SizeType = StringType::size_type;
-	using CodePointIterator = UTF8CodePointIterator;
+	using CodePointIterator = UTF8CodePointIterator<StringType::const_iterator>;
 	
 	UTF8String (UTF8StringPtr str = nullptr);
 	UTF8String (const UTF8String& other);
@@ -119,37 +150,6 @@ inline UTF8String toString (const T& value)
  *	@return true if character is a white-character
  */
 bool isspace (char32_t character);
-
-//-----------------------------------------------------------------------------
-class UTF8CodePointIterator : public std::iterator<std::bidirectional_iterator_tag, char32_t, std::string::difference_type>
-{
-public:
-	using CodePoint = value_type;
-	using BaseIterator = std::string::const_iterator;
-	
-	UTF8CodePointIterator () = default;
-	explicit UTF8CodePointIterator (const BaseIterator& iterator) : it (iterator) {}
-	
-	UTF8CodePointIterator& operator++ ();
-	UTF8CodePointIterator& operator-- ();
-	UTF8CodePointIterator operator++ (int);
-	UTF8CodePointIterator operator-- (int);
-	
-	bool operator== (const UTF8CodePointIterator& other) const;
-	bool operator!= (const UTF8CodePointIterator& other) const;
-	
-	CodePoint operator* () const;
-	
-	BaseIterator base () const { return it; }
-private:
-	BaseIterator it;
-	
-	static constexpr uint8_t kFirstBitMask = 128u; // 1000000
-	static constexpr uint8_t kSecondBitMask = 64u; // 0100000
-	static constexpr uint8_t kThirdBitMask = 32u; // 0010000
-	static constexpr uint8_t kFourthBitMask = 16u; // 0001000
-	static constexpr uint8_t kFifthBitMask = 8u; // 0000100
-};
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 //-----------------------------------------------------------------------------
@@ -394,7 +394,8 @@ inline UTF8StringView::operator const UTF8StringPtr () const
 }
 
 //-----------------------------------------------------------------------------
-inline UTF8CodePointIterator& UTF8CodePointIterator::operator++ ()
+template<typename BaseIterator>
+inline UTF8CodePointIterator<BaseIterator>& UTF8CodePointIterator<BaseIterator>::operator++ ()
 {
 	auto firstByte = *it;
  
@@ -419,7 +420,8 @@ inline UTF8CodePointIterator& UTF8CodePointIterator::operator++ ()
 }
 
 //-----------------------------------------------------------------------------
-inline UTF8CodePointIterator& UTF8CodePointIterator::operator-- ()
+template<typename BaseIterator>
+inline UTF8CodePointIterator<BaseIterator>& UTF8CodePointIterator<BaseIterator>::operator-- ()
 {
 	--it;
  	if (*it & kFirstBitMask)
@@ -438,7 +440,8 @@ inline UTF8CodePointIterator& UTF8CodePointIterator::operator-- ()
 }
 
 //-----------------------------------------------------------------------------
-inline UTF8CodePointIterator UTF8CodePointIterator::operator++ (int)
+template<typename BaseIterator>
+inline UTF8CodePointIterator<BaseIterator> UTF8CodePointIterator<BaseIterator>::operator++ (int)
 {
 	auto result = *this;
 	++(*this);
@@ -446,7 +449,8 @@ inline UTF8CodePointIterator UTF8CodePointIterator::operator++ (int)
 }
 
 //-----------------------------------------------------------------------------
-inline UTF8CodePointIterator UTF8CodePointIterator::operator-- (int)
+template<typename BaseIterator>
+inline UTF8CodePointIterator<BaseIterator> UTF8CodePointIterator<BaseIterator>::operator-- (int)
 {
 	auto result = *this;
 	--(*this);
@@ -454,19 +458,22 @@ inline UTF8CodePointIterator UTF8CodePointIterator::operator-- (int)
 }
 
 //-----------------------------------------------------------------------------
-inline bool UTF8CodePointIterator::operator== (const UTF8CodePointIterator& other) const
+template<typename BaseIterator>
+inline bool UTF8CodePointIterator<BaseIterator>::operator== (const UTF8CodePointIterator<BaseIterator>& other) const
 {
 	return it == other.it;
 }
 
 //-----------------------------------------------------------------------------
-inline bool UTF8CodePointIterator::operator!= (const UTF8CodePointIterator& other) const
+template<typename BaseIterator>
+inline bool UTF8CodePointIterator<BaseIterator>::operator!= (const UTF8CodePointIterator<BaseIterator>& other) const
 {
 	return it != other.it;
 }
 
 //-----------------------------------------------------------------------------
-inline UTF8CodePointIterator::CodePoint UTF8CodePointIterator::operator* () const
+template<typename BaseIterator>
+inline typename UTF8CodePointIterator<BaseIterator>::CodePoint UTF8CodePointIterator<BaseIterator>::operator* () const
 {
 	CodePoint codePoint = 0;
  
