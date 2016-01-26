@@ -255,6 +255,24 @@ public:
 
 	const UTF8String& getID () const { return value->getID (); }
 
+	void onBeginEdit (IValue& value) override
+	{
+		for (auto& c : controls)
+		{
+			if (auto listener = c->getListener ())
+				listener->controlBeginEdit (c);
+		}
+	}
+	
+	void onEndEdit (IValue& value) override
+	{
+		for (auto& c : controls)
+		{
+			if (auto listener = c->getListener ())
+				listener->controlEndEdit (c);
+		}
+	}
+
 	void onPerformEdit (IValue& value, IValue::Type newValue) override
 	{
 		for (auto& c : controls)
@@ -337,7 +355,9 @@ public:
 			}
 		}
 		updateControlOnStateChange (control);
+		control->beginEdit ();
 		control->setValueNormalized (static_cast<float> (value->getValue ()));
+		control->endEdit ();
 		control->invalid ();
 		control->registerControlListener (this);
 		control->registerViewListener (this);
