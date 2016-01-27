@@ -12,7 +12,7 @@ using namespace VSTGUI::Standalone;
 using namespace VSTGUI::Standalone::UIDesc;
 
 //------------------------------------------------------------------------
-std::unique_ptr<About> About::gInstance;
+About::Ptr About::gInstance;
 
 //------------------------------------------------------------------------
 void About::show ()

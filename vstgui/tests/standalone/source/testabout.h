@@ -12,7 +12,8 @@ public:
 	static void show ();
 
 private:
-	static std::unique_ptr<About> gInstance;
+	using Ptr = std::unique_ptr<About>;
+	static Ptr gInstance;
 
 	using IWindow = VSTGUI::Standalone::IWindow;
 	using WindowPtr = VSTGUI::Standalone::WindowPtr;
