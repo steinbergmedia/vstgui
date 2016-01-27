@@ -27,7 +27,6 @@ CScrollbar::CScrollbar (const CRect& size, IControlListener* listener, int32_t t
 , overlayStyle (false)
 , mouseIsInside (false)
 , drawer (nullptr)
-, timer (nullptr)
 {
 	setTransparency (true);
 	setWheelInc (0.05f);
@@ -52,7 +51,6 @@ CScrollbar::CScrollbar (const CScrollbar& v)
 , overlayStyle (v.overlayStyle)
 , mouseIsInside (false)
 , drawer (v.drawer)
-, timer (nullptr)
 {
 	calculateScrollerLength ();
 }
@@ -228,8 +226,7 @@ CMouseEventResult CScrollbar::onMouseDown (CPoint &where, const CButtonState& bu
 	else if (scrollerArea.pointInside (where))
 	{
 		doStepping ();
-		timer = new CVSTGUITimer (this, 250);
-		timer->start ();
+		timer = owned (new CVSTGUITimer (this, 250, true));
 		return kMouseEventHandled;
 	}
 	return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
@@ -238,11 +235,7 @@ CMouseEventResult CScrollbar::onMouseDown (CPoint &where, const CButtonState& bu
 //-----------------------------------------------------------------------------
 CMouseEventResult CScrollbar::onMouseUp (CPoint &where, const CButtonState& buttons)
 {
-	if (timer)
-	{
-		timer->forget ();
-		timer = nullptr;
-	}
+	timer = nullptr;
 	return kMouseEventHandled;
 }
 

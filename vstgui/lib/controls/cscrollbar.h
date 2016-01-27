@@ -95,7 +95,7 @@ protected:
 	
 	IScrollbarDrawer* drawer;
 private:
-	CVSTGUITimer* timer;
+	SharedPointer<CVSTGUITimer> timer;
 	CPoint startPoint;
 	CRect scrollerRect;
 	bool scrolling;
