@@ -271,6 +271,17 @@ static const CommandWithKeyList* getCommandList (const char* group)
 		}
 	}
 
+	NSMenuItem* editMenu = [mainMenu itemWithTitle:@"Edit"];
+	if (editMenu && editMenu.submenu)
+	{
+		NSMenuItem* showCharacterPanelItem = [editMenu.submenu itemWithTitle:@"Characters"];
+		if (showCharacterPanelItem == nil)
+		{
+			[editMenu.submenu addItem:[NSMenuItem separatorItem]];
+			[editMenu.submenu addItemWithTitle:@"Emoji & Symbols" action:@selector(orderFrontCharacterPalette:) keyEquivalent:@""];
+		}
+	}
+
 	// move Windows menu to the end
 	NSMenuItem* windowsMenuItem = [mainMenu itemWithTitle:@"Windows"];
 	[mainMenu removeItem:windowsMenuItem];
