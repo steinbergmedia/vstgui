@@ -69,7 +69,7 @@ public:
 	CPoint getSize () const override { return platformWindow->getSize (); }
 	CPoint getPosition () const override { return platformWindow->getPosition (); }
 	CRect getFocusViewRect () const override;
-	void setSize (const CPoint& newSize) override { platformWindow->setSize (newSize); }
+	void setSize (const CPoint& newSize) override;
 	void setPosition (const CPoint& newPosition) override
 	{
 		platformWindow->setPosition (newPosition);
@@ -123,6 +123,15 @@ bool Window::init (const WindowConfiguration& config, const WindowControllerPtr&
 		controller = inController;
 	}
 	return platformWindow != nullptr;
+}
+
+//------------------------------------------------------------------------
+void Window::setSize (const CPoint& newSize)
+{
+	CPoint size (newSize);
+	if (controller)
+		size = controller->constraintSize (*this, size);
+	platformWindow->setSize (size);
 }
 
 //------------------------------------------------------------------------
