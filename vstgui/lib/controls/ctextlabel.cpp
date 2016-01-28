@@ -193,9 +193,16 @@ void CMultiLineTextLabel::draw (CDrawContext* pContext)
 		recalculateLines (pContext);
 	drawBack (pContext);
 	pContext->saveGlobalState ();
+	CRect oldClip;
+	pContext->getClipRect (oldClip);
+	CRect newClip (getViewSize ());
+	newClip.inset (getTextInset ());
+	newClip.bound (oldClip);
+	pContext->setClipRect (newClip);
+
 	pContext->setDrawMode (kAntiAliasing);
 	pContext->setFont (getFont ());
-
+	
 	CDrawContext::Transform t (*pContext, CGraphicsTransform ().translate (getViewSize ().getTopLeft ()));
 
 	if (style & kShadowText)
