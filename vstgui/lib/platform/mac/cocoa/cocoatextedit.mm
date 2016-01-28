@@ -288,7 +288,7 @@ CocoaTextEdit::~CocoaTextEdit ()
 //-----------------------------------------------------------------------------
 UTF8String CocoaTextEdit::getText ()
 {
-	return [[platformControl stringValue] UTF8String];
+	return [[[platformControl stringValue] decomposedStringWithCanonicalMapping] UTF8String];
 }
 
 //-----------------------------------------------------------------------------
