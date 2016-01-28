@@ -35,6 +35,7 @@
 #include "ctextlabel.h"
 #include "../platform/iplatformfont.h"
 #include "../cdrawmethods.h"
+#include "../cdrawcontext.h"
 
 namespace VSTGUI {
 
@@ -56,7 +57,6 @@ IdStringPtr CTextLabel::kMsgTruncatedTextChanged = "CTextLabel::kMsgTruncatedTex
 //------------------------------------------------------------------------
 CTextLabel::CTextLabel (const CRect& size, UTF8StringPtr txt, CBitmap* background, const int32_t style)
 : CParamDisplay (size, background, style)
-, text (nullptr)
 , textTruncateMode (kTruncateNone)
 {
 	setText (txt);
@@ -65,7 +65,6 @@ CTextLabel::CTextLabel (const CRect& size, UTF8StringPtr txt, CBitmap* backgroun
 //------------------------------------------------------------------------
 CTextLabel::CTextLabel (const CTextLabel& v)
 : CParamDisplay (v)
-, text (nullptr)
 , textTruncateMode (v.textTruncateMode)
 {
 	setText (v.getText ());
@@ -161,6 +160,186 @@ void CTextLabel::drawStyleChanged ()
 		calculateTruncatedText ();
 	}
 	CParamDisplay::drawStyleChanged ();
+}
+
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
+CMultiLineTextLabel::CMultiLineTextLabel (const CRect& size)
+: CTextLabel (size)
+{
+}
+
+//------------------------------------------------------------------------
+void CMultiLineTextLabel::setTextTruncateMode (TextTruncateMode)
+{
+	// not supported on multi line labels
+	CTextLabel::setTextTruncateMode (kTruncateNone);
+}
+
+//------------------------------------------------------------------------
+void CMultiLineTextLabel::setLineLayout (LineLayout layout)
+{
+	if (lineLayout == layout)
+		return;
+	lineLayout = layout;
+	lines.clear ();
+}
+
+//------------------------------------------------------------------------
+void CMultiLineTextLabel::draw (CDrawContext* pContext)
+{
+	if (getText ().empty () == false && lines.empty ())
+		recalculateLines (pContext);
+	drawBack (pContext);
+	pContext->saveGlobalState ();
+	pContext->setDrawMode (kAntiAliasing);
+	pContext->setFont (getFont ());
+
+	CDrawContext::Transform t (*pContext, CGraphicsTransform ().translate (getViewSize ().getTopLeft ()));
+
+	if (style & kShadowText)
+	{
+		CDrawContext::Transform t (*pContext, CGraphicsTransform ().translate (shadowTextOffset));
+		pContext->setFontColor (getShadowColor ());
+		for (const auto& line : lines)
+			pContext->drawString (line.str.getPlatformString (), line.r, getHoriAlign (), bAntialias);
+	}
+
+	pContext->setFontColor (getFontColor ());
+	for (const auto& line : lines)
+		pContext->drawString (line.str.getPlatformString (), line.r, getHoriAlign (), bAntialias);
+
+	pContext->restoreGlobalState ();
+	setDirty (false);
+}
+
+//------------------------------------------------------------------------
+bool CMultiLineTextLabel::sizeToFit ()
+{
+	return false;
+}
+
+//------------------------------------------------------------------------
+void CMultiLineTextLabel::setText (const UTF8String& txt)
+{
+	if (getText () == txt)
+		return;
+	CTextLabel::setText (txt);
+	lines.clear ();
+}
+
+//------------------------------------------------------------------------
+void CMultiLineTextLabel::setViewSize (const CRect& rect, bool invalid)
+{
+	if (getViewSize () != rect)
+		lines.clear ();
+	CTextLabel::setViewSize (rect, invalid);
+}
+
+//------------------------------------------------------------------------
+void CMultiLineTextLabel::drawStyleChanged ()
+{
+	lines.clear ();
+	CTextLabel::drawStyleChanged ();
+}
+
+//------------------------------------------------------------------------
+inline bool isLineBreakSeparator (char32_t c)
+{
+	switch (c)
+	{
+		case '-': return true;
+		case '_': return true;
+		case '/': return true;
+		case '\\': return true;
+		case '.': return true;
+		case ',': return true;
+		case ':': return true;
+		case ';': return true;
+		case '?': return true;
+		case '!': return true;
+		case '*': return true;
+		case '+': return true;
+		case '&': return true;
+	}
+	return false;
+}
+
+//------------------------------------------------------------------------
+void CMultiLineTextLabel::recalculateLines (CDrawContext* context)
+{
+	const auto& font = getFont ()->getPlatformFont ();
+	const auto& fontPainter = getFont ()->getFontPainter ();
+	auto ascent = font->getAscent ();
+	auto descent = font->getDescent ();
+	auto leading = font->getLeading ();
+	auto lineHeight = ascent + descent + leading;
+
+	const auto& textInset = getTextInset ();
+	auto maxWidth = getWidth () - (textInset.x * 2);
+
+	std::vector<std::pair<UTF8String, CCoord>> elements;
+	std::stringstream stream (getText ().getString ());
+	std::string line;
+	while (std::getline (stream, line, '\n'))
+	{
+		UTF8String str (std::move (line));
+		auto width = fontPainter->getStringWidth (context, str.getPlatformString ());
+		elements.emplace_back (std::move (str), width);
+	}
+
+	CCoord y = textInset.y;
+
+	for (auto& element : elements)
+	{
+		if (element.second > maxWidth && lineLayout != LineLayout::clip)
+		{
+			if (lineLayout == LineLayout::truncate)
+			{
+				element.first = CDrawMethods::createTruncatedText (CDrawMethods::kTextTruncateTail, element.first, fontID, maxWidth);
+			}
+			else // wrap
+			{
+				auto start = element.first.begin ();
+				auto lastSeparator = start;
+				auto pos = start;
+				while (pos != element.first.end ())
+				{
+					if (isspace (*pos))
+						lastSeparator = pos;
+					else if (isLineBreakSeparator (*pos))
+						lastSeparator = ++pos;
+					UTF8String tmp ({start.base (), ++(pos.base ())});
+					auto width = fontPainter->getStringWidth (context, tmp.getPlatformString ());
+					if (width > maxWidth)
+					{
+						if (lastSeparator == element.first.end ())
+							lastSeparator = pos;
+						if (start == lastSeparator)
+							lastSeparator = pos;
+						lines.emplace_back (Line {CRect (textInset.x, y, getWidth () - textInset.x, y + lineHeight + textInset.y), UTF8String ({start.base (), lastSeparator.base ()})});
+						y += lineHeight;
+						pos = lastSeparator;
+						start = pos;
+						if (isspace (*start))
+							++start;
+						lastSeparator = element.first.end ();
+					}
+					++pos;
+				}
+				if (start != element.first.end ())
+				{
+					lines.emplace_back (Line {CRect (textInset.x, y, getWidth () - textInset.x, y + lineHeight + textInset.y), UTF8String ({start.base (), element.first.end ().base ()})});
+					y += lineHeight;
+				}
+				continue;
+			}
+		}
+		lines.emplace_back (Line {CRect (textInset.x, y, getWidth () - textInset.x, y + lineHeight + textInset.y), std::move (element.first)});
+		y += lineHeight;
+	}
+
 }
 
 } // namespace

@@ -90,6 +90,41 @@ protected:
 	UTF8String truncatedText;
 };
 
+//-----------------------------------------------------------------------------
+class CMultiLineTextLabel : public CTextLabel
+{
+public:
+	CMultiLineTextLabel (const CRect& size);
+	CMultiLineTextLabel (const CMultiLineTextLabel&) = default;
+
+	enum class LineLayout {
+		clip,
+		truncate,
+		wrap
+	};
+	virtual void setLineLayout (LineLayout layout);
+	LineLayout getLineLayout () const { return lineLayout; }
+
+	void draw (CDrawContext* pContext) override;
+	bool sizeToFit () override;
+	void setText (const UTF8String& txt) override;
+	void setViewSize (const CRect& rect, bool invalid = true) override;
+	void drawStyleChanged () override;
+	void setTextTruncateMode (TextTruncateMode mode) override;
+private:
+	void recalculateLines (CDrawContext* context);
+	
+	LineLayout lineLayout {LineLayout::clip};
+
+	struct Line
+	{
+		CRect r;
+		UTF8String str;
+	};
+	using Lines = std::vector<Line>;
+	Lines lines;
+};
+
 } // namespace
 
 #endif

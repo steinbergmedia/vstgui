@@ -34,6 +34,7 @@ static const IdStringPtr kCParamDisplay = "CParamDisplay";
 static const IdStringPtr kCXYPad = "CXYPad";
 static const IdStringPtr kCOptionMenu = "COptionMenu";
 static const IdStringPtr kCTextLabel = "CTextLabel";
+static const IdStringPtr kCMultiLineTextLabel = "CMultiLineTextLabel";
 static const IdStringPtr kCTextEdit = "CTextEdit";
 static const IdStringPtr kCTextButton = "CTextButton";
 static const IdStringPtr kCSegmentButton = "CSegmentButton";
@@ -168,6 +169,11 @@ static const std::string kAttrMenuCheckStyle = "menu-check-style";
 // CTextLabelCreator attributes
 //-----------------------------------------------------------------------------
 static const std::string kAttrTruncateMode = "truncate-mode";
+
+//-----------------------------------------------------------------------------
+// CMultiLineTextLabelCreator attributes
+//-----------------------------------------------------------------------------
+static const std::string kAttrLineLayout = "line-layout";
 
 //-----------------------------------------------------------------------------
 // CTextEditCreator attributes

@@ -1753,6 +1753,79 @@ public:
 CTextLabelCreator __gCTextLabelCreator;
 
 //-----------------------------------------------------------------------------
+class CMultiLineTextLabelCreator : public IViewCreator
+{
+public:
+	CMultiLineTextLabelCreator () { UIViewFactory::registerViewCreator (*this); }
+	IdStringPtr getViewName () const override { return kCMultiLineTextLabel; }
+	IdStringPtr getBaseViewName () const override { return kCTextLabel; }
+	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CMultiLineTextLabel (CRect (0, 0, 100, 20)); }
+	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
+	{
+		auto label = dynamic_cast<CMultiLineTextLabel*> (view);
+		if (!label)
+			return false;
+		
+		auto attr = attributes.getAttributeValue (kAttrLineLayout);
+		if (attr)
+		{
+			if (*attr == "truncate")
+				label->setLineLayout (CMultiLineTextLabel::LineLayout::truncate);
+			else if (*attr == "wrap")
+				label->setLineLayout (CMultiLineTextLabel::LineLayout::wrap);
+			else
+				label->setLineLayout (CMultiLineTextLabel::LineLayout::clip);
+		}
+		
+		return true;
+	}
+	bool getAttributeNames (std::list<std::string>& attributeNames) const override
+	{
+		attributeNames.push_back (kAttrLineLayout);
+		return true;
+	}
+	AttrType getAttributeType (const std::string& attributeName) const override
+	{
+		if (attributeName == kAttrLineLayout) return kListType;
+		return kUnknownType;
+	}
+	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const override
+	{
+		auto label = dynamic_cast<CMultiLineTextLabel*> (view);
+		if (!label)
+			return false;
+		if (attributeName == kAttrLineLayout)
+		{
+			switch (label->getLineLayout ())
+			{
+				case CMultiLineTextLabel::LineLayout::truncate: stringValue = "truncate"; break;
+				case CMultiLineTextLabel::LineLayout::wrap: stringValue = "wrap"; break;
+				case CMultiLineTextLabel::LineLayout::clip: stringValue = "clip"; break;
+			}
+			return true;
+		}
+		return false;
+	}
+	bool getPossibleListValues (const std::string& attributeName, std::list<const std::string*>& values) const override
+	{
+		if (attributeName == kAttrLineLayout)
+		{
+			static std::string kClip = "clip";
+			static std::string kTruncate = "truncate";
+			static std::string kWrap = "wrap";
+			
+			values.push_back (&kClip);
+			values.push_back (&kTruncate);
+			values.push_back (&kWrap);
+			return true;
+		}
+		return false;
+	}
+
+};
+CMultiLineTextLabelCreator __gCMultiLineTextLabelCreator;
+
+//-----------------------------------------------------------------------------
 class CTextEditCreator : public IViewCreator
 {
 public:
