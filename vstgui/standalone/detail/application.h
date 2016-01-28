@@ -43,6 +43,7 @@ public:
 	                   PlatformCallbacks&& callbacks) = 0;
 
 	virtual const CommandList& getCommandList () = 0;
+	virtual bool canQuit () = 0;
 };
 
 } // Detail

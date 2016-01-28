@@ -57,7 +57,7 @@ static const CommandWithKeyList* getCommandList (const char* group)
 //------------------------------------------------------------------------
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication*)sender
 {
-	if (IApplication::instance ().getDelegate ().canQuit ())
+	if (getApplicationPlatformAccess ()->canQuit ())
 		return NSTerminateNow;
 	return NSTerminateCancel;
 }

@@ -52,6 +52,7 @@ public:
 	void init (IPreference& preferences, IApplication::CommandLineArguments&& cmdArgs,
 	           PlatformCallbacks&& callbacks) override;
 	const CommandList& getCommandList () override;
+	bool canQuit () override;
 
 private:
 	bool doCommandHandling (const Command& command, bool checkOnly);
@@ -150,10 +151,25 @@ void Application::showAlertBoxForWindow (const AlertBoxForWindowConfig& config)
 //------------------------------------------------------------------------
 void Application::quit ()
 {
-	if (!delegate->canQuit ())
+	if (!canQuit ())
 		return;
 	if (platform.quit)
 		platform.quit ();
+}
+
+//------------------------------------------------------------------------
+bool Application::canQuit ()
+{
+	if (!delegate->canQuit ())
+		return false;
+
+	for (auto& window : windows)
+	{
+		if (window->getController () && !window->getController()->canClose (*window))
+			return false;
+	}
+	
+	return true;
 }
 
 //------------------------------------------------------------------------
