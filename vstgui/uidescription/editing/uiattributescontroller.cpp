@@ -186,7 +186,7 @@ public:
 			if (tag >= kRowTag && tag <= kColTag)
 			{
 				FOREACH_IN_SELECTION(selection, view)
-					if (dynamic_cast<CViewContainer*>(view) == nullptr)
+					if (view->asViewContainer () == nullptr)
 					{
 						controls[tag]->setVisible (false);
 						break;
@@ -1063,8 +1063,7 @@ CView* UIAttributesController::createValueViewForAttributeType (const UIViewFact
 				CView* view = UIEditController::getEditorDescription ().createView ("attributes.number", this);
 				if (view)
 				{
-					CViewContainer* container = dynamic_cast<CViewContainer*>(view);
-					if (container)
+					if (auto container = view->asViewContainer ())
 					{
 						std::vector<CSlider*> sliders;
 						if (container->getChildViewsOfType<CSlider> (sliders) == 1)

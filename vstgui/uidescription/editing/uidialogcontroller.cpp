@@ -254,8 +254,7 @@ CView* UIDialogController::verifyView (CView* view, const UIAttributes& attribut
 				size.setHeight (subView->getHeight ());
 				view->setViewSize (size);
 				view->setMouseableArea (size);
-				CViewContainer* container = dynamic_cast<CViewContainer*> (view);
-				if (container)
+				if (auto container = view->asViewContainer ())
 					container->addView (subView);
 			}
 		}
@@ -334,8 +333,7 @@ void UIDialogController::collectOpenGLViews (CViewContainer* container)
 			openglViews.push_back (openGLView);
 		else
 		{
-			CViewContainer* childContainer = dynamic_cast<CViewContainer*>(*it);
-			if (childContainer)
+			if (auto childContainer = (*it)->asViewContainer ())
 				collectOpenGLViews (childContainer);
 		}
 		it++;

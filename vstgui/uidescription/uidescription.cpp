@@ -966,7 +966,7 @@ UINode* UIDescription::findNodeForView (CView* view) const
 			{
 				if (view == parentView)
 					return node;
-				CViewContainer* container = dynamic_cast<CViewContainer*> (parentView);
+				CViewContainer* container = parentView->asViewContainer ();
 				vstgui_assert (container != nullptr);
 				UIDescList::iterator nodeIterator = node->getChildren ().begin ();
 				CViewContainer* childContainer = nullptr;
@@ -979,7 +979,7 @@ UINode* UIDescription::findNodeForView (CView* view) const
 						parentView = view;
 						break;
 					}
-					childContainer = dynamic_cast<CViewContainer*>(*it);
+					childContainer = (*it)->asViewContainer ();
 					if (childContainer && childContainer->isChild (view, true))
 					{
 						break;
@@ -1135,7 +1135,7 @@ CView* UIDescription::createViewFromNode (UINode* node) const
 	}
 	if (result && node->hasChildren ())
 	{
-		CViewContainer* viewContainer = dynamic_cast<CViewContainer*> (result);
+		CViewContainer* viewContainer = result->asViewContainer ();
 		for (const auto& itNode : node->getChildren ())
 		{
 			if (viewContainer)
@@ -1973,7 +1973,7 @@ bool UIDescription::updateAttributesForView (UINode* node, CView* view, bool dee
 #if VSTGUI_LIVE_EDITING
 	UIViewFactory* factory = dynamic_cast<UIViewFactory*> (viewFactory);
 	std::list<std::string> attributeNames;
-	CViewContainer* container = dynamic_cast<CViewContainer*> (view);
+	CViewContainer* container = view->asViewContainer ();
 	if (factory->getAttributeNamesForView (view, attributeNames))
 	{
 		for (auto& name : attributeNames)

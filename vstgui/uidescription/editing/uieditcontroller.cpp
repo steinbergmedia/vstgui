@@ -611,8 +611,7 @@ void UIEditController::valueChanged (CControl* control)
 			case kEditingTag:
 			{
 				selection->empty ();
-				CViewContainer* container = editView->getEditView () ? dynamic_cast<CViewContainer*>(editView->getEditView ()) : nullptr;
-				if (container)
+				if (auto container = editView->getEditView () ? editView->getEditView ()->asViewContainer () : nullptr)
 					resetScrollViewOffsets (container);
 				editView->enableEditing (control->getValue () == control->getMax () ? true : false);
 				break;
@@ -701,7 +700,7 @@ void UIEditController::beforeSave ()
 		
 		getSettings ()->setIntegerAttribute ("Version", 1);
 		// find the view of this controller
-		CViewContainer* container = dynamic_cast<CViewContainer*> (editView->getParentView ());
+		auto container = editView->getParentView ()->asViewContainer ();
 		while (container && container != container->getFrame ())
 		{
 			if (getViewController (container, false) == this)
@@ -709,7 +708,7 @@ void UIEditController::beforeSave ()
 				getSettings ()->setRectAttribute ("EditorSize", container->getViewSize ());
 				break;
 			}
-			container = dynamic_cast<CViewContainer*> (container->getParentView ());
+			container = container->getParentView () ? container->getParentView ()->asViewContainer () : nullptr;
 		}
 		undoManager->markSavePosition ();
 		if (zoomSettingController)
@@ -753,7 +752,7 @@ void UIEditController::onTemplateSelectionChanged ()
 		}
 		if (editView->getEditView ())
 		{
-			if (!(selection->first () && dynamic_cast<CViewContainer*> (editView->getEditView ())->isChild(selection->first (), true)))
+			if (!(selection->first () && editView->getEditView ()->asViewContainer ()->isChild (selection->first (), true)))
 				selection->setExclusive (editView->getEditView ());
 		}
 		else
@@ -781,10 +780,10 @@ void UIEditController::addSelectionToCurrentView (UISelection* copySelection)
 	if (selection->total () == 0)
 		return;
 	CPoint offset;
-	CViewContainer* container = dynamic_cast<CViewContainer*> (selection->first ());
+	CViewContainer* container = selection->first ()->asViewContainer ();
 	if (container == nullptr)
 	{
-		container = dynamic_cast<CViewContainer*> (selection->first ()->getParentView ());
+		container = selection->first ()->getParentView ()->asViewContainer ();
 		offset = selection->first ()->getViewSize ().getTopLeft ();
 		offset.offset (gridController->getSize ().x, gridController->getSize ().y);
 	}
@@ -1036,8 +1035,7 @@ CMessageResult UIEditController::validateMenuItem (CCommandMenuItem* item)
 		{
 			bool lower = cmdName == "Lower" ? true : false;
 			CView* view = selection->first ();
-			CViewContainer* parent = dynamic_cast<CViewContainer*>(view->getParentView ());
-			if (parent)
+			if (auto parent = view->getParentView ()->asViewContainer ())
 			{
 				if (lower)
 				{
@@ -1060,7 +1058,7 @@ CMessageResult UIEditController::validateMenuItem (CCommandMenuItem* item)
 	{
 		if (cmdName == "Select All Children")
 		{
-			bool enable = selection->total () == 1 && selection->first () && dynamic_cast<CViewContainer*> (selection->first ());
+			bool enable = selection->total () == 1 && selection->first () && selection->first ()->asViewContainer ();
 			item->setEnabled (enable);
 			return kMessageNotified;
 		}
@@ -1123,7 +1121,7 @@ bool UIEditController::doZOrderAction (bool lower)
 //----------------------------------------------------------------------------------------------------
 void UIEditController::doSelectAllChildren ()
 {
-	CViewContainer* container = dynamic_cast<CViewContainer*> (selection->first ());
+	CViewContainer* container = selection->first ()->asViewContainer ();
 	selection->empty ();
 	const IViewFactory* factory = editDescription->getViewFactory ();
 	ViewIterator it (container);
@@ -1142,8 +1140,7 @@ void UIEditController::onUndoManagerChanged ()
 	CView* view = selection->first ();
 	if (view)
 	{
-		CViewContainer* templateView = dynamic_cast<CViewContainer*> (editView->getEditView ());
-		if (templateView)
+		if (auto templateView = editView->getEditView () ? editView->getEditView ()->asViewContainer () : nullptr)
 		{
 			if (view == templateView || templateView->isChild (view, true))
 			{
@@ -1152,7 +1149,7 @@ void UIEditController::onUndoManagerChanged ()
 		}
 		for (auto& it : templates)
 		{
-			CViewContainer* container = it.view.cast<CViewContainer> ();
+			CViewContainer* container = it.view->asViewContainer ();
 			if (container && (view == container || container->isChild (view, true)))
 			{
 				templateController->selectTemplate (it.name.c_str ());
@@ -1174,8 +1171,7 @@ void UIEditController::resetScrollViewOffsets (CViewContainer* view)
 		{
 			scrollView->resetScrollOffset ();
 		}
-		CViewContainer* container = dynamic_cast<CViewContainer*>(*it);
-		if (container)
+		if (auto container = (*it)->asViewContainer ())
 			resetScrollViewOffsets (container);
 		it++;
 	}
@@ -1589,8 +1585,7 @@ void UIEditController::updateTemplate (const std::vector<Template>::const_iterat
 	if (it != templates.end ())
 	{
 		CView* view = (*it).view;
-		CViewContainer* container = dynamic_cast<CViewContainer*>(view);
-		if (container)
+		if (auto container = view->asViewContainer ())
 			resetScrollViewOffsets (container);
 		editDescription->updateViewDescription ((*it).name.c_str (), view);
 	}

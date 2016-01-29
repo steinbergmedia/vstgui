@@ -220,16 +220,15 @@ static CControl* findControlTag (CViewContainer* parent, int32_t tag, bool rever
 		}
 		else if (reverse)
 		{
-			CViewContainer* container = dynamic_cast<CViewContainer*> (view);
-			if (container)
+			if (auto container = view->asViewContainer ())
 				result = findControlTag (container, tag);
 		}
 		if (result)
 			break;
 		++it;
 	}
-	if (result == nullptr && !reverse)
-		return findControlTag (dynamic_cast<CViewContainer*> (parent->getParentView ()), reverse);
+	if (result == nullptr && !reverse && parent->getParentView ())
+		return findControlTag (parent->getParentView ()->asViewContainer (), reverse);
 	return result;
 }
 
@@ -239,7 +238,7 @@ void UIDescriptionViewSwitchController::switchContainerAttached ()
 	if (switchControlTag != -1)
 	{
 		// find the switch Control
-		switchControl = findControlTag (dynamic_cast<CViewContainer*> (viewSwitch->getParentView ()), switchControlTag, false);
+		switchControl = findControlTag (viewSwitch->getParentView ()->asViewContainer (), switchControlTag, false);
 		if (switchControl == nullptr)
 		{
 			switchControl = findControlTag (viewSwitch->getFrame (), switchControlTag, true);

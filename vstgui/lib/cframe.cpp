@@ -329,7 +329,7 @@ void CFrame::checkMouseViews (const CPoint& where, const CButtonState& buttons)
 		clearMouseViews (where, buttons);
 		return;
 	}
-	CViewContainer* vc = currentMouseView ? dynamic_cast<CViewContainer*> (currentMouseView) : nullptr;
+	CViewContainer* vc = currentMouseView ? currentMouseView->asViewContainer () : nullptr;
 	// if the currentMouseView is not a view container, we know that the new mouseView won't be a child of it and that all other
 	// views in the list are viewcontainers
 	if (vc == nullptr && currentMouseView)
@@ -365,7 +365,7 @@ void CFrame::checkMouseViews (const CPoint& where, const CButtonState& buttons)
 		else
 			break;
 	}
-	vc = pMouseViews.empty () == false ? dynamic_cast<CViewContainer*> (pMouseViews.back ()) : nullptr;
+	vc = pMouseViews.empty () == false ? pMouseViews.back ()->asViewContainer () : nullptr;
 	if (vc)
 	{
 		ViewList::iterator it2 = pMouseViews.end ();
@@ -428,7 +428,7 @@ bool CFrame::hitTestSubViews (const CPoint& where, const CButtonState& buttons)
 		getTransform ().inverse ().transform (where2);
 		if (pModalView->isVisible () && pModalView->getMouseEnabled () && pModalView->hitTest (where2, buttons))
 		{
-			if (auto viewContainer = dynamic_cast<CViewContainer*> (pModalView))
+			if (auto viewContainer = pModalView->asViewContainer ())
 			{
 				return viewContainer->hitTestSubViews (where2, buttons);
 			}
@@ -813,8 +813,7 @@ bool CFrame::setModalView (CView* pView)
 		if (result)
 		{
 			clearMouseViews (CPoint (0, 0), 0, true);
-			CViewContainer* container = dynamic_cast<CViewContainer*> (pModalView);
-			if (container)
+			if (auto container = pModalView->asViewContainer ())
 				container->advanceNextFocusView (nullptr, false);
 			else
 				setFocusView (pModalView->wantsFocus () ? pModalView : nullptr);
@@ -899,8 +898,7 @@ void CFrame::onViewRemoved (CView* pView)
 		pActiveFocusView = nullptr;
 	if (pFocusView == pView)
 		setFocusView (nullptr);
-	CViewContainer* container = dynamic_cast<CViewContainer*> (pView);
-	if (container)
+	if (auto container = pView->asViewContainer ())
 	{
 		if (container->isChild (pFocusView, true))
 			setFocusView (nullptr);
@@ -983,8 +981,7 @@ bool CFrame::advanceNextFocusView (CView* oldFocus, bool reverse)
 {
 	if (pModalView)
 	{
-		CViewContainer* container = dynamic_cast<CViewContainer*> (pModalView);
-		if (container)
+		if (auto container = pModalView->asViewContainer ())
 		{
 			if (oldFocus == nullptr || container->isChild (oldFocus, true) == false)
 				return container->advanceNextFocusView (nullptr, reverse);
@@ -1084,8 +1081,7 @@ CView* CFrame::getViewAt (const CPoint& where, const GetViewOptions& options) co
 		{
 			if (options.deep ())
 			{
-				CViewContainer* container = dynamic_cast<CViewContainer*> (pModalView);
-				if (container)
+				if (auto container = pModalView->asViewContainer ())
 				{
 					return container->getViewAt (where2, options);
 				}
@@ -1106,8 +1102,7 @@ CViewContainer* CFrame::getContainerAt (const CPoint& where, const GetViewOption
 		getTransform ().inverse ().transform (where2);
 		if (pModalView->getViewSize ().pointInside (where2))
 		{
-			CViewContainer* container = dynamic_cast<CViewContainer*> (pModalView);
-			if (container)
+			if (auto container = pModalView->asViewContainer ())
 			{
 				if (options.deep ())
 					return container->getContainerAt (where2, options);

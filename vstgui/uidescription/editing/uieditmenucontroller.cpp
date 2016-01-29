@@ -299,7 +299,7 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 				bool enabled = false;
 				if (selection->total () == 1)
 				{
-					CViewContainer* container = dynamic_cast<CViewContainer*>(selection->first());
+					CViewContainer* container = selection->first ()->asViewContainer ();
 					if (container && container->hasChildren () && dynamic_cast<UIEditView*>(container->getParentView ()) == nullptr)
 						enabled = true;
 				}
@@ -317,7 +317,7 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 				bool enabled = false;
 				if (selection->total () == 1)
 				{
-					CViewContainer* container = dynamic_cast<CViewContainer*>(selection->first());
+					CViewContainer* container = selection->first ()->asViewContainer ();
 					if (container == nullptr || (container && dynamic_cast<UIEditView*>(container->getParentView ()) == nullptr))
 						enabled = true;
 				}
@@ -338,7 +338,7 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 			else if (cmdName == "Insert Template")
 			{
 				item->setSubmenu (nullptr);
-				item->setEnabled (selection->total () == 1 && dynamic_cast<CViewContainer*> (selection->first ()));
+				item->setEnabled (selection->total () == 1 && selection->first ()->asViewContainer ());
 				if (item->isEnabled () == false)
 					return kMessageNotified;
 				std::list<const std::string*> templateNames;
@@ -434,8 +434,7 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 			const IViewFactory* viewFactory = description->getViewFactory ();
 			UIAttributes viewAttr;
 			viewAttr.setAttribute (UIViewCreator::kAttrClass, item->getCommandName ().getString ());
-			CViewContainer* newContainer = dynamic_cast<CViewContainer*> (viewFactory->createView (viewAttr, description));
-			if (newContainer)
+			if (auto newContainer = viewFactory->createView (viewAttr, description)->asViewContainer ())
 			{
 				IAction* action = new EmbedViewOperation (selection, newContainer);
 				undoManager->pushAndPerform (action);	
@@ -450,8 +449,7 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 		}
 		else if (cmdCategory == "InsertTemplate")
 		{
-			CViewContainer* parent = dynamic_cast<CViewContainer*> (selection->first ());
-			if (parent)
+			if (auto parent = selection->first ()->asViewContainer ())
 			{
 				CView* view = description->createView (item->getCommandName (), description->getController ());
 				if (view)

@@ -67,8 +67,7 @@ public:
 			return -1;
 		if (key.virt == VKEY_LEFT)
 		{
-			CViewContainer* parent = dynamic_cast<CViewContainer*>(browser->getParentView ());
-			if (parent)
+			if (auto parent = browser->getParentView ()->asViewContainer ())
 			{
 				if (parent->advanceNextFocusView (browser, true))
 				{
@@ -78,18 +77,17 @@ public:
 		}
 		else if (key.virt == VKEY_RIGHT)
 		{
-			CViewContainer* parent = dynamic_cast<CViewContainer*>(browser->getParentView ());
-			if (parent)
+			if (auto parent = browser->getParentView ()->asViewContainer ())
 			{
 				if (parent->advanceNextFocusView (browser, false))
 				{
 					CView* focusView = dynamic_cast<CView*> (browser->getFrame()->getFocusView ());
 					if (focusView)
 					{
-						CViewContainer* parent = dynamic_cast<CViewContainer*>(focusView->getParentView ());
+						CViewContainer* parent = focusView->getParentView ()->asViewContainer ();
 						while (parent != browser->getFrame ())
 						{
-							parent = dynamic_cast<CViewContainer*>(parent->getParentView ());
+							parent = parent->getParentView ()->asViewContainer ();
 							CDataBrowser* focusBrowser = dynamic_cast<CDataBrowser*>(parent);
 							if (focusBrowser)
 							{
@@ -467,8 +465,7 @@ bool UIViewListDataSource::update (CViewContainer* vc)
 		ViewIterator it (vc);
 		while (*it)
 		{
-			CViewContainer* subview = dynamic_cast<CViewContainer*>(*it);
-			if (subview)
+			if (auto subview = (*it)->asViewContainer ())
 			{
 				if (update (subview))
 				{
@@ -514,8 +511,7 @@ void UIViewListDataSource::dbSelectionChanged (CDataBrowser* browser)
 		next = nullptr;
 	}
 	GenericStringListDataBrowserSource::dbSelectionChanged (browser);
-	CViewContainer* container = dynamic_cast<CViewContainer*>(subview);
-	if (container)
+	if (auto container = subview ? subview->asViewContainer () : nullptr)
 	{
 		UIViewListDataSource* dataSource = new UIViewListDataSource (container, viewFactory, selection, undoManager, delegate);
 		UIEditController::setupDataSource (dataSource);

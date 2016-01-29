@@ -278,6 +278,9 @@ public:
 	virtual void dumpInfo ();
 	#endif
 
+	virtual CViewContainer* asViewContainer () { return nullptr; }
+	virtual const CViewContainer* asViewContainer () const { return nullptr; }
+
 	// overwrites
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 	void beforeDelete () override;

@@ -580,7 +580,7 @@ CViewContainer* UIEditView::getContainerAt (const CPoint& p, const GetViewOption
 		{
 			while (view && factory->getViewName (view) == nullptr)
 			{
-				view = dynamic_cast<CViewContainer*> (view->getParentView ());
+				view = view->getParentView ()->asViewContainer ();
 			}
 		}
 	}
@@ -930,7 +930,7 @@ void UIEditView::doSizeEditingMove (CPoint& where)
 		CViewContainer* container = nullptr;
 		if (!autosizing)
 		{
-			container = dynamic_cast<CViewContainer*>(view);
+			container = view->asViewContainer ();
 			if (container)
 			{
 				oldAutosizingEnabled = container->getAutosizingEnabled ();

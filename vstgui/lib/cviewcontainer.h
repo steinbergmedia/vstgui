@@ -237,6 +237,9 @@ public:
 	virtual void dumpHierarchy ();
 	#endif
 
+	CViewContainer* asViewContainer () final { return this; }
+	const CViewContainer* asViewContainer () const final { return nullptr; }
+
 protected:
 	~CViewContainer ();
 	virtual bool checkUpdateRect (CView* view, const CRect& rect);
@@ -280,7 +283,7 @@ uint32_t CViewContainer::getChildViewsOfType (ContainerClass& result, bool deep)
 		}
 		if (deep)
 		{
-			if (CViewContainer* container = (*it).cast<CViewContainer> ())
+			if (auto container = (*it)->asViewContainer ())
 			{
 				container->getChildViewsOfType<ViewClass, ContainerClass> (result);
 			}

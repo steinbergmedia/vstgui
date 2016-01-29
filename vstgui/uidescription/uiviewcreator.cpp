@@ -633,7 +633,7 @@ public:
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CViewContainer (CRect (0, 0, 100, 100)); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
-		CViewContainer* viewContainer = dynamic_cast<CViewContainer*> (view);
+		CViewContainer* viewContainer = view->asViewContainer ();
 		if (viewContainer == nullptr)
 			return false;
 		CColor backColor;
@@ -669,7 +669,7 @@ public:
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const override
 	{
-		CViewContainer* vc = dynamic_cast<CViewContainer*> (view);
+		CViewContainer* vc = view->asViewContainer ();
 		if (vc == nullptr)
 			return false;
 		if (attributeName == kAttrBackgroundColor)

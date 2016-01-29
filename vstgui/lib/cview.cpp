@@ -378,7 +378,7 @@ bool CView::attached (CView* parent)
 {
 	if (isAttached ())
 		return false;
-	vstgui_assert (dynamic_cast<CViewContainer*> (parent) != nullptr);
+	vstgui_assert (parent->asViewContainer ());
 	pParentView = parent;
 	pParentFrame = parent->getFrame ();
 	viewFlags |= kIsAttached;
@@ -510,11 +510,11 @@ CGraphicsTransform CView::getGlobalTransform () const
 	typedef std::list<CViewContainer*> ParentViews;
 	ParentViews parents;
 	
-	CViewContainer* parent = dynamic_cast<CViewContainer*>(getParentView ());
+	CViewContainer* parent = getParentView () ? getParentView ()->asViewContainer () : nullptr;
 	while (parent)
 	{
 		parents.push_front (parent);
-		parent = dynamic_cast<CViewContainer*>(parent->getParentView ());
+		parent = parent->getParentView () ? parent->getParentView ()->asViewContainer () : nullptr;
 	}
 	for (const auto& parent : parents)
 	{
@@ -523,8 +523,7 @@ CGraphicsTransform CView::getGlobalTransform () const
 		transform = transform * t;
 	}
 
-	const CViewContainer* This = dynamic_cast<const CViewContainer*> (this);
-	if (This)
+	if (auto This = this->asViewContainer ())
 		transform = This->getTransform () * transform;
 	return transform;
 }

@@ -205,7 +205,7 @@ bool CTabView::addTab (CView* view, CControl* button)
 	if (!view || !button)
 		return false;
 
-	CViewContainer* tabContainer = dynamic_cast<CViewContainer*>(getView (0));
+	CViewContainer* tabContainer = hasChildren () ? getView (0)->asViewContainer () : nullptr;
 	if (tabContainer == nullptr)
 	{
 		int32_t asf = kAutosizeLeft | kAutosizeTop | kAutosizeRight | kAutosizeColumn;
@@ -289,7 +289,7 @@ bool CTabView::removeTab (CView* view)
 	if (!view)
 		return false;
 	
-	CViewContainer* tabContainer = dynamic_cast<CViewContainer*>(getView (0));
+	CViewContainer* tabContainer = hasChildren () ? getView (0)->asViewContainer () : nullptr;
 	if (!tabContainer)
 		return false;
 	CTabChildView* v = firstChild;
@@ -388,7 +388,7 @@ void CTabView::drawBackgroundRect (CDrawContext *pContext, const CRect& _updateR
 {
 	CRect oldClip = pContext->getClipRect (oldClip);
 	CRect updateRect (_updateRect);
-	CViewContainer* tabContainer = dynamic_cast<CViewContainer*>(getView (0));
+	CViewContainer* tabContainer = hasChildren () ? getView (0)->asViewContainer () : nullptr;
 	if (tabContainer)
 	{
 		CRect tcRect = tabContainer->getViewSize ();

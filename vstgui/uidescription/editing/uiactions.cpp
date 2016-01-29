@@ -100,9 +100,9 @@ UnembedViewOperation::UnembedViewOperation (UISelection* selection, const IViewF
 : BaseSelectionOperation<SharedPointer<CView> > (selection)
 , factory (factory)
 {
-	containerView = dynamic_cast<CViewContainer*> (selection->first ());
+	containerView = selection->first ()->asViewContainer ();
 	collectSubviews (containerView, true);
-	parent = dynamic_cast<CViewContainer*> (containerView->getParentView ());
+	parent = containerView->getParentView ()->asViewContainer ();
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -117,8 +117,7 @@ void UnembedViewOperation::collectSubviews (CViewContainer* container, bool deep
 		}
 		else if (deep)
 		{
-			CViewContainer* c = dynamic_cast<CViewContainer*>(*it);
-			if (c)
+			if (auto c = (*it)->asViewContainer ())
 				collectSubviews (c, false);
 		}
 		++it;
@@ -182,7 +181,7 @@ EmbedViewOperation::EmbedViewOperation (UISelection* selection, CViewContainer* 
 : BaseSelectionOperation<std::pair<SharedPointer<CView>, CRect> > (selection)
 , newContainer (owned (newContainer))
 {
-	parent = dynamic_cast<CViewContainer*> (selection->first ()->getParentView ());
+	parent = selection->first ()->getParentView ()->asViewContainer ();
 	FOREACH_IN_SELECTION(selection, view)
 		if (view->getParentView () == parent)
 		{
@@ -377,7 +376,7 @@ void ViewSizeChangeOperation::undo ()
 		bool oldAutosizing = false;
 		if (!autosizing)
 		{
-			container = dynamic_cast<CViewContainer*> (view);
+			container = view->asViewContainer ();
 			if (container)
 			{
 				oldAutosizing = container->getAutosizingEnabled ();
@@ -403,7 +402,7 @@ DeleteOperation::DeleteOperation (UISelection* selection)
 : selection (selection)
 {
 	FOREACH_IN_SELECTION(selection, view)
-		CViewContainer* container = dynamic_cast<CViewContainer*> (view->getParentView ());
+		CViewContainer* container = view->getParentView ()->asViewContainer ();
 		if (dynamic_cast<UIEditView*>(container) == nullptr)
 		{
 			CView* nextView = nullptr;
@@ -499,7 +498,7 @@ TransformViewTypeOperation::TransformViewTypeOperation (UISelection* selection, 
 : view (selection->first ())
 , newView (nullptr)
 , beforeView (nullptr)
-, parent (dynamic_cast<CViewContainer*> (view->getParentView ()))
+, parent (view->getParentView ()->asViewContainer ())
 , selection (selection)
 , factory (factory)
 , description (desc)
@@ -550,7 +549,7 @@ void TransformViewTypeOperation::exchangeSubViews (CViewContainer* src, CViewCon
 			{
 				temp.push_back (childView);
 			}
-			else if (CViewContainer* container = dynamic_cast<CViewContainer*>(childView))
+			else if (auto container = childView->asViewContainer ())
 			{
 				exchangeSubViews (container, dst);
 			}
@@ -575,7 +574,7 @@ void TransformViewTypeOperation::perform ()
 			parent->addView (newView, beforeView);
 		else
 			parent->addView (newView);
-		exchangeSubViews (view.cast<CViewContainer> (), dynamic_cast<CViewContainer*> (newView));
+		exchangeSubViews (view->asViewContainer (), newView->asViewContainer ());
 		selection->setExclusive (newView);
 	}
 }
@@ -591,7 +590,7 @@ void TransformViewTypeOperation::undo ()
 			parent->addView (view, beforeView);
 		else
 			parent->addView (view);
-		exchangeSubViews (dynamic_cast<CViewContainer*> (newView), view.cast<CViewContainer> ());
+		exchangeSubViews (newView->asViewContainer (), view->asViewContainer ());
 		selection->setExclusive (view);
 	}
 }
@@ -724,8 +723,7 @@ void MultipleAttributeChangeAction::collectViewsWithAttributeValue (const UIView
 void MultipleAttributeChangeAction::collectAllSubViews (CView* view, std::list<CView*>& views)
 {
 	views.push_back (view);
-	CViewContainer* container = dynamic_cast<CViewContainer*> (view);
-	if (container)
+	if (auto container = view->asViewContainer ())
 	{
 		ViewIterator it (container);
 		while (*it)
@@ -1300,7 +1298,7 @@ HierarchyMoveViewOperation::HierarchyMoveViewOperation (CView* view, UISelection
 , selection (selection)
 , up (up)
 {
-	parent = dynamic_cast<CViewContainer*> (view->getParentView ());
+	parent = view->getParentView ()->asViewContainer ();
 }
 
 //----------------------------------------------------------------------------------------------------

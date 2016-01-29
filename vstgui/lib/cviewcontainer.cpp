@@ -473,7 +473,7 @@ bool CViewContainer::isChild (CView *pView, bool deep) const
 				found = true;
 				break;
 			}
-			if (CViewContainer* container = dynamic_cast<CViewContainer*>(v))
+			if (CViewContainer* container = v->asViewContainer ())
 				found = container->isChild (pView, true);
 			++it;
 		}
@@ -558,7 +558,7 @@ bool CViewContainer::invalidateDirtyViews ()
 	{
 		if (pV->isDirty () && pV->isVisible ())
 		{
-			if (CViewContainer* container = pV.cast<CViewContainer> ())
+			if (CViewContainer* container = pV->asViewContainer ())
 				container->invalidateDirtyViews ();
 			else
 				pV->invalid ();
@@ -788,7 +788,7 @@ bool CViewContainer::hitTestSubViews (const CPoint& where, const CButtonState& b
 	FOREACHSUBVIEW_REVERSE(true)
 		if (pV && pV->isVisible () && pV->getMouseEnabled () && pV->hitTest (where2, buttons))
 		{
-			if (auto container = dynamic_cast<CViewContainer*>(pV))
+			if (auto container = pV->asViewContainer ())
 			{
 				if (container->hitTestSubViews (where2, buttons))
 					return true;
@@ -1041,8 +1041,7 @@ void CViewContainer::findSingleTouchEventTarget (ITouchEvent::Touch& event)
 		CBaseObjectGuard guard (view);
 		if (view->getMouseEnabled () && view->isVisible () && view->hitTest (where, buttons))
 		{
-			CViewContainer* container = dynamic_cast<CViewContainer*>(view);
-			if (container)
+			if (auto container = view->asViewContainer ())
 			{
 				container->findSingleTouchEventTarget (event);
 				if (event.target != 0)
@@ -1110,7 +1109,7 @@ bool CViewContainer::advanceNextFocusView (CView* oldFocus, bool reverse)
 					getFrame ()->setFocusView (pV);
 					return true;
 				}
-				else if (CViewContainer* container = dynamic_cast<CViewContainer*> (pV))
+				else if (CViewContainer* container = pV->asViewContainer ())
 				{
 					if (container->advanceNextFocusView (nullptr, reverse))
 						return true;
@@ -1167,13 +1166,13 @@ CView* CViewContainer::getViewAt (const CPoint& p, const GetViewOptions& options
 			}
 			if (options.deep ())
 			{
-				if (CViewContainer* container = dynamic_cast<CViewContainer*> (pV))
+				if (CViewContainer* container = pV->asViewContainer ())
 				{
 					CView* view = container->getViewAt (where, options);
 					return options.includeViewContainer () ? (view ? view : container) : view;
 				}
 			}
-			if (!options.includeViewContainer () && dynamic_cast<CViewContainer*> (pV))
+			if (!options.includeViewContainer () && pV->asViewContainer ())
 				continue;
 			return pV;
 		}
@@ -1209,12 +1208,12 @@ bool CViewContainer::getViewsAt (const CPoint& p, ViewList& views, const GetView
 			}
 			if (options.deep ())
 			{
-				if (CViewContainer* container = dynamic_cast<CViewContainer*> (pV))
+				if (CViewContainer* container = pV->asViewContainer ())
 					result |= container->getViewsAt (where, views, options);
 			}
 			if (options.includeViewContainer () == false)
 			{
-				if (dynamic_cast<CViewContainer*> (pV))
+				if (pV->asViewContainer ())
 					continue;
 			}
 			views.push_back (pV);
@@ -1249,7 +1248,7 @@ CViewContainer* CViewContainer::getContainerAt (const CPoint& p, const GetViewOp
 			}
 			if (options.deep ())
 			{
-				if (CViewContainer* container = dynamic_cast<CViewContainer*> (pV))
+				if (CViewContainer* container = pV->asViewContainer ())
 					return container->getContainerAt (where, options);
 			}
 			break;
@@ -1324,7 +1323,7 @@ void CViewContainer::dumpHierarchy ()
 			DebugPrint ("\t");
 		pV->dumpInfo ();
 		DebugPrint ("\n");
-		if (CViewContainer* container = pV.cast<CViewContainer> ())
+		if (CViewContainer* container = pV->asViewContainer ())
 			container->dumpHierarchy ();
 	}
 	_debugDumpLevel--;
