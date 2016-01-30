@@ -163,6 +163,19 @@ void CTextLabel::drawStyleChanged ()
 }
 
 //------------------------------------------------------------------------
+void CTextLabel::valueChanged ()
+{
+	if (valueToStringFunction)
+	{
+		char string[256];
+		string[0] = 0;
+		if (valueToStringFunction (getValue (), string, this))
+			setText (string);
+	}
+	CParamDisplay::valueChanged ();
+}
+
+//------------------------------------------------------------------------
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 CMultiLineTextLabel::CMultiLineTextLabel (const CRect& size)

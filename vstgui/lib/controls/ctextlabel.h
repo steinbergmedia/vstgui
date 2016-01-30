@@ -75,6 +75,7 @@ public:
 	virtual bool sizeToFit () override;
 	virtual void setViewSize (const CRect& rect, bool invalid = true) override;
 	virtual void drawStyleChanged () override;
+	virtual void valueChanged () override;
 
 	CLASS_METHODS(CTextLabel, CParamDisplay)
 protected:
