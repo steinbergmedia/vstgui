@@ -1,19 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <vstgui-ui-description version="1">
 	<fonts>
+		<font alternative-font-names="Segoe UI, Avenir" font-name="Segoe UI" name="New" size="18"/>
 	</fonts>
 	<colors>
-		<color name="AlertBox.background" rgba="#ecececff"/>
 		<color name="Black Alpha 140" rgba="#0000008c"/>
 		<color name="Focus" rgba="#3bafffff"/>
+		<color name="TextShadow" rgba="#0000002f"/>
 	</colors>
 	<custom>
 		<attributes name="UIDescFilePath" path="/Users/AScheffler/Sources/vstgui/vstgui/tests/standalone/resources/resources.uidesc"/>
 	</custom>
 	<gradients>
 		<gradient name="About Background">
-			<color-stop rgba="#dcdcdcf5" start="0"/>
-			<color-stop rgba="#b4b4b4f5" start="1"/>
+			<color-stop rgba="#dcdcdcff" start="0"/>
+			<color-stop rgba="#b4b4b4ff" start="1"/>
 		</gradient>
 		<gradient name="Background">
 			<color-stop rgba="#393939fa" start="0"/>

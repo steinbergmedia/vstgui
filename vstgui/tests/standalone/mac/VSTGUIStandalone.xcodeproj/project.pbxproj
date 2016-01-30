@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		BC2FFECD1C4146070073D566 /* alertbox.uidesc in Resources */ = {isa = PBXBuildFile; fileRef = BC2FFECC1C4146070073D566 /* alertbox.uidesc */; };
+		BC4662471C5CBB6B00130535 /* AlertBoxDesign.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BC4662451C5CBB6B00130535 /* AlertBoxDesign.cpp */; };
 		BC58A5391C33F3D800F340EF /* testabout.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BC58A5371C33F3D800F340EF /* testabout.cpp */; };
 		BC58A53D1C33FA1E00F340EF /* about.uidesc in Resources */ = {isa = PBXBuildFile; fileRef = BC58A53C1C33FA1E00F340EF /* about.uidesc */; };
 		BC58A53F1C342AC000F340EF /* testpopup.uidesc in Resources */ = {isa = PBXBuildFile; fileRef = BC58A53E1C342AC000F340EF /* testpopup.uidesc */; };
@@ -70,6 +71,8 @@
 
 /* Begin PBXFileReference section */
 		BC2FFECC1C4146070073D566 /* alertbox.uidesc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = alertbox.uidesc; sourceTree = "<group>"; };
+		BC4662451C5CBB6B00130535 /* AlertBoxDesign.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AlertBoxDesign.cpp; sourceTree = "<group>"; };
+		BC4662461C5CBB6B00130535 /* AlertBoxDesign.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AlertBoxDesign.h; sourceTree = "<group>"; };
 		BC58A5371C33F3D800F340EF /* testabout.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = testabout.cpp; sourceTree = "<group>"; };
 		BC58A5381C33F3D800F340EF /* testabout.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = testabout.h; sourceTree = "<group>"; };
 		BC58A53C1C33FA1E00F340EF /* about.uidesc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; path = about.uidesc; sourceTree = "<group>"; };
@@ -170,6 +173,8 @@
 				F408C5B91C2ABD5500F46C6A /* testmodel.h */,
 				BC58A5371C33F3D800F340EF /* testabout.cpp */,
 				BC58A5381C33F3D800F340EF /* testabout.h */,
+				BC4662451C5CBB6B00130535 /* AlertBoxDesign.cpp */,
+				BC4662461C5CBB6B00130535 /* AlertBoxDesign.h */,
 			);
 			name = source;
 			path = ../source;
@@ -288,6 +293,7 @@
 			files = (
 				F47863381C28633C00C76167 /* testappdelegate.cpp in Sources */,
 				F408C5BA1C2ABD5500F46C6A /* testmodel.cpp in Sources */,
+				BC4662471C5CBB6B00130535 /* AlertBoxDesign.cpp in Sources */,
 				BC58A5391C33F3D800F340EF /* testabout.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

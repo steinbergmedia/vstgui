@@ -1,6 +1,7 @@
 #include "testappdelegate.h"
 #include "testmodel.h"
 #include "testabout.h"
+#include "AlertBoxDesign.h"
 #include "vstgui/standalone/helpers/appdelegate.h"
 #include "vstgui/standalone/iapplication.h"
 #include "vstgui/standalone/iwindow.h"
@@ -43,6 +44,7 @@ private:
 Application::Init gAppDelegate (std::make_shared<Delegate> ());
 
 static Command NewPopup {CommandGroup::File, "New Popup"};
+static Command ShowAlertBoxDesign {CommandGroup::File, "Show AlertBox Design"};
 
 //------------------------------------------------------------------------
 Delegate::Delegate ()
@@ -57,13 +59,14 @@ void Delegate::finishLaunching ()
 	model = std::make_shared<TestModel> ();
 	IApplication::instance ().registerCommand (Commands::NewDocument, 'n');
 	IApplication::instance ().registerCommand (NewPopup, 'N');
+	IApplication::instance ().registerCommand (ShowAlertBoxDesign, 'b');
 	handleCommand (Commands::NewDocument);
 }
 
 //------------------------------------------------------------------------
 bool Delegate::canHandleCommand (const Command& command)
 {
-	return command == Commands::NewDocument || command == NewPopup;
+	return command == Commands::NewDocument || command == NewPopup || command == ShowAlertBoxDesign;
 }
 
 //------------------------------------------------------------------------
@@ -93,6 +96,12 @@ bool Delegate::handleCommand (const Command& command)
 		{
 			window->show ();
 		}
+		return true;
+	}
+	else if (command == ShowAlertBoxDesign)
+	{
+		if (auto window = VSTGUI::Standalone::makeAlertBoxDesignWindow ())
+			window->show ();
 		return true;
 	}
 	return false;

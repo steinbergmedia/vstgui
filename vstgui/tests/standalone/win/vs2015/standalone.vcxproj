@@ -182,6 +182,7 @@
     <ClInclude Include="..\..\..\..\standalone\iwindow.h" />
     <ClInclude Include="..\..\..\..\standalone\iwindowcontroller.h" />
     <ClInclude Include="..\..\..\..\standalone\iwindowlistener.h" />
+    <ClInclude Include="..\..\source\AlertBoxDesign.h" />
     <ClInclude Include="..\..\source\testabout.h" />
     <ClInclude Include="..\..\source\testappdelegate.h" />
     <ClInclude Include="..\..\source\testmodel.h" />
@@ -201,6 +202,7 @@
     <ClCompile Include="..\..\..\..\vstgui_win32.cpp">
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Default</BasicRuntimeChecks>
     </ClCompile>
+    <ClCompile Include="..\..\source\AlertBoxDesign.cpp" />
     <ClCompile Include="..\..\source\testabout.cpp" />
     <ClCompile Include="..\..\source\testappdelegate.cpp" />
     <ClCompile Include="..\..\source\testmodel.cpp" />

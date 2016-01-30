@@ -117,6 +117,9 @@
     <ClInclude Include="..\..\..\..\standalone\helpers\modelbinding.h">
       <Filter>Source Files\vstgui\standalone\helpers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\source\AlertBoxDesign.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\standalone\detail\application.cpp">
@@ -156,6 +159,9 @@
       <Filter>Source Files\vstgui\standalone\detail</Filter>
     </ClCompile>
     <ClCompile Include="..\..\source\testmodel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\source\AlertBoxDesign.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
