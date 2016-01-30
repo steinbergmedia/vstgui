@@ -357,6 +357,7 @@ public:
 		updateControlOnStateChange (control);
 		control->beginEdit ();
 		control->setValueNormalized (static_cast<float> (value->getValue ()));
+		control->valueChanged ();
 		control->endEdit ();
 		control->invalid ();
 		control->registerControlListener (this);
