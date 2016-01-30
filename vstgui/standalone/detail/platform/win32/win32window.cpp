@@ -69,6 +69,7 @@ public:
 	LRESULT CALLBACK proc (UINT message, WPARAM wParam, LPARAM lParam);
 
 private:
+	void updateDPI ();
 	void setNewDPI (uint32_t newDpi);
 	void handleMenuCommand (const UTF8String& group, UINT index);
 	void windowWillClose ();
@@ -594,12 +595,18 @@ void Window::setPosition (const CPoint& newPosition)
 void Window::setTitle (const UTF8String& newTitle) {}
 
 //------------------------------------------------------------------------
-void Window::show ()
+void Window::updateDPI ()
 {
 	auto monitor = MonitorFromWindow (hwnd, MONITOR_DEFAULTTONEAREST);
 	UINT x, y;
 	GetDpiForMonitor (monitor, MDT_EFFECTIVE_DPI, &x, &y);
 	setNewDPI (x);
+}
+
+//------------------------------------------------------------------------
+void Window::show ()
+{
+	updateDPI ();
 
 	RECT clientRect {};
 	clientRect.right = static_cast<LONG> (initialSize.x * dpiScale);
@@ -639,6 +646,8 @@ void Window::activate () { BringWindowToTop (hwnd); }
 //------------------------------------------------------------------------
 void Window::center ()
 {
+	updateDPI ();
+
 	auto monitor = MonitorFromWindow (hwnd, MONITOR_DEFAULTTONEAREST);
 	MONITORINFO info;
 	info.cbSize = sizeof (MONITORINFO);
@@ -647,7 +656,8 @@ void Window::center ()
 	    static_cast<CCoord> (info.rcWork.left), static_cast<CCoord> (info.rcWork.top),
 	    static_cast<CCoord> (info.rcWork.right), static_cast<CCoord> (info.rcWork.bottom)};
 	CRect windowRect;
-	windowRect.setSize (getSize ());
+	windowRect.setWidth (getSize ().x * dpiScale);
+	windowRect.setHeight (getSize ().y * dpiScale);
 	windowRect.centerInside (monitorRect);
 	setPosition (windowRect.getTopLeft ());
 }
