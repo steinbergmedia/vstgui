@@ -41,8 +41,8 @@ class ModelBindingCallbacks : public ValueListenerAdapter, public IModelBinding
 public:
 	~ModelBindingCallbacks ();
 
-	void addValue (ValuePtr value, const ValueCalls& callbacks = {});
-	void addValue (ValuePtr value, ValueCalls&& callbacks);
+	ValuePtr addValue (ValuePtr value, const ValueCalls& callbacks = {});
+	ValuePtr addValue (ValuePtr value, ValueCalls&& callbacks);
 
 	ValuePtr getValue (const UTF8String& valueID) const;
 
@@ -69,19 +69,21 @@ inline ModelBindingCallbacks::~ModelBindingCallbacks ()
 }
 
 //------------------------------------------------------------------------
-inline void ModelBindingCallbacks::addValue (ValuePtr value, const ValueCalls& callbacks)
+inline ValuePtr ModelBindingCallbacks::addValue (ValuePtr value, const ValueCalls& callbacks)
 {
 	values.emplace (value.get (), callbacks);
 	valueList.emplace_back (value);
 	value->registerListener (this);
+	return value;
 }
 
 //------------------------------------------------------------------------
-inline void ModelBindingCallbacks::addValue (ValuePtr value, ValueCalls&& callbacks)
+inline ValuePtr ModelBindingCallbacks::addValue (ValuePtr value, ValueCalls&& callbacks)
 {
 	values.emplace (value.get (), std::move (callbacks));
 	valueList.emplace_back (value);
 	value->registerListener (this);
+	return value;
 }
 
 //------------------------------------------------------------------------
