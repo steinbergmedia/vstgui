@@ -1166,7 +1166,7 @@ CView* CViewContainer::getViewAt (const CPoint& p, const GetViewOptions& options
 			}
 			if (options.deep ())
 			{
-				if (CViewContainer* container = pV->asViewContainer ())
+				if (auto container = pV->asViewContainer ())
 				{
 					CView* view = container->getViewAt (where, options);
 					return options.includeViewContainer () ? (view ? view : container) : view;
