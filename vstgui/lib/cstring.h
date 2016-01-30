@@ -39,6 +39,7 @@
 #include "platform/iplatformstring.h"
 #include <string>
 #include <sstream>
+#include <functional>
 
 namespace VSTGUI {
 
@@ -151,6 +152,32 @@ inline UTF8String toString (const T& value)
  *	@return true if character is a white-character
  */
 bool isspace (char32_t character) noexcept;
+
+//-----------------------------------------------------------------------------
+struct TrimOptions
+{
+	using CharTestFunc = std::function<bool (char32_t)>;
+	TrimOptions (CharTestFunc&& func = [] (char32_t c) { return isspace (c); }) : test (std::move (func)) {}
+
+	TrimOptions& left () { flags |= Flags::kLeft; return *this; }
+	TrimOptions& right () { flags |= Flags::kRight; return *this; }
+	
+	bool trimLeft () const { return (flags & Flags::kLeft) != 0; }
+	bool trimRight () const { return (flags & Flags::kRight) != 0; }
+
+	bool operator() (char32_t c) const { return !test (c); }
+
+private:
+	enum Flags {
+		kLeft = 1 << 0,
+		kRight = 1 << 1
+	};
+	uint8_t flags {0};
+	CharTestFunc test;
+};
+
+//-----------------------------------------------------------------------------
+UTF8String trim (const UTF8String& str, TrimOptions options = TrimOptions ().left ().right ());
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 //-----------------------------------------------------------------------------

@@ -201,6 +201,30 @@ bool isspace (char32_t character) noexcept
 	return false;
 }
 
+//-----------------------------------------------------------------------------
+UTF8String trim (const UTF8String& str, TrimOptions options)
+{
+	using Iterator = UTF8String::CodePointIterator;
+	auto string = str.getString ();
+	if (options.trimLeft ())
+	{
+		auto it = std::find_if (Iterator (string.begin ()), Iterator (string.end ()), options);
+		string.erase (string.begin (), it.base ());
+	}
+	if (options.trimRight ())
+	{
+		auto pos = Iterator (string.end ());
+		for (auto it = Iterator (string.end ()); it != Iterator (string.begin ()); --it)
+		{
+			if (options (*it))
+				break;
+			pos = it;
+		}
+		string.erase (pos.base (), string.end ());
+	}
+	return UTF8String (std::move (string));
+}
+
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 
 namespace String {

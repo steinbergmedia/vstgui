@@ -3171,9 +3171,10 @@ CFontRef UIFontNode::getFont ()
 						attributes->getStringArrayAttribute ("alternative-font-names", alternativeFontNames);
 						for (auto& alternateFontName : alternativeFontNames)
 						{
-							if (std::find (fontNames.begin (), fontNames.end (), alternateFontName) != fontNames.end ())
+							auto trimmedString = trim (UTF8String (alternateFontName));
+							if (std::find (fontNames.begin (), fontNames.end (), trimmedString.getString ()) != fontNames.end ())
 							{
-								font = new CFontDesc (alternateFontName.c_str (), size, fontStyle);
+								font = new CFontDesc (trimmedString.data (), size, fontStyle);
 								break;
 							}
 						}
