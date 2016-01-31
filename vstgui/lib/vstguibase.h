@@ -405,6 +405,10 @@ template <class I>
 inline SharedPointer<I> owned (I* p) { return SharedPointer<I> (p, false); }
 
 //------------------------------------------------------------------------
+template <class I>
+inline SharedPointer<I> shared (I* p) { return SharedPointer<I> (p, true); }
+
+//------------------------------------------------------------------------
 template <class I, typename ...Args>
 inline SharedPointer<I> makeOwned (Args&& ...args)
 {
