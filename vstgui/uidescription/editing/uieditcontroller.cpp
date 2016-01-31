@@ -1565,7 +1565,7 @@ void UIEditController::performDuplicateTemplate (UTF8StringPtr name, UTF8StringP
 //----------------------------------------------------------------------------------------------------
 void UIEditController::onTemplateCreation (UTF8StringPtr name, CView* view)
 {
-	templates.push_back (Template (name, view));
+	templates.emplace_back (name, view);
 	selection->setExclusive (view);
 }
 
@@ -1608,7 +1608,7 @@ void UIEditController::onTemplatesChanged ()
 		if (std::find (templates.begin (), templates.end (), *it) == templates.end ())
 		{
 			auto view = owned (editDescription->createView (it->c_str (), editDescription->getController ()));
-			templates.push_back (Template (*it, view));
+			templates.emplace_back (*it, view);
 		}
 	}
 	for (std::vector<Template>::iterator it = templates.begin (); it != templates.end ();)

@@ -155,18 +155,18 @@ protected:
 		std::string filter = filterString.getString ();
 		std::transform (filter.begin (), filter.end (), filter.begin (), ::tolower);
 
-		for (auto it = tmpNames.begin (); it != tmpNames.end (); it++)
+		for (auto& name : tmpNames)
 		{
 			if (!filter.empty ())
 			{
-				std::string tmp (*(*it));
+				std::string tmp (*name);
 				std::transform (tmp.begin (), tmp.end (), tmp.begin (), ::tolower);
 				if (tmp.find (filter) == std::string::npos)
 					continue;
 			}
-			if ((*it)->find ("~ ") == 0)
+			if (name->find ("~ ") == 0)
 				continue; // don't show static items
-			names.push_back (UTF8String (*(*it)));
+			names.emplace_back (UTF8String (*name));
 		}
 		setStringList (&names);
 	}

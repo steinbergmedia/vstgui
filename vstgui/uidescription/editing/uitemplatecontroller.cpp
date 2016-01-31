@@ -455,7 +455,7 @@ bool UIViewListDataSource::update (CViewContainer* vc)
 		IdStringPtr viewName = viewFactory->getViewName (subview);
 		if (viewName)
 		{
-			names.push_back (viewName);
+			names.emplace_back (viewName);
 			subviews.push_back (subview);
 		}
 		it++;

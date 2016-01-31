@@ -1187,21 +1187,19 @@ void UIAttributesController::getConsolidatedAttributeNames (StringList& attrName
 				attrNames = temp;
 			else
 			{
-				StringList::const_iterator it = attrNames.begin ();
-				while (it != attrNames.end ())
+				for (auto& attrName : attrNames)
 				{
-					bool found = std::find (temp.begin (), temp.end (), *it) != temp.end ();
+					bool found = std::find (temp.begin (), temp.end (), attrName) != temp.end ();
 					if (!found)
 					{
-						toRemove.push_back ((*it));
-						temp.remove (*it);
+						toRemove.emplace_back (attrName);
+						temp.remove (attrName);
 					}
-					it++;
 				}
 			}
 			if (!filter.empty ())
 			{
-				for (StringList::reverse_iterator rit = temp.rbegin (); rit != temp.rend (); rit++)
+				for (StringList::reverse_iterator rit = temp.rbegin (); rit != temp.rend (); ++rit)
 				{
 					std::string lowerCaseName (*rit);
 					std::transform (lowerCaseName.begin (), lowerCaseName.end (), lowerCaseName.begin (), ::tolower);
@@ -1209,9 +1207,9 @@ void UIAttributesController::getConsolidatedAttributeNames (StringList& attrName
 						toRemove.push_back (*rit);
 				}
 			}
-			for (StringList::const_iterator it = toRemove.begin (); it != toRemove.end (); it++)
+			for (auto& attrName : toRemove)
 			{
-				attrNames.remove ((*it));
+				attrNames.remove (attrName);
 			}
 		}
 	FOREACH_IN_SELECTION_END

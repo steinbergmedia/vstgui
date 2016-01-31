@@ -83,7 +83,7 @@ void UITagsDataSource::update ()
 	{
 		std::string tagString;
 		description->getControlTagString (name.data (), tagString);
-		tags.push_back (UTF8String (std::move (tagString)));
+		tags.emplace_back (std::move (tagString));
 	}
 }
 
