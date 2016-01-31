@@ -205,7 +205,7 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
-class UIZoomSettingController : public IController, public CBaseObject
+class UIZoomSettingController : public IController, public IContextMenuController2, public CBaseObject
 {
 public:
 	UIZoomSettingController (UIEditController* editController)
@@ -302,22 +302,27 @@ public:
 		return view;
 	}
 
-	int32_t controlModifierClicked (CControl* pControl, CButtonState button) override
-	{
-		if (pControl == zoomValueControl && button.isRightButton ())
-		{
-			popupZoomMenu (pControl);
-			return 1;
-		}
-		return 0;
-	}
-
 	void valueChanged (CControl* pControl) override
 	{
 		if (pControl == zoomValueControl)
 			editController->onZoomChanged (pControl->getValue () / 100.f);
 	}
 	
+	void appendContextMenuItems (COptionMenu& contextMenu, CView* view, const CPoint& where) override
+	{
+		if (view == zoomValueControl)
+		{
+			for (auto i = 50; i <= 200; i += 50)
+			{
+				auto item = new CCommandMenuItem ("Zoom " + toString (i) + "%");
+				item->setActions ([this, i] (CCommandMenuItem*) {
+					updateZoom (i);
+				});
+				contextMenu.addEntry (item);
+			}
+		}
+	}
+
 private:
 	void updateZoom (float newZoom)
 	{
@@ -328,24 +333,6 @@ private:
 		}
 	}
 	
-	void popupZoomMenu (CView* anchor)
-	{
-		COptionMenu menu;
-		menu.addEntry ("50%")->setTag (50);
-		menu.addEntry ("100%")->setTag (100);
-		menu.addEntry ("150%")->setTag (150);
-		menu.addEntry ("200%")->setTag (200);
-		CPoint location = anchor->getViewSize ().getTopLeft ();
-		anchor->localToFrame (location);
-		if (menu.popup (anchor->getFrame (), location))
-		{
-			if (CMenuItem* item = menu.getEntry (menu.getLastResult ()))
-			{
-				updateZoom (static_cast<float> (item->getTag ()));
-			}
-		}
-	}
-
 	UIEditController* editController;
 	CTextEdit* zoomValueControl;
 };
