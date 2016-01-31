@@ -290,8 +290,10 @@ void Animator::removeAnimation (CView* view, IdStringPtr name)
 //-----------------------------------------------------------------------------
 void Animator::removeAnimations (CView* view)
 {
-	for (auto& animation : animations)
+	AnimationList::iterator it = animations.begin ();
+	while (it != animations.end ())
 	{
+		Animation* animation = *it++;
 		if (animation->view == view)
 		{
 			if (animation->done == false)
