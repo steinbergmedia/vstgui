@@ -238,7 +238,7 @@ public:
 	#endif
 
 	CViewContainer* asViewContainer () final { return this; }
-	const CViewContainer* asViewContainer () const final { return nullptr; }
+	const CViewContainer* asViewContainer () const final { return this; }
 
 protected:
 	~CViewContainer ();
