@@ -280,17 +280,23 @@ protected:
 		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 	}
 
-	void dbCellTextChanged (int32_t row, int32_t column, UTF8StringPtr newText, CDataBrowser* browser) override
+	void dbCellTextChanged (int32_t _row, int32_t column, UTF8StringPtr newText, CDataBrowser* browser) override
 	{
-		if (row < (int32_t)names.size () && names.at (static_cast<uint32_t> (row)) != newText)
-		{
-			if (performNameChange (names.at (static_cast<uint32_t> (row)).data (), newText))
-			{
-				if (selectName (newText) == -1 && row < (int32_t)names.size ())
-					selectName (names.at (static_cast<uint32_t> (row)).data ());
-			}
-		}
 		textEditControl = nullptr;
+		if (_row < 0 || _row >= static_cast<int32_t> (names.size ()))
+			return;
+		auto row = static_cast<size_t> (_row);
+		for (auto& name : names)
+		{
+			if (name == newText)
+				return;
+		}
+		auto& currentName = names.at (row);
+		if (performNameChange (currentName.data (), newText))
+		{
+			if (selectName (newText) == -1 && row < names.size ())
+				selectName (names.at (row).data ());
+		}
 	}
 
 	void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* control, CDataBrowser* browser) override
