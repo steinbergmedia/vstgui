@@ -263,7 +263,7 @@ public:
 				listener->controlBeginEdit (c);
 		}
 	}
-	
+
 	void onEndEdit (IValue& value) override
 	{
 		for (auto& c : controls)
@@ -726,6 +726,16 @@ struct WindowController::EditImpl : WindowController::Impl
 			auto create = it == tagNames.end ();
 			uiDesc->changeControlTagString (v->getID (), std::to_string (index), create);
 			++index;
+		}
+		// now remove all old tags
+		for (auto& name : tagNames)
+		{
+			auto it = std::find_if (valueWrappers.begin (), valueWrappers.end (),
+			                        [&] (const ValueWrapperList::value_type& value) {
+				                        return value->getID () == *name;
+				                    });
+			if (it == valueWrappers.end ())
+				uiDesc->removeTag (name->data ());
 		}
 	}
 
