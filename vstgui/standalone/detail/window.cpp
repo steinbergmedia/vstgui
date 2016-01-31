@@ -1,6 +1,8 @@
 #include "window.h"
 #include "../../lib/cframe.h"
 #include "../../lib/dispatchlist.h"
+#include "../../lib/controls/coptionmenu.h"
+#include "../../uidescription/icontroller.h"
 #include "../icommand.h"
 #include "../iapplication.h"
 #include "../ipreference.h"
@@ -59,6 +61,7 @@ PosAndSize positionAndSizeFromString (const UTF8String& str)
 class Window : public IWindow,
                public IPlatformWindowAccess,
                public Platform::IWindowDelegate,
+               public IMouseObserver,
                public std::enable_shared_from_this<Window>
 {
 public:
@@ -99,6 +102,17 @@ public:
 	// ICommandHandler
 	bool canHandleCommand (const Command& command) override;
 	bool handleCommand (const Command& command) override;
+
+	// IMouseObserver
+	void onMouseEntered (CView* view, CFrame* frame) override {};
+	void onMouseExited (CView* view, CFrame* frame) override {};
+	CMouseEventResult onMouseMoved (CFrame* frame, const CPoint& where,
+	                                const CButtonState& buttons) override
+	{
+		return kMouseEventNotHandled;
+	}
+	CMouseEventResult onMouseDown (CFrame* frame, const CPoint& where,
+	                               const CButtonState& buttons) override;
 
 private:
 	WindowControllerPtr controller;
@@ -161,11 +175,15 @@ void Window::show ()
 void Window::setContentView (const SharedPointer<CFrame>& newFrame)
 {
 	if (frame)
+	{
+		frame->unregisterMouseObserver (this);
 		frame->close ();
+	}
 	frame = newFrame;
 	if (!frame)
 		return;
 	frame->open (platformWindow->getPlatformHandle (), platformWindow->getPlatformType ());
+	frame->registerMouseObserver (this);
 	platformWindow->onSetContentView (frame);
 }
 
@@ -226,6 +244,7 @@ void Window::onClosed ()
 	platformWindow->onSetContentView (nullptr);
 	if (frame)
 	{
+		frame->unregisterMouseObserver (this);
 		frame->remember ();
 		frame->close ();
 		frame = nullptr;
@@ -299,6 +318,44 @@ bool Window::handleCommand (const Command& command)
 	if (auto commandHandler = controller->dynamicCast<ICommandHandler> ())
 		return commandHandler->handleCommand (command);
 	return false;
+}
+
+//------------------------------------------------------------------------
+CMouseEventResult Window::onMouseDown (CFrame* frame, const CPoint& where,
+                                       const CButtonState& buttons)
+{
+	if (!buttons.isRightButton ())
+		return kMouseEventNotHandled;
+
+	CViewContainer::ViewList views;
+	if (frame->getViewsAt (where, views, GetViewOptions (GetViewOptions::kDeep |
+	                                                     GetViewOptions::kIncludeViewContainer)))
+	{
+		COptionMenu contextMenu;
+		for (const auto& view : views)
+		{
+			auto viewController = getViewController (view);
+			auto contextMenuController = dynamic_cast<IContextMenuController*> (viewController);
+			auto contextMenuController2 = dynamic_cast<IContextMenuController2*> (viewController);
+			if (contextMenuController == nullptr && contextMenuController2 == nullptr)
+				continue;
+			if (contextMenu.getNbEntries () != 0)
+				contextMenu.addSeparator ();
+			CPoint p (where);
+			view->frameToLocal (p);
+			if (contextMenuController)
+				contextMenuController->appendContextMenuItems (contextMenu, p);
+			else if (contextMenuController2)
+				contextMenuController2->appendContextMenuItems (contextMenu, view, p);
+		}
+		if (contextMenu.getNbEntries () > 0)
+		{
+			contextMenu.setStyle (kPopupStyle);
+			contextMenu.popup (frame, where);
+			return kMouseEventHandled;
+		}
+	}
+	return kMouseEventNotHandled;
 }
 
 //------------------------------------------------------------------------
