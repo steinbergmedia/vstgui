@@ -423,7 +423,6 @@ void DeleteOperation::undo ()
 {
 	selection->empty ();
 	IDependency::DeferChanges dc (selection);
-	const_iterator it = begin ();
 	for (auto& element : *this)
 	{
 		if (element.second.nextView)
@@ -633,7 +632,6 @@ void AttributeChangeAction::undo ()
 {
 	const IViewFactory* viewFactory = desc->getViewFactory ();
 	selection->changed (UISelection::kMsgSelectionViewWillChange);
-	const_iterator it = begin ();
 	for (auto& element : *this)
 	{
 		UIAttributes attr;
