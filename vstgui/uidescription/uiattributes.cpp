@@ -204,13 +204,11 @@ bool UIAttributes::getPointAttribute (const std::string& name, CPoint& p) const
 			StringArray subStrings;
 			while (pos != std::string::npos)
 			{
-				std::string name (*str, start, pos - start);
-				subStrings.push_back (name);
+				subStrings.emplace_back (*str, start, pos - start);
 				start = pos+1;
 				pos = str->find (",", start, 1);
 			}
-			std::string name (*str, start, std::string::npos);
-			subStrings.push_back (name);
+			subStrings.emplace_back (*str, start, std::string::npos);
 			if (subStrings.size () == 2)
 			{
 				p.x = UTF8StringView (subStrings[0].c_str ()).toDouble ();
@@ -249,13 +247,11 @@ bool UIAttributes::getRectAttribute (const std::string& name, CRect& r) const
 			StringArray subStrings;
 			while (pos != std::string::npos)
 			{
-				std::string name (*str, start, pos - start);
-				subStrings.push_back (name);
+				subStrings.emplace_back (*str, start, pos - start);
 				start = pos+1;
 				pos = str->find (",", start, 1);
 			}
-			std::string name (*str, start, std::string::npos);
-			subStrings.push_back (name);
+			subStrings.emplace_back (*str, start, std::string::npos);
 			if (subStrings.size () == 4)
 			{
 				r.left = UTF8StringView (subStrings[0].c_str ()).toDouble ();
@@ -285,7 +281,7 @@ bool UIAttributes::getStringArrayAttribute (const std::string& name, StringArray
 		std::string item;
 		while (std::getline (ss, item, ','))
 		{
-			values.push_back (item);
+			values.emplace_back (std::move (item));
 		}
 		return true;
 	}

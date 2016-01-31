@@ -2349,7 +2349,7 @@ static bool tokenizeString (std::string& str, StringTokenList& tokens)
 				{
 					if (start != iterator)
 						tokens.emplace_back (std::string {start.base (), iterator.base ()});
-					tokens.push_back (StringToken (StringToken::kAdd));
+					tokens.emplace_back (StringToken::kAdd);
 					start = iterator;
 					++start;
 					break;
@@ -2358,7 +2358,7 @@ static bool tokenizeString (std::string& str, StringTokenList& tokens)
 				{
 					if (start != iterator)
 						tokens.emplace_back (std::string {start.base (), iterator.base ()});
-					tokens.push_back (StringToken (StringToken::kSubtract));
+					tokens.emplace_back (StringToken::kSubtract);
 					start = iterator;
 					++start;
 					break;
@@ -2367,7 +2367,7 @@ static bool tokenizeString (std::string& str, StringTokenList& tokens)
 				{
 					if (start != iterator)
 						tokens.emplace_back (std::string {start.base (), iterator.base ()});
-					tokens.push_back (StringToken (StringToken::kMulitply));
+					tokens.emplace_back (StringToken::kMulitply);
 					start = iterator;
 					++start;
 					break;
@@ -2376,7 +2376,7 @@ static bool tokenizeString (std::string& str, StringTokenList& tokens)
 				{
 					if (start != iterator)
 						tokens.emplace_back (std::string {start.base (), iterator.base ()});
-					tokens.push_back (StringToken (StringToken::kDivide));
+					tokens.emplace_back (StringToken::kDivide);
 					start = iterator;
 					++start;
 					break;
@@ -2385,7 +2385,7 @@ static bool tokenizeString (std::string& str, StringTokenList& tokens)
 				{
 					if (start != iterator)
 						tokens.emplace_back (std::string {start.base (), iterator.base ()});
-					tokens.push_back (StringToken (StringToken::kOpenParenthesis));
+					tokens.emplace_back (StringToken::kOpenParenthesis);
 					start = iterator;
 					++start;
 					break;
@@ -2394,7 +2394,7 @@ static bool tokenizeString (std::string& str, StringTokenList& tokens)
 				{
 					if (start != iterator)
 						tokens.emplace_back (std::string {start.base (), iterator.base ()});
-					tokens.push_back (StringToken (StringToken::kCloseParenthesis));
+					tokens.emplace_back (StringToken::kCloseParenthesis);
 					start = iterator;
 					++start;
 					break;
