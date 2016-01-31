@@ -72,6 +72,15 @@ public:
 };
 
 //-----------------------------------------------------------------------------
+class IContextMenuController2
+{
+public:
+	virtual ~IContextMenuController2 () {}
+	
+	virtual void appendContextMenuItems (COptionMenu& contextMenu, CView* view, const CPoint& where) = 0;
+};
+
+//-----------------------------------------------------------------------------
 /* helper method to get the controller of a view */
 inline IController* getViewController (const CView* view, bool deep = false)
 {
