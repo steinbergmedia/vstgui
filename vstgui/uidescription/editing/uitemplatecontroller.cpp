@@ -688,8 +688,16 @@ CMouseEventResult UITemplatesDataSource::dbOnMouseDown (const CPoint& where, con
 //----------------------------------------------------------------------------------------------------
 void UITemplatesDataSource::dbCellTextChanged (int32_t row, int32_t column, UTF8StringPtr newText, CDataBrowser* browser)
 {
-	if (getStringList ()->at (static_cast<uint32_t> (row)) != newText)
-		actionPerformer->performTemplateNameChange (getStringList ()->at (static_cast<uint32_t> (row)).data (), newText);
+	auto oldName = getStringList ()->at (static_cast<uint32_t> (row));
+	if (oldName != newText)
+	{
+		for (auto& name : *getStringList ())
+		{
+			if (name == newText)
+				return;
+		}
+		actionPerformer->performTemplateNameChange (oldName.data (), newText);
+	}
 }
 
 //----------------------------------------------------------------------------------------------------
