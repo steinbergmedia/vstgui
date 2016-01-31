@@ -202,19 +202,11 @@ protected:
 			#if DEBUG_LOG
 			DebugPrint ("Current Animators : %d\n", animators.size ());
 			#endif
-			Animators::iterator it = animators.begin ();
-			while (it != animators.end ())
-			{
-				Animator* animator = *it++;
+			for (auto& animator : animators)
 				animator->notify (sender, message);
-			}
 			inTimer = false;
-			it = toRemove.begin ();
-			while (it != toRemove.end ())
-			{
-				Animator* animator = *it++;
+			for (auto& animator : toRemove)
 				removeAnimator (animator);
-			}
 			toRemove.clear ();
 			return kMessageNotified;
 		}
@@ -277,15 +269,13 @@ void Animator::addAnimation (CView* view, IdStringPtr name, IAnimationTarget* ta
 //-----------------------------------------------------------------------------
 void Animator::removeAnimation (CView* view, IdStringPtr name)
 {
-	AnimationList::iterator it = animations.begin ();
-	while (it != animations.end ())
+	for (auto& animation : animations)
 	{
-		Animation* animation = *it++;
 		if (animation->view == view && animation->name == name)
 		{
-			#if DEBUG_LOG
+#if DEBUG_LOG
 			DebugPrint ("animation removed: %p - %s\n", view, name);
-			#endif
+#endif
 			if (animation->done == false)
 			{
 				animation->done = true;
@@ -300,10 +290,8 @@ void Animator::removeAnimation (CView* view, IdStringPtr name)
 //-----------------------------------------------------------------------------
 void Animator::removeAnimations (CView* view)
 {
-	AnimationList::iterator it = animations.begin ();
-	while (it != animations.end ())
+	for (auto& animation : animations)
 	{
-		Animation* animation = *it++;
 		if (animation->view == view)
 		{
 			if (animation->done == false)
@@ -369,12 +357,8 @@ CMessageResult Animator::notify (CBaseObject* sender, IdStringPtr message)
 				++it;
 		}
 		inTimer = false;
-		AnimationList::const_iterator cit = toRemove.begin ();
-		while (cit != toRemove.end ())
-		{
-			Animation* a = *cit++;
-			removeAnimation (a);
-		}
+		for (auto& animation : toRemove)
+			removeAnimation (animation);
 		toRemove.clear ();
 		if (animations.empty ())
 			Timer::removeAnimator (this);
