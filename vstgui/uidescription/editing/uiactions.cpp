@@ -66,13 +66,11 @@ UTF8StringPtr SizeToFitOperation::getName ()
 void SizeToFitOperation::perform ()
 {
 	selection->changed (UISelection::kMsgSelectionViewWillChange);
-	const_iterator it = begin ();
-	while (it != end ())
+	for (auto& element : *this)
 	{
-		(*it).first->invalid ();
-		(*it).first->sizeToFit ();
-		(*it).first->invalid ();
-		it++;
+		element.first->invalid ();
+		element.first->sizeToFit ();
+		element.first->invalid ();
 	}
 	selection->changed (UISelection::kMsgSelectionViewChanged);
 }
@@ -81,14 +79,12 @@ void SizeToFitOperation::perform ()
 void SizeToFitOperation::undo ()
 {
 	selection->changed (UISelection::kMsgSelectionViewWillChange);
-	const_iterator it = begin ();
-	while (it != end ())
+	for (auto& element : *this)
 	{
-		(*it).first->invalid ();
-		(*it).first->setViewSize ((*it).second);
-		(*it).first->setMouseableArea ((*it).second);
-		(*it).first->invalid ();
-		it++;
+		element.first->invalid ();
+		element.first->setViewSize (element.second);
+		element.first->setMouseableArea (element.second);
+		element.first->invalid ();
 	}
 	selection->changed (UISelection::kMsgSelectionViewChanged);
 }
@@ -158,10 +154,8 @@ void UnembedViewOperation::perform ()
 void UnembedViewOperation::undo ()
 {
 	CRect containerViewSize = containerView->getViewSize ();
-	const_iterator it = begin ();
-	while (it != end ())
+	for (auto& view : *this)
 	{
-		CView* view = (*it);
 		parent->removeView (view, false);
 		CRect viewSize = view->getViewSize ();
 		CRect mouseSize = view->getMouseableArea ();
@@ -170,7 +164,6 @@ void UnembedViewOperation::undo ()
 		view->setViewSize (viewSize);
 		view->setMouseableArea (mouseSize);
 		containerView->addView (view);
-		it++;
 	}
 	parent->addView (containerView);
 	selection->setExclusive (containerView);
@@ -190,10 +183,9 @@ EmbedViewOperation::EmbedViewOperation (UISelection* selection, CViewContainer* 
 	FOREACH_IN_SELECTION_END
 
 	CRect r = selection->first ()->getViewSize ();
-	const_iterator it = begin ();
-	while (it != end ())
+	for (auto& element : *this)
 	{
-		CView* view = (*it).first;
+		CView* view = element.first;
 		CRect viewSize = view->getViewSize ();
 		if (viewSize.left < r.left)
 			r.left = viewSize.left;
@@ -203,7 +195,6 @@ EmbedViewOperation::EmbedViewOperation (UISelection* selection, CViewContainer* 
 			r.top = viewSize.top;
 		if (viewSize.bottom > r.bottom)
 			r.bottom = viewSize.bottom;
-		it++;
 	}
 	r.extend (10, 10);
 	newContainer->setViewSize (r);
@@ -220,17 +211,15 @@ UTF8StringPtr EmbedViewOperation::getName ()
 void EmbedViewOperation::perform ()
 {
 	CRect parentRect = newContainer->getViewSize ();
-	const_iterator it = begin ();
-	while (it != end ())
+	for (auto& element : *this)
 	{
-		CView* view = (*it).first;
+		CView* view = element.first;
 		parent->removeView (view, false);
 		CRect r = view->getViewSize ();
 		r.offset (-parentRect.left, -parentRect.top);
 		view->setViewSize (r);
 		view->setMouseableArea (r);
 		newContainer->addView (view);
-		it++;
 	}
 	parent->addView (newContainer);
 	newContainer->remember ();
@@ -297,14 +286,12 @@ UTF8StringPtr ViewCopyOperation::getName ()
 void ViewCopyOperation::perform ()
 {
 	workingSelection->empty ();
-	const_iterator it = begin ();
-	while (it != end ())
+	for (auto& view : *this)
 	{
-		parent->addView (*it);
-		(*it)->remember ();
-		(*it)->invalid ();
-		workingSelection->add (*it);
-		it++;
+		parent->addView (view);
+		(view)->remember ();
+		(view)->invalid ();
+		workingSelection->add (view);
 	}
 }
 
@@ -312,19 +299,15 @@ void ViewCopyOperation::perform ()
 void ViewCopyOperation::undo ()
 {
 	workingSelection->empty ();
-	const_iterator it = begin ();
-	while (it != end ())
+	for (auto& view : *this)
 	{
-		(*it)->invalid ();
-		parent->removeView (*it, true);
-		it++;
+		view->invalid ();
+		parent->removeView (view, true);
 	}
-	it = oldSelectedViews.begin ();
-	while (it != oldSelectedViews.end ())
+	for (auto& view : oldSelectedViews)
 	{
-		workingSelection->add (*it);
-		(*it)->invalid ();
-		it++;
+		workingSelection->add (view);
+		view->invalid ();
 	}
 }
 
@@ -365,13 +348,12 @@ void ViewSizeChangeOperation::perform ()
 void ViewSizeChangeOperation::undo ()
 {
 	selection->empty ();
-	iterator it = begin ();
-	while (it != end ())
+	for (auto& element : *this)
 	{
-		CView* view = (*it).first;
-		CRect size ((*it).second);
+		CView* view = element.first;
+		CRect size (element.second);
 		view->invalid ();
-		(*it).second = view->getViewSize ();
+		element.second = view->getViewSize ();
 		CViewContainer* container = nullptr;
 		bool oldAutosizing = false;
 		if (!autosizing)
@@ -391,7 +373,6 @@ void ViewSizeChangeOperation::undo ()
 		{
 			container->setAutosizingEnabled (oldAutosizing);
 		}
-		it++;
 	}
 }
 
@@ -433,12 +414,8 @@ UTF8StringPtr DeleteOperation::getName ()
 void DeleteOperation::perform ()
 {
 	selection->empty ();
-	const_iterator it = begin ();
-	while (it != end ())
-	{
-		(*it).first->removeView ((*it).second.view);
-		it++;
-	}
+	for (auto& element : *this)
+		element.first->removeView (element.second.view);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -447,15 +424,14 @@ void DeleteOperation::undo ()
 	selection->empty ();
 	IDependency::DeferChanges dc (selection);
 	const_iterator it = begin ();
-	while (it != end ())
+	for (auto& element : *this)
 	{
-		if ((*it).second.nextView)
-			(*it).first->addView ((*it).second.view, (*it).second.nextView);
+		if (element.second.nextView)
+			element.first->addView (element.second.view, element.second.nextView);
 		else
-			(*it).first->addView ((*it).second.view);
-		(*it).second.view->remember ();
-		selection->add ((*it).second.view);
-		it++;
+			element.first->addView (element.second.view);
+		element.second.view->remember ();
+		selection->add (element.second.view);
 	}
 }
 
@@ -622,14 +598,14 @@ UTF8StringPtr AttributeChangeAction::getName ()
 //-----------------------------------------------------------------------------
 void AttributeChangeAction::updateSelection ()
 {
-	for (const_iterator it = begin (); it != end (); it++)
+	for (auto& element : *this)
 	{
-		if (selection->contains ((*it).first) == false)
+		if (selection->contains (element.first) == false)
 		{
 			IDependency::DeferChanges dc (selection);
 			selection->empty ();
-			for (const_iterator it2 = begin (); it2 != end (); it2++)
-				selection->add ((*it2).first);
+			for (auto& it2 : *this)
+				selection->add (it2.first);
 			break;
 		}
 	}
@@ -642,13 +618,11 @@ void AttributeChangeAction::perform ()
 	UIAttributes attr;
 	attr.setAttribute (attrName, attrValue);
 	selection->changed (UISelection::kMsgSelectionViewWillChange);
-	const_iterator it = begin ();
-	while (it != end ())
+	for (auto& element : *this)
 	{
-		(*it).first->invalid ();	// we need to invalid before changing anything as the size may change
-		viewFactory->applyAttributeValues ((*it).first, attr, desc);
-		(*it).first->invalid ();	// and afterwards also
-		it++;
+		element.first->invalid ();	// we need to invalid before changing anything as the size may change
+		viewFactory->applyAttributeValues (element.first, attr, desc);
+		element.first->invalid ();	// and afterwards also
 	}
 	selection->changed (UISelection::kMsgSelectionViewChanged);
 	updateSelection ();
@@ -660,14 +634,13 @@ void AttributeChangeAction::undo ()
 	const IViewFactory* viewFactory = desc->getViewFactory ();
 	selection->changed (UISelection::kMsgSelectionViewWillChange);
 	const_iterator it = begin ();
-	while (it != end ())
+	for (auto& element : *this)
 	{
 		UIAttributes attr;
-		attr.setAttribute (attrName, (*it).second);
-		(*it).first->invalid ();	// we need to invalid before changing anything as the size may change
-		viewFactory->applyAttributeValues ((*it).first, attr, desc);
-		(*it).first->invalid ();	// and afterwards also
-		it++;
+		attr.setAttribute (attrName, element.second);
+		element.first->invalid ();	// we need to invalid before changing anything as the size may change
+		viewFactory->applyAttributeValues (element.first, attr, desc);
+		element.first->invalid ();	// and afterwards also
 	}
 	selection->changed (UISelection::kMsgSelectionViewChanged);
 	updateSelection ();
@@ -691,31 +664,26 @@ void MultipleAttributeChangeAction::collectViewsWithAttributeValue (const UIView
 {
 	std::list<CView*> views;
 	collectAllSubViews (startView, views);
-	std::list<CView*>::iterator it = views.begin ();
-	while (it != views.end ())
+	for (auto& view : views)
 	{
-		CView* view = (*it);
 		std::list<std::string> attrNames;
 		if (viewFactory->getAttributeNamesForView (view, attrNames))
 		{
-			std::list<std::string>::iterator namesIt = attrNames.begin ();
-			while (namesIt != attrNames.end ())
+			for (auto& attrName : attrNames)
 			{
-				if (viewFactory->getAttributeType (view, (*namesIt)) == type)
+				if (viewFactory->getAttributeType (view, attrName) == type)
 				{
 					std::string typeValue;
-					if (viewFactory->getAttributeValue (view, (*namesIt), typeValue, desc))
+					if (viewFactory->getAttributeValue (view, attrName, typeValue, desc))
 					{
 						if (typeValue == value)
 						{
-							push_back (std::make_pair (view, (*namesIt)));
+							emplace_back (view, attrName);
 						}
 					}
 				}
-				namesIt++;
 			}
 		}
-		it++;
 	}
 }
 
@@ -738,15 +706,13 @@ void MultipleAttributeChangeAction::collectAllSubViews (CView* view, std::list<C
 void MultipleAttributeChangeAction::setAttributeValue (UTF8StringPtr value)
 {
 	const IViewFactory* viewFactory = description->getViewFactory ();
-	const_iterator it = begin ();
-	while (it != end ())
+	for (auto& element : *this)
 	{
-		CView* view = (*it).first;
+		CView* view = element.first;
 		UIAttributes newAttr;
-		newAttr.setAttribute ((*it).second, value);
+		newAttr.setAttribute (element.second, value);
 		viewFactory->applyAttributeValues (view, newAttr, description);
 		view->invalid ();
-		it++;
 	}
 }
 
