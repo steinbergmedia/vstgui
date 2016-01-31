@@ -1631,6 +1631,19 @@ void UIEditController::onTemplatesChanged ()
 	}
 }
 
+//----------------------------------------------------------------------------------------------------
+void UIEditController::appendContextMenuItems (COptionMenu& contextMenu, const CPoint& where)
+{
+	if (editView == nullptr)
+		return;
+	auto editMenu = getMenuController ()->getEditMenu ();
+	for (auto& entry : *editMenu->getItems ())
+	{
+		entry->remember ();
+		contextMenu.addEntry (entry);
+	}
+}
+
 } // namespace
 
 #endif // VSTGUI_LIVE_EDITING

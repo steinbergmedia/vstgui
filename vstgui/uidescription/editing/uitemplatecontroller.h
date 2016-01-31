@@ -51,7 +51,7 @@ namespace VSTGUI {
 class UIViewListDataSource;
 
 //----------------------------------------------------------------------------------------------------
-class UITemplateController : public CBaseObject, public DelegationController, public IGenericStringListDataBrowserSourceSelectionChanged, public IDependency
+class UITemplateController : public CBaseObject, public DelegationController, public IContextMenuController2, public IGenericStringListDataBrowserSourceSelectionChanged, public IDependency
 {
 public:
 	UITemplateController (IController* baseController, UIDescription* description, UISelection* selection, UIUndoManager* undoManager, IActionPerformer* actionPerformer);
@@ -73,6 +73,8 @@ protected:
 	virtual IController* createSubController (UTF8StringPtr name, const IUIDescription* description) override;
 
 	virtual void dbSelectionChanged (int32_t selectedRow, GenericStringListDataBrowserSource* source) override;
+
+	void appendContextMenuItems (COptionMenu& contextMenu, CView* view, const CPoint& where) override;
 
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 

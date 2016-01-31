@@ -61,18 +61,17 @@ public:
 	bool removeItem (UTF8StringPtr name) override { return false; }
 	bool performNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) override { return false; }
 	UTF8StringPtr getDefaultsName () override { return "UIViewCreatorDataSource"; }
+
+	void addViewToCurrentEditView (int32_t row);
 protected:
-	void addViewToCurrentEditView ();
-	SharedPointer<UISelection> createSelection ();
+	SharedPointer<UISelection> createSelection (int32_t row);
 	const UIViewFactory* factory;
-	int32_t mouseDownRow;
 };
 
 //----------------------------------------------------------------------------------------------------
 UIViewCreatorController::UIViewCreatorController (IController* baseController, UIDescription* description)
 : DelegationController (baseController)
 , description (description)
-, dataSource (nullptr)
 {
 }
 
@@ -91,10 +90,11 @@ CView* UIViewCreatorController::createView (const UIAttributes& attributes, cons
 	{
 		if (*name == "ViewDataBrowser")
 		{
-			const UIViewFactory* factory = dynamic_cast<const UIViewFactory*> (description->getViewFactory ());
+			vstgui_assert (dataBrowser == nullptr);
+			const auto factory = dynamic_cast<const UIViewFactory*> (description->getViewFactory ());
 			dataSource = new UIViewCreatorDataSource (factory, description);
 			UIEditController::setupDataSource (dataSource);
-			CDataBrowser* dataBrowser = new CDataBrowser (CRect (0, 0, 0, 0), dataSource, CDataBrowser::kDrawRowLines|CScrollView::kHorizontalScrollbar | CScrollView::kVerticalScrollbar);
+			dataBrowser = new CDataBrowser (CRect (0, 0, 0, 0), dataSource, CDataBrowser::kDrawRowLines|CScrollView::kHorizontalScrollbar | CScrollView::kVerticalScrollbar);
 			return dataBrowser;
 		}
 	}
@@ -126,6 +126,21 @@ void UIViewCreatorController::valueChanged (CControl* control)
 }
 
 //----------------------------------------------------------------------------------------------------
+void UIViewCreatorController::appendContextMenuItems (COptionMenu& contextMenu, const CPoint& where)
+{
+	auto cell = dataBrowser->getCellAt (where);
+	if (!cell.isValid ())
+		return;
+	const auto& viewName = dataSource->getStringList ()->at (static_cast<uint32_t> (cell.row));
+	UTF8String menuEntryName = "Insert '" + viewName + "'";
+	auto item = new CCommandMenuItem (menuEntryName);
+	item->setActions ([&, cell] (CCommandMenuItem* item) {
+		dataSource->addViewToCurrentEditView (cell.row);
+	});
+	contextMenu.addEntry (item);
+}
+
+//----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 UIViewCreatorDataSource::UIViewCreatorDataSource (const UIViewFactory* factory, UIDescription* description)
@@ -141,25 +156,25 @@ void UIViewCreatorDataSource::getNames (std::list<const std::string*>& names)
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIViewCreatorDataSource::addViewToCurrentEditView ()
+void UIViewCreatorDataSource::addViewToCurrentEditView (int32_t row)
 {
 	UIViewCreatorController* controller = dynamic_cast<UIViewCreatorController*> (getViewController (dataBrowser, true));
 	if (controller)
 	{
 		if (UIEditController* editController = dynamic_cast<UIEditController*>(controller->getBaseController ()))
 		{
-			SharedPointer<UISelection> selection = createSelection ();
+			SharedPointer<UISelection> selection = createSelection (row);
 			editController->addSelectionToCurrentView (selection);
 		}
 	}
 }
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<UISelection> UIViewCreatorDataSource::createSelection ()
+SharedPointer<UISelection> UIViewCreatorDataSource::createSelection (int32_t row)
 {
 	SharedPointer<UISelection> selection;
 	UIAttributes viewAttr;
-	viewAttr.setAttribute (UIViewCreator::kAttrClass, getStringList ()->at (static_cast<uint32_t> (mouseDownRow)).getString ());
+	viewAttr.setAttribute (UIViewCreator::kAttrClass, getStringList ()->at (static_cast<uint32_t> (row)).getString ());
 	CView* view = factory->createView (viewAttr, description);
 	if (view)
 	{
@@ -179,38 +194,22 @@ SharedPointer<UISelection> UIViewCreatorDataSource::createSelection ()
 //----------------------------------------------------------------------------------------------------
 CMouseEventResult UIViewCreatorDataSource::dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser)
 {
-	mouseDownRow = row;
 	if (buttons.isLeftButton ())
 	{
 		if (!buttons.isDoubleClick ())
 			return kMouseEventHandled;
-		addViewToCurrentEditView ();
+		addViewToCurrentEditView (row);
 	}
-	else if (buttons.isRightButton ())
-	{
-		const auto& viewName = getStringList ()->at (static_cast<uint32_t> (mouseDownRow));
-		UTF8String menuEntryName = "Add a new '" + viewName + "'";
-		COptionMenu menu;
-		menu.setStyle (kPopupStyle);
-		menu.addEntry (menuEntryName);
-		CPoint menuLocation (where);
-		browser->localToFrame (menuLocation);
-		if (menu.popup (browser->getFrame (), menuLocation))
-		{
-			if (menu.getEntry (menu.getLastResult ()))
-				addViewToCurrentEditView ();
-		}
-	}
-	mouseDownRow = -1;
 	return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 }
 
 //----------------------------------------------------------------------------------------------------
 CMouseEventResult UIViewCreatorDataSource::dbOnMouseMoved (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser)
 {
-	if (mouseDownRow >= 0 && buttons.isLeftButton ())
+	if (buttons.isLeftButton ())
 	{
-		SharedPointer<UISelection> selection = createSelection ();
+		auto row = dataBrowser->getSelection().front ();
+		SharedPointer<UISelection> selection = createSelection (row);
 		CMemoryStream stream (1024, 1024, false);
 		if (selection->store (stream, description))
 		{
@@ -219,7 +218,6 @@ CMouseEventResult UIViewCreatorDataSource::dbOnMouseMoved (const CPoint& where, 
 			browser->doDrag (dropSource);
 			dropSource->forget ();
 		}
-		mouseDownRow = -1;
 	}
 	return kMouseEventNotHandled;
 }

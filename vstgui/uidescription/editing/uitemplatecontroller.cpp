@@ -412,6 +412,36 @@ IController* UITemplateController::createSubController (UTF8StringPtr name, cons
 }
 
 //----------------------------------------------------------------------------------------------------
+void UITemplateController::appendContextMenuItems (COptionMenu& contextMenu, CView* view, const CPoint& where)
+{
+	CPoint w (where);
+	view->localToFrame (w);
+	templateDataBrowser->frameToLocal (w);
+	if (!templateDataBrowser->hitTest (w))
+		return;
+	auto cell = templateDataBrowser->getCellAt (w);
+	if (!cell.isValid ())
+		return;
+	auto dataSource = dynamic_cast<UITemplatesDataSource*> (templateDataBrowser->getDelegate ());
+	auto templateName = dataSource->getStringList()->at (static_cast<uint32_t> (cell.row));
+	vstgui_assert (dataSource);
+	auto item = new CCommandMenuItem ("Duplicate Template '" + templateName + "'");
+	item->setActions ([this, cell, dataSource] (CCommandMenuItem*) {
+		std::list<const std::string*> tmp;
+		editDescription->collectTemplateViewNames (tmp);
+		std::string newName (dataSource->getStringList ()->at (static_cast<uint32_t> (cell.row)).data ());
+		UIEditMenuController::createUniqueTemplateName (tmp, newName);
+		actionPerformer->performDuplicateTemplate (dataSource->getStringList ()->at (static_cast<uint32_t> (cell.row)).data (), newName.data ());
+	});
+	contextMenu.addEntry (item);
+	item = new CCommandMenuItem ("Delete Template '" + templateName + "'");
+	item->setActions ([this, cell, dataSource] (CCommandMenuItem*) {
+		actionPerformer->performDeleteTemplate (dataSource->getStringList ()->at (static_cast<uint32_t> (cell.row)).data ());
+	});
+	contextMenu.addEntry (item);
+}
+
+//----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 UIViewListDataSource::UIViewListDataSource (CViewContainer* view, const IViewFactory* viewFactory, UISelection* selection, UIUndoManager* undoManager, IGenericStringListDataBrowserSourceSelectionChanged* delegate)
