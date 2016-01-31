@@ -541,7 +541,11 @@ CDataBrowser::Cell CDataBrowser::getCellAt (const CPoint& where) const
 	Cell pos;
 	if (dbView)
 	{
-		dbView->getCell (where, pos);
+		CPoint w (where);
+		localToFrame (w);
+		dbView->frameToLocal (w);
+		if (dbView->hitTest (w))
+			dbView->getCell (w, pos);
 	}
 	return pos;
 }
