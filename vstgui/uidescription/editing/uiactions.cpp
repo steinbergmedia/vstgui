@@ -806,7 +806,7 @@ void TagChangeAction::undo ()
 		if (isNewTag)
 			description->removeTag (name.c_str ());
 		else
-			description->changeControlTagString (name.c_str (), originalTag);
+			description->changeControlTagString (name.c_str (), originalTag, remove);
 	}
 }
 
