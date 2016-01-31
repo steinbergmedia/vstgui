@@ -253,9 +253,9 @@ CMouseEventResult CSegmentButton::onMouseDown (CPoint& where, const CButtonState
 		float newValue = 0;
 		float valueOffset = 1.f / (segments.size () - 1);
 		uint32_t currentIndex = getSegmentIndex (getValueNormalized ());
-		for (Segments::const_iterator it = segments.begin (), end = segments.end (); it != end; ++it, newValue += valueOffset)
+		for (auto& segment : segments)
 		{
-			if ((*it).rect.pointInside (where))
+			if (segment.rect.pointInside (where))
 			{
 				uint32_t newIndex = getSegmentIndex (newValue);
 				if (newIndex != currentIndex)
@@ -268,6 +268,7 @@ CMouseEventResult CSegmentButton::onMouseDown (CPoint& where, const CButtonState
 				}
 				break;
 			}
+			newValue += valueOffset;
 		}
 	}
 	return kMouseDownEventHandledButDontNeedMovedOrUpEvents;

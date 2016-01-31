@@ -675,14 +675,12 @@ int32_t COptionMenu::getCurrentIndex (bool countSeparator) const
 		return currentIndex;
 	int32_t i = 0;
 	int32_t numSeparators = 0;
-	CMenuItemIterator it = menuItems->begin ();
-	while (it != menuItems->end ())
+	for (auto& item : *menuItems)
 	{
-		if ((*it)->isSeparator ())
+		if (item->isSeparator ())
 			numSeparators++;
 		if (i == currentIndex)
 			break;
-		++it;
 		i++;
 	}
 	return currentIndex - numSeparators;
@@ -702,14 +700,12 @@ bool COptionMenu::setCurrent (int32_t index, bool countSeparator)
 	else
 	{
 		int32_t i = 0;
-		CMenuItemIterator it = menuItems->begin ();
-		while (it != menuItems->end ())
+		for (auto& item : *menuItems)
 		{
 			if (i > index)
 				break;
-			if ((*it)->isSeparator ())
+			if (item->isSeparator ())
 				index++;
-			++it;
 			i++;
 		}
 		currentIndex = index;
@@ -755,12 +751,10 @@ bool COptionMenu::checkEntry (int32_t index, bool state)
 //------------------------------------------------------------------------
 bool COptionMenu::checkEntryAlone (int32_t index)
 {
-	CMenuItemIterator it = menuItems->begin ();
 	int32_t pos = 0;
-	while (it != menuItems->end ())
+	for (auto& item : *menuItems)
 	{
-		(*it)->setChecked (pos == index);
-		++it;
+		item->setChecked (pos == index);
 		pos++;
 	}
 	return true;
