@@ -26,29 +26,38 @@ struct WindowComposition
 		set = reinterpret_cast<SetProc> (GetProcAddress (hMod, "SetWindowCompositionAttribute"));
 	}
 
-	bool enableTransparentGradient (HWND hwnd)
+	bool setWindowTransparent (HWND hwnd)
 	{
-		return setAccentState (hwnd, ACCENT_ENABLE_TRANSPARENTGRADIENT);
+		return setAccentState (hwnd, ACCENT_ENABLE_TRANSPARENT);
 	}
+
 private:
+	typedef enum _AccentState {
+		ACCENT_DISABLED = 0,
+		ACCENT_ENABLE_GRADIENT = 1,
+		ACCENT_ENABLE_TRANSPARENTGRADIENT = 2,
+		ACCENT_ENABLE_BLURBEHIND = 3,
+		ACCENT_ENABLE_TRANSPARENT = 4,
+		ACCENT_INVALID_STATE = 5
+	} AccentState;
+
+	typedef struct _AccentPolicy {
+		AccentState AccentState;
+		int32_t AccentFlags;
+		int32_t GradientColor;
+		int32_t AnimationId;
+	} AccentPolicy;
+
 	enum Attribute
 	{
 		// ...
 		WCA_ACCENT_POLICY = 19
 		// ...
 	};
-	enum AccentState
-	{
-		ACCENT_DISABLED = 0,
-		ACCENT_ENABLE_GRADIENT = 1,
-		ACCENT_ENABLE_TRANSPARENTGRADIENT = 2,
-		ACCENT_ENABLE_BLURBEHIND = 3,
-		ACCENT_INVALID_STATE = 4
-	};
 
 	struct Data
 	{
-		DWORD attribute;
+		Attribute attribute;
 		PVOID pData;
 		ULONG dataSize;
 	};
@@ -63,12 +72,14 @@ private:
 	{
 		if (set)
 		{
+			AccentPolicy policy {};
+			policy.AccentState = state;
 			Data d;
 			d.attribute = Attribute::WCA_ACCENT_POLICY;
-			d.dataSize = sizeof (AccentState);
-			d.pData = &state;
+			d.dataSize = sizeof (AccentPolicy);
+			d.pData = &policy;
 			auto result = set (hwnd, &d);
-			return result == S_OK;
+			return result == 0;
 		}
 		return false;
 	}
@@ -399,7 +410,7 @@ static CPoint getRectSize (const RECT& r)
 //------------------------------------------------------------------------
 void Window::makeTransparent ()
 {
-	gWindowComposition.enableTransparentGradient (hwnd);
+	gWindowComposition.setWindowTransparent (hwnd);
 }
 
 //------------------------------------------------------------------------
@@ -468,12 +479,12 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 				modalWindow->activate ();
 				return 0;
 			}
-			//if (!hasBorder)
-			//{
-			//	MARGINS margins = {-1};
-			//	auto res = DwmExtendFrameIntoClientArea (hwnd, &margins);
-			//	vstgui_assert (res == S_OK);
-			//}
+			if (!hasBorder)
+			{
+				MARGINS margins = {0};
+				auto res = DwmExtendFrameIntoClientArea (hwnd, &margins);
+				vstgui_assert (res == S_OK);
+			}
 
 			if (action == WA_ACTIVE || action == WA_CLICKACTIVE)
 			{
