@@ -17,6 +17,65 @@
 
 extern void* hInstance;
 
+struct WindowComposition
+{
+	WindowComposition ()
+	{
+		HMODULE hMod = LoadLibrary(L"user32.dll");
+		get = reinterpret_cast<GetProc> (GetProcAddress (hMod, "GetWindowCompositionAttribute"));
+		set = reinterpret_cast<SetProc> (GetProcAddress (hMod, "SetWindowCompositionAttribute"));
+	}
+
+	bool enableTransparentGradient (HWND hwnd)
+	{
+		return setAccentState (hwnd, ACCENT_ENABLE_TRANSPARENTGRADIENT);
+	}
+private:
+	enum Attribute
+	{
+		// ...
+		WCA_ACCENT_POLICY = 19
+		// ...
+	};
+	enum AccentState
+	{
+		ACCENT_DISABLED = 0,
+		ACCENT_ENABLE_GRADIENT = 1,
+		ACCENT_ENABLE_TRANSPARENTGRADIENT = 2,
+		ACCENT_ENABLE_BLURBEHIND = 3,
+		ACCENT_INVALID_STATE = 4
+	};
+
+	struct Data
+	{
+		DWORD attribute;
+		PVOID pData;
+		ULONG dataSize;
+	};
+
+	typedef HRESULT (WINAPI* GetProc)(HWND, Data*);
+	typedef HRESULT (WINAPI* SetProc)(HWND, Data*);
+
+	GetProc get = nullptr;
+	SetProc set = nullptr;
+
+	bool setAccentState (HWND hwnd, AccentState state)
+	{
+		if (set)
+		{
+			Data d;
+			d.attribute = Attribute::WCA_ACCENT_POLICY;
+			d.dataSize = sizeof (AccentState);
+			d.pData = &state;
+			auto result = set (hwnd, &d);
+			return result == S_OK;
+		}
+		return false;
+	}
+
+};
+static WindowComposition gWindowComposition;
+
 //------------------------------------------------------------------------
 namespace VSTGUI {
 namespace Standalone {
@@ -69,6 +128,7 @@ public:
 	LRESULT CALLBACK proc (UINT message, WPARAM wParam, LPARAM lParam);
 
 private:
+	void makeTransparent ();
 	void updateDPI ();
 	void setNewDPI (uint32_t newDpi);
 	void handleMenuCommand (const UTF8String& group, UINT index);
@@ -193,6 +253,8 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 		hasMenu = true;
 		updateCommands ();
 	}
+	if (isTransparent)
+		makeTransparent ();
 	return true;
 }
 
@@ -335,6 +397,12 @@ static CPoint getRectSize (const RECT& r)
 }
 
 //------------------------------------------------------------------------
+void Window::makeTransparent ()
+{
+	gWindowComposition.enableTransparentGradient (hwnd);
+}
+
+//------------------------------------------------------------------------
 LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 {
 	if (!delegate)
@@ -400,20 +468,12 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 				modalWindow->activate ();
 				return 0;
 			}
-			if (!hasBorder)
-			{
-				if (isTransparent)
-				{
-					DWM_BLURBEHIND bb = {};
-					bb.dwFlags = DWM_BB_ENABLE;
-					bb.fEnable = true;
-					DwmEnableBlurBehindWindow (hwnd, &bb);
-				}
-
-				MARGINS margins = {0, 0, 0, 0};
-				auto res = DwmExtendFrameIntoClientArea (hwnd, &margins);
-				vstgui_assert (res == S_OK);
-			}
+			//if (!hasBorder)
+			//{
+			//	MARGINS margins = {-1};
+			//	auto res = DwmExtendFrameIntoClientArea (hwnd, &margins);
+			//	vstgui_assert (res == S_OK);
+			//}
 
 			if (action == WA_ACTIVE || action == WA_CLICKACTIVE)
 			{
