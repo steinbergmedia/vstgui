@@ -316,7 +316,7 @@ public:
 			{
 				auto item = new CCommandMenuItem ("Zoom " + toString (i) + "%");
 				item->setActions ([this, i] (CCommandMenuItem*) {
-					updateZoom (i);
+					updateZoom (static_cast<float> (i));
 				});
 				contextMenu.addEntry (item);
 			}
