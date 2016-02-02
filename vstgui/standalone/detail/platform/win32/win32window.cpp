@@ -12,41 +12,49 @@
 #include <Dwmapi.h>
 #include <d2d1.h>
 #include <ShellScalingAPI.h>
+#include <VersionHelpers.h>
 
 #pragma comment(lib, "Dwmapi.lib")
 
 extern void* hInstance;
 
+//------------------------------------------------------------------------
 struct WindowComposition
 {
 	WindowComposition ()
 	{
-		HMODULE hMod = LoadLibrary(L"user32.dll");
+		HMODULE hMod = LoadLibrary (L"user32.dll");
 		get = reinterpret_cast<GetProc> (GetProcAddress (hMod, "GetWindowCompositionAttribute"));
 		set = reinterpret_cast<SetProc> (GetProcAddress (hMod, "SetWindowCompositionAttribute"));
 	}
 
 	bool setWindowTransparent (HWND hwnd)
 	{
-		return setAccentState (hwnd, ACCENT_ENABLE_TRANSPARENT);
+		// TODO: need manifest file to actually get the running version of Windows 8.1 or greater
+		auto accentState = IsWindowsVersionOrGreater (10, 0, 0) ?
+		                       AccentState::ACCENT_ENABLE_TRANSPARENT :
+		                       AccentState::ACCENT_ENABLE_BLURBEHIND;
+		return setAccentState (hwnd, accentState);
 	}
 
+//------------------------------------------------------------------------
 private:
-	typedef enum _AccentState {
+	enum AccentState {
 		ACCENT_DISABLED = 0,
 		ACCENT_ENABLE_GRADIENT = 1,
 		ACCENT_ENABLE_TRANSPARENTGRADIENT = 2,
-		ACCENT_ENABLE_BLURBEHIND = 3,
-		ACCENT_ENABLE_TRANSPARENT = 4,
+		ACCENT_ENABLE_BLURBEHIND = 3, // use on Windows 8
+		ACCENT_ENABLE_TRANSPARENT = 4, // use on Windows 10
 		ACCENT_INVALID_STATE = 5
-	} AccentState;
+	};
 
-	typedef struct _AccentPolicy {
+	struct AccentPolicy
+	{
 		AccentState AccentState;
 		int32_t AccentFlags;
 		int32_t GradientColor;
 		int32_t AnimationId;
-	} AccentPolicy;
+	};
 
 	enum Attribute
 	{
@@ -62,8 +70,8 @@ private:
 		ULONG dataSize;
 	};
 
-	typedef HRESULT (WINAPI* GetProc)(HWND, Data*);
-	typedef HRESULT (WINAPI* SetProc)(HWND, Data*);
+	typedef HRESULT (WINAPI* GetProc) (HWND, Data*);
+	typedef HRESULT (WINAPI* SetProc) (HWND, Data*);
 
 	GetProc get = nullptr;
 	SetProc set = nullptr;
@@ -83,7 +91,6 @@ private:
 		}
 		return false;
 	}
-
 };
 static WindowComposition gWindowComposition;
 
