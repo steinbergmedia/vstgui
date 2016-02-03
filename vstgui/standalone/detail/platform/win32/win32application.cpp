@@ -67,7 +67,6 @@ private:
 //------------------------------------------------------------------------
 void Application::init ()
 {
-	useD2DHardwareRenderer (true);
 	SetProcessDpiAwareness (PROCESS_PER_MONITOR_DPI_AWARE);
 
 	IApplication::CommandLineArguments cmdArgs;
@@ -243,6 +242,7 @@ int APIENTRY wWinMain (_In_ HINSTANCE instance, _In_opt_ HINSTANCE prevInstance,
 
 	hInstance = instance;
 
+	VSTGUI::useD2DHardwareRenderer (true);
 	VSTGUI::Standalone::Platform::Win32::Application app;
 	app.init ();
 	app.run ();

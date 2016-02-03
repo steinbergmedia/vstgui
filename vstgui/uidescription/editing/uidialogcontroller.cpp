@@ -73,7 +73,7 @@ void UIDialogController::run (UTF8StringPtr _templateName, UTF8StringPtr _dialog
 	dialogButton2 = _button2 != nullptr ? _button2 : "";
 	dialogController = dynamic_cast<CBaseObject*> (_dialogController);
 	dialogDescription = _description;
-	CView* view = UIEditController::getEditorDescription ().createView ("dialog", this);
+	CView* view = UIEditController::getEditorDescription ()->createView ("dialog", this);
 	if (view)
 	{
 		CLayeredViewContainer* layeredView = dynamic_cast<CLayeredViewContainer*>(view);

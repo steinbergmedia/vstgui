@@ -762,7 +762,7 @@ struct WindowController::EditImpl : WindowController::Impl
 			frame->addView (view);
 			frame->enableTooltips (true);
 			CColor focusColor = kBlueCColor;
-			uiEditController->getEditorDescription ().getColor ("focus", focusColor);
+			uiEditController->getEditorDescription ()->getColor ("focus", focusColor);
 			frame->setFocusColor (focusColor);
 			frame->setFocusDrawingEnabled (true);
 			frame->setFocusWidth (1);

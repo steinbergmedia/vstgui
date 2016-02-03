@@ -39,6 +39,10 @@
 #if VSTGUI_DIRECT2D_SUPPORT
 	#include <d2d1.h>
 	#include <dwrite.h>
+	#include <wincodec.h>
+
+#pragma comment (lib,"windowscodecs.lib")
+
 #endif
 
 #include <shlwapi.h>
@@ -77,18 +81,12 @@ class D2DFactory
 {
 public:
 	D2DFactory ()
-	: factory (0)
-	, writeFactory (0)
-	, d2d1Dll (0)
-	, dwriteDll (0)
-	, useCount (0)
 	{
 		d2d1Dll = LoadLibraryA ("d2d1.dll");
 		if (d2d1Dll)
 		{
 			HRESULT hr = S_OK;
 			_D2D1CreateFactory = (D2D1CreateFactoryProc)GetProcAddress (d2d1Dll, "D2D1CreateFactory");
-			getFactory ();
 			dwriteDll = LoadLibraryA ("dwrite.dll");
 			if (dwriteDll)
 			{
@@ -104,16 +102,15 @@ public:
 	~D2DFactory ()
 	{
 		CFontDesc::cleanup ();
-//		if (writeFactory)
-//			writeFactory->Release ();
-//		if (dwriteDll)
-//			FreeLibrary (dwriteDll);
-//		if (d2d1Dll)
-//			FreeLibrary (d2d1Dll);
+		releaseFactory ();
+		if (dwriteDll)
+			FreeLibrary (dwriteDll);
+		if (d2d1Dll)
+			FreeLibrary (d2d1Dll);
 	}
 	ID2D1Factory* getFactory () const
 	{
-		if (_D2D1CreateFactory && !factory)
+		if (_D2D1CreateFactory && factory == nullptr)
 		{
 			D2D1_FACTORY_OPTIONS* options = 0;
 		#if 0 //DEBUG
@@ -126,8 +123,27 @@ public:
 		return factory;
 	}
 	
+	IWICImagingFactory* getImagingFactory ()
+	{
+		if (imagingFactory == nullptr)
+		{
+#if _WIN32_WINNT > 0x601
+// make sure when building with the Win 8.0 SDK we work on Win7
+#define VSTGUI_WICImagingFactory CLSID_WICImagingFactory1
+#else
+#define VSTGUI_WICImagingFactory CLSID_WICImagingFactory
+#endif
+			CoCreateInstance (VSTGUI_WICImagingFactory, NULL, CLSCTX_INPROC_SERVER, IID_IWICImagingFactory, (void**)&imagingFactory);
+		}
+		return imagingFactory;
+	}
+
 	void use ()
 	{
+		if (useCount == 0)
+		{
+			getFactory ();
+		}
 		++useCount;
 	}
 
@@ -138,20 +154,28 @@ public:
 			releaseFactory ();
 	}
 
+	IDWriteFactory* getWriteFactory () const { return writeFactory; }
+private:
 	void releaseFactory ()
 	{
+		if (writeFactory)
+			writeFactory->Release ();
+		writeFactory = nullptr;
+		if (imagingFactory)
+			imagingFactory->Release ();
+		imagingFactory = nullptr;
 		if (factory)
 			factory->Release ();
-		factory = 0;
+		factory = nullptr;
 	}
-	IDWriteFactory* getWriteFactory () const { return writeFactory; }
-protected:
-	D2D1CreateFactoryProc _D2D1CreateFactory;
-	ID2D1Factory* factory;
-	IDWriteFactory* writeFactory;
-	HMODULE d2d1Dll;
-	HMODULE dwriteDll;
-	int32_t useCount;
+
+	D2D1CreateFactoryProc _D2D1CreateFactory {nullptr};
+	ID2D1Factory* factory {nullptr};
+	IDWriteFactory* writeFactory {nullptr};
+	IWICImagingFactory* imagingFactory {nullptr};
+	HMODULE d2d1Dll {nullptr};
+	HMODULE dwriteDll {nullptr};
+	int32_t useCount {0};
 };
 
 //-----------------------------------------------------------------------------
@@ -169,6 +193,16 @@ ID2D1Factory* getD2DFactory ()
 	return getD2DFactoryInstance ().getFactory ();
 #else
 	return 0;
+#endif
+}
+
+//-----------------------------------------------------------------------------
+IWICImagingFactory* getWICImageingFactory ()
+{
+#if VSTGUI_DIRECT2D_SUPPORT
+	return getD2DFactoryInstance ().getImagingFactory ();
+#else
+	return nullptr;
 #endif
 }
 

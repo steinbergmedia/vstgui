@@ -72,7 +72,7 @@ public:
 
 	void addSelectionToCurrentView (UISelection* selection);
 
-	static UIDescription& getEditorDescription ();
+	static SharedPointer<UIDescription> getEditorDescription ();
 	static void setupDataSource (GenericStringListDataBrowserSource* source);
 	static bool std__stringCompare (const std::string* lhs, const std::string* rhs);
 	static const UTF8StringPtr kEncodeBitmapsSettingsKey;
@@ -140,6 +140,7 @@ protected:
 	virtual int32_t onKeyUp (const VstKeyCode& code, CFrame* frame) override;
 
 	SharedPointer<UIDescription> editDescription;
+	SharedPointer<UIDescription> editorDesc;
 	SharedPointer<UISelection> selection;
 	SharedPointer<UIUndoManager> undoManager;
 	SharedPointer<UIGridController> gridController;

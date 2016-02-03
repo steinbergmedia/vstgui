@@ -1038,29 +1038,32 @@ void UIAttributesController::validateAttributeViews ()
 //----------------------------------------------------------------------------------------------------
 CView* UIAttributesController::createValueViewForAttributeType (const UIViewFactory* viewFactory, CView* view, const std::string& attrName, IViewCreator::AttrType attrType)
 {
+	auto editorDescription = UIEditController::getEditorDescription ();
+	if (!editDescription)
+		return nullptr;
 	switch (attrType)
 	{
 		case IViewCreator::kFontType:
-			return UIEditController::getEditorDescription ().createView ("attributes.font", this);
+			return editorDescription->createView ("attributes.font", this);
 		case IViewCreator::kBitmapType:
-			return UIEditController::getEditorDescription ().createView ("attributes.bitmap", this);
+			return editorDescription->createView ("attributes.bitmap", this);
 		case IViewCreator::kTagType:
-			return UIEditController::getEditorDescription ().createView ("attributes.tag", this);
+			return editorDescription->createView ("attributes.tag", this);
 		case IViewCreator::kColorType:
-			return UIEditController::getEditorDescription ().createView ("attributes.color", this);
+			return editorDescription->createView ("attributes.color", this);
 		case IViewCreator::kGradientType:
-			return UIEditController::getEditorDescription ().createView ("attributes.gradient", this);
+			return editorDescription->createView ("attributes.gradient", this);
 		case IViewCreator::kBooleanType:
-			return UIEditController::getEditorDescription ().createView ("attributes.boolean", this);
+			return editorDescription->createView ("attributes.boolean", this);
 		case IViewCreator::kListType:
-			return UIEditController::getEditorDescription ().createView ("attributes.list", this);
+			return editorDescription->createView ("attributes.list", this);
 		case IViewCreator::kFloatType:
 		case IViewCreator::kIntegerType:
 		{
 			double minValue, maxValue;
 			if (viewFactory->getAttributeValueRange (view, attrName, minValue, maxValue))
 			{
-				CView* view = UIEditController::getEditorDescription ().createView ("attributes.number", this);
+				CView* view = editorDescription->createView ("attributes.number", this);
 				if (view)
 				{
 					if (auto container = view->asViewContainer ())
@@ -1079,7 +1082,7 @@ CView* UIAttributesController::createValueViewForAttributeType (const UIViewFact
 		default:
 			break;
 	}
-	return UIEditController::getEditorDescription ().createView ("attributes.text", this);
+	return editorDescription->createView ("attributes.text", this);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -1123,11 +1126,11 @@ CView* UIAttributesController::createViewForAttribute (const std::string& attrNa
 	
 	if (attrName == "text-alignment")
 	{
-		valueView = UIEditController::getEditorDescription ().createView ("attributes.text.alignment", this);
+		valueView = UIEditController::getEditorDescription ()->createView ("attributes.text.alignment", this);
 	}
 	else if (attrName == "autosize")
 	{
-		valueView = UIEditController::getEditorDescription ().createView ("attributes.view.autosize", this);
+		valueView = UIEditController::getEditorDescription ()->createView ("attributes.view.autosize", this);
 	}
 	
 	if (valueView == nullptr)

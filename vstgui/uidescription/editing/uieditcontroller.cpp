@@ -76,7 +76,7 @@ namespace VSTGUI {
 class UIEditControllerDescription
 {
 public:
-	UIDescription& get () const
+	SharedPointer<UIDescription> get () const
 	{
 		if (uiDesc == nullptr)
 		{
@@ -87,10 +87,16 @@ public:
 				descPath += "/uidescriptioneditor.uidesc";
 				SharedPointer<UIDescription> editorDesc = owned (new UIDescription (descPath.c_str ()));
 				if (editorDesc->parse ())
-					uiDesc = editorDesc;
+					uiDesc = std::move (editorDesc);
 			}
 		}
-		return *uiDesc;
+		return uiDesc;
+	}
+
+	void tryFree ()
+	{
+		if (uiDesc->getNbReference () == 1)
+			uiDesc = nullptr;
 	}
 
 private:
@@ -100,7 +106,7 @@ private:
 static UIEditControllerDescription gUIDescription;
 
 //----------------------------------------------------------------------------------------------------
-UIDescription& UIEditController::getEditorDescription ()
+SharedPointer<UIDescription> UIEditController::getEditorDescription ()
 {
 	return gUIDescription.get ();
 }
@@ -114,16 +120,17 @@ void UIEditController::setupDataSource (GenericStringListDataBrowserSource* sour
 	static CColor rowBackColor;
 	static CColor rowAlternateBackColor;
 	static bool once = true;
+	auto editorDescription = UIEditController::getEditorDescription ();
 	if (once)
 	{
-		UIEditController::getEditorDescription ().getColor ("db.selection", selectionColor);
-		UIEditController::getEditorDescription ().getColor ("db.font", fontColor);
-		UIEditController::getEditorDescription ().getColor ("db.row.line", rowlineColor);
-		UIEditController::getEditorDescription ().getColor ("db.row.back", rowBackColor);
-		UIEditController::getEditorDescription ().getColor ("db.row.alternate.back", rowAlternateBackColor);
+		editorDescription->getColor ("db.selection", selectionColor);
+		editorDescription->getColor ("db.font", fontColor);
+		editorDescription->getColor ("db.row.line", rowlineColor);
+		editorDescription->getColor ("db.row.back", rowBackColor);
+		editorDescription->getColor ("db.row.alternate.back", rowAlternateBackColor);
 		once = false;
 	}
-	CFontRef font = UIEditController::getEditorDescription ().getFont ("db.font");
+	CFontRef font = editorDescription->getFont ("db.font");
 	source->setupUI (selectionColor, fontColor, rowlineColor, rowBackColor, rowAlternateBackColor, font);
 }
 
@@ -166,7 +173,7 @@ public:
 		{
 			static CColor lineColor = kBlackCColor;
 			if (lineColor == kBlackCColor)
-				UIEditController::getEditorDescription ().getColor ("shading.light.frame", lineColor);
+				UIEditController::getEditorDescription ()->getColor ("shading.light.frame", lineColor);
 
 			CRect size (_size);
 			context->setDrawMode (kAliasing);
@@ -174,7 +181,7 @@ public:
 			context->setLineWidth (1.);
 			context->setFrameColor (lineColor);
 
-			CGradient* shading = UIEditController::getEditorDescription ().getGradient ("shading.light");
+			CGradient* shading = UIEditController::getEditorDescription ()->getGradient ("shading.light");
 			if (shading)
 			{
 				path->addRect (size);
@@ -349,6 +356,7 @@ UIEditController::UIEditController (UIDescription* description)
 , templateController (nullptr)
 , dirty (false)
 {
+	editorDesc = getEditorDescription ();
 	description->addDependency (this);
 	undoManager->addDependency (this);
 	menuController = new UIEditMenuController (this, selection, undoManager, editDescription, this);
@@ -364,15 +372,17 @@ UIEditController::~UIEditController ()
 		templateController->removeDependency (this);
 	undoManager->removeDependency (this);
 	editDescription->removeDependency (this);
+	editorDesc = nullptr;
+	gUIDescription.tryFree ();
 }
 
 //----------------------------------------------------------------------------------------------------
 CView* UIEditController::createEditView ()
 {
-	if (getEditorDescription ().parse ())
+	if (editorDesc->parse ())
 	{
 		IController* controller = this;
-		CView* view = getEditorDescription ().createView ("view", controller);
+		CView* view = editorDesc->createView ("view", controller);
 		if (view)
 		{
 			view->setAttribute (kCViewControllerAttribute, sizeof (IController*), &controller);
@@ -473,7 +483,7 @@ CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes
 			zoomSettingController = new UIZoomSettingController (this); // not owned, shared with control
 			CTextEdit* textEdit = new CTextEdit (scaleMenuRect, zoomSettingController, 0);
 			textEdit->setAttribute (kCViewControllerAttribute, sizeof (IController*), &zoomSettingController);
-			CView* zoomView = zoomSettingController->verifyView (textEdit, UIAttributes (), &getEditorDescription ());
+			CView* zoomView = zoomSettingController->verifyView (textEdit, UIAttributes (), editorDesc);
 			zoomView->setAutosizeFlags (kAutosizeRight|kAutosizeTop|kAutosizeBottom);
 			splitView->addViewToSeparator (0, zoomView);
 			zoomSettingController->restoreSetting (*getSettings ());
@@ -521,7 +531,7 @@ CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes
 					{
 						if (segmentBitmapNames[segmentBitmapNameIndex])
 						{
-							CBitmap* bitmap = getEditorDescription().getBitmap (segmentBitmapNames[segmentBitmapNameIndex++]);
+							CBitmap* bitmap = editorDesc->getBitmap (segmentBitmapNames[segmentBitmapNameIndex++]);
 							if (!bitmap)
 								continue;
 							segment.icon = bitmap;
@@ -815,7 +825,7 @@ void UIEditController::showTemplateSettings ()
 	}
 	UIDialogController* dc = new UIDialogController (this, editView->getFrame ());
 	UITemplateSettingsController* tsController = new UITemplateSettingsController (editTemplateName, editDescription);
-	dc->run ("template.settings", "Template Settings", "OK", "Cancel", tsController, &getEditorDescription ());
+	dc->run ("template.settings", "Template Settings", "OK", "Cancel", tsController, editorDesc);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -823,7 +833,7 @@ void UIEditController::showFocusSettings ()
 {
 	UIDialogController* dc = new UIDialogController (this, editView->getFrame ());
 	UIFocusSettingsController* fsController = new UIFocusSettingsController (editDescription);
-	dc->run ("focus.settings", "Focus Drawing Settings", "OK", "Cancel", fsController, &getEditorDescription ());
+	dc->run ("focus.settings", "Focus Drawing Settings", "OK", "Cancel", fsController, editorDesc);
 }
 
 //----------------------------------------------------------------------------------------------------

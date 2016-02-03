@@ -721,7 +721,7 @@ void UIGradientsController::showEditDialog ()
 {
 	UIDialogController* dc = new UIDialogController (this, editButton->getFrame ());
 	UIGradientEditorController* fsController = new UIGradientEditorController (dataSource->getSelectedGradientName (), dataSource->getSelectedGradient (), editDescription, actionPerformer);
-	dc->run ("gradient.editor", "Gradient Editor", "OK", "Cancel", fsController, &UIEditController::getEditorDescription ());
+	dc->run ("gradient.editor", "Gradient Editor", "OK", "Cancel", fsController, UIEditController::getEditorDescription ());
 }
 
 } // namespace

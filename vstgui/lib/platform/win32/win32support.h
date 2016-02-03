@@ -48,6 +48,7 @@
 
 interface ID2D1Factory;
 interface IDWriteFactory;
+interface IWICImagingFactory;
 
 namespace VSTGUI {
 
@@ -64,6 +65,7 @@ class CDrawContext;
 extern HINSTANCE GetInstance ();
 extern const OSVERSIONINFOEX& getSystemVersion ();
 extern ID2D1Factory* getD2DFactory ();
+extern IWICImagingFactory* getWICImageingFactory ();
 extern void useD2D ();
 extern void unuseD2D ();
 extern IDWriteFactory* getDWriteFactory ();

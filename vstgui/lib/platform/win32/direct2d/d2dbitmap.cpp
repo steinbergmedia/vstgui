@@ -42,20 +42,7 @@
 #include <shlwapi.h>
 #include <cassert>
 
-#pragma comment (lib,"windowscodecs.lib")
-
 namespace VSTGUI {
-
-//-----------------------------------------------------------------------------
-class WICGlobal
-{
-public:
-	static IWICImagingFactory* getFactory ();
-protected:
-	WICGlobal ();
-	~WICGlobal ();
-	IWICImagingFactory* factory;
-};
 
 //-----------------------------------------------------------------------------
 D2DBitmap::D2DBitmap ()
@@ -73,7 +60,7 @@ D2DBitmap::D2DBitmap (const CPoint& size)
 	REFWICPixelFormatGUID pixelFormat = GUID_WICPixelFormat32bppPBGRA;
 	WICBitmapCreateCacheOption options = WICBitmapCacheOnLoad;
 	IWICBitmap* bitmap = 0;
-	HRESULT hr = WICGlobal::getFactory ()->CreateBitmap ((UINT)size.x, (UINT)size.y, pixelFormat, options, &bitmap);
+	HRESULT hr = getWICImageingFactory ()->CreateBitmap ((UINT)size.x, (UINT)size.y, pixelFormat, options, &bitmap);
 	if (hr == S_OK && bitmap)
 	{
 		source = bitmap;
@@ -92,8 +79,8 @@ D2DBitmap::~D2DBitmap ()
 	if (source)
 	{
 		D2DBitmapCache* gCache = D2DBitmapCache::instance ();
-		if (gCache)
-			gCache->removeBitmap (this);
+		vstgui_assert (gCache, "D2D resources are already freed");
+		gCache->removeBitmap (this);
 		if (source)
 			source->Release ();
 	}
@@ -108,7 +95,7 @@ IWICBitmap* D2DBitmap::getBitmap ()
 	IWICBitmap* icBitmap = 0;
 	if (!SUCCEEDED (getSource ()->QueryInterface (IID_IWICBitmap, (void**)&icBitmap)))
 	{
-		if (SUCCEEDED (WICGlobal::getFactory ()->CreateBitmapFromSource (getSource (), WICBitmapCacheOnDemand, &icBitmap)))
+		if (SUCCEEDED (getWICImageingFactory ()->CreateBitmapFromSource (getSource (), WICBitmapCacheOnDemand, &icBitmap)))
 		{
 			replaceBitmapSource (icBitmap);
 		}
@@ -126,7 +113,7 @@ bool D2DBitmap::createMemoryPNGRepresentation (void** ptr, uint32_t& size)
 
 	bool result = false;
 	IWICBitmapEncoder* encoder = 0;
-	if (SUCCEEDED (WICGlobal::getFactory ()->CreateEncoder (GUID_ContainerFormatPng, NULL, &encoder)))
+	if (SUCCEEDED (getWICImageingFactory ()->CreateEncoder (GUID_ContainerFormatPng, NULL, &encoder)))
 	{
 		IStream* stream = 0;
 		if (SUCCEEDED (CreateStreamOnHGlobal (NULL, TRUE, &stream)))
@@ -178,11 +165,11 @@ bool D2DBitmap::loadFromStream (IStream* iStream)
 {
 	IWICBitmapDecoder* decoder = 0;
 	IWICStream* stream = 0;
-	if (SUCCEEDED (WICGlobal::getFactory ()->CreateStream (&stream)))
+	if (SUCCEEDED (getWICImageingFactory ()->CreateStream (&stream)))
 	{
 		if (SUCCEEDED (stream->InitializeFromIStream (iStream)))
 		{
-			WICGlobal::getFactory ()->CreateDecoderFromStream (stream, NULL, WICDecodeMetadataCacheOnLoad, &decoder);
+			getWICImageingFactory ()->CreateDecoderFromStream (stream, NULL, WICDecodeMetadataCacheOnLoad, &decoder);
 		}
 		stream->Release ();
 	}
@@ -197,7 +184,7 @@ bool D2DBitmap::loadFromStream (IStream* iStream)
 			size.x = w;
 			size.y = h;
 			IWICFormatConverter* converter = 0;
-			WICGlobal::getFactory ()->CreateFormatConverter (&converter);
+			getWICImageingFactory ()->CreateFormatConverter (&converter);
 			if (converter)
 			{
 				if (!SUCCEEDED (converter->Initialize (frame, GUID_WICPixelFormat32bppPBGRA, WICBitmapDitherTypeNone, NULL, 0.f, WICBitmapPaletteTypeMedianCut)))
@@ -488,38 +475,6 @@ D2DBitmapCache* D2DBitmapCache::instance ()
 {
 	static D2DBitmapCache gInstance;
 	return gD2DBitmapCache;
-}
-
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-WICGlobal::WICGlobal ()
-: factory (0)
-{
-
-#if _WIN32_WINNT > 0x601
-// make sure when building with the Win 8.0 SDK we work on Win7
-#define VSTGUI_WICImagingFactory CLSID_WICImagingFactory1
-#else
-#define VSTGUI_WICImagingFactory CLSID_WICImagingFactory
-#endif
-
-	CoCreateInstance (VSTGUI_WICImagingFactory, NULL, CLSCTX_INPROC_SERVER, IID_IWICImagingFactory, (void**)&factory);
-	vstgui_assert (factory);
-}
-
-//-----------------------------------------------------------------------------
-WICGlobal::~WICGlobal ()
-{
-	if (factory)
-		factory->Release ();
-}
-
-//-----------------------------------------------------------------------------
-IWICImagingFactory* WICGlobal::getFactory ()
-{
-	static WICGlobal wicGlobal;
-	return wicGlobal.factory;
 }
 
 } // namespace
