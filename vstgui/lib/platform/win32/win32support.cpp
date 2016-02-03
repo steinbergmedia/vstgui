@@ -85,17 +85,10 @@ public:
 		d2d1Dll = LoadLibraryA ("d2d1.dll");
 		if (d2d1Dll)
 		{
-			HRESULT hr = S_OK;
 			_D2D1CreateFactory = (D2D1CreateFactoryProc)GetProcAddress (d2d1Dll, "D2D1CreateFactory");
 			dwriteDll = LoadLibraryA ("dwrite.dll");
 			if (dwriteDll)
-			{
-				DWriteCreateFactoryProc _DWriteCreateFactory = (DWriteCreateFactoryProc)GetProcAddress (dwriteDll, "DWriteCreateFactory");
-				if (_DWriteCreateFactory)
-				{
-					hr = _DWriteCreateFactory (DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), (void**)&writeFactory);
-				}
-			}	
+				_DWriteCreateFactory = (DWriteCreateFactoryProc)GetProcAddress (dwriteDll, "DWriteCreateFactory");
 		}
 	}
 
@@ -123,6 +116,13 @@ public:
 		return factory;
 	}
 	
+	IDWriteFactory* getWriteFactory ()
+	{
+		if (!writeFactory && _DWriteCreateFactory)
+			_DWriteCreateFactory (DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), (void**)&writeFactory);
+		return writeFactory;
+	}
+
 	IWICImagingFactory* getImagingFactory ()
 	{
 		if (imagingFactory == nullptr)
@@ -140,10 +140,6 @@ public:
 
 	void use ()
 	{
-		if (useCount == 0)
-		{
-			getFactory ();
-		}
 		++useCount;
 	}
 
@@ -154,7 +150,6 @@ public:
 			releaseFactory ();
 	}
 
-	IDWriteFactory* getWriteFactory () const { return writeFactory; }
 private:
 	void releaseFactory ()
 	{
@@ -170,6 +165,7 @@ private:
 	}
 
 	D2D1CreateFactoryProc _D2D1CreateFactory {nullptr};
+	DWriteCreateFactoryProc _DWriteCreateFactory {nullptr};
 	ID2D1Factory* factory {nullptr};
 	IDWriteFactory* writeFactory {nullptr};
 	IWICImagingFactory* imagingFactory {nullptr};
