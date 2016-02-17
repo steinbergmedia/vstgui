@@ -224,6 +224,9 @@ public:
 	/** converts the string to a float */
 	float toFloat (uint32_t precision = 8) const;
 	
+	/** converts the string to an integer */
+	int64_t toInteger () const;
+
 	bool operator== (const UTF8StringPtr otherString) const;
 	bool operator!= (const UTF8StringPtr otherString) const;
 	operator const UTF8StringPtr () const;
@@ -400,6 +403,16 @@ inline double UTF8StringView::toDouble (uint32_t precision) const
 inline float UTF8StringView::toFloat (uint32_t precision) const
 {
 	return static_cast<float>(toDouble (precision));
+}
+
+//------------------------------------------------------------------------
+inline int64_t UTF8StringView::toInteger () const
+{
+	std::istringstream sstream (str);
+	sstream.imbue (std::locale::classic ());
+	int64_t result;
+	sstream >> result;
+	return result;
 }
 
 //-----------------------------------------------------------------------------
