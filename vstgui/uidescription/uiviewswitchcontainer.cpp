@@ -228,7 +228,7 @@ static CControl* findControlTag (CViewContainer* parent, int32_t tag, bool rever
 		++it;
 	}
 	if (result == nullptr && !reverse && parent->getParentView ())
-		return findControlTag (parent->getParentView ()->asViewContainer (), reverse);
+		return findControlTag (parent->getParentView ()->asViewContainer (), tag, reverse);
 	return result;
 }
 
