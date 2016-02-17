@@ -78,6 +78,7 @@ public:
 
 	void setClipboard (IDataPackage* data) override;
 	IDataPackage* getClipboard () override;
+	PlatformType getPlatformType () const override { return PlatformType::kHWND; }
 
 	LONG_PTR WINAPI proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 //-----------------------------------------------------------------------------

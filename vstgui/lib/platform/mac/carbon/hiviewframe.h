@@ -79,6 +79,7 @@ public:
 	DragResult doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap) override;
 	void setClipboard (IDataPackage* data) override;
 	IDataPackage* getClipboard () override;
+	PlatformType getPlatformType () const override { return PlatformType::kWindowRef; }
 
 //-----------------------------------------------------------------------------
 protected:

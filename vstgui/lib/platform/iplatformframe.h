@@ -129,6 +129,7 @@ public:
 	virtual void setClipboard (IDataPackage* data) = 0;	///< set clipboard data
 	virtual IDataPackage* getClipboard () = 0;			///< get clipboard data
 
+	virtual PlatformType getPlatformType () const = 0;
 //-----------------------------------------------------------------------------
 protected:
 	explicit IPlatformFrame (IPlatformFrameCallback* frame) : frame (frame) {}
