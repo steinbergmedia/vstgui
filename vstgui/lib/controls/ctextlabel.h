@@ -106,6 +106,9 @@ public:
 	virtual void setLineLayout (LineLayout layout);
 	LineLayout getLineLayout () const { return lineLayout; }
 
+	virtual void setAutoHeight (bool state);
+	bool getAutoHeight () const { return autoHeight; }
+
 	void draw (CDrawContext* pContext) override;
 	bool sizeToFit () override;
 	void setText (const UTF8String& txt) override;
@@ -114,7 +117,9 @@ public:
 	void setTextTruncateMode (TextTruncateMode mode) override;
 private:
 	void recalculateLines (CDrawContext* context);
+	void recalculateHeight ();
 	
+	bool autoHeight {false};
 	LineLayout lineLayout {LineLayout::clip};
 
 	struct Line

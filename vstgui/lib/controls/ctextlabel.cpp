@@ -167,10 +167,9 @@ void CTextLabel::valueChanged ()
 {
 	if (valueToStringFunction)
 	{
-		char string[256];
-		string[0] = 0;
+		std::string string;
 		if (valueToStringFunction (getValue (), string, this))
-			setText (string);
+			setText (UTF8String (std::move (string)));
 	}
 	CParamDisplay::valueChanged ();
 }
@@ -197,6 +196,16 @@ void CMultiLineTextLabel::setLineLayout (LineLayout layout)
 		return;
 	lineLayout = layout;
 	lines.clear ();
+}
+
+//------------------------------------------------------------------------
+void CMultiLineTextLabel::setAutoHeight (bool state)
+{
+	if (autoHeight == state)
+		return;
+	autoHeight = state;
+	if (autoHeight && isAttached ())
+		recalculateHeight ();
 }
 
 //------------------------------------------------------------------------
@@ -247,6 +256,20 @@ void CMultiLineTextLabel::setText (const UTF8String& txt)
 		return;
 	CTextLabel::setText (txt);
 	lines.clear ();
+	if (autoHeight && isAttached ())
+	{
+		recalculateLines (nullptr);
+		recalculateHeight ();
+	}
+}
+
+//------------------------------------------------------------------------
+void CMultiLineTextLabel::recalculateHeight ()
+{
+	auto lastLine = lines.back ().r;
+	auto viewSize = getViewSize ();
+	viewSize.bottom = lastLine.bottom + getTextInset ().y;
+	CTextLabel::setViewSize (viewSize);
 }
 
 //------------------------------------------------------------------------
@@ -324,7 +347,7 @@ void CMultiLineTextLabel::recalculateLines (CDrawContext* context)
 				auto start = element.first.begin ();
 				auto lastSeparator = start;
 				auto pos = start;
-				while (pos != element.first.end ())
+				while (pos != element.first.end () && *pos != 0)
 				{
 					if (isspace (*pos))
 						lastSeparator = pos;

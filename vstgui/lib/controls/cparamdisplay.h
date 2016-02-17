@@ -104,6 +104,11 @@ public:
 	void setValueToStringFunction (const ValueToStringFunction& valueToStringFunc);
 	void setValueToStringFunction (ValueToStringFunction&& valueToStringFunc);
 
+	using ValueToStringFunction2 = std::function<bool (float value, std::string& result, CParamDisplay* display)>;
+
+	void setValueToStringFunction2 (const ValueToStringFunction2& valueToStringFunc);
+	void setValueToStringFunction2 (ValueToStringFunction2&& valueToStringFunc);
+	
 	virtual void setStyle (int32_t val);
 	int32_t getStyle () const { return style; }
 
@@ -126,7 +131,7 @@ protected:
 
 	virtual void drawStyleChanged ();
 
-	ValueToStringFunction valueToStringFunction;
+	ValueToStringFunction2 valueToStringFunction;
 
 	CHoriTxtAlign horiTxtAlign;
 	int32_t		style;

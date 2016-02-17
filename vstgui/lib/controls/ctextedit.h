@@ -104,6 +104,7 @@ protected:
 	CFontRef platformGetFont () const override;
 	CHoriTxtAlign platformGetHoriTxtAlign () const override { return getHoriAlign (); }
 	const UTF8String& platformGetText () const override { return text; }
+	const UTF8String& platformGetPlaceholderText () const override { return placeholderString; }
 	CRect platformGetSize () const override;
 	CRect platformGetVisibleSize () const override;
 	CPoint platformGetTextInset () const override { return getTextInset (); }

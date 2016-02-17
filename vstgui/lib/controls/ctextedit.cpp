@@ -112,17 +112,19 @@ void CTextEdit::setValue (float val)
 {
 	CTextLabel::setValue (val);
 	bool converted = false;
-	char string[256] = {0};
+	std::string string;
 	if (valueToStringFunction)
 		converted = valueToStringFunction (getValue (), string, this);
 	if (!converted)
 	{
+		char tmp[255];
 		char precisionStr[10];
 		sprintf (precisionStr, "%%.%hhuf", valuePrecision);
-		sprintf (string, precisionStr, getValue ());
+		sprintf (tmp, precisionStr, getValue ());
+		string = tmp;
 	}
 
-	setText (string);
+	setText (UTF8String (std::move (string)));
 }
 
 //------------------------------------------------------------------------
@@ -136,9 +138,9 @@ void CTextEdit::setText (const UTF8String& txt)
 			CTextLabel::setValue (val);
 			if (valueToStringFunction)
 			{
-				char string[256] = {0};
+				std::string string;
 				valueToStringFunction (getValue (), string, this);
-				CTextLabel::setText (string);
+				CTextLabel::setText (UTF8String (std::move (string)));
 				if (platformControl)
 					platformControl->setText (getText ());
 				return;
@@ -252,7 +254,8 @@ void CTextEdit::platformLooseFocus (bool returnPressed)
 {
 	remember ();
 	bWasReturnPressed = returnPressed;
-	getFrame ()->setFocusView (nullptr);
+	if (getFrame ()->getFocusView () == this)
+		getFrame ()->setFocusView (nullptr);
 	forget ();
 }
 

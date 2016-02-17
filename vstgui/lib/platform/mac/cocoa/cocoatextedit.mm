@@ -93,6 +93,7 @@ static id VSTGUI_NSTextField_Init (id self, SEL _cmd, void* textEdit)
 		}
 		
 		NSString* text = fromUTF8String<NSString*> (tec->platformGetText ());
+		NSString* placeholder = fromUTF8String<NSString*> (tec->platformGetPlaceholderText ());
 
 		[self setTextColor:nsColorFromCColor (tec->platformGetFontColor ())];
 		[self setBordered:NO];
@@ -124,6 +125,14 @@ static id VSTGUI_NSTextField_Init (id self, SEL _cmd, void* textEdit)
 			[cell setAlignment:NSCenterTextAlignment];
 		else if (tec->platformGetHoriTxtAlign () == kRightText)
 			[cell setAlignment:NSRightTextAlignment];
+		if (placeholder.length > 0)
+		{
+			CColor color = tec->platformGetFontColor ();
+			color.alpha /= 2;
+			NSDictionary* attrDict = [NSDictionary dictionaryWithObjectsAndKeys:[self font], NSFontAttributeName, nsColorFromCColor (color), NSForegroundColorAttributeName, nil];
+			NSAttributedString* as = [[[NSAttributedString alloc] initWithString:placeholder attributes:attrDict] autorelease];
+			[cell setPlaceholderAttributedString:as];
+		}
 
 		[self setDelegate:self];
 		[self setNextKeyView:frameView];

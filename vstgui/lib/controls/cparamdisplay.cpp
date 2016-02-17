@@ -126,15 +126,36 @@ void CParamDisplay::setPrecision (uint8_t precision)
 }
 
 //------------------------------------------------------------------------
-void CParamDisplay::setValueToStringFunction (const ValueToStringFunction& valueToStringFunc)
+void CParamDisplay::setValueToStringFunction2 (const ValueToStringFunction2& valueToStringFunc)
 {
 	valueToStringFunction = valueToStringFunc;
 }
 
 //------------------------------------------------------------------------
-void CParamDisplay::setValueToStringFunction (ValueToStringFunction&& valueToStringFunc)
+void CParamDisplay::setValueToStringFunction2 (ValueToStringFunction2&& valueToStringFunc)
 {
 	valueToStringFunction = std::move (valueToStringFunc);
+}
+
+//------------------------------------------------------------------------
+void CParamDisplay::setValueToStringFunction (const ValueToStringFunction& func)
+{
+	setValueToStringFunction2 ([func] (float value, std::string& str, CParamDisplay* display) {
+		char string[256];
+		string[0] = 0;
+		if (func (value, string, display))
+		{
+			str = string;
+			return true;
+		}
+		return false;
+	});
+}
+
+//------------------------------------------------------------------------
+void CParamDisplay::setValueToStringFunction (ValueToStringFunction&& func)
+{
+	setValueToStringFunction (func);
 }
 
 //------------------------------------------------------------------------
@@ -168,17 +189,18 @@ void CParamDisplay::draw (CDrawContext *pContext)
 	if (style & kNoDrawStyle)
 		return;
 
-	char string[256];
-	string[0] = 0;
+	std::string string;
 
 	bool converted = false;
 	if (valueToStringFunction)
 		converted = valueToStringFunction (value, string, this);
 	if (!converted)
 	{
+		char tmp[255];
 		char precisionStr[10];
 		sprintf (precisionStr, "%%.%hhuf", valuePrecision);
-		sprintf (string, precisionStr, value);
+		sprintf (tmp, precisionStr, value);
+		string = tmp;
 	}
 
 	drawBack (pContext);

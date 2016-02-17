@@ -174,6 +174,7 @@ static const std::string kAttrTruncateMode = "truncate-mode";
 // CMultiLineTextLabelCreator attributes
 //-----------------------------------------------------------------------------
 static const std::string kAttrLineLayout = "line-layout";
+static const std::string kAttrAutoHeight = "auto-height";
 
 //-----------------------------------------------------------------------------
 // CTextEditCreator attributes

@@ -55,6 +55,7 @@ public:
 	virtual CFontRef platformGetFont () const = 0;
 	virtual CHoriTxtAlign platformGetHoriTxtAlign () const = 0; 
 	virtual const UTF8String& platformGetText () const = 0;
+	virtual const UTF8String& platformGetPlaceholderText () const = 0;
 	virtual CRect platformGetSize () const = 0;
 	virtual CRect platformGetVisibleSize () const = 0;
 	virtual CPoint platformGetTextInset () const = 0;

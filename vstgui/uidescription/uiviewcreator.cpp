@@ -1776,17 +1776,22 @@ public:
 			else
 				label->setLineLayout (CMultiLineTextLabel::LineLayout::clip);
 		}
+		bool autoHeight;
+		if (attributes.getBooleanAttribute (kAttrAutoHeight, autoHeight))
+			label->setAutoHeight (autoHeight);
 		
 		return true;
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const override
 	{
 		attributeNames.push_back (kAttrLineLayout);
+		attributeNames.push_back (kAttrAutoHeight);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const override
 	{
 		if (attributeName == kAttrLineLayout) return kListType;
+		if (attributeName == kAttrAutoHeight) return kBooleanType;
 		return kUnknownType;
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const override
@@ -1804,6 +1809,12 @@ public:
 			}
 			return true;
 		}
+		else if (attributeName == kAttrAutoHeight)
+		{
+			stringValue = label->getAutoHeight () ? "true" : "false";
+			return true;
+		}
+
 		return false;
 	}
 	bool getPossibleListValues (const std::string& attributeName, std::list<const std::string*>& values) const override
