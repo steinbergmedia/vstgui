@@ -133,7 +133,7 @@ protected:
 	CCoord scrollbarWidth;
 	int32_t style;
 	int32_t activeScrollbarStyle;
-
+	bool recalculateSubViewsRecursionGard {false};
 	enum {
 		kHSBTag,
 		kVSBTag

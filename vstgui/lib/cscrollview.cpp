@@ -334,7 +334,10 @@ CScrollView::CScrollView (const CScrollView& v)
 //-----------------------------------------------------------------------------
 void CScrollView::recalculateSubViews ()
 {
-	CRect scsize (0, 0, getViewSize ().getWidth (), getViewSize ().getHeight ());
+	if (recalculateSubViewsRecursionGard)
+		return;
+	recalculateSubViewsRecursionGard = true;
+	CRect scsize (containerSize.left, containerSize.top, getViewSize ().getWidth (), getViewSize ().getHeight ());
 	if (!(style & kDontDrawFrame))
 	{
 		scsize.left++; scsize.top++;
@@ -447,6 +450,7 @@ void CScrollView::recalculateSubViews ()
 	if (style & kOverlayScrollbars)
 		CViewContainer::changeViewZOrder (sc, 0);
 	sc->setAutoDragScroll ((style & kAutoDragScrolling) ? true : false);
+	recalculateSubViewsRecursionGard = false;
 }
 
 //-----------------------------------------------------------------------------

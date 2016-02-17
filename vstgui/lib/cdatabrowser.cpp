@@ -277,9 +277,17 @@ void CDataBrowser::recalculateLayout (bool rememberSelection)
 			pV->getViewSize (viewSize);
 			if (pV != dbHeaderContainer && viewSize.top < rowHeight+lineWidth)
 			{
+				bool autoSizingEnabled = false;
+				if (auto container = pV->asViewContainer ())
+				{
+					autoSizingEnabled = container->getAutosizingEnabled ();
+					container->setAutosizingEnabled (false);
+				}
 				viewSize.top += rowHeight+lineWidth;
 				pV->setViewSize (viewSize);
 				pV->setMouseableArea (viewSize);
+				if (auto container = pV->asViewContainer ())
+					container->setAutosizingEnabled (autoSizingEnabled);
 			}
 		}
 	}
@@ -714,16 +722,16 @@ CMouseEventResult CDataBrowserHeader::onMouseMoved (CPoint &where, const CButton
 					db->dbSetCurrentColumnWidth (mouseColumn, newWidth, browser);
 					browser->recalculateLayout (true);
 				}
-				return kMouseEventHandled;
 			}
 		}
+		return kMouseEventHandled;
 	}
 	else
 	{
 		int32_t col = getColumnAtPoint (where);
 		CCoord minWidth;
 		CCoord maxWidth;
-		if (col >= 0 && db->dbGetColumnDescription (mouseColumn, minWidth, maxWidth, browser) && minWidth != maxWidth)
+		if (col >= 0 && db->dbGetColumnDescription (col, minWidth, maxWidth, browser) && minWidth != maxWidth)
 			getFrame ()->setCursor (kCursorHSize);
 		else
 			getFrame ()->setCursor (kCursorDefault);
@@ -1272,8 +1280,13 @@ void GenericStringListDataBrowserSource::dbDrawCell (CDrawContext* context, cons
 		{
 			double hue, saturation, value;
 			color.toHSV (hue, saturation, value);
-			saturation *= 0.5;
-			color.fromHSV (hue, saturation, value);
+			if (saturation > 0.)
+			{
+				saturation *= 0.5;
+				color.fromHSV (hue, saturation, value);
+			}
+			else
+				color.alpha /= 2;
 		}
 		context->setFillColor (color);
 		context->drawRect (size, kDrawFilled);
