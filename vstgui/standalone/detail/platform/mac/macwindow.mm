@@ -23,7 +23,10 @@ namespace VSTGUI {
 namespace Standalone {
 namespace Platform {
 namespace Mac {
+
 class Window;
+
+//------------------------------------------------------------------------
 } // Mac
 } // Platform
 } // Standalone
@@ -37,6 +40,7 @@ class Window;
 //------------------------------------------------------------------------
 @interface VSTGUIWindow : NSWindow
 @property BOOL supportMovableByWindowBackground;
+@property BOOL nonClosable;
 @end
 
 //------------------------------------------------------------------------
@@ -127,6 +131,8 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 		nsWindowDelegate = [VSTGUIPopupDelegate new];
 		nsWindowDelegate.macWindow = this;
 		[nsWindow setAnimationBehavior:NSWindowAnimationBehaviorUtilityWindow];
+		nsWindow.collectionBehavior =
+		    NSWindowCollectionBehaviorFullScreenAuxiliary | nsWindow.collectionBehavior;
 	}
 	else
 	{
@@ -140,6 +146,11 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 		nsWindowDelegate = [VSTGUIWindowDelegate new];
 		nsWindowDelegate.macWindow = this;
 		[nsWindow setAnimationBehavior:NSWindowAnimationBehaviorNone];
+		if (!config.style.canClose ())
+			window.nonClosable = true;
+		nsWindow.collectionBehavior = NSWindowCollectionBehaviorFullScreenPrimary |
+		                              NSWindowCollectionBehaviorFullScreenAuxiliary |
+		                              nsWindow.collectionBehavior;
 	}
 	[nsWindow setDelegate:nsWindowDelegate];
 
@@ -401,7 +412,7 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 - (BOOL)validateMenuItem:(NSMenuItem*)menuItem
 {
 	if ([menuItem action] == @selector (performClose:))
-		return YES;
+		return !self.nonClosable;
 	return [super validateMenuItem:menuItem];
 }
 

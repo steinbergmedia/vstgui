@@ -17,8 +17,27 @@ IValue::Type convertStepToValue (IStepValue::StepType step, IStepValue::StepType
 //------------------------------------------------------------------------
 IStepValue::StepType convertValueToStep (IValue::Type value, IStepValue::StepType steps)
 {
-	return std::min (steps, static_cast<IStepValue::StepType> (value * static_cast<IValue::Type> (steps + 1)));
+	return std::min (
+	    steps, static_cast<IStepValue::StepType> (value * static_cast<IValue::Type> (steps + 1)));
 }
+
+//------------------------------------------------------------------------
+class PercentStringConverter : public IValueStringConverter
+{
+public:
+	UTF8String valueAsString (IValue::Type value) const override
+	{
+		auto v = static_cast<uint32_t> (value * 100.);
+		return toString (v) + " %";
+	}
+	
+	IValue::Type stringAsValue (const UTF8String& string) const override
+	{
+		auto v = UTF8StringView (string).toDouble ();
+		return v / 100.;
+	}
+
+};
 
 //------------------------------------------------------------------------
 } // anonymous
@@ -36,7 +55,7 @@ public:
 		result = std::to_string (value);
 		return result;
 	}
-	
+
 	IValue::Type stringAsValue (const UTF8String& string) const override
 	{
 		IValue::Type value;
@@ -54,28 +73,34 @@ public:
 class StringListValueStringConverter : public IValueStringConverter
 {
 public:
-	explicit StringListValueStringConverter (const std::initializer_list<UTF8String>& list) : strings (list)
+	explicit StringListValueStringConverter (const std::initializer_list<UTF8String>& list)
+	: strings (list)
 	{
 	}
-	
+
+	explicit StringListValueStringConverter (const IStringListValue::StringList& list) : strings (list)
+	{
+	}
+
 	UTF8String valueAsString (IValue::Type value) const override
 	{
 		auto index =
-		convertValueToStep (value, static_cast<IStepValue::StepType> (strings.size () - 1));
+		    convertValueToStep (value, static_cast<IStepValue::StepType> (strings.size () - 1));
 		return strings[index];
 	}
-	
+
 	IValue::Type stringAsValue (const UTF8String& string) const override
 	{
 		auto it = std::find (strings.begin (), strings.end (), string);
 		if (it != strings.end ())
-			return convertStepToValue (static_cast<IStepValue::StepType> (std::distance (strings.begin (), it)),
-									   static_cast<IStepValue::StepType> (strings.size () - 1));
-			return IValue::InvalidValue;
+			return convertStepToValue (
+			    static_cast<IStepValue::StepType> (std::distance (strings.begin (), it)),
+			    static_cast<IStepValue::StepType> (strings.size () - 1));
+		return IValue::InvalidValue;
 	}
-	
+
 private:
-	std::vector<UTF8String> strings;
+	IStringListValue::StringList strings;
 };
 
 //------------------------------------------------------------------------
@@ -87,21 +112,25 @@ public:
 	void beginEdit () override;
 	bool performEdit (Type newValue) override;
 	void endEdit () override;
-	
+
 	void setActive (bool state) override;
 	bool isActive () const override;
-	
+
 	Type getValue () const override;
 	bool isEditing () const override;
-	
+
 	const UTF8String& getID () const override;
 
 	const IValueStringConverter& getStringConverter () const override;
-	
+
 	void registerListener (IValueListener* listener) override;
 	void unregisterListener (IValueListener* listener) override;
 
 	bool hasStringConverter () const { return stringConverter != nullptr; }
+	void setStringConverter (const ValueStringConverterPtr& stringConverter);
+
+	void dispatchStateChange ();
+
 private:
 	UTF8String idString;
 	Type value;
@@ -115,7 +144,8 @@ private:
 class StepValue : public Value, public IStepValue, public IValueStringConverter
 {
 public:
-	StepValue (const UTF8String& id, StepType initialSteps, Type initialValue, const ValueStringConverterPtr& stringConverter);
+	StepValue (const UTF8String& id, StepType initialSteps, Type initialValue,
+	           const ValueStringConverterPtr& stringConverter);
 
 	bool performEdit (Type newValue) override;
 
@@ -127,15 +157,27 @@ public:
 	IValue::Type stringAsValue (const UTF8String& string) const override;
 
 	const IValueStringConverter& getStringConverter () const override;
+
+	void setNumSteps (StepType numSteps);
+
 private:
 	StepType steps;
 };
 
 //------------------------------------------------------------------------
-Value::Value (const UTF8String& id, Type initialValue, const ValueStringConverterPtr& stringConverter)
-: idString (id)
-, value (initialValue)
-, stringConverter (stringConverter)
+class StringListValue : public StepValue, public IStringListValue
+{
+public:
+	StringListValue (const UTF8String& id, StepType initialSteps, Type initialValue,
+	                 const ValueStringConverterPtr& stringConverter);
+
+	bool updateStringList (const std::vector<UTF8String>& newStrings) override;
+};
+
+//------------------------------------------------------------------------
+Value::Value (const UTF8String& id, Type initialValue,
+              const ValueStringConverterPtr& stringConverter)
+: idString (id), value (initialValue), stringConverter (stringConverter)
 {
 }
 
@@ -143,12 +185,10 @@ Value::Value (const UTF8String& id, Type initialValue, const ValueStringConverte
 void Value::beginEdit ()
 {
 	++editCount;
-	
+
 	if (editCount == 1)
 	{
-		listeners.forEach ([this] (IValueListener* l) {
-			l->onBeginEdit (*this);
-		});
+		listeners.forEach ([this] (IValueListener* l) { l->onBeginEdit (*this); });
 	}
 }
 
@@ -157,14 +197,12 @@ bool Value::performEdit (Type newValue)
 {
 	if (newValue < 0. || newValue > 1.)
 		return false;
-	if (newValue == value)
-		return true;
+//	if (newValue == value)
+//		return true;
 	value = newValue;
-	
-	listeners.forEach ([this] (IValueListener* l) {
-		l->onPerformEdit (*this, value);
-	});
-	
+
+	listeners.forEach ([this] (IValueListener* l) { l->onPerformEdit (*this, value); });
+
 	return true;
 }
 
@@ -176,9 +214,7 @@ void Value::endEdit ()
 
 	if (editCount == 0)
 	{
-		listeners.forEach ([this] (IValueListener* l) {
-			l->onEndEdit (*this);
-		});
+		listeners.forEach ([this] (IValueListener* l) { l->onEndEdit (*this); });
 	}
 }
 
@@ -188,52 +224,40 @@ void Value::setActive (bool state)
 	if (state == active)
 		return;
 	active = state;
-
-	listeners.forEach ([this] (IValueListener* l) {
-		l->onStateChange (*this);
-	});
+	dispatchStateChange ();
 }
 
 //------------------------------------------------------------------------
-bool Value::isActive () const
+bool Value::isActive () const { return active; }
+
+//------------------------------------------------------------------------
+Value::Type Value::getValue () const { return value; }
+
+//------------------------------------------------------------------------
+bool Value::isEditing () const { return editCount != 0; }
+
+//------------------------------------------------------------------------
+const UTF8String& Value::getID () const { return idString; }
+
+//------------------------------------------------------------------------
+const IValueStringConverter& Value::getStringConverter () const { return *stringConverter.get (); }
+
+//------------------------------------------------------------------------
+void Value::registerListener (IValueListener* listener) { listeners.add (listener); }
+
+//------------------------------------------------------------------------
+void Value::unregisterListener (IValueListener* listener) { listeners.remove (listener); }
+
+//------------------------------------------------------------------------
+void Value::dispatchStateChange ()
 {
-	return active;
+	listeners.forEach ([this] (IValueListener* l) { l->onStateChange (*this); });
 }
 
 //------------------------------------------------------------------------
-Value::Type Value::getValue () const
+void Value::setStringConverter (const ValueStringConverterPtr& converter)
 {
-	return value;
-}
-
-//------------------------------------------------------------------------
-bool Value::isEditing () const
-{
-	return editCount != 0;
-}
-
-//------------------------------------------------------------------------
-const UTF8String& Value::getID () const
-{
-	return idString;
-}
-
-//------------------------------------------------------------------------
-const IValueStringConverter& Value::getStringConverter () const
-{
-	return *stringConverter.get ();
-}
-
-//------------------------------------------------------------------------
-void Value::registerListener (IValueListener* listener)
-{
-	listeners.add (listener);
-}
-
-//------------------------------------------------------------------------
-void Value::unregisterListener (IValueListener* listener)
-{
-	listeners.remove (listener);
+	stringConverter = converter;
 }
 
 //------------------------------------------------------------------------
@@ -241,8 +265,7 @@ void Value::unregisterListener (IValueListener* listener)
 //------------------------------------------------------------------------
 StepValue::StepValue (const UTF8String& id, StepType initialSteps, Type initialValue,
                       const ValueStringConverterPtr& stringConverter)
-: Value (id, initialValue, stringConverter)
-, steps (initialSteps - 1)
+: Value (id, initialValue, stringConverter), steps (initialSteps - 1)
 {
 }
 
@@ -253,15 +276,12 @@ bool StepValue::performEdit (Type newValue)
 }
 
 //------------------------------------------------------------------------
-StepValue::StepType StepValue::getSteps () const
-{
-	return steps + 1;
-}
+StepValue::StepType StepValue::getSteps () const { return steps + 1; }
 
 //------------------------------------------------------------------------
 IValue::Type StepValue::stepToValue (StepType step) const
 {
-	return convertStepToValue(step, steps);
+	return convertStepToValue (step, steps);
 }
 
 //------------------------------------------------------------------------
@@ -298,6 +318,28 @@ const IValueStringConverter& StepValue::getStringConverter () const
 }
 
 //------------------------------------------------------------------------
+void StepValue::setNumSteps (StepType numSteps)
+{
+	steps = numSteps - 1;
+	dispatchStateChange ();
+}
+
+//------------------------------------------------------------------------
+StringListValue::StringListValue (const UTF8String& id, StepType initialSteps, Type initialValue,
+                                  const ValueStringConverterPtr& stringConverter)
+: StepValue (id, initialSteps, initialValue, stringConverter)
+{
+}
+
+//------------------------------------------------------------------------
+bool StringListValue::updateStringList (const std::vector<UTF8String>& newStrings)
+{
+	setStringConverter (std::make_shared<Detail::StringListValueStringConverter> (newStrings));
+	setNumSteps (static_cast<IStepValue::StepType> (newStrings.size ()));
+	return true;
+}
+
+//------------------------------------------------------------------------
 } // Detail
 
 //------------------------------------------------------------------------
@@ -324,12 +366,28 @@ ValuePtr makeStepValue (const UTF8String& id, IStepValue::StepType initialSteps,
 
 //------------------------------------------------------------------------
 ValuePtr makeStringListValue (const UTF8String& id,
-                              const std::initializer_list<UTF8String>& strings)
+                              const std::initializer_list<UTF8String>& strings,
+                              IValue::Type initialValue)
 {
 	vstgui_assert (id.empty () == false);
-	return std::make_shared<Detail::StepValue> (
+	return std::make_shared<Detail::StringListValue> (
+	    id, static_cast<IStepValue::StepType> (strings.size ()), initialValue,
+	    std::make_shared<Detail::StringListValueStringConverter> (strings));
+}
+
+//------------------------------------------------------------------------
+ValuePtr makeStringListValue (const UTF8String& id, const IStringListValue::StringList& strings)
+{
+	vstgui_assert (id.empty () == false);
+	return std::make_shared<Detail::StringListValue> (
 	    id, static_cast<IStepValue::StepType> (strings.size ()), 0,
 	    std::make_shared<Detail::StringListValueStringConverter> (strings));
+}
+
+//------------------------------------------------------------------------
+ValueStringConverterPtr makePercentConverter ()
+{
+	return std::make_shared<Detail::PercentStringConverter> ();
 }
 
 //------------------------------------------------------------------------

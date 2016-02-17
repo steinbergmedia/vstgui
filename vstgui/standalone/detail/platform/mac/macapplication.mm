@@ -98,6 +98,7 @@ static const CommandWithKeyList* getCommandList (const char* group)
 		{
 			return NO;
 		}
+		return YES;
 	}
 	else if (menuItem.action == @selector (showAboutDialog:))
 	{
@@ -254,7 +255,18 @@ static const CommandWithKeyList* getCommandList (const char* group)
 	auto& commandList = getApplicationPlatformAccess ()->getCommandList ();
 	for (auto& e : commandList)
 	{
-		if (e.first != CommandGroup::Application)
+		if (e.first == CommandGroup::Windows)
+		{
+			NSMenu* windowsMenu = [NSApp windowsMenu];
+			for (auto& command : e.second)
+			{
+				NSString* title = stringFromUTF8String (command.name);
+				NSMenuItem* item = [windowsMenu itemWithTitle:title];
+				if (!item)
+					[windowsMenu addItem:[self createMenuItemFromCommand:command]];
+			}
+		}
+		else if (e.first != CommandGroup::Application)
 		{
 			NSString* title = stringFromUTF8String (e.first);
 			NSMenuItem* item = [mainMenu itemWithTitle:title];

@@ -212,15 +212,23 @@ private:
 };
 
 //------------------------------------------------------------------------
-class WindowController : public WindowControllerAdapter, public ICommandHandler
+class WindowController : public IWindowController, public ICommandHandler
 {
 public:
 	bool init (const UIDesc::Config& config, WindowPtr& window);
 	bool initStatic (const UIDesc::Config& config, WindowPtr& window);
 
-	CPoint constraintSize (const IWindow& window, const CPoint& newSize) override;
+	void onSizeChanged (const IWindow& window, const CPoint& newSize) override;
+	void onPositionChanged (const IWindow& window, const CPoint& newPosition) override;
+	void onShow (const IWindow& window) override;
+	void onHide (const IWindow& window) override;
 	void onClosed (const IWindow& window) override;
+	void onActivated (const IWindow& window) override;
+	void onDeactivated (const IWindow& window) override;
+	CPoint constraintSize (const IWindow& window, const CPoint& newSize) override;
 	bool canClose (const IWindow& window) const override;
+	void beforeShow (IWindow& window) override;
+	void onSetContentView (IWindow& window, const SharedPointer<CFrame>& contentView) override;
 
 	bool canHandleCommand (const Command& command) override;
 	bool handleCommand (const Command& command) override;
@@ -317,6 +325,7 @@ public:
 		for (auto& c : controls)
 		{
 			updateControlOnStateChange (c);
+			c->valueChanged ();
 		}
 	}
 
@@ -335,11 +344,9 @@ public:
 	{
 		if (auto paramDisplay = dynamic_cast<CParamDisplay*> (control))
 		{
-			paramDisplay->setValueToStringFunction (
-			    [this] (float value, char utf8String[256], CParamDisplay* display) {
-				    auto string = this->value->getStringConverter ().valueAsString (value);
-				    auto numBytes = std::min<size_t> (string.length () + 1, 255);
-				    string.copy (utf8String, numBytes);
+			paramDisplay->setValueToStringFunction2 (
+			    [this] (float value, std::string& utf8String, CParamDisplay* display) {
+				    utf8String = this->value->getStringConverter ().valueAsString (value);
 				    return true;
 				});
 			if (auto textEdit = dynamic_cast<CTextEdit*> (paramDisplay))
@@ -446,6 +453,13 @@ struct WindowController::Impl : public IController, public ICommandHandler
 
 	virtual CPoint constraintSize (const CPoint& newSize)
 	{
+		if (customization)
+		{
+			if (auto customController = customization->dynamicCast<IWindowController> ())
+			{
+				return customController->constraintSize (*window, newSize);
+			}
+		}
 		CPoint p (newSize);
 		if (minSize.x > 0 && minSize.y > 0)
 		{
@@ -460,7 +474,96 @@ struct WindowController::Impl : public IController, public ICommandHandler
 		return p;
 	}
 
-	virtual bool canClose () { return true; }
+	virtual void beforeShow ()
+	{
+		if (customization)
+		{
+			if (auto customController = customization->dynamicCast<IWindowController> ())
+				customController->beforeShow (*window);
+		}
+	}
+
+	virtual bool canClose ()
+	{
+		if (customization)
+		{
+			if (auto customController = customization->dynamicCast<IWindowController> ())
+				return customController->canClose (*window);
+		}
+		return true;
+	}
+
+	void onSetContentView (const SharedPointer<CFrame>& contentView)
+	{
+		if (customization)
+		{
+			if (auto customController = customization->dynamicCast<IWindowController> ())
+				customController->onSetContentView (*window, contentView);
+		}
+	}
+
+	virtual void onSizeChanged (const CPoint& newSize)
+	{
+		if (customization)
+		{
+			if (auto customController = customization->dynamicCast<IWindowController> ())
+				customController->onSizeChanged (*window, newSize);
+		}
+	}
+
+	void onPositionChanged (const CPoint& newPos)
+	{
+		if (customization)
+		{
+			if (auto customController = customization->dynamicCast<IWindowController> ())
+				customController->onPositionChanged (*window, newPos);
+		}
+	}
+
+	void onShow ()
+	{
+		if (customization)
+		{
+			if (auto customController = customization->dynamicCast<IWindowController> ())
+				customController->onShow (*window);
+		}
+	}
+
+	void onHide ()
+	{
+		if (customization)
+		{
+			if (auto customController = customization->dynamicCast<IWindowController> ())
+				customController->onHide (*window);
+		}
+	}
+
+	void onClosed ()
+	{
+		if (customization)
+		{
+			if (auto customController = customization->dynamicCast<IWindowController> ())
+				customController->onClosed (*window);
+		}
+	}
+
+	void onActivated ()
+	{
+		if (customization)
+		{
+			if (auto customController = customization->dynamicCast<IWindowController> ())
+				customController->onActivated (*window);
+		}
+	}
+
+	void onDeactivated ()
+	{
+		if (customization)
+		{
+			if (auto customController = customization->dynamicCast<IWindowController> ())
+				customController->onDeactivated (*window);
+		}
+	}
 
 	bool initUIDesc (const char* fileName)
 	{
@@ -517,15 +620,31 @@ struct WindowController::Impl : public IController, public ICommandHandler
 
 	bool canHandleCommand (const Command& command) override
 	{
-		if (auto commandHandler = modelBinding->dynamicCast<ICommandHandler> ())
-			return commandHandler->canHandleCommand (command);
+		if (modelBinding)
+		{
+			if (auto commandHandler = modelBinding->dynamicCast<ICommandHandler> ())
+				return commandHandler->canHandleCommand (command);
+		}
+		if (customization)
+		{
+			if (auto commandHandler = customization->dynamicCast<ICommandHandler> ())
+				return commandHandler->canHandleCommand (command);
+		}
 		return false;
 	}
 
 	bool handleCommand (const Command& command) override
 	{
-		if (auto commandHandler = modelBinding->dynamicCast<ICommandHandler> ())
-			return commandHandler->handleCommand (command);
+		if (modelBinding)
+		{
+			if (auto commandHandler = modelBinding->dynamicCast<ICommandHandler> ())
+				return commandHandler->handleCommand (command);
+		}
+		if (customization)
+		{
+			if (auto commandHandler = customization->dynamicCast<ICommandHandler> ())
+				return commandHandler->handleCommand (command);
+		}
 		return false;
 	}
 
@@ -636,7 +755,8 @@ struct WindowController::EditImpl : WindowController::Impl
 		{
 			UIAttributes* attr = new UIAttributes ();
 			attr->setAttribute (UIViewCreator::kAttrClass, "CViewContainer");
-			attr->setAttribute ("size", "300, 300");
+			attr->setAttribute (UIViewCreator::kAttrSize, "300, 300");
+			attr->setAttribute (UIViewCreator::kAttrAutosize, "left right top bottom");
 			uiDesc->addNewTemplate (templateName, attr);
 
 			initAsNew ();
@@ -664,10 +784,16 @@ struct WindowController::EditImpl : WindowController::Impl
 		return Impl::constraintSize (newSize);
 	}
 
+	void onSizeChanged (const CPoint& newSize) override
+	{
+		if (isEditing)
+			return;
+		Impl::onSizeChanged (newSize);
+	}
 	bool canClose () override
 	{
 		enableEditing (false);
-		return true;
+		return Impl::canClose ();
 	}
 
 	void initAsNew ()
@@ -814,6 +940,7 @@ bool WindowController::initStatic (const UIDesc::Config& config, WindowPtr& wind
 	return impl->initStatic (window, config.uiDescFileName, config.viewName);
 }
 
+//------------------------------------------------------------------------
 bool WindowController::init (const UIDesc::Config& config, WindowPtr& window)
 {
 #if VSTGUI_LIVE_EDITING
@@ -827,14 +954,47 @@ bool WindowController::init (const UIDesc::Config& config, WindowPtr& window)
 //------------------------------------------------------------------------
 CPoint WindowController::constraintSize (const IWindow& window, const CPoint& newSize)
 {
-	return impl->constraintSize (newSize);
+	return impl ? impl->constraintSize (newSize) : newSize;
 }
 
 //------------------------------------------------------------------------
-bool WindowController::canClose (const IWindow& window) const { return impl->canClose (); }
+bool WindowController::canClose (const IWindow& window) const { return impl ? impl->canClose () : true; }
 
 //------------------------------------------------------------------------
-void WindowController::onClosed (const IWindow& window) { impl = nullptr; }
+void WindowController::onClosed (const IWindow& window) { if (impl) impl->onClosed (); impl = nullptr; }
+
+//------------------------------------------------------------------------
+void WindowController::beforeShow (IWindow& window) { if (impl) impl->beforeShow (); }
+
+//------------------------------------------------------------------------
+void WindowController::onSetContentView (IWindow& window, const SharedPointer<CFrame>& contentView)
+{
+	if (impl) impl->onSetContentView (contentView);
+}
+
+//------------------------------------------------------------------------
+void WindowController::onSizeChanged (const IWindow& window, const CPoint& newSize)
+{
+	if (impl) impl->onSizeChanged (newSize);
+}
+
+//------------------------------------------------------------------------
+void WindowController::onPositionChanged (const IWindow& window, const CPoint& newPosition)
+{
+	if (impl) impl->onPositionChanged (newPosition);
+}
+
+//------------------------------------------------------------------------
+void WindowController::onShow (const IWindow& window) { if (impl) impl->onShow (); }
+
+//------------------------------------------------------------------------
+void WindowController::onHide (const IWindow& window) { if (impl) impl->onHide (); }
+
+//------------------------------------------------------------------------
+void WindowController::onActivated (const IWindow& window) { if (impl) impl->onActivated (); }
+
+//------------------------------------------------------------------------
+void WindowController::onDeactivated (const IWindow& window) { if (impl) impl->onDeactivated (); }
 
 //------------------------------------------------------------------------
 bool WindowController::canHandleCommand (const Command& command)

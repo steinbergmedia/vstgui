@@ -26,6 +26,7 @@ public:
 };
 
 //------------------------------------------------------------------------
+/** UIDesc window customization interface */
 class ICustomization : public Interface
 {
 public:
@@ -51,13 +52,27 @@ struct Config
 {
 	/** Filename of the UIDescription xml file */
 	UTF8String uiDescFileName;
-	/** view to show in the window */
+
+	/** View name to show in the window */
 	UTF8String viewName;
-	/** window configuration */
+
+	/** Window configuration */
 	WindowConfiguration windowConfig;
-	/** model binding */
+
+	/** Model binding
+	 *
+	 *	Additioanlly to the IModelBinding features, if this object implements the ICommandHandler
+	 *	interface all commands send to the window will be dispatched to this object.
+	 *
+	 */
 	ModelBindingPtr modelBinding;
-	/** optional UI customization */
+
+	/** Optional UI customization
+	 *
+	 *	Additionally to the ICustomization features, if this object implements the IWindowController
+	 *	interface, all window controller functions will be dispatched to this object.
+	 *
+	 */
 	CustomizationPtr customization;
 };
 

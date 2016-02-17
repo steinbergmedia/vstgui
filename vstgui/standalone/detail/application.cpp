@@ -81,6 +81,7 @@ void Application::init (IPreference& preferences, IApplication::CommandLineArgum
 	platform = std::move (callbacks);
 
 	registerCommand (Commands::About);
+	registerCommand (Commands::Preferences);
 	registerCommand (Commands::Quit, 'q');
 	registerCommand (Commands::CloseWindow, 'w');
 	registerCommand (Commands::Undo, 'z');

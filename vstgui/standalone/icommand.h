@@ -43,6 +43,7 @@ namespace CommandGroup {
 static constexpr IdStringPtr Application = "Application";
 static constexpr IdStringPtr File = "File";
 static constexpr IdStringPtr Edit = "Edit";
+static constexpr IdStringPtr Windows = "Windows";
 
 //------------------------------------------------------------------------
 } // CommandGroup

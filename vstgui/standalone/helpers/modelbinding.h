@@ -33,6 +33,16 @@ struct ValueCalls
 		c.onEndEditCall = std::move (call);
 		return c;
 	}
+	
+	static ValueCalls onAction (const Call& call)
+	{
+		ValueCalls c;
+		c.onEndEditCall = [call] (IValue& v) {
+			if (v.getValue() > 0.5)
+				call (v);
+		};
+		return c;
+	}
 };
 
 //------------------------------------------------------------------------
@@ -58,6 +68,7 @@ private:
 	ValueList valueList;
 	ValueMap values;
 };
+using ModelBindingCallbacksPtr = std::shared_ptr<ModelBindingCallbacks>;
 
 //------------------------------------------------------------------------
 inline ModelBindingCallbacks::~ModelBindingCallbacks ()

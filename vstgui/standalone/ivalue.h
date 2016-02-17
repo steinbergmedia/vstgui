@@ -37,7 +37,7 @@ public:
 };
 
 //------------------------------------------------------------------------
-/** extension to IValue for a non continous value */
+/** extension to IValue for a non continous value with discrete steps */
 class IStepValue : public Interface
 {
 public:

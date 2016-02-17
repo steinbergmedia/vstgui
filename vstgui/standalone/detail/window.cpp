@@ -151,13 +151,15 @@ void Window::setSize (const CPoint& newSize)
 //------------------------------------------------------------------------
 void Window::show ()
 {
+	if (controller)
+		controller->beforeShow (*this);
 	bool positionChanged = false;
 	if (!autoSaveFrameName.empty ())
 	{
-		auto frame = IApplication::instance ().getPreferences ().get (autoSaveFrameName);
-		if (!frame.empty ())
+		auto frameName = IApplication::instance ().getPreferences ().get (autoSaveFrameName);
+		if (!frameName.empty ())
 		{
-			auto ps = positionAndSizeFromString (frame);
+			auto ps = positionAndSizeFromString (frameName);
 			if (ps.pos != nullPoint && ps.size != nullPoint)
 			{
 				setPosition (ps.pos);
@@ -181,10 +183,16 @@ void Window::setContentView (const SharedPointer<CFrame>& newFrame)
 	}
 	frame = newFrame;
 	if (!frame)
+	{
+		if (controller)
+			controller->onSetContentView (*this, frame);
 		return;
+	}
 	frame->open (platformWindow->getPlatformHandle (), platformWindow->getPlatformType ());
 	frame->registerMouseObserver (this);
 	platformWindow->onSetContentView (frame);
+	if (controller)
+		controller->onSetContentView (*this, frame);
 }
 
 //------------------------------------------------------------------------

@@ -351,6 +351,9 @@
 		F440F8D217A90D9A00616683 /* uitouchevent.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = uitouchevent.h; sourceTree = "<group>"; };
 		F440F8D317A9117500616683 /* vstgui_ios.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = vstgui_ios.mm; path = ../../vstgui_ios.mm; sourceTree = "<group>"; };
 		F440F8D417A9117500616683 /* vstgui_uidescription_ios.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = vstgui_uidescription_ios.mm; path = ../../vstgui_uidescription_ios.mm; sourceTree = "<group>"; };
+		F4419F8E1C6DC7EA004F706F /* vstgui_standalone_mac.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = vstgui_standalone_mac.mm; path = ../../vstgui_standalone_mac.mm; sourceTree = "<group>"; };
+		F4419F8F1C6DC7EA004F706F /* vstgui_standalone_win32.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = vstgui_standalone_win32.cpp; path = ../../vstgui_standalone_win32.cpp; sourceTree = "<group>"; };
+		F4419F901C6DC7EA004F706F /* vstgui_standalone.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = vstgui_standalone.cpp; path = ../../vstgui_standalone.cpp; sourceTree = "<group>"; };
 		F442AF8F18FEFBE800E7BC3A /* cgraphicstransform.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = cgraphicstransform.h; sourceTree = "<group>"; };
 		F44524351C46E8ED00CB4EB5 /* appdelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = appdelegate.h; sourceTree = "<group>"; };
 		F44524361C46EB8600CB4EB5 /* modelbinding.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = modelbinding.h; sourceTree = "<group>"; };
@@ -899,6 +902,9 @@
 				F4E3905B1308155200615042 /* vstgui.h */,
 				F440F8D317A9117500616683 /* vstgui_ios.mm */,
 				F4462D2F175646EE00E6835D /* vstgui_mac.mm */,
+				F4419F8E1C6DC7EA004F706F /* vstgui_standalone_mac.mm */,
+				F4419F8F1C6DC7EA004F706F /* vstgui_standalone_win32.cpp */,
+				F4419F901C6DC7EA004F706F /* vstgui_standalone.cpp */,
 				F440F8D417A9117500616683 /* vstgui_uidescription_ios.mm */,
 				F4462D30175646EE00E6835D /* vstgui_uidescription_mac.mm */,
 				F4462D31175646EE00E6835D /* vstgui_uidescription_win32.cpp */,
