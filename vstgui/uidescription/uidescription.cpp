@@ -615,9 +615,9 @@ static UIViewFactory* getGenericViewFactory ()
 
 namespace UIDescriptionPrivate {
 //-----------------------------------------------------------------------------
-static bool decodeScaleFactorFromName (std::string name, double& scaleFactor)
+static bool decodeScaleFactorFromName (std::string name, std::string identicator, double& scaleFactor)
 {
-	size_t index = name.find_last_of ("#");
+	size_t index = name.find_last_of (identicator);
 	if (index == std::string::npos)
 		return false;
 	name.erase (0, index+1);
@@ -630,11 +630,26 @@ static bool decodeScaleFactorFromName (std::string name, double& scaleFactor)
 }
 
 //-----------------------------------------------------------------------------
+static bool decodeScaleFactorFromName (std::string name, double& scaleFactor)
+{
+	if (!decodeScaleFactorFromName (name, "#", scaleFactor))
+	{
+		if (!decodeScaleFactorFromName (name, "_", scaleFactor))
+			return false;
+	}
+	return true;
+}
+
+//-----------------------------------------------------------------------------
 static std::string removeScaleFactorFromName (std::string name)
 {
 	size_t index = name.find_last_of ("#");
 	if (index == std::string::npos)
-		return "";
+	{
+		index = name.find_last_of ("_");
+		if (index == std::string::npos)
+			return "";
+	}
 	name.erase (index);
 	return name;
 }
