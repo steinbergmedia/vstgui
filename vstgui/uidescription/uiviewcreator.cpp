@@ -442,6 +442,8 @@ public:
 			view->setTransparency (b);
 		if (attributes.getBooleanAttribute (kAttrMouseEnabled, b))
 			view->setMouseEnabled (b);
+		if (attributes.getBooleanAttribute (kAttrWantsFocus, b))
+			view->setWantsFocus (b);
 
 		const std::string* autosizeAttr = attributes.getAttributeValue (kAttrAutosize);
 		if (autosizeAttr)
@@ -491,6 +493,7 @@ public:
 		attributeNames.push_back (kAttrOpacity);
 		attributeNames.push_back (kAttrTransparent);
 		attributeNames.push_back (kAttrMouseEnabled);
+		attributeNames.push_back (kAttrWantsFocus);
 		attributeNames.push_back (kAttrBitmap);
 		attributeNames.push_back (kAttrDisabledBitmap);
 		attributeNames.push_back (kAttrAutosize);
@@ -506,6 +509,7 @@ public:
 		else if (attributeName == kAttrOpacity) return kFloatType;
 		else if (attributeName == kAttrTransparent) return kBooleanType;
 		else if (attributeName == kAttrMouseEnabled) return kBooleanType;
+		else if (attributeName == kAttrWantsFocus) return kBooleanType;
 		else if (attributeName == kAttrBitmap) return kBitmapType;
 		else if (attributeName == kAttrDisabledBitmap) return kBitmapType;
 		else if (attributeName == kAttrAutosize) return kStringType;
@@ -539,6 +543,11 @@ public:
 		else if (attributeName == kAttrMouseEnabled)
 		{
 			stringValue = view->getMouseEnabled () ? "true" : "false";
+			return true;
+		}
+		else if (attributeName == kAttrWantsFocus)
+		{
+			stringValue = view->wantsFocus () ? "true" : "false";
 			return true;
 		}
 		else if (attributeName == kAttrBitmap)

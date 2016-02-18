@@ -77,6 +77,7 @@ static const std::string kAttrOrigin = "origin";
 static const std::string kAttrSize = "size";
 static const std::string kAttrTransparent = "transparent";
 static const std::string kAttrMouseEnabled = "mouse-enabled";
+static const std::string kAttrWantsFocus = "wants-focus";
 static const std::string kAttrBitmap = "bitmap";
 static const std::string kAttrDisabledBitmap = "disabled-bitmap";
 static const std::string kAttrAutosize = "autosize";
