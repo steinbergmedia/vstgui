@@ -75,6 +75,7 @@ public:
 	UIEditViewOverlay (CViewContainer* editView);
 	~UIEditViewOverlay () override;
 	
+	bool attached (CView* parent) override;
 	void viewSizeChanged (CView* view, const CRect& oldSize) override;
 protected:
 	CViewContainer* editView;
@@ -95,6 +96,14 @@ UIEditViewOverlay::~UIEditViewOverlay ()
 {
 	editView->getParentView ()->unregisterViewListener (this);
 	editView->unregisterViewListener (this);
+}
+
+//----------------------------------------------------------------------------------------------------
+bool UIEditViewOverlay::attached (CView* parent)
+{
+	auto result = CView::attached (parent);
+	viewSizeChanged (editView->getParentView (), CRect (0, 0, 0, 0));
+	return result;
 }
 
 //----------------------------------------------------------------------------------------------------
