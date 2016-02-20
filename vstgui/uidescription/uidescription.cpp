@@ -650,6 +650,9 @@ static std::string removeScaleFactorFromName (std::string name)
 		if (index == std::string::npos)
 			return "";
 	}
+	auto xIndex = name.find_last_of ("x");
+	if (xIndex == std::string::npos || index > xIndex)
+		return "";
 	name.erase (index);
 	return name;
 }
