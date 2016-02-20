@@ -907,6 +907,9 @@ void CFrame::onViewRemoved (CView* pView)
 		getViewAddedRemovedObserver ()->onViewRemoved (this, pView);
 	if (pAnimator)
 		pAnimator->removeAnimations (pView);
+	if (pView->wantsWindowActiveStateChangeNotification ())
+		windowActiveStateChangeViews.erase (
+		    std::find (windowActiveStateChangeViews.begin (), windowActiveStateChangeViews.end (), pView));
 }
 
 //-----------------------------------------------------------------------------
@@ -917,6 +920,11 @@ void CFrame::onViewAdded (CView* pView)
 {
 	if (getViewAddedRemovedObserver ())
 		getViewAddedRemovedObserver ()->onViewAdded (this, pView);
+	if (pView->wantsWindowActiveStateChangeNotification ())
+	{
+		windowActiveStateChangeViews.push_back (pView);
+		pView->onWindowActivate (bWindowActive);
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -1493,6 +1501,17 @@ void CFrame::platformOnActivate (bool state)
 		CollectInvalidRects cir (this);
 		onActivate (state);
 	}
+}
+
+//------------------------------------------------------------------------
+void CFrame::platformOnWindowActivate (bool state)
+{
+	if (bWindowActive == state)
+		return;
+	bWindowActive = state;
+	CollectInvalidRects cir (this);
+	for (auto& view : windowActiveStateChangeViews)
+		view->onWindowActivate (state);
 }
 
 //-----------------------------------------------------------------------------

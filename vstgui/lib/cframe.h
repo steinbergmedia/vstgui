@@ -205,6 +205,7 @@ protected:
 	ViewList pMouseViews;
 
 	bool	bActive;
+	bool	bWindowActive {false};
 
 	// keyboard hooks
 	typedef std::list<IKeyboardHook*> KeyboardHookList;
@@ -224,6 +225,9 @@ protected:
 	typedef std::list<IScaleFactorChangedListener*> ScaleFactorChangedListenerList;
 	ScaleFactorChangedListenerList* pScaleFactorChangedListenerList;
 
+	using WindowActiveStateChangeViews = std::vector<CView*>;
+	WindowActiveStateChangeViews windowActiveStateChangeViews;
+
 	// platform frame
 	IPlatformFrame* platformFrame;
 	bool platformDrawRect (CDrawContext* context, const CRect& rect) override;
@@ -239,6 +243,7 @@ protected:
 	bool platformOnKeyDown (VstKeyCode& keyCode) override;
 	bool platformOnKeyUp (VstKeyCode& keyCode) override;
 	void platformOnActivate (bool state) override;
+	void platformOnWindowActivate (bool state) override;
 	void platformScaleFactorChanged () override;
 #if VSTGUI_TOUCH_EVENT_HANDLING
 	void platformOnTouchEvent (ITouchEvent& event) override;

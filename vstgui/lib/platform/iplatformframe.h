@@ -82,7 +82,8 @@ public:
 	virtual bool platformOnKeyUp (VstKeyCode& keyCode) = 0;
 
 	virtual void platformOnActivate (bool state) = 0;
-
+	virtual void platformOnWindowActivate (bool state) = 0;
+	
 	virtual void platformScaleFactorChanged () = 0;
 
 #if VSTGUI_TOUCH_EVENT_HANDLING

@@ -260,6 +260,11 @@ public:
 	static uint32_t idleRate;																	///< global idle rate in Hz, defaults to 30 Hz
 	//@}
 
+	/** weather this view wants to be informed if the window's active state changes */
+	virtual bool wantsWindowActiveStateChangeNotification () const { return false; }
+	/** called when the active state of the window changes */
+	virtual void onWindowActivate (bool state) {}
+	
 	//-----------------------------------------------------------------------------
 	/// @name View Listener Methods
 	//-----------------------------------------------------------------------------

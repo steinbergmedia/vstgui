@@ -235,6 +235,8 @@ static void VSTGUI_NSView_windowDidChangeBackingProperties (id self, SEL _cmd, N
 //------------------------------------------------------------------------------------
 static void VSTGUI_NSView_windowKeyStateChanged (id self, SEL _cmd, NSNotification* notification)
 {
+	IPlatformFrameCallback* frame = getFrame (self);
+	auto active = [[notification name] isEqualToString:NSWindowDidBecomeKeyNotification] ? true : false;
 	NSView* firstResponder = (NSView*)[[self window] firstResponder];
 	if (![firstResponder isKindOfClass:[NSView class]])
 		firstResponder = nil;
@@ -244,11 +246,11 @@ static void VSTGUI_NSView_windowKeyStateChanged (id self, SEL _cmd, NSNotificati
 			firstResponder = [firstResponder superview];
 		if (firstResponder == self)
 		{
-			IPlatformFrameCallback* frame = getFrame (self);
 			if (frame)
-				frame->platformOnActivate ([[notification name] isEqualToString:NSWindowDidBecomeKeyNotification] ? true : false);
+				frame->platformOnActivate (active);
 		}
 	}
+	frame->platformOnWindowActivate (active);
 }
 
 //------------------------------------------------------------------------------------
