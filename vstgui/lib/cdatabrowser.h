@@ -195,6 +195,7 @@ protected:
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 	bool attached (CView *parent) override;
 	bool removed (CView* parent) override;
+	bool wantsFocus () const override;
 
 	void recalculateSubViews () override;
 	void validateSelection ();

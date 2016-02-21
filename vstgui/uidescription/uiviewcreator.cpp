@@ -442,7 +442,7 @@ public:
 			view->setTransparency (b);
 		if (attributes.getBooleanAttribute (kAttrMouseEnabled, b))
 			view->setMouseEnabled (b);
-		if (attributes.getBooleanAttribute (kAttrWantsFocus, b))
+		if (attributes.hasAttribute (kAttrWantsFocus) && attributes.getBooleanAttribute (kAttrWantsFocus, b))
 			view->setWantsFocus (b);
 
 		const std::string* autosizeAttr = attributes.getAttributeValue (kAttrAutosize);

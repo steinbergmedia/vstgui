@@ -167,6 +167,12 @@ void CDataBrowser::setWantsFocus (bool state)
 	}
 }
 
+//------------------------------------------------------------------------
+bool CDataBrowser::wantsFocus () const
+{
+	return dbView ? dbView->wantsFocus () : false;
+}
+
 //-----------------------------------------------------------------------------------------------
 bool CDataBrowser::attached (CView *parent)
 {
