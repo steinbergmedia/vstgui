@@ -316,4 +316,11 @@ void CColor::fromHSV (double hue, double saturation, double value)
 	blue = (uint8_t) floor (b * 255. + 0.5);
 }
 
+//-----------------------------------------------------------------------------
+void CColor::fromRGBA(uint32_t color) {
+	red = (color >> 24) & 0xFF;
+	green = (color >> 16) & 0xFF;
+	blue = (color >> 8) & 0xFF;
+	alpha = color & 0xFF;
+}
 } // namespace
