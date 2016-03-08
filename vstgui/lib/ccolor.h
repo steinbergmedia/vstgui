@@ -131,6 +131,8 @@ struct CColor
 	uint8_t getLightness () const;
 	//@}
 	
+	void fromRGBA (uint32_t color);
+	
 	uint8_t red;		///< red component [0..255]
 	uint8_t green;		///< green component [0..255]
 	uint8_t blue;		///< blue component [0..255]
