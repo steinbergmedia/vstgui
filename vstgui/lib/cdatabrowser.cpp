@@ -203,9 +203,12 @@ int32_t CDataBrowser::onKeyDown (VstKeyCode& keyCode)
 CMouseEventResult CDataBrowser::onMouseDown (CPoint& where, const CButtonState& buttons)
 {
 	CMouseEventResult result = CViewContainer::onMouseDown (where, buttons);
-	CView* focusView = getFrame ()->getFocusView ();
-	if (focusView != dbView && !isChild (focusView, true))
-		getFrame ()->setFocusView (dbView);
+	if (auto frame = getFrame ())
+	{
+		CView* focusView = frame->getFocusView ();
+		if (focusView != dbView && !isChild (focusView, true))
+			frame->setFocusView (dbView);
+	}
 	return result;
 }
 
