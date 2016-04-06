@@ -268,7 +268,7 @@ void CMultiLineTextLabel::recalculateHeight ()
 {
 	auto lastLine = lines.back ().r;
 	auto viewSize = getViewSize ();
-	viewSize.bottom = lastLine.bottom + getTextInset ().y;
+	viewSize.setHeight (lastLine.bottom + getTextInset ().y);
 	CTextLabel::setViewSize (viewSize);
 }
 
