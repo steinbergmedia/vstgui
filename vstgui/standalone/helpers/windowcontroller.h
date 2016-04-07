@@ -23,7 +23,7 @@ public:
 	}
 	bool canClose (const IWindow& window) const override { return true; }
 	void beforeShow (IWindow& window) override {}
-	void onSetContentView (IWindow& window, const SharedPointer<CFrame>& contentView) override {};
+	void onSetContentView (IWindow& window, const SharedPointer<CFrame>& contentView) override {}
 };
 
 
