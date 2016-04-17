@@ -1,16 +1,16 @@
-#include "win32preference.h"
-#include "win32window.h"
-#include "../iplatformwindow.h"
-#include "../../application.h"
-#include "../../window.h"
-#include "../../genericalertbox.h"
+#include "../../../../lib/cvstguitimer.h"
+#include "../../../../lib/platform/win32/win32support.h"
 #include "../../../iappdelegate.h"
 #include "../../../iapplication.h"
-#include "../../../../lib/platform/win32/win32support.h"
-#include "../../../../lib/cvstguitimer.h"
+#include "../../application.h"
+#include "../../genericalertbox.h"
+#include "../../window.h"
+#include "../iplatformwindow.h"
+#include "win32preference.h"
+#include "win32window.h"
 
-#include <Windows.h>
 #include <ShellScalingAPI.h>
+#include <Windows.h>
 
 #pragma comment(lib, "Shcore.lib")
 #pragma comment(lib, "d2d1.lib")
@@ -29,12 +29,6 @@ using VSTGUI::Standalone::Detail::IPlatformWindowAccess;
 using CommandWithKeyList =
     VSTGUI::Standalone::Detail::IApplicationPlatformAccess::CommandWithKeyList;
 using VSTGUI::Standalone::Detail::PlatformCallbacks;
-
-//------------------------------------------------------------------------
-static IApplicationPlatformAccess* getApplicationPlatformAccess ()
-{
-	return IApplication::instance ().dynamicCast<IApplicationPlatformAccess> ();
-}
 
 //------------------------------------------------------------------------
 static IWin32Window* toWin32Window (const VSTGUI::Standalone::WindowPtr& window)
@@ -88,7 +82,7 @@ void Application::init ()
 		showAlertForWindow (config);
 	};
 
-	auto app = getApplicationPlatformAccess ();
+	auto app = Detail::getApplicationPlatformAccess ();
 	vstgui_assert (app);
 	app->init (prefs, std::move (cmdArgs), std::move (callbacks));
 }
@@ -139,10 +133,10 @@ void Application::showAlertForWindow (const AlertBoxForWindowConfig& config)
 		    auto parentWinWindow = toWin32Window (parentWindow);
 		    vstgui_assert (parentWinWindow);
 		    parentWinWindow->setModalWindow (nullptr);
-		    Call::later ([callback, r, parentWindow] () { 
-				callback (r); 
-				if (auto winWindow = toWin32Window (parentWindow))
-					winWindow->dynamicCast<IWindow> ()->activate ();
+		    Call::later ([callback, r, parentWindow] () {
+			    callback (r);
+			    if (auto winWindow = toWin32Window (parentWindow))
+				    winWindow->dynamicCast<IWindow> ()->activate ();
 			});
 		}))
 	{
@@ -174,7 +168,7 @@ void Application::onCommandUpdate ()
 		if (auto winWindow = toWin32Window (w))
 			winWindow->updateCommands ();
 	}
-	auto app = getApplicationPlatformAccess ();
+	auto app = Detail::getApplicationPlatformAccess ();
 	std::vector<ACCEL> accels;
 	WORD cmd = 0;
 	for (auto& grp : app->getCommandList ())

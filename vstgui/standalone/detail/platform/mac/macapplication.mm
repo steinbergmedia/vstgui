@@ -1,12 +1,12 @@
-#import <Cocoa/Cocoa.h>
-#import "VSTGUICommand.h"
-#import "macpreference.h"
-#import "macwindow.h"
-#import "macutilities.h"
-#import "../../application.h"
-#import "../../window.h"
 #import "../../../iappdelegate.h"
 #import "../../../iapplication.h"
+#import "../../application.h"
+#import "../../window.h"
+#import "VSTGUICommand.h"
+#import "macpreference.h"
+#import "macutilities.h"
+#import "macwindow.h"
+#import <Cocoa/Cocoa.h>
 
 //------------------------------------------------------------------------
 @interface VSTGUIApplicationDelegate : NSObject <NSApplicationDelegate>
@@ -25,15 +25,9 @@ using CommandWithKeyList =
 using VSTGUI::Standalone::Detail::PlatformCallbacks;
 
 //------------------------------------------------------------------------
-static IApplicationPlatformAccess* getApplicationPlatformAccess ()
-{
-	return IApplication::instance ().dynamicCast<IApplicationPlatformAccess> ();
-}
-
-//------------------------------------------------------------------------
 static const CommandWithKeyList* getCommandList (const char* group)
 {
-	for (auto& e : getApplicationPlatformAccess ()->getCommandList ())
+	for (auto& e : Detail::getApplicationPlatformAccess ()->getCommandList ())
 	{
 		if (e.first == group)
 			return &e.second;
@@ -57,7 +51,7 @@ static const CommandWithKeyList* getCommandList (const char* group)
 //------------------------------------------------------------------------
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication*)sender
 {
-	if (getApplicationPlatformAccess ()->canQuit ())
+	if (Detail::getApplicationPlatformAccess ()->canQuit ())
 		return NSTerminateNow;
 	return NSTerminateCancel;
 }
@@ -252,7 +246,7 @@ static const CommandWithKeyList* getCommandList (const char* group)
 
 	appMenuItem.submenu = [self createAppMenu];
 
-	auto& commandList = getApplicationPlatformAccess ()->getCommandList ();
+	auto& commandList = Detail::getApplicationPlatformAccess ()->getCommandList ();
 	for (auto& e : commandList)
 	{
 		if (e.first == CommandGroup::Windows)
@@ -290,7 +284,9 @@ static const CommandWithKeyList* getCommandList (const char* group)
 		if (showCharacterPanelItem == nil)
 		{
 			[editMenu.submenu addItem:[NSMenuItem separatorItem]];
-			[editMenu.submenu addItemWithTitle:@"Emoji & Symbols" action:@selector(orderFrontCharacterPalette:) keyEquivalent:@""];
+			[editMenu.submenu addItemWithTitle:@"Emoji & Symbols"
+			                            action:@selector (orderFrontCharacterPalette:)
+			                     keyEquivalent:@""];
 		}
 	}
 
@@ -404,7 +400,7 @@ static const CommandWithKeyList* getCommandList (const char* group)
 	}
 
 	IApplication::CommandLineArguments cmdArgs;
-	NSArray *args = [[NSProcessInfo processInfo] arguments];
+	NSArray* args = [[NSProcessInfo processInfo] arguments];
 	for (NSString* str in args)
 	{
 		cmdArgs.push_back ([str UTF8String]);
@@ -420,7 +416,7 @@ static const CommandWithKeyList* getCommandList (const char* group)
 	callbacks.showAlertForWindow = [Self] (const AlertBoxForWindowConfig& config) {
 		return [Self showAlertForWindow:config];
 	};
-	auto app = getApplicationPlatformAccess ();
+	auto app = Detail::getApplicationPlatformAccess ();
 	vstgui_assert (app);
 	app->init (prefs, std::move (cmdArgs), std::move (callbacks));
 	[self setupMainMenu];

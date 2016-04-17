@@ -1,9 +1,9 @@
 #pragma once
 
-#include "../interface.h"
-#include "../icommand.h"
 #include "../ialertbox.h"
 #include "../iapplication.h"
+#include "../icommand.h"
+#include "../interface.h"
 #include <functional>
 #include <vector>
 
@@ -46,6 +46,13 @@ public:
 	virtual bool canQuit () = 0;
 };
 
+//------------------------------------------------------------------------
+inline IApplicationPlatformAccess* getApplicationPlatformAccess ()
+{
+	return IApplication::instance ().dynamicCast<IApplicationPlatformAccess> ();
+}
+
+//------------------------------------------------------------------------
 } // Detail
 } // Standalone
 } // VSTGUI

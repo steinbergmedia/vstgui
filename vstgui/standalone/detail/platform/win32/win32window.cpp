@@ -1,18 +1,18 @@
 #include "win32window.h"
-#include "../iplatformwindow.h"
-#include "../../application.h"
-#include "../../../iapplication.h"
-#include "../../../iappdelegate.h"
-#include "../../../../lib/platform/win32/winstring.h"
 #include "../../../../lib/cvstguitimer.h"
 #include "../../../../lib/platform/win32/direct2d/d2ddrawcontext.h"
 #include "../../../../lib/platform/win32/win32frame.h"
-#include <Windows.h>
-#include <windowsx.h>
+#include "../../../../lib/platform/win32/winstring.h"
+#include "../../../iappdelegate.h"
+#include "../../../iapplication.h"
+#include "../../application.h"
+#include "../iplatformwindow.h"
 #include <Dwmapi.h>
-#include <d2d1.h>
 #include <ShellScalingAPI.h>
 #include <VersionHelpers.h>
+#include <Windows.h>
+#include <d2d1.h>
+#include <windowsx.h>
 
 #pragma comment(lib, "Dwmapi.lib")
 
@@ -39,7 +39,8 @@ struct WindowComposition
 
 //------------------------------------------------------------------------
 private:
-	enum AccentState {
+	enum AccentState
+	{
 		ACCENT_DISABLED = 0,
 		ACCENT_ENABLE_GRADIENT = 1,
 		ACCENT_ENABLE_TRANSPARENTGRADIENT = 2,
@@ -102,12 +103,9 @@ namespace Win32 {
 
 static const WCHAR* gWindowClassName = L"VSTGUI_Standalone_WindowClass";
 
-static HINSTANCE getHInstance () { return static_cast<HINSTANCE> (hInstance); }
-
-//------------------------------------------------------------------------
-static Detail::IApplicationPlatformAccess* getApplicationPlatformAccess ()
+static HINSTANCE getHInstance ()
 {
-	return IApplication::instance ().dynamicCast<Detail::IApplicationPlatformAccess> ();
+	return static_cast<HINSTANCE> (hInstance);
 }
 
 //------------------------------------------------------------------------
@@ -354,7 +352,7 @@ void Window::updateCommands () const
 
 	const auto& appInfo = IApplication::instance ().getDelegate ().getInfo ();
 
-	auto& commandList = getApplicationPlatformAccess ()->getCommandList ();
+	auto& commandList = Detail::getApplicationPlatformAccess ()->getCommandList ();
 	for (auto& e : commandList)
 	{
 		auto subMenu = createSubMenu (e.first, e.second);
@@ -374,7 +372,7 @@ void Window::updateCommands () const
 //------------------------------------------------------------------------
 void Window::handleMenuCommand (const UTF8String& group, UINT index)
 {
-	auto& commandList = getApplicationPlatformAccess ()->getCommandList ();
+	auto& commandList = Detail::getApplicationPlatformAccess ()->getCommandList ();
 	for (auto& e : commandList)
 	{
 		if (e.first == group)
@@ -395,8 +393,8 @@ void Window::handleMenuCommand (const UTF8String& group, UINT index)
 					delegate->handleCommand (*it);
 				else
 				{
-					if (auto commandHandler =
-					        getApplicationPlatformAccess ()->dynamicCast<ICommandHandler> ())
+					if (auto commandHandler = Detail::getApplicationPlatformAccess ()
+					                              ->dynamicCast<ICommandHandler> ())
 					{
 						if (commandHandler->canHandleCommand (*it))
 							commandHandler->handleCommand (*it);
@@ -546,7 +544,7 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 		{
 			if (HIWORD (wParam) == EN_CHANGE)
 				break;
-			auto app = getApplicationPlatformAccess ();
+			auto app = Detail::getApplicationPlatformAccess ();
 			auto cmdID = LOWORD (wParam);
 			WORD cmd = 0;
 			for (auto& grp : app->getCommandList ())
@@ -562,7 +560,7 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 						}
 						else
 						{
-							if (auto commandHandler = getApplicationPlatformAccess ()
+							if (auto commandHandler = Detail::getApplicationPlatformAccess ()
 							                              ->dynamicCast<ICommandHandler> ())
 							{
 								if (commandHandler->canHandleCommand (e))
@@ -670,7 +668,9 @@ void Window::setPosition (const CPoint& newPosition)
 }
 
 //------------------------------------------------------------------------
-void Window::setTitle (const UTF8String& newTitle) {}
+void Window::setTitle (const UTF8String& newTitle)
+{
+}
 
 //------------------------------------------------------------------------
 void Window::updateDPI ()
@@ -698,7 +698,10 @@ void Window::show ()
 }
 
 //------------------------------------------------------------------------
-void Window::hide () { ShowWindow (hwnd, false); }
+void Window::hide ()
+{
+	ShowWindow (hwnd, false);
+}
 
 //------------------------------------------------------------------------
 void Window::close ()
@@ -719,7 +722,10 @@ void Window::onQuit ()
 }
 
 //------------------------------------------------------------------------
-void Window::activate () { BringWindowToTop (hwnd); }
+void Window::activate ()
+{
+	BringWindowToTop (hwnd);
+}
 
 //------------------------------------------------------------------------
 void Window::center ()
