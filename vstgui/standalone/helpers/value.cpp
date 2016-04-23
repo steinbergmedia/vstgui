@@ -281,6 +281,8 @@ StepValue::StepType StepValue::getSteps () const { return steps + 1; }
 //------------------------------------------------------------------------
 IValue::Type StepValue::stepToValue (StepType step) const
 {
+	if (steps == 0)
+		return 0.;
 	return convertStepToValue (step, steps);
 }
 
