@@ -214,8 +214,9 @@ UTF8String trim (const UTF8String& str, TrimOptions options)
 	if (options.trimRight ())
 	{
 		auto pos = Iterator (string.end ());
-		for (auto it = Iterator (string.end ()); it != Iterator (string.begin ()); --it)
+		for (auto it = Iterator (string.end ()); it != Iterator (string.begin ());)
 		{
+			--it;
 			if (options (*it))
 				break;
 			pos = it;
