@@ -194,14 +194,16 @@ void Application::onCommandUpdate ()
 //------------------------------------------------------------------------
 void Application::quit ()
 {
-	auto windows = IApplication::instance ().getWindows (); // Yes, copy the window list
-	for (auto& w : windows)
-	{
-		if (auto winWindow = toWin32Window (w))
-			winWindow->onQuit ();
-	}
-	IApplication::instance ().getDelegate ().onQuit ();
-	PostQuitMessage (0);
+	Call::later ([] () {
+		auto windows = IApplication::instance ().getWindows (); // Yes, copy the window list
+		for (auto& w : windows)
+		{
+			if (auto winWindow = toWin32Window (w))
+				winWindow->onQuit ();
+		}
+		IApplication::instance ().getDelegate ().onQuit ();
+		PostQuitMessage (0);
+	});
 }
 
 //------------------------------------------------------------------------

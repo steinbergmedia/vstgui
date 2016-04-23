@@ -251,7 +251,7 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 		}
 		else
 		{
-			dwStyle = WS_POPUP; // | WS_THICKFRAME | WS_CAPTION | WS_MAXIMIZEBOX | WS_MINIMIZEBOX;
+			dwStyle = WS_POPUP | WS_CLIPCHILDREN; // | WS_THICKFRAME | WS_CAPTION | WS_MAXIMIZEBOX | WS_MINIMIZEBOX;
 			exStyle = WS_EX_COMPOSITED | WS_EX_TRANSPARENT;
 		}
 	}
@@ -284,6 +284,7 @@ void Window::onSetContentView (CFrame* inFrame)
 		frameWindowProc = [win32Frame] (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam) {
 			return win32Frame->proc (hwnd, message, wParam, lParam);
 		};
+		updateDPI ();
 	}
 	else
 		frameWindowProc = nullptr;

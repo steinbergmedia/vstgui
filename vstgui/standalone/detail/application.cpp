@@ -63,6 +63,7 @@ private:
 	PlatformCallbacks platform;
 	CommandList commandList;
 	CommandLineArguments commandLineArguments;
+	bool inQuit {false};
 };
 
 //------------------------------------------------------------------------
@@ -152,10 +153,12 @@ void Application::showAlertBoxForWindow (const AlertBoxForWindowConfig& config)
 //------------------------------------------------------------------------
 void Application::quit ()
 {
-	if (!canQuit ())
+	if (inQuit || !canQuit ())
 		return;
+	inQuit = true;
 	if (platform.quit)
 		platform.quit ();
+	inQuit = false;
 }
 
 //------------------------------------------------------------------------
