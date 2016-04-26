@@ -118,6 +118,7 @@ public:
 
 	CPoint getSize () const override;
 	CPoint getPosition () const override;
+	double getScaleFactor () const override;
 
 	void setSize (const CPoint& newSize) override;
 	void setPosition (const CPoint& newPosition) override;
@@ -680,6 +681,17 @@ void Window::updateDPI ()
 	UINT x, y;
 	GetDpiForMonitor (monitor, MDT_EFFECTIVE_DPI, &x, &y);
 	setNewDPI (x);
+}
+
+//------------------------------------------------------------------------
+double Window::getScaleFactor () const
+{
+	if (!hwnd)
+		return 1.;
+	auto monitor = MonitorFromWindow (hwnd, MONITOR_DEFAULTTONEAREST);
+	UINT x, y;
+	GetDpiForMonitor (monitor, MDT_EFFECTIVE_DPI, &x, &y);
+	return static_cast<CCoord> (x) * (100. / 96.) / 100.;
 }
 
 //------------------------------------------------------------------------

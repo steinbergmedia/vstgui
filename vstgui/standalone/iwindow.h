@@ -115,6 +115,7 @@ public:
 
 	virtual CPoint getSize () const = 0;
 	virtual CPoint getPosition () const = 0;
+	virtual double getScaleFactor () const = 0;
 	virtual CRect getFocusViewRect () const = 0;
 
 	virtual void setSize (const CPoint& newSize) = 0;

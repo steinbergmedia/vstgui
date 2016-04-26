@@ -69,6 +69,7 @@ public:
 
 	CPoint getSize () const override;
 	CPoint getPosition () const override;
+	double getScaleFactor () const override { return 1.; }
 
 	void setSize (const CPoint& newSize) override;
 	void setPosition (const CPoint& newPosition) override;

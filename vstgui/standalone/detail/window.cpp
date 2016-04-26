@@ -71,6 +71,7 @@ public:
 	const WindowControllerPtr& getController () const override { return controller; }
 	CPoint getSize () const override { return platformWindow->getSize (); }
 	CPoint getPosition () const override { return platformWindow->getPosition (); }
+	double getScaleFactor () const override { return platformWindow->getScaleFactor (); }
 	CRect getFocusViewRect () const override;
 	void setSize (const CPoint& newSize) override;
 	void setPosition (const CPoint& newPosition) override
