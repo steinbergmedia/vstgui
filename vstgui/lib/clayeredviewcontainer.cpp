@@ -77,7 +77,8 @@ void CLayeredViewContainer::updateLayerSize ()
 		parentLayerView->translateToGlobal (p);
 		newSize.offsetInverse (p);
 	}
-	layer->setSize (newSize);
+	if (layer)
+		layer->setSize (newSize);
 }
 
 //-----------------------------------------------------------------------------
