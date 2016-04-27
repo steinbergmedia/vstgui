@@ -15,6 +15,7 @@
 #include <windowsx.h>
 
 #pragma comment(lib, "Dwmapi.lib")
+#pragma comment(lib, "Comctl32.lib")
 
 extern void* hInstance;
 
@@ -108,6 +109,9 @@ static HINSTANCE getHInstance ()
 	return static_cast<HINSTANCE> (hInstance);
 }
 
+static LRESULT CALLBACK childWindowProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam,
+                                         UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
+
 //------------------------------------------------------------------------
 class Window : public IWindow, public IWin32Window, public std::enable_shared_from_this<Window>
 {
@@ -142,6 +146,7 @@ public:
 		modalWindow = window;
 	}
 
+	bool nonClientHitTest (LPARAM& lParam, LRESULT& result);
 	LRESULT CALLBACK proc (UINT message, WPARAM wParam, LPARAM lParam);
 
 private:
@@ -252,7 +257,7 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 		}
 		else
 		{
-			dwStyle = WS_POPUP | WS_CLIPCHILDREN; // | WS_THICKFRAME | WS_CAPTION | WS_MAXIMIZEBOX | WS_MINIMIZEBOX;
+			dwStyle = WS_POPUP | WS_CLIPCHILDREN;
 			exStyle = WS_EX_COMPOSITED | WS_EX_TRANSPARENT;
 		}
 	}
@@ -507,14 +512,6 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 			}
 			return 0;
 		}
-		case WM_NCCALCSIZE:
-		{
-			if (!hasBorder)
-			{
-				return 0;
-			}
-			break;
-		}
 		case WM_CLOSE:
 		{
 			windowWillClose ();
@@ -579,32 +576,28 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 			}
 			break;
 		}
+		case WM_NCACTIVATE:
+		{
+			if (frame)
+			{
+				auto fc = static_cast<IPlatformFrameCallback*> (frame);
+				fc->platformOnWindowActivate (wParam ? true : false);
+			}
+			break;
+		}
+		case WM_NCCALCSIZE:
+		{
+			if (!hasBorder)
+			{
+				return 0;
+			}
+			break;
+		}
 		case WM_NCHITTEST:
 		{
-			if (movableByWindowBackground)
-			{
-				LONG x = GET_X_LPARAM (lParam);
-				LONG y = GET_Y_LPARAM (lParam);
-				POINT p {x, y};
-				auto size = getSize ();
-				frame->getTransform ().transform (size);
-				if (ScreenToClient (hwnd, &p) && p.y > 0 && p.x > 0 && p.y < size.y && p.x < size.x)
-				{
-					if (sizable && !hasBorder)
-					{
-						const auto edgeSizeWidth = 10;
-						if (p.x > size.x - edgeSizeWidth && p.y > size.y - edgeSizeWidth)
-							return HTBOTTOMRIGHT;
-						// TODO: add other edges
-					}
-					CPoint where {static_cast<CCoord> (p.x), static_cast<CCoord> (p.y)};
-					if (!frame->hitTestSubViews (where))
-					{
-						return HTCAPTION;
-					}
-					return HTCLIENT;
-				}
-			}
+			LRESULT res {};
+			if (nonClientHitTest (lParam, res))
+				return res;
 			break;
 		}
 		case WM_DPICHANGED:
@@ -612,10 +605,102 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 			setNewDPI (static_cast<uint32_t> (LOWORD (wParam)));
 			break;
 		}
+		case WM_PARENTNOTIFY:
+		{
+			switch (LOWORD (wParam))
+			{
+				case WM_CREATE:
+				{
+					auto child = reinterpret_cast<HWND> (lParam);
+					SetWindowSubclass (child, childWindowProc, 0,
+					                   reinterpret_cast<DWORD_PTR> (this));
+					break;
+				}
+				case WM_DESTROY:
+				{
+					auto child = reinterpret_cast<HWND> (lParam);
+					RemoveWindowSubclass (child, childWindowProc, 0);
+					break;
+				}
+			}
+			break;
+		}
 	}
 	if (frameWindowProc)
 		return frameWindowProc (hwnd, message, wParam, lParam);
 	return DefWindowProc (hwnd, message, wParam, lParam);
+}
+
+//------------------------------------------------------------------------
+LRESULT CALLBACK childWindowProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam,
+                                  UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
+{
+	auto window = reinterpret_cast<Window*> (dwRefData);
+	if (message == WM_PARENTNOTIFY)
+	{
+		switch (LOWORD (wParam))
+		{
+			case WM_CREATE:
+			{
+				auto child = reinterpret_cast<HWND> (lParam);
+				SetWindowSubclass (child, childWindowProc, 0, reinterpret_cast<DWORD_PTR> (window));
+				break;
+			}
+			case WM_DESTROY:
+			{
+				auto child = reinterpret_cast<HWND> (lParam);
+				RemoveWindowSubclass (child, childWindowProc, 0);
+				break;
+			}
+			default:
+				return DefWindowProc (hWnd, message, wParam, lParam);
+		}
+	}
+	else if (message == WM_NCHITTEST)
+	{
+		if (window)
+		{
+			LRESULT res {};
+			if (window->nonClientHitTest (lParam, res) && res != HTCLIENT)
+				return HTTRANSPARENT;
+		}
+	}
+	return DefSubclassProc (hWnd, message, wParam, lParam);
+}
+
+//------------------------------------------------------------------------
+bool Window::nonClientHitTest (LPARAM& lParam, LRESULT& result)
+{
+	if (movableByWindowBackground)
+	{
+		LONG x = GET_X_LPARAM (lParam);
+		LONG y = GET_Y_LPARAM (lParam);
+		POINT p {x, y};
+		auto size = getSize ();
+		frame->getTransform ().transform (size);
+		if (ScreenToClient (hwnd, &p) && p.y > 0 && p.x > 0 && p.y < size.y && p.x < size.x)
+		{
+			if (sizable && !hasBorder)
+			{
+				const auto edgeSizeWidth = 10 * dpiScale;
+				if (p.x > size.x - edgeSizeWidth && p.y > size.y - edgeSizeWidth)
+				{
+					result = HTBOTTOMRIGHT;
+					return true;
+				}
+				// TODO: add other edges
+			}
+			CPoint where {static_cast<CCoord> (p.x), static_cast<CCoord> (p.y)};
+			if (!frame->hitTestSubViews (where))
+			{
+				result = HTCAPTION;
+				return true;
+			}
+			result = HTCLIENT;
+			return true;
+		}
+	}
+	return false;
 }
 
 //------------------------------------------------------------------------
