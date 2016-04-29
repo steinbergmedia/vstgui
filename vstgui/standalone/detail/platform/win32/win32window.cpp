@@ -149,6 +149,14 @@ public:
 	bool nonClientHitTest (LPARAM& lParam, LRESULT& result);
 	LRESULT CALLBACK proc (UINT message, WPARAM wParam, LPARAM lParam);
 
+	enum class HandleCommandResult
+	{
+		CommandHandled,
+		CommandRejected,
+		CommandUnknown
+	};
+	HandleCommandResult handleCommand (const WORD &cmdID);
+
 private:
 	void makeTransparent ();
 	void updateDPI ();
@@ -543,36 +551,13 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 		{
 			if (HIWORD (wParam) == EN_CHANGE)
 				break;
-			auto app = Detail::getApplicationPlatformAccess ();
 			auto cmdID = LOWORD (wParam);
-			WORD cmd = 0;
-			for (auto& grp : app->getCommandList ())
+			auto result = handleCommand (cmdID);
+			switch (result)
 			{
-				for (auto& e : grp.second)
-				{
-					if (cmd == cmdID)
-					{
-						if (delegate->canHandleCommand (e))
-						{
-							if (delegate->handleCommand (e))
-								return 1;
-						}
-						else
-						{
-							if (auto commandHandler = Detail::getApplicationPlatformAccess ()
-							                              ->dynamicCast<ICommandHandler> ())
-							{
-								if (commandHandler->canHandleCommand (e))
-								{
-									if (commandHandler->handleCommand (e))
-										return 1;
-								}
-							}
-						}
-						return 0;
-					}
-					++cmd;
-				}
+				case HandleCommandResult::CommandHandled: return 1;
+				case HandleCommandResult::CommandRejected: return 0;
+				case HandleCommandResult::CommandUnknown: break;
 			}
 			break;
 		}
@@ -631,6 +616,41 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 	return DefWindowProc (hwnd, message, wParam, lParam);
 }
 
+auto Window::handleCommand(const WORD &cmdID) -> HandleCommandResult
+{
+	auto app = Detail::getApplicationPlatformAccess();
+	WORD cmd = 0;
+	for (auto& grp : app->getCommandList())
+	{
+		for (auto& e : grp.second)
+		{
+			if (cmd == cmdID)
+			{
+				if (delegate->canHandleCommand(e))
+				{
+					if (delegate->handleCommand(e))
+						return HandleCommandResult::CommandHandled;
+				}
+				else
+				{
+					if (auto commandHandler = Detail::getApplicationPlatformAccess()
+						->dynamicCast<ICommandHandler>())
+					{
+						if (commandHandler->canHandleCommand(e))
+						{
+							if (commandHandler->handleCommand(e))
+								return HandleCommandResult::CommandHandled;
+						}
+					}
+				}
+				return HandleCommandResult::CommandRejected;
+			}
+			++cmd;
+		}
+	}
+	return HandleCommandResult::CommandUnknown;
+}
+
 //------------------------------------------------------------------------
 LRESULT CALLBACK childWindowProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam,
                                   UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
@@ -653,7 +673,7 @@ LRESULT CALLBACK childWindowProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM
 				break;
 			}
 			default:
-				return DefWindowProc (hWnd, message, wParam, lParam);
+				return DefSubclassProc (hWnd, message, wParam, lParam);
 		}
 	}
 	else if (message == WM_NCHITTEST)
@@ -663,6 +683,17 @@ LRESULT CALLBACK childWindowProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM
 			LRESULT res {};
 			if (window->nonClientHitTest (lParam, res) && res != HTCLIENT)
 				return HTTRANSPARENT;
+		}
+	}
+	else if (message == WM_COMMAND && HIWORD (wParam) != EN_CHANGE)
+	{
+		auto cmdID = LOWORD (wParam);
+		auto result = window->handleCommand (cmdID);
+		switch (result)
+		{
+			case Window::HandleCommandResult::CommandHandled: return 1;
+			case Window::HandleCommandResult::CommandRejected: return 0;
+			case Window::HandleCommandResult::CommandUnknown: break;
 		}
 	}
 	return DefSubclassProc (hWnd, message, wParam, lParam);
