@@ -53,11 +53,11 @@ public:
 	UIFontsDataSource (UIDescription* description, IActionPerformer* actionPerformer, IGenericStringListDataBrowserSourceSelectionChanged* delegate);
 	
 protected:
-	void getNames (std::list<const std::string*>& names) VSTGUI_OVERRIDE_VMETHOD;
-	bool addItem (UTF8StringPtr name) VSTGUI_OVERRIDE_VMETHOD;
-	bool removeItem (UTF8StringPtr name) VSTGUI_OVERRIDE_VMETHOD;
-	bool performNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) VSTGUI_OVERRIDE_VMETHOD;
-	UTF8StringPtr getDefaultsName () VSTGUI_OVERRIDE_VMETHOD { return "UIFontsDataSource"; }
+	void getNames (std::list<const std::string*>& names) override;
+	bool addItem (UTF8StringPtr name) override;
+	bool removeItem (UTF8StringPtr name) override;
+	bool performNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) override;
+	UTF8StringPtr getDefaultsName () override { return "UIFontsDataSource"; }
 
 	SharedPointer<CColorChooser> colorChooser;
 };
@@ -177,13 +177,8 @@ CView* UIFontsController::verifyView (CView* view, const UIAttributes& attribute
 				sizeTextEdit = dynamic_cast<CTextEdit*>(control);
 				if (sizeTextEdit)
 				{
-				#if VSTGUI_HAS_FUNCTIONAL
 					sizeTextEdit->setValueToStringFunction (valueToString);
 					sizeTextEdit->setStringToValueFunction (stringToValue);
-				#else
-					sizeTextEdit->setValueToStringProc (valueToString, sizeTextEdit);
-					sizeTextEdit->setStringToValueProc (stringToValue);
-				#endif
 				}
 				control->setMouseEnabled (false);
 				break;

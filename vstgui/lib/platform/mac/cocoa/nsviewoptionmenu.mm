@@ -299,8 +299,8 @@ PlatformOptionMenuResult NSViewOptionMenu::popup (COptionMenu* optionMenu)
 	CPoint p = globalSize.getTopLeft ();
 	NSRect cellFrameRect = {{0}};
 	cellFrameRect.origin = nsPointFromCPoint (p);
-	cellFrameRect.size.width = globalSize.getWidth ();
-	cellFrameRect.size.height = globalSize.getHeight ();
+	cellFrameRect.size.width = static_cast<CGFloat> (globalSize.getWidth ());
+	cellFrameRect.size.height = static_cast<CGFloat> (globalSize.getHeight ());
 	if (!(optionMenu->getStyle () & kPopupStyle))
 	{
 		NSMenuItem* item = [nsMenu insertItemWithTitle:@"" action:nil keyEquivalent:@"" atIndex:0];

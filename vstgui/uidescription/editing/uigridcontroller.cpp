@@ -97,26 +97,16 @@ CView* UIGridController::verifyView (CView* view, const UIAttributes& attributes
 			case kGridXTag:
 			{
 				gridControls[0] = control;
-			#if VSTGUI_HAS_FUNCTIONAL
 				gridControls[0]->setStringToValueFunction (stringToValue);
 				gridControls[0]->setValueToStringFunction (valueToString);
-			#else
-				gridControls[0]->setStringToValueProc (stringToValue);
-				gridControls[0]->setValueToStringProc (valueToString);
-			#endif
 				gridControls[0]->setValue ((float)size.x);
 				break;
 			}
 			case kGridYTag:
 			{
 				gridControls[1] = control;
-			#if VSTGUI_HAS_FUNCTIONAL
 				gridControls[1]->setStringToValueFunction (stringToValue);
 				gridControls[1]->setValueToStringFunction (valueToString);
-			#else
-				gridControls[1]->setStringToValueProc (stringToValue);
-				gridControls[1]->setValueToStringProc (valueToString);
-			#endif
 				gridControls[1]->setValue ((float)size.y);
 				break;
 			}

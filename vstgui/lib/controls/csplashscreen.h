@@ -52,8 +52,8 @@ public:
 	CSplashScreen (const CRect& size, IControlListener* listener, int32_t tag, CView* splashView);
 	CSplashScreen (const CSplashScreen& splashScreen);
 
-	virtual void draw (CDrawContext*) VSTGUI_OVERRIDE_VMETHOD;
-	virtual bool hitTest (const CPoint& where, const CButtonState& buttons = -1) VSTGUI_OVERRIDE_VMETHOD;
+	virtual void draw (CDrawContext*) override;
+	virtual bool hitTest (const CPoint& where, const CButtonState& buttons = -1) override;
 
 	//-----------------------------------------------------------------------------
 	/// @name CSplashScreen Methods
@@ -65,13 +65,13 @@ public:
 	virtual CRect& getDisplayArea (CRect& rect) const { rect = toDisplay; return rect; }	///< get the area in which the splash will be displayed
 	//@}
 
-	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
+	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
 
 	CLASS_METHODS(CSplashScreen, CControl)
 protected:
 	~CSplashScreen ();
 	using CControl::valueChanged;
-	void valueChanged (CControl *pControl) VSTGUI_OVERRIDE_VMETHOD;
+	void valueChanged (CControl *pControl) override;
 
 	CRect	toDisplay;
 	CRect	keepSize;
@@ -111,11 +111,11 @@ public:
 	virtual bool createAnimation (uint32_t animationIndex, uint32_t animationTime, CView* splashView, bool removeViewAnimation);
 	//@}
 
-	virtual void unSplash () VSTGUI_OVERRIDE_VMETHOD;
-	virtual void draw (CDrawContext*) VSTGUI_OVERRIDE_VMETHOD;
-	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
-	virtual bool sizeToFit () VSTGUI_OVERRIDE_VMETHOD;
-	virtual CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
+	virtual void unSplash () override;
+	virtual void draw (CDrawContext*) override;
+	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
+	virtual bool sizeToFit () override;
+	virtual CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 
 protected:
 	~CAnimationSplashScreen ();

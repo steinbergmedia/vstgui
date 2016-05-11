@@ -53,10 +53,10 @@ public:
 	Pasteboard (NSPasteboard* pb);
 	~Pasteboard ();
 
-	uint32_t getCount () const VSTGUI_OVERRIDE_VMETHOD;
-	uint32_t getDataSize (uint32_t index) const VSTGUI_OVERRIDE_VMETHOD;
-	Type getDataType (uint32_t index) const VSTGUI_OVERRIDE_VMETHOD;
-	uint32_t getData (uint32_t index, const void*& buffer, Type& type) const VSTGUI_OVERRIDE_VMETHOD;
+	uint32_t getCount () const override;
+	uint32_t getDataSize (uint32_t index) const override;
+	Type getDataType (uint32_t index) const override;
+	uint32_t getData (uint32_t index, const void*& buffer, Type& type) const override;
 protected:
 	NSPasteboard* pb;
 	uint32_t nbItems;

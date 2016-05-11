@@ -128,14 +128,14 @@ public:
 	//@}
 	
 	// overrides
-	bool attached (CView *parent) VSTGUI_OVERRIDE_VMETHOD;
-	void setViewSize (const CRect& rect, bool invalid = true) VSTGUI_OVERRIDE_VMETHOD;
-	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
-	int32_t onKeyDown (VstKeyCode& keyCode) VSTGUI_OVERRIDE_VMETHOD;
-	void draw (CDrawContext* pContext) VSTGUI_OVERRIDE_VMETHOD;
-	void drawRect (CDrawContext* pContext, const CRect& dirtyRect) VSTGUI_OVERRIDE_VMETHOD;
-	bool drawFocusOnTop () VSTGUI_OVERRIDE_VMETHOD;
-	bool getFocusPath (CGraphicsPath& outPath) VSTGUI_OVERRIDE_VMETHOD;
+	bool attached (CView *parent) override;
+	void setViewSize (const CRect& rect, bool invalid = true) override;
+	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
+	int32_t onKeyDown (VstKeyCode& keyCode) override;
+	void draw (CDrawContext* pContext) override;
+	void drawRect (CDrawContext* pContext, const CRect& dirtyRect) override;
+	bool drawFocusOnTop () override;
+	bool getFocusPath (CGraphicsPath& outPath) override;
 
 	CLASS_METHODS(CSegmentButton, CControl)
 private:

@@ -67,14 +67,14 @@ public:
 	static IdStringPtr kMsgTemplateChanged;
 	static IdStringPtr kMsgTemplateNameChanged;
 protected:
-	virtual void valueChanged (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD {}
-	virtual CView* createView (const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
-	virtual CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
-	virtual IController* createSubController (UTF8StringPtr name, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
+	virtual void valueChanged (CControl* pControl) override {}
+	virtual CView* createView (const UIAttributes& attributes, const IUIDescription* description) override;
+	virtual CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;
+	virtual IController* createSubController (UTF8StringPtr name, const IUIDescription* description) override;
 
-	virtual void dbSelectionChanged (int32_t selectedRow, GenericStringListDataBrowserSource* source) VSTGUI_OVERRIDE_VMETHOD;
+	virtual void dbSelectionChanged (int32_t selectedRow, GenericStringListDataBrowserSource* source) override;
 
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 
 	SharedPointer<UIDescription> editDescription;
 	SharedPointer<UISelection> selection;

@@ -71,10 +71,10 @@ public:
 
 	static IdStringPtr kMsgTruncatedTextChanged;								///< message which is send to dependent objects when the truncated text changes
 	
-	virtual	void draw (CDrawContext* pContext) VSTGUI_OVERRIDE_VMETHOD;
-	virtual bool sizeToFit () VSTGUI_OVERRIDE_VMETHOD;
-	virtual void setViewSize (const CRect& rect, bool invalid = true) VSTGUI_OVERRIDE_VMETHOD;
-	virtual void drawStyleChanged () VSTGUI_OVERRIDE_VMETHOD;
+	virtual	void draw (CDrawContext* pContext) override;
+	virtual bool sizeToFit () override;
+	virtual void setViewSize (const CRect& rect, bool invalid = true) override;
+	virtual void drawStyleChanged () override;
 
 	CLASS_METHODS(CTextLabel, CParamDisplay)
 protected:
@@ -82,8 +82,8 @@ protected:
 	void freeText ();
 	void calculateTruncatedText ();
 
-	bool onWheel (const CPoint& where, const float& distance, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD { return false; }
-	bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD { return false; }
+	bool onWheel (const CPoint& where, const float& distance, const CButtonState& buttons) override { return false; }
+	bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons) override { return false; }
 
 	TextTruncateMode textTruncateMode;
 	UTF8String text;

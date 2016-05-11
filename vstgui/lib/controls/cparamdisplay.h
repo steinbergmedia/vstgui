@@ -39,9 +39,7 @@
 #include "../cfont.h"
 #include "../ccolor.h"
 #include "../cdrawdefs.h"
-#if VSTGUI_HAS_FUNCTIONAL
 #include <functional>
-#endif
 
 namespace VSTGUI {
 
@@ -96,19 +94,12 @@ public:
 	virtual void setFrameWidth (const CCoord& width);
 	CCoord getFrameWidth () const { return frameWidth; }
 
-#if VSTGUI_HAS_FUNCTIONAL
 	typedef CParamDisplay	ValueToStringUserData;
-#else
-	typedef void			ValueToStringUserData;
-#endif
 
-	VSTGUI_DEPRECATED_FUNCTIONAL(virtual void setValueToStringProc (CParamDisplayValueToStringProc proc, void* userData = 0);) ///< deprecated use setValueToStringFunction instead if you use c++11
-#if VSTGUI_HAS_FUNCTIONAL
 	typedef std::function<bool(float value, char utf8String[256], CParamDisplay* display)> ValueToStringFunction;
 	
 	void setValueToStringFunction (const ValueToStringFunction& valueToStringFunc);
 	void setValueToStringFunction (ValueToStringFunction&& valueToStringFunc);
-#endif
 
 	virtual void setStyle (int32_t val);
 	int32_t getStyle () const { return style; }
@@ -118,28 +109,21 @@ public:
 
 	//@}
 
-	void draw (CDrawContext* pContext) VSTGUI_OVERRIDE_VMETHOD;
-	bool getFocusPath (CGraphicsPath& outPath) VSTGUI_OVERRIDE_VMETHOD;
-	bool removed (CView* parent) VSTGUI_OVERRIDE_VMETHOD;
+	void draw (CDrawContext* pContext) override;
+	bool getFocusPath (CGraphicsPath& outPath) override;
+	bool removed (CView* parent) override;
 
 	CLASS_METHODS(CParamDisplay, CControl)
 protected:
 	~CParamDisplay ();
 	virtual void drawBack (CDrawContext* pContext, CBitmap* newBack = 0);
-	VSTGUI_DEPRECATED (void drawText (CDrawContext* pContext, UTF8StringPtr string);)
-	VSTGUI_DEPRECATED (void drawText (CDrawContext* pContext, UTF8StringPtr string, const CRect& size);)
 
 	virtual void drawPlatformText (CDrawContext* pContext, IPlatformString* string);
 	virtual void drawPlatformText (CDrawContext* pContext, IPlatformString* string, const CRect& size);
 
 	virtual void drawStyleChanged ();
 
-#if VSTGUI_HAS_FUNCTIONAL
 	ValueToStringFunction valueToStringFunction;
-#else
-	CParamDisplayValueToStringProc valueToString;
-	void* valueToStringUserData;
-#endif
 
 	CHoriTxtAlign horiTxtAlign;
 	int32_t		style;

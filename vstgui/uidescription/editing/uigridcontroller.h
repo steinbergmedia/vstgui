@@ -53,9 +53,9 @@ public:
 	~UIGridController ();
 
 protected:
-	void valueChanged (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
-	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
-	IControlListener* getControlListener (UTF8StringPtr name) VSTGUI_OVERRIDE_VMETHOD;
+	void valueChanged (CControl* pControl) override;
+	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;
+	IControlListener* getControlListener (UTF8StringPtr name) override;
 
 	SharedPointer<UIDescription> editDescription;
 	SharedPointer<CTextEdit> gridControls[2];

@@ -66,8 +66,8 @@ static id VSTGUI_NSTextField_Init (id self, SEL _cmd, void* textEdit)
 
 		CPoint textInset = tec->platformGetTextInset ();
 
-		editFrameRect.origin.x = textInset.x/2. - 1.;
-		editFrameRect.origin.y = textInset.y/2.;
+		editFrameRect.origin.x = static_cast<CGFloat> (textInset.x/2. - 1.);
+		editFrameRect.origin.y = static_cast<CGFloat> (textInset.y/2.);
 		editFrameRect.size.width -= textInset.x/2.;
 		editFrameRect.size.height -= textInset.y/2. - 1.;
 		self = objc_msgSendSuper (SUPER, @selector(initWithFrame:), editFrameRect);
@@ -104,7 +104,7 @@ static id VSTGUI_NSTextField_Init (id self, SEL _cmd, void* textEdit)
 		if ([self frame].size.height < editFrameRect.size.height)
 		{
 			CGFloat offset = editFrameRect.size.height - [self frame].size.height;
-			editFrameRect.origin.y = offset / 2.;
+			editFrameRect.origin.y = static_cast<CGFloat> (offset / 2.);
 			editFrameRect.size.height = [self frame].size.height;
 		}
 		else
@@ -140,7 +140,7 @@ static id VSTGUI_NSTextField_Init (id self, SEL _cmd, void* textEdit)
 				if (zPosition > maxZPosition)
 					maxZPosition = zPosition;
 			}
-			[containerView layer].zPosition = maxZPosition + 1;
+			[containerView layer].zPosition = static_cast<CGFloat> (maxZPosition + 1);
 		}
 		
 	}

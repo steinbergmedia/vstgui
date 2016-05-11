@@ -56,15 +56,10 @@ public:
 	bool add (const void* buffer, uint32_t bufferSize, Type type);
 
 	// IDataPackage
-	virtual uint32_t getCount () const VSTGUI_FINAL_VMETHOD;
-	virtual uint32_t getDataSize (uint32_t index) const VSTGUI_FINAL_VMETHOD;
-	virtual Type getDataType (uint32_t index) const VSTGUI_FINAL_VMETHOD;
-	virtual uint32_t getData (uint32_t index, const void*& buffer, Type& type) const VSTGUI_FINAL_VMETHOD;
-
-	// old interface
-	VSTGUI_DEPRECATED(int32_t getEntrySize (int32_t index) const;) ///< \deprecated
-	VSTGUI_DEPRECATED(Type getEntryType (int32_t index) const;) ///< \deprecated
-	VSTGUI_DEPRECATED(int32_t getEntry (int32_t index, const void*& buffer, Type& type) const;) ///< \deprecated
+	virtual uint32_t getCount () const final;
+	virtual uint32_t getDataSize (uint32_t index) const final;
+	virtual Type getDataType (uint32_t index) const final;
+	virtual uint32_t getData (uint32_t index, const void*& buffer, Type& type) const final;
 
 	//-------------------------------------------
 	CLASS_METHODS_NOCOPY(CDropSource, IDataPackage)
@@ -77,9 +72,7 @@ protected:
 		
 		CDropEntry (const void* buffer, uint32_t bufferSize, Type type);
 		CDropEntry (const CDropEntry& entry);
-	#if VSTGUI_RVALUE_REF_SUPPORT
 		CDropEntry (CDropEntry&& entry) noexcept;
-	#endif
 		~CDropEntry ();
 	};
 	/// @endcond

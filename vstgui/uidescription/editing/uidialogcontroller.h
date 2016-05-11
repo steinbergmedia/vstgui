@@ -61,21 +61,21 @@ public:
 	static IdStringPtr kMsgDialogButton2Clicked;
 	static IdStringPtr kMsgDialogShow;
 protected:
-	void valueChanged (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
-	IControlListener* getControlListener (UTF8StringPtr controlTagName) VSTGUI_OVERRIDE_VMETHOD;
-	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
+	void valueChanged (CControl* pControl) override;
+	IControlListener* getControlListener (UTF8StringPtr controlTagName) override;
+	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 
-	void viewSizeChanged (CView* view, const CRect& oldSize) VSTGUI_OVERRIDE_VMETHOD;
-	void viewRemoved (CView* view) VSTGUI_OVERRIDE_VMETHOD;
+	void viewSizeChanged (CView* view, const CRect& oldSize) override;
+	void viewRemoved (CView* view) override;
 	
 	void close ();
 	void layoutButtons ();
 	void collectOpenGLViews (CViewContainer* container);
 	void setOpenGLViewsVisible (bool state);
 
-	int32_t onKeyDown (const VstKeyCode& code, CFrame* frame) VSTGUI_OVERRIDE_VMETHOD;
-	int32_t onKeyUp (const VstKeyCode& code, CFrame* frame) VSTGUI_OVERRIDE_VMETHOD;
+	int32_t onKeyDown (const VstKeyCode& code, CFrame* frame) override;
+	int32_t onKeyUp (const VstKeyCode& code, CFrame* frame) override;
 
 	CFrame* frame;
 	SharedPointer<CBaseObject> dialogController;

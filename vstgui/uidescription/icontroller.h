@@ -55,14 +55,6 @@ public:
 	virtual CView* createView (const UIAttributes& attributes, const IUIDescription* description) { return 0; }
 	virtual CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) { return view; }
 	virtual IController* createSubController (UTF8StringPtr name, const IUIDescription* description) { return 0; }
-
-#if DEBUG && VSTGUI_ENABLE_DEPRECATED_METHODS
-	// the method arguments have changed for the above methods so here are definitions that will generate a compiler error
-	// if someone has not updated its methods
-	virtual int32_t createView (const UIAttributes& attributes, IUIDescription* description) VSTGUI_FINAL_VMETHOD { return 0; }
-	virtual int32_t verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description) VSTGUI_FINAL_VMETHOD { return 0; }
-	virtual int32_t createSubController (UTF8StringPtr name, IUIDescription* description) VSTGUI_FINAL_VMETHOD { return 0;}
-#endif
 };
 
 //-----------------------------------------------------------------------------

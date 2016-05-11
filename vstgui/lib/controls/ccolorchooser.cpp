@@ -62,7 +62,7 @@ public:
 		setWheelInc (10.f/255.f);
 	}
 
-	void draw (CDrawContext* context) VSTGUI_OVERRIDE_VMETHOD
+	void draw (CDrawContext* context) override
 	{
 		CColor handleFillColor (kWhiteCColor);
 		CColor handleFrameColor (kBlackCColor);
@@ -151,7 +151,7 @@ public:
 	{
 	}
 	
-	void draw (CDrawContext* context) VSTGUI_OVERRIDE_VMETHOD
+	void draw (CDrawContext* context) override
 	{
 		context->setDrawMode (kAliasing);
 		if (checkerBoardBack && color.alpha != 255)
@@ -236,7 +236,7 @@ public:
 		return false;
 	}
 
-	bool onDrop (IDataPackage* drag, const CPoint& where) VSTGUI_OVERRIDE_VMETHOD
+	bool onDrop (IDataPackage* drag, const CPoint& where) override
 	{
 		CColor color;
 		if (dragContainerHasColor (drag, &color))
@@ -248,7 +248,7 @@ public:
 		return false;
 	}
 	
-	void onDragEnter (IDataPackage* drag, const CPoint& where) VSTGUI_OVERRIDE_VMETHOD
+	void onDragEnter (IDataPackage* drag, const CPoint& where) override
 	{
 		if (dragContainerHasColor (drag, 0))
 			getFrame ()->setCursor (kCursorCopy);
@@ -256,7 +256,7 @@ public:
 			getFrame ()->setCursor (kCursorNotAllowed);
 	}
 	
-	void onDragLeave (IDataPackage* drag, const CPoint& where) VSTGUI_OVERRIDE_VMETHOD
+	void onDragLeave (IDataPackage* drag, const CPoint& where) override
 	{
 		getFrame ()->setCursor (kCursorNotAllowed);
 	}
@@ -480,91 +480,56 @@ CColorChooser::CColorChooser (IColorChooserDelegate* delegate, const CColor& ini
 	editFields[0] = new CTextEdit (r, this, kRedTag, 0);
 	CColorChooserInternal::setupParamDisplay (editFields[0], settings);
 	editFields[0]->setAutosizeFlags (kAutosizeRight|kAutosizeBottom);
-#if VSTGUI_HAS_FUNCTIONAL
 	editFields[0]->setStringToValueFunction (convertColorValue);
 	editFields[0]->setValueToStringFunction (convertColorValueToString);
-#else
-	editFields[0]->setStringToValueProc (convertColorValue);
-	editFields[0]->setValueToStringProc (convertColorValueToString);
-#endif
 	addView (editFields[0]);
 
 	r.offset (0, yMargin + controlHeight);
 	editFields[1] = new CTextEdit (r, this, kGreenTag, 0);
 	CColorChooserInternal::setupParamDisplay (editFields[1], settings);
 	editFields[1]->setAutosizeFlags (kAutosizeRight|kAutosizeBottom);
-#if VSTGUI_HAS_FUNCTIONAL
 	editFields[1]->setStringToValueFunction (convertColorValue);
 	editFields[1]->setValueToStringFunction (convertColorValueToString);
-#else
-	editFields[1]->setStringToValueProc (convertColorValue);
-	editFields[1]->setValueToStringProc (convertColorValueToString);
-#endif
 	addView (editFields[1]);
 
 	r.offset (0, yMargin + controlHeight);
 	editFields[2] = new CTextEdit (r, this, kBlueTag, 0);
 	CColorChooserInternal::setupParamDisplay (editFields[2], settings);
 	editFields[2]->setAutosizeFlags (kAutosizeRight|kAutosizeBottom);
-#if VSTGUI_HAS_FUNCTIONAL
 	editFields[2]->setStringToValueFunction (convertColorValue);
 	editFields[2]->setValueToStringFunction (convertColorValueToString);
-#else
-	editFields[2]->setStringToValueProc (convertColorValue);
-	editFields[2]->setValueToStringProc (convertColorValueToString);
-#endif
 	addView (editFields[2]);
 
 	r.offset (0, yMargin + yMargin + controlHeight);
 	editFields[3] = new CTextEdit (r, this, kHueTag, 0);
 	CColorChooserInternal::setupParamDisplay (editFields[3], settings);
 	editFields[3]->setAutosizeFlags (kAutosizeRight|kAutosizeBottom);
-#if VSTGUI_HAS_FUNCTIONAL
 	editFields[3]->setStringToValueFunction (convertColorValue);
 	editFields[3]->setValueToStringFunction (convertColorValueToString);
-#else
-	editFields[3]->setStringToValueProc (convertColorValue);
-	editFields[3]->setValueToStringProc (convertColorValueToString);
-#endif
 	addView (editFields[3]);
 
 	r.offset (0, yMargin + controlHeight);
 	editFields[4] = new CTextEdit (r, this, kSaturationTag, 0);
 	CColorChooserInternal::setupParamDisplay (editFields[4], settings);
 	editFields[4]->setAutosizeFlags (kAutosizeRight|kAutosizeBottom);
-#if VSTGUI_HAS_FUNCTIONAL
 	editFields[4]->setStringToValueFunction (convertColorValue);
 	editFields[4]->setValueToStringFunction (convertColorValueToString);
-#else
-	editFields[4]->setStringToValueProc (convertColorValue);
-	editFields[4]->setValueToStringProc (convertColorValueToString);
-#endif
 	addView (editFields[4]);
 
 	r.offset (0, yMargin + controlHeight);
 	editFields[5] = new CTextEdit (r, this, kBrightnessTag, 0);
 	CColorChooserInternal::setupParamDisplay (editFields[5], settings);
 	editFields[5]->setAutosizeFlags (kAutosizeRight|kAutosizeBottom);
-#if VSTGUI_HAS_FUNCTIONAL
 	editFields[5]->setStringToValueFunction (convertColorValue);
 	editFields[5]->setValueToStringFunction (convertColorValueToString);
-#else
-	editFields[5]->setStringToValueProc (convertColorValue);
-	editFields[5]->setValueToStringProc (convertColorValueToString);
-#endif
 	addView (editFields[5]);
 
 	r.offset (0, yMargin + yMargin + controlHeight);
 	editFields[6] = new CTextEdit (r, this, kAlphaTag, 0);
 	CColorChooserInternal::setupParamDisplay (editFields[6], settings);
 	editFields[6]->setAutosizeFlags (kAutosizeRight|kAutosizeBottom);
-#if VSTGUI_HAS_FUNCTIONAL
 	editFields[6]->setStringToValueFunction (convertColorValue);
 	editFields[6]->setValueToStringFunction (convertColorValueToString);
-#else
-	editFields[6]->setStringToValueProc (convertColorValue);
-	editFields[6]->setValueToStringProc (convertColorValueToString);
-#endif
 	addView (editFields[6]);
 
 	updateState ();

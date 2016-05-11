@@ -252,9 +252,8 @@ CGraphicsTransform CLayeredViewContainer::getDrawTransform () const
 		parents.push_front (parent);
 		parent = static_cast<CViewContainer*> (parent->getParentView ());
 	}
-	VSTGUI_RANGE_BASED_FOR_LOOP (ParentViews, parents, CViewContainer*, parent)
+	for (const auto& parent : parents)
 		transform = parent->getTransform () * transform;
-	VSTGUI_RANGE_BASED_FOR_LOOP_END
 	
 	const CViewContainer* This = static_cast<const CViewContainer*> (this);
 	if (This)

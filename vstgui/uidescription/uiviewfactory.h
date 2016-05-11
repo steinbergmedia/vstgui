@@ -53,10 +53,10 @@ public:
 	~UIViewFactory ();
 
 	// IViewFactory
-	CView* createView (const UIAttributes& attributes, const IUIDescription* description) const VSTGUI_OVERRIDE_VMETHOD;
-	bool applyAttributeValues (CView* view, const UIAttributes& attributes, const IUIDescription* desc) const VSTGUI_OVERRIDE_VMETHOD;
-	IdStringPtr getViewName (CView* view) const VSTGUI_OVERRIDE_VMETHOD;
-	bool applyCustomViewAttributeValues (CView* customView, IdStringPtr baseViewName, const UIAttributes& attributes, const IUIDescription* desc) const VSTGUI_OVERRIDE_VMETHOD;
+	CView* createView (const UIAttributes& attributes, const IUIDescription* description) const override;
+	bool applyAttributeValues (CView* view, const UIAttributes& attributes, const IUIDescription* desc) const override;
+	IdStringPtr getViewName (CView* view) const override;
+	bool applyCustomViewAttributeValues (CView* customView, IdStringPtr baseViewName, const UIAttributes& attributes, const IUIDescription* desc) const override;
 	
 	static void registerViewCreator (const IViewCreator& viewCreator);
 	static void unregisterViewCreator (const IViewCreator& viewCreator);

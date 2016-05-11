@@ -59,7 +59,7 @@ public:
 	UITouchEvent () : touchCounter (0) {}
 	
 	TouchMap& getTouchMap () { return touches; }
-	double getTimeStamp () const VSTGUI_OVERRIDE_VMETHOD { return currentTime; }
+	double getTimeStamp () const override { return currentTime; }
 };
 
 } // namespace

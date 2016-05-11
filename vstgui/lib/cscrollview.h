@@ -65,7 +65,6 @@ protected:
 
 public:
 	CScrollView (const CRect& size, const CRect& containerSize, int32_t style, CCoord scrollbarWidth = 16, CBitmap* pBackground = 0);
-	VSTGUI_DEPRECATED(CScrollView (const CRect& size, const CRect& containerSize, CFrame* pParent, int32_t style, CCoord scrollbarWidth = 16, CBitmap* pBackground = 0);)
 	CScrollView (const CScrollView& scrollView);
 
 	/** Scroll View Style Flags */
@@ -104,21 +103,21 @@ public:
 	//@}
 
 	// overwrite
-	bool addView (CView* pView) VSTGUI_OVERRIDE_VMETHOD;
-	bool addView (CView* pView, const CRect& mouseableArea, bool mouseEnabled = true) VSTGUI_OVERRIDE_VMETHOD;
-	bool addView (CView* pView, CView* pBefore) VSTGUI_OVERRIDE_VMETHOD;
-	bool removeView (CView* pView, bool withForget = true) VSTGUI_OVERRIDE_VMETHOD;
-	bool removeAll (bool withForget = true) VSTGUI_OVERRIDE_VMETHOD;
-	uint32_t getNbViews () const VSTGUI_OVERRIDE_VMETHOD;
-	CView* getView (uint32_t index) const VSTGUI_OVERRIDE_VMETHOD;
-	void drawBackgroundRect (CDrawContext* pContext, const CRect& _updateRect) VSTGUI_OVERRIDE_VMETHOD;
-	bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
-	void valueChanged (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
-	void setTransparency (bool val) VSTGUI_OVERRIDE_VMETHOD;
-	void setBackgroundColor (const CColor& color) VSTGUI_OVERRIDE_VMETHOD;
-	void setViewSize (const CRect& rect, bool invalid = true) VSTGUI_OVERRIDE_VMETHOD;
-	void setAutosizeFlags (int32_t flags) VSTGUI_OVERRIDE_VMETHOD;
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
+	bool addView (CView* pView) override;
+	bool addView (CView* pView, const CRect& mouseableArea, bool mouseEnabled = true) override;
+	bool addView (CView* pView, CView* pBefore) override;
+	bool removeView (CView* pView, bool withForget = true) override;
+	bool removeAll (bool withForget = true) override;
+	uint32_t getNbViews () const override;
+	CView* getView (uint32_t index) const override;
+	void drawBackgroundRect (CDrawContext* pContext, const CRect& _updateRect) override;
+	bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons) override;
+	void valueChanged (CControl* pControl) override;
+	void setTransparency (bool val) override;
+	void setBackgroundColor (const CColor& color) override;
+	void setViewSize (const CRect& rect, bool invalid = true) override;
+	void setAutosizeFlags (int32_t flags) override;
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 
 	CLASS_METHODS(CScrollView, CViewContainer)
 //-----------------------------------------------------------------------------

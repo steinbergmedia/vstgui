@@ -68,9 +68,9 @@ public:
 	TestSubController (IController* controller, Parameter* switchParameter);
 	~TestSubController ();
 
-	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
+	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;
 	
-	void PLUGIN_API update (FUnknown* changedUnknown, int32 message) VSTGUI_OVERRIDE_VMETHOD;
+	void PLUGIN_API update (FUnknown* changedUnknown, int32 message) override;
 	OBJ_METHODS(TestSubController, FObject)
 protected:
 	Parameter* switchParameter;

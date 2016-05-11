@@ -51,9 +51,6 @@ public:
 	virtual void controlEndEdit (CControl* pControl) {}
 	virtual void controlTagWillChange (CControl* pControl) {}
 	virtual void controlTagDidChange (CControl* pControl) {}
-#if DEBUG && VSTGUI_ENABLE_DEPRECATED_METHODS
-	virtual char controlModifierClicked (CControl* pControl, long button) { return 0; }
-#endif
 };
 
 }

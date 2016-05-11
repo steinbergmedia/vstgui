@@ -130,13 +130,8 @@ CView* UIFocusSettingsController::verifyView (CView* view, const UIAttributes& a
 				CTextEdit* edit = dynamic_cast<CTextEdit*>(control);
 				if (edit)
 				{
-				#if VSTGUI_HAS_FUNCTIONAL
 					edit->setStringToValueFunction (stringToValue);
 					edit->setValueToStringFunction (valueToString);
-				#else
-					edit->setStringToValueProc (stringToValue);
-					edit->setValueToStringProc (valueToString);
-				#endif
 				}
 				double current = 1.;
 				settings->getDoubleAttribute ("width", current);

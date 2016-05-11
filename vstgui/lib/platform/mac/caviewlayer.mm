@@ -205,9 +205,7 @@ CAViewLayer::CAViewLayer (CALayer* parent)
 #else
 	layer = [VSTGUI_CALayer new];
 #endif
-#if TARGET_OS_IPHONE || MAC_OS_X_VERSION_MIN_REQUIRED > MAC_OS_X_VERSION_10_6
 	[layer setContentsScale:parent.contentsScale];
-#endif
 	[parent addSublayer:layer];
 }
 

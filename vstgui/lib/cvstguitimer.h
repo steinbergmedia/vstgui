@@ -37,10 +37,7 @@
 
 #include "vstguibase.h"
 #include "platform/iplatformtimer.h"
-
-#if VSTGUI_HAS_FUNCTIONAL
 #include <functional>
-#endif
 
 namespace VSTGUI {
 
@@ -51,12 +48,10 @@ namespace VSTGUI {
 class CVSTGUITimer : public CBaseObject, public IPlatformTimerCallback
 {
 public:
-#if VSTGUI_HAS_FUNCTIONAL
 	typedef std::function<void(CVSTGUITimer*)> CallbackFunc;
 
 	CVSTGUITimer (const CallbackFunc& callback, uint32_t fireTime = 100, bool doStart = true);
 	CVSTGUITimer (CallbackFunc&& callback, uint32_t fireTime = 100, bool doStart = true);
-#endif
 	CVSTGUITimer (CBaseObject* timerObject, uint32_t fireTime = 100, bool doStart = false);
 	
 	virtual bool start ();							///< starts the timer
@@ -72,19 +67,14 @@ public:
 protected:
 	~CVSTGUITimer ();
 	
-	void fire () VSTGUI_OVERRIDE_VMETHOD;
+	void fire () override;
 	
 	uint32_t fireTime;
-#if VSTGUI_HAS_FUNCTIONAL
 	CallbackFunc callbackFunc;
-#else
-	CBaseObject* timerObject;
-#endif
 
 	SharedPointer<IPlatformTimer> platformTimer;
 };
 
-#if VSTGUI_HAS_FUNCTIONAL
 namespace Call
 {
 	typedef std::function<void ()> FunctionCallback;
@@ -98,7 +88,6 @@ namespace Call
 		}, delayInMilliseconds, true);
 	}
 };
-#endif
 
 } // namespace
 

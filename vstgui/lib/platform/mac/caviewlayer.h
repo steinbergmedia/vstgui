@@ -58,11 +58,11 @@ public:
 
 	bool init (IPlatformViewLayerDelegate* drawDelegate);
 	
-	void invalidRect (const CRect& size) VSTGUI_OVERRIDE_VMETHOD;
-	void setSize (const CRect& size) VSTGUI_OVERRIDE_VMETHOD;
-	void setZIndex (uint32_t zIndex) VSTGUI_OVERRIDE_VMETHOD;
-	void setAlpha (float alpha) VSTGUI_OVERRIDE_VMETHOD;
-	void draw (CDrawContext* context, const CRect& updateRect) VSTGUI_OVERRIDE_VMETHOD;
+	void invalidRect (const CRect& size) override;
+	void setSize (const CRect& size) override;
+	void setZIndex (uint32_t zIndex) override;
+	void setAlpha (float alpha) override;
+	void draw (CDrawContext* context, const CRect& updateRect) override;
 
 	CALayer* getLayer () const { return layer; }
 //-----------------------------------------------------------------------------

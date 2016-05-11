@@ -58,7 +58,6 @@ CDropSource::CDropEntry::CDropEntry (const CDropEntry& entry)
 		memcpy (buffer, entry.buffer, bufferSize);
 }
 
-#if VSTGUI_RVALUE_REF_SUPPORT
 //-----------------------------------------------------------------------------
 CDropSource::CDropEntry::CDropEntry (CDropEntry&& entry) noexcept
 {
@@ -70,7 +69,6 @@ CDropSource::CDropEntry::CDropEntry (CDropEntry&& entry) noexcept
 	entry.type = kError;
 }
 
-#endif
 //-----------------------------------------------------------------------------
 CDropSource::CDropEntry::~CDropEntry ()
 {
@@ -125,25 +123,5 @@ uint32_t CDropSource::getData (uint32_t index, const void*& buffer, Type& type) 
 	type = entries[index].type;
 	return entries[index].bufferSize;
 }
-
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-//-----------------------------------------------------------------------------
-int32_t CDropSource::getEntrySize (int32_t index) const
-{
-	return static_cast<int32_t> (getDataSize (static_cast<uint32_t> (index)));
-}
-
-//-----------------------------------------------------------------------------
-CDropSource::Type CDropSource::getEntryType (int32_t index) const
-{
-	return getDataType (static_cast<uint32_t> (index));
-}
-
-//-----------------------------------------------------------------------------
-int32_t CDropSource::getEntry (int32_t index, const void*& buffer, Type& type) const
-{
-	return static_cast<int32_t> (getData (static_cast<uint32_t> (index), buffer, type));
-}
-#endif // VSTGUI_ENABLE_DEPRECATED_METHODS
 
 } // namespace

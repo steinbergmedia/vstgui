@@ -70,7 +70,7 @@ public:
 	virtual void hasDifferentValues (bool state) { differentValues = state; }
 	bool hasDifferentValues () const { return differentValues; }
 protected:
-	IControlListener* getControlListener (UTF8StringPtr controlTagName) VSTGUI_OVERRIDE_VMETHOD { return this; }
+	IControlListener* getControlListener (UTF8StringPtr controlTagName) override { return this; }
 	UIAttributesController* getAttributesController () const { return dynamic_cast<UIAttributesController*> (controller); }
 	void performValueChange (UTF8StringPtr value)
 	{
@@ -91,7 +91,7 @@ public:
 	TextAlignmentController (IController* baseController, const std::string& attrName)
 	: Controller (baseController, attrName) {}
 
-	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD
+	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override
 	{
 		CControl* control = dynamic_cast<CControl*>(view);
 		if (control)
@@ -103,7 +103,7 @@ public:
 		return controller->verifyView (view, attributes, description);
 	}
 
-	void setValue (const std::string& value) VSTGUI_OVERRIDE_VMETHOD
+	void setValue (const std::string& value) override
 	{
 		if (hasDifferentValues ())
 		{
@@ -128,7 +128,7 @@ public:
 		}
 	}
 
-	void valueChanged (CControl* control) VSTGUI_OVERRIDE_VMETHOD
+	void valueChanged (CControl* control) override
 	{
 		if (control->getValue () == control->getMax ())
 		{
@@ -175,7 +175,7 @@ public:
 	AutosizeController (IController* baseController, UISelection* selection, const std::string& attrName)
 	: Controller (baseController, attrName), selection (selection) {}
 
-	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD
+	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override
 	{
 		CControl* control = dynamic_cast<CControl*>(view);
 		if (control)
@@ -197,7 +197,7 @@ public:
 		return controller->verifyView (view, attributes, description);
 	}
 
-	void setValue (const std::string& value) VSTGUI_OVERRIDE_VMETHOD
+	void setValue (const std::string& value) override
 	{
 		if (hasDifferentValues ())
 		{
@@ -221,7 +221,7 @@ public:
 		}
 	}
 
-	void valueChanged (CControl* control) VSTGUI_OVERRIDE_VMETHOD
+	void valueChanged (CControl* control) override
 	{
 		if (control == controls[kRowTag])
 		{
@@ -295,7 +295,7 @@ public:
 	BooleanController (IController* baseController, const std::string& attrName)
 	: Controller (baseController, attrName), control (0) {}
 
-	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD
+	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override
 	{
 		if (control == 0)
 		{
@@ -303,14 +303,14 @@ public:
 		}
 		return controller->verifyView (view, attributes, description);
 	}
-	void valueChanged (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD
+	void valueChanged (CControl* pControl) override
 	{
 		if (pControl->getValue () == control->getMax ())
 			performValueChange ("true");
 		else
 			performValueChange ("false");
 	}
-	void setValue (const std::string& value) VSTGUI_OVERRIDE_VMETHOD
+	void setValue (const std::string& value) override
 	{
 		if (hasDifferentValues())
 		{
@@ -348,7 +348,7 @@ public:
 			slider->removeDependency (this);
 	}
 	
-	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD
+	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override
 	{
 		if (textLabel == 0)
 		{
@@ -373,7 +373,7 @@ public:
 		return controller->verifyView (view, attributes, description);
 	}
 	
-	void controlBeginEdit (VSTGUI::CControl* pControl) VSTGUI_OVERRIDE_VMETHOD
+	void controlBeginEdit (VSTGUI::CControl* pControl) override
 	{
 		if (pControl == slider)
 		{
@@ -384,7 +384,7 @@ public:
 		Controller::controlBeginEdit (pControl);
 	}
 	
-	void controlEndEdit (VSTGUI::CControl* pControl) VSTGUI_OVERRIDE_VMETHOD
+	void controlEndEdit (VSTGUI::CControl* pControl) override
 	{
 		if (pControl == slider)
 		{
@@ -393,7 +393,7 @@ public:
 		Controller::controlEndEdit (pControl);
 	}
 	
-	void valueChanged (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD
+	void valueChanged (CControl* pControl) override
 	{
 		if (textLabel == pControl)
 		{
@@ -408,7 +408,7 @@ public:
 		}
 	}
 	
-	void setValue (const std::string& value) VSTGUI_OVERRIDE_VMETHOD
+	void setValue (const std::string& value) override
 	{
 		if (textLabel)
 		{
@@ -450,9 +450,8 @@ public:
 		
 	}
 
-	void viewLostFocus (CView* view) VSTGUI_OVERRIDE_VMETHOD
+	void viewLostFocus (CView* view) override
 	{
-	#if VSTGUI_HAS_FUNCTIONAL
 		if (view == textLabel)
 		{
 			SharedPointer<CTextEdit> textEdit = textLabel.cast<CTextEdit> ();
@@ -463,10 +462,9 @@ public:
 				});
 			}
 		}
-	#endif
 	}
 	
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override
 	{
 		if (message == CTextLabel::kMsgTruncatedTextChanged)
 		{
@@ -495,7 +493,7 @@ public:
 			menu->removeDependency (this);
 	}
 	
-	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD
+	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override
 	{
 		if (menu == 0)
 		{
@@ -523,12 +521,12 @@ public:
 		}
 	}
 
-	void setValue (const std::string& value) VSTGUI_OVERRIDE_VMETHOD
+	void setValue (const std::string& value) override
 	{
 		TextController::setValue (value);
 	}
 
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override
 	{
 		if (sender == menu && message == COptionMenu::kMsgBeforePopup)
 		{
@@ -541,9 +539,8 @@ public:
 				names.sort (UIEditController::std__stringCompare);
 			if (addNoneItem && !names.empty ())
 				menu->addSeparator ();
-			VSTGUI_RANGE_BASED_FOR_LOOP(StringPtrList, names, const std::string*, name)
+			for (const auto& name : names)
 				addMenuEntry (name);
-			VSTGUI_RANGE_BASED_FOR_LOOP_END
 			return kMessageNotified;
 		}
 		else if (message == CCommandMenuItem::kMsgMenuItemSelected)
@@ -558,7 +555,7 @@ public:
 		return TextController::notify (sender, message);
 	}
 
-	void valueDisplayTruncated (UTF8StringPtr txt) VSTGUI_OVERRIDE_VMETHOD
+	void valueDisplayTruncated (UTF8StringPtr txt) override
 	{
 		if (textLabel && menu)
 		{
@@ -585,12 +582,12 @@ public:
 	ColorController (IController* baseController, const std::string& attrName, UIDescription* description)
 	: MenuController (baseController, attrName, description) {}
 
-	void collectMenuItemNames (StringPtrList& names) VSTGUI_OVERRIDE_VMETHOD
+	void collectMenuItemNames (StringPtrList& names) override
 	{
 		description->collectColorNames (names);
 	}
 	
-	void validateMenuEntry (CCommandMenuItem* item) VSTGUI_OVERRIDE_VMETHOD
+	void validateMenuEntry (CCommandMenuItem* item) override
 	{
 		const CCoord size = 15;
 		CColor color;
@@ -609,7 +606,7 @@ public:
 		}
 	}
 	
-	void setValue (const std::string& value) VSTGUI_OVERRIDE_VMETHOD
+	void setValue (const std::string& value) override
 	{
 		MenuController::setValue (value);
 		if (colorView)
@@ -634,7 +631,7 @@ public:
 		}
 	}
 
-	CView* createView (const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD
+	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override
 	{
 		const std::string* attr = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 		if (attr && *attr == "ColorView")
@@ -649,7 +646,7 @@ protected:
 	{
 	public:
 		ColorView () : CView (CRect (0, 0, 0, 0)) ,color (kTransparentCColor) {}
-		void draw (CDrawContext* context) VSTGUI_OVERRIDE_VMETHOD
+		void draw (CDrawContext* context) override
 		{
 			context->setFillColor (color);
 			context->setDrawMode (kAliasing);
@@ -667,12 +664,12 @@ public:
 	GradientController (IController* baseController, const std::string& attrName, UIDescription* description)
 	: MenuController (baseController, attrName, description) {}
 
-	void collectMenuItemNames (StringPtrList& names) VSTGUI_OVERRIDE_VMETHOD
+	void collectMenuItemNames (StringPtrList& names) override
 	{
 		description->collectGradientNames (names);
 	}
 	
-	void validateMenuEntry (CCommandMenuItem* item) VSTGUI_OVERRIDE_VMETHOD
+	void validateMenuEntry (CCommandMenuItem* item) override
 	{
 		const CCoord size = 15;
 		if (CGradient* gradient = description->getGradient (item->getTitle ()))
@@ -691,7 +688,7 @@ public:
 		}
 	}
 	
-	void setValue (const std::string& value) VSTGUI_OVERRIDE_VMETHOD
+	void setValue (const std::string& value) override
 	{
 		MenuController::setValue (value);
 		if (gradientView)
@@ -708,7 +705,7 @@ public:
 		}
 	}
 
-	CView* createView (const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD
+	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override
 	{
 		const std::string* attr = attributes.getAttributeValue (IUIDescription::kCustomViewName);
 		if (attr && *attr == "GradientView")
@@ -723,7 +720,7 @@ protected:
 	{
 	public:
 		GradientView () : CView (CRect (0, 0, 0, 0)) {}
-		void draw (CDrawContext* context) VSTGUI_OVERRIDE_VMETHOD
+		void draw (CDrawContext* context) override
 		{
 			if (gradient == 0)
 				return;
@@ -744,7 +741,7 @@ public:
 	TagController (IController* baseController, const std::string& attrName, UIDescription* description)
 	: MenuController (baseController, attrName, description, true, false) {}
 
-	void collectMenuItemNames (StringPtrList& names) VSTGUI_OVERRIDE_VMETHOD
+	void collectMenuItemNames (StringPtrList& names) override
 	{
 		description->collectControlTagNames (names);
 	}
@@ -758,7 +755,7 @@ public:
 	BitmapController (IController* baseController, const std::string& attrName, UIDescription* description)
 	: MenuController (baseController, attrName, description) {}
 
-	void collectMenuItemNames (StringPtrList& names) VSTGUI_OVERRIDE_VMETHOD
+	void collectMenuItemNames (StringPtrList& names) override
 	{
 		description->collectBitmapNames (names);
 	}
@@ -772,7 +769,7 @@ public:
 	FontController (IController* baseController, const std::string& attrName, UIDescription* description)
 	: MenuController (baseController, attrName, description) {}
 
-	void collectMenuItemNames (StringPtrList& names) VSTGUI_OVERRIDE_VMETHOD
+	void collectMenuItemNames (StringPtrList& names) override
 	{
 		description->collectFontNames (names);
 	}
@@ -786,7 +783,7 @@ public:
 	ListController (IController* baseController, const std::string& attrName, UIDescription* description, UISelection* selection)
 	: MenuController (baseController, attrName, description, false, false), selection (selection) {}
 
-	void collectMenuItemNames (StringPtrList& names) VSTGUI_OVERRIDE_VMETHOD
+	void collectMenuItemNames (StringPtrList& names) override
 	{
 		const UIViewFactory* viewFactory = dynamic_cast<const UIViewFactory*>(description->getViewFactory ());
 		if (viewFactory)

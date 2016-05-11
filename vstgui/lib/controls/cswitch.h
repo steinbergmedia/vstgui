@@ -51,16 +51,16 @@ public:
 	CVerticalSwitch (const CRect& size, IControlListener* listener, int32_t tag, int32_t subPixmaps, CCoord heightOfOneImage, int32_t iMaxPositions, CBitmap* background, const CPoint& offset = CPoint (0, 0));
 	CVerticalSwitch (const CVerticalSwitch& vswitch);
 
-	virtual void draw (CDrawContext*) VSTGUI_OVERRIDE_VMETHOD;
+	virtual void draw (CDrawContext*) override;
 
-	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
-	virtual CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
-	virtual CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
-	virtual int32_t onKeyDown (VstKeyCode& keyCode) VSTGUI_OVERRIDE_VMETHOD;
+	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
+	virtual CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
+	virtual CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
+	virtual int32_t onKeyDown (VstKeyCode& keyCode) override;
 
-	virtual bool sizeToFit () VSTGUI_OVERRIDE_VMETHOD;
+	virtual bool sizeToFit () override;
 
-	void setNumSubPixmaps (int32_t numSubPixmaps) VSTGUI_OVERRIDE_VMETHOD { IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps); invalid (); }
+	void setNumSubPixmaps (int32_t numSubPixmaps) override { IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps); invalid (); }
 
 	CLASS_METHODS(CVerticalSwitch, CControl)
 protected:
@@ -84,16 +84,16 @@ public:
 	CHorizontalSwitch (const CRect& size, IControlListener* listener, int32_t tag, int32_t subPixmaps, CCoord heightOfOneImage, int32_t iMaxPositions, CBitmap* background, const CPoint& offset = CPoint (0, 0));
 	CHorizontalSwitch (const CHorizontalSwitch& hswitch);
 
-	virtual void draw (CDrawContext*) VSTGUI_OVERRIDE_VMETHOD;
+	virtual void draw (CDrawContext*) override;
 
-	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
-	virtual CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
-	virtual CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
-	virtual int32_t onKeyDown (VstKeyCode& keyCode) VSTGUI_OVERRIDE_VMETHOD;
+	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
+	virtual CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
+	virtual CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
+	virtual int32_t onKeyDown (VstKeyCode& keyCode) override;
 
-	virtual bool sizeToFit () VSTGUI_OVERRIDE_VMETHOD;
+	virtual bool sizeToFit () override;
 
-	void setNumSubPixmaps (int32_t numSubPixmaps) VSTGUI_OVERRIDE_VMETHOD { IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps); invalid (); }
+	void setNumSubPixmaps (int32_t numSubPixmaps) override { IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps); invalid (); }
 
 	CLASS_METHODS(CHorizontalSwitch, CControl)
 protected:
@@ -117,24 +117,24 @@ public:
 	CRockerSwitch (const CRect& size, IControlListener* listener, int32_t tag, CCoord heightOfOneImage, CBitmap* background, const CPoint& offset = CPoint (0, 0), const int32_t style = kHorizontal);
 	CRockerSwitch (const CRockerSwitch& rswitch);
 
-	virtual void draw (CDrawContext*) VSTGUI_OVERRIDE_VMETHOD;
-	virtual bool onWheel (const CPoint& where, const float& distance, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
+	virtual void draw (CDrawContext*) override;
+	virtual bool onWheel (const CPoint& where, const float& distance, const CButtonState& buttons) override;
 
-	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
-	virtual CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
-	virtual CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
-	virtual int32_t onKeyDown (VstKeyCode& keyCode) VSTGUI_OVERRIDE_VMETHOD;
-	virtual int32_t onKeyUp (VstKeyCode& keyCode) VSTGUI_OVERRIDE_VMETHOD;
+	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
+	virtual CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
+	virtual CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
+	virtual int32_t onKeyDown (VstKeyCode& keyCode) override;
+	virtual int32_t onKeyUp (VstKeyCode& keyCode) override;
 
-	virtual bool sizeToFit () VSTGUI_OVERRIDE_VMETHOD;
+	virtual bool sizeToFit () override;
 
-	void setNumSubPixmaps (int32_t numSubPixmaps) VSTGUI_OVERRIDE_VMETHOD { IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps); invalid (); }
+	void setNumSubPixmaps (int32_t numSubPixmaps) override { IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps); invalid (); }
 
 	CLASS_METHODS(CRockerSwitch, CControl)
 protected:
 	~CRockerSwitch ();
 
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 
 	CPoint	offset;
 	int32_t	style;

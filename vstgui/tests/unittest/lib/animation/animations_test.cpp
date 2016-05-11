@@ -55,7 +55,7 @@ class TestControl : public CControl
 {
 public:
 	TestControl () : CControl (CRect (0, 0, 0, 0)) {}
-	void draw (CDrawContext* pContext) VSTGUI_OVERRIDE_VMETHOD {}
+	void draw (CDrawContext* pContext) override {}
 
 	CLASS_METHODS(TestControl, CControl)
 };

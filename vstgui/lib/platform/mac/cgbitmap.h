@@ -58,11 +58,11 @@ public:
 	CGBitmap ();
 	~CGBitmap ();
 	
-	bool load (const CResourceDescription& desc) VSTGUI_OVERRIDE_VMETHOD;
-	const CPoint& getSize () const VSTGUI_OVERRIDE_VMETHOD { return size; }
-	IPlatformBitmapPixelAccess* lockPixels (bool alphaPremultiplied) VSTGUI_OVERRIDE_VMETHOD;
-	void setScaleFactor (double factor) VSTGUI_OVERRIDE_VMETHOD { scaleFactor = factor; }
-	double getScaleFactor () const VSTGUI_OVERRIDE_VMETHOD { return scaleFactor; }
+	bool load (const CResourceDescription& desc) override;
+	const CPoint& getSize () const override { return size; }
+	IPlatformBitmapPixelAccess* lockPixels (bool alphaPremultiplied) override;
+	void setScaleFactor (double factor) override { scaleFactor = factor; }
+	double getScaleFactor () const override { return scaleFactor; }
 
 	CGImageRef getCGImage ();
 	CGContextRef createCGContext ();
