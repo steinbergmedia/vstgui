@@ -70,9 +70,8 @@ public:
 		if (gNbCView > 0)
 		{
 			DebugPrint ("Warning: There are %d unreleased CView objects.\n", gNbCView);
-			VSTGUI_RANGE_BASED_FOR_LOOP(ViewList, gViewList, CView*, view)
+			for (const auto& view : gViewList)
 				DebugPrint ("%s\n", typeid(view).name ());
-			VSTGUI_RANGE_BASED_FOR_LOOP_END
 		}
 	}
 };
@@ -117,7 +116,6 @@ public:
 		}
 	}
 
-#if VSTGUI_RVALUE_REF_SUPPORT
 	CViewAttributeEntry (CViewAttributeEntry&& me) noexcept
 	: size (0)
 	, data (0)
@@ -135,7 +133,6 @@ public:
 		me.data = nullptr;
 		return *this;
 	}
-#endif
 
 protected:
 	uint32_t size;
@@ -181,7 +178,7 @@ protected:
 		gInstance = 0;
 	}
 
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override
 	{
 		CBaseObjectGuard guard (this);
 		for (ViewContainer::const_iterator it = views.begin (); it != views.end ();)
@@ -208,81 +205,6 @@ UTF8StringPtr kTrademarkSymbol	= "\xE2\x84\xA2";
 UTF8StringPtr kRegisteredSymbol	= "\xC2\xAE";
 UTF8StringPtr kMicroSymbol		= "\xC2\xB5";
 UTF8StringPtr kPerthousandSymbol	= "\xE2\x80\xB0";
-
-//------------------------------------------------------------------------
-namespace CViewPrivate {
-
-//------------------------------------------------------------------------
-struct ViewListenerCall
-{
-	CView* view;
-	ViewListenerCall (CView* view) : view (view) {}
-	
-};
-
-//------------------------------------------------------------------------
-struct ViewSizeChanged : ViewListenerCall
-{
-	const CRect& oldSize;
-	ViewSizeChanged (CView* view, const CRect& oldSize) : ViewListenerCall (view), oldSize (oldSize) {}
-	void operator () (IViewListener* listener) const
-	{
-		listener->viewSizeChanged (view, oldSize);
-	}
-};
-
-//------------------------------------------------------------------------
-struct ViewAttached : ViewListenerCall
-{
-	ViewAttached (CView* view) : ViewListenerCall (view) {}
-	void operator () (IViewListener* listener) const
-	{
-		listener->viewAttached (view);
-	}
-};
-
-//------------------------------------------------------------------------
-struct ViewRemoved : ViewListenerCall
-{
-	ViewRemoved (CView* view) : ViewListenerCall (view) {}
-	void operator () (IViewListener* listener) const
-	{
-		listener->viewRemoved (view);
-	}
-};
-
-//------------------------------------------------------------------------
-struct ViewLostFocus : ViewListenerCall
-{
-	ViewLostFocus (CView* view) : ViewListenerCall (view) {}
-	void operator () (IViewListener* listener) const
-	{
-		listener->viewLostFocus (view);
-	}
-};
-
-//------------------------------------------------------------------------
-struct ViewTookFocus : ViewListenerCall
-{
-	ViewTookFocus (CView* view) : ViewListenerCall (view) {}
-	void operator () (IViewListener* listener) const
-	{
-		listener->viewTookFocus (view);
-	}
-};
-
-//------------------------------------------------------------------------
-struct ViewWillDelete : ViewListenerCall
-{
-	ViewWillDelete (CView* view) : ViewListenerCall (view) {}
-	void operator () (IViewListener* listener) const
-	{
-		listener->viewWillDelete (view);
-	}
-};
-
-//------------------------------------------------------------------------
-} // CViewPrivate
 
 //-----------------------------------------------------------------------------
 IdStringPtr kMsgViewSizeChanged = "kMsgViewSizeChanged";
@@ -354,7 +276,9 @@ CView::~CView ()
 //-----------------------------------------------------------------------------
 void CView::beforeDelete ()
 {
-	viewListeners.forEach (CViewPrivate::ViewWillDelete (this));
+	viewListeners.forEach ([&] (IViewListener* listener) {
+		listener->viewWillDelete (this);
+	});
 }
 
 //-----------------------------------------------------------------------------
@@ -460,7 +384,9 @@ bool CView::attached (CView* parent)
 		pParentFrame->onViewAdded (this);
 	if (wantsIdle ())
 		IdleViewUpdater::add (this);
-	viewListeners.forEach (CViewPrivate::ViewAttached (this));
+	viewListeners.forEach ([&] (IViewListener* listener) {
+		listener->viewAttached (this);
+	});
 	return true;
 }
 
@@ -475,7 +401,9 @@ bool CView::removed (CView* parent)
 		return false;
 	if (wantsIdle ())
 		IdleViewUpdater::remove (this);
-	viewListeners.forEach (CViewPrivate::ViewRemoved (this));
+	viewListeners.forEach ([&] (IViewListener* listener) {
+		listener->viewRemoved (this);
+	});
 	if (pParentFrame)
 		pParentFrame->onViewRemoved (this);
 	pParentView = 0;
@@ -586,11 +514,12 @@ CGraphicsTransform CView::getGlobalTransform () const
 		parents.push_front (parent);
 		parent = dynamic_cast<CViewContainer*>(parent->getParentView ());
 	}
-	VSTGUI_RANGE_BASED_FOR_LOOP (ParentViews, parents, CViewContainer*, parent)
+	for (const auto& parent : parents)
+	{
 		CGraphicsTransform t = parent->getTransform ();
 		t.translate (parent->getViewSize ().getTopLeft ());
 		transform = transform * t;
-	VSTGUI_RANGE_BASED_FOR_LOOP_END
+	}
 
 	const CViewContainer* This = dynamic_cast<const CViewContainer*> (this);
 	if (This)
@@ -708,13 +637,17 @@ CMessageResult CView::notify (CBaseObject* sender, IdStringPtr message)
 //------------------------------------------------------------------------------
 void CView::looseFocus ()
 {
-	viewListeners.forEach (CViewPrivate::ViewLostFocus (this));
+	viewListeners.forEach ([&] (IViewListener* listener) {
+		listener->viewLostFocus (this);
+	});
 }
 
 //------------------------------------------------------------------------------
 void CView::takeFocus ()
 {
-	viewListeners.forEach (CViewPrivate::ViewTookFocus (this));
+	viewListeners.forEach ([&] (IViewListener* listener) {
+		listener->viewTookFocus (this);
+	});
 }
 
 //------------------------------------------------------------------------------
@@ -734,7 +667,9 @@ void CView::setViewSize (const CRect& newSize, bool doInvalid)
 			setDirty ();
 		if (getParentView ())
 			getParentView ()->notify (this, kMsgViewSizeChanged);
-		viewListeners.forEach (CViewPrivate::ViewSizeChanged (this, oldSize));
+		viewListeners.forEach ([&] (IViewListener* listener) {
+			listener->viewSizeChanged (this, oldSize);
+		});
 	}
 }
 

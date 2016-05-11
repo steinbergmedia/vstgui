@@ -79,14 +79,6 @@ public:
 	virtual bool getPossibleListValues (const std::string& attributeName, std::list<const std::string*>& values) const { return false; }
 	// optional value range
 	virtual bool getAttributeValueRange (const std::string& attributeName, double& minValue, double &maxValue) const { return false; }
-
-#if DEBUG && VSTGUI_ENABLE_DEPRECATED_METHODS
-	// the method arguments have changed for the above methods so here are definitions that will generate a compiler error
-	// if someone has not updated its methods
-	virtual int32_t create (const UIAttributes& attributes, IUIDescription* description) const VSTGUI_FINAL_VMETHOD { return 0; }
-	virtual void* apply (CView* view, const UIAttributes& attributes, IUIDescription* description) const VSTGUI_FINAL_VMETHOD { return 0; }
-	virtual void* getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, IUIDescription* desc) const VSTGUI_FINAL_VMETHOD { return 0; }
-#endif
 };
 
 } // namespace

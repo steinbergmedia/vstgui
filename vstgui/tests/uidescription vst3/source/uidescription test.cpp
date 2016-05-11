@@ -61,8 +61,8 @@ class PeakParameter : public Parameter
 public:
 	PeakParameter (int32 flags, ParamID id, const TChar* title);
 
-	void toString (ParamValue normValue, String128 string) const VSTGUI_OVERRIDE_VMETHOD;
-	bool fromString (const TChar* string, ParamValue& normValue) const VSTGUI_OVERRIDE_VMETHOD;
+	void toString (ParamValue normValue, String128 string) const override;
+	bool fromString (const TChar* string, ParamValue& normValue) const override;
 };
 
 //------------------------------------------------------------------------
@@ -167,7 +167,7 @@ class RemoveModalViewAnimation : public Animation::AlphaValueAnimation
 public:
 	RemoveModalViewAnimation (float endValue, bool forceEndValueOnFinish = false) : Animation::AlphaValueAnimation (endValue, forceEndValueOnFinish) {}
 
-	void animationFinished (CView* view, IdStringPtr name, bool wasCanceled) VSTGUI_OVERRIDE_VMETHOD
+	void animationFinished (CView* view, IdStringPtr name, bool wasCanceled) override
 	{
 		Animation::AlphaValueAnimation::animationFinished (view, name, wasCanceled);
 		if (view == view->getFrame ()->getModalView ())
@@ -186,8 +186,8 @@ class ModalViewController : public DelegationController
 public:
 	ModalViewController (IController* controller, const UIDescription* desc) : DelegationController (controller), desc (desc) {}
 
-	IControlListener* getControlListener (const char* controlTagName) VSTGUI_OVERRIDE_VMETHOD { return this; }
-	void valueChanged (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD
+	IControlListener* getControlListener (const char* controlTagName) override { return this; }
+	void valueChanged (CControl* pControl) override
 	{
 		if (pControl->getValue () > 0.)
 		{
@@ -251,7 +251,7 @@ public:
 			path->forget ();
 	}
 	
-	bool getSplitViewSizeConstraint (int32_t index, CCoord& minWidth, CCoord& maxWidth, CSplitView* splitView) VSTGUI_OVERRIDE_VMETHOD
+	bool getSplitViewSizeConstraint (int32_t index, CCoord& minWidth, CCoord& maxWidth, CSplitView* splitView) override
 	{
 		if (index == 0)
 		{
@@ -269,12 +269,12 @@ public:
 		return true;
 	}
 	
-	ISplitViewSeparatorDrawer* getSplitViewSeparatorDrawer (CSplitView* splitView) VSTGUI_OVERRIDE_VMETHOD
+	ISplitViewSeparatorDrawer* getSplitViewSeparatorDrawer (CSplitView* splitView) override
 	{
 		return this;
 	}
 
-	bool storeViewSize (int32_t index, const CCoord& size, CSplitView* splitView) VSTGUI_OVERRIDE_VMETHOD
+	bool storeViewSize (int32_t index, const CCoord& size, CSplitView* splitView) override
 	{
 		if (index < 3)
 		{
@@ -284,7 +284,7 @@ public:
 		return false;
 	}
 	
-	bool restoreViewSize (int32_t index, CCoord& size, CSplitView* splitView) VSTGUI_OVERRIDE_VMETHOD
+	bool restoreViewSize (int32_t index, CCoord& size, CSplitView* splitView) override
 	{
 		if (index < 3 && viewSizes[index] != -1.)
 		{
@@ -294,7 +294,7 @@ public:
 		return false;
 	}
 
-	void drawSplitViewSeparator (CDrawContext* context, const CRect& size, int32_t flags, int32_t index, CSplitView* splitView) VSTGUI_OVERRIDE_VMETHOD
+	void drawSplitViewSeparator (CDrawContext* context, const CRect& size, int32_t flags, int32_t index, CSplitView* splitView) override
 	{
 		if (path == 0)
 		{
@@ -366,7 +366,7 @@ public:
 		
 	}
 
-	void draw (CDrawContext* context) VSTGUI_OVERRIDE_VMETHOD
+	void draw (CDrawContext* context) override
 	{
 		CGraphicsPath* path = context->createGraphicsPath ();
 		if (path)
@@ -395,7 +395,7 @@ class DrawPrimitivesTestView : public CView
 public:
 	DrawPrimitivesTestView (const CRect& size) : CView (size) {}
 	
-	void draw (CDrawContext* context) VSTGUI_OVERRIDE_VMETHOD
+	void draw (CDrawContext* context) override
 	{
 		context->setDrawMode (kAliasing);
 		context->setLineWidth (1);
@@ -647,7 +647,7 @@ class UIDescriptionTestControllerMenuHandler : public CBaseObject
 public:
 	UIDescriptionTestControllerMenuHandler (Parameter* param) : param (param) {}
 
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override
 	{
 		if (message == CCommandMenuItem::kMsgMenuItemSelected)
 		{

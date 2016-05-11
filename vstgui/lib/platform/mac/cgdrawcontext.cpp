@@ -408,7 +408,8 @@ void CGDrawContext::drawLines (const LineList& lines)
 		
 		CGPoint* cgPoints = new CGPoint[lines.size () * 2];
 		uint32_t index = 0;
-		VSTGUI_RANGE_BASED_FOR_LOOP(LineList, lines, LinePair, line)
+		for (const auto& line : lines)
+		{
 			cgPoints[index] = CGPointFromCPoint (line.first);
 			cgPoints[index+1] = CGPointFromCPoint (line.second);
 			if (getDrawMode ().integralMode ())
@@ -417,7 +418,7 @@ void CGDrawContext::drawLines (const LineList& lines)
 				cgPoints[index+1] = pixelAlligned (cgPoints[index+1]);
 			}
 			index += 2;
-		VSTGUI_RANGE_BASED_FOR_LOOP_END
+		}
 
 		if (getDrawMode ().integralMode ())
 		{

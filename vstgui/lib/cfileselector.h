@@ -38,9 +38,7 @@
 #include "vstguifwd.h"
 #include <list>
 #include <vector>
-#if VSTGUI_HAS_FUNCTIONAL
 #include <functional>
-#endif
 
 namespace VSTGUI {
 
@@ -65,10 +63,8 @@ public:
 //-----------------------------------------------------------------------------
 	CLASS_METHODS(CFileExtension, CBaseObject)
 //-----------------------------------------------------------------------------
-#if VSTGUI_RVALUE_REF_SUPPORT
 	CFileExtension (CFileExtension&& ext) noexcept;
 	CFileExtension& operator=(CFileExtension&& ext) noexcept;
-#endif
 protected:
 	void init (UTF8StringPtr description, UTF8StringPtr extension, UTF8StringPtr mimeType, UTF8StringPtr uti);
 	
@@ -132,10 +128,8 @@ public:
 	//@{
 	static CNewFileSelector* create (CFrame* parent = 0, Style style = kSelectFile); ///< create a new instance
 
-#if VSTGUI_HAS_FUNCTIONAL
 	typedef std::function<void(CNewFileSelector*)> CallbackFunc;
 	bool run (CallbackFunc&& callback);
-#endif
 	bool run (CBaseObject* delegate);	///< the delegate will get a kSelectEndMessage throu the notify method where the sender is this CNewFileSelector object
 	void cancel ();						///< cancel running the file selector
 	bool runModal ();					///< run as modal dialog
@@ -151,9 +145,7 @@ public:
 	void setDefaultExtension (const CFileExtension& extension);	///< set default file extension
 	void setAllowMultiFileSelection (bool state);				///< set allow multi file selection (only valid for kSelectFile selector style)
 	void addFileExtension (const CFileExtension& extension);	///< add a file extension
-#if VSTGUI_RVALUE_REF_SUPPORT
 	void addFileExtension (CFileExtension&& extension);			///< add a file extension
-#endif
 	//@}
 
 	//-----------------------------------------------------------------------------

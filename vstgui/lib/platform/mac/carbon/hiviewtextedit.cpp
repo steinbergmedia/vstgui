@@ -91,7 +91,7 @@ HIViewTextEdit::HIViewTextEdit (HIViewRef parent, IPlatformTextEditCallback* tex
 
 		ControlEditTextSelectionRec selection;
 		selection.selStart = 0;
-		selection.selEnd = strlen (text);
+		selection.selEnd = static_cast<SInt16> (strlen (text));
 		SetControlData (platformControl, kControlEditTextPart, kControlEditTextSelectionTag, sizeof (ControlEditTextSelectionRec), &selection);
 
 		Boolean singleLineStyle = true;
@@ -105,7 +105,7 @@ HIViewTextEdit::HIViewTextEdit (HIViewRef parent, IPlatformTextEditCallback* tex
 			case kRightText: fontStyle.just = teFlushRight; break;
 			default: fontStyle.just = teCenter; break;
 		}
-		fontStyle.size = fontID->getSize ();
+		fontStyle.size = static_cast<SInt16> (fontID->getSize ());
 	#if MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_6
 		Str255 fontName;
 		CopyCStringToPascal (fontID->getName (), fontName);
@@ -172,7 +172,7 @@ UTF8StringPtr HIViewTextEdit::getText ()
 		{
 			freeText ();
 			CFIndex textSize = CFStringGetMaximumSizeForEncoding (CFStringGetLength (cfstr), kCFStringEncodingUTF8);
-			text = (UTF8StringBuffer)std::malloc (textSize);
+			text = static_cast<UTF8StringBuffer> (std::malloc (static_cast<size_t> (textSize)));
 			
 			CFStringGetCString (cfstr, text, textSize, kCFStringEncodingUTF8);
 			CFRelease (cfstr);
@@ -195,10 +195,10 @@ bool HIViewTextEdit::updateSize ()
 			rect.offset ((CCoord)hiRect.origin.x, (CCoord)hiRect.origin.y);
 		}
 		HIRect r;
-		r.origin.x = rect.left;
-		r.origin.y = rect.top;
-		r.size.width = rect.getWidth ();
-		r.size.height = rect.getHeight ();
+		r.origin.x = static_cast<CGFloat> (rect.left);
+		r.origin.y = static_cast<CGFloat> (rect.top);
+		r.size.width = static_cast<CGFloat> (rect.getWidth ());
+		r.size.height = static_cast<CGFloat> (rect.getHeight ());
 		if (HIViewSetFrame (platformControl, &r) == noErr)
 			return true;
 	}

@@ -37,12 +37,4 @@
 
 namespace VSTGUI {
 
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-//-----------------------------------------------------------------------------
-bool CPoint::isInside (const CRect& r) const
-{
-	return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
-}
-#endif
-
 }

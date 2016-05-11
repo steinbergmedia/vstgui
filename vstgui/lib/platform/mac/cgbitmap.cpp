@@ -123,7 +123,7 @@ bool IPlatformBitmap::createMemoryPNGRepresentation (IPlatformBitmap* bitmap, vo
 					{
 						size = (uint32_t)CFDataGetLength (data);
 						*ptr = std::malloc (size);
-						CFDataGetBytes (data, CFRangeMake (0, size), (UInt8*)*ptr);
+						CFDataGetBytes (data, CFRangeMake (0, static_cast<CFIndex> (size)), static_cast<UInt8*> (*ptr));
 						result = true;
 					}
 					CFRelease (dest);
@@ -440,17 +440,17 @@ public:
 		bitmap->forget ();
 	}
 
-	uint8_t* getAddress () const VSTGUI_OVERRIDE_VMETHOD
+	uint8_t* getAddress () const override
 	{
 		return (uint8_t*)bitmap->getBits ();
 	}
 	
-	uint32_t getBytesPerRow () const VSTGUI_OVERRIDE_VMETHOD
+	uint32_t getBytesPerRow () const override
 	{
 		return bitmap->getBytesPerRow ();
 	}
 	
-	PixelFormat getPixelFormat () const VSTGUI_OVERRIDE_VMETHOD
+	PixelFormat getPixelFormat () const override
 	{
 		#ifdef __BIG_ENDIAN__
 		return kRGBA;

@@ -42,12 +42,6 @@
 
 #define USE_MAIN_DISPLAY_COLORSPACE	1
 
-#if !TARGET_OS_IPHONE && MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_7
-// forward declare functions Apple removed from OSX SDK 10.11
-extern CMError CMGetSystemProfile (CMProfileRef * prof);
-extern CMError CMCloseProfile (CMProfileRef prof);
-#endif
-
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
@@ -124,15 +118,7 @@ class GenericMacColorSpace
 public:
 	GenericMacColorSpace ()
 	{
-	#if USE_MAIN_DISPLAY_COLORSPACE
 		colorspace = CreateMainDisplayColorSpace ();
-	#else
-		#if MAC_COCOA
-		colorspace = CGColorSpaceCreateWithName (kCGColorSpaceGenericRGB);
-		#else
-		colorspace = CreateGenericRGBColorSpace ();
-		#endif
-	#endif
 	}
 	
 	~GenericMacColorSpace ()
@@ -146,51 +132,13 @@ public:
 		return gInstance;
 	}
 	
-#if !MAC_COCOA && !USE_MAIN_DISPLAY_COLORSPACE
-	//-----------------------------------------------------------------------------
-	CMProfileRef OpenGenericProfile(void)
-	{
-		#define	kGenericRGBProfilePathStr       "/System/Library/ColorSync/Profiles/Generic RGB Profile.icc"
-
-		CMProfileLocation 	loc;
-		CMProfileRef cmProfile;
-			
-		loc.locType = cmPathBasedProfile;
-		std::strcpy (loc.u.pathLoc.path, kGenericRGBProfilePathStr);
-	
-		if (CMOpenProfile (&cmProfile, &loc) != noErr)
-			cmProfile = NULL;
-		
-	    return cmProfile;
-	}
-
-	//-----------------------------------------------------------------------------
-	static CGColorSpaceRef CreateGenericRGBColorSpace (void)
-	{
-		CGColorSpaceRef colorspace = 0;
-		CMProfileRef genericRGBProfile = OpenGenericProfile ();
-	
-		if (genericRGBProfile)
-		{
-			colorspace = CGColorSpaceCreateWithPlatformColorSpace (genericRGBProfile);
-			
-			// we opened the profile so it is up to us to close it
-			CMCloseProfile (genericRGBProfile); 
-		}
-		if (colorspace == NULL)
-			colorspace = CGColorSpaceCreateDeviceRGB ();
-		return colorspace;
-	}
-#endif
-
-#if USE_MAIN_DISPLAY_COLORSPACE
 	//-----------------------------------------------------------------------------
 	static CGColorSpaceRef CreateMainDisplayColorSpace ()
 	{
 	#if TARGET_OS_IPHONE
 		return CGColorSpaceCreateDeviceRGB ();
 
-	#elif MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_7
+	#else
 		ColorSyncProfileRef csProfileRef = ColorSyncProfileCreateWithDisplayID (0);
 		if (csProfileRef)
 		{
@@ -199,23 +147,8 @@ public:
 			return colorSpace;
 		}
 		return 0;
-	#else
-		CMProfileRef sysprof = NULL;
-
-		// Get the Systems Profile for the main display
-		if (CMGetSystemProfile (&sysprof) == noErr)
-		{
-			// Create a colorspace with the systems profile
-			CGColorSpaceRef colorSpace = CGColorSpaceCreateWithPlatformColorSpace (sysprof);
-
-			// Close the profile
-			CMCloseProfile (sysprof);
-			return colorSpace;
-		}
-		return 0;
 	#endif
 	}
-#endif
 
 	CGColorSpaceRef colorspace;
 };

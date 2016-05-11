@@ -65,16 +65,16 @@ public:
 	~COpenGLView ();
 
 	// IOpenGLView	
-	virtual void drawOpenGL (const CRect& updateRect) VSTGUI_OVERRIDE_VMETHOD = 0;	///< will be called when the view was marked invalid or the view was resized
-	virtual void reshape () VSTGUI_OVERRIDE_VMETHOD;
+	virtual void drawOpenGL (const CRect& updateRect) override = 0;	///< will be called when the view was marked invalid or the view was resized
+	virtual void reshape () override;
 
 	// CView
-	virtual void setViewSize (const CRect& rect, bool invalid = true) VSTGUI_OVERRIDE_VMETHOD;
-	virtual void parentSizeChanged () VSTGUI_OVERRIDE_VMETHOD;
-	virtual bool removed (CView* parent) VSTGUI_OVERRIDE_VMETHOD;
-	virtual bool attached (CView* parent) VSTGUI_OVERRIDE_VMETHOD;
-	virtual void invalidRect (const CRect& rect) VSTGUI_OVERRIDE_VMETHOD;
-	virtual void setVisible (bool state) VSTGUI_OVERRIDE_VMETHOD;
+	virtual void setViewSize (const CRect& rect, bool invalid = true) override;
+	virtual void parentSizeChanged () override;
+	virtual bool removed (CView* parent) override;
+	virtual bool attached (CView* parent) override;
+	virtual void invalidRect (const CRect& rect) override;
+	virtual void setVisible (bool state) override;
 
 	CLASS_METHODS_NOCOPY (COpenGLView, CView)
 protected:

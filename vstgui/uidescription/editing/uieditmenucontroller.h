@@ -169,8 +169,8 @@ public:
 
 	int32_t processKeyCommand (const VstKeyCode& key);
 
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
-	virtual void valueChanged (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
+	virtual void valueChanged (CControl* pControl) override;
 
 	static bool createUniqueTemplateName (std::list<const std::string*>& names, std::string& name);
 protected:
@@ -178,10 +178,10 @@ protected:
 	void createEditMenu (COptionMenu* menu);
 	void createFileMenu (COptionMenu* menu);
 
-	virtual CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD;
-	IControlListener* getControlListener (UTF8StringPtr name) VSTGUI_OVERRIDE_VMETHOD { return this; }
-	void controlBeginEdit (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
-	void controlEndEdit (CControl* pControl) VSTGUI_OVERRIDE_VMETHOD;
+	virtual CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;
+	IControlListener* getControlListener (UTF8StringPtr name) override { return this; }
+	void controlBeginEdit (CControl* pControl) override;
+	void controlEndEdit (CControl* pControl) override;
 
 	SharedPointer<UISelection> selection;
 	SharedPointer<UIUndoManager> undoManager;

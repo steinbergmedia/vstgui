@@ -76,9 +76,8 @@ void GroupController::valueChanged (CControl* pControl)
 //------------------------------------------------------------------------
 void GroupController::controlBeginEdit (CControl* pControl)
 {
-	VSTGUI_RANGE_BASED_FOR_LOOP (ControlList, controls, CControl*, c)
+	for (const auto& c : controls)
 		c->setMouseEnabled (c == pControl);
-	VSTGUI_RANGE_BASED_FOR_LOOP_END
 	editController->beginEdit (parameter->getInfo ().id);
 }
 
@@ -96,7 +95,8 @@ void PLUGIN_API GroupController::update (Steinberg::FUnknown* changedUnknown, St
 	if (p && p == parameter)
 	{
 		Steinberg::Vst::ParamValue plainValue = parameter->toPlain (parameter->getNormalized ());
-		VSTGUI_RANGE_BASED_FOR_LOOP (ControlList, controls, CControl*, c)
+		for (const auto& c : controls)
+		{
 			if (c->getTag () == plainValue)
 			{
 				c->setValue (1);
@@ -108,7 +108,7 @@ void PLUGIN_API GroupController::update (Steinberg::FUnknown* changedUnknown, St
 				c->setMouseEnabled (true);
 			}
 			c->invalid ();
-		VSTGUI_RANGE_BASED_FOR_LOOP_END
+		}
 	}
 }
 

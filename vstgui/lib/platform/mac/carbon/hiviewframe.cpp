@@ -527,10 +527,10 @@ bool HIViewFrame::setSize (const CRect& newSize)
 	{
 		HIRect frameRect;
 		HIViewGetFrame (controlRef, &frameRect);
-		frameRect.origin.x = newSize.left;
-		frameRect.origin.y = newSize.top;
-		frameRect.size.width = newSize.getWidth ();
-		frameRect.size.height = newSize.getHeight ();
+		frameRect.origin.x = static_cast<CGFloat> (newSize.left);
+		frameRect.origin.y = static_cast<CGFloat> (newSize.top);
+		frameRect.size.width = static_cast<CGFloat> (newSize.getWidth ());
+		frameRect.size.height = static_cast<CGFloat> (newSize.getHeight ());
 		HIViewSetFrame (controlRef, &frameRect);
 	}
 	return true;
@@ -582,8 +582,8 @@ bool HIViewFrame::getCurrentMousePosition (CPoint& mousePosition) const
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED > MAC_OS_X_VERSION_10_6
 	HIGetMousePosition (kHICoordSpaceView, fromView, &location);
-	location.x = floor (location.x + 0.5);
-	location.y = floor (location.y + 0.5);
+	location.x = static_cast<CGFloat> (floor (location.x + 0.5));
+	location.y = static_cast<CGFloat> (floor (location.y + 0.5));
 #else
 	location = CGPointMake (mousePosition.x, mousePosition.y);
 #endif
@@ -720,10 +720,10 @@ bool HIViewFrame::showTooltip (const CRect& _rect, const char* utf8Text)
 
 	HMHelpContentRec helpContent = {0};
 	helpContent.version = 0;
-	helpContent.absHotRect.left = rect.left;
-	helpContent.absHotRect.right = rect.right;
-	helpContent.absHotRect.top = rect.top;
-	helpContent.absHotRect.bottom = rect.bottom;
+	helpContent.absHotRect.left = static_cast<short> (rect.left);
+	helpContent.absHotRect.right = static_cast<short> (rect.right);
+	helpContent.absHotRect.top = static_cast<short> (rect.top);
+	helpContent.absHotRect.bottom = static_cast<short> (rect.bottom);
 	helpContent.tagSide = kHMDefaultSide;
 	helpContent.content[0].contentType = kHMCFStringContent;
 	helpContent.content[0].u.tagCFString = CFStringCreateWithCString (0, utf8Text, kCFStringEncodingUTF8);
@@ -781,14 +781,14 @@ DragResult HIViewFrame::doDrag (IDataPackage* source, const CPoint& offset, CBit
 		{
 			const void* buffer = 0;
 			IDataPackage::Type type;
-			int32_t bufferSize = source->getData (i, buffer, type);
+			uint32_t bufferSize = source->getData (i, buffer, type);
 			if (bufferSize > 0)
 			{
 				switch (type)
 				{
 					case IDataPackage::kFilePath:
 					{
-						CFURLRef cfUrl = CFURLCreateFromFileSystemRepresentation (0, (const UInt8*)buffer, bufferSize, false);
+						CFURLRef cfUrl = CFURLCreateFromFileSystemRepresentation (0, (const UInt8*)buffer, static_cast<CFIndex> (bufferSize), false);
 						if (cfUrl)
 						{
 							CFDataRef dataRef = CFURLCreateData (0, cfUrl, kCFStringEncodingUTF8, false);
@@ -818,7 +818,7 @@ DragResult HIViewFrame::doDrag (IDataPackage* source, const CPoint& offset, CBit
 					}
 					case IDataPackage::kBinary:
 					{
-						CFDataRef dataRef = CFDataCreate (0, (const UInt8*)buffer, bufferSize);
+						CFDataRef dataRef = CFDataCreate (0, (const UInt8*)buffer, static_cast<CFIndex> (bufferSize));
 						if (dataRef)
 						{
 							PasteboardPutItemFlavor (pb, (void*)buffer, kUTTypeData, dataRef, kPasteboardFlavorSenderOnly);
@@ -1480,7 +1480,7 @@ pascal OSStatus HIViewFrame::carbonEventHandler (EventHandlerCallRef inHandlerCa
 						GetEventParameter (inEvent, kEventParamKeyMacCharCodes, typeChar, NULL, sizeof (char), NULL, &character);
 						GetEventParameter (inEvent, kEventParamKeyCode, typeUInt32, NULL, sizeof (UInt32), NULL, &keyCode);
 						GetEventParameter (inEvent, kEventParamKeyModifiers, typeUInt32, NULL, sizeof (UInt32), NULL, &modifiers);
-						char scanCode = keyCode;
+						char scanCode = static_cast<char> (keyCode);
 						VstKeyCode vstKeyCode;
 						memset (&vstKeyCode, 0, sizeof (VstKeyCode));
 						KeyboardLayoutRef layout;
@@ -1491,7 +1491,7 @@ pascal OSStatus HIViewFrame::carbonEventHandler (EventHandlerCallRef inHandlerCa
 							if (pKCHR)
 							{
 								static UInt32 keyTranslateState = 0;
-								vstKeyCode.character = KeyTranslate (pKCHR, keyCode, &keyTranslateState);
+								vstKeyCode.character = static_cast<int32_t> (KeyTranslate (pKCHR, static_cast<UInt16> (keyCode), &keyTranslateState));
 								if (modifiers & shiftKey)
 								{
 									vstKeyCode.character = toupper (vstKeyCode.character);
@@ -1503,7 +1503,7 @@ pascal OSStatus HIViewFrame::carbonEventHandler (EventHandlerCallRef inHandlerCa
 						{
 							if (keyTable[i + 1] == scanCode)
 							{
-								vstKeyCode.virt = keyTable[i];
+								vstKeyCode.virt = static_cast<unsigned char> (keyTable[i]);
 								vstKeyCode.character = 0;
 								break;
 							}

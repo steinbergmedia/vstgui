@@ -66,13 +66,13 @@ public:
 	//@}
 
 	// overrides
-	virtual void draw (CDrawContext*) VSTGUI_OVERRIDE_VMETHOD;
-	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
-	virtual CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
-	virtual CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
-	virtual CMouseEventResult onMouseCancel () VSTGUI_OVERRIDE_VMETHOD;
-	virtual int32_t onKeyDown (VstKeyCode& keyCode) VSTGUI_OVERRIDE_VMETHOD;
-	virtual bool sizeToFit () VSTGUI_OVERRIDE_VMETHOD;
+	virtual void draw (CDrawContext*) override;
+	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
+	virtual CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
+	virtual CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
+	virtual CMouseEventResult onMouseCancel () override;
+	virtual int32_t onKeyDown (VstKeyCode& keyCode) override;
+	virtual bool sizeToFit () override;
 
 	CLASS_METHODS(COnOffButton, CControl)
 protected:
@@ -122,15 +122,15 @@ public:
 	//@}
 
 	// overrides
-	virtual void draw (CDrawContext* context) VSTGUI_OVERRIDE_VMETHOD;
-	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
-	virtual CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
-	virtual CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
-	virtual CMouseEventResult onMouseCancel () VSTGUI_OVERRIDE_VMETHOD;
-	virtual int32_t onKeyDown (VstKeyCode& keyCode) VSTGUI_OVERRIDE_VMETHOD;
-	virtual bool sizeToFit () VSTGUI_OVERRIDE_VMETHOD;
-	virtual void setBackground (CBitmap *background) VSTGUI_OVERRIDE_VMETHOD;
-	virtual bool getFocusPath (CGraphicsPath& outPath) VSTGUI_OVERRIDE_VMETHOD;
+	virtual void draw (CDrawContext* context) override;
+	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
+	virtual CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
+	virtual CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
+	virtual CMouseEventResult onMouseCancel () override;
+	virtual int32_t onKeyDown (VstKeyCode& keyCode) override;
+	virtual bool sizeToFit () override;
+	virtual void setBackground (CBitmap *background) override;
+	virtual bool getFocusPath (CGraphicsPath& outPath) override;
 
 	CLASS_METHODS(CCheckBox, CControl)
 protected:
@@ -160,18 +160,18 @@ public:
 	CKickButton (const CRect& size, IControlListener* listener, int32_t tag, CCoord heightOfOneImage, CBitmap* background, const CPoint& offset = CPoint (0, 0));
 	CKickButton (const CKickButton& kickButton);
 
-	virtual void draw (CDrawContext*) VSTGUI_OVERRIDE_VMETHOD;
+	virtual void draw (CDrawContext*) override;
 
-	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
-	virtual CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
-	virtual CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
-	virtual CMouseEventResult onMouseCancel () VSTGUI_OVERRIDE_VMETHOD;
-	virtual int32_t onKeyDown (VstKeyCode& keyCode) VSTGUI_OVERRIDE_VMETHOD;
-	virtual int32_t onKeyUp (VstKeyCode& keyCode) VSTGUI_OVERRIDE_VMETHOD;
+	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
+	virtual CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
+	virtual CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
+	virtual CMouseEventResult onMouseCancel () override;
+	virtual int32_t onKeyDown (VstKeyCode& keyCode) override;
+	virtual int32_t onKeyUp (VstKeyCode& keyCode) override;
 
-	virtual bool sizeToFit () VSTGUI_OVERRIDE_VMETHOD;
+	virtual bool sizeToFit () override;
 
-	void setNumSubPixmaps (int32_t numSubPixmaps) VSTGUI_OVERRIDE_VMETHOD { IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps); invalid (); }
+	void setNumSubPixmaps (int32_t numSubPixmaps) override { IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps); invalid (); }
 
 	CLASS_METHODS(CKickButton, CControl)
 protected:
@@ -250,18 +250,18 @@ public:
 	//@}
 
 	// overrides
-	void draw (CDrawContext* context) VSTGUI_OVERRIDE_VMETHOD;
-	bool getFocusPath (CGraphicsPath& outPath) VSTGUI_OVERRIDE_VMETHOD;
-	bool drawFocusOnTop () VSTGUI_OVERRIDE_VMETHOD;
-	void setViewSize (const CRect& rect, bool invalid = true) VSTGUI_OVERRIDE_VMETHOD;
-	bool removed (CView* parent) VSTGUI_OVERRIDE_VMETHOD;
-	virtual bool sizeToFit () VSTGUI_OVERRIDE_VMETHOD;
-	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
-	virtual CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
-	virtual CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
-	virtual CMouseEventResult onMouseCancel () VSTGUI_OVERRIDE_VMETHOD;
-	virtual int32_t onKeyDown (VstKeyCode& keyCode) VSTGUI_OVERRIDE_VMETHOD;
-	virtual int32_t onKeyUp (VstKeyCode& keyCode) VSTGUI_OVERRIDE_VMETHOD;
+	void draw (CDrawContext* context) override;
+	bool getFocusPath (CGraphicsPath& outPath) override;
+	bool drawFocusOnTop () override;
+	void setViewSize (const CRect& rect, bool invalid = true) override;
+	bool removed (CView* parent) override;
+	virtual bool sizeToFit () override;
+	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
+	virtual CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
+	virtual CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
+	virtual CMouseEventResult onMouseCancel () override;
+	virtual int32_t onKeyDown (VstKeyCode& keyCode) override;
+	virtual int32_t onKeyUp (VstKeyCode& keyCode) override;
 	
 	CLASS_METHODS(CTextButton, CControl)
 protected:

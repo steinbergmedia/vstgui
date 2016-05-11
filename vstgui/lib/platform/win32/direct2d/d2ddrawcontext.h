@@ -62,34 +62,34 @@ public:
 	ID2D1StrokeStyle* getStrokeStyle () const { return strokeStyle; }
 
 	// CDrawContext
-	void drawLine (const LinePair& line) VSTGUI_OVERRIDE_VMETHOD;
-	void drawLines (const LineList& lines) VSTGUI_OVERRIDE_VMETHOD;
-	void drawPolygon (const PointList& polygonPointList, const CDrawStyle drawStyle = kDrawStroked) VSTGUI_OVERRIDE_VMETHOD;
-	void drawRect (const CRect &rect, const CDrawStyle drawStyle = kDrawStroked) VSTGUI_OVERRIDE_VMETHOD;
-	void drawArc (const CRect &rect, const float startAngle1, const float endAngle2, const CDrawStyle drawStyle = kDrawStroked) VSTGUI_OVERRIDE_VMETHOD;
-	void drawEllipse (const CRect &rect, const CDrawStyle drawStyle = kDrawStroked) VSTGUI_OVERRIDE_VMETHOD;
-	void drawPoint (const CPoint &point, const CColor& color) VSTGUI_OVERRIDE_VMETHOD;
-	void drawBitmap (CBitmap* bitmap, const CRect& dest, const CPoint& offset = CPoint (0, 0), float alpha = 1.f) VSTGUI_OVERRIDE_VMETHOD;
-	void clearRect (const CRect& rect) VSTGUI_OVERRIDE_VMETHOD;
-	void setLineStyle (const CLineStyle& style) VSTGUI_OVERRIDE_VMETHOD;
-	void setLineWidth (CCoord width) VSTGUI_OVERRIDE_VMETHOD;
-	void setDrawMode (CDrawMode mode) VSTGUI_OVERRIDE_VMETHOD;
-	void setClipRect (const CRect &clip) VSTGUI_OVERRIDE_VMETHOD;
-	void resetClipRect () VSTGUI_OVERRIDE_VMETHOD;
-	void setFillColor  (const CColor& color) VSTGUI_OVERRIDE_VMETHOD;
-	void setFrameColor (const CColor& color) VSTGUI_OVERRIDE_VMETHOD;
-	void setFontColor (const CColor& color) VSTGUI_OVERRIDE_VMETHOD;
-	void setGlobalAlpha (float newAlpha) VSTGUI_OVERRIDE_VMETHOD;
-	void saveGlobalState () VSTGUI_OVERRIDE_VMETHOD;
-	void restoreGlobalState () VSTGUI_OVERRIDE_VMETHOD;
-	CGraphicsPath* createGraphicsPath () VSTGUI_OVERRIDE_VMETHOD;
-	CGraphicsPath* createTextPath (const CFontRef font, UTF8StringPtr text) VSTGUI_OVERRIDE_VMETHOD;
-	void drawGraphicsPath (CGraphicsPath* path, PathDrawMode mode = kPathFilled, CGraphicsTransform* transformation = 0) VSTGUI_OVERRIDE_VMETHOD;
-	void fillLinearGradient (CGraphicsPath* path, const CGradient& gradient, const CPoint& startPoint, const CPoint& endPoint, bool evenOdd = false, CGraphicsTransform* transformation = 0) VSTGUI_OVERRIDE_VMETHOD;
-	void fillRadialGradient (CGraphicsPath* path, const CGradient& gradient, const CPoint& center, CCoord radius, const CPoint& originOffset = CPoint (0, 0), bool evenOdd = false, CGraphicsTransform* transformation = 0) VSTGUI_OVERRIDE_VMETHOD;
+	void drawLine (const LinePair& line) override;
+	void drawLines (const LineList& lines) override;
+	void drawPolygon (const PointList& polygonPointList, const CDrawStyle drawStyle = kDrawStroked) override;
+	void drawRect (const CRect &rect, const CDrawStyle drawStyle = kDrawStroked) override;
+	void drawArc (const CRect &rect, const float startAngle1, const float endAngle2, const CDrawStyle drawStyle = kDrawStroked) override;
+	void drawEllipse (const CRect &rect, const CDrawStyle drawStyle = kDrawStroked) override;
+	void drawPoint (const CPoint &point, const CColor& color) override;
+	void drawBitmap (CBitmap* bitmap, const CRect& dest, const CPoint& offset = CPoint (0, 0), float alpha = 1.f) override;
+	void clearRect (const CRect& rect) override;
+	void setLineStyle (const CLineStyle& style) override;
+	void setLineWidth (CCoord width) override;
+	void setDrawMode (CDrawMode mode) override;
+	void setClipRect (const CRect &clip) override;
+	void resetClipRect () override;
+	void setFillColor  (const CColor& color) override;
+	void setFrameColor (const CColor& color) override;
+	void setFontColor (const CColor& color) override;
+	void setGlobalAlpha (float newAlpha) override;
+	void saveGlobalState () override;
+	void restoreGlobalState () override;
+	CGraphicsPath* createGraphicsPath () override;
+	CGraphicsPath* createTextPath (const CFontRef font, UTF8StringPtr text) override;
+	void drawGraphicsPath (CGraphicsPath* path, PathDrawMode mode = kPathFilled, CGraphicsTransform* transformation = 0) override;
+	void fillLinearGradient (CGraphicsPath* path, const CGradient& gradient, const CPoint& startPoint, const CPoint& endPoint, bool evenOdd = false, CGraphicsTransform* transformation = 0) override;
+	void fillRadialGradient (CGraphicsPath* path, const CGradient& gradient, const CPoint& center, CCoord radius, const CPoint& originOffset = CPoint (0, 0), bool evenOdd = false, CGraphicsTransform* transformation = 0) override;
 
-	void beginDraw () VSTGUI_OVERRIDE_VMETHOD;
-	void endDraw () VSTGUI_OVERRIDE_VMETHOD;
+	void beginDraw () override;
+	void endDraw () override;
 
 	//-----------------------------------------------------------------------------
 	class D2DApplyClip
@@ -107,7 +107,7 @@ public:
 	
 //-----------------------------------------------------------------------------
 protected:
-	void init () VSTGUI_OVERRIDE_VMETHOD;
+	void init () override;
 	void createRenderTarget ();
 	void releaseRenderTarget ();
 	ID2D1GradientStopCollection* createGradientStopCollection (const CGradient& gradient) const;

@@ -299,10 +299,8 @@ CCommandMenuItem::CCommandMenuItem (const CCommandMenuItem& item)
 , target (0)
 , commandCategory (0)
 , commandName (0)
-#if VSTGUI_HAS_FUNCTIONAL
 , selectedFunc (item.selectedFunc)
 , validateFunc (item.validateFunc)
-#endif
 {
 	setTarget (item.target);
 	setCommandCategory (item.commandCategory);
@@ -353,22 +351,19 @@ void CCommandMenuItem::setTarget (CBaseObject* _target)
 		target->remember ();
 }
 
-#if VSTGUI_HAS_FUNCTIONAL
 //------------------------------------------------------------------------
 void CCommandMenuItem::setActions (SelectedCallbackFunction&& selected, ValidateCallbackFunction&& validate)
 {
 	selectedFunc = std::move (selected);
 	validateFunc = std::move (validate);
 }
-#endif
 
 //------------------------------------------------------------------------
 void CCommandMenuItem::execute ()
 {
-#if VSTGUI_HAS_FUNCTIONAL
 	if (selectedFunc)
 		selectedFunc (this);
-#endif
+
 	if (getTarget ())
 		getTarget ()->notify (this, CCommandMenuItem::kMsgMenuItemSelected);
 }
@@ -376,10 +371,9 @@ void CCommandMenuItem::execute ()
 //------------------------------------------------------------------------
 void CCommandMenuItem::validate ()
 {
-#if VSTGUI_HAS_FUNCTIONAL
 	if (validateFunc)
 		validateFunc (this);
-#endif
+
 	if (getTarget ())
 		getTarget ()->notify (this, CCommandMenuItem::kMsgMenuItemValidate);
 }

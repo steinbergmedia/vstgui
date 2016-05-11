@@ -54,9 +54,6 @@ struct CRect
 	inline bool operator != (const CRect& other) const;
 	inline bool operator == (const CRect& other) const;
 	
-	VSTGUI_DEPRECATED (inline CCoord width () const;)
-	VSTGUI_DEPRECATED (inline CCoord height () const;)
-
 	inline CCoord getWidth () const;
 	inline CCoord getHeight () const;
 
@@ -431,16 +428,6 @@ inline CRect& CRect::offsetInverse (const CPoint& p)
 {
 	return offset (-p.x, -p.y);
 }
-
-
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-//------------------------------------------------------------------------
-inline CCoord CRect::width () const  { return getWidth (); }
-
-//------------------------------------------------------------------------
-inline CCoord CRect::height () const { return getHeight (); }
-
-#endif
 
 } // namespace
 

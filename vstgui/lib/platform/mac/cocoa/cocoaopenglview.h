@@ -57,17 +57,17 @@ public:
 	CocoaOpenGLView (NSView* parent);
 	~CocoaOpenGLView ();
 
-	virtual bool init (IOpenGLView* view, PixelFormat* pixelFormat = 0) VSTGUI_OVERRIDE_VMETHOD;
-	virtual void remove () VSTGUI_OVERRIDE_VMETHOD;
+	virtual bool init (IOpenGLView* view, PixelFormat* pixelFormat = 0) override;
+	virtual void remove () override;
 
-	virtual void invalidRect (const CRect& rect) VSTGUI_OVERRIDE_VMETHOD;
-	virtual void viewSizeChanged (const CRect& visibleSize) VSTGUI_OVERRIDE_VMETHOD;
+	virtual void invalidRect (const CRect& rect) override;
+	virtual void viewSizeChanged (const CRect& visibleSize) override;
 
-	virtual bool makeContextCurrent () VSTGUI_OVERRIDE_VMETHOD;
-	virtual bool lockContext () VSTGUI_OVERRIDE_VMETHOD;
-	virtual bool unlockContext () VSTGUI_OVERRIDE_VMETHOD;
+	virtual bool makeContextCurrent () override;
+	virtual bool lockContext () override;
+	virtual bool unlockContext () override;
 
-	virtual void swapBuffers () VSTGUI_OVERRIDE_VMETHOD;
+	virtual void swapBuffers () override;
 	
 	void doDraw (const CRect& r);
 	void reshape ();

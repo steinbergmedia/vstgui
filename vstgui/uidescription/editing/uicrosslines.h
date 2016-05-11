@@ -63,11 +63,11 @@ public:
 
 	void update (UISelection* selection);
 	void update (const CPoint& point);
-	void invalid () VSTGUI_OVERRIDE_VMETHOD;
-	void draw (CDrawContext* pContext) VSTGUI_OVERRIDE_VMETHOD;
+	void invalid () override;
+	void draw (CDrawContext* pContext) override;
 protected:
 	void drawLines (CDrawContext* pContext, const CRect& size, const CRect& selectionSize);
-	void viewSizeChanged (CView* view, const CRect& oldSize) VSTGUI_OVERRIDE_VMETHOD;
+	void viewSizeChanged (CView* view, const CRect& oldSize) override;
 
 	CViewContainer* editView;
 	CRect currentRect;

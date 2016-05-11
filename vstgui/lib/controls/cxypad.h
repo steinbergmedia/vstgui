@@ -49,11 +49,11 @@ public:
 	void setStopTrackingOnMouseExit (bool state) { stopTrackingOnMouseExit = state; }
 	bool getStopTrackingOnMouseExit () const { return stopTrackingOnMouseExit; }
 
-	void draw (CDrawContext* context) VSTGUI_OVERRIDE_VMETHOD;
+	void draw (CDrawContext* context) override;
 	
-	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
-	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
-	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
+	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
 
 	static float calculateValue (float x, float y)
 	{
@@ -69,8 +69,8 @@ public:
 	}
 	
 protected:
-	virtual void setMin (float val) VSTGUI_OVERRIDE_VMETHOD { }
-	virtual void setMax (float val) VSTGUI_OVERRIDE_VMETHOD { }
+	virtual void setMin (float val) override { }
+	virtual void setMax (float val) override { }
 
 	void boundValues (float& x, float& y);
 	

@@ -53,6 +53,9 @@
     <ClCompile Include="..\..\..\plugin-bindings\vst3groupcontroller.cpp">
       <Filter>Source Files\VSTGUI</Filter>
     </ClCompile>
+    <ClCompile Include="..\source\edituidescriptioneditor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\animationtest.h">
@@ -78,6 +81,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\plugin-bindings\vst3groupcontroller.h">
       <Filter>Source Files\VSTGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\edituidescriptioneditor.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -45,9 +45,9 @@ namespace VSTGUI {
 class UndoStackTop : public IAction
 {
 public:
-	UTF8StringPtr getName () VSTGUI_OVERRIDE_VMETHOD { return 0; }
-	void perform () VSTGUI_OVERRIDE_VMETHOD {}
-	void undo () VSTGUI_OVERRIDE_VMETHOD {}
+	UTF8StringPtr getName () override { return 0; }
+	void perform () override {}
+	void undo () override {}
 };
 
 //----------------------------------------------------------------------------------------------------
@@ -64,14 +64,14 @@ public:
 		std::for_each (begin (), end (), doDelete);
 	}
 
-	UTF8StringPtr getName () VSTGUI_OVERRIDE_VMETHOD { return name.c_str (); }
+	UTF8StringPtr getName () override { return name.c_str (); }
 
-	void perform () VSTGUI_OVERRIDE_VMETHOD
+	void perform () override
 	{
 		std::for_each (begin (), end (), doPerform);
 	}
 	
-	void undo () VSTGUI_OVERRIDE_VMETHOD
+	void undo () override
 	{
 		std::for_each (rbegin (), rend (), doUndo);
 	}

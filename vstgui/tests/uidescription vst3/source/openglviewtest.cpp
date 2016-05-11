@@ -109,7 +109,7 @@ public:
 		useThread = state;
 	}
 
-	void platformOpenGLViewCreated () VSTGUI_OVERRIDE_VMETHOD
+	void platformOpenGLViewCreated () override
 	{
 		getPlatformOpenGLView ()->lockContext ();
 		getPlatformOpenGLView ()->makeContextCurrent ();
@@ -125,13 +125,13 @@ public:
 		setThreaded (useThread);
 	}
 	
-	void platformOpenGLViewWillDestroy () VSTGUI_OVERRIDE_VMETHOD
+	void platformOpenGLViewWillDestroy () override
 	{
 		killThread ();
 		removeAllAnimations ();
 	}
 	
-	void platformOpenGLViewSizeChanged () VSTGUI_OVERRIDE_VMETHOD
+	void platformOpenGLViewSizeChanged () override
 	{
 		if (getPlatformOpenGLView ())
 		{
@@ -167,7 +167,7 @@ public:
 		}
 	}
 	
-	void drawOpenGL (const CRect& updateRect) VSTGUI_OVERRIDE_VMETHOD
+	void drawOpenGL (const CRect& updateRect) override
 	{
 		glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		
@@ -218,7 +218,7 @@ public:
 		getPlatformOpenGLView ()->swapBuffers ();
 	}
 
-	PixelFormat* getPixelFormat () VSTGUI_OVERRIDE_VMETHOD
+	PixelFormat* getPixelFormat () override
 	{
 		static PixelFormat pixelFormat;
 		pixelFormat.flags = PixelFormat::kAccelerated | PixelFormat::kMultiSample;
@@ -236,7 +236,7 @@ protected:
 		{
 		}
 		
-		uint32 entry () VSTGUI_OVERRIDE_VMETHOD
+		uint32 entry () override
 		{
 			while (cancelDrawLoop == false)
 			{
@@ -256,8 +256,8 @@ protected:
 		volatile bool cancelDrawLoop;
 	};
 
-	virtual void animationStart (CView* view, IdStringPtr name)  VSTGUI_OVERRIDE_VMETHOD {}
-	virtual void animationTick (CView* view, IdStringPtr name, float pos) VSTGUI_OVERRIDE_VMETHOD
+	virtual void animationStart (CView* view, IdStringPtr name)  override {}
+	virtual void animationTick (CView* view, IdStringPtr name, float pos) override
 	{
 		if (thread == 0)
 		{
@@ -271,7 +271,7 @@ protected:
 		}
 	}
 	
-	virtual void animationFinished (CView* view, IdStringPtr name, bool wasCanceled) VSTGUI_OVERRIDE_VMETHOD {}
+	virtual void animationFinished (CView* view, IdStringPtr name, bool wasCanceled) override {}
 
 	float xRotation;
 	float yRotation;
@@ -292,14 +292,14 @@ public:
 	, openGLView (0)
 	{}
 
-	IControlListener* getControlListener (UTF8StringPtr name) VSTGUI_OVERRIDE_VMETHOD
+	IControlListener* getControlListener (UTF8StringPtr name) override
 	{
 		if (strcmp (name, "threaded") == 0)
 			return this;
 		return controller->getControlListener (name);
 	}
 	
-	CView* createView (const UIAttributes& attributes, const IUIDescription* description) VSTGUI_OVERRIDE_VMETHOD
+	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override
 	{
 		const std::string* name = attributes.getAttributeValue ("custom-view-name");
 		if (name && *name == "OpenGLView")
@@ -310,7 +310,7 @@ public:
 		return controller->createView (attributes, description);
 	}
 	
-	void valueChanged (CControl* control) VSTGUI_OVERRIDE_VMETHOD
+	void valueChanged (CControl* control) override
 	{
 		if (openGLView)
 			openGLView->setThreaded (control->getValue () == control->getMax ());

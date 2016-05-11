@@ -53,14 +53,14 @@ class UIViewCreatorDataSource : public UIBaseDataSource
 public:
 	UIViewCreatorDataSource (const UIViewFactory* factory, UIDescription* description);
 
-	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
-	CMouseEventResult dbOnMouseMoved (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) VSTGUI_OVERRIDE_VMETHOD;
+	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) override;
+	CMouseEventResult dbOnMouseMoved (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) override;
 
-	void getNames (std::list<const std::string*>& names) VSTGUI_OVERRIDE_VMETHOD;
-	bool addItem (UTF8StringPtr name) VSTGUI_OVERRIDE_VMETHOD { return false; }
-	bool removeItem (UTF8StringPtr name) VSTGUI_OVERRIDE_VMETHOD { return false; }
-	bool performNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) VSTGUI_OVERRIDE_VMETHOD { return false; }
-	UTF8StringPtr getDefaultsName () VSTGUI_OVERRIDE_VMETHOD { return "UIViewCreatorDataSource"; }
+	void getNames (std::list<const std::string*>& names) override;
+	bool addItem (UTF8StringPtr name) override { return false; }
+	bool removeItem (UTF8StringPtr name) override { return false; }
+	bool performNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) override { return false; }
+	UTF8StringPtr getDefaultsName () override { return "UIViewCreatorDataSource"; }
 protected:
 	void addViewToCurrentEditView ();
 	SharedPointer<UISelection> createSelection ();

@@ -55,12 +55,12 @@ class CoreTextFont : public IPlatformFont, public IFontPainter
 public:
 	CoreTextFont (UTF8StringPtr name, const CCoord& size, const int32_t& style);
 
-	double getAscent () const VSTGUI_OVERRIDE_VMETHOD;
-	double getDescent () const VSTGUI_OVERRIDE_VMETHOD;
-	double getLeading () const VSTGUI_OVERRIDE_VMETHOD;
-	double getCapHeight () const VSTGUI_OVERRIDE_VMETHOD;
+	double getAscent () const override;
+	double getDescent () const override;
+	double getLeading () const override;
+	double getCapHeight () const override;
 	
-	IFontPainter* getPainter () VSTGUI_OVERRIDE_VMETHOD { return this; }
+	IFontPainter* getPainter () override { return this; }
 	
 	CTFontRef getFontRef () const { return fontRef; }
 	CGFloat getSize () const { return CTFontGetSize (fontRef); }
@@ -69,8 +69,8 @@ public:
 protected:
 	~CoreTextFont ();
 
-	void drawString (CDrawContext* context, IPlatformString* string, const CPoint& p, bool antialias = true) VSTGUI_OVERRIDE_VMETHOD;
-	CCoord getStringWidth (CDrawContext* context, IPlatformString* string, bool antialias = true) VSTGUI_OVERRIDE_VMETHOD;
+	void drawString (CDrawContext* context, IPlatformString* string, const CPoint& p, bool antialias = true) override;
+	CCoord getStringWidth (CDrawContext* context, IPlatformString* string, bool antialias = true) override;
 	CFDictionaryRef getStringAttributes (const CGColorRef color = 0);
 
 	CTLineRef createCTLine (CDrawContext* context, MacString* macString);

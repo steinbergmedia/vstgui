@@ -73,10 +73,9 @@ public:
 	Property (const Property& p);
 	~Property ();
 
-#if VSTGUI_RVALUE_REF_SUPPORT
 	Property (Property&& p) noexcept;
 	Property& operator=(Property&& p) noexcept;
-#endif
+
 	Type getType () const { return type; }
 
 	int32_t getInteger () const;
@@ -242,14 +241,14 @@ protected:
 	bool registerProperty (IdStringPtr name, const Property& defaultProperty);
 	CBitmap* getInputBitmap () const;
 
-	virtual UTF8StringPtr getDescription () const VSTGUI_OVERRIDE_VMETHOD;
-	virtual bool setProperty (IdStringPtr name, const Property& property) VSTGUI_OVERRIDE_VMETHOD;
-	virtual const Property& getProperty (IdStringPtr name) const VSTGUI_OVERRIDE_VMETHOD;
+	virtual UTF8StringPtr getDescription () const override;
+	virtual bool setProperty (IdStringPtr name, const Property& property) override;
+	virtual const Property& getProperty (IdStringPtr name) const override;
 	
-	virtual uint32_t getNumProperties () const VSTGUI_OVERRIDE_VMETHOD;
-	virtual IdStringPtr getPropertyName (uint32_t index) const VSTGUI_OVERRIDE_VMETHOD;
-	virtual Property::Type getPropertyType (uint32_t index) const VSTGUI_OVERRIDE_VMETHOD;
-	virtual Property::Type getPropertyType (IdStringPtr name) const VSTGUI_OVERRIDE_VMETHOD;
+	virtual uint32_t getNumProperties () const override;
+	virtual IdStringPtr getPropertyName (uint32_t index) const override;
+	virtual Property::Type getPropertyType (uint32_t index) const override;
+	virtual Property::Type getPropertyType (IdStringPtr name) const override;
 
 private:
 	std::string description;

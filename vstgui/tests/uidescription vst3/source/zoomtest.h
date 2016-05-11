@@ -28,14 +28,14 @@ public:
 class ZoomTestController : public UIDescriptionBaseController
 {
 public:
-	Steinberg::tresult PLUGIN_API initialize (Steinberg::FUnknown* context) VSTGUI_OVERRIDE_VMETHOD;
-	Steinberg::IPlugView* PLUGIN_API createView (Steinberg::FIDString name) VSTGUI_OVERRIDE_VMETHOD;
-	IController* createSubController (UTF8StringPtr name, const IUIDescription* description, VST3Editor* editor) VSTGUI_OVERRIDE_VMETHOD;
+	Steinberg::tresult PLUGIN_API initialize (Steinberg::FUnknown* context) override;
+	Steinberg::IPlugView* PLUGIN_API createView (Steinberg::FIDString name) override;
+	IController* createSubController (UTF8StringPtr name, const IUIDescription* description, VST3Editor* editor) override;
 
-	void PLUGIN_API update (Steinberg::FUnknown* changedUnknown, Steinberg::int32 message) VSTGUI_OVERRIDE_VMETHOD;
+	void PLUGIN_API update (Steinberg::FUnknown* changedUnknown, Steinberg::int32 message) override;
 
-	void editorAttached (Steinberg::Vst::EditorView* editor) VSTGUI_OVERRIDE_VMETHOD;
-	void editorRemoved (Steinberg::Vst::EditorView* editor) VSTGUI_OVERRIDE_VMETHOD;
+	void editorAttached (Steinberg::Vst::EditorView* editor) override;
+	void editorRemoved (Steinberg::Vst::EditorView* editor) override;
 
 	static Steinberg::FUnknown* createInstance (void*) { return (Steinberg::Vst::IEditController*)new ZoomTestController; }
 	static Steinberg::FUID cid;

@@ -74,7 +74,7 @@ public:
 	UIEditViewOverlay (CViewContainer* editView);
 	~UIEditViewOverlay ();
 	
-	void viewSizeChanged (CView* view, const CRect& oldSize) VSTGUI_OVERRIDE_VMETHOD;
+	void viewSizeChanged (CView* view, const CRect& oldSize) override;
 protected:
 	CViewContainer* editView;
 };
@@ -119,9 +119,9 @@ public:
 	~UISelectionView ();
 
 private:
-	void draw (CDrawContext* pContext) VSTGUI_OVERRIDE_VMETHOD;
+	void draw (CDrawContext* pContext) override;
 	void drawResizeHandle (const CPoint& p, CDrawContext* pContext);
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 	
 	SharedPointer<UISelection> selection;
 	CColor selectionColor;
@@ -236,7 +236,7 @@ public:
 
 	void setHighlightView (CView* view);
 private:
-	void draw (CDrawContext* pContext) VSTGUI_OVERRIDE_VMETHOD;
+	void draw (CDrawContext* pContext) override;
 
 	CView* highlightView;
 	CColor strokeColor;

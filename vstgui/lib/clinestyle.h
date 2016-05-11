@@ -67,22 +67,16 @@ public:
 	CLineStyle (const CLineStyle& lineStyle);
 	~CLineStyle ();
 
-#if VSTGUI_RVALUE_REF_SUPPORT
 	CLineStyle (LineCap cap, LineJoin join, CCoord dashPhase, CoordVector&& dashLengths) noexcept;
 	CLineStyle (CLineStyle&& cls) noexcept;
 	CLineStyle& operator= (CLineStyle&& cls) noexcept;
-#endif
 	
 	LineCap getLineCap () const { return cap; }
 	LineJoin getLineJoin () const { return join; }
 	CCoord getDashPhase () const { return dashPhase; }
 	uint32_t getDashCount () const { return static_cast<uint32_t> (dashLengths.size ()); }
 	CoordVector& getDashLengths () { return dashLengths; }
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	const CCoord* getDashLengths() const { return &dashLengths[0]; }
-#else
 	const CoordVector& getDashLengths() const { return dashLengths; }
-#endif
 
 	void setLineCap (LineCap newCap) { cap = newCap; }
 	void setLineJoin (LineJoin newJoin) { join = newJoin; }

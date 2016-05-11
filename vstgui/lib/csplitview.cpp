@@ -47,16 +47,16 @@ class CSplitViewSeparatorView : public CViewContainer
 public:
 	CSplitViewSeparatorView (const CRect& size, CSplitView::Style style, int32_t index);
 
-	void drawRect (CDrawContext *pContext, const CRect& r) VSTGUI_OVERRIDE_VMETHOD;
+	void drawRect (CDrawContext *pContext, const CRect& r) override;
 
-	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
-	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
-	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
+	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
 
-	CMouseEventResult onMouseEntered (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
-	CMouseEventResult onMouseExited (CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
+	CMouseEventResult onMouseEntered (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseExited (CPoint& where, const CButtonState& buttons) override;
 
-	bool removed (CView* parent) VSTGUI_OVERRIDE_VMETHOD;
+	bool removed (CView* parent) override;
 protected:
 	CPoint lastMousePos;
 	CRect startSize;
