@@ -213,6 +213,9 @@ static const std::string kAttrHandleColor = "handle-color";
 static const std::string kAttrHandleShadowColor = "handle-shadow-color";
 static const std::string kAttrHandleLineWidth = "handle-line-width";
 static const std::string kAttrCircleDrawing = "circle-drawing";
+static const std::string kAttrCoronaLineCapButt = "corona-line-cap-butt";
+static const std::string kAttrSkipHandleDrawing = "skip-handle-drawing";
+static const std::string kAttrCoronaOutlineWidthAdd = "corona-outline-width-add";
 
 //-----------------------------------------------------------------------------
 // IMultiBitmapControlCreator attributes
