@@ -2423,6 +2423,8 @@ public:
 			knob->setZoomFactor (static_cast<float>(d));
 		if (attributes.getDoubleAttribute (kAttrHandleLineWidth, d))
 			knob->setHandleLineWidth (d);
+		if (attributes.getDoubleAttribute (kAttrCoronaOutlineWidthAdd, d))
+			knob->setCoronaOutlineWidthAdd (d);
 
 		CColor color;
 		if (stringToColor (attributes.getAttributeValue (kAttrCoronaColor), color, description))
@@ -2443,6 +2445,8 @@ public:
 		applyStyleMask (attributes.getAttributeValue (kAttrCoronaInverted), CKnob::kCoronaInverted, drawStyle);
 		applyStyleMask (attributes.getAttributeValue (kAttrCoronaDashDot), CKnob::kCoronaLineDashDot, drawStyle);
 		applyStyleMask (attributes.getAttributeValue (kAttrCoronaOutline), CKnob::kCoronaOutline, drawStyle);
+		applyStyleMask (attributes.getAttributeValue (kAttrCoronaLineCapButt), CKnob::kCoronaLineCapButt, drawStyle);
+		applyStyleMask (attributes.getAttributeValue (kAttrSkipHandleDrawing), CKnob::kSkipHandleDrawing, drawStyle);
 		knob->setDrawStyle (drawStyle);
 		return true;
 	}
@@ -2458,11 +2462,14 @@ public:
 		attributeNames.push_back (kAttrCoronaFromCenter);
 		attributeNames.push_back (kAttrCoronaInverted);
 		attributeNames.push_back (kAttrCoronaDashDot);
+		attributeNames.push_back (kAttrCoronaLineCapButt);
+		attributeNames.push_back (kAttrSkipHandleDrawing);
 		attributeNames.push_back (kAttrCoronaInset);
 		attributeNames.push_back (kAttrCoronaColor);
 		attributeNames.push_back (kAttrHandleShadowColor);
 		attributeNames.push_back (kAttrHandleColor);
 		attributeNames.push_back (kAttrHandleLineWidth);
+		attributeNames.push_back (kAttrCoronaOutlineWidthAdd);
 		attributeNames.push_back (kAttrHandleBitmap);
 		return true;
 	}
@@ -2478,11 +2485,14 @@ public:
 		else if (attributeName == kAttrCoronaFromCenter) return kBooleanType;
 		else if (attributeName == kAttrCoronaInverted) return kBooleanType;
 		else if (attributeName == kAttrCoronaDashDot) return kBooleanType;
+		else if (attributeName == kAttrCoronaLineCapButt) return kBooleanType;
+		else if (attributeName == kAttrSkipHandleDrawing) return kBooleanType;
 		else if (attributeName == kAttrCoronaInset) return kFloatType;
 		else if (attributeName == kAttrCoronaColor) return kColorType;
 		else if (attributeName == kAttrHandleShadowColor) return kColorType;
 		else if (attributeName == kAttrHandleColor) return kColorType;
 		else if (attributeName == kAttrHandleLineWidth) return kFloatType;
+		else if (attributeName == kAttrCoronaOutlineWidthAdd) return kFloatType;
 		else if (attributeName == kAttrHandleBitmap) return kBitmapType;
 		return kUnknownType;
 	}
@@ -2520,6 +2530,11 @@ public:
 		else if (attributeName == kAttrHandleLineWidth)
 		{
 			stringValue = numberToString (knob->getHandleLineWidth ());
+			return true;
+		}
+		else if (attributeName == kAttrCoronaOutlineWidthAdd)
+		{
+			stringValue = numberToString (knob->getCoronaOutlineWidthAdd ());
 			return true;
 		}
 		else if (attributeName == kAttrCoronaColor)
@@ -2588,6 +2603,22 @@ public:
 		else if (attributeName == kAttrCoronaOutline)
 		{
 			if (knob->getDrawStyle () & CKnob::kCoronaOutline)
+				stringValue = "true";
+			else
+				stringValue = "false";
+			return true;
+		}
+		else if (attributeName == kAttrCoronaLineCapButt)
+		{
+			if (knob->getDrawStyle () & CKnob::kCoronaLineCapButt)
+				stringValue = "true";
+			else
+				stringValue = "false";
+			return true;
+		}
+		else if (attributeName == kAttrSkipHandleDrawing)
+		{
+			if (knob->getDrawStyle () & CKnob::kSkipHandleDrawing)
 				stringValue = "true";
 			else
 				stringValue = "false";
