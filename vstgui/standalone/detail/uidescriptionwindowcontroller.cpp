@@ -738,7 +738,7 @@ struct WindowController::EditImpl : WindowController::Impl
 	          const CustomizationPtr& customization)
 	: Impl (controller, modelBinding, customization)
 	{
-		IApplication::instance ().registerCommand (ToggleEditingCommand, 'e');
+		IApplication::instance ().registerCommand (ToggleEditingCommand, 'E');
 	}
 
 	bool init (WindowPtr& inWindow, const char* fileName, const char* templateName) override

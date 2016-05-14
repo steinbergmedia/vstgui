@@ -384,6 +384,12 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 	self.macWindow->getDelegate ().onDeactivated ();
 }
 
+//------------------------------------------------------------------------
+- (void)noResponderFor:(SEL)eventSelector
+{
+	// prevent Beep
+}
+
 @end
 
 //------------------------------------------------------------------------
@@ -425,6 +431,12 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 		[NSApp addWindowsItem:self title:self.title filename:NO];
 	}
 	[super makeKeyAndOrderFront:sender];
+}
+
+//------------------------------------------------------------------------
+- (void)noResponderFor:(SEL)eventSelector
+{
+	// prevent Beep
 }
 
 @end
@@ -481,6 +493,12 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 {
 	VSTGUIPopup* popup = self;
 	VSTGUI::Call::later ([=] () { [popup close]; });
+}
+
+//------------------------------------------------------------------------
+- (void)noResponderFor:(SEL)eventSelector
+{
+	// prevent Beep
 }
 
 @end
