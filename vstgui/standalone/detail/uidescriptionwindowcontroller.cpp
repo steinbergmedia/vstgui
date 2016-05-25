@@ -644,6 +644,8 @@ struct WindowController::EditImpl : WindowController::Impl
 			return;
 		if (force || uiEditController->getUndoManager ()->isSavePosition () == false)
 		{
+			if (uiEditController->getUndoManager ()->isSavePosition () == false)
+				Detail::saveSharedUIDescription ();
 			if (!uiDesc->save (uiDesc->getFilePath (), uiEditController->getSaveOptions ()))
 			{
 				AlertBoxConfig config;
@@ -652,8 +654,6 @@ struct WindowController::EditImpl : WindowController::Impl
 			}
 			else
 				Detail::getEditFileMap ().set (filename, uiDesc->getFilePath ());
-			if (uiEditController->getUndoManager ()->isSavePosition () == false)
-				Detail::saveSharedUIDescription ();
 		}
 	}
 
