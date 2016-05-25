@@ -22,6 +22,7 @@ public:
 	bool hasPreferenceDialog () override { return false; }
 	const Info& getInfo () const override { return appInfo; }
 	UTF8StringPtr getSharedUIResourceFilename () const override { return nullptr; }
+//------------------------------------------------------------------------
 private:
 	Info appInfo;
 };
