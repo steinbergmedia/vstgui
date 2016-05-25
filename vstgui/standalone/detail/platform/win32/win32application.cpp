@@ -4,6 +4,7 @@
 #include "../../../iapplication.h"
 #include "../../application.h"
 #include "../../genericalertbox.h"
+#include "../../shareduiresources.h"
 #include "../../window.h"
 #include "../iplatformwindow.h"
 #include "win32preference.h"
@@ -218,6 +219,7 @@ void Application::run ()
 		TranslateMessage (&msg);
 		DispatchMessage (&msg);
 	}
+	Detail::cleanupSharedUIResources ();
 }
 
 //------------------------------------------------------------------------

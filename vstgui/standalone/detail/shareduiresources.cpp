@@ -55,6 +55,8 @@ public:
 	static SharedUIResources& instance () noexcept;
 
 	SharedUIResources () noexcept;
+	
+	void cleanup ();
 
 	Optional<CColor> getColor (const UTF8String& name) const override;
 	Optional<CBitmap*> getBitmap (const UTF8String& name) const override;
@@ -79,6 +81,12 @@ SharedUIResources& SharedUIResources::instance () noexcept
 //------------------------------------------------------------------------
 SharedUIResources::SharedUIResources () noexcept
 {
+}
+
+//------------------------------------------------------------------------
+void SharedUIResources::cleanup ()
+{
+	uiDesc = nullptr;
 }
 
 //------------------------------------------------------------------------
@@ -190,6 +198,12 @@ const ISharedUIResources& getSharedUIResources ()
 SharedPointer<UIDescription> getSharedUIDescription ()
 {
 	return SharedUIResources::instance ().get ();
+}
+
+//------------------------------------------------------------------------
+void cleanupSharedUIResources ()
+{
+	SharedUIResources::instance ().cleanup ();
 }
 
 #if VSTGUI_LIVE_EDITING

@@ -52,11 +52,7 @@ void vstgui_assert (Expect expect, const char* str = nullptr)
 		throw std::logic_error (str ? str : "unknown");
 }
 #else
-template<typename Expect>
-void vstgui_assert (Expect expect, const char* = nullptr)
-{
-	assert (expect);
-}
+#define vstgui_assert(x, ...) assert (x)
 #endif
 
 

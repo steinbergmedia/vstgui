@@ -1,6 +1,7 @@
 #import "../../../iappdelegate.h"
 #import "../../../iapplication.h"
 #import "../../application.h"
+#import "../../shareduiresources.h"
 #import "../../window.h"
 #import "VSTGUICommand.h"
 #import "macpreference.h"
@@ -426,6 +427,7 @@ static const CommandWithKeyList* getCommandList (const char* group)
 - (void)applicationWillTerminate:(NSNotification*)notification
 {
 	IApplication::instance ().getDelegate ().onQuit ();
+	Detail::cleanupSharedUIResources ();
 }
 
 @end
