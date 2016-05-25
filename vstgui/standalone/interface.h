@@ -7,7 +7,7 @@ namespace VSTGUI {
 class Interface
 {
 public:
-	virtual ~Interface () {}
+	virtual ~Interface () noexcept {}
 
 	Interface () = default;
 	Interface (const Interface&) = delete;

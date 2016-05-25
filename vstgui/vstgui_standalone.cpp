@@ -36,4 +36,5 @@
 #include "standalone/detail/uidescriptionwindowcontroller.cpp"
 #include "standalone/detail/window.cpp"
 #include "standalone/detail/genericalertbox.cpp"
+#include "standalone/detail/shareduiresources.cpp"
 #include "standalone/helpers/value.cpp"

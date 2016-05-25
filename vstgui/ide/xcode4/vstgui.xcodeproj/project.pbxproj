@@ -57,6 +57,8 @@
 		F47D201A18A6648C00487CDB /* uiattributes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F47D201618A6648C00487CDB /* uiattributes.cpp */; };
 		F47D201D18A6648C00487CDB /* uiattributes.h in Headers */ = {isa = PBXBuildFile; fileRef = F47D201718A6648C00487CDB /* uiattributes.h */; };
 		F48069331C2734E300356894 /* macapplication.mm in Sources */ = {isa = PBXBuildFile; fileRef = F48069321C2734E300356894 /* macapplication.mm */; };
+		F488C4441CF4513E007B7757 /* shareduiresources.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F488C4421CF4513E007B7757 /* shareduiresources.cpp */; };
+		F488C4451CF4513E007B7757 /* shareduiresources.h in Headers */ = {isa = PBXBuildFile; fileRef = F488C4431CF4513E007B7757 /* shareduiresources.h */; };
 		F48E9CF419C2D1000082B06D /* cgradient.h in Headers */ = {isa = PBXBuildFile; fileRef = F48E9CEF19C2D1000082B06D /* cgradient.h */; };
 		F490FDD41BE2C5F000386A09 /* clinestyle_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F490FDD31BE2C5F000386A09 /* clinestyle_test.cpp */; };
 		F490FDD61BE3C82F00386A09 /* utf8string_test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F490FDD51BE3C82F00386A09 /* utf8string_test.cpp */; };
@@ -419,6 +421,10 @@
 		F485F11413F8F7770001A913 /* uitagscontroller.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uitagscontroller.cpp; sourceTree = "<group>"; };
 		F485F11613F97FF70001A913 /* uicolorscontroller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uicolorscontroller.h; sourceTree = "<group>"; };
 		F485F11813F97FFD0001A913 /* uicolorscontroller.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uicolorscontroller.cpp; sourceTree = "<group>"; };
+		F488C4401CF44EF3007B7757 /* optional.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = optional.h; sourceTree = "<group>"; };
+		F488C4411CF4504B007B7757 /* ishareduiresources.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ishareduiresources.h; sourceTree = "<group>"; };
+		F488C4421CF4513E007B7757 /* shareduiresources.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = shareduiresources.cpp; sourceTree = "<group>"; };
+		F488C4431CF4513E007B7757 /* shareduiresources.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = shareduiresources.h; sourceTree = "<group>"; };
 		F48BCB3F13F545290010DCC1 /* uieditmenucontroller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uieditmenucontroller.h; sourceTree = "<group>"; };
 		F48BCB4113F545350010DCC1 /* uieditmenucontroller.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uieditmenucontroller.cpp; sourceTree = "<group>"; };
 		F48BCB4313F569820010DCC1 /* uiviewcreatecontroller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uiviewcreatecontroller.h; sourceTree = "<group>"; };
@@ -1007,6 +1013,7 @@
 				F46B06B31902D29F006189B9 /* iscalefactorchangedlistener.h */,
 				F440F8CC17A8FF7600616683 /* itouchevent.h */,
 				F4DF261118A23B0300DE6ADF /* iviewlistener.h */,
+				F488C4401CF44EF3007B7757 /* optional.h */,
 				F497F0E813080A1C00F0A613 /* vstguibase.h */,
 				F497F0E913080A1C00F0A613 /* vstguidebug.cpp */,
 				F497F0EA13080A1C00F0A613 /* vstguidebug.h */,
@@ -1188,6 +1195,7 @@
 				F418EE6F1C29E22400D0F39F /* icommand.h */,
 				F4B5B5BE1C26E6DB00450324 /* interface.h */,
 				F41CEBF11C2EAEED00697722 /* ipreference.h */,
+				F488C4411CF4504B007B7757 /* ishareduiresources.h */,
 				F4975FE11C2D7981001D489E /* iuidescwindow.h */,
 				F4975FE01C2D631F001D489E /* ivalue.h */,
 				F459BCF61C4689FA004001A4 /* ivaluelistener.h */,
@@ -1205,11 +1213,13 @@
 				F4B5B5C71C26F47C00450324 /* platform */,
 				F4B5B5C91C26FA9C00450324 /* application.cpp */,
 				F4B5B5CB1C26FACF00450324 /* application.h */,
+				BC2FFED01C4147CA0073D566 /* genericalertbox.cpp */,
+				BC2FFED11C4147CA0073D566 /* genericalertbox.h */,
+				F488C4421CF4513E007B7757 /* shareduiresources.cpp */,
+				F488C4431CF4513E007B7757 /* shareduiresources.h */,
 				F4975FE21C2D7AB8001D489E /* uidescriptionwindowcontroller.cpp */,
 				F4B5B5C51C26F2C500450324 /* window.cpp */,
 				F4B5B5CC1C26FD4E00450324 /* window.h */,
-				BC2FFED01C4147CA0073D566 /* genericalertbox.cpp */,
-				BC2FFED11C4147CA0073D566 /* genericalertbox.h */,
 			);
 			path = detail;
 			sourceTree = "<group>";
@@ -1339,6 +1349,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F488C4451CF4513E007B7757 /* shareduiresources.h in Headers */,
 				F41CEBF51C2EB0FA00697722 /* macpreference.h in Headers */,
 				BC2FFED31C4147CA0073D566 /* genericalertbox.h in Headers */,
 			);
@@ -1501,6 +1512,7 @@
 				F4B5B5CA1C26FA9C00450324 /* application.cpp in Sources */,
 				F48069331C2734E300356894 /* macapplication.mm in Sources */,
 				BC2FFED21C4147CA0073D566 /* genericalertbox.cpp in Sources */,
+				F488C4441CF4513E007B7757 /* shareduiresources.cpp in Sources */,
 				F4B5B5C61C26F2C500450324 /* window.cpp in Sources */,
 				F478633A1C28654100C76167 /* macwindow.mm in Sources */,
 				F408C5B71C2AA19700F46C6A /* VSTGUICommand.mm in Sources */,

@@ -2,6 +2,7 @@
 #include "../iappdelegate.h"
 #include "../iapplication.h"
 #include "../iwindowcontroller.h"
+#include "shareduiresources.h"
 #include "window.h"
 #include "../icommand.h"
 #include "../../lib/cview.h"
@@ -26,6 +27,7 @@ public:
 	void setDelegate (const Standalone::Application::DelegatePtr& delegate);
 	IPreference& getPreferences () const override;
 	const CommandLineArguments& getCommandLineArguments () const override;
+	const ISharedUIResources& getSharedUIResources () const override;
 	Standalone::Application::IDelegate& getDelegate () const override;
 	WindowPtr createWindow (const WindowConfiguration& config,
 	                        const WindowControllerPtr& controller) override;
@@ -119,6 +121,12 @@ IPreference& Application::getPreferences () const
 const Application::CommandLineArguments& Application::getCommandLineArguments () const
 {
 	return commandLineArguments;
+}
+
+//------------------------------------------------------------------------
+const ISharedUIResources& Application::getSharedUIResources () const
+{
+	return Detail::getSharedUIResources ();
 }
 
 //------------------------------------------------------------------------

@@ -81,7 +81,7 @@ Win32TextEdit::Win32TextEdit (HWND parent, IPlatformTextEditCallback* textEdit)
 	UTF8StringHelper stringHelper (textEdit->platformGetText ());
 	text = stringHelper;
 
-	DWORD wxStyle = 0;
+	DWORD wxStyle = WS_EX_LAYERED;
 	if (getD2DFactory () == 0 && getSystemVersion ().dwMajorVersion >= 6) // Vista and above
 		wxStyle = WS_EX_COMPOSITED;
 	wstyle |= WS_CHILD | WS_VISIBLE | ES_AUTOHSCROLL;
@@ -89,6 +89,10 @@ Win32TextEdit::Win32TextEdit (HWND parent, IPlatformTextEditCallback* textEdit)
 		TEXT("EDIT"), stringHelper, wstyle,
 		(int)rect.left, (int)rect.top, (int)rect.getWidth (), (int)rect.getHeight (),
 		parent, NULL, GetInstance (), 0);
+
+	CColor backColor = textEdit->platformGetBackColor ();
+	SetLayeredWindowAttributes (platformControl, RGB (backColor.red, backColor.green, backColor.blue), 0, LWA_COLORKEY);
+	platformBackColor = CreateSolidBrush (RGB (backColor.red, backColor.green, backColor.blue));
 
 	logfont.lfWeight = FW_NORMAL;
 	logfont.lfHeight = (LONG)-fontH;
@@ -112,8 +116,6 @@ Win32TextEdit::Win32TextEdit (HWND parent, IPlatformTextEditCallback* textEdit)
 
 	oldWndProcEdit = (WINDOWSPROC)(LONG_PTR)SetWindowLongPtr (platformControl, GWLP_WNDPROC, (__int3264)(LONG_PTR)procEdit);
 
-	CColor backColor = textEdit->platformGetBackColor ();
-	platformBackColor = CreateSolidBrush (RGB (backColor.red, backColor.green, backColor.blue));
 }
 
 //-----------------------------------------------------------------------------

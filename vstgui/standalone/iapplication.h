@@ -1,10 +1,10 @@
 #pragma once
 
 #include "fwd.h"
-#include "interface.h"
 #include "iwindow.h"
-#include <vector>
+#include "interface.h"
 #include <cstdint>
+#include <vector>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -25,7 +25,9 @@ public:
 	virtual IPreference& getPreferences () const = 0;
 	/** Get the command line arguments */
 	virtual const CommandLineArguments& getCommandLineArguments () const = 0;
-
+	/** Get the shared UI resources */
+	virtual const ISharedUIResources& getSharedUIResources () const = 0;
+	
 	/** Create a new window
 	 *
 	 *	@param config window configuration

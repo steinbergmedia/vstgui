@@ -1,3 +1,4 @@
+#include "shareduiresources.h"
 #include "../iuidescwindow.h"
 #include "../iapplication.h"
 #include "../iappdelegate.h"
@@ -26,190 +27,6 @@ namespace /* Anonymous */ {
 
 using UIDesc::ModelBindingPtr;
 using UIDesc::CustomizationPtr;
-
-#if VSTGUI_LIVE_EDITING
-//------------------------------------------------------------------------
-struct EditFileMap
-{
-private:
-	using Map = std::unordered_map<std::string, std::string>;
-	Map fileMap;
-	static EditFileMap& instance ()
-	{
-		static EditFileMap gInstance;
-		return gInstance;
-	}
-
-public:
-	static void set (const std::string& filename, const std::string& absolutePath)
-	{
-		instance ().fileMap.insert ({filename, absolutePath});
-	}
-	static const std::string& get (const std::string& filename)
-	{
-		auto it = instance ().fileMap.find (filename);
-		if (it == instance ().fileMap.end ())
-		{
-			static std::string empty;
-			return empty;
-		}
-		return it->second;
-	}
-};
-
-//------------------------------------------------------------------------
-bool initUIDescAsNew (UIDescription& uiDesc, CFrame* _frame)
-{
-	SharedPointer<CFrame> frame (_frame);
-	if (!frame)
-		frame = makeOwned<CFrame> (CRect (), nullptr);
-	auto fs = owned (CNewFileSelector::create (frame, CNewFileSelector::kSelectSaveFile));
-	fs->setDefaultSaveName (uiDesc.getFilePath ());
-	fs->setDefaultExtension (CFileExtension ("UIDescription File", "uidesc"));
-	fs->setTitle ("Save UIDescription File");
-	if (fs->runModal ())
-	{
-		if (fs->getNumSelectedFiles () == 0)
-		{
-			return false;
-		}
-		auto path = fs->getSelectedFile (0);
-		uiDesc.setFilePath (path);
-		auto settings = uiDesc.getCustomAttributes ("UIDescFilePath", true);
-		settings->setAttribute ("path", path);
-		return true;
-	}
-	return false;
-}
-
-//------------------------------------------------------------------------
-enum class UIDescCheckFilePathResult
-{
-	exists,
-	newPathSet,
-	cancel
-};
-
-//------------------------------------------------------------------------
-UIDescCheckFilePathResult checkAndUpdateUIDescFilePath (
-    UIDescription& uiDesc, CFrame* _frame,
-    UTF8StringPtr notFoundText = "The uidesc file location cannot be found.")
-{
-	CFileStream stream;
-	if (stream.open (uiDesc.getFilePath (), CFileStream::kReadMode))
-		return UIDescCheckFilePathResult::exists;
-
-	SharedPointer<CFrame> frame (_frame);
-	if (!frame)
-		frame = makeOwned<CFrame> (CRect (), nullptr);
-
-	AlertBoxConfig alertConfig;
-	alertConfig.headline = notFoundText;
-	alertConfig.description = uiDesc.getFilePath ();
-	alertConfig.defaultButton = "Locate";
-	alertConfig.secondButton = "Close";
-	auto alertResult = IApplication::instance ().showAlertBox (alertConfig);
-	if (alertResult == AlertResult::secondButton)
-	{
-		return UIDescCheckFilePathResult::cancel;
-	}
-	auto fs = owned (CNewFileSelector::create (frame, CNewFileSelector::kSelectFile));
-	fs->setDefaultExtension (CFileExtension ("UIDescription File", "uidesc"));
-	if (fs->runModal ())
-	{
-		if (fs->getNumSelectedFiles () == 0)
-		{
-			return UIDescCheckFilePathResult::cancel;
-		}
-		uiDesc.setFilePath (fs->getSelectedFile (0));
-		auto settings = uiDesc.getCustomAttributes ("UIDescFilePath", true);
-		settings->setAttribute ("path", uiDesc.getFilePath ());
-		return UIDescCheckFilePathResult::newPathSet;
-	}
-	return UIDescCheckFilePathResult::cancel;
-}
-
-#endif
-
-//------------------------------------------------------------------------
-struct SharedResources
-{
-	static SharedResources& instance ()
-	{
-		static SharedResources gInstance;
-		return gInstance;
-	}
-
-	const SharedPointer<UIDescription>& get ()
-	{
-		load ();
-		return uiDesc;
-	}
-
-	void unuse ()
-	{
-		save ();
-		if (uiDesc && uiDesc->getNbReference () == 1)
-			uiDesc = nullptr;
-	}
-
-private:
-	bool load ()
-	{
-		if (uiDesc)
-			return true;
-		auto filename = IApplication::instance ().getDelegate ().getSharedUIResourceFilename ();
-		if (!filename)
-			return true;
-
-#if VSTGUI_LIVE_EDITING
-		auto& absPath = EditFileMap::get (filename);
-		if (!absPath.empty ())
-			filename = absPath.data ();
-#endif
-
-		uiDesc = makeOwned<UIDescription> (filename);
-		if (!uiDesc->parse ())
-		{
-#if VSTGUI_LIVE_EDITING
-			if (!initUIDescAsNew (*uiDesc, nullptr))
-				return false;
-			else
-#endif
-				return false;
-		}
-		auto settings = uiDesc->getCustomAttributes ("UIDescFilePath", true);
-		auto filePath = settings->getAttributeValue ("path");
-		if (filePath)
-			uiDesc->setFilePath (filePath->data ());
-
-#if VSTGUI_LIVE_EDITING
-		checkAndUpdateUIDescFilePath (*uiDesc, nullptr,
-		                              "The resource ui desc file location cannot be found.");
-		EditFileMap::set (IApplication::instance ().getDelegate ().getSharedUIResourceFilename (),
-		                  uiDesc->getFilePath ());
-#endif
-		return true;
-	}
-
-	bool save ()
-	{
-#if VSTGUI_LIVE_EDITING
-		if (uiDesc == nullptr)
-			return true;
-
-		if (uiDesc->save (uiDesc->getFilePath (), UIDescription::kWriteImagesIntoXMLFile))
-			return true;
-		AlertBoxConfig config;
-		config.headline = "Saving the shared resources uidesc file failed.";
-		IApplication::instance ().showAlertBox (config);
-		return false;
-#else
-		return true;
-#endif
-	}
-	SharedPointer<UIDescription> uiDesc;
-};
 
 //------------------------------------------------------------------------
 class WindowController : public IWindowController, public ICommandHandler
@@ -415,7 +232,6 @@ struct WindowController::Impl : public IController, public ICommandHandler
 		if (uiDesc && uiDesc->getSharedResources ())
 		{
 			uiDesc->setSharedResources (nullptr);
-			SharedResources::instance ().unuse ();
 		}
 	}
 
@@ -568,7 +384,7 @@ struct WindowController::Impl : public IController, public ICommandHandler
 	bool initUIDesc (const char* fileName)
 	{
 		uiDesc = makeOwned<UIDescription> (fileName);
-		uiDesc->setSharedResources (SharedResources::instance ().get ());
+		uiDesc->setSharedResources (Detail::getSharedUIDescription ());
 		if (!uiDesc->parse ())
 		{
 			return false;
@@ -744,9 +560,8 @@ struct WindowController::EditImpl : WindowController::Impl
 	bool init (WindowPtr& inWindow, const char* fileName, const char* templateName) override
 	{
 		this->filename = fileName;
-		auto& absPath = EditFileMap::get (fileName);
-		if (!absPath.empty ())
-			fileName = absPath.data ();
+		if (auto absPath = Detail::getEditFileMap ().get (fileName))
+			fileName = *absPath;
 		window = inWindow.get ();
 		frame = makeOwned<CFrame> (CRect (), nullptr);
 		frame->setTransparency (true);
@@ -798,7 +613,7 @@ struct WindowController::EditImpl : WindowController::Impl
 
 	void initAsNew ()
 	{
-		if (initUIDescAsNew (*uiDesc, frame))
+		if (Detail::initUIDescAsNew (*uiDesc, frame))
 		{
 			enableEditing (true, true);
 			save (true);
@@ -812,10 +627,10 @@ struct WindowController::EditImpl : WindowController::Impl
 
 	void checkFileExists ()
 	{
-		auto result = checkAndUpdateUIDescFilePath (*uiDesc, frame);
-		if (result == UIDescCheckFilePathResult::exists)
+		auto result = Detail::checkAndUpdateUIDescFilePath (*uiDesc, frame);
+		if (result == Detail::UIDescCheckFilePathResult::exists)
 			return;
-		if (result == UIDescCheckFilePathResult::newPathSet)
+		if (result == Detail::UIDescCheckFilePathResult::newPathSet)
 		{
 			save (true);
 			return;
@@ -836,7 +651,9 @@ struct WindowController::EditImpl : WindowController::Impl
 				IApplication::instance ().showAlertBox (config);
 			}
 			else
-				EditFileMap::set (filename, uiDesc->getFilePath ());
+				Detail::getEditFileMap ().set (filename, uiDesc->getFilePath ());
+			if (uiEditController->getUndoManager ()->isSavePosition () == false)
+				Detail::saveSharedUIDescription ();
 		}
 	}
 
