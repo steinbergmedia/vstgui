@@ -273,7 +273,9 @@ struct WindowController::Impl : public IController, public ICommandHandler
 		{
 			if (auto customController = customization->dynamicCast<IWindowController> ())
 			{
-				return customController->constraintSize (*window, newSize);
+				auto p = customController->constraintSize (*window, newSize);
+				if (p != newSize)
+					return p;
 			}
 		}
 		CPoint p (newSize);
