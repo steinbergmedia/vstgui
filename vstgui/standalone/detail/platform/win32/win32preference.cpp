@@ -43,10 +43,8 @@ bool Win32Preference::set (const UTF8String& key, const UTF8String& value)
 }
 
 //------------------------------------------------------------------------
-UTF8String Win32Preference::get (const UTF8String& key)
+Optional<UTF8String> Win32Preference::get (const UTF8String& key)
 {
-	UTF8String result;
-
 	auto keyStr = dynamic_cast<WinString*> (key.getPlatformString ());
 	vstgui_assert (keyStr);
 
@@ -56,17 +54,16 @@ UTF8String Win32Preference::get (const UTF8String& key)
 	        RegQueryValueEx (hKey, keyStr->getWideString (), NULL, &dwType, nullptr, &dwCount)) &&
 	    dwType == REG_SZ && dwCount > 0)
 	{
-		auto buffer = new uint8_t[dwCount + 1];
-		if (SUCCEEDED (
-		        RegQueryValueEx (hKey, keyStr->getWideString (), NULL, &dwType, buffer, &dwCount)))
+		auto buffer = std::make_unique<uint8_t[]> (dwCount + 1);
+		if (SUCCEEDED (RegQueryValueEx (hKey, keyStr->getWideString (), NULL, &dwType,
+		                                buffer.get (), &dwCount)))
 		{
-			UTF8StringHelper helper (reinterpret_cast<const WCHAR*> (buffer));
-			result = helper;
+			UTF8StringHelper helper (reinterpret_cast<const WCHAR*> (buffer.get ()));
+			return Optional<UTF8String> (helper);
 		}
-		delete[] buffer;
 	}
 
-	return result;
+	return {};
 }
 
 //------------------------------------------------------------------------

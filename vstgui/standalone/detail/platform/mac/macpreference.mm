@@ -16,13 +16,13 @@ bool MacPreference::set (const UTF8String& key, const UTF8String& value)
 }
 
 //------------------------------------------------------------------------
-UTF8String MacPreference::get (const UTF8String& key)
+Optional<UTF8String> MacPreference::get (const UTF8String& key)
 {
 	NSString* value =
 	    [[NSUserDefaults standardUserDefaults] stringForKey:stringFromUTF8String (key)];
 	if (value != nil)
-		return UTF8String ([value UTF8String]);
-	return UTF8String ();
+		return Optional<UTF8String> (UTF8String ([value UTF8String]));
+	return {};
 }
 
 //------------------------------------------------------------------------

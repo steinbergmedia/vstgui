@@ -116,7 +116,7 @@ inline const T* Optional<T>::operator-> () const
 template <typename T>
 inline T* Optional<T>::operator-> ()
 {
-	return _value.second;
+	return &_value.second;
 }
 
 //------------------------------------------------------------------------

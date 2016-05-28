@@ -157,10 +157,9 @@ void Window::show ()
 	bool positionChanged = false;
 	if (!autoSaveFrameName.empty ())
 	{
-		auto frameName = IApplication::instance ().getPreferences ().get (autoSaveFrameName);
-		if (!frameName.empty ())
+		if (auto frameName = IApplication::instance ().getPreferences ().get (autoSaveFrameName))
 		{
-			auto ps = positionAndSizeFromString (frameName);
+			auto ps = positionAndSizeFromString (*frameName);
 			if (ps.pos != nullPoint && ps.size != nullPoint)
 			{
 				setPosition (ps.pos);
