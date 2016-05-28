@@ -155,7 +155,7 @@ public:
 		CommandRejected,
 		CommandUnknown
 	};
-	HandleCommandResult handleCommand (const WORD &cmdID);
+	HandleCommandResult handleCommand (const WORD& cmdID);
 
 private:
 	void makeTransparent ();
@@ -616,29 +616,29 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 	return DefWindowProc (hwnd, message, wParam, lParam);
 }
 
-auto Window::handleCommand(const WORD &cmdID) -> HandleCommandResult
+auto Window::handleCommand (const WORD& cmdID) -> HandleCommandResult
 {
-	auto app = Detail::getApplicationPlatformAccess();
+	auto app = Detail::getApplicationPlatformAccess ();
 	WORD cmd = 0;
-	for (auto& grp : app->getCommandList())
+	for (auto& grp : app->getCommandList ())
 	{
 		for (auto& e : grp.second)
 		{
 			if (cmd == cmdID)
 			{
-				if (delegate->canHandleCommand(e))
+				if (delegate->canHandleCommand (e))
 				{
-					if (delegate->handleCommand(e))
+					if (delegate->handleCommand (e))
 						return HandleCommandResult::CommandHandled;
 				}
 				else
 				{
-					if (auto commandHandler = Detail::getApplicationPlatformAccess()
-						->dynamicCast<ICommandHandler>())
+					if (auto commandHandler = Detail::getApplicationPlatformAccess ()
+					                              ->dynamicCast<ICommandHandler> ())
 					{
-						if (commandHandler->canHandleCommand(e))
+						if (commandHandler->canHandleCommand (e))
 						{
-							if (commandHandler->handleCommand(e))
+							if (commandHandler->handleCommand (e))
 								return HandleCommandResult::CommandHandled;
 						}
 					}
@@ -672,8 +672,7 @@ LRESULT CALLBACK childWindowProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM
 				RemoveWindowSubclass (child, childWindowProc, 0);
 				break;
 			}
-			default:
-				return DefSubclassProc (hWnd, message, wParam, lParam);
+			default: return DefSubclassProc (hWnd, message, wParam, lParam);
 		}
 	}
 	else if (message == WM_NCHITTEST)

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "interface.h"
-#include "../lib/optional.h"
 #include "../lib/vstguifwd.h"
+#include "../lib/optional.h"
+#include "interface.h"
 
 //------------------------------------------------------------------------
 namespace VSTGUI {

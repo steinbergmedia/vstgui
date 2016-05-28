@@ -1,10 +1,10 @@
 #include "window.h"
 #include "../../lib/cframe.h"
-#include "../../lib/dispatchlist.h"
 #include "../../lib/controls/coptionmenu.h"
+#include "../../lib/dispatchlist.h"
 #include "../../uidescription/icontroller.h"
-#include "../icommand.h"
 #include "../iapplication.h"
+#include "../icommand.h"
 #include "../ipreference.h"
 #include "../iwindowcontroller.h"
 #include "platform/iplatformwindow.h"
@@ -279,7 +279,10 @@ void Window::onHide ()
 }
 
 //------------------------------------------------------------------------
-bool Window::canClose () { return controller ? controller->canClose (*this) : true; }
+bool Window::canClose ()
+{
+	return controller ? controller->canClose (*this) : true;
+}
 
 //------------------------------------------------------------------------
 void Window::onActivated ()
@@ -298,7 +301,10 @@ void Window::onDeactivated ()
 }
 
 //------------------------------------------------------------------------
-void Window::registerWindowListener (IWindowListener* listener) { windowListeners.add (listener); }
+void Window::registerWindowListener (IWindowListener* listener)
+{
+	windowListeners.add (listener);
+}
 
 //------------------------------------------------------------------------
 void Window::unregisterWindowListener (IWindowListener* listener)

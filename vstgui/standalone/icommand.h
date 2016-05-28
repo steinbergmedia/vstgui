@@ -1,7 +1,7 @@
 #pragma once
 
-#include "interface.h"
 #include "../lib/cstring.h"
+#include "interface.h"
 
 //------------------------------------------------------------------------
 namespace VSTGUI {

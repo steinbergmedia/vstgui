@@ -1,8 +1,8 @@
 #include "win32preference.h"
-#include "../../../iapplication.h"
-#include "../../../iappdelegate.h"
-#include "../../../../lib/platform/win32/winstring.h"
 #include "../../../../lib/platform/win32/win32support.h"
+#include "../../../../lib/platform/win32/winstring.h"
+#include "../../../iappdelegate.h"
+#include "../../../iapplication.h"
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -24,7 +24,10 @@ Win32Preference::Win32Preference ()
 }
 
 //------------------------------------------------------------------------
-Win32Preference::~Win32Preference () { RegCloseKey (hKey); }
+Win32Preference::~Win32Preference ()
+{
+	RegCloseKey (hKey);
+}
 
 //------------------------------------------------------------------------
 bool Win32Preference::set (const UTF8String& key, const UTF8String& value)

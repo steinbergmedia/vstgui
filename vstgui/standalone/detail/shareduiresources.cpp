@@ -55,7 +55,7 @@ public:
 	static SharedUIResources& instance () noexcept;
 
 	SharedUIResources () noexcept;
-	
+
 	void cleanup ();
 
 	Optional<CColor> getColor (const UTF8String& name) const override;
@@ -63,10 +63,15 @@ public:
 	Optional<CGradient*> getGradient (const UTF8String& name) const override;
 	Optional<CFontDesc*> getFont (const UTF8String& name) const override;
 
-	SharedPointer<UIDescription> get () const { load (); return uiDesc; }
+	SharedPointer<UIDescription> get () const
+	{
+		load ();
+		return uiDesc;
+	}
+
 private:
 	void load () const;
-	
+
 	mutable bool loadDone {false};
 	mutable SharedPointer<UIDescription> uiDesc;
 };
@@ -97,12 +102,12 @@ void SharedUIResources::load () const
 	loadDone = true;
 	if (auto filename = IApplication::instance ().getDelegate ().getSharedUIResourceFilename ())
 	{
-		
+
 #if VSTGUI_LIVE_EDITING
 		if (auto absPath = Detail::getEditFileMap ().get (filename))
 			filename = *absPath;
 #endif
-		
+
 		auto description = makeOwned<UIDescription> (filename);
 		if (!description->parse ())
 		{
@@ -117,19 +122,19 @@ void SharedUIResources::load () const
 		auto filePath = settings->getAttributeValue ("path");
 		if (filePath)
 			description->setFilePath (filePath->data ());
-		
+
 		uiDesc = description;
 #if VSTGUI_LIVE_EDITING
 		auto res = Detail::checkAndUpdateUIDescFilePath (
-														 *description, nullptr, "The resource ui desc file location cannot be found.");
+		    *description, nullptr, "The resource ui desc file location cannot be found.");
 		if (res == UIDescCheckFilePathResult::cancel)
 		{
 			IApplication::instance ().quit ();
 			return;
 		}
 		Detail::getEditFileMap ().set (
-									   IApplication::instance ().getDelegate ().getSharedUIResourceFilename (),
-									   description->getFilePath ());
+		    IApplication::instance ().getDelegate ().getSharedUIResourceFilename (),
+		    description->getFilePath ());
 		if (res == UIDescCheckFilePathResult::newPathSet)
 			saveSharedUIDescription ();
 #endif

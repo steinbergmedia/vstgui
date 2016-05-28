@@ -2,8 +2,8 @@
 
 #include "../iuidescwindow.h"
 #include "valuelistener.h"
-#include <unordered_map>
 #include <functional>
+#include <unordered_map>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -33,12 +33,12 @@ struct ValueCalls
 		c.onEndEditCall = std::move (call);
 		return c;
 	}
-	
+
 	static ValueCalls onAction (const Call& call)
 	{
 		ValueCalls c;
 		c.onEndEditCall = [call] (IValue& v) {
-			if (v.getValue() > 0.5)
+			if (v.getValue () > 0.5)
 				call (v);
 		};
 		return c;

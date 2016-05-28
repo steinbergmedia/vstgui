@@ -26,7 +26,6 @@ public:
 	void onSetContentView (IWindow& window, const SharedPointer<CFrame>& contentView) override {}
 };
 
-
 //------------------------------------------------------------------------
 } // Standalone
 } // VSTGUI

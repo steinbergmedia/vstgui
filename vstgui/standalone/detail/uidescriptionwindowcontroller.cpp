@@ -1,24 +1,24 @@
-#include "shareduiresources.h"
-#include "../iuidescwindow.h"
-#include "../iapplication.h"
-#include "../iappdelegate.h"
-#include "../ialertbox.h"
-#include "../helpers/windowcontroller.h"
-#include "../helpers/valuelistener.h"
-#include "../../lib/iviewlistener.h"
-#include "../../lib/cframe.h"
-#include "../../lib/crect.h"
 #include "../../lib/cfileselector.h"
-#include "../../lib/cvstguitimer.h"
+#include "../../lib/cframe.h"
 #include "../../lib/controls/coptionmenu.h"
-#include "../../lib/controls/ctextedit.h"
 #include "../../lib/controls/csegmentbutton.h"
-#include "../../uidescription/uidescription.h"
-#include "../../uidescription/uiattributes.h"
+#include "../../lib/controls/ctextedit.h"
+#include "../../lib/crect.h"
+#include "../../lib/cvstguitimer.h"
+#include "../../lib/iviewlistener.h"
 #include "../../uidescription/cstream.h"
 #include "../../uidescription/detail/uiviewcreatorattributes.h"
 #include "../../uidescription/editing/uieditcontroller.h"
 #include "../../uidescription/editing/uieditmenucontroller.h"
+#include "../../uidescription/uiattributes.h"
+#include "../../uidescription/uidescription.h"
+#include "../helpers/valuelistener.h"
+#include "../helpers/windowcontroller.h"
+#include "../ialertbox.h"
+#include "../iappdelegate.h"
+#include "../iapplication.h"
+#include "../iuidescwindow.h"
+#include "shareduiresources.h"
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -777,43 +777,74 @@ CPoint WindowController::constraintSize (const IWindow& window, const CPoint& ne
 }
 
 //------------------------------------------------------------------------
-bool WindowController::canClose (const IWindow& window) const { return impl ? impl->canClose () : true; }
+bool WindowController::canClose (const IWindow& window) const
+{
+	return impl ? impl->canClose () : true;
+}
 
 //------------------------------------------------------------------------
-void WindowController::onClosed (const IWindow& window) { if (impl) impl->onClosed (); impl = nullptr; }
+void WindowController::onClosed (const IWindow& window)
+{
+	if (impl)
+		impl->onClosed ();
+	impl = nullptr;
+}
 
 //------------------------------------------------------------------------
-void WindowController::beforeShow (IWindow& window) { if (impl) impl->beforeShow (); }
+void WindowController::beforeShow (IWindow& window)
+{
+	if (impl)
+		impl->beforeShow ();
+}
 
 //------------------------------------------------------------------------
 void WindowController::onSetContentView (IWindow& window, const SharedPointer<CFrame>& contentView)
 {
-	if (impl) impl->onSetContentView (contentView);
+	if (impl)
+		impl->onSetContentView (contentView);
 }
 
 //------------------------------------------------------------------------
 void WindowController::onSizeChanged (const IWindow& window, const CPoint& newSize)
 {
-	if (impl) impl->onSizeChanged (newSize);
+	if (impl)
+		impl->onSizeChanged (newSize);
 }
 
 //------------------------------------------------------------------------
 void WindowController::onPositionChanged (const IWindow& window, const CPoint& newPosition)
 {
-	if (impl) impl->onPositionChanged (newPosition);
+	if (impl)
+		impl->onPositionChanged (newPosition);
 }
 
 //------------------------------------------------------------------------
-void WindowController::onShow (const IWindow& window) { if (impl) impl->onShow (); }
+void WindowController::onShow (const IWindow& window)
+{
+	if (impl)
+		impl->onShow ();
+}
 
 //------------------------------------------------------------------------
-void WindowController::onHide (const IWindow& window) { if (impl) impl->onHide (); }
+void WindowController::onHide (const IWindow& window)
+{
+	if (impl)
+		impl->onHide ();
+}
 
 //------------------------------------------------------------------------
-void WindowController::onActivated (const IWindow& window) { if (impl) impl->onActivated (); }
+void WindowController::onActivated (const IWindow& window)
+{
+	if (impl)
+		impl->onActivated ();
+}
 
 //------------------------------------------------------------------------
-void WindowController::onDeactivated (const IWindow& window) { if (impl) impl->onDeactivated (); }
+void WindowController::onDeactivated (const IWindow& window)
+{
+	if (impl)
+		impl->onDeactivated ();
+}
 
 //------------------------------------------------------------------------
 bool WindowController::canHandleCommand (const Command& command)

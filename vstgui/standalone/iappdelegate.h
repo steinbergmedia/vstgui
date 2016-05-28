@@ -1,8 +1,8 @@
 #pragma once
 
-#include "interface.h"
 #include "fwd.h"
 #include "../lib/cstring.h"
+#include "interface.h"
 #include <memory>
 
 //------------------------------------------------------------------------

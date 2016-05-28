@@ -27,7 +27,7 @@ public:
 	virtual const CommandLineArguments& getCommandLineArguments () const = 0;
 	/** Get the shared UI resources */
 	virtual const ISharedUIResources& getSharedUIResources () const = 0;
-	
+
 	/** Create a new window
 	 *
 	 *	@param config window configuration

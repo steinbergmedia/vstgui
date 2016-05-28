@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../../iwindow.h"
-#include "../../icommand.h"
 #include "../../../lib/platform/iplatformframe.h"
+#include "../../icommand.h"
+#include "../../iwindow.h"
 
 //------------------------------------------------------------------------
 namespace VSTGUI {

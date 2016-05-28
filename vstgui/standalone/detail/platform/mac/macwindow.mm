@@ -1,11 +1,11 @@
 #import <Cocoa/Cocoa.h>
 
-#import "macwindow.h"
-#import "VSTGUICommand.h"
-#import "../iplatformwindow.h"
-#import "../../../../lib/platform/mac/macstring.h"
-#import "../../../../lib/cvstguitimer.h"
 #import "../../../../lib/cframe.h"
+#import "../../../../lib/cvstguitimer.h"
+#import "../../../../lib/platform/mac/macstring.h"
+#import "../iplatformwindow.h"
+#import "VSTGUICommand.h"
+#import "macwindow.h"
 
 #ifndef MAC_OS_X_VERSION_10_11
 #define MAC_OS_X_VERSION_10_11 101100
@@ -173,10 +173,16 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 }
 
 //------------------------------------------------------------------------
-bool Window::isPopup () const { return [nsWindow isKindOfClass:[NSPanel class]]; }
+bool Window::isPopup () const
+{
+	return [nsWindow isKindOfClass:[NSPanel class]];
+}
 
 //------------------------------------------------------------------------
-void Window::onSetContentView (CFrame* newFrame) { frame = newFrame; }
+void Window::onSetContentView (CFrame* newFrame)
+{
+	frame = newFrame;
+}
 
 //------------------------------------------------------------------------
 void Window::windowDidResize (const CPoint& newSize)
@@ -279,13 +285,22 @@ void Window::hide ()
 }
 
 //------------------------------------------------------------------------
-void Window::close () { [nsWindow performClose:nil]; }
+void Window::close ()
+{
+	[nsWindow performClose:nil];
+}
 
 //------------------------------------------------------------------------
-void Window::activate () { [nsWindow makeKeyAndOrderFront:nil]; }
+void Window::activate ()
+{
+	[nsWindow makeKeyAndOrderFront:nil];
+}
 
 //------------------------------------------------------------------------
-void Window::center () { [nsWindow center]; }
+void Window::center ()
+{
+	[nsWindow center];
+}
 
 } // Mac
 
@@ -367,10 +382,16 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 }
 
 //------------------------------------------------------------------------
-- (void)windowWillClose:(NSNotification*)notification { self.macWindow->windowWillClose (); }
+- (void)windowWillClose:(NSNotification*)notification
+{
+	self.macWindow->windowWillClose ();
+}
 
 //------------------------------------------------------------------------
-- (BOOL)windowShouldClose:(id)sender { return self.macWindow->getDelegate ().canClose (); }
+- (BOOL)windowShouldClose:(id)sender
+{
+	return self.macWindow->getDelegate ().canClose ();
+}
 
 //------------------------------------------------------------------------
 - (void)windowDidBecomeKey:(NSNotification*)notification
@@ -406,7 +427,10 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 }
 
 //------------------------------------------------------------------------
-- (BOOL)canBecomeKeyWindow { return YES; }
+- (BOOL)canBecomeKeyWindow
+{
+	return YES;
+}
 
 //------------------------------------------------------------------------
 - (void)performClose:(nullable id)sender
@@ -445,7 +469,10 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 @implementation VSTGUIPopup
 
 //------------------------------------------------------------------------
-- (BOOL)canBecomeKeyWindow { return YES; }
+- (BOOL)canBecomeKeyWindow
+{
+	return YES;
+}
 
 //------------------------------------------------------------------------
 - (void)mouseDown:(NSEvent*)theEvent
@@ -486,7 +513,10 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 }
 
 //------------------------------------------------------------------------
-- (void)cancelOperation:(nullable id)sender { [self resignKeyWindow]; }
+- (void)cancelOperation:(nullable id)sender
+{
+	[self resignKeyWindow];
+}
 
 //------------------------------------------------------------------------
 - (void)performClose:(nullable id)sender
@@ -507,6 +537,9 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 @implementation VSTGUIPopupDelegate
 
 //------------------------------------------------------------------------
-- (void)windowDidResignKey:(NSNotification*)notification { [self.macWindow->getNSWindow () close]; }
+- (void)windowDidResignKey:(NSNotification*)notification
+{
+	[self.macWindow->getNSWindow () close];
+}
 
 @end

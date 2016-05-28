@@ -1,8 +1,8 @@
 #pragma once
 
 #include "fwd.h"
-#include "interface.h"
 #include "../lib/cpoint.h"
+#include "interface.h"
 
 //------------------------------------------------------------------------
 namespace VSTGUI {

@@ -1,12 +1,12 @@
 #include "application.h"
+#include "../../lib/cview.h"
+#include "../../lib/cvstguitimer.h"
 #include "../iappdelegate.h"
 #include "../iapplication.h"
+#include "../icommand.h"
 #include "../iwindowcontroller.h"
 #include "shareduiresources.h"
 #include "window.h"
-#include "../icommand.h"
-#include "../../lib/cview.h"
-#include "../../lib/cvstguitimer.h"
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -93,7 +93,7 @@ void Application::init (IPreference& preferences, IApplication::CommandLineArgum
 	registerCommand (Commands::Copy, 'c');
 	registerCommand (Commands::Paste, 'v');
 	registerCommand (Commands::SelectAll, 'a');
-	
+
 	getDelegate ().finishLaunching ();
 }
 
@@ -177,15 +177,18 @@ bool Application::canQuit ()
 
 	for (auto& window : windows)
 	{
-		if (window->getController () && !window->getController()->canClose (*window))
+		if (window->getController () && !window->getController ()->canClose (*window))
 			return false;
 	}
-	
+
 	return true;
 }
 
 //------------------------------------------------------------------------
-const Application::CommandList& Application::getCommandList () { return commandList; }
+const Application::CommandList& Application::getCommandList ()
+{
+	return commandList;
+}
 
 //------------------------------------------------------------------------
 void Application::registerCommand (const Command& command, char16_t defaultCommandKey)
@@ -282,7 +285,10 @@ void Application::onActivated (const IWindow& window)
 } // Detail
 
 //------------------------------------------------------------------------
-IApplication& IApplication::instance () { return Detail::Application::instance (); }
+IApplication& IApplication::instance ()
+{
+	return Detail::Application::instance ();
+}
 
 //------------------------------------------------------------------------
 namespace Application {

@@ -37,9 +37,8 @@ ValuePtr makeStringListValue (const UTF8String& id, const IStringListValue::Stri
 
 //------------------------------------------------------------------------
 ValueStringConverterPtr makePercentConverter ();
-	
+
 //------------------------------------------------------------------------
 } // Value
-
 } // Standalone
 } // VSTGUI

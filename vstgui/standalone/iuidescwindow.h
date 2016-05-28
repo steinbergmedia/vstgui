@@ -1,10 +1,10 @@
 #pragma once
 
+#include "../uidescription/uidescriptionfwd.h"
 #include "fwd.h"
-#include "iwindow.h"
 #include "icommand.h"
 #include "ivalue.h"
-#include "../uidescription/uidescriptionfwd.h"
+#include "iwindow.h"
 #include <vector>
 
 //------------------------------------------------------------------------

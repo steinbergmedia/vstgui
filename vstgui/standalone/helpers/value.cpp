@@ -1,6 +1,6 @@
 #include "value.h"
-#include "../ivaluelistener.h"
 #include "../../lib/dispatchlist.h"
+#include "../ivaluelistener.h"
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -30,13 +30,12 @@ public:
 		auto v = static_cast<uint32_t> (value * 100.);
 		return toString (v) + " %";
 	}
-	
+
 	IValue::Type stringAsValue (const UTF8String& string) const override
 	{
 		auto v = UTF8StringView (string).toDouble ();
 		return v / 100.;
 	}
-
 };
 
 //------------------------------------------------------------------------
@@ -78,7 +77,8 @@ public:
 	{
 	}
 
-	explicit StringListValueStringConverter (const IStringListValue::StringList& list) : strings (list)
+	explicit StringListValueStringConverter (const IStringListValue::StringList& list)
+	: strings (list)
 	{
 	}
 
@@ -197,8 +197,8 @@ bool Value::performEdit (Type newValue)
 {
 	if (newValue < 0. || newValue > 1.)
 		return false;
-//	if (newValue == value)
-//		return true;
+	//	if (newValue == value)
+	//		return true;
 	value = newValue;
 
 	listeners.forEach ([this] (IValueListener* l) { l->onPerformEdit (*this, value); });
@@ -228,25 +228,46 @@ void Value::setActive (bool state)
 }
 
 //------------------------------------------------------------------------
-bool Value::isActive () const { return active; }
+bool Value::isActive () const
+{
+	return active;
+}
 
 //------------------------------------------------------------------------
-Value::Type Value::getValue () const { return value; }
+Value::Type Value::getValue () const
+{
+	return value;
+}
 
 //------------------------------------------------------------------------
-bool Value::isEditing () const { return editCount != 0; }
+bool Value::isEditing () const
+{
+	return editCount != 0;
+}
 
 //------------------------------------------------------------------------
-const UTF8String& Value::getID () const { return idString; }
+const UTF8String& Value::getID () const
+{
+	return idString;
+}
 
 //------------------------------------------------------------------------
-const IValueStringConverter& Value::getStringConverter () const { return *stringConverter.get (); }
+const IValueStringConverter& Value::getStringConverter () const
+{
+	return *stringConverter.get ();
+}
 
 //------------------------------------------------------------------------
-void Value::registerListener (IValueListener* listener) { listeners.add (listener); }
+void Value::registerListener (IValueListener* listener)
+{
+	listeners.add (listener);
+}
 
 //------------------------------------------------------------------------
-void Value::unregisterListener (IValueListener* listener) { listeners.remove (listener); }
+void Value::unregisterListener (IValueListener* listener)
+{
+	listeners.remove (listener);
+}
 
 //------------------------------------------------------------------------
 void Value::dispatchStateChange ()
@@ -276,7 +297,10 @@ bool StepValue::performEdit (Type newValue)
 }
 
 //------------------------------------------------------------------------
-StepValue::StepType StepValue::getSteps () const { return steps + 1; }
+StepValue::StepType StepValue::getSteps () const
+{
+	return steps + 1;
+}
 
 //------------------------------------------------------------------------
 IValue::Type StepValue::stepToValue (StepType step) const

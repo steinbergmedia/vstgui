@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../../../interface.h"
 #include "../../../fwd.h"
+#include "../../../interface.h"
 
 #ifndef _WINDEF_
 struct HWND__;

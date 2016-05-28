@@ -1,7 +1,7 @@
 #pragma once
 
-#import <Foundation/Foundation.h>
 #import "../../application.h"
+#import <Foundation/Foundation.h>
 
 //------------------------------------------------------------------------
 @interface VSTGUICommand : NSObject
