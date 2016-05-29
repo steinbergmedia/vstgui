@@ -1,4 +1,5 @@
 #include "shareduiresources.h"
+#include "application.h"
 #include "../../lib/cbitmap.h"
 #include "../../lib/ccolor.h"
 #include "../../lib/cfileselector.h"

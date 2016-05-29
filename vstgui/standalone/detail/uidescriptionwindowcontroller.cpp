@@ -18,6 +18,7 @@
 #include "../iappdelegate.h"
 #include "../iapplication.h"
 #include "../iuidescwindow.h"
+#include "application.h"
 #include "shareduiresources.h"
 
 //------------------------------------------------------------------------
@@ -615,6 +616,8 @@ struct WindowController::EditImpl : WindowController::Impl
 
 	void initAsNew ()
 	{
+		Detail::PreventPopupClose ppc (window);
+
 		if (Detail::initUIDescAsNew (*uiDesc, frame))
 		{
 			enableEditing (true, true);
@@ -629,6 +632,8 @@ struct WindowController::EditImpl : WindowController::Impl
 
 	void checkFileExists ()
 	{
+		Detail::PreventPopupClose ppc (window);
+
 		auto result = Detail::checkAndUpdateUIDescFilePath (*uiDesc, frame);
 		if (result == Detail::UIDescCheckFilePathResult::exists)
 			return;

@@ -515,7 +515,8 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 				delegate->onDeactivated ();
 				if (isPopup)
 				{
-					close ();
+					if (!Detail::getApplicationPlatformAccess ()->dontClosePopupOnDeactivation (this))
+						close ();
 				}
 			}
 			return 0;

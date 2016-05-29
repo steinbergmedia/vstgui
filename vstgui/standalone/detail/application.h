@@ -3,6 +3,7 @@
 #include "../ialertbox.h"
 #include "../iapplication.h"
 #include "../icommand.h"
+#include "platform/iplatformwindow.h"
 #include "../interface.h"
 #include <functional>
 #include <vector>
@@ -44,6 +45,8 @@ public:
 
 	virtual const CommandList& getCommandList () = 0;
 	virtual bool canQuit () = 0;
+
+	virtual bool dontClosePopupOnDeactivation (Platform::IWindow* window) = 0;
 };
 
 //------------------------------------------------------------------------
@@ -51,6 +54,17 @@ inline IApplicationPlatformAccess* getApplicationPlatformAccess ()
 {
 	return IApplication::instance ().dynamicCast<IApplicationPlatformAccess> ();
 }
+
+//------------------------------------------------------------------------
+class PreventPopupClose
+{
+public:
+	PreventPopupClose (IWindow* window);
+	~PreventPopupClose () noexcept;
+
+private:
+	Platform::IWindow* platformWindow {nullptr};
+};
 
 //------------------------------------------------------------------------
 } // Detail

@@ -539,6 +539,9 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 //------------------------------------------------------------------------
 - (void)windowDidResignKey:(NSNotification*)notification
 {
+	auto app = VSTGUI::Standalone::Detail::getApplicationPlatformAccess ();
+	if (app->dontClosePopupOnDeactivation (self.macWindow))
+		return;
 	[self.macWindow->getNSWindow () close];
 }
 

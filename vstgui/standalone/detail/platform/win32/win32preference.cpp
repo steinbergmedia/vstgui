@@ -59,7 +59,7 @@ Optional<UTF8String> Win32Preference::get (const UTF8String& key)
 		                                buffer.get (), &dwCount)))
 		{
 			UTF8StringHelper helper (reinterpret_cast<const WCHAR*> (buffer.get ()));
-			return Optional<UTF8String> (helper);
+			return Optional<UTF8String> (UTF8String (helper));
 		}
 	}
 

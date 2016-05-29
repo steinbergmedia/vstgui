@@ -55,6 +55,7 @@ public:
 	           PlatformCallbacks&& callbacks) override;
 	const CommandList& getCommandList () override;
 	bool canQuit () override;
+	bool dontClosePopupOnDeactivation (Platform::IWindow* window) override;
 
 private:
 	bool doCommandHandling (const Command& command, bool checkOnly);
@@ -278,6 +279,35 @@ void Application::onActivated (const IWindow& window)
 		auto window = *it;
 		windows.erase (it);
 		windows.insert (windows.begin (), window);
+	}
+}
+
+static std::vector<Platform::IWindow*> popupClosePreventionList;
+
+//------------------------------------------------------------------------
+bool Application::dontClosePopupOnDeactivation (Platform::IWindow* window)
+{
+	return std::find (popupClosePreventionList.begin (), popupClosePreventionList.end (), window) !=
+	       popupClosePreventionList.end ();
+}
+
+//------------------------------------------------------------------------
+PreventPopupClose::PreventPopupClose (IWindow* window)
+{
+	if (auto pwa = window->dynamicCast<IPlatformWindowAccess>())
+	{
+		if ((platformWindow = pwa->getPlatformWindow()->dynamicCast<Platform::IWindow>()))
+			popupClosePreventionList.push_back (platformWindow);
+	}
+}
+
+//------------------------------------------------------------------------
+PreventPopupClose::~PreventPopupClose () noexcept
+{
+	auto it = std::find (popupClosePreventionList.begin (), popupClosePreventionList.end (), platformWindow);
+	if (it != popupClosePreventionList.end())
+	{
+		popupClosePreventionList.erase (it);
 	}
 }
 
