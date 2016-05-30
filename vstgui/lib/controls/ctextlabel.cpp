@@ -107,6 +107,8 @@ void CTextLabel::calculateTruncatedText ()
 			truncatedText.clear ();
 		changed (kMsgTruncatedTextChanged);
 	}
+	else if (!truncatedText.empty ())
+		truncatedText.clear ();
 }
 
 //------------------------------------------------------------------------
