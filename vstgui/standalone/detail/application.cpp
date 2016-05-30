@@ -309,6 +309,7 @@ PreventPopupClose::~PreventPopupClose () noexcept
 	{
 		popupClosePreventionList.erase (it);
 	}
+	platformWindow->activate ();
 }
 
 //------------------------------------------------------------------------
