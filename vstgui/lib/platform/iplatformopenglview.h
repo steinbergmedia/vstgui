@@ -56,9 +56,9 @@ struct PixelFormat
 		kModernOpenGL	= 1 << 3		// Mac only currently. Indicates to use the NSOpenGLProfileVersion3_2Core. Not tested !
 	};
 
-	uint32_t flags;
 	uint32_t depthSize;
 	uint32_t samples;		///< only used when kMultiSample is set
+	uint32_t flags;
 
 	PixelFormat () : depthSize (32), samples (0), flags (kAccelerated) {}
 	PixelFormat (const PixelFormat& pf) : depthSize (pf.depthSize), samples (pf.samples), flags (pf.flags) {}

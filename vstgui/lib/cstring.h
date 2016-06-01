@@ -331,8 +331,8 @@ public:
 	operator uint8_t* () const { return (uint8_t*)currentPos; }
 
 protected:
-	uint8_t* currentPos;
 	uint8_t* startPos;
+	uint8_t* currentPos;
 	size_t strLen;
 };
 
