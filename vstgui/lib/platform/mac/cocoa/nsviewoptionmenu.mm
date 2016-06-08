@@ -293,6 +293,7 @@ PlatformOptionMenuResult NSViewOptionMenu::popup (COptionMenu* optionMenu)
 	NSViewFrame* nsViewFrame = dynamic_cast<NSViewFrame*> (frame->getPlatformFrame ());
 
 	CRect globalSize = optionMenu->translateToGlobal (optionMenu->getViewSize ());
+	globalSize.offset (-frame->getViewSize ().getTopLeft ());
 
 	bool multipleCheck = optionMenu->getStyle () & (kMultipleCheckStyle & ~kCheckStyle);
 	NSView* view = nsViewFrame->getPlatformControl ();

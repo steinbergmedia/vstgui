@@ -84,6 +84,7 @@ PlatformOptionMenuResult Win32OptionMenu::popup (COptionMenu* optionMenu)
 	
 	//---Transform local coordinates to global coordinates
 	CRect rect = optionMenu->translateToGlobal (optionMenu->getViewSize ());
+	rect.offset (-optionMenu->getFrame ()->getViewSize ().getTopLeft ());
 
 	int32_t offset;
 
