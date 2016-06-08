@@ -645,7 +645,7 @@ void CGDrawContext::drawBitmap (CBitmap* bitmap, const CRect& inRect, const CPoi
 	CGImageRef image = cgBitmap ? cgBitmap->getCGImage () : nullptr;
 	if (image)
 	{
-		CGContextRef context = beginCGContext (false, false);
+		CGContextRef context = beginCGContext (false, true);
 		if (context)
 		{
 			CGLayerRef layer = cgBitmap->getCGLayer ();
