@@ -45,7 +45,7 @@ CRowColumnView::CRowColumnView (const CRect& size, Style style, LayoutStyle layo
 , layoutStyle (layoutStyle)
 , spacing (spacing)
 , margin (margin)
-, animateViewResizing (false)
+, flags (0)
 , layoutGuard (false)
 , viewResizeAnimationTime (200)
 {
@@ -96,11 +96,41 @@ void CRowColumnView::setLayoutStyle (LayoutStyle style)
 }
 
 //--------------------------------------------------------------------------------
+bool CRowColumnView::isAnimateViewResizing () const
+{
+	return flags & kAnimateViewResizing;
+}
+
+//--------------------------------------------------------------------------------
+void CRowColumnView::setAnimateViewResizing (bool state)
+{
+	if (state)
+		flags |= kAnimateViewResizing;
+	else
+		flags &= ~kAnimateViewResizing;
+}
+
+//--------------------------------------------------------------------------------
+bool CRowColumnView::hideClippedSubviews () const
+{
+	return flags & kHideClippedSubViews;
+}
+
+//--------------------------------------------------------------------------------
+void CRowColumnView::setHideClippedSubviews (bool state)
+{
+	if (state)
+		flags |= kHideClippedSubViews;
+	else
+		flags &= ~kHideClippedSubViews;
+}
+
+//--------------------------------------------------------------------------------
 void CRowColumnView::resizeSubView (CView* view, const CRect& newSize)
 {
 	if (view->getViewSize () != newSize)
 	{
-		if (isAttached () && animateViewResizing && viewResizeAnimationTime > 0)
+		if (isAttached () && isAnimateViewResizing () && viewResizeAnimationTime > 0)
 		{
 			view->addAnimation ("CRowColumnResizing", new Animation::ViewSizeAnimation (newSize, false), new Animation::LinearTimingFunction (viewResizeAnimationTime));
 		}
@@ -192,6 +222,16 @@ void CRowColumnView::layoutViews ()
 	{
 		layoutGuard = true;
 		layoutViewsEqualSize ();
+		if (hideClippedSubviews ())
+		{
+			for (auto& view : children)
+			{
+				if (view->getVisibleViewSize () != view->getViewSize ())
+					view->setVisible (false);
+				else
+					view->setVisible (true);
+			}
+		}
 		layoutGuard = false;
 	}
 }

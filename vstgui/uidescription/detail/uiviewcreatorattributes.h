@@ -104,6 +104,7 @@ static const std::string kAttrRowStyle = "row-style";
 static const std::string kAttrSpacing = "spacing";
 static const std::string kAttrMargin = "margin";
 static const std::string kAttrAnimateViewResizing = "animate-view-resizing";
+static const std::string kAttrHideClippedSubviews = "hide-clipped-subviews";
 static const std::string kAttrEqualSizeLayout = "equal-size-layout";
 static const std::string kAttrViewResizeAnimationTime = "view-resize-animation-time";
 

@@ -788,6 +788,9 @@ public:
 		attr = attributes.getAttributeValue (kAttrAnimateViewResizing);
 		if (attr)
 			rcv->setAnimateViewResizing (*attr == "true" ? true : false);
+		attr = attributes.getAttributeValue (kAttrHideClippedSubviews);
+		if (attr)
+			rcv->setHideClippedSubviews (*attr == "true" ? true : false);
 		attr = attributes.getAttributeValue (kAttrEqualSizeLayout);
 		if (attr)
 		{
@@ -814,6 +817,7 @@ public:
 		attributeNames.push_back (kAttrSpacing);
 		attributeNames.push_back (kAttrMargin);
 		attributeNames.push_back (kAttrEqualSizeLayout);
+		attributeNames.push_back (kAttrHideClippedSubviews);
 		attributeNames.push_back (kAttrAnimateViewResizing);
 		attributeNames.push_back (kAttrViewResizeAnimationTime);
 		return true;
@@ -824,6 +828,7 @@ public:
 		if (attributeName == kAttrSpacing) return kIntegerType;
 		if (attributeName == kAttrMargin) return kRectType;
 		if (attributeName == kAttrEqualSizeLayout) return kListType;
+		if (attributeName == kAttrHideClippedSubviews) return kBooleanType;
 		if (attributeName == kAttrAnimateViewResizing) return kBooleanType;
 		if (attributeName == kAttrViewResizeAnimationTime) return kIntegerType;
 		return kUnknownType;
@@ -841,6 +846,11 @@ public:
 		if (attributeName == kAttrAnimateViewResizing)
 		{
 			stringValue = rcv->isAnimateViewResizing () ? "true" : "false";
+			return true;
+		}
+		if (attributeName == kAttrHideClippedSubviews)
+		{
+			stringValue = rcv->hideClippedSubviews () ? "true" : "false";
 			return true;
 		}
 		if (attributeName == kAttrSpacing)
