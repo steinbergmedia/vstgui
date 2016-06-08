@@ -4,6 +4,7 @@
 #include "../lib/cstring.h"
 #include "interface.h"
 #include <memory>
+#include <vector>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -55,6 +56,12 @@ public:
 	 *	has its own resources.
 	 */
 	virtual UTF8StringPtr getSharedUIResourceFilename () const = 0;
+	/** Called when the system wants the app to open files
+	 *
+	 *	@param paths UTF-8 encoded paths to the files
+	 *	@return true on success
+	 */
+	virtual bool openFiles (const std::vector<UTF8String>& paths) = 0;
 };
 
 //------------------------------------------------------------------------

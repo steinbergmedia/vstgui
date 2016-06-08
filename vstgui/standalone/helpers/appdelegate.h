@@ -22,6 +22,7 @@ public:
 	bool hasPreferenceDialog () override { return false; }
 	const Info& getInfo () const override { return appInfo; }
 	UTF8StringPtr getSharedUIResourceFilename () const override { return nullptr; }
+	bool openFiles (const std::vector<UTF8String>& paths) override { return false; }
 //------------------------------------------------------------------------
 private:
 	Info appInfo;

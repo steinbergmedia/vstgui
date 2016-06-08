@@ -14,6 +14,8 @@
 {
 	VSTGUI::Standalone::Platform::Mac::MacPreference prefs;
 }
+@property NSArray<NSString*>* startupOpenFiles;
+@property BOOL hasFinishedLaunching;
 @end
 
 using namespace VSTGUI::Standalone;
@@ -421,6 +423,12 @@ static const CommandWithKeyList* getCommandList (const char* group)
 	vstgui_assert (app);
 	app->init (prefs, std::move (cmdArgs), std::move (callbacks));
 	[self setupMainMenu];
+	self.hasFinishedLaunching = YES;
+	if (self.startupOpenFiles)
+	{
+		[self openFilesInternal:self.startupOpenFiles];
+		self.startupOpenFiles = nil;
+	}
 }
 
 //------------------------------------------------------------------------
@@ -428,6 +436,31 @@ static const CommandWithKeyList* getCommandList (const char* group)
 {
 	IApplication::instance ().getDelegate ().onQuit ();
 	Detail::cleanupSharedUIResources ();
+}
+
+//------------------------------------------------------------------------
+- (BOOL)openFilesInternal:(NSArray<NSString*>*)filenames
+{
+	std::vector<VSTGUI::UTF8String> paths;
+	paths.reserve (filenames.count);
+	for (NSString* filename in filenames)
+	{
+		paths.emplace_back ([filename UTF8String]);
+	}
+	return IApplication::instance ().getDelegate ().openFiles (paths) ? YES : NO;
+}
+
+//------------------------------------------------------------------------
+- (void)application:(NSApplication*)sender openFiles:(NSArray<NSString*>*)filenames
+{
+	if (!self.hasFinishedLaunching)
+	{
+		self.startupOpenFiles = filenames;
+		return;
+	}
+	BOOL result = [self openFilesInternal:filenames];
+	[sender replyToOpenOrPrint:result ? NSApplicationDelegateReplySuccess :
+	                                    NSApplicationDelegateReplyFailure];
 }
 
 @end
