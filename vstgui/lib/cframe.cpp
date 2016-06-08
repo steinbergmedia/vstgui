@@ -1235,6 +1235,7 @@ void CFrame::invalidRect (const CRect& rect)
 
 	CRect _rect (rect);
 	getTransform ().transform (_rect);
+	_rect.makeIntegral ();
 	if (collectInvalidRects)
 		collectInvalidRects->addRect (_rect);
 	else

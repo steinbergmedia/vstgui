@@ -171,6 +171,7 @@ void CDrawContext::setClipRect (const CRect &clip)
 {
 	currentState.clipRect = clip;
 	getCurrentTransform ().transform (currentState.clipRect);
+	currentState.clipRect.makeIntegral ();
 }
 
 //-----------------------------------------------------------------------------
