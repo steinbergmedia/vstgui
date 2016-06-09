@@ -36,6 +36,7 @@
 #define __base64codec__
 
 #include "../lib/vstguibase.h"
+#include "../lib/malloc.h"
 #include <string>
 #include <cstdlib>
 
@@ -45,49 +46,42 @@ namespace VSTGUI {
 class Base64Codec
 {
 public:
-	Base64Codec () : data (0), dataSize (0) {}
-
-	~Base64Codec ()
+	bool decode (const std::string& base64String)
 	{
-		if (data)
-			std::free (data);
+		return decode (base64String.data (), base64String.length ());
 	}
 
-	bool init (const std::string& base64String)
+	template <typename T>
+	bool decode (const T* inBuffer, size_t inBufferSize)
 	{
-		if (data)
-			return false;
-		uint32_t strLen = (uint32_t)base64String.length ();
-		uint8_t* strPtr = (uint8_t*)base64String.c_str ();
-		data = (int8_t*)std::malloc ((strLen * 3 / 4) + 3);
+		static_assert (sizeof (T) == 1, "T must be one byte type");
+		data.allocate ((inBufferSize * 3 / 4) + 3);
 		uint8_t input[4];
 		uint32_t i;
-		for (i = 0; i <= strLen - 4; i += 4)
+		for (i = 0; i <= inBufferSize - 4; i += 4)
 		{
-			input[0] = *strPtr++;
-			input[1] = *strPtr++;
-			input[2] = *strPtr++;
-			input[3] = *strPtr++;
-			dataSize += decodeblock (input, (uint8_t*)(data + dataSize));
+			input[0] = static_cast<uint8_t> (*inBuffer++);
+			input[1] = static_cast<uint8_t> (*inBuffer++);
+			input[2] = static_cast<uint8_t> (*inBuffer++);
+			input[3] = static_cast<uint8_t> (*inBuffer++);
+			dataSize += decodeblock (input, reinterpret_cast<uint8_t*> (data.get () + dataSize));
 		}
-		if (i < strLen)
+		if (i < inBufferSize)
 		{
 			uint32_t j;
 			input[0] = input[1] = input[2] = input[3] = '=';
-			for (j = 0; i < strLen; i++, j++)
+			for (j = 0; i < inBufferSize; i++, j++)
 			{
-				input[j] = *strPtr++;
+				input[j] = static_cast<uint8_t> (*inBuffer++);
 			}
-			dataSize += decodeblock (input, (uint8_t*)(data + dataSize));
+			dataSize += decodeblock (input, reinterpret_cast<uint8_t*> (data.get () + dataSize));
 		}
 		return true;
 	}
 
-	bool init (const void* binaryData, uint32_t binaryDataSize)
+	bool encode (const void* binaryData, uint32_t binaryDataSize)
 	{
-		if (data)
-			return false;
-		data = (int8_t*)std::malloc ((binaryDataSize * 4) / 3 + 4);
+		data.allocate ((binaryDataSize * 4) / 3 + 4);
 		uint8_t* ptr = (uint8_t*)binaryData;
 		uint8_t input[3];
 		uint32_t i;
@@ -96,7 +90,7 @@ public:
 			input[0] = *ptr++;
 			input[1] = *ptr++;
 			input[2] = *ptr++;
-			encodeblock (input, (uint8_t*)(data + dataSize), 3);
+			encodeblock (input, (uint8_t*)(data.get () + dataSize), 3);
 			dataSize += 4;
 		}
 		if (i < binaryDataSize)
@@ -107,13 +101,13 @@ public:
 			{
 				input[j] = *ptr++;
 			}
-			encodeblock (input, (uint8_t*)(data + dataSize), j);
+			encodeblock (input, (uint8_t*)(data.get () + dataSize), j);
 			dataSize += 4;
 		}
 		return true;
 	}
 
-	const int8_t* getData () const { return data; }
+	const int8_t* getData () const { return data.get (); }
 	uint32_t getDataSize () const { return dataSize; }
 
 protected:
@@ -153,8 +147,8 @@ protected:
 		output[3] = (uint8_t)(len > 2 ? cb64[input[2] & 0x3f] : '=');
 	}
 
-	int8_t* data;
-	uint32_t dataSize;
+	Malloc<int8_t> data;
+	uint32_t dataSize {0};
 };
 
 } // namespace VSTGUI

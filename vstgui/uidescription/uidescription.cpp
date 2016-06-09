@@ -2739,12 +2739,26 @@ void UIDescription::xmlCharData (Xml::Parser* parser, const int8_t* data, int32_
 	if (nodeStack.size () == 0)
 		return;
 	std::stringstream& sstream = nodeStack.back ()->getData ();
-	for (int32_t i = 0; i < length; i++)
+	const int8_t* dataStart = nullptr;
+	uint32_t validChars = 0;
+	for (int32_t i = 0; i < length; i++, ++data)
 	{
-		if (data[i] == '\t' || data[i] == '\n' || data[i] == '\r' || data[i] == 0x20)
+		if (*data < 0x21)
+		{
+			if (dataStart)
+			{
+				sstream.write (reinterpret_cast<const char*> (dataStart), validChars);
+				dataStart = nullptr;
+				validChars = 0;
+			}
 			continue;
-		sstream << (char)data[i];
+		}
+		if (dataStart == nullptr)
+			dataStart = data;
+		++validChars;
 	}
+	if (dataStart && validChars > 0)
+		sstream.write (reinterpret_cast<const char*> (dataStart), validChars);
 }
 
 //-----------------------------------------------------------------------------
@@ -2996,14 +3010,14 @@ void UIBitmapNode::createXMLData (const std::string& pathHint)
 			if (IPlatformBitmap::createMemoryPNGRepresentation (platformBitmap, &data, dataSize))
 			{
 				Base64Codec bd;
-				if (bd.init (data, dataSize))
+				if (bd.encode (data, dataSize))
 				{
 					UINode* node = getChildren ().findChildNode ("data");
 					if (node)
 						getChildren ().remove (node);
 					UINode* dataNode = new UINode ("data");
 					dataNode->getAttributes ()->setAttribute ("encoding", "base64");
-					dataNode->getData ().write ((const char*)bd.getData (), static_cast<std::streamsize> (bd.getDataSize ()));
+					dataNode->getData ().write (reinterpret_cast<const char*> (bd.getData ()), static_cast<std::streamsize> (bd.getDataSize ()));
 					getChildren ().add (dataNode);
 				}
 				std::free (data);
@@ -3066,7 +3080,7 @@ CBitmap* UIBitmapNode::getBitmap (const std::string& pathHint)
 				if (codec && *codec == "base64")
 				{
 					Base64Codec bd;
-					if (bd.init (node->getData ().str ()))
+					if (bd.decode (node->getData ().str ()))
 					{
 						auto platformBitmap = owned (IPlatformBitmap::createFromMemory (bd.getData (), bd.getDataSize ()));
 						if (platformBitmap)

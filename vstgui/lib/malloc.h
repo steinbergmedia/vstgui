@@ -1,6 +1,6 @@
 //-----------------------------------------------------------------------------
 // VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins :
+// VSTGUI: Graphical User Interface Framework not only for VST plugins :
 //
 // Version 4.3
 //
@@ -32,53 +32,70 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#ifndef __cdropsource__
-#define __cdropsource__
+#pragma once
 
-#include "vstguibase.h"
-#include "idatapackage.h"
-#include "malloc.h"
-#include <vector>
+#include "../lib/vstguibase.h"
+#include <cstring>
 
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-// CDropSource Declaration
-//! @brief drop source
-//!
-//! @ingroup new_in_4_0
-//-----------------------------------------------------------------------------
-class CDropSource : public IDataPackage
+struct MallocAllocator
 {
-public:
-	CDropSource ();
-	CDropSource (const void* buffer, uint32_t bufferSize, Type type);
-
-	bool add (const void* buffer, uint32_t bufferSize, Type type);
-
-	// IDataPackage
-	virtual uint32_t getCount () const final;
-	virtual uint32_t getDataSize (uint32_t index) const final;
-	virtual Type getDataType (uint32_t index) const final;
-	virtual uint32_t getData (uint32_t index, const void*& buffer, Type& type) const final;
-
-	//-------------------------------------------
-	CLASS_METHODS_NOCOPY(CDropSource, IDataPackage)
-protected:
-	/// @cond ignore
-	struct CDropEntry {
-		Malloc<int8_t> buffer;
-		Type type;
-		
-		CDropEntry (const void* buffer, uint32_t bufferSize, Type type);
-		CDropEntry (const CDropEntry& entry);
-		CDropEntry (CDropEntry&& entry) noexcept;
-	};
-	/// @endcond
-	typedef std::vector<CDropEntry> DropEntryVector;
-	DropEntryVector entries;
+	static void* allocate (size_t size) { return std::malloc (size); }
+	static void deallocate (void* ptr, size_t size) { std::free (ptr); }
 };
 
-} // namespace
+//-----------------------------------------------------------------------------
+template <typename T, typename Allocator = MallocAllocator>
+class Malloc
+{
+public:
+	Malloc () = default;
+	Malloc (size_t objectCount) : count (objectCount)
+	{
+		if (objectCount)
+			allocate (objectCount);
+	}
+	Malloc (Malloc&& other) { *this = std::move (other); }
+	Malloc& operator= (Malloc&& other)
+	{
+		buffer = other.buffer;
+		count = other.count;
+		other.buffer = nullptr;
+		other.count = 0;
+		return *this;
+	}
+	Malloc (const Malloc&) = delete;
+	Malloc& operator= (const Malloc&) = delete;
+	~Malloc () { deallocate (); }
 
-#endif // __cdropsource__
+	T* get () { return buffer; }
+	const T* get () const { return buffer; }
+	size_t size () const { return count; }
+
+	void allocate (size_t objectCount)
+	{
+		if (buffer)
+			deallocate ();
+		if (objectCount)
+			buffer = static_cast<T*> (Allocator::allocate (objectCount * sizeof (T)));
+		count = objectCount;
+	}
+
+	void deallocate ()
+	{
+		if (buffer)
+		{
+			Allocator::deallocate (buffer, count * sizeof (T));
+			buffer = nullptr;
+			count = 0;
+		}
+	}
+
+private:
+	T* buffer {nullptr};
+	size_t count {0};
+};
+
+} // VSTGUI

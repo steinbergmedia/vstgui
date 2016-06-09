@@ -38,42 +38,28 @@ namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
 CDropSource::CDropEntry::CDropEntry (const void* inBuffer, uint32_t inBufferSize, Type inType)
-: buffer (nullptr)
-, bufferSize (inBufferSize)
-, type (inType)
+: type (inType)
 {
-	buffer = std::malloc (bufferSize);
-	if (buffer)
-		memcpy (buffer, inBuffer, bufferSize);
+	buffer.allocate (inBufferSize);
+	if (buffer.get ())
+		memcpy (buffer.get (), inBuffer, buffer.size ());
 }
 
 //-----------------------------------------------------------------------------
 CDropSource::CDropEntry::CDropEntry (const CDropEntry& entry)
-: buffer (nullptr)
-, bufferSize (entry.bufferSize)
-, type (entry.type)
+: type (entry.type)
 {
-	buffer = std::malloc (bufferSize);
-	if (buffer)
-		memcpy (buffer, entry.buffer, bufferSize);
+	buffer.allocate (entry.buffer.size ());
+	if (buffer.get ())
+		memcpy (buffer.get (), entry.buffer.get (), buffer.size ());
 }
 
 //-----------------------------------------------------------------------------
 CDropSource::CDropEntry::CDropEntry (CDropEntry&& entry) noexcept
 {
-	buffer = entry.buffer;
-	bufferSize = entry.bufferSize;
+	buffer = std::move (entry.buffer);
 	type = entry.type;
-	entry.buffer = nullptr;
-	entry.bufferSize = 0;
 	entry.type = kError;
-}
-
-//-----------------------------------------------------------------------------
-CDropSource::CDropEntry::~CDropEntry ()
-{
-	if (buffer)
-		std::free (buffer);
 }
 
 //-----------------------------------------------------------------------------
@@ -105,7 +91,7 @@ uint32_t CDropSource::getCount () const
 //-----------------------------------------------------------------------------
 uint32_t CDropSource::getDataSize (uint32_t index) const
 {
-	return index < getCount () ? entries[index].bufferSize : 0;
+	return index < getCount () ? static_cast<uint32_t> (entries[index].buffer.size ()) : 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -119,9 +105,9 @@ uint32_t CDropSource::getData (uint32_t index, const void*& buffer, Type& type) 
 {
 	if (index >= getCount ())
 		return 0;
-	buffer = entries[index].buffer;
+	buffer = entries[index].buffer.get ();
 	type = entries[index].type;
-	return entries[index].bufferSize;
+	return static_cast<uint32_t> (entries[index].buffer.size ());
 }
 
 } // namespace

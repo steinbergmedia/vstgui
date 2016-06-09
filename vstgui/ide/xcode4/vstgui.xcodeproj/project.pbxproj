@@ -617,6 +617,7 @@
 		F4B5B5CC1C26FD4E00450324 /* window.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = window.h; sourceTree = "<group>"; };
 		F4B627951C01AEDA000A7D6C /* platform_helper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = platform_helper.h; sourceTree = "<group>"; };
 		F4B627961C01AFC4000A7D6C /* platform_helper_mac.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = platform_helper_mac.mm; sourceTree = "<group>"; };
+		F4BAC4221D0A092800916989 /* malloc.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = malloc.h; sourceTree = "<group>"; };
 		F4C0F1F1197AA20700A48B02 /* uicolorslider.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uicolorslider.cpp; sourceTree = "<group>"; };
 		F4C0F1F2197AA20700A48B02 /* uicolorslider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uicolorslider.h; sourceTree = "<group>"; };
 		F4C0F1F9197BC2F900A48B02 /* uicolorchoosercontroller.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = uicolorchoosercontroller.cpp; sourceTree = "<group>"; };
@@ -1019,6 +1020,7 @@
 				F497F0EA13080A1C00F0A613 /* vstguidebug.h */,
 				F466318619BA1B3A0063536E /* vstguifwd.h */,
 				F497F0EB13080A1C00F0A613 /* vstkeycode.h */,
+				F4BAC4221D0A092800916989 /* malloc.h */,
 			);
 			name = lib;
 			path = ../../lib;

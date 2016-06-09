@@ -40,6 +40,7 @@
 #include "cgraphicspath.h"
 #include "idatapackage.h"
 #include "iviewlistener.h"
+#include "malloc.h"
 #include "animation/animator.h"
 #include "../uidescription/icontroller.h"
 #include <cassert>
@@ -85,58 +86,37 @@ class CViewAttributeEntry
 {
 public:
 	CViewAttributeEntry (uint32_t _size, const void* _data)
-	: size (0)
-	, data (nullptr)
 	{
 		updateData (_size, _data);
 	}
 
-	~CViewAttributeEntry ()
-	{
-		if (data)
-			std::free (data);
-	}
-
-	uint32_t getSize () const { return size; }
-	const void* getData () const { return data; }
-
-	void updateData (uint32_t _size, const void* _data)
-	{
-		if (data && size != _size)
-		{
-			std::free (data);
-			data = nullptr;
-		}
-		size = _size;
-		if (size)
-		{
-			if (data == nullptr)
-				data = std::malloc (size);
-			std::memcpy (data, _data, size);
-		}
-	}
-
+	CViewAttributeEntry (const CViewAttributeEntry& me) = delete;
+	CViewAttributeEntry& operator= (const CViewAttributeEntry& me) = delete;
 	CViewAttributeEntry (CViewAttributeEntry&& me) noexcept
-	: size (0)
-	, data (nullptr)
 	{
 		*this = std::move (me);
 	}
-
+	
 	CViewAttributeEntry& operator=(CViewAttributeEntry&& me) noexcept
 	{
-		if (data)
-			std::free (data);
-		size = me.size;
-		data = me.data;
-		me.size = 0;
-		me.data = nullptr;
+		data = std::move (me.data);
 		return *this;
+	}
+	
+	uint32_t getSize () const { return static_cast<uint32_t> (data.size ()); }
+	const void* getData () const { return data.get (); }
+
+	void updateData (uint32_t _size, const void* _data)
+	{
+		data.allocate (_size);
+		if (data.size ())
+		{
+			std::memcpy (data.get (), _data, data.size ());
+		}
 	}
 
 protected:
-	uint32_t size;
-	void* data;
+	Malloc<int8_t> data;
 };
 
 //-----------------------------------------------------------------------------
