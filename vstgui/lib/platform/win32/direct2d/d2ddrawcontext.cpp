@@ -401,6 +401,7 @@ void D2DDrawContext::drawBitmap (CBitmap* bitmap, const CRect& dest, const CPoin
 {
 	if (renderTarget == 0)
 		return;
+	ConcatClip concatClip (*this, dest);
 	D2DApplyClip ac (this);
 	if (ac.isEmpty ())
 		return;
@@ -420,16 +421,17 @@ void D2DDrawContext::drawBitmap (CBitmap* bitmap, const CRect& dest, const CPoin
 			{
 				double bitmapScaleFactor = platformBitmap->getScaleFactor ();
 				CGraphicsTransform bitmapTransform;
-				bitmapTransform.scale (bitmapScaleFactor, bitmapScaleFactor);
-				Transform transform (*this, bitmapTransform.inverse ());
+				bitmapTransform.scale (1./bitmapScaleFactor, 1./bitmapScaleFactor);
+				Transform transform (*this, bitmapTransform);
 
 				CRect d (dest);
+				d.setWidth (bitmap->getWidth ());
+				d.setHeight (bitmap->getHeight ());
+				d.offset (-offset.x, -offset.y);
 				d.makeIntegral ();
-				CRect source (dest);
-				source.offset (-source.left, -source.top);
-				source.offset (offset.x, offset.y);
-
-				bitmapTransform.transform (source);
+				CRect source;
+				source.setWidth (d2d1Bitmap->GetSize ().width);
+				source.setHeight (d2d1Bitmap->GetSize ().height);
 
 				D2D1_RECT_F sourceRect = makeD2DRect (source);
 				renderTarget->DrawBitmap (d2d1Bitmap, makeD2DRect (d), alpha * currentState.globalAlpha, D2D1_BITMAP_INTERPOLATION_MODE_LINEAR, &sourceRect);

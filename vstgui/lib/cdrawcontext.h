@@ -252,6 +252,25 @@ private:
 	std::stack<CGraphicsTransform> transformStack;
 };
 
+//-----------------------------------------------------------------------------
+struct ConcatClip
+{
+	ConcatClip (CDrawContext& context, CRect rect)
+		:context (context)
+	{
+		context.getClipRect (origClip);
+		rect.bound (origClip);
+		context.setClipRect (rect);
+	}
+	~ConcatClip ()
+	{
+		context.setClipRect (origClip);
+	}
+private:
+	CDrawContext& context;
+	CRect origClip;
+};
+
 } // namespace
 
 #endif
