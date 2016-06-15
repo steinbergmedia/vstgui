@@ -744,6 +744,19 @@ NSViewFrame::NSViewFrame (IPlatformFrameCallback* frame, const CRect& size, NSVi
 {
 	initClass ();
 	nsView = [[viewClass alloc] initWithNSViewFrame: this parent: parent andSize: &size];
+	auto processInfo = [NSProcessInfo processInfo];
+	if ([processInfo respondsToSelector:@selector(operatingSystemVersion)])
+	{
+		auto systemVersion = processInfo.operatingSystemVersion;
+		// on Mac OS X 10.11 we activate layer drawing as this fixes a few issues like that only a
+		// few parts of a window are updated permanently when scrolling or manipulating a control
+		// while other parts are only updated when the malipulation ended, or CNinePartTiledBitmap
+		// are drawn incorrectly when scaled.
+		if (systemVersion.majorVersion >= 10 && systemVersion.minorVersion > 10)
+		{
+			[nsView setWantsLayer:YES];
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------
