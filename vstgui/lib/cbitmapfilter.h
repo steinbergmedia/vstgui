@@ -48,7 +48,7 @@ namespace BitmapFilter {
 /// @brief Filter Property
 /// @ingroup new_in_4_1
 //----------------------------------------------------------------------------------------------------
-class Property : public CBaseObject
+class Property
 {
 public:
 	enum Type {
@@ -71,10 +71,8 @@ public:
 	Property (const CColor& colorValue);
 	Property (const CGraphicsTransform& transformValue);
 	Property (const Property& p);
-	~Property ();
-
 	Property (Property&& p) noexcept;
-	Property& operator=(Property&& p) noexcept;
+	~Property ();
 
 	Type getType () const { return type; }
 
@@ -87,8 +85,8 @@ public:
 	const CGraphicsTransform& getTransform () const;
 
 	Property& operator=(const Property& p);
+	Property& operator=(Property&& p) noexcept;
 
-	CLASS_METHODS_NOCOPY(Property, CBaseObject)
 //----------------------------------------------------------------------------------------------------
 private:
 	template<typename T> void assign (T value);
@@ -107,6 +105,7 @@ public:
 	
 	virtual UTF8StringPtr getDescription () const = 0;
 	virtual bool setProperty (IdStringPtr name, const Property& property) = 0;
+	virtual bool setProperty (IdStringPtr name, Property&& property) = 0;
 	virtual const Property& getProperty (IdStringPtr name) const = 0;
 
 	virtual uint32_t getNumProperties () const = 0;
@@ -233,7 +232,7 @@ namespace Standard {
 /// @brief A Base Class for Implementing Bitmap Filters
 /// @ingroup new_in_4_1
 //----------------------------------------------------------------------------------------------------
-class FilterBase : public IFilter, private std::map<std::string, Property>
+class FilterBase : public IFilter
 {
 protected:
 	FilterBase (UTF8StringPtr description);
@@ -243,6 +242,7 @@ protected:
 
 	virtual UTF8StringPtr getDescription () const override;
 	virtual bool setProperty (IdStringPtr name, const Property& property) override;
+	virtual bool setProperty (IdStringPtr name, Property&& property) override;
 	virtual const Property& getProperty (IdStringPtr name) const override;
 	
 	virtual uint32_t getNumProperties () const override;
@@ -251,7 +251,9 @@ protected:
 	virtual Property::Type getPropertyType (IdStringPtr name) const override;
 
 private:
+	using PropertyMap = std::map<std::string, Property>;
 	std::string description;
+	PropertyMap properties;
 };
 
 } // namespace BitmapFilter

@@ -76,7 +76,7 @@ Property::Property (double floatValue)
 Property::Property (CBaseObject* objectValue)
 : type (kObject)
 {
-	assign (objectValue);
+	value = static_cast<void*> (objectValue);
 	objectValue->remember ();
 }
 
@@ -123,7 +123,8 @@ Property::~Property ()
 	{
 		if (type == kObject)
 			getObject ()->forget ();
-		std::free (value);
+		else
+			std::free (value);
 	}
 }
 
@@ -141,7 +142,8 @@ Property& Property::operator=(Property&& p) noexcept
 	{
 		if (type == kObject)
 			getObject ()->forget ();
-		std::free (value);
+		else
+			std::free (value);
 	}
 	type = p.type;
 	value = p.value;
@@ -157,23 +159,24 @@ Property& Property::operator=(const Property& p)
 	{
 		if (type == kObject)
 			getObject ()->forget ();
-		std::free (value);
+		else
+			std::free (value);
 		value = nullptr;
 	}
 	type = p.type;
 	if (p.value)
 	{
-		uint32_t valueSize;
+		uint32_t valueSize = 0u;
 		switch (type)
 		{
 			case kInteger: valueSize = sizeof (int32_t); break;
 			case kFloat: valueSize = sizeof (double); break;
-			case kObject: valueSize = sizeof (CBaseObject*); p.getObject ()->remember (); break;
+			case kObject: value = p.value; p.getObject ()->remember (); break;
 			case kRect: valueSize = sizeof (CRect); break;
 			case kPoint: valueSize = sizeof (CPoint); break;
 			case kColor: valueSize = sizeof (CColor); break;
 			case kTransformMatrix: valueSize = sizeof (CGraphicsTransform); break;
-			case kUnknown: valueSize = 0; break;
+			case kUnknown: valueSize = 0u; break;
 		}
 		if (valueSize)
 		{
@@ -202,7 +205,7 @@ double Property::getFloat () const
 CBaseObject* Property::getObject () const
 {
 	vstgui_assert (type == kObject);
-	return *static_cast<CBaseObject**> (value);
+	return static_cast<CBaseObject*> (value);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -317,10 +320,22 @@ UTF8StringPtr FilterBase::getDescription () const
 //----------------------------------------------------------------------------------------------------
 bool FilterBase::setProperty (IdStringPtr name, const Property& property)
 {
-	const_iterator it = find (name);
-	if (it != end () && it->second.getType () == property.getType ())
+	auto it = properties.find (name);
+	if (it != properties.end () && it->second.getType () == property.getType ())
 	{
-		(*this)[name] = property;
+		properties[name] = property;
+		return true;
+	}
+	return false;
+}
+
+//----------------------------------------------------------------------------------------------------
+bool FilterBase::setProperty (IdStringPtr name, Property&& property)
+{
+	auto it = properties.find (name);
+	if (it != properties.end () && it->second.getType () == property.getType ())
+	{
+		properties[name] = std::move (property);
 		return true;
 	}
 	return false;
@@ -329,8 +344,8 @@ bool FilterBase::setProperty (IdStringPtr name, const Property& property)
 //----------------------------------------------------------------------------------------------------
 const Property& FilterBase::getProperty (IdStringPtr name) const
 {
-	const_iterator it = find (name);
-	if (it != end ())
+	auto it = properties.find (name);
+	if (it != properties.end ())
 		return it->second;
 	static Property notFound (Property::kUnknown);
 	return notFound;
@@ -339,13 +354,13 @@ const Property& FilterBase::getProperty (IdStringPtr name) const
 //----------------------------------------------------------------------------------------------------
 uint32_t FilterBase::getNumProperties () const
 {
-	return (uint32_t)size ();
+	return static_cast<uint32_t> (properties.size ());
 }
 
 //----------------------------------------------------------------------------------------------------
 IdStringPtr FilterBase::getPropertyName (uint32_t index) const
 {
-	for (const auto & it : *this)
+	for (const auto & it : properties)
 	{
 		if (index == 0)
 			return it.first.c_str ();
@@ -357,7 +372,7 @@ IdStringPtr FilterBase::getPropertyName (uint32_t index) const
 //----------------------------------------------------------------------------------------------------
 Property::Type FilterBase::getPropertyType (uint32_t index) const
 {
-	for (const auto & it : *this)
+	for (const auto & it : properties)
 	{
 		if (index == 0)
 			return it.second.getType ();
@@ -369,8 +384,8 @@ Property::Type FilterBase::getPropertyType (uint32_t index) const
 //----------------------------------------------------------------------------------------------------
 Property::Type FilterBase::getPropertyType (IdStringPtr name) const
 {
-	const_iterator it = find (name);
-	if (it != end ())
+	auto it = properties.find (name);
+	if (it != properties.end ())
 	{
 		return (*it).second.getType ();
 	}
@@ -380,14 +395,14 @@ Property::Type FilterBase::getPropertyType (IdStringPtr name) const
 //----------------------------------------------------------------------------------------------------
 bool FilterBase::registerProperty (IdStringPtr name, const Property& defaultProperty)
 {
-	return insert (std::make_pair (name, defaultProperty)).second;
+	return properties.insert (std::make_pair (name, defaultProperty)).second;
 }
 
 //----------------------------------------------------------------------------------------------------
 CBitmap* FilterBase::getInputBitmap () const
 {
-	const_iterator it = find (Standard::Property::kInputBitmap);
-	if (it != end ())
+	auto it = properties.find (Standard::Property::kInputBitmap);
+	if (it != properties.end ())
 	{
 		CBaseObject* obj = (*it).second.getObject ();
 		return obj ? dynamic_cast<CBitmap*>(obj) : nullptr;
