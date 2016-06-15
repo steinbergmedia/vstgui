@@ -7,6 +7,10 @@
 #import "VSTGUICommand.h"
 #import "macwindow.h"
 
+#if __has_feature(nullability) == 0
+static_assert (false, "Need newer clang compiler!");
+#endif
+
 #ifndef MAC_OS_X_VERSION_10_11
 #define MAC_OS_X_VERSION_10_11 101100
 #endif
@@ -14,7 +18,7 @@
 //------------------------------------------------------------------------
 #if MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_11
 @interface NSWindow (BackwardsCompatibility)
-- (void)performWindowDragWithEvent:(NSEvent*)event;
+- (void)performWindowDragWithEvent:(NSEvent* _Nonnull)event;
 @end
 #endif
 
@@ -34,7 +38,7 @@ class Window;
 
 //------------------------------------------------------------------------
 @interface VSTGUIWindowDelegate : NSObject <NSWindowDelegate>
-@property VSTGUI::Standalone::Platform::Mac::Window* macWindow;
+@property VSTGUI::Standalone::Platform::Mac::Window* _Nullable macWindow;
 @end
 
 //------------------------------------------------------------------------
@@ -82,23 +86,23 @@ public:
 	void center () override;
 
 	PlatformType getPlatformType () const override { return kNSView; };
-	void* getPlatformHandle () const override
+	void* _Nonnull getPlatformHandle () const override
 	{
 		return static_cast<void*> ((__bridge void*)nsWindow.contentView);
 	}
-	void onSetContentView (CFrame* newFrame) override;
+	void onSetContentView (CFrame* _Nullable newFrame) override;
 
 	void windowDidResize (const CPoint& newSize);
 	void windowWillClose ();
 	IWindowDelegate& getDelegate () const { return *delegate; }
-	NSWindow* getNSWindow () const override { return nsWindow; }
+	NSWindow* _Nonnull getNSWindow () const override { return nsWindow; }
 	bool isPopup () const override;
 
 private:
-	NSWindow* nsWindow {nullptr};
-	VSTGUIWindowDelegate* nsWindowDelegate {nullptr};
-	IWindowDelegate* delegate {nullptr};
-	CFrame* frame {nullptr};
+	NSWindow* _Nullable nsWindow {nullptr};
+	VSTGUIWindowDelegate* _Nullable nsWindowDelegate {nullptr};
+	IWindowDelegate* _Nullable delegate {nullptr};
+	CFrame* _Nullable frame {nullptr};
 };
 
 //------------------------------------------------------------------------
@@ -179,7 +183,7 @@ bool Window::isPopup () const
 }
 
 //------------------------------------------------------------------------
-void Window::onSetContentView (CFrame* newFrame)
+void Window::onSetContentView (CFrame* _Nullable newFrame)
 {
 	frame = newFrame;
 }
@@ -321,7 +325,7 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 @implementation VSTGUIWindowDelegate
 
 //------------------------------------------------------------------------
-- (IBAction)processCommand:(id)sender
+- (IBAction)processCommand:(nullable id)sender
 {
 	bool res = false;
 	VSTGUICommand* command = [sender representedObject];
@@ -336,7 +340,7 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 }
 
 //------------------------------------------------------------------------
-- (BOOL)validateMenuItem:(NSMenuItem*)menuItem
+- (BOOL)validateMenuItem:(nonnull NSMenuItem*)menuItem
 {
 	BOOL res = NO;
 	if (VSTGUICommand* command = menuItem.representedObject)
@@ -351,7 +355,7 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 }
 
 //------------------------------------------------------------------------
-- (NSSize)windowWillResize:(NSWindow*)sender toSize:(NSSize)frameSize
+- (NSSize)windowWillResize:(nonnull NSWindow*)sender toSize:(NSSize)frameSize
 {
 	NSRect r {};
 	r.size = frameSize;
@@ -365,7 +369,7 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 }
 
 //------------------------------------------------------------------------
-- (void)windowDidResize:(NSNotification*)notification
+- (void)windowDidResize:(nonnull NSNotification*)notification
 {
 	NSRect r = [[notification object] frame];
 	r = [self.macWindow->getNSWindow () contentRectForFrameRect:r];
@@ -376,37 +380,37 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 }
 
 //------------------------------------------------------------------------
-- (void)windowDidMove:(NSNotification*)notification
+- (void)windowDidMove:(nonnull NSNotification*)notification
 {
 	self.macWindow->getDelegate ().onPositionChanged (self.macWindow->getPosition ());
 }
 
 //------------------------------------------------------------------------
-- (void)windowWillClose:(NSNotification*)notification
+- (void)windowWillClose:(nonnull NSNotification*)notification
 {
 	self.macWindow->windowWillClose ();
 }
 
 //------------------------------------------------------------------------
-- (BOOL)windowShouldClose:(id)sender
+- (BOOL)windowShouldClose:(nonnull id)sender
 {
 	return self.macWindow->getDelegate ().canClose ();
 }
 
 //------------------------------------------------------------------------
-- (void)windowDidBecomeKey:(NSNotification*)notification
+- (void)windowDidBecomeKey:(nonnull NSNotification*)notification
 {
 	self.macWindow->getDelegate ().onActivated ();
 }
 
 //------------------------------------------------------------------------
-- (void)windowDidResignKey:(NSNotification*)notification
+- (void)windowDidResignKey:(nonnull NSNotification*)notification
 {
 	self.macWindow->getDelegate ().onDeactivated ();
 }
 
 //------------------------------------------------------------------------
-- (void)noResponderFor:(SEL)eventSelector
+- (void)noResponderFor:(nonnull SEL)eventSelector
 {
 	// prevent Beep
 }
@@ -417,7 +421,7 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 @implementation VSTGUIWindow
 
 //------------------------------------------------------------------------
-- (void)mouseDown:(NSEvent*)theEvent
+- (void)mouseDown:(nonnull NSEvent*)theEvent
 {
 	if (self.supportMovableByWindowBackground &&
 	    [super respondsToSelector:@selector (performWindowDragWithEvent:)])
@@ -440,7 +444,7 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 }
 
 //------------------------------------------------------------------------
-- (BOOL)validateMenuItem:(NSMenuItem*)menuItem
+- (BOOL)validateMenuItem:(nonnull NSMenuItem*)menuItem
 {
 	if ([menuItem action] == @selector (performClose:))
 		return !self.nonClosable;
@@ -458,7 +462,7 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 }
 
 //------------------------------------------------------------------------
-- (void)noResponderFor:(SEL)eventSelector
+- (void)noResponderFor:(nonnull SEL)eventSelector
 {
 	// prevent Beep
 }
@@ -475,7 +479,7 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 }
 
 //------------------------------------------------------------------------
-- (void)mouseDown:(NSEvent*)theEvent
+- (void)mouseDown:(nonnull NSEvent*)theEvent
 {
 	if (self.supportMovableByWindowBackground &&
 	    [super respondsToSelector:@selector (performWindowDragWithEvent:)])
@@ -485,7 +489,7 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 }
 
 //------------------------------------------------------------------------
-- (void)sendEvent:(NSEvent*)theEvent
+- (void)sendEvent:(nonnull NSEvent*)theEvent
 {
 	self.doResignKeyStackDepth++;
 	self.inSendEvent = YES;
@@ -526,7 +530,7 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 }
 
 //------------------------------------------------------------------------
-- (void)noResponderFor:(SEL)eventSelector
+- (void)noResponderFor:(nonnull SEL)eventSelector
 {
 	// prevent Beep
 }
@@ -537,7 +541,7 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 @implementation VSTGUIPopupDelegate
 
 //------------------------------------------------------------------------
-- (void)windowDidResignKey:(NSNotification*)notification
+- (void)windowDidResignKey:(nonnull NSNotification*)notification
 {
 	auto app = VSTGUI::Standalone::Detail::getApplicationPlatformAccess ();
 	if (app->dontClosePopupOnDeactivation (self.macWindow))

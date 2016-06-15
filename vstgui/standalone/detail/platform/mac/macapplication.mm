@@ -9,12 +9,16 @@
 #import "macwindow.h"
 #import <Cocoa/Cocoa.h>
 
+#if __has_feature(nullability) == 0
+static_assert (false, "Need newer clang compiler!");
+#endif
+
 //------------------------------------------------------------------------
 @interface VSTGUIApplicationDelegate : NSObject <NSApplicationDelegate>
 {
 	VSTGUI::Standalone::Platform::Mac::MacPreference prefs;
 }
-@property NSArray<NSString*>* startupOpenFiles;
+@property NSArray<NSString*>* _Nullable startupOpenFiles;
 @property BOOL hasFinishedLaunching;
 @end
 
@@ -28,7 +32,7 @@ using CommandWithKeyList =
 using VSTGUI::Standalone::Detail::PlatformCallbacks;
 
 //------------------------------------------------------------------------
-static const CommandWithKeyList* getCommandList (const char* group)
+static const CommandWithKeyList* _Nullable getCommandList (const char* _Nonnull group)
 {
 	for (auto& e : Detail::getApplicationPlatformAccess ()->getCommandList ())
 	{
@@ -42,7 +46,7 @@ static const CommandWithKeyList* getCommandList (const char* group)
 @implementation VSTGUIApplicationDelegate
 
 //------------------------------------------------------------------------
-- (instancetype)init
+- (instancetype _Nonnull)init
 {
 	self = [super init];
 	if (self)
@@ -52,7 +56,7 @@ static const CommandWithKeyList* getCommandList (const char* group)
 }
 
 //------------------------------------------------------------------------
-- (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication*)sender
+- (NSApplicationTerminateReply)applicationShouldTerminate:(nonnull NSApplication*)sender
 {
 	if (Detail::getApplicationPlatformAccess ()->canQuit ())
 		return NSTerminateNow;
@@ -87,7 +91,7 @@ static const CommandWithKeyList* getCommandList (const char* group)
 }
 
 //------------------------------------------------------------------------
-- (BOOL)validateMenuItem:(NSMenuItem*)menuItem
+- (BOOL)validateMenuItem:(nonnull NSMenuItem*)menuItem
 {
 	if (menuItem.action == @selector (showPreferenceDialog:))
 	{
@@ -111,7 +115,7 @@ static const CommandWithKeyList* getCommandList (const char* group)
 }
 
 //------------------------------------------------------------------------
-- (SEL)selectorForCommand:(const CommandWithKey&)command
+- (nonnull SEL)selectorForCommand:(const CommandWithKey&)command
 {
 	if (command == Commands::CloseWindow)
 		return @selector (performClose:);
@@ -131,7 +135,7 @@ static const CommandWithKeyList* getCommandList (const char* group)
 }
 
 //------------------------------------------------------------------------
-- (NSMenuItem*)createMenuItemFromCommand:(const CommandWithKey&)command
+- (nonnull NSMenuItem*)createMenuItemFromCommand:(const CommandWithKey&)command
 {
 	if (command.name == CommandName::MenuSeparator)
 		return [NSMenuItem separatorItem];
@@ -152,7 +156,7 @@ static const CommandWithKeyList* getCommandList (const char* group)
 }
 
 //------------------------------------------------------------------------
-- (NSMenu*)createAppMenu
+- (nonnull NSMenu*)createAppMenu
 {
 	NSDictionary* dict = [[NSBundle mainBundle] infoDictionary];
 	NSString* appName = dict[(@"CFBundleName")];
@@ -200,7 +204,7 @@ static const CommandWithKeyList* getCommandList (const char* group)
 }
 
 //------------------------------------------------------------------------
-- (void)fillMenu:(NSMenu*)menu fromCommandList:(const CommandWithKeyList&)commandList
+- (void)fillMenu:(nonnull NSMenu*)menu fromCommandList:(const CommandWithKeyList&)commandList
 {
 	for (auto& command : commandList)
 	{
@@ -209,7 +213,7 @@ static const CommandWithKeyList* getCommandList (const char* group)
 }
 
 //------------------------------------------------------------------------
-- (NSMenu*)createWindowsMenu
+- (nonnull NSMenu*)createWindowsMenu
 {
 	NSMenu* menu = [[NSMenu alloc] initWithTitle:@"Windows"];
 	[menu addItemWithTitle:@"Minimize" action:@selector (performMiniaturize:) keyEquivalent:@"m"];
@@ -300,7 +304,7 @@ static const CommandWithKeyList* getCommandList (const char* group)
 }
 
 //------------------------------------------------------------------------
-- (NSAlert*)createAlert:(const AlertBoxConfig&)config
+- (nonnull NSAlert*)createAlert:(const AlertBoxConfig&)config
 {
 	NSAlert* alert = [NSAlert new];
 	if (!config.headline.empty ())
@@ -394,7 +398,7 @@ static const CommandWithKeyList* getCommandList (const char* group)
 }
 
 //------------------------------------------------------------------------
-- (void)applicationDidFinishLaunching:(NSNotification*)notification
+- (void)applicationDidFinishLaunching:(nonnull NSNotification*)notification
 {
 	if ([self verifyInfoPlistEntries] == NO)
 	{
@@ -432,14 +436,14 @@ static const CommandWithKeyList* getCommandList (const char* group)
 }
 
 //------------------------------------------------------------------------
-- (void)applicationWillTerminate:(NSNotification*)notification
+- (void)applicationWillTerminate:(nonnull NSNotification*)notification
 {
 	IApplication::instance ().getDelegate ().onQuit ();
 	Detail::cleanupSharedUIResources ();
 }
 
 //------------------------------------------------------------------------
-- (BOOL)openFilesInternal:(NSArray<NSString*>*)filenames
+- (BOOL)openFilesInternal:(nonnull NSArray<NSString*>*)filenames
 {
 	std::vector<VSTGUI::UTF8String> paths;
 	paths.reserve (filenames.count);
@@ -451,7 +455,7 @@ static const CommandWithKeyList* getCommandList (const char* group)
 }
 
 //------------------------------------------------------------------------
-- (void)application:(NSApplication*)sender openFiles:(NSArray<NSString*>*)filenames
+- (void)application:(nonnull NSApplication*)sender openFiles:(nonnull NSArray<NSString*>*)filenames
 {
 	if (!self.hasFinishedLaunching)
 	{
@@ -467,11 +471,11 @@ static const CommandWithKeyList* getCommandList (const char* group)
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
-void* gBundleRef = nullptr;
+void* _Nullable gBundleRef = nullptr;
 }
 
 //------------------------------------------------------------------------
-int main (int argc, const char** argv)
+int main (int argc, const char* _Nonnull * _Nonnull argv)
 {
 	VSTGUI::gBundleRef = CFBundleGetMainBundle ();
 	VSTGUIApplicationDelegate* delegate = [VSTGUIApplicationDelegate new];
