@@ -98,7 +98,7 @@ void CRowColumnView::setLayoutStyle (LayoutStyle style)
 //--------------------------------------------------------------------------------
 bool CRowColumnView::isAnimateViewResizing () const
 {
-	return flags & kAnimateViewResizing;
+	return (flags & kAnimateViewResizing) != 0;
 }
 
 //--------------------------------------------------------------------------------
@@ -113,7 +113,7 @@ void CRowColumnView::setAnimateViewResizing (bool state)
 //--------------------------------------------------------------------------------
 bool CRowColumnView::hideClippedSubviews () const
 {
-	return flags & kHideClippedSubViews;
+	return (flags & kHideClippedSubViews) != 0;
 }
 
 //--------------------------------------------------------------------------------
