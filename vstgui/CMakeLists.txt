@@ -1,7 +1,13 @@
 cmake_minimum_required(VERSION 3.4.1)
 project(vstgui)
 
-SET(vstgui_common_sources 
+if(CMAKE_CONFIGURATION_TYPES)
+  set(CMAKE_CONFIGURATION_TYPES Debug Release)
+  set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+endif()
+
+##########################################################################################
+set(vstgui_common_sources 
 	lib/cbitmap.cpp
 	lib/cbitmap.h
 	lib/cbitmapfilter.cpp
@@ -136,7 +142,8 @@ SET(vstgui_common_sources
 	lib/platform/std_unorderedmap.h
 )
 
-SET(vstgui_uidescription_common_sources
+##########################################################################################
+set(vstgui_uidescription_common_sources
 	uidescription/base64codec.h
 	uidescription/cstream.cpp
 	uidescription/cstream.h
@@ -212,7 +219,8 @@ SET(vstgui_uidescription_common_sources
 	uidescription/editing/uiviewcreatecontroller.h
 )
 
-SET(vstgui_mac_sources
+##########################################################################################
+set(vstgui_mac_sources
 	lib/platform/mac/caviewlayer.h
 	lib/platform/mac/caviewlayer.mm
 	lib/platform/mac/cfontmac.h
@@ -251,7 +259,9 @@ SET(vstgui_mac_sources
 	lib/platform/mac/carbon/hiviewtextedit.h
 	lib/platform/win32
 )
-SET(vstgui_win32_sources
+
+##########################################################################################
+set(vstgui_win32_sources
 	lib/platform/win32/cfontwin32.cpp
 	lib/platform/win32/cfontwin32.h
 	lib/platform/win32/gdiplusbitmap.cpp
@@ -287,7 +297,8 @@ SET(vstgui_win32_sources
 	lib/platform/win32/direct2d/d2dgraphicspath.h
 )
 
-SET(vstgui_standalone_common_sources
+##########################################################################################
+set(vstgui_standalone_common_sources
 	standalone/fwd.h
 	standalone/ialertbox.h
 	standalone/iappdelegate.h
@@ -311,7 +322,8 @@ SET(vstgui_standalone_common_sources
 	standalone/detail/platform/iplatformwindow.h
 )
 
-SET(vstgui_standalone_mac_sources
+##########################################################################################
+set(vstgui_standalone_mac_sources
 	standalone/detail/platform/mac/VSTGUICommand.h
 	standalone/detail/platform/mac/VSTGUICommand.mm
 	standalone/detail/platform/mac/macapplication.mm
@@ -322,7 +334,8 @@ SET(vstgui_standalone_mac_sources
 	standalone/detail/platform/mac/macwindow.mm
 )
 
-SET(vstgui_standalone_win32_sources
+##########################################################################################
+set(vstgui_standalone_win32_sources
 	standalone/detail/platform/win32/win32application.cpp
 	standalone/detail/platform/win32/win32preference.cpp
 	standalone/detail/platform/win32/win32preference.h
@@ -330,20 +343,77 @@ SET(vstgui_standalone_win32_sources
 	standalone/detail/platform/win32/win32window.h
 )
 
-IF(CMAKE_HOST_APPLE)
-	SET(vstgui_sources ${vstgui_common_sources} ${vstgui_uidescription_common_sources} ${vstgui_mac_sources})
-	SET(vstgui_standalone_sources ${vstgui_standalone_common_sources} ${vstgui_standalone_mac_sources})
-ENDIF()
-IF(MSVC)
-	SET(vstgui_sources ${vstgui_common_sources} ${vstgui_uidescription_common_sources} ${vstgui_win32_sources})
-	SET(vstgui_standalone_sources ${vstgui_standalone_common_sources} ${vstgui_standalone_win32_sources})
-ENDIF()
+##########################################################################################
+if(CMAKE_HOST_APPLE)
+  set(CMAKE_OSX_DEPLOYMENT_TARGET 10.9)
+	set(vstgui_sources ${vstgui_common_sources} ${vstgui_uidescription_common_sources} ${vstgui_mac_sources})
+	set(vstgui_standalone_sources ${vstgui_standalone_common_sources} ${vstgui_standalone_mac_sources})
 
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEVELOPMENT -DVSTGUI_LIVE_EDITING=1")
+	set_source_files_properties(${vstgui_standalone_sources} PROPERTIES
+		COMPILE_FLAGS "-fobjc-arc"
+	)
+endif()
+
+##########################################################################################
+if(MSVC)
+	set(vstgui_sources ${vstgui_common_sources} ${vstgui_uidescription_common_sources} ${vstgui_win32_sources})
+	set(vstgui_standalone_sources ${vstgui_standalone_common_sources} ${vstgui_standalone_win32_sources})
+endif()
+
+##########################################################################################
+set(VSTGUI_COMPILE_DEFINITIONS_DEBUG "VSTGUI_LIVE_EDITING;DEBUG")
+set(VSTGUI_COMPILE_DEFINITIONS_RELEASE "NDEBUG;RELEASE")
+if(MSVC)
+  set(VSTGUI_COMPILE_DEFINITIONS_DEBUG "${VSTGUI_COMPILE_DEFINITIONS_DEBUG};_CRT_SECURE_NO_WARNINGS")
+  set(VSTGUI_COMPILE_DEFINITIONS_RELEASE "${VSTGUI_COMPILE_DEFINITIONS_RELEASE};_CRT_SECURE_NO_WARNINGS")
+endif()
+
+set(VSTGUI_COMPILE_DEFINITIONS PRIVATE
+    $<$<CONFIG:Debug>:${VSTGUI_COMPILE_DEFINITIONS_DEBUG}>
+    $<$<CONFIG:Release>:${VSTGUI_COMPILE_DEFINITIONS_RELEASE}>
+)
 
 add_library(vstgui STATIC ${vstgui_sources})
 add_library(vstgui_standalone STATIC ${vstgui_standalone_sources})
+
+target_compile_definitions(vstgui ${VSTGUI_COMPILE_DEFINITIONS})
+target_compile_definitions(vstgui_standalone ${VSTGUI_COMPILE_DEFINITIONS})
+
 set_property(TARGET vstgui PROPERTY CXX_STANDARD 11)
 set_property(TARGET vstgui PROPERTY CXX_STANDARD_REQUIRED ON)
-set_property(TARGET vstgui_standalone PROPERTY CXX_STANDARD 11)
+set_property(TARGET vstgui PROPERTY CMAKE_CXX_STANDARD_REQUIRED ON)
+set_property(TARGET vstgui_standalone PROPERTY CXX_STANDARD 14)
 set_property(TARGET vstgui_standalone PROPERTY CXX_STANDARD_REQUIRED ON)
+set_property(TARGET vstgui_standalone PROPERTY CMAKE_CXX_STANDARD_REQUIRED ON)
+
+##########################################################################################
+macro(SOURCE_GROUP_BY_FOLDER target)
+  set(SOURCE_GROUP_DELIMITER "/")
+  set(last_dir "")
+  set(files "")
+  foreach(file ${${target}_sources})
+    get_filename_component(dir "${file}" DIRECTORY)
+    string(FIND "${dir}" ${target} isTargetFolder)
+    if (${isTargetFolder} EQUAL 0)
+      string(LENGTH ${target} offset)
+      string(SUBSTRING "${dir}" ${offset} -1 dir)
+    endif(${isTargetFolder} EQUAL 0)
+    if (NOT "${dir}" STREQUAL "${last_dir}")
+      if (files)
+        source_group("${last_dir}" FILES ${files})
+      endif (files)
+      set(files "")
+    endif (NOT "${dir}" STREQUAL "${last_dir}")
+    set(files ${files} ${file})
+    set(last_dir "${dir}")
+  endforeach(file)
+  if (files)
+    source_group("${last_dir}" FILES ${files})
+  endif (files)
+endmacro(SOURCE_GROUP_BY_FOLDER)
+
+##########################################################################################
+if(CMAKE_CONFIGURATION_TYPES)
+  SOURCE_GROUP_BY_FOLDER(vstgui)
+  SOURCE_GROUP_BY_FOLDER(vstgui_standalone)
+endif()

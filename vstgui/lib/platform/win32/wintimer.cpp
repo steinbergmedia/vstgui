@@ -36,7 +36,7 @@
 
 #if WINDOWS
 #include <windows.h>
-#include <list>
+#include <map>
 
 namespace VSTGUI {
 

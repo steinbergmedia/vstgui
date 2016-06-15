@@ -32,3 +32,4 @@ compile_commands.json
 vstgui.sdf
 vstgui.v12.suo
 vstgui/ide/visualstudio/vs2015/.vs
+vstgui/build
