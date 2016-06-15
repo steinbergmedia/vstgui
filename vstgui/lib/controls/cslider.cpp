@@ -69,8 +69,8 @@ CSlider::CSlider (const CRect &rect, IControlListener* listener, int32_t tag, in
 , offset (offset)
 , pHandle (handle)
 , style (style)
-, minPos (iMinPos)
 , mode (kFreeClickMode)
+, minPos (iMinPos)
 , drawStyle (0)
 {
 	setDrawTransparentHandle (true);
@@ -167,6 +167,7 @@ CSlider::CSlider (const CSlider& v)
 , offsetHandle (v.offsetHandle)
 , pHandle (v.pHandle)
 , style (v.style)
+, mode (v.mode)
 , widthOfSlider (v.widthOfSlider)
 , heightOfSlider (v.heightOfSlider)
 , rangeHandle (v.rangeHandle)
@@ -178,9 +179,8 @@ CSlider::CSlider (const CSlider& v)
 , zoomFactor (v.zoomFactor)
 , bDrawTransparentEnabled (v.bDrawTransparentEnabled)
 , drawStyle (v.drawStyle)
-, mode (v.mode)
-, backColor (v.backColor)
 , frameColor (v.frameColor)
+, backColor (v.backColor)
 , valueColor (v.valueColor)
 {
 	if (pHandle)
@@ -188,7 +188,7 @@ CSlider::CSlider (const CSlider& v)
 }
 
 //------------------------------------------------------------------------
-CSlider::~CSlider ()
+CSlider::~CSlider () noexcept
 {
 	if (pHandle)
 		pHandle->forget ();

@@ -145,9 +145,9 @@ public:
 	ColorView (const CRect& r, const CColor& initialColor, IControlListener* listener = nullptr, int32_t tag = -1, bool checkerBoardBack = true, const CColor& checkerBoardColor1 = kWhiteCColor, const CColor& checkerBoardColor2 = kBlackCColor)
 	: CControl (r, listener, tag)
 	, color (initialColor)
-	, checkerBoardBack (checkerBoardBack)
 	, checkerBoardColor1 (checkerBoardColor1)
 	, checkerBoardColor2 (checkerBoardColor2)
+	, checkerBoardBack (checkerBoardBack)
 	{
 	}
 	
@@ -345,6 +345,7 @@ IdStringPtr CColorChooser::kMsgEndColorChange = "CColorChooser::kMsgEndColorChan
 CColorChooser::CColorChooser (IColorChooserDelegate* delegate, const CColor& initialColor, const CColorChooserUISettings& settings)
 : CViewContainer (CRect (0, 0, 0, 0))
 , delegate (delegate)
+, color (initialColor)
 , redSlider (nullptr)
 , greenSlider (nullptr)
 , blueSlider (nullptr)
@@ -353,7 +354,6 @@ CColorChooser::CColorChooser (IColorChooserDelegate* delegate, const CColor& ini
 , brightnessSlider (nullptr)
 , alphaSlider (nullptr)
 , colorView (nullptr)
-, color (initialColor)
 {
 	setTransparency (true);
 	setAutosizeFlags (kAutosizeAll);

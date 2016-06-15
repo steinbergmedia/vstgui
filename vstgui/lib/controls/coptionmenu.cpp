@@ -59,11 +59,6 @@ Defines an item of a VSTGUI::COptionMenu
 //------------------------------------------------------------------------
 CMenuItem::CMenuItem (const UTF8String& inTitle, const UTF8String& inKeycode, int32_t inKeyModifiers, CBitmap* inIcon, int32_t inFlags)
 : flags (inFlags)
-, keyModifiers (0)
-, virtualKeyCode (0)
-, submenu (nullptr)
-, icon (nullptr)
-, tag (-1)
 {
 	setTitle (inTitle);
 	setKey (inKeycode, inKeyModifiers);
@@ -79,12 +74,6 @@ CMenuItem::CMenuItem (const UTF8String& inTitle, const UTF8String& inKeycode, in
  */
 //------------------------------------------------------------------------
 CMenuItem::CMenuItem (const UTF8String& inTitle, COptionMenu* inSubmenu, CBitmap* inIcon)
-: flags (0)
-, keyModifiers (0)
-, virtualKeyCode (0)
-, submenu (nullptr)
-, icon (nullptr)
-, tag (-1)
 {
 	setTitle (inTitle);
 	setSubmenu (inSubmenu);
@@ -99,12 +88,6 @@ CMenuItem::CMenuItem (const UTF8String& inTitle, COptionMenu* inSubmenu, CBitmap
  */
 //------------------------------------------------------------------------
 CMenuItem::CMenuItem (const UTF8String& inTitle, int32_t inTag)
-: flags (0)
-, keyModifiers (0)
-, virtualKeyCode (0)
-, submenu (nullptr)
-, icon (nullptr)
-, tag (-1)
 {
 	setTitle (inTitle);
 	setTag (inTag);
@@ -118,10 +101,6 @@ CMenuItem::CMenuItem (const UTF8String& inTitle, int32_t inTag)
 //------------------------------------------------------------------------
 CMenuItem::CMenuItem (const CMenuItem& item)
 : flags (item.flags)
-, keyModifiers (0)
-, virtualKeyCode (0)
-, submenu (nullptr)
-, icon (nullptr)
 {
 	setTitle (item.getTitle ());
 	setIcon (item.getIcon ());
@@ -131,15 +110,6 @@ CMenuItem::CMenuItem (const CMenuItem& item)
 		setKey (item.getKeycode (), item.getKeyModifiers ());
 	setTag (item.getTag ());
 	setSubmenu (item.getSubmenu ());
-}
-
-//------------------------------------------------------------------------
-CMenuItem::~CMenuItem ()
-{
-	setIcon (nullptr);
-	setSubmenu (nullptr);
-	setTitle (nullptr);
-	setKey (nullptr);
 }
 
 //------------------------------------------------------------------------
@@ -166,21 +136,13 @@ void CMenuItem::setVirtualKey (int32_t inVirtualKeyCode, int32_t inKeyModifiers)
 //------------------------------------------------------------------------
 void CMenuItem::setSubmenu (COptionMenu* inSubmenu)
 {
-	if (submenu)
-		submenu->forget ();
 	submenu = inSubmenu;
-	if (submenu)
-		submenu->remember ();
 }
 
 //------------------------------------------------------------------------
 void CMenuItem::setIcon (CBitmap* inIcon)
 {
-	if (icon)
-		icon->forget ();
 	icon = inIcon;
-	if (icon)
-		icon->remember ();
 }
 
 //------------------------------------------------------------------------
@@ -238,7 +200,6 @@ IdStringPtr CCommandMenuItem::kMsgMenuItemSelected = "kMsgMenuItemSelected";
 //------------------------------------------------------------------------
 CCommandMenuItem::CCommandMenuItem (const UTF8String& title, const UTF8String& keycode, int32_t keyModifiers, CBitmap* icon, int32_t flags, CBaseObject* _target, const UTF8String& _commandCategory, const UTF8String& _commandName)
 : CMenuItem (title, keycode, keyModifiers, icon, flags)
-, target (nullptr)
 {
 	setTarget (_target);
 	setCommandCategory (_commandCategory);
@@ -248,7 +209,6 @@ CCommandMenuItem::CCommandMenuItem (const UTF8String& title, const UTF8String& k
 //------------------------------------------------------------------------
 CCommandMenuItem::CCommandMenuItem (const UTF8String& title, COptionMenu* submenu, CBitmap* icon, CBaseObject* _target, const UTF8String& _commandCategory, const UTF8String& _commandName)
 : CMenuItem (title, submenu, icon)
-, target (nullptr)
 {
 	setTarget (_target);
 	setCommandCategory (_commandCategory);
@@ -258,7 +218,6 @@ CCommandMenuItem::CCommandMenuItem (const UTF8String& title, COptionMenu* submen
 //------------------------------------------------------------------------
 CCommandMenuItem::CCommandMenuItem (const UTF8String& title, int32_t tag, CBaseObject* _target, const UTF8String& _commandCategory, const UTF8String& _commandName)
 : CMenuItem (title, tag)
-, target (nullptr)
 {
 	setTarget (_target);
 	setCommandCategory (_commandCategory);
@@ -268,7 +227,6 @@ CCommandMenuItem::CCommandMenuItem (const UTF8String& title, int32_t tag, CBaseO
 //------------------------------------------------------------------------
 CCommandMenuItem::CCommandMenuItem (const UTF8String& title, CBaseObject* _target, const UTF8String& _commandCategory, const UTF8String& _commandName)
 : CMenuItem (title, -1)
-, target (nullptr)
 {
 	setTarget (_target);
 	setCommandCategory (_commandCategory);
@@ -278,21 +236,12 @@ CCommandMenuItem::CCommandMenuItem (const UTF8String& title, CBaseObject* _targe
 //------------------------------------------------------------------------
 CCommandMenuItem::CCommandMenuItem (const CCommandMenuItem& item)
 : CMenuItem (item)
-, target (nullptr)
+, validateFunc (item.validateFunc)
+, selectedFunc (item.selectedFunc)
 , commandCategory (item.commandCategory)
 , commandName (item.commandName)
-, selectedFunc (item.selectedFunc)
-, validateFunc (item.validateFunc)
 {
 	setTarget (item.target);
-}
-
-//------------------------------------------------------------------------
-CCommandMenuItem::~CCommandMenuItem ()
-{
-	setTarget (nullptr);
-	setCommandCategory (nullptr);
-	setCommandName (nullptr);
 }
 
 //------------------------------------------------------------------------
@@ -322,11 +271,7 @@ bool CCommandMenuItem::isCommandName (const UTF8String& name) const
 //------------------------------------------------------------------------
 void CCommandMenuItem::setTarget (CBaseObject* _target)
 {
-	if (target)
-		target->forget ();
 	target = _target;
-	if (_target)
-		target->remember ();
 }
 
 //------------------------------------------------------------------------
@@ -382,21 +327,12 @@ There are 2 styles with or without a shadowed text. When a mouse click occurs, a
 COptionMenu::COptionMenu (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background, CBitmap* bgWhenClick, const int32_t style)
 : CParamDisplay (size, background, style)
 , bgWhenClick (bgWhenClick)
-, nbItemsPerColumn (-1)
-, prefixNumbers (0)
-, inPopup (false)
 {
 	this->listener = listener;
 	this->tag = tag;
 
-	currentIndex = -1;
 	lastButton = kRButton;
-	lastResult = -1;
-	lastMenu = nullptr;
 	
-	if (bgWhenClick)
-		bgWhenClick->remember ();
-
 	menuItems = new CMenuItemList;
 	setWantsFocus (true);
 }
@@ -404,14 +340,6 @@ COptionMenu::COptionMenu (const CRect& size, IControlListener* listener, int32_t
 //------------------------------------------------------------------------
 COptionMenu::COptionMenu ()
 : CParamDisplay (CRect (0, 0, 0, 0))
-, currentIndex (-1)
-, bgWhenClick (nullptr)
-, lastButton (0)
-, nbItemsPerColumn (-1)
-, lastResult (-1)
-, prefixNumbers (0)
-, lastMenu (nullptr)
-, inPopup (false)
 {
 	menuItems = new CMenuItemList;
 	setWantsFocus (true);
@@ -420,29 +348,17 @@ COptionMenu::COptionMenu ()
 //------------------------------------------------------------------------
 COptionMenu::COptionMenu (const COptionMenu& v)
 : CParamDisplay (v)
-, currentIndex (-1)
-, bgWhenClick (v.bgWhenClick)
-, lastButton (0)
-, nbItemsPerColumn (v.nbItemsPerColumn)
-, lastResult (-1)
-, prefixNumbers (0)
-, lastMenu (nullptr)
 , menuItems (new CMenuItemList (*v.menuItems))
-, inPopup (false)
+, nbItemsPerColumn (v.nbItemsPerColumn)
+, bgWhenClick (v.bgWhenClick)
 {
-	if (bgWhenClick)
-		bgWhenClick->remember ();
-
 	setWantsFocus (true);
 }
 
 //------------------------------------------------------------------------
-COptionMenu::~COptionMenu ()
+COptionMenu::~COptionMenu () noexcept
 {
 	removeAllEntry ();
-
-	if (bgWhenClick)
-		bgWhenClick->forget ();
 
 	delete menuItems;
 }

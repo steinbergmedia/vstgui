@@ -48,7 +48,7 @@ namespace VSTGUI {
 class CVSTGUITimer : public CBaseObject, public IPlatformTimerCallback
 {
 public:
-	typedef std::function<void(CVSTGUITimer*)> CallbackFunc;
+	using CallbackFunc = std::function<void(CVSTGUITimer*)>;
 
 	CVSTGUITimer (const CallbackFunc& callback, uint32_t fireTime = 100, bool doStart = true);
 	CVSTGUITimer (CallbackFunc&& callback, uint32_t fireTime = 100, bool doStart = true);
@@ -65,7 +65,7 @@ public:
 //-----------------------------------------------------------------------------
 	CLASS_METHODS_NOCOPY(CVSTGUITimer, CBaseObject)
 protected:
-	~CVSTGUITimer ();
+	~CVSTGUITimer () noexcept override;
 	
 	void fire () override;
 	

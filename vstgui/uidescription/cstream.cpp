@@ -77,7 +77,7 @@ CMemoryStream::CMemoryStream (const int8_t* inBuffer, uint32_t bufferSize, bool 
 }
 
 //-----------------------------------------------------------------------------
-CMemoryStream::~CMemoryStream ()
+CMemoryStream::~CMemoryStream () noexcept
 {
 	if (ownsBuffer && buffer)
 		std::free (buffer);
@@ -215,7 +215,7 @@ CFileStream::CFileStream ()
 }
 
 //-----------------------------------------------------------------------------
-CFileStream::~CFileStream ()
+CFileStream::~CFileStream () noexcept
 {
 	if (stream)
 	{
@@ -360,7 +360,7 @@ CResourceInputStream::CResourceInputStream (ByteOrder byteOrder)
 }
 
 //-----------------------------------------------------------------------------
-CResourceInputStream::~CResourceInputStream ()
+CResourceInputStream::~CResourceInputStream () noexcept
 {
 	if (platformHandle)
 	{

@@ -52,7 +52,7 @@ class FontPreviewView : public CView
 {
 public:
 	FontPreviewView (const CRect& size, const CColor& color = kWhiteCColor) : CView (size), font (nullptr), fontColor (color) {}
-	~FontPreviewView () override { if (font) font->forget (); }
+	~FontPreviewView () noexcept override { if (font) font->forget (); }
 	
 	void setFont (CFontRef newFont)
 	{
@@ -90,8 +90,8 @@ public:
 	}
 	
 protected:
-	CColor fontColor;
 	CFontRef font;
+	CColor fontColor;
 };
 
 enum {
@@ -112,8 +112,8 @@ enum {
 CFontChooser::CFontChooser (IFontChooserDelegate* delegate, CFontRef initialFont, const CFontChooserUIDefinition& uiDef)
 : CViewContainer (CRect (0, 0, 300, 500))
 , delegate (nullptr)
-, selFont (nullptr)
 , fontBrowser (nullptr)
+, selFont (nullptr)
 {
 	std::list<std::string> fnList;
 	IPlatformFont::getAllPlatformFontFamilies (fnList);

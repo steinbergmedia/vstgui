@@ -54,7 +54,7 @@ public:
 	explicit CBitmap (const CResourceDescription& desc);				///< Create a pixmap from a resource identifier.
 	CBitmap (CCoord width, CCoord height);					///< Create a pixmap with a given size.
 	explicit CBitmap (IPlatformBitmap* platformBitmap);
-	~CBitmap () = default;
+	~CBitmap () noexcept override = default;
 
 	//-----------------------------------------------------------------------------
 	/// @name CBitmap Methods
@@ -147,7 +147,7 @@ class CNinePartTiledBitmap : public CBitmap
 public:
 	CNinePartTiledBitmap (const CResourceDescription& desc, const CNinePartTiledDescription& offsets);
 	CNinePartTiledBitmap (IPlatformBitmap* platformBitmap, const CNinePartTiledDescription& offsets);
-	~CNinePartTiledBitmap ();
+	~CNinePartTiledBitmap () noexcept override = default;
 	
 	//-----------------------------------------------------------------------------
 	/// @name Part Offsets

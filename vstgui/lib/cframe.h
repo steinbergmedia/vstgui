@@ -185,51 +185,49 @@ public:
 
 	//-------------------------------------------
 protected:
-	~CFrame () = default;
+	using ViewList = std::list<CView*>;
+	using KeyboardHookList = std::list<IKeyboardHook*>;
+	using MouseObserverList = std::list<IMouseObserver*>;
+	using ScaleFactorChangedListenerList = std::list<IScaleFactorChangedListener*>;
+	using WindowActiveStateChangeViews = std::vector<CView*>;
+
+	struct CollectInvalidRects : public CBaseObject
+	{
+		explicit CollectInvalidRects (CFrame* frame);
+		~CollectInvalidRects () noexcept;
+		
+		void addRect (const CRect& rect);
+		void flush ();
+	private:
+		using InvalidRects = std::vector<CRect>;
+
+		SharedPointer<CFrame> frame;
+		InvalidRects invalidRects;
+		uint32_t lastTicks;
+#if VSTGUI_LOG_COLLECT_INVALID_RECTS
+		uint32_t numAddedRects;
+#endif
+	};
+	
+	~CFrame () noexcept override = default;
 	void beforeDelete () override;
 	
 	void checkMouseViews (const CPoint& where, const CButtonState& buttons);
 	void clearMouseViews (const CPoint& where, const CButtonState& buttons, bool callMouseExit = true);
 	void removeFromMouseViews (CView* view);
-
-	VSTGUIEditorInterface*		pEditor;
-	IViewAddedRemovedObserver*	pViewAddedRemovedObserver;
-	CTooltipSupport*			pTooltips;
-	Animation::Animator*		pAnimator;
-
-	CView   *pModalView;
-	CView   *pFocusView;
-	CView   *pActiveFocusView;
-	
-	typedef std::list<CView*> ViewList;
-	ViewList pMouseViews;
-
-	bool	bActive;
-	bool	bWindowActive {false};
+	void setCollectInvalidRects (CollectInvalidRects* collectInvalidRects);
 
 	// keyboard hooks
-	typedef std::list<IKeyboardHook*> KeyboardHookList;
-	KeyboardHookList* pKeyboardHooks;
 	int32_t keyboardHooksOnKeyDown (const VstKeyCode& key);
 	int32_t keyboardHooksOnKeyUp (const VstKeyCode& key);
 
 	// mouse observers
-	typedef std::list<IMouseObserver*> MouseObserverList;
-	MouseObserverList* pMouseObservers;
 	void callMouseObserverMouseEntered (CView* view);
 	void callMouseObserverMouseExited (CView* view);
 	CMouseEventResult callMouseObserverMouseDown (const CPoint& where, const CButtonState& buttons);
 	CMouseEventResult callMouseObserverMouseMoved (const CPoint& where, const CButtonState& buttons);
 
-	// scale factor changed listener
-	typedef std::list<IScaleFactorChangedListener*> ScaleFactorChangedListenerList;
-	ScaleFactorChangedListenerList* pScaleFactorChangedListenerList;
-
-	using WindowActiveStateChangeViews = std::vector<CView*>;
-	WindowActiveStateChangeViews windowActiveStateChangeViews;
-
 	// platform frame
-	IPlatformFrame* platformFrame;
 	bool platformDrawRect (CDrawContext* context, const CRect& rect) override;
 	CMouseEventResult platformOnMouseDown (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult platformOnMouseMoved (CPoint& where, const CButtonState& buttons) override;
@@ -249,25 +247,24 @@ protected:
 	void platformOnTouchEvent (ITouchEvent& event) override;
 #endif
 
-	struct CollectInvalidRects : public CBaseObject
-	{
-		explicit CollectInvalidRects (CFrame* frame);
-		~CollectInvalidRects ();
-		
-		void addRect (const CRect& rect);
-		void flush ();
-	private:
-		SharedPointer<CFrame> frame;
-		typedef std::vector<CRect> InvalidRects;
-		InvalidRects invalidRects;
-		uint32_t lastTicks;
-	#if VSTGUI_LOG_COLLECT_INVALID_RECTS
-		uint32_t numAddedRects;
-	#endif
-	};
+	IPlatformFrame* platformFrame {nullptr};
+	VSTGUIEditorInterface* pEditor {nullptr};
+	IViewAddedRemovedObserver* pViewAddedRemovedObserver {nullptr};
+	CTooltipSupport* pTooltips {nullptr};
+	Animation::Animator* pAnimator {nullptr};
+	CView* pModalView {nullptr};
+	CView* pFocusView {nullptr};
+	CView* pActiveFocusView {nullptr};
+	CollectInvalidRects* collectInvalidRects {nullptr};
+	KeyboardHookList* pKeyboardHooks {nullptr};
+	MouseObserverList* pMouseObservers {nullptr};
+	ScaleFactorChangedListenerList* pScaleFactorChangedListenerList {nullptr};
 
-	void setCollectInvalidRects (CollectInvalidRects* collectInvalidRects);
-	CollectInvalidRects* collectInvalidRects;
+	ViewList pMouseViews;
+	WindowActiveStateChangeViews windowActiveStateChangeViews;
+
+	bool bActive {false};
+	bool bWindowActive {false};
 };
 
 //----------------------------------------------------
@@ -284,10 +281,10 @@ public:
 
 	virtual CFrame* getFrame () const { return frame; }
 protected:
-	VSTGUIEditorInterface () : frame (0) {}
-	virtual ~VSTGUIEditorInterface () {}
+	VSTGUIEditorInterface () = default;
+	virtual ~VSTGUIEditorInterface () noexcept = default;
 
-	CFrame* frame;
+	CFrame* frame {nullptr};
 };
 
 //-----------------------------------------------------------------------------
@@ -297,7 +294,7 @@ protected:
 class IMouseObserver
 {
 public:
-	virtual ~IMouseObserver() {}
+	virtual ~IMouseObserver() noexcept = default;
 	virtual void onMouseEntered (CView* view, CFrame* frame) = 0;
 	virtual void onMouseExited (CView* view, CFrame* frame) = 0;
 	virtual CMouseEventResult onMouseMoved (CFrame* frame, const CPoint& where, const CButtonState& buttons) { return kMouseEventNotHandled; }	///< a mouse move event happend on the frame at position where. If the observer handles this, the event won't be propagated further
@@ -312,7 +309,7 @@ public:
 class IKeyboardHook
 {
 public:
-	virtual ~IKeyboardHook () {}
+	virtual ~IKeyboardHook () noexcept = default;
 	
 	virtual int32_t onKeyDown (const VstKeyCode& code, CFrame* frame) = 0;	///< should return 1 if no further key down processing should apply, otherwise -1
 	virtual int32_t onKeyUp (const VstKeyCode& code, CFrame* frame) = 0;	///< should return 1 if no further key up processing should apply, otherwise -1
@@ -326,7 +323,7 @@ public:
 class IViewAddedRemovedObserver
 {
 public:
-	virtual ~IViewAddedRemovedObserver () {}
+	virtual ~IViewAddedRemovedObserver () noexcept = default;
 	
 	virtual void onViewAdded (CFrame* frame, CView* view) = 0;
 	virtual void onViewRemoved (CFrame* frame, CView* view) = 0;

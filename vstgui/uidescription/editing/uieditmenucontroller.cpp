@@ -56,17 +56,7 @@ UIEditMenuController::UIEditMenuController (IController* baseController, UISelec
 , undoManager (undoManager)
 , description (description)
 , actionPerformer (actionPerformer)
-, editMenu (nullptr)
-, fileMenu (nullptr)
-, editLabel (nullptr)
-, fileLabel (nullptr)
 {
-}
-
-//----------------------------------------------------------------------------------------------------
-UIEditMenuController::~UIEditMenuController ()
-{
-	highlightTimer = nullptr;
 }
 
 //----------------------------------------------------------------------------------------------------

@@ -58,8 +58,8 @@ CVSTGUITimer::CVSTGUITimer (CBaseObject* timerObject, uint32_t fireTime, bool do
 //-----------------------------------------------------------------------------
 CVSTGUITimer::CVSTGUITimer (const CallbackFunc& callback, uint32_t fireTime, bool doStart)
 : fireTime (fireTime)
-, platformTimer (nullptr)
 , callbackFunc (callback)
+, platformTimer (nullptr)
 {
 	if (doStart)
 		start ();
@@ -68,15 +68,15 @@ CVSTGUITimer::CVSTGUITimer (const CallbackFunc& callback, uint32_t fireTime, boo
 //-----------------------------------------------------------------------------
 CVSTGUITimer::CVSTGUITimer (CallbackFunc&& callback, uint32_t fireTime, bool doStart)
 : fireTime (fireTime)
-, platformTimer (nullptr)
 , callbackFunc (std::move (callback))
+, platformTimer (nullptr)
 {
 	if (doStart)
 		start ();
 }
 
 //-----------------------------------------------------------------------------
-CVSTGUITimer::~CVSTGUITimer ()
+CVSTGUITimer::~CVSTGUITimer () noexcept
 {
 	stop ();
 }

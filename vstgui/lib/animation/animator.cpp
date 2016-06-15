@@ -233,7 +233,7 @@ Animator::Animator ()
 }
 
 //-----------------------------------------------------------------------------
-Animator::~Animator ()
+Animator::~Animator () noexcept
 {
 	Timer::removeAnimator (this);
 }
@@ -373,8 +373,8 @@ IdStringPtr kMsgAnimationFinished = "kMsgAnimationFinished";
 
 //-----------------------------------------------------------------------------
 Animator::Animation::Animation (CView* view, const std::string& name, IAnimationTarget* at, ITimingFunction* t, NotificationFunction notification)
-: view (view)
-, name (name)
+: name (name)
+, view (view)
 , target (at)
 , timingFunction (t)
 , notification (std::move (notification))
@@ -385,7 +385,7 @@ Animator::Animation::Animation (CView* view, const std::string& name, IAnimation
 }
 
 //-----------------------------------------------------------------------------
-Animator::Animation::~Animation ()
+Animator::Animation::~Animation () noexcept
 {
 	if (notification)
 		notification (view, name.c_str (), target);

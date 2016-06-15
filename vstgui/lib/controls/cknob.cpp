@@ -69,12 +69,12 @@ By clicking alt modifier and left mouse button the value changes with a vertical
 //------------------------------------------------------------------------
 CKnob::CKnob (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background, CBitmap* handle, const CPoint& offset, int32_t drawStyle)
 : CControl (size, listener, tag, background)
-, drawStyle (drawStyle)
 , offset (offset)
-, pHandle (handle)
+, drawStyle (drawStyle)
 , handleLineWidth (1.)
 , coronaInset (0)
 , coronaOutlineWidthAdd (2.)
+, pHandle (handle)
 {
 	if (pHandle)
 	{
@@ -108,17 +108,17 @@ CKnob::CKnob (const CKnob& v)
 , inset (v.inset)
 , coronaInset (v.coronaInset)
 , coronaOutlineWidthAdd (v.coronaInset)
+, pHandle (v.pHandle)
 , startAngle (v.startAngle)
 , rangeAngle (v.rangeAngle)
 , zoomFactor (v.zoomFactor)
-, pHandle (v.pHandle)
 {
 	if (pHandle)
 		pHandle->remember ();
 }
 
 //------------------------------------------------------------------------
-CKnob::~CKnob ()
+CKnob::~CKnob () noexcept
 {
 	if (pHandle)
 		pHandle->forget ();

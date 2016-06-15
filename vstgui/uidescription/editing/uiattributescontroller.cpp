@@ -806,10 +806,10 @@ UIAttributesController::UIAttributesController (IController* baseController, UIS
 , selection (selection)
 , undoManager (undoManager)
 , editDescription (description)
-, attributeView (nullptr)
-, viewNameLabel (nullptr)
-, currentAttributeName (nullptr)
 , liveAction (nullptr)
+, viewNameLabel (nullptr)
+, attributeView (nullptr)
+, currentAttributeName (nullptr)
 {
 	selection->addDependency (this);
 	undoManager->addDependency (this);

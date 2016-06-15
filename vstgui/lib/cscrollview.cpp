@@ -310,9 +310,9 @@ CScrollView::CScrollView (const CRect &size, const CRect &containerSize, int32_t
 CScrollView::CScrollView (const CScrollView& v)
 : CViewContainer (v)
 , containerSize (v.containerSize)
+, scrollbarWidth (v.scrollbarWidth)
 , style (v.style)
 , activeScrollbarStyle (v.activeScrollbarStyle)
-, scrollbarWidth (v.scrollbarWidth)
 {
 	CViewContainer::removeAll ();
 	if (activeScrollbarStyle & kHorizontalScrollbar && v.hsb)

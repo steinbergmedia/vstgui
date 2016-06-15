@@ -354,16 +354,13 @@ If the bitmap is set, the bitmap must contain 6 states of the checkbox in the fo
 CCheckBox::CCheckBox (const CRect& size, IControlListener* listener, int32_t tag, UTF8StringPtr title, CBitmap* bitmap, int32_t style)
 : CControl (size, listener, tag, bitmap)
 , style (style)
-, font (nullptr)
 , fontColor (kWhiteCColor)
-, hilight (false)
+, font (kSystemFont)
 {
 	setTitle (title);
-	setFont (kSystemFont);
 	setBoxFillColor (kWhiteCColor);
 	setBoxFrameColor (kBlackCColor);
 	setCheckMarkColor (kRedCColor);
-	font->remember ();
 	setWantsFocus (true);
 	if (style & kAutoSizeToFit)
 		sizeToFit ();
@@ -373,23 +370,14 @@ CCheckBox::CCheckBox (const CRect& size, IControlListener* listener, int32_t tag
 CCheckBox::CCheckBox (const CCheckBox& checkbox)
 : CControl (checkbox)
 , style (checkbox.style)
-, font (nullptr)
 , fontColor (checkbox.fontColor)
-, hilight (false)
+, font (checkbox.font)
 {
 	setTitle (checkbox.title);
-	setFont (checkbox.font);
 	setBoxFillColor (checkbox.boxFillColor);
 	setBoxFrameColor (checkbox.boxFrameColor);
 	setCheckMarkColor (checkbox.checkMarkColor);
-	font->remember ();
 	setWantsFocus (true);
-}
-
-//------------------------------------------------------------------------
-CCheckBox::~CCheckBox ()
-{
-	setFont (nullptr);
 }
 
 //------------------------------------------------------------------------
@@ -403,12 +391,8 @@ void CCheckBox::setTitle (const UTF8String& newTitle)
 //------------------------------------------------------------------------
 void CCheckBox::setFont (CFontRef newFont)
 {
-	if (font)
-		font->forget ();
 	font = newFont;
-	if (font)
-		font->remember ();
-	if (style & kAutoSizeToFit)
+	if (font && style & kAutoSizeToFit)
 		sizeToFit ();
 }
 
@@ -685,17 +669,15 @@ int32_t CCheckBox::onKeyDown (VstKeyCode& keyCode)
 //------------------------------------------------------------------------
 CTextButton::CTextButton (const CRect& size, IControlListener* listener, int32_t tag, UTF8StringPtr title, Style style)
 : CControl (size, listener, tag, nullptr)
-, title (title)
-, font (nullptr)
-, _path (nullptr)
+, font (kSystemFont)
 , frameWidth (1.)
 , roundRadius (6.)
 , textMargin (0.)
-, iconPosition (CDrawMethods::kIconLeft)
 , horiTxtAlign (kCenterText)
+, iconPosition (CDrawMethods::kIconLeft)
 , style (style)
+, title (title)
 {
-	setFont (kSystemFont);
 	setTextColor (kBlackCColor);
 	setTextColorHighlighted (kWhiteCColor);
 	
@@ -755,13 +737,7 @@ void CTextButton::setTitle (const UTF8String& newTitle)
 //------------------------------------------------------------------------
 void CTextButton::setFont (CFontRef newFont)
 {
-	if (newFont == nullptr)
-		return;
-	if (font)
-		font->forget ();
 	font = newFont;
-	if (font)
-		font->remember ();
 	invalid ();
 }
 
@@ -953,7 +929,7 @@ CGraphicsPath* CTextButton::getPath (CDrawContext* context)
 	{
 		CRect r (getViewSize ());
 		r.inset (frameWidth / 2., frameWidth / 2.);
-		_path = context->createRoundRectGraphicsPath (r, roundRadius);
+		_path = owned (context->createRoundRectGraphicsPath (r, roundRadius));
 	}
 	return _path;
 }
@@ -961,11 +937,7 @@ CGraphicsPath* CTextButton::getPath (CDrawContext* context)
 //------------------------------------------------------------------------
 void CTextButton::invalidPath ()
 {
-	if (_path)
-	{
-		_path->forget ();
-		_path = nullptr;
-	}
+	_path = nullptr;
 }
 
 //------------------------------------------------------------------------

@@ -77,7 +77,7 @@ private:
 class CViewContainer : public CView
 {
 public:
-	typedef std::list<SharedPointer<CView> > ViewList;
+	using ViewList = std::list<SharedPointer<CView>>;
 
 	explicit CViewContainer (const CRect& size);
 	CViewContainer (const CViewContainer& viewContainer);
@@ -241,27 +241,29 @@ public:
 	const CViewContainer* asViewContainer () const final { return this; }
 
 protected:
-	~CViewContainer ();
-	virtual bool checkUpdateRect (CView* view, const CRect& rect);
-
 	enum {
 		kAutosizeSubviews = 1 << (CView::kLastCViewFlag + 1)
 	};
+	
+	~CViewContainer () noexcept override;
+
+	virtual bool checkUpdateRect (CView* view, const CRect& rect);
 
 	/// @cond ignore
 	ViewList children;
 	/// @endcond
 
-	CDrawStyle backgroundColorDrawStyle;
-	CColor backgroundColor;
+	CDrawStyle backgroundColorDrawStyle {kDrawFilledAndStroked};
+	CColor backgroundColor {kBlackCColor};
 	CPoint backgroundOffset;
 	CRect lastDrawnFocus;
 	
-	CView* currentDragView;
-	CView* mouseDownView;
+	CView* currentDragView {nullptr};
+	CView* mouseDownView {nullptr};
 
 private:
-	typedef DispatchList<IViewContainerListener> ViewContainerListenerDispatcher;
+	using ViewContainerListenerDispatcher = DispatchList<IViewContainerListener>;
+
 	ViewContainerListenerDispatcher viewContainerListeners;
 	CGraphicsTransform transform;
 };

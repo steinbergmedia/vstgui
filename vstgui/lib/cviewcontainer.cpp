@@ -65,21 +65,16 @@ IdStringPtr kMsgLooseFocus = "LooseFocus";
  */
 CViewContainer::CViewContainer (const CRect &rect)
 : CView (rect)
-, currentDragView (nullptr)
-, mouseDownView (nullptr)
-, backgroundColorDrawStyle (kDrawFilledAndStroked)
 {
-	backgroundOffset (0, 0);
-	backgroundColor = kBlackCColor;
 	setAutosizingEnabled (true);
 }
 
 //-----------------------------------------------------------------------------
 CViewContainer::CViewContainer (const CViewContainer& v)
 : CView (v)
+, backgroundColorDrawStyle (v.backgroundColorDrawStyle)
 , backgroundColor (v.backgroundColor)
 , backgroundOffset (v.backgroundOffset)
-, backgroundColorDrawStyle (v.backgroundColorDrawStyle)
 , currentDragView (nullptr)
 , mouseDownView (nullptr)
 {
@@ -92,7 +87,7 @@ CViewContainer::CViewContainer (const CViewContainer& v)
 }
 
 //-----------------------------------------------------------------------------
-CViewContainer::~CViewContainer ()
+CViewContainer::~CViewContainer () noexcept
 {
 	// remove all views
 	CViewContainer::removeAll (true);

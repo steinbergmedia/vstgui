@@ -413,7 +413,7 @@ class UIBitmapSettingsController : public CBaseObject, public IController
 {
 public:
 	UIBitmapSettingsController (CBitmap* bitmap, const std::string& bitmapName, UIDescription* description, IActionPerformer* actionPerformer);
-	~UIBitmapSettingsController () = default;
+	~UIBitmapSettingsController () noexcept override = default;
 
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;
@@ -426,10 +426,10 @@ protected:
 	static bool stringToValue (UTF8StringPtr txt, float& result, CTextEdit::StringToValueUserData* userData);
 	static bool valueToString (float value, char utf8String[256], CParamDisplay::ValueToStringUserData* userData);
 
-	IActionPerformer* actionPerformer;
-	SharedPointer<UIDescription> editDescription;
 	SharedPointer<CBitmap> bitmap;
+	SharedPointer<UIDescription> editDescription;
 	SharedPointer<UIBitmapView> bitmapView;
+	IActionPerformer* actionPerformer;
 	std::string bitmapName;
 	CRect origOffsets;
 
@@ -452,9 +452,9 @@ protected:
 //----------------------------------------------------------------------------------------------------
 UIBitmapSettingsController::UIBitmapSettingsController (CBitmap* bitmap, const std::string& bitmapName, UIDescription* description, IActionPerformer* actionPerformer)
 : bitmap (bitmap)
-, bitmapName (bitmapName)
 , editDescription (description)
 , actionPerformer (actionPerformer)
+, bitmapName (bitmapName)
 , origOffsets (10, 10, 10, 10)
 {
 	for (auto& control : controls)

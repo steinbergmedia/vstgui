@@ -64,18 +64,6 @@ On Windows it's a WS_CHILD Window.
 CFrame::CFrame (const CRect& inSize, VSTGUIEditorInterface* inEditor)
 : CViewContainer (inSize)
 , pEditor (inEditor)
-, pMouseObservers (nullptr)
-, pKeyboardHooks (nullptr)
-, pViewAddedRemovedObserver (nullptr)
-, pScaleFactorChangedListenerList (nullptr)
-, pTooltips (nullptr)
-, pAnimator (nullptr)
-, pModalView (nullptr)
-, pFocusView (nullptr)
-, pActiveFocusView (nullptr)
-, bActive (true)
-, platformFrame (nullptr)
-, collectInvalidRects (nullptr)
 {
 	pParentFrame = this;
 }
@@ -1641,7 +1629,7 @@ CFrame::CollectInvalidRects::CollectInvalidRects (CFrame* frame)
 }
 
 //-----------------------------------------------------------------------------
-CFrame::CollectInvalidRects::~CollectInvalidRects ()
+CFrame::CollectInvalidRects::~CollectInvalidRects () noexcept
 {
 	frame->setCollectInvalidRects (nullptr);
 }

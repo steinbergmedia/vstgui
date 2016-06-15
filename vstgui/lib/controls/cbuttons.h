@@ -76,7 +76,7 @@ public:
 
 	CLASS_METHODS(COnOffButton, CControl)
 protected:
-	~COnOffButton () = default;
+	~COnOffButton () noexcept override = default;
 	int32_t style;
 };
 
@@ -134,18 +134,19 @@ public:
 
 	CLASS_METHODS(CCheckBox, CControl)
 protected:
-	~CCheckBox ();
+	~CCheckBox () noexcept override = default;
+
 	UTF8String title;
 	int32_t style;
 	CColor fontColor;
 	CColor boxFrameColor;
 	CColor boxFillColor;
 	CColor checkMarkColor;
-	CFontRef font;
+	SharedPointer<CFontDesc> font;
 
 private:
-	float previousValue;
-	bool hilight;
+	float previousValue {0.f};
+	bool hilight {false};
 };
 
 //-----------------------------------------------------------------------------
@@ -175,7 +176,7 @@ public:
 
 	CLASS_METHODS(CKickButton, CControl)
 protected:
-	~CKickButton () = default;
+	~CKickButton () noexcept override = default;
 	CPoint	offset;
 
 private:
@@ -265,11 +266,13 @@ public:
 	
 	CLASS_METHODS(CTextButton, CControl)
 protected:
+	~CTextButton () noexcept override = default;
+
 	void invalidPath ();
 	CGraphicsPath* getPath (CDrawContext* context);
 
-	CFontRef font;
-	CGraphicsPath* _path;
+	SharedPointer<CFontDesc> font;
+	SharedPointer<CGraphicsPath> _path;
 	SharedPointer<CBitmap> icon;
 	SharedPointer<CBitmap> iconHighlighted;
 	SharedPointer<CGradient> gradient;

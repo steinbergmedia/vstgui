@@ -197,11 +197,6 @@ bool CView::kDirtyCallAlwaysOnMainThread = false;
 CView::CView (const CRect& size)
 : size (size)
 , mouseableArea (size)
-, pParentFrame (nullptr)
-, pParentView (nullptr)
-, pBackground (nullptr)
-, autosizeFlags (kAutosizeNone)
-, alphaValue (1.f)
 {
 	#if VSTGUI_CHECK_VIEW_RELEASING
 	static CViewInternal::AllocatedViews allocatedViews;
@@ -218,19 +213,19 @@ CView::CView (const CView& v)
 , mouseableArea (v.mouseableArea)
 , pParentFrame (nullptr)
 , pParentView (nullptr)
-, pBackground (v.pBackground)
-, pDisabledBackground (v.pDisabledBackground)
-, pHitTestPath (v.pHitTestPath)
 , viewFlags (v.viewFlags)
 , autosizeFlags (v.autosizeFlags)
 , alphaValue (v.alphaValue)
+, pBackground (v.pBackground)
+, pDisabledBackground (v.pDisabledBackground)
+, pHitTestPath (v.pHitTestPath)
 {
 	for (auto& attribute : attributes)
 		setAttribute (attribute.first, attribute.second->getSize (), attribute.second->getData ());
 }
 
 //-----------------------------------------------------------------------------
-CView::~CView ()
+CView::~CView () noexcept
 {
 	vstgui_assert (isAttached () == false, "View is still attached");
 	vstgui_assert (viewListeners.empty (), "View listeners not empty");

@@ -123,7 +123,7 @@ public:
 
 	CLASS_METHODS(CSlider, CControl)
 protected:
-	~CSlider ();
+	~CSlider () noexcept override;
 	void setViewSize (const CRect& rect, bool invalid) override;
 	
 	float calculateDelta (const CPoint& where, CRect* handleRect = nullptr) const;

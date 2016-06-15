@@ -575,9 +575,9 @@ void TransformViewTypeOperation::undo ()
 //-----------------------------------------------------------------------------
 AttributeChangeAction::AttributeChangeAction (UIDescription* desc, UISelection* selection, const std::string& attrName, const std::string& attrValue)
 : desc (desc)
+, selection (selection)
 , attrName (attrName)
 , attrValue (attrValue)
-, selection (selection)
 {
 	const UIViewFactory* viewFactory = dynamic_cast<const UIViewFactory*> (desc->getViewFactory ());
 	std::string attrOldValue;

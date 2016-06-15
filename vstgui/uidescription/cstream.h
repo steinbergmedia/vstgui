@@ -52,7 +52,7 @@ class OutputStream
 {
 public:
 	explicit OutputStream (ByteOrder byteOrder = kNativeByteOrder) : byteOrder (byteOrder) {}
-	virtual ~OutputStream () {}
+	virtual ~OutputStream () noexcept = default;
 
 	ByteOrder getByteOrder () const { return byteOrder; }
 	void setByteOrder (ByteOrder newByteOrder) { byteOrder = newByteOrder; }
@@ -81,7 +81,7 @@ class InputStream
 {
 public:
 	explicit InputStream (ByteOrder byteOrder = kNativeByteOrder) : byteOrder (byteOrder) {}
-	virtual ~InputStream () {}
+	virtual ~InputStream () noexcept = default;
 
 	ByteOrder getByteOrder () const { return byteOrder; }
 	void setByteOrder (ByteOrder newByteOrder) { byteOrder = newByteOrder; }
@@ -109,7 +109,7 @@ private:
 class SeekableStream
 {
 public:
-	virtual ~SeekableStream () {}
+	virtual ~SeekableStream () noexcept = default;
 	enum SeekMode {
 		kSeekSet,
 		kSeekCurrent,
@@ -129,7 +129,7 @@ class CMemoryStream : virtual public OutputStream, virtual public InputStream, p
 public:
 	CMemoryStream (uint32_t initialSize = 1024, uint32_t delta = 1024, bool binaryMode = true, ByteOrder byteOrder = kNativeByteOrder);
 	CMemoryStream (const int8_t* buffer, uint32_t bufferSize, bool binaryMode = true, ByteOrder byteOrder = kNativeByteOrder);
-	~CMemoryStream ();
+	~CMemoryStream () noexcept override;
 
 	uint32_t writeRaw (const void* buffer, uint32_t size) override;
 	uint32_t readRaw (void* buffer, uint32_t size) override;
@@ -147,13 +147,13 @@ public:
 protected:
 	bool resize (uint32_t newSize);
 
-	bool binaryMode;
-	bool ownsBuffer;
 	int8_t* buffer;
 	uint32_t bufferSize;
 	uint32_t size;
 	uint32_t pos;
 	uint32_t delta;
+	bool binaryMode;
+	bool ownsBuffer;
 };
 
 /**
@@ -163,7 +163,7 @@ class CFileStream : public OutputStream, public InputStream, public SeekableStre
 {
 public:
 	CFileStream ();
-	~CFileStream ();
+	~CFileStream () noexcept override;
 
 	enum {
 		kReadMode		= 1 << 0,
@@ -229,7 +229,7 @@ class CResourceInputStream : public InputStream, public SeekableStream
 {
 public:
 	explicit CResourceInputStream (ByteOrder byteOrder = kNativeByteOrder);
-	~CResourceInputStream ();
+	~CResourceInputStream () noexcept override;
 
 	bool open (const CResourceDescription& res);
 

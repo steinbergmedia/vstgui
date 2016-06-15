@@ -226,10 +226,6 @@ CNinePartTiledBitmap::CNinePartTiledBitmap (IPlatformBitmap* platformBitmap, con
 }
 
 //-----------------------------------------------------------------------------
-CNinePartTiledBitmap::~CNinePartTiledBitmap ()
-= default;
-
-//-----------------------------------------------------------------------------
 void CNinePartTiledBitmap::draw (CDrawContext* inContext, const CRect& inDestRect, const CPoint& offset, float inAlpha)
 {
 	inContext->drawBitmapNinePartTiled (this, inDestRect, offsets, inAlpha);

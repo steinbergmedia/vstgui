@@ -89,13 +89,13 @@ public:
 
 	CLASS_METHODS(CFontDesc, CBaseObject)
 protected:
-	IPlatformFont* platformFont;
-	
 	void beforeDelete () override;
 	virtual void freePlatformFont ();
+
 	UTF8String name;
 	CCoord size;
 	int32_t style;
+	IPlatformFont* platformFont;
 };
 
 typedef CFontDesc*	CFontRef;

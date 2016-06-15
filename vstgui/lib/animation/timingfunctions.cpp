@@ -131,9 +131,9 @@ float InterpolationTimingFunction::getPosition (uint32_t milliseconds)
 RepeatTimingFunction::RepeatTimingFunction (TimingFunctionBase* tf, int32_t repeatCount, bool autoReverse)
 : tf (tf)
 , repeatCount (repeatCount)
+, runCounter (0)
 , autoReverse (autoReverse)
 , isReverse (false)
-, runCounter (0)
 {
 }
 

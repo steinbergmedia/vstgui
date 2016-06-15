@@ -93,16 +93,16 @@ public:
 
 //------------------------------------------------------------------------
 protected:
-	~CMenuItem ();
+	~CMenuItem () noexcept override = default;
 
 	UTF8String title;
 	UTF8String keyCode;
-	COptionMenu* submenu;
-	CBitmap* icon;
-	int32_t flags;
-	int32_t keyModifiers;
-	int32_t virtualKeyCode;
-	int32_t tag;
+	SharedPointer<COptionMenu> submenu;
+	SharedPointer<CBitmap> icon;
+	int32_t flags {0};
+	int32_t keyModifiers {0};
+	int32_t virtualKeyCode {0};
+	int32_t tag {-1};
 };
 
 //-----------------------------------------------------------------------------
@@ -118,7 +118,7 @@ public:
 	CCommandMenuItem (const UTF8String& title, int32_t tag, CBaseObject* target = nullptr, const UTF8String& commandCategory = nullptr, const UTF8String& commandName = nullptr);
 	CCommandMenuItem (const UTF8String& title, CBaseObject* target, const UTF8String& commandCategory = nullptr, const UTF8String& commandName = nullptr);
 	CCommandMenuItem (const CCommandMenuItem& item);
-	~CCommandMenuItem ();
+	~CCommandMenuItem () noexcept override = default;
 
 	//-----------------------------------------------------------------------------
 	/// @name CCommandMenuItem Methods
@@ -149,7 +149,7 @@ public:
 protected:
 	ValidateCallbackFunction validateFunc;
 	SelectedCallbackFunction selectedFunc;
-	CBaseObject* target;
+	SharedPointer<CBaseObject> target;
 	UTF8String commandCategory;
 	UTF8String commandName;
 };
@@ -170,7 +170,7 @@ public:
 	COptionMenu ();
 	COptionMenu (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background = nullptr, CBitmap* bgWhenClick = nullptr, const int32_t style = 0);
 	COptionMenu (const COptionMenu& menu);
-	~COptionMenu ();
+	~COptionMenu () noexcept override;
 
 	//-----------------------------------------------------------------------------
 	/// @name COptionMenu Methods
@@ -230,14 +230,14 @@ protected:
 
 	CMenuItemList* menuItems;
 
-	bool     inPopup;
-	int32_t     currentIndex;
-	CButtonState     lastButton;
-	int32_t     nbItemsPerColumn;
-	int32_t	 lastResult;
-	int32_t	 prefixNumbers;
-	CBitmap* bgWhenClick;
-	COptionMenu* lastMenu;
+	bool inPopup {false};
+	int32_t currentIndex {-1};
+	CButtonState lastButton {0};
+	int32_t nbItemsPerColumn {-1};
+	int32_t lastResult {-1};
+	int32_t prefixNumbers {0};
+	SharedPointer<CBitmap> bgWhenClick;
+	COptionMenu* lastMenu {nullptr};
 };
 
 } // namespace

@@ -68,7 +68,7 @@ public:
 
 		CRect rect;
 	};
-	typedef std::vector<Segment> Segments;
+	using Segments = std::vector<Segment>;
 	static uint32_t kPushBack;
 
 	CSegmentButton (const CRect& size, IControlListener* listener = nullptr, int32_t tag = -1);
@@ -146,15 +146,15 @@ private:
 	SharedPointer<CGradient> gradient;
 	SharedPointer<CGradient> gradientHighlighted;
 	SharedPointer<CFontDesc> font;
-	CColor textColor;
-	CColor textColorHighlighted;
-	CColor frameColor;
-	CHoriTxtAlign textAlignment;
-	CCoord textMargin;
-	CCoord roundRadius;
-	CCoord frameWidth;
-	Style style;
-	CDrawMethods::TextTruncateMode textTruncateMode;
+	CColor textColor {kBlackCColor};
+	CColor textColorHighlighted {kWhiteCColor};
+	CColor frameColor {kBlackCColor};
+	CHoriTxtAlign textAlignment {kCenterText};
+	CCoord textMargin {0.};
+	CCoord roundRadius {5.};
+	CCoord frameWidth {1.};
+	Style style {kHorizontal};
+	CDrawMethods::TextTruncateMode textTruncateMode {CDrawMethods::kTextTruncateNone};
 };
 
 } // namespace

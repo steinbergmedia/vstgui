@@ -121,10 +121,10 @@ IdStringPtr CNewFileSelector::kSelectEndMessage = "CNewFileSelector Select End M
 //-----------------------------------------------------------------------------
 CNewFileSelector::CNewFileSelector (CFrame* frame)
 : frame (frame)
-, defaultExtension (nullptr)
 , title (nullptr)
 , initialPath (nullptr)
 , defaultSaveName (nullptr)
+, defaultExtension (nullptr)
 , allowMultiFileSelection (false)
 {
 }

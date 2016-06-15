@@ -261,8 +261,8 @@ enum CMessageResult
 class CBaseObject
 {
 public:
-	CBaseObject () : nbReference (1) {}
-	virtual ~CBaseObject () {}
+	CBaseObject () = default;
+	virtual ~CBaseObject () noexcept = default;
 
 	//-----------------------------------------------------------------------------
 	/// @name Reference Counting Methods
@@ -287,7 +287,7 @@ public:
 	/// @endcond
 
 private:
-	int32_t nbReference;
+	int32_t nbReference {1};
 };
 
 //------------------------------------------------------------------------

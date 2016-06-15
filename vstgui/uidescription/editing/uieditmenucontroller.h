@@ -162,7 +162,7 @@ class UIEditMenuController : public CBaseObject, public DelegationController
 {
 public:
 	UIEditMenuController (IController* baseController, UISelection* selection, UIUndoManager* undoManager, UIDescription* description, IActionPerformer* actionPerformer);
-	~UIEditMenuController ();
+	~UIEditMenuController () noexcept override = default;
 
 	COptionMenu* getFileMenu () const { return fileMenu; }
 	COptionMenu* getEditMenu () const { return editMenu; }
@@ -189,8 +189,8 @@ protected:
 	SharedPointer<CVSTGUITimer> highlightTimer;
 	IActionPerformer* actionPerformer;
 
-	COptionMenu* fileMenu;
-	COptionMenu* editMenu;
+	COptionMenu* fileMenu {nullptr};
+	COptionMenu* editMenu {nullptr};
 	SharedPointer<CTextLabel> fileLabel;
 	SharedPointer<CTextLabel> editLabel;
 	

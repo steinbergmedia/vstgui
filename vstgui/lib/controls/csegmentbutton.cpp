@@ -40,22 +40,12 @@
 
 namespace VSTGUI {
 
-typedef std::numeric_limits<uint32_t> UInt32Limit;
-uint32_t CSegmentButton::kPushBack = UInt32Limit::max ();
+uint32_t CSegmentButton::kPushBack = std::numeric_limits<uint32_t>::max ();
 
 //-----------------------------------------------------------------------------
 CSegmentButton::CSegmentButton (const CRect& size, IControlListener* listener, int32_t tag)
 : CControl (size, listener, tag)
-, textColor (kBlackCColor)
-, textColorHighlighted (kWhiteCColor)
-, frameColor (kBlackCColor)
-, textAlignment (kCenterText)
-, textMargin (0)
 , font (kNormalFont)
-, roundRadius (5)
-, frameWidth (1)
-, style (kHorizontal)
-, textTruncateMode (CDrawMethods::kTextTruncateNone)
 {
 	setWantsFocus (true);
 }

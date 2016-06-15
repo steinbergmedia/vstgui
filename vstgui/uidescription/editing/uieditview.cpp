@@ -305,18 +305,7 @@ static const CCoord kResizeHandleSize = 6.;
 //----------------------------------------------------------------------------------------------------
 UIEditView::UIEditView (const CRect& size, UIDescription* uidescription)
 : CViewContainer (size)
-, undoManger (nullptr)
-, selection (nullptr)
-, dragSelection (nullptr)
 , description (uidescription)
-, highlightView (nullptr)
-, overlayView (nullptr)
-, lines (nullptr)
-, moveSizeOperation (nullptr)
-, editTimer (nullptr)
-, mouseEditMode (kNoEditing)
-, editing (true)
-, autosizing (true)
 , grid (nullptr)
 {
 	setScale (1.);

@@ -124,7 +124,7 @@ public:
 
 	CLASS_METHODS(CKnob, CControl)
 protected:
-	~CKnob ();
+	~CKnob () noexcept override;
 	virtual void drawHandle (CDrawContext* pContext);
 	virtual void drawCoronaOutline (CDrawContext* pContext) const;
 	virtual void drawCorona (CDrawContext* pContext) const;

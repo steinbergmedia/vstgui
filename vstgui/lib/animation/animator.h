@@ -88,13 +88,13 @@ public:
 	CLASS_METHODS_NOCOPY(Animator, CBaseObject)
 protected:
 
-	~Animator ();
+	~Animator () noexcept override;
 
 	class Animation : public CBaseObject
 	{
 	public:
 		Animation (CView* view, const std::string& name, IAnimationTarget* at, ITimingFunction* t, NotificationFunction notification);
-		~Animation ();
+		~Animation () noexcept override;
 
 		std::string name;
 		SharedPointer<CView> view;

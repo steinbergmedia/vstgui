@@ -293,16 +293,6 @@ public:
 	//-------------------------------------------
 	CLASS_METHODS(CView, CBaseObject)
 protected:
-	~CView ();
-
-	CGraphicsPath* getHitTestPath () const { return pHitTestPath; }
-	
-	CRect  size;
-	CRect  mouseableArea;
-
-	CFrame* pParentFrame;
-	CView* pParentView;
-
 	enum {
 		kMouseEnabled			= 1 << 0,
 		kTransparencyEnabled	= 1 << 1,
@@ -314,23 +304,32 @@ protected:
 		kIsSubview				= 1 << 7,
 		kLastCViewFlag			= 7
 	};
-	int32_t viewFlags;
+
+	~CView () noexcept override;
+
+	CGraphicsPath* getHitTestPath () const { return pHitTestPath; }
 	
-	int32_t autosizeFlags;
+	CRect  size;
+	CRect  mouseableArea;
+
+	CFrame* pParentFrame {nullptr};
+	CView* pParentView {nullptr};
+
+	int32_t viewFlags {0};
+	int32_t autosizeFlags {kAutosizeNone};
 	
-	float alphaValue;
+	float alphaValue {1.f};
 
 private:
+	using ViewAttributes = std::map<CViewAttributeID, CViewAttributeEntry*>;
+	using ViewListenerDispatcher = DispatchList<IViewListener>;
+
 	SharedPointer<CBitmap> pBackground;
 	SharedPointer<CBitmap> pDisabledBackground;
 	SharedPointer<CGraphicsPath> pHitTestPath;
 
-	typedef std::map<CViewAttributeID, CViewAttributeEntry*> ViewAttributes;
 	ViewAttributes attributes;
-
-	typedef DispatchList<IViewListener> ViewListenerDispatcher;
 	ViewListenerDispatcher viewListeners;
-
 };
 
 //-----------------------------------------------------------------------------

@@ -395,20 +395,20 @@ public:
 protected:
 	void apply ();
 	
-	IActionPerformer* actionPerformer;
 	SharedPointer<UIDescription> editDescription;
 	SharedPointer<UIColorStopEditView> colorStopEditView;
 	SharedPointer<CGradient> gradient;
 	SharedPointer<UIColor> editColor;
+	IActionPerformer* actionPerformer;
 	std::string gradientName;
 };
 
 //----------------------------------------------------------------------------------------------------
 UIGradientEditorController::UIGradientEditorController (const std::string& gradientName, CGradient* gradient, UIDescription* description, IActionPerformer* actionPerformer)
 : editDescription(description)
-, actionPerformer(actionPerformer)
 , gradient (gradient)
 , editColor (owned (new UIColor ()))
+, actionPerformer(actionPerformer)
 , gradientName (gradientName)
 {
 	*editColor = gradient->getColorStops ().begin ()->second;

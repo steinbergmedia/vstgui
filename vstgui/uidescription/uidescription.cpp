@@ -2802,8 +2802,8 @@ UINode::UINode (const std::string& _name, UIAttributes* _attributes, bool needsF
 //-----------------------------------------------------------------------------
 UINode::UINode (const std::string& _name, UIDescList* _children, UIAttributes* _attributes)
 : name (_name)
-, children (_children)
 , attributes (_attributes)
+, children (_children)
 , flags (0)
 {
 	vstgui_assert (children != nullptr);
@@ -2816,9 +2816,9 @@ UINode::UINode (const std::string& _name, UIDescList* _children, UIAttributes* _
 //-----------------------------------------------------------------------------
 UINode::UINode (const UINode& n)
 : name (n.name)
-, flags (n.flags)
 , attributes (new UIAttributes (*n.attributes))
 , children (new UIDescList (*n.children))
+, flags (n.flags)
 {
 	data.clear ();
 	data << n.getData ().str ();
@@ -2864,8 +2864,8 @@ UICommentNode::UICommentNode (const std::string& comment)
 //-----------------------------------------------------------------------------
 UIVariableNode::UIVariableNode (const std::string& name, UIAttributes* attributes)
 : UINode (name, attributes)
-, number (0)
 , type (kUnknown)
+, number (0)
 {
 	const std::string* typeStr = attributes->getAttributeValue ("type");
 	const std::string* valueStr = attributes->getAttributeValue ("value");

@@ -131,23 +131,23 @@ protected:
 	bool removed (CView* parent) override;
 	bool attached (CView* parent) override;
 
-	bool editing;
-	bool autosizing;
-	MouseEditMode mouseEditMode;
-	MouseSizeMode mouseSizeMode;
+	bool editing {true};
+	bool autosizing {true};
+	MouseEditMode mouseEditMode {kNoEditing};
+	MouseSizeMode mouseSizeMode {kSizeModeNone};
 	CPoint mouseStartPoint;
  
 	SharedPointer<UIUndoManager> undoManger;
 	SharedPointer<UISelection> selection;
-	UISelection* dragSelection;
-	UIDescription* description;
+	UISelection* dragSelection {nullptr};
+	UIDescription* description {nullptr};
 	SharedPointer<UIGrid> grid;
 	
-	UIEditViewInternal::UIHighlightView* highlightView;
-	CLayeredViewContainer* overlayView;
-	UICrossLines* lines;
-	IAction* moveSizeOperation;
-	CVSTGUITimer* editTimer;
+	UIEditViewInternal::UIHighlightView* highlightView {nullptr};
+	CLayeredViewContainer* overlayView {nullptr};
+	UICrossLines* lines {nullptr};
+	IAction* moveSizeOperation {nullptr};
+	CVSTGUITimer* editTimer {nullptr};
 	
 	CColor crosslineForegroundColor;
 	CColor crosslineBackgroundColor;
