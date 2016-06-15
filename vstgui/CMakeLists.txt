@@ -306,6 +306,7 @@ set(vstgui_standalone_common_sources
 	standalone/icommand.h
 	standalone/interface.h
 	standalone/ipreference.h
+	standalone/ishareduiresources.h
 	standalone/iuidescwindow.h
 	standalone/ivalue.h
 	standalone/ivaluelistener.h
@@ -316,10 +317,19 @@ set(vstgui_standalone_common_sources
 	standalone/detail/application.h
 	standalone/detail/genericalertbox.cpp
 	standalone/detail/genericalertbox.h
+	standalone/detail/shareduiresources.cpp
+	standalone/detail/shareduiresources.h
 	standalone/detail/uidescriptionwindowcontroller.cpp
 	standalone/detail/window.cpp
 	standalone/detail/window.h
 	standalone/detail/platform/iplatformwindow.h
+  standalone/helpers/appdelegate.h
+  standalone/helpers/modelbinding.h
+  standalone/helpers/value.cpp
+  standalone/helpers/value.h
+  standalone/helpers/valuelistener.h
+  standalone/helpers/windowcontroller.h
+  standalone/helpers/windowlistener.h
 )
 
 ##########################################################################################
