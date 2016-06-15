@@ -70,7 +70,7 @@ public:
 			*pointer = obj;
 		}
 	}
-	~ScopePointer ()
+	~ScopePointer () noexcept
 	{
 		if (pointer)
 			*pointer = oldObject;
@@ -109,8 +109,7 @@ public:
 	using UIDescListContainerType::size;
 	
 	explicit UIDescList (bool ownsObjects = true);
-	UIDescList (const UIDescList& descList);
-	~UIDescList () override;
+	~UIDescList () noexcept override;
 
 	virtual void add (UINode* obj);
 	virtual void remove (UINode* obj);
@@ -134,7 +133,7 @@ public:
 	UINode (const std::string& name, UIAttributes* attributes = nullptr, bool needsFastChildNameAttributeLookup = false);
 	UINode (const std::string& name, UIDescList* children, UIAttributes* attributes = nullptr);
 	UINode (const UINode& n);
-	~UINode () override;
+	~UINode () noexcept override;
 
 	const std::string& getName () const { return name; }
 	std::stringstream& getData () { return data; }
@@ -229,7 +228,7 @@ public:
 	void removeXMLData ();
 	CLASS_METHODS_NOCOPY(UIBitmapNode, UINode)
 protected:
-	~UIBitmapNode () override;
+	~UIBitmapNode () noexcept override;
 	CBitmap* createBitmap (const std::string& str, CNinePartTiledDescription* partDesc) const;
 	CBitmap* bitmap;
 	bool filterProcessed;
@@ -247,7 +246,7 @@ public:
 	bool getAlternativeFontNames (std::string& fontNames);
 	CLASS_METHODS_NOCOPY(UIFontNode, UINode)
 protected:
-	~UIFontNode () override;
+	~UIFontNode () noexcept override;
 	CFontRef font;
 };
 
@@ -343,18 +342,7 @@ UIDescList::UIDescList (bool ownsObjects)
 }
 
 //-----------------------------------------------------------------------------
-UIDescList::UIDescList (const UIDescList& descList)
-{
-	for (auto descListNode : descList)
-	{
-		UINode* node = static_cast<UINode*> (descListNode->newCopy ());
-		vstgui_assert (node);
-		add (node);
-	}
-}
-
-//-----------------------------------------------------------------------------
-UIDescList::~UIDescList ()
+UIDescList::~UIDescList () noexcept
 {
 	removeAll ();
 }
@@ -2310,7 +2298,7 @@ struct Locale
 		std::locale::global (std::locale::classic ());
 	}
 
-	~Locale ()
+	~Locale () noexcept
 	{
 		std::locale::global (origLocal);
 	}
@@ -2825,7 +2813,7 @@ UINode::UINode (const UINode& n)
 }
 
 //-----------------------------------------------------------------------------
-UINode::~UINode ()
+UINode::~UINode () noexcept
 {
 	if (attributes)
 		attributes->forget ();
@@ -2990,7 +2978,7 @@ UIBitmapNode::UIBitmapNode (const std::string& name, UIAttributes* attributes)
 }
 
 //-----------------------------------------------------------------------------
-UIBitmapNode::~UIBitmapNode ()
+UIBitmapNode::~UIBitmapNode () noexcept
 {
 	if (bitmap)
 		bitmap->forget ();
@@ -3161,7 +3149,7 @@ UIFontNode::UIFontNode (const std::string& name, UIAttributes* attributes)
 }
 
 //-----------------------------------------------------------------------------
-UIFontNode::~UIFontNode ()
+UIFontNode::~UIFontNode () noexcept
 {
 	if (font)
 		font->forget ();
