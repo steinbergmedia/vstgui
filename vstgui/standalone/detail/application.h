@@ -40,7 +40,8 @@ public:
 	using CommandListPair = std::pair<UTF8String, CommandWithKeyList>;
 	using CommandList = std::vector<CommandListPair>;
 
-	virtual void init (IPreference& preferences, IApplication::CommandLineArguments&& cmdArgs,
+	virtual void init (IPreference& preferences, UTF8String&& applicationPath,
+	                   IApplication::CommandLineArguments&& cmdArgs,
 	                   PlatformCallbacks&& callbacks) = 0;
 
 	virtual const CommandList& getCommandList () = 0;

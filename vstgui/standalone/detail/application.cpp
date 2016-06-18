@@ -28,6 +28,7 @@ public:
 	IPreference& getPreferences () const override;
 	const CommandLineArguments& getCommandLineArguments () const override;
 	const ISharedUIResources& getSharedUIResources () const override;
+	const UTF8String& getApplicationPath () const override { return appPath; }
 	Standalone::Application::IDelegate& getDelegate () const override;
 	WindowPtr createWindow (const WindowConfiguration& config,
 	                        const WindowControllerPtr& controller) override;
@@ -51,7 +52,8 @@ public:
 	bool handleCommand (const Command& command) override;
 
 	// IApplicationPlatformAccess
-	void init (IPreference& preferences, IApplication::CommandLineArguments&& cmdArgs,
+	void init (IPreference& preferences, UTF8String&& applicationPath,
+	           IApplication::CommandLineArguments&& cmdArgs,
 	           PlatformCallbacks&& callbacks) override;
 	const CommandList& getCommandList () override;
 	bool canQuit () override;
@@ -66,6 +68,7 @@ private:
 	PlatformCallbacks platform;
 	CommandList commandList;
 	CommandLineArguments commandLineArguments;
+	UTF8String appPath;
 	bool inQuit {false};
 };
 
@@ -77,11 +80,12 @@ Application& Application::instance ()
 }
 
 //------------------------------------------------------------------------
-void Application::init (IPreference& preferences, IApplication::CommandLineArguments&& cmdArgs,
-                        PlatformCallbacks&& callbacks)
+void Application::init (IPreference& preferences, UTF8String&& applicationPath,
+                        IApplication::CommandLineArguments&& cmdArgs, PlatformCallbacks&& callbacks)
 {
 	this->preferences = &preferences;
 	commandLineArguments = std::move (cmdArgs);
+	appPath = std::move (applicationPath);
 	platform = std::move (callbacks);
 
 	registerCommand (Commands::About);
@@ -294,9 +298,9 @@ bool Application::dontClosePopupOnDeactivation (Platform::IWindow* window)
 //------------------------------------------------------------------------
 PreventPopupClose::PreventPopupClose (IWindow* window)
 {
-	if (auto pwa = window->dynamicCast<IPlatformWindowAccess>())
+	if (auto pwa = window->dynamicCast<IPlatformWindowAccess> ())
 	{
-		if ((platformWindow = pwa->getPlatformWindow()->dynamicCast<Platform::IWindow>()))
+		if ((platformWindow = pwa->getPlatformWindow ()->dynamicCast<Platform::IWindow> ()))
 			popupClosePreventionList.push_back (platformWindow);
 	}
 }
@@ -304,8 +308,9 @@ PreventPopupClose::PreventPopupClose (IWindow* window)
 //------------------------------------------------------------------------
 PreventPopupClose::~PreventPopupClose () noexcept
 {
-	auto it = std::find (popupClosePreventionList.begin (), popupClosePreventionList.end (), platformWindow);
-	if (it != popupClosePreventionList.end())
+	auto it = std::find (popupClosePreventionList.begin (), popupClosePreventionList.end (),
+	                     platformWindow);
+	if (it != popupClosePreventionList.end ())
 	{
 		popupClosePreventionList.erase (it);
 	}

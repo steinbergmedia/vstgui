@@ -406,6 +406,9 @@ static const CommandWithKeyList* _Nullable getCommandList (const char* _Nonnull 
 		return;
 	}
 
+	auto url = [[NSBundle mainBundle] bundleURL];
+	VSTGUI::UTF8String appPath ([url fileSystemRepresentation]);
+
 	IApplication::CommandLineArguments cmdArgs;
 	NSArray* args = [[NSProcessInfo processInfo] arguments];
 	for (NSString* str in args)
@@ -425,7 +428,7 @@ static const CommandWithKeyList* _Nullable getCommandList (const char* _Nonnull 
 	};
 	auto app = Detail::getApplicationPlatformAccess ();
 	vstgui_assert (app);
-	app->init (prefs, std::move (cmdArgs), std::move (callbacks));
+	app->init (prefs, std::move (appPath), std::move (cmdArgs), std::move (callbacks));
 	[self setupMainMenu];
 	self.hasFinishedLaunching = YES;
 	if (self.startupOpenFiles)

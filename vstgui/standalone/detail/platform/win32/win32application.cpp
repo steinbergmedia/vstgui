@@ -12,6 +12,7 @@
 
 #include <ShellScalingAPI.h>
 #include <Windows.h>
+#include <array>
 
 #pragma comment(lib, "Shcore.lib")
 #pragma comment(lib, "d2d1.lib")
@@ -83,9 +84,14 @@ void Application::init ()
 		showAlertForWindow (config);
 	};
 
+	UTF8String appPath;
+	std::array<wchar_t, 1024> path;
+	GetModuleFileName (GetModuleHandle (nullptr), path.data (), static_cast<DWORD> (path.size ()));
+	appPath = UTF8StringHelper (path.data ()).getUTF8String ();
+
 	auto app = Detail::getApplicationPlatformAccess ();
 	vstgui_assert (app);
-	app->init (prefs, std::move (cmdArgs), std::move (callbacks));
+	app->init (prefs, std::move (appPath), std::move (cmdArgs), std::move (callbacks));
 }
 
 //------------------------------------------------------------------------
