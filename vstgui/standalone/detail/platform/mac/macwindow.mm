@@ -99,6 +99,8 @@ public:
 	bool isPopup () const override;
 
 private:
+	NSRect validateFrameRect (NSRect r) const;
+
 	NSWindow* _Nullable nsWindow {nullptr};
 	VSTGUIWindowDelegate* _Nullable nsWindowDelegate {nullptr};
 	IWindowDelegate* _Nullable delegate {nullptr};
@@ -236,6 +238,24 @@ CPoint Window::getPosition () const
 }
 
 //------------------------------------------------------------------------
+NSRect Window::validateFrameRect (NSRect r) const
+{
+	BOOL isOnScreen = NO;
+	for (NSScreen* screen in [NSScreen screens])
+	{
+		if (NSIntersectsRect (r, screen.visibleFrame))
+		{
+			isOnScreen = YES;
+			break;
+		}
+	}
+	if (!isOnScreen)
+		r = [nsWindow constrainFrameRect:r toScreen:[NSScreen mainScreen]];
+
+	return r;
+}
+
+//------------------------------------------------------------------------
 void Window::setSize (const CPoint& newSize)
 {
 	NSRect r = [nsWindow contentRectForFrameRect:nsWindow.frame];
@@ -256,9 +276,10 @@ void Window::setPosition (const CPoint& newPosition)
 	NSRect r = [nsWindow contentRectForFrameRect:nsWindow.frame];
 	r.origin.x = newPosition.x;
 	r.origin.y = getMainScreenRect ().size.height - (newPosition.y + r.size.height);
-	[nsWindow setFrame:[nsWindow frameRectForContentRect:r]
-	           display:[nsWindow isVisible]
-	           animate:NO];
+
+	r = validateFrameRect ([nsWindow frameRectForContentRect:r]);
+
+	[nsWindow setFrame:r display:[nsWindow isVisible] animate:NO];
 }
 
 //------------------------------------------------------------------------
