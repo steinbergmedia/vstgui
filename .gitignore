@@ -33,3 +33,4 @@ vstgui.sdf
 vstgui.v12.suo
 vstgui/ide/visualstudio/vs2015/.vs
 vstgui/build
+vstgui/tests/uidescription vst3/win/.vs
