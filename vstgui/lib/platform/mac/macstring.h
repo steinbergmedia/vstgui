@@ -42,8 +42,8 @@
 #include <CoreFoundation/CoreFoundation.h>
 #include "cfontmac.h"
 
-#ifdef __OBJC__
-#import <Cocoa/Cocoa.h>
+#if defined(__OBJC__)
+#import <Foundation/Foundation.h>
 #else
 struct NSString;
 #endif

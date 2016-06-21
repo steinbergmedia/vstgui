@@ -94,6 +94,12 @@ using namespace VSTGUI;
 }
 
 //-----------------------------------------------------------------------------
+- (void)didMoveToWindow
+{
+	uiViewFrame->getFrame ()->platformOnActivate (self.window ? true : false);
+}
+
+//-----------------------------------------------------------------------------
 - (void)updateTouchEvent:(NSSet*)touches
 {
 	ITouchEvent::TouchMap& touchMap = touchEvent.getTouchMap ();
