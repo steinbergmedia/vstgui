@@ -151,13 +151,13 @@ inline UTF8String toString (const T& value)
  *	@param character UTF-32 character
  *	@return true if character is a white-character
  */
-bool isspace (char32_t character) noexcept;
+bool isSpace (char32_t character) noexcept;
 
 //-----------------------------------------------------------------------------
 struct TrimOptions
 {
 	using CharTestFunc = std::function<bool (char32_t)>;
-	TrimOptions (CharTestFunc&& func = [] (char32_t c) { return isspace (c); }) : test (std::move (func)) {}
+	TrimOptions (CharTestFunc&& func = [] (char32_t c) { return isSpace (c); }) : test (std::move (func)) {}
 
 	TrimOptions& left () { flags |= Flags::kLeft; return *this; }
 	TrimOptions& right () { flags |= Flags::kRight; return *this; }

@@ -168,7 +168,7 @@ UTF8String::CodePointIterator UTF8String::end () const noexcept
 }
 
 //-----------------------------------------------------------------------------
-bool isspace (char32_t character) noexcept
+bool isSpace (char32_t character) noexcept
 {
 	switch (character)
 	{
