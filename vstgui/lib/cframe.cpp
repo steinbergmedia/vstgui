@@ -51,7 +51,7 @@ IdStringPtr kMsgOldFocusView = "kMsgOldFocusView";
 #define DEBUG_MOUSE_VIEWS	0//DEBUG
 
 //------------------------------------------------------------------------
-struct CFrame::CollectInvalidRects : public CBaseObject
+struct CFrame::CollectInvalidRects
 {
 	explicit CollectInvalidRects (CFrame* frame);
 	~CollectInvalidRects () noexcept;
