@@ -278,29 +278,6 @@ void CDataBrowser::recalculateLayout (bool rememberSelection)
 		allColumnsWidth += db->dbGetCurrentColumnWidth (i, this);
 	if (style & kDrawColumnLines)
 		allColumnsWidth += numColumns * lineWidth;
-	if (style & kDrawHeader)
-	{
-		for (const auto& pV : children)
-		{
-			CRect viewSize;
-			pV->getViewSize (viewSize);
-			if (pV != dbHeaderContainer && viewSize.top < rowHeight+lineWidth)
-			{
-				bool autoSizingEnabled = false;
-				if (auto container = pV->asViewContainer ())
-				{
-					autoSizingEnabled = container->getAutosizingEnabled ();
-					container->setAutosizingEnabled (false);
-				}
-				viewSize.top += rowHeight+lineWidth;
-				pV->setViewSize (viewSize);
-				pV->setMouseableArea (viewSize);
-				if (auto container = pV->asViewContainer ())
-					container->setAutosizingEnabled (autoSizingEnabled);
-			}
-		}
-	}
-
 	CRect newContainerSize (0, 0, allColumnsWidth, allRowsHeight);
 	if (style & kDrawHeader)
 	{
@@ -353,6 +330,32 @@ void CDataBrowser::recalculateLayout (bool rememberSelection)
 		scrollbar->setWheelInc (wheelInc);
 	}
 
+	if (style & kDrawHeader)
+	{
+		for (const auto& pV : children)
+		{
+			CRect viewSize;
+			pV->getViewSize (viewSize);
+			if (pV != dbHeaderContainer && viewSize.top < rowHeight+lineWidth)
+			{
+				if (style & kOverlayScrollbars && pV.cast<CScrollView> ())
+					continue;
+
+				bool autoSizingEnabled = false;
+				if (auto container = pV->asViewContainer ())
+				{
+					autoSizingEnabled = container->getAutosizingEnabled ();
+					container->setAutosizingEnabled (false);
+				}
+				viewSize.top += rowHeight+lineWidth;
+				pV->setViewSize (viewSize);
+				pV->setMouseableArea (viewSize);
+				if (auto container = pV->asViewContainer ())
+					container->setAutosizingEnabled (autoSizingEnabled);
+			}
+		}
+	}
+	
 	if (isAttached ())
 		invalid ();
 		
