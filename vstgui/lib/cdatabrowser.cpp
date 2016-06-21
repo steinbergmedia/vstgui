@@ -1171,17 +1171,12 @@ GenericStringListDataBrowserSource::GenericStringListDataBrowserSource (const St
 , drawFont (kSystemFont)
 , dataBrowser (nullptr)
 , delegate (delegate)
-, timer (nullptr)
 {
-	drawFont->remember ();
 }
 
 //-----------------------------------------------------------------------------
 GenericStringListDataBrowserSource::~GenericStringListDataBrowserSource ()
 {
-	if (timer)
-		timer->forget ();
-	drawFont->forget ();
 }
 
 //-----------------------------------------------------------------------------
@@ -1208,12 +1203,7 @@ void GenericStringListDataBrowserSource::setStringList (const StringVector* stri
 void GenericStringListDataBrowserSource::setupUI (const CColor& _selectionColor, const CColor& _fontColor, const CColor& _rowlineColor, const CColor& _rowBackColor, const CColor& _rowAlternateBackColor, CFontRef _font, int32_t _rowHeight, CCoord _textInset)
 {
 	if (_font)
-	{
-		if (drawFont)
-			drawFont->forget ();
 		drawFont = _font;
-		drawFont->remember ();
-	}
 	textInset = CPoint (_textInset, 0);
 	rowHeight = _rowHeight;
 	selectionColor = _selectionColor;
@@ -1323,7 +1313,7 @@ int32_t GenericStringListDataBrowserSource::dbOnKeyDown (const VstKeyCode& _key,
 	{
 		if (timer == nullptr)
 		{
-			timer = new CVSTGUITimer (this, 1000);
+			timer = owned (new CVSTGUITimer (this, 1000));
 			timer->start ();
 		}
 		else
@@ -1364,7 +1354,6 @@ CMessageResult GenericStringListDataBrowserSource::notify (CBaseObject* sender, 
 	if (message == CVSTGUITimer::kMsgTimer)
 	{
 		keyDownFindString = "";
-		timer->forget ();
 		timer = nullptr;
 		return kMessageNotified;
 	}

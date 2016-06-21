@@ -269,11 +269,11 @@ protected:
 	CColor rowAlternateBackColor;
 	CPoint textInset;
 	CHoriTxtAlign textAlignment;
-	CFontRef drawFont;
+	SharedPointer<CFontDesc> drawFont;
 	CDataBrowser* dataBrowser;
 	IGenericStringListDataBrowserSourceSelectionChanged* delegate;
 
-	CVSTGUITimer* timer;
+	SharedPointer<CVSTGUITimer> timer;
 	std::string keyDownFindString;
 };
 
