@@ -287,8 +287,19 @@ void CMultiLineTextLabel::recalculateHeight ()
 //------------------------------------------------------------------------
 void CMultiLineTextLabel::setViewSize (const CRect& rect, bool invalid)
 {
-	if (getViewSize () != rect)
-		lines.clear ();
+	auto viewSize = getViewSize ();
+	auto normRect = rect;
+	viewSize.originize ();
+	normRect.originize ();
+	if (viewSize != normRect)
+	{
+		if (lineLayout != LineLayout::clip ||
+		    (lineLayout == LineLayout::clip &&
+		     viewSize.getHeight () != normRect.getHeight ()))
+		{
+			lines.clear ();
+		}
+	}
 	CTextLabel::setViewSize (rect, invalid);
 }
 
