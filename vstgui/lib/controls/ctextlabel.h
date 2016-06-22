@@ -109,7 +109,7 @@ public:
 	virtual void setAutoHeight (bool state);
 	bool getAutoHeight () const { return autoHeight; }
 
-	void draw (CDrawContext* pContext) override;
+	void drawRect (CDrawContext* pContext, const CRect& updateRect) override;
 	bool sizeToFit () override;
 	void setText (const UTF8String& txt) override;
 	void setViewSize (const CRect& rect, bool invalid = true) override;

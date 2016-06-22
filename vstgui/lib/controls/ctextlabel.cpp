@@ -211,7 +211,7 @@ void CMultiLineTextLabel::setAutoHeight (bool state)
 }
 
 //------------------------------------------------------------------------
-void CMultiLineTextLabel::draw (CDrawContext* pContext)
+void CMultiLineTextLabel::drawRect (CDrawContext* pContext, const CRect& updateRect)
 {
 	if (getText ().empty () == false && lines.empty ())
 		recalculateLines (pContext);
@@ -219,13 +219,15 @@ void CMultiLineTextLabel::draw (CDrawContext* pContext)
 	pContext->saveGlobalState ();
 	CRect oldClip;
 	pContext->getClipRect (oldClip);
-	CRect newClip (getViewSize ());
+	CRect newClip (updateRect);
 	newClip.inset (getTextInset ());
 	newClip.bound (oldClip);
 	pContext->setClipRect (newClip);
 
 	pContext->setDrawMode (kAntiAliasing);
 	pContext->setFont (getFont ());
+	
+	newClip.offsetInverse (getViewSize().getTopLeft ());
 	
 	CDrawContext::Transform t (*pContext, CGraphicsTransform ().translate (getViewSize ().getTopLeft ()));
 
@@ -234,12 +236,20 @@ void CMultiLineTextLabel::draw (CDrawContext* pContext)
 		CDrawContext::Transform t (*pContext, CGraphicsTransform ().translate (shadowTextOffset));
 		pContext->setFontColor (getShadowColor ());
 		for (const auto& line : lines)
-			pContext->drawString (line.str.getPlatformString (), line.r, getHoriAlign (), bAntialias);
+		{
+			if (line.r.rectOverlap (newClip))
+				pContext->drawString (line.str.getPlatformString (), line.r, getHoriAlign (), bAntialias);
+		}
 	}
 
 	pContext->setFontColor (getFontColor ());
 	for (const auto& line : lines)
-		pContext->drawString (line.str.getPlatformString (), line.r, getHoriAlign (), bAntialias);
+	{
+		if (line.r.rectOverlap (newClip))
+			pContext->drawString (line.str.getPlatformString (), line.r, getHoriAlign (), bAntialias);
+		else if (line.r.bottom > newClip.bottom)
+			break;
+	}
 
 	pContext->restoreGlobalState ();
 	setDirty (false);
