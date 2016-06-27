@@ -194,6 +194,7 @@ class CHorizontalSwitch;
 class CRockerSwitch;
 class CTextEdit;
 class CTextLabel;
+class CMultiLineTextLabel;
 class CVuMeter;
 class CXYPad;
 

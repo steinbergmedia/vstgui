@@ -103,11 +103,13 @@ public:
 		truncate,
 		wrap
 	};
-	virtual void setLineLayout (LineLayout layout);
+	void setLineLayout (LineLayout layout);
 	LineLayout getLineLayout () const { return lineLayout; }
 
-	virtual void setAutoHeight (bool state);
+	void setAutoHeight (bool state);
 	bool getAutoHeight () const { return autoHeight; }
+
+	CCoord getMaxLineWidth ();
 
 	void drawRect (CDrawContext* pContext, const CRect& updateRect) override;
 	bool sizeToFit () override;

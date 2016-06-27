@@ -211,6 +211,20 @@ void CMultiLineTextLabel::setAutoHeight (bool state)
 }
 
 //------------------------------------------------------------------------
+CCoord CMultiLineTextLabel::getMaxLineWidth ()
+{
+	if (lines.empty () && getText ().empty () == false)
+		recalculateLines (nullptr);
+	CCoord maxWidth {};
+	for (const auto& line : lines)
+	{
+		if (line.r.getWidth () > maxWidth)
+			maxWidth = line.r.getWidth ();
+	}
+	return maxWidth;
+}
+
+//------------------------------------------------------------------------
 void CMultiLineTextLabel::drawRect (CDrawContext* pContext, const CRect& updateRect)
 {
 	if (getText ().empty () == false && lines.empty ())
@@ -278,9 +292,14 @@ void CMultiLineTextLabel::setText (const UTF8String& txt)
 //------------------------------------------------------------------------
 void CMultiLineTextLabel::recalculateHeight ()
 {
-	auto lastLine = lines.back ().r;
 	auto viewSize = getViewSize ();
-	viewSize.setHeight (lastLine.bottom + getTextInset ().y);
+	if (lines.empty ())
+		viewSize.setHeight (0.);
+	else
+	{
+		auto lastLine = lines.back ().r;
+		viewSize.setHeight (lastLine.bottom + getTextInset ().y);
+	}
 	CTextLabel::setViewSize (viewSize);
 }
 
@@ -357,52 +376,61 @@ void CMultiLineTextLabel::recalculateLines (CDrawContext* context)
 
 	CCoord y = textInset.y;
 
+	auto lineWidth = getWidth () - textInset.x;
+	
 	for (auto& element : elements)
 	{
-		if (element.second > maxWidth && lineLayout != LineLayout::clip)
+		if (lineLayout == LineLayout::clip)
 		{
-			if (lineLayout == LineLayout::truncate)
-			{
-				element.first = CDrawMethods::createTruncatedText (CDrawMethods::kTextTruncateTail, element.first, fontID, maxWidth);
-			}
-			else // wrap
-			{
-				auto start = element.first.begin ();
-				auto lastSeparator = start;
-				auto pos = start;
-				while (pos != element.first.end () && *pos != 0)
-				{
-					if (isspace (*pos))
-						lastSeparator = pos;
-					else if (isLineBreakSeparator (*pos))
-						lastSeparator = ++pos;
-					UTF8String tmp ({start.base (), ++(pos.base ())});
-					auto width = fontPainter->getStringWidth (context, tmp.getPlatformString ());
-					if (width > maxWidth)
-					{
-						if (lastSeparator == element.first.end ())
-							lastSeparator = pos;
-						if (start == lastSeparator)
-							lastSeparator = pos;
-						lines.emplace_back (Line {CRect (textInset.x, y, getWidth () - textInset.x, y + lineHeight + textInset.y), UTF8String ({start.base (), lastSeparator.base ()})});
-						y += lineHeight;
-						pos = lastSeparator;
-						start = pos;
-						if (isspace (*start))
-							++start;
-						lastSeparator = element.first.end ();
-					}
-					++pos;
-				}
-				if (start != element.first.end ())
-				{
-					lines.emplace_back (Line {CRect (textInset.x, y, getWidth () - textInset.x, y + lineHeight + textInset.y), UTF8String ({start.base (), element.first.end ().base ()})});
-					y += lineHeight;
-				}
-				continue;
-			}
+			lines.emplace_back (Line {CRect (textInset.x, y, element.second + textInset.x, y + lineHeight + textInset.y), std::move (element.first)});
 		}
-		lines.emplace_back (Line {CRect (textInset.x, y, getWidth () - textInset.x, y + lineHeight + textInset.y), std::move (element.first)});
+		else
+		{
+			if (element.second > maxWidth)
+			{
+				if (lineLayout == LineLayout::truncate)
+				{
+					element.first = CDrawMethods::createTruncatedText (CDrawMethods::kTextTruncateTail, element.first, fontID, maxWidth);
+				}
+				else // wrap
+				{
+					auto start = element.first.begin ();
+					auto lastSeparator = start;
+					auto pos = start;
+					while (pos != element.first.end () && *pos != 0)
+					{
+						if (isspace (*pos))
+							lastSeparator = pos;
+						else if (isLineBreakSeparator (*pos))
+							lastSeparator = ++pos;
+						UTF8String tmp ({start.base (), ++(pos.base ())});
+						auto width = fontPainter->getStringWidth (context, tmp.getPlatformString ());
+						if (width > maxWidth)
+						{
+							if (lastSeparator == element.first.end ())
+								lastSeparator = pos;
+							if (start == lastSeparator)
+								lastSeparator = pos;
+							lines.emplace_back (Line {CRect (textInset.x, y, lineWidth, y + lineHeight + textInset.y), UTF8String ({start.base (), lastSeparator.base ()})});
+							y += lineHeight;
+							pos = lastSeparator;
+							start = pos;
+							if (isspace (*start))
+								++start;
+							lastSeparator = element.first.end ();
+						}
+						++pos;
+					}
+					if (start != element.first.end ())
+					{
+						lines.emplace_back (Line {CRect (textInset.x, y, lineWidth, y + lineHeight + textInset.y), UTF8String ({start.base (), element.first.end ().base ()})});
+						y += lineHeight;
+					}
+					continue;
+				}
+			}
+			lines.emplace_back (Line {CRect (textInset.x, y, lineWidth, y + lineHeight + textInset.y), std::move (element.first)});
+		}
 		y += lineHeight;
 	}
 
