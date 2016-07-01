@@ -124,7 +124,14 @@ void CTextEdit::setValue (float val)
 		string = tmp;
 	}
 
-	setText (UTF8String (std::move (string)));
+	if (converted)
+	{
+		CTextLabel::setText (UTF8String (std::move (string)));
+		if (platformControl)
+			platformControl->setText (getText ());
+	}
+	else
+		setText (UTF8String (std::move (string)));
 }
 
 //------------------------------------------------------------------------
