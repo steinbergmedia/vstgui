@@ -164,6 +164,8 @@ void CFrame::beforeDelete ()
 	
 	delete pImpl;
 	pImpl = nullptr;
+	
+	CViewContainer::beforeDelete ();
 }
 
 //-----------------------------------------------------------------------------

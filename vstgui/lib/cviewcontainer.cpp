@@ -89,9 +89,15 @@ CViewContainer::CViewContainer (const CViewContainer& v)
 //-----------------------------------------------------------------------------
 CViewContainer::~CViewContainer () noexcept
 {
+	vstgui_assert (viewContainerListeners.empty ());
+}
+
+//-----------------------------------------------------------------------------
+void CViewContainer::beforeDelete ()
+{
 	// remove all views
 	CViewContainer::removeAll (true);
-	vstgui_assert (viewContainerListeners.empty ());
+	CView::beforeDelete ();
 }
 
 //-----------------------------------------------------------------------------

@@ -225,11 +225,18 @@ CView::CView (const CView& v)
 }
 
 //-----------------------------------------------------------------------------
-CView::~CView () noexcept
+CView::~CView () noexcept = default;
+
+//-----------------------------------------------------------------------------
+void CView::beforeDelete ()
 {
+	viewListeners.forEach ([&] (IViewListener* listener) {
+		listener->viewWillDelete (this);
+	});
+
 	vstgui_assert (isAttached () == false, "View is still attached");
 	vstgui_assert (viewListeners.empty (), "View listeners not empty");
-
+	
 	IController* controller = nullptr;
 	uint32_t size = sizeof (IController*);
 	if (getAttribute (kCViewControllerAttribute, sizeof (IController*), &controller, size) == true)
@@ -240,22 +247,15 @@ CView::~CView () noexcept
 		else
 			delete controller;
 	}
-
+	
 	for (auto& attribute : attributes)
 		delete attribute.second;
-
-	#if VSTGUI_CHECK_VIEW_RELEASING
+	
+#if VSTGUI_CHECK_VIEW_RELEASING
 	CViewInternal::gNbCView--;
 	CViewInternal::gViewList.remove (this);
-	#endif
-}
-
-//-----------------------------------------------------------------------------
-void CView::beforeDelete ()
-{
-	viewListeners.forEach ([&] (IViewListener* listener) {
-		listener->viewWillDelete (this);
-	});
+#endif
+	CBaseObject::beforeDelete ();
 }
 
 //-----------------------------------------------------------------------------

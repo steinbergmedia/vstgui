@@ -194,11 +194,11 @@ public:
 //-----------------------------------------------------------------------------
 protected:
 	CBitmapPixelAccess ();
-	~CBitmapPixelAccess () noexcept;
+	~CBitmapPixelAccess () noexcept override = default;
 	void init (CBitmap* bitmap, IPlatformBitmapPixelAccess* pixelAccess);
 
 	CBitmap* bitmap;
-	IPlatformBitmapPixelAccess* pixelAccess;
+	SharedPointer<IPlatformBitmapPixelAccess> pixelAccess;
 	uint8_t* currentPos;
 	uint8_t* address;
 	uint32_t bytesPerRow;

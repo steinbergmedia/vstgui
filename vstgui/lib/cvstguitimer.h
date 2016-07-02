@@ -66,7 +66,8 @@ public:
 	CLASS_METHODS_NOCOPY(CVSTGUITimer, CBaseObject)
 protected:
 	~CVSTGUITimer () noexcept override;
-	
+
+	void beforeDelete () override;
 	void fire () override;
 	
 	uint32_t fireTime;

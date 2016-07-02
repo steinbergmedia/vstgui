@@ -76,9 +76,13 @@ CVSTGUITimer::CVSTGUITimer (CallbackFunc&& callback, uint32_t fireTime, bool doS
 }
 
 //-----------------------------------------------------------------------------
-CVSTGUITimer::~CVSTGUITimer () noexcept
+CVSTGUITimer::~CVSTGUITimer () noexcept = default;
+
+//-----------------------------------------------------------------------------
+void CVSTGUITimer::beforeDelete ()
 {
 	stop ();
+	CBaseObject::beforeDelete ();
 }
 
 //-----------------------------------------------------------------------------

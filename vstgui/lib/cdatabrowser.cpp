@@ -1175,9 +1175,7 @@ GenericStringListDataBrowserSource::GenericStringListDataBrowserSource (const St
 }
 
 //-----------------------------------------------------------------------------
-GenericStringListDataBrowserSource::~GenericStringListDataBrowserSource () noexcept
-{
-}
+GenericStringListDataBrowserSource::~GenericStringListDataBrowserSource () noexcept = default;
 
 //-----------------------------------------------------------------------------
 void GenericStringListDataBrowserSource::dbAttached (CDataBrowser* browser)

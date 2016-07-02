@@ -246,7 +246,8 @@ protected:
 	};
 	
 	~CViewContainer () noexcept override;
-
+	void beforeDelete () override;
+	
 	virtual bool checkUpdateRect (CView* view, const CRect& rect);
 
 	/// @cond ignore

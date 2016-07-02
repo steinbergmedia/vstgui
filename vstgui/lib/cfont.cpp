@@ -121,6 +121,7 @@ CFontDesc::CFontDesc (const CFontDesc& font)
 void CFontDesc::beforeDelete ()
 {
 	freePlatformFont ();
+	CBaseObject::beforeDelete ();
 }
 
 //-----------------------------------------------------------------------------

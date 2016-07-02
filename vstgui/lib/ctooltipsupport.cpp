@@ -64,14 +64,12 @@ CTooltipSupport::CTooltipSupport (CFrame* frame, uint32_t delay)
 , delay (delay)
 , state (kHidden)
 {
-	timer = new CVSTGUITimer (this, delay);
+	timer = owned (new CVSTGUITimer (this, delay));
 }
 
 //------------------------------------------------------------------------
 CTooltipSupport::~CTooltipSupport () noexcept
 {
-	timer->forget ();
-
 	IPlatformFrame* platformFrame = frame->getPlatformFrame ();
 	if (platformFrame)
 		platformFrame->hideTooltip ();

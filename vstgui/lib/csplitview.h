@@ -121,6 +121,8 @@ protected:
 class ISplitViewController
 {
 public:
+	virtual ~ISplitViewController () noexcept = default;
+
 	/** return the minimum and maximum size (width or height) of a view. */
 	virtual bool getSplitViewSizeConstraint (int32_t index, CCoord& minSize, CCoord& maxSize, CSplitView* splitView) = 0;
 	/** return the separator drawer. */
@@ -138,6 +140,8 @@ public:
 class ISplitViewSeparatorDrawer
 {
 public:
+	virtual ~ISplitViewSeparatorDrawer () noexcept = default;
+
 	enum Flags {
 		kMouseOver = 1 << 0,
 		kMouseDown = 1 << 1

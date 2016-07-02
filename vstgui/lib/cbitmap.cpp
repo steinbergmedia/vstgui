@@ -248,13 +248,6 @@ CBitmapPixelAccess::CBitmapPixelAccess ()
 }
 
 //------------------------------------------------------------------------
-CBitmapPixelAccess::~CBitmapPixelAccess () noexcept
-{
-	if (pixelAccess)
-		pixelAccess->forget ();
-}
-
-//------------------------------------------------------------------------
 void CBitmapPixelAccess::init (CBitmap* _bitmap, IPlatformBitmapPixelAccess* _pixelAccess)
 {
 	bitmap = _bitmap;
@@ -295,7 +288,7 @@ CBitmapPixelAccess* CBitmapPixelAccess::create (CBitmap* bitmap, bool alphaPremu
 {
 	if (bitmap == nullptr || bitmap->getPlatformBitmap () == nullptr)
 		return nullptr;
-	IPlatformBitmapPixelAccess* pixelAccess = bitmap->getPlatformBitmap ()->lockPixels (alphaPremultiplied);
+	auto pixelAccess = owned (bitmap->getPlatformBitmap ()->lockPixels (alphaPremultiplied));
 	if (pixelAccess == nullptr)
 		return nullptr;
 	CBitmapPixelAccess* result = nullptr;

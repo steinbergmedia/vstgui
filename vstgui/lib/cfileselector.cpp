@@ -54,9 +54,7 @@ CFileExtension::CFileExtension (const CFileExtension& ext)
 }
 
 //-----------------------------------------------------------------------------
-CFileExtension::~CFileExtension () noexcept
-{
-}
+CFileExtension::~CFileExtension () noexcept = default;
 
 //-----------------------------------------------------------------------------
 CFileExtension::CFileExtension (CFileExtension&& ext) noexcept
@@ -130,12 +128,7 @@ CNewFileSelector::CNewFileSelector (CFrame* frame)
 }
 
 //-----------------------------------------------------------------------------
-CNewFileSelector::~CNewFileSelector () noexcept
-{
-	setTitle (nullptr);
-	setInitialDirectory (nullptr);
-	setDefaultSaveName (nullptr);
-}
+CNewFileSelector::~CNewFileSelector () noexcept = default;
 
 //-----------------------------------------------------------------------------
 bool CNewFileSelector::run (CBaseObject* delegate)

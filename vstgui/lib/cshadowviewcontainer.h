@@ -86,6 +86,8 @@ protected:
 	void viewContainerViewRemoved (CViewContainer* container, CView* view) override;
 	void viewContainerViewZOrderChanged (CViewContainer* container, CView* view) override;
 
+	void beforeDelete () override;
+
 	bool dontDrawBackground;
 	CPoint shadowOffset;
 	float shadowIntensity;
