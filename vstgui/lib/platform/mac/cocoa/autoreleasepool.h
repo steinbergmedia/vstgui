@@ -52,7 +52,7 @@ class AutoreleasePool
 {
 public:
 	AutoreleasePool ();
-	~AutoreleasePool ();
+	~AutoreleasePool () noexcept;
 
 //------------------------------------------------------------------------------------
 protected:

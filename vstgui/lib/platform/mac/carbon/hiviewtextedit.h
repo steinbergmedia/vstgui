@@ -48,7 +48,7 @@ class HIViewTextEdit : public IPlatformTextEdit
 {
 public:
 	HIViewTextEdit (HIViewRef parent, IPlatformTextEditCallback* textEdit);
-	~HIViewTextEdit ();
+	~HIViewTextEdit () noexcept;
 	
 	UTF8String getText () override;
 	bool setText (const UTF8String& text) override;

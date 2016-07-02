@@ -64,7 +64,7 @@ class UIDescription : public CBaseObject, public IUIDescription, public Xml::IHa
 public:
 	UIDescription (const CResourceDescription& xmlFile, IViewFactory* viewFactory = nullptr);
 	UIDescription (Xml::IContentProvider* xmlContentProvider, IViewFactory* viewFactory = nullptr);
-	~UIDescription ();
+	~UIDescription () noexcept;
 
 	virtual bool parse ();
 
@@ -223,7 +223,7 @@ protected:
 class IBitmapCreator
 {
 public:
-	virtual ~IBitmapCreator () {}
+	virtual ~IBitmapCreator () noexcept = default;
 	
 	virtual IPlatformBitmap* createBitmap (const UIAttributes& attributes) = 0;
 };

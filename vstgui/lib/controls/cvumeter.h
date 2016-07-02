@@ -79,7 +79,7 @@ public:
 	
 	CLASS_METHODS(CVuMeter, CControl)
 protected:
-	~CVuMeter ();	
+	~CVuMeter () noexcept;	
 
 	CBitmap* offBitmap;
 	

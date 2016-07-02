@@ -123,7 +123,7 @@ public:
 
 	CLASS_METHODS(CParamDisplay, CControl)
 protected:
-	~CParamDisplay ();
+	~CParamDisplay () noexcept;
 	virtual void drawBack (CDrawContext* pContext, CBitmap* newBack = nullptr);
 
 	virtual void drawPlatformText (CDrawContext* pContext, IPlatformString* string);

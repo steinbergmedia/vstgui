@@ -21,7 +21,7 @@ namespace Animation {
 class IAnimationTarget
 {
 public:
-	virtual ~IAnimationTarget () {}
+	virtual ~IAnimationTarget () noexcept = default;
 
 	virtual void animationStart (CView* view, IdStringPtr name) = 0;						///< animation starts
 	virtual void animationTick (CView* view, IdStringPtr name, float pos) = 0;				///< pos is a normalized value between zero and one

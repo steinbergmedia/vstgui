@@ -58,7 +58,7 @@ class NSViewFrame : public IPlatformFrame
 {
 public:
 	NSViewFrame (IPlatformFrameCallback* frame, const CRect& size, NSView* parent);
-	~NSViewFrame ();
+	~NSViewFrame () noexcept;
 
 	NSView* getPlatformControl () const { return nsView; }
 	IPlatformFrameCallback* getFrame () const { return frame; }

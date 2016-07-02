@@ -66,7 +66,7 @@ class TimeWatch
 {
 public:
 	TimeWatch (UTF8StringPtr name = nullptr, bool startNow = true);
-	~TimeWatch ();
+	~TimeWatch () noexcept;
 	
 	void start ();
 	void stop ();

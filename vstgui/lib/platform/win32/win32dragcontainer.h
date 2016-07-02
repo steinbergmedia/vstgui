@@ -49,7 +49,7 @@ class WinDragContainer : public IDataPackage
 {
 public:
 	WinDragContainer (IDataObject* platformDrag);
-	~WinDragContainer ();
+	~WinDragContainer () noexcept;
 
 	uint32_t getCount () const override;
 	uint32_t getDataSize (uint32_t index) const override;

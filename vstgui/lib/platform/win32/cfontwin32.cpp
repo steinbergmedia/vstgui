@@ -102,7 +102,7 @@ GdiPlusFont::GdiPlusFont (const UTF8String& name, const CCoord& size, const int3
 	font = ::new Gdiplus::Font (tempName, (Gdiplus::REAL)size, gdiStyle, Gdiplus::UnitPixel);
 }
 //-----------------------------------------------------------------------------
-GdiPlusFont::~GdiPlusFont ()
+GdiPlusFont::~GdiPlusFont () noexcept
 {
 	if (font)
 		::delete font;

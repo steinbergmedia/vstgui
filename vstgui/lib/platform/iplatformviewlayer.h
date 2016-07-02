@@ -43,6 +43,8 @@ namespace VSTGUI {
 class IPlatformViewLayerDelegate
 {
 public:
+	virtual ~IPlatformViewLayerDelegate () noexcept = default;
+
 	virtual void drawViewLayer (CDrawContext* context, const CRect& dirtyRect) = 0; // dirtyRect is zero based
 };
 

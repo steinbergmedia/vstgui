@@ -80,7 +80,7 @@ public:
 	static void exit ();
 protected:
 	GDIPlusGlobals ();
-	~GDIPlusGlobals ();
+	~GDIPlusGlobals () noexcept;
 
 	static GDIPlusGlobals* gInstance;
 	ULONG_PTR gdiplusToken;
@@ -91,7 +91,7 @@ class UTF8StringHelper
 public:
 	UTF8StringHelper (const char* utf8Str) : utf8Str (utf8Str), allocWideStr (0), allocStrIsWide (true) {}
 	UTF8StringHelper (const WCHAR* wideStr) : wideStr (wideStr), allocUTF8Str (0), allocStrIsWide (false) {}
-	~UTF8StringHelper ()
+	~UTF8StringHelper () noexcept
 	{
 		if (allocUTF8Str)
 			std::free (allocUTF8Str);
@@ -153,7 +153,7 @@ class ResourceStream : public IStream
 {
 public:
 	ResourceStream ();
-	virtual ~ResourceStream () = default;
+	~ResourceStream () noexcept = default;
 
 	bool open (const CResourceDescription& resourceDesc, const char* type);
 

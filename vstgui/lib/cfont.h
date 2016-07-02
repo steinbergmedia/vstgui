@@ -63,7 +63,7 @@ class CFontDesc : public CBaseObject
 public:
 	CFontDesc (const UTF8String& name = "", const CCoord& size = 0, const int32_t style = 0);
 	CFontDesc (const CFontDesc& font);
-	~CFontDesc () = default;
+	~CFontDesc () noexcept = default;
 
 	//-----------------------------------------------------------------------------
 	/// @name Size, Name and Style Methods

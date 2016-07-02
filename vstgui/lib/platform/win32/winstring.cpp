@@ -57,7 +57,7 @@ WinString::WinString (UTF8StringPtr utf8String)
 }
 
 //-----------------------------------------------------------------------------
-WinString::~WinString ()
+WinString::~WinString () noexcept
 {
 	if (wideString)
 		std::free (wideString);

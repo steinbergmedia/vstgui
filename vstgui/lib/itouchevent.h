@@ -111,7 +111,7 @@ public:
 	virtual double getTimeStamp () const = 0;
 protected:
 	ITouchEvent () {}
-	virtual ~ITouchEvent () {}
+	virtual ~ITouchEvent () noexcept = default;
 
 	TouchMap touches;
 };

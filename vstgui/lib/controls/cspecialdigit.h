@@ -54,7 +54,7 @@ public:
 
 	CLASS_METHODS(CSpecialDigit, CControl)
 protected:
-	~CSpecialDigit () = default;
+	~CSpecialDigit () noexcept = default;
 	int32_t     iNumbers;
 	int32_t     xpos[7];
 	int32_t     ypos[7];

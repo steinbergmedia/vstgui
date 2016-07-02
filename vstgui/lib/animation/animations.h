@@ -100,7 +100,7 @@ public:
 
 	/** oldView must be a subview of the animation view */
 	ExchangeViewAnimation (CView* oldView, CView* newView, AnimationStyle style = kAlphaValueFade);
-	~ExchangeViewAnimation ();
+	~ExchangeViewAnimation () noexcept;
 
 	void animationStart (CView* view, IdStringPtr name) override;
 	void animationTick (CView* view, IdStringPtr name, float pos) override;

@@ -79,7 +79,7 @@ public:
 
 	CLASS_METHODS(CTextLabel, CParamDisplay)
 protected:
-	~CTextLabel () = default;
+	~CTextLabel () noexcept = default;
 	void freeText ();
 	void calculateTruncatedText ();
 

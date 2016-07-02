@@ -52,7 +52,7 @@ class CFileExtension : public CBaseObject
 public:
 	CFileExtension (const UTF8String& description, const UTF8String& extension, const UTF8String& mimeType = "", int32_t macType = 0, const UTF8String& uti = "");
 	CFileExtension (const CFileExtension& ext);
-	~CFileExtension ();
+	~CFileExtension () noexcept;
 
 	const UTF8String& getDescription () const { return description; }
 	const UTF8String& getExtension () const { return extension; }
@@ -164,7 +164,7 @@ public:
 	CLASS_METHODS_NOCOPY(CNewFileSelector, CBaseObject)
 protected:
 	explicit CNewFileSelector (CFrame* frame = nullptr);
-	~CNewFileSelector ();
+	~CNewFileSelector () noexcept;
 
 	virtual bool runInternal (CBaseObject* delegate) = 0;
 	virtual void cancelInternal () = 0;

@@ -122,7 +122,7 @@ public:
 	CLASS_METHODS(CScrollView, CViewContainer)
 //-----------------------------------------------------------------------------
 protected:
-	~CScrollView () = default;
+	~CScrollView () noexcept = default;
 	virtual void recalculateSubViews ();
 
 	CScrollContainer* sc;

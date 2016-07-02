@@ -53,7 +53,7 @@ UIViewSwitchContainer::UIViewSwitchContainer (const CRect& size)
 }
 
 //-----------------------------------------------------------------------------
-UIViewSwitchContainer::~UIViewSwitchContainer ()
+UIViewSwitchContainer::~UIViewSwitchContainer () noexcept
 {
 	setController (nullptr);
 }

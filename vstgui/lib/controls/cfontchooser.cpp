@@ -208,7 +208,7 @@ CFontChooser::CFontChooser (IFontChooserDelegate* delegate, CFontRef initialFont
 }
 
 //-----------------------------------------------------------------------------
-CFontChooser::~CFontChooser ()
+CFontChooser::~CFontChooser () noexcept
 {
 	if (selFont)
 		selFont->forget ();

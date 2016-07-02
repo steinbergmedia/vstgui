@@ -57,7 +57,7 @@ TimeWatch::TimeWatch (UTF8StringPtr name, bool startNow)
 }
 
 //-----------------------------------------------------------------------------
-TimeWatch::~TimeWatch ()
+TimeWatch::~TimeWatch () noexcept
 {
 	stop ();
 }

@@ -94,7 +94,7 @@ public:
 
 	CLASS_METHODS(CTextEdit, CParamDisplay)
 protected:
-	~CTextEdit ();
+	~CTextEdit () noexcept;
 
 	void createPlatformTextEdit ();
 	void updateText (IPlatformTextEdit* pte);

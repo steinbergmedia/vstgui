@@ -45,7 +45,7 @@ class WinTimer : public IPlatformTimer
 {
 public:
 	WinTimer (IPlatformTimerCallback* callback);
-	~WinTimer ();
+	~WinTimer () noexcept;
 
 	bool start (uint32_t fireTime) override;
 	bool stop () override;
@@ -76,7 +76,7 @@ WinTimer::WinTimer (IPlatformTimerCallback* callback)
 }
 
 //-----------------------------------------------------------------------------
-WinTimer::~WinTimer ()
+WinTimer::~WinTimer () noexcept
 {
 	stop ();
 }

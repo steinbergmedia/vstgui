@@ -117,7 +117,7 @@ Property::Property (const Property& p)
 }
 
 //----------------------------------------------------------------------------------------------------
-Property::~Property ()
+Property::~Property () noexcept
 {
 	if (value)
 	{

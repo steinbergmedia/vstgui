@@ -77,7 +77,7 @@ class CDropTarget : public ::IDropTarget
 {	
 public:
 	CDropTarget (Win32Frame* pFrame);
-	virtual ~CDropTarget ();
+	~CDropTarget () noexcept;
 
 	// IUnknown
 	STDMETHOD (QueryInterface) (REFIID riid, void** object);
@@ -120,7 +120,7 @@ class Win32DataObject : public CBaseObject, public ::IDataObject
 {
 public:
 	Win32DataObject (IDataPackage* dataPackage);
-	~Win32DataObject ();
+	~Win32DataObject () noexcept;
 
 	// IUnknown
 	STDMETHOD (QueryInterface) (REFIID riid, void** object);
@@ -219,7 +219,7 @@ Win32Frame::Win32Frame (IPlatformFrameCallback* frame, const CRect& size, HWND p
 }
 
 //-----------------------------------------------------------------------------
-Win32Frame::~Win32Frame ()
+Win32Frame::~Win32Frame () noexcept
 {
 	if (updateRegionList)
 		std::free (updateRegionList);
@@ -1053,7 +1053,7 @@ CDropTarget::CDropTarget (Win32Frame* pFrame)
 }
 
 //-----------------------------------------------------------------------------
-CDropTarget::~CDropTarget ()
+CDropTarget::~CDropTarget () noexcept
 {
 }
 
@@ -1203,7 +1203,7 @@ Win32DataObject::Win32DataObject (IDataPackage* dataPackage)
 }
 
 //-----------------------------------------------------------------------------
-Win32DataObject::~Win32DataObject ()
+Win32DataObject::~Win32DataObject () noexcept
 {
 	dataPackage->forget ();
 }

@@ -688,7 +688,7 @@ UIDescription::UIDescription (Xml::IContentProvider* xmlContentProvider, IViewFa
 }
 
 //-----------------------------------------------------------------------------
-UIDescription::~UIDescription ()
+UIDescription::~UIDescription () noexcept
 {
 	if (nodes)
 		nodes->forget ();

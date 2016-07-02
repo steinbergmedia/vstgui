@@ -68,7 +68,7 @@ CTooltipSupport::CTooltipSupport (CFrame* frame, uint32_t delay)
 }
 
 //------------------------------------------------------------------------
-CTooltipSupport::~CTooltipSupport ()
+CTooltipSupport::~CTooltipSupport () noexcept
 {
 	timer->forget ();
 

@@ -70,7 +70,7 @@ public:
 	{
 	public:
 		explicit DeferChanges (IDependency* dep) : dep (dep) { dep->deferChanges (true); }
-		~DeferChanges () { dep->deferChanges (false); }
+		~DeferChanges () noexcept { dep->deferChanges (false); }
 	protected:
 		IDependency* dep;
 	};
@@ -78,7 +78,7 @@ public:
 //----------------------------------------------------------------------------------------------------
 protected:
 	IDependency () = default;
-	virtual ~IDependency ();
+	virtual ~IDependency () noexcept;
 
 	static void rememberObject (CBaseObject* obj) { obj->remember (); }
 	static void forgetObject (CBaseObject* obj) { obj->forget (); }
@@ -137,7 +137,7 @@ inline void IDependency::deferChanges (bool state)
 }
 
 //----------------------------------------------------------------------------------------------------
-inline IDependency::~IDependency ()
+inline IDependency::~IDependency () noexcept
 {
 	vstgui_assert (dependents.size () == 0);
 }

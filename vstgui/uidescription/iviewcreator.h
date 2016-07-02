@@ -50,7 +50,7 @@ class UIAttributes;
 class IViewCreator
 {
 public:
-	virtual ~IViewCreator () {}
+	virtual ~IViewCreator () noexcept = default;
 	
 	enum AttrType {
 		kUnknownType,

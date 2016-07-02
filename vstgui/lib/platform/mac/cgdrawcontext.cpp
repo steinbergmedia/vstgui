@@ -130,7 +130,7 @@ void CGDrawContext::init ()
 }
 
 //-----------------------------------------------------------------------------
-CGDrawContext::~CGDrawContext ()
+CGDrawContext::~CGDrawContext () noexcept
 {
 	CGContextRestoreGState (cgContext); // restore the original state
 	CGContextRestoreGState (cgContext); // we need to do it twice !!!

@@ -92,7 +92,7 @@ public:
 		}
 	}
 
-	~D2DFactory ()
+	~D2DFactory () noexcept
 	{
 		CFontDesc::cleanup ();
 		releaseFactory ();
@@ -378,7 +378,7 @@ GDIPlusGlobals::GDIPlusGlobals ()
 }
 
 //-----------------------------------------------------------------------------
-GDIPlusGlobals::~GDIPlusGlobals ()
+GDIPlusGlobals::~GDIPlusGlobals () noexcept
 {
 	CFontDesc::cleanup ();
 	Gdiplus::GdiplusShutdown (gdiplusToken);

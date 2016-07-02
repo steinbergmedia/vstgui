@@ -48,7 +48,7 @@ class WinString : public IPlatformString
 {
 public:
 	WinString (UTF8StringPtr utf8String);
-	~WinString ();
+	~WinString () noexcept;
 	
 	void setUTF8String (UTF8StringPtr utf8String) override;
 

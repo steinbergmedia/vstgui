@@ -108,7 +108,7 @@ QuartzGraphicsPath::QuartzGraphicsPath (const CoreTextFont* font, UTF8StringPtr 
 }
 
 //-----------------------------------------------------------------------------
-QuartzGraphicsPath::~QuartzGraphicsPath ()
+QuartzGraphicsPath::~QuartzGraphicsPath () noexcept
 {
 	dirty ();
 	if (originalTextPath)
@@ -342,7 +342,7 @@ QuartzGradient::QuartzGradient (double _color1Start, double _color2Start, const 
 }
 
 //-----------------------------------------------------------------------------
-QuartzGradient::~QuartzGradient ()
+QuartzGradient::~QuartzGradient () noexcept
 {
 	releaseCGGradient ();
 }

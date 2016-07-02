@@ -210,7 +210,7 @@ CAViewLayer::CAViewLayer (CALayer* parent)
 }
 
 //-----------------------------------------------------------------------------
-CAViewLayer::~CAViewLayer ()
+CAViewLayer::~CAViewLayer () noexcept
 {
 	if (layer)
 	{

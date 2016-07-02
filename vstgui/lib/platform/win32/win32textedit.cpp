@@ -119,7 +119,7 @@ Win32TextEdit::Win32TextEdit (HWND parent, IPlatformTextEditCallback* textEdit)
 }
 
 //-----------------------------------------------------------------------------
-Win32TextEdit::~Win32TextEdit ()
+Win32TextEdit::~Win32TextEdit () noexcept
 {
 	if (platformControl)
 	{

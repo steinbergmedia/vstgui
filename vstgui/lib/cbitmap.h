@@ -194,7 +194,7 @@ public:
 //-----------------------------------------------------------------------------
 protected:
 	CBitmapPixelAccess ();
-	~CBitmapPixelAccess ();
+	~CBitmapPixelAccess () noexcept;
 	void init (CBitmap* bitmap, IPlatformBitmapPixelAccess* pixelAccess);
 
 	CBitmap* bitmap;

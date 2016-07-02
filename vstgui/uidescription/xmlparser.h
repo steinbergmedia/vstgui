@@ -66,7 +66,7 @@ class Parser
 {
 public:
 	Parser ();
-	virtual ~Parser ();
+	virtual ~Parser () noexcept;
 
 	bool parse (IContentProvider* provider, IHandler* handler);
 

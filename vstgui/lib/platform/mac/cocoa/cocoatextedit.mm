@@ -289,7 +289,7 @@ CocoaTextEdit::CocoaTextEdit (NSView* parent, IPlatformTextEditCallback* textEdi
 }
 
 //-----------------------------------------------------------------------------
-CocoaTextEdit::~CocoaTextEdit ()
+CocoaTextEdit::~CocoaTextEdit () noexcept
 {
 	[platformControl performSelector:@selector(removeFromSuperview)];
 	[platformControl performSelector:@selector(autorelease)];

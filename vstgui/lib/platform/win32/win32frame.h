@@ -48,7 +48,7 @@ class Win32Frame : public IPlatformFrame
 {
 public:
 	Win32Frame (IPlatformFrameCallback* frame, const CRect& size, HWND parent, PlatformType parentType);
-	~Win32Frame ();
+	~Win32Frame () noexcept;
 
 	HWND getPlatformWindow () const { return windowHandle; }
 	HWND getParentPlatformWindow () const { return parentWindow; }

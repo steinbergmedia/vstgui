@@ -121,7 +121,7 @@ class MacDragContainer : public CDragContainer
 {
 public:
 	MacDragContainer (DragRef platformDrag);
-	~MacDragContainer ();
+	~MacDragContainer () noexcept;
 
 	virtual void* first (int32_t& size, int32_t& type);		///< returns pointer on a char array if type is known
 	virtual void* next (int32_t& size, int32_t& type);		///< returns pointer on a char array if type is known
@@ -178,7 +178,7 @@ MacDragContainer::MacDragContainer (DragRef inPlatformDrag)
 }
 
 //-----------------------------------------------------------------------------
-MacDragContainer::~MacDragContainer ()
+MacDragContainer::~MacDragContainer () noexcept
 {
 	if (lastItem)
 	{
@@ -452,7 +452,7 @@ HIViewFrame::HIViewFrame (IPlatformFrameCallback* frame, const CRect& size, Wind
 }
 
 //-----------------------------------------------------------------------------
-HIViewFrame::~HIViewFrame ()
+HIViewFrame::~HIViewFrame () noexcept
 {
 	if (keyboardEventHandler)
 		RemoveEventHandler (keyboardEventHandler);

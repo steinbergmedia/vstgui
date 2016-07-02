@@ -79,7 +79,7 @@ CDrawContext::Transform::Transform (CDrawContext& context, const CGraphicsTransf
 }
 
 //-----------------------------------------------------------------------------
-CDrawContext::Transform::~Transform ()
+CDrawContext::Transform::~Transform () noexcept
 {
 	if (transformation.isInvariant () == false)
 		context.popTransform ();
@@ -94,7 +94,7 @@ CDrawContext::CDrawContext (const CRect& surfaceRect)
 }
 
 //-----------------------------------------------------------------------------
-CDrawContext::~CDrawContext ()
+CDrawContext::~CDrawContext () noexcept
 {
 	#if DEBUG
 	if (!globalStatesStack.empty ())

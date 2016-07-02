@@ -178,7 +178,7 @@ CGBitmap::CGBitmap ()
 }
 
 //-----------------------------------------------------------------------------
-CGBitmap::~CGBitmap ()
+CGBitmap::~CGBitmap () noexcept
 {
 	if (image)
 		CGImageRelease (image);
@@ -424,7 +424,7 @@ public:
 		bitmap->remember ();
 	}
 	
-	~CGBitmapPixelAccess () override
+	~CGBitmapPixelAccess () noexcept override
 	{
 		if (!alphaPremultiplied)
 		{

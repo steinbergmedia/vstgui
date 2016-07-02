@@ -135,7 +135,7 @@ CDataBrowser::CDataBrowser (const CRect& size, IDataBrowserDelegate* db, int32_t
 }
 
 //-----------------------------------------------------------------------------------------------
-CDataBrowser::~CDataBrowser ()
+CDataBrowser::~CDataBrowser () noexcept
 {
 	CBaseObject* obj = dynamic_cast<CBaseObject*>(db);
 	if (obj)
@@ -1175,7 +1175,7 @@ GenericStringListDataBrowserSource::GenericStringListDataBrowserSource (const St
 }
 
 //-----------------------------------------------------------------------------
-GenericStringListDataBrowserSource::~GenericStringListDataBrowserSource ()
+GenericStringListDataBrowserSource::~GenericStringListDataBrowserSource () noexcept
 {
 }
 

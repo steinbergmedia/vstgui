@@ -643,7 +643,7 @@ class CocoaTooltipWindow : public CBaseObject
 {
 public:
 	CocoaTooltipWindow ();
-	~CocoaTooltipWindow () override;
+	~CocoaTooltipWindow () noexcept override;
 
 	void set (NSViewFrame* nsViewFrame, const CRect& rect, const char* tooltip);
 	void hide ();
@@ -760,7 +760,7 @@ NSViewFrame::NSViewFrame (IPlatformFrameCallback* frame, const CRect& size, NSVi
 }
 
 //-----------------------------------------------------------------------------
-NSViewFrame::~NSViewFrame ()
+NSViewFrame::~NSViewFrame () noexcept
 {
 	if (tooltipWindow)
 		tooltipWindow->forget ();
@@ -1173,7 +1173,7 @@ CocoaTooltipWindow::CocoaTooltipWindow ()
 }
 
 //------------------------------------------------------------------------------------
-CocoaTooltipWindow::~CocoaTooltipWindow ()
+CocoaTooltipWindow::~CocoaTooltipWindow () noexcept
 {
 	if (timer)
 		timer->forget ();

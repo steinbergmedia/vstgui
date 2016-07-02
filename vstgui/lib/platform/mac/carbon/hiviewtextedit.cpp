@@ -124,7 +124,7 @@ HIViewTextEdit::HIViewTextEdit (HIViewRef parent, IPlatformTextEditCallback* tex
 }
 
 //-----------------------------------------------------------------------------
-HIViewTextEdit::~HIViewTextEdit ()
+HIViewTextEdit::~HIViewTextEdit () noexcept
 {
 	if (eventHandler)
 		RemoveEventHandler (eventHandler);

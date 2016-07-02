@@ -111,7 +111,7 @@ Parser::Parser ()
 }
 
 //-----------------------------------------------------------------------------
-Parser::~Parser ()
+Parser::~Parser () noexcept
 {
 	if (parser)
 		XML_ParserFree (PARSER);

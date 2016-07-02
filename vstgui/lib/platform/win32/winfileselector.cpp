@@ -122,7 +122,7 @@ class VistaFileSelector : public CNewFileSelector
 {
 public:
 	VistaFileSelector (CFrame* frame, Style style);
-	~VistaFileSelector ();
+	~VistaFileSelector () noexcept;
 
 	virtual bool runInternal (CBaseObject* delegate) override;
 	virtual void cancelInternal () override;
@@ -190,7 +190,7 @@ VistaFileSelector::VistaFileSelector (CFrame* frame, Style style)
 }
 
 //-----------------------------------------------------------------------------
-VistaFileSelector::~VistaFileSelector ()
+VistaFileSelector::~VistaFileSelector () noexcept
 {
 }
 

@@ -66,7 +66,7 @@ public:
 	explicit CLineStyle (LineCap cap, LineJoin join = kLineJoinMiter, CCoord dashPhase = 0., uint32_t dashCount = 0, const CCoord* dashLengths = nullptr);
 	CLineStyle (LineCap cap, LineJoin join, CCoord dashPhase, const CoordVector& dashLengths);
 	CLineStyle (const CLineStyle& lineStyle);
-	~CLineStyle () = default;
+	~CLineStyle () noexcept = default;
 
 	CLineStyle (LineCap cap, LineJoin join, CCoord dashPhase, CoordVector&& dashLengths) noexcept;
 	CLineStyle (CLineStyle&& cls) noexcept;

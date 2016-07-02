@@ -67,7 +67,7 @@ public:
 
 //------------------------------------------------------------------------------------
 protected:
-	~CoreTextFont ();
+	~CoreTextFont () noexcept;
 
 	void drawString (CDrawContext* context, IPlatformString* string, const CPoint& p, bool antialias = true) override;
 	CCoord getStringWidth (CDrawContext* context, IPlatformString* string, bool antialias = true) override;

@@ -83,7 +83,7 @@ CTextEdit::CTextEdit (const CTextEdit& v)
 }
 
 //------------------------------------------------------------------------
-CTextEdit::~CTextEdit ()
+CTextEdit::~CTextEdit () noexcept
 {
 	listener = nullptr;
 	vstgui_assert (platformControl == nullptr);

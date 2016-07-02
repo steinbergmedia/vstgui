@@ -47,7 +47,7 @@ namespace VSTGUI {
 class IFontPainter
 {
 public:
-	virtual ~IFontPainter () {}
+	virtual ~IFontPainter () noexcept = default;
 
 	virtual void drawString (CDrawContext* context, IPlatformString* string, const CPoint& p, bool antialias = true) = 0;
 	virtual CCoord getStringWidth (CDrawContext* context, IPlatformString* string, bool antialias = true) = 0;

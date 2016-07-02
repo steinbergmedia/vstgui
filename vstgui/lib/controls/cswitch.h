@@ -64,7 +64,7 @@ public:
 
 	CLASS_METHODS(CVerticalSwitch, CControl)
 protected:
-	~CVerticalSwitch () = default;
+	~CVerticalSwitch () noexcept = default;
 	CPoint	offset;
 
 private:
@@ -97,7 +97,7 @@ public:
 
 	CLASS_METHODS(CHorizontalSwitch, CControl)
 protected:
-	~CHorizontalSwitch () = default;
+	~CHorizontalSwitch () noexcept = default;
 	CPoint	offset;
 
 private:
@@ -132,7 +132,7 @@ public:
 
 	CLASS_METHODS(CRockerSwitch, CControl)
 protected:
-	~CRockerSwitch ();
+	~CRockerSwitch () noexcept;
 
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 

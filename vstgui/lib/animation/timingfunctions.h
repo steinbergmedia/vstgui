@@ -111,7 +111,7 @@ class RepeatTimingFunction : public ITimingFunction
 {
 public:
 	RepeatTimingFunction (TimingFunctionBase* tf, int32_t repeatCount, bool autoReverse = true);
-	~RepeatTimingFunction ();
+	~RepeatTimingFunction () noexcept;
 
 	float getPosition (uint32_t milliseconds) override;
 	bool isDone (uint32_t milliseconds) override;

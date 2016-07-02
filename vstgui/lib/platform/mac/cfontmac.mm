@@ -156,7 +156,7 @@ CoreTextFont::CoreTextFont (const UTF8String& name, const CCoord& size, const in
 }
 
 //-----------------------------------------------------------------------------
-CoreTextFont::~CoreTextFont ()
+CoreTextFont::~CoreTextFont () noexcept
 {
 	if (stringAttributes)
 		CFRelease (stringAttributes);

@@ -52,7 +52,7 @@ class GdiplusBitmap : public Win32BitmapBase
 public:
 	GdiplusBitmap ();
 	GdiplusBitmap (const CPoint& size);
-	~GdiplusBitmap ();
+	~GdiplusBitmap () noexcept;
 
 	bool load (const CResourceDescription& desc) override;
 	const CPoint& getSize () const override { return size; }
@@ -71,7 +71,7 @@ protected:
 	{
 	public:
 		PixelAccess ();
-		~PixelAccess ();
+		~PixelAccess () noexcept;
 
 		bool init (GdiplusBitmap* bitmap, bool alphaPremulitplied);
 

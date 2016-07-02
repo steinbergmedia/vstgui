@@ -58,7 +58,7 @@ public:
 	//-------------------------------------------
 	CLASS_METHODS_NOCOPY(CTooltipSupport, CBaseObject)
 protected:
-	~CTooltipSupport ();
+	~CTooltipSupport () noexcept;
 	bool showTooltip ();
 
 	enum {

@@ -50,7 +50,7 @@ class UIViewFactory : public CBaseObject, public IViewFactory
 {
 public:
 	UIViewFactory ();
-	~UIViewFactory () = default;
+	~UIViewFactory () noexcept = default;
 
 	// IViewFactory
 	CView* createView (const UIAttributes& attributes, const IUIDescription* description) const override;

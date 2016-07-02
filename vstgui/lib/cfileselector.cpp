@@ -54,7 +54,7 @@ CFileExtension::CFileExtension (const CFileExtension& ext)
 }
 
 //-----------------------------------------------------------------------------
-CFileExtension::~CFileExtension ()
+CFileExtension::~CFileExtension () noexcept
 {
 }
 
@@ -130,7 +130,7 @@ CNewFileSelector::CNewFileSelector (CFrame* frame)
 }
 
 //-----------------------------------------------------------------------------
-CNewFileSelector::~CNewFileSelector ()
+CNewFileSelector::~CNewFileSelector () noexcept
 {
 	setTitle (nullptr);
 	setInitialDirectory (nullptr);
@@ -171,7 +171,7 @@ class CNewFileSelectorCallback : public CBaseObject
 {
 public:
 	CNewFileSelectorCallback (CNewFileSelector::CallbackFunc&& callback) : callbackFunc (std::move (callback)) {}
-	~CNewFileSelectorCallback () override = default;
+	~CNewFileSelectorCallback () noexcept override = default;
 private:
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override
 	{

@@ -51,7 +51,7 @@ class Pasteboard : public IDataPackage
 {
 public:
 	Pasteboard (NSPasteboard* pb);
-	~Pasteboard () override;
+	~Pasteboard () noexcept override;
 
 	uint32_t getCount () const override;
 	uint32_t getDataSize (uint32_t index) const override;
@@ -128,7 +128,7 @@ Pasteboard::Pasteboard (NSPasteboard* pb)
 }
 
 //-----------------------------------------------------------------------------
-Pasteboard::~Pasteboard ()
+Pasteboard::~Pasteboard () noexcept
 {
 	if (dataArray)
 		[dataArray release];

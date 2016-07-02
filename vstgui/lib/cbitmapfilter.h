@@ -72,7 +72,7 @@ public:
 	Property (const CGraphicsTransform& transformValue);
 	Property (const Property& p);
 	Property (Property&& p) noexcept;
-	~Property ();
+	~Property () noexcept;
 
 	Type getType () const { return type; }
 

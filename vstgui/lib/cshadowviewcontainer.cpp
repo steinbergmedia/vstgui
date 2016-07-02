@@ -64,7 +64,7 @@ CShadowViewContainer::CShadowViewContainer (const CShadowViewContainer& copy)
 }
 
 //------------------------------------------------------------------------
-CShadowViewContainer::~CShadowViewContainer ()
+CShadowViewContainer::~CShadowViewContainer () noexcept
 {
 	unregisterViewContainerListener (this);
 }

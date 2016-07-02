@@ -93,7 +93,7 @@ CParamDisplay::CParamDisplay (const CParamDisplay& v)
 }
 
 //------------------------------------------------------------------------
-CParamDisplay::~CParamDisplay ()
+CParamDisplay::~CParamDisplay () noexcept
 {
 	if (fontID)
 		fontID->forget ();

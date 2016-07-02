@@ -186,7 +186,7 @@ public:
 	
 	CLASS_METHODS_VIRTUAL(CControl, CView)
 protected:
-	~CControl () = default;
+	~CControl () noexcept = default;
 	static int32_t mapVstKeyModifier (int32_t vstModifier);
 
 	typedef DispatchList<IControlListener> SubListenerDispatcher;

@@ -84,7 +84,7 @@ CVuMeter::CVuMeter (const CVuMeter& v)
 }
 
 //------------------------------------------------------------------------
-CVuMeter::~CVuMeter ()
+CVuMeter::~CVuMeter () noexcept
 {
 	setOnBitmap (nullptr);
 	setOffBitmap (nullptr);

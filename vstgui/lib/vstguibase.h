@@ -299,7 +299,7 @@ public:
 	inline SharedPointer (I* ptr, bool remember = true);
 	inline SharedPointer (const SharedPointer&);
 	inline SharedPointer ();
-	inline ~SharedPointer ();
+	inline ~SharedPointer () noexcept;
 
 	inline I* operator=(I* ptr);
 	inline SharedPointer<I>& operator=(const SharedPointer<I>& );
@@ -352,7 +352,7 @@ inline SharedPointer<I>::SharedPointer ()
 
 //------------------------------------------------------------------------
 template <class I>
-inline SharedPointer<I>::~SharedPointer ()
+inline SharedPointer<I>::~SharedPointer () noexcept
 {
 	if (ptr)
 		ptr->forget ();

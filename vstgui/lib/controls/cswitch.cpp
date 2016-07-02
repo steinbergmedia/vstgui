@@ -448,7 +448,7 @@ CRockerSwitch::CRockerSwitch (const CRockerSwitch& v)
 }
 
 //------------------------------------------------------------------------
-CRockerSwitch::~CRockerSwitch ()
+CRockerSwitch::~CRockerSwitch () noexcept
 {
 	if (resetValueTimer)
 		resetValueTimer->forget ();

@@ -48,7 +48,7 @@ class UIViewSwitchContainer : public CViewContainer
 {
 public:
 	explicit UIViewSwitchContainer (const CRect& size);
-	~UIViewSwitchContainer ();
+	~UIViewSwitchContainer () noexcept;
 
 	IViewSwitchController* getController () const { return controller; }
 	void setController (IViewSwitchController* controller);	// owns controller if it is a CBaseObject
@@ -84,7 +84,7 @@ class IViewSwitchController
 {
 public:
 	explicit IViewSwitchController (UIViewSwitchContainer* viewSwitch) : viewSwitch (viewSwitch) {}
-	virtual ~IViewSwitchController () {}
+	virtual ~IViewSwitchController () noexcept = default;
 
 	void init () { viewSwitch->setController (this); }
 

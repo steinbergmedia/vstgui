@@ -138,7 +138,7 @@ RepeatTimingFunction::RepeatTimingFunction (TimingFunctionBase* tf, int32_t repe
 }
 
 //-----------------------------------------------------------------------------
-RepeatTimingFunction::~RepeatTimingFunction ()
+RepeatTimingFunction::~RepeatTimingFunction () noexcept
 {
 	CBaseObject* obj = dynamic_cast<CBaseObject*> (tf);
 	if (obj)

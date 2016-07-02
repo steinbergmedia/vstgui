@@ -59,7 +59,7 @@ GdiplusBitmap::GdiplusBitmap (const CPoint& size)
 }
 
 //-----------------------------------------------------------------------------
-GdiplusBitmap::~GdiplusBitmap ()
+GdiplusBitmap::~GdiplusBitmap () noexcept
 {
 	if (bitmap)
 	{
@@ -147,7 +147,7 @@ GdiplusBitmap::PixelAccess::PixelAccess ()
 }
 
 //-----------------------------------------------------------------------------
-GdiplusBitmap::PixelAccess::~PixelAccess ()
+GdiplusBitmap::PixelAccess::~PixelAccess () noexcept
 {
 	if (bitmap)
 	{

@@ -126,7 +126,7 @@ WinDragContainer::WinDragContainer (IDataObject* platformDrag)
 }
 
 //-----------------------------------------------------------------------------
-WinDragContainer::~WinDragContainer ()
+WinDragContainer::~WinDragContainer () noexcept
 {
 	if (data)
 	{

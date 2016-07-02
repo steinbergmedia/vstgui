@@ -69,7 +69,7 @@ public:
 
 	CLASS_METHODS(CSplashScreen, CControl)
 protected:
-	~CSplashScreen ();
+	~CSplashScreen () noexcept;
 	using CControl::valueChanged;
 	void valueChanged (CControl *pControl) override;
 
@@ -118,7 +118,7 @@ public:
 	virtual CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 
 protected:
-	~CAnimationSplashScreen () = default;
+	~CAnimationSplashScreen () noexcept = default;
 
 	uint32_t animationIndex;
 	uint32_t animationTime;

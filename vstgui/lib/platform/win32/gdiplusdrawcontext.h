@@ -52,7 +52,7 @@ class GdiplusDrawContext : public COffscreenContext
 public:
 	GdiplusDrawContext (HWND window, const CRect& drawSurface);
 	GdiplusDrawContext (GdiplusBitmap* bitmap);
-	~GdiplusDrawContext ();
+	~GdiplusDrawContext () noexcept;
 
 	Gdiplus::Graphics* getGraphics () const { return pGraphics; }
 	Gdiplus::Pen* getPen () const { return pPen; }
@@ -119,7 +119,7 @@ struct GdiplusDrawScope
 		}
 	}
 
-	~GdiplusDrawScope ()
+	~GdiplusDrawScope () noexcept
 	{
 		Gdiplus::Matrix matrix;
 		graphics->SetTransform (&matrix);

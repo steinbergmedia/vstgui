@@ -52,7 +52,7 @@ public:
 	static void setAddToContentView (bool addToContentView); // defaults to true
 
 	HIViewFrame (IPlatformFrameCallback* frame, const CRect& size, WindowRef parent);
-	~HIViewFrame ();
+	~HIViewFrame () noexcept;
 
 	HIViewRef getPlatformControl () const { return controlRef; }
 	const CPoint& getScrollOffset () const { return hiScrollOffset; }

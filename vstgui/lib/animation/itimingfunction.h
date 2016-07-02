@@ -21,7 +21,7 @@ namespace Animation {
 class ITimingFunction
 {
 public:
-	virtual ~ITimingFunction () {}
+	virtual ~ITimingFunction () noexcept = default;
 
 	virtual float getPosition (uint32_t milliseconds) = 0;
 	virtual bool isDone (uint32_t milliseconds) = 0;

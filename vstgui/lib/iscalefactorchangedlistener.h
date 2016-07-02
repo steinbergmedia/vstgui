@@ -43,6 +43,8 @@ namespace VSTGUI {
 class IScaleFactorChangedListener
 {
 public:
+	virtual ~IScaleFactorChangedListener () noexcept = default;
+
 	virtual void onScaleFactorChanged (CFrame* frame) = 0;
 };
 

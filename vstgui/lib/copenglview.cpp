@@ -48,7 +48,7 @@ COpenGLView::COpenGLView (const CRect& size)
 }
 
 //-----------------------------------------------------------------------------
-COpenGLView::~COpenGLView ()
+COpenGLView::~COpenGLView () noexcept
 {
 	vstgui_assert (platformOpenGLView == nullptr);
 }

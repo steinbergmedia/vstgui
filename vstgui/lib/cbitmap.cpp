@@ -248,7 +248,7 @@ CBitmapPixelAccess::CBitmapPixelAccess ()
 }
 
 //------------------------------------------------------------------------
-CBitmapPixelAccess::~CBitmapPixelAccess ()
+CBitmapPixelAccess::~CBitmapPixelAccess () noexcept
 {
 	if (pixelAccess)
 		pixelAccess->forget ();

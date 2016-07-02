@@ -96,7 +96,7 @@ public:
 //-----------------------------------------------------------------------------
 	CLASS_METHODS (CTabView, CViewContainer)
 protected:
-	~CTabView ();
+	~CTabView () noexcept;
 	void setCurrentChild (CTabChildView* childView);
 
 	int32_t numberOfChilds;

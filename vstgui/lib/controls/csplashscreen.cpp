@@ -123,7 +123,7 @@ CSplashScreen::CSplashScreen (const CSplashScreen& v)
 }
 
 //------------------------------------------------------------------------
-CSplashScreen::~CSplashScreen ()
+CSplashScreen::~CSplashScreen () noexcept
 {
 	if (modalView)
 		modalView->forget ();

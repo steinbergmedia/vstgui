@@ -190,7 +190,7 @@ public:
 	int32_t onKeyDown (VstKeyCode& keyCode) override;
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
 protected:
-	~CDataBrowser ();
+	~CDataBrowser () noexcept;
 	void valueChanged (CControl *pControl) override;
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 	bool attached (CView *parent) override;
@@ -225,7 +225,7 @@ public:
 	using StringVector = std::vector<UTF8String>;
 
 	GenericStringListDataBrowserSource (const StringVector* stringList, IGenericStringListDataBrowserSourceSelectionChanged* delegate = nullptr);
-	~GenericStringListDataBrowserSource ();
+	~GenericStringListDataBrowserSource () noexcept;
 
 	void setStringList (const StringVector* stringList);
 	const StringVector* getStringList () const { return stringList; }

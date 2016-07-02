@@ -184,7 +184,7 @@ protected:
 		timer->start ();
 	}
 	
-	~Timer () override
+	~Timer () noexcept override
 	{
 		#if DEBUG_LOG
 		DebugPrint ("Animation timer stopped\n");

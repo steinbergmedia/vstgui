@@ -55,7 +55,7 @@ MacString::MacString (UTF8StringPtr utf8String)
 }
 
 //-----------------------------------------------------------------------------
-MacString::~MacString ()
+MacString::~MacString () noexcept
 {
 	if (ctLine)
 		CFRelease (ctLine);

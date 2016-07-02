@@ -58,7 +58,7 @@ public:
 		textFont = kSystemFont; textFont->remember ();
 	}
 
-	~CTabButton () override
+	~CTabButton () noexcept override
 	{
 		if (textFont)
 			textFont->forget ();
@@ -118,7 +118,7 @@ public:
 	{
 	}
 
-	~CTabChildView () override
+	~CTabChildView () noexcept override
 	{
 		view->forget ();
 	}
@@ -170,7 +170,7 @@ CTabView::CTabView (const CRect& size, const CRect& tabSize, CBitmap* background
 }
 
 //-----------------------------------------------------------------------------
-CTabView::~CTabView ()
+CTabView::~CTabView () noexcept
 {
 	pParentView = nullptr;
 	pParentFrame = nullptr;

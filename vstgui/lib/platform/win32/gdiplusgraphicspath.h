@@ -53,7 +53,7 @@ class GdiplusGraphicsPath : public CGraphicsPath
 public:
 	GdiplusGraphicsPath ();
 	GdiplusGraphicsPath (const GdiPlusFont* font, UTF8StringPtr text);
-	~GdiplusGraphicsPath ();
+	~GdiplusGraphicsPath () noexcept;
 
 	Gdiplus::GraphicsPath* getGraphicsPath ();
 

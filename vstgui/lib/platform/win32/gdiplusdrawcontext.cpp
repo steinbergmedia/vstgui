@@ -81,7 +81,7 @@ GdiplusDrawContext::GdiplusDrawContext (GdiplusBitmap* inBitmap)
 }
 
 //-----------------------------------------------------------------------------
-GdiplusDrawContext::~GdiplusDrawContext ()
+GdiplusDrawContext::~GdiplusDrawContext () noexcept
 {
 	if (pFontBrush)
 		::delete pFontBrush;

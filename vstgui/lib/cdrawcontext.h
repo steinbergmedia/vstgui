@@ -65,7 +65,7 @@ public:
 	struct Transform
 	{
 		Transform (CDrawContext& context, const CGraphicsTransform& transformation);
-		~Transform ();
+		~Transform () noexcept;
 		
 	private:
 		CDrawContext& context;
@@ -210,7 +210,7 @@ public:
 	CLASS_METHODS_NOCOPY(CDrawContext, CBaseObject)
 protected:
 	explicit CDrawContext (const CRect& surfaceRect);
-	~CDrawContext ();
+	~CDrawContext () noexcept;
 
 	virtual void init ();
 
@@ -262,7 +262,7 @@ struct ConcatClip
 		rect.bound (origClip);
 		context.setClipRect (rect);
 	}
-	~ConcatClip ()
+	~ConcatClip () noexcept
 	{
 		context.setClipRect (origClip);
 	}

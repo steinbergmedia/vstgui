@@ -55,7 +55,7 @@ public:
 
 	static bool getAllPlatformFontFamilies (std::list<std::string>& fontFamilyNames);
 protected:
-	~GdiPlusFont ();
+	~GdiPlusFont () noexcept;
 	
 	double getAscent () const override;
 	double getDescent () const override;

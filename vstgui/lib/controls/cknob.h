@@ -186,7 +186,7 @@ public:
 
 	CLASS_METHODS(CAnimKnob, CKnob)
 protected:
-	~CAnimKnob () = default;
+	~CAnimKnob () noexcept = default;
 	bool	bInverseBitmap;
 };
 

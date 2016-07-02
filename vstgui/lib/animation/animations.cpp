@@ -147,7 +147,7 @@ ExchangeViewAnimation::ExchangeViewAnimation (CView* oldView, CView* newView, An
 }
 
 //-----------------------------------------------------------------------------
-ExchangeViewAnimation::~ExchangeViewAnimation ()
+ExchangeViewAnimation::~ExchangeViewAnimation () noexcept
 {
 	viewToRemove->forget ();
 	newView->forget ();

@@ -71,7 +71,7 @@ public:
 	CLASS_METHODS(CScrollbar, CControl)
 	//-----------------------------------------------------------------------------
 protected:
-	~CScrollbar () = default;
+	~CScrollbar () noexcept = default;
 
 	void drawBackground (CDrawContext* pContext);
 	void drawScroller (CDrawContext* pContext, const CRect& size);

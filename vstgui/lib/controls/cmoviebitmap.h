@@ -58,7 +58,7 @@ public:
 
 	CLASS_METHODS(CMovieBitmap, CControl)
 protected:
-	~CMovieBitmap () = default;
+	~CMovieBitmap () noexcept = default;
 	CPoint	offset;
 };
 
