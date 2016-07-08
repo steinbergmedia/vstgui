@@ -89,6 +89,14 @@ Win32TextEdit::Win32TextEdit (HWND parent, IPlatformTextEditCallback* textEdit)
 		TEXT("EDIT"), stringHelper, wstyle,
 		(int)rect.left, (int)rect.top, (int)rect.getWidth (), (int)rect.getHeight (),
 		parent, NULL, GetInstance (), 0);
+	if (!platformControl)
+	{
+		wxStyle &= ~WS_EX_LAYERED;
+		platformControl = CreateWindowEx (wxStyle,
+			TEXT("EDIT"), stringHelper, wstyle,
+			(int)rect.left, (int)rect.top, (int)rect.getWidth (), (int)rect.getHeight (),
+			parent, NULL, GetInstance (), 0);
+	}
 
 	CColor backColor = textEdit->platformGetBackColor ();
 	SetLayeredWindowAttributes (platformControl, RGB (backColor.red, backColor.green, backColor.blue), 0, LWA_COLORKEY);
