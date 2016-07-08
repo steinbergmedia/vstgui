@@ -970,7 +970,13 @@ LONG_PTR WINAPI Win32Frame::proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 		}
 		case WM_KEYDOWN:
 		{
-			VstKeyCode key;
+			VstKeyCode key {};
+			if (GetKeyState (VK_SHIFT)   < 0)
+				key.modifier |= MODIFIER_SHIFT;
+			if (GetKeyState (VK_CONTROL) < 0)
+				key.modifier |= MODIFIER_CONTROL;
+			if (GetKeyState (VK_MENU)    < 0)
+				key.modifier |= MODIFIER_ALTERNATE;
 			key.virt = translateWinVirtualKey (wParam);
 			if (key.virt)
 			{
@@ -981,7 +987,13 @@ LONG_PTR WINAPI Win32Frame::proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 		}
 		case WM_KEYUP:
 		{
-			VstKeyCode key;
+			VstKeyCode key {};
+			if (GetKeyState (VK_SHIFT)   < 0)
+				key.modifier |= MODIFIER_SHIFT;
+			if (GetKeyState (VK_CONTROL) < 0)
+				key.modifier |= MODIFIER_CONTROL;
+			if (GetKeyState (VK_MENU)    < 0)
+				key.modifier |= MODIFIER_ALTERNATE;
 			key.virt = translateWinVirtualKey (wParam);
 			if (key.virt)
 			{
