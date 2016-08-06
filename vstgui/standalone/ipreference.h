@@ -10,6 +10,10 @@ namespace VSTGUI {
 namespace Standalone {
 
 //------------------------------------------------------------------------
+/** Preference interface
+ *
+ *	@ingroup standalone
+ */
 class IPreference : public Interface
 {
 public:

@@ -9,7 +9,10 @@ namespace VSTGUI {
 namespace Standalone {
 
 //------------------------------------------------------------------------
-/** value interface */
+/** Value interface
+ *
+ *	@ingroup standalone
+ */
 class IValue : public Interface
 {
 public:
@@ -37,7 +40,10 @@ public:
 };
 
 //------------------------------------------------------------------------
-/** extension to IValue for a non continous value with discrete steps */
+/** extension to IValue for a non continous value with discrete steps
+ *
+ *	@ingroup standalone
+ */
 class IStepValue : public Interface
 {
 public:
@@ -50,6 +56,10 @@ public:
 };
 
 //------------------------------------------------------------------------
+/** Value string converter interface
+ *
+ *	@ingroup standalone
+ */
 class IValueStringConverter : public Interface
 {
 public:

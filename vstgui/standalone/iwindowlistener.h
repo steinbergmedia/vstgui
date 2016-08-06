@@ -9,6 +9,10 @@ namespace VSTGUI {
 namespace Standalone {
 
 //------------------------------------------------------------------------
+/** Window listener interface
+ *
+ *	@ingroup standalone
+ */
 class IWindowListener : public Interface
 {
 public:

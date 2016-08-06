@@ -14,6 +14,8 @@ namespace Standalone {
  *	if they implement the ICommandHandler interface.
  *	Commands are registered via IApplication::registerCommand.
  *
+ *
+ *	@ingroup standalone
  */
 struct Command
 {
@@ -28,7 +30,10 @@ inline bool operator== (const Command& c1, const Command& c2)
 }
 
 //------------------------------------------------------------------------
-/** Handler for commands */
+/** Handler for commands
+ *
+ *	@ingroup standalone
+ */
 class ICommandHandler : public Interface
 {
 public:
@@ -37,7 +42,10 @@ public:
 };
 
 //------------------------------------------------------------------------
-/** predefined command groups */
+/** predefined command groups
+ *
+ *	@ingroup standalone
+ */
 namespace CommandGroup {
 
 static constexpr IdStringPtr Application = "Application";
@@ -71,7 +79,10 @@ static constexpr IdStringPtr MenuSeparator = "~";
 } // CommandName
 
 //------------------------------------------------------------------------
-/** predefined commands */
+/** predefined commands
+ *
+ *	@ingroup standalone
+ */
 namespace Commands {
 
 static const Command About {CommandGroup::Application, CommandName::About};

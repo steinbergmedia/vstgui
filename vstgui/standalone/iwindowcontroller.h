@@ -7,6 +7,10 @@ namespace VSTGUI {
 namespace Standalone {
 
 //------------------------------------------------------------------------
+/** Window controller interface
+ *
+ *	@ingroup standalone
+ */
 class IWindowController : public IWindowListener
 {
 public:

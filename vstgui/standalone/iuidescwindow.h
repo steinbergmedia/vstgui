@@ -16,6 +16,8 @@ namespace UIDesc {
 /** Model binding interface
  *
  *	Make values available in the UIDescription window to be able to bind to controls.
+ *
+ *	@ingroup standalone
  */
 class IModelBinding : public Interface
 {
@@ -26,7 +28,10 @@ public:
 };
 
 //------------------------------------------------------------------------
-/** UIDesc window customization interface */
+/** UIDesc window customization interface
+ *
+ *	@ingroup standalone
+ */
 class ICustomization : public Interface
 {
 public:
@@ -47,7 +52,10 @@ public:
 };
 
 //------------------------------------------------------------------------
-/** Configuration for a UIDescription window */
+/** Configuration for a UIDescription window
+ *
+ *	@ingroup standalone
+ */
 struct Config
 {
 	/** Filename of the UIDescription xml file */
@@ -81,6 +89,8 @@ struct Config
  *
  *	@param config window configuration
  *	@see Config
+ *
+ *	@ingroup standalone
  */
 WindowPtr makeWindow (const Config& config);
 

@@ -13,6 +13,8 @@ namespace Standalone {
  *	Application delegates and window controllers can implement this interface to customize the
  *	visibility and order of commands shown in the menu of the application or window.
  *	The context parameter of the methods is either an IApplication or IWindow.
+ *
+ *	@ingroup standalone
  */
 class IMenuBuilder : public Interface
 {

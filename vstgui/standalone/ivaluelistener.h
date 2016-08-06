@@ -7,6 +7,10 @@ namespace VSTGUI {
 namespace Standalone {
 
 //------------------------------------------------------------------------
+/** Value listener interface
+ *
+ *	@ingroup standalone
+ */
 class IValueListener : public Interface
 {
 public:

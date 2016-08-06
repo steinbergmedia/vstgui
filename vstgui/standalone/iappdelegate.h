@@ -12,6 +12,10 @@ namespace Standalone {
 namespace Application {
 
 //------------------------------------------------------------------------
+/** Application info.
+ *
+ *	@ingroup standalone
+ */
 struct Info
 {
 	/** Name of the application */
@@ -23,12 +27,14 @@ struct Info
 };
 
 //------------------------------------------------------------------------
-/** Application delegate interface
+/** Application delegate interface.
  *
  *	Every VSTGUI application needs a delegate. It's a global instance which handles
  *	custom application behaviour.
  *
  *	You define it via Application::Init (std::make_shared<YourDelegateClassType> ())
+ *
+ *	@ingroup standalone
  */
 class IDelegate : public Interface
 {

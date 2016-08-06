@@ -9,6 +9,10 @@ namespace VSTGUI {
 namespace Standalone {
 
 //------------------------------------------------------------------------
+/** Shared UI resources interface
+ *
+ *	@ingroup standalone
+ */
 class ISharedUIResources : public Interface
 {
 public:

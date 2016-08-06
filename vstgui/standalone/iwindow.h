@@ -10,7 +10,9 @@ namespace VSTGUI {
 namespace Standalone {
 
 //------------------------------------------------------------------------
-/** About window types:
+/** Window types
+ *
+ *	About window types:
  *
  *	There are two types of windows :
  *
@@ -22,6 +24,8 @@ namespace Standalone {
  *	a time.
  *	A popup window will automatically close if it is deactivated.
  *
+ *
+ *	@ingroup standalone
  */
 enum class WindowType
 {
@@ -30,6 +34,10 @@ enum class WindowType
 };
 
 //------------------------------------------------------------------------
+/** Window style
+ *
+ *	@ingroup standalone
+ */
 struct WindowStyle
 {
 private:
@@ -91,6 +99,10 @@ public:
 };
 
 //------------------------------------------------------------------------
+/** Window configuration
+ *
+ *	@ingroup standalone
+ */
 struct WindowConfiguration
 {
 	WindowType type {WindowType::Document};
@@ -107,6 +119,8 @@ struct WindowConfiguration
  *
  *	Windows are automatically destroyed when they are closed.
  *
+ *
+ *	@ingroup standalone
  */
 class IWindow : public Interface
 {
