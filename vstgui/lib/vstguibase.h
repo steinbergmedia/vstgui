@@ -44,7 +44,7 @@
 // VSTGUI Version
 //-----------------------------------------------------------------------------
 #define VSTGUI_VERSION_MAJOR  4
-#define VSTGUI_VERSION_MINOR  4
+#define VSTGUI_VERSION_MINOR  5
 
 //-----------------------------------------------------------------------------
 // Platform definitions

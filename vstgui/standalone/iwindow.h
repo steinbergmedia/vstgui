@@ -36,6 +36,20 @@ enum class WindowType
 //------------------------------------------------------------------------
 /** Window style
  *
+ *	Defines window style and behaviour.
+ *
+ *	Border: Adds border and title bar. If transparent is set, this is ignored.
+ *
+ *	Close: Adds a closebox if bordered and allows standard ways of closing the window.
+ *
+ *	Size: Allows user resizing.
+ *
+ *	Transparent: Window has no background and no operating system style window frame.
+ *
+ *	MovableByWindowBackground: User can move the window by its background.
+ *
+ *	Centered: Window will initially shown centered on screen.
+ *
  *	@ingroup standalone
  */
 struct WindowStyle
@@ -118,7 +132,6 @@ struct WindowConfiguration
  *	Windows are created via IApplication::instance ().createWindow ()
  *
  *	Windows are automatically destroyed when they are closed.
- *
  *
  *	@ingroup standalone
  */

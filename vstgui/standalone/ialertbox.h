@@ -10,6 +10,10 @@ namespace VSTGUI {
 namespace Standalone {
 
 //------------------------------------------------------------------------
+/** Alert result
+ *
+ *	@ingroup standalone
+ */
 enum class AlertResult
 {
 	defaultButton,
@@ -19,6 +23,10 @@ enum class AlertResult
 };
 
 //------------------------------------------------------------------------
+/** Alertbox configuration
+ *
+ *	@ingroup standalone
+ */
 struct AlertBoxConfig
 {
 	UTF8String headline;
@@ -29,6 +37,10 @@ struct AlertBoxConfig
 };
 
 //------------------------------------------------------------------------
+/** Alertbox for window configuration
+ *
+ *	@ingroup standalone
+ */
 struct AlertBoxForWindowConfig : AlertBoxConfig
 {
 	using Callback = std::function<void (AlertResult)>;

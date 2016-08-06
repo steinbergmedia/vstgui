@@ -40,7 +40,7 @@ public:
 		config.viewName = "Window";
 		config.windowConfig.title = "Sample App";
 		config.windowConfig.autoSaveFrameName = "SampleAppWindow";
-		config.windowConfig.style.close ().size ().centered ();
+		config.windowConfig.style.border ().close ().size ().centered ();
 		if (auto window = UIDesc::makeWindow (config))
 		{
 			window->show ();
