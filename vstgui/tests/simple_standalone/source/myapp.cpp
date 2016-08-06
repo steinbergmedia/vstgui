@@ -1,23 +1,3 @@
-#pragma once
-
-/**
-
-@defgroup standalone Standalone Library
-
-@page standalone_library Standalone Library
-
-- @ref standalone_about @n
-- @ref standalone_supported_os @n
-- @ref standalone_compiler_requirements @n
-
-@section standalone_about About
-
-The standalone library adds a minimal set of classes to write simple cross-platform applications.
-
-Here's a minimal sample just showing one window:
-
-@code{.cpp}
-
 #include "vstgui/standalone/iapplication.h"
 #include "vstgui/standalone/iuidescwindow.h"
 #include "vstgui/standalone/helpers/appdelegate.h"
@@ -30,7 +10,7 @@ class MyApplication : public DelegateAdapter, public WindowListenerAdapter
 {
 public:
 	MyApplication ()
-	: DelegateAdapter ({"Sample App", "1.0.0", "com.mycompany.sampleapp"})
+	: DelegateAdapter ({"simple_standalone", "1.0.0", "com.mycompany.simple_standalone"})
 	{}
 	
 	void finishLaunching () override
@@ -55,26 +35,7 @@ public:
 	{
 		IApplication::instance ().quit ();
 	}
-
+	
 };
 
 static Init gAppDelegate (std::make_shared<MyApplication> ());
-
-@endcode
-
-@section standalone_supported_os Supported operating systems
-
-- Microsoft Windows
-	- minimum supported version : 8.1
-- Apple macOS
-	- minimum supported version : 10.10
-
-@section standalone_compiler_requirements Compiler requirements
-
-To compile the library you need a compiler supporting most of c++14.
-
-As of this writing these compilers work (others not tested):
-- Visual Studio 15
-- Xcode 7.3
-
-*/
