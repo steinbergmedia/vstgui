@@ -53,7 +53,7 @@ struct Config
 	/** Filename of the UIDescription xml file */
 	UTF8String uiDescFileName;
 
-	/** View name to show in the window */
+	/** Template name of the view in the uidesc file to show in the window */
 	UTF8String viewName;
 
 	/** Window configuration */

@@ -869,6 +869,8 @@ bool WindowController::handleCommand (const Command& command)
 //------------------------------------------------------------------------
 namespace UIDesc {
 
+static const UTF8StringView staticXmlIdentifier ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+
 //------------------------------------------------------------------------
 WindowPtr makeWindow (const Config& config)
 {
@@ -877,8 +879,7 @@ WindowPtr makeWindow (const Config& config)
 
 	auto controller = std::make_shared<WindowController> ();
 
-	if (UTF8StringView (config.uiDescFileName)
-	        .startsWith ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"))
+	if (UTF8StringView (config.uiDescFileName).startsWith (staticXmlIdentifier))
 	{
 		auto window = IApplication::instance ().createWindow (config.windowConfig, controller);
 		if (!window)

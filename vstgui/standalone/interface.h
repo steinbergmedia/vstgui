@@ -11,7 +11,9 @@ public:
 
 	Interface () = default;
 	Interface (const Interface&) = delete;
+	Interface (Interface&&) = delete;
 	Interface& operator= (const Interface&) = delete;
+	Interface& operator= (Interface&&) = delete;
 
 	template <typename T>
 	const T* dynamicCast () const
@@ -24,7 +26,12 @@ public:
 	{
 		return dynamic_cast<T*> (this);
 	}
+
 };
+
+//------------------------------------------------------------------------
+template<typename Iface, typename T>
+inline const Iface& asInterface (T* obj) { return *static_cast<Iface*> (obj); }
 
 //------------------------------------------------------------------------
 } // VSTGUI

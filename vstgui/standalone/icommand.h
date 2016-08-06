@@ -52,12 +52,12 @@ static constexpr IdStringPtr Windows = "Windows";
 namespace CommandName {
 
 static constexpr IdStringPtr About = "About";
-static constexpr IdStringPtr Preferences = "Preferences";
+static constexpr IdStringPtr Preferences = "Preferences...";
 static constexpr IdStringPtr Quit = "Quit";
 static constexpr IdStringPtr New = "New";
-static constexpr IdStringPtr Open = "Open";
+static constexpr IdStringPtr Open = "Open...";
 static constexpr IdStringPtr Save = "Save";
-static constexpr IdStringPtr SaveAs = "Save As";
+static constexpr IdStringPtr SaveAs = "Save As...";
 static constexpr IdStringPtr CloseWindow = "Close Window";
 static constexpr IdStringPtr Undo = "Undo";
 static constexpr IdStringPtr Redo = "Redo";

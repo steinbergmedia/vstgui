@@ -34,10 +34,10 @@ struct ValueCalls
 		return c;
 	}
 
-	static ValueCalls onAction (const Call& call)
+	static ValueCalls onAction (Call&& call)
 	{
 		ValueCalls c;
-		c.onEndEditCall = [call] (IValue& v) {
+		c.onEndEditCall = [call = std::move (call)] (IValue& v) {
 			if (v.getValue () > 0.5)
 				call (v);
 		};
@@ -54,7 +54,7 @@ public:
 	ValuePtr addValue (ValuePtr value, const ValueCalls& callbacks = {});
 	ValuePtr addValue (ValuePtr value, ValueCalls&& callbacks);
 
-	ValuePtr getValue (const UTF8String& valueID) const;
+	ValuePtr getValue (UTF8StringView valueID) const;
 
 private:
 	const ValueList& getValues () const override { return valueList; }
@@ -98,7 +98,7 @@ inline ValuePtr ModelBindingCallbacks::addValue (ValuePtr value, ValueCalls&& ca
 }
 
 //------------------------------------------------------------------------
-inline ValuePtr ModelBindingCallbacks::getValue (const UTF8String& valueID) const
+inline ValuePtr ModelBindingCallbacks::getValue (UTF8StringView valueID) const
 {
 	for (auto& v : valueList)
 	{

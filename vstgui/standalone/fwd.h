@@ -11,6 +11,7 @@ class IWindowController;
 class IWindowListener;
 class IPreference;
 class ICommandHandler;
+class IMenuBuilder;
 class IValue;
 class IStepValue;
 class IValueListener;

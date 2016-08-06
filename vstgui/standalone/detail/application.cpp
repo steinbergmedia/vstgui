@@ -5,6 +5,7 @@
 #include "../iapplication.h"
 #include "../icommand.h"
 #include "../iwindowcontroller.h"
+#include "../imenubuilder.h"
 #include "shareduiresources.h"
 #include "window.h"
 
@@ -67,6 +68,7 @@ private:
 	IPreference* preferences {nullptr};
 	PlatformCallbacks platform;
 	CommandList commandList;
+	CommandList menuCommandList;
 	CommandLineArguments commandLineArguments;
 	UTF8String appPath;
 	bool inQuit {false};
@@ -192,6 +194,48 @@ bool Application::canQuit ()
 //------------------------------------------------------------------------
 const Application::CommandList& Application::getCommandList ()
 {
+	if (auto menuBuilder = delegate->dynamicCast<IMenuBuilder> ())
+	{
+		menuCommandList.clear ();
+		for (auto& catList : commandList)
+		{
+			if (catList.second.empty ())
+				continue;
+			if (!menuBuilder->showCommandGroupInMenu (asInterface<IApplication> (this),
+			                                          catList.first))
+				continue;
+			auto catListCopy = catList;
+			for (auto it = catListCopy.second.begin (); it != catListCopy.second.end ();)
+			{
+				auto current = it++;
+				if (!menuBuilder->showCommandInMenu (asInterface<IApplication> (this), *current))
+					it = catListCopy.second.erase (current);
+			}
+			if (catListCopy.second.empty ())
+				continue;
+			if (auto func = menuBuilder->getCommandGroupSortFunction (
+			        asInterface<IApplication> (this), catListCopy.first))
+			{
+				std::sort (catListCopy.second.begin (), catListCopy.second.end (),
+				           [&] (const CommandWithKey& lhs, const CommandWithKey& rhs) {
+					           return func (lhs.name, rhs.name);
+					       });
+			}
+			for (auto it = ++catListCopy.second.begin (); it != catListCopy.second.end (); ++it)
+			{
+				if (menuBuilder->prependMenuSeparator (asInterface<IApplication> (this), *it))
+				{
+					CommandWithKey separator {};
+					separator.name = CommandName::MenuSeparator;
+					it = catListCopy.second.emplace (it, std::move (separator));
+					++it;
+				}
+			}
+
+			menuCommandList.push_back (catListCopy);
+		}
+		return menuCommandList;
+	}
 	return commandList;
 }
 

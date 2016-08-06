@@ -35,7 +35,7 @@ class IDelegate : public Interface
 public:
 	/** Called when the application has finished launching. */
 	virtual void finishLaunching () = 0;
-	/** Called when the application is terminated. */
+	/** Called when the application is terminating. */
 	virtual void onQuit () = 0;
 	/** Called to check if it is currently possible to quit. */
 	virtual bool canQuit () = 0;

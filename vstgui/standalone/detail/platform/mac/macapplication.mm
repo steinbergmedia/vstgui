@@ -20,6 +20,7 @@ static_assert (false, "Need newer clang compiler!");
 }
 @property NSArray<NSString*>* _Nullable startupOpenFiles;
 @property BOOL hasFinishedLaunching;
+@property BOOL hasTriggeredSetupMainMenu;
 @end
 
 using namespace VSTGUI::Standalone;
@@ -304,6 +305,19 @@ static const CommandWithKeyList* _Nullable getCommandList (const char* _Nonnull 
 }
 
 //------------------------------------------------------------------------
+- (void)triggerSetupMainMenu
+{
+	if (self.hasTriggeredSetupMainMenu)
+		return;
+	self.hasTriggeredSetupMainMenu = YES;
+	dispatch_after (dispatch_time (DISPATCH_TIME_NOW, (int64_t) (0.1 * NSEC_PER_SEC)),
+	                dispatch_get_main_queue (), ^{
+		              [self setupMainMenu];
+		              self.hasTriggeredSetupMainMenu = NO;
+		            });
+}
+
+//------------------------------------------------------------------------
 - (nonnull NSAlert*)createAlert:(const AlertBoxConfig&)config
 {
 	NSAlert* alert = [NSAlert new];
@@ -421,7 +435,7 @@ static const CommandWithKeyList* _Nullable getCommandList (const char* _Nonnull 
 	callbacks.quit = [] () {
 		[NSApp performSelector:@selector (terminate:) withObject:nil afterDelay:0];
 	};
-	callbacks.onCommandUpdate = [Self] () { [Self setupMainMenu]; };
+	callbacks.onCommandUpdate = [Self] () { [Self triggerSetupMainMenu]; };
 	callbacks.showAlert = [Self] (const AlertBoxConfig& config) { return [Self showAlert:config]; };
 	callbacks.showAlertForWindow = [Self] (const AlertBoxForWindowConfig& config) {
 		return [Self showAlertForWindow:config];

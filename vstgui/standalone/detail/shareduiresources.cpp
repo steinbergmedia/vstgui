@@ -9,6 +9,7 @@
 #include "../ialertbox.h"
 #include "../iappdelegate.h"
 #include "../iapplication.h"
+#include "../ipreference.h"
 #include <unordered_map>
 
 //------------------------------------------------------------------------
@@ -214,6 +215,9 @@ void cleanupSharedUIResources ()
 
 #if VSTGUI_LIVE_EDITING
 //------------------------------------------------------------------------
+static constexpr auto UIDescPathKey = "VSTGUI::Standalone|Debug|UIDescPath";
+
+//------------------------------------------------------------------------
 UIDescCheckFilePathResult checkAndUpdateUIDescFilePath (UIDescription& uiDesc, CFrame* _frame,
                                                         UTF8StringPtr notFoundText)
 {
@@ -236,6 +240,8 @@ UIDescCheckFilePathResult checkAndUpdateUIDescFilePath (UIDescription& uiDesc, C
 		return UIDescCheckFilePathResult::cancel;
 	}
 	auto fs = owned (CNewFileSelector::create (frame, CNewFileSelector::kSelectFile));
+	if (auto initPath = IApplication::instance ().getPreferences ().get (UIDescPathKey))
+		fs->setInitialDirectory (*initPath);
 	fs->setDefaultExtension (CFileExtension ("UIDescription File", "uidesc"));
 	if (fs->runModal ())
 	{
@@ -243,9 +249,11 @@ UIDescCheckFilePathResult checkAndUpdateUIDescFilePath (UIDescription& uiDesc, C
 		{
 			return UIDescCheckFilePathResult::cancel;
 		}
-		uiDesc.setFilePath (fs->getSelectedFile (0));
+		auto path = fs->getSelectedFile (0);
+		uiDesc.setFilePath (path);
 		auto settings = uiDesc.getCustomAttributes ("UIDescFilePath", true);
 		settings->setAttribute ("path", uiDesc.getFilePath ());
+		IApplication::instance ().getPreferences ().set (UIDescPathKey, path);
 		return UIDescCheckFilePathResult::newPathSet;
 	}
 	return UIDescCheckFilePathResult::cancel;
@@ -258,6 +266,8 @@ bool initUIDescAsNew (UIDescription& uiDesc, CFrame* _frame)
 	if (!frame)
 		frame = makeOwned<CFrame> (CRect (), nullptr);
 	auto fs = owned (CNewFileSelector::create (frame, CNewFileSelector::kSelectSaveFile));
+	if (auto initPath = IApplication::instance ().getPreferences ().get (UIDescPathKey))
+		fs->setInitialDirectory (*initPath);
 	fs->setDefaultSaveName (uiDesc.getFilePath ());
 	fs->setDefaultExtension (CFileExtension ("UIDescription File", "uidesc"));
 	fs->setTitle ("Save UIDescription File");
@@ -271,6 +281,7 @@ bool initUIDescAsNew (UIDescription& uiDesc, CFrame* _frame)
 		uiDesc.setFilePath (path);
 		auto settings = uiDesc.getCustomAttributes ("UIDescFilePath", true);
 		settings->setAttribute ("path", path);
+		IApplication::instance ().getPreferences ().set (UIDescPathKey, path);
 		return true;
 	}
 	return false;

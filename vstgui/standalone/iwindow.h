@@ -20,7 +20,7 @@ namespace Standalone {
  *
  *	There can be as many document windows visible as you wish, but only one popup can be visible at
  *	a time.
- *	Popup windows will be closed when they get deactivated.
+ *	A popup window will automatically close if it is deactivated.
  *
  */
 enum class WindowType
@@ -111,22 +111,35 @@ struct WindowConfiguration
 class IWindow : public Interface
 {
 public:
+	/** Get the window controller. Can be nullptr. */
 	virtual const WindowControllerPtr& getController () const = 0;
 
+	/** Get the size of the client area. */
 	virtual CPoint getSize () const = 0;
+	/** Get the position in global coordinates. */
 	virtual CPoint getPosition () const = 0;
+	/** Get the content scale factor. */
 	virtual double getScaleFactor () const = 0;
+	/** Get the rect of the current focus view in frame relative coordinates. */
 	virtual CRect getFocusViewRect () const = 0;
 
+	/** Set the size of the client area. */
 	virtual void setSize (const CPoint& newSize) = 0;
+	/** Set the position in global coordinates. */
 	virtual void setPosition (const CPoint& newPosition) = 0;
+	/** Set the window title. */
 	virtual void setTitle (const UTF8String& newTitle) = 0;
+	/** Set content view. */
 	virtual void setContentView (const SharedPointer<CFrame>& frame) = 0;
 
+	/** Show the window. */
 	virtual void show () = 0;
+	/** Hide the window. */
 	virtual void hide () = 0;
+	/** Close the window. */
 	virtual void close () = 0;
 
+	/** Activate the window. */
 	virtual void activate () = 0;
 
 	/** Register a window listener.
@@ -136,7 +149,7 @@ public:
 	 *	Listeners are automatically removed when the window is closed.
 	 */
 	virtual void registerWindowListener (IWindowListener* listener) = 0;
-	/** Unregister a window listener */
+	/** Unregister a window listener. */
 	virtual void unregisterWindowListener (IWindowListener* listener) = 0;
 };
 
