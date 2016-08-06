@@ -40,6 +40,7 @@
 #if WINDOWS
 
 #include "../../cbitmap.h"
+#include "../../optional.h"
 
 #include <windows.h>
 
@@ -49,6 +50,8 @@
 interface ID2D1Factory;
 interface IDWriteFactory;
 interface IWICImagingFactory;
+
+struct VstKeyCode;
 
 namespace VSTGUI {
 
@@ -71,6 +74,7 @@ extern void unuseD2D ();
 extern IDWriteFactory* getDWriteFactory ();
 extern CDrawContext* createDrawContext (HWND window, HDC device, const CRect& surfaceRect);
 extern void useD2DHardwareRenderer (bool state);
+extern Optional<VstKeyCode> keyMessageToKeyCode (WPARAM wParam, LPARAM lParam);
 
 /// @cond ignore
 class GDIPlusGlobals : public CBaseObject

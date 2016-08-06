@@ -217,11 +217,10 @@ static BOOL VSTGUI_NSTextField_DoCommandBySelector (id self, SEL _cmd, NSControl
 	{
 		VstKeyCode keyCode = {0};
 		keyCode.virt = VKEY_RETURN;
-		if (!tec->platformOnKeyDown (keyCode))
+		if (tec->platformOnKeyDown (keyCode))
 		{
-			tec->platformLooseFocus (true);
+			return YES;
 		}
-		return YES;
 	}
 	else if (commandSelector == @selector (insertTab:))
 	{
@@ -246,11 +245,10 @@ static BOOL VSTGUI_NSTextField_DoCommandBySelector (id self, SEL _cmd, NSControl
 	{
 		VstKeyCode keyCode = {0};
 		keyCode.virt = VKEY_ESCAPE;
-		if (!tec->platformOnKeyDown (keyCode))
+		if (tec->platformOnKeyDown (keyCode))
 		{
-			tec->platformLooseFocus (false);
+			return YES;
 		}
-		return YES; // return YES, otherwise it beeps !!!
 	}
 	return NO;
 }

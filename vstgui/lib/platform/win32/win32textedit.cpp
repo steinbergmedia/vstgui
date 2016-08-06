@@ -212,23 +212,11 @@ LONG_PTR WINAPI Win32TextEdit::procEdit (HWND hwnd, UINT message, WPARAM wParam,
 			{
 				if (win32TextEdit->textEdit)
 				{
-					if (wParam == VK_RETURN)
+					if (auto keyCode = keyMessageToKeyCode (wParam, lParam))
 					{
-						win32TextEdit->textEdit->platformLooseFocus (true);
-						return 0;
-					}
-					else if (wParam == VK_TAB)
-					{
-						VstKeyCode keyCode = {0};
-						keyCode.virt = VKEY_TAB;
-						keyCode.modifier = GetKeyState (VK_SHIFT) < 0 ? MODIFIER_SHIFT : 0;
-						if (win32TextEdit->textEdit->platformOnKeyDown (keyCode))
+						// for now only dispatch virtual keys
+						if (keyCode->character == 0 && win32TextEdit->textEdit->platformOnKeyDown (*keyCode))
 							return 0;
-					}
-					else if (wParam == VK_ESCAPE)
-					{
-						win32TextEdit->textEdit->platformLooseFocus (false);
-						return 0;
 					}
 				}
 				break;
