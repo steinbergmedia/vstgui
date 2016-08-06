@@ -71,6 +71,15 @@ UTF8String::UTF8String (const UTF8String& other)
 }
 
 //-----------------------------------------------------------------------------
+UTF8String& UTF8String::operator= (const UTF8String& str)
+{
+	string = str.string;
+	platformString = str.platformString;
+	return *this;
+}
+
+
+//-----------------------------------------------------------------------------
 UTF8String::UTF8String (UTF8String&& other) noexcept
 {
 	*this = std::move (other);

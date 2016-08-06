@@ -36,6 +36,7 @@
 #define __cstring__
 
 #include "vstguifwd.h"
+#include "optional.h"
 #include "platform/iplatformstring.h"
 #include <string>
 #include <sstream>
@@ -78,8 +79,6 @@ private:
 /**
  *  @brief holds an UTF8 encoded string and a platform representation of it
  *
- *	You should currently don't use this, it's used internally.
- *
  */
 //-----------------------------------------------------------------------------
 class UTF8String
@@ -95,7 +94,7 @@ public:
 	UTF8String (UTF8String&& other) noexcept;
 	UTF8String (StringType&& str) noexcept;
 
-	UTF8String& operator= (const UTF8String& other) = default;
+	UTF8String& operator= (const UTF8String& other);
 	UTF8String& operator= (const StringType& other);
 	UTF8String& operator= (UTF8String&& other) noexcept;
 	UTF8String& operator= (StringType&& str) noexcept;
@@ -190,18 +189,26 @@ namespace String {
 #endif
 
 //-----------------------------------------------------------------------------
-/** @brief a view on an UTF-8 String
+/** @brief a view on a null terminated UTF-8 String
 	
 	It does not copy the string.
 	It's allowed to put null pointers into it.
-	A null pointer is treaded different than an empty string.
+	A null pointer is treaded different than an empty string as they are not equal and the byte
+	count of a null pointer is zero while the empty string has a byte count of one.
 */
 //-----------------------------------------------------------------------------
 class UTF8StringView
 {
 public:
+	UTF8StringView () : str (nullptr), byteCount (0) {}
 	UTF8StringView (const UTF8StringPtr string) : str (string) {}
-	explicit UTF8StringView (const UTF8String& string) : str (string.data ()) {}
+	UTF8StringView (const UTF8String& string) : str (string.data ()), byteCount (string.length () + 1) {}
+	UTF8StringView (const std::string& string) : str (string.data ()), byteCount (string.size () + 1) {}
+
+	UTF8StringView (const UTF8StringView& other) noexcept;
+	UTF8StringView& operator= (const UTF8StringView& other) noexcept;
+	UTF8StringView (UTF8StringView&& other) noexcept = default;
+	UTF8StringView& operator= (UTF8StringView&& other) = default;
 
 	/** calculates the bytes used by this string, including null-character */
 	size_t calculateByteCount () const;
@@ -227,13 +234,16 @@ public:
 	/** converts the string to an integer */
 	int64_t toInteger () const;
 
+	template<typename T>
+	Optional<T> toNumber () const;
+
 	bool operator== (const UTF8StringPtr otherString) const;
 	bool operator!= (const UTF8StringPtr otherString) const;
 	operator const UTF8StringPtr () const;
 //-----------------------------------------------------------------------------
 private:
-	UTF8StringView () : str (0) {}
-	const UTF8StringPtr str;
+	UTF8StringPtr str;
+	mutable Optional<size_t> byteCount;
 };
 
 //-----------------------------------------------------------------------------
@@ -339,6 +349,21 @@ protected:
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
+inline UTF8StringView::UTF8StringView (const UTF8StringView& other) noexcept
+{
+	*this = other;
+}
+
+//------------------------------------------------------------------------
+inline UTF8StringView& UTF8StringView::operator= (const UTF8StringView& other) noexcept
+{
+	str = other.str;
+	if (other.byteCount)
+		byteCount = makeOptional (*other.byteCount);
+	return *this;
+}
+
+//------------------------------------------------------------------------
 inline size_t UTF8StringView::calculateCharacterCount () const
 {
 	size_t count = 0;
@@ -357,13 +382,15 @@ inline size_t UTF8StringView::calculateCharacterCount () const
 //-----------------------------------------------------------------------------
 inline size_t UTF8StringView::calculateByteCount () const
 {
-	return str ? std::strlen (str) + 1 : 0;
+	if (!byteCount)
+		byteCount = makeOptional<size_t> (str ? std::strlen (str) + 1 : 0);
+	return *byteCount;
 }
 
 //-----------------------------------------------------------------------------
 inline bool UTF8StringView::contains (const UTF8StringPtr subString) const
 {
-	return (!str || !subString || std::strstr (str, subString) == 0) ? false : true;
+	return (!str || !subString || std::strstr (str, subString) == nullptr) ? false : true;
 }
 
 //-----------------------------------------------------------------------------
@@ -408,11 +435,23 @@ inline float UTF8StringView::toFloat (uint32_t precision) const
 //------------------------------------------------------------------------
 inline int64_t UTF8StringView::toInteger () const
 {
+	if (auto number = toNumber<int64_t> ())
+		return *number;
+	return 0;
+}
+
+//------------------------------------------------------------------------
+template<typename T>
+inline Optional<T> UTF8StringView::toNumber () const
+{
+	static_assert (std::is_arithmetic<T>::value, "only arithmetic types allowed");
 	std::istringstream sstream (str);
 	sstream.imbue (std::locale::classic ());
-	int64_t result;
-	sstream >> result;
-	return result;
+	T number {};
+	sstream >> number;
+	if (!sstream.fail ())
+		return makeOptional (number);
+	return {};
 }
 
 //-----------------------------------------------------------------------------
