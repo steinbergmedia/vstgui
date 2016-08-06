@@ -25,20 +25,20 @@ namespace Platform {
 namespace Win32 {
 
 using namespace VSTGUI::Standalone;
-using VSTGUI::Standalone::Detail::IApplicationPlatformAccess;
+using VSTGUI::Standalone::Detail::IPlatformApplication;
 using VSTGUI::Standalone::Detail::CommandWithKey;
 using VSTGUI::Standalone::Detail::IPlatformWindowAccess;
 using CommandWithKeyList =
-    VSTGUI::Standalone::Detail::IApplicationPlatformAccess::CommandWithKeyList;
+    VSTGUI::Standalone::Detail::IPlatformApplication::CommandWithKeyList;
 using VSTGUI::Standalone::Detail::PlatformCallbacks;
 
 //------------------------------------------------------------------------
 static IWin32Window* toWin32Window (const VSTGUI::Standalone::WindowPtr& window)
 {
-	auto platformWindow = window->dynamicCast<Detail::IPlatformWindowAccess> ();
+	auto platformWindow = dynamicPtrCast<Detail::IPlatformWindowAccess> (window);
 	if (!platformWindow)
 		return nullptr;
-	return platformWindow->getPlatformWindow ()->dynamicCast<IWin32Window> ();
+	return staticPtrCast<IWin32Window> (platformWindow->getPlatformWindow ()).get ();
 }
 
 //------------------------------------------------------------------------
@@ -109,10 +109,7 @@ AlertResult Application::showAlert (const AlertBoxConfig& config)
 			if (auto winWindow = toWin32Window (w))
 				winWindow->setModalWindow (window);
 		}
-		auto platformWindow = window->dynamicCast<Detail::IPlatformWindowAccess> ()
-		                          ->getPlatformWindow ()
-		                          ->dynamicCast<IWindow> ();
-		platformWindow->center ();
+		winModalWindow->center ();
 
 		window->show ();
 		MSG msg;
@@ -143,7 +140,7 @@ void Application::showAlertForWindow (const AlertBoxForWindowConfig& config)
 		    Call::later ([callback, r, parentWindow] () {
 			    callback (r);
 			    if (auto winWindow = toWin32Window (parentWindow))
-				    winWindow->dynamicCast<IWindow> ()->activate ();
+				    winWindow->activate ();
 			});
 		}))
 	{

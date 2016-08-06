@@ -52,7 +52,7 @@ public:
 };
 
 //------------------------------------------------------------------------
-/** Configuration for a UIDescription window
+/** Configuration for an UIDescription window
  *
  *	@ingroup standalone
  */
@@ -75,7 +75,7 @@ struct Config
 	 */
 	ModelBindingPtr modelBinding;
 
-	/** Optional UI customization
+	/** %Optional UI customization
 	 *
 	 *	Additionally to the ICustomization features, if this object implements the IWindowController
 	 *	interface, all window controller functions will be dispatched to this object.

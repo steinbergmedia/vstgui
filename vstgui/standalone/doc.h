@@ -4,6 +4,10 @@
 
 @defgroup standalone Standalone Library
 
+List of classes for the standalone library.
+
+See @ref standalone_library "this page" for an introduction.
+
 @page standalone_library Standalone Library
 
 - @ref standalone_about @n
@@ -13,6 +17,7 @@
 @section standalone_about About
 
 The standalone library adds a minimal set of classes to write simple cross-platform applications.
+See @ref standalone "this page" for a list of classes.
 
 Here's a minimal sample just showing one window:
 
@@ -58,9 +63,14 @@ public:
 
 };
 
-static Init gAppDelegate (std::make_shared<MyApplication> ());
+static Init gAppDelegate (std::make_unique<MyApplication> ());
 
 @endcode
+
+Adding a real user interface to the window is done via a "What You See Is What You Get" editor
+at runtime as known from the VST3 inline editor. Bindings are done via the
+VSTGUI::Standalone::IModelBinding interface.
+
 
 @section standalone_supported_os Supported operating systems
 
@@ -71,10 +81,22 @@ static Init gAppDelegate (std::make_shared<MyApplication> ());
 
 @section standalone_compiler_requirements Compiler requirements
 
-To compile the library you need a compiler supporting most of c++14.
+To compile and use the library you need a compiler supporting most of c++14.
 
-As of this writing these compilers work (others not tested):
+As of this writing the following compilers work (others not tested):
 - Visual Studio 15
 - Xcode 7.3
 
 */
+
+//------------------------------------------------------------------------
+namespace VSTGUI {
+/** %Standalone Library
+ *
+ *	See @ref standalone_library "this page"
+ */
+namespace Standalone {
+	
+//------------------------------------------------------------------------
+} // Standalone
+} // VSTGUI

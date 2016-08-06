@@ -176,8 +176,8 @@ WindowPtr createAlertBox (const AlertBoxConfig& alertBoxConfig, const AlertBoxCa
 	config.windowConfig.style.transparent ().movableByWindowBackground ();
 	config.viewName = "AlertBox";
 	config.uiDescFileName = xmlText;
-	config.modelBinding = std::static_pointer_cast<UIDesc::IModelBinding> (controller);
-	config.customization = std::static_pointer_cast<UIDesc::ICustomization> (controller);
+	config.modelBinding = staticPtrCast<UIDesc::IModelBinding> (controller);
+	config.customization = staticPtrCast<UIDesc::ICustomization> (controller);
 	auto window = UIDesc::makeWindow (config);
 	controller->setWindow (window);
 	return window;

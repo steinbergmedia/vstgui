@@ -12,7 +12,7 @@ namespace Standalone {
 namespace Application {
 
 //------------------------------------------------------------------------
-/** Application info.
+/** %Application info.
  *
  *	@ingroup standalone
  */
@@ -27,7 +27,7 @@ struct Info
 };
 
 //------------------------------------------------------------------------
-/** Application delegate interface.
+/** %Application delegate interface.
  *
  *	Every VSTGUI application needs a delegate. It's a global instance which handles
  *	custom application behaviour.
@@ -73,7 +73,7 @@ public:
 //------------------------------------------------------------------------
 struct Init
 {
-	explicit Init (const DelegatePtr& delegate);
+	explicit Init (DelegatePtr&& delegate);
 };
 
 //------------------------------------------------------------------------

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../../../fwd.h"
-#include "../../../interface.h"
+#include "../iplatformwindow.h"
 
 #ifndef _WINDEF_
 struct HWND__;
@@ -15,7 +15,7 @@ namespace Platform {
 namespace Win32 {
 
 //------------------------------------------------------------------------
-class IWin32Window : public Interface
+class IWin32Window : public Platform::IWindow
 {
 public:
 	virtual void updateCommands () const = 0;

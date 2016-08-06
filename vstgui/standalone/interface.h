@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 //------------------------------------------------------------------------
 namespace VSTGUI {
 
@@ -16,22 +18,55 @@ public:
 	Interface& operator= (Interface&&) = delete;
 
 	template <typename T>
-	const T* dynamicCast () const
+	const auto dynamicCast () const
 	{
 		return dynamic_cast<const T*> (this);
 	}
 
 	template <typename T>
-	T* dynamicCast ()
+	auto dynamicCast ()
 	{
 		return dynamic_cast<T*> (this);
 	}
-
 };
 
 //------------------------------------------------------------------------
-template<typename Iface, typename T>
-inline const Iface& asInterface (T* obj) { return *static_cast<Iface*> (obj); }
+using InterfacePtr = std::shared_ptr<Interface>;
+
+//------------------------------------------------------------------------
+template <typename Iface, typename T>
+inline auto dynamicPtrCast (std::shared_ptr<T>& obj)
+{
+	return std::dynamic_pointer_cast<Iface> (obj);
+}
+
+//------------------------------------------------------------------------
+template <typename Iface, typename T>
+inline const auto dynamicPtrCast (const std::shared_ptr<T>& obj)
+{
+	return std::dynamic_pointer_cast<Iface> (obj);
+}
+
+//------------------------------------------------------------------------
+template <typename Iface, typename T>
+inline auto staticPtrCast (std::shared_ptr<T>& obj)
+{
+	return std::static_pointer_cast<Iface> (obj);
+}
+
+//------------------------------------------------------------------------
+template <typename Iface, typename T>
+inline const auto staticPtrCast (const std::shared_ptr<T>& obj)
+{
+	return std::static_pointer_cast<Iface> (obj);
+}
+
+//------------------------------------------------------------------------
+template <typename Iface, typename T>
+inline const auto& asInterface (const T& obj)
+{
+	return static_cast<const Iface&> (obj);
+}
 
 //------------------------------------------------------------------------
 } // VSTGUI

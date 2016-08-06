@@ -113,7 +113,7 @@ static LRESULT CALLBACK childWindowProc (HWND hWnd, UINT message, WPARAM wParam,
                                          UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
 
 //------------------------------------------------------------------------
-class Window : public IWindow, public IWin32Window, public std::enable_shared_from_this<Window>
+class Window : public IWin32Window, public std::enable_shared_from_this<Window>
 {
 public:
 	Window () = default;
@@ -316,7 +316,7 @@ void Window::setNewDPI (uint32_t newDpi)
 
 //------------------------------------------------------------------------
 static HMENU createSubMenu (const UTF8String& group,
-                            const Detail::IApplicationPlatformAccess::CommandWithKeyList& commands)
+                            const Detail::IPlatformApplication::CommandWithKeyList& commands)
 {
 	// TODO: cleanup memory leaks
 	HMENU menu = CreateMenu ();
@@ -408,8 +408,7 @@ void Window::handleMenuCommand (const UTF8String& group, UINT index)
 					delegate->handleCommand (*it);
 				else
 				{
-					if (auto commandHandler = Detail::getApplicationPlatformAccess ()
-					                              ->dynamicCast<ICommandHandler> ())
+					if (auto commandHandler = Detail::getApplicationPlatformAccess ())
 					{
 						if (commandHandler->canHandleCommand (*it))
 							commandHandler->handleCommand (*it);
@@ -634,8 +633,7 @@ auto Window::handleCommand (const WORD& cmdID) -> HandleCommandResult
 				}
 				else
 				{
-					if (auto commandHandler = Detail::getApplicationPlatformAccess ()
-					                              ->dynamicCast<ICommandHandler> ())
+					if (auto commandHandler = Detail::getApplicationPlatformAccess ())
 					{
 						if (commandHandler->canHandleCommand (e))
 						{

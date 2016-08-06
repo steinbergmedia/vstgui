@@ -11,10 +11,10 @@ namespace Detail {
 WindowPtr makeWindow (const WindowConfiguration& config, const WindowControllerPtr& controller);
 
 //------------------------------------------------------------------------
-class IPlatformWindowAccess : public Interface
+class IPlatformWindowAccess : public IWindow
 {
 public:
-	virtual Interface* getPlatformWindow () const = 0;
+	virtual InterfacePtr getPlatformWindow () const = 0;
 };
 
 //------------------------------------------------------------------------

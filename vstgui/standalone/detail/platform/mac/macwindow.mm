@@ -66,7 +66,7 @@ namespace Platform {
 namespace Mac {
 
 //------------------------------------------------------------------------
-class Window : public IWindow, public IMacWindow
+class Window : public IMacWindow
 {
 public:
 	bool init (const WindowConfiguration& config, IWindowDelegate& delegate);

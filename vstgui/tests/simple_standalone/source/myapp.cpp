@@ -38,4 +38,4 @@ public:
 	
 };
 
-static Init gAppDelegate (std::make_shared<MyApplication> ());
+static Init gAppDelegate (std::make_unique<MyApplication> ());

@@ -1,6 +1,7 @@
 #pragma once
 
 #import "../../../interface.h"
+#import "../iplatformwindow.h"
 
 @class NSWindow;
 
@@ -11,7 +12,7 @@ namespace Platform {
 namespace Mac {
 
 //------------------------------------------------------------------------
-class IMacWindow : public Interface
+class IMacWindow : public IWindow
 {
 public:
 	virtual NSWindow* getNSWindow () const = 0;

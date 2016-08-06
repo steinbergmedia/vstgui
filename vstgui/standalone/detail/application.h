@@ -3,6 +3,7 @@
 #include "../ialertbox.h"
 #include "../iapplication.h"
 #include "../icommand.h"
+#include "../iwindowlistener.h"
 #include "platform/iplatformwindow.h"
 #include "../interface.h"
 #include <functional>
@@ -33,7 +34,7 @@ struct PlatformCallbacks
 };
 
 //------------------------------------------------------------------------
-class IApplicationPlatformAccess : public Interface
+class IPlatformApplication : public IApplication, public IWindowListener, public ICommandHandler
 {
 public:
 	using CommandWithKeyList = std::vector<CommandWithKey>;
@@ -51,20 +52,20 @@ public:
 };
 
 //------------------------------------------------------------------------
-inline IApplicationPlatformAccess* getApplicationPlatformAccess ()
+inline IPlatformApplication* getApplicationPlatformAccess ()
 {
-	return IApplication::instance ().dynamicCast<IApplicationPlatformAccess> ();
+	return static_cast<IPlatformApplication*> (&IApplication::instance ());
 }
 
 //------------------------------------------------------------------------
 class PreventPopupClose
 {
 public:
-	PreventPopupClose (IWindow* window);
+	PreventPopupClose (IWindow& window);
 	~PreventPopupClose () noexcept;
 
 private:
-	Platform::IWindow* platformWindow {nullptr};
+	std::shared_ptr<Platform::IWindow> platformWindow;
 };
 
 //------------------------------------------------------------------------

@@ -25,11 +25,10 @@ static_assert (false, "Need newer clang compiler!");
 
 using namespace VSTGUI::Standalone;
 using VSTGUI::Standalone::Platform::Mac::IMacWindow;
-using VSTGUI::Standalone::Detail::IApplicationPlatformAccess;
+using VSTGUI::Standalone::Detail::IPlatformApplication;
 using VSTGUI::Standalone::Detail::CommandWithKey;
 using VSTGUI::Standalone::Detail::IPlatformWindowAccess;
-using CommandWithKeyList =
-    VSTGUI::Standalone::Detail::IApplicationPlatformAccess::CommandWithKeyList;
+using CommandWithKeyList = VSTGUI::Standalone::Detail::IPlatformApplication::CommandWithKeyList;
 using VSTGUI::Standalone::Detail::PlatformCallbacks;
 
 //------------------------------------------------------------------------
@@ -82,13 +81,8 @@ static const CommandWithKeyList* _Nullable getCommandList (const char* _Nonnull 
 //------------------------------------------------------------------------
 - (IBAction)processCommand:(nullable id)sender
 {
-	VSTGUICommand* command = [sender representedObject];
-	if (command)
-	{
-		if (auto commandHandler =
-		        IApplication::instance ().getDelegate ().dynamicCast<ICommandHandler> ())
-			commandHandler->handleCommand ([command command]);
-	}
+	if (VSTGUICommand* command = [sender representedObject])
+		Detail::getApplicationPlatformAccess ()->handleCommand ([command command]);
 }
 
 //------------------------------------------------------------------------
@@ -108,9 +102,7 @@ static const CommandWithKeyList* _Nullable getCommandList (const char* _Nonnull 
 	}
 	else if (VSTGUICommand* command = menuItem.representedObject)
 	{
-		if (auto commandHandler =
-		        IApplication::instance ().getDelegate ().dynamicCast<ICommandHandler> ())
-			return commandHandler->canHandleCommand ([command command]);
+		return Detail::getApplicationPlatformAccess ()->canHandleCommand ([command command]);
 	}
 	return NO;
 }
@@ -348,16 +340,12 @@ static const CommandWithKeyList* _Nullable getCommandList (const char* _Nonnull 
 //------------------------------------------------------------------------
 - (void)showAlertForWindow:(const AlertBoxForWindowConfig&)config
 {
-	auto platformWindowAccess = config.window->dynamicCast<IPlatformWindowAccess> ();
+	auto platformWindowAccess = VSTGUI::dynamicPtrCast<IPlatformWindowAccess> (config.window);
 	if (!platformWindowAccess)
 		return;
-	auto platformWindow = platformWindowAccess->getPlatformWindow ();
-	if (!platformWindow)
-		return;
-	auto macWindow = platformWindow->dynamicCast<IMacWindow> ();
+	auto macWindow = VSTGUI::staticPtrCast<IMacWindow> (platformWindowAccess->getPlatformWindow ());
 	if (!macWindow)
 		return;
-
 	if (macWindow->isPopup ())
 	{
 		auto result = [self showAlert:config];
@@ -492,7 +480,7 @@ void* _Nullable gBundleRef = nullptr;
 }
 
 //------------------------------------------------------------------------
-int main (int argc, const char* _Nonnull * _Nonnull argv)
+int main (int argc, const char* _Nonnull* _Nonnull argv)
 {
 	VSTGUI::gBundleRef = CFBundleGetMainBundle ();
 	VSTGUIApplicationDelegate* delegate = [VSTGUIApplicationDelegate new];

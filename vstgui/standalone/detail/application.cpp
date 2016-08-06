@@ -4,8 +4,8 @@
 #include "../iappdelegate.h"
 #include "../iapplication.h"
 #include "../icommand.h"
-#include "../iwindowcontroller.h"
 #include "../imenubuilder.h"
+#include "../iwindowcontroller.h"
 #include "shareduiresources.h"
 #include "window.h"
 
@@ -15,17 +15,14 @@ namespace Standalone {
 namespace Detail {
 
 //------------------------------------------------------------------------
-class Application : public IApplication,
-                    public IWindowListener,
-                    public ICommandHandler,
-                    public IApplicationPlatformAccess
+class Application : public IPlatformApplication
 {
 public:
 	static Application& instance ();
 	Application () = default;
 
 	// IApplication
-	void setDelegate (const Standalone::Application::DelegatePtr& delegate);
+	void setDelegate (Standalone::Application::DelegatePtr&& delegate);
 	IPreference& getPreferences () const override;
 	const CommandLineArguments& getCommandLineArguments () const override;
 	const ISharedUIResources& getSharedUIResources () const override;
@@ -52,7 +49,7 @@ public:
 	bool canHandleCommand (const Command& command) override;
 	bool handleCommand (const Command& command) override;
 
-	// IApplicationPlatformAccess
+	// IPlatformApplication
 	void init (IPreference& preferences, UTF8String&& applicationPath,
 	           IApplication::CommandLineArguments&& cmdArgs,
 	           PlatformCallbacks&& callbacks) override;
@@ -90,6 +87,7 @@ void Application::init (IPreference& preferences, UTF8String&& applicationPath,
 	appPath = std::move (applicationPath);
 	platform = std::move (callbacks);
 
+	// TODO: make command registration configurable
 	registerCommand (Commands::About);
 	registerCommand (Commands::Preferences);
 	registerCommand (Commands::Quit, 'q');
@@ -105,9 +103,9 @@ void Application::init (IPreference& preferences, UTF8String&& applicationPath,
 }
 
 //------------------------------------------------------------------------
-void Application::setDelegate (const Standalone::Application::DelegatePtr& inDelegate)
+void Application::setDelegate (Standalone::Application::DelegatePtr&& inDelegate)
 {
-	delegate = inDelegate;
+	delegate = std::move (inDelegate);
 }
 
 //------------------------------------------------------------------------
@@ -194,27 +192,27 @@ bool Application::canQuit ()
 //------------------------------------------------------------------------
 const Application::CommandList& Application::getCommandList ()
 {
-	if (auto menuBuilder = delegate->dynamicCast<IMenuBuilder> ())
+	if (auto menuBuilder = dynamic_cast<IMenuBuilder*> (delegate.get ()))
 	{
 		menuCommandList.clear ();
 		for (auto& catList : commandList)
 		{
 			if (catList.second.empty ())
 				continue;
-			if (!menuBuilder->showCommandGroupInMenu (asInterface<IApplication> (this),
+			if (!menuBuilder->showCommandGroupInMenu (asInterface<IApplication> (*this),
 			                                          catList.first))
 				continue;
 			auto catListCopy = catList;
 			for (auto it = catListCopy.second.begin (); it != catListCopy.second.end ();)
 			{
 				auto current = it++;
-				if (!menuBuilder->showCommandInMenu (asInterface<IApplication> (this), *current))
+				if (!menuBuilder->showCommandInMenu (asInterface<IApplication> (*this), *current))
 					it = catListCopy.second.erase (current);
 			}
 			if (catListCopy.second.empty ())
 				continue;
 			if (auto func = menuBuilder->getCommandGroupSortFunction (
-			        asInterface<IApplication> (this), catListCopy.first))
+			        asInterface<IApplication> (*this), catListCopy.first))
 			{
 				std::sort (catListCopy.second.begin (), catListCopy.second.end (),
 				           [&] (const CommandWithKey& lhs, const CommandWithKey& rhs) {
@@ -223,7 +221,7 @@ const Application::CommandList& Application::getCommandList ()
 			}
 			for (auto it = ++catListCopy.second.begin (); it != catListCopy.second.end (); ++it)
 			{
-				if (menuBuilder->prependMenuSeparator (asInterface<IApplication> (this), *it))
+				if (menuBuilder->prependMenuSeparator (asInterface<IApplication> (*this), *it))
 				{
 					CommandWithKey separator {};
 					separator.name = CommandName::MenuSeparator;
@@ -283,7 +281,7 @@ bool Application::handleCommand (const Command& command)
 bool Application::doCommandHandling (const Command& command, bool checkOnly)
 {
 	bool result = false;
-	if (auto commandHandler = delegate->dynamicCast<ICommandHandler> ())
+	if (auto commandHandler = dynamic_cast<ICommandHandler*> (delegate.get ()))
 		result = checkOnly ? commandHandler->canHandleCommand (command) :
 		                     commandHandler->handleCommand (command);
 	if (!result)
@@ -340,12 +338,12 @@ bool Application::dontClosePopupOnDeactivation (Platform::IWindow* window)
 }
 
 //------------------------------------------------------------------------
-PreventPopupClose::PreventPopupClose (IWindow* window)
+PreventPopupClose::PreventPopupClose (IWindow& window)
 {
-	if (auto pwa = window->dynamicCast<IPlatformWindowAccess> ())
+	if (auto pwa = static_cast<IPlatformWindowAccess*> (&window))
 	{
-		if ((platformWindow = pwa->getPlatformWindow ()->dynamicCast<Platform::IWindow> ()))
-			popupClosePreventionList.push_back (platformWindow);
+		if ((platformWindow = dynamicPtrCast<Platform::IWindow> (pwa->getPlatformWindow ())))
+			popupClosePreventionList.push_back (platformWindow.get ());
 	}
 }
 
@@ -353,7 +351,7 @@ PreventPopupClose::PreventPopupClose (IWindow* window)
 PreventPopupClose::~PreventPopupClose () noexcept
 {
 	auto it = std::find (popupClosePreventionList.begin (), popupClosePreventionList.end (),
-	                     platformWindow);
+	                     platformWindow.get ());
 	if (it != popupClosePreventionList.end ())
 	{
 		popupClosePreventionList.erase (it);
@@ -374,10 +372,10 @@ IApplication& IApplication::instance ()
 namespace Application {
 
 //------------------------------------------------------------------------
-Init::Init (const DelegatePtr& delegate)
+Init::Init (DelegatePtr&& delegate)
 {
 	CView::kDirtyCallAlwaysOnMainThread = true;
-	Detail::Application::instance ().setDelegate (delegate);
+	Detail::Application::instance ().setDelegate (std::move (delegate));
 }
 
 //------------------------------------------------------------------------

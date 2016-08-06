@@ -58,8 +58,7 @@ PosAndSize positionAndSizeFromString (const UTF8String& str)
 } // anonymous
 
 //------------------------------------------------------------------------
-class Window : public IWindow,
-               public IPlatformWindowAccess,
+class Window : public IPlatformWindowAccess,
                public Platform::IWindowDelegate,
                public IMouseObserver,
                public std::enable_shared_from_this<Window>
@@ -88,7 +87,7 @@ public:
 	void unregisterWindowListener (IWindowListener* listener) override;
 
 	// IPlatformWindowAccess
-	Interface* getPlatformWindow () const override { return platformWindow.get (); }
+	InterfacePtr getPlatformWindow () const override { return platformWindow; }
 
 	// Platform::IWindowDelegate
 	CPoint constraintSize (const CPoint& newSize) override;
@@ -316,7 +315,7 @@ bool Window::canHandleCommand (const Command& command)
 {
 	if (command == Commands::CloseWindow)
 		return controller->canClose (*this);
-	if (auto commandHandler = controller->dynamicCast<ICommandHandler> ())
+	if (auto commandHandler = dynamicPtrCast<ICommandHandler> (controller))
 		return commandHandler->canHandleCommand (command);
 	return false;
 }
@@ -329,7 +328,7 @@ bool Window::handleCommand (const Command& command)
 		close ();
 		return true;
 	}
-	if (auto commandHandler = controller->dynamicCast<ICommandHandler> ())
+	if (auto commandHandler = dynamicPtrCast<ICommandHandler> (controller))
 		return commandHandler->handleCommand (command);
 	return false;
 }

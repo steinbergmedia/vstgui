@@ -113,16 +113,16 @@ public:
 		control->setMin (0.f);
 		control->setMax (1.f);
 		control->setMouseEnabled (value->isActive ());
-		auto stepValue = value->dynamicCast<const IStepValue> ();
+		auto stepValue = dynamicPtrCast<const IStepValue> (value);
 		if (!stepValue)
 			return;
+		const auto& stringConvert = value->getStringConverter ();
 		if (auto menu = dynamic_cast<COptionMenu*> (control))
 		{
 			menu->removeAllEntry ();
 			for (IStepValue::StepType i = 0; i < stepValue->getSteps (); ++i)
 			{
-				auto title =
-				    value->getStringConverter ().valueAsString (stepValue->stepToValue (i));
+				auto title = stringConvert.valueAsString (stepValue->stepToValue (i));
 				menu->addEntry (title);
 			}
 		}
@@ -131,8 +131,7 @@ public:
 			segmentButton->removeAllSegments ();
 			for (IStepValue::StepType i = 0; i < stepValue->getSteps (); ++i)
 			{
-				auto title =
-				    value->getStringConverter ().valueAsString (stepValue->stepToValue (i));
+				auto title = stringConvert.valueAsString (stepValue->stepToValue (i));
 				segmentButton->addSegment ({title});
 			}
 		}
@@ -214,7 +213,7 @@ protected:
 	ControlList controls;
 };
 
-using ValueWrapperPtr = std::shared_ptr<ValueWrapper>;
+using ValueWrapperPtr = std::unique_ptr<ValueWrapper>;
 
 //------------------------------------------------------------------------
 struct WindowController::Impl : public IController, public ICommandHandler
@@ -272,7 +271,7 @@ struct WindowController::Impl : public IController, public ICommandHandler
 	{
 		if (customization)
 		{
-			if (auto customController = customization->dynamicCast<IWindowController> ())
+			if (auto customController = dynamicPtrCast<IWindowController> (customization))
 			{
 				auto p = customController->constraintSize (*window, newSize);
 				if (p != newSize)
@@ -297,7 +296,7 @@ struct WindowController::Impl : public IController, public ICommandHandler
 	{
 		if (customization)
 		{
-			if (auto customController = customization->dynamicCast<IWindowController> ())
+			if (auto customController = dynamicPtrCast<IWindowController> (customization))
 				customController->beforeShow (*window);
 		}
 	}
@@ -306,7 +305,7 @@ struct WindowController::Impl : public IController, public ICommandHandler
 	{
 		if (customization)
 		{
-			if (auto customController = customization->dynamicCast<IWindowController> ())
+			if (auto customController = dynamicPtrCast<IWindowController> (customization))
 				return customController->canClose (*window);
 		}
 		return true;
@@ -316,7 +315,7 @@ struct WindowController::Impl : public IController, public ICommandHandler
 	{
 		if (customization)
 		{
-			if (auto customController = customization->dynamicCast<IWindowController> ())
+			if (auto customController = dynamicPtrCast<IWindowController> (customization))
 				customController->onSetContentView (*window, contentView);
 		}
 	}
@@ -325,7 +324,7 @@ struct WindowController::Impl : public IController, public ICommandHandler
 	{
 		if (customization)
 		{
-			if (auto customController = customization->dynamicCast<IWindowController> ())
+			if (auto customController = dynamicPtrCast<IWindowController> (customization))
 				customController->onSizeChanged (*window, newSize);
 		}
 	}
@@ -334,7 +333,7 @@ struct WindowController::Impl : public IController, public ICommandHandler
 	{
 		if (customization)
 		{
-			if (auto customController = customization->dynamicCast<IWindowController> ())
+			if (auto customController = dynamicPtrCast<IWindowController> (customization))
 				customController->onPositionChanged (*window, newPos);
 		}
 	}
@@ -343,7 +342,7 @@ struct WindowController::Impl : public IController, public ICommandHandler
 	{
 		if (customization)
 		{
-			if (auto customController = customization->dynamicCast<IWindowController> ())
+			if (auto customController = dynamicPtrCast<IWindowController> (customization))
 				customController->onShow (*window);
 		}
 	}
@@ -352,7 +351,7 @@ struct WindowController::Impl : public IController, public ICommandHandler
 	{
 		if (customization)
 		{
-			if (auto customController = customization->dynamicCast<IWindowController> ())
+			if (auto customController = dynamicPtrCast<IWindowController> (customization))
 				customController->onHide (*window);
 		}
 	}
@@ -361,7 +360,7 @@ struct WindowController::Impl : public IController, public ICommandHandler
 	{
 		if (customization)
 		{
-			if (auto customController = customization->dynamicCast<IWindowController> ())
+			if (auto customController = dynamicPtrCast<IWindowController> (customization))
 				customController->onClosed (*window);
 		}
 	}
@@ -370,7 +369,7 @@ struct WindowController::Impl : public IController, public ICommandHandler
 	{
 		if (customization)
 		{
-			if (auto customController = customization->dynamicCast<IWindowController> ())
+			if (auto customController = dynamicPtrCast<IWindowController> (customization))
 				customController->onActivated (*window);
 		}
 	}
@@ -379,7 +378,7 @@ struct WindowController::Impl : public IController, public ICommandHandler
 	{
 		if (customization)
 		{
-			if (auto customController = customization->dynamicCast<IWindowController> ())
+			if (auto customController = dynamicPtrCast<IWindowController> (customization))
 				customController->onDeactivated (*window);
 		}
 	}
@@ -441,12 +440,12 @@ struct WindowController::Impl : public IController, public ICommandHandler
 	{
 		if (modelBinding)
 		{
-			if (auto commandHandler = modelBinding->dynamicCast<ICommandHandler> ())
+			if (auto commandHandler = dynamicPtrCast<ICommandHandler> (modelBinding))
 				return commandHandler->canHandleCommand (command);
 		}
 		if (customization)
 		{
-			if (auto commandHandler = customization->dynamicCast<ICommandHandler> ())
+			if (auto commandHandler = dynamicPtrCast<ICommandHandler> (customization))
 				return commandHandler->canHandleCommand (command);
 		}
 		return false;
@@ -456,12 +455,12 @@ struct WindowController::Impl : public IController, public ICommandHandler
 	{
 		if (modelBinding)
 		{
-			if (auto commandHandler = modelBinding->dynamicCast<ICommandHandler> ())
+			if (auto commandHandler = dynamicPtrCast<ICommandHandler> (modelBinding))
 				return commandHandler->handleCommand (command);
 		}
 		if (customization)
 		{
-			if (auto commandHandler = customization->dynamicCast<ICommandHandler> ())
+			if (auto commandHandler = dynamicPtrCast<ICommandHandler> (customization))
 				return commandHandler->handleCommand (command);
 		}
 		return false;
@@ -473,7 +472,7 @@ struct WindowController::Impl : public IController, public ICommandHandler
 			return;
 		for (auto& value : modelHandler->getValues ())
 		{
-			valueWrappers.emplace_back (std::make_shared<ValueWrapper> (value));
+			valueWrappers.emplace_back (std::make_unique<ValueWrapper> (value));
 		}
 	}
 
@@ -616,7 +615,7 @@ struct WindowController::EditImpl : WindowController::Impl
 
 	void initAsNew ()
 	{
-		Detail::PreventPopupClose ppc (window);
+		Detail::PreventPopupClose ppc (*window);
 
 		if (Detail::initUIDescAsNew (*uiDesc, frame))
 		{
@@ -632,7 +631,7 @@ struct WindowController::EditImpl : WindowController::Impl
 
 	void checkFileExists ()
 	{
-		Detail::PreventPopupClose ppc (window);
+		Detail::PreventPopupClose ppc (*window);
 
 		auto result = Detail::checkAndUpdateUIDescFilePath (*uiDesc, frame);
 		if (result == Detail::UIDescCheckFilePathResult::exists)
