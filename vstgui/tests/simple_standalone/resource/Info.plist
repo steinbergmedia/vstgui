@@ -7,7 +7,7 @@
 	<key>CFBundleExecutable</key>
 	<string>simple_standalone</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.mycompany.simple_standalone</string>
+	<string>com.mycompany.simplestandalone</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>

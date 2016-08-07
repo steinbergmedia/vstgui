@@ -35,7 +35,7 @@ class MyApplication : public DelegateAdapter, public WindowListenerAdapter
 {
 public:
 	MyApplication ()
-	: DelegateAdapter ({"Sample App", "1.0.0", "com.mycompany.sampleapp"})
+	: DelegateAdapter ({"simple_standalone", "1.0.0", "com.mycompany.simplestandalone"})
 	{}
 	
 	void finishLaunching () override
@@ -60,7 +60,7 @@ public:
 	{
 		IApplication::instance ().quit ();
 	}
-
+	
 };
 
 static Init gAppDelegate (std::make_unique<MyApplication> ());
