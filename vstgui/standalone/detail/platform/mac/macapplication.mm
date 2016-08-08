@@ -381,20 +381,17 @@ static const CommandWithKeyList* _Nullable getCommandList (const char* _Nonnull 
 	NSString* infoPlistString = dict[(@"CFBundleName")];
 	if (![stringFromUTF8String (appInfo.name) isEqualToString:infoPlistString])
 	{
-		NSLog (@"CFBundleName is not equal to Application::Info::name");
-		return NO;
+		NSLog (@"Warning: CFBundleName is not equal to Application::Info::name");
 	}
 	infoPlistString = dict[(@"CFBundleShortVersionString")];
 	if (![stringFromUTF8String (appInfo.version) isEqualToString:infoPlistString])
 	{
-		NSLog (@"CFBundleShortVersionString is not equal to Application::Info::version");
-		return NO;
+		NSLog (@"Warning: CFBundleShortVersionString is not equal to Application::Info::version");
 	}
 	infoPlistString = dict[(@"CFBundleIdentifier")];
 	if (![stringFromUTF8String (appInfo.uri) isEqualToString:infoPlistString])
 	{
-		NSLog (@"CFBundleIdentifier is not equal to Application::Info::uri");
-		return NO;
+		NSLog (@"Warning: CFBundleIdentifier is not equal to Application::Info::uri");
 	}
 	return YES;
 }
@@ -430,8 +427,8 @@ static const CommandWithKeyList* _Nullable getCommandList (const char* _Nonnull 
 	};
 	auto app = Detail::getApplicationPlatformAccess ();
 	vstgui_assert (app);
-	app->init (prefs, std::move (appPath), std::move (cmdArgs), std::move (callbacks));
 	[self setupMainMenu];
+	app->init (prefs, std::move (appPath), std::move (cmdArgs), std::move (callbacks));
 	self.hasFinishedLaunching = YES;
 	if (self.startupOpenFiles)
 	{
