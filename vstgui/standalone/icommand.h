@@ -8,7 +8,7 @@ namespace VSTGUI {
 namespace Standalone {
 
 //------------------------------------------------------------------------
-/** Commands
+/** %Command definition
  *
  *	Commands are automatically dispatched to Application::IDelegate and IWindowController instances
  *	if they implement the ICommandHandler interface.

@@ -11,7 +11,7 @@ namespace VSTGUI {
 namespace Standalone {
 
 //------------------------------------------------------------------------
-/** Application interface.
+/** %Application interface.
  *
  *	@ingroup standalone
  */

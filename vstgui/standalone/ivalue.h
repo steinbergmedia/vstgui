@@ -56,7 +56,7 @@ public:
 };
 
 //------------------------------------------------------------------------
-/** Value string converter interface
+/** %Value string converter interface
  *
  *	@ingroup standalone
  */

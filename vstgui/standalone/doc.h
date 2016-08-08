@@ -11,6 +11,7 @@ See @ref standalone_library "this page" for an introduction.
 @page standalone_library Standalone Library
 
 - @ref standalone_about @n
+- @ref standalone_modelbinding @n
 - @ref standalone_supported_os @n
 - @ref standalone_compiler_requirements @n
 
@@ -34,33 +35,33 @@ using namespace VSTGUI::Standalone::Application;
 class MyApplication : public DelegateAdapter, public WindowListenerAdapter
 {
 public:
-	MyApplication ()
-	: DelegateAdapter ({"simple_standalone", "1.0.0", "com.mycompany.simplestandalone"})
-	{}
-	
-	void finishLaunching () override
-	{
-		UIDesc::Config config;
-		config.uiDescFileName = "Window.uidesc";
-		config.viewName = "Window";
-		config.windowConfig.title = "Sample App";
-		config.windowConfig.autoSaveFrameName = "SampleAppWindow";
-		config.windowConfig.style.border ().close ().size ().centered ();
-		if (auto window = UIDesc::makeWindow (config))
-		{
-			window->show ();
-			window->registerWindowListener (this);
-		}
-		else
-		{
-			IApplication::instance ().quit ();
-		}
-	}
-	void onClosed (const IWindow& window) override
-	{
-		IApplication::instance ().quit ();
-	}
-	
+    MyApplication ()
+    : DelegateAdapter ({"simple_standalone", "1.0.0", "com.mycompany.simplestandalone"})
+    {}
+
+    void finishLaunching () override
+    {
+        UIDesc::Config config;
+        config.uiDescFileName = "Window.uidesc";
+        config.viewName = "Window";
+        config.windowConfig.title = "Sample App";
+        config.windowConfig.autoSaveFrameName = "SampleAppWindow";
+        config.windowConfig.style.border ().close ().size ().centered ();
+        if (auto window = UIDesc::makeWindow (config))
+        {
+            window->show ();
+            window->registerWindowListener (this);
+        }
+        else
+        {
+            IApplication::instance ().quit ();
+        }
+    }
+    void onClosed (const IWindow& window) override
+    {
+        IApplication::instance ().quit ();
+    }
+
 };
 
 static Init gAppDelegate (std::make_unique<MyApplication> ());
@@ -71,13 +72,38 @@ Adding a real user interface to the window is done via a "What You See Is What Y
 at runtime as known from the VST3 inline editor. Bindings are done via the
 VSTGUI::Standalone::IModelBinding interface.
 
+@section standalone_modelbinding Bindings
+
+Binding the user interface with your code is done via VSTGUI::Standalone::IValue objects. A list
+of value objects are exposed via an object that implements the
+VSTGUI::Standalone::UIDesc::IModelBinding interface.
+
+As an example implementation there is the ModelBindingCallbacks class in the helpers sub directory.
+For example you want to have a button in the UI which triggers a function, you can implement it
+like this :
+
+@code{.cpp}
+
+auto binding = std::make_shared<UIDesc::ModelBindingCallbacks> ();
+binding->addValue (Value::make ("MyFunction"),
+                   UIDesc::ValueCalls::onAction ([&] (IValue& v) {
+                        executeMyFunction ();
+                   }));
+config.modelBinding = binding;
+
+@endcode
+
+After you have set the binding as the VSTGUI::Standalone::UIDesc::Config::modelBinding parameter
+when you create the window, you can start your program, enable the inline editor, create a button
+and bind that button to the "control-tag" of "MyFunction" as written in the above code. When the
+button is clicked, the function 'executeMyFunction' is called.
 
 @section standalone_supported_os Supported operating systems
 
 - Microsoft Windows
-	- minimum supported version : 8.1
+    - minimum supported version : 8.1
 - Apple macOS
-	- minimum supported version : 10.10
+    - minimum supported version : 10.10
 
 @section standalone_compiler_requirements Compiler requirements
 

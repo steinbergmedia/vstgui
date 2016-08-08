@@ -39,9 +39,6 @@ public:
 };
 
 //------------------------------------------------------------------------
-} // anonymous
-
-//------------------------------------------------------------------------
 class DefaultValueStringConverter : public IValueStringConverter
 {
 public:
@@ -365,7 +362,9 @@ bool StringListValue::updateStringList (const std::vector<UTF8String>& newString
 	return true;
 }
 
+
 //------------------------------------------------------------------------
+} // anonymous
 } // Detail
 
 //------------------------------------------------------------------------

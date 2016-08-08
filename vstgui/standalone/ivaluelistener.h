@@ -7,7 +7,7 @@ namespace VSTGUI {
 namespace Standalone {
 
 //------------------------------------------------------------------------
-/** Value listener interface
+/** %Value listener interface
  *
  *	@ingroup standalone
  */
