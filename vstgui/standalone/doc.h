@@ -12,6 +12,7 @@ See @ref standalone_library "this page" for an introduction.
 
 - @ref standalone_about @n
 - @ref standalone_modelbinding @n
+- @ref standalone_window_customization @n
 - @ref standalone_supported_os @n
 - @ref standalone_compiler_requirements @n
 
@@ -70,15 +71,15 @@ static Init gAppDelegate (std::make_unique<MyApplication> ());
 
 Adding a real user interface to the window is done via a "What You See Is What You Get" editor
 at runtime as known from the VST3 inline editor. Bindings are done via the
-VSTGUI::Standalone::IModelBinding interface.
+@link VSTGUI::Standalone::UIDesc::IModelBinding IModelBinding @endlink interface.
 
 @section standalone_modelbinding Bindings
 
-Binding the user interface with your code is done via VSTGUI::Standalone::IValue objects. A list
+Binding the user interface with your code is done via @link VSTGUI::Standalone::IValue IValue @endlink objects. A list
 of value objects are exposed via an object that implements the
-VSTGUI::Standalone::UIDesc::IModelBinding interface.
+@link VSTGUI::Standalone::UIDesc::IModelBinding IModelBinding @endlink interface.
 
-As an example implementation there is the ModelBindingCallbacks class in the helpers sub directory.
+As an example implementation there is the @link VSTGUI::Standalone::UIDesc::ModelBindingCallbacks ModelBindingCallbacks @endlink class in the helpers sub directory.
 For example you want to have a button in the UI which triggers a function, you can implement it
 like this :
 
@@ -93,10 +94,20 @@ config.modelBinding = binding;
 
 @endcode
 
-After you have set the binding as the VSTGUI::Standalone::UIDesc::Config::modelBinding parameter
+After you have set the binding as the @link VSTGUI::Standalone::UIDesc::Config::modelBinding UIDesc::Config::modelBinding @endlink parameter
 when you create the window, you can start your program, enable the inline editor, create a button
 and bind that button to the "control-tag" of "MyFunction" as written in the above code. When the
 button is clicked, the function 'executeMyFunction' is called.
+
+@section standalone_window_customization Customization
+
+If you need deeper control of the UI you can supply an object implementing the
+@link VSTGUI::Standalone::UIDesc::ICustomization ICustomization @endlink interface as the
+@link VSTGUI::Standalone::UIDesc::Config::customization UIDesc::Config::customization @endlink parameter.
+In the UI editor you can set the 'sub-controller' attribute of a view container to create a new 
+@link VSTGUI::IController IController @endlink object out of your @link VSTGUI::Standalone::UIDesc::ICustomization ICustomization @endlink object. This controller can alter the UI in
+many ways, it can even create custom views if you don't want to use the way described in
+@link VSTGUI::IViewCreator IViewCreator @endlink to support the view inside the UI editor.
 
 @section standalone_supported_os Supported operating systems
 
