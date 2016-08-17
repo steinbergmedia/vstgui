@@ -737,6 +737,10 @@ struct WindowController::EditImpl : WindowController::Impl
 	{
 		if (command == ToggleEditingCommand)
 			return true;
+		else if (uiEditController &&
+		         uiEditController->getMenuController ()->canHandleCommand (command.group,
+		                                                                   command.name))
+			return true;
 		return Impl::canHandleCommand (command);
 	}
 
@@ -747,6 +751,10 @@ struct WindowController::EditImpl : WindowController::Impl
 			enableEditing (!isEditing);
 			return true;
 		}
+		else if (uiEditController &&
+		         uiEditController->getMenuController ()->handleCommand (command.group,
+		                                                                command.name))
+			return true;
 		return Impl::handleCommand (command);
 	}
 

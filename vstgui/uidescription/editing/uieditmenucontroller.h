@@ -168,12 +168,15 @@ public:
 	COptionMenu* getEditMenu () const { return editMenu; }
 
 	int32_t processKeyCommand (const VstKeyCode& key);
+	bool handleCommand (const UTF8StringPtr category, const UTF8StringPtr name);
+	bool canHandleCommand (const UTF8StringPtr category, const UTF8StringPtr name) const;
 
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 	virtual void valueChanged (CControl* pControl) override;
 
 	static bool createUniqueTemplateName (std::list<const std::string*>& names, std::string& name);
 protected:
+	bool validateMenuItem (CCommandMenuItem& item);
 	CCommandMenuItem* findKeyCommandItem (COptionMenu* menu, const VstKeyCode& key);
 	void createEditMenu (COptionMenu* menu);
 	void createFileMenu (COptionMenu* menu);
