@@ -722,6 +722,7 @@ COptionMenu *COptionMenu::getLastItemMenu (int32_t &idxInMenu) const
 //------------------------------------------------------------------------
 void COptionMenu::setValue (float val)
 {
+	val = std::round (val);
 	if ((int32_t)val < 0 || (int32_t)val >= getNbEntries ())
 		return;
 	
