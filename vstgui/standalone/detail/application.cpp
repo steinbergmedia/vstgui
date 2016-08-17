@@ -58,6 +58,7 @@ public:
 	bool dontClosePopupOnDeactivation (Platform::IWindow* window) override;
 
 private:
+	void registerStandardCommands ();
 	bool doCommandHandling (const Command& command, bool checkOnly);
 
 	WindowList windows;
@@ -87,19 +88,28 @@ void Application::init (IPreference& preferences, UTF8String&& applicationPath,
 	appPath = std::move (applicationPath);
 	platform = std::move (callbacks);
 
-	// TODO: make command registration configurable
+	// About and Quit are mandatory
 	registerCommand (Commands::About);
-	registerCommand (Commands::Preferences);
 	registerCommand (Commands::Quit, 'q');
+
+	// TODO: make command registration configurable
+	registerStandardCommands ();
+
+	getDelegate ().finishLaunching ();
+}
+
+//------------------------------------------------------------------------
+void Application::registerStandardCommands ()
+{
+	registerCommand (Commands::Preferences);
 	registerCommand (Commands::CloseWindow, 'w');
 	registerCommand (Commands::Undo, 'z');
 	registerCommand (Commands::Redo, 'Z');
 	registerCommand (Commands::Cut, 'x');
 	registerCommand (Commands::Copy, 'c');
 	registerCommand (Commands::Paste, 'v');
+	registerCommand (Commands::Delete, 0x8);
 	registerCommand (Commands::SelectAll, 'a');
-
-	getDelegate ().finishLaunching ();
 }
 
 //------------------------------------------------------------------------
@@ -230,7 +240,32 @@ const Application::CommandList& Application::getCommandList ()
 				}
 			}
 
-			menuCommandList.push_back (catListCopy);
+			menuCommandList.emplace_back (std::move (catListCopy));
+		}
+		return menuCommandList;
+	}
+	else
+	{
+		menuCommandList.clear ();
+		for (auto& catList : commandList)
+		{
+			if (catList.second.empty ())
+				continue;
+			auto catListCopy = catList;
+			if (catList.first == CommandGroup::Edit)
+			{
+				for (auto it = ++catListCopy.second.begin (); it != catListCopy.second.end (); ++it)
+				{
+					if (it->name == CommandName::Cut || it->name == CommandName::SelectAll)
+					{
+						CommandWithKey separator {};
+						separator.name = CommandName::MenuSeparator;
+						it = catListCopy.second.emplace (it, std::move (separator));
+						++it;
+					}
+				}
+			}
+			menuCommandList.emplace_back (std::move (catListCopy));
 		}
 		return menuCommandList;
 	}

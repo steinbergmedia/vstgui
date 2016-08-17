@@ -346,6 +346,14 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 @implementation VSTGUIWindowDelegate
 
 //------------------------------------------------------------------------
+- (id)firstResponderIsFieldEditor
+{
+	id firstResponder = [self.macWindow->getNSWindow () firstResponder];
+	id fieldEditor = [self.macWindow->getNSWindow () fieldEditor:NO forObject:self];
+	return firstResponder == fieldEditor ? fieldEditor : nil;
+}
+
+//------------------------------------------------------------------------
 - (IBAction)processCommand:(nullable id)sender
 {
 	bool res = false;
@@ -361,18 +369,111 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 }
 
 //------------------------------------------------------------------------
+- (void)undo
+{
+	if (id fieldEditor = [self firstResponderIsFieldEditor])
+	{
+		[[[fieldEditor window] undoManager] undo];
+		return;
+	}
+
+	using namespace VSTGUI::Standalone;
+	Command command {CommandGroup::Edit, CommandName::Undo};
+	self.macWindow->getDelegate ().handleCommand (command);
+}
+
+//------------------------------------------------------------------------
+- (void)redo
+{
+	if (id fieldEditor = [self firstResponderIsFieldEditor])
+	{
+		[[[fieldEditor window] undoManager] redo];
+		return;
+	}
+
+	using namespace VSTGUI::Standalone;
+	Command command {CommandGroup::Edit, CommandName::Redo};
+	self.macWindow->getDelegate ().handleCommand (command);
+}
+
+//------------------------------------------------------------------------
+- (void)copy:(id)sender
+{
+	using namespace VSTGUI::Standalone;
+	Command command {CommandGroup::Edit, CommandName::Copy};
+	self.macWindow->getDelegate ().handleCommand (command);
+}
+
+//------------------------------------------------------------------------
+- (void)cut:(id)sender
+{
+	using namespace VSTGUI::Standalone;
+	Command command {CommandGroup::Edit, CommandName::Cut};
+	self.macWindow->getDelegate ().handleCommand (command);
+}
+
+//------------------------------------------------------------------------
+- (void)paste:(id)sender
+{
+	using namespace VSTGUI::Standalone;
+	Command command {CommandGroup::Edit, CommandName::Paste};
+	self.macWindow->getDelegate ().handleCommand (command);
+}
+
+//------------------------------------------------------------------------
+- (void) delete:(id)sender
+{
+	using namespace VSTGUI::Standalone;
+	Command command {CommandGroup::Edit, CommandName::Delete};
+	self.macWindow->getDelegate ().handleCommand (command);
+}
+
+//------------------------------------------------------------------------
 - (BOOL)validateMenuItem:(nonnull NSMenuItem*)menuItem
 {
+	SEL action = menuItem.action;
+	if (action == @selector (undo) || action == @selector (redo))
+	{
+		if (id fieldEditor = [self firstResponderIsFieldEditor])
+		{
+			BOOL enable = NO;
+			NSString* itemTitle = nil;
+			NSUndoManager* undoManager = [[fieldEditor window] undoManager];
+			if (action == @selector (undo))
+			{
+				enable = undoManager.canUndo;
+				itemTitle = undoManager.undoMenuItemTitle;
+			}
+			else
+			{
+				enable = undoManager.canRedo;
+				itemTitle = undoManager.redoMenuItemTitle;
+			}
+			menuItem.title = itemTitle;
+			return enable;
+		}
+		else
+		{
+			if (action == @selector (undo))
+				menuItem.title = @"Undo";
+			else
+				menuItem.title = @"Redo";
+		}
+	}
+
 	BOOL res = NO;
 	if (VSTGUICommand* command = menuItem.representedObject)
 		res = self.macWindow->getDelegate ().canHandleCommand ([command command]);
-	if (!res)
-	{
-		id delegate = [NSApp delegate];
-		if ([delegate respondsToSelector:@selector (validateMenuItem:)])
-			return [delegate validateMenuItem:menuItem];
-	}
 	return res;
+}
+
+//------------------------------------------------------------------------
+- (id)windowWillReturnFieldEditor:(NSWindow*)sender toObject:(id)client
+{
+	id fieldEditor = [sender fieldEditor:YES forObject:self];
+	if (fieldEditor)
+		[fieldEditor setAllowsUndo:YES];
+	return fieldEditor;
 }
 
 //------------------------------------------------------------------------
@@ -486,6 +587,16 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 - (void)noResponderFor:(nonnull SEL)eventSelector
 {
 	// prevent Beep
+}
+
+//------------------------------------------------------------------------
+- (void)endEditingFor:(nullable id)anObject
+{
+	[super endEditingFor:anObject];
+	if (anObject == [self fieldEditor:NO forObject:anObject])
+	{
+		[[self undoManager] removeAllActions];
+	}
 }
 
 @end

@@ -86,6 +86,12 @@ static const CommandWithKeyList* _Nullable getCommandList (const char* _Nonnull 
 }
 
 //------------------------------------------------------------------------
+- (void)showHelp:(nullable id)sender
+{
+	
+}
+
+//------------------------------------------------------------------------
 - (BOOL)validateMenuItem:(nonnull NSMenuItem*)menuItem
 {
 	if (menuItem.action == @selector (showPreferenceDialog:))
@@ -122,6 +128,8 @@ static const CommandWithKeyList* _Nullable getCommandList (const char* _Nonnull 
 		return @selector (copy:);
 	else if (command == Commands::Paste)
 		return @selector (paste:);
+	else if (command == Commands::Delete)
+		return @selector (delete:);
 	else if (command == Commands::SelectAll)
 		return @selector (selectAll:);
 	return @selector (processCommand:);
@@ -149,50 +157,57 @@ static const CommandWithKeyList* _Nullable getCommandList (const char* _Nonnull 
 }
 
 //------------------------------------------------------------------------
-- (nonnull NSMenu*)createAppMenu
+- (nonnull NSString*)appName
 {
 	NSDictionary* dict = [[NSBundle mainBundle] infoDictionary];
-	NSString* appName = dict[(@"CFBundleName")];
+	return dict[(@"CFBundleName")];
+}
+
+//------------------------------------------------------------------------
+- (nonnull NSMenu*)createAppMenu
+{
+	NSString* appName = [self appName];
 	NSMenu* menu = [[NSMenu alloc] initWithTitle:appName];
+
+	[menu addItemWithTitle:[NSString stringWithFormat:@"About %@", appName]
+					action:@selector (showAboutDialog:)
+			 keyEquivalent:@""];
+	[menu addItem:[NSMenuItem separatorItem]];
+
+	[menu addItemWithTitle:@"Preferences..."
+					action:@selector (showPreferenceDialog:)
+			 keyEquivalent:@","];
+
+	[menu addItem:[NSMenuItem separatorItem]];
+
 	auto commandList = getCommandList (CommandGroup::Application);
 	if (commandList)
 	{
 		for (auto& command : *commandList)
 		{
-			if (command == Commands::About)
-			{
-				[menu addItemWithTitle:[NSString stringWithFormat:@"About %@", appName]
-				                action:@selector (showAboutDialog:)
-				         keyEquivalent:@""];
-				[menu addItem:[NSMenuItem separatorItem]];
-			}
-			else if (command == Commands::Preferences)
-				[menu addItemWithTitle:@"Preferences..."
-				                action:@selector (showPreferenceDialog:)
-				         keyEquivalent:@","];
-			else if (command == Commands::Quit)
-			{
-				[menu addItem:[NSMenuItem separatorItem]];
-				[menu addItemWithTitle:[NSString stringWithFormat:@"Hide %@", appName]
-				                action:@selector (hide:)
-				         keyEquivalent:@"h"];
-				[menu addItemWithTitle:@"Hide Others"
-				                action:@selector (hideOtherApplications:)
-				         keyEquivalent:@""];
-				[menu addItemWithTitle:@"Show All"
-				                action:@selector (unhideAllApplications:)
-				         keyEquivalent:@""];
-				[menu addItem:[NSMenuItem separatorItem]];
-				[menu addItemWithTitle:[NSString stringWithFormat:@"Quit %@", appName]
-				                action:@selector (terminate:)
-				         keyEquivalent:@"q"];
-			}
-			else
+			if (command != Commands::About && command != Commands::Preferences &&
+			    command != Commands::Quit && command != Commands::Help)
 			{
 				[menu addItem:[self createMenuItemFromCommand:command]];
 			}
 		}
 	}
+
+	[menu addItem:[NSMenuItem separatorItem]];
+	[menu addItemWithTitle:[NSString stringWithFormat:@"Hide %@", appName]
+					action:@selector (hide:)
+			 keyEquivalent:@"h"];
+	[menu addItemWithTitle:@"Hide Others"
+					action:@selector (hideOtherApplications:)
+			 keyEquivalent:@""];
+	[menu addItemWithTitle:@"Show All"
+					action:@selector (unhideAllApplications:)
+			 keyEquivalent:@""];
+	[menu addItem:[NSMenuItem separatorItem]];
+	[menu addItemWithTitle:[NSString stringWithFormat:@"Quit %@", appName]
+					action:@selector (terminate:)
+			 keyEquivalent:@"q"];
+	
 	return menu;
 }
 
@@ -208,7 +223,7 @@ static const CommandWithKeyList* _Nullable getCommandList (const char* _Nonnull 
 //------------------------------------------------------------------------
 - (nonnull NSMenu*)createWindowsMenu
 {
-	NSMenu* menu = [[NSMenu alloc] initWithTitle:@"Windows"];
+	NSMenu* menu = [[NSMenu alloc] initWithTitle:@"Window"];
 	[menu addItemWithTitle:@"Minimize" action:@selector (performMiniaturize:) keyEquivalent:@"m"];
 	[menu addItemWithTitle:@"Zoom" action:@selector (performZoom:) keyEquivalent:@""];
 	NSMenuItem* item = [menu addItemWithTitle:@"Fullscreen"
@@ -216,6 +231,17 @@ static const CommandWithKeyList* _Nullable getCommandList (const char* _Nonnull 
 	                            keyEquivalent:@"f"];
 	item.keyEquivalentModifierMask = NSCommandKeyMask | NSControlKeyMask;
 	[menu addItem:[NSMenuItem separatorItem]];
+	[menu addItemWithTitle:@"Bring All to Front"
+	                action:@selector (arrangeInFront:)
+	         keyEquivalent:@""];
+	[menu addItem:[NSMenuItem separatorItem]];
+	return menu;
+}
+
+//------------------------------------------------------------------------
+- (nonnull NSMenu*)createHelpMenu
+{
+	NSMenu* menu = [[NSMenu alloc] initWithTitle:@"Help"];
 	return menu;
 }
 
@@ -233,10 +259,16 @@ static const CommandWithKeyList* _Nullable getCommandList (const char* _Nonnull 
 		[mainMenu addItem:appMenuItem];
 
 		NSMenuItem* item =
-		    [[NSMenuItem alloc] initWithTitle:@"Windows" action:nullptr keyEquivalent:@""];
+		    [[NSMenuItem alloc] initWithTitle:@"Window" action:nullptr keyEquivalent:@""];
 		NSMenu* windowsMenu = [self createWindowsMenu];
 		[NSApp setWindowsMenu:windowsMenu];
 		item.submenu = windowsMenu;
+		[mainMenu addItem:item];
+
+		item = [[NSMenuItem alloc] initWithTitle:@"Help" action:nullptr keyEquivalent:@""];
+		NSMenu* helpMenu = [self createHelpMenu];
+		[NSApp setHelpMenu:helpMenu];
+		item.submenu = helpMenu;
 		[mainMenu addItem:item];
 	}
 	else
@@ -249,7 +281,7 @@ static const CommandWithKeyList* _Nullable getCommandList (const char* _Nonnull 
 	auto& commandList = Detail::getApplicationPlatformAccess ()->getCommandList ();
 	for (auto& e : commandList)
 	{
-		if (e.first == CommandGroup::Windows)
+		if (e.first == CommandGroup::Window)
 		{
 			NSMenu* windowsMenu = [NSApp windowsMenu];
 			for (auto& command : e.second)
@@ -260,7 +292,25 @@ static const CommandWithKeyList* _Nullable getCommandList (const char* _Nonnull 
 					[windowsMenu addItem:[self createMenuItemFromCommand:command]];
 			}
 		}
-		else if (e.first != CommandGroup::Application)
+		else if (e.first == CommandGroup::Application)
+		{
+			for (auto& cmd : e.second)
+			{
+				if (cmd.name == CommandName::Help)
+				{
+					NSMenu* helpMenu = [NSApp helpMenu];
+					NSMenuItem* item = [helpMenu itemWithTitle:stringFromUTF8String(cmd.name)];
+					if (!item)
+					{
+						item = [self createMenuItemFromCommand:cmd];
+						NSString* appName = [self appName];
+						item.title = [appName stringByAppendingString:@" Help"];
+						[helpMenu addItem:item];
+					}
+				}
+			}
+		}
+		else
 		{
 			NSString* title = stringFromUTF8String (e.first);
 			NSMenuItem* item = [mainMenu itemWithTitle:title];
@@ -291,9 +341,13 @@ static const CommandWithKeyList* _Nullable getCommandList (const char* _Nonnull 
 	}
 
 	// move Windows menu to the end
-	NSMenuItem* windowsMenuItem = [mainMenu itemWithTitle:@"Windows"];
+	NSMenuItem* windowsMenuItem = [mainMenu itemWithTitle:@"Window"];
 	[mainMenu removeItem:windowsMenuItem];
 	[mainMenu addItem:windowsMenuItem];
+	// move Help menu to the end
+	NSMenuItem* helpMenuItem = [mainMenu itemWithTitle:@"Help"];
+	[mainMenu removeItem:helpMenuItem];
+	[mainMenu addItem:helpMenuItem];
 }
 
 //------------------------------------------------------------------------

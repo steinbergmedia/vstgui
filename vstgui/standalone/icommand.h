@@ -30,6 +30,12 @@ inline bool operator== (const Command& c1, const Command& c2)
 }
 
 //------------------------------------------------------------------------
+inline bool operator!= (const Command& c1, const Command& c2)
+{
+	return c1.group != c2.group || c1.name != c2.name;
+}
+
+//------------------------------------------------------------------------
 /** Handler for commands
  *
  *	@ingroup standalone
@@ -51,7 +57,7 @@ namespace CommandGroup {
 static constexpr IdStringPtr Application = "Application";
 static constexpr IdStringPtr File = "File";
 static constexpr IdStringPtr Edit = "Edit";
-static constexpr IdStringPtr Windows = "Windows";
+static constexpr IdStringPtr Window = "Window";
 
 //------------------------------------------------------------------------
 } // CommandGroup
@@ -62,6 +68,7 @@ namespace CommandName {
 static constexpr IdStringPtr About = "About";
 static constexpr IdStringPtr Preferences = "Preferences...";
 static constexpr IdStringPtr Quit = "Quit";
+static constexpr IdStringPtr Help = "Help";
 static constexpr IdStringPtr New = "New";
 static constexpr IdStringPtr Open = "Open...";
 static constexpr IdStringPtr Save = "Save";
@@ -72,6 +79,7 @@ static constexpr IdStringPtr Redo = "Redo";
 static constexpr IdStringPtr Cut = "Cut";
 static constexpr IdStringPtr Copy = "Copy";
 static constexpr IdStringPtr Paste = "Paste";
+static constexpr IdStringPtr Delete = "Delete";
 static constexpr IdStringPtr SelectAll = "Select All";
 
 static constexpr IdStringPtr MenuSeparator = "~";
@@ -88,6 +96,7 @@ namespace Commands {
 static const Command About {CommandGroup::Application, CommandName::About};
 static const Command Preferences {CommandGroup::Application, CommandName::Preferences};
 static const Command Quit {CommandGroup::Application, CommandName::Quit};
+static const Command Help {CommandGroup::Application, CommandName::Help};
 
 static const Command NewDocument {CommandGroup::File, CommandName::New};
 static const Command OpenDocument {CommandGroup::File, CommandName::Open};
@@ -100,6 +109,7 @@ static const Command Redo {CommandGroup::Edit, CommandName::Redo};
 static const Command Cut {CommandGroup::Edit, CommandName::Cut};
 static const Command Copy {CommandGroup::Edit, CommandName::Copy};
 static const Command Paste {CommandGroup::Edit, CommandName::Paste};
+static const Command Delete {CommandGroup::Edit, CommandName::Delete};
 static const Command SelectAll {CommandGroup::Edit, CommandName::SelectAll};
 
 //------------------------------------------------------------------------
