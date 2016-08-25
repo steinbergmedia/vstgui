@@ -81,7 +81,6 @@ set(${target}_sources
 
 ##########################################################################################
 if(CMAKE_HOST_APPLE)
-  set(CMAKE_OSX_DEPLOYMENT_TARGET 10.9)
 endif()
 
 ##########################################################################################
@@ -92,10 +91,6 @@ endif()
 add_library(${target} STATIC ${${target}_sources})
 
 target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS})
-
-set_property(TARGET ${target} PROPERTY CXX_STANDARD 11)
-set_property(TARGET ${target} PROPERTY CXX_STANDARD_REQUIRED ON)
-set_property(TARGET ${target} PROPERTY CMAKE_CXX_STANDARD_REQUIRED ON)
-
-SOURCE_GROUP_BY_FOLDER(${target})
+vstgui_set_cxx_version(${target} 11)
+vstgui_source_group_by_folder(${target})
 

@@ -1,5 +1,7 @@
 ##########################################################################################
-set(vstgui_standalone_common_sources
+set(target vstgui_standalone)
+
+set(${target}_common_sources
   doc.h
   fwd.h
   ialertbox.h
@@ -35,7 +37,7 @@ set(vstgui_standalone_common_sources
 )
 
 ##########################################################################################
-set(vstgui_standalone_mac_sources
+set(${target}_mac_sources
   detail/platform/mac/VSTGUICommand.h
   detail/platform/mac/VSTGUICommand.mm
   detail/platform/mac/macapplication.mm
@@ -47,7 +49,7 @@ set(vstgui_standalone_mac_sources
 )
 
 ##########################################################################################
-set(vstgui_standalone_win32_sources
+set(${target}_win32_sources
   detail/platform/win32/win32application.cpp
   detail/platform/win32/win32menu.cpp
   detail/platform/win32/win32menu.h
@@ -59,29 +61,21 @@ set(vstgui_standalone_win32_sources
 
 ##########################################################################################
 if(CMAKE_HOST_APPLE)
-  set(CMAKE_OSX_DEPLOYMENT_TARGET 10.9)
-	set(vstgui_standalone_sources ${vstgui_standalone_common_sources} ${vstgui_standalone_mac_sources})
+	set(${target}_sources ${${target}_common_sources} ${${target}_mac_sources})
 
-	set_source_files_properties(${vstgui_standalone_sources} PROPERTIES
+	set_source_files_properties(${${target}_sources} PROPERTIES
 		COMPILE_FLAGS "-fobjc-arc"
 	)
 endif()
 
 ##########################################################################################
 if(MSVC)
-	set(vstgui_standalone_sources ${vstgui_standalone_common_sources} ${vstgui_standalone_win32_sources})
+	set(${target}_sources ${${target}_common_sources} ${${target}_win32_sources})
 endif()
 
 ##########################################################################################
-add_library(vstgui_standalone STATIC ${vstgui_standalone_sources})
+add_library(${target} STATIC ${${target}_sources})
 
-target_compile_definitions(vstgui_standalone ${VSTGUI_COMPILE_DEFINITIONS})
-
-set_property(TARGET vstgui_standalone PROPERTY CXX_STANDARD 14)
-set_property(TARGET vstgui_standalone PROPERTY CXX_STANDARD_REQUIRED ON)
-set_property(TARGET vstgui_standalone PROPERTY CMAKE_CXX_STANDARD_REQUIRED ON)
-
-##########################################################################################
-if(CMAKE_CONFIGURATION_TYPES)
-  SOURCE_GROUP_BY_FOLDER(vstgui_standalone)
-endif()
+target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS})
+vstgui_set_cxx_version(${target} 14)
+vstgui_source_group_by_folder(${target})

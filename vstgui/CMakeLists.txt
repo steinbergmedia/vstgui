@@ -2,8 +2,17 @@
 cmake_minimum_required(VERSION 3.5)
 project(vstgui)
 
+set(CMAKE_OSX_DEPLOYMENT_TARGET 10.9)
+
 ##########################################################################################
-macro(SOURCE_GROUP_BY_FOLDER target)
+function(vstgui_set_cxx_version target version)
+  set_property(TARGET ${target} PROPERTY CXX_STANDARD ${version})
+  set_property(TARGET ${target} PROPERTY CXX_STANDARD_REQUIRED ON)
+  set_property(TARGET ${target} PROPERTY CMAKE_CXX_STANDARD_REQUIRED ON)
+endfunction(vstgui_set_cxx_version target version)
+  
+##########################################################################################
+function(vstgui_source_group_by_folder target)
   if(CMAKE_CONFIGURATION_TYPES)
     set(SOURCE_GROUP_DELIMITER "/")
     set(last_dir "")
@@ -28,7 +37,7 @@ macro(SOURCE_GROUP_BY_FOLDER target)
       source_group("${last_dir}" FILES ${files})
     endif (files)
   endif(CMAKE_CONFIGURATION_TYPES)
-endmacro(SOURCE_GROUP_BY_FOLDER)
+endfunction(vstgui_source_group_by_folder)
 
 ##########################################################################################
 if(CMAKE_CONFIGURATION_TYPES)
@@ -91,78 +100,7 @@ add_subdirectory(lib)
 add_subdirectory(uidescription)
 if(NOT VSTGUI_DISABLE_STANDALONE)
   add_subdirectory(standalone)
-endif()
-
-##########################################################################################
-# VSTGUI Simple Standalone Application
-##########################################################################################
-if(NOT VSTGUI_DISABLE_SIMPLE_STANDALONE_APP)
-  set(target simple_standalone)
-
-  set(${target}_sources
-    "tests/simple_standalone/source/myapp.cpp"
-  )
-
-  ##########################################################################################
-  if(CMAKE_HOST_APPLE)
-    set(CMAKE_OSX_DEPLOYMENT_TARGET 10.9)
-  	set(BUNDLE_PKG_INFO
-      "tests/simple_standalone/resource/PkgInfo"
-  	)
-  	set(simple_standalone_resources
-  		"tests/simple_standalone/resource/Window.uidesc"
-  	)
-  	set_source_files_properties(${BUNDLE_PKG_INFO} PROPERTIES
-  		MACOSX_PACKAGE_LOCATION "."
-  	)
-    set_source_files_properties(${simple_standalone_resources} PROPERTIES
-      MACOSX_PACKAGE_LOCATION "Resources"
-    )
-    set(simple_standalone_resources ${simple_standalone_resources} ${BUNDLE_PKG_INFO})
-    
-  	set(${target}_PLATFORM_LIBS
-  		"-framework Cocoa"
-  		"-framework OpenGL"
-  		"-framework QuartzCore"
-  		"-framework Accelerate"
-  	)
-  	get_filename_component(InfoPlistFile "tests/simple_standalone/resource/Info.plist" ABSOLUTE)
-  	set(APP_PROPERTIES
-  		MACOSX_BUNDLE TRUE
-  		MACOSX_BUNDLE_INFO_PLIST ${InfoPlistFile}
-  		OUTPUT_NAME "simple_standalone"
-  	)
+  if(NOT VSTGUI_DISABLE_SIMPLE_STANDALONE_APP)
+    include(tests/simple_standalone/CMakeLists.txt)
   endif()
-
-  ##########################################################################################
-  if(MSVC)
-    set(simple_standalone_resources
-      "tests/simple_standalone/resource/simple_standalone.rc"
-    )
-    set(APP_PROPERTIES
-      LINK_FLAGS "/SUBSYSTEM:windows /INCLUDE:wWinMain"
-    )
-  endif()
-
-  ##########################################################################################
-  include_directories(../)
-  add_executable(${target}
-    ${${target}_sources}
-    ${simple_standalone_resources}
-  )
-  target_link_libraries(${target}
-  	vstgui
-    vstgui_uidescription
-    vstgui_standalone
-  	${${target}_PLATFORM_LIBS}
-  )
-
-  set_target_properties(${target} PROPERTIES ${APP_PROPERTIES})
-  set_property(TARGET ${target} PROPERTY CXX_STANDARD 14)
-  set_property(TARGET ${target} PROPERTY CXX_STANDARD_REQUIRED ON)
-  set_property(TARGET ${target} PROPERTY CMAKE_CXX_STANDARD_REQUIRED ON)
-
-  target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS})
-  
-  SOURCE_GROUP_BY_FOLDER(${target})
 endif()
