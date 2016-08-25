@@ -573,7 +573,6 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 			vstgui_assert (false, "Should not be called!");
 			return 1;
 		}
-#if 1
 		case WM_INITMENUPOPUP:
 		{
 			if (wParam == 0)
@@ -584,7 +583,6 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 			validateMenu (menu);
 			return 0;
 		}
-#endif
 		case WM_MENUCOMMAND:
 		{
 			if (lParam == 0)
@@ -763,10 +761,35 @@ bool Window::nonClientHitTest (LPARAM& lParam, LRESULT& result)
 		{
 			if (sizable && !hasBorder)
 			{
-				const auto edgeSizeWidth = 10 * dpiScale;
-				if (p.x > size.x - edgeSizeWidth && p.y > size.y - edgeSizeWidth)
+				const auto edgeSizeWidth = 5 * dpiScale;
+				if (p.x > size.x - edgeSizeWidth)
 				{
-					result = HTBOTTOMRIGHT;
+					if (p.y > size.y - edgeSizeWidth)
+						result = HTBOTTOMRIGHT;
+					else if (p.y < edgeSizeWidth)
+						result = HTTOPRIGHT;
+					else
+						result = HTRIGHT;
+					return true;
+				}
+				if (p.x < edgeSizeWidth)
+				{
+					if (p.y > size.y - edgeSizeWidth)
+						result = HTBOTTOMLEFT;
+					else if (p.y < edgeSizeWidth)
+						result = HTTOPLEFT;
+					else
+						result = HTLEFT;
+					return true;
+				}
+				if (p.y < edgeSizeWidth)
+				{
+					result = HTTOP;
+					return true;
+				}
+				if (p.y > size.y - edgeSizeWidth)
+				{
+					result = HTBOTTOM;
 					return true;
 				}
 				// TODO: add other edges
