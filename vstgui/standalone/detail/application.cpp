@@ -89,10 +89,6 @@ void Application::init (IPreference& preferences, UTF8String&& applicationPath,
 	appPath = std::move (applicationPath);
 	platform = std::move (callbacks);
 
-	// About and Quit are mandatory
-	registerCommand (Commands::About);
-	registerCommand (Commands::Quit, 'q');
-
 	// TODO: make command registration configurable
 	registerStandardCommands ();
 
@@ -102,7 +98,9 @@ void Application::init (IPreference& preferences, UTF8String&& applicationPath,
 //------------------------------------------------------------------------
 void Application::registerStandardCommands ()
 {
+	registerCommand (Commands::About);
 	registerCommand (Commands::Preferences);
+	registerCommand (Commands::Quit, 'q');
 	registerCommand (Commands::CloseWindow, 'w');
 	registerCommand (Commands::Undo, 'z');
 	registerCommand (Commands::Redo, 'Z');

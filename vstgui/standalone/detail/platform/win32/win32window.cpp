@@ -346,17 +346,79 @@ void Window::updateCommands () const
 
 //	const auto& appInfo = IApplication::instance ().getDelegate ().getInfo ();
 
+	std::shared_ptr<Win32Menu> fileMenu = nullptr;
+	const Detail::IPlatformApplication::CommandWithKeyList* appCommands = nullptr;
+
 	const auto& commandList = Detail::getApplicationPlatformAccess ()->getCommandList ();
 	for (auto& e : commandList)
 	{
+		if (e.first == CommandGroup::Application)
+		{
+			appCommands = &e.second;
+			continue;
+		}
 		auto subMenu = createSubMenu (e.first, e.second);
 		if (subMenu)
 		{
 			mainMenu->addSubMenu (subMenu);
+			if (e.first == CommandGroup::File)
+				fileMenu = subMenu;
 		}
 	}
-
+	if (appCommands)
+	{
+		auto menu = std::make_shared<Win32Menu> ("Help");
+		for (auto& e : *appCommands)
+		{
+			if (fileMenu)
+			{
+				if (e.name == CommandName::Preferences)
+				{
+					fileMenu->addSeparator ();
+					fileMenu->addItem (e.name, e.defaultKey, e.id);
+					continue;
+				}
+				if (e.name == CommandName::Quit)
+				{
+					fileMenu->addSeparator ();
+					fileMenu->addItem ("Exit", e.defaultKey, e.id);
+					continue;
+				}
+			}
+			if (e.name == CommandName::MenuSeparator)
+			{
+				menu->addSeparator ();
+			}
+			else
+			{
+				menu->addItem (e.name, e.defaultKey, e.id);
+			}
+		}
+		mainMenu->addSubMenu (menu);
+	}
 	SetMenu (hwnd, *mainMenu);
+}
+
+//------------------------------------------------------------------------
+Command mapCommand (const Command& cmd)
+{
+	Command mappedCommand = cmd;
+	if (cmd.group == "Help")
+	{
+		mappedCommand.group = CommandGroup::Application;
+	}
+	else if (cmd.group == CommandGroup::File)
+	{
+		if (cmd.name == "Exit")
+		{
+			mappedCommand = Commands::Quit;
+		}
+		else if (cmd.name == CommandName::Preferences)
+		{
+			mappedCommand = Commands::Preferences;
+		}
+	}
+	return mappedCommand;
 }
 
 //------------------------------------------------------------------------
@@ -373,9 +435,10 @@ void Window::validateMenu (Win32Menu* menu)
 		else
 		{
 			command.name = item.title;
-			auto canHandle = delegate->canHandleCommand (command);
+			auto cmd = mapCommand (command);
+			auto canHandle = delegate->canHandleCommand (cmd);
 			if (!canHandle)
-				canHandle = appCommandHandler->canHandleCommand (command);
+				canHandle = appCommandHandler->canHandleCommand (cmd);
 			canHandle ? item.enable () : item.disable ();
 			return true;
 		}
@@ -386,7 +449,7 @@ void Window::validateMenu (Win32Menu* menu)
 //------------------------------------------------------------------------
 void Window::handleMenuCommand (const UTF8String& group, const UTF8String& name)
 {
-	Command command {group, name};
+	Command command = mapCommand ({group, name});
 	if (delegate->canHandleCommand (command))
 		delegate->handleCommand (command);
 	else
