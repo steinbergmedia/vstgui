@@ -486,6 +486,7 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 
 			if (action == WA_ACTIVE || action == WA_CLICKACTIVE)
 			{
+				SetFocus (hwnd);
 				delegate->onActivated ();
 			}
 			else
