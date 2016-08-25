@@ -1,4 +1,5 @@
 #include "win32window.h"
+#include "win32menu.h"
 #include "../../../../lib/cvstguitimer.h"
 #include "../../../../lib/platform/win32/direct2d/d2ddrawcontext.h"
 #include "../../../../lib/platform/win32/win32frame.h"
@@ -161,14 +162,15 @@ private:
 	void makeTransparent ();
 	void updateDPI ();
 	void setNewDPI (uint32_t newDpi);
-	void handleMenuCommand (const UTF8String& group, UINT index);
+	void validateMenu (Win32Menu* menu);
+	void handleMenuCommand (const UTF8String& group, const UTF8String& name);
 	void windowWillClose ();
 	void registerWindowClasses ();
 	bool isVisible () const { return IsWindowVisible (hwnd) != 0; }
 
 	HWND hwnd {nullptr};
 	VSTGUI::Standalone::WindowPtr modalWindow;
-	mutable HMENU mainMenu {nullptr};
+	mutable std::shared_ptr<Win32Menu> mainMenu;
 	IWindowDelegate* delegate {nullptr};
 	CFrame* frame {nullptr};
 	CPoint initialSize;
@@ -220,6 +222,11 @@ Window::~Window ()
 {
 	if (hwnd)
 	{
+		if (mainMenu)
+		{
+			SetMenu (hwnd, nullptr);
+			mainMenu.reset ();
+		}
 		SetWindowLongPtr (hwnd, GWLP_USERDATA, (__int3264) (LONG_PTR) nullptr);
 		DestroyWindow (hwnd);
 	}
@@ -315,36 +322,16 @@ void Window::setNewDPI (uint32_t newDpi)
 }
 
 //------------------------------------------------------------------------
-static HMENU createSubMenu (const UTF8String& group,
+static std::shared_ptr<Win32Menu> createSubMenu (const UTF8String& group,
                             const Detail::IPlatformApplication::CommandWithKeyList& commands)
 {
-	// TODO: cleanup memory leaks
-	HMENU menu = CreateMenu ();
-	MENUINFO info {};
-	info.cbSize = sizeof (MENUINFO);
-	info.fMask = MIM_MENUDATA;
-	info.dwMenuData = reinterpret_cast<ULONG_PTR> (new UTF8String (group));
-	SetMenuInfo (menu, &info);
-
-	UINT index = 0;
+	auto menu = std::make_shared<Win32Menu> (group);
 	for (auto& e : commands)
 	{
-		SharedPointer<WinString> itemTitle;
-		if (e.defaultKey != 0)
-		{
-			auto title = e.name.getString ();
-			auto upper = toupper (e.defaultKey);
-			title += "\tCtrl+";
-			if (upper == e.defaultKey)
-				title += "Shift+";
-			title += static_cast<char> (upper);
-			UTF8String titleStr (title.data ());
-			itemTitle = dynamic_cast<WinString*> (titleStr.getPlatformString ());
-		}
+		if (e.name == CommandName::MenuSeparator)
+			menu->addSeparator ();
 		else
-			itemTitle = dynamic_cast<WinString*> (e.name.getPlatformString ());
-		AppendMenu (menu, MF_STRING, index, itemTitle->getWideString ());
-		++index;
+			menu->addItem (e.name, e.defaultKey, e.id);
 	}
 	return menu;
 }
@@ -355,67 +342,59 @@ void Window::updateCommands () const
 	if (!hasMenu)
 		return;
 
-	// TODO: cleanup memory leaks
-	if (mainMenu)
-		DestroyMenu (mainMenu);
-	mainMenu = CreateMenu ();
-	MENUINFO info {};
-	info.cbSize = sizeof (MENUINFO);
-	info.dwStyle = MNS_NOTIFYBYPOS;
-	info.fMask = MIM_STYLE;
-	SetMenuInfo (mainMenu, &info);
+	mainMenu = std::make_shared<Win32Menu> ("");
 
-	const auto& appInfo = IApplication::instance ().getDelegate ().getInfo ();
+//	const auto& appInfo = IApplication::instance ().getDelegate ().getInfo ();
 
-	auto& commandList = Detail::getApplicationPlatformAccess ()->getCommandList ();
+	const auto& commandList = Detail::getApplicationPlatformAccess ()->getCommandList ();
 	for (auto& e : commandList)
 	{
 		auto subMenu = createSubMenu (e.first, e.second);
 		if (subMenu)
 		{
-			auto isAppGroup = e.first == CommandGroup::Application;
-			auto menuTitle = dynamic_cast<WinString*> (
-			    isAppGroup ? appInfo.name.getPlatformString () : e.first.getPlatformString ());
-			AppendMenu (mainMenu, MF_STRING | MF_POPUP | MF_ENABLED, (UINT_PTR)subMenu,
-			            menuTitle->getWideString ());
+			mainMenu->addSubMenu (subMenu);
 		}
 	}
 
-	SetMenu (hwnd, mainMenu);
+	SetMenu (hwnd, *mainMenu);
 }
 
 //------------------------------------------------------------------------
-void Window::handleMenuCommand (const UTF8String& group, UINT index)
+void Window::validateMenu (Win32Menu* menu)
 {
-	auto& commandList = Detail::getApplicationPlatformAccess ()->getCommandList ();
-	for (auto& e : commandList)
-	{
-		if (e.first == group)
+	auto appCommandHandler = Detail::getApplicationPlatformAccess ();
+	Command command;
+	command.group = menu->title;
+	menu->validateMenuItems ([&] (auto& item) {
+		if (auto subMenu = item.asMenu ())
 		{
-			auto it = e.second.begin ();
-			std::advance (it, index);
-			if (it != e.second.end ())
-			{
-				if (*it == Commands::About)
-				{
-					if (IApplication::instance ().getDelegate ().hasAboutDialog ())
-					{
-						IApplication::instance ().getDelegate ().showAboutDialog ();
-						return;
-					}
-				}
-				if (delegate->canHandleCommand (*it))
-					delegate->handleCommand (*it);
-				else
-				{
-					if (auto commandHandler = Detail::getApplicationPlatformAccess ())
-					{
-						if (commandHandler->canHandleCommand (*it))
-							commandHandler->handleCommand (*it);
-					}
-				}
-			}
-			break;
+			validateMenu (subMenu);
+		}
+		else
+		{
+			command.name = item.title;
+			auto canHandle = delegate->canHandleCommand (command);
+			if (!canHandle)
+				canHandle = appCommandHandler->canHandleCommand (command);
+			canHandle ? item.enable () : item.disable ();
+			return true;
+		}
+		return false;
+	});
+}
+
+//------------------------------------------------------------------------
+void Window::handleMenuCommand (const UTF8String& group, const UTF8String& name)
+{
+	Command command {group, name};
+	if (delegate->canHandleCommand (command))
+		delegate->handleCommand (command);
+	else
+	{
+		if (auto commandHandler = Detail::getApplicationPlatformAccess ())
+		{
+			if (commandHandler->canHandleCommand (command))
+				commandHandler->handleCommand (command);
 		}
 	}
 }
@@ -530,20 +509,30 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 			vstgui_assert (false, "Should not be called!");
 			return 1;
 		}
+#if 1
+		case WM_INITMENUPOPUP:
+		{
+			if (wParam == 0)
+				return 0;
+			auto menu = Win32Menu::fromHMENU (reinterpret_cast<HMENU> (wParam));
+			if (!menu)
+				return 0;
+			validateMenu (menu);
+			return 0;
+		}
+#endif
 		case WM_MENUCOMMAND:
 		{
-			HMENU menu = reinterpret_cast<HMENU> (lParam);
-			if (menu)
+			if (lParam == 0)
+				return 0;
+			auto menu = Win32Menu::fromHMENU (reinterpret_cast<HMENU> (lParam));
+			if (!menu)
+				return 0;
+			auto index = static_cast<size_t> (wParam);
+			if (const auto& item = menu->itemAtIndex (index))
 			{
-				MENUINFO info {};
-				info.cbSize = sizeof (MENUINFO);
-				info.fMask = MIM_MENUDATA;
-				GetMenuInfo (menu, &info);
-				auto group = reinterpret_cast<UTF8String*> (info.dwMenuData);
-				if (group)
-				{
-					handleMenuCommand (*group, static_cast<UINT> (wParam));
-				}
+				const auto& group = menu->title;
+				handleMenuCommand (group, item->title);
 			}
 			break;
 		}
@@ -616,15 +605,15 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 	return DefWindowProc (hwnd, message, wParam, lParam);
 }
 
+//------------------------------------------------------------------------
 auto Window::handleCommand (const WORD& cmdID) -> HandleCommandResult
 {
 	auto app = Detail::getApplicationPlatformAccess ();
-	WORD cmd = 0;
 	for (auto& grp : app->getCommandList ())
 	{
 		for (auto& e : grp.second)
 		{
-			if (cmd == cmdID)
+			if (e.id == cmdID)
 			{
 				if (delegate->canHandleCommand (e))
 				{
@@ -644,7 +633,6 @@ auto Window::handleCommand (const WORD& cmdID) -> HandleCommandResult
 				}
 				return HandleCommandResult::CommandRejected;
 			}
-			++cmd;
 		}
 	}
 	return HandleCommandResult::CommandUnknown;

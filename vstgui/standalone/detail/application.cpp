@@ -70,6 +70,7 @@ private:
 	CommandLineArguments commandLineArguments;
 	UTF8String appPath;
 	bool inQuit {false};
+	uint16_t commandIDCounter {0};
 };
 
 //------------------------------------------------------------------------
@@ -244,32 +245,28 @@ const Application::CommandList& Application::getCommandList ()
 		}
 		return menuCommandList;
 	}
-	else
+	menuCommandList.clear ();
+	for (auto& catList : commandList)
 	{
-		menuCommandList.clear ();
-		for (auto& catList : commandList)
+		if (catList.second.empty ())
+			continue;
+		auto catListCopy = catList;
+		if (catList.first == CommandGroup::Edit)
 		{
-			if (catList.second.empty ())
-				continue;
-			auto catListCopy = catList;
-			if (catList.first == CommandGroup::Edit)
+			for (auto it = ++catListCopy.second.begin (); it != catListCopy.second.end (); ++it)
 			{
-				for (auto it = ++catListCopy.second.begin (); it != catListCopy.second.end (); ++it)
+				if (it->name == CommandName::Cut || it->name == CommandName::SelectAll)
 				{
-					if (it->name == CommandName::Cut || it->name == CommandName::SelectAll)
-					{
-						CommandWithKey separator {};
-						separator.name = CommandName::MenuSeparator;
-						it = catListCopy.second.emplace (it, std::move (separator));
-						++it;
-					}
+					CommandWithKey separator {};
+					separator.name = CommandName::MenuSeparator;
+					it = catListCopy.second.emplace (it, std::move (separator));
+					++it;
 				}
 			}
-			menuCommandList.emplace_back (std::move (catListCopy));
 		}
-		return menuCommandList;
+		menuCommandList.emplace_back (std::move (catListCopy));
 	}
-	return commandList;
+	return menuCommandList;
 }
 
 //------------------------------------------------------------------------
@@ -279,6 +276,7 @@ void Application::registerCommand (const Command& command, char16_t defaultComma
 	c.group = command.group;
 	c.name = command.name;
 	c.defaultKey = defaultCommandKey;
+	c.id = ++commandIDCounter;
 	bool added = false;
 	for (auto& entry : commandList)
 	{
@@ -329,6 +327,24 @@ bool Application::doCommandHandling (const Command& command, bool checkOnly)
 				return true;
 			}
 			return delegate->canQuit ();
+		}
+		else if (command == Commands::About)
+		{
+			if (!checkOnly)
+			{
+				delegate->showAboutDialog ();
+				return true;
+			}
+			return delegate->hasAboutDialog ();
+		}
+		else if (command == Commands::Preferences)
+		{
+			if (!checkOnly)
+			{
+				delegate->showPreferenceDialog ();
+				return true;
+			}
+			return delegate->hasPreferenceDialog ();
 		}
 	}
 	return result;

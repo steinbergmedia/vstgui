@@ -356,7 +356,7 @@ struct WindowController::Impl : public IController, public ICommandHandler
 		}
 	}
 
-	void onClosed ()
+	virtual void onClosed ()
 	{
 		if (customization)
 		{
@@ -607,11 +607,14 @@ struct WindowController::EditImpl : WindowController::Impl
 			return;
 		Impl::onSizeChanged (newSize);
 	}
-	bool canClose () override
+
+	void onClosed () override
 	{
 		enableEditing (false);
-		return Impl::canClose ();
+		Impl::onClosed ();
 	}
+
+	bool canClose () override { return Impl::canClose (); }
 
 	void initAsNew ()
 	{

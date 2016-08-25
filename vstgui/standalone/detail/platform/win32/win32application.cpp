@@ -61,6 +61,7 @@ public:
 
 private:
 	Win32Preference prefs;
+	bool needCommandUpdate {false};
 	HACCEL keyboardAccelerators {nullptr};
 };
 
@@ -82,7 +83,7 @@ void Application::init ()
 
 	PlatformCallbacks callbacks;
 	callbacks.quit = [this] () { quit (); };
-	callbacks.onCommandUpdate = [this] () { onCommandUpdate (); };
+	callbacks.onCommandUpdate = [this] () { needCommandUpdate = true; };
 	callbacks.showAlert = [this] (const AlertBoxConfig& config) { return showAlert (config); };
 	callbacks.showAlertForWindow = [this] (const AlertBoxForWindowConfig& config) {
 		showAlertForWindow (config);
@@ -176,10 +177,8 @@ void Application::onCommandUpdate ()
 		if (auto winWindow = toWin32Window (w))
 			winWindow->updateCommands ();
 	}
-	auto app = Detail::getApplicationPlatformAccess ();
 	std::vector<ACCEL> accels;
-	WORD cmd = 0;
-	for (auto& grp : app->getCommandList ())
+	for (auto& grp : Detail::getApplicationPlatformAccess ()->getCommandList ())
 	{
 		for (auto& e : grp.second)
 		{
@@ -189,14 +188,14 @@ void Application::onCommandUpdate ()
 				auto upperKey = toupper (e.defaultKey);
 				if (upperKey == e.defaultKey)
 					virt |= FSHIFT;
-				accels.push_back ({virt, static_cast<WORD> (upperKey), cmd});
+				accels.push_back ({virt, static_cast<WORD> (upperKey), e.id});
 			}
-			++cmd;
 		}
 	}
 	if (!accels.empty ())
 		keyboardAccelerators =
 		    CreateAcceleratorTable (accels.data (), static_cast<int> (accels.size ()));
+	needCommandUpdate = false;
 }
 
 //------------------------------------------------------------------------
@@ -220,11 +219,13 @@ void Application::run ()
 	MSG msg;
 	while (GetMessage (&msg, NULL, 0, 0))
 	{
-		if (TranslateAccelerator (msg.hwnd, keyboardAccelerators, &msg))
+		if (keyboardAccelerators && TranslateAccelerator (msg.hwnd, keyboardAccelerators, &msg))
 			continue;
 
 		TranslateMessage (&msg);
 		DispatchMessage (&msg);
+		if (needCommandUpdate)
+			onCommandUpdate ();
 	}
 	Detail::cleanupSharedUIResources ();
 }

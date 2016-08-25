@@ -17,6 +17,7 @@ namespace Detail {
 struct CommandWithKey : Command
 {
 	char16_t defaultKey;
+	uint16_t id;
 };
 
 //------------------------------------------------------------------------

@@ -49,6 +49,8 @@ set(vstgui_standalone_mac_sources
 ##########################################################################################
 set(vstgui_standalone_win32_sources
   detail/platform/win32/win32application.cpp
+  detail/platform/win32/win32menu.cpp
+  detail/platform/win32/win32menu.h
   detail/platform/win32/win32preference.cpp
   detail/platform/win32/win32preference.h
   detail/platform/win32/win32window.cpp
