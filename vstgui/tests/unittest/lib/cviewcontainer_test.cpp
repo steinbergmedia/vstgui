@@ -234,6 +234,7 @@ TESTCASE(CViewContainerTest,
 	
 	TEST(advanceNextFocusView,
 		CFrame* frame = new CFrame (CRect (0, 0, 10, 10), 0);
+		frame->onActivate (true);
 		CView* view1 = new CView (CRect (0, 0, 10, 10));
 		CView* view2 = new CView (CRect (0, 0, 10, 10));
 		CView* view3 = new CView (CRect (0, 0, 10, 10));

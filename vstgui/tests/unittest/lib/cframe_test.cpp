@@ -359,6 +359,7 @@ TESTCASE(CFrameTest,
 		auto view = new View ();
 		frame->addView (view);
 		frame->attached (frame);
+		frame->onActivate (true);
 		VstKeyCode key {};
 		EXPECT (frame->onKeyDown (key) == -1);
 		frame->setFocusView (view);
@@ -390,6 +391,7 @@ TESTCASE(CFrameTest,
 		auto view = new View ();
 		frame->addView (view);
 		frame->attached (frame);
+		frame->onActivate (true);
 		VstKeyCode key {};
 		EXPECT (frame->onKeyUp (key) == -1);
 		frame->setFocusView (view);
@@ -465,8 +467,8 @@ TESTCASE(CFrameTest,
 		auto view = owned (new View ());
 		frame->attached (frame);
 		frame->setModalView (view);
-		frame->onActivate (true);
 		EXPECT (frame->getFocusView () == nullptr);
+		frame->onActivate (true);
 		view->setWantsFocus (true);
 		frame->advanceNextFocusView (frame->getFocusView ());
 		EXPECT (frame->getFocusView () == view);
