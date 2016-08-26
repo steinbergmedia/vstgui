@@ -320,11 +320,11 @@ TESTCASE(CViewMacTest,
 		auto v = new View ();
 		container->addView (v);
 		v->setWantsIdle (true);
-		CFRunLoopRunInMode (kCFRunLoopDefaultMode, 0.5, false);
+		CFRunLoopRunInMode (kCFRunLoopDefaultMode, 0.2, false);
 		EXPECT(v->onIdleCalled == true);
 		v->setWantsIdle (false);
 		v->onIdleCalled = false;
-		CFRunLoopRunInMode (kCFRunLoopDefaultMode, 0.5, false);
+		CFRunLoopRunInMode (kCFRunLoopDefaultMode, 0.2, false);
 		EXPECT(v->onIdleCalled == false);
 		container->removeView (v);
 		container->removed (parent);
