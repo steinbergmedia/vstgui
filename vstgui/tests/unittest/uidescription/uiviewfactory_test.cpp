@@ -38,6 +38,7 @@
 #include "../../../uidescription/uiviewfactory.h"
 #include "../../../uidescription/uiattributes.h"
 #include "../../../uidescription/detail/uiviewcreatorattributes.h"
+#include <algorithm>
 
 namespace VSTGUI {
 namespace {
