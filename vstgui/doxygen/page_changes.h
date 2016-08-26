@@ -17,6 +17,11 @@ It's recommended to start new projects with version 4 while old projects should 
 
 @section new_stuff New Stuff
 
+@subsection version4_5 Version 4.5
+
+- cmake build system
+- @ref standalone_library @n
+ 
 @subsection version4_3 Version 4.3
 
 - last version to support Windows XP, Mac OS X 10.6 and non c++11 mode
@@ -59,6 +64,8 @@ Note: All current deprecated methods will be removed in the next version. So mak
 - Direct2D drawing on Windows (Windows Vista or Windows 7)
 
 @section code_changes Changes for existing VSTGUI code
+
+@subsection code_changes_4_3_to_4_5 VSTGUI 4.3 -> VSTGUI 4.5
 
 @subsection code_changes_4_2_to_4_3 VSTGUI 4.2 -> VSTGUI 4.3
 
