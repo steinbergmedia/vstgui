@@ -42,6 +42,9 @@
 #include "../../cbitmap.h"
 #include "../../optional.h"
 
+#include <algorithm>
+using std::min;
+using std::max;
 #include <windows.h>
 
 #include <objidl.h>

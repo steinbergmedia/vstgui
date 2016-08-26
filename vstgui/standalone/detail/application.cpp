@@ -8,6 +8,7 @@
 #include "../iwindowcontroller.h"
 #include "shareduiresources.h"
 #include "window.h"
+#include <algorithm>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {

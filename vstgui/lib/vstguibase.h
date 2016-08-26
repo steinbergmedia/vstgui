@@ -66,14 +66,8 @@
 		#define VSTGUI_OPENGL_SUPPORT 0	// there's an implementation, but not yet tested, so this is zero
 		#define VSTGUI_TOUCH_EVENT_HANDLING 1
 	#else
-		#ifndef MAC_OS_X_VERSION_10_7
-			#error you need at least OSX SDK 10.7 to build vstgui
-		#endif
-		#ifndef MAC_OS_X_VERSION_10_8
-			#define MAC_OS_X_VERSION_10_8 1080
-		#endif
 		#ifndef MAC_OS_X_VERSION_10_9
-			#define MAC_OS_X_VERSION_10_9 1090
+			#error you need at least OSX SDK 10.9 to build vstgui
 		#endif
 		#ifndef MAC_COCOA
 			#define MAC_COCOA 1
@@ -118,8 +112,8 @@
 		#define NOMINMAX
 	#endif
 	#include <sdkddkver.h>
-	#if _WIN32_WINNT < 0x600
-		#error unsupported Platform SDK you need at least the Vista Platform SDK to compile VSTGUI
+	#if _WIN32_WINNT < 0x601
+		#error unsupported Platform SDK you need at least the Windows 7 Platform SDK to compile VSTGUI
 	#endif
 	#ifdef __GNUC__
 		#if __cplusplus < 201103L
@@ -144,9 +138,6 @@
 	#pragma warning(3 : 4431) // missing type specifier - int assumed. Note: C no longer supports default-int
 	#pragma warning(3 : 4254) // conversion from 'type1' to 'type2', possible loss of data
 	#pragma warning(3 : 4388) // signed/unsigned mismatch
-	#include <algorithm>
-	using std::min;
-	using std::max;
 
 	#if defined (__clang__) && __clang__
 		#if defined (VSTGUI_WARN_EVERYTHING) && VSTGUI_WARN_EVERYTHING == 1
@@ -417,6 +408,13 @@ inline SharedPointer<I> makeOwned (Args&& ...args)
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 //------------------------------------------------------------------------
+/** An owning pointer. \Deprecated
+ *
+ *	This class is now deprecated. Please change your code from
+ *	@code{.cpp} OwningPointer<MyClass> obj = new MyClass () @endcode
+ *	to
+ *	@code{.cpp} SharedPointer<MyClass> obj = makeOwned<MyClass> (); @endcode
+ */
 template <class I>
 class OwningPointer : public SharedPointer<I>
 {

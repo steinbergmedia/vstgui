@@ -33,7 +33,8 @@
 //-----------------------------------------------------------------------------
 
 #include "cstring.h"
-#include <string.h>
+#include <cstring>
+#include <algorithm>
 
 namespace VSTGUI {
 

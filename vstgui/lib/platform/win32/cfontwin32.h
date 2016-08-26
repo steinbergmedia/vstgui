@@ -39,9 +39,7 @@
 
 #if WINDOWS
 
-#include <windows.h>
-#include <objidl.h>
-#include <gdiplus.h>
+#include "win32support.h"
 
 namespace VSTGUI {
 

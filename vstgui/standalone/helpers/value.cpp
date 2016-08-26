@@ -1,6 +1,7 @@
 #include "value.h"
 #include "../../lib/dispatchlist.h"
 #include "../ivaluelistener.h"
+#include <algorithm>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {

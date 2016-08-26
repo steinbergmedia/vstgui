@@ -39,6 +39,7 @@
 #include "cgraphicspath.h"
 #include "cgraphicstransform.h"
 #include <cassert>
+#include <algorithm>
 
 namespace VSTGUI {
 
