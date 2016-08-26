@@ -41,7 +41,7 @@ private:
 };
 
 //------------------------------------------------------------------------
-Application::Init gAppDelegate (std::make_shared<Delegate> ());
+Application::Init gAppDelegate (std::make_unique<Delegate> ());
 
 static Command NewPopup {CommandGroup::File, "New Popup"};
 static Command ShowAlertBoxDesign {CommandGroup::File, "Show AlertBox Design"};

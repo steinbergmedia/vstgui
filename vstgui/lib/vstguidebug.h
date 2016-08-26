@@ -46,7 +46,7 @@ void setAssertionHandler (const AssertionHandler& handler);
 bool hasAssertionHandler ();
 void doAssert (const char* filename, const char* line, ...) noexcept (false);
 
-#define vstgui_assert(x, ...) if (!(x)) doAssert (__FILE__, VSTGUI_MAKE_STRING(__LINE__), ## __VA_ARGS__);
+#define vstgui_assert(x, ...) if (!(x)) VSTGUI::doAssert (__FILE__, VSTGUI_MAKE_STRING(__LINE__), ## __VA_ARGS__);
 
 } // VSTGUI
 
