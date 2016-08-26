@@ -4,6 +4,7 @@
 #import "../../../../lib/cvstguitimer.h"
 #import "../../../../lib/platform/mac/macstring.h"
 #import "../iplatformwindow.h"
+#import "../../application.h"
 #import "VSTGUICommand.h"
 #import "macwindow.h"
 
@@ -354,18 +355,30 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 }
 
 //------------------------------------------------------------------------
+- (BOOL)canHandleCommand:(const VSTGUI::Standalone::Command&) command
+{
+	using namespace VSTGUI::Standalone;
+	if (self.macWindow->getDelegate ().canHandleCommand (command))
+		return YES;
+	return Detail::getApplicationPlatformAccess()->canHandleCommand (command) ? YES : NO;
+}
+
+//------------------------------------------------------------------------
+- (BOOL)handleCommand:(const VSTGUI::Standalone::Command&) command
+{
+	using namespace VSTGUI::Standalone;
+	if (self.macWindow->getDelegate ().handleCommand (command))
+		return YES;
+	return Detail::getApplicationPlatformAccess()->handleCommand (command) ? YES : NO;
+	
+}
+
+//------------------------------------------------------------------------
 - (IBAction)processCommand:(nullable id)sender
 {
-	bool res = false;
 	VSTGUICommand* command = [sender representedObject];
 	if (command)
-		res = self.macWindow->getDelegate ().handleCommand ([command command]);
-	if (!res)
-	{
-		id delegate = [NSApp delegate];
-		if ([delegate respondsToSelector:@selector (processCommand:)])
-			return [delegate processCommand:sender];
-	}
+		[self handleCommand:command.command];
 }
 
 //------------------------------------------------------------------------
@@ -379,7 +392,7 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 
 	using namespace VSTGUI::Standalone;
 	Command command {CommandGroup::Edit, CommandName::Undo};
-	self.macWindow->getDelegate ().handleCommand (command);
+	[self handleCommand:command];
 }
 
 //------------------------------------------------------------------------
@@ -393,7 +406,7 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 
 	using namespace VSTGUI::Standalone;
 	Command command {CommandGroup::Edit, CommandName::Redo};
-	self.macWindow->getDelegate ().handleCommand (command);
+	[self handleCommand:command];
 }
 
 //------------------------------------------------------------------------
@@ -401,7 +414,7 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 {
 	using namespace VSTGUI::Standalone;
 	Command command {CommandGroup::Edit, CommandName::Copy};
-	self.macWindow->getDelegate ().handleCommand (command);
+	[self handleCommand:command];
 }
 
 //------------------------------------------------------------------------
@@ -409,7 +422,7 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 {
 	using namespace VSTGUI::Standalone;
 	Command command {CommandGroup::Edit, CommandName::Cut};
-	self.macWindow->getDelegate ().handleCommand (command);
+	[self handleCommand:command];
 }
 
 //------------------------------------------------------------------------
@@ -417,7 +430,7 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 {
 	using namespace VSTGUI::Standalone;
 	Command command {CommandGroup::Edit, CommandName::Paste};
-	self.macWindow->getDelegate ().handleCommand (command);
+	[self handleCommand:command];
 }
 
 //------------------------------------------------------------------------
@@ -425,7 +438,7 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 {
 	using namespace VSTGUI::Standalone;
 	Command command {CommandGroup::Edit, CommandName::Delete};
-	self.macWindow->getDelegate ().handleCommand (command);
+	[self handleCommand:command];
 }
 
 //------------------------------------------------------------------------
@@ -463,7 +476,7 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 
 	BOOL res = NO;
 	if (VSTGUICommand* command = menuItem.representedObject)
-		res = self.macWindow->getDelegate ().canHandleCommand ([command command]);
+		res = [self canHandleCommand:command.command];
 	return res;
 }
 
