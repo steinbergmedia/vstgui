@@ -33,7 +33,7 @@
 		</gradient>
 	</gradients>
 	<custom>
-		<attributes name="UIDescFilePath" path="/Users/AScheffler/Sources/vstgui/vstgui/tests/standalone/resources/alertbox.uidesc"/>
+		<attributes name="UIDescFilePath" path="/Users/scheffle/Source/VST3/vstgui/vstgui/tests/standalone/resource/alertbox.uidesc"/>
 		<attributes Size="10, 10" name="UIGridController"/>
 		<attributes SelectedTemplate="AlertBox" name="UITemplateController"/>
 		<attributes EditViewScale="1" EditorSize="0, 0, 698, 575" SplitViewSize_0_0="0.7653429602888086602519024381763301789761" SplitViewSize_0_1="0.1985559566787003515919707297143759205937" SplitViewSize_1_0="0.4891696750902527202065073197445599362254" SplitViewSize_1_1="0.5018050541516245743878243956714868545532" SplitViewSize_2_0="0.7421203438395415075135019833396654576063" SplitViewSize_2_1="0.2507163323782234942704860714002279564738" TabSwitchValue="3" Version="1" name="UIEditController"/>
