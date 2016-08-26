@@ -615,6 +615,7 @@ TESTCASE(CFrameTest,
 	);
 	
 	TEST(collectInvalidRectsOnMouseDown,
+		// It is expected that this test failes on Mac OS X 10.11 because of OS changes 
 		auto platformHandle = UnitTest::PlatformParentHandle::create ();
 		auto frame = new CFrame (CRect (0, 0, 100, 100), nullptr);
 		auto view = new CollectInvalidRectView ();
