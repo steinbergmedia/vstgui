@@ -59,17 +59,15 @@ Since May 2003 VSTGUI is open source and hosted at sourceforge.
 
 Currently VSTGUI compiles on
 \par Microsoft Windows (with Visual Studio and Windows 7 Platform SDK)
-- XP SP 2 (32 and 64 bit)
-- Vista (32 and 64 bit)
 - 7 (32 and 64 bit)
 - 8 (32 and 64 bit)
-\par Apple Mac OS X (with gcc 4.0/4.2 or Clang 2.0)
-- 10.6 (32 and 64 bit)
-- 10.7 (32 and 64 bit)
-- 10.8 (32 and 64 bit)
+- 10 (32 and 64 bit)
+\par Apple Mac OS X
 - 10.9 (32 and 64 bit)
+- 10.10 (32 and 64 bit)
+- 10.11 (32 and 64 bit)
 \par Apple iOS
-- 7.0 (32 and 64 bit)
+- 9.0 (32 and 64 bit)
 
 \sa
 <a href="http://vstgui.sf.net" target=_blank> VSTGUI @ Sourceforge </a>
