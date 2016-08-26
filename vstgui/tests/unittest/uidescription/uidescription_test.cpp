@@ -571,55 +571,94 @@ TESTCASE(UIDescriptionTests,
 		EXPECT(result == str);
 	);
 
-	TEST(templates,
-		 return false;
-		 // TODO: This test is crashing, evaluate reason
-		Xml::MemoryContentProvider provider (createViewUIDesc, strlen(createViewUIDesc));
-		UIDescription desc (&provider);
-		EXPECT(desc.parse () == true);
-		
-		auto attributes = desc.getViewAttributes ("view");
-		EXPECT(attributes);
-		auto classAttr = attributes->getAttributeValue (UIViewCreator::kAttrClass);
-		EXPECT(classAttr);
-		EXPECT(*classAttr == "CViewContainer");
-		attributes = desc.getViewAttributes ("view not existing");
-		EXPECT(attributes == nullptr);
-		
-		Controller controller;
-		auto view = owned (desc.createView ("view", &controller));
-		EXPECT(view);
-		auto viewContainer = view.cast<CViewContainer>();
-		EXPECT(viewContainer);
-		EXPECT(viewContainer->getNbViews () == 1);
-		StringPtrList names;
-		desc.collectTemplateViewNames(names);
-		EXPECT(names.size() == 1);
-		EXPECT(desc.duplicateTemplate ("view not existing", "viewcopy") == false);
-		EXPECT(desc.duplicateTemplate ("view", "viewcopy"));
-		EXPECT(desc.addNewTemplate ("view", nullptr) == false);
-		names.clear();
-		desc.collectTemplateViewNames(names);
-		EXPECT(names.size() == 2);
-		EXPECT(desc.changeTemplateName ("viewcopy", "copyOfView"));
-		EXPECT(desc.changeTemplateName ("viewcopy", "copyOfView") == false);
-		view = owned (desc.createView ("copyOfView", &controller));
-		EXPECT(view);
-
-		std::string name;
-		desc.getTemplateNameFromView (view, name);
-		EXPECT(name == "copyOfView");
-		EXPECT(desc.removeTemplate ("view which does not exirt") == false);
-		EXPECT(desc.removeTemplate ("copyOfView"));
-		view = owned (desc.createView ("copyOfView", &controller));
-		EXPECT(view == nullptr);
-
-		auto a = new UIAttributes ();
-		a->setAttribute (UIViewCreator::kAttrClass, "CViewContainer");
-		EXPECT(desc.addNewTemplate ("addNewTemplate", a));
-		EXPECT(desc.getViewAttributes ("addNewTemplate"));
+	TEST(getViewAttributes,
+		 Xml::MemoryContentProvider provider (createViewUIDesc, strlen(createViewUIDesc));
+		 UIDescription desc (&provider);
+		 EXPECT(desc.parse () == true);
+		 
+		 auto attributes = desc.getViewAttributes ("view");
+		 EXPECT(attributes);
+		 auto classAttr = attributes->getAttributeValue (UIViewCreator::kAttrClass);
+		 EXPECT(classAttr);
+		 EXPECT(*classAttr == "CViewContainer");
+		 attributes = desc.getViewAttributes ("view not existing");
+		 EXPECT(attributes == nullptr);
 	);
 
+	TEST(collectTemplateViewNames,
+		 Xml::MemoryContentProvider provider (createViewUIDesc, strlen(createViewUIDesc));
+		 UIDescription desc (&provider);
+		 EXPECT(desc.parse () == true);
+
+		 StringPtrList names;
+		 desc.collectTemplateViewNames (names);
+		 EXPECT(names.size () == 1);
+		 EXPECT(*names.front () == std::string ("view"));
+	);
+
+	TEST(duplicateTemplate,
+		 Xml::MemoryContentProvider provider (createViewUIDesc, strlen(createViewUIDesc));
+		 UIDescription desc (&provider);
+		 EXPECT(desc.parse () == true);
+
+		 StringPtrList names;
+		 desc.collectTemplateViewNames (names);
+		 EXPECT(desc.duplicateTemplate ("view not existing", "viewcopy") == false);
+		 EXPECT(desc.duplicateTemplate ("view", "viewcopy"));
+		 EXPECT(desc.addNewTemplate ("view", nullptr) == false);
+		 names.clear();
+		 desc.collectTemplateViewNames (names);
+		 EXPECT(names.size() == 2);
+		 EXPECT(*names.front () == std::string ("view"));
+		 EXPECT(*names.back () == std::string ("viewcopy"));
+	);
+
+	TEST(changeTemplateName,
+		 Xml::MemoryContentProvider provider (createViewUIDesc, strlen(createViewUIDesc));
+		 UIDescription desc (&provider);
+		 EXPECT(desc.parse () == true);
+
+		 EXPECT(desc.duplicateTemplate ("view", "viewcopy"));
+		 EXPECT(desc.changeTemplateName ("viewcopy", "copyOfView"));
+		 StringPtrList names;
+		 desc.collectTemplateViewNames (names);
+		 EXPECT(*names.back () == std::string ("copyOfView"));
+	);
+
+	TEST(getTemplateNameFromView,
+		 Xml::MemoryContentProvider provider (createViewUIDesc, strlen(createViewUIDesc));
+		 UIDescription desc (&provider);
+		 EXPECT(desc.parse () == true);
+
+		 Controller controller;
+		 auto view = owned (desc.createView ("view", &controller));
+		 std::string name;
+		 desc.getTemplateNameFromView (view, name);
+		 EXPECT(name == "view");
+	);
+
+	TEST(removeTemplate,
+		 Xml::MemoryContentProvider provider (createViewUIDesc, strlen(createViewUIDesc));
+		 UIDescription desc (&provider);
+		 EXPECT(desc.parse () == true);
+		 
+		 EXPECT(desc.removeTemplate ("view which does not exist") == false);
+		 EXPECT(desc.removeTemplate ("view"));
+	);
+
+	TEST(addNewTemplate,
+		 Xml::MemoryContentProvider provider (createViewUIDesc, strlen(createViewUIDesc));
+		 UIDescription desc (&provider);
+		 EXPECT(desc.parse () == true);
+
+		 auto a = new UIAttributes ();
+		 a->setAttribute (UIViewCreator::kAttrClass, "CViewContainer");
+		 EXPECT(desc.addNewTemplate ("addNewTemplate", a));
+		 StringPtrList names;
+		 desc.collectTemplateViewNames (names);
+		 EXPECT(*names.back () == std::string ("addNewTemplate"));
+	);
+	
 	TEST(storeRestoreViews,
 		Xml::MemoryContentProvider provider (createViewUIDesc, strlen(createViewUIDesc));
 		UIDescription desc (&provider);

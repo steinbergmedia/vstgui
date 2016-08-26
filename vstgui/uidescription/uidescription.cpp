@@ -109,6 +109,7 @@ public:
 	using UIDescListContainerType::size;
 	
 	explicit UIDescList (bool ownsObjects = true);
+	UIDescList (const UIDescList& uiDesc);
 	~UIDescList () noexcept override;
 
 	virtual void add (UINode* obj);
@@ -339,6 +340,14 @@ private:
 UIDescList::UIDescList (bool ownsObjects)
 : ownsObjects (ownsObjects)
 {
+}
+
+//------------------------------------------------------------------------
+UIDescList::UIDescList (const UIDescList& uiDesc)
+: ownsObjects (false)
+{
+	for (auto& child : uiDesc)
+		add (child);
 }
 
 //-----------------------------------------------------------------------------
