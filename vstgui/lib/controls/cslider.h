@@ -78,9 +78,6 @@ public:
 
 	virtual void  setZoomFactor (float val) { zoomFactor = val; }
 	virtual float getZoomFactor () const { return zoomFactor; }
-
-	VSTGUI_DEPRECATED(virtual void setFreeClick (bool val) { setMode (val ? kFreeClickMode : kTouchMode); })
-	VSTGUI_DEPRECATED(virtual bool getFreeClick () const { return getMode () == kFreeClickMode; })
 	//@}
 
 	//-----------------------------------------------------------------------------

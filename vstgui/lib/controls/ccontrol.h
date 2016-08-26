@@ -228,6 +228,4 @@ protected:
 
 } // namespace
 
-VSTGUI_DEPRECATED(typedef VSTGUI::IControlListener CControlListener;) ///< \deprecated use IControlListener instead of CControlListener
-
 #endif
