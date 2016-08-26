@@ -21,6 +21,8 @@ It's recommended to start new projects with version 4 while old projects should 
 
 - cmake build system
 - @ref standalone_library @n
+- new Control: VSTGUI::CMultiLineTextLabel
+- adopt many c++11 language features
  
 @subsection version4_3 Version 4.3
 
