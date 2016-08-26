@@ -35,6 +35,7 @@
 #include "unittests.h"
 
 #if ENABLE_UNIT_TESTS
+#include "../../lib/vstguidebug.h"
 
 #include <chrono>
 #include <cstdarg>
@@ -291,6 +292,9 @@ void* hInstance = nullptr;
 
 int main ()
 {
+	VSTGUI::setAssertionHandler ([] (const char* file, const char* line, const char* desc) {
+		throw std::logic_error (desc ? desc : "unknown");
+	});
 #if WINDOWS
 	CoInitialize (nullptr);
 	hInstance = GetModuleHandle (nullptr);
