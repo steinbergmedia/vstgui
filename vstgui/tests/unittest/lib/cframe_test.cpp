@@ -415,6 +415,7 @@ TESTCASE(CFrameTest,
 		auto view = new View ();
 		frame->attached (frame);
 		frame->addView (view);
+		frame->onActivate (true);
 		EXPECT (frame->getFocusView () == nullptr);
 		view->setWantsFocus (true);
 		frame->advanceNextFocusView (frame->getFocusView ());
@@ -464,6 +465,7 @@ TESTCASE(CFrameTest,
 		auto view = owned (new View ());
 		frame->attached (frame);
 		frame->setModalView (view);
+		frame->onActivate (true);
 		EXPECT (frame->getFocusView () == nullptr);
 		view->setWantsFocus (true);
 		frame->advanceNextFocusView (frame->getFocusView ());
