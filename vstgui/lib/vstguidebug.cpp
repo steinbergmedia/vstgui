@@ -96,6 +96,42 @@ void DebugPrint (const char *format, ...)
 	#endif
 }
 
+static AssertionHandler assertionHandler {};
+
+//------------------------------------------------------------------------
+void setAssertionHandler (const AssertionHandler& handler)
+{
+	assertionHandler = handler;
+}
+
+//------------------------------------------------------------------------
+bool hasAssertionHandler ()
+{
+	return assertionHandler ? true : false;
+}
+
+//------------------------------------------------------------------------
+void doAssert (const char* filename, const char* line, ...) noexcept (false)
+{
+	std::va_list marker;
+	va_start (marker, line);
+	auto desc = va_arg (marker, const char*);
+	if (hasAssertionHandler ())
+	{
+		try {
+			assertionHandler (filename, line, desc);
+		} catch (...)
+		{
+			 std::rethrow_exception (std::current_exception());
+		}
+	}
+	else
+	{
+		DebugPrint ("\nassert at %s:%s: %s\n", filename, line, desc ? desc : "unknown");
+		assert (false);
+	}
+}
+
 } // namespace
 
 #endif // DEBUG

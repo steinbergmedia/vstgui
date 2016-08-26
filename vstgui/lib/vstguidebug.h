@@ -36,25 +36,24 @@
 #define __vstguidebug__
 
 #include "vstguibase.h"
+#include <functional>
+
+//------------------------------------------------------------------------
+namespace VSTGUI {
+
+using AssertionHandler = std::function<void (const char* filename, const char* line, const char* desc)>;
+void setAssertionHandler (const AssertionHandler& handler);
+bool hasAssertionHandler ();
+void doAssert (const char* filename, const char* line, ...) noexcept (false);
+
+#define vstgui_assert(x, ...) if (!(x)) doAssert (__FILE__, VSTGUI_MAKE_STRING(__LINE__), ## __VA_ARGS__);
+
+} // VSTGUI
 
 #if DEBUG
 
 #include <ctime>
 #include <cassert>
-
-// assert handling
-
-#if ENABLE_UNIT_TESTS
-template<typename Expect>
-void vstgui_assert (Expect expect, const char* str = nullptr)
-{
-	if (!expect)
-		throw std::logic_error (str ? str : "unknown");
-}
-#else
-#define vstgui_assert(x, ...) assert (x)
-#endif
-
 
 namespace VSTGUI {
 
@@ -79,17 +78,6 @@ protected:
 } // namespace
 
 #else
-
-#if ENABLE_UNIT_TESTS
-template<typename Expect>
-void vstgui_assert (Expect expect, const char* str = nullptr)
-{
-	if (!expect)
-		throw std::logic_error (str ? str : "unknown");
-}
-#else
-#define vstgui_assert(...)
-#endif
 
 #endif // DEBUG
 
