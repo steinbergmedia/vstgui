@@ -109,3 +109,5 @@ target_link_libraries(${target}
 vstgui_set_cxx_version(${target} 11)
 target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS} ENABLE_UNIT_TESTS=1)
 vstgui_source_group_by_folder(${target})
+
+add_custom_command(TARGET ${target} POST_BUILD COMMAND "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/unittests")
