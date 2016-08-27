@@ -92,6 +92,9 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
+/** Multi line text label
+ *	@ingroup new_in_4_5
+ */
 class CMultiLineTextLabel : public CTextLabel
 {
 public:
@@ -99,25 +102,30 @@ public:
 	CMultiLineTextLabel (const CMultiLineTextLabel&) = default;
 
 	enum class LineLayout {
-		clip,
-		truncate,
-		wrap
+		clip, ///< clip lines overflowing the view size width
+		truncate, ///< truncate lines overflowing the view size width
+		wrap ///< wrap overflowing words to next line
 	};
 	void setLineLayout (LineLayout layout);
 	LineLayout getLineLayout () const { return lineLayout; }
 
+	/** automatically resize the view according to the contents (only the height) 
+	 *	@param state on or off
+	 */
 	void setAutoHeight (bool state);
+	/** returns true if this view resizes itself according to the contents */
 	bool getAutoHeight () const { return autoHeight; }
 
+	/** return the maximum line width of all lines */
 	CCoord getMaxLineWidth ();
 
 	void drawRect (CDrawContext* pContext, const CRect& updateRect) override;
 	bool sizeToFit () override;
 	void setText (const UTF8String& txt) override;
 	void setViewSize (const CRect& rect, bool invalid = true) override;
-	void drawStyleChanged () override;
 	void setTextTruncateMode (TextTruncateMode mode) override;
 private:
+	void drawStyleChanged () override;
 	void recalculateLines (CDrawContext* context);
 	void recalculateHeight ();
 	
