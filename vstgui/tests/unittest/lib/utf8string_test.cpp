@@ -91,7 +91,7 @@ TESTCASE(UTF8StringTest,
 	);
 
 	TEST(codePointIterator,
-		 UTF8String str (u8"Äॴ𪀚");
+		 UTF8String str ("\xc3\x84\xe0\xa5\xb4\xf0\xaa\x80\x9a\0"); // u8"Äॴ𪀚"
 		 auto charCount = 0;
 		 for (auto it = str.begin (); it != str.end (); ++it)
 		 {
