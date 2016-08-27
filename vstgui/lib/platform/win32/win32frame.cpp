@@ -394,7 +394,6 @@ bool Win32Frame::setSize (const CRect& newSize)
 	}
 	if (!parentWindow)
 		return true;
-	// TODO for VST2: we only set the size of the window we own. In VST2 this was not the case, we also resized the parent window. This must be done upstream now.
 	SetWindowPos (windowHandle, HWND_TOP, (int)newSize.left, (int)newSize.top, (int)newSize.getWidth (), (int)newSize.getHeight (), SWP_NOZORDER|SWP_NOCOPYBITS|SWP_NOREDRAW|SWP_DEFERERASE);
 	invalidRect (newSize);
 	return true;
@@ -409,34 +408,12 @@ bool Win32Frame::getSize (CRect& size) const
 	p.x = r.left;
 	p.y = r.top;
 	MapWindowPoints (HWND_DESKTOP, windowHandle, &p, 1);
+	MapWindowPoints (windowHandle, GetParent (windowHandle), &p, 1);
 	size.left = p.x;
 	size.top = p.y;
 	size.right = p.x + (r.right - r.left);
 	size.bottom = p.y + (r.bottom - r.top);
 	return true;
-
-#if 0 // old code, returned other values, why ?
-	// return the size relative to the client rect of this window
-	// get the main window
-	HWND wnd = GetParent (windowHandle);
-	HWND wndParent = GetParent (wnd);
-	HWND wndParentParent = GetParent (wndParent);
-
-	RECT  rctTempWnd;
-	GetWindowRect (wnd, &rctTempWnd);
-	
-	POINT point;
-	point.x = rctTempWnd.left;
-	point.y = rctTempWnd.top;
-
-	MapWindowPoints (HWND_DESKTOP, wndParentParent, &point, 1);
-	
-	size.left   = (CCoord)point.x;
-	size.top    = (CCoord)point.y;
-	size.right  = (CCoord)size.left + rctTempWnd.right - rctTempWnd.left;
-	size.bottom = (CCoord)size.top  + rctTempWnd.bottom - rctTempWnd.top;
-	return true;
-#endif
 }
 
 //-----------------------------------------------------------------------------
