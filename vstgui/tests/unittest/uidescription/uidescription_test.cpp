@@ -142,12 +142,7 @@ constexpr auto withAllNodesUIDesc = R"(<?xml version="1.0" encoding="UTF-8"?>
 	<bitmaps>
 		<bitmap name="b1" path="b1.png"/>
 		<bitmap name="b1#2.0x" path="b1#2.0x.png" scale-factor="2"/>
-		<bitmap name="dataBitmap" path="dataBitmap.png">
-			<data encoding="base64">
-				iVBORw0KGgoAAAANSUhEUgAAAA4AAAAHCAYAAAA4R3wZAAAAAXNSR0IArs4c6QAAACxJREFUGBlj/A8EDG
-				QAFqAeRjL0MYA0IgOibUfXSLTtII1E24LsNKr4kSSbASPLBxbAIufgAAAAAElFTkSuQmCC
-			</data>
-		</bitmap>
+		<bitmap name="dataBitmap" path="dataBitmap.png"/>
 	</bitmaps>
 	<control-tags>
 		<control-tag name="t1" tag="1234"/>
