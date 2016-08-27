@@ -408,7 +408,7 @@ inline SharedPointer<I> makeOwned (Args&& ...args)
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 //------------------------------------------------------------------------
-/** An owning pointer. \Deprecated
+/** An owning pointer. \deprecated
  *
  *	This class is now deprecated. Please change your code from
  *	@code{.cpp} OwningPointer<MyClass> obj = new MyClass () @endcode

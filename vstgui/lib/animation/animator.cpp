@@ -224,8 +224,6 @@ protected:
 Timer* Timer::gInstance = nullptr;
 ///@endcond
 
-/** @class Animator
-	see @ref page_animation Support */
 //-----------------------------------------------------------------------------
 Animator::Animator ()
 : inTimer (false)

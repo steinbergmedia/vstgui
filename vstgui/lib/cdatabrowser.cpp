@@ -112,7 +112,6 @@ protected:
 //-----------------------------------------------------------------------------------------------
 /**
  * @param size size of data browser
- * @param pParent frame
  * @param db data browser interface. If db is inheritated from CBaseObject it will be remembered and released if data browser is destroyed
  * @param style data browser and scroll view style see #CDataBrowserStyle and #CScrollViewStyle
  * @param scrollbarWidth width of scrollbars
@@ -367,8 +366,7 @@ void CDataBrowser::recalculateLayout (bool rememberSelection)
 
 //-----------------------------------------------------------------------------------------------
 /**
- * @param row row to invalidate
- * @param column column to invalidate
+ * @param cell cell to invalidate
  */
 void CDataBrowser::invalidate (const Cell& cell)
 {
@@ -523,8 +521,7 @@ void CDataBrowser::validateSelection ()
 
 //-----------------------------------------------------------------------------------------------
 /**
- * @param row row number
- * @param column column number
+ * @param cell cell
  * @return bounds of cell
  */
 CRect CDataBrowser::getCellBounds (const Cell& cell)
@@ -572,8 +569,7 @@ CDataBrowser::Cell CDataBrowser::getCellAt (const CPoint& where) const
 
 //-----------------------------------------------------------------------------------------------
 /**
- * @param row row number
- * @param column column number
+ * @param cell cell
  * @param initialText UTF-8 string the text edit field will be initialized with
  */
 void CDataBrowser::beginTextEdit (const Cell& cell, UTF8StringPtr initialText)

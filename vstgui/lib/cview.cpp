@@ -629,7 +629,7 @@ void CView::takeFocus ()
 //------------------------------------------------------------------------------
 /**
  * @param newSize rect of new size of view
- * @param invalid if true set view dirty
+ * @param doInvalid if true set view dirty
  */
 void CView::setViewSize (const CRect& newSize, bool doInvalid)
 {
