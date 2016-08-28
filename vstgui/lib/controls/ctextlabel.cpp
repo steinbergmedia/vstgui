@@ -403,6 +403,8 @@ void CMultiLineTextLabel::recalculateLines (CDrawContext* context)
 							lastSeparator = pos;
 						else if (isLineBreakSeparator (*pos))
 							lastSeparator = ++pos;
+						if (pos == element.first.end ())
+							break;
 						UTF8String tmp ({start.base (), ++(pos.base ())});
 						auto width = fontPainter->getStringWidth (context, tmp.getPlatformString ());
 						if (width > maxWidth)
