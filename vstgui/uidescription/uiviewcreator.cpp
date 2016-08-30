@@ -368,10 +368,7 @@ static void applyStyleMask (const std::string* value, int32_t mask, int32_t& sty
 {
 	if (value)
 	{
-		if (*value == "true")
-			style |= mask;
-		else
-			style &= ~mask;
+		setBit (style, mask, *value == "true");
 	}
 }
 
@@ -940,10 +937,7 @@ public:
 		const std::string* attr = attributes.getAttributeValue (kAttrBordered);
 		if (attr)
 		{
-			if (*attr == "true")
-				style &= ~CScrollView::kDontDrawFrame;
-			else
-				style |= CScrollView::kDontDrawFrame;
+			setBit (style, CScrollView::kDontDrawFrame, *attr != "true");
 		}
 		applyStyleMask (attributes.getAttributeValue (kAttrOverlayScrollbars), CScrollView::kOverlayScrollbars, style);
 		applyStyleMask (attributes.getAttributeValue (kAttrFollowFocusView), CScrollView::kFollowFocusView, style);
@@ -2935,13 +2929,13 @@ public:
 			int32_t style = slider->getStyle ();
 			if (*orientationAttr == "vertical")
 			{
-				style &= ~kHorizontal;
-				style |= kVertical;
+				setBit (style, kHorizontal, false);
+				setBit (style, kVertical, true);
 			}
 			else
 			{
-				style &= ~kVertical;
-				style |= kHorizontal;
+				setBit (style, kVertical, false);
+				setBit (style, kHorizontal, true);
 			}
 			slider->setStyle (style);
 		}
@@ -2953,26 +2947,26 @@ public:
 			{
 				if (style & kVertical)
 				{
-					style &= ~kBottom;
-					style |= kTop;
+					setBit (style, kBottom, false);
+					setBit (style, kTop, true);
 				}
 				else if (style & kHorizontal)
 				{
-					style &= ~kLeft;
-					style |= kRight;
+					setBit (style, kLeft, false);
+					setBit (style, kRight, true);
 				}
 			}
 			else
 			{
 				if (style & kVertical)
 				{
-					style &= ~kTop;
-					style |= kBottom;
+					setBit (style, kTop, false);
+					setBit (style, kBottom, true);
 				}
 				else if (style & kHorizontal)
 				{
-					style &= ~kRight;
-					style |= kLeft;
+					setBit (style, kRight, false);
+					setBit (style, kLeft, true);
 				}
 			}
 			slider->setStyle (style);

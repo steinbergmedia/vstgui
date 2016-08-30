@@ -438,22 +438,24 @@ public:
 #endif
 
 //------------------------------------------------------------------------
-template <typename T>
-inline void setBit (T& storage, T bit, bool state)
+template <typename T, typename B>
+inline void setBit (T& storage, B bit, bool state)
 {
 	static_assert (std::is_integral<T>::value, "only works for integral types");
+	static_assert (sizeof (T) >= sizeof (B), "bit type is too big");
 	if (state)
-		storage |= bit;
+		storage |= static_cast<T> (bit);
 	else
-		storage &= ~(bit);
+		storage &= ~(static_cast<T> (bit));
 }
 
 //------------------------------------------------------------------------
-template <typename T>
-inline bool hasBit (T storage, T bit)
+template <typename T, typename B>
+inline constexpr bool hasBit (T storage, B bit)
 {
 	static_assert (std::is_integral<T>::value, "only works for integral types");
-	return (storage & bit) ? true : false;
+	static_assert (sizeof (T) >= sizeof (B), "bit type is too big");
+	return (storage & static_cast<T> (bit)) ? true : false;
 }
 
 } // namespace

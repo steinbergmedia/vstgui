@@ -349,7 +349,7 @@ void CGDrawContext::setLineWidth (CCoord width)
 void CGDrawContext::setDrawMode (CDrawMode mode)
 {
 	if (cgContext)
-		CGContextSetShouldAntialias (cgContext, mode == kAntiAliasing ? true : false);
+		CGContextSetShouldAntialias (cgContext, mode.antiAliasing ());
 
 	CDrawContext::setDrawMode (mode);
 }

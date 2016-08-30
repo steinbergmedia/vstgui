@@ -158,16 +158,16 @@ struct TrimOptions
 	using CharTestFunc = std::function<bool (char32_t)>;
 	TrimOptions (CharTestFunc&& func = [] (char32_t c) { return isSpace (c); }) : test (std::move (func)) {}
 
-	TrimOptions& left () { flags |= Flags::kLeft; return *this; }
-	TrimOptions& right () { flags |= Flags::kRight; return *this; }
+	TrimOptions& left () { setBit (flags, Flags::kLeft, true); return *this; }
+	TrimOptions& right () { setBit (flags, Flags::kRight, true); return *this; }
 	
-	bool trimLeft () const { return (flags & Flags::kLeft) != 0; }
-	bool trimRight () const { return (flags & Flags::kRight) != 0; }
+	bool trimLeft () const { return hasBit (flags, Flags::kLeft); }
+	bool trimRight () const { return hasBit (flags, Flags::kRight); }
 
 	bool operator() (char32_t c) const { return !test (c); }
 
 private:
-	enum Flags {
+	enum Flags : uint8_t {
 		kLeft = 1 << 0,
 		kRight = 1 << 1
 	};

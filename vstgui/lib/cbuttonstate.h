@@ -75,7 +75,7 @@ public:
 	/** returns true if only the right button is set. Ignores modifier state */
 	bool isRightButton () const { return getButtonState () == kRButton; }
 
-	bool isDoubleClick () const { return (state & kDoubleClick) ? true : false; }
+	bool isDoubleClick () const { return hasBit<int32_t> (state, kDoubleClick); }
 
 	int32_t operator() () const { return state; }
 	CButtonState& operator= (int32_t s) { state = s; return *this; }

@@ -77,10 +77,10 @@ public:
 	virtual void setIcon (CBitmap* icon);									///< set menu item icon
 	virtual void setTag (int32_t tag);										///< set menu item tag
 
-	bool isEnabled () const { return !(flags & kDisabled); }				///< returns whether the item is enabled or not
-	bool isChecked () const { return (flags & kChecked) != 0; }				///< returns whether the item is checked or not
-	bool isTitle () const { return (flags & kTitle) != 0; }					///< returns whether the item is a title item or not
-	bool isSeparator () const { return (flags & kSeparator) != 0; }			///< returns whether the item is a separator or not
+	bool isEnabled () const { return !hasBit (flags, kDisabled); }				///< returns whether the item is enabled or not
+	bool isChecked () const { return hasBit (flags, kChecked); }				///< returns whether the item is checked or not
+	bool isTitle () const { return hasBit (flags, kTitle); }					///< returns whether the item is a title item or not
+	bool isSeparator () const { return hasBit (flags, kSeparator); }			///< returns whether the item is a separator or not
 
 	const UTF8String& getTitle () const { return title; }					///< returns the title of the item
 	int32_t getKeyModifiers () const { return keyModifiers; }				///< returns the key modifiers of the item

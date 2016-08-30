@@ -154,37 +154,25 @@ void CMenuItem::setTag (int32_t t)
 //------------------------------------------------------------------------
 void CMenuItem::setEnabled (bool state)
 {
-	if (state)
-		flags &= ~kDisabled;
-	else
-		flags |= kDisabled;
+	setBit (flags, kDisabled, !state);
 }
 
 //------------------------------------------------------------------------
 void CMenuItem::setChecked (bool state)
 {
-	if (state)
-		flags |= kChecked;
-	else
-		flags &= ~kChecked;
+	setBit (flags, kChecked, state);
 }
 
 //------------------------------------------------------------------------
 void CMenuItem::setIsTitle (bool state)
 {
-	if (state)
-		flags |= kTitle;
-	else
-		flags &= ~kTitle;
+	setBit (flags, kTitle, state);
 }
 
 //------------------------------------------------------------------------
 void CMenuItem::setIsSeparator (bool state)
 {
-	if (state)
-		flags |= kSeparator;
-	else
-		flags &= ~kSeparator;
+	setBit (flags, kSeparator, state);
 }
 
 //------------------------------------------------------------------------

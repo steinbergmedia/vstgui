@@ -149,8 +149,8 @@ public:
 		kNoExport = 1 << 0
 	};
 	
-	bool noExport () const { return flags & kNoExport; }
-	void noExport (bool state) { if (state) flags |= kNoExport; else flags &= ~kNoExport; }
+	bool noExport () const { return hasBit (flags, kNoExport); }
+	void noExport (bool state) { setBit (flags, kNoExport, state); }
 
 	bool operator== (const UINode& n) const { return name == n.name; }
 	
