@@ -213,12 +213,12 @@ CView::CView (const CView& v)
 , mouseableArea (v.mouseableArea)
 , pParentFrame (nullptr)
 , pParentView (nullptr)
-, viewFlags (v.viewFlags)
 , autosizeFlags (v.autosizeFlags)
 , alphaValue (v.alphaValue)
 , pBackground (v.pBackground)
 , pDisabledBackground (v.pDisabledBackground)
 , pHitTestPath (v.pHitTestPath)
+, viewFlags (v.viewFlags)
 {
 	for (auto& attribute : attributes)
 		setAttribute (attribute.first, attribute.second->getSize (), attribute.second->getData ());
@@ -261,10 +261,7 @@ void CView::beforeDelete ()
 //-----------------------------------------------------------------------------
 void CView::setViewFlag (int32_t bit, bool state)
 {
-	if (state)
-		viewFlags |= bit;
-	else
-		viewFlags &= ~(bit);
+	setBit (viewFlags, bit, state);
 }
 
 //-----------------------------------------------------------------------------

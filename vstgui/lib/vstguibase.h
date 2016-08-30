@@ -437,6 +437,25 @@ public:
 };
 #endif
 
+//------------------------------------------------------------------------
+template <typename T>
+inline void setBit (T& storage, T bit, bool state)
+{
+	static_assert (std::is_integral<T>::value, "only works for integral types");
+	if (state)
+		storage |= bit;
+	else
+		storage &= ~(bit);
+}
+
+//------------------------------------------------------------------------
+template <typename T>
+inline bool hasBit (T storage, T bit)
+{
+	static_assert (std::is_integral<T>::value, "only works for integral types");
+	return (storage & bit) ? true : false;
+}
+
 } // namespace
 
 //-----------------------------------------------------------------------------

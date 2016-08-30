@@ -309,7 +309,7 @@ protected:
 
 	CGraphicsPath* getHitTestPath () const { return pHitTestPath; }
 	
-	bool hasViewFlag (int32_t bit) const { return (viewFlags & bit) ? true : false; }
+	bool hasViewFlag (int32_t bit) const { return hasBit (viewFlags, bit); }
 	void setViewFlag (int32_t bit, bool state);
 	
 	CRect  size;
