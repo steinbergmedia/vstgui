@@ -204,7 +204,7 @@ CView::CView (const CRect& size)
 	CViewInternal::gViewList.push_back (this);
 	#endif
 
-	viewFlags = kMouseEnabled | kVisible;
+	setViewFlag (kMouseEnabled | kVisible, true);
 }
 
 //-----------------------------------------------------------------------------
@@ -259,14 +259,20 @@ void CView::beforeDelete ()
 }
 
 //-----------------------------------------------------------------------------
+void CView::setViewFlag (int32_t bit, bool state)
+{
+	if (state)
+		viewFlags |= bit;
+	else
+		viewFlags &= ~(bit);
+}
+
+//-----------------------------------------------------------------------------
 void CView::setMouseEnabled (bool state)
 {
 	if (getMouseEnabled () != state)
 	{
-		if (state)
-			viewFlags |= kMouseEnabled;
-		else
-			viewFlags &= ~kMouseEnabled;
+		setViewFlag (kMouseEnabled, state);
 
 		if (pDisabledBackground)
 		{
@@ -280,10 +286,7 @@ void CView::setTransparency (bool state)
 {
 	if (getTransparency() != state)
 	{
-		if (state)
-			viewFlags |= kTransparencyEnabled;
-		else
-			viewFlags &= ~kTransparencyEnabled;
+		setViewFlag (kTransparencyEnabled, state);
 		setDirty (true);
 	}
 }
@@ -291,10 +294,7 @@ void CView::setTransparency (bool state)
 //-----------------------------------------------------------------------------
 void CView::setWantsFocus (bool state)
 {
-	if (state)
-		viewFlags |= kWantsFocus;
-	else
-		viewFlags &= ~kWantsFocus;
+	setViewFlag (kWantsFocus, state);
 }
 
 //-----------------------------------------------------------------------------
@@ -302,18 +302,9 @@ void CView::setWantsIdle (bool state)
 {
 	if (wantsIdle () == state)
 		return;
-	if (state)
-	{
-		viewFlags |= kWantsIdle;
-		if (isAttached ())
-			IdleViewUpdater::add (this);
-	}
-	else
-	{
-		viewFlags &= ~kWantsIdle;
-		if (isAttached ())
-			IdleViewUpdater::remove (this);
-	}
+	setViewFlag (kWantsIdle, state);
+	if (isAttached ())
+		state ? IdleViewUpdater::add (this) : IdleViewUpdater::remove (this);
 }
 
 //-----------------------------------------------------------------------------
@@ -323,14 +314,11 @@ void CView::setDirty (bool state)
 	{
 		if (state)
 			invalidRect (size);
-		viewFlags &= ~kDirty;
+		setViewFlag (kDirty, false);
 	}
 	else
 	{
-		if (state)
-			viewFlags |= kDirty;
-		else
-			viewFlags &= ~kDirty;
+		setViewFlag (kDirty, state);
 	}
 }
 
@@ -338,10 +326,7 @@ void CView::setDirty (bool state)
 void CView::setSubviewState (bool state)
 {
 	vstgui_assert (isSubview () != state, "");
-	if (state)
-		viewFlags |= kIsSubview;
-	else
-		viewFlags &= ~kIsSubview;
+	setViewFlag (kIsSubview, state);
 }
 
 //-----------------------------------------------------------------------------
@@ -356,7 +341,7 @@ bool CView::attached (CView* parent)
 	vstgui_assert (parent->asViewContainer ());
 	pParentView = parent;
 	pParentFrame = parent->getFrame ();
-	viewFlags |= kIsAttached;
+	setViewFlag (kIsAttached, true);
 	if (pParentFrame)
 		pParentFrame->onViewAdded (this);
 	if (wantsIdle ())
@@ -385,7 +370,7 @@ bool CView::removed (CView* parent)
 		pParentFrame->onViewRemoved (this);
 	pParentView = nullptr;
 	pParentFrame = nullptr;
-	viewFlags &= ~kIsAttached;
+	setViewFlag (kIsAttached, false);
 	return true;
 }
 
@@ -509,7 +494,7 @@ CGraphicsTransform CView::getGlobalTransform () const
  */
 void CView::invalidRect (const CRect& rect)
 {
-	if (isAttached () && viewFlags & kVisible)
+	if (isAttached () && hasViewFlag (kVisible))
 	{
 		vstgui_assert (pParentView);
 		pParentView->invalidRect (rect);
@@ -663,17 +648,17 @@ CRect CView::getVisibleViewSize () const
 //-----------------------------------------------------------------------------
 void CView::setVisible (bool state)
 {
-	if ((viewFlags & kVisible) ? true : false != state)
+	if (hasViewFlag (kVisible) != state)
 	{
 		if (state)
 		{
-			viewFlags |= kVisible;
+			setViewFlag (kVisible, true);
 			invalid ();
 		}
 		else
 		{
 			invalid ();
-			viewFlags &= ~kVisible;
+			setViewFlag (kVisible, false);
 		}
 	}
 }

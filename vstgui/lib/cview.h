@@ -90,7 +90,7 @@ public:
 	virtual void drawRect (CDrawContext *pContext, const CRect& updateRect) { draw (pContext); }		///< called if the view should draw itself
 	virtual bool checkUpdate (const CRect& updateRect) const { return updateRect.rectOverlap (size); }
 
-	virtual bool isDirty () const { return (viewFlags & kDirty) ? true : false; }						///< check if view is dirty
+	virtual bool isDirty () const { return hasViewFlag (kDirty); }										///< check if view is dirty
 	virtual void setDirty (bool val = true);															///< set the view to dirty so that it is redrawn in the next idle. Thread Safe !
 	static bool kDirtyCallAlwaysOnMainThread;															///< if this is true, setting a view dirty will call invalid() instead of checking it in idle. Default value is false.
 
@@ -98,7 +98,7 @@ public:
 	virtual void invalid () { setDirty (false); invalidRect (size); }									///< mark whole view as invalid
 
 	virtual void setVisible (bool state);																///< set visibility state
-	bool isVisible () const { return (viewFlags & kVisible) && alphaValue > 0.f; }						///< get visibility state
+	bool isVisible () const { return hasViewFlag (kVisible) && alphaValue > 0.f; }						///< get visibility state
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -120,7 +120,7 @@ public:
 	virtual bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons);	///< called if a mouse wheel event is happening over this view
 
 	virtual void setMouseEnabled (bool bEnable = true);											///< turn on/off mouse usage for this view
-	virtual bool getMouseEnabled () const { return viewFlags & kMouseEnabled; }					///< get the state of wheather this view uses the mouse or not
+	virtual bool getMouseEnabled () const { return hasViewFlag (kMouseEnabled); }				///< get the state of wheather this view uses the mouse or not
 
 	virtual void setMouseableArea (const CRect& rect)  { mouseableArea = rect; }				///< set the area in which the view reacts to the mouse
 	virtual CRect& getMouseableArea (CRect& rect) const { rect = mouseableArea; return rect;}	///< get the area in which the view reacts to the mouse
@@ -180,7 +180,7 @@ public:
 	//@{
 	virtual void looseFocus ();																	///< called if view should loose focus
 	virtual void takeFocus ();																	///< called if view should take focus
-	virtual bool wantsFocus () const { return (viewFlags & kWantsFocus) ? true : false; }		///< check if view supports focus
+	virtual bool wantsFocus () const { return hasViewFlag (kWantsFocus); }						///< check if view supports focus
 	virtual void setWantsFocus (bool state);													///< set focus support on/off
 	//@}
 
@@ -212,7 +212,7 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual void setTransparency (bool val);															///< set views transparent state
-	virtual bool getTransparency () const { return (viewFlags & kTransparencyEnabled) ? true : false; }	///< get views transparent state
+	virtual bool getTransparency () const { return hasViewFlag (kTransparencyEnabled); }				///< get views transparent state
 
 	virtual void setAlphaValue (float alpha);													///< set alpha value which will be applied when drawing this view
 	float getAlphaValue () const { return alphaValue; }											///< get alpha value
@@ -224,11 +224,11 @@ public:
 	//@{
 	virtual bool removed (CView* parent);														///< view is removed from parent view
 	virtual bool attached (CView* parent);														///< view is attached to a parent view
-	bool isAttached () const { return (viewFlags & kIsAttached) ? true : false; }				///< is view attached to a parentView
+	bool isAttached () const { return hasViewFlag (kIsAttached); }								///< is view attached to a parentView
 	//@}
 
 	void setSubviewState (bool state);
-	bool isSubview () const { return (viewFlags & kIsSubview) ? true : false; }
+	bool isSubview () const { return hasViewFlag (kIsSubview); }
 
 	//-----------------------------------------------------------------------------
 	/// @name Parent Methods
@@ -256,7 +256,7 @@ public:
 	//@{
 	virtual void onIdle () {}																	///< called on idle when view wants idle
 	void setWantsIdle (bool state);																///< enable/disable onIdle() callback
-	bool wantsIdle () const { return (viewFlags & kWantsIdle) ? true : false; }					///< returns if the view wants idle callback or not
+	bool wantsIdle () const { return hasViewFlag (kWantsIdle); }								///< returns if the view wants idle callback or not
 	static uint32_t idleRate;																	///< global idle rate in Hz, defaults to 30 Hz
 	//@}
 
@@ -309,13 +309,15 @@ protected:
 
 	CGraphicsPath* getHitTestPath () const { return pHitTestPath; }
 	
+	bool hasViewFlag (int32_t bit) const { return (viewFlags & bit) ? true : false; }
+	void setViewFlag (int32_t bit, bool state);
+	
 	CRect  size;
 	CRect  mouseableArea;
 
 	CFrame* pParentFrame {nullptr};
 	CView* pParentView {nullptr};
 
-	int32_t viewFlags {0};
 	int32_t autosizeFlags {kAutosizeNone};
 	
 	float alphaValue {1.f};
@@ -330,6 +332,8 @@ private:
 
 	ViewAttributes attributes;
 	ViewListenerDispatcher viewListeners;
+
+	int32_t viewFlags {0};
 };
 
 //-----------------------------------------------------------------------------

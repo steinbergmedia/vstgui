@@ -134,10 +134,7 @@ void CViewContainer::setTransform (const CGraphicsTransform& t)
 //-----------------------------------------------------------------------------
 void CViewContainer::setAutosizingEnabled (bool state)
 {
-	if (state)
-		viewFlags |= kAutosizeSubviews;
-	else
-		viewFlags &= ~kAutosizeSubviews;
+	setViewFlag (kAutosizeSubviews, state);
 }
 
 //-----------------------------------------------------------------------------

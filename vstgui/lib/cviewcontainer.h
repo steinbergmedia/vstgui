@@ -104,7 +104,7 @@ public:
 	virtual bool hitTestSubViews (const CPoint& where, const CButtonState& buttons = -1);
 
 	virtual void setAutosizingEnabled (bool state);					///< enable or disable autosizing subviews. Per default this is enabled.
-	bool getAutosizingEnabled () const { return (viewFlags & kAutosizeSubviews) ? true : false; }
+	bool getAutosizingEnabled () const { return hasViewFlag (kAutosizeSubviews); }
 
 	/** get child views of type ViewClass. ContainerClass must be a stdc++ container */
 	template<class ViewClass, class ContainerClass>

@@ -160,7 +160,7 @@ void CFrame::beforeDelete ()
 
 	pImpl->platformFrame = nullptr;
 
-	viewFlags &= ~kIsAttached;
+	setViewFlag (kIsAttached, false);
 	
 	delete pImpl;
 	pImpl = nullptr;
