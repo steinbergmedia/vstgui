@@ -219,8 +219,8 @@ public:
 		CView* operator* () const
 		{
 			if (reverse)
-				return riterator != children.rend () ? *riterator : 0;
-			return iterator != children.end () ? *iterator : 0;
+				return riterator != children.rend () ? *riterator : nullptr;
+			return iterator != children.end () ? *iterator : nullptr;
 		}
 		
 	protected:
