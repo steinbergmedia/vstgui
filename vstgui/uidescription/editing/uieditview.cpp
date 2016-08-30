@@ -164,11 +164,12 @@ void UISelectionView::drawResizeHandle (const CPoint& p, CDrawContext* pContext)
 //----------------------------------------------------------------------------------------------------
 void UISelectionView::draw (CDrawContext* pContext)
 {
+	auto lineWidth = pContext->getHairlineSize ();
 	CRect r (getVisibleViewSize ());
 	pContext->setClipRect (r);
 	pContext->setDrawMode (kAliasing);
 	pContext->setLineStyle (kLineSolid);
-	pContext->setLineWidth (1);
+	pContext->setLineWidth (lineWidth);
 
 	CColor lightColor (kWhiteCColor);
 	lightColor.alpha = 140;
@@ -180,10 +181,10 @@ void UISelectionView::draw (CDrawContext* pContext)
 	FOREACH_IN_SELECTION(selection, view)
 		CRect vs = selection->getGlobalViewCoordinates (view);
 		vs.offsetInverse (p);
-		vs.extend (1., 1.);
+		vs.extend (lineWidth, lineWidth);
 		pContext->setFrameColor (lightColor);
 		pContext->drawRect (vs);
-		vs.inset (1., 1.);
+		vs.inset (lineWidth, lineWidth);
 		pContext->setFrameColor (selectionColor);
 		pContext->drawRect (vs);
 		if (vs.getWidth () > handleInset * 2. && vs.getHeight () > handleInset * 2.)

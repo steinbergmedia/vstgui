@@ -403,4 +403,10 @@ const CGraphicsTransform& CDrawContext::getCurrentTransform () const
 	return transformStack.top ();
 }
 
+//------------------------------------------------------------------------
+CCoord CDrawContext::getHairlineSize () const
+{
+	return 1. / (getScaleFactor () * getCurrentTransform ().m11);
+}
+
 } // namespace

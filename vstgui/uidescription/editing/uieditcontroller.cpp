@@ -175,10 +175,12 @@ public:
 			if (lineColor == kBlackCColor)
 				UIEditController::getEditorDescription ()->getColor ("shading.light.frame", lineColor);
 
+			auto lineWidth = context->getHairlineSize ();
+
 			CRect size (_size);
 			context->setDrawMode (kAliasing);
 			context->setLineStyle (kLineSolid);
-			context->setLineWidth (1.);
+			context->setLineWidth (lineWidth);
 			context->setFrameColor (lineColor);
 
 			CGradient* shading = UIEditController::getEditorDescription ()->getGradient ("shading.light");
@@ -191,15 +193,15 @@ public:
 					if (drawBottomLine)
 						context->drawLine (CPoint (size.left, size.top), CPoint (size.left, size.bottom));
 					if (drawTopLine)
-						context->drawLine (CPoint (size.right-1, size.bottom), CPoint (size.right-1, size.top));
+						context->drawLine (CPoint (size.right-lineWidth, size.bottom), CPoint (size.right-lineWidth, size.top));
 				}
 				else
 				{
 					context->fillLinearGradient (path, *shading, CPoint (size.left, size.top), CPoint (size.left, size.bottom));
 					if (drawTopLine)
-						context->drawLine (CPoint (size.left, size.top), CPoint (size.right, size.top));
+						context->drawLine (CPoint (size.left, size.top + lineWidth), CPoint (size.right, size.top + lineWidth));
 					if (drawBottomLine)
-						context->drawLine (CPoint (size.right, size.bottom-1), CPoint (size.left, size.bottom-1));
+						context->drawLine (CPoint (size.right, size.bottom-lineWidth), CPoint (size.left, size.bottom-lineWidth));
 				}
 			}
 		}

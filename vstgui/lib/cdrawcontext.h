@@ -179,6 +179,15 @@ public:
 	//@{
 	const CGraphicsTransform& getCurrentTransform () const;
 	const CRect& getAbsoluteClipRect () const { return currentState.clipRect; }
+
+	/** returns the backend scale factor. */
+	virtual double getScaleFactor () const { return 1.; }
+	
+	/** returns the current line size which corresponds to one pixel on screen.
+	 *
+	 *	do not cache this value, instead ask for it every time you need it.
+	 */
+	CCoord getHairlineSize () const;
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -201,8 +210,6 @@ public:
 	virtual void fillLinearGradient (CGraphicsPath* path, const CGradient& gradient, const CPoint& startPoint, const CPoint& endPoint, bool evenOdd = false, CGraphicsTransform* transformation = nullptr) = 0;
 	virtual void fillRadialGradient (CGraphicsPath* path, const CGradient& gradient, const CPoint& center, CCoord radius, const CPoint& originOffset = CPoint (0,0), bool evenOdd = false, CGraphicsTransform* transformation = nullptr) = 0;
 	//@}
-
-	virtual double getScaleFactor () const { return 1.; }
 
 	virtual void beginDraw () {}
 	virtual void endDraw () {}
