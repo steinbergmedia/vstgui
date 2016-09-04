@@ -215,9 +215,7 @@ static void VSTGUI_NSView_viewDidMoveToWindow (id self, SEL _cmd)
 	{
 		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(windowKeyStateChanged:) name:NSWindowDidBecomeKeyNotification object:window];
 		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(windowKeyStateChanged:) name:NSWindowDidResignKeyNotification object:window];
-	#if MAC_OS_X_VERSION_MAX_ALLOWED > MAC_OS_X_VERSION_10_6
 		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(windowDidChangeBackingProperties:) name:NSWindowDidChangeBackingPropertiesNotification object:window];
-	#endif
 		IPlatformFrameCallback* frame = getFrame (self);
 		if (frame)
 			frame->platformOnActivate ([window isKeyWindow] ? true : false);
@@ -435,16 +433,10 @@ static void VSTGUI_NSView_scrollWheel (id self, SEL _cmd, NSEvent* theEvent)
 //------------------------------------------------------------------------------------
 static NSPoint getGlobalMouseLocation (NSView* view)
 {
-#if MAC_OS_X_VERSION_MAX_ALLOWED > MAC_OS_X_VERSION_10_6
 	NSRect r = {};
 	r.origin = [NSEvent mouseLocation];
 	r = [[view window] convertRectFromScreen:r];
 	return [view convertPoint:r.origin fromView:nil];
-#else
-	NSPoint nsPoint = [NSEvent mouseLocation];
-	nsPoint = [[view window] convertScreenToBase:nsPoint];
-	return [view convertPoint:nsPoint fromView:nil];
-#endif
 }
 
 //------------------------------------------------------------------------------------
