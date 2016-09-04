@@ -7,6 +7,7 @@ set(${target}_common_sources
   ialertbox.h
   iappdelegate.h
   iapplication.h
+  iasync.h
   icommand.h
   interface.h
   ipreference.h
@@ -40,6 +41,7 @@ set(${target}_common_sources
 set(${target}_mac_sources
   detail/platform/mac/VSTGUICommand.h
   detail/platform/mac/VSTGUICommand.mm
+  detail/platform/mac/macasync.mm
   detail/platform/mac/macapplication.mm
   detail/platform/mac/macpreference.h
   detail/platform/mac/macpreference.mm
@@ -51,6 +53,8 @@ set(${target}_mac_sources
 ##########################################################################################
 set(${target}_win32_sources
   detail/platform/win32/win32application.cpp
+  detail/platform/win32/win32async.cpp
+  detail/platform/win32/win32async.h
   detail/platform/win32/win32menu.cpp
   detail/platform/win32/win32menu.h
   detail/platform/win32/win32preference.cpp

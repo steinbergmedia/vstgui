@@ -34,6 +34,7 @@
 
 #include "vstgui_standalone.cpp"
 #include "standalone/detail/platform/win32/win32application.cpp"
+#include "standalone/detail/platform/win32/win32async.cpp"
 #include "standalone/detail/platform/win32/win32menu.cpp"
 #include "standalone/detail/platform/win32/win32preference.cpp"
 #include "standalone/detail/platform/win32/win32window.cpp"

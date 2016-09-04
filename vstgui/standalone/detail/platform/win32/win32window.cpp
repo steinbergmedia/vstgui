@@ -1,6 +1,6 @@
 #include "win32window.h"
 #include "win32menu.h"
-#include "../../../../lib/cvstguitimer.h"
+#include "win32async.h"
 #include "../../../../lib/platform/win32/direct2d/d2ddrawcontext.h"
 #include "../../../../lib/platform/win32/win32frame.h"
 #include "../../../../lib/platform/win32/winstring.h"
@@ -103,7 +103,7 @@ namespace Standalone {
 namespace Platform {
 namespace Win32 {
 
-static const WCHAR* gWindowClassName = L"VSTGUI_Standalone_WindowClass";
+static const WCHAR* gWindowClassName = L"VSTGUI Standalone WindowClass";
 
 static HINSTANCE getHInstance ()
 {
@@ -222,13 +222,9 @@ Window::~Window ()
 {
 	if (hwnd)
 	{
-		if (mainMenu)
-		{
-			SetMenu (hwnd, nullptr);
-			mainMenu.reset ();
-		}
 		SetWindowLongPtr (hwnd, GWLP_USERDATA, (__int3264) (LONG_PTR) nullptr);
 		DestroyWindow (hwnd);
+		mainMenu.reset ();
 	}
 }
 
@@ -912,7 +908,7 @@ void Window::close ()
 	auto call = [self] () {
 		self->onQuit (); // TODO: rename method !
 	};
-	Call::later (call);
+	Async::perform (Async::Context::Main, call);
 }
 
 //------------------------------------------------------------------------

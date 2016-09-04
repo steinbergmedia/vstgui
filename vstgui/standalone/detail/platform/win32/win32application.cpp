@@ -1,4 +1,3 @@
-#include "../../../../lib/cvstguitimer.h"
 #include "../../../../lib/platform/win32/win32support.h"
 #include "../../../iappdelegate.h"
 #include "../../../iapplication.h"
@@ -7,6 +6,7 @@
 #include "../../shareduiresources.h"
 #include "../../window.h"
 #include "../iplatformwindow.h"
+#include "win32async.h"
 #include "win32preference.h"
 #include "win32window.h"
 
@@ -18,7 +18,8 @@
 #pragma comment(lib, "d2d1.lib")
 #pragma comment(lib, "dwrite.lib")
 
-#pragma comment(linker,"\"/manifestdependency:type='win32' \
+#pragma comment(linker, \
+                "\"/manifestdependency:type='win32' \
 name='Microsoft.Windows.Common-Controls' version='6.0.0.0' \
 processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 
@@ -28,12 +29,10 @@ namespace Standalone {
 namespace Platform {
 namespace Win32 {
 
-using namespace VSTGUI::Standalone;
 using VSTGUI::Standalone::Detail::IPlatformApplication;
 using VSTGUI::Standalone::Detail::CommandWithKey;
 using VSTGUI::Standalone::Detail::IPlatformWindowAccess;
-using CommandWithKeyList =
-    VSTGUI::Standalone::Detail::IPlatformApplication::CommandWithKeyList;
+using CommandWithKeyList = VSTGUI::Standalone::Detail::IPlatformApplication::CommandWithKeyList;
 using VSTGUI::Standalone::Detail::PlatformCallbacks;
 
 //------------------------------------------------------------------------
@@ -51,7 +50,7 @@ class Application
 public:
 	Application () = default;
 
-	void init ();
+	void init (HINSTANCE instance, LPWSTR commandLine);
 	void run ();
 
 	void quit ();
@@ -66,12 +65,11 @@ private:
 };
 
 //------------------------------------------------------------------------
-void Application::init ()
+void Application::init (HINSTANCE instance, LPWSTR commandLine)
 {
 	SetProcessDpiAwareness (PROCESS_PER_MONITOR_DPI_AWARE);
 
 	IApplication::CommandLineArguments cmdArgs;
-	auto commandLine = GetCommandLine ();
 	int numArgs = 0;
 	auto cmdArgsArray = CommandLineToArgvW (commandLine, &numArgs);
 	for (int i = 0; i < numArgs; ++i)
@@ -80,6 +78,8 @@ void Application::init ()
 		cmdArgs.push_back (str.getUTF8String ());
 	}
 	LocalFree (cmdArgsArray);
+
+	initAsyncHandling (instance);
 
 	PlatformCallbacks callbacks;
 	callbacks.quit = [this] () { quit (); };
@@ -142,7 +142,7 @@ void Application::showAlertForWindow (const AlertBoxForWindowConfig& config)
 		    auto parentWinWindow = toWin32Window (parentWindow);
 		    vstgui_assert (parentWinWindow);
 		    parentWinWindow->setModalWindow (nullptr);
-		    Call::later ([callback, r, parentWindow] () {
+		    Async::perform (Async::Context::Main, [callback, r, parentWindow] () {
 			    callback (r);
 			    if (auto winWindow = toWin32Window (parentWindow))
 				    winWindow->activate ();
@@ -201,7 +201,7 @@ void Application::onCommandUpdate ()
 //------------------------------------------------------------------------
 void Application::quit ()
 {
-	Call::later ([] () {
+	Async::perform (Async::Context::Main, [] () {
 		auto windows = IApplication::instance ().getWindows (); // Yes, copy the window list
 		for (auto& w : windows)
 		{
@@ -250,7 +250,7 @@ int APIENTRY wWinMain (_In_ HINSTANCE instance, _In_opt_ HINSTANCE prevInstance,
 
 	VSTGUI::useD2DHardwareRenderer (true);
 	VSTGUI::Standalone::Platform::Win32::Application app;
-	app.init ();
+	app.init (instance, lpCmdLine);
 	app.run ();
 
 	CoUninitialize ();

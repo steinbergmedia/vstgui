@@ -3,6 +3,7 @@
 #include "testabout.h"
 #include "AlertBoxDesign.h"
 #include "vstgui/standalone/helpers/appdelegate.h"
+#include "vstgui/standalone/helpers/windowlistener.h"
 #include "vstgui/standalone/iapplication.h"
 #include "vstgui/standalone/iwindow.h"
 #include "vstgui/standalone/icommand.h"
@@ -21,7 +22,7 @@ namespace MyApp {
 using namespace VSTGUI::Standalone;
 
 //------------------------------------------------------------------------
-class Delegate : public Application::DelegateAdapter, public ICommandHandler
+class Delegate : public Application::DelegateAdapter, public ICommandHandler, public WindowListenerAdapter
 {
 public:
 	Delegate ();
@@ -35,6 +36,9 @@ public:
 	// ICommandHandler
 	bool canHandleCommand (const Command& command) override;
 	bool handleCommand (const Command& command) override;
+
+	// WindowListenerAdapter
+	void onClosed (const IWindow& window) override;
 
 private:
 	std::shared_ptr<TestModel> model;
@@ -61,6 +65,15 @@ void Delegate::finishLaunching ()
 	IApplication::instance ().registerCommand (NewPopup, 'N');
 	IApplication::instance ().registerCommand (ShowAlertBoxDesign, 'b');
 	handleCommand (Commands::NewDocument);
+}
+
+//------------------------------------------------------------------------
+void Delegate::onClosed (const IWindow& window)
+{
+	if (IApplication::instance ().getWindows ().empty ())
+	{
+		IApplication::instance ().quit ();
+	}
 }
 
 //------------------------------------------------------------------------
@@ -95,6 +108,7 @@ bool Delegate::handleCommand (const Command& command)
 		if (auto window = UIDesc::makeWindow (config))
 		{
 			window->show ();
+			window->registerWindowListener (this);
 		}
 		return true;
 	}
