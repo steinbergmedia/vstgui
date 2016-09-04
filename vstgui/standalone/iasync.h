@@ -19,7 +19,7 @@ enum class Context
 };
 
 //------------------------------------------------------------------------
-/** Perform a task asynchronous.
+/** Perform a task asynchronously.
  *
  *	Schedule a task to be performed asynchronous either on a background thread or on the main
  *	thread.

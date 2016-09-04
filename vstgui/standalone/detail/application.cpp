@@ -1,6 +1,5 @@
 #include "application.h"
 #include "../../lib/cview.h"
-#include "../../lib/cvstguitimer.h"
 #include "../iappdelegate.h"
 #include "../iapplication.h"
 #include "../icommand.h"

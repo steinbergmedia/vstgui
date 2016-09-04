@@ -17,6 +17,7 @@
 #include "../ialertbox.h"
 #include "../iappdelegate.h"
 #include "../iapplication.h"
+#include "../iasync.h"
 #include "../iuidescwindow.h"
 #include "application.h"
 #include "shareduiresources.h"
@@ -628,7 +629,7 @@ struct WindowController::EditImpl : WindowController::Impl
 		}
 		else
 		{
-			Call::later ([this] () { window->close (); });
+			Async::perform (Async::Context::Main, [this] () { window->close (); });
 		}
 	}
 

@@ -1,10 +1,10 @@
 #import <Cocoa/Cocoa.h>
 
 #import "../../../../lib/cframe.h"
-#import "../../../../lib/cvstguitimer.h"
 #import "../../../../lib/platform/mac/macstring.h"
-#import "../iplatformwindow.h"
+#import "../../../iasync.h"
 #import "../../application.h"
+#import "../iplatformwindow.h"
 #import "VSTGUICommand.h"
 #import "macwindow.h"
 
@@ -355,22 +355,21 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 }
 
 //------------------------------------------------------------------------
-- (BOOL)canHandleCommand:(const VSTGUI::Standalone::Command&) command
+- (BOOL)canHandleCommand:(const VSTGUI::Standalone::Command&)command
 {
 	using namespace VSTGUI::Standalone;
 	if (self.macWindow->getDelegate ().canHandleCommand (command))
 		return YES;
-	return Detail::getApplicationPlatformAccess()->canHandleCommand (command) ? YES : NO;
+	return Detail::getApplicationPlatformAccess ()->canHandleCommand (command) ? YES : NO;
 }
 
 //------------------------------------------------------------------------
-- (BOOL)handleCommand:(const VSTGUI::Standalone::Command&) command
+- (BOOL)handleCommand:(const VSTGUI::Standalone::Command&)command
 {
 	using namespace VSTGUI::Standalone;
 	if (self.macWindow->getDelegate ().handleCommand (command))
 		return YES;
-	return Detail::getApplicationPlatformAccess()->handleCommand (command) ? YES : NO;
-	
+	return Detail::getApplicationPlatformAccess ()->handleCommand (command) ? YES : NO;
 }
 
 //------------------------------------------------------------------------
@@ -574,8 +573,9 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 //------------------------------------------------------------------------
 - (void)performClose:(nullable id)sender
 {
+	using namespace VSTGUI::Standalone;
 	VSTGUIWindow* window = self;
-	VSTGUI::Call::later ([=] () { [window close]; });
+	Async::perform (Async::Context::Main, [=] () { [window close]; });
 }
 
 //------------------------------------------------------------------------
@@ -670,8 +670,9 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 //------------------------------------------------------------------------
 - (void)performClose:(nullable id)sender
 {
+	using namespace VSTGUI::Standalone;
 	VSTGUIPopup* popup = self;
-	VSTGUI::Call::later ([=] () { [popup close]; });
+	Async::perform (Async::Context::Main, [=] () { [popup close]; });
 }
 
 //------------------------------------------------------------------------
