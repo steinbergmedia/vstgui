@@ -111,9 +111,9 @@ many ways, it can even create custom views if you don't want to use the way desc
 
 @section standalone_supported_os Supported operating systems
 
-- Microsoft Windows
+- Microsoft Windows 64bit
     - minimum supported version : 8.1
-- Apple macOS
+- Apple macOS 64bit
     - minimum supported version : 10.10
 
 @section standalone_compiler_requirements Compiler requirements
