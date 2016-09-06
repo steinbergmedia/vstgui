@@ -207,6 +207,18 @@ static void VSTGUI_NSView_updateTrackingAreas (id self, SEL _cmd)
 extern NSString* const NSWindowDidChangeBackingPropertiesNotification;
 
 //------------------------------------------------------------------------------------
+static void VSTGUI_NSView_windowDidChangeBackingProperties (id self, SEL _cmd, NSNotification* notification)
+{
+	double scaleFactor = 1.;
+	if (auto window = [self window])
+		scaleFactor = [window backingScaleFactor];
+	
+	IPlatformFrameCallback* frame = getFrame (self);
+	if (frame)
+		frame->platformScaleFactorChanged (scaleFactor);
+}
+
+//------------------------------------------------------------------------------------
 static void VSTGUI_NSView_viewDidMoveToWindow (id self, SEL _cmd)
 {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
@@ -219,15 +231,8 @@ static void VSTGUI_NSView_viewDidMoveToWindow (id self, SEL _cmd)
 		IPlatformFrameCallback* frame = getFrame (self);
 		if (frame)
 			frame->platformOnActivate ([window isKeyWindow] ? true : false);
+		VSTGUI_NSView_windowDidChangeBackingProperties (self, _cmd, nil);
 	}
-}
-
-//------------------------------------------------------------------------------------
-static void VSTGUI_NSView_windowDidChangeBackingProperties (id self, SEL _cmd, NSNotification* notification)
-{
-	IPlatformFrameCallback* frame = getFrame (self);
-	if (frame)
-		frame->platformScaleFactorChanged ();
 }
 
 //------------------------------------------------------------------------------------

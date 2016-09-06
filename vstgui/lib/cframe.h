@@ -73,6 +73,8 @@ public:
 
 	bool setZoom (double zoomFactor);				///< set zoom factor
 
+	double getScaleFactor () const;
+
 	void idle ();
 
 	uint32_t getTicks () const;				///< get the current time (in ms)
@@ -203,6 +205,8 @@ protected:
 	CMouseEventResult callMouseObserverMouseDown (const CPoint& where, const CButtonState& buttons);
 	CMouseEventResult callMouseObserverMouseMoved (const CPoint& where, const CButtonState& buttons);
 
+	void dispatchNewScaleFactor (double newScaleFactor);
+
 	// platform frame
 	bool platformDrawRect (CDrawContext* context, const CRect& rect) override;
 	CMouseEventResult platformOnMouseDown (CPoint& where, const CButtonState& buttons) override;
@@ -218,7 +222,7 @@ protected:
 	bool platformOnKeyUp (VstKeyCode& keyCode) override;
 	void platformOnActivate (bool state) override;
 	void platformOnWindowActivate (bool state) override;
-	void platformScaleFactorChanged () override;
+	void platformScaleFactorChanged (double newScaleFactor) override;
 #if VSTGUI_TOUCH_EVENT_HANDLING
 	void platformOnTouchEvent (ITouchEvent& event) override;
 #endif

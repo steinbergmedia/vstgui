@@ -94,7 +94,7 @@ bool CShadowViewContainer::attached (CView* parent)
 }
 
 //-----------------------------------------------------------------------------
-void CShadowViewContainer::onScaleFactorChanged (CFrame* frame)
+void CShadowViewContainer::onScaleFactorChanged (CFrame* frame, double newScaleFactor)
 {
 	invalidateShadow ();
 }

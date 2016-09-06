@@ -78,7 +78,7 @@ public:
 	void setViewSize (const CRect& rect, bool invalid = true) override;
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 
-	void onScaleFactorChanged (CFrame* frame) override;
+	void onScaleFactorChanged (CFrame* frame, double newScaleFactor) override;
 
 	CLASS_METHODS(CShadowViewContainer, CViewContainer)
 protected:

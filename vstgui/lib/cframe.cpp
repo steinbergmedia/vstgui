@@ -94,7 +94,9 @@ struct CFrame::Impl
 	
 	ViewList pMouseViews;
 	WindowActiveStateChangeViews windowActiveStateChangeViews;
-	
+
+	double userScaleFactor {1.};
+	double platformScaleFactor {1.};
 	bool bActive {false};
 	bool bWindowActive {false};
 };
@@ -188,11 +190,14 @@ bool CFrame::open (void* systemWin, PlatformType systemWindowType)
 	if (!systemWin || isAttached ())
 		return false;
 
+	attached (this);
+	
 	pImpl->platformFrame = owned (IPlatformFrame::createPlatformFrame (this, getViewSize (), systemWin, systemWindowType));
 	if (!pImpl->platformFrame)
+	{
+		removed (this);
 		return false;
-
-	attached (this);
+	}
 
 	pParentView = nullptr;
 
@@ -239,7 +244,18 @@ bool CFrame::setZoom (double zoomFactor)
 	}
 	invalid ();
 	setAutosizingEnabled (true);
+	if (result)
+	{
+		pImpl->userScaleFactor = zoomFactor;
+		dispatchNewScaleFactor (getScaleFactor ());
+	}
 	return result;
+}
+
+//------------------------------------------------------------------------
+double CFrame::getScaleFactor () const
+{
+	return pImpl->platformScaleFactor * pImpl->userScaleFactor;
 }
 
 //-----------------------------------------------------------------------------
@@ -1581,12 +1597,21 @@ void CFrame::platformOnWindowActivate (bool state)
 }
 
 //-----------------------------------------------------------------------------
-void CFrame::platformScaleFactorChanged ()
+void CFrame::platformScaleFactorChanged (double newScaleFactor)
+{
+	if (pImpl->platformScaleFactor == newScaleFactor)
+		return;
+	pImpl->platformScaleFactor = newScaleFactor;
+	dispatchNewScaleFactor (getScaleFactor ());
+}
+
+//-----------------------------------------------------------------------------
+void CFrame::dispatchNewScaleFactor (double newScaleFactor)
 {
 	if (pImpl->pScaleFactorChangedListenerList == nullptr)
 		return;
 	for (auto& listener : *pImpl->pScaleFactorChangedListenerList)
-		listener->onScaleFactorChanged (this);
+		listener->onScaleFactorChanged (this, newScaleFactor);
 }
 
 #if VSTGUI_TOUCH_EVENT_HANDLING
