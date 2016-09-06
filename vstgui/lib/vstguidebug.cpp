@@ -33,6 +33,7 @@
 //-----------------------------------------------------------------------------
 
 #include "vstguidebug.h"
+#include <cstdarg>
 
 #if DEBUG
 
@@ -42,7 +43,6 @@
 	#include "platform/win32/win32support.h"
 #endif
 
-#include <cstdarg>
 #include <cstdio>
 
 namespace VSTGUI {
@@ -96,6 +96,12 @@ void DebugPrint (const char *format, ...)
 	#endif
 }
 
+} // namespace
+
+#endif // DEBUG
+
+namespace VSTGUI {
+
 static AssertionHandler assertionHandler {};
 
 //------------------------------------------------------------------------
@@ -113,6 +119,10 @@ bool hasAssertionHandler ()
 //------------------------------------------------------------------------
 void doAssert (const char* filename, const char* line, ...) noexcept (false)
 {
+#if NDEBUG
+	if (!hasAssertionHandler ())
+		return;
+#endif
 	std::va_list marker;
 	va_start (marker, line);
 	auto desc = va_arg (marker, const char*);
@@ -122,16 +132,16 @@ void doAssert (const char* filename, const char* line, ...) noexcept (false)
 			assertionHandler (filename, line, desc);
 		} catch (...)
 		{
-			 std::rethrow_exception (std::current_exception());
+		 std::rethrow_exception (std::current_exception());
 		}
 	}
+#if DEBUG
 	else
 	{
 		DebugPrint ("\nassert at %s:%s: %s\n", filename, line, desc ? desc : "unknown");
 		assert (false);
 	}
-}
-
-} // namespace
-
 #endif // DEBUG
+}
+	
+} // namespace
