@@ -152,6 +152,8 @@
 	#error unsupported compiler
 #endif
 
+#include <atomic>
+
 #ifdef UNICODE
 	#undef UNICODE
 #endif
@@ -255,6 +257,9 @@ public:
 	CBaseObject () = default;
 	virtual ~CBaseObject () noexcept = default;
 
+	CBaseObject (const CBaseObject& o) {};
+	CBaseObject& operator= (const CBaseObject& obj) { return *this; }
+	
 	//-----------------------------------------------------------------------------
 	/// @name Reference Counting Methods
 	//-----------------------------------------------------------------------------
@@ -278,7 +283,7 @@ public:
 	/// @endcond
 
 private:
-	int32_t nbReference {1};
+	std::atomic<int32_t> nbReference {1};
 };
 
 //------------------------------------------------------------------------
