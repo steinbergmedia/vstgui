@@ -14,6 +14,7 @@
 #include "vstgui/uidescription/iuidescription.h"
 #include "vstgui/uidescription/uiattributes.h"
 #include <atomic>
+#include <thread>
 #include <cassert>
 
 //------------------------------------------------------------------------
@@ -78,7 +79,8 @@ inline void calculateMandelbrotBitmap (Model model, SharedPointer<CBitmap> bitma
 {
 	if (auto pa = owned (CBitmapPixelAccess::create (bitmap)))
 	{
-		const auto numLinesPerTask = static_cast<uint32_t> (size.y / 64.);
+		const auto numLinesPerTask =
+		    static_cast<uint32_t> (size.y / (std::thread::hardware_concurrency () * 2));
 
 		const auto maxIterationInv = 1. / model.getIterations ();
 
