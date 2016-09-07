@@ -75,19 +75,45 @@ inline double hypot (double x, double y)
 }
 
 //------------------------------------------------------------------------
+inline Complex mulAdd (Complex z, Complex w, Complex v)
+{
+	auto a = z.real ();
+	auto b = z.imag ();
+	auto c = w.real ();
+	auto d = w.imag ();
+	auto ac = a * c;
+	auto bd = b * d;
+	auto ad = a * d;
+	auto bc = b * c;
+	auto x = ac - bd;
+	auto y = ad + bc;
+	return Complex (x + v.real (), y + v.imag ());
+}
+
+//------------------------------------------------------------------------
 template <typename SetPixelProc>
 inline void calculateLine (uint32_t line, Point size, const Model& model, SetPixelProc setPixel)
 {
+	Point sizeInv (size);
+	sizeInv -= {1, 1};
+	sizeInv.x = 1. / sizeInv.x;
+	sizeInv.y = 1. / sizeInv.y;
+	Point diff;
+	diff.x = model.getMax ().x - model.getMin ().x;
+	diff.y = model.getMax ().y - model.getMin ().y;
+	Point pos;
 	for (auto x = 0u; x < size.x; ++x)
 	{
-		auto pos = pixelToPoint (model.getMax (), model.getMin (), size, Point (x, line));
+		pos.x = model.getMin ().x + x * sizeInv.x * diff.x;
+		pos.y = model.getMin ().y + line * sizeInv.y * diff.y;
+		//		auto pos = pixelToPoint (model.getMax (), model.getMin (), size, Point (x, line));
 		Complex c {pos.x, pos.y};
 		Complex z {0};
 		uint32_t iterations {};
 
 		for (; iterations < model.getIterations () && hypot (z.real (), z.imag ()) < 2.0;
 		     ++iterations)
-			z = z * z + c;
+			z = mulAdd (z, z, c);
 
 		setPixel (x, iterations);
 	}
