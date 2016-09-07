@@ -190,15 +190,14 @@ bool CFrame::open (void* systemWin, PlatformType systemWindowType)
 	if (!systemWin || isAttached ())
 		return false;
 
-	attached (this);
-	
 	pImpl->platformFrame = owned (IPlatformFrame::createPlatformFrame (this, getViewSize (), systemWin, systemWindowType));
 	if (!pImpl->platformFrame)
 	{
-		removed (this);
 		return false;
 	}
 
+	attached (this);
+	
 	pParentView = nullptr;
 
 	return true;
