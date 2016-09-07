@@ -4,27 +4,27 @@
 set(target standalone)
 
 set(${target}_sources
-  "tests/standalone/source/AlertBoxDesign.cpp"
-  "tests/standalone/source/AlertBoxDesign.h"
-  "tests/standalone/source/testabout.cpp"
-  "tests/standalone/source/testabout.h"
-  "tests/standalone/source/testappdelegate.cpp"
-  "tests/standalone/source/testappdelegate.h"
-  "tests/standalone/source/testmodel.cpp"
-  "tests/standalone/source/testmodel.h"
+  "standalone/examples/standalone/source/AlertBoxDesign.cpp"
+  "standalone/examples/standalone/source/AlertBoxDesign.h"
+  "standalone/examples/standalone/source/testabout.cpp"
+  "standalone/examples/standalone/source/testabout.h"
+  "standalone/examples/standalone/source/testappdelegate.cpp"
+  "standalone/examples/standalone/source/testappdelegate.h"
+  "standalone/examples/standalone/source/testmodel.cpp"
+  "standalone/examples/standalone/source/testmodel.h"
 )
 
 ##########################################################################################
 if(CMAKE_HOST_APPLE)
 	set(BUNDLE_PKG_INFO
-    "tests/standalone/resource/PkgInfo"
+    "standalone/examples/standalone/resource/PkgInfo"
 	)
 	set(standalone_resources
-		"tests/standalone/resource/about.uidesc"
-		"tests/standalone/resource/alertbox.uidesc"
-		"tests/standalone/resource/resources.uidesc"
-		"tests/standalone/resource/test.uidesc"
-		"tests/standalone/resource/testpopup.uidesc"
+		"standalone/examples/standalone/resource/about.uidesc"
+		"standalone/examples/standalone/resource/alertbox.uidesc"
+		"standalone/examples/standalone/resource/resources.uidesc"
+		"standalone/examples/standalone/resource/test.uidesc"
+		"standalone/examples/standalone/resource/testpopup.uidesc"
 	)
 	set_source_files_properties(${BUNDLE_PKG_INFO} PROPERTIES
 		MACOSX_PACKAGE_LOCATION "."
@@ -40,7 +40,7 @@ if(CMAKE_HOST_APPLE)
 		"-framework QuartzCore"
 		"-framework Accelerate"
 	)
-	get_filename_component(InfoPlistFile "tests/standalone/resource/Info.plist" ABSOLUTE)
+	get_filename_component(InfoPlistFile "standalone/examples/standalone/resource/Info.plist" ABSOLUTE)
 	set(APP_PROPERTIES
 		MACOSX_BUNDLE TRUE
 		MACOSX_BUNDLE_INFO_PLIST ${InfoPlistFile}
@@ -51,7 +51,7 @@ endif()
 ##########################################################################################
 if(MSVC)
   set(standalone_resources
-    "tests/standalone/resource/standalone.rc"
+    "standalone/examples/standalone/resource/standalone.rc"
   )
   set(APP_PROPERTIES
     LINK_FLAGS "/SUBSYSTEM:windows /INCLUDE:wWinMain"
@@ -59,7 +59,7 @@ if(MSVC)
 endif()
 
 ##########################################################################################
-include_directories(../)
+#include_directories(../)
 add_executable(${target}
   ${${target}_sources}
   ${standalone_resources}
@@ -72,6 +72,5 @@ target_link_libraries(${target}
 )
 
 vstgui_set_cxx_version(${target} 14)
-set_target_properties(${target} PROPERTIES ${APP_PROPERTIES})
+set_target_properties(${target} PROPERTIES ${APP_PROPERTIES} ${VSTGUI_STANDALONE_EXAMPLES})
 target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS})
-vstgui_source_group_by_folder(${target})

@@ -8,7 +8,7 @@
 		<view back-color="~ BlackCColor" background-offset="0, 0" class="CTextEdit" control-tag="Test" default-value="0.5" font="~ NormalFont" font-antialias="true" font-color="~ WhiteCColor" frame-color="~ BlackCColor" frame-width="1" immediate-text-change="false" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="240, 10" round-rect-radius="6" shadow-color="~ RedCColor" size="90, 20" style-3D-in="false" style-3D-out="false" style-doubleclick="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" text-shadow-offset="1, 1" title="0.287546" transparent="false" value-precision="2" wheel-inc-value="0.1"/>
 	</template>
 	<custom>
-		<attributes name="UIDescFilePath" path="/Users/scheffle/Source/VST3/vstgui/vstgui/tests/standalone/resource/testpopup.uidesc"/>
+		<attributes name="UIDescFilePath" path="/Users/scheffle/Source/VST3/vstgui/vstgui/standalone/examples/standalone/resource/testpopup.uidesc"/>
 		<attributes Size="10, 10" name="UIGridController"/>
 		<attributes SelectedTemplate="view" name="UITemplateController"/>
 		<attributes EditViewScale="1" EditorSize="0, 0, 777, 714" SplitViewSize_0_0="0.8124098124098123596681375602202024310827" SplitViewSize_0_1="0.1587301587301587213474363124987576156855" SplitViewSize_1_0="0.4819624819624819811458849017071770504117" SplitViewSize_1_1="0.5108225108225108446191597977303899824619" SplitViewSize_2_0="0.768339768339768358629271460813470184803" SplitViewSize_2_1="0.2252252252252252284758782252538367174566" TabSwitchValue="3" Version="1" name="UIEditController"/>

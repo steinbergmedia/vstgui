@@ -66,5 +66,5 @@ target_link_libraries(${target}
 )
 
 vstgui_set_cxx_version(${target} 14)
-set_target_properties(${target} PROPERTIES ${APP_PROPERTIES})
+set_target_properties(${target} PROPERTIES ${APP_PROPERTIES} ${VSTGUI_STANDALONE_EXAMPLES})
 target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS})
