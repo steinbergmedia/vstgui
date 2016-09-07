@@ -120,7 +120,8 @@ inline void calculateMandelbrotBitmap (Model model, SharedPointer<CBitmap> bitma
 struct ViewController : DelegationController,
                         IViewListenerAdapter,
                         IModelChangeListener,
-                        IScaleFactorChangedListener
+                        IScaleFactorChangedListener,
+						CBaseObject
 {
 	ViewController (IController* parent, Model::Ptr model)
 	: DelegationController (parent), model (model)
@@ -195,10 +196,11 @@ struct ViewController : DelegationController,
 		auto bitmap = owned (new CBitmap (size.x, size.y));
 		bitmap->getPlatformBitmap ()->setScaleFactor (scaleFactor);
 		auto id = ++taskID;
+		auto This = shared (this);
 		calculateMandelbrotBitmap (*model.get (), bitmap, size, id, taskID,
-		                           [this] (uint32_t id, SharedPointer<CBitmap> bitmap) {
-			                           if (id == taskID && mandelbrotView)
-				                           mandelbrotView->setBackground (bitmap);
+		                           [This] (uint32_t id, SharedPointer<CBitmap> bitmap) {
+			                           if (id == This->taskID && This->mandelbrotView)
+				                           This->mandelbrotView->setBackground (bitmap);
 			                       });
 	}
 
