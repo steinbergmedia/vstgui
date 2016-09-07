@@ -15,13 +15,13 @@ class IMenuBuilder;
 class IValue;
 class IStepValue;
 class IValueListener;
-class IValueStringConverter;
+class IValueConverter;
 class ISharedUIResources;
 
 using WindowPtr = std::shared_ptr<IWindow>;
 using WindowControllerPtr = std::shared_ptr<IWindowController>;
 using ValuePtr = std::shared_ptr<IValue>;
-using ValueStringConverterPtr = std::shared_ptr<IValueStringConverter>;
+using ValueConverterPtr = std::shared_ptr<IValueConverter>;
 
 struct Command;
 struct AlertBoxConfig;

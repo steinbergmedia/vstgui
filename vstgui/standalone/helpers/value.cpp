@@ -23,7 +23,7 @@ IStepValue::StepType convertValueToStep (IValue::Type value, IStepValue::StepTyp
 }
 
 //------------------------------------------------------------------------
-class PercentStringConverter : public IValueStringConverter
+class PercentValueConverter : public IValueConverter
 {
 public:
 	UTF8String valueAsString (IValue::Type value) const override
@@ -37,10 +37,17 @@ public:
 		auto v = UTF8StringView (string).toDouble ();
 		return v / 100.;
 	}
+
+	IValue::Type plainToNormalize (IValue::Type plain) const override { return plain / 100.; }
+
+	IValue::Type normalizeToPlain (IValue::Type normalized) const override
+	{
+		return normalized * 100.;
+	}
 };
 
 //------------------------------------------------------------------------
-class DefaultValueStringConverter : public IValueStringConverter
+class DefaultValueConverter : public IValueConverter
 {
 public:
 	UTF8String valueAsString (IValue::Type value) const override
@@ -49,7 +56,7 @@ public:
 		if (value < 0. || value > 1.)
 			return result;
 
-		result = std::to_string (value);
+		result = std::to_string (normalizeToPlain (value));
 		return result;
 	}
 
@@ -60,25 +67,51 @@ public:
 		sstream.imbue (std::locale::classic ());
 		sstream.precision (40);
 		sstream >> value;
+		value = plainToNormalize (value);
 		if (value < 0. || value > 1.)
 			return IValue::InvalidValue;
 		return value;
 	}
+
+	IValue::Type plainToNormalize (IValue::Type plain) const override { return plain; }
+
+	IValue::Type normalizeToPlain (IValue::Type normalized) const override { return normalized; }
 };
 
 //------------------------------------------------------------------------
-class StringListValueStringConverter : public IValueStringConverter
+class RangeValueConverter : public DefaultValueConverter
 {
 public:
-	explicit StringListValueStringConverter (const std::initializer_list<UTF8String>& list)
+	RangeValueConverter (IValue::Type minValue, IValue::Type maxValue)
+	: minValue (minValue), maxValue (maxValue)
+	{
+	}
+
+	IValue::Type plainToNormalize (IValue::Type plain) const override
+	{
+		return (plain - minValue) / (maxValue - minValue);
+	}
+
+	IValue::Type normalizeToPlain (IValue::Type normalized) const override
+	{
+		return normalized * (maxValue - minValue) + minValue;
+	}
+
+private:
+	IValue::Type minValue;
+	IValue::Type maxValue;
+};
+
+//------------------------------------------------------------------------
+class StringListValueConverter : public IValueConverter
+{
+public:
+	explicit StringListValueConverter (const std::initializer_list<UTF8String>& list)
 	: strings (list)
 	{
 	}
 
-	explicit StringListValueStringConverter (const IStringListValue::StringList& list)
-	: strings (list)
-	{
-	}
+	explicit StringListValueConverter (const IStringListValue::StringList& list) : strings (list) {}
 
 	UTF8String valueAsString (IValue::Type value) const override
 	{
@@ -97,6 +130,17 @@ public:
 		return IValue::InvalidValue;
 	}
 
+	IValue::Type plainToNormalize (IValue::Type plain) const override
+	{
+		return convertStepToValue (plain, static_cast<IStepValue::StepType> (strings.size () - 1));
+	}
+
+	IValue::Type normalizeToPlain (IValue::Type normalized) const override
+	{
+		return convertValueToStep (normalized,
+		                           static_cast<IStepValue::StepType> (strings.size () - 1));
+	}
+
 private:
 	IStringListValue::StringList strings;
 };
@@ -105,7 +149,7 @@ private:
 class Value : public IValue
 {
 public:
-	Value (const UTF8String& id, Type initialValue, const ValueStringConverterPtr& stringConverter);
+	Value (const UTF8String& id, Type initialValue, const ValueConverterPtr& stringConverter);
 
 	void beginEdit () override;
 	bool performEdit (Type newValue) override;
@@ -119,13 +163,13 @@ public:
 
 	const UTF8String& getID () const override;
 
-	const IValueStringConverter& getStringConverter () const override;
+	const IValueConverter& getConverter () const override;
 
 	void registerListener (IValueListener* listener) override;
 	void unregisterListener (IValueListener* listener) override;
 
-	bool hasStringConverter () const { return stringConverter != nullptr; }
-	void setStringConverter (const ValueStringConverterPtr& stringConverter);
+	bool hasStringConverter () const { return valueConverter != nullptr; }
+	void setValueConverter (const ValueConverterPtr& stringConverter);
 
 	void dispatchStateChange ();
 
@@ -134,16 +178,16 @@ private:
 	Type value;
 	bool active {true};
 	uint32_t editCount {0};
-	ValueStringConverterPtr stringConverter;
+	ValueConverterPtr valueConverter;
 	DispatchList<IValueListener> listeners;
 };
 
 //------------------------------------------------------------------------
-class StepValue : public Value, public IStepValue, public IValueStringConverter
+class StepValue : public Value, public IStepValue, public IValueConverter
 {
 public:
 	StepValue (const UTF8String& id, StepType initialSteps, Type initialValue,
-	           const ValueStringConverterPtr& stringConverter);
+	           const ValueConverterPtr& stringConverter);
 
 	bool performEdit (Type newValue) override;
 
@@ -153,8 +197,10 @@ public:
 
 	UTF8String valueAsString (IValue::Type value) const override;
 	IValue::Type stringAsValue (const UTF8String& string) const override;
+	IValue::Type plainToNormalize (IValue::Type plain) const override;
+	IValue::Type normalizeToPlain (IValue::Type normalized) const override;
 
-	const IValueStringConverter& getStringConverter () const override;
+	const IValueConverter& getConverter () const override;
 
 	void setNumSteps (StepType numSteps);
 
@@ -167,15 +213,14 @@ class StringListValue : public StepValue, public IStringListValue
 {
 public:
 	StringListValue (const UTF8String& id, StepType initialSteps, Type initialValue,
-	                 const ValueStringConverterPtr& stringConverter);
+	                 const ValueConverterPtr& stringConverter);
 
 	bool updateStringList (const std::vector<UTF8String>& newStrings) override;
 };
 
 //------------------------------------------------------------------------
-Value::Value (const UTF8String& id, Type initialValue,
-              const ValueStringConverterPtr& stringConverter)
-: idString (id), value (initialValue), stringConverter (stringConverter)
+Value::Value (const UTF8String& id, Type initialValue, const ValueConverterPtr& stringConverter)
+: idString (id), value (initialValue), valueConverter (stringConverter)
 {
 }
 
@@ -250,9 +295,9 @@ const UTF8String& Value::getID () const
 }
 
 //------------------------------------------------------------------------
-const IValueStringConverter& Value::getStringConverter () const
+const IValueConverter& Value::getConverter () const
 {
-	return *stringConverter.get ();
+	return *valueConverter.get ();
 }
 
 //------------------------------------------------------------------------
@@ -274,16 +319,16 @@ void Value::dispatchStateChange ()
 }
 
 //------------------------------------------------------------------------
-void Value::setStringConverter (const ValueStringConverterPtr& converter)
+void Value::setValueConverter (const ValueConverterPtr& converter)
 {
-	stringConverter = converter;
+	valueConverter = converter;
 }
 
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 StepValue::StepValue (const UTF8String& id, StepType initialSteps, Type initialValue,
-                      const ValueStringConverterPtr& stringConverter)
+                      const ValueConverterPtr& stringConverter)
 : Value (id, initialValue, stringConverter), steps (initialSteps - 1)
 {
 }
@@ -334,11 +379,23 @@ IValue::Type StepValue::stringAsValue (const UTF8String& string) const
 }
 
 //------------------------------------------------------------------------
-const IValueStringConverter& StepValue::getStringConverter () const
+IValue::Type StepValue::plainToNormalize (IValue::Type plain) const
+{
+	return stepToValue (plain);
+}
+
+//------------------------------------------------------------------------
+IValue::Type StepValue::normalizeToPlain (IValue::Type normalized) const
+{
+	return valueToStep (normalized);
+}
+
+//------------------------------------------------------------------------
+const IValueConverter& StepValue::getConverter () const
 {
 	if (!hasStringConverter ())
 		return *this;
-	return Value::getStringConverter ();
+	return Value::getConverter ();
 }
 
 //------------------------------------------------------------------------
@@ -350,7 +407,7 @@ void StepValue::setNumSteps (StepType numSteps)
 
 //------------------------------------------------------------------------
 StringListValue::StringListValue (const UTF8String& id, StepType initialSteps, Type initialValue,
-                                  const ValueStringConverterPtr& stringConverter)
+                                  const ValueConverterPtr& stringConverter)
 : StepValue (id, initialSteps, initialValue, stringConverter)
 {
 }
@@ -358,11 +415,10 @@ StringListValue::StringListValue (const UTF8String& id, StepType initialSteps, T
 //------------------------------------------------------------------------
 bool StringListValue::updateStringList (const std::vector<UTF8String>& newStrings)
 {
-	setStringConverter (std::make_shared<Detail::StringListValueStringConverter> (newStrings));
+	setValueConverter (std::make_shared<Detail::StringListValueConverter> (newStrings));
 	setNumSteps (static_cast<IStepValue::StepType> (newStrings.size ()));
 	return true;
 }
-
 
 //------------------------------------------------------------------------
 } // anonymous
@@ -373,18 +429,18 @@ namespace Value {
 
 //------------------------------------------------------------------------
 ValuePtr make (const UTF8String& id, IValue::Type initialValue,
-               const ValueStringConverterPtr& stringConverter)
+               const ValueConverterPtr& stringConverter)
 {
 	vstgui_assert (id.empty () == false);
-	return std::make_shared<Detail::Value> (
-	    id, initialValue, stringConverter.get () ?
-	                          stringConverter :
-	                          std::make_shared<Detail::DefaultValueStringConverter> ());
+	return std::make_shared<Detail::Value> (id, initialValue,
+	                                        stringConverter.get () ?
+	                                            stringConverter :
+	                                            std::make_shared<Detail::DefaultValueConverter> ());
 }
 
 //------------------------------------------------------------------------
 ValuePtr makeStepValue (const UTF8String& id, IStepValue::StepType initialSteps,
-                        IValue::Type initialValue, const ValueStringConverterPtr& stringConverter)
+                        IValue::Type initialValue, const ValueConverterPtr& stringConverter)
 {
 	vstgui_assert (id.empty () == false);
 	return std::make_shared<Detail::StepValue> (id, initialSteps, initialValue, stringConverter);
@@ -398,7 +454,7 @@ ValuePtr makeStringListValue (const UTF8String& id,
 	vstgui_assert (id.empty () == false);
 	return std::make_shared<Detail::StringListValue> (
 	    id, static_cast<IStepValue::StepType> (strings.size ()), initialValue,
-	    std::make_shared<Detail::StringListValueStringConverter> (strings));
+	    std::make_shared<Detail::StringListValueConverter> (strings));
 }
 
 //------------------------------------------------------------------------
@@ -407,13 +463,19 @@ ValuePtr makeStringListValue (const UTF8String& id, const IStringListValue::Stri
 	vstgui_assert (id.empty () == false);
 	return std::make_shared<Detail::StringListValue> (
 	    id, static_cast<IStepValue::StepType> (strings.size ()), 0,
-	    std::make_shared<Detail::StringListValueStringConverter> (strings));
+	    std::make_shared<Detail::StringListValueConverter> (strings));
 }
 
 //------------------------------------------------------------------------
-ValueStringConverterPtr makePercentConverter ()
+ValueConverterPtr makePercentConverter ()
 {
-	return std::make_shared<Detail::PercentStringConverter> ();
+	return std::make_shared<Detail::PercentValueConverter> ();
+}
+
+//------------------------------------------------------------------------
+ValueConverterPtr makeRangeConverter (IValue::Type minValue, IValue::Type maxValue)
+{
+	return std::make_shared<Detail::RangeValueConverter> (minValue, maxValue);
 }
 
 //------------------------------------------------------------------------

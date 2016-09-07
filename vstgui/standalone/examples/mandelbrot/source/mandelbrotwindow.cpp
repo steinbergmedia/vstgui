@@ -233,8 +233,18 @@ struct ModelBinding : UIDesc::IModelBinding, IModelChangeListener, ValueListener
 			maxIterations->performEdit (sv->stepToValue (model->getIterations ()));
 
 		values.emplace_back (maxIterations);
+		values.emplace_back (minX);
+		values.emplace_back (minY);
+		values.emplace_back (maxX);
+		values.emplace_back (maxY);
 
 		maxIterations->registerListener (this);
+		minX->registerListener (this);
+		minY->registerListener (this);
+		maxX->registerListener (this);
+		maxY->registerListener (this);
+		
+		model->registerListener (this);
 	}
 
 	const ValueList& getValues () const override { return values; }
@@ -242,12 +252,17 @@ struct ModelBinding : UIDesc::IModelBinding, IModelChangeListener, ValueListener
 	void modelChanged (const Model& model) override
 	{
 		if (auto sv = maxIterations->dynamicCast<IStepValue> ())
-		{
-			maxIterations->beginEdit ();
-			maxIterations->performEdit (sv->stepToValue (model.getIterations ()));
-			maxIterations->endEdit ();
-		}
+			Value::performEdit (*maxIterations.get (), sv->stepToValue (model.getIterations ()));
+		Value::performEdit (*minX.get (),
+		                    minX->getConverter ().plainToNormalize (model.getMin ().x));
+		Value::performEdit (*minY.get (),
+		                    minY->getConverter ().plainToNormalize (model.getMin ().y));
+		Value::performEdit (*maxX.get (),
+		                    maxX->getConverter ().plainToNormalize (model.getMax ().x));
+		Value::performEdit (*maxY.get (),
+		                    maxY->getConverter ().plainToNormalize (model.getMax ().y));
 	}
+
 	void onPerformEdit (IValue& value, IValue::Type newValue) override
 	{
 		if (&value == maxIterations.get ())
@@ -256,10 +271,26 @@ struct ModelBinding : UIDesc::IModelBinding, IModelChangeListener, ValueListener
 			{
 				model->setIterations (sv->valueToStep (value.getValue ()));
 			}
+			return;
 		}
+		auto min = model->getMin ();
+		auto max = model->getMax ();
+		if (&value == maxX.get())
+			max.x = value.getConverter ().normalizeToPlain (value.getValue ());
+		else if (&value == maxY.get())
+			max.y = value.getConverter ().normalizeToPlain (value.getValue ());
+		else if (&value == minX.get())
+			min.x = value.getConverter ().normalizeToPlain (value.getValue ());
+		else if (&value == minY.get())
+			min.y = value.getConverter ().normalizeToPlain (value.getValue ());
+		model->setMinMax (min, max);
 	}
 
 	ValuePtr maxIterations {Value::makeStepValue ("max interations", 1024)};
+	ValuePtr minX {Value::make ("minX", 0., Value::makeRangeConverter (-2.2, 1.2))};
+	ValuePtr minY {Value::make ("minY", 0., Value::makeRangeConverter (-1.7, 1.7))};
+	ValuePtr maxX {Value::make ("maxX", 1., Value::makeRangeConverter (-2.2, 1.2))};
+	ValuePtr maxY {Value::make ("maxY", 1., Value::makeRangeConverter (-1.7, 1.7))};
 	ValueList values;
 
 	Model::Ptr model;

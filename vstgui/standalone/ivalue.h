@@ -33,7 +33,7 @@ public:
 
 	virtual const UTF8String& getID () const = 0;
 
-	virtual const IValueStringConverter& getStringConverter () const = 0;
+	virtual const IValueConverter& getConverter () const = 0;
 
 	virtual void registerListener (IValueListener* listener) = 0;
 	virtual void unregisterListener (IValueListener* listener) = 0;
@@ -60,11 +60,14 @@ public:
  *
  *	@ingroup standalone
  */
-class IValueStringConverter : public Interface
+class IValueConverter : public Interface
 {
 public:
 	virtual UTF8String valueAsString (IValue::Type value) const = 0;
 	virtual IValue::Type stringAsValue (const UTF8String& string) const = 0;
+
+	virtual IValue::Type plainToNormalize (IValue::Type plain) const = 0;
+	virtual IValue::Type normalizeToPlain (IValue::Type normalized) const = 0;
 };
 
 //------------------------------------------------------------------------

@@ -117,13 +117,13 @@ public:
 		auto stepValue = dynamicPtrCast<const IStepValue> (value);
 		if (!stepValue)
 			return;
-		const auto& stringConvert = value->getStringConverter ();
+		const auto& valueConverter = value->getConverter ();
 		if (auto menu = dynamic_cast<COptionMenu*> (control))
 		{
 			menu->removeAllEntry ();
 			for (IStepValue::StepType i = 0; i < stepValue->getSteps (); ++i)
 			{
-				auto title = stringConvert.valueAsString (stepValue->stepToValue (i));
+				auto title = valueConverter.valueAsString (stepValue->stepToValue (i));
 				menu->addEntry (title);
 			}
 		}
@@ -132,7 +132,7 @@ public:
 			segmentButton->removeAllSegments ();
 			for (IStepValue::StepType i = 0; i < stepValue->getSteps (); ++i)
 			{
-				auto title = stringConvert.valueAsString (stepValue->stepToValue (i));
+				auto title = valueConverter.valueAsString (stepValue->stepToValue (i));
 				segmentButton->addSegment ({title});
 			}
 		}
@@ -164,14 +164,14 @@ public:
 		{
 			paramDisplay->setValueToStringFunction2 (
 			    [this] (float value, std::string& utf8String, CParamDisplay* display) {
-				    utf8String = this->value->getStringConverter ().valueAsString (value);
+				    utf8String = this->value->getConverter ().valueAsString (value);
 				    return true;
 				});
 			if (auto textEdit = dynamic_cast<CTextEdit*> (paramDisplay))
 			{
 				textEdit->setStringToValueFunction (
 				    [&] (UTF8StringPtr txt, float& result, CTextEdit* textEdit) {
-					    auto v = value->getStringConverter ().stringAsValue (txt);
+					    auto v = value->getConverter ().stringAsValue (txt);
 					    if (v == IValue::InvalidValue)
 						    v = value->getValue ();
 					    result = static_cast<float> (v);

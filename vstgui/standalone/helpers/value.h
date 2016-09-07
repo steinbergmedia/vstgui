@@ -20,12 +20,12 @@ namespace Value {
 
 //------------------------------------------------------------------------
 ValuePtr make (const UTF8String& id, IValue::Type initialValue = 0.,
-               const ValueStringConverterPtr& stringConverter = nullptr);
+               const ValueConverterPtr& stringConverter = nullptr);
 
 //------------------------------------------------------------------------
 ValuePtr makeStepValue (const UTF8String& id, IStepValue::StepType numSteps,
                         IValue::Type initialValue = 0.,
-                        const ValueStringConverterPtr& stringConverter = nullptr);
+                        const ValueConverterPtr& stringConverter = nullptr);
 
 //------------------------------------------------------------------------
 ValuePtr makeStringListValue (const UTF8String& id,
@@ -36,7 +36,16 @@ ValuePtr makeStringListValue (const UTF8String& id,
 ValuePtr makeStringListValue (const UTF8String& id, const IStringListValue::StringList& strings);
 
 //------------------------------------------------------------------------
-ValueStringConverterPtr makePercentConverter ();
+ValueConverterPtr makePercentConverter ();
+ValueConverterPtr makeRangeConverter (IValue::Type minValue, IValue::Type maxValue);
+
+//------------------------------------------------------------------------
+inline void performEdit (IValue& value, IValue::Type newValue)
+{
+	value.beginEdit ();
+	value.performEdit (newValue);
+	value.endEdit ();
+}
 
 //------------------------------------------------------------------------
 } // Value
