@@ -16,7 +16,7 @@ struct View : public VSTGUI::CView
 	using CDrawContext = VSTGUI::CDrawContext;
 	using ChangedFunc = std::function<void (CRect box)>;
 
-	View (const ChangedFunc& func);
+	View (ChangedFunc&& func);
 
 	int32_t onKeyDown (VstKeyCode& keyCode) override;
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;

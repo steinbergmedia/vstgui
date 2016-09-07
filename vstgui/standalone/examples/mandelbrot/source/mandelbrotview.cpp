@@ -10,7 +10,7 @@ namespace Mandelbrot {
 using namespace VSTGUI;
 
 //------------------------------------------------------------------------
-View::View (const ChangedFunc& func) : CView ({}), changed (func)
+View::View (ChangedFunc&& func) : CView ({}), changed (std::move (func))
 {
 }
 
