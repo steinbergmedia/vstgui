@@ -4,16 +4,16 @@
 set(target simple_standalone)
 
 set(${target}_sources
-  "tests/simple_standalone/source/myapp.cpp"
+  "standalone/examples/simple_standalone/source/myapp.cpp"
 )
 
 ##########################################################################################
 if(CMAKE_HOST_APPLE)
 	set(BUNDLE_PKG_INFO
-    "tests/simple_standalone/resource/PkgInfo"
+    "standalone/examples/simple_standalone/resource/PkgInfo"
 	)
 	set(simple_standalone_resources
-		"tests/simple_standalone/resource/Window.uidesc"
+		"standalone/examples/simple_standalone/resource/Window.uidesc"
 	)
 	set_source_files_properties(${BUNDLE_PKG_INFO} PROPERTIES
 		MACOSX_PACKAGE_LOCATION "."
@@ -29,7 +29,7 @@ if(CMAKE_HOST_APPLE)
 		"-framework QuartzCore"
 		"-framework Accelerate"
 	)
-	get_filename_component(InfoPlistFile "tests/simple_standalone/resource/Info.plist" ABSOLUTE)
+	get_filename_component(InfoPlistFile "standalone/examples/simple_standalone/resource/Info.plist" ABSOLUTE)
 	set(APP_PROPERTIES
 		MACOSX_BUNDLE TRUE
 		MACOSX_BUNDLE_INFO_PLIST ${InfoPlistFile}
@@ -40,7 +40,7 @@ endif()
 ##########################################################################################
 if(MSVC)
   set(simple_standalone_resources
-    "tests/simple_standalone/resource/simple_standalone.rc"
+    "standalone/examples/simple_standalone/resource/simple_standalone.rc"
   )
   set(APP_PROPERTIES
     LINK_FLAGS "/SUBSYSTEM:windows /INCLUDE:wWinMain"
@@ -63,4 +63,3 @@ target_link_libraries(${target}
 vstgui_set_cxx_version(${target} 14)
 set_target_properties(${target} PROPERTIES ${APP_PROPERTIES})
 target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS})
-vstgui_source_group_by_folder(${target})
