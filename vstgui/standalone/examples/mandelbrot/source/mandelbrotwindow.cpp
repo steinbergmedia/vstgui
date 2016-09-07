@@ -1,5 +1,6 @@
 #include "mandelbrotwindow.h"
 #include "mandelbrot.h"
+#include "mandelbrotview.h"
 #include "vstgui/lib/cbitmap.h"
 #include "vstgui/lib/ccolor.h"
 #include "vstgui/lib/cdrawcontext.h"
@@ -23,49 +24,6 @@ namespace Mandelbrot {
 using namespace VSTGUI;
 using namespace VSTGUI::Standalone;
 using namespace VSTGUI::Standalone::Application;
-
-//------------------------------------------------------------------------
-struct ModelBinding : UIDesc::IModelBinding, IModelChangeListener, ValueListenerAdapter
-{
-	using Ptr = std::shared_ptr<ModelBinding>;
-
-	ModelBinding (Model::Ptr model) : model (model)
-	{
-		if (auto sv = maxIterations->dynamicCast<IStepValue> ())
-			maxIterations->performEdit (sv->stepToValue (model->getIterations ()));
-
-		values.emplace_back (maxIterations);
-
-		maxIterations->registerListener (this);
-	}
-
-	const ValueList& getValues () const override { return values; }
-
-	void modelChanged (const Model& model) override
-	{
-		if (auto sv = maxIterations->dynamicCast<IStepValue> ())
-		{
-			maxIterations->beginEdit ();
-			maxIterations->performEdit (sv->stepToValue (model.getIterations ()));
-			maxIterations->endEdit ();
-		}
-	}
-	void onPerformEdit (IValue& value, IValue::Type newValue) override
-	{
-		if (&value == maxIterations.get ())
-		{
-			if (auto sv = maxIterations->dynamicCast<IStepValue> ())
-			{
-				model->setIterations (sv->valueToStep (value.getValue ()));
-			}
-		}
-	}
-
-	ValuePtr maxIterations {Value::makeStepValue ("max interations", 1024)};
-	ValueList values;
-
-	Model::Ptr model;
-};
 
 //------------------------------------------------------------------------
 inline CColor calculateColor (uint32_t iteration, double maxIterationInv)
@@ -156,87 +114,6 @@ inline void calculateMandelbrotBitmap (Model model, SharedPointer<CBitmap> bitma
 		}
 	}
 }
-
-//------------------------------------------------------------------------
-struct View : public CView
-{
-	using ChangedFunc = std::function<void (CRect box)>;
-
-	View (const ChangedFunc& func) : CView ({}), changed (func) {}
-
-	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override
-	{
-		if (buttons.isLeftButton ())
-		{
-			box.setTopLeft (where);
-			box.setBottomRight (where);
-			return kMouseEventHandled;
-		}
-		return kMouseEventNotHandled;
-	}
-
-	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override
-	{
-		if (buttons.isLeftButton () && !box.isEmpty ())
-		{
-			if (changed)
-			{
-				CRect b {box};
-				b.offsetInverse (getViewSize ().getTopLeft ());
-				changed (b);
-			}
-			invalidRect (box);
-			box = {};
-		}
-		return kMouseEventHandled;
-	}
-
-	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override
-	{
-		if (!buttons.isLeftButton ())
-			return kMouseEventNotHandled;
-		invalidRect (box);
-		box.setBottomRight (where);
-		invalidRect (box);
-		return kMouseEventHandled;
-	}
-
-	CMouseEventResult onMouseCancel () override
-	{
-		invalidRect (box);
-		box = {};
-		return kMouseEventHandled;
-	}
-
-	void draw (CDrawContext* context) override
-	{
-		if (auto bitmap = getBackground ())
-		{
-			auto width = bitmap->getWidth ();
-			auto height = bitmap->getHeight ();
-			CGraphicsTransform transform;
-			transform.scale (getWidth () / width, getHeight () / height);
-			transform.translate (getViewSize ().left, getViewSize ().top);
-			CDrawContext::Transform t (*context, transform);
-			bitmap->draw (context, CRect (0, 0, width, height));
-		}
-		if (box.isEmpty ())
-			return;
-		auto hairlineSize = context->getHairlineSize ();
-		ConcatClip cc (*context, box);
-		context->setLineWidth (hairlineSize);
-		context->setDrawMode (kAliasing);
-		context->setFrameColor (kBlackCColor);
-		context->drawRect (box);
-		CRect b2 (box);
-		b2.inset (hairlineSize, hairlineSize);
-		context->setFrameColor (kWhiteCColor);
-		context->drawRect (b2);
-	}
-
-	CRect box;
-	ChangedFunc changed;
-};
 
 //------------------------------------------------------------------------
 struct ViewController : DelegationController,
@@ -340,6 +217,49 @@ struct Customization : UIDesc::ICustomization
 	{
 		return new ViewController (parent, model);
 	}
+	Model::Ptr model;
+};
+
+//------------------------------------------------------------------------
+struct ModelBinding : UIDesc::IModelBinding, IModelChangeListener, ValueListenerAdapter
+{
+	using Ptr = std::shared_ptr<ModelBinding>;
+
+	ModelBinding (Model::Ptr model) : model (model)
+	{
+		if (auto sv = maxIterations->dynamicCast<IStepValue> ())
+			maxIterations->performEdit (sv->stepToValue (model->getIterations ()));
+
+		values.emplace_back (maxIterations);
+
+		maxIterations->registerListener (this);
+	}
+
+	const ValueList& getValues () const override { return values; }
+
+	void modelChanged (const Model& model) override
+	{
+		if (auto sv = maxIterations->dynamicCast<IStepValue> ())
+		{
+			maxIterations->beginEdit ();
+			maxIterations->performEdit (sv->stepToValue (model.getIterations ()));
+			maxIterations->endEdit ();
+		}
+	}
+	void onPerformEdit (IValue& value, IValue::Type newValue) override
+	{
+		if (&value == maxIterations.get ())
+		{
+			if (auto sv = maxIterations->dynamicCast<IStepValue> ())
+			{
+				model->setIterations (sv->valueToStep (value.getValue ()));
+			}
+		}
+	}
+
+	ValuePtr maxIterations {Value::makeStepValue ("max interations", 1024)};
+	ValueList values;
+
 	Model::Ptr model;
 };
 

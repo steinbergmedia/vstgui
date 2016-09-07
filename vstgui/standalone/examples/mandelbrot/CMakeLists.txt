@@ -6,6 +6,8 @@ set(target mandelbrot)
 set(${target}_sources
   "standalone/examples/mandelbrot/source/mandelbrot.h"
   "standalone/examples/mandelbrot/source/mandelbrotapp.cpp"
+  "standalone/examples/mandelbrot/source/mandelbrotview.cpp"
+  "standalone/examples/mandelbrot/source/mandelbrotview.h"
   "standalone/examples/mandelbrot/source/mandelbrotwindow.cpp"
   "standalone/examples/mandelbrot/source/mandelbrotwindow.h"
 )
