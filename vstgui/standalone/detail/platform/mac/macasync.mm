@@ -1,10 +1,25 @@
-#include "../../../iasync.h"
-#include <dispatch/dispatch.h>
+#import "macasync.h"
+#import "../../../iasync.h"
+#import <Cocoa/Cocoa.h>
+#import <atomic>
+#import <dispatch/dispatch.h>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
 namespace Standalone {
 namespace Async {
+
+//------------------------------------------------------------------------
+static std::atomic<uint32_t> gBackgroundTaskCount {};
+
+//------------------------------------------------------------------------
+void waitAllTasksDone ()
+{
+	while (gBackgroundTaskCount != 0)
+	{
+		[[NSRunLoop mainRunLoop] runMode:NSRunLoopCommonModes beforeDate:[NSDate distantFuture]];
+	}
+}
 
 //------------------------------------------------------------------------
 void perform (Context context, Task&& task)
@@ -20,12 +35,15 @@ void perform (Context context, Task&& task)
 		case Context::Background:
 		{
 			queue = dispatch_get_global_queue (DISPATCH_QUEUE_PRIORITY_LOW, 0);
+			++gBackgroundTaskCount;
 			break;
 		}
 	}
-	dispatch_async (queue, [task = std::move (task)] () {
+	dispatch_async (queue, [context, task = std::move (task)] () {
 		// execute
 		task ();
+		if (context == Context::Background)
+			--gBackgroundTaskCount;
 	});
 }
 

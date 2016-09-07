@@ -3,6 +3,7 @@
 #include <memory>
 #include <mutex>
 #include <ppltasks.h>
+#include <atomic>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -10,6 +11,7 @@ namespace Standalone {
 namespace Platform {
 namespace Win32 {
 
+static std::atomic<uint32_t> gBackgroundTaskCount {};
 static HWND asyncMessageWindow {nullptr};
 static LRESULT CALLBACK AsyncWndMessageProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 static constexpr auto WM_USER_ASYNC = WM_USER;
@@ -29,6 +31,27 @@ void initAsyncHandling (HINSTANCE instance)
 	RegisterClassEx (&wcex);
 	asyncMessageWindow = CreateWindowEx (0, wcex.lpszClassName, nullptr, 0, 0, 0, 0, 0,
 	                                     HWND_MESSAGE, nullptr, instance, nullptr);
+}
+
+//------------------------------------------------------------------------
+void terminateAsyncHandling ()
+{
+	MSG msg;
+	while (gBackgroundTaskCount != 0)
+	{
+		if (PeekMessage (&msg, asyncMessageWindow, 0, 0, PM_REMOVE))
+		{
+			TranslateMessage (&msg);
+			DispatchMessage (&msg);
+		}
+	}
+	while (PeekMessage (&msg, asyncMessageWindow, 0, 0, PM_REMOVE))
+	{
+		TranslateMessage (&msg);
+		DispatchMessage (&msg);
+	}
+	DestroyWindow (asyncMessageWindow);
+	asyncMessageWindow = nullptr;
 }
 
 //------------------------------------------------------------------------
@@ -61,9 +84,11 @@ struct TaskWrapper : std::enable_shared_from_this<TaskWrapper>
 
 	void run ()
 	{
+		++gBackgroundTaskCount;
 		f = std::make_shared<concurrency::task<void>> ([This = shared_from_this ()] () {
 			This->task ();
 			This->f = nullptr;
+			--gBackgroundTaskCount;
 		});
 	}
 	Async::Task task;

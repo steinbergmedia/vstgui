@@ -7,6 +7,7 @@
 #import "macpreference.h"
 #import "macutilities.h"
 #import "macwindow.h"
+#import "macasync.h"
 #import <Cocoa/Cocoa.h>
 
 #if __has_feature(nullability) == 0
@@ -495,7 +496,12 @@ static const CommandWithKeyList* _Nullable getCommandList (const char* _Nonnull 
 - (void)applicationWillTerminate:(nonnull NSNotification*)notification
 {
 	IApplication::instance ().getDelegate ().onQuit ();
+	for (NSWindow* window in [NSApp windows])
+	{
+		[window close];
+	}
 	Detail::cleanupSharedUIResources ();
+	Async::waitAllTasksDone ();
 }
 
 //------------------------------------------------------------------------

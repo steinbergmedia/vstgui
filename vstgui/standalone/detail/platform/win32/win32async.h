@@ -8,6 +8,7 @@ namespace Platform {
 namespace Win32 {
 
 void initAsyncHandling (HINSTANCE instance);
+void terminateAsyncHandling ();
 
 //------------------------------------------------------------------------
 } // Win32

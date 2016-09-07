@@ -227,6 +227,7 @@ void Application::run ()
 		if (needCommandUpdate)
 			onCommandUpdate ();
 	}
+	terminateAsyncHandling ();
 	Detail::cleanupSharedUIResources ();
 }
 
