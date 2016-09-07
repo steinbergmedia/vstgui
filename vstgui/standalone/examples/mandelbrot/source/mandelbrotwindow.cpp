@@ -17,6 +17,7 @@
 #include "vstgui/uidescription/iuidescription.h"
 #include "vstgui/uidescription/uiattributes.h"
 #include <atomic>
+#include <cassert>
 
 //------------------------------------------------------------------------
 namespace Mandelbrot {
