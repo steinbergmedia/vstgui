@@ -303,6 +303,8 @@ public:
 	inline operator I* ()  const { return ptr; }      // act as I*
 	inline I* operator->() const { return ptr; }      // act as I*
 
+	inline I* get () const { return ptr; }
+
 	template<class T> T* cast () const { return dynamic_cast<T*> (ptr); }
 
 	inline SharedPointer (SharedPointer<I>&& mp) noexcept;
