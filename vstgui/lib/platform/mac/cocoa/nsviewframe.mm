@@ -1052,7 +1052,7 @@ COffscreenContext* NSViewFrame::createOffscreenContext (CCoord width, CCoord hei
 DragResult NSViewFrame::doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap)
 {
 	lastDragOperationResult = kDragError;
-	CGBitmap* cgBitmap = dragBitmap ? dynamic_cast<CGBitmap*> (dragBitmap->getPlatformBitmap ()) : nullptr;
+	CGBitmap* cgBitmap = dragBitmap ? dynamic_cast<CGBitmap*> (dragBitmap->getPlatformBitmap ().get ()) : nullptr;
 	CGImageRef cgImage = cgBitmap ? cgBitmap->getCGImage () : nullptr;
 	if (nsView)
 	{

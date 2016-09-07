@@ -143,7 +143,7 @@ void CGDrawContext::endDraw ()
 	CGContextSynchronize (cgContext);
 	if (bitmap && bitmap->getPlatformBitmap ())
 	{
-		CGBitmap* cgBitmap = dynamic_cast<CGBitmap*> (bitmap->getPlatformBitmap ());
+		CGBitmap* cgBitmap = dynamic_cast<CGBitmap*> (bitmap->getPlatformBitmap ().get ());
 		if (cgBitmap)
 			cgBitmap->setDirty ();
 	}

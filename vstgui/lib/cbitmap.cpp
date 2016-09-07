@@ -89,7 +89,7 @@ CBitmap::CBitmap (CCoord width, CCoord height)
 }
 
 //-----------------------------------------------------------------------------
-CBitmap::CBitmap (IPlatformBitmap* platformBitmap)
+CBitmap::CBitmap (const SharedPointer<IPlatformBitmap>& platformBitmap)
 {
 	bitmaps.push_back (platformBitmap);
 }
@@ -107,27 +107,27 @@ void CBitmap::draw (CDrawContext* context, const CRect& rect, const CPoint& offs
 //-----------------------------------------------------------------------------
 CCoord CBitmap::getWidth () const
 {
-	if (getPlatformBitmap ())
-		return getPlatformBitmap ()->getSize ().x / getPlatformBitmap ()->getScaleFactor ();
+	if (auto pb = getPlatformBitmap ())
+		return pb->getSize ().x / pb->getScaleFactor ();
 	return 0;
 }
 
 //-----------------------------------------------------------------------------
 CCoord CBitmap::getHeight () const
 {
-	if (getPlatformBitmap ())
-		return getPlatformBitmap ()->getSize ().y / getPlatformBitmap ()->getScaleFactor ();
+	if (auto pb = getPlatformBitmap ())
+		return pb->getSize ().y / pb->getScaleFactor ();
 	return 0;
 }
 
 //-----------------------------------------------------------------------------
-IPlatformBitmap* CBitmap::getPlatformBitmap () const
+SharedPointer<IPlatformBitmap> CBitmap::getPlatformBitmap () const
 {
 	return bitmaps.empty () ? nullptr : bitmaps[0];
 }
 
 //-----------------------------------------------------------------------------
-void CBitmap::setPlatformBitmap (IPlatformBitmap* bitmap)
+void CBitmap::setPlatformBitmap (const SharedPointer<IPlatformBitmap>& bitmap)
 {
 	if (bitmaps.empty ())
 		bitmaps.push_back (bitmap);
@@ -136,7 +136,7 @@ void CBitmap::setPlatformBitmap (IPlatformBitmap* bitmap)
 }
 
 //-----------------------------------------------------------------------------
-bool CBitmap::addBitmap (IPlatformBitmap* platformBitmap)
+bool CBitmap::addBitmap (const SharedPointer<IPlatformBitmap>& platformBitmap)
 {
 	double scaleFactor = platformBitmap->getScaleFactor ();
 	CPoint size (getWidth (), getHeight ());
@@ -161,11 +161,11 @@ bool CBitmap::addBitmap (IPlatformBitmap* platformBitmap)
 }
 
 //-----------------------------------------------------------------------------
-IPlatformBitmap* CBitmap::getBestPlatformBitmapForScaleFactor (double scaleFactor) const
+SharedPointer<IPlatformBitmap> CBitmap::getBestPlatformBitmapForScaleFactor (double scaleFactor) const
 {
 	if (bitmaps.empty ())
 		return nullptr;
-	IPlatformBitmap* bestBitmap = bitmaps[0];
+	auto bestBitmap = bitmaps[0];
 	double bestDiff = std::abs (scaleFactor - bestBitmap->getScaleFactor ());
 	for (const auto& bitmap : bitmaps)
 	{
@@ -219,7 +219,7 @@ CNinePartTiledBitmap::CNinePartTiledBitmap (const CResourceDescription& desc, co
 }
 
 //-----------------------------------------------------------------------------
-CNinePartTiledBitmap::CNinePartTiledBitmap (IPlatformBitmap* platformBitmap, const CNinePartTiledDescription& offsets)
+CNinePartTiledBitmap::CNinePartTiledBitmap (const SharedPointer<IPlatformBitmap>& platformBitmap, const CNinePartTiledDescription& offsets)
 : CBitmap (platformBitmap)
 , offsets (offsets)
 {

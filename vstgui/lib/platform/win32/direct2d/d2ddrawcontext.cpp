@@ -151,7 +151,7 @@ void D2DDrawContext::createRenderTarget ()
 	}
 	else if (bitmap)
 	{
-		D2DBitmap* d2dBitmap = dynamic_cast<D2DBitmap*> (bitmap->getPlatformBitmap ());
+		D2DBitmap* d2dBitmap = dynamic_cast<D2DBitmap*> (bitmap->getPlatformBitmap ().get ());
 		if (d2dBitmap)
 		{
 			D2D1_RENDER_TARGET_TYPE targetType = D2D1_RENDER_TARGET_TYPE_SOFTWARE;
@@ -227,7 +227,7 @@ void D2DDrawContext::endDraw ()
 		}
 		if (bitmap)
 		{
-			D2DBitmap* d2dBitmap = dynamic_cast<D2DBitmap*> (bitmap->getPlatformBitmap ());
+			D2DBitmap* d2dBitmap = dynamic_cast<D2DBitmap*> (bitmap->getPlatformBitmap ().get ());
 			D2DBitmapCache::instance ()->removeBitmap (d2dBitmap);
 		}
 	}

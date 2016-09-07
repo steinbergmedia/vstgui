@@ -53,7 +53,7 @@ class CBitmap : public CBaseObject
 public:
 	explicit CBitmap (const CResourceDescription& desc);				///< Create a pixmap from a resource identifier.
 	CBitmap (CCoord width, CCoord height);					///< Create a pixmap with a given size.
-	explicit CBitmap (IPlatformBitmap* platformBitmap);
+	explicit CBitmap (const SharedPointer<IPlatformBitmap>& platformBitmap);
 	~CBitmap () noexcept override = default;
 
 	//-----------------------------------------------------------------------------
@@ -69,11 +69,11 @@ public:
 
 	const CResourceDescription& getResourceDescription () const { return resourceDesc; }
 
-	IPlatformBitmap* getPlatformBitmap () const;
-	void setPlatformBitmap (IPlatformBitmap* bitmap);
+	SharedPointer<IPlatformBitmap> getPlatformBitmap () const;
+	void setPlatformBitmap (const SharedPointer<IPlatformBitmap>& bitmap);
 
-	bool addBitmap (IPlatformBitmap* platformBitmap);
-	IPlatformBitmap* getBestPlatformBitmapForScaleFactor (double scaleFactor) const;
+	bool addBitmap (const SharedPointer<IPlatformBitmap>& platformBitmap);
+	SharedPointer<IPlatformBitmap> getBestPlatformBitmapForScaleFactor (double scaleFactor) const;
 	//@}
 
 //-----------------------------------------------------------------------------
@@ -146,7 +146,7 @@ class CNinePartTiledBitmap : public CBitmap
 {
 public:
 	CNinePartTiledBitmap (const CResourceDescription& desc, const CNinePartTiledDescription& offsets);
-	CNinePartTiledBitmap (IPlatformBitmap* platformBitmap, const CNinePartTiledDescription& offsets);
+	CNinePartTiledBitmap (const SharedPointer<IPlatformBitmap>& platformBitmap, const CNinePartTiledDescription& offsets);
 	~CNinePartTiledBitmap () noexcept override = default;
 	
 	//-----------------------------------------------------------------------------
