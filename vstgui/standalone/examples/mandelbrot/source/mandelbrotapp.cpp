@@ -20,15 +20,8 @@ struct AppDelegate : DelegateAdapter, WindowListenerAdapter, ICommandHandler
 	void finishLaunching () override
 	{
 		IApplication::instance ().registerCommand(Commands::NewDocument, 'n');
-		if (auto window = makeMandelbrotWindow ())
-		{
-			window->show ();
-			window->registerWindowListener (this);
-		}
-		else
-		{
+		if (!handleCommand(Commands::NewDocument))
 			IApplication::instance ().quit ();
-		}
 	}
 
 	bool canHandleCommand (const Command& command) override
