@@ -1,6 +1,7 @@
 
 #include "mandelbrotview.h"
 #include "vstgui/lib/cbitmap.h"
+#include "vstgui/lib/cframe.h"
 #include "vstgui/lib/cdrawcontext.h"
 
 //------------------------------------------------------------------------
@@ -18,6 +19,8 @@ CMouseEventResult View::onMouseDown (CPoint& where, const CButtonState& buttons)
 {
 	if (buttons.isLeftButton ())
 	{
+		setWantsFocus (true);
+		getFrame ()->setFocusView (this);
 		box.setTopLeft (where);
 		box.setBottomRight (where);
 		return kMouseEventHandled;
@@ -28,7 +31,7 @@ CMouseEventResult View::onMouseDown (CPoint& where, const CButtonState& buttons)
 //------------------------------------------------------------------------
 CMouseEventResult View::onMouseUp (CPoint& where, const CButtonState& buttons)
 {
-	if (buttons.isLeftButton () && !box.isEmpty ())
+	if (wantsFocus () && buttons.isLeftButton () && !box.isEmpty ())
 	{
 		if (changed)
 		{
@@ -36,8 +39,7 @@ CMouseEventResult View::onMouseUp (CPoint& where, const CButtonState& buttons)
 			b.offsetInverse (getViewSize ().getTopLeft ());
 			changed (b);
 		}
-		invalidRect (box);
-		box = {};
+		onMouseCancel ();
 	}
 	return kMouseEventHandled;
 }
@@ -45,11 +47,12 @@ CMouseEventResult View::onMouseUp (CPoint& where, const CButtonState& buttons)
 //------------------------------------------------------------------------
 CMouseEventResult View::onMouseMoved (CPoint& where, const CButtonState& buttons)
 {
-	if (!buttons.isLeftButton ())
+	if (!wantsFocus () || !buttons.isLeftButton ())
 		return kMouseEventNotHandled;
-	invalidRect (box);
+	CRect r (box);
 	box.setBottomRight (where);
-	invalidRect (box);
+	r.unite (box);
+	invalidRect (r);
 	return kMouseEventHandled;
 }
 
@@ -58,7 +61,20 @@ CMouseEventResult View::onMouseCancel ()
 {
 	invalidRect (box);
 	box = {};
+	setWantsFocus (false);
+	getFrame ()->setFocusView (nullptr);
 	return kMouseEventHandled;
+}
+
+//------------------------------------------------------------------------
+int32_t View::onKeyDown (VstKeyCode& keyCode)
+{
+	if (keyCode.virt == VKEY_ESCAPE)
+	{
+		onMouseCancel ();
+		return 1;
+	}
+	return -1;
 }
 
 //------------------------------------------------------------------------

@@ -18,6 +18,7 @@ struct View : public VSTGUI::CView
 
 	View (const ChangedFunc& func);
 
+	int32_t onKeyDown (VstKeyCode& keyCode) override;
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
