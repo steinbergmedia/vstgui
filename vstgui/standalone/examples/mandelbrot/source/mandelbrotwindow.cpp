@@ -81,18 +81,18 @@ inline void calculateMandelbrotBitmap (Model model, SharedPointer<CBitmap> bitma
 {
 	if (auto pa = owned (CBitmapPixelAccess::create (bitmap)))
 	{
-		const auto numLinesPerTask = size.y / 64;
+		const auto numLinesPerTask = static_cast<uint32_t> (size.y / 64.);
 
 		const auto maxIterationInv = 1. / model.getIterations ();
 
 		auto pixelAccess = shared (pa->getPlatformBitmapPixelAccess ());
 		auto colorToInt32 = getColorToInt32 (pixelAccess->getPixelFormat ());
 		auto counter = std::make_shared<uint32_t> (0);
-		for (auto y = 0; y < size.y; y += numLinesPerTask)
+		for (auto y = 0u; y < static_cast<uint32_t> (size.y); y += numLinesPerTask)
 		{
 			++(*counter);
 			auto task = [=, &taskID] () {
-				for (auto i = 0; i < numLinesPerTask; ++i)
+				for (auto i = 0u; i < numLinesPerTask; ++i)
 				{
 					if (y + i >= size.y || taskID != id)
 						break;
