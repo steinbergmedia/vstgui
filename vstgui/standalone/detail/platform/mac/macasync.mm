@@ -19,7 +19,7 @@ void perform (Context context, Task&& task)
 		}
 		case Context::Background:
 		{
-			queue = dispatch_get_global_queue (DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+			queue = dispatch_get_global_queue (DISPATCH_QUEUE_PRIORITY_LOW, 0);
 			break;
 		}
 	}
