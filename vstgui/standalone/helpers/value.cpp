@@ -149,7 +149,7 @@ private:
 class Value : public IValue
 {
 public:
-	Value (const UTF8String& id, Type initialValue, const ValueConverterPtr& stringConverter);
+	Value (const UTF8String& id, Type initialValue, const ValueConverterPtr& valueConverter);
 
 	void beginEdit () override;
 	bool performEdit (Type newValue) override;
@@ -168,7 +168,7 @@ public:
 	void registerListener (IValueListener* listener) override;
 	void unregisterListener (IValueListener* listener) override;
 
-	bool hasStringConverter () const { return valueConverter != nullptr; }
+	bool hasValueConverter () const { return valueConverter != nullptr; }
 	void setValueConverter (const ValueConverterPtr& stringConverter);
 
 	void dispatchStateChange ();
@@ -219,8 +219,8 @@ public:
 };
 
 //------------------------------------------------------------------------
-Value::Value (const UTF8String& id, Type initialValue, const ValueConverterPtr& stringConverter)
-: idString (id), value (initialValue), valueConverter (stringConverter)
+Value::Value (const UTF8String& id, Type initialValue, const ValueConverterPtr& valueConverter)
+: idString (id), value (initialValue), valueConverter (valueConverter)
 {
 }
 
@@ -393,7 +393,7 @@ IValue::Type StepValue::normalizeToPlain (IValue::Type normalized) const
 //------------------------------------------------------------------------
 const IValueConverter& StepValue::getConverter () const
 {
-	if (!hasStringConverter ())
+	if (!hasValueConverter ())
 		return *this;
 	return Value::getConverter ();
 }
@@ -421,6 +421,13 @@ bool StringListValue::updateStringList (const std::vector<UTF8String>& newString
 }
 
 //------------------------------------------------------------------------
+ValueConverterPtr getDefaultConverter ()
+{
+	static ValueConverterPtr gInstance = std::make_shared<Detail::DefaultValueConverter> ();
+	return gInstance;
+}
+
+//------------------------------------------------------------------------
 } // anonymous
 } // Detail
 
@@ -432,10 +439,9 @@ ValuePtr make (const UTF8String& id, IValue::Type initialValue,
                const ValueConverterPtr& stringConverter)
 {
 	vstgui_assert (id.empty () == false);
-	return std::make_shared<Detail::Value> (id, initialValue,
-	                                        stringConverter.get () ?
-	                                            stringConverter :
-	                                            std::make_shared<Detail::DefaultValueConverter> ());
+	return std::make_shared<Detail::Value> (id, initialValue, stringConverter.get () ?
+	                                                              stringConverter :
+	                                                              Detail::getDefaultConverter ());
 }
 
 //------------------------------------------------------------------------

@@ -40,11 +40,62 @@ ValueConverterPtr makePercentConverter ();
 ValueConverterPtr makeRangeConverter (IValue::Type minValue, IValue::Type maxValue);
 
 //------------------------------------------------------------------------
-inline void performEdit (IValue& value, IValue::Type newValue)
+inline IValue::Type plainToNormalize (IValue& value, IValue::Type plainValue)
+{
+	return value.getConverter ().plainToNormalize (plainValue);
+}
+
+//------------------------------------------------------------------------
+inline IValue::Type normalizeToPlain (IValue& value, IValue::Type normalizeValue)
+{
+	return value.getConverter ().normalizeToPlain (normalizeValue);
+}
+
+//------------------------------------------------------------------------
+inline IStepValue::StepType normalizeToStep (IValue& value, IValue::Type normalizeValue)
+{
+	if (auto stepValue = value.dynamicCast<IStepValue> ())
+	{
+		return stepValue->valueToStep (normalizeValue);
+	}
+	return IStepValue::InvalidStep;
+}
+
+//------------------------------------------------------------------------
+inline IValue::Type currentPlainValue (IValue& value)
+{
+	return normalizeToPlain (value, value.getValue ());
+}
+
+//------------------------------------------------------------------------
+inline IStepValue::StepType currentStepValue (IValue& value)
+{
+	return normalizeToStep (value, value.getValue ());
+}
+
+//------------------------------------------------------------------------
+inline void performSingleEdit (IValue& value, IValue::Type newValue)
 {
 	value.beginEdit ();
 	value.performEdit (newValue);
 	value.endEdit ();
+}
+
+//------------------------------------------------------------------------
+inline void performSinglePlainEdit (IValue& value, IValue::Type plainValue)
+{
+	performSingleEdit (value, plainToNormalize (value, plainValue));
+}
+
+//------------------------------------------------------------------------
+inline bool performSingleStepEdit (IValue& value, IStepValue::StepType step)
+{
+	if (auto stepValue = value.dynamicCast<IStepValue> ())
+	{
+		performSingleEdit (value, stepValue->stepToValue (step));
+		return true;
+	}
+	return false;
 }
 
 //------------------------------------------------------------------------

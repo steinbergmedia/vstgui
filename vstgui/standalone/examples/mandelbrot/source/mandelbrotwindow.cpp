@@ -14,8 +14,8 @@
 #include "vstgui/uidescription/iuidescription.h"
 #include "vstgui/uidescription/uiattributes.h"
 #include <atomic>
-#include <thread>
 #include <cassert>
+#include <thread>
 
 //------------------------------------------------------------------------
 namespace Mandelbrot {
@@ -120,7 +120,7 @@ struct ViewController : DelegationController,
                         IViewListenerAdapter,
                         IModelChangeListener,
                         IScaleFactorChangedListener,
-						CBaseObject
+                        CBaseObject
 {
 	ViewController (IController* parent, Model::Ptr model)
 	: DelegationController (parent), model (model)
@@ -229,8 +229,7 @@ struct ModelBinding : UIDesc::IModelBinding, IModelChangeListener, ValueListener
 
 	ModelBinding (Model::Ptr model) : model (model)
 	{
-		if (auto sv = maxIterations->dynamicCast<IStepValue> ())
-			maxIterations->performEdit (sv->stepToValue (model->getIterations ()));
+		Value::performSingleStepEdit (*maxIterations.get (), model->getIterations ());
 
 		values.emplace_back (maxIterations);
 		values.emplace_back (minX);
@@ -243,7 +242,7 @@ struct ModelBinding : UIDesc::IModelBinding, IModelChangeListener, ValueListener
 		minY->registerListener (this);
 		maxX->registerListener (this);
 		maxY->registerListener (this);
-		
+
 		model->registerListener (this);
 	}
 
@@ -251,46 +250,43 @@ struct ModelBinding : UIDesc::IModelBinding, IModelChangeListener, ValueListener
 
 	void modelChanged (const Model& model) override
 	{
-		if (auto sv = maxIterations->dynamicCast<IStepValue> ())
-			Value::performEdit (*maxIterations.get (), sv->stepToValue (model.getIterations ()));
-		Value::performEdit (*minX.get (),
-		                    minX->getConverter ().plainToNormalize (model.getMin ().x));
-		Value::performEdit (*minY.get (),
-		                    minY->getConverter ().plainToNormalize (model.getMin ().y));
-		Value::performEdit (*maxX.get (),
-		                    maxX->getConverter ().plainToNormalize (model.getMax ().x));
-		Value::performEdit (*maxY.get (),
-		                    maxY->getConverter ().plainToNormalize (model.getMax ().y));
+		Value::performSingleStepEdit (*maxIterations.get (), model.getIterations ());
+		Value::performSinglePlainEdit (*minX.get (), model.getMin ().x);
+		Value::performSinglePlainEdit (*minY.get (), model.getMin ().y);
+		Value::performSinglePlainEdit (*maxX.get (), model.getMax ().x);
+		Value::performSinglePlainEdit (*maxY.get (), model.getMax ().y);
 	}
 
 	void onPerformEdit (IValue& value, IValue::Type newValue) override
 	{
 		if (&value == maxIterations.get ())
 		{
-			if (auto sv = maxIterations->dynamicCast<IStepValue> ())
-			{
-				model->setIterations (sv->valueToStep (value.getValue ()));
-			}
+			auto step = Value::currentStepValue (*maxIterations.get ());
+			if (step != IStepValue::InvalidStep)
+				model->setIterations (step);
 			return;
 		}
 		auto min = model->getMin ();
 		auto max = model->getMax ();
-		if (&value == maxX.get())
-			max.x = value.getConverter ().normalizeToPlain (value.getValue ());
-		else if (&value == maxY.get())
-			max.y = value.getConverter ().normalizeToPlain (value.getValue ());
-		else if (&value == minX.get())
-			min.x = value.getConverter ().normalizeToPlain (value.getValue ());
-		else if (&value == minY.get())
-			min.y = value.getConverter ().normalizeToPlain (value.getValue ());
+		if (&value == maxX.get ())
+			max.x = Value::currentPlainValue (value);
+		else if (&value == maxY.get ())
+			max.y = Value::currentPlainValue (value);
+		else if (&value == minX.get ())
+			min.x = Value::currentPlainValue (value);
+		else if (&value == minY.get ())
+			min.y = Value::currentPlainValue (value);
 		model->setMinMax (min, max);
 	}
 
+	ValueConverterPtr xConverter {Value::makeRangeConverter (-2.2, 1.2)};
+	ValueConverterPtr yConverter {Value::makeRangeConverter (-1.7, 1.7)};
+
 	ValuePtr maxIterations {Value::makeStepValue ("max interations", 1024)};
-	ValuePtr minX {Value::make ("minX", 0., Value::makeRangeConverter (-2.2, 1.2))};
-	ValuePtr minY {Value::make ("minY", 0., Value::makeRangeConverter (-1.7, 1.7))};
-	ValuePtr maxX {Value::make ("maxX", 1., Value::makeRangeConverter (-2.2, 1.2))};
-	ValuePtr maxY {Value::make ("maxY", 1., Value::makeRangeConverter (-1.7, 1.7))};
+	ValuePtr minX {Value::make ("minX", 0., xConverter)};
+	ValuePtr minY {Value::make ("minY", 0., yConverter)};
+	ValuePtr maxX {Value::make ("maxX", 1., xConverter)};
+	ValuePtr maxY {Value::make ("maxY", 1., yConverter)};
 	ValueList values;
 
 	Model::Ptr model;
