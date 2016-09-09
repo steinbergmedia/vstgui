@@ -40,7 +40,10 @@
 namespace VSTGUI {
 
 //------------------------------------------------------------------------
-/** simplified optional */
+/** simplified optional 
+ *
+ *	@ingroup new_in_4_5
+ */
 template <typename T>
 struct Optional
 {
