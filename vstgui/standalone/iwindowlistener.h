@@ -16,12 +16,19 @@ namespace Standalone {
 class IWindowListener : public Interface
 {
 public:
+	/** Size of window is changed. */
 	virtual void onSizeChanged (const IWindow& window, const CPoint& newSize) = 0;
+	/** Position of window is changed. */
 	virtual void onPositionChanged (const IWindow& window, const CPoint& newPosition) = 0;
+	/** Window is shown. */
 	virtual void onShow (const IWindow& window) = 0;
+	/** Window is hidden. */
 	virtual void onHide (const IWindow& window) = 0;
+	/** Window is closed. */
 	virtual void onClosed (const IWindow& window) = 0;
+	/** Window is activated. */
 	virtual void onActivated (const IWindow& window) = 0;
+	/** Window is deactivated. */
 	virtual void onDeactivated (const IWindow& window) = 0;
 };
 

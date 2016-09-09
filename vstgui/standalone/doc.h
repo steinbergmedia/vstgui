@@ -131,6 +131,7 @@ namespace VSTGUI {
 /** %Standalone Library
  *
  *	See @ref standalone_library "this page"
+ *	@ingroup new_in_4_5
  */
 namespace Standalone {
 	

@@ -43,7 +43,9 @@ inline bool operator!= (const Command& c1, const Command& c2)
 class ICommandHandler : public Interface
 {
 public:
+	/** Check if command can be handled. */
 	virtual bool canHandleCommand (const Command& command) = 0;
+	/** Handle command. */
 	virtual bool handleCommand (const Command& command) = 0;
 };
 

@@ -9,6 +9,7 @@ set(${target}_common_sources
   iapplication.h
   iasync.h
   icommand.h
+  imenubuilder.h
   interface.h
   ipreference.h
   ishareduiresources.h
