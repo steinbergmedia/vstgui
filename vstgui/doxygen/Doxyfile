@@ -871,7 +871,8 @@ EXCLUDE                = ../uidescription/expat/ \
                          ../tutorial \
                          ../tests/ \
                          ../lib/platform/ \
-                         ../standalone/detail/
+                         ../standalone/detail/ \
+                         ../standalone/examples/
 
 # The EXCLUDE_SYMLINKS tag can be used to select whether or not files or
 # directories that are symbolic links (a Unix file system feature) are excluded
