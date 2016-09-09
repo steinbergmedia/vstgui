@@ -60,10 +60,10 @@ protected:
 	double getLeading () const override;
 	double getCapHeight () const override;
 
-	IFontPainter* getPainter () override { return this; }
+	const IFontPainter* getPainter () const override { return this; }
 
-	void drawString (CDrawContext* context, IPlatformString* string, const CPoint& p, bool antialias = true) override;
-	CCoord getStringWidth (CDrawContext* context, IPlatformString* string, bool antialias = true) override;
+	void drawString (CDrawContext* context, IPlatformString* string, const CPoint& p, bool antialias = true) const override;
+	CCoord getStringWidth (CDrawContext* context, IPlatformString* string, bool antialias = true) const override;
 
 	Gdiplus::Font* font;
 	INT gdiStyle;

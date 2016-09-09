@@ -133,7 +133,7 @@ IDWriteTextLayout* D2DFont::createTextLayout (IPlatformString* string) const
 }
 
 //-----------------------------------------------------------------------------
-void D2DFont::drawString (CDrawContext* context, IPlatformString* string, const CPoint& p, bool antialias)
+void D2DFont::drawString (CDrawContext* context, IPlatformString* string, const CPoint& p, bool antialias) const
 {
 	D2DDrawContext* d2dContext = dynamic_cast<D2DDrawContext*> (context);
 	if (d2dContext && textFormat)
@@ -174,7 +174,7 @@ void D2DFont::drawString (CDrawContext* context, IPlatformString* string, const 
 }
 
 //-----------------------------------------------------------------------------
-CCoord D2DFont::getStringWidth (CDrawContext* context, IPlatformString* string, bool antialias)
+CCoord D2DFont::getStringWidth (CDrawContext* context, IPlatformString* string, bool antialias) const
 {
 	CCoord result = 0;
 	if (textFormat)

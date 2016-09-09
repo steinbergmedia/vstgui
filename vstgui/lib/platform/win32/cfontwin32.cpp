@@ -109,7 +109,7 @@ GdiPlusFont::~GdiPlusFont () noexcept
 }
 
 //-----------------------------------------------------------------------------
-void GdiPlusFont::drawString (CDrawContext* context, IPlatformString* string, const CPoint& point, bool antialias)
+void GdiPlusFont::drawString (CDrawContext* context, IPlatformString* string, const CPoint& point, bool antialias) const
 {
 	Gdiplus::Graphics* pGraphics = getGraphics (context);
 	Gdiplus::Brush* pFontBrush = getFontBrush (context);
@@ -124,7 +124,7 @@ void GdiPlusFont::drawString (CDrawContext* context, IPlatformString* string, co
 }
 
 //-----------------------------------------------------------------------------
-CCoord GdiPlusFont::getStringWidth (CDrawContext* context, IPlatformString* string, bool antialias)
+CCoord GdiPlusFont::getStringWidth (CDrawContext* context, IPlatformString* string, bool antialias) const
 {
 	CCoord result = 0;
 	const WinString* winString = dynamic_cast<const WinString*> (string);

@@ -442,8 +442,7 @@ bool CCheckBox::sizeToFit ()
 {
 	if (title.empty ())
 		return false;
-	IFontPainter* painter = font ? font->getFontPainter () : nullptr;
-	if (painter)
+	if (auto painter = font->getFontPainter ())
 	{
 		CRect fitSize (getViewSize ());
 		if (getDrawBackground ())
@@ -861,8 +860,7 @@ bool CTextButton::sizeToFit ()
 {
 	if (title.empty ())
 		return false;
-	IFontPainter* painter = font ? font->getFontPainter () : nullptr;
-	if (painter)
+	if (auto painter = font->getFontPainter ())
 	{
 		CRect fitSize (getViewSize ());
 		fitSize.right = fitSize.left + (roundRadius + 1.) * 4.;

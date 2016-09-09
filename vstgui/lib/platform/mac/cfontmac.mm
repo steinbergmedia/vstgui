@@ -189,7 +189,7 @@ double CoreTextFont::getCapHeight () const
 }
 
 //-----------------------------------------------------------------------------
-CFDictionaryRef CoreTextFont::getStringAttributes (const CGColorRef color)
+CFDictionaryRef CoreTextFont::getStringAttributes (const CGColorRef color) const
 {
 	if (stringAttributes == nullptr)
 	{
@@ -204,7 +204,7 @@ CFDictionaryRef CoreTextFont::getStringAttributes (const CGColorRef color)
 }
 
 //-----------------------------------------------------------------------------
-CTLineRef CoreTextFont::createCTLine (CDrawContext* context, MacString* macString)
+CTLineRef CoreTextFont::createCTLine (CDrawContext* context, MacString* macString) const
 {
 	CColor fontColor = context ? context->getFontColor () : kBlackCColor;
 	if (context)
@@ -247,7 +247,7 @@ CTLineRef CoreTextFont::createCTLine (CDrawContext* context, MacString* macStrin
 }
 
 //-----------------------------------------------------------------------------
-void CoreTextFont::drawString (CDrawContext* context, IPlatformString* string, const CPoint& point, bool antialias)
+void CoreTextFont::drawString (CDrawContext* context, IPlatformString* string, const CPoint& point, bool antialias) const
 {
 	MacString* macString = dynamic_cast<MacString*> (string);
 	if (macString == nullptr)
@@ -303,7 +303,7 @@ void CoreTextFont::drawString (CDrawContext* context, IPlatformString* string, c
 }
 
 //-----------------------------------------------------------------------------
-CCoord CoreTextFont::getStringWidth (CDrawContext* context, IPlatformString* string, bool antialias)
+CCoord CoreTextFont::getStringWidth (CDrawContext* context, IPlatformString* string, bool antialias) const
 {
 	CCoord result = 0;
 	MacString* macString = dynamic_cast<MacString*> (string);

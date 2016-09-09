@@ -46,7 +46,7 @@ UTF8String createTruncatedText (TextTruncateMode mode, const UTF8String& text, C
 {
 	if (mode == kTextTruncateNone)
 		return text;
-	IFontPainter* painter = font->getPlatformFont ()->getPainter ();
+	auto painter = font->getPlatformFont ()->getPainter ();
 	CCoord width = painter->getStringWidth (nullptr, text.getPlatformString (), true);
 	width += textInset.x * 2;
 	if (width > maxWidth)

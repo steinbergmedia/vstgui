@@ -62,10 +62,10 @@ protected:
 	double getLeading () const override { return leading; }
 	double getCapHeight () const override { return capHeight; }
 
-	IFontPainter* getPainter () override { return this; }
+	const IFontPainter* getPainter () const override { return this; }
 
-	void drawString (CDrawContext* context, IPlatformString* string, const CPoint& p, bool antialias = true) override;
-	CCoord getStringWidth (CDrawContext* context, IPlatformString* string, bool antialias = true) override;
+	void drawString (CDrawContext* context, IPlatformString* string, const CPoint& p, bool antialias = true) const override;
+	CCoord getStringWidth (CDrawContext* context, IPlatformString* string, bool antialias = true) const override;
 
 	IDWriteTextFormat* textFormat;
 	double ascent;

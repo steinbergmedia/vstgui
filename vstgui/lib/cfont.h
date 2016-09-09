@@ -80,8 +80,8 @@ public:
 	virtual void setStyle (int32_t newStyle);				///< set the style of the font @sa CTxtFace
 	//@}
 
-	virtual PlatformFontPtr getPlatformFont ();
-	virtual IFontPainter* getFontPainter ();
+	virtual const PlatformFontPtr getPlatformFont () const;
+	virtual const IFontPainter* getFontPainter () const;
 
 	virtual CFontDesc& operator= (const CFontDesc&);
 	virtual bool operator== (const CFontDesc&) const;
@@ -97,7 +97,7 @@ protected:
 	UTF8String name;
 	CCoord size;
 	int32_t style;
-	PlatformFontPtr platformFont;
+	mutable PlatformFontPtr platformFont;
 };
 
 typedef CFontDesc*	CFontRef;

@@ -247,11 +247,8 @@ CCoord CDrawContext::getStringWidth (IPlatformString* string)
 	if (currentState.font == nullptr || string == nullptr)
 		return result;
 	
-	IFontPainter* painter = currentState.font->getFontPainter ();
-	if (painter)
-	{
+	if (auto painter = currentState.font->getFontPainter ())
 		result = painter->getStringWidth (this, string, true);
-	}
 	
 	return result;
 }
@@ -261,14 +258,14 @@ void CDrawContext::drawString (IPlatformString* string, const CRect& _rect, cons
 {
 	if (!string || currentState.font == nullptr)
 		return;
-	IFontPainter* painter = currentState.font->getFontPainter ();
+	auto painter = currentState.font->getFontPainter ();
 	if (painter == nullptr)
 		return;
 	
 	CRect rect (_rect);
 	
 	double capHeight = -1;
-	IPlatformFont* platformFont = currentState.font->getPlatformFont ();
+	auto platformFont = currentState.font->getPlatformFont ();
 	if (platformFont)
 		capHeight = platformFont->getCapHeight ();
 	
@@ -294,8 +291,7 @@ void CDrawContext::drawString (IPlatformString* string, const CPoint& point, boo
 	if (string == nullptr || currentState.font == nullptr)
 		return;
 	
-	IFontPainter* painter = currentState.font->getFontPainter ();
-	if (painter)
+	if (auto painter = currentState.font->getFontPainter ())
 		painter->drawString (this, string, point, antialias);
 }
 

@@ -125,7 +125,7 @@ void CFontDesc::beforeDelete ()
 }
 
 //-----------------------------------------------------------------------------
-auto CFontDesc::getPlatformFont () -> PlatformFontPtr
+auto CFontDesc::getPlatformFont () const -> const PlatformFontPtr
 {
 	if (platformFont == nullptr)
 		platformFont = owned (IPlatformFont::create (name, size, style));
@@ -133,7 +133,7 @@ auto CFontDesc::getPlatformFont () -> PlatformFontPtr
 }
 
 //-----------------------------------------------------------------------------
-IFontPainter* CFontDesc::getFontPainter ()
+const IFontPainter* CFontDesc::getFontPainter () const
 {
 	IPlatformFont* pf = getPlatformFont ();
 	if (pf)

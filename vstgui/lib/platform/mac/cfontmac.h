@@ -60,7 +60,7 @@ public:
 	double getLeading () const override;
 	double getCapHeight () const override;
 	
-	IFontPainter* getPainter () override { return this; }
+	const IFontPainter* getPainter () const override { return this; }
 	
 	CTFontRef getFontRef () const { return fontRef; }
 	CGFloat getSize () const { return CTFontGetSize (fontRef); }
@@ -69,17 +69,17 @@ public:
 protected:
 	~CoreTextFont () noexcept;
 
-	void drawString (CDrawContext* context, IPlatformString* string, const CPoint& p, bool antialias = true) override;
-	CCoord getStringWidth (CDrawContext* context, IPlatformString* string, bool antialias = true) override;
-	CFDictionaryRef getStringAttributes (const CGColorRef color = nullptr);
+	void drawString (CDrawContext* context, IPlatformString* string, const CPoint& p, bool antialias = true) const override;
+	CCoord getStringWidth (CDrawContext* context, IPlatformString* string, bool antialias = true) const override;
+	CFDictionaryRef getStringAttributes (const CGColorRef color = nullptr) const;
 
-	CTLineRef createCTLine (CDrawContext* context, MacString* macString);
+	CTLineRef createCTLine (CDrawContext* context, MacString* macString) const;
 
 	CTFontRef fontRef;
 	int32_t style;
 	bool underlineStyle;
-	CColor lastColor;
-	CFMutableDictionaryRef stringAttributes;
+	mutable CColor lastColor;
+	mutable CFMutableDictionaryRef stringAttributes;
 	double ascent;
 	double descent;
 	double leading;
