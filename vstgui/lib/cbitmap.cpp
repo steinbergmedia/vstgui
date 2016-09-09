@@ -74,10 +74,12 @@ CBitmap::CBitmap ()
 CBitmap::CBitmap (const CResourceDescription& desc)
 : resourceDesc (desc)
 {
-	SharedPointer<IPlatformBitmap> platformBitmap = owned (IPlatformBitmap::create ());
-	if (platformBitmap && platformBitmap->load (desc))
+	if (auto platformBitmap = owned (IPlatformBitmap::create ()))
 	{
-		bitmaps.push_back (platformBitmap);
+		if (platformBitmap->load (desc))
+		{
+			bitmaps.push_back (platformBitmap);
+		}
 	}
 }
 
@@ -89,7 +91,7 @@ CBitmap::CBitmap (CCoord width, CCoord height)
 }
 
 //-----------------------------------------------------------------------------
-CBitmap::CBitmap (const SharedPointer<IPlatformBitmap>& platformBitmap)
+CBitmap::CBitmap (const PlatformBitmapPtr& platformBitmap)
 {
 	bitmaps.push_back (platformBitmap);
 }
@@ -121,13 +123,13 @@ CCoord CBitmap::getHeight () const
 }
 
 //-----------------------------------------------------------------------------
-SharedPointer<IPlatformBitmap> CBitmap::getPlatformBitmap () const
+auto CBitmap::getPlatformBitmap () const -> PlatformBitmapPtr
 {
 	return bitmaps.empty () ? nullptr : bitmaps[0];
 }
 
 //-----------------------------------------------------------------------------
-void CBitmap::setPlatformBitmap (const SharedPointer<IPlatformBitmap>& bitmap)
+void CBitmap::setPlatformBitmap (const PlatformBitmapPtr& bitmap)
 {
 	if (bitmaps.empty ())
 		bitmaps.push_back (bitmap);
@@ -136,7 +138,7 @@ void CBitmap::setPlatformBitmap (const SharedPointer<IPlatformBitmap>& bitmap)
 }
 
 //-----------------------------------------------------------------------------
-bool CBitmap::addBitmap (const SharedPointer<IPlatformBitmap>& platformBitmap)
+bool CBitmap::addBitmap (const PlatformBitmapPtr& platformBitmap)
 {
 	double scaleFactor = platformBitmap->getScaleFactor ();
 	CPoint size (getWidth (), getHeight ());
@@ -161,7 +163,7 @@ bool CBitmap::addBitmap (const SharedPointer<IPlatformBitmap>& platformBitmap)
 }
 
 //-----------------------------------------------------------------------------
-SharedPointer<IPlatformBitmap> CBitmap::getBestPlatformBitmapForScaleFactor (double scaleFactor) const
+auto CBitmap::getBestPlatformBitmapForScaleFactor (double scaleFactor) const -> PlatformBitmapPtr
 {
 	if (bitmaps.empty ())
 		return nullptr;
@@ -219,7 +221,7 @@ CNinePartTiledBitmap::CNinePartTiledBitmap (const CResourceDescription& desc, co
 }
 
 //-----------------------------------------------------------------------------
-CNinePartTiledBitmap::CNinePartTiledBitmap (const SharedPointer<IPlatformBitmap>& platformBitmap, const CNinePartTiledDescription& offsets)
+CNinePartTiledBitmap::CNinePartTiledBitmap (const PlatformBitmapPtr& platformBitmap, const CNinePartTiledDescription& offsets)
 : CBitmap (platformBitmap)
 , offsets (offsets)
 {

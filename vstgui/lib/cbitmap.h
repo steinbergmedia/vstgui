@@ -51,9 +51,11 @@ namespace VSTGUI {
 class CBitmap : public CBaseObject
 {
 public:
+	using PlatformBitmapPtr = SharedPointer<IPlatformBitmap>;
+
 	explicit CBitmap (const CResourceDescription& desc);				///< Create a pixmap from a resource identifier.
 	CBitmap (CCoord width, CCoord height);					///< Create a pixmap with a given size.
-	explicit CBitmap (const SharedPointer<IPlatformBitmap>& platformBitmap);
+	explicit CBitmap (const PlatformBitmapPtr& platformBitmap);
 	~CBitmap () noexcept override = default;
 
 	//-----------------------------------------------------------------------------
@@ -69,11 +71,11 @@ public:
 
 	const CResourceDescription& getResourceDescription () const { return resourceDesc; }
 
-	SharedPointer<IPlatformBitmap> getPlatformBitmap () const;
-	void setPlatformBitmap (const SharedPointer<IPlatformBitmap>& bitmap);
+	PlatformBitmapPtr getPlatformBitmap () const;
+	void setPlatformBitmap (const PlatformBitmapPtr& bitmap);
 
-	bool addBitmap (const SharedPointer<IPlatformBitmap>& platformBitmap);
-	SharedPointer<IPlatformBitmap> getBestPlatformBitmapForScaleFactor (double scaleFactor) const;
+	bool addBitmap (const PlatformBitmapPtr& platformBitmap);
+	PlatformBitmapPtr getBestPlatformBitmapForScaleFactor (double scaleFactor) const;
 	//@}
 
 //-----------------------------------------------------------------------------
@@ -82,8 +84,7 @@ protected:
 	CBitmap ();
 
 	CResourceDescription resourceDesc;
-	typedef SharedPointer<IPlatformBitmap> BitmapPointer;
-	typedef std::vector<BitmapPointer> BitmapVector;
+	using BitmapVector = std::vector<PlatformBitmapPtr>;
 	BitmapVector bitmaps;
 };
 
@@ -146,7 +147,7 @@ class CNinePartTiledBitmap : public CBitmap
 {
 public:
 	CNinePartTiledBitmap (const CResourceDescription& desc, const CNinePartTiledDescription& offsets);
-	CNinePartTiledBitmap (const SharedPointer<IPlatformBitmap>& platformBitmap, const CNinePartTiledDescription& offsets);
+	CNinePartTiledBitmap (const PlatformBitmapPtr& platformBitmap, const CNinePartTiledDescription& offsets);
 	~CNinePartTiledBitmap () noexcept override = default;
 	
 	//-----------------------------------------------------------------------------
