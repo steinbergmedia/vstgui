@@ -124,8 +124,8 @@ CGraphicsPath* GdiplusDrawContext::createGraphicsPath ()
 //-----------------------------------------------------------------------------
 CGraphicsPath* GdiplusDrawContext::createTextPath (const CFontRef font, UTF8StringPtr text)
 {
-	const GdiPlusFont* ctFont = dynamic_cast<const GdiPlusFont*>(font->getPlatformFont ());
-	return ctFont ? new GdiplusGraphicsPath (ctFont, text) : 0;
+	auto ctFont = font->getPlatformFont ().cast<const GdiPlusFont> ();
+	return ctFont ? new GdiplusGraphicsPath (ctFont, text) : nullptr;
 }
 
 //-----------------------------------------------------------------------------

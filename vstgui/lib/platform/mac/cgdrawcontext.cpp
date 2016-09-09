@@ -159,7 +159,7 @@ CGraphicsPath* CGDrawContext::createGraphicsPath ()
 //-----------------------------------------------------------------------------
 CGraphicsPath* CGDrawContext::createTextPath (const CFontRef font, UTF8StringPtr text)
 {
-	const CoreTextFont* ctFont = dynamic_cast<const CoreTextFont*>(font->getPlatformFont ());
+	const CoreTextFont* ctFont = font->getPlatformFont ().cast<const CoreTextFont>();
 	return ctFont ? new QuartzGraphicsPath (ctFont, text) : nullptr;
 }
 

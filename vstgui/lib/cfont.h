@@ -61,6 +61,8 @@ enum CTxtFace
 class CFontDesc : public CBaseObject
 {
 public:
+	using PlatformFontPtr = SharedPointer<IPlatformFont>;
+	
 	CFontDesc (const UTF8String& name = "", const CCoord& size = 0, const int32_t style = 0);
 	CFontDesc (const CFontDesc& font);
 	~CFontDesc () noexcept = default;
@@ -78,7 +80,7 @@ public:
 	virtual void setStyle (int32_t newStyle);				///< set the style of the font @sa CTxtFace
 	//@}
 
-	virtual IPlatformFont* getPlatformFont ();
+	virtual PlatformFontPtr getPlatformFont ();
 	virtual IFontPainter* getFontPainter ();
 
 	virtual CFontDesc& operator= (const CFontDesc&);
@@ -95,7 +97,7 @@ protected:
 	UTF8String name;
 	CCoord size;
 	int32_t style;
-	IPlatformFont* platformFont;
+	PlatformFontPtr platformFont;
 };
 
 typedef CFontDesc*	CFontRef;

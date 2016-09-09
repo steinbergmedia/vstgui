@@ -125,10 +125,10 @@ void CFontDesc::beforeDelete ()
 }
 
 //-----------------------------------------------------------------------------
-IPlatformFont* CFontDesc::getPlatformFont ()
+auto CFontDesc::getPlatformFont () -> PlatformFontPtr
 {
 	if (platformFont == nullptr)
-		platformFont = IPlatformFont::create (name, size, style);
+		platformFont = owned (IPlatformFont::create (name, size, style));
 	return platformFont;
 }
 
@@ -144,11 +144,7 @@ IFontPainter* CFontDesc::getFontPainter ()
 //-----------------------------------------------------------------------------
 void CFontDesc::freePlatformFont ()
 {
-	if (platformFont)
-	{
-		platformFont->forget ();
-		platformFont = nullptr;
-	}
+	platformFont = nullptr;
 }
 
 //-----------------------------------------------------------------------------

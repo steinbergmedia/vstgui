@@ -248,8 +248,8 @@ CGraphicsPath* D2DDrawContext::createGraphicsPath ()
 //-----------------------------------------------------------------------------
 CGraphicsPath* D2DDrawContext::createTextPath (const CFontRef font, UTF8StringPtr text)
 {
- 	const D2DFont* ctFont = dynamic_cast<const D2DFont*>(font->getPlatformFont ());
- 	return ctFont ? new D2DGraphicsPath (ctFont, text) : 0;
+ 	auto ctFont = font->getPlatformFont ().cast<const D2DFont> ();
+ 	return ctFont ? new D2DGraphicsPath (ctFont, text) : nullptr;
 }
 
 //-----------------------------------------------------------------------------
