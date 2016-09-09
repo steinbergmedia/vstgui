@@ -741,11 +741,11 @@ bool HIViewFrame::hideTooltip ()
 }
 
 //-----------------------------------------------------------------------------
-IPlatformTextEdit* HIViewFrame::createPlatformTextEdit (IPlatformTextEditCallback* textEdit)
+SharedPointer<IPlatformTextEdit> HIViewFrame::createPlatformTextEdit (IPlatformTextEditCallback* textEdit)
 {
 	HIViewTextEdit* control = new HIViewTextEdit (controlRef, textEdit);
 	if (control->getPlatformControl ())
-		return control;
+		return owned<IPlatformTextEdit> (control);
 	control->forget ();
 	return 0;
 }

@@ -998,9 +998,9 @@ bool NSViewFrame::hideTooltip ()
 }
 
 //-----------------------------------------------------------------------------
-IPlatformTextEdit* NSViewFrame::createPlatformTextEdit (IPlatformTextEditCallback* textEdit)
+SharedPointer<IPlatformTextEdit> NSViewFrame::createPlatformTextEdit (IPlatformTextEditCallback* textEdit)
 {
-	return new CocoaTextEdit (nsView, textEdit);
+	return owned<IPlatformTextEdit> (new CocoaTextEdit (nsView, textEdit));
 }
 
 //-----------------------------------------------------------------------------

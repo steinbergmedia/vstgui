@@ -83,7 +83,7 @@ public:
 	bool showTooltip (const CRect& rect, const char* utf8Text) override;
 	bool hideTooltip () override;
 	void* getPlatformRepresentation () const override { return nsView; }
-	IPlatformTextEdit* createPlatformTextEdit (IPlatformTextEditCallback* textEdit) override;
+	SharedPointer<IPlatformTextEdit> createPlatformTextEdit (IPlatformTextEditCallback* textEdit) override;
 	IPlatformOptionMenu* createPlatformOptionMenu () override;
 #if VSTGUI_OPENGL_SUPPORT
 	IPlatformOpenGLView* createPlatformOpenGLView () override;

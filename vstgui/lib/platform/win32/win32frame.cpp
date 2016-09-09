@@ -566,9 +566,9 @@ bool Win32Frame::hideTooltip ()
 }
 
 //-----------------------------------------------------------------------------
-IPlatformTextEdit* Win32Frame::createPlatformTextEdit (IPlatformTextEditCallback* textEdit)
+SharedPointer<IPlatformTextEdit> Win32Frame::createPlatformTextEdit (IPlatformTextEditCallback* textEdit)
 {
-	return new Win32TextEdit (windowHandle, textEdit);
+	return owned<IPlatformTextEdit> (new Win32TextEdit (windowHandle, textEdit));
 }
 
 //-----------------------------------------------------------------------------

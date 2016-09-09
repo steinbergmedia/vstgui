@@ -115,7 +115,7 @@ public:
 
 	virtual void* getPlatformRepresentation () const = 0;	// TODO: remove this call later when everything is done
 
-	virtual IPlatformTextEdit* createPlatformTextEdit (IPlatformTextEditCallback* textEdit) = 0; ///< create a native text edit control
+	virtual SharedPointer<IPlatformTextEdit> createPlatformTextEdit (IPlatformTextEditCallback* textEdit) = 0; ///< create a native text edit control
 	virtual IPlatformOptionMenu* createPlatformOptionMenu () = 0; ///< create a native popup menu
 #if VSTGUI_OPENGL_SUPPORT
 	virtual IPlatformOpenGLView* createPlatformOpenGLView () = 0; ///< create a native opengl sub view

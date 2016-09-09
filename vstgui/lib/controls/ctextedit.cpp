@@ -60,7 +60,6 @@ A bitmap can be used as background.
 CTextEdit::CTextEdit (const CRect& size, IControlListener* listener, int32_t tag, UTF8StringPtr txt, CBitmap* background, const int32_t style)
 : CTextLabel (size, txt, background, style)
 , bWasReturnPressed (false)
-, platformControl (nullptr)
 , immediateTextChange (false)
 {
 	this->listener = listener;
@@ -73,7 +72,6 @@ CTextEdit::CTextEdit (const CRect& size, IControlListener* listener, int32_t tag
 CTextEdit::CTextEdit (const CTextEdit& v)
 : CTextLabel (v)
 , bWasReturnPressed (false)
-, platformControl (nullptr)
 , stringToValueFunction (v.stringToValueFunction)
 , immediateTextChange (v.immediateTextChange)
 , platformFont (v.platformFont)
@@ -344,12 +342,12 @@ void CTextEdit::looseFocus ()
 
 	CBaseObjectGuard guard (this);
 
-	IPlatformTextEdit* _platformControl = platformControl;
+	auto _platformControl = platformControl;
 	platformControl = nullptr;
 	
 	updateText (_platformControl);
 	
-	_platformControl->forget ();
+	_platformControl = nullptr;
 
 	// if you want to destroy the text edit do it with the loose focus message
 	CView* receiver = pParentView ? pParentView : pParentFrame;

@@ -51,6 +51,8 @@ typedef bool (*CTextEditStringToValueProc) (UTF8StringPtr txt, float& result, vo
 class CTextEdit : public CTextLabel, public IPlatformTextEditCallback
 {
 public:
+	using PlatformTextEditPtr = SharedPointer<IPlatformTextEdit>;
+
 	CTextEdit (const CRect& size, IControlListener* listener, int32_t tag, UTF8StringPtr txt = nullptr, CBitmap* background = nullptr, const int32_t style = 0);
 	CTextEdit (const CTextEdit& textEdit);
 
@@ -90,7 +92,7 @@ public:
 
 	bool bWasReturnPressed;
 
-	IPlatformTextEdit* getPlatformTextEdit () const { return platformControl; }
+	PlatformTextEditPtr getPlatformTextEdit () const { return platformControl; }
 
 	CLASS_METHODS(CTextEdit, CParamDisplay)
 protected:
@@ -112,7 +114,7 @@ protected:
 	bool platformOnKeyDown (const VstKeyCode& key) override;
 	void platformTextDidChange () override;
 
-	IPlatformTextEdit* platformControl;
+	PlatformTextEditPtr platformControl;
 
 	StringToValueFunction stringToValueFunction;
 
