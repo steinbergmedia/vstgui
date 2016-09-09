@@ -192,6 +192,7 @@ struct ViewController : DelegationController,
 		CPoint size = mandelbrotView->getViewSize ().getSize ();
 		size.x *= scaleFactor;
 		size.y *= scaleFactor;
+		size.makeIntegral ();
 		auto bitmap = owned (new CBitmap (size.x, size.y));
 		bitmap->getPlatformBitmap ()->setScaleFactor (scaleFactor);
 		auto id = ++taskID;
