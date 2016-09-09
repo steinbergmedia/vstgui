@@ -132,7 +132,7 @@ public:
 
 	IValue::Type plainToNormalized (IValue::Type plain) const override
 	{
-		return convertStepToValue (plain, static_cast<IStepValue::StepType> (strings.size () - 1));
+		return convertStepToValue (static_cast<IStepValue::StepType> (plain), static_cast<IStepValue::StepType> (strings.size () - 1));
 	}
 
 	IValue::Type normalizedToPlain (IValue::Type normalized) const override
@@ -381,7 +381,7 @@ IValue::Type StepValue::stringAsValue (const UTF8String& string) const
 //------------------------------------------------------------------------
 IValue::Type StepValue::plainToNormalized (IValue::Type plain) const
 {
-	return stepToValue (plain);
+	return stepToValue (static_cast<IStepValue::StepType> (plain));
 }
 
 //------------------------------------------------------------------------
