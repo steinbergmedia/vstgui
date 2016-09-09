@@ -38,9 +38,9 @@ public:
 		return v / 100.;
 	}
 
-	IValue::Type plainToNormalize (IValue::Type plain) const override { return plain / 100.; }
+	IValue::Type plainToNormalized (IValue::Type plain) const override { return plain / 100.; }
 
-	IValue::Type normalizeToPlain (IValue::Type normalized) const override
+	IValue::Type normalizedToPlain (IValue::Type normalized) const override
 	{
 		return normalized * 100.;
 	}
@@ -56,7 +56,7 @@ public:
 		if (value < 0. || value > 1.)
 			return result;
 
-		result = std::to_string (normalizeToPlain (value));
+		result = std::to_string (normalizedToPlain (value));
 		return result;
 	}
 
@@ -67,15 +67,15 @@ public:
 		sstream.imbue (std::locale::classic ());
 		sstream.precision (40);
 		sstream >> value;
-		value = plainToNormalize (value);
+		value = plainToNormalized (value);
 		if (value < 0. || value > 1.)
 			return IValue::InvalidValue;
 		return value;
 	}
 
-	IValue::Type plainToNormalize (IValue::Type plain) const override { return plain; }
+	IValue::Type plainToNormalized (IValue::Type plain) const override { return plain; }
 
-	IValue::Type normalizeToPlain (IValue::Type normalized) const override { return normalized; }
+	IValue::Type normalizedToPlain (IValue::Type normalized) const override { return normalized; }
 };
 
 //------------------------------------------------------------------------
@@ -87,12 +87,12 @@ public:
 	{
 	}
 
-	IValue::Type plainToNormalize (IValue::Type plain) const override
+	IValue::Type plainToNormalized (IValue::Type plain) const override
 	{
 		return (plain - minValue) / (maxValue - minValue);
 	}
 
-	IValue::Type normalizeToPlain (IValue::Type normalized) const override
+	IValue::Type normalizedToPlain (IValue::Type normalized) const override
 	{
 		return normalized * (maxValue - minValue) + minValue;
 	}
@@ -130,12 +130,12 @@ public:
 		return IValue::InvalidValue;
 	}
 
-	IValue::Type plainToNormalize (IValue::Type plain) const override
+	IValue::Type plainToNormalized (IValue::Type plain) const override
 	{
 		return convertStepToValue (plain, static_cast<IStepValue::StepType> (strings.size () - 1));
 	}
 
-	IValue::Type normalizeToPlain (IValue::Type normalized) const override
+	IValue::Type normalizedToPlain (IValue::Type normalized) const override
 	{
 		return convertValueToStep (normalized,
 		                           static_cast<IStepValue::StepType> (strings.size () - 1));
@@ -197,8 +197,8 @@ public:
 
 	UTF8String valueAsString (IValue::Type value) const override;
 	IValue::Type stringAsValue (const UTF8String& string) const override;
-	IValue::Type plainToNormalize (IValue::Type plain) const override;
-	IValue::Type normalizeToPlain (IValue::Type normalized) const override;
+	IValue::Type plainToNormalized (IValue::Type plain) const override;
+	IValue::Type normalizedToPlain (IValue::Type normalized) const override;
 
 	const IValueConverter& getConverter () const override;
 
@@ -379,13 +379,13 @@ IValue::Type StepValue::stringAsValue (const UTF8String& string) const
 }
 
 //------------------------------------------------------------------------
-IValue::Type StepValue::plainToNormalize (IValue::Type plain) const
+IValue::Type StepValue::plainToNormalized (IValue::Type plain) const
 {
 	return stepToValue (plain);
 }
 
 //------------------------------------------------------------------------
-IValue::Type StepValue::normalizeToPlain (IValue::Type normalized) const
+IValue::Type StepValue::normalizedToPlain (IValue::Type normalized) const
 {
 	return valueToStep (normalized);
 }

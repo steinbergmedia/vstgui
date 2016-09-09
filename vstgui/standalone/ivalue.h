@@ -66,8 +66,8 @@ public:
 	virtual UTF8String valueAsString (IValue::Type value) const = 0;
 	virtual IValue::Type stringAsValue (const UTF8String& string) const = 0;
 
-	virtual IValue::Type plainToNormalize (IValue::Type plain) const = 0;
-	virtual IValue::Type normalizeToPlain (IValue::Type normalized) const = 0;
+	virtual IValue::Type plainToNormalized (IValue::Type plain) const = 0;
+	virtual IValue::Type normalizedToPlain (IValue::Type normalized) const = 0;
 };
 
 //------------------------------------------------------------------------

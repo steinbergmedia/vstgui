@@ -42,21 +42,31 @@ ValueConverterPtr makeRangeConverter (IValue::Type minValue, IValue::Type maxVal
 //------------------------------------------------------------------------
 inline IValue::Type plainToNormalize (IValue& value, IValue::Type plainValue)
 {
-	return value.getConverter ().plainToNormalize (plainValue);
+	return value.getConverter ().plainToNormalized (plainValue);
 }
 
 //------------------------------------------------------------------------
 inline IValue::Type normalizeToPlain (IValue& value, IValue::Type normalizeValue)
 {
-	return value.getConverter ().normalizeToPlain (normalizeValue);
+	return value.getConverter ().normalizedToPlain (normalizeValue);
+}
+
+//------------------------------------------------------------------------
+inline IValue::Type stepToNormalize (IValue& value, IStepValue::StepType stepValue)
+{
+	if (auto sv = value.dynamicCast<IStepValue> ())
+	{
+		return sv->stepToValue (stepValue);
+	}
+	return IValue::InvalidValue;
 }
 
 //------------------------------------------------------------------------
 inline IStepValue::StepType normalizeToStep (IValue& value, IValue::Type normalizeValue)
 {
-	if (auto stepValue = value.dynamicCast<IStepValue> ())
+	if (auto sv = value.dynamicCast<IStepValue> ())
 	{
-		return stepValue->valueToStep (normalizeValue);
+		return sv->valueToStep (normalizeValue);
 	}
 	return IStepValue::InvalidStep;
 }
