@@ -290,7 +290,7 @@ CBitmapPixelAccess* CBitmapPixelAccess::create (CBitmap* bitmap, bool alphaPremu
 {
 	if (bitmap == nullptr || bitmap->getPlatformBitmap () == nullptr)
 		return nullptr;
-	auto pixelAccess = owned (bitmap->getPlatformBitmap ()->lockPixels (alphaPremultiplied));
+	auto pixelAccess = bitmap->getPlatformBitmap ()->lockPixels (alphaPremultiplied);
 	if (pixelAccess == nullptr)
 		return nullptr;
 	CBitmapPixelAccess* result = nullptr;

@@ -316,12 +316,11 @@ SharedPointer<IPlatformBitmap> IPlatformBitmap::createFromMemory (const void* pt
 }
 
 //-----------------------------------------------------------------------------
-bool IPlatformBitmap::createMemoryPNGRepresentation (IPlatformBitmap* bitmap, void** ptr, uint32_t& size)
+PNGBitmapBuffer IPlatformBitmap::createMemoryPNGRepresentation (const SharedPointer<IPlatformBitmap>& bitmap)
 {
-	Win32BitmapBase* bitmapBase = dynamic_cast<Win32BitmapBase*> (bitmap);
-	if (bitmapBase)
-		return bitmapBase->createMemoryPNGRepresentation (ptr, size);
-	return false;
+	if (auto bitmapBase = bitmap.cast<Win32BitmapBase> ())
+		return bitmapBase->createMemoryPNGRepresentation ();
+	return {};
 }
 
 //-----------------------------------------------------------------------------

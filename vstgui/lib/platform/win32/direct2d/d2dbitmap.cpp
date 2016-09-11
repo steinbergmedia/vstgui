@@ -106,21 +106,21 @@ IWICBitmap* D2DBitmap::getBitmap ()
 }
 
 //-----------------------------------------------------------------------------
-bool D2DBitmap::createMemoryPNGRepresentation (void** ptr, uint32_t& size)
+PNGBitmapBuffer D2DBitmap::createMemoryPNGRepresentation ()
 {
-	if (getSource () == 0)
-		return false;
+	if (getSource () == nullptr)
+		return {};
 
-	bool result = false;
-	IWICBitmapEncoder* encoder = 0;
+	PNGBitmapBuffer buffer;
+	IWICBitmapEncoder* encoder = nullptr;
 	if (SUCCEEDED (getWICImageingFactory ()->CreateEncoder (GUID_ContainerFormatPng, NULL, &encoder)))
 	{
-		IStream* stream = 0;
+		IStream* stream = nullptr;
 		if (SUCCEEDED (CreateStreamOnHGlobal (NULL, TRUE, &stream)))
 		{
 			if (SUCCEEDED (encoder->Initialize (stream, WICBitmapEncoderNoCache)))
 			{
-				IWICBitmapFrameEncode* frame = 0;
+				IWICBitmapFrameEncode* frame = nullptr;
 				if (SUCCEEDED (encoder->CreateNewFrame (&frame, NULL)))
 				{
 					if (SUCCEEDED (frame->Initialize (NULL)))
@@ -138,10 +138,8 @@ bool D2DBitmap::createMemoryPNGRepresentation (void** ptr, uint32_t& size)
 										SIZE_T globalSize = GlobalSize (hGlobal);
 										if (globalSize && globalAddress)
 										{
-											*ptr = std::malloc (globalSize);
-											size = (uint32_t)globalSize;
-											memcpy (*ptr, globalAddress, globalSize);
-											result = true;
+											buffer.resize (globalSize);
+											memcpy (buffer.data (), globalAddress, globalSize);
 										}
 										GlobalUnlock (hGlobal);
 									}
@@ -152,12 +150,11 @@ bool D2DBitmap::createMemoryPNGRepresentation (void** ptr, uint32_t& size)
 					frame->Release ();
 				}
 			}
-
 			stream->Release ();
 		}
 		encoder->Release ();
 	}
-	return result;
+	return buffer;
 }
 
 //-----------------------------------------------------------------------------
@@ -272,15 +269,14 @@ void D2DBitmap::replaceBitmapSource (IWICBitmapSource* newSourceBitmap)
 }
 
 //-----------------------------------------------------------------------------
-IPlatformBitmapPixelAccess* D2DBitmap::lockPixels (bool alphaPremultiplied)
+SharedPointer<IPlatformBitmapPixelAccess> D2DBitmap::lockPixels (bool alphaPremultiplied)
 {
-	if (getSource () == 0)
-		return 0;
-	PixelAccess* pixelAccess = new PixelAccess;
+	if (getSource () == nullptr)
+		return nullptr;
+	auto pixelAccess = owned (new PixelAccess);
 	if (pixelAccess->init (this, alphaPremultiplied))
-		return pixelAccess;
-	pixelAccess->forget ();
-	return 0;
+		return shared<IPlatformBitmapPixelAccess> (pixelAccess);
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------

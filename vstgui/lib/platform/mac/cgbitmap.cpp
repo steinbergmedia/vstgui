@@ -96,12 +96,11 @@ SharedPointer<IPlatformBitmap> IPlatformBitmap::createFromMemory (const void* pt
 }
 
 //-----------------------------------------------------------------------------
-bool IPlatformBitmap::createMemoryPNGRepresentation (IPlatformBitmap* bitmap, void** ptr, uint32_t& size)
+PNGBitmapBuffer IPlatformBitmap::createMemoryPNGRepresentation (const SharedPointer<IPlatformBitmap>& bitmap)
 {
-	bool result = false;
+	PNGBitmapBuffer buffer;
 #if !TARGET_OS_IPHONE
-	CGBitmap* cgBitmap = dynamic_cast<CGBitmap*> (bitmap);
-	if (cgBitmap)
+	if (auto cgBitmap = bitmap.cast<CGBitmap> ())
 	{
 		CGImageRef image = cgBitmap->getCGImage ();
 		if (image)
@@ -115,10 +114,8 @@ bool IPlatformBitmap::createMemoryPNGRepresentation (IPlatformBitmap* bitmap, vo
 					CGImageDestinationAddImage (dest, image, nullptr);
 					if (CGImageDestinationFinalize (dest))
 					{
-						size = (uint32_t)CFDataGetLength (data);
-						*ptr = std::malloc (size);
-						CFDataGetBytes (data, CFRangeMake (0, static_cast<CFIndex> (size)), static_cast<UInt8*> (*ptr));
-						result = true;
+						buffer.resize(CFDataGetLength (data));
+						CFDataGetBytes (data, CFRangeMake (0, CFDataGetLength (data)), buffer.data ());
 					}
 					CFRelease (dest);
 				}
@@ -127,7 +124,7 @@ bool IPlatformBitmap::createMemoryPNGRepresentation (IPlatformBitmap* bitmap, vo
 		}
 	}
 #endif
-	return result;
+	return buffer;
 }
 
 //-----------------------------------------------------------------------------
@@ -459,7 +456,7 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-IPlatformBitmapPixelAccess* CGBitmap::lockPixels (bool alphaPremultiplied)
+SharedPointer<IPlatformBitmapPixelAccess> CGBitmap::lockPixels (bool alphaPremultiplied)
 {
 	if (bits == nullptr)
 	{
@@ -469,7 +466,7 @@ IPlatformBitmapPixelAccess* CGBitmap::lockPixels (bool alphaPremultiplied)
 	}
 	if (bits)
 	{
-		return new CGBitmapPixelAccess (this, alphaPremultiplied);
+		return owned<IPlatformBitmapPixelAccess> (new CGBitmapPixelAccess (this, alphaPremultiplied));
 	}
 	return nullptr;
 }

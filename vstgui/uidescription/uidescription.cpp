@@ -2999,15 +2999,13 @@ void UIBitmapNode::createXMLData (const std::string& pathHint)
 	CBitmap* bitmap = getBitmap (pathHint);
 	if (bitmap)
 	{
-		IPlatformBitmap* platformBitmap = bitmap->getPlatformBitmap ();
-		if (platformBitmap)
+		if (auto platformBitmap = bitmap->getPlatformBitmap ())
 		{
-			void* data;
-			uint32_t dataSize;
-			if (IPlatformBitmap::createMemoryPNGRepresentation (platformBitmap, &data, dataSize))
+			auto buffer = IPlatformBitmap::createMemoryPNGRepresentation (platformBitmap);
+			if (!buffer.empty ())
 			{
 				Base64Codec bd;
-				if (bd.encode (data, dataSize))
+				if (bd.encode (buffer.data(), static_cast<uint32_t> (buffer.size ())))
 				{
 					UINode* node = getChildren ().findChildNode ("data");
 					if (node)
@@ -3017,7 +3015,6 @@ void UIBitmapNode::createXMLData (const std::string& pathHint)
 					dataNode->getData ().write (reinterpret_cast<const char*> (bd.getData ()), static_cast<std::streamsize> (bd.getDataSize ()));
 					getChildren ().add (dataNode);
 				}
-				std::free (data);
 			}
 		}
 	}

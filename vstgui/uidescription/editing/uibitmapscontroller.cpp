@@ -143,13 +143,11 @@ public:
 		if (platformBitmap && platformBitmap->getScaleFactor () != 1.)
 		{
 			// get rid of the scale factor
-			void* ptr;
-			uint32_t memSize;
-			if (IPlatformBitmap::createMemoryPNGRepresentation (platformBitmap, &ptr, memSize))
+			auto buffer = IPlatformBitmap::createMemoryPNGRepresentation (platformBitmap);
+			if (!buffer.empty ())
 			{
-				auto newPlatformBitmap = IPlatformBitmap::createFromMemory (ptr, memSize);
+				auto newPlatformBitmap = IPlatformBitmap::createFromMemory (buffer.data (), static_cast<uint32_t> (buffer.size ()));
 				CView::setBackground (owned (new CBitmap (newPlatformBitmap)));
-				std::free (ptr);
 			}
 		}
 		else

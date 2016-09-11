@@ -54,14 +54,14 @@ public:
 
 	bool load (const CResourceDescription& desc) override;
 	const CPoint& getSize () const override { return size; }
-	IPlatformBitmapPixelAccess* lockPixels (bool alphaPremultiplied) override;
+	SharedPointer<IPlatformBitmapPixelAccess> lockPixels (bool alphaPremultiplied) override;
 	void setScaleFactor (double factor) override {}
 	double getScaleFactor () const override { return 1.; }
 
 	Gdiplus::Bitmap* getBitmap () const { return bitmap; }
 	HBITMAP createHBitmap () override;
 	bool loadFromStream (IStream* stream) override;
-	bool createMemoryPNGRepresentation (void** ptr, uint32_t& size) override;
+	PNGBitmapBuffer createMemoryPNGRepresentation () override;
 
 //-----------------------------------------------------------------------------
 protected:

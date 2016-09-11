@@ -87,10 +87,9 @@ bool GdiplusBitmap::loadFromStream (IStream* stream)
 }
 
 //-----------------------------------------------------------------------------
-bool GdiplusBitmap::createMemoryPNGRepresentation (void** ptr, uint32_t& size)
+PNGBitmapBuffer GdiplusBitmap::createMemoryPNGRepresentation ()
 {
-	// TODO: Implementation
-	return false;
+	return {};
 }
 
 //-----------------------------------------------------------------------------
@@ -125,19 +124,15 @@ HBITMAP GdiplusBitmap::createHBitmap ()
 }
 
 //-----------------------------------------------------------------------------
-IPlatformBitmapPixelAccess* GdiplusBitmap::lockPixels (bool alphaPremultiplied)
+SharedPointer<IPlatformBitmapPixelAccess> GdiplusBitmap::lockPixels (bool alphaPremultiplied)
 {
-	PixelAccess* pixelAccess = 0;
 	if (bitmap)
 	{
-		pixelAccess = new PixelAccess ();
-		if (pixelAccess->init (this, alphaPremultiplied) == false)
-		{
-			delete pixelAccess;
-			pixelAccess = 0;
-		}
+		auto pixelAccess = owned (new PixelAccess ());
+		if (pixelAccess->init (this, alphaPremultiplied))
+			return shared<IPlatformBitmapPixelAccess> (pixelAccess);
 	}
-	return pixelAccess;
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------

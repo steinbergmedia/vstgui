@@ -60,7 +60,7 @@ public:
 	
 	bool load (const CResourceDescription& desc) override;
 	const CPoint& getSize () const override { return size; }
-	IPlatformBitmapPixelAccess* lockPixels (bool alphaPremultiplied) override;
+	SharedPointer<IPlatformBitmapPixelAccess> lockPixels (bool alphaPremultiplied) override;
 	void setScaleFactor (double factor) override { scaleFactor = factor; }
 	double getScaleFactor () const override { return scaleFactor; }
 

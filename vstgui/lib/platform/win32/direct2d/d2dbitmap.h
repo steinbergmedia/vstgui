@@ -61,7 +61,7 @@ public:
 
 	bool load (const CResourceDescription& desc) override;
 	const CPoint& getSize () const override { return size; }
-	IPlatformBitmapPixelAccess* lockPixels (bool alphaPremultiplied) override;
+	SharedPointer<IPlatformBitmapPixelAccess> lockPixels (bool alphaPremultiplied) override;
 	void setScaleFactor (double factor) override { scaleFactor = factor; }
 	double getScaleFactor () const override { return scaleFactor; }
 
@@ -70,7 +70,7 @@ public:
 
 	IWICBitmapSource* getSource () const { return source; }
 	IWICBitmap* getBitmap ();
-	bool createMemoryPNGRepresentation (void** ptr, uint32_t& size) override;
+	PNGBitmapBuffer createMemoryPNGRepresentation () override;
 //-----------------------------------------------------------------------------
 protected:
 	void replaceBitmapSource (IWICBitmapSource* newSourceBitmap);
