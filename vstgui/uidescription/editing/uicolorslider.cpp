@@ -93,8 +93,7 @@ CMessageResult UIColorSlider::notify (CBaseObject* sender, IdStringPtr message)
 void UIColorSlider::updateBackground (CDrawContext* context)
 {
 	double scaleFactor = context->getScaleFactor ();
-	SharedPointer<COffscreenContext> offscreen = owned (COffscreenContext::create (getFrame (), getWidth (), getHeight (), scaleFactor));
-	if (offscreen)
+	if (auto offscreen = COffscreenContext::create (getFrame (), getWidth (), getHeight (), scaleFactor))
 	{
 		const int32_t kNumPoints = (style <= kLightness) ? 360 : 256;
 		CCoord width = std::floor (getWidth () + 0.5);
@@ -172,8 +171,7 @@ void UIColorSlider::updateBackground (CDrawContext* context)
 //----------------------------------------------------------------------------------------------------
 void UIColorSlider::updateHandle (CDrawContext* context)
 {
-	SharedPointer<COffscreenContext> offscreen = owned (COffscreenContext::create (getFrame (), 7, getHeight (), context->getScaleFactor ()));
-	if (offscreen)
+	if (auto offscreen = COffscreenContext::create (getFrame (), 7, getHeight (), context->getScaleFactor ()))
 	{
 		offscreen->beginDraw ();
 		offscreen->setFrameColor (kBlackCColor);

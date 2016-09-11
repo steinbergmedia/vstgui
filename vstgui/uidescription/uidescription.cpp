@@ -3062,8 +3062,7 @@ CBitmap* UIBitmapNode::getBitmap (const std::string& pathHint)
 				if (removeLastPathComponent (absPath))
 				{
 					absPath += "/" + *path;
-					SharedPointer<IPlatformBitmap> platformBitmap = owned (IPlatformBitmap::createFromPath (absPath.c_str ()));
-					if (platformBitmap)
+					if (auto platformBitmap = IPlatformBitmap::createFromPath (absPath.c_str ()))
 						bitmap->setPlatformBitmap (platformBitmap);
 				}
 			}
@@ -3079,8 +3078,7 @@ CBitmap* UIBitmapNode::getBitmap (const std::string& pathHint)
 					Base64Codec bd;
 					if (bd.decode (node->getData ().str ()))
 					{
-						auto platformBitmap = owned (IPlatformBitmap::createFromMemory (bd.getData (), bd.getDataSize ()));
-						if (platformBitmap)
+						if (auto platformBitmap = IPlatformBitmap::createFromMemory (bd.getData (), bd.getDataSize ()))
 						{
 							double scaleFactor = 1.;
 							if (attributes->getDoubleAttribute ("scale-factor", scaleFactor))

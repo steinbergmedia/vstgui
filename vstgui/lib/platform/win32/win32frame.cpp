@@ -572,33 +572,33 @@ SharedPointer<IPlatformTextEdit> Win32Frame::createPlatformTextEdit (IPlatformTe
 }
 
 //-----------------------------------------------------------------------------
-IPlatformOptionMenu* Win32Frame::createPlatformOptionMenu ()
+SharedPointer<IPlatformOptionMenu> Win32Frame::createPlatformOptionMenu ()
 {
-	return new Win32OptionMenu (windowHandle);
+	return owned<IPlatformOptionMenu> (new Win32OptionMenu (windowHandle));
 }
 
 #if VSTGUI_OPENGL_SUPPORT
 //-----------------------------------------------------------------------------
-IPlatformOpenGLView* Win32Frame::createPlatformOpenGLView ()
+SharedPointer<IPlatformOpenGLView> Win32Frame::createPlatformOpenGLView ()
 {
-	return new Win32OpenGLView (this);
+	return owned<IPlatformOpenGLView> (new Win32OpenGLView (this));
 }
 #endif
 
 //-----------------------------------------------------------------------------
-COffscreenContext* Win32Frame::createOffscreenContext (CCoord width, CCoord height, double scaleFactor)
+SharedPointer<COffscreenContext> Win32Frame::createOffscreenContext (CCoord width, CCoord height, double scaleFactor)
 {
 #if VSTGUI_DIRECT2D_SUPPORT
 	if (getD2DFactory ())
 	{
 		D2DBitmap* bitmap = new D2DBitmap (CPoint (width, height));
-		D2DDrawContext* context = new D2DDrawContext (bitmap);
+		auto context = owned<COffscreenContext> (new D2DDrawContext (bitmap));
 		bitmap->forget ();
 		return context;
 	}
 #endif
 	GdiplusBitmap* bitmap = new GdiplusBitmap (CPoint (width, height));
-	GdiplusDrawContext* context = new GdiplusDrawContext (bitmap);
+	auto context = owned<COffscreenContext> (new GdiplusDrawContext (bitmap));
 	bitmap->forget ();
 	return context;
 }

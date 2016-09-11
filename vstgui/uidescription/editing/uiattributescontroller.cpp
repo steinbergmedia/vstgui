@@ -593,15 +593,14 @@ public:
 		CColor color;
 		if (description->getColor (item->getTitle (), color))
 		{
-			COffscreenContext* context = COffscreenContext::create (menu->getFrame (), size, size);
-			if (context)
+			
+			if (auto context = COffscreenContext::create (menu->getFrame (), size, size))
 			{
 				context->beginDraw ();
 				context->setFillColor (color);
 				context->drawRect (CRect (0, 0, size, size), kDrawFilled);
 				context->endDraw ();
 				item->setIcon (context->getBitmap ());
-				context->forget ();
 			}
 		}
 	}
@@ -674,8 +673,7 @@ public:
 		const CCoord size = 15;
 		if (CGradient* gradient = description->getGradient (item->getTitle ()))
 		{
-			COffscreenContext* context = COffscreenContext::create (menu->getFrame (), size, size);
-			if (context)
+			if (auto context = COffscreenContext::create (menu->getFrame (), size, size))
 			{
 				context->beginDraw ();
 				SharedPointer<CGraphicsPath> path = owned (context->createGraphicsPath ());
@@ -683,7 +681,6 @@ public:
 				context->fillLinearGradient(path, *gradient, CPoint (0, 0), CPoint (size, 0));
 				context->endDraw ();
 				item->setIcon (context->getBitmap ());
-				context->forget ();
 			}
 		}
 	}

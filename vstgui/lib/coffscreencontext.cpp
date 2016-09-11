@@ -59,7 +59,7 @@ void COffscreenContext::copyFrom (CDrawContext *pContext, CRect destRect, CPoint
 }
 
 //-----------------------------------------------------------------------------
-COffscreenContext* COffscreenContext::create (CFrame* frame, CCoord width, CCoord height, double scaleFactor)
+SharedPointer<COffscreenContext> COffscreenContext::create (CFrame* frame, CCoord width, CCoord height, double scaleFactor)
 {
 	if (width >= 1. && height >= 1.)
 	{

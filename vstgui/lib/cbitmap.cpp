@@ -74,7 +74,7 @@ CBitmap::CBitmap ()
 CBitmap::CBitmap (const CResourceDescription& desc)
 : resourceDesc (desc)
 {
-	if (auto platformBitmap = owned (IPlatformBitmap::create ()))
+	if (auto platformBitmap = IPlatformBitmap::create ())
 	{
 		if (platformBitmap->load (desc))
 		{
@@ -87,7 +87,7 @@ CBitmap::CBitmap (const CResourceDescription& desc)
 CBitmap::CBitmap (CCoord width, CCoord height)
 {
 	CPoint p (width, height);
-	bitmaps.push_back (owned (IPlatformBitmap::create (&p)));
+	bitmaps.push_back (IPlatformBitmap::create (&p));
 }
 
 //-----------------------------------------------------------------------------

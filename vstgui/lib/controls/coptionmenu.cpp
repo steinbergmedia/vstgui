@@ -447,8 +447,7 @@ bool COptionMenu::popup ()
 
 	getFrame ()->onStartLocalEventLoop ();
 
-	IPlatformOptionMenu* platformMenu = getFrame ()->getPlatformFrame ()->createPlatformOptionMenu ();
-	if (platformMenu)
+	if (auto platformMenu = getFrame ()->getPlatformFrame ()->createPlatformOptionMenu ())
 	{
 		PlatformOptionMenuResult platformPopupResult = platformMenu->popup (this);
 		if (platformPopupResult.menu != nullptr)
@@ -464,7 +463,6 @@ bool COptionMenu::popup ()
 			if (commandItem)
 				commandItem->execute ();
 		}
-		platformMenu->forget ();
 	}
 
 	endEdit ();

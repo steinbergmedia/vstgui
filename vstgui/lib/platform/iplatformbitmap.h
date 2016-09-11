@@ -46,11 +46,11 @@ class IPlatformBitmapPixelAccess;
 class IPlatformBitmap : public CBaseObject
 {
 public:
-	static IPlatformBitmap* create (CPoint* size = nullptr); ///< if size pointer is not zero, create a bitmap which can be used as a draw surface
-	static IPlatformBitmap* createFromPath (UTF8StringPtr absolutePath); ///< create a bitmap from an absolute path
+	static SharedPointer<IPlatformBitmap> create (CPoint* size = nullptr); ///< if size pointer is not zero, create a bitmap which can be used as a draw surface
+	static SharedPointer<IPlatformBitmap> createFromPath (UTF8StringPtr absolutePath); ///< create a bitmap from an absolute path
 
 	/** Create a platform bitmap from memory */
-	static IPlatformBitmap* createFromMemory (const void* ptr, uint32_t memSize);
+	static SharedPointer<IPlatformBitmap> createFromMemory (const void* ptr, uint32_t memSize);
 
 	/** Create a memory representation of the platform bitmap in PNG format. The memory could be used by createFromMemory.
 		Caller needs to free the memory in ptr */

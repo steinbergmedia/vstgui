@@ -1030,7 +1030,7 @@ CBitmap* UIEditView::createBitmapFromSelection (UISelection* selection)
 {
 	CRect viewSize = getSelection ()->getBounds ();
 	
-	COffscreenContext* context = COffscreenContext::create (getFrame (), viewSize.getWidth (), viewSize.getHeight ());
+	auto context = COffscreenContext::create (getFrame (), viewSize.getWidth (), viewSize.getHeight ());
 	context->beginDraw ();
 	context->setFillColor (CColor (0, 0, 0, 40));
 	context->setFrameColor (CColor (255, 255, 255, 40));
@@ -1068,7 +1068,6 @@ CBitmap* UIEditView::createBitmapFromSelection (UISelection* selection)
 	context->endDraw ();
 	CBitmap* bitmap = context->getBitmap ();
 	bitmap->remember ();
-	context->forget ();
 	return bitmap;
 }
 

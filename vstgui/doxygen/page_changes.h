@@ -69,6 +69,8 @@ Note: All current deprecated methods will be removed in the next version. So mak
 
 @subsection code_changes_4_3_to_4_5 VSTGUI 4.3 -> VSTGUI 4.5
 
+- COffscreenContext::create returns a SharedPointer<COffscreenContext> now, not a naked pointer.
+
 @subsection code_changes_4_2_to_4_3 VSTGUI 4.2 -> VSTGUI 4.3
 
 - CControlListener was renamed to IControlListener and moved into the VSTGUI namespace and its own header file. A typedef for CControlListener is available but marked as deprecated.

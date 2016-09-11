@@ -114,7 +114,7 @@ bool CLayeredViewContainer::attached (CView* parent)
 			}
 			parent = parent->getParentView ();
 		}
-		layer = owned (pParentFrame->getPlatformFrame ()->createPlatformViewLayer (this, parentLayerView ? parentLayerView->layer : nullptr));
+		layer = pParentFrame->getPlatformFrame ()->createPlatformViewLayer (this, parentLayerView ? parentLayerView->layer : nullptr);
 		if (layer)
 		{
 			layer->setZIndex (zIndex);

@@ -183,8 +183,7 @@ void CShadowViewContainer::drawRect (CDrawContext* pContext, const CRect& update
 		CCoord width = getWidth ();
 		CCoord height = getHeight ();
 		
-		SharedPointer<COffscreenContext> offscreenContext = owned (COffscreenContext::create (getFrame (), width, height, scaleFactor));
-		if (offscreenContext)
+		if (auto offscreenContext = COffscreenContext::create (getFrame (), width, height, scaleFactor))
 		{
 			offscreenContext->beginDraw ();
 			CDrawContext::Transform transform (*offscreenContext, CGraphicsTransform ().translate (-getViewSize ().left - shadowOffset.x, -getViewSize ().top - shadowOffset.y));

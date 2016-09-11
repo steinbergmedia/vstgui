@@ -217,6 +217,12 @@ class RepeatTimingFunction;
 template <class I> class SharedPointer;
 
 // platform
+class IPlatformTextEdit;
+class IPlatformTextEditCallback;
+class IPlatformOptionMenu;
+class IPlatformOpenGLView;
+class IPlatformViewLayer;
+class IPlatformViewLayerDelegate;
 class IPlatformString;
 class IPlatformBitmap;
 class IPlatformBitmapPixelAccess;

@@ -147,7 +147,7 @@ public:
 			uint32_t memSize;
 			if (IPlatformBitmap::createMemoryPNGRepresentation (platformBitmap, &ptr, memSize))
 			{
-				SharedPointer<IPlatformBitmap> newPlatformBitmap = owned (IPlatformBitmap::createFromMemory (ptr, memSize));
+				auto newPlatformBitmap = IPlatformBitmap::createFromMemory (ptr, memSize);
 				CView::setBackground (owned (new CBitmap (newPlatformBitmap)));
 				std::free (ptr);
 			}

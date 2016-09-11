@@ -84,12 +84,12 @@ public:
 	bool hideTooltip () override;
 	void* getPlatformRepresentation () const override { return nsView; }
 	SharedPointer<IPlatformTextEdit> createPlatformTextEdit (IPlatformTextEditCallback* textEdit) override;
-	IPlatformOptionMenu* createPlatformOptionMenu () override;
+	SharedPointer<IPlatformOptionMenu> createPlatformOptionMenu () override;
 #if VSTGUI_OPENGL_SUPPORT
-	IPlatformOpenGLView* createPlatformOpenGLView () override;
+	SharedPointer<IPlatformOpenGLView> createPlatformOpenGLView () override;
 #endif
-	IPlatformViewLayer* createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer = nullptr) override;
-	COffscreenContext* createOffscreenContext (CCoord width, CCoord height, double scaleFactor) override;
+	SharedPointer<IPlatformViewLayer> createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer = nullptr) override;
+	SharedPointer<COffscreenContext> createOffscreenContext (CCoord width, CCoord height, double scaleFactor) override;
 	DragResult doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap) override;
 	void setClipboard (IDataPackage* data) override;
 	IDataPackage* getClipboard () override;

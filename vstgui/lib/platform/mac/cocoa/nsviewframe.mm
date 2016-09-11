@@ -1004,37 +1004,37 @@ SharedPointer<IPlatformTextEdit> NSViewFrame::createPlatformTextEdit (IPlatformT
 }
 
 //-----------------------------------------------------------------------------
-IPlatformOptionMenu* NSViewFrame::createPlatformOptionMenu ()
+SharedPointer<IPlatformOptionMenu> NSViewFrame::createPlatformOptionMenu ()
 {
-	return new NSViewOptionMenu ();
+	return owned<IPlatformOptionMenu> (new NSViewOptionMenu ());
 }
 
 #if VSTGUI_OPENGL_SUPPORT
 //-----------------------------------------------------------------------------
-IPlatformOpenGLView* NSViewFrame::createPlatformOpenGLView ()
+SharedPointer<IPlatformOpenGLView> NSViewFrame::createPlatformOpenGLView ()
 {
-	return new CocoaOpenGLView (nsView);
+	return owned<IPlatformOpenGLView> (new CocoaOpenGLView (nsView));
 }
 #endif
 
 //-----------------------------------------------------------------------------
-IPlatformViewLayer* NSViewFrame::createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer)
+SharedPointer<IPlatformViewLayer> NSViewFrame::createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer)
 {
-	CAViewLayer* parentViewLayer = dynamic_cast<CAViewLayer*> (parentLayer);
+	auto parentViewLayer = dynamic_cast<CAViewLayer*> (parentLayer);
 	if (parentViewLayer == nullptr || parentViewLayer->getLayer () == nullptr)
 	{
 		// after this is called, 'Quartz Debug' will not work as before. So when using 'Quartz Debug' comment the following two lines.
 		[nsView setWantsLayer:YES];
 		nsView.layer.actions = nil;
 	}
-    CALayer* caParentLayer = parentViewLayer ? parentViewLayer->getLayer () : [nsView layer];
-	CAViewLayer* layer = new CAViewLayer (caParentLayer);
+	auto caParentLayer = parentViewLayer ? parentViewLayer->getLayer () : [nsView layer];
+	auto layer = owned (new CAViewLayer (caParentLayer));
 	layer->init (drawDelegate);
-	return layer;
+	return shared<IPlatformViewLayer> (layer);
 }
 
 //-----------------------------------------------------------------------------
-COffscreenContext* NSViewFrame::createOffscreenContext (CCoord width, CCoord height, double scaleFactor)
+SharedPointer<COffscreenContext> NSViewFrame::createOffscreenContext (CCoord width, CCoord height, double scaleFactor)
 {
 	CGBitmap* bitmap = new CGBitmap (CPoint (width * scaleFactor, height * scaleFactor));
 	bitmap->setScaleFactor (scaleFactor);

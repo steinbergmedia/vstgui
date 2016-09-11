@@ -241,56 +241,59 @@ CDrawContext* createDrawContext (HWND window, HDC device, const CRect& surfaceRe
 }
 
 //-----------------------------------------------------------------------------
-IPlatformBitmap* IPlatformBitmap::create (CPoint* size)
+SharedPointer<IPlatformBitmap> IPlatformBitmap::create (CPoint* size)
 {
 #if VSTGUI_DIRECT2D_SUPPORT
 	if (getD2DFactory ())
 	{
 		if (size)
-			return new D2DBitmap (*size);
-		return new D2DBitmap ();
+			return owned<IPlatformBitmap> (new D2DBitmap (*size));
+		return owned<IPlatformBitmap> (new D2DBitmap ());
 	}
 #endif
 	if (size)
-		return new GdiplusBitmap (*size);
-	return new GdiplusBitmap ();
+		return owned<IPlatformBitmap> (new GdiplusBitmap (*size));
+	return owned<IPlatformBitmap> (new GdiplusBitmap ());
+}
+
+//------------------------------------------------------------------------
+static SharedPointer<IPlatformBitmap> createFromIStream (IStream* stream)
+{
+#if VSTGUI_DIRECT2D_SUPPORT
+	if (getD2DFactory ())
+	{
+		auto result = owned (new D2DBitmap ());
+		if (result->loadFromStream (stream))
+		{
+			return shared<IPlatformBitmap> (result);
+		}
+		return nullptr;
+	}
+#endif
+	auto bitmap = owned (new GdiplusBitmap ());
+	if (bitmap->loadFromStream (stream))
+	{
+		return shared<IPlatformBitmap> (bitmap);
+	}
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------
-IPlatformBitmap* IPlatformBitmap::createFromPath (UTF8StringPtr absolutePath)
+SharedPointer<IPlatformBitmap> IPlatformBitmap::createFromPath (UTF8StringPtr absolutePath)
 {
 	UTF8StringHelper path (absolutePath);
 	IStream* stream = 0;
 	if (SUCCEEDED (SHCreateStreamOnFileEx (path, STGM_READ|STGM_SHARE_DENY_WRITE, 0, false, 0, &stream)))
 	{
-#if VSTGUI_DIRECT2D_SUPPORT
-		if (getD2DFactory ())
-		{
-			D2DBitmap* result = new D2DBitmap ();
-			if (result->loadFromStream (stream))
-			{
-				stream->Release ();
-				return result;
-			}
-			stream->Release ();
-			result->forget ();
-			return 0;
-		}
-#endif
-		GdiplusBitmap* bitmap = new GdiplusBitmap ();
-		if (bitmap->loadFromStream (stream))
-		{
-			stream->Release ();
-			return bitmap;
-		}
-		bitmap->forget ();
+		auto result = createFromIStream (stream);
 		stream->Release ();
+		return result;
 	}
-	return 0;
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------
-IPlatformBitmap* IPlatformBitmap::createFromMemory (const void* ptr, uint32_t memSize)
+SharedPointer<IPlatformBitmap> IPlatformBitmap::createFromMemory (const void* ptr, uint32_t memSize)
 {
 #ifdef __GNUC__
 	typedef IStream* (*SHCreateMemStreamProc) (const BYTE* pInit, UINT cbInit);
@@ -302,28 +305,9 @@ IPlatformBitmap* IPlatformBitmap::createFromMemory (const void* ptr, uint32_t me
 #endif
 	if (stream)
 	{
-#if VSTGUI_DIRECT2D_SUPPORT
-		if (getD2DFactory ())
-		{
-			D2DBitmap* result = new D2DBitmap ();
-			if (result->loadFromStream (stream))
-			{
-				stream->Release ();
-				return result;
-			}
-			stream->Release ();
-			result->forget ();
-			return 0;
-		}
-#endif
-		GdiplusBitmap* bitmap = new GdiplusBitmap ();
-		if (bitmap->loadFromStream (stream))
-		{
-			stream->Release ();
-			return bitmap;
-		}
-		bitmap->forget ();
+		auto result = createFromIStream (stream);
 		stream->Release ();
+		return result;
 	}
 #ifdef __GNUC__
 	FreeLibrary (shlwDll);

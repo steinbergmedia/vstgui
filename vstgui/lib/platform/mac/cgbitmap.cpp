@@ -46,30 +46,27 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-IPlatformBitmap* IPlatformBitmap::create (CPoint* size)
+SharedPointer<IPlatformBitmap> IPlatformBitmap::create (CPoint* size)
 {
 	if (size)
 		return new CGBitmap (*size);
-	return new CGBitmap ();
+	return owned<IPlatformBitmap> (new CGBitmap ());
 }
 
 //-----------------------------------------------------------------------------
-IPlatformBitmap* IPlatformBitmap::createFromPath (UTF8StringPtr absolutePath)
+SharedPointer<IPlatformBitmap> IPlatformBitmap::createFromPath (UTF8StringPtr absolutePath)
 {
-	CGBitmap* bitmap = nullptr;
+	SharedPointer<IPlatformBitmap> bitmap;
 	CFURLRef url = CFURLCreateFromFileSystemRepresentation (nullptr, (const UInt8*)absolutePath, static_cast<CFIndex> (strlen (absolutePath)), false);
 	if (url)
 	{
 		CGImageSourceRef source = CGImageSourceCreateWithURL (url, nullptr);
 		if (source)
 		{
-			bitmap = new CGBitmap ();
-			bool result = bitmap->loadFromImageSource (source);
-			if (result == false)
-			{
-				bitmap->forget ();
-				bitmap = nullptr;
-			}
+			auto cgBitmap = owned (new CGBitmap ());
+			bool result = cgBitmap->loadFromImageSource (source);
+			if (result)
+				bitmap = shared<IPlatformBitmap> (cgBitmap);
 			CFRelease (source);
 		}
 		CFRelease (url);
@@ -78,22 +75,19 @@ IPlatformBitmap* IPlatformBitmap::createFromPath (UTF8StringPtr absolutePath)
 }
 
 //-----------------------------------------------------------------------------
-IPlatformBitmap* IPlatformBitmap::createFromMemory (const void* ptr, uint32_t memSize)
+SharedPointer<IPlatformBitmap> IPlatformBitmap::createFromMemory (const void* ptr, uint32_t memSize)
 {
-	CGBitmap* bitmap = nullptr;
+	SharedPointer<IPlatformBitmap> bitmap;
 	CFDataRef data = CFDataCreate (nullptr, (const UInt8*)ptr, static_cast<CFIndex> (memSize));
 	if (data)
 	{
 		CGImageSourceRef source = CGImageSourceCreateWithData (data, nullptr);
 		if (source)
 		{
-			bitmap = new CGBitmap ();
-			bool result = bitmap->loadFromImageSource (source);
-			if (result == false)
-			{
-				bitmap->forget ();
-				bitmap = nullptr;
-			}
+			auto cgBitmap = owned (new CGBitmap ());
+			bool result = cgBitmap->loadFromImageSource (source);
+			if (result)
+				bitmap = shared<IPlatformBitmap> (cgBitmap);
 			CFRelease (source);
 		}
 		CFRelease (data);

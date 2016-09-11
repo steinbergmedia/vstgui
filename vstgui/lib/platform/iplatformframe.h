@@ -42,12 +42,6 @@
 struct VstKeyCode;
 
 namespace VSTGUI {
-class IPlatformTextEdit;
-class IPlatformTextEditCallback;
-class IPlatformOptionMenu;
-class IPlatformOpenGLView;
-class IPlatformViewLayer;
-class IPlatformViewLayerDelegate;
 
 enum PlatformType {
 	kHWND,
@@ -116,14 +110,14 @@ public:
 	virtual void* getPlatformRepresentation () const = 0;	// TODO: remove this call later when everything is done
 
 	virtual SharedPointer<IPlatformTextEdit> createPlatformTextEdit (IPlatformTextEditCallback* textEdit) = 0; ///< create a native text edit control
-	virtual IPlatformOptionMenu* createPlatformOptionMenu () = 0; ///< create a native popup menu
+	virtual SharedPointer<IPlatformOptionMenu> createPlatformOptionMenu () = 0; ///< create a native popup menu
 #if VSTGUI_OPENGL_SUPPORT
-	virtual IPlatformOpenGLView* createPlatformOpenGLView () = 0; ///< create a native opengl sub view
+	virtual SharedPointer<IPlatformOpenGLView> createPlatformOpenGLView () = 0; ///< create a native opengl sub view
 #endif // VSTGUI_OPENGL_SUPPORT
 	
-	virtual IPlatformViewLayer* createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer = nullptr) = 0; ///< create a native view layer, may return 0 if not supported
+	virtual SharedPointer<IPlatformViewLayer> createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer = nullptr) = 0; ///< create a native view layer, may return 0 if not supported
 	
-	virtual COffscreenContext* createOffscreenContext (CCoord width, CCoord height, double scaleFactor = 1.) = 0; ///< create an offscreen draw device
+	virtual SharedPointer<COffscreenContext> createOffscreenContext (CCoord width, CCoord height, double scaleFactor = 1.) = 0; ///< create an offscreen draw device
 
 	virtual DragResult doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap) = 0; ///< start a drag operation
 

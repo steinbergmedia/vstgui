@@ -747,26 +747,25 @@ SharedPointer<IPlatformTextEdit> HIViewFrame::createPlatformTextEdit (IPlatformT
 	if (control->getPlatformControl ())
 		return owned<IPlatformTextEdit> (control);
 	control->forget ();
-	return 0;
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------
-IPlatformOptionMenu* HIViewFrame::createPlatformOptionMenu ()
+SharedPointer<IPlatformOptionMenu> HIViewFrame::createPlatformOptionMenu ()
 {
-	return new HIViewOptionMenu ();
+	return owned<IPlatformOptionMenu> (new HIViewOptionMenu ());
 }
 
 //-----------------------------------------------------------------------------
-COffscreenContext* HIViewFrame::createOffscreenContext (CCoord width, CCoord height, double scaleFactor)
+SharedPointer<COffscreenContext> HIViewFrame::createOffscreenContext (CCoord width, CCoord height, double scaleFactor)
 {
 	CGBitmap* bitmap = new CGBitmap (CPoint (width * scaleFactor, height * scaleFactor));
 	bitmap->setScaleFactor (scaleFactor);
-	CGDrawContext* context = new CGDrawContext (bitmap);
+	auto context = owned<COffscreenContext> (new CGDrawContext (bitmap));
 	bitmap->forget ();
 	if (context->getCGContext ())
 		return context;
-	context->forget ();
-	return 0;
+	return nullptr;
 }
 
 //------------------------------------------------------------------------------------
