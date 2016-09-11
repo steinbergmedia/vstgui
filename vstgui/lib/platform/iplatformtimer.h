@@ -50,7 +50,7 @@ public:
 class IPlatformTimer : public CBaseObject
 {
 public:
-	static IPlatformTimer* create (IPlatformTimerCallback* callback);
+	static SharedPointer<IPlatformTimer> create (IPlatformTimerCallback* callback);
 
 	virtual bool start (uint32_t fireTime) = 0;
 	virtual bool stop () = 0;

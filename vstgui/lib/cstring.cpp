@@ -161,7 +161,7 @@ void UTF8String::copy (UTF8StringBuffer dst, SizeType dstSize) const noexcept
 IPlatformString* UTF8String::getPlatformString () const noexcept
 {
 	if (platformString == nullptr)
-		platformString = owned (IPlatformString::createWithUTF8String (data ()));
+		platformString = IPlatformString::createWithUTF8String (data ());
 	return platformString;
 }
 

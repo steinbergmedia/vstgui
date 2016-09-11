@@ -60,9 +60,9 @@ private:
 };
 
 //-----------------------------------------------------------------------------
-IPlatformTimer* IPlatformTimer::create (IPlatformTimerCallback* callback)
+SharedPointer<IPlatformTimer> IPlatformTimer::create (IPlatformTimerCallback* callback)
 {
-	return new WinTimer (callback);
+	return owned<IPlatformTimer> (new WinTimer (callback));
 }
 
 //-----------------------------------------------------------------------------

@@ -43,9 +43,9 @@ namespace VSTGUI {
 static int kMinWinStringBufferSize = 256;
 
 //-----------------------------------------------------------------------------
-IPlatformString* IPlatformString::createWithUTF8String (UTF8StringPtr utf8String)
+SharedPointer<IPlatformString> IPlatformString::createWithUTF8String (UTF8StringPtr utf8String)
 {
-	return new WinString (utf8String);
+	return owned<IPlatformString> (new WinString (utf8String));
 }
 
 //-----------------------------------------------------------------------------

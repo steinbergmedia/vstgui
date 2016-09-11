@@ -56,9 +56,9 @@ private:
 };
 
 //-----------------------------------------------------------------------------
-IPlatformTimer* IPlatformTimer::create (IPlatformTimerCallback* callback)
+SharedPointer<IPlatformTimer> IPlatformTimer::create (IPlatformTimerCallback* callback)
 {
-	return new MacTimer (callback);
+	return owned<IPlatformTimer> (new MacTimer (callback));
 }
 
 //-----------------------------------------------------------------------------

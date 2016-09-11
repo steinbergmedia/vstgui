@@ -90,7 +90,7 @@ bool CVSTGUITimer::start ()
 {
 	if (platformTimer == nullptr)
 	{
-		platformTimer = owned (IPlatformTimer::create (this));
+		platformTimer = IPlatformTimer::create (this);
 		if (platformTimer)
 		{
 			platformTimer->start (fireTime);
