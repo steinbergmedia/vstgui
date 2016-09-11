@@ -1098,8 +1098,8 @@ void UIEditView::startDrag (CPoint& where)
 		return;
 	stream.end ();
 
-	CDropSource dropSource (stream.getBuffer (), static_cast<uint32_t>(stream.tell ()), CDropSource::kText);
-	doDrag (&dropSource, offset, bitmap);
+	auto dropSource = CDropSource::create (stream.getBuffer (), static_cast<uint32_t>(stream.tell ()), CDropSource::kText);
+	doDrag (dropSource, offset, bitmap);
 	if (bitmap)
 		bitmap->forget ();
 }

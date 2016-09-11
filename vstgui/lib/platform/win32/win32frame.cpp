@@ -624,16 +624,16 @@ DragResult Win32Frame::doDrag (IDataPackage* source, const CPoint& offset, CBitm
 }
 
 //-----------------------------------------------------------------------------
-void Win32Frame::setClipboard (IDataPackage* data)
+void Win32Frame::setClipboard (const SharedPointer<IDataPackage>& data)
 {
 	// TODO: Implementation
 }
 
 //-----------------------------------------------------------------------------
-IDataPackage* Win32Frame::getClipboard ()
+SharedPointer<IDataPackage> Win32Frame::getClipboard ()
 {
 	// TODO: Implementation
-	return 0;
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------

@@ -116,8 +116,8 @@ public:
 
 	Animation::Animator* getAnimator ();									///< get animator for this frame
 
-	IDataPackage* getClipboard ();											///< get the clipboard data. data is owned by the caller
-	void setClipboard (IDataPackage* data);									///< set the clipboard data.
+	SharedPointer<IDataPackage> getClipboard ();							///< get the clipboard data. data is owned by the caller
+	void setClipboard (const SharedPointer<IDataPackage>& data);			///< set the clipboard data.
 
 	IViewAddedRemovedObserver* getViewAddedRemovedObserver () const;
 	void setViewAddedRemovedObserver (IViewAddedRemovedObserver* observer);

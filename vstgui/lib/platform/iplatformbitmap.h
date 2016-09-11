@@ -54,14 +54,13 @@ public:
 	/** Create a platform bitmap from memory */
 	static SharedPointer<IPlatformBitmap> createFromMemory (const void* ptr, uint32_t memSize);
 
-	/** Create a memory representation of the platform bitmap in PNG format. The memory could be used by createFromMemory.
-		Caller needs to free the memory in ptr */
+	/** Create a memory representation of the platform bitmap in PNG format. */
 	static PNGBitmapBuffer createMemoryPNGRepresentation (const SharedPointer<IPlatformBitmap>& bitmap);
 
 	virtual bool load (const CResourceDescription& desc) = 0;
 	virtual const CPoint& getSize () const = 0;
 
-	virtual SharedPointer<IPlatformBitmapPixelAccess> lockPixels (bool alphaPremultiplied) = 0;	// you need to forget the result after use.
+	virtual SharedPointer<IPlatformBitmapPixelAccess> lockPixels (bool alphaPremultiplied) = 0;
 	
 	virtual void setScaleFactor (double factor) = 0;
 	virtual double getScaleFactor () const = 0;

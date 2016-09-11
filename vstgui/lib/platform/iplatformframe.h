@@ -121,8 +121,8 @@ public:
 
 	virtual DragResult doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap) = 0; ///< start a drag operation
 
-	virtual void setClipboard (IDataPackage* data) = 0;	///< set clipboard data
-	virtual IDataPackage* getClipboard () = 0;			///< get clipboard data
+	virtual void setClipboard (const SharedPointer<IDataPackage>& data) = 0;	///< set clipboard data
+	virtual SharedPointer<IDataPackage> getClipboard () = 0;			///< get clipboard data
 
 	virtual PlatformType getPlatformType () const = 0;
 //-----------------------------------------------------------------------------

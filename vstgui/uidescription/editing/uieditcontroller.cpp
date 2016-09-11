@@ -766,9 +766,8 @@ void UIEditController::doCopy (bool cut)
 		updateTemplate (editTemplateName.c_str ());
 	CMemoryStream stream (1024, 1024, false);
 	selection->store (stream, editDescription);
-	CDropSource* dataSource = new CDropSource (stream.getBuffer (), static_cast<uint32_t> (stream.tell ()), IDataPackage::kText);
+	auto dataSource = CDropSource::create (stream.getBuffer (), static_cast<uint32_t> (stream.tell ()), IDataPackage::kText);
 	editView->getFrame ()->setClipboard (dataSource);
-	dataSource->forget ();
 	if (cut)
 		undoManager->pushAndPerform (new DeleteOperation (selection));
 }
@@ -795,8 +794,7 @@ void UIEditController::addSelectionToCurrentView (UISelection* copySelection)
 //----------------------------------------------------------------------------------------------------
 void UIEditController::doPaste ()
 {
-	IDataPackage* clipboard = editView->getFrame ()->getClipboard ();
-	if (clipboard)
+	if (auto clipboard = editView->getFrame ()->getClipboard ())
 	{
 		if (clipboard->getDataType (0) == IDataPackage::kText)
 		{
@@ -814,7 +812,6 @@ void UIEditController::doPaste ()
 				copySelection->forget ();
 			}
 		}
-		clipboard->forget ();
 	}
 }
 
@@ -978,12 +975,10 @@ CMessageResult UIEditController::validateMenuItem (CCommandMenuItem* item)
 			item->setEnabled (false);
 			if (editView && selection->first ())
 			{
-				IDataPackage* clipboard = editView->getFrame ()->getClipboard ();
-				if (clipboard)
+				if (auto clipboard = editView->getFrame ()->getClipboard ())
 				{
 					if (clipboard->getDataType (0) == IDataPackage::kText)
 						item->setEnabled (true);
-					clipboard->forget ();
 				}
 			}
 			return kMessageNotified;

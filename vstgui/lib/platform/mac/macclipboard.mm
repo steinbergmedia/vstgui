@@ -189,20 +189,20 @@ uint32_t Pasteboard::getData (uint32_t index, const void*& buffer, Pasteboard::T
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-IDataPackage* createClipboardDataPackage ()
+SharedPointer<IDataPackage> createClipboardDataPackage ()
 {
-	return new Pasteboard ([NSPasteboard generalPasteboard]);
+	return owned<IDataPackage> (new Pasteboard ([NSPasteboard generalPasteboard]));
 }
 
 //-----------------------------------------------------------------------------
-IDataPackage* createDragDataPackage (NSPasteboard* pasteboard)
+SharedPointer<IDataPackage> createDragDataPackage (NSPasteboard* pasteboard)
 {
-	return new Pasteboard (pasteboard);
+	return owned<IDataPackage> (new Pasteboard (pasteboard));
 }
 
 #if MAC_CARBON
 //-----------------------------------------------------------------------------
-IDataPackage* createCarbonDragDataPackage (DragRef drag)
+SharedPointer<IDataPackage> createCarbonDragDataPackage (DragRef drag)
 {
 	PasteboardRef pr;
 	if (GetDragPasteboard (drag, &pr) == noErr)
@@ -211,15 +211,15 @@ IDataPackage* createCarbonDragDataPackage (DragRef drag)
 		if (PasteboardCopyName (pr, &pasteboardName) == noErr)
 		{
 			[(NSString*)pasteboardName autorelease];
-			return new Pasteboard ([NSPasteboard pasteboardWithName:(NSString*)pasteboardName]);
+			return owned<IDataPackage> (new Pasteboard ([NSPasteboard pasteboardWithName:(NSString*)pasteboardName]));
 		}
 	}
-	return 0;
+	return nullptr;
 }
 #endif
 
 //-----------------------------------------------------------------------------
-void setClipboard (IDataPackage* dataSource)
+void setClipboard (const SharedPointer<IDataPackage>& dataSource)
 {
 	NSPasteboard* pb = [NSPasteboard generalPasteboard];
 	if (dataSource)

@@ -74,7 +74,7 @@ HIDDEN inline NSViewFrame* getNSViewFrame (id obj)
 }
 
 static Class viewClass = nullptr;
-static IDataPackage* gCocoaDragContainer = nullptr;
+static SharedPointer<IDataPackage> gCocoaDragContainer;
 
 #ifndef __MAC_10_7
 //------------------------------------------------------------------------------------
@@ -591,7 +591,6 @@ static void VSTGUI_NSView_draggingExited (id self, SEL _cmd, id sender)
 	_vstguiframe->platformOnDragLeave (gCocoaDragContainer, where);
 	[[NSCursor arrowCursor] set];
 
-	gCocoaDragContainer->forget ();
 	gCocoaDragContainer = nullptr;
 }
 
@@ -606,7 +605,6 @@ static BOOL VSTGUI_NSView_performDragOperation (id self, SEL _cmd, id sender)
 	nsViewGetCurrentMouseLocation (self, where);
 	bool result = _vstguiframe->platformOnDrop (gCocoaDragContainer, where);
 	getNSViewFrame (self)->setMouseCursor (kCursorDefault);
-	gCocoaDragContainer->forget ();
 	gCocoaDragContainer = nullptr;
 	return result;
 }
@@ -1135,13 +1133,13 @@ DragResult NSViewFrame::doDrag (IDataPackage* source, const CPoint& offset, CBit
 }
 
 //-----------------------------------------------------------------------------
-void NSViewFrame::setClipboard (IDataPackage* data)
+void NSViewFrame::setClipboard (const SharedPointer<IDataPackage>& data)
 {
 	MacClipboard::setClipboard (data);
 }
 
 //-----------------------------------------------------------------------------
-IDataPackage* NSViewFrame::getClipboard ()
+SharedPointer<IDataPackage> NSViewFrame::getClipboard ()
 {
 	return MacClipboard::createClipboardDataPackage ();
 }

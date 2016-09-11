@@ -37,6 +37,7 @@
 #include "ctooltipsupport.h"
 #include "itouchevent.h"
 #include "iscalefactorchangedlistener.h"
+#include "idatapackage.h"
 #include "animation/animator.h"
 #include "controls/ctextedit.h"
 #include <cassert>
@@ -675,7 +676,7 @@ DragResult CFrame::doDrag (IDataPackage* source, const CPoint& offset, CBitmap* 
 }
 
 //-----------------------------------------------------------------------------
-IDataPackage* CFrame::getClipboard ()
+SharedPointer<IDataPackage> CFrame::getClipboard ()
 {
 	if (pImpl->platformFrame)
 		return pImpl->platformFrame->getClipboard ();
@@ -683,7 +684,7 @@ IDataPackage* CFrame::getClipboard ()
 }
 
 //-----------------------------------------------------------------------------
-void CFrame::setClipboard (IDataPackage* data)
+void CFrame::setClipboard (const SharedPointer<IDataPackage>& data)
 {
 	if (pImpl->platformFrame)
 		pImpl->platformFrame->setClipboard (data);

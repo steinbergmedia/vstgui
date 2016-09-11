@@ -214,9 +214,8 @@ CMouseEventResult UIViewCreatorDataSource::dbOnMouseMoved (const CPoint& where, 
 		if (selection->store (stream, description))
 		{
 			stream.end ();
-			CDropSource* dropSource = new CDropSource (stream.getBuffer (), static_cast<uint32_t> (stream.tell ()), CDropSource::kText);
+			auto dropSource = CDropSource::create (stream.getBuffer (), static_cast<uint32_t> (stream.tell ()), CDropSource::kText);
 			browser->doDrag (dropSource);
-			dropSource->forget ();
 		}
 	}
 	return kMouseEventNotHandled;

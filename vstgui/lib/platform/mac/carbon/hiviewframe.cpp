@@ -93,7 +93,7 @@ static void Rect2CRect (Rect &rr, CRect &cr)
 	cr.bottom = rr.bottom;
 }
 
-static IDataPackage* gDragContainer = 0;
+static SharedPointer<IDataPackage> gDragContainer;
 
 //-----------------------------------------------------------------------------
 static CPoint GetMacDragMouse (HIViewFrame* frame, DragRef drag)
@@ -111,243 +111,6 @@ static CPoint GetMacDragMouse (HIViewFrame* frame, DragRef drag)
 	}
 	return where;
 }
-
-
-#if 0
-//-----------------------------------------------------------------------------
-// MacDragContainer Declaration
-//-----------------------------------------------------------------------------
-class MacDragContainer : public CDragContainer
-{
-public:
-	MacDragContainer (DragRef platformDrag);
-	~MacDragContainer () noexcept;
-
-	virtual void* first (int32_t& size, int32_t& type);		///< returns pointer on a char array if type is known
-	virtual void* next (int32_t& size, int32_t& type);		///< returns pointer on a char array if type is known
-	
-	virtual int32_t getType (int32_t idx) const;
-	virtual int32_t getCount () const { return nbItems; }
-
-	DragRef getPlatformDrag () const { return platformDrag; }
-
-protected:
-	DragRef platformDrag;
-	PasteboardRef pasteboard;
-	int32_t nbItems;
-	
-	int32_t iterator;
-	void* lastItem;
-};
-
-static MacDragContainer* gDragContainer = 0;
-
-//-----------------------------------------------------------------------------
-static CPoint GetMacDragMouse (HIViewFrame* frame)
-{
-	HIViewRef view = frame->getPlatformControl ();
-	CPoint where;
-	Point r;
-	if (GetDragMouse ((DragRef)gDragContainer->getPlatformDrag (), NULL, &r) == noErr)
-	{
-		HIPoint location;
-		location = CGPointMake ((CGFloat)r.h, (CGFloat)r.v);
-		HIPointConvert (&location, kHICoordSpaceScreenPixel, NULL, kHICoordSpaceView, view);
-		where.x = (CCoord)location.x;
-		where.y = (CCoord)location.y;
-	}
-	return where;
-}
-
-//-----------------------------------------------------------------------------
-// MacDragContainer Implementation
-//-----------------------------------------------------------------------------
-MacDragContainer::MacDragContainer (DragRef inPlatformDrag)
-: platformDrag (inPlatformDrag)
-, pasteboard (0)
-, nbItems (0)
-, iterator (0)
-, lastItem (0)
-{
-	if (GetDragPasteboard (inPlatformDrag, &pasteboard) == noErr)
-	{
-		ItemCount numItems;
-		if (PasteboardGetItemCount (pasteboard, &numItems) == noErr)
-			nbItems = numItems;
-	}
-}
-
-//-----------------------------------------------------------------------------
-MacDragContainer::~MacDragContainer () noexcept
-{
-	if (lastItem)
-	{
-		std::free (lastItem);
-		lastItem = 0;
-	}
-}
-
-//-----------------------------------------------------------------------------
-int32_t MacDragContainer::getType (int32_t idx) const
-{
-	if (platformDrag == 0)
-		return CDragContainer::kError;
-
-	PasteboardItemID itemID;
-	if (PasteboardGetItemIdentifier (pasteboard, idx+1, &itemID) == noErr)
-	{
-		CFArrayRef flavors = 0;
-		if (PasteboardCopyItemFlavors (pasteboard, itemID, &flavors) == noErr)
-		{
-			int32_t result = CDragContainer::kUnknown;
-			for (CFIndex i = 0; i < CFArrayGetCount (flavors); i++)
-			{
-				CFStringRef flavorType = (CFStringRef)CFArrayGetValueAtIndex (flavors, i);
-				if (flavorType == 0)
-					continue;
-				CFStringRef osTypeFlavorType = UTTypeCopyPreferredTagWithClass (flavorType, kUTTagClassOSType);
-				if (osTypeFlavorType == 0)
-					continue;
-				if (CFStringCompare (osTypeFlavorType, CFSTR("utxt"), 0) == kCFCompareEqualTo)
-					result = CDragContainer::kUnicodeText;
-				else if (CFStringCompare (osTypeFlavorType, CFSTR("utf8"), 0) == kCFCompareEqualTo)
-					result = CDragContainer::kUnicodeText;
-				else if (CFStringCompare (osTypeFlavorType, CFSTR("furl"), 0) == kCFCompareEqualTo)
-					result = CDragContainer::kFile;
-				else if (CFStringCompare (osTypeFlavorType, CFSTR("TEXT"), 0) == kCFCompareEqualTo)
-					result = CDragContainer::kText;
-				else if (CFStringCompare (osTypeFlavorType, CFSTR("XML "), 0) == kCFCompareEqualTo)
-					result = CDragContainer::kText;
-				CFRelease (osTypeFlavorType);
-				if (result != CDragContainer::kUnknown)
-					break;
-			}
-			CFRelease (flavors);
-			return result;
-		}
-	}
-	return CDragContainer::kUnknown;
-}
-
-//-----------------------------------------------------------------------------
-void* MacDragContainer::first (int32_t& size, int32_t& type)
-{
-	iterator = 0;
-	return next (size, type);
-}
-
-//-----------------------------------------------------------------------------
-void* MacDragContainer::next (int32_t& size, int32_t& type)
-{
-	if (platformDrag == 0)
-	{
-		type = CDragContainer::kError;
-		return 0;
-	}
-	if (lastItem)
-	{
-		std::free (lastItem);
-		lastItem = 0;
-	}
-	size = 0;
-	type = CDragContainer::kUnknown;
-
-	PasteboardItemID itemID;
-	if (PasteboardGetItemIdentifier (pasteboard, ++iterator, &itemID) == noErr)
-	{
-		CFArrayRef flavors = 0;
-		if (PasteboardCopyItemFlavors (pasteboard, itemID, &flavors) == noErr)
-		{
-			for (CFIndex i = 0; i < CFArrayGetCount (flavors); i++)
-			{
-				CFStringRef flavorType = (CFStringRef)CFArrayGetValueAtIndex (flavors, i);
-				if (flavorType == 0)
-					continue;
-				CFStringRef osTypeFlavorType = UTTypeCopyPreferredTagWithClass (flavorType, kUTTagClassOSType);
-				PasteboardFlavorFlags flavorFlags;
-				PasteboardGetItemFlavorFlags (pasteboard, itemID, flavorType, &flavorFlags);
-				CFDataRef flavorData = 0;
-				if (PasteboardCopyItemFlavorData (pasteboard, itemID, flavorType, &flavorData) == noErr)
-				{
-					CFIndex flavorDataSize = CFDataGetLength (flavorData);
-					const UInt8* data = CFDataGetBytePtr (flavorData);
-					if (data)
-					{
-						if (osTypeFlavorType == 0)
-						{
-							type = CDragContainer::kUnknown;
-							size = flavorDataSize;
-							lastItem = std::malloc (size);
-							memcpy (lastItem, data, size);
-						}
-						else if (CFStringCompare (osTypeFlavorType, CFSTR("utxt"), 0) == kCFCompareEqualTo)
-						{
-							CFStringRef utf16String = CFStringCreateWithBytes(0, data, flavorDataSize, kCFStringEncodingUTF16, false);
-							if (utf16String)
-							{
-								CFIndex maxSize = CFStringGetMaximumSizeForEncoding (flavorDataSize/2, kCFStringEncodingUTF8);
-								lastItem = std::malloc (maxSize+1);
-								if (CFStringGetCString (utf16String, (char*)lastItem, maxSize, kCFStringEncodingUTF8))
-								{
-									type = CDragContainer::kUnicodeText;
-									size = strlen ((const char*)lastItem);
-								}
-								else
-								{
-									std::free (lastItem);
-									lastItem = 0;
-								}
-								CFRelease (utf16String);
-							}
-						}
-						else if (CFStringCompare (osTypeFlavorType, CFSTR("furl"), 0) == kCFCompareEqualTo)
-						{
-							type = CDragContainer::kFile;
-							CFURLRef url = CFURLCreateWithBytes (NULL, data, flavorDataSize, kCFStringEncodingUTF8, NULL);
-							lastItem = std::malloc (PATH_MAX);
-							CFURLGetFileSystemRepresentation (url, false, (UInt8*)lastItem, PATH_MAX);
-							CFRelease (url);
-							size = strlen ((const char*)lastItem);
-						}
-						else if (CFStringCompare (osTypeFlavorType, CFSTR("utf8"), 0) == kCFCompareEqualTo)
-						{
-							type = CDragContainer::kUnicodeText;
-							size = flavorDataSize;
-							lastItem = std::malloc (flavorDataSize + 1);
-							((char*)lastItem)[flavorDataSize] = 0;
-							memcpy (lastItem, data, flavorDataSize);
-						}
-						else if (CFStringCompare (osTypeFlavorType, CFSTR("TEXT"), 0) == kCFCompareEqualTo)
-						{
-							type = CDragContainer::kText;
-							size = flavorDataSize;
-							lastItem = std::malloc (flavorDataSize + 1);
-							((char*)lastItem)[flavorDataSize] = 0;
-							memcpy (lastItem, data, flavorDataSize);
-						}
-						else if (CFStringCompare (osTypeFlavorType, CFSTR("XML "), 0) == kCFCompareEqualTo)
-						{
-							type = CDragContainer::kText;
-							size = flavorDataSize;
-							lastItem = std::malloc (flavorDataSize + 1);
-							((char*)lastItem)[flavorDataSize] = 0;
-							memcpy (lastItem, data, flavorDataSize);
-						}
-					}
-					CFRelease (flavorData);
-				}
-				if (osTypeFlavorType)
-					CFRelease (osTypeFlavorType);
-				if (type != CDragContainer::kError)
-					break;
-			}
-			CFRelease (flavors);
-			return lastItem;
-		}
-	}
-	return NULL;
-}
-#endif
 
 static bool addViewToContentView = true;
 //-----------------------------------------------------------------------------
@@ -868,13 +631,13 @@ DragResult HIViewFrame::doDrag (IDataPackage* source, const CPoint& offset, CBit
 }
 
 //-----------------------------------------------------------------------------
-void HIViewFrame::setClipboard (IDataPackage* data)
+void HIViewFrame::setClipboard (const SharedPointer<IDataPackage>& data)
 {
 	MacClipboard::setClipboard (data);
 }
 
 //-----------------------------------------------------------------------------
-IDataPackage* HIViewFrame::getClipboard ()
+SharedPointer<IDataPackage> HIViewFrame::getClipboard ()
 {
 	return MacClipboard::createClipboardDataPackage ();
 }
@@ -1347,8 +1110,7 @@ pascal OSStatus HIViewFrame::carbonEventHandler (EventHandlerCallRef inHandlerCa
 						CPoint where = GetMacDragMouse (hiviewframe, dragRef);
 						frame->platformOnDrop (gDragContainer, where);
 						hiviewframe->setMouseCursor (kCursorDefault);
-						gDragContainer->forget ();
-						gDragContainer = 0;
+						gDragContainer = nullptr;
 					}
 					result = noErr;
 					break;

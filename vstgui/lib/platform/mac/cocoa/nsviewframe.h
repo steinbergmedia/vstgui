@@ -91,8 +91,8 @@ public:
 	SharedPointer<IPlatformViewLayer> createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer = nullptr) override;
 	SharedPointer<COffscreenContext> createOffscreenContext (CCoord width, CCoord height, double scaleFactor) override;
 	DragResult doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap) override;
-	void setClipboard (IDataPackage* data) override;
-	IDataPackage* getClipboard () override;
+	void setClipboard (const SharedPointer<IDataPackage>& data) override;
+	SharedPointer<IDataPackage> getClipboard () override;
 	PlatformType getPlatformType () const override { return PlatformType::kNSView; }
 
 //-----------------------------------------------------------------------------
