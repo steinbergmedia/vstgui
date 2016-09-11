@@ -325,19 +325,18 @@ bool IPlatformBitmap::createMemoryPNGRepresentation (IPlatformBitmap* bitmap, vo
 }
 
 //-----------------------------------------------------------------------------
-IPlatformFont* IPlatformFont::create (const UTF8String& name, const CCoord& size, const int32_t& style)
+SharedPointer<IPlatformFont> IPlatformFont::create (const UTF8String& name, const CCoord& size, const int32_t& style)
 {
 #if VSTGUI_DIRECT2D_SUPPORT
 	if (getD2DFactory ())
 	{
-		return new D2DFont (name, size, style);
+		return owned<IPlatformFont> (new D2DFont (name, size, style));
 	}
 #endif
-	GdiPlusFont* font = new GdiPlusFont (name, size, style);
+	auto font = owned (new GdiPlusFont (name, size, style));
 	if (font->getFont ())
-		return font;
-	font->forget ();
-	return 0;
+		return shared<IPlatformFont> (font);
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------

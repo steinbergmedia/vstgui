@@ -65,12 +65,11 @@ static uint32_t getCTVersion ()
 }
 
 //-----------------------------------------------------------------------------
-IPlatformFont* IPlatformFont::create (const UTF8String& name, const CCoord& size, const int32_t& style)
+SharedPointer<IPlatformFont> IPlatformFont::create (const UTF8String& name, const CCoord& size, const int32_t& style)
 {
-	CoreTextFont* font = new CoreTextFont (name, size, style);
+	auto font = owned (new CoreTextFont (name, size, style));
 	if (font->getFontRef ())
-		return font;
-	font->forget ();
+		return shared<IPlatformFont> (font);
 	return nullptr;
 }
 
