@@ -90,6 +90,17 @@ CBitmap::CBitmap (CCoord width, CCoord height)
 	bitmaps.push_back (IPlatformBitmap::create (&p));
 }
 
+//------------------------------------------------------------------------
+CBitmap::CBitmap (CPoint size, double scaleFactor)
+{
+	size.x *= scaleFactor;
+	size.y *= scaleFactor;
+	size.makeIntegral ();
+	auto bitmap = IPlatformBitmap::create (&size);
+	bitmap->setScaleFactor (scaleFactor);
+	bitmaps.push_back (bitmap);
+}
+
 //-----------------------------------------------------------------------------
 CBitmap::CBitmap (const PlatformBitmapPtr& platformBitmap)
 {
@@ -122,6 +133,20 @@ CCoord CBitmap::getHeight () const
 	return 0;
 }
 
+//------------------------------------------------------------------------
+CPoint CBitmap::getSize () const
+{
+	CPoint p;
+	if (auto pb = getPlatformBitmap ())
+	{
+		auto scaleFactor = pb->getScaleFactor ();
+		p = pb->getSize ();
+		p.x /= scaleFactor;
+		p.y /= scaleFactor;
+	}
+	return p;
+}
+
 //-----------------------------------------------------------------------------
 auto CBitmap::getPlatformBitmap () const -> PlatformBitmapPtr
 {
@@ -141,7 +166,7 @@ void CBitmap::setPlatformBitmap (const PlatformBitmapPtr& bitmap)
 bool CBitmap::addBitmap (const PlatformBitmapPtr& platformBitmap)
 {
 	double scaleFactor = platformBitmap->getScaleFactor ();
-	CPoint size (getWidth (), getHeight ());
+	CPoint size = getSize ();
 	CPoint bitmapSize = platformBitmap->getSize ();
 	bitmapSize.x /= scaleFactor;
 	bitmapSize.y /= scaleFactor;
@@ -256,8 +281,9 @@ void CBitmapPixelAccess::init (CBitmap* _bitmap, IPlatformBitmapPixelAccess* _pi
 	pixelAccess = _pixelAccess;
 	address = currentPos = pixelAccess->getAddress ();
 	bytesPerRow = pixelAccess->getBytesPerRow ();
-	maxX = (uint32_t)(bitmap->getPlatformBitmap ()->getSize ().x)-1;
-	maxY = (uint32_t)(bitmap->getPlatformBitmap ()->getSize ().y)-1;
+	auto size = bitmap->getPlatformBitmap ()->getSize ();
+	maxX = static_cast<uint32_t> (size.x) - 1;
+	maxY = static_cast<uint32_t> (size.y) - 1;
 }
 
 /// @cond ignore

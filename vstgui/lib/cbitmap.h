@@ -53,8 +53,9 @@ class CBitmap : public CBaseObject
 public:
 	using PlatformBitmapPtr = SharedPointer<IPlatformBitmap>;
 
-	explicit CBitmap (const CResourceDescription& desc);				///< Create a pixmap from a resource identifier.
-	CBitmap (CCoord width, CCoord height);					///< Create a pixmap with a given size.
+	explicit CBitmap (const CResourceDescription& desc);				///< Create an image from a resource identifier.
+	CBitmap (CCoord width, CCoord height);								///< Create an image with a given size.
+	CBitmap (CPoint size, double scaleFactor = 1.);						///< Create an image with a given size.
 	explicit CBitmap (const PlatformBitmapPtr& platformBitmap);
 	~CBitmap () noexcept override = default;
 
@@ -66,6 +67,7 @@ public:
 
 	CCoord getWidth () const;		///< get the width of the image
 	CCoord getHeight () const;		///< get the height of the image
+	CPoint getSize () const;		///< get size of image
 
 	bool isLoaded () const { return getPlatformBitmap () ? true : false; }	///< check if image is loaded
 
