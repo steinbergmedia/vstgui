@@ -60,7 +60,7 @@ public:
 
 	constexpr uint32_t modeIgnoringIntegralMode () const { return (mode & ~kNonIntegralMode); }
 
-	constexpr bool integralMode () const { return hasBit (mode, kNonIntegralMode); }
+	constexpr bool integralMode () const { return !hasBit (mode, kNonIntegralMode); }
 	constexpr bool aliasing () const { return hasBit (mode, kAliasing); }
 	constexpr bool antiAliasing () const { return hasBit (mode, kAntiAliasing); }
 
