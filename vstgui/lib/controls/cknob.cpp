@@ -74,6 +74,7 @@ CKnob::CKnob (const CRect& size, IControlListener* listener, int32_t tag, CBitma
 , pHandle (handle)
 , handleLineWidth (1.)
 , coronaInset (0)
+, coronaOutlineWidthAdd (2.)
 {
 	if (pHandle)
 	{
@@ -106,6 +107,7 @@ CKnob::CKnob (const CKnob& v)
 , handleLineWidth (v.handleLineWidth)
 , inset (v.inset)
 , coronaInset (v.coronaInset)
+, coronaOutlineWidthAdd (v.coronaInset)
 , startAngle (v.startAngle)
 , rangeAngle (v.rangeAngle)
 , zoomFactor (v.zoomFactor)
@@ -183,10 +185,13 @@ void CKnob::draw (CDrawContext *pContext)
 			drawCoronaOutline (pContext);
 		if (drawStyle & kCoronaDrawing)
 			drawCorona (pContext);
-		if (drawStyle & kHandleCircleDrawing)
-			drawHandleAsCircle (pContext);
-		else
-			drawHandleAsLine (pContext);
+		if (!(drawStyle & kSkipHandleDrawing))
+		{
+			if (drawStyle & kHandleCircleDrawing)
+				drawHandleAsCircle (pContext);
+			else
+				drawHandleAsLine (pContext);
+		}
 	}
 	setDirty (false);
 }
@@ -216,10 +221,11 @@ void CKnob::drawCoronaOutline (CDrawContext* pContext) const
 	addArc (path, corona, startAngle, rangeAngle);
 	pContext->setFrameColor (colorShadowHandle);
 	CLineStyle lineStyle (kLineSolid);
-	lineStyle.setLineCap (CLineStyle::kLineCapRound);
+	if (!(drawStyle & kCoronaLineCapButt))
+		lineStyle.setLineCap (CLineStyle::kLineCapRound);
 	pContext->setLineStyle (lineStyle);
-	pContext->setLineWidth (handleLineWidth+2.);
-	pContext->setDrawMode (kAntiAliasing);
+	pContext->setLineWidth (handleLineWidth+coronaOutlineWidthAdd);
+	pContext->setDrawMode (kAntiAliasing | kNonIntegralMode);
 	pContext->drawGraphicsPath (path, CDrawContext::kPathStroked);
 }
 
@@ -245,12 +251,13 @@ void CKnob::drawCorona (CDrawContext* pContext) const
 	}
 	pContext->setFrameColor (coronaColor);
 	CLineStyle lineStyle (drawStyle & kCoronaLineDashDot ? kLineOnOffDash : kLineSolid);
-	lineStyle.setLineCap (CLineStyle::kLineCapRound);
+	if (!(drawStyle & kCoronaLineCapButt))
+		lineStyle.setLineCap (CLineStyle::kLineCapRound);
 	if (drawStyle & kCoronaLineDashDot)
 		lineStyle.getDashLengths ()[1] = 2;
 	pContext->setLineStyle (lineStyle);
 	pContext->setLineWidth (handleLineWidth);
-	pContext->setDrawMode (kAntiAliasing);
+	pContext->setDrawMode (kAntiAliasing | kNonIntegralMode);
 	pContext->drawGraphicsPath (path, CDrawContext::kPathStroked);
 }
 
@@ -268,7 +275,7 @@ void CKnob::drawHandleAsCircle (CDrawContext* pContext) const
 	pContext->setFillColor (colorHandle);
 	pContext->setLineWidth (0.5);
 	pContext->setLineStyle (kLineSolid);
-	pContext->setDrawMode (kAntiAliasing);
+	pContext->setDrawMode (kAntiAliasing | kNonIntegralMode);
 	pContext->drawEllipse (r, kDrawFilledAndStroked);
 }
 
@@ -284,7 +291,7 @@ void CKnob::drawHandleAsLine (CDrawContext* pContext) const
 	pContext->setFrameColor (colorShadowHandle);
 	pContext->setLineWidth (handleLineWidth);
 	pContext->setLineStyle (CLineStyle (CLineStyle::kLineCapRound));
-	pContext->setDrawMode (kAntiAliasing);
+	pContext->setDrawMode (kAntiAliasing | kNonIntegralMode);
 	pContext->drawLine (where, origin);
 	
 	where.offset (1, -1);
@@ -602,6 +609,16 @@ void CKnob::setHandleLineWidth (CCoord width)
 	if (width != handleLineWidth)
 	{
 		handleLineWidth = width;
+		setDirty ();
+	}
+}
+
+//------------------------------------------------------------------------
+void CKnob::setCoronaOutlineWidthAdd (CCoord width)
+{
+	if (width != coronaOutlineWidthAdd)
+	{
+		coronaOutlineWidthAdd = width;
 		setDirty ();
 	}
 }
