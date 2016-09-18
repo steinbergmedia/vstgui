@@ -269,7 +269,7 @@ void setClipboard (const SharedPointer<IDataPackage>& dataSource)
 	}
 	else
 	{
-		[pb declareTypes:[NSArray array] owner:nil];
+		[pb clearContents];
 	}
 }
 
