@@ -193,6 +193,8 @@ struct ViewController : DelegationController,
 		size.x *= scaleFactor;
 		size.y *= scaleFactor;
 		size.makeIntegral ();
+		if (size.x == 0 || size.y == 0)
+			return;
 		auto bitmap = owned (new CBitmap (size.x, size.y));
 		bitmap->getPlatformBitmap ()->setScaleFactor (scaleFactor);
 		auto id = ++taskID;

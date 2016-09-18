@@ -82,13 +82,12 @@ void View::draw (CDrawContext* context)
 {
 	if (auto bitmap = getBackground ())
 	{
-		auto width = bitmap->getWidth ();
-		auto height = bitmap->getHeight ();
+		auto bitmapSize = bitmap->getSize ();
 		CGraphicsTransform transform;
-		transform.scale (getWidth () / width, getHeight () / height);
+		transform.scale (getWidth () / bitmapSize.x, getHeight () / bitmapSize.y);
 		transform.translate (getViewSize ().left, getViewSize ().top);
 		CDrawContext::Transform t (*context, transform);
-		bitmap->draw (context, CRect (0, 0, width, height));
+		bitmap->draw (context, CRect (0, 0, bitmapSize.x, bitmapSize.y));
 	}
 	if (box.isEmpty ())
 		return;
