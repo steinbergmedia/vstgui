@@ -55,7 +55,9 @@ public:
 		kCoronaFromCenter			= 1 << 2,
 		kCoronaInverted				= 1 << 3,
 		kCoronaLineDashDot			= 1 << 4,
-		kCoronaOutline				= 1 << 5
+		kCoronaOutline				= 1 << 5,
+		kCoronaLineCapButt			= 1 << 6,
+		kSkipHandleDrawing			= 1 << 7,
 	};
 	
 	CKnob (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background, CBitmap* handle, const CPoint& offset = CPoint (0, 0), int32_t drawStyle = kLegacyHandleLineDrawing);
@@ -94,6 +96,9 @@ public:
 
 	virtual CCoord getHandleLineWidth () const { return handleLineWidth; }
 	virtual void setHandleLineWidth (CCoord width);
+
+	virtual CCoord getCoronaOutlineWidthAdd () const { return coronaOutlineWidthAdd; }
+	virtual void setCoronaOutlineWidthAdd (CCoord width);
 
 	virtual CBitmap* getHandleBitmap () const { return pHandle; }
 	virtual void setHandleBitmap (CBitmap* bitmap);
@@ -135,6 +140,7 @@ protected:
 	CCoord handleLineWidth;
 	CCoord inset;
 	CCoord coronaInset;
+	CCoord coronaOutlineWidthAdd;
 
 	CBitmap* pHandle;
 	float startAngle, rangeAngle;
