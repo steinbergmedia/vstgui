@@ -1,8 +1,8 @@
 #include "testmodel.h"
-#include "vstgui/standalone/iapplication.h"
-#include "vstgui/standalone/ialertbox.h"
-#include "vstgui/standalone/iuidescwindow.h"
-#include "vstgui/standalone/helpers/value.h"
+#include "vstgui/standalone/include/iapplication.h"
+#include "vstgui/standalone/include/ialertbox.h"
+#include "vstgui/standalone/include/iuidescwindow.h"
+#include "vstgui/standalone/include/helpers/value.h"
 #include "vstgui/lib/cframe.h"
 #include "vstgui/lib/cvstguitimer.h"
 

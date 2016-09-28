@@ -1,7 +1,7 @@
 #pragma once
 
-#include "vstgui/standalone/iuidescwindow.h"
-#include "vstgui/standalone/helpers/valuelistener.h"
+#include "vstgui/standalone/include/iuidescwindow.h"
+#include "vstgui/standalone/include/helpers/valuelistener.h"
 
 //------------------------------------------------------------------------
 namespace MyApp {

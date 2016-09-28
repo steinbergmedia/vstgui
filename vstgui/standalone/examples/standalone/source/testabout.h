@@ -1,6 +1,6 @@
 #pragma once
 
-#include "vstgui/standalone/helpers/windowlistener.h"
+#include "vstgui/standalone/include/helpers/windowlistener.h"
 
 //------------------------------------------------------------------------
 namespace MyApp {

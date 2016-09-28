@@ -1,9 +1,9 @@
 #include "testabout.h"
-#include "vstgui/standalone/iapplication.h"
-#include "vstgui/standalone/iuidescwindow.h"
-#include "vstgui/standalone/helpers/value.h"
-#include "vstgui/standalone/helpers/modelbinding.h"
-#include "vstgui/standalone/iuidescwindow.h"
+#include "vstgui/standalone/include/iapplication.h"
+#include "vstgui/standalone/include/iuidescwindow.h"
+#include "vstgui/standalone/include/helpers/value.h"
+#include "vstgui/standalone/include/helpers/modelbinding.h"
+#include "vstgui/standalone/include/iuidescwindow.h"
 
 //------------------------------------------------------------------------
 namespace MyApp {

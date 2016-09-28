@@ -1,6 +1,6 @@
 #pragma once
 
-#include "vstgui/standalone/fwd.h"
+#include "vstgui/standalone/include/fwd.h"
 
 //------------------------------------------------------------------------
 namespace Mandelbrot {

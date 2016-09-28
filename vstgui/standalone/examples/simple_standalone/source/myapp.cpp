@@ -1,7 +1,7 @@
-#include "vstgui/standalone/iapplication.h"
-#include "vstgui/standalone/iuidescwindow.h"
-#include "vstgui/standalone/helpers/appdelegate.h"
-#include "vstgui/standalone/helpers/windowlistener.h"
+#include "vstgui/standalone/include/iapplication.h"
+#include "vstgui/standalone/include/iuidescwindow.h"
+#include "vstgui/standalone/include/helpers/appdelegate.h"
+#include "vstgui/standalone/include/helpers/windowlistener.h"
 
 using namespace VSTGUI::Standalone;
 using namespace VSTGUI::Standalone::Application;
