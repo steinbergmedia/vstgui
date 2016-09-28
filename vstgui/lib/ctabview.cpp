@@ -172,8 +172,8 @@ CTabView::CTabView (const CRect& size, const CRect& tabSize, CBitmap* background
 //-----------------------------------------------------------------------------
 CTabView::~CTabView () noexcept
 {
-	pParentView = nullptr;
-	pParentFrame = nullptr;
+	setParentView (nullptr);
+	setParentFrame (nullptr);
 	removeAllTabs ();
 	if (tabBitmap)
 		tabBitmap->forget ();

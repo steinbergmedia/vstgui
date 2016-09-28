@@ -312,15 +312,12 @@ protected:
 	bool hasViewFlag (int32_t bit) const { return hasBit (viewFlags, bit); }
 	void setViewFlag (int32_t bit, bool state);
 	
+	void setAlphaValueNoInvalidate (float value) { alphaValue = value; }
+	void setParentFrame (CFrame* frame) { pParentFrame = frame; }
+	void setParentView (CView* parent) { pParentView = parent; }
+
 	CRect  size;
 	CRect  mouseableArea;
-
-	CFrame* pParentFrame {nullptr};
-	CView* pParentView {nullptr};
-
-	int32_t autosizeFlags {kAutosizeNone};
-	
-	float alphaValue {1.f};
 
 private:
 	using ViewAttributes = std::map<CViewAttributeID, CViewAttributeEntry*>;
@@ -334,6 +331,10 @@ private:
 	ViewListenerDispatcher viewListeners;
 
 	int32_t viewFlags {0};
+	int32_t autosizeFlags {kAutosizeNone};
+	float alphaValue {1.f};
+	CFrame* pParentFrame {nullptr};
+	CView* pParentView {nullptr};
 };
 
 //-----------------------------------------------------------------------------
