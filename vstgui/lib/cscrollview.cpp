@@ -133,7 +133,7 @@ void CScrollContainer::setScrollOffset (CPoint newOffset, bool redraw)
 	if (diff.x == 0 && diff.y == 0)
 		return;
 	inScrolling = true;
-	for (const auto& pV : children)
+	for (const auto& pV : getChildren ())
 	{
 		CRect r, mr;
 		pV->getViewSize (r);
@@ -181,7 +181,7 @@ bool CScrollContainer::isDirty () const
 	if (CView::isDirty ())
 		return true;
 
-	for (const auto& pV : children)
+	for (const auto& pV : getChildren ())
 	{
 		if (pV->isDirty () && pV->isVisible ())
 		{

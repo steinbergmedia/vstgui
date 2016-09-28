@@ -214,7 +214,7 @@ bool CFrame::attached (CView* parent)
 	{
 		setParentView (nullptr);
 
-		for (const auto& pV : children)
+		for (const auto& pV : getChildren ())
 			pV->attached (this);
 		
 		return true;
@@ -354,7 +354,7 @@ void CFrame::removeFromMouseViews (CView* view)
 //-----------------------------------------------------------------------------
 void CFrame::checkMouseViews (const CPoint& where, const CButtonState& buttons)
 {
-	if (mouseDownView)
+	if (getMouseDownView ())
 		return;
 	CPoint lp;
 	CView* mouseView = getViewAt (where, GetViewOptions (GetViewOptions::kDeep|GetViewOptions::kMouseEnabled|GetViewOptions::kIncludeViewContainer));
@@ -492,7 +492,7 @@ CMouseEventResult CFrame::onMouseDown (CPoint &where, const CButtonState& button
 	getTransform ().inverse ().transform (where2);
 
 	// reset views
-	mouseDownView = nullptr;
+	setMouseDownView (nullptr);
 	if (pImpl->pFocusView && dynamic_cast<CTextEdit*> (pImpl->pFocusView))
 		setFocusView (nullptr);
 
@@ -512,7 +512,7 @@ CMouseEventResult CFrame::onMouseDown (CPoint &where, const CButtonState& button
 			CMouseEventResult result = pImpl->pModalView->onMouseDown (where2, buttons);
 			if (result == kMouseEventHandled)
 			{
-				mouseDownView = pImpl->pModalView;
+				setMouseDownView (pImpl->pModalView);
 				return kMouseEventHandled;
 			}
 		}
@@ -577,7 +577,7 @@ CMouseEventResult CFrame::onMouseMoved (CPoint &where, const CButtonState& butto
 CMouseEventResult CFrame::onMouseExited (CPoint &where, const CButtonState& buttons)
 { // this should only get called from the platform implementation
 
-	if (mouseDownView == nullptr)
+	if (getMouseDownView () == nullptr)
 	{
 		clearMouseViews (where, buttons);
 		if (pImpl->tooltips)
@@ -653,7 +653,7 @@ bool CFrame::onWheel (const CPoint &where, const CMouseWheelAxis &axis, const fl
 {
 	bool result = false;
 
-	if (mouseDownView == nullptr)
+	if (getMouseDownView () == nullptr)
 	{
 		result = CViewContainer::onWheel (where, axis, distance, buttons);
 		checkMouseViews (where, buttons);
@@ -1276,7 +1276,7 @@ void CFrame::scrollRect (const CRect& src, const CPoint& distance)
 void CFrame::invalidate (const CRect &rect)
 {
 	CRect rectView;
-	for (const auto& pV : children)
+	for (const auto& pV : getChildren ())
 	{
 		pV->getViewSize (rectView);
 		if (rect.rectOverlap (rectView))

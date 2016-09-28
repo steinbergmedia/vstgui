@@ -218,7 +218,7 @@ void CRowColumnView::layoutViews ()
 		layoutViewsEqualSize ();
 		if (hideClippedSubviews ())
 		{
-			for (auto& view : children)
+			for (auto& view : getChildren ())
 			{
 				if (view->getVisibleViewSize () != view->getViewSize ())
 					view->setVisible (false);
@@ -233,7 +233,7 @@ void CRowColumnView::layoutViews ()
 //--------------------------------------------------------------------------------
 bool CRowColumnView::sizeToFit ()
 {
-	if (children.size () > 0)
+	if (!getChildren ().empty ())
 	{
 		CRect viewSize = getViewSize ();
 		CPoint maxSize;

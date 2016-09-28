@@ -250,23 +250,28 @@ protected:
 	
 	virtual bool checkUpdateRect (CView* view, const CRect& rect);
 
-	/// @cond ignore
-	ViewList children;
-	/// @endcond
-
-	CDrawStyle backgroundColorDrawStyle {kDrawFilledAndStroked};
-	CColor backgroundColor {kBlackCColor};
-	CPoint backgroundOffset;
-	CRect lastDrawnFocus;
+	void setMouseDownView (CView* view) { mouseDownView = view; }
+	CView* getMouseDownView () const { return mouseDownView; }
 	
-	CView* currentDragView {nullptr};
-	CView* mouseDownView {nullptr};
-
+	const ViewList& getChildren () const { return children; }
 private:
 	using ViewContainerListenerDispatcher = DispatchList<IViewContainerListener>;
 
 	ViewContainerListenerDispatcher viewContainerListeners;
 	CGraphicsTransform transform;
+
+	/// @cond ignore
+	ViewList children;
+	/// @endcond
+	
+	CDrawStyle backgroundColorDrawStyle {kDrawFilledAndStroked};
+	CColor backgroundColor {kBlackCColor};
+	CPoint backgroundOffset;
+
+	CRect lastDrawnFocus;
+
+	CView* currentDragView {nullptr};
+	CView* mouseDownView {nullptr};
 };
 
 typedef CViewContainer::Iterator<false> ViewIterator;
