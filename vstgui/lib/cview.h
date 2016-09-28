@@ -316,9 +316,6 @@ protected:
 	void setParentFrame (CFrame* frame) { pParentFrame = frame; }
 	void setParentView (CView* parent) { pParentView = parent; }
 
-	CRect  size;
-	CRect  mouseableArea;
-
 private:
 	using ViewAttributes = std::map<CViewAttributeID, CViewAttributeEntry*>;
 	using ViewListenerDispatcher = DispatchList<IViewListener>;
@@ -330,6 +327,8 @@ private:
 	ViewAttributes attributes;
 	ViewListenerDispatcher viewListeners;
 
+	CRect  size;
+	CRect  mouseableArea;
 	int32_t viewFlags {0};
 	int32_t autosizeFlags {kAutosizeNone};
 	float alphaValue {1.f};
