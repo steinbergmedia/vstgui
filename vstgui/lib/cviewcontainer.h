@@ -185,7 +185,7 @@ public:
 	class Iterator
 	{
 	public:
-		explicit Iterator<reverse> (const CViewContainer* container) : children (container->children) { if (reverse) riterator = children.rbegin (); else iterator = children.begin (); }
+		explicit Iterator<reverse> (const CViewContainer* container) : children (container->getChildren ()) { if (reverse) riterator = children.rbegin (); else iterator = children.begin (); }
 		Iterator<reverse> (const Iterator& vi) : children (vi.children), iterator (vi.iterator), riterator (vi.riterator) {}
 		
 		Iterator<reverse>& operator++ ()
@@ -279,24 +279,22 @@ typedef CViewContainer::Iterator<true> ReverseViewIterator;
 
 //-----------------------------------------------------------------------------
 template<class ViewClass, class ContainerClass>
-uint32_t CViewContainer::getChildViewsOfType (ContainerClass& result, bool deep) const
+inline uint32_t CViewContainer::getChildViewsOfType (ContainerClass& result, bool deep) const
 {
-	ChildViewConstIterator it = children.begin ();
-	while (it != children.end ())
+	for (auto& child : getChildren ())
 	{
-		ViewClass* vObj = (*it).cast<ViewClass> ();
+		ViewClass* vObj = child.cast<ViewClass> ();
 		if (vObj)
 		{
 			result.push_back (vObj);
 		}
 		if (deep)
 		{
-			if (auto container = (*it)->asViewContainer ())
+			if (auto container = child->asViewContainer ())
 			{
 				container->getChildViewsOfType<ViewClass, ContainerClass> (result);
 			}
 		}
-		++it;
 	}
 	return static_cast<uint32_t> (result.size ());
 }
