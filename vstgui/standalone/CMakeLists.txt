@@ -2,66 +2,66 @@
 set(target vstgui_standalone)
 
 set(${target}_common_sources
-  doc.h
-  fwd.h
-  ialertbox.h
-  iappdelegate.h
-  iapplication.h
-  iasync.h
-  icommand.h
-  imenubuilder.h
-  interface.h
-  ipreference.h
-  ishareduiresources.h
-  iuidescwindow.h
-  ivalue.h
-  ivaluelistener.h
-  iwindow.h
-  iwindowcontroller.h
-  iwindowlistener.h
-  detail/application.cpp
-  detail/application.h
-  detail/genericalertbox.cpp
-  detail/genericalertbox.h
-  detail/shareduiresources.cpp
-  detail/shareduiresources.h
-  detail/uidescriptionwindowcontroller.cpp
-  detail/window.cpp
-  detail/window.h
-  detail/platform/iplatformwindow.h
-  helpers/appdelegate.h
-  helpers/modelbinding.h
-  helpers/value.cpp
-  helpers/value.h
-  helpers/valuelistener.h
-  helpers/windowcontroller.h
-  helpers/windowlistener.h
+  include/doc.h
+  include/fwd.h
+  include/ialertbox.h
+  include/iappdelegate.h
+  include/iapplication.h
+  include/iasync.h
+  include/icommand.h
+  include/imenubuilder.h
+  include/interface.h
+  include/ipreference.h
+  include/ishareduiresources.h
+  include/iuidescwindow.h
+  include/ivalue.h
+  include/ivaluelistener.h
+  include/iwindow.h
+  include/iwindowcontroller.h
+  include/iwindowlistener.h
+  include/helpers/appdelegate.h
+  include/helpers/modelbinding.h
+  include/helpers/value.h
+  include/helpers/valuelistener.h
+  include/helpers/windowcontroller.h
+  include/helpers/windowlistener.h
+  source/application.cpp
+  source/application.h
+  source/genericalertbox.cpp
+  source/genericalertbox.h
+  source/shareduiresources.cpp
+  source/shareduiresources.h
+  source/uidescriptionwindowcontroller.cpp
+  source/window.cpp
+  source/window.h
+  source/platform/iplatformwindow.h
+  source/helpers/value.cpp
 )
 
 ##########################################################################################
 set(${target}_mac_sources
-  detail/platform/mac/VSTGUICommand.h
-  detail/platform/mac/VSTGUICommand.mm
-  detail/platform/mac/macasync.mm
-  detail/platform/mac/macapplication.mm
-  detail/platform/mac/macpreference.h
-  detail/platform/mac/macpreference.mm
-  detail/platform/mac/macutilities.h
-  detail/platform/mac/macwindow.h
-  detail/platform/mac/macwindow.mm
+  source/platform/mac/VSTGUICommand.h
+  source/platform/mac/VSTGUICommand.mm
+  source/platform/mac/macasync.mm
+  source/platform/mac/macapplication.mm
+  source/platform/mac/macpreference.h
+  source/platform/mac/macpreference.mm
+  source/platform/mac/macutilities.h
+  source/platform/mac/macwindow.h
+  source/platform/mac/macwindow.mm
 )
 
 ##########################################################################################
 set(${target}_win32_sources
-  detail/platform/win32/win32application.cpp
-  detail/platform/win32/win32async.cpp
-  detail/platform/win32/win32async.h
-  detail/platform/win32/win32menu.cpp
-  detail/platform/win32/win32menu.h
-  detail/platform/win32/win32preference.cpp
-  detail/platform/win32/win32preference.h
-  detail/platform/win32/win32window.cpp
-  detail/platform/win32/win32window.h
+  source/platform/win32/win32application.cpp
+  source/platform/win32/win32async.cpp
+  source/platform/win32/win32async.h
+  source/platform/win32/win32menu.cpp
+  source/platform/win32/win32menu.h
+  source/platform/win32/win32preference.cpp
+  source/platform/win32/win32preference.h
+  source/platform/win32/win32window.cpp
+  source/platform/win32/win32window.h
 )
 
 ##########################################################################################

@@ -1,9 +1,9 @@
 #include "mandelbrotwindow.h"
-#include "vstgui/standalone/helpers/appdelegate.h"
-#include "vstgui/standalone/helpers/windowlistener.h"
-#include "vstgui/standalone/iapplication.h"
-#include "vstgui/standalone/iwindow.h"
-#include "vstgui/standalone/icommand.h"
+#include "vstgui/standalone/include/helpers/appdelegate.h"
+#include "vstgui/standalone/include/helpers/windowlistener.h"
+#include "vstgui/standalone/include/iapplication.h"
+#include "vstgui/standalone/include/iwindow.h"
+#include "vstgui/standalone/include/icommand.h"
 #include <atomic>
 
 //------------------------------------------------------------------------

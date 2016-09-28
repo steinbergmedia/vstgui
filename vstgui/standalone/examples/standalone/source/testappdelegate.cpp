@@ -2,17 +2,17 @@
 #include "testmodel.h"
 #include "testabout.h"
 #include "AlertBoxDesign.h"
-#include "vstgui/standalone/helpers/appdelegate.h"
-#include "vstgui/standalone/helpers/windowlistener.h"
-#include "vstgui/standalone/iapplication.h"
-#include "vstgui/standalone/iwindow.h"
-#include "vstgui/standalone/icommand.h"
-#include "vstgui/standalone/iuidescwindow.h"
-#include "vstgui/standalone/ialertbox.h"
+#include "vstgui/standalone/include/helpers/appdelegate.h"
+#include "vstgui/standalone/include/helpers/windowlistener.h"
+#include "vstgui/standalone/include/iapplication.h"
+#include "vstgui/standalone/include/iwindow.h"
+#include "vstgui/standalone/include/icommand.h"
+#include "vstgui/standalone/include/iuidescwindow.h"
+#include "vstgui/standalone/include/ialertbox.h"
 #include "vstgui/lib/cframe.h"
 #include "vstgui/lib/crect.h"
 
-#include "vstgui/standalone/detail/genericalertbox.h"
+#include "vstgui/standalone/source/genericalertbox.h"
 
 #include <memory>
 
