@@ -350,7 +350,7 @@ void CTextEdit::looseFocus ()
 	_platformControl = nullptr;
 
 	// if you want to destroy the text edit do it with the loose focus message
-	CView* receiver = pParentView ? pParentView : pParentFrame;
+	CView* receiver = getParentView () ? getParentView () : getFrame ();
 	while (receiver)
 	{
 		if (receiver->notify (this, kMsgLooseFocus) == kMessageNotified)

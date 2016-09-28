@@ -101,9 +101,9 @@ bool CLayeredViewContainer::attached (CView* parent)
 	if (isAttached ())
 		return false;
 
-	pParentView = parent;
-	pParentFrame = parent->getFrame ();
-	if (pParentFrame)
+	setParentView (parent);
+	setParentFrame (parent->getFrame ());
+	if (getFrame ())
 	{
 		while (parent && dynamic_cast<CFrame*>(parent) == nullptr)
 		{
@@ -114,7 +114,7 @@ bool CLayeredViewContainer::attached (CView* parent)
 			}
 			parent = parent->getParentView ();
 		}
-		layer = pParentFrame->getPlatformFrame ()->createPlatformViewLayer (this, parentLayerView ? parentLayerView->layer : nullptr);
+		layer = getFrame ()->getPlatformFrame ()->createPlatformViewLayer (this, parentLayerView ? parentLayerView->layer : nullptr);
 		if (layer)
 		{
 			layer->setZIndex (zIndex);
@@ -122,12 +122,12 @@ bool CLayeredViewContainer::attached (CView* parent)
 			updateLayerSize ();
 		}
 	}
-	parent = pParentView;
+	parent = getParentView ();
 	
 	registerListeners (true);
 	
-	pParentView = nullptr;
-	pParentFrame = nullptr;
+	setParentView (nullptr);
+	setParentFrame (nullptr);
 
 	return CViewContainer::attached (parent);
 }
@@ -201,7 +201,7 @@ void CLayeredViewContainer::setAlphaValue (float alpha)
 {
 	if (layer)
 	{
-		alphaValue = alpha;
+		setAlphaValueNoInvalidate (alpha);
 		layer->setAlpha (alpha);
 	}
 	else

@@ -734,7 +734,7 @@ void COptionMenu::takeFocus ()
 //------------------------------------------------------------------------
 void COptionMenu::looseFocus ()
 {	
-	CView* receiver = pParentView ? pParentView : pParentFrame;
+	CView* receiver = getParentView () ? getParentView () : getFrame ();
 	while (receiver)
 	{
 		if (receiver->notify (this, kMsgLooseFocus) == kMessageNotified)

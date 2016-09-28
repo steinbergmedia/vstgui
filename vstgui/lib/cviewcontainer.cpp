@@ -231,10 +231,10 @@ CRect CViewContainer::getVisibleSize (const CRect& rect) const
 	CRect result (rect);
 	result.offset (viewSize.left, viewSize.top);
 	result.bound (viewSize);
-	if (pParentFrame == this)
+	if (getFrame () == this)
 	{}
-	else if (pParentView)
-		result = static_cast<CViewContainer*> (pParentView)->getVisibleSize (result);
+	else if (getParentView ())
+		result = static_cast<CViewContainer*> (getParentView ())->getVisibleSize (result);
 	result.offset (-viewSize.left, -viewSize.top);
 	return result;
 }
@@ -548,8 +548,8 @@ bool CViewContainer::invalidateDirtyViews ()
 		return true;
 	if (CView::isDirty ())
 	{
-		if (pParentView)
-			pParentView->invalidRect (getViewSize ());
+		if (getParentView ())
+			getParentView ()->invalidRect (getViewSize ());
 		return true;
 	}
 	for (const auto& pV : children)
@@ -571,8 +571,8 @@ void CViewContainer::invalid ()
 	if (!isVisible ())
 		return;
 	CRect _rect (getViewSize ());
-	if (pParentView)
-		pParentView->invalidRect (_rect);
+	if (getParentView ())
+		getParentView ()->invalidRect (_rect);
 }
 
 //-----------------------------------------------------------------------------
@@ -586,8 +586,8 @@ void CViewContainer::invalidRect (const CRect& rect)
 	_rect.bound (getViewSize ());
 	if (_rect.isEmpty ())
 		return;
-	if (pParentView)
-		pParentView->invalidRect (_rect);
+	if (getParentView ())
+		getParentView ()->invalidRect (_rect);
 }
 
 //-----------------------------------------------------------------------------
@@ -1260,8 +1260,8 @@ CViewContainer* CViewContainer::getContainerAt (const CPoint& p, const GetViewOp
 CPoint& CViewContainer::frameToLocal (CPoint& point) const
 {
 	point.offset (-getViewSize ().left, -getViewSize ().top);
-	if (pParentView)
-		return pParentView->frameToLocal (point);
+	if (getParentView ())
+		return getParentView ()->frameToLocal (point);
 	return point;
 }
 
@@ -1269,8 +1269,8 @@ CPoint& CViewContainer::frameToLocal (CPoint& point) const
 CPoint& CViewContainer::localToFrame (CPoint& point) const
 {
 	point.offset (getViewSize ().left, getViewSize ().top);
-	if (pParentView)
-		return pParentView->localToFrame (point);
+	if (getParentView ())
+		return getParentView ()->localToFrame (point);
 	return point;
 }
 
@@ -1292,7 +1292,7 @@ bool CViewContainer::attached (CView* parent)
 	if (isAttached ())
 		return false;
 
-	pParentFrame = parent->getFrame ();
+	setParentFrame (parent->getFrame ());
 
 	bool result = CView::attached (parent);
 	if (result)

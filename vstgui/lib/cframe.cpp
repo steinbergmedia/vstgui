@@ -119,7 +119,7 @@ CFrame::CFrame (const CRect& inSize, VSTGUIEditorInterface* inEditor)
 	pImpl = new Impl;
 	pImpl->pEditor = inEditor;
 
-	pParentFrame = this;
+	setParentFrame (this);
 }
 
 //-----------------------------------------------------------------------------
@@ -131,7 +131,7 @@ void CFrame::beforeDelete ()
 
 	setCursor (kCursorDefault);
 
-	pParentFrame = nullptr;
+	setParentFrame (nullptr);
 	removeAll ();
 
 	pImpl->tooltips = nullptr;
@@ -179,7 +179,7 @@ void CFrame::close ()
 	if (pImpl->pModalView)
 		removeView (pImpl->pModalView, false);
 	setCursor (kCursorDefault);
-	pParentFrame = nullptr;
+	setParentFrame (nullptr);
 	removeAll ();
 	pImpl->platformFrame = nullptr;
 	forget ();
@@ -199,7 +199,7 @@ bool CFrame::open (void* systemWin, PlatformType systemWindowType)
 
 	attached (this);
 	
-	pParentView = nullptr;
+	setParentView (nullptr);
 
 	return true;
 }
@@ -212,7 +212,7 @@ bool CFrame::attached (CView* parent)
 	vstgui_assert (parent == this);
 	if (CView::attached (parent))
 	{
-		pParentView = nullptr;
+		setParentView (nullptr);
 
 		for (const auto& pV : children)
 			pV->attached (this);
@@ -1578,7 +1578,7 @@ bool CFrame::platformOnKeyUp (VstKeyCode& keyCode)
 //-----------------------------------------------------------------------------
 void CFrame::platformOnActivate (bool state)
 {
-	if (pParentFrame)
+	if (getFrame ())
 	{
 		CollectInvalidRects cir (this);
 		onActivate (state);
