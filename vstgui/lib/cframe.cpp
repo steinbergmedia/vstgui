@@ -741,10 +741,10 @@ bool CFrame::setPosition (CCoord x, CCoord y)
 	if (pImpl->platformFrame)
 	{
 		CRect rect (getViewSize ());
-		rect.offset (x - size.left, y - size.top);
+		rect.offset (x - getViewSize ().left, y - getViewSize ().top);
 		if (pImpl->platformFrame->setSize (rect))
 		{
-			size = rect;
+			setViewSize (rect, false);
 			return true;
 		}
 	}

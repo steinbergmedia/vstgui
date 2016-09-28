@@ -520,7 +520,7 @@ void CKnob::valueToPoint (CPoint &point) const
 	float alpha = (value - getMin()) / (getMax() - getMin());
 	alpha = startAngle + alpha*rangeAngle;
 
-	CPoint c(size.getWidth () / 2., size.getHeight () / 2.);
+	CPoint c (getViewSize ().getWidth () / 2., getViewSize ().getHeight () / 2.);
 	double xradius = c.x - inset;
 	double yradius = c.y - inset;
 
@@ -535,7 +535,7 @@ float CKnob::valueFromPoint (CPoint &point) const
 	double d = rangeAngle * 0.5;
 	double a = startAngle + d;
 
-	CPoint c (size.getWidth () / 2., size.getHeight () / 2.);
+	CPoint c (getViewSize ().getWidth () / 2., getViewSize ().getHeight () / 2.);
 	double xradius = c.x - inset;
 	double yradius = c.y - inset;
 
