@@ -35,7 +35,9 @@
 #ifndef __uiviewframe__
 #define __uiviewframe__
 
-#include "../../../cframe.h"
+#include "../../../vstguifwd.h"
+#include "../../../cview.h"
+#include "../../iplatformframe.h"
 
 #if TARGET_OS_IPHONE
 
@@ -69,16 +71,16 @@ public:
 	bool showTooltip (const CRect& rect, const char* utf8Text) override { return false; };
 	bool hideTooltip () override { return false; };
 	void* getPlatformRepresentation () const override { return (__bridge void*)uiView; }
-	IPlatformTextEdit* createPlatformTextEdit (IPlatformTextEditCallback* textEdit) override;
-	IPlatformOptionMenu* createPlatformOptionMenu () override;
+	SharedPointer<IPlatformTextEdit> createPlatformTextEdit (IPlatformTextEditCallback* textEdit) override;
+	SharedPointer<IPlatformOptionMenu> createPlatformOptionMenu () override;
 #if VSTGUI_OPENGL_SUPPORT
-	IPlatformOpenGLView* createPlatformOpenGLView () override;
+	SharedPointer<IPlatformOpenGLView> createPlatformOpenGLView () override;
 #endif
-	IPlatformViewLayer* createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer) override;
-	COffscreenContext* createOffscreenContext (CCoord width, CCoord height, double scaleFactor = 1.) override;
-	DragResult doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap) override { return kDragError; }
-	void setClipboard (IDataPackage* data) override {}
-	IDataPackage* getClipboard () override { return nullptr; }
+	SharedPointer<IPlatformViewLayer> createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer) override;
+	SharedPointer<COffscreenContext> createOffscreenContext (CCoord width, CCoord height, double scaleFactor = 1.) override;
+	DragResult doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap) override;
+	void setClipboard (const SharedPointer<IDataPackage>& data) override;
+	SharedPointer<IDataPackage> getClipboard () override;
 	PlatformType getPlatformType () const override { return PlatformType::kUIView; }
 
 //-----------------------------------------------------------------------------
