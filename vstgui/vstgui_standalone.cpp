@@ -32,9 +32,9 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#include "standalone/detail/application.cpp"
-#include "standalone/detail/uidescriptionwindowcontroller.cpp"
-#include "standalone/detail/window.cpp"
-#include "standalone/detail/genericalertbox.cpp"
-#include "standalone/detail/shareduiresources.cpp"
-#include "standalone/helpers/value.cpp"
+#include "standalone/source/application.cpp"
+#include "standalone/source/uidescriptionwindowcontroller.cpp"
+#include "standalone/source/window.cpp"
+#include "standalone/source/genericalertbox.cpp"
+#include "standalone/source/shareduiresources.cpp"
+#include "standalone/source/helpers/value.cpp"

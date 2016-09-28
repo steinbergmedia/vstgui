@@ -33,8 +33,8 @@
 //-----------------------------------------------------------------------------
 
 #import "vstgui_standalone.cpp"
-#import "standalone/detail/platform/mac/macapplication.mm"
-#import "standalone/detail/platform/mac/macasync.mm"
-#import "standalone/detail/platform/mac/macpreference.mm"
-#import "standalone/detail/platform/mac/macwindow.mm"
-#import "standalone/detail/platform/mac/VSTGUICommand.mm"
+#import "standalone/source/platform/mac/macapplication.mm"
+#import "standalone/source/platform/mac/macasync.mm"
+#import "standalone/source/platform/mac/macpreference.mm"
+#import "standalone/source/platform/mac/macwindow.mm"
+#import "standalone/source/platform/mac/VSTGUICommand.mm"
