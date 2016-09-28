@@ -236,7 +236,7 @@ void CDataBrowser::valueChanged (CControl *pControl)
 				break;
 			}
 		}
-		if (isAttached () && (mouseDownView == dbView || mouseDownView == nullptr))
+		if (isAttached () && (getMouseDownView () == dbView || getMouseDownView () == nullptr))
 		{
 			CPoint where;
 			getFrame ()->getCurrentMouseLocation (where);
@@ -331,7 +331,7 @@ void CDataBrowser::recalculateLayout (bool rememberSelection)
 
 	if (style & kDrawHeader)
 	{
-		for (const auto& pV : children)
+		for (const auto& pV : getChildren ())
 		{
 			CRect viewSize;
 			pV->getViewSize (viewSize);

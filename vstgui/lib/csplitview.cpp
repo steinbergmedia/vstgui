@@ -826,7 +826,7 @@ CMouseEventResult CSplitViewSeparatorView::onMouseDown (CPoint& where, const CBu
 //-----------------------------------------------------------------------------
 CMouseEventResult CSplitViewSeparatorView::onMouseUp (CPoint& where, const CButtonState& buttons)
 {
-	if (mouseDownView)
+	if (getMouseDownView ())
 		return CViewContainer::onMouseUp (where, buttons);
 	if (hasBit (flags, ISplitViewSeparatorDrawer::kMouseDown))
 	{
@@ -840,7 +840,7 @@ CMouseEventResult CSplitViewSeparatorView::onMouseUp (CPoint& where, const CButt
 //-----------------------------------------------------------------------------
 CMouseEventResult CSplitViewSeparatorView::onMouseMoved (CPoint& where, const CButtonState& buttons)
 {
-	if (mouseDownView)
+	if (getMouseDownView ())
 		return CViewContainer::onMouseMoved (where, buttons);
 	if (hasBit (flags, ISplitViewSeparatorDrawer::kMouseDown))
 	{
