@@ -4,10 +4,10 @@
 #import "../../shareduiresources.h"
 #import "../../window.h"
 #import "VSTGUICommand.h"
+#import "macasync.h"
 #import "macpreference.h"
 #import "macutilities.h"
 #import "macwindow.h"
-#import "macasync.h"
 #import <Cocoa/Cocoa.h>
 
 #if __has_feature(nullability) == 0
@@ -89,7 +89,6 @@ static const CommandWithKeyList* _Nullable getCommandList (const char* _Nonnull 
 //------------------------------------------------------------------------
 - (void)showHelp:(nullable id)sender
 {
-	
 }
 
 //------------------------------------------------------------------------
@@ -171,13 +170,13 @@ static const CommandWithKeyList* _Nullable getCommandList (const char* _Nonnull 
 	NSMenu* menu = [[NSMenu alloc] initWithTitle:appName];
 
 	[menu addItemWithTitle:[NSString stringWithFormat:@"About %@", appName]
-					action:@selector (showAboutDialog:)
-			 keyEquivalent:@""];
+	                action:@selector (showAboutDialog:)
+	         keyEquivalent:@""];
 	[menu addItem:[NSMenuItem separatorItem]];
 
 	[menu addItemWithTitle:@"Preferences..."
-					action:@selector (showPreferenceDialog:)
-			 keyEquivalent:@","];
+	                action:@selector (showPreferenceDialog:)
+	         keyEquivalent:@","];
 
 	[menu addItem:[NSMenuItem separatorItem]];
 
@@ -196,19 +195,17 @@ static const CommandWithKeyList* _Nullable getCommandList (const char* _Nonnull 
 
 	[menu addItem:[NSMenuItem separatorItem]];
 	[menu addItemWithTitle:[NSString stringWithFormat:@"Hide %@", appName]
-					action:@selector (hide:)
-			 keyEquivalent:@"h"];
+	                action:@selector (hide:)
+	         keyEquivalent:@"h"];
 	[menu addItemWithTitle:@"Hide Others"
-					action:@selector (hideOtherApplications:)
-			 keyEquivalent:@""];
-	[menu addItemWithTitle:@"Show All"
-					action:@selector (unhideAllApplications:)
-			 keyEquivalent:@""];
+	                action:@selector (hideOtherApplications:)
+	         keyEquivalent:@""];
+	[menu addItemWithTitle:@"Show All" action:@selector (unhideAllApplications:) keyEquivalent:@""];
 	[menu addItem:[NSMenuItem separatorItem]];
 	[menu addItemWithTitle:[NSString stringWithFormat:@"Quit %@", appName]
-					action:@selector (terminate:)
-			 keyEquivalent:@"q"];
-	
+	                action:@selector (terminate:)
+	         keyEquivalent:@"q"];
+
 	return menu;
 }
 
@@ -300,7 +297,7 @@ static const CommandWithKeyList* _Nullable getCommandList (const char* _Nonnull 
 				if (cmd.name == CommandName::Help)
 				{
 					NSMenu* helpMenu = [NSApp helpMenu];
-					NSMenuItem* item = [helpMenu itemWithTitle:stringFromUTF8String(cmd.name)];
+					NSMenuItem* item = [helpMenu itemWithTitle:stringFromUTF8String (cmd.name)];
 					if (!item)
 					{
 						item = [self createMenuItemFromCommand:cmd];
