@@ -1,5 +1,4 @@
 #include "shareduiresources.h"
-#include "application.h"
 #include "../../lib/cbitmap.h"
 #include "../../lib/ccolor.h"
 #include "../../lib/cfileselector.h"
@@ -10,6 +9,7 @@
 #include "../include/iappdelegate.h"
 #include "../include/iapplication.h"
 #include "../include/ipreference.h"
+#include "application.h"
 #include <unordered_map>
 
 //------------------------------------------------------------------------

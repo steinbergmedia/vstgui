@@ -1,6 +1,6 @@
 #include "../../include/helpers/value.h"
-#include "../../include/ivaluelistener.h"
 #include "../../../lib/dispatchlist.h"
+#include "../../include/ivaluelistener.h"
 #include <algorithm>
 
 //------------------------------------------------------------------------
@@ -132,7 +132,8 @@ public:
 
 	IValue::Type plainToNormalized (IValue::Type plain) const override
 	{
-		return convertStepToValue (static_cast<IStepValue::StepType> (plain), static_cast<IStepValue::StepType> (strings.size () - 1));
+		return convertStepToValue (static_cast<IStepValue::StepType> (plain),
+		                           static_cast<IStepValue::StepType> (strings.size () - 1));
 	}
 
 	IValue::Type normalizedToPlain (IValue::Type normalized) const override
