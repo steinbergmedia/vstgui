@@ -790,7 +790,7 @@ INPUT                  = ./doc.h \
                          ../uidescription/ \
                          ./page_keyeventflow.h \
                          ../plugin-bindings/ \
-                         ../standalone
+                         ../standalone/include/
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding. Doxygen uses
@@ -870,9 +870,7 @@ RECURSIVE              = YES
 EXCLUDE                = ../uidescription/expat/ \
                          ../tutorial \
                          ../tests/ \
-                         ../lib/platform/ \
-                         ../standalone/detail/ \
-                         ../standalone/examples/
+                         ../lib/platform/
 
 # The EXCLUDE_SYMLINKS tag can be used to select whether or not files or
 # directories that are symbolic links (a Unix file system feature) are excluded
