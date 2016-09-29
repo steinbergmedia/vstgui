@@ -356,10 +356,10 @@ CMouseEventResult Window::onMouseDown (CFrame* frame, const CPoint& where,
 				contextMenu.addSeparator ();
 			CPoint p (where);
 			view->frameToLocal (p);
-			if (contextMenuController)
-				contextMenuController->appendContextMenuItems (contextMenu, p);
-			else if (contextMenuController2)
+			if (contextMenuController2)
 				contextMenuController2->appendContextMenuItems (contextMenu, view, p);
+			else if (contextMenuController)
+				contextMenuController->appendContextMenuItems (contextMenu, p);
 		}
 		if (contextMenu.getNbEntries () > 0)
 		{
