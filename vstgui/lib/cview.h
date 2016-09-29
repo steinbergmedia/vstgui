@@ -320,10 +320,6 @@ private:
 	using ViewAttributes = std::map<CViewAttributeID, CViewAttributeEntry*>;
 	using ViewListenerDispatcher = DispatchList<IViewListener>;
 
-	SharedPointer<CBitmap> pBackground;
-	SharedPointer<CBitmap> pDisabledBackground;
-	SharedPointer<CGraphicsPath> pHitTestPath;
-
 	ViewAttributes attributes;
 	ViewListenerDispatcher viewListeners;
 
@@ -334,6 +330,10 @@ private:
 	float alphaValue {1.f};
 	CFrame* pParentFrame {nullptr};
 	CView* pParentView {nullptr};
+
+	SharedPointer<CBitmap> pBackground;
+	SharedPointer<CBitmap> pDisabledBackground;
+	SharedPointer<CGraphicsPath> pHitTestPath;
 };
 
 //-----------------------------------------------------------------------------
