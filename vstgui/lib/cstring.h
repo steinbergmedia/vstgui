@@ -217,7 +217,7 @@ public:
 	size_t calculateCharacterCount () const;
 
 	/** checks this string if it contains a subString */
-	bool contains (const UTF8StringPtr subString) const;
+	bool contains (const UTF8StringPtr subString, bool ignoreCase = false) const;
 
 	/** checks this string if it starts with startString */
 	bool startsWith (const UTF8StringView& startString) const;
@@ -258,6 +258,14 @@ public:
 		begin ();
 	}
 
+	UTF8CharacterIterator (const UTF8StringPtr utf8Str, size_t strLen)
+	: startPos ((uint8_t*)utf8Str)
+	, currentPos (0)
+	, strLen (strLen)
+	{
+		begin ();
+	}
+	
 	UTF8CharacterIterator (const std::string& stdStr)
 	: startPos ((uint8_t*)stdStr.c_str ())
 	, currentPos (0)
@@ -388,8 +396,19 @@ inline size_t UTF8StringView::calculateByteCount () const
 }
 
 //-----------------------------------------------------------------------------
-inline bool UTF8StringView::contains (const UTF8StringPtr subString) const
+inline bool UTF8StringView::contains (const UTF8StringPtr subString, bool ignoreCase) const
 {
+	if (ignoreCase)
+	{
+		if (!str || !subString)
+			return false;
+		UTF8CharacterIterator subIt (subString);
+		UTF8CharacterIterator it (str, calculateByteCount ());
+		auto foundIt = std::search (
+		    it.begin (), it.end (), subIt.begin (), subIt.end (),
+		    [] (uint8_t c1, uint8_t c2) { return std::toupper (c1) == std::toupper (c2); });
+		return foundIt != it.end ();
+	}
 	return (!str || !subString || std::strstr (str, subString) == nullptr) ? false : true;
 }
 
