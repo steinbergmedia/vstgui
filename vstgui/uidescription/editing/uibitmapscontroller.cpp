@@ -37,7 +37,6 @@
 #if VSTGUI_LIVE_EDITING
 
 #include "uibasedatasource.h"
-#include "uisearchtextfield.h"
 #include "uieditcontroller.h"
 #include "uidialogcontroller.h"
 #include "../../lib/cbitmapfilter.h"
@@ -46,6 +45,7 @@
 #include "../../lib/cvstguitimer.h"
 #include "../../lib/controls/ccolorchooser.h"
 #include "../../lib/controls/ctextedit.h"
+#include "../../lib/controls/csearchtextedit.h"
 #include "../../lib/platform/iplatformbitmap.h"
 
 namespace VSTGUI {
@@ -769,7 +769,7 @@ CView* UIBitmapsController::createView (const UIAttributes& attributes, const IU
 //----------------------------------------------------------------------------------------------------
 CView* UIBitmapsController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
 {
-	UISearchTextField* searchField = dynamic_cast<UISearchTextField*>(view);
+	auto searchField = dynamic_cast<CSearchTextEdit*>(view);
 	if (searchField && searchField->getTag () == kSearchTag)
 	{
 		dataSource->setSearchFieldControl (searchField);

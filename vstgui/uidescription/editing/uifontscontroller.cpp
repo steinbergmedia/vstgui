@@ -37,10 +37,10 @@
 #if VSTGUI_LIVE_EDITING
 
 #include "uieditcontroller.h"
-#include "uisearchtextfield.h"
 #include "uibasedatasource.h"
 #include "../../lib/controls/ccolorchooser.h"
 #include "../../lib/controls/coptionmenu.h"
+#include "../../lib/controls/csearchtextedit.h"
 #include "../../lib/platform/iplatformfont.h"
 #include <sstream>
 
@@ -139,7 +139,7 @@ CView* UIFontsController::createView (const UIAttributes& attributes, const IUID
 //----------------------------------------------------------------------------------------------------
 CView* UIFontsController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
 {
-	UISearchTextField* searchField = dynamic_cast<UISearchTextField*>(view);
+	auto searchField = dynamic_cast<CSearchTextEdit*>(view);
 	if (searchField && searchField->getTag () == kSearchTag)
 	{
 		dataSource->setSearchFieldControl (searchField);

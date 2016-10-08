@@ -3,8 +3,8 @@
 #if VSTGUI_LIVE_EDITING
 
 #include "uieditcontroller.h"
-#include "uisearchtextfield.h"
 #include "uibasedatasource.h"
+#include "../../lib/controls/csearchtextedit.h"
 #include <sstream>
 
 namespace VSTGUI {
@@ -184,7 +184,7 @@ CView* UITagsController::createView (const UIAttributes& attributes, const IUIDe
 //----------------------------------------------------------------------------------------------------
 CView* UITagsController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
 {
-	UISearchTextField* searchField = dynamic_cast<UISearchTextField*>(view);
+	auto searchField = dynamic_cast<CSearchTextEdit*>(view);
 	if (searchField && searchField->getTag () == kSearchTag)
 	{
 		dataSource->setSearchFieldControl (searchField);

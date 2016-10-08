@@ -48,7 +48,6 @@
 #include "uitemplatecontroller.h"
 #include "uiviewcreatecontroller.h"
 #include "uiundomanager.h"
-#include "uisearchtextfield.h"
 #include "uiactions.h"
 #include "uiselection.h"
 #include "uidialogcontroller.h"
@@ -57,6 +56,7 @@
 #include "../uiattributes.h"
 #include "../../lib/controls/coptionmenu.h"
 #include "../../lib/controls/csegmentbutton.h"
+#include "../../lib/controls/csearchtextedit.h"
 #include "../../lib/animation/animations.h"
 #include "../../lib/animation/timingfunctions.h"
 #include "../../lib/cdropsource.h"
@@ -430,7 +430,7 @@ CView* UIEditController::createView (const UIAttributes& attributes, const IUIDe
 		}
 		else if (*name == "UISearchTextField")
 		{
-			return new UISearchTextField (CRect (0, 0, 0, 0), nullptr, -2);
+			return new CSearchTextEdit (CRect (0, 0, 0, 0), nullptr, -2);
 		}
 	}
 	return nullptr;
