@@ -39,10 +39,10 @@
 #include "uicolor.h"
 #include "uicolorchoosercontroller.h"
 #include "uieditcontroller.h"
-#include "uisearchtextfield.h"
 #include "uibasedatasource.h"
 #include "../../lib/coffscreencontext.h"
 #include "../../lib/idatapackage.h"
+#include "../../lib/controls/csearchtextedit.h"
 #include <sstream>
 
 namespace VSTGUI {
@@ -348,7 +348,7 @@ CView* UIColorsController::createView (const UIAttributes& attributes, const IUI
 //----------------------------------------------------------------------------------------------------
 CView* UIColorsController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
 {
-	UISearchTextField* searchField = dynamic_cast<UISearchTextField*>(view);
+	auto searchField = dynamic_cast<CSearchTextEdit*>(view);
 	if (searchField && searchField->getTag () == kSearchTag)
 	{
 		dataSource->setSearchFieldControl (searchField);

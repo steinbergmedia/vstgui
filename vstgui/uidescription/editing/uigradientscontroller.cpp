@@ -658,7 +658,7 @@ CView* UIGradientsController::verifyView (CView* view, const UIAttributes& attri
 	CControl* control = dynamic_cast<CControl*> (view);
 	if (control)
 	{
-		UISearchTextField* searchField = dynamic_cast<UISearchTextField*> (control);
+		auto searchField = dynamic_cast<CSearchTextEdit*> (control);
 		if (searchField && searchField->getTag () == kSearchTag)
 		{
 			dataSource->setSearchFieldControl (searchField);

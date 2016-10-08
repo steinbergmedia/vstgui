@@ -32,23 +32,21 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#include "uisearchtextfield.h"
+#include "csearchtextedit.h"
 
-#if VSTGUI_LIVE_EDITING
-
-#include "../../lib/cframe.h"
-#include "../../lib/cgraphicspath.h"
+#include "../cframe.h"
+#include "../cgraphicspath.h"
 
 namespace VSTGUI {
 
 //----------------------------------------------------------------------------------------------------
-UISearchTextField::UISearchTextField (const CRect& size, IControlListener* listener, int32_t tag, UTF8StringPtr txt, CBitmap* background, const int32_t style)
+CSearchTextEdit::CSearchTextEdit (const CRect& size, IControlListener* listener, int32_t tag, UTF8StringPtr txt, CBitmap* background, const int32_t style)
 : CTextEdit (size, listener, tag, nullptr, background, style)
 {
 }
 
 //----------------------------------------------------------------------------------------------------
-CRect UISearchTextField::getClearMarkRect () const
+CRect CSearchTextEdit::getClearMarkRect () const
 {
 	CRect r (getViewSize ());
 	r.left = r.right - getHeight ();
@@ -57,7 +55,7 @@ CRect UISearchTextField::getClearMarkRect () const
 }
 
 //----------------------------------------------------------------------------------------------------
-CMouseEventResult UISearchTextField::onMouseDown (CPoint& where, const CButtonState& buttons)
+CMouseEventResult CSearchTextEdit::onMouseDown (CPoint& where, const CButtonState& buttons)
 {
 	if (buttons.isLeftButton ())
 	{
@@ -77,12 +75,12 @@ CMouseEventResult UISearchTextField::onMouseDown (CPoint& where, const CButtonSt
 }
 
 //----------------------------------------------------------------------------------------------------
-void UISearchTextField::drawClearMark (CDrawContext* context) const
+void CSearchTextEdit::drawClearMark (CDrawContext* context) const
 {
 	if (getText ().empty ())
 		return;
 
-	SharedPointer<CGraphicsPath> path = owned (context->createGraphicsPath ());
+	auto path = owned (context->createGraphicsPath ());
 	if (path == nullptr)
 		return;
 
@@ -108,7 +106,7 @@ void UISearchTextField::drawClearMark (CDrawContext* context) const
 }
 
 //----------------------------------------------------------------------------------------------------
-void UISearchTextField::draw (CDrawContext *pContext)
+void CSearchTextEdit::draw (CDrawContext *pContext)
 {
 	drawBack (pContext);
 	drawClearMark (pContext);
@@ -137,7 +135,7 @@ void UISearchTextField::draw (CDrawContext *pContext)
 }
 
 //------------------------------------------------------------------------
-CRect UISearchTextField::platformGetSize () const
+CRect CSearchTextEdit::platformGetSize () const
 {
 	CRect rect = getViewSize ();
 	CRect cmr = getClearMarkRect ();
@@ -146,13 +144,13 @@ CRect UISearchTextField::platformGetSize () const
 }
 
 //------------------------------------------------------------------------
-CRect UISearchTextField::platformGetVisibleSize () const
+CRect CSearchTextEdit::platformGetVisibleSize () const
 {
 	CRect rect = getViewSize ();
 	CRect cmr = getClearMarkRect ();
 	rect.right = cmr.left;
 	if (getParentView ())
-		rect = static_cast<CViewContainer*>(getParentView ())->getVisibleSize (rect);
+		rect = getParentView ()->asViewContainer ()->getVisibleSize (rect);
 	else if (getFrame ())
 		rect = getFrame ()->getVisibleSize (rect);
 
@@ -161,5 +159,3 @@ CRect UISearchTextField::platformGetVisibleSize () const
 
 
 } // namespace
-
-#endif // VSTGUI_LIVE_EDITING

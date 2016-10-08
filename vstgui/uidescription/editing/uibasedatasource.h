@@ -41,7 +41,7 @@
 
 #include "../uiattributes.h"
 #include "../../lib/cdatabrowser.h"
-#include "uisearchtextfield.h"
+#include "../../lib/controls/csearchtextedit.h"
 #include <sstream>
 #include <algorithm>
 
@@ -65,7 +65,7 @@ public:
 		description->removeDependency (this);
 	}
 
-	void setSearchFieldControl (UISearchTextField* searchControl)
+	void setSearchFieldControl (CSearchTextEdit* searchControl)
 	{
 		searchField = searchControl;
 		searchField->setListener (this);
@@ -310,7 +310,7 @@ protected:
 	}
 
 	SharedPointer<UIDescription> description;
-	SharedPointer<UISearchTextField> searchField;
+	SharedPointer<CSearchTextEdit> searchField;
 	SharedPointer<CTextEdit> textEditControl;
 	IActionPerformer* actionPerformer;
 	IdStringPtr descriptionMessage;

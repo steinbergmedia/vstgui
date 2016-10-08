@@ -109,6 +109,8 @@ set(${target}_common_sources
   controls/cparamdisplay.h
   controls/cscrollbar.cpp
   controls/cscrollbar.h
+  controls/csearchtextedit.cpp
+  controls/csearchtextedit.h
   controls/csegmentbutton.cpp
   controls/csegmentbutton.h
   controls/cslider.cpp

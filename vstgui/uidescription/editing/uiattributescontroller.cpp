@@ -38,10 +38,10 @@
 
 #include "uiactions.h"
 #include "uieditcontroller.h"
-#include "uisearchtextfield.h"
 #include "../uiviewfactory.h"
 #include "../uiattributes.h"
 #include "../../lib/controls/coptionmenu.h"
+#include "../../lib/controls/csearchtextedit.h"
 #include "../../lib/controls/cslider.h"
 #include "../../lib/coffscreencontext.h"
 #include "../../lib/crowcolumnview.h"
@@ -862,7 +862,7 @@ void UIAttributesController::valueChanged (CControl* control)
 	{
 		case kSearchFieldTag:
 		{
-			UISearchTextField* searchField = dynamic_cast<UISearchTextField*> (control);
+			auto searchField = dynamic_cast<CSearchTextEdit*> (control);
 			if (searchField)
 			{
 				filterString = searchField->getText ();
