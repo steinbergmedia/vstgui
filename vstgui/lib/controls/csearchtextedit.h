@@ -50,9 +50,11 @@ public:
 protected:
 	void drawClearMark (CDrawContext* context) const;
 	CRect getClearMarkRect () const;
-
+	CRect getTextRect () const;
+	
 	CRect platformGetSize () const override;
 	CRect platformGetVisibleSize () const override;
+	void platformTextDidChange () override;
 };
 
 } // namespace

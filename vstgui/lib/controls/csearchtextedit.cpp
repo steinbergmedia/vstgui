@@ -43,13 +43,17 @@ namespace VSTGUI {
 CSearchTextEdit::CSearchTextEdit (const CRect& size, IControlListener* listener, int32_t tag, UTF8StringPtr txt, CBitmap* background, const int32_t style)
 : CTextEdit (size, listener, tag, nullptr, background, style)
 {
+	setPlaceholderString ("Search");
 }
 
 //----------------------------------------------------------------------------------------------------
 CRect CSearchTextEdit::getClearMarkRect () const
 {
 	CRect r (getViewSize ());
-	r.left = r.right - getHeight ();
+	if (getHoriAlign () == kRightText)
+		r.right = r.left + getHeight ();
+	else
+		r.left = r.right - getHeight ();
 	r.inset (2, 2);
 	return r;
 }
@@ -77,7 +81,7 @@ CMouseEventResult CSearchTextEdit::onMouseDown (CPoint& where, const CButtonStat
 //----------------------------------------------------------------------------------------------------
 void CSearchTextEdit::drawClearMark (CDrawContext* context) const
 {
-	if (getText ().empty ())
+	if (!((platformControl && !platformControl->getText ().empty ()) || !getText ().empty ()))
 		return;
 
 	auto path = owned (context->createGraphicsPath ());
@@ -88,7 +92,7 @@ void CSearchTextEdit::drawClearMark (CDrawContext* context) const
 	CColor color (fontColor);
 	color.alpha /= 2;
 	context->setFillColor (color);
-	context->setDrawMode (kAntiAliasing|kNonIntegralMode);
+	context->setDrawMode (kAntiAliasing);
 	context->drawEllipse (r, kDrawFilled);
 	double h,s,v;
 	color.toHSV (h, s, v);
@@ -101,7 +105,7 @@ void CSearchTextEdit::drawClearMark (CDrawContext* context) const
 	path->addLine (r.getBottomRight ());
 	path->beginSubpath (r.getBottomLeft ());
 	path->addLine (r.getTopRight ());
-	context->setDrawMode (kAntiAliasing|kNonIntegralMode);
+	context->setDrawMode (kAntiAliasing);
 	context->drawGraphicsPath (path, CDrawContext::kPathStroked);
 }
 
@@ -125,30 +129,37 @@ void CSearchTextEdit::draw (CDrawContext *pContext)
 		CColor color (fontColor);
 		color.alpha /= 2;
 		setFontColor (color);
-		drawPlatformText (pContext, UTF8String ("Search").getPlatformString ());
+		drawPlatformText (pContext, getPlaceholderString ().getPlatformString (), getTextRect ());
 	}
 	else
-		drawPlatformText (pContext, getText ().getPlatformString ());
+		drawPlatformText (pContext, getText ().getPlatformString (), getTextRect ());
 
 	setDirty (false);
 	setFontColor (origFontColor);
 }
 
 //------------------------------------------------------------------------
-CRect CSearchTextEdit::platformGetSize () const
+CRect CSearchTextEdit::getTextRect () const
 {
 	CRect rect = getViewSize ();
 	CRect cmr = getClearMarkRect ();
-	rect.right = cmr.left;
-	return translateToGlobal (rect);
+	if (getHoriAlign () == kRightText)
+		rect.left = cmr.right;
+	else
+		rect.right = cmr.left;
+	return rect;
+}
+
+//------------------------------------------------------------------------
+CRect CSearchTextEdit::platformGetSize () const
+{
+	return translateToGlobal (getTextRect ());
 }
 
 //------------------------------------------------------------------------
 CRect CSearchTextEdit::platformGetVisibleSize () const
 {
-	CRect rect = getViewSize ();
-	CRect cmr = getClearMarkRect ();
-	rect.right = cmr.left;
+	CRect rect = getTextRect ();
 	if (getParentView ())
 		rect = getParentView ()->asViewContainer ()->getVisibleSize (rect);
 	else if (getFrame ())
@@ -157,5 +168,12 @@ CRect CSearchTextEdit::platformGetVisibleSize () const
 	return translateToGlobal (rect);
 }
 
+//------------------------------------------------------------------------
+void CSearchTextEdit::platformTextDidChange ()
+{
+	invalidRect (getClearMarkRect ());
+	CTextEdit::platformTextDidChange ();
+}
 
+//------------------------------------------------------------------------
 } // namespace

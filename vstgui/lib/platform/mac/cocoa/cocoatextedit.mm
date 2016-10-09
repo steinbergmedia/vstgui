@@ -129,8 +129,21 @@ static id VSTGUI_NSTextField_Init (id self, SEL _cmd, void* textEdit)
 		{
 			CColor color = tec->platformGetFontColor ();
 			color.alpha /= 2;
-			NSDictionary* attrDict = [NSDictionary dictionaryWithObjectsAndKeys:[self font], NSFontAttributeName, nsColorFromCColor (color), NSForegroundColorAttributeName, nil];
-			NSAttributedString* as = [[[NSAttributedString alloc] initWithString:placeholder attributes:attrDict] autorelease];
+			NSMutableParagraphStyle* paragraphStyle = [[[NSMutableParagraphStyle alloc] init] autorelease];
+			if (tec->platformGetHoriTxtAlign () == kCenterText)
+				paragraphStyle.alignment = NSCenterTextAlignment;
+			else if (tec->platformGetHoriTxtAlign () == kRightText)
+				paragraphStyle.alignment = NSRightTextAlignment;
+			NSDictionary* attrDict =
+			    [NSDictionary dictionaryWithObjectsAndKeys:[self font], NSFontAttributeName,
+			                                               nsColorFromCColor (color),
+			                                               NSForegroundColorAttributeName,
+														   paragraphStyle,
+														   NSParagraphStyleAttributeName,
+														   nil];
+			NSAttributedString* as =
+			    [[[NSAttributedString alloc] initWithString:placeholder attributes:attrDict]
+			        autorelease];
 			[cell setPlaceholderAttributedString:as];
 		}
 

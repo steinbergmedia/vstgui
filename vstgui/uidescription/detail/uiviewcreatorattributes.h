@@ -36,6 +36,7 @@ static const IdStringPtr kCOptionMenu = "COptionMenu";
 static const IdStringPtr kCTextLabel = "CTextLabel";
 static const IdStringPtr kCMultiLineTextLabel = "CMultiLineTextLabel";
 static const IdStringPtr kCTextEdit = "CTextEdit";
+static const IdStringPtr kCSearchTextEdit = "CSearchTextEdit";
 static const IdStringPtr kCTextButton = "CTextButton";
 static const IdStringPtr kCSegmentButton = "CSegmentButton";
 static const IdStringPtr kCKnob = "CKnob";
