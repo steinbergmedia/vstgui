@@ -1917,6 +1917,36 @@ public:
 };
 CTextEditCreator __gCTextEditCreator;
 
+//------------------------------------------------------------------------
+class CSearchTextEditCreator : public IViewCreator
+{
+public:
+	CSearchTextEditCreator () { UIViewFactory::registerViewCreator (*this); }
+	IdStringPtr getViewName () const override { return kCSearchTextEdit; }
+	IdStringPtr getBaseViewName () const override { return kCTextEdit; }
+	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override
+	{
+		return new CSearchTextEdit (CRect (0, 0, 100, 20), nullptr, -1);
+	}
+	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
+	{
+		return true;
+	}
+	bool getAttributeNames (std::list<std::string>& attributeNames) const override
+	{
+		return true;
+	}
+	AttrType getAttributeType (const std::string& attributeName) const override
+	{
+		return kUnknownType;
+	}
+	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const override
+	{
+		return false;
+	}
+};
+CSearchTextEditCreator __gCSearchTextEditCreator;
+
 //-----------------------------------------------------------------------------
 class CTextButtonCreator : public IViewCreator
 {
