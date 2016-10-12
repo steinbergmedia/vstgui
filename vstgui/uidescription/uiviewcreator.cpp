@@ -1930,18 +1930,35 @@ public:
 	}
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
+		auto ste = dynamic_cast<CSearchTextEdit*>(view);
+		if (!ste)
+			return false;
+		CPoint p;
+		if (attributes.getPointAttribute (kAttrClearMarkInset, p))
+			ste->setClearMarkInset (p);
 		return true;
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const override
 	{
+		attributeNames.emplace_back (kAttrClearMarkInset);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const override
 	{
+		if (attributeName == kAttrClearMarkInset)
+			return kPointType;
 		return kUnknownType;
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const override
 	{
+		auto ste = dynamic_cast<CSearchTextEdit*>(view);
+		if (!ste)
+			return false;
+		if (attributeName == kAttrClearMarkInset)
+		{
+			pointToString (ste->getClearMarkInset (), stringValue);
+			return true;
+		}
 		return false;
 	}
 };
