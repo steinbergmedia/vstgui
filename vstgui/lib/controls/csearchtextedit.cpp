@@ -46,6 +46,22 @@ CSearchTextEdit::CSearchTextEdit (const CRect& size, IControlListener* listener,
 	setPlaceholderString ("Search");
 }
 
+//------------------------------------------------------------------------
+void CSearchTextEdit::setClearMarkInset (CPoint inset)
+{
+	if (inset != clearMarkInset)
+	{
+		clearMarkInset = inset;
+		invalid ();
+	}
+}
+
+//------------------------------------------------------------------------
+CPoint CSearchTextEdit::getClearMarkInset () const
+{
+	return clearMarkInset;
+}
+
 //----------------------------------------------------------------------------------------------------
 CRect CSearchTextEdit::getClearMarkRect () const
 {
@@ -54,7 +70,7 @@ CRect CSearchTextEdit::getClearMarkRect () const
 		r.right = r.left + getHeight ();
 	else
 		r.left = r.right - getHeight ();
-	r.inset (2, 2);
+	r.inset (getClearMarkInset ());
 	return r;
 }
 
