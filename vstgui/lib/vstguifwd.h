@@ -193,6 +193,7 @@ class CVerticalSwitch;
 class CHorizontalSwitch;
 class CRockerSwitch;
 class CTextEdit;
+class CSearchTextEdit;
 class CTextLabel;
 class CMultiLineTextLabel;
 class CVuMeter;
