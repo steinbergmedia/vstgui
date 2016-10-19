@@ -26,7 +26,7 @@ public:
 	IPreference& getPreferences () const override;
 	const CommandLineArguments& getCommandLineArguments () const override;
 	const ISharedUIResources& getSharedUIResources () const override;
-	const UTF8String& getApplicationPath () const override { return appPath; }
+	const ICommonDirectories& getCommonDirectories () const override;
 	Standalone::Application::IDelegate& getDelegate () const override;
 	WindowPtr createWindow (const WindowConfiguration& config,
 	                        const WindowControllerPtr& controller) override;
@@ -50,9 +50,7 @@ public:
 	bool handleCommand (const Command& command) override;
 
 	// IPlatformApplication
-	void init (IPreference& preferences, UTF8String&& applicationPath,
-	           IApplication::CommandLineArguments&& cmdArgs,
-	           PlatformCallbacks&& callbacks) override;
+	void init (const InitParams& params) override;
 	const CommandList& getCommandList () override;
 	bool canQuit () override;
 	bool dontClosePopupOnDeactivation (Platform::IWindow* window) override;
@@ -64,11 +62,11 @@ private:
 	WindowList windows;
 	Standalone::Application::DelegatePtr delegate;
 	IPreference* preferences {nullptr};
+	ICommonDirectories* commonDirectories {nullptr};
 	PlatformCallbacks platform;
 	CommandList commandList;
 	CommandList menuCommandList;
 	CommandLineArguments commandLineArguments;
-	UTF8String appPath;
 	bool inQuit {false};
 	uint16_t commandIDCounter {0};
 };
@@ -81,13 +79,12 @@ Application& Application::instance ()
 }
 
 //------------------------------------------------------------------------
-void Application::init (IPreference& preferences, UTF8String&& applicationPath,
-                        IApplication::CommandLineArguments&& cmdArgs, PlatformCallbacks&& callbacks)
+void Application::init (const InitParams& params)
 {
-	this->preferences = &preferences;
-	commandLineArguments = std::move (cmdArgs);
-	appPath = std::move (applicationPath);
-	platform = std::move (callbacks);
+	preferences = &params.preferences;
+	commonDirectories = &params.commonDirectories;
+	commandLineArguments = std::move (params.cmdArgs);
+	platform = std::move (params.callbacks);
 
 	// TODO: make command registration configurable
 	registerStandardCommands ();
@@ -141,6 +138,13 @@ const Application::CommandLineArguments& Application::getCommandLineArguments ()
 const ISharedUIResources& Application::getSharedUIResources () const
 {
 	return Detail::getSharedUIResources ();
+}
+
+//------------------------------------------------------------------------
+const ICommonDirectories& Application::getCommonDirectories () const
+{
+	vstgui_assert (commonDirectories);
+	return *commonDirectories;
 }
 
 //------------------------------------------------------------------------

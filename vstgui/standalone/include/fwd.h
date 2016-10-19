@@ -17,6 +17,7 @@ class IStepValue;
 class IValueListener;
 class IValueConverter;
 class ISharedUIResources;
+class ICommonDirectories;
 
 using WindowPtr = std::shared_ptr<IWindow>;
 using WindowControllerPtr = std::shared_ptr<IWindowController>;

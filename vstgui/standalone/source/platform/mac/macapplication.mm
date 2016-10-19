@@ -5,6 +5,7 @@
 #import "../../window.h"
 #import "VSTGUICommand.h"
 #import "macasync.h"
+#import "maccommondirectories.h"
 #import "macpreference.h"
 #import "macutilities.h"
 #import "macwindow.h"
@@ -18,6 +19,7 @@ static_assert (false, "Need newer clang compiler!");
 @interface VSTGUIApplicationDelegate : NSObject <NSApplicationDelegate>
 {
 	VSTGUI::Standalone::Platform::Mac::MacPreference prefs;
+	VSTGUI::Standalone::Platform::Mac::CommonDirectories commonDirecories;
 }
 @property NSArray<NSString*>* _Nullable startupOpenFiles;
 @property BOOL hasFinishedLaunching;
@@ -457,9 +459,6 @@ static const CommandWithKeyList* _Nullable getCommandList (const char* _Nonnull 
 		return;
 	}
 
-	auto url = [[NSBundle mainBundle] bundleURL];
-	VSTGUI::UTF8String appPath ([url fileSystemRepresentation]);
-
 	IApplication::CommandLineArguments cmdArgs;
 	NSArray* args = [[NSProcessInfo processInfo] arguments];
 	for (NSString* str in args)
@@ -480,7 +479,7 @@ static const CommandWithKeyList* _Nullable getCommandList (const char* _Nonnull 
 	auto app = Detail::getApplicationPlatformAccess ();
 	vstgui_assert (app);
 	[self setupMainMenu];
-	app->init (prefs, std::move (appPath), std::move (cmdArgs), std::move (callbacks));
+	app->init ({prefs, commonDirecories, std::move (cmdArgs), std::move (callbacks)});
 	self.hasFinishedLaunching = YES;
 	if (self.startupOpenFiles)
 	{

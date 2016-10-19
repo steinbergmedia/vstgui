@@ -41,6 +41,8 @@
 #include <string>
 #include <sstream>
 #include <functional>
+#include <algorithm>
+#include <cctype>
 
 namespace VSTGUI {
 

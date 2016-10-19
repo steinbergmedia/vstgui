@@ -9,7 +9,7 @@
 #include "win32async.h"
 #include "win32preference.h"
 #include "win32window.h"
-
+#include "win32commondirectories.h"
 #include <ShellScalingAPI.h>
 #include <Windows.h>
 #include <array>
@@ -60,6 +60,7 @@ public:
 
 private:
 	Win32Preference prefs;
+	CommonDirectories commonDirectories;
 	bool needCommandUpdate {false};
 	HACCEL keyboardAccelerators {nullptr};
 };
@@ -89,14 +90,9 @@ void Application::init (HINSTANCE instance, LPWSTR commandLine)
 		showAlertForWindow (config);
 	};
 
-	UTF8String appPath;
-	std::array<wchar_t, 1024> path;
-	GetModuleFileName (GetModuleHandle (nullptr), path.data (), static_cast<DWORD> (path.size ()));
-	appPath = UTF8StringHelper (path.data ()).getUTF8String ();
-
 	auto app = Detail::getApplicationPlatformAccess ();
 	vstgui_assert (app);
-	app->init (prefs, std::move (appPath), std::move (cmdArgs), std::move (callbacks));
+	app->init ({prefs, commonDirectories, std::move (cmdArgs), std::move (callbacks)});
 }
 
 //------------------------------------------------------------------------
