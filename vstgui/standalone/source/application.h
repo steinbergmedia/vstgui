@@ -41,9 +41,15 @@ public:
 	using CommandListPair = std::pair<UTF8String, CommandWithKeyList>;
 	using CommandList = std::vector<CommandListPair>;
 
-	virtual void init (IPreference& preferences, UTF8String&& applicationPath,
-	                   IApplication::CommandLineArguments&& cmdArgs,
-	                   PlatformCallbacks&& callbacks) = 0;
+	struct InitParams
+	{
+		IPreference& preferences;
+		ICommonDirectories& commonDirectories;
+		IApplication::CommandLineArguments&& cmdArgs;
+		PlatformCallbacks&& callbacks;
+	};
+
+	virtual void init (const InitParams& params) = 0;
 
 	virtual const CommandList& getCommandList () = 0;
 	virtual bool canQuit () = 0;

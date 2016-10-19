@@ -9,6 +9,7 @@ set(${target}_common_sources
   include/iapplication.h
   include/iasync.h
   include/icommand.h
+  include/icommondirectories.h
   include/imenubuilder.h
   include/interface.h
   include/ipreference.h
@@ -44,6 +45,8 @@ set(${target}_mac_sources
   source/platform/mac/VSTGUICommand.mm
   source/platform/mac/macasync.mm
   source/platform/mac/macapplication.mm
+  source/platform/mac/maccommondirectories.h
+  source/platform/mac/maccommondirectories.mm
   source/platform/mac/macpreference.h
   source/platform/mac/macpreference.mm
   source/platform/mac/macutilities.h
@@ -56,6 +59,8 @@ set(${target}_win32_sources
   source/platform/win32/win32application.cpp
   source/platform/win32/win32async.cpp
   source/platform/win32/win32async.h
+  source/platform/win32/win32commondirectories.h
+  source/platform/win32/win32commondirectories.cpp
   source/platform/win32/win32menu.cpp
   source/platform/win32/win32menu.h
   source/platform/win32/win32preference.cpp
