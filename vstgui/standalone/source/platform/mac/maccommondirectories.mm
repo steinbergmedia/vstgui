@@ -61,17 +61,17 @@ UTF8String CommonDirectories::get (Location location, const UTF8String& subDir, 
 			auto url = [[NSBundle mainBundle] bundleURL];
 			return UTF8String ([url fileSystemRepresentation]);
 		}
-		case Location::AppPreferences:
+		case Location::AppPreferencesPath:
 		{
-			break;
+			return getPath (NSUserDomainMask, NSLibraryDirectory, subDir, create, true);
 		}
-		case Location::AppCaches:
+		case Location::AppCachesPath:
 		{
 			return getPath (NSUserDomainMask, NSCachesDirectory, subDir, create, true);
 		}
-		case Location::UserDocuments:
+		case Location::UserDocumentsPath:
 		{
-			break;
+			return getPath (NSUserDomainMask, NSDocumentDirectory, subDir, create, false);
 		}
 	}
 	return {};
