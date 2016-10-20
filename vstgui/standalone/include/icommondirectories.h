@@ -15,9 +15,9 @@ public:
 	enum class Location
 	{
 		AppPath,
-		AppPreferences,
-		AppCaches,
-		UserDocuments,
+		AppPreferencesPath,
+		AppCachesPath,
+		UserDocumentsPath,
 	};
 	
 	/** Get a common directory.
