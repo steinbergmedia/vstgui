@@ -312,9 +312,9 @@ void Window::setNewDPI (uint32_t newDpi)
 {
 	CPoint size = getSize ();
 	dpiScale = static_cast<double> (newDpi) * (100. / 96.) / 100.;
-	setSize (size);
 	if (frame)
 		frame->setZoom (dpiScale);
+	setSize (size);
 }
 
 //------------------------------------------------------------------------
