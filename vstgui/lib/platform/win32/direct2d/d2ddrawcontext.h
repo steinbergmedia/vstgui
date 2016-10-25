@@ -130,6 +130,8 @@ protected:
 //-----------------------------------------------------------------------------
 template<typename T> void D2DDrawContext::pixelAllign (T& obj) const
 {
+#if 1
+#else
 	const CGraphicsTransform& t = getCurrentTransform ();
 	CGraphicsTransform tInv = t.inverse ();
 	t.transform (obj);
@@ -137,6 +139,7 @@ template<typename T> void D2DDrawContext::pixelAllign (T& obj) const
 		obj.offset (-0.5, -0.5);
 	obj.makeIntegral ();
 	tInv.transform (obj);
+#endif
 }
 
 //-----------------------------------------------------------------------------

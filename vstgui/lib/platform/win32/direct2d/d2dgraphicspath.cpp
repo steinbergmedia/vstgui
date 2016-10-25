@@ -187,7 +187,7 @@ public:
 	D2D1_POINT_2F alignPoint (const D2D1_POINT_2F& p)
 	{
 		CPoint point (p.x, p.y);
-		if (context->getCurrentTransform ().m11 != 1.)
+		if (context->getDrawMode ().antiAliasing ())
 			point.offset (-0.5, -0.5);
 		if (context)
 			context->pixelAllign (point);
