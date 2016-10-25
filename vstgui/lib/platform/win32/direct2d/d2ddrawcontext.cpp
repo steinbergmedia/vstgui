@@ -63,8 +63,6 @@ D2DDrawContext::D2DApplyClip::D2DApplyClip (D2DDrawContext* drawContext, bool ha
 	if (drawContext->currentClip != drawContext->currentState.clipRect)
 	{
 		CRect clip = drawContext->currentState.clipRect;
-		if (drawContext->getDrawMode ().integralMode ())
-			drawContext->pixelAllign (clip);
 		if (drawContext->currentClip.isEmpty () == false)
 			drawContext->getRenderTarget ()->PopAxisAlignedClip ();
 		if (clip.isEmpty () == false)
@@ -75,19 +73,13 @@ D2DDrawContext::D2DApplyClip::D2DApplyClip (D2DDrawContext* drawContext, bool ha
 	{
 		applyClip = drawContext->currentClip;
 	}
-
-	if (drawContext->getCurrentTransform ().isInvariant () == false)
+	CGraphicsTransform transform = drawContext->getCurrentTransform ();
+	if (halfPointOffset)
 	{
-		CGraphicsTransform transform = drawContext->getCurrentTransform ();
-		if (halfPointOffset)
-		{
-			CPoint offset (0.5 * transform.m11, 0.5 * transform.m22);
-			transform.translate (offset);
-		}
-		drawContext->getRenderTarget ()->SetTransform (convert (transform));
+		CPoint offset (0.5, 0.5);
+		transform.translate (offset);
 	}
-	else if (halfPointOffset)
-		drawContext->getRenderTarget ()->SetTransform (D2D1::Matrix3x2F::Translation (0.5f, 0.5f));
+	drawContext->getRenderTarget ()->SetTransform (convert (transform));
 }
 
 //-----------------------------------------------------------------------------
@@ -258,7 +250,7 @@ void D2DDrawContext::drawGraphicsPath (CGraphicsPath* _path, PathDrawMode mode, 
 	if (renderTarget == 0)
 		return;
 
-	bool halfPointOffset = (mode == kPathStroked || currentState.drawMode.integralMode ()) ? ((((int32_t)currentState.frameWidth) % 2) != 0) : false;
+	bool halfPointOffset = (mode == kPathStroked && currentState.drawMode.integralMode ()) ? true : false;
 	D2DApplyClip ac (this, halfPointOffset);
 	if (ac.isEmpty ())
 		return;
@@ -267,7 +259,7 @@ void D2DDrawContext::drawGraphicsPath (CGraphicsPath* _path, PathDrawMode mode, 
 	if (d2dPath == 0)
 		return;
 
-	ID2D1Geometry* path = d2dPath->createPath (mode == kPathFilledEvenOdd ? D2D1_FILL_MODE_ALTERNATE : D2D1_FILL_MODE_WINDING, currentState.drawMode.integralMode () ? this : 0, t);
+	ID2D1Geometry* path = d2dPath->createPath (mode == kPathFilledEvenOdd ? D2D1_FILL_MODE_ALTERNATE : D2D1_FILL_MODE_WINDING, halfPointOffset ? this : 0, t);
 	if (path)
 	{
 		if (mode == kPathFilled || mode == kPathFilledEvenOdd)
@@ -300,7 +292,7 @@ void D2DDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradient& 
 	if (renderTarget == 0)
 		return;
 
-	bool halfPointOffset = currentState.drawMode.integralMode () ? ((((int32_t)currentState.frameWidth) % 2) != 0) : false;
+	bool halfPointOffset = currentState.drawMode.integralMode () ? true : false;
 	D2DApplyClip ac (this, halfPointOffset);
 	if (ac.isEmpty ())
 		return;
@@ -309,7 +301,7 @@ void D2DDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradient& 
 	if (d2dPath == 0)
 		return;
 
-	ID2D1Geometry* path = d2dPath->createPath (evenOdd ? D2D1_FILL_MODE_ALTERNATE : D2D1_FILL_MODE_WINDING, this, t);
+	ID2D1Geometry* path = d2dPath->createPath (evenOdd ? D2D1_FILL_MODE_ALTERNATE : D2D1_FILL_MODE_WINDING, nullptr, t);
 	if (path)
 	{
 
@@ -505,7 +497,7 @@ void D2DDrawContext::drawRect (const CRect &_rect, const CDrawStyle drawStyle)
 	CRect rect (_rect);
 	if (currentState.drawMode.integralMode ())
 		pixelAllign (rect);
-	bool halfPointOffset = (((int32_t)currentState.frameWidth) % 2) != 0;
+	bool halfPointOffset = currentState.drawMode.integralMode ();//(((int32_t)currentState.frameWidth) % 2) != 0;
 	if (drawStyle == kDrawFilled || drawStyle == kDrawFilledAndStroked)
 	{
 		D2DApplyClip ac (this);
@@ -518,8 +510,14 @@ void D2DDrawContext::drawRect (const CRect &_rect, const CDrawStyle drawStyle)
 		D2DApplyClip ac (this, halfPointOffset);
 		if (ac.isEmpty ())
 			return;
-		rect.right -= 1.;
-		rect.bottom -= 1.;
+		if (halfPointOffset)
+		{
+			auto hairlineSize = getHairlineSize ();
+			rect.left += hairlineSize;
+			rect.top += hairlineSize;
+			rect.right -= hairlineSize;
+			rect.bottom -= hairlineSize;
+		}
 		renderTarget->DrawRectangle (makeD2DRect (rect), strokeBrush, (FLOAT)currentState.frameWidth, strokeStyle);
 	}
 }
