@@ -14,8 +14,13 @@
 #include "vstgui/uidescription/delegationcontroller.h"
 #include "vstgui/uidescription/uiattributes.h"
 #include "vstgui/uidescription/iuidescription.h"
-#include "vstgui/lib/cdrawcontext.h"
+#include "vstgui/uidescription/cstream.h"
+#include "vstgui/lib/coffscreencontext.h"
+#include "vstgui/lib/cframe.h"
+#include "vstgui/lib/cfileselector.h"
+#include "vstgui/lib/cbitmap.h"
 #include "vstgui/lib/cgraphicstransform.h"
+#include "vstgui/lib/platform/iplatformbitmap.h"
 
 namespace VSTGUI {
 namespace Standalone {
@@ -31,7 +36,7 @@ public:
 	{
 	}
 
-	void draw (CDrawContext* context)
+	void draw (CDrawContext* context) override
 	{
 		if (func)
 		{
@@ -40,7 +45,61 @@ public:
 		}
 	}
 
+	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override
+	{
+		return kMouseEventHandled;
+	}
+
+	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override
+	{
+		if (func && buttons.isLeftButton ())
+		{
+			saveAsPNG ();
+		}
+		return kMouseEventHandled;
+	}
+	
 private:
+	std::string getSavePath ()
+	{
+		if (auto fs = owned (CNewFileSelector::create (getFrame (), CNewFileSelector::kSelectSaveFile)))
+		{
+			fs->setDefaultExtension (CFileExtension ("PNG", "png"));
+			if (fs->runModal ())
+			{
+				return fs->getSelectedFile (0);
+			}
+		}
+		return {};
+	}
+
+	void saveAsPNG ()
+	{
+		auto filePath = getSavePath ();
+		if (filePath.empty ())
+			return;
+
+		auto size = getViewSize ().getSize ();
+		auto scaleFactor = getFrame ()->getScaleFactor ();
+		if (auto offscreen = COffscreenContext::create (getFrame (), size.x * scaleFactor, size.y * scaleFactor, scaleFactor))
+		{
+			offscreen->beginDraw ();
+			func (*offscreen, size);
+			offscreen->endDraw ();
+			auto bitmap = offscreen->getBitmap ();
+			if (auto platformBitmap = bitmap->getPlatformBitmap ())
+			{
+				auto buffer = IPlatformBitmap::createMemoryPNGRepresentation (platformBitmap);
+				if (buffer.empty ())
+					return;
+				CFileStream stream;
+				if (!stream.open (filePath.data (), CFileStream::kBinaryMode | CFileStream::kWriteMode))
+					return;
+				stream.writeRaw (buffer.data (), buffer.size ());
+			}
+		}
+	}
+
 	DrawFunction func;
 };
 
@@ -55,6 +114,7 @@ void drawRects (CDrawContext& context, CPoint size)
 	context.setLineStyle (kLineSolid);
 	context.setLineWidth (1);
 	context.drawRect (CRect (5, 5, 10, 10), kDrawStroked);
+	context.setFrameColor (MakeCColor (0, 0, 0, 150));
 	context.drawLine ({10, 5}, {25, 5});
 	context.drawLine ({5, 10}, {5, 25});
 }
