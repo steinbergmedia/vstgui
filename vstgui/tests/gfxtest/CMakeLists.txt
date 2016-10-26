@@ -1,15 +1,12 @@
 ##########################################################################################
-# VSTGUI Simple Standalone Application
+# VSTGUI GFXTest Application
 ##########################################################################################
-set(target mandelbrot)
+set(target GFXTest)
 
 set(${target}_sources
-  "source/mandelbrot.h"
-  "source/mandelbrotapp.cpp"
-  "source/mandelbrotview.cpp"
-  "source/mandelbrotview.h"
-  "source/mandelbrotwindow.cpp"
-  "source/mandelbrotwindow.h"
+  "source/app.cpp"
+  "source/drawdevicetests.cpp"
+  "source/drawdevicetests.h"
 )
 
 ##########################################################################################
@@ -17,16 +14,17 @@ if(CMAKE_HOST_APPLE)
 	set(BUNDLE_PKG_INFO
     "resource/PkgInfo"
 	)
-	set(mandelbrot_resources
+	set(gfxtest_resources
 		"resource/Window.uidesc"
+		"resource/DrawDeviceTests.uidesc"
 	)
 	set_source_files_properties(${BUNDLE_PKG_INFO} PROPERTIES
 		MACOSX_PACKAGE_LOCATION "."
 	)
-  set_source_files_properties(${mandelbrot_resources} PROPERTIES
+  set_source_files_properties(${gfxtest_resources} PROPERTIES
     MACOSX_PACKAGE_LOCATION "Resources"
   )
-  set(mandelbrot_resources ${mandelbrot_resources} ${BUNDLE_PKG_INFO})
+  set(gfxtest_resources ${gfxtest_resources} ${BUNDLE_PKG_INFO})
   
 	set(${target}_PLATFORM_LIBS
 		"-framework Cocoa"
@@ -38,14 +36,14 @@ if(CMAKE_HOST_APPLE)
 	set(APP_PROPERTIES
 		MACOSX_BUNDLE TRUE
 		MACOSX_BUNDLE_INFO_PLIST ${InfoPlistFile}
-		OUTPUT_NAME "mandelbrot"
+		OUTPUT_NAME "GFXTest"
 	)
 endif()
 
 ##########################################################################################
 if(MSVC)
-  set(mandelbrot_resources
-    "resource/mandelbrot.rc"
+  set(gfxtest_resources
+    "resource/gfxtest.rc"
   )
   set(APP_PROPERTIES
     LINK_FLAGS "/SUBSYSTEM:windows /INCLUDE:wWinMain"
@@ -53,10 +51,10 @@ if(MSVC)
 endif()
 
 ##########################################################################################
-include_directories(../../../../)
+include_directories(../../../)
 add_executable(${target}
   ${${target}_sources}
-  ${mandelbrot_resources}
+  ${gfxtest_resources}
 )
 target_link_libraries(${target}
 	vstgui
@@ -66,5 +64,5 @@ target_link_libraries(${target}
 )
 
 vstgui_set_cxx_version(${target} 14)
-set_target_properties(${target} PROPERTIES ${APP_PROPERTIES} ${VSTGUI_STANDALONE_EXAMPLES})
+set_target_properties(${target} PROPERTIES ${APP_PROPERTIES} FOLDER Tests)
 target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS})

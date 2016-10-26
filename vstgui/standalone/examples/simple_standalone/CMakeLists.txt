@@ -4,16 +4,16 @@
 set(target simple_standalone)
 
 set(${target}_sources
-  "standalone/examples/simple_standalone/source/myapp.cpp"
+  "source/myapp.cpp"
 )
 
 ##########################################################################################
 if(CMAKE_HOST_APPLE)
 	set(BUNDLE_PKG_INFO
-    "standalone/examples/simple_standalone/resource/PkgInfo"
+    "resource/PkgInfo"
 	)
 	set(simple_standalone_resources
-		"standalone/examples/simple_standalone/resource/Window.uidesc"
+		"resource/Window.uidesc"
 	)
 	set_source_files_properties(${BUNDLE_PKG_INFO} PROPERTIES
 		MACOSX_PACKAGE_LOCATION "."
@@ -29,7 +29,7 @@ if(CMAKE_HOST_APPLE)
 		"-framework QuartzCore"
 		"-framework Accelerate"
 	)
-	get_filename_component(InfoPlistFile "standalone/examples/simple_standalone/resource/Info.plist" ABSOLUTE)
+	get_filename_component(InfoPlistFile "resource/Info.plist" ABSOLUTE)
 	set(APP_PROPERTIES
 		MACOSX_BUNDLE TRUE
 		MACOSX_BUNDLE_INFO_PLIST ${InfoPlistFile}
@@ -40,7 +40,7 @@ endif()
 ##########################################################################################
 if(MSVC)
   set(simple_standalone_resources
-    "standalone/examples/simple_standalone/resource/simple_standalone.rc"
+    "resource/simple_standalone.rc"
   )
   set(APP_PROPERTIES
     LINK_FLAGS "/SUBSYSTEM:windows /INCLUDE:wWinMain"
@@ -48,7 +48,7 @@ if(MSVC)
 endif()
 
 ##########################################################################################
-include_directories(../)
+include_directories(../../../../)
 add_executable(${target}
   ${${target}_sources}
   ${simple_standalone_resources}
