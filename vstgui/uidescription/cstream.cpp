@@ -254,9 +254,10 @@ bool CFileStream::open (UTF8StringPtr path, int32_t mode, ByteOrder byteOrder)
 #if WINDOWS
 	// always use binary mode so that newlines are not converted
 	fmode << "b";
-#endif
+#else
 	if (mode & kBinaryMode)
 		fmode << "b";
+#endif
 	stream = fopen (path, fmode.str ().c_str ());
 	openMode = mode;
 
