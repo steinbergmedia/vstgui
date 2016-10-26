@@ -72,12 +72,13 @@ public:
 	CPoint getPosition () const override { return platformWindow->getPosition (); }
 	double getScaleFactor () const override { return platformWindow->getScaleFactor (); }
 	CRect getFocusViewRect () const override;
+	const UTF8String& getTitle () const override { return title; }
 	void setSize (const CPoint& newSize) override;
 	void setPosition (const CPoint& newPosition) override
 	{
 		platformWindow->setPosition (newPosition);
 	}
-	void setTitle (const UTF8String& newTitle) override { platformWindow->setTitle (newTitle); }
+	void setTitle (const UTF8String& newTitle) override { title = newTitle; platformWindow->setTitle (newTitle); }
 	void setContentView (const SharedPointer<CFrame>& newFrame) override;
 	void show () override;
 	void hide () override { platformWindow->hide (); }
@@ -120,12 +121,14 @@ private:
 	Platform::WindowPtr platformWindow;
 	SharedPointer<CFrame> frame;
 	UTF8String autoSaveFrameName;
+	UTF8String title;
 	DispatchList<IWindowListener> windowListeners;
 };
 
 //------------------------------------------------------------------------
 bool Window::init (const WindowConfiguration& config, const WindowControllerPtr& inController)
 {
+	title = config.title;
 	windowStyle = config.style;
 	platformWindow = Platform::makeWindow (config, *this);
 	if (platformWindow)

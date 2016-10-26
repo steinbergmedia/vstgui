@@ -4,27 +4,27 @@
 set(target standalone)
 
 set(${target}_sources
-  "standalone/examples/standalone/source/AlertBoxDesign.cpp"
-  "standalone/examples/standalone/source/AlertBoxDesign.h"
-  "standalone/examples/standalone/source/testabout.cpp"
-  "standalone/examples/standalone/source/testabout.h"
-  "standalone/examples/standalone/source/testappdelegate.cpp"
-  "standalone/examples/standalone/source/testappdelegate.h"
-  "standalone/examples/standalone/source/testmodel.cpp"
-  "standalone/examples/standalone/source/testmodel.h"
+  "source/AlertBoxDesign.cpp"
+  "source/AlertBoxDesign.h"
+  "source/testabout.cpp"
+  "source/testabout.h"
+  "source/testappdelegate.cpp"
+  "source/testappdelegate.h"
+  "source/testmodel.cpp"
+  "source/testmodel.h"
 )
 
 ##########################################################################################
 if(CMAKE_HOST_APPLE)
 	set(BUNDLE_PKG_INFO
-    "standalone/examples/standalone/resource/PkgInfo"
+    "resource/PkgInfo"
 	)
 	set(standalone_resources
-		"standalone/examples/standalone/resource/about.uidesc"
-		"standalone/examples/standalone/resource/alertbox.uidesc"
-		"standalone/examples/standalone/resource/resources.uidesc"
-		"standalone/examples/standalone/resource/test.uidesc"
-		"standalone/examples/standalone/resource/testpopup.uidesc"
+		"resource/about.uidesc"
+		"resource/alertbox.uidesc"
+		"resource/resources.uidesc"
+		"resource/test.uidesc"
+		"resource/testpopup.uidesc"
 	)
 	set_source_files_properties(${BUNDLE_PKG_INFO} PROPERTIES
 		MACOSX_PACKAGE_LOCATION "."
@@ -40,7 +40,7 @@ if(CMAKE_HOST_APPLE)
 		"-framework QuartzCore"
 		"-framework Accelerate"
 	)
-	get_filename_component(InfoPlistFile "standalone/examples/standalone/resource/Info.plist" ABSOLUTE)
+	get_filename_component(InfoPlistFile "resource/Info.plist" ABSOLUTE)
 	set(APP_PROPERTIES
 		MACOSX_BUNDLE TRUE
 		MACOSX_BUNDLE_INFO_PLIST ${InfoPlistFile}
@@ -51,7 +51,7 @@ endif()
 ##########################################################################################
 if(MSVC)
   set(standalone_resources
-    "standalone/examples/standalone/resource/standalone.rc"
+    "resource/standalone.rc"
   )
   set(APP_PROPERTIES
     LINK_FLAGS "/SUBSYSTEM:windows /INCLUDE:wWinMain"
@@ -59,7 +59,7 @@ if(MSVC)
 endif()
 
 ##########################################################################################
-#include_directories(../)
+include_directories(../../../../)
 add_executable(${target}
   ${${target}_sources}
   ${standalone_resources}

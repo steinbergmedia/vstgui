@@ -149,6 +149,8 @@ public:
 	virtual double getScaleFactor () const = 0;
 	/** Get the rect of the current focus view in frame relative coordinates. */
 	virtual CRect getFocusViewRect () const = 0;
+	/** Get the title of the window. */
+	virtual const UTF8String& getTitle () const = 0;
 
 	/** Set the size of the client area. */
 	virtual void setSize (const CPoint& newSize) = 0;

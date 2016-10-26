@@ -45,10 +45,14 @@ struct ValueCalls
 	}
 };
 
+class ModelBindingCallbacks;
+using ModelBindingCallbacksPtr = std::shared_ptr<ModelBindingCallbacks>;
+
 //------------------------------------------------------------------------
 class ModelBindingCallbacks : public ValueListenerAdapter, public IModelBinding
 {
 public:
+	static ModelBindingCallbacksPtr make () { return std::make_shared<ModelBindingCallbacks> (); }
 	~ModelBindingCallbacks ();
 
 	ValuePtr addValue (ValuePtr value, const ValueCalls& callbacks = {});
@@ -68,7 +72,6 @@ private:
 	ValueList valueList;
 	ValueMap values;
 };
-using ModelBindingCallbacksPtr = std::shared_ptr<ModelBindingCallbacks>;
 
 //------------------------------------------------------------------------
 inline ModelBindingCallbacks::~ModelBindingCallbacks ()
