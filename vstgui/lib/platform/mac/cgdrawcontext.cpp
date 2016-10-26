@@ -376,7 +376,6 @@ void CGDrawContext::drawLine (const LinePair& line)
 		{
 			first = pixelAlligned (first);
 			second = pixelAlligned (second);
-
 			int32_t frameWidth = static_cast<int32_t> (currentState.frameWidth);
 			if (frameWidth % 2)
 				CGContextTranslateCTM (context, 0.5, 0.5);
@@ -476,7 +475,7 @@ void CGDrawContext::applyLineWidthCTM (CGContextRef context) const
 {
 	int32_t frameWidth = static_cast<int32_t> (currentState.frameWidth);
 	if (frameWidth % 2)
-		CGContextTranslateCTM (context, 0.5, -0.5);
+		CGContextTranslateCTM (context, 0.5, 0.5);
 }
 
 //-----------------------------------------------------------------------------
@@ -485,7 +484,7 @@ void CGDrawContext::drawRect (const CRect &rect, const CDrawStyle drawStyle)
 	CGContextRef context = beginCGContext (true, getDrawMode ().integralMode ());
 	if (context)
 	{
-		CGRect r = CGRectMake (static_cast<CGFloat> (rect.left), static_cast<CGFloat> (rect.top + 1), static_cast<CGFloat> (rect.getWidth () - 1), static_cast<CGFloat> (rect.getHeight () - 1));
+		CGRect r = CGRectMake (static_cast<CGFloat> (rect.left), static_cast<CGFloat> (rect.top), static_cast<CGFloat> (rect.getWidth () - 1), static_cast<CGFloat> (rect.getHeight () - 1));
 
 		CGPathDrawingMode m;
 		switch (drawStyle)
@@ -499,7 +498,8 @@ void CGDrawContext::drawRect (const CRect &rect, const CDrawStyle drawStyle)
 		if (getDrawMode ().integralMode ())
 		{
 			r = pixelAlligned (r);
-			applyLineWidthCTM (context);
+			if (drawStyle == kDrawStroked || drawStyle == kDrawFilledAndStroked)
+				applyLineWidthCTM (context);
 		}
 
 		CGContextBeginPath (context);
