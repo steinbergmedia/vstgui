@@ -44,7 +44,7 @@ namespace VSTGUI {
 using AssertionHandler = std::function<void (const char* filename, const char* line, const char* desc)>;
 void setAssertionHandler (const AssertionHandler& handler);
 bool hasAssertionHandler ();
-void doAssert (const char* filename, const char* line, ...) noexcept (false);
+void doAssert (const char* filename, const char* line, const char* desc = nullptr) noexcept (false);
 
 #define vstgui_assert(x, ...) if (!(x)) VSTGUI::doAssert (__FILE__, VSTGUI_MAKE_STRING(__LINE__), ## __VA_ARGS__);
 

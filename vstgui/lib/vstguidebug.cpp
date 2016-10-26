@@ -117,15 +117,12 @@ bool hasAssertionHandler ()
 }
 
 //------------------------------------------------------------------------
-void doAssert (const char* filename, const char* line, ...) noexcept (false)
+void doAssert (const char* filename, const char* line, const char* desc) noexcept (false)
 {
 #if NDEBUG
 	if (!hasAssertionHandler ())
 		return;
 #endif
-	std::va_list marker;
-	va_start (marker, line);
-	auto desc = va_arg (marker, const char*);
 	if (hasAssertionHandler ())
 	{
 		try {
