@@ -50,13 +50,13 @@ void drawRects (CDrawContext& context, CPoint size)
 	context.setFillColor (MakeCColor (0, 0, 0, 100));
 	context.drawRect (CRect ().setSize (size), kDrawFilled);
 
-	context.setDrawMode (kAntiAliasing|kNonIntegralMode);
+	context.setDrawMode (kAliasing);
 	context.setFrameColor (kBlackCColor);
 	context.setLineStyle (kLineSolid);
 	context.setLineWidth (1);
-	context.drawRect (CRect (5, 5, 15, 15), kDrawStroked);
-	context.drawLine ({15, 5}, {25, 5});
-	context.drawLine ({5, 15}, {5, 25});
+	context.drawRect (CRect (5, 5, 10, 10), kDrawStroked);
+	context.drawLine ({10, 5}, {25, 5});
+	context.drawLine ({5, 10}, {5, 25});
 }
 
 class ViewCreator : public DelegationController
