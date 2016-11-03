@@ -54,7 +54,10 @@ public:
 	{
 		if (func && buttons.isLeftButton ())
 		{
-			saveAsPNG ();
+			if (buttons.getModifierState () & kShift)
+				saveAsPNG ();
+			else
+				invalid ();
 		}
 		return kMouseEventHandled;
 	}
@@ -81,7 +84,7 @@ private:
 
 		auto size = getViewSize ().getSize ();
 		auto scaleFactor = getFrame ()->getScaleFactor ();
-		if (auto offscreen = COffscreenContext::create (getFrame (), size.x * scaleFactor, size.y * scaleFactor, scaleFactor))
+		if (auto offscreen = COffscreenContext::create (getFrame (), size.x, size.y, scaleFactor))
 		{
 			offscreen->beginDraw ();
 			func (*offscreen, size);
@@ -93,7 +96,7 @@ private:
 				if (buffer.empty ())
 					return;
 				CFileStream stream;
-				if (!stream.open (filePath.data (), CFileStream::kBinaryMode | CFileStream::kWriteMode))
+				if (!stream.open (filePath.data (), CFileStream::kBinaryMode | CFileStream::kWriteMode | CFileStream::kTruncateMode))
 					return;
 				stream.writeRaw (buffer.data (), buffer.size ());
 			}
@@ -109,6 +112,7 @@ void drawRects (CDrawContext& context, CPoint size)
 	context.setFillColor (MakeCColor (0, 0, 0, 100));
 	context.drawRect (CRect ().setSize (size), kDrawFilled);
 
+	//--
 	context.setDrawMode (kAliasing);
 	context.setFrameColor (kBlackCColor);
 	context.setLineStyle (kLineSolid);
@@ -117,6 +121,82 @@ void drawRects (CDrawContext& context, CPoint size)
 	context.setFrameColor (MakeCColor (0, 0, 0, 150));
 	context.drawLine ({10, 5}, {25, 5});
 	context.drawLine ({5, 10}, {5, 25});
+	//--
+	context.setDrawMode (kAliasing);
+	auto hairline = context.getHairlineSize ();
+	CRect r2 (40, 5, 50, 15);
+	context.setLineWidth (5);
+	context.setFrameColor (CColor (0, 0, 255, 100));
+	context.drawRect (r2);
+	context.setLineWidth (3);
+	context.setFrameColor (CColor (255, 0, 0, 100));
+	context.drawRect (r2);
+	context.setLineWidth (1);
+	context.setFrameColor (CColor (0, 255, 0, 100));
+	context.drawRect (r2);
+	//--
+	r2 = {60, 5, 70, 15};
+	context.setLineWidth (hairline);
+	context.setFrameColor (CColor (0, 255, 0, 200));
+	context.drawRect (r2);
+	r2.inset (hairline, hairline);
+	context.setFrameColor (CColor (255, 0, 0, 200));
+	context.drawRect (r2);
+	r2.inset (hairline, hairline);
+	context.setFrameColor (CColor (0, 0, 255, 200));
+	context.drawRect (r2);
+	//--
+	CRect r {5, 50, 0, 0};
+	r.setSize ({20, 20});
+	context.setLineWidth (1);
+	context.setDrawMode (kAliasing);
+	context.setFillColor (MakeCColor (255, 0, 0, 255));
+	context.drawRect (r, kDrawFilled);
+	context.setFillColor (MakeCColor (0, 0, 0, 200));
+	context.drawEllipse (r, kDrawFilled);
+	context.setFrameColor (CColor (0, 255, 0, 100));
+	context.drawRect (r, kDrawStroked);
+	//--
+	r = {50, 50, 80, 80};
+	context.setDrawMode (kAliasing);
+	context.setLineWidth (1);
+	context.setFrameColor (CColor (0, 255, 255, 100));
+	context.drawLine (r.getTopLeft (), r.getTopRight ());
+	context.drawLine (r.getBottomLeft (), r.getBottomRight ());
+	r.inset (10, -10);
+	context.drawLine (r.getTopRight (), r.getBottomRight ());
+	context.drawLine (r.getTopLeft (), r.getBottomLeft ());
+	r.left++;
+	r.top += 11;
+	r.bottom -= 10;
+	context.setFillColor (CColor (255, 0, 0, 100));
+	context.drawRect (r, kDrawFilled);
+	//--
+	r = {90, 90, 120, 120};
+	context.setDrawMode (kAliasing);
+	context.setLineWidth (1);
+	context.setFrameColor (CColor (0, 0, 255, 100));
+	context.setFillColor (CColor (255, 0, 0, 100));
+	context.drawEllipse (r, kDrawFilledAndStroked);
+	r.offset (40, 0);
+	context.setDrawMode (kAntiAliasing);
+	context.drawEllipse (r, kDrawFilledAndStroked);
+	//--
+	r = {90, 130, 120, 160};
+	context.setDrawMode (kAliasing);
+	context.setLineWidth (1);
+	context.setFrameColor (CColor (0, 0, 255, 100));
+	context.setFillColor (CColor (255, 0, 0, 100));
+	context.drawEllipse (r, kDrawFilled);
+	r2 = r;
+	r2.extend (1, 1);
+	context.drawEllipse (r2, kDrawStroked);
+	r.offset (40, 0);
+	context.setDrawMode (kAntiAliasing);
+	context.drawEllipse (r, kDrawFilled);
+	r2 = r;
+	r2.extend (1, 1);
+	context.drawEllipse (r2, kDrawStroked);
 }
 
 class ViewCreator : public DelegationController
