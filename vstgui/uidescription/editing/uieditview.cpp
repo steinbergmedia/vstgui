@@ -164,7 +164,7 @@ void UISelectionView::drawResizeHandle (const CPoint& p, CDrawContext* pContext)
 //----------------------------------------------------------------------------------------------------
 void UISelectionView::draw (CDrawContext* pContext)
 {
-	auto lineWidth = pContext->getHairlineSize ();
+	auto lineWidth = 1.;
 	CRect r (getVisibleViewSize ());
 	ConcatClip cc (*pContext, r);
 	pContext->setDrawMode (kAliasing);
@@ -174,7 +174,7 @@ void UISelectionView::draw (CDrawContext* pContext)
 	CColor lightColor (kWhiteCColor);
 	lightColor.alpha = 140;
 	pContext->setFillColor (lightColor);
-	
+
 	CView* mainView = editView->getView (0);
 	CPoint p;
 	frameToLocal (p);

@@ -48,7 +48,7 @@ namespace VSTGUI {
 	
 	Example for an imaginary view class called MyView which directly inherites from CView:
 	@code
-	class MyViewCreator : public IViewCreator
+	class MyViewCreator : public ViewCreatorAdapter
 	{
 	public:
 		// register this class with the view factory
@@ -421,6 +421,20 @@ void UIViewFactory::collectRegisteredViewNames (StringPtrList& viewNames, IdStri
 		iter++;
 	}
 	viewNames.sort (viewNamesSortFunc);
+}
+
+//-----------------------------------------------------------------------------
+auto UIViewFactory::collectRegisteredViewAndDisplayNames () const -> ViewAndDisplayNameList
+{
+	ViewAndDisplayNameList list;
+	ViewCreatorRegistry& registry = getCreatorRegistry ();
+	ViewCreatorRegistry::const_iterator iter = registry.begin ();
+	while (iter != registry.end ())
+	{
+		list.push_back (std::make_pair (&(*iter).first, (*iter).second->getDisplayName ()));
+		iter++;
+	}
+	return list;
 }
 
 //-----------------------------------------------------------------------------
