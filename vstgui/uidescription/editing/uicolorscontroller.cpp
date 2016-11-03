@@ -74,6 +74,8 @@ protected:
 	void dbOnDragExitCell (int32_t row, int32_t column, IDataPackage* drag, CDataBrowser* browser) override;
 	bool dbOnDropInCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser) override;
 
+	CCoord getColorIconWith ();
+	
 	SharedPointer<UIColor> color;
 	bool editing;
 	std::string colorString;
@@ -185,9 +187,18 @@ void UIColorsDataSource::dbSelectionChanged (CDataBrowser* browser)
 }
 
 //----------------------------------------------------------------------------------------------------
+CCoord UIColorsDataSource::getColorIconWith ()
+{
+	return dataBrowser ? dbGetRowHeight (dataBrowser) : 0.;
+}
+
+//----------------------------------------------------------------------------------------------------
 void UIColorsDataSource::dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser)
 {
-	GenericStringListDataBrowserSource::dbDrawCell (context, size, row, column, flags, browser);
+	GenericStringListDataBrowserSource::drawRowBackground (context, size, row, flags, browser);
+	CRect r (size);
+	r.right -= getColorIconWith ();
+	GenericStringListDataBrowserSource::drawRowString (context, r, row, flags, browser);
 	CColor color;
 	if (description->getColor (names.at (static_cast<uint32_t> (row)).data (), color))
 	{
@@ -196,8 +207,8 @@ void UIColorsDataSource::dbDrawCell (CDrawContext* context, const CRect& size, i
 		context->setLineWidth (1);
 		context->setLineStyle (kLineSolid);
 		context->setDrawMode (kAliasing);
-		CRect r (size);
-		r.left = r.right - r.getHeight ();
+		r = size;
+		r.left = r.right - getColorIconWith ();
 		r.inset (2, 2);
 		context->drawRect (r, kDrawFilledAndStroked);
 	}
@@ -208,7 +219,7 @@ void UIColorsDataSource::dbCellSetupTextEdit (int32_t row, int32_t column, CText
 {
 	UIBaseDataSource::dbCellSetupTextEdit(row, column, control, browser);
 	CRect r (control->getViewSize ());
-	r.right -= r.getHeight ();
+	r.right -= getColorIconWith ();
 	control->setViewSize (r);
 }
 

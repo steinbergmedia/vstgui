@@ -1259,12 +1259,11 @@ void GenericStringListDataBrowserSource::dbDrawHeader (CDrawContext* context, co
 }
 
 //-----------------------------------------------------------------------------
-void GenericStringListDataBrowserSource::dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser)
+void GenericStringListDataBrowserSource::drawRowBackground (CDrawContext* context, const CRect& size, int32_t row, int32_t flags, CDataBrowser* browser) const
 {
-	vstgui_assert (row >= 0);
-	vstgui_assert (column >= 0);
+	vstgui_assert (row >= 0 && row < stringList->size ());
 
-	context->setDrawMode (kAliasing|kNonIntegralMode);
+	context->setDrawMode (kAliasing);
 	context->setLineWidth (1.);
 	context->setFillColor ((row % 2) ? rowBackColor : rowAlternateBackColor);
 	context->drawRect (size, kDrawFilled);
@@ -1287,11 +1286,31 @@ void GenericStringListDataBrowserSource::dbDrawCell (CDrawContext* context, cons
 		context->setFillColor (color);
 		context->drawRect (size, kDrawFilled);
 	}
+}
+
+//-----------------------------------------------------------------------------
+void GenericStringListDataBrowserSource::drawRowString (CDrawContext* context, const CRect& size, int32_t row, int32_t flags, CDataBrowser* browser) const
+{
+	vstgui_assert (row >= 0 && row < stringList->size ());
+	
+	context->saveGlobalState ();
 	CRect stringSize (size);
 	stringSize.inset (textInset.x, textInset.y);
 	context->setFont (drawFont);
 	context->setFontColor (fontColor);
+	context->setClipRect (stringSize);
 	context->drawString ((*stringList)[static_cast<size_t> (row)].getPlatformString (), stringSize, textAlignment);
+	context->restoreGlobalState ();
+}
+
+//-----------------------------------------------------------------------------
+void GenericStringListDataBrowserSource::dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser)
+{
+	vstgui_assert (row >= 0 && row < stringList->size ());
+	vstgui_assert (column == 0);
+
+	drawRowBackground (context, size, row, flags, browser);
+	drawRowString (context, size, row, flags, browser);
 }
 
 //-----------------------------------------------------------------------------

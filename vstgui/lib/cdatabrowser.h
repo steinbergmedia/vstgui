@@ -233,6 +233,9 @@ public:
 	void setupUI (const CColor& selectionColor, const CColor& fontColor, const CColor& rowlineColor, const CColor& rowBackColor, const CColor& rowAlteranteBackColor, CFontRef font = nullptr, int32_t rowHeight = -1, CCoord textInset = 2.);
 
 protected:
+	void drawRowBackground (CDrawContext* context, const CRect& size, int32_t row, int32_t flags, CDataBrowser* browser) const;
+	void drawRowString (CDrawContext* context, const CRect& size, int32_t row, int32_t flags, CDataBrowser* browser) const;
+
 	int32_t dbGetNumRows (CDataBrowser* browser) override;
 	int32_t dbGetNumColumns (CDataBrowser* browser) override { return 1; }
 	bool dbGetColumnDescription (int32_t index, CCoord& minWidth, CCoord& maxWidth, CDataBrowser* browser)  override{ return false; }
