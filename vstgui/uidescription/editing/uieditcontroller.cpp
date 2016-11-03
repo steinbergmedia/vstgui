@@ -175,7 +175,7 @@ public:
 			if (lineColor == kBlackCColor)
 				UIEditController::getEditorDescription ()->getColor ("shading.light.frame", lineColor);
 
-			auto lineWidth = context->getHairlineSize ();
+			auto lineWidth = 1.;
 
 			CRect size (_size);
 			context->setDrawMode (kAliasing);
@@ -199,7 +199,7 @@ public:
 				{
 					context->fillLinearGradient (path, *shading, CPoint (size.left, size.top), CPoint (size.left, size.bottom));
 					if (drawTopLine)
-						context->drawLine (CPoint (size.left, size.top + lineWidth), CPoint (size.right, size.top + lineWidth));
+						context->drawLine (CPoint (size.left, size.top), CPoint (size.right, size.top));
 					if (drawBottomLine)
 						context->drawLine (CPoint (size.right, size.bottom-lineWidth), CPoint (size.left, size.bottom-lineWidth));
 				}

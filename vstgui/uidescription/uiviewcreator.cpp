@@ -228,7 +228,7 @@ Attributes:
 */
 
 /*
-class CViewCreator : public IViewCreator
+class CViewCreator : public ViewCreatorAdapter
 {
 public:
 	IdStringPtr getViewName () const { return "CView"; }
@@ -400,12 +400,13 @@ static void addGradientToUIDescription (const IUIDescription* description, CGrad
 static bool getStandardAttributeListValues (const std::string& attributeName, std::list<const std::string*>& values);
 
 //-----------------------------------------------------------------------------
-class CViewCreator : public IViewCreator
+class CViewCreator : public ViewCreatorAdapter
 {
 public:
 	CViewCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCView; }
 	IdStringPtr getBaseViewName () const override { return nullptr; }
+	UTF8StringPtr getDisplayName () const override { return "View"; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CView (CRect (0, 0, 0, 0)); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
@@ -630,12 +631,13 @@ private:
 CViewCreator __gCViewCreator;
 
 //-----------------------------------------------------------------------------
-class CViewContainerCreator : public IViewCreator
+class CViewContainerCreator : public ViewCreatorAdapter
 {
 public:
 	CViewContainerCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCViewContainer; }
 	IdStringPtr getBaseViewName () const override { return kCView; }
+	UTF8StringPtr getDisplayName () const override { return "View Container"; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CViewContainer (CRect (0, 0, 100, 100)); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
@@ -715,12 +717,13 @@ public:
 CViewContainerCreator __CViewContainerCreator;
 
 //-----------------------------------------------------------------------------
-class CLayeredViewContainerCreator : public IViewCreator
+class CLayeredViewContainerCreator : public ViewCreatorAdapter
 {
 public:
 	CLayeredViewContainerCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCLayeredViewContainer; }
 	IdStringPtr getBaseViewName () const override { return kCViewContainer; }
+	UTF8StringPtr getDisplayName () const override { return "Layered View Container"; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CLayeredViewContainer (CRect (0, 0, 100, 100)); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
@@ -758,12 +761,13 @@ public:
 CLayeredViewContainerCreator __CLayeredViewContainerCreator;
 
 //-----------------------------------------------------------------------------
-class CRowColumnViewCreator : public IViewCreator
+class CRowColumnViewCreator : public ViewCreatorAdapter
 {
 public:
 	CRowColumnViewCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCRowColumnView; }
 	IdStringPtr getBaseViewName () const override { return kCViewContainer; }
+	UTF8StringPtr getDisplayName () const override { return "Row Column View Container"; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CRowColumnView (CRect (0, 0, 100, 100)); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
@@ -909,12 +913,13 @@ public:
 CRowColumnViewCreator __CRowColumnViewCreator;
 
 //-----------------------------------------------------------------------------
-class CScrollViewCreator : public IViewCreator
+class CScrollViewCreator : public ViewCreatorAdapter
 {
 public:
 	CScrollViewCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCScrollView; }
 	IdStringPtr getBaseViewName () const override { return kCViewContainer; }
+	UTF8StringPtr getDisplayName () const override { return "Scroll View"; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CScrollView (CRect (0, 0, 100, 100), CRect (0, 0, 200, 200), CScrollView::kHorizontalScrollbar|CScrollView::kVerticalScrollbar); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
@@ -1076,7 +1081,7 @@ public:
 CScrollViewCreator __CScrollViewCreator;
 
 //-----------------------------------------------------------------------------
-class CControlCreator : public IViewCreator
+class CControlCreator : public ViewCreatorAdapter
 {
 protected:
 	class DummyControl : public CControl
@@ -1091,6 +1096,7 @@ public:
 	CControlCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCControl; }
 	IdStringPtr getBaseViewName () const override { return kCView; }
+	UTF8StringPtr getDisplayName () const override { return "Control"; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new DummyControl (); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
@@ -1212,40 +1218,25 @@ public:
 CControlCreator __gCControlCreator;
 
 //-----------------------------------------------------------------------------
-class COnOffButtonCreator : public IViewCreator
+class COnOffButtonCreator : public ViewCreatorAdapter
 {
 public:
 	COnOffButtonCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCOnOffButton; }
 	IdStringPtr getBaseViewName () const override { return kCControl; }
+	UTF8StringPtr getDisplayName () const override { return "OnOff Button"; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new COnOffButton (CRect (0, 0, 0, 0), nullptr, -1, nullptr); }
-	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
-	{
-		return true;
-	}
-	bool getAttributeNames (std::list<std::string>& attributeNames) const override
-	{
-		return true;
-	}
-	AttrType getAttributeType (const std::string& attributeName) const override
-	{
-		return kUnknownType;
-	}
-	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const override
-	{
-		return false;
-	}
-
 };
 COnOffButtonCreator __gCOnOffButtonCreator;
 
 //-----------------------------------------------------------------------------
-class CCheckBoxCreator : public IViewCreator
+class CCheckBoxCreator : public ViewCreatorAdapter
 {
 public:
 	CCheckBoxCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCCheckBox; }
 	IdStringPtr getBaseViewName () const override { return kCControl; }
+	UTF8StringPtr getDisplayName () const override { return "Checkbox"; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CCheckBox (CRect (0, 0, 100, 20), nullptr, -1, "Title"); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
@@ -1376,12 +1367,13 @@ public:
 CCheckBoxCreator __gCCheckBoxCreator;
 
 //-----------------------------------------------------------------------------
-class CParamDisplayCreator : public IViewCreator
+class CParamDisplayCreator : public ViewCreatorAdapter
 {
 public:
 	CParamDisplayCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCParamDisplay; }
 	IdStringPtr getBaseViewName () const override { return kCControl; }
+	UTF8StringPtr getDisplayName () const override { return "Parameter Display"; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CParamDisplay (CRect (0, 0, 0, 0)); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
@@ -1636,12 +1628,13 @@ public:
 CParamDisplayCreator __gCParamDisplayCreator;
 
 //-----------------------------------------------------------------------------
-class COptionMenuCreator : public IViewCreator
+class COptionMenuCreator : public ViewCreatorAdapter
 {
 public:
 	COptionMenuCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCOptionMenu; }
 	IdStringPtr getBaseViewName () const override { return kCParamDisplay; }
+	UTF8StringPtr getDisplayName () const override { return "Option Menu"; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new COptionMenu (); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
@@ -1690,12 +1683,13 @@ public:
 COptionMenuCreator __gCOptionMenuCreator;
 
 //-----------------------------------------------------------------------------
-class CTextLabelCreator : public IViewCreator
+class CTextLabelCreator : public ViewCreatorAdapter
 {
 public:
 	CTextLabelCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCTextLabel; }
 	IdStringPtr getBaseViewName () const override { return kCParamDisplay; }
+	UTF8StringPtr getDisplayName () const override { return "Label"; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CTextLabel (CRect (0, 0, 100, 20)); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
@@ -1766,12 +1760,13 @@ public:
 CTextLabelCreator __gCTextLabelCreator;
 
 //-----------------------------------------------------------------------------
-class CMultiLineTextLabelCreator : public IViewCreator
+class CMultiLineTextLabelCreator : public ViewCreatorAdapter
 {
 public:
 	CMultiLineTextLabelCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCMultiLineTextLabel; }
 	IdStringPtr getBaseViewName () const override { return kCTextLabel; }
+	UTF8StringPtr getDisplayName () const override { return "Multiline Label"; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CMultiLineTextLabel (CRect (0, 0, 100, 20)); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
@@ -1850,12 +1845,13 @@ public:
 CMultiLineTextLabelCreator __gCMultiLineTextLabelCreator;
 
 //-----------------------------------------------------------------------------
-class CTextEditCreator : public IViewCreator
+class CTextEditCreator : public ViewCreatorAdapter
 {
 public:
 	CTextEditCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCTextEdit; }
 	IdStringPtr getBaseViewName () const override { return kCTextLabel; }
+	UTF8StringPtr getDisplayName () const override { return "Text Edit"; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CTextEdit (CRect (0, 0, 100, 20), nullptr, -1); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
@@ -1918,12 +1914,13 @@ public:
 CTextEditCreator __gCTextEditCreator;
 
 //------------------------------------------------------------------------
-class CSearchTextEditCreator : public IViewCreator
+class CSearchTextEditCreator : public ViewCreatorAdapter
 {
 public:
 	CSearchTextEditCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCSearchTextEdit; }
 	IdStringPtr getBaseViewName () const override { return kCTextEdit; }
+	UTF8StringPtr getDisplayName () const override { return "Search Text Edit"; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override
 	{
 		return new CSearchTextEdit (CRect (0, 0, 100, 20), nullptr, -1);
@@ -1965,12 +1962,13 @@ public:
 CSearchTextEditCreator __gCSearchTextEditCreator;
 
 //-----------------------------------------------------------------------------
-class CTextButtonCreator : public IViewCreator
+class CTextButtonCreator : public ViewCreatorAdapter
 {
 public:
 	CTextButtonCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCTextButton; }
 	IdStringPtr getBaseViewName () const override { return kCControl; }
+	UTF8StringPtr getDisplayName () const override { return "Text Button"; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override
 	{
 		CTextButton* button = new CTextButton (CRect (0, 0, 100, 20), nullptr, -1, "");
@@ -2290,12 +2288,13 @@ public:
 CTextButtonCreator __gCTextButtonCreator;
 
 //-----------------------------------------------------------------------------
-class CSegmentButtonCreator : public IViewCreator
+class CSegmentButtonCreator : public ViewCreatorAdapter
 {
 public:
 	CSegmentButtonCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCSegmentButton; }
 	IdStringPtr getBaseViewName () const override { return kCControl; }
+	UTF8StringPtr getDisplayName () const override { return "Segment Button"; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override
 	{
 		CSegmentButton* button = new CSegmentButton (CRect (0, 0, 200, 20));
@@ -2550,12 +2549,13 @@ public:
 CSegmentButtonCreator __gCSegmentButtonCreator;
 
 //-----------------------------------------------------------------------------
-class CKnobCreator : public IViewCreator
+class CKnobCreator : public ViewCreatorAdapter
 {
 public:
 	CKnobCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCKnob; }
 	IdStringPtr getBaseViewName () const override { return kCControl; }
+	UTF8StringPtr getDisplayName () const override { return "Knob"; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CKnob (CRect (0, 0, 0, 0), nullptr, -1, nullptr, nullptr); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
@@ -2792,7 +2792,7 @@ public:
 CKnobCreator __CKnobCreator;
 
 //-----------------------------------------------------------------------------
-class IMultiBitmapControlCreator : public IViewCreator
+class IMultiBitmapControlCreator : public ViewCreatorAdapter
 {
 public:
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
@@ -2851,6 +2851,7 @@ public:
 	CAnimKnobCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCAnimKnob; }
 	IdStringPtr getBaseViewName () const override { return kCKnob; }
+	UTF8StringPtr getDisplayName () const override { return "Animation Knob"; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CAnimKnob (CRect (0, 0, 0, 0), nullptr, -1, nullptr); }
 };
 CAnimKnobCreator __gCAnimKnobCreator;
@@ -2862,6 +2863,7 @@ public:
 	CVerticalSwitchCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCVerticalSwitch; }
 	IdStringPtr getBaseViewName () const override { return kCControl; }
+	UTF8StringPtr getDisplayName () const override { return "Vertical Switch"; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CVerticalSwitch (CRect (0, 0, 0, 0), nullptr, -1, nullptr); }
 };
 CVerticalSwitchCreator __gCVerticalSwitchCreator;
@@ -2873,6 +2875,7 @@ public:
 	CHorizontalSwitchCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCHorizontalSwitch; }
 	IdStringPtr getBaseViewName () const override { return kCControl; }
+	UTF8StringPtr getDisplayName () const override { return "Horizontal Switch"; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CHorizontalSwitch (CRect (0, 0, 0, 0), nullptr, -1, nullptr); }
 };
 CHorizontalSwitchCreator __gCHorizontalSwitchCreator;
@@ -2884,6 +2887,7 @@ public:
 	CRockerSwitchCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCRockerSwitch; }
 	IdStringPtr getBaseViewName () const override { return kCControl; }
+	UTF8StringPtr getDisplayName () const override { return "Rocker Switch"; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CRockerSwitch (CRect (0, 0, 0, 0), nullptr, -1, nullptr); }
 };
 CRockerSwitchCreator __gCRockerSwitchCreator;
@@ -2895,6 +2899,7 @@ public:
 	CMovieBitmapCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCMovieBitmap; }
 	IdStringPtr getBaseViewName () const override { return kCControl; }
+	UTF8StringPtr getDisplayName () const override { return "Movie Bitmap"; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CMovieBitmap (CRect (0, 0, 0, 0), nullptr, -1, nullptr); }
 };
 CMovieBitmapCreator __gCMovieBitmapCreator;
@@ -2906,6 +2911,7 @@ public:
 	CMovieButtonCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCMovieButton; }
 	IdStringPtr getBaseViewName () const override { return kCControl; }
+	UTF8StringPtr getDisplayName () const override { return "Movie Button"; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CMovieButton (CRect (0, 0, 0, 0), nullptr, -1, nullptr); }
 };
 CMovieButtonCreator __gCMovieButtonCreator;
@@ -2917,17 +2923,19 @@ public:
 	CKickButtonCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCKickButton; }
 	IdStringPtr getBaseViewName () const override { return kCControl; }
+	UTF8StringPtr getDisplayName () const override { return "Kick Button"; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CKickButton (CRect (0, 0, 0, 0), nullptr, -1, nullptr); }
 };
 CKickButtonCreator __gCKickButtonCreator;
 
 //-----------------------------------------------------------------------------
-class CSliderCreator : public IViewCreator
+class CSliderCreator : public ViewCreatorAdapter
 {
 public:
 	CSliderCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCSlider; }
 	IdStringPtr getBaseViewName () const override { return kCControl; }
+	UTF8StringPtr getDisplayName () const override { return "Slider"; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CSlider (CRect (0, 0, 0, 0), nullptr, -1, 0, 0, nullptr, nullptr); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
@@ -3223,12 +3231,13 @@ public:
 CSliderCreator __gCSliderCreator;
 
 //-----------------------------------------------------------------------------
-class CVuMeterCreator : public IViewCreator
+class CVuMeterCreator : public ViewCreatorAdapter
 {
 public:
 	CVuMeterCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCVuMeter; }
 	IdStringPtr getBaseViewName () const override { return kCControl; }
+	UTF8StringPtr getDisplayName () const override { return "VU Meter"; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CVuMeter (CRect (0, 0, 0, 0), nullptr, nullptr, 100); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
@@ -3316,12 +3325,13 @@ public:
 CVuMeterCreator __gCVuMeterCreator;
 
 //-----------------------------------------------------------------------------
-class CAnimationSplashScreenCreator : public IViewCreator
+class CAnimationSplashScreenCreator : public ViewCreatorAdapter
 {
 public:
 	CAnimationSplashScreenCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCAnimationSplashScreen; }
 	IdStringPtr getBaseViewName () const override { return kCControl; }
+	UTF8StringPtr getDisplayName () const override { return "Animation Splash Screen"; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CAnimationSplashScreen (CRect (0, 0, 0, 0), -1, nullptr, nullptr); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
@@ -3416,12 +3426,13 @@ public:
 CAnimationSplashScreenCreator __gCAnimationSplashScreenCreator;
 
 //-----------------------------------------------------------------------------
-class UIViewSwitchContainerCreator : public IViewCreator
+class UIViewSwitchContainerCreator : public ViewCreatorAdapter
 {
 public:
 	UIViewSwitchContainerCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kUIViewSwitchContainer; }
 	IdStringPtr getBaseViewName () const override { return kCViewContainer; }
+	UTF8StringPtr getDisplayName () const override { return "View Switch Container"; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override
 	{
 		UIViewSwitchContainer* vsc = new UIViewSwitchContainer (CRect (0, 0, 100, 100));
@@ -3562,12 +3573,13 @@ public:
 UIViewSwitchContainerCreator __gUIViewSwitchContainerCreator;
 
 //-----------------------------------------------------------------------------
-class CSplitViewCreator : public IViewCreator
+class CSplitViewCreator : public ViewCreatorAdapter
 {
 public:
 	CSplitViewCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCSplitView; }
 	IdStringPtr getBaseViewName () const override { return kCViewContainer; }
+	UTF8StringPtr getDisplayName () const override { return "Split View"; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CSplitView (CRect (0, 0, 100, 100)); }
 
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
@@ -3697,12 +3709,13 @@ public:
 CSplitViewCreator __gCSplitViewCreator;
 
 //-----------------------------------------------------------------------------
-class CShadowViewContainerCreator : public IViewCreator
+class CShadowViewContainerCreator : public ViewCreatorAdapter
 {
 public:
 	CShadowViewContainerCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCShadowViewContainer; }
 	IdStringPtr getBaseViewName () const override { return kCViewContainer; }
+	UTF8StringPtr getDisplayName () const override { return "Shadow View Container"; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override
 	{
 		return new CShadowViewContainer (CRect (0, 0, 200, 200));
@@ -3779,12 +3792,13 @@ public:
 CShadowViewContainerCreator __gCShadowViewContainerCreator;
 
 //-----------------------------------------------------------------------------
-class CGradientViewCreator : public IViewCreator
+class CGradientViewCreator : public ViewCreatorAdapter
 {
 public:
 	CGradientViewCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCGradientView; }
 	IdStringPtr getBaseViewName () const override { return kCView; }
+	UTF8StringPtr getDisplayName () const override { return "Gradient View"; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override
 	{
 		CGradientView* gradientView = new CGradientView (CRect (0, 0, 100, 100));
@@ -3969,29 +3983,14 @@ public:
 CGradientViewCreator __gCGradientViewCreator;
 
 //-----------------------------------------------------------------------------
-class CXYPadCreator : public IViewCreator
+class CXYPadCreator : public ViewCreatorAdapter
 {
 public:
 	CXYPadCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCXYPad; }
 	IdStringPtr getBaseViewName () const override { return kCParamDisplay; }
+	UTF8StringPtr getDisplayName () const override { return "XY Pad"; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CXYPad (CRect (0, 0, 100, 20)); }
-	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
-	{
-		return true;
-	}
-	bool getAttributeNames (std::list<std::string>& attributeNames) const override
-	{
-		return true;
-	}
-	AttrType getAttributeType (const std::string& attributeName) const override
-	{
-		return kUnknownType;
-	}
-	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const override
-	{
-		return false;
-	}
 };
 CXYPadCreator __gCXYPadCreator;
 

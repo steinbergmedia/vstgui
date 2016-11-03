@@ -65,6 +65,7 @@ public:
 	void addViewToCurrentEditView (int32_t row);
 protected:
 	SharedPointer<UISelection> createSelection (int32_t row);
+	UIViewFactory::ViewAndDisplayNameList viewAndDisplayNameList;
 	const UIViewFactory* factory;
 };
 
@@ -152,7 +153,13 @@ UIViewCreatorDataSource::UIViewCreatorDataSource (const UIViewFactory* factory, 
 //----------------------------------------------------------------------------------------------------
 void UIViewCreatorDataSource::getNames (std::list<const std::string*>& names)
 {
-	factory->collectRegisteredViewNames (names);
+	viewAndDisplayNameList = factory->collectRegisteredViewAndDisplayNames ();
+	for (const auto& e : viewAndDisplayNameList)
+	{
+		names.push_back (&e.second);
+	}
+	names.sort ([] (const auto& lhs, const auto& rhs) { return *lhs < *rhs; });
+
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -161,7 +168,7 @@ void UIViewCreatorDataSource::addViewToCurrentEditView (int32_t row)
 	UIViewCreatorController* controller = dynamic_cast<UIViewCreatorController*> (getViewController (dataBrowser, true));
 	if (controller)
 	{
-		if (UIEditController* editController = dynamic_cast<UIEditController*>(controller->getBaseController ()))
+		if (UIEditController* editController = dynamic_cast<UIEditController*> (controller->getBaseController ()))
 		{
 			SharedPointer<UISelection> selection = createSelection (row);
 			editController->addSelectionToCurrentView (selection);
@@ -173,8 +180,14 @@ void UIViewCreatorDataSource::addViewToCurrentEditView (int32_t row)
 SharedPointer<UISelection> UIViewCreatorDataSource::createSelection (int32_t row)
 {
 	SharedPointer<UISelection> selection;
+	auto viewDisplayName = getStringList ()->at (static_cast<uint32_t> (row)).getString ();
+	auto it = std::find_if (viewAndDisplayNameList.begin (), viewAndDisplayNameList.end (), [&] (const auto& entry) {
+		return entry.second == viewDisplayName;
+	});
+	if (it == viewAndDisplayNameList.end ())
+		return nullptr;
 	UIAttributes viewAttr;
-	viewAttr.setAttribute (UIViewCreator::kAttrClass, getStringList ()->at (static_cast<uint32_t> (row)).getString ());
+	viewAttr.setAttribute (UIViewCreator::kAttrClass, *it->first);
 	CView* view = factory->createView (viewAttr, description);
 	if (view)
 	{
