@@ -521,6 +521,8 @@ protected:
 
 	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser) override;
 	void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* control, CDataBrowser* browser) override;
+
+	CCoord getGradientIconWidth ();
 };
 
 //----------------------------------------------------------------------------------------------------
@@ -579,9 +581,18 @@ void UIGradientsDataSource::update ()
 }
 
 //----------------------------------------------------------------------------------------------------
+CCoord UIGradientsDataSource::getGradientIconWidth ()
+{
+	return dataBrowser ? dbGetRowHeight (dataBrowser) * 2. : 0.;
+}
+
+//----------------------------------------------------------------------------------------------------
 void UIGradientsDataSource::dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser)
 {
-	GenericStringListDataBrowserSource::dbDrawCell (context, size, row, column, flags, browser);
+	GenericStringListDataBrowserSource::drawRowBackground (context, size, row, flags, browser);
+	CRect r (size);
+	r.right -= getGradientIconWidth ();
+	GenericStringListDataBrowserSource::drawRowString (context, r, row, flags, browser);
 	CGradient* gradient = nullptr;
 	if ((gradient = description->getGradient (names.at (static_cast<uint32_t> (row)).data ())))
 	{
@@ -589,8 +600,8 @@ void UIGradientsDataSource::dbDrawCell (CDrawContext* context, const CRect& size
 		context->setLineWidth (1);
 		context->setLineStyle (kLineSolid);
 		context->setDrawMode (kAliasing);
-		CRect r (size);
-		r.left = r.right - (r.getHeight () * 2.);
+		r = size;
+		r.left = r.right - (getGradientIconWidth ());
 		r.offset (-0.5, -0.5);
 		r.inset (3, 2);
 		SharedPointer<CGraphicsPath> path = owned (context->createGraphicsPath ());
@@ -606,7 +617,7 @@ void UIGradientsDataSource::dbCellSetupTextEdit (int32_t row, int32_t column, CT
 {
 	UIBaseDataSource::dbCellSetupTextEdit(row, column, control, browser);
 	CRect r (control->getViewSize ());
-	r.right -= r.getHeight () * 2.;
+	r.right -= getGradientIconWidth ();
 	control->setViewSize (r);
 }
 
