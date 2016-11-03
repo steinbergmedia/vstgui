@@ -376,9 +376,7 @@ void CGDrawContext::drawLine (const LinePair& line)
 		{
 			first = pixelAlligned (first);
 			second = pixelAlligned (second);
-			int32_t frameWidth = static_cast<int32_t> (currentState.frameWidth);
-			if (frameWidth % 2)
-				CGContextTranslateCTM (context, 0.5, 0.5);
+			applyLineWidthCTM (context);
 		}
 
 		CGContextMoveToPoint (context, first.x, first.y);
@@ -398,7 +396,6 @@ void CGDrawContext::drawLines (const LineList& lines)
 	if (context)
 	{
 		applyLineStyle (context);
-		
 		CGPoint* cgPoints = new CGPoint[lines.size () * 2];
 		uint32_t index = 0;
 		for (const auto& line : lines)
@@ -414,11 +411,7 @@ void CGDrawContext::drawLines (const LineList& lines)
 		}
 
 		if (getDrawMode ().integralMode ())
-		{
-			int32_t frameWidth = static_cast<int32_t> (currentState.frameWidth);
-			if (frameWidth % 2)
-				CGContextTranslateCTM (context, 0.5, 0.5);
-		}
+			applyLineWidthCTM (context);
 		
 		const size_t maxPointsPerIteration = 16;
 		const CGPoint* pointPtr = cgPoints;
@@ -484,7 +477,12 @@ void CGDrawContext::drawRect (const CRect &rect, const CDrawStyle drawStyle)
 	CGContextRef context = beginCGContext (true, getDrawMode ().integralMode ());
 	if (context)
 	{
-		CGRect r = CGRectMake (static_cast<CGFloat> (rect.left), static_cast<CGFloat> (rect.top), static_cast<CGFloat> (rect.getWidth () - 1), static_cast<CGFloat> (rect.getHeight () - 1));
+		CGRect r = CGRectFromCRect (rect);
+		if (drawStyle != kDrawFilled)
+		{
+			r.size.width -= 1.;
+			r.size.height -= 1.;
+		}
 
 		CGPathDrawingMode m;
 		switch (drawStyle)
@@ -498,7 +496,7 @@ void CGDrawContext::drawRect (const CRect &rect, const CDrawStyle drawStyle)
 		if (getDrawMode ().integralMode ())
 		{
 			r = pixelAlligned (r);
-			if (drawStyle == kDrawStroked || drawStyle == kDrawFilledAndStroked)
+			if (drawStyle != kDrawFilled)
 				applyLineWidthCTM (context);
 		}
 
@@ -516,7 +514,12 @@ void CGDrawContext::drawEllipse (const CRect &rect, const CDrawStyle drawStyle)
 	CGContextRef context = beginCGContext (true, getDrawMode ().integralMode ());
 	if (context)
 	{
-		CGRect r = CGRectMake (static_cast<CGFloat> (rect.left), static_cast<CGFloat> (rect.top + 1), static_cast<CGFloat> (rect.getWidth () - 1), static_cast<CGFloat> (rect.getHeight () - 1));
+		CGRect r = CGRectFromCRect (rect);
+		if (drawStyle != kDrawFilled)
+		{
+			r.size.width -= 1.;
+			r.size.height -= 1.;
+		}
 
 		CGPathDrawingMode m;
 		switch (drawStyle)
@@ -528,8 +531,9 @@ void CGDrawContext::drawEllipse (const CRect &rect, const CDrawStyle drawStyle)
 		applyLineStyle (context);
 		if (getDrawMode ().integralMode ())
 		{
+			if (drawStyle != kDrawFilled)
+				applyLineWidthCTM (context);
 			r = pixelAlligned (r);
-			applyLineWidthCTM (context);
 		}
 
 		CGContextAddEllipseInRect (context, r);

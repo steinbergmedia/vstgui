@@ -61,8 +61,8 @@ public:
 	constexpr uint32_t modeIgnoringIntegralMode () const { return (mode & ~kNonIntegralMode); }
 
 	constexpr bool integralMode () const { return !hasBit (mode, kNonIntegralMode); }
-	constexpr bool aliasing () const { return hasBit (mode, kAliasing); }
-	constexpr bool antiAliasing () const { return hasBit (mode, kAntiAliasing); }
+	constexpr bool aliasing () const { return modeIgnoringIntegralMode () == kAliasing; }
+	constexpr bool antiAliasing () const { return modeIgnoringIntegralMode () == kAntiAliasing; }
 
 	CDrawMode& operator= (uint32_t m) { mode = m; return *this; }
 
