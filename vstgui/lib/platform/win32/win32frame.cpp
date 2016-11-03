@@ -591,7 +591,8 @@ SharedPointer<COffscreenContext> Win32Frame::createOffscreenContext (CCoord widt
 #if VSTGUI_DIRECT2D_SUPPORT
 	if (getD2DFactory ())
 	{
-		D2DBitmap* bitmap = new D2DBitmap (CPoint (width, height));
+		D2DBitmap* bitmap = new D2DBitmap (CPoint (width * scaleFactor, height * scaleFactor));
+		bitmap->setScaleFactor (scaleFactor);
 		auto context = owned<COffscreenContext> (new D2DDrawContext (bitmap));
 		bitmap->forget ();
 		return context;
