@@ -115,7 +115,7 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 	if (config.style.hasBorder ())
 		styleMask |= NSTitledWindowMask;
 	if (config.style.canSize ())
-		styleMask |= NSResizableWindowMask;
+		styleMask |= NSResizableWindowMask | NSMiniaturizableWindowMask;
 	if (config.style.canClose ())
 		styleMask |= NSClosableWindowMask;
 
