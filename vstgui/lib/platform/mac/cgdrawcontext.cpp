@@ -194,7 +194,7 @@ void CGDrawContext::drawGraphicsPath (CGraphicsPath* _path, PathDrawMode mode, C
 			CGAffineTransform transform = QuartzGraphicsPath::createCGAffineTransform (*t);
 			CGContextConcatCTM (context, transform);
 		}
-		if (getDrawMode ().integralMode ())
+		if (getDrawMode ().integralMode () && getDrawMode ().aliasing ())
 		{
 			CGContextSaveGState (context);
 			applyLineWidthCTM (context);
@@ -239,7 +239,7 @@ void CGDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradient& g
 			CGAffineTransform transform = QuartzGraphicsPath::createCGAffineTransform (*t);
 			CGContextConcatCTM (context, transform);
 		}
-		if (getDrawMode ().integralMode ())
+		if (getDrawMode ().integralMode () && getDrawMode ().aliasing ())
 			path->pixelAlign (this);
 
 		CGContextAddPath (context, path->getCGPathRef ());
@@ -276,7 +276,7 @@ void CGDrawContext::fillRadialGradient (CGraphicsPath* _path, const CGradient& g
 			CGAffineTransform transform = QuartzGraphicsPath::createCGAffineTransform (*t);
 			CGContextConcatCTM (context, transform);
 		}
-		if (getDrawMode ().integralMode ())
+		if (getDrawMode ().integralMode () && getDrawMode ().aliasing ())
 			path->pixelAlign (this);
 		
 		CGContextAddPath (context, path->getCGPathRef ());
