@@ -12,6 +12,7 @@
 #include "../../uidescription/editing/uieditmenucontroller.h"
 #include "../../uidescription/uiattributes.h"
 #include "../../uidescription/uidescription.h"
+#include "../include/helpers/menubuilder.h"
 #include "../include/helpers/valuelistener.h"
 #include "../include/helpers/windowcontroller.h"
 #include "../include/ialertbox.h"
@@ -31,7 +32,7 @@ using UIDesc::ModelBindingPtr;
 using UIDesc::CustomizationPtr;
 
 //------------------------------------------------------------------------
-class WindowController : public IWindowController, public ICommandHandler
+class WindowController : public IWindowController, public ICommandHandler, public MenuBuilderAdapter
 {
 public:
 	bool init (const UIDesc::Config& config, WindowPtr& window);
@@ -51,6 +52,12 @@ public:
 
 	bool canHandleCommand (const Command& command) override;
 	bool handleCommand (const Command& command) override;
+
+	bool showCommandGroupInMenu (const Interface& context, const UTF8String& group) const override;
+	bool showCommandInMenu (const Interface& context, const Command& cmd) const override;
+	SortFunction getCommandGroupSortFunction (const Interface& context,
+											  const UTF8String& group) const override;
+	bool prependMenuSeparator (const Interface& context, const Command& cmd) const override;
 
 private:
 	struct Impl;
@@ -656,7 +663,7 @@ struct WindowController::EditImpl : WindowController::Impl
 		{
 			if (uiEditController->getUndoManager ()->isSavePosition () == false)
 				Detail::saveSharedUIDescription ();
-			if (!uiDesc->save (uiDesc->getFilePath (), uiEditController->getSaveOptions ()))
+			if (!uiDesc->save (uiDesc->getFilePath (), UIDescription::kWriteImagesIntoXMLFile))
 			{
 				AlertBoxConfig config;
 				config.headline = "Saving the uidesc file failed.";
@@ -872,6 +879,40 @@ bool WindowController::canHandleCommand (const Command& command)
 bool WindowController::handleCommand (const Command& command)
 {
 	return impl->handleCommand (command);
+}
+
+//------------------------------------------------------------------------
+bool WindowController::showCommandGroupInMenu (const Interface& context,
+                                               const UTF8String& group) const
+{
+	if (auto menuBuilder = dynamicPtrCast<IMenuBuilder> (impl->customization))
+		return menuBuilder->showCommandGroupInMenu (context, group);
+	return true;
+}
+
+//------------------------------------------------------------------------
+bool WindowController::showCommandInMenu (const Interface& context, const Command& cmd) const
+{
+	if (auto menuBuilder = dynamicPtrCast<IMenuBuilder> (impl->customization))
+		return menuBuilder->showCommandInMenu (context, cmd);
+	return true;
+}
+
+//------------------------------------------------------------------------
+auto WindowController::getCommandGroupSortFunction (const Interface& context,
+                                                    const UTF8String& group) const -> SortFunction
+{
+	if (auto menuBuilder = dynamicPtrCast<IMenuBuilder> (impl->customization))
+		return menuBuilder->getCommandGroupSortFunction (context, group);
+	return {};
+}
+
+//------------------------------------------------------------------------
+bool WindowController::prependMenuSeparator (const Interface& context, const Command& cmd) const
+{
+	if (auto menuBuilder = dynamicPtrCast<IMenuBuilder> (impl->customization))
+		return menuBuilder->prependMenuSeparator (context, cmd);
+	return false;
 }
 
 //------------------------------------------------------------------------

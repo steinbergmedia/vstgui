@@ -13,6 +13,7 @@
 #include <ShellScalingAPI.h>
 #include <Windows.h>
 #include <array>
+#include <chrono>
 
 #pragma comment(lib, "Shcore.lib")
 #pragma comment(lib, "d2d1.lib")
@@ -59,6 +60,8 @@ public:
 	void showAlertForWindow (const AlertBoxForWindowConfig& config);
 
 private:
+	static void dispatchPaintMessages ();
+
 	Win32Preference prefs;
 	CommonDirectories commonDirectories;
 	bool needCommandUpdate {false};
@@ -84,7 +87,15 @@ void Application::init (HINSTANCE instance, LPWSTR commandLine)
 
 	PlatformCallbacks callbacks;
 	callbacks.quit = [this] () { quit (); };
-	callbacks.onCommandUpdate = [this] () { needCommandUpdate = true; };
+	callbacks.onCommandUpdate = [this] () { 
+		if (!needCommandUpdate)
+		{
+			needCommandUpdate = true;
+			Async::perform (Async::Context::Main, [this] () {
+				onCommandUpdate ();
+			});
+		}
+	};
 	callbacks.showAlert = [this] (const AlertBoxConfig& config) { return showAlert (config); };
 	callbacks.showAlertForWindow = [this] (const AlertBoxForWindowConfig& config) {
 		showAlertForWindow (config);
@@ -210,8 +221,25 @@ void Application::quit ()
 }
 
 //------------------------------------------------------------------------
+void Application::dispatchPaintMessages ()
+{
+	HWND prevPaintWindow = nullptr;
+	MSG msg;
+	while (PeekMessage (&msg, nullptr, WM_PAINT, WM_PAINT, PM_REMOVE | PM_QS_PAINT))
+	{
+		TranslateMessage (&msg);
+		DispatchMessage (&msg);
+		if (prevPaintWindow == msg.hwnd)
+			break;
+		prevPaintWindow = msg.hwnd;
+	}
+}
+
+//------------------------------------------------------------------------
 void Application::run ()
 {
+	using namespace std::chrono;
+	auto lastPaintMessageTime = steady_clock::now ();
 	MSG msg;
 	while (GetMessage (&msg, NULL, 0, 0))
 	{
@@ -220,8 +248,13 @@ void Application::run ()
 
 		TranslateMessage (&msg);
 		DispatchMessage (&msg);
-		if (needCommandUpdate)
-			onCommandUpdate ();
+		if (msg.message == WM_PAINT &&
+		    duration_cast<milliseconds> (steady_clock::now () - lastPaintMessageTime).count () >=
+		        15)
+		{
+			dispatchPaintMessages ();
+			lastPaintMessageTime = steady_clock::now ();
+		}
 	}
 	terminateAsyncHandling ();
 	Detail::cleanupSharedUIResources ();

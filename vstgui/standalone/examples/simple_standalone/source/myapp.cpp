@@ -10,7 +10,7 @@ class MyApplication : public DelegateAdapter, public WindowListenerAdapter
 {
 public:
 	MyApplication ()
-	: DelegateAdapter ({"simple_standalone", "1.0.0", "com.mycompany.simplestandalone"})
+	: DelegateAdapter ({"simple_standalone", "1.0.0", "vstgui.examples.simplestandalone"})
 	{}
 	
 	void finishLaunching () override

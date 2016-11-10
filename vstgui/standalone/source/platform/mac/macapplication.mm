@@ -278,7 +278,7 @@ static const CommandWithKeyList* _Nullable getCommandList (const char* _Nonnull 
 
 	appMenuItem.submenu = [self createAppMenu];
 
-	auto& commandList = Detail::getApplicationPlatformAccess ()->getCommandList ();
+	auto commandList = Detail::getApplicationPlatformAccess ()->getCommandList ();
 	for (auto& e : commandList)
 	{
 		if (e.first == CommandGroup::Window)
@@ -356,11 +356,10 @@ static const CommandWithKeyList* _Nullable getCommandList (const char* _Nonnull 
 	if (self.hasTriggeredSetupMainMenu)
 		return;
 	self.hasTriggeredSetupMainMenu = YES;
-	dispatch_after (dispatch_time (DISPATCH_TIME_NOW, (int64_t) (0.1 * NSEC_PER_SEC)),
-	                dispatch_get_main_queue (), ^{
-		              [self setupMainMenu];
-		              self.hasTriggeredSetupMainMenu = NO;
-		            });
+	Async::perform (Async::Context::Main, [self] () {
+		[self setupMainMenu];
+		self.hasTriggeredSetupMainMenu = NO;
+	});
 }
 
 //------------------------------------------------------------------------

@@ -17,10 +17,8 @@
 			<color-stop rgba="#b4b4b4ff" start="1"/>
 		</gradient>
 		<gradient name="Background">
-			<color-stop rgba="#393939fa" start="0"/>
-			<color-stop rgba="#050505ff" start="0.1064041940789473422723787621180235873908"/>
-			<color-stop rgba="#393939fa" start="0.2044921874999999500399638918679556809366"/>
-			<color-stop rgba="#c8c8c8fa" start="1"/>
+			<color-stop rgba="#464646ff" start="0"/>
+			<color-stop rgba="#393939ff" start="1"/>
 		</gradient>
 		<gradient name="Default TextButton Gradient">
 			<color-stop rgba="#dcdcdcff" start="0"/>

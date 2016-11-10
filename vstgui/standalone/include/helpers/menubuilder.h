@@ -1,13 +1,37 @@
-//
-//  menubuilder.h
-//  vstgui
-//
-//  Created by Arne Scheffler on 07/11/2016.
-//
-//
+#pragma once
 
-#ifndef menubuilder_h
-#define menubuilder_h
+#include "../imenubuilder.h"
 
+//------------------------------------------------------------------------
+namespace VSTGUI {
+namespace Standalone {
 
-#endif /* menubuilder_h */
+//------------------------------------------------------------------------
+class MenuBuilderAdapter : public IMenuBuilder
+{
+public:
+	bool showCommandGroupInMenu (const Interface& context, const UTF8String& group) const override
+	{
+		return true;
+	}
+	
+	bool showCommandInMenu (const Interface& context, const Command& cmd) const override
+	{
+		return true;
+	}
+	
+	SortFunction getCommandGroupSortFunction (const Interface& context,
+	                                          const UTF8String& group) const override
+	{
+		return {};
+	}
+	
+	bool prependMenuSeparator (const Interface& context, const Command& cmd) const override
+	{
+		return false;
+	}
+};
+
+//------------------------------------------------------------------------
+} // Standalone
+} // VSTGUI

@@ -51,13 +51,14 @@ public:
 
 	// IPlatformApplication
 	void init (const InitParams& params) override;
-	const CommandList& getCommandList () override;
+	CommandList getCommandList (const Platform::IWindow* window) override;
 	bool canQuit () override;
 	bool dontClosePopupOnDeactivation (Platform::IWindow* window) override;
 
 private:
 	void registerStandardCommands ();
 	bool doCommandHandling (const Command& command, bool checkOnly);
+	CommandList getCommandList (const Interface& context, IMenuBuilder* menuBuilder);
 
 	WindowList windows;
 	Standalone::Application::DelegatePtr delegate;
@@ -65,7 +66,6 @@ private:
 	ICommonDirectories* commonDirectories {nullptr};
 	PlatformCallbacks platform;
 	CommandList commandList;
-	CommandList menuCommandList;
 	CommandLineArguments commandLineArguments;
 	bool inQuit {false};
 	uint16_t commandIDCounter {0};
@@ -203,29 +203,28 @@ bool Application::canQuit ()
 }
 
 //------------------------------------------------------------------------
-const Application::CommandList& Application::getCommandList ()
+auto Application::getCommandList (const Interface& context, IMenuBuilder* menuBuilder)
+    -> CommandList
 {
-	if (auto menuBuilder = dynamic_cast<IMenuBuilder*> (delegate.get ()))
+	CommandList menuCommandList;
+	if (menuBuilder)
 	{
-		menuCommandList.clear ();
 		for (auto& catList : commandList)
 		{
 			if (catList.second.empty ())
 				continue;
-			if (!menuBuilder->showCommandGroupInMenu (asInterface<IApplication> (*this),
-			                                          catList.first))
+			if (!menuBuilder->showCommandGroupInMenu (context, catList.first))
 				continue;
 			auto catListCopy = catList;
 			for (auto it = catListCopy.second.begin (); it != catListCopy.second.end ();)
 			{
 				auto current = it++;
-				if (!menuBuilder->showCommandInMenu (asInterface<IApplication> (*this), *current))
+				if (!menuBuilder->showCommandInMenu (context, *current))
 					it = catListCopy.second.erase (current);
 			}
 			if (catListCopy.second.empty ())
 				continue;
-			if (auto func = menuBuilder->getCommandGroupSortFunction (
-			        asInterface<IApplication> (*this), catListCopy.first))
+			if (auto func = menuBuilder->getCommandGroupSortFunction (context, catListCopy.first))
 			{
 				std::sort (catListCopy.second.begin (), catListCopy.second.end (),
 				           [&] (const CommandWithKey& lhs, const CommandWithKey& rhs) {
@@ -234,7 +233,7 @@ const Application::CommandList& Application::getCommandList ()
 			}
 			for (auto it = ++catListCopy.second.begin (); it != catListCopy.second.end (); ++it)
 			{
-				if (menuBuilder->prependMenuSeparator (asInterface<IApplication> (*this), *it))
+				if (menuBuilder->prependMenuSeparator (context, *it))
 				{
 					CommandWithKey separator {};
 					separator.name = CommandName::MenuSeparator;
@@ -269,6 +268,25 @@ const Application::CommandList& Application::getCommandList ()
 		menuCommandList.emplace_back (std::move (catListCopy));
 	}
 	return menuCommandList;
+}
+
+//------------------------------------------------------------------------
+auto Application::getCommandList (const Platform::IWindow* window) -> CommandList
+{
+	if (window)
+	{
+		for (auto& w : getWindows ())
+		{
+			if (staticPtrCast<IPlatformWindowAccess> (w)->getPlatformWindow ().get () == window)
+			{
+				return getCommandList (asInterface<IWindow> (*w.get ()),
+				                       w->getController ()->dynamicCast<IMenuBuilder> ());
+			}
+		}
+		return {};
+	}
+	return getCommandList (asInterface<IApplication> (*this),
+	                       delegate.get ()->dynamicCast<IMenuBuilder> ());
 }
 
 //------------------------------------------------------------------------

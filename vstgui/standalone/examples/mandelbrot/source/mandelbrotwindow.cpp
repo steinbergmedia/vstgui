@@ -80,7 +80,7 @@ inline void calculateMandelbrotBitmap (Model model, SharedPointer<CBitmap> bitma
 	if (auto pa = owned (CBitmapPixelAccess::create (bitmap)))
 	{
 		const auto numLinesPerTask =
-		    static_cast<uint32_t> (size.y / (std::thread::hardware_concurrency () * 2));
+		    static_cast<uint32_t> (size.y / (std::thread::hardware_concurrency () * 8));
 
 		const auto maxIterationInv = 1. / model.getIterations ();
 
@@ -122,8 +122,8 @@ struct ViewController : DelegationController,
                         IScaleFactorChangedListener,
                         CBaseObject
 {
-	ViewController (IController* parent, Model::Ptr model)
-	: DelegationController (parent), model (model)
+	ViewController (IController* parent, Model::Ptr model, ValuePtr progressValue)
+	: DelegationController (parent), model (model), progressValue (progressValue)
 	{
 		model->registerListener (this);
 	}
@@ -195,6 +195,7 @@ struct ViewController : DelegationController,
 		size.makeIntegral ();
 		if (size.x == 0 || size.y == 0)
 			return;
+		Value::performSingleEdit (*progressValue, 1.);
 		auto bitmap = owned (new CBitmap (size.x, size.y));
 		bitmap->getPlatformBitmap ()->setScaleFactor (scaleFactor);
 		auto id = ++taskID;
@@ -202,11 +203,15 @@ struct ViewController : DelegationController,
 		calculateMandelbrotBitmap (*model.get (), bitmap, size, id, taskID,
 		                           [This] (uint32_t id, SharedPointer<CBitmap> bitmap) {
 			                           if (id == This->taskID && This->mandelbrotView)
+			                           {
 				                           This->mandelbrotView->setBackground (bitmap);
+				                           Value::performSingleEdit (*This->progressValue, 0.);
+			                           }
 			                       });
 	}
 
 	Model::Ptr model;
+	ValuePtr progressValue;
 	CView* mandelbrotView {nullptr};
 	double scaleFactor {1.};
 	std::atomic<uint32_t> taskID {0};
@@ -215,14 +220,18 @@ struct ViewController : DelegationController,
 //------------------------------------------------------------------------
 struct Customization : UIDesc::ICustomization
 {
-	Customization (Model::Ptr model) : model (model) {}
+	Customization (Model::Ptr model, ValuePtr progressValue)
+	: model (model), progressValue (progressValue)
+	{
+	}
 
 	IController* createController (const UTF8StringView& name, IController* parent,
 	                               const IUIDescription* uiDesc) override
 	{
-		return new ViewController (parent, model);
+		return new ViewController (parent, model, progressValue);
 	}
 	Model::Ptr model;
+	ValuePtr progressValue;
 };
 
 //------------------------------------------------------------------------
@@ -239,6 +248,8 @@ struct ModelBinding : UIDesc::IModelBinding, IModelChangeListener, ValueListener
 		values.emplace_back (minY);
 		values.emplace_back (maxX);
 		values.emplace_back (maxY);
+		values.emplace_back (progressValue);
+		values.emplace_back (showParams);
 
 		maxIterations->registerListener (this);
 		minX->registerListener (this);
@@ -290,6 +301,8 @@ struct ModelBinding : UIDesc::IModelBinding, IModelChangeListener, ValueListener
 	ValuePtr minY {Value::make ("minY", 0., yConverter)};
 	ValuePtr maxX {Value::make ("maxX", 1., xConverter)};
 	ValuePtr maxY {Value::make ("maxY", 1., yConverter)};
+	ValuePtr progressValue {Value::make ("progress")};
+	ValuePtr showParams {Value::make ("showParams")};
 	ValueList values;
 
 	Model::Ptr model;
@@ -304,7 +317,7 @@ VSTGUI::Standalone::WindowPtr makeMandelbrotWindow ()
 	config.uiDescFileName = "Window.uidesc";
 	config.viewName = "Window";
 	config.modelBinding = modelBinding;
-	config.customization = std::make_shared<Customization> (model);
+	config.customization = std::make_shared<Customization> (model, modelBinding->progressValue);
 	config.windowConfig.title = "Mandelbrot";
 	config.windowConfig.autoSaveFrameName = "Mandelbrot";
 	config.windowConfig.style.border ().close ().size ().centered ();
