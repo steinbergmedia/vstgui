@@ -61,14 +61,12 @@ public:
 	*/
 	void addAnimation (CView* view, IdStringPtr name, IAnimationTarget* target, ITimingFunction* timingFunction, CBaseObject* notificationObject = nullptr);
 
-	typedef std::function<void (CView*, const IdStringPtr, IAnimationTarget*)> NotificationFunction;
-
 	/** adds an animation.
 		Animation and timingFunction is now owned by the animator.
 		An already running animation for view with name will be canceled.
 		The notification function will be called when the animation has finished.
 	*/
-	void addAnimation (CView* view, IdStringPtr name, IAnimationTarget* target, ITimingFunction* timingFunction, NotificationFunction notification);
+	void addAnimation (CView* view, IdStringPtr name, IAnimationTarget* target, ITimingFunction* timingFunction, DoneFunction notification);
 
 	/** removes an animation.
 		If animation is a CBaseObject forget() will be called otherwise it is deleted.
@@ -93,14 +91,14 @@ protected:
 	class Animation : public CBaseObject
 	{
 	public:
-		Animation (CView* view, const std::string& name, IAnimationTarget* at, ITimingFunction* t, NotificationFunction notification);
+		Animation (CView* view, const std::string& name, IAnimationTarget* at, ITimingFunction* t, DoneFunction notification);
 		~Animation () noexcept override;
 
 		std::string name;
 		SharedPointer<CView> view;
 		IAnimationTarget* target;
 		ITimingFunction* timingFunction;
-		NotificationFunction notification;
+		DoneFunction notification;
 		uint32_t startTime;
 		float lastPos;
 		bool done;

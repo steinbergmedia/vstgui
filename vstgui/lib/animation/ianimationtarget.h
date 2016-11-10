@@ -9,7 +9,7 @@
 #ifndef __ianimationtarget__
 #define __ianimationtarget__
 
-#include "../vstguibase.h"
+#include "../vstguifwd.h"
 
 namespace VSTGUI {
 namespace Animation {
