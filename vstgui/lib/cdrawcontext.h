@@ -263,9 +263,10 @@ private:
 struct ConcatClip
 {
 	ConcatClip (CDrawContext& context, CRect rect)
-		:context (context)
+	: context (context)
 	{
 		context.getClipRect (origClip);
+		rect.normalize ();
 		rect.bound (origClip);
 		context.setClipRect (rect);
 	}
