@@ -163,6 +163,7 @@ CRect& CDrawContext::getClipRect (CRect &clip) const
 {
 	clip = currentState.clipRect;
 	getCurrentTransform ().inverse ().transform (clip);
+	clip.normalize ();
 	return clip;
 }
 
@@ -171,6 +172,7 @@ void CDrawContext::setClipRect (const CRect &clip)
 {
 	currentState.clipRect = clip;
 	getCurrentTransform ().transform (currentState.clipRect);
+	currentState.clipRect.normalize ();
 	currentState.clipRect.makeIntegral ();
 }
 
@@ -324,8 +326,6 @@ void CDrawContext::fillRectWithBitmap (CBitmap* bitmap, const CRect& srcRect, co
 	CRect bitmapPartRect;
 	CPoint sourceOffset (srcRect.left, srcRect.top);
 
-	CRect currentClip = getClipRect (currentClip);
-
 	for (auto top = dstRect.top; top < dstRect.bottom; top += srcRect.getHeight ())
 	{
 		bitmapPartRect.top = top;
@@ -346,8 +346,7 @@ void CDrawContext::fillRectWithBitmap (CBitmap* bitmap, const CRect& srcRect, co
 			if (bitmapPartRect.getWidth () > srcRect.getWidth ())
 				bitmapPartRect.setWidth (srcRect.getWidth ());
 			
-			if (currentClip.rectOverlap (bitmapPartRect))
-				drawBitmap (bitmap, bitmapPartRect, sourceOffset, alpha);
+			drawBitmap (bitmap, bitmapPartRect, sourceOffset, alpha);
 		}
 	}
 }
