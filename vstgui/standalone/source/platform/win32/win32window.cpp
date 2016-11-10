@@ -345,7 +345,7 @@ void Window::updateCommands () const
 	std::shared_ptr<Win32Menu> fileMenu = nullptr;
 	const Detail::IPlatformApplication::CommandWithKeyList* appCommands = nullptr;
 
-	const auto& commandList = Detail::getApplicationPlatformAccess ()->getCommandList ();
+	const auto& commandList = Detail::getApplicationPlatformAccess ()->getCommandList (this);
 	for (auto& e : commandList)
 	{
 		if (e.first == CommandGroup::Application)

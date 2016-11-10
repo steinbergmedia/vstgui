@@ -1,19 +1,21 @@
 #pragma once
 
 #include "vstgui/lib/cview.h"
+#include "vstgui/lib/ifocusdrawing.h"
 #include <functional>
 
 //------------------------------------------------------------------------
 namespace Mandelbrot {
 
 //------------------------------------------------------------------------
-struct View : public VSTGUI::CView
+struct View : public VSTGUI::CView, public VSTGUI::IFocusDrawing
 {
 	using CRect = VSTGUI::CRect;
 	using CPoint = VSTGUI::CPoint;
 	using CMouseEventResult = VSTGUI::CMouseEventResult;
 	using CButtonState = VSTGUI::CButtonState;
 	using CDrawContext = VSTGUI::CDrawContext;
+	using CGraphicsPath = VSTGUI::CGraphicsPath;
 	using ChangedFunc = std::function<void (CRect box)>;
 
 	View (ChangedFunc&& func);
@@ -24,6 +26,9 @@ struct View : public VSTGUI::CView
 	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseCancel () override;
 	void draw (CDrawContext* context) override;
+
+	bool drawFocusOnTop () override { return false; }
+	bool getFocusPath (CGraphicsPath& outPath) override { return false; }
 
 private:
 	CRect box;

@@ -151,6 +151,12 @@ public:
 	virtual CRect getFocusViewRect () const = 0;
 	/** Get the title of the window. */
 	virtual const UTF8String& getTitle () const = 0;
+	/** Get the type of the window. */
+	virtual WindowType getType () const = 0;
+	/** Get the style of the window. */
+	virtual WindowStyle getStyle () const = 0;
+	/** Get the auto save frame name of the window. */
+	virtual const UTF8String& getAutoSaveFrameName () const = 0;
 
 	/** Set the size of the client area. */
 	virtual void setSize (const CPoint& newSize) = 0;

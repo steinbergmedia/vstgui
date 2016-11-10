@@ -24,7 +24,8 @@ enum class Context
 /** Schedule a task to be performed asynchronous either on a background thread or on the main
  *	thread.
  *
- *	Can be called from any thread except realtime constraint threads.
+ *	Can be called from any thread, but should not be called from realtime constraint threads as it
+ *	may involves locks and memory allocations
  *
  *	@ingroup standalone
  *

@@ -15,12 +15,12 @@ using namespace VSTGUI::Standalone::Application;
 //------------------------------------------------------------------------
 struct AppDelegate : DelegateAdapter, WindowListenerAdapter, ICommandHandler
 {
-	AppDelegate () : DelegateAdapter ({"mandelbrot", "1.0.0", "com.mycompany.mandelbrot"}) {}
+	AppDelegate () : DelegateAdapter ({"mandelbrot", "1.0.0", "vstgui.examples.mandelbrot"}) {}
 
 	void finishLaunching () override
 	{
-		IApplication::instance ().registerCommand(Commands::NewDocument, 'n');
-		if (!handleCommand(Commands::NewDocument))
+		IApplication::instance ().registerCommand (Commands::NewDocument, 'n');
+		if (!handleCommand (Commands::NewDocument))
 			IApplication::instance ().quit ();
 	}
 

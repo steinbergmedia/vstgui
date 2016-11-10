@@ -7,7 +7,7 @@
 	<key>CFBundleExecutable</key>
 	<string>GFXTest</string>
 	<key>CFBundleIdentifier</key>
-	<string>vstgui.gfxtest</string>
+	<string>vstgui.tests.gfxtest</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>

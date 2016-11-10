@@ -15,7 +15,7 @@ class GFXTestApp : public DelegateAdapter, public WindowListenerAdapter
 {
 public:
 	GFXTestApp ()
-	: DelegateAdapter ({"gfxtest", "1.0.0", "vstgui.gfxtest"})
+	: DelegateAdapter ({"gfxtest", "1.0.0", "vstgui.tests.gfxtest"})
 	{}
 	
 	void finishLaunching () override

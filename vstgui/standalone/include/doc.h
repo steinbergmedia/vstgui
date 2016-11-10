@@ -85,7 +85,7 @@ like this :
 
 @code{.cpp}
 
-auto binding = std::make_shared<UIDesc::ModelBindingCallbacks> ();
+auto binding = UIDesc::ModelBindingCallbacks::make ();
 binding->addValue (Value::make ("MyFunction"),
                    UIDesc::ValueCalls::onAction ([&] (IValue& v) {
                         executeMyFunction ();
