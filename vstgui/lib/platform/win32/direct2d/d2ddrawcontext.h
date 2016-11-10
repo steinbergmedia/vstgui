@@ -103,6 +103,7 @@ public:
 	protected:
 		D2DDrawContext* drawContext;
 		CRect applyClip;
+		bool layerIsUsed {false};
 	};
 
 	template<typename T> void pixelAllign (T& rect) const;

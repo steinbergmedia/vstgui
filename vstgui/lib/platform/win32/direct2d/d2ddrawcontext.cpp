@@ -60,19 +60,6 @@ void useD2DHardwareRenderer (bool state)
 D2DDrawContext::D2DApplyClip::D2DApplyClip (D2DDrawContext* drawContext, bool halfPointOffset)
 : drawContext (drawContext)
 {
-	if (drawContext->currentClip != drawContext->currentState.clipRect)
-	{
-		CRect clip = drawContext->currentState.clipRect;
-		if (drawContext->currentClip.isEmpty () == false)
-			drawContext->getRenderTarget ()->PopAxisAlignedClip ();
-		if (clip.isEmpty () == false)
-			drawContext->getRenderTarget ()->PushAxisAlignedClip (makeD2DRect (clip), D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
-		drawContext->currentClip = applyClip = clip;
-	}
-	else
-	{
-		applyClip = drawContext->currentClip;
-	}
 	CGraphicsTransform transform = drawContext->getCurrentTransform ();
 	auto scale = drawContext->getScaleFactor ();
 	transform.scale (scale, scale);
@@ -81,12 +68,51 @@ D2DDrawContext::D2DApplyClip::D2DApplyClip (D2DDrawContext* drawContext, bool ha
 		CPoint offset (0.5, 0.5);
 		transform.translate (offset);
 	}
-	drawContext->getRenderTarget ()->SetTransform (convert (transform));
+	if (transform.m12 != 0. || transform.m21 != 0.)
+	{ // we have a rotated matrix, we need to use a layer
+		layerIsUsed = true;
+		if (drawContext->currentClip.isEmpty () == false)
+			drawContext->getRenderTarget ()->PopAxisAlignedClip ();
+
+		ID2D1RectangleGeometry* geometry;
+		if (FAILED (getD2DFactory ()->CreateRectangleGeometry (makeD2DRect (drawContext->currentState.clipRect), &geometry)))
+			return;
+		auto d2dMatrix = convert (transform);
+		drawContext->getRenderTarget ()->PushLayer (
+		    D2D1::LayerParameters (D2D1::InfiniteRect (), geometry,
+		                           D2D1_ANTIALIAS_MODE_ALIASED),
+		    nullptr);
+		drawContext->getRenderTarget ()->SetTransform (convert (transform));
+		geometry->Release ();
+		applyClip = drawContext->currentState.clipRect;
+		drawContext->currentClip = {};
+	}
+	else
+	{
+		if (drawContext->currentClip != drawContext->currentState.clipRect)
+		{
+			CRect clip = drawContext->currentState.clipRect;
+			if (drawContext->currentClip.isEmpty () == false)
+				drawContext->getRenderTarget ()->PopAxisAlignedClip ();
+			if (clip.isEmpty () == false)
+				drawContext->getRenderTarget ()->PushAxisAlignedClip (makeD2DRect (clip), D2D1_ANTIALIAS_MODE_ALIASED);
+			drawContext->currentClip = applyClip = clip;
+		}
+		else
+		{
+			applyClip = drawContext->currentClip;
+		}
+		drawContext->getRenderTarget ()->SetTransform (convert (transform));
+	}
 }
 
 //-----------------------------------------------------------------------------
 D2DDrawContext::D2DApplyClip::~D2DApplyClip ()
 {
+	if (layerIsUsed)
+	{
+		drawContext->getRenderTarget ()->PopLayer ();
+	}
 	auto scale = drawContext->getScaleFactor ();
 	CGraphicsTransform transform;
 	transform.scale (scale, scale);
