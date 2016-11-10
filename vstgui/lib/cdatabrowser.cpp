@@ -1298,7 +1298,7 @@ void GenericStringListDataBrowserSource::drawRowString (CDrawContext* context, c
 	stringSize.inset (textInset.x, textInset.y);
 	context->setFont (drawFont);
 	context->setFontColor (fontColor);
-	context->setClipRect (stringSize);
+	ConcatClip cc (*context, stringSize);
 	context->drawString ((*stringList)[static_cast<size_t> (row)].getPlatformString (), stringSize, textAlignment);
 	context->restoreGlobalState ();
 }
