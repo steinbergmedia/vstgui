@@ -36,6 +36,7 @@
 #define __vstguifwd__
 
 #include "vstguibase.h"
+#include <functional>
 
 namespace VSTGUI {
 
@@ -213,6 +214,7 @@ class LinearTimingFunction;
 class PowerTimingFunction;
 class InterpolationTimingFunction;
 class RepeatTimingFunction;
+using DoneFunction = std::function<void (CView*, const IdStringPtr, IAnimationTarget*)>;
 } // Animation
 
 template <class I> class SharedPointer;

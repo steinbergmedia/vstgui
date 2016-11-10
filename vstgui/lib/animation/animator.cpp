@@ -237,7 +237,7 @@ Animator::~Animator () noexcept
 }
 
 //-----------------------------------------------------------------------------
-void Animator::addAnimation (CView* view, IdStringPtr name, IAnimationTarget* target, ITimingFunction* timingFunction, NotificationFunction notification)
+void Animator::addAnimation (CView* view, IdStringPtr name, IAnimationTarget* target, ITimingFunction* timingFunction, DoneFunction notification)
 {
 	if (animations.empty ())
 		Timer::addAnimator (this);
@@ -252,7 +252,7 @@ void Animator::addAnimation (CView* view, IdStringPtr name, IAnimationTarget* ta
 //-----------------------------------------------------------------------------
 void Animator::addAnimation (CView* view, IdStringPtr name, IAnimationTarget* target, ITimingFunction* timingFunction, CBaseObject* notificationObject)
 {
-	NotificationFunction notification;
+	DoneFunction notification;
 	if (notificationObject)
 	{
 		SharedPointer<CBaseObject> nObj (notificationObject);
@@ -370,7 +370,7 @@ CMessageResult Animator::notify (CBaseObject* sender, IdStringPtr message)
 IdStringPtr kMsgAnimationFinished = "kMsgAnimationFinished";
 
 //-----------------------------------------------------------------------------
-Animator::Animation::Animation (CView* view, const std::string& name, IAnimationTarget* at, ITimingFunction* t, NotificationFunction notification)
+Animator::Animation::Animation (CView* view, const std::string& name, IAnimationTarget* at, ITimingFunction* t, DoneFunction notification)
 : name (name)
 , view (view)
 , target (at)

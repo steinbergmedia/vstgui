@@ -789,6 +789,15 @@ void CView::addAnimation (IdStringPtr name, Animation::IAnimationTarget* target,
 }
 
 //-----------------------------------------------------------------------------
+void CView::addAnimation (IdStringPtr name, Animation::IAnimationTarget* target, Animation::ITimingFunction* timingFunction, const Animation::DoneFunction& doneFunc)
+{
+	if (getFrame ())
+	{
+		getFrame ()->getAnimator ()->addAnimation (this, name, target, timingFunction, doneFunc);
+	}
+}
+
+//-----------------------------------------------------------------------------
 void CView::removeAnimation (IdStringPtr name)
 {
 	if (getFrame ())
