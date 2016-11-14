@@ -1261,7 +1261,7 @@ void GenericStringListDataBrowserSource::dbDrawHeader (CDrawContext* context, co
 //-----------------------------------------------------------------------------
 void GenericStringListDataBrowserSource::drawRowBackground (CDrawContext* context, const CRect& size, int32_t row, int32_t flags, CDataBrowser* browser) const
 {
-	vstgui_assert (row >= 0 && row < stringList->size ());
+	vstgui_assert (row >= 0 && static_cast<size_t> (row) < stringList->size ());
 
 	context->setDrawMode (kAliasing);
 	context->setLineWidth (1.);
@@ -1291,7 +1291,7 @@ void GenericStringListDataBrowserSource::drawRowBackground (CDrawContext* contex
 //-----------------------------------------------------------------------------
 void GenericStringListDataBrowserSource::drawRowString (CDrawContext* context, const CRect& size, int32_t row, int32_t flags, CDataBrowser* browser) const
 {
-	vstgui_assert (row >= 0 && row < stringList->size ());
+	vstgui_assert (row >= 0 && static_cast<size_t> (row) < stringList->size ());
 	
 	context->saveGlobalState ();
 	CRect stringSize (size);
@@ -1306,7 +1306,7 @@ void GenericStringListDataBrowserSource::drawRowString (CDrawContext* context, c
 //-----------------------------------------------------------------------------
 void GenericStringListDataBrowserSource::dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser)
 {
-	vstgui_assert (row >= 0 && row < stringList->size ());
+	vstgui_assert (row >= 0 && static_cast<size_t> (row) < stringList->size ());
 	vstgui_assert (column == 0);
 
 	drawRowBackground (context, size, row, flags, browser);
