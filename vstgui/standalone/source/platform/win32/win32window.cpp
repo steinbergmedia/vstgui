@@ -173,6 +173,7 @@ private:
 	mutable std::shared_ptr<Win32Menu> mainMenu;
 	IWindowDelegate* delegate {nullptr};
 	CFrame* frame {nullptr};
+	mutable Detail::IPlatformApplication::CommandList menuCommandList;
 	CPoint initialSize;
 	double dpiScale {1.};
 	DWORD exStyle {};
@@ -282,10 +283,7 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 	delegate = &inDelegate;
 	SetWindowLongPtr (hwnd, GWLP_USERDATA, (__int3264) (LONG_PTR) this);
 	if (hasBorder)
-	{
 		hasMenu = true;
-		updateCommands ();
-	}
 	if (isTransparent)
 		makeTransparent ();
 	return true;
@@ -338,15 +336,21 @@ void Window::updateCommands () const
 	if (!hasMenu)
 		return;
 
-	mainMenu = std::make_shared<Win32Menu> ("");
+	menuCommandList = Detail::getApplicationPlatformAccess ()->getCommandList (this);
+	if (menuCommandList.empty ())
+	{
+		if (mainMenu)
+			SetMenu (hwnd, nullptr);
+		mainMenu.reset ();
+		return;
+	}
 
-//	const auto& appInfo = IApplication::instance ().getDelegate ().getInfo ();
+	mainMenu = std::make_shared<Win32Menu> ("");
 
 	std::shared_ptr<Win32Menu> fileMenu = nullptr;
 	const Detail::IPlatformApplication::CommandWithKeyList* appCommands = nullptr;
 
-	const auto& commandList = Detail::getApplicationPlatformAccess ()->getCommandList (this);
-	for (auto& e : commandList)
+	for (auto& e : menuCommandList)
 	{
 		if (e.first == CommandGroup::Application)
 		{
@@ -667,9 +671,9 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 auto Window::handleCommand (const WORD& cmdID) -> HandleCommandResult
 {
 	auto app = Detail::getApplicationPlatformAccess ();
-	for (auto& grp : app->getCommandList ())
+	for (const auto& grp : app->getKeyCommandList ())
 	{
-		for (auto& e : grp.second)
+		for (const auto& e : grp.second)
 		{
 			if (e.id == cmdID)
 			{
@@ -882,6 +886,8 @@ double Window::getScaleFactor () const
 //------------------------------------------------------------------------
 void Window::show ()
 {
+	if (hasMenu)
+		updateCommands ();
 	updateDPI ();
 
 	RECT clientRect {};

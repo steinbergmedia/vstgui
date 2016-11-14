@@ -22,6 +22,8 @@ public:
 	virtual void beforeShow (IWindow& window) = 0;
 	/** Content view of window is changed. */
 	virtual void onSetContentView (IWindow& window, const SharedPointer<CFrame>& contentView) = 0;
+	/** Get the menu builder for this window. */
+	virtual IMenuBuilder* getWindowMenuBuilder (const IWindow& window) const = 0;
 };
 
 //------------------------------------------------------------------------

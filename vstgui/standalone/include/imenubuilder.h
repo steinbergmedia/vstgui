@@ -10,8 +10,9 @@ namespace Standalone {
 //------------------------------------------------------------------------
 /** Menu builder interface
  *
- *	%Application delegates and window controllers can implement this interface to customize the
- *	visibility and order of commands shown in the menu of the application or window.
+ *	%Application delegates can implement this interface to customize the visibility and order of
+ *	commands shown in the menu of the application or window. On platforms where the menu is sitting
+ *	in the window, the window controllers menu builder is used if it has one.
  *	The context parameter of the methods is either an IApplication or IWindow.
  *
  *	@ingroup standalone
