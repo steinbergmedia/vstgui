@@ -33,5 +33,20 @@ public:
 };
 
 //------------------------------------------------------------------------
+class NoMenuBuilder : public MenuBuilderAdapter
+{
+public:
+	bool showCommandGroupInMenu (const Interface& context, const UTF8String& group) const override
+	{
+		return false;
+	}
+	
+	bool showCommandInMenu (const Interface& context, const Command& cmd) const override
+	{
+		return false;
+	}
+};
+
+//------------------------------------------------------------------------
 } // Standalone
 } // VSTGUI

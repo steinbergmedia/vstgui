@@ -52,6 +52,7 @@ public:
 	// IPlatformApplication
 	void init (const InitParams& params) override;
 	CommandList getCommandList (const Platform::IWindow* window) override;
+	const CommandList& getKeyCommandList () override;
 	bool canQuit () override;
 	bool dontClosePopupOnDeactivation (Platform::IWindow* window) override;
 
@@ -279,14 +280,22 @@ auto Application::getCommandList (const Platform::IWindow* window) -> CommandLis
 		{
 			if (staticPtrCast<IPlatformWindowAccess> (w)->getPlatformWindow ().get () == window)
 			{
-				return getCommandList (asInterface<IWindow> (*w.get ()),
-				                       w->getController ()->dynamicCast<IMenuBuilder> ());
+				auto menuBuilder = w->getController ()->getWindowMenuBuilder (*w.get ());
+				if (!menuBuilder)
+					menuBuilder = delegate.get ()->dynamicCast<IMenuBuilder> ();
+				return getCommandList (asInterface<IWindow> (*w.get ()), menuBuilder);
 			}
 		}
 		return {};
 	}
 	return getCommandList (asInterface<IApplication> (*this),
 	                       delegate.get ()->dynamicCast<IMenuBuilder> ());
+}
+
+//------------------------------------------------------------------------
+auto Application::getKeyCommandList () -> const CommandList&
+{
+	return commandList;
 }
 
 //------------------------------------------------------------------------

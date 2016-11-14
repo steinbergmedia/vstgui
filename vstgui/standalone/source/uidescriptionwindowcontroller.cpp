@@ -32,7 +32,7 @@ using UIDesc::ModelBindingPtr;
 using UIDesc::CustomizationPtr;
 
 //------------------------------------------------------------------------
-class WindowController : public IWindowController, public ICommandHandler, public MenuBuilderAdapter
+class WindowController : public IWindowController, public ICommandHandler
 {
 public:
 	bool init (const UIDesc::Config& config, WindowPtr& window);
@@ -53,12 +53,7 @@ public:
 	bool canHandleCommand (const Command& command) override;
 	bool handleCommand (const Command& command) override;
 
-	bool showCommandGroupInMenu (const Interface& context, const UTF8String& group) const override;
-	bool showCommandInMenu (const Interface& context, const Command& cmd) const override;
-	SortFunction getCommandGroupSortFunction (const Interface& context,
-											  const UTF8String& group) const override;
-	bool prependMenuSeparator (const Interface& context, const Command& cmd) const override;
-
+	IMenuBuilder* getWindowMenuBuilder (const IWindow& window) const override;
 private:
 	struct Impl;
 	struct EditImpl;
@@ -882,37 +877,11 @@ bool WindowController::handleCommand (const Command& command)
 }
 
 //------------------------------------------------------------------------
-bool WindowController::showCommandGroupInMenu (const Interface& context,
-                                               const UTF8String& group) const
+IMenuBuilder* WindowController::getWindowMenuBuilder (const IWindow& window) const
 {
 	if (auto menuBuilder = dynamicPtrCast<IMenuBuilder> (impl->customization))
-		return menuBuilder->showCommandGroupInMenu (context, group);
-	return true;
-}
-
-//------------------------------------------------------------------------
-bool WindowController::showCommandInMenu (const Interface& context, const Command& cmd) const
-{
-	if (auto menuBuilder = dynamicPtrCast<IMenuBuilder> (impl->customization))
-		return menuBuilder->showCommandInMenu (context, cmd);
-	return true;
-}
-
-//------------------------------------------------------------------------
-auto WindowController::getCommandGroupSortFunction (const Interface& context,
-                                                    const UTF8String& group) const -> SortFunction
-{
-	if (auto menuBuilder = dynamicPtrCast<IMenuBuilder> (impl->customization))
-		return menuBuilder->getCommandGroupSortFunction (context, group);
-	return {};
-}
-
-//------------------------------------------------------------------------
-bool WindowController::prependMenuSeparator (const Interface& context, const Command& cmd) const
-{
-	if (auto menuBuilder = dynamicPtrCast<IMenuBuilder> (impl->customization))
-		return menuBuilder->prependMenuSeparator (context, cmd);
-	return false;
+		return menuBuilder.get ();
+	return nullptr;
 }
 
 //------------------------------------------------------------------------
