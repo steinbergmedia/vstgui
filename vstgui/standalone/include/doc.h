@@ -18,6 +18,8 @@ See @ref standalone_library "this page" for an introduction.
 
 @section standalone_about About
 
+@note The Standalone Library is a preview. The API may change in the future !
+
 The standalone library adds a minimal set of classes to write simple cross-platform applications.
 See @ref standalone "this page" for a list of classes.
 
