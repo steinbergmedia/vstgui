@@ -8,6 +8,7 @@
 #include "vstgui/lib/iviewlistener.h"
 #include "vstgui/standalone/include/helpers/value.h"
 #include "vstgui/standalone/include/helpers/valuelistener.h"
+#include "vstgui/standalone/include/helpers/uidesc/customization.h"
 #include "vstgui/standalone/include/iasync.h"
 #include "vstgui/standalone/include/iuidescwindow.h"
 #include "vstgui/uidescription/delegationcontroller.h"
@@ -218,23 +219,6 @@ struct ViewController : DelegationController,
 };
 
 //------------------------------------------------------------------------
-struct Customization : UIDesc::ICustomization
-{
-	Customization (Model::Ptr model, ValuePtr progressValue)
-	: model (model), progressValue (progressValue)
-	{
-	}
-
-	IController* createController (const UTF8StringView& name, IController* parent,
-	                               const IUIDescription* uiDesc) override
-	{
-		return new ViewController (parent, model, progressValue);
-	}
-	Model::Ptr model;
-	ValuePtr progressValue;
-};
-
-//------------------------------------------------------------------------
 struct ModelBinding : UIDesc::IModelBinding, IModelChangeListener, ValueListenerAdapter
 {
 	using Ptr = std::shared_ptr<ModelBinding>;
@@ -313,11 +297,18 @@ VSTGUI::Standalone::WindowPtr makeMandelbrotWindow ()
 {
 	auto model = std::make_shared<Model> ();
 	auto modelBinding = std::make_shared<ModelBinding> (model);
+	auto customization = UIDesc::Customization::make ();
+
+	customization->addCreateViewController (
+	    "mandelbrotviewcontroller", [=] (const auto& name, auto parent, const auto uiDesc) {
+		    return new ViewController (parent, model, modelBinding->progressValue);
+		});
+
 	UIDesc::Config config;
 	config.uiDescFileName = "Window.uidesc";
 	config.viewName = "Window";
 	config.modelBinding = modelBinding;
-	config.customization = std::make_shared<Customization> (model, modelBinding->progressValue);
+	config.customization = customization;
 	config.windowConfig.title = "Mandelbrot";
 	config.windowConfig.autoSaveFrameName = "Mandelbrot";
 	config.windowConfig.style.border ().close ().size ().centered ();
