@@ -91,14 +91,14 @@ UTF8String CommonDirectories::getAppPath () const
 }
 
 //------------------------------------------------------------------------
-UTF8String CommonDirectories::get (Location location, const UTF8String& subDir, bool create) const
+UTF8String CommonDirectories::get (CommonDirectoryLocation location, const UTF8String& subDir, bool create) const
 {
 	switch (location)
 	{
-		case Location::AppPath: return getAppPath ();
-		case Location::AppPreferencesPath: return getLocalAppDataPath ("Preferences", subDir, create);
-		case Location::AppCachesPath: return getLocalAppDataPath ("Caches", subDir, create);
-		case Location::UserDocumentsPath:
+		case CommonDirectoryLocation::AppPath: return getAppPath ();
+		case CommonDirectoryLocation::AppPreferencesPath: return getLocalAppDataPath ("Preferences", subDir, create);
+		case CommonDirectoryLocation::AppCachesPath: return getLocalAppDataPath ("Caches", subDir, create);
+		case CommonDirectoryLocation::UserDocumentsPath:
 		{
 			auto result = GetKnownFolderPathStr (FOLDERID_Documents, create);
 			if (result.empty () || !addSubDir (result, subDir, create))

@@ -54,27 +54,27 @@ UTF8String getPath (NSSearchPathDomainMask domain, NSSearchPathDirectory directo
 } // anonymous
 
 //------------------------------------------------------------------------
-UTF8String CommonDirectories::get (Location location, const UTF8String& subDir, bool create) const
+UTF8String CommonDirectories::get (CommonDirectoryLocation location, const UTF8String& subDir, bool create) const
 {
 	switch (location)
 	{
-		case Location::AppPath:
+		case CommonDirectoryLocation::AppPath:
 		{
 			auto url = [[NSBundle mainBundle] bundleURL];
 			return UTF8String ([url fileSystemRepresentation]);
 		}
-		case Location::AppPreferencesPath:
+		case CommonDirectoryLocation::AppPreferencesPath:
 		{
 			auto appPath = createAppPathString ();
 			UTF8String prefPath ("Preferences");
 			return getPath (NSUserDomainMask, NSLibraryDirectory, {&prefPath, &appPath, &subDir}, create);
 		}
-		case Location::AppCachesPath:
+		case CommonDirectoryLocation::AppCachesPath:
 		{
 			auto appPath = createAppPathString ();
 			return getPath (NSUserDomainMask, NSCachesDirectory, {&appPath, &subDir}, create);
 		}
-		case Location::UserDocumentsPath:
+		case CommonDirectoryLocation::UserDocumentsPath:
 		{
 			return getPath (NSUserDomainMask, NSDocumentDirectory, {&subDir}, create);
 		}
