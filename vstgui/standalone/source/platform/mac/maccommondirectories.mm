@@ -14,7 +14,13 @@ namespace Mac {
 namespace {
 
 //------------------------------------------------------------------------
-UTF8String getPath (NSSearchPathDomainMask domain, NSSearchPathDirectory directory, const UTF8String& subDir, bool create, bool addAppURI)
+UTF8String createAppPathString ()
+{
+	return IApplication::instance ().getDelegate ().getInfo ().uri;
+}
+
+//------------------------------------------------------------------------
+UTF8String getPath (NSSearchPathDomainMask domain, NSSearchPathDirectory directory, std::vector<const UTF8String*> subDirs, bool create)
 {
 	auto fileManager = [NSFileManager defaultManager];
 	auto url = [fileManager URLForDirectory:directory
@@ -24,14 +30,10 @@ UTF8String getPath (NSSearchPathDomainMask domain, NSSearchPathDirectory directo
 									  error:nil];
 	if (url)
 	{
-		if (addAppURI)
+		for (const auto& subDir : subDirs)
 		{
-			auto name = IApplication::instance ().getDelegate ().getInfo ().uri;
-			url = [url URLByAppendingPathComponent:stringFromUTF8String (name)];
-		}
-		if (!subDir.empty ())
-		{
-			url = [url URLByAppendingPathComponent:stringFromUTF8String (subDir)];
+			if (!subDir->empty ())
+				url = [url URLByAppendingPathComponent:stringFromUTF8String (*subDir)];
 		}
 		if (create)
 		{
@@ -63,15 +65,18 @@ UTF8String CommonDirectories::get (Location location, const UTF8String& subDir, 
 		}
 		case Location::AppPreferencesPath:
 		{
-			return getPath (NSUserDomainMask, NSLibraryDirectory, subDir, create, true);
+			auto appPath = createAppPathString ();
+			UTF8String prefPath ("Preferences");
+			return getPath (NSUserDomainMask, NSLibraryDirectory, {&prefPath, &appPath, &subDir}, create);
 		}
 		case Location::AppCachesPath:
 		{
-			return getPath (NSUserDomainMask, NSCachesDirectory, subDir, create, true);
+			auto appPath = createAppPathString ();
+			return getPath (NSUserDomainMask, NSCachesDirectory, {&appPath, &subDir}, create);
 		}
 		case Location::UserDocumentsPath:
 		{
-			return getPath (NSUserDomainMask, NSDocumentDirectory, subDir, create, false);
+			return getPath (NSUserDomainMask, NSDocumentDirectory, {&subDir}, create);
 		}
 	}
 	return {};
