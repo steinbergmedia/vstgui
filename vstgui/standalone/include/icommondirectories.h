@@ -8,18 +8,18 @@ namespace VSTGUI {
 namespace Standalone {
 
 //------------------------------------------------------------------------
+enum class CommonDirectoryLocation
+{
+	AppPath,
+	AppPreferencesPath,
+	AppCachesPath,
+	UserDocumentsPath,
+};
+
+//------------------------------------------------------------------------
 class ICommonDirectories : public Interface
 {
 public:
-	//------------------------------------------------------------------------
-	enum class Location
-	{
-		AppPath,
-		AppPreferencesPath,
-		AppCachesPath,
-		UserDocumentsPath,
-	};
-	
 	/** Get a common directory.
 	 *
 	 *	@param location the location of the directory
@@ -28,7 +28,7 @@ public:
 	 *	@return path string. If location does not exist the string is empty.
 	 *						 If it exists, the last character in the path is a separator.
 	 */
-	virtual UTF8String get (Location location, const UTF8String& subDir = "", bool create = false) const = 0;
+	virtual UTF8String get (CommonDirectoryLocation location, const UTF8String& subDir = "", bool create = false) const = 0;
 };
 
 //------------------------------------------------------------------------
