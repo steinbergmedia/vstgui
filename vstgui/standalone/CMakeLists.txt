@@ -27,6 +27,7 @@ set(${target}_common_sources
   include/helpers/windowcontroller.h
   include/helpers/windowlistener.h
   include/helpers/uidesc/modelbinding.h
+  include/helpers/uidesc/customization.h
   source/application.cpp
   source/application.h
   source/genericalertbox.cpp
