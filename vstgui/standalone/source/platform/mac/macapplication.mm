@@ -35,14 +35,14 @@ using CommandWithKeyList = VSTGUI::Standalone::Detail::IPlatformApplication::Com
 using VSTGUI::Standalone::Detail::PlatformCallbacks;
 
 //------------------------------------------------------------------------
-static const CommandWithKeyList* _Nullable getCommandList (const char* _Nonnull group)
+static CommandWithKeyList getCommandList (const char* _Nonnull group)
 {
 	for (auto& e : Detail::getApplicationPlatformAccess ()->getCommandList ())
 	{
 		if (e.first == group)
-			return &e.second;
+			return e.second;
 	}
-	return nullptr;
+	return {};
 }
 
 //------------------------------------------------------------------------
@@ -183,9 +183,9 @@ static const CommandWithKeyList* _Nullable getCommandList (const char* _Nonnull 
 	[menu addItem:[NSMenuItem separatorItem]];
 
 	auto commandList = getCommandList (CommandGroup::Application);
-	if (commandList)
+	if (!commandList.empty ())
 	{
-		for (auto& command : *commandList)
+		for (auto& command : commandList)
 		{
 			if (command != Commands::About && command != Commands::Preferences &&
 			    command != Commands::Quit && command != Commands::Help)
