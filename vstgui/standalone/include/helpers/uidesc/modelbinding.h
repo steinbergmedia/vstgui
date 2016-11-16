@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../iuidescwindow.h"
-#include "valuelistener.h"
+#include "../../iuidescwindow.h"
+#include "../valuelistener.h"
 #include <functional>
 #include <unordered_map>
 

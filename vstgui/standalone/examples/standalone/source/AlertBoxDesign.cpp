@@ -1,6 +1,6 @@
 #include "AlertBoxDesign.h"
 #include "vstgui/standalone/include/iuidescwindow.h"
-#include "vstgui/standalone/include/helpers/modelbinding.h"
+#include "vstgui/standalone/include/helpers/uidesc/modelbinding.h"
 #include "vstgui/standalone/include/helpers/value.h"
 
 namespace VSTGUI {
