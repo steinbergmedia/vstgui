@@ -264,7 +264,7 @@ public:
 	/// @name Reference Counting Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual void forget () { nbReference--; if (nbReference == 0) { beforeDelete (); delete this; } }	///< decrease refcount and delete object if refcount == 0
+	virtual void forget () { if (--nbReference == 0) { beforeDelete (); delete this; } }	///< decrease refcount and delete object if refcount == 0
 	virtual void remember () { nbReference++; }										///< increase refcount
 	virtual int32_t getNbReference () const { return nbReference; }					///< get refcount
 	//@}
