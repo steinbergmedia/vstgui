@@ -414,23 +414,24 @@ static void VSTGUI_NSView_scrollWheel (id self, SEL _cmd, NSEvent* theEvent)
 	NSPoint nsPoint = [theEvent locationInWindow];
 	nsPoint = [self convertPoint:nsPoint fromView:nil];
 	mapModifiers (modifiers, buttons);
-	float distanceX = static_cast<float> ([theEvent deltaX]);
-	float distanceY = static_cast<float> ([theEvent deltaY]);
-	if ([theEvent respondsToSelector:@selector(isDirectionInvertedFromDevice)])
+	auto distanceX = [theEvent scrollingDeltaX];
+	auto distanceY = [theEvent scrollingDeltaY];
+	if ([theEvent hasPreciseScrollingDeltas])
 	{
-		BOOL inverted = [theEvent isDirectionInvertedFromDevice];
-		if (inverted)
-		{
-			distanceX *= -1;
-			distanceY *= -1;
-			buttons |= kMouseWheelInverted;
-		}
+		distanceX *= 0.1;
+		distanceY *= 0.1;
+	}
+	if ([theEvent isDirectionInvertedFromDevice])
+	{
+		distanceX *= -1;
+		distanceY *= -1;
+		buttons |= kMouseWheelInverted;
 	}
 	CPoint p = pointFromNSPoint (nsPoint);
-	if (distanceX != 0.f)
-		_vstguiframe->platformOnMouseWheel (p, kMouseWheelAxisX, distanceX, buttons);
-	if (distanceY != 0.f)
-		_vstguiframe->platformOnMouseWheel (p, kMouseWheelAxisY, distanceY, buttons);
+	if (distanceX != 0.)
+		_vstguiframe->platformOnMouseWheel (p, kMouseWheelAxisX, static_cast<float> (distanceX), buttons);
+	if (distanceY != 0.)
+		_vstguiframe->platformOnMouseWheel (p, kMouseWheelAxisY, static_cast<float> (distanceY), buttons);
 }
 
 //------------------------------------------------------------------------------------
