@@ -9,6 +9,7 @@
 #include "drawdevicetests.h"
 #include "vstgui/standalone/include/iuidescwindow.h"
 #include "vstgui/standalone/include/iapplication.h"
+#include "vstgui/standalone/include/helpers/menubuilder.h"
 #include "vstgui/standalone/include/helpers/uidesc/modelbinding.h"
 #include "vstgui/standalone/include/helpers/value.h"
 #include "vstgui/uidescription/delegationcontroller.h"
@@ -224,7 +225,7 @@ private:
 
 };
 
-class DrawDeviceTestsCustomization : public UIDesc::ICustomization
+class DrawDeviceTestsCustomization : public UIDesc::ICustomization, public NoMenuBuilder
 {
 public:
 	DrawDeviceTestsCustomization ()
