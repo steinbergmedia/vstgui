@@ -36,11 +36,12 @@
 #define __nsviewframe__
 
 #include "../../../vstguifwd.h"
-#include "../../../cview.h"
-#include "../../iplatformframe.h"
 
 #if MAC_COCOA
 
+#include "../../../cview.h"
+#include "../../iplatformframe.h"
+#include "../../../idatapackage.h"
 #include <list>
 
 #ifdef __OBJC__
@@ -66,6 +67,9 @@ public:
 	void setLastDragOperationResult (DragResult result) { lastDragOperationResult = result; }
 	void setIgnoreNextResignFirstResponder (bool state) { ignoreNextResignFirstResponder = state; }
 	bool getIgnoreNextResignFirstResponder () const { return ignoreNextResignFirstResponder; }
+
+	void setDragDataPackage (SharedPointer<IDataPackage>&& package) { dragDataPackage = std::move (package); }
+	const SharedPointer<IDataPackage>& getDragDataPackage () const { return dragDataPackage; }
 
 	void initTrackingArea ();
 	void cursorUpdate ();
@@ -101,6 +105,7 @@ protected:
 
 	NSView* nsView;
 	CocoaTooltipWindow* tooltipWindow;
+	SharedPointer<IDataPackage> dragDataPackage;
 
 	DragResult lastDragOperationResult;
 	bool ignoreNextResignFirstResponder;

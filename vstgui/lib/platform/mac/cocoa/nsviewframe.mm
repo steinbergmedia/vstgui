@@ -47,7 +47,6 @@
 #import "../quartzgraphicspath.h"
 #import "../caviewlayer.h"
 #import "../../../cvstguitimer.h"
-#import "../../../idatapackage.h"
 #import "../../../cbitmap.h"
 
 #if MAC_CARBON
@@ -55,6 +54,8 @@
 #endif
 
 #import <Carbon/Carbon.h>
+
+#define VSTGUI_NSVIEW_USE_DRAGGING_SESSION 0
 
 using namespace VSTGUI;
 
@@ -74,14 +75,6 @@ HIDDEN inline NSViewFrame* getNSViewFrame (id obj)
 }
 
 static Class viewClass = nullptr;
-static SharedPointer<IDataPackage> gCocoaDragContainer;
-
-#ifndef __MAC_10_7
-//------------------------------------------------------------------------------------
-@interface NSEvent (VSTGUI_NSEvent_Private)
-- (BOOL)isDirectionInvertedFromDevice;
-@end
-#endif
 
 //------------------------------------------------------------------------------------
 @interface NSObject (VSTGUI_NSView)
@@ -548,20 +541,20 @@ static void VSTGUI_NSView_keyUp (id self, SEL _cmd, NSEvent* theEvent)
 //------------------------------------------------------------------------------------
 static NSDragOperation VSTGUI_NSView_draggingEntered (id self, SEL _cmd, id sender)
 {
-	IPlatformFrameCallback* _vstguiframe = getFrame (self);
-	if (!_vstguiframe)
+	NSViewFrame* frame = getNSViewFrame (self);
+	if (!frame)
 		return NSDragOperationNone;
 
     NSPasteboard *pboard = [sender draggingPasteboard];
 
-	gCocoaDragContainer = MacClipboard::createDragDataPackage (pboard);
+	frame->setDragDataPackage (MacClipboard::createDragDataPackage (pboard));
 
 	CPoint where;
 	nsViewGetCurrentMouseLocation (self, where);
 
 	getNSViewFrame (self)->setMouseCursor (kCursorNotAllowed);
 
-	_vstguiframe->platformOnDragEnter (gCocoaDragContainer, where);
+	frame->getFrame ()->platformOnDragEnter (frame->getDragDataPackage (), where);
 	
 	return NSDragOperationGeneric;
 }
@@ -569,13 +562,13 @@ static NSDragOperation VSTGUI_NSView_draggingEntered (id self, SEL _cmd, id send
 //------------------------------------------------------------------------------------
 static NSDragOperation VSTGUI_NSView_draggingUpdated (id self, SEL _cmd, id sender)
 {
-	IPlatformFrameCallback* _vstguiframe = getFrame (self);
-	if (!_vstguiframe)
+	NSViewFrame* frame = getNSViewFrame (self);
+	if (!frame)
 		return NSDragOperationNone;
 
 	CPoint where;
 	nsViewGetCurrentMouseLocation (self, where);
-	_vstguiframe->platformOnDragMove (gCocoaDragContainer, where);
+	frame->getFrame ()->platformOnDragMove (frame->getDragDataPackage (), where);
 
 	return NSDragOperationGeneric;
 }
@@ -583,33 +576,52 @@ static NSDragOperation VSTGUI_NSView_draggingUpdated (id self, SEL _cmd, id send
 //------------------------------------------------------------------------------------
 static void VSTGUI_NSView_draggingExited (id self, SEL _cmd, id sender)
 {
-	IPlatformFrameCallback* _vstguiframe = getFrame (self);
-	if (!_vstguiframe || !gCocoaDragContainer)
+	NSViewFrame* frame = getNSViewFrame (self);
+	if (!frame || !frame->getDragDataPackage ())
 		return;
 
 	CPoint where;
 	nsViewGetCurrentMouseLocation (self, where);
-	_vstguiframe->platformOnDragLeave (gCocoaDragContainer, where);
+	frame->getFrame ()->platformOnDragLeave (frame->getDragDataPackage (), where);
 	[[NSCursor arrowCursor] set];
 
-	gCocoaDragContainer = nullptr;
+	frame->setDragDataPackage (nullptr);
 }
 
 //------------------------------------------------------------------------------------
 static BOOL VSTGUI_NSView_performDragOperation (id self, SEL _cmd, id sender)
 {
-	IPlatformFrameCallback* _vstguiframe = getFrame (self);
-	if (!_vstguiframe)
+	NSViewFrame* frame = getNSViewFrame (self);
+	if (!frame || !frame->getDragDataPackage ())
 		return NO;
 
 	CPoint where;
 	nsViewGetCurrentMouseLocation (self, where);
-	bool result = _vstguiframe->platformOnDrop (gCocoaDragContainer, where);
-	getNSViewFrame (self)->setMouseCursor (kCursorDefault);
-	gCocoaDragContainer = nullptr;
+	bool result = frame->getFrame ()->platformOnDrop (frame->getDragDataPackage (), where);
+	frame->setMouseCursor (kCursorDefault);
+	frame->setDragDataPackage (nullptr);
 	return result;
 }
 
+#if VSTGUI_NSVIEW_USE_DRAGGING_SESSION
+//------------------------------------------------------------------------------------
+static NSDragOperation VSTGUI_NSView_draggingSessionSourceOperationMaskForDraggingContext (id self, SEL _cmd, NSDraggingSession* session, NSDraggingContext context)
+{
+	if (context == NSDraggingContextOutsideApplication)
+	{
+		if (auto dataPackage = MacClipboard::createDragDataPackage (session.draggingPasteboard))
+		{
+			for (auto index = 0u, count = dataPackage->getCount (); index < count; ++index)
+			{
+				if (dataPackage->getDataType (index) == IDataPackage::kBinary)
+					return NSDragOperationPrivate;
+			}
+		}
+		return NSDragOperationCopy;
+	}
+	return NSDragOperationGeneric;
+}
+#else
 //------------------------------------------------------------------------------------
 static void VSTGUI_NSView_draggedImageEndedAtOperation (id self, SEL _cmd, NSImage* image, NSPoint aPoint, NSDragOperation operation)
 {
@@ -628,7 +640,7 @@ static void VSTGUI_NSView_draggedImageEndedAtOperation (id self, SEL _cmd, NSIma
 			frame->setLastDragOperationResult (kDragCopied);
 	}
 }
-
+#endif
 
 namespace VSTGUI {
 
@@ -664,7 +676,6 @@ void NSViewFrame::initClass ()
 	{
 		AutoreleasePool ap;
 
-		const char* nsPointEncoded = @encode(NSPoint);
 		const char* nsUIntegerEncoded = @encode(NSUInteger);
 		const char* nsRectEncoded = @encode(NSRect);
 		char funcSig[100];
@@ -718,8 +729,15 @@ void NSViewFrame::initClass ()
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(draggingExited:), IMP (VSTGUI_NSView_draggingExited), "v@:@:^:"))
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(performDragOperation:), IMP (VSTGUI_NSView_performDragOperation), "B@:@:^:"))
 
-		sprintf (funcSig, "v@:@:^:%s:%s", nsPointEncoded, nsUIntegerEncoded);
+#if VSTGUI_NSVIEW_USE_DRAGGING_SESSION
+		sprintf (funcSig, "%s@:@:^:%s", @encode(NSDragOperation), @encode(NSDraggingContext));
+		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(draggingSession:sourceOperationMaskForDraggingContext:), IMP (VSTGUI_NSView_draggingSessionSourceOperationMaskForDraggingContext), funcSig))
+		Protocol* nsDraggingSourceProtocol = objc_getProtocol ("NSDraggingSource");
+		class_addProtocol (viewClass, nsDraggingSourceProtocol);
+#else
+		sprintf (funcSig, "v@:@:^:%s:%s", @encode(NSPoint), nsUIntegerEncoded);
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(draggedImage:endedAt:operation:), IMP (VSTGUI_NSView_draggedImageEndedAtOperation), funcSig))
+#endif
 
 		VSTGUI_CHECK_YES(class_addIvar (viewClass, "_nsViewFrame", sizeof (void*), (uint8_t)log2(sizeof(void*)), @encode(void*)))
 		objc_registerClassPair (viewClass);
@@ -1049,17 +1067,17 @@ SharedPointer<COffscreenContext> NSViewFrame::createOffscreenContext (CCoord wid
 DragResult NSViewFrame::doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap)
 {
 	lastDragOperationResult = kDragError;
-	CGBitmap* cgBitmap = dragBitmap ? dynamic_cast<CGBitmap*> (dragBitmap->getPlatformBitmap ().get ()) : nullptr;
-	CGImageRef cgImage = cgBitmap ? cgBitmap->getCGImage () : nullptr;
 	if (nsView)
 	{
+		CGBitmap* cgBitmap = dragBitmap ? dynamic_cast<CGBitmap*> (dragBitmap->getPlatformBitmap ().get ()) : nullptr;
+		CGImageRef cgImage = cgBitmap ? cgBitmap->getCGImage () : nullptr;
 		NSPoint bitmapOffset = { static_cast<CGFloat>(offset.x), static_cast<CGFloat>(offset.y) };
-		NSPasteboard* nsPasteboard = [NSPasteboard pasteboardWithName:NSDragPboard];
-		NSImage* nsImage = nil;
+
 		NSEvent* event = [NSApp currentEvent];
 		if (event == nullptr || !([event type] == NSLeftMouseDown || [event type] == NSLeftMouseDragged))
 			return kDragRefused;
 		NSPoint nsLocation = [event locationInWindow];
+		NSImage* nsImage = nil;
 		if (cgImage)
 		{
 			nsImage = [imageFromCGImageRef (cgImage) autorelease];
@@ -1077,8 +1095,73 @@ DragResult NSViewFrame::doDrag (IDataPackage* source, const CPoint& offset, CBit
 			bitmapOffset.x += nsLocation.x;
 			bitmapOffset.y += nsLocation.y;
 		}
-
-		
+#if VSTGUI_NSVIEW_USE_DRAGGING_SESSION
+		NSMutableArray* dragItems = [[NSMutableArray new] autorelease];
+		for (uint32_t index = 0, count = source->getCount (); index < count; ++index)
+		{
+			const void* buffer = nullptr;
+			IDataPackage::Type type {};
+			auto size = source->getData (index, buffer, type);
+			if (size == 0)
+				continue;
+			NSDraggingItem* item = nil;
+			switch (type)
+			{
+				case IDataPackage::kFilePath:
+				{
+					if (auto fileUrl = [NSURL fileURLWithPath:[NSString stringWithUTF8String:reinterpret_cast<const char*>(buffer)]])
+					{
+						item = [[[NSDraggingItem alloc] initWithPasteboardWriter:fileUrl] autorelease];
+					}
+					break;
+				}
+				case IDataPackage::kText:
+				{
+					if (auto string = [NSString stringWithUTF8String:reinterpret_cast<const char*>(buffer)])
+					{
+						item = [[[NSDraggingItem alloc] initWithPasteboardWriter:string] autorelease];
+					}
+					break;
+				}
+				case IDataPackage::kBinary:
+				{
+#if 0
+					// TODO: write an object implementing NSPasteboardWriting to provide NSData
+					if (auto data = [NSData dataWithBytes:buffer length:size])
+					{
+						item = [[[NSDraggingItem alloc] initWithPasteboardWriter:data] autorelease];
+					}
+#endif
+					break;
+				}
+				case IDataPackage::kError:
+				{
+					continue;
+				}
+			}
+			if (item)
+			{
+				if (cgImage && [dragItems count] == 0)
+				{
+					NSRect r;
+					r.origin = bitmapOffset;
+					r.origin.y -= [nsImage size].height;
+					r.size = nsImage.size;
+					[item setDraggingFrame:r contents:nsImage];
+				}
+				else
+					item.draggingFrame.origin = bitmapOffset;
+				[dragItems addObject:item];
+			}
+		}
+		NSView <NSDraggingSource>* draggingSource = (NSView <NSDraggingSource>*)nsView;
+		if (auto session = [nsView beginDraggingSessionWithItems:dragItems event:event source:draggingSource])
+		{
+			session.animatesToStartingPositionsOnCancelOrFail = YES;
+			return kDragAsynchronous;
+		}
+#else
+		NSPasteboard* nsPasteboard = [NSPasteboard pasteboardWithName:NSDragPboard];
 		IDataPackage::Type type = source->getDataType (0);
 		switch (type)
 		{
@@ -1129,6 +1212,7 @@ DragResult NSViewFrame::doDrag (IDataPackage* source, const CPoint& offset, CBit
 		[nsView dragImage:nsImage at:bitmapOffset offset:NSMakeSize (0, 0) event:event pasteboard:nsPasteboard source:nsView slideBack:dragBitmap ? YES : NO];
 		[nsPasteboard clearContents];
 		return lastDragOperationResult;
+#endif
 	}
 	return kDragError;
 }
