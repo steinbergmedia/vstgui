@@ -569,7 +569,7 @@ int32_t CView::onKeyUp (VstKeyCode& keyCode)
  * @param source source drop
  * @param offset bitmap offset
  * @param dragBitmap bitmap to drag
- * @return 0 on failure, negative if source was moved and positive if source was copied
+ * @return see DragResult
  */
 DragResult CView::doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap)
 {
