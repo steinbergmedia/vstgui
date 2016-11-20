@@ -20,7 +20,7 @@ See @ref standalone_library "this page" for an introduction.
 
 @note The Standalone Library is a preview. The API may change in the future !
 
-The standalone library adds a minimal set of classes to write simple cross-platform applications.
+The standalone library adds a minimal set of classes to write simple cross-platform UI applications.
 See @ref standalone "this page" for a list of classes.
 
 Here's a minimal sample just showing one window:
