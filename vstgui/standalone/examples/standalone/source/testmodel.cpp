@@ -51,7 +51,7 @@ void TestModel::onEndEdit (IValue& value)
 		config.thirdButton = "Do Quit";
 		config.window = IApplication::instance ().getWindows ().front ();
 		config.callback = [] (AlertResult res) {
-			if (res == AlertResult::thirdButton)
+			if (res == AlertResult::ThirdButton)
 				IApplication::instance ().quit ();
 		};
 		if (config.window)
