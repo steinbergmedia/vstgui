@@ -109,7 +109,7 @@ void Application::init (HINSTANCE instance, LPWSTR commandLine)
 //------------------------------------------------------------------------
 AlertResult Application::showAlert (const AlertBoxConfig& config)
 {
-	AlertResult result = AlertResult::error;
+	AlertResult result = AlertResult::Error;
 	if (auto window = Detail::createAlertBox (config, [&] (AlertResult r) { result = r; }))
 	{
 		auto winModalWindow = toWin32Window (window);
@@ -126,7 +126,7 @@ AlertResult Application::showAlert (const AlertBoxConfig& config)
 		window->show ();
 		MSG msg;
 		BOOL gmResult;
-		while (result == AlertResult::error && (gmResult = GetMessage (&msg, NULL, 0, 0)))
+		while (result == AlertResult::Error && (gmResult = GetMessage (&msg, NULL, 0, 0)))
 		{
 			TranslateMessage (&msg);
 			DispatchMessage (&msg);

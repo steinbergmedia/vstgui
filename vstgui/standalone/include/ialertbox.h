@@ -16,10 +16,10 @@ namespace Standalone {
  */
 enum class AlertResult
 {
-	defaultButton,
-	secondButton,
-	thirdButton,
-	error,
+	DefaultButton,
+	SecondButton,
+	ThirdButton,
+	Error,
 };
 
 //------------------------------------------------------------------------
