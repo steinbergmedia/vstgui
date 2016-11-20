@@ -37,9 +37,9 @@ IEditFileMap& getEditFileMap ();
 //------------------------------------------------------------------------
 enum class UIDescCheckFilePathResult
 {
-	exists,
-	newPathSet,
-	cancel
+	Exists,
+	NewPathSet,
+	Cancel
 };
 
 //------------------------------------------------------------------------

@@ -640,9 +640,9 @@ struct WindowController::EditImpl : WindowController::Impl
 		Detail::PreventPopupClose ppc (*window);
 
 		auto result = Detail::checkAndUpdateUIDescFilePath (*uiDesc, frame);
-		if (result == Detail::UIDescCheckFilePathResult::exists)
+		if (result == Detail::UIDescCheckFilePathResult::Exists)
 			return;
-		if (result == Detail::UIDescCheckFilePathResult::newPathSet)
+		if (result == Detail::UIDescCheckFilePathResult::NewPathSet)
 		{
 			save (true);
 			return;

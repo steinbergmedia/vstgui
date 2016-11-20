@@ -166,7 +166,7 @@ AlertResult Application::showAlertBox (const AlertBoxConfig& config)
 {
 	if (platform.showAlert)
 		return platform.showAlert (config);
-	return AlertResult::error;
+	return AlertResult::Error;
 }
 
 //------------------------------------------------------------------------

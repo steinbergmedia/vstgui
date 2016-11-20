@@ -96,17 +96,17 @@ public:
 		if (value.getID () == "AlertBox.firstButton")
 		{
 			window->close ();
-			callback (AlertResult::defaultButton);
+			callback (AlertResult::DefaultButton);
 		}
 		else if (value.getID () == "AlertBox.secondButton")
 		{
 			window->close ();
-			callback (AlertResult::secondButton);
+			callback (AlertResult::SecondButton);
 		}
 		else if (value.getID () == "AlertBox.thirdButton")
 		{
 			window->close ();
-			callback (AlertResult::thirdButton);
+			callback (AlertResult::ThirdButton);
 		}
 	}
 

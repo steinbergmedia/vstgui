@@ -129,7 +129,7 @@ void SharedUIResources::load () const
 #if VSTGUI_LIVE_EDITING
 		auto res = Detail::checkAndUpdateUIDescFilePath (
 		    *description, nullptr, "The resource ui desc file location cannot be found.");
-		if (res == UIDescCheckFilePathResult::cancel)
+		if (res == UIDescCheckFilePathResult::Cancel)
 		{
 			IApplication::instance ().quit ();
 			return;
@@ -137,7 +137,7 @@ void SharedUIResources::load () const
 		Detail::getEditFileMap ().set (
 		    IApplication::instance ().getDelegate ().getSharedUIResourceFilename (),
 		    description->getFilePath ());
-		if (res == UIDescCheckFilePathResult::newPathSet)
+		if (res == UIDescCheckFilePathResult::NewPathSet)
 			saveSharedUIDescription ();
 #endif
 	}
@@ -223,7 +223,7 @@ UIDescCheckFilePathResult checkAndUpdateUIDescFilePath (UIDescription& uiDesc, C
 {
 	CFileStream stream;
 	if (stream.open (uiDesc.getFilePath (), CFileStream::kReadMode))
-		return UIDescCheckFilePathResult::exists;
+		return UIDescCheckFilePathResult::Exists;
 
 	SharedPointer<CFrame> frame (_frame);
 	if (!frame)
@@ -235,9 +235,9 @@ UIDescCheckFilePathResult checkAndUpdateUIDescFilePath (UIDescription& uiDesc, C
 	alertConfig.defaultButton = "Locate";
 	alertConfig.secondButton = "Close";
 	auto alertResult = IApplication::instance ().showAlertBox (alertConfig);
-	if (alertResult == AlertResult::secondButton)
+	if (alertResult == AlertResult::SecondButton)
 	{
-		return UIDescCheckFilePathResult::cancel;
+		return UIDescCheckFilePathResult::Cancel;
 	}
 	auto fs = owned (CNewFileSelector::create (frame, CNewFileSelector::kSelectFile));
 	if (auto initPath = IApplication::instance ().getPreferences ().get (UIDescPathKey))
@@ -247,16 +247,16 @@ UIDescCheckFilePathResult checkAndUpdateUIDescFilePath (UIDescription& uiDesc, C
 	{
 		if (fs->getNumSelectedFiles () == 0)
 		{
-			return UIDescCheckFilePathResult::cancel;
+			return UIDescCheckFilePathResult::Cancel;
 		}
 		auto path = fs->getSelectedFile (0);
 		uiDesc.setFilePath (path);
 		auto settings = uiDesc.getCustomAttributes ("UIDescFilePath", true);
 		settings->setAttribute ("path", uiDesc.getFilePath ());
 		IApplication::instance ().getPreferences ().set (UIDescPathKey, path);
-		return UIDescCheckFilePathResult::newPathSet;
+		return UIDescCheckFilePathResult::NewPathSet;
 	}
-	return UIDescCheckFilePathResult::cancel;
+	return UIDescCheckFilePathResult::Cancel;
 }
 
 //------------------------------------------------------------------------

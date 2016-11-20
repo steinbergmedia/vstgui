@@ -384,10 +384,10 @@ static CommandWithKeyList getCommandList (const char* _Nonnull group)
 	NSAlert* alert = [self createAlert:config];
 	NSModalResponse response = [alert runModal];
 	if (response == NSAlertSecondButtonReturn)
-		return AlertResult::secondButton;
+		return AlertResult::SecondButton;
 	if (response == NSAlertThirdButtonReturn)
-		return AlertResult::thirdButton;
-	return AlertResult::defaultButton;
+		return AlertResult::ThirdButton;
+	return AlertResult::DefaultButton;
 }
 
 //------------------------------------------------------------------------
@@ -414,13 +414,13 @@ static CommandWithKeyList getCommandList (const char* _Nonnull group)
 	              completionHandler:^(NSModalResponse returnCode) {
 		            if (callback)
 		            {
-			            AlertResult result = AlertResult::error;
+			            AlertResult result = AlertResult::Error;
 			            if (returnCode == NSAlertFirstButtonReturn)
-				            result = AlertResult::defaultButton;
+				            result = AlertResult::DefaultButton;
 			            else if (returnCode == NSAlertSecondButtonReturn)
-				            result = AlertResult::secondButton;
+				            result = AlertResult::SecondButton;
 			            else if (returnCode == NSAlertThirdButtonReturn)
-				            result = AlertResult::thirdButton;
+				            result = AlertResult::ThirdButton;
 			            callback (result);
 		            }
 		          }];
