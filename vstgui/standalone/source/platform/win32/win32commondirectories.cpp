@@ -63,7 +63,7 @@ CommonDirectories::CommonDirectories ()
 }
 
 //------------------------------------------------------------------------
-UTF8String CommonDirectories::getLocalAppDataPath (const UTF8String& dir, const UTF8String& subDir,
+Optional<UTF8String> CommonDirectories::getLocalAppDataPath (const UTF8String& dir, const UTF8String& subDir,
                                                    bool create) const
 {
 	if (!localAppDataPath.empty ())
@@ -81,7 +81,7 @@ UTF8String CommonDirectories::getLocalAppDataPath (const UTF8String& dir, const 
 }
 
 //------------------------------------------------------------------------
-UTF8String CommonDirectories::getAppPath () const
+Optional<UTF8String> CommonDirectories::getAppPath () const
 {
 	UTF8String appPath;
 	std::array<wchar_t, 1024> path;
@@ -91,7 +91,7 @@ UTF8String CommonDirectories::getAppPath () const
 }
 
 //------------------------------------------------------------------------
-UTF8String CommonDirectories::get (CommonDirectoryLocation location, const UTF8String& subDir, bool create) const
+Optional<UTF8String> CommonDirectories::get (CommonDirectoryLocation location, const UTF8String& subDir, bool create) const
 {
 	switch (location)
 	{
