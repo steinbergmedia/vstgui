@@ -20,7 +20,7 @@ UTF8String createAppPathString ()
 }
 
 //------------------------------------------------------------------------
-UTF8String getPath (NSSearchPathDomainMask domain, NSSearchPathDirectory directory, std::vector<const UTF8String*> subDirs, bool create)
+Optional<UTF8String> getPath (NSSearchPathDomainMask domain, NSSearchPathDirectory directory, std::vector<const UTF8String*> subDirs, bool create)
 {
 	auto fileManager = [NSFileManager defaultManager];
 	auto url = [fileManager URLForDirectory:directory
@@ -54,7 +54,7 @@ UTF8String getPath (NSSearchPathDomainMask domain, NSSearchPathDirectory directo
 } // anonymous
 
 //------------------------------------------------------------------------
-UTF8String CommonDirectories::get (CommonDirectoryLocation location, const UTF8String& subDir, bool create) const
+Optional<UTF8String> CommonDirectories::get (CommonDirectoryLocation location, const UTF8String& subDir, bool create) const
 {
 	switch (location)
 	{

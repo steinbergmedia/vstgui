@@ -2,6 +2,7 @@
 
 #include "interface.h"
 #include "../../lib/cstring.h"
+#include "../../lib/optional.h"
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -25,10 +26,9 @@ public:
 	 *	@param location the location of the directory
 	 *	@param subDir optional sub directory
 	 *	@param create create directory if it does not exist
-	 *	@return path string. If location does not exist the string is empty.
-	 *						 If it exists, the last character in the path is a separator.
+	 *	@return If location does exist the string is the path to the directory with the last character the path separator.
 	 */
-	virtual UTF8String get (CommonDirectoryLocation location, const UTF8String& subDir = "", bool create = false) const = 0;
+	virtual Optional<UTF8String> get (CommonDirectoryLocation location, const UTF8String& subDir = "", bool create = false) const = 0;
 };
 
 //------------------------------------------------------------------------
