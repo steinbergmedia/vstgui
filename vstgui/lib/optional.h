@@ -49,7 +49,7 @@ struct Optional
 {
 	static_assert (std::is_default_constructible<T>::value, "Type T must be default constructible");
 
-	explicit Optional (T&& v);
+	Optional (T&& v);
 	explicit Optional (const T& v);
 	Optional ();
 
