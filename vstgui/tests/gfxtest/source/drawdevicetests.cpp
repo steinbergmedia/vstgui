@@ -11,6 +11,7 @@
 #include "vstgui/standalone/include/iapplication.h"
 #include "vstgui/standalone/include/helpers/menubuilder.h"
 #include "vstgui/standalone/include/helpers/uidesc/modelbinding.h"
+#include "vstgui/standalone/include/helpers/uidesc/customization.h"
 #include "vstgui/standalone/include/helpers/value.h"
 #include "vstgui/uidescription/delegationcontroller.h"
 #include "vstgui/uidescription/uiattributes.h"
@@ -225,32 +226,15 @@ private:
 
 };
 
-class DrawDeviceTestsCustomization : public UIDesc::ICustomization, public NoMenuBuilder
+class DrawDeviceTestsCustomization : public UIDesc::Customization, public NoMenuBuilder
 {
 public:
-	DrawDeviceTestsCustomization ()
-	{
-		modelBindings = UIDesc::ModelBindingCallbacks::make ();
-		modelBindings->addValue (Value::makeStringListValue ("ViewSelector", {"Lines/Rects", "Paths"}));
-	}
-	
-	IController* createController (const UTF8StringView& name, IController* parent,
-								   const IUIDescription* uiDesc) override
-   {
-	   if (name == "ViewCreator")
-		   return new ViewCreator (parent);
-	   return nullptr;
-   }
-
-	UIDesc::ModelBindingPtr getModelBinding () const { return modelBindings; }
-private:
-	UIDesc::ModelBindingCallbacksPtr modelBindings;
 };
 
 void makeDrawDeviceTestsWindow ()
 {
 	static UTF8String windowTitle = "DrawDeviceTests";
-	const auto& windows = IApplication::instance().getWindows ();
+	const auto& windows = IApplication::instance ().getWindows ();
 	for (auto& window : windows)
 	{
 		if (window->getTitle () == windowTitle)
@@ -260,13 +244,19 @@ void makeDrawDeviceTestsWindow ()
 		}
 	}
 
+	auto modelBinding = UIDesc::ModelBindingCallbacks::make ();
+	modelBinding->addValue (Value::makeStringListValue ("ViewSelector", {"Lines/Rects", "Paths"}));
+
 	auto drawDeviceTestsCustomization = std::make_shared<DrawDeviceTestsCustomization> ();
+	drawDeviceTestsCustomization->addCreateViewController ("ViewCreator", [] (const auto& name, auto parent, const auto uiDesc) {
+		return new ViewCreator (parent);
+	});
 
 	UIDesc::Config config;
 	config.uiDescFileName = "DrawDeviceTests.uidesc";
 	config.viewName = "Window";
 	config.customization = drawDeviceTestsCustomization;
-	config.modelBinding = drawDeviceTestsCustomization->getModelBinding ();
+	config.modelBinding = modelBinding;
 	config.windowConfig.title = windowTitle;
 	config.windowConfig.autoSaveFrameName = "DrawDeviceTestsWindow";
 	config.windowConfig.style.border ().close ().size ().centered ();
