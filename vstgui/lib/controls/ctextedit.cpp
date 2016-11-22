@@ -331,7 +331,7 @@ void CTextEdit::takeFocus ()
 	if (getFrame()->getFocusView () != this)
 		getFrame()->setFocusView (this);
 	CTextLabel::takeFocus ();
-	return;
+	invalid ();
 }
 
 //------------------------------------------------------------------------
@@ -358,6 +358,7 @@ void CTextEdit::looseFocus ()
 		receiver = receiver->getParentView ();
 	}
 	CTextLabel::looseFocus ();
+	invalid ();
 }
 
 //------------------------------------------------------------------------
