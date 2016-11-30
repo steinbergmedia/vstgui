@@ -248,7 +248,7 @@ void makeDrawDeviceTestsWindow ()
 	modelBinding->addValue (Value::makeStringListValue ("ViewSelector", {"Lines/Rects", "Paths"}));
 
 	auto drawDeviceTestsCustomization = std::make_shared<DrawDeviceTestsCustomization> ();
-	drawDeviceTestsCustomization->addCreateViewController ("ViewCreator", [] (const auto& name, auto parent, const auto uiDesc) {
+	drawDeviceTestsCustomization->addCreateViewControllerFunc ("ViewCreator", [] (const auto& name, auto parent, const auto uiDesc) {
 		return new ViewCreator (parent);
 	});
 

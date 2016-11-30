@@ -277,6 +277,10 @@ struct ModelBinding : UIDesc::IModelBinding, IModelChangeListener, ValueListener
 		model->setMinMax (min, max);
 	}
 
+	const ValuePtr& getProgressValue () const { return progressValue; }
+
+private:
+
 	ValueConverterPtr xConverter {Value::makeRangeConverter (-2.2, 1.2)};
 	ValueConverterPtr yConverter {Value::makeRangeConverter (-1.7, 1.7)};
 
@@ -299,9 +303,9 @@ VSTGUI::Standalone::WindowPtr makeMandelbrotWindow ()
 	auto modelBinding = std::make_shared<ModelBinding> (model);
 	auto customization = UIDesc::Customization::make ();
 
-	customization->addCreateViewController (
+	customization->addCreateViewControllerFunc (
 	    "mandelbrotviewcontroller", [=] (const auto& name, auto parent, const auto uiDesc) {
-		    return new ViewController (parent, model, modelBinding->progressValue);
+		    return new ViewController (parent, model, modelBinding->getProgressValue ());
 		});
 
 	UIDesc::Config config;
