@@ -37,7 +37,8 @@ struct ValueCalls
 	static ValueCalls onAction (Call&& call)
 	{
 		ValueCalls c;
-		c.onEndEditCall = [call = std::move (call)] (IValue& v) {
+		c.onEndEditCall = [call = std::move (call)] (IValue & v)
+		{
 			if (v.getValue () > 0.5)
 				call (v);
 		};

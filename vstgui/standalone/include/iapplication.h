@@ -33,7 +33,7 @@ public:
 	virtual const ISharedUIResources& getSharedUIResources () const = 0;
 	/** Get common directories */
 	virtual const ICommonDirectories& getCommonDirectories () const = 0;
-	
+
 	/** Create a new window
 	 *
 	 *	@param config window configuration

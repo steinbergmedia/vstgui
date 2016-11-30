@@ -1,14 +1,15 @@
 #include "mandelbrotwindow.h"
 #include "mandelbrot.h"
 #include "mandelbrotview.h"
+#include "modelbinding.h"
 #include "vstgui/lib/cbitmap.h"
 #include "vstgui/lib/ccolor.h"
 #include "vstgui/lib/cframe.h"
 #include "vstgui/lib/iscalefactorchangedlistener.h"
 #include "vstgui/lib/iviewlistener.h"
+#include "vstgui/standalone/include/helpers/uidesc/customization.h"
 #include "vstgui/standalone/include/helpers/value.h"
 #include "vstgui/standalone/include/helpers/valuelistener.h"
-#include "vstgui/standalone/include/helpers/uidesc/customization.h"
 #include "vstgui/standalone/include/iasync.h"
 #include "vstgui/standalone/include/iuidescwindow.h"
 #include "vstgui/uidescription/delegationcontroller.h"
@@ -219,88 +220,10 @@ struct ViewController : DelegationController,
 };
 
 //------------------------------------------------------------------------
-struct ModelBinding : UIDesc::IModelBinding, IModelChangeListener, ValueListenerAdapter
-{
-	using Ptr = std::shared_ptr<ModelBinding>;
-
-	ModelBinding (Model::Ptr model) : model (model)
-	{
-		Value::performSingleStepEdit (*maxIterations.get (), model->getIterations ());
-
-		values.emplace_back (maxIterations);
-		values.emplace_back (minX);
-		values.emplace_back (minY);
-		values.emplace_back (maxX);
-		values.emplace_back (maxY);
-		values.emplace_back (progressValue);
-		values.emplace_back (showParams);
-
-		maxIterations->registerListener (this);
-		minX->registerListener (this);
-		minY->registerListener (this);
-		maxX->registerListener (this);
-		maxY->registerListener (this);
-
-		model->registerListener (this);
-	}
-
-	const ValueList& getValues () const override { return values; }
-
-	void modelChanged (const Model& model) override
-	{
-		Value::performSingleStepEdit (*maxIterations.get (), model.getIterations ());
-		Value::performSinglePlainEdit (*minX.get (), model.getMin ().x);
-		Value::performSinglePlainEdit (*minY.get (), model.getMin ().y);
-		Value::performSinglePlainEdit (*maxX.get (), model.getMax ().x);
-		Value::performSinglePlainEdit (*maxY.get (), model.getMax ().y);
-	}
-
-	void onPerformEdit (IValue& value, IValue::Type newValue) override
-	{
-		if (&value == maxIterations.get ())
-		{
-			auto step = Value::currentStepValue (*maxIterations.get ());
-			if (step != IStepValue::InvalidStep)
-				model->setIterations (step);
-			return;
-		}
-		auto min = model->getMin ();
-		auto max = model->getMax ();
-		if (&value == maxX.get ())
-			max.x = Value::currentPlainValue (value);
-		else if (&value == maxY.get ())
-			max.y = Value::currentPlainValue (value);
-		else if (&value == minX.get ())
-			min.x = Value::currentPlainValue (value);
-		else if (&value == minY.get ())
-			min.y = Value::currentPlainValue (value);
-		model->setMinMax (min, max);
-	}
-
-	const ValuePtr& getProgressValue () const { return progressValue; }
-
-private:
-
-	ValueConverterPtr xConverter {Value::makeRangeConverter (-2.2, 1.2)};
-	ValueConverterPtr yConverter {Value::makeRangeConverter (-1.7, 1.7)};
-
-	ValuePtr maxIterations {Value::makeStepValue ("max interations", 1024)};
-	ValuePtr minX {Value::make ("minX", 0., xConverter)};
-	ValuePtr minY {Value::make ("minY", 0., yConverter)};
-	ValuePtr maxX {Value::make ("maxX", 1., xConverter)};
-	ValuePtr maxY {Value::make ("maxY", 1., yConverter)};
-	ValuePtr progressValue {Value::make ("progress")};
-	ValuePtr showParams {Value::make ("showParams")};
-	ValueList values;
-
-	Model::Ptr model;
-};
-
-//------------------------------------------------------------------------
 VSTGUI::Standalone::WindowPtr makeMandelbrotWindow ()
 {
 	auto model = std::make_shared<Model> ();
-	auto modelBinding = std::make_shared<ModelBinding> (model);
+	auto modelBinding = ModelBinding::make (model);
 	auto customization = UIDesc::Customization::make ();
 
 	customization->addCreateViewControllerFunc (

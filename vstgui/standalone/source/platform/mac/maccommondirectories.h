@@ -12,7 +12,8 @@ namespace Mac {
 class CommonDirectories : public ICommonDirectories
 {
 public:
-	Optional<UTF8String> get (CommonDirectoryLocation location, const UTF8String& subDir, bool create = false) const override;
+	Optional<UTF8String> get (CommonDirectoryLocation location, const UTF8String& subDir,
+	                          bool create = false) const override;
 };
 
 //------------------------------------------------------------------------

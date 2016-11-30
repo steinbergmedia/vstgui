@@ -10,6 +10,7 @@ set(${target}_sources
   "source/mandelbrotview.h"
   "source/mandelbrotwindow.cpp"
   "source/mandelbrotwindow.h"
+  "source/modelbinging.h"
   "source/progressindicatorview.cpp"
 )
 

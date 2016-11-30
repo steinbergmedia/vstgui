@@ -52,7 +52,7 @@ public:
 	virtual void init (const InitParams& params) = 0;
 
 	virtual CommandList getCommandList (const Platform::IWindow* window = nullptr) = 0;
-	virtual const CommandList& getKeyCommandList () = 0; 
+	virtual const CommandList& getKeyCommandList () = 0;
 	virtual bool canQuit () = 0;
 
 	virtual bool dontClosePopupOnDeactivation (Platform::IWindow* window) = 0;

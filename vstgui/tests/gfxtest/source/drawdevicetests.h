@@ -8,10 +8,12 @@
 
 #pragma once
 
+//------------------------------------------------------------------------
 namespace VSTGUI {
 namespace Standalone {
 
 void makeDrawDeviceTestsWindow ();
 
+//------------------------------------------------------------------------
 } // Standalone
 } // VSTGUI

@@ -14,18 +14,18 @@ public:
 	{
 		return true;
 	}
-	
+
 	bool showCommandInMenu (const Interface& context, const Command& cmd) const override
 	{
 		return true;
 	}
-	
+
 	SortFunction getCommandGroupSortFunction (const Interface& context,
 	                                          const UTF8String& group) const override
 	{
 		return {};
 	}
-	
+
 	bool prependMenuSeparator (const Interface& context, const Command& cmd) const override
 	{
 		return false;
@@ -40,7 +40,7 @@ public:
 	{
 		return false;
 	}
-	
+
 	bool showCommandInMenu (const Interface& context, const Command& cmd) const override
 	{
 		return false;
