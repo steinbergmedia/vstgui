@@ -1,7 +1,7 @@
 #import "maccommondirectories.h"
-#import "macutilities.h"
-#import "../../../include/iapplication.h"
 #import "../../../include/iappdelegate.h"
+#import "../../../include/iapplication.h"
+#import "macutilities.h"
 #import <Cocoa/Cocoa.h>
 
 //------------------------------------------------------------------------
@@ -20,14 +20,15 @@ UTF8String createAppPathString ()
 }
 
 //------------------------------------------------------------------------
-Optional<UTF8String> getPath (NSSearchPathDomainMask domain, NSSearchPathDirectory directory, std::vector<const UTF8String*> subDirs, bool create)
+Optional<UTF8String> getPath (NSSearchPathDomainMask domain, NSSearchPathDirectory directory,
+                              std::vector<const UTF8String*> subDirs, bool create)
 {
 	auto fileManager = [NSFileManager defaultManager];
 	auto url = [fileManager URLForDirectory:directory
-								   inDomain:domain
-						  appropriateForURL:nil
-									 create:create ? YES : NO
-									  error:nil];
+	                               inDomain:domain
+	                      appropriateForURL:nil
+	                                 create:create ? YES : NO
+	                                  error:nil];
 	if (url)
 	{
 		for (const auto& subDir : subDirs)
@@ -38,9 +39,9 @@ Optional<UTF8String> getPath (NSSearchPathDomainMask domain, NSSearchPathDirecto
 		if (create)
 		{
 			if (![fileManager createDirectoryAtURL:url
-					   withIntermediateDirectories:YES
-										attributes:nil
-											 error:nil])
+			           withIntermediateDirectories:YES
+			                            attributes:nil
+			                                 error:nil])
 			{
 				return {};
 			}
@@ -54,7 +55,8 @@ Optional<UTF8String> getPath (NSSearchPathDomainMask domain, NSSearchPathDirecto
 } // anonymous
 
 //------------------------------------------------------------------------
-Optional<UTF8String> CommonDirectories::get (CommonDirectoryLocation location, const UTF8String& subDir, bool create) const
+Optional<UTF8String> CommonDirectories::get (CommonDirectoryLocation location,
+                                             const UTF8String& subDir, bool create) const
 {
 	switch (location)
 	{
@@ -67,7 +69,8 @@ Optional<UTF8String> CommonDirectories::get (CommonDirectoryLocation location, c
 		{
 			auto appPath = createAppPathString ();
 			UTF8String prefPath ("Preferences");
-			return getPath (NSUserDomainMask, NSLibraryDirectory, {&prefPath, &appPath, &subDir}, create);
+			return getPath (NSUserDomainMask, NSLibraryDirectory, {&prefPath, &appPath, &subDir},
+			                create);
 		}
 		case CommonDirectoryLocation::AppCachesPath:
 		{

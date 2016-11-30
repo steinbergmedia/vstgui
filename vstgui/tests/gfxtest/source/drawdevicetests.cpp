@@ -7,42 +7,41 @@
 //
 
 #include "drawdevicetests.h"
-#include "vstgui/standalone/include/iuidescwindow.h"
-#include "vstgui/standalone/include/iapplication.h"
-#include "vstgui/standalone/include/helpers/menubuilder.h"
-#include "vstgui/standalone/include/helpers/uidesc/modelbinding.h"
-#include "vstgui/standalone/include/helpers/uidesc/customization.h"
-#include "vstgui/standalone/include/helpers/value.h"
-#include "vstgui/uidescription/delegationcontroller.h"
-#include "vstgui/uidescription/uiattributes.h"
-#include "vstgui/uidescription/iuidescription.h"
-#include "vstgui/uidescription/cstream.h"
-#include "vstgui/lib/coffscreencontext.h"
-#include "vstgui/lib/cframe.h"
-#include "vstgui/lib/cfileselector.h"
 #include "vstgui/lib/cbitmap.h"
+#include "vstgui/lib/cfileselector.h"
+#include "vstgui/lib/cframe.h"
 #include "vstgui/lib/cgraphicstransform.h"
+#include "vstgui/lib/coffscreencontext.h"
 #include "vstgui/lib/platform/iplatformbitmap.h"
+#include "vstgui/standalone/include/helpers/menubuilder.h"
+#include "vstgui/standalone/include/helpers/uidesc/customization.h"
+#include "vstgui/standalone/include/helpers/uidesc/modelbinding.h"
+#include "vstgui/standalone/include/helpers/value.h"
+#include "vstgui/standalone/include/iapplication.h"
+#include "vstgui/standalone/include/iuidescwindow.h"
+#include "vstgui/uidescription/cstream.h"
+#include "vstgui/uidescription/delegationcontroller.h"
+#include "vstgui/uidescription/iuidescription.h"
+#include "vstgui/uidescription/uiattributes.h"
 
+//------------------------------------------------------------------------
 namespace VSTGUI {
 namespace Standalone {
 
+//------------------------------------------------------------------------
 class CustomDrawView : public CView
 {
 public:
 	using DrawFunction = std::function<void (CDrawContext& context, CPoint viewSize)>;
-	
-	CustomDrawView (DrawFunction func)
-	: CView (CRect (0, 0, 0, 0))
-	, func (func)
-	{
-	}
+
+	CustomDrawView (DrawFunction func) : CView (CRect (0, 0, 0, 0)), func (func) {}
 
 	void draw (CDrawContext* context) override
 	{
 		if (func)
 		{
-			CDrawContext::Transform t (*context, CGraphicsTransform ().translate (getViewSize ().getTopLeft()));
+			CDrawContext::Transform t (
+			    *context, CGraphicsTransform ().translate (getViewSize ().getTopLeft ()));
 			func (*context, getViewSize ().getSize ());
 		}
 	}
@@ -63,11 +62,12 @@ public:
 		}
 		return kMouseEventHandled;
 	}
-	
+
 private:
 	std::string getSavePath ()
 	{
-		if (auto fs = owned (CNewFileSelector::create (getFrame (), CNewFileSelector::kSelectSaveFile)))
+		if (auto fs =
+		        owned (CNewFileSelector::create (getFrame (), CNewFileSelector::kSelectSaveFile)))
 		{
 			fs->setDefaultExtension (CFileExtension ("PNG", "png"));
 			if (fs->runModal ())
@@ -98,7 +98,9 @@ private:
 				if (buffer.empty ())
 					return;
 				CFileStream stream;
-				if (!stream.open (filePath.data (), CFileStream::kBinaryMode | CFileStream::kWriteMode | CFileStream::kTruncateMode))
+				if (!stream.open (filePath.data (), CFileStream::kBinaryMode |
+				                                        CFileStream::kWriteMode |
+				                                        CFileStream::kTruncateMode))
 					return;
 				stream.writeRaw (buffer.data (), buffer.size ());
 			}
@@ -108,6 +110,7 @@ private:
 	DrawFunction func;
 };
 
+//------------------------------------------------------------------------
 void drawRects (CDrawContext& context, CPoint size)
 {
 	context.setDrawMode (kAliasing);
@@ -201,6 +204,7 @@ void drawRects (CDrawContext& context, CPoint size)
 	context.drawEllipse (r2, kDrawStroked);
 }
 
+//------------------------------------------------------------------------
 class ViewCreator : public DelegationController
 {
 public:
@@ -216,21 +220,21 @@ public:
 			}
 			else if (*customViewName == "PathsView")
 			{
-				
 			}
 		}
 		return DelegationController::createView (attributes, description);
 	}
 
 private:
-
 };
 
+//------------------------------------------------------------------------
 class DrawDeviceTestsCustomization : public UIDesc::Customization, public NoMenuBuilder
 {
 public:
 };
 
+//------------------------------------------------------------------------
 void makeDrawDeviceTestsWindow ()
 {
 	static UTF8String windowTitle = "DrawDeviceTests";
@@ -248,9 +252,9 @@ void makeDrawDeviceTestsWindow ()
 	modelBinding->addValue (Value::makeStringListValue ("ViewSelector", {"Lines/Rects", "Paths"}));
 
 	auto drawDeviceTestsCustomization = std::make_shared<DrawDeviceTestsCustomization> ();
-	drawDeviceTestsCustomization->addCreateViewControllerFunc ("ViewCreator", [] (const auto& name, auto parent, const auto uiDesc) {
-		return new ViewCreator (parent);
-	});
+	drawDeviceTestsCustomization->addCreateViewControllerFunc (
+	    "ViewCreator",
+	    [] (const auto& name, auto parent, const auto uiDesc) { return new ViewCreator (parent); });
 
 	UIDesc::Config config;
 	config.uiDescFileName = "DrawDeviceTests.uidesc";
@@ -264,5 +268,6 @@ void makeDrawDeviceTestsWindow ()
 		window->show ();
 }
 
+//------------------------------------------------------------------------
 } // Standalone
 } // VSTGUI

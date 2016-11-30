@@ -54,6 +54,7 @@ public:
 	bool handleCommand (const Command& command) override;
 
 	IMenuBuilder* getWindowMenuBuilder (const IWindow& window) const override;
+
 private:
 	struct Impl;
 	struct EditImpl;
