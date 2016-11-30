@@ -18,13 +18,13 @@ public:
 	using CreateViewControllerFunc = std::function<IController*(
 	    const UTF8StringView& name, IController* parent, const IUIDescription* uiDesc)>;
 
-	void addCreateViewController (const UTF8String& name, CreateViewControllerFunc func)
+	void addCreateViewControllerFunc (const UTF8String& name, CreateViewControllerFunc func)
 	{
 		createViewControllerMap.emplace (name.getString (), func);
 	}
 
 	IController* createController (const UTF8StringView& name, IController* parent,
-	                               const IUIDescription* uiDesc)
+	                               const IUIDescription* uiDesc) override
 	{
 		auto it = createViewControllerMap.find (std::string (name));
 		if (it != createViewControllerMap.end ())
