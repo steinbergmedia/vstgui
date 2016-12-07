@@ -307,7 +307,7 @@ PlatformOptionMenuResult NSViewOptionMenu::popup (COptionMenu* optionMenu)
 		[item setTag:-1];
 	}
 	if (!multipleCheck && optionMenu->getStyle () & kCheckStyle)
-		[[nsMenu itemWithTag:(NSInteger)optionMenu->getValue ()] setState:NSOnState];
+		[[nsMenu itemWithTag:(NSInteger)optionMenu->getCurrentIndex (true)] setState:NSOnState];
 
 	NSView* cellContainer = [[NSView alloc] initWithFrame:cellFrameRect];
 	[view addSubview:cellContainer];
