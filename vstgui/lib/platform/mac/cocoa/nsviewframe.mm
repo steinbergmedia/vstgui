@@ -642,6 +642,15 @@ static void VSTGUI_NSView_draggedImageEndedAtOperation (id self, SEL _cmd, NSIma
 }
 #endif
 
+//------------------------------------------------------------------------------------
+static id VSTGUI_NSView_makeTouchbar (id self)
+{
+	NSViewFrame* frame = getNSViewFrame (self);
+	if (frame)
+		return reinterpret_cast<id> (frame->makeTouchBar ());
+	return nil;
+}
+
 namespace VSTGUI {
 
 //------------------------------------------------------------------------------------
@@ -738,6 +747,14 @@ void NSViewFrame::initClass ()
 		sprintf (funcSig, "v@:@:^:%s:%s", @encode(NSPoint), nsUIntegerEncoded);
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(draggedImage:endedAt:operation:), IMP (VSTGUI_NSView_draggedImageEndedAtOperation), funcSig))
 #endif
+
+// optional touchbar support
+		if (auto protocol = objc_getProtocol ("NSTouchBarProvider"))
+		{
+			class_addProtocol (viewClass, protocol);
+			sprintf (funcSig, "%s@:@:", @encode(NSObject*));
+			class_addMethod (viewClass, @selector(makeTouchBar), IMP (VSTGUI_NSView_makeTouchbar), funcSig);
+		}
 
 		VSTGUI_CHECK_YES(class_addIvar (viewClass, "_nsViewFrame", sizeof (void*), (uint8_t)log2(sizeof(void*)), @encode(void*)))
 		objc_registerClassPair (viewClass);
@@ -1227,6 +1244,43 @@ void NSViewFrame::setClipboard (const SharedPointer<IDataPackage>& data)
 SharedPointer<IDataPackage> NSViewFrame::getClipboard ()
 {
 	return MacClipboard::createClipboardDataPackage ();
+}
+
+//-----------------------------------------------------------------------------
+void NSViewFrame::setTouchBarCreator (const SharedPointer<ITouchBarCreator>& creator)
+{
+	touchBarCreator = creator;
+	if (!nsView.window || !nsView.window.visible)
+		return;
+	if (![nsView respondsToSelector:@selector(setTouchBar:)])
+		return;
+	
+	if (!touchBarCreator)
+		[nsView performSelector:@selector(setTouchBar:) withObject:nil];
+	else
+	{
+		if ([nsView performSelector:@selector(touchBar) withObject:nil] != nil)
+			recreateTouchBar ();
+	}
+}
+
+//-----------------------------------------------------------------------------
+void NSViewFrame::recreateTouchBar ()
+{
+	if (!touchBarCreator)
+		return;
+	if (![nsView respondsToSelector:@selector(setTouchBar:)])
+		return;
+	if (id tb = reinterpret_cast<id> (touchBarCreator->createTouchBar ()))
+		[nsView performSelector:@selector(setTouchBar:) withObject:tb];
+}
+
+//-----------------------------------------------------------------------------
+void* NSViewFrame::makeTouchBar () const
+{
+	if (touchBarCreator)
+		return touchBarCreator->createTouchBar ();
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------

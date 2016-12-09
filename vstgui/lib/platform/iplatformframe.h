@@ -131,6 +131,28 @@ protected:
 	IPlatformFrameCallback* frame;
 };
 
+//-----------------------------------------------------------------------------
+/* Extension to support Mac TouchBar */
+//-----------------------------------------------------------------------------
+class ITouchBarCreator : public CBaseObject
+{
+public:
+	/** must return an instance of NSTouchBar or nullptr. */
+	virtual void* createTouchBar () = 0;
+};
+
+//-----------------------------------------------------------------------------
+class IPlatformFrameTouchBarExtension /* Extents IPlatformFrame */
+{
+public:
+	virtual ~IPlatformFrameTouchBarExtension () noexcept = default;
+
+	/** set the touchbar creator. */
+	virtual void setTouchBarCreator (const SharedPointer<ITouchBarCreator>& creator) = 0;
+	/** forces the touchbar to be recreated. */
+	virtual void recreateTouchBar () = 0;
+};
+
 } // namespace
 
 /// @endcond
