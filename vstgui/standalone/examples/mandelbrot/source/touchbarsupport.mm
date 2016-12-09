@@ -63,6 +63,7 @@ void installTouchbarSupport (IPlatformFrameTouchBarExtension* tbExt, const Value
 	tbExt->setTouchBarCreator (owned<ITouchBarCreator> (new TouchBarMaker (value)));
 }
 	
+//------------------------------------------------------------------------
 } // Mandelbrot
 
 
@@ -80,7 +81,7 @@ void installTouchbarSupport (IPlatformFrameTouchBarExtension* tbExt, const Value
 //------------------------------------------------------------------------
 - (void)onSliderAction:(id)sender
 {
-	self.value->performEdit([sender doubleValue]);
+	self.value->performEdit ([sender doubleValue]);
 }
 
 //------------------------------------------------------------------------
