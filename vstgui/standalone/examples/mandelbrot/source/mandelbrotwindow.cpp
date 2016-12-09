@@ -2,6 +2,7 @@
 #include "mandelbrot.h"
 #include "mandelbrotview.h"
 #include "modelbinding.h"
+#include "touchbarsupport.h"
 #include "vstgui/lib/cbitmap.h"
 #include "vstgui/lib/ccolor.h"
 #include "vstgui/lib/cframe.h"
@@ -10,6 +11,7 @@
 #include "vstgui/standalone/include/helpers/uidesc/customization.h"
 #include "vstgui/standalone/include/helpers/value.h"
 #include "vstgui/standalone/include/helpers/valuelistener.h"
+#include "vstgui/standalone/include/helpers/windowcontroller.h"
 #include "vstgui/standalone/include/iasync.h"
 #include "vstgui/standalone/include/iuidescwindow.h"
 #include "vstgui/uidescription/delegationcontroller.h"
@@ -220,11 +222,32 @@ struct ViewController : DelegationController,
 };
 
 //------------------------------------------------------------------------
+struct WindowCustomization : public UIDesc::Customization, public WindowControllerAdapter
+{
+	static std::shared_ptr<WindowCustomization> make (const ValuePtr& maxIterations)
+	{
+		auto obj = std::make_shared<WindowCustomization>();
+		obj->maxIterations = maxIterations;
+		return obj;
+	}
+
+	void onSetContentView (IWindow& window, const SharedPointer<CFrame>& contentView) override
+	{
+		if (auto touchBarExt = dynamic_cast<IPlatformFrameTouchBarExtension*> (contentView->getPlatformFrame ()))
+		{
+			installTouchbarSupport (touchBarExt, maxIterations);
+		}
+	}
+	
+	ValuePtr maxIterations;
+};
+
+//------------------------------------------------------------------------
 VSTGUI::Standalone::WindowPtr makeMandelbrotWindow ()
 {
 	auto model = std::make_shared<Model> ();
 	auto modelBinding = ModelBinding::make (model);
-	auto customization = UIDesc::Customization::make ();
+	auto customization = WindowCustomization::make (modelBinding->getMaxIterationsValue ());
 
 	customization->addCreateViewControllerFunc (
 	    "mandelbrotviewcontroller", [=] (const auto& name, auto parent, const auto uiDesc) {

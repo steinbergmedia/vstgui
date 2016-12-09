@@ -55,7 +55,7 @@ namespace VSTGUI {
 class CocoaTooltipWindow;
 
 //-----------------------------------------------------------------------------
-class NSViewFrame : public IPlatformFrame
+class NSViewFrame : public IPlatformFrame, public IPlatformFrameTouchBarExtension
 {
 public:
 	NSViewFrame (IPlatformFrameCallback* frame, const CRect& size, NSView* parent);
@@ -63,6 +63,7 @@ public:
 
 	NSView* getPlatformControl () const { return nsView; }
 	IPlatformFrameCallback* getFrame () const { return frame; }
+	void* makeTouchBar () const;
 	
 	void setLastDragOperationResult (DragResult result) { lastDragOperationResult = result; }
 	void setIgnoreNextResignFirstResponder (bool state) { ignoreNextResignFirstResponder = state; }
@@ -99,6 +100,9 @@ public:
 	SharedPointer<IDataPackage> getClipboard () override;
 	PlatformType getPlatformType () const override { return PlatformType::kNSView; }
 
+	void setTouchBarCreator (const SharedPointer<ITouchBarCreator>& creator) override;
+	void recreateTouchBar () override;
+
 //-----------------------------------------------------------------------------
 protected:
 	static void initClass ();
@@ -106,6 +110,7 @@ protected:
 	NSView* nsView;
 	CocoaTooltipWindow* tooltipWindow;
 	SharedPointer<IDataPackage> dragDataPackage;
+	SharedPointer<ITouchBarCreator> touchBarCreator;
 
 	DragResult lastDragOperationResult;
 	bool ignoreNextResignFirstResponder;

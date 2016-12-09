@@ -10,7 +10,7 @@ set(${target}_sources
   "source/mandelbrotview.h"
   "source/mandelbrotwindow.cpp"
   "source/mandelbrotwindow.h"
-  "source/modelbinging.h"
+  "source/modelbinding.h"
   "source/progressindicatorview.cpp"
 )
 
@@ -30,6 +30,11 @@ if(CMAKE_HOST_APPLE)
   )
   set(mandelbrot_resources ${mandelbrot_resources} ${BUNDLE_PKG_INFO})
   
+	set(${target}_sources ${${target}_sources}
+		"source/touchbarsupport.mm"
+		"source/touchbarsupport.h"
+	)
+
 	set(${target}_PLATFORM_LIBS
 		"-framework Cocoa"
 		"-framework OpenGL"
