@@ -95,6 +95,7 @@ struct CFrame::Impl
 	
 	ViewList pMouseViews;
 	WindowActiveStateChangeViews windowActiveStateChangeViews;
+	DispatchList<IFocusViewObserver> focusViewObservers;
 
 	double userScaleFactor {1.};
 	double platformScaleFactor {1.};
@@ -1032,6 +1033,11 @@ void CFrame::setFocusView (CView *pView)
 	}
 	if (pImpl->pFocusView && pImpl->pFocusView->wantsFocus ())
 		pImpl->pFocusView->takeFocus ();
+	
+	pImpl->focusViewObservers.forEach ([&] (IFocusViewObserver* observer) {
+		observer->onFocusViewChanged (this, pImpl->pFocusView, pOldFocusView);
+	});
+	
 	recursion = false;
 }
 
@@ -1395,6 +1401,18 @@ void CFrame::registerMouseObserver (IMouseObserver* observer)
 	if (pImpl->pMouseObservers == nullptr)
 		pImpl->pMouseObservers = new Impl::MouseObserverList ();
 	pImpl->pMouseObservers->push_back (observer);
+}
+
+//-----------------------------------------------------------------------------
+void CFrame::registerFocusViewObserver (IFocusViewObserver* observer)
+{
+	pImpl->focusViewObservers.add (observer);
+}
+
+//-----------------------------------------------------------------------------
+void CFrame::unregisterFocusViewObserver (IFocusViewObserver* observer)
+{
+	pImpl->focusViewObservers.remove (observer);
 }
 
 //-----------------------------------------------------------------------------

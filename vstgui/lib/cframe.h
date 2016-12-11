@@ -130,6 +130,10 @@ public:
 
 	void registerScaleFactorChangedListeneer (IScaleFactorChangedListener* listener);
 	void unregisterScaleFactorChangedListeneer (IScaleFactorChangedListener* listener);
+
+	void registerFocusViewObserver (IFocusViewObserver* observer);
+	void unregisterFocusViewObserver (IFocusViewObserver* observer);
+	
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -292,6 +296,19 @@ public:
 	
 	virtual void onViewAdded (CFrame* frame, CView* view) = 0;
 	virtual void onViewRemoved (CFrame* frame, CView* view) = 0;
+};
+
+//-----------------------------------------------------------------------------
+// IFocusViewObserver Declaration
+//! @brief focus view observer interface for CFrame
+//! @ingroup new_in_4_5
+//-----------------------------------------------------------------------------
+class IFocusViewObserver
+{
+public:
+	virtual ~IFocusViewObserver () noexcept = default;
+	
+	virtual void onFocusViewChanged (CFrame* frame, CView* newFocusView, CView* oldFocusView) = 0;
 };
 
 } // namespace
