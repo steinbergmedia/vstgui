@@ -123,6 +123,7 @@ class IDataBrowserDelegate;
 class IMouseObserver;
 class IKeyboardHook;
 class IViewAddedRemovedObserver;
+class IFocusViewObserver;
 class ISplitViewController;
 class ISplitViewSeparatorDrawer;
 class IScrollbarDrawer;
