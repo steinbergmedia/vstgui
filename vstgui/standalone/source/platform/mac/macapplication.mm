@@ -458,6 +458,12 @@ static CommandWithKeyList getCommandList (const char* _Nonnull group)
 		return;
 	}
 
+	// disable tab support in macOS 10.12 and above until we support it correctly
+	if (auto m = [[NSWindow class] methodForSelector:@selector(setAllowsAutomaticWindowTabbing:)])
+	{
+		m ([NSWindow class], @selector(setAllowsAutomaticWindowTabbing:), NO);
+	}
+
 	IApplication::CommandLineArguments cmdArgs;
 	NSArray* args = [[NSProcessInfo processInfo] arguments];
 	for (NSString* str in args)
