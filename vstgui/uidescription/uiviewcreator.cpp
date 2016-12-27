@@ -53,6 +53,7 @@
 - @ref ckickbutton @n
 - @ref cslider @n
 - @ref cvumeter @n
+- @ref coptionmenu @n
 - @ref uiviewswitchcontainer @n
 
 @section cview CView
@@ -106,6 +107,8 @@ Attributes:
 - \b font-color [color]
 - \b back-color [color]
 - \b frame-color [color]
+- \b frame-width [float]
+- \b round-rect-radius [float]
 - \b shadow-color [color]
 - \b font-antialias [true/false]
 - \b style-3D-in [true/false]
@@ -113,8 +116,11 @@ Attributes:
 - \b style-no-frame [true/false]
 - \b style-no-text [true/false]
 - \b style-no-draw [true/false]
+- \b style-round-rect [true/false]
 - \b style-shadow-text [true/false]
 - \b text-alignment [left/center/right]
+- \b text-rotation [float]
+- \b value-precision [integer]
 
 @section ctextlabel CTextLabel
 Declaration:
@@ -299,6 +305,16 @@ Attributes:
 - \b zoom-factor [float]
 - \b orientation [vertical/horizontal]
 - \b reverse-orientation [true/false]
+
+@section coptionmenu COptionMenu
+Declaration:
+@verbatim <view class="COptionMenu" /> @endverbatim
+
+Inherites attributes from @ref cparamdisplay @n
+
+Attributes:
+- \b menu-popup-style [true/false]
+- \b menu-check-style [true/false]
 
 @section cvumeter CVuMeter
 Declaration:
