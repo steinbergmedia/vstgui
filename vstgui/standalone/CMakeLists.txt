@@ -46,6 +46,7 @@ set(${target}_mac_sources
   source/platform/mac/VSTGUICommand.h
   source/platform/mac/VSTGUICommand.mm
   source/platform/mac/macasync.mm
+  source/platform/mac/macasync.h
   source/platform/mac/macapplication.mm
   source/platform/mac/maccommondirectories.h
   source/platform/mac/maccommondirectories.mm
