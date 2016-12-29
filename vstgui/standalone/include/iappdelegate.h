@@ -32,7 +32,7 @@ struct Info
  *	Every VSTGUI application needs a delegate. It's a global instance which handles
  *	custom application behaviour.
  *
- *	You define it via Application::Init (std::make_shared<YourDelegateClassType> ())
+ *	You define it via Application::Init (std::make_unique<YourDelegateClassType> ())
  *
  *	@ingroup standalone
  */
