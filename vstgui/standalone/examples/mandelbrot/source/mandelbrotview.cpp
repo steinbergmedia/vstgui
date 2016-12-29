@@ -94,7 +94,7 @@ void View::draw (CDrawContext* context)
 	auto hairlineSize = context->getHairlineSize ();
 	ConcatClip cc (*context, box);
 	context->setLineWidth (hairlineSize);
-	context->setDrawMode (kAliasing);
+	context->setDrawMode (kAliasing | kNonIntegralMode);
 	context->setFrameColor (kBlackCColor);
 	context->drawRect (box);
 	CRect b2 (box);
