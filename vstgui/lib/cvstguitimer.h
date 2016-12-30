@@ -45,7 +45,7 @@ namespace VSTGUI {
 // CVSTGUITimer Declaration
 //! A timer class, which posts timer messages to CBaseObjects or calls a lambda function (c++11 only).
 //-----------------------------------------------------------------------------
-class CVSTGUITimer : public CBaseObject, public IPlatformTimerCallback
+class CVSTGUITimer final : public CBaseObject, public IPlatformTimerCallback
 {
 public:
 	using CallbackFunc = std::function<void(CVSTGUITimer*)>;
@@ -54,10 +54,10 @@ public:
 	CVSTGUITimer (CallbackFunc&& callback, uint32_t fireTime = 100, bool doStart = true);
 	CVSTGUITimer (CBaseObject* timerObject, uint32_t fireTime = 100, bool doStart = false);
 	
-	virtual bool start ();							///< starts the timer
-	virtual bool stop ();							///< stops the timer, returns whether timer was running or not
+	bool start ();							///< starts the timer
+	bool stop ();							///< stops the timer, returns whether timer was running or not
 
-	virtual bool setFireTime (uint32_t newFireTime);		///< in milliseconds
+	bool setFireTime (uint32_t newFireTime);		///< in milliseconds
 	uint32_t getFireTime () const { return fireTime; }		///< in milliseconds
 
 //-----------------------------------------------------------------------------

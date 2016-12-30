@@ -46,7 +46,7 @@ namespace VSTGUI {
 ///	@brief Gradient Object [new in 4.0]
 ///	@ingroup new_in_4_0
 //-----------------------------------------------------------------------------
-class CGradient : public CBaseObject
+class CGradient : public AtomicReferenceCounted
 {
 public:
 	typedef std::multimap<double, CColor> ColorStopMap;
@@ -82,8 +82,6 @@ public:
 	
 	const ColorStopMap& getColorStops () const { return colorStops; }
 	//@}
-//-----------------------------------------------------------------------------
-	CLASS_METHODS_NOCOPY(CGradient, CBaseObject)
 protected:
 	CGradient (double color1Start, double color2Start, const CColor& color1, const CColor& color2)
 	{

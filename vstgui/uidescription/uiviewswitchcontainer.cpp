@@ -63,7 +63,7 @@ void UIViewSwitchContainer::setController (IViewSwitchController* _controller)
 {
 	if (controller)
 	{
-		CBaseObject* obj = dynamic_cast<CBaseObject*> (controller);
+		auto obj = dynamic_cast<IReference*> (controller);
 		if (obj)
 			obj->forget ();
 	}

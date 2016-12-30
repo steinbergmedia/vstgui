@@ -47,7 +47,7 @@ namespace VSTGUI {
 // CFileExtension Declaration
 //! @brief file extension description
 //-----------------------------------------------------------------------------
-class CFileExtension : public CBaseObject
+class CFileExtension
 {
 public:
 	CFileExtension (const UTF8String& description, const UTF8String& extension, const UTF8String& mimeType = "", int32_t macType = 0, const UTF8String& uti = "");
@@ -61,8 +61,6 @@ public:
 	int32_t getMacType () const { return macType; }
 
 	bool operator== (const CFileExtension& ext) const;
-//-----------------------------------------------------------------------------
-	CLASS_METHODS(CFileExtension, CBaseObject)
 //-----------------------------------------------------------------------------
 	CFileExtension (CFileExtension&& ext) noexcept;
 	CFileExtension& operator=(CFileExtension&& ext) noexcept;

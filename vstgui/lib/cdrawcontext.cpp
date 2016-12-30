@@ -207,7 +207,7 @@ void CDrawContext::setFont (const CFontRef newFont, const CCoord& size, const in
 		return;
 	if ((size > 0 && newFont->getSize () != size) || (style != -1 && newFont->getStyle () != style))
 	{
-		currentState.font = owned (static_cast<CFontRef> (newFont->newCopy ()));
+		currentState.font = makeOwned<CFontDesc> (*newFont);
 		if (size > 0)
 			currentState.font->setSize (size);
 		if (style != -1)

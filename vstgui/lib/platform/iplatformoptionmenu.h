@@ -49,7 +49,7 @@ struct PlatformOptionMenuResult
 };
 
 //-----------------------------------------------------------------------------
-class IPlatformOptionMenu : public CBaseObject
+class IPlatformOptionMenu : public AtomicReferenceCounted
 {
 public:
 	virtual PlatformOptionMenuResult popup (COptionMenu* optionMenu) = 0;

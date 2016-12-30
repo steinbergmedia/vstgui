@@ -56,7 +56,7 @@ struct CNinePartTiledDescription;
 // CDrawContext Declaration
 //! @brief A drawing context encapsulates the drawing context of the underlying OS
 //-----------------------------------------------------------------------------
-class CDrawContext : public CBaseObject
+class CDrawContext : public AtomicReferenceCounted
 {
 public:
 	//-----------------------------------------------------------------------------
@@ -214,7 +214,6 @@ public:
 	virtual void beginDraw () {}
 	virtual void endDraw () {}
 
-	CLASS_METHODS_NOCOPY(CDrawContext, CBaseObject)
 protected:
 	explicit CDrawContext (const CRect& surfaceRect);
 	~CDrawContext () noexcept;

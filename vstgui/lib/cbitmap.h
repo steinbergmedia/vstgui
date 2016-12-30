@@ -48,7 +48,7 @@ namespace VSTGUI {
 // CBitmap Declaration
 //! @brief Encapsulates various platform depended kinds of bitmaps
 //-----------------------------------------------------------------------------
-class CBitmap : public CBaseObject
+class CBitmap : public AtomicReferenceCounted
 {
 public:
 	using PlatformBitmapPtr = SharedPointer<IPlatformBitmap>;
@@ -81,7 +81,6 @@ public:
 	//@}
 
 //-----------------------------------------------------------------------------
-	CLASS_METHODS_NOCOPY(CBitmap, CBaseObject)
 protected:
 	CBitmap ();
 
@@ -163,7 +162,6 @@ public:
 	virtual void draw (CDrawContext* context, const CRect& rect, const CPoint& offset = CPoint (0, 0), float alpha = 1.f) override;
 
 //-----------------------------------------------------------------------------
-	CLASS_METHODS_NOCOPY(CNinePartTiledBitmap, CBitmap)
 protected:
 	CNinePartTiledDescription offsets;
 };
@@ -173,7 +171,7 @@ protected:
 /// @brief direct pixel access to a CBitmap
 /// @ingroup new_in_4_0
 //------------------------------------------------------------------------
-class CBitmapPixelAccess : public CBaseObject
+class CBitmapPixelAccess : public AtomicReferenceCounted
 {
 public:
 	inline bool operator++ ();								///< advance position

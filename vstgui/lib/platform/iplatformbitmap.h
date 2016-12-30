@@ -45,7 +45,7 @@ using PNGBitmapBuffer = std::vector<uint8_t>;
 class IPlatformBitmapPixelAccess;
 
 //-----------------------------------------------------------------------------
-class IPlatformBitmap : public CBaseObject
+class IPlatformBitmap : public AtomicReferenceCounted
 {
 public:
 	static SharedPointer<IPlatformBitmap> create (CPoint* size = nullptr); ///< if size pointer is not zero, create a bitmap which can be used as a draw surface
@@ -67,7 +67,7 @@ public:
 };
 
 //------------------------------------------------------------------------------------
-class IPlatformBitmapPixelAccess : public CBaseObject
+class IPlatformBitmapPixelAccess : public AtomicReferenceCounted
 {
 public:
 	enum PixelFormat {

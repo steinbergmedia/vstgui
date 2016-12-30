@@ -95,7 +95,7 @@ class UINode;
 
 typedef std::vector<UINode*> UIDescListContainerType;
 //-----------------------------------------------------------------------------
-class UIDescList : public CBaseObject, private UIDescListContainerType
+class UIDescList : public NonAtomicReferenceCounted, private UIDescListContainerType
 {
 public:
 	using UIDescListContainerType::begin;
@@ -122,13 +122,12 @@ public:
 
 	void sort ();
 	
-	CLASS_METHODS(UIDescList, CBaseObject)
 protected:
 	bool ownsObjects;
 };
 
 //-----------------------------------------------------------------------------
-class UINode : public CBaseObject
+class UINode : public NonAtomicReferenceCounted
 {
 public:
 	UINode (const std::string& name, UIAttributes* attributes = nullptr, bool needsFastChildNameAttributeLookup = false);
@@ -156,7 +155,6 @@ public:
 	
 	void sortChildren ();
 
-	CLASS_METHODS(UINode, CBaseObject)
 protected:
 	std::string name;
 	std::stringstream data;
@@ -170,7 +168,6 @@ class UICommentNode : public UINode
 {
 public:
 	explicit UICommentNode (const std::string& comment);
-	CLASS_METHODS_NOCOPY(UICommentNode, UINode)
 };
 
 //-----------------------------------------------------------------------------
@@ -189,7 +186,6 @@ public:
 	double getNumber () const;
 	const std::string& getString () const;
 
-	CLASS_METHODS_NOCOPY(UIVariableNode, UINode)
 protected:
 	Type type;
 	double number;
@@ -206,7 +202,6 @@ public:
 	const std::string* getTagString () const;
 	void setTagString (const std::string& str);
 	
-	CLASS_METHODS_NOCOPY(UIControlTagNode, UINode)
 protected:
 	int32_t tag;
 };
@@ -227,7 +222,6 @@ public:
 	
 	void createXMLData (const std::string& pathHint);
 	void removeXMLData ();
-	CLASS_METHODS_NOCOPY(UIBitmapNode, UINode)
 protected:
 	~UIBitmapNode () noexcept override;
 	CBitmap* createBitmap (const std::string& str, CNinePartTiledDescription* partDesc) const;
@@ -245,7 +239,6 @@ public:
 	void setFont (CFontRef newFont);
 	void setAlternativeFontNames (UTF8StringPtr fontNames);
 	bool getAlternativeFontNames (std::string& fontNames);
-	CLASS_METHODS_NOCOPY(UIFontNode, UINode)
 protected:
 	~UIFontNode () noexcept override;
 	CFontRef font;
@@ -258,7 +251,6 @@ public:
 	UIColorNode (const std::string& name, UIAttributes* attributes);
 	const CColor& getColor () const { return color; }
 	void setColor (const CColor& newColor);
-	CLASS_METHODS_NOCOPY(UIColorNode, UINode)
 protected:
 	CColor color;
 };
@@ -270,7 +262,6 @@ public:
 	UIGradientNode (const std::string& name, UIAttributes* attributes);
 	CGradient* getGradient ();
 	void setGradient (CGradient* g);
-	CLASS_METHODS_NOCOPY(UIGradientNode, UINode)
 protected:
 	SharedPointer<CGradient> gradient;
 	
@@ -1198,7 +1189,7 @@ CView* UIDescription::createViewFromNode (UINode* node) const
 		subControllerStack.pop_back ();
 		if (result == nullptr)
 		{
-			CBaseObject* obj = dynamic_cast<CBaseObject*> (subController);
+			auto obj = dynamic_cast<IReference*> (subController);
 			if (obj)
 				obj->forget ();
 			else
@@ -1469,7 +1460,7 @@ CBitmap* UIDescription::getBitmap (UTF8StringPtr name) const
 				filter->setProperty (BitmapFilter::Standard::Property::kInputBitmap, bitmap);
 				if (filter->run ())
 				{
-					CBaseObject* obj = filter->getProperty (BitmapFilter::Standard::Property::kOutputBitmap).getObject ();
+					auto obj = filter->getProperty (BitmapFilter::Standard::Property::kOutputBitmap).getObject ();
 					CBitmap* outputBitmap = dynamic_cast<CBitmap*>(obj);
 					if (outputBitmap)
 					{
@@ -2138,7 +2129,7 @@ bool UIDescription::duplicateTemplate (UTF8StringPtr name, UTF8StringPtr duplica
 	UINode* templateNode = findChildNodeByNameAttribute (nodes, name);
 	if (templateNode)
 	{
-		UINode* duplicate = static_cast<UINode*> (templateNode->newCopy ());
+		UINode* duplicate = new UINode (*templateNode);
 		vstgui_assert (duplicate);
 		if (duplicate)
 		{

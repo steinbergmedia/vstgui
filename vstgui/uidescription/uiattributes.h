@@ -48,7 +48,7 @@ class InputStream;
 typedef std::unordered_map<std::string,std::string> UIAttributesMap;
 
 //-----------------------------------------------------------------------------
-class UIAttributes : public CBaseObject, private UIAttributesMap
+class UIAttributes : public NonAtomicReferenceCounted, private UIAttributesMap
 {
 public:
 	using StringArray = std::vector<std::string>;

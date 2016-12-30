@@ -67,7 +67,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class IPlatformTextEdit : public CBaseObject
+class IPlatformTextEdit : public AtomicReferenceCounted
 {
 public:
 	virtual UTF8String getText () = 0;

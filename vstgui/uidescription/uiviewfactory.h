@@ -46,7 +46,7 @@ namespace VSTGUI {
 /// @brief Default view factory
 ///	@ingroup new_in_4_0
 //-----------------------------------------------------------------------------
-class UIViewFactory : public CBaseObject, public IViewFactory
+class UIViewFactory : public NonAtomicReferenceCounted, public IViewFactory
 {
 public:
 	UIViewFactory ();

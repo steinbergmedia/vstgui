@@ -36,7 +36,7 @@
 #define __icontroller__
 
 #include "../lib/controls/icontrollistener.h"
-#include "../lib/cview.h"
+#include "../lib/cviewcontainer.h"
 
 namespace VSTGUI {
 
@@ -81,7 +81,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-/* helper method to get the controller of a view */
+/** helper method to get the controller of a view */
 inline IController* getViewController (const CView* view, bool deep = false)
 {
 	IController* controller = nullptr;
@@ -96,6 +96,29 @@ inline IController* getViewController (const CView* view, bool deep = false)
 	return controller;
 }
 
+//-----------------------------------------------------------------------------
+/** helper method to find a specific controller inside a view hierarchy */
+template<typename T>
+inline T* findViewController (const CViewContainer* view)
+{
+	if (auto ctrler = dynamic_cast<T*> (getViewController (view)))
+		return ctrler;
+	ViewIterator iterator (view);
+	while (*iterator)
+	{
+		if (auto ctrler = dynamic_cast<T*> (getViewController (*iterator)))
+			return ctrler;
+		if (auto container = (*iterator)->asViewContainer ())
+		{
+			if (auto ctrler = findViewController<T> (container))
+				return ctrler;
+		}
+		++iterator;
+	}
+	return nullptr;
+}
+
+//-----------------------------------------------------------------------------
 } // namespace
 
 #endif // __icontroller__

@@ -75,7 +75,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class IPlatformOpenGLView : public CBaseObject
+class IPlatformOpenGLView : public AtomicReferenceCounted
 {
 public:
 

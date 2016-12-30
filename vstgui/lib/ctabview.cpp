@@ -106,7 +106,7 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-class CTabChildView : public CBaseObject
+class CTabChildView : public NonAtomicReferenceCounted
 //-----------------------------------------------------------------------------
 {
 public:
@@ -435,7 +435,7 @@ CRect& CTabView::getTabViewSize (CRect& rect) const
 //-----------------------------------------------------------------------------
 void CTabView::setTabFontStyle (const CFontRef font, CCoord fontSize, CColor selectedColor, CColor deselectedColor)
 {
-	CFontRef tabFont = static_cast<CFontRef> (font->newCopy ());
+	auto tabFont = makeOwned<CFontDesc> (*font);
 	tabFont->setSize (fontSize);
 	CTabChildView* v = firstChild;
 	while (v)
@@ -449,7 +449,6 @@ void CTabView::setTabFontStyle (const CFontRef font, CCoord fontSize, CColor sel
 		}
 		v = v->next;
 	}
-	tabFont->forget ();
 }
 
 //-----------------------------------------------------------------------------

@@ -65,7 +65,7 @@ public:
 	Property (Type type = kUnknown);
 	Property (int32_t intValue);
 	Property (double floatValue);
-	Property (CBaseObject* objectValue);
+	Property (IReference* objectValue);
 	Property (const CRect& rectValue);
 	Property (const CPoint& pointValue);
 	Property (const CColor& colorValue);
@@ -78,7 +78,7 @@ public:
 
 	int32_t getInteger () const;
 	double getFloat () const;
-	CBaseObject* getObject () const;
+	IReference* getObject () const;
 	const CRect& getRect () const;
 	const CPoint& getPoint () const;
 	const CColor& getColor () const;
@@ -98,7 +98,7 @@ private:
 /// @brief Filter Interface
 /// @ingroup new_in_4_1
 //----------------------------------------------------------------------------------------------------
-class IFilter : public CBaseObject
+class IFilter : public NonAtomicReferenceCounted
 {
 public:
 	virtual bool run (bool replaceInputBitmap = false) = 0;
@@ -114,8 +114,6 @@ public:
 	virtual Property::Type getPropertyType (IdStringPtr name) const = 0;
 
 	typedef IFilter* (*CreateFunction) (IdStringPtr name);
-
-	CLASS_METHODS_NOCOPY(IFilter, CBaseObject)
 };
 
 //----------------------------------------------------------------------------------------------------

@@ -58,7 +58,7 @@ enum CTxtFace
 // CFontDesc Declaration
 //! @brief font class
 //-----------------------------------------------------------------------------
-class CFontDesc : public CBaseObject
+class CFontDesc : public AtomicReferenceCounted
 {
 public:
 	using PlatformFontPtr = SharedPointer<IPlatformFont>;
@@ -89,7 +89,6 @@ public:
 	
 	static void cleanup ();
 
-	CLASS_METHODS(CFontDesc, CBaseObject)
 protected:
 	void beforeDelete () override;
 	virtual void freePlatformFont ();

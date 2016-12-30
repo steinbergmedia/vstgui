@@ -241,7 +241,7 @@ void CView::beforeDelete ()
 	uint32_t size = sizeof (IController*);
 	if (getAttribute (kCViewControllerAttribute, sizeof (IController*), &controller, size) == true)
 	{
-		CBaseObject* obj = dynamic_cast<CBaseObject*> (controller);
+		auto obj = dynamic_cast<IReference*> (controller);
 		if (obj)
 			obj->forget ();
 		else
