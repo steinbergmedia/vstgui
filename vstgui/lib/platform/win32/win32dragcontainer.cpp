@@ -69,7 +69,7 @@ WinDragContainer::WinDragContainer (IDataObject* platformDrag)
 			if (data && dataSize)
 			{
 				UTF8StringHelper wideString ((const WCHAR*)data);
-				strings.push_back (std::string (wideString));
+				strings.emplace_back (wideString);
 				nbItems = 1;
 			}
 			GlobalUnlock (medium.hGlobal);
@@ -98,7 +98,7 @@ WinDragContainer::WinDragContainer (IDataObject* platformDrag)
 						// resolve link
 						checkResolveLink (fileDropped, fileDropped);
 						UTF8StringHelper path (fileDropped);
-						strings.push_back (std::string (path));
+						strings.emplace_back (path);
 					}
 				}
 			}

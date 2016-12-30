@@ -1158,7 +1158,7 @@ CView* UIAttributesController::createViewForAttribute (const std::string& attrNa
 			{
 				c->hasDifferentValues (hasDifferentValues);
 				c->setValue (attrValue);
-				attributeControllers.push_back (c);
+				attributeControllers.emplace_back (c);
 			}
 		}
 		r.setHeight (valueView->getHeight ());
@@ -1204,7 +1204,7 @@ void UIAttributesController::getConsolidatedAttributeNames (StringList& attrName
 					std::string lowerCaseName (*rit);
 					std::transform (lowerCaseName.begin (), lowerCaseName.end (), lowerCaseName.begin (), ::tolower);
 					if (lowerCaseName.find (filter) == std::string::npos)
-						toRemove.push_back (*rit);
+						toRemove.emplace_back (*rit);
 				}
 			}
 			for (auto& attrName : toRemove)

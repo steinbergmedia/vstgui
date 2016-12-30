@@ -47,7 +47,7 @@ namespace VSTGUI {
 class UIViewCreatorDataSource;
 
 //----------------------------------------------------------------------------------------------------
-class UIViewCreatorController : public CBaseObject, public DelegationController, public IContextMenuController
+class UIViewCreatorController : public NonAtomicReferenceCounted, public DelegationController, public IContextMenuController
 {
 public:
 	UIViewCreatorController (IController* baseController, UIDescription* description);

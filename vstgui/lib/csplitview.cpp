@@ -153,7 +153,7 @@ void CSplitView::resizeFirstView (CPoint diff)
 		CView* view = *it;
 		CSplitViewSeparatorView* separatorView = dynamic_cast<CSplitViewSeparatorView*> (view);
 		if (separatorView)
-			separators.push_back (separatorView);
+			separators.emplace_back (separatorView);
 		r = view->getViewSize ();
 		if (style == kHorizontal)
 		{
@@ -188,7 +188,7 @@ void CSplitView::resizeSecondView (CPoint diff)
 		CView* view = *it;
 		CSplitViewSeparatorView* separatorView = dynamic_cast<CSplitViewSeparatorView*> (view);
 		if (separatorView)
-			separators.push_back (separatorView);
+			separators.emplace_back (separatorView);
 		else
 			viewIndex++;
 		r = view->getViewSize ();
@@ -253,7 +253,7 @@ void CSplitView::resizeLastView (CPoint diff)
 		CView* view = *it;
 		CSplitViewSeparatorView* separatorView = dynamic_cast<CSplitViewSeparatorView*> (view);
 		if (separatorView)
-			separators.push_back (separatorView);
+			separators.emplace_back (separatorView);
 		r = view->getViewSize ();
 		if (style == kHorizontal)
 		{
@@ -304,7 +304,7 @@ void CSplitView::resizeViewsEqual (CPoint diff)
 		CSplitViewSeparatorView* separatorView = dynamic_cast<CSplitViewSeparatorView*> (*it);
 		if (separatorView)
 		{
-			separators.push_back (separatorView);
+			separators.emplace_back (separatorView);
 			CRect r2 = separatorView->getViewSize ();
 			if (style == kHorizontal)
 			{

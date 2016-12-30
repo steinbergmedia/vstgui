@@ -137,8 +137,8 @@ public:
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const override
 	{
-		attributeNames.push_back (kAttrRotation);
-		attributeNames.push_back (kAttrRotationTime);
+		attributeNames.emplace_back (kAttrRotation);
+		attributeNames.emplace_back (kAttrRotationTime);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const override

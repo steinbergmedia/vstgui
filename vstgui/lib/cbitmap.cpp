@@ -78,7 +78,7 @@ CBitmap::CBitmap (const CResourceDescription& desc)
 	{
 		if (platformBitmap->load (desc))
 		{
-			bitmaps.push_back (platformBitmap);
+			bitmaps.emplace_back (platformBitmap);
 		}
 	}
 }
@@ -87,7 +87,7 @@ CBitmap::CBitmap (const CResourceDescription& desc)
 CBitmap::CBitmap (CCoord width, CCoord height)
 {
 	CPoint p (width, height);
-	bitmaps.push_back (IPlatformBitmap::create (&p));
+	bitmaps.emplace_back (IPlatformBitmap::create (&p));
 }
 
 //------------------------------------------------------------------------
@@ -98,13 +98,13 @@ CBitmap::CBitmap (CPoint size, double scaleFactor)
 	size.makeIntegral ();
 	auto bitmap = IPlatformBitmap::create (&size);
 	bitmap->setScaleFactor (scaleFactor);
-	bitmaps.push_back (bitmap);
+	bitmaps.emplace_back (bitmap);
 }
 
 //-----------------------------------------------------------------------------
 CBitmap::CBitmap (const PlatformBitmapPtr& platformBitmap)
 {
-	bitmaps.push_back (platformBitmap);
+	bitmaps.emplace_back (platformBitmap);
 }
 
 //-----------------------------------------------------------------------------
@@ -157,7 +157,7 @@ auto CBitmap::getPlatformBitmap () const -> PlatformBitmapPtr
 void CBitmap::setPlatformBitmap (const PlatformBitmapPtr& bitmap)
 {
 	if (bitmaps.empty ())
-		bitmaps.push_back (bitmap);
+		bitmaps.emplace_back (bitmap);
 	else
 		bitmaps[0] = bitmap;
 }
@@ -183,7 +183,7 @@ bool CBitmap::addBitmap (const PlatformBitmapPtr& platformBitmap)
 			return false;
 		}
 	}
-	bitmaps.push_back (platformBitmap);
+	bitmaps.emplace_back (platformBitmap);
 	return true;
 }
 

@@ -294,17 +294,17 @@ void UIDescriptionViewSwitchController::setTemplateNames (UTF8StringPtr _templat
 			while (pos != std::string::npos)
 			{
 				std::string name (temp, start, pos - start);
-				templateNames.push_back (name);
+				templateNames.emplace_back (name);
 				start = pos+1;
 				pos = temp.find (",", start, 1);
 			}
 			std::string name (temp, start, std::string::npos);
-			templateNames.push_back (name);
+			templateNames.emplace_back (name);
 		}
 		else
 		{
 			// only one template name
-			templateNames.push_back (temp);
+			templateNames.emplace_back (temp);
 		}
 	}
 }

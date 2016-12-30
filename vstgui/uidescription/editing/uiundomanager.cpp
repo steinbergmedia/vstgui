@@ -88,7 +88,7 @@ static void deleteUndoManagerAction (IAction* action) { delete action; }
 //----------------------------------------------------------------------------------------------------
 UIUndoManager::UIUndoManager ()
 {
-	push_back (new UndoStackTop);
+	emplace_back (new UndoStackTop);
 	position = begin ();
 	savePosition = begin ();
 }
@@ -104,7 +104,7 @@ void UIUndoManager::pushAndPerform (IAction* action)
 {
 	if (groupQueue.empty () == false)
 	{
-		groupQueue.back ()->push_back (action);
+		groupQueue.back ()->emplace_back (action);
 		return;
 	}
 	if (position != end ())
@@ -120,7 +120,7 @@ void UIUndoManager::pushAndPerform (IAction* action)
 		}
 		erase (oldStack, end ());
 	}
-	push_back (action);
+	emplace_back (action);
 	position = end ();
 	position--;
 	action->perform ();
@@ -196,7 +196,7 @@ void UIUndoManager::clear ()
 {
 	std::for_each (begin (), end (), deleteUndoManagerAction);
 	std::list<IAction*>::clear ();
-	push_back (new UndoStackTop);
+	emplace_back (new UndoStackTop);
 	position = end ();
 	savePosition = begin ();
 	changed (kMsgChanged);
@@ -206,7 +206,7 @@ void UIUndoManager::clear ()
 void UIUndoManager::startGroupAction (UTF8StringPtr name)
 {
 	UIGroupAction* action = new UIGroupAction (name);
-	groupQueue.push_back (action);
+	groupQueue.emplace_back (action);
 }
 
 //----------------------------------------------------------------------------------------------------

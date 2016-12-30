@@ -155,7 +155,7 @@ WindowPtr Application::createWindow (const WindowConfiguration& config,
 	auto window = makeWindow (config, controller);
 	if (window)
 	{
-		windows.push_back (window);
+		windows.emplace_back (window);
 		window->registerWindowListener (this);
 	}
 	return window;
@@ -316,7 +316,7 @@ void Application::registerCommand (const Command& command, char16_t defaultComma
 				if (cmd == command)
 					return; // already registered
 			}
-			entry.second.push_back (c);
+			entry.second.emplace_back (c);
 			added = true;
 			break;
 		}
@@ -423,7 +423,7 @@ PreventPopupClose::PreventPopupClose (IWindow& window)
 	if (auto pwa = static_cast<IPlatformWindowAccess*> (&window))
 	{
 		if ((platformWindow = dynamicPtrCast<Platform::IWindow> (pwa->getPlatformWindow ())))
-			popupClosePreventionList.push_back (platformWindow.get ());
+			popupClosePreventionList.emplace_back (platformWindow.get ());
 	}
 }
 

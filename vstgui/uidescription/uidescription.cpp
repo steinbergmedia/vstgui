@@ -352,7 +352,7 @@ void UIDescList::add (UINode* obj)
 {
 	if (!ownsObjects)
 		obj->remember ();
-	UIDescListContainerType::push_back (obj);
+	UIDescListContainerType::emplace_back (obj);
 }
 
 //-----------------------------------------------------------------------------
@@ -1086,7 +1086,7 @@ bool UIDescription::restoreViews (InputStream& stream, std::list<SharedPointer<C
 				CView* view = createViewFromNode (childNode);
 				if (view)
 				{
-					views.push_back (view);
+					views.emplace_back (view);
 					view->forget ();
 				}
 			}
@@ -1118,7 +1118,7 @@ CView* UIDescription::createViewFromNode (UINode* node) const
 			subController = controller->createSubController (subControllerName->c_str (), this);
 			if (subController)
 			{
-				subControllerStack.push_back (controller);
+				subControllerStack.emplace_back (controller);
 				setController (subController);
 			}
 		}
@@ -1394,7 +1394,7 @@ CBitmap* UIDescription::getBitmap (UTF8StringPtr name) const
 					auto filter = owned (BitmapFilter::Factory::getInstance().createFilter (filterName->c_str ()));
 					if (filter == nullptr)
 						continue;
-					filters.push_back (filter);
+					filters.emplace_back (filter);
 					for (auto& propertyNode : childNode->getChildren ())
 					{
 						if (propertyNode->getName () != "property")
@@ -1819,7 +1819,7 @@ void UIDescription::collectBitmapFilters (UTF8StringPtr bitmapName, std::list<Sh
 						}
 					}
 				}
-				filters.push_back (attributes);
+				filters.emplace_back (attributes);
 				attributes->forget ();
 			}
 		}
@@ -1917,7 +1917,7 @@ void UIDescription::collectTemplateViewNames (std::list<const std::string*>& nam
 		{
 			const std::string* nodeName = itNode->getAttributes ()->getAttributeValue ("name");
 			if (nodeName)
-				names.push_back (nodeName);
+				names.emplace_back (nodeName);
 		}
 	}
 }
@@ -1936,7 +1936,7 @@ template<typename NodeType> void UIDescription::collectNamesFromNode (IdStringPt
 			{
 				const std::string* name = node->getAttributes ()->getAttributeValue ("name");
 				if (name)
-					names.push_back (name);
+					names.emplace_back (name);
 			}
 		}
 	}
@@ -2696,19 +2696,19 @@ void UIDescription::startXmlElement (Xml::Parser* parser, IdStringPtr elementNam
 		if (newNode)
 		{
 			parent->getChildren ().add (newNode);
-			nodeStack.push_back (newNode);
+			nodeStack.emplace_back (newNode);
 		}
 	}
 	else if (name == "vstgui-ui-description")
 	{
 		nodes = new UINode (name, new UIAttributes (elementAttributes));
-		nodeStack.push_back (nodes);
+		nodeStack.emplace_back (nodes);
 	}
 	else if (name == "vstgui-ui-description-view-list")
 	{
 		vstgui_assert (nodes == nullptr);
 		nodes = new UINode (name, new UIAttributes (elementAttributes));
-		nodeStack.push_back (nodes);
+		nodeStack.emplace_back (nodes);
 		restoreViewsMode = true;
 	}
 }

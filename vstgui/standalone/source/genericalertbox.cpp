@@ -153,7 +153,7 @@ private:
 	ValuePtr addValue (ValuePtr&& value)
 	{
 		value->registerListener (this);
-		values.push_back (std::move (value));
+		values.emplace_back (std::move (value));
 		return values.back ();
 	}
 

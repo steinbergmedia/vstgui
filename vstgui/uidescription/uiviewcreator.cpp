@@ -243,7 +243,7 @@ public:
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const
 	{
-		attributeNames.push_back ("empty");
+		attributeNames.emplace_back ("empty");
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const
@@ -486,18 +486,18 @@ public:
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const override
 	{
-		attributeNames.push_back (kAttrOrigin);
-		attributeNames.push_back (kAttrSize);
-		attributeNames.push_back (kAttrOpacity);
-		attributeNames.push_back (kAttrTransparent);
-		attributeNames.push_back (kAttrMouseEnabled);
-		attributeNames.push_back (kAttrWantsFocus);
-		attributeNames.push_back (kAttrBitmap);
-		attributeNames.push_back (kAttrDisabledBitmap);
-		attributeNames.push_back (kAttrAutosize);
-		attributeNames.push_back (kAttrTooltip);
-		attributeNames.push_back (kAttrCustomViewName);
-		attributeNames.push_back (kAttrSubController);
+		attributeNames.emplace_back (kAttrOrigin);
+		attributeNames.emplace_back (kAttrSize);
+		attributeNames.emplace_back (kAttrOpacity);
+		attributeNames.emplace_back (kAttrTransparent);
+		attributeNames.emplace_back (kAttrMouseEnabled);
+		attributeNames.emplace_back (kAttrWantsFocus);
+		attributeNames.emplace_back (kAttrBitmap);
+		attributeNames.emplace_back (kAttrDisabledBitmap);
+		attributeNames.emplace_back (kAttrAutosize);
+		attributeNames.emplace_back (kAttrTooltip);
+		attributeNames.emplace_back (kAttrCustomViewName);
+		attributeNames.emplace_back (kAttrSubController);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const override
@@ -665,8 +665,8 @@ public:
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const override
 	{
-		attributeNames.push_back (kAttrBackgroundColor);
-		attributeNames.push_back (kAttrBackgroundColorDrawStyle);
+		attributeNames.emplace_back (kAttrBackgroundColor);
+		attributeNames.emplace_back (kAttrBackgroundColorDrawStyle);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const override
@@ -705,9 +705,9 @@ public:
 			static std::string kStroked = "stroked";
 			static std::string kFilledAndStroked = "filled and stroked";
 			static std::string kFilled = "filled";
-			values.push_back (&kStroked);
-			values.push_back (&kFilledAndStroked);
-			values.push_back (&kFilled);
+			values.emplace_back (&kStroked);
+			values.emplace_back (&kFilledAndStroked);
+			values.emplace_back (&kFilled);
 			return true;
 		}
 		return false;
@@ -737,7 +737,7 @@ public:
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const override
 	{
-		attributeNames.push_back (kAttrZIndex);
+		attributeNames.emplace_back (kAttrZIndex);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const override
@@ -814,13 +814,13 @@ public:
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const override
 	{
-		attributeNames.push_back (kAttrRowStyle);
-		attributeNames.push_back (kAttrSpacing);
-		attributeNames.push_back (kAttrMargin);
-		attributeNames.push_back (kAttrEqualSizeLayout);
-		attributeNames.push_back (kAttrHideClippedSubviews);
-		attributeNames.push_back (kAttrAnimateViewResizing);
-		attributeNames.push_back (kAttrViewResizeAnimationTime);
+		attributeNames.emplace_back (kAttrRowStyle);
+		attributeNames.emplace_back (kAttrSpacing);
+		attributeNames.emplace_back (kAttrMargin);
+		attributeNames.emplace_back (kAttrEqualSizeLayout);
+		attributeNames.emplace_back (kAttrHideClippedSubviews);
+		attributeNames.emplace_back (kAttrAnimateViewResizing);
+		attributeNames.emplace_back (kAttrViewResizeAnimationTime);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const override
@@ -900,10 +900,10 @@ public:
 			static std::string kCenter = "center";
 			static std::string kRightBottom = "right-bottom";
 	
-			values.push_back (&kLeftTop);
-			values.push_back (&kStretch);
-			values.push_back (&kCenter);
-			values.push_back (&kRightBottom);
+			values.emplace_back (&kLeftTop);
+			values.emplace_back (&kStretch);
+			values.emplace_back (&kCenter);
+			values.emplace_back (&kRightBottom);
 			return true;
 		}
 		return false;
@@ -973,18 +973,18 @@ public:
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const override
 	{
-		attributeNames.push_back (kAttrContainerSize);
-		attributeNames.push_back (kAttrScrollbarBackgroundColor);
-		attributeNames.push_back (kAttrScrollbarFrameColor);
-		attributeNames.push_back (kAttrScrollbarScrollerColor);
-		attributeNames.push_back (kAttrHorizontalScrollbar);
-		attributeNames.push_back (kAttrVerticalScrollbar);
-		attributeNames.push_back (kAttrAutoHideScrollbars);
-		attributeNames.push_back (kAttrAutoDragScrolling);
-		attributeNames.push_back (kAttrOverlayScrollbars);
-		attributeNames.push_back (kAttrScrollbarWidth);
-		attributeNames.push_back (kAttrBordered);
-		attributeNames.push_back (kAttrFollowFocusView);
+		attributeNames.emplace_back (kAttrContainerSize);
+		attributeNames.emplace_back (kAttrScrollbarBackgroundColor);
+		attributeNames.emplace_back (kAttrScrollbarFrameColor);
+		attributeNames.emplace_back (kAttrScrollbarScrollerColor);
+		attributeNames.emplace_back (kAttrHorizontalScrollbar);
+		attributeNames.emplace_back (kAttrVerticalScrollbar);
+		attributeNames.emplace_back (kAttrAutoHideScrollbars);
+		attributeNames.emplace_back (kAttrAutoDragScrolling);
+		attributeNames.emplace_back (kAttrOverlayScrollbars);
+		attributeNames.emplace_back (kAttrScrollbarWidth);
+		attributeNames.emplace_back (kAttrBordered);
+		attributeNames.emplace_back (kAttrFollowFocusView);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const override
@@ -1151,12 +1151,12 @@ public:
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const override
 	{
-		attributeNames.push_back (kAttrControlTag);
-		attributeNames.push_back (kAttrDefaultValue);
-		attributeNames.push_back (kAttrMinValue);
-		attributeNames.push_back (kAttrMaxValue);
-		attributeNames.push_back (kAttrWheelIncValue);
-		attributeNames.push_back (kAttrBackgroundOffset);
+		attributeNames.emplace_back (kAttrControlTag);
+		attributeNames.emplace_back (kAttrDefaultValue);
+		attributeNames.emplace_back (kAttrMinValue);
+		attributeNames.emplace_back (kAttrMaxValue);
+		attributeNames.emplace_back (kAttrWheelIncValue);
+		attributeNames.emplace_back (kAttrBackgroundOffset);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const override
@@ -1281,14 +1281,14 @@ public:
 
 	bool getAttributeNames (std::list<std::string>& attributeNames) const override
 	{
-		attributeNames.push_back (kAttrTitle);
-		attributeNames.push_back (kAttrFont);
-		attributeNames.push_back (kAttrFontColor);
-		attributeNames.push_back (kAttrBoxframeColor);
-		attributeNames.push_back (kAttrBoxfillColor);
-		attributeNames.push_back (kAttrCheckmarkColor);
-		attributeNames.push_back (kAttrAutosizeToFit);
-		attributeNames.push_back (kAttrDrawCrossbox);
+		attributeNames.emplace_back (kAttrTitle);
+		attributeNames.emplace_back (kAttrFont);
+		attributeNames.emplace_back (kAttrFontColor);
+		attributeNames.emplace_back (kAttrBoxframeColor);
+		attributeNames.emplace_back (kAttrBoxfillColor);
+		attributeNames.emplace_back (kAttrCheckmarkColor);
+		attributeNames.emplace_back (kAttrAutosizeToFit);
+		attributeNames.emplace_back (kAttrDrawCrossbox);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const override
@@ -1449,26 +1449,26 @@ public:
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const override
 	{
-		attributeNames.push_back (kAttrFont);
-		attributeNames.push_back (kAttrFontColor);
-		attributeNames.push_back (kAttrBackColor);
-		attributeNames.push_back (kAttrFrameColor);
-		attributeNames.push_back (kAttrShadowColor);
-		attributeNames.push_back (kAttrRoundRectRadius);
-		attributeNames.push_back (kAttrFrameWidth);
-		attributeNames.push_back (kAttrTextAlignment);
-		attributeNames.push_back (kAttrTextInset);
-		attributeNames.push_back (kAttrTextShadowOffset);
-		attributeNames.push_back (kAttrValuePrecision);
-		attributeNames.push_back (kAttrFontAntialias);
-		attributeNames.push_back (kAttrStyle3DIn);
-		attributeNames.push_back (kAttrStyle3DOut);
-		attributeNames.push_back (kAttrStyleNoFrame);
-		attributeNames.push_back (kAttrStyleNoText);
-		attributeNames.push_back (kAttrStyleNoDraw);
-		attributeNames.push_back (kAttrStyleShadowText);
-		attributeNames.push_back (kAttrStyleRoundRect);
-		attributeNames.push_back (kAttrTextRotation);
+		attributeNames.emplace_back (kAttrFont);
+		attributeNames.emplace_back (kAttrFontColor);
+		attributeNames.emplace_back (kAttrBackColor);
+		attributeNames.emplace_back (kAttrFrameColor);
+		attributeNames.emplace_back (kAttrShadowColor);
+		attributeNames.emplace_back (kAttrRoundRectRadius);
+		attributeNames.emplace_back (kAttrFrameWidth);
+		attributeNames.emplace_back (kAttrTextAlignment);
+		attributeNames.emplace_back (kAttrTextInset);
+		attributeNames.emplace_back (kAttrTextShadowOffset);
+		attributeNames.emplace_back (kAttrValuePrecision);
+		attributeNames.emplace_back (kAttrFontAntialias);
+		attributeNames.emplace_back (kAttrStyle3DIn);
+		attributeNames.emplace_back (kAttrStyle3DOut);
+		attributeNames.emplace_back (kAttrStyleNoFrame);
+		attributeNames.emplace_back (kAttrStyleNoText);
+		attributeNames.emplace_back (kAttrStyleNoDraw);
+		attributeNames.emplace_back (kAttrStyleShadowText);
+		attributeNames.emplace_back (kAttrStyleRoundRect);
+		attributeNames.emplace_back (kAttrTextRotation);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const override
@@ -1651,8 +1651,8 @@ public:
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const override
 	{
-		attributeNames.push_back (kAttrMenuPopupStyle);
-		attributeNames.push_back (kAttrMenuCheckStyle);
+		attributeNames.emplace_back (kAttrMenuPopupStyle);
+		attributeNames.emplace_back (kAttrMenuCheckStyle);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const override
@@ -1715,8 +1715,8 @@ public:
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const override
 	{
-		attributeNames.push_back (kAttrTitle);
-		attributeNames.push_back (kAttrTruncateMode);
+		attributeNames.emplace_back (kAttrTitle);
+		attributeNames.emplace_back (kAttrTruncateMode);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const override
@@ -1792,8 +1792,8 @@ public:
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const override
 	{
-		attributeNames.push_back (kAttrLineLayout);
-		attributeNames.push_back (kAttrAutoHeight);
+		attributeNames.emplace_back (kAttrLineLayout);
+		attributeNames.emplace_back (kAttrAutoHeight);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const override
@@ -1833,9 +1833,9 @@ public:
 			static std::string kTruncate = "truncate";
 			static std::string kWrap = "wrap";
 			
-			values.push_back (&kClip);
-			values.push_back (&kTruncate);
-			values.push_back (&kWrap);
+			values.emplace_back (&kClip);
+			values.emplace_back (&kTruncate);
+			values.emplace_back (&kWrap);
 			return true;
 		}
 		return false;
@@ -1874,9 +1874,9 @@ public:
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const override
 	{
-		attributeNames.push_back (kAttrImmediateTextChange);
-		attributeNames.push_back (kAttrStyleDoubleClick);
-		attributeNames.push_back (kAttrPlaceholderTitle);
+		attributeNames.emplace_back (kAttrImmediateTextChange);
+		attributeNames.emplace_back (kAttrStyleDoubleClick);
+		attributeNames.emplace_back (kAttrPlaceholderTitle);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const override
@@ -2094,22 +2094,22 @@ public:
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const override
 	{
-		attributeNames.push_back (kAttrKickStyle);
-		attributeNames.push_back (kAttrTitle);
-		attributeNames.push_back (kAttrFont);
-		attributeNames.push_back (kAttrTextColor);
-		attributeNames.push_back (kAttrTextColorHighlighted);
-		attributeNames.push_back (kAttrGradient);
-		attributeNames.push_back (kAttrGradientHighlighted);
-		attributeNames.push_back (kAttrFrameColor);
-		attributeNames.push_back (kAttrFrameColorHighlighted);
-		attributeNames.push_back (kAttrRoundRadius);
-		attributeNames.push_back (kAttrFrameWidth);
-		attributeNames.push_back (kAttrIconTextMargin);
-		attributeNames.push_back (kAttrTextAlignment);
-		attributeNames.push_back (kAttrIcon);
-		attributeNames.push_back (kAttrIconHighlighted);
-		attributeNames.push_back (kAttrIconPosition);
+		attributeNames.emplace_back (kAttrKickStyle);
+		attributeNames.emplace_back (kAttrTitle);
+		attributeNames.emplace_back (kAttrFont);
+		attributeNames.emplace_back (kAttrTextColor);
+		attributeNames.emplace_back (kAttrTextColorHighlighted);
+		attributeNames.emplace_back (kAttrGradient);
+		attributeNames.emplace_back (kAttrGradientHighlighted);
+		attributeNames.emplace_back (kAttrFrameColor);
+		attributeNames.emplace_back (kAttrFrameColorHighlighted);
+		attributeNames.emplace_back (kAttrRoundRadius);
+		attributeNames.emplace_back (kAttrFrameWidth);
+		attributeNames.emplace_back (kAttrIconTextMargin);
+		attributeNames.emplace_back (kAttrTextAlignment);
+		attributeNames.emplace_back (kAttrIcon);
+		attributeNames.emplace_back (kAttrIconHighlighted);
+		attributeNames.emplace_back (kAttrIconPosition);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const override
@@ -2146,7 +2146,7 @@ public:
 			int32_t index = 0;
 			while (positions[index].size () > 0)
 			{
-				values.push_back(&positions[index]);
+				values.emplace_back(&positions[index]);
 				index++;
 			}
 			return true;
@@ -2398,19 +2398,19 @@ public:
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const override
 	{
-		attributeNames.push_back (kAttrStyle);
-		attributeNames.push_back (kAttrSegmentNames);
-		attributeNames.push_back (kAttrFont);
-		attributeNames.push_back (kAttrTextColor);
-		attributeNames.push_back (kAttrTextColorHighlighted);
-		attributeNames.push_back (kAttrGradient);
-		attributeNames.push_back (kAttrGradientHighlighted);
-		attributeNames.push_back (kAttrFrameColor);
-		attributeNames.push_back (kAttrRoundRadius);
-		attributeNames.push_back (kAttrFrameWidth);
-		attributeNames.push_back (kAttrIconTextMargin);
-		attributeNames.push_back (kAttrTextAlignment);
-		attributeNames.push_back (kAttrTruncateMode);
+		attributeNames.emplace_back (kAttrStyle);
+		attributeNames.emplace_back (kAttrSegmentNames);
+		attributeNames.emplace_back (kAttrFont);
+		attributeNames.emplace_back (kAttrTextColor);
+		attributeNames.emplace_back (kAttrTextColorHighlighted);
+		attributeNames.emplace_back (kAttrGradient);
+		attributeNames.emplace_back (kAttrGradientHighlighted);
+		attributeNames.emplace_back (kAttrFrameColor);
+		attributeNames.emplace_back (kAttrRoundRadius);
+		attributeNames.emplace_back (kAttrFrameWidth);
+		attributeNames.emplace_back (kAttrIconTextMargin);
+		attributeNames.emplace_back (kAttrTextAlignment);
+		attributeNames.emplace_back (kAttrTruncateMode);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const override
@@ -2462,7 +2462,7 @@ public:
 			const CSegmentButton::Segments& segments = button->getSegments ();
 			UIAttributes::StringArray stringArray;
 			for (const auto& segment : segments)
-				stringArray.push_back (std::string (segment.name.getString ()));
+				stringArray.emplace_back (segment.name.getString ());
 			stringValue = UIAttributes::createStringArrayValue (stringArray);
 			return true;
 		}
@@ -2613,25 +2613,25 @@ public:
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const override
 	{
-		attributeNames.push_back (kAttrAngleStart);
-		attributeNames.push_back (kAttrAngleRange);
-		attributeNames.push_back (kAttrValueInset);
-		attributeNames.push_back (kAttrZoomFactor);
-		attributeNames.push_back (kAttrCircleDrawing);
-		attributeNames.push_back (kAttrCoronaDrawing);
-		attributeNames.push_back (kAttrCoronaOutline);
-		attributeNames.push_back (kAttrCoronaFromCenter);
-		attributeNames.push_back (kAttrCoronaInverted);
-		attributeNames.push_back (kAttrCoronaDashDot);
-		attributeNames.push_back (kAttrCoronaLineCapButt);
-		attributeNames.push_back (kAttrSkipHandleDrawing);
-		attributeNames.push_back (kAttrCoronaInset);
-		attributeNames.push_back (kAttrCoronaColor);
-		attributeNames.push_back (kAttrHandleShadowColor);
-		attributeNames.push_back (kAttrHandleColor);
-		attributeNames.push_back (kAttrHandleLineWidth);
-		attributeNames.push_back (kAttrCoronaOutlineWidthAdd);
-		attributeNames.push_back (kAttrHandleBitmap);
+		attributeNames.emplace_back (kAttrAngleStart);
+		attributeNames.emplace_back (kAttrAngleRange);
+		attributeNames.emplace_back (kAttrValueInset);
+		attributeNames.emplace_back (kAttrZoomFactor);
+		attributeNames.emplace_back (kAttrCircleDrawing);
+		attributeNames.emplace_back (kAttrCoronaDrawing);
+		attributeNames.emplace_back (kAttrCoronaOutline);
+		attributeNames.emplace_back (kAttrCoronaFromCenter);
+		attributeNames.emplace_back (kAttrCoronaInverted);
+		attributeNames.emplace_back (kAttrCoronaDashDot);
+		attributeNames.emplace_back (kAttrCoronaLineCapButt);
+		attributeNames.emplace_back (kAttrSkipHandleDrawing);
+		attributeNames.emplace_back (kAttrCoronaInset);
+		attributeNames.emplace_back (kAttrCoronaColor);
+		attributeNames.emplace_back (kAttrHandleShadowColor);
+		attributeNames.emplace_back (kAttrHandleColor);
+		attributeNames.emplace_back (kAttrHandleLineWidth);
+		attributeNames.emplace_back (kAttrCoronaOutlineWidthAdd);
+		attributeNames.emplace_back (kAttrHandleBitmap);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const override
@@ -2813,8 +2813,8 @@ public:
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const override
 	{
-		attributeNames.push_back (kAttrHeightOfOneImage);
-		attributeNames.push_back (kAttrSubPixmaps);
+		attributeNames.emplace_back (kAttrHeightOfOneImage);
+		attributeNames.emplace_back (kAttrSubPixmaps);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const override
@@ -3046,22 +3046,22 @@ public:
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const override
 	{
-		attributeNames.push_back (kAttrTransparentHandle);
-		attributeNames.push_back (kAttrMode);
-		attributeNames.push_back (kAttrHandleBitmap);
-		attributeNames.push_back (kAttrHandleOffset);
-		attributeNames.push_back (kAttrBitmapOffset);
-		attributeNames.push_back (kAttrZoomFactor);
-		attributeNames.push_back (kAttrOrientation);
-		attributeNames.push_back (kAttrReverseOrientation);
-		attributeNames.push_back (kAttrDrawFrame);
-		attributeNames.push_back (kAttrDrawBack);
-		attributeNames.push_back (kAttrDrawValue);
-		attributeNames.push_back (kAttrDrawValueFromCenter);
-		attributeNames.push_back (kAttrDrawValueInverted);
-		attributeNames.push_back (kAttrDrawFrameColor);
-		attributeNames.push_back (kAttrDrawBackColor);
-		attributeNames.push_back (kAttrDrawValueColor);
+		attributeNames.emplace_back (kAttrTransparentHandle);
+		attributeNames.emplace_back (kAttrMode);
+		attributeNames.emplace_back (kAttrHandleBitmap);
+		attributeNames.emplace_back (kAttrHandleOffset);
+		attributeNames.emplace_back (kAttrBitmapOffset);
+		attributeNames.emplace_back (kAttrZoomFactor);
+		attributeNames.emplace_back (kAttrOrientation);
+		attributeNames.emplace_back (kAttrReverseOrientation);
+		attributeNames.emplace_back (kAttrDrawFrame);
+		attributeNames.emplace_back (kAttrDrawBack);
+		attributeNames.emplace_back (kAttrDrawValue);
+		attributeNames.emplace_back (kAttrDrawValueFromCenter);
+		attributeNames.emplace_back (kAttrDrawValueInverted);
+		attributeNames.emplace_back (kAttrDrawFrameColor);
+		attributeNames.emplace_back (kAttrDrawBackColor);
+		attributeNames.emplace_back (kAttrDrawValueColor);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const override
@@ -3219,9 +3219,9 @@ public:
 			static std::string kRelativeTouch = "relative touch";
 			static std::string kFreeClick = "free click";
 			
-			values.push_back (&kTouch);
-			values.push_back (&kRelativeTouch);
-			values.push_back (&kFreeClick);
+			values.emplace_back (&kTouch);
+			values.emplace_back (&kRelativeTouch);
+			values.emplace_back (&kFreeClick);
 			return true;
 		}
 		return false;
@@ -3264,10 +3264,10 @@ public:
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const override
 	{
-		attributeNames.push_back (kAttrOffBitmap);
-		attributeNames.push_back (kAttrNumLed);
-		attributeNames.push_back (kAttrOrientation);
-		attributeNames.push_back (kAttrDecreaseStepValue);
+		attributeNames.emplace_back (kAttrOffBitmap);
+		attributeNames.emplace_back (kAttrNumLed);
+		attributeNames.emplace_back (kAttrOrientation);
+		attributeNames.emplace_back (kAttrDecreaseStepValue);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const override
@@ -3368,11 +3368,11 @@ public:
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const override
 	{
-		attributeNames.push_back (kAttrSplashBitmap);
-		attributeNames.push_back (kAttrSplashOrigin);
-		attributeNames.push_back (kAttrSplashSize);
-		attributeNames.push_back (kAttrAnimationIndex);
-		attributeNames.push_back (kAttrAnimationTime);
+		attributeNames.emplace_back (kAttrSplashBitmap);
+		attributeNames.emplace_back (kAttrSplashOrigin);
+		attributeNames.emplace_back (kAttrSplashSize);
+		attributeNames.emplace_back (kAttrAnimationIndex);
+		attributeNames.emplace_back (kAttrAnimationTime);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const override
@@ -3484,10 +3484,10 @@ public:
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const override
 	{
-		attributeNames.push_back (kAttrTemplateNames);
-		attributeNames.push_back (kAttrTemplateSwitchControl);
-		attributeNames.push_back (kAttrAnimationStyle);
-		attributeNames.push_back (kAttrAnimationTime);
+		attributeNames.emplace_back (kAttrTemplateNames);
+		attributeNames.emplace_back (kAttrTemplateSwitchControl);
+		attributeNames.emplace_back (kAttrAnimationStyle);
+		attributeNames.emplace_back (kAttrAnimationTime);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const override
@@ -3562,9 +3562,9 @@ public:
 			static std::string kMoveInOut = "move";
 			static std::string kPushInOut = "push";
 			
-			values.push_back (&kFadeInOut);
-			values.push_back (&kMoveInOut);
-			values.push_back (&kPushInOut);
+			values.emplace_back (&kFadeInOut);
+			values.emplace_back (&kMoveInOut);
+			values.emplace_back (&kPushInOut);
 			return true;
 		}
 		return false;
@@ -3628,9 +3628,9 @@ public:
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const override
 	{
-		attributeNames.push_back (kAttrOrientation);
-		attributeNames.push_back (kAttrResizeMethod);
-		attributeNames.push_back (kAttrSeparatorWidth);
+		attributeNames.emplace_back (kAttrOrientation);
+		attributeNames.emplace_back (kAttrResizeMethod);
+		attributeNames.emplace_back (kAttrSeparatorWidth);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const override
@@ -3696,10 +3696,10 @@ public:
 			static std::string kLast = "last";
 			static std::string kAll = "all";
 	
-			values.push_back (&kFirst);
-			values.push_back (&kSecond);
-			values.push_back (&kLast);
-			values.push_back (&kAll);
+			values.emplace_back (&kFirst);
+			values.emplace_back (&kSecond);
+			values.emplace_back (&kLast);
+			values.emplace_back (&kAll);
 			return true;
 		}
 		return false;
@@ -3738,9 +3738,9 @@ public:
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const override
 	{
-		attributeNames.push_back (kAttrShadowIntensity);
-		attributeNames.push_back (kAttrShadowOffset);
-		attributeNames.push_back (kAttrShadowBlurSize);
+		attributeNames.emplace_back (kAttrShadowIntensity);
+		attributeNames.emplace_back (kAttrShadowOffset);
+		attributeNames.emplace_back (kAttrShadowBlurSize);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const override
@@ -3878,15 +3878,15 @@ public:
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const override
 	{
-		attributeNames.push_back (kAttrGradientStyle);
-		attributeNames.push_back (kAttrGradient);
-		attributeNames.push_back (kAttrGradientAngle);
-		attributeNames.push_back (kAttrRadialCenter);
-		attributeNames.push_back (kAttrRadialRadius);
-		attributeNames.push_back (kAttrFrameColor);
-		attributeNames.push_back (kAttrRoundRectRadius);
-		attributeNames.push_back (kAttrFrameWidth);
-		attributeNames.push_back (kAttrDrawAntialiased);
+		attributeNames.emplace_back (kAttrGradientStyle);
+		attributeNames.emplace_back (kAttrGradient);
+		attributeNames.emplace_back (kAttrGradientAngle);
+		attributeNames.emplace_back (kAttrRadialCenter);
+		attributeNames.emplace_back (kAttrRadialRadius);
+		attributeNames.emplace_back (kAttrFrameColor);
+		attributeNames.emplace_back (kAttrRoundRectRadius);
+		attributeNames.emplace_back (kAttrFrameWidth);
+		attributeNames.emplace_back (kAttrDrawAntialiased);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const override
@@ -3962,8 +3962,8 @@ public:
 		{
 			static std::string kLinear = "linear";
 			static std::string kRadial = "radial";
-			values.push_back (&kLinear);
-			values.push_back (&kRadial);
+			values.emplace_back (&kLinear);
+			values.emplace_back (&kRadial);
 			return true;
 		}
 		return false;
@@ -4002,8 +4002,8 @@ static bool getStandardAttributeListValues (const std::string& attributeName, st
 		static std::string kHorizontal = "horizontal";
 		static std::string kVertical = "vertical";
 		
-		values.push_back (&kHorizontal);
-		values.push_back (&kVertical);
+		values.emplace_back (&kHorizontal);
+		values.emplace_back (&kVertical);
 		return true;
 	}
 	else if (attributeName == kAttrTruncateMode)
@@ -4012,9 +4012,9 @@ static bool getStandardAttributeListValues (const std::string& attributeName, st
 		static std::string kHead = "head";
 		static std::string kTail = "tail";
 		
-		values.push_back (&kNone);
-		values.push_back (&kHead);
-		values.push_back (&kTail);
+		values.emplace_back (&kNone);
+		values.emplace_back (&kHead);
+		values.emplace_back (&kTail);
 		return true;
 	}
 	return false;

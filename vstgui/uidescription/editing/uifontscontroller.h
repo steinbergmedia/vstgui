@@ -49,7 +49,7 @@
 namespace VSTGUI {
 class UIFontsDataSource;
 //----------------------------------------------------------------------------------------------------
-class UIFontsController : public CBaseObject, public DelegationController, public IGenericStringListDataBrowserSourceSelectionChanged
+class UIFontsController : public NonAtomicReferenceCounted, public DelegationController, public IGenericStringListDataBrowserSourceSelectionChanged
 {
 public:
 	UIFontsController (IController* baseController, UIDescription* description, IActionPerformer* actionPerformer);

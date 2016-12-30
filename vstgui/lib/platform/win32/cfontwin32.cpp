@@ -59,7 +59,7 @@ bool GdiPlusFont::getAllPlatformFontFamilies (std::list<std::string>& fontFamily
 			{
 				families[i].GetFamilyName (familyName);
 				UTF8StringHelper str (familyName);
-				fontFamilyNames.push_back (std::string (str));
+				fontFamilyNames.emplace_back (str);
 			}
 		}
 		::delete [] families;

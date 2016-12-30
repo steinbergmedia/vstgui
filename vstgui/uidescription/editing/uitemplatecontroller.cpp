@@ -486,7 +486,7 @@ bool UIViewListDataSource::update (CViewContainer* vc)
 		if (viewName)
 		{
 			names.emplace_back (viewName);
-			subviews.push_back (subview);
+			subviews.emplace_back (subview);
 		}
 		it++;
 	}

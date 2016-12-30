@@ -156,7 +156,7 @@ static std::vector<int32_t> boxesForGauss (double sigma, uint16_t numBoxes)
 	ideal = ((12. * sigma * sigma) - (numBoxes * l * l) - (4. * numBoxes * l) - (3. * numBoxes)) / ((-4. * l) - 4.);
 	int32_t m = static_cast<int32_t> (std::floor (ideal));
 	for (int32_t i = 0; i < numBoxes; ++i)
-		boxes.push_back (i < m ? l : u);
+		boxes.emplace_back (i < m ? l : u);
 	return boxes;
 }
 

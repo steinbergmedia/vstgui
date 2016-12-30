@@ -462,7 +462,7 @@ CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes
 	CSplitView* splitView = dynamic_cast<CSplitView*>(view);
 	if (splitView)
 	{
-		splitViews.push_back (splitView);
+		splitViews.emplace_back (splitView);
 		if (splitViews.size () == 1)
 		{
 			CFontRef font = description->getFont ("control.font");
@@ -1346,7 +1346,7 @@ void UIEditController::finishGroupAction ()
 void UIEditController::getTemplateViews (std::list<CView*>& views) const
 {
 	for (const auto& templateDesc : templates)
-		views.push_back (templateDesc.view);
+		views.emplace_back (templateDesc.view);
 }
 
 //----------------------------------------------------------------------------------------------------

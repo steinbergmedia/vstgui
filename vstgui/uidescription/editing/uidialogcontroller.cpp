@@ -330,7 +330,7 @@ void UIDialogController::collectOpenGLViews (CViewContainer* container)
 	{
 		COpenGLView* openGLView = dynamic_cast<COpenGLView*>(*it);
 		if (openGLView && openGLView->isVisible ())
-			openglViews.push_back (openGLView);
+			openglViews.emplace_back (openGLView);
 		else
 		{
 			if (auto childContainer = (*it)->asViewContainer ())

@@ -351,7 +351,7 @@ bool CViewContainer::addView (CView *pView, CView* pBefore)
 	}
 	else
 	{
-		children.push_back (pView);
+		children.emplace_back (pView);
 	}
 
 	pView->setSubviewState (true);
@@ -1214,7 +1214,7 @@ bool CViewContainer::getViewsAt (const CPoint& p, ViewList& views, const GetView
 				if (pV->asViewContainer ())
 					continue;
 			}
-			views.push_back (pV);
+			views.emplace_back (pV);
 			result = true;
 		}
 	ENDFOREACHSUBVIEW

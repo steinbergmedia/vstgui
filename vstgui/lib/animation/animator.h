@@ -47,7 +47,7 @@ namespace Animation {
 /// @brief Animation runner
 ///	@ingroup new_in_4_0
 //-----------------------------------------------------------------------------
-class Animator : public CBaseObject
+class Animator : public NonAtomicReferenceCounted
 {
 public:
 	//-----------------------------------------------------------------------------
@@ -69,7 +69,7 @@ public:
 	void addAnimation (CView* view, IdStringPtr name, IAnimationTarget* target, ITimingFunction* timingFunction, DoneFunction notification);
 
 	/** removes an animation.
-		If animation is a CBaseObject forget() will be called otherwise it is deleted.
+		If animation has the IReference interface forget() will be called otherwise it is deleted.
 		The same will be done with the timingFunction.
 	*/
 	void removeAnimation (CView* view, IdStringPtr name);
@@ -81,17 +81,16 @@ public:
 	/// @cond ignore
 
 	Animator ();	// do not use this, instead use CFrame::getAnimator()
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
+	void onTimer ();
 
-	CLASS_METHODS_NOCOPY(Animator, CBaseObject)
 protected:
 
 	~Animator () noexcept override;
 
-	class Animation : public CBaseObject
+	class Animation : public NonAtomicReferenceCounted
 	{
 	public:
-		Animation (CView* view, const std::string& name, IAnimationTarget* at, ITimingFunction* t, DoneFunction notification);
+		Animation (CView* view, const std::string& name, IAnimationTarget* at, ITimingFunction* t, DoneFunction&& notification);
 		~Animation () noexcept override;
 
 		std::string name;

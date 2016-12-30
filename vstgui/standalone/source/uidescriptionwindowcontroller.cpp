@@ -190,7 +190,7 @@ public:
 		control->invalid ();
 		control->registerControlListener (this);
 		control->registerViewListener (this);
-		controls.push_back (control);
+		controls.emplace_back (control);
 	}
 
 	void removeControl (CControl* control)

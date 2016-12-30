@@ -98,7 +98,7 @@ private:
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-class Win32DropSource : public CBaseObject, public ::IDropSource
+class Win32DropSource : public AtomicReferenceCounted, public ::IDropSource
 {
 public:
 	Win32DropSource () {}
@@ -116,7 +116,7 @@ public:
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-class Win32DataObject : public CBaseObject, public ::IDataObject
+class Win32DataObject : public AtomicReferenceCounted, public ::IDataObject
 {
 public:
 	Win32DataObject (IDataPackage* dataPackage);

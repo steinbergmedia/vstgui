@@ -209,7 +209,7 @@ CView* UIColorChooserController::verifyView (CView* view, const UIAttributes& at
 	CControl* control = dynamic_cast<CControl*>(view);
 	if (control && control->getTag () >= 0)
 	{
-		controls.push_back (control);
+		controls.emplace_back (control);
 		CTextEdit* textEdit = dynamic_cast<CTextEdit*> (control);
 		if (textEdit)
 		{

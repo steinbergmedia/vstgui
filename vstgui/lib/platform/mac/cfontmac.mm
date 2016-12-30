@@ -84,7 +84,7 @@ bool IPlatformFont::getAllPlatformFontFamilies (std::list<std::string>& fontFami
 	for (uint32_t i = 0; i < [fonts count]; i++)
 	{
 		NSString* font = [fonts objectAtIndex:i];
-		fontFamilyNames.push_back (std::string ([font UTF8String]));
+		fontFamilyNames.emplace_back ([font UTF8String]);
 	}
 	return true;
 }
