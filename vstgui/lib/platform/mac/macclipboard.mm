@@ -80,7 +80,7 @@ Pasteboard::Pasteboard (NSPasteboard* pb)
 		NSString* unicodeText = [pb stringForType:NSStringPboardType];
 		if (unicodeText)
 		{
-			strings.push_back ([unicodeText UTF8String]);
+			strings.emplace_back ([unicodeText UTF8String]);
 		}
 	}
 	else
@@ -96,7 +96,7 @@ Pasteboard::Pasteboard (NSPasteboard* pb)
 			{
 				NSString* str = [fileNames objectAtIndex:i];
 				if (str)
-					strings.push_back ([str UTF8String]);
+					strings.emplace_back ([str UTF8String]);
 			}
 		}
 		else if ([pb availableTypeFromArray:[NSArray arrayWithObject:NSColorPboardType]])
@@ -111,7 +111,7 @@ Pasteboard::Pasteboard (NSPasteboard* pb)
 				int32_t alpha = static_cast<int32_t> ([nsColor alphaComponent] * 255.);
 				char str[10];
 				sprintf (str, "#%02x%02x%02x%02x", red, green, blue, alpha);
-				strings.push_back (str);
+				strings.emplace_back (str);
 			}
 		}
 		else

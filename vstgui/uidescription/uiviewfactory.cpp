@@ -83,7 +83,7 @@ namespace VSTGUI {
 		// add your custom attributes to the list		
 		bool getAttributeNames (std::list<std::string>& attributeNames) const
 		{
-			attributeNames.push_back ("my-custom-attribute");
+			attributeNames.emplace_back ("my-custom-attribute");
 			return true;
 		}
 		
@@ -417,7 +417,7 @@ void UIViewFactory::collectRegisteredViewNames (StringPtrList& viewNames, IdStri
 				continue;
 			}
 		}
-		viewNames.push_back (&(*iter).first);
+		viewNames.emplace_back (&(*iter).first);
 		iter++;
 	}
 	viewNames.sort (viewNamesSortFunc);
@@ -431,7 +431,7 @@ auto UIViewFactory::collectRegisteredViewAndDisplayNames () const -> ViewAndDisp
 	ViewCreatorRegistry::const_iterator iter = registry.begin ();
 	while (iter != registry.end ())
 	{
-		list.push_back (std::make_pair (&(*iter).first, (*iter).second->getDisplayName ()));
+		list.emplace_back (&(*iter).first, (*iter).second->getDisplayName ());
 		iter++;
 	}
 	return list;

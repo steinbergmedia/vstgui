@@ -54,7 +54,7 @@ CSegmentButton::CSegmentButton (const CRect& size, IControlListener* listener, i
 void CSegmentButton::addSegment (Segment segment, uint32_t index)
 {
 	if (index == kPushBack && segments.size () < kPushBack)
-		segments.push_back (segment);
+		segments.emplace_back (segment);
 	else if (index < segments.size ())
 	{
 		Segments::iterator it = segments.begin ();

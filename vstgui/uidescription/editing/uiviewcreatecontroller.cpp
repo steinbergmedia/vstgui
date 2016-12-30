@@ -156,7 +156,7 @@ void UIViewCreatorDataSource::getNames (std::list<const std::string*>& names)
 	viewAndDisplayNameList = factory->collectRegisteredViewAndDisplayNames ();
 	for (const auto& e : viewAndDisplayNameList)
 	{
-		names.push_back (&e.second);
+		names.emplace_back (&e.second);
 	}
 	names.sort ([] (const auto& lhs, const auto& rhs) { return *lhs < *rhs; });
 

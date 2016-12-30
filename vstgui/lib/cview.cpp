@@ -127,7 +127,7 @@ public:
 	{
 		if (gInstance == nullptr)
 			new IdleViewUpdater ();
-		gInstance->views.push_back (view);
+		gInstance->views.emplace_back (view);
 	}
 
 	static void remove (CView* view)
@@ -201,7 +201,7 @@ CView::CView (const CRect& size)
 	#if VSTGUI_CHECK_VIEW_RELEASING
 	static CViewInternal::AllocatedViews allocatedViews;
 	CViewInternal::gNbCView++;
-	CViewInternal::gViewList.push_back (this);
+	CViewInternal::gViewList.emplace_back (this);
 	#endif
 
 	setViewFlag (kMouseEnabled | kVisible, true);

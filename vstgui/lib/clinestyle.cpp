@@ -47,7 +47,7 @@ CLineStyle::CLineStyle (LineCap _cap, LineJoin _join, CCoord _dashPhase, uint32_
 	if (_dashCount && _dashLengths)
 	{
 		for (uint32_t i = 0; i < _dashCount; i++)
-			dashLengths.push_back (_dashLengths[i]);
+			dashLengths.emplace_back (_dashLengths[i]);
 	}
 }
 

@@ -245,13 +245,13 @@ void CNewFileSelector::setDefaultExtension (const CFileExtension& extension)
 //-----------------------------------------------------------------------------
 void CNewFileSelector::addFileExtension (const CFileExtension& extension)
 {
-	extensions.push_back (extension);
+	extensions.emplace_back (extension);
 }
 
 //-----------------------------------------------------------------------------
 void CNewFileSelector::addFileExtension (CFileExtension&& extension)
 {
-	extensions.push_back (std::move (extension));
+	extensions.emplace_back (std::move (extension));
 }
 
 //-----------------------------------------------------------------------------

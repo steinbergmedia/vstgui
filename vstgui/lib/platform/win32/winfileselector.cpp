@@ -313,7 +313,7 @@ bool VistaFileSelector::runModalInternal ()
 							if (SUCCEEDED (hr))
 							{
 								UTF8StringHelper str (filesysPath);
-								result.push_back (str.getUTF8String ());
+								result.emplace_back (str.getUTF8String ());
 							}
 							item->Release ();
 						}
@@ -334,7 +334,7 @@ bool VistaFileSelector::runModalInternal ()
 				if (SUCCEEDED (hr))
 				{
 					UTF8StringHelper str (filesysPath);
-					result.push_back (str.getUTF8String ());
+					result.emplace_back (str.getUTF8String ());
 				}
 				item->Release ();
 			}
@@ -404,7 +404,7 @@ bool XPFileSelector::runModalInternal ()
 				char szPathNameC_[MAX_PATH];
 				char *szPathNameC= szPathNameC_;
 				WideCharToMultiByte (CP_ACP, WC_COMPOSITECHECK|WC_DEFAULTCHAR, szPathName, -1, szPathNameC, MAX_PATH, NULL, NULL); 
-				result.push_back (szPathNameC);
+				result.emplace_back (szPathNameC);
 				return true;
 			}
 		}
@@ -468,7 +468,7 @@ bool XPFileSelector::runModalInternal ()
 	}
 
 	UTF8StringHelper str (filePathBuffer);
-	result.push_back (str.getUTF8String ());
+	result.emplace_back (str.getUTF8String ());
 	return true;
 }
 

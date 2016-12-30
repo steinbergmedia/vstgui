@@ -283,7 +283,7 @@ inline uint32_t CViewContainer::getChildViewsOfType (ContainerClass& result, boo
 {
 	for (auto& child : getChildren ())
 	{
-		ViewClass* vObj = child.cast<ViewClass> ();
+		auto vObj = child.cast<ViewClass> ();
 		if (vObj)
 		{
 			result.push_back (vObj);

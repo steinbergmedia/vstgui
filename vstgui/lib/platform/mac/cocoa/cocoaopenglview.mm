@@ -74,45 +74,45 @@ bool CocoaOpenGLView::init (IOpenGLView* view, PixelFormat* _pixelFormat)
 		if (_pixelFormat)
 		{
 			pixelFormat = *_pixelFormat;
-			formatAttributes.push_back (NSOpenGLPFADepthSize);
-			formatAttributes.push_back (pixelFormat.depthSize);
+			formatAttributes.emplace_back (NSOpenGLPFADepthSize);
+			formatAttributes.emplace_back (pixelFormat.depthSize);
 			if (pixelFormat.flags & PixelFormat::kAccelerated)
 			{
-				formatAttributes.push_back (NSOpenGLPFANoRecovery);
-				formatAttributes.push_back (NSOpenGLPFAAccelerated);
+				formatAttributes.emplace_back (NSOpenGLPFANoRecovery);
+				formatAttributes.emplace_back (NSOpenGLPFAAccelerated);
 			}
 			if (pixelFormat.flags & PixelFormat::kDoubleBuffered)
 			{
-				formatAttributes.push_back (NSOpenGLPFADoubleBuffer);
-				formatAttributes.push_back (NSOpenGLPFABackingStore);
+				formatAttributes.emplace_back (NSOpenGLPFADoubleBuffer);
+				formatAttributes.emplace_back (NSOpenGLPFABackingStore);
 			}
 			if (pixelFormat.flags & PixelFormat::kMultiSample)
 			{
-				formatAttributes.push_back (NSOpenGLPFAMultisample);
-				formatAttributes.push_back (true);
-				formatAttributes.push_back (NSOpenGLPFASampleBuffers);
-				formatAttributes.push_back (2);
-				formatAttributes.push_back (NSOpenGLPFASamples);
-				formatAttributes.push_back (pixelFormat.samples);
+				formatAttributes.emplace_back (NSOpenGLPFAMultisample);
+				formatAttributes.emplace_back (true);
+				formatAttributes.emplace_back (NSOpenGLPFASampleBuffers);
+				formatAttributes.emplace_back (2);
+				formatAttributes.emplace_back (NSOpenGLPFASamples);
+				formatAttributes.emplace_back (pixelFormat.samples);
 			}
 			if (pixelFormat.flags & PixelFormat::kModernOpenGL)
 			{
-				formatAttributes.push_back (NSOpenGLPFAOpenGLProfile);
-				formatAttributes.push_back (NSOpenGLProfileVersion3_2Core);
+				formatAttributes.emplace_back (NSOpenGLPFAOpenGLProfile);
+				formatAttributes.emplace_back (NSOpenGLProfileVersion3_2Core);
 			}
 		}
 		else
 		{
-			formatAttributes.push_back (NSOpenGLPFANoRecovery);
-			formatAttributes.push_back (NSOpenGLPFAAccelerated);
-			formatAttributes.push_back (NSOpenGLPFADoubleBuffer);
-			formatAttributes.push_back (NSOpenGLPFABackingStore);
-			formatAttributes.push_back (NSOpenGLPFADepthSize);
-			formatAttributes.push_back (32);
-			formatAttributes.push_back (NSOpenGLPFAOpenGLProfile);
-			formatAttributes.push_back (NSOpenGLProfileVersionLegacy);
+			formatAttributes.emplace_back (NSOpenGLPFANoRecovery);
+			formatAttributes.emplace_back (NSOpenGLPFAAccelerated);
+			formatAttributes.emplace_back (NSOpenGLPFADoubleBuffer);
+			formatAttributes.emplace_back (NSOpenGLPFABackingStore);
+			formatAttributes.emplace_back (NSOpenGLPFADepthSize);
+			formatAttributes.emplace_back (32);
+			formatAttributes.emplace_back (NSOpenGLPFAOpenGLProfile);
+			formatAttributes.emplace_back (NSOpenGLProfileVersionLegacy);
 		}
-		formatAttributes.push_back (0);
+		formatAttributes.emplace_back (0);
 		NSOpenGLPixelFormat* nsPixelFormat = [[[NSOpenGLPixelFormat alloc] initWithAttributes:&formatAttributes.front ()] autorelease];
 		platformView = [[openGLViewClass alloc] initWithFrame:r pixelFormat:nsPixelFormat callback:this];
 		if (platformView)

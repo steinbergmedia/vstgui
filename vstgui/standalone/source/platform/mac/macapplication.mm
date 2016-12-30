@@ -468,7 +468,7 @@ static CommandWithKeyList getCommandList (const char* _Nonnull group)
 	NSArray* args = [[NSProcessInfo processInfo] arguments];
 	for (NSString* str in args)
 	{
-		cmdArgs.push_back ([str UTF8String]);
+		cmdArgs.emplace_back ([str UTF8String]);
 	}
 
 	VSTGUIApplicationDelegate* Self = self;

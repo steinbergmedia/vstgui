@@ -420,11 +420,11 @@ void CFrame::checkMouseViews (const CPoint& where, const CButtonState& buttons)
 		CView* container = mouseView;
 		while ((vc = static_cast<CViewContainer*> (container->getParentView ())) != *it2)
 		{
-			pImpl->pMouseViews.push_back (vc);
+			pImpl->pMouseViews.emplace_back (vc);
 			vc->remember ();
 			container = vc;
 		}
-		pImpl->pMouseViews.push_back (mouseView);
+		pImpl->pMouseViews.emplace_back (mouseView);
 		mouseView->remember ();
 		++it2;
 		while (it2 != pImpl->pMouseViews.end ())
@@ -443,7 +443,7 @@ void CFrame::checkMouseViews (const CPoint& where, const CButtonState& buttons)
 	{
 		// must be pMouseViews.size () == 0
 		vstgui_assert (pImpl->pMouseViews.empty ());
-		pImpl->pMouseViews.push_back (mouseView);
+		pImpl->pMouseViews.emplace_back (mouseView);
 		mouseView->remember ();
 		while ((vc = static_cast<CViewContainer*> (mouseView->getParentView ())) != this)
 		{
@@ -974,7 +974,7 @@ void CFrame::onViewAdded (CView* pView)
 		getViewAddedRemovedObserver ()->onViewAdded (this, pView);
 	if (pView->wantsWindowActiveStateChangeNotification ())
 	{
-		pImpl->windowActiveStateChangeViews.push_back (pView);
+		pImpl->windowActiveStateChangeViews.emplace_back (pView);
 		pView->onWindowActivate (pImpl->bWindowActive);
 	}
 }
@@ -1322,7 +1322,7 @@ void CFrame::registerKeyboardHook (IKeyboardHook* hook)
 {
 	if (pImpl->pKeyboardHooks == nullptr)
 		pImpl->pKeyboardHooks = new Impl::KeyboardHookList ();
-	pImpl->pKeyboardHooks->push_back (hook);
+	pImpl->pKeyboardHooks->emplace_back (hook);
 }
 
 //-----------------------------------------------------------------------------
@@ -1378,7 +1378,7 @@ void CFrame::registerScaleFactorChangedListeneer (IScaleFactorChangedListener* l
 {
 	if (pImpl->pScaleFactorChangedListenerList == nullptr)
 		pImpl->pScaleFactorChangedListenerList = new Impl::ScaleFactorChangedListenerList ();
-	pImpl->pScaleFactorChangedListenerList->push_back (listener);
+	pImpl->pScaleFactorChangedListenerList->emplace_back (listener);
 }
 
 //-----------------------------------------------------------------------------
@@ -1400,7 +1400,7 @@ void CFrame::registerMouseObserver (IMouseObserver* observer)
 {
 	if (pImpl->pMouseObservers == nullptr)
 		pImpl->pMouseObservers = new Impl::MouseObserverList ();
-	pImpl->pMouseObservers->push_back (observer);
+	pImpl->pMouseObservers->emplace_back (observer);
 }
 
 //-----------------------------------------------------------------------------
@@ -1690,7 +1690,7 @@ void CFrame::platformOnTouchEvent (ITouchEvent& event)
 				if (std::find (targetDispatched.begin (), targetDispatched.end (), target) == targetDispatched.end ())
 				{
 					target->onTouchEvent (event);
-					targetDispatched.push_back (target);
+					targetDispatched.emplace_back (target);
 				}
 			}
 		}
@@ -1795,7 +1795,7 @@ void CFrame::CollectInvalidRects::addRect (const CRect& rect)
 		}
 	}
 	if (add)
-		invalidRects.push_back (rect);
+		invalidRects.emplace_back (rect);
 	uint32_t now = frame->getTicks ();
 	if (now - lastTicks > 16)
 	{

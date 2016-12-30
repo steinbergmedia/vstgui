@@ -426,7 +426,7 @@ void CDataBrowser::setSelectedRow (int32_t index, bool makeVisible)
 	}
 	selection.clear ();
 	
-	selection.push_back (index);
+	selection.emplace_back (index);
 	if (hasChanged)
 		db->dbSelectionChanged (this);
 	
@@ -452,7 +452,7 @@ void CDataBrowser::selectRow (int32_t row)
 	{
 		if (getStyle () & kMultiSelectionStyle)
 		{
-			selection.push_back (row);
+			selection.emplace_back (row);
 			dbView->invalidateRow (row);
 			db->dbSelectionChanged (this);
 		}
@@ -861,7 +861,7 @@ void CDataBrowserView::drawRect (CDrawContext* context, const CRect& updateRect)
 		r.left = getViewSize ().left;
 		r.setWidth (getWidth ());
 		if (drawRowLines)
-			lines.push_back (std::make_pair (r.getBottomLeft (), r.getBottomRight ()));
+			lines.emplace_back (r.getBottomLeft (), r.getBottomRight ());
 		r.offset (0, rowHeight);
 	}
 	if (browser->getStyle () & CDataBrowser::kDrawColumnLines)
@@ -876,7 +876,7 @@ void CDataBrowserView::drawRect (CDrawContext* context, const CRect& updateRect)
 			for (int32_t col = 0; col < numColumns - 1; col++)
 			{
 				p1.x = p2.x = p1.x + db->dbGetCurrentColumnWidth (col, browser) + lineWidth;
-				lines.push_back (std::make_pair (p1, p2));
+				lines.emplace_back (p1, p2);
 			}
 		}
 	}

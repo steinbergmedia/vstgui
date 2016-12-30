@@ -48,7 +48,7 @@ class UIGradientsDataSource;
 class IActionPerformer;
 
 //----------------------------------------------------------------------------------------------------
-class UIGradientsController : public CBaseObject, public DelegationController, public IGenericStringListDataBrowserSourceSelectionChanged
+class UIGradientsController : public NonAtomicReferenceCounted, public DelegationController, public IGenericStringListDataBrowserSourceSelectionChanged
 {
 public:
 	UIGradientsController (IController* baseController, UIDescription* description, IActionPerformer* actionPerformer);

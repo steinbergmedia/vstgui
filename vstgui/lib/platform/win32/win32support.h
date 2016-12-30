@@ -80,7 +80,7 @@ extern void useD2DHardwareRenderer (bool state);
 extern Optional<VstKeyCode> keyMessageToKeyCode (WPARAM wParam, LPARAM lParam);
 
 /// @cond ignore
-class GDIPlusGlobals : public CBaseObject
+class GDIPlusGlobals : public AtomicReferenceCounted
 {
 public:
 	static void enter ();

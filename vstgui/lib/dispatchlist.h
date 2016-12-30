@@ -47,9 +47,9 @@ template <typename T>
 void DispatchList<T>::add (T* obj)
 {
 	if (inForEach)
-		toAdd.push_back (obj);
+		toAdd.emplace_back (obj);
 	else
-		entries.push_back (obj);
+		entries.emplace_back (obj);
 }
 
 //------------------------------------------------------------------------
@@ -57,7 +57,7 @@ template <typename T>
 void DispatchList<T>::remove (T* obj)
 {
 	if (inForEach)
-		toRemove.push_back (obj);
+		toRemove.emplace_back (obj);
 	else
 	{
 		auto it = std::find (entries.begin (), entries.end (), obj);

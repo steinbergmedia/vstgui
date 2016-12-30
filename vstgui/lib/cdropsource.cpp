@@ -78,7 +78,7 @@ bool CDropSource::add (const void* buffer, uint32_t bufferSize, Type type)
 {
 	if (entries.size () == entries.max_size ())
 		return false;
-	entries.push_back (CDropEntry (buffer, bufferSize, type));
+	entries.emplace_back (buffer, bufferSize, type);
 	return true;
 }
 

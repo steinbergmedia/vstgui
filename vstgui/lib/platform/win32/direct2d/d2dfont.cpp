@@ -67,7 +67,7 @@ bool D2DFont::getAllPlatformFontFamilies (std::list<std::string>& fontFamilyName
 			if (SUCCEEDED (names->GetString (0, name, nameLength)))
 			{
 				UTF8StringHelper str (name);
-				fontFamilyNames.push_back (str.getUTF8String ());
+				fontFamilyNames.emplace_back (str.getUTF8String ());
 			}
 			delete [] name;
 		}

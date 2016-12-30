@@ -121,7 +121,7 @@ CFontChooser::CFontChooser (IFontChooserDelegate* delegate, CFontRef initialFont
 	std::list<std::string>::const_iterator it = fnList.begin ();
 	while (it != fnList.end ())
 	{
-		fontNames.push_back (UTF8String (*it));
+		fontNames.emplace_back (*it);
 		++it;
 	}
 	GenericStringListDataBrowserSource* dbSource = new GenericStringListDataBrowserSource (&fontNames, this);

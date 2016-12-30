@@ -76,7 +76,7 @@ void UISelection::add (CView* view)
 	changed (kMsgSelectionWillChange);
 	if (style == kSingleSelectionStyle)
 		empty ();
-	push_back (view);
+	emplace_back (view);
 	changed (kMsgSelectionChanged);
 }
 
@@ -211,7 +211,7 @@ bool UISelection::store (OutputStream& stream, IUIDescription* uiDescription)
 		FOREACH_IN_SELECTION(this, view)
 			if (!containsParent (view))
 			{
-				views.push_back (view);
+				views.emplace_back (view);
 			}
 		FOREACH_IN_SELECTION_END
 		

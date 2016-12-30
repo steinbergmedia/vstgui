@@ -244,7 +244,7 @@ HMENU Win32OptionMenu::createMenu (COptionMenu* _menu, int32_t& offsetIdx)
 						{
 							mInfo.hbmpItem = hBmp;
 							SetMenuItemInfo (menu, offset + inc, TRUE, &mInfo);
-							bitmaps.push_back (hBmp);
+							bitmaps.emplace_back (hBmp);
 						}
 					}
 				}

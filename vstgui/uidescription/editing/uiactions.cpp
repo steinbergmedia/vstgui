@@ -52,7 +52,7 @@ SizeToFitOperation::SizeToFitOperation (UISelection* selection)
 : BaseSelectionOperation<std::pair<SharedPointer<CView>, CRect> > (selection)
 {
 	FOREACH_IN_SELECTION(selection, view)
-		push_back (std::make_pair (view, view->getViewSize ()));
+		emplace_back (view, view->getViewSize ());
 	FOREACH_IN_SELECTION_END
 }
 
@@ -109,7 +109,7 @@ void UnembedViewOperation::collectSubviews (CViewContainer* container, bool deep
 	{
 		if (factory->getViewName (*it))
 		{
-			push_back (*it);
+			emplace_back (*it);
 		}
 		else if (deep)
 		{
@@ -178,7 +178,7 @@ EmbedViewOperation::EmbedViewOperation (UISelection* selection, CViewContainer* 
 	FOREACH_IN_SELECTION(selection, view)
 		if (view->getParentView () == parent)
 		{
-			push_back (std::make_pair (view, view->getViewSize ()));
+			emplace_back (view, view->getViewSize ());
 		}
 	FOREACH_IN_SELECTION_END
 
@@ -265,12 +265,12 @@ ViewCopyOperation::ViewCopyOperation (UISelection* copySelection, UISelection* w
 
 			view->setViewSize (newSize);
 			view->setMouseableArea (newSize);
-			push_back (view);
+			emplace_back (view);
 		}
 	FOREACH_IN_SELECTION_END
 
 	FOREACH_IN_SELECTION(workingSelection, view)
-		oldSelectedViews.push_back (view);
+		oldSelectedViews.emplace_back (view);
 	FOREACH_IN_SELECTION_END
 }
 
@@ -321,7 +321,7 @@ ViewSizeChangeOperation::ViewSizeChangeOperation (UISelection* selection, bool s
 , autosizing (autosizingEnabled)
 {
 	FOREACH_IN_SELECTION(selection, view)
-		push_back (std::make_pair (view, view->getViewSize ()));
+		emplace_back (view, view->getViewSize ());
 	FOREACH_IN_SELECTION_END
 }
 
@@ -522,7 +522,7 @@ void TransformViewTypeOperation::exchangeSubViews (CViewContainer* src, CViewCon
 			CView* childView = *it;
 			if (factory->getViewName (childView))
 			{
-				temp.push_back (childView);
+				temp.emplace_back (childView);
 			}
 			else if (auto container = childView->asViewContainer ())
 			{
@@ -688,7 +688,7 @@ void MultipleAttributeChangeAction::collectViewsWithAttributeValue (const UIView
 //----------------------------------------------------------------------------------------------------
 void MultipleAttributeChangeAction::collectAllSubViews (CView* view, std::list<CView*>& views)
 {
-	views.push_back (view);
+	views.emplace_back (view);
 	if (auto container = view->asViewContainer ())
 	{
 		ViewIterator it (container);

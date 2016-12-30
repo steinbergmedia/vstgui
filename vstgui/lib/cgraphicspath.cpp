@@ -100,7 +100,7 @@ void CGraphicsPath::addPath (const CGraphicsPath& path, CGraphicsTransform* tran
 				}
 			}
 		}
-		elements.push_back (e);
+		elements.emplace_back (e);
 	}
 	dirty ();
 }
@@ -114,7 +114,7 @@ void CGraphicsPath::addArc (const CRect& rect, double startAngle, double endAngl
 	e.instruction.arc.startAngle = startAngle;
 	e.instruction.arc.endAngle = endAngle;
 	e.instruction.arc.clockwise = clockwise;
-	elements.push_back (e);
+	elements.emplace_back (e);
 	dirty ();
 }
 
@@ -124,7 +124,7 @@ void CGraphicsPath::addEllipse (const CRect& rect)
 	Element e;
 	e.type = Element::kEllipse;
 	CRect2Rect (rect, e.instruction.rect);
-	elements.push_back (e);
+	elements.emplace_back (e);
 	dirty ();
 }
 
@@ -134,7 +134,7 @@ void CGraphicsPath::addRect (const CRect& rect)
 	Element e;
 	e.type = Element::kRect;
 	CRect2Rect (rect, e.instruction.rect);
-	elements.push_back (e);
+	elements.emplace_back (e);
 	dirty ();
 }
 
@@ -144,7 +144,7 @@ void CGraphicsPath::addLine (const CPoint& to)
 	Element e;
 	e.type = Element::kLine;
 	CPoint2Point (to, e.instruction.point);
-	elements.push_back (e);
+	elements.emplace_back (e);
 	dirty ();
 }
 
@@ -156,7 +156,7 @@ void CGraphicsPath::addBezierCurve (const CPoint& control1, const CPoint& contro
 	CPoint2Point (control1, e.instruction.curve.control1);
 	CPoint2Point (control2, e.instruction.curve.control2);
 	CPoint2Point (end, e.instruction.curve.end);
-	elements.push_back (e);
+	elements.emplace_back (e);
 	dirty ();
 }
 
@@ -166,7 +166,7 @@ void CGraphicsPath::beginSubpath (const CPoint& start)
 	Element e;
 	e.type = Element::kBeginSubpath;
 	CPoint2Point (start, e.instruction.point);
-	elements.push_back (e);
+	elements.emplace_back (e);
 	dirty ();
 }
 
@@ -175,7 +175,7 @@ void CGraphicsPath::closeSubpath ()
 {
 	Element e;
 	e.type = Element::kCloseSubpath;
-	elements.push_back (e);
+	elements.emplace_back (e);
 	dirty ();
 }
 
