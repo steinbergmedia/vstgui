@@ -111,12 +111,25 @@ PNGBitmapBuffer IPlatformBitmap::createMemoryPNGRepresentation (const SharedPoin
 				CGImageDestinationRef dest = CGImageDestinationCreateWithData (data, kUTTypePNG, 1, nullptr);
 				if (dest)
 				{
-					CGImageDestinationAddImage (dest, image, nullptr);
+					auto scaleFactor = bitmap->getScaleFactor ();
+					CFMutableDictionaryRef properties = nullptr;
+					if (scaleFactor != 1.)
+					{
+						properties = CFDictionaryCreateMutable (nullptr, 2, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+						double dpi = 72 * scaleFactor;
+						auto number = CFNumberCreate(nullptr, kCFNumberDoubleType, &dpi);
+						CFDictionaryAddValue (properties, kCGImagePropertyDPIWidth, number);
+						CFDictionaryAddValue (properties, kCGImagePropertyDPIHeight, number);
+						CFRelease (number);
+					}
+					CGImageDestinationAddImage (dest, image, properties);
 					if (CGImageDestinationFinalize (dest))
 					{
 						buffer.resize(CFDataGetLength (data));
 						CFDataGetBytes (data, CFRangeMake (0, CFDataGetLength (data)), buffer.data ());
 					}
+					if (properties)
+						CFRelease (properties);
 					CFRelease (dest);
 				}
 				CFRelease (data);
