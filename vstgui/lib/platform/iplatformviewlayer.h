@@ -49,7 +49,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class IPlatformViewLayer : public CBaseObject
+class IPlatformViewLayer : public AtomicReferenceCounted
 {
 public:
 	virtual void invalidRect (const CRect& size) = 0; ///< size must be zero based

@@ -248,10 +248,45 @@ enum CMessageResult
 };
 
 //-----------------------------------------------------------------------------
+class IReference
+{
+public:
+	virtual void forget () = 0;
+	virtual void remember () = 0;
+};
+
+//-----------------------------------------------------------------------------
+template <typename T>
+class ReferenceCounted : public IReference
+{
+public:
+	ReferenceCounted () = default;
+	virtual ~ReferenceCounted () noexcept = default;
+	
+	ReferenceCounted (const ReferenceCounted&) {};
+	ReferenceCounted& operator= (const ReferenceCounted&) { return *this; }
+
+	//-----------------------------------------------------------------------------
+	/// @name Reference Counting Methods
+	//-----------------------------------------------------------------------------
+	//@{
+	void forget () override { if (--nbReference == 0) { beforeDelete (); delete this; } }	///< decrease refcount and delete object if refcount == 0
+	void remember () override { nbReference++; }										///< increase refcount
+	virtual int32_t getNbReference () const { return nbReference; }					///< get refcount
+	virtual void beforeDelete () {}
+	//@}
+private:
+	T nbReference {1};
+};
+
+using AtomicReferenceCounted = ReferenceCounted<std::atomic<int32_t>>;
+using NonAtomicReferenceCounted = ReferenceCounted<int32_t>;
+
+//-----------------------------------------------------------------------------
 // CBaseObject Declaration
 //! @brief Base Object with reference counter
 //-----------------------------------------------------------------------------
-class CBaseObject
+class CBaseObject : public NonAtomicReferenceCounted
 {
 public:
 	CBaseObject () = default;
@@ -261,29 +296,15 @@ public:
 	CBaseObject& operator= (const CBaseObject& obj) { return *this; }
 	
 	//-----------------------------------------------------------------------------
-	/// @name Reference Counting Methods
-	//-----------------------------------------------------------------------------
-	//@{
-	virtual void forget () { if (--nbReference == 0) { beforeDelete (); delete this; } }	///< decrease refcount and delete object if refcount == 0
-	virtual void remember () { nbReference++; }										///< increase refcount
-	virtual int32_t getNbReference () const { return nbReference; }					///< get refcount
-	//@}
-
-	//-----------------------------------------------------------------------------
 	/// @name Message Methods
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual CMessageResult notify (CBaseObject* sender, IdStringPtr message) { return kMessageUnknown; }
 	//@}
 
-	virtual void beforeDelete () {}
-
 	/// @cond ignore
 	virtual CBaseObject* newCopy () const { return 0; }
 	/// @endcond
-
-private:
-	std::atomic<int32_t> nbReference {1};
 };
 
 //------------------------------------------------------------------------

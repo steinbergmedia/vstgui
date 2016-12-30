@@ -59,7 +59,7 @@ public:
 ///
 /// Encapsulation of a platform font. You should never need to call IPlatformFont::create(..), instead use CFontDesc::getPlatformFont().
 //-----------------------------------------------------------------------------
-class IPlatformFont : public CBaseObject
+class IPlatformFont : public AtomicReferenceCounted
 {
 public:
 	static SharedPointer<IPlatformFont> create (const UTF8String& name, const CCoord& size, const int32_t& style);

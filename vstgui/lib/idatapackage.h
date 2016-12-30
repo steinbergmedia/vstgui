@@ -42,7 +42,7 @@ namespace VSTGUI {
 //-----------------------------------------------------------------------------
 ///	@brief interface for drag&drop and clipboard data
 //-----------------------------------------------------------------------------
-class IDataPackage : public CBaseObject
+class IDataPackage : public AtomicReferenceCounted
 {
 public:
 	enum Type {
@@ -58,8 +58,6 @@ public:
 	virtual Type getDataType (uint32_t index) const = 0;
 	virtual uint32_t getData (uint32_t index, const void*& buffer, Type& type) const = 0;
 
-	//-------------------------------------------
-	CLASS_METHODS_NOCOPY(IDataPackage, CBaseObject)
 protected:
 	IDataPackage () {}
 };

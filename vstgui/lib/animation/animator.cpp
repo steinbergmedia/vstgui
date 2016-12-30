@@ -387,12 +387,12 @@ Animator::Animation::~Animation () noexcept
 {
 	if (notification)
 		notification (view, name.c_str (), target);
-	CBaseObject* obj = dynamic_cast<CBaseObject*> (target);
+	auto obj = dynamic_cast<IReference*> (target);
 	if (obj)
 		obj->forget ();
 	else
 		delete target;
-	obj = dynamic_cast<CBaseObject*> (timingFunction);
+	obj = dynamic_cast<IReference*> (timingFunction);
 	if (obj)
 		obj->forget ();
 	else

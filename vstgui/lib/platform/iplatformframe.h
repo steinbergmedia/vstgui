@@ -87,7 +87,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class IPlatformFrame : public CBaseObject
+class IPlatformFrame : public AtomicReferenceCounted
 {
 public:
 	static IPlatformFrame* createPlatformFrame (IPlatformFrameCallback* frame, const CRect& size, void* parent, PlatformType parentType);	///< create platform representation
@@ -134,7 +134,7 @@ protected:
 //-----------------------------------------------------------------------------
 /* Extension to support Mac TouchBar */
 //-----------------------------------------------------------------------------
-class ITouchBarCreator : public CBaseObject
+class ITouchBarCreator : public AtomicReferenceCounted
 {
 public:
 	/** must return an instance of NSTouchBar or nullptr. */

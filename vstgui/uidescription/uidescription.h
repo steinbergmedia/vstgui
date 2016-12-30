@@ -59,7 +59,7 @@ class OutputStream;
 /// @brief XML description parser and view creator
 /// @ingroup new_in_4_0
 //-----------------------------------------------------------------------------
-class UIDescription : public CBaseObject, public IUIDescription, public Xml::IHandler, public IDependency
+class UIDescription : public NonAtomicReferenceCounted, public IUIDescription, public Xml::IHandler, public IDependency
 {
 public:
 	UIDescription (const CResourceDescription& xmlFile, IViewFactory* viewFactory = nullptr);

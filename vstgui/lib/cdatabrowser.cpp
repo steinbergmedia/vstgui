@@ -128,7 +128,7 @@ CDataBrowser::CDataBrowser (const CRect& size, IDataBrowserDelegate* db, int32_t
 	dbView = new CDataBrowserView (CRect (0, 0, 0, 0), db, this);
 	dbView->setAutosizeFlags (kAutosizeLeft|kAutosizeRight|kAutosizeBottom);
 	addView (dbView);
-	CBaseObject* obj = dynamic_cast<CBaseObject*>(db);
+	auto obj = dynamic_cast<IReference*>(db);
 	if (obj)
 		obj->remember ();
 }
@@ -136,7 +136,7 @@ CDataBrowser::CDataBrowser (const CRect& size, IDataBrowserDelegate* db, int32_t
 //-----------------------------------------------------------------------------------------------
 CDataBrowser::~CDataBrowser () noexcept
 {
-	CBaseObject* obj = dynamic_cast<CBaseObject*>(db);
+	auto obj = dynamic_cast<IReference*>(db);
 	if (obj)
 		obj->forget ();
 }

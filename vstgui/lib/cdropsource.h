@@ -59,13 +59,10 @@ public:
 	bool add (const void* buffer, uint32_t bufferSize, Type type);
 
 	// IDataPackage
-	virtual uint32_t getCount () const final;
-	virtual uint32_t getDataSize (uint32_t index) const final;
-	virtual Type getDataType (uint32_t index) const final;
-	virtual uint32_t getData (uint32_t index, const void*& buffer, Type& type) const final;
-
-	//-------------------------------------------
-	CLASS_METHODS_NOCOPY(CDropSource, IDataPackage)
+	uint32_t getCount () const final;
+	uint32_t getDataSize (uint32_t index) const final;
+	Type getDataType (uint32_t index) const final;
+	uint32_t getData (uint32_t index, const void*& buffer, Type& type) const final;
 protected:
 	/// @cond ignore
 	struct CDropEntry {

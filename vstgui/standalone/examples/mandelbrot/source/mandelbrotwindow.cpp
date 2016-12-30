@@ -127,7 +127,7 @@ struct ViewController : DelegationController,
                         IViewListenerAdapter,
                         IModelChangeListener,
                         IScaleFactorChangedListener,
-                        CBaseObject
+                        AtomicReferenceCounted
 {
 	ViewController (IController* parent, Model::Ptr model, ValuePtr progressValue)
 	: DelegationController (parent), model (model), progressValue (progressValue)

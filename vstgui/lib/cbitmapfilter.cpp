@@ -74,7 +74,7 @@ Property::Property (double floatValue)
 }
 
 //----------------------------------------------------------------------------------------------------
-Property::Property (CBaseObject* objectValue)
+Property::Property (IReference* objectValue)
 : type (kObject)
 {
 	value = static_cast<void*> (objectValue);
@@ -203,10 +203,10 @@ double Property::getFloat () const
 }
 
 //----------------------------------------------------------------------------------------------------
-CBaseObject* Property::getObject () const
+IReference* Property::getObject () const
 {
 	vstgui_assert (type == kObject);
-	return static_cast<CBaseObject*> (value);
+	return static_cast<IReference*> (value);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -405,7 +405,7 @@ CBitmap* FilterBase::getInputBitmap () const
 	auto it = properties.find (Standard::Property::kInputBitmap);
 	if (it != properties.end ())
 	{
-		CBaseObject* obj = (*it).second.getObject ();
+		auto obj = (*it).second.getObject ();
 		return obj ? dynamic_cast<CBitmap*>(obj) : nullptr;
 	}
 	return nullptr;

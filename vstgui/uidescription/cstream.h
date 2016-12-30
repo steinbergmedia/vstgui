@@ -124,7 +124,7 @@ public:
 /**
 	Memory input and output stream
  */
-class CMemoryStream : virtual public OutputStream, virtual public InputStream, public SeekableStream, public CBaseObject
+class CMemoryStream : virtual public OutputStream, virtual public InputStream, public SeekableStream, public AtomicReferenceCounted
 {
 public:
 	CMemoryStream (uint32_t initialSize = 1024, uint32_t delta = 1024, bool binaryMode = true, ByteOrder byteOrder = kNativeByteOrder);
@@ -159,7 +159,7 @@ protected:
 /**
 	File input and output stream
  */
-class CFileStream : public OutputStream, public InputStream, public SeekableStream, public CBaseObject
+class CFileStream : public OutputStream, public InputStream, public SeekableStream, public AtomicReferenceCounted
 {
 public:
 	CFileStream ();

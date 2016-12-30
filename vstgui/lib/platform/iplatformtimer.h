@@ -47,7 +47,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class IPlatformTimer : public CBaseObject
+class IPlatformTimer : public AtomicReferenceCounted
 {
 public:
 	static SharedPointer<IPlatformTimer> create (IPlatformTimerCallback* callback);

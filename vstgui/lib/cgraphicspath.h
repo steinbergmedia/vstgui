@@ -46,7 +46,7 @@ namespace VSTGUI {
 ///	@brief Graphics Path Object
 ///	@ingroup new_in_4_0
 //-----------------------------------------------------------------------------
-class CGraphicsPath : public CBaseObject
+class CGraphicsPath : public AtomicReferenceCounted
 {
 public:
 	//-----------------------------------------------------------------------------
@@ -121,8 +121,6 @@ public:
 	virtual CRect getBoundingBox () = 0;
 	//@}
 	
-//-----------------------------------------------------------------------------
-	CLASS_METHODS_NOCOPY(CGraphicsPath, CBaseObject)
 protected:
 	CGraphicsPath () {}
 
