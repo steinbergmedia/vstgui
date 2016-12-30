@@ -6,6 +6,7 @@
 #include "vstgui/lib/cbitmap.h"
 #include "vstgui/lib/ccolor.h"
 #include "vstgui/lib/cframe.h"
+#include "vstgui/lib/cfileselector.h"
 #include "vstgui/lib/iscalefactorchangedlistener.h"
 #include "vstgui/lib/iviewlistener.h"
 #include "vstgui/standalone/include/helpers/uidesc/customization.h"
@@ -13,10 +14,12 @@
 #include "vstgui/standalone/include/helpers/valuelistener.h"
 #include "vstgui/standalone/include/helpers/windowcontroller.h"
 #include "vstgui/standalone/include/iasync.h"
+#include "vstgui/standalone/include/iapplication.h"
 #include "vstgui/standalone/include/iuidescwindow.h"
 #include "vstgui/uidescription/delegationcontroller.h"
 #include "vstgui/uidescription/iuidescription.h"
 #include "vstgui/uidescription/uiattributes.h"
+#include "vstgui/uidescription/cstream.h"
 #include <atomic>
 #include <cassert>
 #include <thread>
@@ -214,6 +217,21 @@ struct ViewController : DelegationController,
 			                       });
 	}
 
+	void saveBitmap (OutputStream& stream)
+	{
+		if (auto bitmap = mandelbrotView->getBackground ())
+		{
+			if (auto platformBitmap = bitmap->getPlatformBitmap ())
+			{
+				auto bytes = IPlatformBitmap::createMemoryPNGRepresentation (platformBitmap);
+				if (!bytes.empty ())
+				{
+					stream.writeRaw (bytes.data (), bytes.size ());
+				}
+			}
+		}
+	}
+
 	Model::Ptr model;
 	ValuePtr progressValue;
 	CView* mandelbrotView {nullptr};
@@ -221,8 +239,10 @@ struct ViewController : DelegationController,
 	std::atomic<uint32_t> taskID {0};
 };
 
+static const Command saveCommand {"File", "Save Bitmap"};
+
 //------------------------------------------------------------------------
-struct WindowCustomization : public UIDesc::Customization, public WindowControllerAdapter
+struct WindowCustomization : public UIDesc::Customization, public WindowControllerAdapter, public ICommandHandler
 {
 	static std::shared_ptr<WindowCustomization> make (const ValuePtr& maxIterations)
 	{
@@ -233,18 +253,57 @@ struct WindowCustomization : public UIDesc::Customization, public WindowControll
 
 	void onSetContentView (IWindow& window, const SharedPointer<CFrame>& contentView) override
 	{
+		frame = contentView;
+		if (!contentView)
+			return;
 		if (auto touchBarExt = dynamic_cast<IPlatformFrameTouchBarExtension*> (contentView->getPlatformFrame ()))
 		{
 			installTouchbarSupport (touchBarExt, maxIterations);
 		}
 	}
+
+	bool canHandleCommand (const Command& command) override
+	{
+		if (frame && command == saveCommand)
+			return true;
+		return false;
+	}
+	bool handleCommand (const Command& command) override
+	{
+		if (frame && command == saveCommand)
+		{
+			if (auto fs = owned (CNewFileSelector::create (frame, CNewFileSelector::kSelectSaveFile)))
+			{
+				fs->addFileExtension ({"PNG File", "png", "image/png"});
+				fs->run ([frame = shared (frame)] (CNewFileSelector* fs) {
+					if (fs->getNumSelectedFiles () == 0)
+						return;
+					if (auto controller = findViewController<ViewController> (frame))
+					{
+						auto path = fs->getSelectedFile (0);
+						assert (path != nullptr);
+						CFileStream stream;
+						if (!stream.open (path, CFileStream::kWriteMode | CFileStream::kBinaryMode | CFileStream::kTruncateMode))
+							return;
+						controller->saveBitmap (stream);
+					}
+				});
+				return true;
+			}
+		}
+		return false;
+	}
 	
 	ValuePtr maxIterations;
+	CFrame* frame {nullptr};
 };
+
 
 //------------------------------------------------------------------------
 VSTGUI::Standalone::WindowPtr makeMandelbrotWindow ()
 {
+	IApplication::instance ().registerCommand (saveCommand, 0);
+
 	auto model = std::make_shared<Model> ();
 	auto modelBinding = ModelBinding::make (model);
 	auto customization = WindowCustomization::make (modelBinding->getMaxIterationsValue ());
