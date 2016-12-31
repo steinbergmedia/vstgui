@@ -41,9 +41,7 @@
 #include "vstkeycode.h"
 #include "cbuttonstate.h"
 #include "cgraphicstransform.h"
-#include <map>
 #include <memory>
-#include <vector>
 
 namespace VSTGUI {
 

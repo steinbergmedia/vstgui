@@ -36,6 +36,7 @@
 #include "../../../lib/iviewlistener.h"
 #include "../../../lib/ccolor.h"
 #include "../unittests.h"
+#include <vector>
 
 namespace VSTGUI {
 

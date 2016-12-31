@@ -42,6 +42,7 @@
 #import "autoreleasepool.h"
 
 #import <OpenGL/OpenGL.h>
+#import <vector>
 
 static Class openGLViewClass = nullptr;
 
