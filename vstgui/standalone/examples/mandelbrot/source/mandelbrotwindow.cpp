@@ -203,7 +203,7 @@ struct ViewController : DelegationController,
 		if (size.x == 0 || size.y == 0)
 			return;
 		Value::performSingleEdit (*progressValue, 1.);
-		auto bitmap = owned (new CBitmap (size.x, size.y));
+		auto bitmap = makeOwned<CBitmap> (size.x, size.y);
 		bitmap->getPlatformBitmap ()->setScaleFactor (scaleFactor);
 		auto id = ++taskID;
 		auto This = shared (this);

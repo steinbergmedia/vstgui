@@ -654,21 +654,21 @@ static id VSTGUI_NSView_makeTouchbar (id self)
 namespace VSTGUI {
 
 //------------------------------------------------------------------------------------
-class CocoaTooltipWindow : public CBaseObject
+class CocoaTooltipWindow : public NonAtomicReferenceCounted
 {
 public:
-	CocoaTooltipWindow ();
+	CocoaTooltipWindow () = default;
 	~CocoaTooltipWindow () noexcept override;
 
 	void set (NSViewFrame* nsViewFrame, const CRect& rect, const char* tooltip);
 	void hide ();
 
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
+	void onTimer ();
 protected:
-	CVSTGUITimer* timer;
-	CFrame* frame;
-	NSWindow* window;
-	NSTextField* textfield;
+	SharedPointer<CVSTGUITimer> timer;
+	CFrame* frame {nullptr};
+	NSWindow* window {nullptr};
+	NSTextField* textfield {nullptr};
 };
 
 //-----------------------------------------------------------------------------
@@ -1034,20 +1034,20 @@ bool NSViewFrame::hideTooltip ()
 //-----------------------------------------------------------------------------
 SharedPointer<IPlatformTextEdit> NSViewFrame::createPlatformTextEdit (IPlatformTextEditCallback* textEdit)
 {
-	return owned<IPlatformTextEdit> (new CocoaTextEdit (nsView, textEdit));
+	return makeOwned<CocoaTextEdit> (nsView, textEdit);
 }
 
 //-----------------------------------------------------------------------------
 SharedPointer<IPlatformOptionMenu> NSViewFrame::createPlatformOptionMenu ()
 {
-	return owned<IPlatformOptionMenu> (new NSViewOptionMenu ());
+	return makeOwned<NSViewOptionMenu> ();
 }
 
 #if VSTGUI_OPENGL_SUPPORT
 //-----------------------------------------------------------------------------
 SharedPointer<IPlatformOpenGLView> NSViewFrame::createPlatformOpenGLView ()
 {
-	return owned<IPlatformOpenGLView> (new CocoaOpenGLView (nsView));
+	return makeOwned<CocoaOpenGLView> (nsView);
 }
 #endif
 
@@ -1062,21 +1062,19 @@ SharedPointer<IPlatformViewLayer> NSViewFrame::createPlatformViewLayer (IPlatfor
 		nsView.layer.actions = nil;
 	}
 	auto caParentLayer = parentViewLayer ? parentViewLayer->getLayer () : [nsView layer];
-	auto layer = owned (new CAViewLayer (caParentLayer));
+	auto layer = makeOwned<CAViewLayer> (caParentLayer);
 	layer->init (drawDelegate);
-	return shared<IPlatformViewLayer> (layer);
+	return std::move (layer);
 }
 
 //-----------------------------------------------------------------------------
 SharedPointer<COffscreenContext> NSViewFrame::createOffscreenContext (CCoord width, CCoord height, double scaleFactor)
 {
-	CGBitmap* bitmap = new CGBitmap (CPoint (width * scaleFactor, height * scaleFactor));
+	auto bitmap = makeOwned<CGBitmap> (CPoint (width * scaleFactor, height * scaleFactor));
 	bitmap->setScaleFactor (scaleFactor);
-	CGDrawContext* context = new CGDrawContext (bitmap);
-	bitmap->forget ();
+	auto context = makeOwned<CGDrawContext> (bitmap);
 	if (context->getCGContext ())
-		return context;
-	context->forget ();
+		return std::move (context);
 	return nullptr;
 }
 
@@ -1296,19 +1294,9 @@ IPlatformFrame* IPlatformFrame::createPlatformFrame (IPlatformFrameCallback* fra
 //------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------
-CocoaTooltipWindow::CocoaTooltipWindow ()
-: timer (nullptr)
-, frame (nullptr)
-, window (nullptr)
-, textfield (nullptr)
-{
-}
-
-//------------------------------------------------------------------------------------
 CocoaTooltipWindow::~CocoaTooltipWindow () noexcept
 {
-	if (timer)
-		timer->forget ();
+	timer = nullptr;
 	if (window)
 	{
 		[window orderOut:nil];
@@ -1319,11 +1307,7 @@ CocoaTooltipWindow::~CocoaTooltipWindow () noexcept
 //------------------------------------------------------------------------------------
 void CocoaTooltipWindow::set (NSViewFrame* nsViewFrame, const CRect& rect, const char* tooltip)
 {
-	if (timer)
-	{
-		timer->forget ();
-		timer = nullptr;
-	}
+	timer = nullptr;
 	NSView* nsView = nsViewFrame->getPlatformControl ();
 	if (!window)
 	{
@@ -1379,29 +1363,22 @@ void CocoaTooltipWindow::hide ()
 {
 	if (timer == nullptr && [window isVisible])
 	{
-		timer = new CVSTGUITimer (this, 17);
-		timer->start ();
-		notify (timer, CVSTGUITimer::kMsgTimer);
+		timer = makeOwned<CVSTGUITimer> ([this] (CVSTGUITimer*) { onTimer (); }, 17);
+		onTimer ();
 	}
 }
 
 //------------------------------------------------------------------------------------
-CMessageResult CocoaTooltipWindow::notify (CBaseObject* sender, IdStringPtr message)
+void CocoaTooltipWindow::onTimer ()
 {
-	if (message == CVSTGUITimer::kMsgTimer)
+	CGFloat newAlpha = [window alphaValue] - 0.05;
+	if (newAlpha <= 0)
 	{
-		CGFloat newAlpha = [window alphaValue] - 0.05;
-		if (newAlpha <= 0)
-		{
-			[window orderOut:nil];
-			timer->forget ();
-			timer = nullptr;
-		}
-		else
-			[window setAlphaValue:newAlpha];
-		return kMessageNotified;
+		[window orderOut:nil];
+		timer = nullptr;
 	}
-	return kMessageUnknown;
+	else
+		[window setAlphaValue:newAlpha];
 }
 } // namespace
 

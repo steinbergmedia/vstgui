@@ -407,7 +407,7 @@ protected:
 UIGradientEditorController::UIGradientEditorController (const std::string& gradientName, CGradient* gradient, UIDescription* description, IActionPerformer* actionPerformer)
 : editDescription(description)
 , gradient (gradient)
-, editColor (owned (new UIColor ()))
+, editColor (makeOwned<UIColor> ())
 , actionPerformer(actionPerformer)
 , gradientName (gradientName)
 {

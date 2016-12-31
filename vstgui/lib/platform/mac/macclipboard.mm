@@ -191,13 +191,13 @@ uint32_t Pasteboard::getData (uint32_t index, const void*& buffer, Pasteboard::T
 //-----------------------------------------------------------------------------
 SharedPointer<IDataPackage> createClipboardDataPackage ()
 {
-	return owned<IDataPackage> (new Pasteboard ([NSPasteboard generalPasteboard]));
+	return makeOwned<Pasteboard> ([NSPasteboard generalPasteboard]);
 }
 
 //-----------------------------------------------------------------------------
 SharedPointer<IDataPackage> createDragDataPackage (NSPasteboard* pasteboard)
 {
-	return owned<IDataPackage> (new Pasteboard (pasteboard));
+	return makeOwned<Pasteboard> (pasteboard);
 }
 
 #if MAC_CARBON
@@ -211,7 +211,7 @@ SharedPointer<IDataPackage> createCarbonDragDataPackage (DragRef drag)
 		if (PasteboardCopyName (pr, &pasteboardName) == noErr)
 		{
 			[(NSString*)pasteboardName autorelease];
-			return owned<IDataPackage> (new Pasteboard ([NSPasteboard pasteboardWithName:(NSString*)pasteboardName]));
+			return makeOwned<Pasteboard> ([NSPasteboard pasteboardWithName:(NSString*)pasteboardName]);
 		}
 	}
 	return nullptr;

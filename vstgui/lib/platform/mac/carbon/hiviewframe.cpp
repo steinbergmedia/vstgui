@@ -506,26 +506,24 @@ bool HIViewFrame::hideTooltip ()
 //-----------------------------------------------------------------------------
 SharedPointer<IPlatformTextEdit> HIViewFrame::createPlatformTextEdit (IPlatformTextEditCallback* textEdit)
 {
-	HIViewTextEdit* control = new HIViewTextEdit (controlRef, textEdit);
+	auto control = makeOwned<HIViewTextEdit> (controlRef, textEdit);
 	if (control->getPlatformControl ())
-		return owned<IPlatformTextEdit> (control);
-	control->forget ();
+		return control;
 	return nullptr;
 }
 
 //-----------------------------------------------------------------------------
 SharedPointer<IPlatformOptionMenu> HIViewFrame::createPlatformOptionMenu ()
 {
-	return owned<IPlatformOptionMenu> (new HIViewOptionMenu ());
+	return makeOwned<HIViewOptionMenu> ();
 }
 
 //-----------------------------------------------------------------------------
 SharedPointer<COffscreenContext> HIViewFrame::createOffscreenContext (CCoord width, CCoord height, double scaleFactor)
 {
-	CGBitmap* bitmap = new CGBitmap (CPoint (width * scaleFactor, height * scaleFactor));
+	auto bitmap = makeOwned<CGBitmap> (CPoint (width * scaleFactor, height * scaleFactor));
 	bitmap->setScaleFactor (scaleFactor);
-	auto context = owned<COffscreenContext> (new CGDrawContext (bitmap));
-	bitmap->forget ();
+	auto context = makeOwned<CGDrawContext> (bitmap);
 	if (context->getCGContext ())
 		return context;
 	return nullptr;

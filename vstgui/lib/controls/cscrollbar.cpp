@@ -226,7 +226,7 @@ CMouseEventResult CScrollbar::onMouseDown (CPoint &where, const CButtonState& bu
 	else if (scrollerArea.pointInside (where))
 	{
 		doStepping ();
-		timer = owned (new CVSTGUITimer (this, 250, true));
+		timer = makeOwned<CVSTGUITimer> (this, 250, true);
 		return kMouseEventHandled;
 	}
 	return kMouseDownEventHandledButDontNeedMovedOrUpEvents;

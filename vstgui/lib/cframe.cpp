@@ -265,7 +265,7 @@ void CFrame::enableTooltips (bool state)
 	if (state)
 	{
 		if (pImpl->tooltips == nullptr)
-			pImpl->tooltips = owned (new CTooltipSupport (this));
+			pImpl->tooltips = makeOwned<CTooltipSupport> (this);
 	}
 	else if (pImpl->tooltips)
 	{
@@ -703,7 +703,7 @@ void CFrame::idle ()
 Animation::Animator* CFrame::getAnimator ()
 {
 	if (pImpl->animator == nullptr)
-		pImpl->animator = owned (new Animation::Animator);
+		pImpl->animator = makeOwned<Animation::Animator> ();
 	return pImpl->animator;
 }
 
