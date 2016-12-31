@@ -55,19 +55,6 @@ namespace VSTGUI {
 
 HINSTANCE GetInstance () { return (HINSTANCE)hInstance; }
 
-const OSVERSIONINFOEX& getSystemVersion ()
-{
-	static OSVERSIONINFOEX gSystemVersion = {0};
-	static bool once = true;
-	if (once)
-	{
-		memset (&gSystemVersion, 0, sizeof (gSystemVersion));
-		gSystemVersion.dwOSVersionInfoSize = sizeof (gSystemVersion);
-		GetVersionEx ((OSVERSIONINFO *)&gSystemVersion);
-	}
-	return gSystemVersion;
-}
-
 //-----------------------------------------------------------------------------
 #if VSTGUI_DIRECT2D_SUPPORT
 typedef HRESULT (WINAPI *D2D1CreateFactoryProc) (D2D1_FACTORY_TYPE type, REFIID riid, CONST D2D1_FACTORY_OPTIONS *pFactoryOptions, void** factory);
