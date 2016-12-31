@@ -158,7 +158,7 @@ CNewFileSelector* CNewFileSelector::create (CFrame* parent, Style style)
 		#endif
 		return 0;
 	}
-	if (getSystemVersion ().dwMajorVersion >= 6) // Vista
+	if (IsWindowsVistaOrGreater()) // Vista
 		return new VistaFileSelector (parent, style);
 	return new XPFileSelector (parent, style);
 }
