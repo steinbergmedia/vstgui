@@ -1326,7 +1326,7 @@ int32_t GenericStringListDataBrowserSource::dbOnKeyDown (const VstKeyCode& _key,
 	{
 		if (timer == nullptr)
 		{
-			timer = owned (new CVSTGUITimer (this, 1000));
+			timer = makeOwned<CVSTGUITimer> (this, 1000);
 			timer->start ();
 		}
 		else

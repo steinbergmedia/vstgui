@@ -85,7 +85,7 @@ public:
 			if (removeLastPathComponent (descPath))
 			{
 				descPath += "/uidescriptioneditor.uidesc";
-				SharedPointer<UIDescription> editorDesc = owned (new UIDescription (descPath.c_str ()));
+				auto editorDesc = makeOwned<UIDescription> (descPath.c_str ());
 				if (editorDesc->parse ())
 					uiDesc = std::move (editorDesc);
 			}

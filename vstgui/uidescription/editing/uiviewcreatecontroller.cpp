@@ -197,7 +197,7 @@ SharedPointer<UISelection> UIViewCreatorDataSource::createSelection (int32_t row
 			view->setViewSize (size);
 			view->setMouseableArea (size);
 		}
-		selection = owned (new UISelection ());
+		selection = makeOwned<UISelection> ();
 		selection->add (view);
 		view->forget ();
 	}

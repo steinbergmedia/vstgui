@@ -41,7 +41,7 @@ namespace VSTGUI {
 //-----------------------------------------------------------------------------
 SharedPointer<IPlatformString> IPlatformString::createWithUTF8String (UTF8StringPtr utf8String)
 {
-	return owned<IPlatformString> (new MacString (utf8String));
+	return makeOwned<MacString> (utf8String);
 }
 
 //-----------------------------------------------------------------------------

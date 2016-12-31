@@ -147,7 +147,7 @@ public:
 			if (!buffer.empty ())
 			{
 				auto newPlatformBitmap = IPlatformBitmap::createFromMemory (buffer.data (), static_cast<uint32_t> (buffer.size ()));
-				CView::setBackground (owned (new CBitmap (newPlatformBitmap)));
+				CView::setBackground (makeOwned<CBitmap> (newPlatformBitmap));
 			}
 		}
 		else

@@ -313,26 +313,58 @@ class SharedPointer
 {
 public:
 //------------------------------------------------------------------------
-	inline SharedPointer (I* ptr, bool remember = true);
-	inline SharedPointer (const SharedPointer&);
-	inline SharedPointer ();
+	inline SharedPointer (I* ptr, bool remember = true) noexcept;
+	inline SharedPointer (const SharedPointer&) noexcept;
+	inline SharedPointer () noexcept;
 	inline ~SharedPointer () noexcept;
 
-	inline I* operator=(I* ptr);
-	inline SharedPointer<I>& operator=(const SharedPointer<I>& );
+	inline I* operator=(I* ptr) noexcept;
+	inline SharedPointer<I>& operator=(const SharedPointer<I>& ) noexcept;
 
-	inline operator I* ()  const { return ptr; }      // act as I*
-	inline I* operator->() const { return ptr; }      // act as I*
+	inline operator I* ()  const noexcept { return ptr; }      // act as I*
+	inline I* operator->() const noexcept { return ptr; }      // act as I*
 
-	inline I* get () const { return ptr; }
+	inline I* get () const noexcept { return ptr; }
 
 	template<class T> T* cast () const { return dynamic_cast<T*> (ptr); }
 
 	inline SharedPointer (SharedPointer<I>&& mp) noexcept;
 	inline SharedPointer<I>& operator=(SharedPointer<I>&& mp) noexcept;
+
+	template<typename T>
+	inline SharedPointer (const SharedPointer<T>& op) noexcept
+	{
+		*this = static_cast<I*> (op.get ());
+	}
+
+	template<typename T>
+	inline SharedPointer& operator= (const SharedPointer<T>& op) noexcept
+	{
+		*this = static_cast<I*> (op.get ());
+		return *this;
+	}
+	
+	template<typename T>
+	inline SharedPointer (SharedPointer<T>&& op) noexcept
+	{
+		*this = std::move (op);
+	}
+
+	template<typename T>
+	inline SharedPointer& operator= (SharedPointer<T>&& op) noexcept
+	{
+		if (ptr)
+			ptr->forget ();
+		ptr = op.ptr;
+		op.ptr = nullptr;
+		return *this;
+	}
 //------------------------------------------------------------------------
 protected:
-	I* ptr;
+	template<typename T>
+	friend class SharedPointer;
+
+	I* ptr {nullptr};
 };
 
 //-----------------------------------------------------------------------------
@@ -347,7 +379,7 @@ protected:
 
 //------------------------------------------------------------------------
 template <class I>
-inline SharedPointer<I>::SharedPointer (I* _ptr, bool remember)
+inline SharedPointer<I>::SharedPointer (I* _ptr, bool remember) noexcept
 : ptr (_ptr)
 {
 	if (ptr && remember)
@@ -356,7 +388,7 @@ inline SharedPointer<I>::SharedPointer (I* _ptr, bool remember)
 
 //------------------------------------------------------------------------
 template <class I>
-inline SharedPointer<I>::SharedPointer (const SharedPointer<I>& other)
+inline SharedPointer<I>::SharedPointer (const SharedPointer<I>& other) noexcept
 : ptr (other.ptr)
 {
 	if (ptr)
@@ -365,7 +397,7 @@ inline SharedPointer<I>::SharedPointer (const SharedPointer<I>& other)
 
 //------------------------------------------------------------------------
 template <class I>
-inline SharedPointer<I>::SharedPointer ()
+inline SharedPointer<I>::SharedPointer () noexcept
 : ptr (0)
 {}
 
@@ -398,7 +430,7 @@ inline SharedPointer<I>& SharedPointer<I>::operator=(SharedPointer<I>&& mp) noex
 
 //------------------------------------------------------------------------
 template <class I>
-inline I* SharedPointer<I>::operator=(I* _ptr)
+inline I* SharedPointer<I>::operator=(I* _ptr) noexcept
 {
 	if (_ptr != ptr)
 	{
@@ -413,7 +445,7 @@ inline I* SharedPointer<I>::operator=(I* _ptr)
 
 //------------------------------------------------------------------------
 template <class I>
-inline SharedPointer<I>& SharedPointer<I>::operator=(const SharedPointer<I>& _ptr)
+inline SharedPointer<I>& SharedPointer<I>::operator=(const SharedPointer<I>& _ptr) noexcept
 {
 	operator= (_ptr.ptr);
 	return *this;
@@ -421,11 +453,11 @@ inline SharedPointer<I>& SharedPointer<I>::operator=(const SharedPointer<I>& _pt
 
 //------------------------------------------------------------------------
 template <class I>
-inline SharedPointer<I> owned (I* p) { return SharedPointer<I> (p, false); }
+inline SharedPointer<I> owned (I* p) noexcept { return SharedPointer<I> (p, false); }
 
 //------------------------------------------------------------------------
 template <class I>
-inline SharedPointer<I> shared (I* p) { return SharedPointer<I> (p, true); }
+inline SharedPointer<I> shared (I* p) noexcept { return SharedPointer<I> (p, true); }
 
 //------------------------------------------------------------------------
 template <class I, typename ...Args>

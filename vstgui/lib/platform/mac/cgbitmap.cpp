@@ -49,8 +49,8 @@ namespace VSTGUI {
 SharedPointer<IPlatformBitmap> IPlatformBitmap::create (CPoint* size)
 {
 	if (size)
-		return new CGBitmap (*size);
-	return owned<IPlatformBitmap> (new CGBitmap ());
+		return makeOwned<CGBitmap> (*size);
+	return makeOwned<CGBitmap> ();
 }
 
 //-----------------------------------------------------------------------------
@@ -63,10 +63,10 @@ SharedPointer<IPlatformBitmap> IPlatformBitmap::createFromPath (UTF8StringPtr ab
 		CGImageSourceRef source = CGImageSourceCreateWithURL (url, nullptr);
 		if (source)
 		{
-			auto cgBitmap = owned (new CGBitmap ());
+			auto cgBitmap = makeOwned<CGBitmap> ();
 			bool result = cgBitmap->loadFromImageSource (source);
 			if (result)
-				bitmap = shared<IPlatformBitmap> (cgBitmap);
+				bitmap = std::move (cgBitmap);
 			CFRelease (source);
 		}
 		CFRelease (url);
@@ -84,10 +84,10 @@ SharedPointer<IPlatformBitmap> IPlatformBitmap::createFromMemory (const void* pt
 		CGImageSourceRef source = CGImageSourceCreateWithData (data, nullptr);
 		if (source)
 		{
-			auto cgBitmap = owned (new CGBitmap ());
+			auto cgBitmap = makeOwned<CGBitmap> ();
 			bool result = cgBitmap->loadFromImageSource (source);
 			if (result)
-				bitmap = shared<IPlatformBitmap> (cgBitmap);
+				bitmap = std::move (cgBitmap);
 			CFRelease (source);
 		}
 		CFRelease (data);
@@ -479,7 +479,7 @@ SharedPointer<IPlatformBitmapPixelAccess> CGBitmap::lockPixels (bool alphaPremul
 	}
 	if (bits)
 	{
-		return owned<IPlatformBitmapPixelAccess> (new CGBitmapPixelAccess (this, alphaPremultiplied));
+		return makeOwned<CGBitmapPixelAccess> (this, alphaPremultiplied);
 	}
 	return nullptr;
 }

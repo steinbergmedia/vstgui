@@ -64,7 +64,7 @@ CTooltipSupport::CTooltipSupport (CFrame* frame, uint32_t delay)
 , delay (delay)
 , state (kHidden)
 {
-	timer = owned (new CVSTGUITimer (this, delay));
+	timer = makeOwned<CVSTGUITimer> (this, delay);
 }
 
 //------------------------------------------------------------------------

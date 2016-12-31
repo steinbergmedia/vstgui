@@ -237,7 +237,7 @@ CFontRef CTextEdit::platformGetFont () const
 	fontSize *= getGlobalTransform ().m11;
 	if (fontSize == font->getSize ())
 		return font;
-	platformFont = owned (new CFontDesc (*font));
+	platformFont = makeOwned<CFontDesc> (*font);
 	platformFont->setSize (fontSize);
 	return platformFont;
 }

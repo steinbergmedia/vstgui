@@ -113,7 +113,7 @@ uint32_t CDropSource::getData (uint32_t index, const void*& buffer, Type& type) 
 //-----------------------------------------------------------------------------
 SharedPointer<IDataPackage> CDropSource::create (const void* buffer, uint32_t bufferSize, Type type)
 {
-	return owned<IDataPackage> (new CDropSource (buffer, bufferSize, type));
+	return makeOwned<CDropSource> (buffer, bufferSize, type);
 }
 
 } // namespace

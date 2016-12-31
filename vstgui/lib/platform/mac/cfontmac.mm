@@ -67,9 +67,9 @@ static uint32_t getCTVersion ()
 //-----------------------------------------------------------------------------
 SharedPointer<IPlatformFont> IPlatformFont::create (const UTF8String& name, const CCoord& size, const int32_t& style)
 {
-	auto font = owned (new CoreTextFont (name, size, style));
+	auto font = makeOwned<CoreTextFont> (name, size, style);
 	if (font->getFontRef ())
-		return shared<IPlatformFont> (font);
+		return std::move (font);
 	return nullptr;
 }
 
