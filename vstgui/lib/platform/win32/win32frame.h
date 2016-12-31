@@ -40,6 +40,7 @@
 #if WINDOWS
 
 #include <windows.h>
+#include <VersionHelpers.h>
 
 namespace VSTGUI {
 
