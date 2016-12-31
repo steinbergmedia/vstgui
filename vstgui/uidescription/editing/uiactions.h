@@ -45,6 +45,7 @@
 #include "../../lib/cgradient.h"
 #include <list>
 #include <map>
+#include <vector>
 #include <string>
 
 namespace VSTGUI {
