@@ -41,8 +41,8 @@
 #include "vstkeycode.h"
 #include "cbuttonstate.h"
 #include "cgraphicstransform.h"
-#include "dispatchlist.h"
 #include <map>
+#include <memory>
 #include <vector>
 
 namespace VSTGUI {
@@ -88,17 +88,17 @@ public:
 	//@{
 	virtual void draw (CDrawContext *pContext);															///< called if the view should draw itself
 	virtual void drawRect (CDrawContext *pContext, const CRect& updateRect) { draw (pContext); }		///< called if the view should draw itself
-	virtual bool checkUpdate (const CRect& updateRect) const { return updateRect.rectOverlap (size); }
+	virtual bool checkUpdate (const CRect& updateRect) const { return updateRect.rectOverlap (getViewSize ()); }
 
 	virtual bool isDirty () const { return hasViewFlag (kDirty); }										///< check if view is dirty
 	virtual void setDirty (bool val = true);															///< set the view to dirty so that it is redrawn in the next idle. Thread Safe !
 	static bool kDirtyCallAlwaysOnMainThread;															///< if this is true, setting a view dirty will call invalid() instead of checking it in idle. Default value is false.
 
 	virtual void invalidRect (const CRect& rect);														///< mark rect as invalid
-	virtual void invalid () { setDirty (false); invalidRect (size); }									///< mark whole view as invalid
+	virtual void invalid () { setDirty (false); invalidRect (getViewSize ()); }									///< mark whole view as invalid
 
 	virtual void setVisible (bool state);																///< set visibility state
-	bool isVisible () const { return hasViewFlag (kVisible) && alphaValue > 0.f; }						///< get visibility state
+	bool isVisible () const { return hasViewFlag (kVisible) && getAlphaValue () > 0.f; }						///< get visibility state
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -120,11 +120,11 @@ public:
 	virtual bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons);	///< called if a mouse wheel event is happening over this view
 
 	virtual void setMouseEnabled (bool bEnable = true);											///< turn on/off mouse usage for this view
-	virtual bool getMouseEnabled () const { return hasViewFlag (kMouseEnabled); }				///< get the state of wheather this view uses the mouse or not
+	bool getMouseEnabled () const { return hasViewFlag (kMouseEnabled); }						///< get the state of wheather this view uses the mouse or not
 
-	virtual void setMouseableArea (const CRect& rect)  { mouseableArea = rect; }				///< set the area in which the view reacts to the mouse
-	virtual CRect& getMouseableArea (CRect& rect) const { rect = mouseableArea; return rect;}	///< get the area in which the view reacts to the mouse
-	virtual const CRect& getMouseableArea () const { return mouseableArea; }					///< read only access to the mouseable area
+	virtual void setMouseableArea (const CRect& rect);											///< set the area in which the view reacts to the mouse
+	CRect& getMouseableArea (CRect& rect) const;												///< get the area in which the view reacts to the mouse
+	const CRect& getMouseableArea () const;														///< read only access to the mouseable area
 	//@}
 
 #if VSTGUI_TOUCH_EVENT_HANDLING
@@ -160,17 +160,17 @@ public:
 	/// @name View Size Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	CCoord getHeight () const { return size.getHeight (); }										///< get the height of the view
-	CCoord getWidth ()  const { return size.getWidth (); }										///< get the width of the view
+	CCoord getHeight () const { return getViewSize ().getHeight (); }							///< get the height of the view
+	CCoord getWidth ()  const { return getViewSize ().getWidth (); }							///< get the width of the view
 	virtual void setViewSize (const CRect& rect, bool invalid = true);							///< set views size
-	CRect& getViewSize (CRect& rect) const { rect = size; return rect; }						///< returns the current view size
-	const CRect& getViewSize () const { return size; }											///< read only access to view size
+	CRect& getViewSize (CRect& rect) const;														///< returns the current view size
+	const CRect& getViewSize () const;															///< read only access to view size
 	virtual CRect getVisibleViewSize () const;													///< returns the visible size of the view
 	virtual void parentSizeChanged () {}														///< notification that one of the views parent has changed its size
 	virtual CPoint& frameToLocal (CPoint& point) const;											///< conversion from frame coordinates to local view coordinates
 	virtual CPoint& localToFrame (CPoint& point) const;											///< conversion from local view coordinates to frame coordinates
-	virtual void setAutosizeFlags (int32_t flags) { autosizeFlags = flags; }					///< set autosize flags
-	virtual int32_t getAutosizeFlags () const { return autosizeFlags; }							///< get autosize flags
+	virtual void setAutosizeFlags (int32_t flags);												///< set autosize flags
+	int32_t getAutosizeFlags () const;															///< get autosize flags
 	virtual bool sizeToFit () { return false; }													///< resize view to optimal size
 	//@}
 
@@ -199,23 +199,23 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual void setBackground (CBitmap* background);											///< set the background image of this view
-	CBitmap* getBackground () const { return pBackground; }										///< get the background image of this view
+	CBitmap* getBackground () const;															///< get the background image of this view
 
 	virtual void setDisabledBackground (CBitmap* background);									///< set background image used when the mouse is not enabled
-	CBitmap* getDisabledBackground () const { return pDisabledBackground; }						///< get background image used when the mouse is not enabled
+	CBitmap* getDisabledBackground () const;													///< get background image used when the mouse is not enabled
 
-	CBitmap* getDrawBackground () const { return (pDisabledBackground ? (getMouseEnabled () ? pBackground : pDisabledBackground): pBackground); }
+	CBitmap* getDrawBackground () const;
 	//@}
 
 	//-----------------------------------------------------------------------------
 	/// @name Transparency Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual void setTransparency (bool val);															///< set views transparent state
-	virtual bool getTransparency () const { return hasViewFlag (kTransparencyEnabled); }				///< get views transparent state
+	virtual void setTransparency (bool val);													///< set views transparent state
+	bool getTransparency () const { return hasViewFlag (kTransparencyEnabled); }				///< get views transparent state
 
 	virtual void setAlphaValue (float alpha);													///< set alpha value which will be applied when drawing this view
-	float getAlphaValue () const { return alphaValue; }											///< get alpha value
+	float getAlphaValue () const;																///< get alpha value
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -234,8 +234,8 @@ public:
 	/// @name Parent Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	CView* getParentView () const { return pParentView; }										///< get parent view
-	CFrame* getFrame () const { return pParentFrame; }											///< get frame
+	CView* getParentView () const;																///< get parent view
+	CFrame* getFrame () const;																	///< get frame
 	virtual VSTGUIEditorInterface* getEditor () const;											///< get editor
 	//@}
 
@@ -308,33 +308,18 @@ protected:
 
 	~CView () noexcept override;
 
-	CGraphicsPath* getHitTestPath () const { return pHitTestPath; }
+	CGraphicsPath* getHitTestPath () const;
 	
-	bool hasViewFlag (int32_t bit) const { return hasBit (viewFlags, bit); }
+	bool hasViewFlag (int32_t bit) const;
 	void setViewFlag (int32_t bit, bool state);
 	
-	void setAlphaValueNoInvalidate (float value) { alphaValue = value; }
-	void setParentFrame (CFrame* frame) { pParentFrame = frame; }
-	void setParentView (CView* parent) { pParentView = parent; }
+	void setAlphaValueNoInvalidate (float value);
+	void setParentFrame (CFrame* frame);
+	void setParentView (CView* parent);
 
 private:
-	using ViewAttributes = std::map<CViewAttributeID, CViewAttributeEntry*>;
-	using ViewListenerDispatcher = DispatchList<IViewListener>;
-
-	ViewAttributes attributes;
-	ViewListenerDispatcher viewListeners;
-
-	CRect  size;
-	CRect  mouseableArea;
-	int32_t viewFlags {0};
-	int32_t autosizeFlags {kAutosizeNone};
-	float alphaValue {1.f};
-	CFrame* pParentFrame {nullptr};
-	CView* pParentView {nullptr};
-
-	SharedPointer<CBitmap> pBackground;
-	SharedPointer<CBitmap> pDisabledBackground;
-	SharedPointer<CGraphicsPath> pHitTestPath;
+	struct Impl;
+	std::unique_ptr<Impl> pImpl;
 };
 
 //-----------------------------------------------------------------------------
