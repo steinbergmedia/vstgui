@@ -46,7 +46,6 @@
 #include <vector>
 
 namespace VSTGUI {
-class CViewAttributeEntry;
 
 //-----------------------------------------------------------------------------
 // Definitions of special characters in a platform independent way
