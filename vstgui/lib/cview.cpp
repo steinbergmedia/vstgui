@@ -45,6 +45,7 @@
 #include "animation/animator.h"
 #include "../uidescription/icontroller.h"
 #include <cassert>
+#include <unordered_map>
 #if DEBUG
 #include <list>
 #include <typeinfo>
@@ -53,10 +54,11 @@
 namespace VSTGUI {
 
 /// @cond ignore
-#define VSTGUI_CHECK_VIEW_RELEASING	0//DEBUG
-#if VSTGUI_CHECK_VIEW_RELEASING
 //------------------------------------------------------------------------
 namespace CViewInternal {
+
+#define VSTGUI_CHECK_VIEW_RELEASING	0//DEBUG
+#if VSTGUI_CHECK_VIEW_RELEASING
 
 typedef std::list<CView*> ViewList;
 static ViewList gViewList;
@@ -78,27 +80,26 @@ public:
 	}
 };
 
-} // CViewInternal
 
-#endif // DEBUG
+#endif // VSTGUI_CHECK_VIEW_RELEASING
 
 //-----------------------------------------------------------------------------
-class CViewAttributeEntry
+class AttributeEntry
 {
 public:
-	CViewAttributeEntry (uint32_t _size, const void* _data)
+	AttributeEntry (uint32_t _size, const void* _data)
 	{
 		updateData (_size, _data);
 	}
-
-	CViewAttributeEntry (const CViewAttributeEntry& me) = delete;
-	CViewAttributeEntry& operator= (const CViewAttributeEntry& me) = delete;
-	CViewAttributeEntry (CViewAttributeEntry&& me) noexcept
+	
+	AttributeEntry (const AttributeEntry& me) = delete;
+	AttributeEntry& operator= (const AttributeEntry& me) = delete;
+	AttributeEntry (AttributeEntry&& me) noexcept
 	{
 		*this = std::move (me);
 	}
 	
-	CViewAttributeEntry& operator=(CViewAttributeEntry&& me) noexcept
+	AttributeEntry& operator=(AttributeEntry&& me) noexcept
 	{
 		data = std::move (me.data);
 		return *this;
@@ -106,7 +107,7 @@ public:
 	
 	uint32_t getSize () const { return static_cast<uint32_t> (data.size ()); }
 	const void* getData () const { return data.get (); }
-
+	
 	void updateData (uint32_t _size, const void* _data)
 	{
 		data.allocate (_size);
@@ -115,68 +116,67 @@ public:
 			std::memcpy (data.get (), _data, data.size ());
 		}
 	}
-
+	
 protected:
 	Malloc<int8_t> data;
 };
 
 //-----------------------------------------------------------------------------
-class IdleViewUpdater : public CBaseObject
+class IdleViewUpdater
 {
 public:
 	static void add (CView* view)
 	{
 		if (gInstance == nullptr)
-			new IdleViewUpdater ();
+			gInstance = std::unique_ptr<IdleViewUpdater> (new IdleViewUpdater ());
 		gInstance->views.emplace_back (view);
 	}
-
+	
 	static void remove (CView* view)
 	{
 		if (gInstance)
 		{
 			gInstance->views.remove (view);
-			if (gInstance->views.empty ())
+			if (!gInstance->inTimer && gInstance->views.empty ())
 			{
-				gInstance->forget ();
+				gInstance = nullptr;
 			}
 		}
 	}
-
+	
 protected:
 	typedef std::list<CView*> ViewContainer;
-
+	
 	IdleViewUpdater ()
 	{
-		vstgui_assert (gInstance == nullptr);
-		gInstance = this;
-		timer = new CVSTGUITimer (this, 1000/CView::idleRate, true);
+		timer = makeOwned<CVSTGUITimer> ([this] (CVSTGUITimer*) { onTimer (); }, 1000/CView::idleRate);
 	}
-
-	~IdleViewUpdater () override
+	
+	void onTimer ()
 	{
-		timer->forget ();
-		gInstance = nullptr;
-	}
-
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override
-	{
-		CBaseObjectGuard guard (this);
+		inTimer = true;
 		for (ViewContainer::const_iterator it = views.begin (); it != views.end ();)
 		{
 			CView* view = (*it);
 			++it;
 			view->onIdle ();
 		}
-		return kMessageNotified;
+		inTimer = false;
+		if (views.empty ())
+			gInstance = nullptr;
 	}
-	CVSTGUITimer* timer;
+	SharedPointer<CVSTGUITimer> timer;
 	ViewContainer views;
-
-	static IdleViewUpdater* gInstance;
+	bool inTimer {false};
+	
+	static std::unique_ptr<IdleViewUpdater> gInstance;
 };
-IdleViewUpdater* IdleViewUpdater::gInstance = nullptr;
+std::unique_ptr<IdleViewUpdater> IdleViewUpdater::gInstance;
+
+} // CViewInternal
+
 uint32_t CView::idleRate = 30;
+
 /// @endcond
 
 UTF8StringPtr kDegreeSymbol		= "\xC2\xB0";
@@ -197,7 +197,7 @@ bool CView::kDirtyCallAlwaysOnMainThread = false;
 //-----------------------------------------------------------------------------
 struct CView::Impl
 {
-	using ViewAttributes = std::map<CViewAttributeID, CViewAttributeEntry*>;
+	using ViewAttributes = std::unordered_map<CViewAttributeID, std::unique_ptr<CViewInternal::AttributeEntry>>;
 	using ViewListenerDispatcher = DispatchList<IViewListener>;
 	
 	ViewAttributes attributes;
@@ -273,8 +273,7 @@ void CView::beforeDelete ()
 			delete controller;
 	}
 	
-	for (auto& attribute : pImpl->attributes)
-		delete attribute.second;
+	pImpl->attributes.clear ();
 	
 #if VSTGUI_CHECK_VIEW_RELEASING
 	CViewInternal::gNbCView--;
@@ -357,7 +356,7 @@ void CView::setWantsIdle (bool state)
 		return;
 	setViewFlag (kWantsIdle, state);
 	if (isAttached ())
-		state ? IdleViewUpdater::add (this) : IdleViewUpdater::remove (this);
+		state ? CViewInternal::IdleViewUpdater::add (this) : CViewInternal::IdleViewUpdater::remove (this);
 }
 
 //-----------------------------------------------------------------------------
@@ -398,7 +397,7 @@ bool CView::attached (CView* parent)
 	if (pImpl->pParentFrame)
 		pImpl->pParentFrame->onViewAdded (this);
 	if (wantsIdle ())
-		IdleViewUpdater::add (this);
+		CViewInternal::IdleViewUpdater::add (this);
 	pImpl->viewListeners.forEach ([&] (IViewListener* listener) {
 		listener->viewAttached (this);
 	});
@@ -415,7 +414,7 @@ bool CView::removed (CView* parent)
 	if (!isAttached ())
 		return false;
 	if (wantsIdle ())
-		IdleViewUpdater::remove (this);
+		CViewInternal::IdleViewUpdater::remove (this);
 	pImpl->viewListeners.forEach ([&] (IViewListener* listener) {
 		listener->viewRemoved (this);
 	});
@@ -897,7 +896,7 @@ bool CView::setAttribute (const CViewAttributeID aId, const uint32_t inSize, con
 	if (it != pImpl->attributes.end ())
 		it->second->updateData (inSize, inData);
 	else
-		pImpl->attributes.insert (std::pair<CViewAttributeID, CViewAttributeEntry*> (aId, new CViewAttributeEntry (inSize, inData)));
+		pImpl->attributes.emplace (aId, std::unique_ptr<CViewInternal::AttributeEntry> (new CViewInternal::AttributeEntry (inSize, inData)));
 	return true;
 }
 
@@ -907,7 +906,6 @@ bool CView::removeAttribute (const CViewAttributeID aId)
 	auto it = pImpl->attributes.find (aId);
 	if (it != pImpl->attributes.end ())
 	{
-		delete it->second;
 		pImpl->attributes.erase (aId);
 		return true;
 	}
