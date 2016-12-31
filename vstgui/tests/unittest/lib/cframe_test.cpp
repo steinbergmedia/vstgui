@@ -33,6 +33,7 @@
 //-----------------------------------------------------------------------------
 
 #include "../../../lib/cframe.h"
+#include "../../../lib/ccolor.h"
 #include "../unittests.h"
 #include "platform_helper.h"
 

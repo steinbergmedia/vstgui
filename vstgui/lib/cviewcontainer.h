@@ -37,12 +37,12 @@
 
 #include "vstguifwd.h"
 #include "cview.h"
-#include "ccolor.h"
 #include "cdrawdefs.h"
 #if VSTGUI_TOUCH_EVENT_HANDLING
 #include "itouchevent.h"
 #endif
 #include <list>
+#include <memory>
 
 namespace VSTGUI {
 
@@ -116,13 +116,13 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual void setBackgroundColor (const CColor& color);	///< set the background color (will only be drawn if this container is not set to transparent and does not have a background bitmap)
-	virtual CColor getBackgroundColor () const { return backgroundColor; }	///< get the background color
-	virtual void setBackgroundOffset (const CPoint& p) { backgroundOffset = p; }	///< set the offset of the background bitmap
-	virtual const CPoint& getBackgroundOffset () const { return backgroundOffset; }	///< get the offset of the background bitmap
+	virtual CColor getBackgroundColor () const;	///< get the background color
+	virtual void setBackgroundOffset (const CPoint& p);	///< set the offset of the background bitmap
+	virtual const CPoint& getBackgroundOffset () const;	///< get the offset of the background bitmap
 	virtual void drawBackgroundRect (CDrawContext* pContext, const CRect& _updateRect);	///< draw the background
 	
 	virtual void setBackgroundColorDrawStyle (CDrawStyle style);
-	CDrawStyle getBackgroundColorDrawStyle () const { return backgroundColorDrawStyle; }
+	CDrawStyle getBackgroundColorDrawStyle () const;
 	//@}
 
 	virtual bool advanceNextFocusView (CView* oldFocus, bool reverse = false);
@@ -130,7 +130,7 @@ public:
 	virtual CRect getVisibleSize (const CRect& rect) const;
 
 	void setTransform (const CGraphicsTransform& t);
-	const CGraphicsTransform& getTransform () const { return transform; }
+	const CGraphicsTransform& getTransform () const;
 	
 	void registerViewContainerListener (IViewContainerListener* listener);
 	void unregisterViewContainerListener (IViewContainerListener* listener);
@@ -250,28 +250,13 @@ protected:
 	
 	virtual bool checkUpdateRect (CView* view, const CRect& rect);
 
-	void setMouseDownView (CView* view) { mouseDownView = view; }
-	CView* getMouseDownView () const { return mouseDownView; }
+	void setMouseDownView (CView* view);
+	CView* getMouseDownView () const;
 	
-	const ViewList& getChildren () const { return children; }
+	const ViewList& getChildren () const;
 private:
-	using ViewContainerListenerDispatcher = DispatchList<IViewContainerListener>;
-
-	ViewContainerListenerDispatcher viewContainerListeners;
-	CGraphicsTransform transform;
-
-	/// @cond ignore
-	ViewList children;
-	/// @endcond
-	
-	CDrawStyle backgroundColorDrawStyle {kDrawFilledAndStroked};
-	CColor backgroundColor {kBlackCColor};
-	CPoint backgroundOffset;
-
-	CRect lastDrawnFocus;
-
-	CView* currentDragView {nullptr};
-	CView* mouseDownView {nullptr};
+	struct Impl;
+	std::unique_ptr<Impl> pImpl;
 };
 
 typedef CViewContainer::Iterator<false> ViewIterator;

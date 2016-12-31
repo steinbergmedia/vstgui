@@ -40,6 +40,7 @@
 #include "vstguifwd.h"
 #include "cscrollview.h"
 #include "cfont.h"
+#include "ccolor.h"
 #include "cstring.h"
 #include <vector>
 
