@@ -82,7 +82,7 @@ Win32TextEdit::Win32TextEdit (HWND parent, IPlatformTextEditCallback* textEdit)
 	text = stringHelper;
 
 	DWORD wxStyle = 0;
-	if (getD2DFactory () == 0 && getSystemVersion ().dwMajorVersion >= 6) // Vista and above
+	if (getD2DFactory () == 0 && IsWindowsVistaOrGreater()) // Vista and above
 		wxStyle = WS_EX_COMPOSITED;
 	wstyle |= WS_CHILD | WS_VISIBLE | ES_AUTOHSCROLL;
 	platformControl = CreateWindowEx (wxStyle,
