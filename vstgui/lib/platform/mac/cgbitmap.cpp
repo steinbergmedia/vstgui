@@ -281,7 +281,6 @@ bool CGBitmap::loadFromImageSource (CGImageSourceRef source)
 			if (CFNumberGetValue (value, kCFNumberDoubleType, &fValue))
 				size.x = fValue;
 		}
-		CFRetain (imageSource);
 	#if VSTGUI_QUARTZ_WORKAROUND_PNG_DECODE_ON_DRAW_BUG
 		// workaround a bug in Mac OS X 10.6 (32 bit), where PNG bitmaps were decoded all the time when drawn.
 		// we fix this by copying the pixels of the bitmap into our own buffer.
