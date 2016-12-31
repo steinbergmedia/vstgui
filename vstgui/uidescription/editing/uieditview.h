@@ -36,6 +36,7 @@
 #define __uieditview__
 
 #include "../../lib/cviewcontainer.h"
+#include "../../lib/ccolor.h"
 
 #if VSTGUI_LIVE_EDITING
 

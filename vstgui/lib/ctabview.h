@@ -38,6 +38,7 @@
 #include "vstguifwd.h"
 #include "cviewcontainer.h"
 #include "cfont.h"
+#include "ccolor.h"
 #include "controls/icontrollistener.h"
 
 namespace VSTGUI {

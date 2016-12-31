@@ -34,6 +34,7 @@
 
 #include "../../../lib/cframe.h"
 #include "../../../lib/iviewlistener.h"
+#include "../../../lib/ccolor.h"
 #include "../unittests.h"
 
 namespace VSTGUI {

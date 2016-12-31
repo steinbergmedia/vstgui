@@ -36,6 +36,7 @@
 
 #if MAC
 #include "../../cframe.h"
+#include "../../ccolor.h"
 #include "../iplatformframe.h"
 #include "../std_unorderedmap.h"
 #include <mach/mach_time.h>
