@@ -649,10 +649,10 @@ void CGDrawContext::drawBitmap (CBitmap* bitmap, const CRect& inRect, const CPoi
 			CGLayerRef layer = cgBitmap->getCGLayer ();
 			if (layer == nullptr)
 			{
-				BitmapDrawCountMap::iterator it = bitmapDrawCount.find (cgBitmap);
+				auto it = bitmapDrawCount.find (cgBitmap);
 				if (it == bitmapDrawCount.end ())
 				{
-					bitmapDrawCount.insert (std::pair<CGBitmap*, int32_t> (cgBitmap, 1));
+					bitmapDrawCount.emplace (cgBitmap, 1);
 				}
 				else
 				{

@@ -55,8 +55,8 @@ public:
 	static CGradient* create (double color1Start, double color2Start, const CColor& color1, const CColor& color2)
 	{
 		ColorStopMap map;
-		map.insert (std::make_pair (color1Start, color1));
-		map.insert (std::make_pair (color2Start, color2));
+		map.emplace (color1Start, color1);
+		map.emplace (color2Start, color2);
 		return create (map);
 	}
 	

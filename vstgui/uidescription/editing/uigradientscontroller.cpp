@@ -146,7 +146,7 @@ void UIColorStopEditView::setCurrentStartOffset (double startOffset)
 	{
 		CColor color = pos->second;
 		colorStopMap.erase (pos);
-		colorStopMap.insert (std::make_pair (startOffset, color));
+		colorStopMap.emplace (startOffset, color);
 		editStartOffset = startOffset;
 		changed (kChanged);
 		invalid ();
@@ -156,7 +156,7 @@ void UIColorStopEditView::setCurrentStartOffset (double startOffset)
 //----------------------------------------------------------------------------------------------------
 void UIColorStopEditView::addColorStop (double startOffset)
 {
-	colorStopMap.insert (std::make_pair (startOffset, editColor->base ()));
+	colorStopMap.emplace (startOffset, editColor->base ());
 	editStartOffset = startOffset;
 	changed (kChanged);
 	invalid ();

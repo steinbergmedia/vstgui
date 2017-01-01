@@ -95,8 +95,8 @@ static CGColorMap& getColorMap ()
 //-----------------------------------------------------------------------------
 CGColorRef getCGColor (const CColor& color)
 {
-	CGColorMap& colorMap = getColorMap ();
-	CGColorMap::const_iterator it = colorMap.find (color);
+	auto& colorMap = getColorMap ();
+	auto it = colorMap.find (color);
 	if (it != colorMap.end ())
 	{
 		CGColorRef result = it->second;
@@ -109,7 +109,7 @@ CGColorRef getCGColor (const CColor& color)
 		static_cast<CGFloat> (color.alpha / 255.)
 	};
 	CGColorRef result = CGColorCreate (GetCGColorSpace (), components);
-	colorMap.insert (std::make_pair (color, result));
+	colorMap.emplace (color, result);
 	return result;
 }
 

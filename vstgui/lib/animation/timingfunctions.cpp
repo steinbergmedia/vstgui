@@ -98,7 +98,7 @@ InterpolationTimingFunction::InterpolationTimingFunction (uint32_t length, float
 //-----------------------------------------------------------------------------
 void InterpolationTimingFunction::addPoint (float time, float pos)
 {
-	points.insert (std::make_pair ((uint32_t)((float)getLength () * time), pos));
+	points.emplace ((uint32_t)((float)getLength () * time), pos);
 }
 
 //-----------------------------------------------------------------------------
