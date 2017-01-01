@@ -118,8 +118,8 @@ protected:
 
 	void updateViewSize (CView* view, const CRect& rect);
 
-	CView* newView;
-	CView* viewToRemove;
+	SharedPointer<CView> newView;
+	SharedPointer<CView> viewToRemove;
 	AnimationStyle style;
 	float newViewAlphaValueEnd;
 	float oldViewAlphaValueStart;
