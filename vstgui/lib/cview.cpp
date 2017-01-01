@@ -60,7 +60,7 @@ namespace CViewInternal {
 #define VSTGUI_CHECK_VIEW_RELEASING	0//DEBUG
 #if VSTGUI_CHECK_VIEW_RELEASING
 
-typedef std::list<CView*> ViewList;
+using ViewList = std::list<CView*>;
 static ViewList gViewList;
 int32_t gNbCView = 0;
 
@@ -145,7 +145,7 @@ public:
 	}
 	
 protected:
-	typedef std::list<CView*> ViewContainer;
+	using ViewContainer = std::list<CView*>;
 	
 	IdleViewUpdater ()
 	{
@@ -203,17 +203,17 @@ struct CView::Impl
 	ViewAttributes attributes;
 	ViewListenerDispatcher viewListeners;
 	
-	CRect  size;
-	CRect  mouseableArea;
+	CRect size;
+	CRect mouseableArea;
 	int32_t viewFlags {0};
 	int32_t autosizeFlags {kAutosizeNone};
 	float alphaValue {1.f};
-	CFrame* pParentFrame {nullptr};
-	CView* pParentView {nullptr};
+	CFrame* parentFrame {nullptr};
+	CView* parentView {nullptr};
 	
-	SharedPointer<CBitmap> pBackground;
-	SharedPointer<CBitmap> pDisabledBackground;
-	SharedPointer<CGraphicsPath> pHitTestPath;
+	SharedPointer<CBitmap> background;
+	SharedPointer<CBitmap> disabledBackground;
+	SharedPointer<CGraphicsPath> hitTestPath;
 };
 
 //-----------------------------------------------------------------------------
@@ -241,9 +241,9 @@ CView::CView (const CView& v)
 	pImpl->viewFlags = v.pImpl->viewFlags;
 	pImpl->autosizeFlags = v.pImpl->autosizeFlags;
 	pImpl->alphaValue = v.pImpl->alphaValue;
-	pImpl->pBackground = v.pImpl->pBackground;
-	pImpl->pDisabledBackground = v.pImpl->pDisabledBackground;
-	pImpl->pHitTestPath = v.pImpl->pHitTestPath;
+	pImpl->background = v.pImpl->background;
+	pImpl->disabledBackground = v.pImpl->disabledBackground;
+	pImpl->hitTestPath = v.pImpl->hitTestPath;
 
 	for (auto& attribute : v.pImpl->attributes)
 		setAttribute (attribute.first, attribute.second->getSize (), attribute.second->getData ());
@@ -304,7 +304,7 @@ const CRect& CView::getMouseableArea () const
 //-----------------------------------------------------------------------------
 CGraphicsPath* CView::getHitTestPath () const
 {
-	return pImpl->pHitTestPath;
+	return pImpl->hitTestPath;
 }
 
 //-----------------------------------------------------------------------------
@@ -326,7 +326,7 @@ void CView::setMouseEnabled (bool state)
 	{
 		setViewFlag (kMouseEnabled, state);
 
-		if (pImpl->pDisabledBackground)
+		if (pImpl->disabledBackground)
 		{
 			setDirty (true);
 		}
@@ -391,11 +391,11 @@ bool CView::attached (CView* parent)
 	if (isAttached ())
 		return false;
 	vstgui_assert (parent->asViewContainer ());
-	pImpl->pParentView = parent;
-	pImpl->pParentFrame = parent->getFrame ();
+	pImpl->parentView = parent;
+	pImpl->parentFrame = parent->getFrame ();
 	setViewFlag (kIsAttached, true);
-	if (pImpl->pParentFrame)
-		pImpl->pParentFrame->onViewAdded (this);
+	if (pImpl->parentFrame)
+		pImpl->parentFrame->onViewAdded (this);
 	if (wantsIdle ())
 		CViewInternal::IdleViewUpdater::add (this);
 	pImpl->viewListeners.forEach ([&] (IViewListener* listener) {
@@ -418,10 +418,10 @@ bool CView::removed (CView* parent)
 	pImpl->viewListeners.forEach ([&] (IViewListener* listener) {
 		listener->viewRemoved (this);
 	});
-	if (pImpl->pParentFrame)
-		pImpl->pParentFrame->onViewRemoved (this);
-	pImpl->pParentView = nullptr;
-	pImpl->pParentFrame = nullptr;
+	if (pImpl->parentFrame)
+		pImpl->parentFrame->onViewRemoved (this);
+	pImpl->parentView = nullptr;
+	pImpl->parentFrame = nullptr;
 	setViewFlag (kIsAttached, false);
 	return true;
 }
@@ -471,7 +471,7 @@ CMouseEventResult CView::onMouseCancel ()
  */
 void CView::setHitTestPath (CGraphicsPath* path)
 {
-	pImpl->pHitTestPath = path;
+	pImpl->hitTestPath = path;
 }
 
 //-----------------------------------------------------------------------------
@@ -482,11 +482,11 @@ void CView::setHitTestPath (CGraphicsPath* path)
  */
 bool CView::hitTest (const CPoint& where, const CButtonState& buttons)
 {
-	if (pImpl->pHitTestPath)
+	if (pImpl->hitTestPath)
 	{
 		CPoint p (where);
 		p.offset (-getViewSize ().left, -getViewSize ().top);
-		return pImpl->pHitTestPath->hitTest (p);
+		return pImpl->hitTestPath->hitTest (p);
 	}
 	return pImpl->mouseableArea.pointInside (where);
 }
@@ -498,8 +498,8 @@ bool CView::hitTest (const CPoint& where, const CButtonState& buttons)
  */
 CPoint& CView::frameToLocal (CPoint& point) const
 {
-	if (pImpl->pParentView)
-		return pImpl->pParentView->frameToLocal (point);
+	if (pImpl->parentView)
+		return pImpl->parentView->frameToLocal (point);
 	return point;
 }
 
@@ -510,16 +510,17 @@ CPoint& CView::frameToLocal (CPoint& point) const
  */
 CPoint& CView::localToFrame (CPoint& point) const
 {
-	if (pImpl->pParentView)
-		return pImpl->pParentView->localToFrame (point);
+	if (pImpl->parentView)
+		return pImpl->parentView->localToFrame (point);
 	return point;
 }
 
 //-----------------------------------------------------------------------------
 CGraphicsTransform CView::getGlobalTransform () const
 {
+	using ParentViews = std::list<CViewContainer*>;
+
 	CGraphicsTransform transform;
-	typedef std::list<CViewContainer*> ParentViews;
 	ParentViews parents;
 	
 	CViewContainer* parent = getParentView () ? getParentView ()->asViewContainer () : nullptr;
@@ -548,8 +549,8 @@ void CView::invalidRect (const CRect& rect)
 {
 	if (isAttached () && hasViewFlag (kVisible))
 	{
-		vstgui_assert (pImpl->pParentView);
-		pImpl->pParentView->invalidRect (rect);
+		vstgui_assert (pImpl->parentView);
+		pImpl->parentView->invalidRect (rect);
 	}
 }
 
@@ -705,8 +706,8 @@ const CRect& CView::getViewSize () const
  */
 CRect CView::getVisibleViewSize () const
 {
-	if (pImpl->pParentView)
-		return static_cast<CViewContainer*>(pImpl->pParentView)->getVisibleSize (getViewSize ());
+	if (pImpl->parentView)
+		return static_cast<CViewContainer*>(pImpl->parentView)->getVisibleSize (getViewSize ());
 	return CRect (0, 0, 0, 0);
 }
 
@@ -741,8 +742,8 @@ void CView::setAlphaValue (float alpha)
 	{
 		pImpl->alphaValue = alpha;
 		// we invalidate the parent to make sure that when alpha == 0 that a redraw occurs
-		if (pImpl->pParentView)
-			pImpl->pParentView->invalidRect (getViewSize ());
+		if (pImpl->parentView)
+			pImpl->parentView->invalidRect (getViewSize ());
 	}
 }
 
@@ -767,31 +768,31 @@ int32_t CView::getAutosizeFlags () const
 //-----------------------------------------------------------------------------
 void CView::setParentFrame (CFrame* frame)
 {
-	pImpl->pParentFrame = frame;
+	pImpl->parentFrame = frame;
 }
 
 //-----------------------------------------------------------------------------
 void CView::setParentView (CView* parent)
 {
-	pImpl->pParentView = parent;
+	pImpl->parentView = parent;
 }
 
 //-----------------------------------------------------------------------------
 CView* CView::getParentView () const
 {
-	return pImpl->pParentView;
+	return pImpl->parentView;
 }
 
 //-----------------------------------------------------------------------------
 CFrame* CView::getFrame () const
 {
-	return pImpl->pParentFrame;
+	return pImpl->parentFrame;
 }
 
 //-----------------------------------------------------------------------------
 VSTGUIEditorInterface* CView::getEditor () const
 {
-	return pImpl->pParentFrame ? pImpl->pParentFrame->getEditor () : nullptr;
+	return pImpl->parentFrame ? pImpl->parentFrame->getEditor () : nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -800,7 +801,7 @@ VSTGUIEditorInterface* CView::getEditor () const
  */
 void CView::setBackground (CBitmap* background)
 {
-	pImpl->pBackground = background;
+	pImpl->background = background;
 	if (getMouseEnabled () == true)
 		setDirty (true);
 }
@@ -808,19 +809,19 @@ void CView::setBackground (CBitmap* background)
 //-----------------------------------------------------------------------------
 CBitmap* CView::getBackground () const
 {
-	return pImpl->pBackground;
+	return pImpl->background;
 }
 
 //-----------------------------------------------------------------------------
 CBitmap* CView::getDisabledBackground () const
 {
-	return pImpl->pDisabledBackground;
+	return pImpl->disabledBackground;
 }
 
 //-----------------------------------------------------------------------------
 CBitmap* CView::getDrawBackground () const
 {
-	return (pImpl->pDisabledBackground ? (getMouseEnabled () ? pImpl->pBackground : pImpl->pDisabledBackground): pImpl->pBackground);
+	return (pImpl->disabledBackground ? (getMouseEnabled () ? pImpl->background : pImpl->disabledBackground): pImpl->background);
 }
 
 //-----------------------------------------------------------------------------
@@ -829,7 +830,7 @@ CBitmap* CView::getDrawBackground () const
  */
 void CView::setDisabledBackground (CBitmap* background)
 {
-	pImpl->pDisabledBackground = background;
+	pImpl->disabledBackground = background;
 	if (getMouseEnabled () == false)
 		setDirty (true);
 }
