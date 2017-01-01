@@ -62,7 +62,7 @@ IdStringPtr kMsgLooseFocus = "LooseFocus";
 //-----------------------------------------------------------------------------
 struct CViewContainer::Impl
 {
-	using ViewContainerListenerDispatcher = DispatchList<IViewContainerListener>;
+	using ViewContainerListenerDispatcher = DispatchList<IViewContainerListener*>;
 	
 	ViewContainerListenerDispatcher viewContainerListeners;
 	CGraphicsTransform transform;

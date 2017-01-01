@@ -87,11 +87,11 @@ struct CFrame::Impl
 	CollectInvalidRects* collectInvalidRects {nullptr};
 	
 	ViewList mouseViews;
-	DispatchList<CView> windowActiveStateChangeViews;
-	DispatchList<IScaleFactorChangedListener> scaleFactorChangedListenerList;
-	DispatchList<IMouseObserver> mouseObservers;
-	DispatchList<IFocusViewObserver> focusViewObservers;
-	DispatchList<IKeyboardHook> keyboardHooks;
+	DispatchList<CView*> windowActiveStateChangeViews;
+	DispatchList<IScaleFactorChangedListener*> scaleFactorChangedListenerList;
+	DispatchList<IMouseObserver*> mouseObservers;
+	DispatchList<IFocusViewObserver*> focusViewObservers;
+	DispatchList<IKeyboardHook*> keyboardHooks;
 
 	double userScaleFactor {1.};
 	double platformScaleFactor {1.};

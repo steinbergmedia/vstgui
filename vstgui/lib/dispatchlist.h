@@ -20,8 +20,8 @@ class DispatchList
 public:
 	DispatchList ();
 
-	void add (T* obj);
-	void remove (T* obj);
+	void add (T obj);
+	void remove (T obj);
 	bool empty () const;
 
 	template <typename Procedure>
@@ -31,7 +31,7 @@ public:
 	void forEachReverse (Procedure proc);
 
 private:
-	using Array = std::vector<T*>;
+	using Array = std::vector<T>;
 
 	void postForEach ();
 
@@ -49,7 +49,7 @@ inline DispatchList<T>::DispatchList ()
 
 //------------------------------------------------------------------------
 template <typename T>
-inline void DispatchList<T>::add (T* obj)
+inline void DispatchList<T>::add (T obj)
 {
 	if (inForEach)
 		toAdd.emplace_back (obj);
@@ -59,7 +59,7 @@ inline void DispatchList<T>::add (T* obj)
 
 //------------------------------------------------------------------------
 template <typename T>
-inline void DispatchList<T>::remove (T* obj)
+inline void DispatchList<T>::remove (T obj)
 {
 	if (inForEach)
 		toRemove.emplace_back (obj);

@@ -189,7 +189,7 @@ protected:
 	~CControl () noexcept = default;
 	static int32_t mapVstKeyModifier (int32_t vstModifier);
 
-	using SubListenerDispatcher = DispatchList<IControlListener>;
+	using SubListenerDispatcher = DispatchList<IControlListener*>;
 
 	IControlListener* listener;
 	SubListenerDispatcher subListeners;

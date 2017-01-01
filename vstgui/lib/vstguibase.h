@@ -359,6 +359,7 @@ public:
 		op.ptr = nullptr;
 		return *this;
 	}
+	
 //------------------------------------------------------------------------
 protected:
 	template<typename T>

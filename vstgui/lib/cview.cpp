@@ -198,7 +198,7 @@ bool CView::kDirtyCallAlwaysOnMainThread = false;
 struct CView::Impl
 {
 	using ViewAttributes = std::unordered_map<CViewAttributeID, std::unique_ptr<CViewInternal::AttributeEntry>>;
-	using ViewListenerDispatcher = DispatchList<IViewListener>;
+	using ViewListenerDispatcher = DispatchList<IViewListener*>;
 	
 	ViewAttributes attributes;
 	ViewListenerDispatcher viewListeners;
