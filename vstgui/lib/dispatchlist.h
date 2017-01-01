@@ -20,8 +20,10 @@ class DispatchList
 public:
 	DispatchList ();
 
-	void add (T obj);
-	void remove (T obj);
+	void add (const T& obj);
+	void add (T&& obj);
+	void remove (const T& obj);
+	void remove (T&& obj);
 	bool empty () const;
 
 	template <typename Procedure>
@@ -49,7 +51,7 @@ inline DispatchList<T>::DispatchList ()
 
 //------------------------------------------------------------------------
 template <typename T>
-inline void DispatchList<T>::add (T obj)
+inline void DispatchList<T>::add (const T& obj)
 {
 	if (inForEach)
 		toAdd.emplace_back (obj);
@@ -59,10 +61,34 @@ inline void DispatchList<T>::add (T obj)
 
 //------------------------------------------------------------------------
 template <typename T>
-inline void DispatchList<T>::remove (T obj)
+inline void DispatchList<T>::add (T&& obj)
+{
+	if (inForEach)
+		toAdd.emplace_back (std::move (obj));
+	else
+		entries.emplace_back (std::move (obj));
+}
+
+//------------------------------------------------------------------------
+template <typename T>
+inline void DispatchList<T>::remove (const T& obj)
 {
 	if (inForEach)
 		toRemove.emplace_back (obj);
+	else
+	{
+		auto it = std::find (entries.begin (), entries.end (), obj);
+		if (it != entries.end ())
+			entries.erase (it);
+	}
+}
+
+//------------------------------------------------------------------------
+template <typename T>
+inline void DispatchList<T>::remove (T&& obj)
+{
+	if (inForEach)
+		toRemove.emplace_back (std::move (obj));
 	else
 	{
 		auto it = std::find (entries.begin (), entries.end (), obj);
@@ -84,14 +110,14 @@ inline void DispatchList<T>::postForEach ()
 {
 	if (!toAdd.empty ())
 	{
-		for (auto& it : toAdd)
-			add (it);
+		for (auto&& it : toAdd)
+			add (std::move (it));
 		toAdd.clear ();
 	}
 	if (!toRemove.empty ())
 	{
-		for (auto& it : toRemove)
-			remove (it);
+		for (auto&& it : toRemove)
+			remove (std::move (it));
 		toRemove.clear ();
 	}
 }

@@ -124,7 +124,9 @@ public:
 #include "itimingfunction.h"
 #include "../cvstguitimer.h"
 #include "../cview.h"
+#include "../dispatchlist.h"
 #include "../platform/iplatformframe.h"
+#include <list>
 
 #define DEBUG_LOG	0 // DEBUG
 
@@ -132,6 +134,8 @@ namespace VSTGUI {
 namespace Animation {
 
 ///@cond ignore
+namespace Detail {
+
 //-----------------------------------------------------------------------------
 class Timer : public NonAtomicReferenceCounted
 {
@@ -139,9 +143,9 @@ public:
 	static void addAnimator (Animator* animator)
 	{
 		getInstance ()->animators.emplace_back (animator);
-		#if DEBUG_LOG
+#if DEBUG_LOG
 		DebugPrint ("Animator added: %p\n", animator);
-		#endif
+#endif
 	}
 	static void removeAnimator (Animator* animator)
 	{
@@ -153,9 +157,9 @@ public:
 			}
 			else
 			{
-				#if DEBUG_LOG
+#if DEBUG_LOG
 				DebugPrint ("Animator removed: %p\n", animator);
-				#endif
+#endif
 				gInstance->animators.remove (animator);
 				if (gInstance->animators.empty ())
 				{
@@ -177,9 +181,9 @@ protected:
 	Timer ()
 	: inTimer (false)
 	{
-		#if DEBUG_LOG
+#if DEBUG_LOG
 		DebugPrint ("Animation timer started\n");
-		#endif
+#endif
 		timer = new CVSTGUITimer ([this] (CVSTGUITimer*) {
 			onTimer ();
 		}, 1000/60); // 60 Hz
@@ -187,9 +191,9 @@ protected:
 	
 	~Timer () noexcept override
 	{
-		#if DEBUG_LOG
+#if DEBUG_LOG
 		DebugPrint ("Animation timer stopped\n");
-		#endif
+#endif
 		timer->forget ();
 		gInstance = nullptr;
 	}
@@ -198,9 +202,9 @@ protected:
 	{
 		inTimer = true;
 		auto guard = shared (this);
-		#if DEBUG_LOG
+#if DEBUG_LOG
 		DebugPrint ("Current Animators : %d\n", animators.size ());
-		#endif
+#endif
 		for (auto& animator : animators)
 			animator->onTimer ();
 		inTimer = false;
@@ -220,7 +224,7 @@ protected:
 Timer* Timer::gInstance = nullptr;
 
 //-----------------------------------------------------------------------------
-class Animator::Animation : public NonAtomicReferenceCounted
+class Animation : public NonAtomicReferenceCounted
 {
 public:
 	Animation (CView* view, const std::string& name, IAnimationTarget* at, ITimingFunction* t, DoneFunction&& notification);
@@ -228,37 +232,73 @@ public:
 	
 	std::string name;
 	SharedPointer<CView> view;
-	IAnimationTarget* target;
+	IAnimationTarget* animationTarget;
 	ITimingFunction* timingFunction;
 	DoneFunction notification;
 	uint32_t startTime;
 	float lastPos;
 	bool done;
 };
+
+//-----------------------------------------------------------------------------
+Animation::Animation (CView* view, const std::string& name, IAnimationTarget* at, ITimingFunction* t, DoneFunction&& notification)
+: name (name)
+, view (view)
+, animationTarget (at)
+, timingFunction (t)
+, notification (std::move (notification))
+, startTime (0)
+, lastPos (-1)
+, done (false)
+{
+}
+
+//-----------------------------------------------------------------------------
+Animation::~Animation () noexcept
+{
+	if (notification)
+		notification (view, name.c_str (), animationTarget);
+	if (auto obj = dynamic_cast<IReference*> (animationTarget))
+		obj->forget ();
+	else
+		delete animationTarget;
+	if (auto obj = dynamic_cast<IReference*> (timingFunction))
+		obj->forget ();
+	else
+		delete timingFunction;
+}
+
+} // Detail
+
+//-----------------------------------------------------------------------------
+struct Animator::Impl
+{
+	DispatchList<SharedPointer<Detail::Animation>> animations;
+};
 ///@endcond
 
 //-----------------------------------------------------------------------------
 Animator::Animator ()
-: inTimer (false)
 {
+	pImpl = std::unique_ptr<Impl> (new Impl ());
 }
 
 //-----------------------------------------------------------------------------
 Animator::~Animator () noexcept
 {
-	Timer::removeAnimator (this);
+	Detail::Timer::removeAnimator (this);
 }
 
 //-----------------------------------------------------------------------------
 void Animator::addAnimation (CView* view, IdStringPtr name, IAnimationTarget* target, ITimingFunction* timingFunction, DoneFunction notification)
 {
-	if (animations.empty ())
-		Timer::addAnimator (this);
-	removeAnimation (view, name); // cancel animation with same view and name
-	animations.emplace_back (makeOwned<Animation> (view, name, target, timingFunction, std::move (notification)));
-	#if DEBUG_LOG
+	if (pImpl->animations.empty ())
+		Detail::Timer::addAnimator (this);
+	removeAnimation (view, name);
+	pImpl->animations.add (makeOwned<Detail::Animation> (view, name, target, timingFunction, std::move (notification)));
+#if DEBUG_LOG
 	DebugPrint ("new animation added: %p - %s\n", view, name);
-	#endif
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -279,8 +319,7 @@ void Animator::addAnimation (CView* view, IdStringPtr name, IAnimationTarget* ta
 //-----------------------------------------------------------------------------
 void Animator::removeAnimation (CView* view, IdStringPtr name)
 {
-	for (auto& animation : animations)
-	{
+	pImpl->animations.forEach ([&] (const SharedPointer<Detail::Animation>& animation) {
 		if (animation->view == view && animation->name == name)
 		{
 #if DEBUG_LOG
@@ -289,121 +328,67 @@ void Animator::removeAnimation (CView* view, IdStringPtr name)
 			if (animation->done == false)
 			{
 				animation->done = true;
-				animation->target->animationFinished (view, name, true);
+				animation->animationTarget->animationFinished (view, name, true);
 			}
-			removeAnimation (animation);
-			break;
+			pImpl->animations.remove (animation);
 		}
-	}
+	});
 }
 
 //-----------------------------------------------------------------------------
 void Animator::removeAnimations (CView* view)
 {
-	AnimationList::iterator it = animations.begin ();
-	while (it != animations.end ())
-	{
-		Animation* animation = *it++;
+	pImpl->animations.forEach ([&] (const SharedPointer<Detail::Animation>& animation) {
 		if (animation->view == view)
 		{
+#if DEBUG_LOG
+			DebugPrint ("animation removed: %p - %s\n", view, animation->name.data ());
+#endif
 			if (animation->done == false)
 			{
 				animation->done = true;
-				animation->target->animationFinished (animation->view, animation->name.c_str (), true);
+				animation->animationTarget->animationFinished (view, animation->name.data (), true);
 			}
-			removeAnimation (animation);
+			pImpl->animations.remove (animation);
 		}
-	}
-}
-
-//-----------------------------------------------------------------------------
-void Animator::removeAnimation (Animation* a)
-{
-	if (inTimer)
-	{
-		toRemove.emplace_back (a);
-		toRemove.unique ();
-	}
-	else
-	{
-		animations.remove (a);
-	}
+	});
 }
 
 //-----------------------------------------------------------------------------
 void Animator::onTimer ()
 {
 	auto selfGuard = shared (this);
-	inTimer = true;
 	uint32_t currentTicks = IPlatformFrame::getTicks ();
-	for (AnimationList::iterator it = animations.begin (), end = animations.end (); it != end;)
-	{
-		SharedPointer<Animation> a (*it);
-		if (a->startTime == 0)
+	pImpl->animations.forEach ([&] (SharedPointer<Detail::Animation>& animation) {
+		if (animation->startTime == 0)
 		{
-		#if DEBUG_LOG
-			DebugPrint ("animation start: %p - %s\n", a->view.cast<CView>(), a->name.c_str ());
-		#endif
-			a->target->animationStart (a->view, a->name.c_str ());
-			a->startTime = currentTicks;
+#if DEBUG_LOG
+			DebugPrint ("animation start: %p - %s\n", animation->view.cast<CView>(), animation->name.data ());
+#endif
+			animation->animationTarget->animationStart (animation->view, animation->name.data ());
+			animation->startTime = currentTicks;
 		}
-		uint32_t time = currentTicks - a->startTime;
-		float pos = a->timingFunction->getPosition (time);
-		if (pos != a->lastPos)
+		uint32_t time = currentTicks - animation->startTime;
+		float pos = animation->timingFunction->getPosition (time);
+		if (pos != animation->lastPos)
 		{
-			a->target->animationTick (a->view, a->name.c_str (), pos);
-			a->lastPos = pos;
+			animation->animationTarget->animationTick (animation->view, animation->name.data (), pos);
+			animation->lastPos = pos;
 		}
-		if (a->timingFunction->isDone (time))
+		if (animation->timingFunction->isDone (time))
 		{
-			a->done = true;
-			a->target->animationFinished (a->view, a->name.c_str (), false);
-		#if DEBUG_LOG
-			DebugPrint ("animation finished: %p - %s\n", a->view.cast<CView>(), a->name.c_str ());
-		#endif
-			it = animations.erase (it);
+			animation->done = true;
+			animation->animationTarget->animationFinished (animation->view, animation->name.data (), false);
+#if DEBUG_LOG
+			DebugPrint ("animation finished: %p - %s\n", animation->view.cast<CView>(), animation->name.data ());
+#endif
+			pImpl->animations.remove (animation);
 		}
-		else
-			++it;
-	}
-	inTimer = false;
-	for (auto& animation : toRemove)
-		removeAnimation (animation);
-	toRemove.clear ();
-	if (animations.empty ())
-		Timer::removeAnimator (this);
+	});
+	if (pImpl->animations.empty ())
+		Detail::Timer::removeAnimator (this);
 }
 
 IdStringPtr kMsgAnimationFinished = "kMsgAnimationFinished";
-
-//-----------------------------------------------------------------------------
-Animator::Animation::Animation (CView* view, const std::string& name, IAnimationTarget* at, ITimingFunction* t, DoneFunction&& notification)
-: name (name)
-, view (view)
-, target (at)
-, timingFunction (t)
-, notification (std::move (notification))
-, startTime (0)
-, lastPos (-1)
-, done (false)
-{
-}
-
-//-----------------------------------------------------------------------------
-Animator::Animation::~Animation () noexcept
-{
-	if (notification)
-		notification (view, name.c_str (), target);
-	auto obj = dynamic_cast<IReference*> (target);
-	if (obj)
-		obj->forget ();
-	else
-		delete target;
-	obj = dynamic_cast<IReference*> (timingFunction);
-	if (obj)
-		obj->forget ();
-	else
-		delete timingFunction;
-}
 
 }} // namespaces
