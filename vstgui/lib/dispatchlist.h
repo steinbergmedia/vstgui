@@ -33,6 +33,8 @@ public:
 private:
 	using Array = std::vector<T*>;
 
+	void postForEach ();
+
 	Array entries;
 	Array toRemove;
 	Array toAdd;
@@ -41,13 +43,13 @@ private:
 
 //------------------------------------------------------------------------
 template <typename T>
-DispatchList<T>::DispatchList ()
+inline DispatchList<T>::DispatchList ()
 {
 }
 
 //------------------------------------------------------------------------
 template <typename T>
-void DispatchList<T>::add (T* obj)
+inline void DispatchList<T>::add (T* obj)
 {
 	if (inForEach)
 		toAdd.emplace_back (obj);
@@ -57,7 +59,7 @@ void DispatchList<T>::add (T* obj)
 
 //------------------------------------------------------------------------
 template <typename T>
-void DispatchList<T>::remove (T* obj)
+inline void DispatchList<T>::remove (T* obj)
 {
 	if (inForEach)
 		toRemove.emplace_back (obj);
@@ -71,15 +73,33 @@ void DispatchList<T>::remove (T* obj)
 
 //------------------------------------------------------------------------
 template <typename T>
-bool DispatchList<T>::empty () const
+inline bool DispatchList<T>::empty () const
 {
 	return entries.empty ();
 }
 
 //------------------------------------------------------------------------
 template <typename T>
+inline void DispatchList<T>::postForEach ()
+{
+	if (!toAdd.empty ())
+	{
+		for (auto& it : toAdd)
+			add (it);
+		toAdd.clear ();
+	}
+	if (!toRemove.empty ())
+	{
+		for (auto& it : toRemove)
+			remove (it);
+		toRemove.clear ();
+	}
+}
+
+//------------------------------------------------------------------------
+template <typename T>
 template <typename Procedure>
-void DispatchList<T>::forEach (Procedure proc)
+inline void DispatchList<T>::forEach (Procedure proc)
 {
 	if (entries.empty ())
 		return;
@@ -90,20 +110,13 @@ void DispatchList<T>::forEach (Procedure proc)
 		proc (it);
 	inForEach = wasInForEach;
 	if (!inForEach)
-	{
-		for (auto& it : toAdd)
-			add (it);
-		for (auto& it : toRemove)
-			remove (it);
-		toAdd.clear ();
-		toRemove.clear ();
-	}
+		postForEach ();
 }
 
 //------------------------------------------------------------------------
 template <typename T>
 template <typename Procedure>
-void DispatchList<T>::forEachReverse (Procedure proc)
+inline void DispatchList<T>::forEachReverse (Procedure proc)
 {
 	if (entries.empty ())
 		return;
@@ -114,14 +127,7 @@ void DispatchList<T>::forEachReverse (Procedure proc)
 		proc (*it);
 	inForEach = wasInForEach;
 	if (!inForEach)
-	{
-		for (auto& it : toAdd)
-			add (it);
-		for (auto& it : toRemove)
-			remove (it);
-		toAdd.clear ();
-		toRemove.clear ();
-	}
+		postForEach ();
 }
 
 //------------------------------------------------------------------------
