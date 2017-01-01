@@ -218,6 +218,23 @@ protected:
 	static Timer* gInstance;
 };
 Timer* Timer::gInstance = nullptr;
+
+//-----------------------------------------------------------------------------
+class Animator::Animation : public NonAtomicReferenceCounted
+{
+public:
+	Animation (CView* view, const std::string& name, IAnimationTarget* at, ITimingFunction* t, DoneFunction&& notification);
+	~Animation () noexcept override;
+	
+	std::string name;
+	SharedPointer<CView> view;
+	IAnimationTarget* target;
+	ITimingFunction* timingFunction;
+	DoneFunction notification;
+	uint32_t startTime;
+	float lastPos;
+	bool done;
+};
 ///@endcond
 
 //-----------------------------------------------------------------------------
