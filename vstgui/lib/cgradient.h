@@ -72,12 +72,12 @@ public:
 	
 	virtual void addColorStop (const std::pair<double, CColor>& colorStop)
 	{
-		colorStops.insert (colorStop);
+		colorStops.emplace (colorStop);
 	}
 
 	virtual void addColorStop (std::pair<double, CColor>&& colorStop)
 	{
-		colorStops.insert (std::move (colorStop));
+		colorStops.emplace (std::move (colorStop));
 	}
 	
 	const ColorStopMap& getColorStops () const { return colorStops; }
