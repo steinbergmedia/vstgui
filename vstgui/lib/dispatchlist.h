@@ -27,6 +27,9 @@ public:
 	template <typename Procedure>
 	void forEach (Procedure proc);
 
+	template <typename Procedure>
+	void forEachReverse (Procedure proc);
+
 private:
 	using Array = std::vector<T*>;
 
@@ -85,6 +88,30 @@ void DispatchList<T>::forEach (Procedure proc)
 	inForEach = true;
 	for (auto& it : entries)
 		proc (it);
+	inForEach = wasInForEach;
+	if (!inForEach)
+	{
+		for (auto& it : toAdd)
+			add (it);
+		for (auto& it : toRemove)
+			remove (it);
+		toAdd.clear ();
+		toRemove.clear ();
+	}
+}
+
+//------------------------------------------------------------------------
+template <typename T>
+template <typename Procedure>
+void DispatchList<T>::forEachReverse (Procedure proc)
+{
+	if (entries.empty ())
+		return;
+	
+	bool wasInForEach = inForEach;
+	inForEach = true;
+	for (auto it = entries.rbegin (); it != entries.rend (); ++it)
+		proc (*it);
 	inForEach = wasInForEach;
 	if (!inForEach)
 	{

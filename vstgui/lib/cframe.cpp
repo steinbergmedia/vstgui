@@ -75,32 +75,28 @@ private:
 struct CFrame::Impl
 {
 	using ViewList = std::list<CView*>;
-	using KeyboardHookList = std::list<IKeyboardHook*>;
-	using MouseObserverList = std::list<IMouseObserver*>;
-	using ScaleFactorChangedListenerList = std::list<IScaleFactorChangedListener*>;
-	using WindowActiveStateChangeViews = std::vector<CView*>;
 
 	SharedPointer<IPlatformFrame> platformFrame;
-	VSTGUIEditorInterface* pEditor {nullptr};
-	IViewAddedRemovedObserver* pViewAddedRemovedObserver {nullptr};
+	VSTGUIEditorInterface* editor {nullptr};
+	IViewAddedRemovedObserver* viewAddedRemovedObserver {nullptr};
 	SharedPointer<CTooltipSupport> tooltips;
 	SharedPointer<Animation::Animator> animator;
-	CView* pModalView {nullptr};
-	CView* pFocusView {nullptr};
-	CView* pActiveFocusView {nullptr};
+	CView* modalView {nullptr};
+	CView* focusView {nullptr};
+	CView* activeFocusView {nullptr};
 	CollectInvalidRects* collectInvalidRects {nullptr};
-	KeyboardHookList* pKeyboardHooks {nullptr};
-	MouseObserverList* pMouseObservers {nullptr};
-	ScaleFactorChangedListenerList* pScaleFactorChangedListenerList {nullptr};
 	
-	ViewList pMouseViews;
-	WindowActiveStateChangeViews windowActiveStateChangeViews;
+	ViewList mouseViews;
+	DispatchList<CView> windowActiveStateChangeViews;
+	DispatchList<IScaleFactorChangedListener> scaleFactorChangedListenerList;
+	DispatchList<IMouseObserver> mouseObservers;
 	DispatchList<IFocusViewObserver> focusViewObservers;
+	DispatchList<IKeyboardHook> keyboardHooks;
 
 	double userScaleFactor {1.};
 	double platformScaleFactor {1.};
-	bool bActive {false};
-	bool bWindowActive {false};
+	bool active {false};
+	bool windowActive {false};
 };
 
 //-----------------------------------------------------------------------------
@@ -118,7 +114,7 @@ CFrame::CFrame (const CRect& inSize, VSTGUIEditorInterface* inEditor)
 : CViewContainer (inSize)
 {
 	pImpl = new Impl;
-	pImpl->pEditor = inEditor;
+	pImpl->editor = inEditor;
 
 	setParentFrame (this);
 }
@@ -138,29 +134,22 @@ void CFrame::beforeDelete ()
 	pImpl->tooltips = nullptr;
 	pImpl->animator = nullptr;
 
-	if (pImpl->pScaleFactorChangedListenerList)
-	{
 #if DEBUG
+	if (!pImpl->scaleFactorChangedListenerList.empty ())
+	{
 		DebugPrint ("Warning: Scale Factor Changed Listeners are not cleaned up correctly.\n If you register a change listener you must also unregister it !\n");
-#endif
-		delete pImpl->pScaleFactorChangedListenerList;
 	}
 	
-	if (pImpl->pMouseObservers)
+	if (!pImpl->mouseObservers.empty ())
 	{
-	#if DEBUG
 		DebugPrint ("Warning: Mouse Observers are not cleaned up correctly.\n If you register a mouse oberver you must also unregister it !\n");
-	#endif
-		delete pImpl->pMouseObservers;
 	}
 
-	if (pImpl->pKeyboardHooks)
+	if (!pImpl->keyboardHooks.empty ())
 	{
-	#if DEBUG
 		DebugPrint ("Warning: Keyboard Hooks are not cleaned up correctly.\n If you register a keyboard hook you must also unregister it !\n");
-	#endif
-		delete pImpl->pKeyboardHooks;
 	}
+#endif
 
 	pImpl->platformFrame = nullptr;
 
@@ -177,8 +166,8 @@ void CFrame::close ()
 {
 	clearMouseViews (CPoint (0, 0), 0, false);
 
-	if (pImpl->pModalView)
-		removeView (pImpl->pModalView, false);
+	if (pImpl->modalView)
+		removeView (pImpl->modalView, false);
 	setCursor (kCursorDefault);
 	setParentFrame (nullptr);
 	removeAll ();
@@ -306,8 +295,8 @@ void CFrame::drawRect (CDrawContext* pContext, const CRect& updateRect)
 void CFrame::clearMouseViews (const CPoint& where, const CButtonState& buttons, bool callMouseExit)
 {
 	CPoint lp;
-	auto it = pImpl->pMouseViews.rbegin ();
-	while (it != pImpl->pMouseViews.rend ())
+	auto it = pImpl->mouseViews.rbegin ();
+	while (it != pImpl->mouseViews.rend ())
 	{
 		if (callMouseExit)
 		{
@@ -326,15 +315,15 @@ void CFrame::clearMouseViews (const CPoint& where, const CButtonState& buttons, 
 		(*it)->forget ();
 		++it;
 	}
-	pImpl->pMouseViews.clear ();
+	pImpl->mouseViews.clear ();
 }
 
 //-----------------------------------------------------------------------------
 void CFrame::removeFromMouseViews (CView* view)
 {
 	bool found = false;
-	auto it = pImpl->pMouseViews.begin ();
-	while (it != pImpl->pMouseViews.end ())
+	auto it = pImpl->mouseViews.begin ();
+	while (it != pImpl->mouseViews.end ())
 	{
 		if (found || (*it) == view)
 		{
@@ -344,7 +333,7 @@ void CFrame::removeFromMouseViews (CView* view)
 			callMouseObserverMouseExited ((*it));
 
 			(*it)->forget ();
-			pImpl->pMouseViews.erase (it++);
+			pImpl->mouseViews.erase (it++);
 			found = true;
 		}
 		else
@@ -359,7 +348,7 @@ void CFrame::checkMouseViews (const CPoint& where, const CButtonState& buttons)
 		return;
 	CPoint lp;
 	CView* mouseView = getViewAt (where, GetViewOptions (GetViewOptions::kDeep|GetViewOptions::kMouseEnabled|GetViewOptions::kIncludeViewContainer));
-	CView* currentMouseView = pImpl->pMouseViews.empty () == false ? pImpl->pMouseViews.back () : nullptr;
+	CView* currentMouseView = pImpl->mouseViews.empty () == false ? pImpl->mouseViews.back () : nullptr;
 	if (currentMouseView == mouseView)
 		return; // no change
 
@@ -389,10 +378,10 @@ void CFrame::checkMouseViews (const CPoint& where, const CButtonState& buttons)
 		DebugPrint ("mouseExited : %p\n", currentMouseView);
 	#endif
 		currentMouseView->forget ();
-		pImpl->pMouseViews.remove (currentMouseView);
+		pImpl->mouseViews.remove (currentMouseView);
 	}
-	auto it = pImpl->pMouseViews.rbegin ();
-	while (it != pImpl->pMouseViews.rend ())
+	auto it = pImpl->mouseViews.rbegin ();
+	while (it != pImpl->mouseViews.rend ())
 	{
 		vc = static_cast<CViewContainer*> ((*it));
 		if (vc == mouseView)
@@ -407,27 +396,27 @@ void CFrame::checkMouseViews (const CPoint& where, const CButtonState& buttons)
 			DebugPrint ("mouseExited : %p\n", vc);
 		#endif
 			vc->forget ();
-			pImpl->pMouseViews.erase (--it.base ());
+			pImpl->mouseViews.erase (--it.base ());
 		}
 		else
 			break;
 	}
-	vc = pImpl->pMouseViews.empty () == false ? pImpl->pMouseViews.back ()->asViewContainer () : nullptr;
+	vc = pImpl->mouseViews.empty () == false ? pImpl->mouseViews.back ()->asViewContainer () : nullptr;
 	if (vc)
 	{
-		auto it2 = pImpl->pMouseViews.end ();
+		auto it2 = pImpl->mouseViews.end ();
 		--it2;
 		CView* container = mouseView;
 		while ((vc = static_cast<CViewContainer*> (container->getParentView ())) != *it2)
 		{
-			pImpl->pMouseViews.emplace_back (vc);
+			pImpl->mouseViews.emplace_back (vc);
 			vc->remember ();
 			container = vc;
 		}
-		pImpl->pMouseViews.emplace_back (mouseView);
+		pImpl->mouseViews.emplace_back (mouseView);
 		mouseView->remember ();
 		++it2;
-		while (it2 != pImpl->pMouseViews.end ())
+		while (it2 != pImpl->mouseViews.end ())
 		{
 			lp = where;
 			(*it2)->frameToLocal (lp);
@@ -442,17 +431,17 @@ void CFrame::checkMouseViews (const CPoint& where, const CButtonState& buttons)
 	else
 	{
 		// must be pMouseViews.size () == 0
-		vstgui_assert (pImpl->pMouseViews.empty ());
-		pImpl->pMouseViews.emplace_back (mouseView);
+		vstgui_assert (pImpl->mouseViews.empty ());
+		pImpl->mouseViews.emplace_back (mouseView);
 		mouseView->remember ();
 		while ((vc = static_cast<CViewContainer*> (mouseView->getParentView ())) != this)
 		{
-			pImpl->pMouseViews.push_front (vc);
+			pImpl->mouseViews.push_front (vc);
 			vc->remember ();
 			mouseView = vc;
 		}
-		auto it2 = pImpl->pMouseViews.begin ();
-		while (it2 != pImpl->pMouseViews.end ())
+		auto it2 = pImpl->mouseViews.begin ();
+		while (it2 != pImpl->mouseViews.end ())
 		{
 			lp = where;
 			(*it2)->frameToLocal (lp);
@@ -469,13 +458,13 @@ void CFrame::checkMouseViews (const CPoint& where, const CButtonState& buttons)
 //------------------------------------------------------------------------
 bool CFrame::hitTestSubViews (const CPoint& where, const CButtonState& buttons)
 {
-	if (pImpl->pModalView)
+	if (pImpl->modalView)
 	{
 		CPoint where2 (where);
 		getTransform ().inverse ().transform (where2);
-		if (pImpl->pModalView->isVisible () && pImpl->pModalView->getMouseEnabled () && pImpl->pModalView->hitTest (where2, buttons))
+		if (pImpl->modalView->isVisible () && pImpl->modalView->getMouseEnabled () && pImpl->modalView->hitTest (where2, buttons))
 		{
-			if (auto viewContainer = pImpl->pModalView->asViewContainer ())
+			if (auto viewContainer = pImpl->modalView->asViewContainer ())
 			{
 				return viewContainer->hitTestSubViews (where2, buttons);
 			}
@@ -494,7 +483,7 @@ CMouseEventResult CFrame::onMouseDown (CPoint &where, const CButtonState& button
 
 	// reset views
 	setMouseDownView (nullptr);
-	if (pImpl->pFocusView && dynamic_cast<CTextEdit*> (pImpl->pFocusView))
+	if (pImpl->focusView && dynamic_cast<CTextEdit*> (pImpl->focusView))
 		setFocusView (nullptr);
 
 	if (pImpl->tooltips)
@@ -504,16 +493,16 @@ CMouseEventResult CFrame::onMouseDown (CPoint &where, const CButtonState& button
 	if (result != kMouseEventNotHandled)
 		return result;
 
-	if (pImpl->pModalView)
+	if (pImpl->modalView)
 	{
-		CBaseObjectGuard rg (pImpl->pModalView);
+		CBaseObjectGuard rg (pImpl->modalView);
 
-		if (pImpl->pModalView->isVisible () && pImpl->pModalView->getMouseEnabled () && pImpl->pModalView->hitTest (where2, buttons))
+		if (pImpl->modalView->isVisible () && pImpl->modalView->getMouseEnabled () && pImpl->modalView->hitTest (where2, buttons))
 		{
-			CMouseEventResult result = pImpl->pModalView->onMouseDown (where2, buttons);
+			CMouseEventResult result = pImpl->modalView->onMouseDown (where2, buttons);
 			if (result == kMouseEventHandled)
 			{
-				setMouseDownView (pImpl->pModalView);
+				setMouseDownView (pImpl->modalView);
 				return kMouseEventHandled;
 			}
 		}
@@ -547,10 +536,10 @@ CMouseEventResult CFrame::onMouseMoved (CPoint &where, const CButtonState& butto
 	if (result != kMouseEventNotHandled)
 		return result;
 
-	if (pImpl->pModalView)
+	if (pImpl->modalView)
 	{
-		CBaseObjectGuard rg (pImpl->pModalView);
-		result = pImpl->pModalView->onMouseMoved (where2, buttons);
+		CBaseObjectGuard rg (pImpl->modalView);
+		result = pImpl->modalView->onMouseMoved (where2, buttons);
 	}
 	else
 	{
@@ -559,8 +548,8 @@ CMouseEventResult CFrame::onMouseMoved (CPoint &where, const CButtonState& butto
 		if (result == kMouseEventNotHandled)
 		{
 			CButtonState buttons2 = (buttons & (kShift | kControl | kAlt | kApple));
-			auto it = pImpl->pMouseViews.rbegin ();
-			while (it != pImpl->pMouseViews.rend ())
+			auto it = pImpl->mouseViews.rbegin ();
+			while (it != pImpl->mouseViews.rend ())
 			{
 				p = where2;
 				(*it)->getParentView ()->frameToLocal (p);
@@ -593,14 +582,14 @@ int32_t CFrame::onKeyDown (VstKeyCode& keyCode)
 {
 	int32_t result = keyboardHooksOnKeyDown (keyCode);
 
-	if (result == -1 && pImpl->pFocusView)
+	if (result == -1 && pImpl->focusView)
 	{
-		CBaseObjectGuard og (pImpl->pFocusView);
-		if (pImpl->pFocusView->getMouseEnabled ())
-			result = pImpl->pFocusView->onKeyDown (keyCode);
+		CBaseObjectGuard og (pImpl->focusView);
+		if (pImpl->focusView->getMouseEnabled ())
+			result = pImpl->focusView->onKeyDown (keyCode);
 		if (result == -1)
 		{
-			CView* parent = pImpl->pFocusView->getParentView ();
+			CView* parent = pImpl->focusView->getParentView ();
 			while (parent != this && result == -1)
 			{
 				if (parent->getMouseEnabled ())
@@ -610,14 +599,14 @@ int32_t CFrame::onKeyDown (VstKeyCode& keyCode)
 		}
 	}
 
-	if (result == -1 && pImpl->pModalView)
+	if (result == -1 && pImpl->modalView)
 	{
-		CBaseObjectGuard og (pImpl->pModalView);
-		result = pImpl->pModalView->onKeyDown (keyCode);
+		CBaseObjectGuard og (pImpl->modalView);
+		result = pImpl->modalView->onKeyDown (keyCode);
 	}
 
 	if (result == -1 && keyCode.virt == VKEY_TAB)
-		result = advanceNextFocusView (pImpl->pFocusView, (keyCode.modifier & MODIFIER_SHIFT) ? true : false) ? 1 : -1;
+		result = advanceNextFocusView (pImpl->focusView, (keyCode.modifier & MODIFIER_SHIFT) ? true : false) ? 1 : -1;
 
 	return result;
 }
@@ -627,13 +616,13 @@ int32_t CFrame::onKeyUp (VstKeyCode& keyCode)
 {
 	int32_t result = keyboardHooksOnKeyUp (keyCode);
 
-	if (result == -1 && pImpl->pFocusView)
+	if (result == -1 && pImpl->focusView)
 	{
-		if (pImpl->pFocusView->getMouseEnabled ())
-			result = pImpl->pFocusView->onKeyUp (keyCode);
+		if (pImpl->focusView->getMouseEnabled ())
+			result = pImpl->focusView->onKeyUp (keyCode);
 		if (result == -1)
 		{
-			CView* parent = pImpl->pFocusView->getParentView ();
+			CView* parent = pImpl->focusView->getParentView ();
 			while (parent != this && result == -1)
 			{
 				if (parent->getMouseEnabled ())
@@ -643,8 +632,8 @@ int32_t CFrame::onKeyUp (VstKeyCode& keyCode)
 		}
 	}
 
-	if (result == -1 && pImpl->pModalView)
-		result = pImpl->pModalView->onKeyUp (keyCode);
+	if (result == -1 && pImpl->modalView)
+		result = pImpl->modalView->onKeyUp (keyCode);
 
 	return result;
 }
@@ -724,7 +713,7 @@ int32_t CFrame::kDefaultKnobMode = kCircularMode;
 //-----------------------------------------------------------------------------
 int32_t CFrame::getKnobMode () const
 {
-	int32_t result = pImpl->pEditor ? pImpl->pEditor->getKnobMode () : -1;
+	int32_t result = pImpl->editor ? pImpl->editor->getKnobMode () : -1;
 	if (result == -1)
 		result = kDefaultKnobMode;
 	return result;
@@ -840,30 +829,30 @@ bool CFrame::getSize (CRect& outSize) const
  */
 bool CFrame::setModalView (CView* pView)
 {
-	if (pView == nullptr && pImpl->pModalView == nullptr)
+	if (pView == nullptr && pImpl->modalView == nullptr)
 		return true;
 
 	// If there is a modal view or the view 
-	if ((pView && pImpl->pModalView) || (pView && pView->isAttached ()))
+	if ((pView && pImpl->modalView) || (pView && pView->isAttached ()))
 		return false;
 
-	if (pImpl->pModalView)
+	if (pImpl->modalView)
 	{
-		removeView (pImpl->pModalView, false);
+		removeView (pImpl->modalView, false);
 	}
 	
-	pImpl->pModalView = pView;
+	pImpl->modalView = pView;
 
-	if (pImpl->pModalView)
+	if (pImpl->modalView)
 	{
-		bool result = addView (pImpl->pModalView);
+		bool result = addView (pImpl->modalView);
 		if (result)
 		{
 			clearMouseViews (CPoint (0, 0), 0, true);
-			if (auto container = pImpl->pModalView->asViewContainer ())
+			if (auto container = pImpl->modalView->asViewContainer ())
 				container->advanceNextFocusView (nullptr, false);
 			else
-				setFocusView (pImpl->pModalView->wantsFocus () ? pImpl->pModalView : nullptr);
+				setFocusView (pImpl->modalView->wantsFocus () ? pImpl->modalView : nullptr);
 		}
 		return result;
 	}
@@ -878,20 +867,20 @@ bool CFrame::setModalView (CView* pView)
 }
 
 //-----------------------------------------------------------------------------
-CView* CFrame::getModalView () const { return pImpl->pModalView; }
+CView* CFrame::getModalView () const { return pImpl->modalView; }
 
 //-----------------------------------------------------------------------------
 void CFrame::beginEdit (int32_t index)
 {
-	if (pImpl->pEditor)
-		pImpl->pEditor->beginEdit (index);
+	if (pImpl->editor)
+		pImpl->editor->beginEdit (index);
 }
 
 //-----------------------------------------------------------------------------
 void CFrame::endEdit (int32_t index)
 {
-	if (pImpl->pEditor)
-		pImpl->pEditor->endEdit (index);
+	if (pImpl->editor)
+		pImpl->editor->endEdit (index);
 }
 
 //-----------------------------------------------------------------------------
@@ -944,13 +933,13 @@ void CFrame::onViewRemoved (CView* pView)
 {
 	removeFromMouseViews (pView);
 
-	if (pImpl->pActiveFocusView == pView)
-		pImpl->pActiveFocusView = nullptr;
-	if (pImpl->pFocusView == pView)
+	if (pImpl->activeFocusView == pView)
+		pImpl->activeFocusView = nullptr;
+	if (pImpl->focusView == pView)
 		setFocusView (nullptr);
 	if (auto container = pView->asViewContainer ())
 	{
-		if (container->isChild (pImpl->pFocusView, true))
+		if (container->isChild (pImpl->focusView, true))
 			setFocusView (nullptr);
 	}
 	if (getViewAddedRemovedObserver ())
@@ -958,10 +947,7 @@ void CFrame::onViewRemoved (CView* pView)
 	if (pImpl->animator)
 		pImpl->animator->removeAnimations (pView);
 	if (pView->wantsWindowActiveStateChangeNotification ())
-	{
-		pImpl->windowActiveStateChangeViews.erase (
-		    std::find (pImpl->windowActiveStateChangeViews.begin (), pImpl->windowActiveStateChangeViews.end (), pView));
-	}
+		pImpl->windowActiveStateChangeViews.remove (pView);
 }
 
 //-----------------------------------------------------------------------------
@@ -974,8 +960,8 @@ void CFrame::onViewAdded (CView* pView)
 		getViewAddedRemovedObserver ()->onViewAdded (this, pView);
 	if (pView->wantsWindowActiveStateChangeNotification ())
 	{
-		pImpl->windowActiveStateChangeViews.emplace_back (pView);
-		pView->onWindowActivate (pImpl->bWindowActive);
+		pImpl->windowActiveStateChangeViews.add (pView);
+		pView->onWindowActivate (pImpl->windowActive);
 	}
 }
 
@@ -986,33 +972,33 @@ void CFrame::onViewAdded (CView* pView)
 void CFrame::setFocusView (CView *pView)
 {
 	static bool recursion = false;
-	if (pView == pImpl->pFocusView || (recursion && pImpl->pFocusView != nullptr))
+	if (pView == pImpl->focusView || (recursion && pImpl->focusView != nullptr))
 		return;
 
-	if (!pImpl->bActive)
+	if (!pImpl->active)
 	{
-		pImpl->pActiveFocusView = pView;
+		pImpl->activeFocusView = pView;
 		return;
 	}
 
 	recursion = true;
 
-	CView *pOldFocusView = pImpl->pFocusView;
+	CView *pOldFocusView = pImpl->focusView;
 	if (pView == nullptr  || (pView && pView->isAttached () == false))
-		pImpl->pFocusView = nullptr;
+		pImpl->focusView = nullptr;
 	else
-		pImpl->pFocusView = pView;
-	if (pImpl->pFocusView && pImpl->pFocusView->wantsFocus ())
+		pImpl->focusView = pView;
+	if (pImpl->focusView && pImpl->focusView->wantsFocus ())
 	{
-		pImpl->pFocusView->invalid ();
+		pImpl->focusView->invalid ();
 
-		CView* receiver = pImpl->pFocusView->getParentView ();
+		CView* receiver = pImpl->focusView->getParentView ();
 		while (receiver != this && receiver != nullptr)
 		{
-			receiver->notify (pImpl->pFocusView, kMsgNewFocusView);
+			receiver->notify (pImpl->focusView, kMsgNewFocusView);
 			receiver = receiver->getParentView ();
 		}
-		notify (pImpl->pFocusView, kMsgNewFocusView);
+		notify (pImpl->focusView, kMsgNewFocusView);
 	}
 
 	if (pOldFocusView)
@@ -1031,11 +1017,11 @@ void CFrame::setFocusView (CView *pView)
 		}
 		pOldFocusView->looseFocus ();
 	}
-	if (pImpl->pFocusView && pImpl->pFocusView->wantsFocus ())
-		pImpl->pFocusView->takeFocus ();
+	if (pImpl->focusView && pImpl->focusView->wantsFocus ())
+		pImpl->focusView->takeFocus ();
 	
 	pImpl->focusViewObservers.forEach ([&] (IFocusViewObserver* observer) {
-		observer->onFocusViewChanged (this, pImpl->pFocusView, pOldFocusView);
+		observer->onFocusViewChanged (this, pImpl->focusView, pOldFocusView);
 	});
 	
 	recursion = false;
@@ -1044,15 +1030,15 @@ void CFrame::setFocusView (CView *pView)
 //-----------------------------------------------------------------------------
 CView* CFrame::getFocusView () const
 {
-	return pImpl->pFocusView;
+	return pImpl->focusView;
 }
 
 //-----------------------------------------------------------------------------
 bool CFrame::advanceNextFocusView (CView* oldFocus, bool reverse)
 {
-	if (pImpl->pModalView)
+	if (pImpl->modalView)
 	{
-		if (auto container = pImpl->pModalView->asViewContainer ())
+		if (auto container = pImpl->modalView->asViewContainer ())
 		{
 			if (oldFocus == nullptr || container->isChild (oldFocus, true) == false)
 				return container->advanceNextFocusView (nullptr, reverse);
@@ -1078,18 +1064,18 @@ bool CFrame::advanceNextFocusView (CView* oldFocus, bool reverse)
 				}
 			}
 		}
-		else if (oldFocus != pImpl->pModalView)
+		else if (oldFocus != pImpl->modalView)
 		{
-			setFocusView (pImpl->pModalView);
+			setFocusView (pImpl->modalView);
 			return true;
 		}
 		return false; // currently not supported, but should be done sometime
 	}
 	if (oldFocus == nullptr)
 	{
-		if (pImpl->pFocusView == nullptr)
+		if (pImpl->focusView == nullptr)
 			return CViewContainer::advanceNextFocusView (nullptr, reverse);
-		oldFocus = pImpl->pFocusView;
+		oldFocus = pImpl->focusView;
 	}
 	if (isChild (oldFocus))
 	{
@@ -1122,8 +1108,8 @@ bool CFrame::advanceNextFocusView (CView* oldFocus, bool reverse)
 //-----------------------------------------------------------------------------
 bool CFrame::removeView (CView* pView, bool withForget)
 {
-	if (pImpl->pModalView == pView)
-		pImpl->pModalView = nullptr;
+	if (pImpl->modalView == pView)
+		pImpl->modalView = nullptr;
 	return CViewContainer::removeView (pView, withForget);
 }
 
@@ -1131,12 +1117,12 @@ bool CFrame::removeView (CView* pView, bool withForget)
 bool CFrame::removeAll (bool withForget)
 {
 	setModalView (nullptr);
-	if (pImpl->pFocusView)
+	if (pImpl->focusView)
 	{
-		pImpl->pFocusView->looseFocus ();
-		pImpl->pFocusView = nullptr;
+		pImpl->focusView->looseFocus ();
+		pImpl->focusView = nullptr;
 	}
-	pImpl->pActiveFocusView = nullptr;
+	pImpl->activeFocusView = nullptr;
 	clearMouseViews (CPoint (0, 0), 0, false);
 	return CViewContainer::removeAll (withForget);
 }
@@ -1144,20 +1130,20 @@ bool CFrame::removeAll (bool withForget)
 //-----------------------------------------------------------------------------
 CView* CFrame::getViewAt (const CPoint& where, const GetViewOptions& options) const
 {
-	if (pImpl->pModalView)
+	if (pImpl->modalView)
 	{
 		CPoint where2 (where);
 		getTransform ().inverse ().transform (where2);
-		if (pImpl->pModalView->getViewSize ().pointInside (where2))
+		if (pImpl->modalView->getViewSize ().pointInside (where2))
 		{
 			if (options.deep ())
 			{
-				if (auto container = pImpl->pModalView->asViewContainer ())
+				if (auto container = pImpl->modalView->asViewContainer ())
 				{
 					return container->getViewAt (where2, options);
 				}
 			}
-			return pImpl->pModalView;
+			return pImpl->modalView;
 		}
 		return nullptr;
 	}
@@ -1167,13 +1153,13 @@ CView* CFrame::getViewAt (const CPoint& where, const GetViewOptions& options) co
 //-----------------------------------------------------------------------------
 CViewContainer* CFrame::getContainerAt (const CPoint& where, const GetViewOptions& options) const
 {
-	if (pImpl->pModalView)
+	if (pImpl->modalView)
 	{
 		CPoint where2 (where);
 		getTransform ().inverse ().transform (where2);
-		if (pImpl->pModalView->getViewSize ().pointInside (where2))
+		if (pImpl->modalView->getViewSize ().pointInside (where2))
 		{
-			if (auto container = pImpl->pModalView->asViewContainer ())
+			if (auto container = pImpl->modalView->asViewContainer ())
 			{
 				if (options.deep ())
 					return container->getContainerAt (where2, options);
@@ -1188,15 +1174,15 @@ CViewContainer* CFrame::getContainerAt (const CPoint& where, const GetViewOption
 //-----------------------------------------------------------------------------
 void CFrame::onActivate (bool state)
 {
-	if (pImpl->bActive != state)
+	if (pImpl->active != state)
 	{
 		if (state)
 		{
-			pImpl->bActive = true;
-			if (pImpl->pActiveFocusView)
+			pImpl->active = true;
+			if (pImpl->activeFocusView)
 			{
-				setFocusView (pImpl->pActiveFocusView);
-				pImpl->pActiveFocusView = nullptr;
+				setFocusView (pImpl->activeFocusView);
+				pImpl->activeFocusView = nullptr;
 			}
 			else
 				advanceNextFocusView (nullptr, false);
@@ -1205,9 +1191,9 @@ void CFrame::onActivate (bool state)
 		{
 			if (pImpl->tooltips)
 				pImpl->tooltips->hideTooltip ();
-			pImpl->pActiveFocusView = getFocusView ();
+			pImpl->activeFocusView = getFocusView ();
 			setFocusView (nullptr);
-			pImpl->bActive = false;
+			pImpl->active = false;
 		}
 	}
 }
@@ -1308,99 +1294,69 @@ void CFrame::invalidRect (const CRect& rect)
 //-----------------------------------------------------------------------------
 IViewAddedRemovedObserver* CFrame::getViewAddedRemovedObserver () const
 {
-	return pImpl->pViewAddedRemovedObserver;
+	return pImpl->viewAddedRemovedObserver;
 }
 
 //-----------------------------------------------------------------------------
 void CFrame::setViewAddedRemovedObserver (IViewAddedRemovedObserver* observer)
 {
-	pImpl->pViewAddedRemovedObserver = observer;
+	pImpl->viewAddedRemovedObserver = observer;
 }
 
 //-----------------------------------------------------------------------------
 void CFrame::registerKeyboardHook (IKeyboardHook* hook)
 {
-	if (pImpl->pKeyboardHooks == nullptr)
-		pImpl->pKeyboardHooks = new Impl::KeyboardHookList ();
-	pImpl->pKeyboardHooks->emplace_back (hook);
+	pImpl->keyboardHooks.add (hook);
 }
 
 //-----------------------------------------------------------------------------
 void CFrame::unregisterKeyboardHook (IKeyboardHook* hook)
 {
-	if (pImpl->pKeyboardHooks)
-	{
-		pImpl->pKeyboardHooks->remove (hook);
-		if (pImpl->pKeyboardHooks->empty ())
-		{
-			delete pImpl->pKeyboardHooks;
-			pImpl->pKeyboardHooks = nullptr;
-		}
-	}
+	pImpl->keyboardHooks.remove (hook);
 }
 
 //-----------------------------------------------------------------------------
 int32_t CFrame::keyboardHooksOnKeyDown (const VstKeyCode& key)
 {
-	if (pImpl->pKeyboardHooks)
-	{
-		for (auto it = pImpl->pKeyboardHooks->rbegin (); it != pImpl->pKeyboardHooks->rend ();)
+	int32_t result = -1;
+	pImpl->keyboardHooks.forEachReverse ([&] (IKeyboardHook* hook) {
+		if (result <= 0)
 		{
-			IKeyboardHook* hook = *it;
-			++it;
-			int32_t result = hook->onKeyDown (key, this);
-			if (result > 0)
-				return result;
+			result = hook->onKeyDown (key, this);
 		}
-	}
-	return -1;
+	});
+	return result;
 }
 
 //-----------------------------------------------------------------------------
 int32_t CFrame::keyboardHooksOnKeyUp (const VstKeyCode& key)
 {
-	if (pImpl->pKeyboardHooks)
-	{
-		for (auto it = pImpl->pKeyboardHooks->rbegin (); it != pImpl->pKeyboardHooks->rend ();)
+	int32_t result = -1;
+	pImpl->keyboardHooks.forEachReverse ([&] (IKeyboardHook* hook) {
+		if (result <= 0)
 		{
-			IKeyboardHook* hook = *it;
-			++it;
-			int32_t result = hook->onKeyUp (key, this);
-			if (result > 0)
-				return result;
+			result = hook->onKeyUp (key, this);
 		}
-	}
-	return -1;
+	});
+	return result;
 }
 
 //-----------------------------------------------------------------------------
 void CFrame::registerScaleFactorChangedListeneer (IScaleFactorChangedListener* listener)
 {
-	if (pImpl->pScaleFactorChangedListenerList == nullptr)
-		pImpl->pScaleFactorChangedListenerList = new Impl::ScaleFactorChangedListenerList ();
-	pImpl->pScaleFactorChangedListenerList->emplace_back (listener);
+	pImpl->scaleFactorChangedListenerList.add (listener);
 }
 
 //-----------------------------------------------------------------------------
 void CFrame::unregisterScaleFactorChangedListeneer (IScaleFactorChangedListener* listener)
 {
-	if (pImpl->pScaleFactorChangedListenerList)
-	{
-		pImpl->pScaleFactorChangedListenerList->remove (listener);
-		if (pImpl->pScaleFactorChangedListenerList->empty ())
-		{
-			delete pImpl->pScaleFactorChangedListenerList;
-			pImpl->pScaleFactorChangedListenerList = nullptr;
-		}
-	}
+	pImpl->scaleFactorChangedListenerList.remove (listener);
 }
 
 //-----------------------------------------------------------------------------
 void CFrame::registerMouseObserver (IMouseObserver* observer)
 {
-	if (pImpl->pMouseObservers == nullptr)
-		pImpl->pMouseObservers = new Impl::MouseObserverList ();
-	pImpl->pMouseObservers->emplace_back (observer);
+	pImpl->mouseObservers.add (observer);
 }
 
 //-----------------------------------------------------------------------------
@@ -1418,73 +1374,61 @@ void CFrame::unregisterFocusViewObserver (IFocusViewObserver* observer)
 //-----------------------------------------------------------------------------
 void CFrame::unregisterMouseObserver (IMouseObserver* observer)
 {
-	if (pImpl->pMouseObservers)
-	{
-		pImpl->pMouseObservers->remove (observer);
-		if (pImpl->pMouseObservers->empty ())
-		{
-			delete pImpl->pMouseObservers;
-			pImpl->pMouseObservers = nullptr;
-		}
-	}
+	pImpl->mouseObservers.remove (observer);
 }
 
 //-----------------------------------------------------------------------------
 void CFrame::callMouseObserverMouseEntered (CView* view)
 {
-	if (pImpl->pMouseObservers == nullptr)
-		return;
-	for (auto& observer : *pImpl->pMouseObservers)
+	pImpl->mouseObservers.forEach ([&] (IMouseObserver* observer) {
 		observer->onMouseEntered (view, this);
+	});
 }
 
 //-----------------------------------------------------------------------------
 void CFrame::callMouseObserverMouseExited (CView* view)
 {
-	if (pImpl->pMouseObservers == nullptr)
-		return;
-	for (auto& observer : *pImpl->pMouseObservers)
+	pImpl->mouseObservers.forEach ([&] (IMouseObserver* observer) {
 		observer->onMouseExited (view, this);
+	});
 }
 
 //-----------------------------------------------------------------------------
 CMouseEventResult CFrame::callMouseObserverMouseDown (const CPoint& _where, const CButtonState& buttons)
 {
-	if (pImpl->pMouseObservers == nullptr)
-		return kMouseEventNotHandled;
-
-	CMouseEventResult result = kMouseEventNotHandled;
+	CMouseEventResult eventResult = kMouseEventNotHandled;
+	if (pImpl->mouseObservers.empty ())
+		return eventResult;
+	
 	CPoint where (_where);
 	getTransform ().inverse ().transform (where);
-	
-	for (auto& observer : *pImpl->pMouseObservers)
-	{
+
+	pImpl->mouseObservers.forEach ([&] (IMouseObserver* observer) {
 		CMouseEventResult result2 = observer->onMouseDown (this, where, buttons);
 		if (result2 == kMouseEventHandled)
-			result = kMouseEventHandled;
-		if (pImpl->pMouseObservers == nullptr)
-			return kMouseEventHandled;
-	}
-	return result;
+			eventResult = kMouseEventHandled;
+	});
+
+	return eventResult;
 }
 
 //-----------------------------------------------------------------------------
 CMouseEventResult CFrame::callMouseObserverMouseMoved (const CPoint& _where, const CButtonState& buttons)
 {
-	if (pImpl->pMouseObservers == nullptr)
-		return kMouseEventNotHandled;
-
-	CMouseEventResult result = kMouseEventNotHandled;
+	CMouseEventResult eventResult = kMouseEventNotHandled;
+	if (pImpl->mouseObservers.empty ())
+		return eventResult;
+	
 	CPoint where (_where);
 	getTransform ().inverse ().transform (where);
 	
-	for (auto& observer : *pImpl->pMouseObservers)
-	{
+	pImpl->mouseObservers.forEach ([&] (IMouseObserver* observer) {
 		CMouseEventResult result2 = observer->onMouseMoved (this, where, buttons);
 		if (result2 == kMouseEventHandled)
-			result = kMouseEventHandled;
-	}
-	return result;
+			eventResult = kMouseEventHandled;
+	});
+	
+	return eventResult;
 }
 
 #if DEBUG
@@ -1500,7 +1444,7 @@ void CFrame::dumpHierarchy ()
 //-----------------------------------------------------------------------------
 VSTGUIEditorInterface* CFrame::getEditor () const
 {
-	return pImpl->pEditor;
+	return pImpl->editor;
 }
 
 //-----------------------------------------------------------------------------
@@ -1606,12 +1550,13 @@ void CFrame::platformOnActivate (bool state)
 //------------------------------------------------------------------------
 void CFrame::platformOnWindowActivate (bool state)
 {
-	if (pImpl->bWindowActive == state)
+	if (pImpl->windowActive == state)
 		return;
-	pImpl->bWindowActive = state;
+	pImpl->windowActive = state;
 	CollectInvalidRects cir (this);
-	for (auto& view : pImpl->windowActiveStateChangeViews)
+	pImpl->windowActiveStateChangeViews.forEach ([&] (CView* view) {
 		view->onWindowActivate (state);
+	});
 }
 
 //-----------------------------------------------------------------------------
@@ -1626,10 +1571,9 @@ void CFrame::platformScaleFactorChanged (double newScaleFactor)
 //-----------------------------------------------------------------------------
 void CFrame::dispatchNewScaleFactor (double newScaleFactor)
 {
-	if (pImpl->pScaleFactorChangedListenerList == nullptr)
-		return;
-	for (auto& listener : *pImpl->pScaleFactorChangedListenerList)
+	pImpl->scaleFactorChangedListenerList.forEach ([&] (IScaleFactorChangedListener* listener) {
 		listener->onScaleFactorChanged (this, newScaleFactor);
+	});
 }
 
 #if VSTGUI_TOUCH_EVENT_HANDLING
