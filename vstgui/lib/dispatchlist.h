@@ -28,7 +28,7 @@ public:
 	void forEach (Procedure proc);
 
 private:
-	typedef std::vector<T*> Array;
+	using Array = std::vector<T*>;
 
 	Array entries;
 	Array toRemove;

@@ -69,8 +69,8 @@ public:
 		
 		Touch () : timeStamp (0), state (kUndefined), target (0), targetIsSingleTouch (false), tapCount (0) {}
 	};
-	typedef std::pair<int32_t, ITouchEvent::Touch> TouchPair;
-	typedef std::map<int32_t, Touch> TouchMap;
+	using TouchPair = std::pair<int32_t, ITouchEvent::Touch>;
+	using TouchMap = std::map<int32_t, Touch>;
 	
 	int32_t numTouches () const { return static_cast<int32_t> (touches.size ()); }
 	

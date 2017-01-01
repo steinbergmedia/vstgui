@@ -49,7 +49,7 @@ namespace VSTGUI {
 class CGradient : public AtomicReferenceCounted
 {
 public:
-	typedef std::multimap<double, CColor> ColorStopMap;
+	using ColorStopMap = std::multimap<double, CColor>;
 
 	static CGradient* create (const ColorStopMap& colorStopMap);
 	static CGradient* create (double color1Start, double color2Start, const CColor& color1, const CColor& color2)

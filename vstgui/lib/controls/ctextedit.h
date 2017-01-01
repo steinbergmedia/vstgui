@@ -41,7 +41,7 @@
 
 namespace VSTGUI {
 
-typedef bool (*CTextEditStringToValueProc) (UTF8StringPtr txt, float& result, void* userData);
+using CTextEditStringToValueProc = bool (*) (UTF8StringPtr txt, float& result, void* userData);
 
 //-----------------------------------------------------------------------------
 // CTextEdit Declaration
@@ -60,9 +60,9 @@ public:
 	/// @name CTextEdit Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	typedef CTextEdit		StringToValueUserData;
+	using StringToValueUserData = CTextEdit;
 
-	typedef std::function<bool(UTF8StringPtr txt, float& result, CTextEdit* textEdit)> StringToValueFunction;
+	using StringToValueFunction = std::function<bool(UTF8StringPtr txt, float& result, CTextEdit* textEdit)>;
 	
 	void setStringToValueFunction (const StringToValueFunction& stringToValueFunc);
 	void setStringToValueFunction (StringToValueFunction&& stringToValueFunc);

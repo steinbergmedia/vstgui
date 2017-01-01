@@ -77,7 +77,7 @@ public:
 protected:
 	iterator position;
 	iterator savePosition;
-	typedef std::deque<UIGroupAction*> GroupActionDeque;
+	using GroupActionDeque = std::deque<UIGroupAction*>;
 	GroupActionDeque groupQueue;
 };
 

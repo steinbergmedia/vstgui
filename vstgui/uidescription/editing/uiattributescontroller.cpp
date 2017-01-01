@@ -504,7 +504,7 @@ public:
 		return TextController::verifyView (view, attributes, description);
 	}
 
-	typedef std::list<const std::string*> StringPtrList;
+	using StringPtrList =std::list<const std::string*>;
 	virtual void collectMenuItemNames (StringPtrList& names) = 0;
 	virtual void validateMenuEntry (CCommandMenuItem* item) {}
 

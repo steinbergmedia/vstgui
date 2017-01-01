@@ -235,8 +235,9 @@ void CLayeredViewContainer::drawViewLayer (CDrawContext* context, const CRect& _
 //-----------------------------------------------------------------------------
 CGraphicsTransform CLayeredViewContainer::getDrawTransform () const
 {
+	using ParentViews = std::list<CViewContainer*>;
+
 	CGraphicsTransform transform;
-	typedef std::list<CViewContainer*> ParentViews;
 	ParentViews parents;
 
 	CViewContainer* parent = static_cast<CViewContainer*> (getParentView ());

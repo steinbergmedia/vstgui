@@ -135,8 +135,8 @@ public:
 	void setTarget (CBaseObject* target);
 	CBaseObject* getTarget () const { return target; }
 
-	typedef std::function<void(CCommandMenuItem* item)> ValidateCallbackFunction;
-	typedef std::function<void(CCommandMenuItem* item)> SelectedCallbackFunction;
+	using ValidateCallbackFunction = std::function<void(CCommandMenuItem* item)>;
+	using SelectedCallbackFunction = std::function<void(CCommandMenuItem* item)>;
 
 	void setActions (SelectedCallbackFunction&& selected, ValidateCallbackFunction&& validate = [](CCommandMenuItem*){});
 	//@}
@@ -154,9 +154,9 @@ protected:
 	UTF8String commandName;
 };
 
-typedef std::vector<SharedPointer<CMenuItem> > CMenuItemList;
-typedef CMenuItemList::iterator CMenuItemIterator;
-typedef CMenuItemList::const_iterator CConstMenuItemIterator;
+using CMenuItemList = std::vector<SharedPointer<CMenuItem>>;
+using CMenuItemIterator = CMenuItemList::iterator;
+using CConstMenuItemIterator = CMenuItemList::const_iterator;
 
 
 //-----------------------------------------------------------------------------

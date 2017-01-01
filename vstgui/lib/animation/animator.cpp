@@ -211,7 +211,7 @@ protected:
 
 	CVSTGUITimer* timer;
 	
-	typedef std::list<Animator*> Animators;
+	using Animators = std::list<Animator*>;
 	Animators animators;
 	Animators toRemove;
 	bool inTimer;

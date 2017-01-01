@@ -70,7 +70,7 @@ struct ColorHash
 	}
 };
 
-typedef std::unordered_map<CColor, CGColorRef, ColorHash> CGColorMap;
+using CGColorMap = std::unordered_map<CColor, CGColorRef, ColorHash>;
 
 //-----------------------------------------------------------------------------
 class CGColorMapImpl

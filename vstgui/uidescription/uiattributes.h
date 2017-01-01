@@ -45,7 +45,7 @@ namespace VSTGUI {
 class OutputStream;
 class InputStream;
 
-typedef std::unordered_map<std::string,std::string> UIAttributesMap;
+using UIAttributesMap = std::unordered_map<std::string,std::string>;
 
 //-----------------------------------------------------------------------------
 class UIAttributes : public NonAtomicReferenceCounted, private UIAttributesMap

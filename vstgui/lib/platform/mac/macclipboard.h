@@ -44,7 +44,7 @@ struct NSPasteboard;
 #endif
 
 #if MAC_CARBON
-typedef struct OpaqueDragRef*           DragRef;
+using DragRef = struct OpaqueDragRef*;
 #endif
 
 namespace VSTGUI {

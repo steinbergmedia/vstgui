@@ -44,7 +44,7 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-typedef bool (*CParamDisplayValueToStringProc) (float value, char utf8String[256], void* userData);
+using CParamDisplayValueToStringProc = bool (*) (float value, char utf8String[256], void* userData);
 
 //-----------------------------------------------------------------------------
 // CParamDisplay Declaration
@@ -97,9 +97,8 @@ public:
 	virtual void setFrameWidth (const CCoord& width);
 	CCoord getFrameWidth () const { return frameWidth; }
 
-	typedef CParamDisplay	ValueToStringUserData;
-
-	typedef std::function<bool(float value, char utf8String[256], CParamDisplay* display)> ValueToStringFunction;
+	using ValueToStringUserData = CParamDisplay;
+	using ValueToStringFunction = std::function<bool(float value, char utf8String[256], CParamDisplay* display)>;
 	
 	void setValueToStringFunction (const ValueToStringFunction& valueToStringFunc);
 	void setValueToStringFunction (ValueToStringFunction&& valueToStringFunc);

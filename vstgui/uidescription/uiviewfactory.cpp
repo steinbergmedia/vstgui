@@ -117,13 +117,13 @@ namespace VSTGUI {
 	@endcode
 */
 
-typedef std::unordered_map<std::string, const IViewCreator*> ViewCreatorRegistryMap;
+using ViewCreatorRegistryMap = std::unordered_map<std::string, const IViewCreator*>;
 
 //-----------------------------------------------------------------------------
 class ViewCreatorRegistry : private ViewCreatorRegistryMap
 {
 public:
-	typedef ViewCreatorRegistryMap::const_iterator const_iterator;
+	using const_iterator = ViewCreatorRegistryMap::const_iterator;
 
 	const_iterator begin () { return ViewCreatorRegistryMap::begin (); }
 	const_iterator end () { return ViewCreatorRegistryMap::end (); }

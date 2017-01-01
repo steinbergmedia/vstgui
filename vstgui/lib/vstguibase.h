@@ -220,10 +220,10 @@
 //----------------------------------------------------
 namespace VSTGUI {
 	
-typedef double		CCoord;				///< coordinate type
-typedef const char* IdStringPtr;		///< ID String pointer
-typedef const char* UTF8StringPtr;		///< UTF8 String pointer
-typedef char*		UTF8StringBuffer;	///< UTF8 String buffer pointer
+using CCoord = double;					///< coordinate type
+using IdStringPtr = const char*;		///< ID String pointer
+using UTF8StringPtr = const char*;		///< UTF8 String pointer
+using UTF8StringBuffer = char*;			///< UTF8 String buffer pointer
 
 //-----------------------------------------------------------------------------
 // @brief Byte Order

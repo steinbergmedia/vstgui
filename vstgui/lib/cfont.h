@@ -99,7 +99,7 @@ protected:
 	mutable PlatformFontPtr platformFont;
 };
 
-typedef CFontDesc*	CFontRef;
+using CFontRef = CFontDesc*;
 
 //-----------------------------------------------------------------------------
 // Global fonts
