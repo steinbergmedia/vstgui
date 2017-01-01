@@ -52,7 +52,7 @@ private:
 	{
 		listeners.forEach ([this] (auto& l) { l->modelChanged (*this); });
 	}
-	VSTGUI::DispatchList<IModelChangeListener> listeners;
+	VSTGUI::DispatchList<IModelChangeListener*> listeners;
 
 	Point max {1.2, 1.7};
 	Point min {-2.2, -1.7};

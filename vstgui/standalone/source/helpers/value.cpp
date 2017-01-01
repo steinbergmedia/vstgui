@@ -180,7 +180,7 @@ private:
 	bool active {true};
 	uint32_t editCount {0};
 	ValueConverterPtr valueConverter;
-	DispatchList<IValueListener> listeners;
+	DispatchList<IValueListener*> listeners;
 };
 
 //------------------------------------------------------------------------

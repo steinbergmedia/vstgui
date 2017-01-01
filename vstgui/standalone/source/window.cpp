@@ -130,7 +130,7 @@ private:
 	SharedPointer<CFrame> frame;
 	UTF8String autoSaveFrameName;
 	UTF8String title;
-	DispatchList<IWindowListener> windowListeners;
+	DispatchList<IWindowListener*> windowListeners;
 };
 
 //------------------------------------------------------------------------
