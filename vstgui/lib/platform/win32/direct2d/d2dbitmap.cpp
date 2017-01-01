@@ -384,16 +384,16 @@ ID2D1Bitmap* D2DBitmapCache::getBitmap (D2DBitmap* bitmap, ID2D1RenderTarget* re
 		}
 		ID2D1Bitmap* b = createBitmap (bitmap, renderTarget);
 		if (b)
-			it->second.insert (std::make_pair (renderTarget, b));
+			it->second.emplace (renderTarget, b);
 		return b;
 	}
-	std::pair<BitmapCache::iterator, bool> insertSuccess = cache.insert (std::make_pair (bitmap, RenderTargetBitmapMap ()));
+	auto insertSuccess = cache.emplace (bitmap, RenderTargetBitmapMap ());
 	if (insertSuccess.second == true)
 	{
 		ID2D1Bitmap* b = createBitmap (bitmap, renderTarget);
 		if (b)
 		{
-			insertSuccess.first->second.insert (std::make_pair (renderTarget, b));
+			insertSuccess.first->second.emplace (renderTarget, b);
 			return b;
 		}
 	}

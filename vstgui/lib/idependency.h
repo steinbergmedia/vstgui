@@ -108,7 +108,7 @@ inline void IDependency::changed (IdStringPtr message)
 {
 	if (deferChangeCount)
 	{
-		deferedChanges.insert (message);
+		deferedChanges.emplace (message);
 	}
 	else if (dependents.empty () == false)
 	{

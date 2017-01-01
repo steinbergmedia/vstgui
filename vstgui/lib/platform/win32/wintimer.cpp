@@ -89,7 +89,7 @@ bool WinTimer::start (uint32_t fireTime)
 
 	timer = SetTimer ((HWND)NULL, (UINT_PTR)0, fireTime, TimerProc);
 	if (timer)
-		gTimerMap.insert (std::make_pair (timer, callback));
+		gTimerMap.emplace (timer, callback);
 
 	return false;
 }

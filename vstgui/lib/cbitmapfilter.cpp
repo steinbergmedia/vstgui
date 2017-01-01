@@ -290,7 +290,7 @@ bool Factory::registerFilter (IdStringPtr name, IFilter::CreateFunction createFu
 	if (it != filters.end ())
 		it->second = createFunction;
 	else
-		filters.insert (std::make_pair (name, createFunction));
+		filters.emplace (name, createFunction);
 	return true;
 }
 
@@ -396,7 +396,7 @@ Property::Type FilterBase::getPropertyType (IdStringPtr name) const
 //----------------------------------------------------------------------------------------------------
 bool FilterBase::registerProperty (IdStringPtr name, const Property& defaultProperty)
 {
-	return properties.insert (std::make_pair (name, defaultProperty)).second;
+	return properties.emplace (name, defaultProperty).second;
 }
 
 //----------------------------------------------------------------------------------------------------

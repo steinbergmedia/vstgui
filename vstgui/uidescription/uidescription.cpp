@@ -280,7 +280,7 @@ public:
 		UIDescList::add (obj);
 		const std::string* nameAttributeValue = obj->getAttributes ()->getAttributeValue ("name");
 		if (nameAttributeValue)
-			childMap.insert (std::make_pair (*nameAttributeValue, obj));
+			childMap.emplace (*nameAttributeValue, obj);
 	}
 
 	void remove (UINode* obj) override
@@ -320,7 +320,7 @@ public:
 			childMap.erase (it);
 		const std::string* nameAttributeValue = node->getAttributes ()->getAttributeValue ("name");
 		if (nameAttributeValue)
-			childMap.insert (std::make_pair (*nameAttributeValue, node));
+			childMap.emplace (*nameAttributeValue, node);
 	}
 private:
 	ChildMap childMap;
@@ -3319,7 +3319,7 @@ CGradient* UIGradientNode::getGradient ()
 					continue;
 				if (UIDescription::parseColor (*rgba, color) == false)
 					continue;
-				colorStops.insert (std::make_pair (start, color));
+				colorStops.emplace (start, color);
 			}
 		}
 		if (colorStops.size () > 1)

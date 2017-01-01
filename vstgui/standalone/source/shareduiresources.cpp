@@ -27,7 +27,7 @@ struct EditFileMap : IEditFileMap
 
 	void set (const std::string& filename, const std::string& absolutePath) override
 	{
-		fileMap.insert ({filename, absolutePath});
+		fileMap.emplace (filename, absolutePath);
 	}
 
 	Optional<const char*> get (const std::string& filename) const override
