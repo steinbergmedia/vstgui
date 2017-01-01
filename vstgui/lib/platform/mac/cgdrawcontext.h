@@ -110,7 +110,7 @@ protected:
 
 	CGContextRef cgContext;
 
-	typedef std::map<CGBitmap*, int32_t> BitmapDrawCountMap;
+	using BitmapDrawCountMap = std::map<CGBitmap*, int32_t>;
 	BitmapDrawCountMap bitmapDrawCount;
 	
 	double scaleFactor;

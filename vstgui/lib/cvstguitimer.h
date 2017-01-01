@@ -78,7 +78,7 @@ protected:
 
 namespace Call
 {
-	typedef std::function<void ()> FunctionCallback;
+	using FunctionCallback = std::function<void ()>;
 
 	/** Trigger a function call at a later timer */
 	inline void later (FunctionCallback callback, uint32_t delayInMilliseconds = 10)

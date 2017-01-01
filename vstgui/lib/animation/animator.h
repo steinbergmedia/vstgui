@@ -105,7 +105,7 @@ protected:
 
 	void removeAnimation (Animation* a);
 
-	typedef std::list<SharedPointer<Animation> > AnimationList;
+	using AnimationList = std::list<SharedPointer<Animation>>;
 	AnimationList animations;
 	AnimationList toRemove;
 	bool inTimer;

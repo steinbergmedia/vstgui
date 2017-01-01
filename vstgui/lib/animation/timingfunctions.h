@@ -99,7 +99,7 @@ public:
 protected:
 	float getPosition (uint32_t milliseconds) override;
 
-	typedef std::map<uint32_t, float> PointMap;
+	using PointMap = std::map<uint32_t, float>;
 	PointMap points;
 };
 

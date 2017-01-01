@@ -46,7 +46,7 @@ namespace VSTGUI {
 class CLineStyle
 {
 public:
-	typedef std::vector<CCoord> CoordVector;
+	using CoordVector = std::vector<CCoord>;
 
 	enum LineCap
 	{

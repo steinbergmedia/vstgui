@@ -59,7 +59,7 @@ extern UTF8StringPtr kPerthousandSymbol;	///< per mille sign
 extern IdStringPtr kMsgViewSizeChanged;		///< Message send to parent that the size of the view has changed
 
 //-----------------------------------------------------------------------------
-typedef size_t CViewAttributeID;
+using CViewAttributeID = size_t;
 //-----------------------------------------------------------------------------
 // Attributes
 //		all attributes where the first letter is lowercase are reserved for the vstgui lib

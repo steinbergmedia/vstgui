@@ -74,7 +74,7 @@ protected:
 		CDropEntry (CDropEntry&& entry) noexcept;
 	};
 	/// @endcond
-	typedef std::vector<CDropEntry> DropEntryVector;
+	using DropEntryVector = std::vector<CDropEntry>;
 	DropEntryVector entries;
 };
 

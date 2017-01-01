@@ -44,7 +44,7 @@
 namespace VSTGUI {
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED <= MAC_OS_X_VERSION_10_4
-typedef UInt32 URefCon;
+using URefCon = UInt32;
 #endif
 
 //-----------------------------------------------------------------------------

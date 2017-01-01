@@ -76,9 +76,9 @@ public:
 	/// @name Draw primitives
 	//-----------------------------------------------------------------------------
 	//@{
-	typedef std::pair<CPoint, CPoint> LinePair;
-	typedef std::vector<LinePair> LineList;
-	typedef std::vector<CPoint> PointList;
+	using LinePair = std::pair<CPoint, CPoint>;
+	using LineList = std::vector<LinePair>;
+	using PointList = std::vector<CPoint>;
 
 	inline void drawLine (const CPoint& start, const CPoint& end) { drawLine (std::make_pair (start, end)); }
 	virtual void drawLine (const LinePair& line) = 0;	///< draw a line

@@ -48,7 +48,7 @@ class IUIDescription;
 class OutputStream;
 class InputStream;
 
-typedef std::list<SharedPointer<CView> > UISelectionViewList;
+using UISelectionViewList = std::list<SharedPointer<CView>>;
 //----------------------------------------------------------------------------------------------------
 class UISelection : public CBaseObject, protected UISelectionViewList, public IDependency
 //----------------------------------------------------------------------------------------------------

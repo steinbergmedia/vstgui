@@ -177,7 +177,7 @@ protected:
 	inline void CPoint2Point (const CPoint& point, CGraphicsPath::Point& p) const {p.x = point.x;p.y = point.y;}
 	/// @endcond
 
-	typedef std::vector<Element> ElementList;
+	using ElementList = std::vector<Element>;
 	ElementList elements;
 };
 

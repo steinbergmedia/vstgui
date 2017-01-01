@@ -50,7 +50,7 @@ public:
 	bool start (uint32_t fireTime) override;
 	bool stop () override;
 private:
-	typedef std::map<UINT_PTR, IPlatformTimerCallback*> TimerMap;
+	using TimerMap = std::map<UINT_PTR, IPlatformTimerCallback*>;
 	static TimerMap gTimerMap;
 
 	static VOID CALLBACK TimerProc (HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime);

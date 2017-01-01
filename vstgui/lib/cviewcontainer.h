@@ -177,8 +177,8 @@ public:
 	virtual CPoint& localToFrame (CPoint& point) const override;
 
 	//-----------------------------------------------------------------------------
-	typedef ViewList::const_iterator ChildViewConstIterator;
-	typedef ViewList::const_reverse_iterator ChildViewConstReverseIterator;
+	using ChildViewConstIterator = ViewList::const_iterator;
+	using ChildViewConstReverseIterator = ViewList::const_reverse_iterator;
 
 	//-----------------------------------------------------------------------------
 	template<bool reverse>
@@ -259,8 +259,8 @@ private:
 	std::unique_ptr<Impl> pImpl;
 };
 
-typedef CViewContainer::Iterator<false> ViewIterator;
-typedef CViewContainer::Iterator<true> ReverseViewIterator;
+using ViewIterator = CViewContainer::Iterator<false>;
+using ReverseViewIterator = CViewContainer::Iterator<true>;
 
 //-----------------------------------------------------------------------------
 template<class ViewClass, class ContainerClass>

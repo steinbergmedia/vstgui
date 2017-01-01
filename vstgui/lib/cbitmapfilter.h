@@ -113,7 +113,7 @@ public:
 	virtual Property::Type getPropertyType (uint32_t index) const = 0;
 	virtual Property::Type getPropertyType (IdStringPtr name) const = 0;
 
-	typedef IFilter* (*CreateFunction) (IdStringPtr name);
+	using CreateFunction = IFilter* (*) (IdStringPtr name);
 };
 
 //----------------------------------------------------------------------------------------------------
@@ -134,7 +134,7 @@ public:
 	bool registerFilter (IdStringPtr name, IFilter::CreateFunction createFunction);
 	bool unregisterFilter (IdStringPtr name, IFilter::CreateFunction createFunction);
 protected:
-	typedef std::map<std::string, IFilter::CreateFunction > FilterMap;
+	using FilterMap = std::map<std::string, IFilter::CreateFunction>;
 	FilterMap filters;
 };
 

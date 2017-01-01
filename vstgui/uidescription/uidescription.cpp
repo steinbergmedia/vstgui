@@ -93,7 +93,7 @@ namespace MainNodeNames {
 
 class UINode;
 
-typedef std::vector<UINode*> UIDescListContainerType;
+using UIDescListContainerType = std::vector<UINode*>;
 //-----------------------------------------------------------------------------
 class UIDescList : public NonAtomicReferenceCounted, private UIDescListContainerType
 {
@@ -271,7 +271,7 @@ protected:
 class UIDescListWithFastFindAttributeNameChild : public UIDescList
 {
 private:
-	typedef std::unordered_map<std::string, UINode*> ChildMap;
+	using ChildMap = std::unordered_map<std::string, UINode*>;
 public:
 	UIDescListWithFastFindAttributeNameChild () {}
 	
@@ -456,7 +456,7 @@ void UIDescWriter::encodeAttributeString (std::string& str)
 bool UIDescWriter::writeAttributes (UIAttributes* attr, OutputStream& stream)
 {
 	bool result = true;
-	typedef std::map<std::string,std::string> SortedAttributes;
+	using SortedAttributes = std::map<std::string,std::string>;
 	SortedAttributes sortedAttributes (attr->begin (), attr->end ());
 	for (auto& sa : sortedAttributes)
 	{
@@ -2329,7 +2329,7 @@ public:
 	double result;
 };
 
-typedef std::list<StringToken> StringTokenList;
+using StringTokenList = std::list<StringToken>;
 	
 //-----------------------------------------------------------------------------
 static bool tokenizeString (std::string& str, StringTokenList& tokens)

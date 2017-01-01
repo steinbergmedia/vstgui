@@ -64,7 +64,7 @@ public:
 	void endLiveAttributeChange ();
 	void performAttributeChange (const std::string& name, const std::string& value);
 protected:
-	typedef std::list<std::string> StringList;
+	using StringList = std::list<std::string>;
 
 	CView* createViewForAttribute (const std::string& attrName);
 	void rebuildAttributesView ();
@@ -85,7 +85,7 @@ protected:
 	SharedPointer<CVSTGUITimer> timer;
 	IAction* liveAction;
 
-	typedef std::list<UIAttributeControllers::Controller*> UIAttributeControllerList;
+	using UIAttributeControllerList = std::list<UIAttributeControllers::Controller*>;
 	UIAttributeControllerList attributeControllers;
 
 	enum {

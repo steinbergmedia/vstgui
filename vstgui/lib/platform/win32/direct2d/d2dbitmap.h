@@ -118,8 +118,8 @@ protected:
 	D2DBitmapCache ();
 	~D2DBitmapCache ();
 	ID2D1Bitmap* createBitmap (D2DBitmap* bitmap, ID2D1RenderTarget* renderTarget);
-	typedef std::map<ID2D1RenderTarget*, ID2D1Bitmap*> RenderTargetBitmapMap;
-	typedef std::map<D2DBitmap*, RenderTargetBitmapMap> BitmapCache;
+	using RenderTargetBitmapMap = std::map<ID2D1RenderTarget*, ID2D1Bitmap*>;
+	using BitmapCache = std::map<D2DBitmap*, RenderTargetBitmapMap>;
 	BitmapCache cache;
 };
 

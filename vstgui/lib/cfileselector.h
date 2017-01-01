@@ -127,7 +127,7 @@ public:
 	//@{
 	static CNewFileSelector* create (CFrame* parent = nullptr, Style style = kSelectFile); ///< create a new instance
 
-	typedef std::function<void(CNewFileSelector*)> CallbackFunc;
+	using CallbackFunc = std::function<void(CNewFileSelector*)>;
 	bool run (CallbackFunc&& callback);
 	bool run (CBaseObject* delegate);	///< the delegate will get a kSelectEndMessage throu the notify method where the sender is this CNewFileSelector object
 	void cancel ();						///< cancel running the file selector
@@ -175,7 +175,7 @@ protected:
 	const CFileExtension* defaultExtension;
 	bool allowMultiFileSelection;
 
-	typedef std::list<CFileExtension> FileExtensionList;
+	using FileExtensionList = std::list<CFileExtension>;
 	FileExtensionList extensions;
 	std::vector<UTF8String> result;
 };

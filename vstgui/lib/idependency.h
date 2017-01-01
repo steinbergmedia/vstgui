@@ -83,8 +83,8 @@ protected:
 	static void rememberObject (CBaseObject* obj) { obj->remember (); }
 	static void forgetObject (CBaseObject* obj) { obj->forget (); }
 
-	typedef std::set<IdStringPtr> DeferedChangesSet;
-	typedef std::list<CBaseObject*> DependentList;
+	using DeferedChangesSet = std::set<IdStringPtr>;
+	using DependentList = std::list<CBaseObject*>;
 
 	int32_t deferChangeCount {0};
 	DeferedChangesSet deferedChanges;

@@ -714,7 +714,7 @@ private:
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-typedef void (*SimpleFilterProcessFunction) (CColor& color, FilterBase* self);
+using SimpleFilterProcessFunction = void (*) (CColor& color, FilterBase* self);
 
 template<typename SimpleFilterProcessFunction>
 class SimpleFilter : public FilterBase

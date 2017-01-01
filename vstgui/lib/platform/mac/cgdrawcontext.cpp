@@ -44,7 +44,7 @@
 
 #ifndef CGFLOAT_DEFINED
 	#define CGFLOAT_DEFINED
-	typedef float CGFloat;
+	using CGFloat = float;
 #endif // CGFLOAT_DEFINED
 
 namespace VSTGUI {

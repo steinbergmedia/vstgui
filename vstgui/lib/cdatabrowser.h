@@ -157,7 +157,7 @@ public:
 		bool isValid () const { return row > -1 && column > -1; }
 	};
 
-	typedef std::vector<int32_t> Selection;
+	using Selection = std::vector<int32_t>;
 
 	//-----------------------------------------------------------------------------
 	/// @name CDataBrowser Methods

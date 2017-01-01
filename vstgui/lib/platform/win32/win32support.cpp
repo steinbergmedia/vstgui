@@ -296,7 +296,7 @@ SharedPointer<IPlatformBitmap> IPlatformBitmap::createFromPath (UTF8StringPtr ab
 SharedPointer<IPlatformBitmap> IPlatformBitmap::createFromMemory (const void* ptr, uint32_t memSize)
 {
 #ifdef __GNUC__
-	typedef IStream* (*SHCreateMemStreamProc) (const BYTE* pInit, UINT cbInit);
+	using SHCreateMemStreamProc = IStream* (*) (const BYTE* pInit, UINT cbInit);
 	HMODULE shlwDll = LoadLibraryA ("shlwapi.dll");
 	SHCreateMemStreamProc proc = reinterpret_cast<SHCreateMemStreamProc> (GetProcAddress (shlwDll, MAKEINTRESOURCEA (12)));
 	IStream* stream = proc (static_cast<const BYTE*> (ptr), memSize);
