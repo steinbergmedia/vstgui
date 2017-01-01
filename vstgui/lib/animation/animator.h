@@ -36,9 +36,9 @@
 #define __animator__
 
 #include "../vstguifwd.h"
-#include <list>
 #include <string>
 #include <functional>
+#include <memory>
 
 namespace VSTGUI {
 namespace Animation {
@@ -84,17 +84,10 @@ public:
 	void onTimer ();
 
 protected:
-
 	~Animator () noexcept override;
 
-	class Animation;
-
-	void removeAnimation (Animation* a);
-
-	using AnimationList = std::list<SharedPointer<Animation>>;
-	AnimationList animations;
-	AnimationList toRemove;
-	bool inTimer;
+	struct Impl;
+	std::unique_ptr<Impl> pImpl;
 	/// @endcond
 };
 

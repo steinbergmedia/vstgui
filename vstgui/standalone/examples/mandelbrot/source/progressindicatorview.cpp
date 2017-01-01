@@ -69,6 +69,9 @@ void ProgressIndicatorView::setValue (float val)
 	if (val == getValue ())
 		return;
 	CControl::setValue (val);
+	if (!isAttached ())
+		return;
+
 	bool animActive = getValueNormalized () >= 0.5;
 	if (animActive)
 	{
