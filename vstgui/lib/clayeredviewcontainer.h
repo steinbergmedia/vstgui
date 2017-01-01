@@ -76,7 +76,7 @@ protected:
 	CGraphicsTransform getDrawTransform () const;
 	void registerListeners (bool state);
 
-	SharedPointer<IPlatformViewLayer>layer;
+	SharedPointer<IPlatformViewLayer> layer;
 	CLayeredViewContainer* parentLayerView {nullptr};
 	uint32_t zIndex {0};
 };
