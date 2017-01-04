@@ -1130,7 +1130,13 @@ void UIEditController::doSelectAllChildren ()
 //----------------------------------------------------------------------------------------------------
 void UIEditController::onUndoManagerChanged ()
 {
-	setDirty (!undoManager->isSavePosition ());
+	if (undoManager->isSavePosition ())
+	{
+		updateTemplate (editTemplateName.data ());
+		setDirty (false);
+	}
+	else
+		setDirty (true);
 	CView* view = selection->first ();
 	if (view)
 	{
