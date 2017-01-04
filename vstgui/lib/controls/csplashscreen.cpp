@@ -301,6 +301,8 @@ bool CAnimationSplashScreen::sizeToFit ()
 //------------------------------------------------------------------------
 bool CAnimationSplashScreen::createAnimation (uint32_t animationIndex, uint32_t animationTime, CView* splashView, bool removeViewAnimation)
 {
+	if (!isAttached ())
+		return false;
 	switch (animationIndex)
 	{
 		case 0:
