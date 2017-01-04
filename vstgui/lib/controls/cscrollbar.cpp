@@ -181,7 +181,7 @@ void CScrollbar::setOverlayStyle (bool state)
 //-----------------------------------------------------------------------------
 CMouseEventResult CScrollbar::onMouseEntered (CPoint& where, const CButtonState& buttons)
 {
-	if (overlayStyle)
+	if (overlayStyle && scrollerLength != 0)
 	{
 		addAnimation ("AlphaValueAnimation", new Animation::AlphaValueAnimation (1.f), new Animation::LinearTimingFunction (100));
 	}
@@ -192,7 +192,7 @@ CMouseEventResult CScrollbar::onMouseEntered (CPoint& where, const CButtonState&
 //-----------------------------------------------------------------------------
 CMouseEventResult CScrollbar::onMouseExited (CPoint& where, const CButtonState& buttons)
 {
-	if (overlayStyle)
+	if (overlayStyle && scrollerLength != 0)
 	{
 		Animation::ITimingFunction* timingFunction = nullptr;
 		if (getAlphaValue () == 1.f)
@@ -283,7 +283,7 @@ CMouseEventResult CScrollbar::onMouseMoved (CPoint &where, const CButtonState& b
 //------------------------------------------------------------------------
 void CScrollbar::onVisualChange ()
 {
-	if (overlayStyle && !mouseIsInside)
+	if (isAttached () && overlayStyle && !mouseIsInside && scrollerLength != 0)
 	{
 		Animation::InterpolationTimingFunction* timingFunction = new Animation::InterpolationTimingFunction (1100);
 		timingFunction->addPoint (1000.f/1100.f, 0);
@@ -295,7 +295,7 @@ void CScrollbar::onVisualChange ()
 //------------------------------------------------------------------------
 bool CScrollbar::onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &_distance, const CButtonState &buttons)
 {
-	if (!getMouseEnabled ())
+	if (scrollerLength == 0 || !getMouseEnabled ())
 		return false;
 
 	if (buttons != 0 && !(buttons & (kShift|kMouseWheelInverted)))
