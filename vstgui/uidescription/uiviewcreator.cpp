@@ -43,6 +43,8 @@
 - @ref cparamdisplay @n
 - @ref ctextlabel @n
 - @ref ctextedit @n
+- @ref ctextbutton @n
+- @ref csegmentbutton @n
 - @ref cknob @n
 - @ref cverticalswitch @n
 - @ref chorizontalswitch @n
@@ -50,6 +52,9 @@
 - @ref cmoviebitmap @n
 - @ref ckickbutton @n
 - @ref cslider @n
+- @ref cvumeter @n
+- @ref coptionmenu @n
+- @ref uiviewswitchcontainer @n
 
 @section cview CView
 Declaration:
@@ -102,6 +107,8 @@ Attributes:
 - \b font-color [color]
 - \b back-color [color]
 - \b frame-color [color]
+- \b frame-width [float]
+- \b round-rect-radius [float]
 - \b shadow-color [color]
 - \b font-antialias [true/false]
 - \b style-3D-in [true/false]
@@ -109,8 +116,11 @@ Attributes:
 - \b style-no-frame [true/false]
 - \b style-no-text [true/false]
 - \b style-no-draw [true/false]
+- \b style-round-rect [true/false]
 - \b style-shadow-text [true/false]
 - \b text-alignment [left/center/right]
+- \b text-rotation [float]
+- \b value-precision [integer]
 
 @section ctextlabel CTextLabel
 Declaration:
@@ -208,6 +218,70 @@ Inherites attributes from @ref ccontrol @n
 Attributes:
 - \b height-of-one-image [int]
 
+@section ctextbutton CTextButton
+Declaration:
+@verbatim <view class="CTextButton" /> @endverbatim
+
+Inherits attributes from @ref ccontrol @n
+
+New style (named) gradients are supported by:
+- \b gradient
+- \b gradient-highlighted
+
+Old style (parametric) gradients are supported by:
+- \b gradient-start-color
+- \b gradient-end-color
+- \b gradient-start-color-hightlighted
+- \b gradient-end-color-highlighted
+
+When named gradients are used, the parametric gradient information is discarded.
+
+Attributes:
+- \b title [string]
+- \b font [string]
+- \b text-alignment [left/right/center]
+- \b text-color [color string]
+- \b text-color-highlighted [color string]
+- \b frame-color [color string]
+- \b frame-color-highlighted [color string]
+- \b frame-width [float]
+- \b round-radius [float]
+- \b icon-text-margin [float]
+- \b kick-style [true/false]
+- \b icon [string]
+- \b icon-highlighted [string]
+- \b icon-position [left/right/center above text/center below text]
+- \b gradient [string]
+- \b gradient-highlighted [string]
+- \b gradient-start-color [color string]
+- \b graident-end-color [color string]
+- \b gradient-start-color-hightlighted [color string]
+- \b gradient-end-color-highlighted [color string]
+
+@section csegmentbutton CSegmentButton
+Declaration:
+@verbatim <view class="CSegmentButton" /> @endverbatim
+
+Inherits attributes from @ref ccontrol @n
+
+note: a string array is a comma seperated string: "one,two,three".
+
+Attributes:
+- \b font [string]
+- \b style [horizontal/vertical]
+- \b text-alignment [left/right/center]
+- \b text-color [color string]
+- \b text-color-highlighted [color string]
+- \b frame-color [color string]
+- \b frame-color-highlighted [color string]
+- \b frame-width [float]
+- \b round-radius [float]
+- \b icon-text-margin [float]
+- \b gradient [string]
+- \b gradient-highlighted [string]
+- \b segment-names [string array]
+- \b truncate-mode [head/tail/none]
+
 @section cslider CSlider
 Declaration:
 @verbatim <view class="CSlider" /> @endverbatim
@@ -217,12 +291,51 @@ Inherites attributes from @ref ccontrol @n
 Attributes:
 - \b transparent-handle [true/false]
 - \b free-click [true/false]
-- \b handle-bitmap [bitmap name
+- \b handle-bitmap [bitmap name]
 - \b handle-offset [Point]
+- \b mode [touch/relative touch/free click]
+- \b draw-frame [true/false]
+- \b draw-back [true/false]
+- \b draw-value [true/false]
+- \b draw-value-inverted [true/false]
+- \b draw-value-from-center [true/false]
+- \b draw-back-color [color string]
+- \b draw-value-color [color string]
 - \b bitmap-offset [Point]
 - \b zoom-factor [float]
 - \b orientation [vertical/horizontal]
 - \b reverse-orientation [true/false]
+
+@section coptionmenu COptionMenu
+Declaration:
+@verbatim <view class="COptionMenu" /> @endverbatim
+
+Inherites attributes from @ref cparamdisplay @n
+
+Attributes:
+- \b menu-popup-style [true/false]
+- \b menu-check-style [true/false]
+
+@section cvumeter CVuMeter
+Declaration:
+@verbatim <view class="CVuMeter" /> @endverbatim
+
+Inherites attributes from @ref cviewcontainer @n
+
+Attributes:
+- \b off-bitmap [bitmap name]
+- \b num-led [integer]
+- \b orientation [vertical/horizontal]
+- \b decrease-step-value [float]
+
+@section uiviewswitchcontainer UIViewSwitchContainer
+Declaration:
+@verbatim <view class="UIViewSwitchContainer" /> @endverbatim
+
+- \b template-names [string array]
+- \b template-switch-control [tag name]
+- \b animation-style [fade/move/push]
+- \b animation-time [integer]
 
 @cond ignore
 */
