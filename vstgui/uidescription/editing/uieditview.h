@@ -46,7 +46,7 @@ class UISelection;
 class UIDescription;
 class IUIDescription;
 class UICrossLines;
-class IAction;
+class ViewSizeChangeOperation;
 class UIGrid;
 namespace UIEditViewInternal {
 	class UIHighlightView;
@@ -147,7 +147,7 @@ protected:
 	UIEditViewInternal::UIHighlightView* highlightView {nullptr};
 	CLayeredViewContainer* overlayView {nullptr};
 	UICrossLines* lines {nullptr};
-	IAction* moveSizeOperation {nullptr};
+	ViewSizeChangeOperation* moveSizeOperation {nullptr};
 	CVSTGUITimer* editTimer {nullptr};
 	
 	CColor crosslineForegroundColor;

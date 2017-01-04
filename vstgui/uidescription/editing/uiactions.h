@@ -141,6 +141,8 @@ public:
 	UTF8StringPtr getName () override;
 	void perform () override;
 	void undo () override;
+	
+	bool didChange ();
 protected:
 	bool first;
 	bool sizing;

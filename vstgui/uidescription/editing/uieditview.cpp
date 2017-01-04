@@ -814,7 +814,10 @@ CMouseEventResult UIEditView::onMouseUp (CPoint &where, const CButtonState& butt
 		mouseEditMode = kNoEditing;
 		if (moveSizeOperation)
 		{
-			getUndoManager ()->pushAndPerform (moveSizeOperation);
+			if (moveSizeOperation->didChange ())
+				getUndoManager ()->pushAndPerform (moveSizeOperation);
+			else
+				delete moveSizeOperation;
 			moveSizeOperation = nullptr;
 		}
 		onMouseMoved (where, CButtonState (buttons.getModifierState ()));
