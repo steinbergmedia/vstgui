@@ -199,7 +199,7 @@ Win32Frame::Win32Frame (IPlatformFrameCallback* frame, const CRect& size, HWND p
 		{
 			// when WS_EX_COMPOSITED is set drawing does not work correctly. This seems like a bug in Direct2D wich happens with this hotfix
 		}
-		else if (getSystemVersion ().dwMajorVersion >= 6) // Vista and above
+		else if (IsWindowsVistaOrGreater()) // Vista and above
 			style |= WS_EX_COMPOSITED;
 		else
 			backBuffer = createOffscreenContext (size.getWidth (), size.getHeight ());
