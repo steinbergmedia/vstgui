@@ -55,6 +55,7 @@ namespace VSTGUI {
 
 HINSTANCE GetInstance () { return (HINSTANCE)hInstance; }
 
+#ifndef VERSIONHELPERAPI
 const OSVERSIONINFOEX& getSystemVersion ()
 {
 	static OSVERSIONINFOEX gSystemVersion = {0};
@@ -67,6 +68,10 @@ const OSVERSIONINFOEX& getSystemVersion ()
 	}
 	return gSystemVersion;
 }
+const bool IsWindowsVistaOrGreater() {
+	return (getSystemVersion().dwMajorVersion >= 6);
+}
+#endif
 
 //-----------------------------------------------------------------------------
 #if VSTGUI_DIRECT2D_SUPPORT

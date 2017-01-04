@@ -42,6 +42,9 @@
 #include "../../cbitmap.h"
 
 #include <windows.h>
+#if defined (WINAPI_FAMILY_SYSTEM)
+#include <VersionHelpers.h>
+#endif
 
 #include <objidl.h>
 #include <gdiplus.h>
@@ -62,7 +65,10 @@ namespace VSTGUI {
 class CDrawContext;
 
 extern HINSTANCE GetInstance ();
-extern const OSVERSIONINFOEX& getSystemVersion ();
+#ifndef VERSIONHELPERAPI
+extern const OSVERSIONINFOEX& getSystemVersion();
+extern const bool IsWindowsVistaOrGreater();
+#endif
 extern ID2D1Factory* getD2DFactory ();
 extern void useD2D ();
 extern void unuseD2D ();
