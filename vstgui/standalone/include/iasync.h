@@ -6,6 +6,9 @@
 //------------------------------------------------------------------------
 namespace VSTGUI {
 namespace Standalone {
+/** %asynchronous tasks
+ *	@ingroup standalone
+ */
 namespace Async {
 
 using Task = std::function<void ()>;
@@ -26,8 +29,6 @@ enum class Context
  *
  *	Can be called from any thread, but should not be called from realtime constraint threads as it
  *	may involves locks and memory allocations
- *
- *	@ingroup standalone
  *
  *	@param context	background or main thread
  *	@param task		task to be performed

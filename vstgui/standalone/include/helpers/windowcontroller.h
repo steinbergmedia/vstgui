@@ -7,6 +7,10 @@ namespace VSTGUI {
 namespace Standalone {
 
 //------------------------------------------------------------------------
+/** %Window controller adapter
+ *
+ *	@ingroup standalone
+ */
 class WindowControllerAdapter : public IWindowController
 {
 public:

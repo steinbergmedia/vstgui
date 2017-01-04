@@ -216,7 +216,7 @@ public:
 	StringListValue (const UTF8String& id, StepType initialSteps, Type initialValue,
 	                 const ValueConverterPtr& stringConverter);
 
-	bool updateStringList (const std::vector<UTF8String>& newStrings) override;
+	bool updateStringList (const StringList& newStrings) override;
 };
 
 //------------------------------------------------------------------------
@@ -414,7 +414,7 @@ StringListValue::StringListValue (const UTF8String& id, StepType initialSteps, T
 }
 
 //------------------------------------------------------------------------
-bool StringListValue::updateStringList (const std::vector<UTF8String>& newStrings)
+bool StringListValue::updateStringList (const StringList& newStrings)
 {
 	setValueConverter (std::make_shared<Detail::StringListValueConverter> (newStrings));
 	setNumSteps (static_cast<IStepValue::StepType> (newStrings.size ()));
@@ -455,7 +455,7 @@ ValuePtr makeStepValue (const UTF8String& id, IStepValue::StepType initialSteps,
 
 //------------------------------------------------------------------------
 ValuePtr makeStringListValue (const UTF8String& id,
-                              const std::initializer_list<UTF8String>& strings,
+                              const std::initializer_list<IStringListValue::StringType>& strings,
                               IValue::Type initialValue)
 {
 	vstgui_assert (id.empty () == false);
