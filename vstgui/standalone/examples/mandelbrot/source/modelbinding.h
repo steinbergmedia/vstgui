@@ -78,10 +78,11 @@ struct ModelBinding : VSTGUI::Standalone::UIDesc::IModelBinding,
 	const ValuePtr& getProgressValue () const { return progressValue; }
 	const ValuePtr& getMaxIterationsValue () const { return maxIterations; }
 private:
+	static constexpr auto numMaxIterations = 2048.;
 	ValueConverterPtr xConverter {VSTGUI::Standalone::Value::makeRangeConverter (-2.2, 1.2)};
 	ValueConverterPtr yConverter {VSTGUI::Standalone::Value::makeRangeConverter (-1.7, 1.7)};
 
-	ValuePtr maxIterations {VSTGUI::Standalone::Value::makeStepValue ("max interations", 1024)};
+	ValuePtr maxIterations {VSTGUI::Standalone::Value::makeStepValue ("max interations", numMaxIterations)};
 	ValuePtr minX {VSTGUI::Standalone::Value::make ("minX", 0., xConverter)};
 	ValuePtr minY {VSTGUI::Standalone::Value::make ("minY", 0., yConverter)};
 	ValuePtr maxX {VSTGUI::Standalone::Value::make ("maxX", 1., xConverter)};
