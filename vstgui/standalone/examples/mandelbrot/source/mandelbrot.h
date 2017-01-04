@@ -60,15 +60,6 @@ private:
 };
 
 //------------------------------------------------------------------------
-inline Point pixelToPoint (Point max, Point min, Point size, Point pixel)
-{
-	Point p;
-	p.x = min.x + pixel.x / (size.x - 1.0) * (max.x - min.x);
-	p.y = min.y + pixel.y / (size.y - 1.0) * (max.y - min.y);
-	return p;
-}
-
-//------------------------------------------------------------------------
 inline double hypot (double x, double y)
 {
 	return std::sqrt (x * x + y * y);
@@ -102,11 +93,11 @@ inline void calculateLine (uint32_t line, Point size, const Model& model, SetPix
 	diff.x = model.getMax ().x - model.getMin ().x;
 	diff.y = model.getMax ().y - model.getMin ().y;
 	Point pos;
+	pos.y = model.getMin ().y + line * sizeInv.y * diff.y;
+	std::vector<uint32_t> iterationResult (size.x);
 	for (auto x = 0u; x < size.x; ++x)
 	{
 		pos.x = model.getMin ().x + x * sizeInv.x * diff.x;
-		pos.y = model.getMin ().y + line * sizeInv.y * diff.y;
-		//		auto pos = pixelToPoint (model.getMax (), model.getMin (), size, Point (x, line));
 		Complex c {pos.x, pos.y};
 		Complex z {0};
 		uint32_t iterations {};
@@ -114,9 +105,10 @@ inline void calculateLine (uint32_t line, Point size, const Model& model, SetPix
 		for (; iterations < model.getIterations () && hypot (z.real (), z.imag ()) < 2.0;
 		     ++iterations)
 			z = mulAdd (z, z, c);
-
-		setPixel (x, iterations);
+		iterationResult[x] = iterations;
 	}
+	for (auto x = 0u; x < size.x; ++x)
+		setPixel (x, iterationResult[x]);
 }
 
 //------------------------------------------------------------------------
