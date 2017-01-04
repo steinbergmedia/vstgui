@@ -60,6 +60,15 @@ private:
 };
 
 //------------------------------------------------------------------------
+inline Point pixelToPoint (Point max, Point min, Point size, Point pixel)
+{
+	Point p;
+	p.x = min.x + pixel.x / (size.x - 1.0) * (max.x - min.x);
+	p.y = min.y + pixel.y / (size.y - 1.0) * (max.y - min.y);
+	return p;
+}
+
+//------------------------------------------------------------------------
 inline double hypot (double x, double y)
 {
 	return std::sqrt (x * x + y * y);
