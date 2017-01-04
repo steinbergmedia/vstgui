@@ -8,6 +8,10 @@ namespace Standalone {
 namespace Application {
 
 //------------------------------------------------------------------------
+/** %Application delegate adapter
+ *
+ *	@ingroup standalone
+ */
 class DelegateAdapter : public IDelegate
 {
 public:

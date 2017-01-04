@@ -7,6 +7,10 @@ namespace VSTGUI {
 namespace Standalone {
 
 //------------------------------------------------------------------------
+/** Menu builder adapter
+ *
+ *	@ingroup standalone
+ */
 class MenuBuilderAdapter : public IMenuBuilder
 {
 public:
@@ -33,6 +37,12 @@ public:
 };
 
 //------------------------------------------------------------------------
+/** No menu builder adapter
+ *
+ *	Use this to prevent a window to have a menu
+ *
+ *	@ingroup standalone
+ */
 class NoMenuBuilder : public MenuBuilderAdapter
 {
 public:

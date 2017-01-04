@@ -10,6 +10,40 @@ namespace Standalone {
 namespace UIDesc {
 
 //------------------------------------------------------------------------
+/** Customization helper for an UIDesc window
+ *
+ *	Use this class to create controllers for your views
+ *
+ *	Example:
+ *	@code{.cpp}
+ *	using namespace VSTGUI::Standalone;
+ *	auto customization = UIDesc::Customization::make ();
+ *
+ *	customization->addCreateViewControllerFunc (
+ *		"MyFirstViewController", [] (const auto& name, auto parent, const auto uiDesc) {
+ *			return new MyFirstViewController (parent);
+ *		});
+ *	customization->addCreateViewControllerFunc (
+ *		"MySecondViewController", [] (const auto& name, auto parent, const auto uiDesc) {
+ *			return new MySecondViewController (parent);
+ *		});
+ *
+ *	UIDesc::Config config;
+ *	config.uiDescFileName = "Window.uidesc";
+ *	config.viewName = "Window";
+ *	config.customization = customization;
+ *	config.windowConfig.title = "MyWindow";
+ *	config.windowConfig.style.border ().close ().size ().centered ();
+ *	if (auto window = UIDesc::makeWindow (config))
+ *		window->show ();
+ *
+ *	@endcode
+ *
+ *	The view controller MyFirstViewController will be created when the sub-controller attribute of a
+ *	view is equal to "MyFirstController" and the same for "MySecondViewController".
+ *
+ *	@ingroup standalone
+ */
 class Customization : public ICustomization
 {
 public:
