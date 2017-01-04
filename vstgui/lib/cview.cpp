@@ -916,18 +916,20 @@ bool CView::removeAttribute (const CViewAttributeID aId)
 //-----------------------------------------------------------------------------
 void CView::addAnimation (IdStringPtr name, Animation::IAnimationTarget* target, Animation::ITimingFunction* timingFunction, CBaseObject* notificationObject)
 {
-	if (getFrame ())
+	vstgui_assert (isAttached (), "to start an animation, the view needs to be attached");
+	if (auto frame = getFrame ())
 	{
-		getFrame ()->getAnimator ()->addAnimation (this, name, target, timingFunction, notificationObject);
+		frame->getAnimator ()->addAnimation (this, name, target, timingFunction, notificationObject);
 	}
 }
 
 //-----------------------------------------------------------------------------
 void CView::addAnimation (IdStringPtr name, Animation::IAnimationTarget* target, Animation::ITimingFunction* timingFunction, const Animation::DoneFunction& doneFunc)
 {
-	if (getFrame ())
+	vstgui_assert (isAttached (), "to start an animation, the view needs to be attached");
+	if (auto frame = getFrame ())
 	{
-		getFrame ()->getAnimator ()->addAnimation (this, name, target, timingFunction, doneFunc);
+		frame->getAnimator ()->addAnimation (this, name, target, timingFunction, doneFunc);
 	}
 }
 
