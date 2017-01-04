@@ -524,6 +524,8 @@ void CScrollView::setContainerSize (const CRect& cs, bool keepVisibleArea)
 				newValue = 0.f;
 			vsb->setValue (newValue);
 		}
+		if (oldSize != containerSize)
+			vsb->onVisualChange ();
 		valueChanged (vsb);
 	}
 	if (hsb)
@@ -543,6 +545,8 @@ void CScrollView::setContainerSize (const CRect& cs, bool keepVisibleArea)
 				newValue = 0.f;
 			hsb->setValue (newValue);
 		}
+		if (oldSize != containerSize)
+			hsb->onVisualChange ();
 		valueChanged (hsb);
 	}
 }

@@ -283,12 +283,20 @@ CMouseEventResult CScrollbar::onMouseMoved (CPoint &where, const CButtonState& b
 //------------------------------------------------------------------------
 void CScrollbar::onVisualChange ()
 {
-	if (isAttached () && overlayStyle && !mouseIsInside && scrollerLength != 0)
+	if (isAttached () && overlayStyle && !mouseIsInside)
 	{
-		Animation::InterpolationTimingFunction* timingFunction = new Animation::InterpolationTimingFunction (1100);
-		timingFunction->addPoint (1000.f/1100.f, 0);
-		addAnimation ("AlphaValueAnimation", new Animation::AlphaValueAnimation (0.001f), timingFunction);
-		setAlphaValue (1.f);
+		if (scrollerLength != 0)
+		{
+			auto timingFunction = new Animation::InterpolationTimingFunction (1100);
+			timingFunction->addPoint (1000.f/1100.f, 0);
+			addAnimation ("AlphaValueAnimation", new Animation::AlphaValueAnimation (0.001f), timingFunction);
+			setAlphaValue (1.f);
+		}
+		else
+		{
+			removeAnimation ("AlphaValueAnimation");
+			setAlphaValue (0.f);
+		}
 	}
 }
 
