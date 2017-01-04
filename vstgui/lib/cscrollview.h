@@ -37,6 +37,7 @@
 
 #include "vstguifwd.h"
 #include "cviewcontainer.h"
+#include "iviewlistener.h"
 #include "controls/icontrollistener.h"
 
 namespace VSTGUI {
@@ -47,7 +48,7 @@ class CScrollContainer;
 //! @brief a scrollable container view with scrollbars
 /// @ingroup containerviews
 //-----------------------------------------------------------------------------
-class CScrollView : public CViewContainer, public IControlListener
+class CScrollView : public CViewContainer, public IControlListener, public IViewListenerAdapter
 {
 protected:
 	enum
@@ -124,6 +125,9 @@ public:
 protected:
 	~CScrollView () noexcept = default;
 	virtual void recalculateSubViews ();
+
+	void viewSizeChanged (CView* view, const CRect& oldSize) override;
+	void viewWillDelete (CView* view) override;
 
 	CScrollContainer* sc;
 	CScrollbar* vsb;

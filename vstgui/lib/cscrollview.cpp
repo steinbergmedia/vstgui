@@ -395,6 +395,7 @@ void CScrollView::recalculateSubViews ()
 			hsb = new CScrollbar (sbr, this, kHSBTag, CScrollbar::kHorizontal, containerSize);
 			hsb->setAutosizeFlags (kAutosizeLeft | kAutosizeRight | kAutosizeBottom);
 			CViewContainer::addView (hsb, nullptr);
+			hsb->registerViewListener (this);
 		}
 		if (!(style & kOverlayScrollbars))
 			scsize.bottom = sbr.top;
@@ -426,6 +427,7 @@ void CScrollView::recalculateSubViews ()
 			vsb = new CScrollbar (sbr, this, kVSBTag, CScrollbar::kVertical, containerSize);
 			vsb->setAutosizeFlags (kAutosizeTop | kAutosizeRight | kAutosizeBottom);
 			CViewContainer::addView (vsb, nullptr);
+			vsb->registerViewListener (this);
 		}
 		if (!(style & kOverlayScrollbars))
 			scsize.right = sbr.left;
@@ -770,6 +772,28 @@ CMessageResult CScrollView::notify (CBaseObject* sender, IdStringPtr message)
 		}
 	}
 	return CViewContainer::notify (sender, message);
+}
+
+//-----------------------------------------------------------------------------
+void CScrollView::viewSizeChanged (CView* view, const CRect& oldSize)
+{
+	if (view == hsb)
+	{
+		hsb->setScrollSize (containerSize);
+		hsb->onVisualChange ();
+	}
+	else if (view == vsb);
+	{
+		vsb->setScrollSize (containerSize);
+		vsb->onVisualChange ();
+	}
+}
+
+//-----------------------------------------------------------------------------
+void CScrollView::viewWillDelete (CView* view)
+{
+	if (view == hsb || view == vsb)
+		view->unregisterViewListener (this);
 }
 
 } // namespace
