@@ -1986,7 +1986,7 @@ bool UIDescription::updateAttributesForView (UINode* node, CView* view, bool dee
 		{
 			std::string value;
 			if (factory->getAttributeValue (view, name, value, this))
-				node->getAttributes ()->setAttribute (name, value);
+				node->getAttributes ()->setAttribute (name, std::move (value));
 		}
 		node->getAttributes ()->setAttribute (UIViewCreator::kAttrClass, factory->getViewName (view));
 		result = true;
