@@ -52,7 +52,7 @@ UIAttributes::UIAttributes (UTF8StringPtr* attributes)
 		int32_t i = 0;
 		while (attributes[i] != nullptr && attributes[i+1] != nullptr)
 		{
-			insert (std::make_pair (attributes[i], attributes[i+1]));
+			emplace (attributes[i], attributes[i+1]);
 			i += 2;
 		}
 	}
@@ -80,8 +80,9 @@ void UIAttributes::setAttribute (const std::string& name, const std::string& val
 {
 	iterator iter = find (name);
 	if (iter != end ())
-		erase (iter);
-	insert (std::make_pair (name, value));
+		iter->second = value;
+	else
+		emplace (name, value);
 }
 
 //-----------------------------------------------------------------------------
@@ -89,8 +90,9 @@ void UIAttributes::setAttribute (const std::string& name, std::string&& value)
 {
 	iterator iter = find (name);
 	if (iter != end ())
-		erase (iter);
-	insert (std::make_pair (name, std::move (value)));
+		iter->second = std::move (value);
+	else
+		emplace (name, std::move (value));
 }
 
 //-----------------------------------------------------------------------------
@@ -98,8 +100,9 @@ void UIAttributes::setAttribute (std::string&& name, std::string&& value)
 {
 	iterator iter = find (name);
 	if (iter != end ())
-		erase (iter);
-	insert (std::make_pair (std::move (name), std::move (value)));
+		iter->second = std::move (value);
+	else
+		emplace (std::move (name), std::move (value));
 }
 
 //-----------------------------------------------------------------------------
@@ -331,7 +334,7 @@ bool UIAttributes::restore (InputStream& stream)
 			std::string key, value;
 			if (!(stream >> key)) return false;
 			if (!(stream >> value)) return false;
-			setAttribute (key, value);
+			setAttribute (std::move (key), std::move (value));
 		}
 		return true;
 	}
