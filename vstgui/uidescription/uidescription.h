@@ -202,6 +202,10 @@ protected:
 	void xmlCharData (Xml::Parser* parser, const int8_t* data, int32_t length) override;
 	void xmlComment (Xml::Parser* parser, IdStringPtr comment) override;
 
+	bool parsed () const;
+	void setXmlContentProvider (Xml::IContentProvider* provider);
+
+private:
 	CResourceDescription xmlFile;
 	std::string filePath;
 
