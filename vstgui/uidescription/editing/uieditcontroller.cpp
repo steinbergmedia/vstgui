@@ -61,10 +61,12 @@
 #include "../../lib/animation/timingfunctions.h"
 #include "../../lib/cdropsource.h"
 #include "../../lib/cgraphicspath.h"
+#include "../../lib/coffscreencontext.h"
 
 #include <sstream>
 #include <algorithm>
 #include <cassert>
+#include <array>
 
 #if WINDOWS
 #define snprintf _snprintf
@@ -449,15 +451,47 @@ enum {
 	kNotSavedTag = 666,
 	kEditingTag,
 	kAutosizeTag,
+	kBackgroundSelectTag,
 	kTabSwitchTag = 123456
 };
+
+//----------------------------------------------------------------------------------------------------
+static SharedPointer<CBitmap> createColorBitmap (CPoint size, CColor color)
+{
+	auto bitmap = makeOwned<CBitmap> (size);
+	if (auto pixelAccessor = owned (CBitmapPixelAccess::create (bitmap)))
+	{
+		for (auto y = 0u; y < static_cast<uint32_t> (size.y); y++)
+		{
+			pixelAccessor->setPosition (0, y);
+			for (auto x = 0; x < static_cast<uint32_t> (size.x); ++x)
+			{
+				pixelAccessor->setColor (color);
+				++(*pixelAccessor);
+			}
+		}
+	}
+	
+	return bitmap;
+}
+
+static CColor kLightGreyColor (220, 220, 220);
+	
+//----------------------------------------------------------------------------------------------------
+static const std::array<CColor, 4> editViewBackgroundColors = {{
+	{230, 230, 230},
+	{150, 150, 150},
+	kWhiteCColor,
+	kBlackCColor
+}};
 
 //----------------------------------------------------------------------------------------------------
 CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
 {
 	if (view == editView)
 	{
-		editView->setTransparency (true);
+		editView->setBackgroundColor (editViewBackgroundColors[0]);
+		return view;
 	}
 	CSplitView* splitView = dynamic_cast<CSplitView*>(view);
 	if (splitView)
@@ -489,6 +523,26 @@ CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes
 			zoomView->setAutosizeFlags (kAutosizeRight|kAutosizeTop|kAutosizeBottom);
 			splitView->addViewToSeparator (0, zoomView);
 			zoomSettingController->restoreSetting (*getSettings ());
+			
+			// Add Background Menu
+			auto gradient = description->getGradient ("Default TextButton Gradient");
+			auto gradientHighlighted = description->getGradient ("Default TextButton Gradient Highlighted");
+			CRect backSelectRect (0, 0, 20 * editViewBackgroundColors.size (), splitView->getSeparatorWidth ());
+			backSelectRect.inset (2, 2);
+			auto backSelectControl = new CSegmentButton (backSelectRect, this, kBackgroundSelectTag);
+			backSelectControl->setGradient (gradient);
+			backSelectControl->setGradientHighlighted (gradientHighlighted);
+			backSelectControl->setFrameColor (frameColor);
+			backSelectControl->setRoundRadius (2.);
+			auto bitmapSize = splitView->getSeparatorWidth () - 12;
+			CSegmentButton::Segment segment {};
+			segment.iconPosition = CDrawMethods::kIconCenterAbove;
+			for (auto& color : editViewBackgroundColors)
+			{
+				segment.icon = segment.iconHighlighted = createColorBitmap ({bitmapSize, bitmapSize}, color);
+				backSelectControl->addSegment (segment);
+			}
+			splitView->addViewToSeparator (0, backSelectControl);
 		}
 	}
 	CControl* control = dynamic_cast<CControl*>(view);
@@ -618,6 +672,15 @@ void UIEditController::valueChanged (CControl* control)
 			case kAutosizeTag:
 			{
 				editView->enableAutosizing (control->getValue () == 1.f);
+				break;
+			}
+			case kBackgroundSelectTag:
+			{
+				if (auto seg = dynamic_cast<CSegmentButton*> (control))
+				{
+					CColor color = editViewBackgroundColors[seg->getSelectedSegment ()];
+					editView->setBackgroundColor (color);
+				}
 				break;
 			}
 		}
