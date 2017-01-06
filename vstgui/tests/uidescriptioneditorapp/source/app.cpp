@@ -17,6 +17,7 @@ namespace Standalone {
 
 using namespace Application;
 
+#if VSTGUI_LIVE_EDITING
 //------------------------------------------------------------------------
 class Controller : public WindowControllerAdapter, public ICommandHandler
 {
@@ -59,10 +60,11 @@ public:
 		CRect r;
 		r.setSize (window.getSize());
 		auto frame = makeOwned<CFrame> (r, nullptr);
+		frame->enableTooltips (true);
 		if (auto view = editController->createEditView ())
 		{
 			editController->remember (); // view will forget it too
-			view->setViewSize (r);
+			frame->setViewSize (view->getViewSize ());
 			frame->addView (view);
 			window.setContentView (frame);
 		}
@@ -121,6 +123,7 @@ public:
 	SharedPointer<UIDescription> uidesc;
 	SharedPointer<UIEditController> editController;
 };
+#endif
 
 //------------------------------------------------------------------------
 class UIDescriptionEditorApp : public DelegateAdapter
@@ -131,6 +134,7 @@ public:
 
 	void finishLaunching () override
 	{
+#if VSTGUI_LIVE_EDITING
 		auto controller = std::make_shared<Controller> ();
 		if (controller->init ())
 		{
@@ -144,6 +148,12 @@ public:
 			else
 				IApplication::instance ().quit ();
 		}
+#else
+		IApplication::instance ().quit ();
+		AlertBoxConfig config;
+		config.headline = "UIDescriptionEditorApp only works in Debug mode";
+		IApplication::instance().showAlertBox (config);
+#endif
 	}
 
 };
