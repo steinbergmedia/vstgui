@@ -46,7 +46,7 @@ public:
 	void onActivated (const IWindow& window) override;
 	void onDeactivated (const IWindow& window) override;
 	CPoint constraintSize (const IWindow& window, const CPoint& newSize) override;
-	bool canClose (const IWindow& window) const override;
+	bool canClose (const IWindow& window) override;
 	void beforeShow (IWindow& window) override;
 	void onSetContentView (IWindow& window, const SharedPointer<CFrame>& contentView) override;
 
@@ -796,7 +796,7 @@ CPoint WindowController::constraintSize (const IWindow& window, const CPoint& ne
 }
 
 //------------------------------------------------------------------------
-bool WindowController::canClose (const IWindow& window) const
+bool WindowController::canClose (const IWindow& window)
 {
 	return impl ? impl->canClose () : true;
 }

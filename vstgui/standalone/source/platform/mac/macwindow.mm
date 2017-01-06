@@ -574,6 +574,11 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 - (void)performClose:(nullable id)sender
 {
 	using namespace VSTGUI::Standalone;
+	if (self.delegate)
+	{
+		if (![self.delegate windowShouldClose:self])
+			return;
+	}
 	VSTGUIWindow* window = self;
 	Async::perform (Async::Context::Main, [=] () { [window close]; });
 }

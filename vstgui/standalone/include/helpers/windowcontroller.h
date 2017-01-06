@@ -25,7 +25,7 @@ public:
 	{
 		return newSize;
 	}
-	bool canClose (const IWindow& window) const override { return true; }
+	bool canClose (const IWindow& window) override { return true; }
 	void beforeShow (IWindow& window) override {}
 	void onSetContentView (IWindow& window, const SharedPointer<CFrame>& contentView) override {}
 	IMenuBuilder* getWindowMenuBuilder (const IWindow& window) const override { return nullptr; }
