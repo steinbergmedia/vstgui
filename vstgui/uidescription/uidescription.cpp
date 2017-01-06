@@ -776,9 +776,21 @@ void UIDescription::addDefaultNodes ()
 }
 
 //-----------------------------------------------------------------------------
+bool UIDescription::parsed () const
+{
+	return nodes != nullptr;
+}
+
+//-----------------------------------------------------------------------------
+void UIDescription::setXmlContentProvider (Xml::IContentProvider* provider)
+{
+	xmlContentProvider = provider;
+}
+
+//-----------------------------------------------------------------------------
 bool UIDescription::parse ()
 {
-	if (nodes)
+	if (parsed ())
 		return true;
 	Xml::Parser parser;
 	if (xmlContentProvider)

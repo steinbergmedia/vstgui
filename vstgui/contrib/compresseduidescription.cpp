@@ -70,7 +70,7 @@ CompressedUIDescription::CompressedUIDescription (const CResourceDescription& co
 //-----------------------------------------------------------------------------
 bool CompressedUIDescription::parse ()
 {
-	if (nodes)
+	if (parsed ())
 		return true;
 	bool result = false;
 	CResourceInputStream resStream (kLittleEndianByteOrder);
@@ -84,9 +84,9 @@ bool CompressedUIDescription::parse ()
 			if (zin.open (resStream))
 			{
 				Xml::InputStreamContentProvider compressedContentProvider (zin);
-				xmlContentProvider = &compressedContentProvider;
+				setXmlContentProvider (&compressedContentProvider);
 				result = UIDescription::parse ();
-				xmlContentProvider = nullptr;
+				setXmlContentProvider (nullptr);
 			}
 		}
 	}
