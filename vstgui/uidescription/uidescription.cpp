@@ -680,14 +680,14 @@ struct UIDescription::Impl
 	
 	bool restoreViewsMode {false};
 
-	Optional<UIVariableNode*> variableBaseNode;
+	Optional<UINode*> variableBaseNode;
 
-	UIVariableNode* getVariableBaseNode ()
+	UINode* getVariableBaseNode ()
 	{
 		if (!variableBaseNode)
 		{
 			if (nodes)
-				variableBaseNode = dynamic_cast<UIVariableNode*> (nodes->getChildren ().findChildNode (MainNodeNames::kVariable));
+				variableBaseNode = nodes->getChildren ().findChildNode (MainNodeNames::kVariable);
 		}
 		return *variableBaseNode;
 	}
