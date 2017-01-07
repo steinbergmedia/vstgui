@@ -69,6 +69,7 @@ struct Optional
 	T&& value ();
 	const T& value () const;
 
+	void reset ();
 private:
 	std::pair<bool, T> _value;
 };
@@ -150,6 +151,14 @@ inline const T& Optional<T>::value () const
 {
 	assert (_value.first);
 	return _value.second;
+}
+
+//------------------------------------------------------------------------
+template <typename T>
+inline void Optional<T>::reset ()
+{
+	_value.first = false;
+	_value.second = {};
 }
 
 //------------------------------------------------------------------------

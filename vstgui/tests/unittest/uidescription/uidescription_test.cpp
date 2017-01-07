@@ -35,9 +35,11 @@
 #include "../unittests.h"
 #include "../../../uidescription/uidescription.h"
 #include "../../../uidescription/uiattributes.h"
+#include "../../../uidescription/icontroller.h"
 #include "../../../uidescription/xmlparser.h"
 #include "../../../uidescription/detail/uiviewcreatorattributes.h"
 #include "../../../lib/ccolor.h"
+#include "../../../lib/cbitmap.h"
 #include "../../../lib/cgradient.h"
 #include "../../../lib/cviewcontainer.h"
 

@@ -241,6 +241,7 @@ public:
 
 	bool operator== (const UTF8StringPtr otherString) const;
 	bool operator!= (const UTF8StringPtr otherString) const;
+	bool operator== (UTF8StringView otherString) const;
 	operator const UTF8StringPtr () const;
 //-----------------------------------------------------------------------------
 private:
@@ -486,6 +487,14 @@ inline bool UTF8StringView::operator== (const UTF8StringPtr otherString) const
 inline bool UTF8StringView::operator!= (const UTF8StringPtr otherString) const
 {
 	return !(*this == otherString);
+}
+
+//-----------------------------------------------------------------------------
+inline bool UTF8StringView::operator== (UTF8StringView otherString) const
+{
+	if (byteCount && otherString.byteCount && *byteCount != *otherString.byteCount)
+		return false;
+	return operator==(otherString.str);
 }
 
 //-----------------------------------------------------------------------------
