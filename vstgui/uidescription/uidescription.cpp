@@ -675,7 +675,6 @@ struct UIDescription::Impl
 	SharedPointer<UIDescription> sharedResources;
 	
 	mutable std::deque<IController*> subControllerStack;
-	
 	std::deque<UINode*> nodeStack;
 	
 	bool restoreViewsMode {false};
