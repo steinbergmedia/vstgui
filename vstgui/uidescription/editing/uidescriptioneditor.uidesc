@@ -669,18 +669,18 @@
 		<view autosize="left right top bottom " back-color="db.font" background-offset="0, 0" class="COptionMenu" control-tag="attributes.optionmenu" default-value="0.5" font="~ NormalFont" font-antialias="true" font-color="db.background" frame-color="db.font" frame-width="1" max-value="1.84467e+19" menu-check-style="true" menu-popup-style="true" min-value="0" mouse-enabled="true" opacity="1" origin="1, 1" round-rect-radius="6" shadow-color="~ RedCColor" size="398, 16" style-3D-in="false" style-3D-out="false" style-no-draw="true" style-no-frame="false" style-no-text="true" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" text-shadow-offset="1, 1" transparent="true" value-precision="2" wants-focus="true" wheel-inc-value="0.1"/>
 	</template>
 	<custom>
-		<attributes EditViewScale="1" EditorSize="0, 0, 923, 692" EncodeBitmaps="true" SplitViewSize_0_0="0.521609538002980599458169308491051197052" SplitViewSize_0_1="0.448584202682563326636255851553869433701" SplitViewSize_1_0="0.4754098360655737431912370993813965469599" SplitViewSize_1_1="0.5171385991058121689434301515575498342514" SplitViewSize_2_0="0.8049837486457205315559804148506373167038" SplitViewSize_2_1="0.1895991332611050850243117338322917930782" Version="1" name="UIEditController"/>
+		<attributes EditViewScale="1" EditorSize="0, 0, 923, 692" EncodeBitmaps="true" SplitViewSize_0_0="0.521609538002980599458169308491051197052" SplitViewSize_0_1="0.448584202682563326636255851553869433701" SplitViewSize_1_0="0.4754098360655737431912370993813965469599" SplitViewSize_1_1="0.5171385991058121689434301515575498342514" SplitViewSize_2_0="0.8049837486457205315559804148506373167038" SplitViewSize_2_1="0.1895991332611050850243117338322917930782" TabSwitchValue="2" Version="1" name="UIEditController"/>
 		<attributes name="UIViewCreatorController"/>
 		<attributes Size="5, 5" name="UIGridController"/>
 		<attributes SelectedRow="22" name="UIViewCreatorDataSource"/>
 		<attributes name="UIAttributesController"/>
-		<attributes FilterString="control." SelectedRow="3" name="UIColorsDataSource"/>
+		<attributes SelectedRow="7" name="UIColorsDataSource"/>
 		<attributes FilterString="gradients.edit.apply" SelectedRow="0" name="UITagsDataSource"/>
 		<attributes SelectedRow="0" name="UIFontsDataSource"/>
 		<attributes SelectedRow="17" name="UIBitmapsDataSource"/>
-		<attributes SelectedTemplate="attributes.view.autosize" name="UITemplateController"/>
-		<attributes name="FocusDrawing"/>
-		<attributes SelectedRow="1" name="UIGradientsDataSource"/>
+		<attributes SelectedTemplate="attributes.number" name="UITemplateController"/>
+		<attributes color="focus" enabled="true" name="FocusDrawing" width="1.5"/>
+		<attributes SelectedRow="10" name="UIGradientsDataSource"/>
 		<attributes Path="/Users/scheffle/subversion/vstgui/vstgui/uidescription/editing/uidescriptioneditor.uidesc" name="VST3Editor"/>
 	</custom>
 	<template autosize="left right top bottom " background-color="background" background-color-draw-style="filled and stroked" class="CViewContainer" mouse-enabled="true" name="bitmapediting" opacity="1" origin="0, 0" size="170, 223" sub-controller="BitmapEditController" transparent="false" wants-focus="false">
@@ -894,9 +894,8 @@
 			<color-stop color="#646464ff" start="1"/>
 		</gradient>
 		<gradient name="Toolbar">
-			<color-stop rgba="#686868ff" start="0"/>
-			<color-stop rgba="#4d4d4dff" start="0.5245785361842105753993337202700786292553"/>
-			<color-stop rgba="#4d4d4dff" start="1"/>
+			<color-stop rgba="#2a3340ff" start="0"/>
+			<color-stop rgba="#232a34ff" start="0.511184210526315796485619102895725518465"/>
 		</gradient>
 		<gradient name="shading.light">
 			<color-stop rgba="#edededff" start="0"/>

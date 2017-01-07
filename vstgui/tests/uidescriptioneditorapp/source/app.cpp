@@ -11,6 +11,7 @@
 #include "vstgui/uidescription/editing/uiundomanager.h"
 #include "vstgui/lib/cframe.h"
 #include "vstgui/lib/cbitmap.h"
+#include "vstgui/lib/ccolor.h"
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -68,6 +69,16 @@ public:
 			frame->setViewSize (view->getViewSize ());
 			frame->addView (view);
 			window.setContentView (frame);
+			
+			auto focusDrawingSettings = uidesc->getFocusDrawingSettings ();
+			if (focusDrawingSettings.enabled)
+			{
+				CColor focusColor;
+				if (uidesc->getColor(focusDrawingSettings.colorName, focusColor))
+					frame->setFocusColor(focusColor);
+				frame->setFocusWidth (focusDrawingSettings.width);
+				frame->setFocusDrawingEnabled (true);
+			}
 		}
 	}
 
