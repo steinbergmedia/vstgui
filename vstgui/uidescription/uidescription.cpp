@@ -118,7 +118,7 @@ public:
 	virtual void add (UINode* obj);
 	virtual void remove (UINode* obj);
 	virtual void removeAll ();
-	virtual UINode* findChildNode (const std::string& nodeName) const;
+	virtual UINode* findChildNode (UTF8StringView nodeName) const;
 	virtual UINode* findChildNodeWithAttributeValue (const std::string& attributeName, const std::string& attributeValue) const;
 
 	virtual void nodeAttributeChanged (UINode* child, const std::string& attributeName, const std::string& oldAttributeValue) {}
@@ -378,11 +378,12 @@ void UIDescList::removeAll ()
 }
 
 //-----------------------------------------------------------------------------
-UINode* UIDescList::findChildNode (const std::string& nodeName) const
+UINode* UIDescList::findChildNode (UTF8StringView nodeName) const
 {
 	for (const auto& node : *this)
 	{
-		if (node->getName () == nodeName)
+		auto& name = node->getName ();
+		if (nodeName == UTF8StringView (name))
 			return node;
 	}
 	return nullptr;
@@ -678,6 +679,18 @@ struct UIDescription::Impl
 	std::deque<UINode*> nodeStack;
 	
 	bool restoreViewsMode {false};
+
+	Optional<UIVariableNode*> variableBaseNode;
+
+	UIVariableNode* getVariableBaseNode ()
+	{
+		if (!variableBaseNode)
+		{
+			if (nodes)
+				variableBaseNode = dynamic_cast<UIVariableNode*> (nodes->getChildren ().findChildNode (MainNodeNames::kVariable));
+		}
+		return *variableBaseNode;
+	}
 };
 
 //-----------------------------------------------------------------------------
@@ -1316,9 +1329,10 @@ const UIAttributes* UIDescription::getViewAttributes (UTF8StringPtr name) const
 //-----------------------------------------------------------------------------
 UINode* UIDescription::getBaseNode (UTF8StringPtr name) const
 {
+	UTF8StringView nameView (name);
+	nameView.calculateByteCount ();
 	if (impl->sharedResources)
 	{
-		UTF8StringView nameView (name);
 		if (nameView == MainNodeNames::kBitmap || nameView == MainNodeNames::kFont || nameView == MainNodeNames::kColor || nameView == MainNodeNames::kGradient)
 		{
 			return impl->sharedResources->getBaseNode (name);
@@ -1326,7 +1340,7 @@ UINode* UIDescription::getBaseNode (UTF8StringPtr name) const
 	}
 	if (impl->nodes)
 	{
-		UINode* node = impl->nodes->getChildren ().findChildNode (name);
+		UINode* node = impl->nodes->getChildren ().findChildNode (nameView);
 		if (node)
 			return node;
 
@@ -2305,7 +2319,7 @@ bool UIDescription::changeControlTagString  (UTF8StringPtr tagName, const std::s
 //-----------------------------------------------------------------------------
 bool UIDescription::getVariable (UTF8StringPtr name, double& value) const
 {
-	UIVariableNode* node = dynamic_cast<UIVariableNode*> (findChildNodeByNameAttribute (getBaseNode (MainNodeNames::kVariable), name));
+	UIVariableNode* node = dynamic_cast<UIVariableNode*> (findChildNodeByNameAttribute (impl->getVariableBaseNode (), name));
 	if (node)
 	{
 		if (node->getType () == UIVariableNode::kNumber)
@@ -2329,7 +2343,7 @@ bool UIDescription::getVariable (UTF8StringPtr name, double& value) const
 //-----------------------------------------------------------------------------
 bool UIDescription::getVariable (UTF8StringPtr name, std::string& value) const
 {
-	UIVariableNode* node = dynamic_cast<UIVariableNode*> (findChildNodeByNameAttribute (getBaseNode (MainNodeNames::kVariable), name));
+	UIVariableNode* node = dynamic_cast<UIVariableNode*> (findChildNodeByNameAttribute (impl->getVariableBaseNode (), name));
 	if (node)
 	{
 		value = node->getString ();
