@@ -40,6 +40,9 @@
 
 namespace VSTGUI {
 
+//-----------------------------------------------------------------------------
+using CViewAttributeID = size_t;
+
 // enums
 //----------------------------
 // @brief Mouse Wheel Axis

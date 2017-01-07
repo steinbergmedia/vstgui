@@ -36,24 +36,16 @@
 #define __uidescription__
 
 #include "../lib/idependency.h"
-#include "../lib/cbitmap.h"
-#include "../lib/cstring.h"
 #include "iuidescription.h"
-#include "icontroller.h"
+#include "uidescriptionfwd.h"
 #include "xmlparser.h"
-#include <deque>
 #include <list>
 #include <string>
+#include <memory>
 
 namespace VSTGUI {
 
 class UINode;
-class UIAttributes;
-class IViewFactory;
-class IUIDescription;
-class IBitmapCreator;
-class InputStream;
-class OutputStream;
 
 //-----------------------------------------------------------------------------
 /// @brief XML description parser and view creator
@@ -79,11 +71,11 @@ public:
 	bool storeViews (const std::list<CView*>& views, OutputStream& stream, UIAttributes* customData = nullptr) const;
 	bool restoreViews (InputStream& stream, std::list<SharedPointer<CView> >& views, UIAttributes** customData = nullptr);
 
-	UTF8StringPtr getFilePath () const { return filePath.c_str (); }
+	UTF8StringPtr getFilePath () const;
 	void setFilePath (UTF8StringPtr path);
 	
 	void setSharedResources (const SharedPointer<UIDescription>& resources);
-	const SharedPointer<UIDescription>& getSharedResources () const { return sharedResources; }
+	const SharedPointer<UIDescription>& getSharedResources () const;
 	
 	const UIAttributes* getViewAttributes (UTF8StringPtr name) const;
 
@@ -96,8 +88,8 @@ public:
 	CGradient* getGradient (UTF8StringPtr name) const override;
 	int32_t getTagForName (UTF8StringPtr name) const override;
 	IControlListener* getControlListener (UTF8StringPtr name) const override;
-	IController* getController () const override { return controller; }
-	const IViewFactory* getViewFactory () const override { return viewFactory; }
+	IController* getController () const override;
+	const IViewFactory* getViewFactory () const override;
 	
 	UTF8StringPtr lookupColorName (const CColor& color) const override;
 	UTF8StringPtr lookupFontName (const CFontRef font) const override;
@@ -206,21 +198,8 @@ protected:
 	void setXmlContentProvider (Xml::IContentProvider* provider);
 
 private:
-	CResourceDescription xmlFile;
-	std::string filePath;
-
-	UINode* nodes;
-	mutable IController* controller;
-	IViewFactory* viewFactory;
-	Xml::IContentProvider* xmlContentProvider;
-	IBitmapCreator* bitmapCreator;
-	SharedPointer<UIDescription> sharedResources;
-
-	mutable std::deque<IController*> subControllerStack;
-
-	std::deque<UINode*> nodeStack;
-	
-	bool restoreViewsMode;
+	struct Impl;
+	std::unique_ptr<Impl> impl;
 };
  
 //-----------------------------------------------------------------------------
