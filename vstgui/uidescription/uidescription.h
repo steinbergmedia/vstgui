@@ -174,6 +174,20 @@ public:
 	static IdStringPtr kMessageGradientChanged;
 	static IdStringPtr kMessageBeforeSave;
 protected:
+	void addDefaultNodes ();
+
+	bool saveToStream (OutputStream& stream, int32_t flags);
+
+	bool parsed () const;
+	void setXmlContentProvider (Xml::IContentProvider* provider);
+
+private:
+	// Xml::IHandler
+	void startXmlElement (Xml::Parser* parser, IdStringPtr elementName, UTF8StringPtr* elementAttributes) override;
+	void endXmlElement (Xml::Parser* parser, IdStringPtr name) override;
+	void xmlCharData (Xml::Parser* parser, const int8_t* data, int32_t length) override;
+	void xmlComment (Xml::Parser* parser, IdStringPtr comment) override;
+	
 	CView* createViewFromNode (UINode* node) const;
 	UINode* getBaseNode (UTF8StringPtr name) const;
 	UINode* findChildNodeByNameAttribute (UINode* node, UTF8StringPtr nameAttribute) const;
@@ -183,21 +197,7 @@ protected:
 	template<typename NodeType, typename ObjType, typename CompareFunction> UTF8StringPtr lookupName (const ObjType& obj, IdStringPtr mainNodeName, CompareFunction compare) const;
 	template<typename NodeType> void changeNodeName (UTF8StringPtr oldName, UTF8StringPtr newName, IdStringPtr mainNodeName, IdStringPtr changeMsg);
 	template<typename NodeType> void collectNamesFromNode (IdStringPtr mainNodeName, std::list<const std::string*>& names) const;
-
-	void addDefaultNodes ();
-
-	bool saveToStream (OutputStream& stream, int32_t flags);
-
-	// Xml::IHandler
-	void startXmlElement (Xml::Parser* parser, IdStringPtr elementName, UTF8StringPtr* elementAttributes) override;
-	void endXmlElement (Xml::Parser* parser, IdStringPtr name) override;
-	void xmlCharData (Xml::Parser* parser, const int8_t* data, int32_t length) override;
-	void xmlComment (Xml::Parser* parser, IdStringPtr comment) override;
-
-	bool parsed () const;
-	void setXmlContentProvider (Xml::IContentProvider* provider);
-
-private:
+	
 	struct Impl;
 	std::unique_ptr<Impl> impl;
 };
