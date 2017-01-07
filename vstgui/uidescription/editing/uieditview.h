@@ -36,9 +36,11 @@
 #define __uieditview__
 
 #include "../../lib/cviewcontainer.h"
-#include "../../lib/ccolor.h"
 
 #if VSTGUI_LIVE_EDITING
+
+#include "../../lib/cbitmap.h"
+#include "../../lib/ccolor.h"
 
 namespace VSTGUI {
 class UIUndoManager;

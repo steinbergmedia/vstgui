@@ -39,6 +39,7 @@
 
 #if VSTGUI_LIVE_EDITING
 
+#include "../icontroller.h"
 #include "../../lib/controls/ctextedit.h"
 #include <string>
 

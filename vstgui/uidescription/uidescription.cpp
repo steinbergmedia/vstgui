@@ -38,12 +38,14 @@
 #include "uiviewcreator.h"
 #include "cstream.h"
 #include "base64codec.h"
+#include "icontroller.h"
 #include "../lib/cfont.h"
 #include "../lib/cstring.h"
 #include "../lib/cframe.h"
 #include "../lib/cdrawcontext.h"
 #include "../lib/cgradient.h"
 #include "../lib/cgraphicspath.h"
+#include "../lib/cbitmap.h"
 #include "../lib/cbitmapfilter.h"
 #include "../lib/platform/std_unorderedmap.h"
 #include "../lib/platform/iplatformbitmap.h"
@@ -53,6 +55,7 @@
 #include <fstream>
 #include <algorithm>
 #include <cassert>
+#include <deque>
 
 namespace VSTGUI {
 
@@ -658,53 +661,70 @@ IdStringPtr UIDescription::kMessageGradientChanged = "kMessageGradientChanged";
 IdStringPtr UIDescription::kMessageBeforeSave = "kMessageBeforeSave";
 
 //-----------------------------------------------------------------------------
-UIDescription::UIDescription (const CResourceDescription& xmlFile, IViewFactory* _viewFactory)
-: xmlFile (xmlFile)
-, nodes (nullptr)
-, controller (nullptr)
-, viewFactory (_viewFactory)
-, xmlContentProvider (nullptr)
-, bitmapCreator (nullptr)
-, restoreViewsMode (false)
+struct UIDescription::Impl
 {
+	CResourceDescription xmlFile;
+	std::string filePath;
+	
+	mutable IController* controller {nullptr};
+	IViewFactory* viewFactory {nullptr};
+	Xml::IContentProvider* xmlContentProvider {nullptr};
+	IBitmapCreator* bitmapCreator { nullptr};
+
+	SharedPointer<UINode> nodes;
+	SharedPointer<UIDescription> sharedResources;
+	
+	mutable std::deque<IController*> subControllerStack;
+	
+	std::deque<UINode*> nodeStack;
+	
+	bool restoreViewsMode {false};
+};
+
+//-----------------------------------------------------------------------------
+UIDescription::UIDescription (const CResourceDescription& xmlFile, IViewFactory* _viewFactory)
+{
+	impl = std::unique_ptr<Impl> (new Impl);
+	impl->xmlFile = xmlFile;
+	impl->viewFactory = _viewFactory;
 	if (xmlFile.type == CResourceDescription::kStringType && xmlFile.u.name != nullptr)
 		setFilePath (xmlFile.u.name);
-	if (viewFactory == nullptr)
-		viewFactory = getGenericViewFactory ();
+	if (impl->viewFactory == nullptr)
+		impl->viewFactory = getGenericViewFactory ();
 }
 
 //-----------------------------------------------------------------------------
 UIDescription::UIDescription (Xml::IContentProvider* xmlContentProvider, IViewFactory* _viewFactory)
-: nodes (nullptr)
-, controller (nullptr)
-, viewFactory (_viewFactory)
-, xmlContentProvider (xmlContentProvider)
-, bitmapCreator (nullptr)
-, restoreViewsMode (false)
 {
-	memset (&xmlFile, 0, sizeof (CResourceDescription));
-	if (viewFactory == nullptr)
-		viewFactory = getGenericViewFactory ();
+	impl = std::unique_ptr<Impl> (new Impl);
+	impl->viewFactory = _viewFactory;
+	impl->xmlContentProvider = xmlContentProvider;
+	if (impl->viewFactory == nullptr)
+		impl->viewFactory = getGenericViewFactory ();
 }
 
 //-----------------------------------------------------------------------------
 UIDescription::~UIDescription () noexcept
 {
-	if (nodes)
-		nodes->forget ();
 }
 
 //------------------------------------------------------------------------
 void UIDescription::setFilePath (UTF8StringPtr path)
 {
-	filePath = path;
-	xmlFile.u.name = filePath.c_str (); // make sure that xmlFile.u.name points to valid memory
+	impl->filePath = path;
+	impl->xmlFile.u.name = impl->filePath.data (); // make sure that xmlFile.u.name points to valid memory
+}
+
+//-----------------------------------------------------------------------------
+UTF8StringPtr UIDescription::getFilePath () const
+{
+	return impl->filePath.data ();
 }
 
 //-----------------------------------------------------------------------------
 void UIDescription::addDefaultNodes ()
 {
-	if (sharedResources)
+	if (impl->sharedResources)
 		return;
 	UINode* fontsNode = getBaseNode (MainNodeNames::kFont);
 	if (fontsNode)
@@ -778,13 +798,13 @@ void UIDescription::addDefaultNodes ()
 //-----------------------------------------------------------------------------
 bool UIDescription::parsed () const
 {
-	return nodes != nullptr;
+	return impl->nodes != nullptr;
 }
 
 //-----------------------------------------------------------------------------
 void UIDescription::setXmlContentProvider (Xml::IContentProvider* provider)
 {
-	xmlContentProvider = provider;
+	impl->xmlContentProvider = provider;
 }
 
 //-----------------------------------------------------------------------------
@@ -793,9 +813,9 @@ bool UIDescription::parse ()
 	if (parsed ())
 		return true;
 	Xml::Parser parser;
-	if (xmlContentProvider)
+	if (impl->xmlContentProvider)
 	{
-		if (parser.parse (xmlContentProvider, this))
+		if (parser.parse (impl->xmlContentProvider, this))
 		{
 			addDefaultNodes ();
 			return true;
@@ -804,7 +824,7 @@ bool UIDescription::parse ()
 	else
 	{
 		CResourceInputStream resInputStream;
-		if (resInputStream.open (xmlFile))
+		if (resInputStream.open (impl->xmlFile))
 		{
 			Xml::InputStreamContentProvider contentProvider (resInputStream);
 			if (parser.parse (&contentProvider, this))
@@ -813,10 +833,10 @@ bool UIDescription::parse ()
 				return true;
 			}
 		}
-		else if (xmlFile.type == CResourceDescription::kStringType)
+		else if (impl->xmlFile.type == CResourceDescription::kStringType)
 		{
 			CFileStream fileStream;
-			if (fileStream.open (xmlFile.u.name, CFileStream::kReadMode))
+			if (fileStream.open (impl->xmlFile.u.name, CFileStream::kReadMode))
 			{
 				Xml::InputStreamContentProvider contentProvider (fileStream);
 				if (parser.parse (&contentProvider, this))
@@ -827,9 +847,9 @@ bool UIDescription::parse ()
 			}
 		}
 	}
-	if (!nodes)
+	if (!impl->nodes)
 	{
-		nodes = new UINode ("vstgui-ui-description");
+		impl->nodes = makeOwned<UINode> ("vstgui-ui-description");
 		addDefaultNodes ();
 	}
 	return false;
@@ -838,19 +858,31 @@ bool UIDescription::parse ()
 //-----------------------------------------------------------------------------
 void UIDescription::setController (IController* inController) const
 {
-	controller = inController;
+	impl->controller = inController;
+}
+
+//-----------------------------------------------------------------------------
+IController* UIDescription::getController () const
+{
+	return impl->controller;
+}
+
+//-----------------------------------------------------------------------------
+const IViewFactory* UIDescription::getViewFactory () const
+{
+	return impl->viewFactory;
 }
 
 //-----------------------------------------------------------------------------
 void UIDescription::setBitmapCreator (IBitmapCreator* creator)
 {
-	bitmapCreator = creator;
+	impl->bitmapCreator = creator;
 }
 
 //-----------------------------------------------------------------------------
 bool UIDescription::saveWindowsRCFile (UTF8StringPtr filename)
 {
-	if (sharedResources)
+	if (impl->sharedResources)
 		return true;
 	bool result = false;
 	UINode* bitmapNodes = getBaseNode (MainNodeNames::kBitmap);
@@ -926,7 +958,7 @@ bool UIDescription::save (UTF8StringPtr filename, int32_t flags)
 bool UIDescription::saveToStream (OutputStream& stream, int32_t flags)
 {
 	changed (kMessageBeforeSave);
-	if (!sharedResources)
+	if (!impl->sharedResources)
 	{
 		UINode* bitmapNodes = getBaseNode (MainNodeNames::kBitmap);
 		if (bitmapNodes)
@@ -937,7 +969,7 @@ bool UIDescription::saveToStream (OutputStream& stream, int32_t flags)
 				if (bitmapNode)
 				{
 					if (flags & kWriteImagesIntoXMLFile)
-						bitmapNode->createXMLData (filePath);
+						bitmapNode->createXMLData (impl->filePath);
 					else
 						bitmapNode->removeXMLData ();
 					
@@ -945,15 +977,21 @@ bool UIDescription::saveToStream (OutputStream& stream, int32_t flags)
 			}
 		}
 	}
-	nodes->getAttributes ()->setAttribute ("version", "1");
+	impl->nodes->getAttributes ()->setAttribute ("version", "1");
 	UIDescWriter writer;
-	return writer.write (stream, nodes);
+	return writer.write (stream, impl->nodes);
 }
 
 //-----------------------------------------------------------------------------
 void UIDescription::setSharedResources (const SharedPointer<UIDescription>& resources)
 {
-	sharedResources = resources;
+	impl->sharedResources = resources;
+}
+
+//-----------------------------------------------------------------------------
+const SharedPointer<UIDescription>& UIDescription::getSharedResources () const
+{
+	return impl->sharedResources;
 }
 
 //-----------------------------------------------------------------------------
@@ -966,7 +1004,7 @@ UINode* UIDescription::findNodeForView (CView* view) const
 	if (parentView)
 	{
 		UINode* node = nullptr;
-		for (const auto& itNode : nodes->getChildren ())
+		for (const auto& itNode : impl->nodes->getChildren ())
 		{
 			if (itNode->getName () == MainNodeNames::kTemplate)
 			{
@@ -1038,7 +1076,7 @@ bool UIDescription::storeViews (const std::list<CView*>& views, OutputStream& st
 		{
 		#if VSTGUI_LIVE_EDITING
 			UIAttributes* attr = new UIAttributes;
-			UIViewFactory* factory = dynamic_cast<UIViewFactory*> (viewFactory);
+			UIViewFactory* factory = dynamic_cast<UIViewFactory*> (impl->viewFactory);
 			if (factory)
 			{
 				if (factory->getAttributesForView (view, const_cast<UIDescription*> (this), *attr) == false)
@@ -1069,16 +1107,19 @@ bool UIDescription::storeViews (const std::list<CView*>& views, OutputStream& st
 //-----------------------------------------------------------------------------
 bool UIDescription::restoreViews (InputStream& stream, std::list<SharedPointer<CView> >& views, UIAttributes** customData)
 {
-	UINode* baseNode = nullptr;
-	if (nodes)
+	SharedPointer<UINode> baseNode;
+	if (impl->nodes)
 	{
-		ScopePointer<UINode> sp (&nodes, baseNode);
+		auto origNodes = std::move (impl->nodes);
+		impl->nodes = baseNode;
+
 		Xml::InputStreamContentProvider contentProvider (stream);
 		Xml::Parser parser;
 		if (parser.parse (&contentProvider, this))
 		{
-			baseNode = nodes;
+			baseNode = impl->nodes;
 		}
+		impl->nodes = std::move (origNodes);
 	}
 	if (baseNode)
 	{
@@ -1103,7 +1144,6 @@ bool UIDescription::restoreViews (InputStream& stream, std::list<SharedPointer<C
 				}
 			}
 		}
-		baseNode->forget ();
 	}
 	return views.empty () == false;
 }
@@ -1114,41 +1154,41 @@ CView* UIDescription::createViewFromNode (UINode* node) const
 	const std::string* templateName = node->getAttributes ()->getAttributeValue (MainNodeNames::kTemplate);
 	if (templateName)
 	{
-		CView* view = createView (templateName->c_str (), controller);
+		CView* view = createView (templateName->c_str (), impl->controller);
 		if (view)
-			viewFactory->applyAttributeValues (view, *node->getAttributes (), this);
+			impl->viewFactory->applyAttributeValues (view, *node->getAttributes (), this);
 		return view;
 	}
 
 	IController* subController = nullptr;
 	CView* result = nullptr;
-	if (controller)
+	if (impl->controller)
 	{
 		const std::string* subControllerName = node->getAttributes ()->getAttributeValue ("sub-controller");
 		if (subControllerName)
 		{
-			subController = controller->createSubController (subControllerName->c_str (), this);
+			subController = impl->controller->createSubController (subControllerName->c_str (), this);
 			if (subController)
 			{
-				subControllerStack.emplace_back (controller);
+				impl->subControllerStack.emplace_back (impl->controller);
 				setController (subController);
 			}
 		}
-		result = controller->createView (*node->getAttributes (), this);
-		if (result && viewFactory)
+		result = impl->controller->createView (*node->getAttributes (), this);
+		if (result && impl->viewFactory)
 		{
 			const std::string* viewClass = node->getAttributes ()->getAttributeValue (UIViewCreator::kAttrClass);
 			if (viewClass)
-				viewFactory->applyCustomViewAttributeValues (result, viewClass->c_str (), *node->getAttributes (), this);
+				impl->viewFactory->applyCustomViewAttributeValues (result, viewClass->c_str (), *node->getAttributes (), this);
 		}
 	}
-	if (result == nullptr && viewFactory)
+	if (result == nullptr && impl->viewFactory)
 	{
-		result = viewFactory->createView (*node->getAttributes (), this);
+		result = impl->viewFactory->createView (*node->getAttributes (), this);
 		if (result == nullptr)
 		{
 			result = new CViewContainer (CRect (0, 0, 0, 0));
-			viewFactory->applyCustomViewAttributeValues (result, "CViewContainer", *node->getAttributes (), this);
+			impl->viewFactory->applyCustomViewAttributeValues (result, "CViewContainer", *node->getAttributes (), this);
 		}
 	}
 	if (result && node->hasChildren ())
@@ -1191,14 +1231,14 @@ CView* UIDescription::createViewFromNode (UINode* node) const
 			}
 		}
 	}
-	if (result && controller)
-		result = controller->verifyView (result, *node->getAttributes (), this);
+	if (result && impl->controller)
+		result = impl->controller->verifyView (result, *node->getAttributes (), this);
 	if (subController)
 	{
 		if (result)
 			result->setAttribute (kCViewControllerAttribute, sizeof (IController*), &subController);
-		setController (subControllerStack.back ());
-		subControllerStack.pop_back ();
+		setController (impl->subControllerStack.back ());
+		impl->subControllerStack.pop_back ();
 		if (result == nullptr)
 		{
 			auto obj = dynamic_cast<IReference*> (subController);
@@ -1217,10 +1257,10 @@ CViewAttributeID UIDescription::kTemplateNameAttributeID = 'uitl';
 //-----------------------------------------------------------------------------
 CView* UIDescription::createView (UTF8StringPtr name, IController* _controller) const
 {
-	ScopePointer<IController> sp (&controller, _controller);
-	if (nodes)
+	ScopePointer<IController> sp (&impl->controller, _controller);
+	if (impl->nodes)
 	{
-		for (const auto& itNode : nodes->getChildren ())
+		for (const auto& itNode : impl->nodes->getChildren ())
 		{
 			if (itNode->getName () == MainNodeNames::kTemplate)
 			{
@@ -1259,9 +1299,9 @@ bool UIDescription::getTemplateNameFromView (CView* view, std::string& templateN
 //-----------------------------------------------------------------------------
 const UIAttributes* UIDescription::getViewAttributes (UTF8StringPtr name) const
 {
-	if (nodes)
+	if (impl->nodes)
 	{
-		for (const auto& itNode : nodes->getChildren ())
+		for (const auto& itNode : impl->nodes->getChildren ())
 		{
 			if (itNode->getName () == MainNodeNames::kTemplate)
 			{
@@ -1277,22 +1317,22 @@ const UIAttributes* UIDescription::getViewAttributes (UTF8StringPtr name) const
 //-----------------------------------------------------------------------------
 UINode* UIDescription::getBaseNode (UTF8StringPtr name) const
 {
-	if (sharedResources)
+	if (impl->sharedResources)
 	{
 		UTF8StringView nameView (name);
 		if (nameView == MainNodeNames::kBitmap || nameView == MainNodeNames::kFont || nameView == MainNodeNames::kColor || nameView == MainNodeNames::kGradient)
 		{
-			return sharedResources->getBaseNode (name);
+			return impl->sharedResources->getBaseNode (name);
 		}
 	}
-	if (nodes)
+	if (impl->nodes)
 	{
-		UINode* node = nodes->getChildren ().findChildNode (name);
+		UINode* node = impl->nodes->getChildren ().findChildNode (name);
 		if (node)
 			return node;
 
 		node = new UINode (name);
-		nodes->getChildren ().add (node);
+		impl->nodes->getChildren ().add (node);
 		return node;
 	}
 	return nullptr;
@@ -1328,8 +1368,8 @@ int32_t UIDescription::getTagForName (UTF8StringPtr name) const
 			}
 		}
 	}
-	if (controller)
-		tag = controller->getTagForName (name, tag);
+	if (impl->controller)
+		tag = impl->controller->getTagForName (name, tag);
 	return tag;
 }
 
@@ -1371,8 +1411,8 @@ bool UIDescription::hasGradientName (UTF8StringPtr name) const
 //-----------------------------------------------------------------------------
 IControlListener* UIDescription::getControlListener (UTF8StringPtr name) const
 {
-	if (controller)
-		return controller->getControlListener (name);
+	if (impl->controller)
+		return impl->controller->getControlListener (name);
 	return nullptr;
 }
 
@@ -1382,10 +1422,10 @@ CBitmap* UIDescription::getBitmap (UTF8StringPtr name) const
 	UIBitmapNode* bitmapNode = dynamic_cast<UIBitmapNode*> (findChildNodeByNameAttribute (getBaseNode (MainNodeNames::kBitmap), name));
 	if (bitmapNode)
 	{
-		CBitmap* bitmap = bitmapNode->getBitmap (filePath);
-		if (bitmapCreator && bitmap && bitmap->getPlatformBitmap () == nullptr)
+		CBitmap* bitmap = bitmapNode->getBitmap (impl->filePath);
+		if (impl->bitmapCreator && bitmap && bitmap->getPlatformBitmap () == nullptr)
 		{
-			IPlatformBitmap* platformBitmap = bitmapCreator->createBitmap (*bitmapNode->getAttributes ());
+			IPlatformBitmap* platformBitmap = impl->bitmapCreator->createBitmap (*bitmapNode->getAttributes ());
 			if (platformBitmap)
 			{
 				double scaleFactor;
@@ -1586,7 +1626,7 @@ UTF8StringPtr UIDescription::lookupFontName (const CFontRef font) const
 UTF8StringPtr UIDescription::lookupBitmapName (const CBitmap* bitmap) const
 {
 	return bitmap ? lookupName<UIBitmapNode> (bitmap, MainNodeNames::kBitmap, [] (const UIDescription* desc, UIBitmapNode* node, const CBitmap* bitmap) {
-		return node->getBitmap (desc->filePath) == bitmap;
+		return node->getBitmap (desc->impl->filePath) == bitmap;
 	}) : nullptr;
 }
 
@@ -1921,9 +1961,9 @@ bool UIDescription::getAlternativeFontNames (UTF8StringPtr name, std::string& al
 //-----------------------------------------------------------------------------
 void UIDescription::collectTemplateViewNames (std::list<const std::string*>& names) const
 {
-	if (!nodes)
+	if (!impl->nodes)
 		return;
-	for (const auto& itNode : nodes->getChildren ())
+	for (const auto& itNode : impl->nodes->getChildren ())
 	{
 		if (itNode->getName () == MainNodeNames::kTemplate)
 		{
@@ -1989,7 +2029,7 @@ bool UIDescription::updateAttributesForView (UINode* node, CView* view, bool dee
 {
 	bool result = false;
 #if VSTGUI_LIVE_EDITING
-	UIViewFactory* factory = dynamic_cast<UIViewFactory*> (viewFactory);
+	UIViewFactory* factory = dynamic_cast<UIViewFactory*> (impl->viewFactory);
 	std::list<std::string> attributeNames;
 	CViewContainer* container = view->asViewContainer ();
 	if (factory->getAttributeNamesForView (view, attributeNames))
@@ -2060,11 +2100,11 @@ bool UIDescription::updateAttributesForView (UINode* node, CView* view, bool dee
 void UIDescription::updateViewDescription (UTF8StringPtr name, CView* view)
 {
 #if VSTGUI_LIVE_EDITING
-	UIViewFactory* factory = dynamic_cast<UIViewFactory*> (viewFactory);
-	if (factory && nodes)
+	UIViewFactory* factory = dynamic_cast<UIViewFactory*> (impl->viewFactory);
+	if (factory && impl->nodes)
 	{
 		UINode* node = nullptr;
-		for (auto& childNode : nodes->getChildren ())
+		for (auto& childNode : impl->nodes->getChildren ())
 		{
 			if (childNode->getName () == MainNodeNames::kTemplate)
 			{
@@ -2090,13 +2130,13 @@ void UIDescription::updateViewDescription (UTF8StringPtr name, CView* view)
 bool UIDescription::addNewTemplate (UTF8StringPtr name, UIAttributes* attr)
 {
 #if VSTGUI_LIVE_EDITING
-	vstgui_assert (nodes);
-	UINode* templateNode = findChildNodeByNameAttribute (nodes, name);
+	vstgui_assert (impl->nodes);
+	UINode* templateNode = findChildNodeByNameAttribute (impl->nodes, name);
 	if (templateNode == nullptr)
 	{
 		UINode* newNode = new UINode (MainNodeNames::kTemplate, attr);
 		attr->setAttribute ("name", name);
-		nodes->getChildren ().add (newNode);
+		impl->nodes->getChildren ().add (newNode);
 		changed (kMessageTemplateChanged);
 		return true;
 	}
@@ -2108,10 +2148,10 @@ bool UIDescription::addNewTemplate (UTF8StringPtr name, UIAttributes* attr)
 bool UIDescription::removeTemplate (UTF8StringPtr name)
 {
 #if VSTGUI_LIVE_EDITING
-	UINode* templateNode = findChildNodeByNameAttribute (nodes, name);
+	UINode* templateNode = findChildNodeByNameAttribute (impl->nodes, name);
 	if (templateNode)
 	{
-		nodes->getChildren ().remove (templateNode);
+		impl->nodes->getChildren ().remove (templateNode);
 		changed (kMessageTemplateChanged);
 		return true;
 	}
@@ -2123,7 +2163,7 @@ bool UIDescription::removeTemplate (UTF8StringPtr name)
 bool UIDescription::changeTemplateName (UTF8StringPtr name, UTF8StringPtr newName)
 {
 #if VSTGUI_LIVE_EDITING
-	UINode* templateNode = findChildNodeByNameAttribute (nodes, name);
+	UINode* templateNode = findChildNodeByNameAttribute (impl->nodes, name);
 	if (templateNode)
 	{
 		templateNode->getAttributes()->setAttribute ("name", newName);
@@ -2138,7 +2178,7 @@ bool UIDescription::changeTemplateName (UTF8StringPtr name, UTF8StringPtr newNam
 bool UIDescription::duplicateTemplate (UTF8StringPtr name, UTF8StringPtr duplicateName)
 {
 #if VSTGUI_LIVE_EDITING
-	UINode* templateNode = findChildNodeByNameAttribute (nodes, name);
+	UINode* templateNode = findChildNodeByNameAttribute (impl->nodes, name);
 	if (templateNode)
 	{
 		UINode* duplicate = new UINode (*templateNode);
@@ -2146,7 +2186,7 @@ bool UIDescription::duplicateTemplate (UTF8StringPtr name, UTF8StringPtr duplica
 		if (duplicate)
 		{
 			duplicate->getAttributes()->setAttribute ("name", duplicateName);
-			nodes->getChildren ().add (duplicate);
+			impl->nodes->getChildren ().add (duplicate);
 			changed (kMessageTemplateChanged);
 			return true;
 		}
@@ -2634,11 +2674,11 @@ bool UIDescription::calculateStringValue (UTF8StringPtr _str, double& result) co
 void UIDescription::startXmlElement (Xml::Parser* parser, IdStringPtr elementName, UTF8StringPtr* elementAttributes)
 {
 	std::string name (elementName);
-	if (nodes)
+	if (impl->nodes)
 	{
-		UINode* parent = nodeStack.back ();
+		UINode* parent = impl->nodeStack.back ();
 		UINode* newNode = nullptr;
-		if (restoreViewsMode)
+		if (impl->restoreViewsMode)
 		{
 			if (name != "view" && name != MainNodeNames::kCustom)
 			{
@@ -2648,7 +2688,7 @@ void UIDescription::startXmlElement (Xml::Parser* parser, IdStringPtr elementNam
 		}
 		else
 		{
-			if (parent == nodes)
+			if (parent == impl->nodes)
 			{
 				// only allowed second level elements
 				if (name == MainNodeNames::kControlTag || name == MainNodeNames::kColor || name == MainNodeNames::kBitmap)
@@ -2708,37 +2748,37 @@ void UIDescription::startXmlElement (Xml::Parser* parser, IdStringPtr elementNam
 		if (newNode)
 		{
 			parent->getChildren ().add (newNode);
-			nodeStack.emplace_back (newNode);
+			impl->nodeStack.emplace_back (newNode);
 		}
 	}
 	else if (name == "vstgui-ui-description")
 	{
-		nodes = new UINode (name, new UIAttributes (elementAttributes));
-		nodeStack.emplace_back (nodes);
+		impl->nodes = makeOwned<UINode> (name, new UIAttributes (elementAttributes));
+		impl->nodeStack.emplace_back (impl->nodes);
 	}
 	else if (name == "vstgui-ui-description-view-list")
 	{
-		vstgui_assert (nodes == nullptr);
-		nodes = new UINode (name, new UIAttributes (elementAttributes));
-		nodeStack.emplace_back (nodes);
-		restoreViewsMode = true;
+		vstgui_assert (impl->nodes == nullptr);
+		impl->nodes = makeOwned<UINode> (name, new UIAttributes (elementAttributes));
+		impl->nodeStack.emplace_back (impl->nodes);
+		impl->restoreViewsMode = true;
 	}
 }
 
 //-----------------------------------------------------------------------------
 void UIDescription::endXmlElement (Xml::Parser* parser, IdStringPtr name)
 {
-	if (nodeStack.back () == nodes)
-		restoreViewsMode = false;
-	nodeStack.pop_back ();
+	if (impl->nodeStack.back () == impl->nodes)
+		impl->restoreViewsMode = false;
+	impl->nodeStack.pop_back ();
 }
 
 //-----------------------------------------------------------------------------
 void UIDescription::xmlCharData (Xml::Parser* parser, const int8_t* data, int32_t length)
 {
-	if (nodeStack.size () == 0)
+	if (impl->nodeStack.size () == 0)
 		return;
-	std::stringstream& sstream = nodeStack.back ()->getData ();
+	std::stringstream& sstream = impl->nodeStack.back ()->getData ();
 	const int8_t* dataStart = nullptr;
 	uint32_t validChars = 0;
 	for (int32_t i = 0; i < length; i++, ++data)
@@ -2765,14 +2805,14 @@ void UIDescription::xmlCharData (Xml::Parser* parser, const int8_t* data, int32_
 void UIDescription::xmlComment (Xml::Parser* parser, IdStringPtr comment)
 {
 #if VSTGUI_LIVE_EDITING
-	if (nodeStack.size () == 0)
+	if (impl->nodeStack.size () == 0)
 	{
 	#if DEBUG
 		DebugPrint ("*** WARNING : Comment outside of root tag will be removed on save !\nComment: %s\n", comment);
 	#endif
 		return;
 	}
-	UINode* parent = nodeStack.back ();
+	UINode* parent = impl->nodeStack.back ();
 	if (parent && comment)
 	{
 		std::string commentStr (comment);

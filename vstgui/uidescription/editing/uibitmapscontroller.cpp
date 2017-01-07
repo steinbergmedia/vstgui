@@ -39,6 +39,7 @@
 #include "uibasedatasource.h"
 #include "uieditcontroller.h"
 #include "uidialogcontroller.h"
+#include "../../lib/cbitmap.h"
 #include "../../lib/cbitmapfilter.h"
 #include "../../lib/cfileselector.h"
 #include "../../lib/idatapackage.h"

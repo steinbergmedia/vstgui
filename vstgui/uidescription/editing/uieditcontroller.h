@@ -40,9 +40,12 @@
 #if VSTGUI_LIVE_EDITING
 
 #include "../iviewcreator.h"
+#include "../icontroller.h"
 #include "iaction.h"
 #include "../../lib/csplitview.h"
 #include "../../lib/cframe.h"
+
+#include <vector>
 
 namespace VSTGUI {
 class UIEditView;

@@ -41,6 +41,7 @@
 #include "../uidescription.h"
 #include "../uiattributes.h"
 #include "../../lib/cgraphicspath.h"
+#include "../../lib/cbitmap.h"
 #include "../detail/uiviewcreatorattributes.h"
 
 namespace VSTGUI {

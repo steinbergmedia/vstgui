@@ -10,6 +10,7 @@
 #include "vstgui/uidescription/editing/uieditcontroller.h"
 #include "vstgui/uidescription/editing/uiundomanager.h"
 #include "vstgui/lib/cframe.h"
+#include "vstgui/lib/cbitmap.h"
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
