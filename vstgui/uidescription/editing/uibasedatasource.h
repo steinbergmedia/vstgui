@@ -42,6 +42,7 @@
 #include "../uiattributes.h"
 #include "../../lib/cdatabrowser.h"
 #include "../../lib/controls/csearchtextedit.h"
+#include "../../lib/controls/cscrollbar.h"
 #include <sstream>
 #include <algorithm>
 
@@ -168,7 +169,21 @@ protected:
 				continue; // don't show static items
 			names.emplace_back (UTF8String (*name));
 		}
+		bool vsbIsVisible = false;
+		if (dataBrowser)
+		{
+			if (auto vsb = dataBrowser->getVerticalScrollbar ())
+				vsbIsVisible = vsb->isVisible ();
+		}
 		setStringList (&names);
+		if (dataBrowser)
+		{
+			if (auto vsb = dataBrowser->getVerticalScrollbar ())
+			{
+				if (vsb->isVisible() != vsbIsVisible)
+					dataBrowser->recalculateLayout ();
+			}
+		}
 	}
 	
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override
