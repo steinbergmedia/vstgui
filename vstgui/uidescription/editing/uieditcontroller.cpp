@@ -504,29 +504,10 @@ CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes
 			description->getColor ("control.font", fontColor);
 			description->getColor ("control.frame", frameColor);
 			description->getColor ("control.back", backColor);
-			CTextLabel* label = new CTextLabel (CRect (0, 0, splitView->getWidth (), splitView->getSeparatorWidth ()), "Templates | View Hierarchy");
-			label->setTransparency (true);
-			label->setMouseEnabled (false);
-			label->setFont (font);
-			label->setFontColor (kBlackCColor);
-			label->setAutosizeFlags (kAutosizeAll);
-			splitView->addViewToSeparator (0, label);
-			// Add Scale Menu
-			CRect scaleMenuRect (0, 0, 50, splitView->getSeparatorWidth ());
-			scaleMenuRect.offset (splitView->getWidth ()-scaleMenuRect.getWidth (), 0);
-			scaleMenuRect.inset (2, 2);
-			
-			zoomSettingController = new UIZoomSettingController (this); // not owned, shared with control
-			CTextEdit* textEdit = new CTextEdit (scaleMenuRect, zoomSettingController, 0);
-			textEdit->setAttribute (kCViewControllerAttribute, sizeof (IController*), &zoomSettingController);
-			CView* zoomView = zoomSettingController->verifyView (textEdit, UIAttributes (), editorDesc);
-			zoomView->setAutosizeFlags (kAutosizeRight|kAutosizeTop|kAutosizeBottom);
-			splitView->addViewToSeparator (0, zoomView);
-			zoomSettingController->restoreSetting (*getSettings ());
-			
-			// Add Background Menu
 			auto gradient = description->getGradient ("Default TextButton Gradient");
 			auto gradientHighlighted = description->getGradient ("Default TextButton Gradient Highlighted");
+
+			// Add Background Menu
 			CRect backSelectRect (0, 0, 20 * editViewBackgroundColors.size (), splitView->getSeparatorWidth ());
 			backSelectRect.inset (2, 2);
 			auto backSelectControl = new CSegmentButton (backSelectRect, this, kBackgroundSelectTag);
@@ -543,6 +524,29 @@ CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes
 				backSelectControl->addSegment (segment);
 			}
 			splitView->addViewToSeparator (0, backSelectControl);
+
+			// Add Title
+			CTextLabel* label = new CTextLabel (CRect (0, 0, splitView->getWidth (), splitView->getSeparatorWidth ()), "Templates | View Hierarchy");
+			label->setTransparency (true);
+			label->setMouseEnabled (false);
+			label->setFont (font);
+			label->setFontColor (kBlackCColor);
+			label->setAutosizeFlags (kAutosizeAll);
+			splitView->addViewToSeparator (0, label);
+
+			// Add Scale Menu
+			CRect scaleMenuRect (0, 0, 50, splitView->getSeparatorWidth ());
+			scaleMenuRect.offset (splitView->getWidth ()-scaleMenuRect.getWidth (), 0);
+			scaleMenuRect.inset (2, 2);
+			
+			zoomSettingController = new UIZoomSettingController (this); // not owned, shared with control
+			CTextEdit* textEdit = new CTextEdit (scaleMenuRect, zoomSettingController, 0);
+			textEdit->setAttribute (kCViewControllerAttribute, sizeof (IController*), &zoomSettingController);
+			CView* zoomView = zoomSettingController->verifyView (textEdit, UIAttributes (), editorDesc);
+			zoomView->setAutosizeFlags (kAutosizeRight|kAutosizeTop|kAutosizeBottom);
+			splitView->addViewToSeparator (0, zoomView);
+			zoomSettingController->restoreSetting (*getSettings ());
+			
 		}
 	}
 	CControl* control = dynamic_cast<CControl*>(view);
