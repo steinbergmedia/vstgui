@@ -32,95 +32,80 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#include "../iplatformtimer.h"
+#pragma once
 
-#if WINDOWS
-#include <windows.h>
-#include <list>
-#include <map>
-
-namespace VSTGUI {
+#include <cairo/cairo.h>
+#include <utility>
 
 //-----------------------------------------------------------------------------
-class WinTimer : public IPlatformTimer
+namespace VSTGUI {
+namespace Cairo {
+
+//-----------------------------------------------------------------------------
+template <typename Type, typename RetainProcType, RetainProcType RetainProc,
+		  typename ReleaseProcType, ReleaseProcType ReleaseProc>
+class Handle
 {
 public:
-	WinTimer (IPlatformTimerCallback* callback);
-	~WinTimer ();
+	Handle () {}
+	explicit Handle (Type h) : handle (h) {}
+	~Handle () { reset (); }
+	Handle (Handle&& o) { *this = std::move (o); }
+	Handle& operator= (Handle&& o)
+	{
+		reset ();
+		std::swap (handle, o.handle);
+		return *this;
+	}
 
-	bool start (uint32_t fireTime) VSTGUI_OVERRIDE_VMETHOD;
-	bool stop () VSTGUI_OVERRIDE_VMETHOD;
+	Handle (const Handle& o) { *this = o; }
+	Handle& operator= (const Handle& o)
+	{
+		reset ();
+		if (o.handle)
+		{
+			handle = RetainProc (o.handle);
+		}
+		return *this;
+	}
+
+	void assign (Type h)
+	{
+		reset ();
+		handle = h;
+	}
+
+	void reset ()
+	{
+		if (handle)
+		{
+			ReleaseProc (handle);
+			handle = nullptr;
+		}
+	}
+
+	operator Type () const { return handle; }
+	operator bool () const { return handle != nullptr; }
+
 private:
-	typedef std::map<UINT_PTR, IPlatformTimerCallback*> TimerMap;
-	static TimerMap gTimerMap;
-
-	static VOID CALLBACK TimerProc (HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime);
-
-	UINT_PTR timer;
-	IPlatformTimerCallback* callback;
+	Type handle {nullptr};
 };
 
-//-----------------------------------------------------------------------------
-IPlatformTimer* IPlatformTimer::create (IPlatformTimerCallback* callback)
-{
-	return new WinTimer (callback);
-}
+using ContextHandle = Handle<cairo_t*, decltype (&cairo_reference), cairo_reference,
+							 decltype (&cairo_destroy), cairo_destroy>;
+
+using SurfaceHandle =
+	Handle<cairo_surface_t*, decltype (&cairo_surface_reference), cairo_surface_reference,
+		   decltype (&cairo_surface_destroy), cairo_surface_destroy>;
+
+using PatternHandle =
+	Handle<cairo_pattern_t*, decltype (&cairo_pattern_reference), cairo_pattern_reference,
+		   decltype (&cairo_pattern_destroy), cairo_pattern_destroy>;
+
+using ScaledFontHandle = Handle<cairo_scaled_font_t*, decltype (&cairo_scaled_font_reference),
+								cairo_scaled_font_reference, decltype (&cairo_scaled_font_destroy),
+								cairo_scaled_font_destroy>;
 
 //-----------------------------------------------------------------------------
-WinTimer::TimerMap WinTimer::gTimerMap;
-
-//-----------------------------------------------------------------------------
-WinTimer::WinTimer (IPlatformTimerCallback* callback)
-: callback (callback)
-, timer (0)
-{
-}
-
-//-----------------------------------------------------------------------------
-WinTimer::~WinTimer ()
-{
-	stop ();
-}
-
-//-----------------------------------------------------------------------------
-bool WinTimer::start (uint32_t fireTime)
-{
-	if (timer)
-		return false;
-
-	timer = SetTimer ((HWND)NULL, (UINT_PTR)0, fireTime, TimerProc);
-	if (timer)
-		gTimerMap.insert (std::make_pair (timer, callback));
-
-	return false;
-}
-
-//-----------------------------------------------------------------------------
-bool WinTimer::stop ()
-{
-	if (timer)
-	{
-		KillTimer ((HWND)NULL, timer);
-		if (!gTimerMap.empty ())
-		{
-			TimerMap::const_iterator it = gTimerMap.find (timer);
-			if (it != gTimerMap.end ())
-				gTimerMap.erase (it);
-		}
-		timer = 0;
-		return true;
-	}
-	return false;
-}
-
-//------------------------------------------------------------------------
-VOID CALLBACK WinTimer::TimerProc (HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
-{
-	TimerMap::const_iterator it = gTimerMap.find (idEvent);
-	if (it != gTimerMap.end ())
-		(*it).second->fire ();
-}
-
-}
-
-#endif
+} // Cairo
+} // VSTGUI

@@ -374,10 +374,7 @@ bool UIBitmapsDataSource::add ()
 	OwningPointer<CNewFileSelector> fs = CNewFileSelector::create (dataBrowser->getFrame ());
 	if (fs)
 	{
-		fs->addFileExtension (CFileExtension ("PNG", "PNG"));
-		fs->addFileExtension (CFileExtension ("BMP", "BMP"));
-		fs->addFileExtension (CFileExtension ("JPG", "JPG"));
-		fs->addFileExtension (CFileExtension ("JPEG", "JPEG"));
+		fs->addFileExtension (CFileExtension ("PNG", "PNG", "image/png"));
 		fs->setAllowMultiFileSelection (true);
 		if (fs->runModal ())
 		{

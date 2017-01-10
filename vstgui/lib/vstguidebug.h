@@ -45,6 +45,8 @@
 // assert handling
 
 #if ENABLE_UNIT_TESTS
+#include <stdexcept>
+
 template<typename Expect>
 void vstgui_assert (Expect expect, const char* str = nullptr)
 {
@@ -85,6 +87,8 @@ protected:
 #else
 
 #if ENABLE_UNIT_TESTS
+#include <stdexcept>
+
 template<typename Expect>
 void vstgui_assert (Expect expect, const char* str = 0)
 {

@@ -157,6 +157,8 @@ public:
 	
 	void setBitmapCreator (IBitmapCreator* bitmapCreator);
 	
+	void freePlatformResources ();
+
 	static bool parseColor (const std::string& colorString, CColor& color);
 	static CViewAttributeID kTemplateNameAttributeID;
 	

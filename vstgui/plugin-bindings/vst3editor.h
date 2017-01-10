@@ -42,6 +42,11 @@
 #include <vector>
 #include <map>
 
+#if VST_VERSION >= 0x030607
+#include "pluginterfaces/gui/iplugviewcontentscalesupport.h"
+#define VST3_CONTENT_SCALE_SUPPORT
+#endif
+
 namespace VSTGUI {
 class ParameterChangeListener;
 class VST3Editor;
@@ -72,7 +77,15 @@ public:
 //! @brief VST3 Editor with automatic parameter binding
 //! @ingroup new_in_4_0
 //-----------------------------------------------------------------------------
-class VST3Editor : public Steinberg::Vst::VSTGUIEditor, public Steinberg::Vst::IParameterFinder, public IController, public IViewAddedRemovedObserver, public IMouseObserver, public IKeyboardHook
+class VST3Editor : public Steinberg::Vst::VSTGUIEditor,
+                   public Steinberg::Vst::IParameterFinder,
+                   public IController,
+                   public IViewAddedRemovedObserver,
+                   public IMouseObserver,
+                   public IKeyboardHook
+#ifdef VST3_CONTENT_SCALE_SUPPORT
+				 , public Steinberg::IPlugViewContentScaleSupport
+#endif
 {
 public:
 	VST3Editor (Steinberg::Vst::EditController* controller, UTF8StringPtr templateName, UTF8StringPtr xmlFile);
@@ -92,10 +105,11 @@ public:
 
 //-----------------------------------------------------------------------------
 	DELEGATE_REFCOUNT(Steinberg::Vst::VSTGUIEditor)
-	Steinberg::tresult PLUGIN_API queryInterface (const ::Steinberg::TUID iid, void** obj);
+	Steinberg::tresult PLUGIN_API queryInterface (const ::Steinberg::TUID iid, void** obj) VSTGUI_OVERRIDE_VMETHOD;
 protected:
 	~VST3Editor ();
 	void init ();
+	double getAbsScaleFactor () const;
 	ParameterChangeListener* getParameterChangeListener (int32_t tag) const;
 	void recreateView ();
 
@@ -145,6 +159,10 @@ protected:
 	int32_t onKeyDown (const VstKeyCode& code, CFrame* frame) VSTGUI_OVERRIDE_VMETHOD;
 	int32_t onKeyUp (const VstKeyCode& code, CFrame* frame) VSTGUI_OVERRIDE_VMETHOD;
 
+#ifdef VST3_CONTENT_SCALE_SUPPORT
+	Steinberg::tresult PLUGIN_API setContentScaleFactor (ScaleFactor factor) VSTGUI_OVERRIDE_VMETHOD;
+#endif
+
 	UIDescription* description;
 	VST3EditorDelegate* delegate;
 	IController* originalController;
@@ -157,6 +175,7 @@ protected:
 	bool editingEnabled;
 	bool requestResizeGuard;
 
+	double contentScaleFactor;
 	double zoomFactor;
 	std::vector<double> allowedZoomFactors;
 	

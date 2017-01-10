@@ -213,7 +213,7 @@ inline bool removeLastPathComponent (std::string& path)
 //------------------------------------------------------------------------
 inline bool pathIsAbsolute (const std::string& path)
 {
-#if MAC
+#if MAC || LINUX
 	return !path.empty () && path[0] == unixPathSeparator;
 #elif WINDOWS
 	return path.length () >= 2 && path[1] == ':';

@@ -44,7 +44,7 @@
 // VSTGUI Version
 //-----------------------------------------------------------------------------
 #define VSTGUI_VERSION_MAJOR  4
-#define VSTGUI_VERSION_MINOR  3
+#define VSTGUI_VERSION_MINOR  4
 
 //-----------------------------------------------------------------------------
 // Platform definitions
@@ -185,6 +185,21 @@
 	#include <algorithm>
 	using std::min;
 	using std::max;
+#elif defined(__linux__)
+    #include <cstdint>
+    #include <type_traits>
+    #include <algorithm>
+    #include <climits>
+    using std::min;
+    using std::max;
+    #define VSTGUI_OVERRIDE_VMETHOD	override
+    #define VSTGUI_FINAL_VMETHOD final
+    #define VSTGUI_RVALUE_REF_SUPPORT 1
+    #define VSTGUI_RANGE_BASED_FOR_LOOP_SUPPORT 1
+    #define VSTGUI_HAS_FUNCTIONAL 1
+	#ifndef LINUX
+		#define LINUX 1
+	#endif
 #else
 	#error unsupported compiler
 #endif

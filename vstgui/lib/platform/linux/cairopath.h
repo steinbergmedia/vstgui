@@ -32,95 +32,41 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#include "../iplatformtimer.h"
+#pragma once
 
-#if WINDOWS
-#include <windows.h>
-#include <list>
-#include <map>
-
-namespace VSTGUI {
-
-//-----------------------------------------------------------------------------
-class WinTimer : public IPlatformTimer
-{
-public:
-	WinTimer (IPlatformTimerCallback* callback);
-	~WinTimer ();
-
-	bool start (uint32_t fireTime) VSTGUI_OVERRIDE_VMETHOD;
-	bool stop () VSTGUI_OVERRIDE_VMETHOD;
-private:
-	typedef std::map<UINT_PTR, IPlatformTimerCallback*> TimerMap;
-	static TimerMap gTimerMap;
-
-	static VOID CALLBACK TimerProc (HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime);
-
-	UINT_PTR timer;
-	IPlatformTimerCallback* callback;
-};
-
-//-----------------------------------------------------------------------------
-IPlatformTimer* IPlatformTimer::create (IPlatformTimerCallback* callback)
-{
-	return new WinTimer (callback);
-}
-
-//-----------------------------------------------------------------------------
-WinTimer::TimerMap WinTimer::gTimerMap;
-
-//-----------------------------------------------------------------------------
-WinTimer::WinTimer (IPlatformTimerCallback* callback)
-: callback (callback)
-, timer (0)
-{
-}
-
-//-----------------------------------------------------------------------------
-WinTimer::~WinTimer ()
-{
-	stop ();
-}
-
-//-----------------------------------------------------------------------------
-bool WinTimer::start (uint32_t fireTime)
-{
-	if (timer)
-		return false;
-
-	timer = SetTimer ((HWND)NULL, (UINT_PTR)0, fireTime, TimerProc);
-	if (timer)
-		gTimerMap.insert (std::make_pair (timer, callback));
-
-	return false;
-}
-
-//-----------------------------------------------------------------------------
-bool WinTimer::stop ()
-{
-	if (timer)
-	{
-		KillTimer ((HWND)NULL, timer);
-		if (!gTimerMap.empty ())
-		{
-			TimerMap::const_iterator it = gTimerMap.find (timer);
-			if (it != gTimerMap.end ())
-				gTimerMap.erase (it);
-		}
-		timer = 0;
-		return true;
-	}
-	return false;
-}
+#include "../../cgraphicspath.h"
+#include "cairoutils.h"
 
 //------------------------------------------------------------------------
-VOID CALLBACK WinTimer::TimerProc (HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
+namespace VSTGUI {
+namespace Cairo {
+
+//------------------------------------------------------------------------
+class Path : public CGraphicsPath
 {
-	TimerMap::const_iterator it = gTimerMap.find (idEvent);
-	if (it != gTimerMap.end ())
-		(*it).second->fire ();
-}
+public:
+	Path (const ContextHandle& cr) noexcept;
+	~Path () noexcept;
 
-}
+	cairo_path_t* getPath (const ContextHandle& handle,
+						   const CGraphicsTransform* alignTransform = nullptr);
 
-#endif
+	CGradient* createGradient (double color1Start, double color2Start, const CColor& color1,
+							   const CColor& color2) override;
+
+	bool hitTest (const CPoint& p, bool evenOddFilled = false,
+				  CGraphicsTransform* transform = 0) override;
+	CPoint getCurrentPosition () override;
+	CRect getBoundingBox () override;
+
+	void dirty () override;
+
+//------------------------------------------------------------------------
+private:
+	ContextHandle cr;
+	cairo_path_t* path {nullptr};
+};
+
+//------------------------------------------------------------------------
+} // Cairo
+} // VSTGUI

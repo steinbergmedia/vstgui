@@ -39,7 +39,7 @@
 #include "../uidescription.h"
 #include "../cstream.h"
 #include "../uiattributes.h"
-#include "../../lib/cviewcontainer.h"
+#include "../../lib/cframe.h"
 #include <sstream>
 #include <algorithm>
 
@@ -160,7 +160,8 @@ CRect UISelection::getBounds () const
 //----------------------------------------------------------------------------------------------------
 CRect UISelection::getGlobalViewCoordinates (CView* view)
 {
-	return view->translateToGlobal (view->getViewSize ());
+	CRect result = view->translateToGlobal (view->getViewSize ());
+	return view->getFrame () ? view->getFrame ()->getTransform ().inverse ().transform (result) : result;
 }
 
 //----------------------------------------------------------------------------------------------------

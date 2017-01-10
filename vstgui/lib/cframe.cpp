@@ -946,7 +946,12 @@ void CFrame::onViewRemoved (CView* pView)
 	if (pActiveFocusView == pView)
 		pActiveFocusView = 0;
 	if (pFocusView == pView)
-		setFocusView (0);
+	{
+		if (bActive)
+			setFocusView (0);
+		else
+			pFocusView = 0;
+	}
 	CViewContainer* container = dynamic_cast<CViewContainer*> (pView);
 	if (container)
 	{
@@ -1461,6 +1466,17 @@ void CFrame::dumpHierarchy ()
 	CViewContainer::dumpHierarchy ();
 }
 #endif
+
+//-----------------------------------------------------------------------------
+bool CFrame::handleNextSystemEvents ()
+{
+	if (IPlatformFrameRunLoopExt* rle = dynamic_cast<IPlatformFrameRunLoopExt*> (platformFrame))
+	{
+		rle->handleNextEvents ();
+		return true;
+	}
+	return false;
+}
 
 //-----------------------------------------------------------------------------
 bool CFrame::platformDrawRect (CDrawContext* context, const CRect& rect)

@@ -153,6 +153,8 @@ public:
 
 	void onStartLocalEventLoop ();
 
+	bool handleNextSystemEvents ();
+
 	void invalid () VSTGUI_OVERRIDE_VMETHOD { invalidRect (getViewSize ()); setDirty (false); }
 	void invalidRect (const CRect& rect) VSTGUI_OVERRIDE_VMETHOD;
 
