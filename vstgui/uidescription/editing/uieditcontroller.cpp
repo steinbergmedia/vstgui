@@ -101,7 +101,7 @@ public:
 				if (editorDesc->parse ())
 				{
 					uiDesc = editorDesc;
-			}
+				}
 				else
 				{
 					vstgui_assert (false, "the __FILE__ macro is relative, so it's not possible to find the uidescriptioneditor.uidesc. You can replace the macro with the absolute filename to make this work on your devel machine");

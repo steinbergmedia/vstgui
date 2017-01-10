@@ -45,7 +45,7 @@ static LRESULT CALLBACK MainWndProc (HWND h, UINT m , WPARAM w, LPARAM l)
 }
 
 BOOL InitApplication(HINSTANCE hinstance) 
-{ 
+{
     WNDCLASSEX wcx; 
  
     // Fill in the window class structure with parameters 
@@ -68,7 +68,7 @@ BOOL InitApplication(HINSTANCE hinstance)
     wcx.hIconSm = nullptr; 
  
     // Register the window class. 
- 
+
     return RegisterClassEx(&wcx); 
 }
 

@@ -167,8 +167,8 @@ public:
 	}
 
 	UTF8CharacterIterator (const std::string& stdStr)
-	: startPos ((uint8_t*)stdStr.c_str ())
-	, currentPos (0)
+	: currentPos (0)
+    , startPos ((uint8_t*)stdStr.c_str ())
 	, strLen (stdStr.size ())
 	{
 		begin ();
