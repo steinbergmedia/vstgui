@@ -52,9 +52,8 @@ namespace VSTGUI {
 SizeToFitOperation::SizeToFitOperation (UISelection* selection)
 : BaseSelectionOperation<std::pair<SharedPointer<CView>, CRect> > (selection)
 {
-	FOREACH_IN_SELECTION(selection, view)
+	for (auto view : *selection)
 		emplace_back (view, view->getViewSize ());
-	FOREACH_IN_SELECTION_END
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -176,12 +175,13 @@ EmbedViewOperation::EmbedViewOperation (UISelection* selection, CViewContainer* 
 , newContainer (owned (newContainer))
 {
 	parent = selection->first ()->getParentView ()->asViewContainer ();
-	FOREACH_IN_SELECTION(selection, view)
+	for (auto view : *selection)
+	{
 		if (view->getParentView () == parent)
 		{
 			emplace_back (view, view->getViewSize ());
 		}
-	FOREACH_IN_SELECTION_END
+	}
 
 	CRect r = selection->first ()->getViewSize ();
 	for (auto& element : *this)
@@ -256,7 +256,8 @@ ViewCopyOperation::ViewCopyOperation (UISelection* copySelection, UISelection* w
 , workingSelection (workingSelection)
 {
 	CRect selectionBounds = copySelection->getBounds ();
-	FOREACH_IN_SELECTION(copySelection, view)
+	for (auto view : *copySelection)
+	{
 		if (!copySelection->containsParent (view))
 		{
 			CRect viewSize = UISelection::getGlobalViewCoordinates (view);
@@ -268,11 +269,10 @@ ViewCopyOperation::ViewCopyOperation (UISelection* copySelection, UISelection* w
 			view->setMouseableArea (newSize);
 			emplace_back (view);
 		}
-	FOREACH_IN_SELECTION_END
+	}
 
-	FOREACH_IN_SELECTION(workingSelection, view)
+	for (auto view : *workingSelection)
 		oldSelectedViews.emplace_back (view);
-	FOREACH_IN_SELECTION_END
 }
 
 //-----------------------------------------------------------------------------
@@ -321,9 +321,8 @@ ViewSizeChangeOperation::ViewSizeChangeOperation (UISelection* selection, bool s
 , sizing (sizing)
 , autosizing (autosizingEnabled)
 {
-	FOREACH_IN_SELECTION(selection, view)
+	for (auto view : *selection)
 		emplace_back (view, view->getViewSize ());
-	FOREACH_IN_SELECTION_END
 }
 
 //-----------------------------------------------------------------------------
@@ -395,7 +394,8 @@ bool ViewSizeChangeOperation::didChange ()
 DeleteOperation::DeleteOperation (UISelection* selection)
 : selection (selection)
 {
-	FOREACH_IN_SELECTION(selection, view)
+	for (auto view : *selection)
+	{
 		CViewContainer* container = view->getParentView ()->asViewContainer ();
 		if (dynamic_cast<UIEditView*>(container) == nullptr)
 		{
@@ -412,7 +412,7 @@ DeleteOperation::DeleteOperation (UISelection* selection)
 			}
 			insert (std::make_pair (container, DeleteOperationViewAndNext (view, nextView)));
 		}
-	FOREACH_IN_SELECTION_END
+	}
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -594,10 +594,11 @@ AttributeChangeAction::AttributeChangeAction (UIDescription* desc, UISelection* 
 {
 	const UIViewFactory* viewFactory = dynamic_cast<const UIViewFactory*> (desc->getViewFactory ());
 	std::string attrOldValue;
-	FOREACH_IN_SELECTION(selection, view)
+	for (auto view : *selection)
+	{
 		viewFactory->getAttributeValue (view, attrName, attrOldValue, desc);
 		insert (std::make_pair (view, attrOldValue));
-	FOREACH_IN_SELECTION_END
+	}
 	name = "'" + attrName + "' change";
 }
 

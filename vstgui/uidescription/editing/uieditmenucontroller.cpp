@@ -284,13 +284,14 @@ bool UIEditMenuController::validateMenuItem (CCommandMenuItem& item)
 		{
 			item.setSubmenu (nullptr);
 			bool enable = selection->total () > 0;
-			FOREACH_IN_SELECTION(selection, view)
-			if (dynamic_cast<UIEditView*>(view->getParentView()) != nullptr)
+			for (auto view : *selection)
 			{
-				enable = false;
-				break;
+				if (dynamic_cast<UIEditView*>(view->getParentView()) != nullptr)
+				{
+					enable = false;
+					break;
+				}
 			}
-			FOREACH_IN_SELECTION_END
 			item.setEnabled (enable);
 			if (enable == false)
 				return true;
