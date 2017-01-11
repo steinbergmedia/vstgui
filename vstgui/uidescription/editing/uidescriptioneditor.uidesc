@@ -669,7 +669,7 @@
 		<view autosize="left right top bottom " back-color="db.font" background-offset="0, 0" class="COptionMenu" control-tag="attributes.optionmenu" default-value="0.5" font="~ NormalFont" font-antialias="true" font-color="db.background" frame-color="db.font" frame-width="1" max-value="1.84467e+19" menu-check-style="true" menu-popup-style="true" min-value="0" mouse-enabled="true" opacity="1" origin="1, 1" round-rect-radius="6" shadow-color="~ RedCColor" size="398, 16" style-3D-in="false" style-3D-out="false" style-no-draw="true" style-no-frame="false" style-no-text="true" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" text-shadow-offset="1, 1" transparent="true" value-precision="2" wants-focus="true" wheel-inc-value="0.1"/>
 	</template>
 	<custom>
-		<attributes EditViewScale="1" EditorSize="0, 0, 1016, 724" EncodeBitmaps="true" SplitViewSize_0_0="0.493598862019914652599084092798875644803" SplitViewSize_0_1="0.4779516358463726799499227126943878829479" SplitViewSize_1_0="0.4765291607396870410262579298432683572173" SplitViewSize_1_1="0.5163584637268847643554181559011340141296" SplitViewSize_2_0="0.8228346456692913202246586479304824024439" SplitViewSize_2_1="0.1722440944881889757223092374260886572301" TabSwitchValue="2" Version="1" name="UIEditController"/>
+		<attributes EditViewScale="1" EditorSize="0, 0, 1023, 722" EncodeBitmaps="true" SplitViewSize_0_0="0.4921540656205420916080583992879837751389" SplitViewSize_0_1="0.479315263908701827411107387888478115201" SplitViewSize_1_0="0.4807417974322396592157247141585685312748" SplitViewSize_1_1="0.5121255349500712927834911170066334307194" SplitViewSize_2_0="0.8240469208211144147568916196178179234266" SplitViewSize_2_1="0.171065493646138794270328276070358697325" TabSwitchValue="3" Version="1" name="UIEditController"/>
 		<attributes name="UIViewCreatorController"/>
 		<attributes Size="5, 5" name="UIGridController"/>
 		<attributes SelectedRow="22" name="UIViewCreatorDataSource"/>
@@ -680,7 +680,7 @@
 		<attributes SelectedRow="17" name="UIBitmapsDataSource"/>
 		<attributes SelectedTemplate="gradient.editor" name="UITemplateController"/>
 		<attributes color="focus" enabled="true" name="FocusDrawing" width="1.5"/>
-		<attributes SelectedRow="10" name="UIGradientsDataSource"/>
+		<attributes SelectedRow="5" name="UIGradientsDataSource"/>
 		<attributes Path="/Users/scheffle/subversion/vstgui/vstgui/uidescription/editing/uidescriptioneditor.uidesc" name="VST3Editor"/>
 	</custom>
 	<template autosize="left right top bottom " background-color="background" background-color-draw-style="filled and stroked" class="CViewContainer" mouse-enabled="true" name="bitmapediting" opacity="1" origin="0, 0" size="170, 223" sub-controller="BitmapEditController" transparent="false" wants-focus="false">
@@ -860,10 +860,6 @@
 			<color-stop rgba="#b4b4b4ff" start="0"/>
 			<color-stop rgba="#646464ff" start="1"/>
 		</gradient>
-		<gradient name="GradientView 1">
-			<color-stop color="#686868ff" start="0"/>
-			<color-stop color="#4d4d4dff" start="1"/>
-		</gradient>
 		<gradient name="GradientView 2">
 			<color-stop rgba="#b4b4b4ff" start="0"/>
 			<color-stop rgba="#b9b9b9ff" start="1"/>
@@ -872,25 +868,9 @@
 			<color-stop rgba="#ffffff00" start="0"/>
 			<color-stop rgba="#ffffff00" start="1"/>
 		</gradient>
-		<gradient name="TextButton 1">
-			<color-stop color="#dcdcdcff" start="0"/>
-			<color-stop color="#b4b4b4ff" start="1"/>
-		</gradient>
-		<gradient name="TextButton 2">
-			<color-stop color="#ffffff00" start="0"/>
-			<color-stop color="#ffffff00" start="1"/>
-		</gradient>
 		<gradient name="TextButton Highlighted">
 			<color-stop rgba="#646464ff" start="0"/>
 			<color-stop rgba="#646464ff" start="1"/>
-		</gradient>
-		<gradient name="TextButton Highlighted 1">
-			<color-stop color="#b4b4b4ff" start="0"/>
-			<color-stop color="#646464ff" start="1"/>
-		</gradient>
-		<gradient name="TextButton Highlighted 2">
-			<color-stop color="#646464ff" start="0"/>
-			<color-stop color="#646464ff" start="1"/>
 		</gradient>
 		<gradient name="Toolbar">
 			<color-stop rgba="#2a3340ff" start="0"/>
