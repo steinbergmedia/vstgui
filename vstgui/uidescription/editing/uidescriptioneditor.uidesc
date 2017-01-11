@@ -681,7 +681,6 @@
 		<attributes SelectedTemplate="gradient.editor" name="UITemplateController"/>
 		<attributes color="focus" enabled="true" name="FocusDrawing" width="1.5"/>
 		<attributes SelectedRow="5" name="UIGradientsDataSource"/>
-		<attributes Path="/Users/scheffle/subversion/vstgui/vstgui/uidescription/editing/uidescriptioneditor.uidesc" name="VST3Editor"/>
 	</custom>
 	<template autosize="left right top bottom " background-color="background" background-color-draw-style="filled and stroked" class="CViewContainer" mouse-enabled="true" name="bitmapediting" opacity="1" origin="0, 0" size="170, 223" sub-controller="BitmapEditController" transparent="false" wants-focus="false">
 		<view auto-drag-scrolling="false" auto-hide-scrollbars="true" autosize="left right top bottom " background-color="db.background" background-color-draw-style="filled and stroked" bordered="false" class="CScrollView" container-size="170, 140" custom-view-name="BitmapsBrowser" follow-focus-view="false" horizontal-scrollbar="false" mouse-enabled="true" opacity="1" origin="0, 0" overlay-scrollbars="false" scrollbar-background-color="scrollbar.background" scrollbar-frame-color="scrollbar.frame" scrollbar-scroller-color="scrollbar.scroller" scrollbar-width="12" size="170, 160" transparent="false" vertical-scrollbar="true" wants-focus="false"/>
