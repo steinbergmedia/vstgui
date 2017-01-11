@@ -520,6 +520,11 @@ public:
 	LiveEditingCView (const CRect& r) : CView (r) {}
 	void draw (CDrawContext* context)
 	{
+		if (getDrawBackground ())
+		{
+			CView::draw (context);
+			return;
+		}
 		context->setLineWidth (1.);
 		context->setLineStyle (kLineSolid);
 		context->setDrawMode (kAliasing);
