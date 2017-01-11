@@ -512,6 +512,48 @@ static void addGradientToUIDescription (const IUIDescription* description, CGrad
 
 static bool getStandardAttributeListValues (const std::string& attributeName, std::list<const std::string*>& values);
 
+#if VSTGUI_LIVE_EDITING
+//-----------------------------------------------------------------------------
+class LiveEditingCView : public CView
+{
+public:
+	LiveEditingCView (const CRect& r) : CView (r) {}
+	void draw (CDrawContext* context)
+	{
+		context->setLineWidth (1.);
+		context->setLineStyle (kLineSolid);
+		context->setDrawMode (kAliasing);
+		context->setFrameColor ({200, 200, 200, 100});
+		context->setFillColor ({200, 200, 200, 100});
+		constexpr auto width = 5.;
+		CRect viewSize = getViewSize ();
+		auto r = viewSize;
+		r.setSize ({width,width});
+		uint32_t row = 0u;
+		while (r.top < viewSize.bottom)
+		{
+			uint32_t column = (row % 2) ? 0u : 1u;
+			while (r.left < viewSize.right)
+			{
+				if (column % 2)
+					context->drawRect (r, kDrawFilled);
+				r.offset (width, 0);
+				++column;
+			}
+			r.left = viewSize.left;
+			r.right = r.left + width;
+			r.offset (0, width);
+			++row;
+		}
+		context->drawRect (viewSize, kDrawStroked);
+		setDirty (false);
+	}
+};
+using SimpleCView = LiveEditingCView;
+#else
+using SimpleCView = CView;
+#endif
+
 //-----------------------------------------------------------------------------
 class CViewCreator : public ViewCreatorAdapter
 {
@@ -520,7 +562,7 @@ public:
 	IdStringPtr getViewName () const override { return kCView; }
 	IdStringPtr getBaseViewName () const override { return nullptr; }
 	UTF8StringPtr getDisplayName () const override { return "View"; }
-	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CView (CRect (0, 0, 0, 0)); }
+	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new SimpleCView (CRect (0, 0, 0, 0)); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
 		CPoint p;
