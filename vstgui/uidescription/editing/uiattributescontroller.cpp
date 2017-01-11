@@ -185,13 +185,14 @@ public:
 				controls[tag] = control;
 			if (tag >= kRowTag && tag <= kColTag)
 			{
-				FOREACH_IN_SELECTION(selection, view)
+				for (auto view : *selection)
+				{
 					if (view->asViewContainer () == nullptr)
 					{
 						controls[tag]->setVisible (false);
 						break;
 					}
-				FOREACH_IN_SELECTION_END
+				}
 			}
 		}
 		return controller->verifyView (view, attributes, description);
@@ -1019,14 +1020,15 @@ void UIAttributesController::validateAttributeViews ()
 		std::string attrValue;
 		bool first = true;
 		bool hasDifferentValues = false;
-		FOREACH_IN_SELECTION (selection, view)
+		for (auto view : *selection)
+		{
 			std::string temp;
 			viewFactory->getAttributeValue (view, controller->getAttributeName (), temp, editDescription);
 			if (temp != attrValue && !first)
 				hasDifferentValues = true;
 			attrValue = temp;
 			first = false;
-		FOREACH_IN_SELECTION_END
+		}
 		controller->hasDifferentValues (hasDifferentValues);
 		controller->setValue (attrValue);
 	}
@@ -1109,14 +1111,15 @@ CView* UIAttributesController::createViewForAttribute (const std::string& attrNa
 
 	std::string attrValue;
 	bool first = true;
-	FOREACH_IN_SELECTION(selection, view)
+	for (auto view : *selection)
+	{
 		std::string temp;
 		viewFactory->getAttributeValue (view, attrName, temp, editDescription);
 		if (temp != attrValue && !first)
 			hasDifferentValues = true;
 		attrValue = temp;
 		first = false;
-	FOREACH_IN_SELECTION_END
+	}
 
 	CRect r (middle+margin, 1, width-5, height+1);
 	CView* valueView = nullptr;
@@ -1178,7 +1181,9 @@ void UIAttributesController::getConsolidatedAttributeNames (StringList& attrName
 {
 	const UIViewFactory* viewFactory = dynamic_cast<const UIViewFactory*> (editDescription->getViewFactory ());
 	vstgui_assert (viewFactory);
-	FOREACH_IN_SELECTION(selection, view)
+	
+	for (auto view : *selection)
+	{
 		StringList temp;
 		if (viewFactory->getAttributeNamesForView (view, temp))
 		{
@@ -1212,7 +1217,7 @@ void UIAttributesController::getConsolidatedAttributeNames (StringList& attrName
 				attrNames.remove (attrName);
 			}
 		}
-	FOREACH_IN_SELECTION_END
+	}
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -1235,7 +1240,8 @@ void UIAttributesController::rebuildAttributesView ()
 		if (selectedViews > 0)
 		{
 			UTF8StringPtr viewname = nullptr;
-			FOREACH_IN_SELECTION(selection, view)
+			for (auto view : *selection)
+			{
 				UTF8StringPtr name = viewFactory->getViewName (view);
 				if (viewname != nullptr && UTF8StringView (name) != viewname)
 				{
@@ -1243,7 +1249,7 @@ void UIAttributesController::rebuildAttributesView ()
 					break;
 				}
 				viewname = name;
-			FOREACH_IN_SELECTION_END
+			}
 			if (viewname != nullptr)
 			{
 				if (selectedViews == 1)
@@ -1281,11 +1287,10 @@ void UIAttributesController::rebuildAttributesView ()
 	else
 	{
 		CCoord width = attributeView->getWidth () - (attributeView->getMargin ().left + attributeView->getMargin ().right);
-		StringList::const_iterator it = attrNames.begin ();
-		while (it != attrNames.end ())
+		for (const auto& name : attrNames)
 		{
-			currentAttributeName = &(*it);
-			CView* view = createViewForAttribute ((*it));
+			currentAttributeName = &name;
+			CView* view = createViewForAttribute (name);
 			if (view)
 			{
 				CRect r = view->getViewSize ();
@@ -1294,7 +1299,6 @@ void UIAttributesController::rebuildAttributesView ()
 				view->setMouseableArea (r);
 				attributeView->addView (view);
 			}
-			it++;
 		}
 		currentAttributeName = nullptr;
 		attributeView->sizeToFit ();

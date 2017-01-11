@@ -179,7 +179,8 @@ void UISelectionView::draw (CDrawContext* pContext)
 	CView* mainView = editView->getView (0);
 	CPoint p;
 	frameToLocal (p);
-	FOREACH_IN_SELECTION(selection, view)
+	for (auto view : *selection)
+	{
 		CRect vs = selection->getGlobalViewCoordinates (view);
 		vs.offsetInverse (p);
 		vs.extend (lineWidth, lineWidth);
@@ -216,7 +217,7 @@ void UISelectionView::draw (CDrawContext* pContext)
 				}
 			}
 		}
-	FOREACH_IN_SELECTION_END
+	}
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -226,12 +227,13 @@ CMessageResult UISelectionView::notify (CBaseObject* sender, IdStringPtr message
 	{
 		CPoint p;
 		frameToLocal (p);
-		FOREACH_IN_SELECTION(selection, view)
+		for (auto view : *selection)
+		{
 			CRect vs = selection->getGlobalViewCoordinates (view);
 			vs.offsetInverse (p);
 			vs.extend (handleInset + 1, handleInset + 1);
 			invalidRect (vs);
-		FOREACH_IN_SELECTION_END
+		}
 		return kMessageNotified;
 	}
 	return kMessageUnknown;
@@ -630,7 +632,9 @@ UIEditView::MouseSizeMode UIEditView::selectionHitTest (const CPoint& _where, CV
 	frameToLocal (p);
 
 	CView* mainView = getView (0);
-	FOREACH_IN_SELECTION_REVERSE(getSelection (), view)
+	for (auto it = getSelection ()->rbegin (), end = getSelection ()->rend (); it != end; ++it)
+	{
+		auto view = (*it);
 		CRect r = getSelection ()->getGlobalViewCoordinates (view);
 		bool isMainView = (mainView == view) ? true : false;
 		r.offset (p);
@@ -670,7 +674,7 @@ UIEditView::MouseSizeMode UIEditView::selectionHitTest (const CPoint& _where, CV
 			if (resultView)
 				*resultView = nullptr;
 		}
-	FOREACH_IN_SELECTION_END
+	}
 	if (resultView)
 		*resultView = nullptr;
 	return kSizeModeNone;
@@ -853,14 +857,15 @@ void UIEditView::doKeySize (const CPoint& delta)
 		if (!moveSizeOperation)
 			moveSizeOperation = new ViewSizeChangeOperation (selection, true, autosizing);
 		getSelection ()->changed (UISelection::kMsgSelectionViewWillChange);
-		FOREACH_IN_SELECTION (selection, view)
+		for (auto view : *selection)
+		{
 			CRect viewSize = view->getViewSize ();
 			CPoint bottomRight = viewSize.getBottomRight ();
 			bottomRight += delta;
 			viewSize.setBottomRight (bottomRight);
 			view->setViewSize (viewSize);
 			view->setMouseableArea (viewSize);
-		FOREACH_IN_SELECTION_END
+		}
 		getSelection ()->changed (UISelection::kMsgSelectionViewChanged);
 		getUndoManager ()->pushAndPerform (moveSizeOperation);
 		moveSizeOperation = nullptr;
@@ -1046,7 +1051,8 @@ CBitmap* UIEditView::createBitmapFromSelection (UISelection* selection)
 	getTransform ().inverse ().transform (viewSize);
 	CDrawContext::Transform tr2 (*context, CGraphicsTransform ().translate (-viewSize.left, -viewSize.top));
 	
-	FOREACH_IN_SELECTION(getSelection (), view)
+	for (auto view : *getSelection ())
+	{
 		if (!getSelection ()->containsParent (view))
 		{
 			CPoint p;
@@ -1054,7 +1060,7 @@ CBitmap* UIEditView::createBitmapFromSelection (UISelection* selection)
 			getTransform ().inverse ().transform (p);
 			CDrawContext::Transform transform (*context, CGraphicsTransform ().translate (p.x, p.y));
 			context->setClipRect (view->getViewSize ());
-			if (IPlatformViewLayerDelegate* layer = dynamic_cast<IPlatformViewLayerDelegate*>(view))
+			if (IPlatformViewLayerDelegate* layer = view.cast<IPlatformViewLayerDelegate> ())
 			{
 				CRect r (view->getViewSize ());
 				r.originize ();
@@ -1065,7 +1071,7 @@ CBitmap* UIEditView::createBitmapFromSelection (UISelection* selection)
 				view->drawRect (context, view->getViewSize ());
 			}
 		}
-	FOREACH_IN_SELECTION_END
+	}
 
 	}
 

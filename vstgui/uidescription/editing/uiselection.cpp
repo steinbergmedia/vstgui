@@ -208,12 +208,13 @@ bool UISelection::store (OutputStream& stream, IUIDescription* uiDescription)
 	if (desc)
 	{
 		std::list<CView*> views;
-		FOREACH_IN_SELECTION(this, view)
+		for (auto view : *this)
+		{
 			if (!containsParent (view))
 			{
 				views.emplace_back (view);
 			}
-		FOREACH_IN_SELECTION_END
+		}
 		
 		auto attr = makeOwned<UIAttributes> ();
 		attr->setPointAttribute ("selection-drag-offset", dragOffset);

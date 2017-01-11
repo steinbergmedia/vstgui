@@ -106,28 +106,6 @@ protected:
 	CPoint dragOffset;
 };
 
-//----------------------------------------------------------------------------------------------------
-#define FOREACH_IN_SELECTION(__selection, view) \
-	{ \
-	UISelection::const_iterator __it = __selection->begin (); \
-	while (__it != __selection->end ()) \
-	{ \
-		CView* view = (*__it);
-
-//----------------------------------------------------------------------------------------------------
-#define FOREACH_IN_SELECTION_REVERSE(__selection, view) \
-	{ \
-	UISelection::const_reverse_iterator __it = __selection->rbegin (); \
-	while (__it != __selection->rend ()) \
-	{ \
-		CView* view = (*__it);
-
-//----------------------------------------------------------------------------------------------------
-#define FOREACH_IN_SELECTION_END \
-		__it++; \
-	} \
-	}
-
 } // namespace
 
 #endif // VSTGUI_LIVE_EDITING
