@@ -149,9 +149,9 @@ private:
 
 		output[0] = cb64[input[0] >> 2];
 		output[1] = cb64[((input[0] & 0x03) << 4) | ((input[1] & 0xf0) >> 4)];
-		output[2] =
-			(uint8_t)(len > 1 ? cb64[((input[1] & 0x0f) << 2) | ((input[2] & 0xc0) >> 6)] : '=');
-		output[3] = (uint8_t)(len > 2 ? cb64[input[2] & 0x3f] : '=');
+		output[2] = static_cast<uint8_t>
+			(len > 1 ? cb64[((input[1] & 0x0f) << 2) | ((input[2] & 0xc0) >> 6)] : '=');
+		output[3] = static_cast<uint8_t>(len > 2 ? cb64[input[2] & 0x3f] : '=');
 	}
 
 	Malloc<uint8_t> data;
