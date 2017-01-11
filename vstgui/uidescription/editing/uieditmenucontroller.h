@@ -172,7 +172,7 @@ public:
 	bool canHandleCommand (const UTF8StringPtr category, const UTF8StringPtr name) const;
 
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
-	virtual void valueChanged (CControl* pControl) override;
+	void valueChanged (CControl* pControl) override;
 
 	static bool createUniqueTemplateName (std::list<const std::string*>& names, std::string& name);
 protected:
@@ -181,7 +181,7 @@ protected:
 	void createEditMenu (COptionMenu* menu);
 	void createFileMenu (COptionMenu* menu);
 
-	virtual CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;
+	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;
 	IControlListener* getControlListener (UTF8StringPtr name) override { return this; }
 	void controlBeginEdit (CControl* pControl) override;
 	void controlEndEdit (CControl* pControl) override;

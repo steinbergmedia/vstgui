@@ -235,9 +235,9 @@ class MultipleAttributeChangeAction : public IAction, public std::vector<std::pa
 {
 public:
 	MultipleAttributeChangeAction (UIDescription* description, const std::list<CView*>& views, IViewCreator::AttrType attrType, UTF8StringPtr oldValue, UTF8StringPtr newValue);
-	virtual UTF8StringPtr getName () override { return "multiple view attribute changes"; }
-	virtual void perform () override;
-	virtual void undo () override;
+	UTF8StringPtr getName () override { return "multiple view attribute changes"; }
+	void perform () override;
+	void undo () override;
 protected:
 	void setAttributeValue (UTF8StringPtr value);
 	static void collectAllSubViews (CView* view, std::list<CView*>& views);
@@ -254,9 +254,9 @@ class TagChangeAction : public IAction
 public:
 	TagChangeAction (UIDescription* description, UTF8StringPtr name, UTF8StringPtr newTagString, bool remove, bool performOrUndo);
 
-	virtual UTF8StringPtr getName () override;
-	virtual void perform () override;
-	virtual void undo () override;
+	UTF8StringPtr getName () override;
+	void perform () override;
+	void undo () override;
 	
 	bool isAddTag () const { return isNewTag; }
 protected:
@@ -275,9 +275,9 @@ class TagNameChangeAction : public IAction
 public:
 	TagNameChangeAction (UIDescription* description, UTF8StringPtr oldName, UTF8StringPtr newName, bool performOrUndo);
 
-	virtual UTF8StringPtr getName () override;
-	virtual void perform () override;
-	virtual void undo () override;
+	UTF8StringPtr getName () override;
+	void perform () override;
+	void undo () override;
 protected:
 	SharedPointer<UIDescription> description;
 	std::string oldName;
@@ -291,9 +291,9 @@ class ColorChangeAction : public IAction
 public:
 	ColorChangeAction (UIDescription* description, UTF8StringPtr name, const CColor& color, bool remove, bool performOrUndo);
 
-	virtual UTF8StringPtr getName () override;
-	virtual void perform () override;
-	virtual void undo () override;
+	UTF8StringPtr getName () override;
+	void perform () override;
+	void undo () override;
 	
 	bool isAddColor () const { return isNewColor; }
 protected:
@@ -312,9 +312,9 @@ class ColorNameChangeAction : public IAction
 public:
 	ColorNameChangeAction (UIDescription* description, UTF8StringPtr oldName, UTF8StringPtr newName, bool performOrUndo);
 
-	virtual UTF8StringPtr getName () override;
-	virtual void perform () override;
-	virtual void undo () override;
+	UTF8StringPtr getName () override;
+	void perform () override;
+	void undo () override;
 protected:
 	SharedPointer<UIDescription> description;
 	std::string oldName;
@@ -328,9 +328,9 @@ class BitmapChangeAction : public IAction
 public:
 	BitmapChangeAction (UIDescription* description, UTF8StringPtr name, UTF8StringPtr path, bool remove, bool performOrUndo);
 
-	virtual UTF8StringPtr getName () override;
-	virtual void perform () override;
-	virtual void undo () override;
+	UTF8StringPtr getName () override;
+	void perform () override;
+	void undo () override;
 	
 	bool isAddBitmap () const { return isNewBitmap; }
 protected:
@@ -349,9 +349,9 @@ class BitmapNameChangeAction : public IAction
 public:
 	BitmapNameChangeAction (UIDescription* description, UTF8StringPtr oldName, UTF8StringPtr newName, bool performOrUndo);
 
-	virtual UTF8StringPtr getName () override;
-	virtual void perform () override;
-	virtual void undo () override;
+	UTF8StringPtr getName () override;
+	void perform () override;
+	void undo () override;
 protected:
 	SharedPointer<UIDescription> description;
 	std::string oldName;
@@ -366,9 +366,9 @@ public:
 	NinePartTiledBitmapChangeAction (UIDescription* description, UTF8StringPtr name, const CRect* rect, bool performOrUndo);
 	~NinePartTiledBitmapChangeAction ();
 	
-	virtual UTF8StringPtr getName () override;
-	virtual void perform () override;
-	virtual void undo () override;
+	UTF8StringPtr getName () override;
+	void perform () override;
+	void undo () override;
 protected:
 	SharedPointer<UIDescription> description;
 	std::string name;
@@ -384,9 +384,9 @@ public:
 	BitmapFilterChangeAction (UIDescription* description, UTF8StringPtr bitmapName, const std::list<SharedPointer<UIAttributes> >& attributes, bool performOrUndo);
 	~BitmapFilterChangeAction () = default;
 	
-	virtual UTF8StringPtr getName () override;
-	virtual void perform () override;
-	virtual void undo () override;
+	UTF8StringPtr getName () override;
+	void perform () override;
+	void undo () override;
 protected:
 	SharedPointer<UIDescription> description;
 	std::string bitmapName;
@@ -401,9 +401,9 @@ class GradientChangeAction : public IAction
 public:
 	GradientChangeAction (UIDescription* description, UTF8StringPtr name, CGradient* gradient, bool remove, bool performOrUndo);
 
-	virtual UTF8StringPtr getName () override;
-	virtual void perform () override;
-	virtual void undo () override;
+	UTF8StringPtr getName () override;
+	void perform () override;
+	void undo () override;
 	
 	bool isAddGradient () const { return originalGradient == 0; }
 protected:
@@ -421,9 +421,9 @@ class GradientNameChangeAction : public IAction
 public:
 	GradientNameChangeAction (UIDescription* description, UTF8StringPtr oldName, UTF8StringPtr newName, bool performOrUndo);
 
-	virtual UTF8StringPtr getName () override;
-	virtual void perform () override;
-	virtual void undo () override;
+	UTF8StringPtr getName () override;
+	void perform () override;
+	void undo () override;
 protected:
 	SharedPointer<UIDescription> description;
 	std::string oldName;
@@ -437,9 +437,9 @@ class FontChangeAction : public IAction
 public:
 	FontChangeAction (UIDescription* description, UTF8StringPtr name, CFontRef font, bool remove, bool performOrUndo);
 
-	virtual UTF8StringPtr getName () override;
-	virtual void perform () override;
-	virtual void undo () override;
+	UTF8StringPtr getName () override;
+	void perform () override;
+	void undo () override;
 
 	bool isAddFont () const { return originalFont == 0; }
 protected:
@@ -458,9 +458,9 @@ class FontNameChangeAction : public IAction
 public:
 	FontNameChangeAction (UIDescription* description, UTF8StringPtr oldName, UTF8StringPtr newName, bool performOrUndo);
 
-	virtual UTF8StringPtr getName () override;
-	virtual void perform () override;
-	virtual void undo () override;
+	UTF8StringPtr getName () override;
+	void perform () override;
+	void undo () override;
 protected:
 	SharedPointer<UIDescription> description;
 	std::string oldName;
@@ -473,9 +473,9 @@ class AlternateFontChangeAction : public IAction
 {
 public:
 	AlternateFontChangeAction (UIDescription* description, UTF8StringPtr fontName, UTF8StringPtr newAlternateFontNames);
-	virtual UTF8StringPtr getName () override;
-	virtual void perform () override;
-	virtual void undo () override;
+	UTF8StringPtr getName () override;
+	void perform () override;
+	void undo () override;
 protected:
 	SharedPointer<UIDescription> description;
 	std::string fontName;
