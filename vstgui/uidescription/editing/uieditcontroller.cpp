@@ -464,7 +464,7 @@ static SharedPointer<CBitmap> createColorBitmap (CPoint size, CColor color)
 		for (auto y = 0u; y < static_cast<uint32_t> (size.y); y++)
 		{
 			pixelAccessor->setPosition (0, y);
-			for (auto x = 0; x < static_cast<uint32_t> (size.x); ++x)
+			for (auto x = 0u; x < static_cast<uint32_t> (size.x); ++x)
 			{
 				pixelAccessor->setColor (color);
 				++(*pixelAccessor);
@@ -508,7 +508,7 @@ CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes
 			auto gradientHighlighted = description->getGradient ("Default TextButton Gradient Highlighted");
 
 			// Add Background Menu
-			CRect backSelectRect (0, 0, 20 * editViewBackgroundColors.size (), splitView->getSeparatorWidth ());
+			CRect backSelectRect (0., 0., 20. * editViewBackgroundColors.size (), splitView->getSeparatorWidth ());
 			backSelectRect.inset (2, 2);
 			auto backSelectControl = new CSegmentButton (backSelectRect, this, kBackgroundSelectTag);
 			backSelectControl->setGradient (gradient);
