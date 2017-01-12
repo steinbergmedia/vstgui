@@ -1142,15 +1142,13 @@ void CViewContainer::findSingleTouchEventTarget (ITouchEvent::Touch& event)
 //-----------------------------------------------------------------------------
 void CViewContainer::looseFocus ()
 {
-	for (const auto& pV : pImpl->children)
-		pV->looseFocus ();
+	CView::looseFocus ();
 }
 
 //-----------------------------------------------------------------------------
 void CViewContainer::takeFocus ()
 {
-	for (const auto& pV : pImpl->children)
-		pV->takeFocus ();
+	CView::takeFocus ();
 }
 
 //-----------------------------------------------------------------------------
