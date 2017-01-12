@@ -37,6 +37,7 @@
 
 #include "../lib/vstguibase.h"
 #include "../lib/malloc.h"
+#include "../lib/optional.h"
 #include <string>
 #include <cstdlib>
 
@@ -46,18 +47,25 @@ namespace VSTGUI {
 class Base64Codec
 {
 public:
+	struct Result
+	{
+		Malloc<uint8_t> data;
+		uint32_t dataSize {0};
+	};
+
 	template<typename T>
-	bool decode (const T& base64String)
+	static inline Result decode (const T& base64String)
 	{
 		return decode (base64String.data (), base64String.size ());
 	}
 
 	template <typename T>
-	bool decode (const T* inBuffer, size_t inBufferSize)
+	static inline Result decode (const T* inBuffer, size_t inBufferSize)
 	{
 		static_assert (sizeof (T) == 1, "T must be one byte type");
-		data.allocate ((inBufferSize * 3 / 4) + 3);
-		dataSize = 0;
+		Result r;
+		r.data.allocate ((inBufferSize * 3 / 4) + 3);
+		r.dataSize = 0;
 		uint8_t input[4];
 		uint32_t i;
 		for (i = 0; i < inBufferSize - 4; i += 4)
@@ -66,7 +74,7 @@ public:
 			input[1] = static_cast<uint8_t> (*inBuffer++);
 			input[2] = static_cast<uint8_t> (*inBuffer++);
 			input[3] = static_cast<uint8_t> (*inBuffer++);
-			dataSize += decodeblock<false> (input, data.get () + dataSize);
+			r.dataSize += decodeblock<false> (input, r.data.get () + r.dataSize);
 		}
 		if (i < inBufferSize)
 		{
@@ -76,15 +84,16 @@ public:
 			{
 				input[j] = static_cast<uint8_t> (*inBuffer++);
 			}
-			dataSize += decodeblock<true> (input, data.get () + dataSize);
+			r.dataSize += decodeblock<true> (input, r.data.get () + r.dataSize);
 		}
-		return true;
+		return r;
 	}
 
-	bool encode (const void* binaryData, size_t binaryDataSize)
+	static inline Result encode (const void* binaryData, size_t binaryDataSize)
 	{
-		data.allocate ((binaryDataSize * 4) / 3 + 4);
-		dataSize = 0;
+		Result r;
+		r.data.allocate ((binaryDataSize * 4) / 3 + 4);
+		r.dataSize = 0;
 		auto ptr = reinterpret_cast<const uint8_t*> (binaryData);
 		uint8_t input[3];
 		uint32_t i;
@@ -93,8 +102,8 @@ public:
 			input[0] = *ptr++;
 			input[1] = *ptr++;
 			input[2] = *ptr++;
-			encodeblock (input, data.get () + dataSize, 3);
-			dataSize += 4;
+			encodeblock (input, r.data.get () + r.dataSize, 3);
+			r.dataSize += 4;
 		}
 		if (i < binaryDataSize)
 		{
@@ -104,18 +113,15 @@ public:
 			{
 				input[j] = *ptr++;
 			}
-			encodeblock (input, data.get () + dataSize, j);
-			dataSize += 4;
+			encodeblock (input, r.data.get () + r.dataSize, j);
+			r.dataSize += 4;
 		}
-		return true;
+		return r;
 	}
-
-	const uint8_t* getData () const { return data.get (); }
-	uint32_t getDataSize () const { return dataSize; }
 
 private:
 	template<bool finalBlock = true>
-	inline uint32_t decodeblock (uint8_t input[4], uint8_t output[3])
+	static inline uint32_t decodeblock (uint8_t input[4], uint8_t output[3])
 	{
 		static constexpr uint8_t cd64[] = {
 			62,   0xFF, 0xFF, 0xFF, 63,   52,   53, 54, 55, 56, 57, 58, 59, 60, 61, 0xFF,
@@ -142,7 +148,7 @@ private:
 		return result;
 	}
 
-	inline void encodeblock (uint8_t input[3], uint8_t output[4], uint32_t len)
+	static inline void encodeblock (uint8_t input[3], uint8_t output[4], uint32_t len)
 	{
 		static constexpr uint8_t cb64[] =
 			"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -153,9 +159,6 @@ private:
 			(len > 1 ? cb64[((input[1] & 0x0f) << 2) | ((input[2] & 0xc0) >> 6)] : '=');
 		output[3] = static_cast<uint8_t>(len > 2 ? cb64[input[2] & 0x3f] : '=');
 	}
-
-	Malloc<uint8_t> data;
-	uint32_t dataSize {0};
 };
 
 } // namespace VSTGUI
