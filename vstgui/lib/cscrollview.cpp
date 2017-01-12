@@ -786,7 +786,7 @@ void CScrollView::viewSizeChanged (CView* view, const CRect& oldSize)
 		hsb->setScrollSize (containerSize);
 		hsb->onVisualChange ();
 	}
-	else if (view == vsb);
+	else if (view == vsb)
 	{
 		vsb->setScrollSize (containerSize);
 		vsb->onVisualChange ();
