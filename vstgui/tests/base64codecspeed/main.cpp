@@ -16,7 +16,7 @@ int main ()
 	auto encoderResult = Base64Codec::encode (origData.get (), origData.size ());
 	auto decoderResult = Base64Codec::decode (encoderResult.data.get (), encoderResult.dataSize);
 
-	if (encoderResult.dataSize != decoderResult.dataSize)
+	if (origData.size () != decoderResult.dataSize)
 		return -1;
 
 	if (memcmp (origData.get (), decoderResult.data.get (), origData.size ()) != 0)

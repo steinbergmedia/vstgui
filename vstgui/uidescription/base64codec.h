@@ -61,25 +61,33 @@ public:
 		static_assert (sizeof (T) == 1, "T must be one byte type");
 		Result r;
 		r.data.allocate ((inBufferSize * 3 / 4) + 3);
-		uint8_t input[4];
-		uint32_t i;
-		for (i = 0; i < inBufferSize - 4; i += 4)
+		uint8_t input1[4];
+		uint8_t input2[4];
+		auto input1Ptr = reinterpret_cast<uint32_t*>(&input1[0]);
+		auto input2Ptr = reinterpret_cast<uint32_t*>(&input2[0]);
+		auto buffer32Ptr = reinterpret_cast<const uint32_t*> (inBuffer);
+		uint32_t i = 0;
+		for (; i < inBufferSize - 8; i += 8)
 		{
-			input[0] = static_cast<uint8_t> (*inBuffer++);
-			input[1] = static_cast<uint8_t> (*inBuffer++);
-			input[2] = static_cast<uint8_t> (*inBuffer++);
-			input[3] = static_cast<uint8_t> (*inBuffer++);
-			r.dataSize += decodeblock<false> (input, r.data.get () + r.dataSize);
+			*input1Ptr = *buffer32Ptr++;
+			*input2Ptr = *buffer32Ptr++;
+			r.dataSize += decodeblock<false> (input1, r.data.get () + r.dataSize);
+			r.dataSize += decodeblock<false> (input2, r.data.get () + r.dataSize);
+		}
+		for (;i < inBufferSize - 4; i += 4)
+		{
+			*input1Ptr = *buffer32Ptr++;
+			r.dataSize += decodeblock<false> (input1, r.data.get () + r.dataSize);
 		}
 		if (i < inBufferSize)
 		{
 			uint32_t j;
-			input[0] = input[1] = input[2] = input[3] = '=';
+			input1[0] = input1[1] = input1[2] = input1[3] = '=';
 			for (j = 0; i < inBufferSize; i++, j++)
 			{
-				input[j] = static_cast<uint8_t> (*inBuffer++);
+				input1[j] = static_cast<uint8_t> (inBuffer[i]);
 			}
-			r.dataSize += decodeblock<true> (input, r.data.get () + r.dataSize);
+			r.dataSize += decodeblock<true> (input1, r.data.get () + r.dataSize);
 		}
 		return r;
 	}
