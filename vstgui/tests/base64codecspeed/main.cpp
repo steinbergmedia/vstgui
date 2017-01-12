@@ -13,17 +13,13 @@ int main ()
 	std::independent_bits_engine<std::default_random_engine, sizeof (uint8_t) * 8, uint8_t> rbe;
 	std::generate (origData.get (), origData.get () + origData.size (), std::ref (rbe));
 
-	Base64Codec encoder;
-	if (!encoder.encode (origData.get (), origData.size ()))
-		return -1;
-	Base64Codec decoder;
-	if (!decoder.decode (encoder.getData (), encoder.getDataSize ()))
+	auto encoderResult = Base64Codec::encode (origData.get (), origData.size ());
+	auto decoderResult = Base64Codec::decode (encoderResult.data.get (), encoderResult.dataSize);
+
+	if (encoderResult.dataSize != decoderResult.dataSize)
 		return -1;
 
-	if (origData.size () != decoder.getDataSize ())
-		return -1;
-
-	if (memcmp (origData.get (), decoder.getData (), origData.size ()) != 0)
+	if (memcmp (origData.get (), decoderResult.data.get (), origData.size ()) != 0)
 		return -1;
 	return 0;
 }

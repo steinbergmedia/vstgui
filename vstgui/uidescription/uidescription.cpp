@@ -3060,17 +3060,14 @@ void UIBitmapNode::createXMLData (const std::string& pathHint)
 			auto buffer = IPlatformBitmap::createMemoryPNGRepresentation (platformBitmap);
 			if (!buffer.empty ())
 			{
-				Base64Codec bd;
-				if (bd.encode (buffer.data(), static_cast<uint32_t> (buffer.size ())))
-				{
-					UINode* node = getChildren ().findChildNode ("data");
-					if (node)
-						getChildren ().remove (node);
-					UINode* dataNode = new UINode ("data");
-					dataNode->getAttributes ()->setAttribute ("encoding", "base64");
-					dataNode->getData ().write (reinterpret_cast<const char*> (bd.getData ()), static_cast<std::streamsize> (bd.getDataSize ()));
-					getChildren ().add (dataNode);
-				}
+				auto result = Base64Codec::encode (buffer.data(), static_cast<uint32_t> (buffer.size ()));
+				UINode* node = getChildren ().findChildNode ("data");
+				if (node)
+					getChildren ().remove (node);
+				UINode* dataNode = new UINode ("data");
+				dataNode->getAttributes ()->setAttribute ("encoding", "base64");
+				dataNode->getData ().write (reinterpret_cast<const char*> (result.data.get ()), static_cast<std::streamsize> (result.dataSize));
+				getChildren ().add (dataNode);
 			}
 		}
 	}
@@ -3128,16 +3125,13 @@ CBitmap* UIBitmapNode::getBitmap (const std::string& pathHint)
 				const std::string* codec = node->getAttributes ()->getAttributeValue ("encoding");
 				if (codec && *codec == "base64")
 				{
-					Base64Codec bd;
-					if (bd.decode (node->getData ().str ()))
+					auto result = Base64Codec::decode (node->getData ().str ());
+					if (auto platformBitmap = IPlatformBitmap::createFromMemory (result.data.get (), result.dataSize))
 					{
-						if (auto platformBitmap = IPlatformBitmap::createFromMemory (bd.getData (), bd.getDataSize ()))
-						{
-							double scaleFactor = 1.;
-							if (attributes->getDoubleAttribute ("scale-factor", scaleFactor))
-								platformBitmap->setScaleFactor (scaleFactor);
-							bitmap->setPlatformBitmap (platformBitmap);
-						}
+						double scaleFactor = 1.;
+						if (attributes->getDoubleAttribute ("scale-factor", scaleFactor))
+							platformBitmap->setScaleFactor (scaleFactor);
+						bitmap->setPlatformBitmap (platformBitmap);
 					}
 				}
 			}
