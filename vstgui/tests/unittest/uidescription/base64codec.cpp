@@ -42,7 +42,7 @@ TESTCASE(Base64CodecTest,
 
 	TEST(encodeAscii,
 		 std::string test ("ABCD");
-		 auto result = Base64Codec::encode (test.c_str (), 4);
+		 auto result = Base64Codec::encode (test.data (), test.size ());
 		 EXPECT (result.dataSize == 8);
 		 uint8_t* ptr = result.data.get ();
 		 EXPECT (ptr[0] == 'Q');
@@ -56,7 +56,7 @@ TESTCASE(Base64CodecTest,
 	);
 
 	TEST(encodeBinary,
-		 unsigned char binary [6];
+		 uint8_t binary [6];
 		 binary[0] = 0x89;
 		 binary[1] = 0x50;
 		 binary[2] = 0x4E;

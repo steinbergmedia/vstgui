@@ -35,11 +35,7 @@
 #ifndef __base64codec__
 #define __base64codec__
 
-#include "../lib/vstguibase.h"
 #include "../lib/malloc.h"
-#include "../lib/optional.h"
-#include <string>
-#include <cstdlib>
 
 namespace VSTGUI {
 
@@ -65,7 +61,6 @@ public:
 		static_assert (sizeof (T) == 1, "T must be one byte type");
 		Result r;
 		r.data.allocate ((inBufferSize * 3 / 4) + 3);
-		r.dataSize = 0;
 		uint8_t input[4];
 		uint32_t i;
 		for (i = 0; i < inBufferSize - 4; i += 4)
@@ -93,7 +88,6 @@ public:
 	{
 		Result r;
 		r.data.allocate ((binaryDataSize * 4) / 3 + 4);
-		r.dataSize = 0;
 		auto ptr = reinterpret_cast<const uint8_t*> (binaryData);
 		uint8_t input[3];
 		uint32_t i;
