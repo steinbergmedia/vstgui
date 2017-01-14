@@ -57,7 +57,6 @@
 #include "uidescription/editing/uifontscontroller.cpp"
 #include "uidescription/editing/uigradientscontroller.cpp"
 #include "uidescription/editing/uigridcontroller.cpp"
-#include "uidescription/editing/uisearchtextfield.cpp"
 #include "uidescription/editing/uiselection.cpp"
 #include "uidescription/editing/uitagscontroller.cpp"
 #include "uidescription/editing/uitemplatecontroller.cpp"
