@@ -133,14 +133,16 @@ protected:
 class UINode : public NonAtomicReferenceCounted
 {
 public:
+	using DataStorage = std::string;
+
 	UINode (const std::string& name, UIAttributes* attributes = nullptr, bool needsFastChildNameAttributeLookup = false);
 	UINode (const std::string& name, UIDescList* children, UIAttributes* attributes = nullptr);
 	UINode (const UINode& n);
 	~UINode () noexcept override;
 
 	const std::string& getName () const { return name; }
-	std::stringstream& getData () { return data; }
-	const std::stringstream& getData () const { return data; }
+	DataStorage& getData () { return data; }
+	const DataStorage& getData () const { return data; }
 
 	UIAttributes* getAttributes () const { return attributes; }
 	UIDescList& getChildren () const { return *children; }
@@ -160,7 +162,7 @@ public:
 
 protected:
 	std::string name;
-	std::stringstream data;
+	DataStorage data;
 	UIAttributes* attributes;
 	UIDescList* children;
 	int32_t flags;
@@ -425,7 +427,7 @@ protected:
 
 	bool writeNode (UINode* node, OutputStream& stream);
 	bool writeComment (UICommentNode* node, OutputStream& stream);
-	bool writeNodeData (std::stringstream& str, OutputStream& stream);
+	bool writeNodeData (UINode::DataStorage& str, OutputStream& stream);
 	bool writeAttributes (UIAttributes* attr, OutputStream& stream);
 	int32_t intendLevel;
 };
@@ -479,16 +481,13 @@ bool UIDescWriter::writeAttributes (UIAttributes* attr, OutputStream& stream)
 }
 
 //-----------------------------------------------------------------------------
-bool UIDescWriter::writeNodeData (std::stringstream& str, OutputStream& stream)
+bool UIDescWriter::writeNodeData (UINode::DataStorage& str, OutputStream& stream)
 {
 	for (int32_t i = 0; i < intendLevel; i++) stream << "\t";
-	str.seekg (0);
 	uint32_t i = 0;
-	while (str.tellg () < str.tellp ())
+	for (auto c : str)
 	{
-		int8_t byte;
-		str >> byte;
-		stream << byte;
+		stream << static_cast<int8_t> (c);
 		if (i++ > 80)
 		{
 			stream << "\n";
@@ -504,7 +503,7 @@ bool UIDescWriter::writeNodeData (std::stringstream& str, OutputStream& stream)
 bool UIDescWriter::writeComment (UICommentNode* node, OutputStream& stream)
 {
 	stream << "<!--";
-	stream << node->getData ().str ();
+	stream << node->getData ();
 	stream << "-->\n";
 	return true;
 }
@@ -530,7 +529,7 @@ bool UIDescWriter::writeNode (UINode* node, OutputStream& stream)
 		{
 			stream << ">\n";
 			intendLevel++;
-			if (node->getData ().str ().length () > 0)
+			if (!node->getData ().empty ())
 				result = writeNodeData (node->getData (), stream);
 			for (auto& childNode : children)
 			{
@@ -543,7 +542,7 @@ bool UIDescWriter::writeNode (UINode* node, OutputStream& stream)
 			stream << node->getName ();
 			stream << ">\n";
 		}
-		else if (node->getData ().str ().length () > 0)
+		else if (!node->getData ().empty ())
 		{
 			stream << ">\n";
 			intendLevel++;
@@ -2791,7 +2790,7 @@ void UIDescription::xmlCharData (Xml::Parser* parser, const int8_t* data, int32_
 {
 	if (impl->nodeStack.size () == 0)
 		return;
-	std::stringstream& sstream = impl->nodeStack.back ()->getData ();
+	auto& nodeData = impl->nodeStack.back ()->getData ();
 	const int8_t* dataStart = nullptr;
 	uint32_t validChars = 0;
 	for (int32_t i = 0; i < length; i++, ++data)
@@ -2800,7 +2799,7 @@ void UIDescription::xmlCharData (Xml::Parser* parser, const int8_t* data, int32_
 		{
 			if (dataStart)
 			{
-				sstream.write (reinterpret_cast<const char*> (dataStart), validChars);
+				nodeData.append (reinterpret_cast<const char*> (dataStart), validChars);
 				dataStart = nullptr;
 				validChars = 0;
 			}
@@ -2811,7 +2810,7 @@ void UIDescription::xmlCharData (Xml::Parser* parser, const int8_t* data, int32_
 		++validChars;
 	}
 	if (dataStart && validChars > 0)
-		sstream.write (reinterpret_cast<const char*> (dataStart), validChars);
+		nodeData.append (reinterpret_cast<const char*> (dataStart), validChars);
 }
 
 //-----------------------------------------------------------------------------
@@ -2829,7 +2828,7 @@ void UIDescription::xmlComment (Xml::Parser* parser, IdStringPtr comment)
 	if (parent && comment)
 	{
 		std::string commentStr (comment);
-		if (commentStr.length () > 0)
+		if (!commentStr.empty ())
 		{
 			UICommentNode* commentNode = new UICommentNode (comment);
 			parent->getChildren ().add (commentNode);
@@ -2847,7 +2846,6 @@ UINode::UINode (const std::string& _name, UIAttributes* _attributes, bool needsF
 , children (needsFastChildNameAttributeLookup ? new UIDescListWithFastFindAttributeNameChild: new UIDescList)
 , flags (0)
 {
-	data.clear ();
 	if (attributes == nullptr)
 		attributes = new UIAttributes ();
 }
@@ -2860,7 +2858,6 @@ UINode::UINode (const std::string& _name, UIDescList* _children, UIAttributes* _
 , flags (0)
 {
 	vstgui_assert (children != nullptr);
-	data.clear ();
 	children->remember ();
 	if (attributes == nullptr)
 		attributes = new UIAttributes ();
@@ -2869,12 +2866,11 @@ UINode::UINode (const std::string& _name, UIDescList* _children, UIAttributes* _
 //-----------------------------------------------------------------------------
 UINode::UINode (const UINode& n)
 : name (n.name)
+, data (n.data)
 , attributes (new UIAttributes (*n.attributes))
 , children (new UIDescList (*n.children))
 , flags (n.flags)
 {
-	data.clear ();
-	data << n.getData ().str ();
 }
 
 //-----------------------------------------------------------------------------
@@ -2909,7 +2905,7 @@ void UINode::sortChildren ()
 UICommentNode::UICommentNode (const std::string& comment)
 : UINode ("comment")
 {
-	data << comment;
+	data = comment;
 }
 
 //-----------------------------------------------------------------------------
@@ -3066,7 +3062,7 @@ void UIBitmapNode::createXMLData (const std::string& pathHint)
 					getChildren ().remove (node);
 				UINode* dataNode = new UINode ("data");
 				dataNode->getAttributes ()->setAttribute ("encoding", "base64");
-				dataNode->getData ().write (reinterpret_cast<const char*> (result.data.get ()), static_cast<std::streamsize> (result.dataSize));
+				dataNode->getData ().append (reinterpret_cast<const char*> (result.data.get ()), static_cast<std::streamsize> (result.dataSize));
 				getChildren ().add (dataNode);
 			}
 		}
@@ -3120,12 +3116,12 @@ CBitmap* UIBitmapNode::getBitmap (const std::string& pathHint)
 		if (bitmap && bitmap->getPlatformBitmap () == nullptr)
 		{
 			UINode* node = getChildren ().findChildNode ("data");
-			if (node && node->getData ().str ().length () > 0)
+			if (node && !node->getData ().empty ())
 			{
 				const std::string* codec = node->getAttributes ()->getAttributeValue ("encoding");
 				if (codec && *codec == "base64")
 				{
-					auto result = Base64Codec::decode (node->getData ().str ());
+					auto result = Base64Codec::decode (node->getData ());
 					if (auto platformBitmap = IPlatformBitmap::createFromMemory (result.data.get (), result.dataSize))
 					{
 						double scaleFactor = 1.;
