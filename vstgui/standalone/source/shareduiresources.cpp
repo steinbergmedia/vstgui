@@ -8,7 +8,7 @@
 #include "../include/ialertbox.h"
 #include "../include/iappdelegate.h"
 #include "../include/iapplication.h"
-#include "../include/ipreference.h"
+#include "../include/helpers/preferences.h"
 #include "application.h"
 #include <unordered_map>
 
@@ -240,7 +240,8 @@ UIDescCheckFilePathResult checkAndUpdateUIDescFilePath (UIDescription& uiDesc, C
 		return UIDescCheckFilePathResult::Cancel;
 	}
 	auto fs = owned (CNewFileSelector::create (frame, CNewFileSelector::kSelectFile));
-	if (auto initPath = IApplication::instance ().getPreferences ().get (UIDescPathKey))
+	VSTGUI::Standalone::Preferences prefs;
+	if (auto initPath = prefs.get (UIDescPathKey))
 		fs->setInitialDirectory (*initPath);
 	fs->setDefaultExtension (CFileExtension ("UIDescription File", "uidesc"));
 	if (fs->runModal ())
@@ -253,7 +254,7 @@ UIDescCheckFilePathResult checkAndUpdateUIDescFilePath (UIDescription& uiDesc, C
 		uiDesc.setFilePath (path);
 		auto settings = uiDesc.getCustomAttributes ("UIDescFilePath", true);
 		settings->setAttribute ("path", uiDesc.getFilePath ());
-		IApplication::instance ().getPreferences ().set (UIDescPathKey, path);
+		prefs.set (UIDescPathKey, path);
 		return UIDescCheckFilePathResult::NewPathSet;
 	}
 	return UIDescCheckFilePathResult::Cancel;
@@ -266,7 +267,8 @@ bool initUIDescAsNew (UIDescription& uiDesc, CFrame* _frame)
 	if (!frame)
 		frame = makeOwned<CFrame> (CRect (), nullptr);
 	auto fs = owned (CNewFileSelector::create (frame, CNewFileSelector::kSelectSaveFile));
-	if (auto initPath = IApplication::instance ().getPreferences ().get (UIDescPathKey))
+	VSTGUI::Standalone::Preferences prefs;
+	if (auto initPath = prefs.get (UIDescPathKey))
 		fs->setInitialDirectory (*initPath);
 	fs->setDefaultSaveName (uiDesc.getFilePath ());
 	fs->setDefaultExtension (CFileExtension ("UIDescription File", "uidesc"));
@@ -281,7 +283,7 @@ bool initUIDescAsNew (UIDescription& uiDesc, CFrame* _frame)
 		uiDesc.setFilePath (path);
 		auto settings = uiDesc.getCustomAttributes ("UIDescFilePath", true);
 		settings->setAttribute ("path", path);
-		IApplication::instance ().getPreferences ().set (UIDescPathKey, path);
+		prefs.set (UIDescPathKey, path);
 		return true;
 	}
 	return false;

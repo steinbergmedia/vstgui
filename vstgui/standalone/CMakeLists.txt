@@ -22,6 +22,7 @@ set(${target}_common_sources
   include/iwindowlistener.h
   include/helpers/appdelegate.h
   include/helpers/menubuilder.h
+  include/helpers/preferences.h
   include/helpers/value.h
   include/helpers/valuelistener.h
   include/helpers/windowcontroller.h
