@@ -66,26 +66,27 @@ public:
 		auto input1Ptr = reinterpret_cast<uint32_t*>(&input1[0]);
 		auto input2Ptr = reinterpret_cast<uint32_t*>(&input2[0]);
 		auto buffer32Ptr = reinterpret_cast<const uint32_t*> (inBuffer);
-		uint32_t i = 0;
-		for (; i < inBufferSize - 8; i += 8)
+		while (inBufferSize > 8)
 		{
 			*input1Ptr = *buffer32Ptr++;
 			*input2Ptr = *buffer32Ptr++;
 			r.dataSize += decodeblock<false> (input1, r.data.get () + r.dataSize);
 			r.dataSize += decodeblock<false> (input2, r.data.get () + r.dataSize);
+			inBufferSize -= 8;
 		}
-		for (;i < inBufferSize - 4; i += 4)
+		while (inBufferSize > 4)
 		{
 			*input1Ptr = *buffer32Ptr++;
 			r.dataSize += decodeblock<false> (input1, r.data.get () + r.dataSize);
+			inBufferSize -= 4;
 		}
-		if (i < inBufferSize)
+		if (inBufferSize > 0)
 		{
-			uint32_t j;
 			input1[0] = input1[1] = input1[2] = input1[3] = '=';
-			for (j = 0; i < inBufferSize; i++, j++)
+			auto ptr = reinterpret_cast<const uint8_t*>(buffer32Ptr);
+			for (uint32_t j = 0; j < inBufferSize; j++)
 			{
-				input1[j] = static_cast<uint8_t> (inBuffer[i]);
+				input1[j] = *ptr++;
 			}
 			r.dataSize += decodeblock<true> (input1, r.data.get () + r.dataSize);
 		}
