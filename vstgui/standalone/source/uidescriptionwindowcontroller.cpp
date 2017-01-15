@@ -12,6 +12,7 @@
 #include "../../uidescription/editing/uieditmenucontroller.h"
 #include "../../uidescription/uiattributes.h"
 #include "../../uidescription/uidescription.h"
+#include "../../uidescription/icontroller.h"
 #include "../include/helpers/menubuilder.h"
 #include "../include/helpers/valuelistener.h"
 #include "../include/helpers/windowcontroller.h"
