@@ -78,6 +78,28 @@ ValuePtr makeStringListValue (const UTF8String& id,
  */
 ValuePtr makeStringListValue (const UTF8String& id, const IStringListValue::StringList& strings);
 
+//------------------------------------------------------------------------
+/** make a static string value
+ *
+ *	a static string value is an inactive unchangeable value 
+ *
+ *	@param id value ID
+ *	@param value static string
+ *	@return shared value pointer
+ */
+ValuePtr makeStaticStringValue (const UTF8String& id, const UTF8String& value);
+
+//------------------------------------------------------------------------
+/** make a static string value
+ *
+ *	a static string value is an inactive unchangeable value
+ *
+ *	@param id value ID
+ *	@param value static string
+ *	@return shared value pointer
+ */
+ValuePtr makeStaticStringValue (const UTF8String& id, UTF8String&& value);
+
 /** @} */
 /** @name %Create value converters
  *	@{ */

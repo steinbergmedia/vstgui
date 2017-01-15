@@ -147,7 +147,59 @@ private:
 };
 
 //------------------------------------------------------------------------
-class Value : public IValue
+struct ValueBase : public IValue
+{
+	ValueBase (const UTF8String& id) : idString (id) {}
+
+	const UTF8String& getID () const override { return idString; }
+
+	using Listeners = DispatchList<IValueListener*>;
+	
+	void registerListener (IValueListener* listener) override { listeners.add (listener); }
+	void unregisterListener (IValueListener* listener) override { listeners.remove (listener); }
+
+	Listeners& getListeners () { return listeners; }
+
+private:
+	UTF8String idString;
+	Listeners listeners;
+};
+
+//------------------------------------------------------------------------
+class StaticStringValue : public ValueBase, public IValueConverter
+{
+public:
+	StaticStringValue (const UTF8String& id, const UTF8String& value)
+	: ValueBase (id), value (value)
+	{}
+
+	StaticStringValue (const UTF8String& id, UTF8String&& value)
+	: ValueBase (id), value (std::move (value))
+	{}
+
+	void beginEdit () override {}
+	bool performEdit (Type newValue) override { return false; }
+	void endEdit () override {}
+	
+	void setActive (bool state) override {}
+	bool isActive () const override { return false; }
+	
+	Type getValue () const override { return 0.; }
+	bool isEditing () const override { return false; }
+	
+	const IValueConverter& getConverter () const override { return *this; }
+	
+
+	UTF8String valueAsString (IValue::Type) const override { return value; }
+	IValue::Type stringAsValue (const UTF8String&) const override { return 0.; }
+	IValue::Type plainToNormalized (IValue::Type) const override { return 0.; }
+	IValue::Type normalizedToPlain (IValue::Type) const override { return 0.; }
+private:
+	UTF8String value;
+};
+
+//------------------------------------------------------------------------
+class Value : public ValueBase
 {
 public:
 	Value (const UTF8String& id, Type initialValue, const ValueConverterPtr& valueConverter);
@@ -162,12 +214,7 @@ public:
 	Type getValue () const override;
 	bool isEditing () const override;
 
-	const UTF8String& getID () const override;
-
 	const IValueConverter& getConverter () const override;
-
-	void registerListener (IValueListener* listener) override;
-	void unregisterListener (IValueListener* listener) override;
 
 	bool hasValueConverter () const { return valueConverter != nullptr; }
 	void setValueConverter (const ValueConverterPtr& stringConverter);
@@ -175,12 +222,10 @@ public:
 	void dispatchStateChange ();
 
 private:
-	UTF8String idString;
 	Type value;
 	bool active {true};
 	uint32_t editCount {0};
 	ValueConverterPtr valueConverter;
-	DispatchList<IValueListener*> listeners;
 };
 
 //------------------------------------------------------------------------
@@ -221,7 +266,7 @@ public:
 
 //------------------------------------------------------------------------
 Value::Value (const UTF8String& id, Type initialValue, const ValueConverterPtr& valueConverter)
-: idString (id), value (initialValue), valueConverter (valueConverter)
+: ValueBase (id), value (initialValue), valueConverter (valueConverter)
 {
 }
 
@@ -232,7 +277,7 @@ void Value::beginEdit ()
 
 	if (editCount == 1)
 	{
-		listeners.forEach ([this] (IValueListener* l) { l->onBeginEdit (*this); });
+		getListeners ().forEach ([this] (IValueListener* l) { l->onBeginEdit (*this); });
 	}
 }
 
@@ -245,7 +290,7 @@ bool Value::performEdit (Type newValue)
 	//		return true;
 	value = newValue;
 
-	listeners.forEach ([this] (IValueListener* l) { l->onPerformEdit (*this, value); });
+	getListeners ().forEach ([this] (IValueListener* l) { l->onPerformEdit (*this, value); });
 
 	return true;
 }
@@ -258,7 +303,7 @@ void Value::endEdit ()
 
 	if (editCount == 0)
 	{
-		listeners.forEach ([this] (IValueListener* l) { l->onEndEdit (*this); });
+		getListeners ().forEach ([this] (IValueListener* l) { l->onEndEdit (*this); });
 	}
 }
 
@@ -290,33 +335,15 @@ bool Value::isEditing () const
 }
 
 //------------------------------------------------------------------------
-const UTF8String& Value::getID () const
-{
-	return idString;
-}
-
-//------------------------------------------------------------------------
 const IValueConverter& Value::getConverter () const
 {
 	return *valueConverter.get ();
 }
 
 //------------------------------------------------------------------------
-void Value::registerListener (IValueListener* listener)
-{
-	listeners.add (listener);
-}
-
-//------------------------------------------------------------------------
-void Value::unregisterListener (IValueListener* listener)
-{
-	listeners.remove (listener);
-}
-
-//------------------------------------------------------------------------
 void Value::dispatchStateChange ()
 {
-	listeners.forEach ([this] (IValueListener* l) { l->onStateChange (*this); });
+	getListeners ().forEach ([this] (IValueListener* l) { l->onStateChange (*this); });
 }
 
 //------------------------------------------------------------------------
@@ -471,6 +498,18 @@ ValuePtr makeStringListValue (const UTF8String& id, const IStringListValue::Stri
 	return std::make_shared<Detail::StringListValue> (
 	    id, static_cast<IStepValue::StepType> (strings.size ()), 0,
 	    std::make_shared<Detail::StringListValueConverter> (strings));
+}
+
+//------------------------------------------------------------------------
+ValuePtr makeStaticStringValue (const UTF8String& id, const UTF8String& value)
+{
+	return std::make_shared<Detail::StaticStringValue> (id, value);
+}
+
+//------------------------------------------------------------------------
+ValuePtr makeStaticStringValue (const UTF8String& id, UTF8String&& value)
+{
+	return std::make_shared<Detail::StaticStringValue> (id, std::move (value));
 }
 
 //------------------------------------------------------------------------
