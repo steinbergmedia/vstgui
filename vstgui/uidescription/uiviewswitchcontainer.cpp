@@ -85,12 +85,11 @@ void UIViewSwitchContainer::setCurrentViewIndex (int32_t viewIndex)
 				view->setViewSize (vs);
 				view->setMouseableArea (vs);
 			}
-			if (animationTime)
+			if (isAttached () && animationTime)
 			{
-				if (getFrame ())
-					getFrame ()->getAnimator ()->removeAnimation (this, "UIViewSwitchContainer::setCurrentViewIndex");
+				removeAnimation ("UIViewSwitchContainer::setCurrentViewIndex");
 				CView* oldView = getView (0);
-				if (isAttached () && oldView && getFrame ())
+				if (oldView)
 				{
 					Animation::IAnimationTarget* animation = nullptr;
 					switch (animationStyle)
@@ -122,7 +121,7 @@ void UIViewSwitchContainer::setCurrentViewIndex (int32_t viewIndex)
 						}
 					}
 					if (animation)
-						getFrame ()->getAnimator ()->addAnimation (this, "UIViewSwitchContainer::setCurrentViewIndex", animation, new Animation::LinearTimingFunction (animationTime));
+						addAnimation ("UIViewSwitchContainer::setCurrentViewIndex", animation, new Animation::LinearTimingFunction (animationTime));
 					else
 					{
 						removeAll ();
@@ -173,6 +172,7 @@ bool UIViewSwitchContainer::removed (CView* parent)
 {
 	if (isAttached ())
 	{
+		removeAnimation ("UIViewSwitchContainer::setCurrentViewIndex");
 		bool result = CViewContainer::removed (parent);
 		if (result && controller)
 			controller->switchContainerRemoved ();
