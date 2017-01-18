@@ -182,6 +182,7 @@ static const std::string kAttrAutoHeight = "auto-height";
 //-----------------------------------------------------------------------------
 // CTextEditCreator attributes
 //-----------------------------------------------------------------------------
+static const std::string kAttrSecureStyle = "secure-style";
 static const std::string kAttrImmediateTextChange = "immediate-text-change";
 static const std::string kAttrStyleDoubleClick = "style-doubleclick";
 static const std::string kAttrPlaceholderTitle = "placeholder-title";
