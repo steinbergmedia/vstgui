@@ -2020,7 +2020,9 @@ public:
 			return false;
 
 		bool b;
-		if (attributes.getBooleanAttribute(kAttrImmediateTextChange, b))
+		if (attributes.getBooleanAttribute (kAttrSecureStyle, b))
+			label->setSecureStyle (b);
+		if (attributes.getBooleanAttribute (kAttrImmediateTextChange, b))
 			label->setImmediateTextChange (b);
 
 		int32_t style = label->getStyle ();
@@ -2034,6 +2036,7 @@ public:
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const override
 	{
+		attributeNames.emplace_back (kAttrSecureStyle);
 		attributeNames.emplace_back (kAttrImmediateTextChange);
 		attributeNames.emplace_back (kAttrStyleDoubleClick);
 		attributeNames.emplace_back (kAttrPlaceholderTitle);
@@ -2041,6 +2044,7 @@ public:
 	}
 	AttrType getAttributeType (const std::string& attributeName) const override
 	{
+		if (attributeName == kAttrSecureStyle) return kBooleanType;
 		if (attributeName == kAttrImmediateTextChange) return kBooleanType;
 		if (attributeName == kAttrStyleDoubleClick) return kBooleanType;
 		if (attributeName == kAttrPlaceholderTitle) return kStringType;
@@ -2051,6 +2055,11 @@ public:
 		CTextEdit* label = dynamic_cast<CTextEdit*> (view);
 		if (!label)
 			return false;
+		if (attributeName == kAttrSecureStyle)
+		{
+			stringValue = label->getSecureStyle () ? "true" : "false";
+			return true;
+		}
 		if (attributeName == kAttrImmediateTextChange)
 		{
 			stringValue = label->getImmediateTextChange () ? "true" : "false";

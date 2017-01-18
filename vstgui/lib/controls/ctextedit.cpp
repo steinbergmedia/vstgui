@@ -59,8 +59,6 @@ A bitmap can be used as background.
 //------------------------------------------------------------------------
 CTextEdit::CTextEdit (const CRect& size, IControlListener* listener, int32_t tag, UTF8StringPtr txt, CBitmap* background, const int32_t style)
 : CTextLabel (size, txt, background, style)
-, bWasReturnPressed (false)
-, immediateTextChange (false)
 {
 	this->listener = listener;
 	this->tag = tag;
@@ -74,6 +72,7 @@ CTextEdit::CTextEdit (const CTextEdit& v)
 , bWasReturnPressed (false)
 , stringToValueFunction (v.stringToValueFunction)
 , immediateTextChange (v.immediateTextChange)
+, secureStyle (v.secureStyle)
 , platformFont (v.platformFont)
 , placeholderString (v.placeholderString)
 {
@@ -103,6 +102,25 @@ void CTextEdit::setStringToValueFunction (StringToValueFunction&& stringToValueF
 void CTextEdit::setImmediateTextChange (bool state)
 {
 	immediateTextChange = state;
+}
+
+//------------------------------------------------------------------------
+void CTextEdit::setSecureStyle (bool state)
+{
+	if (secureStyle != state)
+	{
+		secureStyle = state;
+		if (platformControl)
+		{
+			
+		}
+	}
+}
+
+//------------------------------------------------------------------------
+bool CTextEdit::getSecureStyle () const
+{
+	return secureStyle;
 }
 
 //------------------------------------------------------------------------
@@ -172,17 +190,28 @@ void CTextEdit::draw (CDrawContext *pContext)
 		setDirty (false);
 		return;
 	}
-	if (text.empty () && !placeholderString.empty ())
+	drawBack (pContext);
+	if (text.empty ())
 	{
-		drawBack (pContext);
-		pContext->saveGlobalState ();
-		pContext->setGlobalAlpha (pContext->getGlobalAlpha () * 0.5f);
-		drawPlatformText (pContext, placeholderString.getPlatformString ());
-		pContext->restoreGlobalState ();
-		setDirty (false);
+		if (!placeholderString.empty ())
+		{
+			pContext->saveGlobalState ();
+			pContext->setGlobalAlpha (pContext->getGlobalAlpha () * 0.5f);
+			drawPlatformText (pContext, placeholderString.getPlatformString ());
+			pContext->restoreGlobalState ();
+		}
+	}
+	else if (getSecureStyle ())
+	{
+		constexpr auto bulletCharacter = "\xE2\x80\xA2";
+		UTF8String str;
+		for (auto i = 0u; i < text.length (); ++i)
+			str += bulletCharacter;
+		drawPlatformText (pContext, str.getPlatformString ());
 	}
 	else
 		CTextLabel::draw (pContext);
+	setDirty (false);
 }
 
 //------------------------------------------------------------------------
@@ -287,6 +316,12 @@ void CTextEdit::platformTextDidChange ()
 {
 	if (platformControl && immediateTextChange)
 		updateText (platformControl);
+}
+
+//------------------------------------------------------------------------
+bool CTextEdit::platformIsSecureTextEdit ()
+{
+	return getSecureStyle ();
 }
 
 //------------------------------------------------------------------------

@@ -70,6 +70,9 @@ public:
 	virtual void setImmediateTextChange (bool state);	///< enable/disable immediate text change behaviour.
 	bool getImmediateTextChange () const { return immediateTextChange; }	///< get immediate text change behaviour
 
+	void setSecureStyle (bool state);	///< enable/disable secure style
+	bool getSecureStyle () const;		///< get secure style
+	
 	virtual void setPlaceholderString (const UTF8String& str);
 	const UTF8String& getPlaceholderString () const { return placeholderString; }
 	//@}
@@ -90,7 +93,7 @@ public:
 	virtual void setViewSize (const CRect& newSize, bool invalid = true) override;
 	virtual void parentSizeChanged () override;
 
-	bool bWasReturnPressed;
+	bool bWasReturnPressed {false};
 
 	PlatformTextEditPtr getPlatformTextEdit () const { return platformControl; }
 
@@ -113,12 +116,14 @@ protected:
 	void platformLooseFocus (bool returnPressed) override;
 	bool platformOnKeyDown (const VstKeyCode& key) override;
 	void platformTextDidChange () override;
+	bool platformIsSecureTextEdit () override;
 
 	PlatformTextEditPtr platformControl;
 
 	StringToValueFunction stringToValueFunction;
 
-	bool immediateTextChange;
+	bool immediateTextChange {false};
+	bool secureStyle {false};
 	mutable SharedPointer<CFontDesc> platformFont;
 	UTF8String placeholderString;
 };

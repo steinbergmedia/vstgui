@@ -62,6 +62,7 @@ public:
 	virtual void platformLooseFocus (bool returnPressed) = 0;
 	virtual bool platformOnKeyDown (const VstKeyCode& key) = 0;
 	virtual void platformTextDidChange () = 0;
+	virtual bool platformIsSecureTextEdit () = 0;
 
 //------------------------------------------------------------------------------------
 };

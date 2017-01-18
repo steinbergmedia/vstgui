@@ -45,6 +45,7 @@
 using namespace VSTGUI;
 
 static Class textFieldClass = nullptr;
+static Class secureTextFieldClass = nullptr;
 
 @interface NSObject (VSTGUI_NSTextField_Private)
 -(id)initWithTextEdit:(id)textEit;
@@ -277,6 +278,8 @@ __attribute__((__destructor__)) static void cleanup_VSTGUI_NSTextField ()
 {
 	if (textFieldClass)
 		objc_disposeClassPair (textFieldClass);
+	if (secureTextFieldClass)
+		objc_disposeClassPair (secureTextFieldClass);
 }
 
 //-----------------------------------------------------------------------------
@@ -294,6 +297,16 @@ void CocoaTextEdit::initClass ()
 		VSTGUI_CHECK_YES(class_addMethod (textFieldClass, @selector(textDidChange:), IMP (VSTGUI_NSTextField_TextDidChange), "v@:@:@@:"))
 		VSTGUI_CHECK_YES(class_addIvar (textFieldClass, "_textEdit", sizeof (void*), (uint8_t)log2(sizeof(void*)), @encode(void*)))
 		objc_registerClassPair (textFieldClass);
+
+		NSMutableString* secureTextFieldClassName = [[[NSMutableString alloc] initWithString:@"VSTGUI_NSSecureTextField"] autorelease];
+		secureTextFieldClass = generateUniqueClass (secureTextFieldClassName, [NSSecureTextField class]);
+		VSTGUI_CHECK_YES(class_addMethod (secureTextFieldClass, @selector(initWithTextEdit:), IMP (VSTGUI_NSTextField_Init), "@@:@:^:"))
+		VSTGUI_CHECK_YES(class_addMethod (secureTextFieldClass, @selector(syncSize), IMP (VSTGUI_NSTextField_SyncSize), "v@:@:"))
+		VSTGUI_CHECK_YES(class_addMethod (secureTextFieldClass, @selector(removeFromSuperview), IMP (VSTGUI_NSTextField_RemoveFromSuperview), "v@:@:"))
+		VSTGUI_CHECK_YES(class_addMethod (secureTextFieldClass, @selector(control:textView:doCommandBySelector:), IMP (VSTGUI_NSTextField_DoCommandBySelector), "B@:@:@:@::"))
+		VSTGUI_CHECK_YES(class_addMethod (secureTextFieldClass, @selector(textDidChange:), IMP (VSTGUI_NSTextField_TextDidChange), "v@:@:@@:"))
+		VSTGUI_CHECK_YES(class_addIvar (secureTextFieldClass, "_textEdit", sizeof (void*), (uint8_t)log2(sizeof(void*)), @encode(void*)))
+		objc_registerClassPair (secureTextFieldClass);
 	}
 }
 
@@ -304,7 +317,10 @@ CocoaTextEdit::CocoaTextEdit (NSView* parent, IPlatformTextEditCallback* textEdi
 , parent (parent)
 {
 	initClass ();
-	platformControl = [[textFieldClass alloc] initWithTextEdit:(id)this];
+	if (textEdit->platformIsSecureTextEdit ())
+		platformControl = [[secureTextFieldClass alloc] initWithTextEdit:(id)this];
+	else
+		platformControl = [[textFieldClass alloc] initWithTextEdit:(id)this];
 }
 
 //-----------------------------------------------------------------------------
