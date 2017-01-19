@@ -466,6 +466,7 @@ static CommandWithKeyList getCommandList (const char* _Nonnull group)
 
 	IApplication::CommandLineArguments cmdArgs;
 	NSArray* args = [[NSProcessInfo processInfo] arguments];
+	cmdArgs.reserve ([args count]);
 	for (NSString* str in args)
 	{
 		cmdArgs.emplace_back ([str UTF8String]);

@@ -475,6 +475,7 @@ struct WindowController::Impl : public IController, public ICommandHandler
 	{
 		if (!modelHandler)
 			return;
+		valueWrappers.reserve (modelHandler->getValues ().size ());
 		for (auto& value : modelHandler->getValues ())
 		{
 			valueWrappers.emplace_back (std::make_unique<ValueWrapper> (value));
