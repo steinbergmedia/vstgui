@@ -34,6 +34,7 @@
 
 #include "ctextedit.h"
 #include "../cframe.h"
+#include "../platform/iplatformframe.h"
 #include <cassert>
 
 namespace VSTGUI {

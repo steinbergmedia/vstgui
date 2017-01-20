@@ -234,6 +234,7 @@ class IPlatformString;
 class IPlatformBitmap;
 class IPlatformBitmapPixelAccess;
 class IPlatformFont;
+class IPlatformFrame;
 class IFontPainter;
 
 }

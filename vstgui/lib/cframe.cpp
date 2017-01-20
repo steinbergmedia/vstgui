@@ -40,6 +40,7 @@
 #include "idatapackage.h"
 #include "animation/animator.h"
 #include "controls/ctextedit.h"
+#include "platform/iplatformframe.h"
 #include <cassert>
 #include <vector>
 #include <limits>
@@ -176,12 +177,12 @@ void CFrame::close ()
 }
 
 //-----------------------------------------------------------------------------
-bool CFrame::open (void* systemWin, PlatformType systemWindowType)
+bool CFrame::open (void* systemWin, PlatformType systemWindowType, IPlatformFrameConfig* config)
 {
 	if (!systemWin || isAttached ())
 		return false;
 
-	pImpl->platformFrame = owned (IPlatformFrame::createPlatformFrame (this, getViewSize (), systemWin, systemWindowType));
+	pImpl->platformFrame = owned (IPlatformFrame::createPlatformFrame (this, getViewSize (), systemWin, systemWindowType, config));
 	if (!pImpl->platformFrame)
 	{
 		return false;

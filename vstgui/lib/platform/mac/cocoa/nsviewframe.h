@@ -55,10 +55,20 @@ namespace VSTGUI {
 class CocoaTooltipWindow;
 
 //-----------------------------------------------------------------------------
+class CocoaFrameConfig : public IPlatformFrameConfig
+{
+public:
+	enum Flags {
+		kNoCALayer = 1 << 0,
+	};
+	uint32_t flags {0};
+};
+
+//-----------------------------------------------------------------------------
 class NSViewFrame : public IPlatformFrame, public IPlatformFrameTouchBarExtension
 {
 public:
-	NSViewFrame (IPlatformFrameCallback* frame, const CRect& size, NSView* parent);
+	NSViewFrame (IPlatformFrameCallback* frame, const CRect& size, NSView* parent, IPlatformFrameConfig* config);
 	~NSViewFrame () noexcept;
 
 	NSView* getPlatformControl () const { return nsView; }

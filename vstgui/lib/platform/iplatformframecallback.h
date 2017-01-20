@@ -32,55 +32,70 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#include "coffscreencontext.h"
-#include "cframe.h"
-#include "cbitmap.h"
-#include "platform/iplatformframe.h"
+#ifndef __iplatformframecallback__
+#define __iplatformframecallback__
+
+/// @cond ignore
+
+#include "../vstguifwd.h"
+
+struct VstKeyCode;
 
 namespace VSTGUI {
 
-//-----------------------------------------------------------------------------
-COffscreenContext::COffscreenContext (CBitmap* bitmap)
-: CDrawContext (CRect (0, 0, bitmap->getWidth (), bitmap->getHeight ()))
-, bitmap (bitmap)
-{
-}
+enum PlatformType {
+	kHWND,
+	kWindowRef,
+	kNSView,
+	kUIView,
+	kHWNDTopLevel,
+	
+	kDefaultNative = -1
+};
 
 //-----------------------------------------------------------------------------
-COffscreenContext::COffscreenContext (const CRect& surfaceRect)
-: CDrawContext (surfaceRect)
-{
-}
-
+// Callback interface from IPlatformFrame implementations
 //-----------------------------------------------------------------------------
-void COffscreenContext::copyFrom (CDrawContext *pContext, CRect destRect, CPoint srcOffset)
+class IPlatformFrameCallback
 {
-	if (bitmap)
-		bitmap->draw (pContext, destRect, srcOffset);
-}
+public:
+	virtual bool platformDrawRect (CDrawContext* context, const CRect& rect) = 0;
+	
+	virtual CMouseEventResult platformOnMouseDown (CPoint& where, const CButtonState& buttons) = 0;
+	virtual CMouseEventResult platformOnMouseMoved (CPoint& where, const CButtonState& buttons) = 0;
+	virtual CMouseEventResult platformOnMouseUp (CPoint& where, const CButtonState& buttons) = 0;
+	virtual CMouseEventResult platformOnMouseExited (CPoint& where, const CButtonState& buttons) = 0;
+	virtual bool platformOnMouseWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const CButtonState &buttons) = 0;
 
-//-----------------------------------------------------------------------------
-SharedPointer<COffscreenContext> COffscreenContext::create (CFrame* frame, CCoord width, CCoord height, double scaleFactor)
+	virtual bool platformOnDrop (IDataPackage* drag, const CPoint& where) = 0;
+	virtual void platformOnDragEnter (IDataPackage* drag, const CPoint& where) = 0;
+	virtual void platformOnDragLeave (IDataPackage* drag, const CPoint& where) = 0;
+	virtual void platformOnDragMove (IDataPackage* drag, const CPoint& where) = 0;
+
+	virtual bool platformOnKeyDown (VstKeyCode& keyCode) = 0;
+	virtual bool platformOnKeyUp (VstKeyCode& keyCode) = 0;
+
+	virtual void platformOnActivate (bool state) = 0;
+	virtual void platformOnWindowActivate (bool state) = 0;
+	
+	virtual void platformScaleFactorChanged (double newScaleFactor) = 0;
+
+#if VSTGUI_TOUCH_EVENT_HANDLING
+	virtual void platformOnTouchEvent (ITouchEvent& event) = 0;
+#endif
+//------------------------------------------------------------------------------------
+};
+
+//------------------------------------------------------------------------------------
+class IPlatformFrameConfig
 {
-	if (width >= 1. && height >= 1.)
-	{
-		IPlatformFrame* pf = frame ? frame->getPlatformFrame () : nullptr;
-		if (pf)
-			return pf->createOffscreenContext (width, height, scaleFactor);
-	}
-	return nullptr;
-}
+public:
+	virtual ~IPlatformFrameConfig () noexcept = default;
+};
 
-//-----------------------------------------------------------------------------
-CCoord COffscreenContext::getWidth () const
-{
-	return bitmap ? bitmap->getWidth () : 0.;
-}
-
-//-----------------------------------------------------------------------------
-CCoord COffscreenContext::getHeight () const
-{
-	return bitmap ? bitmap->getHeight () : 0.;
-}
-
+//------------------------------------------------------------------------------------
 } // namespace
+
+/// @endcond
+
+#endif // __iplatformframecallback__
