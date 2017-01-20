@@ -33,21 +33,20 @@
 //-----------------------------------------------------------------------------
 
 #include "vst3editor.h"
-#include "../lib/vstkeycode.h"
 #include "../lib/cvstguitimer.h"
+#include "../lib/vstkeycode.h"
+#include "../uidescription/detail/uiviewcreatorattributes.h"
 #include "../uidescription/editing/uieditcontroller.h"
 #include "../uidescription/editing/uieditmenucontroller.h"
-#include "../uidescription/uiviewfactory.h"
 #include "../uidescription/uiattributes.h"
-#include "../uidescription/detail/uiviewcreatorattributes.h"
-#include "base/source/updatehandler.h"
+#include "../uidescription/uiviewfactory.h"
 #include "base/source/fstring.h"
-#include "base/source/timer.h"
+#include "base/source/updatehandler.h"
 #include "pluginterfaces/base/keycodes.h"
+#include <algorithm>
+#include <cassert>
 #include <list>
 #include <sstream>
-#include <cassert>
-#include <algorithm>
 
 #if defined (kVstVersionMajor) && defined (kVstVersionMinor)
 #define VST3_SUPPORTS_CONTEXTMENU (kVstVersionMajor > 3 || (kVstVersionMajor == 3 && kVstVersionMinor > 1))
@@ -69,34 +68,33 @@ DEF_CLASS_IID (IPlugViewContentScaleSupport)
 class UpdateHandlerInit
 {
 public:
-	UpdateHandlerInit ()
-	{
-		get ();
-	}
+	UpdateHandlerInit () { get (); }
+
 	UpdateHandler* get () { return UpdateHandler::instance (); }
 };
 
 static UpdateHandlerInit gUpdateHandlerInit;
 
 //-----------------------------------------------------------------------------
-class IdleUpdateHandler : public FObject, public ITimerCallback
+class IdleUpdateHandler : public FObject, public IPlatformTimerCallback
 {
 public:
 	OBJ_METHODS (IdleUpdateHandler, FObject)
 	SINGLETON (IdleUpdateHandler)
 protected:
-	IdleUpdateHandler () 
+	IdleUpdateHandler ()
 	{
-		timer = Timer::create (this, 1000/30); // 30 Hz timer
-		VSTGUI::CView::kDirtyCallAlwaysOnMainThread = true; // we will always call CView::setDirty() on the main thread
+		timer = IPlatformTimer::create (this);
+		timer->start (1000 / 30); // 30 Hz timer
+		
+		// we will always call CView::setDirty() on the main thread
+		VSTGUI::CView::kDirtyCallAlwaysOnMainThread = true;
 	}
-	~IdleUpdateHandler () { timer->release (); }
-	void onTimer (Timer* timer)
-	{
-		gUpdateHandlerInit.get ()->triggerDeferedUpdates ();
-	}
+	~IdleUpdateHandler () { timer->stop (); }
 
-	Steinberg::Timer* timer;
+	void fire () VSTGUI_OVERRIDE_VMETHOD { gUpdateHandlerInit.get ()->triggerDeferedUpdates (); }
+
+	IPlatformTimer* timer;
 };
 
 } // namespace Steinberg
