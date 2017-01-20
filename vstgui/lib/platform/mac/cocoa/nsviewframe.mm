@@ -762,7 +762,7 @@ void NSViewFrame::initClass ()
 }
 
 //-----------------------------------------------------------------------------
-NSViewFrame::NSViewFrame (IPlatformFrameCallback* frame, const CRect& size, NSView* parent)
+NSViewFrame::NSViewFrame (IPlatformFrameCallback* frame, const CRect& size, NSView* parent, IPlatformFrameConfig* config)
 : IPlatformFrame (frame)
 , nsView (nullptr)
 , tooltipWindow (nullptr)
@@ -771,8 +771,14 @@ NSViewFrame::NSViewFrame (IPlatformFrameCallback* frame, const CRect& size, NSVi
 , inDraw (false)
 , cursor (kCursorDefault)
 {
+	auto cocoaConfig = dynamic_cast<CocoaFrameConfig*> (config);
 	initClass ();
+	
 	nsView = [[viewClass alloc] initWithNSViewFrame: this parent: parent andSize: &size];
+
+	if (cocoaConfig && cocoaConfig->flags & CocoaFrameConfig::kNoCALayer)
+		return;
+
 	auto processInfo = [NSProcessInfo processInfo];
 	if ([processInfo respondsToSelector:@selector(operatingSystemVersion)])
 	{
@@ -1282,13 +1288,13 @@ void* NSViewFrame::makeTouchBar () const
 }
 
 //-----------------------------------------------------------------------------
-IPlatformFrame* IPlatformFrame::createPlatformFrame (IPlatformFrameCallback* frame, const CRect& size, void* parent, PlatformType platformType)
+IPlatformFrame* IPlatformFrame::createPlatformFrame (IPlatformFrameCallback* frame, const CRect& size, void* parent, PlatformType platformType, IPlatformFrameConfig* config)
 {
 	#if MAC_CARBON
 	if (platformType == kWindowRef || platformType == kDefaultNative)
-		return new HIViewFrame (frame, size, (WindowRef)parent);
+		return new HIViewFrame (frame, size, reinterpret_cast<WindowRef> (parent));
 	#endif
-	return new NSViewFrame (frame, size, (NSView*)parent);
+	return new NSViewFrame (frame, size, reinterpret_cast<NSView*> (parent), config);
 }
 
 //------------------------------------------------------------------------------------

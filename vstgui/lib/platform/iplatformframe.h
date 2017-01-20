@@ -38,59 +38,15 @@
 /// @cond ignore
 
 #include "../vstguifwd.h"
-
-struct VstKeyCode;
+#include "iplatformframecallback.h"
 
 namespace VSTGUI {
-
-enum PlatformType {
-	kHWND,
-	kWindowRef,
-	kNSView,
-	kUIView,
-	kHWNDTopLevel,
-	
-	kDefaultNative = -1
-};
-
-//-----------------------------------------------------------------------------
-// Callback interface from IPlatformFrame implementations
-//-----------------------------------------------------------------------------
-class IPlatformFrameCallback
-{
-public:
-	virtual bool platformDrawRect (CDrawContext* context, const CRect& rect) = 0;
-	
-	virtual CMouseEventResult platformOnMouseDown (CPoint& where, const CButtonState& buttons) = 0;
-	virtual CMouseEventResult platformOnMouseMoved (CPoint& where, const CButtonState& buttons) = 0;
-	virtual CMouseEventResult platformOnMouseUp (CPoint& where, const CButtonState& buttons) = 0;
-	virtual CMouseEventResult platformOnMouseExited (CPoint& where, const CButtonState& buttons) = 0;
-	virtual bool platformOnMouseWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const CButtonState &buttons) = 0;
-
-	virtual bool platformOnDrop (IDataPackage* drag, const CPoint& where) = 0;
-	virtual void platformOnDragEnter (IDataPackage* drag, const CPoint& where) = 0;
-	virtual void platformOnDragLeave (IDataPackage* drag, const CPoint& where) = 0;
-	virtual void platformOnDragMove (IDataPackage* drag, const CPoint& where) = 0;
-
-	virtual bool platformOnKeyDown (VstKeyCode& keyCode) = 0;
-	virtual bool platformOnKeyUp (VstKeyCode& keyCode) = 0;
-
-	virtual void platformOnActivate (bool state) = 0;
-	virtual void platformOnWindowActivate (bool state) = 0;
-	
-	virtual void platformScaleFactorChanged (double newScaleFactor) = 0;
-
-#if VSTGUI_TOUCH_EVENT_HANDLING
-	virtual void platformOnTouchEvent (ITouchEvent& event) = 0;
-#endif
-//------------------------------------------------------------------------------------
-};
 
 //-----------------------------------------------------------------------------
 class IPlatformFrame : public AtomicReferenceCounted
 {
 public:
-	static IPlatformFrame* createPlatformFrame (IPlatformFrameCallback* frame, const CRect& size, void* parent, PlatformType parentType);	///< create platform representation
+	static IPlatformFrame* createPlatformFrame (IPlatformFrameCallback* frame, const CRect& size, void* parent, PlatformType parentType, IPlatformFrameConfig* config = nullptr);	///< create platform representation
 	static uint32_t getTicks ();
 
 	virtual bool getGlobalPosition (CPoint& pos) const = 0;	///< get the top left position in global coordinates

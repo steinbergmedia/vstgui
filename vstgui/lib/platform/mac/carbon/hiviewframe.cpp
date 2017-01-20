@@ -54,7 +54,7 @@ namespace VSTGUI {
 
 #if !MAC_COCOA
 //-----------------------------------------------------------------------------
-IPlatformFrame* IPlatformFrame::createPlatformFrame (IPlatformFrameCallback* frame, const CRect& size, void* parent, PlatformType parentType)
+IPlatformFrame* IPlatformFrame::createPlatformFrame (IPlatformFrameCallback* frame, const CRect& size, void* parent, PlatformType parentType, IPlatformFrameConfig* config)
 {
 	return new HIViewFrame (frame, size, (WindowRef)parent);
 }

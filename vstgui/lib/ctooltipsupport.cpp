@@ -35,6 +35,7 @@
 #include "ctooltipsupport.h"
 #include "cframe.h"
 #include "cvstguitimer.h"
+#include "platform/iplatformframe.h"
 
 #if DEBUG
 #define DEBUGLOG 0

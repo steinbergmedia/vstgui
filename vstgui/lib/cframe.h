@@ -37,7 +37,7 @@
 
 #include "vstguifwd.h"
 #include "cviewcontainer.h"
-#include "platform/iplatformframe.h"
+#include "platform/iplatformframecallback.h"
 
 namespace VSTGUI {
 
@@ -68,7 +68,7 @@ public:
 	/// @name CFrame Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	bool open (void* pSystemWindow, PlatformType systemWindowType = kDefaultNative);
+	bool open (void* pSystemWindow, PlatformType systemWindowType = kDefaultNative, IPlatformFrameConfig* = nullptr);
 	void close ();							///< closes the frame and calls forget
 
 	bool setZoom (double zoomFactor);				///< set zoom factor

@@ -133,6 +133,7 @@ set(${target}_common_sources
   platform/iplatformbitmap.h
   platform/iplatformfont.h
   platform/iplatformframe.h
+  platform/iplatformframecallback.h
   platform/iplatformopenglview.h
   platform/iplatformoptionmenu.h
   platform/iplatformstring.h

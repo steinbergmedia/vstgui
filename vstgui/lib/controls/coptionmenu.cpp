@@ -38,6 +38,7 @@
 #include "../cstring.h"
 
 #include "../platform/iplatformoptionmenu.h"
+#include "../platform/iplatformframe.h"
 
 namespace VSTGUI {
 

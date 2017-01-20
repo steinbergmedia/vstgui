@@ -35,6 +35,7 @@
 #include "clayeredviewcontainer.h"
 #include "cframe.h"
 #include "cdrawcontext.h"
+#include "platform/iplatformframe.h"
 
 namespace VSTGUI {
 
