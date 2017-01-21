@@ -85,6 +85,8 @@ Win32TextEdit::Win32TextEdit (HWND parent, IPlatformTextEditCallback* textEdit)
 	if (getD2DFactory () == 0 && IsWindowsVistaOrGreater()) // Vista and above
 		wxStyle = WS_EX_COMPOSITED;
 	wstyle |= WS_CHILD | WS_VISIBLE | ES_AUTOHSCROLL;
+	if (textEdit->platformIsSecureTextEdit ())
+		wstyle |= ES_PASSWORD;
 	platformControl = CreateWindowEx (wxStyle,
 		TEXT("EDIT"), stringHelper, wstyle,
 		(int)rect.left, (int)rect.top, (int)rect.getWidth (), (int)rect.getHeight (),
