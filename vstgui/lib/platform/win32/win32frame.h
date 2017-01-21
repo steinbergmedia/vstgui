@@ -39,6 +39,7 @@
 
 #if WINDOWS
 
+#include "../iplatformframe.h"
 #include "../iplatformviewlayer.h"
 #include <windows.h>
 
