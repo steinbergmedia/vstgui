@@ -3048,22 +3048,23 @@ UIBitmapNode::~UIBitmapNode () noexcept
 //-----------------------------------------------------------------------------
 void UIBitmapNode::createXMLData (const std::string& pathHint)
 {
-	CBitmap* bitmap = getBitmap (pathHint);
-	if (bitmap)
+	UINode* node = getChildren ().findChildNode ("data");
+	if (node == nullptr)
 	{
-		if (auto platformBitmap = bitmap->getPlatformBitmap ())
+		CBitmap* bitmap = getBitmap (pathHint);
+		if (bitmap)
 		{
-			auto buffer = IPlatformBitmap::createMemoryPNGRepresentation (platformBitmap);
-			if (!buffer.empty ())
+			if (auto platformBitmap = bitmap->getPlatformBitmap ())
 			{
-				auto result = Base64Codec::encode (buffer.data(), static_cast<uint32_t> (buffer.size ()));
-				UINode* node = getChildren ().findChildNode ("data");
-				if (node)
-					getChildren ().remove (node);
-				UINode* dataNode = new UINode ("data");
-				dataNode->getAttributes ()->setAttribute ("encoding", "base64");
-				dataNode->getData ().append (reinterpret_cast<const char*> (result.data.get ()), static_cast<std::streamsize> (result.dataSize));
-				getChildren ().add (dataNode);
+				auto buffer = IPlatformBitmap::createMemoryPNGRepresentation (platformBitmap);
+				if (!buffer.empty ())
+				{
+					auto result = Base64Codec::encode (buffer.data(), static_cast<uint32_t> (buffer.size ()));
+					UINode* dataNode = new UINode ("data");
+					dataNode->getAttributes ()->setAttribute ("encoding", "base64");
+					dataNode->getData ().append (reinterpret_cast<const char*> (result.data.get ()), static_cast<std::streamsize> (result.dataSize));
+					getChildren ().add (dataNode);
+				}
 			}
 		}
 	}
@@ -3156,6 +3157,7 @@ void UIBitmapNode::setBitmap (UTF8StringPtr bitmapName)
 	double scaleFactor = 1.;
 	if (UIDescriptionPrivate::decodeScaleFactorFromName (bitmapName, scaleFactor))
 		attributes->setDoubleAttribute ("scale-factor", scaleFactor);
+	removeXMLData ();
 }
 
 //-----------------------------------------------------------------------------
