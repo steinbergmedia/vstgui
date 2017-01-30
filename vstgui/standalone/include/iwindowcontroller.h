@@ -1,6 +1,7 @@
 #pragma once
 
 #include "iwindowlistener.h"
+#include "../../lib/vstguifwd.h"
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
