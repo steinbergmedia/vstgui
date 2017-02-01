@@ -267,6 +267,7 @@ void CDataBrowser::recalculateLayout (bool rememberSelection)
 	CColor lineColor;
 	db->dbGetLineWidthAndColor (lineWidth, lineColor, this);
 	CCoord rowHeight = db->dbGetRowHeight (this);
+	CCoord headerHeight = db->dbGetHeaderHeight (this);
 	int32_t numRows = db->dbGetNumRows (this);
 	int32_t numColumns = db->dbGetNumColumns (this);
 	CCoord allRowsHeight = rowHeight * numRows;
@@ -280,9 +281,10 @@ void CDataBrowser::recalculateLayout (bool rememberSelection)
 	CRect newContainerSize (0, 0, allColumnsWidth, allRowsHeight);
 	if (style & kDrawHeader)
 	{
-		newContainerSize.offset (0, rowHeight+lineWidth);
 
-		CRect headerSize (0, 0, newContainerSize.getWidth (), rowHeight+lineWidth);
+		newContainerSize.offset (0, headerHeight+lineWidth);
+
+		CRect headerSize (0, 0, newContainerSize.getWidth (), headerHeight+lineWidth);
 		if (style & kHorizontalScrollbar && hsb)
 			headerSize.right += hsb->getWidth ();
 		if (dbHeader == nullptr)
@@ -335,7 +337,7 @@ void CDataBrowser::recalculateLayout (bool rememberSelection)
 		{
 			CRect viewSize;
 			pV->getViewSize (viewSize);
-			if (pV != dbHeaderContainer && viewSize.top < rowHeight+lineWidth)
+			if (pV != dbHeaderContainer && viewSize.top < headerHeight+lineWidth)
 			{
 				if (style & kOverlayScrollbars && pV.cast<CScrollView> ())
 					continue;
@@ -346,7 +348,7 @@ void CDataBrowser::recalculateLayout (bool rememberSelection)
 					autoSizingEnabled = container->getAutosizingEnabled ();
 					container->setAutosizingEnabled (false);
 				}
-				viewSize.top += rowHeight+lineWidth;
+				viewSize.top += headerHeight+lineWidth;
 				pV->setViewSize (viewSize);
 				pV->setMouseableArea (viewSize);
 				if (auto container = pV->asViewContainer ())
@@ -637,13 +639,13 @@ void CDataBrowserHeader::drawRect (CDrawContext* context, const CRect& updateRec
 	{
 		db->dbGetLineWidthAndColor (lineWidth, lineColor, browser);
 	}
-	CCoord rowHeight = db->dbGetRowHeight (browser);
+	CCoord headerHeight = db->dbGetHeaderHeight (browser);
 	if (browser->getStyle () & CDataBrowser::kDrawRowLines)
-		rowHeight += lineWidth;
+		headerHeight += lineWidth;
 	int32_t numColumns = db->dbGetNumColumns (browser);
 
 	CRect r (getViewSize ().left, getViewSize ().top, 0, 0);
-	r.setHeight (rowHeight);
+	r.setHeight (headerHeight);
 	for (int32_t col = 0; col < numColumns; col++)
 	{
 		CCoord columnWidth = db->dbGetCurrentColumnWidth (col, browser);
