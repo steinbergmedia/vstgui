@@ -61,6 +61,7 @@ public:
 	virtual CCoord dbGetCurrentColumnWidth (int32_t index, CDataBrowser* browser) = 0;	///< return current width of index column
 	virtual void dbSetCurrentColumnWidth (int32_t index, const CCoord& width, CDataBrowser* browser) {}	///< the width of a column has changed
 	virtual CCoord dbGetRowHeight (CDataBrowser* browser) = 0;	///< return height of one row
+	virtual CCoord dbGetHeaderHeight (CDataBrowser* browser) { return dbGetRowHeight (browser); } ///< return height of header
 	virtual bool dbGetLineWidthAndColor (CCoord& width, CColor& color, CDataBrowser* browser) { return false; } ///< return the line width and color
 	virtual void dbAttached (CDataBrowser* browser) {}	///< databrowser view was attached to a parent
 	virtual void dbRemoved (CDataBrowser* browser) {}		///< databrowser view will be removed from its parent
