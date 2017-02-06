@@ -74,7 +74,7 @@ bool CompressedUIDescription::parse ()
 		return true;
 	bool result = false;
 	CResourceInputStream resStream (kLittleEndianByteOrder);
-	if (resStream.open (xmlFile))
+	if (resStream.open (getXmlFile ()))
 	{
 		int64_t identifier;
 		static_cast<InputStream&> (resStream) >> identifier;

@@ -181,6 +181,7 @@ protected:
 	bool parsed () const;
 	void setXmlContentProvider (Xml::IContentProvider* provider);
 
+	const CResourceDescription& getXmlFile () const;
 private:
 	// Xml::IHandler
 	void startXmlElement (Xml::Parser* parser, IdStringPtr elementName, UTF8StringPtr* elementAttributes) override;
