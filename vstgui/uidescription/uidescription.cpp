@@ -733,6 +733,12 @@ UTF8StringPtr UIDescription::getFilePath () const
 }
 
 //-----------------------------------------------------------------------------
+const CResourceDescription& UIDescription::getXmlFile () const
+{
+	return impl->xmlFile;
+}
+
+//-----------------------------------------------------------------------------
 void UIDescription::addDefaultNodes ()
 {
 	if (impl->sharedResources)
