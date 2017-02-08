@@ -47,6 +47,7 @@
 #include <gtkmm/plug.h>
 #include <iostream>
 #include <unordered_map>
+#include <cassert>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {

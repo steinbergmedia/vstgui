@@ -40,6 +40,7 @@
 #include <fontconfig/fontconfig.h>
 #include <freetype2/ft2build.h>
 #include <unordered_map>
+#include <cassert>
 
 #include FT_FREETYPE_H
 

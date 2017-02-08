@@ -38,6 +38,7 @@
 #include "cairobitmap.h"
 #include "x11platform.h"
 #include <memory>
+#include <vector>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
