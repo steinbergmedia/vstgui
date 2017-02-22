@@ -9,7 +9,7 @@ VSTGUI is a user interface toolkit mainly for audio plug-ins (VST, AudioUnit, et
 
 ##Platform support
 - Microsoft Windows 7 - 10
-- Apple OSX 10.7-10.11
+- Apple OSX 10.7-10.12
 - Apple iOS 8-9
 
 ##Requirements
