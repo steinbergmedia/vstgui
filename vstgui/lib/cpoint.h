@@ -47,7 +47,7 @@ struct CRect;
 struct CPoint
 {
 	CPoint (CCoord x = 0, CCoord y = 0) : x (x), y (y) {}
-	CPoint& operator () (CCoord x, CCoord y) { this->x = x; this->y = y; return *this; }
+	CPoint& operator () (CCoord _x, CCoord _y) { x = _x; y = _y; return *this; }
 
 	VSTGUI_DEPRECATED (bool isInside (const CRect& r) const;)
 
@@ -60,7 +60,7 @@ struct CPoint
 	CPoint operator- (const CPoint& other) const { return CPoint (x - other.x, y - other.y); }
 	CPoint operator- () const { return CPoint (-x, -y); }
 	
-	CPoint& offset (const CCoord x, const CCoord y) { *this += CPoint (x, y); return *this; }
+	CPoint& offset (const CCoord _x, const CCoord _y) { *this += CPoint (_x, _y); return *this; }
 	CPoint& offset (const CPoint& other) { *this += other; return *this; }
 	CPoint& offsetInverse (const CPoint& other) { *this -= other; return *this; }
 
