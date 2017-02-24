@@ -1,8 +1,7 @@
 # VSTGUI
 
 VSTGUI is a user interface toolkit mainly for audio plug-ins (VST, AAX, AudioUnit, etc...)
- and it designed for working well with VST3 plug-in.
- 
+ and it is designed for working well with VST3 plug-ins.
 
 ## History
 - First developed inhouse of Steinberg Media Technologies (around 1998) for their first VST plug-ins.
