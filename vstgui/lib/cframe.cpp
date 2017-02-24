@@ -1268,14 +1268,13 @@ void CFrame::scrollRect (const CRect& src, const CPoint& distance)
 //-----------------------------------------------------------------------------
 void CFrame::invalidate (const CRect &rect)
 {
-	CRect rectView;
 	FOREACHSUBVIEW
-	if (pV)
-	{
-		pV->getViewSize (rectView);
-		if (rect.rectOverlap (rectView))
-			pV->setDirty (true);
-	}
+		if (pV)
+		{
+			CRect rectView = pV->getViewSize ();
+			if (rect.rectOverlap (rectView))
+				pV->setDirty (true);
+		}
 	ENDFOREACHSUBVIEW
 }
 
