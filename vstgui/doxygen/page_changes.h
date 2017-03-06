@@ -17,6 +17,11 @@ It's recommended to start new projects with version 4 while old projects should 
 
 @section new_stuff New Stuff
 
+@subsection version4_4 Version 4.4
+
+- preview Linux version
+- support for Windows XP, Mac OS X 10.6 and non c++11 mode will be removed with version 4.5
+
 @subsection version4_3 Version 4.3
 
 - last version to support Windows XP, Mac OS X 10.6 and non c++11 mode

@@ -39,7 +39,7 @@
 #include "../uidescription.h"
 #include "../cstream.h"
 #include "../uiattributes.h"
-#include "../../lib/cviewcontainer.h"
+#include "../../lib/cframe.h"
 #include <sstream>
 #include <algorithm>
 
@@ -160,7 +160,8 @@ CRect UISelection::getBounds () const
 //----------------------------------------------------------------------------------------------------
 CRect UISelection::getGlobalViewCoordinates (CView* view)
 {
-	return view->translateToGlobal (view->getViewSize ());
+	CRect result = view->translateToGlobal (view->getViewSize ());
+	return view->getFrame () ? view->getFrame ()->getTransform ().inverse ().transform (result) : result;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -172,7 +173,7 @@ void UISelection::moveBy (const CPoint& p)
 	{
 		if (!containsParent ((*it)))
 		{
-			CRect viewRect = (*it)->getViewSize (viewRect);
+			CRect viewRect = (*it)->getViewSize ();
 			viewRect.offset (p.x, p.y);
 			(*it)->setViewSize (viewRect);
 			(*it)->setMouseableArea (viewRect);

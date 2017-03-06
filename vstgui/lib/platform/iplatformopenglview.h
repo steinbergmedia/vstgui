@@ -60,8 +60,8 @@ struct PixelFormat
 	uint32_t depthSize;
 	uint32_t samples;		///< only used when kMultiSample is set
 
-	PixelFormat () : depthSize (32), samples (0), flags (kAccelerated) {}
-	PixelFormat (const PixelFormat& pf) : depthSize (pf.depthSize), samples (pf.samples), flags (pf.flags) {}
+	PixelFormat () : flags (kAccelerated), depthSize (32), samples (0) {}
+	PixelFormat (const PixelFormat& pf) : flags (pf.flags), depthSize (pf.depthSize), samples (pf.samples) {}
 	
 	PixelFormat& operator() (const PixelFormat& pf) { depthSize = pf.depthSize; samples = pf.samples; flags = pf.flags; return *this; }
 };

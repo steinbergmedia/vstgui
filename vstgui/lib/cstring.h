@@ -157,16 +157,16 @@ class UTF8CharacterIterator
 {
 public:
 	UTF8CharacterIterator (const UTF8StringPtr utf8Str)
-	: startPos ((uint8_t*)utf8Str)
-	, currentPos (0)
+	: currentPos (0)
+    , startPos ((uint8_t*)utf8Str)
 	, strLen (std::strlen (utf8Str))
 	{
 		begin ();
 	}
 
 	UTF8CharacterIterator (const std::string& stdStr)
-	: startPos ((uint8_t*)stdStr.c_str ())
-	, currentPos (0)
+	: currentPos (0)
+    , startPos ((uint8_t*)stdStr.c_str ())
 	, strLen (stdStr.size ())
 	{
 		begin ();
