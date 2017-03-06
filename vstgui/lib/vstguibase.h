@@ -159,11 +159,6 @@
     #include <climits>
     using std::min;
     using std::max;
-    #define VSTGUI_OVERRIDE_VMETHOD	override
-    #define VSTGUI_FINAL_VMETHOD final
-    #define VSTGUI_RVALUE_REF_SUPPORT 1
-    #define VSTGUI_RANGE_BASED_FOR_LOOP_SUPPORT 1
-    #define VSTGUI_HAS_FUNCTIONAL 1
 	#ifndef LINUX
 		#define LINUX 1
 	#endif

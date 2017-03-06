@@ -77,7 +77,7 @@ static Glib::RefPtr<Gdk::Pixbuf> pixBufFromBitmap (CBitmap* bitmap)
 	auto platformBitmap = bitmap->getPlatformBitmap ();
 	if (!platformBitmap)
 		return {};
-	auto cairoBitmap = dynamic_cast<Cairo::Bitmap*> (platformBitmap);
+	auto cairoBitmap = platformBitmap.cast<Cairo::Bitmap> ();
 	if (!cairoBitmap)
 		return {};
 	auto surface = cairoBitmap->getSurface ();
@@ -124,7 +124,7 @@ static void constructMenu (Gtk::Menu* menu, COptionMenu* optionMenu,
 				auto image = Gtk::manage (new Gtk::Image (pixBuf));
 				box->pack_start (*image, false, false, 0);
 			}
-			auto titleLabel = Gtk::manage (new Gtk::Label (item->getTitle (), Gtk::ALIGN_START));
+			auto titleLabel = Gtk::manage (new Gtk::Label (item->getTitle ().data (), Gtk::ALIGN_START));
 			if (popupStyle && optionMenu->getValue () == index)
 			{
 				std::stringstream stream;

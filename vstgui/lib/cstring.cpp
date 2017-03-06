@@ -152,6 +152,8 @@ void UTF8String::copy (UTF8StringBuffer dst, SizeType dstSize) const noexcept
 {
 #if WINDOWS
 	strcpy_s (dst, dstSize, string.data ());
+#elif LINUX
+	strncpy (dst, string.data (), dstSize);
 #else
 	strlcpy (dst, string.data (), dstSize);
 #endif

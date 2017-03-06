@@ -38,9 +38,9 @@
 namespace VSTGUI {
 
 //------------------------------------------------------------------------
-IPlatformString* IPlatformString::createWithUTF8String (UTF8StringPtr utf8String)
+SharedPointer<IPlatformString> IPlatformString::createWithUTF8String (UTF8StringPtr utf8String)
 {
-	return new LinuxString (utf8String);
+	return owned (new LinuxString (utf8String));
 }
 
 //------------------------------------------------------------------------
