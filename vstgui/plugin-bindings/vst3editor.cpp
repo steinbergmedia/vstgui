@@ -92,7 +92,7 @@ protected:
 	}
 	~IdleUpdateHandler () { timer->stop (); }
 
-	void fire () VSTGUI_OVERRIDE_VMETHOD { gUpdateHandlerInit.get ()->triggerDeferedUpdates (); }
+	void fire () override { gUpdateHandlerInit.get ()->triggerDeferedUpdates (); }
 
 	IPlatformTimer* timer;
 };
@@ -777,7 +777,7 @@ public:
 		item->forget ();
 	}
 
-	Steinberg::tresult PLUGIN_API executeMenuItem (Steinberg::int32 tag) VSTGUI_OVERRIDE_VMETHOD
+	Steinberg::tresult PLUGIN_API executeMenuItem (Steinberg::int32 tag) override
 	{
 		item->execute ();
 		return Steinberg::kResultTrue;
