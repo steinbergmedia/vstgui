@@ -63,6 +63,8 @@ set(${target}_sources
 	editing/uigrid.h
 	editing/uigridcontroller.cpp
 	editing/uigridcontroller.h
+	editing/uisearchtextfield.cpp
+	editing/uisearchtextfield.h
 	editing/uiselection.cpp
 	editing/uiselection.h
 	editing/uitagscontroller.cpp
@@ -88,7 +90,13 @@ endif()
 ##########################################################################################
 add_library(${target} STATIC ${${target}_sources})
 
+target_link_libraries(${target} PRIVATE vstgui)
 target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS})
 vstgui_set_cxx_version(${target} 14)
 vstgui_source_group_by_folder(${target})
 
+##########################################################################################
+if(UNIX AND NOT CMAKE_HOST_APPLE)
+	execute_process(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/editing/createuidescdata.sh WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/editing/ RESULT_VARIABLE result)
+	target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS} "HAVE_EDITORUIDESC_H")
+endif()

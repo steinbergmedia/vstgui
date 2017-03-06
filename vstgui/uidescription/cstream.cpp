@@ -43,6 +43,8 @@
 	#include "../lib/platform/win32/win32support.h"
 	#define fseeko _fseeki64
 	#define ftello _ftelli64
+#elif LINUX
+	#include "../lib/platform/linux/x11platform.h"
 #endif
 
 namespace VSTGUI {
@@ -365,7 +367,7 @@ CResourceInputStream::~CResourceInputStream () noexcept
 {
 	if (platformHandle)
 	{
-	#if MAC
+	#if MAC || LINUX
 		fclose ((FILE*)platformHandle);
 	#elif WINDOWS
 		((ResourceStream*)platformHandle)->Release ();
@@ -404,6 +406,16 @@ bool CResourceInputStream::open (const CResourceDescription& res)
 			CFRelease (cfStr);
 		}
 	}
+#elif LINUX
+	if (res.type == CResourceDescription::kIntegerType)
+		return false;
+	auto path = X11::Platform::getInstance ().getPath ();
+	if (!path.empty ())
+	{
+		path += "/Contents/Resources/";
+		path += res.u.name;
+		platformHandle = fopen (path.data (), "rb");
+	}
 #elif WINDOWS
 	platformHandle = new ResourceStream ();
 	if (!((ResourceStream*)platformHandle)->open (res, "DATA"))
@@ -421,7 +433,7 @@ uint32_t CResourceInputStream::readRaw (void* buffer, uint32_t size)
 	uint32_t readResult = kStreamIOError;
 	if (platformHandle)
 	{
-	#if MAC
+	#if MAC || LINUX
 		readResult = static_cast<uint32_t> (fread (buffer, 1, size, (FILE*)platformHandle));
 		if (readResult == 0)
 		{
@@ -445,7 +457,7 @@ int64_t CResourceInputStream::seek (int64_t pos, SeekMode mode)
 {
 	if (platformHandle)
 	{
-	#if MAC
+	#if MAC || LINUX
 		int whence;
 		switch (mode)
 		{
@@ -477,7 +489,7 @@ int64_t CResourceInputStream::tell () const
 {
 	if (platformHandle)
 	{
-	#if MAC
+	#if MAC || LINUX
 		return ftello ((FILE*)platformHandle);
 	#elif WINDOWS
 		ULARGE_INTEGER pos;
@@ -494,7 +506,7 @@ void CResourceInputStream::rewind ()
 {
 	if (platformHandle)
 	{
-	#if MAC
+	#if MAC || LINUX
 		fseek ((FILE*)platformHandle, 0L, SEEK_SET);
 	#elif WINDOWS
 		((ResourceStream*)platformHandle)->Revert ();

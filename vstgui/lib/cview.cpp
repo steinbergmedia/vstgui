@@ -955,7 +955,7 @@ void CView::removeAllAnimations ()
 //-----------------------------------------------------------------------------
 void CView::dumpInfo ()
 {
-	CRect viewRect = getViewSize (viewRect);
+	CRect viewRect = getViewSize ();
 	DebugPrint ("left:%4d, top:%4d, width:%4d, height:%4d ", viewRect.left, viewRect.top, viewRect.getWidth (), viewRect.getHeight ());
 	if (getMouseEnabled ())
 		DebugPrint ("(Mouse Enabled) ");

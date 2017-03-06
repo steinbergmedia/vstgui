@@ -39,6 +39,7 @@
 #include <shlobj.h>
 #include <commctrl.h>
 #include <cmath>
+#include <windowsx.h>
 #include "gdiplusdrawcontext.h"
 #include "gdiplusbitmap.h"
 #include "gdiplusgraphicspath.h"
@@ -871,7 +872,7 @@ LONG_PTR WINAPI Win32Frame::proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 			if (doubleClick)
 				buttons |= kDoubleClick;
 			SetFocus (getPlatformWindow ());
-			CPoint where ((CCoord)((int)(short)LOWORD(lParam)), (CCoord)((int)(short)HIWORD(lParam)));
+			CPoint where (GET_X_LPARAM (lParam), GET_Y_LPARAM (lParam));
 			if (pFrame->platformOnMouseDown (where, buttons) == kMouseEventHandled && getPlatformWindow ())
 				SetCapture (getPlatformWindow ());
 			return 0;
@@ -915,7 +916,7 @@ LONG_PTR WINAPI Win32Frame::proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 				tme.hwndTrack = windowHandle;
 				TrackMouseEvent (&tme);
 			}
-			CPoint where ((CCoord)((int)(short)LOWORD(lParam)), (CCoord)((int)(short)HIWORD(lParam)));
+			CPoint where (GET_X_LPARAM (lParam), GET_Y_LPARAM (lParam));
 			pFrame->platformOnMouseMoved (where, buttons);
 			return 0;
 		}
@@ -941,7 +942,7 @@ LONG_PTR WINAPI Win32Frame::proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 				buttons |= kShift;
 			if (GetKeyState (VK_MENU) < 0)
 				buttons |= kAlt;
-			CPoint where ((CCoord)((int)(short)LOWORD(lParam)), (CCoord)((int)(short)HIWORD(lParam)));
+			CPoint where (GET_X_LPARAM (lParam), GET_Y_LPARAM (lParam));
 			pFrame->platformOnMouseUp (where, buttons);
 			ReleaseCapture ();
 			return 0;

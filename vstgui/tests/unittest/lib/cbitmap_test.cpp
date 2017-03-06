@@ -68,6 +68,7 @@ TESTCASE(CBitmapTest,
 		EXPECT (bitmap.getHeight () == 10);
 
 		auto accessor = owned (CBitmapPixelAccess::create (&bitmap));
+		EXPECT(accessor);
 		uint32_t x = 0;
 		uint32_t y = 0;
 		CColor color;
@@ -92,6 +93,26 @@ TESTCASE(CBitmapTest,
 				x = 0;
 			}
 		} while (++(*accessor));
+	);
+	TEST(pixelAccess2,
+		CBitmap bitmap (10, 10);
+		CColor color (255, 1, 2, 150);
+		if (auto accessor = owned (CBitmapPixelAccess::create(&bitmap)))
+		{
+			do
+			{
+				accessor->setColor (color);
+			} while (++(*accessor));
+		}
+		if (auto accessor = owned (CBitmapPixelAccess::create(&bitmap)))
+		{
+			do
+			{
+				CColor c;
+				accessor->getColor (c);
+				EXPECT (c == color);
+			} while (++(*accessor));
+		}
 	);
 );
 

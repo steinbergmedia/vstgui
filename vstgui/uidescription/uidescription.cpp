@@ -159,6 +159,7 @@ public:
 	bool operator== (const UINode& n) const { return name == n.name; }
 	
 	void sortChildren ();
+	virtual void freePlatformResources () {}
 
 protected:
 	std::string name;
@@ -227,6 +228,8 @@ public:
 	
 	void createXMLData (const std::string& pathHint);
 	void removeXMLData ();
+
+	void freePlatformResources () override;
 protected:
 	~UIBitmapNode () noexcept override;
 	CBitmap* createBitmap (const std::string& str, CNinePartTiledDescription* partDesc) const;
@@ -244,6 +247,8 @@ public:
 	void setFont (CFontRef newFont);
 	void setAlternativeFontNames (UTF8StringPtr fontNames);
 	bool getAlternativeFontNames (std::string& fontNames);
+
+	void freePlatformResources () override;
 protected:
 	~UIFontNode () noexcept override;
 	CFontRef font;
@@ -267,6 +272,8 @@ public:
 	UIGradientNode (const std::string& name, UIAttributes* attributes);
 	CGradient* getGradient ();
 	void setGradient (CGradient* g);
+
+	void freePlatformResources () override;
 protected:
 	SharedPointer<CGradient> gradient;
 	
@@ -894,6 +901,23 @@ const IViewFactory* UIDescription::getViewFactory () const
 void UIDescription::setBitmapCreator (IBitmapCreator* creator)
 {
 	impl->bitmapCreator = creator;
+}
+
+//-----------------------------------------------------------------------------
+static void FreeNodePlatformResources (UINode* node)
+{
+	for (UIDescList::iterator it = node->getChildren ().begin (), end = node->getChildren ().end (); it != end; ++it)
+	{
+		(*it)->freePlatformResources ();
+		FreeNodePlatformResources (*it);
+	}
+}
+
+//-----------------------------------------------------------------------------
+void UIDescription::freePlatformResources ()
+{
+	if (nodes)
+		FreeNodePlatformResources (nodes);
 }
 
 //-----------------------------------------------------------------------------
@@ -3052,6 +3076,14 @@ UIBitmapNode::~UIBitmapNode () noexcept
 }
 
 //-----------------------------------------------------------------------------
+void UIBitmapNode::freePlatformResources ()
+{
+	if (bitmap)
+		bitmap->forget ();
+	bitmap = nullptr;
+}
+
+//-----------------------------------------------------------------------------
 void UIBitmapNode::createXMLData (const std::string& pathHint)
 {
 	UINode* node = getChildren ().findChildNode ("data");
@@ -3214,6 +3246,14 @@ UIFontNode::~UIFontNode () noexcept
 }
 
 //-----------------------------------------------------------------------------
+void UIFontNode::freePlatformResources ()
+{
+	if (font)
+		font->forget ();
+	font = nullptr;
+}
+
+//-----------------------------------------------------------------------------
 CFontRef UIFontNode::getFont ()
 {
 	if (font == nullptr)
@@ -3363,6 +3403,12 @@ void UIColorNode::setColor (const CColor& newColor)
 UIGradientNode::UIGradientNode (const std::string& name, UIAttributes* attributes)
 : UINode (name, attributes)
 {
+}
+
+//-----------------------------------------------------------------------------
+void UIGradientNode::freePlatformResources ()
+{
+	gradient = nullptr;
 }
 
 //-----------------------------------------------------------------------------

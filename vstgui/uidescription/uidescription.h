@@ -163,6 +163,8 @@ public:
 	FocusDrawing getFocusDrawingSettings () const;
 	void setFocusDrawingSettings (const FocusDrawing& fd);
 	
+	void freePlatformResources ();
+
 	static bool parseColor (const std::string& colorString, CColor& color);
 	static CViewAttributeID kTemplateNameAttributeID;
 	

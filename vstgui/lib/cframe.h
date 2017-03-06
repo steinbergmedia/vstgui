@@ -157,6 +157,8 @@ public:
 	void invalid () override { invalidRect (getViewSize ()); setDirty (false); }
 	void invalidRect (const CRect& rect) override;
 
+	bool handleNextSystemEvents ();
+
 	bool removeView (CView* pView, bool withForget = true) override;
 	bool removeAll (bool withForget = true) override;
 	CView* getViewAt (const CPoint& where, const GetViewOptions& options = GetViewOptions (GetViewOptions::kNone)) const override;

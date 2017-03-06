@@ -36,24 +36,31 @@
 #define __vstguidebug__
 
 #include "vstguibase.h"
-#include <functional>
-
-//------------------------------------------------------------------------
-namespace VSTGUI {
-
-using AssertionHandler = std::function<void (const char* filename, const char* line, const char* desc)>;
-void setAssertionHandler (const AssertionHandler& handler);
-bool hasAssertionHandler ();
-void doAssert (const char* filename, const char* line, const char* desc = nullptr) noexcept (false);
-
-#define vstgui_assert(x, ...) if (!(x)) VSTGUI::doAssert (__FILE__, VSTGUI_MAKE_STRING(__LINE__), ## __VA_ARGS__);
-
-} // VSTGUI
 
 #if DEBUG
 
 #include <ctime>
 #include <cassert>
+
+// assert handling
+
+#if ENABLE_UNIT_TESTS
+#include <stdexcept>
+
+template<typename Expect>
+void vstgui_assert (Expect expect, const char* str = nullptr)
+{
+	if (!expect)
+		throw std::logic_error (str ? str : "unknown");
+}
+#else
+template<typename Expect>
+void vstgui_assert (Expect expect, const char* = 0)
+{
+	assert (expect);
+}
+#endif
+
 
 namespace VSTGUI {
 
@@ -64,20 +71,33 @@ extern void DebugPrint (const char *format, ...);
 class TimeWatch
 {
 public:
-	TimeWatch (UTF8StringPtr name = nullptr, bool startNow = true);
-	~TimeWatch () noexcept;
+	TimeWatch (UTF8StringPtr name = 0, bool startNow = true);
+	~TimeWatch ();
 	
 	void start ();
 	void stop ();
 
 protected:
-	std::string name;
+	UTF8StringBuffer name;
 	std::clock_t startTime;
 };
 
 } // namespace
 
 #else
+
+#if ENABLE_UNIT_TESTS
+#include <stdexcept>
+
+template<typename Expect>
+void vstgui_assert (Expect expect, const char* str = 0)
+{
+	if (!expect)
+		throw std::logic_error (str ? str : "unknown");
+}
+#else
+#define vstgui_assert(...)
+#endif
 
 #endif // DEBUG
 

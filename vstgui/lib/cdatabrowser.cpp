@@ -225,7 +225,7 @@ void CDataBrowser::valueChanged (CControl *pControl)
 			{
 				if (dbHeader)
 				{
-					CRect viewSize = dbHeader->getViewSize (viewSize);
+					CRect viewSize = dbHeader->getViewSize ();
 					CCoord width = viewSize.getWidth ();
 					viewSize.left = offset.x;
 					viewSize.setWidth (width);
@@ -549,7 +549,7 @@ CRect CDataBrowser::getCellBounds (const Cell& cell)
 		}
 		result.setWidth (colWidth);
 	}
-	CRect viewSize = dbView->getViewSize (viewSize);
+	CRect viewSize = dbView->getViewSize ();
 	result.offset (viewSize.left, viewSize.top);
 	return result;
 }

@@ -598,6 +598,7 @@ TESTCASE(CFrameTest,
 	
 	TEST(open,
 		auto platformHandle = UnitTest::PlatformParentHandle::create ();
+		EXPECT(platformHandle);
 		auto frame = new CFrame (CRect (0, 0, 100, 100), nullptr);
 		EXPECT (frame->open (nullptr) == false);
 		EXPECT (frame->open (platformHandle->getHandle (), platformHandle->getType ()));
@@ -606,6 +607,7 @@ TESTCASE(CFrameTest,
 	
 	TEST(setPosition,
 		auto platformHandle = UnitTest::PlatformParentHandle::create ();
+		EXPECT(platformHandle);
 		auto frame = new CFrame (CRect (0, 0, 100, 100), nullptr);
 		frame->open (platformHandle->getHandle (), platformHandle->getType ());
 		CPoint p;

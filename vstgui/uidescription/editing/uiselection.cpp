@@ -177,7 +177,7 @@ void UISelection::moveBy (const CPoint& p)
 	{
 		if (!containsParent ((*it)))
 		{
-			CRect viewRect = (*it)->getViewSize (viewRect);
+			CRect viewRect = (*it)->getViewSize ();
 			viewRect.offset (p.x, p.y);
 			(*it)->setViewSize (viewRect);
 			(*it)->setMouseableArea (viewRect);
