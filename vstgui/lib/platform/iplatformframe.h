@@ -50,10 +50,11 @@ class IPlatformViewLayer;
 class IPlatformViewLayerDelegate;
 
 enum PlatformType {
-	kHWND,
-	kWindowRef,
-	kNSView,
-	kUIView,
+	kHWND,		// Windows HWND
+	kWindowRef,	// macOS WindowRef (Carbon)
+	kNSView,	// macOS NSView
+	kUIView,	// iOS UIView
+	kX11EmbedWindowID,	// X11 XID
 	
 	kDefaultNative = -1
 };
@@ -132,6 +133,15 @@ public:
 protected:
 	IPlatformFrame (IPlatformFrameCallback* frame) : frame (frame) {}
 	IPlatformFrameCallback* frame;
+};
+
+//-----------------------------------------------------------------------------
+class IPlatformFrameRunLoopExt
+{
+public:
+	virtual ~IPlatformFrameRunLoopExt () {};
+
+	virtual void handleNextEvents() = 0;
 };
 
 } // namespace

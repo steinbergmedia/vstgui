@@ -155,6 +155,7 @@ public:
 	bool operator== (const UINode& n) const { return name == n.name; }
 	
 	void sortChildren ();
+	virtual void freePlatformResources () {}
 
 	CLASS_METHODS(UINode, CBaseObject)
 protected:
@@ -227,6 +228,8 @@ public:
 	
 	void createXMLData (const std::string& pathHint);
 	void removeXMLData ();
+
+	void freePlatformResources () VSTGUI_OVERRIDE_VMETHOD;
 	CLASS_METHODS_NOCOPY(UIBitmapNode, UINode)
 protected:
 	~UIBitmapNode ();
@@ -245,6 +248,8 @@ public:
 	void setFont (CFontRef newFont);
 	void setAlternativeFontNames (UTF8StringPtr fontNames);
 	bool getAlternativeFontNames (std::string& fontNames);
+
+	void freePlatformResources () VSTGUI_OVERRIDE_VMETHOD;
 	CLASS_METHODS_NOCOPY(UIFontNode, UINode)
 protected:
 	~UIFontNode ();
@@ -270,6 +275,8 @@ public:
 	UIGradientNode (const std::string& name, UIAttributes* attributes);
 	CGradient* getGradient ();
 	void setGradient (CGradient* g);
+
+	void freePlatformResources () VSTGUI_OVERRIDE_VMETHOD;
 	CLASS_METHODS_NOCOPY(UIGradientNode, UINode)
 protected:
 	SharedPointer<CGradient> gradient;
@@ -820,6 +827,23 @@ void UIDescription::setController (IController* inController) const
 void UIDescription::setBitmapCreator (IBitmapCreator* creator)
 {
 	bitmapCreator = creator;
+}
+
+//-----------------------------------------------------------------------------
+static void FreeNodePlatformResources (UINode* node)
+{
+	for (UIDescList::iterator it = node->getChildren ().begin (), end = node->getChildren ().end (); it != end; ++it)
+	{
+		(*it)->freePlatformResources ();
+		FreeNodePlatformResources (*it);
+	}
+}
+
+//-----------------------------------------------------------------------------
+void UIDescription::freePlatformResources ()
+{
+	if (nodes)
+		FreeNodePlatformResources (nodes);
 }
 
 //-----------------------------------------------------------------------------
@@ -2925,6 +2949,14 @@ UIBitmapNode::~UIBitmapNode ()
 }
 
 //-----------------------------------------------------------------------------
+void UIBitmapNode::freePlatformResources ()
+{
+	if (bitmap)
+		bitmap->forget ();
+	bitmap = 0;
+}
+
+//-----------------------------------------------------------------------------
 void UIBitmapNode::createXMLData (const std::string& pathHint)
 {
 	CBitmap* bitmap = getBitmap (pathHint);
@@ -3096,6 +3128,14 @@ UIFontNode::~UIFontNode ()
 }
 
 //-----------------------------------------------------------------------------
+void UIFontNode::freePlatformResources ()
+{
+	if (font)
+		font->forget ();
+	font = 0;
+}
+
+//-----------------------------------------------------------------------------
 CFontRef UIFontNode::getFont ()
 {
 	if (font == 0)
@@ -3244,6 +3284,12 @@ void UIColorNode::setColor (const CColor& newColor)
 UIGradientNode::UIGradientNode (const std::string& name, UIAttributes* attributes)
 : UINode (name, attributes)
 {
+}
+
+//-----------------------------------------------------------------------------
+void UIGradientNode::freePlatformResources ()
+{
+	gradient = 0;
 }
 
 //-----------------------------------------------------------------------------

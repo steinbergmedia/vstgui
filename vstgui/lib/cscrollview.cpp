@@ -140,8 +140,8 @@ void CScrollContainer::setScrollOffset (CPoint newOffset, bool redraw)
 	inScrolling = true;
 	for (const auto& pV : children)
 	{
-		CRect r, mr;
-		pV->getViewSize (r);
+		CRect r = pV->getViewSize ();
+		CRect mr;
 		pV->getMouseableArea (mr);
 		r.offset (diff.x , diff.y);
 		pV->setViewSize (r, false);
@@ -514,7 +514,7 @@ void CScrollView::setContainerSize (const CRect& cs, bool keepVisibleArea)
 			vsb->setValue (0);
 		else if (sc && keepVisibleArea && oldScrollSize.getHeight () != cs.getHeight ())
 		{
-			CRect vSize = sc->getViewSize (vSize);
+			CRect vSize = sc->getViewSize ();
 			float newValue = (float)(oldValue * ((float)(oldScrollSize.getHeight () - vSize.getHeight ()) / ((float)cs.getHeight () - vSize.getHeight ())));
 			if (newValue > 1.f)
 				newValue = 1.f;
@@ -533,7 +533,7 @@ void CScrollView::setContainerSize (const CRect& cs, bool keepVisibleArea)
 			hsb->setValue (0);
 		else if (sc && keepVisibleArea && oldScrollSize.getWidth () != cs.getWidth ())
 		{
-			CRect vSize = sc->getViewSize (vSize);
+			CRect vSize = sc->getViewSize ();
 			float newValue = (float)(oldValue * ((float)(oldScrollSize.getWidth () - vSize.getWidth ()) / ((float)cs.getWidth () - vSize.getWidth ())));
 			if (newValue > 1.f)
 				newValue = 1.f;
@@ -551,8 +551,7 @@ void CScrollView::makeRectVisible (const CRect& rect)
 	CRect r (rect);
 	const CPoint& scrollOffset = sc->getScrollOffset ();
 	CPoint newOffset (scrollOffset);
-	CRect vs;
-	sc->getViewSize (vs);
+	CRect vs = sc->getViewSize ();
 	if (!(style & kDontDrawFrame))
 	{
 		vs.left--; //vs.top--;
@@ -693,7 +692,7 @@ void CScrollView::valueChanged (CControl *pControl)
 		float value = pControl->getValue ();
 		int32_t tag = pControl->getTag ();
 		CPoint offset;
-		CRect vsize = sc->getViewSize (vsize);
+		CRect vsize = sc->getViewSize ();
 		CRect csize = sc->getContainerSize ();
 		sc->getScrollOffset (offset);
 

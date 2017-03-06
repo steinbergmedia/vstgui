@@ -37,6 +37,7 @@
 #if WINDOWS
 #include <windows.h>
 #include <list>
+#include <map>
 
 namespace VSTGUI {
 
@@ -100,10 +101,12 @@ bool WinTimer::stop ()
 	if (timer)
 	{
 		KillTimer ((HWND)NULL, timer);
-		TimerMap::const_iterator it = gTimerMap.find (timer);
-		if (it != gTimerMap.end ())
-			gTimerMap.erase (it);
-
+		if (!gTimerMap.empty ())
+		{
+			TimerMap::const_iterator it = gTimerMap.find (timer);
+			if (it != gTimerMap.end ())
+				gTimerMap.erase (it);
+		}
 		timer = 0;
 		return true;
 	}
