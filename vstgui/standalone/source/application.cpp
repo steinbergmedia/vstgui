@@ -118,7 +118,7 @@ void Application::setDelegate (Standalone::Application::DelegatePtr&& inDelegate
 //------------------------------------------------------------------------
 Standalone::Application::IDelegate& Application::getDelegate () const
 {
-	vstgui_assert (delegate, "Delegate cannot be nullptr");
+	vstgui_assert (delegate.get (), "Delegate cannot be nullptr");
 	return *(delegate.get ());
 }
 

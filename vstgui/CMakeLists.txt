@@ -146,7 +146,7 @@ if(NOT VSTGUI_DISABLE_STANDALONE)
   endif()
 endif()
 if(NOT VSTGUI_DISABLE_UNITTESTS)
-  include(tests/unittest/CMakeLists.txt)
+  add_subdirectory(tests)
 endif()
 
 get_directory_property(hasParent PARENT_DIRECTORY)

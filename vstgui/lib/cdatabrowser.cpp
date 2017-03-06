@@ -335,8 +335,7 @@ void CDataBrowser::recalculateLayout (bool rememberSelection)
 	{
 		for (const auto& pV : getChildren ())
 		{
-			CRect viewSize;
-			pV->getViewSize (viewSize);
+			CRect viewSize = pV->getViewSize ();
 			if (pV != dbHeaderContainer && viewSize.top < headerHeight+lineWidth)
 			{
 				if (style & kOverlayScrollbars && pV.cast<CScrollView> ())

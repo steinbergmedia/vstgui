@@ -688,13 +688,6 @@ void CView::setViewSize (const CRect& newSize, bool doInvalid)
 }
 
 //------------------------------------------------------------------------------
-CRect& CView::getViewSize (CRect& rect) const
-{
-	rect = pImpl->size;
-	return rect;
-}
-
-//------------------------------------------------------------------------------
 const CRect& CView::getViewSize () const
 {
 	return pImpl->size;

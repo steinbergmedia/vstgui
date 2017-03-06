@@ -938,10 +938,10 @@ void CFrame::onViewRemoved (CView* pView)
 		pImpl->activeFocusView = nullptr;
 	if (pImpl->focusView == pView)
 	{
-		if (bActive)
+		if (pImpl->active)
 			setFocusView (0);
 		else
-			pFocusView = 0;
+			pImpl->focusView = 0;
 	}
 	if (auto container = pView->asViewContainer ())
 	{
@@ -1461,7 +1461,7 @@ IPlatformFrame* CFrame::getPlatformFrame () const
 //-----------------------------------------------------------------------------
 bool CFrame::handleNextSystemEvents ()
 {
-	if (auto rle = dynamic_cast<IPlatformFrameRunLoopExt*> (platformFrame))
+	if (auto rle = dynamic_cast<IPlatformFrameRunLoopExt*> (getPlatformFrame ()))
 	{
 		rle->handleNextEvents ();
 		return true;
