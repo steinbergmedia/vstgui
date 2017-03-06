@@ -74,6 +74,10 @@
 
 namespace VSTGUI {
 
+#ifdef HAVE_EDITORUIDESC_H
+#include "editoruidesc.h"
+#endif
+
 //----------------------------------------------------------------------------------------------------
 class UIEditControllerDescription
 {
@@ -82,6 +86,14 @@ public:
 	{
 		if (uiDesc == nullptr)
 		{
+#ifdef HAVE_EDITORUIDESC_H
+			Xml::MemoryContentProvider provider (editorUIDesc, strlen (editorUIDesc));
+			SharedPointer<UIDescription> editorDesc = owned (new UIDescription (&provider));
+			if (editorDesc->parse ())
+			{
+				uiDesc = editorDesc;
+			}
+#else
 			std::string descPath (__FILE__);
 			unixfyPath (descPath);
 			if (removeLastPathComponent (descPath))
@@ -89,8 +101,15 @@ public:
 				descPath += "/uidescriptioneditor.uidesc";
 				auto editorDesc = makeOwned<UIDescription> (descPath.c_str ());
 				if (editorDesc->parse ())
+				{
 					uiDesc = std::move (editorDesc);
+				}
+				else
+				{
+					vstgui_assert (false, "the __FILE__ macro is relative, so it's not possible to find the uidescriptioneditor.uidesc. You can replace the macro with the absolute filename to make this work on your devel machine");
+				}
 			}
+#endif
 		}
 		return uiDesc;
 	}
@@ -740,6 +759,7 @@ CMessageResult UIEditController::notify (CBaseObject* sender, IdStringPtr messag
 		editView->getFrame ()->unregisterKeyboardHook (this);
 		beforeSave ();
 		splitViews.clear ();
+		getEditorDescription ().freePlatformResources ();
 		return kMessageNotified;
 	}
 	else if (message == UIDescription::kMessageBeforeSave)

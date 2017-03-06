@@ -17,7 +17,6 @@ vstgui/tests/uidescription vst3/win/x64
 vstgui/tests/uidescription vst3/win/Win32
 vstgui/ide/xcode4/vstgui.xcodeproj/project.xcworkspace
 vstgui/ide/visualstudio/vs2013/build
-VST3SDK
 vstgui.opensdf
 vstgui/tests/standalone/mac/build
 vstgui/tests/standalone/mac/DerivedData
@@ -35,3 +34,5 @@ vstgui/ide/visualstudio/vs2015/.vs
 vstgui/build
 vstgui/tests/uidescription vst3/win/.vs
 vstgui/Documentation/html
+/vstgui/uidescription/editing/editoruidesc.h
+CMakeLists.txt.user

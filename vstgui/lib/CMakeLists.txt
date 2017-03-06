@@ -141,10 +141,10 @@ set(${target}_common_sources
   platform/iplatformtimer.h
   platform/iplatformviewlayer.h
   platform/std_unorderedmap.h
-  )
+)
 
   ##########################################################################################
-  set(${target}_mac_sources
+set(${target}_mac_sources
   platform/mac/caviewlayer.h
   platform/mac/caviewlayer.mm
   platform/mac/cfontmac.h
@@ -182,10 +182,10 @@ set(${target}_common_sources
   platform/mac/carbon/hiviewtextedit.cpp
   platform/mac/carbon/hiviewtextedit.h
   platform/win32
-  )
+)
 
   ##########################################################################################
-  set(${target}_win32_sources
+set(${target}_win32_sources
   platform/win32/cfontwin32.cpp
   platform/win32/cfontwin32.h
   platform/win32/gdiplusbitmap.cpp
@@ -221,6 +221,33 @@ set(${target}_common_sources
   platform/win32/direct2d/d2dgraphicspath.h
 )
 
+ ##########################################################################################
+set(${target}_linux_sources
+	platform/linux/cairobitmap.cpp
+	platform/linux/cairobitmap.h
+	platform/linux/cairocontext.cpp
+	platform/linux/cairocontext.h
+	platform/linux/cairofont.cpp
+	platform/linux/cairofont.h
+	platform/linux/cairogradient.cpp
+	platform/linux/cairogradient.h
+	platform/linux/cairopath.cpp
+	platform/linux/cairopath.h
+	platform/linux/cairoutils.h
+    platform/linux/gtkoptionmenu.cpp
+    platform/linux/gtkoptionmenu.h
+    platform/linux/gtktextedit.cpp
+    platform/linux/gtktextedit.h
+    platform/linux/linuxstring.cpp
+	platform/linux/linuxstring.h
+	platform/linux/x11frame.cpp
+	platform/linux/x11frame.h
+	platform/linux/x11platform.cpp
+	platform/linux/x11platform.h
+	platform/linux/x11timer.cpp
+	platform/linux/x11timer.h
+)
+
 ##########################################################################################
 if(CMAKE_HOST_APPLE)
   set(${target}_sources ${${target}_common_sources} ${${target}_mac_sources})
@@ -232,9 +259,22 @@ if(MSVC)
 endif()
 
 ##########################################################################################
+# Linux
+if(UNIX AND NOT CMAKE_HOST_APPLE)
+	set(${target}_sources ${${target}_common_sources} ${${target}_linux_sources})
+endif()
+
+##########################################################################################
 add_library(${target} STATIC ${${target}_sources})
 
 target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS})
 vstgui_set_cxx_version(${target} 11)
 vstgui_source_group_by_folder(${target})
 
+if(UNIX AND NOT CMAKE_HOST_APPLE)
+	target_include_directories(${target} PRIVATE ${X11_INCLUDE_DIR})
+    target_include_directories(${target} PRIVATE ${GTK3_INCLUDE_DIRS})
+    target_include_directories(${target} PRIVATE ${GTKMM3_INCLUDE_DIRS})
+    target_include_directories(${target} PRIVATE ${FREETYPE_INCLUDE_DIRS})
+	target_link_libraries(${target} PRIVATE ${LINUX_LIBRARIES})
+endif()

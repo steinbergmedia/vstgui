@@ -304,7 +304,6 @@ TESTCASE(CViewTest,
 		EXPECT(v.getWidth () == 10);
 		EXPECT(v.getHeight () == 10);
 		CRect r;
-		EXPECT(v.getViewSize (r) == v.getViewSize ());
 		EXPECT(v.getMouseableArea (r) == v.getMouseableArea ());
 	);
 	

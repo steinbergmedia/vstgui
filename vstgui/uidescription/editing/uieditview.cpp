@@ -231,7 +231,7 @@ CMessageResult UISelectionView::notify (CBaseObject* sender, IdStringPtr message
 		{
 			CRect vs = selection->getGlobalViewCoordinates (view);
 			vs.offsetInverse (p);
-			vs.extend (handleInset + 1, handleInset + 1);
+			vs.extend (handleInset + 2, handleInset + 2);
 			invalidRect (vs);
 		}
 		return kMessageNotified;

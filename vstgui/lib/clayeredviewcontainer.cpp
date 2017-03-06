@@ -150,7 +150,8 @@ void CLayeredViewContainer::registerListeners (bool state)
 //-----------------------------------------------------------------------------
 void CLayeredViewContainer::viewContainerTransformChanged (CViewContainer* container)
 {
-	updateLayerSize ();
+	if (layer)
+		updateLayerSize ();
 }
 
 //-----------------------------------------------------------------------------

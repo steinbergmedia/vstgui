@@ -937,7 +937,12 @@ void CFrame::onViewRemoved (CView* pView)
 	if (pImpl->activeFocusView == pView)
 		pImpl->activeFocusView = nullptr;
 	if (pImpl->focusView == pView)
-		setFocusView (nullptr);
+	{
+		if (bActive)
+			setFocusView (0);
+		else
+			pFocusView = 0;
+	}
 	if (auto container = pView->asViewContainer ())
 	{
 		if (container->isChild (pImpl->focusView, true))
@@ -1268,10 +1273,9 @@ void CFrame::scrollRect (const CRect& src, const CPoint& distance)
 //-----------------------------------------------------------------------------
 void CFrame::invalidate (const CRect &rect)
 {
-	CRect rectView;
 	for (const auto& pV : getChildren ())
 	{
-		pV->getViewSize (rectView);
+		CRect rectView = pV->getViewSize ();
 		if (rect.rectOverlap (rectView))
 			pV->setDirty (true);
 	}
@@ -1452,6 +1456,17 @@ VSTGUIEditorInterface* CFrame::getEditor () const
 IPlatformFrame* CFrame::getPlatformFrame () const
 {
 	return pImpl->platformFrame;
+}
+
+//-----------------------------------------------------------------------------
+bool CFrame::handleNextSystemEvents ()
+{
+	if (auto rle = dynamic_cast<IPlatformFrameRunLoopExt*> (platformFrame))
+	{
+		rle->handleNextEvents ();
+		return true;
+	}
+	return false;
 }
 
 //-----------------------------------------------------------------------------
