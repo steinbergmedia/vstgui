@@ -217,7 +217,7 @@ void CDataBrowser::valueChanged (CControl *pControl)
 			{
 				if (dbHeader)
 				{
-					CRect viewSize = dbHeader->getViewSize (viewSize);
+					CRect viewSize = dbHeader->getViewSize ();
 					CCoord width = viewSize.getWidth ();
 					viewSize.left = offset.x;
 					viewSize.setWidth (width);
@@ -273,8 +273,7 @@ void CDataBrowser::recalculateLayout (bool rememberSelection)
 	{
 		for (const auto& pV : children)
 		{
-			CRect viewSize;
-			pV->getViewSize (viewSize);
+			CRect viewSize = pV->getViewSize ();
 			if (pV != dbHeaderContainer && viewSize.top < rowHeight+lineWidth)
 			{
 				viewSize.top += rowHeight+lineWidth;
@@ -530,7 +529,7 @@ CRect CDataBrowser::getCellBounds (const Cell& cell)
 		}
 		result.setWidth (colWidth);
 	}
-	CRect viewSize = dbView->getViewSize (viewSize);
+	CRect viewSize = dbView->getViewSize ();
 	result.offset (viewSize.left, viewSize.top);
 	return result;
 }

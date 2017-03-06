@@ -152,6 +152,8 @@ public:
 	void invalid () override { invalidRect (getViewSize ()); setDirty (false); }
 	void invalidRect (const CRect& rect) override;
 
+	bool handleNextSystemEvents ();
+
 	IPlatformFrame* getPlatformFrame () const { return platformFrame; }
 
 	bool removeView (CView* pView, bool withForget = true) override;

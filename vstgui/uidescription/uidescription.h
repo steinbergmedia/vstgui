@@ -156,7 +156,9 @@ public:
 	bool calculateStringValue (UTF8StringPtr str, double& result) const;
 	
 	void setBitmapCreator (IBitmapCreator* bitmapCreator);
-	
+
+	void freePlatformResources ();
+
 	static bool parseColor (const std::string& colorString, CColor& color);
 	static CViewAttributeID kTemplateNameAttributeID;
 	

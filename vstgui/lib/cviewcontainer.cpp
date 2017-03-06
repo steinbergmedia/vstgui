@@ -712,7 +712,7 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 
 				if (checkUpdateRect (pV, clientRect))
 				{
-					CRect viewSize = pV->getViewSize (viewSize);
+					CRect viewSize = pV->getViewSize ();
 					viewSize.bound (newClip);
 					if (viewSize.getWidth () == 0 || viewSize.getHeight () == 0)
 						continue;
@@ -1126,7 +1126,7 @@ bool CViewContainer::isDirty () const
 	{
 		if (pV->isDirty () && pV->isVisible ())
 		{
-			CRect r = pV->getViewSize (r);
+			CRect r = pV->getViewSize ();
 			r.bound (viewSize);
 			if (r.getWidth () > 0 && r.getHeight () > 0)
 				return true;

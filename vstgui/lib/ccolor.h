@@ -56,12 +56,12 @@ struct CColor
 	/// @name Operator Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	CColor& operator() (uint8_t red, uint8_t green, uint8_t blue, uint8_t alpha)
+	CColor& operator() (uint8_t _red, uint8_t _green, uint8_t _blue, uint8_t _alpha)
 	{
-		this->red   = red;
-		this->green = green;
-		this->blue  = blue;
-		this->alpha = alpha;
+		red   = _red;
+		green = _green;
+		blue  = _blue;
+		alpha = _alpha;
 		return *this; 
 	}
 

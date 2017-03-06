@@ -119,27 +119,27 @@ inline CRect::CRect (const CPoint& origin, const CPoint& size)
 }
 
 //------------------------------------------------------------------------
-CRect& CRect::operator () (CCoord left, CCoord top, CCoord right, CCoord bottom)
+CRect& CRect::operator () (CCoord _left, CCoord _top, CCoord _right, CCoord _bottom)
 {
-	if (left < right)
+	if (_left < _right)
 	{
-		this->left = left;
-		this->right = right;
+		left = _left;
+		right = _right;
 	}
 	else
 	{
-		this->left = right;
-		this->right = left;
+		left = _right;
+		right = _left;
 	}
-	if (top < bottom)
+	if (_top < _bottom)
 	{
-		this->top = top;
-		this->bottom = bottom;
+		top = _top;
+		bottom = _bottom;
 	}
 	else
 	{
-		this->top = bottom;
-		this->bottom = top;
+		top = _bottom;
+		bottom = _top;
 	}
 	return *this;
 }
