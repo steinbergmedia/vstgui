@@ -49,6 +49,7 @@ enum PlatformType {
 	kWindowRef,	// macOS WindowRef (Carbon)
 	kNSView,	// macOS NSView
 	kUIView,	// iOS UIView
+	kHWNDTopLevel,	// Windows HWDN Top Level (non child)
 	kX11EmbedWindowID,	// X11 XID
 
 	kDefaultNative = -1
