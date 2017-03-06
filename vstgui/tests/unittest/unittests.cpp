@@ -248,7 +248,7 @@ public:
 		}
 		end = system_clock::now ();
 		intend--;
-		printf (" [%s] -> %lld µs\n", result ? "OK" : "Failed", duration_cast<microseconds> (end-start).count ());
+		printf (" [%s] -> %ld µs\n", result ? "OK" : "Failed", duration_cast<microseconds> (end-start).count ());
 		printOutput ();
 		return result;
 	}
@@ -283,6 +283,8 @@ static int RunTests ()
 #if __APPLE_CC__
 #include <CoreFoundation/CoreFoundation.h>
 namespace VSTGUI { void* gBundleRef = CFBundleGetMainBundle (); }
+#elif __linux__
+namespace VSTGUI { void* soHandle = nullptr; }
 #endif
 
 #if WINDOWS

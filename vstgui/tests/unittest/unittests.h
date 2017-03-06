@@ -37,6 +37,7 @@
 
 #if ENABLE_UNIT_TESTS
 
+#include "../../lib/vstguifwd.h"
 #include <string>
 #include <list>
 #include <functional>

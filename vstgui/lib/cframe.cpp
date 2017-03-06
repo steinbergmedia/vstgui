@@ -882,7 +882,12 @@ void CFrame::onViewRemoved (CView* pView)
 	if (pActiveFocusView == pView)
 		pActiveFocusView = 0;
 	if (pFocusView == pView)
-		setFocusView (0);
+	{
+		if (bActive)
+			setFocusView (0);
+		else
+			pFocusView = 0;
+	}
 	CViewContainer* container = dynamic_cast<CViewContainer*> (pView);
 	if (container)
 	{
@@ -1199,10 +1204,9 @@ void CFrame::scrollRect (const CRect& src, const CPoint& distance)
 //-----------------------------------------------------------------------------
 void CFrame::invalidate (const CRect &rect)
 {
-	CRect rectView;
 	for (const auto& pV : children)
 	{
-		pV->getViewSize (rectView);
+		CRect rectView = pV->getViewSize ();
 		if (rect.rectOverlap (rectView))
 			pV->setDirty (true);
 	}
@@ -1395,6 +1399,17 @@ void CFrame::dumpHierarchy ()
 	CViewContainer::dumpHierarchy ();
 }
 #endif
+
+//-----------------------------------------------------------------------------
+bool CFrame::handleNextSystemEvents ()
+{
+	if (IPlatformFrameRunLoopExt* rle = dynamic_cast<IPlatformFrameRunLoopExt*> (platformFrame))
+	{
+		rle->handleNextEvents ();
+		return true;
+	}
+	return false;
+}
 
 //-----------------------------------------------------------------------------
 bool CFrame::platformDrawRect (CDrawContext* context, const CRect& rect)

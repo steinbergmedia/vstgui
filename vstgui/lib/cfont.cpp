@@ -73,13 +73,13 @@ namespace VSTGUI {
 	static CFontDesc gSymbolFont ("Symbol", 13);
 
 #else
-	static CFontDesc gSystemFont ("FreeSans", 12);
-	static CFontDesc gNormalFontVeryBig ("FreeSans", 18);
-	static CFontDesc gNormalFontBig ("FreeSans", 14);
-	static CFontDesc gNormalFont ("FreeSans", 12);
-	static CFontDesc gNormalFontSmall ("FreeSans", 11);
-	static CFontDesc gNormalFontSmaller ("FreeSans", 10);
-	static CFontDesc gNormalFontVerySmall ("FreeSans", 9);
+	static CFontDesc gSystemFont ("Arial", 12);
+	static CFontDesc gNormalFontVeryBig ("Arial", 18);
+	static CFontDesc gNormalFontBig ("Arial", 14);
+	static CFontDesc gNormalFont ("Arial", 12);
+	static CFontDesc gNormalFontSmall ("Arial", 11);
+	static CFontDesc gNormalFontSmaller ("Arial", 10);
+	static CFontDesc gNormalFontVerySmall ("Arial", 9);
 	static CFontDesc gSymbolFont ("Symbol", 13);
 
 #endif
