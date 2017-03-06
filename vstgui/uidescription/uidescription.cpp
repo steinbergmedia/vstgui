@@ -916,8 +916,8 @@ static void FreeNodePlatformResources (UINode* node)
 //-----------------------------------------------------------------------------
 void UIDescription::freePlatformResources ()
 {
-	if (nodes)
-		FreeNodePlatformResources (nodes);
+	if (impl->nodes)
+		FreeNodePlatformResources (impl->nodes);
 }
 
 //-----------------------------------------------------------------------------

@@ -759,7 +759,7 @@ CMessageResult UIEditController::notify (CBaseObject* sender, IdStringPtr messag
 		editView->getFrame ()->unregisterKeyboardHook (this);
 		beforeSave ();
 		splitViews.clear ();
-		getEditorDescription ().freePlatformResources ();
+		getEditorDescription ()->freePlatformResources ();
 		return kMessageNotified;
 	}
 	else if (message == UIDescription::kMessageBeforeSave)
