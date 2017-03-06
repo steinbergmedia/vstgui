@@ -105,7 +105,7 @@ public:
 
 //-----------------------------------------------------------------------------
 	DELEGATE_REFCOUNT(Steinberg::Vst::VSTGUIEditor)
-	Steinberg::tresult PLUGIN_API queryInterface (const ::Steinberg::TUID iid, void** obj) VSTGUI_OVERRIDE_VMETHOD;
+	Steinberg::tresult PLUGIN_API queryInterface (const ::Steinberg::TUID iid, void** obj) override;
 protected:
 	~VST3Editor ();
 	void init ();
@@ -160,7 +160,7 @@ protected:
 	int32_t onKeyUp (const VstKeyCode& code, CFrame* frame) override;
 
 #ifdef VST3_CONTENT_SCALE_SUPPORT
-	Steinberg::tresult PLUGIN_API setContentScaleFactor (ScaleFactor factor) VSTGUI_OVERRIDE_VMETHOD;
+	Steinberg::tresult PLUGIN_API setContentScaleFactor (ScaleFactor factor) override;
 #endif
 
 	UIDescription* description;
