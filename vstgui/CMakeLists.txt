@@ -132,6 +132,10 @@ endif()
 add_subdirectory(lib)
 add_subdirectory(uidescription)
 
+if(UNIX AND NOT CMAKE_HOST_APPLE)
+  set(VSTGUI_DISABLE_STANDALONE 1)
+endif()
+
 if(NOT VSTGUI_DISABLE_STANDALONE)
   if(NOT VSTGUI_DISABLE_STANDALONE_EXAMPLES)
     set(VSTGUI_STANDALONE_EXAMPLES FOLDER "Standalone Examples")

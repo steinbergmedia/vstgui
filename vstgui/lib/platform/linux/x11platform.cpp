@@ -88,8 +88,8 @@ struct GtkFileSelector : CNewFileSelector
 
 	void prepareRunning ()
 	{
-		if (title)
-			dialog.set_title (title);
+		if (!title.empty ())
+			dialog.set_title (title.getString ());
 		dialog.add_button ("_Cancel", 0);
 		switch (style)
 		{
@@ -108,8 +108,8 @@ struct GtkFileSelector : CNewFileSelector
 				dialog.set_action (Gtk::FILE_CHOOSER_ACTION_SAVE);
 				dialog.add_button ("_Save", 1);
 				dialog.set_do_overwrite_confirmation (true);
-				if (defaultSaveName)
-					dialog.set_current_name (defaultSaveName);
+				if (!defaultSaveName.empty ())
+					dialog.set_current_name (defaultSaveName.getString ());
 				break;
 			}
 			case kSelectDirectory:
@@ -130,7 +130,7 @@ struct GtkFileSelector : CNewFileSelector
 				dialog.close ();
 			}
 		});
-		if (initialPath)
+		if (!initialPath.empty ())
 		{
 			auto directory = getDirectory (initialPath);
 			if (!directory.empty ())
@@ -141,19 +141,19 @@ struct GtkFileSelector : CNewFileSelector
 			auto fileFilter = Gtk::FileFilter::create ();
 			if (ext == getAllFilesExtension ())
 			{
-				fileFilter->set_name (ext.getDescription ());
+				fileFilter->set_name (ext.getDescription ().getString ());
 				fileFilter->add_pattern ("*");
 			}
 			else
 			{
-				if (auto desc = ext.getDescription ())
-					fileFilter->set_name (desc);
-				if (auto mimeType = ext.getMimeType ())
-					fileFilter->add_mime_type (mimeType);
-				if (auto fileExt = ext.getExtension ())
+				if (!ext.getDescription ().empty ())
+					fileFilter->set_name (ext.getDescription ().getString ());
+				if (!ext.getMimeType ().empty ())
+					fileFilter->add_mime_type (ext.getMimeType ().getString ());
+				if (!ext.getExtension ().empty ())
 				{
 					Glib::ustring s ("*.");
-					s += fileExt;
+					s += ext.getExtension ().getString ();
 					fileFilter->add_pattern (s);
 				}
 			}
@@ -167,7 +167,7 @@ struct GtkFileSelector : CNewFileSelector
 			return;
 		for (auto str : dialog.get_filenames ())
 		{
-			result.push_back (String::newWithString (str.data ()));
+			result.push_back (UTF8String (str));
 		}
 	}
 

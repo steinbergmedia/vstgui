@@ -412,7 +412,7 @@ void Context::drawBitmap (CBitmap* bitmap, const CRect& dest, const CPoint& offs
 {
 	if (auto cd = DrawBlock::begin (*this))
 	{
-		if (auto cairoBitmap = dynamic_cast<Bitmap*> (bitmap->getPlatformBitmap ()))
+		if (auto cairoBitmap = bitmap->getPlatformBitmap ().cast<Bitmap> ())
 		{
 			cairo_translate (cr, dest.left, dest.top);
 			cairo_rectangle (cr, 0, 0, dest.getWidth (), dest.getHeight ());

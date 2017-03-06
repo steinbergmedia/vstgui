@@ -74,7 +74,7 @@ private:
 //-----------------------------------------------------------------------------
 struct PNGMemoryWriter
 {
-	using Buffer = std::vector<int8_t>;
+	using Buffer = PNGBitmapBuffer;
 
 	Buffer create (cairo_surface_t* image)
 	{
@@ -219,16 +219,15 @@ const CPoint& Bitmap::getSize () const
 	return size;
 }
 //-----------------------------------------------------------------------------
-IPlatformBitmapPixelAccess* Bitmap::lockPixels (bool alphaPremultiplied)
+SharedPointer<IPlatformBitmapPixelAccess> Bitmap::lockPixels (bool alphaPremultiplied)
 {
 	if (locked)
 		return nullptr;
 #warning TODO: alphaPremultiplied is currently ignored, always treated as true
 	locked = true;
-	auto pixelAccess = new CairoBitmapPrivate::PixelAccess ();
+	auto pixelAccess = owned (new CairoBitmapPrivate::PixelAccess ());
 	if (pixelAccess->init (this, surface))
 		return pixelAccess;
-	pixelAccess->forget ();
 	return nullptr;
 }
 
@@ -282,13 +281,13 @@ PixelAccess::~PixelAccess ()
 } // Cairo
 
 //-----------------------------------------------------------------------------
-IPlatformBitmap* IPlatformBitmap::create (CPoint* size)
+SharedPointer<IPlatformBitmap> IPlatformBitmap::create (CPoint* size)
 {
-	return new Cairo::Bitmap (size);
+	return owned (new Cairo::Bitmap (size));
 }
 
 //-----------------------------------------------------------------------------
-IPlatformBitmap* IPlatformBitmap::createFromPath (UTF8StringPtr absolutePath)
+SharedPointer<IPlatformBitmap> IPlatformBitmap::createFromPath (UTF8StringPtr absolutePath)
 {
 	if (auto surface = Cairo::CairoBitmapPrivate::createImageFromPath (absolutePath))
 	{
@@ -297,40 +296,32 @@ IPlatformBitmap* IPlatformBitmap::createFromPath (UTF8StringPtr absolutePath)
 			cairo_surface_destroy (surface);
 			return nullptr;
 		}
-		return new Cairo::Bitmap (surface);
+		return owned (new Cairo::Bitmap (surface));
 	}
 	return nullptr;
 }
 
 //-----------------------------------------------------------------------------
-IPlatformBitmap* IPlatformBitmap::createFromMemory (const void* ptr, uint32_t memSize)
+SharedPointer<IPlatformBitmap> IPlatformBitmap::createFromMemory (const void* ptr, uint32_t memSize)
 {
 	Cairo::CairoBitmapPrivate::PNGMemoryReader reader (reinterpret_cast<const uint8_t*> (ptr),
 													   memSize);
 	if (auto surface = reader.create ())
 	{
-		return new Cairo::Bitmap (Cairo::SurfaceHandle {surface});
+		return owned (new Cairo::Bitmap (Cairo::SurfaceHandle {surface}));
 	}
 	return nullptr;
 }
 
 //-----------------------------------------------------------------------------
-bool IPlatformBitmap::createMemoryPNGRepresentation (IPlatformBitmap* bitmap, void** ptr,
-													 uint32_t& size)
+PNGBitmapBuffer IPlatformBitmap::createMemoryPNGRepresentation (const SharedPointer<IPlatformBitmap>& bitmap)
 {
-	if (auto cairoBitmap = dynamic_cast<Cairo::Bitmap*> (bitmap))
+	if (auto cairoBitmap = bitmap.cast<Cairo::Bitmap> ())
 	{
 		Cairo::CairoBitmapPrivate::PNGMemoryWriter writer;
-		auto buffer = writer.create (cairoBitmap->getSurface ());
-		if (!buffer.empty ())
-		{
-			*ptr = malloc (buffer.size ());
-			memcpy (*ptr, buffer.data (), buffer.size ());
-			size = buffer.size ();
-			return true;
-		}
+		return writer.create (cairoBitmap->getSurface ());
 	}
-	return false;
+	return {};
 }
 
 //-----------------------------------------------------------------------------
