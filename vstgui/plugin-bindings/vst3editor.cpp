@@ -84,7 +84,7 @@ public:
 protected:
 	IdleUpdateHandler ()
 	{
-		timer = IPlatformTimer::create (this);
+		timer = VSTGUI::owned(IPlatformTimer::create (this));
 		timer->start (1000 / 30); // 30 Hz timer
 		
 		// we will always call CView::setDirty() on the main thread
@@ -94,7 +94,7 @@ protected:
 
 	void fire () VSTGUI_OVERRIDE_VMETHOD { gUpdateHandlerInit.get ()->triggerDeferedUpdates (); }
 
-	IPlatformTimer* timer;
+	VSTGUI::SharedPointer<IPlatformTimer> timer;
 };
 
 } // namespace Steinberg
