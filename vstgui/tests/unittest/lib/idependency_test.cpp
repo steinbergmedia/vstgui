@@ -46,7 +46,7 @@ public:
 		
 	}
 	
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message)
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override
 	{
 		notifyCalledCount++;
 		return kMessageNotified;

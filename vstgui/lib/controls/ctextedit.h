@@ -78,20 +78,20 @@ public:
 	//@}
 
 	// overrides
-	virtual void setText (const UTF8String& txt) override;
-	virtual void setValue (float val) override;
-	virtual void setTextRotation (double angle) override { return; } ///< not supported
+	void setText (const UTF8String& txt) override;
+	void setValue (float val) override;
+	void setTextRotation (double angle) override { return; } ///< not supported
 
-	virtual	void draw (CDrawContext* pContext) override;
-	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
-	virtual int32_t onKeyDown (VstKeyCode& keyCode) override;
+	void draw (CDrawContext* pContext) override;
+	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
+	int32_t onKeyDown (VstKeyCode& keyCode) override;
 
-	virtual	void takeFocus () override;
-	virtual	void looseFocus () override;
-	virtual bool wantsFocus () const override;		///< check if view supports focus
+	void takeFocus () override;
+	void looseFocus () override;
+	bool wantsFocus () const override;		///< check if view supports focus
 
-	virtual void setViewSize (const CRect& newSize, bool invalid = true) override;
-	virtual void parentSizeChanged () override;
+	void setViewSize (const CRect& newSize, bool invalid = true) override;
+	void parentSizeChanged () override;
 
 	bool bWasReturnPressed {false};
 
@@ -99,7 +99,7 @@ public:
 
 	CLASS_METHODS(CTextEdit, CParamDisplay)
 protected:
-	~CTextEdit () noexcept;
+	~CTextEdit () noexcept override;
 
 	void createPlatformTextEdit ();
 	void updateText (IPlatformTextEdit* pte);

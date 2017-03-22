@@ -48,7 +48,7 @@ class UIViewSwitchContainer : public CViewContainer
 {
 public:
 	explicit UIViewSwitchContainer (const CRect& size);
-	~UIViewSwitchContainer () noexcept;
+	~UIViewSwitchContainer () noexcept override;
 
 	IViewSwitchController* getController () const { return controller; }
 	void setController (IViewSwitchController* controller);	// owns controller if it is a CBaseObject

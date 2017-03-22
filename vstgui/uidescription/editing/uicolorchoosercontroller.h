@@ -50,7 +50,7 @@ class UIColorChooserController : public CBaseObject, public DelegationController
 {
 public:
 	UIColorChooserController (IController* baseController, UIColor* color);
-	~UIColorChooserController ();
+	~UIColorChooserController () override;
 	
 protected:
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;

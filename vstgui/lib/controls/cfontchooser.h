@@ -95,7 +95,7 @@ class CFontChooser : public CViewContainer, public IControlListener, public IGen
 {
 public:
 	CFontChooser (IFontChooserDelegate* delegate, CFontRef initialFont = nullptr, const CFontChooserUIDefinition& uiDef = CFontChooserUIDefinition ());
-	~CFontChooser () noexcept;
+	~CFontChooser () noexcept override;
 
 	void setFont (CFontRef font);
 	

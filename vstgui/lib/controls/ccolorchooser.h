@@ -73,7 +73,7 @@ class CColorChooser : public CViewContainer, public IControlListener, public IDe
 {
 public:
 	CColorChooser (IColorChooserDelegate* delegate = 0, const CColor& initialColor = kTransparentCColor, const CColorChooserUISettings& settings = CColorChooserUISettings ());
-	~CColorChooser () noexcept = default;
+	~CColorChooser () noexcept override = default;
 
 	void setColor (const CColor& newColor);
 	

@@ -58,7 +58,7 @@ class QuartzGraphicsPath : public CGraphicsPath
 public:
 	QuartzGraphicsPath ();
 	QuartzGraphicsPath (const CoreTextFont* font, UTF8StringPtr text);
-	~QuartzGraphicsPath () noexcept;
+	~QuartzGraphicsPath () noexcept override;
 
 	void pixelAlign (CDrawContext* context);
 	CGPathRef getCGPathRef ();
@@ -85,7 +85,7 @@ class QuartzGradient : public CGradient
 public:
 	explicit QuartzGradient (const ColorStopMap& map);
 	QuartzGradient (double _color1Start, double _color2Start, const CColor& _color1, const CColor& _color2);
-	~QuartzGradient () noexcept;
+	~QuartzGradient () noexcept override;
 
 	operator CGGradientRef () const;
 

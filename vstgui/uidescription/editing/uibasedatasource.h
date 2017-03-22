@@ -61,7 +61,7 @@ public:
 		textInset.x = 4;
 	}
 	
-	~UIBaseDataSource ()
+	~UIBaseDataSource () override
 	{
 		description->removeDependency (this);
 	}

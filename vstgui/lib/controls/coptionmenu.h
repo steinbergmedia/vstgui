@@ -209,18 +209,18 @@ public:
 	//@}
 
 	// overrides
-	virtual void setValue (float val) override;
-	virtual void setMin (float val) override {}
-	virtual float getMin () const override { return 0; }
-	virtual void setMax (float val) override {}
-	virtual float getMax () const override { return (float)(menuItems->size () - 1); }
+	void setValue (float val) override;
+	void setMin (float val) override {}
+	float getMin () const override { return 0; }
+	void setMax (float val) override {}
+	float getMax () const override { return (float)(menuItems->size () - 1); }
 
-	virtual	void draw (CDrawContext* pContext) override;
-	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
-	virtual int32_t onKeyDown (VstKeyCode& keyCode) override;
+	void draw (CDrawContext* pContext) override;
+	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
+	int32_t onKeyDown (VstKeyCode& keyCode) override;
 
-	virtual	void takeFocus () override;
-	virtual	void looseFocus () override;
+	void takeFocus () override;
+	void looseFocus () override;
 
 	static IdStringPtr kMsgBeforePopup;
 	

@@ -52,7 +52,7 @@ class CShadowViewContainer : public CViewContainer, public IScaleFactorChangedLi
 public:
 	explicit CShadowViewContainer (const CRect& size);
 	CShadowViewContainer (const CShadowViewContainer& copy);
-	~CShadowViewContainer () noexcept;
+	~CShadowViewContainer () noexcept override;
 
 	//-----------------------------------------------------------------------------
 	/// @name CShadowViewContainer Methods

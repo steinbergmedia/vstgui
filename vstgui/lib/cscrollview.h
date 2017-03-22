@@ -123,7 +123,7 @@ public:
 	CLASS_METHODS(CScrollView, CViewContainer)
 //-----------------------------------------------------------------------------
 protected:
-	~CScrollView () noexcept = default;
+	~CScrollView () noexcept override = default;
 	virtual void recalculateSubViews ();
 
 	void viewSizeChanged (CView* view, const CRect& oldSize) override;

@@ -26,7 +26,7 @@ public:
 		value->registerListener (this);
 	}
 
-	~TouchBarMaker ()
+	~TouchBarMaker () override
 	{
 		value->unregisterListener (this);
 	}

@@ -305,7 +305,7 @@ class CBaseObject : public NonAtomicReferenceCounted
 {
 public:
 	CBaseObject () = default;
-	virtual ~CBaseObject () noexcept = default;
+	~CBaseObject () noexcept override = default;
 
 	CBaseObject (const CBaseObject& o) {};
 	CBaseObject& operator= (const CBaseObject& obj) { return *this; }

@@ -90,14 +90,14 @@ public:
 	virtual void setTabViewInsets (const CPoint& inset);
 	//@}
 
-	virtual void drawBackgroundRect (CDrawContext *pContext, const CRect& _updateRect) override;
-	virtual void valueChanged (CControl *pControl) override;
-	virtual void setViewSize (const CRect &rect, bool invalid = true) override;
-	virtual void setAutosizeFlags (int32_t flags) override;
+	void drawBackgroundRect (CDrawContext *pContext, const CRect& _updateRect) override;
+	void valueChanged (CControl *pControl) override;
+	void setViewSize (const CRect &rect, bool invalid = true) override;
+	void setAutosizeFlags (int32_t flags) override;
 //-----------------------------------------------------------------------------
 	CLASS_METHODS (CTabView, CViewContainer)
 protected:
-	~CTabView () noexcept;
+	~CTabView () noexcept override;
 	void setCurrentChild (CTabChildView* childView);
 
 	int32_t numberOfChilds;

@@ -54,7 +54,7 @@ class CAViewLayer : public IPlatformViewLayer
 {
 public:
 	CAViewLayer (CALayer* parent);
-	~CAViewLayer () noexcept;
+	~CAViewLayer () noexcept override;
 
 	bool init (IPlatformViewLayerDelegate* drawDelegate);
 	

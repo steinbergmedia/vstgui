@@ -108,19 +108,19 @@ public:
 	//@}
 
 	// overrides
-	virtual void draw (CDrawContext* pContext) override;
-	virtual bool onWheel (const CPoint& where, const float& distance, const CButtonState& buttons) override;
-	virtual int32_t onKeyDown (VstKeyCode& keyCode) override;
-	virtual void setViewSize (const CRect &rect, bool invalid = true) override;
-	virtual bool sizeToFit () override;
-	virtual void setMin (float val) override;
-	virtual void setMax (float val) override;
-	virtual bool getFocusPath (CGraphicsPath& outPath) override;
-	virtual bool drawFocusOnTop () override;
+	void draw (CDrawContext* pContext) override;
+	bool onWheel (const CPoint& where, const float& distance, const CButtonState& buttons) override;
+	int32_t onKeyDown (VstKeyCode& keyCode) override;
+	void setViewSize (const CRect &rect, bool invalid = true) override;
+	bool sizeToFit () override;
+	void setMin (float val) override;
+	void setMax (float val) override;
+	bool getFocusPath (CGraphicsPath& outPath) override;
+	bool drawFocusOnTop () override;
 
-	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
-	virtual CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
-	virtual CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
 
 	CLASS_METHODS(CKnob, CControl)
 protected:
@@ -178,15 +178,15 @@ public:
 	//@}
 
 	// overrides
-	virtual void draw (CDrawContext* pContext) override;
-	virtual bool sizeToFit () override;
+	void draw (CDrawContext* pContext) override;
+	bool sizeToFit () override;
 	void setHeightOfOneImage (const CCoord& height) override;
 	void setBackground (CBitmap *background) override;
 	void setNumSubPixmaps (int32_t numSubPixmaps) override { IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps); invalid (); }
 
 	CLASS_METHODS(CAnimKnob, CKnob)
 protected:
-	~CAnimKnob () noexcept = default;
+	~CAnimKnob () noexcept override = default;
 	bool	bInverseBitmap;
 };
 

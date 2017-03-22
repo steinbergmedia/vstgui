@@ -243,7 +243,7 @@ public:
 	, zoomValueControl (nullptr)
 	{}
 
-	~UIZoomSettingController () = default;
+	~UIZoomSettingController () override = default;
 
 	void restoreSetting (const UIAttributes& attributes)
 	{

@@ -55,7 +55,7 @@ class UITemplateController : public CBaseObject, public DelegationController, pu
 {
 public:
 	UITemplateController (IController* baseController, UIDescription* description, UISelection* selection, UIUndoManager* undoManager, IActionPerformer* actionPerformer);
-	~UITemplateController ();
+	~UITemplateController () override;
 
 	const UTF8String* getSelectedTemplateName () const { return selectedTemplateName; }
 

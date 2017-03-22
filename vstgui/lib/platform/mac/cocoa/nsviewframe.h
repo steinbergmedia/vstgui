@@ -69,7 +69,7 @@ class NSViewFrame : public IPlatformFrame, public IPlatformFrameTouchBarExtensio
 {
 public:
 	NSViewFrame (IPlatformFrameCallback* frame, const CRect& size, NSView* parent, IPlatformFrameConfig* config);
-	~NSViewFrame () noexcept;
+	~NSViewFrame () noexcept override;
 
 	NSView* getPlatformControl () const { return nsView; }
 	IPlatformFrameCallback* getFrame () const { return frame; }

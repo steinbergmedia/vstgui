@@ -51,7 +51,7 @@ class UIViewCreatorController : public NonAtomicReferenceCounted, public Delegat
 {
 public:
 	UIViewCreatorController (IController* baseController, UIDescription* description);
-	~UIViewCreatorController ();
+	~UIViewCreatorController () override;
 	
 	IController* getBaseController () const { return controller; }
 protected:

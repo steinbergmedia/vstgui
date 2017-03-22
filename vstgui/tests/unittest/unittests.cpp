@@ -176,7 +176,7 @@ private:
 public:
 	StdOutContext () : intend (0) {}
 
-	virtual void printRaw (const char* str)
+	void printRaw (const char* str) override
 	{
 		testOutput += str;
 		testOutput += "\n";

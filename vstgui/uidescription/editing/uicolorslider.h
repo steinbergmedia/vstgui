@@ -62,7 +62,7 @@ public:
 		kAlpha
 	};
 	UIColorSlider (UIColor* color, int32_t style);
-	~UIColorSlider ();
+	~UIColorSlider () override;
 
 protected:
 	void draw (CDrawContext* context) override;

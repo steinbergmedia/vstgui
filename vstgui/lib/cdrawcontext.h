@@ -216,7 +216,7 @@ public:
 
 protected:
 	explicit CDrawContext (const CRect& surfaceRect);
-	~CDrawContext () noexcept;
+	~CDrawContext () noexcept override;
 
 	virtual void init ();
 

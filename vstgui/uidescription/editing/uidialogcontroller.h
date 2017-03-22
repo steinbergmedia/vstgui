@@ -53,7 +53,7 @@ class UIDialogController : public CBaseObject, public DelegationController, publ
 {
 public:
 	UIDialogController (IController* baseController, CFrame* frame);
-	~UIDialogController () = default;
+	~UIDialogController () override = default;
 	
 	void run (UTF8StringPtr templateName, UTF8StringPtr dialogTitle, UTF8StringPtr button1, UTF8StringPtr button2, IController* controller, UIDescription* description);
 

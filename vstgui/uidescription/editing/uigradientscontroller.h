@@ -52,7 +52,7 @@ class UIGradientsController : public NonAtomicReferenceCounted, public Delegatio
 {
 public:
 	UIGradientsController (IController* baseController, UIDescription* description, IActionPerformer* actionPerformer);
-	~UIGradientsController ();
+	~UIGradientsController () override;
 
 protected:
 	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override;

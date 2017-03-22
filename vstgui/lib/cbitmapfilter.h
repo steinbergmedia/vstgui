@@ -238,15 +238,15 @@ protected:
 	bool registerProperty (IdStringPtr name, const Property& defaultProperty);
 	CBitmap* getInputBitmap () const;
 
-	virtual UTF8StringPtr getDescription () const override;
-	virtual bool setProperty (IdStringPtr name, const Property& property) override;
-	virtual bool setProperty (IdStringPtr name, Property&& property) override;
-	virtual const Property& getProperty (IdStringPtr name) const override;
+	UTF8StringPtr getDescription () const override;
+	bool setProperty (IdStringPtr name, const Property& property) override;
+	bool setProperty (IdStringPtr name, Property&& property) override;
+	const Property& getProperty (IdStringPtr name) const override;
 	
-	virtual uint32_t getNumProperties () const override;
-	virtual IdStringPtr getPropertyName (uint32_t index) const override;
-	virtual Property::Type getPropertyType (uint32_t index) const override;
-	virtual Property::Type getPropertyType (IdStringPtr name) const override;
+	uint32_t getNumProperties () const override;
+	IdStringPtr getPropertyName (uint32_t index) const override;
+	Property::Type getPropertyType (uint32_t index) const override;
+	Property::Type getPropertyType (IdStringPtr name) const override;
 
 private:
 	using PropertyMap = std::map<std::string, Property>;
