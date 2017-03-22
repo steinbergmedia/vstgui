@@ -906,10 +906,10 @@ void UIDescription::setBitmapCreator (IBitmapCreator* creator)
 //-----------------------------------------------------------------------------
 static void FreeNodePlatformResources (UINode* node)
 {
-	for (UIDescList::iterator it = node->getChildren ().begin (), end = node->getChildren ().end (); it != end; ++it)
+	for (auto& child : node->getChildren ())
 	{
-		(*it)->freePlatformResources ();
-		FreeNodePlatformResources (*it);
+		child->freePlatformResources ();
+		FreeNodePlatformResources (child);
 	}
 }
 
