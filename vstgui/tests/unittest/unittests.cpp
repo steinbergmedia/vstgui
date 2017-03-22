@@ -148,8 +148,8 @@ void Context::print (const char* fmt, ...)
 
 	delete[] buffer;
 #else
-	char* str = 0;
-	if (vasprintf (&str, fmt, args) >= 0 && str != 0)
+	char* str = nullptr;
+	if (vasprintf (&str, fmt, args) >= 0 && str != nullptr)
 	{
 		printRaw (str);
 		std::free (str);
