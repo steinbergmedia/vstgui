@@ -103,7 +103,7 @@ TestCase& TestCase::operator=(TestCase &&tc) noexcept
 //----------------------------------------------------------------------------------------------------
 void TestCase::registerTest (std::string&& name, TestFunction&& function)
 {
-	tests.push_back (TestPair (std::move (name), std::move (function)));
+	tests.emplace_back (std::move (name), std::move (function));
 }
 
 //----------------------------------------------------------------------------------------------------
