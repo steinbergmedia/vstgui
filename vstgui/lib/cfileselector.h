@@ -162,7 +162,7 @@ public:
 	CLASS_METHODS_NOCOPY(CNewFileSelector, CBaseObject)
 protected:
 	explicit CNewFileSelector (CFrame* frame = nullptr);
-	~CNewFileSelector () noexcept;
+	~CNewFileSelector () noexcept override;
 
 	virtual bool runInternal (CBaseObject* delegate) = 0;
 	virtual void cancelInternal () = 0;

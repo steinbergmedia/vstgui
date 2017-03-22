@@ -61,7 +61,7 @@ class CGDrawContext : public COffscreenContext
 public:
 	CGDrawContext (CGContextRef cgContext, const CRect& rect);
 	explicit CGDrawContext (CGBitmap* bitmap);
-	~CGDrawContext () noexcept;
+	~CGDrawContext () noexcept override;
 	
 	void drawLine (const LinePair& line) override;
 	void drawLines (const LineList& lines) override;

@@ -71,7 +71,7 @@ class SizeToFitOperation : public BaseSelectionOperation<std::pair<SharedPointer
 {
 public:
 	SizeToFitOperation (UISelection* selection);
-	~SizeToFitOperation () = default;
+	~SizeToFitOperation () override = default;
 
 	UTF8StringPtr getName () override;
 	
@@ -84,7 +84,7 @@ class UnembedViewOperation : public BaseSelectionOperation<SharedPointer<CView> 
 {
 public:
 	UnembedViewOperation (UISelection* selection, const IViewFactory* factory);
-	~UnembedViewOperation () = default;
+	~UnembedViewOperation () override = default;
 
 	UTF8StringPtr getName () override;
 
@@ -103,7 +103,7 @@ class EmbedViewOperation : public BaseSelectionOperation<std::pair<SharedPointer
 {
 public:
 	EmbedViewOperation (UISelection* selection, CViewContainer* newContainer);
-	~EmbedViewOperation () = default;
+	~EmbedViewOperation () override = default;
 	
 	UTF8StringPtr getName () override;
 	void perform () override;
@@ -119,7 +119,7 @@ class ViewCopyOperation : public IAction, protected std::list<SharedPointer<CVie
 {
 public:
 	ViewCopyOperation (UISelection* copySelection, UISelection* workingSelection, CViewContainer* parent, const CPoint& offset, IUIDescription* desc);
-	~ViewCopyOperation () = default;
+	~ViewCopyOperation () override = default;
 	
 	UTF8StringPtr getName () override;
 	void perform () override;
@@ -136,7 +136,7 @@ class ViewSizeChangeOperation : public BaseSelectionOperation<std::pair<SharedPo
 {
 public:
 	ViewSizeChangeOperation (UISelection* selection, bool sizing, bool autosizingEnabled);
-	~ViewSizeChangeOperation () = default;
+	~ViewSizeChangeOperation () override = default;
 	
 	UTF8StringPtr getName () override;
 	void perform () override;
@@ -163,7 +163,7 @@ class DeleteOperation : public IAction, protected std::multimap<SharedPointer<CV
 {
 public:
 	DeleteOperation (UISelection* selection);
-	~DeleteOperation () = default;
+	~DeleteOperation () override = default;
 	
 	UTF8StringPtr getName () override;
 	void perform () override;
@@ -177,7 +177,7 @@ class InsertViewOperation : public IAction
 {
 public:
 	InsertViewOperation (CViewContainer* parent, CView* view, UISelection* selection);
-	~InsertViewOperation () = default;
+	~InsertViewOperation () override = default;
 
 	UTF8StringPtr getName () override;
 	void perform () override;
@@ -193,7 +193,7 @@ class TransformViewTypeOperation : public IAction
 {
 public:
 	TransformViewTypeOperation (UISelection* selection, IdStringPtr viewClassName, UIDescription* desc, const UIViewFactory* factory);
-	~TransformViewTypeOperation ();
+	~TransformViewTypeOperation () override;
 
 	UTF8StringPtr getName () override;
 
@@ -215,7 +215,7 @@ class AttributeChangeAction : public IAction, protected std::map<SharedPointer<C
 {
 public:
 	AttributeChangeAction (UIDescription* desc, UISelection* selection, const std::string& attrName, const std::string& attrValue);
-	~AttributeChangeAction () = default;
+	~AttributeChangeAction () override = default;
 
 	UTF8StringPtr getName () override;
 	void perform () override;
@@ -364,7 +364,7 @@ class NinePartTiledBitmapChangeAction : public IAction
 {
 public:
 	NinePartTiledBitmapChangeAction (UIDescription* description, UTF8StringPtr name, const CRect* rect, bool performOrUndo);
-	~NinePartTiledBitmapChangeAction ();
+	~NinePartTiledBitmapChangeAction () override;
 	
 	UTF8StringPtr getName () override;
 	void perform () override;
@@ -382,7 +382,7 @@ class BitmapFilterChangeAction : public IAction
 {
 public:
 	BitmapFilterChangeAction (UIDescription* description, UTF8StringPtr bitmapName, const std::list<SharedPointer<UIAttributes> >& attributes, bool performOrUndo);
-	~BitmapFilterChangeAction () = default;
+	~BitmapFilterChangeAction () override = default;
 	
 	UTF8StringPtr getName () override;
 	void perform () override;
@@ -488,7 +488,7 @@ class HierarchyMoveViewOperation : public IAction
 {
 public:
 	HierarchyMoveViewOperation (CView* view, UISelection* selection, bool up);
-	~HierarchyMoveViewOperation () = default;
+	~HierarchyMoveViewOperation () override = default;
 
 	UTF8StringPtr getName () override;
 	void perform () override;

@@ -67,7 +67,7 @@ public:
 	};
 	
 	UISelection (int32_t style = kMultiSelectionStyle);
-	~UISelection ();
+	~UISelection () override;
 
 	void setStyle (int32_t style);
 

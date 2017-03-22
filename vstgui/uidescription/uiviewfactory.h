@@ -50,7 +50,7 @@ class UIViewFactory : public NonAtomicReferenceCounted, public IViewFactory
 {
 public:
 	UIViewFactory ();
-	~UIViewFactory () noexcept = default;
+	~UIViewFactory () noexcept override = default;
 
 	// IViewFactory
 	CView* createView (const UIAttributes& attributes, const IUIDescription* description) const override;

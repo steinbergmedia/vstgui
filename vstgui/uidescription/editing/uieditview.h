@@ -59,7 +59,7 @@ class UIEditView : public CViewContainer
 {
 public:
 	UIEditView (const CRect& size, UIDescription* uidescription);
-	~UIEditView ();
+	~UIEditView () override;
 
 	void enableEditing (bool state);
 	void enableAutosizing (bool state);

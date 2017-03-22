@@ -50,7 +50,7 @@ class UIGridController : public UIGrid, public DelegationController
 {
 public:
 	UIGridController (IController* baseController, UIDescription* description);
-	~UIGridController ();
+	~UIGridController () override;
 
 protected:
 	void valueChanged (CControl* pControl) override;

@@ -21,7 +21,7 @@ struct MacParentHandle : PlatformParentHandle
 		window = [[NSWindow alloc] initWithContentRect:NSMakeRect(0, 0, 100, 100) styleMask:NSTitledWindowMask backing:NSBackingStoreBuffered defer:NO];
 	}
 	
-	~MacParentHandle ()
+	~MacParentHandle () override
 	{
 		[window release];
 	}

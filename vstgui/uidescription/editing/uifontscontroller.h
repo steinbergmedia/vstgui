@@ -53,7 +53,7 @@ class UIFontsController : public NonAtomicReferenceCounted, public DelegationCon
 {
 public:
 	UIFontsController (IController* baseController, UIDescription* description, IActionPerformer* actionPerformer);
-	~UIFontsController ();
+	~UIFontsController () override;
 
 protected:
 	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override;

@@ -140,8 +140,8 @@ public:
 
 	const int8_t* getBuffer () const { return buffer; }
 
-	virtual bool operator<< (const std::string& str) override;
-	virtual bool operator>> (std::string& string) override;
+	bool operator<< (const std::string& str) override;
+	bool operator>> (std::string& string) override;
 
 	bool end (); // write a zero byte if binaryMode is false
 protected:
@@ -181,8 +181,8 @@ public:
 	int64_t tell () const override;
 	void rewind () override;
 
-	virtual bool operator<< (const std::string& str) override;
-	virtual bool operator>> (std::string& string) override;
+	bool operator<< (const std::string& str) override;
+	bool operator>> (std::string& string) override;
 protected:
 	FILE* stream;
 	int32_t openMode;
@@ -233,11 +233,11 @@ public:
 
 	bool open (const CResourceDescription& res);
 
-	virtual bool operator>> (std::string& string) override { return false; }
-	virtual uint32_t readRaw (void* buffer, uint32_t size) override;
-	virtual int64_t seek (int64_t pos, SeekMode mode) override;
-	virtual int64_t tell () const override;
-	virtual void rewind () override;
+	bool operator>> (std::string& string) override { return false; }
+	uint32_t readRaw (void* buffer, uint32_t size) override;
+	int64_t seek (int64_t pos, SeekMode mode) override;
+	int64_t tell () const override;
+	void rewind () override;
 protected:
 	void* platformHandle;
 };

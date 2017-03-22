@@ -55,7 +55,7 @@ class MacString : public IPlatformString
 {
 public:
 	MacString (UTF8StringPtr utf8String);
-	~MacString () noexcept;
+	~MacString () noexcept override;
 	
 	void setUTF8String (UTF8StringPtr utf8String) override;
 

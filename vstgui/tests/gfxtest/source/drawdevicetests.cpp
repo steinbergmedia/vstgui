@@ -210,7 +210,7 @@ class ViewCreator : public DelegationController
 public:
 	ViewCreator (IController* parent) : DelegationController (parent) {}
 
-	CView* createView (const UIAttributes& attributes, const IUIDescription* description)
+	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override
 	{
 		if (auto customViewName = attributes.getAttributeValue (IUIDescription::kCustomViewName))
 		{

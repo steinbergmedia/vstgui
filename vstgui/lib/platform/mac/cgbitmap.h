@@ -56,7 +56,7 @@ public:
 	explicit CGBitmap (const CPoint& size);
 	explicit CGBitmap (CGImageRef image);
 	CGBitmap ();
-	~CGBitmap () noexcept;
+	~CGBitmap () noexcept override;
 	
 	bool load (const CResourceDescription& desc) override;
 	const CPoint& getSize () const override { return size; }

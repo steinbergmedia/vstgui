@@ -134,7 +134,7 @@ struct ViewController : DelegationController,
 	{
 		model->registerListener (this);
 	}
-	~ViewController () noexcept { model->unregisterListener (this); }
+	~ViewController () noexcept override { model->unregisterListener (this); }
 
 	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override
 	{

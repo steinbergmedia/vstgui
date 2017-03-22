@@ -71,15 +71,15 @@ public:
 
 	static IdStringPtr kMsgTruncatedTextChanged;								///< message which is send to dependent objects when the truncated text changes
 	
-	virtual	void draw (CDrawContext* pContext) override;
-	virtual bool sizeToFit () override;
-	virtual void setViewSize (const CRect& rect, bool invalid = true) override;
-	virtual void drawStyleChanged () override;
-	virtual void valueChanged () override;
+	void draw (CDrawContext* pContext) override;
+	bool sizeToFit () override;
+	void setViewSize (const CRect& rect, bool invalid = true) override;
+	void drawStyleChanged () override;
+	void valueChanged () override;
 
 	CLASS_METHODS(CTextLabel, CParamDisplay)
 protected:
-	~CTextLabel () noexcept = default;
+	~CTextLabel () noexcept override = default;
 	void freeText ();
 	void calculateTruncatedText ();
 

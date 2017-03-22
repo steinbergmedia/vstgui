@@ -53,7 +53,7 @@ class UIColorsController : public CBaseObject, public DelegationController
 {
 public:
 	UIColorsController (IController* baseController, UIDescription* description, IActionPerformer* actionPerformer);
-	~UIColorsController ();
+	~UIColorsController () override;
 
 protected:
 	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override;

@@ -58,7 +58,7 @@ class UIAttributesController : public CBaseObject, public DelegationController
 {
 public:
 	UIAttributesController (IController* baseController, UISelection* selection, UIUndoManager* undoManager, UIDescription* description);
-	~UIAttributesController ();
+	~UIAttributesController () override;
 	
 	void beginLiveAttributeChange (const std::string& name, const std::string& currentValue);
 	void endLiveAttributeChange ();

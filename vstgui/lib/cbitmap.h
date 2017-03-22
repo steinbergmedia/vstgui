@@ -159,7 +159,7 @@ public:
 	const CNinePartTiledDescription& getPartOffsets () const { return offsets; }
 	//@}
 
-	virtual void draw (CDrawContext* context, const CRect& rect, const CPoint& offset = CPoint (0, 0), float alpha = 1.f) override;
+	void draw (CDrawContext* context, const CRect& rect, const CPoint& offset = CPoint (0, 0), float alpha = 1.f) override;
 
 //-----------------------------------------------------------------------------
 protected:

@@ -54,7 +54,7 @@ class ModelBindingCallbacks : public ValueListenerAdapter, public IModelBinding
 {
 public:
 	static ModelBindingCallbacksPtr make () { return std::make_shared<ModelBindingCallbacks> (); }
-	~ModelBindingCallbacks ();
+	~ModelBindingCallbacks () override;
 
 	ValuePtr addValue (ValuePtr value, const ValueCalls& callbacks = {});
 	ValuePtr addValue (ValuePtr value, ValueCalls&& callbacks);

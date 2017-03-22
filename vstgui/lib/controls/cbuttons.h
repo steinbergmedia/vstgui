@@ -66,13 +66,13 @@ public:
 	//@}
 
 	// overrides
-	virtual void draw (CDrawContext*) override;
-	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
-	virtual CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
-	virtual CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
-	virtual CMouseEventResult onMouseCancel () override;
-	virtual int32_t onKeyDown (VstKeyCode& keyCode) override;
-	virtual bool sizeToFit () override;
+	void draw (CDrawContext*) override;
+	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseCancel () override;
+	int32_t onKeyDown (VstKeyCode& keyCode) override;
+	bool sizeToFit () override;
 
 	CLASS_METHODS(COnOffButton, CControl)
 protected:
@@ -122,15 +122,15 @@ public:
 	//@}
 
 	// overrides
-	virtual void draw (CDrawContext* context) override;
-	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
-	virtual CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
-	virtual CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
-	virtual CMouseEventResult onMouseCancel () override;
-	virtual int32_t onKeyDown (VstKeyCode& keyCode) override;
-	virtual bool sizeToFit () override;
-	virtual void setBackground (CBitmap *background) override;
-	virtual bool getFocusPath (CGraphicsPath& outPath) override;
+	void draw (CDrawContext* context) override;
+	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseCancel () override;
+	int32_t onKeyDown (VstKeyCode& keyCode) override;
+	bool sizeToFit () override;
+	void setBackground (CBitmap *background) override;
+	bool getFocusPath (CGraphicsPath& outPath) override;
 
 	CLASS_METHODS(CCheckBox, CControl)
 protected:
@@ -161,16 +161,16 @@ public:
 	CKickButton (const CRect& size, IControlListener* listener, int32_t tag, CCoord heightOfOneImage, CBitmap* background, const CPoint& offset = CPoint (0, 0));
 	CKickButton (const CKickButton& kickButton);
 
-	virtual void draw (CDrawContext*) override;
+	void draw (CDrawContext*) override;
 
-	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
-	virtual CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
-	virtual CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
-	virtual CMouseEventResult onMouseCancel () override;
-	virtual int32_t onKeyDown (VstKeyCode& keyCode) override;
-	virtual int32_t onKeyUp (VstKeyCode& keyCode) override;
+	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseCancel () override;
+	int32_t onKeyDown (VstKeyCode& keyCode) override;
+	int32_t onKeyUp (VstKeyCode& keyCode) override;
 
-	virtual bool sizeToFit () override;
+	bool sizeToFit () override;
 
 	void setNumSubPixmaps (int32_t numSubPixmaps) override { IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps); invalid (); }
 
@@ -256,13 +256,13 @@ public:
 	bool drawFocusOnTop () override;
 	void setViewSize (const CRect& rect, bool invalid = true) override;
 	bool removed (CView* parent) override;
-	virtual bool sizeToFit () override;
-	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
-	virtual CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
-	virtual CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
-	virtual CMouseEventResult onMouseCancel () override;
-	virtual int32_t onKeyDown (VstKeyCode& keyCode) override;
-	virtual int32_t onKeyUp (VstKeyCode& keyCode) override;
+	bool sizeToFit () override;
+	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseCancel () override;
+	int32_t onKeyDown (VstKeyCode& keyCode) override;
+	int32_t onKeyUp (VstKeyCode& keyCode) override;
 	
 	CLASS_METHODS(CTextButton, CControl)
 protected:

@@ -122,7 +122,7 @@ public:
 
 	CLASS_METHODS(CParamDisplay, CControl)
 protected:
-	~CParamDisplay () noexcept;
+	~CParamDisplay () noexcept override;
 	virtual void drawBack (CDrawContext* pContext, CBitmap* newBack = nullptr);
 
 	virtual void drawPlatformText (CDrawContext* pContext, IPlatformString* string);

@@ -57,7 +57,7 @@ public:
 	};
 	
 	UICrossLines (CViewContainer* editView, int32_t style, const CColor& background = kWhiteCColor, const CColor& foreground = kBlackCColor);
-	~UICrossLines ();
+	~UICrossLines () override;
 
 	int32_t getStyle () const { return style; }
 

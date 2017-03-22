@@ -56,7 +56,7 @@ class UIDescription : public NonAtomicReferenceCounted, public IUIDescription, p
 public:
 	UIDescription (const CResourceDescription& xmlFile, IViewFactory* viewFactory = nullptr);
 	UIDescription (Xml::IContentProvider* xmlContentProvider, IViewFactory* viewFactory = nullptr);
-	~UIDescription () noexcept;
+	~UIDescription () noexcept override;
 
 	virtual bool parse ();
 

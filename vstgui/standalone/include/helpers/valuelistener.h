@@ -32,7 +32,7 @@ public:
 	{
 		value.registerListener (this);
 	}
-	~ListenerBase () noexcept
+	~ListenerBase () noexcept override
 	{
 		value.unregisterListener (this);
 	}

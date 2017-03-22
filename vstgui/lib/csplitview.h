@@ -64,7 +64,7 @@ public:
 	};
 	
 	CSplitView (const CRect& size, Style style = kHorizontal, CCoord separatorWidth = 10., ISplitViewSeparatorDrawer* drawer = nullptr);
-	~CSplitView () noexcept = default;
+	~CSplitView () noexcept override = default;
 
 	//-----------------------------------------------------------------------------
 	/// @name CSplitView Methods
@@ -86,15 +86,15 @@ public:
 	//@}
 	
 	// overrides
-	virtual bool addView (CView* pView) override;
-	virtual bool addView (CView* pView, const CRect& mouseableArea, bool mouseEnabled = true) override;
-	virtual bool addView (CView* pView, CView* pBefore) override;
-	virtual bool removeView (CView* pView, bool withForget = true) override;
-	virtual bool removeAll (bool withForget = true) override;
-	virtual void setViewSize (const CRect& rect, bool invalid = true) override;
-	virtual bool sizeToFit () override;
-	virtual bool removed (CView* parent) override;
-	virtual bool attached (CView* parent) override;
+	bool addView (CView* pView) override;
+	bool addView (CView* pView, const CRect& mouseableArea, bool mouseEnabled = true) override;
+	bool addView (CView* pView, CView* pBefore) override;
+	bool removeView (CView* pView, bool withForget = true) override;
+	bool removeAll (bool withForget = true) override;
+	void setViewSize (const CRect& rect, bool invalid = true) override;
+	bool sizeToFit () override;
+	bool removed (CView* parent) override;
+	bool attached (CView* parent) override;
 
 	bool requestNewSeparatorSize (CSplitViewSeparatorView* separatorView, const CRect& newSize);
 //-----------------------------------------------------------------------------

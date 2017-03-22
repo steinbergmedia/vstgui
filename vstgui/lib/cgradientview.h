@@ -51,7 +51,7 @@ class CGradientView : public CView
 {
 public:
 	explicit CGradientView (const CRect& size);
-	~CGradientView () noexcept = default;
+	~CGradientView () noexcept override = default;
 
 	//-----------------------------------------------------------------------------
 	/// @name Gradient Style Methods
@@ -84,7 +84,7 @@ public:
 	//@}
 
 	// override
-	virtual void setViewSize (const CRect& rect, bool invalid = true) override;
+	void setViewSize (const CRect& rect, bool invalid = true) override;
 	void draw (CDrawContext* context) override;
 protected:
 	GradientStyle gradientStyle {kLinearGradient};

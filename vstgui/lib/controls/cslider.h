@@ -104,17 +104,17 @@ public:
 	//@}
 
 	// overrides
-	virtual void draw (CDrawContext*) override;
+	void draw (CDrawContext*) override;
 
-	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
-	virtual CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
-	virtual CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
-	virtual CMouseEventResult onMouseCancel () override;
+	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseCancel () override;
 
-	virtual bool onWheel (const CPoint& where, const float& distance, const CButtonState& buttons) override;
-	virtual int32_t onKeyDown (VstKeyCode& keyCode) override;
+	bool onWheel (const CPoint& where, const float& distance, const CButtonState& buttons) override;
+	int32_t onKeyDown (VstKeyCode& keyCode) override;
 
-	virtual bool sizeToFit () override;
+	bool sizeToFit () override;
 
 	static bool kAlwaysUseZoomFactor;
 

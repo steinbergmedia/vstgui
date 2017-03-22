@@ -18,7 +18,7 @@ class UITagsController : public NonAtomicReferenceCounted, public DelegationCont
 {
 public:
 	UITagsController (IController* baseController, UIDescription* description, IActionPerformer* actionPerformer);
-	~UITagsController ();
+	~UITagsController () override;
 
 protected:
 	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override;

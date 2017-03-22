@@ -518,7 +518,7 @@ class LiveEditingCView : public CView
 {
 public:
 	LiveEditingCView (const CRect& r) : CView (r) {}
-	void draw (CDrawContext* context)
+	void draw (CDrawContext* context) override
 	{
 		if (getDrawBackground ())
 		{

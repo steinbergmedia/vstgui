@@ -62,19 +62,19 @@ class COpenGLView : public CView, public IOpenGLView
 {
 public:
 	explicit COpenGLView (const CRect& size);
-	~COpenGLView () noexcept;
+	~COpenGLView () noexcept override;
 
 	// IOpenGLView	
-	virtual void drawOpenGL (const CRect& updateRect) override = 0;	///< will be called when the view was marked invalid or the view was resized
-	virtual void reshape () override;
+	void drawOpenGL (const CRect& updateRect) override = 0;	///< will be called when the view was marked invalid or the view was resized
+	void reshape () override;
 
 	// CView
-	virtual void setViewSize (const CRect& rect, bool invalid = true) override;
-	virtual void parentSizeChanged () override;
-	virtual bool removed (CView* parent) override;
-	virtual bool attached (CView* parent) override;
-	virtual void invalidRect (const CRect& rect) override;
-	virtual void setVisible (bool state) override;
+	void setViewSize (const CRect& rect, bool invalid = true) override;
+	void parentSizeChanged () override;
+	bool removed (CView* parent) override;
+	bool attached (CView* parent) override;
+	void invalidRect (const CRect& rect) override;
+	void setVisible (bool state) override;
 
 	CLASS_METHODS_NOCOPY (COpenGLView, CView)
 protected:

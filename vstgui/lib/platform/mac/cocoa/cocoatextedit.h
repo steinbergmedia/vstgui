@@ -54,7 +54,7 @@ class CocoaTextEdit : public IPlatformTextEdit
 {
 public:
 	CocoaTextEdit (NSView* parent, IPlatformTextEditCallback* textEdit);
-	~CocoaTextEdit () noexcept;
+	~CocoaTextEdit () noexcept override;
 	
 	UTF8String getText () override;
 	bool setText (const UTF8String& text) override;

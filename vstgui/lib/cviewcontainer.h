@@ -136,16 +136,16 @@ public:
 	void unregisterViewContainerListener (IViewContainerListener* listener);
 	
 	// CView
-	virtual void draw (CDrawContext* pContext) override;
-	virtual void drawRect (CDrawContext* pContext, const CRect& updateRect) override;
-	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
-	virtual CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
-	virtual CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
-	virtual CMouseEventResult onMouseCancel () override;
-	virtual bool onWheel (const CPoint& where, const float& distance, const CButtonState& buttons) override;
-	virtual bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons) override;
-	virtual bool hitTest (const CPoint& where, const CButtonState& buttons = -1) override;
-	virtual CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
+	void draw (CDrawContext* pContext) override;
+	void drawRect (CDrawContext* pContext, const CRect& updateRect) override;
+	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseCancel () override;
+	bool onWheel (const CPoint& where, const float& distance, const CButtonState& buttons) override;
+	bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons) override;
+	bool hitTest (const CPoint& where, const CButtonState& buttons = -1) override;
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 
 #if VSTGUI_TOUCH_EVENT_HANDLING
 	virtual void onTouchEvent (ITouchEvent& event) override;
@@ -153,28 +153,28 @@ public:
 	virtual void findSingleTouchEventTarget (ITouchEvent::Touch& event);
 #endif
 
-	virtual bool onDrop (IDataPackage* drag, const CPoint& where) override;
-	virtual void onDragEnter (IDataPackage* drag, const CPoint& where) override;
-	virtual void onDragLeave (IDataPackage* drag, const CPoint& where) override;
-	virtual void onDragMove (IDataPackage* drag, const CPoint& where) override;
+	bool onDrop (IDataPackage* drag, const CPoint& where) override;
+	void onDragEnter (IDataPackage* drag, const CPoint& where) override;
+	void onDragLeave (IDataPackage* drag, const CPoint& where) override;
+	void onDragMove (IDataPackage* drag, const CPoint& where) override;
 
-	virtual void looseFocus () override;
-	virtual void takeFocus () override;
+	void looseFocus () override;
+	void takeFocus () override;
 
-	virtual bool isDirty () const override;
+	bool isDirty () const override;
 
-	virtual void invalid () override;
-	virtual void invalidRect (const CRect& rect) override;
+	void invalid () override;
+	void invalidRect (const CRect& rect) override;
 	
-	virtual void setViewSize (const CRect& rect, bool invalid = true) override;
-	virtual void parentSizeChanged () override;
-	virtual bool sizeToFit () override;
+	void setViewSize (const CRect& rect, bool invalid = true) override;
+	void parentSizeChanged () override;
+	bool sizeToFit () override;
 
-	virtual bool removed (CView* parent) override;
-	virtual bool attached (CView* parent) override;
+	bool removed (CView* parent) override;
+	bool attached (CView* parent) override;
 		
-	virtual CPoint& frameToLocal (CPoint& point) const override;
-	virtual CPoint& localToFrame (CPoint& point) const override;
+	CPoint& frameToLocal (CPoint& point) const override;
+	CPoint& localToFrame (CPoint& point) const override;
 
 	//-----------------------------------------------------------------------------
 	using ChildViewConstIterator = ViewList::const_iterator;
@@ -233,7 +233,7 @@ public:
 	CLASS_METHODS(CViewContainer, CView)
 
 	#if DEBUG
-	virtual void dumpInfo () override;
+	void dumpInfo () override;
 	virtual void dumpHierarchy ();
 	#endif
 

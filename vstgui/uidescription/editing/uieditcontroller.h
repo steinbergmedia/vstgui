@@ -81,7 +81,7 @@ public:
 	static const UTF8StringPtr kEncodeBitmapsSettingsKey;
 	static const UTF8StringPtr kWriteWindowsRCFileSettingsKey;
 protected:
-	~UIEditController ();
+	~UIEditController () override;
 
 	static void resetScrollViewOffsets (CViewContainer* view);
 

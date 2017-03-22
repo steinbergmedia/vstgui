@@ -69,8 +69,8 @@ public:
 	}
 	
 protected:
-	virtual void setMin (float val) override { }
-	virtual void setMax (float val) override { }
+	void setMin (float val) override { }
+	void setMax (float val) override { }
 
 	void boundValues (float& x, float& y);
 	
