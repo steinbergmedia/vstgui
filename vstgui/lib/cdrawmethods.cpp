@@ -46,10 +46,10 @@ UTF8String createTruncatedText (TextTruncateMode mode, const UTF8String& text, C
 {
 	if (mode == kTextTruncateNone)
 		return text;
-	auto painter = font->getPlatformFont () ? font->getPlatformFont ()->getPainter () : 0;
+	auto painter = font->getPlatformFont () ? font->getPlatformFont ()->getPainter () : nullptr;
 	if (!painter)
 		return text;
-	CCoord width = painter->getStringWidth (0, text.getPlatformString (), true);
+	CCoord width = painter->getStringWidth (nullptr, text.getPlatformString (), true);
 	width += textInset.x * 2;
 	if (width > maxWidth)
 	{

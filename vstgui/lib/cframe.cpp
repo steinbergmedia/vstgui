@@ -939,9 +939,9 @@ void CFrame::onViewRemoved (CView* pView)
 	if (pImpl->focusView == pView)
 	{
 		if (pImpl->active)
-			setFocusView (0);
+			setFocusView (nullptr);
 		else
-			pImpl->focusView = 0;
+			pImpl->focusView = nullptr;
 	}
 	if (auto container = pView->asViewContainer ())
 	{
