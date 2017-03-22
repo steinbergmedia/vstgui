@@ -58,6 +58,11 @@ CScrollbar::CScrollbar (const CScrollbar& v)
 //-----------------------------------------------------------------------------
 CScrollbar::~CScrollbar ()
 {
+	if (timer)
+	{
+		timer->forget();
+		timer = 0;
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -230,6 +235,11 @@ CMouseEventResult CScrollbar::onMouseDown (CPoint &where, const CButtonState& bu
 	}
 	else if (scrollerArea.pointInside (where))
 	{
+		if (timer)
+		{
+			timer->forget();
+			timer = 0;
+		}
 		doStepping ();
 		timer = owned (new CVSTGUITimer (this, 250, true));
 		return kMouseEventHandled;
