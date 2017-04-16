@@ -60,17 +60,17 @@ public:
 			sstream.imbue (std::locale::classic ());
 			uint8_t c;
 			sstream >> c;
-			if (c != '{' || sstream.fail ())
+			if (sstream.fail () || c != '{')
 				return {};
 			CCoord x;
 			sstream >> x;
 			sstream >> c;
-			if (c != ';' || sstream.fail ())
+			if (sstream.fail () || c != ';')
 				return {};
 			CCoord y;
 			sstream >> y;
 			sstream >> c;
-			if (c != '}' || sstream.fail ())
+			if (sstream.fail () || c != '}')
 				return {};
 			return {CPoint (x, y)};
 		}
