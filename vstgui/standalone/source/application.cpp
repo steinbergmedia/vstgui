@@ -15,7 +15,7 @@ namespace Standalone {
 namespace Detail {
 
 //------------------------------------------------------------------------
-class Application : public IPlatformApplication
+class Application final : public IPlatformApplication
 {
 public:
 	static Application& instance ();
