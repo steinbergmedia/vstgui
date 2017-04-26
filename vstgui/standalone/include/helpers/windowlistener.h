@@ -24,5 +24,36 @@ public:
 };
 
 //------------------------------------------------------------------------
+/** %Window closed listener
+ *
+ *	@ingroup standalone
+ */
+class WindowClosedListener : public WindowListenerAdapter
+{
+public:
+	using Func = std::function<void (const IWindow&)>;
+
+	WindowClosedListener () {}
+
+	template <typename Func>
+	WindowClosedListener (Func func) : func (std::forward<Func> (func))
+	{
+	}
+
+	void onClosed (const IWindow& window) override
+	{
+		if (func)
+		{
+			func (window);
+			Func e {};
+			func.swap (e);
+			func = nullptr;
+		}
+	}
+
+	Func func;
+};
+
+//------------------------------------------------------------------------
 } // Standalone
 } // VSTGUI
