@@ -100,67 +100,59 @@ The CFontDesc class replaces the old font handling. You have now the possibilty 
 as long as it is available on the system. You should cache your own CFontDesc as this speeds up drawing on some systems.
 */
 //-----------------------------------------------------------------------------
-CFontDesc::CFontDesc (UTF8StringPtr inName, const CCoord& inSize, const int32_t inStyle)
-: name (0)
-, size (inSize)
+CFontDesc::CFontDesc (const UTF8String& inName, const CCoord& inSize, const int32_t inStyle)
+: size (inSize)
 , style (inStyle)
-, platformFont (0)
+, platformFont (nullptr)
 {
 	setName (inName);
 }
 
 //-----------------------------------------------------------------------------
 CFontDesc::CFontDesc (const CFontDesc& font)
-: name (0)
-, size (0)
+: size (0)
 , style (0)
-, platformFont (0)
+, platformFont (nullptr)
 {
 	*this = font;
 }
 
 //-----------------------------------------------------------------------------
-CFontDesc::~CFontDesc ()
+void CFontDesc::beforeDelete ()
 {
 	freePlatformFont ();
-	setName (0);
 }
 
 //-----------------------------------------------------------------------------
-IPlatformFont* CFontDesc::getPlatformFont ()
+auto CFontDesc::getPlatformFont () const -> const PlatformFontPtr
 {
-	if (platformFont == 0)
+	if (platformFont == nullptr)
 		platformFont = IPlatformFont::create (name, size, style);
 	return platformFont;
 }
 
 //-----------------------------------------------------------------------------
-IFontPainter* CFontDesc::getFontPainter ()
+const IFontPainter* CFontDesc::getFontPainter () const
 {
 	IPlatformFont* pf = getPlatformFont ();
 	if (pf)
 		return pf->getPainter ();
-	return 0;
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------
 void CFontDesc::freePlatformFont ()
 {
-	if (platformFont)
-	{
-		platformFont->forget ();
-		platformFont = 0;
-	}
+	platformFont = nullptr;
 }
 
 //-----------------------------------------------------------------------------
-void CFontDesc::setName (UTF8StringPtr newName)
+void CFontDesc::setName (const UTF8String& newName)
 {
-	if (name && newName && UTF8StringView (name) == newName)
+	if (name == newName)
 		return;
 
-	String::free (name);
-	name = String::newWithString (newName);
+	name = newName;
 	freePlatformFont ();
 }
 
@@ -194,7 +186,7 @@ bool CFontDesc::operator == (const CFontDesc& f) const
 		return false;
 	if (style != f.getStyle ())
 		return false;
-	if (UTF8StringView (name) != f.getName ())
+	if (name != f.getName ())
 		return false;
 	return true;
 }

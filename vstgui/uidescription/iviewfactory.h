@@ -45,7 +45,7 @@ class IUIDescription;
 class IViewFactory
 {
 public:
-	virtual ~IViewFactory () {}
+	virtual ~IViewFactory () noexcept = default;
 	
 	virtual CView* createView (const UIAttributes& attributes, const IUIDescription* description) const = 0;
 	virtual bool applyAttributeValues (CView* view, const UIAttributes& attributes, const IUIDescription* desc) const = 0;

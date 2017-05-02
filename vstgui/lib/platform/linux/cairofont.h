@@ -54,12 +54,12 @@ public:
 	double getDescent () const override;
 	double getLeading () const override;
 	double getCapHeight () const override;
-	IFontPainter* getPainter () override;
+	const IFontPainter* getPainter () const override;
 
 	void drawString (CDrawContext* context, IPlatformString* string, const CPoint& p,
-					 bool antialias = true) override;
+					 bool antialias = true) const override;
 	CCoord getStringWidth (CDrawContext* context, IPlatformString* string,
-						   bool antialias = true) override;
+						   bool antialias = true) const override;
 
 private:
 	struct Impl;

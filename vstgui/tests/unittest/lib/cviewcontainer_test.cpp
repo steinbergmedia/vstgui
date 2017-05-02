@@ -34,7 +34,9 @@
 
 #include "../../../lib/cframe.h"
 #include "../../../lib/iviewlistener.h"
+#include "../../../lib/ccolor.h"
 #include "../unittests.h"
+#include <vector>
 
 namespace VSTGUI {
 
@@ -146,7 +148,7 @@ TESTCASE(CViewContainerTest,
 
 	TEARDOWN(
 		container->forget();
-		container = 0;
+		container = nullptr;
 	);
 	
 	TEST(changeViewZOrder,
@@ -208,7 +210,7 @@ TESTCASE(CViewContainerTest,
 	);
 
 	TEST(removeView,
-		OwningPointer<CView> view = new CView (CRect (0, 0, 10, 10));
+		auto view = makeOwned<CView> (CRect (0, 0, 10, 10));
 		CView* view2 = new CView (CRect (0, 0, 10, 10));
 		
 		container->addView (view);
@@ -220,8 +222,8 @@ TESTCASE(CViewContainerTest,
 	);
 
 	TEST(removeAllViews,
-		OwningPointer<CView> view = new CView (CRect (0, 0, 10, 10));
-		OwningPointer<CView> view2 = new CView (CRect (0, 0, 10, 10));
+		auto view = makeOwned<CView> (CRect (0, 0, 10, 10));
+		auto view2 = makeOwned<CView> (CRect (0, 0, 10, 10));
 		
 		container->addView (view);
 		container->addView (view2);
@@ -233,7 +235,8 @@ TESTCASE(CViewContainerTest,
 	);
 	
 	TEST(advanceNextFocusView,
-		CFrame* frame = new CFrame (CRect (0, 0, 10, 10), 0);
+		CFrame* frame = new CFrame (CRect (0, 0, 10, 10), nullptr);
+		frame->onActivate (true);
 		CView* view1 = new CView (CRect (0, 0, 10, 10));
 		CView* view2 = new CView (CRect (0, 0, 10, 10));
 		CView* view3 = new CView (CRect (0, 0, 10, 10));
@@ -248,11 +251,11 @@ TESTCASE(CViewContainerTest,
 		container->remember ();
 		frame->attached (frame);
 
-		EXPECT(container->advanceNextFocusView (0, true) == true)
+		EXPECT(container->advanceNextFocusView (nullptr, true) == true)
 		EXPECT(frame->getFocusView () == view3)
 		EXPECT(container->advanceNextFocusView (view3) == false)
-		frame->setFocusView (0);
-		EXPECT(container->advanceNextFocusView (0) == true)
+		frame->setFocusView (nullptr);
+		EXPECT(container->advanceNextFocusView (nullptr) == true)
 		EXPECT(frame->getFocusView () == view1)
 		frame->close ();
 	);

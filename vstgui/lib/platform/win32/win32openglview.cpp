@@ -62,7 +62,7 @@ Win32OpenGLView::Win32OpenGLView (Win32Frame* win32Frame)
 }
 
 //-----------------------------------------------------------------------------
-Win32OpenGLView::~Win32OpenGLView ()
+Win32OpenGLView::~Win32OpenGLView () noexcept
 {
 	DeleteCriticalSection (&lock);
 	destroyWindowClass ();

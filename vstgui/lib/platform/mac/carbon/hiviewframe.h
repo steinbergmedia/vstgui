@@ -52,7 +52,7 @@ public:
 	static void setAddToContentView (bool addToContentView); // defaults to true
 
 	HIViewFrame (IPlatformFrameCallback* frame, const CRect& size, WindowRef parent);
-	~HIViewFrame ();
+	~HIViewFrame () noexcept;
 
 	HIViewRef getPlatformControl () const { return controlRef; }
 	const CPoint& getScrollOffset () const { return hiScrollOffset; }
@@ -69,16 +69,17 @@ public:
 	bool showTooltip (const CRect& rect, const char* utf8Text) override;
 	bool hideTooltip () override;
 	void* getPlatformRepresentation () const override { return controlRef; }
-	IPlatformTextEdit* createPlatformTextEdit (IPlatformTextEditCallback* textEdit) override;
-	IPlatformOptionMenu* createPlatformOptionMenu () override;
+	SharedPointer<IPlatformTextEdit> createPlatformTextEdit (IPlatformTextEditCallback* textEdit) override;
+	SharedPointer<IPlatformOptionMenu> createPlatformOptionMenu () override;
 #if VSTGUI_OPENGL_SUPPORT
-	IPlatformOpenGLView* createPlatformOpenGLView () override { return 0; } // not supported
+	SharedPointer<IPlatformOpenGLView> createPlatformOpenGLView () override { return nullptr; } // not supported
 #endif
-	IPlatformViewLayer* createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer = 0) override { return 0; } // not supported
-	COffscreenContext* createOffscreenContext (CCoord width, CCoord height, double scaleFactor = 1.) override;
+	SharedPointer<IPlatformViewLayer> createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer = nullptr) override { return 0; } // not supported
+	SharedPointer<COffscreenContext> createOffscreenContext (CCoord width, CCoord height, double scaleFactor = 1.) override;
 	DragResult doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap) override;
-	void setClipboard (IDataPackage* data) override;
-	IDataPackage* getClipboard () override;
+	void setClipboard (const SharedPointer<IDataPackage>& data) override;
+	SharedPointer<IDataPackage> getClipboard () override;
+	PlatformType getPlatformType () const override { return PlatformType::kWindowRef; }
 
 //-----------------------------------------------------------------------------
 protected:

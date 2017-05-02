@@ -47,7 +47,7 @@ CLineStyle::CLineStyle (LineCap _cap, LineJoin _join, CCoord _dashPhase, uint32_
 	if (_dashCount && _dashLengths)
 	{
 		for (uint32_t i = 0; i < _dashCount; i++)
-			dashLengths.push_back (_dashLengths[i]);
+			dashLengths.emplace_back (_dashLengths[i]);
 	}
 }
 
@@ -64,11 +64,6 @@ CLineStyle::CLineStyle (LineCap _cap, LineJoin _join, CCoord _dashPhase, const C
 CLineStyle::CLineStyle (const CLineStyle& lineStyle)
 {
 	*this = lineStyle;
-}
-
-//-----------------------------------------------------------------------------
-CLineStyle::~CLineStyle ()
-{
 }
 
 //-----------------------------------------------------------------------------
@@ -120,7 +115,7 @@ CLineStyle& CLineStyle::operator= (const CLineStyle& cls)
 
 //-----------------------------------------------------------------------------
 static const CCoord kDefaultOnOffDashLength[] = {1, 1};
-const CLineStyle kLineSolid;
+const CLineStyle kLineSolid {};
 const CLineStyle kLineOnOffDash (CLineStyle::kLineCapButt, CLineStyle::kLineJoinMiter, 0, 2, kDefaultOnOffDashLength);
 
 }

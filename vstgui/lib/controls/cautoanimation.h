@@ -51,8 +51,8 @@ public:
 	CAutoAnimation (const CRect& size, IControlListener* listener, int32_t tag, int32_t subPixmaps, CCoord heightOfOneImage, CBitmap* background, const CPoint& offset = CPoint (0, 0));
 	CAutoAnimation (const CAutoAnimation& autoAnimation);
 
-	virtual void draw (CDrawContext*) override;
-	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
+	void draw (CDrawContext*) override;
+	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
 
 	//-----------------------------------------------------------------------------
 	/// @name CAutoAnimation Methods
@@ -71,7 +71,7 @@ public:
 
 	CLASS_METHODS(CAutoAnimation, CControl)
 protected:
-	~CAutoAnimation ();
+	~CAutoAnimation () noexcept override = default;
 
 	CPoint	offset;
 

@@ -62,11 +62,9 @@ GTKTextEdit::GTKTextEdit (std::unique_ptr<Impl>&& inImpl, IPlatformTextEditCallb
 	impl->widget.width = static_cast<int> (size.getWidth ());
 	impl->widget.set_size_request (size.getWidth (), size.getHeight ());
 	impl->widget.set_can_focus (true);
-	if (auto text = callback->platformGetText ())
-	{
-		impl->widget.set_text (text);
-		impl->widget.select_region (0, impl->widget.get_text_length ());
-	}
+	const auto& text = callback->platformGetText ();
+	impl->widget.set_text (text.getString ());
+	impl->widget.select_region (0, impl->widget.get_text_length ());
 	impl->parent->put (impl->widget, size.left, size.top);
 	impl->parent->show_all ();
 	impl->widget.grab_focus ();
@@ -117,16 +115,16 @@ GTKTextEdit::~GTKTextEdit ()
 }
 
 //------------------------------------------------------------------------
-UTF8StringPtr GTKTextEdit::getText ()
+UTF8String GTKTextEdit::getText ()
 {
 	impl->text = impl->widget.get_text ().data ();
 	return impl->text.data ();
 }
 
 //------------------------------------------------------------------------
-bool GTKTextEdit::setText (UTF8StringPtr text)
+bool GTKTextEdit::setText (const UTF8String& text)
 {
-	impl->widget.set_text (text);
+	impl->widget.set_text (text.getString ());
 	return true;
 }
 

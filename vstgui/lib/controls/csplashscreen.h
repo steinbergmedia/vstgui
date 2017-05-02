@@ -52,8 +52,8 @@ public:
 	CSplashScreen (const CRect& size, IControlListener* listener, int32_t tag, CView* splashView);
 	CSplashScreen (const CSplashScreen& splashScreen);
 
-	virtual void draw (CDrawContext*) override;
-	virtual bool hitTest (const CPoint& where, const CButtonState& buttons = -1) override;
+	void draw (CDrawContext*) override;
+	bool hitTest (const CPoint& where, const CButtonState& buttons = -1) override;
 
 	//-----------------------------------------------------------------------------
 	/// @name CSplashScreen Methods
@@ -65,11 +65,11 @@ public:
 	virtual CRect& getDisplayArea (CRect& rect) const { rect = toDisplay; return rect; }	///< get the area in which the splash will be displayed
 	//@}
 
-	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
 
 	CLASS_METHODS(CSplashScreen, CControl)
 protected:
-	~CSplashScreen ();
+	~CSplashScreen () noexcept override;
 	using CControl::valueChanged;
 	void valueChanged (CControl *pControl) override;
 
@@ -89,7 +89,7 @@ class CAnimationSplashScreen : public CSplashScreen
 {
 public:
 	CAnimationSplashScreen (const CRect& size, int32_t tag, CBitmap* background, CBitmap* splashBitmap);
-	CAnimationSplashScreen (const CAnimationSplashScreen& splashScreen);
+	CAnimationSplashScreen (const CAnimationSplashScreen& splashScreen) = default;
 
 	//-----------------------------------------------------------------------------
 	/// @name CAnimationSplashScreen Methods
@@ -111,14 +111,14 @@ public:
 	virtual bool createAnimation (uint32_t animationIndex, uint32_t animationTime, CView* splashView, bool removeViewAnimation);
 	//@}
 
-	virtual void unSplash () override;
-	virtual void draw (CDrawContext*) override;
-	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
-	virtual bool sizeToFit () override;
-	virtual CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
+	void unSplash () override;
+	void draw (CDrawContext*) override;
+	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
+	bool sizeToFit () override;
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 
 protected:
-	~CAnimationSplashScreen ();
+	~CAnimationSplashScreen () noexcept override = default;
 
 	uint32_t animationIndex;
 	uint32_t animationTime;

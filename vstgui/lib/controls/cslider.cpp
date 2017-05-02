@@ -69,8 +69,8 @@ CSlider::CSlider (const CRect &rect, IControlListener* listener, int32_t tag, in
 , offset (offset)
 , pHandle (handle)
 , style (style)
-, minPos (iMinPos)
 , mode (kFreeClickMode)
+, minPos (iMinPos)
 , drawStyle (0)
 {
 	setDrawTransparentHandle (true);
@@ -167,6 +167,7 @@ CSlider::CSlider (const CSlider& v)
 , offsetHandle (v.offsetHandle)
 , pHandle (v.pHandle)
 , style (v.style)
+, mode (v.mode)
 , widthOfSlider (v.widthOfSlider)
 , heightOfSlider (v.heightOfSlider)
 , rangeHandle (v.rangeHandle)
@@ -178,9 +179,8 @@ CSlider::CSlider (const CSlider& v)
 , zoomFactor (v.zoomFactor)
 , bDrawTransparentEnabled (v.bDrawTransparentEnabled)
 , drawStyle (v.drawStyle)
-, mode (v.mode)
-, backColor (v.backColor)
 , frameColor (v.frameColor)
+, backColor (v.backColor)
 , valueColor (v.valueColor)
 {
 	if (pHandle)
@@ -188,7 +188,7 @@ CSlider::CSlider (const CSlider& v)
 }
 
 //------------------------------------------------------------------------
-CSlider::~CSlider ()
+CSlider::~CSlider () noexcept
 {
 	if (pHandle)
 		pHandle->forget ();
@@ -432,7 +432,7 @@ CMouseEventResult CSlider::onMouseDown (CPoint& where, const CButtonState& butto
 		return kMouseEventNotHandled;
 
 	CRect handleRect;
-	delta = calculateDelta (where, getMode () != kFreeClickMode ? &handleRect : 0);
+	delta = calculateDelta (where, getMode () != kFreeClickMode ? &handleRect : nullptr);
 	if (getMode () == kTouchMode && !handleRect.pointInside (where))
 		return kMouseEventNotHandled;
 
@@ -723,11 +723,6 @@ CVerticalSlider::CVerticalSlider (const CRect &rect, IControlListener* listener,
 {}
 
 //------------------------------------------------------------------------
-CVerticalSlider::CVerticalSlider (const CVerticalSlider& slider)
-: CSlider (slider)
-{}
-
-//------------------------------------------------------------------------
 // CHorizontalSlider
 //------------------------------------------------------------------------
 /*! @class CHorizontalSlider
@@ -767,11 +762,6 @@ CHorizontalSlider::CHorizontalSlider (const CRect &rect, IControlListener* liste
 //------------------------------------------------------------------------
 CHorizontalSlider::CHorizontalSlider (const CRect &rect, IControlListener* listener, int32_t tag, const CPoint& offsetHandle, int32_t rangeHandle, CBitmap* handle, CBitmap* background, const CPoint& offset, const int32_t style)
 : CSlider (rect, listener, tag, offsetHandle, rangeHandle, handle, background, offset, style|kHorizontal)
-{}
-
-//------------------------------------------------------------------------
-CHorizontalSlider::CHorizontalSlider (const CHorizontalSlider& slider)
-: CSlider (slider)
 {}
 
 } // namespace

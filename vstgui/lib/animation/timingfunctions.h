@@ -49,7 +49,7 @@ namespace Animation {
 class TimingFunctionBase : public ITimingFunction
 {
 public:
-	TimingFunctionBase (uint32_t length) : length (length) {}
+	explicit TimingFunctionBase (uint32_t length) : length (length) {}
 
 	uint32_t getLength () const { return length; }
 	bool isDone (uint32_t milliseconds) override { return milliseconds >= length; }
@@ -64,7 +64,7 @@ protected:
 class LinearTimingFunction : public TimingFunctionBase
 {
 public:
-	LinearTimingFunction (uint32_t length);
+	explicit LinearTimingFunction (uint32_t length);
 
 protected:
 	float getPosition (uint32_t milliseconds) override;
@@ -99,7 +99,7 @@ public:
 protected:
 	float getPosition (uint32_t milliseconds) override;
 
-	typedef std::map<uint32_t, float> PointMap;
+	using PointMap = std::map<uint32_t, float>;
 	PointMap points;
 };
 
@@ -111,7 +111,7 @@ class RepeatTimingFunction : public ITimingFunction
 {
 public:
 	RepeatTimingFunction (TimingFunctionBase* tf, int32_t repeatCount, bool autoReverse = true);
-	~RepeatTimingFunction ();
+	~RepeatTimingFunction () noexcept override;
 
 	float getPosition (uint32_t milliseconds) override;
 	bool isDone (uint32_t milliseconds) override;

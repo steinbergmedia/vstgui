@@ -36,11 +36,12 @@
 #define __nsviewframe__
 
 #include "../../../vstguifwd.h"
-#include "../../../cview.h"
-#include "../../iplatformframe.h"
 
 #if MAC_COCOA
 
+#include "../../../cview.h"
+#include "../../iplatformframe.h"
+#include "../../../idatapackage.h"
 #include <list>
 
 #ifdef __OBJC__
@@ -54,18 +55,32 @@ namespace VSTGUI {
 class CocoaTooltipWindow;
 
 //-----------------------------------------------------------------------------
-class NSViewFrame : public IPlatformFrame
+class CocoaFrameConfig : public IPlatformFrameConfig
 {
 public:
-	NSViewFrame (IPlatformFrameCallback* frame, const CRect& size, NSView* parent);
-	~NSViewFrame ();
+	enum Flags {
+		kNoCALayer = 1 << 0,
+	};
+	uint32_t flags {0};
+};
+
+//-----------------------------------------------------------------------------
+class NSViewFrame : public IPlatformFrame, public IPlatformFrameTouchBarExtension
+{
+public:
+	NSViewFrame (IPlatformFrameCallback* frame, const CRect& size, NSView* parent, IPlatformFrameConfig* config);
+	~NSViewFrame () noexcept override;
 
 	NSView* getPlatformControl () const { return nsView; }
 	IPlatformFrameCallback* getFrame () const { return frame; }
+	void* makeTouchBar () const;
 	
 	void setLastDragOperationResult (DragResult result) { lastDragOperationResult = result; }
 	void setIgnoreNextResignFirstResponder (bool state) { ignoreNextResignFirstResponder = state; }
 	bool getIgnoreNextResignFirstResponder () const { return ignoreNextResignFirstResponder; }
+
+	void setDragDataPackage (SharedPointer<IDataPackage>&& package) { dragDataPackage = std::move (package); }
+	const SharedPointer<IDataPackage>& getDragDataPackage () const { return dragDataPackage; }
 
 	void initTrackingArea ();
 	void cursorUpdate ();
@@ -83,16 +98,21 @@ public:
 	bool showTooltip (const CRect& rect, const char* utf8Text) override;
 	bool hideTooltip () override;
 	void* getPlatformRepresentation () const override { return nsView; }
-	IPlatformTextEdit* createPlatformTextEdit (IPlatformTextEditCallback* textEdit) override;
-	IPlatformOptionMenu* createPlatformOptionMenu () override;
+	SharedPointer<IPlatformTextEdit> createPlatformTextEdit (IPlatformTextEditCallback* textEdit) override;
+	SharedPointer<IPlatformOptionMenu> createPlatformOptionMenu () override;
 #if VSTGUI_OPENGL_SUPPORT
-	IPlatformOpenGLView* createPlatformOpenGLView () override;
+	SharedPointer<IPlatformOpenGLView> createPlatformOpenGLView () override;
 #endif
-	IPlatformViewLayer* createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer = 0) override;
-	COffscreenContext* createOffscreenContext (CCoord width, CCoord height, double scaleFactor) override;
+	SharedPointer<IPlatformViewLayer> createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer = nullptr) override;
+	SharedPointer<COffscreenContext> createOffscreenContext (CCoord width, CCoord height, double scaleFactor) override;
 	DragResult doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap) override;
-	void setClipboard (IDataPackage* data) override;
-	IDataPackage* getClipboard () override;
+	void setClipboard (const SharedPointer<IDataPackage>& data) override;
+	SharedPointer<IDataPackage> getClipboard () override;
+	PlatformType getPlatformType () const override { return PlatformType::kNSView; }
+
+	// IPlatformFrameTouchBarExtension
+	void setTouchBarCreator (const SharedPointer<ITouchBarCreator>& creator) override;
+	void recreateTouchBar () override;
 
 //-----------------------------------------------------------------------------
 protected:
@@ -100,6 +120,8 @@ protected:
 
 	NSView* nsView;
 	CocoaTooltipWindow* tooltipWindow;
+	SharedPointer<IDataPackage> dragDataPackage;
+	SharedPointer<ITouchBarCreator> touchBarCreator;
 
 	DragResult lastDragOperationResult;
 	bool ignoreNextResignFirstResponder;

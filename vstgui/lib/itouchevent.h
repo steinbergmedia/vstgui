@@ -69,8 +69,8 @@ public:
 		
 		Touch () : timeStamp (0), state (kUndefined), target (0), targetIsSingleTouch (false), tapCount (0) {}
 	};
-	typedef std::pair<int32_t, ITouchEvent::Touch> TouchPair;
-	typedef std::map<int32_t, Touch> TouchMap;
+	using TouchPair = std::pair<int32_t, ITouchEvent::Touch>;
+	using TouchMap = std::map<int32_t, Touch>;
 	
 	int32_t numTouches () const { return static_cast<int32_t> (touches.size ()); }
 	
@@ -102,7 +102,7 @@ public:
 		TouchMap::iterator it = touches.find (identifier);
 		if (it != touches.end () && it->second.target == view)
 		{
-			it->second.target = 0;
+			it->second.target = nullptr;
 			return true;
 		}
 		return false;
@@ -111,7 +111,7 @@ public:
 	virtual double getTimeStamp () const = 0;
 protected:
 	ITouchEvent () {}
-	virtual ~ITouchEvent () {}
+	virtual ~ITouchEvent () noexcept = default;
 
 	TouchMap touches;
 };

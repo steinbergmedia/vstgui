@@ -50,9 +50,9 @@ namespace VSTGUI {
 class CShadowViewContainer : public CViewContainer, public IScaleFactorChangedListener, public IViewContainerListenerAdapter
 {
 public:
-	CShadowViewContainer (const CRect& size);
+	explicit CShadowViewContainer (const CRect& size);
 	CShadowViewContainer (const CShadowViewContainer& copy);
-	~CShadowViewContainer ();
+	~CShadowViewContainer () noexcept override;
 
 	//-----------------------------------------------------------------------------
 	/// @name CShadowViewContainer Methods
@@ -78,13 +78,15 @@ public:
 	void setViewSize (const CRect& rect, bool invalid = true) override;
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 
-	void onScaleFactorChanged (CFrame* frame) override;
+	void onScaleFactorChanged (CFrame* frame, double newScaleFactor) override;
 
 	CLASS_METHODS(CShadowViewContainer, CViewContainer)
 protected:
 	void viewContainerViewAdded (CViewContainer* container, CView* view) override;
 	void viewContainerViewRemoved (CViewContainer* container, CView* view) override;
 	void viewContainerViewZOrderChanged (CViewContainer* container, CView* view) override;
+
+	void beforeDelete () override;
 
 	bool dontDrawBackground;
 	CPoint shadowOffset;

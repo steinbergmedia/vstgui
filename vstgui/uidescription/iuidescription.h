@@ -49,7 +49,7 @@ class IViewFactory;
 class IUIDescription
 {
 public:
-	virtual ~IUIDescription () {}
+	virtual ~IUIDescription () noexcept = default;
 
 	virtual CView* createView (UTF8StringPtr name, IController* controller) const = 0;
 

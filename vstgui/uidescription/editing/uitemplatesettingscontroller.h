@@ -39,6 +39,7 @@
 
 #if VSTGUI_LIVE_EDITING
 
+#include "../icontroller.h"
 #include "../../lib/controls/ctextedit.h"
 #include <string>
 
@@ -49,7 +50,7 @@ class UITemplateSettingsController : public CBaseObject, public IController
 {
 public:
 	UITemplateSettingsController (const std::string& templateName, UIDescription* description);
-	~UITemplateSettingsController ();
+	~UITemplateSettingsController () override = default;
 
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;

@@ -36,6 +36,7 @@
 #define __cfont__
 
 #include "vstguifwd.h"
+#include "cstring.h"
 #include <string>
 #include <list>
 
@@ -57,28 +58,30 @@ enum CTxtFace
 // CFontDesc Declaration
 //! @brief font class
 //-----------------------------------------------------------------------------
-class CFontDesc : public CBaseObject
+class CFontDesc : public AtomicReferenceCounted
 {
 public:
-	CFontDesc (UTF8StringPtr name = 0, const CCoord& size = 0, const int32_t style = 0);
+	using PlatformFontPtr = SharedPointer<IPlatformFont>;
+	
+	CFontDesc (const UTF8String& name = "", const CCoord& size = 0, const int32_t style = 0);
 	CFontDesc (const CFontDesc& font);
-	~CFontDesc ();
+	~CFontDesc () noexcept override = default;
 
 	//-----------------------------------------------------------------------------
 	/// @name Size, Name and Style Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	UTF8StringPtr getName () const { return name; }		///< get the name of the font
-	const CCoord& getSize () const { return size; }		///< get the height of the font
+	const UTF8String& getName () const { return name; }		///< get the name of the font
+	const CCoord& getSize () const { return size; }			///< get the height of the font
 	const int32_t& getStyle () const { return style; }		///< get the style of the font
 
-	virtual void setName (UTF8StringPtr newName);			///< set the name of the font
-	virtual void setSize (CCoord newSize);				///< set the height of the font
+	virtual void setName (const UTF8String& newName);		///< set the name of the font
+	virtual void setSize (CCoord newSize);					///< set the height of the font
 	virtual void setStyle (int32_t newStyle);				///< set the style of the font @sa CTxtFace
 	//@}
 
-	virtual IPlatformFont* getPlatformFont ();
-	virtual IFontPainter* getFontPainter ();
+	virtual const PlatformFontPtr getPlatformFont () const;
+	virtual const IFontPainter* getFontPainter () const;
 
 	virtual CFontDesc& operator= (const CFontDesc&);
 	virtual bool operator== (const CFontDesc&) const;
@@ -86,17 +89,17 @@ public:
 	
 	static void cleanup ();
 
-	CLASS_METHODS(CFontDesc, CBaseObject)
 protected:
-	IPlatformFont* platformFont;
-	
+	void beforeDelete () override;
 	virtual void freePlatformFont ();
-	UTF8StringBuffer name;
+
+	UTF8String name;
 	CCoord size;
 	int32_t style;
+	mutable PlatformFontPtr platformFont;
 };
 
-typedef CFontDesc*	CFontRef;
+using CFontRef = CFontDesc*;
 
 //-----------------------------------------------------------------------------
 // Global fonts

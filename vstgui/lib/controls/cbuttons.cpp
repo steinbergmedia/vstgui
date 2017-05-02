@@ -76,10 +76,6 @@ COnOffButton::COnOffButton (const COnOffButton& v)
 }
 
 //------------------------------------------------------------------------
-COnOffButton::~COnOffButton ()
-{}
-
-//------------------------------------------------------------------------
 void COnOffButton::draw (CDrawContext *pContext)
 {
 	if (getDrawBackground ())
@@ -220,10 +216,6 @@ CKickButton::CKickButton (const CKickButton& v)
 }
 
 //------------------------------------------------------------------------
-CKickButton::~CKickButton ()
-{}
-
-//------------------------------------------------------------------------
 void CKickButton::draw (CDrawContext *pContext)
 {
 	CPoint where (offset.x, offset.y);
@@ -361,18 +353,14 @@ If the bitmap is set, the bitmap must contain 6 states of the checkbox in the fo
 //------------------------------------------------------------------------
 CCheckBox::CCheckBox (const CRect& size, IControlListener* listener, int32_t tag, UTF8StringPtr title, CBitmap* bitmap, int32_t style)
 : CControl (size, listener, tag, bitmap)
-, title (0)
 , style (style)
-, font (0)
 , fontColor (kWhiteCColor)
-, hilight (false)
+, font (kSystemFont)
 {
 	setTitle (title);
-	setFont (kSystemFont);
 	setBoxFillColor (kWhiteCColor);
 	setBoxFrameColor (kBlackCColor);
 	setCheckMarkColor (kRedCColor);
-	font->remember ();
 	setWantsFocus (true);
 	if (style & kAutoSizeToFit)
 		sizeToFit ();
@@ -381,29 +369,19 @@ CCheckBox::CCheckBox (const CRect& size, IControlListener* listener, int32_t tag
 //------------------------------------------------------------------------
 CCheckBox::CCheckBox (const CCheckBox& checkbox)
 : CControl (checkbox)
-, title (0)
 , style (checkbox.style)
-, font (0)
 , fontColor (checkbox.fontColor)
-, hilight (false)
+, font (checkbox.font)
 {
 	setTitle (checkbox.title);
-	setFont (checkbox.font);
 	setBoxFillColor (checkbox.boxFillColor);
 	setBoxFrameColor (checkbox.boxFrameColor);
 	setCheckMarkColor (checkbox.checkMarkColor);
-	font->remember ();
 	setWantsFocus (true);
 }
 
 //------------------------------------------------------------------------
-CCheckBox::~CCheckBox ()
-{
-	setFont (0);
-}
-
-//------------------------------------------------------------------------
-void CCheckBox::setTitle (UTF8StringPtr newTitle)
+void CCheckBox::setTitle (const UTF8String& newTitle)
 {
 	title = newTitle;
 	if (style & kAutoSizeToFit)
@@ -413,12 +391,8 @@ void CCheckBox::setTitle (UTF8StringPtr newTitle)
 //------------------------------------------------------------------------
 void CCheckBox::setFont (CFontRef newFont)
 {
-	if (font)
-		font->forget ();
 	font = newFont;
-	if (font)
-		font->remember ();
-	if (style & kAutoSizeToFit)
+	if (font && style & kAutoSizeToFit)
 		sizeToFit ();
 }
 
@@ -468,8 +442,7 @@ bool CCheckBox::sizeToFit ()
 {
 	if (title.empty ())
 		return false;
-	IFontPainter* painter = font ? font->getFontPainter () : 0;
-	if (painter)
+	if (auto painter = font->getFontPainter ())
 	{
 		CRect fitSize (getViewSize ());
 		if (getDrawBackground ())
@@ -482,7 +455,7 @@ bool CCheckBox::sizeToFit ()
 			fitSize.setWidth (fitSize.getHeight ());
 		}
 		fitSize.right += kCheckBoxTitleMargin;
-		fitSize.right += painter->getStringWidth (0, CString (title).getPlatformString (), true);
+		fitSize.right += painter->getStringWidth (nullptr, UTF8String (title).getPlatformString (), true);
 		setViewSize (fitSize);
 		setMouseableArea (fitSize);
 		return true;
@@ -694,18 +667,16 @@ int32_t CCheckBox::onKeyDown (VstKeyCode& keyCode)
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 CTextButton::CTextButton (const CRect& size, IControlListener* listener, int32_t tag, UTF8StringPtr title, Style style)
-: CControl (size, listener, tag, 0)
-, title (title)
-, font (0)
-, _path (0)
+: CControl (size, listener, tag, nullptr)
+, font (kSystemFont)
 , frameWidth (1.)
 , roundRadius (6.)
 , textMargin (0.)
-, iconPosition (CDrawMethods::kIconLeft)
 , horiTxtAlign (kCenterText)
+, iconPosition (CDrawMethods::kIconLeft)
 , style (style)
+, title (title)
 {
-	setFont (kSystemFont);
 	setTextColor (kBlackCColor);
 	setTextColorHighlighted (kWhiteCColor);
 	
@@ -756,7 +727,7 @@ CBitmap* CTextButton::getIconHighlighted () const
 }
 
 //------------------------------------------------------------------------
-void CTextButton::setTitle (UTF8StringPtr newTitle)
+void CTextButton::setTitle (const UTF8String& newTitle)
 {
 	title = newTitle;
 	invalid ();
@@ -765,13 +736,7 @@ void CTextButton::setTitle (UTF8StringPtr newTitle)
 //------------------------------------------------------------------------
 void CTextButton::setFont (CFontRef newFont)
 {
-	if (newFont == 0)
-		return;
-	if (font)
-		font->forget ();
 	font = newFont;
-	if (font)
-		font->remember ();
 	invalid ();
 }
 
@@ -895,12 +860,11 @@ bool CTextButton::sizeToFit ()
 {
 	if (title.empty ())
 		return false;
-	IFontPainter* painter = font ? font->getFontPainter () : 0;
-	if (painter)
+	if (auto painter = font->getFontPainter ())
 	{
 		CRect fitSize (getViewSize ());
 		fitSize.right = fitSize.left + (roundRadius + 1.) * 4.;
-		fitSize.right += painter->getStringWidth (0, title.getPlatformString (), true);
+		fitSize.right += painter->getStringWidth (nullptr, title.getPlatformString (), true);
 		setViewSize (fitSize);
 		setMouseableArea (fitSize);
 		return true;
@@ -959,11 +923,11 @@ bool CTextButton::drawFocusOnTop ()
 //------------------------------------------------------------------------
 CGraphicsPath* CTextButton::getPath (CDrawContext* context)
 {
-	if (_path == 0)
+	if (_path == nullptr)
 	{
 		CRect r (getViewSize ());
 		r.inset (frameWidth / 2., frameWidth / 2.);
-		_path = context->createRoundRectGraphicsPath (r, roundRadius);
+		_path = owned (context->createRoundRectGraphicsPath (r, roundRadius));
 	}
 	return _path;
 }
@@ -971,11 +935,7 @@ CGraphicsPath* CTextButton::getPath (CDrawContext* context)
 //------------------------------------------------------------------------
 void CTextButton::invalidPath ()
 {
-	if (_path)
-	{
-		_path->forget ();
-		_path = 0;
-	}
+	_path = nullptr;
 }
 
 //------------------------------------------------------------------------

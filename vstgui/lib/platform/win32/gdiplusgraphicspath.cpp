@@ -64,7 +64,7 @@ GdiplusGraphicsPath::GdiplusGraphicsPath (const GdiPlusFont* font, UTF8StringPtr
 }
 
 //-----------------------------------------------------------------------------
-GdiplusGraphicsPath::~GdiplusGraphicsPath ()
+GdiplusGraphicsPath::~GdiplusGraphicsPath () noexcept
 {
 	if (platformPath)
 		::delete platformPath;

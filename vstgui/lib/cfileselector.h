@@ -36,6 +36,7 @@
 #define __cfileselector__
 
 #include "vstguifwd.h"
+#include "cstring.h"
 #include <list>
 #include <vector>
 #include <functional>
@@ -46,32 +47,30 @@ namespace VSTGUI {
 // CFileExtension Declaration
 //! @brief file extension description
 //-----------------------------------------------------------------------------
-class CFileExtension : public CBaseObject
+class CFileExtension
 {
 public:
-	CFileExtension (UTF8StringPtr description, UTF8StringPtr extension, UTF8StringPtr mimeType = 0, int32_t macType = 0, UTF8StringPtr uti = 0);
+	CFileExtension (const UTF8String& description, const UTF8String& extension, const UTF8String& mimeType = "", int32_t macType = 0, const UTF8String& uti = "");
 	CFileExtension (const CFileExtension& ext);
-	~CFileExtension ();
+	~CFileExtension () noexcept;
 
-	UTF8StringPtr getDescription () const { return description; }
-	UTF8StringPtr getExtension () const { return extension; }
-	UTF8StringPtr getMimeType () const { return mimeType; }
-	UTF8StringPtr getUTI () const { return uti; }
+	const UTF8String& getDescription () const { return description; }
+	const UTF8String& getExtension () const { return extension; }
+	const UTF8String& getMimeType () const { return mimeType; }
+	const UTF8String& getUTI () const { return uti; }
 	int32_t getMacType () const { return macType; }
 
 	bool operator== (const CFileExtension& ext) const;
 //-----------------------------------------------------------------------------
-	CLASS_METHODS(CFileExtension, CBaseObject)
-//-----------------------------------------------------------------------------
 	CFileExtension (CFileExtension&& ext) noexcept;
 	CFileExtension& operator=(CFileExtension&& ext) noexcept;
 protected:
-	void init (UTF8StringPtr description, UTF8StringPtr extension, UTF8StringPtr mimeType, UTF8StringPtr uti);
+	void init (const UTF8String& description, const UTF8String& extension, const UTF8String& mimeType, const UTF8String& uti);
 	
-	UTF8StringBuffer description;
-	UTF8StringBuffer extension;
-	UTF8StringBuffer mimeType;
-	UTF8StringBuffer uti;
+	UTF8String description;
+	UTF8String extension;
+	UTF8String mimeType;
+	UTF8String uti;
 	int32_t macType;
 };
 
@@ -126,9 +125,9 @@ public:
 	/// @name CFileSelector running
 	//-----------------------------------------------------------------------------
 	//@{
-	static CNewFileSelector* create (CFrame* parent = 0, Style style = kSelectFile); ///< create a new instance
+	static CNewFileSelector* create (CFrame* parent = nullptr, Style style = kSelectFile); ///< create a new instance
 
-	typedef std::function<void(CNewFileSelector*)> CallbackFunc;
+	using CallbackFunc = std::function<void(CNewFileSelector*)>;
 	bool run (CallbackFunc&& callback);
 	bool run (CBaseObject* delegate);	///< the delegate will get a kSelectEndMessage throu the notify method where the sender is this CNewFileSelector object
 	void cancel ();						///< cancel running the file selector
@@ -139,9 +138,9 @@ public:
 	/// @name CFileSelector setup
 	//-----------------------------------------------------------------------------
 	//@{
-	void setTitle (UTF8StringPtr title);						///< set title of file selector
-	void setInitialDirectory (UTF8StringPtr path);				///< set initial directory (UTF8 string)
-	void setDefaultSaveName (UTF8StringPtr name);				///< set initial save name (UTF8 string)
+	void setTitle (const UTF8String& title);					///< set title of file selector
+	void setInitialDirectory (const UTF8String& path);			///< set initial directory (UTF8 string)
+	void setDefaultSaveName (const UTF8String& name);			///< set initial save name (UTF8 string)
 	void setDefaultExtension (const CFileExtension& extension);	///< set default file extension
 	void setAllowMultiFileSelection (bool state);				///< set allow multi file selection (only valid for kSelectFile selector style)
 	void addFileExtension (const CFileExtension& extension);	///< add a file extension
@@ -162,23 +161,23 @@ public:
 //-----------------------------------------------------------------------------
 	CLASS_METHODS_NOCOPY(CNewFileSelector, CBaseObject)
 protected:
-	CNewFileSelector (CFrame* frame = 0);
-	~CNewFileSelector ();
+	explicit CNewFileSelector (CFrame* frame = nullptr);
+	~CNewFileSelector () noexcept override;
 
 	virtual bool runInternal (CBaseObject* delegate) = 0;
 	virtual void cancelInternal () = 0;
 	virtual bool runModalInternal () = 0;
 
 	CFrame* frame;
-	UTF8StringBuffer title;
-	UTF8StringBuffer initialPath;
-	UTF8StringBuffer defaultSaveName;
+	UTF8String title;
+	UTF8String initialPath;
+	UTF8String defaultSaveName;
 	const CFileExtension* defaultExtension;
 	bool allowMultiFileSelection;
 
-	typedef std::list<CFileExtension> FileExtensionList;
+	using FileExtensionList = std::list<CFileExtension>;
 	FileExtensionList extensions;
-	std::vector<UTF8StringBuffer> result;
+	std::vector<UTF8String> result;
 };
 
 } // namespace

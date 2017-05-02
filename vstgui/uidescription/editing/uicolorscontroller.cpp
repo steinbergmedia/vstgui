@@ -39,10 +39,10 @@
 #include "uicolor.h"
 #include "uicolorchoosercontroller.h"
 #include "uieditcontroller.h"
-#include "uisearchtextfield.h"
 #include "uibasedatasource.h"
 #include "../../lib/coffscreencontext.h"
 #include "../../lib/idatapackage.h"
+#include "../../lib/controls/csearchtextedit.h"
 #include <sstream>
 
 namespace VSTGUI {
@@ -52,7 +52,7 @@ class UIColorsDataSource : public UIBaseDataSource
 {
 public:
 	UIColorsDataSource (UIDescription* description, IActionPerformer* actionPerformer, UIColor* color);
-	~UIColorsDataSource ();
+	~UIColorsDataSource () override;
 	
 protected:
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
@@ -74,6 +74,8 @@ protected:
 	void dbOnDragExitCell (int32_t row, int32_t column, IDataPackage* drag, CDataBrowser* browser) override;
 	bool dbOnDropInCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser) override;
 
+	CCoord getColorIconWith ();
+	
 	SharedPointer<UIColor> color;
 	bool editing;
 	std::string colorString;
@@ -107,7 +109,7 @@ CMessageResult UIColorsDataSource::notify (CBaseObject* sender, IdStringPtr mess
 			int32_t selectedRow = dataBrowser->getSelectedRow ();
 			if (selectedRow != CDataBrowser::kNoSelection)
 			{
-				actionPerformer->beginLiveColorChange (names.at (static_cast<uint32_t> (selectedRow)).c_str ());
+				actionPerformer->beginLiveColorChange (names.at (static_cast<uint32_t> (selectedRow)).data ());
 				editing = true;
 			}
 		}
@@ -116,7 +118,7 @@ CMessageResult UIColorsDataSource::notify (CBaseObject* sender, IdStringPtr mess
 			int32_t selectedRow = dataBrowser->getSelectedRow ();
 			if (selectedRow != CDataBrowser::kNoSelection)
 			{
-				actionPerformer->endLiveColorChange (names.at (static_cast<uint32_t> (selectedRow)).c_str ());
+				actionPerformer->endLiveColorChange (names.at (static_cast<uint32_t> (selectedRow)).data ());
 				editing = false;
 			}
 		}
@@ -127,7 +129,7 @@ CMessageResult UIColorsDataSource::notify (CBaseObject* sender, IdStringPtr mess
 				int32_t selectedRow = dataBrowser->getSelectedRow ();
 				if (selectedRow != CDataBrowser::kNoSelection)
 				{
-					actionPerformer->performLiveColorChange (names.at (static_cast<uint32_t> (selectedRow)).c_str (), color->base ());
+					actionPerformer->performLiveColorChange (names.at (static_cast<uint32_t> (selectedRow)).data (), color->base ());
 					dataBrowser->setSelectedRow (selectedRow);
 				}
 			}
@@ -174,7 +176,7 @@ void UIColorsDataSource::dbSelectionChanged (CDataBrowser* browser)
 	if (selectedRow != CDataBrowser::kNoSelection)
 	{
 		CColor c;
-		if (description->getColor (names.at (static_cast<uint32_t> (selectedRow)).c_str (), c))
+		if (description->getColor (names.at (static_cast<uint32_t> (selectedRow)).data (), c))
 		{
 			if (c != color->base ())
 			{
@@ -185,19 +187,28 @@ void UIColorsDataSource::dbSelectionChanged (CDataBrowser* browser)
 }
 
 //----------------------------------------------------------------------------------------------------
+CCoord UIColorsDataSource::getColorIconWith ()
+{
+	return dataBrowser ? dbGetRowHeight (dataBrowser) : 0.;
+}
+
+//----------------------------------------------------------------------------------------------------
 void UIColorsDataSource::dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser)
 {
-	GenericStringListDataBrowserSource::dbDrawCell (context, size, row, column, flags, browser);
+	GenericStringListDataBrowserSource::drawRowBackground (context, size, row, flags, browser);
+	CRect r (size);
+	r.right -= getColorIconWith ();
+	GenericStringListDataBrowserSource::drawRowString (context, r, row, flags, browser);
 	CColor color;
-	if (description->getColor (names.at (static_cast<uint32_t> (row)).c_str (), color))
+	if (description->getColor (names.at (static_cast<uint32_t> (row)).data (), color))
 	{
 		context->setFillColor (color);
 		context->setFrameColor (dragRow == row ? kRedCColor : kBlackCColor);
 		context->setLineWidth (1);
 		context->setLineStyle (kLineSolid);
 		context->setDrawMode (kAliasing);
-		CRect r (size);
-		r.left = r.right - r.getHeight ();
+		r = size;
+		r.left = r.right - getColorIconWith ();
 		r.inset (2, 2);
 		context->drawRect (r, kDrawFilledAndStroked);
 	}
@@ -208,7 +219,7 @@ void UIColorsDataSource::dbCellSetupTextEdit (int32_t row, int32_t column, CText
 {
 	UIBaseDataSource::dbCellSetupTextEdit(row, column, control, browser);
 	CRect r (control->getViewSize ());
-	r.right -= r.getHeight ();
+	r.right -= getColorIconWith ();
 	control->setViewSize (r);
 }
 
@@ -288,21 +299,21 @@ bool UIColorsDataSource::dbOnDropInCell (int32_t row, int32_t column, const CPoi
 		std::string gv (colorString.substr (3, 2));
 		std::string bv (colorString.substr (5, 2));
 		std::string av (colorString.substr (7, 2));
-		dragColor.red = (uint8_t)strtol (rv.c_str (), 0, 16);
-		dragColor.green = (uint8_t)strtol (gv.c_str (), 0, 16);
-		dragColor.blue = (uint8_t)strtol (bv.c_str (), 0, 16);
-		dragColor.alpha = (uint8_t)strtol (av.c_str (), 0, 16);
+		dragColor.red = (uint8_t)strtol (rv.data (), nullptr, 16);
+		dragColor.green = (uint8_t)strtol (gv.data (), nullptr, 16);
+		dragColor.blue = (uint8_t)strtol (bv.data (), nullptr, 16);
+		dragColor.alpha = (uint8_t)strtol (av.data (), nullptr, 16);
 		
 		if (row >= 0)
 		{
-			actionPerformer->performColorChange (names[static_cast<uint32_t> (row)].c_str (), dragColor);
+			actionPerformer->performColorChange (names[static_cast<uint32_t> (row)].data (), dragColor);
 		}
 		else
 		{
 			std::string newName (filterString.empty () ? "New" : filterString);
 			if (createUniqueName (newName))
 			{
-				actionPerformer->performColorChange (newName.c_str (), dragColor);
+				actionPerformer->performColorChange (newName.data (), dragColor);
 			}
 		}
 		return true;
@@ -317,8 +328,8 @@ UIColorsController::UIColorsController (IController* baseController, UIDescripti
 : DelegationController (baseController)
 , editDescription (description)
 , actionPerformer (actionPerformer)
-, dataSource (0)
-, color (new UIColor)
+, dataSource (nullptr)
+, color (makeOwned<UIColor> ())
 {
 	dataSource = new UIColorsDataSource (editDescription, actionPerformer, color);
 	UIEditController::setupDataSource (dataSource);
@@ -348,7 +359,7 @@ CView* UIColorsController::createView (const UIAttributes& attributes, const IUI
 //----------------------------------------------------------------------------------------------------
 CView* UIColorsController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
 {
-	UISearchTextField* searchField = dynamic_cast<UISearchTextField*>(view);
+	auto searchField = dynamic_cast<CSearchTextEdit*>(view);
 	if (searchField && searchField->getTag () == kSearchTag)
 	{
 		dataSource->setSearchFieldControl (searchField);

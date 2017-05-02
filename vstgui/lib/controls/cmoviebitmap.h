@@ -51,14 +51,14 @@ public:
 	CMovieBitmap (const CRect& size, IControlListener* listener, int32_t tag, int32_t subPixmaps, CCoord heightOfOneImage, CBitmap* background, const CPoint& offset = CPoint (0, 0));
 	CMovieBitmap (const CMovieBitmap& movieBitmap);
 
-	virtual void draw (CDrawContext*) override;
-	virtual bool sizeToFit () override;
+	void draw (CDrawContext*) override;
+	bool sizeToFit () override;
 
 	void setNumSubPixmaps (int32_t numSubPixmaps) override { IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps); invalid (); }
 
 	CLASS_METHODS(CMovieBitmap, CControl)
 protected:
-	~CMovieBitmap ();
+	~CMovieBitmap () noexcept override = default;
 	CPoint	offset;
 };
 

@@ -44,7 +44,7 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-typedef bool (*CParamDisplayValueToStringProc) (float value, char utf8String[256], void* userData);
+using CParamDisplayValueToStringProc = bool (*) (float value, char utf8String[256], void* userData);
 
 //-----------------------------------------------------------------------------
 // CParamDisplay Declaration
@@ -54,7 +54,7 @@ typedef bool (*CParamDisplayValueToStringProc) (float value, char utf8String[256
 class CParamDisplay : public CControl
 {
 public:
-	CParamDisplay (const CRect& size, CBitmap* background = 0, const int32_t style = 0);
+	CParamDisplay (const CRect& size, CBitmap* background = nullptr, const int32_t style = 0);
 	CParamDisplay (const CParamDisplay& paramDisplay);
 	
 	//-----------------------------------------------------------------------------
@@ -76,6 +76,9 @@ public:
 	virtual void setShadowColor (CColor color);
 	CColor getShadowColor () const { return shadowColor; }
 
+	virtual void setShadowTextOffset (const CPoint& offset);
+	CPoint getShadowTextOffset () const { return shadowTextOffset; }
+
 	virtual void setAntialias (bool state) { bAntialias = state; }
 	bool getAntialias () const { return bAntialias; }
 
@@ -94,13 +97,17 @@ public:
 	virtual void setFrameWidth (const CCoord& width);
 	CCoord getFrameWidth () const { return frameWidth; }
 
-	typedef CParamDisplay	ValueToStringUserData;
-
-	typedef std::function<bool(float value, char utf8String[256], CParamDisplay* display)> ValueToStringFunction;
+	using ValueToStringUserData = CParamDisplay;
+	using ValueToStringFunction = std::function<bool(float value, char utf8String[256], CParamDisplay* display)>;
 	
 	void setValueToStringFunction (const ValueToStringFunction& valueToStringFunc);
 	void setValueToStringFunction (ValueToStringFunction&& valueToStringFunc);
 
+	using ValueToStringFunction2 = std::function<bool (float value, std::string& result, CParamDisplay* display)>;
+
+	void setValueToStringFunction2 (const ValueToStringFunction2& valueToStringFunc);
+	void setValueToStringFunction2 (ValueToStringFunction2&& valueToStringFunc);
+	
 	virtual void setStyle (int32_t val);
 	int32_t getStyle () const { return style; }
 
@@ -115,15 +122,15 @@ public:
 
 	CLASS_METHODS(CParamDisplay, CControl)
 protected:
-	~CParamDisplay ();
-	virtual void drawBack (CDrawContext* pContext, CBitmap* newBack = 0);
+	~CParamDisplay () noexcept override;
+	virtual void drawBack (CDrawContext* pContext, CBitmap* newBack = nullptr);
 
 	virtual void drawPlatformText (CDrawContext* pContext, IPlatformString* string);
 	virtual void drawPlatformText (CDrawContext* pContext, IPlatformString* string, const CRect& size);
 
 	virtual void drawStyleChanged ();
 
-	ValueToStringFunction valueToStringFunction;
+	ValueToStringFunction2 valueToStringFunction;
 
 	CHoriTxtAlign horiTxtAlign;
 	int32_t		style;
@@ -135,6 +142,7 @@ protected:
 	CColor		frameColor;
 	CColor		shadowColor;
 	CPoint		textInset;
+	CPoint		shadowTextOffset {1., 1.};
 	CCoord		roundRectRadius;
 	CCoord		frameWidth;
 	double		textRotation;

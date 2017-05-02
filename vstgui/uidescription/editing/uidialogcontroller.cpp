@@ -63,12 +63,6 @@ UIDialogController::UIDialogController (IController* baseController, CFrame* fra
 }
 
 //----------------------------------------------------------------------------------------------------
-UIDialogController::~UIDialogController ()
-{
-	
-}
-
-//----------------------------------------------------------------------------------------------------
 void UIDialogController::run (UTF8StringPtr _templateName, UTF8StringPtr _dialogTitle, UTF8StringPtr _button1, UTF8StringPtr _button2, IController* _dialogController, UIDescription* _description)
 {
 	collectOpenGLViews (frame);
@@ -76,10 +70,10 @@ void UIDialogController::run (UTF8StringPtr _templateName, UTF8StringPtr _dialog
 	templateName = _templateName;
 	dialogTitle = _dialogTitle;
 	dialogButton1 = _button1;
-	dialogButton2 = _button2 != 0 ? _button2 : "";
+	dialogButton2 = _button2 != nullptr ? _button2 : "";
 	dialogController = dynamic_cast<CBaseObject*> (_dialogController);
 	dialogDescription = _description;
-	CView* view = UIEditController::getEditorDescription ().createView ("dialog", this);
+	CView* view = UIEditController::getEditorDescription ()->createView ("dialog", this);
 	if (view)
 	{
 		CLayeredViewContainer* layeredView = dynamic_cast<CLayeredViewContainer*>(view);
@@ -90,6 +84,7 @@ void UIDialogController::run (UTF8StringPtr _templateName, UTF8StringPtr _dialog
 		size.right += sizeDiff.x;
 		size.bottom += sizeDiff.y;
 		CRect frameSize = frame->getViewSize ();
+		frame->getTransform ().inverse ().transform (frameSize);
 		size.centerInside (frameSize);
 		size.makeIntegral ();
 		view->setViewSize (size);
@@ -131,16 +126,16 @@ void UIDialogController::close ()
 	frame->unregisterKeyboardHook (this);
 	frame->unregisterViewListener (this);
 	if (button1)
-		button1->setListener (0);
+		button1->setListener (nullptr);
 	if (button2)
-		button2->setListener (0);
+		button2->setListener (nullptr);
 	setOpenGLViewsVisible (true);
 
 	CView* dialog = frame->getModalView ();
 	if (dialog)
 	{
 		dialog->unregisterViewListener (this);
-		frame->setModalView (0);
+		frame->setModalView (nullptr);
 		dialog->forget ();
 	}
 	forget ();
@@ -259,8 +254,7 @@ CView* UIDialogController::verifyView (CView* view, const UIAttributes& attribut
 				size.setHeight (subView->getHeight ());
 				view->setViewSize (size);
 				view->setMouseableArea (size);
-				CViewContainer* container = dynamic_cast<CViewContainer*> (view);
-				if (container)
+				if (auto container = view->asViewContainer ())
 					container->addView (subView);
 			}
 		}
@@ -336,11 +330,10 @@ void UIDialogController::collectOpenGLViews (CViewContainer* container)
 	{
 		COpenGLView* openGLView = dynamic_cast<COpenGLView*>(*it);
 		if (openGLView && openGLView->isVisible ())
-			openglViews.push_back (openGLView);
+			openglViews.emplace_back (openGLView);
 		else
 		{
-			CViewContainer* childContainer = dynamic_cast<CViewContainer*>(*it);
-			if (childContainer)
+			if (auto childContainer = (*it)->asViewContainer ())
 				collectOpenGLViews (childContainer);
 		}
 		it++;

@@ -137,20 +137,15 @@ ExchangeViewAnimation::ExchangeViewAnimation (CView* oldView, CView* newView, An
 	vstgui_assert (newView->isAttached () == false);
 	vstgui_assert (viewToRemove->isAttached ());
 
-	viewToRemove->remember ();
-	newView->remember ();
-	CViewContainer* parent = static_cast<CViewContainer*> (viewToRemove->getParentView ());
-	if (parent)
+	if (auto parent = viewToRemove->getParentView ()->asViewContainer ())
 		parent->addView (newView);
 
 	init ();
 }
 
 //-----------------------------------------------------------------------------
-ExchangeViewAnimation::~ExchangeViewAnimation ()
+ExchangeViewAnimation::~ExchangeViewAnimation () noexcept
 {
-	viewToRemove->forget ();
-	newView->forget ();
 }
 
 //-----------------------------------------------------------------------------
@@ -298,7 +293,7 @@ void ExchangeViewAnimation::doPushInOutFromRight (float pos)
 void ExchangeViewAnimation::animationStart (CView* view, IdStringPtr name)
 {
 	#if DEBUG
-	CViewContainer* parent = static_cast<CViewContainer*> (viewToRemove->getParentView ());
+	CViewContainer* parent = viewToRemove->getParentView ()->asViewContainer ();
 	vstgui_assert (view == parent);
 	#endif
 }
@@ -351,11 +346,11 @@ void ExchangeViewAnimation::animationFinished (CView* view, IdStringPtr name, bo
 {
 	if (wasCanceled)
 	{
-		animationTick (0, 0, 1.f);
+		animationTick (nullptr, nullptr, 1.f);
 	}
-	if (viewToRemove->getParentView ())
+	if (auto viewContainer = viewToRemove->getParentView ()->asViewContainer ())
 	{
-		static_cast<CViewContainer*> (viewToRemove->getParentView ())->removeView (viewToRemove);
+		viewContainer->removeView (viewToRemove);
 	}
 }
 

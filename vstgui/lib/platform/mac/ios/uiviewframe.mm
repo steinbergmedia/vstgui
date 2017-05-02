@@ -36,6 +36,8 @@
 
 #if TARGET_OS_IPHONE
 #import "../../../cfileselector.h"
+#import "../../../idatapackage.h"
+#import "../../iplatformoptionmenu.h"
 #import "../cgdrawcontext.h"
 #import "../cgbitmap.h"
 #import "../quartzgraphicspath.h"
@@ -91,6 +93,12 @@ using namespace VSTGUI;
 - (BOOL)canBecomeFirstResponder
 {
 	return YES;
+}
+
+//-----------------------------------------------------------------------------
+- (void)didMoveToWindow
+{
+	uiViewFrame->getFrame ()->platformOnActivate (self.window ? true : false);
 }
 
 //-----------------------------------------------------------------------------
@@ -290,46 +298,50 @@ bool UIViewFrame::scrollRect (const CRect& src, const CPoint& distance)
 }
 
 //-----------------------------------------------------------------------------
-IPlatformTextEdit* UIViewFrame::createPlatformTextEdit (IPlatformTextEditCallback* textEdit)
+SharedPointer<IPlatformTextEdit> UIViewFrame::createPlatformTextEdit (IPlatformTextEditCallback* textEdit)
 {
-	return new UITextEdit (uiView, textEdit);
+	return owned <IPlatformTextEdit> (new UITextEdit (uiView, textEdit));
 }
 
 //-----------------------------------------------------------------------------
-IPlatformOptionMenu* UIViewFrame::createPlatformOptionMenu ()
+SharedPointer<IPlatformOptionMenu> UIViewFrame::createPlatformOptionMenu ()
 {
 	return nullptr;
 }
 
 //-----------------------------------------------------------------------------
-COffscreenContext* UIViewFrame::createOffscreenContext (CCoord width, CCoord height, double scaleFactor)
+SharedPointer<COffscreenContext> UIViewFrame::createOffscreenContext (CCoord width, CCoord height, double scaleFactor)
 {
 	CGBitmap* bitmap = new CGBitmap (CPoint (width * scaleFactor, height * scaleFactor));
 	bitmap->setScaleFactor (scaleFactor);
 	CGDrawContext* context = new CGDrawContext (bitmap);
 	bitmap->forget ();
 	if (context->getCGContext ())
-		return context;
+		return owned<COffscreenContext> (context);
 	context->forget ();
 	return 0;
 }
 
 #if VSTGUI_OPENGL_SUPPORT
 //-----------------------------------------------------------------------------
-IPlatformOpenGLView* UIViewFrame::createPlatformOpenGLView ()
+SharedPointer<IPlatformOpenGLView> UIViewFrame::createPlatformOpenGLView ()
 {
-	return new GLKitOpenGLView (uiView);
+	return owned<IPlatformOpenGLView> (new GLKitOpenGLView (uiView));
 }
 #endif
 
 //-----------------------------------------------------------------------------
-IPlatformViewLayer* UIViewFrame::createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer)
+SharedPointer<IPlatformViewLayer> UIViewFrame::createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer)
 {
 	CAViewLayer* parentViewLayer = dynamic_cast<CAViewLayer*> (parentLayer);
-	CAViewLayer* layer = new CAViewLayer (parentViewLayer ? parentViewLayer->getLayer () : [uiView layer]);
+	auto layer = owned (new CAViewLayer (parentViewLayer ? parentViewLayer->getLayer () : [uiView layer]));
 	layer->init (drawDelegate);
-	return layer;
+	return shared<IPlatformViewLayer> (layer);
 }
+
+DragResult UIViewFrame::doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap) { return kDragError; }
+void UIViewFrame::setClipboard (const SharedPointer<IDataPackage>& data) {}
+SharedPointer<IDataPackage> UIViewFrame::getClipboard () { return nullptr; }
 
 }
 

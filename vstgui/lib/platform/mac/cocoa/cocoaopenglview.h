@@ -55,19 +55,19 @@ class CocoaOpenGLView : public IPlatformOpenGLView
 {
 public:
 	CocoaOpenGLView (NSView* parent);
-	~CocoaOpenGLView ();
+	~CocoaOpenGLView () noexcept override = default;
 
-	virtual bool init (IOpenGLView* view, PixelFormat* pixelFormat = 0) override;
-	virtual void remove () override;
+	bool init (IOpenGLView* view, PixelFormat* pixelFormat = nullptr) override;
+	void remove () override;
 
-	virtual void invalidRect (const CRect& rect) override;
-	virtual void viewSizeChanged (const CRect& visibleSize) override;
+	void invalidRect (const CRect& rect) override;
+	void viewSizeChanged (const CRect& visibleSize) override;
 
-	virtual bool makeContextCurrent () override;
-	virtual bool lockContext () override;
-	virtual bool unlockContext () override;
+	bool makeContextCurrent () override;
+	bool lockContext () override;
+	bool unlockContext () override;
 
-	virtual void swapBuffers () override;
+	void swapBuffers () override;
 	
 	void doDraw (const CRect& r);
 	void reshape ();

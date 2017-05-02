@@ -51,19 +51,19 @@ public:
 	CMovieButton (const CRect& size, IControlListener* listener, int32_t tag, CCoord heightOfOneImage, CBitmap* background, const CPoint& offset = CPoint (0, 0));
 	CMovieButton (const CMovieButton& movieButton);
 
-	virtual void draw (CDrawContext*) override;
+	void draw (CDrawContext*) override;
 
-	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
-	virtual CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
-	virtual CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
-	virtual int32_t onKeyDown (VstKeyCode& keyCode) override;
-	virtual bool sizeToFit () override;
+	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
+	int32_t onKeyDown (VstKeyCode& keyCode) override;
+	bool sizeToFit () override;
 
 	void setNumSubPixmaps (int32_t numSubPixmaps) override { IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps); invalid (); }
 
 	CLASS_METHODS(CMovieButton, CControl)
 protected:
-	~CMovieButton ();	
+	~CMovieButton () noexcept override = default;
 	CPoint   offset;
 	float    buttonState;
 

@@ -42,10 +42,9 @@ TESTCASE(Base64CodecTest,
 
 	TEST(encodeAscii,
 		 std::string test ("ABCD");
-		 Base64Codec bd;
-		 EXPECT (bd.init (test.c_str (), 4) == true)
-		 EXPECT (bd.getDataSize () == 8);
-		 uint8_t* ptr = (uint8_t*)bd.getData ();
+		 auto result = Base64Codec::encode (test.data (), test.size ());
+		 EXPECT (result.dataSize == 8);
+		 uint8_t* ptr = result.data.get ();
 		 EXPECT (ptr[0] == 'Q');
 		 EXPECT (ptr[1] == 'U');
 		 EXPECT (ptr[2] == 'J');
@@ -57,17 +56,16 @@ TESTCASE(Base64CodecTest,
 	);
 
 	TEST(encodeBinary,
-		 unsigned char binary [6];
+		 uint8_t binary [6];
 		 binary[0] = 0x89;
 		 binary[1] = 0x50;
 		 binary[2] = 0x4E;
 		 binary[3] = 0x47;
 		 binary[4] = 0x0D;
 		 binary[5] = 0x0A;
-		 Base64Codec bd;
-		 EXPECT (bd.init (binary, 6) == true);
-		 EXPECT (bd.getDataSize () == 8);
-		 uint8_t* ptr = (uint8_t*)bd.getData ();
+		 auto result = Base64Codec::encode (binary, 6);
+		 EXPECT (result.dataSize == 8);
+		 uint8_t* ptr = result.data.get ();
 		 EXPECT (ptr[0] == 'i');
 		 EXPECT (ptr[1] == 'V');
 		 EXPECT (ptr[2] == 'B');
@@ -80,10 +78,9 @@ TESTCASE(Base64CodecTest,
 
 	TEST(decodeAscii,
 		 std::string test ("QUJDRA");
-		 Base64Codec bd;
-		 EXPECT (bd.init (test) == true)
-		 EXPECT (bd.getDataSize () == 4);
-		 uint8_t* ptr = (uint8_t*)bd.getData ();
+		 auto result = Base64Codec::decode (test);
+		 EXPECT (result.dataSize == 4);
+		 uint8_t* ptr = result.data.get ();
 		 EXPECT (ptr[0] == 'A');
 		 EXPECT (ptr[1] == 'B');
 		 EXPECT (ptr[2] == 'C');
@@ -92,10 +89,9 @@ TESTCASE(Base64CodecTest,
 
 	TEST(decodeBinary,
 		 std::string test ("iVBORw0K");
-		 Base64Codec bd;
-		 EXPECT (bd.init (test) == true)
-		 EXPECT (bd.getDataSize () == 6);
-		 uint8_t* ptr = (uint8_t*)bd.getData ();
+		 auto result = Base64Codec::decode (test);
+		 EXPECT (result.dataSize == 6);
+		 uint8_t* ptr = result.data.get ();
 		 EXPECT (ptr[0] == 0x89);
 		 EXPECT (ptr[1] == 0x50);
 		 EXPECT (ptr[2] == 0x4E);

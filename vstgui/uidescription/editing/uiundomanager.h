@@ -52,7 +52,7 @@ class UIUndoManager : public CBaseObject, protected std::list<IAction*>, public 
 {
 public:
 	UIUndoManager ();
-	~UIUndoManager ();
+	~UIUndoManager () override;
 
 	void pushAndPerform (IAction* action);
 
@@ -77,7 +77,7 @@ public:
 protected:
 	iterator position;
 	iterator savePosition;
-	typedef std::deque<UIGroupAction*> GroupActionDeque;
+	using GroupActionDeque = std::deque<UIGroupAction*>;
 	GroupActionDeque groupQueue;
 };
 

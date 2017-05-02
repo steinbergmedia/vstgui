@@ -35,6 +35,7 @@
 #include "ctooltipsupport.h"
 #include "cframe.h"
 #include "cvstguitimer.h"
+#include "platform/iplatformframe.h"
 
 #if DEBUG
 #define DEBUGLOG 0
@@ -58,20 +59,18 @@ Adding CTooltipSupport is done via VSTGUI::CFrame::enableTooltips (true) */
  * @param delay tooltip delay time in milliseconds
  */
 CTooltipSupport::CTooltipSupport (CFrame* frame, uint32_t delay)
-: timer (0)
+: timer (nullptr)
 , frame (frame)
-, currentView (0)
+, currentView (nullptr)
 , delay (delay)
 , state (kHidden)
 {
-	timer = new CVSTGUITimer (this, delay);
+	timer = makeOwned<CVSTGUITimer> (this, delay);
 }
 
 //------------------------------------------------------------------------
-CTooltipSupport::~CTooltipSupport ()
+CTooltipSupport::~CTooltipSupport () noexcept
 {
-	timer->forget ();
-
 	IPlatformFrame* platformFrame = frame->getPlatformFrame ();
 	if (platformFrame)
 		platformFrame->hideTooltip ();
@@ -80,7 +79,7 @@ CTooltipSupport::~CTooltipSupport ()
 //------------------------------------------------------------------------
 static UTF8StringBuffer getTooltipFromView (CView* view)
 {
-	UTF8StringBuffer tooltip = 0;
+	UTF8StringBuffer tooltip = nullptr;
 	uint32_t tooltipSize = 0;
 	if (view->getAttributeSize (kCViewTooltipAttribute, tooltipSize))
 	{
@@ -89,7 +88,7 @@ static UTF8StringBuffer getTooltipFromView (CView* view)
 		if (!view->getAttribute (kCViewTooltipAttribute, tooltipSize, tooltip, tooltipSize))
 		{
 			std::free (tooltip);
-			tooltip = 0;
+			tooltip = nullptr;
 		}
 	}
 	return tooltip;
@@ -156,7 +155,7 @@ void CTooltipSupport::onMouseExited (CView* view)
 			timer->setFireTime (200);
 			timer->start ();
 		}
-		currentView = 0;
+		currentView = nullptr;
 		#if DEBUGLOG
 		DebugPrint ("CTooltipSupport::onMouseExited (%s)\n", view->getClassName ());
 		#endif
@@ -238,7 +237,7 @@ bool CTooltipSupport::showTooltip ()
 	{
 		if (currentView->isAttached () == false)
 		{
-			currentView = 0;
+			currentView = nullptr;
 			return false;
 		}
 		CRect r = currentView->translateToGlobal (currentView->getVisibleViewSize ());

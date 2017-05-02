@@ -59,7 +59,7 @@ bool GdiPlusFont::getAllPlatformFontFamilies (std::list<std::string>& fontFamily
 			{
 				families[i].GetFamilyName (familyName);
 				UTF8StringHelper str (familyName);
-				fontFamilyNames.push_back (std::string (str));
+				fontFamilyNames.emplace_back (str);
 			}
 		}
 		::delete [] families;
@@ -84,7 +84,7 @@ static Gdiplus::Brush* getFontBrush (CDrawContext* context)
 	return gpdc ? gpdc->getFontBrush () : 0;
 }
 //-----------------------------------------------------------------------------
-GdiPlusFont::GdiPlusFont (const char* name, const CCoord& size, const int32_t& style)
+GdiPlusFont::GdiPlusFont (const UTF8String& name, const CCoord& size, const int32_t& style)
 : font (0)
 {
 	gdiStyle = Gdiplus::FontStyleRegular;
@@ -102,14 +102,14 @@ GdiPlusFont::GdiPlusFont (const char* name, const CCoord& size, const int32_t& s
 	font = ::new Gdiplus::Font (tempName, (Gdiplus::REAL)size, gdiStyle, Gdiplus::UnitPixel);
 }
 //-----------------------------------------------------------------------------
-GdiPlusFont::~GdiPlusFont ()
+GdiPlusFont::~GdiPlusFont () noexcept
 {
 	if (font)
 		::delete font;
 }
 
 //-----------------------------------------------------------------------------
-void GdiPlusFont::drawString (CDrawContext* context, IPlatformString* string, const CPoint& point, bool antialias)
+void GdiPlusFont::drawString (CDrawContext* context, IPlatformString* string, const CPoint& point, bool antialias) const
 {
 	Gdiplus::Graphics* pGraphics = getGraphics (context);
 	Gdiplus::Brush* pFontBrush = getFontBrush (context);
@@ -124,7 +124,7 @@ void GdiPlusFont::drawString (CDrawContext* context, IPlatformString* string, co
 }
 
 //-----------------------------------------------------------------------------
-CCoord GdiPlusFont::getStringWidth (CDrawContext* context, IPlatformString* string, bool antialias)
+CCoord GdiPlusFont::getStringWidth (CDrawContext* context, IPlatformString* string, bool antialias) const
 {
 	CCoord result = 0;
 	const WinString* winString = dynamic_cast<const WinString*> (string);

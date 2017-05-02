@@ -39,23 +39,23 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-IPlatformString* IPlatformString::createWithUTF8String (UTF8StringPtr utf8String)
+SharedPointer<IPlatformString> IPlatformString::createWithUTF8String (UTF8StringPtr utf8String)
 {
-	return new MacString (utf8String);
+	return makeOwned<MacString> (utf8String);
 }
 
 //-----------------------------------------------------------------------------
 MacString::MacString (UTF8StringPtr utf8String)
-: cfString (0)
-, ctLine (NULL)
-, ctLineFontRef (NULL)
+: cfString (nullptr)
+, ctLine (nullptr)
+, ctLineFontRef (nullptr)
 {
 	if (utf8String)
-		cfString = CFStringCreateWithCString (0, utf8String, kCFStringEncodingUTF8);
+		cfString = CFStringCreateWithCString (nullptr, utf8String, kCFStringEncodingUTF8);
 }
 
 //-----------------------------------------------------------------------------
-MacString::~MacString ()
+MacString::~MacString () noexcept
 {
 	if (ctLine)
 		CFRelease (ctLine);
@@ -71,13 +71,13 @@ void MacString::setUTF8String (UTF8StringPtr utf8String)
 
 	if (ctLine)
 		CFRelease (ctLine);
-	ctLine = NULL;
-	ctLineFontRef = 0;
+	ctLine = nullptr;
+	ctLineFontRef = nullptr;
 
 	if (utf8String)
-		cfString = CFStringCreateWithCString (0, utf8String, kCFStringEncodingUTF8);
+		cfString = CFStringCreateWithCString (nullptr, utf8String, kCFStringEncodingUTF8);
 	else
-		cfString = 0;
+		cfString = nullptr;
 }
 
 //-----------------------------------------------------------------------------

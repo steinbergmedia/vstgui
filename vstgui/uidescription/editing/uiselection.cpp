@@ -39,6 +39,7 @@
 #include "../uidescription.h"
 #include "../cstream.h"
 #include "../uiattributes.h"
+#include "../../lib/cviewcontainer.h"
 #include "../../lib/cframe.h"
 #include <sstream>
 #include <algorithm>
@@ -71,16 +72,18 @@ void UISelection::setStyle (int32_t _style)
 //----------------------------------------------------------------------------------------------------
 void UISelection::add (CView* view)
 {
+	vstgui_assert (view, "view cannot be nullptr");
 	changed (kMsgSelectionWillChange);
 	if (style == kSingleSelectionStyle)
 		empty ();
-	push_back (view);
+	emplace_back (view);
 	changed (kMsgSelectionChanged);
 }
 
 //----------------------------------------------------------------------------------------------------
 void UISelection::remove (CView* view)
 {
+	vstgui_assert (view, "view cannot be nullptr");
 	if (contains (view))
 	{
 		changed (kMsgSelectionWillChange);
@@ -92,6 +95,7 @@ void UISelection::remove (CView* view)
 //----------------------------------------------------------------------------------------------------
 void UISelection::setExclusive (CView* view)
 {
+	vstgui_assert (view, "view cannot be nullptr");
 	changed (kMsgSelectionWillChange);
 	DeferChanges dc (this);
 	erase (std::list<SharedPointer<CView> >::begin (), std::list<SharedPointer<CView> >::end ());
@@ -136,7 +140,7 @@ CView* UISelection::first () const
 {
 	if (size () > 0)
 		return *begin ();
-	return 0;
+	return nullptr;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -204,14 +208,15 @@ bool UISelection::store (OutputStream& stream, IUIDescription* uiDescription)
 	if (desc)
 	{
 		std::list<CView*> views;
-		FOREACH_IN_SELECTION(this, view)
+		for (auto view : *this)
+		{
 			if (!containsParent (view))
 			{
-				views.push_back (view);
+				views.emplace_back (view);
 			}
-		FOREACH_IN_SELECTION_END
+		}
 		
-		OwningPointer<UIAttributes> attr = new UIAttributes ();
+		auto attr = makeOwned<UIAttributes> ();
 		attr->setPointAttribute ("selection-drag-offset", dragOffset);
 		return desc->storeViews (views, stream, attr);
 	}
@@ -225,7 +230,7 @@ bool UISelection::restore (InputStream& stream, IUIDescription* uiDescription)
 	UIDescription* desc = dynamic_cast<UIDescription*>(uiDescription);
 	if (desc)
 	{
-		UIAttributes* attr = 0;
+		UIAttributes* attr = nullptr;
 		if (desc->restoreViews (stream, *this, &attr))
 		{
 			if (attr)

@@ -43,15 +43,15 @@ TESTCASE(CBitmapTest,
 
 	TEST(scaleFactor,
 		CPoint p (10, 10);
-		auto b1 = owned (IPlatformBitmap::create (&p));
+		auto b1 = IPlatformBitmap::create (&p);
 		CBitmap bitmap (b1);
 		p (20, 20);
-		auto b2 = owned (IPlatformBitmap::create (&p));
+		auto b2 = IPlatformBitmap::create (&p);
 		b2->setScaleFactor (2.);
 		EXPECT (bitmap.addBitmap (b2));
 		
 		p (21, 21);
-		auto b3 = owned(IPlatformBitmap::create (&p));
+		auto b3 = IPlatformBitmap::create (&p);
 		EXPECT_EXCEPTION (bitmap.addBitmap(b3), "wrong bitmap size");
 		
 		EXPECT (bitmap.getBestPlatformBitmapForScaleFactor (0.5) == b1);

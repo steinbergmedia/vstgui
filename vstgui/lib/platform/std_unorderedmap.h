@@ -34,25 +34,4 @@
 
 #pragma once
 
-#include "../vstguibase.h"
-
-#if MAC
-	#ifdef _LIBCPP_VERSION
-		#include <unordered_map>
-	#else
-		#include <tr1/unordered_map>
-		namespace std { using tr1::unordered_map; }
-	#endif
-#elif defined (__GNUC__)
-	#if __cplusplus >= 201103L
-		#include <unordered_map>
-	#else
-		#include <tr1/unordered_map>
-		namespace std { using tr1::unordered_map; }
-	#endif
-#elif WINDOWS
-	#include <unordered_map>
-	#if _MSC_VER <	1600
-		namespace std { using tr1::unordered_map; }
-	#endif
-#endif
+#include <unordered_map>

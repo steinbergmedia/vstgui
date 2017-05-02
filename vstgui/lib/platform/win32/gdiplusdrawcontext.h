@@ -39,9 +39,7 @@
 
 #if WINDOWS
 
-#include <windows.h>
-#include <objidl.h>
-#include <gdiplus.h>
+#include "win32support.h"
 
 namespace VSTGUI {
 class GdiplusBitmap;
@@ -52,7 +50,7 @@ class GdiplusDrawContext : public COffscreenContext
 public:
 	GdiplusDrawContext (HWND window, const CRect& drawSurface);
 	GdiplusDrawContext (GdiplusBitmap* bitmap);
-	~GdiplusDrawContext ();
+	~GdiplusDrawContext () noexcept;
 
 	Gdiplus::Graphics* getGraphics () const { return pGraphics; }
 	Gdiplus::Pen* getPen () const { return pPen; }
@@ -82,9 +80,9 @@ public:
 	void restoreGlobalState () override;
 	CGraphicsPath* createGraphicsPath () override;
 	CGraphicsPath* createTextPath (const CFontRef font, UTF8StringPtr text) override;
-	void drawGraphicsPath (CGraphicsPath* path, PathDrawMode mode = kPathFilled, CGraphicsTransform* transformation = 0) override;
-	void fillLinearGradient (CGraphicsPath* path, const CGradient& gradient, const CPoint& startPoint, const CPoint& endPoint, bool evenOdd = false, CGraphicsTransform* transformation = 0) override;
-	void fillRadialGradient (CGraphicsPath* path, const CGradient& gradient, const CPoint& center, CCoord radius, const CPoint& originOffset = CPoint (0, 0), bool evenOdd = false, CGraphicsTransform* transformation = 0) override;
+	void drawGraphicsPath (CGraphicsPath* path, PathDrawMode mode = kPathFilled, CGraphicsTransform* transformation = nullptr) override;
+	void fillLinearGradient (CGraphicsPath* path, const CGradient& gradient, const CPoint& startPoint, const CPoint& endPoint, bool evenOdd = false, CGraphicsTransform* transformation = nullptr) override;
+	void fillRadialGradient (CGraphicsPath* path, const CGradient& gradient, const CPoint& center, CCoord radius, const CPoint& originOffset = CPoint (0, 0), bool evenOdd = false, CGraphicsTransform* transformation = nullptr) override;
 
 	void endDraw () override;
 //-----------------------------------------------------------------------------
@@ -119,7 +117,7 @@ struct GdiplusDrawScope
 		}
 	}
 
-	~GdiplusDrawScope ()
+	~GdiplusDrawScope () noexcept
 	{
 		Gdiplus::Matrix matrix;
 		graphics->SetTransform (&matrix);

@@ -33,6 +33,8 @@
 //-----------------------------------------------------------------------------
 
 #include "x11frame.h"
+#include "../iplatformopenglview.h"
+#include "../iplatformviewlayer.h"
 #include "../../cbuttonstate.h"
 #include "../../crect.h"
 #include "../../idatapackage.h"
@@ -186,7 +188,7 @@ struct GtkDragSourcePackage : public IDataPackage
 	{
 		if (data[index].size != 0)
 			return;
-		CBaseObjectGuard guard (const_cast<GtkDragSourcePackage*> (this));
+		auto guard = shared (const_cast<GtkDragSourcePackage*> (this));
 		LocalEventLoop eventLoop;
 		bool dataReceived = false;
 		auto signal = widget.signal_drag_data_received ();
@@ -792,18 +794,17 @@ void* Frame::getGtkWindow ()
 }
 
 //------------------------------------------------------------------------
-IPlatformTextEdit* Frame::createPlatformTextEdit (IPlatformTextEditCallback* textEdit)
+SharedPointer<IPlatformTextEdit> Frame::createPlatformTextEdit (IPlatformTextEditCallback* textEdit)
 {
 	if (auto te = GTKTextEdit::make (&impl->contentView, textEdit))
 	{
-		te->remember ();
 		return te;
 	}
 	return nullptr;
 }
 
 //------------------------------------------------------------------------
-IPlatformOptionMenu* Frame::createPlatformOptionMenu ()
+SharedPointer<IPlatformOptionMenu> Frame::createPlatformOptionMenu ()
 {
 	if (auto om = new GTKOptionMenu (&impl->contentView))
 		return om;
@@ -812,7 +813,7 @@ IPlatformOptionMenu* Frame::createPlatformOptionMenu ()
 
 #if VSTGUI_OPENGL_SUPPORT
 //------------------------------------------------------------------------
-IPlatformOpenGLView* Frame::createPlatformOpenGLView ()
+SharedPointer<IPlatformOpenGLView> Frame::createPlatformOpenGLView ()
 {
 #warning TODO: Implementation
 	return nullptr;
@@ -820,24 +821,23 @@ IPlatformOpenGLView* Frame::createPlatformOpenGLView ()
 #endif
 
 //------------------------------------------------------------------------
-IPlatformViewLayer* Frame::createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate,
-                                                    IPlatformViewLayer* parentLayer)
+SharedPointer<IPlatformViewLayer> Frame::createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate,
+                                                    			  IPlatformViewLayer* parentLayer)
 {
 	// optional
 	return nullptr;
 }
 
 //------------------------------------------------------------------------
-COffscreenContext* Frame::createOffscreenContext (CCoord width, CCoord height, double scaleFactor)
+SharedPointer<COffscreenContext> Frame::createOffscreenContext (CCoord width, CCoord height, double scaleFactor)
 {
 	CPoint size (width * scaleFactor, height * scaleFactor);
 	auto bitmap = new Cairo::Bitmap (&size);
 	bitmap->setScaleFactor (scaleFactor);
-	auto context = new Cairo::Context (bitmap);
+	auto context = owned (new Cairo::Context (bitmap));
 	bitmap->forget ();
 	if (context->valid ())
 		return context;
-	context->forget ();
 	return nullptr;
 }
 
@@ -848,16 +848,22 @@ DragResult Frame::doDrag (IDataPackage* source, const CPoint& offset, CBitmap* d
 }
 
 //------------------------------------------------------------------------
-void Frame::setClipboard (IDataPackage* data)
+void Frame::setClipboard (const SharedPointer<IDataPackage>& data)
 {
 #warning TODO: Implementation
 }
 
 //------------------------------------------------------------------------
-IDataPackage* Frame::getClipboard ()
+SharedPointer<IDataPackage> Frame::getClipboard ()
 {
 #warning TODO: Implementation
 	return nullptr;
+}
+
+//------------------------------------------------------------------------
+PlatformType Frame::getPlatformType () const
+{
+	return kX11EmbedWindowID;
 }
 
 //------------------------------------------------------------------------
@@ -878,7 +884,8 @@ void Frame::handleNextEvents ()
 //------------------------------------------------------------------------
 IPlatformFrame* IPlatformFrame::createPlatformFrame (IPlatformFrameCallback* frame,
                                                      const CRect& size, void* parent,
-                                                     PlatformType parentType)
+                                                     PlatformType parentType,
+                                                     IPlatformFrameConfig* config)
 {
 	if (parentType == kDefaultNative || parentType == kX11EmbedWindowID)
 	{

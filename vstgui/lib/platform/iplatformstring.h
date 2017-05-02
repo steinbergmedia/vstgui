@@ -42,10 +42,10 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-class IPlatformString : public CBaseObject
+class IPlatformString : public AtomicReferenceCounted
 {
 public:
-	static IPlatformString* createWithUTF8String (UTF8StringPtr utf8String = 0);
+	static SharedPointer<IPlatformString> createWithUTF8String (UTF8StringPtr utf8String = nullptr);
 	
 	virtual void setUTF8String (UTF8StringPtr utf8String) = 0;
 };

@@ -39,6 +39,7 @@
 
 #if VSTGUI_LIVE_EDITING
 
+#include "../icontroller.h"
 #include "../../lib/controls/ctextedit.h"
 #include <string>
 
@@ -49,7 +50,7 @@ class UIFocusSettingsController : public CBaseObject, public IController
 {
 public:
 	UIFocusSettingsController (UIDescription* description);
-	~UIFocusSettingsController ();
+	~UIFocusSettingsController () override = default;
 
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;
@@ -59,7 +60,6 @@ protected:
 	static bool stringToValue (UTF8StringPtr txt, float& result, CTextEdit::StringToValueUserData* userData);
 
 	SharedPointer<UIDescription> editDescription;
-	UIAttributes* settings;
 
 	enum {
 		kEnabledTag = 0,

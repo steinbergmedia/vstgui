@@ -48,14 +48,14 @@ namespace VSTGUI {
 class CTextLabel : public CParamDisplay
 {
 public:
-	CTextLabel (const CRect& size, UTF8StringPtr txt = 0, CBitmap* background = 0, const int32_t style = 0);
+	CTextLabel (const CRect& size, UTF8StringPtr txt = nullptr, CBitmap* background = nullptr, const int32_t style = 0);
 	CTextLabel (const CTextLabel& textLabel);
 	
 	//-----------------------------------------------------------------------------
 	/// @name CTextLabel Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual void setText (UTF8StringPtr txt);			///< set text
+	virtual void setText (const UTF8String& txt);			///< set text
 	virtual const UTF8String& getText () const;				///< read only access to text
 
 	enum TextTruncateMode {
@@ -66,19 +66,20 @@ public:
 	
 	virtual void setTextTruncateMode (TextTruncateMode mode);					///< set text truncate mode
 	TextTruncateMode getTextTruncateMode () const { return textTruncateMode; }	///< get text truncate mode
-	UTF8StringPtr getTruncatedText () const { return truncatedText; }			///< get the truncated text
+	const UTF8String& getTruncatedText () const { return truncatedText; }		///< get the truncated text
 	//@}
 
 	static IdStringPtr kMsgTruncatedTextChanged;								///< message which is send to dependent objects when the truncated text changes
 	
-	virtual	void draw (CDrawContext* pContext) override;
-	virtual bool sizeToFit () override;
-	virtual void setViewSize (const CRect& rect, bool invalid = true) override;
-	virtual void drawStyleChanged () override;
+	void draw (CDrawContext* pContext) override;
+	bool sizeToFit () override;
+	void setViewSize (const CRect& rect, bool invalid = true) override;
+	void drawStyleChanged () override;
+	void valueChanged () override;
 
 	CLASS_METHODS(CTextLabel, CParamDisplay)
 protected:
-	~CTextLabel ();
+	~CTextLabel () noexcept override = default;
 	void freeText ();
 	void calculateTruncatedText ();
 
@@ -88,6 +89,56 @@ protected:
 	TextTruncateMode textTruncateMode;
 	UTF8String text;
 	UTF8String truncatedText;
+};
+
+//-----------------------------------------------------------------------------
+/** Multi line text label
+ *	@ingroup new_in_4_5
+ */
+class CMultiLineTextLabel : public CTextLabel
+{
+public:
+	CMultiLineTextLabel (const CRect& size);
+	CMultiLineTextLabel (const CMultiLineTextLabel&) = default;
+
+	enum class LineLayout {
+		clip, ///< clip lines overflowing the view size width
+		truncate, ///< truncate lines overflowing the view size width
+		wrap ///< wrap overflowing words to next line
+	};
+	void setLineLayout (LineLayout layout);
+	LineLayout getLineLayout () const { return lineLayout; }
+
+	/** automatically resize the view according to the contents (only the height) 
+	 *	@param state on or off
+	 */
+	void setAutoHeight (bool state);
+	/** returns true if this view resizes itself according to the contents */
+	bool getAutoHeight () const { return autoHeight; }
+
+	/** return the maximum line width of all lines */
+	CCoord getMaxLineWidth ();
+
+	void drawRect (CDrawContext* pContext, const CRect& updateRect) override;
+	bool sizeToFit () override;
+	void setText (const UTF8String& txt) override;
+	void setViewSize (const CRect& rect, bool invalid = true) override;
+	void setTextTruncateMode (TextTruncateMode mode) override;
+private:
+	void drawStyleChanged () override;
+	void recalculateLines (CDrawContext* context);
+	void recalculateHeight ();
+	
+	bool autoHeight {false};
+	LineLayout lineLayout {LineLayout::clip};
+
+	struct Line
+	{
+		CRect r;
+		UTF8String str;
+	};
+	using Lines = std::vector<Line>;
+	Lines lines;
 };
 
 } // namespace

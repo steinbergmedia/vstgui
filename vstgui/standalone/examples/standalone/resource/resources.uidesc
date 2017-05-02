@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vstgui-ui-description version="1">
+	<fonts>
+		<font alternative-font-names="Segoe UI, Avenir" font-name="Segoe UI" name="New" size="18"/>
+	</fonts>
+	<colors>
+		<color name="Black Alpha 140" rgba="#0000008c"/>
+		<color name="Focus" rgba="#3bafffff"/>
+		<color name="TextShadow" rgba="#0000002f"/>
+	</colors>
+	<custom>
+		<attributes name="UIDescFilePath" path="/Users/scheffle/Source/VST3/vstgui/vstgui/standalone/examples/standalone/resource/resources.uidesc"/>
+	</custom>
+	<gradients>
+		<gradient name="About Background">
+			<color-stop rgba="#dcdcdcff" start="0"/>
+			<color-stop rgba="#b4b4b4ff" start="1"/>
+		</gradient>
+		<gradient name="Background">
+			<color-stop rgba="#464646ff" start="0"/>
+			<color-stop rgba="#393939ff" start="1"/>
+		</gradient>
+		<gradient name="Default TextButton Gradient">
+			<color-stop rgba="#dcdcdcff" start="0"/>
+			<color-stop rgba="#b4b4b4ff" start="1"/>
+		</gradient>
+		<gradient name="Default TextButton Gradient Highlighted">
+			<color-stop rgba="#b4b4b4ff" start="0"/>
+			<color-stop rgba="#646464ff" start="1"/>
+		</gradient>
+		<gradient name="New">
+			<color-stop rgba="#a0a0a0d2" start="0"/>
+			<color-stop rgba="#b9b9b9d2" start="0.9807874177631579204472700439509935677052"/>
+		</gradient>
+	</gradients>
+	<bitmaps/>
+</vstgui-ui-description>

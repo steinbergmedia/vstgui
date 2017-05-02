@@ -98,7 +98,7 @@ InterpolationTimingFunction::InterpolationTimingFunction (uint32_t length, float
 //-----------------------------------------------------------------------------
 void InterpolationTimingFunction::addPoint (float time, float pos)
 {
-	points.insert (std::make_pair ((uint32_t)((float)getLength () * time), pos));
+	points.emplace ((uint32_t)((float)getLength () * time), pos);
 }
 
 //-----------------------------------------------------------------------------
@@ -120,7 +120,7 @@ float InterpolationTimingFunction::getPosition (uint32_t milliseconds)
 		}
 		prevTime = time;
 		prevPos = pos;
-		it++;
+		++it;
 	}
 	return 1.f;
 }
@@ -131,16 +131,16 @@ float InterpolationTimingFunction::getPosition (uint32_t milliseconds)
 RepeatTimingFunction::RepeatTimingFunction (TimingFunctionBase* tf, int32_t repeatCount, bool autoReverse)
 : tf (tf)
 , repeatCount (repeatCount)
+, runCounter (0)
 , autoReverse (autoReverse)
 , isReverse (false)
-, runCounter (0)
 {
 }
 
 //-----------------------------------------------------------------------------
-RepeatTimingFunction::~RepeatTimingFunction ()
+RepeatTimingFunction::~RepeatTimingFunction () noexcept
 {
-	CBaseObject* obj = dynamic_cast<CBaseObject*> (tf);
+	auto obj = dynamic_cast<IReference*> (tf);
 	if (obj)
 		obj->forget ();
 	else

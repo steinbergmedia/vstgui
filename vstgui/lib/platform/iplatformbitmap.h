@@ -38,35 +38,36 @@
 /// @cond ignore
 
 #include "../vstguifwd.h"
+#include <vector>
 
 namespace VSTGUI {
+using PNGBitmapBuffer = std::vector<uint8_t>;
 class IPlatformBitmapPixelAccess;
 
 //-----------------------------------------------------------------------------
-class IPlatformBitmap : public CBaseObject
+class IPlatformBitmap : public AtomicReferenceCounted
 {
 public:
-	static IPlatformBitmap* create (CPoint* size = 0); ///< if size pointer is not zero, create a bitmap which can be used as a draw surface
-	static IPlatformBitmap* createFromPath (UTF8StringPtr absolutePath); ///< create a bitmap from an absolute path
+	static SharedPointer<IPlatformBitmap> create (CPoint* size = nullptr); ///< if size pointer is not zero, create a bitmap which can be used as a draw surface
+	static SharedPointer<IPlatformBitmap> createFromPath (UTF8StringPtr absolutePath); ///< create a bitmap from an absolute path
 
 	/** Create a platform bitmap from memory */
-	static IPlatformBitmap* createFromMemory (const void* ptr, uint32_t memSize);
+	static SharedPointer<IPlatformBitmap> createFromMemory (const void* ptr, uint32_t memSize);
 
-	/** Create a memory representation of the platform bitmap in PNG format. The memory could be used by createFromMemory.
-		Caller needs to free the memory in ptr */
-	static bool createMemoryPNGRepresentation (IPlatformBitmap* bitmap, void** ptr, uint32_t& size);
+	/** Create a memory representation of the platform bitmap in PNG format. */
+	static PNGBitmapBuffer createMemoryPNGRepresentation (const SharedPointer<IPlatformBitmap>& bitmap);
 
 	virtual bool load (const CResourceDescription& desc) = 0;
 	virtual const CPoint& getSize () const = 0;
 
-	virtual IPlatformBitmapPixelAccess* lockPixels (bool alphaPremultiplied) = 0;	// you need to forget the result after use.
+	virtual SharedPointer<IPlatformBitmapPixelAccess> lockPixels (bool alphaPremultiplied) = 0;
 	
 	virtual void setScaleFactor (double factor) = 0;
 	virtual double getScaleFactor () const = 0;
 };
 
 //------------------------------------------------------------------------------------
-class IPlatformBitmapPixelAccess : public CBaseObject
+class IPlatformBitmapPixelAccess : public AtomicReferenceCounted
 {
 public:
 	enum PixelFormat {

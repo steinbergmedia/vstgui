@@ -39,6 +39,7 @@
 
 #import "../cfontmac.h"
 #import "../macglobals.h"
+#import "../macstring.h"
 
 #if __has_feature(objc_arc) && __clang_major__ >= 3
 #define ARC_ENABLED 1
@@ -116,7 +117,7 @@ UITextEdit::UITextEdit (UIView* parent, IPlatformTextEditCallback* textEdit)
 	platformControl = [[UITextField alloc] initWithFrame:r];
 	
 	bool fontSet = false;
-	CoreTextFont* ctf = dynamic_cast<CoreTextFont*>(textEdit->platformGetFont ()->getPlatformFont ());
+	CoreTextFont* ctf = textEdit->platformGetFont ()->getPlatformFont ().cast<CoreTextFont> ();
 	if (ctf)
 	{
 		CTFontRef fontRef = ctf->getFontRef ();
@@ -177,7 +178,7 @@ UITextEdit::~UITextEdit ()
 }
 
 //------------------------------------------------------------------------------------
-UTF8StringPtr UITextEdit::getText ()
+UTF8String UITextEdit::getText ()
 {
 	if (platformControl)
 	{
@@ -188,12 +189,14 @@ UTF8StringPtr UITextEdit::getText ()
 }
 
 //------------------------------------------------------------------------------------
-bool UITextEdit::setText (UTF8StringPtr text)
+bool UITextEdit::setText (const UTF8String& text)
 {
-	if (platformControl)
+	if (platformControl == nullptr)
+		return false;
+	if (NSString* t = fromUTF8String<NSString*> (text))
 	{
-		NSString* t = [NSString stringWithUTF8String:text];
 		[platformControl setText:t];
+		return true;
 	}
 	return false;
 }

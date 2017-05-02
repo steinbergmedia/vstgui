@@ -91,6 +91,8 @@ public:
 	void beginDraw () override;
 	void endDraw () override;
 
+	double getScaleFactor () const override { return scaleFactor; }
+
 	//-----------------------------------------------------------------------------
 	class D2DApplyClip
 	{
@@ -101,6 +103,7 @@ public:
 	protected:
 		D2DDrawContext* drawContext;
 		CRect applyClip;
+		bool layerIsUsed {false};
 	};
 
 	template<typename T> void pixelAllign (T& rect) const;
@@ -117,6 +120,9 @@ protected:
 	void setFontColorInternal (const CColor& color);
 	void setLineStyleInternal (const CLineStyle& style);
 	void setDrawModeInternal (CDrawMode mode);
+	void drawLineInternal (CPoint start, CPoint end);
+
+	bool needsHalfPointOffset () const;
 
 	HWND window;
 	ID2D1RenderTarget* renderTarget;
@@ -125,6 +131,7 @@ protected:
 	ID2D1SolidColorBrush* fontBrush;
 	ID2D1StrokeStyle* strokeStyle;
 	CRect currentClip;
+	double scaleFactor {1.};
 };
 
 //-----------------------------------------------------------------------------
@@ -132,8 +139,6 @@ template<typename T> void D2DDrawContext::pixelAllign (T& obj) const
 {
 	const CGraphicsTransform& t = getCurrentTransform ();
 	CGraphicsTransform tInv = t.inverse ();
-	if (currentState.drawMode.integralMode ())
-		obj.offset (-0.5, -0.5);
 	t.transform (obj);
 	obj.makeIntegral ();
 	tInv.transform (obj);

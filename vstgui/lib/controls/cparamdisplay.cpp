@@ -51,7 +51,7 @@ The user can specify its convert function (from float to char) by default the st
 The text-value is centered in the given rect.
 */
 CParamDisplay::CParamDisplay (const CRect& size, CBitmap* background, const int32_t style)
-: CControl (size, 0, -1, background)
+: CControl (size, nullptr, -1, background)
 , horiTxtAlign (kCenterText)
 , style (style)
 , valuePrecision (2)
@@ -93,7 +93,7 @@ CParamDisplay::CParamDisplay (const CParamDisplay& v)
 }
 
 //------------------------------------------------------------------------
-CParamDisplay::~CParamDisplay ()
+CParamDisplay::~CParamDisplay () noexcept
 {
 	if (fontID)
 		fontID->forget ();
@@ -126,15 +126,41 @@ void CParamDisplay::setPrecision (uint8_t precision)
 }
 
 //------------------------------------------------------------------------
-void CParamDisplay::setValueToStringFunction (const ValueToStringFunction& valueToStringFunc)
+void CParamDisplay::setValueToStringFunction2 (const ValueToStringFunction2& valueToStringFunc)
 {
 	valueToStringFunction = valueToStringFunc;
 }
 
 //------------------------------------------------------------------------
-void CParamDisplay::setValueToStringFunction (ValueToStringFunction&& valueToStringFunc)
+void CParamDisplay::setValueToStringFunction2 (ValueToStringFunction2&& valueToStringFunc)
 {
 	valueToStringFunction = std::move (valueToStringFunc);
+}
+
+//------------------------------------------------------------------------
+void CParamDisplay::setValueToStringFunction (const ValueToStringFunction& func)
+{
+	if (!func)
+	{
+		setValueToStringFunction2 (nullptr);
+		return;
+	}
+	setValueToStringFunction2 ([=] (float value, std::string& str, CParamDisplay* display) {
+		char string[256];
+		string[0] = 0;
+		if (func (value, string, display))
+		{
+			str = string;
+			return true;
+		}
+		return false;
+	});
+}
+
+//------------------------------------------------------------------------
+void CParamDisplay::setValueToStringFunction (ValueToStringFunction&& func)
+{
+	setValueToStringFunction (func);
 }
 
 //------------------------------------------------------------------------
@@ -146,16 +172,17 @@ bool CParamDisplay::getFocusPath (CGraphicsPath& outPath)
 		CRect r (getViewSize ());
 		if (style & kRoundRectStyle)
 		{
-			r.extend (focusWidth, focusWidth);
+			r.inset (getFrameWidth () / 2., getFrameWidth () / 2.);
 			outPath.addRoundRect (r, roundRectRadius);
 			outPath.closeSubpath ();
-			r = getViewSize ();
+			r.extend (focusWidth, focusWidth);
 			outPath.addRoundRect (r, roundRectRadius);
 		}
 		else
 		{
+			r.inset (getFrameWidth () / 2., getFrameWidth () / 2.);
 			outPath.addRect (r);
-			r.inset (-focusWidth, -focusWidth);
+			r.extend (focusWidth, focusWidth);
 			outPath.addRect (r);
 		}
 	}
@@ -168,21 +195,22 @@ void CParamDisplay::draw (CDrawContext *pContext)
 	if (style & kNoDrawStyle)
 		return;
 
-	char string[256];
-	string[0] = 0;
+	std::string string;
 
 	bool converted = false;
 	if (valueToStringFunction)
 		converted = valueToStringFunction (value, string, this);
 	if (!converted)
 	{
+		char tmp[255];
 		char precisionStr[10];
 		sprintf (precisionStr, "%%.%hhuf", valuePrecision);
-		sprintf (string, precisionStr, value);
+		sprintf (tmp, precisionStr, value);
+		string = tmp;
 	}
 
 	drawBack (pContext);
-	drawPlatformText (pContext, CString (string).getPlatformString ());
+	drawPlatformText (pContext, UTF8String (string).getPlatformString ());
 	setDirty (false);
 }
 
@@ -341,7 +369,7 @@ void CParamDisplay::drawPlatformText (CDrawContext* pContext, IPlatformString* s
 		if (style & kShadowText)
 		{
 			CRect newSize (textRect);
-			newSize.offset (1, 1);
+			newSize.offset (shadowTextOffset);
 			pContext->setFontColor (shadowColor);
 			pContext->drawString (string, newSize, horiTxtAlign, bAntialias);
 		}
@@ -401,6 +429,16 @@ void CParamDisplay::setShadowColor (CColor color)
 	if (shadowColor != color)
 	{
 		shadowColor = color;
+		drawStyleChanged ();
+	}
+}
+
+//------------------------------------------------------------------------
+void CParamDisplay::setShadowTextOffset (const CPoint& offset)
+{
+	if (shadowTextOffset != offset)
+	{
+		shadowTextOffset = offset;
 		drawStyleChanged ();
 	}
 }

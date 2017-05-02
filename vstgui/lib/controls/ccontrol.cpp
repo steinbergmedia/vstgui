@@ -131,11 +131,6 @@ CControl::CControl (const CControl& c)
 }
 
 //------------------------------------------------------------------------
-CControl::~CControl ()
-{
-}
-
-//------------------------------------------------------------------------
 void CControl::registerControlListener (IControlListener* listener)
 {
 	subListeners.add (listener);

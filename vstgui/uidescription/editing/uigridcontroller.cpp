@@ -134,7 +134,7 @@ bool UIGridController::valueToString (float value, char utf8String[256], CParamD
 //----------------------------------------------------------------------------------------------------
 bool UIGridController::stringToValue (UTF8StringPtr txt, float& result, CTextEdit::StringToValueUserData* userData)
 {
-	int32_t value = txt ? (int32_t)strtol (txt, 0, 10) : 0;
+	int32_t value = txt ? (int32_t)strtol (txt, nullptr, 10) : 0;
 	result = (float)value;
 	return true;
 }

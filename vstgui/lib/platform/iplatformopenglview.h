@@ -56,12 +56,12 @@ struct PixelFormat
 		kModernOpenGL	= 1 << 3		// Mac only currently. Indicates to use the NSOpenGLProfileVersion3_2Core. Not tested !
 	};
 
-	uint32_t flags;
 	uint32_t depthSize;
 	uint32_t samples;		///< only used when kMultiSample is set
+	uint32_t flags;
 
-	PixelFormat () : flags (kAccelerated), depthSize (32), samples (0) {}
-	PixelFormat (const PixelFormat& pf) : flags (pf.flags), depthSize (pf.depthSize), samples (pf.samples) {}
+	PixelFormat () : depthSize (32), samples (0), flags (kAccelerated) {}
+	PixelFormat (const PixelFormat& pf) : depthSize (pf.depthSize), samples (pf.samples), flags (pf.flags) {}
 	
 	PixelFormat& operator() (const PixelFormat& pf) { depthSize = pf.depthSize; samples = pf.samples; flags = pf.flags; return *this; }
 };
@@ -75,11 +75,11 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class IPlatformOpenGLView : public CBaseObject
+class IPlatformOpenGLView : public AtomicReferenceCounted
 {
 public:
 
-	virtual bool init (IOpenGLView* view, PixelFormat* pixelFormat = 0) = 0;
+	virtual bool init (IOpenGLView* view, PixelFormat* pixelFormat = nullptr) = 0;
 	virtual void remove () = 0;
 
 	virtual void invalidRect (const CRect& rect) = 0;

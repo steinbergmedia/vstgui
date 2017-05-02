@@ -112,7 +112,7 @@ TESTCASE(AnimatorTest,
 		auto a = owned (new Animator ());
 		auto view = owned (new CView (CRect (0, 0, 0, 0)));
 		MessageReceiver recevier;
-		a->addAnimation (view, "Test", new AlphaValueAnimation (0.f), new LinearTimingFunction (2000), &recevier);
+		a->addAnimation (view, "Test", new AlphaValueAnimation (0.f), new LinearTimingFunction (100), &recevier);
 		CFRunLoopRun ();
 		EXPECT(recevier.messageReceived == true)
 	);

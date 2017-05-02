@@ -43,11 +43,13 @@ namespace VSTGUI {
 class IPlatformViewLayerDelegate
 {
 public:
+	virtual ~IPlatformViewLayerDelegate () noexcept = default;
+
 	virtual void drawViewLayer (CDrawContext* context, const CRect& dirtyRect) = 0; // dirtyRect is zero based
 };
 
 //-----------------------------------------------------------------------------
-class IPlatformViewLayer : public CBaseObject
+class IPlatformViewLayer : public AtomicReferenceCounted
 {
 public:
 	virtual void invalidRect (const CRect& size) = 0; ///< size must be zero based

@@ -59,8 +59,6 @@ Since May 2003 VSTGUI is open source and hosted at sourceforge.
 
 Currently VSTGUI compiles on
 \par Microsoft Windows (with Visual Studio and Windows 7 Platform SDK)
-- XP SP 2 (32 and 64 bit)
-- Vista (32 and 64 bit)
 - 7 (32 and 64 bit)
 - 8 (32 and 64 bit)
 - 10 (32 and 64 bit)

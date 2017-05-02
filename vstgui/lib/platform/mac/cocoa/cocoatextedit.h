@@ -54,10 +54,10 @@ class CocoaTextEdit : public IPlatformTextEdit
 {
 public:
 	CocoaTextEdit (NSView* parent, IPlatformTextEditCallback* textEdit);
-	~CocoaTextEdit ();
+	~CocoaTextEdit () noexcept override;
 	
-	UTF8StringPtr getText () override;
-	bool setText (UTF8StringPtr text) override;
+	UTF8String getText () override;
+	bool setText (const UTF8String& text) override;
 	bool updateSize () override;
 
 	NSTextField* getPlatformControl () const { return platformControl; }

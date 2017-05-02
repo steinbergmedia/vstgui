@@ -39,6 +39,8 @@
 
 #if WINDOWS
 
+#include "../iplatformframe.h"
+#include "../iplatformviewlayer.h"
 #include <windows.h>
 
 namespace VSTGUI {
@@ -47,8 +49,8 @@ namespace VSTGUI {
 class Win32Frame : public IPlatformFrame
 {
 public:
-	Win32Frame (IPlatformFrameCallback* frame, const CRect& size, HWND parent);
-	~Win32Frame ();
+	Win32Frame (IPlatformFrameCallback* frame, const CRect& size, HWND parent, PlatformType parentType);
+	~Win32Frame () noexcept;
 
 	HWND getPlatformWindow () const { return windowHandle; }
 	HWND getParentPlatformWindow () const { return parentWindow; }
@@ -67,18 +69,20 @@ public:
 	bool showTooltip (const CRect& rect, const char* utf8Text) override;
 	bool hideTooltip () override;
 	void* getPlatformRepresentation () const override { return windowHandle; }
-	IPlatformTextEdit* createPlatformTextEdit (IPlatformTextEditCallback* textEdit) override;
-	IPlatformOptionMenu* createPlatformOptionMenu () override;
+	SharedPointer<IPlatformTextEdit> createPlatformTextEdit (IPlatformTextEditCallback* textEdit) override;
+	SharedPointer<IPlatformOptionMenu> createPlatformOptionMenu () override;
 #if VSTGUI_OPENGL_SUPPORT
-	IPlatformOpenGLView* createPlatformOpenGLView () override;
+	SharedPointer<IPlatformOpenGLView> createPlatformOpenGLView () override;
 #endif
-	IPlatformViewLayer* createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer = 0) override { return 0; } // not yet supported
-	COffscreenContext* createOffscreenContext (CCoord width, CCoord height, double scaleFactor = 1.) override;
+	SharedPointer<IPlatformViewLayer> createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer = nullptr) override { return 0; } // not yet supported
+	SharedPointer<COffscreenContext> createOffscreenContext (CCoord width, CCoord height, double scaleFactor = 1.) override;
 	DragResult doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap) override;
 
-	void setClipboard (IDataPackage* data) override;
-	IDataPackage* getClipboard () override;
+	void setClipboard (const SharedPointer<IDataPackage>& data) override;
+	SharedPointer<IDataPackage> getClipboard () override;
+	PlatformType getPlatformType () const override { return PlatformType::kHWND; }
 
+	LONG_PTR WINAPI proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 //-----------------------------------------------------------------------------
 protected:
 	void initTooltip ();

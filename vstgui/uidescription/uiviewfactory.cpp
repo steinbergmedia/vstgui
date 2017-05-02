@@ -48,7 +48,7 @@ namespace VSTGUI {
 	
 	Example for an imaginary view class called MyView which directly inherites from CView:
 	@code
-	class MyViewCreator : public IViewCreator
+	class MyViewCreator : public ViewCreatorAdapter
 	{
 	public:
 		// register this class with the view factory
@@ -83,7 +83,7 @@ namespace VSTGUI {
 		// add your custom attributes to the list		
 		bool getAttributeNames (std::list<std::string>& attributeNames) const
 		{
-			attributeNames.push_back ("my-custom-attribute");
+			attributeNames.emplace_back ("my-custom-attribute");
 			return true;
 		}
 		
@@ -117,13 +117,13 @@ namespace VSTGUI {
 	@endcode
 */
 
-typedef std::unordered_map<std::string, const IViewCreator*> ViewCreatorRegistryMap;
+using ViewCreatorRegistryMap = std::unordered_map<std::string, const IViewCreator*>;
 
 //-----------------------------------------------------------------------------
 class ViewCreatorRegistry : private ViewCreatorRegistryMap
 {
 public:
-	typedef ViewCreatorRegistryMap::const_iterator const_iterator;
+	using const_iterator = ViewCreatorRegistryMap::const_iterator;
 
 	const_iterator begin () { return ViewCreatorRegistryMap::begin (); }
 	const_iterator end () { return ViewCreatorRegistryMap::end (); }
@@ -172,11 +172,6 @@ UIViewFactory::UIViewFactory ()
 }
 
 //-----------------------------------------------------------------------------
-UIViewFactory::~UIViewFactory ()
-{
-}
-
-//-----------------------------------------------------------------------------
 CView* UIViewFactory::createViewByName (const std::string* className, const UIAttributes& attributes, const IUIDescription* description) const
 {
 	ViewCreatorRegistry& registry = getCreatorRegistry ();
@@ -192,7 +187,7 @@ CView* UIViewFactory::createViewByName (const std::string* className, const UIAt
 			evaluateAttributesAndRemember (view, attributes, evaluatedAttributes, description);
 			while (iter != registry.end () && (*iter).second->apply (view, evaluatedAttributes, description))
 			{
-				if ((*iter).second->getBaseViewName () == 0)
+				if ((*iter).second->getBaseViewName () == nullptr)
 					break;
 				iter = registry.find ((*iter).second->getBaseViewName ());
 			}
@@ -205,7 +200,7 @@ CView* UIViewFactory::createViewByName (const std::string* className, const UIAt
 		DebugPrint ("UIViewFactory::createView(..): Could not find view of class: %s\n", className->c_str ());
 	#endif
 	}
-	return 0;
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -258,7 +253,7 @@ bool UIViewFactory::applyCustomViewAttributeValues (CView* customView, IdStringP
 //-----------------------------------------------------------------------------
 IdStringPtr UIViewFactory::getViewName (CView* view) const
 {
-	IdStringPtr viewName = 0;
+	IdStringPtr viewName = nullptr;
 	uint32_t size = sizeof (IdStringPtr);
 	view->getAttribute (kViewNameAttribute, size, &viewName, size);
 	return viewName;
@@ -422,10 +417,24 @@ void UIViewFactory::collectRegisteredViewNames (StringPtrList& viewNames, IdStri
 				continue;
 			}
 		}
-		viewNames.push_back (&(*iter).first);
+		viewNames.emplace_back (&(*iter).first);
 		iter++;
 	}
 	viewNames.sort (viewNamesSortFunc);
+}
+
+//-----------------------------------------------------------------------------
+auto UIViewFactory::collectRegisteredViewAndDisplayNames () const -> ViewAndDisplayNameList
+{
+	ViewAndDisplayNameList list;
+	ViewCreatorRegistry& registry = getCreatorRegistry ();
+	ViewCreatorRegistry::const_iterator iter = registry.begin ();
+	while (iter != registry.end ())
+	{
+		list.emplace_back (&(*iter).first, (*iter).second->getDisplayName ());
+		iter++;
+	}
+	return list;
 }
 
 //-----------------------------------------------------------------------------

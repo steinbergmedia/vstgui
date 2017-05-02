@@ -45,19 +45,19 @@ namespace VSTGUI {
 // CVSTGUITimer Declaration
 //! A timer class, which posts timer messages to CBaseObjects or calls a lambda function (c++11 only).
 //-----------------------------------------------------------------------------
-class CVSTGUITimer : public CBaseObject, public IPlatformTimerCallback
+class CVSTGUITimer final : public CBaseObject, public IPlatformTimerCallback
 {
 public:
-	typedef std::function<void(CVSTGUITimer*)> CallbackFunc;
+	using CallbackFunc = std::function<void(CVSTGUITimer*)>;
 
 	CVSTGUITimer (const CallbackFunc& callback, uint32_t fireTime = 100, bool doStart = true);
 	CVSTGUITimer (CallbackFunc&& callback, uint32_t fireTime = 100, bool doStart = true);
 	CVSTGUITimer (CBaseObject* timerObject, uint32_t fireTime = 100, bool doStart = false);
 	
-	virtual bool start ();							///< starts the timer
-	virtual bool stop ();							///< stops the timer, returns whether timer was running or not
+	bool start ();							///< starts the timer
+	bool stop ();							///< stops the timer, returns whether timer was running or not
 
-	virtual bool setFireTime (uint32_t newFireTime);		///< in milliseconds
+	bool setFireTime (uint32_t newFireTime);		///< in milliseconds
 	uint32_t getFireTime () const { return fireTime; }		///< in milliseconds
 
 //-----------------------------------------------------------------------------
@@ -65,8 +65,9 @@ public:
 //-----------------------------------------------------------------------------
 	CLASS_METHODS_NOCOPY(CVSTGUITimer, CBaseObject)
 protected:
-	~CVSTGUITimer ();
-	
+	~CVSTGUITimer () noexcept override;
+
+	void beforeDelete () override;
 	void fire () override;
 	
 	uint32_t fireTime;
@@ -77,12 +78,13 @@ protected:
 
 namespace Call
 {
-	typedef std::function<void ()> FunctionCallback;
+	using FunctionCallback = std::function<void ()>;
 
 	/** Trigger a function call at a later timer */
 	inline void later (FunctionCallback callback, uint32_t delayInMilliseconds = 10)
 	{
 		new CVSTGUITimer ([callback] (CVSTGUITimer* timer) {
+			timer->stop ();
 			callback ();
 			timer->forget ();
 		}, delayInMilliseconds, true);

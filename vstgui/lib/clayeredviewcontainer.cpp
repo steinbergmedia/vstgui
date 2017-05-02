@@ -35,21 +35,14 @@
 #include "clayeredviewcontainer.h"
 #include "cframe.h"
 #include "cdrawcontext.h"
+#include "platform/iplatformframe.h"
 
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
 CLayeredViewContainer::CLayeredViewContainer (const CRect& r)
 : CViewContainer (r)
-, parentLayerView (0)
-, zIndex (0)
 {
-}
-
-//-----------------------------------------------------------------------------
-CLayeredViewContainer::~CLayeredViewContainer ()
-{
-	
 }
 
 //-----------------------------------------------------------------------------
@@ -85,7 +78,8 @@ void CLayeredViewContainer::updateLayerSize ()
 		parentLayerView->translateToGlobal (p);
 		newSize.offsetInverse (p);
 	}
-	layer->setSize (newSize);
+	if (layer)
+		layer->setSize (newSize);
 }
 
 //-----------------------------------------------------------------------------
@@ -96,8 +90,8 @@ bool CLayeredViewContainer::removed (CView* parent)
 	registerListeners (false);
 	if (layer)
 	{
-		layer = 0;
-		parentLayerView = 0;
+		layer = nullptr;
+		parentLayerView = nullptr;
 	}
 	return CViewContainer::removed (parent);
 }
@@ -108,11 +102,11 @@ bool CLayeredViewContainer::attached (CView* parent)
 	if (isAttached ())
 		return false;
 
-	pParentView = parent;
-	pParentFrame = parent->getFrame ();
-	if (pParentFrame)
+	setParentView (parent);
+	setParentFrame (parent->getFrame ());
+	if (getFrame ())
 	{
-		while (parent && dynamic_cast<CFrame*>(parent) == 0)
+		while (parent && dynamic_cast<CFrame*>(parent) == nullptr)
 		{
 			parentLayerView = dynamic_cast<CLayeredViewContainer*>(parent);
 			if (parentLayerView)
@@ -121,7 +115,7 @@ bool CLayeredViewContainer::attached (CView* parent)
 			}
 			parent = parent->getParentView ();
 		}
-		layer = pParentFrame->getPlatformFrame ()->createPlatformViewLayer (this, parentLayerView ? parentLayerView->layer : 0);
+		layer = getFrame ()->getPlatformFrame ()->createPlatformViewLayer (this, parentLayerView ? parentLayerView->layer : nullptr);
 		if (layer)
 		{
 			layer->setZIndex (zIndex);
@@ -129,12 +123,12 @@ bool CLayeredViewContainer::attached (CView* parent)
 			updateLayerSize ();
 		}
 	}
-	parent = pParentView;
+	parent = getParentView ();
 	
 	registerListeners (true);
 	
-	pParentView = 0;
-	pParentFrame = 0;
+	setParentView (nullptr);
+	setParentFrame (nullptr);
 
 	return CViewContainer::attached (parent);
 }
@@ -209,7 +203,7 @@ void CLayeredViewContainer::setAlphaValue (float alpha)
 {
 	if (layer)
 	{
-		alphaValue = alpha;
+		setAlphaValueNoInvalidate (alpha);
 		layer->setAlpha (alpha);
 	}
 	else
@@ -243,8 +237,9 @@ void CLayeredViewContainer::drawViewLayer (CDrawContext* context, const CRect& _
 //-----------------------------------------------------------------------------
 CGraphicsTransform CLayeredViewContainer::getDrawTransform () const
 {
+	using ParentViews = std::list<CViewContainer*>;
+
 	CGraphicsTransform transform;
-	typedef std::list<CViewContainer*> ParentViews;
 	ParentViews parents;
 
 	CViewContainer* parent = static_cast<CViewContainer*> (getParentView ());

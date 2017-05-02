@@ -32,33 +32,39 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#ifndef __uisearchtextfield__
-#define __uisearchtextfield__
+#ifndef __csearchtextedit__
+#define __csearchtextedit__
 
-#include "../../lib/controls/ctextedit.h"
-
-#if VSTGUI_LIVE_EDITING
+#include "ctextedit.h"
 
 namespace VSTGUI {
 
-//----------------------------------------------------------------------------------------------------
-class UISearchTextField : public CTextEdit
+//-----------------------------------------------------------------------------
+/** Search text edit field
+ *	@ingroup new_in_4_5
+ */
+class CSearchTextEdit : public CTextEdit
 {
 public:
-	UISearchTextField (const CRect& size, IControlListener* listener, int32_t tag, UTF8StringPtr txt = 0, CBitmap* background = 0, const int32_t style = 0);
+	CSearchTextEdit (const CRect& size, IControlListener* listener, int32_t tag, UTF8StringPtr txt = nullptr, CBitmap* background = nullptr, const int32_t style = 0);
+
+	void setClearMarkInset (CPoint inset);
+	CPoint getClearMarkInset () const;
 	
 	void draw (CDrawContext *pContext) override;
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
 protected:
 	void drawClearMark (CDrawContext* context) const;
 	CRect getClearMarkRect () const;
-
+	CRect getTextRect () const;
+	
 	CRect platformGetSize () const override;
 	CRect platformGetVisibleSize () const override;
+	void platformTextDidChange () override;
+	
+	CPoint clearMarkInset {2., 2.};
 };
 
 } // namespace
 
-#endif // VSTGUI_LIVE_EDITING
-
-#endif // __uisearchtextfield__
+#endif // __csearchtextedit__

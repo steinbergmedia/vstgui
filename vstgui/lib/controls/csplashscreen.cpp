@@ -92,7 +92,7 @@ CSplashScreen::CSplashScreen (const CRect& size, IControlListener* listener, int
 : CControl (size, listener, tag, background)
 , toDisplay (toDisplay)
 , offset (offset)
-, modalView (0)
+, modalView (nullptr)
 {
 	modalView = new CDefaultSplashScreenView (toDisplay, this, background, offset);
 }
@@ -119,11 +119,11 @@ CSplashScreen::CSplashScreen (const CSplashScreen& v)
 , keepSize (v.keepSize)
 , offset (v.offset)
 {
-	modalView = (CView*)v.modalView->newCopy ();
+	modalView = static_cast<CView*> (v.modalView->newCopy ());
 }
 
 //------------------------------------------------------------------------
-CSplashScreen::~CSplashScreen ()
+CSplashScreen::~CSplashScreen () noexcept
 {
 	if (modalView)
 		modalView->forget ();
@@ -183,7 +183,7 @@ void CSplashScreen::unSplash ()
 		{
 			if (modalView)
 				modalView->invalid ();
-			getFrame ()->setModalView (NULL);
+			getFrame ()->setModalView (nullptr);
 		}
 	}
 }
@@ -192,24 +192,11 @@ void CSplashScreen::unSplash ()
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 CAnimationSplashScreen::CAnimationSplashScreen (const CRect& size, int32_t tag, CBitmap* background, CBitmap* splashBitmap)
-: CSplashScreen (size, 0, tag, splashBitmap, CRect (0, 0, 0, 0))
+: CSplashScreen (size, nullptr, tag, splashBitmap, CRect (0, 0, 0, 0))
 , animationIndex (0)
 , animationTime (500)
 {
 	CView::setBackground (background);
-}
-
-//------------------------------------------------------------------------
-CAnimationSplashScreen::CAnimationSplashScreen (const CAnimationSplashScreen& splashScreen)
-: CSplashScreen (splashScreen)
-, animationIndex (splashScreen.animationIndex)
-, animationTime (splashScreen.animationTime)
-{
-}
-
-//------------------------------------------------------------------------
-CAnimationSplashScreen::~CAnimationSplashScreen ()
-{
 }
 
 //------------------------------------------------------------------------
@@ -226,7 +213,7 @@ CBitmap* CAnimationSplashScreen::getSplashBitmap () const
 {
 	if (modalView)
 		return modalView->getBackground ();
-	return 0;
+	return nullptr;
 }
 
 //------------------------------------------------------------------------
@@ -271,7 +258,7 @@ void CAnimationSplashScreen::unSplash ()
 			{
 				if (modalView)
 					modalView->invalid ();
-				getFrame ()->setModalView (NULL);
+				getFrame ()->setModalView (nullptr);
 				setMouseEnabled (true);
 			}
 		}
@@ -314,6 +301,8 @@ bool CAnimationSplashScreen::sizeToFit ()
 //------------------------------------------------------------------------
 bool CAnimationSplashScreen::createAnimation (uint32_t animationIndex, uint32_t animationTime, CView* splashView, bool removeViewAnimation)
 {
+	if (!isAttached ())
+		return false;
 	switch (animationIndex)
 	{
 		case 0:
@@ -346,7 +335,7 @@ CMessageResult CAnimationSplashScreen::notify (CBaseObject* sender, IdStringPtr 
 			modalView->setMouseEnabled (true);
 		}
 		if (getFrame ())
-			getFrame ()->setModalView (NULL);
+			getFrame ()->setModalView (nullptr);
 		setMouseEnabled (true);
 		return kMessageNotified;
 	}

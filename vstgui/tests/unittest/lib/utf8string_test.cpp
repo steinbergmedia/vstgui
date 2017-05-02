@@ -41,33 +41,20 @@
 
 namespace VSTGUI {
 
-TESTCASE(CStringTest,
-
-	TEST(test,
-		CString str ("Test");
-		EXPECT(str.getPlatformString ());
-		EXPECT(UTF8String ("Test") == str.getUTF8String ());
-		str.setUTF8String ("Other");
-		EXPECT(str.getPlatformString ());
-		EXPECT(UTF8String ("Other") == str.getUTF8String ());
-	);
-
-);
-
 TESTCASE(UTF8StringTest,
 
 	TEST(empty,
 		UTF8String str;
 		EXPECT (str.empty ());
-		EXPECT (str.getByteCount () == 0);
+		EXPECT (str.length () == 0);
 	);
 	
 	TEST(set,
 		UTF8String str;
 		EXPECT (str.empty ());
-		str.set ("Test");
+		str.assign ("Test");
 		EXPECT(str.empty () == false);
-		EXPECT(str.get () == std::string ("Test"));
+		EXPECT(str.data () == std::string ("Test"));
 	);
 
 	TEST(equalOperator,
@@ -103,6 +90,15 @@ TESTCASE(UTF8StringTest,
 		EXPECT(str1 != str2);
 	);
 
+	TEST(codePointIterator,
+		 UTF8String str ("\xc3\x84\xe0\xa5\xb4\xf0\xaa\x80\x9a\0"); // u8"Äॴ𪀚"
+		 auto charCount = 0;
+		 for (auto it = str.begin (); it != str.end (); ++it)
+		 {
+			 charCount++;
+		 }
+		 EXPECT(charCount == 3);
+	);
 );
 
 #if MAC

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		F445ECCB1D19CAA4005FEEF3 /* libvstgui-ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F445ECC41D19CA97005FEEF3 /* libvstgui-ios.a */; };
 		F44C94D519C344FF0075CC67 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F44C94D419C344FF0075CC67 /* Foundation.framework */; };
 		F44C94D719C344FF0075CC67 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F44C94D619C344FF0075CC67 /* CoreGraphics.framework */; };
 		F44C94D919C344FF0075CC67 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F44C94D819C344FF0075CC67 /* UIKit.framework */; };
@@ -16,15 +17,52 @@
 		F44C94E819C344FF0075CC67 /* Main_iPhone.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F44C94E619C344FF0075CC67 /* Main_iPhone.storyboard */; };
 		F44C94EB19C344FF0075CC67 /* Main_iPad.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F44C94E919C344FF0075CC67 /* Main_iPad.storyboard */; };
 		F44C94EE19C344FF0075CC67 /* ViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = F44C94ED19C344FF0075CC67 /* ViewController.mm */; };
-		F44C950F19C3455F0075CC67 /* vstgui_ios.mm in Sources */ = {isa = PBXBuildFile; fileRef = F44C950D19C3455F0075CC67 /* vstgui_ios.mm */; };
-		F44C951019C3455F0075CC67 /* vstgui_uidescription_ios.mm in Sources */ = {isa = PBXBuildFile; fileRef = F44C950E19C3455F0075CC67 /* vstgui_uidescription_ios.mm */; };
 		F44C951319C34BED0075CC67 /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F44C951219C34BED0075CC67 /* Accelerate.framework */; };
 		F44C951719C34BFD0075CC67 /* ImageIO.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F44C951619C34BFD0075CC67 /* ImageIO.framework */; };
 		F44C951919C34C160075CC67 /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F44C951819C34C160075CC67 /* MobileCoreServices.framework */; };
 		F44C951C19C351550075CC67 /* ios_test.uidesc in Resources */ = {isa = PBXBuildFile; fileRef = F44C951B19C351550075CC67 /* ios_test.uidesc */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		F445ECC11D19CA97005FEEF3 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F445ECBA1D19CA96005FEEF3 /* vstgui.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = F4F953F616510E61006EE1D1;
+			remoteInfo = vstgui;
+		};
+		F445ECC31D19CA97005FEEF3 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F445ECBA1D19CA96005FEEF3 /* vstgui.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = F4E9C69317A8266200F42EF8;
+			remoteInfo = "vstgui-ios";
+		};
+		F445ECC51D19CA97005FEEF3 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F445ECBA1D19CA96005FEEF3 /* vstgui.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = F4CC1E811709F2EC008F07FD;
+			remoteInfo = unittests;
+		};
+		F445ECC71D19CA97005FEEF3 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F445ECBA1D19CA96005FEEF3 /* vstgui.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = F4B5B5B11C26E35B00450324;
+			remoteInfo = vstgui_standalone;
+		};
+		F445ECC91D19CA9F005FEEF3 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F445ECBA1D19CA96005FEEF3 /* vstgui.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = F4E9C69217A8266200F42EF8;
+			remoteInfo = "vstgui-ios";
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
+		F445ECBA1D19CA96005FEEF3 /* vstgui.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = vstgui.xcodeproj; path = ../../ide/xcode4/vstgui.xcodeproj; sourceTree = "<group>"; };
 		F44C94D119C344FF0075CC67 /* VSTGUI Test.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "VSTGUI Test.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F44C94D419C344FF0075CC67 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		F44C94D619C344FF0075CC67 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -40,8 +78,6 @@
 		F44C94EC19C344FF0075CC67 /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
 		F44C94ED19C344FF0075CC67 /* ViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ViewController.mm; sourceTree = "<group>"; };
 		F44C94F619C344FF0075CC67 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
-		F44C950D19C3455F0075CC67 /* vstgui_ios.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = vstgui_ios.mm; sourceTree = "<group>"; };
-		F44C950E19C3455F0075CC67 /* vstgui_uidescription_ios.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = vstgui_uidescription_ios.mm; sourceTree = "<group>"; };
 		F44C951219C34BED0075CC67 /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
 		F44C951419C34BF20075CC67 /* CoreImage.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreImage.framework; path = System/Library/Frameworks/CoreImage.framework; sourceTree = SDKROOT; };
 		F44C951619C34BFD0075CC67 /* ImageIO.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ImageIO.framework; path = System/Library/Frameworks/ImageIO.framework; sourceTree = SDKROOT; };
@@ -54,6 +90,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F445ECCB1D19CAA4005FEEF3 /* libvstgui-ios.a in Frameworks */,
 				F44C951919C34C160075CC67 /* MobileCoreServices.framework in Frameworks */,
 				F44C951719C34BFD0075CC67 /* ImageIO.framework in Frameworks */,
 				F44C951319C34BED0075CC67 /* Accelerate.framework in Frameworks */,
@@ -66,9 +103,21 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		F445ECBB1D19CA96005FEEF3 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				F445ECC21D19CA97005FEEF3 /* libvstgui.a */,
+				F445ECC41D19CA97005FEEF3 /* libvstgui-ios.a */,
+				F445ECC61D19CA97005FEEF3 /* unittests */,
+				F445ECC81D19CA97005FEEF3 /* libvstgui_standalone.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 		F44C94C819C344FF0075CC67 = {
 			isa = PBXGroup;
 			children = (
+				F445ECBA1D19CA96005FEEF3 /* vstgui.xcodeproj */,
 				F44C94DA19C344FF0075CC67 /* iOS Standalone */,
 				F44C94D319C344FF0075CC67 /* Frameworks */,
 				F44C94D219C344FF0075CC67 /* Products */,
@@ -101,7 +150,6 @@
 		F44C94DA19C344FF0075CC67 /* iOS Standalone */ = {
 			isa = PBXGroup;
 			children = (
-				F44C950C19C345420075CC67 /* vstgui */,
 				F44C94E319C344FF0075CC67 /* AppDelegate.h */,
 				F44C94E419C344FF0075CC67 /* AppDelegate.mm */,
 				F44C94E619C344FF0075CC67 /* Main_iPhone.storyboard */,
@@ -125,16 +173,6 @@
 			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
-		F44C950C19C345420075CC67 /* vstgui */ = {
-			isa = PBXGroup;
-			children = (
-				F44C950D19C3455F0075CC67 /* vstgui_ios.mm */,
-				F44C950E19C3455F0075CC67 /* vstgui_uidescription_ios.mm */,
-			);
-			name = vstgui;
-			path = ../../..;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -149,6 +187,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				F445ECCA1D19CA9F005FEEF3 /* PBXTargetDependency */,
 			);
 			name = "iOS Standalone";
 			productName = "iOS Standalone";
@@ -174,12 +213,49 @@
 			mainGroup = F44C94C819C344FF0075CC67;
 			productRefGroup = F44C94D219C344FF0075CC67 /* Products */;
 			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = F445ECBB1D19CA96005FEEF3 /* Products */;
+					ProjectRef = F445ECBA1D19CA96005FEEF3 /* vstgui.xcodeproj */;
+				},
+			);
 			projectRoot = "";
 			targets = (
 				F44C94D019C344FF0075CC67 /* iOS Standalone */,
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		F445ECC21D19CA97005FEEF3 /* libvstgui.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libvstgui.a;
+			remoteRef = F445ECC11D19CA97005FEEF3 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		F445ECC41D19CA97005FEEF3 /* libvstgui-ios.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = "libvstgui-ios.a";
+			remoteRef = F445ECC31D19CA97005FEEF3 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		F445ECC61D19CA97005FEEF3 /* unittests */ = {
+			isa = PBXReferenceProxy;
+			fileType = "compiled.mach-o.executable";
+			path = unittests;
+			remoteRef = F445ECC51D19CA97005FEEF3 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		F445ECC81D19CA97005FEEF3 /* libvstgui_standalone.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libvstgui_standalone.a;
+			remoteRef = F445ECC71D19CA97005FEEF3 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
 		F44C94CF19C344FF0075CC67 /* Resources */ = {
@@ -201,14 +277,20 @@
 			buildActionMask = 2147483647;
 			files = (
 				F44C94EE19C344FF0075CC67 /* ViewController.mm in Sources */,
-				F44C950F19C3455F0075CC67 /* vstgui_ios.mm in Sources */,
-				F44C951019C3455F0075CC67 /* vstgui_uidescription_ios.mm in Sources */,
 				F44C94E519C344FF0075CC67 /* AppDelegate.mm in Sources */,
 				F44C94E119C344FF0075CC67 /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		F445ECCA1D19CA9F005FEEF3 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = "vstgui-ios";
+			targetProxy = F445ECC91D19CA9F005FEEF3 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		F44C94DD19C344FF0075CC67 /* InfoPlist.strings */ = {

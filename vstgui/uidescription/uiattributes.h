@@ -36,8 +36,8 @@
 #define __uiattributes__
 
 #include "../lib/vstguifwd.h"
+#include "../lib/cstring.h"
 
-#include <string>
 #include <vector>
 #include "../lib/platform/std_unorderedmap.h"
 
@@ -45,16 +45,16 @@ namespace VSTGUI {
 class OutputStream;
 class InputStream;
 
-typedef std::unordered_map<std::string,std::string> UIAttributesMap;
+using UIAttributesMap = std::unordered_map<std::string,std::string>;
 
 //-----------------------------------------------------------------------------
-class UIAttributes : public CBaseObject, private UIAttributesMap
+class UIAttributes : public NonAtomicReferenceCounted, private UIAttributesMap
 {
 public:
-	typedef std::vector<std::string> StringArray;
+	using StringArray = std::vector<std::string>;
 	
-	UIAttributes (UTF8StringPtr* attributes = 0);
-	~UIAttributes ();
+	explicit UIAttributes (UTF8StringPtr* attributes = nullptr);
+	~UIAttributes () noexcept override = default;
 
 	using UIAttributesMap::begin;
 	using UIAttributesMap::end;

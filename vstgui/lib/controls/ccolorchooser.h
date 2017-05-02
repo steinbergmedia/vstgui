@@ -58,15 +58,13 @@ public:
 //-----------------------------------------------------------------------------
 struct CColorChooserUISettings
 {
-	CFontRef font;
-	CColor fontColor;
-	CColor checkerBoardColor1;
-	CColor checkerBoardColor2;
-	CPoint margin;
+	CFontRef font {kNormalFont};
+	CColor fontColor {kWhiteCColor};
+	CColor checkerBoardColor1 {kWhiteCColor};
+	CColor checkerBoardColor2 {kBlackCColor};
+	CPoint margin {5, 5};
 
-	bool checkerBoardBack;
-	
-	CColorChooserUISettings ();
+	bool checkerBoardBack {true};
 };
 
 ///	@ingroup new_in_4_0
@@ -75,7 +73,7 @@ class CColorChooser : public CViewContainer, public IControlListener, public IDe
 {
 public:
 	CColorChooser (IColorChooserDelegate* delegate = 0, const CColor& initialColor = kTransparentCColor, const CColorChooserUISettings& settings = CColorChooserUISettings ());
-	~CColorChooser ();
+	~CColorChooser () noexcept override = default;
 
 	void setColor (const CColor& newColor);
 	

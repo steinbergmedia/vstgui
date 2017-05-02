@@ -47,7 +47,7 @@ AutoreleasePool::AutoreleasePool ()
 }
 
 //-----------------------------------------------------------------------------
-AutoreleasePool::~AutoreleasePool ()
+AutoreleasePool::~AutoreleasePool () noexcept
 {
 	[pool drain];
 }

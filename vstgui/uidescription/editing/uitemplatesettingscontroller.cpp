@@ -65,13 +65,8 @@ UITemplateSettingsController::UITemplateSettingsController (const std::string& t
 			maxSize.y = -1.;
 		}
 	}
-	for (int32_t i = 0; i < kNumTags; i++)
-		controls[i] = 0;
-}
-
-//----------------------------------------------------------------------------------------------------
-UITemplateSettingsController::~UITemplateSettingsController ()
-{
+	for (auto& control : controls)
+		control = nullptr;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -256,7 +251,7 @@ bool UITemplateSettingsController::valueToString (float value, char utf8String[2
 //----------------------------------------------------------------------------------------------------
 bool UITemplateSettingsController::stringToValue (UTF8StringPtr txt, float& result, CTextEdit::StringToValueUserData* userData)
 {
-	int32_t value = txt ? (int32_t)strtol (txt, 0, 10) : 0;
+	int32_t value = txt ? (int32_t)strtol (txt, nullptr, 10) : 0;
 	result = (float)value;
 	return true;
 }

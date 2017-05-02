@@ -36,9 +36,9 @@
 #define __animator__
 
 #include "../vstguifwd.h"
-#include <list>
 #include <string>
 #include <functional>
+#include <memory>
 
 namespace VSTGUI {
 namespace Animation {
@@ -47,7 +47,7 @@ namespace Animation {
 /// @brief Animation runner
 ///	@ingroup new_in_4_0
 //-----------------------------------------------------------------------------
-class Animator : public CBaseObject
+class Animator : public NonAtomicReferenceCounted
 {
 public:
 	//-----------------------------------------------------------------------------
@@ -59,19 +59,17 @@ public:
 		An already running animation for view with name will be canceled.
 		If a notificationObject is supplied, it will be notified when the animation has finished @see FinishedMessage.
 	*/
-	void addAnimation (CView* view, IdStringPtr name, IAnimationTarget* target, ITimingFunction* timingFunction, CBaseObject* notificationObject = 0);
-
-	typedef std::function<void (CView*, const IdStringPtr, IAnimationTarget*)> NotificationFunction;
+	void addAnimation (CView* view, IdStringPtr name, IAnimationTarget* target, ITimingFunction* timingFunction, CBaseObject* notificationObject = nullptr);
 
 	/** adds an animation.
 		Animation and timingFunction is now owned by the animator.
 		An already running animation for view with name will be canceled.
 		The notification function will be called when the animation has finished.
 	*/
-	void addAnimation (CView* view, IdStringPtr name, IAnimationTarget* target, ITimingFunction* timingFunction, NotificationFunction notification);
+	void addAnimation (CView* view, IdStringPtr name, IAnimationTarget* target, ITimingFunction* timingFunction, DoneFunction notification);
 
 	/** removes an animation.
-		If animation is a CBaseObject forget() will be called otherwise it is deleted.
+		If animation has the IReference interface forget() will be called otherwise it is deleted.
 		The same will be done with the timingFunction.
 	*/
 	void removeAnimation (CView* view, IdStringPtr name);
@@ -83,35 +81,13 @@ public:
 	/// @cond ignore
 
 	Animator ();	// do not use this, instead use CFrame::getAnimator()
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
+	void onTimer ();
 
-	CLASS_METHODS_NOCOPY(Animator, CBaseObject)
 protected:
+	~Animator () noexcept override;
 
-	~Animator ();
-
-	class Animation : public CBaseObject
-	{
-	public:
-		Animation (CView* view, const std::string& name, IAnimationTarget* at, ITimingFunction* t, NotificationFunction notification);
-		~Animation ();
-
-		std::string name;
-		SharedPointer<CView> view;
-		IAnimationTarget* target;
-		ITimingFunction* timingFunction;
-		NotificationFunction notification;
-		uint32_t startTime;
-		float lastPos;
-		bool done;
-	};
-
-	void removeAnimation (Animation* a);
-
-	typedef std::list<SharedPointer<Animation> > AnimationList;
-	AnimationList animations;
-	AnimationList toRemove;
-	bool inTimer;
+	struct Impl;
+	std::unique_ptr<Impl> pImpl;
 	/// @endcond
 };
 

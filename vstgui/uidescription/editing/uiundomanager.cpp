@@ -45,7 +45,7 @@ namespace VSTGUI {
 class UndoStackTop : public IAction
 {
 public:
-	UTF8StringPtr getName () override { return 0; }
+	UTF8StringPtr getName () override { return nullptr; }
 	void perform () override {}
 	void undo () override {}
 };
@@ -59,7 +59,7 @@ public:
 	static void doDelete (IAction* action) { delete action; }
 
 	UIGroupAction (UTF8StringPtr name) : name (name) {}
-	~UIGroupAction ()
+	~UIGroupAction () override
 	{
 		std::for_each (begin (), end (), doDelete);
 	}
@@ -88,8 +88,8 @@ static void deleteUndoManagerAction (IAction* action) { delete action; }
 //----------------------------------------------------------------------------------------------------
 UIUndoManager::UIUndoManager ()
 {
-	push_back (new UndoStackTop);
-	position = end ();
+	emplace_back (new UndoStackTop);
+	position = begin ();
 	savePosition = begin ();
 }
 
@@ -104,7 +104,7 @@ void UIUndoManager::pushAndPerform (IAction* action)
 {
 	if (groupQueue.empty () == false)
 	{
-		groupQueue.back ()->push_back (action);
+		groupQueue.back ()->emplace_back (action);
 		return;
 	}
 	if (position != end ())
@@ -120,7 +120,7 @@ void UIUndoManager::pushAndPerform (IAction* action)
 		}
 		erase (oldStack, end ());
 	}
-	push_back (action);
+	emplace_back (action);
 	position = end ();
 	position--;
 	action->perform ();
@@ -174,13 +174,13 @@ UTF8StringPtr UIUndoManager::getUndoName ()
 {
 	if (position != end () && position != begin ())
 		return (*position)->getName ();
-	return 0;
+	return nullptr;
 }
 
 //----------------------------------------------------------------------------------------------------
 UTF8StringPtr UIUndoManager::getRedoName ()
 {
-	UTF8StringPtr redoName = 0;
+	UTF8StringPtr redoName = nullptr;
 	if (position != end ())
 	{
 		position++;
@@ -196,7 +196,7 @@ void UIUndoManager::clear ()
 {
 	std::for_each (begin (), end (), deleteUndoManagerAction);
 	std::list<IAction*>::clear ();
-	push_back (new UndoStackTop);
+	emplace_back (new UndoStackTop);
 	position = end ();
 	savePosition = begin ();
 	changed (kMsgChanged);
@@ -206,7 +206,7 @@ void UIUndoManager::clear ()
 void UIUndoManager::startGroupAction (UTF8StringPtr name)
 {
 	UIGroupAction* action = new UIGroupAction (name);
-	groupQueue.push_back (action);
+	groupQueue.emplace_back (action);
 }
 
 //----------------------------------------------------------------------------------------------------

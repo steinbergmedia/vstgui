@@ -14,11 +14,11 @@ namespace VSTGUI {
 class UITagsDataSource;
 
 //----------------------------------------------------------------------------------------------------
-class UITagsController : public CBaseObject, public DelegationController
+class UITagsController : public NonAtomicReferenceCounted, public DelegationController
 {
 public:
 	UITagsController (IController* baseController, UIDescription* description, IActionPerformer* actionPerformer);
-	~UITagsController ();
+	~UITagsController () override;
 
 protected:
 	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override;

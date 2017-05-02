@@ -40,7 +40,6 @@
 #include <commctrl.h>
 #include <cmath>
 #include <windowsx.h>
-
 #include "gdiplusdrawcontext.h"
 #include "gdiplusbitmap.h"
 #include "gdiplusgraphicspath.h"
@@ -57,6 +56,8 @@
 #if VSTGUI_OPENGL_SUPPORT
 #include "win32openglview.h"
 #endif
+
+#include <windowsx.h>
 
 // windows libraries VSTGUI depends on
 #pragma comment(lib, "Shlwapi.lib")
@@ -77,7 +78,7 @@ class CDropTarget : public ::IDropTarget
 {	
 public:
 	CDropTarget (Win32Frame* pFrame);
-	virtual ~CDropTarget ();
+	~CDropTarget () noexcept;
 
 	// IUnknown
 	STDMETHOD (QueryInterface) (REFIID riid, void** object);
@@ -91,7 +92,6 @@ public:
 	STDMETHOD (Drop) (IDataObject* dataObject, DWORD keyState, POINTL pt, DWORD* effect);
 private:
 	int32_t refCount;
-	bool accept;
 	Win32Frame* pFrame;
 	WinDragContainer* gDragContainer;
 };
@@ -99,15 +99,15 @@ private:
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-class Win32DropSource : public CBaseObject, public ::IDropSource
+class Win32DropSource : public AtomicReferenceCounted, public ::IDropSource
 {
 public:
 	Win32DropSource () {}
 
 	// IUnknown
 	STDMETHOD (QueryInterface) (REFIID riid, void** object);
-	STDMETHOD_ (ULONG, AddRef) (void) { remember (); return getNbReference ();}
-	STDMETHOD_ (ULONG, Release) (void) { ULONG refCount = getNbReference () - 1; forget (); return refCount; }
+	STDMETHOD_ (ULONG, AddRef) (void) { remember (); return static_cast<ULONG> (getNbReference ());}
+	STDMETHOD_ (ULONG, Release) (void) { ULONG refCount = static_cast<ULONG> (getNbReference ()) - 1; forget (); return refCount; }
 	
 	// IDropSource
 	STDMETHOD (QueryContinueDrag) (BOOL escapePressed, DWORD keyState);
@@ -117,16 +117,16 @@ public:
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-class Win32DataObject : public CBaseObject, public ::IDataObject
+class Win32DataObject : public AtomicReferenceCounted, public ::IDataObject
 {
 public:
 	Win32DataObject (IDataPackage* dataPackage);
-	~Win32DataObject ();
+	~Win32DataObject () noexcept;
 
 	// IUnknown
 	STDMETHOD (QueryInterface) (REFIID riid, void** object);
-	STDMETHOD_ (ULONG, AddRef) (void) { remember (); return getNbReference ();}
-	STDMETHOD_ (ULONG, Release) (void) { ULONG refCount = getNbReference () - 1; forget (); return refCount; }
+	STDMETHOD_ (ULONG, AddRef) (void) { remember (); return static_cast<ULONG> (getNbReference ());}
+	STDMETHOD_ (ULONG, Release) (void) { ULONG refCount = static_cast<ULONG> (getNbReference ()) - 1; forget (); return refCount; }
 
 	// IDataObject
 	STDMETHOD (GetData) (FORMATETC *format, STGMEDIUM *medium);
@@ -143,9 +143,9 @@ private:
 };
 
 //-----------------------------------------------------------------------------
-IPlatformFrame* IPlatformFrame::createPlatformFrame (IPlatformFrameCallback* frame, const CRect& size, void* parent, PlatformType parentType)
+IPlatformFrame* IPlatformFrame::createPlatformFrame (IPlatformFrameCallback* frame, const CRect& size, void* parent, PlatformType parentType, IPlatformFrameConfig* config)
 {
-	return new Win32Frame (frame, size, (HWND)parent);
+	return new Win32Frame (frame, size, (HWND)parent, parentType);
 }
 
 //-----------------------------------------------------------------------------
@@ -172,7 +172,7 @@ static bool isParentLayered (HWND parent)
 }
 
 //-----------------------------------------------------------------------------
-Win32Frame::Win32Frame (IPlatformFrameCallback* frame, const CRect& size, HWND parent)
+Win32Frame::Win32Frame (IPlatformFrameCallback* frame, const CRect& size, HWND parent, PlatformType parentType)
 : IPlatformFrame (frame)
 , windowHandle (0)
 , parentWindow (parent)
@@ -184,34 +184,43 @@ Win32Frame::Win32Frame (IPlatformFrameCallback* frame, const CRect& size, HWND p
 , updateRegionList (0)
 , updateRegionListSize (0)
 {
-	initWindowClass ();
 	useD2D ();
-
-	DWORD style = isParentLayered (parent) ? WS_EX_TRANSPARENT : 0;
-	#if !DEBUG_DRAWING
-	if (getD2DFactory ()) // workaround for Direct2D hotfix (KB2028560)
+	if (parentType == PlatformType::kHWNDTopLevel)
 	{
-		// when WS_EX_COMPOSITED is set drawing does not work correctly. This seems like a bug in Direct2D wich happens with this hotfix
+		windowHandle = parent;
+		parentWindow = nullptr;
 	}
-	else if (IsWindowsVistaOrGreater()) // Vista and above
-		style |= WS_EX_COMPOSITED;
 	else
-		backBuffer = createOffscreenContext (size.getWidth (), size.getHeight ());
-	#endif
-	windowHandle = CreateWindowEx (style, gClassName, TEXT("Window"),
-									WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, 
-									0, 0, (int)size.getWidth (), (int)size.getHeight (), 
-									parentWindow, NULL, GetInstance (), NULL);
-
-	if (windowHandle)
 	{
-		SetWindowLongPtr (windowHandle, GWLP_USERDATA, (__int3264)(LONG_PTR)this);
-		RegisterDragDrop (windowHandle, new CDropTarget (this));
+		initWindowClass ();
+
+		DWORD style = isParentLayered (parent) ? WS_EX_TRANSPARENT : 0;
+		#if !DEBUG_DRAWING
+		if (getD2DFactory ()) // workaround for Direct2D hotfix (KB2028560)
+		{
+			// when WS_EX_COMPOSITED is set drawing does not work correctly. This seems like a bug in Direct2D wich happens with this hotfix
+		}
+		else if (IsWindowsVistaOrGreater()) // Vista and above
+			style |= WS_EX_COMPOSITED;
+		else
+			backBuffer = createOffscreenContext (size.getWidth (), size.getHeight ());
+		#endif
+		windowHandle = CreateWindowEx (style, gClassName, TEXT("Window"),
+										WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, 
+										0, 0, (int)size.getWidth (), (int)size.getHeight (), 
+										parentWindow, NULL, GetInstance (), NULL);
+
+		if (windowHandle)
+		{
+			SetWindowLongPtr (windowHandle, GWLP_USERDATA, (__int3264)(LONG_PTR)this);
+			RegisterDragDrop (windowHandle, new CDropTarget (this));
+		}
 	}
+	setMouseCursor (kCursorDefault);
 }
 
 //-----------------------------------------------------------------------------
-Win32Frame::~Win32Frame ()
+Win32Frame::~Win32Frame () noexcept
 {
 	if (updateRegionList)
 		std::free (updateRegionList);
@@ -219,15 +228,18 @@ Win32Frame::~Win32Frame ()
 		deviceContext->forget ();
 	if (tooltipWindow)
 		DestroyWindow (tooltipWindow);
-	if (windowHandle)
-	{
-		RevokeDragDrop (windowHandle);
-		SetWindowLongPtr (windowHandle, GWLP_USERDATA, (LONG_PTR)NULL);
-		DestroyWindow (windowHandle);
-	}
 	if (backBuffer)
 		backBuffer->forget ();
-	destroyWindowClass ();
+	if (parentWindow)
+	{
+		if (windowHandle)
+		{
+			RevokeDragDrop (windowHandle);
+			SetWindowLongPtr (windowHandle, GWLP_USERDATA, (LONG_PTR)NULL);
+			DestroyWindow (windowHandle);
+		}
+		destroyWindowClass ();
+	}
 
 	unuseD2D ();
 }
@@ -381,7 +393,8 @@ bool Win32Frame::setSize (const CRect& newSize)
 		backBuffer->forget ();
 		backBuffer = createOffscreenContext (newSize.getWidth (), newSize.getHeight ());
 	}
-	// TODO for VST2: we only set the size of the window we own. In VST2 this was not the case, we also resized the parent window. This must be done upstream now.
+	if (!parentWindow)
+		return true;
 	SetWindowPos (windowHandle, HWND_TOP, (int)newSize.left, (int)newSize.top, (int)newSize.getWidth (), (int)newSize.getHeight (), SWP_NOZORDER|SWP_NOCOPYBITS|SWP_NOREDRAW|SWP_DEFERERASE);
 	invalidRect (newSize);
 	return true;
@@ -396,34 +409,12 @@ bool Win32Frame::getSize (CRect& size) const
 	p.x = r.left;
 	p.y = r.top;
 	MapWindowPoints (HWND_DESKTOP, windowHandle, &p, 1);
+	MapWindowPoints (windowHandle, GetParent (windowHandle), &p, 1);
 	size.left = p.x;
 	size.top = p.y;
 	size.right = p.x + (r.right - r.left);
 	size.bottom = p.y + (r.bottom - r.top);
 	return true;
-
-#if 0 // old code, returned other values, why ?
-	// return the size relative to the client rect of this window
-	// get the main window
-	HWND wnd = GetParent (windowHandle);
-	HWND wndParent = GetParent (wnd);
-	HWND wndParentParent = GetParent (wndParent);
-
-	RECT  rctTempWnd;
-	GetWindowRect (wnd, &rctTempWnd);
-	
-	POINT point;
-	point.x = rctTempWnd.left;
-	point.y = rctTempWnd.top;
-
-	MapWindowPoints (HWND_DESKTOP, wndParentParent, &point, 1);
-	
-	size.left   = (CCoord)point.x;
-	size.top    = (CCoord)point.y;
-	size.right  = (CCoord)size.left + rctTempWnd.right - rctTempWnd.left;
-	size.bottom = (CCoord)size.top  + rctTempWnd.bottom - rctTempWnd.top;
-	return true;
-#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -576,39 +567,40 @@ bool Win32Frame::hideTooltip ()
 }
 
 //-----------------------------------------------------------------------------
-IPlatformTextEdit* Win32Frame::createPlatformTextEdit (IPlatformTextEditCallback* textEdit)
+SharedPointer<IPlatformTextEdit> Win32Frame::createPlatformTextEdit (IPlatformTextEditCallback* textEdit)
 {
-	return new Win32TextEdit (windowHandle, textEdit);
+	return owned<IPlatformTextEdit> (new Win32TextEdit (windowHandle, textEdit));
 }
 
 //-----------------------------------------------------------------------------
-IPlatformOptionMenu* Win32Frame::createPlatformOptionMenu ()
+SharedPointer<IPlatformOptionMenu> Win32Frame::createPlatformOptionMenu ()
 {
-	return new Win32OptionMenu (windowHandle);
+	return owned<IPlatformOptionMenu> (new Win32OptionMenu (windowHandle));
 }
 
 #if VSTGUI_OPENGL_SUPPORT
 //-----------------------------------------------------------------------------
-IPlatformOpenGLView* Win32Frame::createPlatformOpenGLView ()
+SharedPointer<IPlatformOpenGLView> Win32Frame::createPlatformOpenGLView ()
 {
-	return new Win32OpenGLView (this);
+	return owned<IPlatformOpenGLView> (new Win32OpenGLView (this));
 }
 #endif
 
 //-----------------------------------------------------------------------------
-COffscreenContext* Win32Frame::createOffscreenContext (CCoord width, CCoord height, double scaleFactor)
+SharedPointer<COffscreenContext> Win32Frame::createOffscreenContext (CCoord width, CCoord height, double scaleFactor)
 {
 #if VSTGUI_DIRECT2D_SUPPORT
 	if (getD2DFactory ())
 	{
-		D2DBitmap* bitmap = new D2DBitmap (CPoint (width, height));
-		D2DDrawContext* context = new D2DDrawContext (bitmap);
+		D2DBitmap* bitmap = new D2DBitmap (CPoint (width * scaleFactor, height * scaleFactor));
+		bitmap->setScaleFactor (scaleFactor);
+		auto context = owned<COffscreenContext> (new D2DDrawContext (bitmap));
 		bitmap->forget ();
 		return context;
 	}
 #endif
 	GdiplusBitmap* bitmap = new GdiplusBitmap (CPoint (width, height));
-	GdiplusDrawContext* context = new GdiplusDrawContext (bitmap);
+	auto context = owned<COffscreenContext> (new GdiplusDrawContext (bitmap));
 	bitmap->forget ();
 	return context;
 }
@@ -634,16 +626,16 @@ DragResult Win32Frame::doDrag (IDataPackage* source, const CPoint& offset, CBitm
 }
 
 //-----------------------------------------------------------------------------
-void Win32Frame::setClipboard (IDataPackage* data)
+void Win32Frame::setClipboard (const SharedPointer<IDataPackage>& data)
 {
 	// TODO: Implementation
 }
 
 //-----------------------------------------------------------------------------
-IDataPackage* Win32Frame::getClipboard ()
+SharedPointer<IDataPackage> Win32Frame::getClipboard ()
 {
 	// TODO: Implementation
-	return 0;
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -785,244 +777,260 @@ static unsigned char translateWinVirtualKey (WPARAM winVKey)
 }
 
 //-----------------------------------------------------------------------------
+LONG_PTR WINAPI Win32Frame::proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	SharedPointer<Win32Frame> lifeGuard (this);
+	IPlatformFrameCallback* pFrame = getFrame ();
+	bool doubleClick = false;
+	
+	switch (message)
+	{
+		case WM_MOUSEWHEEL:
+		{
+			CButtonState buttons = 0;
+			if (GetKeyState (VK_SHIFT)   < 0)
+				buttons |= kShift;
+			if (GetKeyState (VK_CONTROL) < 0)
+				buttons |= kControl;
+			if (GetKeyState (VK_MENU)    < 0)
+				buttons |= kAlt;
+			short zDelta = (short) GET_WHEEL_DELTA_WPARAM(wParam);
+			POINT p {GET_X_LPARAM (lParam), GET_Y_LPARAM (lParam)};
+			ScreenToClient (windowHandle, &p);
+			CPoint where (p.x, p.y);
+			pFrame->platformOnMouseWheel (where, kMouseWheelAxisY, ((float)zDelta / WHEEL_DELTA), buttons);
+			break;
+		}
+		case WM_MOUSEHWHEEL:	// new since vista
+		{
+			CButtonState buttons = 0;
+			if (GetKeyState (VK_SHIFT)   < 0)
+				buttons |= kShift;
+			if (GetKeyState (VK_CONTROL) < 0)
+				buttons |= kControl;
+			if (GetKeyState (VK_MENU)    < 0)
+				buttons |= kAlt;
+			short zDelta = (short) GET_WHEEL_DELTA_WPARAM(wParam);
+			POINT p {GET_X_LPARAM (lParam), GET_Y_LPARAM (lParam)};
+			ScreenToClient (windowHandle, &p);
+			CPoint where (p.x, p.y);
+			pFrame->platformOnMouseWheel (where, kMouseWheelAxisX, ((float)-zDelta / WHEEL_DELTA), buttons);
+			break;
+		}
+		case WM_CTLCOLOREDIT:
+		{
+			Win32TextEdit* win32TextEdit = (Win32TextEdit*)(LONG_PTR) GetWindowLongPtr ((HWND)lParam, GWLP_USERDATA);
+			if (win32TextEdit)
+			{
+				CColor fontColor = win32TextEdit->getTextEdit ()->platformGetFontColor ();
+				SetTextColor ((HDC) wParam, RGB (fontColor.red, fontColor.green, fontColor.blue));
+#if 1 // TODO: I don't know why the transparent part does not work anymore. Needs more investigation.
+				CColor backColor = win32TextEdit->getTextEdit ()->platformGetBackColor ();
+				SetBkColor ((HDC) wParam, RGB (backColor.red, backColor.green, backColor.blue));
+				return (LRESULT)(win32TextEdit->getPlatformBackColor ());
+#else
+				SetBkMode ((HDC)wParam, TRANSPARENT);
+				return (LRESULT) ::GetStockObject (HOLLOW_BRUSH);
+#endif
+			}
+			break;
+		}
+			
+		case WM_PAINT:
+		{
+			paint (hwnd);
+			return 0;
+		}
+			
+		case WM_RBUTTONDBLCLK:
+		case WM_MBUTTONDBLCLK:
+		case WM_LBUTTONDBLCLK:
+		case WM_XBUTTONDBLCLK:
+			doubleClick = true;
+		case WM_RBUTTONDOWN:
+		case WM_MBUTTONDOWN:
+		case WM_LBUTTONDOWN:
+		case WM_XBUTTONDOWN:
+		{
+			CButtonState buttons = 0;
+			if (wParam & MK_LBUTTON)
+				buttons |= kLButton;
+			if (wParam & MK_RBUTTON)
+				buttons |= kRButton;
+			if (wParam & MK_MBUTTON)
+				buttons |= kMButton;
+			if (wParam & MK_XBUTTON1)
+				buttons |= kButton4;
+			if (wParam & MK_XBUTTON2)
+				buttons |= kButton5;
+			if (wParam & MK_CONTROL)
+				buttons |= kControl;
+			if (wParam & MK_SHIFT)
+				buttons |= kShift;
+			if (GetKeyState (VK_MENU)    < 0)
+				buttons |= kAlt;
+			if (doubleClick)
+				buttons |= kDoubleClick;
+			SetFocus (getPlatformWindow ());
+			CPoint where (GET_X_LPARAM (lParam), GET_Y_LPARAM (lParam));
+			if (pFrame->platformOnMouseDown (where, buttons) == kMouseEventHandled && getPlatformWindow ())
+				SetCapture (getPlatformWindow ());
+			return 0;
+		}
+		case WM_MOUSELEAVE:
+		{
+			CPoint where;
+			getCurrentMousePosition (where);
+			CButtonState buttons;
+			getCurrentMouseButtons (buttons);
+			pFrame->platformOnMouseExited (where, buttons);
+			mouseInside = false;
+			return 0;
+		}
+		case WM_MOUSEMOVE:
+		{
+			CButtonState buttons = 0;
+			if (wParam & MK_LBUTTON)
+				buttons |= kLButton;
+			if (wParam & MK_RBUTTON)
+				buttons |= kRButton;
+			if (wParam & MK_MBUTTON)
+				buttons |= kMButton;
+			if (wParam & MK_XBUTTON1)
+				buttons |= kButton4;
+			if (wParam & MK_XBUTTON2)
+				buttons |= kButton5;
+			if (wParam & MK_CONTROL)
+				buttons |= kControl;
+			if (wParam & MK_SHIFT)
+				buttons |= kShift;
+			if (GetKeyState (VK_MENU) < 0)
+				buttons |= kAlt;
+			if (!mouseInside)
+			{
+				// this makes sure that WM_MOUSELEAVE will be generated by the system
+				mouseInside = true;
+				TRACKMOUSEEVENT tme = {0};
+				tme.cbSize = sizeof (tme);
+				tme.dwFlags = TME_LEAVE;
+				tme.hwndTrack = windowHandle;
+				TrackMouseEvent (&tme);
+			}
+			CPoint where (GET_X_LPARAM (lParam), GET_Y_LPARAM (lParam));
+			pFrame->platformOnMouseMoved (where, buttons);
+			return 0;
+		}
+		case WM_LBUTTONUP:
+		case WM_RBUTTONUP:
+		case WM_MBUTTONUP:
+		case WM_XBUTTONUP:
+		{
+			CButtonState buttons = 0;
+			if (message & MK_LBUTTON || message == WM_LBUTTONUP)
+				buttons |= kLButton;
+			if (wParam & MK_RBUTTON || message == WM_RBUTTONUP)
+				buttons |= kRButton;
+			if (wParam & MK_MBUTTON || message == WM_MBUTTONUP)
+				buttons |= kMButton;
+			if (wParam & MK_XBUTTON1)
+				buttons |= kButton4;
+			if (wParam & MK_XBUTTON2)
+				buttons |= kButton5;
+			if (wParam & MK_CONTROL)
+				buttons |= kControl;
+			if (wParam & MK_SHIFT)
+				buttons |= kShift;
+			if (GetKeyState (VK_MENU) < 0)
+				buttons |= kAlt;
+			CPoint where (GET_X_LPARAM (lParam), GET_Y_LPARAM (lParam));
+			pFrame->platformOnMouseUp (where, buttons);
+			ReleaseCapture ();
+			return 0;
+		}
+		case WM_KEYDOWN:
+		{
+			VstKeyCode key {};
+			if (GetKeyState (VK_SHIFT)   < 0)
+				key.modifier |= MODIFIER_SHIFT;
+			if (GetKeyState (VK_CONTROL) < 0)
+				key.modifier |= MODIFIER_CONTROL;
+			if (GetKeyState (VK_MENU)    < 0)
+				key.modifier |= MODIFIER_ALTERNATE;
+			key.virt = translateWinVirtualKey (wParam);
+			if (key.virt)
+			{
+				if (pFrame->platformOnKeyDown (key))
+					return 0;
+			}
+			break;
+		}
+		case WM_KEYUP:
+		{
+			VstKeyCode key {};
+			if (GetKeyState (VK_SHIFT)   < 0)
+				key.modifier |= MODIFIER_SHIFT;
+			if (GetKeyState (VK_CONTROL) < 0)
+				key.modifier |= MODIFIER_CONTROL;
+			if (GetKeyState (VK_MENU)    < 0)
+				key.modifier |= MODIFIER_ALTERNATE;
+			key.virt = translateWinVirtualKey (wParam);
+			if (key.virt)
+			{
+				if (pFrame->platformOnKeyUp (key))
+					return 0;
+			}
+			break;
+		}
+		case WM_SETFOCUS:
+		{
+			pFrame->platformOnActivate (true);
+			break;
+		}
+		case WM_KILLFOCUS:
+		{
+			HWND focusWindow = GetFocus ();
+			if (GetParent (focusWindow) != windowHandle)
+				pFrame->platformOnActivate (false);
+			break;
+		}
+		case WM_DESTROY:
+		{
+#if DEBUG
+			DebugPrint ("This sometimes happens, only when we are currently processing a mouse down event and via a callback into the host the window gets destroyed. Otherwise this should never get called. We are the owner of the window and we are responsible of destroying it.\n");
+#endif
+			if (parentWindow)
+				windowHandle = 0;
+			break;
+		}
+		case WM_ERASEBKGND:
+		{
+			return 1; // don't draw background
+		}
+		case WM_COMMAND:
+		{
+			if (HIWORD (wParam) == EN_CHANGE)
+			{
+				// text control changes will be forwarded to the text control window proc
+				HWND controlWindow = (HWND)lParam;
+				WINDOWSPROC textEditWindowProc = (WINDOWSPROC)(LONG_PTR)GetWindowLongPtr (controlWindow, GWLP_WNDPROC);
+				if (textEditWindowProc)
+				{
+					textEditWindowProc (controlWindow, WM_COMMAND, wParam, lParam);
+				}
+			}
+			break;
+		}
+	}
+	return DefWindowProc (hwnd, message, wParam, lParam);
+}
+
+//-----------------------------------------------------------------------------
 LONG_PTR WINAPI Win32Frame::WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	Win32Frame* win32Frame = (Win32Frame*)(LONG_PTR)GetWindowLongPtr (hwnd, GWLP_USERDATA);
 	if (win32Frame)
 	{
-		SharedPointer<Win32Frame> lifeGuard (win32Frame);
-		IPlatformFrameCallback* pFrame = win32Frame->getFrame ();
-		bool doubleClick = false;
-
-		switch (message)
-		{
-			case WM_MOUSEWHEEL:
-			{
-				CButtonState buttons = 0;
-				if (GetKeyState (VK_SHIFT)   < 0)
-					buttons |= kShift;
-				if (GetKeyState (VK_CONTROL) < 0)
-					buttons |= kControl;
-				if (GetKeyState (VK_MENU)    < 0)
-					buttons |= kAlt;
-				CPoint where (GET_X_LPARAM (lParam), GET_Y_LPARAM (lParam));
-				short zDelta = (short) HIWORD(wParam);
-				RECT rctWnd;
-				GetWindowRect (hwnd, &rctWnd);
-				where.offset ((CCoord)-rctWnd.left, (CCoord)-rctWnd.top);
-				pFrame->platformOnMouseWheel (where, kMouseWheelAxisY, ((float)zDelta / WHEEL_DELTA), buttons);
-				break;
-			}
-			case WM_MOUSEHWHEEL:	// new since vista
-			{
-				CButtonState buttons = 0;
-				if (GetKeyState (VK_SHIFT)   < 0)
-					buttons |= kShift;
-				if (GetKeyState (VK_CONTROL) < 0)
-					buttons |= kControl;
-				if (GetKeyState (VK_MENU)    < 0)
-					buttons |= kAlt;
-				CPoint where (GET_X_LPARAM (lParam), GET_Y_LPARAM (lParam));
-				short zDelta = (short) HIWORD(wParam);
-				RECT rctWnd;
-				GetWindowRect (hwnd, &rctWnd);
-				where.offset ((CCoord)-rctWnd.left, (CCoord)-rctWnd.top);
-				pFrame->platformOnMouseWheel (where, kMouseWheelAxisX, ((float)-zDelta / WHEEL_DELTA), buttons);
-				break;
-			}
-			case WM_CTLCOLOREDIT:
-			{
-				Win32TextEdit* win32TextEdit = (Win32TextEdit*)(LONG_PTR) GetWindowLongPtr ((HWND)lParam, GWLP_USERDATA);
-				if (win32TextEdit)
-				{
-					CColor fontColor = win32TextEdit->getTextEdit ()->platformGetFontColor ();
-					SetTextColor ((HDC) wParam, RGB (fontColor.red, fontColor.green, fontColor.blue));
-					#if 1 // TODO: I don't know why the transparent part does not work anymore. Needs more investigation.
-					CColor backColor = win32TextEdit->getTextEdit ()->platformGetBackColor ();
-					SetBkColor ((HDC) wParam, RGB (backColor.red, backColor.green, backColor.blue));
-					return (LRESULT)(win32TextEdit->getPlatformBackColor ());
-
-					#else
-					SetBkMode ((HDC)wParam, TRANSPARENT);
-					return (LRESULT) ::GetStockObject (HOLLOW_BRUSH);
-
-					#endif
-				}
-				break;
-			}
-
-			case WM_PAINT:
-			{
-				win32Frame->paint (hwnd);
-				return 0;
-			}
-
-			case WM_RBUTTONDBLCLK:
-			case WM_MBUTTONDBLCLK:
-			case WM_LBUTTONDBLCLK:
-			case WM_XBUTTONDBLCLK:
-				doubleClick = true;
-			case WM_RBUTTONDOWN:
-			case WM_MBUTTONDOWN:
-			case WM_LBUTTONDOWN:
-			case WM_XBUTTONDOWN:
-			{
-				CButtonState buttons = 0;
-				if (wParam & MK_LBUTTON)
-					buttons |= kLButton;
-				if (wParam & MK_RBUTTON)
-					buttons |= kRButton;
-				if (wParam & MK_MBUTTON)
-					buttons |= kMButton;
-				if (wParam & MK_XBUTTON1)
-					buttons |= kButton4;
-				if (wParam & MK_XBUTTON2)
-					buttons |= kButton5;
-				if (wParam & MK_CONTROL)
-					buttons |= kControl;
-				if (wParam & MK_SHIFT)
-					buttons |= kShift;
-				if (GetKeyState (VK_MENU)    < 0)
-					buttons |= kAlt;
-				if (doubleClick)
-					buttons |= kDoubleClick;
-				SetFocus (win32Frame->getPlatformWindow ());
-				CPoint where (GET_X_LPARAM (lParam), GET_Y_LPARAM (lParam));
-				if (pFrame->platformOnMouseDown (where, buttons) == kMouseEventHandled && win32Frame->getPlatformWindow ())
-					SetCapture (win32Frame->getPlatformWindow ());
-				return 0;
-			}
-			case WM_MOUSELEAVE:
-			{
-				CPoint where;
-				win32Frame->getCurrentMousePosition (where);
-				CButtonState buttons;
-				win32Frame->getCurrentMouseButtons (buttons);
-				pFrame->platformOnMouseExited (where, buttons);
-				win32Frame->mouseInside = false;
-				return 0;
-			}
-			case WM_MOUSEMOVE:
-			{
-				CButtonState buttons = 0;
-				if (wParam & MK_LBUTTON)
-					buttons |= kLButton;
-				if (wParam & MK_RBUTTON)
-					buttons |= kRButton;
-				if (wParam & MK_MBUTTON)
-					buttons |= kMButton;
-				if (wParam & MK_XBUTTON1)
-					buttons |= kButton4;
-				if (wParam & MK_XBUTTON2)
-					buttons |= kButton5;
-				if (wParam & MK_CONTROL)
-					buttons |= kControl;
-				if (wParam & MK_SHIFT)
-					buttons |= kShift;
-				if (GetKeyState (VK_MENU) < 0)
-					buttons |= kAlt;
-				if (!win32Frame->mouseInside)
-				{
-					// this makes sure that WM_MOUSELEAVE will be generated by the system
-					win32Frame->mouseInside = true;
-					TRACKMOUSEEVENT tme = {0};
-					tme.cbSize = sizeof (tme);
-					tme.dwFlags = TME_LEAVE;
-					tme.hwndTrack = win32Frame->windowHandle;
-					TrackMouseEvent (&tme);
-				}
-				CPoint where (GET_X_LPARAM (lParam), GET_Y_LPARAM (lParam));
-				pFrame->platformOnMouseMoved (where, buttons);
-				return 0;
-			}
-			case WM_LBUTTONUP:
-			case WM_RBUTTONUP:
-			case WM_MBUTTONUP:
-			case WM_XBUTTONUP:
-			{
-				CButtonState buttons = 0;
-				if (message & MK_LBUTTON || message == WM_LBUTTONUP)
-					buttons |= kLButton;
-				if (wParam & MK_RBUTTON || message == WM_RBUTTONUP)
-					buttons |= kRButton;
-				if (wParam & MK_MBUTTON || message == WM_MBUTTONUP)
-					buttons |= kMButton;
-				if (wParam & MK_XBUTTON1)
-					buttons |= kButton4;
-				if (wParam & MK_XBUTTON2)
-					buttons |= kButton5;
-				if (wParam & MK_CONTROL)
-					buttons |= kControl;
-				if (wParam & MK_SHIFT)
-					buttons |= kShift;
-				if (GetKeyState (VK_MENU) < 0)
-					buttons |= kAlt;
-				CPoint where (GET_X_LPARAM (lParam), GET_Y_LPARAM (lParam));
-				pFrame->platformOnMouseUp (where, buttons);
-				ReleaseCapture ();
-				return 0;
-			}
-			case WM_KEYDOWN:
-			{
-				VstKeyCode key;
-				key.virt = translateWinVirtualKey (wParam);
-				if (key.virt)
-				{
-					if (pFrame->platformOnKeyDown (key))
-						return 0;
-				}
-				break;
-			}
-			case WM_KEYUP:
-			{
-				VstKeyCode key;
-				key.virt = translateWinVirtualKey (wParam);
-				if (key.virt)
-				{
-					if (pFrame->platformOnKeyUp (key))
-						return 0;
-				}
-				break;
-			}
-			case WM_SETFOCUS:
-			{
-				pFrame->platformOnActivate (true);
-				break;
-			}
-			case WM_KILLFOCUS:
-			{
-				HWND focusWindow = GetFocus ();
-				if (GetParent (focusWindow) != win32Frame->windowHandle)
-					pFrame->platformOnActivate (false);
-				break;
-			}
-			case WM_DESTROY:
-			{
-				#if DEBUG
-				DebugPrint ("This sometimes happens, only when we are currently processing a mouse down event and via a callback into the host the window gets destroyed. Otherwise this should never get called. We are the owner of the window and we are responsible of destroying it.\n");
-				#endif
-				win32Frame->windowHandle = 0;
-				break;
-			}
-			case WM_ERASEBKGND:
-			{
-				return 1; // don't draw background
-			}
-			case WM_COMMAND:
-			{
-				if (HIWORD (wParam) == EN_CHANGE)
-				{
-					// text control changes will be forwarded to the text control window proc
-					HWND controlWindow = (HWND)lParam;
-					WINDOWSPROC textEditWindowProc = (WINDOWSPROC)(LONG_PTR)GetWindowLongPtr (controlWindow, GWLP_WNDPROC);
-					if (textEditWindowProc)
-					{
-						textEditWindowProc (controlWindow, WM_COMMAND, wParam, lParam);
-					}
-				}
-				break;
-			}
-		}
+		return win32Frame->proc (hwnd, message, wParam, lParam);
 	}
 	return DefWindowProc (hwnd, message, wParam, lParam);
 }
@@ -1036,7 +1044,7 @@ CDropTarget::CDropTarget (Win32Frame* pFrame)
 }
 
 //-----------------------------------------------------------------------------
-CDropTarget::~CDropTarget ()
+CDropTarget::~CDropTarget () noexcept
 {
 }
 
@@ -1056,7 +1064,7 @@ STDMETHODIMP CDropTarget::QueryInterface (REFIID riid, void** object)
 //-----------------------------------------------------------------------------
 STDMETHODIMP_(ULONG) CDropTarget::AddRef (void)
 {
-	return ++refCount;
+	return static_cast<ULONG> (++refCount);
 }
 
 //-----------------------------------------------------------------------------
@@ -1068,7 +1076,7 @@ STDMETHODIMP_(ULONG) CDropTarget::Release (void)
 		delete this;
 		return 0;
 	}
-	return refCount;
+	return static_cast<ULONG> (refCount);
 }
 
 //-----------------------------------------------------------------------------
@@ -1186,7 +1194,7 @@ Win32DataObject::Win32DataObject (IDataPackage* dataPackage)
 }
 
 //-----------------------------------------------------------------------------
-Win32DataObject::~Win32DataObject ()
+Win32DataObject::~Win32DataObject () noexcept
 {
 	dataPackage->forget ();
 }

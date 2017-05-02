@@ -106,7 +106,7 @@ enum CControlEnum
 class CControl : public CView, public IFocusDrawing, public IDependency
 {
 public:
-	CControl (const CRect& size, IControlListener* listener = 0, int32_t tag = 0, CBitmap* pBackground = 0);
+	CControl (const CRect& size, IControlListener* listener = nullptr, int32_t tag = 0, CBitmap* pBackground = nullptr);
 	CControl (const CControl& c);
 
 	//-----------------------------------------------------------------------------
@@ -186,10 +186,10 @@ public:
 	
 	CLASS_METHODS_VIRTUAL(CControl, CView)
 protected:
-	~CControl ();
+	~CControl () noexcept override = default;
 	static int32_t mapVstKeyModifier (int32_t vstModifier);
 
-	typedef DispatchList<IControlListener> SubListenerDispatcher;
+	using SubListenerDispatcher = DispatchList<IControlListener*>;
 
 	IControlListener* listener;
 	SubListenerDispatcher subListeners;
@@ -227,7 +227,5 @@ protected:
 };
 
 } // namespace
-
-VSTGUI_DEPRECATED(typedef VSTGUI::IControlListener CControlListener;) ///< \deprecated use IControlListener instead of CControlListener
 
 #endif

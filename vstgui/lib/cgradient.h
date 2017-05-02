@@ -46,17 +46,17 @@ namespace VSTGUI {
 ///	@brief Gradient Object [new in 4.0]
 ///	@ingroup new_in_4_0
 //-----------------------------------------------------------------------------
-class CGradient : public CBaseObject
+class CGradient : public AtomicReferenceCounted
 {
 public:
-	typedef std::multimap<double, CColor> ColorStopMap;
+	using ColorStopMap = std::multimap<double, CColor>;
 
 	static CGradient* create (const ColorStopMap& colorStopMap);
 	static CGradient* create (double color1Start, double color2Start, const CColor& color1, const CColor& color2)
 	{
 		ColorStopMap map;
-		map.insert (std::make_pair (color1Start, color1));
-		map.insert (std::make_pair (color2Start, color2));
+		map.emplace (color1Start, color1);
+		map.emplace (color2Start, color2);
 		return create (map);
 	}
 	
@@ -72,25 +72,23 @@ public:
 	
 	virtual void addColorStop (const std::pair<double, CColor>& colorStop)
 	{
-		colorStops.insert (colorStop);
+		colorStops.emplace (colorStop);
 	}
 
 	virtual void addColorStop (std::pair<double, CColor>&& colorStop)
 	{
-		colorStops.insert (std::move (colorStop));
+		colorStops.emplace (std::move (colorStop));
 	}
 	
 	const ColorStopMap& getColorStops () const { return colorStops; }
 	//@}
-//-----------------------------------------------------------------------------
-	CLASS_METHODS_NOCOPY(CGradient, CBaseObject)
 protected:
 	CGradient (double color1Start, double color2Start, const CColor& color1, const CColor& color2)
 	{
 		addColorStop (color1Start, color1);
 		addColorStop (color2Start, color2);
 	}
-	CGradient (const ColorStopMap& colorStopMap) : colorStops (colorStopMap) {}
+	explicit CGradient (const ColorStopMap& colorStopMap) : colorStops (colorStopMap) {}
 
 	ColorStopMap colorStops;
 };

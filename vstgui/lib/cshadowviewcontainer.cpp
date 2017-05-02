@@ -64,16 +64,20 @@ CShadowViewContainer::CShadowViewContainer (const CShadowViewContainer& copy)
 }
 
 //------------------------------------------------------------------------
-CShadowViewContainer::~CShadowViewContainer ()
+CShadowViewContainer::~CShadowViewContainer () noexcept = default;
+
+//------------------------------------------------------------------------
+void CShadowViewContainer::beforeDelete ()
 {
 	unregisterViewContainerListener (this);
+	CViewContainer::beforeDelete ();
 }
 
 //-----------------------------------------------------------------------------
 bool CShadowViewContainer::removed (CView* parent)
 {
 	getFrame ()->unregisterScaleFactorChangedListeneer (this);
-	setBackground (0);
+	setBackground (nullptr);
 	return CViewContainer::removed (parent);
 }
 
@@ -90,7 +94,7 @@ bool CShadowViewContainer::attached (CView* parent)
 }
 
 //-----------------------------------------------------------------------------
-void CShadowViewContainer::onScaleFactorChanged (CFrame* frame)
+void CShadowViewContainer::onScaleFactorChanged (CFrame* frame, double newScaleFactor)
 {
 	invalidateShadow ();
 }
@@ -152,7 +156,7 @@ static std::vector<int32_t> boxesForGauss (double sigma, uint16_t numBoxes)
 	ideal = ((12. * sigma * sigma) - (numBoxes * l * l) - (4. * numBoxes * l) - (3. * numBoxes)) / ((-4. * l) - 4.);
 	int32_t m = static_cast<int32_t> (std::floor (ideal));
 	for (int32_t i = 0; i < numBoxes; ++i)
-		boxes.push_back (i < m ? l : u);
+		boxes.emplace_back (i < m ? l : u);
 	return boxes;
 }
 
@@ -179,8 +183,7 @@ void CShadowViewContainer::drawRect (CDrawContext* pContext, const CRect& update
 		CCoord width = getWidth ();
 		CCoord height = getHeight ();
 		
-		SharedPointer<COffscreenContext> offscreenContext = owned (COffscreenContext::create (getFrame (), width, height, scaleFactor));
-		if (offscreenContext)
+		if (auto offscreenContext = COffscreenContext::create (getFrame (), width, height, scaleFactor))
 		{
 			offscreenContext->beginDraw ();
 			CDrawContext::Transform transform (*offscreenContext, CGraphicsTransform ().translate (-getViewSize ().left - shadowOffset.x, -getViewSize ().top - shadowOffset.y));

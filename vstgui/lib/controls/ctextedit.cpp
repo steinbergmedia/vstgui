@@ -34,6 +34,7 @@
 
 #include "ctextedit.h"
 #include "../cframe.h"
+#include "../platform/iplatformframe.h"
 #include <cassert>
 
 namespace VSTGUI {
@@ -59,8 +60,6 @@ A bitmap can be used as background.
 //------------------------------------------------------------------------
 CTextEdit::CTextEdit (const CRect& size, IControlListener* listener, int32_t tag, UTF8StringPtr txt, CBitmap* background, const int32_t style)
 : CTextLabel (size, txt, background, style)
-, platformControl (0)
-, immediateTextChange (false)
 {
 	this->listener = listener;
 	this->tag = tag;
@@ -71,18 +70,21 @@ CTextEdit::CTextEdit (const CRect& size, IControlListener* listener, int32_t tag
 //------------------------------------------------------------------------
 CTextEdit::CTextEdit (const CTextEdit& v)
 : CTextLabel (v)
-, platformControl (0)
+, bWasReturnPressed (false)
 , stringToValueFunction (v.stringToValueFunction)
 , immediateTextChange (v.immediateTextChange)
+, secureStyle (v.secureStyle)
+, platformFont (v.platformFont)
+, placeholderString (v.placeholderString)
 {
 	setWantsFocus (true);
 }
 
 //------------------------------------------------------------------------
-CTextEdit::~CTextEdit ()
+CTextEdit::~CTextEdit () noexcept
 {
-	listener = 0;
-	vstgui_assert (platformControl == 0);
+	listener = nullptr;
+	vstgui_assert (platformControl == nullptr);
 }
 
 //------------------------------------------------------------------------
@@ -104,25 +106,53 @@ void CTextEdit::setImmediateTextChange (bool state)
 }
 
 //------------------------------------------------------------------------
+void CTextEdit::setSecureStyle (bool state)
+{
+	if (secureStyle != state)
+	{
+		secureStyle = state;
+		if (platformControl)
+		{
+			
+		}
+	}
+}
+
+//------------------------------------------------------------------------
+bool CTextEdit::getSecureStyle () const
+{
+	return secureStyle;
+}
+
+//------------------------------------------------------------------------
 void CTextEdit::setValue (float val)
 {
 	CTextLabel::setValue (val);
 	bool converted = false;
-	char string[256] = {0};
+	std::string string;
 	if (valueToStringFunction)
 		converted = valueToStringFunction (getValue (), string, this);
 	if (!converted)
 	{
+		char tmp[255];
 		char precisionStr[10];
 		sprintf (precisionStr, "%%.%hhuf", valuePrecision);
-		sprintf (string, precisionStr, getValue ());
+		sprintf (tmp, precisionStr, getValue ());
+		string = tmp;
 	}
 
-	setText (string);
+	if (converted)
+	{
+		CTextLabel::setText (UTF8String (std::move (string)));
+		if (platformControl)
+			platformControl->setText (getText ());
+	}
+	else
+		setText (UTF8String (std::move (string)));
 }
 
 //------------------------------------------------------------------------
-void CTextEdit::setText (UTF8StringPtr txt)
+void CTextEdit::setText (const UTF8String& txt)
 {
 	if (stringToValueFunction)
 	{
@@ -132,9 +162,9 @@ void CTextEdit::setText (UTF8StringPtr txt)
 			CTextLabel::setValue (val);
 			if (valueToStringFunction)
 			{
-				char string[256] = {0};
+				std::string string;
 				valueToStringFunction (getValue (), string, this);
-				CTextLabel::setText (string);
+				CTextLabel::setText (UTF8String (std::move (string)));
 				if (platformControl)
 					platformControl->setText (getText ());
 				return;
@@ -147,6 +177,12 @@ void CTextEdit::setText (UTF8StringPtr txt)
 }
 
 //------------------------------------------------------------------------
+void CTextEdit::setPlaceholderString (const UTF8String& str)
+{
+	placeholderString = str;
+}
+
+//------------------------------------------------------------------------
 void CTextEdit::draw (CDrawContext *pContext)
 {
 	if (platformControl)
@@ -155,8 +191,28 @@ void CTextEdit::draw (CDrawContext *pContext)
 		setDirty (false);
 		return;
 	}
-
-	CTextLabel::draw (pContext);
+	drawBack (pContext);
+	if (text.empty ())
+	{
+		if (!placeholderString.empty ())
+		{
+			pContext->saveGlobalState ();
+			pContext->setGlobalAlpha (pContext->getGlobalAlpha () * 0.5f);
+			drawPlatformText (pContext, placeholderString.getPlatformString ());
+			pContext->restoreGlobalState ();
+		}
+	}
+	else if (getSecureStyle ())
+	{
+		constexpr auto bulletCharacter = "\xE2\x80\xA2";
+		UTF8String str;
+		for (auto i = 0u; i < text.length (); ++i)
+			str += bulletCharacter;
+		drawPlatformText (pContext, str.getPlatformString ());
+	}
+	else
+		CTextLabel::draw (pContext);
+	setDirty (false);
 }
 
 //------------------------------------------------------------------------
@@ -188,14 +244,14 @@ int32_t CTextEdit::onKeyDown (VstKeyCode& keyCode)
 		{
 			bWasReturnPressed = false;
 			platformControl->setText (text);
-			getFrame ()->setFocusView (0);
+			getFrame ()->setFocusView (nullptr);
 			looseFocus ();
 			return 1;
 		}
 		else if (keyCode.virt == VKEY_RETURN)
 		{
 			bWasReturnPressed = true;
-			getFrame ()->setFocusView (0);
+			getFrame ()->setFocusView (nullptr);
 			looseFocus ();
 			return 1;
 		}
@@ -211,7 +267,7 @@ CFontRef CTextEdit::platformGetFont () const
 	fontSize *= getGlobalTransform ().m11;
 	if (fontSize == font->getSize ())
 		return font;
-	platformFont = owned (new CFontDesc (*font));
+	platformFont = makeOwned<CFontDesc> (*font);
 	platformFont->setSize (fontSize);
 	return platformFont;
 }
@@ -233,14 +289,27 @@ void CTextEdit::platformLooseFocus (bool returnPressed)
 {
 	remember ();
 	bWasReturnPressed = returnPressed;
-	getFrame ()->setFocusView (0);
+	if (getFrame ()->getFocusView () == this)
+		getFrame ()->setFocusView (nullptr);
 	forget ();
 }
 
 //------------------------------------------------------------------------
 bool CTextEdit::platformOnKeyDown (const VstKeyCode& key)
 {
-	return getFrame ()->onKeyDown (const_cast<VstKeyCode&> (key)) == 1;
+	if (getFrame ()->onKeyDown (const_cast<VstKeyCode&> (key)) == 1)
+		return true;
+	if (key.virt == VKEY_RETURN)
+	{
+		platformLooseFocus (true);
+		return true;
+	}
+	else if (key.virt == VKEY_ESCAPE)
+	{
+		platformLooseFocus (false);
+		return true;
+	}
+	return false;
 }
 
 //------------------------------------------------------------------------
@@ -248,6 +317,12 @@ void CTextEdit::platformTextDidChange ()
 {
 	if (platformControl && immediateTextChange)
 		updateText (platformControl);
+}
+
+//------------------------------------------------------------------------
+bool CTextEdit::platformIsSecureTextEdit ()
+{
+	return getSecureStyle ();
 }
 
 //------------------------------------------------------------------------
@@ -292,26 +367,26 @@ void CTextEdit::takeFocus ()
 	if (getFrame()->getFocusView () != this)
 		getFrame()->setFocusView (this);
 	CTextLabel::takeFocus ();
-	return;
+	invalid ();
 }
 
 //------------------------------------------------------------------------
 void CTextEdit::looseFocus ()
 {
-	if (platformControl == 0)
+	if (platformControl == nullptr)
 		return;
 
 	CBaseObjectGuard guard (this);
 
-	IPlatformTextEdit* _platformControl = platformControl;
-	platformControl = 0;
+	auto _platformControl = platformControl;
+	platformControl = nullptr;
 	
 	updateText (_platformControl);
 	
-	_platformControl->forget ();
+	_platformControl = nullptr;
 
 	// if you want to destroy the text edit do it with the loose focus message
-	CView* receiver = pParentView ? pParentView : pParentFrame;
+	CView* receiver = getParentView () ? getParentView () : getFrame ();
 	while (receiver)
 	{
 		if (receiver->notify (this, kMsgLooseFocus) == kMessageNotified)
@@ -319,12 +394,13 @@ void CTextEdit::looseFocus ()
 		receiver = receiver->getParentView ();
 	}
 	CTextLabel::looseFocus ();
+	invalid ();
 }
 
 //------------------------------------------------------------------------
 void CTextEdit::updateText (IPlatformTextEdit* pte)
 {
-	UTF8StringView newText (pte->getText ());
+	auto newText = pte->getText ();
 	if (newText != getText ())
 	{
 		beginEdit ();

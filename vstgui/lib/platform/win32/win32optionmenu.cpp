@@ -84,6 +84,7 @@ PlatformOptionMenuResult Win32OptionMenu::popup (COptionMenu* optionMenu)
 	
 	//---Transform local coordinates to global coordinates
 	CRect rect = optionMenu->translateToGlobal (optionMenu->getViewSize ());
+	rect.offset (-optionMenu->getFrame ()->getViewSize ().getTopLeft ());
 
 	int32_t offset;
 
@@ -92,22 +93,22 @@ PlatformOptionMenuResult Win32OptionMenu::popup (COptionMenu* optionMenu)
 	else
 		offset = static_cast<int32_t> (rect.getHeight ());
 
-	CCoord gx = 0, gy = 0;
-	optionMenu->getFrame ()->getPosition (gx, gy);
-	gx += rect.left;
-	gy += rect.top + offset;
+	POINT p;
+	p.x = static_cast<LONG> (rect.left);
+	p.y = static_cast<LONG> (rect.top + offset);
+	ClientToScreen (windowHandle, &p);
 
 	int32_t offsetIndex = 0;
 	HMENU menu = createMenu (optionMenu, offsetIndex);
 	if (menu)
 	{
-		int flags = TPM_LEFTALIGN;
+		UINT flags = TPM_LEFTALIGN;
 
 // do we need the following ?
 //		if (lastButton & kRButton)
 //			flags |= TPM_RIGHTBUTTON;
 
-		if (TrackPopupMenu (menu, flags, (int)gx, (int)gy, 0, windowHandle, 0))
+		if (TrackPopupMenu (menu, flags, p.x, p.y, 0, windowHandle, 0))
 		{
 			MSG msg;
 			if (PeekMessage (&msg, windowHandle, WM_COMMAND, WM_COMMAND, PM_REMOVE))
@@ -186,17 +187,17 @@ HMENU Win32OptionMenu::createMenu (COptionMenu* _menu, int32_t& offsetIdx)
 				{
 					case 2:
 					{
-						sprintf (titleWithPrefixNumbers, "%1d %s", inc+1, item->getTitle ());
+						sprintf (titleWithPrefixNumbers, "%1d %s", inc+1, item->getTitle ().data ());
 						break;
 					}
 					case 3:
 					{
-						sprintf (titleWithPrefixNumbers, "%02d %s", inc+1, item->getTitle ());
+						sprintf (titleWithPrefixNumbers, "%02d %s", inc+1, item->getTitle ().data ());
 						break;
 					}
 					case 4:
 					{
-						sprintf (titleWithPrefixNumbers, "%03d %s", inc+1, item->getTitle ());
+						sprintf (titleWithPrefixNumbers, "%03d %s", inc+1, item->getTitle ().data ());
 						break;
 					}
 				}
@@ -243,7 +244,7 @@ HMENU Win32OptionMenu::createMenu (COptionMenu* _menu, int32_t& offsetIdx)
 						{
 							mInfo.hbmpItem = hBmp;
 							SetMenuItemInfo (menu, offset + inc, TRUE, &mInfo);
-							bitmaps.push_back (hBmp);
+							bitmaps.emplace_back (hBmp);
 						}
 					}
 				}

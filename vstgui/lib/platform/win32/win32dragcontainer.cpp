@@ -69,7 +69,7 @@ WinDragContainer::WinDragContainer (IDataObject* platformDrag)
 			if (data && dataSize)
 			{
 				UTF8StringHelper wideString ((const WCHAR*)data);
-				strings.push_back (std::string (wideString));
+				strings.emplace_back (wideString);
 				nbItems = 1;
 			}
 			GlobalUnlock (medium.hGlobal);
@@ -98,7 +98,7 @@ WinDragContainer::WinDragContainer (IDataObject* platformDrag)
 						// resolve link
 						checkResolveLink (fileDropped, fileDropped);
 						UTF8StringHelper path (fileDropped);
-						strings.push_back (std::string (path));
+						strings.emplace_back (path);
 					}
 				}
 			}
@@ -126,7 +126,7 @@ WinDragContainer::WinDragContainer (IDataObject* platformDrag)
 }
 
 //-----------------------------------------------------------------------------
-WinDragContainer::~WinDragContainer ()
+WinDragContainer::~WinDragContainer () noexcept
 {
 	if (data)
 	{
@@ -179,7 +179,7 @@ uint32_t WinDragContainer::getData (uint32_t index, const void*& buffer, Type& t
 		}
 		buffer = strings[index].c_str ();
 		type = stringsAreFiles ? kFilePath : kText;
-		return (int32_t)strings[index].length ();
+		return static_cast<uint32_t> (strings[index].length ());
 	}
 	return 0;
 }
@@ -208,7 +208,7 @@ bool WinDragContainer::checkResolveLink (const TCHAR* nativePath, TCHAR* resolve
 				hres = ppf->Load (nativePath, STGM_READ);
 				if (SUCCEEDED (hres))
 				{					
-					hres = psl->Resolve (0, MAKELONG (SLR_ANY_MATCH | SLR_NO_UI, 500));
+					hres = psl->Resolve (0, static_cast<DWORD> (MAKELONG (SLR_ANY_MATCH | SLR_NO_UI, 500)));
 					if (SUCCEEDED (hres))
 					{
 						// Get the path to the link target.

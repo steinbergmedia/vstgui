@@ -39,9 +39,7 @@
 
 #if WINDOWS
 
-#include <windows.h>
-#include <objidl.h>
-#include <gdiplus.h>
+#include "win32support.h"
 
 namespace VSTGUI {
 
@@ -49,23 +47,23 @@ namespace VSTGUI {
 class GdiPlusFont : public IPlatformFont, public IFontPainter
 {
 public:
-	GdiPlusFont (const char* name, const CCoord& size, const int32_t& style);
+	GdiPlusFont (const UTF8String& name, const CCoord& size, const int32_t& style);
 
 	Gdiplus::Font* getFont () const { return font; }
 
 	static bool getAllPlatformFontFamilies (std::list<std::string>& fontFamilyNames);
 protected:
-	~GdiPlusFont ();
+	~GdiPlusFont () noexcept;
 	
 	double getAscent () const override;
 	double getDescent () const override;
 	double getLeading () const override;
 	double getCapHeight () const override;
 
-	IFontPainter* getPainter () override { return this; }
+	const IFontPainter* getPainter () const override { return this; }
 
-	void drawString (CDrawContext* context, IPlatformString* string, const CPoint& p, bool antialias = true) override;
-	CCoord getStringWidth (CDrawContext* context, IPlatformString* string, bool antialias = true) override;
+	void drawString (CDrawContext* context, IPlatformString* string, const CPoint& p, bool antialias = true) const override;
+	CCoord getStringWidth (CDrawContext* context, IPlatformString* string, bool antialias = true) const override;
 
 	Gdiplus::Font* font;
 	INT gdiStyle;

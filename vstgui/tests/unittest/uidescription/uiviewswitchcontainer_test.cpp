@@ -76,6 +76,7 @@ TESTCASE(UIViewSwitchControllerTest,
 		auto rootView = owned (new CViewContainer (CRect (0, 0, 100, 100)));
 		auto container = owned (new CViewContainer (CRect (0, 0, 100, 100)));
 		auto viewSwitch = new UIViewSwitchContainer (CRect (0, 0, 100, 100));
+		viewSwitch->setAnimationTime (0);
 		auto controller = new UIDescriptionViewSwitchController (viewSwitch, &uiDesc, nullptr);
 		controller->setTemplateNames ("v1,v2");
 		EXPECT(container->addView (viewSwitch));
@@ -93,6 +94,7 @@ TESTCASE(UIViewSwitchControllerTest,
 		auto rootView = owned (new CViewContainer (CRect (0, 0, 100, 100)));
 		auto container = owned (new CViewContainer (CRect (0, 0, 100, 100)));
 		auto viewSwitch = new UIViewSwitchContainer (CRect (0, 0, 100, 100));
+		viewSwitch->setAnimationTime (0);
 		auto control = new COnOffButton (CRect (0, 0, 0, 0));
 		control->setTag (1);
 		auto controller = new UIDescriptionViewSwitchController (viewSwitch, &uiDesc, nullptr);

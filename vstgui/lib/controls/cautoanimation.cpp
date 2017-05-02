@@ -103,10 +103,6 @@ CAutoAnimation::CAutoAnimation (const CAutoAnimation& v)
 }
 
 //------------------------------------------------------------------------
-CAutoAnimation::~CAutoAnimation ()
-{}
-
-//------------------------------------------------------------------------
 void CAutoAnimation::draw (CDrawContext *pContext)
 {
 	if (isWindowOpened ())

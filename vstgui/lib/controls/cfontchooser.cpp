@@ -51,8 +51,8 @@ namespace CFontChooserInternal {
 class FontPreviewView : public CView
 {
 public:
-	FontPreviewView (const CRect& size, const CColor& color = kWhiteCColor) : CView (size), font (0), fontColor (color) {}
-	~FontPreviewView () { if (font) font->forget (); }
+	FontPreviewView (const CRect& size, const CColor& color = kWhiteCColor) : CView (size), font (nullptr), fontColor (color) {}
+	~FontPreviewView () noexcept override { if (font) font->forget (); }
 	
 	void setFont (CFontRef newFont)
 	{
@@ -90,8 +90,8 @@ public:
 	}
 	
 protected:
-	CColor fontColor;
 	CFontRef font;
+	CColor fontColor;
 };
 
 enum {
@@ -111,9 +111,9 @@ enum {
 //-----------------------------------------------------------------------------
 CFontChooser::CFontChooser (IFontChooserDelegate* delegate, CFontRef initialFont, const CFontChooserUIDefinition& uiDef)
 : CViewContainer (CRect (0, 0, 300, 500))
-, delegate (0)
-, selFont (0)
-, fontBrowser (0)
+, delegate (nullptr)
+, fontBrowser (nullptr)
+, selFont (nullptr)
 {
 	std::list<std::string> fnList;
 	IPlatformFont::getAllPlatformFontFamilies (fnList);
@@ -121,8 +121,8 @@ CFontChooser::CFontChooser (IFontChooserDelegate* delegate, CFontRef initialFont
 	std::list<std::string>::const_iterator it = fnList.begin ();
 	while (it != fnList.end ())
 	{
-		fontNames.push_back (*it);
-		it++;
+		fontNames.emplace_back (*it);
+		++it;
 	}
 	GenericStringListDataBrowserSource* dbSource = new GenericStringListDataBrowserSource (&fontNames, this);
 	dbSource->setupUI (uiDef.selectionColor, uiDef.fontColor, uiDef.rowlineColor, uiDef.rowBackColor, uiDef.rowAlternateBackColor, uiDef.font, uiDef.rowHeight);
@@ -208,7 +208,7 @@ CFontChooser::CFontChooser (IFontChooserDelegate* delegate, CFontRef initialFont
 }
 
 //-----------------------------------------------------------------------------
-CFontChooser::~CFontChooser ()
+CFontChooser::~CFontChooser () noexcept
 {
 	if (selFont)
 		selFont->forget ();
@@ -223,12 +223,12 @@ void CFontChooser::setFont (CFontRef font)
 			selFont->forget ();
 		selFont = new CFontDesc (*font);
 		sizeEdit->setValue ((float)font->getSize ());
-		boldBox->setValue (font->getStyle () & kBoldFace ? 1.f : 0.f);
-		italicBox->setValue (font->getStyle () & kItalicFace ? 1.f : 0.f);
-		underlineBox->setValue (font->getStyle () & kUnderlineFace ? 1.f : 0.f);
-		strikeoutBox->setValue (font->getStyle () & kStrikethroughFace ? 1.f : 0.f);
+		boldBox->setValue ((font->getStyle () & kBoldFace) ? 1.f : 0.f);
+		italicBox->setValue ((font->getStyle () & kItalicFace) ? 1.f : 0.f);
+		underlineBox->setValue ((font->getStyle () & kUnderlineFace) ? 1.f : 0.f);
+		strikeoutBox->setValue ((font->getStyle () & kStrikethroughFace) ? 1.f : 0.f);
 
-		std::vector<std::string>::const_iterator it = fontNames.begin ();
+		auto it = fontNames.begin ();
 		int32_t row = 0;
 		while (it != fontNames.end ())
 		{
@@ -237,7 +237,7 @@ void CFontChooser::setFont (CFontRef font)
 				fontBrowser->setSelectedRow (row, true);
 				break;
 			}
-			it++;
+			++it;
 			row++;
 		}
 		static_cast<CFontChooserInternal::FontPreviewView*> (fontPreviewView)->setFont (selFont);
@@ -248,7 +248,7 @@ void CFontChooser::setFont (CFontRef font)
 //-----------------------------------------------------------------------------
 void CFontChooser::valueChanged (CControl* pControl)
 {
-	if (selFont == 0)
+	if (selFont == nullptr)
 		return;
 
 	switch (pControl->getTag ())
@@ -301,7 +301,7 @@ void CFontChooser::valueChanged (CControl* pControl)
 void CFontChooser::dbSelectionChanged (int32_t selectedRow, GenericStringListDataBrowserSource* source)
 {
 	if (selectedRow >= 0 && static_cast<size_t> (selectedRow) <= fontNames.size ())
-		selFont->setName (fontNames[static_cast<size_t> (selectedRow)].c_str ());
+		selFont->setName (fontNames[static_cast<size_t> (selectedRow)].data ());
 	static_cast<CFontChooserInternal::FontPreviewView*> (fontPreviewView)->setFont (selFont);
 	if (delegate)
 		delegate->fontChanged (this, selFont);

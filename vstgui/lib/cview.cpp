@@ -38,11 +38,14 @@
 #include "cframe.h"
 #include "cvstguitimer.h"
 #include "cgraphicspath.h"
+#include "dispatchlist.h"
 #include "idatapackage.h"
 #include "iviewlistener.h"
+#include "malloc.h"
 #include "animation/animator.h"
 #include "../uidescription/icontroller.h"
 #include <cassert>
+#include <unordered_map>
 #if DEBUG
 #include <list>
 #include <typeinfo>
@@ -51,12 +54,13 @@
 namespace VSTGUI {
 
 /// @cond ignore
-#define VSTGUI_CHECK_VIEW_RELEASING	0//DEBUG
-#if VSTGUI_CHECK_VIEW_RELEASING
 //------------------------------------------------------------------------
 namespace CViewInternal {
 
-typedef std::list<CView*> ViewList;
+#define VSTGUI_CHECK_VIEW_RELEASING	0//DEBUG
+#if VSTGUI_CHECK_VIEW_RELEASING
+
+using ViewList = std::list<CView*>;
 static ViewList gViewList;
 int32_t gNbCView = 0;
 
@@ -76,126 +80,103 @@ public:
 	}
 };
 
-} // CViewInternal
 
-#endif // DEBUG
+#endif // VSTGUI_CHECK_VIEW_RELEASING
 
 //-----------------------------------------------------------------------------
-class CViewAttributeEntry
+class AttributeEntry
 {
 public:
-	CViewAttributeEntry (uint32_t _size, const void* _data)
-	: size (0)
-	, data (0)
+	AttributeEntry (uint32_t _size, const void* _data)
 	{
 		updateData (_size, _data);
 	}
-
-	~CViewAttributeEntry ()
-	{
-		if (data)
-			std::free (data);
-	}
-
-	uint32_t getSize () const { return size; }
-	const void* getData () const { return data; }
-
-	void updateData (uint32_t _size, const void* _data)
-	{
-		if (data && size != _size)
-		{
-			std::free (data);
-			data = 0;
-		}
-		size = _size;
-		if (size)
-		{
-			if (data == 0)
-				data = std::malloc (size);
-			std::memcpy (data, _data, size);
-		}
-	}
-
-	CViewAttributeEntry (CViewAttributeEntry&& me) noexcept
-	: size (0)
-	, data (0)
+	
+	AttributeEntry (const AttributeEntry& me) = delete;
+	AttributeEntry& operator= (const AttributeEntry& me) = delete;
+	AttributeEntry (AttributeEntry&& me) noexcept
 	{
 		*this = std::move (me);
 	}
-
-	CViewAttributeEntry& operator=(CViewAttributeEntry&& me) noexcept
+	
+	AttributeEntry& operator=(AttributeEntry&& me) noexcept
 	{
-		if (data)
-			std::free (data);
-		size = me.size;
-		data = me.data;
-		me.size = 0;
-		me.data = nullptr;
+		data = std::move (me.data);
 		return *this;
 	}
-
+	
+	uint32_t getSize () const { return static_cast<uint32_t> (data.size ()); }
+	const void* getData () const { return data.get (); }
+	
+	void updateData (uint32_t _size, const void* _data)
+	{
+		data.allocate (_size);
+		if (data.size ())
+		{
+			std::memcpy (data.get (), _data, data.size ());
+		}
+	}
+	
 protected:
-	uint32_t size;
-	void* data;
+	Malloc<int8_t> data;
 };
 
 //-----------------------------------------------------------------------------
-class IdleViewUpdater : public CBaseObject
+class IdleViewUpdater
 {
 public:
 	static void add (CView* view)
 	{
-		if (gInstance == 0)
-			new IdleViewUpdater ();
-		gInstance->views.push_back (view);
+		if (gInstance == nullptr)
+			gInstance = std::unique_ptr<IdleViewUpdater> (new IdleViewUpdater ());
+		gInstance->views.emplace_back (view);
 	}
-
+	
 	static void remove (CView* view)
 	{
 		if (gInstance)
 		{
 			gInstance->views.remove (view);
-			if (gInstance->views.empty ())
+			if (!gInstance->inTimer && gInstance->views.empty ())
 			{
-				gInstance->forget ();
+				gInstance = nullptr;
 			}
 		}
 	}
-
+	
 protected:
-	typedef std::list<CView*> ViewContainer;
-
+	using ViewContainer = std::list<CView*>;
+	
 	IdleViewUpdater ()
 	{
-		vstgui_assert (gInstance == 0);
-		gInstance = this;
-		timer = new CVSTGUITimer (this, 1000/CView::idleRate, true);
+		timer = makeOwned<CVSTGUITimer> ([this] (CVSTGUITimer*) { onTimer (); }, 1000/CView::idleRate);
 	}
-
-	~IdleViewUpdater ()
+	
+	void onTimer ()
 	{
-		timer->forget ();
-		gInstance = 0;
-	}
-
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override
-	{
-		CBaseObjectGuard guard (this);
+		inTimer = true;
 		for (ViewContainer::const_iterator it = views.begin (); it != views.end ();)
 		{
 			CView* view = (*it);
-			it++;
+			++it;
 			view->onIdle ();
 		}
-		return kMessageNotified;
+		inTimer = false;
+		if (views.empty ())
+			gInstance = nullptr;
 	}
-	CVSTGUITimer* timer;
+	SharedPointer<CVSTGUITimer> timer;
 	ViewContainer views;
-
-	static IdleViewUpdater* gInstance;
+	bool inTimer {false};
+	
+	static std::unique_ptr<IdleViewUpdater> gInstance;
 };
-IdleViewUpdater* IdleViewUpdater::gInstance = 0;
+std::unique_ptr<IdleViewUpdater> IdleViewUpdater::gInstance;
+
+} // CViewInternal
+
 uint32_t CView::idleRate = 30;
+
 /// @endcond
 
 UTF8StringPtr kDegreeSymbol		= "\xC2\xB0";
@@ -214,71 +195,128 @@ bool CView::kDirtyCallAlwaysOnMainThread = false;
 //-----------------------------------------------------------------------------
 // CView
 //-----------------------------------------------------------------------------
-CView::CView (const CRect& size)
-: size (size)
-, mouseableArea (size)
-, pParentFrame (0)
-, pParentView (0)
-, pBackground (0)
-, autosizeFlags (kAutosizeNone)
-, alphaValue (1.f)
+struct CView::Impl
 {
+	using ViewAttributes = std::unordered_map<CViewAttributeID, std::unique_ptr<CViewInternal::AttributeEntry>>;
+	using ViewListenerDispatcher = DispatchList<IViewListener*>;
+	
+	ViewAttributes attributes;
+	ViewListenerDispatcher viewListeners;
+	
+	CRect size;
+	CRect mouseableArea;
+	int32_t viewFlags {0};
+	int32_t autosizeFlags {kAutosizeNone};
+	float alphaValue {1.f};
+	CFrame* parentFrame {nullptr};
+	CView* parentView {nullptr};
+	
+	SharedPointer<CBitmap> background;
+	SharedPointer<CBitmap> disabledBackground;
+	SharedPointer<CGraphicsPath> hitTestPath;
+};
+
+//-----------------------------------------------------------------------------
+CView::CView (const CRect& size)
+{
+	pImpl = std::unique_ptr<Impl> (new Impl ());
+	pImpl->size = size;
+	pImpl->mouseableArea = size;
+	
 	#if VSTGUI_CHECK_VIEW_RELEASING
 	static CViewInternal::AllocatedViews allocatedViews;
 	CViewInternal::gNbCView++;
-	CViewInternal::gViewList.push_back (this);
+	CViewInternal::gViewList.emplace_back (this);
 	#endif
 
-	viewFlags = kMouseEnabled | kVisible;
+	setViewFlag (kMouseEnabled | kVisible, true);
 }
 
 //-----------------------------------------------------------------------------
 CView::CView (const CView& v)
-: size (v.size)
-, mouseableArea (v.mouseableArea)
-, pParentFrame (0)
-, pParentView (0)
-, pBackground (v.pBackground)
-, viewFlags (v.viewFlags)
-, autosizeFlags (v.autosizeFlags)
-, alphaValue (v.alphaValue)
 {
-	for (ViewAttributes::iterator it = attributes.begin (); it != attributes.end (); it++)
-		setAttribute (it->first, it->second->getSize (), it->second->getData ());
+	pImpl = std::unique_ptr<Impl> (new Impl ());
+	pImpl->size = v.pImpl->size;
+	pImpl->mouseableArea = v.pImpl->mouseableArea;
+	pImpl->viewFlags = v.pImpl->viewFlags;
+	pImpl->autosizeFlags = v.pImpl->autosizeFlags;
+	pImpl->alphaValue = v.pImpl->alphaValue;
+	pImpl->background = v.pImpl->background;
+	pImpl->disabledBackground = v.pImpl->disabledBackground;
+	pImpl->hitTestPath = v.pImpl->hitTestPath;
+
+	for (auto& attribute : v.pImpl->attributes)
+		setAttribute (attribute.first, attribute.second->getSize (), attribute.second->getData ());
 }
 
 //-----------------------------------------------------------------------------
-CView::~CView ()
-{
-	vstgui_assert (isAttached () == false, "View is still attached");
-	vstgui_assert (viewListeners.empty (), "View listeners not empty");
+CView::~CView () noexcept = default;
 
-	IController* controller = 0;
+//-----------------------------------------------------------------------------
+void CView::beforeDelete ()
+{
+	pImpl->viewListeners.forEach ([&] (IViewListener* listener) {
+		listener->viewWillDelete (this);
+	});
+
+	vstgui_assert (isAttached () == false, "View is still attached");
+	vstgui_assert (pImpl->viewListeners.empty (), "View listeners not empty");
+	
+	IController* controller = nullptr;
 	uint32_t size = sizeof (IController*);
 	if (getAttribute (kCViewControllerAttribute, sizeof (IController*), &controller, size) == true)
 	{
-		CBaseObject* obj = dynamic_cast<CBaseObject*> (controller);
+		auto obj = dynamic_cast<IReference*> (controller);
 		if (obj)
 			obj->forget ();
 		else
 			delete controller;
 	}
-
-	for (ViewAttributes::iterator it = attributes.begin (), end = attributes.end (); it != end; ++it)
-		delete it->second;
-
-	#if VSTGUI_CHECK_VIEW_RELEASING
+	
+	pImpl->attributes.clear ();
+	
+#if VSTGUI_CHECK_VIEW_RELEASING
 	CViewInternal::gNbCView--;
 	CViewInternal::gViewList.remove (this);
-	#endif
+#endif
+	CBaseObject::beforeDelete ();
 }
 
 //-----------------------------------------------------------------------------
-void CView::beforeDelete ()
+void CView::setMouseableArea (const CRect& rect)
 {
-	viewListeners.forEach ([&] (IViewListener* listener) {
-		listener->viewWillDelete (this);
-	});
+	pImpl->mouseableArea = rect;
+}
+
+//-----------------------------------------------------------------------------
+CRect& CView::getMouseableArea (CRect& rect) const
+{
+	rect = pImpl->mouseableArea;
+	return rect;
+}
+
+//-----------------------------------------------------------------------------
+const CRect& CView::getMouseableArea () const
+{
+	return pImpl->mouseableArea;
+}
+
+//-----------------------------------------------------------------------------
+CGraphicsPath* CView::getHitTestPath () const
+{
+	return pImpl->hitTestPath;
+}
+
+//-----------------------------------------------------------------------------
+bool CView::hasViewFlag (int32_t bit) const
+{
+	return hasBit (pImpl->viewFlags, bit);
+}
+
+//-----------------------------------------------------------------------------
+void CView::setViewFlag (int32_t bit, bool state)
+{
+	setBit (pImpl->viewFlags, bit, state);
 }
 
 //-----------------------------------------------------------------------------
@@ -286,12 +324,9 @@ void CView::setMouseEnabled (bool state)
 {
 	if (getMouseEnabled () != state)
 	{
-		if (state)
-			viewFlags |= kMouseEnabled;
-		else
-			viewFlags &= ~kMouseEnabled;
+		setViewFlag (kMouseEnabled, state);
 
-		if (pDisabledBackground)
+		if (pImpl->disabledBackground)
 		{
 			setDirty (true);
 		}
@@ -303,10 +338,7 @@ void CView::setTransparency (bool state)
 {
 	if (getTransparency() != state)
 	{
-		if (state)
-			viewFlags |= kTransparencyEnabled;
-		else
-			viewFlags &= ~kTransparencyEnabled;
+		setViewFlag (kTransparencyEnabled, state);
 		setDirty (true);
 	}
 }
@@ -314,10 +346,7 @@ void CView::setTransparency (bool state)
 //-----------------------------------------------------------------------------
 void CView::setWantsFocus (bool state)
 {
-	if (state)
-		viewFlags |= kWantsFocus;
-	else
-		viewFlags &= ~kWantsFocus;
+	setViewFlag (kWantsFocus, state);
 }
 
 //-----------------------------------------------------------------------------
@@ -325,18 +354,9 @@ void CView::setWantsIdle (bool state)
 {
 	if (wantsIdle () == state)
 		return;
-	if (state)
-	{
-		viewFlags |= kWantsIdle;
-		if (isAttached ())
-			IdleViewUpdater::add (this);
-	}
-	else
-	{
-		viewFlags &= ~kWantsIdle;
-		if (isAttached ())
-			IdleViewUpdater::remove (this);
-	}
+	setViewFlag (kWantsIdle, state);
+	if (isAttached ())
+		state ? CViewInternal::IdleViewUpdater::add (this) : CViewInternal::IdleViewUpdater::remove (this);
 }
 
 //-----------------------------------------------------------------------------
@@ -345,15 +365,12 @@ void CView::setDirty (bool state)
 	if (kDirtyCallAlwaysOnMainThread)
 	{
 		if (state)
-			invalidRect (size);
-		viewFlags &= ~kDirty;
+			invalidRect (getViewSize ());
+		setViewFlag (kDirty, false);
 	}
 	else
 	{
-		if (state)
-			viewFlags |= kDirty;
-		else
-			viewFlags &= ~kDirty;
+		setViewFlag (kDirty, state);
 	}
 }
 
@@ -361,10 +378,7 @@ void CView::setDirty (bool state)
 void CView::setSubviewState (bool state)
 {
 	vstgui_assert (isSubview () != state, "");
-	if (state)
-		viewFlags |= kIsSubview;
-	else
-		viewFlags &= ~kIsSubview;
+	setViewFlag (kIsSubview, state);
 }
 
 //-----------------------------------------------------------------------------
@@ -376,15 +390,15 @@ bool CView::attached (CView* parent)
 {
 	if (isAttached ())
 		return false;
-	vstgui_assert (dynamic_cast<CViewContainer*> (parent) != 0);
-	pParentView = parent;
-	pParentFrame = parent->getFrame ();
-	viewFlags |= kIsAttached;
-	if (pParentFrame)
-		pParentFrame->onViewAdded (this);
+	vstgui_assert (parent->asViewContainer ());
+	pImpl->parentView = parent;
+	pImpl->parentFrame = parent->getFrame ();
+	setViewFlag (kIsAttached, true);
+	if (pImpl->parentFrame)
+		pImpl->parentFrame->onViewAdded (this);
 	if (wantsIdle ())
-		IdleViewUpdater::add (this);
-	viewListeners.forEach ([&] (IViewListener* listener) {
+		CViewInternal::IdleViewUpdater::add (this);
+	pImpl->viewListeners.forEach ([&] (IViewListener* listener) {
 		listener->viewAttached (this);
 	});
 	return true;
@@ -400,15 +414,15 @@ bool CView::removed (CView* parent)
 	if (!isAttached ())
 		return false;
 	if (wantsIdle ())
-		IdleViewUpdater::remove (this);
-	viewListeners.forEach ([&] (IViewListener* listener) {
+		CViewInternal::IdleViewUpdater::remove (this);
+	pImpl->viewListeners.forEach ([&] (IViewListener* listener) {
 		listener->viewRemoved (this);
 	});
-	if (pParentFrame)
-		pParentFrame->onViewRemoved (this);
-	pParentView = 0;
-	pParentFrame = 0;
-	viewFlags &= ~kIsAttached;
+	if (pImpl->parentFrame)
+		pImpl->parentFrame->onViewRemoved (this);
+	pImpl->parentView = nullptr;
+	pImpl->parentFrame = nullptr;
+	setViewFlag (kIsAttached, false);
 	return true;
 }
 
@@ -457,7 +471,7 @@ CMouseEventResult CView::onMouseCancel ()
  */
 void CView::setHitTestPath (CGraphicsPath* path)
 {
-	pHitTestPath = path;
+	pImpl->hitTestPath = path;
 }
 
 //-----------------------------------------------------------------------------
@@ -468,13 +482,13 @@ void CView::setHitTestPath (CGraphicsPath* path)
  */
 bool CView::hitTest (const CPoint& where, const CButtonState& buttons)
 {
-	if (pHitTestPath)
+	if (pImpl->hitTestPath)
 	{
 		CPoint p (where);
 		p.offset (-getViewSize ().left, -getViewSize ().top);
-		return pHitTestPath->hitTest (p);
+		return pImpl->hitTestPath->hitTest (p);
 	}
-	return mouseableArea.pointInside (where);
+	return pImpl->mouseableArea.pointInside (where);
 }
 
 //-----------------------------------------------------------------------------
@@ -484,8 +498,8 @@ bool CView::hitTest (const CPoint& where, const CButtonState& buttons)
  */
 CPoint& CView::frameToLocal (CPoint& point) const
 {
-	if (pParentView)
-		return pParentView->frameToLocal (point);
+	if (pImpl->parentView)
+		return pImpl->parentView->frameToLocal (point);
 	return point;
 }
 
@@ -496,23 +510,24 @@ CPoint& CView::frameToLocal (CPoint& point) const
  */
 CPoint& CView::localToFrame (CPoint& point) const
 {
-	if (pParentView)
-		return pParentView->localToFrame (point);
+	if (pImpl->parentView)
+		return pImpl->parentView->localToFrame (point);
 	return point;
 }
 
 //-----------------------------------------------------------------------------
 CGraphicsTransform CView::getGlobalTransform () const
 {
+	using ParentViews = std::list<CViewContainer*>;
+
 	CGraphicsTransform transform;
-	typedef std::list<CViewContainer*> ParentViews;
 	ParentViews parents;
 	
-	CViewContainer* parent = dynamic_cast<CViewContainer*>(getParentView ());
+	CViewContainer* parent = getParentView () ? getParentView ()->asViewContainer () : nullptr;
 	while (parent)
 	{
 		parents.push_front (parent);
-		parent = dynamic_cast<CViewContainer*>(parent->getParentView ());
+		parent = parent->getParentView () ? parent->getParentView ()->asViewContainer () : nullptr;
 	}
 	for (const auto& parent : parents)
 	{
@@ -521,8 +536,7 @@ CGraphicsTransform CView::getGlobalTransform () const
 		transform = transform * t;
 	}
 
-	const CViewContainer* This = dynamic_cast<const CViewContainer*> (this);
-	if (This)
+	if (auto This = this->asViewContainer ())
 		transform = This->getTransform () * transform;
 	return transform;
 }
@@ -533,10 +547,10 @@ CGraphicsTransform CView::getGlobalTransform () const
  */
 void CView::invalidRect (const CRect& rect)
 {
-	if (isAttached () && viewFlags & kVisible)
+	if (isAttached () && hasViewFlag (kVisible))
 	{
-		vstgui_assert (pParentView);
-		pParentView->invalidRect (rect);
+		vstgui_assert (pImpl->parentView);
+		pImpl->parentView->invalidRect (rect);
 	}
 }
 
@@ -548,7 +562,7 @@ void CView::draw (CDrawContext* pContext)
 {
 	if (getDrawBackground ())
 	{
-		getDrawBackground ()->draw (pContext, size);
+		getDrawBackground ()->draw (pContext, getViewSize ());
 	}
 	setDirty (false);
 }
@@ -611,7 +625,7 @@ int32_t CView::onKeyUp (VstKeyCode& keyCode)
  * @param source source drop
  * @param offset bitmap offset
  * @param dragBitmap bitmap to drag
- * @return 0 on failure, negative if source was moved and positive if source was copied
+ * @return see DragResult
  */
 DragResult CView::doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap)
 {
@@ -637,7 +651,7 @@ CMessageResult CView::notify (CBaseObject* sender, IdStringPtr message)
 //------------------------------------------------------------------------------
 void CView::looseFocus ()
 {
-	viewListeners.forEach ([&] (IViewListener* listener) {
+	pImpl->viewListeners.forEach ([&] (IViewListener* listener) {
 		listener->viewLostFocus (this);
 	});
 }
@@ -645,7 +659,7 @@ void CView::looseFocus ()
 //------------------------------------------------------------------------------
 void CView::takeFocus ()
 {
-	viewListeners.forEach ([&] (IViewListener* listener) {
+	pImpl->viewListeners.forEach ([&] (IViewListener* listener) {
 		listener->viewTookFocus (this);
 	});
 }
@@ -653,24 +667,30 @@ void CView::takeFocus ()
 //------------------------------------------------------------------------------
 /**
  * @param newSize rect of new size of view
- * @param invalid if true set view dirty
+ * @param doInvalid if true set view dirty
  */
 void CView::setViewSize (const CRect& newSize, bool doInvalid)
 {
-	if (size != newSize)
+	if (getViewSize () != newSize)
 	{
 		if (doInvalid && kDirtyCallAlwaysOnMainThread)
 			invalid ();
-		CRect oldSize = size;
-		size = newSize;
+		CRect oldSize = getViewSize ();
+		pImpl->size = newSize;
 		if (doInvalid)
 			setDirty ();
 		if (getParentView ())
 			getParentView ()->notify (this, kMsgViewSizeChanged);
-		viewListeners.forEach ([&] (IViewListener* listener) {
+		pImpl->viewListeners.forEach ([&] (IViewListener* listener) {
 			listener->viewSizeChanged (this, oldSize);
 		});
 	}
+}
+
+//------------------------------------------------------------------------------
+const CRect& CView::getViewSize () const
+{
+	return pImpl->size;
 }
 
 //------------------------------------------------------------------------------
@@ -679,45 +699,93 @@ void CView::setViewSize (const CRect& newSize, bool doInvalid)
  */
 CRect CView::getVisibleViewSize () const
 {
-	if (pParentView)
-		return static_cast<CViewContainer*>(pParentView)->getVisibleSize (size);
+	if (pImpl->parentView)
+		return static_cast<CViewContainer*>(pImpl->parentView)->getVisibleSize (getViewSize ());
 	return CRect (0, 0, 0, 0);
 }
 
 //-----------------------------------------------------------------------------
 void CView::setVisible (bool state)
 {
-	if ((viewFlags & kVisible) ? true : false != state)
+	if (hasViewFlag (kVisible) != state)
 	{
 		if (state)
 		{
-			viewFlags |= kVisible;
+			setViewFlag (kVisible, true);
 			invalid ();
 		}
 		else
 		{
 			invalid ();
-			viewFlags &= ~kVisible;
+			setViewFlag (kVisible, false);
 		}
 	}
 }
 
 //-----------------------------------------------------------------------------
+void CView::setAlphaValueNoInvalidate (float value)
+{
+	pImpl->alphaValue = value;
+}
+
+//-----------------------------------------------------------------------------
 void CView::setAlphaValue (float alpha)
 {
-	if (alphaValue != alpha)
+	if (pImpl->alphaValue != alpha)
 	{
-		alphaValue = alpha;
+		pImpl->alphaValue = alpha;
 		// we invalidate the parent to make sure that when alpha == 0 that a redraw occurs
-		if (pParentView)
-			pParentView->invalidRect (getViewSize ());
+		if (pImpl->parentView)
+			pImpl->parentView->invalidRect (getViewSize ());
 	}
+}
+
+//-----------------------------------------------------------------------------
+float CView::getAlphaValue () const
+{
+	return pImpl->alphaValue;
+}
+
+//-----------------------------------------------------------------------------
+void CView::setAutosizeFlags (int32_t flags)
+{
+	pImpl->autosizeFlags = flags;
+}
+
+//-----------------------------------------------------------------------------
+int32_t CView::getAutosizeFlags () const
+{
+	return pImpl->autosizeFlags;
+}
+
+//-----------------------------------------------------------------------------
+void CView::setParentFrame (CFrame* frame)
+{
+	pImpl->parentFrame = frame;
+}
+
+//-----------------------------------------------------------------------------
+void CView::setParentView (CView* parent)
+{
+	pImpl->parentView = parent;
+}
+
+//-----------------------------------------------------------------------------
+CView* CView::getParentView () const
+{
+	return pImpl->parentView;
+}
+
+//-----------------------------------------------------------------------------
+CFrame* CView::getFrame () const
+{
+	return pImpl->parentFrame;
 }
 
 //-----------------------------------------------------------------------------
 VSTGUIEditorInterface* CView::getEditor () const
 {
-	return pParentFrame ? pParentFrame->getEditor () : 0;
+	return pImpl->parentFrame ? pImpl->parentFrame->getEditor () : nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -726,9 +794,27 @@ VSTGUIEditorInterface* CView::getEditor () const
  */
 void CView::setBackground (CBitmap* background)
 {
-	pBackground = background;
+	pImpl->background = background;
 	if (getMouseEnabled () == true)
 		setDirty (true);
+}
+
+//-----------------------------------------------------------------------------
+CBitmap* CView::getBackground () const
+{
+	return pImpl->background;
+}
+
+//-----------------------------------------------------------------------------
+CBitmap* CView::getDisabledBackground () const
+{
+	return pImpl->disabledBackground;
+}
+
+//-----------------------------------------------------------------------------
+CBitmap* CView::getDrawBackground () const
+{
+	return (pImpl->disabledBackground ? (getMouseEnabled () ? pImpl->background : pImpl->disabledBackground): pImpl->background);
 }
 
 //-----------------------------------------------------------------------------
@@ -737,7 +823,7 @@ void CView::setBackground (CBitmap* background)
  */
 void CView::setDisabledBackground (CBitmap* background)
 {
-	pDisabledBackground = background;
+	pImpl->disabledBackground = background;
 	if (getMouseEnabled () == false)
 		setDirty (true);
 }
@@ -755,8 +841,8 @@ const CViewAttributeID kCViewControllerAttribute = 'ictr';
  */
 bool CView::getAttributeSize (const CViewAttributeID aId, uint32_t& outSize) const
 {
-	ViewAttributes::const_iterator it = attributes.find (aId);
-	if (it != attributes.end ())
+	auto it = pImpl->attributes.find (aId);
+	if (it != pImpl->attributes.end ())
 	{
 		outSize = it->second->getSize ();
 		return true;
@@ -774,8 +860,8 @@ bool CView::getAttributeSize (const CViewAttributeID aId, uint32_t& outSize) con
  */
 bool CView::getAttribute (const CViewAttributeID aId, const uint32_t inSize, void* outData, uint32_t& outSize) const
 {
-	ViewAttributes::const_iterator it = attributes.find (aId);
-	if (it != attributes.end ())
+	auto it = pImpl->attributes.find (aId);
+	if (it != pImpl->attributes.end ())
 	{
 		if (inSize >= it->second->getSize ())
 		{
@@ -798,24 +884,23 @@ bool CView::getAttribute (const CViewAttributeID aId, const uint32_t inSize, voi
  */
 bool CView::setAttribute (const CViewAttributeID aId, const uint32_t inSize, const void* inData)
 {
-	if (inData == 0 || inSize <= 0)
+	if (inData == nullptr || inSize <= 0)
 		return false;
-	ViewAttributes::const_iterator it = attributes.find (aId);
-	if (it != attributes.end ())
+	auto it = pImpl->attributes.find (aId);
+	if (it != pImpl->attributes.end ())
 		it->second->updateData (inSize, inData);
 	else
-		attributes.insert (std::pair<CViewAttributeID, CViewAttributeEntry*> (aId, new CViewAttributeEntry (inSize, inData)));
+		pImpl->attributes.emplace (aId, std::unique_ptr<CViewInternal::AttributeEntry> (new CViewInternal::AttributeEntry (inSize, inData)));
 	return true;
 }
 
 //-----------------------------------------------------------------------------
 bool CView::removeAttribute (const CViewAttributeID aId)
 {
-	ViewAttributes::const_iterator it = attributes.find (aId);
-	if (it != attributes.end ())
+	auto it = pImpl->attributes.find (aId);
+	if (it != pImpl->attributes.end ())
 	{
-		delete it->second;
-		attributes.erase (aId);
+		pImpl->attributes.erase (aId);
 		return true;
 	}
 	return false;
@@ -824,9 +909,20 @@ bool CView::removeAttribute (const CViewAttributeID aId)
 //-----------------------------------------------------------------------------
 void CView::addAnimation (IdStringPtr name, Animation::IAnimationTarget* target, Animation::ITimingFunction* timingFunction, CBaseObject* notificationObject)
 {
-	if (getFrame ())
+	vstgui_assert (isAttached (), "to start an animation, the view needs to be attached");
+	if (auto frame = getFrame ())
 	{
-		getFrame ()->getAnimator ()->addAnimation (this, name, target, timingFunction, notificationObject);
+		frame->getAnimator ()->addAnimation (this, name, target, timingFunction, notificationObject);
+	}
+}
+
+//-----------------------------------------------------------------------------
+void CView::addAnimation (IdStringPtr name, Animation::IAnimationTarget* target, Animation::ITimingFunction* timingFunction, const Animation::DoneFunction& doneFunc)
+{
+	vstgui_assert (isAttached (), "to start an animation, the view needs to be attached");
+	if (auto frame = getFrame ())
+	{
+		frame->getAnimator ()->addAnimation (this, name, target, timingFunction, doneFunc);
 	}
 }
 
@@ -867,13 +963,13 @@ void CView::dumpInfo ()
 //-----------------------------------------------------------------------------
 void CView::registerViewListener (IViewListener* listener)
 {
-	viewListeners.add (listener);
+	pImpl->viewListeners.add (listener);
 }
 
 //-----------------------------------------------------------------------------
 void CView::unregisterViewListener (IViewListener* listener)
 {
-	viewListeners.remove (listener);
+	pImpl->viewListeners.remove (listener);
 }
 
 
@@ -882,9 +978,8 @@ void CView::unregisterViewListener (IViewListener* listener)
 //-----------------------------------------------------------------------------
 CDragContainerHelper::CDragContainerHelper (IDataPackage* drag)
 : drag (drag)
-, index (0)
 {
-	
+	vstgui_assert (drag, "drag cannot be nullptr");
 }
 
 //-----------------------------------------------------------------------------
@@ -898,7 +993,7 @@ void* CDragContainerHelper::first (int32_t& outSize, int32_t& outType)
 void* CDragContainerHelper::next (int32_t& outSize, int32_t& outType)
 {
 	IDataPackage::Type type;
-	const void* data = 0;
+	const void* data = nullptr;
 	outSize = static_cast<int32_t> (drag->getData (static_cast<uint32_t> (index), data, type));
 	switch (type)
 	{

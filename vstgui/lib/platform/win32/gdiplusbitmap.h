@@ -40,9 +40,7 @@
 #if WINDOWS
 
 #include "../../cpoint.h"
-#include <windows.h>
-#include <objidl.h>
-#include <gdiplus.h>
+#include "win32support.h"
 
 namespace VSTGUI {
 
@@ -52,18 +50,18 @@ class GdiplusBitmap : public Win32BitmapBase
 public:
 	GdiplusBitmap ();
 	GdiplusBitmap (const CPoint& size);
-	~GdiplusBitmap ();
+	~GdiplusBitmap () noexcept;
 
 	bool load (const CResourceDescription& desc) override;
 	const CPoint& getSize () const override { return size; }
-	IPlatformBitmapPixelAccess* lockPixels (bool alphaPremultiplied) override;
+	SharedPointer<IPlatformBitmapPixelAccess> lockPixels (bool alphaPremultiplied) override;
 	void setScaleFactor (double factor) override {}
 	double getScaleFactor () const override { return 1.; }
 
 	Gdiplus::Bitmap* getBitmap () const { return bitmap; }
-	HBITMAP createHBitmap ();
-	bool loadFromStream (IStream* stream);
-	bool createMemoryPNGRepresentation (void** ptr, uint32_t& size);
+	HBITMAP createHBitmap () override;
+	bool loadFromStream (IStream* stream) override;
+	PNGBitmapBuffer createMemoryPNGRepresentation () override;
 
 //-----------------------------------------------------------------------------
 protected:
@@ -71,12 +69,12 @@ protected:
 	{
 	public:
 		PixelAccess ();
-		~PixelAccess ();
+		~PixelAccess () noexcept;
 
 		bool init (GdiplusBitmap* bitmap, bool alphaPremulitplied);
 
 		uint8_t* getAddress () const { return (uint8_t*)data.Scan0; }
-		uint32_t getBytesPerRow () const { return data.Stride; }
+		uint32_t getBytesPerRow () const { return static_cast<uint32_t> (data.Stride); }
 		PixelFormat getPixelFormat () const { return kBGRA; }
 	protected:
 		GdiplusBitmap* bitmap;

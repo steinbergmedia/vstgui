@@ -32,32 +32,50 @@
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-#include "uisearchtextfield.h"
+#include "csearchtextedit.h"
 
-#if VSTGUI_LIVE_EDITING
-
-#include "../../lib/cframe.h"
-#include "../../lib/cgraphicspath.h"
+#include "../cframe.h"
+#include "../cgraphicspath.h"
 
 namespace VSTGUI {
 
 //----------------------------------------------------------------------------------------------------
-UISearchTextField::UISearchTextField (const CRect& size, IControlListener* listener, int32_t tag, UTF8StringPtr txt, CBitmap* background, const int32_t style)
-: CTextEdit (size, listener, tag, 0, background, style)
+CSearchTextEdit::CSearchTextEdit (const CRect& size, IControlListener* listener, int32_t tag, UTF8StringPtr txt, CBitmap* background, const int32_t style)
+: CTextEdit (size, listener, tag, nullptr, background, style)
 {
+	setPlaceholderString ("Search");
+}
+
+//------------------------------------------------------------------------
+void CSearchTextEdit::setClearMarkInset (CPoint inset)
+{
+	if (inset != clearMarkInset)
+	{
+		clearMarkInset = inset;
+		invalid ();
+	}
+}
+
+//------------------------------------------------------------------------
+CPoint CSearchTextEdit::getClearMarkInset () const
+{
+	return clearMarkInset;
 }
 
 //----------------------------------------------------------------------------------------------------
-CRect UISearchTextField::getClearMarkRect () const
+CRect CSearchTextEdit::getClearMarkRect () const
 {
 	CRect r (getViewSize ());
-	r.left = r.right - getHeight ();
-	r.inset (2, 2);
+	if (getHoriAlign () == kRightText)
+		r.right = r.left + getHeight ();
+	else
+		r.left = r.right - getHeight ();
+	r.inset (getClearMarkInset ());
 	return r;
 }
 
 //----------------------------------------------------------------------------------------------------
-CMouseEventResult UISearchTextField::onMouseDown (CPoint& where, const CButtonState& buttons)
+CMouseEventResult CSearchTextEdit::onMouseDown (CPoint& where, const CButtonState& buttons)
 {
 	if (buttons.isLeftButton ())
 	{
@@ -77,13 +95,13 @@ CMouseEventResult UISearchTextField::onMouseDown (CPoint& where, const CButtonSt
 }
 
 //----------------------------------------------------------------------------------------------------
-void UISearchTextField::drawClearMark (CDrawContext* context) const
+void CSearchTextEdit::drawClearMark (CDrawContext* context) const
 {
-	if (getText ().empty ())
+	if (!((platformControl && !platformControl->getText ().empty ()) || !getText ().empty ()))
 		return;
 
-	SharedPointer<CGraphicsPath> path = owned (context->createGraphicsPath ());
-	if (path == 0)
+	auto path = owned (context->createGraphicsPath ());
+	if (path == nullptr)
 		return;
 
 	CRect r = getClearMarkRect ();
@@ -103,12 +121,12 @@ void UISearchTextField::drawClearMark (CDrawContext* context) const
 	path->addLine (r.getBottomRight ());
 	path->beginSubpath (r.getBottomLeft ());
 	path->addLine (r.getTopRight ());
-	context->setDrawMode (kAntiAliasing|kNonIntegralMode);
+	context->setDrawMode (kAntiAliasing);
 	context->drawGraphicsPath (path, CDrawContext::kPathStroked);
 }
 
 //----------------------------------------------------------------------------------------------------
-void UISearchTextField::draw (CDrawContext *pContext)
+void CSearchTextEdit::draw (CDrawContext *pContext)
 {
 	drawBack (pContext);
 	drawClearMark (pContext);
@@ -127,45 +145,51 @@ void UISearchTextField::draw (CDrawContext *pContext)
 		CColor color (fontColor);
 		color.alpha /= 2;
 		setFontColor (color);
-		drawPlatformText(pContext, CString ("Search").getPlatformString ());
+		drawPlatformText (pContext, getPlaceholderString ().getPlatformString (), getTextRect ());
 	}
 	else
-		drawPlatformText (pContext, getText ().getPlatformString ());
+		drawPlatformText (pContext, getText ().getPlatformString (), getTextRect ());
 
 	setDirty (false);
 	setFontColor (origFontColor);
 }
 
 //------------------------------------------------------------------------
-CRect UISearchTextField::platformGetSize () const
+CRect CSearchTextEdit::getTextRect () const
 {
 	CRect rect = getViewSize ();
 	CRect cmr = getClearMarkRect ();
-	rect.right = cmr.left;
-	CPoint p (0, 0);
-	localToFrame (p);
-	rect.offset (p.x, p.y);
+	if (getHoriAlign () == kRightText)
+		rect.left = cmr.right;
+	else
+		rect.right = cmr.left;
 	return rect;
 }
 
 //------------------------------------------------------------------------
-CRect UISearchTextField::platformGetVisibleSize () const
+CRect CSearchTextEdit::platformGetSize () const
 {
-	CRect rect = getViewSize ();
-	CRect cmr = getClearMarkRect ();
-	rect.right = cmr.left;
-	if (pParentView)
-		rect = static_cast<CViewContainer*>(pParentView)->getVisibleSize (rect);
-	else if (pParentFrame)
-		rect = pParentFrame->getVisibleSize (rect);
-
-	CPoint p (0, 0);
-	localToFrame (p);
-	rect.offset (p.x, p.y);
-	return rect;
+	return translateToGlobal (getTextRect ());
 }
 
+//------------------------------------------------------------------------
+CRect CSearchTextEdit::platformGetVisibleSize () const
+{
+	CRect rect = getTextRect ();
+	if (getParentView ())
+		rect = getParentView ()->asViewContainer ()->getVisibleSize (rect);
+	else if (getFrame ())
+		rect = getFrame ()->getVisibleSize (rect);
 
+	return translateToGlobal (rect);
+}
+
+//------------------------------------------------------------------------
+void CSearchTextEdit::platformTextDidChange ()
+{
+	invalidRect (getClearMarkRect ());
+	CTextEdit::platformTextDidChange ();
+}
+
+//------------------------------------------------------------------------
 } // namespace
-
-#endif // VSTGUI_LIVE_EDITING

@@ -36,6 +36,7 @@
 
 #if MAC
 #include "../../cframe.h"
+#include "../../ccolor.h"
 #include "../iplatformframe.h"
 #include "../std_unorderedmap.h"
 #include <mach/mach_time.h>
@@ -69,7 +70,7 @@ struct ColorHash
 	}
 };
 
-typedef std::unordered_map<CColor, CGColorRef, ColorHash> CGColorMap;
+using CGColorMap = std::unordered_map<CColor, CGColorRef, ColorHash>;
 
 //-----------------------------------------------------------------------------
 class CGColorMapImpl
@@ -77,8 +78,8 @@ class CGColorMapImpl
 public:
 	~CGColorMapImpl ()
 	{
-		for (CGColorMap::const_iterator it = map.begin (), end = map.end (); it != end; ++it)
-			CFRelease (it->second);
+		for (auto& it : map)
+			CFRelease (it.second);
 	}
 	
 	CGColorMap map;
@@ -94,8 +95,8 @@ static CGColorMap& getColorMap ()
 //-----------------------------------------------------------------------------
 CGColorRef getCGColor (const CColor& color)
 {
-	CGColorMap& colorMap = getColorMap ();
-	CGColorMap::const_iterator it = colorMap.find (color);
+	auto& colorMap = getColorMap ();
+	auto it = colorMap.find (color);
 	if (it != colorMap.end ())
 	{
 		CGColorRef result = it->second;
@@ -108,7 +109,7 @@ CGColorRef getCGColor (const CColor& color)
 		static_cast<CGFloat> (color.alpha / 255.)
 	};
 	CGColorRef result = CGColorCreate (GetCGColorSpace (), components);
-	colorMap.insert (std::make_pair (color, result));
+	colorMap.emplace (color, result);
 	return result;
 }
 
@@ -146,7 +147,7 @@ public:
 			CFRelease (csProfileRef);
 			return colorSpace;
 		}
-		return 0;
+		return nullptr;
 	#endif
 	}
 

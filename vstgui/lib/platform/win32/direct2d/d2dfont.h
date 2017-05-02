@@ -48,7 +48,7 @@ namespace VSTGUI {
 class D2DFont : public IPlatformFont, public IFontPainter
 {
 public:
-	D2DFont (const char* name, const CCoord& size, const int32_t& style);
+	D2DFont (const UTF8String& name, const CCoord& size, const int32_t& style);
 
 	IDWriteTextLayout* createTextLayout (IPlatformString* string) const;
 
@@ -62,10 +62,10 @@ protected:
 	double getLeading () const override { return leading; }
 	double getCapHeight () const override { return capHeight; }
 
-	IFontPainter* getPainter () override { return this; }
+	const IFontPainter* getPainter () const override { return this; }
 
-	void drawString (CDrawContext* context, IPlatformString* string, const CPoint& p, bool antialias = true) override;
-	CCoord getStringWidth (CDrawContext* context, IPlatformString* string, bool antialias = true) override;
+	void drawString (CDrawContext* context, IPlatformString* string, const CPoint& p, bool antialias = true) const override;
+	CCoord getStringWidth (CDrawContext* context, IPlatformString* string, bool antialias = true) const override;
 
 	IDWriteTextFormat* textFormat;
 	double ascent;

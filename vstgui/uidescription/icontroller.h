@@ -36,7 +36,7 @@
 #define __icontroller__
 
 #include "../lib/controls/icontrollistener.h"
-#include "../lib/cview.h"
+#include "../lib/cviewcontainer.h"
 
 namespace VSTGUI {
 
@@ -66,16 +66,25 @@ public:
 class IContextMenuController
 {
 public:
-	virtual ~IContextMenuController () {}
+	virtual ~IContextMenuController () noexcept = default;
 	
 	virtual void appendContextMenuItems (COptionMenu& contextMenu, const CPoint& where) = 0;
 };
 
 //-----------------------------------------------------------------------------
-/* helper method to get the controller of a view */
+class IContextMenuController2
+{
+public:
+	virtual ~IContextMenuController2 () noexcept = default;
+	
+	virtual void appendContextMenuItems (COptionMenu& contextMenu, CView* view, const CPoint& where) = 0;
+};
+
+//-----------------------------------------------------------------------------
+/** helper method to get the controller of a view */
 inline IController* getViewController (const CView* view, bool deep = false)
 {
-	IController* controller = 0;
+	IController* controller = nullptr;
 	uint32_t size = sizeof (IController*);
 	if (view->getAttribute (kCViewControllerAttribute, sizeof (IController*), &controller, size) == false && deep)
 	{
@@ -87,6 +96,29 @@ inline IController* getViewController (const CView* view, bool deep = false)
 	return controller;
 }
 
+//-----------------------------------------------------------------------------
+/** helper method to find a specific controller inside a view hierarchy */
+template<typename T>
+inline T* findViewController (const CViewContainer* view)
+{
+	if (auto ctrler = dynamic_cast<T*> (getViewController (view)))
+		return ctrler;
+	ViewIterator iterator (view);
+	while (*iterator)
+	{
+		if (auto ctrler = dynamic_cast<T*> (getViewController (*iterator)))
+			return ctrler;
+		if (auto container = (*iterator)->asViewContainer ())
+		{
+			if (auto ctrler = findViewController<T> (container))
+				return ctrler;
+		}
+		++iterator;
+	}
+	return nullptr;
+}
+
+//-----------------------------------------------------------------------------
 } // namespace
 
 #endif // __icontroller__

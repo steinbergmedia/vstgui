@@ -51,13 +51,13 @@ namespace VSTGUI {
 class UIViewListDataSource;
 
 //----------------------------------------------------------------------------------------------------
-class UITemplateController : public CBaseObject, public DelegationController, public IGenericStringListDataBrowserSourceSelectionChanged, public IDependency
+class UITemplateController : public CBaseObject, public DelegationController, public IContextMenuController2, public IGenericStringListDataBrowserSourceSelectionChanged, public IDependency
 {
 public:
 	UITemplateController (IController* baseController, UIDescription* description, UISelection* selection, UIUndoManager* undoManager, IActionPerformer* actionPerformer);
-	~UITemplateController ();
+	~UITemplateController () override;
 
-	const std::string* getSelectedTemplateName () const { return selectedTemplateName; }
+	const UTF8String* getSelectedTemplateName () const { return selectedTemplateName; }
 
 	void selectTemplate (UTF8StringPtr name);
 	void setTemplateView (CViewContainer* view);
@@ -67,12 +67,14 @@ public:
 	static IdStringPtr kMsgTemplateChanged;
 	static IdStringPtr kMsgTemplateNameChanged;
 protected:
-	virtual void valueChanged (CControl* pControl) override {}
-	virtual CView* createView (const UIAttributes& attributes, const IUIDescription* description) override;
-	virtual CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;
-	virtual IController* createSubController (UTF8StringPtr name, const IUIDescription* description) override;
+	void valueChanged (CControl* pControl) override {}
+	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override;
+	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;
+	IController* createSubController (UTF8StringPtr name, const IUIDescription* description) override;
 
-	virtual void dbSelectionChanged (int32_t selectedRow, GenericStringListDataBrowserSource* source) override;
+	void dbSelectionChanged (int32_t selectedRow, GenericStringListDataBrowserSource* source) override;
+
+	void appendContextMenuItems (COptionMenu& contextMenu, CView* view, const CPoint& where) override;
 
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 
@@ -83,9 +85,8 @@ protected:
 	CViewContainer* templateView;
 	CDataBrowser* templateDataBrowser;
 	UIViewListDataSource* mainViewDataSource;
-	typedef std::vector<std::string> StringVector;
-	StringVector templateNames;
-	std::string* selectedTemplateName;
+	GenericStringListDataBrowserSource::StringVector templateNames;
+	const UTF8String* selectedTemplateName;
 };
 
 } // namespace

@@ -50,7 +50,7 @@ class UIAttributes;
 class IViewCreator
 {
 public:
-	virtual ~IViewCreator () {}
+	virtual ~IViewCreator () noexcept = default;
 	
 	enum AttrType {
 		kUnknownType,
@@ -76,9 +76,26 @@ public:
 	virtual AttrType getAttributeType (const std::string& attributeName) const = 0;
 	virtual bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const = 0;
 	// optional list type support
-	virtual bool getPossibleListValues (const std::string& attributeName, std::list<const std::string*>& values) const { return false; }
+	virtual bool getPossibleListValues (const std::string& attributeName, std::list<const std::string*>& values) const = 0;
 	// optional value range
-	virtual bool getAttributeValueRange (const std::string& attributeName, double& minValue, double &maxValue) const { return false; }
+	virtual bool getAttributeValueRange (const std::string& attributeName, double& minValue, double &maxValue) const = 0;
+	// optional display name
+	virtual UTF8StringPtr getDisplayName () const = 0;
+};
+
+//-----------------------------------------------------------------------------
+/// @brief View creator interface adapter
+//-----------------------------------------------------------------------------
+class ViewCreatorAdapter : public IViewCreator
+{
+public:
+	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override { return true; }
+	bool getAttributeNames (std::list<std::string>& attributeNames) const override { return true; }
+	AttrType getAttributeType (const std::string& attributeName) const override { return kUnknownType; }
+	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const override { return false; }
+	bool getPossibleListValues (const std::string& attributeName, std::list<const std::string*>& values) const override { return false; }
+	bool getAttributeValueRange (const std::string& attributeName, double& minValue, double &maxValue) const override { return false; }
+	UTF8StringPtr getDisplayName () const override { return getViewName (); }
 };
 
 } // namespace
