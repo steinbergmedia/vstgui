@@ -52,8 +52,8 @@ namespace VSTGUI {
 class CLayeredViewContainer : public CViewContainer, public IPlatformViewLayerDelegate, public IViewContainerListenerAdapter
 {
 public:
-	CLayeredViewContainer (const CRect& r = CRect (0, 0, 0, 0));
-	~CLayeredViewContainer ();
+	explicit CLayeredViewContainer (const CRect& r = CRect (0, 0, 0, 0));
+	~CLayeredViewContainer () noexcept override = default;
 	
 	IPlatformViewLayer* getPlatformLayer () const { return layer; }
 
@@ -76,9 +76,9 @@ protected:
 	CGraphicsTransform getDrawTransform () const;
 	void registerListeners (bool state);
 
-	OwningPointer<IPlatformViewLayer>layer;
-	CLayeredViewContainer* parentLayerView;
-	uint32_t zIndex;
+	SharedPointer<IPlatformViewLayer> layer;
+	CLayeredViewContainer* parentLayerView {nullptr};
+	uint32_t zIndex {0};
 };
 
 } // namespace

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vstgui-ui-description version="1">
+	<fonts>
+	</fonts>
+	<colors>
+	</colors>
+	<template autosize="left right top bottom " background-color="~ BlackCColor" background-color-draw-style="filled and stroked" class="CViewContainer" mouse-enabled="true" name="Window" opacity="1" origin="0, 0" size="300, 300" transparent="false" wants-focus="false">
+		<view autosize="left right top bottom " back-color="~ BlackCColor" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="~ NormalFontVeryBig" font-antialias="true" font-color="~ WhiteCColor" frame-color="~ BlackCColor" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="0, 0" round-rect-radius="6" shadow-color="~ RedCColor" size="300, 300" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" text-shadow-offset="1, 1" title="Hello World!" transparent="false" truncate-mode="tail" value-precision="2" wants-focus="false" wheel-inc-value="0.1"/>
+	</template>
+	<custom>
+		<attributes name="UIDescFilePath" path="/Users/scheffle/Source/VST3/vstgui/vstgui/standalone/examples/simple_standalone/resource/Window.uidesc"/>
+		<attributes Size="10, 10" name="UIGridController"/>
+		<attributes SelectedTemplate="Window" name="UITemplateController"/>
+		<attributes EditViewScale="1" EditorSize="0, 0, 815, 565" SplitViewSize_0_0="0.7757352941176470784157004345615860074759" SplitViewSize_0_1="0.1875" SplitViewSize_1_0="0.5386029411764705621123994205845519900322" SplitViewSize_1_1="0.452205882352941179735950072426931001246" SplitViewSize_2_0="0.7877300613496932557566765353840310126543" SplitViewSize_2_1="0.206134969325153377672776855433767195791" Version="1" name="UIEditController"/>
+		<attributes name="UIAttributesController"/>
+		<attributes SelectedRow="24" name="UIViewCreatorDataSource"/>
+	</custom>
+	<variables/>
+	<bitmaps/>
+	<control-tags/>
+</vstgui-ui-description>

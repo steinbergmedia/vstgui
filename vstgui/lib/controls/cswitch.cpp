@@ -103,10 +103,6 @@ CVerticalSwitch::CVerticalSwitch (const CVerticalSwitch& v)
 }
 
 //------------------------------------------------------------------------
-CVerticalSwitch::~CVerticalSwitch ()
-{}
-
-//------------------------------------------------------------------------
 void CVerticalSwitch::draw (CDrawContext *pContext)
 {
 	if (getDrawBackground ())
@@ -274,10 +270,6 @@ CHorizontalSwitch::CHorizontalSwitch (const CHorizontalSwitch& v)
 }
 
 //------------------------------------------------------------------------
-CHorizontalSwitch::~CHorizontalSwitch ()
-{}
-
-//------------------------------------------------------------------------
 void CHorizontalSwitch::draw (CDrawContext *pContext)
 {
 	if (getDrawBackground ())
@@ -408,7 +400,7 @@ CRockerSwitch::CRockerSwitch (const CRect& size, IControlListener* listener, int
 : CControl (size, listener, tag, background)
 , offset (offset)
 , style (style)
-, resetValueTimer (0)
+, resetValueTimer (nullptr)
 {
 	setNumSubPixmaps (3);
 	setHeightOfOneImage (size.getHeight ());
@@ -434,7 +426,7 @@ CRockerSwitch::CRockerSwitch (const CRect& size, IControlListener* listener, int
 : CControl (size, listener, tag, background)
 , offset (offset)
 , style (style)
-, resetValueTimer (0)
+, resetValueTimer (nullptr)
 {
 	setNumSubPixmaps (3);
 	setHeightOfOneImage (heightOfOneImage);
@@ -449,14 +441,14 @@ CRockerSwitch::CRockerSwitch (const CRockerSwitch& v)
 : CControl (v)
 , offset (v.offset)
 , style (v.style)
-, resetValueTimer (0)
+, resetValueTimer (nullptr)
 {
 	setHeightOfOneImage (v.heightOfOneImage);
 	setWantsFocus (true);
 }
 
 //------------------------------------------------------------------------
-CRockerSwitch::~CRockerSwitch ()
+CRockerSwitch::~CRockerSwitch () noexcept
 {
 	if (resetValueTimer)
 		resetValueTimer->forget ();
@@ -601,7 +593,7 @@ bool CRockerSwitch::onWheel (const CPoint& where, const float &distance, const C
 		valueChanged ();
 	}
 
-	if (resetValueTimer == 0)
+	if (resetValueTimer == nullptr)
 		resetValueTimer = new CVSTGUITimer (this, 200);
 	resetValueTimer->stop ();
 	resetValueTimer->start ();
@@ -625,7 +617,7 @@ CMessageResult CRockerSwitch::notify (CBaseObject* sender, IdStringPtr message)
 			setDirty (true);
 		}
 		resetValueTimer->forget ();
-		resetValueTimer = 0;
+		resetValueTimer = nullptr;
 		return kMessageNotified;
 	}
 	return CControl::notify (sender, message);

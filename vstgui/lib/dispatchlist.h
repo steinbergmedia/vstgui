@@ -20,48 +20,64 @@ class DispatchList
 public:
 	DispatchList ();
 
-	void add (T* obj);
-	void remove (T* obj);
+	void add (const T& obj);
+	void add (T&& obj);
+	void remove (const T& obj);
+	void remove (T&& obj);
 	bool empty () const;
 
 	template <typename Procedure>
 	void forEach (Procedure proc);
 
+	template <typename Procedure>
+	void forEachReverse (Procedure proc);
+
 private:
-	typedef std::vector<T*> Array;
+	using Array = std::vector<T>;
+
+	void postForEach ();
 
 	Array entries;
 	Array toRemove;
 	Array toAdd;
-	bool inForEach;
+	bool inForEach {false};
 };
 
 //------------------------------------------------------------------------
 template <typename T>
-DispatchList<T>::DispatchList ()
-: inForEach (false)
+inline DispatchList<T>::DispatchList ()
 {
 }
 
 //------------------------------------------------------------------------
 template <typename T>
-void DispatchList<T>::add (T* obj)
+inline void DispatchList<T>::add (const T& obj)
 {
 	if (inForEach)
-		toAdd.push_back (obj);
+		toAdd.emplace_back (obj);
 	else
-		entries.push_back (obj);
+		entries.emplace_back (obj);
 }
 
 //------------------------------------------------------------------------
 template <typename T>
-void DispatchList<T>::remove (T* obj)
+inline void DispatchList<T>::add (T&& obj)
 {
 	if (inForEach)
-		toRemove.push_back (obj);
+		toAdd.emplace_back (std::move (obj));
+	else
+		entries.emplace_back (std::move (obj));
+}
+
+//------------------------------------------------------------------------
+template <typename T>
+inline void DispatchList<T>::remove (const T& obj)
+{
+	if (inForEach)
+		toRemove.emplace_back (obj);
 	else
 	{
-		typename Array::iterator it = std::find (entries.begin (), entries.end (), obj);
+		auto it = std::find (entries.begin (), entries.end (), obj);
 		if (it != entries.end ())
 			entries.erase (it);
 	}
@@ -69,29 +85,75 @@ void DispatchList<T>::remove (T* obj)
 
 //------------------------------------------------------------------------
 template <typename T>
-bool DispatchList<T>::empty () const
+inline void DispatchList<T>::remove (T&& obj)
+{
+	if (inForEach)
+		toRemove.emplace_back (std::move (obj));
+	else
+	{
+		auto it = std::find (entries.begin (), entries.end (), obj);
+		if (it != entries.end ())
+			entries.erase (it);
+	}
+}
+
+//------------------------------------------------------------------------
+template <typename T>
+inline bool DispatchList<T>::empty () const
 {
 	return entries.empty ();
 }
 
 //------------------------------------------------------------------------
 template <typename T>
+inline void DispatchList<T>::postForEach ()
+{
+	if (!toAdd.empty ())
+	{
+		for (auto&& it : toAdd)
+			add (std::move (it));
+		toAdd.clear ();
+	}
+	if (!toRemove.empty ())
+	{
+		for (auto&& it : toRemove)
+			remove (std::move (it));
+		toRemove.clear ();
+	}
+}
+
+//------------------------------------------------------------------------
+template <typename T>
 template <typename Procedure>
-void DispatchList<T>::forEach (Procedure proc)
+inline void DispatchList<T>::forEach (Procedure proc)
 {
 	if (entries.empty ())
 		return;
 
+	bool wasInForEach = inForEach;
 	inForEach = true;
-	for (typename Array::const_iterator it = entries.begin (), end = entries.end (); it != end; ++it)
+	for (auto& it : entries)
+		proc (it);
+	inForEach = wasInForEach;
+	if (!inForEach)
+		postForEach ();
+}
+
+//------------------------------------------------------------------------
+template <typename T>
+template <typename Procedure>
+inline void DispatchList<T>::forEachReverse (Procedure proc)
+{
+	if (entries.empty ())
+		return;
+	
+	bool wasInForEach = inForEach;
+	inForEach = true;
+	for (auto it = entries.rbegin (); it != entries.rend (); ++it)
 		proc (*it);
-	inForEach = false;
-	for (typename Array::const_iterator it = toAdd.begin (), end = toAdd.end (); it != end; ++it)
-		add (*it);
-	for (typename Array::const_iterator it = toRemove.begin (), end = toRemove.end (); it != end; ++it)
-		remove (*it);
-	toAdd.clear ();
-	toRemove.clear ();
+	inForEach = wasInForEach;
+	if (!inForEach)
+		postForEach ();
 }
 
 //------------------------------------------------------------------------

@@ -46,7 +46,7 @@ namespace VSTGUI {
 class CLineStyle
 {
 public:
-	typedef std::vector<CCoord> CoordVector;
+	using CoordVector = std::vector<CCoord>;
 
 	enum LineCap
 	{
@@ -62,10 +62,11 @@ public:
 		kLineJoinBevel
 	};
 
-	CLineStyle (LineCap cap = kLineCapButt, LineJoin join = kLineJoinMiter, CCoord dashPhase = 0., uint32_t dashCount = 0, const CCoord* dashLengths = 0);
+	CLineStyle () = default;
+	explicit CLineStyle (LineCap cap, LineJoin join = kLineJoinMiter, CCoord dashPhase = 0., uint32_t dashCount = 0, const CCoord* dashLengths = nullptr);
 	CLineStyle (LineCap cap, LineJoin join, CCoord dashPhase, const CoordVector& dashLengths);
 	CLineStyle (const CLineStyle& lineStyle);
-	~CLineStyle ();
+	~CLineStyle () noexcept = default;
 
 	CLineStyle (LineCap cap, LineJoin join, CCoord dashPhase, CoordVector&& dashLengths) noexcept;
 	CLineStyle (CLineStyle&& cls) noexcept;
@@ -87,9 +88,9 @@ public:
 	CLineStyle& operator= (const CLineStyle& cls);
 
 protected:
-	LineCap cap;
-	LineJoin join;
-	CCoord dashPhase;
+	LineCap cap {kLineCapButt};
+	LineJoin join {kLineJoinMiter};
+	CCoord dashPhase {0.};
 	CoordVector dashLengths;
 };
 

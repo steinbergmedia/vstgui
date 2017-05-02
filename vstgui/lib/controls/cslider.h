@@ -78,9 +78,6 @@ public:
 
 	virtual void  setZoomFactor (float val) { zoomFactor = val; }
 	virtual float getZoomFactor () const { return zoomFactor; }
-
-	VSTGUI_DEPRECATED(virtual void setFreeClick (bool val) { setMode (val ? kFreeClickMode : kTouchMode); })
-	VSTGUI_DEPRECATED(virtual bool getFreeClick () const { return getMode () == kFreeClickMode; })
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -107,26 +104,26 @@ public:
 	//@}
 
 	// overrides
-	virtual void draw (CDrawContext*) override;
+	void draw (CDrawContext*) override;
 
-	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
-	virtual CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
-	virtual CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
-	virtual CMouseEventResult onMouseCancel () override;
+	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseCancel () override;
 
-	virtual bool onWheel (const CPoint& where, const float& distance, const CButtonState& buttons) override;
-	virtual int32_t onKeyDown (VstKeyCode& keyCode) override;
+	bool onWheel (const CPoint& where, const float& distance, const CButtonState& buttons) override;
+	int32_t onKeyDown (VstKeyCode& keyCode) override;
 
-	virtual bool sizeToFit () override;
+	bool sizeToFit () override;
 
 	static bool kAlwaysUseZoomFactor;
 
 	CLASS_METHODS(CSlider, CControl)
 protected:
-	~CSlider ();
+	~CSlider () noexcept override;
 	void setViewSize (const CRect& rect, bool invalid) override;
 	
-	float calculateDelta (const CPoint& where, CRect* handleRect = 0) const;
+	float calculateDelta (const CPoint& where, CRect* handleRect = nullptr) const;
 	
 	CPoint	offset;
 	CPoint	offsetHandle;
@@ -170,7 +167,7 @@ class CVerticalSlider : public CSlider
 public:
 	CVerticalSlider (const CRect& size, IControlListener* listener, int32_t tag, int32_t iMinPos, int32_t iMaxPos, CBitmap* handle, CBitmap* background, const CPoint& offset = CPoint (0, 0), const int32_t style = kBottom);
 	CVerticalSlider (const CRect& rect, IControlListener* listener, int32_t tag, const CPoint& offsetHandle, int32_t rangeHandle, CBitmap* handle, CBitmap* background, const CPoint& offset = CPoint (0, 0), const int32_t style = kBottom);
-	CVerticalSlider (const CVerticalSlider& slider);
+	CVerticalSlider (const CVerticalSlider& slider) = default;
 };
 
 //-----------------------------------------------------------------------------
@@ -183,7 +180,7 @@ class CHorizontalSlider : public CSlider
 public:
 	CHorizontalSlider (const CRect& size, IControlListener* listener, int32_t tag, int32_t iMinPos, int32_t iMaxPos, CBitmap* handle, CBitmap* background, const CPoint& offset = CPoint (0, 0), const int32_t style = kRight);
 	CHorizontalSlider (const CRect& rect, IControlListener* listener, int32_t tag, const CPoint& offsetHandle, int32_t rangeHandle, CBitmap* handle, CBitmap* background, const CPoint& offset = CPoint (0, 0), const int32_t style = kRight);
-	CHorizontalSlider (const CHorizontalSlider& slider);
+	CHorizontalSlider (const CHorizontalSlider& slider) = default;
 };
 
 } // namespace

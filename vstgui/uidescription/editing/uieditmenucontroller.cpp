@@ -56,26 +56,13 @@ UIEditMenuController::UIEditMenuController (IController* baseController, UISelec
 , undoManager (undoManager)
 , description (description)
 , actionPerformer (actionPerformer)
-, editMenu (0)
-, fileMenu (0)
-, editLabel (0)
-, fileLabel (0)
 {
-}
-
-//----------------------------------------------------------------------------------------------------
-UIEditMenuController::~UIEditMenuController ()
-{
-	if (highlightTimer)
-	{
-		highlightTimer = 0;
-	}
 }
 
 //----------------------------------------------------------------------------------------------------
 static void addEntriesToMenu (const UIEditing::MenuEntry* entries, COptionMenu* menu, CBaseObject* menuItemTarget, int32_t& index)
 {
-	while (entries[index].category != 0)
+	while (entries[index].category != nullptr)
 	{
 		if (entries[index].menuFlags & UIEditing::MenuEntry::kSubMenuEnd)
 		{
@@ -85,7 +72,7 @@ static void addEntriesToMenu (const UIEditing::MenuEntry* entries, COptionMenu* 
 			menu->addSeparator ();
 		else if (entries[index].menuFlags & UIEditing::MenuEntry::kSubMenu)
 		{
-			OwningPointer<COptionMenu> subMenu = new COptionMenu ();
+			auto subMenu = makeOwned<COptionMenu> ();
 			if (entries[index].menuFlags & UIEditing::MenuEntry::kSubMenuCheckStyle)
 				subMenu->setStyle (kMultipleCheckStyle|kCheckStyle);
 			menu->addEntry (new CMenuItem (entries[index].name, subMenu));
@@ -132,16 +119,16 @@ void UIEditMenuController::createEditMenu (COptionMenu* menu)
 //----------------------------------------------------------------------------------------------------
 bool UIEditMenuController::createUniqueTemplateName (std::list<const std::string*>& names, std::string& name)
 {
-	for (std::list<const std::string*>::const_iterator it = names.begin (); it != names.end (); ++it)
+	for (auto& it : names)
 	{
-		if (*(*it) == name)
+		if (*it == name)
 		{
 			int32_t count = 0;
 			size_t pos = name.find_last_not_of ("0123456789");
 			if (pos != std::string::npos && pos != name.length () - 1)
 			{
 				std::string numberStr = name.substr (pos);
-				count = static_cast<int32_t> (strtol (numberStr.c_str (), NULL, 10)) + 1;
+				count = static_cast<int32_t> (strtol (numberStr.c_str (), nullptr, 10)) + 1;
 				name.erase (pos+1);
 			}
 			else
@@ -166,329 +153,241 @@ CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr me
 	if (message == CCommandMenuItem::kMsgMenuItemValidate)
 	{
 		CCommandMenuItem* item = dynamic_cast<CCommandMenuItem*> (sender);
-		UTF8StringView cmdCategory (item->getCommandCategory ());
-		UTF8StringView cmdName (item->getCommandName ());
-		item->setChecked (false);
-		if (cmdCategory == "Edit")
-		{
-			if (cmdName == "Undo")
-			{
-				if (undoManager->canUndo ())
-				{
-					std::string str ("Undo ");
-					str += undoManager->getUndoName ();
-					item->setTitle (str.c_str ());
-					item->setEnabled (true);
-				}
-				else
-				{
-					item->setTitle ("Undo");
-					item->setEnabled (false);
-				}
-				return kMessageNotified;
-			}
-			else if (cmdName == "Redo")
-			{
-				if (undoManager->canRedo ())
-				{
-					std::string str ("Redo ");
-					str += undoManager->getRedoName ();
-					item->setTitle (str.c_str ());
-					item->setEnabled (true);
-				}
-				else
-				{
-					item->setTitle ("Redo");
-					item->setEnabled (false);
-				}
-				return kMessageNotified;
-			}
-			else if (cmdName == "Cut")
-			{
-				item->setEnabled (false);
-			}
-			else if (cmdName == "Copy")
-			{
-				item->setEnabled (false);
-			}
-			else if (cmdName == "Paste")
-			{
-				item->setEnabled (false);
-			}
-			else if (cmdName == "Delete")
-			{
-				CView* view = selection->first ();
-				int32_t selectionCount = selection->total ();
-				bool enable = view ? (selectionCount > 1 ? true : dynamic_cast<UIEditView*> (view->getParentView ()) == 0) : false;
-				item->setEnabled (enable);
-				return kMessageNotified;
-			}
-			else if (cmdName == "Add New Template")
-			{
-				std::list<const std::string*> containerViewNames;
-				const UIViewFactory* factory = dynamic_cast<const UIViewFactory*> (description->getViewFactory ());
-				factory->collectRegisteredViewNames (containerViewNames, "CViewContainer");
-				OwningPointer<COptionMenu> submenu = new COptionMenu ();
-				for (std::list<const std::string*>::const_iterator it = containerViewNames.begin (); it != containerViewNames.end (); it++)
-				{
-					submenu->addEntry (new CCommandMenuItem ((*it)->c_str (), this, "AddTemplate", (*it)->c_str ()));
-				}
-				item->setSubmenu (submenu);
-				return kMessageNotified;
-			}
-			else if (cmdName == "Delete Template")
-			{
-				item->setSubmenu (0);
-				std::list<const std::string*> templateNames;
-				description->collectTemplateViewNames (templateNames);
-				item->setEnabled (templateNames.empty () == false);
-				if (templateNames.empty () == false)
-				{
-					templateNames.sort (UIEditController::std__stringCompare);
-					OwningPointer<COptionMenu> submenu = new COptionMenu ();
-					item->setSubmenu (submenu);
-					for (std::list<const std::string*>::const_iterator it = templateNames.begin (); it != templateNames.end (); it++)
-					{
-						submenu->addEntry (new CCommandMenuItem ((*it)->c_str (), this, "RemoveTemplate", (*it)->c_str ()));
-					}
-				}
-				return kMessageNotified;
-			}
-			else if (cmdName == "Duplicate Template")
-			{
-				item->setSubmenu (0);
-				std::list<const std::string*> templateNames;
-				description->collectTemplateViewNames (templateNames);
-				item->setEnabled (templateNames.empty () == false);
-				if (templateNames.empty () == false)
-				{
-					templateNames.sort (UIEditController::std__stringCompare);
-					OwningPointer<COptionMenu> submenu = new COptionMenu ();
-					item->setSubmenu (submenu);
-					for (std::list<const std::string*>::const_iterator it = templateNames.begin (); it != templateNames.end (); it++)
-					{
-						submenu->addEntry (new CCommandMenuItem ((*it)->c_str (), this, "DuplicateTemplate", (*it)->c_str ()));
-					}
-				}
-				return kMessageNotified;
-			}
-			else if (cmdName == "Embed Into")
-			{
-				item->setSubmenu (0);
-				bool enable = selection->total () > 0;
-				FOREACH_IN_SELECTION(selection, view)
-					if (dynamic_cast<UIEditView*>(view->getParentView()) != 0)
-					{
-						enable = false;
-						break;
-					}
-				FOREACH_IN_SELECTION_END
-				item->setEnabled (enable);
-				if (enable == false)
-					return kMessageNotified;
-				OwningPointer<COptionMenu> submenu = new COptionMenu ();
-				item->setSubmenu (submenu);
-				std::list<const std::string*> containerViewNames;
-				const UIViewFactory* factory = dynamic_cast<const UIViewFactory*> (description->getViewFactory ());
-				factory->collectRegisteredViewNames (containerViewNames, "CViewContainer");
-				for (std::list<const std::string*>::const_iterator it = containerViewNames.begin (); it != containerViewNames.end (); it++)
-				{
-					submenu->addEntry (new CCommandMenuItem ((*it)->c_str (), this, "Embed", (*it)->c_str ()));
-				}
-				return kMessageNotified;
-			}
-			else if (cmdName == "Unembed Views")
-			{
-				bool enabled = false;
-				if (selection->total () == 1)
-				{
-					CViewContainer* container = dynamic_cast<CViewContainer*>(selection->first());
-					if (container && container->hasChildren () && dynamic_cast<UIEditView*>(container->getParentView ()) == 0)
-						enabled = true;
-				}
-				item->setEnabled (enabled);
-				return kMessageNotified;
-			}
-			else if (cmdName == "Size To Fit")
-			{
-				item->setEnabled (selection->total() > 0 ? true : false);
-				return kMessageNotified;
-			}
-			else if (cmdName == "Transform View Type")
-			{
-				item->setSubmenu (0);
-				bool enabled = false;
-				if (selection->total () == 1)
-				{
-					CViewContainer* container = dynamic_cast<CViewContainer*>(selection->first());
-					if (container == 0 || (container && dynamic_cast<UIEditView*>(container->getParentView ()) == 0))
-						enabled = true;
-				}
-				item->setEnabled (enabled);
-				if (enabled == false)
-					return kMessageNotified;
-				OwningPointer<COptionMenu> submenu = new COptionMenu ();
-				item->setSubmenu (submenu);
-				std::list<const std::string*> containerViewNames;
-				const UIViewFactory* factory = dynamic_cast<const UIViewFactory*> (description->getViewFactory ());
-				factory->collectRegisteredViewNames (containerViewNames);
-				for (std::list<const std::string*>::const_iterator it = containerViewNames.begin (); it != containerViewNames.end (); it++)
-				{
-					submenu->addEntry (new CCommandMenuItem ((*it)->c_str (), this, "Transform View Type", (*it)->c_str ()));
-				}
-				return kMessageNotified;
-			}
-			else if (cmdName == "Insert Template")
-			{
-				item->setSubmenu (0);
-				item->setEnabled (selection->total () == 1 && dynamic_cast<CViewContainer*> (selection->first ()));
-				if (item->isEnabled () == false)
-					return kMessageNotified;
-				std::list<const std::string*> templateNames;
-				description->collectTemplateViewNames (templateNames);
-				item->setEnabled (templateNames.empty () == false);
-				if (templateNames.empty () == false)
-				{
-					templateNames.sort (UIEditController::std__stringCompare);
-					OwningPointer<COptionMenu> submenu = new COptionMenu ();
-					item->setSubmenu (submenu);
-					for (std::list<const std::string*>::const_iterator it = templateNames.begin (); it != templateNames.end (); it++)
-					{
-						submenu->addEntry (new CCommandMenuItem ((*it)->c_str (), this, "InsertTemplate", (*it)->c_str ()));
-					}
-				}
-				return kMessageNotified;
-			}
-		}
-		CBaseObject* obj = dynamic_cast<CBaseObject*>(controller);
-		return obj ? obj->notify (sender, message) : kMessageNotified;
+		if (item)
+			return validateMenuItem (*item) ? kMessageNotified : kMessageUnknown;
 	}
 	else if (message == CCommandMenuItem::kMsgMenuItemSelected)
 	{
 		CCommandMenuItem* item = dynamic_cast<CCommandMenuItem*> (sender);
-		UTF8StringView cmdCategory (item->getCommandCategory ());
-		UTF8StringView cmdName (item->getCommandName ());
-		if (cmdCategory == "Edit")
-		{
-			if (cmdName == "Undo")
-			{
-				if (undoManager->canUndo ())
-				{
-					undoManager->performUndo ();
-				}
-				return kMessageNotified;
-			}
-			else if (cmdName == "Redo")
-			{
-				if (undoManager->canRedo ())
-				{
-					undoManager->performRedo ();
-				}
-				return kMessageNotified;
-			}
-			else if (cmdName == "Delete")
-			{
-				IAction* action = new DeleteOperation (selection);
-				undoManager->pushAndPerform (action);
-				return kMessageNotified;
-			}
-			else if (cmdName == "Unembed Views")
-			{
-				IAction* action = new UnembedViewOperation (selection, description->getViewFactory ());
-				undoManager->pushAndPerform (action);
-				return kMessageNotified;
-			}
-			else if (cmdName == "Size To Fit")
-			{
-				IAction* action = new SizeToFitOperation (selection);
-				undoManager->pushAndPerform (action);
-				return kMessageNotified;
-			}
-		}
-		else if (cmdCategory == "AddTemplate")
-		{
-			std::list<const std::string*> tmp;
-			description->collectTemplateViewNames (tmp);
-			std::string templateName (item->getCommandName ());
-			if (createUniqueTemplateName (tmp, templateName))
-			{
-				actionPerformer->performCreateNewTemplate (templateName.c_str (), item->getCommandName ());
-			}
+		if (handleCommand (item->getCommandCategory (), item->getCommandName ()))
 			return kMessageNotified;
-		}
-		else if (cmdCategory == "RemoveTemplate")
-		{
-			actionPerformer->performDeleteTemplate (item->getCommandName ());
-			return kMessageNotified;
-		}
-		else if (cmdCategory == "DuplicateTemplate")
-		{
-			std::list<const std::string*> tmp;
-			description->collectTemplateViewNames (tmp);
-			std::string templateName (item->getCommandName ());
-			if (createUniqueTemplateName (tmp, templateName))
-			{
-				actionPerformer->performDuplicateTemplate (item->getCommandName (), templateName.c_str ());
-			}
-			return kMessageNotified;
-		}
-		else if (cmdCategory == "Embed")
-		{
-			const IViewFactory* viewFactory = description->getViewFactory ();
-			UIAttributes viewAttr;
-			viewAttr.setAttribute (UIViewCreator::kAttrClass, item->getCommandName ());
-			CViewContainer* newContainer = dynamic_cast<CViewContainer*> (viewFactory->createView (viewAttr, description));
-			if (newContainer)
-			{
-				IAction* action = new EmbedViewOperation (selection, newContainer);
-				undoManager->pushAndPerform (action);	
-			}
-			return kMessageNotified;
-		}
-		else if (cmdCategory == "Transform View Type")
-		{
-			IAction* action = new TransformViewTypeOperation (selection, item->getCommandName (), description, dynamic_cast<const UIViewFactory*> (description->getViewFactory ()));
-			undoManager->pushAndPerform (action);
-			return kMessageNotified;
-		}
-		else if (cmdCategory == "InsertTemplate")
-		{
-			CViewContainer* parent = dynamic_cast<CViewContainer*> (selection->first ());
-			if (parent)
-			{
-				CView* view = description->createView (item->getCommandName (), description->getController ());
-				if (view)
-				{
-					undoManager->pushAndPerform (new InsertViewOperation (parent, view, selection));
-				}
-			}
-			return kMessageNotified;
-		}
-		CBaseObject* obj = dynamic_cast<CBaseObject*>(controller);
-		return obj ? obj->notify (sender, message) : kMessageNotified;
 	}
 	else if (message == CVSTGUITimer::kMsgTimer)
 	{
 		editLabel->setTransparency (true);
 		fileLabel->setTransparency (true);
-		highlightTimer = 0;
+		highlightTimer = nullptr;
 	}
 	return kMessageUnknown;
+}
+
+//------------------------------------------------------------------------
+bool UIEditMenuController::validateMenuItem (CCommandMenuItem& item)
+{
+	UTF8StringView cmdCategory (item.getCommandCategory ());
+	UTF8StringView cmdName (item.getCommandName ());
+	item.setChecked (false);
+	if (cmdCategory == "Edit")
+	{
+		if (cmdName == "Undo")
+		{
+			if (undoManager->canUndo ())
+			{
+				std::string str ("Undo ");
+				str += undoManager->getUndoName ();
+				item.setTitle (str.c_str ());
+				item.setEnabled (true);
+			}
+			else
+			{
+				item.setTitle ("Undo");
+				item.setEnabled (false);
+			}
+			return true;
+		}
+		else if (cmdName == "Redo")
+		{
+			if (undoManager->canRedo ())
+			{
+				std::string str ("Redo ");
+				str += undoManager->getRedoName ();
+				item.setTitle (str.c_str ());
+				item.setEnabled (true);
+			}
+			else
+			{
+				item.setTitle ("Redo");
+				item.setEnabled (false);
+			}
+			return true;
+		}
+		else if (cmdName == "Cut")
+		{
+			item.setEnabled (false);
+		}
+		else if (cmdName == "Copy")
+		{
+			item.setEnabled (false);
+		}
+		else if (cmdName == "Paste")
+		{
+			item.setEnabled (false);
+		}
+		else if (cmdName == "Delete")
+		{
+			CView* view = selection->first ();
+			int32_t selectionCount = selection->total ();
+			bool enable = view ? (selectionCount > 1 ? true : dynamic_cast<UIEditView*> (view->getParentView ()) == nullptr) : false;
+			item.setEnabled (enable);
+			return true;
+		}
+		else if (cmdName == "Add New Template")
+		{
+			std::list<const std::string*> containerViewNames;
+			const UIViewFactory* factory = dynamic_cast<const UIViewFactory*> (description->getViewFactory ());
+			factory->collectRegisteredViewNames (containerViewNames, "CViewContainer");
+			auto submenu = makeOwned<COptionMenu> ();
+			for (auto& name : containerViewNames)
+			{
+				submenu->addEntry (new CCommandMenuItem (name->c_str (), this, "AddTemplate", name->c_str ()));
+			}
+			item.setSubmenu (submenu);
+			return true;
+		}
+		else if (cmdName == "Delete Template")
+		{
+			item.setSubmenu (nullptr);
+			std::list<const std::string*> templateNames;
+			description->collectTemplateViewNames (templateNames);
+			item.setEnabled (templateNames.empty () == false);
+			if (templateNames.empty () == false)
+			{
+				templateNames.sort (UIEditController::std__stringCompare);
+				auto submenu = makeOwned<COptionMenu> ();
+				item.setSubmenu (submenu);
+				for (auto& name : templateNames)
+				{
+					submenu->addEntry (new CCommandMenuItem (name->c_str (), this, "RemoveTemplate", name->c_str ()));
+				}
+			}
+			return true;
+		}
+		else if (cmdName == "Duplicate Template")
+		{
+			item.setSubmenu (nullptr);
+			std::list<const std::string*> templateNames;
+			description->collectTemplateViewNames (templateNames);
+			item.setEnabled (templateNames.empty () == false);
+			if (templateNames.empty () == false)
+			{
+				templateNames.sort (UIEditController::std__stringCompare);
+				auto submenu = makeOwned<COptionMenu> ();
+				item.setSubmenu (submenu);
+				for (auto& name : templateNames)
+				{
+					submenu->addEntry (new CCommandMenuItem (name->c_str (), this, "DuplicateTemplate", name->c_str ()));
+				}
+			}
+			return true;
+		}
+		else if (cmdName == "Embed Into")
+		{
+			item.setSubmenu (nullptr);
+			bool enable = selection->total () > 0;
+			for (auto view : *selection)
+			{
+				if (dynamic_cast<UIEditView*>(view->getParentView()) != nullptr)
+				{
+					enable = false;
+					break;
+				}
+			}
+			item.setEnabled (enable);
+			if (enable == false)
+				return true;
+			auto submenu = makeOwned<COptionMenu> ();
+			item.setSubmenu (submenu);
+			std::list<const std::string*> containerViewNames;
+			const UIViewFactory* factory = dynamic_cast<const UIViewFactory*> (description->getViewFactory ());
+			factory->collectRegisteredViewNames (containerViewNames, "CViewContainer");
+			for (auto& name : containerViewNames)
+			{
+				submenu->addEntry (new CCommandMenuItem (name->c_str (), this, "Embed", name->c_str ()));
+			}
+			return true;
+		}
+		else if (cmdName == "Unembed Views")
+		{
+			bool enabled = false;
+			if (selection->total () == 1)
+			{
+				CViewContainer* container = selection->first ()->asViewContainer ();
+				if (container && container->hasChildren () && dynamic_cast<UIEditView*>(container->getParentView ()) == nullptr)
+					enabled = true;
+			}
+			item.setEnabled (enabled);
+			return true;
+		}
+		else if (cmdName == "Size To Fit")
+		{
+			item.setEnabled (selection->total() > 0 ? true : false);
+			return true;
+		}
+		else if (cmdName == "Transform View Type")
+		{
+			item.setSubmenu (nullptr);
+			bool enabled = false;
+			if (selection->total () == 1)
+			{
+				CViewContainer* container = selection->first ()->asViewContainer ();
+				if (container == nullptr || (container && dynamic_cast<UIEditView*>(container->getParentView ()) == nullptr))
+					enabled = true;
+			}
+			item.setEnabled (enabled);
+			if (enabled == false)
+				return true;
+			auto submenu = makeOwned<COptionMenu> ();
+			item.setSubmenu (submenu);
+			std::list<const std::string*> containerViewNames;
+			const UIViewFactory* factory = dynamic_cast<const UIViewFactory*> (description->getViewFactory ());
+			factory->collectRegisteredViewNames (containerViewNames);
+			for (auto& name : containerViewNames)
+			{
+				submenu->addEntry (new CCommandMenuItem (name->c_str (), this, "Transform View Type", name->c_str ()));
+			}
+			return true;
+		}
+		else if (cmdName == "Insert Template")
+		{
+			item.setSubmenu (nullptr);
+			item.setEnabled (selection->total () == 1 && selection->first ()->asViewContainer ());
+			if (item.isEnabled () == false)
+				return true;
+			std::list<const std::string*> templateNames;
+			description->collectTemplateViewNames (templateNames);
+			item.setEnabled (templateNames.empty () == false);
+			if (templateNames.empty () == false)
+			{
+				templateNames.sort (UIEditController::std__stringCompare);
+				auto submenu = makeOwned<COptionMenu> ();
+				item.setSubmenu (submenu);
+				for (auto& name : templateNames)
+				{
+					submenu->addEntry (new CCommandMenuItem (name->c_str (), this, "InsertTemplate", name->c_str ()));
+				}
+			}
+			return true;
+		}
+	}
+	CBaseObject* obj = dynamic_cast<CBaseObject*>(controller);
+	if (obj)
+		return obj->notify (&item, CCommandMenuItem::kMsgMenuItemValidate) == kMessageNotified;
+	return false;
 }
 
 //----------------------------------------------------------------------------------------------------
 CCommandMenuItem* UIEditMenuController::findKeyCommandItem (COptionMenu* menu, const VstKeyCode& key)
 {
-	for (CConstMenuItemIterator it = menu->getItems ()->begin (), end = menu->getItems ()->end (); it != end; ++it)
+	for (auto& item : *menu->getItems ())
 	{
-		COptionMenu* subMenu = (*it)->getSubmenu ();
+		COptionMenu* subMenu = item->getSubmenu ();
 		if (subMenu)
 		{
 			CCommandMenuItem* result = findKeyCommandItem (subMenu, key);
 			if (result)
 				return result;
 		}
-		CCommandMenuItem* result = (*it).cast<CCommandMenuItem>();
+		CCommandMenuItem* result = item.cast<CCommandMenuItem>();
 		if (result)
 		{
 			int32_t modifier = 0;
@@ -504,20 +403,139 @@ CCommandMenuItem* UIEditMenuController::findKeyCommandItem (COptionMenu* menu, c
 			{
 				if (key.virt && key.virt == result->getVirtualKeyCode ())
 					return result;
-				else if (result->getKeycode () && result->getKeycode ()[0] == key.character)
+				else if (!result->getKeycode ().empty () && result->getKeycode ().getString ()[0] == key.character)
 					return result;
 			}
 		}
 	}
-	return 0;
+	return nullptr;
+}
+
+//------------------------------------------------------------------------
+bool UIEditMenuController::handleCommand (const UTF8StringPtr category, const UTF8StringPtr name)
+{
+	UTF8StringView cmdCategory (category);
+	UTF8StringView cmdName (name);
+	if (cmdCategory == "Edit")
+	{
+		if (cmdName == "Undo")
+		{
+			if (undoManager->canUndo ())
+			{
+				undoManager->performUndo ();
+			}
+			return true;
+		}
+		else if (cmdName == "Redo")
+		{
+			if (undoManager->canRedo ())
+			{
+				undoManager->performRedo ();
+			}
+			return true;
+		}
+		else if (cmdName == "Delete")
+		{
+			IAction* action = new DeleteOperation (selection);
+			undoManager->pushAndPerform (action);
+			return true;
+		}
+		else if (cmdName == "Unembed Views")
+		{
+			IAction* action = new UnembedViewOperation (selection, description->getViewFactory ());
+			undoManager->pushAndPerform (action);
+			return true;
+		}
+		else if (cmdName == "Size To Fit")
+		{
+			IAction* action = new SizeToFitOperation (selection);
+			undoManager->pushAndPerform (action);
+			return true;
+		}
+	}
+	if (cmdCategory == "AddTemplate")
+	{
+		std::list<const std::string*> tmp;
+		description->collectTemplateViewNames (tmp);
+		std::string templateName (cmdName);
+		if (createUniqueTemplateName (tmp, templateName))
+		{
+			actionPerformer->performCreateNewTemplate (templateName.c_str (), cmdName);
+		}
+		return true;
+	}
+	else if (cmdCategory == "RemoveTemplate")
+	{
+		actionPerformer->performDeleteTemplate (cmdName);
+		return kMessageNotified;
+	}
+	else if (cmdCategory == "DuplicateTemplate")
+	{
+		std::list<const std::string*> tmp;
+		description->collectTemplateViewNames (tmp);
+		std::string templateName (cmdName);
+		if (createUniqueTemplateName (tmp, templateName))
+		{
+			actionPerformer->performDuplicateTemplate (cmdName, templateName.c_str ());
+		}
+		return true;
+	}
+	else if (cmdCategory == "Embed")
+	{
+		const IViewFactory* viewFactory = description->getViewFactory ();
+		UIAttributes viewAttr;
+		viewAttr.setAttribute (UIViewCreator::kAttrClass, std::string (cmdName));
+		if (auto newContainer = viewFactory->createView (viewAttr, description)->asViewContainer ())
+		{
+			IAction* action = new EmbedViewOperation (selection, newContainer);
+			undoManager->pushAndPerform (action);
+		}
+		return true;
+	}
+	else if (cmdCategory == "Transform View Type")
+	{
+		IAction* action = new TransformViewTypeOperation (selection, cmdName, description, dynamic_cast<const UIViewFactory*> (description->getViewFactory ()));
+		undoManager->pushAndPerform (action);
+		return true;
+	}
+	else if (cmdCategory == "InsertTemplate")
+	{
+		if (auto parent = selection->first ()->asViewContainer ())
+		{
+			CView* view = description->createView (cmdName, description->getController ());
+			if (view)
+			{
+				undoManager->pushAndPerform (new InsertViewOperation (parent, view, selection));
+			}
+		}
+		return true;
+	}
+	if (auto obj = dynamic_cast<CBaseObject*> (controller))
+	{
+		CCommandMenuItem item ("", 0, nullptr, category, name);
+		if (obj->notify (&item, CCommandMenuItem::kMsgMenuItemSelected) == kMessageNotified)
+			return true;
+	}
+	return false;
+}
+
+//------------------------------------------------------------------------
+bool UIEditMenuController::canHandleCommand (const UTF8StringPtr category, const UTF8StringPtr name) const
+{
+	CCommandMenuItem item ("", 0, nullptr, category, name);
+	if (const_cast<UIEditMenuController*> (this)->validateMenuItem (item))
+	{
+		return item.isEnabled ();
+	}
+	return false;
 }
 
 //----------------------------------------------------------------------------------------------------
 int32_t UIEditMenuController::processKeyCommand (const VstKeyCode& key)
 {
 	COptionMenu* baseMenu = editMenu;
-	CCommandMenuItem* item = baseMenu ? findKeyCommandItem (baseMenu, key) : 0;
-	if (item == 0 && fileMenu)
+	CCommandMenuItem* item = baseMenu ? findKeyCommandItem (baseMenu, key) : nullptr;
+	if (item == nullptr && fileMenu)
 	{
 		baseMenu = fileMenu;
 		item = findKeyCommandItem (baseMenu, key);
@@ -527,7 +545,7 @@ int32_t UIEditMenuController::processKeyCommand (const VstKeyCode& key)
 		item->getTarget ()->notify (item, CCommandMenuItem::kMsgMenuItemValidate);
 		if (item->isEnabled ())
 		{
-			CTextLabel* label = 0;
+			CTextLabel* label = nullptr;
 			if (baseMenu)
 			{
 				switch (baseMenu->getTag ())
@@ -551,7 +569,7 @@ int32_t UIEditMenuController::processKeyCommand (const VstKeyCode& key)
 			item->getTarget ()->notify (item, CCommandMenuItem::kMsgMenuItemSelected);
 			if (label)
 			{
-				highlightTimer = new CVSTGUITimer (this, 90, true);
+				highlightTimer = makeOwned<CVSTGUITimer> (this, 90u, true);
 			}
 			return 1;
 		}
@@ -637,7 +655,7 @@ void UIEditMenuController::valueChanged (CControl* control)
 //----------------------------------------------------------------------------------------------------
 void UIEditMenuController::controlBeginEdit (CControl* pControl)
 {
-	CTextLabel* label = 0;
+	CTextLabel* label = nullptr;
 	switch (pControl->getTag ())
 	{
 		case kMenuFileTag:
@@ -658,7 +676,7 @@ void UIEditMenuController::controlBeginEdit (CControl* pControl)
 //----------------------------------------------------------------------------------------------------
 void UIEditMenuController::controlEndEdit (CControl* pControl)
 {
-	CTextLabel* label = 0;
+	CTextLabel* label = nullptr;
 	switch (pControl->getTag ())
 	{
 		case kMenuFileTag:

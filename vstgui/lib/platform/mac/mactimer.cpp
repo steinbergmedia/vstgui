@@ -43,8 +43,8 @@ namespace VSTGUI {
 class MacTimer : public IPlatformTimer
 {
 public:
-	MacTimer (IPlatformTimerCallback* callback);
-	~MacTimer ();
+	explicit MacTimer (IPlatformTimerCallback* callback);
+	~MacTimer () override;
 
 	bool start (uint32_t fireTime) override;
 	bool stop () override;
@@ -56,15 +56,15 @@ private:
 };
 
 //-----------------------------------------------------------------------------
-IPlatformTimer* IPlatformTimer::create (IPlatformTimerCallback* callback)
+SharedPointer<IPlatformTimer> IPlatformTimer::create (IPlatformTimerCallback* callback)
 {
-	return new MacTimer (callback);
+	return makeOwned<MacTimer> (callback);
 }
 
 //-----------------------------------------------------------------------------
 MacTimer::MacTimer (IPlatformTimerCallback* callback)
 : callback (callback)
-, timer (0)
+, timer (nullptr)
 {
 }
 
@@ -103,7 +103,7 @@ bool MacTimer::stop ()
 	{
 		CFRunLoopTimerInvalidate (timer);
 		CFRelease (timer);
-		timer = 0;
+		timer = nullptr;
 		return true;
 	}
 	return false;

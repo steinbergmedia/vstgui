@@ -66,7 +66,7 @@ class Parser
 {
 public:
 	Parser ();
-	virtual ~Parser ();
+	virtual ~Parser () noexcept;
 
 	bool parse (IContentProvider* provider, IHandler* handler);
 
@@ -91,7 +91,7 @@ public:
 class InputStreamContentProvider : public IContentProvider
 {
 public:
-	InputStreamContentProvider (InputStream& stream);
+	explicit InputStreamContentProvider (InputStream& stream);
 
 	uint32_t readRawXmlData (int8_t* buffer, uint32_t size) override;
 	void rewind () override;

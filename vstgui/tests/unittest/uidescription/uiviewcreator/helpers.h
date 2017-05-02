@@ -263,14 +263,14 @@ void testAttribute (const IdStringPtr viewName, const std::string& attrName, con
 	EXPECT(value == attrValue);
 }
 
-static bool operator!= (const CGradient& g1, const CGradient& g2)
+inline bool operator!= (const CGradient& g1, const CGradient& g2)
 {
 	auto cs1 = g1.getColorStops ();
 	auto cs2 = g2.getColorStops ();
 	return cs1 != cs2;
 }
 
-static bool operator== (const CGradient& g1, const CGradient& g2)
+inline bool operator== (const CGradient& g1, const CGradient& g2)
 {
 	auto cs1 = g1.getColorStops ();
 	auto cs2 = g2.getColorStops ();

@@ -69,12 +69,12 @@ By clicking alt modifier and left mouse button the value changes with a vertical
 //------------------------------------------------------------------------
 CKnob::CKnob (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background, CBitmap* handle, const CPoint& offset, int32_t drawStyle)
 : CControl (size, listener, tag, background)
-, drawStyle (drawStyle)
 , offset (offset)
-, pHandle (handle)
+, drawStyle (drawStyle)
 , handleLineWidth (1.)
 , coronaInset (0)
 , coronaOutlineWidthAdd (2.)
+, pHandle (handle)
 {
 	if (pHandle)
 	{
@@ -108,17 +108,17 @@ CKnob::CKnob (const CKnob& v)
 , inset (v.inset)
 , coronaInset (v.coronaInset)
 , coronaOutlineWidthAdd (v.coronaInset)
+, pHandle (v.pHandle)
 , startAngle (v.startAngle)
 , rangeAngle (v.rangeAngle)
 , zoomFactor (v.zoomFactor)
-, pHandle (v.pHandle)
 {
 	if (pHandle)
 		pHandle->remember ();
 }
 
 //------------------------------------------------------------------------
-CKnob::~CKnob ()
+CKnob::~CKnob () noexcept
 {
 	if (pHandle)
 		pHandle->forget ();
@@ -213,8 +213,8 @@ void CKnob::addArc (CGraphicsPath* path, const CRect& r, double startAngle, doub
 //------------------------------------------------------------------------
 void CKnob::drawCoronaOutline (CDrawContext* pContext) const
 {
-	OwningPointer<CGraphicsPath> path = pContext->createGraphicsPath ();
-	if (path == 0)
+	auto path = owned (pContext->createGraphicsPath ());
+	if (path == nullptr)
 		return;
 	CRect corona (getViewSize ());
 	corona.inset (coronaInset, coronaInset);
@@ -232,8 +232,8 @@ void CKnob::drawCoronaOutline (CDrawContext* pContext) const
 //------------------------------------------------------------------------
 void CKnob::drawCorona (CDrawContext* pContext) const
 {
-	OwningPointer<CGraphicsPath> path = pContext->createGraphicsPath ();
-	if (path == 0)
+	auto path = owned (pContext->createGraphicsPath ());
+	if (path == nullptr)
 		return;
 	float coronaValue = getValueNormalized ();
 	if (drawStyle & kCoronaInverted)
@@ -250,7 +250,7 @@ void CKnob::drawCorona (CDrawContext* pContext) const
 			addArc (path, corona, startAngle, rangeAngle * coronaValue);
 	}
 	pContext->setFrameColor (coronaColor);
-	CLineStyle lineStyle (drawStyle & kCoronaLineDashDot ? kLineOnOffDash : kLineSolid);
+	CLineStyle lineStyle ((drawStyle & kCoronaLineDashDot) ? kLineOnOffDash : kLineSolid);
 	if (!(drawStyle & kCoronaLineCapButt))
 		lineStyle.setLineCap (CLineStyle::kLineCapRound);
 	if (drawStyle & kCoronaLineDashDot)
@@ -520,7 +520,7 @@ void CKnob::valueToPoint (CPoint &point) const
 	float alpha = (value - getMin()) / (getMax() - getMin());
 	alpha = startAngle + alpha*rangeAngle;
 
-	CPoint c(size.getWidth () / 2., size.getHeight () / 2.);
+	CPoint c (getViewSize ().getWidth () / 2., getViewSize ().getHeight () / 2.);
 	double xradius = c.x - inset;
 	double yradius = c.y - inset;
 
@@ -535,7 +535,7 @@ float CKnob::valueFromPoint (CPoint &point) const
 	double d = rangeAngle * 0.5;
 	double a = startAngle + d;
 
-	CPoint c (size.getWidth () / 2., size.getHeight () / 2.);
+	CPoint c (getViewSize ().getWidth () / 2., getViewSize ().getHeight () / 2.);
 	double xradius = c.x - inset;
 	double yradius = c.y - inset;
 
@@ -639,7 +639,7 @@ void CKnob::setHandleBitmap (CBitmap* bitmap)
 	if (pHandle)
 	{
 		pHandle->forget ();
-		pHandle = 0;
+		pHandle = nullptr;
 	}
 
 	if (bitmap)
@@ -687,7 +687,7 @@ According to the value, a specific subbitmap is displayed. The different subbitm
  */
 //------------------------------------------------------------------------
 CAnimKnob::CAnimKnob (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background, const CPoint &offset)
-: CKnob (size, listener, tag, background, 0, offset)
+: CKnob (size, listener, tag, background, nullptr, offset)
 , bInverseBitmap (false)
 {
 	heightOfOneImage = size.getHeight ();
@@ -708,7 +708,7 @@ CAnimKnob::CAnimKnob (const CRect& size, IControlListener* listener, int32_t tag
  */
 //------------------------------------------------------------------------
 CAnimKnob::CAnimKnob (const CRect& size, IControlListener* listener, int32_t tag, int32_t subPixmaps, CCoord heightOfOneImage, CBitmap* background, const CPoint &offset)
-: CKnob (size, listener, tag, background, 0, offset)
+: CKnob (size, listener, tag, background, nullptr, offset)
 , bInverseBitmap (false)
 {
 	setNumSubPixmaps (subPixmaps);
@@ -724,10 +724,6 @@ CAnimKnob::CAnimKnob (const CAnimKnob& v)
 	setNumSubPixmaps (v.subPixmaps);
 	setHeightOfOneImage (v.heightOfOneImage);
 }
-
-//------------------------------------------------------------------------
-CAnimKnob::~CAnimKnob ()
-{}
 
 //-----------------------------------------------------------------------------------------------
 bool CAnimKnob::sizeToFit ()

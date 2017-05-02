@@ -53,13 +53,13 @@ class GdiplusGraphicsPath : public CGraphicsPath
 public:
 	GdiplusGraphicsPath ();
 	GdiplusGraphicsPath (const GdiPlusFont* font, UTF8StringPtr text);
-	~GdiplusGraphicsPath ();
+	~GdiplusGraphicsPath () noexcept;
 
 	Gdiplus::GraphicsPath* getGraphicsPath ();
 
 	CGradient* createGradient (double color1Start, double color2Start, const CColor& color1, const CColor& color2) override;
 	void dirty () override;
-	bool hitTest (const CPoint& p, bool evenOddFilled = false, CGraphicsTransform* transform = 0) override;
+	bool hitTest (const CPoint& p, bool evenOddFilled = false, CGraphicsTransform* transform = nullptr) override;
 	CPoint getCurrentPosition () override;
 	CRect getBoundingBox () override;
 protected:

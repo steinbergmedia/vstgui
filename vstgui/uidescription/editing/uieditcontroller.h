@@ -40,9 +40,12 @@
 #if VSTGUI_LIVE_EDITING
 
 #include "../iviewcreator.h"
+#include "../icontroller.h"
 #include "iaction.h"
 #include "../../lib/csplitview.h"
 #include "../../lib/cframe.h"
+
+#include <vector>
 
 namespace VSTGUI {
 class UIEditView;
@@ -56,88 +59,94 @@ class GenericStringListDataBrowserSource;
 class CCommandMenuItem;
 
 //----------------------------------------------------------------------------------------------------
-class UIEditController : public CBaseObject, public IController, public ISplitViewController, public ISplitViewSeparatorDrawer, public IActionPerformer, public IKeyboardHook
+class UIEditController : public CBaseObject, public IController, public IContextMenuController, public ISplitViewController, public ISplitViewSeparatorDrawer, public IActionPerformer, public IKeyboardHook
 {
 public:
 	UIEditController (UIDescription* description);
 
 	CView* createEditView ();
 	UIEditMenuController* getMenuController () const { return menuController; }
+	UIUndoManager* getUndoManager () const { return undoManager; }
 	const std::string& getEditTemplateName () const { return editTemplateName; }
 	UIAttributes* getSettings ();
-
+	int32_t getSaveOptions ();
+	
 	void onZoomChanged (double zoom);
 
 	void addSelectionToCurrentView (UISelection* selection);
 
-	static UIDescription& getEditorDescription ();
+	static SharedPointer<UIDescription> getEditorDescription ();
 	static void setupDataSource (GenericStringListDataBrowserSource* source);
 	static bool std__stringCompare (const std::string* lhs, const std::string* rhs);
 	static const UTF8StringPtr kEncodeBitmapsSettingsKey;
 	static const UTF8StringPtr kWriteWindowsRCFileSettingsKey;
 protected:
-	~UIEditController ();
+	~UIEditController () override;
 
 	static void resetScrollViewOffsets (CViewContainer* view);
 
 	int32_t getSplitViewIndex (CSplitView* splitView);
 	void setDirty (bool state);
 
-	virtual void valueChanged (CControl* pControl) override;
-	virtual CView* createView (const UIAttributes& attributes, const IUIDescription* description) override;
-	virtual CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;
-	virtual IController* createSubController (UTF8StringPtr name, const IUIDescription* description) override;
+	void valueChanged (CControl* pControl) override;
+	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override;
+	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;
+	IController* createSubController (UTF8StringPtr name, const IUIDescription* description) override;
 
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 
+	// IContextMenuController
+	void appendContextMenuItems (COptionMenu& contextMenu, const CPoint& where) override;
+
 	// ISplitViewController
-	virtual bool getSplitViewSizeConstraint (int32_t index, CCoord& minSize, CCoord& maxSize, CSplitView* splitView) override;
-	virtual ISplitViewSeparatorDrawer* getSplitViewSeparatorDrawer (CSplitView* splitView) override;
-	virtual bool storeViewSize (int32_t index, const CCoord& size, CSplitView* splitView) override;
-	virtual bool restoreViewSize (int32_t index, CCoord& size, CSplitView* splitView) override;
+	bool getSplitViewSizeConstraint (int32_t index, CCoord& minSize, CCoord& maxSize, CSplitView* splitView) override;
+	ISplitViewSeparatorDrawer* getSplitViewSeparatorDrawer (CSplitView* splitView) override;
+	bool storeViewSize (int32_t index, const CCoord& size, CSplitView* splitView) override;
+	bool restoreViewSize (int32_t index, CCoord& size, CSplitView* splitView) override;
 
 	// ISplitViewSeparatorDrawer
-	virtual void drawSplitViewSeparator (CDrawContext* context, const CRect& size, int32_t flags, int32_t index, CSplitView* splitView) override;
+	void drawSplitViewSeparator (CDrawContext* context, const CRect& size, int32_t flags, int32_t index, CSplitView* splitView) override;
 
 	// IActionPerformer
-	virtual void performAction (IAction* action) override;
-	virtual void performColorChange (UTF8StringPtr colorName, const CColor& newColor, bool remove = false) override;
-	virtual void performTagChange (UTF8StringPtr tagName, UTF8StringPtr tagString, bool remove = false) override;
-	virtual void performBitmapChange (UTF8StringPtr bitmapName, UTF8StringPtr bitmapPath, bool remove = false) override;
-	virtual void performGradientChange (UTF8StringPtr gradientName, CGradient* newGradient, bool remove = false) override;
-	virtual void performFontChange (UTF8StringPtr fontName, CFontRef newFont, bool remove = false) override;
-	virtual void performColorNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) override;
-	virtual void performTagNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) override;
-	virtual void performFontNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) override;
-	virtual void performGradientNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) override;
-	virtual void performBitmapNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) override;
-	virtual void performBitmapNinePartTiledChange (UTF8StringPtr bitmapName, const CRect* offsets) override;
-	virtual void performBitmapFiltersChange (UTF8StringPtr bitmapName, const std::list<SharedPointer<UIAttributes> >& filterDescription) override;
-	virtual void performAlternativeFontChange (UTF8StringPtr fontName, UTF8StringPtr newAlternativeFonts) override;
+	void performAction (IAction* action) override;
+	void performColorChange (UTF8StringPtr colorName, const CColor& newColor, bool remove = false) override;
+	void performTagChange (UTF8StringPtr tagName, UTF8StringPtr tagString, bool remove = false) override;
+	void performBitmapChange (UTF8StringPtr bitmapName, UTF8StringPtr bitmapPath, bool remove = false) override;
+	void performGradientChange (UTF8StringPtr gradientName, CGradient* newGradient, bool remove = false) override;
+	void performFontChange (UTF8StringPtr fontName, CFontRef newFont, bool remove = false) override;
+	void performColorNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) override;
+	void performTagNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) override;
+	void performFontNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) override;
+	void performGradientNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) override;
+	void performBitmapNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) override;
+	void performBitmapNinePartTiledChange (UTF8StringPtr bitmapName, const CRect* offsets) override;
+	void performBitmapFiltersChange (UTF8StringPtr bitmapName, const std::list<SharedPointer<UIAttributes> >& filterDescription) override;
+	void performAlternativeFontChange (UTF8StringPtr fontName, UTF8StringPtr newAlternativeFonts) override;
 
-	virtual void beginLiveColorChange (UTF8StringPtr colorName) override;
-	virtual void performLiveColorChange (UTF8StringPtr colorName, const CColor& newColor) override;
-	virtual void endLiveColorChange (UTF8StringPtr colorName) override;
+	void beginLiveColorChange (UTF8StringPtr colorName) override;
+	void performLiveColorChange (UTF8StringPtr colorName, const CColor& newColor) override;
+	void endLiveColorChange (UTF8StringPtr colorName) override;
 
-	virtual void performTemplateNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) override;
-	virtual void performCreateNewTemplate (UTF8StringPtr name, UTF8StringPtr baseViewClassName) override;
-	virtual void performDeleteTemplate (UTF8StringPtr name) override;
-	virtual void performDuplicateTemplate (UTF8StringPtr name, UTF8StringPtr dupName) override;
+	void performTemplateNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) override;
+	void performCreateNewTemplate (UTF8StringPtr name, UTF8StringPtr baseViewClassName) override;
+	void performDeleteTemplate (UTF8StringPtr name) override;
+	void performDuplicateTemplate (UTF8StringPtr name, UTF8StringPtr dupName) override;
 
-	virtual void onTemplateCreation (UTF8StringPtr name, CView* view) override;
-	virtual void onTemplateNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) override;
+	void onTemplateCreation (UTF8StringPtr name, CView* view) override;
+	void onTemplateNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) override;
 
-	virtual void beginGroupAction (UTF8StringPtr name) override;
-	virtual void finishGroupAction () override;
+	void beginGroupAction (UTF8StringPtr name) override;
+	void finishGroupAction () override;
 
 	// IKeyboardHook
-	virtual int32_t onKeyDown (const VstKeyCode& code, CFrame* frame) override;
-	virtual int32_t onKeyUp (const VstKeyCode& code, CFrame* frame) override;
+	int32_t onKeyDown (const VstKeyCode& code, CFrame* frame) override;
+	int32_t onKeyUp (const VstKeyCode& code, CFrame* frame) override;
 
 	SharedPointer<UIDescription> editDescription;
-	OwningPointer<UISelection> selection;
-	OwningPointer<UIUndoManager> undoManager;
-	OwningPointer<UIGridController> gridController;
+	SharedPointer<UIDescription> editorDesc;
+	SharedPointer<UISelection> selection;
+	SharedPointer<UIUndoManager> undoManager;
+	SharedPointer<UIGridController> gridController;
 	UIEditView* editView;
 	SharedPointer<UITemplateController> templateController;
 	SharedPointer<UIEditMenuController> menuController;
@@ -178,8 +187,8 @@ private:
 	void doPaste ();
 	void showTemplateSettings ();
 	void showFocusSettings ();
-	bool doSelectionMove (const std::string& commandName, bool useGrid) const;
-	bool doSelectionSize (const std::string& commandName, bool useGrid) const;
+	bool doSelectionMove (const UTF8String& commandName, bool useGrid) const;
+	bool doSelectionSize (const UTF8String& commandName, bool useGrid) const;
 	bool doZOrderAction (bool lower);
 	void doSelectAllChildren ();
 	

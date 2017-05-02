@@ -41,6 +41,7 @@
 // the cocoa fileselector is also used for carbon
 #import <Cocoa/Cocoa.h>
 #import "cocoa/cocoahelpers.h"
+#import "macstring.h"
 
 #if MAC_COCOA
 #import "cocoa/nsviewframe.h"
@@ -55,7 +56,7 @@ class CocoaFileSelector : public CNewFileSelector
 {
 public:
 	CocoaFileSelector (CFrame* frame, Style style);
-	~CocoaFileSelector ();
+	~CocoaFileSelector () override = default;
 
 	void openPanelDidEnd (NSSavePanel* panel, NSInteger resultCode);
 protected:
@@ -87,15 +88,10 @@ void CocoaFileSelector::initClass ()
 CocoaFileSelector::CocoaFileSelector (CFrame* frame, Style style)
 : CNewFileSelector (frame)
 , style (style)
-, delegate (0)
+, delegate (nullptr)
 {
 	savePanel = nil;
 	initClass ();
-}
-
-//-----------------------------------------------------------------------------
-CocoaFileSelector::~CocoaFileSelector ()
-{
 }
 
 //-----------------------------------------------------------------------------
@@ -106,11 +102,10 @@ void CocoaFileSelector::openPanelDidEnd (NSSavePanel* savePanel, NSInteger res)
 		if (style == kSelectSaveFile)
 		{
 			NSURL* url = [savePanel URL];
-			const char* utf8Path = url ? [[url path] UTF8String] : 0;
+			const char* utf8Path = url ? [[url path] UTF8String] : nullptr;
 			if (utf8Path)
 			{
-				UTF8StringBuffer path = String::newWithString (utf8Path);
-				result.push_back (path);
+				result.emplace_back (utf8Path);
 			}
 		}
 		else
@@ -120,13 +115,12 @@ void CocoaFileSelector::openPanelDidEnd (NSSavePanel* savePanel, NSInteger res)
 			for (NSUInteger i = 0; i < [urls count]; i++)
 			{
 				NSURL* url = [urls objectAtIndex:i];
-				if (url == 0 || [url path] == 0)
+				if (url == nullptr || [url path] == nullptr)
 					continue;
 				const char* utf8Path = [[url path] UTF8String];
 				if (utf8Path)
 				{
-					UTF8StringBuffer path = String::newWithString (utf8Path);
-					result.push_back (path);
+					result.emplace_back (utf8Path);
 				}
 			}
 		}
@@ -154,7 +148,7 @@ bool CocoaFileSelector::runInternal (CBaseObject* _delegate)
 		if (frame && frame->getPlatformFrame ())
 		{
 			NSViewFrame* nsViewFrame = static_cast<NSViewFrame*> (frame->getPlatformFrame ());
-			parentWindow = nsViewFrame ? [(nsViewFrame->getPlatformControl ()) window] : 0;
+			parentWindow = nsViewFrame ? [(nsViewFrame->getPlatformControl ()) window] : nullptr;
 		}
 		#endif
 		delegate = _delegate;
@@ -164,31 +158,29 @@ bool CocoaFileSelector::runInternal (CBaseObject* _delegate)
 	if (extensions.empty () == false)
 	{
 		typesArray = [[[NSMutableArray alloc] init] autorelease];
-		std::list<CFileExtension>::const_iterator it = extensions.begin ();
-		while (it != extensions.end ())
+		for (auto& ext : extensions)
 		{
-			NSString* uti = 0;
-			if ((*it).getUTI ())
-				uti = [[NSString stringWithCString: (*it).getUTI () encoding:NSUTF8StringEncoding] retain];
-			if (uti == 0 && (*it).getMimeType ())
-				uti = (NSString*)UTTypeCreatePreferredIdentifierForTag (kUTTagClassMIMEType, (CFStringRef)[NSString stringWithCString: (*it).getMimeType () encoding:NSUTF8StringEncoding], kUTTypeData);
-			if (uti == 0 && (*it).getMacType ())
+			NSString* uti = nullptr;
+			if (ext.getUTI ().empty () == false)
+				uti = [fromUTF8String<NSString*> (ext.getUTI ()) retain];
+			if (uti == nullptr && ext.getMimeType ().empty () == false)
+				uti = (NSString*)UTTypeCreatePreferredIdentifierForTag (kUTTagClassMIMEType, fromUTF8String<CFStringRef> (ext.getMimeType ()), kUTTypeData);
+			if (uti == nullptr && ext.getMacType ())
 			{
-				NSString* osType = (NSString*)UTCreateStringForOSType (static_cast<OSType> ((*it).getMacType ()));
+				NSString* osType = (NSString*)UTCreateStringForOSType (static_cast<OSType> (ext.getMacType ()));
 				if (osType)
 				{
 					uti = (NSString*)UTTypeCreatePreferredIdentifierForTag (kUTTagClassOSType, (CFStringRef)osType, kUTTypeData);
 					[osType release];
 				}
 			}
-			if (uti == 0 && (*it).getExtension ())
-				uti = [[NSString stringWithUTF8String:(*it).getExtension ()] retain];
+			if (uti == nullptr && ext.getExtension ().empty () == false)
+				uti = [fromUTF8String<NSString*> (ext.getExtension ()) retain];
 			if (uti)
 			{
 				[typesArray addObject:uti];
 				[uti release];
 			}
-			it++;
 		}
 	}
 	if (style == kSelectSaveFile)
@@ -209,8 +201,8 @@ bool CocoaFileSelector::runInternal (CBaseObject* _delegate)
 			[openPanel setCanChooseDirectories:YES];
 		}
 	}
-	if (title && savePanel)
-		[savePanel setTitle:[NSString stringWithCString: title encoding:NSUTF8StringEncoding]];
+	if (!title.empty () && savePanel)
+		[savePanel setTitle:fromUTF8String<NSString*>(title)];
 	if (openPanel)
 	{
 	#if MAC_COCOA
@@ -264,9 +256,9 @@ bool CocoaFileSelector::runInternal (CBaseObject* _delegate)
 //-----------------------------------------------------------------------------
 void CocoaFileSelector::setupInitalDir ()
 {
-	if (initialPath)
+	if (!initialPath.empty ())
 	{
-		NSURL* dirURL = [NSURL fileURLWithPath:[NSString stringWithCString:initialPath encoding:NSUTF8StringEncoding]];
+		NSURL* dirURL = [NSURL fileURLWithPath:fromUTF8String<NSString*> (initialPath)];
 		NSNumber* isDir;
 		if ([dirURL getResourceValue:&isDir forKey:NSURLIsDirectoryKey error:nil])
 		{
@@ -278,16 +270,16 @@ void CocoaFileSelector::setupInitalDir ()
 			savePanel.directoryURL = dirURL;
 		}
 	}
-	if (defaultSaveName)
+	if (!defaultSaveName.empty ())
 	{
-		savePanel.nameFieldStringValue = [NSString stringWithCString:defaultSaveName encoding:NSUTF8StringEncoding];
+		savePanel.nameFieldStringValue = fromUTF8String<NSString*> (defaultSaveName);
 	}
 }
 
 //-----------------------------------------------------------------------------
 bool CocoaFileSelector::runModalInternal ()
 {
-	return runInternal (0);
+	return runInternal (nullptr);
 }
 
 } // VSTGUI

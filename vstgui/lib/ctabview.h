@@ -38,6 +38,7 @@
 #include "vstguifwd.h"
 #include "cviewcontainer.h"
 #include "cfont.h"
+#include "ccolor.h"
 #include "controls/icontrollistener.h"
 
 namespace VSTGUI {
@@ -66,14 +67,14 @@ public:
 		kAlignBottom = kAlignRight
 	};
 
-	CTabView (const CRect& size, CBitmap* tabBitmap, CBitmap* background = 0, TabPosition tabPosition = kPositionTop, int32_t style = 0);
-	CTabView (const CRect& size, const CRect& tabSize, CBitmap* background = 0, TabPosition tabPosition = kPositionTop, int32_t style = 0);
+	CTabView (const CRect& size, CBitmap* tabBitmap, CBitmap* background = nullptr, TabPosition tabPosition = kPositionTop, int32_t style = 0);
+	CTabView (const CRect& size, const CRect& tabSize, CBitmap* background = nullptr, TabPosition tabPosition = kPositionTop, int32_t style = 0);
 
 	//-----------------------------------------------------------------------------
 	/// @name Tab View Functions
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual bool addTab (CView* view, UTF8StringPtr name = 0, CBitmap* tabBitmap = 0);	///< add a tab
+	virtual bool addTab (CView* view, UTF8StringPtr name = nullptr, CBitmap* tabBitmap = nullptr);	///< add a tab
 	virtual bool addTab (CView* view, CControl* button);	///< add a tab
 	virtual bool removeTab (CView* view);	///< remove a tab
 	virtual bool removeAllTabs ();			///< remove all tabs
@@ -89,14 +90,14 @@ public:
 	virtual void setTabViewInsets (const CPoint& inset);
 	//@}
 
-	virtual void drawBackgroundRect (CDrawContext *pContext, const CRect& _updateRect) override;
-	virtual void valueChanged (CControl *pControl) override;
-	virtual void setViewSize (const CRect &rect, bool invalid = true) override;
-	virtual void setAutosizeFlags (int32_t flags) override;
+	void drawBackgroundRect (CDrawContext *pContext, const CRect& _updateRect) override;
+	void valueChanged (CControl *pControl) override;
+	void setViewSize (const CRect &rect, bool invalid = true) override;
+	void setAutosizeFlags (int32_t flags) override;
 //-----------------------------------------------------------------------------
 	CLASS_METHODS (CTabView, CViewContainer)
 protected:
-	~CTabView ();
+	~CTabView () noexcept override;
 	void setCurrentChild (CTabChildView* childView);
 
 	int32_t numberOfChilds;

@@ -39,6 +39,7 @@
 #include "cpoint.h"
 #include "crect.h"
 #include "cresourcedescription.h"
+#include "platform/iplatformbitmap.h"
 #include <vector>
 
 namespace VSTGUI {
@@ -47,13 +48,16 @@ namespace VSTGUI {
 // CBitmap Declaration
 //! @brief Encapsulates various platform depended kinds of bitmaps
 //-----------------------------------------------------------------------------
-class CBitmap : public CBaseObject
+class CBitmap : public AtomicReferenceCounted
 {
 public:
-	CBitmap (const CResourceDescription& desc);				///< Create a pixmap from a resource identifier.
-	CBitmap (CCoord width, CCoord height);					///< Create a pixmap with a given size.
-	CBitmap (IPlatformBitmap* platformBitmap);
-	~CBitmap ();
+	using PlatformBitmapPtr = SharedPointer<IPlatformBitmap>;
+
+	explicit CBitmap (const CResourceDescription& desc);				///< Create an image from a resource identifier.
+	CBitmap (CCoord width, CCoord height);								///< Create an image with a given size.
+	CBitmap (CPoint size, double scaleFactor = 1.);						///< Create an image with a given size.
+	explicit CBitmap (const PlatformBitmapPtr& platformBitmap);
+	~CBitmap () noexcept override = default;
 
 	//-----------------------------------------------------------------------------
 	/// @name CBitmap Methods
@@ -63,26 +67,25 @@ public:
 
 	CCoord getWidth () const;		///< get the width of the image
 	CCoord getHeight () const;		///< get the height of the image
+	CPoint getSize () const;		///< get size of image
 
 	bool isLoaded () const { return getPlatformBitmap () ? true : false; }	///< check if image is loaded
 
 	const CResourceDescription& getResourceDescription () const { return resourceDesc; }
 
-	IPlatformBitmap* getPlatformBitmap () const;
-	void setPlatformBitmap (IPlatformBitmap* bitmap);
+	PlatformBitmapPtr getPlatformBitmap () const;
+	void setPlatformBitmap (const PlatformBitmapPtr& bitmap);
 
-	bool addBitmap (IPlatformBitmap* platformBitmap);
-	IPlatformBitmap* getBestPlatformBitmapForScaleFactor (double scaleFactor) const;
+	bool addBitmap (const PlatformBitmapPtr& platformBitmap);
+	PlatformBitmapPtr getBestPlatformBitmapForScaleFactor (double scaleFactor) const;
 	//@}
 
 //-----------------------------------------------------------------------------
-	CLASS_METHODS_NOCOPY(CBitmap, CBaseObject)
 protected:
 	CBitmap ();
 
 	CResourceDescription resourceDesc;
-	typedef SharedPointer<IPlatformBitmap> BitmapPointer;
-	typedef std::vector<BitmapPointer> BitmapVector;
+	using BitmapVector = std::vector<PlatformBitmapPtr>;
 	BitmapVector bitmaps;
 };
 
@@ -103,12 +106,13 @@ struct CNinePartTiledDescription
 		kPartCount
 	};
 	
-	CCoord left;
-	CCoord top;
-	CCoord right;
-	CCoord bottom;
-	
-	CNinePartTiledDescription (CCoord left = 0, CCoord top = 0, CCoord right = 0, CCoord bottom = 0)
+	CCoord left {0.};
+	CCoord top {0.};
+	CCoord right {0.};
+	CCoord bottom {0.};
+
+	CNinePartTiledDescription () = default;
+	CNinePartTiledDescription (CCoord left, CCoord top, CCoord right, CCoord bottom)
 	: left (left), top (top), right (right), bottom (bottom) {}
 
 	//-----------------------------------------------------------------------------
@@ -144,8 +148,8 @@ class CNinePartTiledBitmap : public CBitmap
 {
 public:
 	CNinePartTiledBitmap (const CResourceDescription& desc, const CNinePartTiledDescription& offsets);
-	CNinePartTiledBitmap (IPlatformBitmap* platformBitmap, const CNinePartTiledDescription& offsets);
-	~CNinePartTiledBitmap ();
+	CNinePartTiledBitmap (const PlatformBitmapPtr& platformBitmap, const CNinePartTiledDescription& offsets);
+	~CNinePartTiledBitmap () noexcept override = default;
 	
 	//-----------------------------------------------------------------------------
 	/// @name Part Offsets
@@ -155,10 +159,9 @@ public:
 	const CNinePartTiledDescription& getPartOffsets () const { return offsets; }
 	//@}
 
-	virtual void draw (CDrawContext* context, const CRect& rect, const CPoint& offset = CPoint (0, 0), float alpha = 1.f) override;
+	void draw (CDrawContext* context, const CRect& rect, const CPoint& offset = CPoint (0, 0), float alpha = 1.f) override;
 
 //-----------------------------------------------------------------------------
-	CLASS_METHODS_NOCOPY(CNinePartTiledBitmap, CBitmap)
 protected:
 	CNinePartTiledDescription offsets;
 };
@@ -168,7 +171,7 @@ protected:
 /// @brief direct pixel access to a CBitmap
 /// @ingroup new_in_4_0
 //------------------------------------------------------------------------
-class CBitmapPixelAccess : public CBaseObject
+class CBitmapPixelAccess : public AtomicReferenceCounted
 {
 public:
 	inline bool operator++ ();								///< advance position
@@ -192,11 +195,11 @@ public:
 //-----------------------------------------------------------------------------
 protected:
 	CBitmapPixelAccess ();
-	~CBitmapPixelAccess ();
+	~CBitmapPixelAccess () noexcept override = default;
 	void init (CBitmap* bitmap, IPlatformBitmapPixelAccess* pixelAccess);
 
 	CBitmap* bitmap;
-	IPlatformBitmapPixelAccess* pixelAccess;
+	SharedPointer<IPlatformBitmapPixelAccess> pixelAccess;
 	uint8_t* currentPos;
 	uint8_t* address;
 	uint32_t bytesPerRow;

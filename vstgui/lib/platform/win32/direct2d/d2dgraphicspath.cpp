@@ -43,7 +43,7 @@
 #include "d2dfont.h"
 #include <dwrite.h>
 
-#ifdef __GNUC__
+#if defined (__GNUC__) && !defined (__clang__)
 #define __maybenull
 #define __out
 #endif
@@ -186,7 +186,9 @@ public:
 
 	D2D1_POINT_2F alignPoint (const D2D1_POINT_2F& p)
 	{
-		CPoint point (p.x, p.y); 
+		CPoint point (p.x, p.y);
+		if (context->getDrawMode ().antiAliasing ())
+			point.offset (-0.5, -0.5);
 		if (context)
 			context->pixelAllign (point);
 		return D2D1::Point2F (static_cast<FLOAT> (point.x), static_cast<FLOAT> (point.y));
@@ -301,13 +303,14 @@ D2DGraphicsPath::D2DGraphicsPath ()
 
 //-----------------------------------------------------------------------------
 D2DGraphicsPath::D2DGraphicsPath (const D2DFont* font, UTF8StringPtr text)
+: path (0)
 {
 	ID2D1PathGeometry* localPath = 0;
 	getD2DFactory ()->CreatePathGeometry (&localPath);
 	if (localPath == 0)
 		return;
 
-	IDWriteTextLayout* layout = font->createTextLayout (CString (text).getPlatformString ());
+	IDWriteTextLayout* layout = font->createTextLayout (UTF8String (text).getPlatformString ());
 	if (layout == 0)
 		return;
 	

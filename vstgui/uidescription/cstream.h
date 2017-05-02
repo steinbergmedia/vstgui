@@ -51,8 +51,8 @@ static const int64_t kStreamSeekError = -1;
 class OutputStream
 {
 public:
-	OutputStream (ByteOrder byteOrder = kNativeByteOrder) : byteOrder (byteOrder) {}
-	virtual ~OutputStream () {}
+	explicit OutputStream (ByteOrder byteOrder = kNativeByteOrder) : byteOrder (byteOrder) {}
+	virtual ~OutputStream () noexcept = default;
 
 	ByteOrder getByteOrder () const { return byteOrder; }
 	void setByteOrder (ByteOrder newByteOrder) { byteOrder = newByteOrder; }
@@ -80,8 +80,8 @@ private:
 class InputStream
 {
 public:
-	InputStream (ByteOrder byteOrder = kNativeByteOrder) : byteOrder (byteOrder) {}
-	virtual ~InputStream () {}
+	explicit InputStream (ByteOrder byteOrder = kNativeByteOrder) : byteOrder (byteOrder) {}
+	virtual ~InputStream () noexcept = default;
 
 	ByteOrder getByteOrder () const { return byteOrder; }
 	void setByteOrder (ByteOrder newByteOrder) { byteOrder = newByteOrder; }
@@ -109,7 +109,7 @@ private:
 class SeekableStream
 {
 public:
-	virtual ~SeekableStream () {}
+	virtual ~SeekableStream () noexcept = default;
 	enum SeekMode {
 		kSeekSet,
 		kSeekCurrent,
@@ -124,12 +124,12 @@ public:
 /**
 	Memory input and output stream
  */
-class CMemoryStream : virtual public OutputStream, virtual public InputStream, public SeekableStream, public CBaseObject
+class CMemoryStream : virtual public OutputStream, virtual public InputStream, public SeekableStream, public AtomicReferenceCounted
 {
 public:
 	CMemoryStream (uint32_t initialSize = 1024, uint32_t delta = 1024, bool binaryMode = true, ByteOrder byteOrder = kNativeByteOrder);
 	CMemoryStream (const int8_t* buffer, uint32_t bufferSize, bool binaryMode = true, ByteOrder byteOrder = kNativeByteOrder);
-	~CMemoryStream ();
+	~CMemoryStream () noexcept override;
 
 	uint32_t writeRaw (const void* buffer, uint32_t size) override;
 	uint32_t readRaw (void* buffer, uint32_t size) override;
@@ -140,30 +140,30 @@ public:
 
 	const int8_t* getBuffer () const { return buffer; }
 
-	virtual bool operator<< (const std::string& str) override;
-	virtual bool operator>> (std::string& string) override;
+	bool operator<< (const std::string& str) override;
+	bool operator>> (std::string& string) override;
 
 	bool end (); // write a zero byte if binaryMode is false
 protected:
 	bool resize (uint32_t newSize);
 
-	bool binaryMode;
-	bool ownsBuffer;
 	int8_t* buffer;
 	uint32_t bufferSize;
 	uint32_t size;
 	uint32_t pos;
 	uint32_t delta;
+	bool binaryMode;
+	bool ownsBuffer;
 };
 
 /**
 	File input and output stream
  */
-class CFileStream : public OutputStream, public InputStream, public SeekableStream, public CBaseObject
+class CFileStream : public OutputStream, public InputStream, public SeekableStream, public AtomicReferenceCounted
 {
 public:
 	CFileStream ();
-	~CFileStream ();
+	~CFileStream () noexcept override;
 
 	enum {
 		kReadMode		= 1 << 0,
@@ -181,8 +181,8 @@ public:
 	int64_t tell () const override;
 	void rewind () override;
 
-	virtual bool operator<< (const std::string& str) override;
-	virtual bool operator>> (std::string& string) override;
+	bool operator<< (const std::string& str) override;
+	bool operator>> (std::string& string) override;
 protected:
 	FILE* stream;
 	int32_t openMode;
@@ -228,16 +228,16 @@ inline bool pathIsAbsolute (const std::string& path)
 class CResourceInputStream : public InputStream, public SeekableStream
 {
 public:
-	CResourceInputStream (ByteOrder byteOrder = kNativeByteOrder);
-	~CResourceInputStream ();
+	explicit CResourceInputStream (ByteOrder byteOrder = kNativeByteOrder);
+	~CResourceInputStream () noexcept override;
 
 	bool open (const CResourceDescription& res);
 
-	virtual bool operator>> (std::string& string) override { return false; }
-	virtual uint32_t readRaw (void* buffer, uint32_t size) override;
-	virtual int64_t seek (int64_t pos, SeekMode mode) override;
-	virtual int64_t tell () const override;
-	virtual void rewind () override;
+	bool operator>> (std::string& string) override { return false; }
+	uint32_t readRaw (void* buffer, uint32_t size) override;
+	int64_t seek (int64_t pos, SeekMode mode) override;
+	int64_t tell () const override;
+	void rewind () override;
 protected:
 	void* platformHandle;
 };

@@ -41,7 +41,7 @@
 
 namespace VSTGUI {
 
-typedef bool (*CTextEditStringToValueProc) (UTF8StringPtr txt, float& result, void* userData);
+using CTextEditStringToValueProc = bool (*) (UTF8StringPtr txt, float& result, void* userData);
 
 //-----------------------------------------------------------------------------
 // CTextEdit Declaration
@@ -51,47 +51,55 @@ typedef bool (*CTextEditStringToValueProc) (UTF8StringPtr txt, float& result, vo
 class CTextEdit : public CTextLabel, public IPlatformTextEditCallback
 {
 public:
-	CTextEdit (const CRect& size, IControlListener* listener, int32_t tag, UTF8StringPtr txt = 0, CBitmap* background = 0, const int32_t style = 0);
+	using PlatformTextEditPtr = SharedPointer<IPlatformTextEdit>;
+
+	CTextEdit (const CRect& size, IControlListener* listener, int32_t tag, UTF8StringPtr txt = nullptr, CBitmap* background = nullptr, const int32_t style = 0);
 	CTextEdit (const CTextEdit& textEdit);
 
 	//-----------------------------------------------------------------------------
 	/// @name CTextEdit Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	typedef CTextEdit		StringToValueUserData;
+	using StringToValueUserData = CTextEdit;
 
-	typedef std::function<bool(UTF8StringPtr txt, float& result, CTextEdit* textEdit)> StringToValueFunction;
+	using StringToValueFunction = std::function<bool(UTF8StringPtr txt, float& result, CTextEdit* textEdit)>;
 	
 	void setStringToValueFunction (const StringToValueFunction& stringToValueFunc);
 	void setStringToValueFunction (StringToValueFunction&& stringToValueFunc);
 	
 	virtual void setImmediateTextChange (bool state);	///< enable/disable immediate text change behaviour.
 	bool getImmediateTextChange () const { return immediateTextChange; }	///< get immediate text change behaviour
+
+	void setSecureStyle (bool state);	///< enable/disable secure style
+	bool getSecureStyle () const;		///< get secure style
+	
+	virtual void setPlaceholderString (const UTF8String& str);
+	const UTF8String& getPlaceholderString () const { return placeholderString; }
 	//@}
 
 	// overrides
-	virtual void setText (UTF8StringPtr txt) override;
-	virtual void setValue (float val) override;
-	virtual void setTextRotation (double angle) override { return; } ///< not supported
+	void setText (const UTF8String& txt) override;
+	void setValue (float val) override;
+	void setTextRotation (double angle) override { return; } ///< not supported
 
-	virtual	void draw (CDrawContext* pContext) override;
-	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
-	virtual int32_t onKeyDown (VstKeyCode& keyCode) override;
+	void draw (CDrawContext* pContext) override;
+	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
+	int32_t onKeyDown (VstKeyCode& keyCode) override;
 
-	virtual	void takeFocus () override;
-	virtual	void looseFocus () override;
-	virtual bool wantsFocus () const override;		///< check if view supports focus
+	void takeFocus () override;
+	void looseFocus () override;
+	bool wantsFocus () const override;		///< check if view supports focus
 
-	virtual void setViewSize (const CRect& newSize, bool invalid = true) override;
-	virtual void parentSizeChanged () override;
+	void setViewSize (const CRect& newSize, bool invalid = true) override;
+	void parentSizeChanged () override;
 
-	bool bWasReturnPressed;
+	bool bWasReturnPressed {false};
 
-	IPlatformTextEdit* getPlatformTextEdit () const { return platformControl; }
+	PlatformTextEditPtr getPlatformTextEdit () const { return platformControl; }
 
 	CLASS_METHODS(CTextEdit, CParamDisplay)
 protected:
-	~CTextEdit ();
+	~CTextEdit () noexcept override;
 
 	void createPlatformTextEdit ();
 	void updateText (IPlatformTextEdit* pte);
@@ -100,20 +108,24 @@ protected:
 	CColor platformGetFontColor () const override { return getFontColor (); }
 	CFontRef platformGetFont () const override;
 	CHoriTxtAlign platformGetHoriTxtAlign () const override { return getHoriAlign (); }
-	UTF8StringPtr platformGetText () const override { return text; }
+	const UTF8String& platformGetText () const override { return text; }
+	const UTF8String& platformGetPlaceholderText () const override { return placeholderString; }
 	CRect platformGetSize () const override;
 	CRect platformGetVisibleSize () const override;
 	CPoint platformGetTextInset () const override { return getTextInset (); }
 	void platformLooseFocus (bool returnPressed) override;
 	bool platformOnKeyDown (const VstKeyCode& key) override;
 	void platformTextDidChange () override;
+	bool platformIsSecureTextEdit () override;
 
-	IPlatformTextEdit* platformControl;
+	PlatformTextEditPtr platformControl;
 
 	StringToValueFunction stringToValueFunction;
 
-	bool immediateTextChange;
+	bool immediateTextChange {false};
+	bool secureStyle {false};
 	mutable SharedPointer<CFontDesc> platformFont;
+	UTF8String placeholderString;
 };
 
 } // namespace

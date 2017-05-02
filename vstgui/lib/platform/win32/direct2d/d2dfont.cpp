@@ -67,7 +67,7 @@ bool D2DFont::getAllPlatformFontFamilies (std::list<std::string>& fontFamilyName
 			if (SUCCEEDED (names->GetString (0, name, nameLength)))
 			{
 				UTF8StringHelper str (name);
-				fontFamilyNames.push_back (str.getUTF8String ());
+				fontFamilyNames.emplace_back (str.getUTF8String ());
 			}
 			delete [] name;
 		}
@@ -77,7 +77,7 @@ bool D2DFont::getAllPlatformFontFamilies (std::list<std::string>& fontFamilyName
 }
 
 //-----------------------------------------------------------------------------
-D2DFont::D2DFont (const char* name, const CCoord& size, const int32_t& style)
+D2DFont::D2DFont (const UTF8String& name, const CCoord& size, const int32_t& style)
 : textFormat (0)
 , ascent (-1)
 , descent (-1)
@@ -133,7 +133,7 @@ IDWriteTextLayout* D2DFont::createTextLayout (IPlatformString* string) const
 }
 
 //-----------------------------------------------------------------------------
-void D2DFont::drawString (CDrawContext* context, IPlatformString* string, const CPoint& p, bool antialias)
+void D2DFont::drawString (CDrawContext* context, IPlatformString* string, const CPoint& p, bool antialias) const
 {
 	D2DDrawContext* d2dContext = dynamic_cast<D2DDrawContext*> (context);
 	if (d2dContext && textFormat)
@@ -174,7 +174,7 @@ void D2DFont::drawString (CDrawContext* context, IPlatformString* string, const 
 }
 
 //-----------------------------------------------------------------------------
-CCoord D2DFont::getStringWidth (CDrawContext* context, IPlatformString* string, bool antialias)
+CCoord D2DFont::getStringWidth (CDrawContext* context, IPlatformString* string, bool antialias) const
 {
 	CCoord result = 0;
 	if (textFormat)

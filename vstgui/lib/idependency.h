@@ -69,31 +69,32 @@ public:
 	class DeferChanges
 	{
 	public:
-		DeferChanges (IDependency* dep) : dep (dep) { dep->deferChanges (true); }
-		~DeferChanges () { dep->deferChanges (false); }
+		explicit DeferChanges (IDependency* dep) : dep (dep) { dep->deferChanges (true); }
+		~DeferChanges () noexcept { dep->deferChanges (false); }
 	protected:
 		IDependency* dep;
 	};
 
 //----------------------------------------------------------------------------------------------------
 protected:
-	IDependency ();
-	virtual ~IDependency ();
+	IDependency () = default;
+	virtual ~IDependency () noexcept;
 
 	static void rememberObject (CBaseObject* obj) { obj->remember (); }
 	static void forgetObject (CBaseObject* obj) { obj->forget (); }
 
-	int32_t deferChangeCount;
-	typedef std::set<IdStringPtr> DeferedChangesSet;
+	using DeferedChangesSet = std::set<IdStringPtr>;
+	using DependentList = std::list<CBaseObject*>;
+
+	int32_t deferChangeCount {0};
 	DeferedChangesSet deferedChanges;
-	typedef std::list<CBaseObject*> DependentList;
 	DependentList dependents;
 };
 
 //----------------------------------------------------------------------------------------------------
 inline void IDependency::addDependency (CBaseObject* obj)
 {
-	dependents.push_back (obj);
+	dependents.emplace_back (obj);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -107,18 +108,15 @@ inline void IDependency::changed (IdStringPtr message)
 {
 	if (deferChangeCount)
 	{
-		deferedChanges.insert (message);
+		deferedChanges.emplace (message);
 	}
 	else if (dependents.empty () == false)
 	{
 		CBaseObject* This = dynamic_cast<CBaseObject*> (this);
 		DependentList localList (dependents);
 		std::for_each (localList.begin (), localList.end (), rememberObject);
-		for (DependentList::const_iterator it = localList.begin (); it != localList.end (); it++)
-		{
-			CBaseObject* obj = (*it);
+		for (auto& obj : localList)
 			obj->notify (This, message);
-		}
 		std::for_each (localList.begin (), localList.end (), forgetObject);
 	}
 }
@@ -132,20 +130,14 @@ inline void IDependency::deferChanges (bool state)
 	}
 	else if (--deferChangeCount == 0)
 	{
-		for (DeferedChangesSet::const_iterator it = deferedChanges.begin (); it != deferedChanges.end (); it++)
-			changed (*it);
+		for (auto& msg : deferedChanges)
+			changed (msg);
 		deferedChanges.clear ();
 	}
 }
 
 //----------------------------------------------------------------------------------------------------
-inline IDependency::IDependency ()
-: deferChangeCount (0)
-{
-}
-
-//----------------------------------------------------------------------------------------------------
-inline IDependency::~IDependency ()
+inline IDependency::~IDependency () noexcept
 {
 	vstgui_assert (dependents.size () == 0);
 }

@@ -44,7 +44,7 @@ namespace VSTGUI {
 class IControlListener
 {
 public:
-	virtual ~IControlListener() {}
+	virtual ~IControlListener () noexcept = default;
 	virtual void valueChanged (CControl* pControl) = 0;
 	virtual int32_t controlModifierClicked (CControl* pControl, CButtonState button) { return 0; }	///< return 1 if you want the control to not handle it, otherwise 0
 	virtual void controlBeginEdit (CControl* pControl) {}

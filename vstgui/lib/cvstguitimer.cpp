@@ -46,7 +46,7 @@ IdStringPtr CVSTGUITimer::kMsgTimer = "timer fired";
 //-----------------------------------------------------------------------------
 CVSTGUITimer::CVSTGUITimer (CBaseObject* timerObject, uint32_t fireTime, bool doStart)
 : fireTime (fireTime)
-, platformTimer (0)
+, platformTimer (nullptr)
 {
 	callbackFunc = [timerObject](CVSTGUITimer* timer) {
 		timerObject->notify (timer, kMsgTimer);
@@ -58,8 +58,8 @@ CVSTGUITimer::CVSTGUITimer (CBaseObject* timerObject, uint32_t fireTime, bool do
 //-----------------------------------------------------------------------------
 CVSTGUITimer::CVSTGUITimer (const CallbackFunc& callback, uint32_t fireTime, bool doStart)
 : fireTime (fireTime)
-, platformTimer (0)
 , callbackFunc (callback)
+, platformTimer (nullptr)
 {
 	if (doStart)
 		start ();
@@ -68,25 +68,29 @@ CVSTGUITimer::CVSTGUITimer (const CallbackFunc& callback, uint32_t fireTime, boo
 //-----------------------------------------------------------------------------
 CVSTGUITimer::CVSTGUITimer (CallbackFunc&& callback, uint32_t fireTime, bool doStart)
 : fireTime (fireTime)
-, platformTimer (0)
 , callbackFunc (std::move (callback))
+, platformTimer (nullptr)
 {
 	if (doStart)
 		start ();
 }
 
 //-----------------------------------------------------------------------------
-CVSTGUITimer::~CVSTGUITimer ()
+CVSTGUITimer::~CVSTGUITimer () noexcept = default;
+
+//-----------------------------------------------------------------------------
+void CVSTGUITimer::beforeDelete ()
 {
 	stop ();
+	CBaseObject::beforeDelete ();
 }
 
 //-----------------------------------------------------------------------------
 bool CVSTGUITimer::start ()
 {
-	if (platformTimer == 0)
+	if (platformTimer == nullptr)
 	{
-		platformTimer = owned (IPlatformTimer::create (this));
+		platformTimer = IPlatformTimer::create (this);
 		if (platformTimer)
 		{
 			platformTimer->start (fireTime);
@@ -95,7 +99,7 @@ bool CVSTGUITimer::start ()
 		#endif
 		}
 	}
-	return (platformTimer != 0);
+	return (platformTimer != nullptr);
 }
 
 //-----------------------------------------------------------------------------
@@ -104,7 +108,7 @@ bool CVSTGUITimer::stop ()
 	if (platformTimer)
 	{
 		platformTimer->stop ();
-		platformTimer = 0;
+		platformTimer = nullptr;
 
 		#if DEBUGLOG
 		DebugPrint ("Timer stopped (0x%x)\n", timerObject);

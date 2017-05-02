@@ -47,7 +47,6 @@
 #import "../quartzgraphicspath.h"
 #import "../caviewlayer.h"
 #import "../../../cvstguitimer.h"
-#import "../../../idatapackage.h"
 #import "../../../cbitmap.h"
 
 #if MAC_CARBON
@@ -55,6 +54,8 @@
 #endif
 
 #import <Carbon/Carbon.h>
+
+#define VSTGUI_NSVIEW_USE_DRAGGING_SESSION 0
 
 using namespace VSTGUI;
 
@@ -64,7 +65,7 @@ HIDDEN inline IPlatformFrameCallback* getFrame (id obj)
 	NSViewFrame* nsViewFrame = (NSViewFrame*)OBJC_GET_VALUE(obj, _nsViewFrame);
 	if (nsViewFrame)
 		return nsViewFrame->getFrame ();
-	return 0;
+	return nullptr;
 }
 
 //------------------------------------------------------------------------------------
@@ -73,15 +74,7 @@ HIDDEN inline NSViewFrame* getNSViewFrame (id obj)
 	return (NSViewFrame*)OBJC_GET_VALUE(obj, _nsViewFrame);
 }
 
-static Class viewClass = 0;
-static IDataPackage* gCocoaDragContainer = 0;
-
-#ifndef __MAC_10_7
-//------------------------------------------------------------------------------------
-@interface NSEvent (VSTGUI_NSEvent_Private)
-- (BOOL)isDirectionInvertedFromDevice;
-@end
-#endif
+static Class viewClass = nullptr;
 
 //------------------------------------------------------------------------------------
 @interface NSObject (VSTGUI_NSView)
@@ -204,7 +197,17 @@ static void VSTGUI_NSView_updateTrackingAreas (id self, SEL _cmd)
 	objc_msgSendSuper (SUPER, @selector(updateTrackingAreas));
 }
 
-extern NSString* const NSWindowDidChangeBackingPropertiesNotification;
+//------------------------------------------------------------------------------------
+static void VSTGUI_NSView_windowDidChangeBackingProperties (id self, SEL _cmd, NSNotification* notification)
+{
+	double scaleFactor = 1.;
+	if (auto window = [self window])
+		scaleFactor = [window backingScaleFactor];
+	
+	IPlatformFrameCallback* frame = getFrame (self);
+	if (frame)
+		frame->platformScaleFactorChanged (scaleFactor);
+}
 
 //------------------------------------------------------------------------------------
 static void VSTGUI_NSView_viewDidMoveToWindow (id self, SEL _cmd)
@@ -215,26 +218,19 @@ static void VSTGUI_NSView_viewDidMoveToWindow (id self, SEL _cmd)
 	{
 		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(windowKeyStateChanged:) name:NSWindowDidBecomeKeyNotification object:window];
 		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(windowKeyStateChanged:) name:NSWindowDidResignKeyNotification object:window];
-	#if MAC_OS_X_VERSION_MAX_ALLOWED > MAC_OS_X_VERSION_10_6
 		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(windowDidChangeBackingProperties:) name:NSWindowDidChangeBackingPropertiesNotification object:window];
-	#endif
 		IPlatformFrameCallback* frame = getFrame (self);
 		if (frame)
 			frame->platformOnActivate ([window isKeyWindow] ? true : false);
+		VSTGUI_NSView_windowDidChangeBackingProperties (self, _cmd, nil);
 	}
-}
-
-//------------------------------------------------------------------------------------
-static void VSTGUI_NSView_windowDidChangeBackingProperties (id self, SEL _cmd, NSNotification* notification)
-{
-	IPlatformFrameCallback* frame = getFrame (self);
-	if (frame)
-		frame->platformScaleFactorChanged ();
 }
 
 //------------------------------------------------------------------------------------
 static void VSTGUI_NSView_windowKeyStateChanged (id self, SEL _cmd, NSNotification* notification)
 {
+	IPlatformFrameCallback* frame = getFrame (self);
+	auto active = [[notification name] isEqualToString:NSWindowDidBecomeKeyNotification] ? true : false;
 	NSView* firstResponder = (NSView*)[[self window] firstResponder];
 	if (![firstResponder isKindOfClass:[NSView class]])
 		firstResponder = nil;
@@ -244,11 +240,11 @@ static void VSTGUI_NSView_windowKeyStateChanged (id self, SEL _cmd, NSNotificati
 			firstResponder = [firstResponder superview];
 		if (firstResponder == self)
 		{
-			IPlatformFrameCallback* frame = getFrame (self);
 			if (frame)
-				frame->platformOnActivate ([[notification name] isEqualToString:NSWindowDidBecomeKeyNotification] ? true : false);
+				frame->platformOnActivate (active);
 		}
 	}
+	frame->platformOnWindowActivate (active);
 }
 
 //------------------------------------------------------------------------------------
@@ -411,38 +407,33 @@ static void VSTGUI_NSView_scrollWheel (id self, SEL _cmd, NSEvent* theEvent)
 	NSPoint nsPoint = [theEvent locationInWindow];
 	nsPoint = [self convertPoint:nsPoint fromView:nil];
 	mapModifiers (modifiers, buttons);
-	float distanceX = static_cast<float> ([theEvent deltaX]);
-	float distanceY = static_cast<float> ([theEvent deltaY]);
-	if ([theEvent respondsToSelector:@selector(isDirectionInvertedFromDevice)])
+	auto distanceX = [theEvent scrollingDeltaX];
+	auto distanceY = [theEvent scrollingDeltaY];
+	if ([theEvent hasPreciseScrollingDeltas])
 	{
-		BOOL inverted = [theEvent isDirectionInvertedFromDevice];
-		if (inverted)
-		{
-			distanceX *= -1;
-			distanceY *= -1;
-			buttons |= kMouseWheelInverted;
-		}
+		distanceX *= 0.1;
+		distanceY *= 0.1;
+	}
+	if ([theEvent isDirectionInvertedFromDevice])
+	{
+		distanceX *= -1;
+		distanceY *= -1;
+		buttons |= kMouseWheelInverted;
 	}
 	CPoint p = pointFromNSPoint (nsPoint);
-	if (distanceX != 0.f)
-		_vstguiframe->platformOnMouseWheel (p, kMouseWheelAxisX, distanceX, buttons);
-	if (distanceY != 0.f)
-		_vstguiframe->platformOnMouseWheel (p, kMouseWheelAxisY, distanceY, buttons);
+	if (distanceX != 0.)
+		_vstguiframe->platformOnMouseWheel (p, kMouseWheelAxisX, static_cast<float> (distanceX), buttons);
+	if (distanceY != 0.)
+		_vstguiframe->platformOnMouseWheel (p, kMouseWheelAxisY, static_cast<float> (distanceY), buttons);
 }
 
 //------------------------------------------------------------------------------------
 static NSPoint getGlobalMouseLocation (NSView* view)
 {
-#if MAC_OS_X_VERSION_MAX_ALLOWED > MAC_OS_X_VERSION_10_6
 	NSRect r = {};
 	r.origin = [NSEvent mouseLocation];
 	r = [[view window] convertRectFromScreen:r];
 	return [view convertPoint:r.origin fromView:nil];
-#else
-	NSPoint nsPoint = [NSEvent mouseLocation];
-	nsPoint = [[view window] convertScreenToBase:nsPoint];
-	return [view convertPoint:nsPoint fromView:nil];
-#endif
 }
 
 //------------------------------------------------------------------------------------
@@ -550,20 +541,20 @@ static void VSTGUI_NSView_keyUp (id self, SEL _cmd, NSEvent* theEvent)
 //------------------------------------------------------------------------------------
 static NSDragOperation VSTGUI_NSView_draggingEntered (id self, SEL _cmd, id sender)
 {
-	IPlatformFrameCallback* _vstguiframe = getFrame (self);
-	if (!_vstguiframe)
+	NSViewFrame* frame = getNSViewFrame (self);
+	if (!frame)
 		return NSDragOperationNone;
 
     NSPasteboard *pboard = [sender draggingPasteboard];
 
-	gCocoaDragContainer = MacClipboard::createDragDataPackage (pboard);
+	frame->setDragDataPackage (MacClipboard::createDragDataPackage (pboard));
 
 	CPoint where;
 	nsViewGetCurrentMouseLocation (self, where);
 
 	getNSViewFrame (self)->setMouseCursor (kCursorNotAllowed);
 
-	_vstguiframe->platformOnDragEnter (gCocoaDragContainer, where);
+	frame->getFrame ()->platformOnDragEnter (frame->getDragDataPackage (), where);
 	
 	return NSDragOperationGeneric;
 }
@@ -571,13 +562,13 @@ static NSDragOperation VSTGUI_NSView_draggingEntered (id self, SEL _cmd, id send
 //------------------------------------------------------------------------------------
 static NSDragOperation VSTGUI_NSView_draggingUpdated (id self, SEL _cmd, id sender)
 {
-	IPlatformFrameCallback* _vstguiframe = getFrame (self);
-	if (!_vstguiframe)
+	NSViewFrame* frame = getNSViewFrame (self);
+	if (!frame)
 		return NSDragOperationNone;
 
 	CPoint where;
 	nsViewGetCurrentMouseLocation (self, where);
-	_vstguiframe->platformOnDragMove (gCocoaDragContainer, where);
+	frame->getFrame ()->platformOnDragMove (frame->getDragDataPackage (), where);
 
 	return NSDragOperationGeneric;
 }
@@ -585,35 +576,52 @@ static NSDragOperation VSTGUI_NSView_draggingUpdated (id self, SEL _cmd, id send
 //------------------------------------------------------------------------------------
 static void VSTGUI_NSView_draggingExited (id self, SEL _cmd, id sender)
 {
-	IPlatformFrameCallback* _vstguiframe = getFrame (self);
-	if (!_vstguiframe || !gCocoaDragContainer)
+	NSViewFrame* frame = getNSViewFrame (self);
+	if (!frame || !frame->getDragDataPackage ())
 		return;
 
 	CPoint where;
 	nsViewGetCurrentMouseLocation (self, where);
-	_vstguiframe->platformOnDragLeave (gCocoaDragContainer, where);
+	frame->getFrame ()->platformOnDragLeave (frame->getDragDataPackage (), where);
 	[[NSCursor arrowCursor] set];
 
-	gCocoaDragContainer->forget ();
-	gCocoaDragContainer = 0;
+	frame->setDragDataPackage (nullptr);
 }
 
 //------------------------------------------------------------------------------------
 static BOOL VSTGUI_NSView_performDragOperation (id self, SEL _cmd, id sender)
 {
-	IPlatformFrameCallback* _vstguiframe = getFrame (self);
-	if (!_vstguiframe)
+	NSViewFrame* frame = getNSViewFrame (self);
+	if (!frame || !frame->getDragDataPackage ())
 		return NO;
 
 	CPoint where;
 	nsViewGetCurrentMouseLocation (self, where);
-	bool result = _vstguiframe->platformOnDrop (gCocoaDragContainer, where);
-	getNSViewFrame (self)->setMouseCursor (kCursorDefault);
-	gCocoaDragContainer->forget ();
-	gCocoaDragContainer = 0;
+	bool result = frame->getFrame ()->platformOnDrop (frame->getDragDataPackage (), where);
+	frame->setMouseCursor (kCursorDefault);
+	frame->setDragDataPackage (nullptr);
 	return result;
 }
 
+#if VSTGUI_NSVIEW_USE_DRAGGING_SESSION
+//------------------------------------------------------------------------------------
+static NSDragOperation VSTGUI_NSView_draggingSessionSourceOperationMaskForDraggingContext (id self, SEL _cmd, NSDraggingSession* session, NSDraggingContext context)
+{
+	if (context == NSDraggingContextOutsideApplication)
+	{
+		if (auto dataPackage = MacClipboard::createDragDataPackage (session.draggingPasteboard))
+		{
+			for (auto index = 0u, count = dataPackage->getCount (); index < count; ++index)
+			{
+				if (dataPackage->getDataType (index) == IDataPackage::kBinary)
+					return NSDragOperationPrivate;
+			}
+		}
+		return NSDragOperationCopy;
+	}
+	return NSDragOperationGeneric;
+}
+#else
 //------------------------------------------------------------------------------------
 static void VSTGUI_NSView_draggedImageEndedAtOperation (id self, SEL _cmd, NSImage* image, NSPoint aPoint, NSDragOperation operation)
 {
@@ -632,26 +640,35 @@ static void VSTGUI_NSView_draggedImageEndedAtOperation (id self, SEL _cmd, NSIma
 			frame->setLastDragOperationResult (kDragCopied);
 	}
 }
+#endif
 
+//------------------------------------------------------------------------------------
+static id VSTGUI_NSView_makeTouchbar (id self)
+{
+	NSViewFrame* frame = getNSViewFrame (self);
+	if (frame)
+		return reinterpret_cast<id> (frame->makeTouchBar ());
+	return nil;
+}
 
 namespace VSTGUI {
 
 //------------------------------------------------------------------------------------
-class CocoaTooltipWindow : public CBaseObject
+class CocoaTooltipWindow : public NonAtomicReferenceCounted
 {
 public:
-	CocoaTooltipWindow ();
-	~CocoaTooltipWindow ();
+	CocoaTooltipWindow () = default;
+	~CocoaTooltipWindow () noexcept override;
 
 	void set (NSViewFrame* nsViewFrame, const CRect& rect, const char* tooltip);
 	void hide ();
 
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
+	void onTimer ();
 protected:
-	CVSTGUITimer* timer;
-	CFrame* frame;
-	NSWindow* window;
-	NSTextField* textfield;
+	SharedPointer<CVSTGUITimer> timer;
+	CFrame* frame {nullptr};
+	NSWindow* window {nullptr};
+	NSTextField* textfield {nullptr};
 };
 
 //-----------------------------------------------------------------------------
@@ -664,11 +681,10 @@ __attribute__((__destructor__)) static void cleanup_VSTGUI_NSView ()
 //-----------------------------------------------------------------------------
 void NSViewFrame::initClass ()
 {
-	if (viewClass == 0)
+	if (viewClass == nullptr)
 	{
 		AutoreleasePool ap;
 
-		const char* nsPointEncoded = @encode(NSPoint);
 		const char* nsUIntegerEncoded = @encode(NSUInteger);
 		const char* nsRectEncoded = @encode(NSRect);
 		char funcSig[100];
@@ -722,8 +738,23 @@ void NSViewFrame::initClass ()
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(draggingExited:), IMP (VSTGUI_NSView_draggingExited), "v@:@:^:"))
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(performDragOperation:), IMP (VSTGUI_NSView_performDragOperation), "B@:@:^:"))
 
-		sprintf (funcSig, "v@:@:^:%s:%s", nsPointEncoded, nsUIntegerEncoded);
+#if VSTGUI_NSVIEW_USE_DRAGGING_SESSION
+		sprintf (funcSig, "%s@:@:^:%s", @encode(NSDragOperation), @encode(NSDraggingContext));
+		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(draggingSession:sourceOperationMaskForDraggingContext:), IMP (VSTGUI_NSView_draggingSessionSourceOperationMaskForDraggingContext), funcSig))
+		Protocol* nsDraggingSourceProtocol = objc_getProtocol ("NSDraggingSource");
+		class_addProtocol (viewClass, nsDraggingSourceProtocol);
+#else
+		sprintf (funcSig, "v@:@:^:%s:%s", @encode(NSPoint), nsUIntegerEncoded);
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(draggedImage:endedAt:operation:), IMP (VSTGUI_NSView_draggedImageEndedAtOperation), funcSig))
+#endif
+
+// optional touchbar support
+		if (auto protocol = objc_getProtocol ("NSTouchBarProvider"))
+		{
+			class_addProtocol (viewClass, protocol);
+			sprintf (funcSig, "%s@:@:", @encode(NSObject*));
+			class_addMethod (viewClass, @selector(makeTouchBar), IMP (VSTGUI_NSView_makeTouchbar), funcSig);
+		}
 
 		VSTGUI_CHECK_YES(class_addIvar (viewClass, "_nsViewFrame", sizeof (void*), (uint8_t)log2(sizeof(void*)), @encode(void*)))
 		objc_registerClassPair (viewClass);
@@ -731,21 +762,40 @@ void NSViewFrame::initClass ()
 }
 
 //-----------------------------------------------------------------------------
-NSViewFrame::NSViewFrame (IPlatformFrameCallback* frame, const CRect& size, NSView* parent)
+NSViewFrame::NSViewFrame (IPlatformFrameCallback* frame, const CRect& size, NSView* parent, IPlatformFrameConfig* config)
 : IPlatformFrame (frame)
-, nsView (0)
-, tooltipWindow (0)
+, nsView (nullptr)
+, tooltipWindow (nullptr)
 , ignoreNextResignFirstResponder (false)
 , trackingAreaInitialized (false)
 , inDraw (false)
 , cursor (kCursorDefault)
 {
+	auto cocoaConfig = dynamic_cast<CocoaFrameConfig*> (config);
 	initClass ();
+	
 	nsView = [[viewClass alloc] initWithNSViewFrame: this parent: parent andSize: &size];
+
+	if (cocoaConfig && cocoaConfig->flags & CocoaFrameConfig::kNoCALayer)
+		return;
+
+	auto processInfo = [NSProcessInfo processInfo];
+	if ([processInfo respondsToSelector:@selector(operatingSystemVersion)])
+	{
+		auto systemVersion = processInfo.operatingSystemVersion;
+		// on Mac OS X 10.11 we activate layer drawing as this fixes a few issues like that only a
+		// few parts of a window are updated permanently when scrolling or manipulating a control
+		// while other parts are only updated when the malipulation ended, or CNinePartTiledBitmap
+		// are drawn incorrectly when scaled.
+		if (systemVersion.majorVersion >= 10 && systemVersion.minorVersion > 10)
+		{
+			[nsView setWantsLayer:YES];
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------
-NSViewFrame::~NSViewFrame ()
+NSViewFrame::~NSViewFrame () noexcept
 {
 	if (tooltipWindow)
 		tooltipWindow->forget ();
@@ -883,7 +933,7 @@ bool NSViewFrame::setMouseCursor (CCursorType type)
 {
 	cursor = type;
 	@try {
-	NSCursor* cur = 0;
+	NSCursor* cur = nullptr;
 	switch (type)
 	{
 		case kCursorWait: cur = [NSCursor arrowCursor]; break;
@@ -970,7 +1020,7 @@ bool NSViewFrame::scrollRect (const CRect& src, const CPoint& distance)
 //-----------------------------------------------------------------------------
 bool NSViewFrame::showTooltip (const CRect& rect, const char* utf8Text)
 {
-	if (tooltipWindow == 0)
+	if (tooltipWindow == nullptr)
 		tooltipWindow = new CocoaTooltipWindow;
 	tooltipWindow->set (this, rect, utf8Text);
 	return true;
@@ -988,69 +1038,67 @@ bool NSViewFrame::hideTooltip ()
 }
 
 //-----------------------------------------------------------------------------
-IPlatformTextEdit* NSViewFrame::createPlatformTextEdit (IPlatformTextEditCallback* textEdit)
+SharedPointer<IPlatformTextEdit> NSViewFrame::createPlatformTextEdit (IPlatformTextEditCallback* textEdit)
 {
-	return new CocoaTextEdit (nsView, textEdit);
+	return makeOwned<CocoaTextEdit> (nsView, textEdit);
 }
 
 //-----------------------------------------------------------------------------
-IPlatformOptionMenu* NSViewFrame::createPlatformOptionMenu ()
+SharedPointer<IPlatformOptionMenu> NSViewFrame::createPlatformOptionMenu ()
 {
-	return new NSViewOptionMenu ();
+	return makeOwned<NSViewOptionMenu> ();
 }
 
 #if VSTGUI_OPENGL_SUPPORT
 //-----------------------------------------------------------------------------
-IPlatformOpenGLView* NSViewFrame::createPlatformOpenGLView ()
+SharedPointer<IPlatformOpenGLView> NSViewFrame::createPlatformOpenGLView ()
 {
-	return new CocoaOpenGLView (nsView);
+	return makeOwned<CocoaOpenGLView> (nsView);
 }
 #endif
 
 //-----------------------------------------------------------------------------
-IPlatformViewLayer* NSViewFrame::createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer)
+SharedPointer<IPlatformViewLayer> NSViewFrame::createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer)
 {
-	CAViewLayer* parentViewLayer = dynamic_cast<CAViewLayer*> (parentLayer);
-	if (parentViewLayer == 0 || parentViewLayer->getLayer () == 0)
+	auto parentViewLayer = dynamic_cast<CAViewLayer*> (parentLayer);
+	if (parentViewLayer == nullptr || parentViewLayer->getLayer () == nullptr)
 	{
 		// after this is called, 'Quartz Debug' will not work as before. So when using 'Quartz Debug' comment the following two lines.
 		[nsView setWantsLayer:YES];
 		nsView.layer.actions = nil;
 	}
-    CALayer* caParentLayer = parentViewLayer ? parentViewLayer->getLayer () : [nsView layer];
-	CAViewLayer* layer = new CAViewLayer (caParentLayer);
+	auto caParentLayer = parentViewLayer ? parentViewLayer->getLayer () : [nsView layer];
+	auto layer = makeOwned<CAViewLayer> (caParentLayer);
 	layer->init (drawDelegate);
-	return layer;
+	return std::move (layer);
 }
 
 //-----------------------------------------------------------------------------
-COffscreenContext* NSViewFrame::createOffscreenContext (CCoord width, CCoord height, double scaleFactor)
+SharedPointer<COffscreenContext> NSViewFrame::createOffscreenContext (CCoord width, CCoord height, double scaleFactor)
 {
-	CGBitmap* bitmap = new CGBitmap (CPoint (width * scaleFactor, height * scaleFactor));
+	auto bitmap = makeOwned<CGBitmap> (CPoint (width * scaleFactor, height * scaleFactor));
 	bitmap->setScaleFactor (scaleFactor);
-	CGDrawContext* context = new CGDrawContext (bitmap);
-	bitmap->forget ();
+	auto context = makeOwned<CGDrawContext> (bitmap);
 	if (context->getCGContext ())
-		return context;
-	context->forget ();
-	return 0;
+		return std::move (context);
+	return nullptr;
 }
 
 //------------------------------------------------------------------------------------
 DragResult NSViewFrame::doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap)
 {
 	lastDragOperationResult = kDragError;
-	CGBitmap* cgBitmap = dragBitmap ? dynamic_cast<CGBitmap*> (dragBitmap->getPlatformBitmap ()) : 0;
-	CGImageRef cgImage = cgBitmap ? cgBitmap->getCGImage () : 0;
 	if (nsView)
 	{
+		CGBitmap* cgBitmap = dragBitmap ? dynamic_cast<CGBitmap*> (dragBitmap->getPlatformBitmap ().get ()) : nullptr;
+		CGImageRef cgImage = cgBitmap ? cgBitmap->getCGImage () : nullptr;
 		NSPoint bitmapOffset = { static_cast<CGFloat>(offset.x), static_cast<CGFloat>(offset.y) };
-		NSPasteboard* nsPasteboard = [NSPasteboard pasteboardWithName:NSDragPboard];
-		NSImage* nsImage = nil;
+
 		NSEvent* event = [NSApp currentEvent];
-		if (event == 0 || !([event type] == NSLeftMouseDown || [event type] == NSLeftMouseDragged))
+		if (event == nullptr || !([event type] == NSLeftMouseDown || [event type] == NSLeftMouseDragged))
 			return kDragRefused;
 		NSPoint nsLocation = [event locationInWindow];
+		NSImage* nsImage = nil;
 		if (cgImage)
 		{
 			nsImage = [imageFromCGImageRef (cgImage) autorelease];
@@ -1068,8 +1116,73 @@ DragResult NSViewFrame::doDrag (IDataPackage* source, const CPoint& offset, CBit
 			bitmapOffset.x += nsLocation.x;
 			bitmapOffset.y += nsLocation.y;
 		}
-
-		
+#if VSTGUI_NSVIEW_USE_DRAGGING_SESSION
+		NSMutableArray* dragItems = [[NSMutableArray new] autorelease];
+		for (uint32_t index = 0, count = source->getCount (); index < count; ++index)
+		{
+			const void* buffer = nullptr;
+			IDataPackage::Type type {};
+			auto size = source->getData (index, buffer, type);
+			if (size == 0)
+				continue;
+			NSDraggingItem* item = nil;
+			switch (type)
+			{
+				case IDataPackage::kFilePath:
+				{
+					if (auto fileUrl = [NSURL fileURLWithPath:[NSString stringWithUTF8String:reinterpret_cast<const char*>(buffer)]])
+					{
+						item = [[[NSDraggingItem alloc] initWithPasteboardWriter:fileUrl] autorelease];
+					}
+					break;
+				}
+				case IDataPackage::kText:
+				{
+					if (auto string = [NSString stringWithUTF8String:reinterpret_cast<const char*>(buffer)])
+					{
+						item = [[[NSDraggingItem alloc] initWithPasteboardWriter:string] autorelease];
+					}
+					break;
+				}
+				case IDataPackage::kBinary:
+				{
+#if 0
+					// TODO: write an object implementing NSPasteboardWriting to provide NSData
+					if (auto data = [NSData dataWithBytes:buffer length:size])
+					{
+						item = [[[NSDraggingItem alloc] initWithPasteboardWriter:data] autorelease];
+					}
+#endif
+					break;
+				}
+				case IDataPackage::kError:
+				{
+					continue;
+				}
+			}
+			if (item)
+			{
+				if (cgImage && [dragItems count] == 0)
+				{
+					NSRect r;
+					r.origin = bitmapOffset;
+					r.origin.y -= [nsImage size].height;
+					r.size = nsImage.size;
+					[item setDraggingFrame:r contents:nsImage];
+				}
+				else
+					item.draggingFrame.origin = bitmapOffset;
+				[dragItems addObject:item];
+			}
+		}
+		NSView <NSDraggingSource>* draggingSource = (NSView <NSDraggingSource>*)nsView;
+		if (auto session = [nsView beginDraggingSessionWithItems:dragItems event:event source:draggingSource])
+		{
+			session.animatesToStartingPositionsOnCancelOrFail = YES;
+			return kDragAsynchronous;
+		}
+#else
+		NSPasteboard* nsPasteboard = [NSPasteboard pasteboardWithName:NSDragPboard];
 		IDataPackage::Type type = source->getDataType (0);
 		switch (type)
 		{
@@ -1079,7 +1192,7 @@ DragResult NSViewFrame::doDrag (IDataPackage* source, const CPoint& offset, CBit
 				// we allow more than one file
 				for (uint32_t i = 0; i < source->getCount (); i++)
 				{
-					const void* buffer = 0;
+					const void* buffer = nullptr;
 					uint32_t bufferSize = source->getData (i, buffer, type);
 					if (type == IDataPackage::kFilePath && bufferSize > 0 && ((const char*)buffer)[bufferSize-1] == 0)
 					{
@@ -1092,7 +1205,7 @@ DragResult NSViewFrame::doDrag (IDataPackage* source, const CPoint& offset, CBit
 			}
 			case IDataPackage::kText:
 			{
-				const void* buffer = 0;
+				const void* buffer = nullptr;
 				uint32_t bufferSize = source->getData (0, buffer, type);
 				if (bufferSize > 0)
 				{
@@ -1103,7 +1216,7 @@ DragResult NSViewFrame::doDrag (IDataPackage* source, const CPoint& offset, CBit
 			}
 			case IDataPackage::kBinary:
 			{
-				const void* buffer = 0;
+				const void* buffer = nullptr;
 				uint32_t bufferSize = source->getData (0, buffer, type);
 				if (bufferSize > 0)
 				{
@@ -1120,48 +1233,76 @@ DragResult NSViewFrame::doDrag (IDataPackage* source, const CPoint& offset, CBit
 		[nsView dragImage:nsImage at:bitmapOffset offset:NSMakeSize (0, 0) event:event pasteboard:nsPasteboard source:nsView slideBack:dragBitmap ? YES : NO];
 		[nsPasteboard clearContents];
 		return lastDragOperationResult;
+#endif
 	}
 	return kDragError;
 }
 
 //-----------------------------------------------------------------------------
-void NSViewFrame::setClipboard (IDataPackage* data)
+void NSViewFrame::setClipboard (const SharedPointer<IDataPackage>& data)
 {
 	MacClipboard::setClipboard (data);
 }
 
 //-----------------------------------------------------------------------------
-IDataPackage* NSViewFrame::getClipboard ()
+SharedPointer<IDataPackage> NSViewFrame::getClipboard ()
 {
 	return MacClipboard::createClipboardDataPackage ();
 }
 
 //-----------------------------------------------------------------------------
-IPlatformFrame* IPlatformFrame::createPlatformFrame (IPlatformFrameCallback* frame, const CRect& size, void* parent, PlatformType platformType)
+void NSViewFrame::setTouchBarCreator (const SharedPointer<ITouchBarCreator>& creator)
+{
+	touchBarCreator = creator;
+	if (!nsView.window || !nsView.window.visible)
+		return;
+	if (![nsView respondsToSelector:@selector(setTouchBar:)])
+		return;
+	
+	if (!touchBarCreator)
+		[nsView performSelector:@selector(setTouchBar:) withObject:nil];
+	else
+	{
+		if ([nsView performSelector:@selector(touchBar) withObject:nil] != nil)
+			recreateTouchBar ();
+	}
+}
+
+//-----------------------------------------------------------------------------
+void NSViewFrame::recreateTouchBar ()
+{
+	if (!touchBarCreator)
+		return;
+	if (![nsView respondsToSelector:@selector(setTouchBar:)])
+		return;
+	if (id tb = reinterpret_cast<id> (touchBarCreator->createTouchBar ()))
+		[nsView performSelector:@selector(setTouchBar:) withObject:tb];
+}
+
+//-----------------------------------------------------------------------------
+void* NSViewFrame::makeTouchBar () const
+{
+	if (touchBarCreator)
+		return touchBarCreator->createTouchBar ();
+	return nullptr;
+}
+
+//-----------------------------------------------------------------------------
+IPlatformFrame* IPlatformFrame::createPlatformFrame (IPlatformFrameCallback* frame, const CRect& size, void* parent, PlatformType platformType, IPlatformFrameConfig* config)
 {
 	#if MAC_CARBON
 	if (platformType == kWindowRef || platformType == kDefaultNative)
-		return new HIViewFrame (frame, size, (WindowRef)parent);
+		return new HIViewFrame (frame, size, reinterpret_cast<WindowRef> (parent));
 	#endif
-	return new NSViewFrame (frame, size, (NSView*)parent);
+	return new NSViewFrame (frame, size, reinterpret_cast<NSView*> (parent), config);
 }
 
 //------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------
-CocoaTooltipWindow::CocoaTooltipWindow ()
-: timer (0)
-, frame (0)
-, window (0)
-, textfield (0)
+CocoaTooltipWindow::~CocoaTooltipWindow () noexcept
 {
-}
-
-//------------------------------------------------------------------------------------
-CocoaTooltipWindow::~CocoaTooltipWindow ()
-{
-	if (timer)
-		timer->forget ();
+	timer = nullptr;
 	if (window)
 	{
 		[window orderOut:nil];
@@ -1172,11 +1313,7 @@ CocoaTooltipWindow::~CocoaTooltipWindow ()
 //------------------------------------------------------------------------------------
 void CocoaTooltipWindow::set (NSViewFrame* nsViewFrame, const CRect& rect, const char* tooltip)
 {
-	if (timer)
-	{
-		timer->forget ();
-		timer = 0;
-	}
+	timer = nullptr;
 	NSView* nsView = nsViewFrame->getPlatformControl ();
 	if (!window)
 	{
@@ -1230,31 +1367,24 @@ void CocoaTooltipWindow::set (NSViewFrame* nsViewFrame, const CRect& rect, const
 //------------------------------------------------------------------------------------
 void CocoaTooltipWindow::hide ()
 {
-	if (timer == 0 && [window isVisible])
+	if (timer == nullptr && [window isVisible])
 	{
-		timer = new CVSTGUITimer (this, 17);
-		timer->start ();
-		notify (timer, CVSTGUITimer::kMsgTimer);
+		timer = makeOwned<CVSTGUITimer> ([this] (CVSTGUITimer*) { onTimer (); }, 17);
+		onTimer ();
 	}
 }
 
 //------------------------------------------------------------------------------------
-CMessageResult CocoaTooltipWindow::notify (CBaseObject* sender, IdStringPtr message)
+void CocoaTooltipWindow::onTimer ()
 {
-	if (message == CVSTGUITimer::kMsgTimer)
+	CGFloat newAlpha = [window alphaValue] - 0.05;
+	if (newAlpha <= 0)
 	{
-		CGFloat newAlpha = [window alphaValue] - 0.05;
-		if (newAlpha <= 0)
-		{
-			[window orderOut:nil];
-			timer->forget ();
-			timer = 0;
-		}
-		else
-			[window setAlphaValue:newAlpha];
-		return kMessageNotified;
+		[window orderOut:nil];
+		timer = nullptr;
 	}
-	return kMessageUnknown;
+	else
+		[window setAlphaValue:newAlpha];
 }
 } // namespace
 

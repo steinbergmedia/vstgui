@@ -37,6 +37,12 @@
 
 namespace VSTGUI {
 
+#if DEBUG
+static constexpr auto advanceCount = 16;
+#else
+static constexpr auto advanceCount = 1;
+#endif
+
 TESTCASE(CColorTest,
 
 	TEST(makeCColor,
@@ -85,11 +91,11 @@ TESTCASE(CColorTest,
 		double hue;
 		double saturation;
 		double value;
-		for (uint16_t red = 0; red <= 255; red++)
+		for (uint16_t red = 0; red <= 255; red+=advanceCount)
 		{
-			for (uint16_t green = 0; green <= 255; green++)
+			for (uint16_t green = 0; green <= 255; green+=advanceCount)
 			{
-				for (uint16_t blue = 0; blue <= 255; blue++)
+				for (uint16_t blue = 0; blue <= 255; blue+=advanceCount)
 				{
 					CColor c (static_cast<uint8_t> (red), static_cast<uint8_t> (green), static_cast<uint8_t> (blue));
 					c.toHSV (hue, saturation, value);
@@ -107,11 +113,11 @@ TESTCASE(CColorTest,
 		double hue;
 		double saturation;
 		double lightness;
-		for (uint16_t red = 0; red <= 255; red++)
+		for (uint16_t red = 0; red <= 255; red+=advanceCount)
 		{
-			for (uint16_t green = 0; green <= 255; green++)
+			for (uint16_t green = 0; green <= 255; green+=advanceCount)
 			{
-				for (uint16_t blue = 0; blue <= 255; blue++)
+				for (uint16_t blue = 0; blue <= 255; blue+=advanceCount)
 				{
 					CColor c (static_cast<uint8_t> (red), static_cast<uint8_t> (green), static_cast<uint8_t> (blue));
 					c.toHSL (hue, saturation, lightness);

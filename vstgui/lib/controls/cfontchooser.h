@@ -94,8 +94,8 @@ struct CFontChooserUIDefinition
 class CFontChooser : public CViewContainer, public IControlListener, public IGenericStringListDataBrowserSourceSelectionChanged
 {
 public:
-	CFontChooser (IFontChooserDelegate* delegate, CFontRef initialFont = 0, const CFontChooserUIDefinition& uiDef = CFontChooserUIDefinition ());
-	~CFontChooser ();
+	CFontChooser (IFontChooserDelegate* delegate, CFontRef initialFont = nullptr, const CFontChooserUIDefinition& uiDef = CFontChooserUIDefinition ());
+	~CFontChooser () noexcept override;
 
 	void setFont (CFontRef font);
 	
@@ -113,7 +113,7 @@ protected:
 	CCheckBox* underlineBox;
 	CCheckBox* strikeoutBox;
 	CView* fontPreviewView;
-	std::vector<std::string> fontNames;
+	GenericStringListDataBrowserSource::StringVector fontNames;
 	
 	CFontRef selFont;
 };

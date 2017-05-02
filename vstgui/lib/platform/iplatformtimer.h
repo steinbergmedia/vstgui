@@ -47,10 +47,10 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class IPlatformTimer : public CBaseObject
+class IPlatformTimer : public AtomicReferenceCounted
 {
 public:
-	static IPlatformTimer* create (IPlatformTimerCallback* callback);
+	static SharedPointer<IPlatformTimer> create (IPlatformTimerCallback* callback);
 
 	virtual bool start (uint32_t fireTime) = 0;
 	virtual bool stop () = 0;

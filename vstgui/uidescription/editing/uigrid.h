@@ -44,7 +44,7 @@
 namespace VSTGUI {
 
 //----------------------------------------------------------------------------------------------------
-class UIGrid : public CBaseObject
+class UIGrid : public NonAtomicReferenceCounted
 {
 public:
 	UIGrid (const CPoint& size = CPoint (10, 10)) : size (size) {}

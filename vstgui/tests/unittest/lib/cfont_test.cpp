@@ -41,7 +41,7 @@ TESTCASE(CFontTests,
 
 	TEST(attributes,
 		CFontDesc f;
-		EXPECT(f.getName () == nullptr);
+		EXPECT(f.getName ().empty ());
 		EXPECT(f.getSize () == 0.);
 		EXPECT(f.getStyle () == kNormalFace);
 		f.setName ("Test");

@@ -182,7 +182,7 @@ TESTCASE(CTextButtonCreatorTest,
 	);
 
 	TEST(legacyGradient,
-		auto defTB = owned (new CTextButton (CRect (0, 0, 100, 20), 0, -1, ""));
+		auto defTB = owned (new CTextButton (CRect (0, 0, 100, 20), nullptr, -1, ""));
 		
 		DummyUIDescription uidesc;
 		UIViewFactory factory;

@@ -36,8 +36,12 @@
 #define __vstguifwd__
 
 #include "vstguibase.h"
+#include <functional>
 
 namespace VSTGUI {
+
+//-----------------------------------------------------------------------------
+using CViewAttributeID = size_t;
 
 // enums
 //----------------------------
@@ -122,6 +126,7 @@ class IDataBrowserDelegate;
 class IMouseObserver;
 class IKeyboardHook;
 class IViewAddedRemovedObserver;
+class IFocusViewObserver;
 class ISplitViewController;
 class ISplitViewSeparatorDrawer;
 class IScrollbarDrawer;
@@ -193,7 +198,9 @@ class CVerticalSwitch;
 class CHorizontalSwitch;
 class CRockerSwitch;
 class CTextEdit;
+class CSearchTextEdit;
 class CTextLabel;
+class CMultiLineTextLabel;
 class CVuMeter;
 class CXYPad;
 
@@ -211,15 +218,23 @@ class LinearTimingFunction;
 class PowerTimingFunction;
 class InterpolationTimingFunction;
 class RepeatTimingFunction;
+using DoneFunction = std::function<void (CView*, const IdStringPtr, IAnimationTarget*)>;
 } // Animation
 
 template <class I> class SharedPointer;
 
 // platform
+class IPlatformTextEdit;
+class IPlatformTextEditCallback;
+class IPlatformOptionMenu;
+class IPlatformOpenGLView;
+class IPlatformViewLayer;
+class IPlatformViewLayerDelegate;
 class IPlatformString;
 class IPlatformBitmap;
 class IPlatformBitmapPixelAccess;
 class IPlatformFont;
+class IPlatformFrame;
 class IFontPainter;
 
 }

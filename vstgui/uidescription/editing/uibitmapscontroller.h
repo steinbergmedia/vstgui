@@ -53,7 +53,7 @@ class UIBitmapsController : public CBaseObject, public DelegationController, pub
 {
 public:
 	UIBitmapsController (IController* baseController, UIDescription* description, IActionPerformer* actionPerformer);
-	~UIBitmapsController ();
+	~UIBitmapsController () override;
 
 protected:
 	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override;

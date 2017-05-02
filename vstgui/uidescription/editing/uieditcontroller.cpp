@@ -48,7 +48,6 @@
 #include "uitemplatecontroller.h"
 #include "uiviewcreatecontroller.h"
 #include "uiundomanager.h"
-#include "uisearchtextfield.h"
 #include "uiactions.h"
 #include "uiselection.h"
 #include "uidialogcontroller.h"
@@ -57,14 +56,17 @@
 #include "../uiattributes.h"
 #include "../../lib/controls/coptionmenu.h"
 #include "../../lib/controls/csegmentbutton.h"
+#include "../../lib/controls/csearchtextedit.h"
 #include "../../lib/animation/animations.h"
 #include "../../lib/animation/timingfunctions.h"
 #include "../../lib/cdropsource.h"
 #include "../../lib/cgraphicspath.h"
+#include "../../lib/coffscreencontext.h"
 
 #include <sstream>
 #include <algorithm>
 #include <cassert>
+#include <array>
 
 #if WINDOWS
 #define snprintf _snprintf
@@ -80,9 +82,9 @@ namespace VSTGUI {
 class UIEditControllerDescription
 {
 public:
-	UIDescription& get () const
+	SharedPointer<UIDescription> get () const
 	{
-		if (uiDesc == 0)
+		if (uiDesc == nullptr)
 		{
 #ifdef HAVE_EDITORUIDESC_H
 			Xml::MemoryContentProvider provider (editorUIDesc, strlen (editorUIDesc));
@@ -97,10 +99,10 @@ public:
 			if (removeLastPathComponent (descPath))
 			{
 				descPath += "/uidescriptioneditor.uidesc";
-				SharedPointer<UIDescription> editorDesc = owned (new UIDescription (descPath.c_str ()));
+				auto editorDesc = makeOwned<UIDescription> (descPath.c_str ());
 				if (editorDesc->parse ())
 				{
-					uiDesc = editorDesc;
+					uiDesc = std::move (editorDesc);
 				}
 				else
 				{
@@ -109,7 +111,13 @@ public:
 			}
 #endif
 		}
-		return *uiDesc;
+		return uiDesc;
+	}
+
+	void tryFree ()
+	{
+		if (uiDesc->getNbReference () == 1)
+			uiDesc = nullptr;
 	}
 
 private:
@@ -119,7 +127,7 @@ private:
 static UIEditControllerDescription gUIDescription;
 
 //----------------------------------------------------------------------------------------------------
-UIDescription& UIEditController::getEditorDescription ()
+SharedPointer<UIDescription> UIEditController::getEditorDescription ()
 {
 	return gUIDescription.get ();
 }
@@ -133,16 +141,17 @@ void UIEditController::setupDataSource (GenericStringListDataBrowserSource* sour
 	static CColor rowBackColor;
 	static CColor rowAlternateBackColor;
 	static bool once = true;
+	auto editorDescription = UIEditController::getEditorDescription ();
 	if (once)
 	{
-		UIEditController::getEditorDescription ().getColor ("db.selection", selectionColor);
-		UIEditController::getEditorDescription ().getColor ("db.font", fontColor);
-		UIEditController::getEditorDescription ().getColor ("db.row.line", rowlineColor);
-		UIEditController::getEditorDescription ().getColor ("db.row.back", rowBackColor);
-		UIEditController::getEditorDescription ().getColor ("db.row.alternate.back", rowAlternateBackColor);
+		editorDescription->getColor ("db.selection", selectionColor);
+		editorDescription->getColor ("db.font", fontColor);
+		editorDescription->getColor ("db.row.line", rowlineColor);
+		editorDescription->getColor ("db.row.back", rowBackColor);
+		editorDescription->getColor ("db.row.alternate.back", rowAlternateBackColor);
 		once = false;
 	}
-	CFontRef font = UIEditController::getEditorDescription ().getFont ("db.font");
+	CFontRef font = editorDescription->getFont ("db.font");
 	source->setupUI (selectionColor, fontColor, rowlineColor, rowBackColor, rowAlternateBackColor, font);
 }
 
@@ -156,7 +165,7 @@ bool UIEditController::std__stringCompare (const std::string* lhs, const std::st
 		if (c1 != c2)
 			return c1 < c2;
 	}
-	return true;
+	return false;
 }
 
 const UTF8StringPtr UIEditController::kEncodeBitmapsSettingsKey = "EncodeBitmaps";
@@ -185,15 +194,17 @@ public:
 		{
 			static CColor lineColor = kBlackCColor;
 			if (lineColor == kBlackCColor)
-				UIEditController::getEditorDescription ().getColor ("shading.light.frame", lineColor);
+				UIEditController::getEditorDescription ()->getColor ("shading.light.frame", lineColor);
+
+			auto lineWidth = 1.;
 
 			CRect size (_size);
 			context->setDrawMode (kAliasing);
 			context->setLineStyle (kLineSolid);
-			context->setLineWidth (1.);
+			context->setLineWidth (lineWidth);
 			context->setFrameColor (lineColor);
 
-			CGradient* shading = UIEditController::getEditorDescription ().getGradient ("shading.light");
+			CGradient* shading = UIEditController::getEditorDescription ()->getGradient ("shading.light");
 			if (shading)
 			{
 				path->addRect (size);
@@ -203,7 +214,7 @@ public:
 					if (drawBottomLine)
 						context->drawLine (CPoint (size.left, size.top), CPoint (size.left, size.bottom));
 					if (drawTopLine)
-						context->drawLine (CPoint (size.right-1, size.bottom), CPoint (size.right-1, size.top));
+						context->drawLine (CPoint (size.right-lineWidth, size.bottom), CPoint (size.right-lineWidth, size.top));
 				}
 				else
 				{
@@ -211,7 +222,7 @@ public:
 					if (drawTopLine)
 						context->drawLine (CPoint (size.left, size.top), CPoint (size.right, size.top));
 					if (drawBottomLine)
-						context->drawLine (CPoint (size.right, size.bottom-1), CPoint (size.left, size.bottom-1));
+						context->drawLine (CPoint (size.right, size.bottom-lineWidth), CPoint (size.left, size.bottom-lineWidth));
 				}
 			}
 		}
@@ -224,17 +235,15 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
-class UIZoomSettingController : public IController, public CBaseObject
+class UIZoomSettingController : public IController, public IContextMenuController2, public CBaseObject
 {
 public:
 	UIZoomSettingController (UIEditController* editController)
 	: editController (editController)
-	, zoomValueControl (0)
+	, zoomValueControl (nullptr)
 	{}
 
-	~UIZoomSettingController ()
-	{
-	}
+	~UIZoomSettingController () override = default;
 
 	void restoreSetting (const UIAttributes& attributes)
 	{
@@ -294,7 +303,7 @@ public:
 				zoomValueControl->setMin (50.f);
 				zoomValueControl->setMax (1000.f);
 				zoomValueControl->setStringToValueFunction ([] (UTF8StringPtr txt, float& result, CTextEdit*) {
-					int32_t intValue = static_cast<int32_t> (strtol (txt, 0, 10));
+					int32_t intValue = static_cast<int32_t> (strtol (txt, nullptr, 10));
 					if (intValue > 0)
 					{
 						result = static_cast<float> (intValue);
@@ -323,22 +332,27 @@ public:
 		return view;
 	}
 
-	int32_t controlModifierClicked (CControl* pControl, CButtonState button) override
-	{
-		if (pControl == zoomValueControl && button.isRightButton ())
-		{
-			popupZoomMenu (pControl);
-			return 1;
-		}
-		return 0;
-	}
-
 	void valueChanged (CControl* pControl) override
 	{
 		if (pControl == zoomValueControl)
 			editController->onZoomChanged (pControl->getValue () / 100.f);
 	}
 	
+	void appendContextMenuItems (COptionMenu& contextMenu, CView* view, const CPoint& where) override
+	{
+		if (view == zoomValueControl)
+		{
+			for (auto i = 50; i <= 200; i += 50)
+			{
+				auto item = new CCommandMenuItem ("Zoom " + toString (i) + "%");
+				item->setActions ([this, i] (CCommandMenuItem*) {
+					updateZoom (static_cast<float> (i));
+				});
+				contextMenu.addEntry (item);
+			}
+		}
+	}
+
 private:
 	void updateZoom (float newZoom)
 	{
@@ -349,24 +363,6 @@ private:
 		}
 	}
 	
-	void popupZoomMenu (CView* anchor)
-	{
-		COptionMenu menu;
-		menu.addEntry ("50%")->setTag (50);
-		menu.addEntry ("100%")->setTag (100);
-		menu.addEntry ("150%")->setTag (150);
-		menu.addEntry ("200%")->setTag (200);
-		CPoint location = anchor->getViewSize ().getTopLeft ();
-		anchor->localToFrame (location);
-		if (menu.popup (anchor->getFrame (), location))
-		{
-			if (CMenuItem* item = menu.getEntry (menu.getLastResult ()))
-			{
-				updateZoom (static_cast<float> (item->getTag ()));
-			}
-		}
-	}
-
 	UIEditController* editController;
 	CTextEdit* zoomValueControl;
 };
@@ -376,13 +372,14 @@ private:
 //----------------------------------------------------------------------------------------------------
 UIEditController::UIEditController (UIDescription* description)
 : editDescription (description)
-, selection (new UISelection ())
-, undoManager (new UIUndoManager ())
-, editView (0)
-, templateController (0)
+, selection (makeOwned<UISelection> ())
+, undoManager (makeOwned<UIUndoManager> ())
+, gridController (makeOwned<UIGridController> (this, description))
+, editView (nullptr)
+, templateController (nullptr)
 , dirty (false)
 {
-	gridController = new UIGridController (this, description);
+	editorDesc = getEditorDescription ();
 	description->addDependency (this);
 	undoManager->addDependency (this);
 	menuController = new UIEditMenuController (this, selection, undoManager, editDescription, this);
@@ -398,15 +395,17 @@ UIEditController::~UIEditController ()
 		templateController->removeDependency (this);
 	undoManager->removeDependency (this);
 	editDescription->removeDependency (this);
+	editorDesc = nullptr;
+	gUIDescription.tryFree ();
 }
 
 //----------------------------------------------------------------------------------------------------
 CView* UIEditController::createEditView ()
 {
-	if (getEditorDescription ().parse ())
+	if (editorDesc->parse ())
 	{
 		IController* controller = this;
-		CView* view = getEditorDescription ().createView ("view", controller);
+		CView* view = editorDesc->createView ("view", controller);
 		if (view)
 		{
 			view->setAttribute (kCViewControllerAttribute, sizeof (IController*), &controller);
@@ -419,7 +418,7 @@ CView* UIEditController::createEditView ()
 			return view;
 		}
 	}
-	return 0;
+	return nullptr;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -430,7 +429,7 @@ CView* UIEditController::createView (const UIAttributes& attributes, const IUIDe
 	{
 		if (*name == "UIEditView")
 		{
-			vstgui_assert (editView == 0);
+			vstgui_assert (editView == nullptr);
 			editView = new UIEditView (CRect (0, 0, 0, 0), editDescription);
 			editView->setSelection (selection);
 			editView->setUndoManager (undoManager);
@@ -452,10 +451,10 @@ CView* UIEditController::createView (const UIAttributes& attributes, const IUIDe
 		}
 		else if (*name == "UISearchTextField")
 		{
-			return new UISearchTextField (CRect (0, 0, 0, 0), 0, -2);
+			return new CSearchTextEdit (CRect (0, 0, 0, 0), nullptr, -2);
 		}
 	}
-	return 0;
+	return nullptr;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -471,20 +470,52 @@ enum {
 	kNotSavedTag = 666,
 	kEditingTag,
 	kAutosizeTag,
+	kBackgroundSelectTag,
 	kTabSwitchTag = 123456
 };
+
+//----------------------------------------------------------------------------------------------------
+static SharedPointer<CBitmap> createColorBitmap (CPoint size, CColor color)
+{
+	auto bitmap = makeOwned<CBitmap> (size);
+	if (auto pixelAccessor = owned (CBitmapPixelAccess::create (bitmap)))
+	{
+		for (auto y = 0u; y < static_cast<uint32_t> (size.y); y++)
+		{
+			pixelAccessor->setPosition (0, y);
+			for (auto x = 0u; x < static_cast<uint32_t> (size.x); ++x)
+			{
+				pixelAccessor->setColor (color);
+				++(*pixelAccessor);
+			}
+		}
+	}
+	
+	return bitmap;
+}
+
+static CColor kLightGreyColor (220, 220, 220);
+	
+//----------------------------------------------------------------------------------------------------
+static const std::array<CColor, 4> editViewBackgroundColors = {{
+	{230, 230, 230},
+	{150, 150, 150},
+	kWhiteCColor,
+	kBlackCColor
+}};
 
 //----------------------------------------------------------------------------------------------------
 CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
 {
 	if (view == editView)
 	{
-		editView->setTransparency (true);
+		editView->setBackgroundColor (editViewBackgroundColors[0]);
+		return view;
 	}
 	CSplitView* splitView = dynamic_cast<CSplitView*>(view);
 	if (splitView)
 	{
-		splitViews.push_back (splitView);
+		splitViews.emplace_back (splitView);
 		if (splitViews.size () == 1)
 		{
 			CFontRef font = description->getFont ("control.font");
@@ -492,6 +523,28 @@ CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes
 			description->getColor ("control.font", fontColor);
 			description->getColor ("control.frame", frameColor);
 			description->getColor ("control.back", backColor);
+			auto gradient = description->getGradient ("Default TextButton Gradient");
+			auto gradientHighlighted = description->getGradient ("Default TextButton Gradient Highlighted");
+
+			// Add Background Menu
+			CRect backSelectRect (0., 0., 20. * editViewBackgroundColors.size (), splitView->getSeparatorWidth ());
+			backSelectRect.inset (2, 2);
+			auto backSelectControl = new CSegmentButton (backSelectRect, this, kBackgroundSelectTag);
+			backSelectControl->setGradient (gradient);
+			backSelectControl->setGradientHighlighted (gradientHighlighted);
+			backSelectControl->setFrameColor (frameColor);
+			backSelectControl->setRoundRadius (2.);
+			auto bitmapSize = splitView->getSeparatorWidth () - 12;
+			CSegmentButton::Segment segment {};
+			segment.iconPosition = CDrawMethods::kIconCenterAbove;
+			for (auto& color : editViewBackgroundColors)
+			{
+				segment.icon = segment.iconHighlighted = createColorBitmap ({bitmapSize, bitmapSize}, color);
+				backSelectControl->addSegment (segment);
+			}
+			splitView->addViewToSeparator (0, backSelectControl);
+
+			// Add Title
 			CTextLabel* label = new CTextLabel (CRect (0, 0, splitView->getWidth (), splitView->getSeparatorWidth ()), "Templates | View Hierarchy");
 			label->setTransparency (true);
 			label->setMouseEnabled (false);
@@ -499,6 +552,7 @@ CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes
 			label->setFontColor (kBlackCColor);
 			label->setAutosizeFlags (kAutosizeAll);
 			splitView->addViewToSeparator (0, label);
+
 			// Add Scale Menu
 			CRect scaleMenuRect (0, 0, 50, splitView->getSeparatorWidth ());
 			scaleMenuRect.offset (splitView->getWidth ()-scaleMenuRect.getWidth (), 0);
@@ -507,10 +561,11 @@ CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes
 			zoomSettingController = new UIZoomSettingController (this); // not owned, shared with control
 			CTextEdit* textEdit = new CTextEdit (scaleMenuRect, zoomSettingController, 0);
 			textEdit->setAttribute (kCViewControllerAttribute, sizeof (IController*), &zoomSettingController);
-			CView* zoomView = zoomSettingController->verifyView (textEdit, UIAttributes (), &getEditorDescription ());
+			CView* zoomView = zoomSettingController->verifyView (textEdit, UIAttributes (), editorDesc);
 			zoomView->setAutosizeFlags (kAutosizeRight|kAutosizeTop|kAutosizeBottom);
 			splitView->addViewToSeparator (0, zoomView);
 			zoomSettingController->restoreSetting (*getSettings ());
+			
 		}
 	}
 	CControl* control = dynamic_cast<CControl*>(view);
@@ -549,18 +604,18 @@ CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes
 					int32_t value = 0;
 					getSettings ()->getIntegerAttribute ("TabSwitchValue", value);
 					button->setSelectedSegment (static_cast<uint32_t> (value));
-					static const char* segmentBitmapNames[] = {"segment-views", "segment-tags", "segment-colors", "segment-gradients", "segment-bitmaps", "segment-fonts", 0};
+					static const char* segmentBitmapNames[] = {"segment-views", "segment-tags", "segment-colors", "segment-gradients", "segment-bitmaps", "segment-fonts", nullptr};
 					size_t segmentBitmapNameIndex = 0;
-					for (CSegmentButton::Segments::const_iterator it = button->getSegments().begin(), end = button->getSegments().end (); it != end; ++it)
+					for (const auto& segment : button->getSegments())
 					{
 						if (segmentBitmapNames[segmentBitmapNameIndex])
 						{
-							CBitmap* bitmap = getEditorDescription().getBitmap (segmentBitmapNames[segmentBitmapNameIndex++]);
+							CBitmap* bitmap = editorDesc->getBitmap (segmentBitmapNames[segmentBitmapNameIndex++]);
 							if (!bitmap)
 								continue;
-							(*it).icon = bitmap;
-							(*it).iconHighlighted = bitmap;
-							(*it).iconPosition = CDrawMethods::kIconLeft;
+							segment.icon = bitmap;
+							segment.iconHighlighted = bitmap;
+							segment.iconPosition = CDrawMethods::kIconLeft;
 						}
 					}
 				}
@@ -577,7 +632,7 @@ IController* UIEditController::createSubController (UTF8StringPtr name, const IU
 	UTF8StringView subControllerName (name);
 	if (subControllerName == "TemplatesController")
 	{
-		vstgui_assert (templateController == 0);
+		vstgui_assert (templateController == nullptr);
 		templateController = new UITemplateController (this, editDescription, selection, undoManager, this);
 		templateController->addDependency (this);
 		return templateController;
@@ -619,7 +674,7 @@ IController* UIEditController::createSubController (UTF8StringPtr name, const IU
 		gridController->remember ();
 		return gridController;
 	}
-	return 0;
+	return nullptr;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -632,8 +687,7 @@ void UIEditController::valueChanged (CControl* control)
 			case kEditingTag:
 			{
 				selection->empty ();
-				CViewContainer* container = editView->getEditView () ? dynamic_cast<CViewContainer*>(editView->getEditView ()) : 0;
-				if (container)
+				if (auto container = editView->getEditView () ? editView->getEditView ()->asViewContainer () : nullptr)
 					resetScrollViewOffsets (container);
 				editView->enableEditing (control->getValue () == control->getMax () ? true : false);
 				break;
@@ -641,6 +695,15 @@ void UIEditController::valueChanged (CControl* control)
 			case kAutosizeTag:
 			{
 				editView->enableAutosizing (control->getValue () == 1.f);
+				break;
+			}
+			case kBackgroundSelectTag:
+			{
+				if (auto seg = dynamic_cast<CSegmentButton*> (control))
+				{
+					CColor color = editViewBackgroundColors[seg->getSelectedSegment ()];
+					editView->setBackgroundColor (color);
+				}
 				break;
 			}
 		}
@@ -696,7 +759,7 @@ CMessageResult UIEditController::notify (CBaseObject* sender, IdStringPtr messag
 		editView->getFrame ()->unregisterKeyboardHook (this);
 		beforeSave ();
 		splitViews.clear ();
-		getEditorDescription ().freePlatformResources ();
+		getEditorDescription ()->freePlatformResources ();
 		return kMessageNotified;
 	}
 	else if (message == UIDescription::kMessageBeforeSave)
@@ -718,12 +781,12 @@ void UIEditController::beforeSave ()
 			for (std::vector<Template>::const_iterator it = templates.begin (); it != templates.end (); it++)
 				updateTemplate (it);
 		}
-		for (std::list<SharedPointer<CSplitView> >::const_iterator it = splitViews.begin (); it != splitViews.end (); it++)
-			(*it)->storeViewSizes ();
+		for (auto& splitView : splitViews)
+			splitView->storeViewSizes ();
 		
 		getSettings ()->setIntegerAttribute ("Version", 1);
 		// find the view of this controller
-		CViewContainer* container = dynamic_cast<CViewContainer*> (editView->getParentView ());
+		auto container = editView->getParentView ()->asViewContainer ();
 		while (container && container != container->getFrame ())
 		{
 			if (getViewController (container, false) == this)
@@ -731,7 +794,7 @@ void UIEditController::beforeSave ()
 				getSettings ()->setRectAttribute ("EditorSize", container->getViewSize ());
 				break;
 			}
-			container = dynamic_cast<CViewContainer*> (container->getParentView ());
+			container = container->getParentView () ? container->getParentView ()->asViewContainer () : nullptr;
 		}
 		undoManager->markSavePosition ();
 		if (zoomSettingController)
@@ -745,18 +808,18 @@ void UIEditController::onTemplateSelectionChanged ()
 {
 	if (editView && templateController)
 	{
-		const std::string* name = templateController->getSelectedTemplateName ();
-		if ((name && *name != editTemplateName) || name == 0)
+		const auto& name = templateController->getSelectedTemplateName ();
+		if ((name && *name != editTemplateName) || name == nullptr)
 		{
 			if (undoManager->canUndo () && !editTemplateName.empty ())
 				updateTemplate (editTemplateName.c_str ());
 			if (name)
 			{
-				for (std::vector<Template>::const_iterator it = templates.begin (); it != templates.end (); it++)
+				for (auto& it : templates)
 				{
-					if (*name == (*it).name)
+					if (*name == it.name)
 					{
-						CView* view = (*it).view;
+						CView* view = it.view;
 						editView->setEditView (view);
 						templateController->setTemplateView (static_cast<CViewContainer*> (view));
 						editTemplateName = *templateController->getSelectedTemplateName ();
@@ -768,14 +831,14 @@ void UIEditController::onTemplateSelectionChanged ()
 			else
 			{
 				selection->empty ();
-				editView->setEditView (0);
-				templateController->setTemplateView (0);
+				editView->setEditView (nullptr);
+				templateController->setTemplateView (nullptr);
 				editTemplateName = "";
 			}
 		}
 		if (editView->getEditView ())
 		{
-			if (!(selection->first () && dynamic_cast<CViewContainer*> (editView->getEditView ())->isChild(selection->first (), true)))
+			if (!(selection->first () && editView->getEditView ()->asViewContainer ()->isChild (selection->first (), true)))
 				selection->setExclusive (editView->getEditView ());
 		}
 		else
@@ -790,9 +853,8 @@ void UIEditController::doCopy (bool cut)
 		updateTemplate (editTemplateName.c_str ());
 	CMemoryStream stream (1024, 1024, false);
 	selection->store (stream, editDescription);
-	CDropSource* dataSource = new CDropSource (stream.getBuffer (), static_cast<uint32_t> (stream.tell ()), IDataPackage::kText);
+	auto dataSource = CDropSource::create (stream.getBuffer (), static_cast<uint32_t> (stream.tell ()), IDataPackage::kText);
 	editView->getFrame ()->setClipboard (dataSource);
-	dataSource->forget ();
 	if (cut)
 		undoManager->pushAndPerform (new DeleteOperation (selection));
 }
@@ -803,10 +865,10 @@ void UIEditController::addSelectionToCurrentView (UISelection* copySelection)
 	if (selection->total () == 0)
 		return;
 	CPoint offset;
-	CViewContainer* container = dynamic_cast<CViewContainer*> (selection->first ());
-	if (container == 0)
+	CViewContainer* container = selection->first ()->asViewContainer ();
+	if (container == nullptr)
 	{
-		container = dynamic_cast<CViewContainer*> (selection->first ()->getParentView ());
+		container = selection->first ()->getParentView ()->asViewContainer ();
 		offset = selection->first ()->getViewSize ().getTopLeft ();
 		offset.offset (gridController->getSize ().x, gridController->getSize ().y);
 	}
@@ -819,8 +881,7 @@ void UIEditController::addSelectionToCurrentView (UISelection* copySelection)
 //----------------------------------------------------------------------------------------------------
 void UIEditController::doPaste ()
 {
-	IDataPackage* clipboard = editView->getFrame ()->getClipboard ();
-	if (clipboard)
+	if (auto clipboard = editView->getFrame ()->getClipboard ())
 	{
 		if (clipboard->getDataType (0) == IDataPackage::kText)
 		{
@@ -838,7 +899,6 @@ void UIEditController::doPaste ()
 				copySelection->forget ();
 			}
 		}
-		clipboard->forget ();
 	}
 }
 
@@ -851,7 +911,7 @@ void UIEditController::showTemplateSettings ()
 	}
 	UIDialogController* dc = new UIDialogController (this, editView->getFrame ());
 	UITemplateSettingsController* tsController = new UITemplateSettingsController (editTemplateName, editDescription);
-	dc->run ("template.settings", "Template Settings", "OK", "Cancel", tsController, &getEditorDescription ());
+	dc->run ("template.settings", "Template Settings", "OK", "Cancel", tsController, editorDesc);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -859,7 +919,7 @@ void UIEditController::showFocusSettings ()
 {
 	UIDialogController* dc = new UIDialogController (this, editView->getFrame ());
 	UIFocusSettingsController* fsController = new UIFocusSettingsController (editDescription);
-	dc->run ("focus.settings", "Focus Drawing Settings", "OK", "Cancel", fsController, &getEditorDescription ());
+	dc->run ("focus.settings", "Focus Drawing Settings", "OK", "Cancel", fsController, editorDesc);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -1002,12 +1062,10 @@ CMessageResult UIEditController::validateMenuItem (CCommandMenuItem* item)
 			item->setEnabled (false);
 			if (editView && selection->first ())
 			{
-				IDataPackage* clipboard = editView->getFrame ()->getClipboard ();
-				if (clipboard)
+				if (auto clipboard = editView->getFrame ()->getClipboard ())
 				{
 					if (clipboard->getDataType (0) == IDataPackage::kText)
 						item->setEnabled (true);
-					clipboard->forget ();
 				}
 			}
 			return kMessageNotified;
@@ -1058,8 +1116,7 @@ CMessageResult UIEditController::validateMenuItem (CCommandMenuItem* item)
 		{
 			bool lower = cmdName == "Lower" ? true : false;
 			CView* view = selection->first ();
-			CViewContainer* parent = dynamic_cast<CViewContainer*>(view->getParentView ());
-			if (parent)
+			if (auto parent = view->getParentView ()->asViewContainer ())
 			{
 				if (lower)
 				{
@@ -1082,7 +1139,7 @@ CMessageResult UIEditController::validateMenuItem (CCommandMenuItem* item)
 	{
 		if (cmdName == "Select All Children")
 		{
-			bool enable = selection->total () == 1 && selection->first () && dynamic_cast<CViewContainer*> (selection->first ());
+			bool enable = selection->total () == 1 && selection->first () && selection->first ()->asViewContainer ();
 			item->setEnabled (enable);
 			return kMessageNotified;
 		}
@@ -1091,7 +1148,7 @@ CMessageResult UIEditController::validateMenuItem (CCommandMenuItem* item)
 }
 
 //----------------------------------------------------------------------------------------------------
-bool UIEditController::doSelectionMove (const std::string& commandName, bool useGrid) const
+bool UIEditController::doSelectionMove (const UTF8String& commandName, bool useGrid) const
 {
 	CPoint diff;
 	if (commandName == "Move Up")
@@ -1111,7 +1168,7 @@ bool UIEditController::doSelectionMove (const std::string& commandName, bool use
 }
 
 //----------------------------------------------------------------------------------------------------
-bool UIEditController::doSelectionSize (const std::string& commandName, bool useGrid) const
+bool UIEditController::doSelectionSize (const UTF8String& commandName, bool useGrid) const
 {
 	CPoint diff;
 	if (commandName == "Increase Size Width")
@@ -1145,7 +1202,7 @@ bool UIEditController::doZOrderAction (bool lower)
 //----------------------------------------------------------------------------------------------------
 void UIEditController::doSelectAllChildren ()
 {
-	CViewContainer* container = dynamic_cast<CViewContainer*> (selection->first ());
+	CViewContainer* container = selection->first ()->asViewContainer ();
 	selection->empty ();
 	const IViewFactory* factory = editDescription->getViewFactory ();
 	ViewIterator it (container);
@@ -1160,24 +1217,29 @@ void UIEditController::doSelectAllChildren ()
 //----------------------------------------------------------------------------------------------------
 void UIEditController::onUndoManagerChanged ()
 {
-	setDirty (!undoManager->isSavePosition ());
+	if (undoManager->isSavePosition ())
+	{
+		updateTemplate (editTemplateName.data ());
+		setDirty (false);
+	}
+	else
+		setDirty (true);
 	CView* view = selection->first ();
 	if (view)
 	{
-		CViewContainer* templateView = dynamic_cast<CViewContainer*> (editView->getEditView ());
-		if (templateView)
+		if (auto templateView = editView->getEditView () ? editView->getEditView ()->asViewContainer () : nullptr)
 		{
 			if (view == templateView || templateView->isChild (view, true))
 			{
 				return;
 			}
 		}
-		for (std::vector<Template>::const_iterator it = templates.begin (); it != templates.end (); it++)
+		for (auto& it : templates)
 		{
-			CViewContainer* container = dynamic_cast<CViewContainer*>((CView*)(*it).view);
+			CViewContainer* container = it.view->asViewContainer ();
 			if (container && (view == container || container->isChild (view, true)))
 			{
-				templateController->selectTemplate ((*it).name.c_str ());
+				templateController->selectTemplate (it.name.c_str ());
 				return;
 			}
 		}
@@ -1196,8 +1258,7 @@ void UIEditController::resetScrollViewOffsets (CViewContainer* view)
 		{
 			scrollView->resetScrollOffset ();
 		}
-		CViewContainer* container = dynamic_cast<CViewContainer*>(*it);
-		if (container)
+		if (auto container = (*it)->asViewContainer ())
 			resetScrollViewOffsets (container);
 		it++;
 	}
@@ -1206,7 +1267,7 @@ void UIEditController::resetScrollViewOffsets (CViewContainer* view)
 //----------------------------------------------------------------------------------------------------
 int32_t UIEditController::onKeyDown (const VstKeyCode& code, CFrame* frame)
 {
-	if (frame->getModalView () == 0)
+	if (frame->getModalView () == nullptr)
 	{
 		if (frame->getFocusView ())
 		{
@@ -1232,13 +1293,31 @@ UIAttributes* UIEditController::getSettings ()
 }
 
 //----------------------------------------------------------------------------------------------------
+int32_t UIEditController::getSaveOptions ()
+{
+	int32_t flags = 0;
+	UIAttributes* attributes = getSettings ();
+	bool val;
+	if (attributes->getBooleanAttribute (UIEditController::kEncodeBitmapsSettingsKey, val) && val == true)
+	{
+		flags |= UIDescription::kWriteImagesIntoXMLFile;
+	}
+	if (attributes->getBooleanAttribute (UIEditController::kWriteWindowsRCFileSettingsKey, val) && val == true)
+	{
+		flags |= UIDescription::kWriteWindowsResourceFile;
+	}
+	return flags;
+}
+
+//----------------------------------------------------------------------------------------------------
 int32_t UIEditController::getSplitViewIndex (CSplitView* splitView)
 {
 	int32_t index = 0;
-	for (std::list<SharedPointer<CSplitView> >::const_iterator it = splitViews.begin (); it != splitViews.end (); it++, index++)
+	for (auto& sv : splitViews)
 	{
-		if ((*it) == splitView)
+		if (sv == splitView)
 			return index;
+		index++;
 	}
 	return -1;
 }
@@ -1257,7 +1336,7 @@ ISplitViewSeparatorDrawer* UIEditController::getSplitViewSeparatorDrawer (CSplit
 	{
 		return this;
 	}
-	return 0;
+	return nullptr;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -1359,8 +1438,8 @@ void UIEditController::finishGroupAction ()
 //----------------------------------------------------------------------------------------------------
 void UIEditController::getTemplateViews (std::list<CView*>& views) const
 {
-	for (std::vector<Template>::const_iterator it = templates.begin (); it != templates.end (); it++)
-		views.push_back ((*it).view);
+	for (const auto& templateDesc : templates)
+		views.emplace_back (templateDesc.view);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -1573,7 +1652,7 @@ void UIEditController::performDuplicateTemplate (UTF8StringPtr name, UTF8StringP
 //----------------------------------------------------------------------------------------------------
 void UIEditController::onTemplateCreation (UTF8StringPtr name, CView* view)
 {
-	templates.push_back (Template (name, view));
+	templates.emplace_back (name, view);
 	selection->setExclusive (view);
 }
 
@@ -1593,8 +1672,7 @@ void UIEditController::updateTemplate (const std::vector<Template>::const_iterat
 	if (it != templates.end ())
 	{
 		CView* view = (*it).view;
-		CViewContainer* container = dynamic_cast<CViewContainer*>(view);
-		if (container)
+		if (auto container = view->asViewContainer ())
 			resetScrollViewOffsets (container);
 		editDescription->updateViewDescription ((*it).name.c_str (), view);
 	}
@@ -1612,21 +1690,21 @@ void UIEditController::onTemplatesChanged ()
 {
 	std::list<const std::string*> templateNames;
 	editDescription->collectTemplateViewNames (templateNames);
-	for (std::list<const std::string*>::const_iterator it = templateNames.begin (); it != templateNames.end (); it++)
+	for (auto& it : templateNames)
 	{
-		if (std::find (templates.begin (), templates.end (), *(*it)) == templates.end ())
+		if (std::find (templates.begin (), templates.end (), *it) == templates.end ())
 		{
-			OwningPointer<CView> view = editDescription->createView ((*it)->c_str (), editDescription->getController ());
-			templates.push_back (Template (*(*it), view));
+			auto view = owned (editDescription->createView (it->c_str (), editDescription->getController ()));
+			templates.emplace_back (*it, view);
 		}
 	}
 	for (std::vector<Template>::iterator it = templates.begin (); it != templates.end ();)
 	{
 		Template& t = (*it);
 		bool found = false;
-		for (std::list<const std::string*>::const_iterator it2 = templateNames.begin (); it2 != templateNames.end (); it2++)
+		for (auto& it2 : templateNames)
 		{
-			if (t.name == *(*it2))
+			if (t.name == *it2)
 			{
 				found = true;
 				it++;
@@ -1637,6 +1715,19 @@ void UIEditController::onTemplatesChanged ()
 		{
 			it = templates.erase (it);
 		}
+	}
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIEditController::appendContextMenuItems (COptionMenu& contextMenu, const CPoint& where)
+{
+	if (editView == nullptr)
+		return;
+	auto editMenu = getMenuController ()->getEditMenu ();
+	for (auto& entry : *editMenu->getItems ())
+	{
+		entry->remember ();
+		contextMenu.addEntry (entry);
 	}
 }
 

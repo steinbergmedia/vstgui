@@ -109,10 +109,8 @@ void UIColorChooserController::updateColorSlider (CControl* control)
 //----------------------------------------------------------------------------------------------------
 void UIColorChooserController::updateColorSliders ()
 {
-	for (ControlList::const_iterator it = controls.begin (); it != controls.end (); it++)
-	{
-		updateColorSlider (*it);
-	}
+	for (auto& control : controls)
+		updateColorSlider (control);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -162,7 +160,7 @@ bool UIColorChooserController::stringToValue (UTF8StringPtr txt, float& result, 
 	std::locale origLocale;
 	std::locale::global (std::locale::classic ());
 	
-	char* endptr = 0;
+	char* endptr = nullptr;
 	result = (float)strtod (txt, &endptr);
 
 	std::locale::global (origLocale);
@@ -211,7 +209,7 @@ CView* UIColorChooserController::verifyView (CView* view, const UIAttributes& at
 	CControl* control = dynamic_cast<CControl*>(view);
 	if (control && control->getTag () >= 0)
 	{
-		controls.push_back (control);
+		controls.emplace_back (control);
 		CTextEdit* textEdit = dynamic_cast<CTextEdit*> (control);
 		if (textEdit)
 		{

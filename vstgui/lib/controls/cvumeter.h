@@ -71,15 +71,15 @@ public:
 
 
 	// overrides
-	virtual void setDirty (bool state) override;
-	virtual void draw (CDrawContext* pContext) override;
-	virtual void setViewSize (const CRect& newSize, bool invalid = true) override;
-	virtual bool sizeToFit () override;
-	virtual void onIdle () override;
+	void setDirty (bool state) override;
+	void draw (CDrawContext* pContext) override;
+	void setViewSize (const CRect& newSize, bool invalid = true) override;
+	bool sizeToFit () override;
+	void onIdle () override;
 	
 	CLASS_METHODS(CVuMeter, CControl)
 protected:
-	~CVuMeter ();	
+	~CVuMeter () noexcept override;	
 
 	CBitmap* offBitmap;
 	

@@ -36,7 +36,6 @@
 
 #if WINDOWS
 #include <windows.h>
-#include <list>
 #include <map>
 
 namespace VSTGUI {
@@ -46,12 +45,12 @@ class WinTimer : public IPlatformTimer
 {
 public:
 	WinTimer (IPlatformTimerCallback* callback);
-	~WinTimer ();
+	~WinTimer () noexcept;
 
 	bool start (uint32_t fireTime) override;
 	bool stop () override;
 private:
-	typedef std::map<UINT_PTR, IPlatformTimerCallback*> TimerMap;
+	using TimerMap = std::map<UINT_PTR, IPlatformTimerCallback*>;
 	static TimerMap gTimerMap;
 
 	static VOID CALLBACK TimerProc (HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime);
@@ -61,9 +60,9 @@ private:
 };
 
 //-----------------------------------------------------------------------------
-IPlatformTimer* IPlatformTimer::create (IPlatformTimerCallback* callback)
+SharedPointer<IPlatformTimer> IPlatformTimer::create (IPlatformTimerCallback* callback)
 {
-	return new WinTimer (callback);
+	return owned<IPlatformTimer> (new WinTimer (callback));
 }
 
 //-----------------------------------------------------------------------------
@@ -77,7 +76,7 @@ WinTimer::WinTimer (IPlatformTimerCallback* callback)
 }
 
 //-----------------------------------------------------------------------------
-WinTimer::~WinTimer ()
+WinTimer::~WinTimer () noexcept
 {
 	stop ();
 }
@@ -90,7 +89,7 @@ bool WinTimer::start (uint32_t fireTime)
 
 	timer = SetTimer ((HWND)NULL, (UINT_PTR)0, fireTime, TimerProc);
 	if (timer)
-		gTimerMap.insert (std::make_pair (timer, callback));
+		gTimerMap.emplace (timer, callback);
 
 	return false;
 }

@@ -38,6 +38,7 @@
 #include "../../../uidescription/uiviewfactory.h"
 #include "../../../uidescription/uiattributes.h"
 #include "../../../uidescription/detail/uiviewcreatorattributes.h"
+#include <algorithm>
 
 namespace VSTGUI {
 namespace {
@@ -72,9 +73,10 @@ public:
 
 static std::string baseViewAttr ("BaseViewAttr");
 
-struct BaseViewCreator : public IViewCreator
+struct BaseViewCreator : public ViewCreatorAdapter
 {
 	IdStringPtr getViewName () const override { return "BaseView"; }
+	UTF8StringPtr getDisplayName () const override { return "Base View"; }
 	IdStringPtr getBaseViewName () const override { return nullptr; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override
 	{ return new BaseView (); }
@@ -141,9 +143,10 @@ BaseViewCreator baseViewCreator;
 
 static std::string viewAttr ("ViewAttr");
 
-struct ViewCreator : public IViewCreator
+struct ViewCreator : public ViewCreatorAdapter
 {
 	IdStringPtr getViewName () const override { return "TestView"; }
+	UTF8StringPtr getDisplayName () const override { return "Test View"; }
 	IdStringPtr getBaseViewName () const override { return "BaseView"; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override
 	{ return new View (); }
@@ -231,6 +234,15 @@ TESTCASE(UIViewFactoryTests,
 		UIViewFactory::StringPtrList registeredViews;
 		factory->collectRegisteredViewNames (registeredViews, "BaseView");
 		EXPECT(registeredViews.size() == 1);
+	);
+	
+	TEST (collectRegisteredViewAndDisplayNames,
+		auto list = factory->collectRegisteredViewAndDisplayNames ();
+		auto it = std::find_if (list.begin (), list.end (), [] (const auto& value) {
+			return *value.first == "BaseView";
+		});
+		EXPECT(it != list.end ());
+		EXPECT(UTF8StringView (it->second) == UTF8StringView ("Base View"));
 	);
 	
 	TEST(createView,

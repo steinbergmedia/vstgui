@@ -39,13 +39,16 @@
 
 #if VSTGUI_LIVE_EDITING
 
+#include "../../lib/cbitmap.h"
+#include "../../lib/ccolor.h"
+
 namespace VSTGUI {
 class UIUndoManager;
 class UISelection;
 class UIDescription;
 class IUIDescription;
 class UICrossLines;
-class IAction;
+class ViewSizeChangeOperation;
 class UIGrid;
 namespace UIEditViewInternal {
 	class UIHighlightView;
@@ -56,7 +59,7 @@ class UIEditView : public CViewContainer
 {
 public:
 	UIEditView (const CRect& size, UIDescription* uidescription);
-	~UIEditView ();
+	~UIEditView () override;
 
 	void enableEditing (bool state);
 	void enableAutosizing (bool state);
@@ -101,6 +104,7 @@ protected:
 
 	void invalidSelection ();
 	MouseSizeMode selectionHitTest (const CPoint& where, CView** resultView);
+	bool hitTestSubViews (const CPoint& where, const CButtonState& buttons = -1) override;
 	CMouseEventResult onMouseDown (CPoint &where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseUp (CPoint &where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseMoved (CPoint &where, const CButtonState& buttons) override;
@@ -130,23 +134,23 @@ protected:
 	bool removed (CView* parent) override;
 	bool attached (CView* parent) override;
 
-	bool editing;
-	bool autosizing;
-	MouseEditMode mouseEditMode;
-	MouseSizeMode mouseSizeMode;
+	bool editing {true};
+	bool autosizing {true};
+	MouseEditMode mouseEditMode {kNoEditing};
+	MouseSizeMode mouseSizeMode {kSizeModeNone};
 	CPoint mouseStartPoint;
  
 	SharedPointer<UIUndoManager> undoManger;
 	SharedPointer<UISelection> selection;
-	UISelection* dragSelection;
-	UIDescription* description;
+	UISelection* dragSelection {nullptr};
+	UIDescription* description {nullptr};
 	SharedPointer<UIGrid> grid;
 	
-	UIEditViewInternal::UIHighlightView* highlightView;
-	CLayeredViewContainer* overlayView;
-	UICrossLines* lines;
-	IAction* moveSizeOperation;
-	CVSTGUITimer* editTimer;
+	UIEditViewInternal::UIHighlightView* highlightView {nullptr};
+	CLayeredViewContainer* overlayView {nullptr};
+	UICrossLines* lines {nullptr};
+	ViewSizeChangeOperation* moveSizeOperation {nullptr};
+	CVSTGUITimer* editTimer {nullptr};
 	
 	CColor crosslineForegroundColor;
 	CColor crosslineBackgroundColor;

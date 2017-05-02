@@ -48,8 +48,7 @@ There are two usage scenarios :
 @section offscreen_usage1 Drawing into a bitmap and then push the contents into another draw context
 
 @code
-COffscreenContext* offscreen = COffscreenContext::create (frame, 100, 100);
-if (offscreen)
+if (auto offscreen = COffscreenContext::create (frame, 100, 100))
 {
 	offscreen->beginDraw ();
 	// ... 
@@ -57,7 +56,6 @@ if (offscreen)
 	// ...
 	offscreen->endDraw ();
 	offscreen->copyFrom (otherContext, destRect);
-	offscreen->forget ();
 }
 @endcode
 
@@ -66,8 +64,7 @@ if (offscreen)
 @code
 if (cachedBitmap == 0)
 {
-	COffscreenContext* offscreen = COffscreenContext::create (frame, 100, 100);
-	if (offscreen)
+	if (auto offscreen = COffscreenContext::create (frame, 100, 100))
 	{
 		offscreen->beginDraw ();
 		// ... 
@@ -77,7 +74,6 @@ if (cachedBitmap == 0)
 		cachedBitmap = offscreen->getBitmap ();
 		if (cachedBitmap)
 			cachedBitmap->remember ();
-		offscreen->forget ();
 	}
 }
 if (cachedBitmap)
@@ -92,7 +88,7 @@ if (cachedBitmap)
 class COffscreenContext : public CDrawContext
 {
 public:
-	static COffscreenContext* create (CFrame* frame, CCoord width, CCoord height, double scaleFactor = 1.);
+	static SharedPointer<COffscreenContext> create (CFrame* frame, CCoord width, CCoord height, double scaleFactor = 1.);
 
 	//-----------------------------------------------------------------------------
 	/// @name COffscreenContext Methods
@@ -107,11 +103,10 @@ public:
 	CBitmap* getBitmap () const { return bitmap; }
 
 protected:
-	COffscreenContext (CBitmap* bitmap);
-	COffscreenContext (const CRect& surfaceRect);
-	~COffscreenContext ();
+	explicit COffscreenContext (CBitmap* bitmap);
+	explicit COffscreenContext (const CRect& surfaceRect);
 
-	CBitmap* bitmap;
+	SharedPointer<CBitmap> bitmap;
 };
 
 } // namespace

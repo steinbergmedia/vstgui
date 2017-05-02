@@ -46,7 +46,7 @@ namespace VSTGUI {
 ///	@brief Graphics Path Object
 ///	@ingroup new_in_4_0
 //-----------------------------------------------------------------------------
-class CGraphicsPath : public CBaseObject
+class CGraphicsPath : public AtomicReferenceCounted
 {
 public:
 	//-----------------------------------------------------------------------------
@@ -75,7 +75,7 @@ public:
 	/** add a rectangle to the path. Begins a new subpath if no elements were added before. */
 	virtual void addRect (const CRect& rect);
 	/** add another path to the path. Begins a new subpath if no elements were added before. */
-	virtual void addPath (const CGraphicsPath& path, CGraphicsTransform* transformation = 0);
+	virtual void addPath (const CGraphicsPath& path, CGraphicsTransform* transformation = nullptr);
 	/** add a line to the path. A subpath must begin before */
 	virtual void addLine (const CPoint& to);
 	/** add a bezier curve to the path. A subpath must begin before */
@@ -110,7 +110,7 @@ public:
 	/// @name Hit Testing
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual bool hitTest (const CPoint& p, bool evenOddFilled = false, CGraphicsTransform* transform = 0) = 0;
+	virtual bool hitTest (const CPoint& p, bool evenOddFilled = false, CGraphicsTransform* transform = nullptr) = 0;
 	//@}
 	
 	//-----------------------------------------------------------------------------
@@ -121,8 +121,6 @@ public:
 	virtual CRect getBoundingBox () = 0;
 	//@}
 	
-//-----------------------------------------------------------------------------
-	CLASS_METHODS_NOCOPY(CGraphicsPath, CBaseObject)
 protected:
 	CGraphicsPath () {}
 
@@ -179,7 +177,7 @@ protected:
 	inline void CPoint2Point (const CPoint& point, CGraphicsPath::Point& p) const {p.x = point.x;p.y = point.y;}
 	/// @endcond
 
-	typedef std::vector<Element> ElementList;
+	using ElementList = std::vector<Element>;
 	ElementList elements;
 };
 

@@ -35,6 +35,7 @@
 #include "coffscreencontext.h"
 #include "cframe.h"
 #include "cbitmap.h"
+#include "platform/iplatformframe.h"
 
 namespace VSTGUI {
 
@@ -43,21 +44,12 @@ COffscreenContext::COffscreenContext (CBitmap* bitmap)
 : CDrawContext (CRect (0, 0, bitmap->getWidth (), bitmap->getHeight ()))
 , bitmap (bitmap)
 {
-	bitmap->remember ();
 }
 
 //-----------------------------------------------------------------------------
 COffscreenContext::COffscreenContext (const CRect& surfaceRect)
 : CDrawContext (surfaceRect)
-, bitmap (0)
 {
-}
-
-//-----------------------------------------------------------------------------
-COffscreenContext::~COffscreenContext ()
-{
-	if (bitmap)
-		bitmap->forget ();
 }
 
 //-----------------------------------------------------------------------------
@@ -68,15 +60,15 @@ void COffscreenContext::copyFrom (CDrawContext *pContext, CRect destRect, CPoint
 }
 
 //-----------------------------------------------------------------------------
-COffscreenContext* COffscreenContext::create (CFrame* frame, CCoord width, CCoord height, double scaleFactor)
+SharedPointer<COffscreenContext> COffscreenContext::create (CFrame* frame, CCoord width, CCoord height, double scaleFactor)
 {
 	if (width >= 1. && height >= 1.)
 	{
-		IPlatformFrame* pf = frame ? frame->getPlatformFrame () : 0;
+		IPlatformFrame* pf = frame ? frame->getPlatformFrame () : nullptr;
 		if (pf)
 			return pf->createOffscreenContext (width, height, scaleFactor);
 	}
-	return 0;
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------

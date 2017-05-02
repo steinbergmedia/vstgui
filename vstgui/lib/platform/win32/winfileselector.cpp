@@ -57,9 +57,9 @@ static COMDLG_FILTERSPEC* buildExtensionFilter (std::list<CFileExtension>& exten
 {
 	if (extensions.empty () == false)
 	{
-		int32_t i = extensions.size () > 1 ? 1:0;
+		DWORD i = extensions.size () > 1 ? 1u:0u;
 		COMDLG_FILTERSPEC* filters = new COMDLG_FILTERSPEC[extensions.size ()+1+i];
-		int32_t allExtensionCharCount = 0;
+		size_t allExtensionCharCount = 0;
 		std::list<CFileExtension>::iterator it = extensions.begin ();
 		while (it != extensions.end ())
 		{
@@ -75,7 +75,7 @@ static COMDLG_FILTERSPEC* buildExtensionFilter (std::list<CFileExtension>& exten
 			filters[i].pszSpec = wSpec;
 			if (defaultExtension && *defaultExtension == (*it))
 				defaultFileTypeIndex = i+1;
-			allExtensionCharCount += (int32_t)wcslen (filters[i].pszSpec) + 1;
+			allExtensionCharCount += wcslen (filters[i].pszSpec) + 1;
 			it++; i++;
 		}
 		if (extensions.size () > 1)
@@ -84,7 +84,7 @@ static COMDLG_FILTERSPEC* buildExtensionFilter (std::list<CFileExtension>& exten
 			wcscpy (wAllName, kAllSupportedFileTypesString);
 			WCHAR* wAllSpec = (WCHAR*)std::malloc (allExtensionCharCount * sizeof (WCHAR));
 			wAllSpec[0] = 0;
-			for (int32_t j = 1; j < i; j++)
+			for (DWORD j = 1; j < i; j++)
 			{
 				wcscat (wAllSpec, filters[j].pszSpec);
 				if (j != i-1)
@@ -122,7 +122,7 @@ class VistaFileSelector : public CNewFileSelector
 {
 public:
 	VistaFileSelector (CFrame* frame, Style style);
-	~VistaFileSelector ();
+	~VistaFileSelector () noexcept;
 
 	virtual bool runInternal (CBaseObject* delegate) override;
 	virtual void cancelInternal () override;
@@ -190,7 +190,7 @@ VistaFileSelector::VistaFileSelector (CFrame* frame, Style style)
 }
 
 //-----------------------------------------------------------------------------
-VistaFileSelector::~VistaFileSelector ()
+VistaFileSelector::~VistaFileSelector () noexcept
 {
 }
 
@@ -198,7 +198,7 @@ VistaFileSelector::~VistaFileSelector ()
 bool VistaFileSelector::runInternal (CBaseObject* delegate)
 {
 	bool result = runModalInternal ();
-	if (result && delegate)
+	if (delegate)
 	{
 		delegate->notify (this, kSelectEndMessage);
 	}
@@ -220,7 +220,7 @@ bool VistaFileSelector::runModalInternal ()
 	if (style == kSelectSaveFile)
 	{
 		hr = CoCreateInstance (CLSID_FileSaveDialog, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARG(IFileDialog, &fileDialog));
-		if (defaultSaveName)
+		if (!defaultSaveName.empty ())
 		{
 			fileDialog->SetFileName (UTF8StringHelper (defaultSaveName));
 		}
@@ -264,7 +264,7 @@ bool VistaFileSelector::runModalInternal ()
 		return false;
 	}
 
-	if (title)
+	if (!title.empty ())
 		hr = fileDialog->SetTitle (UTF8StringHelper (title));
 
 	DWORD numExtensions = 0;
@@ -276,7 +276,7 @@ bool VistaFileSelector::runModalInternal ()
 		if (defaultFileTypeIndex)
 			fileDialog->SetFileTypeIndex (defaultFileTypeIndex);
 	}
-	if (initialPath && _SHCreateItemFromParsingName)
+	if (!initialPath.empty () && _SHCreateItemFromParsingName)
 	{
 		IShellItem* shellItem;
 		hr = _SHCreateItemFromParsingName (UTF8StringHelper (initialPath), 0, IID_PPV_ARG (IShellItem, &shellItem));
@@ -313,8 +313,7 @@ bool VistaFileSelector::runModalInternal ()
 							if (SUCCEEDED (hr))
 							{
 								UTF8StringHelper str (filesysPath);
-								UTF8StringBuffer resultPath = String::newWithString (str);
-								result.push_back (resultPath);
+								result.emplace_back (str.getUTF8String ());
 							}
 							item->Release ();
 						}
@@ -335,8 +334,7 @@ bool VistaFileSelector::runModalInternal ()
 				if (SUCCEEDED (hr))
 				{
 					UTF8StringHelper str (filesysPath);
-					UTF8StringBuffer resultPath = String::newWithString (str);
-					result.push_back (resultPath);
+					result.emplace_back (str.getUTF8String ());
 				}
 				item->Release ();
 			}
@@ -406,8 +404,7 @@ bool XPFileSelector::runModalInternal ()
 				char szPathNameC_[MAX_PATH];
 				char *szPathNameC= szPathNameC_;
 				WideCharToMultiByte (CP_ACP, WC_COMPOSITECHECK|WC_DEFAULTCHAR, szPathName, -1, szPathNameC, MAX_PATH, NULL, NULL); 
-				UTF8StringBuffer resultPath = String::newWithString (szPathNameC);
-				result.push_back (resultPath);
+				result.emplace_back (szPathNameC);
 				return true;
 			}
 		}
@@ -433,7 +430,7 @@ bool XPFileSelector::runModalInternal ()
 	*filePathBuffer=0;
 
 	UTF8StringHelper defaultSaveNameW (defaultSaveName);
-	if (defaultSaveName)
+	if (!defaultSaveName.empty ())
 	{
 		wcscpy (filePathBuffer, defaultSaveNameW.getWideString ());
 	}
@@ -443,7 +440,7 @@ bool XPFileSelector::runModalInternal ()
 	ofn.lpstrFileTitle = NULL;
 
 	UTF8StringHelper initialPathW (initialPath);
-	if (initialPath)
+	if (!initialPath.empty ())
 	{
 		ofn.lpstrInitialDir = initialPathW.getWideString ();
 	}
@@ -453,7 +450,7 @@ bool XPFileSelector::runModalInternal ()
 	}
 	
 	UTF8StringHelper titleW (title);
-	if (title)
+	if (!title.empty ())
 	{
 		ofn.lpstrTitle = titleW.getWideString ();
 	}
@@ -471,8 +468,7 @@ bool XPFileSelector::runModalInternal ()
 	}
 
 	UTF8StringHelper str (filePathBuffer);
-	UTF8StringBuffer resultPath = String::newWithString (str);
-	result.push_back(resultPath);
+	result.emplace_back (str.getUTF8String ());
 	return true;
 }
 

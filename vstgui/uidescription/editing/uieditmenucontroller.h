@@ -162,23 +162,26 @@ class UIEditMenuController : public CBaseObject, public DelegationController
 {
 public:
 	UIEditMenuController (IController* baseController, UISelection* selection, UIUndoManager* undoManager, UIDescription* description, IActionPerformer* actionPerformer);
-	~UIEditMenuController ();
+	~UIEditMenuController () noexcept override = default;
 
 	COptionMenu* getFileMenu () const { return fileMenu; }
 	COptionMenu* getEditMenu () const { return editMenu; }
 
 	int32_t processKeyCommand (const VstKeyCode& key);
+	bool handleCommand (const UTF8StringPtr category, const UTF8StringPtr name);
+	bool canHandleCommand (const UTF8StringPtr category, const UTF8StringPtr name) const;
 
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
-	virtual void valueChanged (CControl* pControl) override;
+	void valueChanged (CControl* pControl) override;
 
 	static bool createUniqueTemplateName (std::list<const std::string*>& names, std::string& name);
 protected:
+	bool validateMenuItem (CCommandMenuItem& item);
 	CCommandMenuItem* findKeyCommandItem (COptionMenu* menu, const VstKeyCode& key);
 	void createEditMenu (COptionMenu* menu);
 	void createFileMenu (COptionMenu* menu);
 
-	virtual CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;
+	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;
 	IControlListener* getControlListener (UTF8StringPtr name) override { return this; }
 	void controlBeginEdit (CControl* pControl) override;
 	void controlEndEdit (CControl* pControl) override;
@@ -186,11 +189,11 @@ protected:
 	SharedPointer<UISelection> selection;
 	SharedPointer<UIUndoManager> undoManager;
 	SharedPointer<UIDescription> description;
-	OwningPointer<CVSTGUITimer> highlightTimer;
+	SharedPointer<CVSTGUITimer> highlightTimer;
 	IActionPerformer* actionPerformer;
 
-	COptionMenu* fileMenu;
-	COptionMenu* editMenu;
+	COptionMenu* fileMenu {nullptr};
+	COptionMenu* editMenu {nullptr};
 	SharedPointer<CTextLabel> fileLabel;
 	SharedPointer<CTextLabel> editLabel;
 	

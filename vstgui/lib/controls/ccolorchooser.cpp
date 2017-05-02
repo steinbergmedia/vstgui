@@ -50,8 +50,8 @@ namespace CColorChooserInternal {
 class Slider : public CSlider
 {
 public:
-	Slider (const CRect& size, IControlListener* listener = 0, int32_t tag = -1)
-	: CSlider (size, listener, tag, 0, 0, 0, 0)
+	Slider (const CRect& size, IControlListener* listener = nullptr, int32_t tag = -1)
+	: CSlider (size, listener, tag, 0, 0, nullptr, nullptr)
 	{
 		if (size.getWidth () > size.getHeight ())
 			heightOfSlider = widthOfSlider = size.getHeight ();
@@ -142,12 +142,12 @@ public:
 class ColorView : public CControl
 {
 public:
-	ColorView (const CRect& r, const CColor& initialColor, IControlListener* listener = 0, int32_t tag = -1, bool checkerBoardBack = true, const CColor& checkerBoardColor1 = kWhiteCColor, const CColor& checkerBoardColor2 = kBlackCColor)
+	ColorView (const CRect& r, const CColor& initialColor, IControlListener* listener = nullptr, int32_t tag = -1, bool checkerBoardBack = true, const CColor& checkerBoardColor1 = kWhiteCColor, const CColor& checkerBoardColor2 = kBlackCColor)
 	: CControl (r, listener, tag)
 	, color (initialColor)
-	, checkerBoardBack (checkerBoardBack)
 	, checkerBoardColor1 (checkerBoardColor1)
 	, checkerBoardColor2 (checkerBoardColor2)
+	, checkerBoardBack (checkerBoardBack)
 	{
 	}
 	
@@ -163,7 +163,7 @@ public:
 			for (int32_t x = 0; x < getViewSize ().getWidth (); x+=5)
 			{
 				r.left = getViewSize ().left + x;
-				r.top = x % 2 ? getViewSize ().top : getViewSize ().top + 5;
+				r.top = (x % 2) ? getViewSize ().top : getViewSize ().top + 5;
 				r.right = r.left + 5;
 				r.bottom = r.top + 5;
 				for (int32_t y = 0; y < getViewSize ().getHeight (); y+=10)
@@ -206,9 +206,9 @@ public:
 						std::string rv (colorString.substr (1, 2));
 						std::string gv (colorString.substr (3, 2));
 						std::string bv (colorString.substr (5, 2));
-						color->red = (uint8_t)strtol (rv.c_str (), 0, 16);
-						color->green = (uint8_t)strtol (gv.c_str (), 0, 16);
-						color->blue = (uint8_t)strtol (bv.c_str (), 0, 16);
+						color->red = (uint8_t)strtol (rv.c_str (), nullptr, 16);
+						color->green = (uint8_t)strtol (gv.c_str (), nullptr, 16);
+						color->blue = (uint8_t)strtol (bv.c_str (), nullptr, 16);
 						color->alpha = 255;
 					}
 					return true;
@@ -224,10 +224,10 @@ public:
 						std::string gv (colorString.substr (3, 2));
 						std::string bv (colorString.substr (5, 2));
 						std::string av (colorString.substr (7, 2));
-						color->red = (uint8_t)strtol (rv.c_str (), 0, 16);
-						color->green = (uint8_t)strtol (gv.c_str (), 0, 16);
-						color->blue = (uint8_t)strtol (bv.c_str (), 0, 16);
-						color->alpha = (uint8_t)strtol (av.c_str (), 0, 16);
+						color->red = (uint8_t)strtol (rv.c_str (), nullptr, 16);
+						color->green = (uint8_t)strtol (gv.c_str (), nullptr, 16);
+						color->blue = (uint8_t)strtol (bv.c_str (), nullptr, 16);
+						color->alpha = (uint8_t)strtol (av.c_str (), nullptr, 16);
 					}
 					return true;
 				}
@@ -250,7 +250,7 @@ public:
 	
 	void onDragEnter (IDataPackage* drag, const CPoint& where) override
 	{
-		if (dragContainerHasColor (drag, 0))
+		if (dragContainerHasColor (drag, nullptr))
 			getFrame ()->setCursor (kCursorCopy);
 		else
 			getFrame ()->setCursor (kCursorNotAllowed);
@@ -338,17 +338,6 @@ bool CColorChooser::convertAngle (UTF8StringPtr string, float& output, CTextEdit
 }
 
 //-----------------------------------------------------------------------------
-CColorChooserUISettings::CColorChooserUISettings ()
-{
-	font = kNormalFont;
-	fontColor = kWhiteCColor;
-	checkerBoardColor1 = kWhiteCColor;
-	checkerBoardColor2 = kBlackCColor;
-	margin = CPoint (5, 5);
-	checkerBoardBack = true;
-}
-
-//-----------------------------------------------------------------------------
 IdStringPtr CColorChooser::kMsgBeginColorChange = "CColorChooser::kMsgBeginColorChange";
 IdStringPtr CColorChooser::kMsgEndColorChange = "CColorChooser::kMsgEndColorChange";
 
@@ -356,15 +345,15 @@ IdStringPtr CColorChooser::kMsgEndColorChange = "CColorChooser::kMsgEndColorChan
 CColorChooser::CColorChooser (IColorChooserDelegate* delegate, const CColor& initialColor, const CColorChooserUISettings& settings)
 : CViewContainer (CRect (0, 0, 0, 0))
 , delegate (delegate)
-, redSlider (0)
-, greenSlider (0)
-, blueSlider (0)
-, hueSlider (0)
-, saturationSlider (0)
-, brightnessSlider (0)
-, alphaSlider (0)
-, colorView (0)
 , color (initialColor)
+, redSlider (nullptr)
+, greenSlider (nullptr)
+, blueSlider (nullptr)
+, hueSlider (nullptr)
+, saturationSlider (nullptr)
+, brightnessSlider (nullptr)
+, alphaSlider (nullptr)
+, colorView (nullptr)
 {
 	setTransparency (true);
 	setAutosizeFlags (kAutosizeAll);
@@ -477,7 +466,7 @@ CColorChooser::CColorChooser (IColorChooserDelegate* delegate, const CColor& ini
 	r.offset (labelWidth + xMargin + controlWidth + xMargin, r.bottom + yMargin);
 	r.setWidth (editWidth);
 	r.setHeight (controlHeight);
-	editFields[0] = new CTextEdit (r, this, kRedTag, 0);
+	editFields[0] = new CTextEdit (r, this, kRedTag, nullptr);
 	CColorChooserInternal::setupParamDisplay (editFields[0], settings);
 	editFields[0]->setAutosizeFlags (kAutosizeRight|kAutosizeBottom);
 	editFields[0]->setStringToValueFunction (convertColorValue);
@@ -485,7 +474,7 @@ CColorChooser::CColorChooser (IColorChooserDelegate* delegate, const CColor& ini
 	addView (editFields[0]);
 
 	r.offset (0, yMargin + controlHeight);
-	editFields[1] = new CTextEdit (r, this, kGreenTag, 0);
+	editFields[1] = new CTextEdit (r, this, kGreenTag, nullptr);
 	CColorChooserInternal::setupParamDisplay (editFields[1], settings);
 	editFields[1]->setAutosizeFlags (kAutosizeRight|kAutosizeBottom);
 	editFields[1]->setStringToValueFunction (convertColorValue);
@@ -493,7 +482,7 @@ CColorChooser::CColorChooser (IColorChooserDelegate* delegate, const CColor& ini
 	addView (editFields[1]);
 
 	r.offset (0, yMargin + controlHeight);
-	editFields[2] = new CTextEdit (r, this, kBlueTag, 0);
+	editFields[2] = new CTextEdit (r, this, kBlueTag, nullptr);
 	CColorChooserInternal::setupParamDisplay (editFields[2], settings);
 	editFields[2]->setAutosizeFlags (kAutosizeRight|kAutosizeBottom);
 	editFields[2]->setStringToValueFunction (convertColorValue);
@@ -501,7 +490,7 @@ CColorChooser::CColorChooser (IColorChooserDelegate* delegate, const CColor& ini
 	addView (editFields[2]);
 
 	r.offset (0, yMargin + yMargin + controlHeight);
-	editFields[3] = new CTextEdit (r, this, kHueTag, 0);
+	editFields[3] = new CTextEdit (r, this, kHueTag, nullptr);
 	CColorChooserInternal::setupParamDisplay (editFields[3], settings);
 	editFields[3]->setAutosizeFlags (kAutosizeRight|kAutosizeBottom);
 	editFields[3]->setStringToValueFunction (convertColorValue);
@@ -509,7 +498,7 @@ CColorChooser::CColorChooser (IColorChooserDelegate* delegate, const CColor& ini
 	addView (editFields[3]);
 
 	r.offset (0, yMargin + controlHeight);
-	editFields[4] = new CTextEdit (r, this, kSaturationTag, 0);
+	editFields[4] = new CTextEdit (r, this, kSaturationTag, nullptr);
 	CColorChooserInternal::setupParamDisplay (editFields[4], settings);
 	editFields[4]->setAutosizeFlags (kAutosizeRight|kAutosizeBottom);
 	editFields[4]->setStringToValueFunction (convertColorValue);
@@ -517,7 +506,7 @@ CColorChooser::CColorChooser (IColorChooserDelegate* delegate, const CColor& ini
 	addView (editFields[4]);
 
 	r.offset (0, yMargin + controlHeight);
-	editFields[5] = new CTextEdit (r, this, kBrightnessTag, 0);
+	editFields[5] = new CTextEdit (r, this, kBrightnessTag, nullptr);
 	CColorChooserInternal::setupParamDisplay (editFields[5], settings);
 	editFields[5]->setAutosizeFlags (kAutosizeRight|kAutosizeBottom);
 	editFields[5]->setStringToValueFunction (convertColorValue);
@@ -525,7 +514,7 @@ CColorChooser::CColorChooser (IColorChooserDelegate* delegate, const CColor& ini
 	addView (editFields[5]);
 
 	r.offset (0, yMargin + yMargin + controlHeight);
-	editFields[6] = new CTextEdit (r, this, kAlphaTag, 0);
+	editFields[6] = new CTextEdit (r, this, kAlphaTag, nullptr);
 	CColorChooserInternal::setupParamDisplay (editFields[6], settings);
 	editFields[6]->setAutosizeFlags (kAutosizeRight|kAutosizeBottom);
 	editFields[6]->setStringToValueFunction (convertColorValue);
@@ -533,11 +522,6 @@ CColorChooser::CColorChooser (IColorChooserDelegate* delegate, const CColor& ini
 	addView (editFields[6]);
 
 	updateState ();
-}
-
-//-----------------------------------------------------------------------------
-CColorChooser::~CColorChooser ()
-{
 }
 
 //-----------------------------------------------------------------------------

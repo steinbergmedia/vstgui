@@ -54,28 +54,30 @@ public:
 	virtual CColor platformGetFontColor () const = 0;
 	virtual CFontRef platformGetFont () const = 0;
 	virtual CHoriTxtAlign platformGetHoriTxtAlign () const = 0; 
-	virtual UTF8StringPtr platformGetText () const = 0;
+	virtual const UTF8String& platformGetText () const = 0;
+	virtual const UTF8String& platformGetPlaceholderText () const = 0;
 	virtual CRect platformGetSize () const = 0;
 	virtual CRect platformGetVisibleSize () const = 0;
 	virtual CPoint platformGetTextInset () const = 0;
 	virtual void platformLooseFocus (bool returnPressed) = 0;
 	virtual bool platformOnKeyDown (const VstKeyCode& key) = 0;
 	virtual void platformTextDidChange () = 0;
+	virtual bool platformIsSecureTextEdit () = 0;
 
 //------------------------------------------------------------------------------------
 };
 
 //-----------------------------------------------------------------------------
-class IPlatformTextEdit : public CBaseObject
+class IPlatformTextEdit : public AtomicReferenceCounted
 {
 public:
-	virtual UTF8StringPtr getText () = 0;
-	virtual bool setText (UTF8StringPtr text) = 0;
+	virtual UTF8String getText () = 0;
+	virtual bool setText (const UTF8String& text) = 0;
 	virtual bool updateSize () = 0;
 
 //-----------------------------------------------------------------------------
 protected:
-	IPlatformTextEdit (IPlatformTextEditCallback* textEdit) : textEdit (textEdit) {}
+	explicit IPlatformTextEdit (IPlatformTextEditCallback* textEdit) : textEdit (textEdit) {}
 	IPlatformTextEditCallback* textEdit;
 };
 

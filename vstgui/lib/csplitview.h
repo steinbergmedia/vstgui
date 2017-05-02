@@ -63,8 +63,8 @@ public:
 		kResizeAllViews			///< all views will be resized equally
 	};
 	
-	CSplitView (const CRect& size, Style style = kHorizontal, CCoord separatorWidth = 10., ISplitViewSeparatorDrawer* drawer = 0);
-	~CSplitView ();
+	CSplitView (const CRect& size, Style style = kHorizontal, CCoord separatorWidth = 10., ISplitViewSeparatorDrawer* drawer = nullptr);
+	~CSplitView () noexcept override = default;
 
 	//-----------------------------------------------------------------------------
 	/// @name CSplitView Methods
@@ -86,15 +86,15 @@ public:
 	//@}
 	
 	// overrides
-	virtual bool addView (CView* pView) override;
-	virtual bool addView (CView* pView, const CRect& mouseableArea, bool mouseEnabled = true) override;
-	virtual bool addView (CView* pView, CView* pBefore) override;
-	virtual bool removeView (CView* pView, bool withForget = true) override;
-	virtual bool removeAll (bool withForget = true) override;
-	virtual void setViewSize (const CRect& rect, bool invalid = true) override;
-	virtual bool sizeToFit () override;
-	virtual bool removed (CView* parent) override;
-	virtual bool attached (CView* parent) override;
+	bool addView (CView* pView) override;
+	bool addView (CView* pView, const CRect& mouseableArea, bool mouseEnabled = true) override;
+	bool addView (CView* pView, CView* pBefore) override;
+	bool removeView (CView* pView, bool withForget = true) override;
+	bool removeAll (bool withForget = true) override;
+	void setViewSize (const CRect& rect, bool invalid = true) override;
+	bool sizeToFit () override;
+	bool removed (CView* parent) override;
+	bool attached (CView* parent) override;
 
 	bool requestNewSeparatorSize (CSplitViewSeparatorView* separatorView, const CRect& newSize);
 //-----------------------------------------------------------------------------
@@ -121,6 +121,8 @@ protected:
 class ISplitViewController
 {
 public:
+	virtual ~ISplitViewController () noexcept = default;
+
 	/** return the minimum and maximum size (width or height) of a view. */
 	virtual bool getSplitViewSizeConstraint (int32_t index, CCoord& minSize, CCoord& maxSize, CSplitView* splitView) = 0;
 	/** return the separator drawer. */
@@ -138,6 +140,8 @@ public:
 class ISplitViewSeparatorDrawer
 {
 public:
+	virtual ~ISplitViewSeparatorDrawer () noexcept = default;
+
 	enum Flags {
 		kMouseOver = 1 << 0,
 		kMouseDown = 1 << 1

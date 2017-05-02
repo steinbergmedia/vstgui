@@ -42,7 +42,7 @@ namespace VSTGUI {
 //-----------
 // @brief Draw Mode Flags
 //-----------
-enum CDrawModeFlags
+enum CDrawModeFlags : uint32_t
 {
 	kAliasing = 0,					///< aliased drawing
 	kAntiAliasing = 1,				///< antialised drawing
@@ -55,18 +55,20 @@ enum CDrawModeFlags
 struct CDrawMode
 {
 public:
-	CDrawMode (uint32_t mode = kAliasing) : mode (mode) {}
-	CDrawMode (const CDrawMode& m) : mode (m.mode) {}
+	constexpr CDrawMode (uint32_t mode = kAliasing) : mode (mode) {}
+	constexpr CDrawMode (const CDrawMode& m) : mode (m.mode) {}
 
-	uint32_t modeIgnoringIntegralMode () const { return (mode & ~kNonIntegralMode); }
+	constexpr uint32_t modeIgnoringIntegralMode () const { return (mode & ~kNonIntegralMode); }
 
-	bool integralMode () const { return mode & kNonIntegralMode ? false : true; }
+	constexpr bool integralMode () const { return !hasBit (mode, kNonIntegralMode); }
+	constexpr bool aliasing () const { return modeIgnoringIntegralMode () == kAliasing; }
+	constexpr bool antiAliasing () const { return modeIgnoringIntegralMode () == kAntiAliasing; }
 
 	CDrawMode& operator= (uint32_t m) { mode = m; return *this; }
 
-	uint32_t operator() () const { return mode; }
-	bool operator== (const CDrawMode& m) const { return modeIgnoringIntegralMode () == m.modeIgnoringIntegralMode (); }
-	bool operator!= (const CDrawMode& m) const { return modeIgnoringIntegralMode () != m.modeIgnoringIntegralMode (); }
+	constexpr uint32_t operator() () const { return mode; }
+	constexpr bool operator== (const CDrawMode& m) const { return modeIgnoringIntegralMode () == m.modeIgnoringIntegralMode (); }
+	constexpr bool operator!= (const CDrawMode& m) const { return modeIgnoringIntegralMode () != m.modeIgnoringIntegralMode (); }
 private:
 	uint32_t mode;
 };

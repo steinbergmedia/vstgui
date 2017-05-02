@@ -35,6 +35,7 @@
 #include "unittests.h"
 
 #if ENABLE_UNIT_TESTS
+#include "../../lib/vstguidebug.h"
 
 #include <chrono>
 #include <cstdarg>
@@ -102,7 +103,7 @@ TestCase& TestCase::operator=(TestCase &&tc) noexcept
 //----------------------------------------------------------------------------------------------------
 void TestCase::registerTest (std::string&& name, TestFunction&& function)
 {
-	tests.push_back (TestPair (std::move (name), std::move (function)));
+	tests.emplace_back (std::move (name), std::move (function));
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -147,8 +148,8 @@ void Context::print (const char* fmt, ...)
 
 	delete[] buffer;
 #else
-	char* str = 0;
-	if (vasprintf (&str, fmt, args) >= 0 && str != 0)
+	char* str = nullptr;
+	if (vasprintf (&str, fmt, args) >= 0 && str != nullptr)
 	{
 		printRaw (str);
 		std::free (str);
@@ -175,7 +176,7 @@ private:
 public:
 	StdOutContext () : intend (0) {}
 
-	virtual void printRaw (const char* str)
+	void printRaw (const char* str) override
 	{
 		testOutput += str;
 		testOutput += "\n";
@@ -293,6 +294,9 @@ void* hInstance = nullptr;
 
 int main ()
 {
+	VSTGUI::setAssertionHandler ([] (const char* file, const char* line, const char* desc) {
+		throw std::logic_error (desc ? desc : "unknown");
+	});
 #if WINDOWS
 	CoInitialize (nullptr);
 	hInstance = GetModuleHandle (nullptr);

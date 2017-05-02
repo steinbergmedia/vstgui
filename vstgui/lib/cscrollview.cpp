@@ -50,7 +50,7 @@ class CScrollContainer : public CViewContainer
 public:
 	CScrollContainer (const CRect &size, const CRect &containerSize);
 	CScrollContainer (const CScrollContainer& v);
-	~CScrollContainer ();
+	~CScrollContainer () override = default;
 
 	void setScrollOffset (CPoint offset, bool withRedraw = false);
 	void getScrollOffset (CPoint& off) const { off = offset; }
@@ -96,15 +96,10 @@ CScrollContainer::CScrollContainer (const CScrollContainer& v)
 : CViewContainer (v)
 , containerSize (v.containerSize)
 , offset (v.offset)
+, autoDragScroll (v.autoDragScroll)
 , inScrolling (false)
 {
 }
-
-//-----------------------------------------------------------------------------
-CScrollContainer::~CScrollContainer ()
-{
-}
-
 
 //-----------------------------------------------------------------------------
 void CScrollContainer::setContainerSize (const CRect& cs)
@@ -138,7 +133,7 @@ void CScrollContainer::setScrollOffset (CPoint newOffset, bool redraw)
 	if (diff.x == 0 && diff.y == 0)
 		return;
 	inScrolling = true;
-	for (const auto& pV : children)
+	for (const auto& pV : getChildren ())
 	{
 		CRect r = pV->getViewSize ();
 		CRect mr;
@@ -186,7 +181,7 @@ bool CScrollContainer::isDirty () const
 	if (CView::isDirty ())
 		return true;
 
-	for (const auto& pV : children)
+	for (const auto& pV : getChildren ())
 	{
 		if (pV->isDirty () && pV->isVisible ())
 		{
@@ -260,7 +255,7 @@ bool CScrollContainer::attached (CView* parent)
 			newContainerSize.setHeight (r.getHeight ());
 			if (newContainerSize != containerSize)
 			{
-				CScrollView* scrollView = (CScrollView*)getParentView ();
+				CScrollView* scrollView = static_cast<CScrollView*> (getParentView ());
 				scrollView->setContainerSize (newContainerSize);
 			}
 		}
@@ -283,7 +278,7 @@ CMessageResult CScrollContainer::notify (CBaseObject* sender, IdStringPtr messag
 			newContainerSize.setHeight (r.getHeight ());
 			if (newContainerSize != containerSize)
 			{
-				CScrollView* scrollView = (CScrollView*)getParentView ();
+				CScrollView* scrollView = static_cast<CScrollView*> (getParentView ());
 				scrollView->setContainerSize (newContainerSize);
 			}
 		}
@@ -298,9 +293,9 @@ CMessageResult CScrollContainer::notify (CBaseObject* sender, IdStringPtr messag
 //-----------------------------------------------------------------------------
 CScrollView::CScrollView (const CRect &size, const CRect &containerSize, int32_t style, CCoord scrollbarWidth, CBitmap* pBackground)
 : CViewContainer (size)
-, sc (0)
-, vsb (0)
-, hsb (0)
+, sc (nullptr)
+, vsb (nullptr)
+, hsb (nullptr)
 , containerSize (containerSize)
 , scrollbarWidth (scrollbarWidth)
 , style (style)
@@ -315,36 +310,34 @@ CScrollView::CScrollView (const CRect &size, const CRect &containerSize, int32_t
 CScrollView::CScrollView (const CScrollView& v)
 : CViewContainer (v)
 , containerSize (v.containerSize)
+, scrollbarWidth (v.scrollbarWidth)
 , style (v.style)
 , activeScrollbarStyle (v.activeScrollbarStyle)
-, scrollbarWidth (v.scrollbarWidth)
 {
 	CViewContainer::removeAll ();
 	if (activeScrollbarStyle & kHorizontalScrollbar && v.hsb)
 	{
-		hsb = (CScrollbar*)v.hsb->newCopy ();
+		hsb = static_cast<CScrollbar*> (v.hsb->newCopy ());
 		hsb->setListener (this);
-		CViewContainer::addView (hsb, 0);
+		CViewContainer::addView (hsb, nullptr);
 	}
 	if (activeScrollbarStyle & kVerticalScrollbar && v.vsb)
 	{
-		vsb = (CScrollbar*)v.vsb->newCopy ();
+		vsb = static_cast<CScrollbar*> (v.vsb->newCopy ());
 		vsb->setListener (this);
-		CViewContainer::addView (vsb, 0);
+		CViewContainer::addView (vsb, nullptr);
 	}
-	sc = (CScrollContainer*)v.sc->newCopy ();
-	CViewContainer::addView (sc, 0);
-}
-
-//-----------------------------------------------------------------------------
-CScrollView::~CScrollView ()
-{
+	sc = static_cast<CScrollContainer*> (v.sc->newCopy ());
+	CViewContainer::addView (sc, nullptr);
 }
 
 //-----------------------------------------------------------------------------
 void CScrollView::recalculateSubViews ()
 {
-	CRect scsize (0, 0, getViewSize ().getWidth (), getViewSize ().getHeight ());
+	if (recalculateSubViewsRecursionGard)
+		return;
+	recalculateSubViewsRecursionGard = true;
+	CRect scsize (containerSize.left, containerSize.top, getViewSize ().getWidth (), getViewSize ().getHeight ());
 	if (!(style & kDontDrawFrame))
 	{
 		scsize.left++; scsize.top++;
@@ -401,11 +394,12 @@ void CScrollView::recalculateSubViews ()
 		{
 			hsb = new CScrollbar (sbr, this, kHSBTag, CScrollbar::kHorizontal, containerSize);
 			hsb->setAutosizeFlags (kAutosizeLeft | kAutosizeRight | kAutosizeBottom);
-			CViewContainer::addView (hsb, 0);
+			CViewContainer::addView (hsb, nullptr);
+			hsb->registerViewListener (this);
 		}
 		if (!(style & kOverlayScrollbars))
 			scsize.bottom = sbr.top;
-		hsb->setOverlayStyle (style & kOverlayScrollbars ? true : false);
+		hsb->setOverlayStyle ((style & kOverlayScrollbars) ? true : false);
 	}
 	else if (hsb)
 	{
@@ -432,11 +426,12 @@ void CScrollView::recalculateSubViews ()
 		{
 			vsb = new CScrollbar (sbr, this, kVSBTag, CScrollbar::kVertical, containerSize);
 			vsb->setAutosizeFlags (kAutosizeTop | kAutosizeRight | kAutosizeBottom);
-			CViewContainer::addView (vsb, 0);
+			CViewContainer::addView (vsb, nullptr);
+			vsb->registerViewListener (this);
 		}
 		if (!(style & kOverlayScrollbars))
 			scsize.right = sbr.left;
-		vsb->setOverlayStyle (style & kOverlayScrollbars ? true : false);
+		vsb->setOverlayStyle ((style & kOverlayScrollbars) ? true : false);
 	}
 	else if (vsb)
 	{
@@ -447,7 +442,7 @@ void CScrollView::recalculateSubViews ()
 	{
 		sc = new CScrollContainer (scsize, containerSize);
 		sc->setAutosizeFlags (kAutosizeAll);
-		CViewContainer::addView (sc, 0);
+		CViewContainer::addView (sc, nullptr);
 	}
 	else
 	{
@@ -456,13 +451,18 @@ void CScrollView::recalculateSubViews ()
 	}
 	if (style & kOverlayScrollbars)
 		CViewContainer::changeViewZOrder (sc, 0);
-	sc->setAutoDragScroll (style & kAutoDragScrolling ? true : false);
+	sc->setAutoDragScroll ((style & kAutoDragScrolling) ? true : false);
+	recalculateSubViewsRecursionGard = false;
 }
 
 //-----------------------------------------------------------------------------
 void CScrollView::setViewSize (const CRect &rect, bool invalid)
 {
+	bool autoHideScrollbars = (style & kAutoHideScrollbars) != 0;
+	style &= ~ kAutoHideScrollbars;
 	CViewContainer::setViewSize (rect, invalid);
+	if (autoHideScrollbars)
+		style |= kAutoHideScrollbars;
 	setContainerSize (containerSize, true);
 }
 
@@ -479,6 +479,8 @@ void CScrollView::setStyle (int32_t newStyle)
 {
 	if (style != newStyle)
 	{
+		if ((style & kDontDrawFrame) != (newStyle & kDontDrawFrame))
+			setBackgroundColorDrawStyle ((style & kDontDrawFrame) ? kDrawFilled : kDrawFilledAndStroked);
 		style = newStyle;
 		recalculateSubViews ();
 	}
@@ -522,6 +524,8 @@ void CScrollView::setContainerSize (const CRect& cs, bool keepVisibleArea)
 				newValue = 0.f;
 			vsb->setValue (newValue);
 		}
+		if (oldSize != containerSize)
+			vsb->onVisualChange ();
 		valueChanged (vsb);
 	}
 	if (hsb)
@@ -541,6 +545,8 @@ void CScrollView::setContainerSize (const CRect& cs, bool keepVisibleArea)
 				newValue = 0.f;
 			hsb->setValue (newValue);
 		}
+		if (oldSize != containerSize)
+			hsb->onVisualChange ();
 		valueChanged (hsb);
 	}
 }
@@ -735,19 +741,7 @@ void CScrollView::drawBackgroundRect (CDrawContext *pContext, const CRect& _upda
 {
 	CRect r (getViewSize ());
 	r.originize ();
-	if ((backgroundColor.alpha != 255 && getTransparency ()) || !getTransparency ())
-	{
-		pContext->setDrawMode (kAliasing);
-		pContext->setFillColor (backgroundColor);
-		pContext->drawRect (_updateRect, kDrawFilled);
-	}
-	if (!(style & kDontDrawFrame))
-	{
-		pContext->setDrawMode (kAliasing);
-		pContext->setFrameColor (backgroundColor);
-		pContext->setLineWidth (1);
-		pContext->drawRect (r);
-	}
+	CViewContainer::drawBackgroundRect (pContext, r);
 }
 
 //-----------------------------------------------------------------------------
@@ -769,7 +763,7 @@ CMessageResult CScrollView::notify (CBaseObject* sender, IdStringPtr message)
 {
 	if (message == kMsgNewFocusView && getStyle () & kFollowFocusView)
 	{
-		CView* focusView = (CView*)sender;
+		CView* focusView = static_cast<CView*> (sender);
 		if (sc->isChild (focusView, true))
 		{
 			CRect r = focusView->getViewSize ();
@@ -781,6 +775,28 @@ CMessageResult CScrollView::notify (CBaseObject* sender, IdStringPtr message)
 		}
 	}
 	return CViewContainer::notify (sender, message);
+}
+
+//-----------------------------------------------------------------------------
+void CScrollView::viewSizeChanged (CView* view, const CRect& oldSize)
+{
+	if (view == hsb)
+	{
+		hsb->setScrollSize (containerSize);
+		hsb->onVisualChange ();
+	}
+	else if (view == vsb)
+	{
+		vsb->setScrollSize (containerSize);
+		vsb->onVisualChange ();
+	}
+}
+
+//-----------------------------------------------------------------------------
+void CScrollView::viewWillDelete (CView* view)
+{
+	if (view == hsb || view == vsb)
+		view->unregisterViewListener (this);
 }
 
 } // namespace

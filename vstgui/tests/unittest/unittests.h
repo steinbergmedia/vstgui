@@ -122,16 +122,16 @@ class Context;
 class TestCase;
 
 //----------------------------------------------------------------------------------------------------
-typedef std::function<bool(Context*)> TestFunction;
-typedef std::function<void(Context*)> SetupFunction;
-typedef std::function<void(Context*)> TeardownFunction;
-typedef std::function<void(TestCase*)> TestCaseFunction;
+using TestFunction = std::function<bool(Context*)>;
+using SetupFunction = std::function<void(Context*)>;
+using TeardownFunction = std::function<void(Context*)>;
+using TestCaseFunction = std::function<void(TestCase*)>;
 
 //----------------------------------------------------------------------------------------------------
 class UnitTestRegistry
 {
-	typedef std::list<TestCase> TestCases;
-	typedef TestCases::const_iterator Iterator;
+	using TestCases = std::list<TestCase>;
+	using Iterator = TestCases::const_iterator;
 public:
 	static UnitTestRegistry& instance ();
 
@@ -146,9 +146,9 @@ private:
 //----------------------------------------------------------------------------------------------------
 class TestCase
 {
-	typedef std::pair<std::string, TestFunction> TestPair;
-	typedef std::list<TestPair> Tests;
-	typedef Tests::const_iterator Iterator;
+	using TestPair = std::pair<std::string, TestFunction>;
+	using Tests = std::list<TestPair>;
+	using Iterator = Tests::const_iterator;
 public:
 	TestCase (std::string&& name, TestCaseFunction&& testCase);
 	TestCase (TestCase&& tc) noexcept;

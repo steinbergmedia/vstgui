@@ -45,7 +45,7 @@ namespace VSTGUI {
 class CAutoLayoutContainerView : public CViewContainer
 {
 public:
-	CAutoLayoutContainerView (const CRect& size);
+	explicit CAutoLayoutContainerView (const CRect& size);
 
 	virtual void layoutViews () = 0;
 
@@ -95,12 +95,15 @@ public:
 	const CRect& getMargin () const { return margin; }
 	void setMargin (const CRect& margin);
 
-	bool isAnimateViewResizing () const { return animateViewResizing; }
-	void setAnimateViewResizing (bool state) { animateViewResizing = state; }
+	bool isAnimateViewResizing () const;
+	void setAnimateViewResizing (bool state);
 
 	uint32_t getViewResizeAnimationTime () const { return viewResizeAnimationTime; }
 	void setViewResizeAnimationTime (uint32_t ms) { viewResizeAnimationTime = ms; }
 
+	bool hideClippedSubviews () const;
+	void setHideClippedSubviews (bool state);
+	
 	LayoutStyle getLayoutStyle () const { return layoutStyle; }
 	void setLayoutStyle (LayoutStyle style);
 
@@ -114,11 +117,16 @@ protected:
 	void layoutViewsEqualSize ();
 	void resizeSubView (CView* view, const CRect& newSize);
 
+	enum {
+		kAnimateViewResizing = 1 << 0,
+		kHideClippedSubViews = 1 << 1,
+	};
+
 	Style style;
 	LayoutStyle layoutStyle;
 	CCoord spacing;
 	CRect margin;
-	bool animateViewResizing;
+	int32_t flags;
 	bool layoutGuard;
 	uint32_t viewResizeAnimationTime;
 };

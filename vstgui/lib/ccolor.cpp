@@ -161,9 +161,9 @@ void CColor::fromHSL (double hue, double saturation, double lightness)
 	r = (r + m) * 255;
 	g = (g + m ) * 255.;
 	b = (b + m ) * 255.;
-	red = (uint8_t)floor (r + 0.5);
-	green = (uint8_t)floor (g + 0.5);
-	blue = (uint8_t)floor (b + 0.5);
+	red = static_cast<uint8_t> (floor (r + 0.5));
+	green = static_cast<uint8_t> (floor (g + 0.5));
+	blue = static_cast<uint8_t> (floor (b + 0.5));
 }
 
 //-----------------------------------------------------------------------------
@@ -178,9 +178,9 @@ void CColor::toHSV (double& hue, double& saturation, double& value) const
 	}
 
 	/* Normalize value to 1 */
-	double r = (double)(red / 255.) / value;
-	double g = (double)(green / 255.) / value;
-	double b = (double)(blue / 255.) / value;
+	double r = (red / 255.) / value;
+	double g = (green / 255.) / value;
+	double b = (blue / 255.) / value;
 	double rgbMin = min3<double> (r, g, b);
 	rgbMax = max3<double> (r, g, b);
 
@@ -228,7 +228,7 @@ void CColor::fromHSV (double hue, double saturation, double value)
 		value = 1.;
 	if (saturation <= 0.)
 	{
-		red = green = blue = (uint8_t) (value * 255.);
+		red = green = blue = static_cast<uint8_t> (value * 255.);
 		return;
 	}
 	else if (saturation > 1.)
@@ -239,7 +239,7 @@ void CColor::fromHSV (double hue, double saturation, double value)
 		hue += 360.;
 
 	const double hf  = hue / 60.0;
-	const int32_t i  = (int32_t) floor ( hf );
+	const int32_t i  = static_cast<int32_t> (floor (hf));
 	const double f   = hf - i;
 	const double pv  = value * ( 1 - saturation );
 	const double qv  = value * ( 1 - saturation * f );
@@ -311,9 +311,9 @@ void CColor::fromHSV (double hue, double saturation, double value)
 			break;
 		}
 	}
-	red = (uint8_t) floor (r * 255. + 0.5);
-	green = (uint8_t) floor (g * 255. + 0.5);
-	blue = (uint8_t) floor (b * 255. + 0.5);
+	red = static_cast<uint8_t> (floor (r * 255. + 0.5));
+	green = static_cast<uint8_t> (floor (g * 255. + 0.5));
+	blue = static_cast<uint8_t> (floor (b * 255. + 0.5));
 }
 
 } // namespace

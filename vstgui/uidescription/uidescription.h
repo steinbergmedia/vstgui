@@ -36,34 +36,27 @@
 #define __uidescription__
 
 #include "../lib/idependency.h"
-#include "../lib/cbitmap.h"
 #include "iuidescription.h"
-#include "icontroller.h"
+#include "uidescriptionfwd.h"
 #include "xmlparser.h"
-#include <deque>
 #include <list>
 #include <string>
+#include <memory>
 
 namespace VSTGUI {
 
 class UINode;
-class UIAttributes;
-class IViewFactory;
-class IUIDescription;
-class IBitmapCreator;
-class InputStream;
-class OutputStream;
 
 //-----------------------------------------------------------------------------
 /// @brief XML description parser and view creator
 /// @ingroup new_in_4_0
 //-----------------------------------------------------------------------------
-class UIDescription : public CBaseObject, public IUIDescription, public Xml::IHandler, public IDependency
+class UIDescription : public NonAtomicReferenceCounted, public IUIDescription, public Xml::IHandler, public IDependency
 {
 public:
-	UIDescription (const CResourceDescription& xmlFile, IViewFactory* viewFactory = 0);
-	UIDescription (Xml::IContentProvider* xmlContentProvider, IViewFactory* viewFactory = 0);
-	~UIDescription ();
+	UIDescription (const CResourceDescription& xmlFile, IViewFactory* viewFactory = nullptr);
+	UIDescription (Xml::IContentProvider* xmlContentProvider, IViewFactory* viewFactory = nullptr);
+	~UIDescription () noexcept override;
 
 	virtual bool parse ();
 
@@ -75,11 +68,14 @@ public:
 	virtual bool save (UTF8StringPtr filename, int32_t flags = kWriteWindowsResourceFile);
 	virtual bool saveWindowsRCFile (UTF8StringPtr filename);
 
-	bool storeViews (const std::list<CView*> views, OutputStream& stream, UIAttributes* customData = 0) const;
-	bool restoreViews (InputStream& stream, std::list<SharedPointer<CView> >& views, UIAttributes** customData = 0);
+	bool storeViews (const std::list<CView*>& views, OutputStream& stream, UIAttributes* customData = nullptr) const;
+	bool restoreViews (InputStream& stream, std::list<SharedPointer<CView> >& views, UIAttributes** customData = nullptr);
 
-	UTF8StringPtr getFilePath () const { return filePath.c_str (); }
+	UTF8StringPtr getFilePath () const;
 	void setFilePath (UTF8StringPtr path);
+	
+	void setSharedResources (const SharedPointer<UIDescription>& resources);
+	const SharedPointer<UIDescription>& getSharedResources () const;
 	
 	const UIAttributes* getViewAttributes (UTF8StringPtr name) const;
 
@@ -92,8 +88,8 @@ public:
 	CGradient* getGradient (UTF8StringPtr name) const override;
 	int32_t getTagForName (UTF8StringPtr name) const override;
 	IControlListener* getControlListener (UTF8StringPtr name) const override;
-	IController* getController () const override { return controller; }
-	const IViewFactory* getViewFactory () const override { return viewFactory; }
+	IController* getController () const override;
+	const IViewFactory* getViewFactory () const override;
 	
 	UTF8StringPtr lookupColorName (const CColor& color) const override;
 	UTF8StringPtr lookupFontName (const CFontRef font) const override;
@@ -120,7 +116,7 @@ public:
 	void changeColor (UTF8StringPtr name, const CColor& newColor);
 	void changeFont (UTF8StringPtr name, CFontRef newFont);
 	void changeGradient (UTF8StringPtr name, CGradient* newGradient);
-	void changeBitmap (UTF8StringPtr name, UTF8StringPtr newName, const CRect* nineparttiledOffset = 0);
+	void changeBitmap (UTF8StringPtr name, UTF8StringPtr newName, const CRect* nineparttiledOffset = nullptr);
 
 	void changeBitmapFilters (UTF8StringPtr bitmapName, const std::list<SharedPointer<UIAttributes> >& filters);
 	void collectBitmapFilters (UTF8StringPtr bitmapName, std::list<SharedPointer<UIAttributes> >& filters) const;
@@ -148,7 +144,8 @@ public:
 	bool duplicateTemplate (UTF8StringPtr name, UTF8StringPtr duplicateName);
 
 	bool setCustomAttributes (UTF8StringPtr name, UIAttributes* attr); //owns attributes
-	UIAttributes* getCustomAttributes (UTF8StringPtr name, bool create = false);
+	UIAttributes* getCustomAttributes (UTF8StringPtr name) const;
+	UIAttributes* getCustomAttributes (UTF8StringPtr name, bool create);
 
 	bool getControlTagString (UTF8StringPtr tagName, std::string& tagString) const;
 	bool changeControlTagString  (UTF8StringPtr tagName, const std::string& newTagString, bool create = false);
@@ -157,6 +154,15 @@ public:
 	
 	void setBitmapCreator (IBitmapCreator* bitmapCreator);
 
+	struct FocusDrawing
+	{
+		bool enabled {false};
+		CCoord width {1};
+		UTF8String colorName;
+	};
+	FocusDrawing getFocusDrawingSettings () const;
+	void setFocusDrawingSettings (const FocusDrawing& fd);
+	
 	void freePlatformResources ();
 
 	static bool parseColor (const std::string& colorString, CColor& color);
@@ -170,6 +176,21 @@ public:
 	static IdStringPtr kMessageGradientChanged;
 	static IdStringPtr kMessageBeforeSave;
 protected:
+	void addDefaultNodes ();
+
+	bool saveToStream (OutputStream& stream, int32_t flags);
+
+	bool parsed () const;
+	void setXmlContentProvider (Xml::IContentProvider* provider);
+
+	const CResourceDescription& getXmlFile () const;
+private:
+	// Xml::IHandler
+	void startXmlElement (Xml::Parser* parser, IdStringPtr elementName, UTF8StringPtr* elementAttributes) override;
+	void endXmlElement (Xml::Parser* parser, IdStringPtr name) override;
+	void xmlCharData (Xml::Parser* parser, const int8_t* data, int32_t length) override;
+	void xmlComment (Xml::Parser* parser, IdStringPtr comment) override;
+	
 	CView* createViewFromNode (UINode* node) const;
 	UINode* getBaseNode (UTF8StringPtr name) const;
 	UINode* findChildNodeByNameAttribute (UINode* node, UTF8StringPtr nameAttribute) const;
@@ -179,38 +200,16 @@ protected:
 	template<typename NodeType, typename ObjType, typename CompareFunction> UTF8StringPtr lookupName (const ObjType& obj, IdStringPtr mainNodeName, CompareFunction compare) const;
 	template<typename NodeType> void changeNodeName (UTF8StringPtr oldName, UTF8StringPtr newName, IdStringPtr mainNodeName, IdStringPtr changeMsg);
 	template<typename NodeType> void collectNamesFromNode (IdStringPtr mainNodeName, std::list<const std::string*>& names) const;
-
-	void addDefaultNodes ();
-
-	bool saveToStream (OutputStream& stream, int32_t flags);
-
-	// Xml::IHandler
-	void startXmlElement (Xml::Parser* parser, IdStringPtr elementName, UTF8StringPtr* elementAttributes) override;
-	void endXmlElement (Xml::Parser* parser, IdStringPtr name) override;
-	void xmlCharData (Xml::Parser* parser, const int8_t* data, int32_t length) override;
-	void xmlComment (Xml::Parser* parser, IdStringPtr comment) override;
-
-	CResourceDescription xmlFile;
-	std::string filePath;
-
-	UINode* nodes;
-	mutable IController* controller;
-	IViewFactory* viewFactory;
-	Xml::IContentProvider* xmlContentProvider;
-	IBitmapCreator* bitmapCreator;
-
-	mutable std::deque<IController*> subControllerStack;
-
-	std::deque<UINode*> nodeStack;
 	
-	bool restoreViewsMode;
+	struct Impl;
+	std::unique_ptr<Impl> impl;
 };
  
 //-----------------------------------------------------------------------------
 class IBitmapCreator
 {
 public:
-	virtual ~IBitmapCreator () {}
+	virtual ~IBitmapCreator () noexcept = default;
 	
 	virtual IPlatformBitmap* createBitmap (const UIAttributes& attributes) = 0;
 };

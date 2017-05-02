@@ -58,13 +58,13 @@ class QuartzGraphicsPath : public CGraphicsPath
 public:
 	QuartzGraphicsPath ();
 	QuartzGraphicsPath (const CoreTextFont* font, UTF8StringPtr text);
-	~QuartzGraphicsPath ();
+	~QuartzGraphicsPath () noexcept override;
 
 	void pixelAlign (CDrawContext* context);
 	CGPathRef getCGPathRef ();
 	void dirty () override;
 
-	bool hitTest (const CPoint& p, bool evenOddFilled = false, CGraphicsTransform* transform = 0) override;
+	bool hitTest (const CPoint& p, bool evenOddFilled = false, CGraphicsTransform* transform = nullptr) override;
 	CPoint getCurrentPosition () override;
 	CRect getBoundingBox () override;
 
@@ -83,9 +83,9 @@ protected:
 class QuartzGradient : public CGradient
 {
 public:
-	QuartzGradient (const ColorStopMap& map);
+	explicit QuartzGradient (const ColorStopMap& map);
 	QuartzGradient (double _color1Start, double _color2Start, const CColor& _color1, const CColor& _color2);
-	~QuartzGradient ();
+	~QuartzGradient () noexcept override;
 
 	operator CGGradientRef () const;
 

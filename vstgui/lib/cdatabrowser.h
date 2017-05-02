@@ -40,8 +40,9 @@
 #include "vstguifwd.h"
 #include "cscrollview.h"
 #include "cfont.h"
+#include "ccolor.h"
+#include "cstring.h"
 #include <vector>
-#include <string>
 
 namespace VSTGUI {
 
@@ -60,6 +61,7 @@ public:
 	virtual CCoord dbGetCurrentColumnWidth (int32_t index, CDataBrowser* browser) = 0;	///< return current width of index column
 	virtual void dbSetCurrentColumnWidth (int32_t index, const CCoord& width, CDataBrowser* browser) {}	///< the width of a column has changed
 	virtual CCoord dbGetRowHeight (CDataBrowser* browser) = 0;	///< return height of one row
+	virtual CCoord dbGetHeaderHeight (CDataBrowser* browser) { return dbGetRowHeight (browser); } ///< return height of header
 	virtual bool dbGetLineWidthAndColor (CCoord& width, CColor& color, CDataBrowser* browser) { return false; } ///< return the line width and color
 	virtual void dbAttached (CDataBrowser* browser) {}	///< databrowser view was attached to a parent
 	virtual void dbRemoved (CDataBrowser* browser) {}		///< databrowser view will be removed from its parent
@@ -130,7 +132,7 @@ protected:
 	};
 	
 public:
-	CDataBrowser (const CRect& size, IDataBrowserDelegate* db, int32_t style = 0, CCoord scrollbarWidth = 16, CBitmap* pBackground = 0);
+	CDataBrowser (const CRect& size, IDataBrowserDelegate* db, int32_t style = 0, CCoord scrollbarWidth = 16, CBitmap* pBackground = nullptr);
 
 	enum CDataBrowserStyle 
 	{
@@ -148,14 +150,15 @@ public:
 
 	/// @brief CDataBrowser Cell position description
 	struct Cell {
-		int32_t row;
-		int32_t column;
+		int32_t row {-1};
+		int32_t column {-1};
 		
-		Cell (int32_t row = -1, int32_t column = -1) : row (row), column (column) {}
+		Cell () = default;
+		Cell (int32_t row, int32_t column) : row (row), column (column) {}
 		bool isValid () const { return row > -1 && column > -1; }
 	};
 
-	typedef std::vector<int32_t> Selection;
+	using Selection = std::vector<int32_t>;
 
 	//-----------------------------------------------------------------------------
 	/// @name CDataBrowser Methods
@@ -189,11 +192,12 @@ public:
 	int32_t onKeyDown (VstKeyCode& keyCode) override;
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
 protected:
-	~CDataBrowser ();
+	~CDataBrowser () noexcept override;
 	void valueChanged (CControl *pControl) override;
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 	bool attached (CView *parent) override;
 	bool removed (CView* parent) override;
+	bool wantsFocus () const override;
 
 	void recalculateSubViews () override;
 	void validateSelection ();
@@ -220,17 +224,20 @@ public:
 class GenericStringListDataBrowserSource : public IDataBrowserDelegate, public CBaseObject
 {
 public:
-	typedef std::vector<std::string> StringVector;
+	using StringVector = std::vector<UTF8String>;
 
-	GenericStringListDataBrowserSource (const StringVector* stringList, IGenericStringListDataBrowserSourceSelectionChanged* delegate = 0);
-	~GenericStringListDataBrowserSource ();
+	GenericStringListDataBrowserSource (const StringVector* stringList, IGenericStringListDataBrowserSourceSelectionChanged* delegate = nullptr);
+	~GenericStringListDataBrowserSource () noexcept override;
 
 	void setStringList (const StringVector* stringList);
 	const StringVector* getStringList () const { return stringList; }
 
-	void setupUI (const CColor& selectionColor, const CColor& fontColor, const CColor& rowlineColor, const CColor& rowBackColor, const CColor& rowAlteranteBackColor, CFontRef font = 0, int32_t rowHeight = -1, CCoord textInset = 2.);
+	void setupUI (const CColor& selectionColor, const CColor& fontColor, const CColor& rowlineColor, const CColor& rowBackColor, const CColor& rowAlteranteBackColor, CFontRef font = nullptr, int32_t rowHeight = -1, CCoord textInset = 2.);
 
 protected:
+	void drawRowBackground (CDrawContext* context, const CRect& size, int32_t row, int32_t flags, CDataBrowser* browser) const;
+	void drawRowString (CDrawContext* context, const CRect& size, int32_t row, int32_t flags, CDataBrowser* browser) const;
+
 	int32_t dbGetNumRows (CDataBrowser* browser) override;
 	int32_t dbGetNumColumns (CDataBrowser* browser) override { return 1; }
 	bool dbGetColumnDescription (int32_t index, CCoord& minWidth, CCoord& maxWidth, CDataBrowser* browser)  override{ return false; }
@@ -267,11 +274,11 @@ protected:
 	CColor rowAlternateBackColor;
 	CPoint textInset;
 	CHoriTxtAlign textAlignment;
-	CFontRef drawFont;
+	SharedPointer<CFontDesc> drawFont;
 	CDataBrowser* dataBrowser;
 	IGenericStringListDataBrowserSourceSelectionChanged* delegate;
 
-	CVSTGUITimer* timer;
+	SharedPointer<CVSTGUITimer> timer;
 	std::string keyDownFindString;
 };
 

@@ -50,8 +50,8 @@ namespace VSTGUI {
 class CGradientView : public CView
 {
 public:
-	CGradientView (const CRect& size);
-	~CGradientView ();
+	explicit CGradientView (const CRect& size);
+	~CGradientView () noexcept override = default;
 
 	//-----------------------------------------------------------------------------
 	/// @name Gradient Style Methods
@@ -84,17 +84,17 @@ public:
 	//@}
 
 	// override
-	virtual void setViewSize (const CRect& rect, bool invalid = true) override;
+	void setViewSize (const CRect& rect, bool invalid = true) override;
 	void draw (CDrawContext* context) override;
 protected:
-	GradientStyle gradientStyle;
-	CColor frameColor;
-	double gradientAngle;
-	CCoord roundRectRadius;
-	CCoord frameWidth;
-	CCoord radialRadius;
-	CPoint radialCenter;
-	bool drawAntialiased;
+	GradientStyle gradientStyle {kLinearGradient};
+	CColor frameColor {kBlackCColor};
+	double gradientAngle {0.};
+	CCoord roundRectRadius {5.};
+	CCoord frameWidth {1.};
+	CCoord radialRadius {1.};
+	CPoint radialCenter {0.5, 0.5};
+	bool drawAntialiased {true};
 
 	SharedPointer<CGraphicsPath> path;
 	SharedPointer<CGradient> gradient;

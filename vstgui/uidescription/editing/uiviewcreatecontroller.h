@@ -47,11 +47,11 @@ namespace VSTGUI {
 class UIViewCreatorDataSource;
 
 //----------------------------------------------------------------------------------------------------
-class UIViewCreatorController : public CBaseObject, public DelegationController
+class UIViewCreatorController : public NonAtomicReferenceCounted, public DelegationController, public IContextMenuController
 {
 public:
 	UIViewCreatorController (IController* baseController, UIDescription* description);
-	~UIViewCreatorController ();
+	~UIViewCreatorController () override;
 	
 	IController* getBaseController () const { return controller; }
 protected:
@@ -59,10 +59,12 @@ protected:
 	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override;
 	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;
 	IControlListener* getControlListener (UTF8StringPtr name) override;
+	void appendContextMenuItems (COptionMenu& contextMenu, const CPoint& where) override;
 
-	void setupDataSource (UTF8StringPtr filter = 0);
+	void setupDataSource (UTF8StringPtr filter = nullptr);
 	
-	UIViewCreatorDataSource* dataSource;
+	UIViewCreatorDataSource* dataSource {nullptr};
+	CDataBrowser* dataBrowser {nullptr};
 	SharedPointer<UIDescription> description;
 	std::vector<std::string> filteredViewNames;
 	std::vector<std::string> allViewNames;

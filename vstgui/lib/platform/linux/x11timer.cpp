@@ -39,9 +39,9 @@
 namespace VSTGUI {
 
 //------------------------------------------------------------------------
-IPlatformTimer* IPlatformTimer::create (IPlatformTimerCallback* callback)
+SharedPointer<IPlatformTimer> IPlatformTimer::create (IPlatformTimerCallback* callback)
 {
-	return new X11::Timer (callback);
+	return owned (new X11::Timer (callback));
 }
 
 //------------------------------------------------------------------------

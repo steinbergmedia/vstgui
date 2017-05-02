@@ -45,7 +45,7 @@ CRowColumnView::CRowColumnView (const CRect& size, Style style, LayoutStyle layo
 , layoutStyle (layoutStyle)
 , spacing (spacing)
 , margin (margin)
-, animateViewResizing (false)
+, flags (0)
 , layoutGuard (false)
 , viewResizeAnimationTime (200)
 {
@@ -96,11 +96,35 @@ void CRowColumnView::setLayoutStyle (LayoutStyle style)
 }
 
 //--------------------------------------------------------------------------------
+bool CRowColumnView::isAnimateViewResizing () const
+{
+	return hasBit (flags, kAnimateViewResizing);
+}
+
+//--------------------------------------------------------------------------------
+void CRowColumnView::setAnimateViewResizing (bool state)
+{
+	setBit (flags, kAnimateViewResizing, state);
+}
+
+//--------------------------------------------------------------------------------
+bool CRowColumnView::hideClippedSubviews () const
+{
+	return hasBit (flags, kHideClippedSubViews);
+}
+
+//--------------------------------------------------------------------------------
+void CRowColumnView::setHideClippedSubviews (bool state)
+{
+	setBit (flags, kHideClippedSubViews, state);
+}
+
+//--------------------------------------------------------------------------------
 void CRowColumnView::resizeSubView (CView* view, const CRect& newSize)
 {
 	if (view->getViewSize () != newSize)
 	{
-		if (isAttached () && animateViewResizing && viewResizeAnimationTime > 0)
+		if (isAttached () && isAnimateViewResizing () && viewResizeAnimationTime > 0)
 		{
 			view->addAnimation ("CRowColumnResizing", new Animation::ViewSizeAnimation (newSize, false), new Animation::LinearTimingFunction (viewResizeAnimationTime));
 		}
@@ -124,7 +148,7 @@ void CRowColumnView::getMaxChildViewSize (CPoint& maxSize)
 			maxSize.x = viewSize.getWidth ();
 		if (viewSize.getHeight () > maxSize.y)
 			maxSize.y = viewSize.getHeight ();
-		it++;
+		++it;
 	}
 }
 
@@ -181,7 +205,7 @@ void CRowColumnView::layoutViewsEqualSize ()
 			location.x += spacing;
 			location.x += viewSize.getWidth ();
 		}
-		it++;
+		++it;
 	}
 }
 
@@ -192,6 +216,16 @@ void CRowColumnView::layoutViews ()
 	{
 		layoutGuard = true;
 		layoutViewsEqualSize ();
+		if (hideClippedSubviews ())
+		{
+			for (auto& view : getChildren ())
+			{
+				if (view->getVisibleViewSize () != view->getViewSize ())
+					view->setVisible (false);
+				else
+					view->setVisible (true);
+			}
+		}
 		layoutGuard = false;
 	}
 }
@@ -199,7 +233,7 @@ void CRowColumnView::layoutViews ()
 //--------------------------------------------------------------------------------
 bool CRowColumnView::sizeToFit ()
 {
-	if (children.size () > 0)
+	if (!getChildren ().empty ())
 	{
 		CRect viewSize = getViewSize ();
 		CPoint maxSize;
@@ -212,7 +246,7 @@ bool CRowColumnView::sizeToFit ()
 				if (size.getWidth () > maxSize.x)
 					maxSize.x = size.getWidth ();
 				maxSize.y += size.getHeight () + spacing;
-				it++;
+				++it;
 			}
 		}
 		else
@@ -223,7 +257,7 @@ bool CRowColumnView::sizeToFit ()
 				maxSize.x += size.getWidth () + spacing;
 				if (size.bottom > maxSize.y)
 					maxSize.y = size.getHeight ();
-				it++;
+				++it;
 			}
 		}
 		viewSize.setWidth (maxSize.x + margin.left + margin.right);
@@ -281,7 +315,7 @@ void CAutoLayoutContainerView::setViewSize (const CRect& rect, bool invalid)
 //--------------------------------------------------------------------------------
 bool CAutoLayoutContainerView::addView (CView* pView)
 {
-	if (CViewContainer::addView (pView, 0))
+	if (CViewContainer::addView (pView, nullptr))
 	{
 		if (isAttached ())
 			layoutViews ();

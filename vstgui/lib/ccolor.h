@@ -44,7 +44,8 @@ namespace VSTGUI {
 //-----------------------------------------------------------------------------
 struct CColor
 {
-	CColor (uint8_t red = 255, uint8_t green = 255, uint8_t blue = 255, uint8_t alpha = 255)
+	CColor () = default;
+	CColor (uint8_t red, uint8_t green, uint8_t blue, uint8_t alpha = 255)
 	: red (red), green (green), blue (blue), alpha (alpha)
 	{}
 
@@ -74,16 +75,6 @@ struct CColor
 		return *this; 
 	}
 	
-	VSTGUI_DEPRECATED (CColor operator~ ()
-	{
-		CColor c;
-		c.red   = ~red;
-		c.green = ~green;
-		c.blue  = ~blue;
-		c.alpha = ~alpha;
-		return c;
-	})
-
 	bool operator!= (const CColor &other) const 
 	{ return (red != other.red || green != other.green || blue  != other.blue || alpha != other.alpha); }
 
@@ -131,10 +122,10 @@ struct CColor
 	uint8_t getLightness () const;
 	//@}
 	
-	uint8_t red;		///< red component [0..255]
-	uint8_t green;		///< green component [0..255]
-	uint8_t blue;		///< blue component [0..255]
-	uint8_t alpha;		///< alpha component [0..255]
+	uint8_t red {255};			///< red component [0..255]
+	uint8_t green {255};		///< green component [0..255]
+	uint8_t blue {255};			///< blue component [0..255]
+	uint8_t alpha {255};		///< alpha component [0..255]
 };
 
 inline CColor MakeCColor (uint8_t red = 0, uint8_t green = 0, uint8_t blue = 0, uint8_t alpha = 255)

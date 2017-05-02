@@ -92,7 +92,7 @@ protected:
 	}
 	~IdleUpdateHandler () { timer->stop (); }
 
-	void fire () VSTGUI_OVERRIDE_VMETHOD { gUpdateHandlerInit.get ()->triggerDeferedUpdates (); }
+	void fire () override { gUpdateHandlerInit.get ()->triggerDeferedUpdates (); }
 
 	VSTGUI::SharedPointer<IPlatformTimer> timer;
 };
@@ -285,7 +285,7 @@ protected:
 					continue;
 				Steinberg::String utf8Str (utf16Str);
 				utf8Str.toMultiByte (Steinberg::kCP_Utf8);
-				label->setText (utf8Str);
+				label->setText (utf8Str.text8 ());
 			}
 			else
 			{
@@ -303,7 +303,7 @@ protected:
 							editController->getParamStringByValue (getParameterID (), (Steinberg::Vst::ParamValue)i / (Steinberg::Vst::ParamValue)parameter->getInfo ().stepCount, utf16Str);
 							Steinberg::String utf8Str (utf16Str);
 							utf8Str.toMultiByte (Steinberg::kCP_Utf8);
-							optMenu->addEntry (utf8Str);
+							optMenu->addEntry (utf8Str.text8 ());
 						}
 						c->setValue ((float)value - minValue);
 					}
@@ -777,7 +777,7 @@ public:
 		item->forget ();
 	}
 
-	Steinberg::tresult PLUGIN_API executeMenuItem (Steinberg::int32 tag) VSTGUI_OVERRIDE_VMETHOD
+	Steinberg::tresult PLUGIN_API executeMenuItem (Steinberg::int32 tag) override
 	{
 		item->execute ();
 		return Steinberg::kResultTrue;
@@ -1405,7 +1405,7 @@ bool VST3Editor::enableEditing (bool state)
 
 				getFrame ()->enableTooltips (true);
 				CColor focusColor = kBlueCColor;
-				editController->getEditorDescription ().getColor ("focus", focusColor);
+				editController->getEditorDescription ()->getColor ("focus", focusColor);
 				getFrame ()->setFocusColor (focusColor);
 				getFrame ()->setFocusDrawingEnabled (true);
 				getFrame ()->setFocusWidth (1);

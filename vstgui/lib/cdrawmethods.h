@@ -85,11 +85,12 @@ UTF8String createTruncatedText (TextTruncateMode mode, const UTF8String& text, C
  *  @param iconToDraw    	icon to draw
  *  @param iconPosition  	position of the icon
  *  @param textAlignment 	alignment of the string
- *  @param textIconMargin    margin of the string
+ *  @param textIconMargin	margin of the string
  *  @param drawRect      	draw rectangle
  *  @param title         	string
  *  @param font          	font
  *  @param textColor     	font color
+ *	@param truncateMode		trunaction mode
  */
 void drawIconAndText (CDrawContext* context, CBitmap* iconToDraw, IconPosition iconPosition, CHoriTxtAlign textAlignment, CCoord textIconMargin, CRect drawRect, const UTF8String& title, CFontRef font, CColor textColor, TextTruncateMode truncateMode = kTextTruncateNone);
 	

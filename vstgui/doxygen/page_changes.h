@@ -17,6 +17,13 @@ It's recommended to start new projects with version 4 while old projects should 
 
 @section new_stuff New Stuff
 
+@subsection version4_5 Version 4.5
+
+- cmake build system
+- preview of @ref standalone_library @n
+- new Controls: VSTGUI::CMultiLineTextLabel, VSTGUI::CSearchTextEdit
+- adopt many c++11 language features
+ 
 @subsection version4_4 Version 4.4
 
 - preview Linux version
@@ -64,6 +71,10 @@ Note: All current deprecated methods will be removed in the next version. So mak
 - Direct2D drawing on Windows (Windows Vista or Windows 7)
 
 @section code_changes Changes for existing VSTGUI code
+
+@subsection code_changes_4_3_to_4_5 VSTGUI 4.3 -> VSTGUI 4.5
+
+- COffscreenContext::create returns a SharedPointer<COffscreenContext> now, not a naked pointer.
 
 @subsection code_changes_4_2_to_4_3 VSTGUI 4.2 -> VSTGUI 4.3
 
@@ -226,6 +237,10 @@ please see the "Migrating from 2.3.rtf" file in the Documentation folder.
  */
 //------------------------------------------------------------------------
 /*! @defgroup new_in_4_3 Version 4.3
+ *	@ingroup new_in
+ */
+//------------------------------------------------------------------------
+/*! @defgroup new_in_4_5 Version 4.5
  *	@ingroup new_in
  */
 //------------------------------------------------------------------------

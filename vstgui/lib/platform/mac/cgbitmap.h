@@ -53,14 +53,14 @@ namespace VSTGUI {
 class CGBitmap : public IPlatformBitmap
 {
 public:
-	CGBitmap (const CPoint& size);
-	CGBitmap (CGImageRef image);
+	explicit CGBitmap (const CPoint& size);
+	explicit CGBitmap (CGImageRef image);
 	CGBitmap ();
-	~CGBitmap ();
+	~CGBitmap () noexcept override;
 	
 	bool load (const CResourceDescription& desc) override;
 	const CPoint& getSize () const override { return size; }
-	IPlatformBitmapPixelAccess* lockPixels (bool alphaPremultiplied) override;
+	SharedPointer<IPlatformBitmapPixelAccess> lockPixels (bool alphaPremultiplied) override;
 	void setScaleFactor (double factor) override { scaleFactor = factor; }
 	double getScaleFactor () const override { return scaleFactor; }
 

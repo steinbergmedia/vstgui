@@ -46,59 +46,42 @@ UTF8String createTruncatedText (TextTruncateMode mode, const UTF8String& text, C
 {
 	if (mode == kTextTruncateNone)
 		return text;
-	IFontPainter* painter = font->getPlatformFont () ? font->getPlatformFont ()->getPainter () : 0;
+	auto painter = font->getPlatformFont () ? font->getPlatformFont ()->getPainter () : nullptr;
 	if (!painter)
 		return text;
-	CCoord width = painter->getStringWidth (0, text.getPlatformString (), true);
+	CCoord width = painter->getStringWidth (nullptr, text.getPlatformString (), true);
 	width += textInset.x * 2;
 	if (width > maxWidth)
 	{
-		std::string _truncatedText;
-		UTF8String utf8Str;
-		if (mode == kTextTruncateTail)
+		std::string truncatedText;
+		UTF8String result;
+		auto left = text.begin ();
+		auto right = text.end ();
+		while (width > maxWidth && left != right)
 		{
-			_truncatedText = text;
-			_truncatedText += "..";
-			while (width > maxWidth && _truncatedText.size () > 2)
+			if (mode == kTextTruncateHead)
 			{
-				UTF8CharacterIterator it (_truncatedText);
-				it.end ();
-				for (int32_t i = 0; i < 3; i++, --it)
-				{
-					if (it == it.front ())
-					{
-						break;
-					}
-				}
-				_truncatedText.erase (_truncatedText.size () - (2 + it.getByteLength ()), it.getByteLength ());
-				utf8Str.set (_truncatedText.c_str ());
-				width = painter->getStringWidth (0, utf8Str.getPlatformString (), true);
-				width += textInset.x * 2;
+				++left;
+				truncatedText = "..";
 			}
-		}
-		else if (mode == kTextTruncateHead)
-		{
-			_truncatedText = "..";
-			_truncatedText += text;
-			while (width > maxWidth && _truncatedText.size () > 2)
+			else if (mode == kTextTruncateTail)
 			{
-				UTF8CharacterIterator it (_truncatedText);
-				for (int32_t i = 0; i < 2; i++, ++it)
-				{
-					if (it == it.back ())
-					{
-						break;
-					}
-				}
-				_truncatedText.erase (2, it.getByteLength ());
-				utf8Str.set (_truncatedText.c_str ());
-				width = painter->getStringWidth (0, utf8Str.getPlatformString (), true);
-				width += textInset.x * 2;
+				--right;
+				truncatedText = "";
 			}
+
+			truncatedText += {left.base (), right.base ()};
+
+			if (mode == kTextTruncateTail)
+				truncatedText += "..";
+
+			result = truncatedText;
+			width = painter->getStringWidth (nullptr, result.getPlatformString (), true);
+			width += textInset.x * 2;
 		}
-		if (width > maxWidth && flags & kReturnEmptyIfTruncationIsPlaceholderOnly)
-			utf8Str.set ("");
-		return utf8Str;
+		if (left == right && flags & kReturnEmptyIfTruncationIsPlaceholderOnly)
+			result = "";
+		return result;
 	}
 	return text;
 }

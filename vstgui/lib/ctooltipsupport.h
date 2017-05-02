@@ -58,7 +58,7 @@ public:
 	//-------------------------------------------
 	CLASS_METHODS_NOCOPY(CTooltipSupport, CBaseObject)
 protected:
-	~CTooltipSupport ();
+	~CTooltipSupport () noexcept override;
 	bool showTooltip ();
 
 	enum {
@@ -72,7 +72,7 @@ protected:
 	// CBaseObject
 	CMessageResult notify (CBaseObject* sender, IdStringPtr msg) override;
 
-	CVSTGUITimer* timer;
+	SharedPointer<CVSTGUITimer> timer;
 	CFrame* frame;
 	SharedPointer<CView> currentView;
 

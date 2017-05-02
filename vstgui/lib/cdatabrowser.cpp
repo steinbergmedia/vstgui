@@ -112,7 +112,6 @@ protected:
 //-----------------------------------------------------------------------------------------------
 /**
  * @param size size of data browser
- * @param pParent frame
  * @param db data browser interface. If db is inheritated from CBaseObject it will be remembered and released if data browser is destroyed
  * @param style data browser and scroll view style see #CDataBrowserStyle and #CScrollViewStyle
  * @param scrollbarWidth width of scrollbars
@@ -121,23 +120,23 @@ protected:
 CDataBrowser::CDataBrowser (const CRect& size, IDataBrowserDelegate* db, int32_t style, CCoord scrollbarWidth, CBitmap* pBackground)
 : CScrollView (size, CRect (0, 0, 0, 0), style, scrollbarWidth, pBackground)
 , db (db)
-, dbView (0)
-, dbHeader (0)
-, dbHeaderContainer (0)
+, dbView (nullptr)
+, dbHeader (nullptr)
+, dbHeaderContainer (nullptr)
 {
 	setTransparency (true);
 	dbView = new CDataBrowserView (CRect (0, 0, 0, 0), db, this);
 	dbView->setAutosizeFlags (kAutosizeLeft|kAutosizeRight|kAutosizeBottom);
 	addView (dbView);
-	CBaseObject* obj = dynamic_cast<CBaseObject*>(db);
+	auto obj = dynamic_cast<IReference*>(db);
 	if (obj)
 		obj->remember ();
 }
 
 //-----------------------------------------------------------------------------------------------
-CDataBrowser::~CDataBrowser ()
+CDataBrowser::~CDataBrowser () noexcept
 {
-	CBaseObject* obj = dynamic_cast<CBaseObject*>(db);
+	auto obj = dynamic_cast<IReference*>(db);
 	if (obj)
 		obj->forget ();
 }
@@ -165,6 +164,12 @@ void CDataBrowser::setWantsFocus (bool state)
 	{
 		dbView->setWantsFocus (state);
 	}
+}
+
+//------------------------------------------------------------------------
+bool CDataBrowser::wantsFocus () const
+{
+	return dbView ? dbView->wantsFocus () : false;
 }
 
 //-----------------------------------------------------------------------------------------------
@@ -197,9 +202,12 @@ int32_t CDataBrowser::onKeyDown (VstKeyCode& keyCode)
 CMouseEventResult CDataBrowser::onMouseDown (CPoint& where, const CButtonState& buttons)
 {
 	CMouseEventResult result = CViewContainer::onMouseDown (where, buttons);
-	CView* focusView = getFrame ()->getFocusView ();
-	if (focusView != dbView && !isChild (focusView, true))
-		getFrame ()->setFocusView (dbView);
+	if (auto frame = getFrame ())
+	{
+		CView* focusView = frame->getFocusView ();
+		if (focusView != dbView && !isChild (focusView, true))
+			frame->setFocusView (dbView);
+	}
 	return result;
 }
 
@@ -228,7 +236,7 @@ void CDataBrowser::valueChanged (CControl *pControl)
 				break;
 			}
 		}
-		if (isAttached () && (mouseDownView == dbView || mouseDownView == 0))
+		if (isAttached () && (getMouseDownView () == dbView || getMouseDownView () == nullptr))
 		{
 			CPoint where;
 			getFrame ()->getCurrentMouseLocation (where);
@@ -259,6 +267,7 @@ void CDataBrowser::recalculateLayout (bool rememberSelection)
 	CColor lineColor;
 	db->dbGetLineWidthAndColor (lineWidth, lineColor, this);
 	CCoord rowHeight = db->dbGetRowHeight (this);
+	CCoord headerHeight = db->dbGetHeaderHeight (this);
 	int32_t numRows = db->dbGetNumRows (this);
 	int32_t numColumns = db->dbGetNumColumns (this);
 	CCoord allRowsHeight = rowHeight * numRows;
@@ -269,29 +278,16 @@ void CDataBrowser::recalculateLayout (bool rememberSelection)
 		allColumnsWidth += db->dbGetCurrentColumnWidth (i, this);
 	if (style & kDrawColumnLines)
 		allColumnsWidth += numColumns * lineWidth;
-	if (style & kDrawHeader)
-	{
-		for (const auto& pV : children)
-		{
-			CRect viewSize = pV->getViewSize ();
-			if (pV != dbHeaderContainer && viewSize.top < rowHeight+lineWidth)
-			{
-				viewSize.top += rowHeight+lineWidth;
-				pV->setViewSize (viewSize);
-				pV->setMouseableArea (viewSize);
-			}
-		}
-	}
-
 	CRect newContainerSize (0, 0, allColumnsWidth, allRowsHeight);
 	if (style & kDrawHeader)
 	{
-		newContainerSize.offset (0, rowHeight+lineWidth);
 
-		CRect headerSize (0, 0, newContainerSize.getWidth (), rowHeight+lineWidth);
+		newContainerSize.offset (0, headerHeight+lineWidth);
+
+		CRect headerSize (0, 0, newContainerSize.getWidth (), headerHeight+lineWidth);
 		if (style & kHorizontalScrollbar && hsb)
 			headerSize.right += hsb->getWidth ();
-		if (dbHeader == 0)
+		if (dbHeader == nullptr)
 		{
 			CRect hcs (headerSize);
 			if (!(style & kDontDrawFrame))
@@ -304,7 +300,7 @@ void CDataBrowser::recalculateLayout (bool rememberSelection)
 			dbHeader = new CDataBrowserHeader (headerSize, db, this);
 			dbHeader->setAutosizeFlags (kAutosizeLeft|kAutosizeRight|kAutosizeTop);
 			dbHeaderContainer->addView (dbHeader);
-			CViewContainer::addView (dbHeaderContainer, 0);
+			CViewContainer::addView (dbHeaderContainer, nullptr);
 		}
 		else
 		{
@@ -335,6 +331,31 @@ void CDataBrowser::recalculateLayout (bool rememberSelection)
 		scrollbar->setWheelInc (wheelInc);
 	}
 
+	if (style & kDrawHeader)
+	{
+		for (const auto& pV : getChildren ())
+		{
+			CRect viewSize = pV->getViewSize ();
+			if (pV != dbHeaderContainer && viewSize.top < headerHeight+lineWidth)
+			{
+				if (style & kOverlayScrollbars && pV.cast<CScrollView> ())
+					continue;
+
+				bool autoSizingEnabled = false;
+				if (auto container = pV->asViewContainer ())
+				{
+					autoSizingEnabled = container->getAutosizingEnabled ();
+					container->setAutosizingEnabled (false);
+				}
+				viewSize.top += headerHeight+lineWidth;
+				pV->setViewSize (viewSize);
+				pV->setMouseableArea (viewSize);
+				if (auto container = pV->asViewContainer ())
+					container->setAutosizingEnabled (autoSizingEnabled);
+			}
+		}
+	}
+	
 	if (isAttached ())
 		invalid ();
 		
@@ -346,8 +367,7 @@ void CDataBrowser::recalculateLayout (bool rememberSelection)
 
 //-----------------------------------------------------------------------------------------------
 /**
- * @param row row to invalidate
- * @param column column to invalidate
+ * @param cell cell to invalidate
  */
 void CDataBrowser::invalidate (const Cell& cell)
 {
@@ -401,13 +421,13 @@ void CDataBrowser::setSelectedRow (int32_t index, bool makeVisible)
 		invalidateRow (index);
 	}
 	
-	for (Selection::iterator it = selection.begin (); it != selection.end (); it++)
+	for (auto row : selection)
 	{
-		dbView->invalidateRow (*it);
+		dbView->invalidateRow (row);
 	}
 	selection.clear ();
 	
-	selection.push_back (index);
+	selection.emplace_back (index);
 	if (hasChanged)
 		db->dbSelectionChanged (this);
 	
@@ -433,7 +453,7 @@ void CDataBrowser::selectRow (int32_t row)
 	{
 		if (getStyle () & kMultiSelectionStyle)
 		{
-			selection.push_back (row);
+			selection.emplace_back (row);
 			dbView->invalidateRow (row);
 			db->dbSelectionChanged (this);
 		}
@@ -470,9 +490,9 @@ void CDataBrowser::unselectAll ()
 {
 	if (selection.size () > 0)
 	{
-		for (Selection::iterator it = selection.begin (); it != selection.end (); it++)
+		for (auto row : selection)
 		{
-			dbView->invalidateRow (*it);
+			dbView->invalidateRow (row);
 		}
 		selection.clear ();
 		db->dbSelectionChanged (this);
@@ -493,7 +513,7 @@ void CDataBrowser::validateSelection ()
 		}
 		else
 		{
-			it++;
+			++it;
 		}
 	}
 	if (selectionChanged)
@@ -502,8 +522,7 @@ void CDataBrowser::validateSelection ()
 
 //-----------------------------------------------------------------------------------------------
 /**
- * @param row row number
- * @param column column number
+ * @param cell cell
  * @return bounds of cell
  */
 CRect CDataBrowser::getCellBounds (const Cell& cell)
@@ -540,15 +559,18 @@ CDataBrowser::Cell CDataBrowser::getCellAt (const CPoint& where) const
 	Cell pos;
 	if (dbView)
 	{
-		dbView->getCell (where, pos);
+		CPoint w (where);
+		localToFrame (w);
+		dbView->frameToLocal (w);
+		if (dbView->hitTest (w))
+			dbView->getCell (w, pos);
 	}
 	return pos;
 }
 
 //-----------------------------------------------------------------------------------------------
 /**
- * @param row row number
- * @param column column number
+ * @param cell cell
  * @param initialText UTF-8 string the text edit field will be initialized with
  */
 void CDataBrowser::beginTextEdit (const Cell& cell, UTF8StringPtr initialText)
@@ -556,7 +578,7 @@ void CDataBrowser::beginTextEdit (const Cell& cell, UTF8StringPtr initialText)
 	CRect r = getCellBounds (cell);
 	makeRectVisible (r);
 	CRect cellRect = getCellBounds (cell);
-	CTextEdit* te = new CTextEdit (cellRect, 0, -1, initialText);
+	CTextEdit* te = new CTextEdit (cellRect, nullptr, -1, initialText);
 	db->dbCellSetupTextEdit (cell.row, cell.column, te, this);
 	addView (te);
 	getFrame ()->setFocusView (te);
@@ -616,13 +638,13 @@ void CDataBrowserHeader::drawRect (CDrawContext* context, const CRect& updateRec
 	{
 		db->dbGetLineWidthAndColor (lineWidth, lineColor, browser);
 	}
-	CCoord rowHeight = db->dbGetRowHeight (browser);
+	CCoord headerHeight = db->dbGetHeaderHeight (browser);
 	if (browser->getStyle () & CDataBrowser::kDrawRowLines)
-		rowHeight += lineWidth;
+		headerHeight += lineWidth;
 	int32_t numColumns = db->dbGetNumColumns (browser);
 
 	CRect r (getViewSize ().left, getViewSize ().top, 0, 0);
-	r.setHeight (rowHeight);
+	r.setHeight (headerHeight);
 	for (int32_t col = 0; col < numColumns; col++)
 	{
 		CCoord columnWidth = db->dbGetCurrentColumnWidth (col, browser);
@@ -709,16 +731,16 @@ CMouseEventResult CDataBrowserHeader::onMouseMoved (CPoint &where, const CButton
 					db->dbSetCurrentColumnWidth (mouseColumn, newWidth, browser);
 					browser->recalculateLayout (true);
 				}
-				return kMouseEventHandled;
 			}
 		}
+		return kMouseEventHandled;
 	}
 	else
 	{
 		int32_t col = getColumnAtPoint (where);
 		CCoord minWidth;
 		CCoord maxWidth;
-		if (col >= 0 && db->dbGetColumnDescription (mouseColumn, minWidth, maxWidth, browser) && minWidth != maxWidth)
+		if (col >= 0 && db->dbGetColumnDescription (col, minWidth, maxWidth, browser) && minWidth != maxWidth)
 			getFrame ()->setCursor (kCursorHSize);
 		else
 			getFrame ()->setCursor (kCursorDefault);
@@ -840,7 +862,7 @@ void CDataBrowserView::drawRect (CDrawContext* context, const CRect& updateRect)
 		r.left = getViewSize ().left;
 		r.setWidth (getWidth ());
 		if (drawRowLines)
-			lines.push_back (std::make_pair (r.getBottomLeft (), r.getBottomRight ()));
+			lines.emplace_back (r.getBottomLeft (), r.getBottomRight ());
 		r.offset (0, rowHeight);
 	}
 	if (browser->getStyle () & CDataBrowser::kDrawColumnLines)
@@ -855,7 +877,7 @@ void CDataBrowserView::drawRect (CDrawContext* context, const CRect& updateRect)
 			for (int32_t col = 0; col < numColumns - 1; col++)
 			{
 				p1.x = p2.x = p1.x + db->dbGetCurrentColumnWidth (col, browser) + lineWidth;
-				lines.push_back (std::make_pair (p1, p2));
+				lines.emplace_back (p1, p2);
 			}
 		}
 	}
@@ -1144,20 +1166,13 @@ GenericStringListDataBrowserSource::GenericStringListDataBrowserSource (const St
 , textInset (2., 0.)
 , textAlignment (kLeftText)
 , drawFont (kSystemFont)
-, dataBrowser (0)
+, dataBrowser (nullptr)
 , delegate (delegate)
-, timer (0)
 {
-	drawFont->remember ();
 }
 
 //-----------------------------------------------------------------------------
-GenericStringListDataBrowserSource::~GenericStringListDataBrowserSource ()
-{
-	if (timer)
-		timer->forget ();
-	drawFont->forget ();
-}
+GenericStringListDataBrowserSource::~GenericStringListDataBrowserSource () noexcept = default;
 
 //-----------------------------------------------------------------------------
 void GenericStringListDataBrowserSource::dbAttached (CDataBrowser* browser)
@@ -1168,7 +1183,7 @@ void GenericStringListDataBrowserSource::dbAttached (CDataBrowser* browser)
 //-----------------------------------------------------------------------------
 void GenericStringListDataBrowserSource::dbRemoved (CDataBrowser* browser)
 {
-	dataBrowser = 0;
+	dataBrowser = nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -1183,13 +1198,8 @@ void GenericStringListDataBrowserSource::setStringList (const StringVector* stri
 void GenericStringListDataBrowserSource::setupUI (const CColor& _selectionColor, const CColor& _fontColor, const CColor& _rowlineColor, const CColor& _rowBackColor, const CColor& _rowAlternateBackColor, CFontRef _font, int32_t _rowHeight, CCoord _textInset)
 {
 	if (_font)
-	{
-		if (drawFont)
-			drawFont->forget ();
 		drawFont = _font;
-		drawFont->remember ();
-	}
-	textInset = _textInset;
+	textInset = CPoint (_textInset, 0);
 	rowHeight = _rowHeight;
 	selectionColor = _selectionColor;
 	fontColor = _fontColor;
@@ -1250,11 +1260,13 @@ void GenericStringListDataBrowserSource::dbDrawHeader (CDrawContext* context, co
 }
 
 //-----------------------------------------------------------------------------
-void GenericStringListDataBrowserSource::dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser)
+void GenericStringListDataBrowserSource::drawRowBackground (CDrawContext* context, const CRect& size, int32_t row, int32_t flags, CDataBrowser* browser) const
 {
-	context->setDrawMode (kAliasing|kNonIntegralMode);
+	vstgui_assert (row >= 0 && static_cast<size_t> (row) < stringList->size ());
+
+	context->setDrawMode (kAliasing);
 	context->setLineWidth (1.);
-	context->setFillColor (row % 2 ? rowBackColor : rowAlternateBackColor);
+	context->setFillColor ((row % 2) ? rowBackColor : rowAlternateBackColor);
 	context->drawRect (size, kDrawFilled);
 	if (flags & kRowSelected)
 	{
@@ -1264,17 +1276,42 @@ void GenericStringListDataBrowserSource::dbDrawCell (CDrawContext* context, cons
 		{
 			double hue, saturation, value;
 			color.toHSV (hue, saturation, value);
-			saturation *= 0.5;
-			color.fromHSV (hue, saturation, value);
+			if (saturation > 0.)
+			{
+				saturation *= 0.5;
+				color.fromHSV (hue, saturation, value);
+			}
+			else
+				color.alpha /= 2;
 		}
 		context->setFillColor (color);
 		context->drawRect (size, kDrawFilled);
 	}
+}
+
+//-----------------------------------------------------------------------------
+void GenericStringListDataBrowserSource::drawRowString (CDrawContext* context, const CRect& size, int32_t row, int32_t flags, CDataBrowser* browser) const
+{
+	vstgui_assert (row >= 0 && static_cast<size_t> (row) < stringList->size ());
+	
+	context->saveGlobalState ();
 	CRect stringSize (size);
 	stringSize.inset (textInset.x, textInset.y);
 	context->setFont (drawFont);
 	context->setFontColor (fontColor);
-	context->drawString ((*stringList)[static_cast<size_t> (row)].c_str (), stringSize, textAlignment);
+	ConcatClip cc (*context, stringSize);
+	context->drawString ((*stringList)[static_cast<size_t> (row)].getPlatformString (), stringSize, textAlignment);
+	context->restoreGlobalState ();
+}
+
+//-----------------------------------------------------------------------------
+void GenericStringListDataBrowserSource::dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser)
+{
+	vstgui_assert (row >= 0 && static_cast<size_t> (row) < stringList->size ());
+	vstgui_assert (column == 0);
+
+	drawRowBackground (context, size, row, flags, browser);
+	drawRowString (context, size, row, flags, browser);
 }
 
 //-----------------------------------------------------------------------------
@@ -1288,9 +1325,9 @@ int32_t GenericStringListDataBrowserSource::dbOnKeyDown (const VstKeyCode& _key,
 	}
 	if (dataBrowser && key.virt == 0 && key.modifier == 0)
 	{
-		if (timer == 0)
+		if (timer == nullptr)
 		{
-			timer = new CVSTGUITimer (this, 1000);
+			timer = makeOwned<CVSTGUITimer> (this, 1000);
 			timer->start ();
 		}
 		else
@@ -1303,7 +1340,7 @@ int32_t GenericStringListDataBrowserSource::dbOnKeyDown (const VstKeyCode& _key,
 		int32_t row = 0;
 		while (it != stringList->end ())
 		{
-			std::string str ((*it), 0, keyDownFindString.length ());
+			std::string str ((*it).getString (), 0, keyDownFindString.length ());
 			std::transform (str.begin (), str.end (), str.begin (), ::toupper);
 			if (str == keyDownFindString)
 			{
@@ -1311,7 +1348,7 @@ int32_t GenericStringListDataBrowserSource::dbOnKeyDown (const VstKeyCode& _key,
 				return 1;
 			}
 			row++;
-			it++;
+			++it;
 		}
 	}
 	return -1;
@@ -1331,8 +1368,7 @@ CMessageResult GenericStringListDataBrowserSource::notify (CBaseObject* sender, 
 	if (message == CVSTGUITimer::kMsgTimer)
 	{
 		keyDownFindString = "";
-		timer->forget ();
-		timer = 0;
+		timer = nullptr;
 		return kMessageNotified;
 	}
 	return kMessageUnknown;

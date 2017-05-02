@@ -80,6 +80,7 @@
 #include "lib/controls/coptionmenu.h"
 #include "lib/controls/cparamdisplay.h"
 #include "lib/controls/cscrollbar.h"
+#include "lib/controls/csearchtextedit.h"
 #include "lib/controls/csegmentbutton.h"
 #include "lib/controls/cslider.h"
 #include "lib/controls/cspecialdigit.h"

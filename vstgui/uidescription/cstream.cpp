@@ -53,7 +53,7 @@ namespace VSTGUI {
 CMemoryStream::CMemoryStream (uint32_t initialSize, uint32_t inDelta, bool binaryMode, ByteOrder byteOrder)
 : OutputStream (byteOrder)
 , InputStream (byteOrder)
-, buffer (0)
+, buffer (nullptr)
 , bufferSize (0)
 , size (0)
 , pos (0)
@@ -79,7 +79,7 @@ CMemoryStream::CMemoryStream (const int8_t* inBuffer, uint32_t bufferSize, bool 
 }
 
 //-----------------------------------------------------------------------------
-CMemoryStream::~CMemoryStream ()
+CMemoryStream::~CMemoryStream () noexcept
 {
 	if (ownsBuffer && buffer)
 		std::free (buffer);
@@ -106,7 +106,7 @@ bool CMemoryStream::resize (uint32_t inSize)
 	buffer = newBuffer;
 	bufferSize = newSize;
 	
-	return buffer != 0;
+	return buffer != nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -159,11 +159,11 @@ bool CMemoryStream::operator>> (std::string& string)
 	if (binaryMode)
 	{
 		int32_t identifier;
-		if (!(*(InputStream*)this >> identifier)) return false;
+		if (!(*static_cast<InputStream*> (this) >> identifier)) return false;
 		if (identifier == 'str ')
 		{
 			uint32_t length;
-			if (!(*(InputStream*)this >> length)) return false;
+			if (!(*static_cast<InputStream*> (this) >> length)) return false;
 			int8_t* buffer = (int8_t*)std::malloc (length);
 			uint32_t read = readRaw (buffer, length);
 			if (read == length)
@@ -212,12 +212,12 @@ bool CMemoryStream::end ()
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 CFileStream::CFileStream ()
-: stream (0)
+: stream (nullptr)
 {
 }
 
 //-----------------------------------------------------------------------------
-CFileStream::~CFileStream ()
+CFileStream::~CFileStream () noexcept
 {
 	if (stream)
 	{
@@ -253,12 +253,17 @@ bool CFileStream::open (UTF8StringPtr path, int32_t mode, ByteOrder byteOrder)
 		else
 			return false;
 	}
+#if WINDOWS
+	// always use binary mode so that newlines are not converted
+	fmode << "b";
+#else
 	if (mode & kBinaryMode)
 		fmode << "b";
+#endif
 	stream = fopen (path, fmode.str ().c_str ());
 	openMode = mode;
 
-	return stream != 0;
+	return stream != nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -340,7 +345,7 @@ bool CFileStream::operator<< (const std::string& str)
 	{
 		if (openMode & kBinaryMode)
 		{
-			if (!(*(OutputStream*)this << (int8_t)0))
+			if (!(*static_cast<OutputStream*> (this) << (int8_t)0))
 				return false;
 		}
 		return true;
@@ -353,12 +358,12 @@ bool CFileStream::operator<< (const std::string& str)
 //-----------------------------------------------------------------------------
 CResourceInputStream::CResourceInputStream (ByteOrder byteOrder)
 : InputStream (byteOrder)
-, platformHandle (0)
+, platformHandle (nullptr)
 {
 }
 
 //-----------------------------------------------------------------------------
-CResourceInputStream::~CResourceInputStream ()
+CResourceInputStream::~CResourceInputStream () noexcept
 {
 	if (platformHandle)
 	{
@@ -373,7 +378,7 @@ CResourceInputStream::~CResourceInputStream ()
 //-----------------------------------------------------------------------------
 bool CResourceInputStream::open (const CResourceDescription& res)
 {
-	if (platformHandle != 0)
+	if (platformHandle != nullptr)
 		return false;
 #if MAC
 	if (res.type == CResourceDescription::kIntegerType)
@@ -383,12 +388,12 @@ bool CResourceInputStream::open (const CResourceDescription& res)
 		// it's an absolute path, we can use it as is
 //		platformHandle = fopen (res.u.name, "rb");
 	}
-	if (platformHandle == 0 && getBundleRef ())
+	if (platformHandle == nullptr && getBundleRef ())
 	{
-		CFStringRef cfStr = CFStringCreateWithCString (NULL, res.u.name, kCFStringEncodingUTF8);
+		CFStringRef cfStr = CFStringCreateWithCString (nullptr, res.u.name, kCFStringEncodingUTF8);
 		if (cfStr)
 		{
-			CFURLRef url = CFBundleCopyResourceURL (getBundleRef (), cfStr, 0, NULL);
+			CFURLRef url = CFBundleCopyResourceURL (getBundleRef (), cfStr, nullptr, nullptr);
 			if (url)
 			{
 				char filePath[PATH_MAX];
@@ -419,7 +424,7 @@ bool CResourceInputStream::open (const CResourceDescription& res)
 		platformHandle = 0;
 	}
 #endif
-	return platformHandle != 0;
+	return platformHandle != nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -488,7 +493,7 @@ int64_t CResourceInputStream::tell () const
 		return ftello ((FILE*)platformHandle);
 	#elif WINDOWS
 		ULARGE_INTEGER pos;
-		LARGE_INTEGER dummy = {0};
+		LARGE_INTEGER dummy = {};
 		if (((ResourceStream*)platformHandle)->Seek (dummy, STREAM_SEEK_CUR, &pos) == S_OK)
 			return (int64_t)pos.QuadPart;
 	#endif

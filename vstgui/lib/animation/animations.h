@@ -47,7 +47,7 @@ namespace Animation {
 /// @ingroup AnimationTargets
 ///	@ingroup new_in_4_0
 //-----------------------------------------------------------------------------
-class AlphaValueAnimation : public IAnimationTarget, public CBaseObject
+class AlphaValueAnimation : public IAnimationTarget, public NonAtomicReferenceCounted
 {
 public:
 	AlphaValueAnimation (float endValue, bool forceEndValueOnFinish = false);
@@ -66,7 +66,7 @@ protected:
 /// @ingroup AnimationTargets
 ///	@ingroup new_in_4_0
 //-----------------------------------------------------------------------------
-class ViewSizeAnimation : public IAnimationTarget, public CBaseObject
+class ViewSizeAnimation : public IAnimationTarget, public NonAtomicReferenceCounted
 {
 public:
 	ViewSizeAnimation (const CRect& newRect, bool forceEndValueOnFinish = false);
@@ -85,7 +85,7 @@ protected:
 /// @ingroup AnimationTargets
 ///	@ingroup new_in_4_0
 //-----------------------------------------------------------------------------
-class ExchangeViewAnimation : public IAnimationTarget, public CBaseObject
+class ExchangeViewAnimation : public IAnimationTarget, public NonAtomicReferenceCounted
 {
 public:
 	enum AnimationStyle {
@@ -100,7 +100,7 @@ public:
 
 	/** oldView must be a subview of the animation view */
 	ExchangeViewAnimation (CView* oldView, CView* newView, AnimationStyle style = kAlphaValueFade);
-	~ExchangeViewAnimation ();
+	~ExchangeViewAnimation () noexcept override;
 
 	void animationStart (CView* view, IdStringPtr name) override;
 	void animationTick (CView* view, IdStringPtr name, float pos) override;
@@ -118,8 +118,8 @@ protected:
 
 	void updateViewSize (CView* view, const CRect& rect);
 
-	CView* newView;
-	CView* viewToRemove;
+	SharedPointer<CView> newView;
+	SharedPointer<CView> viewToRemove;
 	AnimationStyle style;
 	float newViewAlphaValueEnd;
 	float oldViewAlphaValueStart;
@@ -131,7 +131,7 @@ protected:
 /// @ingroup AnimationTargets
 ///	@ingroup new_in_4_0
 //-----------------------------------------------------------------------------
-class ControlValueAnimation : public IAnimationTarget, public CBaseObject
+class ControlValueAnimation : public IAnimationTarget, public NonAtomicReferenceCounted
 {
 public:
 	ControlValueAnimation (float endValue, bool forceEndValueOnFinish = false);

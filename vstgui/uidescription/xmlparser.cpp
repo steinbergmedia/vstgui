@@ -40,6 +40,7 @@
 #define XML_NS 1
 #define XML_DTD 1
 #define XML_CONTEXT_BYTES 1024
+#define XML_LARGE_SIZE 1
 
 #ifdef BYTEORDER
 	#define OLD_BYTEORDER = BYTEORDER
@@ -68,8 +69,8 @@ namespace Xml {
 //------------------------------------------------------------------------
 static void XMLCALL gStartElementHandler (void* userData, const char* name, const char** atts)
 {
-	Parser* parser = (Parser*)userData;
-	IHandler* handler = parser ? parser->getHandler () : 0;
+	auto parser = static_cast<Parser*> (userData);
+	IHandler* handler = parser ? parser->getHandler () : nullptr;
 	if (handler)
 		handler->startXmlElement (parser, name, atts);
 }
@@ -77,8 +78,8 @@ static void XMLCALL gStartElementHandler (void* userData, const char* name, cons
 //------------------------------------------------------------------------
 static void XMLCALL gEndElementHandler (void* userData, const char* name)
 {
-	Parser* parser = (Parser*)userData;
-	IHandler* handler = parser ? parser->getHandler () : 0;
+	auto parser = static_cast<Parser*> (userData);
+	IHandler* handler = parser ? parser->getHandler () : nullptr;
 	if (handler)
 		handler->endXmlElement (parser, name);
 }
@@ -86,8 +87,8 @@ static void XMLCALL gEndElementHandler (void* userData, const char* name)
 //------------------------------------------------------------------------
 static void XMLCALL gCharacterDataHandler (void* userData, const char* s, int len)
 {
-	Parser* parser = (Parser*)userData;
-	IHandler* handler = parser ? parser->getHandler () : 0;
+	auto parser = static_cast<Parser*> (userData);
+	IHandler* handler = parser ? parser->getHandler () : nullptr;
 	if (handler)
 		handler->xmlCharData (parser, (const int8_t*)s, len);
 }
@@ -95,22 +96,22 @@ static void XMLCALL gCharacterDataHandler (void* userData, const char* s, int le
 //------------------------------------------------------------------------
 static void XMLCALL gCommentHandler (void* userData, const char* string)
 {
-	Parser* parser = (Parser*)userData;
-	IHandler* handler = parser ? parser->getHandler () : 0;
+	auto parser = static_cast<Parser*> (userData);
+	IHandler* handler = parser ? parser->getHandler () : nullptr;
 	if (handler)
 		handler->xmlComment (parser, string);
 }
 
 //-----------------------------------------------------------------------------
 Parser::Parser ()
-: parser (0)
-, handler (0)
+: parser (nullptr)
+, handler (nullptr)
 {
 	parser = XML_ParserCreate ("UTF-8");
 }
 
 //-----------------------------------------------------------------------------
-Parser::~Parser ()
+Parser::~Parser () noexcept
 {
 	if (parser)
 		XML_ParserFree (PARSER);
@@ -119,7 +120,7 @@ Parser::~Parser ()
 //-----------------------------------------------------------------------------
 bool Parser::parse (IContentProvider* provider, IHandler* _handler)
 {
-	if (provider == 0 || _handler == 0)
+	if (provider == nullptr || _handler == nullptr)
 		return false;
 
 	handler = _handler;
@@ -136,9 +137,9 @@ bool Parser::parse (IContentProvider* provider, IHandler* _handler)
 	while (true) 
 	{
 		void* buffer = XML_GetBuffer (PARSER, kBufferSize);
-		if (buffer == 0)
+		if (buffer == nullptr)
 		{
-			handler = 0;
+			handler = nullptr;
 			return false;
 		}
 
@@ -153,7 +154,7 @@ bool Parser::parse (IContentProvider* provider, IHandler* _handler)
 				XML_Error error = XML_GetErrorCode (PARSER);
 				if (error == XML_ERROR_JUNK_AFTER_DOC_ELEMENT) // that's ok
 				{
-					handler = 0;
+					handler = nullptr;
 					return true;
 				}
 				#if DEBUG
@@ -191,12 +192,12 @@ bool Parser::parse (IContentProvider* provider, IHandler* _handler)
 					DebugPrint ("^\n");
 				}
 				#endif
-				handler = 0;
+				handler = nullptr;
 				return false;
 			}
 			case XML_STATUS_SUSPENDED:
 			{
-				handler = 0;
+				handler = nullptr;
 				return true;
 			}
 			default:
@@ -206,7 +207,7 @@ bool Parser::parse (IContentProvider* provider, IHandler* _handler)
 		if (bytesRead == 0)
 			break;
 	}
-	handler = 0;
+	handler = nullptr;
 	return true;
 }
 

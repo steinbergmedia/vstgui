@@ -45,6 +45,8 @@ namespace VSTGUI {
 class IViewListener
 {
 public:
+	virtual ~IViewListener () noexcept = default;
+	
 	virtual void viewSizeChanged (CView* view, const CRect& oldSize) = 0;
 	virtual void viewAttached (CView* view) = 0;
 	virtual void viewRemoved (CView* view) = 0;
@@ -59,6 +61,8 @@ public:
 class IViewContainerListener
 {
 public:
+	virtual ~IViewContainerListener () noexcept = default;
+
 	virtual void viewContainerViewAdded (CViewContainer* container, CView* view) = 0;
 	virtual void viewContainerViewRemoved (CViewContainer* container, CView* view) = 0;
 	virtual void viewContainerViewZOrderChanged (CViewContainer* container, CView* view) = 0;
@@ -71,8 +75,6 @@ public:
 class IViewListenerAdapter : public IViewListener
 {
 public:
-	virtual ~IViewListenerAdapter () {}
-
 	void viewSizeChanged (CView* view, const CRect& oldSize) override {}
 	void viewAttached (CView* view) override {}
 	void viewRemoved (CView* view) override {}

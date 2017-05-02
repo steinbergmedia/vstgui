@@ -54,7 +54,7 @@ namespace VSTGUI {
 class COnOffButton : public CControl
 {
 public:
-	COnOffButton (const CRect& size, IControlListener* listener = 0, int32_t tag = -1, CBitmap* background = 0, int32_t style = 0);
+	COnOffButton (const CRect& size, IControlListener* listener = nullptr, int32_t tag = -1, CBitmap* background = nullptr, int32_t style = 0);
 	COnOffButton (const COnOffButton& onOffButton);
 
 	//-----------------------------------------------------------------------------
@@ -66,17 +66,17 @@ public:
 	//@}
 
 	// overrides
-	virtual void draw (CDrawContext*) override;
-	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
-	virtual CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
-	virtual CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
-	virtual CMouseEventResult onMouseCancel () override;
-	virtual int32_t onKeyDown (VstKeyCode& keyCode) override;
-	virtual bool sizeToFit () override;
+	void draw (CDrawContext*) override;
+	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseCancel () override;
+	int32_t onKeyDown (VstKeyCode& keyCode) override;
+	bool sizeToFit () override;
 
 	CLASS_METHODS(COnOffButton, CControl)
 protected:
-	~COnOffButton ();
+	~COnOffButton () noexcept override = default;
 	int32_t style;
 };
 
@@ -89,7 +89,7 @@ protected:
 class CCheckBox : public CControl
 {
 public:
-	CCheckBox (const CRect& size, IControlListener* listener = 0, int32_t tag = -1, UTF8StringPtr title = 0, CBitmap* bitmap = 0, int32_t style = 0);
+	CCheckBox (const CRect& size, IControlListener* listener = nullptr, int32_t tag = -1, UTF8StringPtr title = nullptr, CBitmap* bitmap = nullptr, int32_t style = 0);
 	CCheckBox (const CCheckBox& checkbox);
 
 	enum Styles {
@@ -101,7 +101,7 @@ public:
 	/// @name CCheckBox Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual void setTitle (UTF8StringPtr newTitle);
+	virtual void setTitle (const UTF8String& newTitle);
 	const UTF8String& getTitle () const { return title; }
 	
 	virtual void setFont (CFontRef newFont);
@@ -122,30 +122,31 @@ public:
 	//@}
 
 	// overrides
-	virtual void draw (CDrawContext* context) override;
-	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
-	virtual CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
-	virtual CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
-	virtual CMouseEventResult onMouseCancel () override;
-	virtual int32_t onKeyDown (VstKeyCode& keyCode) override;
-	virtual bool sizeToFit () override;
-	virtual void setBackground (CBitmap *background) override;
-	virtual bool getFocusPath (CGraphicsPath& outPath) override;
+	void draw (CDrawContext* context) override;
+	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseCancel () override;
+	int32_t onKeyDown (VstKeyCode& keyCode) override;
+	bool sizeToFit () override;
+	void setBackground (CBitmap *background) override;
+	bool getFocusPath (CGraphicsPath& outPath) override;
 
 	CLASS_METHODS(CCheckBox, CControl)
 protected:
-	~CCheckBox ();
+	~CCheckBox () noexcept override = default;
+
 	UTF8String title;
 	int32_t style;
 	CColor fontColor;
 	CColor boxFrameColor;
 	CColor boxFillColor;
 	CColor checkMarkColor;
-	CFontRef font;
+	SharedPointer<CFontDesc> font;
 
 private:
-	float previousValue;
-	bool hilight;
+	float previousValue {0.f};
+	bool hilight {false};
 };
 
 //-----------------------------------------------------------------------------
@@ -160,22 +161,22 @@ public:
 	CKickButton (const CRect& size, IControlListener* listener, int32_t tag, CCoord heightOfOneImage, CBitmap* background, const CPoint& offset = CPoint (0, 0));
 	CKickButton (const CKickButton& kickButton);
 
-	virtual void draw (CDrawContext*) override;
+	void draw (CDrawContext*) override;
 
-	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
-	virtual CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
-	virtual CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
-	virtual CMouseEventResult onMouseCancel () override;
-	virtual int32_t onKeyDown (VstKeyCode& keyCode) override;
-	virtual int32_t onKeyUp (VstKeyCode& keyCode) override;
+	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseCancel () override;
+	int32_t onKeyDown (VstKeyCode& keyCode) override;
+	int32_t onKeyUp (VstKeyCode& keyCode) override;
 
-	virtual bool sizeToFit () override;
+	bool sizeToFit () override;
 
 	void setNumSubPixmaps (int32_t numSubPixmaps) override { IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps); invalid (); }
 
 	CLASS_METHODS(CKickButton, CControl)
 protected:
-	~CKickButton ();	
+	~CKickButton () noexcept override = default;
 	CPoint	offset;
 
 private:
@@ -197,13 +198,13 @@ public:
 		kOnOffStyle
 	};
 
-	CTextButton (const CRect& size, IControlListener* listener = 0, int32_t tag = -1, UTF8StringPtr title = 0, Style = kKickStyle);
+	CTextButton (const CRect& size, IControlListener* listener = nullptr, int32_t tag = -1, UTF8StringPtr title = nullptr, Style = kKickStyle);
 
 	//-----------------------------------------------------------------------------
 	/// @name CTextButton Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual void setTitle (UTF8StringPtr newTitle);
+	virtual void setTitle (const UTF8String& newTitle);
 	const UTF8String& getTitle () const { return title; }
 
 	virtual void setFont (CFontRef newFont);
@@ -255,21 +256,23 @@ public:
 	bool drawFocusOnTop () override;
 	void setViewSize (const CRect& rect, bool invalid = true) override;
 	bool removed (CView* parent) override;
-	virtual bool sizeToFit () override;
-	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
-	virtual CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
-	virtual CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
-	virtual CMouseEventResult onMouseCancel () override;
-	virtual int32_t onKeyDown (VstKeyCode& keyCode) override;
-	virtual int32_t onKeyUp (VstKeyCode& keyCode) override;
+	bool sizeToFit () override;
+	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseCancel () override;
+	int32_t onKeyDown (VstKeyCode& keyCode) override;
+	int32_t onKeyUp (VstKeyCode& keyCode) override;
 	
 	CLASS_METHODS(CTextButton, CControl)
 protected:
+	~CTextButton () noexcept override = default;
+
 	void invalidPath ();
 	CGraphicsPath* getPath (CDrawContext* context);
 
-	CFontRef font;
-	CGraphicsPath* _path;
+	SharedPointer<CFontDesc> font;
+	SharedPointer<CGraphicsPath> _path;
 	SharedPointer<CBitmap> icon;
 	SharedPointer<CBitmap> iconHighlighted;
 	SharedPointer<CGradient> gradient;

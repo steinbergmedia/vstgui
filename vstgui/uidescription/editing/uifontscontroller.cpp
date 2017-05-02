@@ -37,10 +37,10 @@
 #if VSTGUI_LIVE_EDITING
 
 #include "uieditcontroller.h"
-#include "uisearchtextfield.h"
 #include "uibasedatasource.h"
 #include "../../lib/controls/ccolorchooser.h"
 #include "../../lib/controls/coptionmenu.h"
+#include "../../lib/controls/csearchtextedit.h"
 #include "../../lib/platform/iplatformfont.h"
 #include <sstream>
 
@@ -102,14 +102,14 @@ UIFontsController::UIFontsController (IController* baseController, UIDescription
 : DelegationController (baseController)
 , editDescription (description)
 , actionPerformer (actionPerformer)
-, dataSource (0)
-, fontMenu (0)
-, altTextEdit (0)
-, sizeTextEdit (0)
-, boldControl (0)
-, italicControl (0)
-, strikethroughControl (0)
-, underlineControl (0)
+, dataSource (nullptr)
+, fontMenu (nullptr)
+, altTextEdit (nullptr)
+, sizeTextEdit (nullptr)
+, boldControl (nullptr)
+, italicControl (nullptr)
+, strikethroughControl (nullptr)
+, underlineControl (nullptr)
 {
 	dataSource = new UIFontsDataSource (editDescription, actionPerformer, this);
 	UIEditController::setupDataSource (dataSource);
@@ -139,7 +139,7 @@ CView* UIFontsController::createView (const UIAttributes& attributes, const IUID
 //----------------------------------------------------------------------------------------------------
 CView* UIFontsController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
 {
-	UISearchTextField* searchField = dynamic_cast<UISearchTextField*>(view);
+	auto searchField = dynamic_cast<CSearchTextEdit*>(view);
 	if (searchField && searchField->getTag () == kSearchTag)
 	{
 		dataSource->setSearchFieldControl (searchField);
@@ -157,9 +157,9 @@ CView* UIFontsController::verifyView (CView* view, const UIAttributes& attribute
 				if (IPlatformFont::getAllPlatformFontFamilies (fontFamilyNames))
 				{
 					fontFamilyNames.sort ();
-					for (std::list<std::string>::const_iterator it = fontFamilyNames.begin (); it != fontFamilyNames.end (); it++)
+					for (auto& name : fontFamilyNames)
 					{
-						fontMenu->addEntry ((*it).c_str ());
+						fontMenu->addEntry (name.data ());
 					}
 				}
 				fontMenu->setStyle (fontMenu->getStyle () | kNoTextStyle);
@@ -246,7 +246,7 @@ void UIFontsController::valueChanged (CControl* pControl)
 		case kFontStyleStrikethroughTag:
 		case kFontStyleUnderlineTag:
 		{
-			if (fontMenu == 0 || sizeTextEdit == 0 || selectedFont.empty ())
+			if (fontMenu == nullptr || sizeTextEdit == nullptr || selectedFont.empty ())
 				break;
 			CMenuItem* menuItem = fontMenu->getCurrent ();
 			if (menuItem)
@@ -260,14 +260,14 @@ void UIFontsController::valueChanged (CControl* pControl)
 					style |= kUnderlineFace;
 				if (strikethroughControl && strikethroughControl->getValue () > 0)
 					style |= kStrikethroughFace;
-				OwningPointer<CFontDesc> font (new CFontDesc (menuItem->getTitle (), sizeTextEdit->getValue (), style));
-				actionPerformer->performFontChange (selectedFont.c_str (), font);
+				auto font = makeOwned<CFontDesc> (menuItem->getTitle (), sizeTextEdit->getValue (), style);
+				actionPerformer->performFontChange (selectedFont.data (), font);
 			}
 			break;
 		}
 		case kFontAltTag:
 		{
-			actionPerformer->performAlternativeFontChange (selectedFont.c_str (), altTextEdit->getText ());
+			actionPerformer->performAlternativeFontChange (selectedFont.data (), altTextEdit->getText ());
 			break;
 		}
 	}
@@ -276,22 +276,23 @@ void UIFontsController::valueChanged (CControl* pControl)
 //----------------------------------------------------------------------------------------------------
 void UIFontsController::dbSelectionChanged (int32_t selectedRow, GenericStringListDataBrowserSource* source)
 {
-	selectedFont = selectedRow != CDataBrowser::kNoSelection ? dataSource->getStringList ()->at (static_cast<uint32_t> (selectedRow)).c_str () : "";
-	CFontRef font = editDescription->getFont (selectedFont.c_str ());
+	selectedFont = selectedRow != CDataBrowser::kNoSelection ? dataSource->getStringList ()->at (static_cast<uint32_t> (selectedRow)).data () : "";
+	CFontRef font = editDescription->getFont (selectedFont.data ());
 	if (font)
 	{
-		if (fontMenu && font->getName ())
+		if (fontMenu && !font->getName ().empty ())
 		{
-			std::string fontName = font->getName ();
+			auto fontName = font->getName ();
 			CMenuItemList* items = fontMenu->getItems ();
 			int32_t index = 0;
-			for (CConstMenuItemIterator it = items->begin (); it != items->end (); it++, index++)
+			for (auto& item : *items)
 			{
-				if (fontName == (*it)->getTitle ())
+				if (fontName == item->getTitle ())
 				{
 					fontMenu->setValue ((float)index);
 					break;
 				}
+				index++;
 			}
 			fontMenu->setStyle (fontMenu->getStyle () & ~kNoTextStyle);
 			fontMenu->setMouseEnabled (true);
@@ -301,7 +302,7 @@ void UIFontsController::dbSelectionChanged (int32_t selectedRow, GenericStringLi
 			sizeTextEdit->setMouseEnabled (true);
 			std::stringstream str;
 			str << font->getSize ();
-			sizeTextEdit->setText (str.str ().c_str ());
+			sizeTextEdit->setText (str.str ().data ());
 		}
 		if (boldControl)
 		{
@@ -330,8 +331,8 @@ void UIFontsController::dbSelectionChanged (int32_t selectedRow, GenericStringLi
 		if (altTextEdit)
 		{
 			std::string alternativeFonts;
-			editDescription->getAlternativeFontNames (selectedFont.c_str (), alternativeFonts);
-			altTextEdit->setText (alternativeFonts.c_str ());
+			editDescription->getAlternativeFontNames (selectedFont.data (), alternativeFonts);
+			altTextEdit->setText (alternativeFonts.data ());
 			altTextEdit->setMouseEnabled (true);
 		}
 	}
@@ -353,12 +354,12 @@ void UIFontsController::dbSelectionChanged (int32_t selectedRow, GenericStringLi
 		if (altTextEdit)
 		{
 			altTextEdit->setMouseEnabled (false);
-			altTextEdit->setText (0);
+			altTextEdit->setText (nullptr);
 		}
 		if (sizeTextEdit)
 		{
 			sizeTextEdit->setMouseEnabled (false);
-			sizeTextEdit->setText (0);
+			sizeTextEdit->setText (nullptr);
 		}
 	}
 }
@@ -373,14 +374,14 @@ bool UIFontsController::valueToString (float value, char utf8String[256], CParam
 	int32_t intValue = (int32_t)value;
 	std::stringstream str;
 	str << intValue;
-	std::strcpy (utf8String, str.str ().c_str ());
+	std::strcpy (utf8String, str.str ().data ());
 	return true;
 }
 
 //----------------------------------------------------------------------------------------------------
 bool UIFontsController::stringToValue (UTF8StringPtr txt, float& result, CTextEdit::StringToValueUserData* userData)
 {
-	int32_t value = txt ? (int32_t)strtol (txt, 0, 10) : 0;
+	int32_t value = txt ? (int32_t)strtol (txt, nullptr, 10) : 0;
 	result = (float)value;
 	return true;
 }

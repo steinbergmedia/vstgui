@@ -81,14 +81,28 @@ Win32TextEdit::Win32TextEdit (HWND parent, IPlatformTextEditCallback* textEdit)
 	UTF8StringHelper stringHelper (textEdit->platformGetText ());
 	text = stringHelper;
 
-	DWORD wxStyle = 0;
+	DWORD wxStyle = WS_EX_LAYERED;
 	if (getD2DFactory () == 0 && IsWindowsVistaOrGreater()) // Vista and above
 		wxStyle = WS_EX_COMPOSITED;
 	wstyle |= WS_CHILD | WS_VISIBLE | ES_AUTOHSCROLL;
+	if (textEdit->platformIsSecureTextEdit ())
+		wstyle |= ES_PASSWORD;
 	platformControl = CreateWindowEx (wxStyle,
 		TEXT("EDIT"), stringHelper, wstyle,
 		(int)rect.left, (int)rect.top, (int)rect.getWidth (), (int)rect.getHeight (),
 		parent, NULL, GetInstance (), 0);
+	if (!platformControl)
+	{
+		wxStyle &= ~WS_EX_LAYERED;
+		platformControl = CreateWindowEx (wxStyle,
+			TEXT("EDIT"), stringHelper, wstyle,
+			(int)rect.left, (int)rect.top, (int)rect.getWidth (), (int)rect.getHeight (),
+			parent, NULL, GetInstance (), 0);
+	}
+
+	CColor backColor = textEdit->platformGetBackColor ();
+	SetLayeredWindowAttributes (platformControl, RGB (backColor.red, backColor.green, backColor.blue), 0, LWA_COLORKEY);
+	platformBackColor = CreateSolidBrush (RGB (backColor.red, backColor.green, backColor.blue));
 
 	logfont.lfWeight = FW_NORMAL;
 	logfont.lfHeight = (LONG)-fontH;
@@ -112,12 +126,10 @@ Win32TextEdit::Win32TextEdit (HWND parent, IPlatformTextEditCallback* textEdit)
 
 	oldWndProcEdit = (WINDOWSPROC)(LONG_PTR)SetWindowLongPtr (platformControl, GWLP_WNDPROC, (__int3264)(LONG_PTR)procEdit);
 
-	CColor backColor = textEdit->platformGetBackColor ();
-	platformBackColor = CreateSolidBrush (RGB (backColor.red, backColor.green, backColor.blue));
 }
 
 //-----------------------------------------------------------------------------
-Win32TextEdit::~Win32TextEdit ()
+Win32TextEdit::~Win32TextEdit () noexcept
 {
 	if (platformControl)
 	{
@@ -131,7 +143,7 @@ Win32TextEdit::~Win32TextEdit ()
 }
 
 //-----------------------------------------------------------------------------
-UTF8StringPtr Win32TextEdit::getText ()
+UTF8String Win32TextEdit::getText ()
 {
 #if 1
 	return text.c_str ();
@@ -151,7 +163,7 @@ UTF8StringPtr Win32TextEdit::getText ()
 }
 
 //-----------------------------------------------------------------------------
-bool Win32TextEdit::setText (UTF8StringPtr _text)
+bool Win32TextEdit::setText (const UTF8String& _text)
 {
 	if (platformControl && text != _text)
 	{
@@ -202,23 +214,11 @@ LONG_PTR WINAPI Win32TextEdit::procEdit (HWND hwnd, UINT message, WPARAM wParam,
 			{
 				if (win32TextEdit->textEdit)
 				{
-					if (wParam == VK_RETURN)
+					if (auto keyCode = keyMessageToKeyCode (wParam, lParam))
 					{
-						win32TextEdit->textEdit->platformLooseFocus (true);
-						return 0;
-					}
-					else if (wParam == VK_TAB)
-					{
-						VstKeyCode keyCode = {0};
-						keyCode.virt = VKEY_TAB;
-						keyCode.modifier = GetKeyState (VK_SHIFT) < 0 ? MODIFIER_SHIFT : 0;
-						if (win32TextEdit->textEdit->platformOnKeyDown (keyCode))
+						// for now only dispatch virtual keys
+						if (keyCode->character == 0 && win32TextEdit->textEdit->platformOnKeyDown (*keyCode))
 							return 0;
-					}
-					else if (wParam == VK_ESCAPE)
-					{
-						win32TextEdit->textEdit->platformLooseFocus (false);
-						return 0;
 					}
 				}
 				break;

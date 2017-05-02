@@ -3,8 +3,8 @@
 #if VSTGUI_LIVE_EDITING
 
 #include "uieditcontroller.h"
-#include "uisearchtextfield.h"
 #include "uibasedatasource.h"
+#include "../../lib/controls/csearchtextedit.h"
 #include <sstream>
 
 namespace VSTGUI {
@@ -14,7 +14,7 @@ class UITagsDataSource : public UIBaseDataSource
 {
 public:
 	UITagsDataSource (UIDescription* description, IActionPerformer* actionPerformer);
-	~UITagsDataSource ();
+	~UITagsDataSource () override = default;
 
 protected:
 	void getNames (std::list<const std::string*>& names) override;
@@ -42,11 +42,6 @@ UITagsDataSource::UITagsDataSource (UIDescription* description, IActionPerformer
 }
 
 //----------------------------------------------------------------------------------------------------
-UITagsDataSource::~UITagsDataSource ()
-{
-}
-
-//----------------------------------------------------------------------------------------------------
 void UITagsDataSource::getNames (std::list<const std::string*>& names)
 {
 	description->collectControlTagNames (names);
@@ -62,7 +57,7 @@ bool UITagsDataSource::addItem (UTF8StringPtr name)
 //----------------------------------------------------------------------------------------------------
 bool UITagsDataSource::removeItem (UTF8StringPtr name)
 {
-	actionPerformer->performTagChange (name, 0, true);
+	actionPerformer->performTagChange (name, nullptr, true);
 	return true;
 }
 
@@ -84,11 +79,11 @@ void UITagsDataSource::update ()
 {
 	UIBaseDataSource::update ();
 	tags.clear ();
-	for (StringVector::const_iterator it = names.begin (); it != names.end (); it++)
+	for (auto& name : names)
 	{
 		std::string tagString;
-		description->getControlTagString ((*it).c_str (), tagString);
-		tags.push_back (tagString);
+		description->getControlTagString (name.data (), tagString);
+		tags.emplace_back (std::move (tagString));
 	}
 }
 
@@ -97,7 +92,7 @@ CMouseEventResult UITagsDataSource::dbOnMouseDown (const CPoint& where, const CB
 {
 	if (buttons.isLeftButton () && buttons.isDoubleClick ())
 	{
-		UTF8StringPtr value = column == 0 ? names.at (static_cast<uint32_t> (row)).c_str () : tags.at (static_cast<uint32_t> (row)).c_str ();
+		UTF8StringPtr value = column == 0 ? names.at (static_cast<uint32_t> (row)).data () : tags.at (static_cast<uint32_t> (row)).data ();
 		browser->beginTextEdit (CDataBrowser::Cell (row, column), value);
 	}
 	return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
@@ -114,7 +109,7 @@ void UITagsDataSource::dbCellTextChanged (int32_t row, int32_t column, UTF8Strin
 	{
 		if (tags.at (static_cast<uint32_t> (row)) != newText)
 		{
-			actionPerformer->performTagChange (names.at (static_cast<uint32_t> (row)).c_str (), newText);
+			actionPerformer->performTagChange (names.at (static_cast<uint32_t> (row)).data (), newText);
 		}
 	}
 }
@@ -159,7 +154,7 @@ UITagsController::UITagsController (IController* baseController, UIDescription* 
 : DelegationController (baseController)
 , editDescription (description)
 , actionPerformer (actionPerformer)
-, dataSource (0)
+, dataSource (nullptr)
 {
 }
 
@@ -189,7 +184,7 @@ CView* UITagsController::createView (const UIAttributes& attributes, const IUIDe
 //----------------------------------------------------------------------------------------------------
 CView* UITagsController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
 {
-	UISearchTextField* searchField = dynamic_cast<UISearchTextField*>(view);
+	auto searchField = dynamic_cast<CSearchTextEdit*>(view);
 	if (searchField && searchField->getTag () == kSearchTag)
 	{
 		dataSource->setSearchFieldControl (searchField);

@@ -346,14 +346,14 @@ double Font::getCapHeight () const
 }
 
 //------------------------------------------------------------------------
-IFontPainter* Font::getPainter ()
+const IFontPainter* Font::getPainter () const
 {
 	return this;
 }
 
 //------------------------------------------------------------------------
 void Font::drawString (CDrawContext* context, IPlatformString* string, const CPoint& p,
-					   bool antialias)
+					   bool antialias) const
 {
 	if (auto cairoContext = dynamic_cast<Context*> (context))
 	{
@@ -375,7 +375,7 @@ void Font::drawString (CDrawContext* context, IPlatformString* string, const CPo
 }
 
 //------------------------------------------------------------------------
-CCoord Font::getStringWidth (CDrawContext* context, IPlatformString* string, bool antialias)
+CCoord Font::getStringWidth (CDrawContext* context, IPlatformString* string, bool antialias) const
 {
 	if (auto linuxString = dynamic_cast<LinuxString*> (string))
 	{
@@ -391,13 +391,12 @@ CCoord Font::getStringWidth (CDrawContext* context, IPlatformString* string, boo
 } // Cairo
 
 //------------------------------------------------------------------------
-IPlatformFont* IPlatformFont::create (UTF8StringPtr name, const CCoord& size, const int32_t& style)
+SharedPointer<IPlatformFont> IPlatformFont::create (const UTF8String& name, const CCoord& size, const int32_t& style)
 {
-	auto font = new Cairo::Font (name, size, style);
-	if (font->valid ())
-		return font;
-	font->forget ();
-	return nullptr;
+	auto font = owned (new Cairo::Font (name, size, style));
+	if (!font->valid ())
+		font = nullptr;
+	return font;
 }
 
 //------------------------------------------------------------------------

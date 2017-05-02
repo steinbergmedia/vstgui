@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="1">
+    <root name="/Users/AScheffler/Sources/vstgui/vstgui/standalone/"/>
+    <defines>
+        <define name="__APPLE_CC__=1"/>
+        <define name="DEVELOPMENT=1"/>
+        <define name="VSTGUI_RVALUE_REF_SUPPORT"/>
+        <define name="VSTGUI_OVERRIDE_VMETHOD"/>
+        <define name="VSTGUI_FINAL_VMETHOD"/>
+        <define name="VSTGUI_RANGE_BASED_FOR_LOOP_SUPPORT"/>
+        <define name="VSTGUI_HAS_FUNCTIONAL"/>
+        <define name="MAC_OS_X_VERSION_10_5"/>
+    </defines>
+</project>
