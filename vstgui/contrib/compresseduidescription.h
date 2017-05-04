@@ -1,11 +1,6 @@
-/*
- *  compresseduidescription.h
- *
- *
- *  Created by Arne Scheffler on 10/19/10.
- *  Copyright 2010 Arne Scheffler. All rights reserved.
- *
- */
+// This file is part of VSTGUI. It is subject to the license terms 
+// in the LICENSE file found in the top-level directory of this
+// distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #ifndef __compresseduidescription__
 #define __compresseduidescription__
