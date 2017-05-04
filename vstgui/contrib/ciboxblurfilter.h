@@ -1,10 +1,6 @@
-//
-//  ciboxblurfilter.h
-//  a replacement for the box blur filter on Mac OS X using CoreImage
-//
-//  Created by Arne Scheffler on 24/04/14.
-//  Copyright (c) 2014 Arne Scheffler. All rights reserved.
-//
+// This file is part of VSTGUI. It is subject to the license terms 
+// in the LICENSE file found in the top-level directory of this
+// distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #pragma once
 
