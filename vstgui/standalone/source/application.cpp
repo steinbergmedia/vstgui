@@ -198,7 +198,8 @@ bool Application::canQuit ()
 	if (!delegate->canQuit ())
 		return false;
 
-	for (auto& window : windows)
+	auto currentWindows = windows; // make a copy
+	for (auto& window : currentWindows)
 	{
 		if (window->getController () && !window->getController ()->canClose (*window))
 			return false;
