@@ -8,6 +8,7 @@
 #include "public.sdk/source/vst/vstguieditor.h"
 #include "pluginterfaces/vst/ivstplugview.h"
 #include "../uidescription/uidescription.h"
+#include "../uidescription/icontroller.h"
 #include <string>
 #include <vector>
 #include <map>
