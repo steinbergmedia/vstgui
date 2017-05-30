@@ -5,8 +5,9 @@
 #ifndef __vst3padcontroller__
 #define __vst3padcontroller__
 
-#include "../vstgui.h"
-#include "../vstgui_uidescription.h"
+#include "../lib/controls/cxypad.h"
+#include "../uidescription/delegationcontroller.h"
+#include "../uidescription/uidescription.h"
 #include "base/source/fobject.h"
 #include "public.sdk/source/vst/vstparameters.h"
 #include "public.sdk/source/vst/vsteditcontroller.h"
