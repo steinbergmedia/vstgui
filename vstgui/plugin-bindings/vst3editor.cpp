@@ -19,13 +19,19 @@
 #include <list>
 #include <sstream>
 
-#if defined (kVstVersionMajor) && defined (kVstVersionMinor)
-#define VST3_SUPPORTS_CONTEXTMENU (kVstVersionMajor > 3 || (kVstVersionMajor == 3 && kVstVersionMinor > 1))
+#if LINUX
+#include "../lib/platform/linux/x11frame.h"
+#include "pluginterfaces/gui/iplugview.h"
+#endif
+
+#if defined(kVstVersionMajor) && defined(kVstVersionMinor)
+#define VST3_SUPPORTS_CONTEXTMENU \
+	(kVstVersionMajor > 3 || (kVstVersionMajor == 3 && kVstVersionMinor > 1))
 #if VST3_SUPPORTS_CONTEXTMENU
-	#include "pluginterfaces/vst/ivstcontextmenu.h"
+#include "pluginterfaces/vst/ivstcontextmenu.h"
 #endif
 #else
-#define VST3_SUPPORTS_CONTEXTMENU  0
+#define VST3_SUPPORTS_CONTEXTMENU 0
 #endif
 
 /// @cond ignore
@@ -991,9 +997,28 @@ void VST3Editor::recreateView ()
 	enableEditing (editingEnabled);
 }
 
-#define kFrameEnableFocusDrawingAttr	"frame-enable-focus-drawing"
-#define kFrameFocusColorAttr			"frame-focus-color"
-#define kFrameFocusWidthAttr			"frame-focus-width"
+#if LINUX
+//-----------------------------------------------------------------------------
+class LinuxEventHandler : public Steinberg::IPlugViewLinuxEventHandler, public Steinberg::FObject
+{
+public:
+	LinuxEventHandler (CFrame* frame) : frame (frame) {}
+
+	void PLUGIN_API onFDIsSet (FileDescriptor) override { frame->handleNextSystemEvents (); }
+
+	DELEGATE_REFCOUNT(Steinberg::FObject)
+	DEFINE_INTERFACES
+		DEF_INTERFACE (Steinberg::IPlugViewLinuxEventHandler)
+	END_DEFINE_INTERFACES (Steinberg::FObject)
+private:
+	CFrame* frame {nullptr};
+};
+
+#endif
+
+#define kFrameEnableFocusDrawingAttr "frame-enable-focus-drawing"
+#define kFrameFocusColorAttr "frame-focus-color"
+#define kFrameFocusWidthAttr "frame-focus-width"
 
 //-----------------------------------------------------------------------------
 bool PLUGIN_API VST3Editor::open (void* parent, const PlatformType& type)
@@ -1013,7 +1038,26 @@ bool PLUGIN_API VST3Editor::open (void* parent, const PlatformType& type)
 		return false;
 	}
 
-	getFrame ()->open (parent, type);
+	IPlatformFrameConfig* config = nullptr;
+#if LINUX
+	X11::FrameConfig x11config;
+	config = &x11config;
+#endif
+
+	getFrame ()->open (parent, type, config);
+
+#if LINUX
+	if (x11config.displayConnectionNumber != -1)
+	{
+		Steinberg::FUnknownPtr<Steinberg::IPlugFrameLinux> plugFrameLinux (plugFrame);
+		if (plugFrameLinux)
+		{
+			linuxEventHandler = new LinuxEventHandler (getFrame ());
+			plugFrameLinux->registerEventHandler (linuxEventHandler,
+												  x11config.displayConnectionNumber);
+		}
+	}
+#endif
 
 	if (delegate)
 		delegate->didOpen (this);
@@ -1032,9 +1076,22 @@ void PLUGIN_API VST3Editor::close ()
 	paramChangeListeners.clear ();
 	if (frame)
 	{
-	#if VSTGUI_LIVE_EDITING
+#if LINUX
+		if (linuxEventHandler)
+		{
+			Steinberg::FUnknownPtr<Steinberg::IPlugFrameLinux> plugFrameLinux (plugFrame);
+			if (plugFrameLinux)
+			{
+				plugFrameLinux->unregisterEventHandler (linuxEventHandler);
+				linuxEventHandler->release ();
+				linuxEventHandler = nullptr;
+			}
+		}
+#endif
+
+#if VSTGUI_LIVE_EDITING
 		getFrame ()->unregisterKeyboardHook (this);
-	#endif
+#endif
 		getFrame ()->unregisterMouseObserver (this);
 		getFrame ()->removeAll (true);
 		int32_t refCount = getFrame ()->getNbReference ();
