@@ -1,25 +1,25 @@
-﻿// This file is part of VSTGUI. It is subject to the license terms 
+﻿// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "x11frame.h"
-#include "../iplatformopenglview.h"
-#include "../iplatformviewlayer.h"
 #include "../../cbuttonstate.h"
 #include "../../crect.h"
 #include "../../idatapackage.h"
 #include "../../vstkeycode.h"
+#include "../iplatformopenglview.h"
+#include "../iplatformviewlayer.h"
 #include "cairobitmap.h"
 #include "cairocontext.h"
 #include "gtkoptionmenu.h"
 #include "gtktextedit.h"
 #include "x11platform.h"
 #include "x11timer.h"
+#include <cassert>
 #include <gtkmm.h>
 #include <gtkmm/plug.h>
 #include <iostream>
 #include <unordered_map>
-#include <cassert>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -623,7 +623,8 @@ struct Frame::Impl
 };
 
 //------------------------------------------------------------------------
-Frame::Frame (IPlatformFrameCallback* frame, const CRect& size, uint32_t parent)
+Frame::Frame (IPlatformFrameCallback* frame, const CRect& size, uint32_t parent,
+			  IPlatformFrameConfig* config)
 : IPlatformFrame (frame)
 {
 	gtk_init (0, 0);
@@ -638,6 +639,16 @@ Frame::Frame (IPlatformFrameCallback* frame, const CRect& size, uint32_t parent)
 
 	impl->plug.property_has_toplevel_focus ().signal_changed ().connect (
 	    [this] () { this->frame->platformOnActivate (impl->plug.has_toplevel_focus ()); });
+
+	auto cfg = dynamic_cast<FrameConfig*> (config);
+	if (cfg)
+	{
+		auto screen = impl->plug.get_screen ();
+		auto display = screen ? screen->get_display () : Glib::RefPtr<Gdk::Display> ();
+		auto obj = display ? display->gobj () : nullptr;
+		auto x11Display = obj ? gdk_x11_display_get_xdisplay (obj) : nullptr;
+		cfg->displayConnectionNumber = x11Display ? XConnectionNumber (x11Display) : -1;
+	}
 
 #if DEBUG
 	auto id = impl->plug.get_id ();
@@ -791,15 +802,16 @@ SharedPointer<IPlatformOpenGLView> Frame::createPlatformOpenGLView ()
 #endif
 
 //------------------------------------------------------------------------
-SharedPointer<IPlatformViewLayer> Frame::createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate,
-                                                    			  IPlatformViewLayer* parentLayer)
+SharedPointer<IPlatformViewLayer> Frame::createPlatformViewLayer (
+	IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer)
 {
 	// optional
 	return nullptr;
 }
 
 //------------------------------------------------------------------------
-SharedPointer<COffscreenContext> Frame::createOffscreenContext (CCoord width, CCoord height, double scaleFactor)
+SharedPointer<COffscreenContext> Frame::createOffscreenContext (CCoord width, CCoord height,
+																double scaleFactor)
 {
 	CPoint size (width * scaleFactor, height * scaleFactor);
 	auto bitmap = new Cairo::Bitmap (&size);
@@ -860,7 +872,7 @@ IPlatformFrame* IPlatformFrame::createPlatformFrame (IPlatformFrameCallback* fra
 	if (parentType == kDefaultNative || parentType == kX11EmbedWindowID)
 	{
 		auto x11Parent = reinterpret_cast<XID> (parent);
-		return new X11::Frame (frame, size, x11Parent);
+		return new X11::Frame (frame, size, x11Parent, config);
 	}
 	return nullptr;
 }
