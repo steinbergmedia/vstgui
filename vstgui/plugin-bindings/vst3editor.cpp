@@ -3,6 +3,7 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "vst3editor.h"
+#include "../vstgui.h"
 #include "../lib/cvstguitimer.h"
 #include "../lib/vstkeycode.h"
 #include "../uidescription/detail/uiviewcreatorattributes.h"
@@ -54,7 +55,7 @@ public:
 protected:
 	IdleUpdateHandler ()
 	{
-		timer = VSTGUI::owned(IPlatformTimer::create (this));
+		timer = IPlatformTimer::create (this);
 		timer->start (1000 / 30); // 30 Hz timer
 		
 		// we will always call CView::setDirty() on the main thread

@@ -89,6 +89,7 @@ endif()
 add_library(${target} STATIC ${${target}_sources})
 
 add_dependencies(${target} vstgui)
+target_link_libraries(${target} PRIVATE vstgui)
 target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS})
 vstgui_set_cxx_version(${target} 14)
 vstgui_source_group_by_folder(${target})
