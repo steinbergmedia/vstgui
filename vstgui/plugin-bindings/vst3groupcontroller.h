@@ -5,8 +5,9 @@
 #ifndef __vst3groupcontroller__
 #define __vst3groupcontroller__
 
-#include "vstgui/vstgui.h"
-#include "vstgui/vstgui_uidescription.h"
+#include "../lib/controls/ccontrol.h"
+#include "../uidescription/uidescriptionfwd.h"
+#include "../uidescription/icontroller.h"
 #include "base/source/fobject.h"
 #include "public.sdk/source/vst/vstparameters.h"
 #include "public.sdk/source/vst/vsteditcontroller.h"
