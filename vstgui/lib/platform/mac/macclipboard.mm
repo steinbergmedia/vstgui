@@ -1,36 +1,6 @@
-//-----------------------------------------------------------------------------
-// VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins
-//
-// Version 4.3
-//
-//-----------------------------------------------------------------------------
-// VSTGUI LICENSE
-// (c) 2015, Steinberg Media Technologies, All Rights Reserved
-//-----------------------------------------------------------------------------
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
-// 
-//   * Redistributions of source code must retain the above copyright notice, 
-//     this list of conditions and the following disclaimer.
-//   * Redistributions in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation 
-//     and/or other materials provided with the distribution.
-//   * Neither the name of the Steinberg Media Technologies nor the names of its
-//     contributors may be used to endorse or promote products derived from this 
-//     software without specific prior written permission.
-// 
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-// ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
-// IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
-// INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
-// BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
-// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
-// OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE  OF THIS SOFTWARE, EVEN IF ADVISED
-// OF THE POSSIBILITY OF SUCH DAMAGE.
-//-----------------------------------------------------------------------------
+// This file is part of VSTGUI. It is subject to the license terms 
+// in the LICENSE file found in the top-level directory of this
+// distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #import "macclipboard.h"
 #import "macglobals.h"
@@ -51,7 +21,7 @@ class Pasteboard : public IDataPackage
 {
 public:
 	Pasteboard (NSPasteboard* pb);
-	~Pasteboard ();
+	~Pasteboard () noexcept override;
 
 	uint32_t getCount () const override;
 	uint32_t getDataSize (uint32_t index) const override;
@@ -70,7 +40,7 @@ Pasteboard::Pasteboard (NSPasteboard* pb)
 : pb (pb)
 , nbItems (0)
 , stringsAreFiles (false)
-, dataArray (0)
+, dataArray (nullptr)
 {
 	NSArray *supportedTypes = [NSArray arrayWithObjects: NSStringPboardType, nil];
 	NSString* hasString = [pb availableTypeFromArray: supportedTypes];
@@ -80,7 +50,7 @@ Pasteboard::Pasteboard (NSPasteboard* pb)
 		NSString* unicodeText = [pb stringForType:NSStringPboardType];
 		if (unicodeText)
 		{
-			strings.push_back ([unicodeText UTF8String]);
+			strings.emplace_back ([unicodeText UTF8String]);
 		}
 	}
 	else
@@ -96,7 +66,7 @@ Pasteboard::Pasteboard (NSPasteboard* pb)
 			{
 				NSString* str = [fileNames objectAtIndex:i];
 				if (str)
-					strings.push_back ([str UTF8String]);
+					strings.emplace_back ([str UTF8String]);
 			}
 		}
 		else if ([pb availableTypeFromArray:[NSArray arrayWithObject:NSColorPboardType]])
@@ -111,7 +81,7 @@ Pasteboard::Pasteboard (NSPasteboard* pb)
 				int32_t alpha = static_cast<int32_t> ([nsColor alphaComponent] * 255.);
 				char str[10];
 				sprintf (str, "#%02x%02x%02x%02x", red, green, blue, alpha);
-				strings.push_back (str);
+				strings.emplace_back (str);
 			}
 		}
 		else
@@ -128,7 +98,7 @@ Pasteboard::Pasteboard (NSPasteboard* pb)
 }
 
 //-----------------------------------------------------------------------------
-Pasteboard::~Pasteboard ()
+Pasteboard::~Pasteboard () noexcept
 {
 	if (dataArray)
 		[dataArray release];
@@ -189,20 +159,20 @@ uint32_t Pasteboard::getData (uint32_t index, const void*& buffer, Pasteboard::T
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-IDataPackage* createClipboardDataPackage ()
+SharedPointer<IDataPackage> createClipboardDataPackage ()
 {
-	return new Pasteboard ([NSPasteboard generalPasteboard]);
+	return makeOwned<Pasteboard> ([NSPasteboard generalPasteboard]);
 }
 
 //-----------------------------------------------------------------------------
-IDataPackage* createDragDataPackage (NSPasteboard* pasteboard)
+SharedPointer<IDataPackage> createDragDataPackage (NSPasteboard* pasteboard)
 {
-	return new Pasteboard (pasteboard);
+	return makeOwned<Pasteboard> (pasteboard);
 }
 
 #if MAC_CARBON
 //-----------------------------------------------------------------------------
-IDataPackage* createCarbonDragDataPackage (DragRef drag)
+SharedPointer<IDataPackage> createCarbonDragDataPackage (DragRef drag)
 {
 	PasteboardRef pr;
 	if (GetDragPasteboard (drag, &pr) == noErr)
@@ -211,21 +181,21 @@ IDataPackage* createCarbonDragDataPackage (DragRef drag)
 		if (PasteboardCopyName (pr, &pasteboardName) == noErr)
 		{
 			[(NSString*)pasteboardName autorelease];
-			return new Pasteboard ([NSPasteboard pasteboardWithName:(NSString*)pasteboardName]);
+			return makeOwned<Pasteboard> ([NSPasteboard pasteboardWithName:(NSString*)pasteboardName]);
 		}
 	}
-	return 0;
+	return nullptr;
 }
 #endif
 
 //-----------------------------------------------------------------------------
-void setClipboard (IDataPackage* dataSource)
+void setClipboard (const SharedPointer<IDataPackage>& dataSource)
 {
 	NSPasteboard* pb = [NSPasteboard generalPasteboard];
 	if (dataSource)
 	{
 		uint32_t nbItems = dataSource->getCount ();
-		NSMutableArray* fileArray = 0;
+		NSMutableArray* fileArray = nullptr;
 		IDataPackage::Type type;
 		const void* data;
 		uint32_t length;
@@ -249,7 +219,7 @@ void setClipboard (IDataPackage* dataSource)
 					}
 					case IDataPackage::kFilePath:
 					{
-						if (fileArray == 0)
+						if (fileArray == nullptr)
 							fileArray = [[[NSMutableArray alloc] init] autorelease];
 						[fileArray addObject:[NSString stringWithCString:(const char*)data encoding:NSUTF8StringEncoding]];
 						break;

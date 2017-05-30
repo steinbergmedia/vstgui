@@ -1,36 +1,6 @@
-//-----------------------------------------------------------------------------
-// VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins
-//
-// Version 4.3
-//
-//-----------------------------------------------------------------------------
-// VSTGUI LICENSE
-// (c) 2015, Steinberg Media Technologies, All Rights Reserved
-//-----------------------------------------------------------------------------
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
-// 
-//   * Redistributions of source code must retain the above copyright notice, 
-//     this list of conditions and the following disclaimer.
-//   * Redistributions in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation 
-//     and/or other materials provided with the distribution.
-//   * Neither the name of the Steinberg Media Technologies nor the names of its
-//     contributors may be used to endorse or promote products derived from this 
-//     software without specific prior written permission.
-// 
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-// ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
-// IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
-// INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
-// BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
-// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
-// OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE  OF THIS SOFTWARE, EVEN IF ADVISED
-// OF THE POSSIBILITY OF SUCH DAMAGE.
-//-----------------------------------------------------------------------------
+// This file is part of VSTGUI. It is subject to the license terms 
+// in the LICENSE file found in the top-level directory of this
+// distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "cgbitmap.h"
 #include "../../cresourcedescription.h"
@@ -46,30 +16,27 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-IPlatformBitmap* IPlatformBitmap::create (CPoint* size)
+SharedPointer<IPlatformBitmap> IPlatformBitmap::create (CPoint* size)
 {
 	if (size)
-		return new CGBitmap (*size);
-	return new CGBitmap ();
+		return makeOwned<CGBitmap> (*size);
+	return makeOwned<CGBitmap> ();
 }
 
 //-----------------------------------------------------------------------------
-IPlatformBitmap* IPlatformBitmap::createFromPath (UTF8StringPtr absolutePath)
+SharedPointer<IPlatformBitmap> IPlatformBitmap::createFromPath (UTF8StringPtr absolutePath)
 {
-	CGBitmap* bitmap = 0;
-	CFURLRef url = CFURLCreateFromFileSystemRepresentation (0, (const UInt8*)absolutePath, static_cast<CFIndex> (strlen (absolutePath)), false);
+	SharedPointer<IPlatformBitmap> bitmap;
+	CFURLRef url = CFURLCreateFromFileSystemRepresentation (nullptr, (const UInt8*)absolutePath, static_cast<CFIndex> (strlen (absolutePath)), false);
 	if (url)
 	{
-		CGImageSourceRef source = CGImageSourceCreateWithURL (url, NULL);
+		CGImageSourceRef source = CGImageSourceCreateWithURL (url, nullptr);
 		if (source)
 		{
-			bitmap = new CGBitmap ();
-			bool result = bitmap->loadFromImageSource (source);
-			if (result == false)
-			{
-				bitmap->forget ();
-				bitmap = 0;
-			}
+			auto cgBitmap = makeOwned<CGBitmap> ();
+			bool result = cgBitmap->loadFromImageSource (source);
+			if (result)
+				bitmap = std::move (cgBitmap);
 			CFRelease (source);
 		}
 		CFRelease (url);
@@ -78,22 +45,19 @@ IPlatformBitmap* IPlatformBitmap::createFromPath (UTF8StringPtr absolutePath)
 }
 
 //-----------------------------------------------------------------------------
-IPlatformBitmap* IPlatformBitmap::createFromMemory (const void* ptr, uint32_t memSize)
+SharedPointer<IPlatformBitmap> IPlatformBitmap::createFromMemory (const void* ptr, uint32_t memSize)
 {
-	CGBitmap* bitmap = 0;
-	CFDataRef data = CFDataCreate (0, (const UInt8*)ptr, static_cast<CFIndex> (memSize));
+	SharedPointer<IPlatformBitmap> bitmap;
+	CFDataRef data = CFDataCreate (nullptr, (const UInt8*)ptr, static_cast<CFIndex> (memSize));
 	if (data)
 	{
-		CGImageSourceRef source = CGImageSourceCreateWithData (data, NULL);
+		CGImageSourceRef source = CGImageSourceCreateWithData (data, nullptr);
 		if (source)
 		{
-			bitmap = new CGBitmap ();
-			bool result = bitmap->loadFromImageSource (source);
-			if (result == false)
-			{
-				bitmap->forget ();
-				bitmap = 0;
-			}
+			auto cgBitmap = makeOwned<CGBitmap> ();
+			bool result = cgBitmap->loadFromImageSource (source);
+			if (result)
+				bitmap = std::move (cgBitmap);
 			CFRelease (source);
 		}
 		CFRelease (data);
@@ -102,30 +66,40 @@ IPlatformBitmap* IPlatformBitmap::createFromMemory (const void* ptr, uint32_t me
 }
 
 //-----------------------------------------------------------------------------
-bool IPlatformBitmap::createMemoryPNGRepresentation (IPlatformBitmap* bitmap, void** ptr, uint32_t& size)
+PNGBitmapBuffer IPlatformBitmap::createMemoryPNGRepresentation (const SharedPointer<IPlatformBitmap>& bitmap)
 {
-	bool result = false;
+	PNGBitmapBuffer buffer;
 #if !TARGET_OS_IPHONE
-	CGBitmap* cgBitmap = dynamic_cast<CGBitmap*> (bitmap);
-	if (cgBitmap)
+	if (auto cgBitmap = bitmap.cast<CGBitmap> ())
 	{
 		CGImageRef image = cgBitmap->getCGImage ();
 		if (image)
 		{
-			CFMutableDataRef data = CFDataCreateMutable (NULL, 0);
+			CFMutableDataRef data = CFDataCreateMutable (nullptr, 0);
 			if (data)
 			{
-				CGImageDestinationRef dest = CGImageDestinationCreateWithData (data, kUTTypePNG, 1, 0);
+				CGImageDestinationRef dest = CGImageDestinationCreateWithData (data, kUTTypePNG, 1, nullptr);
 				if (dest)
 				{
-					CGImageDestinationAddImage (dest, image, 0);
+					auto scaleFactor = bitmap->getScaleFactor ();
+					CFMutableDictionaryRef properties = nullptr;
+					if (scaleFactor != 1.)
+					{
+						properties = CFDictionaryCreateMutable (nullptr, 2, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+						double dpi = 72 * scaleFactor;
+						auto number = CFNumberCreate(nullptr, kCFNumberDoubleType, &dpi);
+						CFDictionaryAddValue (properties, kCGImagePropertyDPIWidth, number);
+						CFDictionaryAddValue (properties, kCGImagePropertyDPIHeight, number);
+						CFRelease (number);
+					}
+					CGImageDestinationAddImage (dest, image, properties);
 					if (CGImageDestinationFinalize (dest))
 					{
-						size = (uint32_t)CFDataGetLength (data);
-						*ptr = std::malloc (size);
-						CFDataGetBytes (data, CFRangeMake (0, static_cast<CFIndex> (size)), static_cast<UInt8*> (*ptr));
-						result = true;
+						buffer.resize(CFDataGetLength (data));
+						CFDataGetBytes (data, CFRangeMake (0, CFDataGetLength (data)), buffer.data ());
 					}
+					if (properties)
+						CFRelease (properties);
 					CFRelease (dest);
 				}
 				CFRelease (data);
@@ -133,29 +107,29 @@ bool IPlatformBitmap::createMemoryPNGRepresentation (IPlatformBitmap* bitmap, vo
 		}
 	}
 #endif
-	return result;
+	return buffer;
 }
 
 //-----------------------------------------------------------------------------
 CGBitmap::CGBitmap (const CPoint& inSize)
-: image (0)
-, imageSource (0)
-, layer (0)
-, bits (0)
+: size (inSize)
+, image (nullptr)
+, imageSource (nullptr)
+, layer (nullptr)
+, bits (nullptr)
 , dirty (false)
 , bytesPerRow (0)
 , scaleFactor (1.)
 {
-	size = inSize;
 	allocBits ();
 }
 
 //-----------------------------------------------------------------------------
 CGBitmap::CGBitmap (CGImageRef image)
 : image (image)
-, imageSource (0)
-, layer (0)
-, bits (0)
+, imageSource (nullptr)
+, layer (nullptr)
+, bits (nullptr)
 , dirty (false)
 , bytesPerRow (0)
 , scaleFactor (1.)
@@ -167,10 +141,10 @@ CGBitmap::CGBitmap (CGImageRef image)
 
 //-----------------------------------------------------------------------------
 CGBitmap::CGBitmap ()
-: image (0)
-, imageSource (0)
-, layer (0)
-, bits (0)
+: image (nullptr)
+, imageSource (nullptr)
+, layer (nullptr)
+, bits (nullptr)
 , dirty (false)
 , bytesPerRow (0)
 , scaleFactor (1.)
@@ -178,7 +152,7 @@ CGBitmap::CGBitmap ()
 }
 
 //-----------------------------------------------------------------------------
-CGBitmap::~CGBitmap ()
+CGBitmap::~CGBitmap () noexcept
 {
 	if (image)
 		CGImageRelease (image);
@@ -207,24 +181,24 @@ bool CGBitmap::load (const CResourceDescription& desc)
 			sprintf (filename, "bmp%05d", (int32_t)desc.u.id);
 		else
 			std::strcpy (filename, desc.u.name);
-		CFStringRef cfStr = CFStringCreateWithCString (NULL, filename, kCFStringEncodingUTF8);
+		CFStringRef cfStr = CFStringCreateWithCString (nullptr, filename, kCFStringEncodingUTF8);
 		if (cfStr)
 		{
-			CFURLRef url = NULL;
+			CFURLRef url = nullptr;
 			if (filename[0] == '/')
-				url = CFURLCreateFromFileSystemRepresentation (0, (const UInt8*)filename, static_cast<CFIndex> (strlen (filename)), false);
+				url = CFURLCreateFromFileSystemRepresentation (nullptr, (const UInt8*)filename, static_cast<CFIndex> (strlen (filename)), false);
 			int32_t i = 0;
-			while (url == NULL)
+			while (url == nullptr)
 			{
-				static CFStringRef resTypes [] = { CFSTR("png"), CFSTR("bmp"), CFSTR("jpg"), CFSTR("pict"), NULL };
-				url = CFBundleCopyResourceURL (getBundleRef (), cfStr, desc.type == CResourceDescription::kIntegerType ? resTypes[i] : 0, NULL);
-				if (resTypes[++i] == NULL)
+				static CFStringRef resTypes [] = { CFSTR("png"), CFSTR("bmp"), CFSTR("jpg"), CFSTR("pict"), nullptr };
+				url = CFBundleCopyResourceURL (getBundleRef (), cfStr, desc.type == CResourceDescription::kIntegerType ? resTypes[i] : nullptr, nullptr);
+				if (resTypes[++i] == nullptr)
 					break;
 			}
 			CFRelease (cfStr);
 			if (url)
 			{
-				CGImageSourceRef source = CGImageSourceCreateWithURL (url, NULL);
+				CGImageSourceRef source = CGImageSourceCreateWithURL (url, nullptr);
 				if (source)
 				{
 					result = loadFromImageSource (source);
@@ -258,8 +232,8 @@ bool CGBitmap::loadFromImageSource (CGImageSourceRef source)
 	if (imageSource)
 	{
 		CFRetain (imageSource);
-		CFDictionaryRef properties = CGImageSourceCopyPropertiesAtIndex (imageSource, 0, 0);
-		if (properties == 0)
+		CFDictionaryRef properties = CGImageSourceCopyPropertiesAtIndex (imageSource, 0, nullptr);
+		if (properties == nullptr)
 		{
 			return false;
 		}
@@ -277,7 +251,6 @@ bool CGBitmap::loadFromImageSource (CGImageSourceRef source)
 			if (CFNumberGetValue (value, kCFNumberDoubleType, &fValue))
 				size.x = fValue;
 		}
-		CFRetain (imageSource);
 	#if VSTGUI_QUARTZ_WORKAROUND_PNG_DECODE_ON_DRAW_BUG
 		// workaround a bug in Mac OS X 10.6 (32 bit), where PNG bitmaps were decoded all the time when drawn.
 		// we fix this by copying the pixels of the bitmap into our own buffer.
@@ -300,17 +273,17 @@ bool CGBitmap::loadFromImageSource (CGImageSourceRef source)
 //-----------------------------------------------------------------------------
 CGImageRef CGBitmap::getCGImage ()
 {
-	if (image == 0 && imageSource)
+	if (image == nullptr && imageSource)
 	{
 		const void* keys[] = {kCGImageSourceShouldCache, kCGImageSourceShouldPreferRGB32};
 		const void* values[] = {kCFBooleanTrue, kCFBooleanTrue};
-		CFDictionaryRef options = CFDictionaryCreate (NULL, keys, values, 2, NULL, NULL);
+		CFDictionaryRef options = CFDictionaryCreate (nullptr, keys, values, 2, nullptr, nullptr);
 		image = CGImageSourceCreateImageAtIndex (imageSource, 0, options);
 		CFRelease (imageSource);
 		CFRelease (options);
-		imageSource = 0;
+		imageSource = nullptr;
 	}
-	if ((dirty || image == 0) && bits)
+	if ((dirty || image == nullptr) && bits)
 	{
 		freeCGImage ();
 
@@ -318,9 +291,9 @@ CGImageRef CGBitmap::getCGImage ()
 		size_t byteCount = rowBytes * static_cast<size_t> (size.y);
 		size_t bitDepth = 32;
 
-		CGDataProviderRef provider = CGDataProviderCreateWithData (NULL, bits, byteCount, NULL);
+		CGDataProviderRef provider = CGDataProviderCreateWithData (nullptr, bits, byteCount, nullptr);
 		CGBitmapInfo bitmapInfo = kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Big;
-		image = CGImageCreate (static_cast<size_t> (size.x), static_cast<size_t> (size.y), 8, bitDepth, rowBytes, GetCGColorSpace (), bitmapInfo, provider, NULL, false, kCGRenderingIntentDefault);
+		image = CGImageCreate (static_cast<size_t> (size.x), static_cast<size_t> (size.y), 8, bitDepth, rowBytes, GetCGColorSpace (), bitmapInfo, provider, nullptr, false, kCGRenderingIntentDefault);
 		CGDataProviderRelease (provider);
 		dirty = false;
 	}
@@ -330,8 +303,8 @@ CGImageRef CGBitmap::getCGImage ()
 //-----------------------------------------------------------------------------
 CGContextRef CGBitmap::createCGContext ()
 {
-	CGContextRef context = 0;
-	if (bits == 0)
+	CGContextRef context = nullptr;
+	if (bits == nullptr)
 	{
 		allocBits ();
 		if (imageSource)
@@ -370,7 +343,7 @@ CGLayerRef CGBitmap::createCGLayer (CGContextRef context)
 	if (layer && !dirty)
 		return layer;
 	CGImageRef image = getCGImage ();
-	layer = image ? CGLayerCreateWithContext (context, CGSizeFromCPoint (size), 0) : 0;
+	layer = image ? CGLayerCreateWithContext (context, CGSizeFromCPoint (size), nullptr) : nullptr;
 	if (layer)
 	{
 		CGContextRef layerContext = CGLayerGetContext (layer);
@@ -382,7 +355,7 @@ CGLayerRef CGBitmap::createCGLayer (CGContextRef context)
 //-----------------------------------------------------------------------------
 void CGBitmap::allocBits ()
 {
-	if (bits == 0)
+	if (bits == nullptr)
 	{
 		bytesPerRow = static_cast<uint32_t> (size.x * 4);
 		if (bytesPerRow % 16)
@@ -397,10 +370,10 @@ void CGBitmap::freeCGImage ()
 {
 	if (image)
 		CFRelease (image);
-	image = 0;
+	image = nullptr;
 	if (layer)
 		CFRelease (layer);
-	layer = 0;
+	layer = nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -419,12 +392,12 @@ public:
 			buffer.height = static_cast<vImagePixelCount> (bitmap->getSize ().y);
 			buffer.rowBytes = bitmap->getBytesPerRow ();
 			vImage_Error error = vImageUnpremultiplyData_ARGB8888 (&buffer, &buffer, kvImageNoFlags);
-			__Verify (error == kvImageNoError);
+			assert (error == kvImageNoError);
 		}
 		bitmap->remember ();
 	}
 	
-	~CGBitmapPixelAccess ()
+	~CGBitmapPixelAccess () noexcept override
 	{
 		if (!alphaPremultiplied)
 		{
@@ -434,7 +407,7 @@ public:
 			buffer.height = static_cast<vImagePixelCount> (bitmap->getSize ().y);
 			buffer.rowBytes = bitmap->getBytesPerRow ();
 			vImage_Error error = vImagePremultiplyData_ARGB8888 (&buffer, &buffer, kvImageNoFlags);
-			__Verify (error == kvImageNoError);
+			assert (error == kvImageNoError);
 		}
 		bitmap->setDirty ();
 		bitmap->forget ();
@@ -465,9 +438,9 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-IPlatformBitmapPixelAccess* CGBitmap::lockPixels (bool alphaPremultiplied)
+SharedPointer<IPlatformBitmapPixelAccess> CGBitmap::lockPixels (bool alphaPremultiplied)
 {
-	if (bits == 0)
+	if (bits == nullptr)
 	{
 		CGContextRef context = createCGContext ();
 		if (context)
@@ -475,9 +448,9 @@ IPlatformBitmapPixelAccess* CGBitmap::lockPixels (bool alphaPremultiplied)
 	}
 	if (bits)
 	{
-		return new CGBitmapPixelAccess (this, alphaPremultiplied);
+		return makeOwned<CGBitmapPixelAccess> (this, alphaPremultiplied);
 	}
-	return 0;
+	return nullptr;
 }
 
 } // namespace

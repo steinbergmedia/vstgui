@@ -1,36 +1,6 @@
-//-----------------------------------------------------------------------------
-// VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins :
-//
-// Version 4.3
-//
-//-----------------------------------------------------------------------------
-// VSTGUI LICENSE
-// (c) 2015, Steinberg Media Technologies, All Rights Reserved
-//-----------------------------------------------------------------------------
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
-//
-//   * Redistributions of source code must retain the above copyright notice,
-//     this list of conditions and the following disclaimer.
-//   * Redistributions in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation
-//     and/or other materials provided with the distribution.
-//   * Neither the name of the Steinberg Media Technologies nor the names of its
-//     contributors may be used to endorse or promote products derived from this
-//     software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-// ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
-// IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
-// INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
-// BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
-// OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE  OF THIS SOFTWARE, EVEN IF ADVISED
-// OF THE POSSIBILITY OF SUCH DAMAGE.
-//-----------------------------------------------------------------------------
+// This file is part of VSTGUI. It is subject to the license terms 
+// in the LICENSE file found in the top-level directory of this
+// distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #ifndef __vstguibase__
 #define __vstguibase__
@@ -44,7 +14,7 @@
 // VSTGUI Version
 //-----------------------------------------------------------------------------
 #define VSTGUI_VERSION_MAJOR  4
-#define VSTGUI_VERSION_MINOR  4
+#define VSTGUI_VERSION_MINOR  5
 
 //-----------------------------------------------------------------------------
 // Platform definitions
@@ -66,20 +36,8 @@
 		#define VSTGUI_OPENGL_SUPPORT 0	// there's an implementation, but not yet tested, so this is zero
 		#define VSTGUI_TOUCH_EVENT_HANDLING 1
 	#else
-		#ifndef MAC_OS_X_VERSION_10_5
-			#error unsupported Mac OS X SDK
-		#endif
-		#ifndef MAC_OS_X_VERSION_10_6
-			#define MAC_OS_X_VERSION_10_6 1060
-		#endif
-		#ifndef MAC_OS_X_VERSION_10_7
-			#define MAC_OS_X_VERSION_10_7 1070
-		#endif
-		#ifndef MAC_OS_X_VERSION_10_8
-			#define MAC_OS_X_VERSION_10_8 1080
-		#endif
 		#ifndef MAC_OS_X_VERSION_10_9
-			#define MAC_OS_X_VERSION_10_9 1090
+			#error you need at least OSX SDK 10.9 to build vstgui
 		#endif
 		#ifndef MAC_COCOA
 			#define MAC_COCOA 1
@@ -97,24 +55,17 @@
 			#endif
 		#endif
 	#endif
-	#ifdef __has_feature
-		#define VSTGUI_RVALUE_REF_SUPPORT __has_feature (cxx_rvalue_references)
-		#define VSTGUI_RANGE_BASED_FOR_LOOP_SUPPORT __has_feature (cxx_range_for)
-		#if VSTGUI_RVALUE_REF_SUPPORT
-			#include <type_traits>
-		#endif
-		#if __has_feature (cxx_override_control)
-			#define VSTGUI_OVERRIDE_VMETHOD	override
-		#endif
+
+	#ifndef __has_feature
+		#error compiler not supported
 	#endif
-	#if __cplusplus >= 201103L
-		#define VSTGUI_FINAL_VMETHOD final
-		#ifdef _LIBCPP_VERSION
-			#define VSTGUI_HAS_FUNCTIONAL 1
-		#endif
-	#else
-		#define noexcept
+	#if __has_feature (cxx_rvalue_references) == 0
+		#error need cxx_rvalue_references support from compiler
 	#endif
+	#if __has_feature (cxx_range_for) == 0
+		#error need cxx_range_for support from compiler
+	#endif
+	#include <type_traits>
 
 	#if defined (__clang__) && __clang_major__ > 4
 		#if defined (VSTGUI_WARN_EVERYTHING) && VSTGUI_WARN_EVERYTHING == 1
@@ -131,36 +82,22 @@
 		#define NOMINMAX
 	#endif
 	#include <sdkddkver.h>
-	#if _WIN32_WINNT < 0x600
-		#error unsupported Platform SDK you need at least the Vista Platform SDK to compile VSTGUI
+	#if _WIN32_WINNT < 0x601
+		#error unsupported Platform SDK you need at least the Windows 7 Platform SDK to compile VSTGUI
 	#endif
-
 	#ifdef __GNUC__
-		#if __cplusplus >= 201103L
-			#define VSTGUI_OVERRIDE_VMETHOD	override
-			#define VSTGUI_FINAL_VMETHOD final
-			#define VSTGUI_RVALUE_REF_SUPPORT 1
-			#define VSTGUI_RANGE_BASED_FOR_LOOP_SUPPORT 1
-			#define VSTGUI_HAS_FUNCTIONAL 1
-		#else
-			#define noexcept
+		#if __cplusplus < 201103L
+			#error compiler not supported
 		#endif
-		#include <stdint.h>
-	#elif _MSC_VER <	1800
+	#elif _MSC_VER < 1800
 		#error Visual Studio 2013 or newer needed
-	#elif _MSC_VER >=	1800
-		#define VSTGUI_OVERRIDE_VMETHOD	override
-		#define VSTGUI_RVALUE_REF_SUPPORT 1
-		#define VSTGUI_RANGE_BASED_FOR_LOOP_SUPPORT 1
-		#define VSTGUI_HAS_FUNCTIONAL 1
-		#define VSTGUI_FINAL_VMETHOD final
-		#include <type_traits>
-		#include <stdint.h>
 	#endif
+	#include <type_traits>
+	#include <stdint.h>
 	#ifndef WINDOWS
 		#define WINDOWS 1
 	#endif
-	#if !defined(__GNUC__) && _MSC_VER <= 1800
+	#if !defined(__GNUC__) && _MSC_VER == 1800
 		#define noexcept		// only supported since VS 2015
 	#endif
 	#define VSTGUI_DIRECT2D_SUPPORT	1
@@ -171,9 +108,20 @@
 	#pragma warning(3 : 4431) // missing type specifier - int assumed. Note: C no longer supports default-int
 	#pragma warning(3 : 4254) // conversion from 'type1' to 'type2', possible loss of data
 	#pragma warning(3 : 4388) // signed/unsigned mismatch
+
+	#if defined (__clang__) && __clang__
+		#if defined (VSTGUI_WARN_EVERYTHING) && VSTGUI_WARN_EVERYTHING == 1
+			#pragma clang diagnostic warning "-Wconversion"
+			#pragma clang diagnostic ignored "-Wreorder"
+		#else
+			#pragma clang diagnostic warning "-Wunreachable-code"
+		#endif
+	#endif
+
 	#include <algorithm>
 	using std::min;
 	using std::max;
+
 #elif defined(__linux__)
     #include <cstdint>
     #include <type_traits>
@@ -181,45 +129,20 @@
     #include <climits>
     using std::min;
     using std::max;
-    #define VSTGUI_OVERRIDE_VMETHOD	override
-    #define VSTGUI_FINAL_VMETHOD final
-    #define VSTGUI_RVALUE_REF_SUPPORT 1
-    #define VSTGUI_RANGE_BASED_FOR_LOOP_SUPPORT 1
-    #define VSTGUI_HAS_FUNCTIONAL 1
 	#ifndef LINUX
 		#define LINUX 1
 	#endif
+
 #else
 	#error unsupported compiler
 #endif
+
+#include <atomic>
 
 #ifdef UNICODE
 	#undef UNICODE
 #endif
 #define UNICODE 1
-
-//----------------------------------------------------
-// C++11 features
-//----------------------------------------------------
-#ifndef VSTGUI_RVALUE_REF_SUPPORT
-	#error "c++11 compiler needed !"
-#endif
-
-#ifndef VSTGUI_OVERRIDE_VMETHOD
-	#error "c++11 compiler needed !"
-#endif
-
-#ifndef VSTGUI_FINAL_VMETHOD
-	#error "c++11 compiler needed !"
-#endif
-
-#ifndef VSTGUI_RANGE_BASED_FOR_LOOP_SUPPORT
-	#error "c++11 compiler needed !"
-#endif
-
-#ifndef VSTGUI_HAS_FUNCTIONAL
-	#error "c++11 compiler needed !"
-#endif
 
 //----------------------------------------------------
 // Deprecation setting
@@ -249,6 +172,14 @@
 	#define VSTGUI_TOUCH_EVENT_HANDLING 0
 #endif
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+	#define VSTGUI_OVERRIDE_VMETHOD	override
+	#define VSTGUI_FINAL_VMETHOD final
+#else
+	#define VSTGUI_OVERRIDE_VMETHOD	static_assert (false, "VSTGUI_OVERRIDE_VMETHOD is deprecated, just use override!");
+	#define VSTGUI_FINAL_VMETHOD static_assert (false, "VSTGUI_FINAL_VMETHOD is deprecated, just use final!");
+#endif
+
 //----------------------------------------------------
 // Helper makros
 //----------------------------------------------------
@@ -274,10 +205,10 @@
 //----------------------------------------------------
 namespace VSTGUI {
 	
-typedef double		CCoord;				///< coordinate type
-typedef const char* IdStringPtr;		///< ID String pointer
-typedef const char* UTF8StringPtr;		///< UTF8 String pointer
-typedef char*		UTF8StringBuffer;	///< UTF8 String buffer pointer
+using CCoord = double;					///< coordinate type
+using IdStringPtr = const char*;		///< ID String pointer
+using UTF8StringPtr = const char*;		///< UTF8 String pointer
+using UTF8StringBuffer = char*;			///< UTF8 String buffer pointer
 
 //-----------------------------------------------------------------------------
 // @brief Byte Order
@@ -302,24 +233,53 @@ enum CMessageResult
 };
 
 //-----------------------------------------------------------------------------
-// CBaseObject Declaration
-//! @brief Base Object with reference counter
-//-----------------------------------------------------------------------------
-class CBaseObject
+class IReference
 {
 public:
-	CBaseObject () : nbReference (1) {}
-	virtual ~CBaseObject () {}
+	virtual void forget () = 0;
+	virtual void remember () = 0;
+};
+
+//-----------------------------------------------------------------------------
+template <typename T>
+class ReferenceCounted : public IReference
+{
+public:
+	ReferenceCounted () = default;
+	virtual ~ReferenceCounted () noexcept = default;
+	
+	ReferenceCounted (const ReferenceCounted&) {};
+	ReferenceCounted& operator= (const ReferenceCounted&) { return *this; }
 
 	//-----------------------------------------------------------------------------
 	/// @name Reference Counting Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual void forget () { nbReference--; if (nbReference == 0) { beforeDelete (); delete this; } }	///< decrease refcount and delete object if refcount == 0
-	virtual void remember () { nbReference++; }										///< increase refcount
+	void forget () override { if (--nbReference == 0) { beforeDelete (); delete this; } }	///< decrease refcount and delete object if refcount == 0
+	void remember () override { nbReference++; }										///< increase refcount
 	virtual int32_t getNbReference () const { return nbReference; }					///< get refcount
+	virtual void beforeDelete () {}
 	//@}
+private:
+	T nbReference {1};
+};
 
+using AtomicReferenceCounted = ReferenceCounted<std::atomic<int32_t>>;
+using NonAtomicReferenceCounted = ReferenceCounted<int32_t>;
+
+//-----------------------------------------------------------------------------
+// CBaseObject Declaration
+//! @brief Base Object with reference counter
+//-----------------------------------------------------------------------------
+class CBaseObject : public NonAtomicReferenceCounted
+{
+public:
+	CBaseObject () = default;
+	~CBaseObject () noexcept override = default;
+
+	CBaseObject (const CBaseObject& o) {};
+	CBaseObject& operator= (const CBaseObject& obj) { return *this; }
+	
 	//-----------------------------------------------------------------------------
 	/// @name Message Methods
 	//-----------------------------------------------------------------------------
@@ -327,24 +287,9 @@ public:
 	virtual CMessageResult notify (CBaseObject* sender, IdStringPtr message) { return kMessageUnknown; }
 	//@}
 
-	virtual void beforeDelete () {}
-
 	/// @cond ignore
 	virtual CBaseObject* newCopy () const { return 0; }
 	/// @endcond
-
-private:
-	int32_t nbReference;
-};
-
-//-----------------------------------------------------------------------------
-class CBaseObjectGuard
-{
-public:
-	CBaseObjectGuard (CBaseObject* _obj) : obj (_obj) { if (obj) obj->remember (); }
-	~CBaseObjectGuard () { if (obj) obj->forget (); }
-protected:
-	CBaseObject* obj;
 };
 
 //------------------------------------------------------------------------
@@ -353,29 +298,74 @@ class SharedPointer
 {
 public:
 //------------------------------------------------------------------------
-	inline SharedPointer (I* ptr, bool remember = true);
-	inline SharedPointer (const SharedPointer&);
-	inline SharedPointer ();
-	inline ~SharedPointer ();
+	inline SharedPointer (I* ptr, bool remember = true) noexcept;
+	inline SharedPointer (const SharedPointer&) noexcept;
+	inline SharedPointer () noexcept;
+	inline ~SharedPointer () noexcept;
 
-	inline I* operator=(I* ptr);
-	inline SharedPointer<I>& operator=(const SharedPointer<I>& );
+	inline I* operator=(I* ptr) noexcept;
+	inline SharedPointer<I>& operator=(const SharedPointer<I>& ) noexcept;
 
-	inline operator I* ()  const { return ptr; }      // act as I*
-	inline I* operator->() const { return ptr; }      // act as I*
+	inline operator I* ()  const noexcept { return ptr; }      // act as I*
+	inline I* operator->() const noexcept { return ptr; }      // act as I*
+
+	inline I* get () const noexcept { return ptr; }
 
 	template<class T> T* cast () const { return dynamic_cast<T*> (ptr); }
 
 	inline SharedPointer (SharedPointer<I>&& mp) noexcept;
 	inline SharedPointer<I>& operator=(SharedPointer<I>&& mp) noexcept;
+
+	template<typename T>
+	inline SharedPointer (const SharedPointer<T>& op) noexcept
+	{
+		*this = static_cast<I*> (op.get ());
+	}
+
+	template<typename T>
+	inline SharedPointer& operator= (const SharedPointer<T>& op) noexcept
+	{
+		*this = static_cast<I*> (op.get ());
+		return *this;
+	}
+	
+	template<typename T>
+	inline SharedPointer (SharedPointer<T>&& op) noexcept
+	{
+		*this = std::move (op);
+	}
+
+	template<typename T>
+	inline SharedPointer& operator= (SharedPointer<T>&& op) noexcept
+	{
+		if (ptr)
+			ptr->forget ();
+		ptr = op.ptr;
+		op.ptr = nullptr;
+		return *this;
+	}
+	
 //------------------------------------------------------------------------
 protected:
-	I* ptr;
+	template<typename T>
+	friend class SharedPointer;
+
+	I* ptr {nullptr};
 };
+
+//-----------------------------------------------------------------------------
+class CBaseObjectGuard
+{
+public:
+	explicit CBaseObjectGuard (CBaseObject* _obj) : obj (_obj) {}
+protected:
+	SharedPointer<CBaseObject> obj;
+};
+
 
 //------------------------------------------------------------------------
 template <class I>
-inline SharedPointer<I>::SharedPointer (I* _ptr, bool remember)
+inline SharedPointer<I>::SharedPointer (I* _ptr, bool remember) noexcept
 : ptr (_ptr)
 {
 	if (ptr && remember)
@@ -384,7 +374,7 @@ inline SharedPointer<I>::SharedPointer (I* _ptr, bool remember)
 
 //------------------------------------------------------------------------
 template <class I>
-inline SharedPointer<I>::SharedPointer (const SharedPointer<I>& other)
+inline SharedPointer<I>::SharedPointer (const SharedPointer<I>& other) noexcept
 : ptr (other.ptr)
 {
 	if (ptr)
@@ -393,13 +383,13 @@ inline SharedPointer<I>::SharedPointer (const SharedPointer<I>& other)
 
 //------------------------------------------------------------------------
 template <class I>
-inline SharedPointer<I>::SharedPointer ()
+inline SharedPointer<I>::SharedPointer () noexcept
 : ptr (0)
 {}
 
 //------------------------------------------------------------------------
 template <class I>
-inline SharedPointer<I>::~SharedPointer ()
+inline SharedPointer<I>::~SharedPointer () noexcept
 {
 	if (ptr)
 		ptr->forget ();
@@ -426,7 +416,7 @@ inline SharedPointer<I>& SharedPointer<I>::operator=(SharedPointer<I>&& mp) noex
 
 //------------------------------------------------------------------------
 template <class I>
-inline I* SharedPointer<I>::operator=(I* _ptr)
+inline I* SharedPointer<I>::operator=(I* _ptr) noexcept
 {
 	if (_ptr != ptr)
 	{
@@ -441,7 +431,7 @@ inline I* SharedPointer<I>::operator=(I* _ptr)
 
 //------------------------------------------------------------------------
 template <class I>
-inline SharedPointer<I>& SharedPointer<I>::operator=(const SharedPointer<I>& _ptr)
+inline SharedPointer<I>& SharedPointer<I>::operator=(const SharedPointer<I>& _ptr) noexcept
 {
 	operator= (_ptr.ptr);
 	return *this;
@@ -449,9 +439,28 @@ inline SharedPointer<I>& SharedPointer<I>::operator=(const SharedPointer<I>& _pt
 
 //------------------------------------------------------------------------
 template <class I>
-SharedPointer<I> owned (I* p) { return SharedPointer<I> (p, false); }
+inline SharedPointer<I> owned (I* p) noexcept { return SharedPointer<I> (p, false); }
 
 //------------------------------------------------------------------------
+template <class I>
+inline SharedPointer<I> shared (I* p) noexcept { return SharedPointer<I> (p, true); }
+
+//------------------------------------------------------------------------
+template <class I, typename ...Args>
+inline SharedPointer<I> makeOwned (Args&& ...args)
+{
+	return SharedPointer<I> (new I (std::forward<Args>(args)...), false);
+}
+
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+//------------------------------------------------------------------------
+/** An owning pointer. \deprecated
+ *
+ *	This class is now deprecated. Please change your code from
+ *	@code{.cpp} OwningPointer<MyClass> obj = new MyClass () @endcode
+ *	to
+ *	@code{.cpp} SharedPointer<MyClass> obj = makeOwned<MyClass> (); @endcode
+ */
 template <class I>
 class OwningPointer : public SharedPointer<I>
 {
@@ -472,6 +481,28 @@ public:
 		return this->ptr;
 	}
 };
+#endif
+
+//------------------------------------------------------------------------
+template <typename T, typename B>
+inline void setBit (T& storage, B bit, bool state)
+{
+	static_assert (std::is_integral<T>::value, "only works for integral types");
+	static_assert (sizeof (T) >= sizeof (B), "bit type is too big");
+	if (state)
+		storage |= static_cast<T> (bit);
+	else
+		storage &= ~(static_cast<T> (bit));
+}
+
+//------------------------------------------------------------------------
+template <typename T, typename B>
+inline constexpr bool hasBit (T storage, B bit)
+{
+	static_assert (std::is_integral<T>::value, "only works for integral types");
+	static_assert (sizeof (T) >= sizeof (B), "bit type is too big");
+	return (storage & static_cast<T> (bit)) ? true : false;
+}
 
 } // namespace
 

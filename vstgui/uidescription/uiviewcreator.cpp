@@ -1,36 +1,6 @@
-//-----------------------------------------------------------------------------
-// VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins
-//
-// Version 4.3
-//
-//-----------------------------------------------------------------------------
-// VSTGUI LICENSE
-// (c) 2015, Steinberg Media Technologies, All Rights Reserved
-//-----------------------------------------------------------------------------
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
-// 
-//   * Redistributions of source code must retain the above copyright notice, 
-//     this list of conditions and the following disclaimer.
-//   * Redistributions in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation 
-//     and/or other materials provided with the distribution.
-//   * Neither the name of the Steinberg Media Technologies nor the names of its
-//     contributors may be used to endorse or promote products derived from this 
-//     software without specific prior written permission.
-// 
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-// ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
-// IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
-// INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
-// BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
-// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
-// OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE  OF THIS SOFTWARE, EVEN IF ADVISED
-// OF THE POSSIBILITY OF SUCH DAMAGE.
-//-----------------------------------------------------------------------------
+// This file is part of VSTGUI. It is subject to the license terms
+// in the LICENSE file found in the top-level directory of this
+// distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 /**
 @page uidescription_attributes UI XML Attribute Definitions
@@ -341,7 +311,7 @@ Declaration:
 */
 
 /*
-class CViewCreator : public IViewCreator
+class CViewCreator : public ViewCreatorAdapter
 {
 public:
 	IdStringPtr getViewName () const { return "CView"; }
@@ -356,7 +326,7 @@ public:
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const
 	{
-		attributeNames.push_back ("empty");
+		attributeNames.emplace_back ("empty");
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const
@@ -397,8 +367,8 @@ bool parseSize (const std::string& str, CPoint& point)
 	size_t sep = str.find (',', 0);
 	if (sep != std::string::npos)
 	{
-		point.x = strtol (str.c_str (), 0, 10);
-		point.y = strtol (str.c_str () + sep+1, 0, 10);
+		point.x = strtol (str.c_str (), nullptr, 10);
+		point.y = strtol (str.c_str () + sep+1, nullptr, 10);
 		return true;
 	}
 	return false;
@@ -435,7 +405,7 @@ bool bitmapToString (CBitmap* bitmap, std::string& string, const IUIDescription*
 //-----------------------------------------------------------------------------
 bool colorToString (const CColor& color, std::string& string, const IUIDescription* desc)
 {
-	UTF8StringPtr colorName = desc ? desc->lookupColorName (color) : 0;
+	UTF8StringPtr colorName = desc ? desc->lookupColorName (color) : nullptr;
 	if (colorName)
 		string = colorName;
 	else
@@ -468,7 +438,7 @@ static bool stringToBitmap (const std::string* value, CBitmap*& bitmap, const IU
 	if (value)
 	{
 		if (*value == "")
-			bitmap = 0;
+			bitmap = nullptr;
 		else
 			bitmap = desc->getBitmap (value->c_str ());
 		return true;
@@ -481,10 +451,7 @@ static void applyStyleMask (const std::string* value, int32_t mask, int32_t& sty
 {
 	if (value)
 	{
-		if (*value == "true")
-			style |= mask;
-		else
-			style &= ~mask;
+		setBit (style, mask, *value == "true");
 	}
 }
 
@@ -507,7 +474,7 @@ static void addGradientToUIDescription (const IUIDescription* description, CGrad
 					str << " ";
 					str << index;
 				}
-			} while (description->getGradient (str.str ().c_str ()) != 0);
+			} while (description->getGradient (str.str ().c_str ()) != nullptr);
 			uiDesc->changeGradient (str.str ().c_str (), gradient);
 		}
 	}
@@ -515,14 +482,62 @@ static void addGradientToUIDescription (const IUIDescription* description, CGrad
 
 static bool getStandardAttributeListValues (const std::string& attributeName, std::list<const std::string*>& values);
 
+#if VSTGUI_LIVE_EDITING
 //-----------------------------------------------------------------------------
-class CViewCreator : public IViewCreator
+class LiveEditingCView : public CView
+{
+public:
+	LiveEditingCView (const CRect& r) : CView (r) {}
+	void draw (CDrawContext* context) override
+	{
+		if (getDrawBackground ())
+		{
+			CView::draw (context);
+			return;
+		}
+		context->setLineWidth (1.);
+		context->setLineStyle (kLineSolid);
+		context->setDrawMode (kAliasing);
+		context->setFrameColor ({200, 200, 200, 100});
+		context->setFillColor ({200, 200, 200, 100});
+		constexpr auto width = 5.;
+		CRect viewSize = getViewSize ();
+		auto r = viewSize;
+		r.setSize ({width,width});
+		uint32_t row = 0u;
+		while (r.top < viewSize.bottom)
+		{
+			uint32_t column = (row % 2) ? 0u : 1u;
+			while (r.left < viewSize.right)
+			{
+				if (column % 2)
+					context->drawRect (r, kDrawFilled);
+				r.offset (width, 0);
+				++column;
+			}
+			r.left = viewSize.left;
+			r.right = r.left + width;
+			r.offset (0, width);
+			++row;
+		}
+		context->drawRect (viewSize, kDrawStroked);
+		setDirty (false);
+	}
+};
+using SimpleCView = LiveEditingCView;
+#else
+using SimpleCView = CView;
+#endif
+
+//-----------------------------------------------------------------------------
+class CViewCreator : public ViewCreatorAdapter
 {
 public:
 	CViewCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCView; }
-	IdStringPtr getBaseViewName () const override { return 0; }
-	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CView (CRect (0, 0, 0, 0)); }
+	IdStringPtr getBaseViewName () const override { return nullptr; }
+	UTF8StringPtr getDisplayName () const override { return "View"; }
+	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new SimpleCView (CRect (0, 0, 0, 0)); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
 		CPoint p;
@@ -555,6 +570,8 @@ public:
 			view->setTransparency (b);
 		if (attributes.getBooleanAttribute (kAttrMouseEnabled, b))
 			view->setMouseEnabled (b);
+		if (attributes.hasAttribute (kAttrWantsFocus) && attributes.getBooleanAttribute (kAttrWantsFocus, b))
+			view->setWantsFocus (b);
 
 		const std::string* autosizeAttr = attributes.getAttributeValue (kAttrAutosize);
 		if (autosizeAttr)
@@ -599,17 +616,18 @@ public:
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const override
 	{
-		attributeNames.push_back (kAttrOrigin);
-		attributeNames.push_back (kAttrSize);
-		attributeNames.push_back (kAttrOpacity);
-		attributeNames.push_back (kAttrTransparent);
-		attributeNames.push_back (kAttrMouseEnabled);
-		attributeNames.push_back (kAttrBitmap);
-		attributeNames.push_back (kAttrDisabledBitmap);
-		attributeNames.push_back (kAttrAutosize);
-		attributeNames.push_back (kAttrTooltip);
-		attributeNames.push_back (kAttrCustomViewName);
-		attributeNames.push_back (kAttrSubController);
+		attributeNames.emplace_back (kAttrOrigin);
+		attributeNames.emplace_back (kAttrSize);
+		attributeNames.emplace_back (kAttrOpacity);
+		attributeNames.emplace_back (kAttrTransparent);
+		attributeNames.emplace_back (kAttrMouseEnabled);
+		attributeNames.emplace_back (kAttrWantsFocus);
+		attributeNames.emplace_back (kAttrBitmap);
+		attributeNames.emplace_back (kAttrDisabledBitmap);
+		attributeNames.emplace_back (kAttrAutosize);
+		attributeNames.emplace_back (kAttrTooltip);
+		attributeNames.emplace_back (kAttrCustomViewName);
+		attributeNames.emplace_back (kAttrSubController);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const override
@@ -619,6 +637,7 @@ public:
 		else if (attributeName == kAttrOpacity) return kFloatType;
 		else if (attributeName == kAttrTransparent) return kBooleanType;
 		else if (attributeName == kAttrMouseEnabled) return kBooleanType;
+		else if (attributeName == kAttrWantsFocus) return kBooleanType;
 		else if (attributeName == kAttrBitmap) return kBitmapType;
 		else if (attributeName == kAttrDisabledBitmap) return kBitmapType;
 		else if (attributeName == kAttrAutosize) return kStringType;
@@ -652,6 +671,11 @@ public:
 		else if (attributeName == kAttrMouseEnabled)
 		{
 			stringValue = view->getMouseEnabled () ? "true" : "false";
+			return true;
+		}
+		else if (attributeName == kAttrWantsFocus)
+		{
+			stringValue = view->wantsFocus () ? "true" : "false";
 			return true;
 		}
 		else if (attributeName == kAttrBitmap)
@@ -737,17 +761,18 @@ private:
 CViewCreator __gCViewCreator;
 
 //-----------------------------------------------------------------------------
-class CViewContainerCreator : public IViewCreator
+class CViewContainerCreator : public ViewCreatorAdapter
 {
 public:
 	CViewContainerCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCViewContainer; }
 	IdStringPtr getBaseViewName () const override { return kCView; }
+	UTF8StringPtr getDisplayName () const override { return "View Container"; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CViewContainer (CRect (0, 0, 100, 100)); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
-		CViewContainer* viewContainer = dynamic_cast<CViewContainer*> (view);
-		if (viewContainer == 0)
+		CViewContainer* viewContainer = view->asViewContainer ();
+		if (viewContainer == nullptr)
 			return false;
 		CColor backColor;
 		if (stringToColor (attributes.getAttributeValue (kAttrBackgroundColor), backColor, description))
@@ -770,8 +795,8 @@ public:
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const override
 	{
-		attributeNames.push_back (kAttrBackgroundColor);
-		attributeNames.push_back (kAttrBackgroundColorDrawStyle);
+		attributeNames.emplace_back (kAttrBackgroundColor);
+		attributeNames.emplace_back (kAttrBackgroundColorDrawStyle);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const override
@@ -782,8 +807,8 @@ public:
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const override
 	{
-		CViewContainer* vc = dynamic_cast<CViewContainer*> (view);
-		if (vc == 0)
+		CViewContainer* vc = view->asViewContainer ();
+		if (vc == nullptr)
 			return false;
 		if (attributeName == kAttrBackgroundColor)
 		{
@@ -810,9 +835,9 @@ public:
 			static std::string kStroked = "stroked";
 			static std::string kFilledAndStroked = "filled and stroked";
 			static std::string kFilled = "filled";
-			values.push_back (&kStroked);
-			values.push_back (&kFilledAndStroked);
-			values.push_back (&kFilled);
+			values.emplace_back (&kStroked);
+			values.emplace_back (&kFilledAndStroked);
+			values.emplace_back (&kFilled);
 			return true;
 		}
 		return false;
@@ -822,17 +847,18 @@ public:
 CViewContainerCreator __CViewContainerCreator;
 
 //-----------------------------------------------------------------------------
-class CLayeredViewContainerCreator : public IViewCreator
+class CLayeredViewContainerCreator : public ViewCreatorAdapter
 {
 public:
 	CLayeredViewContainerCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCLayeredViewContainer; }
 	IdStringPtr getBaseViewName () const override { return kCViewContainer; }
+	UTF8StringPtr getDisplayName () const override { return "Layered View Container"; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CLayeredViewContainer (CRect (0, 0, 100, 100)); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
 		CLayeredViewContainer* lvc = dynamic_cast<CLayeredViewContainer*>(view);
-		if (lvc == 0)
+		if (lvc == nullptr)
 			return false;
 		int32_t zIndex;
 		if (attributes.getIntegerAttribute (kAttrZIndex, zIndex))
@@ -841,7 +867,7 @@ public:
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const override
 	{
-		attributeNames.push_back (kAttrZIndex);
+		attributeNames.emplace_back (kAttrZIndex);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const override
@@ -852,7 +878,7 @@ public:
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const override
 	{
 		CLayeredViewContainer* lvc = dynamic_cast<CLayeredViewContainer*>(view);
-		if (lvc == 0)
+		if (lvc == nullptr)
 			return false;
 		if (attributeName == kAttrZIndex)
 		{
@@ -865,17 +891,18 @@ public:
 CLayeredViewContainerCreator __CLayeredViewContainerCreator;
 
 //-----------------------------------------------------------------------------
-class CRowColumnViewCreator : public IViewCreator
+class CRowColumnViewCreator : public ViewCreatorAdapter
 {
 public:
 	CRowColumnViewCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCRowColumnView; }
 	IdStringPtr getBaseViewName () const override { return kCViewContainer; }
+	UTF8StringPtr getDisplayName () const override { return "Row Column View Container"; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CRowColumnView (CRect (0, 0, 100, 100)); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
 		CRowColumnView* rcv = dynamic_cast<CRowColumnView*> (view);
-		if (rcv == 0)
+		if (rcv == nullptr)
 			return false;
 		const std::string* attr = attributes.getAttributeValue (kAttrRowStyle);
 		if (attr)
@@ -892,6 +919,9 @@ public:
 		attr = attributes.getAttributeValue (kAttrAnimateViewResizing);
 		if (attr)
 			rcv->setAnimateViewResizing (*attr == "true" ? true : false);
+		attr = attributes.getAttributeValue (kAttrHideClippedSubviews);
+		if (attr)
+			rcv->setHideClippedSubviews (*attr == "true" ? true : false);
 		attr = attributes.getAttributeValue (kAttrEqualSizeLayout);
 		if (attr)
 		{
@@ -907,19 +937,20 @@ public:
 		attr = attributes.getAttributeValue (kAttrViewResizeAnimationTime);
 		if (attr)
 		{
-			uint32_t time = (uint32_t)strtol (attr->c_str(), 0, 10);
+			uint32_t time = (uint32_t)strtol (attr->c_str(), nullptr, 10);
 			rcv->setViewResizeAnimationTime (time);
 		}
 		return true;
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const override
 	{
-		attributeNames.push_back (kAttrRowStyle);
-		attributeNames.push_back (kAttrSpacing);
-		attributeNames.push_back (kAttrMargin);
-		attributeNames.push_back (kAttrEqualSizeLayout);
-		attributeNames.push_back (kAttrAnimateViewResizing);
-		attributeNames.push_back (kAttrViewResizeAnimationTime);
+		attributeNames.emplace_back (kAttrRowStyle);
+		attributeNames.emplace_back (kAttrSpacing);
+		attributeNames.emplace_back (kAttrMargin);
+		attributeNames.emplace_back (kAttrEqualSizeLayout);
+		attributeNames.emplace_back (kAttrHideClippedSubviews);
+		attributeNames.emplace_back (kAttrAnimateViewResizing);
+		attributeNames.emplace_back (kAttrViewResizeAnimationTime);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const override
@@ -928,6 +959,7 @@ public:
 		if (attributeName == kAttrSpacing) return kIntegerType;
 		if (attributeName == kAttrMargin) return kRectType;
 		if (attributeName == kAttrEqualSizeLayout) return kListType;
+		if (attributeName == kAttrHideClippedSubviews) return kBooleanType;
 		if (attributeName == kAttrAnimateViewResizing) return kBooleanType;
 		if (attributeName == kAttrViewResizeAnimationTime) return kIntegerType;
 		return kUnknownType;
@@ -935,7 +967,7 @@ public:
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const override
 	{
 		CRowColumnView* rcv = dynamic_cast<CRowColumnView*> (view);
-		if (rcv == 0)
+		if (rcv == nullptr)
 			return false;
 		if (attributeName == kAttrRowStyle)
 		{
@@ -945,6 +977,11 @@ public:
 		if (attributeName == kAttrAnimateViewResizing)
 		{
 			stringValue = rcv->isAnimateViewResizing () ? "true" : "false";
+			return true;
+		}
+		if (attributeName == kAttrHideClippedSubviews)
+		{
+			stringValue = rcv->hideClippedSubviews () ? "true" : "false";
 			return true;
 		}
 		if (attributeName == kAttrSpacing)
@@ -993,10 +1030,10 @@ public:
 			static std::string kCenter = "center";
 			static std::string kRightBottom = "right-bottom";
 	
-			values.push_back (&kLeftTop);
-			values.push_back (&kStretch);
-			values.push_back (&kCenter);
-			values.push_back (&kRightBottom);
+			values.emplace_back (&kLeftTop);
+			values.emplace_back (&kStretch);
+			values.emplace_back (&kCenter);
+			values.emplace_back (&kRightBottom);
 			return true;
 		}
 		return false;
@@ -1006,17 +1043,18 @@ public:
 CRowColumnViewCreator __CRowColumnViewCreator;
 
 //-----------------------------------------------------------------------------
-class CScrollViewCreator : public IViewCreator
+class CScrollViewCreator : public ViewCreatorAdapter
 {
 public:
 	CScrollViewCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCScrollView; }
 	IdStringPtr getBaseViewName () const override { return kCViewContainer; }
+	UTF8StringPtr getDisplayName () const override { return "Scroll View"; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CScrollView (CRect (0, 0, 100, 100), CRect (0, 0, 200, 200), CScrollView::kHorizontalScrollbar|CScrollView::kVerticalScrollbar); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
 		CScrollView* scrollView = dynamic_cast<CScrollView*> (view);
-		if (scrollView == 0)
+		if (scrollView == nullptr)
 			return false;
 		
 		CPoint p;
@@ -1034,10 +1072,7 @@ public:
 		const std::string* attr = attributes.getAttributeValue (kAttrBordered);
 		if (attr)
 		{
-			if (*attr == "true")
-				style &= ~CScrollView::kDontDrawFrame;
-			else
-				style |= CScrollView::kDontDrawFrame;
+			setBit (style, CScrollView::kDontDrawFrame, *attr != "true");
 		}
 		applyStyleMask (attributes.getAttributeValue (kAttrOverlayScrollbars), CScrollView::kOverlayScrollbars, style);
 		applyStyleMask (attributes.getAttributeValue (kAttrFollowFocusView), CScrollView::kFollowFocusView, style);
@@ -1068,18 +1103,18 @@ public:
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const override
 	{
-		attributeNames.push_back (kAttrContainerSize);
-		attributeNames.push_back (kAttrScrollbarBackgroundColor);
-		attributeNames.push_back (kAttrScrollbarFrameColor);
-		attributeNames.push_back (kAttrScrollbarScrollerColor);
-		attributeNames.push_back (kAttrHorizontalScrollbar);
-		attributeNames.push_back (kAttrVerticalScrollbar);
-		attributeNames.push_back (kAttrAutoHideScrollbars);
-		attributeNames.push_back (kAttrAutoDragScrolling);
-		attributeNames.push_back (kAttrOverlayScrollbars);
-		attributeNames.push_back (kAttrScrollbarWidth);
-		attributeNames.push_back (kAttrBordered);
-		attributeNames.push_back (kAttrFollowFocusView);
+		attributeNames.emplace_back (kAttrContainerSize);
+		attributeNames.emplace_back (kAttrScrollbarBackgroundColor);
+		attributeNames.emplace_back (kAttrScrollbarFrameColor);
+		attributeNames.emplace_back (kAttrScrollbarScrollerColor);
+		attributeNames.emplace_back (kAttrHorizontalScrollbar);
+		attributeNames.emplace_back (kAttrVerticalScrollbar);
+		attributeNames.emplace_back (kAttrAutoHideScrollbars);
+		attributeNames.emplace_back (kAttrAutoDragScrolling);
+		attributeNames.emplace_back (kAttrOverlayScrollbars);
+		attributeNames.emplace_back (kAttrScrollbarWidth);
+		attributeNames.emplace_back (kAttrBordered);
+		attributeNames.emplace_back (kAttrFollowFocusView);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const override
@@ -1101,7 +1136,7 @@ public:
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const override
 	{
 		CScrollView* sc = dynamic_cast<CScrollView*> (view);
-		if (sc == 0)
+		if (sc == nullptr)
 			return false;
 		if (attributeName == kAttrContainerSize)
 		{
@@ -1176,13 +1211,13 @@ public:
 CScrollViewCreator __CScrollViewCreator;
 
 //-----------------------------------------------------------------------------
-class CControlCreator : public IViewCreator
+class CControlCreator : public ViewCreatorAdapter
 {
 protected:
 	class DummyControl : public CControl
 	{
 	public:
-		DummyControl () : CControl (CRect (0, 0, 0, 0), 0, -1) {}
+		DummyControl () : CControl (CRect (0, 0, 0, 0), nullptr, -1) {}
 		void draw (CDrawContext* pContext) override { CView::draw (pContext); }
 		
 		CLASS_METHODS(DummyControl, CControl)
@@ -1191,11 +1226,12 @@ public:
 	CControlCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCControl; }
 	IdStringPtr getBaseViewName () const override { return kCView; }
+	UTF8StringPtr getDisplayName () const override { return "Control"; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new DummyControl (); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
 		CControl* control = dynamic_cast<CControl*> (view);
-		if (control == 0)
+		if (control == nullptr)
 			return false;
 		
 		double value;
@@ -1218,7 +1254,7 @@ public:
 			if (controlTagAttr->length () == 0)
 			{
 				control->setTag (-1);
-				control->setListener (0);
+				control->setListener (nullptr);
 			}
 			else
 			{
@@ -1230,7 +1266,7 @@ public:
 				}
 				else
 				{
-					char* endPtr = 0;
+					char* endPtr = nullptr;
 					tag = (int32_t)strtol (controlTagAttr->c_str (), &endPtr, 10);
 					if (endPtr != controlTagAttr->c_str ())
 					{
@@ -1245,12 +1281,12 @@ public:
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const override
 	{
-		attributeNames.push_back (kAttrControlTag);
-		attributeNames.push_back (kAttrDefaultValue);
-		attributeNames.push_back (kAttrMinValue);
-		attributeNames.push_back (kAttrMaxValue);
-		attributeNames.push_back (kAttrWheelIncValue);
-		attributeNames.push_back (kAttrBackgroundOffset);
+		attributeNames.emplace_back (kAttrControlTag);
+		attributeNames.emplace_back (kAttrDefaultValue);
+		attributeNames.emplace_back (kAttrMinValue);
+		attributeNames.emplace_back (kAttrMaxValue);
+		attributeNames.emplace_back (kAttrWheelIncValue);
+		attributeNames.emplace_back (kAttrBackgroundOffset);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const override
@@ -1266,7 +1302,7 @@ public:
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const override
 	{
 		CControl* control = dynamic_cast<CControl*> (view);
-		if (control == 0)
+		if (control == nullptr)
 			return false;
 		if (attributeName == kAttrControlTag)
 		{
@@ -1312,41 +1348,26 @@ public:
 CControlCreator __gCControlCreator;
 
 //-----------------------------------------------------------------------------
-class COnOffButtonCreator : public IViewCreator
+class COnOffButtonCreator : public ViewCreatorAdapter
 {
 public:
 	COnOffButtonCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCOnOffButton; }
 	IdStringPtr getBaseViewName () const override { return kCControl; }
-	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new COnOffButton (CRect (0, 0, 0, 0), 0, -1, 0); }
-	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
-	{
-		return true;
-	}
-	bool getAttributeNames (std::list<std::string>& attributeNames) const override
-	{
-		return true;
-	}
-	AttrType getAttributeType (const std::string& attributeName) const override
-	{
-		return kUnknownType;
-	}
-	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const override
-	{
-		return false;
-	}
-
+	UTF8StringPtr getDisplayName () const override { return "OnOff Button"; }
+	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new COnOffButton (CRect (0, 0, 0, 0), nullptr, -1, nullptr); }
 };
 COnOffButtonCreator __gCOnOffButtonCreator;
 
 //-----------------------------------------------------------------------------
-class CCheckBoxCreator : public IViewCreator
+class CCheckBoxCreator : public ViewCreatorAdapter
 {
 public:
 	CCheckBoxCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCCheckBox; }
 	IdStringPtr getBaseViewName () const override { return kCControl; }
-	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CCheckBox (CRect (0, 0, 100, 20), 0, -1, "Title"); }
+	UTF8StringPtr getDisplayName () const override { return "Checkbox"; }
+	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CCheckBox (CRect (0, 0, 100, 20), nullptr, -1, "Title"); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
 		CCheckBox* checkbox = dynamic_cast<CCheckBox*> (view);
@@ -1390,14 +1411,14 @@ public:
 
 	bool getAttributeNames (std::list<std::string>& attributeNames) const override
 	{
-		attributeNames.push_back (kAttrTitle);
-		attributeNames.push_back (kAttrFont);
-		attributeNames.push_back (kAttrFontColor);
-		attributeNames.push_back (kAttrBoxframeColor);
-		attributeNames.push_back (kAttrBoxfillColor);
-		attributeNames.push_back (kAttrCheckmarkColor);
-		attributeNames.push_back (kAttrAutosizeToFit);
-		attributeNames.push_back (kAttrDrawCrossbox);
+		attributeNames.emplace_back (kAttrTitle);
+		attributeNames.emplace_back (kAttrFont);
+		attributeNames.emplace_back (kAttrFontColor);
+		attributeNames.emplace_back (kAttrBoxframeColor);
+		attributeNames.emplace_back (kAttrBoxfillColor);
+		attributeNames.emplace_back (kAttrCheckmarkColor);
+		attributeNames.emplace_back (kAttrAutosizeToFit);
+		attributeNames.emplace_back (kAttrDrawCrossbox);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const override
@@ -1420,7 +1441,7 @@ public:
 		
 		if (attributeName == kAttrTitle)
 		{
-			stringValue = checkbox->getTitle ();
+			stringValue = checkbox->getTitle ().getString ();
 			return true;
 		}
 		else if (attributeName == kAttrFont)
@@ -1476,12 +1497,13 @@ public:
 CCheckBoxCreator __gCCheckBoxCreator;
 
 //-----------------------------------------------------------------------------
-class CParamDisplayCreator : public IViewCreator
+class CParamDisplayCreator : public ViewCreatorAdapter
 {
 public:
 	CParamDisplayCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCParamDisplay; }
 	IdStringPtr getBaseViewName () const override { return kCControl; }
+	UTF8StringPtr getDisplayName () const override { return "Parameter Display"; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CParamDisplay (CRect (0, 0, 0, 0)); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
@@ -1512,6 +1534,8 @@ public:
 		CPoint p;
 		if (attributes.getPointAttribute (kAttrTextInset, p))
 			display->setTextInset (p);
+		if (attributes.getPointAttribute (kAttrTextShadowOffset, p))
+			display->setShadowTextOffset (p);
 		bool b;
 		if (attributes.getBooleanAttribute(kAttrFontAntialias, b))
 			display->setAntialias (b);
@@ -1547,7 +1571,7 @@ public:
 		const std::string* precisionAttr = attributes.getAttributeValue (kAttrValuePrecision);
 		if (precisionAttr)
 		{
-			uint8_t precision = (uint8_t)strtol (precisionAttr->c_str (), 0, 10);
+			uint8_t precision = (uint8_t)strtol (precisionAttr->c_str (), nullptr, 10);
 			display->setPrecision (precision);
 		}
 
@@ -1555,25 +1579,26 @@ public:
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const override
 	{
-		attributeNames.push_back (kAttrFont);
-		attributeNames.push_back (kAttrFontColor);
-		attributeNames.push_back (kAttrBackColor);
-		attributeNames.push_back (kAttrFrameColor);
-		attributeNames.push_back (kAttrShadowColor);
-		attributeNames.push_back (kAttrRoundRectRadius);
-		attributeNames.push_back (kAttrFrameWidth);
-		attributeNames.push_back (kAttrTextAlignment);
-		attributeNames.push_back (kAttrTextInset);
-		attributeNames.push_back (kAttrValuePrecision);
-		attributeNames.push_back (kAttrFontAntialias);
-		attributeNames.push_back (kAttrStyle3DIn);
-		attributeNames.push_back (kAttrStyle3DOut);
-		attributeNames.push_back (kAttrStyleNoFrame);
-		attributeNames.push_back (kAttrStyleNoText);
-		attributeNames.push_back (kAttrStyleNoDraw);
-		attributeNames.push_back (kAttrStyleShadowText);
-		attributeNames.push_back (kAttrStyleRoundRect);
-		attributeNames.push_back (kAttrTextRotation);
+		attributeNames.emplace_back (kAttrFont);
+		attributeNames.emplace_back (kAttrFontColor);
+		attributeNames.emplace_back (kAttrBackColor);
+		attributeNames.emplace_back (kAttrFrameColor);
+		attributeNames.emplace_back (kAttrShadowColor);
+		attributeNames.emplace_back (kAttrRoundRectRadius);
+		attributeNames.emplace_back (kAttrFrameWidth);
+		attributeNames.emplace_back (kAttrTextAlignment);
+		attributeNames.emplace_back (kAttrTextInset);
+		attributeNames.emplace_back (kAttrTextShadowOffset);
+		attributeNames.emplace_back (kAttrValuePrecision);
+		attributeNames.emplace_back (kAttrFontAntialias);
+		attributeNames.emplace_back (kAttrStyle3DIn);
+		attributeNames.emplace_back (kAttrStyle3DOut);
+		attributeNames.emplace_back (kAttrStyleNoFrame);
+		attributeNames.emplace_back (kAttrStyleNoText);
+		attributeNames.emplace_back (kAttrStyleNoDraw);
+		attributeNames.emplace_back (kAttrStyleShadowText);
+		attributeNames.emplace_back (kAttrStyleRoundRect);
+		attributeNames.emplace_back (kAttrTextRotation);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const override
@@ -1595,6 +1620,7 @@ public:
 		else if (attributeName == kAttrFrameWidth) return kFloatType;
 		else if (attributeName == kAttrTextAlignment) return kStringType;
 		else if (attributeName == kAttrTextInset) return kPointType;
+		else if (attributeName == kAttrTextShadowOffset) return kPointType;
 		else if (attributeName == kAttrValuePrecision) return kIntegerType;
 		else if (attributeName == kAttrTextRotation) return kFloatType;
 		return kUnknownType;
@@ -1602,7 +1628,7 @@ public:
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const override
 	{
 		CParamDisplay* pd = dynamic_cast<CParamDisplay*> (view);
-		if (pd == 0)
+		if (pd == nullptr)
 			return false;
 		if (attributeName == kAttrFont)
 		{
@@ -1637,6 +1663,11 @@ public:
 		else if (attributeName == kAttrTextInset)
 		{
 			pointToString (pd->getTextInset (), stringValue);
+			return true;
+		}
+		else if (attributeName == kAttrTextShadowOffset)
+		{
+			pointToString (pd->getShadowTextOffset (), stringValue);
 			return true;
 		}
 		else if (attributeName == kAttrFontAntialias)
@@ -1727,12 +1758,13 @@ public:
 CParamDisplayCreator __gCParamDisplayCreator;
 
 //-----------------------------------------------------------------------------
-class COptionMenuCreator : public IViewCreator
+class COptionMenuCreator : public ViewCreatorAdapter
 {
 public:
 	COptionMenuCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCOptionMenu; }
 	IdStringPtr getBaseViewName () const override { return kCParamDisplay; }
+	UTF8StringPtr getDisplayName () const override { return "Option Menu"; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new COptionMenu (); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
@@ -1749,8 +1781,8 @@ public:
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const override
 	{
-		attributeNames.push_back (kAttrMenuPopupStyle);
-		attributeNames.push_back (kAttrMenuCheckStyle);
+		attributeNames.emplace_back (kAttrMenuPopupStyle);
+		attributeNames.emplace_back (kAttrMenuCheckStyle);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const override
@@ -1781,12 +1813,13 @@ public:
 COptionMenuCreator __gCOptionMenuCreator;
 
 //-----------------------------------------------------------------------------
-class CTextLabelCreator : public IViewCreator
+class CTextLabelCreator : public ViewCreatorAdapter
 {
 public:
 	CTextLabelCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCTextLabel; }
 	IdStringPtr getBaseViewName () const override { return kCParamDisplay; }
+	UTF8StringPtr getDisplayName () const override { return "Label"; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CTextLabel (CRect (0, 0, 100, 20)); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
@@ -1812,8 +1845,8 @@ public:
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const override
 	{
-		attributeNames.push_back (kAttrTitle);
-		attributeNames.push_back (kAttrTruncateMode);
+		attributeNames.emplace_back (kAttrTitle);
+		attributeNames.emplace_back (kAttrTruncateMode);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const override
@@ -1829,8 +1862,7 @@ public:
 			return false;
 		if (attributeName == kAttrTitle)
 		{
-			UTF8StringPtr title = label->getText ();
-			stringValue = title ? title : "";
+			stringValue = label->getText ().getString ();
 			return true;
 		}
 		else if (attributeName == kAttrTruncateMode)
@@ -1858,13 +1890,99 @@ public:
 CTextLabelCreator __gCTextLabelCreator;
 
 //-----------------------------------------------------------------------------
-class CTextEditCreator : public IViewCreator
+class CMultiLineTextLabelCreator : public ViewCreatorAdapter
+{
+public:
+	CMultiLineTextLabelCreator () { UIViewFactory::registerViewCreator (*this); }
+	IdStringPtr getViewName () const override { return kCMultiLineTextLabel; }
+	IdStringPtr getBaseViewName () const override { return kCTextLabel; }
+	UTF8StringPtr getDisplayName () const override { return "Multiline Label"; }
+	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CMultiLineTextLabel (CRect (0, 0, 100, 20)); }
+	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
+	{
+		auto label = dynamic_cast<CMultiLineTextLabel*> (view);
+		if (!label)
+			return false;
+		
+		auto attr = attributes.getAttributeValue (kAttrLineLayout);
+		if (attr)
+		{
+			if (*attr == "truncate")
+				label->setLineLayout (CMultiLineTextLabel::LineLayout::truncate);
+			else if (*attr == "wrap")
+				label->setLineLayout (CMultiLineTextLabel::LineLayout::wrap);
+			else
+				label->setLineLayout (CMultiLineTextLabel::LineLayout::clip);
+		}
+		bool autoHeight;
+		if (attributes.getBooleanAttribute (kAttrAutoHeight, autoHeight))
+			label->setAutoHeight (autoHeight);
+		
+		return true;
+	}
+	bool getAttributeNames (std::list<std::string>& attributeNames) const override
+	{
+		attributeNames.emplace_back (kAttrLineLayout);
+		attributeNames.emplace_back (kAttrAutoHeight);
+		return true;
+	}
+	AttrType getAttributeType (const std::string& attributeName) const override
+	{
+		if (attributeName == kAttrLineLayout) return kListType;
+		if (attributeName == kAttrAutoHeight) return kBooleanType;
+		return kUnknownType;
+	}
+	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const override
+	{
+		auto label = dynamic_cast<CMultiLineTextLabel*> (view);
+		if (!label)
+			return false;
+		if (attributeName == kAttrLineLayout)
+		{
+			switch (label->getLineLayout ())
+			{
+				case CMultiLineTextLabel::LineLayout::truncate: stringValue = "truncate"; break;
+				case CMultiLineTextLabel::LineLayout::wrap: stringValue = "wrap"; break;
+				case CMultiLineTextLabel::LineLayout::clip: stringValue = "clip"; break;
+			}
+			return true;
+		}
+		else if (attributeName == kAttrAutoHeight)
+		{
+			stringValue = label->getAutoHeight () ? "true" : "false";
+			return true;
+		}
+
+		return false;
+	}
+	bool getPossibleListValues (const std::string& attributeName, std::list<const std::string*>& values) const override
+	{
+		if (attributeName == kAttrLineLayout)
+		{
+			static std::string kClip = "clip";
+			static std::string kTruncate = "truncate";
+			static std::string kWrap = "wrap";
+			
+			values.emplace_back (&kClip);
+			values.emplace_back (&kTruncate);
+			values.emplace_back (&kWrap);
+			return true;
+		}
+		return false;
+	}
+
+};
+CMultiLineTextLabelCreator __gCMultiLineTextLabelCreator;
+
+//-----------------------------------------------------------------------------
+class CTextEditCreator : public ViewCreatorAdapter
 {
 public:
 	CTextEditCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCTextEdit; }
 	IdStringPtr getBaseViewName () const override { return kCTextLabel; }
-	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CTextEdit (CRect (0, 0, 100, 20), 0, -1); }
+	UTF8StringPtr getDisplayName () const override { return "Text Edit"; }
+	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CTextEdit (CRect (0, 0, 100, 20), nullptr, -1); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
 		CTextEdit* label = dynamic_cast<CTextEdit*> (view);
@@ -1872,25 +1990,34 @@ public:
 			return false;
 
 		bool b;
-		if (attributes.getBooleanAttribute(kAttrImmediateTextChange, b))
+		if (attributes.getBooleanAttribute (kAttrSecureStyle, b))
+			label->setSecureStyle (b);
+		if (attributes.getBooleanAttribute (kAttrImmediateTextChange, b))
 			label->setImmediateTextChange (b);
 
 		int32_t style = label->getStyle ();
 		applyStyleMask (attributes.getAttributeValue (kAttrStyleDoubleClick), kDoubleClickStyle, style);
 		label->setStyle (style);
 
+		if (auto placeholder = attributes.getAttributeValue (kAttrPlaceholderTitle))
+			label->setPlaceholderString (placeholder->c_str ());
+
 		return true;
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const override
 	{
-		attributeNames.push_back (kAttrImmediateTextChange);
-		attributeNames.push_back (kAttrStyleDoubleClick);
+		attributeNames.emplace_back (kAttrSecureStyle);
+		attributeNames.emplace_back (kAttrImmediateTextChange);
+		attributeNames.emplace_back (kAttrStyleDoubleClick);
+		attributeNames.emplace_back (kAttrPlaceholderTitle);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const override
 	{
+		if (attributeName == kAttrSecureStyle) return kBooleanType;
 		if (attributeName == kAttrImmediateTextChange) return kBooleanType;
 		if (attributeName == kAttrStyleDoubleClick) return kBooleanType;
+		if (attributeName == kAttrPlaceholderTitle) return kStringType;
 		return kUnknownType;
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const override
@@ -1898,6 +2025,11 @@ public:
 		CTextEdit* label = dynamic_cast<CTextEdit*> (view);
 		if (!label)
 			return false;
+		if (attributeName == kAttrSecureStyle)
+		{
+			stringValue = label->getSecureStyle () ? "true" : "false";
+			return true;
+		}
 		if (attributeName == kAttrImmediateTextChange)
 		{
 			stringValue = label->getImmediateTextChange () ? "true" : "false";
@@ -1908,6 +2040,11 @@ public:
 			stringValue = label->getStyle () & kDoubleClickStyle ? "true" : "false";
 			return true;
 		}
+		if (attributeName == kAttrPlaceholderTitle)
+		{
+			stringValue = label->getPlaceholderString ().getString ();
+			return true;
+		}
 		
 		return false;
 	}
@@ -1915,16 +2052,65 @@ public:
 };
 CTextEditCreator __gCTextEditCreator;
 
+//------------------------------------------------------------------------
+class CSearchTextEditCreator : public ViewCreatorAdapter
+{
+public:
+	CSearchTextEditCreator () { UIViewFactory::registerViewCreator (*this); }
+	IdStringPtr getViewName () const override { return kCSearchTextEdit; }
+	IdStringPtr getBaseViewName () const override { return kCTextEdit; }
+	UTF8StringPtr getDisplayName () const override { return "Search Text Edit"; }
+	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override
+	{
+		return new CSearchTextEdit (CRect (0, 0, 100, 20), nullptr, -1);
+	}
+	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
+	{
+		auto ste = dynamic_cast<CSearchTextEdit*>(view);
+		if (!ste)
+			return false;
+		CPoint p;
+		if (attributes.getPointAttribute (kAttrClearMarkInset, p))
+			ste->setClearMarkInset (p);
+		return true;
+	}
+	bool getAttributeNames (std::list<std::string>& attributeNames) const override
+	{
+		attributeNames.emplace_back (kAttrClearMarkInset);
+		return true;
+	}
+	AttrType getAttributeType (const std::string& attributeName) const override
+	{
+		if (attributeName == kAttrClearMarkInset)
+			return kPointType;
+		return kUnknownType;
+	}
+	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const override
+	{
+		auto ste = dynamic_cast<CSearchTextEdit*>(view);
+		if (!ste)
+			return false;
+		if (attributeName == kAttrClearMarkInset)
+		{
+			pointToString (ste->getClearMarkInset (), stringValue);
+			return true;
+		}
+		return false;
+	}
+};
+CSearchTextEditCreator __gCSearchTextEditCreator;
+
 //-----------------------------------------------------------------------------
-class CTextButtonCreator : public IViewCreator
+class CTextButtonCreator : public ViewCreatorAdapter
 {
 public:
 	CTextButtonCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCTextButton; }
 	IdStringPtr getBaseViewName () const override { return kCControl; }
+	UTF8StringPtr getDisplayName () const override { return "Text Button"; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override
 	{
-		CTextButton* button = new CTextButton (CRect (0, 0, 100, 20), 0, -1, "");
+		CTextButton* button = new CTextButton (CRect (0, 0, 100, 20), nullptr, -1, "");
 		if (!description->lookupGradientName (button->getGradient ()))
 			addGradientToUIDescription (description, button->getGradient (), "Default TextButton Gradient");
 		if (!description->lookupGradientName (button->getGradientHighlighted ()))
@@ -2020,7 +2206,7 @@ public:
 		if (gradientHighlightedName)
 			button->setGradientHighlighted (description->getGradient (gradientHighlightedName->c_str ()));
 
-		if (gradientName == 0 && gradientHighlightedName == 0)
+		if (gradientName == nullptr && gradientHighlightedName == nullptr)
 		{
 			bool hasOldGradient = true;
 			CColor startColor, highlightedStartColor, endColor, highlightedEndColor;
@@ -2047,22 +2233,22 @@ public:
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const override
 	{
-		attributeNames.push_back (kAttrKickStyle);
-		attributeNames.push_back (kAttrTitle);
-		attributeNames.push_back (kAttrFont);
-		attributeNames.push_back (kAttrTextColor);
-		attributeNames.push_back (kAttrTextColorHighlighted);
-		attributeNames.push_back (kAttrGradient);
-		attributeNames.push_back (kAttrGradientHighlighted);
-		attributeNames.push_back (kAttrFrameColor);
-		attributeNames.push_back (kAttrFrameColorHighlighted);
-		attributeNames.push_back (kAttrRoundRadius);
-		attributeNames.push_back (kAttrFrameWidth);
-		attributeNames.push_back (kAttrIconTextMargin);
-		attributeNames.push_back (kAttrTextAlignment);
-		attributeNames.push_back (kAttrIcon);
-		attributeNames.push_back (kAttrIconHighlighted);
-		attributeNames.push_back (kAttrIconPosition);
+		attributeNames.emplace_back (kAttrKickStyle);
+		attributeNames.emplace_back (kAttrTitle);
+		attributeNames.emplace_back (kAttrFont);
+		attributeNames.emplace_back (kAttrTextColor);
+		attributeNames.emplace_back (kAttrTextColorHighlighted);
+		attributeNames.emplace_back (kAttrGradient);
+		attributeNames.emplace_back (kAttrGradientHighlighted);
+		attributeNames.emplace_back (kAttrFrameColor);
+		attributeNames.emplace_back (kAttrFrameColorHighlighted);
+		attributeNames.emplace_back (kAttrRoundRadius);
+		attributeNames.emplace_back (kAttrFrameWidth);
+		attributeNames.emplace_back (kAttrIconTextMargin);
+		attributeNames.emplace_back (kAttrTextAlignment);
+		attributeNames.emplace_back (kAttrIcon);
+		attributeNames.emplace_back (kAttrIconHighlighted);
+		attributeNames.emplace_back (kAttrIconPosition);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const override
@@ -2099,7 +2285,7 @@ public:
 			int32_t index = 0;
 			while (positions[index].size () > 0)
 			{
-				values.push_back(&positions[index]);
+				values.emplace_back(&positions[index]);
 				index++;
 			}
 			return true;
@@ -2113,8 +2299,7 @@ public:
 			return false;
 		if (attributeName == kAttrTitle)
 		{
-			UTF8StringPtr title = button->getTitle ();
-			stringValue = title ? title : "";
+			stringValue = button->getTitle ().getString ();
 			return true;
 		}
 		else if (attributeName == kAttrFont)
@@ -2224,14 +2409,14 @@ public:
 		else if (attributeName == kAttrGradient)
 		{
 			CGradient* gradient = button->getGradient ();
-			UTF8StringPtr gradientName = gradient ? desc->lookupGradientName (gradient) : 0;
+			UTF8StringPtr gradientName = gradient ? desc->lookupGradientName (gradient) : nullptr;
 			stringValue = gradientName ? gradientName : "";
 			return true;
 		}
 		else if (attributeName == kAttrGradientHighlighted)
 		{
 			CGradient* gradient = button->getGradientHighlighted ();
-			UTF8StringPtr gradientName = gradient ? desc->lookupGradientName (gradient) : 0;
+			UTF8StringPtr gradientName = gradient ? desc->lookupGradientName (gradient) : nullptr;
 			stringValue = gradientName ? gradientName : "";
 			return true;
 		}
@@ -2242,12 +2427,13 @@ public:
 CTextButtonCreator __gCTextButtonCreator;
 
 //-----------------------------------------------------------------------------
-class CSegmentButtonCreator : public IViewCreator
+class CSegmentButtonCreator : public ViewCreatorAdapter
 {
 public:
 	CSegmentButtonCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCSegmentButton; }
 	IdStringPtr getBaseViewName () const override { return kCControl; }
+	UTF8StringPtr getDisplayName () const override { return "Segment Button"; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override
 	{
 		CSegmentButton* button = new CSegmentButton (CRect (0, 0, 200, 20));
@@ -2273,10 +2459,10 @@ public:
 	void updateSegments (CSegmentButton* button, const UIAttributes::StringArray& names) const
 	{
 		button->removeAllSegments ();
-		for (UIAttributes::StringArray::const_iterator it = names.begin (), end = names.end (); it != end; ++it)
+		for (const auto& name : names)
 		{
 			CSegmentButton::Segment segment;
-			segment.name = (*it).c_str ();
+			segment.name = name.c_str ();
 			button->addSegment (segment);
 		}
 	}
@@ -2351,19 +2537,19 @@ public:
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const override
 	{
-		attributeNames.push_back (kAttrStyle);
-		attributeNames.push_back (kAttrSegmentNames);
-		attributeNames.push_back (kAttrFont);
-		attributeNames.push_back (kAttrTextColor);
-		attributeNames.push_back (kAttrTextColorHighlighted);
-		attributeNames.push_back (kAttrGradient);
-		attributeNames.push_back (kAttrGradientHighlighted);
-		attributeNames.push_back (kAttrFrameColor);
-		attributeNames.push_back (kAttrRoundRadius);
-		attributeNames.push_back (kAttrFrameWidth);
-		attributeNames.push_back (kAttrIconTextMargin);
-		attributeNames.push_back (kAttrTextAlignment);
-		attributeNames.push_back (kAttrTruncateMode);
+		attributeNames.emplace_back (kAttrStyle);
+		attributeNames.emplace_back (kAttrSegmentNames);
+		attributeNames.emplace_back (kAttrFont);
+		attributeNames.emplace_back (kAttrTextColor);
+		attributeNames.emplace_back (kAttrTextColorHighlighted);
+		attributeNames.emplace_back (kAttrGradient);
+		attributeNames.emplace_back (kAttrGradientHighlighted);
+		attributeNames.emplace_back (kAttrFrameColor);
+		attributeNames.emplace_back (kAttrRoundRadius);
+		attributeNames.emplace_back (kAttrFrameWidth);
+		attributeNames.emplace_back (kAttrIconTextMargin);
+		attributeNames.emplace_back (kAttrTextAlignment);
+		attributeNames.emplace_back (kAttrTruncateMode);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const override
@@ -2414,8 +2600,8 @@ public:
 		{
 			const CSegmentButton::Segments& segments = button->getSegments ();
 			UIAttributes::StringArray stringArray;
-			for (CSegmentButton::Segments::const_iterator it = segments.begin (), end = segments.end (); it != end; ++it)
-				stringArray.push_back (std::string ((*it).name));
+			for (const auto& segment : segments)
+				stringArray.emplace_back (segment.name.getString ());
 			stringValue = UIAttributes::createStringArrayValue (stringArray);
 			return true;
 		}
@@ -2502,13 +2688,14 @@ public:
 CSegmentButtonCreator __gCSegmentButtonCreator;
 
 //-----------------------------------------------------------------------------
-class CKnobCreator : public IViewCreator
+class CKnobCreator : public ViewCreatorAdapter
 {
 public:
 	CKnobCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCKnob; }
 	IdStringPtr getBaseViewName () const override { return kCControl; }
-	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CKnob (CRect (0, 0, 0, 0), 0, -1, 0, 0); }
+	UTF8StringPtr getDisplayName () const override { return "Knob"; }
+	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CKnob (CRect (0, 0, 0, 0), nullptr, -1, nullptr, nullptr); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
 		CKnob* knob = dynamic_cast<CKnob*> (view);
@@ -2565,25 +2752,25 @@ public:
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const override
 	{
-		attributeNames.push_back (kAttrAngleStart);
-		attributeNames.push_back (kAttrAngleRange);
-		attributeNames.push_back (kAttrValueInset);
-		attributeNames.push_back (kAttrZoomFactor);
-		attributeNames.push_back (kAttrCircleDrawing);
-		attributeNames.push_back (kAttrCoronaDrawing);
-		attributeNames.push_back (kAttrCoronaOutline);
-		attributeNames.push_back (kAttrCoronaFromCenter);
-		attributeNames.push_back (kAttrCoronaInverted);
-		attributeNames.push_back (kAttrCoronaDashDot);
-		attributeNames.push_back (kAttrCoronaLineCapButt);
-		attributeNames.push_back (kAttrSkipHandleDrawing);
-		attributeNames.push_back (kAttrCoronaInset);
-		attributeNames.push_back (kAttrCoronaColor);
-		attributeNames.push_back (kAttrHandleShadowColor);
-		attributeNames.push_back (kAttrHandleColor);
-		attributeNames.push_back (kAttrHandleLineWidth);
-		attributeNames.push_back (kAttrCoronaOutlineWidthAdd);
-		attributeNames.push_back (kAttrHandleBitmap);
+		attributeNames.emplace_back (kAttrAngleStart);
+		attributeNames.emplace_back (kAttrAngleRange);
+		attributeNames.emplace_back (kAttrValueInset);
+		attributeNames.emplace_back (kAttrZoomFactor);
+		attributeNames.emplace_back (kAttrCircleDrawing);
+		attributeNames.emplace_back (kAttrCoronaDrawing);
+		attributeNames.emplace_back (kAttrCoronaOutline);
+		attributeNames.emplace_back (kAttrCoronaFromCenter);
+		attributeNames.emplace_back (kAttrCoronaInverted);
+		attributeNames.emplace_back (kAttrCoronaDashDot);
+		attributeNames.emplace_back (kAttrCoronaLineCapButt);
+		attributeNames.emplace_back (kAttrSkipHandleDrawing);
+		attributeNames.emplace_back (kAttrCoronaInset);
+		attributeNames.emplace_back (kAttrCoronaColor);
+		attributeNames.emplace_back (kAttrHandleShadowColor);
+		attributeNames.emplace_back (kAttrHandleColor);
+		attributeNames.emplace_back (kAttrHandleLineWidth);
+		attributeNames.emplace_back (kAttrCoronaOutlineWidthAdd);
+		attributeNames.emplace_back (kAttrHandleBitmap);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const override
@@ -2744,7 +2931,7 @@ public:
 CKnobCreator __CKnobCreator;
 
 //-----------------------------------------------------------------------------
-class IMultiBitmapControlCreator : public IViewCreator
+class IMultiBitmapControlCreator : public ViewCreatorAdapter
 {
 public:
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
@@ -2765,8 +2952,8 @@ public:
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const override
 	{
-		attributeNames.push_back (kAttrHeightOfOneImage);
-		attributeNames.push_back (kAttrSubPixmaps);
+		attributeNames.emplace_back (kAttrHeightOfOneImage);
+		attributeNames.emplace_back (kAttrSubPixmaps);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const override
@@ -2803,7 +2990,8 @@ public:
 	CAnimKnobCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCAnimKnob; }
 	IdStringPtr getBaseViewName () const override { return kCKnob; }
-	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CAnimKnob (CRect (0, 0, 0, 0), 0, -1, 0); }
+	UTF8StringPtr getDisplayName () const override { return "Animation Knob"; }
+	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CAnimKnob (CRect (0, 0, 0, 0), nullptr, -1, nullptr); }
 };
 CAnimKnobCreator __gCAnimKnobCreator;
 
@@ -2814,7 +3002,8 @@ public:
 	CVerticalSwitchCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCVerticalSwitch; }
 	IdStringPtr getBaseViewName () const override { return kCControl; }
-	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CVerticalSwitch (CRect (0, 0, 0, 0), 0, -1, 0); }
+	UTF8StringPtr getDisplayName () const override { return "Vertical Switch"; }
+	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CVerticalSwitch (CRect (0, 0, 0, 0), nullptr, -1, nullptr); }
 };
 CVerticalSwitchCreator __gCVerticalSwitchCreator;
 
@@ -2825,7 +3014,8 @@ public:
 	CHorizontalSwitchCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCHorizontalSwitch; }
 	IdStringPtr getBaseViewName () const override { return kCControl; }
-	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CHorizontalSwitch (CRect (0, 0, 0, 0), 0, -1, 0); }
+	UTF8StringPtr getDisplayName () const override { return "Horizontal Switch"; }
+	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CHorizontalSwitch (CRect (0, 0, 0, 0), nullptr, -1, nullptr); }
 };
 CHorizontalSwitchCreator __gCHorizontalSwitchCreator;
 
@@ -2836,7 +3026,8 @@ public:
 	CRockerSwitchCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCRockerSwitch; }
 	IdStringPtr getBaseViewName () const override { return kCControl; }
-	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CRockerSwitch (CRect (0, 0, 0, 0), 0, -1, 0); }
+	UTF8StringPtr getDisplayName () const override { return "Rocker Switch"; }
+	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CRockerSwitch (CRect (0, 0, 0, 0), nullptr, -1, nullptr); }
 };
 CRockerSwitchCreator __gCRockerSwitchCreator;
 
@@ -2847,7 +3038,8 @@ public:
 	CMovieBitmapCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCMovieBitmap; }
 	IdStringPtr getBaseViewName () const override { return kCControl; }
-	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CMovieBitmap (CRect (0, 0, 0, 0), 0, -1, 0); }
+	UTF8StringPtr getDisplayName () const override { return "Movie Bitmap"; }
+	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CMovieBitmap (CRect (0, 0, 0, 0), nullptr, -1, nullptr); }
 };
 CMovieBitmapCreator __gCMovieBitmapCreator;
 
@@ -2858,7 +3050,8 @@ public:
 	CMovieButtonCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCMovieButton; }
 	IdStringPtr getBaseViewName () const override { return kCControl; }
-	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CMovieButton (CRect (0, 0, 0, 0), 0, -1, 0); }
+	UTF8StringPtr getDisplayName () const override { return "Movie Button"; }
+	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CMovieButton (CRect (0, 0, 0, 0), nullptr, -1, nullptr); }
 };
 CMovieButtonCreator __gCMovieButtonCreator;
 
@@ -2869,18 +3062,20 @@ public:
 	CKickButtonCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCKickButton; }
 	IdStringPtr getBaseViewName () const override { return kCControl; }
-	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CKickButton (CRect (0, 0, 0, 0), 0, -1, 0); }
+	UTF8StringPtr getDisplayName () const override { return "Kick Button"; }
+	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CKickButton (CRect (0, 0, 0, 0), nullptr, -1, nullptr); }
 };
 CKickButtonCreator __gCKickButtonCreator;
 
 //-----------------------------------------------------------------------------
-class CSliderCreator : public IViewCreator
+class CSliderCreator : public ViewCreatorAdapter
 {
 public:
 	CSliderCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCSlider; }
 	IdStringPtr getBaseViewName () const override { return kCControl; }
-	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CSlider (CRect (0, 0, 0, 0), 0, -1, 0, 0, 0, 0); }
+	UTF8StringPtr getDisplayName () const override { return "Slider"; }
+	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CSlider (CRect (0, 0, 0, 0), nullptr, -1, 0, 0, nullptr, nullptr); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
 		CSlider* slider = dynamic_cast<CSlider*> (view);
@@ -2928,13 +3123,13 @@ public:
 			int32_t style = slider->getStyle ();
 			if (*orientationAttr == "vertical")
 			{
-				style &= ~kHorizontal;
-				style |= kVertical;
+				setBit (style, kHorizontal, false);
+				setBit (style, kVertical, true);
 			}
 			else
 			{
-				style &= ~kVertical;
-				style |= kHorizontal;
+				setBit (style, kVertical, false);
+				setBit (style, kHorizontal, true);
 			}
 			slider->setStyle (style);
 		}
@@ -2946,26 +3141,26 @@ public:
 			{
 				if (style & kVertical)
 				{
-					style &= ~kBottom;
-					style |= kTop;
+					setBit (style, kBottom, false);
+					setBit (style, kTop, true);
 				}
 				else if (style & kHorizontal)
 				{
-					style &= ~kLeft;
-					style |= kRight;
+					setBit (style, kLeft, false);
+					setBit (style, kRight, true);
 				}
 			}
 			else
 			{
 				if (style & kVertical)
 				{
-					style &= ~kTop;
-					style |= kBottom;
+					setBit (style, kTop, false);
+					setBit (style, kBottom, true);
 				}
 				else if (style & kHorizontal)
 				{
-					style &= ~kRight;
-					style |= kLeft;
+					setBit (style, kRight, false);
+					setBit (style, kLeft, true);
 				}
 			}
 			slider->setStyle (style);
@@ -2990,22 +3185,22 @@ public:
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const override
 	{
-		attributeNames.push_back (kAttrTransparentHandle);
-		attributeNames.push_back (kAttrMode);
-		attributeNames.push_back (kAttrHandleBitmap);
-		attributeNames.push_back (kAttrHandleOffset);
-		attributeNames.push_back (kAttrBitmapOffset);
-		attributeNames.push_back (kAttrZoomFactor);
-		attributeNames.push_back (kAttrOrientation);
-		attributeNames.push_back (kAttrReverseOrientation);
-		attributeNames.push_back (kAttrDrawFrame);
-		attributeNames.push_back (kAttrDrawBack);
-		attributeNames.push_back (kAttrDrawValue);
-		attributeNames.push_back (kAttrDrawValueFromCenter);
-		attributeNames.push_back (kAttrDrawValueInverted);
-		attributeNames.push_back (kAttrDrawFrameColor);
-		attributeNames.push_back (kAttrDrawBackColor);
-		attributeNames.push_back (kAttrDrawValueColor);
+		attributeNames.emplace_back (kAttrTransparentHandle);
+		attributeNames.emplace_back (kAttrMode);
+		attributeNames.emplace_back (kAttrHandleBitmap);
+		attributeNames.emplace_back (kAttrHandleOffset);
+		attributeNames.emplace_back (kAttrBitmapOffset);
+		attributeNames.emplace_back (kAttrZoomFactor);
+		attributeNames.emplace_back (kAttrOrientation);
+		attributeNames.emplace_back (kAttrReverseOrientation);
+		attributeNames.emplace_back (kAttrDrawFrame);
+		attributeNames.emplace_back (kAttrDrawBack);
+		attributeNames.emplace_back (kAttrDrawValue);
+		attributeNames.emplace_back (kAttrDrawValueFromCenter);
+		attributeNames.emplace_back (kAttrDrawValueInverted);
+		attributeNames.emplace_back (kAttrDrawFrameColor);
+		attributeNames.emplace_back (kAttrDrawBackColor);
+		attributeNames.emplace_back (kAttrDrawValueColor);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const override
@@ -3163,9 +3358,9 @@ public:
 			static std::string kRelativeTouch = "relative touch";
 			static std::string kFreeClick = "free click";
 			
-			values.push_back (&kTouch);
-			values.push_back (&kRelativeTouch);
-			values.push_back (&kFreeClick);
+			values.emplace_back (&kTouch);
+			values.emplace_back (&kRelativeTouch);
+			values.emplace_back (&kFreeClick);
 			return true;
 		}
 		return false;
@@ -3175,13 +3370,14 @@ public:
 CSliderCreator __gCSliderCreator;
 
 //-----------------------------------------------------------------------------
-class CVuMeterCreator : public IViewCreator
+class CVuMeterCreator : public ViewCreatorAdapter
 {
 public:
 	CVuMeterCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCVuMeter; }
 	IdStringPtr getBaseViewName () const override { return kCControl; }
-	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CVuMeter (CRect (0, 0, 0, 0), 0, 0, 100); }
+	UTF8StringPtr getDisplayName () const override { return "VU Meter"; }
+	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CVuMeter (CRect (0, 0, 0, 0), nullptr, nullptr, 100); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
 		CVuMeter* vuMeter = dynamic_cast<CVuMeter*> (view);
@@ -3207,10 +3403,10 @@ public:
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const override
 	{
-		attributeNames.push_back (kAttrOffBitmap);
-		attributeNames.push_back (kAttrNumLed);
-		attributeNames.push_back (kAttrOrientation);
-		attributeNames.push_back (kAttrDecreaseStepValue);
+		attributeNames.emplace_back (kAttrOffBitmap);
+		attributeNames.emplace_back (kAttrNumLed);
+		attributeNames.emplace_back (kAttrOrientation);
+		attributeNames.emplace_back (kAttrDecreaseStepValue);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const override
@@ -3268,13 +3464,14 @@ public:
 CVuMeterCreator __gCVuMeterCreator;
 
 //-----------------------------------------------------------------------------
-class CAnimationSplashScreenCreator : public IViewCreator
+class CAnimationSplashScreenCreator : public ViewCreatorAdapter
 {
 public:
 	CAnimationSplashScreenCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCAnimationSplashScreen; }
 	IdStringPtr getBaseViewName () const override { return kCControl; }
-	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CAnimationSplashScreen (CRect (0, 0, 0, 0), -1, 0, 0); }
+	UTF8StringPtr getDisplayName () const override { return "Animation Splash Screen"; }
+	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CAnimationSplashScreen (CRect (0, 0, 0, 0), -1, nullptr, nullptr); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
 		CAnimationSplashScreen* splashScreen = dynamic_cast<CAnimationSplashScreen*> (view);
@@ -3310,11 +3507,11 @@ public:
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const override
 	{
-		attributeNames.push_back (kAttrSplashBitmap);
-		attributeNames.push_back (kAttrSplashOrigin);
-		attributeNames.push_back (kAttrSplashSize);
-		attributeNames.push_back (kAttrAnimationIndex);
-		attributeNames.push_back (kAttrAnimationTime);
+		attributeNames.emplace_back (kAttrSplashBitmap);
+		attributeNames.emplace_back (kAttrSplashOrigin);
+		attributeNames.emplace_back (kAttrSplashSize);
+		attributeNames.emplace_back (kAttrAnimationIndex);
+		attributeNames.emplace_back (kAttrAnimationTime);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const override
@@ -3368,12 +3565,13 @@ public:
 CAnimationSplashScreenCreator __gCAnimationSplashScreenCreator;
 
 //-----------------------------------------------------------------------------
-class UIViewSwitchContainerCreator : public IViewCreator
+class UIViewSwitchContainerCreator : public ViewCreatorAdapter
 {
 public:
 	UIViewSwitchContainerCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kUIViewSwitchContainer; }
 	IdStringPtr getBaseViewName () const override { return kCViewContainer; }
+	UTF8StringPtr getDisplayName () const override { return "View Switch Container"; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override
 	{
 		UIViewSwitchContainer* vsc = new UIViewSwitchContainer (CRect (0, 0, 100, 100));
@@ -3425,10 +3623,10 @@ public:
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const override
 	{
-		attributeNames.push_back (kAttrTemplateNames);
-		attributeNames.push_back (kAttrTemplateSwitchControl);
-		attributeNames.push_back (kAttrAnimationStyle);
-		attributeNames.push_back (kAttrAnimationTime);
+		attributeNames.emplace_back (kAttrTemplateNames);
+		attributeNames.emplace_back (kAttrTemplateSwitchControl);
+		attributeNames.emplace_back (kAttrAnimationStyle);
+		attributeNames.emplace_back (kAttrAnimationTime);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const override
@@ -3503,9 +3701,9 @@ public:
 			static std::string kMoveInOut = "move";
 			static std::string kPushInOut = "push";
 			
-			values.push_back (&kFadeInOut);
-			values.push_back (&kMoveInOut);
-			values.push_back (&kPushInOut);
+			values.emplace_back (&kFadeInOut);
+			values.emplace_back (&kMoveInOut);
+			values.emplace_back (&kPushInOut);
 			return true;
 		}
 		return false;
@@ -3514,12 +3712,13 @@ public:
 UIViewSwitchContainerCreator __gUIViewSwitchContainerCreator;
 
 //-----------------------------------------------------------------------------
-class CSplitViewCreator : public IViewCreator
+class CSplitViewCreator : public ViewCreatorAdapter
 {
 public:
 	CSplitViewCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCSplitView; }
 	IdStringPtr getBaseViewName () const override { return kCViewContainer; }
+	UTF8StringPtr getDisplayName () const override { return "Split View"; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CSplitView (CRect (0, 0, 100, 100)); }
 
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
@@ -3568,9 +3767,9 @@ public:
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const override
 	{
-		attributeNames.push_back (kAttrOrientation);
-		attributeNames.push_back (kAttrResizeMethod);
-		attributeNames.push_back (kAttrSeparatorWidth);
+		attributeNames.emplace_back (kAttrOrientation);
+		attributeNames.emplace_back (kAttrResizeMethod);
+		attributeNames.emplace_back (kAttrSeparatorWidth);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const override
@@ -3636,10 +3835,10 @@ public:
 			static std::string kLast = "last";
 			static std::string kAll = "all";
 	
-			values.push_back (&kFirst);
-			values.push_back (&kSecond);
-			values.push_back (&kLast);
-			values.push_back (&kAll);
+			values.emplace_back (&kFirst);
+			values.emplace_back (&kSecond);
+			values.emplace_back (&kLast);
+			values.emplace_back (&kAll);
 			return true;
 		}
 		return false;
@@ -3649,12 +3848,13 @@ public:
 CSplitViewCreator __gCSplitViewCreator;
 
 //-----------------------------------------------------------------------------
-class CShadowViewContainerCreator : public IViewCreator
+class CShadowViewContainerCreator : public ViewCreatorAdapter
 {
 public:
 	CShadowViewContainerCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCShadowViewContainer; }
 	IdStringPtr getBaseViewName () const override { return kCViewContainer; }
+	UTF8StringPtr getDisplayName () const override { return "Shadow View Container"; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override
 	{
 		return new CShadowViewContainer (CRect (0, 0, 200, 200));
@@ -3677,9 +3877,9 @@ public:
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const override
 	{
-		attributeNames.push_back (kAttrShadowIntensity);
-		attributeNames.push_back (kAttrShadowOffset);
-		attributeNames.push_back (kAttrShadowBlurSize);
+		attributeNames.emplace_back (kAttrShadowIntensity);
+		attributeNames.emplace_back (kAttrShadowOffset);
+		attributeNames.emplace_back (kAttrShadowBlurSize);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const override
@@ -3731,12 +3931,13 @@ public:
 CShadowViewContainerCreator __gCShadowViewContainerCreator;
 
 //-----------------------------------------------------------------------------
-class CGradientViewCreator : public IViewCreator
+class CGradientViewCreator : public ViewCreatorAdapter
 {
 public:
 	CGradientViewCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCGradientView; }
 	IdStringPtr getBaseViewName () const override { return kCView; }
+	UTF8StringPtr getDisplayName () const override { return "Gradient View"; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override
 	{
 		CGradientView* gradientView = new CGradientView (CRect (0, 0, 100, 100));
@@ -3754,7 +3955,7 @@ public:
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
 		CGradientView* gv = dynamic_cast<CGradientView*> (view);
-		if (gv == 0)
+		if (gv == nullptr)
 			return false;
 		CColor color;
 		if (stringToColor (attributes.getAttributeValue (kAttrFrameColor), color, description))
@@ -3816,15 +4017,15 @@ public:
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const override
 	{
-		attributeNames.push_back (kAttrGradientStyle);
-		attributeNames.push_back (kAttrGradient);
-		attributeNames.push_back (kAttrGradientAngle);
-		attributeNames.push_back (kAttrRadialCenter);
-		attributeNames.push_back (kAttrRadialRadius);
-		attributeNames.push_back (kAttrFrameColor);
-		attributeNames.push_back (kAttrRoundRectRadius);
-		attributeNames.push_back (kAttrFrameWidth);
-		attributeNames.push_back (kAttrDrawAntialiased);
+		attributeNames.emplace_back (kAttrGradientStyle);
+		attributeNames.emplace_back (kAttrGradient);
+		attributeNames.emplace_back (kAttrGradientAngle);
+		attributeNames.emplace_back (kAttrRadialCenter);
+		attributeNames.emplace_back (kAttrRadialRadius);
+		attributeNames.emplace_back (kAttrFrameColor);
+		attributeNames.emplace_back (kAttrRoundRectRadius);
+		attributeNames.emplace_back (kAttrFrameWidth);
+		attributeNames.emplace_back (kAttrDrawAntialiased);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const override
@@ -3843,7 +4044,7 @@ public:
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const override
 	{
 		CGradientView* gv = dynamic_cast<CGradientView*> (view);
-		if (gv == 0)
+		if (gv == nullptr)
 			return false;
 		if (attributeName == kAttrFrameColor)
 		{
@@ -3888,7 +4089,7 @@ public:
 		if (attributeName == kAttrGradient)
 		{
 			CGradient* gradient = gv->getGradient ();
-			UTF8StringPtr gradientName = gradient ? desc->lookupGradientName (gradient) : 0;
+			UTF8StringPtr gradientName = gradient ? desc->lookupGradientName (gradient) : nullptr;
 			stringValue = gradientName ? gradientName : "";
 			return true;
 		}
@@ -3900,8 +4101,8 @@ public:
 		{
 			static std::string kLinear = "linear";
 			static std::string kRadial = "radial";
-			values.push_back (&kLinear);
-			values.push_back (&kRadial);
+			values.emplace_back (&kLinear);
+			values.emplace_back (&kRadial);
 			return true;
 		}
 		return false;
@@ -3921,29 +4122,14 @@ public:
 CGradientViewCreator __gCGradientViewCreator;
 
 //-----------------------------------------------------------------------------
-class CXYPadCreator : public IViewCreator
+class CXYPadCreator : public ViewCreatorAdapter
 {
 public:
 	CXYPadCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCXYPad; }
 	IdStringPtr getBaseViewName () const override { return kCParamDisplay; }
+	UTF8StringPtr getDisplayName () const override { return "XY Pad"; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CXYPad (CRect (0, 0, 100, 20)); }
-	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
-	{
-		return true;
-	}
-	bool getAttributeNames (std::list<std::string>& attributeNames) const override
-	{
-		return true;
-	}
-	AttrType getAttributeType (const std::string& attributeName) const override
-	{
-		return kUnknownType;
-	}
-	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const override
-	{
-		return false;
-	}
 };
 CXYPadCreator __gCXYPadCreator;
 
@@ -3955,8 +4141,8 @@ static bool getStandardAttributeListValues (const std::string& attributeName, st
 		static std::string kHorizontal = "horizontal";
 		static std::string kVertical = "vertical";
 		
-		values.push_back (&kHorizontal);
-		values.push_back (&kVertical);
+		values.emplace_back (&kHorizontal);
+		values.emplace_back (&kVertical);
 		return true;
 	}
 	else if (attributeName == kAttrTruncateMode)
@@ -3965,9 +4151,9 @@ static bool getStandardAttributeListValues (const std::string& attributeName, st
 		static std::string kHead = "head";
 		static std::string kTail = "tail";
 		
-		values.push_back (&kNone);
-		values.push_back (&kHead);
-		values.push_back (&kTail);
+		values.emplace_back (&kNone);
+		values.emplace_back (&kHead);
+		values.emplace_back (&kTail);
 		return true;
 	}
 	return false;

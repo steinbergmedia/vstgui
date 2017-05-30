@@ -1,36 +1,6 @@
-//-----------------------------------------------------------------------------
-// VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins
-//
-// Version 4.3
-//
-//-----------------------------------------------------------------------------
-// VSTGUI LICENSE
-// (c) 2015, Steinberg Media Technologies, All Rights Reserved
-//-----------------------------------------------------------------------------
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
-// 
-//   * Redistributions of source code must retain the above copyright notice, 
-//     this list of conditions and the following disclaimer.
-//   * Redistributions in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation 
-//     and/or other materials provided with the distribution.
-//   * Neither the name of the Steinberg Media Technologies nor the names of its
-//     contributors may be used to endorse or promote products derived from this 
-//     software without specific prior written permission.
-// 
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-// ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
-// IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
-// INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
-// BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
-// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
-// OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE  OF THIS SOFTWARE, EVEN IF ADVISED
-// OF THE POSSIBILITY OF SUCH DAMAGE.
-//-----------------------------------------------------------------------------
+// This file is part of VSTGUI. It is subject to the license terms 
+// in the LICENSE file found in the top-level directory of this
+// distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "cbitmapfilter.h"
 #include "cbitmap.h"
@@ -39,6 +9,7 @@
 #include "cgraphicspath.h"
 #include "cgraphicstransform.h"
 #include <cassert>
+#include <algorithm>
 
 namespace VSTGUI {
 
@@ -54,7 +25,7 @@ template<typename T> void Property::assign (T toAssign)
 //----------------------------------------------------------------------------------------------------
 Property::Property (Type type)
 : type (type)
-, value (0)
+, value (nullptr)
 {
 }
 
@@ -73,10 +44,10 @@ Property::Property (double floatValue)
 }
 
 //----------------------------------------------------------------------------------------------------
-Property::Property (CBaseObject* objectValue)
+Property::Property (IReference* objectValue)
 : type (kObject)
 {
-	assign (objectValue);
+	value = static_cast<void*> (objectValue);
 	objectValue->remember ();
 }
 
@@ -111,19 +82,20 @@ Property::Property (const CGraphicsTransform& transformValue)
 //----------------------------------------------------------------------------------------------------
 Property::Property (const Property& p)
 : type (p.type)
-, value (0)
+, value (nullptr)
 {
 	*this = p;
 }
 
 //----------------------------------------------------------------------------------------------------
-Property::~Property ()
+Property::~Property () noexcept
 {
 	if (value)
 	{
 		if (type == kObject)
 			getObject ()->forget ();
-		std::free (value);
+		else
+			std::free (value);
 	}
 }
 
@@ -141,7 +113,8 @@ Property& Property::operator=(Property&& p) noexcept
 	{
 		if (type == kObject)
 			getObject ()->forget ();
-		std::free (value);
+		else
+			std::free (value);
 	}
 	type = p.type;
 	value = p.value;
@@ -157,23 +130,24 @@ Property& Property::operator=(const Property& p)
 	{
 		if (type == kObject)
 			getObject ()->forget ();
-		std::free (value);
-		value = 0;
+		else
+			std::free (value);
+		value = nullptr;
 	}
 	type = p.type;
 	if (p.value)
 	{
-		uint32_t valueSize;
+		uint32_t valueSize = 0u;
 		switch (type)
 		{
 			case kInteger: valueSize = sizeof (int32_t); break;
 			case kFloat: valueSize = sizeof (double); break;
-			case kObject: valueSize = sizeof (CBaseObject*); p.getObject ()->remember (); break;
+			case kObject: value = p.value; p.getObject ()->remember (); break;
 			case kRect: valueSize = sizeof (CRect); break;
 			case kPoint: valueSize = sizeof (CPoint); break;
 			case kColor: valueSize = sizeof (CColor); break;
 			case kTransformMatrix: valueSize = sizeof (CGraphicsTransform); break;
-			case kUnknown: valueSize = 0; break;
+			case kUnknown: valueSize = 0u; break;
 		}
 		if (valueSize)
 		{
@@ -199,10 +173,10 @@ double Property::getFloat () const
 }
 
 //----------------------------------------------------------------------------------------------------
-CBaseObject* Property::getObject () const
+IReference* Property::getObject () const
 {
 	vstgui_assert (type == kObject);
-	return *static_cast<CBaseObject**> (value);
+	return static_cast<IReference*> (value);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -261,12 +235,13 @@ uint32_t Factory::getNumFilters () const
 //----------------------------------------------------------------------------------------------------
 IdStringPtr Factory::getFilterName (uint32_t index) const
 {
-	for (FilterMap::const_iterator it = filters.begin (), end = filters.end (); it != end; ++it, --index)
+	for (const auto& filter : filters)
 	{
 		if (index == 0)
-			return it->first.c_str ();
+			return filter.first.c_str ();
+		--index;
 	}
-	return 0;
+	return nullptr;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -275,7 +250,7 @@ IFilter* Factory::createFilter (IdStringPtr name) const
 	FilterMap::const_iterator it = filters.find (name);
 	if (it != filters.end ())
 		return (*it).second (name);
-	return 0;
+	return nullptr;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -285,7 +260,7 @@ bool Factory::registerFilter (IdStringPtr name, IFilter::CreateFunction createFu
 	if (it != filters.end ())
 		it->second = createFunction;
 	else
-		filters.insert (std::make_pair (name, createFunction));
+		filters.emplace (name, createFunction);
 	return true;
 }
 
@@ -316,10 +291,22 @@ UTF8StringPtr FilterBase::getDescription () const
 //----------------------------------------------------------------------------------------------------
 bool FilterBase::setProperty (IdStringPtr name, const Property& property)
 {
-	const_iterator it = find (name);
-	if (it != end () && it->second.getType () == property.getType ())
+	auto it = properties.find (name);
+	if (it != properties.end () && it->second.getType () == property.getType ())
 	{
-		(*this)[name] = property;
+		properties[name] = property;
+		return true;
+	}
+	return false;
+}
+
+//----------------------------------------------------------------------------------------------------
+bool FilterBase::setProperty (IdStringPtr name, Property&& property)
+{
+	auto it = properties.find (name);
+	if (it != properties.end () && it->second.getType () == property.getType ())
+	{
+		properties[name] = std::move (property);
 		return true;
 	}
 	return false;
@@ -328,8 +315,8 @@ bool FilterBase::setProperty (IdStringPtr name, const Property& property)
 //----------------------------------------------------------------------------------------------------
 const Property& FilterBase::getProperty (IdStringPtr name) const
 {
-	const_iterator it = find (name);
-	if (it != end ())
+	auto it = properties.find (name);
+	if (it != properties.end ())
 		return it->second;
 	static Property notFound (Property::kUnknown);
 	return notFound;
@@ -338,27 +325,29 @@ const Property& FilterBase::getProperty (IdStringPtr name) const
 //----------------------------------------------------------------------------------------------------
 uint32_t FilterBase::getNumProperties () const
 {
-	return (uint32_t)size ();
+	return static_cast<uint32_t> (properties.size ());
 }
 
 //----------------------------------------------------------------------------------------------------
 IdStringPtr FilterBase::getPropertyName (uint32_t index) const
 {
-	for (const_iterator it = begin (); it != end (); it++, index--)
+	for (const auto & it : properties)
 	{
 		if (index == 0)
-			return (*it).first.c_str ();
+			return it.first.c_str ();
+		index--;
 	}
-	return 0;
+	return nullptr;
 }
 
 //----------------------------------------------------------------------------------------------------
 Property::Type FilterBase::getPropertyType (uint32_t index) const
 {
-	for (const_iterator it = begin (); it != end (); it++, index--)
+	for (const auto & it : properties)
 	{
 		if (index == 0)
-			return (*it).second.getType ();
+			return it.second.getType ();
+		index--;
 	}
 	return Property::kUnknown;
 }
@@ -366,8 +355,8 @@ Property::Type FilterBase::getPropertyType (uint32_t index) const
 //----------------------------------------------------------------------------------------------------
 Property::Type FilterBase::getPropertyType (IdStringPtr name) const
 {
-	const_iterator it = find (name);
-	if (it != end ())
+	auto it = properties.find (name);
+	if (it != properties.end ())
 	{
 		return (*it).second.getType ();
 	}
@@ -377,19 +366,19 @@ Property::Type FilterBase::getPropertyType (IdStringPtr name) const
 //----------------------------------------------------------------------------------------------------
 bool FilterBase::registerProperty (IdStringPtr name, const Property& defaultProperty)
 {
-	return insert (std::make_pair (name, defaultProperty)).second;
+	return properties.emplace (name, defaultProperty).second;
 }
 
 //----------------------------------------------------------------------------------------------------
 CBitmap* FilterBase::getInputBitmap () const
 {
-	const_iterator it = find (Standard::Property::kInputBitmap);
-	if (it != end ())
+	auto it = properties.find (Standard::Property::kInputBitmap);
+	if (it != properties.end ())
 	{
-		CBaseObject* obj = (*it).second.getObject ();
-		return obj ? dynamic_cast<CBitmap*>(obj) : 0;
+		auto obj = (*it).second.getObject ();
+		return obj ? dynamic_cast<CBitmap*>(obj) : nullptr;
 	}
-	return 0;
+	return nullptr;
 }
 
 ///@cond ignore
@@ -418,7 +407,7 @@ private:
 	{
 		CBitmap* inputBitmap = getInputBitmap ();
 		uint32_t radius = static_cast<uint32_t>(static_cast<double>(getProperty (Property::kRadius).getInteger ()) * inputBitmap->getPlatformBitmap ()->getScaleFactor ());
-		if (inputBitmap == 0 || radius == UINT_MAX)
+		if (inputBitmap == nullptr || radius == UINT_MAX)
 			return false;
 		if (radius < 2)
 		{
@@ -429,7 +418,7 @@ private:
 		if (replace)
 		{
 			SharedPointer<CBitmapPixelAccess> inputAccessor = owned (CBitmapPixelAccess::create (inputBitmap));
-			if (inputAccessor == 0)
+			if (inputAccessor == nullptr)
 				return false;
 			run (*inputAccessor, *inputAccessor, radius);
 			return registerProperty (Property::kOutputBitmap, BitmapFilter::Property (inputBitmap));
@@ -439,7 +428,7 @@ private:
 		{
 			SharedPointer<CBitmapPixelAccess> inputAccessor = owned (CBitmapPixelAccess::create (inputBitmap));
 			SharedPointer<CBitmapPixelAccess> outputAccessor = owned (CBitmapPixelAccess::create (outputBitmap));
-			if (inputAccessor == 0 || outputAccessor == 0)
+			if (inputAccessor == nullptr || outputAccessor == nullptr)
 				return false;
 
 			run (*inputAccessor, *outputAccessor, radius);
@@ -556,15 +545,15 @@ protected:
 		if (outSize.getWidth () <= 0 || outSize.getHeight () <= 0)
 			return false;
 		CBitmap* inputBitmap = getInputBitmap ();
-		if (inputBitmap == 0)
+		if (inputBitmap == nullptr)
 			return false;
 		SharedPointer<CBitmap> outputBitmap = owned (new CBitmap (outSize.getWidth (), outSize.getHeight ()));
-		if (outputBitmap == 0)
+		if (outputBitmap == nullptr)
 			return false;
 		
 		SharedPointer<CBitmapPixelAccess> inputAccessor = owned (CBitmapPixelAccess::create (inputBitmap));
 		SharedPointer<CBitmapPixelAccess> outputAccessor = owned (CBitmapPixelAccess::create (outputBitmap));
-		if (inputAccessor == 0 || outputAccessor == 0)
+		if (inputAccessor == nullptr || outputAccessor == nullptr)
 			return false;
 		process (*inputAccessor, *outputAccessor);
 		return registerProperty (Property::kOutputBitmap, BitmapFilter::Property (outputBitmap));
@@ -607,7 +596,7 @@ private:
 		CColor c;
 		int32_t ix;
 		int32_t iy = -1;
-		int32_t* origPixel = 0;
+		int32_t* origPixel = nullptr;
 		float origY = 0;
 		float origX = 0;
 		for (uint32_t y = 0; y < newHeight; y++, origY += yRatio)
@@ -619,7 +608,7 @@ private:
 			origX = 0;
 			for (uint32_t x = 0; x < newWidth; x++, origX += xRatio, copyPixel++)
 			{
-				if (ix != (int32_t)origX || origPixel == 0)
+				if (ix != (int32_t)origX || origPixel == nullptr)
 				{
 					ix = (int32_t)origX;
 					vstgui_assert (iy >= 0);
@@ -695,7 +684,7 @@ private:
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-typedef void (*SimpleFilterProcessFunction) (CColor& color, FilterBase* self);
+using SimpleFilterProcessFunction = void (*) (CColor& color, FilterBase* self);
 
 template<typename SimpleFilterProcessFunction>
 class SimpleFilter : public FilterBase
@@ -711,20 +700,20 @@ protected:
 	bool run (bool replace) override
 	{
 		SharedPointer<CBitmap> inputBitmap = getInputBitmap ();
-		if (inputBitmap == 0)
+		if (inputBitmap == nullptr)
 			return false;
 		SharedPointer<CBitmapPixelAccess> inputAccessor = owned (CBitmapPixelAccess::create (inputBitmap));
-		if (inputAccessor == 0)
+		if (inputAccessor == nullptr)
 			return false;
 		SharedPointer<CBitmap> outputBitmap;
 		SharedPointer<CBitmapPixelAccess> outputAccessor;
 		if (replace == false)
 		{
 			outputBitmap = owned (new CBitmap (inputBitmap->getWidth (), inputBitmap->getHeight ()));
-			if (outputBitmap == 0)
+			if (outputBitmap == nullptr)
 				return false;
 			outputAccessor = owned (CBitmapPixelAccess::create (outputBitmap));
-			if (outputAccessor == 0)
+			if (outputAccessor == nullptr)
 				return false;
 		}
 		else

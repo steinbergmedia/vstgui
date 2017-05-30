@@ -1,36 +1,6 @@
-//-----------------------------------------------------------------------------
-// VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins
-//
-// Version 4.3
-//
-//-----------------------------------------------------------------------------
-// VSTGUI LICENSE
-// (c) 2015, Steinberg Media Technologies, All Rights Reserved
-//-----------------------------------------------------------------------------
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
-// 
-//   * Redistributions of source code must retain the above copyright notice, 
-//     this list of conditions and the following disclaimer.
-//   * Redistributions in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation 
-//     and/or other materials provided with the distribution.
-//   * Neither the name of the Steinberg Media Technologies nor the names of its
-//     contributors may be used to endorse or promote products derived from this 
-//     software without specific prior written permission.
-// 
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-// ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
-// IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
-// INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
-// BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
-// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
-// OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE  OF THIS SOFTWARE, EVEN IF ADVISED
-// OF THE POSSIBILITY OF SUCH DAMAGE.
-//-----------------------------------------------------------------------------
+// This file is part of VSTGUI. It is subject to the license terms 
+// in the LICENSE file found in the top-level directory of this
+// distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "copenglview.h"
 #include "platform/iplatformframe.h"
@@ -44,14 +14,13 @@ namespace VSTGUI {
 //-----------------------------------------------------------------------------
 COpenGLView::COpenGLView (const CRect& size)
 : CView (size)
-, platformOpenGLView (0)
 {
 }
 
 //-----------------------------------------------------------------------------
-COpenGLView::~COpenGLView ()
+COpenGLView::~COpenGLView () noexcept
 {
-	vstgui_assert (platformOpenGLView == 0);
+	vstgui_assert (platformOpenGLView == nullptr);
 }
 
 //-----------------------------------------------------------------------------
@@ -71,9 +40,9 @@ void COpenGLView::updatePlatformOpenGLViewSize ()
 //-----------------------------------------------------------------------------
 bool COpenGLView::createPlatformOpenGLView ()
 {
-	vstgui_assert (platformOpenGLView == 0);
+	vstgui_assert (platformOpenGLView == nullptr);
 	IPlatformFrame* platformFrame = getFrame ()->getPlatformFrame ();
-	platformOpenGLView = platformFrame ? platformFrame->createPlatformOpenGLView () : 0;
+	platformOpenGLView = platformFrame ? platformFrame->createPlatformOpenGLView () : nullptr;
 	if (platformOpenGLView)
 	{
 		if (platformOpenGLView->init (this, getPixelFormat ()))
@@ -84,8 +53,7 @@ bool COpenGLView::createPlatformOpenGLView ()
 			platformOpenGLViewSizeChanged ();
 			return true;
 		}
-		platformOpenGLView->forget ();
-		platformOpenGLView = 0;
+		platformOpenGLView = nullptr;
 	}
 	return false;
 }
@@ -97,8 +65,7 @@ bool COpenGLView::destroyPlatformOpenGLView ()
 	{
 		platformOpenGLViewWillDestroy ();
 		platformOpenGLView->remove ();
-		platformOpenGLView->forget ();
-		platformOpenGLView = 0;
+		platformOpenGLView = nullptr;
 		return true;
 	}
 	return false;
@@ -170,11 +137,11 @@ void COpenGLView::setVisible (bool state)
 		CView::setVisible (state);
 		if (isAttached ())
 		{
-			if (state && platformOpenGLView == 0)
+			if (state && platformOpenGLView)
 			{
 				createPlatformOpenGLView ();
 			}
-			else if (state == false && platformOpenGLView != 0)
+			else if (state == false && platformOpenGLView != nullptr)
 			{
 				destroyPlatformOpenGLView ();
 			}

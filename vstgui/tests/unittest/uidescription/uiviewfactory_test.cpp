@@ -1,36 +1,6 @@
-//-----------------------------------------------------------------------------
-// VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins
-//
-// Version 4.3
-//
-//-----------------------------------------------------------------------------
-// VSTGUI LICENSE
-// (c) 2015, Steinberg Media Technologies, All Rights Reserved
-//-----------------------------------------------------------------------------
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
-// 
-//   * Redistributions of source code must retain the above copyright notice, 
-//     this list of conditions and the following disclaimer.
-//   * Redistributions in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation 
-//     and/or other materials provided with the distribution.
-//   * Neither the name of the Steinberg Media Technologies nor the names of its
-//     contributors may be used to endorse or promote products derived from this 
-//     software without specific prior written permission.
-// 
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-// ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
-// IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
-// INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
-// BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
-// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
-// OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE  OF THIS SOFTWARE, EVEN IF ADVISED
-// OF THE POSSIBILITY OF SUCH DAMAGE.
-//-----------------------------------------------------------------------------
+// This file is part of VSTGUI. It is subject to the license terms 
+// in the LICENSE file found in the top-level directory of this
+// distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "../unittests.h"
 #include "../../../lib/cview.h"
@@ -38,6 +8,7 @@
 #include "../../../uidescription/uiviewfactory.h"
 #include "../../../uidescription/uiattributes.h"
 #include "../../../uidescription/detail/uiviewcreatorattributes.h"
+#include <algorithm>
 
 namespace VSTGUI {
 namespace {
@@ -72,9 +43,10 @@ public:
 
 static std::string baseViewAttr ("BaseViewAttr");
 
-struct BaseViewCreator : public IViewCreator
+struct BaseViewCreator : public ViewCreatorAdapter
 {
 	IdStringPtr getViewName () const override { return "BaseView"; }
+	UTF8StringPtr getDisplayName () const override { return "Base View"; }
 	IdStringPtr getBaseViewName () const override { return nullptr; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override
 	{ return new BaseView (); }
@@ -141,9 +113,10 @@ BaseViewCreator baseViewCreator;
 
 static std::string viewAttr ("ViewAttr");
 
-struct ViewCreator : public IViewCreator
+struct ViewCreator : public ViewCreatorAdapter
 {
 	IdStringPtr getViewName () const override { return "TestView"; }
+	UTF8StringPtr getDisplayName () const override { return "Test View"; }
 	IdStringPtr getBaseViewName () const override { return "BaseView"; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override
 	{ return new View (); }
@@ -231,6 +204,15 @@ TESTCASE(UIViewFactoryTests,
 		UIViewFactory::StringPtrList registeredViews;
 		factory->collectRegisteredViewNames (registeredViews, "BaseView");
 		EXPECT(registeredViews.size() == 1);
+	);
+	
+	TEST (collectRegisteredViewAndDisplayNames,
+		auto list = factory->collectRegisteredViewAndDisplayNames ();
+		auto it = std::find_if (list.begin (), list.end (), [] (const auto& value) {
+			return *value.first == "BaseView";
+		});
+		EXPECT(it != list.end ());
+		EXPECT(UTF8StringView (it->second) == UTF8StringView ("Base View"));
 	);
 	
 	TEST(createView,

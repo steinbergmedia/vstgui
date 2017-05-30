@@ -1,36 +1,6 @@
-//-----------------------------------------------------------------------------
-// VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins
-//
-// Version 4.3
-//
-//-----------------------------------------------------------------------------
-// VSTGUI LICENSE
-// (c) 2015, Steinberg Media Technologies, All Rights Reserved
-//-----------------------------------------------------------------------------
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
-// 
-//   * Redistributions of source code must retain the above copyright notice, 
-//     this list of conditions and the following disclaimer.
-//   * Redistributions in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation 
-//     and/or other materials provided with the distribution.
-//   * Neither the name of the Steinberg Media Technologies nor the names of its
-//     contributors may be used to endorse or promote products derived from this 
-//     software without specific prior written permission.
-// 
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-// ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
-// IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
-// INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
-// BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
-// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
-// OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE  OF THIS SOFTWARE, EVEN IF ADVISED
-// OF THE POSSIBILITY OF SUCH DAMAGE.
-//-----------------------------------------------------------------------------
+// This file is part of VSTGUI. It is subject to the license terms 
+// in the LICENSE file found in the top-level directory of this
+// distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "cdrawcontext.h"
 #include "cgraphicspath.h"
@@ -42,38 +12,9 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-CDrawContext::CDrawContextState::CDrawContextState ()
-{
-	font = 0;
-	fontColor = kTransparentCColor;
-	frameWidth = 0;
-	frameColor = kTransparentCColor;
-	fillColor = kTransparentCColor;
-	lineStyle = kLineOnOffDash;
-	drawMode = kAntiAliasing;
-	globalAlpha = 1;
-}
-
-//-----------------------------------------------------------------------------
 CDrawContext::CDrawContextState::CDrawContextState (const CDrawContextState& state)
 {
 	*this = state;
-}
-
-//-----------------------------------------------------------------------------
-CDrawContext::CDrawContextState& CDrawContext::CDrawContextState::operator= (const CDrawContextState& state)
-{
-	font = state.font;
-	frameColor = state.frameColor;
-	fillColor = state.fillColor;
-	fontColor = state.fontColor;
-	frameWidth = state.frameWidth;
-	penLoc = state.penLoc;
-	clipRect = state.clipRect;
-	lineStyle = state.lineStyle;
-	drawMode = state.drawMode;
-	globalAlpha = state.globalAlpha;
-	return *this;
 }
 
 //-----------------------------------------------------------------------------
@@ -108,7 +49,7 @@ CDrawContext::Transform::Transform (CDrawContext& context, const CGraphicsTransf
 }
 
 //-----------------------------------------------------------------------------
-CDrawContext::Transform::~Transform ()
+CDrawContext::Transform::~Transform () noexcept
 {
 	if (transformation.isInvariant () == false)
 		context.popTransform ();
@@ -116,21 +57,21 @@ CDrawContext::Transform::~Transform ()
 
 //-----------------------------------------------------------------------------
 CDrawContext::CDrawContext (const CRect& surfaceRect)
-: drawStringHelper (0)
+: drawStringHelper (nullptr)
 , surfaceRect (surfaceRect)
 {
 	transformStack.push (CGraphicsTransform ());
 }
 
 //-----------------------------------------------------------------------------
-CDrawContext::~CDrawContext ()
+CDrawContext::~CDrawContext () noexcept
 {
 	#if DEBUG
 	if (!globalStatesStack.empty ())
 		DebugPrint ("Global state stack not empty. Save and restore global state must be called in sequence !\n");
 	#endif
 	if (drawStringHelper)
-		drawStringHelper->forget ();
+		delete drawStringHelper;
 }
 
 //-----------------------------------------------------------------------------
@@ -192,6 +133,7 @@ CRect& CDrawContext::getClipRect (CRect &clip) const
 {
 	clip = currentState.clipRect;
 	getCurrentTransform ().inverse ().transform (clip);
+	clip.normalize ();
 	return clip;
 }
 
@@ -200,6 +142,8 @@ void CDrawContext::setClipRect (const CRect &clip)
 {
 	currentState.clipRect = clip;
 	getCurrentTransform ().transform (currentState.clipRect);
+	currentState.clipRect.normalize ();
+	currentState.clipRect.makeIntegral ();
 }
 
 //-----------------------------------------------------------------------------
@@ -229,12 +173,11 @@ void CDrawContext::setFontColor (const CColor& color)
 //-----------------------------------------------------------------------------
 void CDrawContext::setFont (const CFontRef newFont, const CCoord& size, const int32_t& style)
 {
-	if (newFont == 0)
+	if (newFont == nullptr)
 		return;
 	if ((size > 0 && newFont->getSize () != size) || (style != -1 && newFont->getStyle () != style))
 	{
-		OwningPointer<CFontDesc> font = (CFontRef)newFont->newCopy ();
-		currentState.font = font;
+		currentState.font = makeOwned<CFontDesc> (*newFont);
 		if (size > 0)
 			currentState.font->setSize (size);
 		if (style != -1)
@@ -253,12 +196,12 @@ void CDrawContext::setGlobalAlpha (float newAlpha)
 }
 
 //-----------------------------------------------------------------------------
-const CString& CDrawContext::getDrawString (UTF8StringPtr string)
+const UTF8String& CDrawContext::getDrawString (UTF8StringPtr string)
 {
-	if (drawStringHelper == 0)
-		drawStringHelper = new CString (string);
+	if (drawStringHelper == nullptr)
+		drawStringHelper = new UTF8String (string);
 	else
-		drawStringHelper->setUTF8String (string);
+		drawStringHelper->assign (string);
 	return *drawStringHelper;
 }
 
@@ -266,21 +209,18 @@ const CString& CDrawContext::getDrawString (UTF8StringPtr string)
 void CDrawContext::clearDrawString ()
 {
 	if (drawStringHelper)
-		drawStringHelper->setUTF8String (0);
+		drawStringHelper->clear ();
 }
 
 //------------------------------------------------------------------------
 CCoord CDrawContext::getStringWidth (IPlatformString* string)
 {
 	CCoord result = -1;
-	if (currentState.font == 0 || string == 0)
+	if (currentState.font == nullptr || string == nullptr)
 		return result;
 	
-	IFontPainter* painter = currentState.font->getFontPainter ();
-	if (painter)
-	{
+	if (auto painter = currentState.font->getFontPainter ())
 		result = painter->getStringWidth (this, string, true);
-	}
 	
 	return result;
 }
@@ -288,16 +228,16 @@ CCoord CDrawContext::getStringWidth (IPlatformString* string)
 //------------------------------------------------------------------------
 void CDrawContext::drawString (IPlatformString* string, const CRect& _rect, const CHoriTxtAlign hAlign, bool antialias)
 {
-	if (!string || currentState.font == 0)
+	if (!string || currentState.font == nullptr)
 		return;
-	IFontPainter* painter = currentState.font->getFontPainter ();
-	if (painter == 0)
+	auto painter = currentState.font->getFontPainter ();
+	if (painter == nullptr)
 		return;
 	
 	CRect rect (_rect);
 	
 	double capHeight = -1;
-	IPlatformFont* platformFont = currentState.font->getPlatformFont ();
+	auto platformFont = currentState.font->getPlatformFont ();
 	if (platformFont)
 		capHeight = platformFont->getCapHeight ();
 	
@@ -320,11 +260,10 @@ void CDrawContext::drawString (IPlatformString* string, const CRect& _rect, cons
 //------------------------------------------------------------------------
 void CDrawContext::drawString (IPlatformString* string, const CPoint& point, bool antialias)
 {
-	if (string == 0 || currentState.font == 0)
+	if (string == nullptr || currentState.font == nullptr)
 		return;
 	
-	IFontPainter* painter = currentState.font->getFontPainter ();
-	if (painter)
+	if (auto painter = currentState.font->getFontPainter ())
 		painter->drawString (this, string, point, antialias);
 }
 
@@ -355,13 +294,9 @@ void CDrawContext::fillRectWithBitmap (CBitmap* bitmap, const CRect& srcRect, co
 		return;
 
 	CRect bitmapPartRect;
-	CCoord left;
-	CCoord top;
 	CPoint sourceOffset (srcRect.left, srcRect.top);
 
-	CRect currentClip = getClipRect (currentClip);
-
-	for (top = dstRect.top; top < dstRect.bottom; top += srcRect.getHeight ())
+	for (auto top = dstRect.top; top < dstRect.bottom; top += srcRect.getHeight ())
 	{
 		bitmapPartRect.top = top;
 		bitmapPartRect.bottom = top + srcRect.getHeight ();
@@ -371,7 +306,7 @@ void CDrawContext::fillRectWithBitmap (CBitmap* bitmap, const CRect& srcRect, co
 		if (bitmapPartRect.getHeight () > srcRect.getHeight ())
 			bitmapPartRect.setHeight (srcRect.getHeight ());
 		
-		for (left = dstRect.left; left < dstRect.right; left += srcRect.getWidth ())
+		for (auto left = dstRect.left; left < dstRect.right; left += srcRect.getWidth ())
 		{
 			bitmapPartRect.left = left;
 			bitmapPartRect.right = left + srcRect.getWidth ();
@@ -381,8 +316,7 @@ void CDrawContext::fillRectWithBitmap (CBitmap* bitmap, const CRect& srcRect, co
 			if (bitmapPartRect.getWidth () > srcRect.getWidth ())
 				bitmapPartRect.setWidth (srcRect.getWidth ());
 			
-			if (currentClip.rectOverlap (bitmapPartRect))
-				drawBitmap (bitmap, bitmapPartRect, sourceOffset, alpha);
+			drawBitmap (bitmap, bitmapPartRect, sourceOffset, alpha);
 		}
 	}
 }
@@ -432,6 +366,12 @@ void CDrawContext::popTransform ()
 const CGraphicsTransform& CDrawContext::getCurrentTransform () const
 {
 	return transformStack.top ();
+}
+
+//------------------------------------------------------------------------
+CCoord CDrawContext::getHairlineSize () const
+{
+	return 1. / (getScaleFactor () * getCurrentTransform ().m11);
 }
 
 } // namespace

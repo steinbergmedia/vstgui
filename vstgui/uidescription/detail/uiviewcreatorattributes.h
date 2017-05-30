@@ -34,7 +34,9 @@ static const IdStringPtr kCParamDisplay = "CParamDisplay";
 static const IdStringPtr kCXYPad = "CXYPad";
 static const IdStringPtr kCOptionMenu = "COptionMenu";
 static const IdStringPtr kCTextLabel = "CTextLabel";
+static const IdStringPtr kCMultiLineTextLabel = "CMultiLineTextLabel";
 static const IdStringPtr kCTextEdit = "CTextEdit";
+static const IdStringPtr kCSearchTextEdit = "CSearchTextEdit";
 static const IdStringPtr kCTextButton = "CTextButton";
 static const IdStringPtr kCSegmentButton = "CSegmentButton";
 static const IdStringPtr kCKnob = "CKnob";
@@ -76,6 +78,7 @@ static const std::string kAttrOrigin = "origin";
 static const std::string kAttrSize = "size";
 static const std::string kAttrTransparent = "transparent";
 static const std::string kAttrMouseEnabled = "mouse-enabled";
+static const std::string kAttrWantsFocus = "wants-focus";
 static const std::string kAttrBitmap = "bitmap";
 static const std::string kAttrDisabledBitmap = "disabled-bitmap";
 static const std::string kAttrAutosize = "autosize";
@@ -102,6 +105,7 @@ static const std::string kAttrRowStyle = "row-style";
 static const std::string kAttrSpacing = "spacing";
 static const std::string kAttrMargin = "margin";
 static const std::string kAttrAnimateViewResizing = "animate-view-resizing";
+static const std::string kAttrHideClippedSubviews = "hide-clipped-subviews";
 static const std::string kAttrEqualSizeLayout = "equal-size-layout";
 static const std::string kAttrViewResizeAnimationTime = "view-resize-animation-time";
 
@@ -156,6 +160,7 @@ static const std::string kAttrStyleRoundRect = "style-round-rect";
 static const std::string kAttrTextInset = "text-inset";
 static const std::string kAttrValuePrecision = "value-precision";
 static const std::string kAttrTextRotation = "text-rotation";
+static const std::string kAttrTextShadowOffset = "text-shadow-offset";
 
 //-----------------------------------------------------------------------------
 // COptionMenuCreator attributes
@@ -169,10 +174,20 @@ static const std::string kAttrMenuCheckStyle = "menu-check-style";
 static const std::string kAttrTruncateMode = "truncate-mode";
 
 //-----------------------------------------------------------------------------
+// CMultiLineTextLabelCreator attributes
+//-----------------------------------------------------------------------------
+static const std::string kAttrLineLayout = "line-layout";
+static const std::string kAttrAutoHeight = "auto-height";
+
+//-----------------------------------------------------------------------------
 // CTextEditCreator attributes
 //-----------------------------------------------------------------------------
+static const std::string kAttrSecureStyle = "secure-style";
 static const std::string kAttrImmediateTextChange = "immediate-text-change";
 static const std::string kAttrStyleDoubleClick = "style-doubleclick";
+static const std::string kAttrPlaceholderTitle = "placeholder-title";
+
+static const std::string kAttrClearMarkInset = "clearmark-inset";
 
 //-----------------------------------------------------------------------------
 // CTextButtonCreator attributes

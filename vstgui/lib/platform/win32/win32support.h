@@ -1,36 +1,6 @@
-//-----------------------------------------------------------------------------
-// VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins
-//
-// Version 4.3
-//
-//-----------------------------------------------------------------------------
-// VSTGUI LICENSE
-// (c) 2015, Steinberg Media Technologies, All Rights Reserved
-//-----------------------------------------------------------------------------
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
-// 
-//   * Redistributions of source code must retain the above copyright notice, 
-//     this list of conditions and the following disclaimer.
-//   * Redistributions in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation 
-//     and/or other materials provided with the distribution.
-//   * Neither the name of the Steinberg Media Technologies nor the names of its
-//     contributors may be used to endorse or promote products derived from this 
-//     software without specific prior written permission.
-// 
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-// ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
-// IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
-// INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
-// BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
-// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
-// OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE  OF THIS SOFTWARE, EVEN IF ADVISED
-// OF THE POSSIBILITY OF SUCH DAMAGE.
-//-----------------------------------------------------------------------------
+// This file is part of VSTGUI. It is subject to the license terms 
+// in the LICENSE file found in the top-level directory of this
+// distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #ifndef __win32support__
 #define __win32support__
@@ -40,7 +10,11 @@
 #if WINDOWS
 
 #include "../../cbitmap.h"
+#include "../../optional.h"
 
+#include <algorithm>
+using std::min;
+using std::max;
 #include <windows.h>
 #if defined (WINAPI_FAMILY_SYSTEM)
 #include <VersionHelpers.h>
@@ -51,6 +25,9 @@
 
 interface ID2D1Factory;
 interface IDWriteFactory;
+interface IWICImagingFactory;
+
+struct VstKeyCode;
 
 namespace VSTGUI {
 
@@ -70,21 +47,23 @@ extern const OSVERSIONINFOEX& getSystemVersion();
 extern const bool IsWindowsVistaOrGreater();
 #endif
 extern ID2D1Factory* getD2DFactory ();
+extern IWICImagingFactory* getWICImageingFactory ();
 extern void useD2D ();
 extern void unuseD2D ();
 extern IDWriteFactory* getDWriteFactory ();
 extern CDrawContext* createDrawContext (HWND window, HDC device, const CRect& surfaceRect);
 extern void useD2DHardwareRenderer (bool state);
+extern Optional<VstKeyCode> keyMessageToKeyCode (WPARAM wParam, LPARAM lParam);
 
 /// @cond ignore
-class GDIPlusGlobals : public CBaseObject
+class GDIPlusGlobals : public AtomicReferenceCounted
 {
 public:
 	static void enter ();
 	static void exit ();
 protected:
 	GDIPlusGlobals ();
-	~GDIPlusGlobals ();
+	~GDIPlusGlobals () noexcept;
 
 	static GDIPlusGlobals* gInstance;
 	ULONG_PTR gdiplusToken;
@@ -95,7 +74,7 @@ class UTF8StringHelper
 public:
 	UTF8StringHelper (const char* utf8Str) : utf8Str (utf8Str), allocWideStr (0), allocStrIsWide (true) {}
 	UTF8StringHelper (const WCHAR* wideStr) : wideStr (wideStr), allocUTF8Str (0), allocStrIsWide (false) {}
-	~UTF8StringHelper ()
+	~UTF8StringHelper () noexcept
 	{
 		if (allocUTF8Str)
 			std::free (allocUTF8Str);
@@ -113,7 +92,7 @@ public:
 			if (!allocWideStr && utf8Str)
 			{
 				int numChars = MultiByteToWideChar (CP_UTF8, 0, utf8Str, -1, 0, 0);
-				allocWideStr = (WCHAR*)::std::malloc ((numChars+1)*2);
+				allocWideStr = (WCHAR*)::std::malloc ((static_cast<size_t> (numChars)+1)*2);
 				if (MultiByteToWideChar (CP_UTF8, 0, utf8Str, -1, allocWideStr, numChars) == 0)
 				{
 					allocWideStr[0] = 0;
@@ -131,7 +110,7 @@ public:
 			if (!allocUTF8Str && wideStr)
 			{
 				int allocSize = WideCharToMultiByte (CP_UTF8, 0, wideStr, -1, 0, 0, 0, 0);
-				allocUTF8Str = (char*)::std::malloc (allocSize+1);
+				allocUTF8Str = (char*)::std::malloc (static_cast<size_t> (allocSize)+1);
 				if (WideCharToMultiByte (CP_UTF8, 0, wideStr, -1, allocUTF8Str, allocSize, 0, 0) == 0)
 				{
 					allocUTF8Str[0] = 0;
@@ -157,6 +136,7 @@ class ResourceStream : public IStream
 {
 public:
 	ResourceStream ();
+	~ResourceStream () noexcept = default;
 
 	bool open (const CResourceDescription& resourceDesc, const char* type);
 

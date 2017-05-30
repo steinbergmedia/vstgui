@@ -1,51 +1,22 @@
-//-----------------------------------------------------------------------------
-// VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework not only for VST plugins
-//
-// Version 4.3
-//
-//-----------------------------------------------------------------------------
-// VSTGUI LICENSE
-// (c) 2015, Steinberg Media Technologies, All Rights Reserved
-//-----------------------------------------------------------------------------
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
-//
-//   * Redistributions of source code must retain the above copyright notice,
-//     this list of conditions and the following disclaimer.
-//   * Redistributions in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation
-//     and/or other materials provided with the distribution.
-//   * Neither the name of the Steinberg Media Technologies nor the names of its
-//     contributors may be used to endorse or promote products derived from this
-//     software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-// ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
-// IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
-// INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
-// BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
-// OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE  OF THIS SOFTWARE, EVEN IF ADVISED
-// OF THE POSSIBILITY OF SUCH DAMAGE.
-//-----------------------------------------------------------------------------
+// This file is part of VSTGUI. It is subject to the license terms
+// in the LICENSE file found in the top-level directory of this
+// distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "uibitmapscontroller.h"
 
 #if VSTGUI_LIVE_EDITING
 
 #include "uibasedatasource.h"
-#include "uisearchtextfield.h"
 #include "uieditcontroller.h"
 #include "uidialogcontroller.h"
+#include "../../lib/cbitmap.h"
 #include "../../lib/cbitmapfilter.h"
 #include "../../lib/cfileselector.h"
 #include "../../lib/idatapackage.h"
 #include "../../lib/cvstguitimer.h"
 #include "../../lib/controls/ccolorchooser.h"
 #include "../../lib/controls/ctextedit.h"
+#include "../../lib/controls/csearchtextedit.h"
 #include "../../lib/platform/iplatformbitmap.h"
 
 namespace VSTGUI {
@@ -53,7 +24,7 @@ namespace VSTGUI {
 class UIBitmapView : public CView
 {
 public:
-	UIBitmapView (CBitmap* bitmap = 0)
+	UIBitmapView (CBitmap* bitmap = nullptr)
 	: CView (CRect (0, 0, 0, 0))
 	, zoom (1.)
 	{
@@ -139,17 +110,15 @@ public:
 
 	void setBackground (CBitmap *background) override
 	{
-		IPlatformBitmap* platformBitmap = background ? background->getPlatformBitmap () : 0;
+		IPlatformBitmap* platformBitmap = background ? background->getPlatformBitmap () : nullptr;
 		if (platformBitmap && platformBitmap->getScaleFactor () != 1.)
 		{
 			// get rid of the scale factor
-			void* ptr;
-			uint32_t memSize;
-			if (IPlatformBitmap::createMemoryPNGRepresentation (platformBitmap, &ptr, memSize))
+			auto buffer = IPlatformBitmap::createMemoryPNGRepresentation (platformBitmap);
+			if (!buffer.empty ())
 			{
-				SharedPointer<IPlatformBitmap> newPlatformBitmap = owned (IPlatformBitmap::createFromMemory (ptr, memSize));
-				CView::setBackground (owned (new CBitmap (newPlatformBitmap)));
-				std::free (ptr);
+				auto newPlatformBitmap = IPlatformBitmap::createFromMemory (buffer.data (), static_cast<uint32_t> (buffer.size ()));
+				CView::setBackground (makeOwned<CBitmap> (newPlatformBitmap));
 			}
 		}
 		else
@@ -202,7 +171,7 @@ void UIBitmapsDataSource::dbOnDragEnterBrowser (IDataPackage* drag, CDataBrowser
 {
 	uint32_t index = 0;
 	IDataPackage::Type type;
-	const void* item = 0;
+	const void* item = nullptr;
 	while (drag->getData (index, item, type) > 0)
 	{
 		if (type == IDataPackage::kFilePath)
@@ -256,7 +225,7 @@ bool UIBitmapsDataSource::dbOnDropInCell (int32_t row, int32_t column, const CPo
 		bool didBeganGroupAction = false;
 		uint32_t index = 0;
 		IDataPackage::Type type;
-		const void* item = 0;
+		const void* item = nullptr;
 		while (drag->getData (index++, item, type) > 0)
 		{
 			if (type == IDataPackage::kFilePath)
@@ -296,14 +265,14 @@ void UIBitmapsDataSource::getNames (std::list<const std::string*>& names)
 //----------------------------------------------------------------------------------------------------
 bool UIBitmapsDataSource::addItem (UTF8StringPtr name)
 {
-	actionPerformer->performBitmapChange (name, 0);
+	actionPerformer->performBitmapChange (name, nullptr);
 	return true;
 }
 
 //----------------------------------------------------------------------------------------------------
 bool UIBitmapsDataSource::removeItem (UTF8StringPtr name)
 {
-	actionPerformer->performBitmapChange (name, 0, true);
+	actionPerformer->performBitmapChange (name, nullptr, true);
 	return true;
 }
 
@@ -319,8 +288,8 @@ CBitmap* UIBitmapsDataSource::getSelectedBitmap ()
 {
 	int32_t selectedRow = dataBrowser ? dataBrowser->getSelectedRow() : CDataBrowser::kNoSelection;
 	if (selectedRow != CDataBrowser::kNoSelection && selectedRow < (int32_t)names.size ())
-		return description->getBitmap (names.at (static_cast<uint32_t> (selectedRow)).c_str ());
-	return 0;
+		return description->getBitmap (names.at (static_cast<uint32_t> (selectedRow)).data ());
+	return nullptr;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -328,8 +297,8 @@ UTF8StringPtr UIBitmapsDataSource::getSelectedBitmapName ()
 {
 	int32_t selectedRow = dataBrowser ? dataBrowser->getSelectedRow() : CDataBrowser::kNoSelection;
 	if (selectedRow != CDataBrowser::kNoSelection && selectedRow < (int32_t)names.size ())
-		return names.at (static_cast<uint32_t> (selectedRow)).c_str ();
-	return 0;
+		return names.at (static_cast<uint32_t> (selectedRow)).data ();
+	return nullptr;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -361,7 +330,7 @@ bool UIBitmapsDataSource::addBitmap (UTF8StringPtr path, std::string& outName)
 				}
 			}
 		}
-		actionPerformer->performBitmapChange (outName.c_str (), pathStr.c_str ());
+		actionPerformer->performBitmapChange (outName.data (), pathStr.data ());
 		result = true;
 	}
 	return result;
@@ -371,7 +340,7 @@ bool UIBitmapsDataSource::addBitmap (UTF8StringPtr path, std::string& outName)
 bool UIBitmapsDataSource::add ()
 {
 	bool result = false;
-	OwningPointer<CNewFileSelector> fs = CNewFileSelector::create (dataBrowser->getFrame ());
+	auto fs = owned (CNewFileSelector::create (dataBrowser->getFrame ()));
 	if (fs)
 	{
 		fs->addFileExtension (CFileExtension ("PNG", "PNG", "image/png"));
@@ -389,7 +358,7 @@ bool UIBitmapsDataSource::add ()
 					std::string newName;
 					if (addBitmap (path, newName) && i == numFiles - 1)
 					{
-						int32_t row = selectName (newName.c_str ());
+						int32_t row = selectName (newName.data ());
 						if (row != -1)
 							dbOnMouseDown (CPoint (0, 0), CButtonState (kLButton|kDoubleClick), row, 0, dataBrowser);
 						result = true;
@@ -410,7 +379,7 @@ class UIBitmapSettingsController : public CBaseObject, public IController
 {
 public:
 	UIBitmapSettingsController (CBitmap* bitmap, const std::string& bitmapName, UIDescription* description, IActionPerformer* actionPerformer);
-	~UIBitmapSettingsController ();
+	~UIBitmapSettingsController () noexcept override = default;
 
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;
@@ -423,10 +392,10 @@ protected:
 	static bool stringToValue (UTF8StringPtr txt, float& result, CTextEdit::StringToValueUserData* userData);
 	static bool valueToString (float value, char utf8String[256], CParamDisplay::ValueToStringUserData* userData);
 
-	IActionPerformer* actionPerformer;
-	SharedPointer<UIDescription> editDescription;
 	SharedPointer<CBitmap> bitmap;
+	SharedPointer<UIDescription> editDescription;
 	SharedPointer<UIBitmapView> bitmapView;
+	IActionPerformer* actionPerformer;
 	std::string bitmapName;
 	CRect origOffsets;
 
@@ -449,18 +418,13 @@ protected:
 //----------------------------------------------------------------------------------------------------
 UIBitmapSettingsController::UIBitmapSettingsController (CBitmap* bitmap, const std::string& bitmapName, UIDescription* description, IActionPerformer* actionPerformer)
 : bitmap (bitmap)
-, bitmapName (bitmapName)
 , editDescription (description)
 , actionPerformer (actionPerformer)
+, bitmapName (bitmapName)
 , origOffsets (10, 10, 10, 10)
 {
-	for (int32_t i = 0; i < kNumTags; i++)
-		controls[i] = 0;
-}
-
-//----------------------------------------------------------------------------------------------------
-UIBitmapSettingsController::~UIBitmapSettingsController ()
-{
+	for (auto& control : controls)
+		control = nullptr;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -502,8 +466,8 @@ void UIBitmapSettingsController::valueChanged (CControl* control)
 			CTextEdit* edit = dynamic_cast<CTextEdit*>(control);
 			if (edit)
 			{
-				actionPerformer->performBitmapChange (bitmapName.c_str (), edit->getText ());
-				bitmap = editDescription->getBitmap (bitmapName.c_str ());
+				actionPerformer->performBitmapChange (bitmapName.data (), edit->getText ());
+				bitmap = editDescription->getBitmap (bitmapName.data ());
 				bitmapView->setBackground (bitmap);
 				updateNinePartTiledControls ();
 			}
@@ -520,8 +484,8 @@ void UIBitmapSettingsController::valueChanged (CControl* control)
 				origOffsets.bottom = nptb->getPartOffsets ().bottom;
 			}
 			bool checked = control->getValue () == control->getMax ();
-			actionPerformer->performBitmapNinePartTiledChange (bitmapName.c_str (), checked ? &origOffsets : 0);
-			bitmap = editDescription->getBitmap (bitmapName.c_str ());
+			actionPerformer->performBitmapNinePartTiledChange (bitmapName.data (), checked ? &origOffsets : nullptr);
+			bitmap = editDescription->getBitmap (bitmapName.data ());
 			bitmapView->setBackground (bitmap);
 			updateNinePartTiledControls ();
 			break;
@@ -536,8 +500,8 @@ void UIBitmapSettingsController::valueChanged (CControl* control)
 			r.top = controls[kNinePartTiledTopTag]->getValue ();
 			r.right = controls[kNinePartTiledRightTag]->getValue ();
 			r.bottom = controls[kNinePartTiledBottomTag]->getValue ();
-			actionPerformer->performBitmapNinePartTiledChange (bitmapName.c_str (), &r);
-			bitmap = editDescription->getBitmap (bitmapName.c_str ());
+			actionPerformer->performBitmapNinePartTiledChange (bitmapName.data (), &r);
+			bitmap = editDescription->getBitmap (bitmapName.data ());
 			bitmapView->setBackground (bitmap);
 			updateNinePartTiledControls ();
 			SharedPointer<CTextEdit> textEdit = SharedPointer<CControl> (control).cast<CTextEdit> ();
@@ -700,7 +664,7 @@ CView* UIBitmapSettingsController::createView (const UIAttributes& attributes, c
 			return bitmapView;
 		}
 	}
-	return 0;
+	return nullptr;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -710,7 +674,7 @@ bool UIBitmapSettingsController::valueToString (float value, char utf8String[256
 	std::stringstream str;
 	str << intValue;
 	str << "%";
-	std::strcpy (utf8String, str.str ().c_str ());
+	std::strcpy (utf8String, str.str ().data ());
 	return true;
 }
 
@@ -718,7 +682,7 @@ bool UIBitmapSettingsController::valueToString (float value, char utf8String[256
 //----------------------------------------------------------------------------------------------------
 bool UIBitmapSettingsController::stringToValue (UTF8StringPtr txt, float& result, CTextEdit::StringToValueUserData* userData)
 {
-	int32_t value = txt ? (int32_t)strtol (txt, 0, 10) : 0;
+	int32_t value = txt ? (int32_t)strtol (txt, nullptr, 10) : 0;
 	result = (float)value;
 	return true;
 }
@@ -730,7 +694,7 @@ UIBitmapsController::UIBitmapsController (IController* baseController, UIDescrip
 : DelegationController (baseController)
 , editDescription (description)
 , actionPerformer (actionPerformer)
-, dataSource (0)
+, dataSource (nullptr)
 {
 	dataSource = new UIBitmapsDataSource (editDescription, actionPerformer, this);
 	UIEditController::setupDataSource (dataSource);
@@ -747,7 +711,7 @@ void UIBitmapsController::showSettingsDialog ()
 {
 	UIDialogController* dc = new UIDialogController (this, bitmapPathEdit->getFrame ());
 	UIBitmapSettingsController* fsController = new UIBitmapSettingsController (dataSource->getSelectedBitmap (), dataSource->getSelectedBitmapName (), editDescription, actionPerformer);
-	dc->run ("bitmap.settings", "Bitmap Settings", "Close", 0, fsController, &UIEditController::getEditorDescription ());
+	dc->run ("bitmap.settings", "Bitmap Settings", "Close", nullptr, fsController, UIEditController::getEditorDescription ());
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -773,7 +737,7 @@ CView* UIBitmapsController::createView (const UIAttributes& attributes, const IU
 //----------------------------------------------------------------------------------------------------
 CView* UIBitmapsController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
 {
-	UISearchTextField* searchField = dynamic_cast<UISearchTextField*>(view);
+	auto searchField = dynamic_cast<CSearchTextEdit*>(view);
 	if (searchField && searchField->getTag () == kSearchTag)
 	{
 		dataSource->setSearchFieldControl (searchField);
@@ -871,7 +835,7 @@ void UIBitmapsController::dbSelectionChanged (int32_t selectedRow, GenericString
 		}
 		if (bitmapPathEdit)
 		{
-			bitmapPathEdit->setText (bitmap ? bitmap->getResourceDescription ().u.name : 0);
+			bitmapPathEdit->setText (bitmap ? bitmap->getResourceDescription ().u.name : nullptr);
 			bitmapPathEdit->setMouseEnabled (selectedBitmapName ? true : false);
 		}
 		if (settingButton)
@@ -887,14 +851,14 @@ bool UIBitmapsController::valueToString (float value, char utf8String[256], void
 	int32_t intValue = (int32_t)value;
 	std::stringstream str;
 	str << intValue;
-	std::strcpy (utf8String, str.str ().c_str ());
+	std::strcpy (utf8String, str.str ().data ());
 	return true;
 }
 
 //----------------------------------------------------------------------------------------------------
 bool UIBitmapsController::stringToValue (UTF8StringPtr txt, float& result, void* userData)
 {
-	int32_t value = txt ? (int32_t)strtol (txt, 0, 10) : 0;
+	int32_t value = txt ? (int32_t)strtol (txt, nullptr, 10) : 0;
 	result = (float)value;
 	return true;
 }

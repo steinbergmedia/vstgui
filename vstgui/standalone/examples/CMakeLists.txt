@@ -1,0 +1,3 @@
+add_subdirectory(mandelbrot)
+add_subdirectory(simple_standalone)
+add_subdirectory(standalone)

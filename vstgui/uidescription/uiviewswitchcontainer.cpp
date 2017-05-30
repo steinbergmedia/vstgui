@@ -1,36 +1,6 @@
-//-----------------------------------------------------------------------------
-// VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins
-//
-// Version 4.3
-//
-//-----------------------------------------------------------------------------
-// VSTGUI LICENSE
-// (c) 2015, Steinberg Media Technologies, All Rights Reserved
-//-----------------------------------------------------------------------------
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
-// 
-//   * Redistributions of source code must retain the above copyright notice, 
-//     this list of conditions and the following disclaimer.
-//   * Redistributions in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation 
-//     and/or other materials provided with the distribution.
-//   * Neither the name of the Steinberg Media Technologies nor the names of its
-//     contributors may be used to endorse or promote products derived from this 
-//     software without specific prior written permission.
-// 
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-// ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
-// IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
-// INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
-// BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
-// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
-// OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE  OF THIS SOFTWARE, EVEN IF ADVISED
-// OF THE POSSIBILITY OF SUCH DAMAGE.
-//-----------------------------------------------------------------------------
+// This file is part of VSTGUI. It is subject to the license terms
+// in the LICENSE file found in the top-level directory of this
+// distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "uiviewswitchcontainer.h"
 #include "iviewcreator.h"
@@ -45,7 +15,7 @@ namespace VSTGUI {
 //-----------------------------------------------------------------------------
 UIViewSwitchContainer::UIViewSwitchContainer (const CRect& size)
 : CViewContainer (size)
-, controller (0)
+, controller (nullptr)
 , currentViewIndex (-1)
 , animationTime (120)
 , animationStyle (kFadeInOut)
@@ -53,9 +23,9 @@ UIViewSwitchContainer::UIViewSwitchContainer (const CRect& size)
 }
 
 //-----------------------------------------------------------------------------
-UIViewSwitchContainer::~UIViewSwitchContainer ()
+UIViewSwitchContainer::~UIViewSwitchContainer () noexcept
 {
-	setController (0);
+	setController (nullptr);
 }
 
 //-----------------------------------------------------------------------------
@@ -63,7 +33,7 @@ void UIViewSwitchContainer::setController (IViewSwitchController* _controller)
 {
 	if (controller)
 	{
-		CBaseObject* obj = dynamic_cast<CBaseObject*> (controller);
+		auto obj = dynamic_cast<IReference*> (controller);
 		if (obj)
 			obj->forget ();
 	}
@@ -85,14 +55,13 @@ void UIViewSwitchContainer::setCurrentViewIndex (int32_t viewIndex)
 				view->setViewSize (vs);
 				view->setMouseableArea (vs);
 			}
-			if (animationTime)
+			if (isAttached () && animationTime)
 			{
-				if (getFrame ())
-					getFrame ()->getAnimator ()->removeAnimation (this, "UIViewSwitchContainer::setCurrentViewIndex");
+				removeAnimation ("UIViewSwitchContainer::setCurrentViewIndex");
 				CView* oldView = getView (0);
-				if (isAttached () && oldView && getFrame ())
+				if (oldView)
 				{
-					Animation::IAnimationTarget* animation = 0;
+					Animation::IAnimationTarget* animation = nullptr;
 					switch (animationStyle)
 					{
 						case kFadeInOut:
@@ -122,7 +91,7 @@ void UIViewSwitchContainer::setCurrentViewIndex (int32_t viewIndex)
 						}
 					}
 					if (animation)
-						getFrame ()->getAnimator ()->addAnimation (this, "UIViewSwitchContainer::setCurrentViewIndex", animation, new Animation::LinearTimingFunction (animationTime));
+						addAnimation ("UIViewSwitchContainer::setCurrentViewIndex", animation, new Animation::LinearTimingFunction (animationTime));
 					else
 					{
 						removeAll ();
@@ -173,6 +142,7 @@ bool UIViewSwitchContainer::removed (CView* parent)
 {
 	if (isAttached ())
 	{
+		removeAnimation ("UIViewSwitchContainer::setCurrentViewIndex");
 		bool result = CViewContainer::removed (parent);
 		if (result && controller)
 			controller->switchContainerRemoved ();
@@ -189,7 +159,7 @@ UIDescriptionViewSwitchController::UIDescriptionViewSwitchController (UIViewSwit
 , uiController (uiController)
 , switchControlTag (-1)
 , currentIndex (-1)
-, switchControl (0)
+, switchControl (nullptr)
 {
 	init ();
 }
@@ -201,13 +171,13 @@ CView* UIDescriptionViewSwitchController::createViewForIndex (int32_t index)
 	{
 		return uiDescription->createView (templateNames[static_cast<uint32_t> (index)].c_str (), uiController);
 	}
-	return 0;
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------
 static CControl* findControlTag (CViewContainer* parent, int32_t tag, bool reverse = true)
 {
-	CControl* result = 0;
+	CControl* result = nullptr;
 	ViewIterator it (parent);
 	while (*it)
 	{
@@ -220,16 +190,15 @@ static CControl* findControlTag (CViewContainer* parent, int32_t tag, bool rever
 		}
 		else if (reverse)
 		{
-			CViewContainer* container = dynamic_cast<CViewContainer*> (view);
-			if (container)
+			if (auto container = view->asViewContainer ())
 				result = findControlTag (container, tag);
 		}
 		if (result)
 			break;
 		++it;
 	}
-	if (result == 0 && !reverse)
-		return findControlTag (dynamic_cast<CViewContainer*> (parent->getParentView ()), reverse);
+	if (result == nullptr && !reverse && parent->getParentView ())
+		return findControlTag (parent->getParentView ()->asViewContainer (), tag, reverse);
 	return result;
 }
 
@@ -239,8 +208,8 @@ void UIDescriptionViewSwitchController::switchContainerAttached ()
 	if (switchControlTag != -1)
 	{
 		// find the switch Control
-		switchControl = findControlTag (dynamic_cast<CViewContainer*> (viewSwitch->getParentView ()), switchControlTag, false);
-		if (switchControl == 0)
+		switchControl = findControlTag (viewSwitch->getParentView ()->asViewContainer (), switchControlTag, false);
+		if (switchControl == nullptr)
 		{
 			switchControl = findControlTag (viewSwitch->getFrame (), switchControlTag, true);
 		}
@@ -260,7 +229,7 @@ void UIDescriptionViewSwitchController::switchContainerRemoved ()
 	{
 		switchControl->removeDependency (this);
 		switchControl->forget ();
-		switchControl = 0;
+		switchControl = nullptr;
 		currentIndex = -1;
 	}
 }
@@ -295,17 +264,17 @@ void UIDescriptionViewSwitchController::setTemplateNames (UTF8StringPtr _templat
 			while (pos != std::string::npos)
 			{
 				std::string name (temp, start, pos - start);
-				templateNames.push_back (name);
+				templateNames.emplace_back (name);
 				start = pos+1;
 				pos = temp.find (",", start, 1);
 			}
 			std::string name (temp, start, std::string::npos);
-			templateNames.push_back (name);
+			templateNames.emplace_back (name);
 		}
 		else
 		{
 			// only one template name
-			templateNames.push_back (temp);
+			templateNames.emplace_back (temp);
 		}
 	}
 }

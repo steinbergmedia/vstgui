@@ -1,36 +1,6 @@
-//-----------------------------------------------------------------------------
-// VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins
-//
-// Version 4.3
-//
-//-----------------------------------------------------------------------------
-// VSTGUI LICENSE
-// (c) 2015, Steinberg Media Technologies, All Rights Reserved
-//-----------------------------------------------------------------------------
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
-// 
-//   * Redistributions of source code must retain the above copyright notice, 
-//     this list of conditions and the following disclaimer.
-//   * Redistributions in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation 
-//     and/or other materials provided with the distribution.
-//   * Neither the name of the Steinberg Media Technologies nor the names of its
-//     contributors may be used to endorse or promote products derived from this 
-//     software without specific prior written permission.
-// 
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-// ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
-// IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
-// INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
-// BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
-// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
-// OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE  OF THIS SOFTWARE, EVEN IF ADVISED
-// OF THE POSSIBILITY OF SUCH DAMAGE.
-//-----------------------------------------------------------------------------
+// This file is part of VSTGUI. It is subject to the license terms 
+// in the LICENSE file found in the top-level directory of this
+// distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #import "nsviewoptionmenu.h"
 
@@ -42,6 +12,7 @@
 #import "../../../cframe.h"
 #import "../../../controls/coptionmenu.h"
 #import "../cgbitmap.h"
+#import "../macstring.h"
 
 @interface NSObject (VSTGUI_NSMenu_Private)
 -(id)initWithOptionMenu:(id)menu;
@@ -53,7 +24,7 @@ namespace VSTGUI {
 static int32_t menuClassCount = 0;
 #endif
 
-static Class menuClass = 0;
+static Class menuClass = nullptr;
 
 //------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------
@@ -80,7 +51,7 @@ static id VSTGUI_NSMenu_Init (id self, SEL _cmd, void* _menu)
 		VSTGUI_NSMenu_Var* var = new VSTGUI_NSMenu_Var;
 		var->_optionMenu = menu;
 		var->_selectedItem = 0;
-		var->_selectedMenu = 0;
+		var->_selectedMenu = nullptr;
 		OBJC_SET_VALUE(self, _private, var);
 
 		int32_t index = -1;
@@ -91,11 +62,11 @@ static id VSTGUI_NSMenu_Init (id self, SEL _cmd, void* _menu)
 			CMenuItem* item = (*it);
 			it++;
 			index++;
-			NSMenuItem* nsItem = 0;
-			NSMutableString* itemTitle = [[[NSMutableString alloc] initWithCString:item->getTitle () encoding:NSUTF8StringEncoding] autorelease];
+			NSMenuItem* nsItem = nullptr;
+			NSMutableString* itemTitle = [[[NSMutableString alloc] initWithString:fromUTF8String<NSString*> (item->getTitle ())] autorelease];
 			if (menu->getPrefixNumbers ())
 			{
-				NSString* prefixString = 0;
+				NSString* prefixString = nullptr;
 				switch (menu->getPrefixNumbers ())
 				{
 					case 2:	prefixString = [NSString stringWithFormat:@"%1d ", index+1]; break;
@@ -130,9 +101,9 @@ static id VSTGUI_NSMenu_Init (id self, SEL _cmd, void* _menu)
 				else
 					[nsItem setState:NSOffState];
 				NSString* keyEquivalent = nil;
-				if (item->getKeycode ())
+				if (!item->getKeycode ().empty ())
 				{
-					keyEquivalent = [NSString stringWithCString:item->getKeycode () encoding:NSUTF8StringEncoding];
+					keyEquivalent = fromUTF8String<NSString*> (item->getKeycode ());
 				}
 				else if (item->getVirtualKeyCode ())
 				{
@@ -156,8 +127,8 @@ static id VSTGUI_NSMenu_Init (id self, SEL _cmd, void* _menu)
 			if (nsItem && item->getIcon ())
 			{
 				IPlatformBitmap* platformBitmap = item->getIcon ()->getPlatformBitmap ();
-				CGBitmap* cgBitmap = platformBitmap ? dynamic_cast<CGBitmap*> (platformBitmap) : 0;
-				CGImageRef image = cgBitmap ? cgBitmap->getCGImage () : 0;
+				CGBitmap* cgBitmap = platformBitmap ? dynamic_cast<CGBitmap*> (platformBitmap) : nullptr;
+				CGImageRef image = cgBitmap ? cgBitmap->getCGImage () : nullptr;
 				if (image)
 				{
 					NSImage* nsImage = imageFromCGImageRef (image);
@@ -216,14 +187,14 @@ static void VSTGUI_NSMenu_MenuItemSelected (id self, SEL _cmd, id item)
 static void* VSTGUI_NSMenu_OptionMenu (id self, SEL _cmd)
 {
 	VSTGUI_NSMenu_Var* var = (VSTGUI_NSMenu_Var*)OBJC_GET_VALUE(self, _private);
-	return var ? var->_optionMenu : 0;
+	return var ? var->_optionMenu : nullptr;
 }
 
 //------------------------------------------------------------------------------------
 static void* VSTGUI_NSMenu_SelectedMenu (id self, SEL _cmd)
 {
 	VSTGUI_NSMenu_Var* var = (VSTGUI_NSMenu_Var*)OBJC_GET_VALUE(self, _private);
-	return var ? var->_selectedMenu : 0;
+	return var ? var->_selectedMenu : nullptr;
 }
 
 //------------------------------------------------------------------------------------
@@ -259,7 +230,7 @@ __attribute__((__destructor__)) static void cleanup_VSTGUI_NSMenu ()
 //-----------------------------------------------------------------------------
 bool NSViewOptionMenu::initClass ()
 {
-	if (menuClass == 0)
+	if (menuClass == nullptr)
 	{
 		NSMutableString* menuClassName = [[[NSMutableString alloc] initWithString:@"VSTGUI_NSMenu"] autorelease];
 		menuClass = generateUniqueClass (menuClassName, [NSMenu class]);
@@ -275,13 +246,13 @@ bool NSViewOptionMenu::initClass ()
 		VSTGUI_CHECK_YES (class_addIvar (menuClass, "_private", sizeof (VSTGUI_NSMenu_Var*), (uint8_t)log2(sizeof(VSTGUI_NSMenu_Var*)), @encode(VSTGUI_NSMenu_Var*)))
 		objc_registerClassPair (menuClass);
 	}
-	return menuClass != 0;
+	return menuClass != nullptr;
 }
 
 //-----------------------------------------------------------------------------
 PlatformOptionMenuResult NSViewOptionMenu::popup (COptionMenu* optionMenu)
 {
-	PlatformOptionMenuResult result = {0};
+	PlatformOptionMenuResult result = {nullptr};
 
 	if (!initClass ())
 		return result;
@@ -292,6 +263,7 @@ PlatformOptionMenuResult NSViewOptionMenu::popup (COptionMenu* optionMenu)
 	NSViewFrame* nsViewFrame = dynamic_cast<NSViewFrame*> (frame->getPlatformFrame ());
 
 	CRect globalSize = optionMenu->translateToGlobal (optionMenu->getViewSize ());
+	globalSize.offset (-frame->getViewSize ().getTopLeft ());
 
 	bool multipleCheck = optionMenu->getStyle () & (kMultipleCheckStyle & ~kCheckStyle);
 	NSView* view = nsViewFrame->getPlatformControl ();

@@ -1,36 +1,6 @@
-//-----------------------------------------------------------------------------
-// VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins
-//
-// Version 4.3
-//
-//-----------------------------------------------------------------------------
-// VSTGUI LICENSE
-// (c) 2015, Steinberg Media Technologies, All Rights Reserved
-//-----------------------------------------------------------------------------
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
-//
-//   * Redistributions of source code must retain the above copyright notice,
-//     this list of conditions and the following disclaimer.
-//   * Redistributions in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation
-//     and/or other materials provided with the distribution.
-//   * Neither the name of the Steinberg Media Technologies nor the names of its
-//     contributors may be used to endorse or promote products derived from this
-//     software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-// ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
-// IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
-// INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
-// BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
-// OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE  OF THIS SOFTWARE, EVEN IF ADVISED
-// OF THE POSSIBILITY OF SUCH DAMAGE.
-//-----------------------------------------------------------------------------
+// This file is part of VSTGUI. It is subject to the license terms 
+// in the LICENSE file found in the top-level directory of this
+// distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "cdrawmethods.h"
 #include "cbitmap.h"
@@ -46,59 +16,42 @@ UTF8String createTruncatedText (TextTruncateMode mode, const UTF8String& text, C
 {
 	if (mode == kTextTruncateNone)
 		return text;
-	IFontPainter* painter = font->getPlatformFont () ? font->getPlatformFont ()->getPainter () : 0;
+	auto painter = font->getPlatformFont () ? font->getPlatformFont ()->getPainter () : nullptr;
 	if (!painter)
 		return text;
-	CCoord width = painter->getStringWidth (0, text.getPlatformString (), true);
+	CCoord width = painter->getStringWidth (nullptr, text.getPlatformString (), true);
 	width += textInset.x * 2;
 	if (width > maxWidth)
 	{
-		std::string _truncatedText;
-		UTF8String utf8Str;
-		if (mode == kTextTruncateTail)
+		std::string truncatedText;
+		UTF8String result;
+		auto left = text.begin ();
+		auto right = text.end ();
+		while (width > maxWidth && left != right)
 		{
-			_truncatedText = text;
-			_truncatedText += "..";
-			while (width > maxWidth && _truncatedText.size () > 2)
+			if (mode == kTextTruncateHead)
 			{
-				UTF8CharacterIterator it (_truncatedText);
-				it.end ();
-				for (int32_t i = 0; i < 3; i++, --it)
-				{
-					if (it == it.front ())
-					{
-						break;
-					}
-				}
-				_truncatedText.erase (_truncatedText.size () - (2 + it.getByteLength ()), it.getByteLength ());
-				utf8Str.set (_truncatedText.c_str ());
-				width = painter->getStringWidth (0, utf8Str.getPlatformString (), true);
-				width += textInset.x * 2;
+				++left;
+				truncatedText = "..";
 			}
-		}
-		else if (mode == kTextTruncateHead)
-		{
-			_truncatedText = "..";
-			_truncatedText += text;
-			while (width > maxWidth && _truncatedText.size () > 2)
+			else if (mode == kTextTruncateTail)
 			{
-				UTF8CharacterIterator it (_truncatedText);
-				for (int32_t i = 0; i < 2; i++, ++it)
-				{
-					if (it == it.back ())
-					{
-						break;
-					}
-				}
-				_truncatedText.erase (2, it.getByteLength ());
-				utf8Str.set (_truncatedText.c_str ());
-				width = painter->getStringWidth (0, utf8Str.getPlatformString (), true);
-				width += textInset.x * 2;
+				--right;
+				truncatedText = "";
 			}
+
+			truncatedText += {left.base (), right.base ()};
+
+			if (mode == kTextTruncateTail)
+				truncatedText += "..";
+
+			result = truncatedText;
+			width = painter->getStringWidth (nullptr, result.getPlatformString (), true);
+			width += textInset.x * 2;
 		}
-		if (width > maxWidth && flags & kReturnEmptyIfTruncationIsPlaceholderOnly)
-			utf8Str.set ("");
-		return utf8Str;
+		if (left == right && flags & kReturnEmptyIfTruncationIsPlaceholderOnly)
+			result = "";
+		return result;
 	}
 	return text;
 }
