@@ -1,36 +1,6 @@
-//-----------------------------------------------------------------------------
-// VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins
-//
-// Version 4.3
-//
-//-----------------------------------------------------------------------------
-// VSTGUI LICENSE
-// (c) 2015, Steinberg Media Technologies, All Rights Reserved
-//-----------------------------------------------------------------------------
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
-// 
-//   * Redistributions of source code must retain the above copyright notice, 
-//     this list of conditions and the following disclaimer.
-//   * Redistributions in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation 
-//     and/or other materials provided with the distribution.
-//   * Neither the name of the Steinberg Media Technologies nor the names of its
-//     contributors may be used to endorse or promote products derived from this 
-//     software without specific prior written permission.
-// 
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-// ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
-// IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
-// INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
-// BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
-// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
-// OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE  OF THIS SOFTWARE, EVEN IF ADVISED
-// OF THE POSSIBILITY OF SUCH DAMAGE.
-//-----------------------------------------------------------------------------
+// This file is part of VSTGUI. It is subject to the license terms
+// in the LICENSE file found in the top-level directory of this
+// distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "cstream.h"
 #include "../lib/cresourcedescription.h"
@@ -53,7 +23,7 @@ namespace VSTGUI {
 CMemoryStream::CMemoryStream (uint32_t initialSize, uint32_t inDelta, bool binaryMode, ByteOrder byteOrder)
 : OutputStream (byteOrder)
 , InputStream (byteOrder)
-, buffer (0)
+, buffer (nullptr)
 , bufferSize (0)
 , size (0)
 , pos (0)
@@ -79,7 +49,7 @@ CMemoryStream::CMemoryStream (const int8_t* inBuffer, uint32_t bufferSize, bool 
 }
 
 //-----------------------------------------------------------------------------
-CMemoryStream::~CMemoryStream ()
+CMemoryStream::~CMemoryStream () noexcept
 {
 	if (ownsBuffer && buffer)
 		std::free (buffer);
@@ -106,7 +76,7 @@ bool CMemoryStream::resize (uint32_t inSize)
 	buffer = newBuffer;
 	bufferSize = newSize;
 	
-	return buffer != 0;
+	return buffer != nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -159,11 +129,11 @@ bool CMemoryStream::operator>> (std::string& string)
 	if (binaryMode)
 	{
 		int32_t identifier;
-		if (!(*(InputStream*)this >> identifier)) return false;
+		if (!(*static_cast<InputStream*> (this) >> identifier)) return false;
 		if (identifier == 'str ')
 		{
 			uint32_t length;
-			if (!(*(InputStream*)this >> length)) return false;
+			if (!(*static_cast<InputStream*> (this) >> length)) return false;
 			int8_t* buffer = (int8_t*)std::malloc (length);
 			uint32_t read = readRaw (buffer, length);
 			if (read == length)
@@ -212,12 +182,12 @@ bool CMemoryStream::end ()
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 CFileStream::CFileStream ()
-: stream (0)
+: stream (nullptr)
 {
 }
 
 //-----------------------------------------------------------------------------
-CFileStream::~CFileStream ()
+CFileStream::~CFileStream () noexcept
 {
 	if (stream)
 	{
@@ -253,12 +223,17 @@ bool CFileStream::open (UTF8StringPtr path, int32_t mode, ByteOrder byteOrder)
 		else
 			return false;
 	}
+#if WINDOWS
+	// always use binary mode so that newlines are not converted
+	fmode << "b";
+#else
 	if (mode & kBinaryMode)
 		fmode << "b";
+#endif
 	stream = fopen (path, fmode.str ().c_str ());
 	openMode = mode;
 
-	return stream != 0;
+	return stream != nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -340,7 +315,7 @@ bool CFileStream::operator<< (const std::string& str)
 	{
 		if (openMode & kBinaryMode)
 		{
-			if (!(*(OutputStream*)this << (int8_t)0))
+			if (!(*static_cast<OutputStream*> (this) << (int8_t)0))
 				return false;
 		}
 		return true;
@@ -353,12 +328,12 @@ bool CFileStream::operator<< (const std::string& str)
 //-----------------------------------------------------------------------------
 CResourceInputStream::CResourceInputStream (ByteOrder byteOrder)
 : InputStream (byteOrder)
-, platformHandle (0)
+, platformHandle (nullptr)
 {
 }
 
 //-----------------------------------------------------------------------------
-CResourceInputStream::~CResourceInputStream ()
+CResourceInputStream::~CResourceInputStream () noexcept
 {
 	if (platformHandle)
 	{
@@ -373,7 +348,7 @@ CResourceInputStream::~CResourceInputStream ()
 //-----------------------------------------------------------------------------
 bool CResourceInputStream::open (const CResourceDescription& res)
 {
-	if (platformHandle != 0)
+	if (platformHandle != nullptr)
 		return false;
 #if MAC
 	if (res.type == CResourceDescription::kIntegerType)
@@ -383,12 +358,12 @@ bool CResourceInputStream::open (const CResourceDescription& res)
 		// it's an absolute path, we can use it as is
 //		platformHandle = fopen (res.u.name, "rb");
 	}
-	if (platformHandle == 0 && getBundleRef ())
+	if (platformHandle == nullptr && getBundleRef ())
 	{
-		CFStringRef cfStr = CFStringCreateWithCString (NULL, res.u.name, kCFStringEncodingUTF8);
+		CFStringRef cfStr = CFStringCreateWithCString (nullptr, res.u.name, kCFStringEncodingUTF8);
 		if (cfStr)
 		{
-			CFURLRef url = CFBundleCopyResourceURL (getBundleRef (), cfStr, 0, NULL);
+			CFURLRef url = CFBundleCopyResourceURL (getBundleRef (), cfStr, nullptr, nullptr);
 			if (url)
 			{
 				char filePath[PATH_MAX];
@@ -419,7 +394,7 @@ bool CResourceInputStream::open (const CResourceDescription& res)
 		platformHandle = 0;
 	}
 #endif
-	return platformHandle != 0;
+	return platformHandle != nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -488,7 +463,7 @@ int64_t CResourceInputStream::tell () const
 		return ftello ((FILE*)platformHandle);
 	#elif WINDOWS
 		ULARGE_INTEGER pos;
-		LARGE_INTEGER dummy = {0};
+		LARGE_INTEGER dummy = {};
 		if (((ResourceStream*)platformHandle)->Seek (dummy, STREAM_SEEK_CUR, &pos) == S_OK)
 			return (int64_t)pos.QuadPart;
 	#endif

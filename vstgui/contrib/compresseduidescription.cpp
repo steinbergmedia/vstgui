@@ -1,11 +1,6 @@
-/*
- *  compresseduidescription.cpp
- *
- *
- *  Created by Arne Scheffler on 10/19/10.
- *  Copyright 2010 Arne Scheffler. All rights reserved.
- *
- */
+// This file is part of VSTGUI. It is subject to the license terms 
+// in the LICENSE file found in the top-level directory of this
+// distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "compresseduidescription.h"
 #include "vstgui/uidescription/xmlparser.h"
@@ -25,8 +20,8 @@ public:
 
 	bool open (InputStream& stream);
 
-	bool operator>> (std::string& string) VSTGUI_OVERRIDE_VMETHOD { return false; }
-	uint32_t readRaw (void* buffer, uint32_t size) VSTGUI_OVERRIDE_VMETHOD;
+	bool operator>> (std::string& string) override { return false; }
+	uint32_t readRaw (void* buffer, uint32_t size) override;
 
 protected:
 	z_streamp zstream;
@@ -45,11 +40,11 @@ public:
 	bool open (OutputStream& stream, int32_t compressionLevel = 6);
 	bool close ();
 
-	bool operator<< (const std::string& str) VSTGUI_OVERRIDE_VMETHOD
+	bool operator<< (const std::string& str) override
 	{
 		return writeRaw (str.c_str (), static_cast<uint32_t> (str.size ())) == str.size ();
 	}
-	uint32_t writeRaw (const void* buffer, uint32_t size) VSTGUI_OVERRIDE_VMETHOD;
+	uint32_t writeRaw (const void* buffer, uint32_t size) override;
 
 protected:
 	z_streamp zstream;
@@ -70,11 +65,11 @@ CompressedUIDescription::CompressedUIDescription (const CResourceDescription& co
 //-----------------------------------------------------------------------------
 bool CompressedUIDescription::parse ()
 {
-	if (nodes)
+	if (parsed ())
 		return true;
 	bool result = false;
 	CResourceInputStream resStream (kLittleEndianByteOrder);
-	if (resStream.open (xmlFile))
+	if (resStream.open (getXmlFile ()))
 	{
 		int64_t identifier;
 		static_cast<InputStream&> (resStream) >> identifier;
@@ -84,9 +79,9 @@ bool CompressedUIDescription::parse ()
 			if (zin.open (resStream))
 			{
 				Xml::InputStreamContentProvider compressedContentProvider (zin);
-				xmlContentProvider = &compressedContentProvider;
+				setXmlContentProvider (&compressedContentProvider);
 				result = UIDescription::parse ();
-				xmlContentProvider = nullptr;
+				setXmlContentProvider (nullptr);
 			}
 		}
 	}

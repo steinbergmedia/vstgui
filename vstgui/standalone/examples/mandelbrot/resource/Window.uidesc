@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vstgui-ui-description version="1">
+	<fonts>
+	</fonts>
+	<colors>
+		<color name="focus" rgba="#84abd7ff"/>
+		<color name="group" rgba="#00000028"/>
+		<color name="slider value" rgba="#3e3e3eff"/>
+	</colors>
+	<template autosize="left right top bottom " background-color="~ BlackCColor" background-color-draw-style="filled and stroked" class="CViewContainer" mouse-enabled="true" name="Window" opacity="1" origin="0, 0" size="350, 310" sub-controller="mandelbrotviewcontroller" transparent="false" wants-focus="false">
+		<view autosize="left right top " background-color="group" background-color-draw-style="filled" class="CViewContainer" mouse-enabled="true" opacity="1" origin="0, 0" size="350, 25" transparent="false" wants-focus="false">
+			<view autosize="left right top bottom " class="CGradientView" draw-antialiased="true" frame-color="~ GreyCColor" frame-width="0" gradient="Background" gradient-angle="0" gradient-style="linear" mouse-enabled="true" opacity="1" origin="0, 0" radial-center="0.5, 0.5" radial-radius="1" round-rect-radius="0" size="350, 25" transparent="false" wants-focus="false"/>
+			<view back-color="~ BlackCColor" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="~ NormalFontSmall" font-antialias="true" font-color="~ WhiteCColor" frame-color="~ BlackCColor" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="25, 5" round-rect-radius="6" shadow-color="~ RedCColor" size="60, 16" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="right" text-inset="5, 0" text-rotation="0" text-shadow-offset="1, 1" title="iterations:" transparent="true" value-precision="2" wants-focus="false" wheel-inc-value="0.1"/>
+			<view autosize="left right " background-offset="0, 0" bitmap-offset="0, 0" class="CSlider" control-tag="max interations" default-value="0.5" draw-back="true" draw-back-color="~ GreyCColor" draw-frame="true" draw-frame-color="~ BlackCColor" draw-value="true" draw-value-color="slider value" draw-value-from-center="false" draw-value-inverted="false" handle-offset="0, 0" max-value="1" min-value="0" mode="free click" mouse-enabled="true" opacity="1" orientation="horizontal" origin="85, 5" reverse-orientation="false" size="205, 16" transparent="false" transparent-handle="true" wants-focus="true" wheel-inc-value="0.1" zoom-factor="10"/>
+			<view autosize="right bottom " back-color="group" background-offset="0, 0" class="CTextEdit" control-tag="max interations" default-value="0.5" font="~ NormalFontSmall" font-antialias="true" font-color="~ WhiteCColor" frame-color="group" frame-width="1" immediate-text-change="false" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="290, 5" round-rect-radius="6" shadow-color="~ RedCColor" size="40, 16" style-3D-in="false" style-3D-out="false" style-doubleclick="true" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" text-shadow-offset="1, 1" title="206" transparent="true" value-precision="2" wants-focus="false" wheel-inc-value="0.1"/>
+			<view autosize="left top " background-offset="0, 0" bitmap="progress" class="ProgressIndicatorView" control-tag="progress" default-value="0.5" max-value="1" min-value="0" mouse-enabled="true" opacity="0" origin="5, 2" rotation="65.250002" rotation-time="800" size="20, 20" transparent="false" wants-focus="false" wheel-inc-value="0.1"/>
+		</view>
+		<view autosize="left right top bottom " bitmap="0" class="CView" custom-view-name="MandelbrotView" mouse-enabled="true" opacity="1" origin="0, 25" size="350, 285" transparent="false" wants-focus="false"/>
+		<view animation-style="fade" animation-time="120" background-color="~ BlackCColor" background-color-draw-style="filled and stroked" class="UIViewSwitchContainer" mouse-enabled="true" opacity="1" origin="10, 35" size="80, 60" template-names="ParamsOff,ParamsOn" template-switch-control="showParams" transparent="true" wants-focus="false"/>
+		<view autosize="left bottom " autosize-to-fit="false" background-offset="0, 0" boxfill-color="~ WhiteCColor" boxframe-color="~ BlackCColor" checkmark-color="~ BlackCColor" class="CCheckBox" control-tag="showParams" default-value="0.5" draw-crossbox="true" font="~ NormalFontSmall" font-color="~ WhiteCColor" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="10, 285" size="165, 20" title="Show Mandelbrot Parameters" transparent="false" wants-focus="true" wheel-inc-value="0.1"/>
+	</template>
+	<variables/>
+	<bitmaps>
+		<bitmap name="progress" path="progress.png">
+			<data encoding="base64">
+				iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAABeWlDQ1BJQ0MgUHJvZmlsZQAAKJF9kE0rRF
+				EYx38ziMxIYWFhcWNYjWmMmtgoMwllMY1R3jZ3rnlRZtzuXCEbC2WrKLHxtuATsLFQ1kopUpLPQGyk6zmG
+				xkt56pznd55znn/P+YPbr5vmTHkQcnnbivdHtNGxca3yAQ9V1OHFoxsFszcWG0LiK/+Ml2tcKl+1K62/9/
+				+GZypVMMBVJdxjmJYtPCDcMm+bipVegyVDCS8rzhR5Q3GyyEcfbxLxqPCpsGZk9SnhO2G/kbVy4Fb6vuS3
+				N5lvnJuZMz7nUT/xpvIjw5KbZTVRIE4/ETQG6SNKmA66ZQ/TToiAnLBTC7Zqjs6ai9Z0JmtrveJEShvMGw
+				G/Fgp2hEH5+tuvUm12F7qeoWytVEtuwskqNN6War4dqF2B43NTt/SPUpksdzoNj4dQMwb1l1A9UUh3hoo/
+				8kag4t5xnlqhch3e1hzndc9x3valWTw6yxc9+tTi4AYSSzB0AVvb0CbatZPvx/tnAogJMXAAAAM9SURBVD
+				gRhZNNSFRRFMfnffjm6QwzfpdGGFRiX0xQRoa2adUHIWHbcJObbNGyoF0uWijZykUQ1ioyWgwVONAiqIWV
+				loQEJiZYfuWMijrzZsZ5/c7TGZ+O0YXz7n3n/M///u8953o8+UPDpbrdi7GYuZZKmS6f4lpvWW5JlEhXZ2
+				dwdXn5xuz0tD+L9Pv9XtZiMpSH3d1qyrJK7LW1vPx1iOv7aWBgP8AM1mXbto4pqAta8XhwA6ay3p1Jp+uY
+				DVfqP5d6Opl8BGEaFfVCKoSJ1VUhVL4NDxcSq+MUVcTkevKGxjGLUVZDRMfUsdHRSpLmUPCBJD9q5BqCoV
+				BIhbwmmUgcTFqWNxwOO/f9fWTE/D05mTu+CrgVgnGU3YesTEj5b8Vvk3hCCgK5OTczY8hRZ6amSnt7ewte
+				9PWJvxZsE6eplutx5FIAH8672Bg2iLUQNFByiLkE82TBxIyenp6ChWi0mvVpRDRyHfvtTMYEk1MpCTq7hN
+				jxJcp+QnbA2W2Hz8T4uAlZE0ShRDxeTK6BadhmO8kPJlX1ccxjzNmq7kDp8UBYBEaIJCenTKdpr9BnF7kb
+				WzIVRcloqhpmObIj07pTWVpa2kXe3ixG8hkTOs4UzrV0Oi0KPZlMRtU0zTB0vUD82YRts02exGxXnkJero
+				3k7CK7gNaQau7ZRrD9V/s6NFR6taUld1Q3QMik/7w07WFa5AHy33BH1W6Qew0uQLwNXDObl7tjstZ4m/K0
+				2gG9Yn4WnZ9vjkQiZVSzYgMsSmRjDbIS8YGthfAa83WsAZMrcoZCu1wi+Jp2ubUQi+3r7++voM/OA3qKVV
+				O4BpTXc8wK/u9g0gUqvVeEgLPxlZU25qPik51tXdcjqVSqrdDne/x5cDBGb6nBYPCyZVk/PKq6QgFOgjt1
+				r6MjStIv7ByNW0RLJAzTfE8Vnxte7ziYzT50tK5/DHZr4wX0QnyEZB/qbuJrl/Cf2dkqFN7m/wKxXFWz+X
+				lV4qEHDMNopB3eek1zEmBSwCQ7OeWVlVMsPtJex3kAzn06gY2PVHfLCAQCS5A9gewLAQtLS7NLf7qA71RV
+				XWRjif9/yFEweVYOiRSEI55xZ25g8gT9BbQhUklLOzuXAAAAAElFTkSuQmCC
+			</data>
+		</bitmap>
+		<bitmap name="progress_2.0x" path="progress_2.0x.png" scale-factor="2">
+			<data encoding="base64">
+				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
+				dxyFZ615uBAAAAAElFTkSuQmCC
+			</data>
+		</bitmap>
+	</bitmaps>
+	<control-tags>
+		<control-tag name="max interations" tag="0"/>
+		<control-tag name="maxX" tag="3"/>
+		<control-tag name="maxY" tag="4"/>
+		<control-tag name="minX" tag="1"/>
+		<control-tag name="minY" tag="2"/>
+		<control-tag name="progress" tag="5"/>
+		<control-tag name="showParams" tag="6"/>
+	</control-tags>
+	<custom>
+		<attributes name="UIDescFilePath" path="/Users/scheffle/Source/VST3/vstgui/vstgui/standalone/examples/mandelbrot/resource/Window.uidesc"/>
+		<attributes Size="5, 5" name="UIGridController"/>
+		<attributes SelectedTemplate="ParamsOn" name="UITemplateController"/>
+		<attributes EditViewScale="1" EditorSize="0, 0, 1059, 711" SplitViewSize_0_0="0.6463768115942029046649963675008621066809" SplitViewSize_0_1="0.3246376811594202660415930949966423213482" SplitViewSize_1_0="0.4710144927536231707065894624975044280291" SplitViewSize_1_1="0.5217391304347825942144822874979581683874" SplitViewSize_2_0="0.6694995278564683793831591174239292740822" SplitViewSize_2_1="0.3257790368271954450918315160379279404879" TabSwitchValue="0" Version="1" name="UIEditController"/>
+		<attributes UIAttributesController="tag" name="UIAttributesController"/>
+		<attributes SelectedRow="2" name="UIViewCreatorDataSource"/>
+		<attributes SelectedRow="2" name="UIColorsDataSource"/>
+		<attributes color="focus" enabled="true" name="FocusDrawing" width="1"/>
+		<attributes SelectedRow="-1" name="UITagsDataSource"/>
+		<attributes SelectedRow="0" name="UIGradientsDataSource"/>
+		<attributes SelectedRow="0" name="UIBitmapsDataSource"/>
+		<attributes SelectedRow="-1" name="UIFontsDataSource"/>
+	</custom>
+	<gradients>
+		<gradient name="Background">
+			<color-stop rgba="#464646ff" start="0"/>
+			<color-stop rgba="#1e1e1eff" start="0.9987356085526315485623172207851894199848"/>
+		</gradient>
+		<gradient name="Default TextButton Gradient">
+			<color-stop rgba="#dcdcdcff" start="0"/>
+			<color-stop rgba="#b4b4b4ff" start="1"/>
+		</gradient>
+		<gradient name="Default TextButton Gradient Highlighted">
+			<color-stop rgba="#b4b4b4ff" start="0"/>
+			<color-stop rgba="#646464ff" start="1"/>
+		</gradient>
+	</gradients>
+	<template background-color="~ BlackCColor" background-color-draw-style="filled and stroked" class="CViewContainer" mouse-enabled="true" name="ParamsOn" opacity="1" origin="0, 0" size="80, 60" transparent="true" wants-focus="false">
+		<view back-color="~ BlackCColor" background-offset="0, 0" class="CTextEdit" control-tag="maxX" default-value="0.5" font="~ NormalFontVerySmall" font-antialias="true" font-color="~ WhiteCColor" frame-color="~ BlackCColor" frame-width="0" immediate-text-change="false" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="30, 30" round-rect-radius="6" shadow-color="~ GreyCColor" size="50, 15" style-3D-in="false" style-3D-out="false" style-doubleclick="true" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="true" text-alignment="right" text-inset="2, 0" text-rotation="0" text-shadow-offset="1, 1" title="-0.566913" transparent="true" value-precision="2" wants-focus="false" wheel-inc-value="0.1"/>
+		<view back-color="~ BlackCColor" background-offset="0, 0" class="CTextEdit" control-tag="maxY" default-value="0.5" font="~ NormalFontVerySmall" font-antialias="true" font-color="~ WhiteCColor" frame-color="~ BlackCColor" frame-width="0" immediate-text-change="false" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="30, 45" round-rect-radius="6" shadow-color="~ GreyCColor" size="50, 15" style-3D-in="false" style-3D-out="false" style-doubleclick="true" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="true" text-alignment="right" text-inset="2, 0" text-rotation="0" text-shadow-offset="1, 1" title="0.596816" transparent="true" value-precision="2" wants-focus="false" wheel-inc-value="0.1"/>
+		<view back-color="~ BlackCColor" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="~ NormalFontVerySmall" font-antialias="true" font-color="~ WhiteCColor" frame-color="~ BlackCColor" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="0, 30" round-rect-radius="6" shadow-color="~ GreyCColor" size="30, 15" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="true" text-alignment="left" text-inset="2, 0" text-rotation="0" text-shadow-offset="1, 1" title="max X:" transparent="true" value-precision="2" wants-focus="false" wheel-inc-value="0.1"/>
+		<view back-color="~ BlackCColor" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="~ NormalFontVerySmall" font-antialias="true" font-color="~ WhiteCColor" frame-color="~ BlackCColor" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="0, 45" round-rect-radius="6" shadow-color="~ GreyCColor" size="30, 15" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="true" text-alignment="left" text-inset="2, 0" text-rotation="0" text-shadow-offset="1, 1" title="max Y:" transparent="true" value-precision="2" wants-focus="false" wheel-inc-value="0.1"/>
+		<view back-color="~ BlackCColor" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="~ NormalFontVerySmall" font-antialias="true" font-color="~ WhiteCColor" frame-color="~ BlackCColor" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="0, 0" round-rect-radius="6" shadow-color="~ GreyCColor" size="30, 15" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="true" text-alignment="left" text-inset="2, 0" text-rotation="0" text-shadow-offset="1, 1" title="min X:" transparent="true" value-precision="2" wants-focus="false" wheel-inc-value="0.1"/>
+		<view back-color="~ BlackCColor" background-offset="0, 0" class="CTextEdit" control-tag="minX" default-value="0.5" font="~ NormalFontVerySmall" font-antialias="true" font-color="~ WhiteCColor" frame-color="~ BlackCColor" frame-width="0" immediate-text-change="false" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="30, 0" round-rect-radius="6" shadow-color="~ GreyCColor" size="50, 15" style-3D-in="false" style-3D-out="false" style-doubleclick="true" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="true" text-alignment="right" text-inset="2, 0" text-rotation="0" text-shadow-offset="1, 1" title="-0.566913" transparent="true" value-precision="2" wants-focus="false" wheel-inc-value="0.1"/>
+		<view back-color="~ BlackCColor" background-offset="0, 0" class="CTextEdit" control-tag="minY" default-value="0.5" font="~ NormalFontVerySmall" font-antialias="true" font-color="~ WhiteCColor" frame-color="~ BlackCColor" frame-width="0" immediate-text-change="false" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="30, 15" round-rect-radius="6" shadow-color="~ GreyCColor" size="50, 15" style-3D-in="false" style-3D-out="false" style-doubleclick="true" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="true" text-alignment="right" text-inset="2, 0" text-rotation="0" text-shadow-offset="1, 1" title="0.596816" transparent="true" value-precision="2" wants-focus="false" wheel-inc-value="0.1"/>
+		<view back-color="~ BlackCColor" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="~ NormalFontVerySmall" font-antialias="true" font-color="~ WhiteCColor" frame-color="~ BlackCColor" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="0, 15" round-rect-radius="6" shadow-color="~ GreyCColor" size="30, 15" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="true" text-alignment="left" text-inset="2, 0" text-rotation="0" text-shadow-offset="1, 1" title="min Y:" transparent="true" value-precision="2" wants-focus="false" wheel-inc-value="0.1"/>
+	</template>
+	<template background-color="~ BlackCColor" background-color-draw-style="filled and stroked" class="CViewContainer" mouse-enabled="true" name="ParamsOff" opacity="1" origin="0, 0" size="80, 60" transparent="true" wants-focus="false"/>
+</vstgui-ui-description>

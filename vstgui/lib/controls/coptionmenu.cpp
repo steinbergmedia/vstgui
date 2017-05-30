@@ -1,36 +1,6 @@
-//-----------------------------------------------------------------------------
-// VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins
-//
-// Version 4.3
-//
-//-----------------------------------------------------------------------------
-// VSTGUI LICENSE
-// (c) 2015, Steinberg Media Technologies, All Rights Reserved
-//-----------------------------------------------------------------------------
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
-// 
-//   * Redistributions of source code must retain the above copyright notice, 
-//     this list of conditions and the following disclaimer.
-//   * Redistributions in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation 
-//     and/or other materials provided with the distribution.
-//   * Neither the name of the Steinberg Media Technologies nor the names of its
-//     contributors may be used to endorse or promote products derived from this 
-//     software without specific prior written permission.
-// 
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-// ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
-// IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
-// INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
-// BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
-// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
-// OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE  OF THIS SOFTWARE, EVEN IF ADVISED
-// OF THE POSSIBILITY OF SUCH DAMAGE.
-//-----------------------------------------------------------------------------
+// This file is part of VSTGUI. It is subject to the license terms 
+// in the LICENSE file found in the top-level directory of this
+// distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "coptionmenu.h"
 #include "../cbitmap.h"
@@ -38,6 +8,7 @@
 #include "../cstring.h"
 
 #include "../platform/iplatformoptionmenu.h"
+#include "../platform/iplatformframe.h"
 
 namespace VSTGUI {
 
@@ -57,15 +28,8 @@ Defines an item of a VSTGUI::COptionMenu
  * @param inIcon icon of item
  */
 //------------------------------------------------------------------------
-CMenuItem::CMenuItem (UTF8StringPtr inTitle, UTF8StringPtr inKeycode, int32_t inKeyModifiers, CBitmap* inIcon, int32_t inFlags)
-: title (0)
-, flags (inFlags)
-, keyCode (0)
-, keyModifiers (0)
-, virtualKeyCode (0)
-, submenu (0)
-, icon (0)
-, tag (-1)
+CMenuItem::CMenuItem (const UTF8String& inTitle, const UTF8String& inKeycode, int32_t inKeyModifiers, CBitmap* inIcon, int32_t inFlags)
+: flags (inFlags)
 {
 	setTitle (inTitle);
 	setKey (inKeycode, inKeyModifiers);
@@ -80,15 +44,7 @@ CMenuItem::CMenuItem (UTF8StringPtr inTitle, UTF8StringPtr inKeycode, int32_t in
  * @param inIcon icon of item
  */
 //------------------------------------------------------------------------
-CMenuItem::CMenuItem (UTF8StringPtr inTitle, COptionMenu* inSubmenu, CBitmap* inIcon)
-: title (0)
-, flags (0)
-, keyCode (0)
-, keyModifiers (0)
-, virtualKeyCode (0)
-, submenu (0)
-, icon (0)
-, tag (-1)
+CMenuItem::CMenuItem (const UTF8String& inTitle, COptionMenu* inSubmenu, CBitmap* inIcon)
 {
 	setTitle (inTitle);
 	setSubmenu (inSubmenu);
@@ -102,15 +58,7 @@ CMenuItem::CMenuItem (UTF8StringPtr inTitle, COptionMenu* inSubmenu, CBitmap* in
  * @param inTag tag of item
  */
 //------------------------------------------------------------------------
-CMenuItem::CMenuItem (UTF8StringPtr inTitle, int32_t inTag)
-: title (0)
-, flags (0)
-, keyCode (0)
-, keyModifiers (0)
-, virtualKeyCode (0)
-, submenu (0)
-, icon (0)
-, tag (-1)
+CMenuItem::CMenuItem (const UTF8String& inTitle, int32_t inTag)
 {
 	setTitle (inTitle);
 	setTag (inTag);
@@ -123,13 +71,7 @@ CMenuItem::CMenuItem (UTF8StringPtr inTitle, int32_t inTag)
  */
 //------------------------------------------------------------------------
 CMenuItem::CMenuItem (const CMenuItem& item)
-: title (0)
-, flags (item.flags)
-, keyCode (0)
-, keyModifiers (0)
-, virtualKeyCode (0)
-, submenu (0)
-, icon (0)
+: flags (item.flags)
 {
 	setTitle (item.getTitle ());
 	setIcon (item.getIcon ());
@@ -142,26 +84,15 @@ CMenuItem::CMenuItem (const CMenuItem& item)
 }
 
 //------------------------------------------------------------------------
-CMenuItem::~CMenuItem ()
+void CMenuItem::setTitle (const UTF8String& inTitle)
 {
-	setIcon (0);
-	setSubmenu (0);
-	setTitle (0);
-	setKey (0);
+	title = inTitle;
 }
 
 //------------------------------------------------------------------------
-void CMenuItem::setTitle (UTF8StringPtr inTitle)
+void CMenuItem::setKey (const UTF8String& inKeycode, int32_t inKeyModifiers)
 {
-	String::free (title);
-	title = String::newWithString (inTitle);
-}
-
-//------------------------------------------------------------------------
-void CMenuItem::setKey (UTF8StringPtr inKeycode, int32_t inKeyModifiers)
-{
-	String::free (keyCode);
-	keyCode = String::newWithString (inKeycode);
+	keyCode = inKeycode;
 	keyModifiers = inKeyModifiers;
 	virtualKeyCode = 0;
 }
@@ -169,28 +100,20 @@ void CMenuItem::setKey (UTF8StringPtr inKeycode, int32_t inKeyModifiers)
 //------------------------------------------------------------------------
 void CMenuItem::setVirtualKey (int32_t inVirtualKeyCode, int32_t inKeyModifiers)
 {
-	setKey (0, inKeyModifiers);
+	setKey (nullptr, inKeyModifiers);
 	virtualKeyCode = inVirtualKeyCode;
 }
 
 //------------------------------------------------------------------------
 void CMenuItem::setSubmenu (COptionMenu* inSubmenu)
 {
-	if (submenu)
-		submenu->forget ();
 	submenu = inSubmenu;
-	if (submenu)
-		submenu->remember ();
 }
 
 //------------------------------------------------------------------------
 void CMenuItem::setIcon (CBitmap* inIcon)
 {
-	if (icon)
-		icon->forget ();
 	icon = inIcon;
-	if (icon)
-		icon->remember ();
 }
 
 //------------------------------------------------------------------------
@@ -202,37 +125,25 @@ void CMenuItem::setTag (int32_t t)
 //------------------------------------------------------------------------
 void CMenuItem::setEnabled (bool state)
 {
-	if (state)
-		flags &= ~kDisabled;
-	else
-		flags |= kDisabled;
+	setBit (flags, kDisabled, !state);
 }
 
 //------------------------------------------------------------------------
 void CMenuItem::setChecked (bool state)
 {
-	if (state)
-		flags |= kChecked;
-	else
-		flags &= ~kChecked;
+	setBit (flags, kChecked, state);
 }
 
 //------------------------------------------------------------------------
 void CMenuItem::setIsTitle (bool state)
 {
-	if (state)
-		flags |= kTitle;
-	else
-		flags &= ~kTitle;
+	setBit (flags, kTitle, state);
 }
 
 //------------------------------------------------------------------------
 void CMenuItem::setIsSeparator (bool state)
 {
-	if (state)
-		flags |= kSeparator;
-	else
-		flags &= ~kSeparator;
+	setBit (flags, kSeparator, state);
 }
 
 //------------------------------------------------------------------------
@@ -246,11 +157,8 @@ IdStringPtr CCommandMenuItem::kMsgMenuItemValidate = "kMsgMenuItemValidate";
 IdStringPtr CCommandMenuItem::kMsgMenuItemSelected = "kMsgMenuItemSelected";
 
 //------------------------------------------------------------------------
-CCommandMenuItem::CCommandMenuItem (UTF8StringPtr title, UTF8StringPtr keycode, int32_t keyModifiers, CBitmap* icon, int32_t flags, CBaseObject* _target, IdStringPtr _commandCategory, IdStringPtr _commandName)
+CCommandMenuItem::CCommandMenuItem (const UTF8String& title, const UTF8String& keycode, int32_t keyModifiers, CBitmap* icon, int32_t flags, CBaseObject* _target, const UTF8String& _commandCategory, const UTF8String& _commandName)
 : CMenuItem (title, keycode, keyModifiers, icon, flags)
-, target (0)
-, commandCategory (0)
-, commandName (0)
 {
 	setTarget (_target);
 	setCommandCategory (_commandCategory);
@@ -258,11 +166,8 @@ CCommandMenuItem::CCommandMenuItem (UTF8StringPtr title, UTF8StringPtr keycode, 
 }
 
 //------------------------------------------------------------------------
-CCommandMenuItem::CCommandMenuItem (UTF8StringPtr title, COptionMenu* submenu, CBitmap* icon, CBaseObject* _target, IdStringPtr _commandCategory, IdStringPtr _commandName)
+CCommandMenuItem::CCommandMenuItem (const UTF8String& title, COptionMenu* submenu, CBitmap* icon, CBaseObject* _target, const UTF8String& _commandCategory, const UTF8String& _commandName)
 : CMenuItem (title, submenu, icon)
-, target (0)
-, commandCategory (0)
-, commandName (0)
 {
 	setTarget (_target);
 	setCommandCategory (_commandCategory);
@@ -270,11 +175,8 @@ CCommandMenuItem::CCommandMenuItem (UTF8StringPtr title, COptionMenu* submenu, C
 }
 
 //------------------------------------------------------------------------
-CCommandMenuItem::CCommandMenuItem (UTF8StringPtr title, int32_t tag, CBaseObject* _target, IdStringPtr _commandCategory, IdStringPtr _commandName)
+CCommandMenuItem::CCommandMenuItem (const UTF8String& title, int32_t tag, CBaseObject* _target, const UTF8String& _commandCategory, const UTF8String& _commandName)
 : CMenuItem (title, tag)
-, target (0)
-, commandCategory (0)
-, commandName (0)
 {
 	setTarget (_target);
 	setCommandCategory (_commandCategory);
@@ -282,11 +184,8 @@ CCommandMenuItem::CCommandMenuItem (UTF8StringPtr title, int32_t tag, CBaseObjec
 }
 
 //------------------------------------------------------------------------
-CCommandMenuItem::CCommandMenuItem (UTF8StringPtr title, CBaseObject* _target, IdStringPtr _commandCategory, IdStringPtr _commandName)
+CCommandMenuItem::CCommandMenuItem (const UTF8String& title, CBaseObject* _target, const UTF8String& _commandCategory, const UTF8String& _commandName)
 : CMenuItem (title, -1)
-, target (0)
-, commandCategory (0)
-, commandName (0)
 {
 	setTarget (_target);
 	setCommandCategory (_commandCategory);
@@ -296,59 +195,42 @@ CCommandMenuItem::CCommandMenuItem (UTF8StringPtr title, CBaseObject* _target, I
 //------------------------------------------------------------------------
 CCommandMenuItem::CCommandMenuItem (const CCommandMenuItem& item)
 : CMenuItem (item)
-, target (0)
-, commandCategory (0)
-, commandName (0)
-, selectedFunc (item.selectedFunc)
 , validateFunc (item.validateFunc)
+, selectedFunc (item.selectedFunc)
+, commandCategory (item.commandCategory)
+, commandName (item.commandName)
 {
 	setTarget (item.target);
-	setCommandCategory (item.commandCategory);
-	setCommandName (item.commandName);
 }
 
 //------------------------------------------------------------------------
-CCommandMenuItem::~CCommandMenuItem ()
+void CCommandMenuItem::setCommandCategory (const UTF8String& category)
 {
-	setTarget (0);
-	setCommandCategory (0);
-	setCommandName (0);
+	commandCategory = category;
 }
 
 //------------------------------------------------------------------------
-void CCommandMenuItem::setCommandCategory (IdStringPtr category)
+bool CCommandMenuItem::isCommandCategory (const UTF8String& category) const
 {
-	String::free (commandCategory);
-	commandCategory = String::newWithString (category);
+	return commandCategory == category;
 }
 
 //------------------------------------------------------------------------
-bool CCommandMenuItem::isCommandCategory (IdStringPtr category) const
+void CCommandMenuItem::setCommandName (const UTF8String& name)
 {
-	return UTF8StringView (commandCategory) == category;
+	commandName = name;
 }
 
 //------------------------------------------------------------------------
-void CCommandMenuItem::setCommandName (IdStringPtr name)
+bool CCommandMenuItem::isCommandName (const UTF8String& name) const
 {
-	String::free (commandName);
-	commandName = String::newWithString (name);
-}
-
-//------------------------------------------------------------------------
-bool CCommandMenuItem::isCommandName (IdStringPtr name) const
-{
-	return UTF8StringView (commandName) == name;
+	return commandName == name;
 }
 
 //------------------------------------------------------------------------
 void CCommandMenuItem::setTarget (CBaseObject* _target)
 {
-	if (target)
-		target->forget ();
 	target = _target;
-	if (_target)
-		target->remember ();
 }
 
 //------------------------------------------------------------------------
@@ -404,21 +286,12 @@ There are 2 styles with or without a shadowed text. When a mouse click occurs, a
 COptionMenu::COptionMenu (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background, CBitmap* bgWhenClick, const int32_t style)
 : CParamDisplay (size, background, style)
 , bgWhenClick (bgWhenClick)
-, nbItemsPerColumn (-1)
-, prefixNumbers (0)
-, inPopup (false)
 {
 	this->listener = listener;
 	this->tag = tag;
 
-	currentIndex = -1;
 	lastButton = kRButton;
-	lastResult = -1;
-	lastMenu = 0;
 	
-	if (bgWhenClick)
-		bgWhenClick->remember ();
-
 	menuItems = new CMenuItemList;
 	setWantsFocus (true);
 }
@@ -426,14 +299,6 @@ COptionMenu::COptionMenu (const CRect& size, IControlListener* listener, int32_t
 //------------------------------------------------------------------------
 COptionMenu::COptionMenu ()
 : CParamDisplay (CRect (0, 0, 0, 0))
-, currentIndex (-1)
-, bgWhenClick (0)
-, lastButton (0)
-, nbItemsPerColumn (-1)
-, lastResult (-1)
-, prefixNumbers (0)
-, lastMenu (0)
-, inPopup (false)
 {
 	menuItems = new CMenuItemList;
 	setWantsFocus (true);
@@ -442,29 +307,17 @@ COptionMenu::COptionMenu ()
 //------------------------------------------------------------------------
 COptionMenu::COptionMenu (const COptionMenu& v)
 : CParamDisplay (v)
-, currentIndex (-1)
-, bgWhenClick (v.bgWhenClick)
-, lastButton (0)
-, nbItemsPerColumn (v.nbItemsPerColumn)
-, lastResult (-1)
-, prefixNumbers (0)
-, lastMenu (0)
 , menuItems (new CMenuItemList (*v.menuItems))
-, inPopup (false)
+, nbItemsPerColumn (v.nbItemsPerColumn)
+, bgWhenClick (v.bgWhenClick)
 {
-	if (bgWhenClick)
-		bgWhenClick->remember ();
-
 	setWantsFocus (true);
 }
 
 //------------------------------------------------------------------------
-COptionMenu::~COptionMenu ()
+COptionMenu::~COptionMenu () noexcept
 {
 	removeAllEntry ();
-
-	if (bgWhenClick)
-		bgWhenClick->forget ();
 
 	delete menuItems;
 }
@@ -535,13 +388,13 @@ int32_t COptionMenu::onKeyDown (VstKeyCode& keyCode)
 void COptionMenu::beforePopup ()
 {
 	changed (kMsgBeforePopup);
-	for (CMenuItemIterator it = menuItems->begin (); it != menuItems->end (); it++)
+	for (auto& menuItem : *menuItems)
 	{
-		CCommandMenuItem* commandItem = (*it).cast<CCommandMenuItem> ();
+		CCommandMenuItem* commandItem = menuItem.cast<CCommandMenuItem> ();
 		if (commandItem)
 			commandItem->validate ();
-		if ((*it)->getSubmenu ())
-			(*it)->getSubmenu ()->beforePopup ();
+		if (menuItem->getSubmenu ())
+			menuItem->getSubmenu ()->beforePopup ();
 	}
 }
 
@@ -561,15 +414,14 @@ bool COptionMenu::popup ()
 	beginEdit ();
 
 	lastResult = -1;
-	lastMenu = 0;
+	lastMenu = nullptr;
 
 	getFrame ()->onStartLocalEventLoop ();
 
-	IPlatformOptionMenu* platformMenu = getFrame ()->getPlatformFrame ()->createPlatformOptionMenu ();
-	if (platformMenu)
+	if (auto platformMenu = getFrame ()->getPlatformFrame ()->createPlatformOptionMenu ())
 	{
 		PlatformOptionMenuResult platformPopupResult = platformMenu->popup (this);
-		if (platformPopupResult.menu != 0)
+		if (platformPopupResult.menu != nullptr)
 		{
 			IDependency::DeferChanges dc (this);
 			lastMenu = platformPopupResult.menu;
@@ -582,7 +434,6 @@ bool COptionMenu::popup ()
 			if (commandItem)
 				commandItem->execute ();
 		}
-		platformMenu->forget ();
 	}
 
 	endEdit ();
@@ -593,7 +444,7 @@ bool COptionMenu::popup ()
 //------------------------------------------------------------------------
 bool COptionMenu::popup (CFrame* frame, const CPoint& frameLocation)
 {
-	if (frame == 0)
+	if (frame == nullptr)
 		return false;
 	if (isAttached ())
 		return false;
@@ -629,34 +480,34 @@ void COptionMenu::setPrefixNumbers (int32_t preCount)
 CMenuItem* COptionMenu::addEntry (CMenuItem* item, int32_t index)
 {
 	if (index < 0 || index > getNbEntries ())
-		menuItems->push_back (item);
+		menuItems->emplace_back (owned (item));
 	else
 	{
-		menuItems->insert (menuItems->begin () + index, item);
+		menuItems->insert (menuItems->begin () + index, owned (item));
 	}
 	return item;
 }
 
 //-----------------------------------------------------------------------------
-CMenuItem* COptionMenu::addEntry (COptionMenu* submenu, UTF8StringPtr title)
+CMenuItem* COptionMenu::addEntry (COptionMenu* submenu, const UTF8String& title)
 {
 	CMenuItem* item = new CMenuItem (title, submenu);
 	return addEntry (item);
 }
 
 //-----------------------------------------------------------------------------
-CMenuItem* COptionMenu::addEntry (UTF8StringPtr title, int32_t index, int32_t itemFlags)
+CMenuItem* COptionMenu::addEntry (const UTF8String& title, int32_t index, int32_t itemFlags)
 {
-	if (UTF8StringView (title) == "-")
+	if (title == "-")
 		return addSeparator (index);
-	CMenuItem* item = new CMenuItem (title, 0, 0, 0, itemFlags);
+	CMenuItem* item = new CMenuItem (title, nullptr, 0, nullptr, itemFlags);
 	return addEntry (item, index);
 }
 
 //-----------------------------------------------------------------------------
 CMenuItem* COptionMenu::addSeparator (int32_t index)
 {
-	CMenuItem* item = new CMenuItem ("", 0, 0, 0, CMenuItem::kSeparator);
+	CMenuItem* item = new CMenuItem ("", nullptr, 0, nullptr, CMenuItem::kSeparator);
 	return addEntry (item, index);
 }
 
@@ -670,7 +521,7 @@ CMenuItem* COptionMenu::getCurrent () const
 CMenuItem* COptionMenu::getEntry (int32_t index) const
 {
 	if (index < 0 || menuItems->empty () || index > getNbEntries ())
-		return 0;
+		return nullptr;
 	
 	return (*menuItems)[(size_t)index];
 }
@@ -687,7 +538,7 @@ COptionMenu* COptionMenu::getSubMenu (int32_t idx) const
 	CMenuItem* item = getEntry (idx);
 	if (item)
 		return item->getSubmenu ();
-	return 0;
+	return nullptr;
 }
 
 //------------------------------------------------------------------------
@@ -697,14 +548,12 @@ int32_t COptionMenu::getCurrentIndex (bool countSeparator) const
 		return currentIndex;
 	int32_t i = 0;
 	int32_t numSeparators = 0;
-	CMenuItemIterator it = menuItems->begin ();
-	while (it != menuItems->end ())
+	for (auto& item : *menuItems)
 	{
-		if ((*it)->isSeparator ())
+		if (item->isSeparator ())
 			numSeparators++;
 		if (i == currentIndex)
 			break;
-		it++;
 		i++;
 	}
 	return currentIndex - numSeparators;
@@ -713,25 +562,23 @@ int32_t COptionMenu::getCurrentIndex (bool countSeparator) const
 //------------------------------------------------------------------------
 bool COptionMenu::setCurrent (int32_t index, bool countSeparator)
 {
-	CMenuItem* item = 0;
+	CMenuItem* item = nullptr;
 	if (countSeparator)
 	{
 		item = getEntry (index);
-		if (!item || (item && item->isSeparator ()))
+		if (!item || item->isSeparator ())
 			return false;
 		currentIndex = index;
 	}
 	else
 	{
 		int32_t i = 0;
-		CMenuItemIterator it = menuItems->begin ();
-		while (it != menuItems->end ())
+		for (auto& item : *menuItems)
 		{
 			if (i > index)
 				break;
-			if ((*it)->isSeparator ())
+			if (item->isSeparator ())
 				index++;
-			it++;
 			i++;
 		}
 		currentIndex = index;
@@ -777,12 +624,10 @@ bool COptionMenu::checkEntry (int32_t index, bool state)
 //------------------------------------------------------------------------
 bool COptionMenu::checkEntryAlone (int32_t index)
 {
-	CMenuItemIterator it = menuItems->begin ();
 	int32_t pos = 0;
-	while (it != menuItems->end ())
+	for (auto& item : *menuItems)
 	{
-		(*it)->setChecked (pos == index);
-		it++;
+		item->setChecked (pos == index);
 		pos++;
 	}
 	return true;
@@ -801,9 +646,9 @@ bool COptionMenu::isCheckEntry (int32_t index) const
 void COptionMenu::draw (CDrawContext *pContext)
 {
 	CMenuItem* item = getEntry (currentIndex);
-	drawBack (pContext, inPopup ? bgWhenClick : 0);
+	drawBack (pContext, inPopup ? bgWhenClick : nullptr);
 	if (item)
-		drawPlatformText (pContext, CString (item->getTitle ()).getPlatformString ());
+		drawPlatformText (pContext, UTF8String (item->getTitle ()).getPlatformString ());
 	setDirty (false);
 }
 
@@ -834,6 +679,7 @@ COptionMenu *COptionMenu::getLastItemMenu (int32_t &idxInMenu) const
 //------------------------------------------------------------------------
 void COptionMenu::setValue (float val)
 {
+	val = std::round (val);
 	if ((int32_t)val < 0 || (int32_t)val >= getNbEntries ())
 		return;
 	
@@ -859,7 +705,7 @@ void COptionMenu::takeFocus ()
 //------------------------------------------------------------------------
 void COptionMenu::looseFocus ()
 {	
-	CView* receiver = pParentView ? pParentView : pParentFrame;
+	CView* receiver = getParentView () ? getParentView () : getFrame ();
 	while (receiver)
 	{
 		if (receiver->notify (this, kMsgLooseFocus) == kMessageNotified)

@@ -1,10 +1,6 @@
-//
-//  uidescriptionadapter.h
-//  vstgui
-//
-//  Created by Arne Scheffler on 30/10/15.
-//
-//
+// This file is part of VSTGUI. It is subject to the license terms 
+// in the LICENSE file found in the top-level directory of this
+// distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #pragma once
 
@@ -263,14 +259,14 @@ void testAttribute (const IdStringPtr viewName, const std::string& attrName, con
 	EXPECT(value == attrValue);
 }
 
-static bool operator!= (const CGradient& g1, const CGradient& g2)
+inline bool operator!= (const CGradient& g1, const CGradient& g2)
 {
 	auto cs1 = g1.getColorStops ();
 	auto cs2 = g2.getColorStops ();
 	return cs1 != cs2;
 }
 
-static bool operator== (const CGradient& g1, const CGradient& g2)
+inline bool operator== (const CGradient& g1, const CGradient& g2)
 {
 	auto cs1 = g1.getColorStops ();
 	auto cs2 = g2.getColorStops ();

@@ -1,10 +1,6 @@
-//
-//  platform_helper_mac.cpp
-//  vstgui
-//
-//  Created by Arne Scheffler on 22/11/15.
-//
-//
+// This file is part of VSTGUI. It is subject to the license terms 
+// in the LICENSE file found in the top-level directory of this
+// distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "platform_helper.h"
 #import <Cocoa/Cocoa.h>
@@ -21,7 +17,7 @@ struct MacParentHandle : PlatformParentHandle
 		window = [[NSWindow alloc] initWithContentRect:NSMakeRect(0, 0, 100, 100) styleMask:NSTitledWindowMask backing:NSBackingStoreBuffered defer:NO];
 	}
 	
-	~MacParentHandle ()
+	~MacParentHandle () override
 	{
 		[window release];
 	}

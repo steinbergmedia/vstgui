@@ -1,36 +1,6 @@
-//-----------------------------------------------------------------------------
-// VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins
-//
-// Version 4.3
-//
-//-----------------------------------------------------------------------------
-// VSTGUI LICENSE
-// (c) 2015, Steinberg Media Technologies, All Rights Reserved
-//-----------------------------------------------------------------------------
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
-// 
-//   * Redistributions of source code must retain the above copyright notice, 
-//     this list of conditions and the following disclaimer.
-//   * Redistributions in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation 
-//     and/or other materials provided with the distribution.
-//   * Neither the name of the Steinberg Media Technologies nor the names of its
-//     contributors may be used to endorse or promote products derived from this 
-//     software without specific prior written permission.
-// 
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-// ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
-// IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
-// INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
-// BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
-// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
-// OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE  OF THIS SOFTWARE, EVEN IF ADVISED
-// OF THE POSSIBILITY OF SUCH DAMAGE.
-//-----------------------------------------------------------------------------
+// This file is part of VSTGUI. It is subject to the license terms 
+// in the LICENSE file found in the top-level directory of this
+// distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "vst3editor.h"
 #include "../lib/cvstguitimer.h"
@@ -92,7 +62,7 @@ protected:
 	}
 	~IdleUpdateHandler () { timer->stop (); }
 
-	void fire () VSTGUI_OVERRIDE_VMETHOD { gUpdateHandlerInit.get ()->triggerDeferedUpdates (); }
+	void fire () override { gUpdateHandlerInit.get ()->triggerDeferedUpdates (); }
 
 	VSTGUI::SharedPointer<IPlatformTimer> timer;
 };
@@ -285,7 +255,7 @@ protected:
 					continue;
 				Steinberg::String utf8Str (utf16Str);
 				utf8Str.toMultiByte (Steinberg::kCP_Utf8);
-				label->setText (utf8Str);
+				label->setText (utf8Str.text8 ());
 			}
 			else
 			{
@@ -303,7 +273,7 @@ protected:
 							editController->getParamStringByValue (getParameterID (), (Steinberg::Vst::ParamValue)i / (Steinberg::Vst::ParamValue)parameter->getInfo ().stepCount, utf16Str);
 							Steinberg::String utf8Str (utf16Str);
 							utf8Str.toMultiByte (Steinberg::kCP_Utf8);
-							optMenu->addEntry (utf8Str);
+							optMenu->addEntry (utf8Str.text8 ());
 						}
 						c->setValue ((float)value - minValue);
 					}
@@ -777,7 +747,7 @@ public:
 		item->forget ();
 	}
 
-	Steinberg::tresult PLUGIN_API executeMenuItem (Steinberg::int32 tag) VSTGUI_OVERRIDE_VMETHOD
+	Steinberg::tresult PLUGIN_API executeMenuItem (Steinberg::int32 tag) override
 	{
 		item->execute ();
 		return Steinberg::kResultTrue;
@@ -1405,7 +1375,7 @@ bool VST3Editor::enableEditing (bool state)
 
 				getFrame ()->enableTooltips (true);
 				CColor focusColor = kBlueCColor;
-				editController->getEditorDescription ().getColor ("focus", focusColor);
+				editController->getEditorDescription ()->getColor ("focus", focusColor);
 				getFrame ()->setFocusColor (focusColor);
 				getFrame ()->setFocusDrawingEnabled (true);
 				getFrame ()->setFocusWidth (1);

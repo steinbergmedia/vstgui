@@ -1,36 +1,6 @@
-//-----------------------------------------------------------------------------
-// VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework not only for VST plugins
-//
-// Version 4.3
-//
-//-----------------------------------------------------------------------------
-// VSTGUI LICENSE
-// (c) 2015, Steinberg Media Technologies, All Rights Reserved
-//-----------------------------------------------------------------------------
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
-//
-//   * Redistributions of source code must retain the above copyright notice,
-//     this list of conditions and the following disclaimer.
-//   * Redistributions in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation
-//     and/or other materials provided with the distribution.
-//   * Neither the name of the Steinberg Media Technologies nor the names of its
-//     contributors may be used to endorse or promote products derived from this
-//     software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-// ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
-// IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
-// INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
-// BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
-// OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE  OF THIS SOFTWARE, EVEN IF ADVISED
-// OF THE POSSIBILITY OF SUCH DAMAGE.
-//-----------------------------------------------------------------------------
+// This file is part of VSTGUI. It is subject to the license terms
+// in the LICENSE file found in the top-level directory of this
+// distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "uitemplatecontroller.h"
 
@@ -59,7 +29,7 @@ class UINavigationDataSource : public GenericStringListDataBrowserSource
 {
 public:
 	UINavigationDataSource (IGenericStringListDataBrowserSourceSelectionChanged* delegate)
-	: GenericStringListDataBrowserSource (0, delegate) { textInset.x = 4.; headerBackgroundColor = kTransparentCColor; }
+	: GenericStringListDataBrowserSource (nullptr, delegate) { textInset.x = 4.; headerBackgroundColor = kTransparentCColor; }
 
 	int32_t dbOnKeyDown (const VstKeyCode& key, CDataBrowser* browser) override
 	{
@@ -67,8 +37,7 @@ public:
 			return -1;
 		if (key.virt == VKEY_LEFT)
 		{
-			CViewContainer* parent = dynamic_cast<CViewContainer*>(browser->getParentView ());
-			if (parent)
+			if (auto parent = browser->getParentView ()->asViewContainer ())
 			{
 				if (parent->advanceNextFocusView (browser, true))
 				{
@@ -78,18 +47,17 @@ public:
 		}
 		else if (key.virt == VKEY_RIGHT)
 		{
-			CViewContainer* parent = dynamic_cast<CViewContainer*>(browser->getParentView ());
-			if (parent)
+			if (auto parent = browser->getParentView ()->asViewContainer ())
 			{
 				if (parent->advanceNextFocusView (browser, false))
 				{
 					CView* focusView = dynamic_cast<CView*> (browser->getFrame()->getFocusView ());
 					if (focusView)
 					{
-						CViewContainer* parent = dynamic_cast<CViewContainer*>(focusView->getParentView ());
+						CViewContainer* parent = focusView->getParentView ()->asViewContainer ();
 						while (parent != browser->getFrame ())
 						{
-							parent = dynamic_cast<CViewContainer*>(parent->getParentView ());
+							parent = parent->getParentView ()->asViewContainer ();
 							CDataBrowser* focusBrowser = dynamic_cast<CDataBrowser*>(parent);
 							if (focusBrowser)
 							{
@@ -124,9 +92,9 @@ public:
 		context->drawLine (CPoint (size.left, size.bottom-1), CPoint (size.right, size.bottom-1));
 		if (!getHeaderTitle ().empty ())
 		{
-			if (headerFont == 0)
+			if (headerFont == nullptr)
 			{
-				headerFont = new CFontDesc (*drawFont);
+				headerFont = makeOwned<CFontDesc> (*drawFont);
 				headerFont->setStyle (kBoldFace);
 				headerFont->setSize (headerFont->getSize ()-1);
 			}
@@ -138,7 +106,7 @@ public:
 protected:
 	mutable UTF8String headerTitle;
 	CColor headerBackgroundColor;
-	OwningPointer<CFontDesc> headerFont;
+	SharedPointer<CFontDesc> headerFont;
 };
 
 //----------------------------------------------------------------------------------------------------
@@ -162,7 +130,7 @@ class UIViewListDataSource : public UINavigationDataSource
 {
 public:
 	UIViewListDataSource (CViewContainer* view, const IViewFactory* viewFactory, UISelection* selection, UIUndoManager* undoManager ,IGenericStringListDataBrowserSourceSelectionChanged* delegate);
-	~UIViewListDataSource ();
+	~UIViewListDataSource () override;
 
 	CViewContainer* getView () const { return view; }
 	CView* getSubview (int32_t index);
@@ -212,10 +180,10 @@ UITemplateController::UITemplateController (IController* baseController, UIDescr
 , selection (selection)
 , undoManager (undoManager)
 , actionPerformer (actionPerformer)
-, templateView (0)
-, templateDataBrowser (0)
-, mainViewDataSource (0)
-, selectedTemplateName (0)
+, templateView (nullptr)
+, templateDataBrowser (nullptr)
+, mainViewDataSource (nullptr)
+, selectedTemplateName (nullptr)
 {
 	editDescription->addDependency (this);
 }
@@ -263,13 +231,14 @@ void UITemplateController::selectTemplate (UTF8StringPtr name)
 	if (templateDataBrowser)
 	{
 		int32_t index = 0;
-		for (StringVector::const_iterator it = templateNames.begin (); it != templateNames.end (); it++, index++)
+		for (auto& templName : templateNames)
 		{
-			if (*it == name)
+			if (templName == name)
 			{
 				templateDataBrowser->setSelectedRow (index, true);
 				break;
 			}
+			index++;
 		}
 	}
 }
@@ -279,29 +248,31 @@ void UITemplateController::dbSelectionChanged (int32_t selectedRow, GenericStrin
 {
 	if (source->getStringList () == &templateNames)
 	{
-		std::string* newName = 0;
+		UTF8String* newName = nullptr;
 		if (selectedRow == CDataBrowser::kNoSelection)
-			newName = 0;
+			newName = nullptr;
 		else
 			newName = &templateNames[static_cast<uint32_t> (selectedRow)];
 
-		if ((newName == 0 && selectedTemplateName != 0)
-		 || (newName != 0 && selectedTemplateName == 0)
+		if ((newName == nullptr && selectedTemplateName != nullptr)
+		 || (newName != nullptr && selectedTemplateName == nullptr)
 		 || (newName != selectedTemplateName && *newName != *selectedTemplateName))
 		{
 			selectedTemplateName = newName;
 			UIAttributes* attr = editDescription->getCustomAttributes ("UITemplateController", true);
 			if (attr)
 			{
-				attr->setAttribute ("SelectedTemplate", selectedTemplateName ? *selectedTemplateName : "");
+				attr->setAttribute ("SelectedTemplate", selectedTemplateName ? selectedTemplateName->getString () : "");
 			}
 
 			changed (kMsgTemplateChanged);
 		}
-		else
+		else if (templateView)
 		{
 			selection->setExclusive (templateView);
 		}
+		else
+			selection->empty ();
 		return;
 	}
 }
@@ -317,18 +288,21 @@ CMessageResult UITemplateController::notify (CBaseObject* sender, IdStringPtr me
 			DeferChanges dc (this);
 			int32_t rowToSelect = templateDataBrowser->getSelectedRow ();
 			int32_t index = 0;
+			auto selectedTemplateStr = selectedTemplateName ? *selectedTemplateName : "";
 			templateNames.clear ();
-			std::string selectedTemplateStr = *selectedTemplateName;
 			dataSource->setStringList (&templateNames);
 			std::list<const std::string*> tmp;
 			editDescription->collectTemplateViewNames (tmp);
 			tmp.sort (UIEditController::std__stringCompare);
-			for (std::list<const std::string*>::const_iterator it = tmp.begin (), end = tmp.end (); it != end; ++it, ++index)
+			for (auto& name : tmp)
 			{
-				templateNames.push_back ((*it)->c_str ());
-				if (*(*it) == selectedTemplateStr)
+				templateNames.emplace_back (*name);
+				if (*name == selectedTemplateStr)
 					rowToSelect = index;
+				++index;
 			}
+			if (rowToSelect < 0)
+				rowToSelect = 0;
 			dataSource->setStringList (&templateNames);
 			templateDataBrowser->setSelectedRow (rowToSelect, true);
 		}
@@ -347,7 +321,7 @@ void UITemplateController::setTemplateView (CViewContainer* view)
 		{
 			mainViewDataSource->remove ();
 			mainViewDataSource->forget ();
-			mainViewDataSource = 0;
+			mainViewDataSource = nullptr;
 		}
 		if (templateView && templateDataBrowser)
 		{
@@ -375,15 +349,15 @@ CView* UITemplateController::createView (const UIAttributes& attributes, const I
 	{
 		if (*name == "TemplateBrowser")
 		{
-			vstgui_assert (templateDataBrowser == 0);
+			vstgui_assert (templateDataBrowser == nullptr);
 			std::list<const std::string*> tmp;
 			editDescription->collectTemplateViewNames (tmp);
 			tmp.sort (UIEditController::std__stringCompare);
-			for (std::list<const std::string*>::const_iterator it = tmp.begin (); it != tmp.end (); it++)
-				templateNames.push_back ((*it)->c_str ());
+			for (auto& name : tmp)
+				templateNames.emplace_back (*name);
 			
 			UIAttributes* attr = editDescription->getCustomAttributes ("UITemplateController", true);
-			const std::string* templateName = attr ? attr->getAttributeValue ("SelectedTemplate") : 0;
+			const std::string* templateName = attr ? attr->getAttributeValue ("SelectedTemplate") : nullptr;
 			UITemplatesDataSource* dataSource = new UITemplatesDataSource (this, editDescription, actionPerformer, templateName);
 			dataSource->setStringList (&templateNames);
 			UIEditController::setupDataSource (dataSource);
@@ -408,16 +382,46 @@ IController* UITemplateController::createSubController (UTF8StringPtr name, cons
 }
 
 //----------------------------------------------------------------------------------------------------
+void UITemplateController::appendContextMenuItems (COptionMenu& contextMenu, CView* view, const CPoint& where)
+{
+	CPoint w (where);
+	view->localToFrame (w);
+	templateDataBrowser->frameToLocal (w);
+	if (!templateDataBrowser->hitTest (w))
+		return;
+	auto cell = templateDataBrowser->getCellAt (w);
+	if (!cell.isValid ())
+		return;
+	auto dataSource = dynamic_cast<UITemplatesDataSource*> (templateDataBrowser->getDelegate ());
+	auto templateName = dataSource->getStringList()->at (static_cast<uint32_t> (cell.row));
+	vstgui_assert (dataSource);
+	auto item = new CCommandMenuItem ("Duplicate Template '" + templateName + "'");
+	item->setActions ([this, cell, dataSource] (CCommandMenuItem*) {
+		std::list<const std::string*> tmp;
+		editDescription->collectTemplateViewNames (tmp);
+		std::string newName (dataSource->getStringList ()->at (static_cast<uint32_t> (cell.row)).data ());
+		UIEditMenuController::createUniqueTemplateName (tmp, newName);
+		actionPerformer->performDuplicateTemplate (dataSource->getStringList ()->at (static_cast<uint32_t> (cell.row)).data (), newName.data ());
+	});
+	contextMenu.addEntry (item);
+	item = new CCommandMenuItem ("Delete Template '" + templateName + "'");
+	item->setActions ([this, cell, dataSource] (CCommandMenuItem*) {
+		actionPerformer->performDeleteTemplate (dataSource->getStringList ()->at (static_cast<uint32_t> (cell.row)).data ());
+	});
+	contextMenu.addEntry (item);
+}
+
+//----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 UIViewListDataSource::UIViewListDataSource (CViewContainer* view, const IViewFactory* viewFactory, UISelection* selection, UIUndoManager* undoManager, IGenericStringListDataBrowserSourceSelectionChanged* delegate)
 : UINavigationDataSource (delegate)
 , view (view)
 , viewFactory (viewFactory)
-, next (0)
+, next (nullptr)
 , selection (selection)
 , undoManager (undoManager)
-, selectedView (0)
+, selectedView (nullptr)
 , inUpdate (false)
 {
 	update (view);
@@ -435,7 +439,7 @@ CView* UIViewListDataSource::getSubview (int32_t index)
 {
 	if (index >= 0 && index < (int32_t)subviews.size ())
 		return subviews[static_cast<uint32_t> (index)];
-	return 0;
+	return nullptr;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -451,8 +455,8 @@ bool UIViewListDataSource::update (CViewContainer* vc)
 		IdStringPtr viewName = viewFactory->getViewName (subview);
 		if (viewName)
 		{
-			names.push_back (viewName);
-			subviews.push_back (subview);
+			names.emplace_back (viewName);
+			subviews.emplace_back (subview);
 		}
 		it++;
 	}
@@ -461,8 +465,7 @@ bool UIViewListDataSource::update (CViewContainer* vc)
 		ViewIterator it (vc);
 		while (*it)
 		{
-			CViewContainer* subview = dynamic_cast<CViewContainer*>(*it);
-			if (subview)
+			if (auto subview = (*it)->asViewContainer ())
 			{
 				if (update (subview))
 				{
@@ -505,11 +508,10 @@ void UIViewListDataSource::dbSelectionChanged (CDataBrowser* browser)
 	if (next)
 	{
 		next->remove ();
-		next = 0;
+		next = nullptr;
 	}
 	GenericStringListDataBrowserSource::dbSelectionChanged (browser);
-	CViewContainer* container = dynamic_cast<CViewContainer*>(subview);
-	if (container)
+	if (auto container = subview ? subview->asViewContainer () : nullptr)
 	{
 		UIViewListDataSource* dataSource = new UIViewListDataSource (container, viewFactory, selection, undoManager, delegate);
 		UIEditController::setupDataSource (dataSource);
@@ -537,7 +539,7 @@ void UIViewListDataSource::remove ()
 	if (next)
 	{
 		next->remove ();
-		next = 0;
+		next = nullptr;
 	}
 	if (dataBrowser)
 	{
@@ -592,11 +594,11 @@ CMessageResult UIViewListDataSource::notify (CBaseObject* sender, IdStringPtr me
 					return kMessageNotified;
 				}
 			}
-			selectedView = 0;
+			selectedView = nullptr;
 			if (next)
 			{
 				next->remove ();
-				next = 0;
+				next = nullptr;
 			}
 		}
 		return kMessageNotified;
@@ -646,7 +648,7 @@ CMouseEventResult UITemplatesDataSource::dbOnMouseDown (const CPoint& where, con
 	{
 		if (buttons.isDoubleClick ())
 		{
-			browser->beginTextEdit (CDataBrowser::Cell (row, column), getStringList ()->at (static_cast<uint32_t> (row)).c_str ());
+			browser->beginTextEdit (CDataBrowser::Cell (row, column), getStringList ()->at (static_cast<uint32_t> (row)).data ());
 			return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 		}
 		delegate->dbSelectionChanged (row, this);
@@ -667,14 +669,14 @@ CMouseEventResult UITemplatesDataSource::dbOnMouseDown (const CPoint& where, con
 				{
 					std::list<const std::string*> tmp;
 					description->collectTemplateViewNames (tmp);
-					std::string newName (getStringList ()->at (static_cast<uint32_t> (row)).c_str ());
+					std::string newName (getStringList ()->at (static_cast<uint32_t> (row)).data ());
 					UIEditMenuController::createUniqueTemplateName (tmp, newName);
-					actionPerformer->performDuplicateTemplate (getStringList ()->at (static_cast<uint32_t> (row)).c_str (), newName.c_str ());
+					actionPerformer->performDuplicateTemplate (getStringList ()->at (static_cast<uint32_t> (row)).data (), newName.data ());
 					break;
 				}
 				case 1:
 				{
-					actionPerformer->performDeleteTemplate (getStringList ()->at (static_cast<uint32_t> (row)).c_str ());
+					actionPerformer->performDeleteTemplate (getStringList ()->at (static_cast<uint32_t> (row)).data ());
 					break;
 				}
 			}
@@ -686,8 +688,16 @@ CMouseEventResult UITemplatesDataSource::dbOnMouseDown (const CPoint& where, con
 //----------------------------------------------------------------------------------------------------
 void UITemplatesDataSource::dbCellTextChanged (int32_t row, int32_t column, UTF8StringPtr newText, CDataBrowser* browser)
 {
-	if (getStringList ()->at (static_cast<uint32_t> (row)) != newText)
-		actionPerformer->performTemplateNameChange (getStringList ()->at (static_cast<uint32_t> (row)).c_str (), newText);
+	auto oldName = getStringList ()->at (static_cast<uint32_t> (row));
+	if (oldName != newText)
+	{
+		for (auto& name : *getStringList ())
+		{
+			if (name == newText)
+				return;
+		}
+		actionPerformer->performTemplateNameChange (oldName.data (), newText);
+	}
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -713,13 +723,14 @@ void UITemplatesDataSource::dbAttached (CDataBrowser* browser)
 		else
 		{
 			uint32_t index = 0;
-			for (StringVector::const_iterator it = getStringList ()->begin (); it != getStringList ()->end (); it++, index++)
+			for (auto& name : *getStringList ())
 			{
-				if (getStringList()->at (index) == firstSelectedTemplateName)
+				if (name == firstSelectedTemplateName)
 				{
 					browser->setSelectedRow (static_cast<int32_t> (index), true);
 					break;
 				}
+				index++;
 			}
 		}
 	}

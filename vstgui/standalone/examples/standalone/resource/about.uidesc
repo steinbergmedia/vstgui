@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vstgui-ui-description version="1">
+	<template background-color="~ GreyCColor" background-color-draw-style="filled and stroked" class="CViewContainer" maxSize="300, 130" minSize="300, 130" mouse-enabled="true" name="view" opacity="1" origin="0, 0" size="300, 130" transparent="true">
+		<view class="CGradientView" draw-antialiased="true" frame-color="Black Alpha 140" frame-width="1" gradient="About Background" gradient-angle="0" gradient-style="linear" mouse-enabled="false" opacity="1" origin="0, 0" radial-center="0.5, 0.5" radial-radius="1" round-rect-radius="5" size="300, 130" transparent="false"/>
+		<view back-color="~ BlackCColor" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="~ NormalFontVeryBig" font-antialias="true" font-color="~ BlackCColor" frame-color="~ BlackCColor" frame-width="1" max-value="1" min-value="0" mouse-enabled="false" opacity="1" origin="10, 20" round-rect-radius="6" shadow-color="~ GreyCColor" size="280, 30" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="true" text-alignment="center" text-inset="0, 0" text-rotation="0" text-shadow-offset="0.5, 0.5" title="VSTGUIStandalone" transparent="true" value-precision="2" wheel-inc-value="0.1"/>
+		<view back-color="~ BlackCColor" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="~ NormalFont" font-antialias="true" font-color="~ BlackCColor" frame-color="~ BlackCColor" frame-width="1" max-value="1" min-value="0" mouse-enabled="false" opacity="1" origin="10, 60" round-rect-radius="6" shadow-color="~ RedCColor" size="280, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" text-shadow-offset="1, 1" title="VSTGUI Standalone Showcase" transparent="true" value-precision="2" wheel-inc-value="0.1"/>
+		<view back-color="~ BlackCColor" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="~ NormalFont" font-antialias="true" font-color="~ BlackCColor" frame-color="~ BlackCColor" frame-width="1" max-value="1" min-value="0" mouse-enabled="false" opacity="1" origin="10, 80" round-rect-radius="6" shadow-color="~ RedCColor" size="280, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" text-shadow-offset="1, 1" title="Version 1.0" transparent="true" value-precision="2" wheel-inc-value="0.1"/>
+		<view back-color="~ BlackCColor" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="~ NormalFontVerySmall" font-antialias="true" font-color="~ BlackCColor" frame-color="~ BlackCColor" frame-width="1" max-value="1" min-value="0" mouse-enabled="false" opacity="1" origin="10, 100" round-rect-radius="6" shadow-color="~ RedCColor" size="280, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" text-shadow-offset="1, 1" title="© 2016 Arne Scheffler" transparent="true" value-precision="2" wheel-inc-value="0.1"/>
+		<view background-offset="0, 0" class="CTextButton" control-tag="Close" default-value="0.5" font="~ NormalFontSmaller" frame-color="~ GreyCColor" frame-color-highlighted="~ GreyCColor" frame-width="0.5" gradient="Default TextButton Gradient" gradient-highlighted="Default TextButton Gradient Highlighted" icon-position="left" icon-text-margin="0" kick-style="false" max-value="1" min-value="0" mouse-enabled="true" opacity="0.5" origin="3, 3" round-radius="5" size="20, 15" text-alignment="center" text-color="~ BlackCColor" text-color-highlighted="~ WhiteCColor" title="X" transparent="false" wheel-inc-value="0.1"/>
+	</template>
+	<control-tags>
+		<control-tag name="Close" tag="0"/>
+	</control-tags>
+	<variables/>
+	<custom>
+		<attributes name="UIDescFilePath" path="/Users/scheffle/Source/VST3/vstgui/vstgui/standalone/examples/standalone/resource/about.uidesc"/>
+		<attributes Size="10, 10" name="UIGridController"/>
+		<attributes SelectedTemplate="view" name="UITemplateController"/>
+		<attributes EditViewScale="1" EditorSize="0, 0, 913, 698" SplitViewSize_0_0="0.8079763663220088654171036068873945623636" SplitViewSize_0_1="0.1624815361890694365154530487416195683181" SplitViewSize_1_0="0.4874446085672082817907835305959451943636" SplitViewSize_1_1="0.5051698670605613283868251528474502265453" SplitViewSize_2_0="0.6845564074479737470824147749226540327072" SplitViewSize_2_1="0.3099671412924425162316310888854786753654" TabSwitchValue="6" Version="1" name="UIEditController"/>
+		<attributes UIAttributesController="mou" name="UIAttributesController"/>
+		<attributes SelectedRow="21" name="UIViewCreatorDataSource"/>
+		<attributes SelectedRow="0" name="UIColorsDataSource"/>
+		<attributes SelectedRow="0" name="UIGradientsDataSource"/>
+		<attributes SelectedRow="-1" name="UIFontsDataSource"/>
+		<attributes SelectedRow="-1" name="UITagsDataSource"/>
+		<attributes SelectedRow="-1" name="UIBitmapsDataSource"/>
+	</custom>
+</vstgui-ui-description>

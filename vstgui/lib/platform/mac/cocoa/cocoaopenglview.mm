@@ -1,36 +1,6 @@
-//-----------------------------------------------------------------------------
-// VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins
-//
-// Version 4.3
-//
-//-----------------------------------------------------------------------------
-// VSTGUI LICENSE
-// (c) 2015, Steinberg Media Technologies, All Rights Reserved
-//-----------------------------------------------------------------------------
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
-// 
-//   * Redistributions of source code must retain the above copyright notice, 
-//     this list of conditions and the following disclaimer.
-//   * Redistributions in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation 
-//     and/or other materials provided with the distribution.
-//   * Neither the name of the Steinberg Media Technologies nor the names of its
-//     contributors may be used to endorse or promote products derived from this 
-//     software without specific prior written permission.
-// 
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-// ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
-// IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
-// INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
-// BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
-// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
-// OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE  OF THIS SOFTWARE, EVEN IF ADVISED
-// OF THE POSSIBILITY OF SUCH DAMAGE.
-//-----------------------------------------------------------------------------
+// This file is part of VSTGUI. It is subject to the license terms 
+// in the LICENSE file found in the top-level directory of this
+// distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #import "cocoaopenglview.h"
 
@@ -42,8 +12,9 @@
 #import "autoreleasepool.h"
 
 #import <OpenGL/OpenGL.h>
+#import <vector>
 
-static Class openGLViewClass = 0;
+static Class openGLViewClass = nullptr;
 
 //-----------------------------------------------------------------------------
 @interface NSObject (VSTGUI_NSOpenGLView)
@@ -55,21 +26,16 @@ namespace VSTGUI {
 //-----------------------------------------------------------------------------
 CocoaOpenGLView::CocoaOpenGLView (NSView* parent)
 : parent (parent)
-, platformView (0)
-, view (0)
+, platformView (nullptr)
+, view (nullptr)
 {
 	initClass ();
 }
 
 //-----------------------------------------------------------------------------
-CocoaOpenGLView::~CocoaOpenGLView ()
-{
-}
-
-//-----------------------------------------------------------------------------
 bool CocoaOpenGLView::init (IOpenGLView* view, PixelFormat* _pixelFormat)
 {
-	if (platformView || openGLViewClass == 0)
+	if (platformView || openGLViewClass == nullptr)
 		return false;
 	if (parent)
 	{
@@ -79,45 +45,45 @@ bool CocoaOpenGLView::init (IOpenGLView* view, PixelFormat* _pixelFormat)
 		if (_pixelFormat)
 		{
 			pixelFormat = *_pixelFormat;
-			formatAttributes.push_back (NSOpenGLPFADepthSize);
-			formatAttributes.push_back (pixelFormat.depthSize);
+			formatAttributes.emplace_back (NSOpenGLPFADepthSize);
+			formatAttributes.emplace_back (pixelFormat.depthSize);
 			if (pixelFormat.flags & PixelFormat::kAccelerated)
 			{
-				formatAttributes.push_back (NSOpenGLPFANoRecovery);
-				formatAttributes.push_back (NSOpenGLPFAAccelerated);
+				formatAttributes.emplace_back (NSOpenGLPFANoRecovery);
+				formatAttributes.emplace_back (NSOpenGLPFAAccelerated);
 			}
 			if (pixelFormat.flags & PixelFormat::kDoubleBuffered)
 			{
-				formatAttributes.push_back (NSOpenGLPFADoubleBuffer);
-				formatAttributes.push_back (NSOpenGLPFABackingStore);
+				formatAttributes.emplace_back (NSOpenGLPFADoubleBuffer);
+				formatAttributes.emplace_back (NSOpenGLPFABackingStore);
 			}
 			if (pixelFormat.flags & PixelFormat::kMultiSample)
 			{
-				formatAttributes.push_back (NSOpenGLPFAMultisample);
-				formatAttributes.push_back (true);
-				formatAttributes.push_back (NSOpenGLPFASampleBuffers);
-				formatAttributes.push_back (2);
-				formatAttributes.push_back (NSOpenGLPFASamples);
-				formatAttributes.push_back (pixelFormat.samples);
+				formatAttributes.emplace_back (NSOpenGLPFAMultisample);
+				formatAttributes.emplace_back (true);
+				formatAttributes.emplace_back (NSOpenGLPFASampleBuffers);
+				formatAttributes.emplace_back (2);
+				formatAttributes.emplace_back (NSOpenGLPFASamples);
+				formatAttributes.emplace_back (pixelFormat.samples);
 			}
 			if (pixelFormat.flags & PixelFormat::kModernOpenGL)
 			{
-				formatAttributes.push_back (NSOpenGLPFAOpenGLProfile);
-				formatAttributes.push_back (NSOpenGLProfileVersion3_2Core);
+				formatAttributes.emplace_back (NSOpenGLPFAOpenGLProfile);
+				formatAttributes.emplace_back (NSOpenGLProfileVersion3_2Core);
 			}
 		}
 		else
 		{
-			formatAttributes.push_back (NSOpenGLPFANoRecovery);
-			formatAttributes.push_back (NSOpenGLPFAAccelerated);
-			formatAttributes.push_back (NSOpenGLPFADoubleBuffer);
-			formatAttributes.push_back (NSOpenGLPFABackingStore);
-			formatAttributes.push_back (NSOpenGLPFADepthSize);
-			formatAttributes.push_back (32);
-			formatAttributes.push_back (NSOpenGLPFAOpenGLProfile);
-			formatAttributes.push_back (NSOpenGLProfileVersionLegacy);
+			formatAttributes.emplace_back (NSOpenGLPFANoRecovery);
+			formatAttributes.emplace_back (NSOpenGLPFAAccelerated);
+			formatAttributes.emplace_back (NSOpenGLPFADoubleBuffer);
+			formatAttributes.emplace_back (NSOpenGLPFABackingStore);
+			formatAttributes.emplace_back (NSOpenGLPFADepthSize);
+			formatAttributes.emplace_back (32);
+			formatAttributes.emplace_back (NSOpenGLPFAOpenGLProfile);
+			formatAttributes.emplace_back (NSOpenGLProfileVersionLegacy);
 		}
-		formatAttributes.push_back (0);
+		formatAttributes.emplace_back (0);
 		NSOpenGLPixelFormat* nsPixelFormat = [[[NSOpenGLPixelFormat alloc] initWithAttributes:&formatAttributes.front ()] autorelease];
 		platformView = [[openGLViewClass alloc] initWithFrame:r pixelFormat:nsPixelFormat callback:this];
 		if (platformView)
@@ -146,7 +112,7 @@ void CocoaOpenGLView::remove ()
 		[platformView removeFromSuperview];
 		[platformView release];
 		platformView = nil;
-		view = 0;
+		view = nullptr;
 	}
 }
 

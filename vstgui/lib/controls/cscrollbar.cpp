@@ -1,10 +1,6 @@
-//
-//  cscrollbar.cpp
-//  vstgui
-//
-//  Created by Arne Scheffler on 20/08/14.
-//
-//
+// This file is part of VSTGUI. It is subject to the license terms 
+// in the LICENSE file found in the top-level directory of this
+// distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "cscrollbar.h"
 #include "../cvstguitimer.h"
@@ -18,7 +14,7 @@ namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
 CScrollbar::CScrollbar (const CRect& size, IControlListener* listener, int32_t tag, ScrollbarDirection direction, const CRect& scrollSize)
-: CControl (size, listener, tag, 0)
+: CControl (size, listener, tag, nullptr)
 , direction (direction)
 , scrollSize (scrollSize)
 , scrollerArea (size)
@@ -26,7 +22,7 @@ CScrollbar::CScrollbar (const CRect& size, IControlListener* listener, int32_t t
 , scrollerLength (0)
 , overlayStyle (false)
 , mouseIsInside (false)
-, drawer (0)
+, drawer (nullptr)
 {
 	setTransparency (true);
 	setWheelInc (0.05f);
@@ -53,11 +49,6 @@ CScrollbar::CScrollbar (const CScrollbar& v)
 , drawer (v.drawer)
 {
 	calculateScrollerLength ();
-}
-
-//-----------------------------------------------------------------------------
-CScrollbar::~CScrollbar ()
-{
 }
 
 //-----------------------------------------------------------------------------
@@ -186,7 +177,7 @@ void CScrollbar::setOverlayStyle (bool state)
 //-----------------------------------------------------------------------------
 CMouseEventResult CScrollbar::onMouseEntered (CPoint& where, const CButtonState& buttons)
 {
-	if (overlayStyle)
+	if (overlayStyle && scrollerLength != 0)
 	{
 		addAnimation ("AlphaValueAnimation", new Animation::AlphaValueAnimation (1.f), new Animation::LinearTimingFunction (100));
 	}
@@ -197,9 +188,9 @@ CMouseEventResult CScrollbar::onMouseEntered (CPoint& where, const CButtonState&
 //-----------------------------------------------------------------------------
 CMouseEventResult CScrollbar::onMouseExited (CPoint& where, const CButtonState& buttons)
 {
-	if (overlayStyle)
+	if (overlayStyle && scrollerLength != 0)
 	{
-		Animation::ITimingFunction* timingFunction = 0;
+		Animation::ITimingFunction* timingFunction = nullptr;
 		if (getAlphaValue () == 1.f)
 		{
 			Animation::InterpolationTimingFunction* interpolTimingFunction = new Animation::InterpolationTimingFunction (400);
@@ -231,7 +222,7 @@ CMouseEventResult CScrollbar::onMouseDown (CPoint &where, const CButtonState& bu
 	else if (scrollerArea.pointInside (where))
 	{
 		doStepping ();
-		timer = owned (new CVSTGUITimer (this, 250, true));
+		timer = makeOwned<CVSTGUITimer> (this, 250, true);
 		return kMouseEventHandled;
 	}
 	return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
@@ -240,7 +231,7 @@ CMouseEventResult CScrollbar::onMouseDown (CPoint &where, const CButtonState& bu
 //-----------------------------------------------------------------------------
 CMouseEventResult CScrollbar::onMouseUp (CPoint &where, const CButtonState& buttons)
 {
-	timer = 0;
+	timer = nullptr;
 	return kMouseEventHandled;
 }
 
@@ -288,19 +279,27 @@ CMouseEventResult CScrollbar::onMouseMoved (CPoint &where, const CButtonState& b
 //------------------------------------------------------------------------
 void CScrollbar::onVisualChange ()
 {
-	if (overlayStyle && !mouseIsInside)
+	if (isAttached () && overlayStyle && !mouseIsInside)
 	{
-		Animation::InterpolationTimingFunction* timingFunction = new Animation::InterpolationTimingFunction (1100);
-		timingFunction->addPoint (1000.f/1100.f, 0);
-		addAnimation ("AlphaValueAnimation", new Animation::AlphaValueAnimation (0.001f), timingFunction);
-		setAlphaValue (1.f);
+		if (scrollerLength != 0)
+		{
+			auto timingFunction = new Animation::InterpolationTimingFunction (1100);
+			timingFunction->addPoint (1000.f/1100.f, 0);
+			addAnimation ("AlphaValueAnimation", new Animation::AlphaValueAnimation (0.001f), timingFunction);
+			setAlphaValue (1.f);
+		}
+		else
+		{
+			removeAnimation ("AlphaValueAnimation");
+			setAlphaValue (0.f);
+		}
 	}
 }
 
 //------------------------------------------------------------------------
 bool CScrollbar::onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &_distance, const CButtonState &buttons)
 {
-	if (!getMouseEnabled ())
+	if (scrollerLength == 0 || !getMouseEnabled ())
 		return false;
 
 	if (buttons != 0 && !(buttons & (kShift|kMouseWheelInverted)))
@@ -363,7 +362,7 @@ void CScrollbar::drawScroller (CDrawContext* pContext, const CRect& size)
 		pContext->setFrameColor (frameColor);
 
 		CCoord wideness = (direction == kVertical ? getWidth() : getHeight()) / 2 - 2;
-		OwningPointer<CGraphicsPath> path = wideness > 2 ? pContext->createGraphicsPath () : 0;
+		auto path = (wideness > 2) ? owned (pContext->createGraphicsPath ()) : nullptr;
 		if (path)
 		{
 			if (wideness > 4)

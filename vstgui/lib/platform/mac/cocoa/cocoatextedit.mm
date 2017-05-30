@@ -1,36 +1,6 @@
-//-----------------------------------------------------------------------------
-// VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins
-//
-// Version 4.3
-//
-//-----------------------------------------------------------------------------
-// VSTGUI LICENSE
-// (c) 2015, Steinberg Media Technologies, All Rights Reserved
-//-----------------------------------------------------------------------------
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
-// 
-//   * Redistributions of source code must retain the above copyright notice, 
-//     this list of conditions and the following disclaimer.
-//   * Redistributions in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation 
-//     and/or other materials provided with the distribution.
-//   * Neither the name of the Steinberg Media Technologies nor the names of its
-//     contributors may be used to endorse or promote products derived from this 
-//     software without specific prior written permission.
-// 
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-// ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
-// IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
-// INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
-// BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
-// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
-// OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE  OF THIS SOFTWARE, EVEN IF ADVISED
-// OF THE POSSIBILITY OF SUCH DAMAGE.
-//-----------------------------------------------------------------------------
+// This file is part of VSTGUI. It is subject to the license terms 
+// in the LICENSE file found in the top-level directory of this
+// distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "cocoatextedit.h"
 
@@ -39,11 +9,13 @@
 #import "cocoahelpers.h"
 #import "autoreleasepool.h"
 #import "../cfontmac.h"
+#import "../macstring.h"
 #import "../../../vstkeycode.h"
 
 using namespace VSTGUI;
 
-static Class textFieldClass = 0;
+static Class textFieldClass = nullptr;
+static Class secureTextFieldClass = nullptr;
 
 @interface NSObject (VSTGUI_NSTextField_Private)
 -(id)initWithTextEdit:(id)textEit;
@@ -78,7 +50,7 @@ static id VSTGUI_NSTextField_Init (id self, SEL _cmd, void* textEdit)
 		}
 		OBJC_SET_VALUE (self, _textEdit, textEdit);
 
-		CoreTextFont* ctf = dynamic_cast<CoreTextFont*> (tec->platformGetFont ()->getPlatformFont ());
+		CoreTextFont* ctf = tec->platformGetFont ()->getPlatformFont ().cast<CoreTextFont> ();
 		if (ctf)
 		{
 			CTFontRef fontRef = ctf->getFontRef ();
@@ -91,7 +63,8 @@ static id VSTGUI_NSTextField_Init (id self, SEL _cmd, void* textEdit)
 			}
 		}
 		
-		NSString* text = [NSString stringWithCString:tec->platformGetText () encoding:NSUTF8StringEncoding];
+		NSString* text = fromUTF8String<NSString*> (tec->platformGetText ());
+		NSString* placeholder = fromUTF8String<NSString*> (tec->platformGetPlaceholderText ());
 
 		[self setTextColor:nsColorFromCColor (tec->platformGetFontColor ())];
 		[self setBordered:NO];
@@ -123,13 +96,43 @@ static id VSTGUI_NSTextField_Init (id self, SEL _cmd, void* textEdit)
 			[cell setAlignment:NSCenterTextAlignment];
 		else if (tec->platformGetHoriTxtAlign () == kRightText)
 			[cell setAlignment:NSRightTextAlignment];
+		if (placeholder.length > 0)
+		{
+			CColor color = tec->platformGetFontColor ();
+			color.alpha /= 2;
+			NSMutableParagraphStyle* paragraphStyle = [[[NSMutableParagraphStyle alloc] init] autorelease];
+			if (tec->platformGetHoriTxtAlign () == kCenterText)
+				paragraphStyle.alignment = NSCenterTextAlignment;
+			else if (tec->platformGetHoriTxtAlign () == kRightText)
+				paragraphStyle.alignment = NSRightTextAlignment;
+			NSDictionary* attrDict =
+			    [NSDictionary dictionaryWithObjectsAndKeys:[self font], NSFontAttributeName,
+			                                               nsColorFromCColor (color),
+			                                               NSForegroundColorAttributeName,
+														   paragraphStyle,
+														   NSParagraphStyleAttributeName,
+														   nil];
+			NSAttributedString* as =
+			    [[[NSAttributedString alloc] initWithString:placeholder attributes:attrDict]
+			        autorelease];
+			[cell setPlaceholderAttributedString:as];
+		}
 
 		[self setDelegate:self];
 		[self setNextKeyView:frameView];
-		if ([frameView respondsToSelector:@selector(makeSubViewFirstResponder:)])
-			[frameView performSelector:@selector(makeSubViewFirstResponder:) withObject:self];
-		else
-			[[self window] makeFirstResponder: self];
+
+
+		if (auto tv = static_cast<NSTextView*> ([[self window] fieldEditor:YES forObject:self]))
+			tv.insertionPointColor = nsColorFromCColor (tec->platformGetFontColor ());
+
+		if ([frameView respondsToSelector:@selector (makeSubViewFirstResponder:)])
+			[frameView performSelector:@selector (makeSubViewFirstResponder:)
+							withObject:self];
+
+		dispatch_after (dispatch_time (DISPATCH_TIME_NOW, (int64_t) (1 * NSEC_PER_MSEC)),
+		                dispatch_get_main_queue (), ^{
+				              [[self window] makeFirstResponder:self];
+			            });
 
 		if ([frameView wantsLayer])
 		{
@@ -167,7 +170,7 @@ static void VSTGUI_NSTextField_SyncSize (id self, SEL _cmd)
 //------------------------------------------------------------------------------------
 static void VSTGUI_NSTextField_RemoveFromSuperview (id self, SEL _cmd)
 {
-	OBJC_SET_VALUE (self, _textEdit, 0);
+	OBJC_SET_VALUE (self, _textEdit, nullptr);
 	NSView* containerView = [self superview];
 	if (containerView)
 	{
@@ -202,11 +205,10 @@ static BOOL VSTGUI_NSTextField_DoCommandBySelector (id self, SEL _cmd, NSControl
 	{
 		VstKeyCode keyCode = {0};
 		keyCode.virt = VKEY_RETURN;
-		if (!tec->platformOnKeyDown (keyCode))
+		if (tec->platformOnKeyDown (keyCode))
 		{
-			tec->platformLooseFocus (true);
+			return YES;
 		}
-		return YES;
 	}
 	else if (commandSelector == @selector (insertTab:))
 	{
@@ -231,11 +233,10 @@ static BOOL VSTGUI_NSTextField_DoCommandBySelector (id self, SEL _cmd, NSControl
 	{
 		VstKeyCode keyCode = {0};
 		keyCode.virt = VKEY_ESCAPE;
-		if (!tec->platformOnKeyDown (keyCode))
+		if (tec->platformOnKeyDown (keyCode))
 		{
-			tec->platformLooseFocus (false);
+			return YES;
 		}
-		return YES; // return YES, otherwise it beeps !!!
 	}
 	return NO;
 }
@@ -247,12 +248,14 @@ __attribute__((__destructor__)) static void cleanup_VSTGUI_NSTextField ()
 {
 	if (textFieldClass)
 		objc_disposeClassPair (textFieldClass);
+	if (secureTextFieldClass)
+		objc_disposeClassPair (secureTextFieldClass);
 }
 
 //-----------------------------------------------------------------------------
 void CocoaTextEdit::initClass ()
 {
-	if (textFieldClass == 0)
+	if (textFieldClass == nullptr)
 	{
 		AutoreleasePool ap;
 		NSMutableString* textFieldClassName = [[[NSMutableString alloc] initWithString:@"VSTGUI_NSTextField"] autorelease];
@@ -264,30 +267,43 @@ void CocoaTextEdit::initClass ()
 		VSTGUI_CHECK_YES(class_addMethod (textFieldClass, @selector(textDidChange:), IMP (VSTGUI_NSTextField_TextDidChange), "v@:@:@@:"))
 		VSTGUI_CHECK_YES(class_addIvar (textFieldClass, "_textEdit", sizeof (void*), (uint8_t)log2(sizeof(void*)), @encode(void*)))
 		objc_registerClassPair (textFieldClass);
+
+		NSMutableString* secureTextFieldClassName = [[[NSMutableString alloc] initWithString:@"VSTGUI_NSSecureTextField"] autorelease];
+		secureTextFieldClass = generateUniqueClass (secureTextFieldClassName, [NSSecureTextField class]);
+		VSTGUI_CHECK_YES(class_addMethod (secureTextFieldClass, @selector(initWithTextEdit:), IMP (VSTGUI_NSTextField_Init), "@@:@:^:"))
+		VSTGUI_CHECK_YES(class_addMethod (secureTextFieldClass, @selector(syncSize), IMP (VSTGUI_NSTextField_SyncSize), "v@:@:"))
+		VSTGUI_CHECK_YES(class_addMethod (secureTextFieldClass, @selector(removeFromSuperview), IMP (VSTGUI_NSTextField_RemoveFromSuperview), "v@:@:"))
+		VSTGUI_CHECK_YES(class_addMethod (secureTextFieldClass, @selector(control:textView:doCommandBySelector:), IMP (VSTGUI_NSTextField_DoCommandBySelector), "B@:@:@:@::"))
+		VSTGUI_CHECK_YES(class_addMethod (secureTextFieldClass, @selector(textDidChange:), IMP (VSTGUI_NSTextField_TextDidChange), "v@:@:@@:"))
+		VSTGUI_CHECK_YES(class_addIvar (secureTextFieldClass, "_textEdit", sizeof (void*), (uint8_t)log2(sizeof(void*)), @encode(void*)))
+		objc_registerClassPair (secureTextFieldClass);
 	}
 }
 
 //-----------------------------------------------------------------------------
 CocoaTextEdit::CocoaTextEdit (NSView* parent, IPlatformTextEditCallback* textEdit)
 : IPlatformTextEdit (textEdit)
-, platformControl (0)
+, platformControl (nullptr)
 , parent (parent)
 {
 	initClass ();
-	platformControl = [[textFieldClass alloc] initWithTextEdit:(id)this];
+	if (textEdit->platformIsSecureTextEdit ())
+		platformControl = [[secureTextFieldClass alloc] initWithTextEdit:(id)this];
+	else
+		platformControl = [[textFieldClass alloc] initWithTextEdit:(id)this];
 }
 
 //-----------------------------------------------------------------------------
-CocoaTextEdit::~CocoaTextEdit ()
+CocoaTextEdit::~CocoaTextEdit () noexcept
 {
 	[platformControl performSelector:@selector(removeFromSuperview)];
 	[platformControl performSelector:@selector(autorelease)];
 }
 
 //-----------------------------------------------------------------------------
-UTF8StringPtr CocoaTextEdit::getText ()
+UTF8String CocoaTextEdit::getText ()
 {
-	return [[platformControl stringValue] UTF8String];
+	return [[[platformControl stringValue] decomposedStringWithCanonicalMapping] UTF8String];
 }
 
 //-----------------------------------------------------------------------------
@@ -298,10 +314,9 @@ bool CocoaTextEdit::updateSize ()
 }
 
 //-----------------------------------------------------------------------------
-bool CocoaTextEdit::setText (UTF8StringPtr text)
+bool CocoaTextEdit::setText (const UTF8String& text)
 {
-	NSString* nsText = [NSString stringWithCString:text encoding:NSUTF8StringEncoding];
-	[platformControl setStringValue:nsText];
+	[platformControl setStringValue:fromUTF8String<NSString*> (text)];
 	return true;
 }
 

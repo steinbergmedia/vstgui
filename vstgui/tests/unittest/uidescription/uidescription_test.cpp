@@ -1,43 +1,15 @@
-//-----------------------------------------------------------------------------
-// VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins
-//
-// Version 4.3
-//
-//-----------------------------------------------------------------------------
-// VSTGUI LICENSE
-// (c) 2015, Steinberg Media Technologies, All Rights Reserved
-//-----------------------------------------------------------------------------
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
-// 
-//   * Redistributions of source code must retain the above copyright notice, 
-//     this list of conditions and the following disclaimer.
-//   * Redistributions in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation 
-//     and/or other materials provided with the distribution.
-//   * Neither the name of the Steinberg Media Technologies nor the names of its
-//     contributors may be used to endorse or promote products derived from this 
-//     software without specific prior written permission.
-// 
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-// ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
-// IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
-// INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
-// BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
-// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
-// OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE  OF THIS SOFTWARE, EVEN IF ADVISED
-// OF THE POSSIBILITY OF SUCH DAMAGE.
-//-----------------------------------------------------------------------------
+// This file is part of VSTGUI. It is subject to the license terms 
+// in the LICENSE file found in the top-level directory of this
+// distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "../unittests.h"
 #include "../../../uidescription/uidescription.h"
 #include "../../../uidescription/uiattributes.h"
+#include "../../../uidescription/icontroller.h"
 #include "../../../uidescription/xmlparser.h"
 #include "../../../uidescription/detail/uiviewcreatorattributes.h"
 #include "../../../lib/ccolor.h"
+#include "../../../lib/cbitmap.h"
 #include "../../../lib/cgradient.h"
 #include "../../../lib/cviewcontainer.h"
 
@@ -142,12 +114,7 @@ constexpr auto withAllNodesUIDesc = R"(<?xml version="1.0" encoding="UTF-8"?>
 	<bitmaps>
 		<bitmap name="b1" path="b1.png"/>
 		<bitmap name="b1#2.0x" path="b1#2.0x.png" scale-factor="2"/>
-		<bitmap name="dataBitmap" path="dataBitmap.png">
-			<data encoding="base64">
-				iVBORw0KGgoAAAANSUhEUgAAAA4AAAAHCAYAAAA4R3wZAAAAAXNSR0IArs4c6QAAACxJREFUGBlj/A8EDG
-				QAFqAeRjL0MYA0IgOibUfXSLTtII1E24LsNKr4kSSbASPLBxbAIufgAAAAAElFTkSuQmCC
-			</data>
-		</bitmap>
+		<bitmap name="dataBitmap" path="dataBitmap.png"/>
 	</bitmaps>
 	<control-tags>
 		<control-tag name="t1" tag="1234"/>
@@ -570,54 +537,95 @@ TESTCASE(UIDescriptionTests,
 		EXPECT(result.size() == str.size ());
 		EXPECT(result == str);
 	);
-	
-	TEST(templates,
-		Xml::MemoryContentProvider provider (createViewUIDesc, strlen(createViewUIDesc));
-		UIDescription desc (&provider);
-		EXPECT(desc.parse () == true);
-		
-		auto attributes = desc.getViewAttributes ("view");
-		EXPECT(attributes);
-		auto classAttr = attributes->getAttributeValue (UIViewCreator::kAttrClass);
-		EXPECT(classAttr);
-		EXPECT(*classAttr == "CViewContainer");
-		attributes = desc.getViewAttributes ("view not existing");
-		EXPECT(attributes == nullptr);
-		
-		Controller controller;
-		auto view = owned (desc.createView ("view", &controller));
-		EXPECT(view);
-		auto viewContainer = view.cast<CViewContainer>();
-		EXPECT(viewContainer);
-		EXPECT(viewContainer->getNbViews () == 1);
-		StringPtrList names;
-		desc.collectTemplateViewNames(names);
-		EXPECT(names.size() == 1);
-		EXPECT(desc.duplicateTemplate ("view not existing", "viewcopy") == false);
-		EXPECT(desc.duplicateTemplate ("view", "viewcopy"));
-		EXPECT(desc.addNewTemplate ("view", nullptr) == false);
-		names.clear();
-		desc.collectTemplateViewNames(names);
-		EXPECT(names.size() == 2);
-		EXPECT(desc.changeTemplateName ("viewcopy", "copyOfView"));
-		EXPECT(desc.changeTemplateName ("viewcopy", "copyOfView") == false);
-		view = owned (desc.createView ("copyOfView", &controller));
-		EXPECT(view);
 
-		std::string name;
-		desc.getTemplateNameFromView (view, name);
-		EXPECT(name == "copyOfView");
-		EXPECT(desc.removeTemplate ("view which does not exirt") == false);
-		EXPECT(desc.removeTemplate ("copyOfView"));
-		view = owned (desc.createView ("copyOfView", &controller));
-		EXPECT(view == nullptr);
-
-		auto a = new UIAttributes ();
-		a->setAttribute (UIViewCreator::kAttrClass, "CViewContainer");
-		EXPECT(desc.addNewTemplate ("addNewTemplate", a));
-		EXPECT(desc.getViewAttributes ("addNewTemplate"));
+	TEST(getViewAttributes,
+		 Xml::MemoryContentProvider provider (createViewUIDesc, strlen(createViewUIDesc));
+		 UIDescription desc (&provider);
+		 EXPECT(desc.parse () == true);
+		 
+		 auto attributes = desc.getViewAttributes ("view");
+		 EXPECT(attributes);
+		 auto classAttr = attributes->getAttributeValue (UIViewCreator::kAttrClass);
+		 EXPECT(classAttr);
+		 EXPECT(*classAttr == "CViewContainer");
+		 attributes = desc.getViewAttributes ("view not existing");
+		 EXPECT(attributes == nullptr);
 	);
 
+	TEST(collectTemplateViewNames,
+		 Xml::MemoryContentProvider provider (createViewUIDesc, strlen(createViewUIDesc));
+		 UIDescription desc (&provider);
+		 EXPECT(desc.parse () == true);
+
+		 StringPtrList names;
+		 desc.collectTemplateViewNames (names);
+		 EXPECT(names.size () == 1);
+		 EXPECT(*names.front () == std::string ("view"));
+	);
+
+	TEST(duplicateTemplate,
+		 Xml::MemoryContentProvider provider (createViewUIDesc, strlen(createViewUIDesc));
+		 UIDescription desc (&provider);
+		 EXPECT(desc.parse () == true);
+
+		 StringPtrList names;
+		 desc.collectTemplateViewNames (names);
+		 EXPECT(desc.duplicateTemplate ("view not existing", "viewcopy") == false);
+		 EXPECT(desc.duplicateTemplate ("view", "viewcopy"));
+		 EXPECT(desc.addNewTemplate ("view", nullptr) == false);
+		 names.clear();
+		 desc.collectTemplateViewNames (names);
+		 EXPECT(names.size() == 2);
+		 EXPECT(*names.front () == std::string ("view"));
+		 EXPECT(*names.back () == std::string ("viewcopy"));
+	);
+
+	TEST(changeTemplateName,
+		 Xml::MemoryContentProvider provider (createViewUIDesc, strlen(createViewUIDesc));
+		 UIDescription desc (&provider);
+		 EXPECT(desc.parse () == true);
+
+		 EXPECT(desc.duplicateTemplate ("view", "viewcopy"));
+		 EXPECT(desc.changeTemplateName ("viewcopy", "copyOfView"));
+		 StringPtrList names;
+		 desc.collectTemplateViewNames (names);
+		 EXPECT(*names.back () == std::string ("copyOfView"));
+	);
+
+	TEST(getTemplateNameFromView,
+		 Xml::MemoryContentProvider provider (createViewUIDesc, strlen(createViewUIDesc));
+		 UIDescription desc (&provider);
+		 EXPECT(desc.parse () == true);
+
+		 Controller controller;
+		 auto view = owned (desc.createView ("view", &controller));
+		 std::string name;
+		 desc.getTemplateNameFromView (view, name);
+		 EXPECT(name == "view");
+	);
+
+	TEST(removeTemplate,
+		 Xml::MemoryContentProvider provider (createViewUIDesc, strlen(createViewUIDesc));
+		 UIDescription desc (&provider);
+		 EXPECT(desc.parse () == true);
+		 
+		 EXPECT(desc.removeTemplate ("view which does not exist") == false);
+		 EXPECT(desc.removeTemplate ("view"));
+	);
+
+	TEST(addNewTemplate,
+		 Xml::MemoryContentProvider provider (createViewUIDesc, strlen(createViewUIDesc));
+		 UIDescription desc (&provider);
+		 EXPECT(desc.parse () == true);
+
+		 auto a = new UIAttributes ();
+		 a->setAttribute (UIViewCreator::kAttrClass, "CViewContainer");
+		 EXPECT(desc.addNewTemplate ("addNewTemplate", a));
+		 StringPtrList names;
+		 desc.collectTemplateViewNames (names);
+		 EXPECT(*names.back () == std::string ("addNewTemplate"));
+	);
+	
 	TEST(storeRestoreViews,
 		Xml::MemoryContentProvider provider (createViewUIDesc, strlen(createViewUIDesc));
 		UIDescription desc (&provider);

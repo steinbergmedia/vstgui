@@ -1,40 +1,12 @@
-//-----------------------------------------------------------------------------
-// VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins
-//
-// Version 4.3
-//
-//-----------------------------------------------------------------------------
-// VSTGUI LICENSE
-// (c) 2015, Steinberg Media Technologies, All Rights Reserved
-//-----------------------------------------------------------------------------
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
-// 
-//   * Redistributions of source code must retain the above copyright notice, 
-//     this list of conditions and the following disclaimer.
-//   * Redistributions in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation 
-//     and/or other materials provided with the distribution.
-//   * Neither the name of the Steinberg Media Technologies nor the names of its
-//     contributors may be used to endorse or promote products derived from this 
-//     software without specific prior written permission.
-// 
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-// ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
-// IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
-// INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
-// BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
-// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
-// OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE  OF THIS SOFTWARE, EVEN IF ADVISED
-// OF THE POSSIBILITY OF SUCH DAMAGE.
-//-----------------------------------------------------------------------------
+// This file is part of VSTGUI. It is subject to the license terms 
+// in the LICENSE file found in the top-level directory of this
+// distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "../../../lib/cframe.h"
 #include "../../../lib/iviewlistener.h"
+#include "../../../lib/ccolor.h"
 #include "../unittests.h"
+#include <vector>
 
 namespace VSTGUI {
 
@@ -146,7 +118,7 @@ TESTCASE(CViewContainerTest,
 
 	TEARDOWN(
 		container->forget();
-		container = 0;
+		container = nullptr;
 	);
 	
 	TEST(changeViewZOrder,
@@ -208,7 +180,7 @@ TESTCASE(CViewContainerTest,
 	);
 
 	TEST(removeView,
-		OwningPointer<CView> view = new CView (CRect (0, 0, 10, 10));
+		auto view = makeOwned<CView> (CRect (0, 0, 10, 10));
 		CView* view2 = new CView (CRect (0, 0, 10, 10));
 		
 		container->addView (view);
@@ -220,8 +192,8 @@ TESTCASE(CViewContainerTest,
 	);
 
 	TEST(removeAllViews,
-		OwningPointer<CView> view = new CView (CRect (0, 0, 10, 10));
-		OwningPointer<CView> view2 = new CView (CRect (0, 0, 10, 10));
+		auto view = makeOwned<CView> (CRect (0, 0, 10, 10));
+		auto view2 = makeOwned<CView> (CRect (0, 0, 10, 10));
 		
 		container->addView (view);
 		container->addView (view2);
@@ -233,7 +205,8 @@ TESTCASE(CViewContainerTest,
 	);
 	
 	TEST(advanceNextFocusView,
-		CFrame* frame = new CFrame (CRect (0, 0, 10, 10), 0);
+		CFrame* frame = new CFrame (CRect (0, 0, 10, 10), nullptr);
+		frame->onActivate (true);
 		CView* view1 = new CView (CRect (0, 0, 10, 10));
 		CView* view2 = new CView (CRect (0, 0, 10, 10));
 		CView* view3 = new CView (CRect (0, 0, 10, 10));
@@ -248,11 +221,11 @@ TESTCASE(CViewContainerTest,
 		container->remember ();
 		frame->attached (frame);
 
-		EXPECT(container->advanceNextFocusView (0, true) == true)
+		EXPECT(container->advanceNextFocusView (nullptr, true) == true)
 		EXPECT(frame->getFocusView () == view3)
 		EXPECT(container->advanceNextFocusView (view3) == false)
-		frame->setFocusView (0);
-		EXPECT(container->advanceNextFocusView (0) == true)
+		frame->setFocusView (nullptr);
+		EXPECT(container->advanceNextFocusView (nullptr) == true)
 		EXPECT(frame->getFocusView () == view1)
 		frame->close ();
 	);
