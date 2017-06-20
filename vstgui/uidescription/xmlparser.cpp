@@ -22,11 +22,11 @@
 #else
 	#define BYTEORDER 1234
 #endif
-#define HAVE_MEMMOVE	1
-namespace VSTGUI {
-namespace Xml {
-	#include "expat/expat.h"
-}} // namespaces
+#if MAC
+	#define HAVE_MEMMOVE
+#endif
+
+#include "expat/expat.h"
 
 #include "xmlparser.h"
 #include <algorithm>
@@ -239,11 +239,11 @@ void InputStreamContentProvider::rewind ()
 #pragma clang diagnostic ignored "-Wconversion"
 #endif
 
+}} // namespaces
+
 #include "./expat/xmltok.c"
 #include "./expat/xmlrole.c"
 #include "./expat/xmlparse.c"
-
-}} // namespaces
 
 #ifdef OLD_BYTEORDER
 	#undef BYTEORDER
