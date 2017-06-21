@@ -6,6 +6,9 @@
 
 /// @cond ignore
 
+#if VSTGUI_USE_SYSTEM_EXPAT
+#include <expat.h>
+#else
 #define XML_STATIC 1
 #define XML_NS 1
 #define XML_DTD 1
@@ -27,6 +30,7 @@
 #endif
 
 #include "expat/expat.h"
+#endif
 
 #include "xmlparser.h"
 #include <algorithm>
@@ -241,6 +245,8 @@ void InputStreamContentProvider::rewind ()
 
 }} // namespaces
 
+#if !VSTGUI_USE_SYSTEM_EXPAT
+
 #include "./expat/xmltok.c"
 #include "./expat/xmlrole.c"
 #include "./expat/xmlparse.c"
@@ -248,6 +254,8 @@ void InputStreamContentProvider::rewind ()
 #ifdef OLD_BYTEORDER
 	#undef BYTEORDER
 	#define BYTEORDER = OLD_BYTEORDER
+#endif
+
 #endif
 
 /// @endcond
