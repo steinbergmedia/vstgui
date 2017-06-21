@@ -97,5 +97,12 @@ vstgui_source_group_by_folder(${target})
 ##########################################################################################
 if(UNIX AND NOT CMAKE_HOST_APPLE)
 	execute_process(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/editing/createuidescdata.sh WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/editing/ RESULT_VARIABLE result)
-	target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS} "HAVE_EDITORUIDESC_H")
+	target_compile_definitions(${target} "HAVE_EDITORUIDESC_H")
 endif()
+##########################################################################################
+find_package(expat)
+if(expat_FOUND)
+  target_compile_definitions(${target} "VSTGUI_USE_SYSTEM_EXPAT=1")
+  target_link_libraries(${target} PRIVATE expat)
+endif()
+
