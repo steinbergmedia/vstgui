@@ -330,17 +330,12 @@ static bool parseSize (const std::string& str, CPoint& point)
 //-----------------------------------------------------------------------------
 static void releaseSubController (IController* subController)
 {
-	CBaseObject* baseObject = dynamic_cast<CBaseObject*> (subController);
-	if (baseObject)
-		baseObject->forget ();
+	if (auto ref = dynamic_cast<IReference*> (subController))
+		ref->forget();
+	else if (auto fobj = dynamic_cast<Steinberg::FObject*> (subController))
+		fobj->release ();
 	else
-	{
-		Steinberg::FObject* fobj = dynamic_cast<Steinberg::FObject*> (subController);
-		if (fobj)
-			fobj->release ();
-		else
-			delete subController;
-	}
+		delete subController;
 }
 
 } // namespace VST3EditorInternal
