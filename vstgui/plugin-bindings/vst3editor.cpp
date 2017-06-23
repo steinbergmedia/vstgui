@@ -53,25 +53,37 @@ public:
 static UpdateHandlerInit gUpdateHandlerInit;
 
 //-----------------------------------------------------------------------------
-class IdleUpdateHandler : public FObject, public IPlatformTimerCallback
+class IdleUpdateHandler
 {
 public:
-	OBJ_METHODS (IdleUpdateHandler, FObject)
-	SINGLETON (IdleUpdateHandler)
-protected:
-	IdleUpdateHandler ()
+	static void start ()
 	{
-		timer = IPlatformTimer::create (this);
-		timer->start (1000 / 30); // 30 Hz timer
-		
-		// we will always call CView::setDirty() on the main thread
-		VSTGUI::CView::kDirtyCallAlwaysOnMainThread = true;
+		auto& instance = get ();
+		if (++instance.users == 1)
+		{
+			instance.timer = makeOwned<CVSTGUITimer> (
+				[] (auto) { gUpdateHandlerInit.get ()->triggerDeferedUpdates (); }, 1000 / 30);
+		}
 	}
-	~IdleUpdateHandler () { timer->stop (); }
 
-	void fire () override { gUpdateHandlerInit.get ()->triggerDeferedUpdates (); }
+	static void stop ()
+	{
+		auto& instance = get ();
+		if (--instance.users == 0)
+		{
+			instance.timer = nullptr;
+		}
+	}
 
-	VSTGUI::SharedPointer<IPlatformTimer> timer;
+protected:
+	static IdleUpdateHandler& get ()
+	{
+		static IdleUpdateHandler gInstance;
+		return gInstance;
+	}
+
+	VSTGUI::SharedPointer<CVSTGUITimer> timer;
+	std::atomic<uint32_t> users {0};
 };
 
 } // namespace Steinberg
@@ -407,7 +419,9 @@ Steinberg::tresult PLUGIN_API VST3Editor::queryInterface (const Steinberg::TUID 
 //-----------------------------------------------------------------------------
 void VST3Editor::init ()
 {
-	Steinberg::IdleUpdateHandler::instance ();
+	// we will always call CView::setDirty() on the main thread
+	VSTGUI::CView::kDirtyCallAlwaysOnMainThread = true;
+
 	zoomFactor = contentScaleFactor = 1.;
 	setIdleRate (300);
 	if (description->parse ())
@@ -998,22 +1012,96 @@ void VST3Editor::recreateView ()
 }
 
 #if LINUX
-//-----------------------------------------------------------------------------
-class LinuxEventHandler : public Steinberg::IPlugViewLinuxEventHandler, public Steinberg::FObject
+// Map Steinberg Vst Interface to VSTGUI Interface
+class RunLoop : public X11::IRunLoop
 {
 public:
-	LinuxEventHandler (CFrame* frame) : frame (frame) {}
+	struct EventHandler : Steinberg::Linux::IEventHandler, public Steinberg::FObject
+	{
+		X11::IEventHandler* handler {nullptr};
 
-	void PLUGIN_API onFDIsSet (FileDescriptor) override { frame->handleNextSystemEvents (); }
+		void PLUGIN_API onFDIsSet (Steinberg::Linux::FileDescriptor) override
+		{
+			if (handler)
+				handler->onEvent ();
+		}
+		DELEGATE_REFCOUNT (Steinberg::FObject)
+		DEFINE_INTERFACES
+			DEF_INTERFACE (Steinberg::Linux::IEventHandler)
+		END_DEFINE_INTERFACES (Steinberg::FObject)
+	};
+	struct TimerHandler : Steinberg::Linux::ITimerHandler, public Steinberg::FObject
+	{
+		X11::ITimerHandler* handler {nullptr};
 
-	DELEGATE_REFCOUNT(Steinberg::FObject)
-	DEFINE_INTERFACES
-		DEF_INTERFACE (Steinberg::IPlugViewLinuxEventHandler)
-	END_DEFINE_INTERFACES (Steinberg::FObject)
+		void PLUGIN_API onTimer () final
+		{
+			if (handler)
+				handler->onTimer ();
+		}
+		DELEGATE_REFCOUNT (Steinberg::FObject)
+		DEFINE_INTERFACES
+			DEF_INTERFACE (Steinberg::Linux::ITimerHandler)
+		END_DEFINE_INTERFACES (Steinberg::FObject)
+	};
+
+	bool registerEventHandler (int fd, X11::IEventHandler* handler) final
+	{
+		auto smtgHandler = Steinberg::owned (new EventHandler ());
+		smtgHandler->handler = handler;
+		if (runLoop->registerEventHandler (smtgHandler, fd) == Steinberg::kResultTrue)
+		{
+			eventHandlers.push_back (smtgHandler);
+			return true;
+		}
+		return false;
+	}
+	bool unregisterEventHandler (X11::IEventHandler* handler) final
+	{
+		for (auto it = eventHandlers.begin (), end = eventHandlers.end (); it != end; ++it)
+		{
+			if ((*it)->handler == handler)
+			{
+				runLoop->unregisterEventHandler ((*it));
+				eventHandlers.erase (it);
+				return true;
+			}
+		}
+		return false;
+	}
+	bool registerTimer (uint64_t interval, X11::ITimerHandler* handler) final
+	{
+		auto smtgHandler = Steinberg::owned (new TimerHandler ());
+		smtgHandler->handler = handler;
+		if (runLoop->registerTimer (smtgHandler, interval) == Steinberg::kResultTrue)
+		{
+			timerHandlers.push_back (smtgHandler);
+			return true;
+		}
+		return false;
+	}
+	bool unregisterTimer (X11::ITimerHandler* handler) final
+	{
+		for (auto it = timerHandlers.begin (), end = timerHandlers.end (); it != end; ++it)
+		{
+			if ((*it)->handler == handler)
+			{
+				runLoop->unregisterTimer ((*it));
+				timerHandlers.erase (it);
+				return true;
+			}
+		}
+		return false;
+	}
+
+	RunLoop (Steinberg::FUnknown* runLoop) : runLoop (runLoop) {}
 private:
-	CFrame* frame {nullptr};
+	using EventHandlers = std::vector<Steinberg::IPtr<EventHandler>>;
+	using TimerHandlers = std::vector<Steinberg::IPtr<TimerHandler>>;
+	EventHandlers eventHandlers;
+	TimerHandlers timerHandlers;
+	Steinberg::FUnknownPtr<Steinberg::Linux::IRunLoop> runLoop;
 };
-
 #endif
 
 #define kFrameEnableFocusDrawingAttr "frame-enable-focus-drawing"
@@ -1041,32 +1129,25 @@ bool PLUGIN_API VST3Editor::open (void* parent, const PlatformType& type)
 	IPlatformFrameConfig* config = nullptr;
 #if LINUX
 	X11::FrameConfig x11config;
+	x11config.runLoop = owned (new RunLoop (plugFrame));
 	config = &x11config;
 #endif
 
 	getFrame ()->open (parent, type, config);
 
-#if LINUX
-	if (x11config.displayConnectionNumber != -1)
-	{
-		Steinberg::FUnknownPtr<Steinberg::IPlugFrameLinux> plugFrameLinux (plugFrame);
-		if (plugFrameLinux)
-		{
-			linuxEventHandler = new LinuxEventHandler (getFrame ());
-			plugFrameLinux->registerEventHandler (linuxEventHandler,
-												  x11config.displayConnectionNumber);
-		}
-	}
-#endif
-
 	if (delegate)
 		delegate->didOpen (this);
+
+	Steinberg::IdleUpdateHandler::start ();
+
 	return true;
 }
 
 //-----------------------------------------------------------------------------
 void PLUGIN_API VST3Editor::close ()
 {
+	Steinberg::IdleUpdateHandler::stop ();
+
 	if (delegate)
 		delegate->willClose (this);
 
@@ -1076,18 +1157,6 @@ void PLUGIN_API VST3Editor::close ()
 	paramChangeListeners.clear ();
 	if (frame)
 	{
-#if LINUX
-		if (linuxEventHandler)
-		{
-			Steinberg::FUnknownPtr<Steinberg::IPlugFrameLinux> plugFrameLinux (plugFrame);
-			if (plugFrameLinux)
-			{
-				plugFrameLinux->unregisterEventHandler (linuxEventHandler);
-				linuxEventHandler->release ();
-				linuxEventHandler = nullptr;
-			}
-		}
-#endif
 
 #if VSTGUI_LIVE_EDITING
 		getFrame ()->unregisterKeyboardHook (this);

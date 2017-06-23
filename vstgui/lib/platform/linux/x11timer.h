@@ -5,31 +5,26 @@
 #pragma once
 
 #include "../iplatformtimer.h"
+#include "x11frame.h"
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
 namespace X11 {
 
 //------------------------------------------------------------------------
-class Timer : public IPlatformTimer
+class Timer : public IPlatformTimer, public ITimerHandler
 {
 public:
 	Timer (IPlatformTimerCallback* callback);
+	~Timer () noexcept;
 
 	bool start (uint32_t periodMs) override;
 	bool stop () override;
 
-	bool fire ();
-	uint32_t getPeriodMs () const { return periodMs; }
-	uint64_t getNextFireTime () const { return nextFireTime; }
-	void setNextFireTime (uint64_t t) { nextFireTime = t; }
-
-	static void checkAndFireTimers ();
+	void onTimer () override;
 
 private:
 	IPlatformTimerCallback* callback = nullptr;
-	uint32_t periodMs = 0;
-	uint64_t nextFireTime = 0;
 };
 
 //------------------------------------------------------------------------

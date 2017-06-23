@@ -1,4 +1,4 @@
-﻿// This file is part of VSTGUI. It is subject to the license terms 
+﻿// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
@@ -17,35 +17,6 @@ SharedPointer<IPlatformTimer> IPlatformTimer::create (IPlatformTimerCallback* ca
 //------------------------------------------------------------------------
 namespace X11 {
 
-using PeriodicTimer = std::list<SharedPointer<Timer>>;
-static PeriodicTimer gPeriodicTimers;
-
-//------------------------------------------------------------------------
-void Timer::checkAndFireTimers ()
-{
-	uint64_t currentTimeMs = Platform::getCurrentTimeMs ();
-
-	for (auto it = gPeriodicTimers.begin (); it != gPeriodicTimers.end ();)
-	{
-		auto timer = *it;
-		if (timer->getNextFireTime () <= currentTimeMs)
-		{
-			if (timer->fire ())
-				timer->setNextFireTime (currentTimeMs + timer->getPeriodMs ());
-			else
-			{
-#if LOG_TIMER
-				std::cout << "unregisterTimer " << timer << " " << timer->getPeriodMs () << " "
-						  << gPeriodicTimers.size () - 1 << "\n";
-#endif
-				it = gPeriodicTimers.erase (it);
-				continue;
-			}
-		}
-		++it;
-	}
-}
-
 //------------------------------------------------------------------------
 Timer::Timer (IPlatformTimerCallback* _callback)
 {
@@ -53,30 +24,36 @@ Timer::Timer (IPlatformTimerCallback* _callback)
 }
 
 //------------------------------------------------------------------------
-bool Timer::start (uint32_t _periodMs)
+Timer::~Timer () noexcept
 {
-	periodMs = _periodMs;
-	nextFireTime = Platform::getCurrentTimeMs () + periodMs;
+	stop ();
+}
 
-	gPeriodicTimers.push_back (this);
-
-	return true;
+//------------------------------------------------------------------------
+bool Timer::start (uint32_t periodMs)
+{
+	auto runLoop = Platform::getInstance ().getRunLoop ();
+	vstgui_assert (runLoop, "Timer only works of run loop was set");
+	if (!runLoop)
+		return false;
+	return runLoop->registerTimer (periodMs, this);
 }
 
 //------------------------------------------------------------------------
 bool Timer::stop ()
 {
-	callback = nullptr;
-	return true;
+	auto runLoop = Platform::getInstance ().getRunLoop ();
+	vstgui_assert (runLoop, "Timer only works of run loop was set");
+	if (!runLoop)
+		return false;
+	return runLoop->unregisterTimer (this);
 }
 
 //------------------------------------------------------------------------
-bool Timer::fire ()
+void Timer::onTimer ()
 {
-	if (!callback)
-		return false;
-	callback->fire ();
-	return true;
+	if (callback)
+		callback->fire ();
 }
 
 //------------------------------------------------------------------------

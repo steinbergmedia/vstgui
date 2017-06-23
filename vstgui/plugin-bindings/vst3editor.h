@@ -153,10 +153,6 @@ protected:
 	CPoint minSize;
 	CPoint maxSize;
 	CRect nonEditRect;
-
-#if LINUX
-	Steinberg::IPlugViewLinuxEventHandler* linuxEventHandler {nullptr};
-#endif
 };
 
 } // namespace

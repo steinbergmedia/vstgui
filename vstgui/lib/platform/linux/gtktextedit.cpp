@@ -8,6 +8,7 @@
 #include "gtktextedit.h"
 #include <functional>
 #include <sstream>
+#include <iostream>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -91,6 +92,7 @@ GTKTextEdit::GTKTextEdit (std::unique_ptr<Impl>&& inImpl, IPlatformTextEditCallb
 
 	impl->widget.set_alignment (alignment);
 
+#if 1
 	// TODO: finalize visual adaption via GTK CSS stuff
 	auto font = callback->platformGetFont ();
 	auto color = callback->platformGetFontColor ();
@@ -104,13 +106,14 @@ GTKTextEdit::GTKTextEdit (std::unique_ptr<Impl>&& inImpl, IPlatformTextEditCallb
 			   << ", " << (color.alpha / 255.) << ");";
 		//		stream << "background: rgba(0, 0, 0, 0); "; // on linux-mint this is also the
 		//selection-color
-		stream << "background-image: linear-gradient(rgba(0, 0, 0, 0)); ";
+        stream << "background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0)); ";
 		stream << "}";
 		auto provider = Gtk::CssProvider::create ();
 		auto streamStr = stream.str ();
-		provider->load_from_data (streamStr);
+        provider->load_from_data (streamStr);
 		style->add_provider (provider, GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
 	}
+#endif
 }
 
 //------------------------------------------------------------------------

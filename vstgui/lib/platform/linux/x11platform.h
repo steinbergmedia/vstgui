@@ -5,6 +5,7 @@
 #pragma once
 
 #include "../../vstguifwd.h"
+#include "x11frame.h"
 #include <atomic>
 #include <list>
 #include <map>
@@ -35,10 +36,14 @@ public:
 
 	std::string getPath ();
 
+	const SharedPointer<IRunLoop>& getRunLoop () const;
+	void setRunLoop (const SharedPointer<IRunLoop>& runLoop);
 private:
 	Platform ();
 
 	std::string path;
+	SharedPointer<IRunLoop> runLoop;
+
 };
 
 //------------------------------------------------------------------------
