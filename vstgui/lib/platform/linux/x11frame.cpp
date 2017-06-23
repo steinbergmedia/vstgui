@@ -14,7 +14,6 @@
 #include "gtkoptionmenu.h"
 #include "gtktextedit.h"
 #include "x11platform.h"
-#include "x11timer.h"
 #include <cassert>
 #include <gtkmm.h>
 #include <gtkmm/plug.h>
@@ -620,6 +619,7 @@ struct Frame::Impl
 	Gtk::Plug plug;
 	Gtk::Fixed contentView;
 	GtkFrame widget;
+	bool handlingEvents {false};
 };
 
 //------------------------------------------------------------------------
@@ -641,26 +641,35 @@ Frame::Frame (IPlatformFrameCallback* frame, const CRect& size, uint32_t parent,
 	    [this] () { this->frame->platformOnActivate (impl->plug.has_toplevel_focus ()); });
 
 	auto cfg = dynamic_cast<FrameConfig*> (config);
-	if (cfg)
+	if (cfg && cfg->runLoop)
 	{
-		auto screen = impl->plug.get_screen ();
-		auto display = screen ? screen->get_display () : Glib::RefPtr<Gdk::Display> ();
-		auto obj = display ? display->gobj () : nullptr;
-		auto x11Display = obj ? gdk_x11_display_get_xdisplay (obj) : nullptr;
-		cfg->displayConnectionNumber = x11Display ? XConnectionNumber (x11Display) : -1;
+		auto window = impl->plug.get_window ();
+		auto display = gdk_window_get_display (window->gobj ());
+		auto xDisplay = gdk_x11_display_get_xdisplay (display);
+		auto runLoop = Platform::getInstance ().getRunLoop ();
+		if (runLoop == nullptr)
+		{
+			Platform::getInstance ().setRunLoop (cfg->runLoop);
+			runLoop = cfg->runLoop;
+		}
+		runLoop->registerEventHandler (XConnectionNumber (xDisplay), this);
 	}
 
-#if DEBUG
+#if 0 // DEBUG
 	auto id = impl->plug.get_id ();
 	std::cout << "PlugID: " << std::hex << id << std::endl;
 
-//	Gdk::Event::set_show_events (true);
+	Gdk::Event::set_show_events (true);
 #endif
 }
 
 //------------------------------------------------------------------------
 Frame::~Frame ()
 {
+	if (auto runLoop = Platform::getInstance ().getRunLoop ())
+	{
+		runLoop->unregisterEventHandler (this);
+	}
 }
 
 //------------------------------------------------------------------------
@@ -849,13 +858,16 @@ PlatformType Frame::getPlatformType () const
 }
 
 //------------------------------------------------------------------------
-void Frame::handleNextEvents ()
+void Frame::onEvent ()
 {
-	Timer::checkAndFireTimers ();
+	if (impl->handlingEvents)
+		return;
+	impl->handlingEvents = true;
 	while (gtk_events_pending ())
 	{
 		gtk_main_iteration_do (false);
 	}
+	impl->handlingEvents = false;
 }
 
 //------------------------------------------------------------------------

@@ -6,21 +6,46 @@
 #include "../../crect.h"
 #include "../iplatformframe.h"
 #include <memory>
+#include <functional>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
 namespace X11 {
 
 //------------------------------------------------------------------------
-class FrameConfig : public IPlatformFrameConfig
+class IEventHandler
 {
 public:
-	/** will contain the XConnectionNumber after the frame is created. */
-	int displayConnectionNumber {-1};
+	virtual void onEvent () = 0;
 };
 
 //------------------------------------------------------------------------
-class Frame : public IPlatformFrame, public IPlatformFrameRunLoopExt
+class ITimerHandler
+{
+public:
+	virtual void onTimer () = 0;
+};
+
+//------------------------------------------------------------------------
+class IRunLoop : public AtomicReferenceCounted
+{
+public:
+	virtual bool registerEventHandler (int fd, IEventHandler* handler) = 0;
+	virtual bool unregisterEventHandler (IEventHandler* handler) = 0;
+
+	virtual bool registerTimer (uint64_t interval, ITimerHandler* handler) = 0;
+	virtual bool unregisterTimer (ITimerHandler* handler) = 0;
+};
+
+//------------------------------------------------------------------------
+class FrameConfig : public IPlatformFrameConfig
+{
+public:
+	SharedPointer<IRunLoop> runLoop;
+};
+
+//------------------------------------------------------------------------
+class Frame : public IPlatformFrame, public IEventHandler
 {
 public:
 	Frame (IPlatformFrameCallback* frame, const CRect& size, uint32_t parent,
@@ -51,9 +76,10 @@ public:
 	DragResult doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap) override;
 	void setClipboard (const SharedPointer<IDataPackage>& data) override;
 	SharedPointer<IDataPackage> getClipboard () override;
-	void handleNextEvents () override;
 
 	PlatformType getPlatformType () const override;
+
+	void onEvent () override;
 
 	void* getGtkWindow (); // return is Gtk::Window*
 private:
