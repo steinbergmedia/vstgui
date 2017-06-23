@@ -646,13 +646,8 @@ Frame::Frame (IPlatformFrameCallback* frame, const CRect& size, uint32_t parent,
 		auto window = impl->plug.get_window ();
 		auto display = gdk_window_get_display (window->gobj ());
 		auto xDisplay = gdk_x11_display_get_xdisplay (display);
-		auto runLoop = Platform::getInstance ().getRunLoop ();
-		if (runLoop == nullptr)
-		{
-			Platform::getInstance ().setRunLoop (cfg->runLoop);
-			runLoop = cfg->runLoop;
-		}
-		runLoop->registerEventHandler (XConnectionNumber (xDisplay), this);
+		RunLoop::init (cfg->runLoop);
+		RunLoop::get ()->registerEventHandler (XConnectionNumber (xDisplay), this);
 	}
 
 #if 0 // DEBUG
@@ -666,10 +661,11 @@ Frame::Frame (IPlatformFrameCallback* frame, const CRect& size, uint32_t parent,
 //------------------------------------------------------------------------
 Frame::~Frame ()
 {
-	if (auto runLoop = Platform::getInstance ().getRunLoop ())
+	if (auto runLoop = RunLoop::get ())
 	{
 		runLoop->unregisterEventHandler (this);
 	}
+	RunLoop::exit ();
 }
 
 //------------------------------------------------------------------------
