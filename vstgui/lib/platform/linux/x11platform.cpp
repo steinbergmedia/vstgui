@@ -246,18 +246,6 @@ std::string Platform::getPath ()
 }
 
 //------------------------------------------------------------------------
-const SharedPointer<IRunLoop>& Platform::getRunLoop () const
-{
-	return runLoop;
-}
-
-//------------------------------------------------------------------------
-void Platform::setRunLoop (const SharedPointer<IRunLoop>& r)
-{
-	runLoop = r;
-}
-
-//------------------------------------------------------------------------
 void LocalEventLoop::run ()
 {
 	running = true;

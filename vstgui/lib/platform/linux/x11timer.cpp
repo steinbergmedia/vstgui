@@ -32,7 +32,7 @@ Timer::~Timer () noexcept
 //------------------------------------------------------------------------
 bool Timer::start (uint32_t periodMs)
 {
-	auto runLoop = Platform::getInstance ().getRunLoop ();
+	auto runLoop = RunLoop::get ();
 	vstgui_assert (runLoop, "Timer only works of run loop was set");
 	if (!runLoop)
 		return false;
@@ -42,7 +42,7 @@ bool Timer::start (uint32_t periodMs)
 //------------------------------------------------------------------------
 bool Timer::stop ()
 {
-	auto runLoop = Platform::getInstance ().getRunLoop ();
+	auto runLoop = RunLoop::get ();
 	vstgui_assert (runLoop, "Timer only works of run loop was set");
 	if (!runLoop)
 		return false;
