@@ -181,7 +181,7 @@ class IBitmapCreator
 public:
 	virtual ~IBitmapCreator () noexcept = default;
 	
-	virtual IPlatformBitmap* createBitmap (const UIAttributes& attributes) = 0;
+	virtual SharedPointer<IPlatformBitmap> createBitmap (const UIAttributes& attributes) = 0;
 };
 
 } // namespace
