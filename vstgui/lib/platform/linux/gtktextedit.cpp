@@ -25,6 +25,7 @@ struct GTKTextField : Gtk::Entry
 
 	bool on_key_press_event (GdkEventKey* event) override
 	{
+		SharedPointer<GTKTextEdit> guard (textEdit);
 		if (keyPress)
 		{
 			if (keyPress (X11::keyCodeFromEvent (event)))
@@ -48,6 +49,7 @@ struct GTKTextField : Gtk::Entry
 
 	KeyPressFunc keyPress;
 	LostFocusFunc lostFocus;
+	GTKTextEdit* textEdit {nullptr};
 	int width {100};
 };
 
@@ -117,6 +119,7 @@ GTKTextEdit::GTKTextEdit (std::unique_ptr<Impl>&& inImpl, IPlatformTextEditCallb
 		} catch (...) {}
 	}
 #endif
+	impl->widget.textEdit = this;
 }
 
 //------------------------------------------------------------------------
