@@ -640,6 +640,8 @@ Frame::Frame (IPlatformFrameCallback* frame, const CRect& size, uint32_t parent,
 	impl->plug.property_has_toplevel_focus ().signal_changed ().connect (
 	    [this] () { this->frame->platformOnActivate (impl->plug.has_toplevel_focus ()); });
 
+	frame->platformOnActivate (true);
+
 	auto cfg = dynamic_cast<FrameConfig*> (config);
 	if (cfg && cfg->runLoop)
 	{
