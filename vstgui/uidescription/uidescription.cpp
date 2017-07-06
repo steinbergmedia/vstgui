@@ -1437,14 +1437,13 @@ CBitmap* UIDescription::getBitmap (UTF8StringPtr name) const
 		CBitmap* bitmap = bitmapNode->getBitmap (impl->filePath);
 		if (impl->bitmapCreator && bitmap && bitmap->getPlatformBitmap () == nullptr)
 		{
-			IPlatformBitmap* platformBitmap = impl->bitmapCreator->createBitmap (*bitmapNode->getAttributes ());
+			auto platformBitmap = impl->bitmapCreator->createBitmap (*bitmapNode->getAttributes ());
 			if (platformBitmap)
 			{
 				double scaleFactor;
 				if (UIDescriptionPrivate::decodeScaleFactorFromName (name, scaleFactor))
 					platformBitmap->setScaleFactor (scaleFactor);
 				bitmap->setPlatformBitmap (platformBitmap);
-				platformBitmap->forget ();
 			}
 		}
 		if (bitmap && bitmapNode->getFilterProcessed () == false)
