@@ -80,9 +80,11 @@ CMouseEventResult CXYPad::onMouseMoved (CPoint& where, const CButtonState& butto
 
 		boundValues (x, y);
 		setValue (calculateValue (x, y));
-		if (listener && isDirty ())
-			listener->valueChanged (this);
-		invalid ();
+		if (isDirty ())
+		{
+			valueChanged ();
+			invalid ();
+		}
 		lastMouseChangePoint = where;
 		return kMouseEventHandled;
 	}
