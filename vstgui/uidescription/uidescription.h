@@ -121,7 +121,10 @@ public:
 	bool changeControlTagString  (UTF8StringPtr tagName, const std::string& newTagString, bool create = false);
 
 	bool calculateStringValue (UTF8StringPtr str, double& result) const;
-	
+
+	void registerListener (UIDescriptionListener* listener);
+	void unregisterListener (UIDescriptionListener* listener);
+
 	void setBitmapCreator (IBitmapCreator* bitmapCreator);
 
 	struct FocusDrawing
