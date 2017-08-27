@@ -11,6 +11,7 @@
 
 #include "../iviewcreator.h"
 #include "../icontroller.h"
+#include "../uidescriptionlistener.h"
 #include "iaction.h"
 #include "../../lib/csplitview.h"
 #include "../../lib/cframe.h"
@@ -29,7 +30,7 @@ class GenericStringListDataBrowserSource;
 class CCommandMenuItem;
 
 //----------------------------------------------------------------------------------------------------
-class UIEditController : public CBaseObject, public IController, public IContextMenuController, public ISplitViewController, public ISplitViewSeparatorDrawer, public IActionPerformer, public IKeyboardHook
+class UIEditController : public CBaseObject, public IController, public IContextMenuController, public ISplitViewController, public ISplitViewSeparatorDrawer, public IActionPerformer, public IKeyboardHook, public UIDescriptionListenerAdapter
 {
 public:
 	UIEditController (UIDescription* description);
@@ -149,6 +150,10 @@ protected:
 
 	std::vector<Template> templates;
 private:
+	void beforeUIDescSave (UIDescription* desc) override;
+	void onUIDescTemplateChanged (UIDescription* desc) override;
+	bool doUIDescTemplateUpdate (UIDescription* desc, UTF8StringPtr name) override;
+
 	void beforeSave ();
 	void onTemplateSelectionChanged ();
 	CMessageResult validateMenuItem (CCommandMenuItem* item);
@@ -164,6 +169,8 @@ private:
 	
 	void onUndoManagerChanged ();
 	template<typename NameChangeAction, IViewCreator::AttrType attrType> void performNameChange (UTF8StringPtr oldName, UTF8StringPtr newName, IdStringPtr groupActionName);
+
+	std::string onlyTemplateToUpdateName;
 };
 
 } // namespace
