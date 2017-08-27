@@ -122,6 +122,24 @@ public:
 	CCoord getFocusWidth () const;							///< get focus draw width
 	//@}
 
+	using Function = std::function<void ()>;
+	/** Queue a function which will be executed after the current event was handled.
+	 *	Only allowed when inEventProcessing () is true
+	 *
+	 *	@param func Function to execute
+	 *	@return true if the function was added to the execution queue
+	 */
+	bool doAfterEventProcessing (Function&& func);
+	/** Queue a function which will be executed after the current event was handled.
+	 *	Only allowed when inEventProcessing () is true
+	 *
+	 *	@param func Function to execute
+	 *	@return true if the function was added to the execution queue
+	 */
+	bool doAfterEventProcessing (const Function& func);
+	/** Returns true if an event is currently being processed. */
+	bool inEventProcessing () const;
+
 	void onStartLocalEventLoop ();
 
 	void invalid () override { invalidRect (getViewSize ()); setDirty (false); }

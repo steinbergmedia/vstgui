@@ -428,8 +428,8 @@ public:
 			SharedPointer<CTextEdit> textEdit = textLabel.cast<CTextEdit> ();
 			if (textEdit && textEdit->bWasReturnPressed)
 			{
-				Call::later([textEdit] () {
-					textEdit->takeFocus();
+				textEdit->getFrame ()->doAfterEventProcessing ([=] () {
+					textEdit->takeFocus ();
 				});
 			}
 		}
