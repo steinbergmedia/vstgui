@@ -112,8 +112,12 @@ public:
 	{
 		for (auto& c : controls)
 		{
-			c->setValueNormalized (static_cast<float> (newValue));
-			c->invalid ();
+			if (c->getValueNormalized () != newValue)
+			{
+				c->setValueNormalized (static_cast<float> (newValue));
+				c->valueChanged ();
+				c->invalid ();
+			}
 		}
 	}
 
