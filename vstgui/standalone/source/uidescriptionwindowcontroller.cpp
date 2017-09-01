@@ -110,13 +110,17 @@ public:
 
 	void onPerformEdit (IValue& value, IValue::Type newValue) override
 	{
+		auto newControlValue = static_cast<float> (newValue);
 		for (auto& c : controls)
 		{
-			if (c->getValueNormalized () != newValue)
+			if (c->getValueNormalized () != newControlValue)
 			{
-				c->setValueNormalized (static_cast<float> (newValue));
-				c->valueChanged ();
-				c->invalid ();
+				c->setValueNormalized (newControlValue);
+				if (c->getValueNormalized () == newControlValue)
+				{
+					c->valueChanged ();
+					c->invalid ();
+				}
 			}
 		}
 	}
@@ -138,6 +142,7 @@ public:
 				auto title = valueConverter.valueAsString (stepValue->stepToValue (i));
 				menu->addEntry (title);
 			}
+			menu->setMax (menu->getNbEntries ());
 		}
 		if (auto segmentButton = dynamic_cast<CSegmentButton*> (control))
 		{
@@ -161,9 +166,11 @@ public:
 
 	void valueChanged (CControl* control) override
 	{
-		auto preValue = value->getValue ();
-		value->performEdit (control->getValueNormalized ());
-		if (value->getValue () == preValue)
+		auto preValue = static_cast<float> (value->getValue ());
+		auto newValue = control->getValueNormalized ();
+		if (preValue != newValue)
+			value->performEdit (newValue);
+		else
 			onPerformEdit (*value, value->getValue ());
 	}
 
