@@ -1,36 +1,6 @@
-//-----------------------------------------------------------------------------
-// VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework not only for VST plugins
-//
-// Version 4.3
-//
-//-----------------------------------------------------------------------------
-// VSTGUI LICENSE
-// (c) 2015, Steinberg Media Technologies, All Rights Reserved
-//-----------------------------------------------------------------------------
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
-//
-//   * Redistributions of source code must retain the above copyright notice,
-//     this list of conditions and the following disclaimer.
-//   * Redistributions in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation
-//     and/or other materials provided with the distribution.
-//   * Neither the name of the Steinberg Media Technologies nor the names of its
-//     contributors may be used to endorse or promote products derived from this
-//     software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-// ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
-// IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
-// INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
-// BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
-// OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE  OF THIS SOFTWARE, EVEN IF ADVISED
-// OF THE POSSIBILITY OF SUCH DAMAGE.
-//-----------------------------------------------------------------------------
+// This file is part of VSTGUI. It is subject to the license terms
+// in the LICENSE file found in the top-level directory of this
+// distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "uidialogcontroller.h"
 
@@ -63,12 +33,6 @@ UIDialogController::UIDialogController (IController* baseController, CFrame* fra
 }
 
 //----------------------------------------------------------------------------------------------------
-UIDialogController::~UIDialogController ()
-{
-	
-}
-
-//----------------------------------------------------------------------------------------------------
 void UIDialogController::run (UTF8StringPtr _templateName, UTF8StringPtr _dialogTitle, UTF8StringPtr _button1, UTF8StringPtr _button2, IController* _dialogController, UIDescription* _description)
 {
 	collectOpenGLViews (frame);
@@ -76,10 +40,10 @@ void UIDialogController::run (UTF8StringPtr _templateName, UTF8StringPtr _dialog
 	templateName = _templateName;
 	dialogTitle = _dialogTitle;
 	dialogButton1 = _button1;
-	dialogButton2 = _button2 != 0 ? _button2 : "";
+	dialogButton2 = _button2 != nullptr ? _button2 : "";
 	dialogController = dynamic_cast<CBaseObject*> (_dialogController);
 	dialogDescription = _description;
-	CView* view = UIEditController::getEditorDescription ().createView ("dialog", this);
+	CView* view = UIEditController::getEditorDescription ()->createView ("dialog", this);
 	if (view)
 	{
 		CLayeredViewContainer* layeredView = dynamic_cast<CLayeredViewContainer*>(view);
@@ -90,6 +54,7 @@ void UIDialogController::run (UTF8StringPtr _templateName, UTF8StringPtr _dialog
 		size.right += sizeDiff.x;
 		size.bottom += sizeDiff.y;
 		CRect frameSize = frame->getViewSize ();
+		frame->getTransform ().inverse ().transform (frameSize);
 		size.centerInside (frameSize);
 		size.makeIntegral ();
 		view->setViewSize (size);
@@ -131,16 +96,16 @@ void UIDialogController::close ()
 	frame->unregisterKeyboardHook (this);
 	frame->unregisterViewListener (this);
 	if (button1)
-		button1->setListener (0);
+		button1->setListener (nullptr);
 	if (button2)
-		button2->setListener (0);
+		button2->setListener (nullptr);
 	setOpenGLViewsVisible (true);
 
 	CView* dialog = frame->getModalView ();
 	if (dialog)
 	{
 		dialog->unregisterViewListener (this);
-		frame->setModalView (0);
+		frame->setModalView (nullptr);
 		dialog->forget ();
 	}
 	forget ();
@@ -259,8 +224,7 @@ CView* UIDialogController::verifyView (CView* view, const UIAttributes& attribut
 				size.setHeight (subView->getHeight ());
 				view->setViewSize (size);
 				view->setMouseableArea (size);
-				CViewContainer* container = dynamic_cast<CViewContainer*> (view);
-				if (container)
+				if (auto container = view->asViewContainer ())
 					container->addView (subView);
 			}
 		}
@@ -336,11 +300,10 @@ void UIDialogController::collectOpenGLViews (CViewContainer* container)
 	{
 		COpenGLView* openGLView = dynamic_cast<COpenGLView*>(*it);
 		if (openGLView && openGLView->isVisible ())
-			openglViews.push_back (openGLView);
+			openglViews.emplace_back (openGLView);
 		else
 		{
-			CViewContainer* childContainer = dynamic_cast<CViewContainer*>(*it);
-			if (childContainer)
+			if (auto childContainer = (*it)->asViewContainer ())
 				collectOpenGLViews (childContainer);
 		}
 		it++;

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vstgui-ui-description version="1">
+	<fonts>
+	</fonts>
+	<colors>
+		<color name="background" rgba="#c6c6c6ff"/>
+		<color name="halfwhite" rgba="#ffffff94"/>
+	</colors>
+	<template autosize="left right top bottom " background-color="background" background-color-draw-style="filled and stroked" class="CViewContainer" mouse-enabled="true" name="Window" opacity="1" origin="0, 0" size="300, 300" sub-controller="ViewCreator" transparent="false" wants-focus="false">
+		<view autosize="left right top " background-offset="0, 0" class="CSegmentButton" control-tag="ViewSelector" default-value="0.5" font="~ NormalFont" frame-color="~ BlackCColor" frame-width="1" gradient="Default TextButton Gradient" gradient-highlighted="Default TextButton Gradient Highlighted" icon-text-margin="0" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="10, 10" round-radius="5" segment-names="Lines/Rects,Paths" size="280, 20" style="horizontal" text-alignment="center" text-color="~ BlackCColor" text-color-highlighted="~ WhiteCColor" transparent="false" wants-focus="true" wheel-inc-value="0.1"/>
+		<view animation-style="fade" animation-time="80" autosize="left right top bottom " background-color="~ BlackCColor" background-color-draw-style="stroked" class="UIViewSwitchContainer" mouse-enabled="true" opacity="1" origin="10, 40" size="280, 250" template-names="Rects,Paths" template-switch-control="ViewSelector" transparent="false" wants-focus="false">
+			<view auto-drag-scrolling="false" auto-hide-scrollbars="false" autosize="left right top bottom " background-color="halfwhite" background-color-draw-style="filled" bordered="true" class="CScrollView" container-size="500, 500" follow-focus-view="false" horizontal-scrollbar="true" mouse-enabled="true" opacity="1" origin="0, 0" overlay-scrollbars="false" scrollbar-background-color="#ffffffc8" scrollbar-frame-color="~ BlackCColor" scrollbar-scroller-color="~ BlueCColor" scrollbar-width="16" size="280, 250" template="Rects" transparent="false" vertical-scrollbar="true" wants-focus="false"/>
+		</view>
+	</template>
+	<custom>
+		<attributes name="UIDescFilePath" path="/Users/scheffle/Source/VST3/vstgui/vstgui/tests/gfxtest/resource/DrawDeviceTests.uidesc"/>
+		<attributes Size="10, 10" name="UIGridController"/>
+		<attributes SelectedTemplate="Window" name="UITemplateController"/>
+		<attributes EditViewScale="1" EditorSize="0, 0, 673, 618" SplitViewSize_0_0="0.7822445561139028669117578829172998666763" SplitViewSize_0_1="0.1842546063651591403687035608527367003262" SplitViewSize_1_0="0.4958123953098827474406107285176403820515" SplitViewSize_1_1="0.4958123953098827474406107285176403820515" SplitViewSize_2_0="0.6196136701337295882296984927961602807045" SplitViewSize_2_1="0.3729569093610698438112649455433711409569" TabSwitchValue="2" Version="1" name="UIEditController"/>
+		<attributes name="UIAttributesController"/>
+		<attributes SelectedRow="27" name="UIViewCreatorDataSource"/>
+		<attributes SelectedRow="-1" name="UIGradientsDataSource"/>
+		<attributes SelectedRow="-1" name="UIBitmapsDataSource"/>
+		<attributes SelectedRow="0" name="UIColorsDataSource"/>
+		<attributes SelectedRow="-1" name="UITagsDataSource"/>
+	</custom>
+	<variables/>
+	<bitmaps/>
+	<control-tags>
+		<control-tag name="ViewSelector" tag="0"/>
+	</control-tags>
+	<gradients>
+		<gradient name="Default TextButton Gradient">
+			<color-stop rgba="#dcdcdcff" start="0"/>
+			<color-stop rgba="#b4b4b4ff" start="1"/>
+		</gradient>
+		<gradient name="Default TextButton Gradient Highlighted">
+			<color-stop rgba="#b4b4b4ff" start="0"/>
+			<color-stop rgba="#646464ff" start="1"/>
+		</gradient>
+	</gradients>
+	<template auto-drag-scrolling="false" auto-hide-scrollbars="false" autosize="left right top bottom " background-color="halfwhite" background-color-draw-style="filled" bordered="true" class="CScrollView" container-size="500, 500" follow-focus-view="false" horizontal-scrollbar="true" mouse-enabled="true" name="Rects" opacity="1" origin="0, 0" overlay-scrollbars="false" scrollbar-background-color="#ffffffc8" scrollbar-frame-color="~ BlackCColor" scrollbar-scroller-color="~ BlueCColor" scrollbar-width="16" size="400, 400" transparent="false" vertical-scrollbar="true" wants-focus="false">
+		<view class="CView" custom-view-name="RectsView" mouse-enabled="true" opacity="1" origin="0, 0" size="500, 500" transparent="false" wants-focus="false"/>
+	</template>
+	<template auto-drag-scrolling="false" auto-hide-scrollbars="false" autosize="left right top bottom " background-color="~ GreenCColor" background-color-draw-style="filled and stroked" bordered="true" class="CScrollView" container-size="200, 200" follow-focus-view="false" horizontal-scrollbar="true" mouse-enabled="true" name="Paths" opacity="1" origin="0, 0" overlay-scrollbars="false" scrollbar-background-color="#ffffffc8" scrollbar-frame-color="~ BlackCColor" scrollbar-scroller-color="~ BlueCColor" scrollbar-width="16" size="400, 400" transparent="false" vertical-scrollbar="true" wants-focus="false">
+		<view class="CView" custom-view-name="PathsView" mouse-enabled="true" opacity="1" origin="0, 0" size="20, 20" transparent="false" wants-focus="false"/>
+	</template>
+</vstgui-ui-description>

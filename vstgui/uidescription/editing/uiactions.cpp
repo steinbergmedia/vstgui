@@ -1,36 +1,6 @@
-//-----------------------------------------------------------------------------
-// VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework not only for VST plugins :
-//
-// Version 4.3
-//
-//-----------------------------------------------------------------------------
-// VSTGUI LICENSE
-// (c) 2015, Steinberg Media Technologies, All Rights Reserved
-//-----------------------------------------------------------------------------
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
-//
-//   * Redistributions of source code must retain the above copyright notice,
-//     this list of conditions and the following disclaimer.
-//   * Redistributions in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation
-//     and/or other materials provided with the distribution.
-//   * Neither the name of the Steinberg Media Technologies nor the names of its
-//     contributors may be used to endorse or promote products derived from this
-//     software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-// ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
-// IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
-// INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
-// BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
-// OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE  OF THIS SOFTWARE, EVEN IF ADVISED
-// OF THE POSSIBILITY OF SUCH DAMAGE.
-//-----------------------------------------------------------------------------
+// This file is part of VSTGUI. It is subject to the license terms
+// in the LICENSE file found in the top-level directory of this
+// distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "uiactions.h"
 
@@ -41,6 +11,7 @@
 #include "../uidescription.h"
 #include "../uiattributes.h"
 #include "../../lib/cgraphicspath.h"
+#include "../../lib/cbitmap.h"
 #include "../detail/uiviewcreatorattributes.h"
 
 namespace VSTGUI {
@@ -51,14 +22,8 @@ namespace VSTGUI {
 SizeToFitOperation::SizeToFitOperation (UISelection* selection)
 : BaseSelectionOperation<std::pair<SharedPointer<CView>, CRect> > (selection)
 {
-	FOREACH_IN_SELECTION(selection, view)
-		push_back (std::make_pair (view, view->getViewSize ()));
-	FOREACH_IN_SELECTION_END
-}
-
-//----------------------------------------------------------------------------------------------------
-SizeToFitOperation::~SizeToFitOperation ()
-{
+	for (auto view : *selection)
+		emplace_back (view, view->getViewSize ());
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -71,13 +36,11 @@ UTF8StringPtr SizeToFitOperation::getName ()
 void SizeToFitOperation::perform ()
 {
 	selection->changed (UISelection::kMsgSelectionViewWillChange);
-	const_iterator it = begin ();
-	while (it != end ())
+	for (auto& element : *this)
 	{
-		(*it).first->invalid ();
-		(*it).first->sizeToFit ();
-		(*it).first->invalid ();
-		it++;
+		element.first->invalid ();
+		element.first->sizeToFit ();
+		element.first->invalid ();
 	}
 	selection->changed (UISelection::kMsgSelectionViewChanged);
 }
@@ -86,14 +49,12 @@ void SizeToFitOperation::perform ()
 void SizeToFitOperation::undo ()
 {
 	selection->changed (UISelection::kMsgSelectionViewWillChange);
-	const_iterator it = begin ();
-	while (it != end ())
+	for (auto& element : *this)
 	{
-		(*it).first->invalid ();
-		(*it).first->setViewSize ((*it).second);
-		(*it).first->setMouseableArea ((*it).second);
-		(*it).first->invalid ();
-		it++;
+		element.first->invalid ();
+		element.first->setViewSize (element.second);
+		element.first->setMouseableArea (element.second);
+		element.first->invalid ();
 	}
 	selection->changed (UISelection::kMsgSelectionViewChanged);
 }
@@ -105,14 +66,9 @@ UnembedViewOperation::UnembedViewOperation (UISelection* selection, const IViewF
 : BaseSelectionOperation<SharedPointer<CView> > (selection)
 , factory (factory)
 {
-	containerView = dynamic_cast<CViewContainer*> (selection->first ());
+	containerView = selection->first ()->asViewContainer ();
 	collectSubviews (containerView, true);
-	parent = dynamic_cast<CViewContainer*> (containerView->getParentView ());
-}
-
-//----------------------------------------------------------------------------------------------------
-UnembedViewOperation::~UnembedViewOperation ()
-{
+	parent = containerView->getParentView ()->asViewContainer ();
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -123,12 +79,11 @@ void UnembedViewOperation::collectSubviews (CViewContainer* container, bool deep
 	{
 		if (factory->getViewName (*it))
 		{
-			push_back (*it);
+			emplace_back (*it);
 		}
 		else if (deep)
 		{
-			CViewContainer* c = dynamic_cast<CViewContainer*>(*it);
-			if (c)
+			if (auto c = (*it)->asViewContainer ())
 				collectSubviews (c, false);
 		}
 		++it;
@@ -169,10 +124,8 @@ void UnembedViewOperation::perform ()
 void UnembedViewOperation::undo ()
 {
 	CRect containerViewSize = containerView->getViewSize ();
-	const_iterator it = begin ();
-	while (it != end ())
+	for (auto& view : *this)
 	{
-		CView* view = (*it);
 		parent->removeView (view, false);
 		CRect viewSize = view->getViewSize ();
 		CRect mouseSize = view->getMouseableArea ();
@@ -181,7 +134,6 @@ void UnembedViewOperation::undo ()
 		view->setViewSize (viewSize);
 		view->setMouseableArea (mouseSize);
 		containerView->addView (view);
-		it++;
 	}
 	parent->addView (containerView);
 	selection->setExclusive (containerView);
@@ -190,21 +142,21 @@ void UnembedViewOperation::undo ()
 //-----------------------------------------------------------------------------
 EmbedViewOperation::EmbedViewOperation (UISelection* selection, CViewContainer* newContainer)
 : BaseSelectionOperation<std::pair<SharedPointer<CView>, CRect> > (selection)
-, newContainer (newContainer)
+, newContainer (owned (newContainer))
 {
-	parent = dynamic_cast<CViewContainer*> (selection->first ()->getParentView ());
-	FOREACH_IN_SELECTION(selection, view)
+	parent = selection->first ()->getParentView ()->asViewContainer ();
+	for (auto view : *selection)
+	{
 		if (view->getParentView () == parent)
 		{
-			push_back (std::make_pair (view, view->getViewSize ()));
+			emplace_back (view, view->getViewSize ());
 		}
-	FOREACH_IN_SELECTION_END
+	}
 
 	CRect r = selection->first ()->getViewSize ();
-	const_iterator it = begin ();
-	while (it != end ())
+	for (auto& element : *this)
 	{
-		CView* view = (*it).first;
+		CView* view = element.first;
 		CRect viewSize = view->getViewSize ();
 		if (viewSize.left < r.left)
 			r.left = viewSize.left;
@@ -214,16 +166,10 @@ EmbedViewOperation::EmbedViewOperation (UISelection* selection, CViewContainer* 
 			r.top = viewSize.top;
 		if (viewSize.bottom > r.bottom)
 			r.bottom = viewSize.bottom;
-		it++;
 	}
 	r.extend (10, 10);
 	newContainer->setViewSize (r);
 	newContainer->setMouseableArea (r);
-}
-
-//-----------------------------------------------------------------------------
-EmbedViewOperation::~EmbedViewOperation ()
-{
 }
 
 //-----------------------------------------------------------------------------
@@ -236,17 +182,15 @@ UTF8StringPtr EmbedViewOperation::getName ()
 void EmbedViewOperation::perform ()
 {
 	CRect parentRect = newContainer->getViewSize ();
-	const_iterator it = begin ();
-	while (it != end ())
+	for (auto& element : *this)
 	{
-		CView* view = (*it).first;
+		CView* view = element.first;
 		parent->removeView (view, false);
 		CRect r = view->getViewSize ();
 		r.offset (-parentRect.left, -parentRect.top);
 		view->setViewSize (r);
 		view->setMouseableArea (r);
 		newContainer->addView (view);
-		it++;
 	}
 	parent->addView (newContainer);
 	newContainer->remember ();
@@ -282,7 +226,8 @@ ViewCopyOperation::ViewCopyOperation (UISelection* copySelection, UISelection* w
 , workingSelection (workingSelection)
 {
 	CRect selectionBounds = copySelection->getBounds ();
-	FOREACH_IN_SELECTION(copySelection, view)
+	for (auto view : *copySelection)
+	{
 		if (!copySelection->containsParent (view))
 		{
 			CRect viewSize = UISelection::getGlobalViewCoordinates (view);
@@ -292,18 +237,12 @@ ViewCopyOperation::ViewCopyOperation (UISelection* copySelection, UISelection* w
 
 			view->setViewSize (newSize);
 			view->setMouseableArea (newSize);
-			push_back (view);
+			emplace_back (view);
 		}
-	FOREACH_IN_SELECTION_END
+	}
 
-	FOREACH_IN_SELECTION(workingSelection, view)
-		oldSelectedViews.push_back (view);
-	FOREACH_IN_SELECTION_END
-}
-
-//-----------------------------------------------------------------------------
-ViewCopyOperation::~ViewCopyOperation ()
-{
+	for (auto view : *workingSelection)
+		oldSelectedViews.emplace_back (view);
 }
 
 //-----------------------------------------------------------------------------
@@ -318,14 +257,12 @@ UTF8StringPtr ViewCopyOperation::getName ()
 void ViewCopyOperation::perform ()
 {
 	workingSelection->empty ();
-	const_iterator it = begin ();
-	while (it != end ())
+	for (auto& view : *this)
 	{
-		parent->addView (*it);
-		(*it)->remember ();
-		(*it)->invalid ();
-		workingSelection->add (*it);
-		it++;
+		parent->addView (view);
+		(view)->remember ();
+		(view)->invalid ();
+		workingSelection->add (view);
 	}
 }
 
@@ -333,19 +270,15 @@ void ViewCopyOperation::perform ()
 void ViewCopyOperation::undo ()
 {
 	workingSelection->empty ();
-	const_iterator it = begin ();
-	while (it != end ())
+	for (auto& view : *this)
 	{
-		(*it)->invalid ();
-		parent->removeView (*it, true);
-		it++;
+		view->invalid ();
+		parent->removeView (view, true);
 	}
-	it = oldSelectedViews.begin ();
-	while (it != oldSelectedViews.end ())
+	for (auto& view : oldSelectedViews)
 	{
-		workingSelection->add (*it);
-		(*it)->invalid ();
-		it++;
+		workingSelection->add (view);
+		view->invalid ();
 	}
 }
 
@@ -358,14 +291,8 @@ ViewSizeChangeOperation::ViewSizeChangeOperation (UISelection* selection, bool s
 , sizing (sizing)
 , autosizing (autosizingEnabled)
 {
-	FOREACH_IN_SELECTION(selection, view)
-		push_back (std::make_pair (view, view->getViewSize ()));
-	FOREACH_IN_SELECTION_END
-}
-
-//-----------------------------------------------------------------------------
-ViewSizeChangeOperation::~ViewSizeChangeOperation ()
-{
+	for (auto view : *selection)
+		emplace_back (view, view->getViewSize ());
 }
 
 //-----------------------------------------------------------------------------
@@ -391,18 +318,17 @@ void ViewSizeChangeOperation::perform ()
 void ViewSizeChangeOperation::undo ()
 {
 	selection->empty ();
-	iterator it = begin ();
-	while (it != end ())
+	for (auto& element : *this)
 	{
-		CView* view = (*it).first;
-		CRect size ((*it).second);
+		CView* view = element.first;
+		CRect size (element.second);
 		view->invalid ();
-		(*it).second = view->getViewSize ();
-		CViewContainer* container = 0;
+		element.second = view->getViewSize ();
+		CViewContainer* container = nullptr;
 		bool oldAutosizing = false;
 		if (!autosizing)
 		{
-			container = dynamic_cast<CViewContainer*> (view);
+			container = view->asViewContainer ();
 			if (container)
 			{
 				oldAutosizing = container->getAutosizingEnabled ();
@@ -417,8 +343,19 @@ void ViewSizeChangeOperation::undo ()
 		{
 			container->setAutosizingEnabled (oldAutosizing);
 		}
-		it++;
 	}
+}
+
+//-----------------------------------------------------------------------------
+bool ViewSizeChangeOperation::didChange ()
+{
+	auto result = false;
+	for (auto& element : *this)
+	{
+		if (element.second != element.first->getViewSize ())
+			result = true;
+	}
+	return result;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -427,11 +364,12 @@ void ViewSizeChangeOperation::undo ()
 DeleteOperation::DeleteOperation (UISelection* selection)
 : selection (selection)
 {
-	FOREACH_IN_SELECTION(selection, view)
-		CViewContainer* container = dynamic_cast<CViewContainer*> (view->getParentView ());
-		if (dynamic_cast<UIEditView*>(container) == 0)
+	for (auto view : *selection)
+	{
+		CViewContainer* container = view->getParentView ()->asViewContainer ();
+		if (dynamic_cast<UIEditView*>(container) == nullptr)
 		{
-			CView* nextView = 0;
+			CView* nextView = nullptr;
 			ViewIterator it (container);
 			while (*it)
 			{
@@ -442,14 +380,9 @@ DeleteOperation::DeleteOperation (UISelection* selection)
 				}
 				++it;
 			}
-			insert (std::make_pair (container, new DeleteOperationViewAndNext (view, nextView)));
+			insert (std::make_pair (container, DeleteOperationViewAndNext (view, nextView)));
 		}
-	FOREACH_IN_SELECTION_END
-}
-
-//----------------------------------------------------------------------------------------------------
-DeleteOperation::~DeleteOperation ()
-{
+	}
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -464,12 +397,8 @@ UTF8StringPtr DeleteOperation::getName ()
 void DeleteOperation::perform ()
 {
 	selection->empty ();
-	const_iterator it = begin ();
-	while (it != end ())
-	{
-		(*it).first->removeView ((*it).second->view);
-		it++;
-	}
+	for (auto& element : *this)
+		element.first->removeView (element.second.view);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -477,16 +406,14 @@ void DeleteOperation::undo ()
 {
 	selection->empty ();
 	IDependency::DeferChanges dc (selection);
-	const_iterator it = begin ();
-	while (it != end ())
+	for (auto& element : *this)
 	{
-		if ((*it).second->nextView)
-			(*it).first->addView ((*it).second->view, (*it).second->nextView);
+		if (element.second.nextView)
+			element.first->addView (element.second.view, element.second.nextView);
 		else
-			(*it).first->addView ((*it).second->view);
-		(*it).second->view->remember ();
-		selection->add ((*it).second->view);
-		it++;
+			element.first->addView (element.second.view);
+		element.second.view->remember ();
+		selection->add (element.second.view);
 	}
 }
 
@@ -497,11 +424,6 @@ InsertViewOperation::InsertViewOperation (CViewContainer* parent, CView* view, U
 : parent (parent)
 , view (view)
 , selection (selection)
-{
-}
-
-//-----------------------------------------------------------------------------
-InsertViewOperation::~InsertViewOperation ()
 {
 }
 
@@ -532,9 +454,9 @@ void InsertViewOperation::undo ()
 //-----------------------------------------------------------------------------
 TransformViewTypeOperation::TransformViewTypeOperation (UISelection* selection, IdStringPtr viewClassName, UIDescription* desc, const UIViewFactory* factory)
 : view (selection->first ())
-, newView (0)
-, beforeView (0)
-, parent (dynamic_cast<CViewContainer*> (view->getParentView ()))
+, newView (nullptr)
+, beforeView (nullptr)
+, parent (view->getParentView ()->asViewContainer ())
 , selection (selection)
 , factory (factory)
 , description (desc)
@@ -583,18 +505,18 @@ void TransformViewTypeOperation::exchangeSubViews (CViewContainer* src, CViewCon
 			CView* childView = *it;
 			if (factory->getViewName (childView))
 			{
-				temp.push_back (childView);
+				temp.emplace_back (childView);
 			}
-			else if (CViewContainer* container = dynamic_cast<CViewContainer*>(childView))
+			else if (auto container = childView->asViewContainer ())
 			{
 				exchangeSubViews (container, dst);
 			}
 			++it;
 		}
-		for (std::list<CView*>::const_iterator it = temp.begin (); it != temp.end (); it++)
+		for (auto& view : temp)
 		{
-			src->removeView (*it, false);
-			dst->addView (*it);
+			src->removeView (view, false);
+			dst->addView (view);
 		}
 	}
 }
@@ -610,7 +532,7 @@ void TransformViewTypeOperation::perform ()
 			parent->addView (newView, beforeView);
 		else
 			parent->addView (newView);
-		exchangeSubViews (view.cast<CViewContainer> (), dynamic_cast<CViewContainer*> (newView));
+		exchangeSubViews (view->asViewContainer (), newView->asViewContainer ());
 		selection->setExclusive (newView);
 	}
 }
@@ -626,7 +548,7 @@ void TransformViewTypeOperation::undo ()
 			parent->addView (view, beforeView);
 		else
 			parent->addView (view);
-		exchangeSubViews (dynamic_cast<CViewContainer*> (newView), view.cast<CViewContainer> ());
+		exchangeSubViews (newView->asViewContainer (), view->asViewContainer ());
 		selection->setExclusive (view);
 	}
 }
@@ -636,22 +558,18 @@ void TransformViewTypeOperation::undo ()
 //-----------------------------------------------------------------------------
 AttributeChangeAction::AttributeChangeAction (UIDescription* desc, UISelection* selection, const std::string& attrName, const std::string& attrValue)
 : desc (desc)
+, selection (selection)
 , attrName (attrName)
 , attrValue (attrValue)
-, selection (selection)
 {
 	const UIViewFactory* viewFactory = dynamic_cast<const UIViewFactory*> (desc->getViewFactory ());
 	std::string attrOldValue;
-	FOREACH_IN_SELECTION(selection, view)
+	for (auto view : *selection)
+	{
 		viewFactory->getAttributeValue (view, attrName, attrOldValue, desc);
 		insert (std::make_pair (view, attrOldValue));
-	FOREACH_IN_SELECTION_END
+	}
 	name = "'" + attrName + "' change";
-}
-
-//-----------------------------------------------------------------------------
-AttributeChangeAction::~AttributeChangeAction ()
-{
 }
 
 //-----------------------------------------------------------------------------
@@ -663,14 +581,14 @@ UTF8StringPtr AttributeChangeAction::getName ()
 //-----------------------------------------------------------------------------
 void AttributeChangeAction::updateSelection ()
 {
-	for (const_iterator it = begin (); it != end (); it++)
+	for (auto& element : *this)
 	{
-		if (selection->contains ((*it).first) == false)
+		if (selection->contains (element.first) == false)
 		{
 			IDependency::DeferChanges dc (selection);
 			selection->empty ();
-			for (const_iterator it2 = begin (); it2 != end (); it2++)
-				selection->add ((*it2).first);
+			for (auto& it2 : *this)
+				selection->add (it2.first);
 			break;
 		}
 	}
@@ -683,13 +601,11 @@ void AttributeChangeAction::perform ()
 	UIAttributes attr;
 	attr.setAttribute (attrName, attrValue);
 	selection->changed (UISelection::kMsgSelectionViewWillChange);
-	const_iterator it = begin ();
-	while (it != end ())
+	for (auto& element : *this)
 	{
-		(*it).first->invalid ();	// we need to invalid before changing anything as the size may change
-		viewFactory->applyAttributeValues ((*it).first, attr, desc);
-		(*it).first->invalid ();	// and afterwards also
-		it++;
+		element.first->invalid ();	// we need to invalid before changing anything as the size may change
+		viewFactory->applyAttributeValues (element.first, attr, desc);
+		element.first->invalid ();	// and afterwards also
 	}
 	selection->changed (UISelection::kMsgSelectionViewChanged);
 	updateSelection ();
@@ -700,15 +616,13 @@ void AttributeChangeAction::undo ()
 {
 	const IViewFactory* viewFactory = desc->getViewFactory ();
 	selection->changed (UISelection::kMsgSelectionViewWillChange);
-	const_iterator it = begin ();
-	while (it != end ())
+	for (auto& element : *this)
 	{
 		UIAttributes attr;
-		attr.setAttribute (attrName, (*it).second);
-		(*it).first->invalid ();	// we need to invalid before changing anything as the size may change
-		viewFactory->applyAttributeValues ((*it).first, attr, desc);
-		(*it).first->invalid ();	// and afterwards also
-		it++;
+		attr.setAttribute (attrName, element.second);
+		element.first->invalid ();	// we need to invalid before changing anything as the size may change
+		viewFactory->applyAttributeValues (element.first, attr, desc);
+		element.first->invalid ();	// and afterwards also
 	}
 	selection->changed (UISelection::kMsgSelectionViewChanged);
 	updateSelection ();
@@ -723,8 +637,8 @@ MultipleAttributeChangeAction::MultipleAttributeChangeAction (UIDescription* des
 , newValue (newValue)
 {
 	const UIViewFactory* viewFactory = dynamic_cast<const UIViewFactory*>(description->getViewFactory ());
-	for (std::list<CView*>::const_iterator it = views.begin (); it != views.end (); it++)
-		collectViewsWithAttributeValue (viewFactory, description, *it, attrType, oldValue);
+	for (auto& view : views)
+		collectViewsWithAttributeValue (viewFactory, description, view, attrType, oldValue);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -732,40 +646,34 @@ void MultipleAttributeChangeAction::collectViewsWithAttributeValue (const UIView
 {
 	std::list<CView*> views;
 	collectAllSubViews (startView, views);
-	std::list<CView*>::iterator it = views.begin ();
-	while (it != views.end ())
+	for (auto& view : views)
 	{
-		CView* view = (*it);
 		std::list<std::string> attrNames;
 		if (viewFactory->getAttributeNamesForView (view, attrNames))
 		{
-			std::list<std::string>::iterator namesIt = attrNames.begin ();
-			while (namesIt != attrNames.end ())
+			for (auto& attrName : attrNames)
 			{
-				if (viewFactory->getAttributeType (view, (*namesIt)) == type)
+				if (viewFactory->getAttributeType (view, attrName) == type)
 				{
 					std::string typeValue;
-					if (viewFactory->getAttributeValue (view, (*namesIt), typeValue, desc))
+					if (viewFactory->getAttributeValue (view, attrName, typeValue, desc))
 					{
 						if (typeValue == value)
 						{
-							push_back (std::make_pair (view, (*namesIt)));
+							emplace_back (view, attrName);
 						}
 					}
 				}
-				namesIt++;
 			}
 		}
-		it++;
 	}
 }
 
 //----------------------------------------------------------------------------------------------------
 void MultipleAttributeChangeAction::collectAllSubViews (CView* view, std::list<CView*>& views)
 {
-	views.push_back (view);
-	CViewContainer* container = dynamic_cast<CViewContainer*> (view);
-	if (container)
+	views.emplace_back (view);
+	if (auto container = view->asViewContainer ())
 	{
 		ViewIterator it (container);
 		while (*it)
@@ -780,15 +688,13 @@ void MultipleAttributeChangeAction::collectAllSubViews (CView* view, std::list<C
 void MultipleAttributeChangeAction::setAttributeValue (UTF8StringPtr value)
 {
 	const IViewFactory* viewFactory = description->getViewFactory ();
-	const_iterator it = begin ();
-	while (it != end ())
+	for (auto& element : *this)
 	{
-		CView* view = (*it).first;
+		CView* view = element.first;
 		UIAttributes newAttr;
-		newAttr.setAttribute ((*it).second, value);
+		newAttr.setAttribute (element.second, value);
 		viewFactory->applyAttributeValues (view, newAttr, description);
 		view->invalid ();
-		it++;
 	}
 }
 
@@ -848,7 +754,7 @@ void TagChangeAction::undo ()
 		if (isNewTag)
 			description->removeTag (name.c_str ());
 		else
-			description->changeControlTagString (name.c_str (), originalTag);
+			description->changeControlTagString (name.c_str (), originalTag, remove);
 	}
 }
 
@@ -1044,8 +950,8 @@ void BitmapNameChangeAction::undo ()
 NinePartTiledBitmapChangeAction::NinePartTiledBitmapChangeAction (UIDescription* description, UTF8StringPtr name, const CRect* rect, bool performOrUndo)
 : description (description)
 , name (name)
-, oldRect (0)
-, newRect (0)
+, oldRect (nullptr)
+, newRect (nullptr)
 , performOrUndo (performOrUndo)
 {
 	if (rect)
@@ -1113,11 +1019,6 @@ BitmapFilterChangeAction::BitmapFilterChangeAction (UIDescription* description, 
 , performOrUndo (performOrUndo)
 {
 	description->collectBitmapFilters (bitmapName, oldAttributes);
-}
-
-//----------------------------------------------------------------------------------------------------
-BitmapFilterChangeAction::~BitmapFilterChangeAction ()
-{
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -1341,16 +1242,11 @@ void AlternateFontChangeAction::undo ()
 //----------------------------------------------------------------------------------------------------
 HierarchyMoveViewOperation::HierarchyMoveViewOperation (CView* view, UISelection* selection, bool up)
 : view (view)
-, parent (0)
+, parent (nullptr)
 , selection (selection)
 , up (up)
 {
-	parent = dynamic_cast<CViewContainer*> (view->getParentView ());
-}
-
-//----------------------------------------------------------------------------------------------------
-HierarchyMoveViewOperation::~HierarchyMoveViewOperation ()
-{
+	parent = view->getParentView ()->asViewContainer ();
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -1440,7 +1336,7 @@ void CreateNewTemplateAction::perform ()
 	attr->setAttribute (UIViewCreator::kAttrClass, baseViewClassName);
 	attr->setAttribute ("size", "400,400");
 	description->addNewTemplate (name.c_str (), attr);
-	if (view == 0)
+	if (view == nullptr)
 		view = description->createView (name.c_str (), description->getController ());
 	actionPerformer->onTemplateCreation (name.c_str (), view);
 }
@@ -1473,7 +1369,7 @@ void DuplicateTemplateAction::perform ()
 {
 	IDependency::DeferChanges dc (description);
 	description->duplicateTemplate (name.c_str (), dupName.c_str ());
-	if (view == 0)
+	if (view == nullptr)
 		view = description->createView (dupName.c_str (), description->getController ());
 	actionPerformer->onTemplateCreation (dupName.c_str (), view);
 }

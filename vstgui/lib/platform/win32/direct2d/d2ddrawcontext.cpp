@@ -1,36 +1,6 @@
-//-----------------------------------------------------------------------------
-// VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins
-//
-// Version 4.3
-//
-//-----------------------------------------------------------------------------
-// VSTGUI LICENSE
-// (c) 2015, Steinberg Media Technologies, All Rights Reserved
-//-----------------------------------------------------------------------------
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
-// 
-//   * Redistributions of source code must retain the above copyright notice, 
-//     this list of conditions and the following disclaimer.
-//   * Redistributions in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation 
-//     and/or other materials provided with the distribution.
-//   * Neither the name of the Steinberg Media Technologies nor the names of its
-//     contributors may be used to endorse or promote products derived from this 
-//     software without specific prior written permission.
-// 
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-// ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
-// IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
-// INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
-// BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
-// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
-// OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE  OF THIS SOFTWARE, EVEN IF ADVISED
-// OF THE POSSIBILITY OF SUCH DAMAGE.
-//-----------------------------------------------------------------------------
+// This file is part of VSTGUI. It is subject to the license terms 
+// in the LICENSE file found in the top-level directory of this
+// distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "d2ddrawcontext.h"
 
@@ -60,48 +30,74 @@ void useD2DHardwareRenderer (bool state)
 D2DDrawContext::D2DApplyClip::D2DApplyClip (D2DDrawContext* drawContext, bool halfPointOffset)
 : drawContext (drawContext)
 {
-	if (drawContext->currentClip != drawContext->currentState.clipRect)
+	CGraphicsTransform transform = drawContext->getCurrentTransform ();
+	auto scale = drawContext->getScaleFactor ();
+	transform.scale (scale, scale);
+	if (halfPointOffset)
 	{
-		CRect clip = drawContext->currentState.clipRect;
-		if (drawContext->getDrawMode ().integralMode ())
-			clip.makeIntegral ();
+		CPoint offset (0.5, 0.5);
+		transform.translate (offset);
+	}
+	if (transform.m12 != 0. || transform.m21 != 0.)
+	{ // we have a rotated matrix, we need to use a layer
+		layerIsUsed = true;
 		if (drawContext->currentClip.isEmpty () == false)
 			drawContext->getRenderTarget ()->PopAxisAlignedClip ();
-		if (clip.isEmpty () == false)
-			drawContext->getRenderTarget ()->PushAxisAlignedClip (makeD2DRect (clip), D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
-		drawContext->currentClip = applyClip = clip;
+
+		ID2D1RectangleGeometry* geometry;
+		if (FAILED (getD2DFactory ()->CreateRectangleGeometry (makeD2DRect (drawContext->currentState.clipRect), &geometry)))
+			return;
+		auto d2dMatrix = convert (transform);
+		drawContext->getRenderTarget ()->PushLayer (
+		    D2D1::LayerParameters (D2D1::InfiniteRect (), geometry,
+		                           D2D1_ANTIALIAS_MODE_ALIASED),
+		    nullptr);
+		drawContext->getRenderTarget ()->SetTransform (convert (transform));
+		geometry->Release ();
+		applyClip = drawContext->currentState.clipRect;
+		drawContext->currentClip = {};
 	}
 	else
 	{
-		applyClip = drawContext->currentClip;
-	}
-
-	if (drawContext->getCurrentTransform ().isInvariant () == false)
-	{
-		CGraphicsTransform transform = drawContext->getCurrentTransform ();
-		if (halfPointOffset)
-			transform.translate (0.5, 0.5);
+		if (drawContext->currentClip != drawContext->currentState.clipRect)
+		{
+			CRect clip = drawContext->currentState.clipRect;
+			if (drawContext->currentClip.isEmpty () == false)
+				drawContext->getRenderTarget ()->PopAxisAlignedClip ();
+			if (clip.isEmpty () == false)
+				drawContext->getRenderTarget ()->PushAxisAlignedClip (makeD2DRect (clip), D2D1_ANTIALIAS_MODE_ALIASED);
+			drawContext->currentClip = applyClip = clip;
+		}
+		else
+		{
+			applyClip = drawContext->currentClip;
+		}
 		drawContext->getRenderTarget ()->SetTransform (convert (transform));
 	}
-	else if (halfPointOffset)
-		drawContext->getRenderTarget ()->SetTransform (D2D1::Matrix3x2F::Translation (0.5f, 0.5f));
 }
 
 //-----------------------------------------------------------------------------
 D2DDrawContext::D2DApplyClip::~D2DApplyClip ()
 {
-	drawContext->getRenderTarget ()->SetTransform (D2D1::Matrix3x2F::Identity ());
+	if (layerIsUsed)
+	{
+		drawContext->getRenderTarget ()->PopLayer ();
+	}
+	auto scale = drawContext->getScaleFactor ();
+	CGraphicsTransform transform;
+	transform.scale (scale, scale);
+	drawContext->getRenderTarget ()->SetTransform (convert (transform));
 }
 
 //-----------------------------------------------------------------------------
 D2DDrawContext::D2DDrawContext (HWND window, const CRect& drawSurface)
 : COffscreenContext (drawSurface)
 , window (window)
-, renderTarget (0)
-, fillBrush (0)
-, strokeBrush (0)
-, fontBrush (0)
-, strokeStyle (0)
+, renderTarget (nullptr)
+, fillBrush (nullptr)
+, strokeBrush (nullptr)
+, fontBrush (nullptr)
+, strokeStyle (nullptr)
 {
 	createRenderTarget ();
 }
@@ -109,12 +105,13 @@ D2DDrawContext::D2DDrawContext (HWND window, const CRect& drawSurface)
 //-----------------------------------------------------------------------------
 D2DDrawContext::D2DDrawContext (D2DBitmap* inBitmap)
 : COffscreenContext (new CBitmap (inBitmap))
-, window (0)
-, renderTarget (0)
-, fillBrush (0)
-, strokeBrush (0)
-, fontBrush (0)
-, strokeStyle (0)
+, window (nullptr)
+, renderTarget (nullptr)
+, fillBrush (nullptr)
+, strokeBrush (nullptr)
+, fontBrush (nullptr)
+, strokeStyle (nullptr)
+, scaleFactor (inBitmap->getScaleFactor ())
 {
 	createRenderTarget ();
 	bitmap->forget ();
@@ -134,21 +131,19 @@ void D2DDrawContext::createRenderTarget ()
 		RECT rc;
 		GetClientRect (window, &rc);
 
-		D2D1_SIZE_U size = D2D1::SizeU (rc.right - rc.left, rc.bottom - rc.top);
-		ID2D1HwndRenderTarget* hwndRenderTarget = 0;
+		D2D1_SIZE_U size = D2D1::SizeU (static_cast<UINT32> (rc.right - rc.left), static_cast<UINT32> (rc.bottom - rc.top));
+		ID2D1HwndRenderTarget* hwndRenderTarget = nullptr;
 		D2D1_PIXEL_FORMAT pixelFormat = D2D1::PixelFormat (DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_PREMULTIPLIED);
 		HRESULT hr = getD2DFactory ()->CreateHwndRenderTarget (D2D1::RenderTargetProperties (gRenderTargetType, pixelFormat), D2D1::HwndRenderTargetProperties (window, size, D2D1_PRESENT_OPTIONS_RETAIN_CONTENTS), &hwndRenderTarget);
 		if (SUCCEEDED (hr))
 		{
-			UINT dpix = 96;
-			UINT dpiy = 96;
-			hwndRenderTarget->SetDpi (static_cast<FLOAT> (dpix), static_cast<FLOAT> (dpiy));
 			renderTarget = hwndRenderTarget;
+			renderTarget->SetDpi (96, 96);
 		}
 	}
 	else if (bitmap)
 	{
-		D2DBitmap* d2dBitmap = dynamic_cast<D2DBitmap*> (bitmap->getPlatformBitmap ());
+		D2DBitmap* d2dBitmap = dynamic_cast<D2DBitmap*> (bitmap->getPlatformBitmap ().get ());
 		if (d2dBitmap)
 		{
 			D2D1_RENDER_TARGET_TYPE targetType = D2D1_RENDER_TARGET_TYPE_SOFTWARE;
@@ -166,28 +161,28 @@ void D2DDrawContext::releaseRenderTarget ()
 	if (fillBrush)
 	{
 		fillBrush->Release ();
-		fillBrush = 0;
+		fillBrush = nullptr;
 	}
 	if (strokeBrush)
 	{
 		strokeBrush->Release ();
-		strokeBrush = 0;
+		strokeBrush = nullptr;
 	}
 	if (fontBrush)
 	{
 		fontBrush->Release ();
-		fontBrush = 0;
+		fontBrush = nullptr;
 	}
 	if (strokeStyle)
 	{
 		strokeStyle->Release ();
-		strokeStyle = 0;
+		strokeStyle = nullptr;
 	}
 	if (renderTarget)
 	{
 		D2DBitmapCache::instance ()->removeRenderTarget (renderTarget);
 		renderTarget->Release ();
-		renderTarget = 0;
+		renderTarget = nullptr;
 	}
 }
 
@@ -196,8 +191,11 @@ void D2DDrawContext::beginDraw ()
 {
 	if (renderTarget)
 	{
+		auto scale = getScaleFactor ();
+		CGraphicsTransform transform;
+		transform.scale (scale, scale);
 		renderTarget->BeginDraw ();
-		renderTarget->SetTransform (D2D1::Matrix3x2F::Identity ());
+		renderTarget->SetTransform (convert (transform));
  	}
 }
 
@@ -224,7 +222,7 @@ void D2DDrawContext::endDraw ()
 		}
 		if (bitmap)
 		{
-			D2DBitmap* d2dBitmap = dynamic_cast<D2DBitmap*> (bitmap->getPlatformBitmap ());
+			D2DBitmap* d2dBitmap = dynamic_cast<D2DBitmap*> (bitmap->getPlatformBitmap ().get ());
 			D2DBitmapCache::instance ()->removeBitmap (d2dBitmap);
 		}
 	}
@@ -245,26 +243,24 @@ CGraphicsPath* D2DDrawContext::createGraphicsPath ()
 //-----------------------------------------------------------------------------
 CGraphicsPath* D2DDrawContext::createTextPath (const CFontRef font, UTF8StringPtr text)
 {
- 	const D2DFont* ctFont = dynamic_cast<const D2DFont*>(font->getPlatformFont ());
- 	return ctFont ? new D2DGraphicsPath (ctFont, text) : 0;
+ 	auto ctFont = font->getPlatformFont ().cast<const D2DFont> ();
+ 	return ctFont ? new D2DGraphicsPath (ctFont, text) : nullptr;
 }
 
 //-----------------------------------------------------------------------------
 void D2DDrawContext::drawGraphicsPath (CGraphicsPath* _path, PathDrawMode mode, CGraphicsTransform* t)
 {
-	if (renderTarget == 0)
+	if (renderTarget == nullptr)
 		return;
-
-	bool halfPointOffset = (mode == kPathStroked || currentState.drawMode.integralMode ()) ? ((((int32_t)currentState.frameWidth) % 2) != 0) : false;
-	D2DApplyClip ac (this, halfPointOffset);
+	D2DApplyClip ac (this);
 	if (ac.isEmpty ())
 		return;
 
 	D2DGraphicsPath* d2dPath = dynamic_cast<D2DGraphicsPath*> (_path);
-	if (d2dPath == 0)
+	if (d2dPath == nullptr)
 		return;
 
-	ID2D1Geometry* path = d2dPath->createPath (mode == kPathFilledEvenOdd ? D2D1_FILL_MODE_ALTERNATE : D2D1_FILL_MODE_WINDING, currentState.drawMode.integralMode () ? this : 0, t);
+	ID2D1Geometry* path = d2dPath->createPath (mode == kPathFilledEvenOdd ? D2D1_FILL_MODE_ALTERNATE : D2D1_FILL_MODE_WINDING, nullptr, t);
 	if (path)
 	{
 		if (mode == kPathFilled || mode == kPathFilledEvenOdd)
@@ -278,7 +274,7 @@ void D2DDrawContext::drawGraphicsPath (CGraphicsPath* _path, PathDrawMode mode, 
 //-----------------------------------------------------------------------------
 ID2D1GradientStopCollection* D2DDrawContext::createGradientStopCollection (const CGradient& d2dGradient) const
 {
-	ID2D1GradientStopCollection* collection = 0;
+	ID2D1GradientStopCollection* collection = nullptr;
 	D2D1_GRADIENT_STOP* gradientStops = new D2D1_GRADIENT_STOP [d2dGradient.getColorStops ().size ()];
 	uint32_t index = 0;
 	for (CGradient::ColorStopMap::const_iterator it = d2dGradient.getColorStops ().begin (); it != d2dGradient.getColorStops ().end (); ++it, ++index)
@@ -294,26 +290,25 @@ ID2D1GradientStopCollection* D2DDrawContext::createGradientStopCollection (const
 //-----------------------------------------------------------------------------
 void D2DDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradient& gradient, const CPoint& startPoint, const CPoint& endPoint, bool evenOdd, CGraphicsTransform* t)
 {
-	if (renderTarget == 0)
+	if (renderTarget == nullptr)
 		return;
 
-	bool halfPointOffset = currentState.drawMode.integralMode () ? ((((int32_t)currentState.frameWidth) % 2) != 0) : false;
-	D2DApplyClip ac (this, halfPointOffset);
+	D2DApplyClip ac (this, true);
 	if (ac.isEmpty ())
 		return;
 	
 	D2DGraphicsPath* d2dPath = dynamic_cast<D2DGraphicsPath*> (_path);
-	if (d2dPath == 0)
+	if (d2dPath == nullptr)
 		return;
 
-	ID2D1Geometry* path = d2dPath->createPath (evenOdd ? D2D1_FILL_MODE_ALTERNATE : D2D1_FILL_MODE_WINDING, this, t);
+	ID2D1Geometry* path = d2dPath->createPath (evenOdd ? D2D1_FILL_MODE_ALTERNATE : D2D1_FILL_MODE_WINDING, nullptr, t);
 	if (path)
 	{
 
 		ID2D1GradientStopCollection* collection = createGradientStopCollection (gradient);
 		if (collection)
 		{
-			ID2D1LinearGradientBrush* brush = 0;
+			ID2D1LinearGradientBrush* brush = nullptr;
 			D2D1_LINEAR_GRADIENT_BRUSH_PROPERTIES properties;
 			properties.startPoint = makeD2DPoint (startPoint);
 			properties.endPoint = makeD2DPoint (endPoint);
@@ -331,24 +326,24 @@ void D2DDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradient& 
 //-----------------------------------------------------------------------------
 void D2DDrawContext::fillRadialGradient (CGraphicsPath* _path, const CGradient& gradient, const CPoint& center, CCoord radius, const CPoint& originOffset, bool evenOdd, CGraphicsTransform* t)
 {
-	if (renderTarget == 0)
+	if (renderTarget == nullptr)
 		return;
 
-	D2DApplyClip ac (this);
+	D2DApplyClip ac (this, true);
 	if (ac.isEmpty ())
 		return;
 	
 	D2DGraphicsPath* d2dPath = dynamic_cast<D2DGraphicsPath*> (_path);
-	if (d2dPath == 0)
+	if (d2dPath == nullptr)
 		return;
 
 	ID2D1Geometry* path = d2dPath->createPath (evenOdd ? D2D1_FILL_MODE_ALTERNATE : D2D1_FILL_MODE_WINDING);
 	if (path)
 	{
-		ID2D1Geometry* geometry = 0;
+		ID2D1Geometry* geometry = nullptr;
 		if (t)
 		{
-			ID2D1TransformedGeometry* tg = 0;
+			ID2D1TransformedGeometry* tg = nullptr;
 			getD2DFactory ()->CreateTransformedGeometry (path, convert (*t), &tg);
 			geometry = tg;
 		}
@@ -361,7 +356,7 @@ void D2DDrawContext::fillRadialGradient (CGraphicsPath* _path, const CGradient& 
 		if (collection)
 		{
 			// brush properties
-			ID2D1RadialGradientBrush* brush = 0;
+			ID2D1RadialGradientBrush* brush = nullptr;
 			D2D1_RADIAL_GRADIENT_BRUSH_PROPERTIES properties;
 			properties.center = makeD2DPoint (center);
 			properties.gradientOriginOffset = makeD2DPoint (originOffset);
@@ -396,8 +391,9 @@ void D2DDrawContext::clearRect (const CRect& rect)
 //-----------------------------------------------------------------------------
 void D2DDrawContext::drawBitmap (CBitmap* bitmap, const CRect& dest, const CPoint& offset, float alpha)
 {
-	if (renderTarget == 0)
+	if (renderTarget == nullptr)
 		return;
+	ConcatClip concatClip (*this, dest);
 	D2DApplyClip ac (this);
 	if (ac.isEmpty ())
 		return;
@@ -407,7 +403,7 @@ void D2DDrawContext::drawBitmap (CBitmap* bitmap, const CRect& dest, const CPoin
 	if (t.m11 == t.m22 && t.m12 == 0 && t.m21 == 0)
 		transformedScaleFactor *= t.m11;
 	IPlatformBitmap* platformBitmap = bitmap->getBestPlatformBitmapForScaleFactor (transformedScaleFactor);
-	D2DBitmap* d2dBitmap = platformBitmap ? dynamic_cast<D2DBitmap*> (platformBitmap) : 0;
+	D2DBitmap* d2dBitmap = platformBitmap ? dynamic_cast<D2DBitmap*> (platformBitmap) : nullptr;
 	if (d2dBitmap)
 	{
 		if (d2dBitmap->getSource ())
@@ -417,16 +413,17 @@ void D2DDrawContext::drawBitmap (CBitmap* bitmap, const CRect& dest, const CPoin
 			{
 				double bitmapScaleFactor = platformBitmap->getScaleFactor ();
 				CGraphicsTransform bitmapTransform;
-				bitmapTransform.scale (bitmapScaleFactor, bitmapScaleFactor);
-				Transform transform (*this, bitmapTransform.inverse ());
+				bitmapTransform.scale (1./bitmapScaleFactor, 1./bitmapScaleFactor);
+				Transform transform (*this, bitmapTransform);
 
 				CRect d (dest);
+				d.setWidth (bitmap->getWidth ());
+				d.setHeight (bitmap->getHeight ());
+				d.offset (-offset.x, -offset.y);
 				d.makeIntegral ();
-				CRect source (dest);
-				source.offset (-source.left, -source.top);
-				source.offset (offset.x, offset.y);
-
-				bitmapTransform.transform (source);
+				CRect source;
+				source.setWidth (d2d1Bitmap->GetSize ().width);
+				source.setHeight (d2d1Bitmap->GetSize ().height);
 
 				D2D1_RECT_F sourceRect = makeD2DRect (source);
 				renderTarget->DrawBitmap (d2d1Bitmap, makeD2DRect (d), alpha * currentState.globalAlpha, D2D1_BITMAP_INTERPOLATION_MODE_LINEAR, &sourceRect);
@@ -436,41 +433,74 @@ void D2DDrawContext::drawBitmap (CBitmap* bitmap, const CRect& dest, const CPoin
 }
 
 //-----------------------------------------------------------------------------
+void D2DDrawContext::drawLineInternal (CPoint start, CPoint end)
+{
+	renderTarget->DrawLine (makeD2DPoint (start), makeD2DPoint (end), strokeBrush, (FLOAT)currentState.frameWidth, strokeStyle);
+}
+
+//-----------------------------------------------------------------------------
+bool D2DDrawContext::needsHalfPointOffset () const
+{
+	return static_cast<int32_t> (currentState.frameWidth) % 2 != 0;
+}
+
+//-----------------------------------------------------------------------------
 void D2DDrawContext::drawLine (const LinePair& line)
 {
-	if (renderTarget == 0)
+	if (renderTarget == nullptr)
 		return;
-	D2DApplyClip ac (this, (((int32_t)currentState.frameWidth) % 2) != 0);
+	D2DApplyClip ac (this);
 	if (ac.isEmpty ())
 		return;
 	
-	if (renderTarget)
+	CPoint start (line.first);
+	CPoint end (line.second);
+	if (getDrawMode ().integralMode ())
 	{
-		CPoint start (line.first);
-		CPoint end (line.second);
-		if (currentState.drawMode.integralMode ())
-		{
-			pixelAllign (start);
-			pixelAllign (end);
-		}
-
-		renderTarget->DrawLine (makeD2DPoint (start), makeD2DPoint (end), strokeBrush, (FLOAT)currentState.frameWidth, strokeStyle);
+		pixelAllign (start);
+		pixelAllign (end);
 	}
+	if (needsHalfPointOffset ())
+	{
+		start.offset (0.5, 0.5);
+		end.offset (0.5, 0.5);
+	}
+	drawLineInternal (start, end);
 }
 
 //-----------------------------------------------------------------------------
 void D2DDrawContext::drawLines (const LineList& lines)
 {
-	if (lines.size () == 0)
+	if (lines.size () == 0 || renderTarget == nullptr)
 		return;
+	D2DApplyClip ac (this);
+	if (ac.isEmpty ())
+		return;
+
+	bool needsOffset = needsHalfPointOffset ();
+	bool integralMode = getDrawMode ().integralMode ();
 	for (const auto& line : lines)
-		drawLine (line);
+	{
+		CPoint start (line.first);
+		CPoint end (line.second);
+		if (integralMode)
+		{
+			pixelAllign (start);
+			pixelAllign (end);
+		}
+		if (needsOffset)
+		{
+			start.offset (0.5, 0.5);
+			end.offset (0.5, 0.5);
+		}
+		drawLineInternal (start, end);
+	}
 }
 
 //-----------------------------------------------------------------------------
 void D2DDrawContext::drawPolygon (const PointList& polygonPointList, const CDrawStyle drawStyle)
 {
-	if (renderTarget == 0 || polygonPointList.size () == 0)
+	if (renderTarget == nullptr || polygonPointList.size () == 0)
 		return;
 	D2DApplyClip ac (this);
 	if (ac.isEmpty ())
@@ -495,26 +525,27 @@ void D2DDrawContext::drawPolygon (const PointList& polygonPointList, const CDraw
 //-----------------------------------------------------------------------------
 void D2DDrawContext::drawRect (const CRect &_rect, const CDrawStyle drawStyle)
 {
-	if (renderTarget == 0)
+	if (renderTarget == nullptr)
+		return;
+	D2DApplyClip ac (this);
+	if (ac.isEmpty ())
 		return;
 	CRect rect (_rect);
-	if (currentState.drawMode.integralMode ())
-		pixelAllign (rect);
-	bool halfPointOffset = (((int32_t)currentState.frameWidth) % 2) != 0;
+	if (drawStyle != kDrawFilled)
+	{
+		rect.right -= 1.;
+		rect.bottom -= 1.;
+	}
 	if (drawStyle == kDrawFilled || drawStyle == kDrawFilledAndStroked)
 	{
-		D2DApplyClip ac (this);
-		if (ac.isEmpty ())
-			return;
 		renderTarget->FillRectangle (makeD2DRect (rect), fillBrush);
 	}
 	if (drawStyle == kDrawStroked || drawStyle == kDrawFilledAndStroked)
 	{
-		D2DApplyClip ac (this, halfPointOffset);
-		if (ac.isEmpty ())
-			return;
-		rect.right -= 1.;
-		rect.bottom -= 1.;
+		if (needsHalfPointOffset ())
+		{
+			rect.offset (0.5, 0.5);
+		}
 		renderTarget->DrawRectangle (makeD2DRect (rect), strokeBrush, (FLOAT)currentState.frameWidth, strokeStyle);
 	}
 }
@@ -522,29 +553,32 @@ void D2DDrawContext::drawRect (const CRect &_rect, const CDrawStyle drawStyle)
 //-----------------------------------------------------------------------------
 void D2DDrawContext::drawArc (const CRect& _rect, const float _startAngle, const float _endAngle, const CDrawStyle drawStyle)
 {
-	CGraphicsPath* path = createGraphicsPath ();
-	if (path)
+	if (auto path = owned (createGraphicsPath ()))
 	{
-		path->addArc (_rect, _startAngle, _endAngle, true);
+		CRect rect (_rect);
+		if (getDrawMode ().integralMode ())
+			pixelAllign (rect);
+		path->addArc (rect, _startAngle, _endAngle, true);
 		if (drawStyle == kDrawFilled || drawStyle == kDrawFilledAndStroked)
 			drawGraphicsPath (path, kPathFilled);
 		if (drawStyle == kDrawStroked || drawStyle == kDrawFilledAndStroked)
 			drawGraphicsPath (path, kPathStroked);
-		path->forget ();
 	}
 }
 
 //-----------------------------------------------------------------------------
 void D2DDrawContext::drawEllipse (const CRect &_rect, const CDrawStyle drawStyle)
 {
-	if (renderTarget == 0)
+	if (renderTarget == nullptr)
 		return;
 	D2DApplyClip ac (this);
 	if (ac.isEmpty ())
 		return;
 	CRect rect (_rect);
-	if (currentState.drawMode.integralMode ())
+	if (getDrawMode ().integralMode ())
 		pixelAllign (rect);
+	if (drawStyle == kDrawStroked)
+		rect.inset (0.5, 0.5);
 	CPoint center (rect.getTopLeft ());
 	center.offset (rect.getWidth () / 2., rect.getHeight () / 2.);
 	D2D1_ELLIPSE ellipse;
@@ -588,7 +622,7 @@ void D2DDrawContext::setLineStyleInternal (const CLineStyle& style)
 	if (strokeStyle)
 	{
 		strokeStyle->Release ();
-		strokeStyle = 0;
+		strokeStyle = nullptr;
 	}
 	D2D1_STROKE_STYLE_PROPERTIES properties;
 	switch (style.getLineCap ())
@@ -617,7 +651,7 @@ void D2DDrawContext::setLineStyleInternal (const CLineStyle& style)
 	else
 	{
 		properties.dashStyle = D2D1_DASH_STYLE_SOLID;
-		getD2DFactory ()->CreateStrokeStyle (properties, 0, 0, &strokeStyle);
+		getD2DFactory ()->CreateStrokeStyle (properties, nullptr, 0, &strokeStyle);
 	}
 }
 
@@ -695,7 +729,7 @@ void D2DDrawContext::setFillColorInternal (const CColor& color)
 	if (fillBrush)
 	{
 		fillBrush->Release ();
-		fillBrush = 0;
+		fillBrush = nullptr;
 	}
 	if (renderTarget)
 	{
@@ -710,7 +744,7 @@ void D2DDrawContext::setFrameColorInternal (const CColor& color)
 	if (strokeBrush)
 	{
 		strokeBrush->Release ();
-		strokeBrush = 0;
+		strokeBrush = nullptr;
 	}
 	if (renderTarget)
 	{
@@ -725,7 +759,7 @@ void D2DDrawContext::setFontColorInternal (const CColor& color)
 	if (fontBrush)
 	{
 		fontBrush->Release ();
-		fontBrush = 0;
+		fontBrush = nullptr;
 	}
 	if (renderTarget)
 	{

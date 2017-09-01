@@ -1,36 +1,6 @@
-//-----------------------------------------------------------------------------
-// VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework not only for VST plugins
-//
-// Version 4.3
-//
-//-----------------------------------------------------------------------------
-// VSTGUI LICENSE
-// (c) 2015, Steinberg Media Technologies, All Rights Reserved
-//-----------------------------------------------------------------------------
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
-//
-//   * Redistributions of source code must retain the above copyright notice,
-//     this list of conditions and the following disclaimer.
-//   * Redistributions in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation
-//     and/or other materials provided with the distribution.
-//   * Neither the name of the Steinberg Media Technologies nor the names of its
-//     contributors may be used to endorse or promote products derived from this
-//     software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-// ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
-// IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
-// INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
-// BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
-// OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE  OF THIS SOFTWARE, EVEN IF ADVISED
-// OF THE POSSIBILITY OF SUCH DAMAGE.
-//-----------------------------------------------------------------------------
+// This file is part of VSTGUI. It is subject to the license terms
+// in the LICENSE file found in the top-level directory of this
+// distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #ifndef __uiviewcreatorcontroller__
 #define __uiviewcreatorcontroller__
@@ -47,11 +17,11 @@ namespace VSTGUI {
 class UIViewCreatorDataSource;
 
 //----------------------------------------------------------------------------------------------------
-class UIViewCreatorController : public CBaseObject, public DelegationController
+class UIViewCreatorController : public NonAtomicReferenceCounted, public DelegationController, public IContextMenuController
 {
 public:
 	UIViewCreatorController (IController* baseController, UIDescription* description);
-	~UIViewCreatorController ();
+	~UIViewCreatorController () override;
 	
 	IController* getBaseController () const { return controller; }
 protected:
@@ -59,10 +29,12 @@ protected:
 	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override;
 	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;
 	IControlListener* getControlListener (UTF8StringPtr name) override;
+	void appendContextMenuItems (COptionMenu& contextMenu, const CPoint& where) override;
 
-	void setupDataSource (UTF8StringPtr filter = 0);
+	void setupDataSource (UTF8StringPtr filter = nullptr);
 	
-	UIViewCreatorDataSource* dataSource;
+	UIViewCreatorDataSource* dataSource {nullptr};
+	CDataBrowser* dataBrowser {nullptr};
 	SharedPointer<UIDescription> description;
 	std::vector<std::string> filteredViewNames;
 	std::vector<std::string> allViewNames;

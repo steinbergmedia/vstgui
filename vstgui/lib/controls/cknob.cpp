@@ -1,36 +1,6 @@
-//-----------------------------------------------------------------------------
-// VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins
-//
-// Version 4.3
-//
-//-----------------------------------------------------------------------------
-// VSTGUI LICENSE
-// (c) 2015, Steinberg Media Technologies, All Rights Reserved
-//-----------------------------------------------------------------------------
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
-// 
-//   * Redistributions of source code must retain the above copyright notice, 
-//     this list of conditions and the following disclaimer.
-//   * Redistributions in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation 
-//     and/or other materials provided with the distribution.
-//   * Neither the name of the Steinberg Media Technologies nor the names of its
-//     contributors may be used to endorse or promote products derived from this 
-//     software without specific prior written permission.
-// 
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-// ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
-// IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
-// INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
-// BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
-// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
-// OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE  OF THIS SOFTWARE, EVEN IF ADVISED
-// OF THE POSSIBILITY OF SUCH DAMAGE.
-//-----------------------------------------------------------------------------
+// This file is part of VSTGUI. It is subject to the license terms 
+// in the LICENSE file found in the top-level directory of this
+// distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "cknob.h"
 #include "../cbitmap.h"
@@ -69,12 +39,12 @@ By clicking alt modifier and left mouse button the value changes with a vertical
 //------------------------------------------------------------------------
 CKnob::CKnob (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background, CBitmap* handle, const CPoint& offset, int32_t drawStyle)
 : CControl (size, listener, tag, background)
-, drawStyle (drawStyle)
 , offset (offset)
-, pHandle (handle)
+, drawStyle (drawStyle)
 , handleLineWidth (1.)
 , coronaInset (0)
 , coronaOutlineWidthAdd (2.)
+, pHandle (handle)
 {
 	if (pHandle)
 	{
@@ -108,17 +78,17 @@ CKnob::CKnob (const CKnob& v)
 , inset (v.inset)
 , coronaInset (v.coronaInset)
 , coronaOutlineWidthAdd (v.coronaInset)
+, pHandle (v.pHandle)
 , startAngle (v.startAngle)
 , rangeAngle (v.rangeAngle)
 , zoomFactor (v.zoomFactor)
-, pHandle (v.pHandle)
 {
 	if (pHandle)
 		pHandle->remember ();
 }
 
 //------------------------------------------------------------------------
-CKnob::~CKnob ()
+CKnob::~CKnob () noexcept
 {
 	if (pHandle)
 		pHandle->forget ();
@@ -213,8 +183,8 @@ void CKnob::addArc (CGraphicsPath* path, const CRect& r, double startAngle, doub
 //------------------------------------------------------------------------
 void CKnob::drawCoronaOutline (CDrawContext* pContext) const
 {
-	OwningPointer<CGraphicsPath> path = pContext->createGraphicsPath ();
-	if (path == 0)
+	auto path = owned (pContext->createGraphicsPath ());
+	if (path == nullptr)
 		return;
 	CRect corona (getViewSize ());
 	corona.inset (coronaInset, coronaInset);
@@ -232,8 +202,8 @@ void CKnob::drawCoronaOutline (CDrawContext* pContext) const
 //------------------------------------------------------------------------
 void CKnob::drawCorona (CDrawContext* pContext) const
 {
-	OwningPointer<CGraphicsPath> path = pContext->createGraphicsPath ();
-	if (path == 0)
+	auto path = owned (pContext->createGraphicsPath ());
+	if (path == nullptr)
 		return;
 	float coronaValue = getValueNormalized ();
 	if (drawStyle & kCoronaInverted)
@@ -250,7 +220,7 @@ void CKnob::drawCorona (CDrawContext* pContext) const
 			addArc (path, corona, startAngle, rangeAngle * coronaValue);
 	}
 	pContext->setFrameColor (coronaColor);
-	CLineStyle lineStyle (drawStyle & kCoronaLineDashDot ? kLineOnOffDash : kLineSolid);
+	CLineStyle lineStyle ((drawStyle & kCoronaLineDashDot) ? kLineOnOffDash : kLineSolid);
 	if (!(drawStyle & kCoronaLineCapButt))
 		lineStyle.setLineCap (CLineStyle::kLineCapRound);
 	if (drawStyle & kCoronaLineDashDot)
@@ -520,7 +490,7 @@ void CKnob::valueToPoint (CPoint &point) const
 	float alpha = (value - getMin()) / (getMax() - getMin());
 	alpha = startAngle + alpha*rangeAngle;
 
-	CPoint c(size.getWidth () / 2., size.getHeight () / 2.);
+	CPoint c (getViewSize ().getWidth () / 2., getViewSize ().getHeight () / 2.);
 	double xradius = c.x - inset;
 	double yradius = c.y - inset;
 
@@ -535,7 +505,7 @@ float CKnob::valueFromPoint (CPoint &point) const
 	double d = rangeAngle * 0.5;
 	double a = startAngle + d;
 
-	CPoint c (size.getWidth () / 2., size.getHeight () / 2.);
+	CPoint c (getViewSize ().getWidth () / 2., getViewSize ().getHeight () / 2.);
 	double xradius = c.x - inset;
 	double yradius = c.y - inset;
 
@@ -639,7 +609,7 @@ void CKnob::setHandleBitmap (CBitmap* bitmap)
 	if (pHandle)
 	{
 		pHandle->forget ();
-		pHandle = 0;
+		pHandle = nullptr;
 	}
 
 	if (bitmap)
@@ -687,7 +657,7 @@ According to the value, a specific subbitmap is displayed. The different subbitm
  */
 //------------------------------------------------------------------------
 CAnimKnob::CAnimKnob (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background, const CPoint &offset)
-: CKnob (size, listener, tag, background, 0, offset)
+: CKnob (size, listener, tag, background, nullptr, offset)
 , bInverseBitmap (false)
 {
 	heightOfOneImage = size.getHeight ();
@@ -708,7 +678,7 @@ CAnimKnob::CAnimKnob (const CRect& size, IControlListener* listener, int32_t tag
  */
 //------------------------------------------------------------------------
 CAnimKnob::CAnimKnob (const CRect& size, IControlListener* listener, int32_t tag, int32_t subPixmaps, CCoord heightOfOneImage, CBitmap* background, const CPoint &offset)
-: CKnob (size, listener, tag, background, 0, offset)
+: CKnob (size, listener, tag, background, nullptr, offset)
 , bInverseBitmap (false)
 {
 	setNumSubPixmaps (subPixmaps);
@@ -724,10 +694,6 @@ CAnimKnob::CAnimKnob (const CAnimKnob& v)
 	setNumSubPixmaps (v.subPixmaps);
 	setHeightOfOneImage (v.heightOfOneImage);
 }
-
-//------------------------------------------------------------------------
-CAnimKnob::~CAnimKnob ()
-{}
 
 //-----------------------------------------------------------------------------------------------
 bool CAnimKnob::sizeToFit ()

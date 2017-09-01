@@ -1,36 +1,6 @@
-//-----------------------------------------------------------------------------
-// VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins
-//
-// Version 4.3
-//
-//-----------------------------------------------------------------------------
-// VSTGUI LICENSE
-// (c) 2015, Steinberg Media Technologies, All Rights Reserved
-//-----------------------------------------------------------------------------
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
-// 
-//   * Redistributions of source code must retain the above copyright notice, 
-//     this list of conditions and the following disclaimer.
-//   * Redistributions in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation 
-//     and/or other materials provided with the distribution.
-//   * Neither the name of the Steinberg Media Technologies nor the names of its
-//     contributors may be used to endorse or promote products derived from this 
-//     software without specific prior written permission.
-// 
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-// ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
-// IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
-// INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
-// BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
-// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
-// OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE  OF THIS SOFTWARE, EVEN IF ADVISED
-// OF THE POSSIBILITY OF SUCH DAMAGE.
-//-----------------------------------------------------------------------------
+// This file is part of VSTGUI. It is subject to the license terms 
+// in the LICENSE file found in the top-level directory of this
+// distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "../../cfileselector.h"
 
@@ -57,9 +27,9 @@ static COMDLG_FILTERSPEC* buildExtensionFilter (std::list<CFileExtension>& exten
 {
 	if (extensions.empty () == false)
 	{
-		int32_t i = extensions.size () > 1 ? 1:0;
+		DWORD i = extensions.size () > 1 ? 1u:0u;
 		COMDLG_FILTERSPEC* filters = new COMDLG_FILTERSPEC[extensions.size ()+1+i];
-		int32_t allExtensionCharCount = 0;
+		size_t allExtensionCharCount = 0;
 		std::list<CFileExtension>::iterator it = extensions.begin ();
 		while (it != extensions.end ())
 		{
@@ -75,7 +45,7 @@ static COMDLG_FILTERSPEC* buildExtensionFilter (std::list<CFileExtension>& exten
 			filters[i].pszSpec = wSpec;
 			if (defaultExtension && *defaultExtension == (*it))
 				defaultFileTypeIndex = i+1;
-			allExtensionCharCount += (int32_t)wcslen (filters[i].pszSpec) + 1;
+			allExtensionCharCount += wcslen (filters[i].pszSpec) + 1;
 			it++; i++;
 		}
 		if (extensions.size () > 1)
@@ -84,7 +54,7 @@ static COMDLG_FILTERSPEC* buildExtensionFilter (std::list<CFileExtension>& exten
 			wcscpy (wAllName, kAllSupportedFileTypesString);
 			WCHAR* wAllSpec = (WCHAR*)std::malloc (allExtensionCharCount * sizeof (WCHAR));
 			wAllSpec[0] = 0;
-			for (int32_t j = 1; j < i; j++)
+			for (DWORD j = 1; j < i; j++)
 			{
 				wcscat (wAllSpec, filters[j].pszSpec);
 				if (j != i-1)
@@ -122,7 +92,7 @@ class VistaFileSelector : public CNewFileSelector
 {
 public:
 	VistaFileSelector (CFrame* frame, Style style);
-	~VistaFileSelector ();
+	~VistaFileSelector () noexcept;
 
 	virtual bool runInternal (CBaseObject* delegate) override;
 	virtual void cancelInternal () override;
@@ -190,7 +160,7 @@ VistaFileSelector::VistaFileSelector (CFrame* frame, Style style)
 }
 
 //-----------------------------------------------------------------------------
-VistaFileSelector::~VistaFileSelector ()
+VistaFileSelector::~VistaFileSelector () noexcept
 {
 }
 
@@ -198,7 +168,7 @@ VistaFileSelector::~VistaFileSelector ()
 bool VistaFileSelector::runInternal (CBaseObject* delegate)
 {
 	bool result = runModalInternal ();
-	if (result && delegate)
+	if (delegate)
 	{
 		delegate->notify (this, kSelectEndMessage);
 	}
@@ -220,7 +190,7 @@ bool VistaFileSelector::runModalInternal ()
 	if (style == kSelectSaveFile)
 	{
 		hr = CoCreateInstance (CLSID_FileSaveDialog, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARG(IFileDialog, &fileDialog));
-		if (defaultSaveName)
+		if (!defaultSaveName.empty ())
 		{
 			fileDialog->SetFileName (UTF8StringHelper (defaultSaveName));
 		}
@@ -264,7 +234,7 @@ bool VistaFileSelector::runModalInternal ()
 		return false;
 	}
 
-	if (title)
+	if (!title.empty ())
 		hr = fileDialog->SetTitle (UTF8StringHelper (title));
 
 	DWORD numExtensions = 0;
@@ -276,7 +246,7 @@ bool VistaFileSelector::runModalInternal ()
 		if (defaultFileTypeIndex)
 			fileDialog->SetFileTypeIndex (defaultFileTypeIndex);
 	}
-	if (initialPath && _SHCreateItemFromParsingName)
+	if (!initialPath.empty () && _SHCreateItemFromParsingName)
 	{
 		IShellItem* shellItem;
 		hr = _SHCreateItemFromParsingName (UTF8StringHelper (initialPath), 0, IID_PPV_ARG (IShellItem, &shellItem));
@@ -313,8 +283,7 @@ bool VistaFileSelector::runModalInternal ()
 							if (SUCCEEDED (hr))
 							{
 								UTF8StringHelper str (filesysPath);
-								UTF8StringBuffer resultPath = String::newWithString (str);
-								result.push_back (resultPath);
+								result.emplace_back (str.getUTF8String ());
 							}
 							item->Release ();
 						}
@@ -335,8 +304,7 @@ bool VistaFileSelector::runModalInternal ()
 				if (SUCCEEDED (hr))
 				{
 					UTF8StringHelper str (filesysPath);
-					UTF8StringBuffer resultPath = String::newWithString (str);
-					result.push_back (resultPath);
+					result.emplace_back (str.getUTF8String ());
 				}
 				item->Release ();
 			}
@@ -406,8 +374,7 @@ bool XPFileSelector::runModalInternal ()
 				char szPathNameC_[MAX_PATH];
 				char *szPathNameC= szPathNameC_;
 				WideCharToMultiByte (CP_ACP, WC_COMPOSITECHECK|WC_DEFAULTCHAR, szPathName, -1, szPathNameC, MAX_PATH, NULL, NULL); 
-				UTF8StringBuffer resultPath = String::newWithString (szPathNameC);
-				result.push_back (resultPath);
+				result.emplace_back (szPathNameC);
 				return true;
 			}
 		}
@@ -433,7 +400,7 @@ bool XPFileSelector::runModalInternal ()
 	*filePathBuffer=0;
 
 	UTF8StringHelper defaultSaveNameW (defaultSaveName);
-	if (defaultSaveName)
+	if (!defaultSaveName.empty ())
 	{
 		wcscpy (filePathBuffer, defaultSaveNameW.getWideString ());
 	}
@@ -443,7 +410,7 @@ bool XPFileSelector::runModalInternal ()
 	ofn.lpstrFileTitle = NULL;
 
 	UTF8StringHelper initialPathW (initialPath);
-	if (initialPath)
+	if (!initialPath.empty ())
 	{
 		ofn.lpstrInitialDir = initialPathW.getWideString ();
 	}
@@ -453,7 +420,7 @@ bool XPFileSelector::runModalInternal ()
 	}
 	
 	UTF8StringHelper titleW (title);
-	if (title)
+	if (!title.empty ())
 	{
 		ofn.lpstrTitle = titleW.getWideString ();
 	}
@@ -471,8 +438,7 @@ bool XPFileSelector::runModalInternal ()
 	}
 
 	UTF8StringHelper str (filePathBuffer);
-	UTF8StringBuffer resultPath = String::newWithString (str);
-	result.push_back(resultPath);
+	result.emplace_back (str.getUTF8String ());
 	return true;
 }
 

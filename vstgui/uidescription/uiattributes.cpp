@@ -1,36 +1,6 @@
-//-----------------------------------------------------------------------------
-// VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins
-//
-// Version 4.3
-//
-//-----------------------------------------------------------------------------
-// VSTGUI LICENSE
-// (c) 2015, Steinberg Media Technologies, All Rights Reserved
-//-----------------------------------------------------------------------------
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
-//
-//   * Redistributions of source code must retain the above copyright notice,
-//     this list of conditions and the following disclaimer.
-//   * Redistributions in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation
-//     and/or other materials provided with the distribution.
-//   * Neither the name of the Steinberg Media Technologies nor the names of its
-//     contributors may be used to endorse or promote products derived from this
-//     software without specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-// ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
-// IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
-// INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
-// BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
-// OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE  OF THIS SOFTWARE, EVEN IF ADVISED
-// OF THE POSSIBILITY OF SUCH DAMAGE.
-//-----------------------------------------------------------------------------
+// This file is part of VSTGUI. It is subject to the license terms
+// in the LICENSE file found in the top-level directory of this
+// distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "uiattributes.h"
 #include "cstream.h"
@@ -50,23 +20,18 @@ UIAttributes::UIAttributes (UTF8StringPtr* attributes)
 	if (attributes)
 	{
 		int32_t i = 0;
-		while (attributes[i] != NULL && attributes[i+1] != NULL)
+		while (attributes[i] != nullptr && attributes[i+1] != nullptr)
 		{
-			insert (std::make_pair (attributes[i], attributes[i+1]));
+			emplace (attributes[i], attributes[i+1]);
 			i += 2;
 		}
 	}
 }
 
 //-----------------------------------------------------------------------------
-UIAttributes::~UIAttributes ()
-{
-}
-
-//-----------------------------------------------------------------------------
 bool UIAttributes::hasAttribute (const std::string& name) const
 {
-	if (getAttributeValue (name) != 0)
+	if (getAttributeValue (name) != nullptr)
 		return true;
 	return false;
 }
@@ -77,7 +42,7 @@ const std::string* UIAttributes::getAttributeValue (const std::string& name) con
 	const_iterator iter = find (name);
 	if (iter != end ())
 		return &iter->second;
-	return 0;
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -85,8 +50,9 @@ void UIAttributes::setAttribute (const std::string& name, const std::string& val
 {
 	iterator iter = find (name);
 	if (iter != end ())
-		erase (iter);
-	insert (std::make_pair (name, value));
+		iter->second = value;
+	else
+		emplace (name, value);
 }
 
 //-----------------------------------------------------------------------------
@@ -94,8 +60,9 @@ void UIAttributes::setAttribute (const std::string& name, std::string&& value)
 {
 	iterator iter = find (name);
 	if (iter != end ())
-		erase (iter);
-	insert (std::make_pair (name, std::move (value)));
+		iter->second = std::move (value);
+	else
+		emplace (name, std::move (value));
 }
 
 //-----------------------------------------------------------------------------
@@ -103,8 +70,9 @@ void UIAttributes::setAttribute (std::string&& name, std::string&& value)
 {
 	iterator iter = find (name);
 	if (iter != end ())
-		erase (iter);
-	insert (std::make_pair (std::move (name), std::move (value)));
+		iter->second = std::move (value);
+	else
+		emplace (std::move (name), std::move (value));
 }
 
 //-----------------------------------------------------------------------------
@@ -180,7 +148,7 @@ bool UIAttributes::getIntegerAttribute (const std::string& name, int32_t& value)
 	const std::string* str = getAttributeValue (name);
 	if (str)
 	{
-		value = (int32_t)strtol (str->c_str (), 0, 10);
+		value = (int32_t)strtol (str->c_str (), nullptr, 10);
 		return true;
 	}
 	return false;
@@ -209,13 +177,11 @@ bool UIAttributes::getPointAttribute (const std::string& name, CPoint& p) const
 			StringArray subStrings;
 			while (pos != std::string::npos)
 			{
-				std::string name (*str, start, pos - start);
-				subStrings.push_back (name);
+				subStrings.emplace_back (*str, start, pos - start);
 				start = pos+1;
 				pos = str->find (",", start, 1);
 			}
-			std::string name (*str, start, std::string::npos);
-			subStrings.push_back (name);
+			subStrings.emplace_back (*str, start, std::string::npos);
 			if (subStrings.size () == 2)
 			{
 				p.x = UTF8StringView (subStrings[0].c_str ()).toDouble ();
@@ -254,13 +220,11 @@ bool UIAttributes::getRectAttribute (const std::string& name, CRect& r) const
 			StringArray subStrings;
 			while (pos != std::string::npos)
 			{
-				std::string name (*str, start, pos - start);
-				subStrings.push_back (name);
+				subStrings.emplace_back (*str, start, pos - start);
 				start = pos+1;
 				pos = str->find (",", start, 1);
 			}
-			std::string name (*str, start, std::string::npos);
-			subStrings.push_back (name);
+			subStrings.emplace_back (*str, start, std::string::npos);
 			if (subStrings.size () == 4)
 			{
 				r.left = UTF8StringView (subStrings[0].c_str ()).toDouble ();
@@ -290,7 +254,7 @@ bool UIAttributes::getStringArrayAttribute (const std::string& name, StringArray
 		std::string item;
 		while (std::getline (ss, item, ','))
 		{
-			values.push_back (item);
+			values.emplace_back (std::move (item));
 		}
 		return true;
 	}
@@ -321,7 +285,7 @@ bool UIAttributes::store (OutputStream& stream) const
 	{
 		if (!(stream << (*it).first)) return false;
 		if (!(stream << (*it).second)) return false;
-		it++;
+		++it;
 	}
 	return true;
 }
@@ -340,7 +304,7 @@ bool UIAttributes::restore (InputStream& stream)
 			std::string key, value;
 			if (!(stream >> key)) return false;
 			if (!(stream >> value)) return false;
-			setAttribute (key, value);
+			setAttribute (std::move (key), std::move (value));
 		}
 		return true;
 	}

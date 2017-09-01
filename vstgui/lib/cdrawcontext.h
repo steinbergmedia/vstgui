@@ -1,36 +1,6 @@
-//-----------------------------------------------------------------------------
-// VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins
-//
-// Version 4.3
-//
-//-----------------------------------------------------------------------------
-// VSTGUI LICENSE
-// (c) 2015, Steinberg Media Technologies, All Rights Reserved
-//-----------------------------------------------------------------------------
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
-// 
-//   * Redistributions of source code must retain the above copyright notice, 
-//     this list of conditions and the following disclaimer.
-//   * Redistributions in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation 
-//     and/or other materials provided with the distribution.
-//   * Neither the name of the Steinberg Media Technologies nor the names of its
-//     contributors may be used to endorse or promote products derived from this 
-//     software without specific prior written permission.
-// 
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-// ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
-// IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
-// INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
-// BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
-// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
-// OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE  OF THIS SOFTWARE, EVEN IF ADVISED
-// OF THE POSSIBILITY OF SUCH DAMAGE.
-//-----------------------------------------------------------------------------
+// This file is part of VSTGUI. It is subject to the license terms 
+// in the LICENSE file found in the top-level directory of this
+// distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #ifndef __cdrawcontext__
 #define __cdrawcontext__
@@ -50,14 +20,13 @@
 
 namespace VSTGUI {
 
-class CString;
 struct CNinePartTiledDescription;
 
 //-----------------------------------------------------------------------------
 // CDrawContext Declaration
 //! @brief A drawing context encapsulates the drawing context of the underlying OS
 //-----------------------------------------------------------------------------
-class CDrawContext : public CBaseObject
+class CDrawContext : public AtomicReferenceCounted
 {
 public:
 	//-----------------------------------------------------------------------------
@@ -66,7 +35,7 @@ public:
 	struct Transform
 	{
 		Transform (CDrawContext& context, const CGraphicsTransform& transformation);
-		~Transform ();
+		~Transform () noexcept;
 		
 	private:
 		CDrawContext& context;
@@ -77,9 +46,9 @@ public:
 	/// @name Draw primitives
 	//-----------------------------------------------------------------------------
 	//@{
-	typedef std::pair<CPoint, CPoint> LinePair;
-	typedef std::vector<LinePair> LineList;
-	typedef std::vector<CPoint> PointList;
+	using LinePair = std::pair<CPoint, CPoint>;
+	using LineList = std::vector<LinePair>;
+	using PointList = std::vector<CPoint>;
 
 	inline void drawLine (const CPoint& start, const CPoint& end) { drawLine (std::make_pair (start, end)); }
 	virtual void drawLine (const LinePair& line) = 0;	///< draw a line
@@ -180,6 +149,15 @@ public:
 	//@{
 	const CGraphicsTransform& getCurrentTransform () const;
 	const CRect& getAbsoluteClipRect () const { return currentState.clipRect; }
+
+	/** returns the backend scale factor. */
+	virtual double getScaleFactor () const { return 1.; }
+	
+	/** returns the current line size which corresponds to one pixel on screen.
+	 *
+	 *	do not cache this value, instead ask for it every time you need it.
+	 */
+	CCoord getHairlineSize () const;
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -198,52 +176,49 @@ public:
 		kPathStroked
 	};
 
-	virtual void drawGraphicsPath (CGraphicsPath* path, PathDrawMode mode = kPathFilled, CGraphicsTransform* transformation = 0) = 0;
-	virtual void fillLinearGradient (CGraphicsPath* path, const CGradient& gradient, const CPoint& startPoint, const CPoint& endPoint, bool evenOdd = false, CGraphicsTransform* transformation = 0) = 0;
-	virtual void fillRadialGradient (CGraphicsPath* path, const CGradient& gradient, const CPoint& center, CCoord radius, const CPoint& originOffset = CPoint (0,0), bool evenOdd = false, CGraphicsTransform* transformation = 0) = 0;
+	virtual void drawGraphicsPath (CGraphicsPath* path, PathDrawMode mode = kPathFilled, CGraphicsTransform* transformation = nullptr) = 0;
+	virtual void fillLinearGradient (CGraphicsPath* path, const CGradient& gradient, const CPoint& startPoint, const CPoint& endPoint, bool evenOdd = false, CGraphicsTransform* transformation = nullptr) = 0;
+	virtual void fillRadialGradient (CGraphicsPath* path, const CGradient& gradient, const CPoint& center, CCoord radius, const CPoint& originOffset = CPoint (0,0), bool evenOdd = false, CGraphicsTransform* transformation = nullptr) = 0;
 	//@}
-
-	virtual double getScaleFactor () const { return 1.; }
 
 	virtual void beginDraw () {}
 	virtual void endDraw () {}
 
-	CLASS_METHODS_NOCOPY(CDrawContext, CBaseObject)
 protected:
-	CDrawContext (const CRect& surfaceRect);
-	~CDrawContext ();
+	explicit CDrawContext (const CRect& surfaceRect);
+	~CDrawContext () noexcept override;
 
 	virtual void init ();
 
 	void pushTransform (const CGraphicsTransform& transformation);
 	void popTransform ();
 
-	const CString& getDrawString (UTF8StringPtr string);
+	const UTF8String& getDrawString (UTF8StringPtr string);
 	void clearDrawString ();
 
 	/// @cond ignore
 	struct CDrawContextState
 	{
 		SharedPointer<CFontDesc> font;
-		CColor frameColor;
-		CColor fillColor;
-		CColor fontColor;
-		CCoord frameWidth;
-		CPoint penLoc;
-		CRect clipRect;
-		CLineStyle lineStyle;
-		CDrawMode drawMode;
-		float globalAlpha;
+		CColor frameColor {kTransparentCColor};
+		CColor fillColor {kTransparentCColor};
+		CColor fontColor {kTransparentCColor};
+		CCoord frameWidth {0.};
+		CPoint penLoc {};
+		CRect clipRect {};
+		CLineStyle lineStyle {kLineOnOffDash};
+		CDrawMode drawMode {kAntiAliasing};
+		float globalAlpha {1.f};
 
-		CDrawContextState ();
+		CDrawContextState () = default;
 		CDrawContextState (const CDrawContextState& state);
-		CDrawContextState& operator= (const CDrawContextState& state);
+		CDrawContextState& operator= (const CDrawContextState& state) = default;
 		CDrawContextState (CDrawContextState&& state) noexcept;
 		CDrawContextState& operator= (CDrawContextState&& state) noexcept;
 	};
 	/// @endcond
 
-	CString* drawStringHelper;
+	UTF8String* drawStringHelper;
 	CRect surfaceRect;
 
 	CDrawContextState currentState;
@@ -251,6 +226,26 @@ protected:
 private:
 	std::stack<CDrawContextState> globalStatesStack;
 	std::stack<CGraphicsTransform> transformStack;
+};
+
+//-----------------------------------------------------------------------------
+struct ConcatClip
+{
+	ConcatClip (CDrawContext& context, CRect rect)
+	: context (context)
+	{
+		context.getClipRect (origClip);
+		rect.normalize ();
+		rect.bound (origClip);
+		context.setClipRect (rect);
+	}
+	~ConcatClip () noexcept
+	{
+		context.setClipRect (origClip);
+	}
+private:
+	CDrawContext& context;
+	CRect origClip;
 };
 
 } // namespace

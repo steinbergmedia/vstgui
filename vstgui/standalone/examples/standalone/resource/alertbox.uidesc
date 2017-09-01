@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<vstgui-ui-description version="1">
+	<template background-color="~ BlackCColor" background-color-draw-style="filled" class="CViewContainer" mouse-enabled="true" name="AlertBox" opacity="1" origin="0, 0" size="420, 120" sub-controller="ButtonController" transparent="true">
+		<view autosize="left right top bottom " class="CGradientView" draw-antialiased="true" frame-color="~ BlackCColor" frame-width="1" gradient="About Background" gradient-angle="0" gradient-style="linear" mouse-enabled="false" opacity="1" origin="0, 0" radial-center="0.5, 0.5" radial-radius="1" round-rect-radius="5" size="420, 120" transparent="false"/>
+		<view background-offset="0, 0" class="CTextButton" control-tag="AlertBox.firstButton" default-value="0.5" font="~ SystemFont" frame-color="~ BlackCColor" frame-color-highlighted="~ BlackCColor" frame-width="1" gradient="Default TextButton Gradient" gradient-highlighted="Default TextButton Gradient Highlighted" icon-position="left" icon-text-margin="0" kick-style="false" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="180, 90" round-radius="6" size="100, 20" text-alignment="center" text-color="~ BlackCColor" text-color-highlighted="~ WhiteCColor" title="OK" transparent="false" wheel-inc-value="0.1"/>
+		<view background-offset="0, 0" class="CTextButton" control-tag="AlertBox.secondButton" default-value="0.5" font="~ SystemFont" frame-color="~ BlackCColor" frame-color-highlighted="~ BlackCColor" frame-width="1" gradient="Default TextButton Gradient" gradient-highlighted="Default TextButton Gradient Highlighted" icon-position="left" icon-text-margin="0" kick-style="false" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="300, 90" round-radius="6" size="100, 20" text-alignment="center" text-color="~ BlackCColor" text-color-highlighted="~ WhiteCColor" title="Cancel" transparent="false" wheel-inc-value="0.1"/>
+		<view background-offset="0, 0" class="CTextButton" control-tag="AlertBox.thirdButton" default-value="0.5" font="~ SystemFont" frame-color="~ BlackCColor" frame-color-highlighted="~ BlackCColor" frame-width="1" gradient="Default TextButton Gradient" gradient-highlighted="Default TextButton Gradient Highlighted" icon-position="left" icon-text-margin="0" kick-style="false" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="20, 90" round-radius="6" size="100, 20" text-alignment="center" text-color="~ BlackCColor" text-color-highlighted="~ WhiteCColor" title="Third" transparent="false" wheel-inc-value="0.1"/>
+		<view back-color="~ BlackCColor" background-offset="0, 0" class="CParamDisplay" control-tag="AlertBox.headline" default-value="0.5" font="~ NormalFontVeryBig" font-antialias="true" font-color="~ BlackCColor" frame-color="~ BlackCColor" frame-width="1" max-value="1" min-value="0" mouse-enabled="false" opacity="1" origin="10, 10" round-rect-radius="6" shadow-color="TextShadow" size="400, 30" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="true" text-alignment="center" text-inset="0, 0" text-rotation="0" text-shadow-offset="1, 1" transparent="true" value-precision="2" wheel-inc-value="0.1"/>
+		<view back-color="~ BlackCColor" background-offset="0, 0" class="CMultiLineTextLabel" control-tag="AlertBox.description" default-value="0.5" font="~ NormalFont" font-antialias="true" font-color="~ BlackCColor" frame-color="~ BlackCColor" frame-width="1" line-layout="wrap" max-value="1" min-value="0" mouse-enabled="false" opacity="1" origin="10, 40" round-rect-radius="6" shadow-color="~ RedCColor" size="400, 50" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="5, 5" text-rotation="0" text-shadow-offset="1, 1" title="Description" transparent="true" value-precision="2" wheel-inc-value="0.1"/>
+	</template>
+	<control-tags>
+		<control-tag name="AlertBox.description" tag="4"/>
+		<control-tag name="AlertBox.firstButton" tag="0"/>
+		<control-tag name="AlertBox.headline" tag="3"/>
+		<control-tag name="AlertBox.secondButton" tag="1"/>
+		<control-tag name="AlertBox.thirdButton" tag="2"/>
+	</control-tags>
+	<colors>
+		<color name="AlertBox.background" rgba="#ecececff"/>
+	</colors>
+	<gradients>
+		<gradient name="About Background">
+			<color-stop rgba="#dcdcdcff" start="0"/>
+			<color-stop rgba="#b4b4b4ff" start="1"/>
+		</gradient>
+		<gradient name="Default TextButton Gradient">
+			<color-stop rgba="#dcdcdcff" start="0"/>
+			<color-stop rgba="#b4b4b4ff" start="1"/>
+		</gradient>
+		<gradient name="Default TextButton Gradient Highlighted">
+			<color-stop rgba="#b4b4b4ff" start="0"/>
+			<color-stop rgba="#646464ff" start="1"/>
+		</gradient>
+	</gradients>
+	<custom>
+		<attributes name="UIDescFilePath" path="/Users/scheffle/Source/VST3/vstgui/vstgui/standalone/examples/standalone/resource/alertbox.uidesc"/>
+		<attributes Size="10, 10" name="UIGridController"/>
+		<attributes SelectedTemplate="AlertBox" name="UITemplateController"/>
+		<attributes EditViewScale="1" EditorSize="0, 0, 698, 575" SplitViewSize_0_0="0.7653429602888086602519024381763301789761" SplitViewSize_0_1="0.1985559566787003515919707297143759205937" SplitViewSize_1_0="0.4891696750902527202065073197445599362254" SplitViewSize_1_1="0.5018050541516245743878243956714868545532" SplitViewSize_2_0="0.7421203438395415075135019833396654576063" SplitViewSize_2_1="0.2507163323782234942704860714002279564738" TabSwitchValue="3" Version="1" name="UIEditController"/>
+		<attributes name="UIAttributesController"/>
+		<attributes SelectedRow="4" name="UIViewCreatorDataSource"/>
+		<attributes SelectedRow="0" name="UIGradientsDataSource"/>
+		<attributes SelectedRow="1" name="UIColorsDataSource"/>
+		<attributes color="Focus" enabled="true" name="FocusDrawing" width="1.5"/>
+	</custom>
+	<variables/>
+</vstgui-ui-description>

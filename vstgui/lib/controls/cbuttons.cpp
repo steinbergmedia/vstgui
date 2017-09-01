@@ -1,36 +1,6 @@
-//-----------------------------------------------------------------------------
-// VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins
-//
-// Version 4.3
-//
-//-----------------------------------------------------------------------------
-// VSTGUI LICENSE
-// (c) 2015, Steinberg Media Technologies, All Rights Reserved
-//-----------------------------------------------------------------------------
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
-// 
-//   * Redistributions of source code must retain the above copyright notice, 
-//     this list of conditions and the following disclaimer.
-//   * Redistributions in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation 
-//     and/or other materials provided with the distribution.
-//   * Neither the name of the Steinberg Media Technologies nor the names of its
-//     contributors may be used to endorse or promote products derived from this 
-//     software without specific prior written permission.
-// 
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-// ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
-// IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
-// INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
-// BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
-// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
-// OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE  OF THIS SOFTWARE, EVEN IF ADVISED
-// OF THE POSSIBILITY OF SUCH DAMAGE.
-//-----------------------------------------------------------------------------
+// This file is part of VSTGUI. It is subject to the license terms 
+// in the LICENSE file found in the top-level directory of this
+// distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "cbuttons.h"
 #include "../cdrawcontext.h"
@@ -74,10 +44,6 @@ COnOffButton::COnOffButton (const COnOffButton& v)
 {
 	setWantsFocus (true);
 }
-
-//------------------------------------------------------------------------
-COnOffButton::~COnOffButton ()
-{}
 
 //------------------------------------------------------------------------
 void COnOffButton::draw (CDrawContext *pContext)
@@ -220,10 +186,6 @@ CKickButton::CKickButton (const CKickButton& v)
 }
 
 //------------------------------------------------------------------------
-CKickButton::~CKickButton ()
-{}
-
-//------------------------------------------------------------------------
 void CKickButton::draw (CDrawContext *pContext)
 {
 	CPoint where (offset.x, offset.y);
@@ -361,18 +323,14 @@ If the bitmap is set, the bitmap must contain 6 states of the checkbox in the fo
 //------------------------------------------------------------------------
 CCheckBox::CCheckBox (const CRect& size, IControlListener* listener, int32_t tag, UTF8StringPtr title, CBitmap* bitmap, int32_t style)
 : CControl (size, listener, tag, bitmap)
-, title (0)
 , style (style)
-, font (0)
 , fontColor (kWhiteCColor)
-, hilight (false)
+, font (kSystemFont)
 {
 	setTitle (title);
-	setFont (kSystemFont);
 	setBoxFillColor (kWhiteCColor);
 	setBoxFrameColor (kBlackCColor);
 	setCheckMarkColor (kRedCColor);
-	font->remember ();
 	setWantsFocus (true);
 	if (style & kAutoSizeToFit)
 		sizeToFit ();
@@ -381,29 +339,19 @@ CCheckBox::CCheckBox (const CRect& size, IControlListener* listener, int32_t tag
 //------------------------------------------------------------------------
 CCheckBox::CCheckBox (const CCheckBox& checkbox)
 : CControl (checkbox)
-, title (0)
 , style (checkbox.style)
-, font (0)
 , fontColor (checkbox.fontColor)
-, hilight (false)
+, font (checkbox.font)
 {
 	setTitle (checkbox.title);
-	setFont (checkbox.font);
 	setBoxFillColor (checkbox.boxFillColor);
 	setBoxFrameColor (checkbox.boxFrameColor);
 	setCheckMarkColor (checkbox.checkMarkColor);
-	font->remember ();
 	setWantsFocus (true);
 }
 
 //------------------------------------------------------------------------
-CCheckBox::~CCheckBox ()
-{
-	setFont (0);
-}
-
-//------------------------------------------------------------------------
-void CCheckBox::setTitle (UTF8StringPtr newTitle)
+void CCheckBox::setTitle (const UTF8String& newTitle)
 {
 	title = newTitle;
 	if (style & kAutoSizeToFit)
@@ -413,12 +361,8 @@ void CCheckBox::setTitle (UTF8StringPtr newTitle)
 //------------------------------------------------------------------------
 void CCheckBox::setFont (CFontRef newFont)
 {
-	if (font)
-		font->forget ();
 	font = newFont;
-	if (font)
-		font->remember ();
-	if (style & kAutoSizeToFit)
+	if (font && style & kAutoSizeToFit)
 		sizeToFit ();
 }
 
@@ -468,8 +412,7 @@ bool CCheckBox::sizeToFit ()
 {
 	if (title.empty ())
 		return false;
-	IFontPainter* painter = font ? font->getFontPainter () : 0;
-	if (painter)
+	if (auto painter = font->getFontPainter ())
 	{
 		CRect fitSize (getViewSize ());
 		if (getDrawBackground ())
@@ -482,7 +425,7 @@ bool CCheckBox::sizeToFit ()
 			fitSize.setWidth (fitSize.getHeight ());
 		}
 		fitSize.right += kCheckBoxTitleMargin;
-		fitSize.right += painter->getStringWidth (0, CString (title).getPlatformString (), true);
+		fitSize.right += painter->getStringWidth (nullptr, UTF8String (title).getPlatformString (), true);
 		setViewSize (fitSize);
 		setMouseableArea (fitSize);
 		return true;
@@ -694,18 +637,16 @@ int32_t CCheckBox::onKeyDown (VstKeyCode& keyCode)
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 CTextButton::CTextButton (const CRect& size, IControlListener* listener, int32_t tag, UTF8StringPtr title, Style style)
-: CControl (size, listener, tag, 0)
-, title (title)
-, font (0)
-, _path (0)
+: CControl (size, listener, tag, nullptr)
+, font (kSystemFont)
 , frameWidth (1.)
 , roundRadius (6.)
 , textMargin (0.)
-, iconPosition (CDrawMethods::kIconLeft)
 , horiTxtAlign (kCenterText)
+, iconPosition (CDrawMethods::kIconLeft)
 , style (style)
+, title (title)
 {
-	setFont (kSystemFont);
 	setTextColor (kBlackCColor);
 	setTextColorHighlighted (kWhiteCColor);
 	
@@ -756,7 +697,7 @@ CBitmap* CTextButton::getIconHighlighted () const
 }
 
 //------------------------------------------------------------------------
-void CTextButton::setTitle (UTF8StringPtr newTitle)
+void CTextButton::setTitle (const UTF8String& newTitle)
 {
 	title = newTitle;
 	invalid ();
@@ -765,13 +706,7 @@ void CTextButton::setTitle (UTF8StringPtr newTitle)
 //------------------------------------------------------------------------
 void CTextButton::setFont (CFontRef newFont)
 {
-	if (newFont == 0)
-		return;
-	if (font)
-		font->forget ();
 	font = newFont;
-	if (font)
-		font->remember ();
 	invalid ();
 }
 
@@ -895,12 +830,11 @@ bool CTextButton::sizeToFit ()
 {
 	if (title.empty ())
 		return false;
-	IFontPainter* painter = font ? font->getFontPainter () : 0;
-	if (painter)
+	if (auto painter = font->getFontPainter ())
 	{
 		CRect fitSize (getViewSize ());
 		fitSize.right = fitSize.left + (roundRadius + 1.) * 4.;
-		fitSize.right += painter->getStringWidth (0, title.getPlatformString (), true);
+		fitSize.right += painter->getStringWidth (nullptr, title.getPlatformString (), true);
 		setViewSize (fitSize);
 		setMouseableArea (fitSize);
 		return true;
@@ -959,11 +893,11 @@ bool CTextButton::drawFocusOnTop ()
 //------------------------------------------------------------------------
 CGraphicsPath* CTextButton::getPath (CDrawContext* context)
 {
-	if (_path == 0)
+	if (_path == nullptr)
 	{
 		CRect r (getViewSize ());
 		r.inset (frameWidth / 2., frameWidth / 2.);
-		_path = context->createRoundRectGraphicsPath (r, roundRadius);
+		_path = owned (context->createRoundRectGraphicsPath (r, roundRadius));
 	}
 	return _path;
 }
@@ -971,11 +905,7 @@ CGraphicsPath* CTextButton::getPath (CDrawContext* context)
 //------------------------------------------------------------------------
 void CTextButton::invalidPath ()
 {
-	if (_path)
-	{
-		_path->forget ();
-		_path = 0;
-	}
+	_path = nullptr;
 }
 
 //------------------------------------------------------------------------

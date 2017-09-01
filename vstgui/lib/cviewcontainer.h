@@ -1,48 +1,18 @@
-//-----------------------------------------------------------------------------
-// VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins
-//
-// Version 4.3
-//
-//-----------------------------------------------------------------------------
-// VSTGUI LICENSE
-// (c) 2015, Steinberg Media Technologies, All Rights Reserved
-//-----------------------------------------------------------------------------
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
-// 
-//   * Redistributions of source code must retain the above copyright notice, 
-//     this list of conditions and the following disclaimer.
-//   * Redistributions in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation 
-//     and/or other materials provided with the distribution.
-//   * Neither the name of the Steinberg Media Technologies nor the names of its
-//     contributors may be used to endorse or promote products derived from this 
-//     software without specific prior written permission.
-// 
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-// ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
-// IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
-// INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
-// BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
-// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
-// OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE  OF THIS SOFTWARE, EVEN IF ADVISED
-// OF THE POSSIBILITY OF SUCH DAMAGE.
-//-----------------------------------------------------------------------------
+// This file is part of VSTGUI. It is subject to the license terms 
+// in the LICENSE file found in the top-level directory of this
+// distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #ifndef __cviewcontainer__
 #define __cviewcontainer__
 
 #include "vstguifwd.h"
 #include "cview.h"
-#include "ccolor.h"
 #include "cdrawdefs.h"
 #if VSTGUI_TOUCH_EVENT_HANDLING
 #include "itouchevent.h"
 #endif
 #include <list>
+#include <memory>
 
 namespace VSTGUI {
 
@@ -77,9 +47,9 @@ private:
 class CViewContainer : public CView
 {
 public:
-	typedef std::list<SharedPointer<CView> > ViewList;
+	using ViewList = std::list<SharedPointer<CView>>;
 
-	CViewContainer (const CRect& size);
+	explicit CViewContainer (const CRect& size);
 	CViewContainer (const CViewContainer& viewContainer);
 
 	//-----------------------------------------------------------------------------
@@ -101,8 +71,10 @@ public:
 	virtual bool getViewsAt (const CPoint& where, ViewList& views, const GetViewOptions& options = GetViewOptions (GetViewOptions::kDeep)) const;	///< get all views at point where, top->down
 	virtual bool changeViewZOrder (CView* view, uint32_t newIndex);	///< change view z order position
 
+	virtual bool hitTestSubViews (const CPoint& where, const CButtonState& buttons = -1);
+
 	virtual void setAutosizingEnabled (bool state);					///< enable or disable autosizing subviews. Per default this is enabled.
-	bool getAutosizingEnabled () const { return (viewFlags & kAutosizeSubviews) ? true : false; }
+	bool getAutosizingEnabled () const { return hasViewFlag (kAutosizeSubviews); }
 
 	/** get child views of type ViewClass. ContainerClass must be a stdc++ container */
 	template<class ViewClass, class ContainerClass>
@@ -114,13 +86,13 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual void setBackgroundColor (const CColor& color);	///< set the background color (will only be drawn if this container is not set to transparent and does not have a background bitmap)
-	virtual CColor getBackgroundColor () const { return backgroundColor; }	///< get the background color
-	virtual void setBackgroundOffset (const CPoint& p) { backgroundOffset = p; }	///< set the offset of the background bitmap
-	virtual const CPoint& getBackgroundOffset () const { return backgroundOffset; }	///< get the offset of the background bitmap
+	virtual CColor getBackgroundColor () const;	///< get the background color
+	virtual void setBackgroundOffset (const CPoint& p);	///< set the offset of the background bitmap
+	virtual const CPoint& getBackgroundOffset () const;	///< get the offset of the background bitmap
 	virtual void drawBackgroundRect (CDrawContext* pContext, const CRect& _updateRect);	///< draw the background
 	
 	virtual void setBackgroundColorDrawStyle (CDrawStyle style);
-	CDrawStyle getBackgroundColorDrawStyle () const { return backgroundColorDrawStyle; }
+	CDrawStyle getBackgroundColorDrawStyle () const;
 	//@}
 
 	virtual bool advanceNextFocusView (CView* oldFocus, bool reverse = false);
@@ -128,22 +100,22 @@ public:
 	virtual CRect getVisibleSize (const CRect& rect) const;
 
 	void setTransform (const CGraphicsTransform& t);
-	const CGraphicsTransform& getTransform () const { return transform; }
+	const CGraphicsTransform& getTransform () const;
 	
 	void registerViewContainerListener (IViewContainerListener* listener);
 	void unregisterViewContainerListener (IViewContainerListener* listener);
 	
 	// CView
-	virtual void draw (CDrawContext* pContext) override;
-	virtual void drawRect (CDrawContext* pContext, const CRect& updateRect) override;
-	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
-	virtual CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
-	virtual CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
-	virtual CMouseEventResult onMouseCancel () override;
-	virtual bool onWheel (const CPoint& where, const float& distance, const CButtonState& buttons) override;
-	virtual bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons) override;
-	virtual bool hitTest (const CPoint& where, const CButtonState& buttons = -1) override;
-	virtual CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
+	void draw (CDrawContext* pContext) override;
+	void drawRect (CDrawContext* pContext, const CRect& updateRect) override;
+	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseCancel () override;
+	bool onWheel (const CPoint& where, const float& distance, const CButtonState& buttons) override;
+	bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons) override;
+	bool hitTest (const CPoint& where, const CButtonState& buttons = -1) override;
+	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 
 #if VSTGUI_TOUCH_EVENT_HANDLING
 	virtual void onTouchEvent (ITouchEvent& event) override;
@@ -151,47 +123,47 @@ public:
 	virtual void findSingleTouchEventTarget (ITouchEvent::Touch& event);
 #endif
 
-	virtual bool onDrop (IDataPackage* drag, const CPoint& where) override;
-	virtual void onDragEnter (IDataPackage* drag, const CPoint& where) override;
-	virtual void onDragLeave (IDataPackage* drag, const CPoint& where) override;
-	virtual void onDragMove (IDataPackage* drag, const CPoint& where) override;
+	bool onDrop (IDataPackage* drag, const CPoint& where) override;
+	void onDragEnter (IDataPackage* drag, const CPoint& where) override;
+	void onDragLeave (IDataPackage* drag, const CPoint& where) override;
+	void onDragMove (IDataPackage* drag, const CPoint& where) override;
 
-	virtual void looseFocus () override;
-	virtual void takeFocus () override;
+	void looseFocus () override;
+	void takeFocus () override;
 
-	virtual bool isDirty () const override;
+	bool isDirty () const override;
 
-	virtual void invalid () override;
-	virtual void invalidRect (const CRect& rect) override;
+	void invalid () override;
+	void invalidRect (const CRect& rect) override;
 	
-	virtual void setViewSize (const CRect& rect, bool invalid = true) override;
-	virtual void parentSizeChanged () override;
-	virtual bool sizeToFit () override;
+	void setViewSize (const CRect& rect, bool invalid = true) override;
+	void parentSizeChanged () override;
+	bool sizeToFit () override;
 
-	virtual bool removed (CView* parent) override;
-	virtual bool attached (CView* parent) override;
+	bool removed (CView* parent) override;
+	bool attached (CView* parent) override;
 		
-	virtual CPoint& frameToLocal (CPoint& point) const override;
-	virtual CPoint& localToFrame (CPoint& point) const override;
+	CPoint& frameToLocal (CPoint& point) const override;
+	CPoint& localToFrame (CPoint& point) const override;
 
 	//-----------------------------------------------------------------------------
-	typedef ViewList::const_iterator ChildViewConstIterator;
-	typedef ViewList::const_reverse_iterator ChildViewConstReverseIterator;
+	using ChildViewConstIterator = ViewList::const_iterator;
+	using ChildViewConstReverseIterator = ViewList::const_reverse_iterator;
 
 	//-----------------------------------------------------------------------------
 	template<bool reverse>
 	class Iterator
 	{
 	public:
-		Iterator<reverse> (const CViewContainer* container) : children (container->children) { if (reverse) riterator = children.rbegin (); else iterator = children.begin (); }
+		explicit Iterator<reverse> (const CViewContainer* container) : children (container->getChildren ()) { if (reverse) riterator = children.rbegin (); else iterator = children.begin (); }
 		Iterator<reverse> (const Iterator& vi) : children (vi.children), iterator (vi.iterator), riterator (vi.riterator) {}
 		
 		Iterator<reverse>& operator++ ()
 		{
 			if (reverse)
-				riterator++;
+				++riterator;
 			else
-				iterator++;
+				++iterator;
 			return *this;
 		}
 		
@@ -199,26 +171,26 @@ public:
 		{
 			Iterator<reverse> old (*this);
 			if (reverse)
-				riterator++;
+				++riterator;
 			else
-				iterator++;
+				++iterator;
 			return old;
 		}
 		
 		Iterator<reverse>& operator-- ()
 		{
 			if (reverse)
-				riterator--;
+				--riterator;
 			else
-				iterator--;
+				--iterator;
 			return *this;
 		}
 		
 		CView* operator* () const
 		{
 			if (reverse)
-				return riterator != children.rend () ? *riterator : 0;
-			return iterator != children.end () ? *iterator : 0;
+				return riterator != children.rend () ? *riterator : nullptr;
+			return iterator != children.end () ? *iterator : nullptr;
 		}
 		
 	protected:
@@ -231,60 +203,53 @@ public:
 	CLASS_METHODS(CViewContainer, CView)
 
 	#if DEBUG
-	virtual void dumpInfo () override;
+	void dumpInfo () override;
 	virtual void dumpHierarchy ();
 	#endif
 
-protected:
-	~CViewContainer ();
-	virtual bool checkUpdateRect (CView* view, const CRect& rect);
-	virtual bool hitTestSubViews (const CPoint& where, const CButtonState buttons = -1);
+	CViewContainer* asViewContainer () final { return this; }
+	const CViewContainer* asViewContainer () const final { return this; }
 
+protected:
 	enum {
 		kAutosizeSubviews = 1 << (CView::kLastCViewFlag + 1)
 	};
-
-	/// @cond ignore
-	ViewList children;
-	/// @endcond
-
-	CDrawStyle backgroundColorDrawStyle;
-	CColor backgroundColor;
-	CPoint backgroundOffset;
-	CRect lastDrawnFocus;
 	
-	CView* currentDragView;
-	CView* mouseDownView;
+	~CViewContainer () noexcept override;
+	void beforeDelete () override;
+	
+	virtual bool checkUpdateRect (CView* view, const CRect& rect);
 
+	void setMouseDownView (CView* view);
+	CView* getMouseDownView () const;
+	
+	const ViewList& getChildren () const;
 private:
-	typedef DispatchList<IViewContainerListener> ViewContainerListenerDispatcher;
-	ViewContainerListenerDispatcher viewContainerListeners;
-	CGraphicsTransform transform;
+	struct Impl;
+	std::unique_ptr<Impl> pImpl;
 };
 
-typedef CViewContainer::Iterator<false> ViewIterator;
-typedef CViewContainer::Iterator<true> ReverseViewIterator;
+using ViewIterator = CViewContainer::Iterator<false>;
+using ReverseViewIterator = CViewContainer::Iterator<true>;
 
 //-----------------------------------------------------------------------------
 template<class ViewClass, class ContainerClass>
-uint32_t CViewContainer::getChildViewsOfType (ContainerClass& result, bool deep) const
+inline uint32_t CViewContainer::getChildViewsOfType (ContainerClass& result, bool deep) const
 {
-	ChildViewConstIterator it = children.begin ();
-	while (it != children.end ())
+	for (auto& child : getChildren ())
 	{
-		ViewClass* vObj = (*it).cast<ViewClass> ();
+		auto vObj = child.cast<ViewClass> ();
 		if (vObj)
 		{
 			result.push_back (vObj);
 		}
 		if (deep)
 		{
-			if (CViewContainer* container = (*it).cast<CViewContainer> ())
+			if (auto container = child->asViewContainer ())
 			{
 				container->getChildViewsOfType<ViewClass, ContainerClass> (result);
 			}
 		}
-		it++;
 	}
 	return static_cast<uint32_t> (result.size ());
 }

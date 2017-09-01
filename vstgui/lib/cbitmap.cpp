@@ -1,36 +1,6 @@
-//-----------------------------------------------------------------------------
-// VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins
-//
-// Version 4.3
-//
-//-----------------------------------------------------------------------------
-// VSTGUI LICENSE
-// (c) 2015, Steinberg Media Technologies, All Rights Reserved
-//-----------------------------------------------------------------------------
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
-// 
-//   * Redistributions of source code must retain the above copyright notice, 
-//     this list of conditions and the following disclaimer.
-//   * Redistributions in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation 
-//     and/or other materials provided with the distribution.
-//   * Neither the name of the Steinberg Media Technologies nor the names of its
-//     contributors may be used to endorse or promote products derived from this 
-//     software without specific prior written permission.
-// 
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-// ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
-// IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
-// INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
-// BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
-// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
-// OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE  OF THIS SOFTWARE, EVEN IF ADVISED
-// OF THE POSSIBILITY OF SUCH DAMAGE.
-//-----------------------------------------------------------------------------
+// This file is part of VSTGUI. It is subject to the license terms 
+// in the LICENSE file found in the top-level directory of this
+// distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "cbitmap.h"
 #include "cdrawcontext.h"
@@ -74,10 +44,12 @@ CBitmap::CBitmap ()
 CBitmap::CBitmap (const CResourceDescription& desc)
 : resourceDesc (desc)
 {
-	SharedPointer<IPlatformBitmap> platformBitmap = owned (IPlatformBitmap::create ());
-	if (platformBitmap && platformBitmap->load (desc))
+	if (auto platformBitmap = IPlatformBitmap::create ())
 	{
-		bitmaps.push_back (platformBitmap);
+		if (platformBitmap->load (desc))
+		{
+			bitmaps.emplace_back (platformBitmap);
+		}
 	}
 }
 
@@ -85,18 +57,24 @@ CBitmap::CBitmap (const CResourceDescription& desc)
 CBitmap::CBitmap (CCoord width, CCoord height)
 {
 	CPoint p (width, height);
-	bitmaps.push_back (owned (IPlatformBitmap::create (&p)));
+	bitmaps.emplace_back (IPlatformBitmap::create (&p));
+}
+
+//------------------------------------------------------------------------
+CBitmap::CBitmap (CPoint size, double scaleFactor)
+{
+	size.x *= scaleFactor;
+	size.y *= scaleFactor;
+	size.makeIntegral ();
+	auto bitmap = IPlatformBitmap::create (&size);
+	bitmap->setScaleFactor (scaleFactor);
+	bitmaps.emplace_back (bitmap);
 }
 
 //-----------------------------------------------------------------------------
-CBitmap::CBitmap (IPlatformBitmap* platformBitmap)
+CBitmap::CBitmap (const PlatformBitmapPtr& platformBitmap)
 {
-	bitmaps.push_back (platformBitmap);
-}
-
-//-----------------------------------------------------------------------------
-CBitmap::~CBitmap ()
-{
+	bitmaps.emplace_back (platformBitmap);
 }
 
 //-----------------------------------------------------------------------------
@@ -112,39 +90,53 @@ void CBitmap::draw (CDrawContext* context, const CRect& rect, const CPoint& offs
 //-----------------------------------------------------------------------------
 CCoord CBitmap::getWidth () const
 {
-	if (getPlatformBitmap ())
-		return getPlatformBitmap ()->getSize ().x / getPlatformBitmap ()->getScaleFactor ();
+	if (auto pb = getPlatformBitmap ())
+		return pb->getSize ().x / pb->getScaleFactor ();
 	return 0;
 }
 
 //-----------------------------------------------------------------------------
 CCoord CBitmap::getHeight () const
 {
-	if (getPlatformBitmap ())
-		return getPlatformBitmap ()->getSize ().y / getPlatformBitmap ()->getScaleFactor ();
+	if (auto pb = getPlatformBitmap ())
+		return pb->getSize ().y / pb->getScaleFactor ();
 	return 0;
 }
 
-//-----------------------------------------------------------------------------
-IPlatformBitmap* CBitmap::getPlatformBitmap () const
+//------------------------------------------------------------------------
+CPoint CBitmap::getSize () const
 {
-	return bitmaps.empty () ? 0 : bitmaps[0];
+	CPoint p;
+	if (auto pb = getPlatformBitmap ())
+	{
+		auto scaleFactor = pb->getScaleFactor ();
+		p = pb->getSize ();
+		p.x /= scaleFactor;
+		p.y /= scaleFactor;
+	}
+	return p;
 }
 
 //-----------------------------------------------------------------------------
-void CBitmap::setPlatformBitmap (IPlatformBitmap* bitmap)
+auto CBitmap::getPlatformBitmap () const -> PlatformBitmapPtr
+{
+	return bitmaps.empty () ? nullptr : bitmaps[0];
+}
+
+//-----------------------------------------------------------------------------
+void CBitmap::setPlatformBitmap (const PlatformBitmapPtr& bitmap)
 {
 	if (bitmaps.empty ())
-		bitmaps.push_back (bitmap);
+		bitmaps.emplace_back (bitmap);
 	else
 		bitmaps[0] = bitmap;
 }
 
 //-----------------------------------------------------------------------------
-bool CBitmap::addBitmap (IPlatformBitmap* platformBitmap)
+bool CBitmap::addBitmap (const PlatformBitmapPtr& platformBitmap)
 {
 	double scaleFactor = platformBitmap->getScaleFactor ();
-	CPoint size (getWidth (), getHeight ());
+	CPoint size = getSize ();
 	CPoint bitmapSize = platformBitmap->getSize ();
 	bitmapSize.x /= scaleFactor;
 	bitmapSize.y /= scaleFactor;
@@ -161,16 +153,16 @@ bool CBitmap::addBitmap (IPlatformBitmap* platformBitmap)
 			return false;
 		}
 	}
-	bitmaps.push_back (platformBitmap);
+	bitmaps.emplace_back (platformBitmap);
 	return true;
 }
 
 //-----------------------------------------------------------------------------
-IPlatformBitmap* CBitmap::getBestPlatformBitmapForScaleFactor (double scaleFactor) const
+auto CBitmap::getBestPlatformBitmapForScaleFactor (double scaleFactor) const -> PlatformBitmapPtr
 {
 	if (bitmaps.empty ())
-		return 0;
-	IPlatformBitmap* bestBitmap = bitmaps[0];
+		return nullptr;
+	auto bestBitmap = bitmaps[0];
 	double bestDiff = std::abs (scaleFactor - bestBitmap->getScaleFactor ());
 	for (const auto& bitmap : bitmaps)
 	{
@@ -224,14 +216,9 @@ CNinePartTiledBitmap::CNinePartTiledBitmap (const CResourceDescription& desc, co
 }
 
 //-----------------------------------------------------------------------------
-CNinePartTiledBitmap::CNinePartTiledBitmap (IPlatformBitmap* platformBitmap, const CNinePartTiledDescription& offsets)
+CNinePartTiledBitmap::CNinePartTiledBitmap (const PlatformBitmapPtr& platformBitmap, const CNinePartTiledDescription& offsets)
 : CBitmap (platformBitmap)
 , offsets (offsets)
-{
-}
-
-//-----------------------------------------------------------------------------
-CNinePartTiledBitmap::~CNinePartTiledBitmap ()
 {
 }
 
@@ -245,10 +232,10 @@ void CNinePartTiledBitmap::draw (CDrawContext* inContext, const CRect& inDestRec
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 CBitmapPixelAccess::CBitmapPixelAccess ()
-: bitmap (0)
-, pixelAccess (0)
-, currentPos (0)
-, address (0)
+: bitmap (nullptr)
+, pixelAccess (nullptr)
+, currentPos (nullptr)
+, address (nullptr)
 , bytesPerRow (0)
 , maxX (0)
 , maxY (0)
@@ -258,21 +245,15 @@ CBitmapPixelAccess::CBitmapPixelAccess ()
 }
 
 //------------------------------------------------------------------------
-CBitmapPixelAccess::~CBitmapPixelAccess ()
-{
-	if (pixelAccess)
-		pixelAccess->forget ();
-}
-
-//------------------------------------------------------------------------
 void CBitmapPixelAccess::init (CBitmap* _bitmap, IPlatformBitmapPixelAccess* _pixelAccess)
 {
 	bitmap = _bitmap;
 	pixelAccess = _pixelAccess;
 	address = currentPos = pixelAccess->getAddress ();
 	bytesPerRow = pixelAccess->getBytesPerRow ();
-	maxX = (uint32_t)(bitmap->getPlatformBitmap ()->getSize ().x)-1;
-	maxY = (uint32_t)(bitmap->getPlatformBitmap ()->getSize ().y)-1;
+	auto size = bitmap->getPlatformBitmap ()->getSize ();
+	maxX = static_cast<uint32_t> (size.x) - 1;
+	maxY = static_cast<uint32_t> (size.y) - 1;
 }
 
 /// @cond ignore
@@ -303,12 +284,12 @@ public:
 //------------------------------------------------------------------------
 CBitmapPixelAccess* CBitmapPixelAccess::create (CBitmap* bitmap, bool alphaPremultiplied)
 {
-	if (bitmap == 0 || bitmap->getPlatformBitmap () == 0)
-		return 0;
-	IPlatformBitmapPixelAccess* pixelAccess = bitmap->getPlatformBitmap ()->lockPixels (alphaPremultiplied);
-	if (pixelAccess == 0)
-		return 0;
-	CBitmapPixelAccess* result = 0;
+	if (bitmap == nullptr || bitmap->getPlatformBitmap () == nullptr)
+		return nullptr;
+	auto pixelAccess = bitmap->getPlatformBitmap ()->lockPixels (alphaPremultiplied);
+	if (pixelAccess == nullptr)
+		return nullptr;
+	CBitmapPixelAccess* result = nullptr;
 	switch (pixelAccess->getPixelFormat ())
 	{
 		case IPlatformBitmapPixelAccess::kARGB: result = new CBitmapPixelAccessOrder<1,2,3,0> (); break;

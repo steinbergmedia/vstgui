@@ -1,36 +1,6 @@
-//-----------------------------------------------------------------------------
-// VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins
-//
-// Version 4.3
-//
-//-----------------------------------------------------------------------------
-// VSTGUI LICENSE
-// (c) 2015, Steinberg Media Technologies, All Rights Reserved
-//-----------------------------------------------------------------------------
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
-// 
-//   * Redistributions of source code must retain the above copyright notice, 
-//     this list of conditions and the following disclaimer.
-//   * Redistributions in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation 
-//     and/or other materials provided with the distribution.
-//   * Neither the name of the Steinberg Media Technologies nor the names of its
-//     contributors may be used to endorse or promote products derived from this 
-//     software without specific prior written permission.
-// 
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-// ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
-// IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
-// INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
-// BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
-// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
-// OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE  OF THIS SOFTWARE, EVEN IF ADVISED
-// OF THE POSSIBILITY OF SUCH DAMAGE.
-//-----------------------------------------------------------------------------
+// This file is part of VSTGUI. It is subject to the license terms 
+// in the LICENSE file found in the top-level directory of this
+// distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "cparamdisplay.h"
 #include "../cbitmap.h"
@@ -51,7 +21,7 @@ The user can specify its convert function (from float to char) by default the st
 The text-value is centered in the given rect.
 */
 CParamDisplay::CParamDisplay (const CRect& size, CBitmap* background, const int32_t style)
-: CControl (size, 0, -1, background)
+: CControl (size, nullptr, -1, background)
 , horiTxtAlign (kCenterText)
 , style (style)
 , valuePrecision (2)
@@ -93,7 +63,7 @@ CParamDisplay::CParamDisplay (const CParamDisplay& v)
 }
 
 //------------------------------------------------------------------------
-CParamDisplay::~CParamDisplay ()
+CParamDisplay::~CParamDisplay () noexcept
 {
 	if (fontID)
 		fontID->forget ();
@@ -126,15 +96,41 @@ void CParamDisplay::setPrecision (uint8_t precision)
 }
 
 //------------------------------------------------------------------------
-void CParamDisplay::setValueToStringFunction (const ValueToStringFunction& valueToStringFunc)
+void CParamDisplay::setValueToStringFunction2 (const ValueToStringFunction2& valueToStringFunc)
 {
 	valueToStringFunction = valueToStringFunc;
 }
 
 //------------------------------------------------------------------------
-void CParamDisplay::setValueToStringFunction (ValueToStringFunction&& valueToStringFunc)
+void CParamDisplay::setValueToStringFunction2 (ValueToStringFunction2&& valueToStringFunc)
 {
 	valueToStringFunction = std::move (valueToStringFunc);
+}
+
+//------------------------------------------------------------------------
+void CParamDisplay::setValueToStringFunction (const ValueToStringFunction& func)
+{
+	if (!func)
+	{
+		setValueToStringFunction2 (nullptr);
+		return;
+	}
+	setValueToStringFunction2 ([=] (float value, std::string& str, CParamDisplay* display) {
+		char string[256];
+		string[0] = 0;
+		if (func (value, string, display))
+		{
+			str = string;
+			return true;
+		}
+		return false;
+	});
+}
+
+//------------------------------------------------------------------------
+void CParamDisplay::setValueToStringFunction (ValueToStringFunction&& func)
+{
+	setValueToStringFunction (func);
 }
 
 //------------------------------------------------------------------------
@@ -146,16 +142,17 @@ bool CParamDisplay::getFocusPath (CGraphicsPath& outPath)
 		CRect r (getViewSize ());
 		if (style & kRoundRectStyle)
 		{
-			r.extend (focusWidth, focusWidth);
+			r.inset (getFrameWidth () / 2., getFrameWidth () / 2.);
 			outPath.addRoundRect (r, roundRectRadius);
 			outPath.closeSubpath ();
-			r = getViewSize ();
+			r.extend (focusWidth, focusWidth);
 			outPath.addRoundRect (r, roundRectRadius);
 		}
 		else
 		{
+			r.inset (getFrameWidth () / 2., getFrameWidth () / 2.);
 			outPath.addRect (r);
-			r.inset (-focusWidth, -focusWidth);
+			r.extend (focusWidth, focusWidth);
 			outPath.addRect (r);
 		}
 	}
@@ -168,21 +165,22 @@ void CParamDisplay::draw (CDrawContext *pContext)
 	if (style & kNoDrawStyle)
 		return;
 
-	char string[256];
-	string[0] = 0;
+	std::string string;
 
 	bool converted = false;
 	if (valueToStringFunction)
 		converted = valueToStringFunction (value, string, this);
 	if (!converted)
 	{
+		char tmp[255];
 		char precisionStr[10];
 		sprintf (precisionStr, "%%.%hhuf", valuePrecision);
-		sprintf (string, precisionStr, value);
+		sprintf (tmp, precisionStr, value);
+		string = tmp;
 	}
 
 	drawBack (pContext);
-	drawPlatformText (pContext, CString (string).getPlatformString ());
+	drawPlatformText (pContext, UTF8String (string).getPlatformString ());
 	setDirty (false);
 }
 
@@ -341,7 +339,7 @@ void CParamDisplay::drawPlatformText (CDrawContext* pContext, IPlatformString* s
 		if (style & kShadowText)
 		{
 			CRect newSize (textRect);
-			newSize.offset (1, 1);
+			newSize.offset (shadowTextOffset);
 			pContext->setFontColor (shadowColor);
 			pContext->drawString (string, newSize, horiTxtAlign, bAntialias);
 		}
@@ -401,6 +399,16 @@ void CParamDisplay::setShadowColor (CColor color)
 	if (shadowColor != color)
 	{
 		shadowColor = color;
+		drawStyleChanged ();
+	}
+}
+
+//------------------------------------------------------------------------
+void CParamDisplay::setShadowTextOffset (const CPoint& offset)
+{
+	if (shadowTextOffset != offset)
+	{
+		shadowTextOffset = offset;
 		drawStyleChanged ();
 	}
 }

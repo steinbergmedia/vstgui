@@ -1,3 +1,7 @@
+// This file is part of VSTGUI. It is subject to the license terms
+// in the LICENSE file found in the top-level directory of this
+// distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+
 #ifndef __uitagscontroller__
 #define __uitagscontroller__
 
@@ -14,11 +18,11 @@ namespace VSTGUI {
 class UITagsDataSource;
 
 //----------------------------------------------------------------------------------------------------
-class UITagsController : public CBaseObject, public DelegationController
+class UITagsController : public NonAtomicReferenceCounted, public DelegationController
 {
 public:
 	UITagsController (IController* baseController, UIDescription* description, IActionPerformer* actionPerformer);
-	~UITagsController ();
+	~UITagsController () override;
 
 protected:
 	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override;

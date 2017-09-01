@@ -1,36 +1,6 @@
-//-----------------------------------------------------------------------------
-// VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins
-//
-// Version 4.3
-//
-//-----------------------------------------------------------------------------
-// VSTGUI LICENSE
-// (c) 2015, Steinberg Media Technologies, All Rights Reserved
-//-----------------------------------------------------------------------------
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
-// 
-//   * Redistributions of source code must retain the above copyright notice, 
-//     this list of conditions and the following disclaimer.
-//   * Redistributions in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation 
-//     and/or other materials provided with the distribution.
-//   * Neither the name of the Steinberg Media Technologies nor the names of its
-//     contributors may be used to endorse or promote products derived from this 
-//     software without specific prior written permission.
-// 
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-// ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
-// IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
-// INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
-// BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
-// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
-// OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE  OF THIS SOFTWARE, EVEN IF ADVISED
-// OF THE POSSIBILITY OF SUCH DAMAGE.
-//-----------------------------------------------------------------------------
+// This file is part of VSTGUI. It is subject to the license terms 
+// in the LICENSE file found in the top-level directory of this
+// distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "cgdrawcontext.h"
 
@@ -44,14 +14,8 @@
 
 #ifndef CGFLOAT_DEFINED
 	#define CGFLOAT_DEFINED
-	typedef float CGFloat;
+	using CGFloat = float;
 #endif // CGFLOAT_DEFINED
-
-#if __cplusplus < 201103L
-namespace std {
-	using ::round;
-}
-#endif
 
 namespace VSTGUI {
 
@@ -130,7 +94,7 @@ void CGDrawContext::init ()
 }
 
 //-----------------------------------------------------------------------------
-CGDrawContext::~CGDrawContext ()
+CGDrawContext::~CGDrawContext () noexcept
 {
 	CGContextRestoreGState (cgContext); // restore the original state
 	CGContextRestoreGState (cgContext); // we need to do it twice !!!
@@ -143,7 +107,7 @@ void CGDrawContext::endDraw ()
 	CGContextSynchronize (cgContext);
 	if (bitmap && bitmap->getPlatformBitmap ())
 	{
-		CGBitmap* cgBitmap = dynamic_cast<CGBitmap*> (bitmap->getPlatformBitmap ());
+		CGBitmap* cgBitmap = dynamic_cast<CGBitmap*> (bitmap->getPlatformBitmap ().get ());
 		if (cgBitmap)
 			cgBitmap->setDirty ();
 	}
@@ -159,15 +123,15 @@ CGraphicsPath* CGDrawContext::createGraphicsPath ()
 //-----------------------------------------------------------------------------
 CGraphicsPath* CGDrawContext::createTextPath (const CFontRef font, UTF8StringPtr text)
 {
-	const CoreTextFont* ctFont = dynamic_cast<const CoreTextFont*>(font->getPlatformFont ());
-	return ctFont ? new QuartzGraphicsPath (ctFont, text) : 0;
+	const CoreTextFont* ctFont = font->getPlatformFont ().cast<const CoreTextFont>();
+	return ctFont ? new QuartzGraphicsPath (ctFont, text) : nullptr;
 }
 
 //-----------------------------------------------------------------------------
 void CGDrawContext::drawGraphicsPath (CGraphicsPath* _path, PathDrawMode mode, CGraphicsTransform* t)
 {
 	QuartzGraphicsPath* path = dynamic_cast<QuartzGraphicsPath*> (_path);
-	if (path == 0)
+	if (path == nullptr)
 		return;
 
 	CGContextRef context = beginCGContext (true, getDrawMode ().integralMode ());
@@ -200,7 +164,7 @@ void CGDrawContext::drawGraphicsPath (CGraphicsPath* _path, PathDrawMode mode, C
 			CGAffineTransform transform = QuartzGraphicsPath::createCGAffineTransform (*t);
 			CGContextConcatCTM (context, transform);
 		}
-		if (getDrawMode ().integralMode ())
+		if (getDrawMode ().integralMode () && getDrawMode ().aliasing ())
 		{
 			CGContextSaveGState (context);
 			applyLineWidthCTM (context);
@@ -222,11 +186,11 @@ void CGDrawContext::drawGraphicsPath (CGraphicsPath* _path, PathDrawMode mode, C
 void CGDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradient& gradient, const CPoint& startPoint, const CPoint& endPoint, bool evenOdd, CGraphicsTransform* t)
 {
 	QuartzGraphicsPath* path = dynamic_cast<QuartzGraphicsPath*> (_path);
-	if (path == 0)
+	if (path == nullptr)
 		return;
 
 	const QuartzGradient* cgGradient = dynamic_cast<const QuartzGradient*> (&gradient);
-	if (cgGradient == 0)
+	if (cgGradient == nullptr)
 		return;
 
 	CGContextRef context = beginCGContext (true, getDrawMode ().integralMode ());
@@ -245,7 +209,7 @@ void CGDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradient& g
 			CGAffineTransform transform = QuartzGraphicsPath::createCGAffineTransform (*t);
 			CGContextConcatCTM (context, transform);
 		}
-		if (getDrawMode ().integralMode ())
+		if (getDrawMode ().integralMode () && getDrawMode ().aliasing ())
 			path->pixelAlign (this);
 
 		CGContextAddPath (context, path->getCGPathRef ());
@@ -266,11 +230,11 @@ void CGDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradient& g
 void CGDrawContext::fillRadialGradient (CGraphicsPath* _path, const CGradient& gradient, const CPoint& center, CCoord radius, const CPoint& originOffset, bool evenOdd, CGraphicsTransform* t)
 {
 	QuartzGraphicsPath* path = dynamic_cast<QuartzGraphicsPath*> (_path);
-	if (path == 0)
+	if (path == nullptr)
 		return;
 
 	const QuartzGradient* cgGradient = dynamic_cast<const QuartzGradient*> (&gradient);
-	if (cgGradient == 0)
+	if (cgGradient == nullptr)
 		return;
 
 	CGContextRef context = beginCGContext (true, getDrawMode ().integralMode ());
@@ -282,7 +246,7 @@ void CGDrawContext::fillRadialGradient (CGraphicsPath* _path, const CGradient& g
 			CGAffineTransform transform = QuartzGraphicsPath::createCGAffineTransform (*t);
 			CGContextConcatCTM (context, transform);
 		}
-		if (getDrawMode ().integralMode ())
+		if (getDrawMode ().integralMode () && getDrawMode ().aliasing ())
 			path->pixelAlign (this);
 		
 		CGContextAddPath (context, path->getCGPathRef ());
@@ -349,7 +313,7 @@ void CGDrawContext::setLineWidth (CCoord width)
 void CGDrawContext::setDrawMode (CDrawMode mode)
 {
 	if (cgContext)
-		CGContextSetShouldAntialias (cgContext, mode == kAntiAliasing ? true : false);
+		CGContextSetShouldAntialias (cgContext, mode.antiAliasing ());
 
 	CDrawContext::setDrawMode (mode);
 }
@@ -382,10 +346,7 @@ void CGDrawContext::drawLine (const LinePair& line)
 		{
 			first = pixelAlligned (first);
 			second = pixelAlligned (second);
-
-			int32_t frameWidth = static_cast<int32_t> (currentState.frameWidth);
-			if (frameWidth % 2)
-				CGContextTranslateCTM (context, 0.5, 0.5);
+			applyLineWidthCTM (context);
 		}
 
 		CGContextMoveToPoint (context, first.x, first.y);
@@ -405,7 +366,6 @@ void CGDrawContext::drawLines (const LineList& lines)
 	if (context)
 	{
 		applyLineStyle (context);
-		
 		CGPoint* cgPoints = new CGPoint[lines.size () * 2];
 		uint32_t index = 0;
 		for (const auto& line : lines)
@@ -421,11 +381,7 @@ void CGDrawContext::drawLines (const LineList& lines)
 		}
 
 		if (getDrawMode ().integralMode ())
-		{
-			int32_t frameWidth = static_cast<int32_t> (currentState.frameWidth);
-			if (frameWidth % 2)
-				CGContextTranslateCTM (context, 0.5, 0.5);
-		}
+			applyLineWidthCTM (context);
 		
 		const size_t maxPointsPerIteration = 16;
 		const CGPoint* pointPtr = cgPoints;
@@ -482,7 +438,7 @@ void CGDrawContext::applyLineWidthCTM (CGContextRef context) const
 {
 	int32_t frameWidth = static_cast<int32_t> (currentState.frameWidth);
 	if (frameWidth % 2)
-		CGContextTranslateCTM (context, 0.5, -0.5);
+		CGContextTranslateCTM (context, 0.5, 0.5);
 }
 
 //-----------------------------------------------------------------------------
@@ -491,7 +447,12 @@ void CGDrawContext::drawRect (const CRect &rect, const CDrawStyle drawStyle)
 	CGContextRef context = beginCGContext (true, getDrawMode ().integralMode ());
 	if (context)
 	{
-		CGRect r = CGRectMake (static_cast<CGFloat> (rect.left), static_cast<CGFloat> (rect.top + 1), static_cast<CGFloat> (rect.getWidth () - 1), static_cast<CGFloat> (rect.getHeight () - 1));
+		CGRect r = CGRectFromCRect (rect);
+		if (drawStyle != kDrawFilled)
+		{
+			r.size.width -= 1.;
+			r.size.height -= 1.;
+		}
 
 		CGPathDrawingMode m;
 		switch (drawStyle)
@@ -505,7 +466,8 @@ void CGDrawContext::drawRect (const CRect &rect, const CDrawStyle drawStyle)
 		if (getDrawMode ().integralMode ())
 		{
 			r = pixelAlligned (r);
-			applyLineWidthCTM (context);
+			if (drawStyle != kDrawFilled)
+				applyLineWidthCTM (context);
 		}
 
 		CGContextBeginPath (context);
@@ -522,7 +484,12 @@ void CGDrawContext::drawEllipse (const CRect &rect, const CDrawStyle drawStyle)
 	CGContextRef context = beginCGContext (true, getDrawMode ().integralMode ());
 	if (context)
 	{
-		CGRect r = CGRectMake (static_cast<CGFloat> (rect.left), static_cast<CGFloat> (rect.top + 1), static_cast<CGFloat> (rect.getWidth () - 1), static_cast<CGFloat> (rect.getHeight () - 1));
+		CGRect r = CGRectFromCRect (rect);
+		if (drawStyle != kDrawFilled)
+		{
+			r.size.width -= 1.;
+			r.size.height -= 1.;
+		}
 
 		CGPathDrawingMode m;
 		switch (drawStyle)
@@ -534,8 +501,9 @@ void CGDrawContext::drawEllipse (const CRect &rect, const CDrawStyle drawStyle)
 		applyLineStyle (context);
 		if (getDrawMode ().integralMode ())
 		{
+			if (drawStyle != kDrawFilled)
+				applyLineWidthCTM (context);
 			r = pixelAlligned (r);
-			applyLineWidthCTM (context);
 		}
 
 		CGContextAddEllipseInRect (context, r);
@@ -592,7 +560,7 @@ void CGDrawContext::drawBitmapNinePartTiled (CBitmap* bitmap, const CRect& inRec
 //-----------------------------------------------------------------------------
 void CGDrawContext::fillRectWithBitmap (CBitmap* bitmap, const CRect& srcRect, const CRect& dstRect, float alpha)
 {
-	if (bitmap == 0 || alpha == 0.f || srcRect.isEmpty () || dstRect.isEmpty ())
+	if (bitmap == nullptr || alpha == 0.f || srcRect.isEmpty () || dstRect.isEmpty ())
 		return;
 
 	if (!(srcRect.left == 0 && srcRect.right == 0 && srcRect.right == bitmap->getWidth () && srcRect.bottom == bitmap->getHeight ()))
@@ -607,8 +575,8 @@ void CGDrawContext::fillRectWithBitmap (CBitmap* bitmap, const CRect& srcRect, c
 	if (srcRect.right > bitmapSize.x || srcRect.bottom > bitmapSize.y)
 		return;
 
-	CGBitmap* cgBitmap = platformBitmap ? dynamic_cast<CGBitmap*> (platformBitmap) : 0;
-	CGImageRef image = cgBitmap ? cgBitmap->getCGImage () : 0;
+	CGBitmap* cgBitmap = platformBitmap ? dynamic_cast<CGBitmap*> (platformBitmap) : nullptr;
+	CGImageRef image = cgBitmap ? cgBitmap->getCGImage () : nullptr;
 	if (image)
 	{
 		CGContextRef context = beginCGContext (false, true);
@@ -634,27 +602,27 @@ void CGDrawContext::fillRectWithBitmap (CBitmap* bitmap, const CRect& srcRect, c
 //-----------------------------------------------------------------------------
 void CGDrawContext::drawBitmap (CBitmap* bitmap, const CRect& inRect, const CPoint& inOffset, float alpha)
 {
-	if (bitmap == 0 || alpha == 0.f)
+	if (bitmap == nullptr || alpha == 0.f)
 		return;
 	double transformedScaleFactor = scaleFactor;
 	CGraphicsTransform t = getCurrentTransform ();
 	if (t.m11 == t.m22 && t.m12 == 0 && t.m21 == 0)
 		transformedScaleFactor *= t.m11;
 	IPlatformBitmap* platformBitmap = bitmap->getBestPlatformBitmapForScaleFactor (transformedScaleFactor);
-	CGBitmap* cgBitmap = platformBitmap ? dynamic_cast<CGBitmap*> (platformBitmap) : 0;
-	CGImageRef image = cgBitmap ? cgBitmap->getCGImage () : 0;
+	CGBitmap* cgBitmap = platformBitmap ? dynamic_cast<CGBitmap*> (platformBitmap) : nullptr;
+	CGImageRef image = cgBitmap ? cgBitmap->getCGImage () : nullptr;
 	if (image)
 	{
-		CGContextRef context = beginCGContext (false, false);
+		CGContextRef context = beginCGContext (false, true);
 		if (context)
 		{
 			CGLayerRef layer = cgBitmap->getCGLayer ();
-			if (layer == 0)
+			if (layer == nullptr)
 			{
-				BitmapDrawCountMap::iterator it = bitmapDrawCount.find (cgBitmap);
+				auto it = bitmapDrawCount.find (cgBitmap);
 				if (it == bitmapDrawCount.end ())
 				{
-					bitmapDrawCount.insert (std::pair<CGBitmap*, int32_t> (cgBitmap, 1));
+					bitmapDrawCount.emplace (cgBitmap, 1);
 				}
 				else
 				{
@@ -774,7 +742,7 @@ CGContextRef CGDrawContext::beginCGContext (bool swapYAxis, bool integralOffset)
 	if (cgContext)
 	{
 		if (currentState.clipRect.isEmpty ())
-			return 0;
+			return nullptr;
 
 		CGContextSaveGState (cgContext);
 
@@ -807,7 +775,7 @@ CGContextRef CGDrawContext::beginCGContext (bool swapYAxis, bool integralOffset)
 		
 		return cgContext;
 	}
-	return 0;
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------

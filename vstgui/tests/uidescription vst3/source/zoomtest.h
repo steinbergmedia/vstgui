@@ -1,10 +1,6 @@
-//
-//  ZoomTest.h
-//  uidescription test
-//
-//  Created by Arne Scheffler on 26/06/14.
-//
-//
+// This file is part of VSTGUI. It is subject to the license terms 
+// in the LICENSE file found in the top-level directory of this
+// distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #ifndef __zoomtest__
 #define __zoomtest__

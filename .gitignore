@@ -18,5 +18,21 @@ vstgui/tests/uidescription vst3/win/Win32
 vstgui/ide/xcode4/vstgui.xcodeproj/project.xcworkspace
 vstgui/ide/visualstudio/vs2013/build
 vstgui.opensdf
+vstgui/tests/standalone/mac/build
+vstgui/tests/standalone/mac/DerivedData
+vstgui/tests/standalone/mac/VSTGUIStandalone.xcodeproj/project.xcworkspace
+vstgui/tests/standalone/mac/VSTGUIStandalone.xcodeproj/xcuserdata
+vstgui/tests/standalone/win/vs2015/x64
+*.vcxproj.user
+vstgui/tests/standalone/win/vs2015/.vs
+vstgui/CMakeFiles
+CMakeCache.txt
+compile_commands.json
+vstgui.sdf
+vstgui.v12.suo
+vstgui/ide/visualstudio/vs2015/.vs
+vstgui/build
+vstgui/tests/uidescription vst3/win/.vs
+vstgui/Documentation/html
 /vstgui/uidescription/editing/editoruidesc.h
 CMakeLists.txt.user

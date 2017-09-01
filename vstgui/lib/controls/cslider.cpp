@@ -1,36 +1,6 @@
-//-----------------------------------------------------------------------------
-// VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins
-//
-// Version 4.3
-//
-//-----------------------------------------------------------------------------
-// VSTGUI LICENSE
-// (c) 2015, Steinberg Media Technologies, All Rights Reserved
-//-----------------------------------------------------------------------------
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
-// 
-//   * Redistributions of source code must retain the above copyright notice, 
-//     this list of conditions and the following disclaimer.
-//   * Redistributions in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation 
-//     and/or other materials provided with the distribution.
-//   * Neither the name of the Steinberg Media Technologies nor the names of its
-//     contributors may be used to endorse or promote products derived from this 
-//     software without specific prior written permission.
-// 
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-// ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
-// IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
-// INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
-// BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
-// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
-// OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE  OF THIS SOFTWARE, EVEN IF ADVISED
-// OF THE POSSIBILITY OF SUCH DAMAGE.
-//-----------------------------------------------------------------------------
+// This file is part of VSTGUI. It is subject to the license terms 
+// in the LICENSE file found in the top-level directory of this
+// distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "cslider.h"
 #include "../cdrawcontext.h"
@@ -69,8 +39,8 @@ CSlider::CSlider (const CRect &rect, IControlListener* listener, int32_t tag, in
 , offset (offset)
 , pHandle (handle)
 , style (style)
-, minPos (iMinPos)
 , mode (kFreeClickMode)
+, minPos (iMinPos)
 , drawStyle (0)
 {
 	setDrawTransparentHandle (true);
@@ -167,6 +137,7 @@ CSlider::CSlider (const CSlider& v)
 , offsetHandle (v.offsetHandle)
 , pHandle (v.pHandle)
 , style (v.style)
+, mode (v.mode)
 , widthOfSlider (v.widthOfSlider)
 , heightOfSlider (v.heightOfSlider)
 , rangeHandle (v.rangeHandle)
@@ -178,9 +149,8 @@ CSlider::CSlider (const CSlider& v)
 , zoomFactor (v.zoomFactor)
 , bDrawTransparentEnabled (v.bDrawTransparentEnabled)
 , drawStyle (v.drawStyle)
-, mode (v.mode)
-, backColor (v.backColor)
 , frameColor (v.frameColor)
+, backColor (v.backColor)
 , valueColor (v.valueColor)
 {
 	if (pHandle)
@@ -188,7 +158,7 @@ CSlider::CSlider (const CSlider& v)
 }
 
 //------------------------------------------------------------------------
-CSlider::~CSlider ()
+CSlider::~CSlider () noexcept
 {
 	if (pHandle)
 		pHandle->forget ();
@@ -432,7 +402,7 @@ CMouseEventResult CSlider::onMouseDown (CPoint& where, const CButtonState& butto
 		return kMouseEventNotHandled;
 
 	CRect handleRect;
-	delta = calculateDelta (where, getMode () != kFreeClickMode ? &handleRect : 0);
+	delta = calculateDelta (where, getMode () != kFreeClickMode ? &handleRect : nullptr);
 	if (getMode () == kTouchMode && !handleRect.pointInside (where))
 		return kMouseEventNotHandled;
 
@@ -723,11 +693,6 @@ CVerticalSlider::CVerticalSlider (const CRect &rect, IControlListener* listener,
 {}
 
 //------------------------------------------------------------------------
-CVerticalSlider::CVerticalSlider (const CVerticalSlider& slider)
-: CSlider (slider)
-{}
-
-//------------------------------------------------------------------------
 // CHorizontalSlider
 //------------------------------------------------------------------------
 /*! @class CHorizontalSlider
@@ -767,11 +732,6 @@ CHorizontalSlider::CHorizontalSlider (const CRect &rect, IControlListener* liste
 //------------------------------------------------------------------------
 CHorizontalSlider::CHorizontalSlider (const CRect &rect, IControlListener* listener, int32_t tag, const CPoint& offsetHandle, int32_t rangeHandle, CBitmap* handle, CBitmap* background, const CPoint& offset, const int32_t style)
 : CSlider (rect, listener, tag, offsetHandle, rangeHandle, handle, background, offset, style|kHorizontal)
-{}
-
-//------------------------------------------------------------------------
-CHorizontalSlider::CHorizontalSlider (const CHorizontalSlider& slider)
-: CSlider (slider)
 {}
 
 } // namespace

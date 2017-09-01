@@ -1,36 +1,6 @@
-//-----------------------------------------------------------------------------
-// VST Plug-Ins SDK
-// VSTGUI: Graphical User Interface Framework for VST plugins
-//
-// Version 4.3
-//
-//-----------------------------------------------------------------------------
-// VSTGUI LICENSE
-// (c) 2015, Steinberg Media Technologies, All Rights Reserved
-//-----------------------------------------------------------------------------
-// Redistribution and use in source and binary forms, with or without modification,
-// are permitted provided that the following conditions are met:
-// 
-//   * Redistributions of source code must retain the above copyright notice, 
-//     this list of conditions and the following disclaimer.
-//   * Redistributions in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation 
-//     and/or other materials provided with the distribution.
-//   * Neither the name of the Steinberg Media Technologies nor the names of its
-//     contributors may be used to endorse or promote products derived from this 
-//     software without specific prior written permission.
-// 
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-// ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
-// WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
-// IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
-// INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
-// BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
-// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
-// LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
-// OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE  OF THIS SOFTWARE, EVEN IF ADVISED
-// OF THE POSSIBILITY OF SUCH DAMAGE.
-//-----------------------------------------------------------------------------
+// This file is part of VSTGUI. It is subject to the license terms 
+// in the LICENSE file found in the top-level directory of this
+// distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "hiviewframe.h"
 
@@ -54,7 +24,7 @@ namespace VSTGUI {
 
 #if !MAC_COCOA
 //-----------------------------------------------------------------------------
-IPlatformFrame* IPlatformFrame::createPlatformFrame (IPlatformFrameCallback* frame, const CRect& size, void* parent, PlatformType parentType)
+IPlatformFrame* IPlatformFrame::createPlatformFrame (IPlatformFrameCallback* frame, const CRect& size, void* parent, PlatformType parentType, IPlatformFrameConfig* config)
 {
 	return new HIViewFrame (frame, size, (WindowRef)parent);
 }
@@ -93,7 +63,7 @@ static void Rect2CRect (Rect &rr, CRect &cr)
 	cr.bottom = rr.bottom;
 }
 
-static IDataPackage* gDragContainer = 0;
+static SharedPointer<IDataPackage> gDragContainer;
 
 //-----------------------------------------------------------------------------
 static CPoint GetMacDragMouse (HIViewFrame* frame, DragRef drag)
@@ -111,243 +81,6 @@ static CPoint GetMacDragMouse (HIViewFrame* frame, DragRef drag)
 	}
 	return where;
 }
-
-
-#if 0
-//-----------------------------------------------------------------------------
-// MacDragContainer Declaration
-//-----------------------------------------------------------------------------
-class MacDragContainer : public CDragContainer
-{
-public:
-	MacDragContainer (DragRef platformDrag);
-	~MacDragContainer ();
-
-	virtual void* first (int32_t& size, int32_t& type);		///< returns pointer on a char array if type is known
-	virtual void* next (int32_t& size, int32_t& type);		///< returns pointer on a char array if type is known
-	
-	virtual int32_t getType (int32_t idx) const;
-	virtual int32_t getCount () const { return nbItems; }
-
-	DragRef getPlatformDrag () const { return platformDrag; }
-
-protected:
-	DragRef platformDrag;
-	PasteboardRef pasteboard;
-	int32_t nbItems;
-	
-	int32_t iterator;
-	void* lastItem;
-};
-
-static MacDragContainer* gDragContainer = 0;
-
-//-----------------------------------------------------------------------------
-static CPoint GetMacDragMouse (HIViewFrame* frame)
-{
-	HIViewRef view = frame->getPlatformControl ();
-	CPoint where;
-	Point r;
-	if (GetDragMouse ((DragRef)gDragContainer->getPlatformDrag (), NULL, &r) == noErr)
-	{
-		HIPoint location;
-		location = CGPointMake ((CGFloat)r.h, (CGFloat)r.v);
-		HIPointConvert (&location, kHICoordSpaceScreenPixel, NULL, kHICoordSpaceView, view);
-		where.x = (CCoord)location.x;
-		where.y = (CCoord)location.y;
-	}
-	return where;
-}
-
-//-----------------------------------------------------------------------------
-// MacDragContainer Implementation
-//-----------------------------------------------------------------------------
-MacDragContainer::MacDragContainer (DragRef inPlatformDrag)
-: platformDrag (inPlatformDrag)
-, pasteboard (0)
-, nbItems (0)
-, iterator (0)
-, lastItem (0)
-{
-	if (GetDragPasteboard (inPlatformDrag, &pasteboard) == noErr)
-	{
-		ItemCount numItems;
-		if (PasteboardGetItemCount (pasteboard, &numItems) == noErr)
-			nbItems = numItems;
-	}
-}
-
-//-----------------------------------------------------------------------------
-MacDragContainer::~MacDragContainer ()
-{
-	if (lastItem)
-	{
-		std::free (lastItem);
-		lastItem = 0;
-	}
-}
-
-//-----------------------------------------------------------------------------
-int32_t MacDragContainer::getType (int32_t idx) const
-{
-	if (platformDrag == 0)
-		return CDragContainer::kError;
-
-	PasteboardItemID itemID;
-	if (PasteboardGetItemIdentifier (pasteboard, idx+1, &itemID) == noErr)
-	{
-		CFArrayRef flavors = 0;
-		if (PasteboardCopyItemFlavors (pasteboard, itemID, &flavors) == noErr)
-		{
-			int32_t result = CDragContainer::kUnknown;
-			for (CFIndex i = 0; i < CFArrayGetCount (flavors); i++)
-			{
-				CFStringRef flavorType = (CFStringRef)CFArrayGetValueAtIndex (flavors, i);
-				if (flavorType == 0)
-					continue;
-				CFStringRef osTypeFlavorType = UTTypeCopyPreferredTagWithClass (flavorType, kUTTagClassOSType);
-				if (osTypeFlavorType == 0)
-					continue;
-				if (CFStringCompare (osTypeFlavorType, CFSTR("utxt"), 0) == kCFCompareEqualTo)
-					result = CDragContainer::kUnicodeText;
-				else if (CFStringCompare (osTypeFlavorType, CFSTR("utf8"), 0) == kCFCompareEqualTo)
-					result = CDragContainer::kUnicodeText;
-				else if (CFStringCompare (osTypeFlavorType, CFSTR("furl"), 0) == kCFCompareEqualTo)
-					result = CDragContainer::kFile;
-				else if (CFStringCompare (osTypeFlavorType, CFSTR("TEXT"), 0) == kCFCompareEqualTo)
-					result = CDragContainer::kText;
-				else if (CFStringCompare (osTypeFlavorType, CFSTR("XML "), 0) == kCFCompareEqualTo)
-					result = CDragContainer::kText;
-				CFRelease (osTypeFlavorType);
-				if (result != CDragContainer::kUnknown)
-					break;
-			}
-			CFRelease (flavors);
-			return result;
-		}
-	}
-	return CDragContainer::kUnknown;
-}
-
-//-----------------------------------------------------------------------------
-void* MacDragContainer::first (int32_t& size, int32_t& type)
-{
-	iterator = 0;
-	return next (size, type);
-}
-
-//-----------------------------------------------------------------------------
-void* MacDragContainer::next (int32_t& size, int32_t& type)
-{
-	if (platformDrag == 0)
-	{
-		type = CDragContainer::kError;
-		return 0;
-	}
-	if (lastItem)
-	{
-		std::free (lastItem);
-		lastItem = 0;
-	}
-	size = 0;
-	type = CDragContainer::kUnknown;
-
-	PasteboardItemID itemID;
-	if (PasteboardGetItemIdentifier (pasteboard, ++iterator, &itemID) == noErr)
-	{
-		CFArrayRef flavors = 0;
-		if (PasteboardCopyItemFlavors (pasteboard, itemID, &flavors) == noErr)
-		{
-			for (CFIndex i = 0; i < CFArrayGetCount (flavors); i++)
-			{
-				CFStringRef flavorType = (CFStringRef)CFArrayGetValueAtIndex (flavors, i);
-				if (flavorType == 0)
-					continue;
-				CFStringRef osTypeFlavorType = UTTypeCopyPreferredTagWithClass (flavorType, kUTTagClassOSType);
-				PasteboardFlavorFlags flavorFlags;
-				PasteboardGetItemFlavorFlags (pasteboard, itemID, flavorType, &flavorFlags);
-				CFDataRef flavorData = 0;
-				if (PasteboardCopyItemFlavorData (pasteboard, itemID, flavorType, &flavorData) == noErr)
-				{
-					CFIndex flavorDataSize = CFDataGetLength (flavorData);
-					const UInt8* data = CFDataGetBytePtr (flavorData);
-					if (data)
-					{
-						if (osTypeFlavorType == 0)
-						{
-							type = CDragContainer::kUnknown;
-							size = flavorDataSize;
-							lastItem = std::malloc (size);
-							memcpy (lastItem, data, size);
-						}
-						else if (CFStringCompare (osTypeFlavorType, CFSTR("utxt"), 0) == kCFCompareEqualTo)
-						{
-							CFStringRef utf16String = CFStringCreateWithBytes(0, data, flavorDataSize, kCFStringEncodingUTF16, false);
-							if (utf16String)
-							{
-								CFIndex maxSize = CFStringGetMaximumSizeForEncoding (flavorDataSize/2, kCFStringEncodingUTF8);
-								lastItem = std::malloc (maxSize+1);
-								if (CFStringGetCString (utf16String, (char*)lastItem, maxSize, kCFStringEncodingUTF8))
-								{
-									type = CDragContainer::kUnicodeText;
-									size = strlen ((const char*)lastItem);
-								}
-								else
-								{
-									std::free (lastItem);
-									lastItem = 0;
-								}
-								CFRelease (utf16String);
-							}
-						}
-						else if (CFStringCompare (osTypeFlavorType, CFSTR("furl"), 0) == kCFCompareEqualTo)
-						{
-							type = CDragContainer::kFile;
-							CFURLRef url = CFURLCreateWithBytes (NULL, data, flavorDataSize, kCFStringEncodingUTF8, NULL);
-							lastItem = std::malloc (PATH_MAX);
-							CFURLGetFileSystemRepresentation (url, false, (UInt8*)lastItem, PATH_MAX);
-							CFRelease (url);
-							size = strlen ((const char*)lastItem);
-						}
-						else if (CFStringCompare (osTypeFlavorType, CFSTR("utf8"), 0) == kCFCompareEqualTo)
-						{
-							type = CDragContainer::kUnicodeText;
-							size = flavorDataSize;
-							lastItem = std::malloc (flavorDataSize + 1);
-							((char*)lastItem)[flavorDataSize] = 0;
-							memcpy (lastItem, data, flavorDataSize);
-						}
-						else if (CFStringCompare (osTypeFlavorType, CFSTR("TEXT"), 0) == kCFCompareEqualTo)
-						{
-							type = CDragContainer::kText;
-							size = flavorDataSize;
-							lastItem = std::malloc (flavorDataSize + 1);
-							((char*)lastItem)[flavorDataSize] = 0;
-							memcpy (lastItem, data, flavorDataSize);
-						}
-						else if (CFStringCompare (osTypeFlavorType, CFSTR("XML "), 0) == kCFCompareEqualTo)
-						{
-							type = CDragContainer::kText;
-							size = flavorDataSize;
-							lastItem = std::malloc (flavorDataSize + 1);
-							((char*)lastItem)[flavorDataSize] = 0;
-							memcpy (lastItem, data, flavorDataSize);
-						}
-					}
-					CFRelease (flavorData);
-				}
-				if (osTypeFlavorType)
-					CFRelease (osTypeFlavorType);
-				if (type != CDragContainer::kError)
-					break;
-			}
-			CFRelease (flavors);
-			return lastItem;
-		}
-	}
-	return NULL;
-}
-#endif
 
 static bool addViewToContentView = true;
 //-----------------------------------------------------------------------------
@@ -452,7 +185,7 @@ HIViewFrame::HIViewFrame (IPlatformFrameCallback* frame, const CRect& size, Wind
 }
 
 //-----------------------------------------------------------------------------
-HIViewFrame::~HIViewFrame ()
+HIViewFrame::~HIViewFrame () noexcept
 {
 	if (keyboardEventHandler)
 		RemoveEventHandler (keyboardEventHandler);
@@ -741,32 +474,29 @@ bool HIViewFrame::hideTooltip ()
 }
 
 //-----------------------------------------------------------------------------
-IPlatformTextEdit* HIViewFrame::createPlatformTextEdit (IPlatformTextEditCallback* textEdit)
+SharedPointer<IPlatformTextEdit> HIViewFrame::createPlatformTextEdit (IPlatformTextEditCallback* textEdit)
 {
-	HIViewTextEdit* control = new HIViewTextEdit (controlRef, textEdit);
+	auto control = makeOwned<HIViewTextEdit> (controlRef, textEdit);
 	if (control->getPlatformControl ())
 		return control;
-	control->forget ();
-	return 0;
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------
-IPlatformOptionMenu* HIViewFrame::createPlatformOptionMenu ()
+SharedPointer<IPlatformOptionMenu> HIViewFrame::createPlatformOptionMenu ()
 {
-	return new HIViewOptionMenu ();
+	return makeOwned<HIViewOptionMenu> ();
 }
 
 //-----------------------------------------------------------------------------
-COffscreenContext* HIViewFrame::createOffscreenContext (CCoord width, CCoord height, double scaleFactor)
+SharedPointer<COffscreenContext> HIViewFrame::createOffscreenContext (CCoord width, CCoord height, double scaleFactor)
 {
-	CGBitmap* bitmap = new CGBitmap (CPoint (width * scaleFactor, height * scaleFactor));
+	auto bitmap = makeOwned<CGBitmap> (CPoint (width * scaleFactor, height * scaleFactor));
 	bitmap->setScaleFactor (scaleFactor);
-	CGDrawContext* context = new CGDrawContext (bitmap);
-	bitmap->forget ();
+	auto context = makeOwned<CGDrawContext> (bitmap);
 	if (context->getCGContext ())
 		return context;
-	context->forget ();
-	return 0;
+	return nullptr;
 }
 
 //------------------------------------------------------------------------------------
@@ -869,13 +599,13 @@ DragResult HIViewFrame::doDrag (IDataPackage* source, const CPoint& offset, CBit
 }
 
 //-----------------------------------------------------------------------------
-void HIViewFrame::setClipboard (IDataPackage* data)
+void HIViewFrame::setClipboard (const SharedPointer<IDataPackage>& data)
 {
 	MacClipboard::setClipboard (data);
 }
 
 //-----------------------------------------------------------------------------
-IDataPackage* HIViewFrame::getClipboard ()
+SharedPointer<IDataPackage> HIViewFrame::getClipboard ()
 {
 	return MacClipboard::createClipboardDataPackage ();
 }
@@ -1093,7 +823,7 @@ static OSStatus HIShapeEnumerateProc (int inMessage, HIShapeRef inShape, const C
 	if (inMessage == kHIShapeEnumerateRect)
 	{
 		CFrameAndCDrawContext* tmp = (CFrameAndCDrawContext*)inRefcon;
-		CRect r (inRect->origin.x, inRect->origin.y);
+		CRect r (inRect->origin.x, inRect->origin.y, 0, 0);
 		r.setWidth (inRect->size.width);
 		r.setHeight (inRect->size.height);
 		tmp->context->saveGlobalState ();
@@ -1348,8 +1078,7 @@ pascal OSStatus HIViewFrame::carbonEventHandler (EventHandlerCallRef inHandlerCa
 						CPoint where = GetMacDragMouse (hiviewframe, dragRef);
 						frame->platformOnDrop (gDragContainer, where);
 						hiviewframe->setMouseCursor (kCursorDefault);
-						gDragContainer->forget ();
-						gDragContainer = 0;
+						gDragContainer = nullptr;
 					}
 					result = noErr;
 					break;
