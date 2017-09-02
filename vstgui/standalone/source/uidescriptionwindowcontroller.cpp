@@ -142,7 +142,6 @@ public:
 				auto title = valueConverter.valueAsString (stepValue->stepToValue (i));
 				menu->addEntry (title);
 			}
-			menu->setMax (menu->getNbEntries ());
 		}
 		if (auto segmentButton = dynamic_cast<CSegmentButton*> (control))
 		{
