@@ -350,8 +350,8 @@ UIEditController::UIEditController (UIDescription* description)
 , dirty (false)
 {
 	editorDesc = getEditorDescription ();
-	description->addDependency (this);
 	undoManager->addDependency (this);
+	editDescription->registerListener (this);
 	menuController = new UIEditMenuController (this, selection, undoManager, editDescription, this);
 	onTemplatesChanged ();
 }
@@ -364,7 +364,7 @@ UIEditController::~UIEditController ()
 	if (templateController)
 		templateController->removeDependency (this);
 	undoManager->removeDependency (this);
-	editDescription->removeDependency (this);
+	editDescription->unregisterListener (this);
 	editorDesc = nullptr;
 	gUIDescription.tryFree ();
 }
@@ -696,11 +696,6 @@ CMessageResult UIEditController::notify (CBaseObject* sender, IdStringPtr messag
 		onTemplateSelectionChanged ();
 		return kMessageNotified;
 	}
-	else if (message == UIDescription::kMessageTemplateChanged)
-	{
-		onTemplatesChanged ();
-		return kMessageNotified;
-	}
 	else if (message == UIUndoManager::kMsgChanged)
 	{
 		onUndoManagerChanged ();
@@ -732,13 +727,28 @@ CMessageResult UIEditController::notify (CBaseObject* sender, IdStringPtr messag
 		getEditorDescription ()->freePlatformResources ();
 		return kMessageNotified;
 	}
-	else if (message == UIDescription::kMessageBeforeSave)
-	{
-		beforeSave ();
-		return kMessageNotified;
-	}
 	
 	return kMessageUnknown;
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIEditController::onUIDescTemplateChanged (UIDescription* desc)
+{
+	onTemplatesChanged ();
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIEditController::beforeUIDescSave (UIDescription* desc)
+{
+	beforeSave ();
+}
+
+//----------------------------------------------------------------------------------------------------
+bool UIEditController::doUIDescTemplateUpdate (UIDescription* desc, UTF8StringPtr name)
+{
+	if (onlyTemplateToUpdateName.empty ())
+		return true;
+	return onlyTemplateToUpdateName == name;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -748,8 +758,14 @@ void UIEditController::beforeSave ()
 	{
 		if (undoManager->canUndo ())
 		{
+			if (!editTemplateName.empty ())
+				updateTemplate (editTemplateName.c_str ());
 			for (std::vector<Template>::const_iterator it = templates.begin (); it != templates.end (); it++)
+			{
+				onlyTemplateToUpdateName = it->name;
 				updateTemplate (it);
+			}
+			onlyTemplateToUpdateName.clear ();
 		}
 		for (auto& splitView : splitViews)
 			splitView->storeViewSizes ();
@@ -1615,6 +1631,7 @@ void UIEditController::performDeleteTemplate (UTF8StringPtr name)
 //----------------------------------------------------------------------------------------------------
 void UIEditController::performDuplicateTemplate (UTF8StringPtr name, UTF8StringPtr dupName)
 {
+	// TODO: make this a non hack!
 	editDescription->changed (UIDescription::kMessageBeforeSave);
 	undoManager->pushAndPerform (new DuplicateTemplateAction (editDescription, this, name, dupName));
 }
