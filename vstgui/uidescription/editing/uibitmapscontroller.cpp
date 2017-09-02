@@ -507,8 +507,8 @@ void UIBitmapSettingsController::valueChanged (CControl* control)
 			SharedPointer<CTextEdit> textEdit = SharedPointer<CControl> (control).cast<CTextEdit> ();
 			if (textEdit && textEdit->bWasReturnPressed)
 			{
-				Call::later([textEdit] () {
-					textEdit->takeFocus();
+				textEdit->getFrame ()->doAfterEventProcessing ([=] () {
+					textEdit->takeFocus ();
 				});
 			}
 			break;

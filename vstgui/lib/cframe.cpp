@@ -13,6 +13,7 @@
 #include "platform/iplatformframe.h"
 #include <cassert>
 #include <vector>
+#include <queue>
 #include <limits>
 
 namespace VSTGUI {
@@ -46,6 +47,7 @@ private:
 struct CFrame::Impl
 {
 	using ViewList = std::list<CView*>;
+	using FunctionQueue = std::queue<Function>;
 
 	SharedPointer<IPlatformFrame> platformFrame;
 	VSTGUIEditorInterface* editor {nullptr};
@@ -63,11 +65,38 @@ struct CFrame::Impl
 	DispatchList<IMouseObserver*> mouseObservers;
 	DispatchList<IFocusViewObserver*> focusViewObservers;
 	DispatchList<IKeyboardHook*> keyboardHooks;
+	FunctionQueue postEventFunctionQueue;
 
 	double userScaleFactor {1.};
 	double platformScaleFactor {1.};
 	bool active {false};
 	bool windowActive {false};
+	bool inEventHandling {false};
+
+	struct PostEventHandler
+	{
+		PostEventHandler (Impl& impl) : impl (impl)
+		{
+			wasInEventHandling = impl.inEventHandling;
+			impl.inEventHandling = true;
+		}
+		~PostEventHandler () noexcept
+		{
+			vstgui_assert (impl.inEventHandling == true);
+			impl.inEventHandling = wasInEventHandling;
+			FunctionQueue fl;
+			impl.postEventFunctionQueue.swap (fl);
+			while (!fl.empty ())
+			{
+				fl.front () ();
+				fl.pop ();
+			}
+		}
+
+	private:
+		Impl& impl;
+		bool wasInEventHandling;
+	};
 };
 
 //-----------------------------------------------------------------------------
@@ -1449,6 +1478,7 @@ bool CFrame::platformDrawRect (CDrawContext* context, const CRect& rect)
 //-----------------------------------------------------------------------------
 CMouseEventResult CFrame::platformOnMouseDown (CPoint& where, const CButtonState& buttons)
 {
+	Impl::PostEventHandler peh (*pImpl);
 	CollectInvalidRects cir (this);
 	return onMouseDown (where, buttons);
 }
@@ -1456,6 +1486,7 @@ CMouseEventResult CFrame::platformOnMouseDown (CPoint& where, const CButtonState
 //-----------------------------------------------------------------------------
 CMouseEventResult CFrame::platformOnMouseMoved (CPoint& where, const CButtonState& buttons)
 {
+	Impl::PostEventHandler peh (*pImpl);
 	CollectInvalidRects cir (this);
 	return onMouseMoved (where, buttons);
 }
@@ -1463,6 +1494,7 @@ CMouseEventResult CFrame::platformOnMouseMoved (CPoint& where, const CButtonStat
 //-----------------------------------------------------------------------------
 CMouseEventResult CFrame::platformOnMouseUp (CPoint& where, const CButtonState& buttons)
 {
+	Impl::PostEventHandler peh (*pImpl);
 	CollectInvalidRects cir (this);
 	return onMouseUp (where, buttons);
 }
@@ -1470,6 +1502,7 @@ CMouseEventResult CFrame::platformOnMouseUp (CPoint& where, const CButtonState& 
 //-----------------------------------------------------------------------------
 CMouseEventResult CFrame::platformOnMouseExited (CPoint& where, const CButtonState& buttons)
 {
+	Impl::PostEventHandler peh (*pImpl);
 	CollectInvalidRects cir (this);
 	return onMouseExited (where, buttons);
 }
@@ -1477,6 +1510,7 @@ CMouseEventResult CFrame::platformOnMouseExited (CPoint& where, const CButtonSta
 //-----------------------------------------------------------------------------
 bool CFrame::platformOnMouseWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const CButtonState &buttons)
 {
+	Impl::PostEventHandler peh (*pImpl);
 	CollectInvalidRects cir (this);
 	return onWheel (where, axis, distance, buttons);
 }
@@ -1484,6 +1518,7 @@ bool CFrame::platformOnMouseWheel (const CPoint &where, const CMouseWheelAxis &a
 //-----------------------------------------------------------------------------
 bool CFrame::platformOnDrop (IDataPackage* drag, const CPoint& where)
 {
+	Impl::PostEventHandler peh (*pImpl);
 	CollectInvalidRects cir (this);
 	return onDrop (drag, where);
 }
@@ -1491,6 +1526,7 @@ bool CFrame::platformOnDrop (IDataPackage* drag, const CPoint& where)
 //-----------------------------------------------------------------------------
 void CFrame::platformOnDragEnter (IDataPackage* drag, const CPoint& where)
 {
+	Impl::PostEventHandler peh (*pImpl);
 	CollectInvalidRects cir (this);
 	return onDragEnter (drag, where);
 }
@@ -1498,6 +1534,7 @@ void CFrame::platformOnDragEnter (IDataPackage* drag, const CPoint& where)
 //-----------------------------------------------------------------------------
 void CFrame::platformOnDragLeave (IDataPackage* drag, const CPoint& where)
 {
+	Impl::PostEventHandler peh (*pImpl);
 	CollectInvalidRects cir (this);
 	return onDragLeave (drag, where);
 }
@@ -1505,6 +1542,7 @@ void CFrame::platformOnDragLeave (IDataPackage* drag, const CPoint& where)
 //-----------------------------------------------------------------------------
 void CFrame::platformOnDragMove (IDataPackage* drag, const CPoint& where)
 {
+	Impl::PostEventHandler peh (*pImpl);
 	CollectInvalidRects cir (this);
 	return onDragMove (drag, where);
 }
@@ -1512,6 +1550,7 @@ void CFrame::platformOnDragMove (IDataPackage* drag, const CPoint& where)
 //-----------------------------------------------------------------------------
 bool CFrame::platformOnKeyDown (VstKeyCode& keyCode)
 {
+	Impl::PostEventHandler peh (*pImpl);
 	CollectInvalidRects cir (this);
 	return onKeyDown (keyCode) == 1;
 }
@@ -1519,6 +1558,7 @@ bool CFrame::platformOnKeyDown (VstKeyCode& keyCode)
 //-----------------------------------------------------------------------------
 bool CFrame::platformOnKeyUp (VstKeyCode& keyCode)
 {
+	Impl::PostEventHandler peh (*pImpl);
 	CollectInvalidRects cir (this);
 	return onKeyUp (keyCode) == 1;
 }
@@ -1566,6 +1606,7 @@ void CFrame::dispatchNewScaleFactor (double newScaleFactor)
 //-----------------------------------------------------------------------------
 void CFrame::platformOnTouchEvent (ITouchEvent& event)
 {
+	Impl::PostEventHandler peh (*pImpl);
 	std::vector<CView*> targetDispatched;
 	bool hasBeganTouch = false;
 	for (const auto& e : event)
@@ -1648,6 +1689,28 @@ void CFrame::platformOnTouchEvent (ITouchEvent& event)
 }
 
 #endif
+
+//-----------------------------------------------------------------------------
+bool CFrame::doAfterEventProcessing (Function&& func)
+{
+	if (pImpl->inEventHandling)
+		pImpl->postEventFunctionQueue.push (std::move (func));
+	return pImpl->inEventHandling;
+}
+
+//-----------------------------------------------------------------------------
+bool CFrame::doAfterEventProcessing (const Function& func)
+{
+	if (pImpl->inEventHandling)
+		pImpl->postEventFunctionQueue.push (func);
+	return pImpl->inEventHandling;
+}
+
+//-----------------------------------------------------------------------------
+bool CFrame::inEventProcessing () const
+{
+	return pImpl->inEventHandling;
+}
 
 //-----------------------------------------------------------------------------
 void CFrame::onStartLocalEventLoop ()
