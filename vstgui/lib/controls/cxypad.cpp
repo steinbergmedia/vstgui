@@ -101,7 +101,7 @@ bool CXYPad::onWheel (const CPoint& where, const CMouseWheelAxis& axis, const fl
 	if (buttons & kMouseWheelInverted)
 		distance = -distance;
 	if (buttons & kShift)
-		distance *= 0.1;
+		distance *= 0.1f;
 	if (axis == kMouseWheelAxisX)
 		x += distance;
 	else
