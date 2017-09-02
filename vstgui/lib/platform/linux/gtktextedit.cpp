@@ -91,26 +91,27 @@ GTKTextEdit::GTKTextEdit (std::unique_ptr<Impl>&& inImpl, IPlatformTextEditCallb
 
 	impl->widget.set_alignment (alignment);
 
-	// TODO: finalize visual adaption via GTK CSS stuff
-	auto font = callback->platformGetFont ();
-	auto color = callback->platformGetFontColor ();
-	if (auto style = impl->widget.get_style_context ())
-	{
-		std::stringstream stream;
-		stream << "* { border-radius: 0; border-style: none; padding: 0;";
-		stream << "font: " << font->getName () << " " << font->getSize () << "; ";
-		stream << "color: rgba(" << static_cast<uint32_t> (color.red) << ", "
-			   << static_cast<uint32_t> (color.green) << ", " << static_cast<uint32_t> (color.blue)
-			   << ", " << (color.alpha / 255.) << ");";
-		//		stream << "background: rgba(0, 0, 0, 0); "; // on linux-mint this is also the
-		//selection-color
-		stream << "background-image: linear-gradient(rgba(0, 0, 0, 0)); ";
-		stream << "}";
-		auto provider = Gtk::CssProvider::create ();
-		auto streamStr = stream.str ();
-		provider->load_from_data (streamStr);
-		style->add_provider (provider, GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
-	}
+        // TODO: finalize visual adaption via GTK CSS stuff
+        auto font = callback->platformGetFont ();
+        auto color = callback->platformGetFontColor ();
+        if (auto style = impl->widget.get_style_context ())
+        {
+                std::stringstream stream;
+                stream << "* { border-radius: 0; border-style: none; padding: 0;";
+                stream << "font-family: " << font->getName () << "; ";
+                stream << "font-size: " << font->getSize () << "px; ";
+                stream << "color: rgba(" << static_cast<uint32_t> (color.red) << ", "
+                        << static_cast<uint32_t> (color.green) << ", " << static_cast<uint32_t> (color.blue)
+                        << ", " << (color.alpha / 255.) << ");";
+                //stream << "background: rgba(0, 0, 0, 0); "; // on linux-mint this is also the
+                //selection-color
+                stream << "background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0)); ";
+                stream << "}";
+                auto provider = Gtk::CssProvider::create ();
+                auto streamStr = stream.str ();
+                provider->load_from_data (streamStr);
+                style->add_provider (provider, GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+        }
 }
 
 //------------------------------------------------------------------------
