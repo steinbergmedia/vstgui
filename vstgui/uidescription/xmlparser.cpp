@@ -25,7 +25,7 @@
 #else
 	#define BYTEORDER 1234
 #endif
-#if MAC
+#if MAC || LINUX
 	#define HAVE_MEMMOVE
 #endif
 
