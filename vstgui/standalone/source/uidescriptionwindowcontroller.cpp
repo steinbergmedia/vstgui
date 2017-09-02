@@ -168,7 +168,7 @@ public:
 	{
 		auto preValue = static_cast<float> (value->getValue ());
 		auto newValue = control->getValueNormalized ();
-		if (preValue != newValue)
+		if (preValue != newValue || dynamic_cast<CTextEdit*>(control))
 			value->performEdit (newValue);
 		else
 			onPerformEdit (*value, value->getValue ());
