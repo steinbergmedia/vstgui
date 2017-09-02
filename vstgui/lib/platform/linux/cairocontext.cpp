@@ -382,14 +382,27 @@ void Context::drawBitmap (CBitmap* bitmap, const CRect& dest, const CPoint& offs
 {
 	if (auto cd = DrawBlock::begin (*this))
 	{
-		if (auto cairoBitmap = bitmap->getPlatformBitmap ().cast<Bitmap> ())
+		double transformedScaleFactor = getScaleFactor();
+		CGraphicsTransform t = getCurrentTransform ();
+		if (t.m11 == t.m22 && t.m12 == 0 && t.m21 == 0)
+			transformedScaleFactor *= t.m11;
+                auto cairoBitmap = bitmap->getBestPlatformBitmapForScaleFactor (transformedScaleFactor).cast<Bitmap> ();
+		if (cairoBitmap)
 		{
 			cairo_translate (cr, dest.left, dest.top);
 			cairo_rectangle (cr, 0, 0, dest.getWidth (), dest.getHeight ());
 			cairo_clip (cr);
-			cairo_set_source_surface (cr, cairoBitmap->getSurface (), -offset.x, -offset.y);
-			cairo_rectangle (cr, -offset.x, -offset.y, dest.getWidth () + offset.x,
-							 dest.getHeight () + offset.y);
+
+			// Setup a pattern for scaling bitmaps and take it as source afterwards.
+			auto pattern = cairo_pattern_create_for_surface (cairoBitmap->getSurface());
+			cairo_matrix_t matrix;
+			cairo_pattern_get_matrix (pattern, &matrix);
+			cairo_matrix_init_scale (&matrix, cairoBitmap->getScaleFactor (), cairoBitmap->getScaleFactor ());
+			cairo_matrix_translate (&matrix, offset.x, offset.y);
+			cairo_pattern_set_matrix (pattern, &matrix);
+			cairo_set_source (cr, pattern);
+
+			cairo_rectangle (cr, -offset.x, -offset.y, dest.getWidth () + offset.x, dest.getHeight () + offset.y);
 			alpha *= getGlobalAlpha ();
 			if (alpha != 1.f)
 			{
@@ -399,6 +412,8 @@ void Context::drawBitmap (CBitmap* bitmap, const CRect& dest, const CPoint& offs
 			{
 				cairo_fill (cr);
 			}
+
+			cairo_pattern_destroy (pattern);
 		}
 	}
 	checkCairoStatus (cr);
