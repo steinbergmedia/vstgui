@@ -175,7 +175,7 @@ CView* UIDescriptionViewSwitchController::createViewForIndex (int32_t index)
 }
 
 //-----------------------------------------------------------------------------
-static CControl* findControlTag (CViewContainer* parent, int32_t tag, bool reverse = true)
+static CControl* findControlForTag (CViewContainer* parent, int32_t tag, bool reverse = true)
 {
 	CControl* result = nullptr;
 	ViewIterator it (parent);
@@ -191,14 +191,14 @@ static CControl* findControlTag (CViewContainer* parent, int32_t tag, bool rever
 		else if (reverse)
 		{
 			if (auto container = view->asViewContainer ())
-				result = findControlTag (container, tag);
+				result = findControlForTag (container, tag);
 		}
 		if (result)
 			break;
 		++it;
 	}
 	if (result == nullptr && !reverse && parent->getParentView ())
-		return findControlTag (parent->getParentView ()->asViewContainer (), tag, reverse);
+		return findControlForTag (parent->getParentView ()->asViewContainer (), tag, reverse);
 	return result;
 }
 
@@ -208,16 +208,15 @@ void UIDescriptionViewSwitchController::switchContainerAttached ()
 	if (switchControlTag != -1)
 	{
 		// find the switch Control
-		switchControl = findControlTag (viewSwitch->getParentView ()->asViewContainer (), switchControlTag, false);
+		switchControl = findControlForTag (viewSwitch->getParentView ()->asViewContainer (), switchControlTag, false);
 		if (switchControl == nullptr)
 		{
-			switchControl = findControlTag (viewSwitch->getFrame (), switchControlTag, true);
+			switchControl = findControlForTag (viewSwitch->getFrame (), switchControlTag, true);
 		}
 		if (switchControl)
 		{
-			switchControl->addDependency (this);
-			switchControl->remember ();
-			notify (switchControl, CControl::kMessageValueChanged);
+			switchControl->registerControlListener (this);
+			valueChanged (switchControl);
 		}
 	}
 }
@@ -227,27 +226,22 @@ void UIDescriptionViewSwitchController::switchContainerRemoved ()
 {
 	if (switchControl)
 	{
-		switchControl->removeDependency (this);
-		switchControl->forget ();
+		switchControl->unregisterControlListener (this);
 		switchControl = nullptr;
 		currentIndex = -1;
 	}
 }
 
 //-----------------------------------------------------------------------------
-CMessageResult UIDescriptionViewSwitchController::notify (CBaseObject* sender, IdStringPtr message)
+void UIDescriptionViewSwitchController::valueChanged (CControl* pControl)
 {
-	if (sender == switchControl && message == CControl::kMessageValueChanged)
+	auto norm = pControl->getValueNormalized ();
+	auto index = std::min<int32_t> ((norm * static_cast<float> (templateNames.size ())), templateNames.size () - 1);
+	if (index != currentIndex)
 	{
-		float norm = switchControl->getValueNormalized ();
-		int32_t index = std::min<int32_t> ((int32_t)(norm * (float)templateNames.size ()), (int32_t)templateNames.size ()-1);
-		if (index != currentIndex)
-		{
-			viewSwitch->setCurrentViewIndex (index);
-			currentIndex = index;
-		}
+		viewSwitch->setCurrentViewIndex (index);
+		currentIndex = index;
 	}
-	return kMessageUnknown;
 }
 
 //-----------------------------------------------------------------------------

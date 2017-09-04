@@ -329,12 +329,10 @@ int32_t COptionMenu::onKeyDown (VstKeyCode& keyCode)
 	{
 		if (keyCode.virt == VKEY_RETURN)
 		{
-			CBaseObjectGuard guard (this);
-			if (bgWhenClick)
-				invalid ();
-			popup ();
-			if (bgWhenClick)
-				invalid ();
+			auto self = shared (this);
+			getFrame ()->doAfterEventProcessing ([self] () {
+				self->doPopup ();
+			});
 			return 1;
 		}
 		if (!(style & (kMultipleCheckStyle & ~kCheckStyle)))
@@ -396,6 +394,17 @@ void COptionMenu::beforePopup ()
 		if (menuItem->getSubmenu ())
 			menuItem->getSubmenu ()->beforePopup ();
 	}
+}
+
+//------------------------------------------------------------------------
+bool COptionMenu::doPopup ()
+{
+	if (bgWhenClick)
+		invalid ();
+	auto result = popup ();
+	if (bgWhenClick)
+		invalid ();
+	return result;
 }
 
 //------------------------------------------------------------------------
@@ -658,12 +667,10 @@ CMouseEventResult COptionMenu::onMouseDown (CPoint& where, const CButtonState& b
 	lastButton = buttons;
 	if (lastButton & (kLButton|kRButton|kApple))
 	{
-		if (bgWhenClick)
-			invalid ();
-		getFrame ()->setFocusView (this);
-		popup ();
-		if (bgWhenClick)
-			invalid ();
+		auto self = shared (this);
+		getFrame ()->doAfterEventProcessing ([self] () {
+			self->doPopup ();
+		});
 		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 	}
 	return kMouseEventNotHandled;

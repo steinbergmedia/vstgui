@@ -4,6 +4,7 @@
 
 #include "cxypad.h"
 #include "../cdrawcontext.h"
+#include "../cvstguitimer.h"
 
 namespace VSTGUI {
 
@@ -80,13 +81,45 @@ CMouseEventResult CXYPad::onMouseMoved (CPoint& where, const CButtonState& butto
 
 		boundValues (x, y);
 		setValue (calculateValue (x, y));
-		if (listener && isDirty ())
-			listener->valueChanged (this);
-		invalid ();
+		if (isDirty ())
+		{
+			valueChanged ();
+			invalid ();
+		}
 		lastMouseChangePoint = where;
 		return kMouseEventHandled;
 	}
 	return kMouseEventNotHandled;
+}
+
+//------------------------------------------------------------------------
+bool CXYPad::onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& _distance, const CButtonState& buttons)
+{
+	float x, y;
+	calculateXY (getValue (), x, y);
+	auto distance = _distance * getWheelInc ();
+	if (buttons & kMouseWheelInverted)
+		distance = -distance;
+	if (buttons & kShift)
+		distance *= 0.1f;
+	if (axis == kMouseWheelAxisX)
+		x += distance;
+	else
+		y += distance;
+	boundValues (x, y);
+	setValue (calculateValue (x, y));
+	if (isDirty ())
+	{
+		invalid ();
+		if (!isEditing ())
+			beginEdit ();
+		endEditTimer = makeOwned<CVSTGUITimer> ([this] (CVSTGUITimer* timer) {
+			endEdit ();
+			timer->stop ();
+		}, 500);
+		valueChanged ();
+	}
+	return true;
 }
 
 //------------------------------------------------------------------------

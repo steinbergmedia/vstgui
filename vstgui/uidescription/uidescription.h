@@ -121,7 +121,10 @@ public:
 	bool changeControlTagString  (UTF8StringPtr tagName, const std::string& newTagString, bool create = false);
 
 	bool calculateStringValue (UTF8StringPtr str, double& result) const;
-	
+
+	void registerListener (UIDescriptionListener* listener);
+	void unregisterListener (UIDescriptionListener* listener);
+
 	void setBitmapCreator (IBitmapCreator* bitmapCreator);
 
 	struct FocusDrawing
@@ -181,7 +184,7 @@ class IBitmapCreator
 public:
 	virtual ~IBitmapCreator () noexcept = default;
 	
-	virtual IPlatformBitmap* createBitmap (const UIAttributes& attributes) = 0;
+	virtual SharedPointer<IPlatformBitmap> createBitmap (const UIAttributes& attributes) = 0;
 };
 
 } // namespace

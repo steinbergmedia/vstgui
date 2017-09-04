@@ -196,6 +196,7 @@ public:
 	
 	CLASS_METHODS(COptionMenu, CParamDisplay)
 protected:
+	bool doPopup ();
 	void beforePopup ();
 
 	CMenuItemList* menuItems;

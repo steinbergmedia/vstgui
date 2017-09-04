@@ -11,6 +11,8 @@ class UIAttributes;
 class IController;
 class IUIDescription;
 class UIDescription;
+class UIDescriptionListener;
+class UIDescriptionListenerAdapter;
 class IViewFactory;
 class InputStream;
 class OutputStream;

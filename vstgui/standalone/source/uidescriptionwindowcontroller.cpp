@@ -110,10 +110,18 @@ public:
 
 	void onPerformEdit (IValue& value, IValue::Type newValue) override
 	{
+		auto newControlValue = static_cast<float> (newValue);
 		for (auto& c : controls)
 		{
-			c->setValueNormalized (static_cast<float> (newValue));
-			c->invalid ();
+			if (c->getValueNormalized () != newControlValue)
+			{
+				c->setValueNormalized (newControlValue);
+				if (c->getValueNormalized () == newControlValue)
+				{
+					c->valueChanged ();
+					c->invalid ();
+				}
+			}
 		}
 	}
 
@@ -157,9 +165,11 @@ public:
 
 	void valueChanged (CControl* control) override
 	{
-		auto preValue = value->getValue ();
-		value->performEdit (control->getValueNormalized ());
-		if (value->getValue () == preValue)
+		auto preValue = static_cast<float> (value->getValue ());
+		auto newValue = control->getValueNormalized ();
+		if (preValue != newValue || dynamic_cast<CTextEdit*>(control))
+			value->performEdit (newValue);
+		else
 			onPerformEdit (*value, value->getValue ());
 	}
 
