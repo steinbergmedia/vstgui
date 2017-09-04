@@ -2,10 +2,13 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#include <cstdlib>
+#include "../lib/vstguibase.h"
 
 /// @cond ignore
 
+#if VSTGUI_USE_SYSTEM_EXPAT
+#include <expat.h>
+#else
 #define XML_STATIC 1
 #define XML_NS 1
 #define XML_DTD 1
@@ -22,11 +25,12 @@
 #else
 	#define BYTEORDER 1234
 #endif
-#define HAVE_MEMMOVE	1
-namespace VSTGUI {
-namespace Xml {
-	#include "expat/expat.h"
-}} // namespaces
+#if MAC || LINUX
+	#define HAVE_MEMMOVE
+#endif
+
+#include "expat/expat.h"
+#endif
 
 #include "xmlparser.h"
 #include <algorithm>
@@ -239,15 +243,19 @@ void InputStreamContentProvider::rewind ()
 #pragma clang diagnostic ignored "-Wconversion"
 #endif
 
+}} // namespaces
+
+#if !VSTGUI_USE_SYSTEM_EXPAT
+
 #include "./expat/xmltok.c"
 #include "./expat/xmlrole.c"
 #include "./expat/xmlparse.c"
 
-}} // namespaces
-
 #ifdef OLD_BYTEORDER
 	#undef BYTEORDER
 	#define BYTEORDER = OLD_BYTEORDER
+#endif
+
 #endif
 
 /// @endcond
