@@ -36,3 +36,4 @@ vstgui/tests/uidescription vst3/win/.vs
 vstgui/Documentation/html
 /vstgui/uidescription/editing/editoruidesc.h
 CMakeLists.txt.user
+build
