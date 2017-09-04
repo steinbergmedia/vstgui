@@ -75,6 +75,7 @@ TESTCASE(UIViewSwitchControllerTest,
 		container->attached (rootView);
 		EXPECT(dynamic_cast<View1*> (viewSwitch->getView (0)));
 		control->setValue (1.f);
+	    control->valueChanged ();
 		EXPECT(dynamic_cast<View2*> (viewSwitch->getView (0)));
 		container->removed (rootView);
 	);
