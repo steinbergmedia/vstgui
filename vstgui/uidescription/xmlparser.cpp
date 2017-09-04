@@ -28,8 +28,10 @@
 #if MAC || LINUX
 	#define HAVE_MEMMOVE
 #endif
-
+namespace VSTGUI {
+namespace Xml {
 #include "expat/expat.h"
+}}
 #endif
 
 #include "xmlparser.h"
@@ -247,9 +249,12 @@ void InputStreamContentProvider::rewind ()
 
 #if !VSTGUI_USE_SYSTEM_EXPAT
 
+namespace VSTGUI {
+namespace Xml {
 #include "./expat/xmltok.c"
 #include "./expat/xmlrole.c"
 #include "./expat/xmlparse.c"
+}}
 
 #ifdef OLD_BYTEORDER
 	#undef BYTEORDER
