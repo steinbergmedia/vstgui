@@ -267,7 +267,7 @@ void CTextEdit::platformLooseFocus (bool returnPressed)
 //------------------------------------------------------------------------
 bool CTextEdit::platformOnKeyDown (const VstKeyCode& key)
 {
-	if (getFrame ()->onKeyDown (const_cast<VstKeyCode&> (key)) == 1)
+	if (dynamic_cast<IPlatformFrameCallback*> (getFrame ())->platformOnKeyDown (const_cast<VstKeyCode&> (key)) == 1)
 		return true;
 	if (key.virt == VKEY_RETURN)
 	{

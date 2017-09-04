@@ -189,7 +189,7 @@ CMouseEventResult UIViewCreatorDataSource::dbOnMouseDown (const CPoint& where, c
 //----------------------------------------------------------------------------------------------------
 CMouseEventResult UIViewCreatorDataSource::dbOnMouseMoved (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser)
 {
-	if (buttons.isLeftButton ())
+	if (buttons.isLeftButton () && row != -1 && column != -1)
 	{
 		auto row = dataBrowser->getSelection().front ();
 		SharedPointer<UISelection> selection = createSelection (row);
@@ -200,6 +200,7 @@ CMouseEventResult UIViewCreatorDataSource::dbOnMouseMoved (const CPoint& where, 
 			auto dropSource = CDropSource::create (stream.getBuffer (), static_cast<uint32_t> (stream.tell ()), CDropSource::kText);
 			browser->doDrag (dropSource);
 		}
+		return kMouseMoveEventHandledButDontNeedMoreEvents;
 	}
 	return kMouseEventNotHandled;
 }

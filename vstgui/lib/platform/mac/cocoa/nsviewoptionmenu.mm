@@ -249,6 +249,8 @@ bool NSViewOptionMenu::initClass ()
 	return menuClass != nullptr;
 }
 
+#define VSTGUI_USE_NEW_NSMENU_POPUP	MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_6
+
 //-----------------------------------------------------------------------------
 PlatformOptionMenuResult NSViewOptionMenu::popup (COptionMenu* optionMenu)
 {
@@ -273,14 +275,30 @@ PlatformOptionMenuResult NSViewOptionMenu::popup (COptionMenu* optionMenu)
 	cellFrameRect.origin = nsPointFromCPoint (p);
 	cellFrameRect.size.width = static_cast<CGFloat> (globalSize.getWidth ());
 	cellFrameRect.size.height = static_cast<CGFloat> (globalSize.getHeight ());
+#if !VSTGUI_USE_NEW_NSMENU_POPUP
 	if (!(optionMenu->getStyle () & kPopupStyle))
 	{
 		NSMenuItem* item = [nsMenu insertItemWithTitle:@"" action:nil keyEquivalent:@"" atIndex:0];
 		[item setTag:-1];
 	}
+#endif
 	if (!multipleCheck && optionMenu->getStyle () & kCheckStyle)
 		[[nsMenu itemWithTag:(NSInteger)optionMenu->getCurrentIndex (true)] setState:NSOnState];
 
+#if VSTGUI_USE_NEW_NSMENU_POPUP
+	NSView* menuContainer = [[NSView alloc] initWithFrame:cellFrameRect];
+	[view addSubview:menuContainer];
+
+	NSMenuItem* selectedItem = nil;
+	if (optionMenu->getStyle () & kPopupStyle)
+		selectedItem = [nsMenu itemAtIndex:optionMenu->getValue ()];
+	[nsMenu popUpMenuPositioningItem:selectedItem
+	                      atLocation:NSMakePoint (0, menuContainer.frame.size.height)
+	                          inView:menuContainer];
+
+	[menuContainer removeFromSuperviewWithoutNeedingDisplay];
+	[menuContainer release];
+#else
 	NSView* cellContainer = [[NSView alloc] initWithFrame:cellFrameRect];
 	[view addSubview:cellContainer];
 	cellFrameRect.origin.x = 0;
@@ -295,9 +313,12 @@ PlatformOptionMenuResult NSViewOptionMenu::popup (COptionMenu* optionMenu)
 	[cell performClickWithFrame:cellFrameRect inView:cellContainer];
 	[cellContainer removeFromSuperviewWithoutNeedingDisplay];
 	[cellContainer release];
+#endif
 	result.menu = (COptionMenu*)[nsMenu performSelector:@selector(selectedMenu)];
 	result.index = (int32_t)(intptr_t)[nsMenu performSelector:@selector(selectedItem)];
+#if !VSTGUI_USE_NEW_NSMENU_POPUP
 	[cell release];
+#endif
 	[nsMenu release];
 	
 	return result;

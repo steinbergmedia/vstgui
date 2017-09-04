@@ -24,6 +24,7 @@ public:
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
+	bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons) override;
 
 	static float calculateValue (float x, float y)
 	{
@@ -47,6 +48,8 @@ protected:
 	CPoint mouseChangeStartPoint;
 	CPoint lastMouseChangePoint;
 	bool stopTrackingOnMouseExit;
+	
+	SharedPointer<CBaseObject> endEditTimer = nullptr;
 };
 
 

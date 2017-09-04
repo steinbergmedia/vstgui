@@ -6,6 +6,7 @@
 #define __uiviewswitchcontainer__
 
 #include "../lib/cviewcontainer.h"
+#include "../lib/controls/icontrollistener.h"
 #include "../lib/vstguifwd.h"
 #include "uidescriptionfwd.h"
 #include <vector>
@@ -68,7 +69,7 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-class UIDescriptionViewSwitchController : public CBaseObject, public IViewSwitchController
+class UIDescriptionViewSwitchController : public CBaseObject, public IViewSwitchController, public IControlListener
 {
 public:
 	UIDescriptionViewSwitchController (UIViewSwitchContainer* viewSwitch, const IUIDescription* uiDescription, IController* uiController);
@@ -77,19 +78,19 @@ public:
 	void switchContainerAttached () override;
 	void switchContainerRemoved () override;
 
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
-
 	void setTemplateNames (UTF8StringPtr templateNames); // comma separated
 	void getTemplateNames (std::string& str); // comma separated
 
 	void setSwitchControlTag (int32_t tag) { switchControlTag = tag; }
 	int32_t getSwitchControlTag () const { return switchControlTag; }
 protected:
+	void valueChanged (CControl* pControl) override;
+
 	const IUIDescription* uiDescription;
 	IController* uiController;
 	int32_t switchControlTag;
 	int32_t currentIndex;
-	CControl* switchControl;
+	SharedPointer<CControl> switchControl;
 	std::vector<std::string> templateNames;
 };
 
