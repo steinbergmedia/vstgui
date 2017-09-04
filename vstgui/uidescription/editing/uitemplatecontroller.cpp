@@ -585,13 +585,16 @@ CMessageResult UIViewListDataSource::notify (CBaseObject* sender, IdStringPtr me
 		update (view);
 		if (selectedView)
 		{
-			int32_t index = 0;
-			for (std::vector<CView*>::const_iterator it = subviews.begin(); it != subviews.end (); it++, index++)
+			if (dataBrowser)
 			{
-				if (*it == selectedView)
+				int32_t index = 0;
+				for (std::vector<CView*>::const_iterator it = subviews.begin (); it != subviews.end (); ++it, index++)
 				{
-					dataBrowser->setSelectedRow (index, true);
-					return kMessageNotified;
+					if (*it == selectedView)
+					{
+						dataBrowser->setSelectedRow (index, true);
+						return kMessageNotified;
+					}
 				}
 			}
 			selectedView = nullptr;
