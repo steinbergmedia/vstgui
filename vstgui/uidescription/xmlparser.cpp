@@ -24,15 +24,13 @@
 #else
 	#define BYTEORDER 1234
 #endif
-#if MAC || LINUX
-	#define HAVE_MEMMOVE
-	#define XML_DEV_URANDOM
-#endif
+#define HAVE_MEMMOVE
+
 namespace VSTGUI {
 namespace Xml {
 #include "expat/expat.h"
 }}
-#endif
+#endif // VSTGUI_USE_SYSTEM_EXPAT
 
 #include "xmlparser.h"
 #include <algorithm>
