@@ -25,13 +25,48 @@
 extern void* hInstance;
 
 //------------------------------------------------------------------------
+struct User32Lib
+{
+	static User32Lib& instance ()
+	{
+		static User32Lib gInstance;
+		return gInstance;
+	}
+
+	template<typename T>
+	T getProcAddress (const char* name)
+	{
+		return reinterpret_cast<T> (GetProcAddress (module, name));
+	}
+
+	bool enableNonClientDpiScaling (HWND window)
+	{
+		if (enableNonClientDpiScalingFunc)
+			return enableNonClientDpiScalingFunc (window);
+		return false;
+	}
+
+private:
+	using EnableNonClientDpiScalingFunc = BOOL (WINAPI*) (_In_ HWND hwnd);
+
+	User32Lib ()
+	{
+		module = LoadLibrary (L"user32.dll");
+		enableNonClientDpiScalingFunc = getProcAddress<EnableNonClientDpiScalingFunc> ("EnableNonClientDpiScaling");
+	}
+
+	EnableNonClientDpiScalingFunc enableNonClientDpiScalingFunc;
+	HMODULE module;
+};
+
+//------------------------------------------------------------------------
 struct WindowComposition
 {
 	WindowComposition ()
 	{
-		HMODULE hMod = LoadLibrary (L"user32.dll");
-		get = reinterpret_cast<GetProc> (GetProcAddress (hMod, "GetWindowCompositionAttribute"));
-		set = reinterpret_cast<SetProc> (GetProcAddress (hMod, "SetWindowCompositionAttribute"));
+		auto user32lib = User32Lib::instance ();
+		get = user32lib.getProcAddress<GetProc> ("GetWindowCompositionAttribute");
+		set = user32lib.getProcAddress<SetProc> ("SetWindowCompositionAttribute");
 	}
 
 	bool setWindowTransparent (HWND hwnd)
@@ -197,6 +232,8 @@ static LRESULT CALLBACK WndProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 	Window* window = reinterpret_cast<Window*> ((LONG_PTR)GetWindowLongPtr (hWnd, GWLP_USERDATA));
 	if (window)
 		return window->proc (message, wParam, lParam);
+	if (message == WM_NCCREATE)
+		User32Lib::instance ().enableNonClientDpiScaling (hWnd);
 	return DefWindowProc (hWnd, message, wParam, lParam);
 }
 
