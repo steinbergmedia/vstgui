@@ -116,11 +116,7 @@ public:
 			if (c->getValueNormalized () != newControlValue)
 			{
 				c->setValueNormalized (newControlValue);
-				if (c->getValueNormalized () == newControlValue)
-				{
-					c->valueChanged ();
-					c->invalid ();
-				}
+				c->invalid ();
 			}
 		}
 	}
