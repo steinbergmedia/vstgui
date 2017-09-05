@@ -5,7 +5,6 @@
 #include "../lib/vstguibase.h"
 
 /// @cond ignore
-
 #if VSTGUI_USE_SYSTEM_EXPAT
 #include <expat.h>
 #else
@@ -27,6 +26,7 @@
 #endif
 #if MAC || LINUX
 	#define HAVE_MEMMOVE
+	#define XML_DEV_URANDOM
 #endif
 namespace VSTGUI {
 namespace Xml {
@@ -37,10 +37,15 @@ namespace Xml {
 #include "xmlparser.h"
 #include <algorithm>
 
-#define PARSER static_cast<XML_ParserStruct*>(parser)
-
 namespace VSTGUI {
 namespace Xml {
+
+//------------------------------------------------------------------------
+struct Parser::Impl
+{
+	XML_ParserStruct* parser {nullptr};
+	IHandler* handler {nullptr};
+};
 
 //------------------------------------------------------------------------
 static void XMLCALL gStartElementHandler (void* userData, const char* name, const char** atts)
@@ -80,31 +85,36 @@ static void XMLCALL gCommentHandler (void* userData, const char* string)
 
 //-----------------------------------------------------------------------------
 Parser::Parser ()
-: parser (nullptr)
-, handler (nullptr)
 {
-	parser = XML_ParserCreate ("UTF-8");
+	pImpl = std::unique_ptr<Impl> (new Impl ());
+	pImpl->parser = XML_ParserCreate ("UTF-8");
 }
 
 //-----------------------------------------------------------------------------
 Parser::~Parser () noexcept
 {
-	if (parser)
-		XML_ParserFree (PARSER);
+	if (pImpl->parser)
+		XML_ParserFree (pImpl->parser);
 }
 
 //-----------------------------------------------------------------------------
-bool Parser::parse (IContentProvider* provider, IHandler* _handler)
+IHandler* Parser::getHandler () const
 {
-	if (provider == nullptr || _handler == nullptr)
+	return pImpl->handler;
+}
+
+//-----------------------------------------------------------------------------
+bool Parser::parse (IContentProvider* provider, IHandler* handler)
+{
+	if (provider == nullptr || handler == nullptr)
 		return false;
 
-	handler = _handler;
-	XML_SetUserData (PARSER, this);
-	XML_SetStartElementHandler (PARSER, gStartElementHandler);
-	XML_SetEndElementHandler (PARSER, gEndElementHandler);
-	XML_SetCharacterDataHandler (PARSER, gCharacterDataHandler);
-	XML_SetCommentHandler (PARSER, gCommentHandler);
+	pImpl->handler = handler;
+	XML_SetUserData (pImpl->parser, this);
+	XML_SetStartElementHandler (pImpl->parser, gStartElementHandler);
+	XML_SetEndElementHandler (pImpl->parser, gEndElementHandler);
+	XML_SetCharacterDataHandler (pImpl->parser, gCharacterDataHandler);
+	XML_SetCommentHandler (pImpl->parser, gCommentHandler);
 
 	static const uint32_t kBufferSize = 0x8000;
 
@@ -112,33 +122,33 @@ bool Parser::parse (IContentProvider* provider, IHandler* _handler)
 
 	while (true) 
 	{
-		void* buffer = XML_GetBuffer (PARSER, kBufferSize);
+		void* buffer = XML_GetBuffer (pImpl->parser, kBufferSize);
 		if (buffer == nullptr)
 		{
-			handler = nullptr;
+			pImpl->handler = nullptr;
 			return false;
 		}
 
 		uint32_t bytesRead = provider->readRawXmlData ((int8_t*)buffer, kBufferSize);
 		if (bytesRead == kStreamIOError)
 			bytesRead = 0;
-		XML_Status status = XML_ParseBuffer (PARSER, static_cast<int> (bytesRead), bytesRead == 0);
+		XML_Status status = XML_ParseBuffer (pImpl->parser, static_cast<int> (bytesRead), bytesRead == 0);
 		switch (status) 
 		{
 			case XML_STATUS_ERROR:
 			{
-				XML_Error error = XML_GetErrorCode (PARSER);
+				XML_Error error = XML_GetErrorCode (pImpl->parser);
 				if (error == XML_ERROR_JUNK_AFTER_DOC_ELEMENT) // that's ok
 				{
-					handler = nullptr;
+					pImpl->handler = nullptr;
 					return true;
 				}
 				#if DEBUG
-				XML_Size currentLineNumber = XML_GetCurrentLineNumber (PARSER);
+				XML_Size currentLineNumber = XML_GetCurrentLineNumber (pImpl->parser);
 				DebugPrint ("XML Parser Error on line: %d\n", currentLineNumber);
-				DebugPrint ("%s\n", XML_ErrorString (XML_GetErrorCode (PARSER)));
+				DebugPrint ("%s\n", XML_ErrorString (XML_GetErrorCode (pImpl->parser)));
 				int offset, size;
-				const char* inputContext = XML_GetInputContext (PARSER, &offset, &size);
+				const char* inputContext = XML_GetInputContext (pImpl->parser, &offset, &size);
 				if (inputContext)
 				{
 					int pos = offset;
@@ -168,12 +178,12 @@ bool Parser::parse (IContentProvider* provider, IHandler* _handler)
 					DebugPrint ("^\n");
 				}
 				#endif
-				handler = nullptr;
+				pImpl->handler = nullptr;
 				return false;
 			}
 			case XML_STATUS_SUSPENDED:
 			{
-				handler = nullptr;
+				pImpl->handler = nullptr;
 				return true;
 			}
 			default:
@@ -183,14 +193,14 @@ bool Parser::parse (IContentProvider* provider, IHandler* _handler)
 		if (bytesRead == 0)
 			break;
 	}
-	handler = nullptr;
+	pImpl->handler = nullptr;
 	return true;
 }
 
 //-----------------------------------------------------------------------------
 bool Parser::stop ()
 {
-	XML_StopParser (PARSER, false);
+	XML_StopParser (pImpl->parser, false);
 	return true;
 }
 
