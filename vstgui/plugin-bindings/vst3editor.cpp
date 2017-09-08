@@ -725,28 +725,6 @@ void VST3Editor::onViewRemoved (CFrame* frame, CView* view)
 	}
 }
 
-//-----------------------------------------------------------------------------
-int32_t VST3Editor::onKeyDown (const VstKeyCode& code, CFrame* frame)
-{
-#if VSTGUI_LIVE_EDITING
-	if (code.modifier == MODIFIER_CONTROL && getFrame ()->getModalView () == 0)
-	{
-		if (code.character == 'e')
-		{
-			enableEditing (!editingEnabled);
-			return 1;
-		}
-	}
-#endif
-	return -1;
-}
-
-//-----------------------------------------------------------------------------
-int32_t VST3Editor::onKeyUp (const VstKeyCode& code, CFrame* frame)
-{
-	return -1;
-}
-
 #if VST3_SUPPORTS_CONTEXTMENU
 /// @cond ignore
 namespace VST3EditorInternal {
@@ -1103,6 +1081,35 @@ private:
 #define kFrameFocusColorAttr "frame-focus-color"
 #define kFrameFocusWidthAttr "frame-focus-width"
 
+#if VSTGUI_LIVE_EDITING
+// keyboard hook
+struct VST3Editor::KeyboardHook : public IKeyboardHook
+{
+public:
+	using Func = std::function<int32_t (const VstKeyCode& code, CFrame* frame)>;
+
+	KeyboardHook (Func&& keyDown, Func&& keyUp)
+	: onKeyDownFunc (std::move (keyDown)), onKeyUpFunc (std::move (keyUp))
+	{
+	}
+
+private:
+	int32_t onKeyDown (const VstKeyCode& code, CFrame* frame) override
+	{
+		return onKeyDownFunc (code, frame);
+	}
+	int32_t onKeyUp (const VstKeyCode& code, CFrame* frame) override
+	{
+		return onKeyUpFunc (code, frame);
+	}
+
+	Func onKeyDownFunc;
+	Func onKeyUpFunc;
+};
+#else
+struct VST3Editor::KeyboardHook {};
+#endif
+
 //-----------------------------------------------------------------------------
 bool PLUGIN_API VST3Editor::open (void* parent, const PlatformType& type)
 {
@@ -1111,7 +1118,21 @@ bool PLUGIN_API VST3Editor::open (void* parent, const PlatformType& type)
 	getFrame ()->setTransparency (true);
 	getFrame ()->registerMouseObserver (this);
 #if VSTGUI_LIVE_EDITING
-	getFrame ()->registerKeyboardHook (this);
+	// will delete itself when the frame will be destroyed
+	keyboardHook = new KeyboardHook (
+	    [this] (const VstKeyCode& code, CFrame* frame) {
+		    if (code.modifier == MODIFIER_CONTROL && frame->getModalView () == 0)
+		    {
+			    if (code.character == 'e')
+			    {
+				    enableEditing (!editingEnabled);
+				    return 1;
+			    }
+		    }
+		    return -1;
+	    },
+	    [this] (const VstKeyCode&, CFrame*) { return -1; });
+	getFrame ()->registerKeyboardHook (keyboardHook);
 #endif
 	getFrame ()->enableTooltips (tooltipsEnabled);
 
@@ -1154,7 +1175,12 @@ void PLUGIN_API VST3Editor::close ()
 	{
 
 #if VSTGUI_LIVE_EDITING
-		getFrame ()->unregisterKeyboardHook (this);
+		if (keyboardHook)
+		{
+			getFrame ()->unregisterKeyboardHook (keyboardHook);
+			delete keyboardHook;
+		}
+		keyboardHook = nullptr;
 #endif
 		getFrame ()->unregisterMouseObserver (this);
 		getFrame ()->removeAll (true);
