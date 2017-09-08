@@ -129,28 +129,27 @@ protected:
 	Steinberg::tresult PLUGIN_API setContentScaleFactor (ScaleFactor factor) override;
 #endif
 
-	UIDescription* description;
-	VST3EditorDelegate* delegate;
-	IController* originalController;
+	struct KeyboardHook;
+	KeyboardHook* keyboardHook {nullptr};
+	UIDescription* description {nullptr};
+	VST3EditorDelegate* delegate {nullptr};
+	IController* originalController {nullptr};
 	typedef std::map<int32_t, ParameterChangeListener*> ParameterChangeListenerMap;
 	ParameterChangeListenerMap paramChangeListeners;
 	std::string viewName;
 	std::string xmlFile;
-	bool tooltipsEnabled;
-	bool doCreateView;
-	bool editingEnabled;
-	bool requestResizeGuard;
+	bool tooltipsEnabled {true};
+	bool doCreateView {false};
+	bool editingEnabled {false};
+	bool requestResizeGuard {false};
 
-	double contentScaleFactor;
-	double zoomFactor;
+	double contentScaleFactor {1.};
+	double zoomFactor {1.};
 	std::vector<double> allowedZoomFactors;
 	
 	CPoint minSize;
 	CPoint maxSize;
 	CRect nonEditRect;
-	
-	struct KeyboardHook;
-	KeyboardHook* keyboardHook {nullptr};
 };
 
 } // namespace

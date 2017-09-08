@@ -364,12 +364,7 @@ See @ref page_vst3_inline_editing @n
 //-----------------------------------------------------------------------------
 VST3Editor::VST3Editor (Steinberg::Vst::EditController* controller, UTF8StringPtr _viewName, UTF8StringPtr _xmlFile)
 : VSTGUIEditor (controller)
-, doCreateView (false)
-, tooltipsEnabled (true)
 , delegate (dynamic_cast<VST3EditorDelegate*> (controller))
-, originalController (0)
-, editingEnabled (false)
-, requestResizeGuard (false)
 {
 	description = new UIDescription (_xmlFile);
 	viewName = _viewName;
@@ -380,12 +375,7 @@ VST3Editor::VST3Editor (Steinberg::Vst::EditController* controller, UTF8StringPt
 //-----------------------------------------------------------------------------
 VST3Editor::VST3Editor (UIDescription* desc, Steinberg::Vst::EditController* controller, UTF8StringPtr _viewName, UTF8StringPtr _xmlFile)
 : VSTGUIEditor (controller)
-, doCreateView (false)
-, tooltipsEnabled (true)
 , delegate (dynamic_cast<VST3EditorDelegate*> (controller))
-, originalController (0)
-, editingEnabled (false)
-, requestResizeGuard (false)
 {
 	description = desc;
 	description->remember ();
@@ -417,7 +407,6 @@ void VST3Editor::init ()
 	// we will always call CView::setDirty() on the main thread
 	VSTGUI::CView::kDirtyCallAlwaysOnMainThread = true;
 
-	zoomFactor = contentScaleFactor = 1.;
 	setIdleRate (300);
 	if (description->parse ())
 	{
