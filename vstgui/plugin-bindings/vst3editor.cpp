@@ -849,12 +849,12 @@ CMouseEventResult VST3Editor::onMouseDown (CFrame* frame, const CPoint& where, c
 		Steinberg::Vst::ParamID paramID;
 		if (handler)
 		{
-			bool paramFound = findParameter ((Steinberg::int32)where.x, (Steinberg::int32)where.y, paramID) == Steinberg::kResultTrue;
+			CPoint where2 (where);
+			getFrame ()->getTransform ().transform (where2);
+			bool paramFound = findParameter ((Steinberg::int32)where2.x, (Steinberg::int32)where2.y, paramID) == Steinberg::kResultTrue;
 			Steinberg::Vst::IContextMenu* contextMenu = handler->createContextMenu (this, paramFound ? &paramID : 0);
 			if (contextMenu)
 			{
-				CPoint where2 (where);
-				getFrame ()->getTransform ().transform (where2);
 				getFrame ()->onStartLocalEventLoop ();
 				if (controllerMenu)
 					VST3EditorInternal::addCOptionMenuEntriesToIContextMenu (this, controllerMenu, contextMenu);
