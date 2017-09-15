@@ -9,6 +9,7 @@
 
 #if MAC_CARBON
 
+#include "../../iplatformframe.h"
 #include <Carbon/Carbon.h>
 
 namespace VSTGUI {
