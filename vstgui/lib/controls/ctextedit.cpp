@@ -377,7 +377,7 @@ void CTextEdit::updateText (IPlatformTextEdit* pte)
 
 		setText (newText);
 
-		valueChanged ();
+		CParamDisplay::valueChanged ();
 
 		endEdit ();
 	}
