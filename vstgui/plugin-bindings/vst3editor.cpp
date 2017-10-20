@@ -201,8 +201,9 @@ public:
 	{
 		if (parameter)
 		{
-			editController->setParamNormalized (getParameterID (), value);
-			editController->performEdit (getParameterID (), value);
+			auto id = getParameterID ();
+			if (editController->setParamNormalized (id, value) == Steinberg::kResultTrue)
+				editController->performEdit (id, editController->getParamNormalized (id));
 		}
 		else
 		{
