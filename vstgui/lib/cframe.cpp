@@ -543,21 +543,20 @@ CMouseEventResult CFrame::onMouseMoved (CPoint &where, const CButtonState& butto
 	}
 	else
 	{
-		CPoint p (where);
-		result = CViewContainer::onMouseMoved (p, buttons);
-		if (result == kMouseEventNotHandled)
+		result = CViewContainer::onMouseMoved (where, buttons);
+	}
+	if (result == kMouseEventNotHandled)
+	{
+		CButtonState buttons2 = (buttons & (kShift | kControl | kAlt | kApple));
+		auto it = pImpl->mouseViews.rbegin ();
+		while (it != pImpl->mouseViews.rend ())
 		{
-			CButtonState buttons2 = (buttons & (kShift | kControl | kAlt | kApple));
-			auto it = pImpl->mouseViews.rbegin ();
-			while (it != pImpl->mouseViews.rend ())
-			{
-				p = where2;
-				(*it)->getParentView ()->frameToLocal (p);
-				result = (*it)->onMouseMoved (p, buttons2);
-				if (result == kMouseEventHandled)
-					break;
-				++it;
-			}
+			CPoint p = where2;
+			(*it)->getParentView ()->frameToLocal (p);
+			result = (*it)->onMouseMoved (p, buttons2);
+			if (result == kMouseEventHandled)
+				break;
+			++it;
 		}
 	}
 	return result;
@@ -843,9 +842,10 @@ bool CFrame::setModalView (CView* pView)
 	
 	pImpl->modalView = pView;
 
+	bool result = true;
 	if (pImpl->modalView)
 	{
-		bool result = addView (pImpl->modalView);
+		result = addView (pImpl->modalView);
 		if (result)
 		{
 			clearMouseViews (CPoint (0, 0), 0, true);
@@ -854,16 +854,15 @@ bool CFrame::setModalView (CView* pView)
 			else
 				setFocusView (pImpl->modalView->wantsFocus () ? pImpl->modalView : nullptr);
 		}
-		return result;
 	}
-	else
+	if (result)
 	{
 		CPoint where;
 		getCurrentMouseLocation (where);
 		checkMouseViews (where, getCurrentMouseButtons ());
 	}
 
-	return true;
+	return result;
 }
 
 //-----------------------------------------------------------------------------
