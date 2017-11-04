@@ -13,7 +13,9 @@
 	#include <dwrite.h>
 	#include <wincodec.h>
 
+#ifdef _MSC_VER
 #pragma comment (lib,"windowscodecs.lib")
+#endif
 
 #endif
 
