@@ -30,8 +30,10 @@
 #include <windowsx.h>
 
 // windows libraries VSTGUI depends on
+#ifdef _MSC_VER
 #pragma comment(lib, "Shlwapi.lib")
 #pragma comment(lib, "gdiplus.lib")
+#endif
 
 namespace VSTGUI {
 
