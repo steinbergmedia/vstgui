@@ -102,12 +102,14 @@
 	#endif
 	#define VSTGUI_DIRECT2D_SUPPORT	1
 	#define DEPRECATED_ATTRIBUTE __declspec(deprecated)
-	#pragma warning(3 : 4189) // local variable is initialized but not referenced
-	#pragma warning(3 : 4702) // unreachable code
-	#pragma warning(3 : 4995) // deprecated
-	#pragma warning(3 : 4431) // missing type specifier - int assumed. Note: C no longer supports default-int
-	#pragma warning(3 : 4254) // conversion from 'type1' to 'type2', possible loss of data
-	#pragma warning(3 : 4388) // signed/unsigned mismatch
+	#ifdef _MSC_VER
+		#pragma warning(3 : 4189) // local variable is initialized but not referenced
+		#pragma warning(3 : 4702) // unreachable code
+		#pragma warning(3 : 4995) // deprecated
+		#pragma warning(3 : 4431) // missing type specifier - int assumed. Note: C no longer supports default-int
+		#pragma warning(3 : 4254) // conversion from 'type1' to 'type2', possible loss of data
+		#pragma warning(3 : 4388) // signed/unsigned mismatch
+	#endif
 
 	#if defined (__clang__) && __clang__
 		#if defined (VSTGUI_WARN_EVERYTHING) && VSTGUI_WARN_EVERYTHING == 1
