@@ -40,8 +40,8 @@ WinTimer::TimerMap WinTimer::gTimerMap;
 
 //-----------------------------------------------------------------------------
 WinTimer::WinTimer (IPlatformTimerCallback* callback)
-: callback (callback)
-, timer (0)
+: timer (0)
+, callback (callback)
 {
 }
 
