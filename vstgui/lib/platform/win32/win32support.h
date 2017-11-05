@@ -17,7 +17,7 @@ using std::min;
 using std::max;
 #include <windows.h>
 #if defined (WINAPI_FAMILY_SYSTEM)
-#include <VersionHelpers.h>
+#include <versionhelpers.h>
 #endif
 
 #include <objidl.h>
