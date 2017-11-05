@@ -2992,6 +2992,44 @@ public:
 	IdStringPtr getBaseViewName () const override { return kCKnob; }
 	UTF8StringPtr getDisplayName () const override { return "Animation Knob"; }
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CAnimKnob (CRect (0, 0, 0, 0), nullptr, -1, nullptr); }
+
+	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
+	{
+		CAnimKnob* animKnob = dynamic_cast<CAnimKnob*> (view);
+		if (!animKnob)
+			return false;
+
+		bool b;
+		if (attributes.getBooleanAttribute(kAttrInverseBitmap, b))
+		{
+			animKnob->setInverseBitmap (b);
+		}
+
+		return IMultiBitmapControlCreator::apply (view, attributes, description);
+	}
+	bool getAttributeNames (std::list<std::string>& attributeNames) const override
+	{
+		attributeNames.emplace_back (kAttrInverseBitmap);
+		return IMultiBitmapControlCreator::getAttributeNames (attributeNames);
+	}
+	AttrType getAttributeType (const std::string& attributeName) const override
+	{
+		if (attributeName == kAttrInverseBitmap) return kBooleanType;
+		return IMultiBitmapControlCreator::getAttributeType (attributeName);
+	}
+	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const override
+	{
+		CAnimKnob* animKnob = dynamic_cast<CAnimKnob*> (view);
+		if (!animKnob)
+			return false;
+
+		if (attributeName == kAttrInverseBitmap)
+		{
+			stringValue = animKnob->getInverseBitmap() ? "true" : "false";
+			return true;
+		}
+		return IMultiBitmapControlCreator::getAttributeValue (view, attributeName, stringValue, desc);
+	}
 };
 CAnimKnobCreator __gCAnimKnobCreator;
 
