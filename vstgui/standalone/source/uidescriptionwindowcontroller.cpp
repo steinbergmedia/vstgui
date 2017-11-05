@@ -113,11 +113,11 @@ public:
 		auto newControlValue = static_cast<float> (newValue);
 		for (auto& c : controls)
 		{
-			if (c->getValueNormalized () != newControlValue)
-			{
-				c->setValueNormalized (newControlValue);
-				c->invalid ();
-			}
+			updateControl = c;
+			c->setValueNormalized (newControlValue);
+			c->valueChanged ();
+			c->invalid ();
+			updateControl = nullptr;
 		}
 	}
 
@@ -161,12 +161,11 @@ public:
 
 	void valueChanged (CControl* control) override
 	{
-		auto preValue = static_cast<float> (value->getValue ());
-		auto newValue = control->getValueNormalized ();
-		if (preValue != newValue || dynamic_cast<CTextEdit*>(control))
-			value->performEdit (newValue);
-		else
-			onPerformEdit (*value, value->getValue ());
+		if (updateControl == control)
+			return;
+
+		auto newValue = static_cast<IValue::Type> (control->getValueNormalized ());
+		value->performEdit (newValue);
 	}
 
 	void controlBeginEdit (CControl* control) override { value->beginEdit (); }
@@ -226,6 +225,7 @@ protected:
 
 	ValuePtr value;
 	ControlList controls;
+	CControl* updateControl {nullptr};
 };
 
 using ValueWrapperPtr = std::unique_ptr<ValueWrapper>;
