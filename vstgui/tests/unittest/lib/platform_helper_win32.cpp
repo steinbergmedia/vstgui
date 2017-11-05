@@ -4,7 +4,7 @@
 
 #include "platform_helper.h"
 #include "../../../lib/platform/win32/win32support.h"
-#include <Windows.h>
+#include <windows.h>
 
 namespace VSTGUI {
 namespace UnitTest {
