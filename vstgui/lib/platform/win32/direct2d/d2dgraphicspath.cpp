@@ -214,9 +214,9 @@ public:
 	}
 
 	AlignPixelSink (D2DDrawContext* context)
-	: context (context)
-	, path (0)
+	: path (0)
 	, sink (0)
+	, context (context)
 	, isClosed (true)
 	{
 	}
