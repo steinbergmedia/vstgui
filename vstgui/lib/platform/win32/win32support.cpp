@@ -13,7 +13,9 @@
 	#include <dwrite.h>
 	#include <wincodec.h>
 
+#ifdef _MSC_VER
 #pragma comment (lib,"windowscodecs.lib")
+#endif
 
 #endif
 
@@ -368,8 +370,8 @@ void GDIPlusGlobals::exit ()
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 ResourceStream::ResourceStream ()
-: streamPos (0)
-, resData (0)
+: resData (0)
+, streamPos (0)
 , resSize (0)
 , _refcount (1)
 {
