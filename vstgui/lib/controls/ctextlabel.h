@@ -94,6 +94,7 @@ public:
 	void setText (const UTF8String& txt) override;
 	void setViewSize (const CRect& rect, bool invalid = true) override;
 	void setTextTruncateMode (TextTruncateMode mode) override;
+	void setValue (float val) override;
 private:
 	void drawStyleChanged () override;
 	void recalculateLines (CDrawContext* context);
