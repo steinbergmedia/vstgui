@@ -13,7 +13,7 @@ function(vstgui_set_cxx_version target version)
   set_property(TARGET ${target} PROPERTY CXX_STANDARD ${version})
   set_property(TARGET ${target} PROPERTY CXX_STANDARD_REQUIRED ON)
   set_property(TARGET ${target} PROPERTY CMAKE_CXX_STANDARD_REQUIRED ON)
-  if(APPLE)
+  if(CMAKE_SYSTEM_NAME MATCHES "Darwin")
   	target_compile_options(${target} PUBLIC "-stdlib=libc++")
   endif()
 endfunction(vstgui_set_cxx_version target version)
@@ -55,7 +55,7 @@ endif()
 ##########################################################################################
 set(VSTGUI_COMPILE_DEFINITIONS_DEBUG "VSTGUI_LIVE_EDITING;DEBUG")
 set(VSTGUI_COMPILE_DEFINITIONS_RELEASE "NDEBUG;RELEASE")
-if(CMAKE_HOST_APPLE)
+if(CMAKE_SYSTEM_NAME MATCHES "Darwin")
 	if(CMAKE_C_COMPILER_VERSION VERSION_GREATER 7)
 		set(VSTGUI_LTO_COMPILER_FLAGS "-O3 -flto=thin")
 	else()
@@ -63,7 +63,7 @@ if(CMAKE_HOST_APPLE)
 	endif()
   set(VSTGUI_LTO_LINKER_FLAGS "")
 endif()
-if(UNIX AND NOT CMAKE_HOST_APPLE)
+if(CMAKE_SYSTEM_NAME MATCHES "^(Linux|.*BSD)")
 	set(VSTGUI_LTO_COMPILER_FLAGS "-O3 -flto")
 	set(VSTGUI_LTO_LINKER_FLAGS "")
 	find_package(X11 REQUIRED)
@@ -110,6 +110,13 @@ set(CMAKE_STATIC_LINKER_FLAGS_RELEASELTO
   "${CMAKE_STATIC_LINKER_FLAGS_RELEASE} ${VSTGUI_LTO_LINKER_FLAGS}"
 )
 
+if(CMAKE_SYSTEM_NAME MATCHES "Windows" AND
+    (CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang"))
+  add_definitions(-D_WIN32_WINNT=0x601 -DWINVER=0x601)
+  add_definitions(-DWIN32_LEAN_AND_MEAN=1)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-multichar")
+endif()
+
 ##########################################################################################
 if(NOT CMAKE_CONFIGURATION_TYPES)
   if(NOT CMAKE_BUILD_TYPE)
@@ -136,7 +143,11 @@ endif()
 add_subdirectory(lib)
 add_subdirectory(uidescription)
 
-if(UNIX AND NOT CMAKE_HOST_APPLE)
+if(CMAKE_SYSTEM_NAME MATCHES "Linux")
+  set(VSTGUI_DISABLE_STANDALONE 1)
+endif()
+if(CMAKE_SYSTEM_NAME MATCHES "Windows" AND
+    (CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang"))
   set(VSTGUI_DISABLE_STANDALONE 1)
 endif()
 

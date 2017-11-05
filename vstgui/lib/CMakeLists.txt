@@ -249,18 +249,18 @@ set(${target}_linux_sources
 )
 
 ##########################################################################################
-if(CMAKE_HOST_APPLE)
+if(CMAKE_SYSTEM_NAME MATCHES "Darwin")
   set(${target}_sources ${${target}_common_sources} ${${target}_mac_sources})
 endif()
 
 ##########################################################################################
-if(MSVC)
+if(CMAKE_SYSTEM_NAME MATCHES "Windows")
   set(${target}_sources ${${target}_common_sources} ${${target}_win32_sources})
 endif()
 
 ##########################################################################################
 # Linux
-if(UNIX AND NOT CMAKE_HOST_APPLE)
+if(CMAKE_SYSTEM_NAME MATCHES "^(Linux|.*BSD)")
 	set(${target}_sources ${${target}_common_sources} ${${target}_linux_sources})
 endif()
 
@@ -271,7 +271,7 @@ target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS})
 vstgui_set_cxx_version(${target} 11)
 vstgui_source_group_by_folder(${target})
 
-if(UNIX AND NOT CMAKE_HOST_APPLE)
+if(CMAKE_SYSTEM_NAME MATCHES "^(Linux|.*BSD)")
 	target_include_directories(${target} PRIVATE ${X11_INCLUDE_DIR})
     target_include_directories(${target} PRIVATE ${GTK3_INCLUDE_DIRS})
     target_include_directories(${target} PRIVATE ${GTKMM3_INCLUDE_DIRS})
