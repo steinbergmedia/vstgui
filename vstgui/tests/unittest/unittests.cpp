@@ -15,7 +15,8 @@
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
-#include <Windows.h>
+#include <windows.h>
+#include <objbase.h>
 #endif
 
 namespace VSTGUI {
