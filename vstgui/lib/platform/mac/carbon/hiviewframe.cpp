@@ -569,7 +569,7 @@ DragResult HIViewFrame::doDrag (IDataPackage* source, const CPoint& offset, CBit
 			if (eventRef && ConvertEventRefToEventRecord (eventRef, &eventRecord))
 			{
 
-				CGBitmap* cgBitmap = dragBitmap ? dynamic_cast<CGBitmap*> (dragBitmap->getPlatformBitmap ()) : 0;
+				CGBitmap* cgBitmap = dragBitmap ? dragBitmap->getPlatformBitmap ().cast<CGBitmap> () : 0;
 				CGImageRef cgImage = cgBitmap ? cgBitmap->getCGImage () : 0;
 				if (cgImage)
 				{
