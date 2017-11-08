@@ -6,7 +6,7 @@
 #include "../../../../lib/platform/win32/win32support.h"
 #include "../../../include/iappdelegate.h"
 #include "../../../include/iapplication.h"
-#include <Shlobj.h>
+#include <shlobj.h>
 #include <array>
 
 //------------------------------------------------------------------------
