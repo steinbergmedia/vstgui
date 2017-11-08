@@ -857,6 +857,11 @@ bool CViewContainer::hitTest (const CPoint& where, const CButtonState& buttons)
 //-----------------------------------------------------------------------------
 CMouseEventResult CViewContainer::onMouseDown (CPoint &where, const CButtonState& buttons)
 {
+	if (pImpl->mouseDownView)
+	{
+		// we ignore secondary buttons when another button is already in a pressed state
+		return kMouseEventHandled;
+	}
 	// convert to relativ pos
 	CPoint where2 (where);
 	where2.offset (-getViewSize ().left, -getViewSize ().top);
