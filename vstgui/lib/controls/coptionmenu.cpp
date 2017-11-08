@@ -411,7 +411,7 @@ bool COptionMenu::doPopup ()
 bool COptionMenu::popup ()
 {
 	bool popupResult = false;
-	if (!getFrame ())
+	if (!getFrame () || menuItems->empty ())
 		return popupResult;
 
 	CBaseObjectGuard objGuard (this);
