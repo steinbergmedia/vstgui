@@ -5,7 +5,7 @@
 #pragma once
 
 #include "../../../../lib/cstring.h"
-#include <Windows.h>
+#include <windows.h>
 #include <functional>
 #include <vector>
 #include <memory>

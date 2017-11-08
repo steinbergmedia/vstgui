@@ -10,6 +10,7 @@
 #if WINDOWS
 
 #include <windows.h>
+#include <objidl.h>
 #include <vector>
 #include <string>
 
