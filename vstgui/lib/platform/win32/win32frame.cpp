@@ -30,8 +30,10 @@
 #include <windowsx.h>
 
 // windows libraries VSTGUI depends on
+#ifdef _MSC_VER
 #pragma comment(lib, "Shlwapi.lib")
 #pragma comment(lib, "gdiplus.lib")
+#endif
 
 namespace VSTGUI {
 
@@ -144,8 +146,8 @@ static bool isParentLayered (HWND parent)
 //-----------------------------------------------------------------------------
 Win32Frame::Win32Frame (IPlatformFrameCallback* frame, const CRect& size, HWND parent, PlatformType parentType)
 : IPlatformFrame (frame)
-, windowHandle (0)
 , parentWindow (parent)
+, windowHandle (0)
 , tooltipWindow (0)
 , backBuffer (0)
 , deviceContext (0)
