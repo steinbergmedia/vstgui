@@ -117,6 +117,17 @@ void CViewContainer::parentSizeChanged ()
 //-----------------------------------------------------------------------------
 void CViewContainer::setMouseDownView (CView* view)
 {
+	if (pImpl->mouseDownView && pImpl->mouseDownView != view)
+	{
+		// make sure the old mouse down view get a mouse cancel or if not implemented a mouse up
+		if (auto cvc = pImpl->mouseDownView->asViewContainer ())
+			cvc->setMouseDownView (nullptr);
+		else if (pImpl->mouseDownView->onMouseCancel () == kMouseEventNotImplemented)
+		{
+			CPoint p = pImpl->mouseDownView->getViewSize ().getTopLeft () - CPoint (10, 10);
+			pImpl->mouseDownView->onMouseUp (p, 0);
+		}
+	}
 	pImpl->mouseDownView = view;
 }
 
@@ -857,11 +868,6 @@ bool CViewContainer::hitTest (const CPoint& where, const CButtonState& buttons)
 //-----------------------------------------------------------------------------
 CMouseEventResult CViewContainer::onMouseDown (CPoint &where, const CButtonState& buttons)
 {
-	if (pImpl->mouseDownView)
-	{
-		// we ignore secondary buttons when another button is already in a pressed state
-		return kMouseEventHandled;
-	}
 	// convert to relativ pos
 	CPoint where2 (where);
 	where2.offset (-getViewSize ().left, -getViewSize ().top);
