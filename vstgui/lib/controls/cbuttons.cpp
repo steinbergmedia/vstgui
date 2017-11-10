@@ -97,7 +97,8 @@ CMouseEventResult COnOffButton::onMouseUp (CPoint& where, const CButtonState& bu
 //------------------------------------------------------------------------
 CMouseEventResult COnOffButton::onMouseCancel ()
 {
-	endEdit ();
+	if (isEditing ())
+		endEdit ();
 	return kMouseEventHandled;
 }
 
@@ -214,23 +215,32 @@ CMouseEventResult CKickButton::onMouseDown (CPoint& where, const CButtonState& b
 //------------------------------------------------------------------------
 CMouseEventResult CKickButton::onMouseCancel ()
 {
-	value = getMin ();
-	if (isDirty ())
-		invalid ();
-	endEdit ();
+	if (isEditing ())
+	{
+		value = getMin ();
+		if (isDirty ())
+		{
+			valueChanged ();
+			invalid ();
+		}
+		endEdit ();
+	}
 	return kMouseEventHandled;
 }
 
 //------------------------------------------------------------------------
 CMouseEventResult CKickButton::onMouseUp (CPoint& where, const CButtonState& buttons)
 {
-	if (value > 0.f)
+	if (isEditing ())
+	{
+		if (value > 0.f)
+			valueChanged ();
+		value = getMin ();
 		valueChanged ();
-	value = getMin ();
-	valueChanged ();
-	if (isDirty ())
-		invalid ();
-	endEdit ();
+		if (isDirty ())
+			invalid ();
+		endEdit ();
+	}
 	return kMouseEventHandled;
 }
 
@@ -592,11 +602,15 @@ CMouseEventResult CCheckBox::onMouseMoved (CPoint& where, const CButtonState& bu
 //------------------------------------------------------------------------
 CMouseEventResult CCheckBox::onMouseCancel ()
 {
-	hilight = false;
-	value = previousValue;
-	if (isDirty ())
+	if (isEditing ())
+	{
+		hilight = false;
+		value = previousValue;
+		if (isDirty ())
+			valueChanged ();
 		invalid ();
-	endEdit ();
+		endEdit ();
+	}
 	return kMouseEventHandled;
 }
 
@@ -920,10 +934,13 @@ CMouseEventResult CTextButton::onMouseDown (CPoint& where, const CButtonState& b
 //------------------------------------------------------------------------
 CMouseEventResult CTextButton::onMouseCancel ()
 {
-	value = fEntryState;
-	if (isDirty ())
-		invalid ();
-	endEdit ();
+	if (isEditing ())
+	{
+		value = fEntryState;
+		if (isDirty ())
+			invalid ();
+		endEdit ();
+	}
 	return kMouseEventHandled;
 }
 

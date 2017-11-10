@@ -26,6 +26,7 @@ public:
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseCancel () override;
 	int32_t onKeyDown (VstKeyCode& keyCode) override;
 
 	bool sizeToFit () override;
@@ -39,6 +40,7 @@ protected:
 
 private:
 	double coef;
+	float mouseStartValue;
 };
 
 
@@ -59,6 +61,7 @@ public:
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseCancel () override;
 	int32_t onKeyDown (VstKeyCode& keyCode) override;
 
 	bool sizeToFit () override;
@@ -72,6 +75,7 @@ protected:
 
 private:
 	double coef;
+	float mouseStartValue;
 };
 
 
@@ -93,6 +97,7 @@ public:
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseCancel () override;
 	int32_t onKeyDown (VstKeyCode& keyCode) override;
 	int32_t onKeyUp (VstKeyCode& keyCode) override;
 
@@ -111,7 +116,7 @@ protected:
 
 	CVSTGUITimer* resetValueTimer;
 private:
-	float fEntryState;
+	float mouseStartValue;
 };
 
 } // namespace

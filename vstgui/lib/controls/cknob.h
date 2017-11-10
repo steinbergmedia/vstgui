@@ -91,7 +91,8 @@ public:
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
-
+	CMouseEventResult onMouseCancel () override;
+	
 	CLASS_METHODS(CKnob, CControl)
 protected:
 	~CKnob () noexcept override;
