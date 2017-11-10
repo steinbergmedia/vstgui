@@ -235,6 +235,11 @@ static const std::string kAttrHeightOfOneImage = "height-of-one-image";
 static const std::string kAttrSubPixmaps = "sub-pixmaps";
 
 //-----------------------------------------------------------------------------
+// CAnimKnobCreator attributes
+//-----------------------------------------------------------------------------
+static const std::string kAttrInverseBitmap = "inverse-bitmap";
+
+//-----------------------------------------------------------------------------
 // CSliderCreator attributes
 //-----------------------------------------------------------------------------
 static const std::string kAttrTransparentHandle = "transparent-handle";

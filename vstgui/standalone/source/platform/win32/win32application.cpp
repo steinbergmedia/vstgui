@@ -14,8 +14,8 @@
 #include "win32preference.h"
 #include "win32window.h"
 #include "win32commondirectories.h"
-#include <ShellScalingAPI.h>
-#include <Windows.h>
+#include <shellscalingapi.h>
+#include <windows.h>
 #include <array>
 #include <chrono>
 

@@ -16,16 +16,16 @@ namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
 D2DBitmap::D2DBitmap ()
-: source (0)
-, scaleFactor (1.)
+: scaleFactor (1.)
+, source (0)
 {
 }
 
 //-----------------------------------------------------------------------------
 D2DBitmap::D2DBitmap (const CPoint& size)
-: source (0)
-, size (size)
+: size (size)
 , scaleFactor (1.)
+, source (0)
 {
 	REFWICPixelFormatGUID pixelFormat = GUID_WICPixelFormat32bppPBGRA;
 	WICBitmapCreateCacheOption options = WICBitmapCacheOnLoad;
