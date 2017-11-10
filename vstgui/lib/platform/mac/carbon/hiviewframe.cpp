@@ -7,6 +7,9 @@
 #if MAC_CARBON
 
 #include "../../iplatformtextedit.h"
+#include "../../iplatformbitmap.h"
+#include "../../iplatformopenglview.h"
+#include "../../iplatformviewlayer.h"
 #include "../../../cbitmap.h"
 #include "../../../cdrawcontext.h"
 #include "../../../cdropsource.h"

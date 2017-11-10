@@ -9,6 +9,9 @@
 
 #if MAC_CARBON
 
+#include "../../iplatformopenglview.h"
+#include "../../iplatformviewlayer.h"
+
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations" // we know that we use deprecated functions from Carbon, so we don't want to be warned
 
 namespace VSTGUI {

@@ -5,6 +5,7 @@
 #pragma once
 
 #include "../../vstguifwd.h"
+#include "x11frame.h"
 #include <atomic>
 #include <list>
 #include <map>
@@ -39,6 +40,40 @@ private:
 	Platform ();
 
 	std::string path;
+};
+
+//------------------------------------------------------------------------
+struct RunLoop
+{
+	static void init (const SharedPointer<IRunLoop>& runLoop)
+	{
+		if (++instance ().useCount == 1)
+		{
+			instance ().runLoop = runLoop;
+		}
+	}
+
+	static void exit ()
+	{
+		if (--instance ().useCount == 0)
+		{
+			instance ().runLoop = nullptr;
+		}
+	}
+
+	static const SharedPointer<IRunLoop> get ()
+	{
+		return instance ().runLoop;
+	}
+
+private:
+	static RunLoop& instance ()
+	{
+		static RunLoop gInstance;
+		return gInstance;
+	}
+	SharedPointer<IRunLoop> runLoop;
+	std::atomic<uint32_t> useCount {0};
 };
 
 //------------------------------------------------------------------------
