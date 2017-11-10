@@ -207,7 +207,6 @@ CMouseEventResult CKickButton::onMouseDown (CPoint& where, const CButtonState& b
 {
 	if (!(buttons & kLButton))
 		return kMouseEventNotHandled;
-	fEntryState = value;
 	beginEdit ();
 	return onMouseMoved (where, buttons);
 }
