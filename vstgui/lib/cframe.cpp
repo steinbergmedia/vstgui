@@ -1457,17 +1457,6 @@ IPlatformFrame* CFrame::getPlatformFrame () const
 }
 
 //-----------------------------------------------------------------------------
-bool CFrame::handleNextSystemEvents ()
-{
-	if (auto rle = dynamic_cast<IPlatformFrameRunLoopExt*> (getPlatformFrame ()))
-	{
-		rle->handleNextEvents ();
-		return true;
-	}
-	return false;
-}
-
-//-----------------------------------------------------------------------------
 bool CFrame::platformDrawRect (CDrawContext* context, const CRect& rect)
 {
 	drawRect (context, rect);

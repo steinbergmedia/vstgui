@@ -585,22 +585,24 @@ static UIViewFactory* getGenericViewFactory ()
 
 namespace UIDescriptionPrivate {
 //-----------------------------------------------------------------------------
-static bool decodeScaleFactorFromName (std::string name, std::string identicator, double& scaleFactor)
+static bool decodeScaleFactorFromName (const std::string& name, const char* identicator,
+                                       double& scaleFactor)
 {
-	size_t index = name.find_last_of (identicator);
-	if (index == std::string::npos)
+	size_t indicatorIndex = name.find_last_of (identicator);
+	if (indicatorIndex == std::string::npos)
 		return false;
-	name.erase (0, index+1);
-	index = name.find_last_of ("x");
-	if (index == std::string::npos)
+	size_t xIndex = name.find_last_of ("x");
+	if (xIndex == std::string::npos)
 		return false;
-	name.erase (index);
-	scaleFactor = UTF8StringView (name.c_str ()).toDouble ();
-	return true;
+	std::string tmp (name);
+	tmp.erase (0, ++indicatorIndex);
+	tmp.erase (xIndex - indicatorIndex);
+	scaleFactor = UTF8StringView (tmp.c_str ()).toDouble ();
+	return scaleFactor != 0;
 }
 
 //-----------------------------------------------------------------------------
-static bool decodeScaleFactorFromName (std::string name, double& scaleFactor)
+static bool decodeScaleFactorFromName (const std::string& name, double& scaleFactor)
 {
 	if (!decodeScaleFactorFromName (name, "#", scaleFactor))
 	{
@@ -2378,7 +2380,7 @@ bool UIDescription::getControlTagString (UTF8StringPtr tagName, std::string& tag
 		{
 			tagString = *tagStr;
 			return true;
-		}		
+		}
 	}
 	return false;
 }
@@ -2416,7 +2418,7 @@ bool UIDescription::changeControlTagString  (UTF8StringPtr tagName, const std::s
 			return true;
 		}
 	}
-	return false;	
+	return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -2710,8 +2712,8 @@ static bool computeTokens (StringTokenList& tokens, double& result)
 		}
 		lastType = (*it).type;
 		
-	}	
-	return true;	
+	}
+	return true;
 }
 
 } // namespace UIDescriptionPrivate
