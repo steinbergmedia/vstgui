@@ -427,19 +427,28 @@ CMouseEventResult CSlider::onMouseDown (CPoint& where, const CButtonState& butto
 //------------------------------------------------------------------------
 CMouseEventResult CSlider::onMouseCancel ()
 {
-	value = startVal;
-	if (isDirty ())
-		valueChanged ();
-	oldButton = 0;
-	endEdit ();
+	if (isEditing ())
+	{
+		value = startVal;
+		if (isDirty ())
+		{
+			valueChanged ();
+			invalid ();
+		}
+		oldButton = 0;
+		endEdit ();
+	}
 	return kMouseEventHandled;
 }
 
 //------------------------------------------------------------------------
 CMouseEventResult CSlider::onMouseUp (CPoint& where, const CButtonState& buttons)
 {
-	oldButton = 0;
-	endEdit ();
+	if (isEditing ())
+	{
+		oldButton = 0;
+		endEdit ();
+	}
 	return kMouseEventHandled;
 }
 

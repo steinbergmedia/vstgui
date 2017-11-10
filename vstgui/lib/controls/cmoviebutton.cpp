@@ -91,7 +91,8 @@ CMouseEventResult CMovieButton::onMouseDown (CPoint& where, const CButtonState& 
 //------------------------------------------------------------------------
 CMouseEventResult CMovieButton::onMouseUp (CPoint& where, const CButtonState& buttons)
 {
-	endEdit ();
+	if (isEditing ())
+		endEdit ();
 	return kMouseEventHandled;
 }
 
@@ -109,12 +110,29 @@ CMouseEventResult CMovieButton::onMouseMoved (CPoint& where, const CButtonState&
 			value = fEntryState;
 	
 		if (isDirty ())
+		{
 			valueChanged ();
-		if (isDirty ())
 			invalid ();
+		}
 		return kMouseEventHandled;
 	}
 	return kMouseEventNotHandled;
+}
+
+//------------------------------------------------------------------------
+CMouseEventResult CMovieButton::onMouseCancel ()
+{
+	if (isEditing ())
+	{
+		value = fEntryState;
+		if (isDirty ())
+		{
+			valueChanged ();
+			invalid ();
+		}
+		endEdit ();
+	}
+	return kMouseEventHandled;
 }
 
 //------------------------------------------------------------------------

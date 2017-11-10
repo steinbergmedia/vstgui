@@ -101,14 +101,31 @@ CMouseEventResult CVerticalSwitch::onMouseDown (CPoint& where, const CButtonStat
 		endEdit ();
 		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 	}
-
+	mouseStartValue = getValue ();
 	return onMouseMoved (where, buttons);
 }
 
 //------------------------------------------------------------------------
 CMouseEventResult CVerticalSwitch::onMouseUp (CPoint& where, const CButtonState& buttons)
 {
-	endEdit ();
+	if (isEditing ())
+		endEdit ();
+	return kMouseEventHandled;
+}
+
+//------------------------------------------------------------------------
+CMouseEventResult CVerticalSwitch::onMouseCancel ()
+{
+	if (isEditing ())
+	{
+		value = mouseStartValue;
+		if (isDirty ())
+		{
+			valueChanged ();
+			invalid ();
+		}
+		endEdit ();
+	}
 	return kMouseEventHandled;
 }
 
@@ -268,14 +285,31 @@ CMouseEventResult CHorizontalSwitch::onMouseDown (CPoint& where, const CButtonSt
 		endEdit ();
 		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 	}
-
+	mouseStartValue = getValue ();
 	return onMouseMoved (where, buttons);
 }
 
 //------------------------------------------------------------------------
 CMouseEventResult CHorizontalSwitch::onMouseUp (CPoint& where, const CButtonState& buttons)
 {
-	endEdit ();
+	if (isEditing ())
+		endEdit ();
+	return kMouseEventHandled;
+}
+
+//------------------------------------------------------------------------
+CMouseEventResult CHorizontalSwitch::onMouseCancel ()
+{
+	if (isEditing ())
+	{
+		value = mouseStartValue;
+		if (isDirty ())
+		{
+			valueChanged ();
+			invalid ();
+		}
+		endEdit ();
+	}
 	return kMouseEventHandled;
 }
 
@@ -446,7 +480,7 @@ CMouseEventResult CRockerSwitch::onMouseDown (CPoint& where, const CButtonState&
 {
 	if (!(buttons & kLButton))
 		return kMouseEventNotHandled;
-	fEntryState = value;
+	mouseStartValue = value;
 	beginEdit ();
 	return onMouseMoved (where, buttons);
 }
@@ -454,10 +488,29 @@ CMouseEventResult CRockerSwitch::onMouseDown (CPoint& where, const CButtonState&
 //------------------------------------------------------------------------
 CMouseEventResult CRockerSwitch::onMouseUp (CPoint& where, const CButtonState& buttons)
 {
-	value = (getMax () - getMin ()) / 2.f + getMin ();
-	if (isDirty ())
-		invalid ();
-	endEdit ();
+	if (isEditing ())
+	{
+		value = (getMax () - getMin ()) / 2.f + getMin ();
+		if (isDirty ())
+			invalid ();
+		endEdit ();
+	}
+	return kMouseEventHandled;
+}
+
+//------------------------------------------------------------------------
+CMouseEventResult CRockerSwitch::onMouseCancel ()
+{
+	if (isEditing ())
+	{
+		value = mouseStartValue;
+		if (isDirty ())
+		{
+			valueChanged ();
+			invalid ();
+		}
+		endEdit ();
+	}
 	return kMouseEventHandled;
 }
 
@@ -478,7 +531,7 @@ CMouseEventResult CRockerSwitch::onMouseMoved (CPoint& where, const CButtonState
 				where.x <= getViewSize ().right && where.y <= getViewSize ().bottom)
 				value = getMax ();
 			else
-				value = fEntryState;
+				value = mouseStartValue;
 		}
 		else
 		{
@@ -489,7 +542,7 @@ CMouseEventResult CRockerSwitch::onMouseMoved (CPoint& where, const CButtonState
 				where.x <= getViewSize ().right && where.y <= getViewSize ().bottom)
 				value = getMax ();
 			else
-				value = fEntryState;
+				value = mouseStartValue;
 		}
 
 		if (isDirty ())
