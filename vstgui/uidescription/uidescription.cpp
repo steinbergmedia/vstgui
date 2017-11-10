@@ -592,7 +592,7 @@ static bool decodeScaleFactorFromName (const std::string& name, const char* iden
 	if (indicatorIndex == std::string::npos)
 		return false;
 	size_t xIndex = name.find_last_of ("x");
-	if (xIndex == std::string::npos)
+	if (xIndex == std::string::npos || xIndex < indicatorIndex)
 		return false;
 	std::string tmp (name);
 	tmp.erase (0, ++indicatorIndex);
