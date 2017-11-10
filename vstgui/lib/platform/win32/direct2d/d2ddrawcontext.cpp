@@ -52,7 +52,7 @@ D2DDrawContext::D2DApplyClip::D2DApplyClip (D2DDrawContext* drawContext, bool ha
 		    D2D1::LayerParameters (D2D1::InfiniteRect (), geometry,
 		                           D2D1_ANTIALIAS_MODE_ALIASED),
 		    nullptr);
-		drawContext->getRenderTarget ()->SetTransform (convert (transform));
+		drawContext->getRenderTarget ()->SetTransform (d2dMatrix);
 		geometry->Release ();
 		applyClip = drawContext->currentState.clipRect;
 		drawContext->currentClip = {};
@@ -211,7 +211,7 @@ void D2DDrawContext::endDraw ()
 		}
 		renderTarget->Flush ();
 		HRESULT result = renderTarget->EndDraw ();
-		if (result == D2DERR_RECREATE_TARGET)
+		if (result == (HRESULT)D2DERR_RECREATE_TARGET)
 		{
 			releaseRenderTarget ();
 			createRenderTarget ();

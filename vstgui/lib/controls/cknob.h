@@ -145,6 +145,7 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	void setInverseBitmap (bool val) { bInverseBitmap = val; }
+	bool getInverseBitmap () const { return bInverseBitmap; }
 	//@}
 
 	// overrides
