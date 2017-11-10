@@ -591,13 +591,16 @@ std::pair<size_t, size_t> rangeOfScaleFactor (const std::string& name,
                                               const char (&identicator)[numIndicators])
 {
 	auto result = std::make_pair (std::string::npos, std::string::npos);
+	size_t xIndex = name.find_last_of ("x");
+	if (xIndex == std::string::npos)
+		return result;
+
 	for (auto i = 0u; i < numIndicators; ++i)
 	{
 		size_t indicatorIndex = name.find_last_of (identicator[i]);
 		if (indicatorIndex == std::string::npos)
 			continue;
-		size_t xIndex = name.find_last_of ("x");
-		if (xIndex == std::string::npos || xIndex < indicatorIndex)
+		if (xIndex < indicatorIndex)
 			continue;
 		result.first = xIndex;
 		result.second = indicatorIndex;
@@ -633,13 +636,13 @@ static bool decodeScaleFactorFromName (const std::string& name, double& scaleFac
 }
 
 //-----------------------------------------------------------------------------
-static std::string removeScaleFactorFromName (std::string name)
+static std::string removeScaleFactorFromName (const std::string& name)
 {
 	auto range = rangeOfScaleFactor (name, scaleFactorIndicatorChars);
 	if (range.first == std::string::npos)
 		return "";
-	name.erase (range.second);
-	return name;
+	auto result = name.substr (0, range.second);
+	return result;
 }
 
 } // UIDescriptionPrivate
