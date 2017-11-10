@@ -10,37 +10,71 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
+class CSwitchBase : public CControl, public IMultiBitmapControl
+{
+protected:
+	CSwitchBase (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background,
+	             const CPoint& offset = CPoint (0, 0));
+	CSwitchBase (const CRect& size, IControlListener* listener, int32_t tag, int32_t subPixmaps,
+	             CCoord heightOfOneImage, int32_t iMaxPositions, CBitmap* background,
+	             const CPoint& offset = CPoint (0, 0));
+	CSwitchBase (const CSwitchBase& other);
+	~CSwitchBase () noexcept override = default;
+
+	void draw (CDrawContext*) override;
+	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseCancel () override;
+	bool sizeToFit () override;
+
+	void setNumSubPixmaps (int32_t numSubPixmaps) override
+	{
+		IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps);
+		invalid ();
+	}
+	const CPoint& getOffset () const { return offset; }
+
+	double getCoef () const { return coef; }
+	int32_t normalizedToIndex (float norm) const
+	{
+		return static_cast<int32_t> (norm * (getNumSubPixmaps () - 1) + 0.5f);
+	}
+
+	float indexToNormalized (int32_t index) const
+	{
+		return static_cast<float> (index) / static_cast<float> (getNumSubPixmaps () - 1);
+	}
+
+	virtual double calculateCoef () const = 0;
+	virtual float calcNormFromPoint (const CPoint& where) const = 0;
+
+private:
+	CPoint offset;
+	double coef;
+	float mouseStartValue;
+};
+
+//-----------------------------------------------------------------------------
 // CVerticalSwitch Declaration
 //! @brief a vertical switch control
 /// @ingroup controls
 //-----------------------------------------------------------------------------
-class CVerticalSwitch : public CControl, public IMultiBitmapControl
+class CVerticalSwitch : public CSwitchBase
 {
 public:
 	CVerticalSwitch (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background, const CPoint& offset = CPoint (0, 0));
 	CVerticalSwitch (const CRect& size, IControlListener* listener, int32_t tag, int32_t subPixmaps, CCoord heightOfOneImage, int32_t iMaxPositions, CBitmap* background, const CPoint& offset = CPoint (0, 0));
 	CVerticalSwitch (const CVerticalSwitch& vswitch);
 
-	void draw (CDrawContext*) override;
-
-	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
-	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
-	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
-	CMouseEventResult onMouseCancel () override;
 	int32_t onKeyDown (VstKeyCode& keyCode) override;
-
-	bool sizeToFit () override;
-
-	void setNumSubPixmaps (int32_t numSubPixmaps) override { IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps); invalid (); }
 
 	CLASS_METHODS(CVerticalSwitch, CControl)
 protected:
 	~CVerticalSwitch () noexcept override = default;
-	CPoint	offset;
 
-private:
-	double coef;
-	float mouseStartValue;
+	double calculateCoef () const override;
+	float calcNormFromPoint (const CPoint& where) const override;
 };
 
 
@@ -49,33 +83,21 @@ private:
 //! @brief a horizontal switch control
 /// @ingroup controls
 //-----------------------------------------------------------------------------
-class CHorizontalSwitch : public CControl, public IMultiBitmapControl
+class CHorizontalSwitch : public CSwitchBase
 {
 public:
 	CHorizontalSwitch (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background, const CPoint& offset = CPoint (0, 0));
 	CHorizontalSwitch (const CRect& size, IControlListener* listener, int32_t tag, int32_t subPixmaps, CCoord heightOfOneImage, int32_t iMaxPositions, CBitmap* background, const CPoint& offset = CPoint (0, 0));
 	CHorizontalSwitch (const CHorizontalSwitch& hswitch);
 
-	void draw (CDrawContext*) override;
-
-	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
-	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
-	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
-	CMouseEventResult onMouseCancel () override;
 	int32_t onKeyDown (VstKeyCode& keyCode) override;
-
-	bool sizeToFit () override;
-
-	void setNumSubPixmaps (int32_t numSubPixmaps) override { IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps); invalid (); }
 
 	CLASS_METHODS(CHorizontalSwitch, CControl)
 protected:
 	~CHorizontalSwitch () noexcept override = default;
-	CPoint	offset;
 
-private:
-	double coef;
-	float mouseStartValue;
+	double calculateCoef () const override;
+	float calcNormFromPoint (const CPoint& where) const override;
 };
 
 
