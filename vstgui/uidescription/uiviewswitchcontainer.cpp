@@ -236,7 +236,7 @@ void UIDescriptionViewSwitchController::switchContainerRemoved ()
 void UIDescriptionViewSwitchController::valueChanged (CControl* pControl)
 {
 	auto norm = pControl->getValueNormalized ();
-	auto index = std::min<int32_t> ((norm * static_cast<float> (templateNames.size ())), templateNames.size () - 1);
+	auto index = std::min (static_cast<int32_t> (norm * static_cast<float> (templateNames.size ())), static_cast<int32_t> (templateNames.size () - 1));
 	if (index != currentIndex)
 	{
 		viewSwitch->setCurrentViewIndex (index);

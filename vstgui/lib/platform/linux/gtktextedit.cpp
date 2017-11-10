@@ -8,6 +8,7 @@
 #include "gtktextedit.h"
 #include <functional>
 #include <sstream>
+#include <iostream>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -24,6 +25,7 @@ struct GTKTextField : Gtk::Entry
 
 	bool on_key_press_event (GdkEventKey* event) override
 	{
+		SharedPointer<GTKTextEdit> guard (textEdit);
 		if (keyPress)
 		{
 			if (keyPress (X11::keyCodeFromEvent (event)))
@@ -47,6 +49,7 @@ struct GTKTextField : Gtk::Entry
 
 	KeyPressFunc keyPress;
 	LostFocusFunc lostFocus;
+	GTKTextEdit* textEdit {nullptr};
 	int width {100};
 };
 
@@ -66,6 +69,7 @@ GTKTextEdit::GTKTextEdit (std::unique_ptr<Impl>&& inImpl, IPlatformTextEditCallb
 	impl->widget.width = static_cast<int> (size.getWidth ());
 	impl->widget.set_size_request (size.getWidth (), size.getHeight ());
 	impl->widget.set_can_focus (true);
+	impl->widget.set_has_frame (false);
 	const auto& text = callback->platformGetText ();
 	impl->widget.set_text (text.getString ());
 	impl->widget.select_region (0, impl->widget.get_text_length ());
@@ -91,27 +95,30 @@ GTKTextEdit::GTKTextEdit (std::unique_ptr<Impl>&& inImpl, IPlatformTextEditCallb
 
 	impl->widget.set_alignment (alignment);
 
-        // TODO: finalize visual adaption via GTK CSS stuff
-        auto font = callback->platformGetFont ();
-        auto color = callback->platformGetFontColor ();
-        if (auto style = impl->widget.get_style_context ())
-        {
-                std::stringstream stream;
-                stream << "* { border-radius: 0; border-style: none; padding: 0;";
-                stream << "font-family: " << font->getName () << "; ";
-                stream << "font-size: " << font->getSize () << "px; ";
-                stream << "color: rgba(" << static_cast<uint32_t> (color.red) << ", "
-                        << static_cast<uint32_t> (color.green) << ", " << static_cast<uint32_t> (color.blue)
-                        << ", " << (color.alpha / 255.) << ");";
-                //stream << "background: rgba(0, 0, 0, 0); "; // on linux-mint this is also the
-                //selection-color
-                stream << "background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0)); ";
-                stream << "}";
-                auto provider = Gtk::CssProvider::create ();
-                auto streamStr = stream.str ();
-                provider->load_from_data (streamStr);
-                style->add_provider (provider, GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
-        }
+	// TODO: finalize visual adaption via GTK CSS stuff
+	auto font = callback->platformGetFont ();
+	auto color = callback->platformGetFontColor ();
+	if (auto style = impl->widget.get_style_context ())
+	{
+		try {
+			std::stringstream stream;
+			stream << "* { border-radius: 0; border-style: none; padding: 0;";
+			stream << "font-family: " << font->getName () << "; ";
+			stream << "font-size: " << font->getSize () << "px; ";
+			stream << "color: rgba(" << static_cast<uint32_t> (color.red) << ", "
+					<< static_cast<uint32_t> (color.green) << ", " << static_cast<uint32_t> (color.blue)
+					<< ", " << (color.alpha / 255.) << ");";
+			//stream << "background: rgba(0, 0, 0, 0); "; // on linux-mint this is also the
+			//selection-color
+			stream << "background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0)); ";
+			stream << "}";
+			auto provider = Gtk::CssProvider::create ();
+			auto streamStr = stream.str ();
+			provider->load_from_data (streamStr);
+			style->add_provider (provider, GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+		} catch (...) {}
+	}
+	impl->widget.textEdit = this;
 }
 
 //------------------------------------------------------------------------

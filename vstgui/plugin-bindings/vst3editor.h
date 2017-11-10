@@ -52,8 +52,7 @@ class VST3Editor : public Steinberg::Vst::VSTGUIEditor,
                    public Steinberg::Vst::IParameterFinder,
                    public IController,
                    public IViewAddedRemovedObserver,
-                   public IMouseObserver,
-                   public IKeyboardHook
+                   public IMouseObserver
 #ifdef VST3_CONTENT_SCALE_SUPPORT
 				 , public Steinberg::IPlugViewContentScaleSupport
 #endif
@@ -126,28 +125,26 @@ protected:
 	CMouseEventResult onMouseMoved (CFrame* frame, const CPoint& where, const CButtonState& buttons) override { return kMouseEventNotHandled; }
 	CMouseEventResult onMouseDown (CFrame* frame, const CPoint& where, const CButtonState& buttons) override;
 
-	// IKeyboardHook
-	int32_t onKeyDown (const VstKeyCode& code, CFrame* frame) override;
-	int32_t onKeyUp (const VstKeyCode& code, CFrame* frame) override;
-
 #ifdef VST3_CONTENT_SCALE_SUPPORT
 	Steinberg::tresult PLUGIN_API setContentScaleFactor (ScaleFactor factor) override;
 #endif
 
-	UIDescription* description;
-	VST3EditorDelegate* delegate;
-	IController* originalController;
+	struct KeyboardHook;
+	KeyboardHook* keyboardHook {nullptr};
+	UIDescription* description {nullptr};
+	VST3EditorDelegate* delegate {nullptr};
+	IController* originalController {nullptr};
 	typedef std::map<int32_t, ParameterChangeListener*> ParameterChangeListenerMap;
 	ParameterChangeListenerMap paramChangeListeners;
 	std::string viewName;
 	std::string xmlFile;
-	bool tooltipsEnabled;
-	bool doCreateView;
-	bool editingEnabled;
-	bool requestResizeGuard;
+	bool tooltipsEnabled {true};
+	bool doCreateView {false};
+	bool editingEnabled {false};
+	bool requestResizeGuard {false};
 
-	double contentScaleFactor;
-	double zoomFactor;
+	double contentScaleFactor {1.};
+	double zoomFactor {1.};
 	std::vector<double> allowedZoomFactors;
 	
 	CPoint minSize;

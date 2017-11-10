@@ -1,25 +1,24 @@
-﻿// This file is part of VSTGUI. It is subject to the license terms 
+﻿// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "x11frame.h"
-#include "../iplatformopenglview.h"
-#include "../iplatformviewlayer.h"
 #include "../../cbuttonstate.h"
 #include "../../crect.h"
 #include "../../idatapackage.h"
 #include "../../vstkeycode.h"
+#include "../iplatformopenglview.h"
+#include "../iplatformviewlayer.h"
 #include "cairobitmap.h"
 #include "cairocontext.h"
 #include "gtkoptionmenu.h"
 #include "gtktextedit.h"
 #include "x11platform.h"
-#include "x11timer.h"
+#include <cassert>
 #include <gtkmm.h>
 #include <gtkmm/plug.h>
 #include <iostream>
 #include <unordered_map>
-#include <cassert>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -620,10 +619,12 @@ struct Frame::Impl
 	Gtk::Plug plug;
 	Gtk::Fixed contentView;
 	GtkFrame widget;
+	bool handlingEvents {false};
 };
 
 //------------------------------------------------------------------------
-Frame::Frame (IPlatformFrameCallback* frame, const CRect& size, uint32_t parent)
+Frame::Frame (IPlatformFrameCallback* frame, const CRect& size, uint32_t parent,
+			  IPlatformFrameConfig* config)
 : IPlatformFrame (frame)
 {
 	gtk_init (0, 0);
@@ -639,17 +640,34 @@ Frame::Frame (IPlatformFrameCallback* frame, const CRect& size, uint32_t parent)
 	impl->plug.property_has_toplevel_focus ().signal_changed ().connect (
 	    [this] () { this->frame->platformOnActivate (impl->plug.has_toplevel_focus ()); });
 
-#if DEBUG
+	frame->platformOnActivate (true);
+
+	auto cfg = dynamic_cast<FrameConfig*> (config);
+	if (cfg && cfg->runLoop)
+	{
+		auto window = impl->plug.get_window ();
+		auto display = gdk_window_get_display (window->gobj ());
+		auto xDisplay = gdk_x11_display_get_xdisplay (display);
+		RunLoop::init (cfg->runLoop);
+		RunLoop::get ()->registerEventHandler (XConnectionNumber (xDisplay), this);
+	}
+
+#if 0 // DEBUG
 	auto id = impl->plug.get_id ();
 	std::cout << "PlugID: " << std::hex << id << std::endl;
 
-//	Gdk::Event::set_show_events (true);
+	Gdk::Event::set_show_events (true);
 #endif
 }
 
 //------------------------------------------------------------------------
 Frame::~Frame ()
 {
+	if (auto runLoop = RunLoop::get ())
+	{
+		runLoop->unregisterEventHandler (this);
+	}
+	RunLoop::exit ();
 }
 
 //------------------------------------------------------------------------
@@ -791,15 +809,16 @@ SharedPointer<IPlatformOpenGLView> Frame::createPlatformOpenGLView ()
 #endif
 
 //------------------------------------------------------------------------
-SharedPointer<IPlatformViewLayer> Frame::createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate,
-                                                    			  IPlatformViewLayer* parentLayer)
+SharedPointer<IPlatformViewLayer> Frame::createPlatformViewLayer (
+	IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer)
 {
 	// optional
 	return nullptr;
 }
 
 //------------------------------------------------------------------------
-SharedPointer<COffscreenContext> Frame::createOffscreenContext (CCoord width, CCoord height, double scaleFactor)
+SharedPointer<COffscreenContext> Frame::createOffscreenContext (CCoord width, CCoord height,
+																double scaleFactor)
 {
 	CPoint size (width * scaleFactor, height * scaleFactor);
 	auto bitmap = new Cairo::Bitmap (&size);
@@ -837,13 +856,16 @@ PlatformType Frame::getPlatformType () const
 }
 
 //------------------------------------------------------------------------
-void Frame::handleNextEvents ()
+void Frame::onEvent ()
 {
-	Timer::checkAndFireTimers ();
+	if (impl->handlingEvents)
+		return;
+	impl->handlingEvents = true;
 	while (gtk_events_pending ())
 	{
 		gtk_main_iteration_do (false);
 	}
+	impl->handlingEvents = false;
 }
 
 //------------------------------------------------------------------------
@@ -860,7 +882,7 @@ IPlatformFrame* IPlatformFrame::createPlatformFrame (IPlatformFrameCallback* fra
 	if (parentType == kDefaultNative || parentType == kX11EmbedWindowID)
 	{
 		auto x11Parent = reinterpret_cast<XID> (parent);
-		return new X11::Frame (frame, size, x11Parent);
+		return new X11::Frame (frame, size, x11Parent, config);
 	}
 	return nullptr;
 }
