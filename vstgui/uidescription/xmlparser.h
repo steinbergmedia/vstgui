@@ -7,6 +7,7 @@
 
 #include "../lib/vstguibase.h"
 #include "cstream.h"
+#include <memory>
 
 namespace VSTGUI {
 namespace Xml {
@@ -42,10 +43,10 @@ public:
 
 	bool stop ();
 
-	IHandler* getHandler () const { return handler; }
+	IHandler* getHandler () const;
 protected:
-	void* parser;
-	IHandler* handler;
+	struct Impl;
+	std::unique_ptr<Impl> pImpl;
 };
 
 //-----------------------------------------------------------------------------
