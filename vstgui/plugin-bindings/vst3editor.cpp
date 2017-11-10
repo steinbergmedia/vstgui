@@ -19,13 +19,19 @@
 #include <list>
 #include <sstream>
 
-#if defined (kVstVersionMajor) && defined (kVstVersionMinor)
-#define VST3_SUPPORTS_CONTEXTMENU (kVstVersionMajor > 3 || (kVstVersionMajor == 3 && kVstVersionMinor > 1))
+#if LINUX
+#include "../lib/platform/linux/x11frame.h"
+#include "pluginterfaces/gui/iplugview.h"
+#endif
+
+#if defined(kVstVersionMajor) && defined(kVstVersionMinor)
+#define VST3_SUPPORTS_CONTEXTMENU \
+	(kVstVersionMajor > 3 || (kVstVersionMajor == 3 && kVstVersionMinor > 1))
 #if VST3_SUPPORTS_CONTEXTMENU
-	#include "pluginterfaces/vst/ivstcontextmenu.h"
+#include "pluginterfaces/vst/ivstcontextmenu.h"
 #endif
 #else
-#define VST3_SUPPORTS_CONTEXTMENU  0
+#define VST3_SUPPORTS_CONTEXTMENU 0
 #endif
 
 /// @cond ignore
@@ -47,25 +53,37 @@ public:
 static UpdateHandlerInit gUpdateHandlerInit;
 
 //-----------------------------------------------------------------------------
-class IdleUpdateHandler : public FObject, public IPlatformTimerCallback
+class IdleUpdateHandler
 {
 public:
-	OBJ_METHODS (IdleUpdateHandler, FObject)
-	SINGLETON (IdleUpdateHandler)
-protected:
-	IdleUpdateHandler ()
+	static void start ()
 	{
-		timer = IPlatformTimer::create (this);
-		timer->start (1000 / 30); // 30 Hz timer
-		
-		// we will always call CView::setDirty() on the main thread
-		VSTGUI::CView::kDirtyCallAlwaysOnMainThread = true;
+		auto& instance = get ();
+		if (++instance.users == 1)
+		{
+			instance.timer = makeOwned<CVSTGUITimer> (
+				[] (auto) { gUpdateHandlerInit.get ()->triggerDeferedUpdates (); }, 1000 / 30);
+		}
 	}
-	~IdleUpdateHandler () { timer->stop (); }
 
-	void fire () override { gUpdateHandlerInit.get ()->triggerDeferedUpdates (); }
+	static void stop ()
+	{
+		auto& instance = get ();
+		if (--instance.users == 0)
+		{
+			instance.timer = nullptr;
+		}
+	}
 
-	VSTGUI::SharedPointer<IPlatformTimer> timer;
+protected:
+	static IdleUpdateHandler& get ()
+	{
+		static IdleUpdateHandler gInstance;
+		return gInstance;
+	}
+
+	VSTGUI::SharedPointer<CVSTGUITimer> timer;
+	std::atomic<uint32_t> users {0};
 };
 
 } // namespace Steinberg
@@ -183,8 +201,9 @@ public:
 	{
 		if (parameter)
 		{
-			editController->setParamNormalized (getParameterID (), value);
-			editController->performEdit (getParameterID (), value);
+			auto id = getParameterID ();
+			if (editController->setParamNormalized (id, value) == Steinberg::kResultTrue)
+				editController->performEdit (id, editController->getParamNormalized (id));
 		}
 		else
 		{
@@ -312,17 +331,12 @@ static bool parseSize (const std::string& str, CPoint& point)
 //-----------------------------------------------------------------------------
 static void releaseSubController (IController* subController)
 {
-	CBaseObject* baseObject = dynamic_cast<CBaseObject*> (subController);
-	if (baseObject)
-		baseObject->forget ();
+	if (auto ref = dynamic_cast<IReference*> (subController))
+		ref->forget();
+	else if (auto fobj = dynamic_cast<Steinberg::FObject*> (subController))
+		fobj->release ();
 	else
-	{
-		Steinberg::FObject* fobj = dynamic_cast<Steinberg::FObject*> (subController);
-		if (fobj)
-			fobj->release ();
-		else
-			delete subController;
-	}
+		delete subController;
 }
 
 } // namespace VST3EditorInternal
@@ -351,12 +365,7 @@ See @ref page_vst3_inline_editing @n
 //-----------------------------------------------------------------------------
 VST3Editor::VST3Editor (Steinberg::Vst::EditController* controller, UTF8StringPtr _viewName, UTF8StringPtr _xmlFile)
 : VSTGUIEditor (controller)
-, doCreateView (false)
-, tooltipsEnabled (true)
 , delegate (dynamic_cast<VST3EditorDelegate*> (controller))
-, originalController (0)
-, editingEnabled (false)
-, requestResizeGuard (false)
 {
 	description = new UIDescription (_xmlFile);
 	viewName = _viewName;
@@ -367,12 +376,7 @@ VST3Editor::VST3Editor (Steinberg::Vst::EditController* controller, UTF8StringPt
 //-----------------------------------------------------------------------------
 VST3Editor::VST3Editor (UIDescription* desc, Steinberg::Vst::EditController* controller, UTF8StringPtr _viewName, UTF8StringPtr _xmlFile)
 : VSTGUIEditor (controller)
-, doCreateView (false)
-, tooltipsEnabled (true)
 , delegate (dynamic_cast<VST3EditorDelegate*> (controller))
-, originalController (0)
-, editingEnabled (false)
-, requestResizeGuard (false)
 {
 	description = desc;
 	description->remember ();
@@ -401,8 +405,9 @@ Steinberg::tresult PLUGIN_API VST3Editor::queryInterface (const Steinberg::TUID 
 //-----------------------------------------------------------------------------
 void VST3Editor::init ()
 {
-	Steinberg::IdleUpdateHandler::instance ();
-	zoomFactor = contentScaleFactor = 1.;
+	// we will always call CView::setDirty() on the main thread
+	VSTGUI::CView::kDirtyCallAlwaysOnMainThread = true;
+
 	setIdleRate (300);
 	if (description->parse ())
 	{
@@ -710,28 +715,6 @@ void VST3Editor::onViewRemoved (CFrame* frame, CView* view)
 	}
 }
 
-//-----------------------------------------------------------------------------
-int32_t VST3Editor::onKeyDown (const VstKeyCode& code, CFrame* frame)
-{
-#if VSTGUI_LIVE_EDITING
-	if (code.modifier == MODIFIER_CONTROL && getFrame ()->getModalView () == 0)
-	{
-		if (code.character == 'e')
-		{
-			enableEditing (!editingEnabled);
-			return 1;
-		}
-	}
-#endif
-	return -1;
-}
-
-//-----------------------------------------------------------------------------
-int32_t VST3Editor::onKeyUp (const VstKeyCode& code, CFrame* frame)
-{
-	return -1;
-}
-
 #if VST3_SUPPORTS_CONTEXTMENU
 /// @cond ignore
 namespace VST3EditorInternal {
@@ -867,12 +850,12 @@ CMouseEventResult VST3Editor::onMouseDown (CFrame* frame, const CPoint& where, c
 		Steinberg::Vst::ParamID paramID;
 		if (handler)
 		{
-			bool paramFound = findParameter ((Steinberg::int32)where.x, (Steinberg::int32)where.y, paramID) == Steinberg::kResultTrue;
+			CPoint where2 (where);
+			getFrame ()->getTransform ().transform (where2);
+			bool paramFound = findParameter ((Steinberg::int32)where2.x, (Steinberg::int32)where2.y, paramID) == Steinberg::kResultTrue;
 			Steinberg::Vst::IContextMenu* contextMenu = handler->createContextMenu (this, paramFound ? &paramID : 0);
 			if (contextMenu)
 			{
-				CPoint where2 (where);
-				getFrame ()->getTransform ().transform (where2);
 				getFrame ()->onStartLocalEventLoop ();
 				if (controllerMenu)
 					VST3EditorInternal::addCOptionMenuEntriesToIContextMenu (this, controllerMenu, contextMenu);
@@ -991,9 +974,131 @@ void VST3Editor::recreateView ()
 	enableEditing (editingEnabled);
 }
 
-#define kFrameEnableFocusDrawingAttr	"frame-enable-focus-drawing"
-#define kFrameFocusColorAttr			"frame-focus-color"
-#define kFrameFocusWidthAttr			"frame-focus-width"
+#if LINUX
+// Map Steinberg Vst Interface to VSTGUI Interface
+class RunLoop : public X11::IRunLoop
+{
+public:
+	struct EventHandler : Steinberg::Linux::IEventHandler, public Steinberg::FObject
+	{
+		X11::IEventHandler* handler {nullptr};
+
+		void PLUGIN_API onFDIsSet (Steinberg::Linux::FileDescriptor) override
+		{
+			if (handler)
+				handler->onEvent ();
+		}
+		DELEGATE_REFCOUNT (Steinberg::FObject)
+		DEFINE_INTERFACES
+			DEF_INTERFACE (Steinberg::Linux::IEventHandler)
+		END_DEFINE_INTERFACES (Steinberg::FObject)
+	};
+	struct TimerHandler : Steinberg::Linux::ITimerHandler, public Steinberg::FObject
+	{
+		X11::ITimerHandler* handler {nullptr};
+
+		void PLUGIN_API onTimer () final
+		{
+			if (handler)
+				handler->onTimer ();
+		}
+		DELEGATE_REFCOUNT (Steinberg::FObject)
+		DEFINE_INTERFACES
+			DEF_INTERFACE (Steinberg::Linux::ITimerHandler)
+		END_DEFINE_INTERFACES (Steinberg::FObject)
+	};
+
+	bool registerEventHandler (int fd, X11::IEventHandler* handler) final
+	{
+		auto smtgHandler = Steinberg::owned (new EventHandler ());
+		smtgHandler->handler = handler;
+		if (runLoop->registerEventHandler (smtgHandler, fd) == Steinberg::kResultTrue)
+		{
+			eventHandlers.push_back (smtgHandler);
+			return true;
+		}
+		return false;
+	}
+	bool unregisterEventHandler (X11::IEventHandler* handler) final
+	{
+		for (auto it = eventHandlers.begin (), end = eventHandlers.end (); it != end; ++it)
+		{
+			if ((*it)->handler == handler)
+			{
+				runLoop->unregisterEventHandler ((*it));
+				eventHandlers.erase (it);
+				return true;
+			}
+		}
+		return false;
+	}
+	bool registerTimer (uint64_t interval, X11::ITimerHandler* handler) final
+	{
+		auto smtgHandler = Steinberg::owned (new TimerHandler ());
+		smtgHandler->handler = handler;
+		if (runLoop->registerTimer (smtgHandler, interval) == Steinberg::kResultTrue)
+		{
+			timerHandlers.push_back (smtgHandler);
+			return true;
+		}
+		return false;
+	}
+	bool unregisterTimer (X11::ITimerHandler* handler) final
+	{
+		for (auto it = timerHandlers.begin (), end = timerHandlers.end (); it != end; ++it)
+		{
+			if ((*it)->handler == handler)
+			{
+				runLoop->unregisterTimer ((*it));
+				timerHandlers.erase (it);
+				return true;
+			}
+		}
+		return false;
+	}
+
+	RunLoop (Steinberg::FUnknown* runLoop) : runLoop (runLoop) {}
+private:
+	using EventHandlers = std::vector<Steinberg::IPtr<EventHandler>>;
+	using TimerHandlers = std::vector<Steinberg::IPtr<TimerHandler>>;
+	EventHandlers eventHandlers;
+	TimerHandlers timerHandlers;
+	Steinberg::FUnknownPtr<Steinberg::Linux::IRunLoop> runLoop;
+};
+#endif
+
+#define kFrameEnableFocusDrawingAttr "frame-enable-focus-drawing"
+#define kFrameFocusColorAttr "frame-focus-color"
+#define kFrameFocusWidthAttr "frame-focus-width"
+
+#if VSTGUI_LIVE_EDITING
+// keyboard hook
+struct VST3Editor::KeyboardHook : public IKeyboardHook
+{
+public:
+	using Func = std::function<int32_t (const VstKeyCode& code, CFrame* frame)>;
+
+	KeyboardHook (Func&& keyDown, Func&& keyUp)
+	: onKeyDownFunc (std::move (keyDown)), onKeyUpFunc (std::move (keyUp))
+	{
+	}
+
+private:
+	int32_t onKeyDown (const VstKeyCode& code, CFrame* frame) override
+	{
+		return onKeyDownFunc (code, frame);
+	}
+	int32_t onKeyUp (const VstKeyCode& code, CFrame* frame) override
+	{
+		return onKeyUpFunc (code, frame);
+	}
+
+	Func onKeyDownFunc;
+	Func onKeyUpFunc;
+};
+#else
+struct VST3Editor::KeyboardHook {};
+#endif
 
 //-----------------------------------------------------------------------------
 bool PLUGIN_API VST3Editor::open (void* parent, const PlatformType& type)
@@ -1003,7 +1108,21 @@ bool PLUGIN_API VST3Editor::open (void* parent, const PlatformType& type)
 	getFrame ()->setTransparency (true);
 	getFrame ()->registerMouseObserver (this);
 #if VSTGUI_LIVE_EDITING
-	getFrame ()->registerKeyboardHook (this);
+	// will delete itself when the frame will be destroyed
+	keyboardHook = new KeyboardHook (
+	    [this] (const VstKeyCode& code, CFrame* frame) {
+		    if (code.modifier == MODIFIER_CONTROL && frame->getModalView () == 0)
+		    {
+			    if (code.character == 'e')
+			    {
+				    enableEditing (!editingEnabled);
+				    return 1;
+			    }
+		    }
+		    return -1;
+	    },
+	    [this] (const VstKeyCode&, CFrame*) { return -1; });
+	getFrame ()->registerKeyboardHook (keyboardHook);
 #endif
 	getFrame ()->enableTooltips (tooltipsEnabled);
 
@@ -1013,16 +1132,28 @@ bool PLUGIN_API VST3Editor::open (void* parent, const PlatformType& type)
 		return false;
 	}
 
-	getFrame ()->open (parent, type);
+	IPlatformFrameConfig* config = nullptr;
+#if LINUX
+	X11::FrameConfig x11config;
+	x11config.runLoop = owned (new RunLoop (plugFrame));
+	config = &x11config;
+#endif
+
+	getFrame ()->open (parent, type, config);
 
 	if (delegate)
 		delegate->didOpen (this);
+
+	Steinberg::IdleUpdateHandler::start ();
+
 	return true;
 }
 
 //-----------------------------------------------------------------------------
 void PLUGIN_API VST3Editor::close ()
 {
+	Steinberg::IdleUpdateHandler::stop ();
+
 	if (delegate)
 		delegate->willClose (this);
 
@@ -1032,9 +1163,15 @@ void PLUGIN_API VST3Editor::close ()
 	paramChangeListeners.clear ();
 	if (frame)
 	{
-	#if VSTGUI_LIVE_EDITING
-		getFrame ()->unregisterKeyboardHook (this);
-	#endif
+
+#if VSTGUI_LIVE_EDITING
+		if (keyboardHook)
+		{
+			getFrame ()->unregisterKeyboardHook (keyboardHook);
+			delete keyboardHook;
+		}
+		keyboardHook = nullptr;
+#endif
 		getFrame ()->unregisterMouseObserver (this);
 		getFrame ()->removeAll (true);
 		int32_t refCount = getFrame ()->getNbReference ();
