@@ -584,50 +584,64 @@ static UIViewFactory* getGenericViewFactory ()
 }
 
 namespace UIDescriptionPrivate {
+
 //-----------------------------------------------------------------------------
-static bool decodeScaleFactorFromName (const std::string& name, const char* identicator,
-                                       double& scaleFactor)
+template <size_t numIndicators>
+std::pair<size_t, size_t> rangeOfScaleFactor (const std::string& name,
+                                              const char (&identicator)[numIndicators])
 {
-	size_t indicatorIndex = name.find_last_of (identicator);
-	if (indicatorIndex == std::string::npos)
-		return false;
-	size_t xIndex = name.find_last_of ("x");
-	if (xIndex == std::string::npos || xIndex < indicatorIndex)
+	auto result = std::make_pair (std::string::npos, std::string::npos);
+	for (auto i = 0u; i < numIndicators; ++i)
+	{
+		size_t indicatorIndex = name.find_last_of (identicator[i]);
+		if (indicatorIndex == std::string::npos)
+			continue;
+		size_t xIndex = name.find_last_of ("x");
+		if (xIndex == std::string::npos || xIndex < indicatorIndex)
+			continue;
+		result.first = xIndex;
+		result.second = indicatorIndex;
+		break;
+	}
+	return result;
+}
+
+//-----------------------------------------------------------------------------
+template <size_t numIndicators>
+bool decodeScaleFactorFromName (const std::string& name, const char (&identicator)[numIndicators],
+                                double& scaleFactor)
+{
+	auto range = rangeOfScaleFactor (name, identicator);
+	if (range.first == std::string::npos)
 		return false;
 	std::string tmp (name);
-	tmp.erase (0, ++indicatorIndex);
-	tmp.erase (xIndex - indicatorIndex);
+	tmp.erase (0, ++range.second);
+	tmp.erase (range.first - range.second);
 	scaleFactor = UTF8StringView (tmp.c_str ()).toDouble ();
 	return scaleFactor != 0;
 }
 
 //-----------------------------------------------------------------------------
+static constexpr const char scaleFactorIndicatorChars[] = "#_";
+
+//-----------------------------------------------------------------------------
 static bool decodeScaleFactorFromName (const std::string& name, double& scaleFactor)
 {
-	if (!decodeScaleFactorFromName (name, "#", scaleFactor))
-	{
-		if (!decodeScaleFactorFromName (name, "_", scaleFactor))
-			return false;
-	}
+	if (!decodeScaleFactorFromName (name, scaleFactorIndicatorChars, scaleFactor))
+		return false;
 	return true;
 }
 
 //-----------------------------------------------------------------------------
 static std::string removeScaleFactorFromName (std::string name)
 {
-	size_t index = name.find_last_of ("#");
-	if (index == std::string::npos)
-	{
-		index = name.find_last_of ("_");
-		if (index == std::string::npos)
-			return "";
-	}
-	auto xIndex = name.find_last_of ("x");
-	if (xIndex == std::string::npos || index > xIndex)
+	auto range = rangeOfScaleFactor (name, scaleFactorIndicatorChars);
+	if (range.first == std::string::npos)
 		return "";
-	name.erase (index);
+	name.erase (range.second);
 	return name;
 }
+
 } // UIDescriptionPrivate
 
 IdStringPtr IUIDescription::kCustomViewName = "custom-view-name";
