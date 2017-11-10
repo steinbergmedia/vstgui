@@ -443,7 +443,7 @@ bool CViewContainer::removeAll (bool withForget)
 	ViewList::iterator it = pImpl->children.begin ();
 	while (it != pImpl->children.end ())
 	{
-		CView* view = *it;
+		auto view = *it;
 		if (isAttached ())
 			view->removed (this);
 		pImpl->children.erase (it);
