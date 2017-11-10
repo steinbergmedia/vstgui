@@ -155,6 +155,19 @@ CMultiLineTextLabel::CMultiLineTextLabel (const CRect& size)
 }
 
 //------------------------------------------------------------------------
+void CMultiLineTextLabel::setValue (float val)
+{
+	CTextLabel::setValue (val);
+
+	if (valueToStringFunction)
+	{
+		std::string string;
+		if (valueToStringFunction (value, string, this))
+			setText (UTF8String (string));
+	}
+}
+
+//------------------------------------------------------------------------
 void CMultiLineTextLabel::setTextTruncateMode (TextTruncateMode)
 {
 	// not supported on multi line labels

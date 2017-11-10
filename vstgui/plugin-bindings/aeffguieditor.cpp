@@ -10,6 +10,8 @@
 #include "public.sdk/source/vst2.x/audioeffectx.h"
 #endif
 
+#include "../lib/platform/iplatformframe.h"
+
 #define kIdleRate    100 // host idle rate in ms
 #define kIdleRate2    50
 #define kIdleRateMin   4 // minimum time between 2 idles in ms
