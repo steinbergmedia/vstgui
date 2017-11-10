@@ -58,15 +58,6 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-class IPlatformFrameRunLoopExt
-{
-public:
-	virtual ~IPlatformFrameRunLoopExt () {};
-
-	virtual void handleNextEvents() = 0;
-};
-
-//-----------------------------------------------------------------------------
 /* Extension to support Mac TouchBar */
 //-----------------------------------------------------------------------------
 class ITouchBarCreator : public AtomicReferenceCounted

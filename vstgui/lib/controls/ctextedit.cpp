@@ -147,6 +147,15 @@ void CTextEdit::setText (const UTF8String& txt)
 }
 
 //------------------------------------------------------------------------
+void CTextEdit::valueChanged ()
+{
+	if (stringToValueFunction)
+		CTextLabel::valueChanged ();
+	
+	CParamDisplay::valueChanged ();
+}
+
+//------------------------------------------------------------------------
 void CTextEdit::setPlaceholderString (const UTF8String& str)
 {
 	placeholderString = str;
