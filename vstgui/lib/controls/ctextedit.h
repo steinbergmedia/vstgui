@@ -49,6 +49,7 @@ public:
 
 	// overrides
 	void setText (const UTF8String& txt) override;
+	void valueChanged () override;
 	void setValue (float val) override;
 	void setTextRotation (double angle) override { return; } ///< not supported
 

@@ -45,10 +45,14 @@ void PadController::valueChanged (CControl* pControl)
 	{
 		float x, y;
 		CXYPad::calculateXY (pControl->getValue (), x, y);
-		editController->performEdit (xParam->getInfo ().id, x);
-		editController->setParamNormalized (xParam->getInfo ().id, x);
-		editController->performEdit (yParam->getInfo ().id, y);
-		editController->setParamNormalized (yParam->getInfo ().id, y);
+
+		auto xId = xParam->getInfo ().id;
+		if (editController->setParamNormalized (xId, x) == Steinberg::kResultTrue)
+			editController->performEdit (xId, editController->getParamNormalized (xId));
+
+		auto yId = yParam->getInfo ().id;
+		if (editController->setParamNormalized (yId, y) == Steinberg::kResultTrue)
+			editController->performEdit (yId, editController->getParamNormalized (yId));
 	}
 	else
 	{
