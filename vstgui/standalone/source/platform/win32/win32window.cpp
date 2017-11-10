@@ -12,10 +12,10 @@
 #include "../../../include/iapplication.h"
 #include "../../application.h"
 #include "../iplatformwindow.h"
-#include <Dwmapi.h>
-#include <ShellScalingAPI.h>
-#include <VersionHelpers.h>
-#include <Windows.h>
+#include <dwmapi.h>
+#include <shellscalingapi.h>
+#include <versionhelpers.h>
+#include <windows.h>
 #include <d2d1.h>
 #include <windowsx.h>
 
