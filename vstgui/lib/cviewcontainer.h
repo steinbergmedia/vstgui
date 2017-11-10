@@ -31,10 +31,15 @@ struct GetViewOptions
 
 	explicit GetViewOptions (uint32_t options = kNone) : flags (options) {}
 
-	bool deep () const { return (flags & kDeep) ? true : false; }
-	bool mouseEnabled () const { return (flags & kMouseEnabled) ? true : false; }
-	bool includeViewContainer () const { return (flags & kIncludeViewContainer) ? true : false; }
-	bool includeInvisible () const { return (flags & kIncludeInvisible) ? true : false; }
+	GetViewOptions& deep (bool state = true) { setBit (flags, kDeep, state); return *this; }
+	GetViewOptions& mouseEnabled (bool state = true) { setBit (flags, kMouseEnabled, state); return *this; }
+	GetViewOptions& includeViewContainer (bool state = true) { setBit (flags, kIncludeViewContainer, state); return *this; }
+	GetViewOptions& includeInvisible (bool state = true) { setBit (flags, kIncludeInvisible, state); return *this; }
+
+	bool getDeep () const { return hasBit (flags, kDeep); }
+	bool getMouseEnabled () const { return hasBit (flags, kMouseEnabled); }
+	bool getIncludeViewContainer () const { return hasBit (flags, kIncludeViewContainer); }
+	bool getIncludeInvisible () const { return hasBit (flags, kIncludeInvisible); }
 private:
 	uint32_t flags;
 };
@@ -66,9 +71,9 @@ public:
 	virtual bool hasChildren () const;						///< check if container has child views
 	virtual uint32_t getNbViews () const;			///< get the number of child views
 	virtual CView* getView (uint32_t index) const;	///< get the child view at index
-	virtual CView* getViewAt (const CPoint& where, const GetViewOptions& options = GetViewOptions (GetViewOptions::kNone)) const;	///< get the view at point where
-	virtual CViewContainer* getContainerAt (const CPoint& where, const GetViewOptions& options = GetViewOptions (GetViewOptions::kDeep)) const;		///< get the container at point where
-	virtual bool getViewsAt (const CPoint& where, ViewList& views, const GetViewOptions& options = GetViewOptions (GetViewOptions::kDeep)) const;	///< get all views at point where, top->down
+	virtual CView* getViewAt (const CPoint& where, const GetViewOptions& options = GetViewOptions ()) const;	///< get the view at point where
+	virtual CViewContainer* getContainerAt (const CPoint& where, const GetViewOptions& options = GetViewOptions ().deep ()) const;		///< get the container at point where
+	virtual bool getViewsAt (const CPoint& where, ViewList& views, const GetViewOptions& options = GetViewOptions ().deep ()) const;	///< get all views at point where, top->down
 	virtual bool changeViewZOrder (CView* view, uint32_t newIndex);	///< change view z order position
 
 	virtual bool hitTestSubViews (const CPoint& where, const CButtonState& buttons = -1);
