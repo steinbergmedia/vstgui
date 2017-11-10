@@ -347,7 +347,7 @@ void CFrame::checkMouseViews (const CPoint& where, const CButtonState& buttons)
 	if (getMouseDownView ())
 		return;
 	CPoint lp;
-	CView* mouseView = getViewAt (where, GetViewOptions (GetViewOptions::kDeep|GetViewOptions::kMouseEnabled|GetViewOptions::kIncludeViewContainer));
+	CView* mouseView = getViewAt (where, GetViewOptions ().deep ().mouseEnabled ().includeViewContainer ());
 	CView* currentMouseView = pImpl->mouseViews.empty () == false ? pImpl->mouseViews.back () : nullptr;
 	if (currentMouseView == mouseView)
 		return; // no change
@@ -1140,7 +1140,7 @@ CView* CFrame::getViewAt (const CPoint& where, const GetViewOptions& options) co
 		getTransform ().inverse ().transform (where2);
 		if (pImpl->modalView->getViewSize ().pointInside (where2))
 		{
-			if (options.deep ())
+			if (options.getDeep ())
 			{
 				if (auto container = pImpl->modalView->asViewContainer ())
 				{
@@ -1165,7 +1165,7 @@ CViewContainer* CFrame::getContainerAt (const CPoint& where, const GetViewOption
 		{
 			if (auto container = pImpl->modalView->asViewContainer ())
 			{
-				if (options.deep ())
+				if (options.getDeep ())
 					return container->getContainerAt (where2, options);
 				return container;
 			}

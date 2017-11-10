@@ -147,8 +147,8 @@ public:
 
 	bool removeView (CView* pView, bool withForget = true) override;
 	bool removeAll (bool withForget = true) override;
-	CView* getViewAt (const CPoint& where, const GetViewOptions& options = GetViewOptions (GetViewOptions::kNone)) const override;
-	CViewContainer* getContainerAt (const CPoint& where, const GetViewOptions& options = GetViewOptions (GetViewOptions::kDeep)) const override;
+	CView* getViewAt (const CPoint& where, const GetViewOptions& options = GetViewOptions ().deep ()) const override;
+	CViewContainer* getContainerAt (const CPoint& where, const GetViewOptions& options = GetViewOptions ().deep ()) const override;
 	bool hitTestSubViews (const CPoint& where, const CButtonState& buttons = -1) override;
 
 	// CView

@@ -983,7 +983,7 @@ bool CViewContainer::onDrop (IDataPackage* drag, const CPoint& where)
 	where2.offset (-getViewSize ().left, -getViewSize ().top);
 	pImpl->transform.inverse ().transform (where2);
 
-	CView* view = getViewAt (where, GetViewOptions (GetViewOptions::kMouseEnabled|GetViewOptions::kIncludeViewContainer));
+	CView* view = getViewAt (where, GetViewOptions ().mouseEnabled ().includeViewContainer ());
 	if (view != pImpl->currentDragView)
 	{
 		if (pImpl->currentDragView)
@@ -1009,7 +1009,7 @@ void CViewContainer::onDragEnter (IDataPackage* drag, const CPoint& where)
 
 	if (pImpl->currentDragView)
 		pImpl->currentDragView->onDragLeave (drag, where2);
-	CView* view = getViewAt (where, GetViewOptions (GetViewOptions::kMouseEnabled|GetViewOptions::kIncludeViewContainer));
+	CView* view = getViewAt (where, GetViewOptions ().mouseEnabled ().includeViewContainer ());
 	pImpl->currentDragView = view;
 	if (view)
 		view->onDragEnter (drag, where2);
@@ -1034,7 +1034,7 @@ void CViewContainer::onDragMove (IDataPackage* drag, const CPoint& where)
 	where2.offset (-getViewSize ().left, -getViewSize ().top);
 	pImpl->transform.inverse ().transform (where2);
 
-	CView* view = getViewAt (where, GetViewOptions (GetViewOptions::kMouseEnabled|GetViewOptions::kIncludeViewContainer));
+	CView* view = getViewAt (where, GetViewOptions ().mouseEnabled ().includeViewContainer ());
 	if (view != pImpl->currentDragView)
 	{
 		if (pImpl->currentDragView)
@@ -1207,22 +1207,22 @@ CView* CViewContainer::getViewAt (const CPoint& p, const GetViewOptions& options
 	FOREACHSUBVIEW_REVERSE(true)
 		if (pV && pV->getMouseableArea ().pointInside (where))
 		{
-			if (!options.includeInvisible () && pV->isVisible () == false)
+			if (!options.getIncludeInvisible () && pV->isVisible () == false)
 				continue;
-			if (options.mouseEnabled ())
+			if (options.getMouseEnabled ())
 			{
 				if (pV->getMouseEnabled () == false)
 					continue;
 			}
-			if (options.deep ())
+			if (options.getDeep ())
 			{
 				if (auto container = pV->asViewContainer ())
 				{
 					CView* view = container->getViewAt (where, options);
-					return options.includeViewContainer () ? (view ? view : container) : view;
+					return options.getIncludeViewContainer () ? (view ? view : container) : view;
 				}
 			}
-			if (!options.includeViewContainer () && pV->asViewContainer ())
+			if (!options.getIncludeViewContainer () && pV->asViewContainer ())
 				continue;
 			return pV;
 		}
@@ -1249,19 +1249,19 @@ bool CViewContainer::getViewsAt (const CPoint& p, ViewList& views, const GetView
 	FOREACHSUBVIEW_REVERSE(true)
 		if (pV && pV->getMouseableArea ().pointInside (where))
 		{
-			if (!options.includeInvisible () && pV->isVisible () == false)
+			if (!options.getIncludeInvisible () && pV->isVisible () == false)
 				continue;
-			if (options.mouseEnabled ())
+			if (options.getMouseEnabled ())
 			{
 				if (pV->getMouseEnabled () == false)
 					continue;
 			}
-			if (options.deep ())
+			if (options.getDeep ())
 			{
 				if (CViewContainer* container = pV->asViewContainer ())
 					result |= container->getViewsAt (where, views, options);
 			}
-			if (options.includeViewContainer () == false)
+			if (options.getIncludeViewContainer () == false)
 			{
 				if (pV->asViewContainer ())
 					continue;
@@ -1289,14 +1289,14 @@ CViewContainer* CViewContainer::getContainerAt (const CPoint& p, const GetViewOp
 	FOREACHSUBVIEW_REVERSE(true)
 		if (pV && pV->getMouseableArea ().pointInside (where))
 		{
-			if (!options.includeInvisible () && pV->isVisible () == false)
+			if (!options.getIncludeInvisible () && pV->isVisible () == false)
 				continue;
-			if (options.mouseEnabled ())
+			if (options.getMouseEnabled ())
 			{
 				if (pV->getMouseEnabled() == false)
 					continue;
 			}
-			if (options.deep ())
+			if (options.getDeep ())
 			{
 				if (CViewContainer* container = pV->asViewContainer ())
 					return container->getContainerAt (where, options);
