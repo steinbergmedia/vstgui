@@ -18,13 +18,6 @@
 
 namespace VSTGUI {
 
-#ifndef FOREACHSUBVIEW_REVERSE
-	#define FOREACHSUBVIEW_REVERSE(reverse) ChildViewConstIterator it; ChildViewConstReverseIterator rit; if (reverse) rit = pImpl->children.rbegin (); else it = pImpl->children.begin (); while (reverse ? rit != pImpl->children.rend () : it != pImpl->children.end ()) { CView* pV; if (reverse) {	pV = (*rit); ++rit; } else { pV = (*it); ++it; } {
-#endif
-#ifndef ENDFOREACHSUBVIEW
-	#define ENDFOREACHSUBVIEW } }
-#endif
-
 IdStringPtr kMsgLooseFocus = "LooseFocus";
 
 //-----------------------------------------------------------------------------
@@ -837,7 +830,9 @@ bool CViewContainer::hitTestSubViews (const CPoint& where, const CButtonState& b
 	where2.offset (-getViewSize ().left, -getViewSize ().top);
 	pImpl->transform.inverse ().transform (where2);
 
-	FOREACHSUBVIEW_REVERSE(true)
+	for (auto it = pImpl->children.rbegin (), end = pImpl->children.rend (); it != end; ++it)
+	{
+		const auto& pV = *it;
 		if (pV && pV->isVisible () && pV->getMouseEnabled () && pV->hitTest (where2, buttons))
 		{
 			if (auto container = pV->asViewContainer ())
@@ -848,7 +843,7 @@ bool CViewContainer::hitTestSubViews (const CPoint& where, const CButtonState& b
 			else
 				return true;
 		}
-	ENDFOREACHSUBVIEW
+	}
 	return false;
 }
 
@@ -873,10 +868,12 @@ CMouseEventResult CViewContainer::onMouseDown (CPoint &where, const CButtonState
 	where2.offset (-getViewSize ().left, -getViewSize ().top);
 	pImpl->transform.inverse ().transform (where2);
 
-	FOREACHSUBVIEW_REVERSE(true)
+	for (auto it = pImpl->children.rbegin (), end = pImpl->children.rend (); it != end; ++it)
+	{
+		const auto& pV = *it;
 		if (pV && pV->isVisible () && pV->getMouseEnabled () && pV->hitTest (where2, buttons))
 		{
-			CControl* control = dynamic_cast<CControl*> (pV);
+			auto control = pV.cast<CControl> ();
 			if (control && control->getListener () && buttons & (kAlt | kShift | kControl | kApple | kRButton))
 			{
 				if (control->getListener ()->controlModifierClicked (control, buttons) != 0)
@@ -897,7 +894,7 @@ CMouseEventResult CViewContainer::onMouseDown (CPoint &where, const CButtonState
 			if (!pV->getTransparency ())
 				return result;
 		}
-	ENDFOREACHSUBVIEW
+	}
 	return kMouseEventNotHandled;
 }
 
@@ -953,7 +950,9 @@ CMouseEventResult CViewContainer::onMouseCancel ()
 //-----------------------------------------------------------------------------
 bool CViewContainer::onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const CButtonState &buttons)
 {
-	FOREACHSUBVIEW_REVERSE(true)
+	for (auto it = pImpl->children.rbegin (), end = pImpl->children.rend (); it != end; ++it)
+	{
+		const auto& pV = *it;
 		CPoint where2 (where);
 		where2.offset (-getViewSize ().left, -getViewSize ().top);
 		pImpl->transform.inverse ().transform (where2);
@@ -964,7 +963,7 @@ bool CViewContainer::onWheel (const CPoint &where, const CMouseWheelAxis &axis, 
 			if (!pV->getTransparency ())
 				return false;
 		}
-	ENDFOREACHSUBVIEW
+	}
 	return false;
 }
 
@@ -1143,13 +1142,14 @@ bool CViewContainer::advanceNextFocusView (CView* oldFocus, bool reverse)
 	if (getFrame ())
 	{
 		bool foundOld = false;
-		FOREACHSUBVIEW_REVERSE(reverse)
+
+		auto func = [&] (CView* pV) {
 			if (oldFocus && !foundOld)
 			{
 				if (oldFocus == pV)
 				{
 					foundOld = true;
-					continue;
+					return false;
 				}
 			}
 			else
@@ -1165,7 +1165,25 @@ bool CViewContainer::advanceNextFocusView (CView* oldFocus, bool reverse)
 						return true;
 				}
 			}
-		ENDFOREACHSUBVIEW
+			return false;
+		};
+
+		if (reverse)
+		{
+			for (auto it = pImpl->children.rbegin (), end = pImpl->children.rend (); it != end; ++it)
+			{
+				if (func (*it))
+					return true;
+			}
+		}
+		else
+		{
+			for (const auto& view : pImpl->children)
+			{
+				if (func (view))
+					return true;
+			}
+		}
 	}
 	return false;
 }
@@ -1204,7 +1222,9 @@ CView* CViewContainer::getViewAt (const CPoint& p, const GetViewOptions& options
 	where.offset (-getViewSize ().left, -getViewSize ().top);
 	pImpl->transform.inverse ().transform (where);
 
-	FOREACHSUBVIEW_REVERSE(true)
+	for (auto it = pImpl->children.rbegin (), end = pImpl->children.rend (); it != end; ++it)
+	{
+		const auto& pV = *it;
 		if (pV && pV->getMouseableArea ().pointInside (where))
 		{
 			if (!options.getIncludeInvisible () && pV->isVisible () == false)
@@ -1226,7 +1246,7 @@ CView* CViewContainer::getViewAt (const CPoint& p, const GetViewOptions& options
 				continue;
 			return pV;
 		}
-	ENDFOREACHSUBVIEW
+	}
 
 	return nullptr;
 }
@@ -1246,7 +1266,9 @@ bool CViewContainer::getViewsAt (const CPoint& p, ViewList& views, const GetView
 	where.offset (-getViewSize ().left, -getViewSize ().top);
 	pImpl->transform.inverse ().transform (where);
 
-	FOREACHSUBVIEW_REVERSE(true)
+	for (auto it = pImpl->children.rbegin (), end = pImpl->children.rend (); it != end; ++it)
+	{
+		const auto& pV = *it;
 		if (pV && pV->getMouseableArea ().pointInside (where))
 		{
 			if (!options.getIncludeInvisible () && pV->isVisible () == false)
@@ -1269,7 +1291,7 @@ bool CViewContainer::getViewsAt (const CPoint& p, ViewList& views, const GetView
 			views.emplace_back (pV);
 			result = true;
 		}
-	ENDFOREACHSUBVIEW
+	}
 
 	return result;
 }
@@ -1286,7 +1308,9 @@ CViewContainer* CViewContainer::getContainerAt (const CPoint& p, const GetViewOp
 	where.offset (-getViewSize ().left, -getViewSize ().top);
 	pImpl->transform.inverse ().transform (where);
 
-	FOREACHSUBVIEW_REVERSE(true)
+	for (auto it = pImpl->children.rbegin (), end = pImpl->children.rend (); it != end; ++it)
+	{
+		const auto& pV = *it;
 		if (pV && pV->getMouseableArea ().pointInside (where))
 		{
 			if (!options.getIncludeInvisible () && pV->isVisible () == false)
@@ -1303,7 +1327,7 @@ CViewContainer* CViewContainer::getContainerAt (const CPoint& p, const GetViewOp
 			}
 			break;
 		}
-	ENDFOREACHSUBVIEW
+	}
 
 	return const_cast<CViewContainer*>(this);
 }
