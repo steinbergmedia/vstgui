@@ -105,5 +105,24 @@ HIDDEN inline NSImage* imageFromCGImageRef (CGImageRef image)
 	return [[NSImage alloc] initWithCGImage:image size:NSZeroSize];
 }
 
+//------------------------------------------------------------------------------------
+struct MacEventModifier
+{
+	enum mask
+	{
+#ifdef MAC_OS_X_VERSION_10_12
+		ShiftKeyMask = NSEventModifierFlagShift,
+		CommandKeyMask = NSEventModifierFlagCommand,
+		AlternateKeyMask = NSEventModifierFlagOption,
+		ControlKeyMask = NSEventModifierFlagControl
+#else
+		ShiftKeyMask = NSShiftKeyMask,
+		CommandKeyMask = NSCommandKeyMask,
+		AlternateKeyMask = NSAlternateKeyMask,
+		ControlKeyMask = NSControlKeyMask
+#endif
+	};
+};
+
 #endif // MAC_COCOA
 #endif // __cocoahelpers__
