@@ -2,6 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
+#import "../../../../lib/platform/mac/cocoa/cocoahelpers.h"
 #import "../../../include/iappdelegate.h"
 #import "../../../include/iapplication.h"
 #import "../../application.h"
@@ -233,7 +234,8 @@ static CommandWithKeyList getCommandList (const char* _Nonnull group)
 	NSMenuItem* item = [menu addItemWithTitle:@"Fullscreen"
 	                                   action:@selector (toggleFullScreen:)
 	                            keyEquivalent:@"f"];
-	item.keyEquivalentModifierMask = NSCommandKeyMask | NSControlKeyMask;
+	item.keyEquivalentModifierMask =
+	    MacEventModifier::CommandKeyMask | MacEventModifier::ControlKeyMask;
 	[menu addItem:[NSMenuItem separatorItem]];
 	[menu addItemWithTitle:@"Bring All to Front"
 	                action:@selector (arrangeInFront:)
