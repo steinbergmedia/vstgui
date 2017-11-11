@@ -569,6 +569,7 @@ bool CViewContainer::changeViewZOrder (CView* view, uint32_t newIndex)
 {
 	if (newIndex < getNbViews ())
 	{
+		CBaseObjectGuard guard (view);
 		ViewList::iterator it = std::find (pImpl->children.begin (), pImpl->children.end (), view);
 		if (it != pImpl->children.end ())
 		{
@@ -870,7 +871,7 @@ CMouseEventResult CViewContainer::onMouseDown (CPoint &where, const CButtonState
 
 	for (auto it = pImpl->children.rbegin (), end = pImpl->children.rend (); it != end; ++it)
 	{
-		const auto& pV = *it;
+		auto pV = *it;
 		if (pV && pV->isVisible () && pV->getMouseEnabled () && pV->hitTest (where2, buttons))
 		{
 			auto control = pV.cast<CControl> ();
@@ -879,7 +880,6 @@ CMouseEventResult CViewContainer::onMouseDown (CPoint &where, const CButtonState
 				if (control->getListener ()->controlModifierClicked (control, buttons) != 0)
 					return kMouseEventHandled;
 			}
-			CBaseObjectGuard crg (pV);
 
 			if (pV->wantsFocus ())
 				getFrame ()->setFocusView (pV);
