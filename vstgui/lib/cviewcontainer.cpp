@@ -66,12 +66,8 @@ CViewContainer::CViewContainer (const CViewContainer& v)
 	pImpl->backgroundColorDrawStyle = v.pImpl->backgroundColorDrawStyle;
 	pImpl->backgroundColor = v.pImpl->backgroundColor;
 	pImpl->backgroundOffset = v.pImpl->backgroundOffset;
-	ViewIterator it (&v);
-	while (*it)
-	{
-		addView (static_cast<CView*>((*it)->newCopy ()));
-		++it;
-	}
+	for (auto& v : v.pImpl->children)
+		addView (static_cast<CView*> (v->newCopy ()));
 }
 
 //-----------------------------------------------------------------------------
@@ -270,7 +266,7 @@ bool CViewContainer::sizeToFit ()
 	if (treatAsColumn || treatAsRow)
 		return false;
 
-	CRect bounds (50000, 50000, -50000, -50000);
+    CRect bounds (50000, 50000, -50000, -50000);
 	for (const auto& pV : pImpl->children)
 	{
 		if (pV->isVisible ())
@@ -286,7 +282,7 @@ bool CViewContainer::sizeToFit ()
 				bounds.bottom = vs.bottom;
 		}
 	}
-	
+    
 	CRect vs (getViewSize ());
 	vs.right = vs.left + bounds.right + bounds.left;
 	vs.bottom = vs.top + bounds.bottom + bounds.top;
@@ -393,7 +389,8 @@ bool CViewContainer::addView (CView *pView, CView* pBefore)
 
 	if (pBefore)
 	{
-		ViewList::iterator it = std::find (pImpl->children.begin (), pImpl->children.end (), pBefore);
+		vstgui_assert (pBefore->getParentView () == this);
+		auto it = std::find (pImpl->children.begin (), pImpl->children.end (), pBefore);
 		pImpl->children.insert (it, pView);
 	}
 	else
@@ -444,7 +441,7 @@ bool CViewContainer::removeAll (bool withForget)
 		pImpl->mouseDownView = nullptr;
 	pImpl->currentDragView = nullptr;
 	
-	ViewList::iterator it = pImpl->children.begin ();
+	auto it = pImpl->children.begin ();
 	while (it != pImpl->children.end ())
 	{
 		auto view = *it;
@@ -470,7 +467,7 @@ bool CViewContainer::removeAll (bool withForget)
  */
 bool CViewContainer::removeView (CView *pView, bool withForget)
 {
-	ViewList::iterator it = std::find (pImpl->children.begin (), pImpl->children.end (), pView);
+	auto it = std::find (pImpl->children.begin (), pImpl->children.end (), pView);
 	if (it != pImpl->children.end ())
 	{
 		pView->invalid ();
@@ -509,7 +506,7 @@ bool CViewContainer::isChild (CView *pView, bool deep) const
 
 	if (deep)
 	{
-		ChildViewConstIterator it = pImpl->children.begin ();
+		auto it = pImpl->children.begin ();
 		while (!found && it != pImpl->children.end ())
 		{
 			CView* v = (*it);
@@ -533,7 +530,7 @@ bool CViewContainer::isChild (CView *pView, bool deep) const
 //-----------------------------------------------------------------------------
 bool CViewContainer::hasChildren () const
 {
-	return pImpl->children.size () > 0;
+	return !pImpl->children.empty ();
 }
 
 //-----------------------------------------------------------------------------
@@ -552,7 +549,7 @@ uint32_t CViewContainer::getNbViews () const
  */
 CView* CViewContainer::getView (uint32_t index) const
 {
-	ChildViewConstIterator it = pImpl->children.begin ();
+	auto it = pImpl->children.begin ();
 	std::advance (it, index);
 	if (it != pImpl->children.end ())
 		return *it;
@@ -570,7 +567,7 @@ bool CViewContainer::changeViewZOrder (CView* view, uint32_t newIndex)
 	if (newIndex < getNbViews ())
 	{
 		CBaseObjectGuard guard (view);
-		ViewList::iterator it = std::find (pImpl->children.begin (), pImpl->children.end (), view);
+		auto it = std::find (pImpl->children.begin (), pImpl->children.end (), view);
 		if (it != pImpl->children.end ())
 		{
 			pImpl->children.erase (it);
