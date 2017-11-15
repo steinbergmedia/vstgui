@@ -266,7 +266,9 @@ bool CViewContainer::sizeToFit ()
 	if (treatAsColumn || treatAsRow)
 		return false;
 
-    CRect bounds (50000, 50000, -50000, -50000);
+	constexpr auto CoordMax = std::numeric_limits<CCoord>::max ();
+	constexpr auto CoordMin = -CoordMax;
+	CRect bounds (CoordMax, CoordMax, CoordMin, CoordMin);
 	for (const auto& pV : pImpl->children)
 	{
 		if (pV->isVisible ())
@@ -282,7 +284,10 @@ bool CViewContainer::sizeToFit ()
 				bounds.bottom = vs.bottom;
 		}
 	}
-    
+
+	if (bounds == CRect (CoordMax, CoordMax, CoordMin, CoordMin))
+		return false;
+
 	CRect vs (getViewSize ());
 	vs.right = vs.left + bounds.right + bounds.left;
 	vs.bottom = vs.top + bounds.bottom + bounds.top;
