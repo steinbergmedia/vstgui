@@ -859,15 +859,18 @@ bool CTextButton::sizeToFit ()
 void CTextButton::draw (CDrawContext* context)
 {
 	bool highlight = value > 0.5 ? true : false;
+	auto lineWidth = getFrameWidth ();
+	if (lineWidth < 0.)
+		lineWidth = context->getHairlineSize ();
 	context->setDrawMode (kAntiAliasing);
-	context->setLineWidth (frameWidth);
+	context->setLineWidth (lineWidth);
 	context->setLineStyle (CLineStyle (CLineStyle::kLineCapRound, CLineStyle::kLineJoinRound));
 	context->setFrameColor (highlight ? frameColorHighlighted : frameColor);
 	CRect r (getViewSize ());
-	r.inset (frameWidth / 2., frameWidth / 2.);
+	r.inset (lineWidth / 2., lineWidth / 2.);
 	if (gradient && gradientHighlighted)
 	{
-		CGraphicsPath* path = getPath (context);
+		CGraphicsPath* path = getPath (context, lineWidth);
 		if (path)
 		{
 			CGradient* drawGradient = highlight ? gradientHighlighted : gradient;
@@ -877,7 +880,7 @@ void CTextButton::draw (CDrawContext* context)
 		}
 	}
 	CRect titleRect = getViewSize ();
-	titleRect.inset (frameWidth / 2., frameWidth / 2.);
+	titleRect.inset (lineWidth / 2., lineWidth / 2.);
 
 	CBitmap* iconToDraw = highlight ? (iconHighlighted ? iconHighlighted : icon) : (icon ? icon : iconHighlighted);
 	CDrawMethods::drawIconAndText (context, iconToDraw, iconPosition, getTextAlignment (), getTextMargin (), titleRect, title, getFont (), highlight ? getTextColorHighlighted () : getTextColor ());
@@ -904,12 +907,12 @@ bool CTextButton::drawFocusOnTop ()
 }
 
 //------------------------------------------------------------------------
-CGraphicsPath* CTextButton::getPath (CDrawContext* context)
+CGraphicsPath* CTextButton::getPath (CDrawContext* context, CCoord lineWidth)
 {
 	if (_path == nullptr)
 	{
 		CRect r (getViewSize ());
-		r.inset (frameWidth / 2., frameWidth / 2.);
+		r.inset (lineWidth / 2., lineWidth / 2.);
 		_path = owned (context->createRoundRectGraphicsPath (r, roundRadius));
 	}
 	return _path;
