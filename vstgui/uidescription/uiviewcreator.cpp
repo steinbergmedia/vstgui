@@ -3212,6 +3212,10 @@ public:
 		applyStyleMask (attributes.getAttributeValue (kAttrDrawValueInverted), CSlider::kDrawInverted, drawStyle);
 		slider->setDrawStyle (drawStyle);
 
+		CCoord lineWidth;
+		if (attributes.getDoubleAttribute(kAttrFrameWidth, lineWidth))
+			slider->setFrameWidth (lineWidth);
+
 		CColor color;
 		if (stringToColor (attributes.getAttributeValue (kAttrDrawFrameColor), color, description))
 			slider->setFrameColor (color);
@@ -3236,6 +3240,7 @@ public:
 		attributeNames.emplace_back (kAttrDrawValue);
 		attributeNames.emplace_back (kAttrDrawValueFromCenter);
 		attributeNames.emplace_back (kAttrDrawValueInverted);
+		attributeNames.emplace_back (kAttrFrameWidth);
 		attributeNames.emplace_back (kAttrDrawFrameColor);
 		attributeNames.emplace_back (kAttrDrawBackColor);
 		attributeNames.emplace_back (kAttrDrawValueColor);
@@ -3256,6 +3261,7 @@ public:
 		if (attributeName == kAttrDrawValue) return kBooleanType;
 		if (attributeName == kAttrDrawValueFromCenter) return kBooleanType;
 		if (attributeName == kAttrDrawValueInverted) return kBooleanType;
+		if (attributeName == kAttrFrameWidth) return kFloatType;
 		if (attributeName == kAttrDrawFrameColor) return kColorType;
 		if (attributeName == kAttrDrawBackColor) return kColorType;
 		if (attributeName == kAttrDrawValueColor) return kColorType;
@@ -3379,6 +3385,11 @@ public:
 		else if (attributeName == kAttrDrawValueColor)
 		{
 			colorToString (slider->getValueColor (), stringValue, desc);
+			return true;
+		}
+		else if (attributeName == kAttrFrameWidth)
+		{
+			stringValue = numberToString (slider->getFrameWidth ());
 			return true;
 		}
 
