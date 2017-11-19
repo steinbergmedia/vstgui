@@ -58,8 +58,8 @@ static CFBundleRef GetPluginBundle ()
 			name.assign (info.dli_fname);
 			for (int i = 0; i < 3; i++)
 			{
-				int delPos = name.find_last_of ('/');
-				if (delPos == -1)
+				size_t delPos = name.find_last_of ('/');
+				if (delPos == std::string::npos)
 				{
 					fprintf (stdout, "Could not determine bundle location.\n");
 					return 0; // unexpected
