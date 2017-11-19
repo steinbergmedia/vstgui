@@ -27,6 +27,7 @@ public:
 	virtual void setZIndex (uint32_t zIndex) = 0;
 	virtual void setAlpha (float alpha) = 0;
 	virtual void draw (CDrawContext* context, const CRect& updateRect) = 0;
+	virtual void onScaleFactorChanged (double newScaleFactor) = 0;
 };
 
 }
