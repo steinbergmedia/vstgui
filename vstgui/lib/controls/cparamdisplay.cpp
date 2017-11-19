@@ -138,11 +138,14 @@ bool CParamDisplay::getFocusPath (CGraphicsPath& outPath)
 {
 	if (wantsFocus ())
 	{
+        auto lineWidth = getFrameWidth ();
+        if (lineWidth < 0.)
+            lineWidth = 1.;
 		CCoord focusWidth = getFrame ()->getFocusWidth ();
 		CRect r (getViewSize ());
 		if (style & kRoundRectStyle)
 		{
-			r.inset (getFrameWidth () / 2., getFrameWidth () / 2.);
+			r.inset (lineWidth / 2., lineWidth / 2.);
 			outPath.addRoundRect (r, roundRectRadius);
 			outPath.closeSubpath ();
 			r.extend (focusWidth, focusWidth);
@@ -150,7 +153,7 @@ bool CParamDisplay::getFocusPath (CGraphicsPath& outPath)
 		}
 		else
 		{
-			r.inset (getFrameWidth () / 2., getFrameWidth () / 2.);
+			r.inset (lineWidth / 2., lineWidth / 2.);
 			outPath.addRect (r);
 			r.extend (focusWidth, focusWidth);
 			outPath.addRect (r);
