@@ -398,8 +398,11 @@ bool CSegmentButton::drawFocusOnTop ()
 //-----------------------------------------------------------------------------
 bool CSegmentButton::getFocusPath (CGraphicsPath& outPath)
 {
+    auto lineWidth = getFrameWidth ();
+    if (lineWidth < 0.)
+        lineWidth = 1.;
 	CRect r (getViewSize ());
-	r.inset (getFrameWidth () / 2., getFrameWidth () / 2.);
+	r.inset (lineWidth / 2., lineWidth / 2.);
 	outPath.addRoundRect (r, getRoundRadius ());
 	CCoord focusWidth = getFrame ()->getFocusWidth ();
 	r.extend (focusWidth, focusWidth);
