@@ -349,6 +349,7 @@ public:
 #include "uidescription.h"
 #include "../vstgui.h"
 #include <sstream>
+#include <regex>
 
 namespace VSTGUI {
 namespace UIViewCreator {
@@ -1829,7 +1830,21 @@ public:
 
 		const std::string* attr = attributes.getAttributeValue (kAttrTitle);
 		if (attr)
-			label->setText (attr->c_str ());
+		{
+			auto index = attr->find ("\\n");
+			if (index != std::string::npos)
+			{
+				auto str = *attr;
+				while (index != std::string::npos)
+				{
+					str.replace (index, 2, "\n");
+					index = str.find ("\\n");
+				}
+				label->setText (UTF8String (std::move (str)));
+			}
+			else
+				label->setText (UTF8String (*attr));
+		}
 		attr = attributes.getAttributeValue (kAttrTruncateMode);
 		if (attr)
 		{
@@ -1863,6 +1878,12 @@ public:
 		if (attributeName == kAttrTitle)
 		{
 			stringValue = label->getText ().getString ();
+			auto index = stringValue.find ("\n");
+			while (index != std::string::npos)
+			{
+				stringValue.replace (index, 1, "\\n");
+				index = stringValue.find ("\n");
+			}
 			return true;
 		}
 		else if (attributeName == kAttrTruncateMode)
