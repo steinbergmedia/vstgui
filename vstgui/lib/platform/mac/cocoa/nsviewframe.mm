@@ -174,9 +174,9 @@ static void VSTGUI_NSView_windowDidChangeBackingProperties (id self, SEL _cmd, N
 	if (auto window = [self window])
 		scaleFactor = [window backingScaleFactor];
 	
-	IPlatformFrameCallback* frame = getFrame (self);
-	if (frame)
-		frame->platformScaleFactorChanged (scaleFactor);
+	NSViewFrame* viewFrame = getNSViewFrame (self);
+	if (viewFrame)
+		viewFrame->scaleFactorChanged (scaleFactor);
 }
 
 //------------------------------------------------------------------------------------
@@ -772,6 +772,16 @@ NSViewFrame::~NSViewFrame () noexcept
 	[nsView unregisterDraggedTypes]; // this is neccessary otherwise AppKit will crash if the plug-in is unloaded from the process
 	[nsView removeFromSuperview];
 	[nsView release];
+}
+
+//------------------------------------------------------------------------------------
+void NSViewFrame::scaleFactorChanged (double newScaleFactor)
+{
+	if (nsView.wantsLayer)
+		nsView.layer.contentsScale = newScaleFactor;
+
+	if (frame)
+		frame->platformScaleFactorChanged (newScaleFactor);
 }
 
 //-----------------------------------------------------------------------------
