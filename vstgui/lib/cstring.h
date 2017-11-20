@@ -390,18 +390,18 @@ inline bool UTF8StringView::startsWith (const UTF8StringView& startString) const
 {
 	if (!str || !startString.str)
 		return false;
-	uint64_t startStringLen = startString.calculateByteCount () - 1;
-	uint64_t thisLen = calculateByteCount () - 1;
+	size_t startStringLen = startString.calculateByteCount ();
+	size_t thisLen = calculateByteCount ();
 	if (startStringLen > thisLen)
 		return false;
-	return strncmp (str, startString.str, startStringLen) == 0;
+	return std::strncmp (str, startString.str, startStringLen - 1) == 0;
 }
 
 //-----------------------------------------------------------------------------
 inline bool UTF8StringView::endsWith (const UTF8StringView& endString) const
 {
-	uint64_t endStringLen = endString.calculateByteCount ();
-	uint64_t thisLen = calculateByteCount ();
+	size_t endStringLen = endString.calculateByteCount ();
+	size_t thisLen = calculateByteCount ();
 	if (endStringLen > thisLen)
 		return false;
 	return endString == UTF8StringView (str + (thisLen - endStringLen));
