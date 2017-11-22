@@ -193,11 +193,7 @@ HIDDEN NSString* GetVirtualKeyCodeString (int32_t virtualKeyCode)
 //------------------------------------------------------------------------------------
 HIDDEN int32_t eventButton (NSEvent* theEvent)
 {
-#ifdef MAC_OS_X_VERSION_10_12
-	if ([theEvent type] == NSEventTypeMouseMoved)
-#else
-	if ([theEvent type] == NSMouseMoved)
-#endif
+	if ([theEvent type] == MacEventType::MouseMoved)
 	{
 		return 0;
 	}
