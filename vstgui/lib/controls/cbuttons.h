@@ -148,9 +148,6 @@ public:
 protected:
 	~CKickButton () noexcept override = default;
 	CPoint	offset;
-
-private:
-	float   fEntryState;
 };
 
 //-----------------------------------------------------------------------------
@@ -239,7 +236,7 @@ protected:
 	~CTextButton () noexcept override = default;
 
 	void invalidPath ();
-	CGraphicsPath* getPath (CDrawContext* context);
+	CGraphicsPath* getPath (CDrawContext* context, CCoord lineWidth);
 
 	SharedPointer<CFontDesc> font;
 	SharedPointer<CGraphicsPath> _path;

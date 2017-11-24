@@ -14,13 +14,19 @@ CGradientView::CGradientView (const CRect& size)
 {
 }
 
+//------------------------------------------------------------------------
+void CGradientView::attributeChanged ()
+{
+	invalid ();
+}
+
 //-----------------------------------------------------------------------------
 void CGradientView::setGradientStyle (GradientStyle style)
 {
 	if (gradientStyle != style)
 	{
 		gradientStyle = style;
-		invalid ();
+		attributeChanged ();
 	}
 }
 
@@ -30,7 +36,7 @@ void CGradientView::setGradient (CGradient* newGradient)
 	if (gradient != newGradient)
 	{
 		gradient = newGradient;
-		invalid ();
+		attributeChanged ();
 	}
 }
 
@@ -40,7 +46,7 @@ void CGradientView::setFrameColor (const CColor& newColor)
 	if (newColor != frameColor)
 	{
 		frameColor = newColor;
-		invalid ();
+		attributeChanged ();
 	}
 }
 
@@ -50,7 +56,7 @@ void CGradientView::setGradientAngle (double angle)
 	if (angle != gradientAngle)
 	{
 		gradientAngle = angle;
-		invalid ();
+		attributeChanged ();
 	}
 }
 
@@ -61,7 +67,7 @@ void CGradientView::setRoundRectRadius (CCoord radius)
 	{
 		roundRectRadius = radius;
 		path = nullptr;
-		invalid ();
+		attributeChanged ();
 	}
 }
 
@@ -72,7 +78,7 @@ void CGradientView::setFrameWidth (CCoord width)
 	{
 		frameWidth = width;
 		path = nullptr;
-		invalid ();
+		attributeChanged ();
 	}
 }
 
@@ -82,7 +88,7 @@ void CGradientView::setDrawAntialiased (bool state)
 	if (state != drawAntialiased)
 	{
 		drawAntialiased = state;
-		invalid ();
+		attributeChanged ();
 	}
 }
 
@@ -92,7 +98,7 @@ void CGradientView::setRadialCenter (const CPoint& center)
 	if (radialCenter != center)
 	{
 		radialCenter = center;
-		invalid ();
+		attributeChanged ();
 	}
 }
 
@@ -102,7 +108,7 @@ void CGradientView::setRadialRadius (CCoord radius)
 	if (radialRadius != radius)
 	{
 		radialRadius = radius;
-		invalid ();
+		attributeChanged ();
 	}
 }
 
@@ -119,10 +125,13 @@ void CGradientView::setViewSize (const CRect& rect, bool invalid)
 //-----------------------------------------------------------------------------
 void CGradientView::draw (CDrawContext* context)
 {
+	auto lineWidth = getFrameWidth ();
+	if (lineWidth < 0.)
+		lineWidth = context->getHairlineSize ();
 	if (path == nullptr)
 	{
 		CRect r = getViewSize ();
-		r.inset (frameWidth / 2., frameWidth / 2.);
+		r.inset (lineWidth / 2., lineWidth / 2.);
 		path = owned (context->createRoundRectGraphicsPath (r, roundRectRadius));
 	}
 	if (path && gradient)
@@ -148,11 +157,11 @@ void CGradientView::draw (CDrawContext* context)
 			context->fillRadialGradient (path, *gradient, center, radialRadius * std::max (getViewSize ().getWidth (), getViewSize ().getHeight ()));
 		}
 		
-		if (frameColor.alpha != 0 && frameWidth > 0.)
+		if (frameColor.alpha != 0 && lineWidth > 0.)
 		{
 			context->setDrawMode (drawAntialiased ? kAntiAliasing : kAliasing);
 			context->setFrameColor (frameColor);
-			context->setLineWidth (frameWidth);
+			context->setLineWidth (lineWidth);
 			context->setLineStyle (kLineSolid);
 			context->drawGraphicsPath (path, CDrawContext::kPathStroked);
 		}

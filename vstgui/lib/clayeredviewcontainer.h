@@ -7,6 +7,7 @@
 
 #include "cviewcontainer.h"
 #include "iviewlistener.h"
+#include "iscalefactorchangedlistener.h"
 #include "platform/iplatformviewlayer.h"
 
 namespace VSTGUI {
@@ -19,7 +20,7 @@ namespace VSTGUI {
 //! A CLayeredViewContainer creates a platform layer on top of a parent layer or the platform view of CFrame
 //! if available on that platform and draws into it, otherwise it acts exactly like a CViewContainer
 //-----------------------------------------------------------------------------
-class CLayeredViewContainer : public CViewContainer, public IPlatformViewLayerDelegate, public IViewContainerListenerAdapter
+class CLayeredViewContainer : public CViewContainer, public IPlatformViewLayerDelegate, public IViewContainerListenerAdapter, public IScaleFactorChangedListener
 {
 public:
 	explicit CLayeredViewContainer (const CRect& r = CRect (0, 0, 0, 0));
@@ -42,6 +43,7 @@ protected:
 	void drawRect (CDrawContext* pContext, const CRect& updateRect) override;
 	void drawViewLayer (CDrawContext* context, const CRect& dirtyRect) override;
 	void viewContainerTransformChanged (CViewContainer* container) override;
+	void onScaleFactorChanged (CFrame* frame, double newScaleFactor) override;
 	void updateLayerSize ();
 	CGraphicsTransform getDrawTransform () const;
 	void registerListeners (bool state);

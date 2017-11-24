@@ -22,6 +22,20 @@ static Class secureTextFieldClass = nullptr;
 @end
 
 //------------------------------------------------------------------------------------
+namespace MacTextAlignment {
+
+#ifdef MAC_OS_X_VERSION_10_12
+static constexpr auto Right = ::NSTextAlignmentRight;
+static constexpr auto Center = ::NSTextAlignmentCenter;
+#else
+static constexpr auto Right = ::NSRightTextAlignment;
+static constexpr auto Center = ::NSCenterTextAlignment;
+#endif
+
+//------------------------------------------------------------------------------------
+} // namespace MacTextAlignment
+
+//------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------
 static id VSTGUI_NSTextField_Init (id self, SEL _cmd, void* textEdit)
@@ -93,18 +107,18 @@ static id VSTGUI_NSTextField_Init (id self, SEL _cmd, void* textEdit)
 		[cell setLineBreakMode: NSLineBreakByClipping];
 		[cell setScrollable:YES];
 		if (tec->platformGetHoriTxtAlign () == kCenterText)
-			[cell setAlignment:NSCenterTextAlignment];
+			[cell setAlignment:MacTextAlignment::Center];
 		else if (tec->platformGetHoriTxtAlign () == kRightText)
-			[cell setAlignment:NSRightTextAlignment];
+			[cell setAlignment:MacTextAlignment::Right];
 		if (placeholder.length > 0)
 		{
 			CColor color = tec->platformGetFontColor ();
 			color.alpha /= 2;
 			NSMutableParagraphStyle* paragraphStyle = [[[NSMutableParagraphStyle alloc] init] autorelease];
 			if (tec->platformGetHoriTxtAlign () == kCenterText)
-				paragraphStyle.alignment = NSCenterTextAlignment;
+				paragraphStyle.alignment = MacTextAlignment::Center;
 			else if (tec->platformGetHoriTxtAlign () == kRightText)
-				paragraphStyle.alignment = NSRightTextAlignment;
+				paragraphStyle.alignment = MacTextAlignment::Right;
 			NSDictionary* attrDict =
 			    [NSDictionary dictionaryWithObjectsAndKeys:[self font], NSFontAttributeName,
 			                                               nsColorFromCColor (color),

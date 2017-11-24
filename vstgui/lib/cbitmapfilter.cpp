@@ -437,92 +437,146 @@ private:
 		return false;
 	}
 
-	inline uint32_t saturate (uint32_t value) { return std::min<uint32_t> (value, 255); }
-
-	inline void calculate (uint32_t* colors, uint32_t numColors)
-	{
-		uint32_t lastColor = numColors - 1;
-		uint32_t red = colors[lastColor] & 0x000000FF;
-		uint32_t green = (colors[lastColor] >> 8) & 0x000000FF;
-		uint32_t blue = (colors[lastColor] >> 16) & 0x000000FF;
-		uint32_t alpha = (colors[lastColor] >> 24) & 0x000000FF;
-		for (int64_t i = (int64_t)numColors-2; i >= 0; i--)
-		{
-			red += colors[i] & 0x000000FF;
-			green += (colors[i] >> 8) & 0x000000FF;
-			blue += (colors[i] >> 16) & 0x000000FF;
-			alpha += (colors[i] >> 24) & 0x000000FF;
-			colors[i+1] = colors[i];
-		}
-		colors[0] = saturate (red / numColors) | (saturate (green / numColors) << 8) | (saturate (blue / numColors) << 16) | (saturate (alpha / numColors) << 24);
-	}
-
 	void run (CBitmapPixelAccess& inputAccessor, CBitmapPixelAccess& outputAccessor, uint32_t radius)
 	{
-		const uint32_t halfRadius = radius / 2;
-		const uint32_t width = inputAccessor.getBitmapWidth ();
-		const uint32_t height = inputAccessor.getBitmapHeight ();
-		uint32_t x,y,x1,y1;
-		uint32_t stackColors[20];
-		uint32_t* nc;
-		if (radius > 19)
-			nc = new uint32_t[(size_t)radius];
-		else
-			nc = stackColors;
-		for (y = 0; y < height; y++)
+		auto inputPbpa = inputAccessor.getPlatformBitmapPixelAccess ();
+		auto outputPbpa = outputAccessor.getPlatformBitmapPixelAccess ();
+		auto inputAddressPtr = inputPbpa->getAddress ();
+		auto outputAddressPtr = outputPbpa->getAddress ();
+		auto width = inputPbpa->getBytesPerRow () / 4;
+		auto height = inputAccessor.getBitmapHeight ();
+		switch (inputPbpa->getPixelFormat ())
 		{
-			memset (nc, 0, sizeof(uint32_t) * (size_t)radius);
-			for (x1 = 0; x1 < radius / 2; x1++)
+			case IPlatformBitmapPixelAccess::kARGB:
+			case IPlatformBitmapPixelAccess::kABGR:
 			{
-				inputAccessor.setPosition (x1, y);
-				inputAccessor.getValue (nc[0]);
-				calculate (nc, radius);
+				algo<0, 1, 2, 3> (inputAddressPtr, outputAddressPtr, width, height,
+				                  static_cast<int32_t> (radius / 2));
+				break;
 			}
-			for (x = 0; x < width - halfRadius; x++, x1++)
+			case IPlatformBitmapPixelAccess::kRGBA:
+			case IPlatformBitmapPixelAccess::kBGRA:
 			{
-				inputAccessor.setPosition (x1, y);
-				inputAccessor.getValue (nc[0]);
-				calculate (nc, radius);
-				outputAccessor.setPosition (x, y);
-				outputAccessor.setValue (nc[0]);
-			}
-			for (;x < width; x++, x1++)
-			{
-				nc[0] = nc[1];
-				calculate (nc, radius);
-				outputAccessor.setPosition (x, y);
-				outputAccessor.setValue (nc[0]);
+				algo<1, 2, 3, 0> (inputAddressPtr, outputAddressPtr, width, height,
+				                  static_cast<int32_t> (radius / 2));
+				break;
 			}
 		}
-		for (x = 0; x < width; x++)
-		{
-			memset (nc, 0, sizeof(uint32_t) * (size_t)radius);
-			for (y1 = 0; y1 < radius / 2; y1++)
-			{
-				inputAccessor.setPosition (x, y1);
-				inputAccessor.getValue (nc[0]);
-				calculate (nc, radius);
-			}
-			for (y = 0; y < height - halfRadius; y++, y1++)
-			{
-				inputAccessor.setPosition (x, y1);
-				inputAccessor.getValue (nc[0]);
-				calculate (nc, radius);
-				outputAccessor.setPosition (x, y);
-				outputAccessor.setValue (nc[0]);
-			}
-			for (; y < height; y++, y1++)
-			{
-				nc[0] = nc[1];
-				calculate (nc, radius);
-				outputAccessor.setPosition (x, y);
-				outputAccessor.setValue (nc[0]);
-			}
-		}
-		if (radius > 19)
-			delete [] nc;
 	}
 
+	template <int32_t redPos, int32_t greenPos, int32_t bluePos, int32_t alphaPos>
+	void algo (uint8_t* inputPixel, uint8_t* outputPixel, int32_t width, int32_t height,
+	           int32_t radius)
+	{
+		vstgui_assert (radius > 0);
+		constexpr int32_t numComponents = 4;
+		int32_t wm = width - 1;
+		int32_t hm = height - 1;
+		int32_t areaSize = width * height;
+		int32_t div = radius + radius + 1;
+		auto red = std::unique_ptr<uint8_t[]> (new uint8_t[areaSize]);
+		auto green = std::unique_ptr<uint8_t[]> (new uint8_t[areaSize]);
+		auto blue = std::unique_ptr<uint8_t[]> (new uint8_t[areaSize]);
+		auto vMin = std::unique_ptr<int32_t[]> (new int32_t[std::max (width, height)]);
+		auto vMax = std::unique_ptr<int32_t[]> (new int32_t[std::max (width, height)]);
+
+		auto dv = std::unique_ptr<uint8_t[]> (new uint8_t[256 * div]);
+
+		for (auto i = 0; i < 256 * div; ++i)
+			dv[i] = (i / div);
+
+		int32_t rsum, gsum, bsum;
+		for (auto y = 0, yw = 0, yi = 0; y < height; ++y, yw += width)
+		{
+			rsum = gsum = bsum = 0;
+			for (auto i = -radius; i <= radius; i++)
+			{
+				auto p = (yi + std::min (wm, std::max (i, 0))) * numComponents;
+				rsum += inputPixel[p + redPos];
+				gsum += inputPixel[p + greenPos];
+				bsum += inputPixel[p + bluePos];
+			}
+			if (y == 0)
+			{
+				for (auto x = 0; x < width; ++x, ++yi)
+				{
+					red[yi] = dv[rsum];
+					green[yi] = dv[gsum];
+					blue[yi] = dv[bsum];
+					vMin[x] = std::min (x + radius + 1, wm);
+					vMax[x] = std::max (x - radius, 0);
+					auto p1 = (yw + vMin[x]) * numComponents;
+					auto p2 = (yw + vMax[x]) * numComponents;
+					rsum += inputPixel[p1 + redPos] - inputPixel[p2 + redPos];
+					gsum += inputPixel[p1 + greenPos] - inputPixel[p2 + greenPos];
+					bsum += inputPixel[p1 + bluePos] - inputPixel[p2 + bluePos];
+				}
+			}
+			else
+			{
+				for (auto x = 0; x < width; ++x, ++yi)
+				{
+					red[yi] = dv[rsum];
+					green[yi] = dv[gsum];
+					blue[yi] = dv[bsum];
+					auto p1 = (yw + vMin[x]) * numComponents;
+					auto p2 = (yw + vMax[x]) * numComponents;
+					rsum += inputPixel[p1 + redPos] - inputPixel[p2 + redPos];
+					gsum += inputPixel[p1 + greenPos] - inputPixel[p2 + greenPos];
+					bsum += inputPixel[p1 + bluePos] - inputPixel[p2 + bluePos];
+				}
+			}
+		}
+
+		rsum = gsum = bsum = 0;
+		for (auto i = -radius, yp = -radius * width; i <= radius; ++i, yp += width)
+		{
+			auto yi = std::max (0, yp);
+			rsum += red[yi];
+			gsum += green[yi];
+			bsum += blue[yi];
+		}
+		for (auto y = 0, yi = 0; y < height; ++y, yi += width)
+		{
+			auto pos = yi * numComponents;
+			outputPixel[pos + redPos] = dv[rsum];
+			outputPixel[pos + greenPos] = dv[gsum];
+			outputPixel[pos + bluePos] = dv[bsum];
+			outputPixel[pos + alphaPos] = inputPixel[pos + alphaPos];
+			vMin[y] = std::min (y + radius + 1, hm) * width;
+			vMax[y] = std::max (y - radius, 0) * width;
+			auto p1 = vMin[y];
+			auto p2 = vMax[y];
+			rsum += red[p1] - red[p2];
+			gsum += green[p1] - green[p2];
+			bsum += blue[p1] - blue[p2];
+		}
+
+		for (auto x = 1; x < width; ++x)
+		{
+			rsum = gsum = bsum = 0;
+			for (auto i = -radius, yp = -radius * width; i <= radius; ++i, yp += width)
+			{
+				auto yi = std::max (0, yp) + x;
+				rsum += red[yi];
+				gsum += green[yi];
+				bsum += blue[yi];
+			}
+			for (auto y = 0, yi = x; y < height; ++y, yi += width)
+			{
+				auto pos = yi * numComponents;
+				outputPixel[pos + redPos] = dv[rsum];
+				outputPixel[pos + greenPos] = dv[gsum];
+				outputPixel[pos + bluePos] = dv[bsum];
+				outputPixel[pos + alphaPos] = inputPixel[pos + alphaPos];
+				auto p1 = x + vMin[y];
+				auto p2 = x + vMax[y];
+				rsum += red[p1] - red[p2];
+				gsum += green[p1] - green[p2];
+				bsum += blue[p1] - blue[p2];
+			}
+		}
+	}
 };
 
 //----------------------------------------------------------------------------------------------------

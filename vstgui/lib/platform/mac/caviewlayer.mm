@@ -246,6 +246,13 @@ void CAViewLayer::draw (CDrawContext* context, const CRect& updateRect)
 {
 }
 
+//-----------------------------------------------------------------------------
+void CAViewLayer::onScaleFactorChanged (double newScaleFactor)
+{
+	if (layer)
+		layer.contentsScale = newScaleFactor;
+}
+
 } // namespace
 
 #endif // MAC_COCOA

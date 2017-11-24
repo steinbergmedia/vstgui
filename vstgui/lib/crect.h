@@ -45,6 +45,7 @@ struct CRect
 	inline CPoint getSize () const;
 	inline CRect& setSize (const CPoint& size);
 
+	inline CRect& offset (CCoord c);
 	inline CRect& offset (CCoord x, CCoord y);
 	inline CRect& inset (CCoord deltaX, CCoord deltaY);
 	inline CRect& extend (CCoord deltaX, CCoord deltaY);
@@ -153,6 +154,12 @@ inline CRect& CRect::setHeight (CCoord height)
 {
 	bottom = top + height;
 	return *this;
+}
+
+//------------------------------------------------------------------------
+inline CRect& CRect::offset (CCoord c)
+{
+	return offset (c, c);
 }
 
 //------------------------------------------------------------------------

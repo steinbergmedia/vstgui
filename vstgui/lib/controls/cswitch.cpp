@@ -10,6 +10,125 @@
 namespace VSTGUI {
 
 //------------------------------------------------------------------------
+CSwitchBase::CSwitchBase (const CRect& size, IControlListener* listener, int32_t tag,
+                          CBitmap* background, const CPoint& offset)
+: CControl (size, listener, tag, background), offset (offset)
+{
+	setDefaultValue (0.f);
+	setWantsFocus (true);
+}
+
+//------------------------------------------------------------------------
+CSwitchBase::CSwitchBase (const CRect& size, IControlListener* listener, int32_t tag,
+                          int32_t subPixmaps, CCoord heightOfOneImage, int32_t iMaxPositions,
+                          CBitmap* background, const CPoint& offset)
+: CControl (size, listener, tag, background), offset (offset)
+{
+	setNumSubPixmaps (subPixmaps);
+	setHeightOfOneImage (heightOfOneImage);
+	setDefaultValue (0.f);
+	setWantsFocus (true);
+}
+
+//------------------------------------------------------------------------
+CSwitchBase::CSwitchBase (const CSwitchBase& other) : CControl (other), offset (other.offset)
+{
+	setNumSubPixmaps (other.subPixmaps);
+	setHeightOfOneImage (other.heightOfOneImage);
+	setWantsFocus (true);
+}
+
+//------------------------------------------------------------------------
+void CSwitchBase::draw (CDrawContext* pContext)
+{
+	if (getDrawBackground ())
+	{
+		float norm = getValueNormalized ();
+		// source position in bitmap
+		CPoint where (0, heightOfOneImage * normalizedToIndex (norm));
+
+		getDrawBackground ()->draw (pContext, getViewSize (), where);
+	}
+	setDirty (false);
+}
+
+//------------------------------------------------------------------------
+bool CSwitchBase::sizeToFit ()
+{
+	if (getDrawBackground ())
+	{
+		CRect vs (getViewSize ());
+		vs.setWidth (getDrawBackground ()->getWidth ());
+		vs.setHeight (getHeightOfOneImage ());
+		setViewSize (vs);
+		setMouseableArea (vs);
+		return true;
+	}
+	return false;
+}
+
+//------------------------------------------------------------------------
+CMouseEventResult CSwitchBase::onMouseDown (CPoint& where, const CButtonState& buttons)
+{
+	if (!(buttons & kLButton))
+		return kMouseEventNotHandled;
+
+	coef = calculateCoef ();
+
+	beginEdit ();
+
+	if (checkDefaultValue (buttons))
+	{
+		endEdit ();
+		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
+	}
+	mouseStartValue = getValue ();
+	return onMouseMoved (where, buttons);
+}
+
+//------------------------------------------------------------------------
+CMouseEventResult CSwitchBase::onMouseUp (CPoint& where, const CButtonState& buttons)
+{
+	if (isEditing ())
+		endEdit ();
+	return kMouseEventHandled;
+}
+
+//------------------------------------------------------------------------
+CMouseEventResult CSwitchBase::onMouseCancel ()
+{
+	if (isEditing ())
+	{
+		value = mouseStartValue;
+		if (isDirty ())
+		{
+			valueChanged ();
+			invalid ();
+		}
+		endEdit ();
+	}
+	return kMouseEventHandled;
+}
+
+//------------------------------------------------------------------------
+CMouseEventResult CSwitchBase::onMouseMoved (CPoint& where, const CButtonState& buttons)
+{
+	if (isEditing ())
+	{
+		float norm = calcNormFromPoint (where);
+		value = getMin () + norm * (getMax () - getMin ());
+		bounceValue ();
+
+		if (isDirty ())
+		{
+			valueChanged ();
+			invalid ();
+		}
+	}
+	return kMouseEventHandled;
+}
+
+//------------------------------------------------------------------------
 // CVerticalSwitch
 //------------------------------------------------------------------------
 /*! @class CVerticalSwitch
@@ -25,18 +144,16 @@ By clicking Alt+Left Mouse the default value is used.
  * @param listener the listener
  * @param tag the control tag
  * @param background the switch bitmap
- * @param offset unused 
+ * @param offset unused
  */
 //------------------------------------------------------------------------
-CVerticalSwitch::CVerticalSwitch (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background, const CPoint &offset)
-: CControl (size, listener, tag, background)
-, offset (offset)
+CVerticalSwitch::CVerticalSwitch (const CRect& size, IControlListener* listener, int32_t tag,
+                                  CBitmap* background, const CPoint& offset)
+: CSwitchBase (size, listener, tag, background, offset)
 {
 	heightOfOneImage = size.getHeight ();
-	setNumSubPixmaps (background ? (int32_t)(background->getHeight () / heightOfOneImage) : 0);
-
-	setDefaultValue (0.f);
-	setWantsFocus (true);
+	setNumSubPixmaps (
+	    background ? static_cast<int32_t> (background->getHeight () / heightOfOneImage) : 0);
 }
 
 //------------------------------------------------------------------------
@@ -52,85 +169,30 @@ CVerticalSwitch::CVerticalSwitch (const CRect& size, IControlListener* listener,
  * @param offset unused
  */
 //------------------------------------------------------------------------
-CVerticalSwitch::CVerticalSwitch (const CRect& size, IControlListener* listener, int32_t tag, int32_t subPixmaps, CCoord heightOfOneImage, int32_t iMaxPositions, CBitmap* background, const CPoint &offset)
-: CControl (size, listener, tag, background)
-, offset (offset)
+CVerticalSwitch::CVerticalSwitch (const CRect& size, IControlListener* listener, int32_t tag,
+                                  int32_t subPixmaps, CCoord heightOfOneImage,
+                                  int32_t iMaxPositions, CBitmap* background, const CPoint& offset)
+: CSwitchBase (size, listener, tag, subPixmaps, heightOfOneImage, iMaxPositions, background, offset)
 {
-	setNumSubPixmaps (subPixmaps);
-	setHeightOfOneImage (heightOfOneImage);
-	setDefaultValue (0.f);
-	setWantsFocus (true);
 }
 
 //------------------------------------------------------------------------
 CVerticalSwitch::CVerticalSwitch (const CVerticalSwitch& v)
-: CControl (v)
-, offset (v.offset)
+: CSwitchBase (v)
 {
-	setNumSubPixmaps (v.subPixmaps);
-	setHeightOfOneImage (v.heightOfOneImage);
-	setWantsFocus (true);
 }
 
 //------------------------------------------------------------------------
-void CVerticalSwitch::draw (CDrawContext *pContext)
+double CVerticalSwitch::calculateCoef () const
 {
-	if (getDrawBackground ())
-	{
-		float norm = (value - getMin ()) / (getMax () - getMin ());
-		// source position in bitmap
-		CPoint where (0, heightOfOneImage * ((int32_t)(norm * (getNumSubPixmaps () - 1) + 0.5f)));
-
-		getDrawBackground ()->draw (pContext, getViewSize (), where);
-	}
-	setDirty (false);
+	return static_cast<double> (heightOfOneImage) / static_cast<double> (getNumSubPixmaps ());
 }
 
 //------------------------------------------------------------------------
-CMouseEventResult CVerticalSwitch::onMouseDown (CPoint& where, const CButtonState& buttons)
+float CVerticalSwitch::calcNormFromPoint (const CPoint& where) const
 {
-	if (!(buttons & kLButton))
-		return kMouseEventNotHandled;
-
-	coef = (double)heightOfOneImage / (double)getNumSubPixmaps ();
-
-	beginEdit ();
-
-	if (checkDefaultValue (buttons))
-	{
-		endEdit ();
-		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
-	}
-
-	return onMouseMoved (where, buttons);
-}
-
-//------------------------------------------------------------------------
-CMouseEventResult CVerticalSwitch::onMouseUp (CPoint& where, const CButtonState& buttons)
-{
-	endEdit ();
-	return kMouseEventHandled;
-}
-
-//------------------------------------------------------------------------
-CMouseEventResult CVerticalSwitch::onMouseMoved (CPoint& where, const CButtonState& buttons)
-{
-	if (isEditing ())
-	{
-		float norm = (int32_t)((where.y - getViewSize ().top) / coef) / (float)(getNumSubPixmaps () - 1);
-		value = getMin () + norm * (getMax () - getMin ());
-		if (value > getMax ())
-			value = getMax ();
-		else if (value < getMin ())
-			value = getMin ();
-
-		if (isDirty ())
-		{
-			valueChanged ();
-			invalid ();
-		}
-	}
-	return kMouseEventHandled;
+	return static_cast<int32_t> ((where.y - getViewSize ().top) / getCoef ()) /
+	       static_cast<float> (getNumSubPixmaps () - 1);
 }
 
 //------------------------------------------------------------------------
@@ -138,19 +200,21 @@ int32_t CVerticalSwitch::onKeyDown (VstKeyCode& keyCode)
 {
 	if (keyCode.modifier == 0)
 	{
-		float norm = (value - getMin ()) / (getMax () - getMin ());
-		int32_t currentIndex = (int32_t)(norm * (getNumSubPixmaps () - 1) + 0.5f);
+		float norm = getValueNormalized ();
+		int32_t currentIndex = normalizedToIndex (norm);
 		if (keyCode.virt == VKEY_UP && currentIndex > 0)
 		{
-			currentIndex--;
-			norm = (float)currentIndex / (float)(getNumSubPixmaps () - 1);
+			--currentIndex;
+			norm = indexToNormalized (currentIndex);
 			value = (getMax () - getMin ()) * norm + getMin ();
+			bounceValue ();
 		}
 		if (keyCode.virt == VKEY_DOWN && currentIndex < (getNumSubPixmaps () - 1))
 		{
-			currentIndex++;
-			norm = (float)currentIndex / (float)(getNumSubPixmaps () - 1);
+			++currentIndex;
+			norm = indexToNormalized (currentIndex);
 			value = (getMax () - getMin ()) * norm + getMin ();
+			bounceValue ();
 		}
 		if (isDirty ())
 		{
@@ -162,21 +226,6 @@ int32_t CVerticalSwitch::onKeyDown (VstKeyCode& keyCode)
 		}
 	}
 	return -1;
-}
-
-//-----------------------------------------------------------------------------------------------
-bool CVerticalSwitch::sizeToFit ()
-{
-	if (getDrawBackground ())
-	{
-		CRect vs (getViewSize ());
-		vs.setWidth (getDrawBackground ()->getWidth ());
-		vs.setHeight (getHeightOfOneImage ());
-		setViewSize (vs);
-		setMouseableArea (vs);
-		return true;
-	}
-	return false;
 }
 
 //------------------------------------------------------------------------
@@ -195,15 +244,12 @@ Same as the CVerticalSwitch but horizontal.
  * @param offset unused
  */
 //------------------------------------------------------------------------
-CHorizontalSwitch::CHorizontalSwitch (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background, const CPoint &offset)
-: CControl (size, listener, tag, background)
-, offset (offset)
+CHorizontalSwitch::CHorizontalSwitch (const CRect& size, IControlListener* listener, int32_t tag,
+                                      CBitmap* background, const CPoint& offset)
+: CSwitchBase (size, listener, tag, background, offset)
 {
 	heightOfOneImage = size.getWidth ();
-	setNumSubPixmaps (background ? (int32_t)(background->getWidth () / heightOfOneImage) : 0);
-
-	setDefaultValue (0.f);
-	setWantsFocus (true);
+	setNumSubPixmaps (background ? (int32_t) (background->getWidth () / heightOfOneImage) : 0);
 }
 
 //------------------------------------------------------------------------
@@ -219,86 +265,31 @@ CHorizontalSwitch::CHorizontalSwitch (const CRect& size, IControlListener* liste
  * @param offset unused
  */
 //------------------------------------------------------------------------
-CHorizontalSwitch::CHorizontalSwitch (const CRect& size, IControlListener* listener, int32_t tag, int32_t subPixmaps, CCoord heightOfOneImage, int32_t iMaxPositions, CBitmap* background, const CPoint &offset)
-: CControl (size, listener, tag, background)
-, offset (offset)
+CHorizontalSwitch::CHorizontalSwitch (const CRect& size, IControlListener* listener, int32_t tag,
+                                      int32_t subPixmaps, CCoord heightOfOneImage,
+                                      int32_t iMaxPositions, CBitmap* background,
+                                      const CPoint& offset)
+: CSwitchBase (size, listener, tag, subPixmaps, heightOfOneImage, iMaxPositions, background, offset)
 {
-	setNumSubPixmaps (subPixmaps);
-	setHeightOfOneImage (heightOfOneImage);
-	setDefaultValue (0.f);
-	setWantsFocus (true);
 }
 
 //------------------------------------------------------------------------
 CHorizontalSwitch::CHorizontalSwitch (const CHorizontalSwitch& v)
-: CControl (v)
-, offset (v.offset)
+: CSwitchBase (v)
 {
-	setNumSubPixmaps (v.subPixmaps);
-	setHeightOfOneImage (v.heightOfOneImage);
-	setWantsFocus (true);
 }
 
 //------------------------------------------------------------------------
-void CHorizontalSwitch::draw (CDrawContext *pContext)
+double CHorizontalSwitch::calculateCoef () const
 {
-	if (getDrawBackground ())
-	{
-		float norm = (value - getMin ()) / (getMax () - getMin ());
-		// source position in bitmap
-		CPoint where (0, heightOfOneImage * ((int32_t)(norm * (getNumSubPixmaps () - 1) + 0.5f)));
-
-		getDrawBackground ()->draw (pContext, getViewSize (), where);
-	}
-	setDirty (false);
+	return getDrawBackground ()->getWidth () / static_cast<double> (getNumSubPixmaps ());
 }
 
 //------------------------------------------------------------------------
-CMouseEventResult CHorizontalSwitch::onMouseDown (CPoint& where, const CButtonState& buttons)
+float CHorizontalSwitch::calcNormFromPoint (const CPoint& where) const
 {
-	if (!(buttons & kLButton))
-		return kMouseEventNotHandled;
-
-	coef = (double)getDrawBackground ()->getWidth () / (double)getNumSubPixmaps ();
-
-	beginEdit ();
-
-	if (checkDefaultValue (buttons))
-	{
-		endEdit ();
-		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
-	}
-
-	return onMouseMoved (where, buttons);
-}
-
-//------------------------------------------------------------------------
-CMouseEventResult CHorizontalSwitch::onMouseUp (CPoint& where, const CButtonState& buttons)
-{
-	endEdit ();
-	return kMouseEventHandled;
-}
-
-//------------------------------------------------------------------------
-CMouseEventResult CHorizontalSwitch::onMouseMoved (CPoint& where, const CButtonState& buttons)
-{
-	if (isEditing ())
-	{
-		float norm = (int32_t)((where.x - getViewSize ().left) / coef) / (float)(getNumSubPixmaps () - 1);
-		value = getMin () + norm * (getMax () - getMin ());
-		if (value > getMax ())
-			value = getMax ();
-		else if (value < getMin ())
-			value = getMin ();
-
-		if (isDirty ())
-		{
-			valueChanged ();
-			invalid ();
-		}
-		return kMouseEventHandled;
-	}
-	return kMouseEventNotHandled;
+	return static_cast<int32_t> ((where.x - getViewSize ().left) / getCoef ()) /
+	       static_cast<float> (getNumSubPixmaps () - 1);
 }
 
 //------------------------------------------------------------------------
@@ -307,18 +298,20 @@ int32_t CHorizontalSwitch::onKeyDown (VstKeyCode& keyCode)
 	if (keyCode.modifier == 0)
 	{
 		float norm = getValueNormalized ();
-		int32_t currentIndex = (int32_t)(norm * (getNumSubPixmaps () - 1) + 0.5f);
+		int32_t currentIndex = normalizedToIndex (norm);
 		if (keyCode.virt == VKEY_LEFT && currentIndex > 0)
 		{
-			currentIndex--;
-			norm = (float)currentIndex / (float)(getNumSubPixmaps () - 1);
+			--currentIndex;
+			norm = indexToNormalized (currentIndex);
 			value = (getMax () - getMin ()) * norm + getMin ();
+			bounceValue ();
 		}
 		if (keyCode.virt == VKEY_RIGHT && currentIndex < (getNumSubPixmaps () - 1))
 		{
-			currentIndex++;
-			norm = (float)currentIndex / (float)(getNumSubPixmaps () - 1);
+			++currentIndex;
+			norm = indexToNormalized (currentIndex);
 			value = (getMax () - getMin ()) * norm + getMin ();
+			bounceValue ();
 		}
 		if (isDirty ())
 		{
@@ -330,21 +323,6 @@ int32_t CHorizontalSwitch::onKeyDown (VstKeyCode& keyCode)
 		}
 	}
 	return -1;
-}
-
-//-----------------------------------------------------------------------------------------------
-bool CHorizontalSwitch::sizeToFit ()
-{
-	if (getDrawBackground ())
-	{
-		CRect vs (getViewSize ());
-		vs.setWidth (getDrawBackground ()->getWidth ());
-		vs.setHeight (getHeightOfOneImage ());
-		setViewSize (vs);
-		setMouseableArea (vs);
-		return true;
-	}
-	return false;
 }
 
 //------------------------------------------------------------------------
@@ -446,7 +424,7 @@ CMouseEventResult CRockerSwitch::onMouseDown (CPoint& where, const CButtonState&
 {
 	if (!(buttons & kLButton))
 		return kMouseEventNotHandled;
-	fEntryState = value;
+	mouseStartValue = value;
 	beginEdit ();
 	return onMouseMoved (where, buttons);
 }
@@ -454,10 +432,29 @@ CMouseEventResult CRockerSwitch::onMouseDown (CPoint& where, const CButtonState&
 //------------------------------------------------------------------------
 CMouseEventResult CRockerSwitch::onMouseUp (CPoint& where, const CButtonState& buttons)
 {
-	value = (getMax () - getMin ()) / 2.f + getMin ();
-	if (isDirty ())
-		invalid ();
-	endEdit ();
+	if (isEditing ())
+	{
+		value = (getMax () - getMin ()) / 2.f + getMin ();
+		if (isDirty ())
+			invalid ();
+		endEdit ();
+	}
+	return kMouseEventHandled;
+}
+
+//------------------------------------------------------------------------
+CMouseEventResult CRockerSwitch::onMouseCancel ()
+{
+	if (isEditing ())
+	{
+		value = mouseStartValue;
+		if (isDirty ())
+		{
+			valueChanged ();
+			invalid ();
+		}
+		endEdit ();
+	}
 	return kMouseEventHandled;
 }
 
@@ -469,7 +466,7 @@ CMouseEventResult CRockerSwitch::onMouseMoved (CPoint& where, const CButtonState
 		CCoord  width_2  = getViewSize ().getWidth () / 2;
 		CCoord  height_2 = getViewSize ().getHeight () / 2;
 
-		if (style & kHorizontal) 
+		if (style & kHorizontal)
 		{
 			if (where.x >= getViewSize ().left && where.y >= getViewSize ().top  &&
 				where.x <= (getViewSize ().left + width_2) && where.y <= getViewSize ().bottom)
@@ -478,7 +475,7 @@ CMouseEventResult CRockerSwitch::onMouseMoved (CPoint& where, const CButtonState
 				where.x <= getViewSize ().right && where.y <= getViewSize ().bottom)
 				value = getMax ();
 			else
-				value = fEntryState;
+				value = mouseStartValue;
 		}
 		else
 		{
@@ -489,7 +486,7 @@ CMouseEventResult CRockerSwitch::onMouseMoved (CPoint& where, const CButtonState
 				where.x <= getViewSize ().right && where.y <= getViewSize ().bottom)
 				value = getMax ();
 			else
-				value = fEntryState;
+				value = mouseStartValue;
 		}
 
 		if (isDirty ())

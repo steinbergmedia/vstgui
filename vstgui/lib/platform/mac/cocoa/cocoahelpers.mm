@@ -112,13 +112,13 @@ HIDDEN VstKeyCode CreateVstKeyCodeFromNSEvent (NSEvent* theEvent)
     }
 
 	NSUInteger modifiers = [theEvent modifierFlags];
-	if (modifiers & NSShiftKeyMask)
+	if (modifiers & MacEventModifier::ShiftKeyMask)
 		kc.modifier |= MODIFIER_SHIFT;
-	if (modifiers & NSCommandKeyMask)
+	if (modifiers & MacEventModifier::CommandKeyMask)
 		kc.modifier |= MODIFIER_CONTROL;
-	if (modifiers & NSAlternateKeyMask)
+	if (modifiers & MacEventModifier::AlternateKeyMask)
 		kc.modifier |= MODIFIER_ALTERNATE;
-	if (modifiers & NSControlKeyMask)
+	if (modifiers & MacEventModifier::ControlKeyMask)
 		kc.modifier |= MODIFIER_COMMAND;
 
 	return kc;
@@ -193,12 +193,15 @@ HIDDEN NSString* GetVirtualKeyCodeString (int32_t virtualKeyCode)
 //------------------------------------------------------------------------------------
 HIDDEN int32_t eventButton (NSEvent* theEvent)
 {
-	if ([theEvent type] == NSMouseMoved)
+	if ([theEvent type] == MacEventType::MouseMoved)
+	{
 		return 0;
+	}
+
 	int32_t buttons = 0;
 	switch ([theEvent buttonNumber])
 	{
-		case 0: buttons = ([theEvent modifierFlags] & NSControlKeyMask) ? kRButton : kLButton; break;
+		case 0: buttons = ([theEvent modifierFlags] & MacEventModifier::ControlKeyMask) ? kRButton : kLButton; break;
 		case 1: buttons = kRButton; break;
 		case 2: buttons = kMButton; break;
 		case 3: buttons = kButton4; break;
