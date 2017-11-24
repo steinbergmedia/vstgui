@@ -346,7 +346,24 @@ CMouseEventResult CKnob::onMouseDown (CPoint& where, const CButtonState& buttons
 //------------------------------------------------------------------------
 CMouseEventResult CKnob::onMouseUp (CPoint& where, const CButtonState& buttons)
 {
-	endEdit ();
+	if (isEditing ())
+		endEdit ();
+	return kMouseEventHandled;
+}
+
+//------------------------------------------------------------------------
+CMouseEventResult CKnob::onMouseCancel ()
+{
+	if (isEditing ())
+	{
+		value = startValue;
+		if (isDirty ())
+		{
+			valueChanged ();
+			invalid ();
+		}
+		endEdit ();
+	}
 	return kMouseEventHandled;
 }
 

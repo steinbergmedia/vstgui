@@ -114,13 +114,13 @@ static id VSTGUI_NSMenu_Init (id self, SEL _cmd, void* _menu)
 					[nsItem setKeyEquivalent:keyEquivalent];
 					uint32_t keyModifiers = 0;
 					if (item->getKeyModifiers () & kControl)
-						keyModifiers |= NSCommandKeyMask;
+						keyModifiers |= MacEventModifier::CommandKeyMask;
 					if (item->getKeyModifiers () & kShift)
-						keyModifiers |= NSShiftKeyMask;
+						keyModifiers |= MacEventModifier::ShiftKeyMask;
 					if (item->getKeyModifiers () & kAlt)
-						keyModifiers |= NSAlternateKeyMask;
+						keyModifiers |= MacEventModifier::AlternateKeyMask;
 					if (item->getKeyModifiers () & kApple)
-						keyModifiers |= NSControlKeyMask;
+						keyModifiers |= MacEventModifier::ControlKeyMask;
 					[nsItem setKeyEquivalentModifierMask:keyModifiers];
 				}
 			}

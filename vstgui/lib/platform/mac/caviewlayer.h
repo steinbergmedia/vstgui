@@ -33,6 +33,7 @@ public:
 	void setZIndex (uint32_t zIndex) override;
 	void setAlpha (float alpha) override;
 	void draw (CDrawContext* context, const CRect& updateRect) override;
+	void onScaleFactorChanged (double newScaleFactor) override;
 
 	CALayer* getLayer () const { return layer; }
 //-----------------------------------------------------------------------------

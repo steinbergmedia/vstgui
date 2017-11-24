@@ -62,6 +62,7 @@ bool CLayeredViewContainer::removed (CView* parent)
 	{
 		layer = nullptr;
 		parentLayerView = nullptr;
+		getFrame ()->unregisterScaleFactorChangedListeneer (this);
 	}
 	return CViewContainer::removed (parent);
 }
@@ -91,6 +92,7 @@ bool CLayeredViewContainer::attached (CView* parent)
 			layer->setZIndex (zIndex);
 			layer->setAlpha (getAlphaValue ());
 			updateLayerSize ();
+			getFrame ()->registerScaleFactorChangedListeneer (this);
 		}
 	}
 	parent = getParentView ();
@@ -225,6 +227,13 @@ CGraphicsTransform CLayeredViewContainer::getDrawTransform () const
 	if (This)
 		transform = This->getTransform () * transform;
 	return transform;
+}
+
+//-----------------------------------------------------------------------------
+void CLayeredViewContainer::onScaleFactorChanged (CFrame* frame, double newScaleFactor)
+{
+	if (layer)
+		layer->onScaleFactorChanged (newScaleFactor);
 }
 
 }

@@ -27,7 +27,8 @@ void CXYPad::draw (CDrawContext* context)
 	CCoord height = getHeight() - getRoundRectRadius ();
 	CRect r (x*width, y*height, x*width, y*height);
 	r.extend (getRoundRectRadius () / 2., getRoundRectRadius () / 2.);
-	r.offset (getViewSize ().left + getRoundRectRadius() / 2., getViewSize ().top + getRoundRectRadius() / 2.);
+	r.offset (getViewSize ().left + getRoundRectRadius () / 2.,
+	          getViewSize ().top + getRoundRectRadius () / 2.);
 	context->setFillColor (getFontColor ());
 	context->setDrawMode (kAntiAliasing);
 	context->drawEllipse (r, kDrawFilled);
@@ -39,8 +40,10 @@ CMouseEventResult CXYPad::onMouseDown (CPoint& where, const CButtonState& button
 {
 	if (buttons.isLeftButton ())
 	{
+		mouseStartValue = getValue ();
 		mouseChangeStartPoint = where;
-		mouseChangeStartPoint.offset (-getViewSize ().left - getRoundRectRadius() / 2., -getViewSize ().top - getRoundRectRadius() / 2.);
+		mouseChangeStartPoint.offset (-getViewSize ().left - getRoundRectRadius () / 2.,
+		                              -getViewSize ().top - getRoundRectRadius () / 2.);
 		beginEdit ();
 		return onMouseMoved (where, buttons);
 	}
@@ -50,12 +53,25 @@ CMouseEventResult CXYPad::onMouseDown (CPoint& where, const CButtonState& button
 //------------------------------------------------------------------------
 CMouseEventResult CXYPad::onMouseUp (CPoint& where, const CButtonState& buttons)
 {
-	if (buttons.isLeftButton ())
-	{
+	if (isEditing ())
 		endEdit ();
-		return kMouseEventHandled;
+	return kMouseEventHandled;
+}
+
+//------------------------------------------------------------------------
+CMouseEventResult CXYPad::onMouseCancel ()
+{
+	if (isEditing ())
+	{
+		value = mouseStartValue;
+		if (isDirty ())
+		{
+			valueChanged ();
+			invalid ();
+		}
+		endEdit ();
 	}
-	return kMouseEventNotHandled;
+	return kMouseEventHandled;
 }
 
 //------------------------------------------------------------------------
@@ -74,7 +90,8 @@ CMouseEventResult CXYPad::onMouseMoved (CPoint& where, const CButtonState& butto
 		float x, y;
 		CCoord width = getWidth() - getRoundRectRadius ();
 		CCoord height = getHeight() - getRoundRectRadius ();
-		where.offset (-getViewSize ().left - getRoundRectRadius() / 2., -getViewSize ().top - getRoundRectRadius() / 2.);
+		where.offset (-getViewSize ().left - getRoundRectRadius () / 2.,
+		              -getViewSize ().top - getRoundRectRadius () / 2.);
 
 		x = (float)(where.x / width);
 		y = (float)(where.y / height);
@@ -93,7 +110,8 @@ CMouseEventResult CXYPad::onMouseMoved (CPoint& where, const CButtonState& butto
 }
 
 //------------------------------------------------------------------------
-bool CXYPad::onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& _distance, const CButtonState& buttons)
+bool CXYPad::onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& _distance,
+                      const CButtonState& buttons)
 {
 	float x, y;
 	calculateXY (getValue (), x, y);

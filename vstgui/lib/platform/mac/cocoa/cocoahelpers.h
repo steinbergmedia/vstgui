@@ -105,5 +105,58 @@ HIDDEN inline NSImage* imageFromCGImageRef (CGImageRef image)
 	return [[NSImage alloc] initWithCGImage:image size:NSZeroSize];
 }
 
+//------------------------------------------------------------------------------------
+struct MacEventModifier
+{
+	enum mask
+	{
+#ifdef MAC_OS_X_VERSION_10_12
+		ShiftKeyMask = NSEventModifierFlagShift,
+		CommandKeyMask = NSEventModifierFlagCommand,
+		AlternateKeyMask = NSEventModifierFlagOption,
+		ControlKeyMask = NSEventModifierFlagControl
+#else
+		ShiftKeyMask = NSShiftKeyMask,
+		CommandKeyMask = NSCommandKeyMask,
+		AlternateKeyMask = NSAlternateKeyMask,
+		ControlKeyMask = NSControlKeyMask
+#endif
+	};
+};
+
+//------------------------------------------------------------------------------------
+namespace MacEventType
+{
+#ifdef MAC_OS_X_VERSION_10_12
+	static constexpr auto LeftMouseDown = ::NSEventTypeLeftMouseDown;
+	static constexpr auto LeftMouseDragged = ::NSEventTypeLeftMouseDragged;
+	static constexpr auto MouseMoved = ::NSEventTypeMouseMoved;
+#else
+	static constexpr auto LeftMouseDown = ::NSLeftMouseDown;
+	static constexpr auto LeftMouseDragged = ::NSLeftMouseDragged;
+	static constexpr auto MouseMoved = ::NSMouseMoved;
+#endif
+}
+
+//------------------------------------------------------------------------------------
+namespace MacWindowStyleMask
+{
+#ifdef MAC_OS_X_VERSION_10_12
+	static constexpr auto Borderless = ::NSWindowStyleMaskBorderless;
+	static constexpr auto Titled = ::NSWindowStyleMaskTitled;
+	static constexpr auto Resizable = ::NSWindowStyleMaskResizable;
+	static constexpr auto Miniaturizable = ::NSWindowStyleMaskMiniaturizable;
+	static constexpr auto Closable = ::NSWindowStyleMaskClosable;
+	static constexpr auto Utility = ::NSWindowStyleMaskUtilityWindow;
+#else
+	static constexpr auto Borderless = ::NSBorderlessWindowMask;
+	static constexpr auto Titled = ::NSTitledWindowMask;
+	static constexpr auto Resizable = ::NSResizableWindowMask;
+	static constexpr auto Miniaturizable = ::NSMiniaturizableWindowMask;
+	static constexpr auto Closable = ::NSClosableWindowMask;
+	static constexpr auto Utility = ::NSUtilityWindowMask;
+#endif
+}
+
 #endif // MAC_COCOA
 #endif // __cocoahelpers__
