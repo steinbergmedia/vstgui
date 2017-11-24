@@ -57,13 +57,13 @@ static Class viewClass = nullptr;
 //------------------------------------------------------------------------------------
 static void mapModifiers (NSUInteger nsEventModifiers, CButtonState& buttonState)
 {
-	if (nsEventModifiers & NSShiftKeyMask)
+	if (nsEventModifiers & MacEventModifier::ShiftKeyMask)
 		buttonState |= kShift;
-	if (nsEventModifiers & NSCommandKeyMask)
+	if (nsEventModifiers & MacEventModifier::CommandKeyMask)
 		buttonState |= kControl;
-	if (nsEventModifiers & NSAlternateKeyMask)
+	if (nsEventModifiers & MacEventModifier::AlternateKeyMask)
 		buttonState |= kAlt;
-	if (nsEventModifiers & NSControlKeyMask)
+	if (nsEventModifiers & MacEventModifier::ControlKeyMask)
 		buttonState |= kApple;
 }
 
@@ -174,9 +174,9 @@ static void VSTGUI_NSView_windowDidChangeBackingProperties (id self, SEL _cmd, N
 	if (auto window = [self window])
 		scaleFactor = [window backingScaleFactor];
 	
-	IPlatformFrameCallback* frame = getFrame (self);
-	if (frame)
-		frame->platformScaleFactorChanged (scaleFactor);
+	NSViewFrame* viewFrame = getNSViewFrame (self);
+	if (viewFrame)
+		viewFrame->scaleFactorChanged (scaleFactor);
 }
 
 //------------------------------------------------------------------------------------
@@ -774,6 +774,16 @@ NSViewFrame::~NSViewFrame () noexcept
 	[nsView release];
 }
 
+//------------------------------------------------------------------------------------
+void NSViewFrame::scaleFactorChanged (double newScaleFactor)
+{
+	if (nsView.wantsLayer)
+		nsView.layer.contentsScale = newScaleFactor;
+
+	if (frame)
+		frame->platformScaleFactorChanged (newScaleFactor);
+}
+
 //-----------------------------------------------------------------------------
 void NSViewFrame::initTrackingArea ()
 {
@@ -878,7 +888,7 @@ bool NSViewFrame::getCurrentMouseButtons (CButtonState& buttons) const
 	NSUInteger mouseButtons = [NSEvent pressedMouseButtons];
 	if (mouseButtons & (1 << 0))
 	{
-		if (mouseButtons == (1 << 0) && modifiers & NSControlKeyMask)
+		if (mouseButtons == (1 << 0) && modifiers & MacEventModifier::ControlKeyMask)
 		{
 			buttons = kRButton;
 			return true;
@@ -1065,7 +1075,8 @@ DragResult NSViewFrame::doDrag (IDataPackage* source, const CPoint& offset, CBit
 		NSPoint bitmapOffset = { static_cast<CGFloat>(offset.x), static_cast<CGFloat>(offset.y) };
 
 		NSEvent* event = [NSApp currentEvent];
-		if (event == nullptr || !([event type] == NSLeftMouseDown || [event type] == NSLeftMouseDragged))
+		if (event == nullptr || !([event type] == MacEventType::LeftMouseDown ||
+		                          [event type] == MacEventType::LeftMouseDragged))
 			return kDragRefused;
 		NSPoint nsLocation = [event locationInWindow];
 		NSImage* nsImage = nil;
@@ -1287,7 +1298,7 @@ void CocoaTooltipWindow::set (NSViewFrame* nsViewFrame, const CRect& rect, const
 	NSView* nsView = nsViewFrame->getPlatformControl ();
 	if (!window)
 	{
-		window = [[NSWindow alloc] initWithContentRect:NSMakeRect (0, 0, 10, 10) styleMask:NSBorderlessWindowMask backing:NSBackingStoreBuffered defer:NO];
+		window = [[NSWindow alloc] initWithContentRect:NSMakeRect (0, 0, 10, 10) styleMask:MacWindowStyleMask::Borderless backing:NSBackingStoreBuffered defer:NO];
 		[window setReleasedWhenClosed:NO];
 		[window setOpaque:NO];
 		[window setHasShadow:YES];

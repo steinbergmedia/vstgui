@@ -277,6 +277,13 @@ CMouseEventResult CScrollbar::onMouseMoved (CPoint &where, const CButtonState& b
 }
 
 //------------------------------------------------------------------------
+CMouseEventResult CScrollbar::onMouseCancel ()
+{
+	timer = nullptr;
+	return kMouseEventHandled;
+}
+
+//------------------------------------------------------------------------
 void CScrollbar::onVisualChange ()
 {
 	if (isAttached () && overlayStyle && !mouseIsInside)

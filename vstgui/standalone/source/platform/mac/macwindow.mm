@@ -6,6 +6,7 @@
 
 #import "../../../../lib/cframe.h"
 #import "../../../../lib/platform/mac/macstring.h"
+#import "../../../../lib/platform/mac/cocoa/cocoahelpers.h"
 #import "../../../include/iasync.h"
 #import "../../application.h"
 #import "../iplatformwindow.h"
@@ -117,18 +118,18 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 {
 	NSUInteger styleMask = 0;
 	if (config.style.hasBorder ())
-		styleMask |= NSTitledWindowMask;
+		styleMask |= MacWindowStyleMask::Titled;
 	if (config.style.canSize ())
-		styleMask |= NSResizableWindowMask | NSMiniaturizableWindowMask;
+		styleMask |= MacWindowStyleMask::Resizable | MacWindowStyleMask::Miniaturizable;
 	if (config.style.canClose ())
-		styleMask |= NSClosableWindowMask;
+		styleMask |= MacWindowStyleMask::Closable;
 
 	delegate = &inDelegate;
 
 	NSRect contentRect = NSMakeRect (0, 0, config.size.x, config.size.y);
 	if (config.type == WindowType::Popup)
 	{
-		styleMask |= NSUtilityWindowMask;
+		styleMask |= MacWindowStyleMask::Utility;
 
 		VSTGUIPopup* popup = [[VSTGUIPopup alloc] initWithContentRect:contentRect
 		                                                    styleMask:styleMask

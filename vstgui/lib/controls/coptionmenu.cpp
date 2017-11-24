@@ -425,23 +425,25 @@ bool COptionMenu::popup ()
 	lastResult = -1;
 	lastMenu = nullptr;
 
-	getFrame ()->onStartLocalEventLoop ();
-
-	if (auto platformMenu = getFrame ()->getPlatformFrame ()->createPlatformOptionMenu ())
+	if (!menuItems->empty ())
 	{
-		PlatformOptionMenuResult platformPopupResult = platformMenu->popup (this);
-		if (platformPopupResult.menu != nullptr)
+		getFrame ()->onStartLocalEventLoop ();
+		if (auto platformMenu = getFrame ()->getPlatformFrame ()->createPlatformOptionMenu ())
 		{
-			IDependency::DeferChanges dc (this);
-			lastMenu = platformPopupResult.menu;
-			lastResult = platformPopupResult.index;
-			lastMenu->setValue ((float)lastResult);
-			valueChanged ();
-			invalid ();
-			popupResult = true;
-			CCommandMenuItem* commandItem = dynamic_cast<CCommandMenuItem*>(lastMenu->getEntry (lastResult));
-			if (commandItem)
-				commandItem->execute ();
+			PlatformOptionMenuResult platformPopupResult = platformMenu->popup (this);
+			if (platformPopupResult.menu != nullptr)
+			{
+				IDependency::DeferChanges dc (this);
+				lastMenu = platformPopupResult.menu;
+				lastResult = platformPopupResult.index;
+				lastMenu->setValue ((float)lastResult);
+				valueChanged ();
+				invalid ();
+				popupResult = true;
+				CCommandMenuItem* commandItem = dynamic_cast<CCommandMenuItem*>(lastMenu->getEntry (lastResult));
+				if (commandItem)
+					commandItem->execute ();
+			}
 		}
 	}
 

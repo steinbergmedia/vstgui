@@ -24,6 +24,7 @@ public:
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseCancel () override;
 	bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons) override;
 
 	static float calculateValue (float x, float y)
@@ -45,6 +46,7 @@ protected:
 
 	void boundValues (float& x, float& y);
 	
+	float mouseStartValue;
 	CPoint mouseChangeStartPoint;
 	CPoint lastMouseChangePoint;
 	bool stopTrackingOnMouseExit;
