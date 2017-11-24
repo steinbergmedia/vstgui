@@ -8,6 +8,7 @@
 #include "cframe.h"
 #include "cbitmap.h"
 #include <cassert>
+#include <array>
 
 namespace VSTGUI {
 
@@ -115,9 +116,10 @@ CMessageResult CShadowViewContainer::notify (CBaseObject* sender, IdStringPtr me
 }
 
 //-----------------------------------------------------------------------------
-static std::vector<int32_t> boxesForGauss (double sigma, uint16_t numBoxes)
+template <size_t numBoxes>
+static std::array<int32_t, numBoxes> boxesForGauss (double sigma)
 {
-	std::vector<int32_t> boxes;
+	std::array<int32_t, numBoxes> boxes;
 	double ideal = std::sqrt ((12 * sigma * sigma / numBoxes) + 1);
 	uint16_t l = static_cast<uint16_t> (std::floor (ideal));
 	if (l % 2 == 0)
@@ -126,7 +128,7 @@ static std::vector<int32_t> boxesForGauss (double sigma, uint16_t numBoxes)
 	ideal = ((12. * sigma * sigma) - (numBoxes * l * l) - (4. * numBoxes * l) - (3. * numBoxes)) / ((-4. * l) - 4.);
 	int32_t m = static_cast<int32_t> (std::floor (ideal));
 	for (int32_t i = 0; i < numBoxes; ++i)
-		boxes.emplace_back (i < m ? l : u);
+		boxes[i] = (i < m ? l : u);
 	return boxes;
 }
 
@@ -176,7 +178,7 @@ void CShadowViewContainer::drawRect (CDrawContext* pContext, const CRect& update
 						SharedPointer<BitmapFilter::IFilter> boxBlurFilter = owned (BitmapFilter::Factory::getInstance ().createFilter (BitmapFilter::Standard::kBoxBlur));
 						if (boxBlurFilter)
 						{
-							std::vector<int32_t> boxSizes = boxesForGauss (shadowBlurSize, 3);
+							auto boxSizes = boxesForGauss<3> (shadowBlurSize);
 							boxBlurFilter->setProperty (BitmapFilter::Standard::Property::kInputBitmap, bitmap);
 							boxBlurFilter->setProperty (BitmapFilter::Standard::Property::kRadius, boxSizes[0]);
 							if (boxBlurFilter->run (true))

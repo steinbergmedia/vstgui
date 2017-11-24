@@ -5,6 +5,7 @@
 #include "cslider.h"
 #include "../cdrawcontext.h"
 #include "../cbitmap.h"
+#include "../cgraphicspath.h"
 #include <cmath>
 
 namespace VSTGUI {
@@ -41,7 +42,6 @@ CSlider::CSlider (const CRect &rect, IControlListener* listener, int32_t tag, in
 , style (style)
 , mode (kFreeClickMode)
 , minPos (iMinPos)
-, drawStyle (0)
 {
 	setDrawTransparentHandle (true);
 
@@ -100,7 +100,6 @@ CSlider::CSlider (const CRect &rect, IControlListener* listener, int32_t tag, co
 , style (style)
 , mode (kFreeClickMode)
 , minPos (0)
-, drawStyle (0)
 {
 	setDrawTransparentHandle (true);
 
@@ -146,6 +145,7 @@ CSlider::CSlider (const CSlider& v)
 , minPos (v.minPos)
 , widthControl (v.widthControl)
 , heightControl (v.heightControl)
+, frameWidth (v.frameWidth)
 , zoomFactor (v.zoomFactor)
 , bDrawTransparentEnabled (v.bDrawTransparentEnabled)
 , drawStyle (v.drawStyle)
@@ -238,27 +238,42 @@ void CSlider::draw (CDrawContext *pContext)
 	
 	if (drawStyle != 0)
 	{
+		auto lineWidth = getFrameWidth ();
+		if (lineWidth < 0.)
+			lineWidth = pContext->getHairlineSize ();
 		CRect r (getViewSize ());
-
-		pContext->setDrawMode (kAliasing);
+		pContext->setDrawMode (kAntiAliasing);
 		pContext->setLineStyle (kLineSolid);
-		pContext->setLineWidth (1.);
+		pContext->setLineWidth (lineWidth);
 		if (drawStyle & kDrawFrame || drawStyle & kDrawBack)
 		{
 			pContext->setFrameColor (frameColor);
 			pContext->setFillColor (backColor);
-			CDrawStyle d = kDrawFilled;
-			if (drawStyle & kDrawFrame && drawStyle & kDrawBack)
-				d = kDrawFilledAndStroked;
-			else if (drawStyle & kDrawFrame)
-				d = kDrawStroked;
-			pContext->drawRect (r, d);
+			if (auto path = owned (pContext->createGraphicsPath ()))
+			{
+				if (drawStyle & kDrawFrame)
+					r.inset (lineWidth / 2., lineWidth / 2.);
+				path->addRect (r);
+				if (drawStyle & kDrawBack)
+					pContext->drawGraphicsPath (path, CDrawContext::kPathFilled);
+				if (drawStyle & kDrawFrame)
+					pContext->drawGraphicsPath (path, CDrawContext::kPathStroked);
+			}
+			else
+			{
+				CDrawStyle d = kDrawFilled;
+				if (drawStyle & kDrawFrame && drawStyle & kDrawBack)
+					d = kDrawFilledAndStroked;
+				else if (drawStyle & kDrawFrame)
+					d = kDrawStroked;
+				pContext->drawRect (r, d);
+			}
 		}
-		pContext->setDrawMode (kAliasing);
 		if (drawStyle & kDrawValue)
 		{
+			pContext->setDrawMode (kAliasing);
 			if (drawStyle & kDrawFrame)
-				r.inset (1., 1.);
+				r.inset (lineWidth / 2., lineWidth / 2.);
 			float drawValue = getValueNormalized ();
 			if (drawStyle & kDrawValueFromCenter)
 			{
@@ -300,7 +315,13 @@ void CSlider::draw (CDrawContext *pContext)
 			if (r.getWidth () >= 0.5 && r.getHeight () >= 0.5)
 			{
 				pContext->setFillColor (valueColor);
-				pContext->drawRect (r, kDrawFilled);
+				if (auto path = owned (pContext->createGraphicsPath ()))
+				{
+					path->addRect (r);
+					pContext->drawGraphicsPath (path, CDrawContext::kPathFilled);
+				}
+				else
+					pContext->drawRect (r, kDrawFilled);
 			}
 		}
 	}
@@ -409,7 +430,7 @@ CMouseEventResult CSlider::onMouseDown (CPoint& where, const CButtonState& butto
 	oldVal    = getMin () - 1;
 	oldButton = buttons;
 
-	if ((getMode () == kRelativeTouchMode && handleRect.pointInside (where)) || getMode () != kRelativeTouchMode)
+	if (!pHandle || (getMode () == kRelativeTouchMode && handleRect.pointInside (where)) || getMode () != kRelativeTouchMode)
 	{
 		if (checkDefaultValue (buttons))
 		{
@@ -427,19 +448,28 @@ CMouseEventResult CSlider::onMouseDown (CPoint& where, const CButtonState& butto
 //------------------------------------------------------------------------
 CMouseEventResult CSlider::onMouseCancel ()
 {
-	value = startVal;
-	if (isDirty ())
-		valueChanged ();
-	oldButton = 0;
-	endEdit ();
+	if (isEditing ())
+	{
+		value = startVal;
+		if (isDirty ())
+		{
+			valueChanged ();
+			invalid ();
+		}
+		oldButton = 0;
+		endEdit ();
+	}
 	return kMouseEventHandled;
 }
 
 //------------------------------------------------------------------------
 CMouseEventResult CSlider::onMouseUp (CPoint& where, const CButtonState& buttons)
 {
-	oldButton = 0;
-	endEdit ();
+	if (isEditing ())
+	{
+		oldButton = 0;
+		endEdit ();
+	}
 	return kMouseEventHandled;
 }
 
@@ -616,6 +646,16 @@ void CSlider::setDrawStyle (int32_t style)
 	if (style != drawStyle)
 	{
 		drawStyle = style;
+		invalid ();
+	}
+}
+
+//------------------------------------------------------------------------
+void CSlider::setFrameWidth (CCoord width)
+{
+	if (frameWidth != width)
+	{
+		frameWidth = width;
 		invalid ();
 	}
 }

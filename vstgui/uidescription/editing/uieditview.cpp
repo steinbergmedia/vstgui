@@ -668,7 +668,7 @@ CMouseEventResult UIEditView::onMouseDown (CPoint &where, const CButtonState& bu
 			where2.offset (-getViewSize ().left, -getViewSize ().top);
 			getTransform ().inverse ().transform (where2);
 			MouseSizeMode sizeMode = selectionHitTest (where, &selectionHitView);
-			CView* mouseHitView = getViewAt (where, GetViewOptions (GetViewOptions::kDeep|GetViewOptions::kIncludeViewContainer|GetViewOptions::kIncludeInvisible));
+			CView* mouseHitView = getViewAt (where, GetViewOptions ().deep ().includeViewContainer ().includeInvisible ());
 			if (selectionHitView == nullptr && mouseHitView == nullptr)
 			{
 				getSelection ()->empty ();
@@ -773,7 +773,7 @@ CMouseEventResult UIEditView::onMouseUp (CPoint &where, const CButtonState& butt
 		}
 		if (mouseEditMode != kNoEditing && !moveSizeOperation && buttons == kLButton && !lines)
 		{
-			CView* view = getViewAt (where, GetViewOptions (GetViewOptions::kDeep|GetViewOptions::kIncludeViewContainer|GetViewOptions::kIncludeInvisible));
+			CView* view = getViewAt (where, GetViewOptions ().deep ().includeViewContainer ().includeInvisible ());
 			if (view == this)
 				view = nullptr;
 			if (view)
@@ -1135,7 +1135,7 @@ bool UIEditView::onDrop (IDataPackage* drag, const CPoint& where)
 				grid->process (where2);
 				getTransform ().transform (where2);
 			}
-			CViewContainer* viewContainer = getContainerAt (where2, GetViewOptions (GetViewOptions::kDeep));
+			CViewContainer* viewContainer = getContainerAt (where2, GetViewOptions ().deep ());
 			if (viewContainer)
 			{
 				getTransform ().inverse ().transform (where2);
@@ -1232,7 +1232,7 @@ void UIEditView::onDragMove (IDataPackage* drag, const CPoint& where)
 					CRect visibleRect = getVisibleViewSize ();
 					where2.offset (getViewSize ().left, getViewSize ().top);
 					where2.offset (-visibleRect.left, -visibleRect.top);
-					highlightView->setHighlightView (getContainerAt (where2, GetViewOptions (GetViewOptions::kDeep)));
+					highlightView->setHighlightView (getContainerAt (where2, GetViewOptions ().deep ()));
 				}
 			}
 		}

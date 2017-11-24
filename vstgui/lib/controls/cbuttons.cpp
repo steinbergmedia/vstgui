@@ -97,7 +97,8 @@ CMouseEventResult COnOffButton::onMouseUp (CPoint& where, const CButtonState& bu
 //------------------------------------------------------------------------
 CMouseEventResult COnOffButton::onMouseCancel ()
 {
-	endEdit ();
+	if (isEditing ())
+		endEdit ();
 	return kMouseEventHandled;
 }
 
@@ -207,7 +208,6 @@ CMouseEventResult CKickButton::onMouseDown (CPoint& where, const CButtonState& b
 {
 	if (!(buttons & kLButton))
 		return kMouseEventNotHandled;
-	fEntryState = value;
 	beginEdit ();
 	return onMouseMoved (where, buttons);
 }
@@ -215,23 +215,32 @@ CMouseEventResult CKickButton::onMouseDown (CPoint& where, const CButtonState& b
 //------------------------------------------------------------------------
 CMouseEventResult CKickButton::onMouseCancel ()
 {
-	value = getMin ();
-	if (isDirty ())
-		invalid ();
-	endEdit ();
+	if (isEditing ())
+	{
+		value = getMin ();
+		if (isDirty ())
+		{
+			valueChanged ();
+			invalid ();
+		}
+		endEdit ();
+	}
 	return kMouseEventHandled;
 }
 
 //------------------------------------------------------------------------
 CMouseEventResult CKickButton::onMouseUp (CPoint& where, const CButtonState& buttons)
 {
-	if (value > 0.f)
+	if (isEditing ())
+	{
+		if (value > 0.f)
+			valueChanged ();
+		value = getMin ();
 		valueChanged ();
-	value = getMin ();
-	valueChanged ();
-	if (isDirty ())
-		invalid ();
-	endEdit ();
+		if (isDirty ())
+			invalid ();
+		endEdit ();
+	}
 	return kMouseEventHandled;
 }
 
@@ -593,11 +602,15 @@ CMouseEventResult CCheckBox::onMouseMoved (CPoint& where, const CButtonState& bu
 //------------------------------------------------------------------------
 CMouseEventResult CCheckBox::onMouseCancel ()
 {
-	hilight = false;
-	value = previousValue;
-	if (isDirty ())
+	if (isEditing ())
+	{
+		hilight = false;
+		value = previousValue;
+		if (isDirty ())
+			valueChanged ();
 		invalid ();
-	endEdit ();
+		endEdit ();
+	}
 	return kMouseEventHandled;
 }
 
@@ -846,15 +859,18 @@ bool CTextButton::sizeToFit ()
 void CTextButton::draw (CDrawContext* context)
 {
 	bool highlight = value > 0.5 ? true : false;
+	auto lineWidth = getFrameWidth ();
+	if (lineWidth < 0.)
+		lineWidth = context->getHairlineSize ();
 	context->setDrawMode (kAntiAliasing);
-	context->setLineWidth (frameWidth);
+	context->setLineWidth (lineWidth);
 	context->setLineStyle (CLineStyle (CLineStyle::kLineCapRound, CLineStyle::kLineJoinRound));
 	context->setFrameColor (highlight ? frameColorHighlighted : frameColor);
 	CRect r (getViewSize ());
-	r.inset (frameWidth / 2., frameWidth / 2.);
+	r.inset (lineWidth / 2., lineWidth / 2.);
 	if (gradient && gradientHighlighted)
 	{
-		CGraphicsPath* path = getPath (context);
+		CGraphicsPath* path = getPath (context, lineWidth);
 		if (path)
 		{
 			CGradient* drawGradient = highlight ? gradientHighlighted : gradient;
@@ -864,7 +880,7 @@ void CTextButton::draw (CDrawContext* context)
 		}
 	}
 	CRect titleRect = getViewSize ();
-	titleRect.inset (frameWidth / 2., frameWidth / 2.);
+	titleRect.inset (lineWidth / 2., lineWidth / 2.);
 
 	CBitmap* iconToDraw = highlight ? (iconHighlighted ? iconHighlighted : icon) : (icon ? icon : iconHighlighted);
 	CDrawMethods::drawIconAndText (context, iconToDraw, iconPosition, getTextAlignment (), getTextMargin (), titleRect, title, getFont (), highlight ? getTextColorHighlighted () : getTextColor ());
@@ -891,12 +907,12 @@ bool CTextButton::drawFocusOnTop ()
 }
 
 //------------------------------------------------------------------------
-CGraphicsPath* CTextButton::getPath (CDrawContext* context)
+CGraphicsPath* CTextButton::getPath (CDrawContext* context, CCoord lineWidth)
 {
 	if (_path == nullptr)
 	{
 		CRect r (getViewSize ());
-		r.inset (frameWidth / 2., frameWidth / 2.);
+		r.inset (lineWidth / 2., lineWidth / 2.);
 		_path = owned (context->createRoundRectGraphicsPath (r, roundRadius));
 	}
 	return _path;
@@ -921,10 +937,13 @@ CMouseEventResult CTextButton::onMouseDown (CPoint& where, const CButtonState& b
 //------------------------------------------------------------------------
 CMouseEventResult CTextButton::onMouseCancel ()
 {
-	value = fEntryState;
-	if (isDirty ())
-		invalid ();
-	endEdit ();
+	if (isEditing ())
+	{
+		value = fEntryState;
+		if (isDirty ())
+			invalid ();
+		endEdit ();
+	}
 	return kMouseEventHandled;
 }
 

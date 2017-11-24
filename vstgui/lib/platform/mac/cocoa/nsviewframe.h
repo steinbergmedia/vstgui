@@ -53,6 +53,7 @@ public:
 	const SharedPointer<IDataPackage>& getDragDataPackage () const { return dragDataPackage; }
 
 	void initTrackingArea ();
+	void scaleFactorChanged (double newScaleFactor);
 	void cursorUpdate ();
 	virtual void drawRect (NSRect* rect);
 

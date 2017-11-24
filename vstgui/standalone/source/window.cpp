@@ -357,8 +357,7 @@ CMouseEventResult Window::onMouseDown (CFrame* frame, const CPoint& where,
 		return kMouseEventNotHandled;
 
 	CViewContainer::ViewList views;
-	if (frame->getViewsAt (where, views, GetViewOptions (GetViewOptions::kDeep |
-	                                                     GetViewOptions::kIncludeViewContainer)))
+	if (frame->getViewsAt (where, views, GetViewOptions ().deep ().includeViewContainer ()))
 	{
 		COptionMenu contextMenu;
 		for (const auto& view : views)

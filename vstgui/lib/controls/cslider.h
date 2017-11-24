@@ -63,11 +63,13 @@ public:
 	};
 
 	virtual void setDrawStyle (int32_t style);
+	virtual void setFrameWidth (CCoord width);
 	virtual void setFrameColor (CColor color);
 	virtual void setBackColor (CColor color);
 	virtual void setValueColor (CColor color);
 
 	int32_t getDrawStyle () const { return drawStyle; }
+	CCoord getFrameWidth () const { return frameWidth; }
 	CColor getFrameColor () const { return frameColor; }
 	CColor getBackColor () const { return backColor; }
 	CColor getValueColor () const { return valueColor; }
@@ -111,14 +113,15 @@ protected:
 	CCoord	minPos;
 	CCoord	widthControl;
 	CCoord	heightControl;
+	CCoord	frameWidth {1.};
 	float	zoomFactor;
 
 	bool	bDrawTransparentEnabled;
 
-	int32_t	drawStyle;
-	CColor  frameColor;
-	CColor  backColor;
-	CColor  valueColor;
+	int32_t	drawStyle {0};
+	CColor  frameColor {kGreyCColor};
+	CColor  backColor {kBlackCColor};
+	CColor  valueColor {kWhiteCColor};
 private:
 	CCoord	delta;
 	float	oldVal;

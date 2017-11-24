@@ -94,8 +94,8 @@ protected:
 
 	void draw (CDrawContext *pContext) override;
 	void drawRect (CDrawContext *pContext, const CRect& updateRect) override;
-	CView* getViewAt (const CPoint& p, const GetViewOptions& options = GetViewOptions (GetViewOptions::kNone)) const override;
-	CViewContainer* getContainerAt (const CPoint& p, const GetViewOptions& options = GetViewOptions (GetViewOptions::kDeep)) const override;
+	CView* getViewAt (const CPoint& p, const GetViewOptions& options = GetViewOptions ()) const override;
+	CViewContainer* getContainerAt (const CPoint& p, const GetViewOptions& options = GetViewOptions ().deep ()) const override;
 	bool advanceNextFocusView (CView* oldFocus, bool reverse) override;
 	bool onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const CButtonState &buttons) override;
 

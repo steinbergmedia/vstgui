@@ -349,6 +349,7 @@ public:
 #include "uidescription.h"
 #include "../vstgui.h"
 #include <sstream>
+#include <regex>
 
 namespace VSTGUI {
 namespace UIViewCreator {
@@ -1829,7 +1830,21 @@ public:
 
 		const std::string* attr = attributes.getAttributeValue (kAttrTitle);
 		if (attr)
-			label->setText (attr->c_str ());
+		{
+			auto index = attr->find ("\\n");
+			if (index != std::string::npos)
+			{
+				auto str = *attr;
+				while (index != std::string::npos)
+				{
+					str.replace (index, 2, "\n");
+					index = str.find ("\\n");
+				}
+				label->setText (UTF8String (std::move (str)));
+			}
+			else
+				label->setText (UTF8String (*attr));
+		}
 		attr = attributes.getAttributeValue (kAttrTruncateMode);
 		if (attr)
 		{
@@ -1863,6 +1878,12 @@ public:
 		if (attributeName == kAttrTitle)
 		{
 			stringValue = label->getText ().getString ();
+			auto index = stringValue.find ("\n");
+			while (index != std::string::npos)
+			{
+				stringValue.replace (index, 1, "\\n");
+				index = stringValue.find ("\n");
+			}
 			return true;
 		}
 		else if (attributeName == kAttrTruncateMode)
@@ -3212,6 +3233,10 @@ public:
 		applyStyleMask (attributes.getAttributeValue (kAttrDrawValueInverted), CSlider::kDrawInverted, drawStyle);
 		slider->setDrawStyle (drawStyle);
 
+		CCoord lineWidth;
+		if (attributes.getDoubleAttribute(kAttrFrameWidth, lineWidth))
+			slider->setFrameWidth (lineWidth);
+
 		CColor color;
 		if (stringToColor (attributes.getAttributeValue (kAttrDrawFrameColor), color, description))
 			slider->setFrameColor (color);
@@ -3236,6 +3261,7 @@ public:
 		attributeNames.emplace_back (kAttrDrawValue);
 		attributeNames.emplace_back (kAttrDrawValueFromCenter);
 		attributeNames.emplace_back (kAttrDrawValueInverted);
+		attributeNames.emplace_back (kAttrFrameWidth);
 		attributeNames.emplace_back (kAttrDrawFrameColor);
 		attributeNames.emplace_back (kAttrDrawBackColor);
 		attributeNames.emplace_back (kAttrDrawValueColor);
@@ -3256,6 +3282,7 @@ public:
 		if (attributeName == kAttrDrawValue) return kBooleanType;
 		if (attributeName == kAttrDrawValueFromCenter) return kBooleanType;
 		if (attributeName == kAttrDrawValueInverted) return kBooleanType;
+		if (attributeName == kAttrFrameWidth) return kFloatType;
 		if (attributeName == kAttrDrawFrameColor) return kColorType;
 		if (attributeName == kAttrDrawBackColor) return kColorType;
 		if (attributeName == kAttrDrawValueColor) return kColorType;
@@ -3379,6 +3406,11 @@ public:
 		else if (attributeName == kAttrDrawValueColor)
 		{
 			colorToString (slider->getValueColor (), stringValue, desc);
+			return true;
+		}
+		else if (attributeName == kAttrFrameWidth)
+		{
+			stringValue = numberToString (slider->getFrameWidth ());
 			return true;
 		}
 

@@ -295,20 +295,25 @@ void CSegmentButton::draw (CDrawContext* pContext)
 void CSegmentButton::drawRect (CDrawContext* pContext, const CRect& dirtyRect)
 {
 	bool isHorizontal = style == kHorizontal;
+	bool drawLines = getFrameWidth () != 0. && getFrameColor ().alpha != 0;
+	auto lineWidth = getFrameWidth ();
+	if (lineWidth < 0.)
+	{
+		lineWidth = pContext->getHairlineSize ();
+	}
 	SharedPointer<CGraphicsPath> path;
-	if (gradient || gradientHighlighted || (getFrameWidth () > 0. && getFrameColor ().alpha != 0))
+	if (gradient || gradientHighlighted || drawLines)
 	{
 		CRect r (getViewSize ());
-		r.inset (getFrameWidth () / 2., getFrameWidth () / 2.);
+		r.inset (lineWidth / 2., lineWidth / 2.);
 		path = owned (pContext->createGraphicsPath ());
 		path->addRoundRect (r, getRoundRadius ());
 	}
 	pContext->setDrawMode (kAntiAliasing);
-	bool drawLines = getFrameWidth () > 0. && getFrameColor ().alpha != 0;
 	if (drawLines)
 	{
 		pContext->setLineStyle (kLineSolid);
-		pContext->setLineWidth (getFrameWidth ());
+		pContext->setLineWidth (lineWidth);
 		pContext->setFrameColor (getFrameColor ());
 	}
 	if (gradient)
@@ -393,8 +398,11 @@ bool CSegmentButton::drawFocusOnTop ()
 //-----------------------------------------------------------------------------
 bool CSegmentButton::getFocusPath (CGraphicsPath& outPath)
 {
+    auto lineWidth = getFrameWidth ();
+    if (lineWidth < 0.)
+        lineWidth = 1.;
 	CRect r (getViewSize ());
-	r.inset (getFrameWidth () / 2., getFrameWidth () / 2.);
+	r.inset (lineWidth / 2., lineWidth / 2.);
 	outPath.addRoundRect (r, getRoundRadius ());
 	CCoord focusWidth = getFrame ()->getFocusWidth ();
 	r.extend (focusWidth, focusWidth);
