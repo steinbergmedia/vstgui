@@ -10,6 +10,7 @@
 #include "cgraphicstransform.h"
 #include <cassert>
 #include <algorithm>
+#include <memory>
 
 namespace VSTGUI {
 
