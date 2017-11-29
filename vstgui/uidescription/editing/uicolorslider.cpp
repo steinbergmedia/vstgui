@@ -143,13 +143,14 @@ void UIColorSlider::updateHandle (CDrawContext* context)
 {
 	if (auto offscreen = COffscreenContext::create (getFrame (), 7, getHeight (), context->getScaleFactor ()))
 	{
+		auto lineWidth = 1.;
 		offscreen->beginDraw ();
 		offscreen->setFrameColor (kBlackCColor);
-		offscreen->setLineWidth (1);
+		offscreen->setLineWidth (lineWidth);
 		offscreen->setDrawMode (kAliasing);
 		CRect r (0, 0, 7, getHeight ());
 		offscreen->drawRect (r, kDrawStroked);
-		r.inset (1, 1);
+		r.inset (lineWidth, lineWidth);
 		offscreen->setFrameColor (kWhiteCColor);
 		offscreen->drawRect (r, kDrawStroked);
 		offscreen->endDraw ();

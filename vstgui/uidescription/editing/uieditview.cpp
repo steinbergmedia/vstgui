@@ -135,7 +135,7 @@ void UISelectionView::drawResizeHandle (const CPoint& p, CDrawContext* pContext)
 //----------------------------------------------------------------------------------------------------
 void UISelectionView::draw (CDrawContext* pContext)
 {
-	auto lineWidth = 1.;
+	auto lineWidth = pContext->getHairlineSize ();
 	CRect r (getVisibleViewSize ());
 	ConcatClip cc (*pContext, r);
 	pContext->setDrawMode (kAliasing);
