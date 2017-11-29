@@ -1406,7 +1406,12 @@ public:
 		applyStyleMask (attributes.getAttributeValue (kAttrDrawCrossbox), CCheckBox::kDrawCrossBox, style);
 		applyStyleMask (attributes.getAttributeValue (kAttrAutosizeToFit), CCheckBox::kAutoSizeToFit, style);
 		checkbox->setStyle (style);
-		
+
+		double dv;
+		if (attributes.getDoubleAttribute (kAttrFrameWidth, dv))
+			checkbox->setFrameWidth (dv);
+		if (attributes.getDoubleAttribute (kAttrRoundRectRadius, dv))
+			checkbox->setRoundRectRadius (dv);
 		return true;
 	}
 
@@ -1418,6 +1423,8 @@ public:
 		attributeNames.emplace_back (kAttrBoxframeColor);
 		attributeNames.emplace_back (kAttrBoxfillColor);
 		attributeNames.emplace_back (kAttrCheckmarkColor);
+		attributeNames.emplace_back (kAttrFrameWidth);
+		attributeNames.emplace_back (kAttrRoundRectRadius);
 		attributeNames.emplace_back (kAttrAutosizeToFit);
 		attributeNames.emplace_back (kAttrDrawCrossbox);
 		return true;
@@ -1430,6 +1437,8 @@ public:
 		else if (attributeName == kAttrBoxframeColor) return kColorType;
 		else if (attributeName == kAttrBoxfillColor) return kColorType;
 		else if (attributeName == kAttrCheckmarkColor) return kColorType;
+		else if (attributeName == kAttrFrameWidth) return kFloatType;
+		else if (attributeName == kAttrRoundRectRadius) return kFloatType;
 		else if (attributeName == kAttrAutosizeToFit) return kBooleanType;
 		else if (attributeName == kAttrDrawCrossbox) return kBooleanType;
 		return kUnknownType;
@@ -1489,6 +1498,16 @@ public:
 				stringValue = "true";
 			else
 				stringValue = "false";
+			return true;
+		}
+		else if (attributeName == kAttrFrameWidth)
+		{
+			stringValue = numberToString (checkbox->getFrameWidth ());
+			return true;
+		}
+		else if (attributeName == kAttrRoundRectRadius)
+		{
+			stringValue = numberToString (checkbox->getRoundRectRadius ());
 			return true;
 		}
 		return false;

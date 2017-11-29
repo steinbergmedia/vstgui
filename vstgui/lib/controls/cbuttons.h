@@ -89,7 +89,13 @@ public:
 
 	virtual int32_t getStyle () const { return style; }
 	virtual void setStyle (int32_t newStyle);
-	//@}
+
+    CCoord getFrameWidth () const { return frameWidth; }
+    virtual void setFrameWidth (CCoord width);
+    CCoord getRoundRectRadius () const { return roundRectRadius; }
+    virtual void setRoundRectRadius (CCoord radius);
+
+    //@}
 
 	// overrides
 	void draw (CDrawContext* context) override;
@@ -112,6 +118,8 @@ protected:
 	CColor boxFrameColor;
 	CColor boxFillColor;
 	CColor checkMarkColor;
+    CCoord frameWidth {1};
+    CCoord roundRectRadius {0};
 	SharedPointer<CFontDesc> font;
 
 private:
