@@ -395,6 +395,26 @@ void CCheckBox::setStyle (int32_t newStyle)
 	}
 }
 
+//------------------------------------------------------------------------
+void CCheckBox::setFrameWidth (CCoord width)
+{
+	if (frameWidth != width)
+	{
+		frameWidth = width;
+		invalid ();
+	}
+}
+
+//------------------------------------------------------------------------
+void CCheckBox::setRoundRectRadius (CCoord radius)
+{
+	if (roundRectRadius != radius)
+	{
+		roundRectRadius = radius;
+		invalid ();
+	}
+}
+
 /// @cond ignore
 //------------------------------------------------------------------------
 static CCoord getFontCapHeight (CFontRef font)
@@ -467,15 +487,26 @@ void CCheckBox::draw (CDrawContext* context)
 	}
 	else
 	{
+		auto lineWidth = frameWidth;
+		if (lineWidth < 0)
+			lineWidth = context->getHairlineSize ();
 		checkBoxSize.setHeight (std::floor (getFontCapHeight (font) + 2.5));
 		checkBoxSize.setWidth (checkBoxSize.getHeight ());
 		checkBoxSize.offset (1., std::ceil ((getViewSize ().getHeight () - checkBoxSize.getHeight ()) / 2.));
-		context->setLineWidth (1);
+		context->setLineWidth (lineWidth);
 		context->setLineStyle (kLineSolid);
 		context->setDrawMode (kAntiAliasing);
 		context->setFrameColor (boxFrameColor);
 		context->setFillColor (boxFillColor);
-		context->drawRect (checkBoxSize, kDrawFilledAndStroked);
+		if (auto path = context->createRoundRectGraphicsPath (checkBoxSize, roundRectRadius))
+		{
+			context->drawGraphicsPath (path, CDrawContext::kPathFilled);
+			context->drawGraphicsPath (path, CDrawContext::kPathStroked);
+		}
+		else
+		{
+			context->drawRect (checkBoxSize, kDrawFilledAndStroked);
+		}
 
 		if (hilight)
 		{
@@ -483,15 +514,22 @@ void CCheckBox::draw (CDrawContext* context)
 			hilightColor.alpha /= 2;
 			context->setFrameColor (hilightColor);
 			CRect r (checkBoxSize);
-			r.inset (1., 1.);
-			context->drawRect (r, kDrawStroked);
+			r.inset (lineWidth, lineWidth);
+			if (auto path = context->createRoundRectGraphicsPath (r, roundRectRadius))
+			{
+				context->drawGraphicsPath (path, CDrawContext::kPathStroked);
+			}
+			else
+			{
+				context->drawRect (r, kDrawStroked);
+			}
 		}
 
 		context->setDrawMode (kAntiAliasing);
 		context->setFrameColor (checkMarkColor);
 		context->setLineWidth (2.);
 
-		const CCoord cbInset = 2;
+		const CCoord cbInset = 2.;
 		
 		if (style & kDrawCrossBox)
 		{
@@ -563,9 +601,9 @@ bool CCheckBox::getFocusPath (CGraphicsPath& outPath)
 			checkBoxSize.setWidth (checkBoxSize.getHeight ());
 			checkBoxSize.offset (1, std::ceil ((getViewSize ().getHeight () - checkBoxSize.getHeight ()) / 2));
 		}
-		outPath.addRect (checkBoxSize);
+		outPath.addRoundRect (checkBoxSize, roundRectRadius);
 		checkBoxSize.extend (focusWidth, focusWidth);
-		outPath.addRect (checkBoxSize);
+		outPath.addRoundRect (checkBoxSize, roundRectRadius);
 	}
 	return true;
 }
