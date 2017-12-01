@@ -149,6 +149,7 @@ Win32Frame::Win32Frame (IPlatformFrameCallback* frame, const CRect& size, HWND p
 , parentWindow (parent)
 , windowHandle (0)
 , tooltipWindow (0)
+, oldFocusWindow (0)
 , backBuffer (0)
 , deviceContext (0)
 , inPaint (false)
@@ -760,11 +761,11 @@ LONG_PTR WINAPI Win32Frame::proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 		case WM_MOUSEWHEEL:
 		{
 			CButtonState buttons = 0;
-			if (GetKeyState (VK_SHIFT)   < 0)
+			if (GetAsyncKeyState (VK_SHIFT)   < 0)
 				buttons |= kShift;
-			if (GetKeyState (VK_CONTROL) < 0)
+			if (GetAsyncKeyState (VK_CONTROL) < 0)
 				buttons |= kControl;
-			if (GetKeyState (VK_MENU)    < 0)
+			if (GetAsyncKeyState (VK_MENU)    < 0)
 				buttons |= kAlt;
 			short zDelta = (short) GET_WHEEL_DELTA_WPARAM(wParam);
 			POINT p {GET_X_LPARAM (lParam), GET_Y_LPARAM (lParam)};
@@ -776,11 +777,11 @@ LONG_PTR WINAPI Win32Frame::proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 		case WM_MOUSEHWHEEL:	// new since vista
 		{
 			CButtonState buttons = 0;
-			if (GetKeyState (VK_SHIFT)   < 0)
+			if (GetAsyncKeyState (VK_SHIFT)   < 0)
 				buttons |= kShift;
-			if (GetKeyState (VK_CONTROL) < 0)
+			if (GetAsyncKeyState (VK_CONTROL) < 0)
 				buttons |= kControl;
-			if (GetKeyState (VK_MENU)    < 0)
+			if (GetAsyncKeyState (VK_MENU)    < 0)
 				buttons |= kAlt;
 			short zDelta = (short) GET_WHEEL_DELTA_WPARAM(wParam);
 			POINT p {GET_X_LPARAM (lParam), GET_Y_LPARAM (lParam)};
@@ -839,11 +840,14 @@ LONG_PTR WINAPI Win32Frame::proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 				buttons |= kControl;
 			if (wParam & MK_SHIFT)
 				buttons |= kShift;
-			if (GetKeyState (VK_MENU)    < 0)
+			if (GetAsyncKeyState (VK_MENU)    < 0)
 				buttons |= kAlt;
 			if (doubleClick)
 				buttons |= kDoubleClick;
-			SetFocus (getPlatformWindow ());
+			HWND oldFocus = SetFocus(getPlatformWindow());
+			if(oldFocus != hwnd)
+				oldFocusWindow = oldFocus;
+
 			CPoint where (GET_X_LPARAM (lParam), GET_Y_LPARAM (lParam));
 			if (pFrame->platformOnMouseDown (where, buttons) == kMouseEventHandled && getPlatformWindow ())
 				SetCapture (getPlatformWindow ());
@@ -876,7 +880,7 @@ LONG_PTR WINAPI Win32Frame::proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 				buttons |= kControl;
 			if (wParam & MK_SHIFT)
 				buttons |= kShift;
-			if (GetKeyState (VK_MENU) < 0)
+			if (GetAsyncKeyState (VK_MENU) < 0)
 				buttons |= kAlt;
 			if (!mouseInside)
 			{
@@ -912,7 +916,7 @@ LONG_PTR WINAPI Win32Frame::proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 				buttons |= kControl;
 			if (wParam & MK_SHIFT)
 				buttons |= kShift;
-			if (GetKeyState (VK_MENU) < 0)
+			if (GetAsyncKeyState (VK_MENU) < 0)
 				buttons |= kAlt;
 			CPoint where (GET_X_LPARAM (lParam), GET_Y_LPARAM (lParam));
 			pFrame->platformOnMouseUp (where, buttons);
@@ -922,11 +926,11 @@ LONG_PTR WINAPI Win32Frame::proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 		case WM_KEYDOWN:
 		{
 			VstKeyCode key {};
-			if (GetKeyState (VK_SHIFT)   < 0)
+			if (GetAsyncKeyState (VK_SHIFT)   < 0)
 				key.modifier |= MODIFIER_SHIFT;
-			if (GetKeyState (VK_CONTROL) < 0)
+			if (GetAsyncKeyState (VK_CONTROL) < 0)
 				key.modifier |= MODIFIER_CONTROL;
-			if (GetKeyState (VK_MENU)    < 0)
+			if (GetAsyncKeyState (VK_MENU)    < 0)
 				key.modifier |= MODIFIER_ALTERNATE;
 			key.virt = translateWinVirtualKey (wParam);
 			if (key.virt)
@@ -934,22 +938,36 @@ LONG_PTR WINAPI Win32Frame::proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 				if (pFrame->platformOnKeyDown (key))
 					return 0;
 			}
+
+			if(IsWindow(oldFocusWindow))
+			{
+				WNDPROC oldProc = (WNDPROC) GetWindowLongPtr(oldFocusWindow, GWLP_WNDPROC);
+				if (oldProc && oldProc != WindowProc)
+					return CallWindowProc (oldProc, oldFocusWindow, message, wParam, lParam);
+			}
 			break;
 		}
 		case WM_KEYUP:
 		{
 			VstKeyCode key {};
-			if (GetKeyState (VK_SHIFT)   < 0)
+			if (GetAsyncKeyState (VK_SHIFT)   < 0)
 				key.modifier |= MODIFIER_SHIFT;
-			if (GetKeyState (VK_CONTROL) < 0)
+			if (GetAsyncKeyState (VK_CONTROL) < 0)
 				key.modifier |= MODIFIER_CONTROL;
-			if (GetKeyState (VK_MENU)    < 0)
+			if (GetAsyncKeyState (VK_MENU)    < 0)
 				key.modifier |= MODIFIER_ALTERNATE;
 			key.virt = translateWinVirtualKey (wParam);
 			if (key.virt)
 			{
 				if (pFrame->platformOnKeyUp (key))
 					return 0;
+			}
+
+			if(IsWindow(oldFocusWindow))
+			{
+				WNDPROC oldProc = (WNDPROC) GetWindowLongPtr(oldFocusWindow, GWLP_WNDPROC);
+				if(oldProc && oldProc != WindowProc)
+					return CallWindowProc (oldProc, oldFocusWindow, message, wParam, lParam);
 			}
 			break;
 		}
@@ -960,6 +978,8 @@ LONG_PTR WINAPI Win32Frame::proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 		}
 		case WM_KILLFOCUS:
 		{
+			oldFocusWindow = 0;
+
 			HWND focusWindow = GetFocus ();
 			if (GetParent (focusWindow) != windowHandle)
 				pFrame->platformOnActivate (false);
