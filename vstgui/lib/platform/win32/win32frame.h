@@ -66,6 +66,7 @@ protected:
 	HWND parentWindow;
 	HWND windowHandle;
 	HWND tooltipWindow;
+	HWND oldFocusWindow;
 
 	COffscreenContext* backBuffer;
 	CDrawContext* deviceContext;
