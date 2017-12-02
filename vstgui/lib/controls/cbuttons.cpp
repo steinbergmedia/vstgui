@@ -920,7 +920,11 @@ void CTextButton::draw (CDrawContext* context)
 	CRect titleRect = getViewSize ();
 	titleRect.inset (lineWidth / 2., lineWidth / 2.);
 
-	CBitmap* iconToDraw = highlight ? (iconHighlighted ? iconHighlighted : icon) : (icon ? icon : iconHighlighted);
+	CBitmap* iconToDraw = nullptr;
+	if (!getMouseEnabled () && getDisabledBackground ())
+		iconToDraw = getDisabledBackground ();
+	else
+		iconToDraw = highlight ? (iconHighlighted ? iconHighlighted : icon) : (icon ? icon : iconHighlighted);
 	CDrawMethods::drawIconAndText (context, iconToDraw, iconPosition, getTextAlignment (), getTextMargin (), titleRect, title, getFont (), highlight ? getTextColorHighlighted () : getTextColor ());
 	setDirty (false);
 }
