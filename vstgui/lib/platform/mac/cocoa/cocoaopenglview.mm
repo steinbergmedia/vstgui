@@ -89,14 +89,17 @@ bool CocoaOpenGLView::init (IOpenGLView* view, PixelFormat* _pixelFormat)
 		if (platformView)
 		{
 			NSOpenGLContext* context = [platformView openGLContext];
-			GLint swapInterval = 1;
-			[context setValues:&swapInterval forParameter:NSOpenGLCPSwapInterval];
+			GLint value = 1;
+			[context setValues:&value forParameter:NSOpenGLCPSwapInterval];
+			value = 0;
+			[context setValues:&value forParameter:NSOpenGLContextParameterSurfaceOpacity];
 
 		#if DEBUG
 			if (pixelFormat.flags & PixelFormat::kModernOpenGL)
 				CGLEnable (static_cast<CGLContextObj> ([context CGLContextObj]), kCGLCECrashOnRemovedFunctions);
 		#endif
 			this->view = view;
+			platformView.wantsBestResolutionOpenGLSurface = YES;
 			return true;
 		}
 	}
@@ -182,6 +185,16 @@ void CocoaOpenGLView::swapBuffers ()
 			[NSOpenGLContext clearCurrentContext];
 		}
 	}
+}
+
+//-----------------------------------------------------------------------------
+double CocoaOpenGLView::getScaleFactor ()
+{
+	if (platformView && platformView.window)
+	{
+		return platformView.window.backingScaleFactor;
+	}
+	return 1.;
 }
 
 //-----------------------------------------------------------------------------
