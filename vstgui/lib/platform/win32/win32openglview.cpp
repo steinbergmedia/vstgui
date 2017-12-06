@@ -255,6 +255,12 @@ void Win32OpenGLView::swapBuffers ()
 	}
 }
 
+//-----------------------------------------------------------------------------
+double Win32OpenGLView::getScaleFactor ()
+{
+	return 1.;
+}
+
 } // namespace
 
 #endif // WINDOWS && VSTGUI_OPENGL_SUPPORT

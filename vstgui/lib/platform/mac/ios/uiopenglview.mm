@@ -168,6 +168,12 @@ void GLKitOpenGLView::swapBuffers ()
 }
 
 //-----------------------------------------------------------------------------
+double GLKitOpenGLView::getScaleFactor ()
+{
+	return 1.;
+}
+
+//-----------------------------------------------------------------------------
 void GLKitOpenGLView::doDraw (const CRect& r)
 {
 	if (view)
