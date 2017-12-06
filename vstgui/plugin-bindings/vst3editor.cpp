@@ -1010,6 +1010,9 @@ public:
 
 	bool registerEventHandler (int fd, X11::IEventHandler* handler) final
 	{
+		if(!runLoop)
+			return false;
+
 		auto smtgHandler = Steinberg::owned (new EventHandler ());
 		smtgHandler->handler = handler;
 		if (runLoop->registerEventHandler (smtgHandler, fd) == Steinberg::kResultTrue)
@@ -1021,6 +1024,9 @@ public:
 	}
 	bool unregisterEventHandler (X11::IEventHandler* handler) final
 	{
+		if(!runLoop)
+			return false;
+
 		for (auto it = eventHandlers.begin (), end = eventHandlers.end (); it != end; ++it)
 		{
 			if ((*it)->handler == handler)
@@ -1034,6 +1040,9 @@ public:
 	}
 	bool registerTimer (uint64_t interval, X11::ITimerHandler* handler) final
 	{
+		if(!runLoop)
+			return false;
+
 		auto smtgHandler = Steinberg::owned (new TimerHandler ());
 		smtgHandler->handler = handler;
 		if (runLoop->registerTimer (smtgHandler, interval) == Steinberg::kResultTrue)
@@ -1045,6 +1054,9 @@ public:
 	}
 	bool unregisterTimer (X11::ITimerHandler* handler) final
 	{
+		if(!runLoop)
+			return false;
+
 		for (auto it = timerHandlers.begin (), end = timerHandlers.end (); it != end; ++it)
 		{
 			if ((*it)->handler == handler)
