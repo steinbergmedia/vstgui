@@ -60,6 +60,7 @@ public:
 	virtual bool unlockContext () = 0;		///< unlock changes to context
 
 	virtual void swapBuffers () = 0;		///< swap buffers and clear active OpenGL context
+	virtual double getScaleFactor () = 0;	///< get the scale factor on HiDPI screens
 };
 
 } // namespace
