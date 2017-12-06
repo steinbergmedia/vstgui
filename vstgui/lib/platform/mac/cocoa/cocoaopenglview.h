@@ -38,6 +38,7 @@ public:
 	bool unlockContext () override;
 
 	void swapBuffers () override;
+	double getScaleFactor () override;
 	
 	void doDraw (const CRect& r);
 	void reshape ();
