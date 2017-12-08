@@ -5,23 +5,22 @@
 #ifndef __win32frame__
 #define __win32frame__
 
-#include "../../cframe.h"
+#include "../platform_win32.h"
 
 #if WINDOWS
 
-#include "../iplatformframe.h"
-#include "../iplatformviewlayer.h"
-#include <windows.h>
+#include "../../cframe.h"
 
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-class Win32Frame : public IPlatformFrame
+class Win32Frame : public IPlatformFrame, public IWin32PlatformFrame
 {
 public:
 	Win32Frame (IPlatformFrameCallback* frame, const CRect& size, HWND parent, PlatformType parentType);
 	~Win32Frame () noexcept;
 
+	HWND getHWND () const override { return windowHandle; }
 	HWND getPlatformWindow () const { return windowHandle; }
 	HWND getParentPlatformWindow () const { return parentWindow; }
 	HWND getOuterWindow () const;
