@@ -32,6 +32,14 @@ void COpenGLView::updatePlatformOpenGLViewSize ()
 		CPoint offset;
 		localToFrame (offset);
 		visibleSize.offset (offset.x, offset.y);
+
+		auto scaleFactor = 1.;
+		if (auto frame = getFrame ())
+			scaleFactor = frame->getZoom ();
+		CGraphicsTransform tm;
+		tm.scale (scaleFactor, scaleFactor);
+		tm.transform (visibleSize);
+
 		platformOpenGLView->viewSizeChanged (visibleSize);
 		platformOpenGLView->invalidRect (getViewSize ());
 	}
@@ -156,12 +164,26 @@ void COpenGLView::invalidRect (const CRect& rect)
 	{
 		CRect r (rect);
 		r.offset (-getViewSize ().left, -getViewSize ().top);
+
+		auto scaleFactor = 1.;
+		if (auto frame = getFrame ())
+			scaleFactor = frame->getZoom ();
+		CGraphicsTransform tm;
+		tm.scale (scaleFactor, scaleFactor);
+		tm.transform (r);
+
 		platformOpenGLView->invalidRect (r);
 	}
 	else
 	{
 		CView::invalidRect (rect);
 	}
+}
+
+//-----------------------------------------------------------------------------
+void COpenGLView::onScaleFactorChanged (CFrame* frame, double newScaleFactor)
+{
+	updatePlatformOpenGLViewSize ();
 }
 
 } // namespace
