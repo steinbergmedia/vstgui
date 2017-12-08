@@ -42,6 +42,7 @@ public:
 	void close ();							///< closes the frame and calls forget
 
 	bool setZoom (double zoomFactor);				///< set zoom factor
+	double getZoom () const;						///< get zoom factor
 
 	double getScaleFactor () const;
 
