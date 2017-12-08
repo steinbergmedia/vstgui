@@ -1295,7 +1295,7 @@ CocoaTooltipWindow::~CocoaTooltipWindow () noexcept
 void CocoaTooltipWindow::set (NSViewFrame* nsViewFrame, const CRect& rect, const char* tooltip)
 {
 	timer = nullptr;
-	NSView* nsView = nsViewFrame->getPlatformControl ();
+	NSView* nsView = nsViewFrame->getNSView ();
 	if (!window)
 	{
 		window = [[NSWindow alloc] initWithContentRect:NSMakeRect (0, 0, 10, 10) styleMask:MacWindowStyleMask::Borderless backing:NSBackingStoreBuffered defer:NO];
