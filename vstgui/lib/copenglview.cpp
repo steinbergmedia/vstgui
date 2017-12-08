@@ -33,9 +33,6 @@ void COpenGLView::updatePlatformOpenGLViewSize ()
 		localToFrame (offset);
 		visibleSize.offset (offset.x, offset.y);
 
-		auto scaleFactor = 1.;
-		if (auto frame = getFrame ())
-			scaleFactor = frame->getZoom ();
 		CGraphicsTransform tm;
 		tm.scale (scaleFactor, scaleFactor);
 		tm.transform (visibleSize);
@@ -59,6 +56,7 @@ bool COpenGLView::createPlatformOpenGLView ()
 			updatePlatformOpenGLViewSize ();
 			platformOpenGLViewCreated ();
 			platformOpenGLViewSizeChanged ();
+			getFrame ()->registerScaleFactorChangedListeneer (this);
 			return true;
 		}
 		platformOpenGLView = nullptr;
@@ -71,6 +69,7 @@ bool COpenGLView::destroyPlatformOpenGLView ()
 {
 	if (platformOpenGLView)
 	{
+		getFrame ()->unregisterScaleFactorChangedListeneer (this);
 		platformOpenGLViewWillDestroy ();
 		platformOpenGLView->remove ();
 		platformOpenGLView = nullptr;
@@ -165,9 +164,6 @@ void COpenGLView::invalidRect (const CRect& rect)
 		CRect r (rect);
 		r.offset (-getViewSize ().left, -getViewSize ().top);
 
-		auto scaleFactor = 1.;
-		if (auto frame = getFrame ())
-			scaleFactor = frame->getZoom ();
 		CGraphicsTransform tm;
 		tm.scale (scaleFactor, scaleFactor);
 		tm.transform (r);
@@ -183,6 +179,7 @@ void COpenGLView::invalidRect (const CRect& rect)
 //-----------------------------------------------------------------------------
 void COpenGLView::onScaleFactorChanged (CFrame* frame, double newScaleFactor)
 {
+	scaleFactor = frame->getZoom ();
 	updatePlatformOpenGLViewSize ();
 }
 
