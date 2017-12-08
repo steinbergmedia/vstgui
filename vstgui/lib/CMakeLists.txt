@@ -140,6 +140,8 @@ set(${target}_common_sources
   platform/iplatformtextedit.h
   platform/iplatformtimer.h
   platform/iplatformviewlayer.h
+  platform/platform_macos.h
+  platform/platform_win32.h
   platform/std_unorderedmap.h
 )
 

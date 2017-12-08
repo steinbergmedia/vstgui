@@ -268,7 +268,7 @@ PlatformOptionMenuResult NSViewOptionMenu::popup (COptionMenu* optionMenu)
 	globalSize.offset (-frame->getViewSize ().getTopLeft ());
 
 	bool multipleCheck = optionMenu->getStyle () & (kMultipleCheckStyle & ~kCheckStyle);
-	NSView* view = nsViewFrame->getPlatformControl ();
+	NSView* view = nsViewFrame->getNSView ();
 	NSMenu* nsMenu = [[menuClass alloc] initWithOptionMenu:(id)optionMenu];
 	CPoint p = globalSize.getTopLeft ();
 	NSRect cellFrameRect = {{0}};
