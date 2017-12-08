@@ -118,7 +118,7 @@ bool CocoaFileSelector::runInternal (CBaseObject* _delegate)
 		if (frame && frame->getPlatformFrame ())
 		{
 			NSViewFrame* nsViewFrame = static_cast<NSViewFrame*> (frame->getPlatformFrame ());
-			parentWindow = nsViewFrame ? [(nsViewFrame->getPlatformControl ()) window] : nullptr;
+			parentWindow = nsViewFrame ? [(nsViewFrame->getNSView ()) window] : nullptr;
 		}
 		#endif
 		delegate = _delegate;
