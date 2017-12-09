@@ -33,19 +33,17 @@ public:
 	bool unlockContext () override;
 
 	void swapBuffers () override;
-	double getScaleFactor () override;
 protected:
 	static void initWindowClass ();
 	static void destroyWindowClass ();
 	static LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 
-	bool createWindow ();
-	bool setupPixelFormt ();
+	bool createWindow (PixelFormat* pixelFormat);
+	bool setupPixelFormt (PixelFormat* pixelFormat);
 
 	Win32Frame* win32Frame;
 	IOpenGLView* view;
 	HWND windowHandle;
-	PixelFormat pixelFormat;
 
 	HDC deviceContext;
 	HGLRC openGLContext;
