@@ -102,7 +102,7 @@ LONG_PTR WINAPI Win32OpenGLView::WindowProc (HWND hwnd, UINT message, WPARAM wPa
 }
 
 //-----------------------------------------------------------------------------
-bool Win32OpenGLView::setupPixelFormt ()
+bool Win32OpenGLView::setupPixelFormt (PixelFormat* pixelFormat)
 {
 	// TODO: support for custom PixelFormat
 	if (deviceContext)
@@ -127,10 +127,18 @@ bool Win32OpenGLView::setupPixelFormt ()
 			0,                                // reserved  
 			0, 0, 0                           // layer masks ignored  
 		}; 
-		int  iPixelFormat; 
-		 
+		if (pixelFormat)
+		{
+			pfd.cDepthBits = pixelFormat->depthBufferSize;
+			pfd.cStencilBits = pixelFormat->stencilBufferSize;
+			if (pixelFormat->flags & PixelFormat::kDoubleBuffered)
+				pfd.dwFlags |= PFD_DOUBLEBUFFER;
+			else
+				pfd.dwFlags &= ~PFD_DOUBLEBUFFER;
+		}
+
 		// get the device context's best, available pixel format match  
-		iPixelFormat = ChoosePixelFormat (deviceContext, &pfd); 
+		auto iPixelFormat = ChoosePixelFormat (deviceContext, &pfd);
 		 
 		// make that match the device context's current pixel format  
 		return SetPixelFormat (deviceContext, iPixelFormat, &pfd) ? true : false;
@@ -139,7 +147,7 @@ bool Win32OpenGLView::setupPixelFormt ()
 }
 
 //-----------------------------------------------------------------------------
-bool Win32OpenGLView::createWindow ()
+bool Win32OpenGLView::createWindow (PixelFormat* pixelFormat)
 {
 	if (windowHandle)
 		return false;
@@ -155,7 +163,7 @@ bool Win32OpenGLView::createWindow ()
 		EnableWindow (windowHandle, false);	// we don't handle mouse and keyboard events
 		SetWindowLongPtr (windowHandle, GWLP_USERDATA, (__int3264)(LONG_PTR)this);
 		deviceContext = GetDC (windowHandle);
-		if (deviceContext && setupPixelFormt ())
+		if (deviceContext && setupPixelFormt (pixelFormat))
 		{
 			openGLContext = wglCreateContext (deviceContext);
 			return true;
@@ -166,14 +174,12 @@ bool Win32OpenGLView::createWindow ()
 }
 
 //-----------------------------------------------------------------------------
-bool Win32OpenGLView::init (IOpenGLView* view, PixelFormat* _pixelFormat)
+bool Win32OpenGLView::init (IOpenGLView* view, PixelFormat* pixelFormat)
 {
 	if (windowHandle)
 		return false;
-	if (_pixelFormat)
-		pixelFormat = *_pixelFormat;
 
-	if (createWindow ())
+	if (createWindow (pixelFormat))
 	{
 		this->view = view;
 		return true;
@@ -253,12 +259,6 @@ void Win32OpenGLView::swapBuffers ()
 		wglMakeCurrent (deviceContext, 0);
 		SwapBuffers (deviceContext);
 	}
-}
-
-//-----------------------------------------------------------------------------
-double Win32OpenGLView::getScaleFactor ()
-{
-	return 1.;
 }
 
 } // namespace
