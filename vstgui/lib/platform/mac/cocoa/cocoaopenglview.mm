@@ -46,12 +46,11 @@ bool CocoaOpenGLView::init (IOpenGLView* view, PixelFormat* _pixelFormat)
 		{
 			pixelFormat = *_pixelFormat;
 			formatAttributes.emplace_back (NSOpenGLPFADepthSize);
-			formatAttributes.emplace_back (pixelFormat.depthSize);
-			if (pixelFormat.flags & PixelFormat::kAccelerated)
-			{
-				formatAttributes.emplace_back (NSOpenGLPFANoRecovery);
-				formatAttributes.emplace_back (NSOpenGLPFAAccelerated);
-			}
+			formatAttributes.emplace_back (pixelFormat.depthBufferSize);
+			formatAttributes.emplace_back (NSOpenGLPFAStencilSize);
+			formatAttributes.emplace_back (pixelFormat.stencilBufferSize);
+			formatAttributes.emplace_back (NSOpenGLPFANoRecovery);
+			formatAttributes.emplace_back (NSOpenGLPFAAccelerated);
 			if (pixelFormat.flags & PixelFormat::kDoubleBuffered)
 			{
 				formatAttributes.emplace_back (NSOpenGLPFADoubleBuffer);
@@ -70,6 +69,11 @@ bool CocoaOpenGLView::init (IOpenGLView* view, PixelFormat* _pixelFormat)
 			{
 				formatAttributes.emplace_back (NSOpenGLPFAOpenGLProfile);
 				formatAttributes.emplace_back (NSOpenGLProfileVersion3_2Core);
+			}
+			else
+			{
+				formatAttributes.emplace_back (NSOpenGLPFAOpenGLProfile);
+				formatAttributes.emplace_back (NSOpenGLProfileVersionLegacy);
 			}
 		}
 		else
@@ -185,16 +189,6 @@ void CocoaOpenGLView::swapBuffers ()
 			[NSOpenGLContext clearCurrentContext];
 		}
 	}
-}
-
-//-----------------------------------------------------------------------------
-double CocoaOpenGLView::getScaleFactor ()
-{
-	if (platformView && platformView.window)
-	{
-		return platformView.window.backingScaleFactor;
-	}
-	return 1.;
 }
 
 //-----------------------------------------------------------------------------
