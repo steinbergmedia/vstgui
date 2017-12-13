@@ -1041,13 +1041,13 @@ SharedPointer<IPlatformOpenGLView> NSViewFrame::createPlatformOpenGLView ()
 SharedPointer<IPlatformViewLayer> NSViewFrame::createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer)
 {
 	auto parentViewLayer = dynamic_cast<CAViewLayer*> (parentLayer);
-	if (parentViewLayer == nullptr || parentViewLayer->getLayer () == nullptr)
+	if (parentViewLayer == nullptr || parentViewLayer->getCALayer () == nullptr)
 	{
 		// after this is called, 'Quartz Debug' will not work as before. So when using 'Quartz Debug' comment the following two lines.
 		[nsView setWantsLayer:YES];
 		nsView.layer.actions = nil;
 	}
-	auto caParentLayer = parentViewLayer ? parentViewLayer->getLayer () : [nsView layer];
+	auto caParentLayer = parentViewLayer ? parentViewLayer->getCALayer () : [nsView layer];
 	auto layer = makeOwned<CAViewLayer> (caParentLayer);
 	layer->init (drawDelegate);
 	return std::move (layer);

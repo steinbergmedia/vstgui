@@ -9,9 +9,10 @@
 #if MAC_COCOA
 
 #ifdef __OBJC__
-#import <Cocoa/Cocoa.h>
+@class NSView, CALayer;
 #else
 struct NSView;
+struct CALayer;
 #endif
 
 //-----------------------------------------------------------------------------
@@ -33,6 +34,14 @@ class ICocoaPlatformFrame
 {
 public:
 	virtual NSView* getNSView () const = 0;
+};
+
+//-----------------------------------------------------------------------------
+// extens IPlatformViewLayer on macOS
+class ICocoaViewLayer
+{
+public:
+	virtual CALayer* getCALayer () const = 0;
 };
 
 //-----------------------------------------------------------------------------
