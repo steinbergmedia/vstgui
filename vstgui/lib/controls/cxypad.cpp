@@ -54,8 +54,11 @@ CMouseEventResult CXYPad::onMouseDown (CPoint& where, const CButtonState& button
 CMouseEventResult CXYPad::onMouseUp (CPoint& where, const CButtonState& buttons)
 {
 	if (isEditing ())
+	{
 		endEdit ();
-	return kMouseEventHandled;
+		return kMouseEventHandled;
+	}
+	return kMouseEventNotHandled;
 }
 
 //------------------------------------------------------------------------
