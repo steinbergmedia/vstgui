@@ -861,7 +861,7 @@ bool CFrame::setModalView (CView* pView)
 				setFocusView (pImpl->modalView->wantsFocus () ? pImpl->modalView : nullptr);
 		}
 	}
-	if (result)
+	if (result && isAttached ())
 	{
 		CPoint where;
 		getCurrentMouseLocation (where);
