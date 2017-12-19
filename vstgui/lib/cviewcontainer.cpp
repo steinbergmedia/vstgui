@@ -390,12 +390,11 @@ bool CViewContainer::addView (CView *pView, CView* pBefore)
 		return false;
 
 	vstgui_assert (!pView->isSubview (), "view is already added to a container view");
-	vstgui_assert(!pView->isSubview());
 
 	if (pBefore)
 	{
-		vstgui_assert (pBefore->getParentView () == this);
 		auto it = std::find (pImpl->children.begin (), pImpl->children.end (), pBefore);
+		vstgui_assert (it != pImpl->children.end ());
 		pImpl->children.insert (it, pView);
 	}
 	else
@@ -1195,7 +1194,7 @@ bool CViewContainer::isDirty () const
 {
 	if (CView::isDirty ())
 		return true;
-		
+	
 	CRect viewSize (getViewSize ());
 	viewSize.offset (-getViewSize ().left, -getViewSize ().top);
 
