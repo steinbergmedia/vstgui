@@ -9,8 +9,8 @@
 
 #if MAC_COCOA
 
+#include "../../platform_macos.h"
 #include "../../../cview.h"
-#include "../../iplatformframe.h"
 #include "../../../idatapackage.h"
 #include <list>
 
@@ -25,23 +25,13 @@ namespace VSTGUI {
 class CocoaTooltipWindow;
 
 //-----------------------------------------------------------------------------
-class CocoaFrameConfig : public IPlatformFrameConfig
-{
-public:
-	enum Flags {
-		kNoCALayer = 1 << 0,
-	};
-	uint32_t flags {0};
-};
-
-//-----------------------------------------------------------------------------
-class NSViewFrame : public IPlatformFrame, public IPlatformFrameTouchBarExtension
+class NSViewFrame : public IPlatformFrame, public ICocoaPlatformFrame, public IPlatformFrameTouchBarExtension
 {
 public:
 	NSViewFrame (IPlatformFrameCallback* frame, const CRect& size, NSView* parent, IPlatformFrameConfig* config);
 	~NSViewFrame () noexcept override;
 
-	NSView* getPlatformControl () const { return nsView; }
+	NSView* getNSView () const override { return nsView; }
 	IPlatformFrameCallback* getFrame () const { return frame; }
 	void* makeTouchBar () const;
 	

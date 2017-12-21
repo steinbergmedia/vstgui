@@ -243,6 +243,12 @@ bool CFrame::setZoom (double zoomFactor)
 }
 
 //------------------------------------------------------------------------
+double CFrame::getZoom () const
+{
+	return pImpl->userScaleFactor;
+}
+
+//------------------------------------------------------------------------
 double CFrame::getScaleFactor () const
 {
 	return pImpl->platformScaleFactor * pImpl->userScaleFactor;

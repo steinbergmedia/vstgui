@@ -6,6 +6,7 @@
 #define __copenglview__
 
 #include "cview.h"
+#include "iscalefactorchangedlistener.h"
 #include "platform/iplatformopenglview.h"
 
 #if VSTGUI_OPENGL_SUPPORT
@@ -28,7 +29,7 @@ TODO: Documentation
 /// @brief a subview which uses OpenGL for drawing
 /// @ingroup new_in_4_1
 //-----------------------------------------------------------------------------
-class COpenGLView : public CView, public IOpenGLView
+class COpenGLView : public CView, public IOpenGLView, public IScaleFactorChangedListener
 {
 public:
 	explicit COpenGLView (const CRect& size);
@@ -45,6 +46,9 @@ public:
 	bool attached (CView* parent) override;
 	void invalidRect (const CRect& rect) override;
 	void setVisible (bool state) override;
+
+	// IScaleFactorChangedListener
+	void onScaleFactorChanged (CFrame* frame, double newScaleFactor) override;
 
 	CLASS_METHODS_NOCOPY (COpenGLView, CView)
 protected:
@@ -63,6 +67,8 @@ private:
 	void updatePlatformOpenGLViewSize ();
 	bool createPlatformOpenGLView ();
 	bool destroyPlatformOpenGLView ();
+
+	double scaleFactor {1.};
 
 	SharedPointer<IPlatformOpenGLView> platformOpenGLView;
 };

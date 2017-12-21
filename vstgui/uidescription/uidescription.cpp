@@ -205,6 +205,9 @@ public:
 protected:
 	~UIBitmapNode () noexcept override;
 	CBitmap* createBitmap (const std::string& str, CNinePartTiledDescription* partDesc) const;
+	SharedPointer<IPlatformBitmap> createBitmapFromDataNode () const;
+	static bool imagesEqual (IPlatformBitmap* b1, IPlatformBitmap* b2);
+	UINode* dataNode () const;
 	CBitmap* bitmap;
 	bool filterProcessed;
 	bool scaledBitmapsAdded;
@@ -1021,7 +1024,6 @@ bool UIDescription::saveToStream (OutputStream& stream, int32_t flags)
 						bitmapNode->createXMLData (impl->filePath);
 					else
 						bitmapNode->removeXMLData ();
-					
 				}
 			}
 		}
@@ -3177,13 +3179,67 @@ void UIBitmapNode::freePlatformResources ()
 }
 
 //-----------------------------------------------------------------------------
+bool UIBitmapNode::imagesEqual (IPlatformBitmap* b1, IPlatformBitmap* b2)
+{
+	if (b1 == b2)
+		return true;
+	if (b1->getSize () != b2->getSize () || b1->getScaleFactor () != b2->getScaleFactor ())
+		return false;
+	auto ac1 = b1->lockPixels (true);
+	if (!ac1)
+		return false;
+	auto ac2 = b2->lockPixels (true);
+	if (!ac2)
+		return false;
+	auto rowBytes = ac1->getBytesPerRow ();
+	if (rowBytes != ac2->getBytesPerRow ())
+		return false;
+	if (ac1->getPixelFormat () != ac2->getPixelFormat ())
+		return false;
+	auto adr1 = ac1->getAddress ();
+	if (!adr1)
+		return false;
+	auto adr2 = ac2->getAddress ();
+	if (!adr2)
+		return false;
+	uint32_t rows = static_cast<uint32_t> (b1->getSize ().y);
+	for (uint32_t y = 0; y < rows; ++y, adr1 += rowBytes, adr2 += rowBytes)
+	{
+		if (memcmp (adr1, adr2, rowBytes) != 0)
+			return false;
+	}
+	return true;
+}
+
+//-----------------------------------------------------------------------------
 void UIBitmapNode::createXMLData (const std::string& pathHint)
 {
 	UINode* node = getChildren ().findChildNode ("data");
+	if (node)
+	{
+		if (node->getData ().empty ())
+		{
+			getChildren ().remove (node);
+			node = nullptr;
+		}
+		else if (auto bitmap = getBitmap (pathHint))
+		{
+			if (auto platformBitmap = bitmap->getPlatformBitmap ())
+			{
+				if (auto dataBitmap = createBitmapFromDataNode ())
+				{
+					if (!imagesEqual (platformBitmap, dataBitmap))
+					{
+						removeXMLData ();
+						node = nullptr;
+					}
+				}
+			}
+		}
+	}
 	if (node == nullptr)
 	{
-		CBitmap* bitmap = getBitmap (pathHint);
-		if (bitmap)
+		if (CBitmap* bitmap = getBitmap (pathHint))
 		{
 			if (auto platformBitmap = bitmap->getPlatformBitmap ())
 			{
@@ -3217,6 +3273,34 @@ CBitmap* UIBitmapNode::createBitmap (const std::string& str, CNinePartTiledDescr
 	return new CBitmap (CResourceDescription (str.c_str()));
 }
 
+//------------------------------------------------------------------------
+UINode* UIBitmapNode::dataNode () const
+{
+	UINode* node = getChildren ().findChildNode ("data");
+	return (node && !node->getData ().empty ()) ? node : nullptr;
+}
+
+//------------------------------------------------------------------------
+SharedPointer<IPlatformBitmap> UIBitmapNode::createBitmapFromDataNode () const
+{
+	if (auto node = dataNode ())
+	{
+		auto codecStr = node->getAttributes ()->getAttributeValue ("encoding");
+		if (codecStr && *codecStr == "base64")
+		{
+			auto result = Base64Codec::decode (node->getData ());
+			if (auto platformBitmap = IPlatformBitmap::createFromMemory (result.data.get (), result.dataSize))
+			{
+				double scaleFactor = 1.;
+				if (attributes->getDoubleAttribute ("scale-factor", scaleFactor))
+					platformBitmap->setScaleFactor (scaleFactor);
+				return platformBitmap;
+			}
+		}
+	}
+	return nullptr;
+}
+
 //-----------------------------------------------------------------------------
 CBitmap* UIBitmapNode::getBitmap (const std::string& pathHint)
 {
@@ -3247,22 +3331,8 @@ CBitmap* UIBitmapNode::getBitmap (const std::string& pathHint)
 		}
 		if (bitmap && bitmap->getPlatformBitmap () == nullptr)
 		{
-			UINode* node = getChildren ().findChildNode ("data");
-			if (node && !node->getData ().empty ())
-			{
-				const std::string* codec = node->getAttributes ()->getAttributeValue ("encoding");
-				if (codec && *codec == "base64")
-				{
-					auto result = Base64Codec::decode (node->getData ());
-					if (auto platformBitmap = IPlatformBitmap::createFromMemory (result.data.get (), result.dataSize))
-					{
-						double scaleFactor = 1.;
-						if (attributes->getDoubleAttribute ("scale-factor", scaleFactor))
-							platformBitmap->setScaleFactor (scaleFactor);
-						bitmap->setPlatformBitmap (platformBitmap);
-					}
-				}
-			}
+			if (auto platformBitmap = createBitmapFromDataNode ())
+				bitmap->setPlatformBitmap (platformBitmap);
 		}
 		if (bitmap && path && bitmap->getPlatformBitmap () && bitmap->getPlatformBitmap ()->getScaleFactor () == 1.)
 		{
@@ -3280,8 +3350,7 @@ CBitmap* UIBitmapNode::getBitmap (const std::string& pathHint)
 //-----------------------------------------------------------------------------
 void UIBitmapNode::setBitmap (UTF8StringPtr bitmapName)
 {
-	std::string attrValue (bitmapName);
-	attributes->setAttribute ("path", attrValue);
+	attributes->setAttribute ("path", std::string (bitmapName));
 	if (bitmap)
 		bitmap->forget ();
 	bitmap = nullptr;
