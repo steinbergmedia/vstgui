@@ -296,7 +296,7 @@ public:
 				zoomValueControl->setFontColor (fontColor);
 				zoomValueControl->setBackColor (backColor);
 				zoomValueControl->setFrameColor (frameColor);
-				zoomValueControl->setFrameWidth (1.);
+				zoomValueControl->setFrameWidth (-1);
 			}
 		}
 		return view;
@@ -503,6 +503,7 @@ CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes
 			backSelectControl->setGradient (gradient);
 			backSelectControl->setGradientHighlighted (gradientHighlighted);
 			backSelectControl->setFrameColor (frameColor);
+			backSelectControl->setFrameWidth (-1.);
 			backSelectControl->setRoundRadius (2.);
 			auto bitmapSize = splitView->getSeparatorWidth () - 12;
 			CSegmentButton::Segment segment {};
