@@ -22,29 +22,28 @@ public:
 	Win32OpenGLView (Win32Frame* win32Frame);
 	~Win32OpenGLView () noexcept;
 
-	virtual bool init (IOpenGLView* view, PixelFormat* pixelFormat = nullptr) override;
-	virtual void remove () override;
+	bool init (IOpenGLView* view, PixelFormat* pixelFormat = nullptr) override;
+	void remove () override;
 
-	virtual void invalidRect (const CRect& rect) override;
-	virtual void viewSizeChanged (const CRect& visibleSize) override; ///< visibleSize is cframe relative
+	void invalidRect (const CRect& rect) override;
+	void viewSizeChanged (const CRect& visibleSize) override; ///< visibleSize is cframe relative
 
-	virtual bool makeContextCurrent () override;
-	virtual bool lockContext () override;
-	virtual bool unlockContext () override;
+	bool makeContextCurrent () override;
+	bool lockContext () override;
+	bool unlockContext () override;
 
-	virtual void swapBuffers () override;
+	void swapBuffers () override;
 protected:
 	static void initWindowClass ();
 	static void destroyWindowClass ();
 	static LONG_PTR WINAPI WindowProc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 
-	bool createWindow ();
-	bool setupPixelFormt ();
+	bool createWindow (PixelFormat* pixelFormat);
+	bool setupPixelFormt (PixelFormat* pixelFormat);
 
 	Win32Frame* win32Frame;
 	IOpenGLView* view;
 	HWND windowHandle;
-	PixelFormat pixelFormat;
 
 	HDC deviceContext;
 	HGLRC openGLContext;

@@ -9,17 +9,12 @@
 
 #if MAC_COCOA
 
-#ifdef __OBJC__
-@class CALayer, VSTGUI_CALayer;
-#else
-struct CALayer;
-struct VSTGUI_CALayer;
-#endif
+#include "../platform_macos.h"
 
 namespace VSTGUI {
 	
 //-----------------------------------------------------------------------------
-class CAViewLayer : public IPlatformViewLayer
+class CAViewLayer : public IPlatformViewLayer, public ICocoaViewLayer
 //-----------------------------------------------------------------------------
 {
 public:
@@ -35,7 +30,7 @@ public:
 	void draw (CDrawContext* context, const CRect& updateRect) override;
 	void onScaleFactorChanged (double newScaleFactor) override;
 
-	CALayer* getLayer () const { return layer; }
+	CALayer* getCALayer () const override { return layer; }
 //-----------------------------------------------------------------------------
 protected:
 	CALayer* layer;

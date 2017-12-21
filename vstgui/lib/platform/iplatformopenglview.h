@@ -17,23 +17,22 @@ class IPlatformFrame;
 //-----------------------------------------------------------------------------
 struct PixelFormat
 {
-	// TODO: do we need more ?
+	// TODO: add more if we need more...
 
 	enum {
 		kDoubleBuffered = 1 << 0,
-		kAccelerated	= 1 << 1,
 		kMultiSample	= 1 << 2,
-		kModernOpenGL	= 1 << 3		// Mac only currently. Indicates to use the NSOpenGLProfileVersion3_2Core. Not tested !
+		kModernOpenGL	= 1 << 3		// Mac only. Indicates to use the NSOpenGLProfileVersion3_2Core.
 	};
 
-	uint32_t depthSize;
-	uint32_t samples;		///< only used when kMultiSample is set
-	uint32_t flags;
+	uint32_t depthBufferSize {32};
+	uint32_t stencilBufferSize {0};
+	uint32_t samples {0};								///< only used when kMultiSample is set
+	uint32_t flags {kDoubleBuffered};
 
-	PixelFormat () : depthSize (32), samples (0), flags (kAccelerated) {}
-	PixelFormat (const PixelFormat& pf) : depthSize (pf.depthSize), samples (pf.samples), flags (pf.flags) {}
-	
-	PixelFormat& operator() (const PixelFormat& pf) { depthSize = pf.depthSize; samples = pf.samples; flags = pf.flags; return *this; }
+	PixelFormat () = default;
+	PixelFormat (const PixelFormat&) = default;
+	PixelFormat& operator= (const PixelFormat&) = default;
 };
 
 //-----------------------------------------------------------------------------
@@ -69,3 +68,4 @@ public:
 /// @endcond
 
 #endif // __iplatformopenglview__
+
