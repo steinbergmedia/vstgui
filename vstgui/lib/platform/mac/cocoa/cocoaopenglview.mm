@@ -46,12 +46,11 @@ bool CocoaOpenGLView::init (IOpenGLView* view, PixelFormat* _pixelFormat)
 		{
 			pixelFormat = *_pixelFormat;
 			formatAttributes.emplace_back (NSOpenGLPFADepthSize);
-			formatAttributes.emplace_back (pixelFormat.depthSize);
-			if (pixelFormat.flags & PixelFormat::kAccelerated)
-			{
-				formatAttributes.emplace_back (NSOpenGLPFANoRecovery);
-				formatAttributes.emplace_back (NSOpenGLPFAAccelerated);
-			}
+			formatAttributes.emplace_back (pixelFormat.depthBufferSize);
+			formatAttributes.emplace_back (NSOpenGLPFAStencilSize);
+			formatAttributes.emplace_back (pixelFormat.stencilBufferSize);
+			formatAttributes.emplace_back (NSOpenGLPFANoRecovery);
+			formatAttributes.emplace_back (NSOpenGLPFAAccelerated);
 			if (pixelFormat.flags & PixelFormat::kDoubleBuffered)
 			{
 				formatAttributes.emplace_back (NSOpenGLPFADoubleBuffer);
@@ -71,6 +70,11 @@ bool CocoaOpenGLView::init (IOpenGLView* view, PixelFormat* _pixelFormat)
 				formatAttributes.emplace_back (NSOpenGLPFAOpenGLProfile);
 				formatAttributes.emplace_back (NSOpenGLProfileVersion3_2Core);
 			}
+			else
+			{
+				formatAttributes.emplace_back (NSOpenGLPFAOpenGLProfile);
+				formatAttributes.emplace_back (NSOpenGLProfileVersionLegacy);
+			}
 		}
 		else
 		{
@@ -89,14 +93,17 @@ bool CocoaOpenGLView::init (IOpenGLView* view, PixelFormat* _pixelFormat)
 		if (platformView)
 		{
 			NSOpenGLContext* context = [platformView openGLContext];
-			GLint swapInterval = 1;
-			[context setValues:&swapInterval forParameter:NSOpenGLCPSwapInterval];
+			GLint value = 1;
+			[context setValues:&value forParameter:NSOpenGLCPSwapInterval];
+			value = 0;
+			[context setValues:&value forParameter:NSOpenGLContextParameterSurfaceOpacity];
 
 		#if DEBUG
 			if (pixelFormat.flags & PixelFormat::kModernOpenGL)
 				CGLEnable (static_cast<CGLContextObj> ([context CGLContextObj]), kCGLCECrashOnRemovedFunctions);
 		#endif
 			this->view = view;
+			platformView.wantsBestResolutionOpenGLSurface = YES;
 			return true;
 		}
 	}

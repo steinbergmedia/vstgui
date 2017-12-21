@@ -564,6 +564,7 @@ struct WindowController::Impl : public IController, public ICommandHandler
 
 #if VSTGUI_LIVE_EDITING
 static const Command ToggleEditingCommand {"Debug", "Toggle Inline Editor"};
+static const Command ResaveSharedResourcesCommand {"Debug", "Resave Shared Resources"};
 
 //------------------------------------------------------------------------
 struct WindowController::EditImpl : WindowController::Impl
@@ -573,6 +574,8 @@ struct WindowController::EditImpl : WindowController::Impl
 	: Impl (controller, modelBinding, customization)
 	{
 		IApplication::instance ().registerCommand (ToggleEditingCommand, 'E');
+		if (IApplication::instance ().getDelegate ().getSharedUIResourceFilename ())
+			IApplication::instance ().registerCommand (ResaveSharedResourcesCommand, 0);
 	}
 
 	bool init (WindowPtr& inWindow, const char* fileName, const char* templateName) override
@@ -754,11 +757,10 @@ struct WindowController::EditImpl : WindowController::Impl
 
 	bool canHandleCommand (const Command& command) override
 	{
-		if (command == ToggleEditingCommand)
+		if (command == ToggleEditingCommand || command == ResaveSharedResourcesCommand)
 			return true;
-		else if (uiEditController &&
-		         uiEditController->getMenuController ()->canHandleCommand (command.group,
-		                                                                   command.name))
+		else if (uiEditController && uiEditController->getMenuController ()->canHandleCommand (
+		                                 command.group, command.name))
 			return true;
 		return Impl::canHandleCommand (command);
 	}
@@ -770,9 +772,13 @@ struct WindowController::EditImpl : WindowController::Impl
 			enableEditing (!isEditing);
 			return true;
 		}
-		else if (uiEditController &&
-		         uiEditController->getMenuController ()->handleCommand (command.group,
-		                                                                command.name))
+		else if (command == ResaveSharedResourcesCommand)
+		{
+			Detail::saveSharedUIDescription ();
+			return true;
+		}
+		else if (uiEditController && uiEditController->getMenuController ()->handleCommand (
+		                                 command.group, command.name))
 			return true;
 		return Impl::handleCommand (command);
 	}

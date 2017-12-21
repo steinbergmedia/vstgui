@@ -437,7 +437,7 @@ void CGDrawContext::drawPolygon (const PointList& polygonPointList, const CDrawS
 void CGDrawContext::applyLineWidthCTM (CGContextRef context) const
 {
 	int32_t frameWidth = static_cast<int32_t> (currentState.frameWidth);
-	if (frameWidth % 2)
+	if (static_cast<CCoord> (frameWidth) == currentState.frameWidth && frameWidth % 2)
 		CGContextTranslateCTM (context, 0.5, 0.5);
 }
 
