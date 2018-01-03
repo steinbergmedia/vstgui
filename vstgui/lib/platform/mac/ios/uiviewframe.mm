@@ -193,7 +193,10 @@ CNewFileSelector* CNewFileSelector::create (CFrame* frame, Style style)
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-IPlatformFrame* IPlatformFrame::createPlatformFrame (IPlatformFrameCallback* frame, const CRect& size, void* parent, PlatformType platformType)
+IPlatformFrame* IPlatformFrame::createPlatformFrame (IPlatformFrameCallback* frame,
+                                                     const CRect& size, void* parent,
+                                                     PlatformType platformType,
+                                                     IPlatformFrameConfig* config)
 {
 	return new UIViewFrame (frame, size, (__bridge UIView*)parent);
 }
@@ -204,7 +207,7 @@ IPlatformFrame* IPlatformFrame::createPlatformFrame (IPlatformFrameCallback* fra
 //-----------------------------------------------------------------------------
 UIViewFrame::UIViewFrame (IPlatformFrameCallback* frame, const CRect& size, UIView* parent)
 : IPlatformFrame (frame)
-, uiView (0)
+, uiView (nullptr)
 {
 	uiView = [[VSTGUI_UIView alloc] initWithUIViewFrame:this parent:parent size:&size];
 }
@@ -304,7 +307,7 @@ SharedPointer<IPlatformOpenGLView> UIViewFrame::createPlatformOpenGLView ()
 SharedPointer<IPlatformViewLayer> UIViewFrame::createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer)
 {
 	CAViewLayer* parentViewLayer = dynamic_cast<CAViewLayer*> (parentLayer);
-	auto layer = owned (new CAViewLayer (parentViewLayer ? parentViewLayer->getLayer () : [uiView layer]));
+	auto layer = owned (new CAViewLayer (parentViewLayer ? parentViewLayer->getCALayer () : [uiView layer]));
 	layer->init (drawDelegate);
 	return shared<IPlatformViewLayer> (layer);
 }
