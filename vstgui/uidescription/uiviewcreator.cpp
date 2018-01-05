@@ -423,7 +423,7 @@ bool colorToString (const CColor& color, std::string& string, const IUIDescripti
 }
 
 //-----------------------------------------------------------------------------
-static bool stringToColor (const std::string* value, CColor& color, const IUIDescription* desc)
+bool stringToColor (const std::string* value, CColor& color, const IUIDescription* desc)
 {
 	if (value && *value == "")
 	{
@@ -434,7 +434,7 @@ static bool stringToColor (const std::string* value, CColor& color, const IUIDes
 }
 
 //-----------------------------------------------------------------------------
-static bool stringToBitmap (const std::string* value, CBitmap*& bitmap, const IUIDescription* desc)
+bool stringToBitmap (const std::string* value, CBitmap*& bitmap, const IUIDescription* desc)
 {
 	if (value)
 	{
