@@ -1211,7 +1211,13 @@ DragResult NSViewFrame::doDrag (IDataPackage* source, const CPoint& offset, CBit
 				return kDragError;
 			}
 		}
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 		[nsView dragImage:nsImage at:bitmapOffset offset:NSMakeSize (0, 0) event:event pasteboard:nsPasteboard source:nsView slideBack:dragBitmap ? YES : NO];
+
+#pragma clang diagnostic pop
+
 		[nsPasteboard clearContents];
 		return lastDragOperationResult;
 #endif
