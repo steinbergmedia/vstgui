@@ -23,7 +23,7 @@ KeyboardView::KeyboardView ()
 }
 
 //------------------------------------------------------------------------
-double KeyboardView::calcYParameter (int8_t note, CCoord y) const
+double KeyboardView::calcYParameter (NoteIndex note, CCoord y) const
 {
 	if (note == -1)
 		return 0.f;
@@ -33,7 +33,7 @@ double KeyboardView::calcYParameter (int8_t note, CCoord y) const
 }
 
 //------------------------------------------------------------------------
-double KeyboardView::calcXParameter (int8_t note, CCoord x) const
+double KeyboardView::calcXParameter (NoteIndex note, CCoord x) const
 {
 	if (note == -1)
 		return 0.f;
@@ -85,7 +85,7 @@ void KeyboardView::onTouchBegin (const ITouchEvent::TouchPair& touch, ITouchEven
 {
 	CPoint where (touch.second.location);
 	frameToLocal (where);
-	int16_t note = pointToNote (where, false);
+	auto note = pointToNote (where, false);
 	if (note >= 0)
 	{
 		for (auto nt : noteTouches)
@@ -112,14 +112,14 @@ void KeyboardView::onTouchMove (const ITouchEvent::TouchPair& touch, ITouchEvent
 {
 	CPoint where (touch.second.location);
 	frameToLocal (where);
-	int16_t note = pointToNote (where, false);
+	auto note = pointToNote (where, false);
 	auto noteTouch = noteTouches.find (touch.first);
 	if (noteTouch != noteTouches.end ())
 	{
 		if (note != noteTouch->second.note)
 		{
-			int8_t noteOff = noteTouch->second.note;
-			int32_t noteOffID = noteTouch->second.noteID;
+			auto noteOff = noteTouch->second.note;
+			auto noteOffID = noteTouch->second.noteID;
 			setKeyPressed (noteTouch->second.note, false);
 			if (note >= 0)
 			{
@@ -194,7 +194,7 @@ CMouseEventResult KeyboardView::onMouseDown (CPoint& where, const CButtonState& 
 {
 	if (buttons.isLeftButton ())
 	{
-		int16_t note = pointToNote (where, false);
+		auto note = pointToNote (where, false);
 		if (note != -1)
 		{
 			doNoteOn (note, calcXParameter (note, where.x), calcYParameter (note, where.y));
@@ -209,7 +209,7 @@ CMouseEventResult KeyboardView::onMouseMoved (CPoint& where, const CButtonState&
 {
 	if (buttons.isLeftButton ())
 	{
-		int16_t note = pointToNote (where, false);
+		auto note = pointToNote (where, false);
 		if (note == pressedNote)
 		{
 			if (delegate)
@@ -265,8 +265,9 @@ void KeyboardViewRangeSelector::unregisterKeyRangeChangedListener (
 void KeyboardViewRangeSelector::drawRect (CDrawContext* context, const CRect& dirtyRect)
 {
 	KeyboardViewBase::drawRect (context, dirtyRect);
-	CRect r1 = getNoteRect (selectionRange.position);
-	CRect r2 = getNoteRect (selectionRange.position + selectionRange.length);
+
+	auto r1 = getNoteRect (selectionRange.position);
+	auto r2 = getNoteRect (selectionRange.position + selectionRange.length);
 
 	r1.offset (-r1.getWidth (), 0);
 	r2.offset (r2.getWidth (), 0);
@@ -283,7 +284,7 @@ void KeyboardViewRangeSelector::drawRect (CDrawContext* context, const CRect& di
 }
 
 //------------------------------------------------------------------------
-void KeyboardViewRangeSelector::setKeyRange (uint8_t startNote, uint8_t numKeys)
+void KeyboardViewRangeSelector::setKeyRange (NoteIndex startNote, NumNotes numKeys)
 {
 	KeyboardViewBase::setKeyRange (startNote, numKeys);
 	if (selectionRange.position < getKeyRangeStart ())
@@ -302,16 +303,16 @@ void KeyboardViewRangeSelector::setSelectionRange (const Range& _range)
 }
 
 //------------------------------------------------------------------------
-void KeyboardViewRangeSelector::setSelectionMinMax (int8_t minRange, int8_t maxRange)
+void KeyboardViewRangeSelector::setSelectionMinMax (NumNotes minRange, NumNotes maxRange)
 {
 	rangeMin = minRange;
 	rangeMax = maxRange;
 }
 
 //------------------------------------------------------------------------
-uint8_t KeyboardViewRangeSelector::getNumWhiteKeysSelected () const
+auto KeyboardViewRangeSelector::getNumWhiteKeysSelected () const -> NumNotes
 {
-	uint8_t whiteKeys = 0;
+	NumNotes whiteKeys = 0;
 	for (auto i = selectionRange.position; i <= selectionRange.position + selectionRange.length;
 	     ++i)
 	{
@@ -328,7 +329,7 @@ void KeyboardViewRangeSelector::onTouchBegin (const ITouchEvent::TouchPair& touc
 {
 	CPoint where (touch.second.location);
 	frameToLocal (where);
-	int16_t note = pointToNote (where, false);
+	auto note = pointToNote (where, false);
 	if (note >= 0)
 	{
 		if (touchIds[0] == -1)
@@ -369,7 +370,7 @@ void KeyboardViewRangeSelector::onTouchBegin (const ITouchEvent::TouchPair& touc
 }
 
 //------------------------------------------------------------------------
-static int8_t bound (int32_t value, int32_t min, int32_t max)
+static int32_t bound (int32_t value, int32_t min, int32_t max)
 {
 	if (value < min)
 		value = min;
@@ -384,20 +385,20 @@ void KeyboardViewRangeSelector::onTouchMove (const ITouchEvent::TouchPair& touch
 {
 	CPoint where (touch.second.location);
 	frameToLocal (where);
-	int16_t note = pointToNote (where, true);
+	auto note = pointToNote (where, true);
 	if (touchIds[0] == touch.first)
 	{
 		if (touchMode == kMoveRange || touchMode == kChangeRangeFront)
 		{
 			if (note >= 0)
 			{
-				int32_t move = note - touchStartNote[0];
-				int32_t newRangeStart =
+				auto move = note - touchStartNote[0];
+				auto newRangeStart =
 				    bound (selectionRangeOnTouchStart.position + move, getKeyRangeStart (),
 				           (getKeyRangeStart () + getNumKeys ()) - selectionRange.length);
 				if (!isWhiteKey (newRangeStart))
 					newRangeStart++;
-				int32_t length = selectionRange.length;
+				auto length = selectionRange.length;
 				if (touchMode == kChangeRangeFront)
 				{
 					length = selectionRange.length + (selectionRange.position - newRangeStart);
@@ -411,8 +412,8 @@ void KeyboardViewRangeSelector::onTouchMove (const ITouchEvent::TouchPair& touch
 		{
 			if (note >= 0)
 			{
-				int32_t move = note - touchStartNote[0];
-				int32_t length = selectionRangeOnTouchStart.length + move;
+				auto move = note - touchStartNote[0];
+				auto length = selectionRangeOnTouchStart.length + move;
 				if (!isWhiteKey (selectionRange.position + length))
 					length++;
 				if (length < rangeMin || length > rangeMax)
@@ -514,10 +515,10 @@ CMouseEventResult KeyboardViewRangeSelector::onMouseMoved (CPoint& where,
 		{
 			auto offset = note - moveStartNote;
 			Range r = moveStartRange;
-			if (static_cast<int16_t> (r.position) + offset < 0)
+			if (static_cast<NoteIndex> (r.position) + offset < 0)
 				r.position = 0;
-			else if (static_cast<int16_t> (r.position + r.length) + offset > 127)
-				r.position = 127 - r.length;
+			else if (static_cast<NoteIndex> (r.position + r.length) + offset >= MaxNotes)
+				r.position = (MaxNotes - 1) - r.length;
 			else
 				r.position += offset;
 			setSelectionRange (r);
@@ -563,7 +564,7 @@ bool KeyboardViewBase::sizeToFit ()
 	if (noteRectCacheInvalid)
 		updateNoteRectCache ();
 
-	CRect r = getNoteRect (startNote + numKeys - 1);
+	auto r = getNoteRect (startNote + numKeys - 1);
 	r.setWidth (r.right);
 	r.setHeight (getViewSize ().getHeight ());
 	r.originize ();
@@ -574,10 +575,10 @@ bool KeyboardViewBase::sizeToFit ()
 }
 
 //------------------------------------------------------------------------
-uint8_t KeyboardViewBase::getNumWhiteKeys () const
+auto KeyboardViewBase::getNumWhiteKeys () const -> NumNotes
 {
-	uint8_t whiteKeys = 0;
-	for (uint8_t i = startNote; i <= startNote + numKeys; ++i)
+	NumNotes whiteKeys = 0;
+	for (NoteIndex i = startNote; i <= startNote + numKeys; ++i)
 	{
 		if (isWhiteKey (i))
 			whiteKeys++;
@@ -586,10 +587,17 @@ uint8_t KeyboardViewBase::getNumWhiteKeys () const
 }
 
 //------------------------------------------------------------------------
-void KeyboardViewBase::setKeyRange (uint8_t _startNote, uint8_t _numKeys)
+void KeyboardViewBase::setKeyRange (NoteIndex _startNote, NumNotes _numKeys)
 {
-	if (static_cast<int32_t> (_numKeys) + static_cast<int32_t> (_startNote) > 127)
-		_numKeys = 127 - _startNote;
+	vstgui_assert (_startNote >= 0 && _numKeys >= 0);
+	if (_startNote < 0 || _numKeys < 0)
+		return;
+
+	if (static_cast<int32_t> (_numKeys) + static_cast<int32_t> (_startNote) >=
+	    static_cast<int32_t> (MaxNotes))
+	{
+		_numKeys = (MaxNotes - 1) - _startNote;
+	}
 	startNote = _startNote;
 	numKeys = _numKeys;
 	noteRectCacheInvalid = true;
@@ -772,7 +780,7 @@ void KeyboardViewBase::drawRect (CDrawContext* context, const CRect& dirtyRect)
 	context->setFont (noteNameFont);
 	context->setDrawMode (kAntiAliasing | kNonIntegralMode);
 
-	for (int32_t i = startNote; i <= startNote + numKeys; i++)
+	for (NoteIndex i = startNote; i <= startNote + numKeys; i++)
 	{
 		if (isWhiteKey (i) == false)
 			continue;
@@ -788,7 +796,7 @@ void KeyboardViewBase::drawRect (CDrawContext* context, const CRect& dirtyRect)
 			context->drawString (text, r);
 		}
 	}
-	for (int32_t i = startNote; i <= startNote + numKeys; i++)
+	for (NoteIndex i = startNote; i <= startNote + numKeys; i++)
 	{
 		if (isWhiteKey (i) == true)
 			continue;
@@ -800,7 +808,7 @@ void KeyboardViewBase::drawRect (CDrawContext* context, const CRect& dirtyRect)
 }
 
 //------------------------------------------------------------------------
-void KeyboardViewBase::drawNote (CDrawContext* context, CRect& rect, uint8_t note,
+void KeyboardViewBase::drawNote (CDrawContext* context, CRect& rect, NoteIndex note,
                                  bool isWhite) const
 {
 	CBitmap* keyBitmap = nullptr;
@@ -856,7 +864,7 @@ void KeyboardViewBase::drawNote (CDrawContext* context, CRect& rect, uint8_t not
 	}
 	if (keyPressed[note] && isWhite)
 	{
-		int8_t otherNote;
+		NoteIndex otherNote;
 		if (note > startNote)
 		{
 			otherNote = note - 1;
@@ -888,12 +896,12 @@ void KeyboardViewBase::drawNote (CDrawContext* context, CRect& rect, uint8_t not
 }
 
 //------------------------------------------------------------------------
-CRect KeyboardViewBase::calcNoteRect (uint8_t note) const
+CRect KeyboardViewBase::calcNoteRect (NoteIndex note) const
 {
 	CRect result;
 	if (note >= startNote && note <= startNote + numKeys)
 	{
-		for (int32_t i = startNote + 1; i <= note; i++)
+		for (NoteIndex i = startNote + 1; i <= note; i++)
 		{
 			bool isWhite = isWhiteKey (i);
 			if (isWhite)
@@ -920,7 +928,7 @@ CRect KeyboardViewBase::calcNoteRect (uint8_t note) const
 //------------------------------------------------------------------------
 void KeyboardViewBase::updateNoteRectCache () const
 {
-	for (int32_t i = 0; i <= 127; ++i)
+	for (NoteIndex i = 0; i < MaxNotes; ++i)
 		noteRectCache[i] = calcNoteRect (i);
 
 	CRect r = getNoteRect (startNote + numKeys);
@@ -928,7 +936,7 @@ void KeyboardViewBase::updateNoteRectCache () const
 	if (space > 0)
 	{
 		space = fabs (space / 2.);
-		for (int32_t i = startNote + 1; i <= startNote + numKeys; ++i)
+		for (NoteIndex i = startNote + 1; i <= startNote + numKeys; ++i)
 			noteRectCache[i].offset (space, 0);
 		noteRectCache[startNote].right += space;
 		noteRectCache[startNote + numKeys].right = getViewSize ().right;
@@ -937,11 +945,11 @@ void KeyboardViewBase::updateNoteRectCache () const
 }
 
 //------------------------------------------------------------------------
-int16_t KeyboardViewBase::pointToNote (const CPoint& p, bool ignoreY) const
+auto KeyboardViewBase::pointToNote (const CPoint& p, bool ignoreY) const -> NoteIndex
 {
 	if (noteRectCacheInvalid)
 		updateNoteRectCache ();
-	int16_t result = 0;
+	NoteIndex result = 0;
 	for (auto r : getNoteRectCache ())
 	{
 		if (!ignoreY)
@@ -960,7 +968,7 @@ int16_t KeyboardViewBase::pointToNote (const CPoint& p, bool ignoreY) const
 		{
 			if (isWhiteKey (result))
 			{
-				const CRect& r2 = getNoteRect (result + 1);
+				auto r2 = getNoteRect (result + 1);
 				if (p.x >= r2.left && p.x < r2.right)
 					return result + 1;
 			}
@@ -972,7 +980,7 @@ int16_t KeyboardViewBase::pointToNote (const CPoint& p, bool ignoreY) const
 }
 
 //------------------------------------------------------------------------
-void KeyboardViewBase::invalidNote (uint8_t note)
+void KeyboardViewBase::invalidNote (NoteIndex note)
 {
 	if (noteRectCacheInvalid)
 		updateNoteRectCache ();
@@ -980,8 +988,12 @@ void KeyboardViewBase::invalidNote (uint8_t note)
 }
 
 //------------------------------------------------------------------------
-void KeyboardViewBase::setKeyPressed (uint8_t note, bool state)
+void KeyboardViewBase::setKeyPressed (NoteIndex note, bool state)
 {
+	vstgui_assert (note >= 0);
+	if (note < 0)
+		return;
+
 	if (keyPressed[note] != state)
 	{
 		keyPressed[note] = state;
@@ -990,14 +1002,14 @@ void KeyboardViewBase::setKeyPressed (uint8_t note, bool state)
 		{
 			if (note > startNote)
 			{
-				int8_t prevKey = note - 1;
+				NoteIndex prevKey = note - 1;
 				if (!isWhiteKey (prevKey))
 					prevKey--;
 				invalidNote (prevKey);
 			}
 			if (note < startNote + numKeys)
 			{
-				int8_t nextKey = note + 1;
+				NoteIndex nextKey = note + 1;
 				if (!isWhiteKey (nextKey))
 					nextKey++;
 				invalidNote (nextKey);
@@ -1007,7 +1019,7 @@ void KeyboardViewBase::setKeyPressed (uint8_t note, bool state)
 }
 
 //------------------------------------------------------------------------
-bool KeyboardViewBase::isWhiteKey (uint8_t note) const
+bool KeyboardViewBase::isWhiteKey (NoteIndex note) const
 {
 	note = note % 12;
 	return note == 0 || note == 2 || note == 4 || note == 5 || note == 7 || note == 9 || note == 11;
@@ -1266,8 +1278,8 @@ public:
 			kv->setBlackKeyHeight (c);
 		if (attributes.getDoubleAttribute (UIViewCreator::kAttrFrameWidth, c))
 			kv->setLineWidth (c);
-		int32_t startNote = kv->getKeyRangeStart ();
-		int32_t numKeys = kv->getNumKeys ();
+		auto startNote = static_cast<int32_t> (kv->getKeyRangeStart ());
+		auto numKeys = static_cast<int32_t> (kv->getNumKeys ());
 		attributes.getIntegerAttribute (kAttrStartNote, startNote);
 		attributes.getIntegerAttribute (kAttrNumKeys, numKeys);
 		kv->setKeyRange (startNote, numKeys);
@@ -1286,7 +1298,7 @@ public:
 		if (attributeName == kAttrNumKeys)
 		{
 			minValue = 12;
-			maxValue = 127;
+			maxValue = KeyboardViewBase::MaxNotes - 1;
 			return true;
 		}
 		return false;
@@ -1385,8 +1397,8 @@ public:
 		auto kb = dynamic_cast<KeyboardViewRangeSelector*> (view);
 		if (!kb)
 			return false;
-		int32_t selMin = kb->getSelectionMin ();
-		int32_t selMax = kb->getSelectionMax ();
+		auto selMin = static_cast<int32_t> (kb->getSelectionMin ());
+		auto selMax = static_cast<int32_t> (kb->getSelectionMax ());
 		attributes.getIntegerAttribute (kAttrSelectionRangeMin, selMin);
 		attributes.getIntegerAttribute (kAttrSelectionRangeMax, selMax);
 		kb->setSelectionMinMax (selMin, selMax);
