@@ -21,7 +21,8 @@
 #include "../quartzgraphicspath.h"
 #include "../macclipboard.h"
 
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations" // we know that we use deprecated functions from Carbon, so we don't want to be warned
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 
 namespace VSTGUI {
 
@@ -44,26 +45,6 @@ bool isWindowComposited (WindowRef window)
 	if (attr & kWindowCompositingAttribute)
 		return true;
 	return false;
-}
-
-//-----------------------------------------------------------------------------
-static void CRect2Rect (const CRect &_cr, Rect &rr)
-{
-	CRect cr (_cr);
-	cr.normalize ();
-	rr.left   = (short)cr.left;
-	rr.right  = (short)cr.right;
-	rr.top    = (short)cr.top;
-	rr.bottom = (short)cr.bottom;
-}
-
-//-----------------------------------------------------------------------------
-static void Rect2CRect (Rect &rr, CRect &cr)
-{
-	cr.left   = rr.left;
-	cr.right  = rr.right;
-	cr.top    = rr.top;
-	cr.bottom = rr.bottom;
 }
 
 static SharedPointer<IDataPackage> gDragContainer;
@@ -798,6 +779,15 @@ public:
 	bool isComposited;
 };
 
+//-----------------------------------------------------------------------------
+static void Rect2CRect (Rect &rr, CRect &cr)
+{
+	cr.left   = rr.left;
+	cr.right  = rr.right;
+	cr.top    = rr.top;
+	cr.bottom = rr.bottom;
+}
+
 static OSStatus VSTGUIDrawRectsProc (UInt16 message, RgnHandle rgn, const Rect* rect, void* refCon)
 {
 	if (message == kQDRegionToRectsMsgParse)
@@ -1264,6 +1254,6 @@ pascal OSStatus HIViewFrame::carbonEventHandler (EventHandlerCallRef inHandlerCa
 
 } // namespace
 
-#pragma GCC diagnostic warning "-Wdeprecated-declarations" // we know that we use deprecated functions from Carbon, so we don't want to be warned
+#pragma clang diagnostic pop
 
 #endif // MAC_CARBON

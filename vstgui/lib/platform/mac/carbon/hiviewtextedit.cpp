@@ -12,7 +12,8 @@
 #include "../../iplatformopenglview.h"
 #include "../../iplatformviewlayer.h"
 
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations" // we know that we use deprecated functions from Carbon, so we don't want to be warned
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 
 namespace VSTGUI {
 
@@ -85,7 +86,11 @@ HIViewTextEdit::HIViewTextEdit (HIViewRef parent, IPlatformTextEditCallback* tex
 		CopyCStringToPascal (fontID->getName (), fontName);
 		GetFNum (fontName, &fontStyle.font);
 	#else
-		#warning Mac OS X 10.7 Carbon incompatibility. It looks like it's not possible to set the font family for a text control anymore
+		if (auto ctFont = fontID->getPlatformFont ().cast<CoreTextFont> ())
+		{
+			if (auto ctFontRef = ctFont->getFontRef ())
+				HIViewSetTextFont (textControl, kControlEditTextPart, ctFontRef);
+		}
 	#endif
 		SetControlData (textControl, kControlEditTextPart, kControlFontStyleTag, sizeof (fontStyle), &fontStyle);
 		HIViewSetVisible (textControl, true);
@@ -295,6 +300,6 @@ pascal OSStatus HIViewTextEdit::CarbonEventsTextControlProc (EventHandlerCallRef
 
 } // namespace
 
-#pragma GCC diagnostic warning "-Wdeprecated-declarations" // we know that we use deprecated functions from Carbon, so we don't want to be warned
+#pragma clang diagnostic pop
 
 #endif

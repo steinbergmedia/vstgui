@@ -6,6 +6,9 @@
 
 #if MAC_CARBON
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 #include "../../../controls/coptionmenu.h"
 #include "../../../cframe.h"
 #include "../../../cbitmap.h"
@@ -170,5 +173,7 @@ MenuRef HIViewOptionMenu::createMenu (COptionMenu* menu)
 }
 
 } // namespace
+
+#pragma clang diagnostic pop
 
 #endif // MAC_CARBON
