@@ -66,8 +66,8 @@ CViewContainer::CViewContainer (const CViewContainer& v)
 	pImpl->backgroundColorDrawStyle = v.pImpl->backgroundColorDrawStyle;
 	pImpl->backgroundColor = v.pImpl->backgroundColor;
 	pImpl->backgroundOffset = v.pImpl->backgroundOffset;
-	for (auto& v : v.pImpl->children)
-		addView (static_cast<CView*> (v->newCopy ()));
+	for (auto& view : v.pImpl->children)
+		addView (static_cast<CView*> (view->newCopy ()));
 }
 
 //-----------------------------------------------------------------------------
