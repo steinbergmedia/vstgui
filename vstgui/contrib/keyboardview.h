@@ -21,6 +21,11 @@ namespace VSTGUI {
 class KeyboardViewBase : public CView
 {
 public:
+	using NoteIndex = int16_t;
+	using NumNotes = uint8_t;
+
+	static constexpr NumNotes MaxNotes = 128;
+
 	enum class BitmapID
 	{
 		WhiteKeyPressed = 0,
@@ -34,12 +39,12 @@ public:
 
 	KeyboardViewBase ();
 
-	void setKeyPressed (uint8_t note, bool state);
+	void setKeyPressed (NoteIndex note, bool state);
 
-	virtual void setKeyRange (uint8_t startNote, uint8_t numKeys);
-	uint8_t getKeyRangeStart () const { return startNote; }
-	uint8_t getNumKeys () const { return numKeys; }
-	uint8_t getNumWhiteKeys () const;
+	virtual void setKeyRange (NoteIndex startNote, NumNotes numKeys);
+	NoteIndex getKeyRangeStart () const { return startNote; }
+	NumNotes getNumKeys () const { return numKeys; }
+	NumNotes getNumWhiteKeys () const;
 
 	void setWhiteKeyWidth (CCoord width);
 	void setBlackKeyWidth (CCoord width);
@@ -74,24 +79,24 @@ public:
 	void setWhiteKeyBitmapInset (const CRect& inset); // TODO: uidesc
 	void setBlackKeyBitmapInset (const CRect& inset); // TODO: uidesc
 
-	const CRect& getNoteRect (uint8_t note) const { return noteRectCache[note]; }
-	bool isWhiteKey (uint8_t note) const;
+	const CRect& getNoteRect (NoteIndex note) const { return noteRectCache[note]; }
+	bool isWhiteKey (NoteIndex note) const;
 
 	void drawRect (CDrawContext* context, const CRect& dirtyRect) override;
 	void setViewSize (const CRect& rect, bool invalid = true) override;
 	bool sizeToFit () override;
 //------------------------------------------------------------------------
 protected:
-	using NoteRectCache = std::array<CRect, 128>;
+	using NoteRectCache = std::array<CRect, MaxNotes>;
 
-	void invalidNote (uint8_t note);
+	void invalidNote (NoteIndex note);
 
-	int16_t pointToNote (const CPoint& p, bool ignoreY) const;
+	NoteIndex pointToNote (const CPoint& p, bool ignoreY) const;
 	const NoteRectCache& getNoteRectCache () const { return noteRectCache; }
 
 private:
-	void drawNote (CDrawContext* context, CRect& rect, uint8_t note, bool isWhite) const;
-	CRect calcNoteRect (uint8_t note) const;
+	void drawNote (CDrawContext* context, CRect& rect, NoteIndex note, bool isWhite) const;
+	CRect calcNoteRect (NoteIndex note) const;
 	void updateNoteRectCache () const;
 	void createBitmapCache ();
 
@@ -118,12 +123,12 @@ private:
 	CColor blackKeyColor {kBlackCColor};
 	CColor blackKeyPressedColor {kGreyCColor};
 
-	uint8_t numKeys {88};
-	uint8_t startNote {21};
+	NumNotes numKeys {88};
+	NoteIndex startNote {21};
 	bool drawNoteText {false};
 	mutable bool noteRectCacheInvalid {true};
 	mutable NoteRectCache noteRectCache;
-	std::bitset<128> keyPressed {};
+	std::bitset<MaxNotes> keyPressed {};
 };
 
 class KeyboardViewRangeSelector;
@@ -141,9 +146,11 @@ class KeyboardViewRangeSelector : public KeyboardViewBase
 public:
 	struct Range
 	{
-		uint8_t position;
-		uint8_t length;
-		Range (uint8_t position = 0, uint8_t length = 0) : position (position), length (length) {}
+		NoteIndex position;
+		NumNotes length;
+		Range (NoteIndex position = 0, NumNotes length = 0) : position (position), length (length)
+		{
+		}
 		bool operator!= (const Range& r) const
 		{
 			return position != r.position || length != r.length;
@@ -154,13 +161,13 @@ public:
 
 	void drawRect (CDrawContext* context, const CRect& dirtyRect) override;
 
-	void setKeyRange (uint8_t startNote, uint8_t numKeys) override;
+	void setKeyRange (NoteIndex startNote, NumNotes numKeys) override;
 	void setSelectionRange (const Range& range);
-	void setSelectionMinMax (int8_t minRange, int8_t maxRange);
+	void setSelectionMinMax (NumNotes minRange, NumNotes maxRange);
 	const Range& getSelectionRange () const { return selectionRange; }
-	int8_t getSelectionMin () const { return rangeMin; }
-	int8_t getSelectionMax () const { return rangeMax; }
-	uint8_t getNumWhiteKeysSelected () const;
+	NumNotes getSelectionMin () const { return rangeMin; }
+	NumNotes getSelectionMax () const { return rangeMax; }
+	NumNotes getNumWhiteKeysSelected () const;
 
 	void registerKeyRangeChangedListener (IKeyboardViewKeyRangeChangedListener* listener);
 	void unregisterKeyRangeChangedListener (IKeyboardViewKeyRangeChangedListener* listener);
@@ -170,8 +177,8 @@ private:
 	DispatchList<IKeyboardViewKeyRangeChangedListener*> listeners;
 
 	Range selectionRange {0, 12};
-	int8_t rangeMin {12};
-	int8_t rangeMax {24};
+	NumNotes rangeMin {12};
+	NumNotes rangeMax {24};
 
 #if VSTGUI_TOUCH_EVENT_HANDLING
 	void onTouchEvent (ITouchEvent& event) override;
@@ -184,7 +191,7 @@ private:
 	Range selectionRangeOnTouchStart;
 	int32_t touchIds[2] {-1};
 	TouchMode touchMode {kUnknown};
-	int8_t touchStartNote[2];
+	NoteIndex touchStartNote[2];
 #else
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
@@ -192,15 +199,17 @@ private:
 	CMouseEventResult onMouseCancel () override;
 
 	Range moveStartRange;
-	int16_t moveStartNote {-1};
+	NoteIndex moveStartNote {-1};
 #endif
 };
 
 //------------------------------------------------------------------------
 struct IKeyboardViewPlayerDelegate
 {
-	virtual int32_t onNoteOn (int8_t note, double xPos, double yPos) = 0;
-	virtual void onNoteOff (int8_t note, int32_t noteID) = 0;
+	using NoteIndex = KeyboardViewBase::NoteIndex;
+
+	virtual int32_t onNoteOn (NoteIndex note, double xPos, double yPos) = 0;
+	virtual void onNoteOff (NoteIndex note, int32_t noteID) = 0;
 
 	virtual void onNoteModulation (int32_t noteID, double xPos, double yPos) = 0;
 
@@ -210,8 +219,8 @@ struct IKeyboardViewPlayerDelegate
 //------------------------------------------------------------------------
 struct KeyboardViewPlayerDelegate : public IKeyboardViewPlayerDelegate
 {
-	int32_t onNoteOn (int8_t note, double xPos, double yPos) override { return -1; }
-	void onNoteOff (int8_t note, int32_t noteID) override {}
+	int32_t onNoteOn (NoteIndex note, double xPos, double yPos) override { return -1; }
+	void onNoteOff (NoteIndex note, int32_t noteID) override {}
 	void onNoteModulation (int32_t noteID, double xPos, double yPos) override {}
 };
 
@@ -223,8 +232,8 @@ public:
 	void setDelegate (IKeyboardViewPlayerDelegate* delegate) { this->delegate = delegate; }
 
 private:
-	double calcYParameter (int8_t note, CCoord y) const;
-	double calcXParameter (int8_t note, CCoord x) const;
+	double calcYParameter (NoteIndex note, CCoord y) const;
+	double calcXParameter (NoteIndex note, CCoord x) const;
 #if VSTGUI_TOUCH_EVENT_HANDLING
 	bool wantsMultiTouchEvents () const override { return true; }
 	void onTouchEvent (ITouchEvent& event) override;
@@ -234,22 +243,22 @@ private:
 
 	struct NoteTouch
 	{
-		int8_t note;
+		NoteIndex note;
 		int32_t noteID;
-		NoteTouch (int8_t note) : note (note), noteID (-1) {}
+		NoteTouch (NoteIndex note) : note (note), noteID (-1) {}
 	};
 
 	std::map<int32_t, NoteTouch> noteTouches;
 #else
 	void doNoteOff ();
-	void doNoteOn (int16_t note, double yPos, double xPos);
+	void doNoteOn (NoteIndex note, double yPos, double xPos);
 
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseCancel () override;
 
-	int8_t pressedNote {-1};
+	NoteIndex pressedNote {-1};
 	int32_t noteID {-1};
 #endif
 
