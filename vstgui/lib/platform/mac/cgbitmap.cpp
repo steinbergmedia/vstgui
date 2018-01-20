@@ -391,8 +391,13 @@ public:
 			buffer.width = static_cast<vImagePixelCount> (bitmap->getSize ().x);
 			buffer.height = static_cast<vImagePixelCount> (bitmap->getSize ().y);
 			buffer.rowBytes = bitmap->getBytesPerRow ();
-			vImage_Error error = vImageUnpremultiplyData_ARGB8888 (&buffer, &buffer, kvImageNoFlags);
+#if DEBUG
+			vImage_Error error =
+#endif
+			vImageUnpremultiplyData_ARGB8888 (&buffer, &buffer, kvImageNoFlags);
+#if DEBUG
 			assert (error == kvImageNoError);
+#endif
 		}
 		bitmap->remember ();
 	}
@@ -406,8 +411,13 @@ public:
 			buffer.width = static_cast<vImagePixelCount> (bitmap->getSize ().x);
 			buffer.height = static_cast<vImagePixelCount> (bitmap->getSize ().y);
 			buffer.rowBytes = bitmap->getBytesPerRow ();
-			vImage_Error error = vImagePremultiplyData_ARGB8888 (&buffer, &buffer, kvImageNoFlags);
+#if DEBUG
+			vImage_Error error =
+#endif
+			vImagePremultiplyData_ARGB8888 (&buffer, &buffer, kvImageNoFlags);
+#if DEBUG
 			assert (error == kvImageNoError);
+#endif
 		}
 		bitmap->setDirty ();
 		bitmap->forget ();
