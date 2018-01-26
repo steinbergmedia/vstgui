@@ -467,19 +467,25 @@ static SharedPointer<CBitmap> createColorBitmap (CPoint size, CColor color)
 static CColor kLightGreyColor (220, 220, 220);
 	
 //----------------------------------------------------------------------------------------------------
-static const std::array<CColor, 4> editViewBackgroundColors = {{
-	{230, 230, 230},
-	{150, 150, 150},
-	kWhiteCColor,
-	kBlackCColor
-}};
+using BackgroundColors = std::array<CColor, 4>;
+
+static const BackgroundColors& editViewBackgroundColors ()
+{
+	static const BackgroundColors colors = {{
+		{230, 230, 230},
+		{150, 150, 150},
+		kWhiteCColor,
+		kBlackCColor
+	}};
+	return colors;
+}
 
 //----------------------------------------------------------------------------------------------------
 CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
 {
 	if (view == editView)
 	{
-		editView->setBackgroundColor (editViewBackgroundColors[0]);
+		editView->setBackgroundColor (editViewBackgroundColors ()[0]);
 		return view;
 	}
 	CSplitView* splitView = dynamic_cast<CSplitView*>(view);
@@ -497,7 +503,7 @@ CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes
 			auto gradientHighlighted = description->getGradient ("Default TextButton Gradient Highlighted");
 
 			// Add Background Menu
-			CRect backSelectRect (0., 0., 20. * editViewBackgroundColors.size (), splitView->getSeparatorWidth ());
+			CRect backSelectRect (0., 0., 20. * editViewBackgroundColors ().size (), splitView->getSeparatorWidth ());
 			backSelectRect.inset (2, 2);
 			auto backSelectControl = new CSegmentButton (backSelectRect, this, kBackgroundSelectTag);
 			backSelectControl->setGradient (gradient);
@@ -508,7 +514,7 @@ CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes
 			auto bitmapSize = splitView->getSeparatorWidth () - 12;
 			CSegmentButton::Segment segment {};
 			segment.iconPosition = CDrawMethods::kIconCenterAbove;
-			for (auto& color : editViewBackgroundColors)
+			for (auto& color : editViewBackgroundColors ())
 			{
 				segment.icon = segment.iconHighlighted = createColorBitmap ({bitmapSize, bitmapSize}, color);
 				backSelectControl->addSegment (segment);
@@ -672,7 +678,7 @@ void UIEditController::valueChanged (CControl* control)
 			{
 				if (auto seg = dynamic_cast<CSegmentButton*> (control))
 				{
-					CColor color = editViewBackgroundColors[seg->getSelectedSegment ()];
+					CColor color = editViewBackgroundColors ()[seg->getSelectedSegment ()];
 					editView->setBackgroundColor (color);
 				}
 				break;
