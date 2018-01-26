@@ -58,8 +58,10 @@ protected:
 	std::string dialogButton1;
 	std::string dialogButton2;
 
+#if VSTGUI_OPENGL_SUPPORT
 	std::list<SharedPointer<COpenGLView> > openglViews;
-		
+#endif
+
 	enum {
 		kButton1Tag,
 		kButton2Tag,
