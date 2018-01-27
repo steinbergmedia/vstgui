@@ -451,34 +451,69 @@ struct WindowController::Impl : public IController, public ICommandHandler
 		window->setSize (view->getViewSize ().getSize ());
 	}
 
+	CView* currentCommandHandlerCandidate ()
+	{
+		if (auto focusView = frame->getFocusView ())
+			return focusView;
+		return frame->getView (0);
+	}
+
 	bool canHandleCommand (const Command& command) override
 	{
+		bool canHandle = false;
 		if (modelBinding)
 		{
 			if (auto commandHandler = dynamicPtrCast<ICommandHandler> (modelBinding))
-				return commandHandler->canHandleCommand (command);
+				canHandle = commandHandler->canHandleCommand (command);
 		}
-		if (customization)
+		if (!canHandle && customization)
 		{
 			if (auto commandHandler = dynamicPtrCast<ICommandHandler> (customization))
-				return commandHandler->canHandleCommand (command);
+				canHandle = commandHandler->canHandleCommand (command);
 		}
-		return false;
+		if (!canHandle)
+		{
+			if (auto view = currentCommandHandlerCandidate ())
+			{
+				if (auto viewController = getViewController(view, true))
+				{
+					if (auto viewCommandHandler = dynamic_cast<ICommandHandler*>(viewController))
+					{
+						canHandle = viewCommandHandler->canHandleCommand (command);
+					}
+				}
+			}
+		}
+		return canHandle;
 	}
 
 	bool handleCommand (const Command& command) override
 	{
+		bool handled = false;
 		if (modelBinding)
 		{
 			if (auto commandHandler = dynamicPtrCast<ICommandHandler> (modelBinding))
-				return commandHandler->handleCommand (command);
+				handled = commandHandler->handleCommand (command);
 		}
-		if (customization)
+		if (!handled && customization)
 		{
 			if (auto commandHandler = dynamicPtrCast<ICommandHandler> (customization))
-				return commandHandler->handleCommand (command);
+				handled = commandHandler->handleCommand (command);
 		}
-		return false;
+		if (!handled)
+		{
+			if (auto view = currentCommandHandlerCandidate ())
+			{
+				if (auto viewController = getViewController(view, true))
+				{
+					if (auto viewCommandHandler = dynamic_cast<ICommandHandler*>(viewController))
+					{
+						handled = viewCommandHandler->handleCommand (command);
+					}
+				}
+			}
+		}
+		return handled;
 	}
 
 	void initModelValues (const ModelBindingPtr& modelHandler)
