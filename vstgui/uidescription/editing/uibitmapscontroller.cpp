@@ -9,8 +9,11 @@
 #include "uibasedatasource.h"
 #include "uieditcontroller.h"
 #include "uidialogcontroller.h"
+#include "uiviewcreatecontroller.h"
+#include "../detail/uiviewcreatorattributes.h"
 #include "../../lib/cbitmap.h"
 #include "../../lib/cbitmapfilter.h"
+#include "../../lib/cdropsource.h"
 #include "../../lib/cfileselector.h"
 #include "../../lib/idatapackage.h"
 #include "../../lib/cvstguitimer.h"
@@ -155,6 +158,9 @@ protected:
 	void dbOnDragExitCell (int32_t row, int32_t column, IDataPackage* drag, CDataBrowser* browser) override;
 	bool dbOnDropInCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser) override;
 
+	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) override;
+	CMouseEventResult dbOnMouseMoved (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) override;
+
 	SharedPointer<CColorChooser> colorChooser;
 	bool dragContainsBitmaps;
 };
@@ -164,6 +170,43 @@ UIBitmapsDataSource::UIBitmapsDataSource (UIDescription* description, IActionPer
 : UIBaseDataSource (description, actionPerformer, UIDescription::kMessageBitmapChanged, delegate)
 , dragContainsBitmaps (false)
 {
+}
+
+//----------------------------------------------------------------------------------------------------
+CMouseEventResult UIBitmapsDataSource::dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser)
+{
+	return kMouseEventHandled;
+}
+
+//----------------------------------------------------------------------------------------------------
+CMouseEventResult UIBitmapsDataSource::dbOnMouseMoved (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser)
+{
+	if (buttons.isLeftButton ())
+	{
+		if (auto bitmap = getSelectedBitmap ())
+		{
+			UIAttributes attr;
+			attr.setAttribute (UIViewCreator::kAttrBitmap, getSelectedBitmapName ());
+			attr.setPointAttribute (UIViewCreator::kAttrSize, bitmap->getSize ());
+			const auto factory =
+			    dynamic_cast<const UIViewFactory*> (description->getViewFactory ());
+			if (auto selection = createSelectionFromViewName (UIViewCreator::kCView, factory,
+			                                                  description, &attr))
+			{
+				CMemoryStream stream (1024, 1024, false);
+				if (selection->store (stream, description))
+				{
+					stream.end ();
+					auto dropSource = CDropSource::create (stream.getBuffer (),
+					                                       static_cast<uint32_t> (stream.tell ()),
+					                                       CDropSource::kText);
+					browser->doDrag (dropSource, {}, bitmap);
+					return kMouseMoveEventHandledButDontNeedMoreEvents;
+				}
+			}
+		}
+	}
+	return kMouseEventHandled;
 }
 
 //----------------------------------------------------------------------------------------------------
