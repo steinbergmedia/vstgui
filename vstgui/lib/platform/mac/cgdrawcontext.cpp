@@ -281,7 +281,7 @@ void CGDrawContext::restoreGlobalState ()
 //-----------------------------------------------------------------------------
 void CGDrawContext::setGlobalAlpha (float newAlpha)
 {
-	if (newAlpha == currentState.globalAlpha)
+	if (newAlpha == getCurrentState ().globalAlpha)
 		return;
 
 	CGContextSetAlpha (cgContext, newAlpha);
@@ -292,7 +292,7 @@ void CGDrawContext::setGlobalAlpha (float newAlpha)
 //-----------------------------------------------------------------------------
 void CGDrawContext::setLineStyle (const CLineStyle& style)
 {
-	if (currentState.lineStyle == style)
+	if (getCurrentState ().lineStyle == style)
 		return;
 
 	CDrawContext::setLineStyle (style);
@@ -301,7 +301,7 @@ void CGDrawContext::setLineStyle (const CLineStyle& style)
 //-----------------------------------------------------------------------------
 void CGDrawContext::setLineWidth (CCoord width)
 {
-	if (currentState.frameWidth == width)
+	if (getCurrentState ().frameWidth == width)
 		return;
 
 	CGContextSetLineWidth (cgContext, static_cast<CGFloat> (width));
@@ -436,8 +436,8 @@ void CGDrawContext::drawPolygon (const PointList& polygonPointList, const CDrawS
 //-----------------------------------------------------------------------------
 void CGDrawContext::applyLineWidthCTM (CGContextRef context) const
 {
-	int32_t frameWidth = static_cast<int32_t> (currentState.frameWidth);
-	if (static_cast<CCoord> (frameWidth) == currentState.frameWidth && frameWidth % 2)
+	int32_t frameWidth = static_cast<int32_t> (getCurrentState ().frameWidth);
+	if (static_cast<CCoord> (frameWidth) == getCurrentState ().frameWidth && frameWidth % 2)
 		CGContextTranslateCTM (context, 0.5, 0.5);
 }
 
@@ -644,7 +644,7 @@ void CGDrawContext::drawCGImageRef (CGContextRef context, CGImageRef image, CGLa
 	CRect rect (inRect);
 	CPoint offset (inOffset);
 	
-	CGContextSetAlpha (context, (CGFloat)alpha*currentState.globalAlpha);
+	CGContextSetAlpha (context, (CGFloat)alpha*getCurrentState ().globalAlpha);
 	
 	CGRect dest;
 	dest.origin.x = static_cast<CGFloat> (rect.left - offset.x);
@@ -702,7 +702,7 @@ void CGDrawContext::clearRect (const CRect& rect)
 //-----------------------------------------------------------------------------
 void CGDrawContext::setFontColor (const CColor& color)
 {
-	if (currentState.fontColor == color)
+	if (getCurrentState ().fontColor == color)
 		return;
 
 	CDrawContext::setFontColor (color);
@@ -711,7 +711,7 @@ void CGDrawContext::setFontColor (const CColor& color)
 //-----------------------------------------------------------------------------
 void CGDrawContext::setFrameColor (const CColor& color)
 {
-	if (currentState.frameColor == color)
+	if (getCurrentState ().frameColor == color)
 		return;
 	
 	if (cgContext)
@@ -723,7 +723,7 @@ void CGDrawContext::setFrameColor (const CColor& color)
 //-----------------------------------------------------------------------------
 void CGDrawContext::setFillColor (const CColor& color)
 {
-	if (currentState.fillColor == color)
+	if (getCurrentState ().fillColor == color)
 		return;
 
 	if (cgContext)
@@ -741,12 +741,12 @@ CGContextRef CGDrawContext::beginCGContext (bool swapYAxis, bool integralOffset)
 {
 	if (cgContext)
 	{
-		if (currentState.clipRect.isEmpty ())
+		if (getCurrentState ().clipRect.isEmpty ())
 			return nullptr;
 
 		CGContextSaveGState (cgContext);
 
-		CGRect cgClipRect = CGRectFromCRect (currentState.clipRect);
+		CGRect cgClipRect = CGRectFromCRect (getCurrentState ().clipRect);
 		if (integralOffset)
 			cgClipRect = pixelAlligned (cgClipRect);
 		CGContextClipToRect (cgContext, cgClipRect);
@@ -790,26 +790,26 @@ void CGDrawContext::releaseCGContext (CGContextRef context)
 //-----------------------------------------------------------------------------
 void CGDrawContext::applyLineStyle (CGContextRef context)
 {
-	switch (currentState.lineStyle.getLineCap ())
+	switch (getCurrentState ().lineStyle.getLineCap ())
 	{
 		case CLineStyle::kLineCapButt: CGContextSetLineCap (context, kCGLineCapButt); break;
 		case CLineStyle::kLineCapRound: CGContextSetLineCap (context, kCGLineCapRound); break;
 		case CLineStyle::kLineCapSquare: CGContextSetLineCap (context, kCGLineCapSquare); break;
 	}
-	switch (currentState.lineStyle.getLineJoin ())
+	switch (getCurrentState ().lineStyle.getLineJoin ())
 	{
 		case CLineStyle::kLineJoinMiter: CGContextSetLineJoin (context, kCGLineJoinMiter); break;
 		case CLineStyle::kLineJoinRound: CGContextSetLineJoin (context, kCGLineJoinRound); break;
 		case CLineStyle::kLineJoinBevel: CGContextSetLineJoin (context, kCGLineJoinBevel); break;
 	}
-	if (currentState.lineStyle.getDashCount () > 0)
+	if (getCurrentState ().lineStyle.getDashCount () > 0)
 	{
-		CGFloat* dashLengths = new CGFloat [currentState.lineStyle.getDashCount ()];
-		for (uint32_t i = 0; i < currentState.lineStyle.getDashCount (); i++)
+		CGFloat* dashLengths = new CGFloat [getCurrentState ().lineStyle.getDashCount ()];
+		for (uint32_t i = 0; i < getCurrentState ().lineStyle.getDashCount (); i++)
 		{
-			dashLengths[i] = static_cast<CGFloat> (currentState.frameWidth * currentState.lineStyle.getDashLengths ()[i]);
+			dashLengths[i] = static_cast<CGFloat> (getCurrentState ().frameWidth * getCurrentState ().lineStyle.getDashLengths ()[i]);
 		}
-		CGContextSetLineDash (context, static_cast<CGFloat> (currentState.lineStyle.getDashPhase ()), dashLengths, currentState.lineStyle.getDashCount ());
+		CGContextSetLineDash (context, static_cast<CGFloat> (getCurrentState ().lineStyle.getDashPhase ()), dashLengths, getCurrentState ().lineStyle.getDashCount ());
 		delete [] dashLengths;
 	}
 }

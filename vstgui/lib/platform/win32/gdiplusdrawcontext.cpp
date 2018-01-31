@@ -104,7 +104,7 @@ void GdiplusDrawContext::drawGraphicsPath (CGraphicsPath* _path, PathDrawMode mo
 	GdiplusGraphicsPath* gdiPlusPath = dynamic_cast<GdiplusGraphicsPath*> (_path);
 	if (gdiPlusPath && pGraphics)
 	{
-		GdiplusDrawScope drawScope (pGraphics, currentState.clipRect, getCurrentTransform ());
+		GdiplusDrawScope drawScope (pGraphics, getCurrentState ().clipRect, getCurrentTransform ());
 
 		Gdiplus::GraphicsPath* path = gdiPlusPath->getGraphicsPath ();
 
@@ -139,7 +139,7 @@ void GdiplusDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradie
 	GdiplusGraphicsPath* gdiPlusPath = dynamic_cast<GdiplusGraphicsPath*> (_path);
 	if (gdiPlusPath && pGraphics)
 	{
-		GdiplusDrawScope drawScope (pGraphics, currentState.clipRect, getCurrentTransform ());
+		GdiplusDrawScope drawScope (pGraphics, getCurrentState ().clipRect, getCurrentTransform ());
 
 		Gdiplus::GraphicsPath* path = gdiPlusPath->getGraphicsPath ();
 
@@ -157,7 +157,7 @@ void GdiplusDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradie
 		for (CGradient::ColorStopMap::const_iterator it = gradient.getColorStops ().begin (); it != gradient.getColorStops ().end (); ++it, ++index)
 		{
 			CColor color = it->second;
-			color.alpha = static_cast<uint8_t> ((float)color.alpha * currentState.globalAlpha);
+			color.alpha = static_cast<uint8_t> ((float)color.alpha * getCurrentState ().globalAlpha);
 			colors[index] = createGdiPlusColor (color);
 			positions[index] = (Gdiplus::REAL)it->first;
 		}
@@ -185,7 +185,7 @@ void GdiplusDrawContext::fillRadialGradient (CGraphicsPath* _path, const CGradie
 	GdiplusGraphicsPath* gdiPlusPath = dynamic_cast<GdiplusGraphicsPath*> (_path);
 	if (gdiPlusPath && pGraphics)
 	{
-		GdiplusDrawScope drawScope (pGraphics, currentState.clipRect, getCurrentTransform ());
+		GdiplusDrawScope drawScope (pGraphics, getCurrentState ().clipRect, getCurrentTransform ());
 
 		Gdiplus::GraphicsPath* path = gdiPlusPath->getGraphicsPath ();
 
@@ -217,7 +217,7 @@ void GdiplusDrawContext::fillRadialGradient (CGraphicsPath* _path, const CGradie
 		for (CGradient::ColorStopMap::const_iterator it = gradient.getColorStops ().begin (); it != gradient.getColorStops ().end (); ++it, ++index)
 		{
 			CColor color = it->second;
-			color.alpha = static_cast<uint8_t>((float)color.alpha * currentState.globalAlpha);
+			color.alpha = static_cast<uint8_t>((float)color.alpha * getCurrentState ().globalAlpha);
 			colors[index] = createGdiPlusColor (color);
 			positions[index] = (Gdiplus::REAL)it->first;
 		}
@@ -238,7 +238,7 @@ void GdiplusDrawContext::drawLine (const LinePair& line)
 {
 	if (pGraphics && pPen)
 	{
-		GdiplusDrawScope drawScope (pGraphics, currentState.clipRect, getCurrentTransform ());
+		GdiplusDrawScope drawScope (pGraphics, getCurrentState ().clipRect, getCurrentTransform ());
 
 		CPoint p1 (line.first);
 		CPoint p2 (line.second);
@@ -264,7 +264,7 @@ void GdiplusDrawContext::drawPolygon (const PointList& polygonPointList, const C
 	if (polygonPointList.size () == 0)
 		return;
 
-	GdiplusDrawScope drawScope (pGraphics, currentState.clipRect, getCurrentTransform ());
+	GdiplusDrawScope drawScope (pGraphics, getCurrentState ().clipRect, getCurrentTransform ());
 
 	Gdiplus::PointF points[30];
 	Gdiplus::PointF* polyPoints;
@@ -301,7 +301,7 @@ void GdiplusDrawContext::drawRect (const CRect &_rect, const CDrawStyle drawStyl
 {
 	if (pGraphics)
 	{
-		GdiplusDrawScope drawScope (pGraphics, currentState.clipRect, getCurrentTransform ());
+		GdiplusDrawScope drawScope (pGraphics, getCurrentState ().clipRect, getCurrentTransform ());
 
 		CRect rect (_rect);
 		rect.normalize ();
@@ -325,7 +325,7 @@ void GdiplusDrawContext::drawArc (const CRect& rect, const float _startAngle, co
 {
 	if (pGraphics)
 	{
-		GdiplusDrawScope drawScope (pGraphics, currentState.clipRect, getCurrentTransform ());
+		GdiplusDrawScope drawScope (pGraphics, getCurrentState ().clipRect, getCurrentTransform ());
 
 		float endAngle = _endAngle;
 		if (endAngle < _startAngle)
@@ -346,7 +346,7 @@ void GdiplusDrawContext::drawEllipse (const CRect &_rect, const CDrawStyle drawS
 {
 	if (pGraphics)
 	{
-		GdiplusDrawScope drawScope (pGraphics, currentState.clipRect, getCurrentTransform ());
+		GdiplusDrawScope drawScope (pGraphics, getCurrentState ().clipRect, getCurrentTransform ());
 
 		CRect rect (_rect);
 		rect.normalize ();
@@ -376,7 +376,7 @@ void GdiplusDrawContext::drawPoint (const CPoint &point, const CColor& color)
 //-----------------------------------------------------------------------------
 void GdiplusDrawContext::drawBitmap (CBitmap* cbitmap, const CRect& dest, const CPoint& offset, float alpha)
 {
-	alpha *= currentState.globalAlpha;
+	alpha *= getCurrentState ().globalAlpha;
 	if (alpha == 0.f || pGraphics == 0)
 		return;
 	IPlatformBitmap* platformBitmap = cbitmap ? cbitmap->getPlatformBitmap () : 0;
@@ -384,7 +384,7 @@ void GdiplusDrawContext::drawBitmap (CBitmap* cbitmap, const CRect& dest, const 
 	Gdiplus::Bitmap* bitmap = gpb ? gpb->getBitmap () : 0;
 	if (bitmap)
 	{
-		GdiplusDrawScope drawScope (pGraphics, currentState.clipRect, getCurrentTransform ());
+		GdiplusDrawScope drawScope (pGraphics, getCurrentState ().clipRect, getCurrentTransform ());
 
 		Gdiplus::ImageAttributes imageAtt;
 		if (alpha != 1.f)
@@ -485,7 +485,7 @@ void GdiplusDrawContext::clearRect (const CRect& rect)
 //-----------------------------------------------------------------------------
 void GdiplusDrawContext::setLineStyle (const CLineStyle& style)
 {
-	if (currentState.lineStyle == style)
+	if (getCurrentState ().lineStyle == style)
 		return;
 	setLineStyleInternal (style);
 	COffscreenContext::setLineStyle (style);
@@ -534,7 +534,7 @@ void GdiplusDrawContext::setLineStyleInternal (const CLineStyle& style)
 //-----------------------------------------------------------------------------
 void GdiplusDrawContext::setLineWidth (CCoord width)
 {
-	if (currentState.frameWidth == width)
+	if (getCurrentState ().frameWidth == width)
 		return;
 	setLineWidthInternal (width);
 	COffscreenContext::setLineWidth (width);
@@ -550,7 +550,7 @@ void GdiplusDrawContext::setLineWidthInternal (CCoord width)
 //-----------------------------------------------------------------------------
 void GdiplusDrawContext::setDrawMode (CDrawMode mode)
 {
-	if (currentState.drawMode == mode)
+	if (getCurrentState ().drawMode == mode)
 		return;
 	setDrawModeInternal (mode);
 	COffscreenContext::setDrawMode (mode);
@@ -583,7 +583,7 @@ void GdiplusDrawContext::resetClipRect ()
 //-----------------------------------------------------------------------------
 void GdiplusDrawContext::setFillColor (const CColor& color)
 {
-	if (currentState.fillColor == color)
+	if (getCurrentState ().fillColor == color)
 		return;
 	setFillColorInternal (color);
 	COffscreenContext::setFillColor (color);
@@ -593,13 +593,13 @@ void GdiplusDrawContext::setFillColor (const CColor& color)
 void GdiplusDrawContext::setFillColorInternal (const CColor& color)
 {
 	if (pBrush)
-		pBrush->SetColor (Gdiplus::Color ((BYTE)((float)color.alpha * currentState.globalAlpha), color.red, color.green, color.blue));
+		pBrush->SetColor (Gdiplus::Color ((BYTE)((float)color.alpha * getCurrentState ().globalAlpha), color.red, color.green, color.blue));
 }
 
 //-----------------------------------------------------------------------------
 void GdiplusDrawContext::setFrameColor (const CColor& color)
 {
-	if (currentState.frameColor == color)
+	if (getCurrentState ().frameColor == color)
 		return;
 	setFrameColorInternal (color);
 	COffscreenContext::setFrameColor (color);
@@ -609,13 +609,13 @@ void GdiplusDrawContext::setFrameColor (const CColor& color)
 void GdiplusDrawContext::setFrameColorInternal (const CColor& color)
 {
 	if (pPen)
-		pPen->SetColor (Gdiplus::Color ((BYTE)((float)color.alpha * currentState.globalAlpha), color.red, color.green, color.blue));
+		pPen->SetColor (Gdiplus::Color ((BYTE)((float)color.alpha * getCurrentState ().globalAlpha), color.red, color.green, color.blue));
 }
 
 //-----------------------------------------------------------------------------
 void GdiplusDrawContext::setFontColor (const CColor& color)
 {
-	if (currentState.fontColor == color)
+	if (getCurrentState ().fontColor == color)
 		return;
 	setFontColorInternal (color);
 	COffscreenContext::setFontColor (color);
@@ -625,18 +625,18 @@ void GdiplusDrawContext::setFontColor (const CColor& color)
 void GdiplusDrawContext::setFontColorInternal (const CColor& color)
 {
 	if (pFontBrush)
-		pFontBrush->SetColor (Gdiplus::Color ((BYTE)((float)color.alpha * currentState.globalAlpha), color.red, color.green, color.blue));
+		pFontBrush->SetColor (Gdiplus::Color ((BYTE)((float)color.alpha * getCurrentState ().globalAlpha), color.red, color.green, color.blue));
 }
 
 //-----------------------------------------------------------------------------
 void GdiplusDrawContext::setGlobalAlpha (float newAlpha)
 {
-	if (currentState.globalAlpha == newAlpha)
+	if (getCurrentState ().globalAlpha == newAlpha)
 		return;
 	COffscreenContext::setGlobalAlpha (newAlpha);
-	setFrameColorInternal (currentState.frameColor);
-	setFillColorInternal (currentState.fillColor);
-	setFontColorInternal (currentState.fontColor);
+	setFrameColorInternal (getCurrentState ().frameColor);
+	setFillColorInternal (getCurrentState ().fillColor);
+	setFontColorInternal (getCurrentState ().fontColor);
 }
 
 //-----------------------------------------------------------------------------
@@ -648,46 +648,46 @@ void GdiplusDrawContext::saveGlobalState ()
 //-----------------------------------------------------------------------------
 void GdiplusDrawContext::restoreGlobalState ()
 {
-	CColor prevFillColor = currentState.fillColor;
-	CColor prevFrameColor = currentState.frameColor;
-	CColor prevFontColor = currentState.fontColor;
-	CLineStyle prevLineStye = currentState.lineStyle;
-	CCoord prevFrameWidth = currentState.frameWidth;
-	CDrawMode prevDrawMode = currentState.drawMode;
-	float prevAlpha = currentState.globalAlpha;
+	CColor prevFillColor = getCurrentState ().fillColor;
+	CColor prevFrameColor = getCurrentState ().frameColor;
+	CColor prevFontColor = getCurrentState ().fontColor;
+	CLineStyle prevLineStye = getCurrentState ().lineStyle;
+	CCoord prevFrameWidth = getCurrentState ().frameWidth;
+	CDrawMode prevDrawMode = getCurrentState ().drawMode;
+	float prevAlpha = getCurrentState ().globalAlpha;
 	COffscreenContext::restoreGlobalState ();
-	if (prevAlpha != currentState.globalAlpha)
+	if (prevAlpha != getCurrentState ().globalAlpha)
 	{
-		float prevAlpha = currentState.globalAlpha;
-		currentState.globalAlpha = -1.f;
+		float prevAlpha = getCurrentState ().globalAlpha;
+		getCurrentState ().globalAlpha = -1.f;
 		setGlobalAlpha (prevAlpha);
 	}
 	else
 	{
-		if (prevFillColor != currentState.fillColor)
+		if (prevFillColor != getCurrentState ().fillColor)
 		{
-			setFillColorInternal (currentState.fillColor);
+			setFillColorInternal (getCurrentState ().fillColor);
 		}
-		if (prevFrameColor != currentState.frameColor)
+		if (prevFrameColor != getCurrentState ().frameColor)
 		{
-			setFrameColorInternal (currentState.frameColor);
+			setFrameColorInternal (getCurrentState ().frameColor);
 		}
-		if (prevFontColor != currentState.fontColor)
+		if (prevFontColor != getCurrentState ().fontColor)
 		{
-			setFontColorInternal (currentState.fontColor);
+			setFontColorInternal (getCurrentState ().fontColor);
 		}
 	}
-	if (prevLineStye != currentState.lineStyle)
+	if (prevLineStye != getCurrentState ().lineStyle)
 	{
-		setLineStyleInternal (currentState.lineStyle);
+		setLineStyleInternal (getCurrentState ().lineStyle);
 	}
-	if (prevFrameWidth != currentState.frameWidth)
+	if (prevFrameWidth != getCurrentState ().frameWidth)
 	{
-		setLineWidthInternal (currentState.frameWidth);
+		setLineWidthInternal (getCurrentState ().frameWidth);
 	}
-	if (prevDrawMode != currentState.drawMode)
+	if (prevDrawMode != getCurrentState ().drawMode)
 	{
-		setDrawModeInternal (currentState.drawMode);
+		setDrawModeInternal (getCurrentState ().drawMode);
 	}
 }
 

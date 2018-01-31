@@ -218,12 +218,13 @@ protected:
 	};
 	/// @endcond
 
+	const CDrawContextState& getCurrentState () const { return currentState; }
+private:
 	UTF8String* drawStringHelper;
 	CRect surfaceRect;
 
 	CDrawContextState currentState;
 
-private:
 	std::stack<CDrawContextState> globalStatesStack;
 	std::stack<CGraphicsTransform> transformStack;
 };
