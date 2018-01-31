@@ -185,6 +185,7 @@ public:
 	virtual void endDraw () {}
 
 protected:
+	CDrawContext () = delete;
 	explicit CDrawContext (const CRect& surfaceRect);
 	~CDrawContext () noexcept override;
 
@@ -220,7 +221,7 @@ protected:
 
 	const CDrawContextState& getCurrentState () const { return currentState; }
 private:
-	UTF8String* drawStringHelper;
+	UTF8String* drawStringHelper {nullptr};
 	CRect surfaceRect;
 
 	CDrawContextState currentState;
