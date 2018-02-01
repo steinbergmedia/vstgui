@@ -258,28 +258,28 @@ int32_t CSegmentButton::onKeyDown (VstKeyCode& keyCode)
 		{
 			case VKEY_LEFT:
 			{
-				if (style == kHorizontal && newIndex > 0)
+				if (style == Style::kHorizontal && newIndex > 0)
 					newIndex--;
 				result = 1;
 				break;
 			}
 			case VKEY_RIGHT:
 			{
-				if (style == kHorizontal && newIndex < segments.size () - 1)
+				if (style == Style::kHorizontal && newIndex < segments.size () - 1)
 					newIndex++;
 				result = 1;
 				break;
 			}
 			case VKEY_UP:
 			{
-				if (style == kVertical && newIndex > 0)
+				if (style == Style::kVertical && newIndex > 0)
 					newIndex--;
 				result = 1;
 				break;
 			}
 			case VKEY_DOWN:
 			{
-				if (style == kVertical && newIndex < segments.size () - 1)
+				if (style == Style::kVertical && newIndex < segments.size () - 1)
 					newIndex++;
 				result = 1;
 				break;
@@ -306,7 +306,7 @@ void CSegmentButton::draw (CDrawContext* pContext)
 //-----------------------------------------------------------------------------
 void CSegmentButton::drawRect (CDrawContext* pContext, const CRect& dirtyRect)
 {
-	bool isHorizontal = style == kHorizontal;
+	bool isHorizontal = style == Style::kHorizontal;
 	bool drawLines = getFrameWidth () != 0. && getFrameColor ().alpha != 0;
 	auto lineWidth = getFrameWidth ();
 	if (lineWidth < 0.)
@@ -376,7 +376,7 @@ void CSegmentButton::updateSegmentSizes ()
 {
 	if (isAttached () && !segments.empty ())
 	{
-		if (style == kHorizontal)
+		if (style == Style::kHorizontal)
 		{
 			CCoord width = getWidth () / segments.size ();
 			CRect r (getViewSize ());

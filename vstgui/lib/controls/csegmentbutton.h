@@ -23,7 +23,7 @@ namespace VSTGUI {
 class CSegmentButton : public CControl
 {
 public:
-	enum Style {
+	enum class Style {
 		kHorizontal,
 		kVertical
 	};
@@ -124,7 +124,7 @@ private:
 	CCoord textMargin {0.};
 	CCoord roundRadius {5.};
 	CCoord frameWidth {1.};
-	Style style {kHorizontal};
+	Style style {Style::kHorizontal};
 	CDrawMethods::TextTruncateMode textTruncateMode {CDrawMethods::kTextTruncateNone};
 };
 

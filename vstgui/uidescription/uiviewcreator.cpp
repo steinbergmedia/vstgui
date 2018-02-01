@@ -2524,7 +2524,7 @@ public:
 
 		attr = attributes.getAttributeValue (kAttrStyle);
 		if (attr)
-			button->setStyle (*attr == "horizontal" ? CSegmentButton::kHorizontal : CSegmentButton::kVertical);
+			button->setStyle (*attr == "horizontal" ? CSegmentButton::Style::kHorizontal : CSegmentButton::Style::kVertical);
 
 		CColor color;
 		if (stringToColor (attributes.getAttributeValue (kAttrTextColor), color, description))
@@ -2672,7 +2672,8 @@ public:
 		}
 		else if (attributeName == kAttrStyle)
 		{
-			stringValue = button->getStyle() == CSegmentButton::kHorizontal ? "horizontal" : "vertical";
+			stringValue = button->getStyle () == CSegmentButton::Style::kHorizontal ? "horizontal" :
+			                                                                          "vertical";
 			return true;
 		}
 		else if (attributeName == kAttrIconTextMargin)
