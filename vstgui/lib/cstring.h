@@ -18,9 +18,15 @@ namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
 template<typename BaseIterator>
-class UTF8CodePointIterator : public std::iterator<std::bidirectional_iterator_tag, char32_t>
+class UTF8CodePointIterator
 {
 public:
+	using iterator_category = std::bidirectional_iterator_tag;
+	using value_type = char32_t;
+	using difference_type = ptrdiff_t;
+	using pointer = char32_t*;
+	using reference = char32_t&;
+
 	using CodePoint = value_type;
 	
 	UTF8CodePointIterator () noexcept = default;
