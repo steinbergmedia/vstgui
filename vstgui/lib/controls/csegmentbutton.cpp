@@ -25,7 +25,7 @@ void CSegmentButton::addSegment (const Segment& segment, uint32_t index)
 		segments.emplace_back (segment);
 	else if (index < segments.size ())
 	{
-		Segments::iterator it = segments.begin ();
+		auto it = segments.begin ();
 		std::advance (it, index);
 		segments.insert (it, segment);
 	}
@@ -39,7 +39,7 @@ void CSegmentButton::addSegment (Segment&& segment, uint32_t index)
 		segments.emplace_back (std::move (segment));
 	else if (index < segments.size ())
 	{
-		Segments::iterator it = segments.begin ();
+		auto it = segments.begin ();
 		std::advance (it, index);
 		segments.insert (it, std::move (segment));
 	}
@@ -51,7 +51,7 @@ void CSegmentButton::removeSegment (uint32_t index)
 {
 	if (index < segments.size ())
 	{
-		Segments::iterator it = segments.begin ();
+		auto it = segments.begin ();
 		std::advance (it, index);
 		segments.erase (it);
 	}
@@ -333,9 +333,9 @@ void CSegmentButton::drawRect (CDrawContext* pContext, const CRect& dirtyRect)
 		pContext->fillLinearGradient (path, *gradient, getViewSize ().getTopLeft (), getViewSize ().getBottomLeft ());
 	}
 	uint32_t selectedIndex = getSelectedSegment ();
-	for (uint32_t index = 0; index < segments.size (); ++index)
+	for (uint32_t index = 0, end = segments.size (); index < end; ++index)
 	{
-		Segment& segment = segments[index];
+		const auto& segment = segments[index];
 		if (!dirtyRect.rectOverlap (segment.rect))
 			continue;
 		CRect oldClip;
