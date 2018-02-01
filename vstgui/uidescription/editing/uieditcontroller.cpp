@@ -506,12 +506,12 @@ CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes
 			backSelectControl->setFrameWidth (-1.);
 			backSelectControl->setRoundRadius (2.);
 			auto bitmapSize = splitView->getSeparatorWidth () - 12;
-			CSegmentButton::Segment segment {};
-			segment.iconPosition = CDrawMethods::kIconCenterAbove;
 			for (auto& color : editViewBackgroundColors)
 			{
+				CSegmentButton::Segment segment {};
+				segment.iconPosition = CDrawMethods::kIconCenterAbove;
 				segment.icon = segment.iconHighlighted = createColorBitmap ({bitmapSize, bitmapSize}, color);
-				backSelectControl->addSegment (segment);
+				backSelectControl->addSegment (std::move (segment));
 			}
 			splitView->addViewToSeparator (0, backSelectControl);
 

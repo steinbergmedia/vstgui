@@ -39,7 +39,7 @@ public:
 		CRect rect;
 	};
 	using Segments = std::vector<Segment>;
-	static uint32_t kPushBack;
+	static constexpr uint32_t kPushBack = std::numeric_limits<uint32_t>::max ();
 
 	CSegmentButton (const CRect& size, IControlListener* listener = nullptr, int32_t tag = -1);
 
@@ -47,7 +47,8 @@ public:
 	/// @name Segment Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	void addSegment (Segment segment, uint32_t index = kPushBack);
+	void addSegment (const Segment& segment, uint32_t index = kPushBack);
+	void addSegment (Segment&& segment, uint32_t index = kPushBack);
 	void removeSegment (uint32_t index);
 	void removeAllSegments ();
 	const Segments& getSegments () const { return segments; }

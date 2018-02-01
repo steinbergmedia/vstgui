@@ -10,8 +10,6 @@
 
 namespace VSTGUI {
 
-uint32_t CSegmentButton::kPushBack = std::numeric_limits<uint32_t>::max ();
-
 //-----------------------------------------------------------------------------
 CSegmentButton::CSegmentButton (const CRect& size, IControlListener* listener, int32_t tag)
 : CControl (size, listener, tag)
@@ -21,7 +19,7 @@ CSegmentButton::CSegmentButton (const CRect& size, IControlListener* listener, i
 }
 
 //-----------------------------------------------------------------------------
-void CSegmentButton::addSegment (Segment segment, uint32_t index)
+void CSegmentButton::addSegment (const Segment& segment, uint32_t index)
 {
 	if (index == kPushBack && segments.size () < kPushBack)
 		segments.emplace_back (segment);
@@ -30,6 +28,20 @@ void CSegmentButton::addSegment (Segment segment, uint32_t index)
 		Segments::iterator it = segments.begin ();
 		std::advance (it, index);
 		segments.insert (it, segment);
+	}
+	updateSegmentSizes ();
+}
+
+//-----------------------------------------------------------------------------
+void CSegmentButton::addSegment (Segment&& segment, uint32_t index)
+{
+	if (index == kPushBack && segments.size () < kPushBack)
+		segments.emplace_back (std::move (segment));
+	else if (index < segments.size ())
+	{
+		Segments::iterator it = segments.begin ();
+		std::advance (it, index);
+		segments.insert (it, std::move (segment));
 	}
 	updateSegmentSizes ();
 }

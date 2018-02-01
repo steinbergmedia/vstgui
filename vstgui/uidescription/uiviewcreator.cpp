@@ -2492,7 +2492,7 @@ public:
 				str << i + 1;
 				CSegmentButton::Segment seg;
 				seg.name = str.str ().c_str ();
-				button->addSegment (seg);
+				button->addSegment (std::move (seg));
 			}
 		}
 	}
@@ -2503,7 +2503,7 @@ public:
 		{
 			CSegmentButton::Segment segment;
 			segment.name = name.c_str ();
-			button->addSegment (segment);
+			button->addSegment (std::move (segment));
 		}
 	}
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
