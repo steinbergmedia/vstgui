@@ -2470,6 +2470,9 @@ CTextButtonCreator __gCTextButtonCreator;
 class CSegmentButtonCreator : public ViewCreatorAdapter
 {
 public:
+	static std::string SelectionModeSingle;
+	static std::string SelectionModeMultiple;
+
 	CSegmentButtonCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCSegmentButton; }
 	IdStringPtr getBaseViewName () const override { return kCControl; }
@@ -2573,11 +2576,20 @@ public:
 			else
 				button->setTextTruncateMode (CDrawMethods::kTextTruncateNone);
 		}
+		attr = attributes.getAttributeValue (kAttrSelectionMode);
+		if (attr)
+		{
+			if (*attr == SelectionModeSingle)
+				button->setSelectionMode (CSegmentButton::SelectionMode::kSingle);
+			else if (*attr == SelectionModeMultiple)
+				button->setSelectionMode (CSegmentButton::SelectionMode::kMultiple);
+		}
 		return true;
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const override
 	{
 		attributeNames.emplace_back (kAttrStyle);
+		attributeNames.emplace_back (kAttrSelectionMode);
 		attributeNames.emplace_back (kAttrSegmentNames);
 		attributeNames.emplace_back (kAttrFont);
 		attributeNames.emplace_back (kAttrTextColor);
@@ -2595,6 +2607,7 @@ public:
 	AttrType getAttributeType (const std::string& attributeName) const override
 	{
 		if (attributeName == kAttrStyle) return kListType;
+		if (attributeName == kAttrSelectionMode) return kListType;
 		if (attributeName == kAttrSegmentNames) return kStringType;
 		if (attributeName == kAttrFont) return kFontType;
 		if (attributeName == kAttrTextColor) return kColorType;
@@ -2614,6 +2627,12 @@ public:
 		if (attributeName == kAttrStyle)
 		{
 			return getStandardAttributeListValues (kAttrOrientation, values);
+		}
+		else if (attributeName == kAttrSelectionMode)
+		{
+			values.push_back (&SelectionModeSingle);
+			values.push_back (&SelectionModeMultiple);
+			return true;
 		}
 		else if (attributeName == kAttrTruncateMode)
 		{
@@ -2722,11 +2741,30 @@ public:
 			}
 			return true;
 		}
+		else if (attributeName == kAttrSelectionMode)
+		{
+			switch (button->getSelectionMode ())
+			{
+				case CSegmentButton::SelectionMode::kSingle:
+				{
+					stringValue = SelectionModeSingle;
+					break;
+				}
+				case CSegmentButton::SelectionMode::kMultiple:
+				{
+					stringValue = SelectionModeMultiple;
+					break;
+				}
+			}
+			return true;
+		}
 		return false;
 	}
 
 };
 CSegmentButtonCreator __gCSegmentButtonCreator;
+std::string CSegmentButtonCreator::SelectionModeSingle = "Single";
+std::string CSegmentButtonCreator::SelectionModeMultiple = "Multiple";
 
 //-----------------------------------------------------------------------------
 class CKnobCreator : public ViewCreatorAdapter

@@ -68,7 +68,9 @@ void CSegmentButton::removeAllSegments ()
 //-----------------------------------------------------------------------------
 void CSegmentButton::setSelectedSegment (uint32_t index)
 {
+	segments[getSelectedSegment ()].selected = false;
 	setValueNormalized (static_cast<float> (index) / static_cast<float> (segments.size () - 1));
+	segments[index].selected = true;
 	invalid ();
 }
 
@@ -86,6 +88,20 @@ void CSegmentButton::setStyle (Style newStyle)
 		style = newStyle;
 		updateSegmentSizes ();
 		invalid ();
+	}
+}
+
+//-----------------------------------------------------------------------------
+void CSegmentButton::setSelectionMode (SelectionMode mode)
+{
+	if (mode != selectionMode)
+	{
+		selectionMode = mode;
+		if (isAttached ())
+		{
+			verifySelections ();
+			invalid ();
+		}
 	}
 }
 
@@ -204,6 +220,7 @@ bool CSegmentButton::attached (CView *parent)
 {
 	if (CControl::attached (parent))
 	{
+		verifySelections ();
 		updateSegmentSizes ();
 		return true;
 	}
@@ -217,6 +234,22 @@ void CSegmentButton::setViewSize (const CRect& rect, bool invalid)
 	updateSegmentSizes ();
 }
 
+//------------------------------------------------------------------------
+void CSegmentButton::selectSegment (uint32_t index, bool state)
+{
+	segments[index].selected = state;
+	auto bitset = static_cast<uint32_t> (value);
+	setBit (bitset, (1 << index), state);
+	value = static_cast<float>(bitset);
+	invalidRect (segments[index].rect);
+}
+
+//------------------------------------------------------------------------
+bool CSegmentButton::isSegmentSelected (uint32_t index) const
+{
+	return segments[index].selected;
+}
+
 //-----------------------------------------------------------------------------
 CMouseEventResult CSegmentButton::onMouseDown (CPoint& where, const CButtonState& buttons)
 {
@@ -224,19 +257,31 @@ CMouseEventResult CSegmentButton::onMouseDown (CPoint& where, const CButtonState
 	{
 		float newValue = 0;
 		float valueOffset = 1.f / (segments.size () - 1);
-		uint32_t currentIndex = getSegmentIndex (getValueNormalized ());
 		for (auto& segment : segments)
 		{
 			if (segment.rect.pointInside (where))
 			{
 				uint32_t newIndex = getSegmentIndex (newValue);
-				if (newIndex != currentIndex)
+				if (selectionMode == SelectionMode::kSingle)
+				{
+					uint32_t currentIndex = getSegmentIndex (getValueNormalized ());
+					if (newIndex != currentIndex)
+					{
+						beginEdit ();
+						segments[currentIndex].selected = false;
+						setSelectedSegment (newIndex);
+						segment.selected = true;
+						valueChanged ();
+						endEdit ();
+						invalid ();
+					}
+				}
+				else
 				{
 					beginEdit ();
-					setSelectedSegment (newIndex);
+					selectSegment (newIndex, !segment.selected);
 					valueChanged ();
 					endEdit ();
-					invalid ();
 				}
 				break;
 			}
@@ -250,7 +295,7 @@ CMouseEventResult CSegmentButton::onMouseDown (CPoint& where, const CButtonState
 int32_t CSegmentButton::onKeyDown (VstKeyCode& keyCode)
 {
 	int32_t result = -1;
-	if (keyCode.modifier == 0 && keyCode.character == 0)
+	if (selectionMode == SelectionMode::kSingle && keyCode.modifier == 0 && keyCode.character == 0)
 	{
 		uint32_t newIndex = getSegmentIndex (getValueNormalized ());
 		uint32_t oldIndex = newIndex;
@@ -330,9 +375,9 @@ void CSegmentButton::drawRect (CDrawContext* pContext, const CRect& dirtyRect)
 	}
 	if (gradient)
 	{
-		pContext->fillLinearGradient (path, *gradient, getViewSize ().getTopLeft (), getViewSize ().getBottomLeft ());
+		pContext->fillLinearGradient (path, *gradient, getViewSize ().getTopLeft (),
+		                              getViewSize ().getBottomLeft ());
 	}
-	uint32_t selectedIndex = getSelectedSegment ();
 	for (uint32_t index = 0, end = segments.size (); index < end; ++index)
 	{
 		const auto& segment = segments[index];
@@ -343,19 +388,29 @@ void CSegmentButton::drawRect (CDrawContext* pContext, const CRect& dirtyRect)
 		CRect clipRect (segment.rect);
 		clipRect.bound (oldClip);
 		pContext->setClipRect (clipRect);
-		bool selected = selectedIndex == index;
-		if (selected && gradientHighlighted)
-			pContext->fillLinearGradient (path, *gradientHighlighted, segment.rect.getTopLeft (), segment.rect.getBottomLeft ());
-		if (selected && segment.backgroundHighlighted)
+		if (segment.selected && gradientHighlighted)
+		{
+			pContext->fillLinearGradient (path, *gradientHighlighted, segment.rect.getTopLeft (),
+			                              segment.rect.getBottomLeft ());
+		}
+		if (segment.selected && segment.backgroundHighlighted)
+		{
 			segment.backgroundHighlighted->draw (pContext, segment.rect);
+		}
 		else if (segment.background)
+		{
 			segment.background->draw (pContext, segment.rect);
-		CDrawMethods::drawIconAndText (pContext, selected ? segment.iconHighlighted : segment.icon, segment.iconPosition, textAlignment, textMargin, segment.rect, segment.name, font, selected ? textColorHighlighted : textColor, textTruncateMode);
+		}
+		CDrawMethods::drawIconAndText (
+		    pContext, segment.selected ? segment.iconHighlighted : segment.icon,
+		    segment.iconPosition, textAlignment, textMargin, segment.rect, segment.name, font,
+		    segment.selected ? textColorHighlighted : textColor, textTruncateMode);
 		pContext->setClipRect (oldClip);
 		if (drawLines && index > 0 && index < segments.size ())
 		{
 			path->beginSubpath (segment.rect.getTopLeft ());
-			path->addLine (isHorizontal ? segment.rect.getBottomLeft () : segment.rect.getTopRight ());
+			path->addLine (isHorizontal ? segment.rect.getBottomLeft () :
+			                              segment.rect.getTopRight ());
 		}
 	}
 	if (drawLines)
@@ -397,6 +452,28 @@ void CSegmentButton::updateSegmentSizes ()
 				segment.rect = r;
 				r.offset (0, height);
 			}
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+void CSegmentButton::verifySelections ()
+{
+	if (selectionMode == SelectionMode::kSingle)
+	{
+		auto selectedIndex = getSelectedSegment ();
+		if (selectedIndex > segments.size ())
+			selectedIndex = 0;
+		for (auto& segment : segments)
+			segment.selected = false;
+		setSelectedSegment (selectedIndex);
+	}
+	else
+	{
+		auto bitset = static_cast<uint32_t> (value);
+		for (auto index = 0u; index < segments.size (); ++index)
+		{
+			segments[index].selected = bitset & (1 << index);
 		}
 	}
 }

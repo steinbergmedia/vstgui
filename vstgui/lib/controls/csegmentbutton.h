@@ -28,6 +28,13 @@ public:
 		kVertical
 	};
 	
+	enum class SelectionMode {
+		/** only one segment may be selected */
+		kSingle,
+		/** multiple segments may be selected */
+		kMultiple,
+	};
+	
 	struct Segment {
 		mutable UTF8String name;
 		mutable SharedPointer<CBitmap> icon;
@@ -37,6 +44,7 @@ public:
 		mutable CDrawMethods::IconPosition iconPosition;
 
 		CRect rect;
+		bool selected {false};
 	};
 	using Segments = std::vector<Segment>;
 	static constexpr uint32_t kPushBack = std::numeric_limits<uint32_t>::max ();
@@ -53,8 +61,15 @@ public:
 	void removeAllSegments ();
 	const Segments& getSegments () const { return segments; }
 
+	/** set the selected segment in single selection mode */
 	void setSelectedSegment (uint32_t index);
+	/** get the selected segment in single selection mode */
 	uint32_t getSelectedSegment () const;
+	
+	/** set selection state for a segment in multiple selection mode */
+	void selectSegment (uint32_t index, bool state);
+	/** get selection state for a segment in multiple selection mode */
+	bool isSegmentSelected (uint32_t index) const;
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -63,6 +78,9 @@ public:
 	//@{
 	void setStyle (Style newStyle);
 	Style getStyle () const { return style; }
+
+	void setSelectionMode (SelectionMode mode);
+	SelectionMode getSelectionMode () const { return selectionMode; }
 
 	void setTextTruncateMode (CDrawMethods::TextTruncateMode mode);
 	CDrawMethods::TextTruncateMode getTextTruncateMode () const { return textTruncateMode; }
@@ -111,6 +129,7 @@ public:
 	CLASS_METHODS(CSegmentButton, CControl)
 private:
 	void updateSegmentSizes ();
+	void verifySelections ();
 	uint32_t getSegmentIndex (float value) const;
 
 	Segments segments;
@@ -125,6 +144,7 @@ private:
 	CCoord roundRadius {5.};
 	CCoord frameWidth {1.};
 	Style style {Style::kHorizontal};
+	SelectionMode selectionMode {SelectionMode::kSingle};
 	CDrawMethods::TextTruncateMode textTruncateMode {CDrawMethods::kTextTruncateNone};
 };
 
