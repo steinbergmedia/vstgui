@@ -380,7 +380,7 @@ void CSegmentButton::drawRect (CDrawContext* pContext, const CRect& dirtyRect)
 		pContext->fillLinearGradient (path, *gradient, getViewSize ().getTopLeft (),
 		                              getViewSize ().getBottomLeft ());
 	}
-	for (uint32_t index = 0, end = segments.size (); index < end; ++index)
+	for (uint32_t index = 0u, end = static_cast<uint32_t> (segments.size ()); index < end; ++index)
 	{
 		const auto& segment = segments[index];
 		if (!dirtyRect.rectOverlap (segment.rect))

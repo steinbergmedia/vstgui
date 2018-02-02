@@ -220,6 +220,7 @@ protected:
 	/// @endcond
 
 	const CDrawContextState& getCurrentState () const { return currentState; }
+	CDrawContextState& getCurrentState () { return currentState; }
 private:
 	UTF8String* drawStringHelper {nullptr};
 	CRect surfaceRect;
