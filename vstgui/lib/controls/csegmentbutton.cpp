@@ -68,6 +68,8 @@ void CSegmentButton::removeAllSegments ()
 //-----------------------------------------------------------------------------
 void CSegmentButton::setSelectedSegment (uint32_t index)
 {
+	if (index >= segments.size ())
+		return;
 	segments[getSelectedSegment ()].selected = false;
 	setValueNormalized (static_cast<float> (index) / static_cast<float> (segments.size () - 1));
 	segments[index].selected = true;
