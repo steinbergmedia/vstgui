@@ -11,6 +11,7 @@
 #include "../../lib/controls/ctextedit.h"
 #include "../../lib/controls/coptionmenu.h"
 #include "../../lib/controls/cscrollbar.h"
+#include "../../lib/cgraphicspath.h"
 #include "uieditcontroller.h"
 #include "uiselection.h"
 #include "uiundomanager.h"
@@ -103,6 +104,23 @@ public:
 			context->drawString (getHeaderTitle ().getPlatformString (), size, kCenterText);
 		}
 	}
+
+	static void drawTriangle (CDrawContext* context, const CRect& size)
+	{
+		if (auto path = owned (context->createGraphicsPath ()))
+		{
+			CRect r (size);
+			r.left = r.right - r.getHeight ();
+			r.inset (4, 4);
+			path->beginSubpath (r.getTopLeft ());
+			path->addLine (r.getBottomLeft ());
+			path->addLine (r.right, r.top + r.getHeight () / 2.);
+			path->closeSubpath ();
+			context->setFillColor (CColor (0, 0, 0, 30));
+			context->drawGraphicsPath (path);
+		}
+	}
+
 protected:
 	mutable UTF8String headerTitle;
 	CColor headerBackgroundColor;
@@ -119,6 +137,7 @@ public:
 	void dbCellTextChanged (int32_t row, int32_t column, UTF8StringPtr newText, CDataBrowser* browser) override;
 	void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* textEditControl, CDataBrowser* browser) override;
 	void dbAttached (CDataBrowser* browser) override;
+	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser) override;
 protected:
 	SharedPointer<UIDescription> description;
 	IActionPerformer* actionPerformer;
@@ -157,6 +176,7 @@ protected:
 	void dbSelectionChanged (CDataBrowser* browser) override;
 	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) override;
 	int32_t dbOnKeyDown (const VstKeyCode& key, CDataBrowser* browser) override;
+	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser) override;
 
 	CViewContainer* view;
 	const IViewFactory* viewFactory;
@@ -632,6 +652,17 @@ int32_t UIViewListDataSource::dbOnKeyDown (const VstKeyCode& key, CDataBrowser* 
 }
 
 //----------------------------------------------------------------------------------------------------
+void UIViewListDataSource::dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser)
+{
+	drawRowBackground (context, size, row, flags, browser);
+	auto subview = getSubview (row);
+	auto container = subview ? subview->asViewContainer () : nullptr;
+	if (container)
+		drawTriangle (context, size);
+	drawRowString (context, size, row, flags, browser);
+}
+
+//----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 UITemplatesDataSource::UITemplatesDataSource (IGenericStringListDataBrowserSourceSelectionChanged* delegate, UIDescription* description, IActionPerformer* actionPerformer, const std::string* templateName)
@@ -712,6 +743,15 @@ void UITemplatesDataSource::dbCellSetupTextEdit (int32_t row, int32_t column, CT
 	textEditControl->setHoriAlign (kLeftText);
 	textEditControl->setTextInset (textInset);
 }
+
+//----------------------------------------------------------------------------------------------------
+void UITemplatesDataSource::dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser)
+{
+	drawRowBackground (context, size, row, flags, browser);
+	drawTriangle (context, size);
+	drawRowString (context, size, row, flags, browser);
+}
+
 
 //----------------------------------------------------------------------------------------------------
 void UITemplatesDataSource::dbAttached (CDataBrowser* browser)
