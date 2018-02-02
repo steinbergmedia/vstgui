@@ -19,10 +19,6 @@
 #include "uieditmenucontroller.h"
 #include <cassert>
 
-#ifdef verify
-	#undef verify
-#endif
-
 namespace VSTGUI {
 
 //----------------------------------------------------------------------------------------------------
@@ -169,7 +165,6 @@ protected:
 		return headerTitle;
 	}
 	
-	void verify ();
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 
 	CCoord calculateSubViewWidth (CViewContainer* view);
