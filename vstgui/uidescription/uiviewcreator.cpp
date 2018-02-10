@@ -349,10 +349,23 @@ public:
 #include "uidescription.h"
 #include "../vstgui.h"
 #include <sstream>
-#include <regex>
+#include <array>
 
 namespace VSTGUI {
 namespace UIViewCreator {
+
+static constexpr auto strTrue = "true";
+static constexpr auto strFalse = "false";
+static constexpr auto strHorizontal = "horizontal";
+static constexpr auto strVertical = "vertical";
+
+static constexpr auto strNone = "none";
+static constexpr auto strHead = "head";
+static constexpr auto strTail = "tail";
+
+static constexpr auto strLeft = "left";
+static constexpr auto strRight = "right";
+static constexpr auto strCenter = "center";
 
 //-----------------------------------------------------------------------------
 template<typename T> std::string numberToString (T value)
@@ -452,7 +465,7 @@ static void applyStyleMask (const std::string* value, int32_t mask, int32_t& sty
 {
 	if (value)
 	{
-		setBit (style, mask, *value == "true");
+		setBit (style, mask, *value == strTrue);
 	}
 }
 
@@ -666,17 +679,17 @@ public:
 		}
 		else if (attributeName == kAttrTransparent)
 		{
-			stringValue = view->getTransparency () ? "true" : "false";
+			stringValue = view->getTransparency () ? strTrue : strFalse;
 			return true;
 		}
 		else if (attributeName == kAttrMouseEnabled)
 		{
-			stringValue = view->getMouseEnabled () ? "true" : "false";
+			stringValue = view->getMouseEnabled () ? strTrue : strFalse;
 			return true;
 		}
 		else if (attributeName == kAttrWantsFocus)
 		{
-			stringValue = view->wantsFocus () ? "true" : "false";
+			stringValue = view->wantsFocus () ? strTrue : strFalse;
 			return true;
 		}
 		else if (attributeName == kAttrBitmap)
@@ -765,6 +778,10 @@ CViewCreator __gCViewCreator;
 class CViewContainerCreator : public ViewCreatorAdapter
 {
 public:
+	std::string kStroked = "stroked";
+	std::string kFilledAndStroked = "filled and stroked";
+	std::string kFilled = "filled";
+
 	CViewContainerCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCViewContainer; }
 	IdStringPtr getBaseViewName () const override { return kCView; }
@@ -782,11 +799,11 @@ public:
 		if (attr)
 		{
 			CDrawStyle drawStyle = kDrawFilledAndStroked;
-			if (*attr == "stroked")
+			if (*attr == kStroked)
 			{
 				drawStyle = kDrawStroked;
 			}
-			else if (*attr == "filled")
+			else if (*attr == kFilled)
 			{
 				drawStyle = kDrawFilled;
 			}
@@ -820,9 +837,9 @@ public:
 		{
 			switch (vc->getBackgroundColorDrawStyle ())
 			{
-				case kDrawStroked: stringValue = "stroked"; break;
-				case kDrawFilledAndStroked: stringValue = "filled and stroked"; break;
-				case kDrawFilled: stringValue = "filled"; break;
+				case kDrawStroked: stringValue = kStroked; break;
+				case kDrawFilledAndStroked: stringValue = kFilledAndStroked; break;
+				case kDrawFilled: stringValue = kFilled; break;
 			}
 			return true;
 		}
@@ -833,9 +850,6 @@ public:
 	{
 		if (attributeName == kAttrBackgroundColorDrawStyle)
 		{
-			static std::string kStroked = "stroked";
-			static std::string kFilledAndStroked = "filled and stroked";
-			static std::string kFilled = "filled";
 			values.emplace_back (&kStroked);
 			values.emplace_back (&kFilledAndStroked);
 			values.emplace_back (&kFilled);
@@ -895,6 +909,11 @@ CLayeredViewContainerCreator __CLayeredViewContainerCreator;
 class CRowColumnViewCreator : public ViewCreatorAdapter
 {
 public:
+	std::string kLeftTop = "left-top";
+	std::string kStretch = "stretch";
+	std::string kCenter = strCenter;
+	std::string kRightBottom = "right-bottom";
+
 	CRowColumnViewCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCRowColumnView; }
 	IdStringPtr getBaseViewName () const override { return kCViewContainer; }
@@ -907,7 +926,7 @@ public:
 			return false;
 		const std::string* attr = attributes.getAttributeValue (kAttrRowStyle);
 		if (attr)
-			rcv->setStyle (*attr == "true" ? CRowColumnView::kRowStyle : CRowColumnView::kColumnStyle);
+			rcv->setStyle (*attr == strTrue ? CRowColumnView::kRowStyle : CRowColumnView::kColumnStyle);
 		attr = attributes.getAttributeValue (kAttrSpacing);
 		if (attr)
 		{
@@ -919,18 +938,18 @@ public:
 			rcv->setMargin (margin);
 		attr = attributes.getAttributeValue (kAttrAnimateViewResizing);
 		if (attr)
-			rcv->setAnimateViewResizing (*attr == "true" ? true : false);
+			rcv->setAnimateViewResizing (*attr == strTrue ? true : false);
 		attr = attributes.getAttributeValue (kAttrHideClippedSubviews);
 		if (attr)
-			rcv->setHideClippedSubviews (*attr == "true" ? true : false);
+			rcv->setHideClippedSubviews (*attr == strTrue ? true : false);
 		attr = attributes.getAttributeValue (kAttrEqualSizeLayout);
 		if (attr)
 		{
-			if (*attr == "stretch")
+			if (*attr == kStretch)
 				rcv->setLayoutStyle (CRowColumnView::kStretchEqualy);
-			else if (*attr == "center")
+			else if (*attr == kCenter)
 				rcv->setLayoutStyle (CRowColumnView::kCenterEqualy);
-			else if (*attr == "right-bottom")
+			else if (*attr == kRightBottom)
 				rcv->setLayoutStyle (CRowColumnView::kRightBottomEqualy);
 			else
 				rcv->setLayoutStyle (CRowColumnView::kLeftTopEqualy);
@@ -972,17 +991,17 @@ public:
 			return false;
 		if (attributeName == kAttrRowStyle)
 		{
-			stringValue = rcv->getStyle () == CRowColumnView::kRowStyle ? "true" : "false";
+			stringValue = rcv->getStyle () == CRowColumnView::kRowStyle ? strTrue : strFalse;
 			return true;
 		}
 		if (attributeName == kAttrAnimateViewResizing)
 		{
-			stringValue = rcv->isAnimateViewResizing () ? "true" : "false";
+			stringValue = rcv->isAnimateViewResizing () ? strTrue : strFalse;
 			return true;
 		}
 		if (attributeName == kAttrHideClippedSubviews)
 		{
-			stringValue = rcv->hideClippedSubviews () ? "true" : "false";
+			stringValue = rcv->hideClippedSubviews () ? strTrue : strFalse;
 			return true;
 		}
 		if (attributeName == kAttrSpacing)
@@ -1013,10 +1032,10 @@ public:
 		{
 			switch (rcv->getLayoutStyle ())
 			{
-				case CRowColumnView::kLeftTopEqualy: stringValue = "left-top"; break;
-				case CRowColumnView::kStretchEqualy: stringValue = "stretch"; break;
-				case CRowColumnView::kCenterEqualy: stringValue = "center"; break;
-				case CRowColumnView::kRightBottomEqualy: stringValue = "right-bottom"; break;
+				case CRowColumnView::kLeftTopEqualy: stringValue = kLeftTop; break;
+				case CRowColumnView::kStretchEqualy: stringValue = kStretch; break;
+				case CRowColumnView::kCenterEqualy: stringValue = kCenter; break;
+				case CRowColumnView::kRightBottomEqualy: stringValue = kRightBottom; break;
 			}
 			return true;
 		}
@@ -1026,11 +1045,6 @@ public:
 	{
 		if (attributeName == kAttrEqualSizeLayout)
 		{
-			static std::string kLeftTop = "left-top";
-			static std::string kStretch = "stretch";
-			static std::string kCenter = "center";
-			static std::string kRightBottom = "right-bottom";
-	
 			values.emplace_back (&kLeftTop);
 			values.emplace_back (&kStretch);
 			values.emplace_back (&kCenter);
@@ -1073,7 +1087,7 @@ public:
 		const std::string* attr = attributes.getAttributeValue (kAttrBordered);
 		if (attr)
 		{
-			setBit (style, CScrollView::kDontDrawFrame, *attr != "true");
+			setBit (style, CScrollView::kDontDrawFrame, *attr != strTrue);
 		}
 		applyStyleMask (attributes.getAttributeValue (kAttrOverlayScrollbars), CScrollView::kOverlayScrollbars, style);
 		applyStyleMask (attributes.getAttributeValue (kAttrFollowFocusView), CScrollView::kFollowFocusView, style);
@@ -1172,37 +1186,37 @@ public:
 		}
 		if (attributeName == kAttrHorizontalScrollbar)
 		{
-			stringValue = sc->getStyle () & CScrollView::kHorizontalScrollbar ? "true" : "false";
+			stringValue = sc->getStyle () & CScrollView::kHorizontalScrollbar ? strTrue : strFalse;
 			return true;
 		}
 		if (attributeName == kAttrVerticalScrollbar)
 		{
-			stringValue = sc->getStyle () & CScrollView::kVerticalScrollbar ? "true" : "false";
+			stringValue = sc->getStyle () & CScrollView::kVerticalScrollbar ? strTrue : strFalse;
 			return true;
 		}
 		if (attributeName == kAttrAutoHideScrollbars)
 		{
-			stringValue = sc->getStyle () & CScrollView::kAutoHideScrollbars ? "true" : "false";
+			stringValue = sc->getStyle () & CScrollView::kAutoHideScrollbars ? strTrue : strFalse;
 			return true;
 		}
 		if (attributeName == kAttrAutoDragScrolling)
 		{
-			stringValue = sc->getStyle () & CScrollView::kAutoDragScrolling ? "true" : "false";
+			stringValue = sc->getStyle () & CScrollView::kAutoDragScrolling ? strTrue : strFalse;
 			return true;
 		}
 		if (attributeName == kAttrBordered)
 		{
-			stringValue = sc->getStyle () & CScrollView::kDontDrawFrame ? "false" : "true";
+			stringValue = sc->getStyle () & CScrollView::kDontDrawFrame ? strFalse : strTrue;
 			return true;
 		}
 		if (attributeName == kAttrOverlayScrollbars)
 		{
-			stringValue = sc->getStyle () & CScrollView::kOverlayScrollbars ? "true" : "false";
+			stringValue = sc->getStyle () & CScrollView::kOverlayScrollbars ? strTrue : strFalse;
 			return true;
 		}
 		if (attributeName == kAttrFollowFocusView)
 		{
-			stringValue = sc->getStyle () & CScrollView::kFollowFocusView ? "true" : "false";
+			stringValue = sc->getStyle () & CScrollView::kFollowFocusView ? strTrue : strFalse;
 			return true;
 		}
 		return false;
@@ -1487,17 +1501,17 @@ public:
 		else if (attributeName == kAttrAutosizeToFit)
 		{
 			if (checkbox->getStyle () & CCheckBox::kAutoSizeToFit)
-				stringValue = "true";
+				stringValue = strTrue;
 			else
-				stringValue = "false";
+				stringValue = strFalse;
 			return true;
 		}
 		else if (attributeName == kAttrDrawCrossbox)
 		{
 			if (checkbox->getStyle () & CCheckBox::kDrawCrossBox)
-				stringValue = "true";
+				stringValue = strTrue;
 			else
-				stringValue = "false";
+				stringValue = strFalse;
 			return true;
 		}
 		else if (attributeName == kAttrFrameWidth)
@@ -1564,9 +1578,9 @@ public:
 		if (textAlignmentAttr)
 		{
 			CHoriTxtAlign align = kCenterText;
-			if (*textAlignmentAttr == "left")
+			if (*textAlignmentAttr == strLeft)
 				align = kLeftText;
-			else if (*textAlignmentAttr == "right")
+			else if (*textAlignmentAttr == strRight)
 				align = kRightText;
 			display->setHoriAlign (align);
 		}
@@ -1692,42 +1706,42 @@ public:
 		}
 		else if (attributeName == kAttrFontAntialias)
 		{
-			stringValue = pd->getAntialias () ? "true" : "false";
+			stringValue = pd->getAntialias () ? strTrue : strFalse;
 			return true;
 		}
 		else if (attributeName == kAttrStyle3DIn)
 		{
-			stringValue = pd->getStyle () & k3DIn ? "true" : "false";
+			stringValue = pd->getStyle () & k3DIn ? strTrue : strFalse;
 			return true;
 		}
 		else if (attributeName == kAttrStyle3DOut)
 		{
-			stringValue = pd->getStyle () & k3DOut ? "true" : "false";
+			stringValue = pd->getStyle () & k3DOut ? strTrue : strFalse;
 			return true;
 		}
 		else if (attributeName == kAttrStyleNoFrame)
 		{
-			stringValue = pd->getStyle () & kNoFrame ? "true" : "false";
+			stringValue = pd->getStyle () & kNoFrame ? strTrue : strFalse;
 			return true;
 		}
 		else if (attributeName == kAttrStyleNoText)
 		{
-			stringValue = pd->getStyle () & kNoTextStyle ? "true" : "false";
+			stringValue = pd->getStyle () & kNoTextStyle ? strTrue : strFalse;
 			return true;
 		}
 		else if (attributeName == kAttrStyleNoDraw)
 		{
-			stringValue = pd->getStyle () & kNoDrawStyle ? "true" : "false";
+			stringValue = pd->getStyle () & kNoDrawStyle ? strTrue : strFalse;
 			return true;
 		}
 		else if (attributeName == kAttrStyleShadowText)
 		{
-			stringValue = pd->getStyle () & kShadowText ? "true" : "false";
+			stringValue = pd->getStyle () & kShadowText ? strTrue : strFalse;
 			return true;
 		}
 		else if (attributeName == kAttrStyleRoundRect)
 		{
-			stringValue = pd->getStyle () & kRoundRectStyle ? "true" : "false";
+			stringValue = pd->getStyle () & kRoundRectStyle ? strTrue : strFalse;
 			return true;
 		}
 		else if (attributeName == kAttrRoundRectRadius)
@@ -1745,9 +1759,9 @@ public:
 			CHoriTxtAlign align = pd->getHoriAlign ();
 			switch (align)
 			{
-				case kLeftText: stringValue = "left"; break;
-				case kRightText: stringValue = "right"; break;
-				case kCenterText: stringValue = "center"; break;
+				case kLeftText: stringValue = strLeft; break;
+				case kRightText: stringValue = strRight; break;
+				case kCenterText: stringValue = strCenter; break;
 			}
 			return true;
 		}
@@ -1818,12 +1832,12 @@ public:
 			return false;
 		if (attributeName == kAttrMenuPopupStyle)
 		{
-			stringValue = (menu->getStyle () & kPopupStyle) ? "true" : "false";
+			stringValue = (menu->getStyle () & kPopupStyle) ? strTrue : strFalse;
 			return true;
 		}
 		if (attributeName == kAttrMenuCheckStyle)
 		{
-			stringValue = (menu->getStyle () & kCheckStyle) ? "true" : "false";
+			stringValue = (menu->getStyle () & kCheckStyle) ? strTrue : strFalse;
 			return true;
 		}
 		return false;
@@ -1867,9 +1881,9 @@ public:
 		attr = attributes.getAttributeValue (kAttrTruncateMode);
 		if (attr)
 		{
-			if (*attr == "head")
+			if (*attr == strHead)
 				label->setTextTruncateMode (CTextLabel::kTruncateHead);
-			else if (*attr == "tail")
+			else if (*attr == strTail)
 				label->setTextTruncateMode (CTextLabel::kTruncateTail);
 			else
 				label->setTextTruncateMode (CTextLabel::kTruncateNone);
@@ -1909,8 +1923,8 @@ public:
 		{
 			switch (label->getTextTruncateMode ())
 			{
-				case CTextLabel::kTruncateHead: stringValue = "head"; break;
-				case CTextLabel::kTruncateTail: stringValue = "tail"; break;
+				case CTextLabel::kTruncateHead: stringValue = strHead; break;
+				case CTextLabel::kTruncateTail: stringValue = strTail; break;
 				case CTextLabel::kTruncateNone: stringValue = ""; break;
 			}
 			return true;
@@ -1933,6 +1947,10 @@ CTextLabelCreator __gCTextLabelCreator;
 class CMultiLineTextLabelCreator : public ViewCreatorAdapter
 {
 public:
+	std::string kClip = "clip";
+	std::string kTruncate = "truncate";
+	std::string kWrap = "wrap";
+
 	CMultiLineTextLabelCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCMultiLineTextLabel; }
 	IdStringPtr getBaseViewName () const override { return kCTextLabel; }
@@ -1947,9 +1965,9 @@ public:
 		auto attr = attributes.getAttributeValue (kAttrLineLayout);
 		if (attr)
 		{
-			if (*attr == "truncate")
+			if (*attr == kTruncate)
 				label->setLineLayout (CMultiLineTextLabel::LineLayout::truncate);
-			else if (*attr == "wrap")
+			else if (*attr == kWrap)
 				label->setLineLayout (CMultiLineTextLabel::LineLayout::wrap);
 			else
 				label->setLineLayout (CMultiLineTextLabel::LineLayout::clip);
@@ -1981,15 +1999,15 @@ public:
 		{
 			switch (label->getLineLayout ())
 			{
-				case CMultiLineTextLabel::LineLayout::truncate: stringValue = "truncate"; break;
-				case CMultiLineTextLabel::LineLayout::wrap: stringValue = "wrap"; break;
-				case CMultiLineTextLabel::LineLayout::clip: stringValue = "clip"; break;
+				case CMultiLineTextLabel::LineLayout::truncate: stringValue = kTruncate; break;
+				case CMultiLineTextLabel::LineLayout::wrap: stringValue = kWrap; break;
+				case CMultiLineTextLabel::LineLayout::clip: stringValue = kClip; break;
 			}
 			return true;
 		}
 		else if (attributeName == kAttrAutoHeight)
 		{
-			stringValue = label->getAutoHeight () ? "true" : "false";
+			stringValue = label->getAutoHeight () ? strTrue : strFalse;
 			return true;
 		}
 
@@ -1999,10 +2017,6 @@ public:
 	{
 		if (attributeName == kAttrLineLayout)
 		{
-			static std::string kClip = "clip";
-			static std::string kTruncate = "truncate";
-			static std::string kWrap = "wrap";
-			
 			values.emplace_back (&kClip);
 			values.emplace_back (&kTruncate);
 			values.emplace_back (&kWrap);
@@ -2067,17 +2081,17 @@ public:
 			return false;
 		if (attributeName == kAttrSecureStyle)
 		{
-			stringValue = label->getSecureStyle () ? "true" : "false";
+			stringValue = label->getSecureStyle () ? strTrue : strFalse;
 			return true;
 		}
 		if (attributeName == kAttrImmediateTextChange)
 		{
-			stringValue = label->getImmediateTextChange () ? "true" : "false";
+			stringValue = label->getImmediateTextChange () ? strTrue : strFalse;
 			return true;
 		}
 		if (attributeName == kAttrStyleDoubleClick)
 		{
-			stringValue = label->getStyle () & kDoubleClickStyle ? "true" : "false";
+			stringValue = label->getStyle () & kDoubleClickStyle ? strTrue : strFalse;
 			return true;
 		}
 		if (attributeName == kAttrPlaceholderTitle)
@@ -2144,7 +2158,10 @@ CSearchTextEditCreator __gCSearchTextEditCreator;
 class CTextButtonCreator : public ViewCreatorAdapter
 {
 public:
-	CTextButtonCreator () { UIViewFactory::registerViewCreator (*this); }
+	std::array<std::string, 4> positionsStrings = {
+	    {strLeft, "center above text", "center below text", strRight}};
+
+	CTextButtonCreator () { UIViewFactory::registerViewCreator (*this); vstgui_assert (positionsStrings.size () == CDrawMethods::kIconRight + 1); }
 	IdStringPtr getViewName () const override { return kCTextButton; }
 	IdStringPtr getBaseViewName () const override { return kCControl; }
 	UTF8StringPtr getDisplayName () const override { return "Text Button"; }
@@ -2198,7 +2215,7 @@ public:
 		attr = attributes.getAttributeValue (kAttrKickStyle);
 		if (attr)
 		{
-			button->setStyle (*attr == "true" ? CTextButton::kKickStyle : CTextButton::kOnOffStyle);
+			button->setStyle (*attr == strTrue ? CTextButton::kKickStyle : CTextButton::kOnOffStyle);
 		}
 
 		CBitmap* bitmap;
@@ -2210,32 +2227,20 @@ public:
 		attr = attributes.getAttributeValue (kAttrIconPosition);
 		if (attr)
 		{
-			CDrawMethods::IconPosition pos = CDrawMethods::kIconLeft;
-			if (*attr == "left")
+			auto it = std::find (positionsStrings.begin (), positionsStrings.end (), *attr);
+			if (it != positionsStrings.end ())
 			{
-				pos = CDrawMethods::kIconLeft;
+				auto pos = std::distance (positionsStrings.begin (), it);
+				button->setIconPosition (static_cast<CDrawMethods::IconPosition> (pos));
 			}
-			else if (*attr == "right")
-			{
-				pos = CDrawMethods::kIconRight;
-			}
-			else if (*attr == "center above text")
-			{
-				pos = CDrawMethods::kIconCenterAbove;
-			}
-			else if (*attr == "center below text")
-			{
-				pos = CDrawMethods::kIconCenterBelow;
-			}
-			button->setIconPosition (pos);
 		}
 		attr = attributes.getAttributeValue (kAttrTextAlignment);
 		if (attr)
 		{
 			CHoriTxtAlign align = kCenterText;
-			if (*attr == "left")
+			if (*attr == strLeft)
 				align = kLeftText;
-			else if (*attr == "right")
+			else if (*attr == strRight)
 				align = kRightText;
 			button->setTextAlignment (align);
 		}
@@ -2315,19 +2320,8 @@ public:
 	{
 		if (attributeName == kAttrIconPosition)
 		{
-			static std::string positions[] = {
-				"left",
-				"center above text",
-				"center below text",
-				"right",
-				""
-			};
-			int32_t index = 0;
-			while (positions[index].size () > 0)
-			{
-				values.emplace_back(&positions[index]);
-				index++;
-			}
+			for (const auto& s : positionsStrings)
+				values.emplace_back (&s);
 			return true;
 		}
 		return false;
@@ -2384,7 +2378,7 @@ public:
 		}
 		else if (attributeName == kAttrKickStyle)
 		{
-			stringValue = button->getStyle() == CTextButton::kKickStyle ? "true" : "false";
+			stringValue = button->getStyle() == CTextButton::kKickStyle ? strTrue : strFalse;
 			return true;
 		}
 		else if (attributeName == kAttrIcon)
@@ -2405,29 +2399,9 @@ public:
 		}
 		else if (attributeName == kAttrIconPosition)
 		{
-			switch (button->getIconPosition ())
-			{
-				case CDrawMethods::kIconLeft:
-				{
-					stringValue = "left";
-					break;
-				}
-				case CDrawMethods::kIconRight:
-				{
-					stringValue = "right";
-					break;
-				}
-				case CDrawMethods::kIconCenterAbove:
-				{
-					stringValue = "center above text";
-					break;
-				}
-				case CDrawMethods::kIconCenterBelow:
-				{
-					stringValue = "center below text";
-					break;
-				}
-			}
+			auto pos = button->getIconPosition ();
+			vstgui_assert (pos < positionsStrings.size ());
+			stringValue = positionsStrings[pos];
 			return true;
 		}
 		else if (attributeName == kAttrIconTextMargin)
@@ -2440,9 +2414,9 @@ public:
 			CHoriTxtAlign align = button->getTextAlignment ();
 			switch (align)
 			{
-				case kLeftText: stringValue = "left"; break;
-				case kRightText: stringValue = "right"; break;
-				case kCenterText: stringValue = "center"; break;
+				case kLeftText: stringValue = strLeft; break;
+				case kRightText: stringValue = strRight; break;
+				case kCenterText: stringValue = strCenter; break;
 			}
 			return true;
 		}
@@ -2470,8 +2444,8 @@ CTextButtonCreator __gCTextButtonCreator;
 class CSegmentButtonCreator : public ViewCreatorAdapter
 {
 public:
-	static std::string SelectionModeSingle;
-	static std::string SelectionModeMultiple;
+	std::string SelectionModeSingle = "Single";
+	std::string SelectionModeMultiple = "Multiple";
 
 	CSegmentButtonCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCSegmentButton; }
@@ -2527,7 +2501,7 @@ public:
 
 		attr = attributes.getAttributeValue (kAttrStyle);
 		if (attr)
-			button->setStyle (*attr == "horizontal" ? CSegmentButton::Style::kHorizontal : CSegmentButton::Style::kVertical);
+			button->setStyle (*attr == strHorizontal ? CSegmentButton::Style::kHorizontal : CSegmentButton::Style::kVertical);
 
 		CColor color;
 		if (stringToColor (attributes.getAttributeValue (kAttrTextColor), color, description))
@@ -2549,9 +2523,9 @@ public:
 		if (attr)
 		{
 			CHoriTxtAlign align = kCenterText;
-			if (*attr == "left")
+			if (*attr == strLeft)
 				align = kLeftText;
-			else if (*attr == "right")
+			else if (*attr == strRight)
 				align = kRightText;
 			button->setTextAlignment (align);
 		}
@@ -2569,9 +2543,9 @@ public:
 		attr = attributes.getAttributeValue (kAttrTruncateMode);
 		if (attr)
 		{
-			if (*attr == "head")
+			if (*attr == strHead)
 				button->setTextTruncateMode (CDrawMethods::kTextTruncateHead);
-			else if (*attr == "tail")
+			else if (*attr == strTail)
 				button->setTextTruncateMode (CDrawMethods::kTextTruncateTail);
 			else
 				button->setTextTruncateMode (CDrawMethods::kTextTruncateNone);
@@ -2691,8 +2665,8 @@ public:
 		}
 		else if (attributeName == kAttrStyle)
 		{
-			stringValue = button->getStyle () == CSegmentButton::Style::kHorizontal ? "horizontal" :
-			                                                                          "vertical";
+			stringValue = button->getStyle () == CSegmentButton::Style::kHorizontal ? strHorizontal :
+			                                                                          strVertical;
 			return true;
 		}
 		else if (attributeName == kAttrIconTextMargin)
@@ -2705,9 +2679,9 @@ public:
 			CHoriTxtAlign align = button->getTextAlignment ();
 			switch (align)
 			{
-				case kLeftText: stringValue = "left"; break;
-				case kRightText: stringValue = "right"; break;
-				case kCenterText: stringValue = "center"; break;
+				case kLeftText: stringValue = strLeft; break;
+				case kRightText: stringValue = strRight; break;
+				case kCenterText: stringValue = strCenter; break;
 			}
 			return true;
 		}
@@ -2735,8 +2709,8 @@ public:
 		{
 			switch (button->getTextTruncateMode ())
 			{
-				case CDrawMethods::kTextTruncateHead: stringValue = "head"; break;
-				case CDrawMethods::kTextTruncateTail: stringValue = "tail"; break;
+				case CDrawMethods::kTextTruncateHead: stringValue = strHead; break;
+				case CDrawMethods::kTextTruncateTail: stringValue = strTail; break;
 				case CDrawMethods::kTextTruncateNone: stringValue = ""; break;
 			}
 			return true;
@@ -2763,8 +2737,6 @@ public:
 
 };
 CSegmentButtonCreator __gCSegmentButtonCreator;
-std::string CSegmentButtonCreator::SelectionModeSingle = "Single";
-std::string CSegmentButtonCreator::SelectionModeMultiple = "Multiple";
 
 //-----------------------------------------------------------------------------
 class CKnobCreator : public ViewCreatorAdapter
@@ -2942,65 +2914,65 @@ public:
 		else if (attributeName == kAttrCircleDrawing)
 		{
 			if (knob->getDrawStyle () & CKnob::kHandleCircleDrawing)
-				stringValue = "true";
+				stringValue = strTrue;
 			else
-				stringValue = "false";
+				stringValue = strFalse;
 			return true;
 		}
 		else if (attributeName == kAttrCoronaDrawing)
 		{
 			if (knob->getDrawStyle () & CKnob::kCoronaDrawing)
-				stringValue = "true";
+				stringValue = strTrue;
 			else
-				stringValue = "false";
+				stringValue = strFalse;
 			return true;
 		}
 		else if (attributeName == kAttrCoronaFromCenter)
 		{
 			if (knob->getDrawStyle () & CKnob::kCoronaFromCenter)
-				stringValue = "true";
+				stringValue = strTrue;
 			else
-				stringValue = "false";
+				stringValue = strFalse;
 			return true;
 		}
 		else if (attributeName == kAttrCoronaInverted)
 		{
 			if (knob->getDrawStyle () & CKnob::kCoronaInverted)
-				stringValue = "true";
+				stringValue = strTrue;
 			else
-				stringValue = "false";
+				stringValue = strFalse;
 			return true;
 		}
 		else if (attributeName == kAttrCoronaDashDot)
 		{
 			if (knob->getDrawStyle () & CKnob::kCoronaLineDashDot)
-				stringValue = "true";
+				stringValue = strTrue;
 			else
-				stringValue = "false";
+				stringValue = strFalse;
 			return true;
 		}
 		else if (attributeName == kAttrCoronaOutline)
 		{
 			if (knob->getDrawStyle () & CKnob::kCoronaOutline)
-				stringValue = "true";
+				stringValue = strTrue;
 			else
-				stringValue = "false";
+				stringValue = strFalse;
 			return true;
 		}
 		else if (attributeName == kAttrCoronaLineCapButt)
 		{
 			if (knob->getDrawStyle () & CKnob::kCoronaLineCapButt)
-				stringValue = "true";
+				stringValue = strTrue;
 			else
-				stringValue = "false";
+				stringValue = strFalse;
 			return true;
 		}
 		else if (attributeName == kAttrSkipHandleDrawing)
 		{
 			if (knob->getDrawStyle () & CKnob::kSkipHandleDrawing)
-				stringValue = "true";
+				stringValue = strTrue;
 			else
-				stringValue = "false";
+				stringValue = strFalse;
 			return true;
 		}
 		return false;
@@ -3104,7 +3076,7 @@ public:
 
 		if (attributeName == kAttrInverseBitmap)
 		{
-			stringValue = animKnob->getInverseBitmap() ? "true" : "false";
+			stringValue = animKnob->getInverseBitmap() ? strTrue : strFalse;
 			return true;
 		}
 		return IMultiBitmapControlCreator::getAttributeValue (view, attributeName, stringValue, desc);
@@ -3188,6 +3160,10 @@ CKickButtonCreator __gCKickButtonCreator;
 class CSliderCreator : public ViewCreatorAdapter
 {
 public:
+	std::string kTouch = "touch";
+	std::string kRelativeTouch = "relative touch";
+	std::string kFreeClick = "free click";
+
 	CSliderCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCSlider; }
 	IdStringPtr getBaseViewName () const override { return kCControl; }
@@ -3203,21 +3179,21 @@ public:
 		const std::string* freeClickAttr = attributes.getAttributeValue ("free-click");
 		if (freeClickAttr)
 		{
-			slider->setMode (*freeClickAttr == "true" ? CSlider::kFreeClickMode : CSlider::kTouchMode);
+			slider->setMode (*freeClickAttr == strTrue ? CSlider::kFreeClickMode : CSlider::kTouchMode);
 		}
 
 		const std::string* transparentHandleAttr = attributes.getAttributeValue (kAttrTransparentHandle);
 		if (transparentHandleAttr)
-			slider->setDrawTransparentHandle (*transparentHandleAttr == "true");
+			slider->setDrawTransparentHandle (*transparentHandleAttr == strTrue);
 
 		const std::string* modeAttr = attributes.getAttributeValue (kAttrMode);
 		if (modeAttr)
 		{
-			if (*modeAttr == "touch")
+			if (*modeAttr == kTouch)
 				slider->setMode (CSlider::kTouchMode);
-			else if (*modeAttr == "relative touch")
+			else if (*modeAttr == kRelativeTouch)
 				slider->setMode (CSlider::kRelativeTouchMode);
-			else if (*modeAttr == "free click")
+			else if (*modeAttr == kFreeClick)
 				slider->setMode (CSlider::kFreeClickMode);
 		}
 		CBitmap* bitmap;
@@ -3238,7 +3214,7 @@ public:
 		if (orientationAttr)
 		{
 			int32_t style = slider->getStyle ();
-			if (*orientationAttr == "vertical")
+			if (*orientationAttr == strVertical)
 			{
 				setBit (style, kHorizontal, false);
 				setBit (style, kVertical, true);
@@ -3254,7 +3230,7 @@ public:
 		if (reverseOrientationAttr)
 		{
 			int32_t style = slider->getStyle ();
-			if (*reverseOrientationAttr == "true")
+			if (*reverseOrientationAttr == strTrue)
 			{
 				if (style & kVertical)
 				{
@@ -3353,7 +3329,7 @@ public:
 			return false;
 		if (attributeName == kAttrTransparentHandle)
 		{
-			stringValue = slider->getDrawTransparentHandle () ? "true" : "false";
+			stringValue = slider->getDrawTransparentHandle () ? strTrue : strFalse;
 			return true;
 		}
 		else if (attributeName == kAttrMode)
@@ -3361,11 +3337,11 @@ public:
 			switch (slider->getMode ())
 			{
 				case CSlider::kTouchMode:
-					stringValue = "touch"; break;
+					stringValue = kTouch; break;
 				case CSlider::kRelativeTouchMode:
-					stringValue = "relative touch"; break;
+					stringValue = kRelativeTouch; break;
 				case CSlider::kFreeClickMode:
-					stringValue = "free click"; break;
+					stringValue = kFreeClick; break;
 			}
 			return true;
 		}
@@ -3396,59 +3372,59 @@ public:
 		else if (attributeName == kAttrOrientation)
 		{
 			if (slider->getStyle () & kVertical)
-				stringValue = "vertical";
+				stringValue = strVertical;
 			else
-				stringValue = "horizontal";
+				stringValue = strHorizontal;
 			return true;
 		}
 		else if (attributeName == kAttrReverseOrientation)
 		{
 			int32_t style = slider->getStyle ();
-			stringValue = "false";
+			stringValue = strFalse;
 			if (((style & kVertical) && (style & kTop)) || ((style & kHorizontal) && (style & kRight)))
-				stringValue = "true";
+				stringValue = strTrue;
 			else
-				stringValue = "false";
+				stringValue = strFalse;
 			return true;
 		}
 		else if (attributeName == kAttrDrawFrame)
 		{
 			if (slider->getDrawStyle () & CSlider::kDrawFrame)
-				stringValue = "true";
+				stringValue = strTrue;
 			else
-				stringValue = "false";
+				stringValue = strFalse;
 			return true;
 		}
 		else if (attributeName == kAttrDrawBack)
 		{
 			if (slider->getDrawStyle () & CSlider::kDrawBack)
-				stringValue = "true";
+				stringValue = strTrue;
 			else
-				stringValue = "false";
+				stringValue = strFalse;
 			return true;
 		}
 		else if (attributeName == kAttrDrawValue)
 		{
 			if (slider->getDrawStyle () & CSlider::kDrawValue)
-				stringValue = "true";
+				stringValue = strTrue;
 			else
-				stringValue = "false";
+				stringValue = strFalse;
 			return true;
 		}
 		else if (attributeName == kAttrDrawValueFromCenter)
 		{
 			if (slider->getDrawStyle () & CSlider::kDrawValueFromCenter)
-				stringValue = "true";
+				stringValue = strTrue;
 			else
-				stringValue = "false";
+				stringValue = strFalse;
 			return true;
 		}
 		else if (attributeName == kAttrDrawValueInverted)
 		{
 			if (slider->getDrawStyle () & CSlider::kDrawInverted)
-				stringValue = "true";
+				stringValue = strTrue;
 			else
-				stringValue = "false";
+				stringValue = strFalse;
 			return true;
 		}
 		else if (attributeName == kAttrDrawFrameColor)
@@ -3482,10 +3458,6 @@ public:
 		}
 		if (attributeName == kAttrMode)
 		{
-			static std::string kTouch = "touch";
-			static std::string kRelativeTouch = "relative touch";
-			static std::string kFreeClick = "free click";
-			
 			values.emplace_back (&kTouch);
 			values.emplace_back (&kRelativeTouch);
 			values.emplace_back (&kFreeClick);
@@ -3518,7 +3490,7 @@ public:
 
 		const std::string* attr = attributes.getAttributeValue (kAttrOrientation);
 		if (attr)
-			vuMeter->setStyle (*attr == "vertical" ? kVertical : kHorizontal);
+			vuMeter->setStyle (*attr == strVertical ? kVertical : kHorizontal);
 		
 		int32_t numLed;
 		if (attributes.getIntegerAttribute(kAttrNumLed, numLed))
@@ -3562,9 +3534,9 @@ public:
 		else if (attributeName == kAttrOrientation)
 		{
 			if (vuMeter->getStyle () & kVertical)
-				stringValue = "vertical";
+				stringValue = strVertical;
 			else
-				stringValue = "horizontal";
+				stringValue = strHorizontal;
 			return true;
 		}
 		else if (attributeName == kAttrNumLed)
@@ -3906,6 +3878,12 @@ UIViewSwitchContainerCreator __gUIViewSwitchContainerCreator;
 class CSplitViewCreator : public ViewCreatorAdapter
 {
 public:
+	std::string kFirst = "first";
+	std::string kSecond = "second";
+	std::string kLast = "last";
+	std::string kAll = "all";
+
+
 	CSplitViewCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCSplitView; }
 	IdStringPtr getBaseViewName () const override { return kCViewContainer; }
@@ -3924,7 +3902,7 @@ public:
 		const std::string* attr = attributes.getAttributeValue (kAttrOrientation);
 		if (attr)
 		{
-			if (*attr == "horizontal")
+			if (*attr == strHorizontal)
 			{
 				splitView->setStyle (CSplitView::kHorizontal);
 			}
@@ -3936,19 +3914,19 @@ public:
 		attr = attributes.getAttributeValue (kAttrResizeMethod);
 		if (attr)
 		{
-			if (*attr == "first")
+			if (*attr == kFirst)
 			{
 				splitView->setResizeMethod (CSplitView::kResizeFirstView);
 			}
-			if (*attr == "second")
+			if (*attr == kSecond)
 			{
 				splitView->setResizeMethod (CSplitView::kResizeSecondView);
 			}
-			else if (*attr == "last")
+			else if (*attr == kLast)
 			{
 				splitView->setResizeMethod (CSplitView::kResizeLastView);
 			}
-			else if (*attr == "all")
+			else if (*attr == kAll)
 			{
 				splitView->setResizeMethod (CSplitView::kResizeAllViews);
 			}
@@ -3982,7 +3960,7 @@ public:
 		}
 		if (attributeName == kAttrOrientation)
 		{
-			stringValue = splitView->getStyle () == CSplitView::kHorizontal ? "horizontal" : "vertical";
+			stringValue = splitView->getStyle () == CSplitView::kHorizontal ? strHorizontal : strVertical;
 			return true;
 		}
 		if (attributeName == kAttrResizeMethod)
@@ -3991,22 +3969,22 @@ public:
 			{
 				case CSplitView::kResizeFirstView:
 				{
-					stringValue = "first";
+					stringValue = kFirst;
 					return true;
 				}
 				case CSplitView::kResizeSecondView:
 				{
-					stringValue = "second";
+					stringValue = kSecond;
 					return true;
 				}
 				case CSplitView::kResizeLastView:
 				{
-					stringValue = "last";
+					stringValue = kLast;
 					return true;
 				}
 				case CSplitView::kResizeAllViews:
 				{
-					stringValue = "all";
+					stringValue = kAll;
 					return true;
 				}
 			}
@@ -4021,11 +3999,6 @@ public:
 		}
 		else if (attributeName == kAttrResizeMethod)
 		{
-			static std::string kFirst = "first";
-			static std::string kSecond = "second";
-			static std::string kLast = "last";
-			static std::string kAll = "all";
-	
 			values.emplace_back (&kFirst);
 			values.emplace_back (&kSecond);
 			values.emplace_back (&kLast);
@@ -4125,6 +4098,9 @@ CShadowViewContainerCreator __gCShadowViewContainerCreator;
 class CGradientViewCreator : public ViewCreatorAdapter
 {
 public:
+	std::string kLinear = "linear";
+	std::string kRadial = "radial";
+
 	CGradientViewCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCGradientView; }
 	IdStringPtr getBaseViewName () const override { return kCView; }
@@ -4167,7 +4143,7 @@ public:
 		const std::string* attr = attributes.getAttributeValue (kAttrGradientStyle);
 		if (attr)
 		{
-			if (*attr == "radial")
+			if (*attr == kRadial)
 				gv->setGradientStyle(CGradientView::kRadialGradient);
 			else
 				gv->setGradientStyle(CGradientView::kLinearGradient);
@@ -4259,12 +4235,12 @@ public:
 		}
 		if (attributeName == kAttrDrawAntialiased)
 		{
-			stringValue = gv->getDrawAntialised () ? "true" : "false";
+			stringValue = gv->getDrawAntialised () ? strTrue : strFalse;
 			return true;
 		}
 		if (attributeName == kAttrGradientStyle)
 		{
-			stringValue = gv->getGradientStyle () == CGradientView::kLinearGradient ? "linear" : "radial";
+			stringValue = gv->getGradientStyle () == CGradientView::kLinearGradient ? kLinear : kRadial;
 			return true;
 		}
 		if (attributeName == kAttrRadialRadius)
@@ -4290,8 +4266,6 @@ public:
 	{
 		if (attributeName == kAttrGradientStyle)
 		{
-			static std::string kLinear = "linear";
-			static std::string kRadial = "radial";
 			values.emplace_back (&kLinear);
 			values.emplace_back (&kRadial);
 			return true;
@@ -4329,8 +4303,8 @@ static bool getStandardAttributeListValues (const std::string& attributeName, st
 {
 	if (attributeName == kAttrOrientation)
 	{
-		static std::string kHorizontal = "horizontal";
-		static std::string kVertical = "vertical";
+		static std::string kHorizontal = strHorizontal;
+		static std::string kVertical = strVertical;
 		
 		values.emplace_back (&kHorizontal);
 		values.emplace_back (&kVertical);
@@ -4338,9 +4312,9 @@ static bool getStandardAttributeListValues (const std::string& attributeName, st
 	}
 	else if (attributeName == kAttrTruncateMode)
 	{
-		static std::string kNone = "none";
-		static std::string kHead = "head";
-		static std::string kTail = "tail";
+		static std::string kNone = strNone;
+		static std::string kHead = strHead;
+		static std::string kTail = strTail;
 		
 		values.emplace_back (&kNone);
 		values.emplace_back (&kHead);
