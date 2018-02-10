@@ -71,7 +71,8 @@ void UIDialogController::run (UTF8StringPtr _templateName, UTF8StringPtr _dialog
 		if (dialogController)
 			dialogController->notify (this, kMsgDialogShow);
 
-		view->addAnimation ("AlphaAnimation", new Animation::AlphaValueAnimation (1.f), new Animation::LinearTimingFunction (160));
+		using namespace Animation;
+		view->addAnimation ("AlphaAnimation", new AlphaValueAnimation (1.f), new CubicBezierTimingFunction (CubicBezierTimingFunction::easyInOut (160)));
 	}
 	else
 	{
@@ -155,7 +156,8 @@ void UIDialogController::valueChanged (CControl* control)
 			}
 		}
 		CView* modalView = frame->getModalView ();
-		modalView->addAnimation ("AlphaAnimation", new Animation::AlphaValueAnimation (0.f), new Animation::LinearTimingFunction (160), this);
+		using namespace Animation;
+		modalView->addAnimation ("AlphaAnimation", new AlphaValueAnimation (0.f), new CubicBezierTimingFunction (CubicBezierTimingFunction::easyInOut (160)), this);
 	}
 }
 
