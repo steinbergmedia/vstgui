@@ -1032,10 +1032,10 @@ CView* UIAttributesController::createValueViewForAttributeType (const UIViewFact
 			double minValue, maxValue;
 			if (viewFactory->getAttributeValueRange (view, attrName, minValue, maxValue))
 			{
-				CView* view = editorDescription->createView ("attributes.number", this);
-				if (view)
+				CView* valueView = editorDescription->createView ("attributes.number", this);
+				if (valueView)
 				{
-					if (auto container = view->asViewContainer ())
+					if (auto container = valueView->asViewContainer ())
 					{
 						std::vector<CSlider*> sliders;
 						if (container->getChildViewsOfType<CSlider> (sliders) == 1)
@@ -1044,7 +1044,7 @@ CView* UIAttributesController::createValueViewForAttributeType (const UIViewFact
 							sliders[0]->setMax (static_cast<float> (maxValue));
 						}
 					}
-					return view;
+					return valueView;
 				}
 			}
 		}
