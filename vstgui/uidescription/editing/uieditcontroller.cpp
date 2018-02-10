@@ -1192,13 +1192,10 @@ void UIEditController::doSelectAllChildren ()
 	CViewContainer* container = selection->first ()->asViewContainer ();
 	selection->empty ();
 	const IViewFactory* factory = editDescription->getViewFactory ();
-	ViewIterator it (container);
-	while (*it)
-	{
-		if (factory->getViewName (*it))
-			selection->add (*it);
-		it++;
-	}
+	container->forEachChild ([&] (CView* view) {
+		if (factory->getViewName (view))
+			selection->add (view);
+	});
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -1237,18 +1234,15 @@ void UIEditController::onUndoManagerChanged ()
 //----------------------------------------------------------------------------------------------------
 void UIEditController::resetScrollViewOffsets (CViewContainer* view)
 {
-	ViewIterator it (view);
-	while (*it)
-	{
-		CScrollView* scrollView = dynamic_cast<CScrollView*>(*it);
+	view->forEachChild ([&] (CView* view) {
+		CScrollView* scrollView = dynamic_cast<CScrollView*>(view);
 		if (scrollView)
 		{
 			scrollView->resetScrollOffset ();
 		}
-		if (auto container = (*it)->asViewContainer ())
+		if (auto container = view->asViewContainer ())
 			resetScrollViewOffsets (container);
-		it++;
-	}
+	});
 }
 
 //----------------------------------------------------------------------------------------------------

@@ -74,20 +74,17 @@ UnembedViewOperation::UnembedViewOperation (UISelection* selection, const IViewF
 //----------------------------------------------------------------------------------------------------
 void UnembedViewOperation::collectSubviews (CViewContainer* container, bool deep)
 {
-	ViewIterator it (container);
-	while (*it)
-	{
-		if (factory->getViewName (*it))
+	container->forEachChild ([&] (CView* view) {
+		if (factory->getViewName (view))
 		{
-			emplace_back (*it);
+			emplace_back (view);
 		}
 		else if (deep)
 		{
-			if (auto c = (*it)->asViewContainer ())
+			if (auto c = view->asViewContainer ())
 				collectSubviews (c, false);
 		}
-		++it;
-	}
+	});
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -499,10 +496,7 @@ void TransformViewTypeOperation::exchangeSubViews (CViewContainer* src, CViewCon
 	{
 		std::list<CView*> temp;
 
-		ViewIterator it (src);
-		while (*it)
-		{
-			CView* childView = *it;
+		src->forEachChild ([&] (CView* childView) {
 			if (factory->getViewName (childView))
 			{
 				temp.emplace_back (childView);
@@ -511,8 +505,7 @@ void TransformViewTypeOperation::exchangeSubViews (CViewContainer* src, CViewCon
 			{
 				exchangeSubViews (container, dst);
 			}
-			++it;
-		}
+		});
 		for (auto& view : temp)
 		{
 			src->removeView (view, false);
@@ -675,12 +668,9 @@ void MultipleAttributeChangeAction::collectAllSubViews (CView* view, std::list<C
 	views.emplace_back (view);
 	if (auto container = view->asViewContainer ())
 	{
-		ViewIterator it (container);
-		while (*it)
-		{
-			collectAllSubViews (*it, views);
-			++it;
-		}
+		container->forEachChild ([&] (CView* view) {
+			collectAllSubViews (view, views);
+		});
 	}
 }
 

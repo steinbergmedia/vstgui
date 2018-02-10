@@ -167,7 +167,7 @@ protected:
 	
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 
-	CCoord calculateSubViewWidth (CViewContainer* view);
+	CCoord calculateSubViewWidth (CViewContainer* view) const;
 	void dbSelectionChanged (CDataBrowser* browser) override;
 	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) override;
 	int32_t dbOnKeyDown (const VstKeyCode& key, CDataBrowser* browser) override;
@@ -463,18 +463,14 @@ bool UIViewListDataSource::update (CViewContainer* vc)
 	inUpdate = true;
 	names.clear ();
 	subviews.clear ();
-	ViewIterator it (vc);
-	while (*it)
-	{
-		CView* subview = *it;
+	vc->forEachChild ([&] (CView* subview) {
 		IdStringPtr viewName = viewFactory->getViewName (subview);
 		if (viewName)
 		{
 			names.emplace_back (viewName);
 			subviews.emplace_back (subview);
 		}
-		it++;
-	}
+	});
 	if (names.empty () && vc->getNbViews () > 0)
 	{
 		ViewIterator it (vc);
@@ -500,16 +496,13 @@ bool UIViewListDataSource::update (CViewContainer* vc)
 }
 
 //----------------------------------------------------------------------------------------------------
-CCoord UIViewListDataSource::calculateSubViewWidth (CViewContainer* view)
+CCoord UIViewListDataSource::calculateSubViewWidth (CViewContainer* view) const
 {
 	CCoord result = 0;
-	
-	ViewIterator it (view);
-	while (*it)
-	{
-		result += (*it)->getViewSize ().getWidth ();
-		it++;
-	}
+
+	view->forEachChild ([&result] (CView* view) {
+		result += view->getViewSize ().getWidth ();
+	});
 	return result;
 }
 

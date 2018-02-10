@@ -84,6 +84,11 @@ public:
 	/** get child views of type ViewClass. ContainerClass must be a stdc++ container */
 	template<class ViewClass, class ContainerClass>
 	uint32_t getChildViewsOfType (ContainerClass& result, bool deep = false) const;
+
+	/** execute proc for each child view */
+	template<typename Proc>
+	void forEachChild (Proc proc) const;
+
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -257,6 +262,16 @@ inline uint32_t CViewContainer::getChildViewsOfType (ContainerClass& result, boo
 		}
 	}
 	return static_cast<uint32_t> (result.size ());
+}
+
+//-----------------------------------------------------------------------------
+template <typename Proc>
+inline void CViewContainer::forEachChild (Proc proc) const
+{
+	for (auto& child : getChildren ())
+	{
+		proc (child);
+	}
 }
 
 } // namespace

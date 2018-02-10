@@ -297,19 +297,13 @@ int32_t UIDialogController::onKeyUp (const VstKeyCode& code, CFrame* frame)
 void UIDialogController::collectOpenGLViews (CViewContainer* container)
 {
 #if VSTGUI_OPENGL_SUPPORT
-	ViewIterator it (container);
-	while (*it)
-	{
-		COpenGLView* openGLView = dynamic_cast<COpenGLView*>(*it);
+	container->forEachChild ([this] (CView* view) {
+		auto openGLView = dynamic_cast<COpenGLView*> (view);
 		if (openGLView && openGLView->isVisible ())
 			openglViews.emplace_back (openGLView);
-		else
-		{
-			if (auto childContainer = (*it)->asViewContainer ())
-				collectOpenGLViews (childContainer);
-		}
-		it++;
-	}
+		else if (auto childContainer = view->asViewContainer ())
+			collectOpenGLViews (childContainer);
+	});
 #endif
 }
 
@@ -317,10 +311,8 @@ void UIDialogController::collectOpenGLViews (CViewContainer* container)
 void UIDialogController::setOpenGLViewsVisible (bool state)
 {
 #if VSTGUI_OPENGL_SUPPORT
-	for (std::list<SharedPointer<COpenGLView> >::const_iterator it = openglViews.begin(); it != openglViews.end (); it++)
-	{
-		(*it)->setVisible (state);
-	}
+	for (auto& v : openglViews)
+		v->setVisible (state);
 #endif
 }
 
