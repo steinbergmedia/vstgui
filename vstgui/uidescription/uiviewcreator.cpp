@@ -3696,6 +3696,16 @@ CAnimationSplashScreenCreator __gCAnimationSplashScreenCreator;
 class UIViewSwitchContainerCreator : public ViewCreatorAdapter
 {
 public:
+	std::string kLinear = "linear";
+	std::string kEasyIn = "easy-in";
+	std::string kEasyOut = "easy-out";
+	std::string kEasyInOut = "easy-in-out";
+	std::string kEasy = "easy";
+
+	std::string kFadeInOut = "fade";
+	std::string kMoveInOut = "move";
+	std::string kPushInOut = "push";
+
 	UIViewSwitchContainerCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kUIViewSwitchContainer; }
 	IdStringPtr getBaseViewName () const override { return kCViewContainer; }
@@ -3735,11 +3745,26 @@ public:
 		if (attr)
 		{
 			UIViewSwitchContainer::AnimationStyle style = UIViewSwitchContainer::kFadeInOut;
-			if (*attr == "move")
+			if (*attr == kMoveInOut)
 				style = UIViewSwitchContainer::kMoveInOut;
-			else if (*attr == "push")
+			else if (*attr == kPushInOut)
 				style = UIViewSwitchContainer::kPushInOut;
 			viewSwitch->setAnimationStyle (style);
+		}
+		
+		attr = attributes.getAttributeValue (kAttrAnimationTimingFunction);
+		if (attr)
+		{
+			UIViewSwitchContainer::TimingFunction tf = UIViewSwitchContainer::kLinear;
+			if (*attr == kEasyIn)
+				tf = UIViewSwitchContainer::kEasyIn;
+			else if (*attr == kEasyOut)
+				tf = UIViewSwitchContainer::kEasyOut;
+			else if (*attr == kEasyInOut)
+				tf = UIViewSwitchContainer::kEasyInOut;
+			else if (*attr == kEasy)
+				tf = UIViewSwitchContainer::kEasy;
+			viewSwitch->setTimingFunction (tf);
 		}
 		
 		int32_t animationTime;
@@ -3754,6 +3779,7 @@ public:
 		attributeNames.emplace_back (kAttrTemplateNames);
 		attributeNames.emplace_back (kAttrTemplateSwitchControl);
 		attributeNames.emplace_back (kAttrAnimationStyle);
+		attributeNames.emplace_back (kAttrAnimationTimingFunction);
 		attributeNames.emplace_back (kAttrAnimationTime);
 		return true;
 	}
@@ -3762,6 +3788,7 @@ public:
 		if (attributeName == kAttrTemplateNames) return kStringType;
 		if (attributeName == kAttrTemplateSwitchControl) return kTagType;
 		if (attributeName == kAttrAnimationStyle) return kListType;
+		if (attributeName == kAttrAnimationTimingFunction) return kListType;
 		if (attributeName == kAttrAnimationTime) return kIntegerType;
 		return kUnknownType;
 	}
@@ -3804,17 +3831,48 @@ public:
 			{
 				case UIViewSwitchContainer::kFadeInOut:
 				{
-					stringValue = "fade";
+					stringValue = kFadeInOut;
 					return true;
 				}
 				case UIViewSwitchContainer::kMoveInOut:
 				{
-					stringValue = "move";
+					stringValue = kMoveInOut;
 					return true;
 				}
 				case UIViewSwitchContainer::kPushInOut:
 				{
-					stringValue = "push";
+					stringValue = kPushInOut;
+					return true;
+				}
+			}
+		}
+		else if (attributeName == kAttrAnimationTimingFunction)
+		{
+			switch (viewSwitch->getTimingFunction ())
+			{
+				case UIViewSwitchContainer::kLinear:
+				{
+					stringValue = kLinear;
+					return true;
+				}
+				case UIViewSwitchContainer::kEasyIn:
+				{
+					stringValue = kEasyIn;
+					return true;
+				}
+				case UIViewSwitchContainer::kEasyOut:
+				{
+					stringValue = kEasyOut;
+					return true;
+				}
+				case UIViewSwitchContainer::kEasyInOut:
+				{
+					stringValue = kEasyInOut;
+					return true;
+				}
+				case UIViewSwitchContainer::kEasy:
+				{
+					stringValue = kEasy;
 					return true;
 				}
 			}
@@ -3825,13 +3883,18 @@ public:
 	{
 		if (attributeName == kAttrAnimationStyle)
 		{
-			static std::string kFadeInOut = "fade";
-			static std::string kMoveInOut = "move";
-			static std::string kPushInOut = "push";
-			
 			values.emplace_back (&kFadeInOut);
 			values.emplace_back (&kMoveInOut);
 			values.emplace_back (&kPushInOut);
+			return true;
+		}
+		if (attributeName == kAttrAnimationTimingFunction)
+		{
+			values.emplace_back (&kLinear);
+			values.emplace_back (&kEasyIn);
+			values.emplace_back (&kEasyOut);
+			values.emplace_back (&kEasyInOut);
+			values.emplace_back (&kEasy);
 			return true;
 		}
 		return false;

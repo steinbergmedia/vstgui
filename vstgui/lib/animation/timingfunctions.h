@@ -7,6 +7,7 @@
 
 #include "animator.h"
 #include "itimingfunction.h"
+#include "../cpoint.h"
 #include <map>
 
 namespace VSTGUI {
@@ -20,9 +21,12 @@ class TimingFunctionBase : public ITimingFunction
 {
 public:
 	explicit TimingFunctionBase (uint32_t length) : length (length) {}
+	TimingFunctionBase (const TimingFunctionBase&) = default;
+	TimingFunctionBase& operator= (const TimingFunctionBase&) = default;
 
 	uint32_t getLength () const { return length; }
 	bool isDone (uint32_t milliseconds) override { return milliseconds >= length; }
+
 protected:
 	uint32_t length; // in milliseconds
 };
@@ -35,8 +39,9 @@ class LinearTimingFunction : public TimingFunctionBase
 {
 public:
 	explicit LinearTimingFunction (uint32_t length);
+	LinearTimingFunction (const LinearTimingFunction&) = default;
+	LinearTimingFunction& operator= (const LinearTimingFunction&) = default;
 
-protected:
 	float getPosition (uint32_t milliseconds) override;
 };
 
@@ -48,10 +53,12 @@ class PowerTimingFunction : public TimingFunctionBase
 {
 public:
 	PowerTimingFunction (uint32_t length, float factor);
+	PowerTimingFunction (const PowerTimingFunction&) = default;
+	PowerTimingFunction& operator= (const PowerTimingFunction&) = default;
 
-protected:
 	float getPosition (uint32_t milliseconds) override;
 
+protected:
 	float factor;
 };
 
@@ -63,14 +70,43 @@ class InterpolationTimingFunction : public TimingFunctionBase
 {
 public:
 	InterpolationTimingFunction (uint32_t length, float startPos = 0.f, float endPos = 1.f);
+	InterpolationTimingFunction (const InterpolationTimingFunction&) = default;
+	InterpolationTimingFunction& operator= (const InterpolationTimingFunction&) = default;
 
 	void addPoint (float time, float pos); ///< both values are normalized ones
 
-protected:
 	float getPosition (uint32_t milliseconds) override;
+
+protected:
 
 	using PointMap = std::map<uint32_t, float>;
 	PointMap points;
+};
+
+//-----------------------------------------------------------------------------
+/// @ingroup AnimationTimingFunctions
+///	@ingroup new_in_4_7
+//-----------------------------------------------------------------------------
+class CubicBezierTimingFunction : public TimingFunctionBase
+{
+public:
+	CubicBezierTimingFunction (uint32_t milliseconds, CPoint p1, CPoint p2);
+	CubicBezierTimingFunction (const CubicBezierTimingFunction&) = default;
+	CubicBezierTimingFunction& operator= (const CubicBezierTimingFunction&) = default;
+
+	float getPosition (uint32_t milliseconds) override;
+
+	// some common timings
+	static CubicBezierTimingFunction easy (uint32_t time);
+	static CubicBezierTimingFunction easyIn (uint32_t time);
+	static CubicBezierTimingFunction easyOut (uint32_t time);
+	static CubicBezierTimingFunction easyInOut (uint32_t time);
+
+private:
+	CPoint lerp (CPoint p1, CPoint p2, float pos) const;
+
+	CPoint p1;
+	CPoint p2;
 };
 
 //-----------------------------------------------------------------------------

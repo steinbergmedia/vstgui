@@ -278,6 +278,7 @@ static const std::string kAttrAnimationIndex = "animation-index";
 static const std::string kAttrTemplateNames = "template-names";
 static const std::string kAttrTemplateSwitchControl = "template-switch-control";
 static const std::string kAttrAnimationStyle = "animation-style";
+static const std::string kAttrAnimationTimingFunction = "animation-timing-function";
 
 //-----------------------------------------------------------------------------
 // CSplitViewCreator attributes
