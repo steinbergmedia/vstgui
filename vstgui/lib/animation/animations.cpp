@@ -314,10 +314,7 @@ void ExchangeViewAnimation::animationTick (CView* view, IdStringPtr name, float 
 //-----------------------------------------------------------------------------
 void ExchangeViewAnimation::animationFinished (CView* view, IdStringPtr name, bool wasCanceled)
 {
-	if (wasCanceled)
-	{
-		animationTick (nullptr, nullptr, 1.f);
-	}
+	animationTick (nullptr, nullptr, 1.f);
 	if (auto viewContainer = viewToRemove->getParentView ()->asViewContainer ())
 	{
 		viewContainer->removeView (viewToRemove);
