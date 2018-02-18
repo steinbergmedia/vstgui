@@ -100,7 +100,7 @@ if(UNIX AND NOT CMAKE_HOST_APPLE)
 	target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS} "HAVE_EDITORUIDESC_H")
 endif()
 ##########################################################################################
-find_package(expat)
+find_package(EXPAT)
 if(EXPAT_FOUND)
   target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS} "VSTGUI_USE_SYSTEM_EXPAT")
   target_link_libraries(${target} PRIVATE expat)
