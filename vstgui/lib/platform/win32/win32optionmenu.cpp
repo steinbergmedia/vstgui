@@ -195,7 +195,7 @@ HMENU Win32OptionMenu::createMenu (COptionMenu* _menu, int32_t& offsetIdx)
 					flags |= MF_DISABLED;
 				if (multipleCheck && item->isChecked ())
 					flags |= MF_CHECKED;
-				if (_menu->getStyle () & kCheckStyle && inc == _menu->getCurrentIndex (true))
+				if (_menu->getStyle () & kCheckStyle && !multipleCheck && inc == _menu->getCurrentIndex (true))
 					flags |= MF_CHECKED;
 				if (!(flags & MF_CHECKED))
 					flags |= MF_UNCHECKED;
