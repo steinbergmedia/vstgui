@@ -74,7 +74,7 @@ set(${target}_win32_sources
 )
 
 ##########################################################################################
-if(CMAKE_HOST_APPLE)
+if(CMAKE_SYSTEM_NAME MATCHES "Darwin")
 	set(${target}_sources ${${target}_common_sources} ${${target}_mac_sources})
 
 	set_source_files_properties(${${target}_sources} PROPERTIES
@@ -83,7 +83,7 @@ if(CMAKE_HOST_APPLE)
 endif()
 
 ##########################################################################################
-if(MSVC)
+if(CMAKE_SYSTEM_NAME MATCHES "Windows")
 	set(${target}_sources ${${target}_common_sources} ${${target}_win32_sources})
 endif()
 

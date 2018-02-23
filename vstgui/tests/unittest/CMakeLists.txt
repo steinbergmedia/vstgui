@@ -77,7 +77,7 @@ set(${target}_sources
 )
 
 ##########################################################################################
-if(CMAKE_HOST_APPLE)
+if(CMAKE_SYSTEM_NAME MATCHES "Darwin")
 	set(${target}_sources
 		${${target}_sources}
 		"${VSTGUI_TEST_BASE}lib/platform_helper_mac.mm"
@@ -93,16 +93,22 @@ if(CMAKE_HOST_APPLE)
 endif()
 
 ##########################################################################################
-if(MSVC)
+if(CMAKE_SYSTEM_NAME MATCHES "Windows")
 	set(${target}_sources
 		${${target}_sources}
 		"${VSTGUI_TEST_BASE}lib/platform_helper_win32.cpp"
 		"${VSTGUI_TEST_BASE}../../vstgui_win32.cpp"
 	)
+	set(${target}_PLATFORM_LIBS
+		opengl32
+		gdiplus
+		shlwapi
+		windowscodecs
+	)
 endif()
 
 ##########################################################################################
-if(UNIX AND NOT CMAKE_HOST_APPLE)
+if(CMAKE_SYSTEM_NAME MATCHES "^(Linux|.*BSD)")
 	set(${target}_sources
 		${${target}_sources}
 		"${VSTGUI_TEST_BASE}lib/platform_helper_linux.cpp"
@@ -128,10 +134,12 @@ vstgui_set_cxx_version(${target} 14)
 target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS} ENABLE_UNIT_TESTS=1 VSTGUI_LIVE_EDITING=1)
 vstgui_source_group_by_folder(${target})
 
-add_custom_command(TARGET ${target} POST_BUILD COMMAND "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/unittests")
+if(NOT CMAKE_CROSSCOMPILING)
+	add_custom_command(TARGET ${target} POST_BUILD COMMAND "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/unittests")
+endif()
 
 ##########################################################################################
-if(UNIX AND NOT CMAKE_HOST_APPLE)
+if(CMAKE_SYSTEM_NAME MATCHES "^(Linux|.*BSD)")
 	target_include_directories(${target} PRIVATE ${X11_INCLUDE_DIR})
     target_include_directories(${target} PRIVATE ${GTK3_INCLUDE_DIRS})
     target_include_directories(${target} PRIVATE ${GTKMM3_INCLUDE_DIRS})
