@@ -193,12 +193,17 @@ HMENU Win32OptionMenu::createMenu (COptionMenu* _menu, int32_t& offsetIdx)
 					flags |= MF_GRAYED;
 				if (item->isTitle ())
 					flags |= MF_DISABLED;
-				if (multipleCheck && item->isChecked ())
+				if (multipleCheck)
+				{
+					if (item->isChecked ())
+						flags |= MF_CHECKED;
+				}
+				else if (_menu->getStyle () & kCheckStyle && inc == _menu->getCurrentIndex (true))
 					flags |= MF_CHECKED;
-				if (_menu->getStyle () & kCheckStyle && inc == _menu->getCurrentIndex (true))
-					flags |= MF_CHECKED;
+
 				if (!(flags & MF_CHECKED))
 					flags |= MF_UNCHECKED;
+
 				AppendMenu (menu, flags, offset + inc, entryText);
 				IPlatformBitmap* platformBitmap = item->getIcon () ? item->getIcon ()->getPlatformBitmap () : 0;
 				if (platformBitmap)
