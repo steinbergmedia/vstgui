@@ -12,13 +12,13 @@ VSTGUI is a user interface toolkit mainly for audio plug-ins (VST, AAX, AudioUni
 Supported OS:
 
 - Microsoft Windows 7-10
-- Apple OSX 10.7-10.12
+- Apple OSX 10.7-10.13
 - Apple iOS 8-9
 - Linux (Preview)
 
 Supported IDE:
-- Visual Studio 2013/2015
-- Xcode 6/7
+- Visual Studio 2013/2015/2017
+- minimum Xcode 7
 - Qt Creator
 
 ## License
@@ -49,5 +49,3 @@ BSD style
     LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
     OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE  OF THIS SOFTWARE, EVEN IF ADVISED
     OF THE POSSIBILITY OF SUCH DAMAGE.
-
-
