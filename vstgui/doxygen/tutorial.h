@@ -14,7 +14,7 @@ This tutorial should give you a brief overview on how to get started using VSTGU
 
 @section vstintegration VST Integration
 
-To add a user interface to a VST Plug-In with VSTGUI is quiet simple.
+To add a user interface to a VST Plug-In with VSTGUI is quite simple.
 
 Create a new class which inherite from AEffGUIEditor. Overwrite AEffGUIEditor::open and AEffGUIEditor::close.
 @code
