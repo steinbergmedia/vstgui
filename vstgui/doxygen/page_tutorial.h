@@ -16,7 +16,7 @@ The VST3 SDK includes a wrapper so that the VST3 plug-in can be used in hosts wh
 
 @section vstintegration VST Integration
 
-To add a user interface to a VST Plug-In with VSTGUI is quiet simple.
+To add a user interface to a VST Plug-In with VSTGUI is quite simple.
 
 Create a new class which inherits from AEffGUIEditor. Overwrite AEffGUIEditor::open and AEffGUIEditor::close.
 @code
