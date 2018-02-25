@@ -107,8 +107,9 @@ inline void calculateLine (uint32_t line, Point size, const Model& model, SetPix
 	diff.y = model.getMax ().y - model.getMin ().y;
 	Point pos;
 	pos.y = model.getMin ().y + line * sizeInv.y * diff.y;
-	std::vector<uint32_t> iterationResult (size.x);
-	for (auto x = 0u; x < size.x; ++x)
+	auto numIterations = static_cast<uint32_t> (size.x);
+	std::vector<uint32_t> iterationResult (numIterations);
+	for (auto x = 0u; x < numIterations; ++x)
 	{
 		pos.x = model.getMin ().x + x * sizeInv.x * diff.x;
 		Complex c {pos.x, pos.y};

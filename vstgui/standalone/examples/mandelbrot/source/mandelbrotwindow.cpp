@@ -230,7 +230,7 @@ struct ViewController : DelegationController,
 				auto bytes = IPlatformBitmap::createMemoryPNGRepresentation (platformBitmap);
 				if (!bytes.empty ())
 				{
-					stream.writeRaw (bytes.data (), bytes.size ());
+					stream.writeRaw (bytes.data (), static_cast<uint32_t> (bytes.size ()));
 				}
 			}
 		}
