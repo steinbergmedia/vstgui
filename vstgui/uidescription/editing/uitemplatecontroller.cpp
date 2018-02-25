@@ -26,7 +26,7 @@ class UINavigationDataSource : public GenericStringListDataBrowserSource
 {
 public:
 	UINavigationDataSource (IGenericStringListDataBrowserSourceSelectionChanged* delegate)
-	: GenericStringListDataBrowserSource (nullptr, delegate) { textInset.x = 4.; headerBackgroundColor = kTransparentCColor; }
+	: GenericStringListDataBrowserSource (nullptr, delegate) { textInset.x = 4.; }
 
 	int32_t dbOnKeyDown (const VstKeyCode& key, CDataBrowser* browser) override
 	{
@@ -74,19 +74,19 @@ public:
 	void dbDrawHeader (CDrawContext* context, const CRect& size, int32_t column, int32_t flags, CDataBrowser* browser) override
 	{
 		context->setDrawMode (kAliasing);
-		context->setLineWidth (1);
-		if (headerBackgroundColor == kTransparentCColor)
+		if (!headerGradient)
 		{
-			double h,s,l;
-			rowAlternateBackColor.toHSL (h, s, l);
-			l /= 2.;
-			headerBackgroundColor.fromHSL (h, s, l);
-			headerBackgroundColor.alpha = rowAlternateBackColor.alpha;
+			headerGradient = UIEditController::getEditorDescription ()->getGradient ("shading.light");
+			UIEditController::getEditorDescription ()->getColor ("shading.light.frame", headerLineColor);
 		}
-		context->setFillColor (headerBackgroundColor);
-		context->drawRect (size, kDrawFilled);
-		context->setFrameColor (rowlineColor);
-		context->drawLine (CPoint (size.left, size.bottom-1), CPoint (size.right, size.bottom-1));
+		if (headerGradient)
+		{
+			if (auto path = owned (context->createGraphicsPath ()))
+			{
+				path->addRect (size);
+				context->fillLinearGradient (path, *headerGradient, CPoint (size.left, size.top), CPoint (size.left, size.bottom));
+			}
+		}
 		if (!getHeaderTitle ().empty ())
 		{
 			if (headerFont == nullptr)
@@ -99,6 +99,11 @@ public:
 			context->setFontColor (fontColor);
 			context->drawString (getHeaderTitle ().getPlatformString (), size, kCenterText);
 		}
+		auto hairlineSize = context->getHairlineSize ();
+		context->setLineWidth (hairlineSize);
+		context->setFrameColor (headerLineColor);
+		context->drawLine (CPoint (size.right-hairlineSize, size.top), CPoint (size.right-hairlineSize, size.bottom));
+		context->drawLine (CPoint (size.left, size.bottom), CPoint (size.right-hairlineSize, size.bottom));
 	}
 
 	static void drawTriangle (CDrawContext* context, const CRect& size)
@@ -119,8 +124,9 @@ public:
 
 protected:
 	mutable UTF8String headerTitle;
-	CColor headerBackgroundColor;
+	CColor headerLineColor {kBlackCColor};
 	SharedPointer<CFontDesc> headerFont;
+	SharedPointer<CGradient> headerGradient;
 };
 
 //----------------------------------------------------------------------------------------------------
