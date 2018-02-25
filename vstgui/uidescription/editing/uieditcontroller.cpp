@@ -419,10 +419,6 @@ CView* UIEditController::createView (const UIAttributes& attributes, const IUIDe
 		{
 			return new UIEditControllerShadingView (false, true, false);
 		}
-		else if (*name == "UISearchTextField")
-		{
-			return new CSearchTextEdit (CRect (0, 0, 0, 0), nullptr, -2);
-		}
 	}
 	return nullptr;
 }
