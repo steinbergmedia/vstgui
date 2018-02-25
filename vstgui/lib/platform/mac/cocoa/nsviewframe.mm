@@ -1311,19 +1311,22 @@ void CocoaTooltipWindow::set (NSViewFrame* nsViewFrame, const CRect& rect, const
 		[window setLevel:NSStatusWindowLevel];
 		[window setHidesOnDeactivate:YES];
 		[window setIgnoresMouseEvents:YES];
-		[window setBackgroundColor: [NSColor colorWithDeviceRed:1.0 green:0.96 blue:0.76 alpha:1.0]];
-		textfield = [[[NSTextField alloc] initWithFrame:[[window contentView] frame]] autorelease];
+		[window setBackgroundColor: [NSColor colorWithDeviceRed:0.94 green:0.94 blue:0.94 alpha:1.0]];
+		textfield = [[[NSTextField alloc] initWithFrame:NSMakeRect (2, 2, 8, 8)] autorelease];
 		[textfield setEditable:NO];
 		[textfield setSelectable:NO];
 		[textfield setBezeled:NO];
 		[textfield setBordered:NO];
 		[textfield setDrawsBackground:NO];
-		[window setContentView:textfield];
+		[window.contentView addSubview:textfield];
 	}
-	NSString* string = [NSString stringWithCString:tooltip encoding:NSUTF8StringEncoding];
-	NSDictionary* attributes = [NSDictionary dictionaryWithObjectsAndKeys:[NSFont controlContentFontOfSize:0], NSFontAttributeName, nil];
-	NSMutableAttributedString* attrString = [[[NSMutableAttributedString alloc] init] autorelease];
-	NSArray* lines = [string componentsSeparatedByString:@"\\n"];
+	auto paragrapheStyle = [NSMutableParagraphStyle new];
+	[paragrapheStyle setParagraphStyle:[NSParagraphStyle defaultParagraphStyle]];
+	paragrapheStyle.alignment = NSTextAlignmentCenter;
+	auto string = [NSString stringWithCString:tooltip encoding:NSUTF8StringEncoding];
+	auto attributes = [NSDictionary dictionaryWithObjectsAndKeys:[NSFont toolTipsFontOfSize:0], NSFontAttributeName, paragrapheStyle, NSParagraphStyleAttributeName, nil];
+	auto attrString = [[[NSMutableAttributedString alloc] init] autorelease];
+	auto lines = [string componentsSeparatedByString:@"\\n"];
 	bool first = true;
 	for (NSString* str in lines)
 	{
@@ -1335,7 +1338,10 @@ void CocoaTooltipWindow::set (NSViewFrame* nsViewFrame, const CRect& rect, const
 	}
 	[textfield setAttributedStringValue:attrString];
 	[textfield sizeToFit];
+
 	NSSize textSize = [textfield bounds].size;
+	textSize.width += 4;
+	textSize.height += 4;
 
 	CPoint p;
 	p.x = rect.left;
@@ -1344,8 +1350,8 @@ void CocoaTooltipWindow::set (NSViewFrame* nsViewFrame, const CRect& rect, const
 	convertPointToGlobal (nsView, nsp);
 	nsp.y -= (textSize.height + 4);
 	nsp.x += (rect.getWidth () - textSize.width) / 2;
-	
-	NSRect frameRect = { nsp, [textfield bounds].size };
+
+	NSRect frameRect = { nsp, textSize };
 	[window setFrame:frameRect display:NO];
 	[window setAlphaValue:0.95];
 	[window orderFront:nil];
