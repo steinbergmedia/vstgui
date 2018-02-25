@@ -79,6 +79,7 @@ public:
 	bool removeAll (bool withForget = true) override;
 	uint32_t getNbViews () const override;
 	CView* getView (uint32_t index) const override;
+	bool changeViewZOrder (CView* view, uint32_t newIndex) override;
 	void drawBackgroundRect (CDrawContext* pContext, const CRect& _updateRect) override;
 	bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons) override;
 	void valueChanged (CControl* pControl) override;

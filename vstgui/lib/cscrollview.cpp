@@ -637,6 +637,12 @@ CView* CScrollView::getView (uint32_t index) const
 }
 
 //-----------------------------------------------------------------------------
+bool CScrollView::changeViewZOrder (CView* view, uint32_t newIndex)
+{
+	return sc->changeViewZOrder (view, newIndex);
+}
+
+//-----------------------------------------------------------------------------
 void CScrollView::setTransparency (bool val)
 {
 	CViewContainer::setTransparency (val);
