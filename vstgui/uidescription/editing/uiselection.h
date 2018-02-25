@@ -56,6 +56,7 @@ public:
 	static CRect getGlobalViewCoordinates (CView* view);
 
 	void moveBy (const CPoint& p);
+	void sizeBy (const CRect& r);
 	void invalidRects () const;
 
 	void setDragOffset (const CPoint& p) { dragOffset = p; }

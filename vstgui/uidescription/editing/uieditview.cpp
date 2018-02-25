@@ -332,7 +332,7 @@ void UIEditView::enableEditing (bool state)
 			
 			highlightView = new UIEditViewInternal::UIHighlightView (this, viewHighlightColor);
 			overlayView->addView (highlightView);
-			UIEditViewInternal::UISelectionView* selectionView = new UIEditViewInternal::UISelectionView (this, getSelection (), viewSelectionColor, kResizeHandleSize);
+			auto selectionView = new UIEditViewInternal::UISelectionView (this, getSelection (), viewSelectionColor, kResizeHandleSize);
 			overlayView->addView (selectionView);
 		}
 		else
@@ -717,8 +717,6 @@ CMouseEventResult UIEditView::onMouseDown (CPoint &where, const CButtonState& bu
 				}
 				else
 				{
-					// TODO: multiple view resizing (width or height only)
-					getSelection ()->setExclusive (selectionHitView);
 					mouseEditMode = kSizeEditing;
 					mouseStartPoint = where2;
 					if (grid)
@@ -871,49 +869,61 @@ void UIEditView::doSizeEditingMove (CPoint& where)
 		where.offset (grid->getSize ().x / 2., grid->getSize ().y / 2.);
 		grid->process (where);
 	}
-	mouseStartPoint = where;
-	CView* view = getSelection ()->first ();
-	CRect viewSize (view->getViewSize ());
-	localToFrame (where);
-	view->getParentView ()->frameToLocal (where);
+	if (mouseStartPoint == where)
+		return;
+
+	CRect diff;
 	switch (mouseSizeMode)
 	{
-		case kSizeModeLeft: viewSize.left = where.x; break;
-		case kSizeModeRight: viewSize.right = where.x; break;
-		case kSizeModeTop: if (where.y <= viewSize.bottom) viewSize.top = where.y; break;
-		case kSizeModeBottom: viewSize.bottom = where.y; break;
-		case kSizeModeTopLeft: viewSize.left = where.x; viewSize.top = where.y; break;
-		case kSizeModeTopRight: viewSize.right = where.x; viewSize.top = where.y; break;
-		case kSizeModeBottomRight: viewSize.right = where.x; viewSize.bottom = where.y; break;
-		case kSizeModeBottomLeft: viewSize.left = where.x; viewSize.bottom = where.y; break;
+		case kSizeModeLeft:
+		{
+			diff.left = where.x - mouseStartPoint.x;
+			break;
+		}
+		case kSizeModeRight:
+		{
+			diff.right = where.x - mouseStartPoint.x;
+			break;
+		}
+		case kSizeModeTop:
+		{
+			diff.top = where.y - mouseStartPoint.y;
+			break;
+		}
+		case kSizeModeBottom:
+		{
+			diff.bottom = where.y - mouseStartPoint.y;
+			break;
+		}
+		case kSizeModeTopLeft:
+		{
+			diff.left = where.x - mouseStartPoint.x;
+			diff.top = where.y - mouseStartPoint.y;
+			break;
+		}
+		case kSizeModeTopRight:
+		{
+			diff.right = where.x - mouseStartPoint.x;
+			diff.top = where.y - mouseStartPoint.y;
+			break;
+		}
+		case kSizeModeBottomRight:
+		{
+			diff.right = where.x - mouseStartPoint.x;
+			diff.bottom = where.y - mouseStartPoint.y;
+			break;
+		}
+		case kSizeModeBottomLeft:
+		{
+			diff.left = where.x - mouseStartPoint.x;
+			diff.bottom = where.y - mouseStartPoint.y;
+			break;
+		}
 		default: break;
 	}
-	if (viewSize.left > viewSize.right)
-		viewSize.right = viewSize.left;
-	if (viewSize.top > viewSize.bottom)
-		viewSize.bottom = viewSize.top;
-	if (viewSize != view->getViewSize ())
-	{
-		bool oldAutosizingEnabled = true;
-		CViewContainer* container = nullptr;
-		if (!autosizing)
-		{
-			container = view->asViewContainer ();
-			if (container)
-			{
-				oldAutosizingEnabled = container->getAutosizingEnabled ();
-				container->setAutosizingEnabled (false);
-			}
-		}
-		getSelection ()->changed (UISelection::kMsgSelectionViewWillChange);
-		view->setViewSize (viewSize);
-		view->setMouseableArea (viewSize);
-		getSelection ()->changed (UISelection::kMsgSelectionViewChanged);
-		if (!autosizing && container)
-		{
-			container->setAutosizingEnabled (oldAutosizingEnabled);
-		}
-	}
+
+	selection->sizeBy (diff);
+	mouseStartPoint = where;
 	if (lines)
 	{
 		if (lines->getStyle () == UICrossLines::kSelectionStyle)
@@ -921,7 +931,6 @@ void UIEditView::doSizeEditingMove (CPoint& where)
 		else
 			lines->update (mouseStartPoint);
 	}
-	getSelection ()->changed (UISelection::kMsgSelectionViewChanged);
 }
 
 //----------------------------------------------------------------------------------------------------

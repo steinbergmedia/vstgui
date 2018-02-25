@@ -158,6 +158,23 @@ void UISelection::moveBy (const CPoint& p)
 }
 
 //----------------------------------------------------------------------------------------------------
+void UISelection::sizeBy (const CRect& r)
+{
+	changed (kMsgSelectionViewWillChange);
+	for (auto view : *this)
+	{
+		auto viewSize = view->getViewSize ();
+		viewSize.left += r.left;
+		viewSize.top += r.top;
+		viewSize.right += r.right;
+		viewSize.bottom += r.bottom;
+		view->setViewSize (viewSize);
+		view->setMouseableArea (viewSize);
+	}
+	changed (kMsgSelectionViewChanged);
+}
+
+//----------------------------------------------------------------------------------------------------
 void UISelection::invalidRects () const
 {
 	const_iterator it = begin ();
