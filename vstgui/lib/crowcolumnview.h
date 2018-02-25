@@ -21,9 +21,7 @@ public:
 
 	bool attached (CView* parent) override;
 	void setViewSize (const CRect& rect, bool invalid = true) override;
-	bool addView (CView* pView) override;
-	bool addView (CView* pView, const CRect& mouseableArea, bool mouseEnabled = true) override;
-	bool addView (CView* pView, CView* pBefore) override;
+	bool addView (CView* pView, CView* pBefore = nullptr) override;
 	bool removeView (CView* pView, bool withForget = true) override;
 	bool changeViewZOrder (CView* view, uint32_t newIndex) override;
 

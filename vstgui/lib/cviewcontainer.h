@@ -61,12 +61,11 @@ public:
 	/// @name Sub View Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual bool addView (CView* pView);	///< add a child view
-	virtual bool addView (CView* pView, const CRect& mouseableArea, bool mouseEnabled = true);	///< add a child view
-	virtual bool addView (CView* pView, CView* pBefore);	///< add a child view before another view
+	bool addView (CView* pView, const CRect& mouseableArea, bool mouseEnabled = true);	///< add a child view
+	virtual bool addView (CView* pView, CView* pBefore = nullptr);	///< add a child view before another view
 	virtual bool removeView (CView* pView, bool withForget = true);	///< remove a child view
 	virtual bool removeAll (bool withForget = true);	///< remove all child views
-	virtual bool isChild (CView* pView) const;	///< check if pView is a child view of this container
+	bool isChild (CView* pView) const;	///< check if pView is a child view of this container
 	virtual bool isChild (CView* pView, bool deep) const;	///< check if pView is a child view of this container
 	virtual bool hasChildren () const;						///< check if container has child views
 	virtual uint32_t getNbViews () const;			///< get the number of child views

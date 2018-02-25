@@ -74,9 +74,7 @@ public:
 	//@}
 
 	// overwrite
-	bool addView (CView* pView) override;
-	bool addView (CView* pView, const CRect& mouseableArea, bool mouseEnabled = true) override;
-	bool addView (CView* pView, CView* pBefore) override;
+	bool addView (CView* pView, CView* pBefore = nullptr) override;
 	bool removeView (CView* pView, bool withForget = true) override;
 	bool removeAll (bool withForget = true) override;
 	uint32_t getNbViews () const override;

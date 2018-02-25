@@ -269,30 +269,6 @@ void CAutoLayoutContainerView::setViewSize (const CRect& rect, bool invalid)
 }
 
 //--------------------------------------------------------------------------------
-bool CAutoLayoutContainerView::addView (CView* pView)
-{
-	if (CViewContainer::addView (pView, nullptr))
-	{
-		if (isAttached ())
-			layoutViews ();
-		return true;
-	}
-	return false;
-}
-
-//--------------------------------------------------------------------------------
-bool CAutoLayoutContainerView::addView (CView* pView, const CRect& mouseableArea, bool mouseEnabled)
-{
-	if (CViewContainer::addView (pView, mouseableArea, mouseEnabled))
-	{
-		if (isAttached ())
-			layoutViews ();
-		return true;
-	}
-	return false;
-}
-
-//--------------------------------------------------------------------------------
 bool CAutoLayoutContainerView::addView (CView* pView, CView* pBefore)
 {
 	if (CViewContainer::addView (pView, pBefore))

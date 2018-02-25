@@ -371,16 +371,6 @@ CMessageResult CViewContainer::notify (CBaseObject* sender, IdStringPtr message)
 //-----------------------------------------------------------------------------
 /**
  * @param pView the view object to add to this container
- * @return true on success. false if view was already attached
- */
-bool CViewContainer::addView (CView* pView)
-{
-	return addView (pView, nullptr);
-}
-
-//-----------------------------------------------------------------------------
-/**
- * @param pView the view object to add to this container
  * @param pBefore the view object
  * @return true on success. false if view was already attached
  */

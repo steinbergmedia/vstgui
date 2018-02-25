@@ -607,18 +607,6 @@ const CPoint& CScrollView::getScrollOffset () const
 }
 
 //-----------------------------------------------------------------------------
-bool CScrollView::addView (CView *pView)
-{
-	return sc->addView (pView);
-}
-
-//-----------------------------------------------------------------------------
-bool CScrollView::addView (CView *pView, const CRect &mouseableArea, bool mouseEnabled)
-{
-	return sc->addView (pView, mouseableArea, mouseEnabled);
-}
-
-//-----------------------------------------------------------------------------
 bool CScrollView::addView (CView* pView, CView* pBefore)
 {
 	return sc->addView (pView, pBefore);
