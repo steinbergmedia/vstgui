@@ -464,8 +464,6 @@ static SharedPointer<CBitmap> createColorBitmap (CPoint size, CColor color)
 	return bitmap;
 }
 
-static CColor kLightGreyColor (220, 220, 220);
-	
 //----------------------------------------------------------------------------------------------------
 static const std::array<CColor, 4> editViewBackgroundColors = {{
 	{230, 230, 230},
