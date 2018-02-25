@@ -43,6 +43,7 @@ public:
 	T* get () { return buffer; }
 	const T* get () const { return buffer; }
 	size_t size () const { return count; }
+	bool empty () const { return count == 0; }
 
 	void allocate (size_t objectCount)
 	{
