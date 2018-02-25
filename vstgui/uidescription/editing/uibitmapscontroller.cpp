@@ -175,8 +175,7 @@ UIBitmapsDataSource::UIBitmapsDataSource (UIDescription* description, IActionPer
 //----------------------------------------------------------------------------------------------------
 CMouseEventResult UIBitmapsDataSource::dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser)
 {
-	if (delegate && buttons.isDoubleClick ())
-		delegate->dbRowDoubleClick (row, this);
+	UIBaseDataSource::dbOnMouseDown (where, buttons, row, column, browser);
 	return kMouseEventHandled;
 }
 
@@ -888,12 +887,6 @@ void UIBitmapsController::dbSelectionChanged (int32_t selectedRow, GenericString
 			settingButton->setMouseEnabled (selectedBitmapName ? true : false);
 		}
 	}
-}
-
-//----------------------------------------------------------------------------------------------------
-void UIBitmapsController::dbRowDoubleClick (int32_t row, GenericStringListDataBrowserSource* source)
-{
-	showSettingsDialog ();
 }
 
 //----------------------------------------------------------------------------------------------------
