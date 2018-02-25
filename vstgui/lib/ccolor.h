@@ -14,12 +14,12 @@ namespace VSTGUI {
 //-----------------------------------------------------------------------------
 struct CColor
 {
-	CColor () = default;
-	CColor (uint8_t red, uint8_t green, uint8_t blue, uint8_t alpha = 255)
+	constexpr CColor () = default;
+	constexpr CColor (uint8_t red, uint8_t green, uint8_t blue, uint8_t alpha = 255)
 	: red (red), green (green), blue (blue), alpha (alpha)
 	{}
 
-	CColor (const CColor& inColor)
+	constexpr CColor (const CColor& inColor)
 	: red (inColor.red), green (inColor.green), blue (inColor.blue), alpha (inColor.alpha)
 	{}
 
@@ -87,7 +87,7 @@ struct CColor
 	void fromHSL (double hue, double saturation, double lightness);
 	
 	/** get the luma of the color */
-	uint8_t getLuma () const { return (uint8_t)((float)red * 0.3f + (float)green * 0.59f + (float)blue * 0.11f); }
+	constexpr uint8_t getLuma () const { return (uint8_t)((float)red * 0.3f + (float)green * 0.59f + (float)blue * 0.11f); }
 	/** get the lightness of the color */
 	uint8_t getLightness () const;
 	//@}
@@ -98,23 +98,22 @@ struct CColor
 	uint8_t alpha {255};		///< alpha component [0..255]
 };
 
-inline CColor MakeCColor (uint8_t red = 0, uint8_t green = 0, uint8_t blue = 0, uint8_t alpha = 255)
+inline constexpr CColor MakeCColor (uint8_t red = 0, uint8_t green = 0, uint8_t blue = 0, uint8_t alpha = 255)
 {
 	return CColor (red, green, blue, alpha);
 }
 
 // define some basic colors
-extern const CColor kTransparentCColor;
-extern const CColor kBlackCColor;
-extern const CColor kWhiteCColor;
-extern const CColor kGreyCColor;
-extern const CColor kRedCColor;
-extern const CColor kGreenCColor;
-extern const CColor kBlueCColor;
-extern const CColor kYellowCColor;
-extern const CColor kCyanCColor;
-extern const CColor kMagentaCColor;
-
+constexpr const CColor kTransparentCColor	= CColor (255, 255, 255,   0);
+constexpr const CColor kBlackCColor			= CColor (  0,   0,   0, 255);
+constexpr const CColor kWhiteCColor			= CColor (255, 255, 255, 255);
+constexpr const CColor kGreyCColor			= CColor (127, 127, 127, 255);
+constexpr const CColor kRedCColor			= CColor (255,   0,   0, 255);
+constexpr const CColor kGreenCColor			= CColor (  0, 255,   0, 255);
+constexpr const CColor kBlueCColor			= CColor (  0,   0, 255, 255);
+constexpr const CColor kYellowCColor		= CColor (255, 255,   0, 255);
+constexpr const CColor kMagentaCColor		= CColor (255,   0, 255, 255);
+constexpr const CColor kCyanCColor			= CColor (  0, 255, 255, 255);
 
 } // namespace
 
