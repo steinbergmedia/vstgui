@@ -235,6 +235,9 @@ protected:
 	const ViewList& getChildren () const;
 private:
 	void clearMouseDownView ();
+	void setDragView (CView* view);
+	CView* getDragView () const;
+	void clearDragView ();
 
 	struct Impl;
 	std::unique_ptr<Impl> pImpl;

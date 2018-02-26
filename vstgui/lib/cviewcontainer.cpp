@@ -20,6 +20,9 @@ namespace VSTGUI {
 
 IdStringPtr kMsgLooseFocus = "LooseFocus";
 
+const CViewAttributeID kCViewContainerDragViewAttribute = 'vcdv';
+const CViewAttributeID kCViewContainerMouseDownViewAttribute = 'vcmd';
+
 //-----------------------------------------------------------------------------
 // CViewContainer Implementation
 //-----------------------------------------------------------------------------
@@ -39,9 +42,6 @@ struct CViewContainer::Impl
 	CPoint backgroundOffset;
 	
 	CRect lastDrawnFocus;
-	
-	CView* currentDragView {nullptr};
-	CView* mouseDownView {nullptr};
 };
 
 //-----------------------------------------------------------------------------
@@ -117,19 +117,45 @@ void CViewContainer::setMouseDownView (CView* view)
 			mouseDownView->onMouseUp (p, 0);
 		}
 	}
-	pImpl->mouseDownView = view;
+	setAttribute (kCViewContainerMouseDownViewAttribute, sizeof (CView*), &view);
 }
 
 //-----------------------------------------------------------------------------
 CView* CViewContainer::getMouseDownView () const
 {
-	return pImpl->mouseDownView;
+	CView* view = nullptr;
+	uint32_t size = 0;
+	if (getAttribute (kCViewContainerMouseDownViewAttribute, sizeof (CView*), &view, size))
+		return view;
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------
 void CViewContainer::clearMouseDownView ()
 {
-	pImpl->mouseDownView = nullptr;
+	removeAttribute (kCViewContainerMouseDownViewAttribute);
+}
+
+//-----------------------------------------------------------------------------
+CView* CViewContainer::getDragView () const
+{
+	CView* view = nullptr;
+	uint32_t size = 0;
+	if (getAttribute (kCViewContainerDragViewAttribute, sizeof (CView*), &view, size))
+		return view;
+	return nullptr;
+}
+
+//-----------------------------------------------------------------------------
+void CViewContainer::setDragView (CView* view)
+{
+	setAttribute (kCViewContainerDragViewAttribute, sizeof (CView*), &view);
+}
+
+//-----------------------------------------------------------------------------
+void CViewContainer::clearDragView ()
+{
+	removeAttribute (kCViewContainerDragViewAttribute);
 }
 
 //-----------------------------------------------------------------------------
@@ -438,7 +464,7 @@ bool CViewContainer::addView (CView* pView, const CRect &mouseableArea, bool mou
 bool CViewContainer::removeAll (bool withForget)
 {
 	clearMouseDownView ();
-	pImpl->currentDragView = nullptr;
+	clearDragView ();
 	
 	auto it = pImpl->children.begin ();
 	while (it != pImpl->children.end ())
@@ -472,8 +498,8 @@ bool CViewContainer::removeView (CView *pView, bool withForget)
 		pView->invalid ();
 		if (pView == getMouseDownView ())
 			clearMouseDownView ();
-		if (pView == pImpl->currentDragView)
-			pImpl->currentDragView = nullptr;
+		if (pView == getDragView ())
+			clearDragView ();
 		if (isAttached ())
 			pView->removed (this);
 		pView->setSubviewState (false);
@@ -979,18 +1005,19 @@ bool CViewContainer::onDrop (IDataPackage* drag, const CPoint& where)
 	pImpl->transform.inverse ().transform (where2);
 
 	CView* view = getViewAt (where, GetViewOptions ().mouseEnabled ().includeViewContainer ());
-	if (view != pImpl->currentDragView)
+	auto currentDragView = getDragView ();
+	if (view != currentDragView)
 	{
-		if (pImpl->currentDragView)
-			pImpl->currentDragView->onDragLeave (drag, where2);
-		pImpl->currentDragView = view;
+		if (currentDragView)
+			currentDragView->onDragLeave (drag, where2);
+		currentDragView = view;
 	}
-	if (pImpl->currentDragView)
+	if (currentDragView)
 	{
-		result = pImpl->currentDragView->onDrop (drag, where2);
-		pImpl->currentDragView->onDragLeave (drag, where2);
+		result = currentDragView->onDrop (drag, where2);
+		currentDragView->onDragLeave (drag, where2);
 	}
-	pImpl->currentDragView = nullptr;
+	clearDragView ();
 	
 	return result;
 }
@@ -1002,12 +1029,17 @@ void CViewContainer::onDragEnter (IDataPackage* drag, const CPoint& where)
 	where2.offset (-getViewSize ().left, -getViewSize ().top);
 	pImpl->transform.inverse ().transform (where2);
 
-	if (pImpl->currentDragView)
-		pImpl->currentDragView->onDragLeave (drag, where2);
-	CView* view = getViewAt (where, GetViewOptions ().mouseEnabled ().includeViewContainer ());
-	pImpl->currentDragView = view;
-	if (view)
+	if (auto currentDragView = getDragView ())
+		currentDragView->onDragLeave (drag, where2);
+	if (auto view = getViewAt (where, GetViewOptions ().mouseEnabled ().includeViewContainer ()))
+	{
+		setDragView (view);
 		view->onDragEnter (drag, where2);
+	}
+	else
+	{
+		clearDragView ();
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -1017,9 +1049,11 @@ void CViewContainer::onDragLeave (IDataPackage* drag, const CPoint& where)
 	where2.offset (-getViewSize ().left, -getViewSize ().top);
 	pImpl->transform.inverse ().transform (where2);
 
-	if (pImpl->currentDragView)
-		pImpl->currentDragView->onDragLeave (drag, where2);
-	pImpl->currentDragView = nullptr;
+	if (auto currentDragView = getDragView ())
+	{
+		currentDragView->onDragLeave (drag, where2);
+		clearDragView ();
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -1030,16 +1064,23 @@ void CViewContainer::onDragMove (IDataPackage* drag, const CPoint& where)
 	pImpl->transform.inverse ().transform (where2);
 
 	CView* view = getViewAt (where, GetViewOptions ().mouseEnabled ().includeViewContainer ());
-	if (view != pImpl->currentDragView)
+	auto currentDragView = getDragView ();
+	if (view != currentDragView)
 	{
-		if (pImpl->currentDragView)
-			pImpl->currentDragView->onDragLeave (drag, where2);
+		if (currentDragView)
+			currentDragView->onDragLeave (drag, where2);
 		if (view)
+		{
 			view->onDragEnter (drag, where2);
-		pImpl->currentDragView = view;
+			setDragView (view);
+		}
+		else
+		{
+			clearDragView ();
+		}
 	}
-	else if (pImpl->currentDragView)
-		pImpl->currentDragView->onDragMove (drag, where2);
+	else if (currentDragView)
+		currentDragView->onDragMove (drag, where2);
 }
 
 #if VSTGUI_TOUCH_EVENT_HANDLING
