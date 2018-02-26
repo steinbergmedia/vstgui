@@ -276,7 +276,7 @@ void* hInstance = nullptr; // for VSTGUI
 int APIENTRY wWinMain (_In_ HINSTANCE instance, _In_opt_ HINSTANCE prevInstance,
                        _In_ LPWSTR lpCmdLine, _In_ int nCmdShow)
 {
-	HRESULT hr = CoInitialize (NULL);
+	HRESULT hr = OleInitialize (NULL);
 	if (FAILED (hr))
 		return FALSE;
 
@@ -287,6 +287,6 @@ int APIENTRY wWinMain (_In_ HINSTANCE instance, _In_opt_ HINSTANCE prevInstance,
 	app.init (instance, lpCmdLine);
 	app.run ();
 
-	CoUninitialize ();
+	OleUninitialize ();
 	return 0;
 }

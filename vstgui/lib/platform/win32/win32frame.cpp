@@ -162,6 +162,7 @@ Win32Frame::Win32Frame (IPlatformFrameCallback* frame, const CRect& size, HWND p
 	{
 		windowHandle = parent;
 		parentWindow = nullptr;
+		RegisterDragDrop (windowHandle, new CDropTarget (this));
 	}
 	else
 	{
@@ -203,11 +204,12 @@ Win32Frame::~Win32Frame () noexcept
 		DestroyWindow (tooltipWindow);
 	if (backBuffer)
 		backBuffer->forget ();
+	if (windowHandle)
+		RevokeDragDrop (windowHandle);
 	if (parentWindow)
 	{
 		if (windowHandle)
 		{
-			RevokeDragDrop (windowHandle);
 			SetWindowLongPtr (windowHandle, GWLP_USERDATA, (LONG_PTR)NULL);
 			DestroyWindow (windowHandle);
 		}
