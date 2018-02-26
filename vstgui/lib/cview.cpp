@@ -163,6 +163,12 @@ IdStringPtr kMsgViewSizeChanged = "kMsgViewSizeChanged";
 bool CView::kDirtyCallAlwaysOnMainThread = false;
 
 //-----------------------------------------------------------------------------
+const CViewAttributeID kCViewAttributeReferencePointer = 'cvrp';
+const CViewAttributeID kCViewTooltipAttribute = 'cvtt';
+const CViewAttributeID kCViewControllerAttribute = 'ictr';
+const CViewAttributeID kCViewHitTestPathAttribute = 'cvht';
+
+//-----------------------------------------------------------------------------
 // CView
 //-----------------------------------------------------------------------------
 struct CView::Impl
@@ -183,7 +189,6 @@ struct CView::Impl
 	
 	SharedPointer<CBitmap> background;
 	SharedPointer<CBitmap> disabledBackground;
-	SharedPointer<CGraphicsPath> hitTestPath;
 };
 
 //-----------------------------------------------------------------------------
@@ -213,7 +218,7 @@ CView::CView (const CView& v)
 	pImpl->alphaValue = v.pImpl->alphaValue;
 	pImpl->background = v.pImpl->background;
 	pImpl->disabledBackground = v.pImpl->disabledBackground;
-	pImpl->hitTestPath = v.pImpl->hitTestPath;
+	setHitTestPath (v.getHitTestPath ());
 
 	for (auto& attribute : v.pImpl->attributes)
 		setAttribute (attribute.first, attribute.second->getSize (), attribute.second->getData ());
@@ -231,6 +236,8 @@ void CView::beforeDelete ()
 
 	vstgui_assert (isAttached () == false, "View is still attached");
 	vstgui_assert (pImpl->viewListeners.empty (), "View listeners not empty");
+
+	setHitTestPath (nullptr);
 	
 	IController* controller = nullptr;
 	uint32_t size = sizeof (IController*);
@@ -261,7 +268,7 @@ void CView::setMouseableArea (const CRect& rect)
 //-----------------------------------------------------------------------------
 CRect& CView::getMouseableArea (CRect& rect) const
 {
-	rect = pImpl->mouseableArea;
+	rect = getMouseableArea ();
 	return rect;
 }
 
@@ -272,9 +279,31 @@ const CRect& CView::getMouseableArea () const
 }
 
 //-----------------------------------------------------------------------------
+/**
+ * @param path the path to use for hit testing. The path will be translated by this views origin, so that the path must not be set again, if the view is moved. Otherwise when the size of the view changes, the path must also be set again.
+ */
+void CView::setHitTestPath (CGraphicsPath* path)
+{
+	if (auto p = getHitTestPath ())
+	{
+		p->forget ();
+		removeAttribute (kCViewHitTestPathAttribute);
+	}
+	if (path)
+	{
+		path->remember ();
+		setAttribute (kCViewHitTestPathAttribute, sizeof (CGraphicsPath*), &path);
+	}
+}
+
+//-----------------------------------------------------------------------------
 CGraphicsPath* CView::getHitTestPath () const
 {
-	return pImpl->hitTestPath;
+	CGraphicsPath* path = nullptr;
+	uint32_t size;
+	if (getAttribute (kCViewHitTestPathAttribute, sizeof (CGraphicsPath*), &path, size))
+		return path;
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -437,28 +466,19 @@ CMouseEventResult CView::onMouseCancel ()
 
 //-----------------------------------------------------------------------------
 /**
- * @param path the path to use for hit testing. The path will be translated by this views origin, so that the path must not be set again, if the view is moved. Otherwise when the size of the view changes, the path must also be set again.
- */
-void CView::setHitTestPath (CGraphicsPath* path)
-{
-	pImpl->hitTestPath = path;
-}
-
-//-----------------------------------------------------------------------------
-/**
  * @param where location
  * @param buttons button and modifier state
  * @return true if point hits this view
  */
 bool CView::hitTest (const CPoint& where, const CButtonState& buttons)
 {
-	if (pImpl->hitTestPath)
+	if (auto path = getHitTestPath ())
 	{
 		CPoint p (where);
 		p.offset (-getViewSize ().left, -getViewSize ().top);
-		return pImpl->hitTestPath->hitTest (p);
+		return path->hitTest (p);
 	}
-	return pImpl->mouseableArea.pointInside (where);
+	return getMouseableArea ().pointInside (where);
 }
 
 //-----------------------------------------------------------------------------
@@ -797,11 +817,6 @@ void CView::setDisabledBackground (CBitmap* background)
 	if (getMouseEnabled () == false)
 		setDirty (true);
 }
-
-//-----------------------------------------------------------------------------
-const CViewAttributeID kCViewAttributeReferencePointer = 'cvrp';
-const CViewAttributeID kCViewTooltipAttribute = 'cvtt';
-const CViewAttributeID kCViewControllerAttribute = 'ictr';
 
 //-----------------------------------------------------------------------------
 /**
