@@ -97,7 +97,7 @@ public:
 	virtual void setBackgroundColor (const CColor& color);	///< set the background color (will only be drawn if this container is not set to transparent and does not have a background bitmap)
 	virtual CColor getBackgroundColor () const;	///< get the background color
 	virtual void setBackgroundOffset (const CPoint& p);	///< set the offset of the background bitmap
-	virtual const CPoint& getBackgroundOffset () const;	///< get the offset of the background bitmap
+	virtual CPoint getBackgroundOffset () const;	///< get the offset of the background bitmap
 	virtual void drawBackgroundRect (CDrawContext* pContext, const CRect& _updateRect);	///< draw the background
 	
 	virtual void setBackgroundColorDrawStyle (CDrawStyle style);

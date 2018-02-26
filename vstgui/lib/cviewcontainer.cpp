@@ -23,6 +23,7 @@ IdStringPtr kMsgLooseFocus = "LooseFocus";
 const CViewAttributeID kCViewContainerDragViewAttribute = 'vcdv';
 const CViewAttributeID kCViewContainerMouseDownViewAttribute = 'vcmd';
 const CViewAttributeID kCViewContainerLastDrawnFocusAttribute = 'vclf';
+const CViewAttributeID kCViewContainerBackgroundOffsetAttribute = 'vcbo';
 
 //-----------------------------------------------------------------------------
 // CViewContainer Implementation
@@ -38,7 +39,6 @@ struct CViewContainer::Impl
 	
 	CDrawStyle backgroundColorDrawStyle {kDrawFilledAndStroked};
 	CColor backgroundColor {kBlackCColor};
-	CPoint backgroundOffset;
 };
 
 //-----------------------------------------------------------------------------
@@ -61,7 +61,7 @@ CViewContainer::CViewContainer (const CViewContainer& v)
 	pImpl->transform = v.pImpl->transform;
 	pImpl->backgroundColorDrawStyle = v.pImpl->backgroundColorDrawStyle;
 	pImpl->backgroundColor = v.pImpl->backgroundColor;
-	pImpl->backgroundOffset = v.pImpl->backgroundOffset;
+	setBackgroundOffset (v.getBackgroundOffset ());
 	for (auto& view : v.pImpl->children)
 		addView (static_cast<CView*> (view->newCopy ()));
 }
@@ -368,13 +368,20 @@ CColor CViewContainer::getBackgroundColor () const
 //------------------------------------------------------------------------------
 void CViewContainer::setBackgroundOffset (const CPoint& p)
 {
-	pImpl->backgroundOffset = p;
+	if (p == CPoint (0, 0))
+		removeAttribute (kCViewContainerBackgroundOffsetAttribute);
+	else
+		setAttribute (kCViewContainerBackgroundOffsetAttribute, sizeof (CPoint), &p);
 }
 
 //------------------------------------------------------------------------------
-const CPoint& CViewContainer::getBackgroundOffset () const
+CPoint CViewContainer::getBackgroundOffset () const
 {
-	return pImpl->backgroundOffset;
+	CPoint p;
+	uint32_t size;
+	if (getAttribute (kCViewContainerBackgroundOffsetAttribute, sizeof (CPoint), &p, size))
+		return p;
+	return {};
 }
 
 //------------------------------------------------------------------------------
@@ -703,7 +710,7 @@ void CViewContainer::drawBackgroundRect (CDrawContext* pContext, const CRect& _u
 		newClip.bound (oldClip);
 		pContext->setClipRect (newClip);
 		CRect tr (0, 0, getViewSize ().getWidth (), getViewSize ().getHeight ());
-		getDrawBackground ()->draw (pContext, tr, pImpl->backgroundOffset);
+		getDrawBackground ()->draw (pContext, tr, getBackgroundOffset ());
 		pContext->setClipRect (oldClip);
 	}
 	else if ((pImpl->backgroundColor.alpha != 255 && getTransparency ()) || !getTransparency ())
