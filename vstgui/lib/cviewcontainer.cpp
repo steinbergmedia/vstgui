@@ -22,6 +22,7 @@ IdStringPtr kMsgLooseFocus = "LooseFocus";
 
 const CViewAttributeID kCViewContainerDragViewAttribute = 'vcdv';
 const CViewAttributeID kCViewContainerMouseDownViewAttribute = 'vcmd';
+const CViewAttributeID kCViewContainerLastDrawnFocusAttribute = 'vclf';
 
 //-----------------------------------------------------------------------------
 // CViewContainer Implementation
@@ -33,15 +34,11 @@ struct CViewContainer::Impl
 	ViewContainerListenerDispatcher viewContainerListeners;
 	CGraphicsTransform transform;
 	
-	/// @cond ignore
 	ViewList children;
-	/// @endcond
 	
 	CDrawStyle backgroundColorDrawStyle {kDrawFilledAndStroked};
 	CColor backgroundColor {kBlackCColor};
 	CPoint backgroundOffset;
-	
-	CRect lastDrawnFocus;
 };
 
 //-----------------------------------------------------------------------------
@@ -156,6 +153,25 @@ void CViewContainer::setDragView (CView* view)
 void CViewContainer::clearDragView ()
 {
 	removeAttribute (kCViewContainerDragViewAttribute);
+}
+
+//-----------------------------------------------------------------------------
+CRect CViewContainer::getLastDrawnFocus () const
+{
+	CRect r;
+	uint32_t size;
+	if (getAttribute (kCViewContainerLastDrawnFocusAttribute, sizeof (CRect), &r, size))
+		return r;
+	return {};
+}
+
+//-----------------------------------------------------------------------------
+void CViewContainer::setLastDrawnFocus (CRect r)
+{
+	if (r.isEmpty ())
+		removeAttribute (kCViewContainerLastDrawnFocusAttribute);
+	else
+		setAttribute (kCViewContainerLastDrawnFocusAttribute, sizeof (CRect), &r);
 }
 
 //-----------------------------------------------------------------------------
@@ -393,9 +409,12 @@ CMessageResult CViewContainer::notify (CBaseObject* sender, IdStringPtr message)
 	}
 	else if (message == kMsgOldFocusView)
 	{
-		if (!pImpl->lastDrawnFocus.isEmpty ())
-			invalidRect (pImpl->lastDrawnFocus);
-		pImpl->lastDrawnFocus = CRect (0, 0, 0, 0);
+		auto ldf = getLastDrawnFocus ();
+		if (!ldf.isEmpty ())
+		{
+			invalidRect (ldf);
+			setLastDrawnFocus (CRect (0, 0, 0, 0));
+		}
 	}
 	return kMessageUnknown;
 }
@@ -762,15 +781,15 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 					{
 						if (_focusDrawing->getFocusPath (*focusPath))
 						{
-							pImpl->lastDrawnFocus = focusPath->getBoundingBox ();
-							if (!pImpl->lastDrawnFocus.isEmpty ())
+							auto lastDrawnFocus = focusPath->getBoundingBox ();
+							if (!lastDrawnFocus.isEmpty ())
 							{
 								pContext->setClipRect (oldClip2);
 								pContext->setDrawMode (kAntiAliasing|kNonIntegralMode);
 								pContext->setFillColor (getFrame ()->getFocusColor ());
 								pContext->drawGraphicsPath (focusPath, CDrawContext::kPathFilledEvenOdd);
-								pImpl->lastDrawnFocus = focusPath->getBoundingBox ();
-								pImpl->lastDrawnFocus.extend (1, 1);
+								lastDrawnFocus.extend (1, 1);
+								setLastDrawnFocus (lastDrawnFocus);
 							}
 							_focusDrawing = nullptr;
 							_focusView = nullptr;
@@ -814,14 +833,14 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 					focusPath->addRect (r);
 				}
 			}
-			pImpl->lastDrawnFocus = focusPath->getBoundingBox ();
-			if (!pImpl->lastDrawnFocus.isEmpty ())
+			auto lastDrawnFocus = focusPath->getBoundingBox ();
+			if (!lastDrawnFocus.isEmpty ())
 			{
 				pContext->setDrawMode (kAntiAliasing|kNonIntegralMode);
 				pContext->setFillColor (getFrame ()->getFocusColor ());
 				pContext->drawGraphicsPath (focusPath, CDrawContext::kPathFilledEvenOdd);
-				pImpl->lastDrawnFocus = focusPath->getBoundingBox ();
-				pImpl->lastDrawnFocus.extend (1, 1);
+				lastDrawnFocus.extend (1, 1);
+				setLastDrawnFocus (lastDrawnFocus);
 			}
 		}
 	}

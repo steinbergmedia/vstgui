@@ -238,6 +238,8 @@ private:
 	void setDragView (CView* view);
 	CView* getDragView () const;
 	void clearDragView ();
+	CRect getLastDrawnFocus () const;
+	void setLastDrawnFocus (CRect r);
 
 	struct Impl;
 	std::unique_ptr<Impl> pImpl;
