@@ -234,6 +234,8 @@ protected:
 	
 	const ViewList& getChildren () const;
 private:
+	void clearMouseDownView ();
+
 	struct Impl;
 	std::unique_ptr<Impl> pImpl;
 };

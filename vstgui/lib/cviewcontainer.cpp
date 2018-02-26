@@ -42,7 +42,6 @@ struct CViewContainer::Impl
 	
 	CView* currentDragView {nullptr};
 	CView* mouseDownView {nullptr};
-	
 };
 
 //-----------------------------------------------------------------------------
@@ -106,15 +105,16 @@ void CViewContainer::parentSizeChanged ()
 //-----------------------------------------------------------------------------
 void CViewContainer::setMouseDownView (CView* view)
 {
-	if (pImpl->mouseDownView && pImpl->mouseDownView != view)
+	auto mouseDownView = getMouseDownView ();
+	if (mouseDownView && mouseDownView != view)
 	{
 		// make sure the old mouse down view get a mouse cancel or if not implemented a mouse up
-		if (auto cvc = pImpl->mouseDownView->asViewContainer ())
+		if (auto cvc = mouseDownView->asViewContainer ())
 			cvc->setMouseDownView (nullptr);
-		else if (pImpl->mouseDownView->onMouseCancel () == kMouseEventNotImplemented)
+		else if (mouseDownView->onMouseCancel () == kMouseEventNotImplemented)
 		{
-			CPoint p = pImpl->mouseDownView->getViewSize ().getTopLeft () - CPoint (10, 10);
-			pImpl->mouseDownView->onMouseUp (p, 0);
+			CPoint p = mouseDownView->getViewSize ().getTopLeft () - CPoint (10, 10);
+			mouseDownView->onMouseUp (p, 0);
 		}
 	}
 	pImpl->mouseDownView = view;
@@ -124,6 +124,12 @@ void CViewContainer::setMouseDownView (CView* view)
 CView* CViewContainer::getMouseDownView () const
 {
 	return pImpl->mouseDownView;
+}
+
+//-----------------------------------------------------------------------------
+void CViewContainer::clearMouseDownView ()
+{
+	pImpl->mouseDownView = nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -431,8 +437,7 @@ bool CViewContainer::addView (CView* pView, const CRect &mouseableArea, bool mou
  */
 bool CViewContainer::removeAll (bool withForget)
 {
-	if (pImpl->mouseDownView)
-		pImpl->mouseDownView = nullptr;
+	clearMouseDownView ();
 	pImpl->currentDragView = nullptr;
 	
 	auto it = pImpl->children.begin ();
@@ -465,8 +470,8 @@ bool CViewContainer::removeView (CView *pView, bool withForget)
 	if (it != pImpl->children.end ())
 	{
 		pView->invalid ();
-		if (pView == pImpl->mouseDownView)
-			pImpl->mouseDownView = nullptr;
+		if (pView == getMouseDownView ())
+			clearMouseDownView ();
 		if (pView == pImpl->currentDragView)
 			pImpl->currentDragView = nullptr;
 		if (isAttached ())
@@ -879,7 +884,7 @@ CMouseEventResult CViewContainer::onMouseDown (CPoint &where, const CButtonState
 			if (result != kMouseEventNotHandled && result != kMouseEventNotImplemented)
 			{
 				if (pV->getNbReference () > 1 && result == kMouseEventHandled)
-					pImpl->mouseDownView = pV;
+					setMouseDownView (pV);
 				return result;
 			}
 			if (!pV->getTransparency ())
@@ -892,15 +897,15 @@ CMouseEventResult CViewContainer::onMouseDown (CPoint &where, const CButtonState
 //-----------------------------------------------------------------------------
 CMouseEventResult CViewContainer::onMouseUp (CPoint &where, const CButtonState& buttons)
 {
-	if (pImpl->mouseDownView)
+	if (auto mouseDownView = getMouseDownView ())
 	{
-		CBaseObjectGuard crg (pImpl->mouseDownView);
+		CBaseObjectGuard crg (mouseDownView);
 
 		CPoint where2 (where);
 		where2.offset (-getViewSize ().left, -getViewSize ().top);
 		pImpl->transform.inverse ().transform (where2);
-		pImpl->mouseDownView->onMouseUp (where2, buttons);
-		pImpl->mouseDownView = nullptr;
+		mouseDownView->onMouseUp (where2, buttons);
+		clearMouseDownView ();
 		return kMouseEventHandled;
 	}
 	return kMouseEventNotHandled;
@@ -909,17 +914,17 @@ CMouseEventResult CViewContainer::onMouseUp (CPoint &where, const CButtonState& 
 //-----------------------------------------------------------------------------
 CMouseEventResult CViewContainer::onMouseMoved (CPoint &where, const CButtonState& buttons)
 {
-	if (pImpl->mouseDownView)
+	if (auto mouseDownView = getMouseDownView ())
 	{
-		CBaseObjectGuard crg (pImpl->mouseDownView);
+		CBaseObjectGuard crg (mouseDownView);
 
 		CPoint where2 (where);
 		where2.offset (-getViewSize ().left, -getViewSize ().top);
 		pImpl->transform.inverse ().transform (where2);
-		CMouseEventResult mouseResult = pImpl->mouseDownView->onMouseMoved (where2, buttons);
+		CMouseEventResult mouseResult = mouseDownView->onMouseMoved (where2, buttons);
 		if (mouseResult != kMouseEventHandled && mouseResult != kMouseEventNotImplemented)
 		{
-			pImpl->mouseDownView = nullptr;
+			clearMouseDownView ();
 			return kMouseEventNotHandled;
 		}
 		return kMouseEventHandled;
@@ -930,10 +935,10 @@ CMouseEventResult CViewContainer::onMouseMoved (CPoint &where, const CButtonStat
 //-----------------------------------------------------------------------------
 CMouseEventResult CViewContainer::onMouseCancel ()
 {
-	if (pImpl->mouseDownView)
+	if (auto mouseDownView = getMouseDownView ())
 	{
-		CBaseObjectGuard crg (pImpl->mouseDownView);
-		return pImpl->mouseDownView->onMouseCancel ();
+		CBaseObjectGuard crg (mouseDownView);
+		return mouseDownView->onMouseCancel ();
 	}
 	return kMouseEventHandled;
 }
