@@ -23,6 +23,14 @@ static Class openGLViewClass = nullptr;
 
 namespace VSTGUI {
 
+#ifdef MAC_OS_X_VERSION_10_12
+static constexpr auto CocoaOpenGLContextParameterSwapInterval = NSOpenGLContextParameterSwapInterval;
+static constexpr auto CocoaOpenGLContextParameterSurfaceOpacity = NSOpenGLContextParameterSurfaceOpacity;
+#else
+static constexpr auto CocoaOpenGLContextParameterSwapInterval = NSOpenGLCPSwapInterval;
+static constexpr auto CocoaOpenGLContextParameterSurfaceOpacity = NSOpenGLCPSurfaceOpacity;
+#endif
+
 //-----------------------------------------------------------------------------
 CocoaOpenGLView::CocoaOpenGLView (NSView* parent)
 : parent (parent)
@@ -94,9 +102,9 @@ bool CocoaOpenGLView::init (IOpenGLView* view, PixelFormat* _pixelFormat)
 		{
 			NSOpenGLContext* context = [platformView openGLContext];
 			GLint value = 1;
-			[context setValues:&value forParameter:NSOpenGLCPSwapInterval];
+			[context setValues:&value forParameter:CocoaOpenGLContextParameterSwapInterval];
 			value = 0;
-			[context setValues:&value forParameter:NSOpenGLContextParameterSurfaceOpacity];
+			[context setValues:&value forParameter:CocoaOpenGLContextParameterSurfaceOpacity];
 
 		#if DEBUG
 			if (pixelFormat.flags & PixelFormat::kModernOpenGL)
