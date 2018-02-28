@@ -483,6 +483,7 @@ SharedPointer<COffscreenContext> HIViewFrame::createOffscreenContext (CCoord wid
 	return nullptr;
 }
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //------------------------------------------------------------------------------------
 DragResult HIViewFrame::doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap)
 {
@@ -581,6 +582,7 @@ DragResult HIViewFrame::doDrag (IDataPackage* source, const CPoint& offset, CBit
 	}
 	return result;
 }
+#endif
 
 //-----------------------------------------------------------------------------
 void HIViewFrame::setClipboard (const SharedPointer<IDataPackage>& data)

@@ -580,6 +580,7 @@ SharedPointer<COffscreenContext> Win32Frame::createOffscreenContext (CCoord widt
 	return context;
 }
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //------------------------------------------------------------------------------------
 DragResult Win32Frame::doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap)
 {
@@ -599,6 +600,7 @@ DragResult Win32Frame::doDrag (IDataPackage* source, const CPoint& offset, CBitm
 	}
 	return result;
 }
+#endif
 
 //-----------------------------------------------------------------------------
 void Win32Frame::setClipboard (const SharedPointer<IDataPackage>& data)

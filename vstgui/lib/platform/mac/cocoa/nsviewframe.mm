@@ -1064,6 +1064,7 @@ SharedPointer<COffscreenContext> NSViewFrame::createOffscreenContext (CCoord wid
 	return nullptr;
 }
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //------------------------------------------------------------------------------------
 DragResult NSViewFrame::doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap)
 {
@@ -1224,6 +1225,7 @@ DragResult NSViewFrame::doDrag (IDataPackage* source, const CPoint& offset, CBit
 	}
 	return kDragError;
 }
+#endif
 
 //-----------------------------------------------------------------------------
 void NSViewFrame::setClipboard (const SharedPointer<IDataPackage>& data)

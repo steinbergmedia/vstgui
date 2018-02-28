@@ -824,11 +824,13 @@ SharedPointer<COffscreenContext> Frame::createOffscreenContext (CCoord width, CC
 	return nullptr;
 }
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //------------------------------------------------------------------------
 DragResult Frame::doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap)
 {
 	return impl->widget.doDrag (source, offset, dragBitmap);
 }
+#endif
 
 //------------------------------------------------------------------------
 void Frame::setClipboard (const SharedPointer<IDataPackage>& data)

@@ -59,8 +59,10 @@ public:
 	/** create an offscreen draw device */
 	virtual SharedPointer<COffscreenContext> createOffscreenContext (CCoord width, CCoord height, double scaleFactor = 1.) = 0;
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 	/** start a drag operation */
 	virtual DragResult doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap) = 0;
+#endif
 
 	/** set clipboard data */
 	virtual void setClipboard (const SharedPointer<IDataPackage>& data) = 0;

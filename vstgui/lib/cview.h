@@ -106,7 +106,7 @@ public:
 	/// @name Drag & Drop Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual DragResult doDrag (IDataPackage* source, const CPoint& offset = CPoint (0, 0), CBitmap* dragBitmap = nullptr);	///< start a drag operation. See CDropSource to create the source data package
+	VSTGUI_DEPRECATED (virtual DragResult doDrag (IDataPackage* source, const CPoint& offset = CPoint (0, 0), CBitmap* dragBitmap = nullptr);)	///< start a drag operation. See CDropSource to create the source data package
 	virtual bool onDrop (IDataPackage* drag, const CPoint& where) { return false; }				///< called if a drag is dropped onto this view
 	virtual void onDragEnter (IDataPackage* drag, const CPoint& where) {}						///< called if a drag is entering this view
 	virtual void onDragLeave (IDataPackage* drag, const CPoint& where) {}						///< called if a drag is leaving this view

@@ -164,7 +164,7 @@ public:
 	bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons) override;
 	int32_t onKeyDown (VstKeyCode& keyCode) override;
 	int32_t onKeyUp (VstKeyCode& keyCode) override;
-	DragResult doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap) override;
+	VSTGUI_DEPRECATED (DragResult doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap) override;)
 	void setViewSize (const CRect& rect, bool invalid = true) override;
 
 	VSTGUIEditorInterface* getEditor () const override;

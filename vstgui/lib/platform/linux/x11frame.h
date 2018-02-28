@@ -72,7 +72,9 @@ public:
 		IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer) override;
 	SharedPointer<COffscreenContext> createOffscreenContext (CCoord width, CCoord height,
 															 double scaleFactor) override;
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 	DragResult doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap) override;
+#endif
 	void setClipboard (const SharedPointer<IDataPackage>& data) override;
 	SharedPointer<IDataPackage> getClipboard () override;
 

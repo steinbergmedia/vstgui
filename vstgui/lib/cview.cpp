@@ -609,6 +609,7 @@ int32_t CView::onKeyUp (VstKeyCode& keyCode)
 	return -1;
 }
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //------------------------------------------------------------------------------
 /**
  * a drag can only be started from within onMouseDown
@@ -626,6 +627,7 @@ DragResult CView::doDrag (IDataPackage* source, const CPoint& offset, CBitmap* d
 	}
 	return kDragError;
 }
+#endif
 
 //------------------------------------------------------------------------------
 /**
