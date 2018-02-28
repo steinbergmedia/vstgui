@@ -16,40 +16,61 @@ namespace VSTGUI {
 class IPlatformFrame : public AtomicReferenceCounted
 {
 public:
-	static IPlatformFrame* createPlatformFrame (IPlatformFrameCallback* frame, const CRect& size, void* parent, PlatformType parentType, IPlatformFrameConfig* config = nullptr);	///< create platform representation
+	/** create platform representation */
+	static IPlatformFrame* createPlatformFrame (IPlatformFrameCallback* frame, const CRect& size, void* parent, PlatformType parentType, IPlatformFrameConfig* config = nullptr);
 	static uint32_t getTicks ();
 
-	virtual bool getGlobalPosition (CPoint& pos) const = 0;	///< get the top left position in global coordinates
-	virtual bool setSize (const CRect& newSize) = 0;	///< set size of platform representation relative to parent
-	virtual bool getSize (CRect& size) const = 0;	///< get size of platform representation relative to parent
+	/** get the top left position in global coordinates */
+	virtual bool getGlobalPosition (CPoint& pos) const = 0;
+	/** set size of platform representation relative to parent */
+	virtual bool setSize (const CRect& newSize) = 0;
+	/** get size of platform representation relative to parent */
+	virtual bool getSize (CRect& size) const = 0;
 	
-	virtual bool getCurrentMousePosition (CPoint& mousePosition) const = 0;	///< get current mouse position out of event stream
-	virtual bool getCurrentMouseButtons (CButtonState& buttons) const = 0;	///< get current mouse buttons out of event stream
-	virtual bool setMouseCursor (CCursorType type) = 0;	///< set mouse cursor shape
+	/** get current mouse position out of event stream */
+	virtual bool getCurrentMousePosition (CPoint& mousePosition) const = 0;
+	/** get current mouse buttons out of event stream */
+	virtual bool getCurrentMouseButtons (CButtonState& buttons) const = 0;
+	/** set mouse cursor shape */
+	virtual bool setMouseCursor (CCursorType type) = 0;
 	
-	virtual bool invalidRect (const CRect& rect) = 0;	///< invalidates rect in platform representation
-	virtual bool scrollRect (const CRect& src, const CPoint& distance) = 0; ///< blit scroll the src rect by distance, return false if not supported
+	/** invalidates rect in platform representation*/
+	virtual bool invalidRect (const CRect& rect) = 0;
+	/** blit scroll the src rect by distance, return false if not supported */
+	virtual bool scrollRect (const CRect& src, const CPoint& distance) = 0;
 
-	virtual bool showTooltip (const CRect& rect, const char* utf8Text) = 0; ///< show tooltip
-	virtual bool hideTooltip () = 0;	///< hide tooltip
+	/** show tooltip */
+	virtual bool showTooltip (const CRect& rect, const char* utf8Text) = 0;
+	/** hide tooltip */
+	virtual bool hideTooltip () = 0;
 
-	virtual void* getPlatformRepresentation () const = 0;	// TODO: remove this call later when everything is done
+	/** TODO: remove this call later when everything is done */
+	virtual void* getPlatformRepresentation () const = 0;
 
-	virtual SharedPointer<IPlatformTextEdit> createPlatformTextEdit (IPlatformTextEditCallback* textEdit) = 0; ///< create a native text edit control
-	virtual SharedPointer<IPlatformOptionMenu> createPlatformOptionMenu () = 0; ///< create a native popup menu
+	/** create a native text edit control */
+	virtual SharedPointer<IPlatformTextEdit> createPlatformTextEdit (IPlatformTextEditCallback* textEdit) = 0;
+	/** create a native popup menu */
+	virtual SharedPointer<IPlatformOptionMenu> createPlatformOptionMenu () = 0;
 #if VSTGUI_OPENGL_SUPPORT
-	virtual SharedPointer<IPlatformOpenGLView> createPlatformOpenGLView () = 0; ///< create a native opengl sub view
+	/** create a native opengl sub view */
+	virtual SharedPointer<IPlatformOpenGLView> createPlatformOpenGLView () = 0;
 #endif // VSTGUI_OPENGL_SUPPORT
 	
-	virtual SharedPointer<IPlatformViewLayer> createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer = nullptr) = 0; ///< create a native view layer, may return 0 if not supported
+	/** create a native view layer, may return 0 if not supported */
+	virtual SharedPointer<IPlatformViewLayer> createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer = nullptr) = 0;
 	
-	virtual SharedPointer<COffscreenContext> createOffscreenContext (CCoord width, CCoord height, double scaleFactor = 1.) = 0; ///< create an offscreen draw device
+	/** create an offscreen draw device */
+	virtual SharedPointer<COffscreenContext> createOffscreenContext (CCoord width, CCoord height, double scaleFactor = 1.) = 0;
 
-	virtual DragResult doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap) = 0; ///< start a drag operation
+	/** start a drag operation */
+	virtual DragResult doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap) = 0;
 
-	virtual void setClipboard (const SharedPointer<IDataPackage>& data) = 0;	///< set clipboard data
-	virtual SharedPointer<IDataPackage> getClipboard () = 0;			///< get clipboard data
+	/** set clipboard data */
+	virtual void setClipboard (const SharedPointer<IDataPackage>& data) = 0;
+	/** get clipboard data */
+	virtual SharedPointer<IDataPackage> getClipboard () = 0;
 
+	/** */
 	virtual PlatformType getPlatformType () const = 0;
 //-----------------------------------------------------------------------------
 protected:
