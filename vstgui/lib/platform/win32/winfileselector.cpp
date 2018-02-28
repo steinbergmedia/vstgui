@@ -7,8 +7,9 @@
 #if WINDOWS
 
 #include "win32support.h"
-#include "win32frame.h"
+#include "../platform_win32.h"
 #include "../../cstring.h"
+#include "../../cframe.h"
 #include <shobjidl.h>
 #include <shlobj.h>
 #include <commdlg.h>
@@ -256,8 +257,8 @@ bool VistaFileSelector::runModalInternal ()
 			shellItem->Release ();
 		}
 	}
-	Win32Frame* win32Frame = frame->getPlatformFrame () ? dynamic_cast<Win32Frame*> (frame->getPlatformFrame ()) : 0;
-	hr = fileDialog->Show (win32Frame ? win32Frame->getPlatformWindow () : 0);
+	auto win32Frame = dynamic_cast<IWin32PlatformFrame*> (frame->getPlatformFrame ());
+	hr = fileDialog->Show (win32Frame->getHWND ());
 	if (SUCCEEDED (hr))
 	{
 		if (allowMultiFileSelection)
@@ -344,6 +345,9 @@ void XPFileSelector::cancelInternal ()
 //-----------------------------------------------------------------------------
 bool XPFileSelector::runModalInternal ()
 {
+	auto win32Frame = dynamic_cast<IWin32PlatformFrame*> (frame->getPlatformFrame ());
+	vstgui_assert (win32Frame);
+
 #if DEBUG
 	if (allowMultiFileSelection)
 	{
@@ -383,7 +387,7 @@ bool XPFileSelector::runModalInternal ()
 
 	OPENFILENAME ofn = {0};
 	ofn.lStructSize  = sizeof (OPENFILENAME);
-	ofn.hwndOwner= (HWND)(frame->getPlatformFrame ()->getPlatformRepresentation ());
+	ofn.hwndOwner= win32Frame->getHWND ();
 	ofn.hInstance = GetInstance ();
 	std::string filter;
 	for (std::list<CFileExtension>::const_iterator it = extensions.begin (); it!=extensions.end (); it++)
