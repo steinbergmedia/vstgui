@@ -16,6 +16,7 @@
 #include "../../lib/cdropsource.h"
 #include "../../lib/cfileselector.h"
 #include "../../lib/idatapackage.h"
+#include "../../lib/dragging.h"
 #include "../../lib/cvstguitimer.h"
 #include "../../lib/controls/ccolorchooser.h"
 #include "../../lib/controls/ctextedit.h"
@@ -201,7 +202,7 @@ CMouseEventResult UIBitmapsDataSource::dbOnMouseMoved (const CPoint& where, cons
 					auto dropSource = CDropSource::create (stream.getBuffer (),
 					                                       static_cast<uint32_t> (stream.tell ()),
 					                                       CDropSource::kText);
-					browser->doDrag (dropSource, {}, bitmap);
+					browser->doDrag (DragDescription (dropSource, {}, bitmap));
 					return kMouseMoveEventHandledButDontNeedMoreEvents;
 				}
 			}

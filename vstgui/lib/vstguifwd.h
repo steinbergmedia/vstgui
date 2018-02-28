@@ -81,6 +81,7 @@ struct CRect;
 struct CButtonState;
 struct CDrawMode;
 struct CGraphicsTransform;
+struct DragDescription;
 
 // interfaces
 class IViewListener;
@@ -101,6 +102,7 @@ class ISplitViewController;
 class ISplitViewSeparatorDrawer;
 class IScrollbarDrawer;
 class IControlListener;
+class IDragCallback;
 
 // classes
 class CBitmap;

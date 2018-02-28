@@ -116,6 +116,7 @@ set(${target}_common_sources
     cviewcontainer.h
     cvstguitimer.cpp
     cvstguitimer.h
+    dragging.h
     dispatchlist.h
     idatapackage.h
     idependency.h

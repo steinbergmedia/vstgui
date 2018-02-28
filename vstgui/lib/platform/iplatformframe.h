@@ -8,6 +8,7 @@
 /// @cond ignore
 
 #include "../vstguifwd.h"
+#include "../dragging.h"
 #include "iplatformframecallback.h"
 
 namespace VSTGUI {
@@ -63,6 +64,7 @@ public:
 	/** start a drag operation */
 	virtual DragResult doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap) = 0;
 #endif
+	virtual bool doDrag (const DragDescription& dragDescription, const SharedPointer<IDragCallback>& callback) = 0;
 
 	/** set clipboard data */
 	virtual void setClipboard (const SharedPointer<IDataPackage>& data) = 0;

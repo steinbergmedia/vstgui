@@ -21,6 +21,7 @@
 #include "../../lib/cdropsource.h"
 #include "../../lib/coffscreencontext.h"
 #include "../../lib/clayeredviewcontainer.h"
+#include "../../lib/dragging.h"
 #include "../../lib/idatapackage.h"
 #include <cassert>
 
@@ -1078,7 +1079,7 @@ void UIEditView::startDrag (CPoint& where)
 	stream.end ();
 
 	auto dropSource = CDropSource::create (stream.getBuffer (), static_cast<uint32_t>(stream.tell ()), CDropSource::kText);
-	doDrag (dropSource, offset, bitmap);
+	doDrag (DragDescription (dropSource, offset, bitmap));
 	if (bitmap)
 		bitmap->forget ();
 }

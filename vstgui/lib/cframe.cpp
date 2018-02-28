@@ -673,6 +673,14 @@ DragResult CFrame::doDrag (IDataPackage* source, const CPoint& offset, CBitmap* 
 #endif
 
 //-----------------------------------------------------------------------------
+bool CFrame::doDrag (const DragDescription& dragDescription, const SharedPointer<IDragCallback>& callback)
+{
+	if (pImpl->platformFrame)
+		return pImpl->platformFrame->doDrag (dragDescription, callback);
+	return false;
+}
+
+//-----------------------------------------------------------------------------
 SharedPointer<IDataPackage> CFrame::getClipboard ()
 {
 	if (pImpl->platformFrame)

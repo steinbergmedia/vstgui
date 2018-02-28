@@ -630,6 +630,17 @@ DragResult CView::doDrag (IDataPackage* source, const CPoint& offset, CBitmap* d
 #endif
 
 //------------------------------------------------------------------------------
+bool CView::doDrag (const DragDescription& dragDescription, const SharedPointer<IDragCallback>& callback)
+{
+	CFrame* frame = getFrame ();
+	if (frame)
+	{
+		return frame->doDrag (dragDescription, callback);
+	}
+	return false;
+}
+
+//------------------------------------------------------------------------------
 /**
  * @param sender message sender
  * @param message message text

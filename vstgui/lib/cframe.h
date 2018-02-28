@@ -165,6 +165,7 @@ public:
 	int32_t onKeyDown (VstKeyCode& keyCode) override;
 	int32_t onKeyUp (VstKeyCode& keyCode) override;
 	VSTGUI_DEPRECATED (DragResult doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap) override;)
+	bool doDrag (const DragDescription& dragDescription, const SharedPointer<IDragCallback>& callback = {}) override;
 	void setViewSize (const CRect& rect, bool invalid = true) override;
 
 	VSTGUIEditorInterface* getEditor () const override;

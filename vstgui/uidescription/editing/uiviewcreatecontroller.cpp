@@ -9,6 +9,7 @@
 #include "uieditcontroller.h"
 #include "uibasedatasource.h"
 #include "../../lib/cdropsource.h"
+#include "../../lib/dragging.h"
 #include "../../lib/controls/coptionmenu.h"
 #include "../../lib/controls/csearchtextedit.h"
 #include "../detail/uiviewcreatorattributes.h"
@@ -210,7 +211,7 @@ CMouseEventResult UIViewCreatorDataSource::dbOnMouseMoved (const CPoint& where, 
 		{
 			stream.end ();
 			auto dropSource = CDropSource::create (stream.getBuffer (), static_cast<uint32_t> (stream.tell ()), CDropSource::kText);
-			browser->doDrag (dropSource);
+			browser->doDrag (DragDescription (dropSource));
 		}
 		return kMouseMoveEventHandledButDontNeedMoreEvents;
 	}
