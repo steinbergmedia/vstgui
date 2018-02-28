@@ -799,12 +799,6 @@ bool Frame::hideTooltip ()
 }
 
 //------------------------------------------------------------------------
-void* Frame::getPlatformRepresentation () const
-{
-	return nullptr;
-}
-
-//------------------------------------------------------------------------
 void* Frame::getGtkWindow ()
 {
 	return &impl->plug;
