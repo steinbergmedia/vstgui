@@ -56,6 +56,7 @@ set(${target}_mac_sources
     source/platform/mac/macutilities.h
     source/platform/mac/macwindow.h
     source/platform/mac/macwindow.mm
+    source/platform/win32
 )
 
 ##########################################################################################

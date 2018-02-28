@@ -184,6 +184,7 @@ set(${target}_mac_sources
     platform/mac/quartzgraphicspath.cpp
     platform/mac/quartzgraphicspath.h
     platform/win32
+    platform/linux
 )
 
   ##########################################################################################
