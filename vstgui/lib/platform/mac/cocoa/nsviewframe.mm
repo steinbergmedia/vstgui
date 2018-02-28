@@ -573,7 +573,39 @@ static BOOL VSTGUI_NSView_performDragOperation (id self, SEL _cmd, id sender)
 	return result;
 }
 
-#if VSTGUI_NSVIEW_USE_DRAGGING_SESSION
+//------------------------------------------------------------------------------------
+struct VSTGUI_NSViewDraggingSession : public IDraggingSession
+{
+	VSTGUI_NSViewDraggingSession (NSDraggingSession* session) : session (session) {}
+	bool setBitmap (const SharedPointer<CBitmap>& bitmap, CPoint offset) override
+	{
+		[session
+		    enumerateDraggingItemsWithOptions:0
+		                              forView:nil
+		                              classes:[NSArray arrayWithObject:[NSPasteboardItem class]]
+		                        searchOptions:[NSDictionary<NSPasteboardReadingOptionKey, id> new]
+		                           usingBlock:^(NSDraggingItem* _Nonnull draggingItem,
+		                                        NSInteger idx, BOOL* _Nonnull stop) {
+			                         CGBitmap* cgBitmap =
+			                             bitmap ? bitmap->getPlatformBitmap ().cast<CGBitmap> () :
+			                                      nullptr;
+			                         CGImageRef cgImage =
+			                             cgBitmap ? cgBitmap->getCGImage () : nullptr;
+			                         auto nsImage =
+			                             cgImage ? [imageFromCGImageRef (cgImage) autorelease] :
+			                                       nil;
+			                         NSRect r;
+			                         r.origin = nsPointFromCPoint (offset);
+			                         r.origin.y -= [nsImage size].height;
+			                         r.size = nsImage.size;
+			                         [draggingItem setDraggingFrame:r contents:nsImage];
+			                         *stop = YES;
+		                           }];
+		return true;
+	}
+	NSDraggingSession* session;
+};
+
 //------------------------------------------------------------------------------------
 static NSDragOperation VSTGUI_NSView_draggingSessionSourceOperationMaskForDraggingContext (id self, SEL _cmd, NSDraggingSession* session, NSDraggingContext context)
 {
@@ -591,7 +623,49 @@ static NSDragOperation VSTGUI_NSView_draggingSessionSourceOperationMaskForDraggi
 	}
 	return NSDragOperationGeneric;
 }
-#else
+
+//------------------------------------------------------------------------------------
+static void VSTGUI_NSView_draggingSessionWillBeginAtPoint (id self, SEL _cmd, NSDraggingSession* session, NSPoint position)
+{
+	NSViewFrame* frame = getNSViewFrame (self);
+	if (!frame || !frame->getDragCallback ())
+		return;
+	position = [self convertPoint:position fromView:nil];
+	VSTGUI_NSViewDraggingSession ds (session);
+	frame->getDragCallback ()->dragWillBegin (&ds, pointFromNSPoint (position));
+}
+
+//------------------------------------------------------------------------------------
+static void VSTGUI_NSView_draggingSessionMovedToPoint (id self, SEL _cmd, NSDraggingSession* session, NSPoint position)
+{
+	NSViewFrame* frame = getNSViewFrame (self);
+	if (!frame || !frame->getDragCallback ())
+		return;
+	position = [self convertPoint:position fromView:nil];
+	VSTGUI_NSViewDraggingSession ds (session);
+	frame->getDragCallback ()->dragMoved (&ds, pointFromNSPoint (position));
+}
+
+//------------------------------------------------------------------------------------
+static void VSTGUI_NSView_draggingSessionEndedAtPoint (id self, SEL _cmd, NSDraggingSession* session, NSPoint position, NSDragOperation operation)
+{
+	NSViewFrame* frame = getNSViewFrame (self);
+	if (!frame || !frame->getDragCallback ())
+		return;
+	DragResult result;
+	switch (operation)
+	{
+		case NSDragOperationNone: result = kDragRefused; break;
+		case NSDragOperationMove: result = kDragMoved; break;
+		default: result = kDragCopied; break;
+	}
+	position = [self convertPoint:position fromView:nil];
+	VSTGUI_NSViewDraggingSession ds (session);
+	frame->getDragCallback ()->dragEnded (&ds, pointFromNSPoint (position), result);
+	frame->clearDragCallback ();
+}
+
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //------------------------------------------------------------------------------------
 static void VSTGUI_NSView_draggedImageEndedAtOperation (id self, SEL _cmd, NSImage* image, NSPoint aPoint, NSDragOperation operation)
 {
@@ -708,12 +782,20 @@ void NSViewFrame::initClass ()
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(draggingExited:), IMP (VSTGUI_NSView_draggingExited), "v@:@:^:"))
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(performDragOperation:), IMP (VSTGUI_NSView_performDragOperation), "B@:@:^:"))
 
-#if VSTGUI_NSVIEW_USE_DRAGGING_SESSION
-		sprintf (funcSig, "%s@:@:^:%s", @encode(NSDragOperation), @encode(NSDraggingContext));
-		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(draggingSession:sourceOperationMaskForDraggingContext:), IMP (VSTGUI_NSView_draggingSessionSourceOperationMaskForDraggingContext), funcSig))
-		Protocol* nsDraggingSourceProtocol = objc_getProtocol ("NSDraggingSource");
-		class_addProtocol (viewClass, nsDraggingSourceProtocol);
-#else
+		if (auto nsDraggingSourceProtocol = objc_getProtocol ("NSDraggingSource"))
+		{
+			sprintf (funcSig, "%s@:@:^:%s", @encode(NSDragOperation), @encode(NSDraggingSession));
+			VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(draggingSession:sourceOperationMaskForDraggingContext:), IMP (VSTGUI_NSView_draggingSessionSourceOperationMaskForDraggingContext), funcSig))
+			sprintf (funcSig, "%s@:@:^:%s:%s", @encode(void), @encode(NSDraggingSession), @encode(NSPoint));
+			VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(draggingSession:willBeginAtPoint:), IMP (VSTGUI_NSView_draggingSessionWillBeginAtPoint), funcSig))
+			VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(draggingSession:movedToPoint:), IMP (VSTGUI_NSView_draggingSessionMovedToPoint), funcSig))
+			sprintf (funcSig, "%s@:@:^:%s:%s:%s", @encode(void), @encode(NSDraggingSession), @encode(NSPoint), @encode(NSDragOperation));
+			VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(draggingSession:endedAtPoint:operation:), IMP (VSTGUI_NSView_draggingSessionEndedAtPoint), funcSig))
+
+			class_addProtocol (viewClass, nsDraggingSourceProtocol);
+		}
+
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 		sprintf (funcSig, "v@:@:^:%s:%s", @encode(NSPoint), nsUIntegerEncoded);
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(draggedImage:endedAt:operation:), IMP (VSTGUI_NSView_draggedImageEndedAtOperation), funcSig))
 #endif
@@ -1098,72 +1180,6 @@ DragResult NSViewFrame::doDrag (IDataPackage* source, const CPoint& offset, CBit
 			bitmapOffset.x += nsLocation.x;
 			bitmapOffset.y += nsLocation.y;
 		}
-#if VSTGUI_NSVIEW_USE_DRAGGING_SESSION
-		NSMutableArray* dragItems = [[NSMutableArray new] autorelease];
-		for (uint32_t index = 0, count = source->getCount (); index < count; ++index)
-		{
-			const void* buffer = nullptr;
-			IDataPackage::Type type {};
-			auto size = source->getData (index, buffer, type);
-			if (size == 0)
-				continue;
-			NSDraggingItem* item = nil;
-			switch (type)
-			{
-				case IDataPackage::kFilePath:
-				{
-					if (auto fileUrl = [NSURL fileURLWithPath:[NSString stringWithUTF8String:reinterpret_cast<const char*>(buffer)]])
-					{
-						item = [[[NSDraggingItem alloc] initWithPasteboardWriter:fileUrl] autorelease];
-					}
-					break;
-				}
-				case IDataPackage::kText:
-				{
-					if (auto string = [NSString stringWithUTF8String:reinterpret_cast<const char*>(buffer)])
-					{
-						item = [[[NSDraggingItem alloc] initWithPasteboardWriter:string] autorelease];
-					}
-					break;
-				}
-				case IDataPackage::kBinary:
-				{
-#if 0
-					// TODO: write an object implementing NSPasteboardWriting to provide NSData
-					if (auto data = [NSData dataWithBytes:buffer length:size])
-					{
-						item = [[[NSDraggingItem alloc] initWithPasteboardWriter:data] autorelease];
-					}
-#endif
-					break;
-				}
-				case IDataPackage::kError:
-				{
-					continue;
-				}
-			}
-			if (item)
-			{
-				if (cgImage && [dragItems count] == 0)
-				{
-					NSRect r;
-					r.origin = bitmapOffset;
-					r.origin.y -= [nsImage size].height;
-					r.size = nsImage.size;
-					[item setDraggingFrame:r contents:nsImage];
-				}
-				else
-					item.draggingFrame.origin = bitmapOffset;
-				[dragItems addObject:item];
-			}
-		}
-		NSView <NSDraggingSource>* draggingSource = (NSView <NSDraggingSource>*)nsView;
-		if (auto session = [nsView beginDraggingSessionWithItems:dragItems event:event source:draggingSource])
-		{
-			session.animatesToStartingPositionsOnCancelOrFail = YES;
-			return kDragAsynchronous;
-		}
-#else
 		NSPasteboard* nsPasteboard = [NSPasteboard pasteboardWithName:NSDragPboard];
 		IDataPackage::Type type = source->getDataType (0);
 		switch (type)
@@ -1221,11 +1237,120 @@ DragResult NSViewFrame::doDrag (IDataPackage* source, const CPoint& offset, CBit
 
 		[nsPasteboard clearContents];
 		return lastDragOperationResult;
-#endif
 	}
 	return kDragError;
 }
 #endif
+
+//-----------------------------------------------------------------------------
+bool NSViewFrame::doDrag (const DragDescription& dragDescription,
+                          const SharedPointer<IDragCallback>& callback)
+{
+	if (!nsView)
+		return false;
+
+	dragCallback = callback;
+
+	CGBitmap* cgBitmap = dragDescription.bitmap ?
+	                         dragDescription.bitmap->getPlatformBitmap ().cast<CGBitmap> () :
+	                         nullptr;
+	CGImageRef cgImage = cgBitmap ? cgBitmap->getCGImage () : nullptr;
+	NSPoint bitmapOffset = {static_cast<CGFloat> (dragDescription.bitmapOffset.x),
+	                        static_cast<CGFloat> (dragDescription.bitmapOffset.y)};
+
+	NSEvent* event = [NSApp currentEvent];
+	if (event == nullptr || !([event type] == MacEventType::LeftMouseDown ||
+							  [event type] == MacEventType::LeftMouseDragged))
+		return kDragRefused;
+	NSPoint nsLocation = [event locationInWindow];
+	NSImage* nsImage = nil;
+	if (cgImage)
+	{
+		nsImage = [imageFromCGImageRef (cgImage) autorelease];
+		nsLocation = [nsView convertPoint:nsLocation fromView:nil];
+		bitmapOffset.x += nsLocation.x;
+		bitmapOffset.y += nsLocation.y + [nsImage size].height;
+	}
+	else
+	{
+		if (bitmapOffset.x == 0)
+			bitmapOffset.x = 1;
+		if (bitmapOffset.y == 0)
+			bitmapOffset.y = 1;
+		nsImage = [[[NSImage alloc] initWithSize:NSMakeSize (fabs (bitmapOffset.x)*2, fabs (bitmapOffset.y)*2)] autorelease];
+		bitmapOffset.x += nsLocation.x;
+		bitmapOffset.y += nsLocation.y;
+	}
+
+	NSMutableArray* dragItems = [[NSMutableArray new] autorelease];
+	for (uint32_t index = 0, count = dragDescription.data->getCount (); index < count; ++index)
+	{
+		const void* buffer = nullptr;
+		IDataPackage::Type type {};
+		auto size = dragDescription.data->getData (index, buffer, type);
+		if (size == 0)
+			continue;
+		NSDraggingItem* item = nil;
+		switch (type)
+		{
+			case IDataPackage::kFilePath:
+			{
+				if (auto fileUrl = [NSURL fileURLWithPath:[NSString stringWithUTF8String:reinterpret_cast<const char*>(buffer)]])
+				{
+					item = [[[NSDraggingItem alloc] initWithPasteboardWriter:fileUrl] autorelease];
+				}
+				break;
+			}
+			case IDataPackage::kText:
+			{
+				if (auto string = [NSString stringWithUTF8String:reinterpret_cast<const char*>(buffer)])
+				{
+					item = [[[NSDraggingItem alloc] initWithPasteboardWriter:string] autorelease];
+				}
+				break;
+			}
+			case IDataPackage::kBinary:
+			{
+#if 0
+				// TODO: write an object implementing NSPasteboardWriting to provide NSData
+				if (auto data = [NSData dataWithBytes:buffer length:size])
+				{
+					item = [[[NSDraggingItem alloc] initWithPasteboardWriter:data] autorelease];
+				}
+#else
+				vstgui_assert (false, "Not yet implemented");
+#endif
+				break;
+			}
+			case IDataPackage::kError:
+			{
+				continue;
+			}
+		}
+		if (item)
+		{
+			if (cgImage && [dragItems count] == 0)
+			{
+				NSRect r;
+				r.origin = bitmapOffset;
+				r.origin.y -= [nsImage size].height;
+				r.size = nsImage.size;
+				[item setDraggingFrame:r contents:nsImage];
+			}
+			else
+				item.draggingFrame.origin = bitmapOffset;
+			[dragItems addObject:item];
+		}
+	}
+	NSView <NSDraggingSource>* draggingSource = (NSView <NSDraggingSource>*)nsView;
+	if (auto session = [nsView beginDraggingSessionWithItems:dragItems event:event source:draggingSource])
+	{
+		session.animatesToStartingPositionsOnCancelOrFail = YES;
+		return true;
+	}
+
+	return false;
+}
 
 //-----------------------------------------------------------------------------
 void NSViewFrame::setClipboard (const SharedPointer<IDataPackage>& data)

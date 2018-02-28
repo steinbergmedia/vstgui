@@ -34,6 +34,8 @@ public:
 	NSView* getNSView () const override { return nsView; }
 	IPlatformFrameCallback* getFrame () const { return frame; }
 	void* makeTouchBar () const;
+	IDragCallback* getDragCallback () const { return dragCallback; }
+	void clearDragCallback () { dragCallback = nullptr; }
 	
 	void setLastDragOperationResult (DragResult result) { lastDragOperationResult = result; }
 	void setIgnoreNextResignFirstResponder (bool state) { ignoreNextResignFirstResponder = state; }
@@ -68,6 +70,8 @@ public:
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 	DragResult doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap) override;
 #endif
+	bool doDrag (const DragDescription& dragDescription, const SharedPointer<IDragCallback>& callback) override;
+
 	void setClipboard (const SharedPointer<IDataPackage>& data) override;
 	SharedPointer<IDataPackage> getClipboard () override;
 	PlatformType getPlatformType () const override { return PlatformType::kNSView; }
@@ -84,6 +88,7 @@ protected:
 	CocoaTooltipWindow* tooltipWindow;
 	SharedPointer<IDataPackage> dragDataPackage;
 	SharedPointer<ITouchBarCreator> touchBarCreator;
+	SharedPointer<IDragCallback> dragCallback;
 
 	DragResult lastDragOperationResult;
 	bool ignoreNextResignFirstResponder;
