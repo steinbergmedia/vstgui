@@ -109,6 +109,7 @@
 		#pragma warning(3 : 4431) // missing type specifier - int assumed. Note: C no longer supports default-int
 		#pragma warning(3 : 4254) // conversion from 'type1' to 'type2', possible loss of data
 		#pragma warning(3 : 4388) // signed/unsigned mismatch
+		#pragma warning(disable : 4250) // class1' : inherits 'class2::member' via dominance
 	#endif
 
 	#if defined (__clang__) && __clang__
@@ -244,7 +245,7 @@ public:
 
 //-----------------------------------------------------------------------------
 template <typename T>
-class ReferenceCounted : public IReference
+class ReferenceCounted : virtual public IReference
 {
 public:
 	ReferenceCounted () = default;
