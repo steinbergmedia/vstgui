@@ -353,15 +353,13 @@ bool Win32Frame::getSize (CRect& size) const
 //-----------------------------------------------------------------------------
 bool Win32Frame::getCurrentMousePosition (CPoint& mousePosition) const
 {
-	HWND hwnd = windowHandle;
 	POINT _where;
 	GetCursorPos (&_where);
-	mousePosition ((CCoord)_where.x, (CCoord)_where.y);
-	if (hwnd)
+	mousePosition (static_cast<CCoord> (_where.x), static_cast<CCoord> (_where.y));
+	if (auto hwnd = getHWND ())
 	{
-		RECT rctTempWnd;
-		GetWindowRect (hwnd, &rctTempWnd);
-		mousePosition.offset ((CCoord)-rctTempWnd.left, (CCoord)-rctTempWnd.top);
+		ScreenToClient (hwnd, &_where);
+		mousePosition (static_cast<CCoord> (_where.x), static_cast<CCoord> (_where.y));
 		return true;
 	}
 	return false;
