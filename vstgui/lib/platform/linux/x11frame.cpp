@@ -535,6 +535,20 @@ struct GtkFrame : Gtk::DrawingArea
 		dragEventLoop.stop ();
 	}
 
+	bool doDrag (const DragDescription& dragDescription, const SharedPointer<IDragCallback>& callback)
+	{
+#warning TODO: new async drag function
+		// for now we use the sync function below
+		if (callback)
+			callback->dragWillBegin (nullptr, CPoint ());
+		auto result = doDrag (dragDescription.data, dragDescription.bitmapOffset, dragDescription.bitmap);
+		if (callback)
+		{
+			callback->dragEnded (nullptr, CPoint (), result);
+		}
+		return false;
+	}
+	
 	DragResult doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap)
 	{
 #warning TODO: dragBitmap support
@@ -831,6 +845,13 @@ DragResult Frame::doDrag (IDataPackage* source, const CPoint& offset, CBitmap* d
 	return impl->widget.doDrag (source, offset, dragBitmap);
 }
 #endif
+
+//------------------------------------------------------------------------
+bool Frame::doDrag (const DragDescription& dragDescription, const SharedPointer<IDragCallback>& callback)
+{
+	return impl->widget.doDrag (dragDescription, callback);
+}
+
 
 //------------------------------------------------------------------------
 void Frame::setClipboard (const SharedPointer<IDataPackage>& data)
