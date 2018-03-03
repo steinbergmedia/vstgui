@@ -1008,8 +1008,8 @@ CMouseEventResult UIEditView::onMouseExited (CPoint& where, const CButtonState& 
 CBitmap* UIEditView::createBitmapFromSelection (UISelection* selection)
 {
 	CRect viewSize = getSelection ()->getBounds ();
-	
-	auto context = COffscreenContext::create (getFrame (), viewSize.getWidth (), viewSize.getHeight ());
+	auto scaleFactor = getFrame ()->getScaleFactor ();
+	auto context = COffscreenContext::create (getFrame (), viewSize.getWidth (), viewSize.getHeight (), scaleFactor);
 	context->beginDraw ();
 	context->setFillColor (CColor (0, 0, 0, 40));
 	context->setFrameColor (CColor (255, 255, 255, 40));

@@ -1241,43 +1241,48 @@ DragResult NSViewFrame::doDrag (IDataPackage* source, const CPoint& offset, CBit
 #endif
 
 //-----------------------------------------------------------------------------
+static NSImage* nsImageForDragOperation (CBitmap* bitmap)
+{
+	if (!bitmap)
+		return nil;
+	auto platformBitmap = bitmap->getPlatformBitmap ();
+	if (!platformBitmap)
+		return nil;
+	auto cgBitmap = platformBitmap.cast<CGBitmap> ();
+	if (!cgBitmap)
+		return nil;
+	auto cgImage = cgBitmap->getCGImage ();
+	if (!cgImage)
+		return nil;
+	auto scaleFactor = platformBitmap->getScaleFactor ();
+	return imageFromCGImageRef (cgImage, scaleFactor);
+}
+
+//-----------------------------------------------------------------------------
 bool NSViewFrame::doDrag (const DragDescription& dragDescription,
                           const SharedPointer<IDragCallback>& callback)
 {
 	if (!nsView)
 		return false;
 
-	dragCallback = callback;
-
-	CGBitmap* cgBitmap = dragDescription.bitmap ?
-	                         dragDescription.bitmap->getPlatformBitmap ().cast<CGBitmap> () :
-	                         nullptr;
-	CGImageRef cgImage = cgBitmap ? cgBitmap->getCGImage () : nullptr;
-	NSPoint bitmapOffset = {static_cast<CGFloat> (dragDescription.bitmapOffset.x),
-	                        static_cast<CGFloat> (dragDescription.bitmapOffset.y)};
-
 	NSEvent* event = [NSApp currentEvent];
 	if (event == nullptr || !([event type] == MacEventType::LeftMouseDown ||
 							  [event type] == MacEventType::LeftMouseDragged))
 		return kDragRefused;
+
+	dragCallback = callback;
+
+	NSPoint bitmapOffset = {static_cast<CGFloat> (dragDescription.bitmapOffset.x),
+	                        static_cast<CGFloat> (dragDescription.bitmapOffset.y)};
+
+	auto bitmap = dragDescription.bitmap;
 	NSPoint nsLocation = [event locationInWindow];
 	NSImage* nsImage = nil;
-	if (cgImage)
+	if ((nsImage = nsImageForDragOperation (bitmap)))
 	{
-		nsImage = [imageFromCGImageRef (cgImage) autorelease];
 		nsLocation = [nsView convertPoint:nsLocation fromView:nil];
 		bitmapOffset.x += nsLocation.x;
 		bitmapOffset.y += nsLocation.y + [nsImage size].height;
-	}
-	else
-	{
-		if (bitmapOffset.x == 0)
-			bitmapOffset.x = 1;
-		if (bitmapOffset.y == 0)
-			bitmapOffset.y = 1;
-		nsImage = [[[NSImage alloc] initWithSize:NSMakeSize (fabs (bitmapOffset.x)*2, fabs (bitmapOffset.y)*2)] autorelease];
-		bitmapOffset.x += nsLocation.x;
-		bitmapOffset.y += nsLocation.y;
 	}
 
 	NSMutableArray* dragItems = [[NSMutableArray new] autorelease];
@@ -1327,12 +1332,13 @@ bool NSViewFrame::doDrag (const DragDescription& dragDescription,
 		}
 		if (item)
 		{
-			if (cgImage && [dragItems count] == 0)
+			if (nsImage && [dragItems count] == 0)
 			{
 				NSRect r;
+				r.size.width = bitmap->getWidth ();
+				r.size.height = bitmap->getHeight ();
 				r.origin = bitmapOffset;
-				r.origin.y -= [nsImage size].height;
-				r.size = nsImage.size;
+				r.origin.y -= r.size.height;
 				[item setDraggingFrame:r contents:nsImage];
 			}
 			else
