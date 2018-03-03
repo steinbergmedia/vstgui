@@ -585,6 +585,13 @@ DragResult HIViewFrame::doDrag (IDataPackage* source, const CPoint& offset, CBit
 #endif
 
 //-----------------------------------------------------------------------------
+bool HIViewFrame::doDrag (const DragDescription& dragDescription, const SharedPointer<IDragCallback>& callback)
+{
+	return false;
+}
+
+
+//-----------------------------------------------------------------------------
 void HIViewFrame::setClipboard (const SharedPointer<IDataPackage>& data)
 {
 	MacClipboard::setClipboard (data);

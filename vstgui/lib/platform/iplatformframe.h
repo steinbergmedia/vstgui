@@ -64,6 +64,10 @@ public:
 	/** start a drag operation */
 	virtual DragResult doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap) = 0;
 #endif
+	/** start a drag operation
+	 *
+	 *	optional callback will be remembered until the drag is droped or canceled
+	 */
 	virtual bool doDrag (const DragDescription& dragDescription, const SharedPointer<IDragCallback>& callback) = 0;
 
 	/** set clipboard data */

@@ -48,7 +48,11 @@ public:
 #endif
 	SharedPointer<IPlatformViewLayer> createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer) override;
 	SharedPointer<COffscreenContext> createOffscreenContext (CCoord width, CCoord height, double scaleFactor = 1.) override;
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 	DragResult doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap) override;
+#endif
+	bool doDrag (const DragDescription& dragDescription, const SharedPointer<IDragCallback>& callback) override;
+
 	void setClipboard (const SharedPointer<IDataPackage>& data) override;
 	SharedPointer<IDataPackage> getClipboard () override;
 	PlatformType getPlatformType () const override { return PlatformType::kUIView; }

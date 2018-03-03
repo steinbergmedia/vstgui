@@ -37,7 +37,9 @@ public:
 	IDragCallback* getDragCallback () const { return dragCallback; }
 	void clearDragCallback () { dragCallback = nullptr; }
 	
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 	void setLastDragOperationResult (DragResult result) { lastDragOperationResult = result; }
+#endif
 	void setIgnoreNextResignFirstResponder (bool state) { ignoreNextResignFirstResponder = state; }
 	bool getIgnoreNextResignFirstResponder () const { return ignoreNextResignFirstResponder; }
 
@@ -90,7 +92,9 @@ protected:
 	SharedPointer<ITouchBarCreator> touchBarCreator;
 	SharedPointer<IDragCallback> dragCallback;
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 	DragResult lastDragOperationResult;
+#endif
 	bool ignoreNextResignFirstResponder;
 	bool trackingAreaInitialized;
 	bool inDraw;

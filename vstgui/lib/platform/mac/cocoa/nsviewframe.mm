@@ -25,8 +25,6 @@
 
 #import <Carbon/Carbon.h>
 
-#define VSTGUI_NSVIEW_USE_DRAGGING_SESSION 0
-
 using namespace VSTGUI;
 
 //------------------------------------------------------------------------------------
