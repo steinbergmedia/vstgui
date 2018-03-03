@@ -26,6 +26,8 @@ public:
 	HWND getOuterWindow () const;
 	IPlatformFrameCallback* getFrame () const { return frame; }
 	
+	CCursorType getLastSetCursor () const { return lastSetCursor; }
+
 	// IPlatformFrame
 	bool getGlobalPosition (CPoint& pos) const override;
 	bool setSize (const CRect& newSize) override;
@@ -78,6 +80,7 @@ protected:
 
 	RGNDATA* updateRegionList;
 	DWORD updateRegionListSize;
+	CCursorType lastSetCursor;
 };
 
 } // namespace

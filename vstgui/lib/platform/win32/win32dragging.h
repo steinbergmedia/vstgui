@@ -19,16 +19,13 @@ namespace VSTGUI {
 class Win32DraggingSession : public IDraggingSession
 {
 public:
-	Win32DraggingSession (const SharedPointer<IDragCallback>& callback)
-	: callback (callback)
-	{}
+	Win32DraggingSession (Win32Frame* frame);
 
-	bool setBitmap (const SharedPointer<CBitmap>& bitmap, CPoint offset) final
-	{
-		return false;
-	}
+	bool setBitmap (const SharedPointer<CBitmap>& bitmap, CPoint offset) final;
 
-	SharedPointer<IDragCallback> callback;
+	bool doDrag (const DragDescription& dragDescription, const SharedPointer<IDragCallback>& callback);
+private:
+	Win32Frame* frame;
 };
 
 //-----------------------------------------------------------------------------
@@ -58,8 +55,6 @@ private:
 class Win32DropSource : public AtomicReferenceCounted, public ::IDropSource
 {
 public:
-	Win32DropSource () = default;
-
 	// IUnknown
 	STDMETHOD (QueryInterface) (REFIID riid, void** object);
 	STDMETHOD_ (ULONG, AddRef) (void) { remember (); return static_cast<ULONG> (getNbReference ());}
@@ -70,6 +65,31 @@ public:
 	STDMETHOD (GiveFeedback) (DWORD effect);
 };
 
+//-----------------------------------------------------------------------------
+class Win32DataObject : public AtomicReferenceCounted, public ::IDataObject
+{
+public:
+	Win32DataObject (IDataPackage* dataPackage);
+	~Win32DataObject () noexcept;
+
+	// IUnknown
+	STDMETHOD (QueryInterface) (REFIID riid, void** object);
+	STDMETHOD_ (ULONG, AddRef) (void) { remember (); return static_cast<ULONG> (getNbReference ());}
+	STDMETHOD_ (ULONG, Release) (void) { ULONG refCount = static_cast<ULONG> (getNbReference ()) - 1; forget (); return refCount; }
+
+	// IDataObject
+	STDMETHOD (GetData) (FORMATETC *format, STGMEDIUM *medium);
+	STDMETHOD (GetDataHere) (FORMATETC *format, STGMEDIUM *medium);
+	STDMETHOD (QueryGetData) (FORMATETC *format);
+	STDMETHOD (GetCanonicalFormatEtc) (FORMATETC *formatIn, FORMATETC *formatOut);
+	STDMETHOD (SetData) (FORMATETC *format, STGMEDIUM *medium, BOOL release);
+	STDMETHOD (EnumFormatEtc) (DWORD direction, IEnumFORMATETC** enumFormat);
+	STDMETHOD (DAdvise) (FORMATETC* format, DWORD advf, IAdviseSink* advSink, DWORD* connection);
+	STDMETHOD (DUnadvise) (DWORD connection);
+	STDMETHOD (EnumDAdvise) (IEnumSTATDATA** enumAdvise);
+private:
+	IDataPackage* dataPackage;
+};
 
 } // namespace
 
