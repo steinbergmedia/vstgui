@@ -262,7 +262,9 @@ TESTCASE(CViewTest,
 		EXPECT(v.onMouseEntered (p, kLButton) == kMouseEventNotImplemented);
 		EXPECT(v.onMouseExited (p, kLButton) == kMouseEventNotImplemented);
 		EXPECT(v.notify (nullptr, nullptr) == kMessageUnknown);
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 		EXPECT(v.doDrag (nullptr) == kDragError);
+#endif
 		EXPECT(v.onDrop (nullptr, p) == false);
 		EXPECT(v.getEditor () == nullptr);
 		EXPECT(v.isDirty () == false);

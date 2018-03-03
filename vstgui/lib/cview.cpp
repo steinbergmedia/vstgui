@@ -14,6 +14,7 @@
 #include "malloc.h"
 #include "animation/animator.h"
 #include "../uidescription/icontroller.h"
+#include "platform/iplatformframe.h"
 #include <cassert>
 #include <unordered_map>
 #if DEBUG
@@ -620,22 +621,35 @@ int32_t CView::onKeyUp (VstKeyCode& keyCode)
  */
 DragResult CView::doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap)
 {
-	CFrame* frame = getFrame ();
-	if (frame)
+	if (auto frame = getFrame ())
 	{
-		return frame->doDrag (source, offset, dragBitmap);
+		if (auto platformFrame = frame->getPlatformFrame ())
+		{
+			return platformFrame->doDrag (source, offset, dragBitmap);
+		}
 	}
 	return kDragError;
 }
 #endif
 
 //------------------------------------------------------------------------------
+/**
+ * A drag can only be started from within onMouseDown or onMouseMove.
+ * This method may return immediately before the drop occurs, if you want to be notified about the
+ * result you have to provide a callback object.
+ *
+ * @param dragDescription drag description
+ * @param callback callback
+ * @return true if the drag was started, otherwise false
+ */
 bool CView::doDrag (const DragDescription& dragDescription, const SharedPointer<IDragCallback>& callback)
 {
-	CFrame* frame = getFrame ();
-	if (frame)
+	if (auto frame = getFrame ())
 	{
-		return frame->doDrag (dragDescription, callback);
+		if (auto platformFrame = frame->getPlatformFrame ())
+		{
+			return platformFrame->doDrag (dragDescription, callback);
+		}
 	}
 	return false;
 }

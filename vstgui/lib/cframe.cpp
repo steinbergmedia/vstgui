@@ -662,24 +662,6 @@ bool CFrame::onWheel (const CPoint &where, const float &distance, const CButtonS
 	return onWheel (where, kMouseWheelAxisY, distance, buttons);
 }
 
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-//-----------------------------------------------------------------------------
-DragResult CFrame::doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap)
-{
-	if (pImpl->platformFrame)
-		return pImpl->platformFrame->doDrag (source, offset, dragBitmap);
-	return kDragError;
-}
-#endif
-
-//-----------------------------------------------------------------------------
-bool CFrame::doDrag (const DragDescription& dragDescription, const SharedPointer<IDragCallback>& callback)
-{
-	if (pImpl->platformFrame)
-		return pImpl->platformFrame->doDrag (dragDescription, callback);
-	return false;
-}
-
 //-----------------------------------------------------------------------------
 SharedPointer<IDataPackage> CFrame::getClipboard ()
 {
