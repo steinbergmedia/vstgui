@@ -186,6 +186,7 @@ set(${target}_mac_sources
     platform/mac/quartzgraphicspath.h
     platform/win32
     platform/linux
+    platform/mac/ios
 )
 
   ##########################################################################################
@@ -209,6 +210,8 @@ set(${target}_win32_sources
     platform/win32/win32bitmapbase.h
     platform/win32/win32dragcontainer.cpp
     platform/win32/win32dragcontainer.h
+    platform/win32/win32dragging.cpp
+    platform/win32/win32dragging.h
     platform/win32/win32frame.cpp
     platform/win32/win32frame.h
     platform/win32/win32openglview.cpp

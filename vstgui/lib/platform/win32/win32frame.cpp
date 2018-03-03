@@ -20,6 +20,7 @@
 #include "win32optionmenu.h"
 #include "win32support.h"
 #include "win32dragcontainer.h"
+#include "win32dragging.h"
 #include "../../cdropsource.h"
 #include "../../cgradient.h"
 
@@ -42,49 +43,6 @@ namespace VSTGUI {
 //-----------------------------------------------------------------------------
 static TCHAR gClassName[100];
 static bool bSwapped_mouse_buttons = false; 
-
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-class CDropTarget : public ::IDropTarget
-{	
-public:
-	CDropTarget (Win32Frame* pFrame);
-	~CDropTarget () noexcept;
-
-	// IUnknown
-	STDMETHOD (QueryInterface) (REFIID riid, void** object);
-	STDMETHOD_ (ULONG, AddRef) (void);
-	STDMETHOD_ (ULONG, Release) (void);
-   
-	// IDropTarget
-	STDMETHOD (DragEnter) (IDataObject* dataObject, DWORD keyState, POINTL pt, DWORD* effect);
-	STDMETHOD (DragOver) (DWORD keyState, POINTL pt, DWORD* effect);
-	STDMETHOD (DragLeave) (void);
-	STDMETHOD (Drop) (IDataObject* dataObject, DWORD keyState, POINTL pt, DWORD* effect);
-private:
-	int32_t refCount;
-	Win32Frame* pFrame;
-	WinDragContainer* gDragContainer;
-};
-
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-class Win32DropSource : public AtomicReferenceCounted, public ::IDropSource
-{
-public:
-	Win32DropSource () {}
-
-	// IUnknown
-	STDMETHOD (QueryInterface) (REFIID riid, void** object);
-	STDMETHOD_ (ULONG, AddRef) (void) { remember (); return static_cast<ULONG> (getNbReference ());}
-	STDMETHOD_ (ULONG, Release) (void) { ULONG refCount = static_cast<ULONG> (getNbReference ()) - 1; forget (); return refCount; }
-	
-	// IDropSource
-	STDMETHOD (QueryContinueDrag) (BOOL escapePressed, DWORD keyState);
-	STDMETHOD (GiveFeedback) (DWORD effect);
-};
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -602,10 +560,42 @@ DragResult Win32Frame::doDrag (IDataPackage* source, const CPoint& offset, CBitm
 }
 #endif
 
+//-----------------------------------------------------------------------------
 bool Win32Frame::doDrag (const DragDescription& dragDescription, const SharedPointer<IDragCallback>& callback)
 {
+	Win32DraggingSession session (callback);
+	// TODO: implement drag bitmap + drag move callback
+	if (callback)
+	{
+		CPoint location;
+		callback->dragWillBegin (&session, location);
+	}
+
+	auto dataObject = new Win32DataObject (dragDescription.data);
+	auto dropSource = new Win32DropSource;
+	DWORD outEffect;
+	auto hResult = DoDragDrop (dataObject, dropSource, DROPEFFECT_COPY, &outEffect);
+	dataObject->Release ();
+	dropSource->Release ();
+	
+	if (callback)
+	{
+		CPoint location;
+		if (hResult == DRAGDROP_S_DROP)
+		{
+			if (outEffect == DROPEFFECT_MOVE)
+				callback->dragEnded (&session, location, kDragMoved);
+			else
+				callback->dragEnded (&session, location, kDragCopied);
+		}
+		else
+		{
+			callback->dragEnded (&session, location, kDragRefused);
+		}
+	}
 	return true;
 }
+
 //-----------------------------------------------------------------------------
 void Win32Frame::setClipboard (const SharedPointer<IDataPackage>& data)
 {
@@ -1033,155 +1023,6 @@ LONG_PTR WINAPI Win32Frame::WindowProc (HWND hwnd, UINT message, WPARAM wParam, 
 		return win32Frame->proc (hwnd, message, wParam, lParam);
 	}
 	return DefWindowProc (hwnd, message, wParam, lParam);
-}
-
-//-----------------------------------------------------------------------------
-CDropTarget::CDropTarget (Win32Frame* pFrame)
-: refCount (0)
-, pFrame (pFrame)
-, gDragContainer (0)
-{
-}
-
-//-----------------------------------------------------------------------------
-CDropTarget::~CDropTarget () noexcept
-{
-}
-
-//-----------------------------------------------------------------------------
-STDMETHODIMP CDropTarget::QueryInterface (REFIID riid, void** object)
-{
-	if (riid == IID_IDropTarget || riid == IID_IUnknown)
-	{
-		*object = this;
-		AddRef ();
-      return NOERROR;
-	}
-	*object = 0;
-	return E_NOINTERFACE;
-}
-
-//-----------------------------------------------------------------------------
-STDMETHODIMP_(ULONG) CDropTarget::AddRef (void)
-{
-	return static_cast<ULONG> (++refCount);
-}
-
-//-----------------------------------------------------------------------------
-STDMETHODIMP_(ULONG) CDropTarget::Release (void)
-{
-	refCount--;
-	if (refCount <= 0)
-	{
-		delete this;
-		return 0;
-	}
-	return static_cast<ULONG> (refCount);
-}
-
-//-----------------------------------------------------------------------------
-STDMETHODIMP CDropTarget::DragEnter (IDataObject* dataObject, DWORD keyState, POINTL pt, DWORD* effect)
-{
-	if (dataObject && pFrame)
-	{
-		gDragContainer = new WinDragContainer (dataObject);
-		CPoint where;
-		pFrame->getCurrentMousePosition (where);
-		pFrame->getFrame ()->platformOnDragEnter (gDragContainer, where);
-		if ((*effect) & DROPEFFECT_COPY) 
-			*effect = DROPEFFECT_COPY;
-		else if ((*effect) & DROPEFFECT_MOVE) 
-			*effect = DROPEFFECT_MOVE;
-		else if ((*effect) & DROPEFFECT_LINK) 
-			*effect = DROPEFFECT_LINK;
-	}
-	else
-		*effect = DROPEFFECT_NONE;
-	return S_OK;
-}
-
-//-----------------------------------------------------------------------------
-STDMETHODIMP CDropTarget::DragOver (DWORD keyState, POINTL pt, DWORD* effect)
-{
-	if (gDragContainer && pFrame)
-	{
-		CPoint where;
-		pFrame->getCurrentMousePosition (where);
-		pFrame->getFrame ()->platformOnDragMove (gDragContainer, where);
-		if ((*effect) & DROPEFFECT_COPY) 
-			*effect = DROPEFFECT_COPY;
-		else if ((*effect) & DROPEFFECT_MOVE) 
-			*effect = DROPEFFECT_MOVE;
-		else if ((*effect) & DROPEFFECT_LINK) 
-			*effect = DROPEFFECT_LINK;
-	}
-	return S_OK;
-}
-
-//-----------------------------------------------------------------------------
-STDMETHODIMP CDropTarget::DragLeave (void)
-{
-	if (gDragContainer && pFrame)
-	{
-		CPoint where;
-		pFrame->getCurrentMousePosition (where);
-		pFrame->getFrame ()->platformOnDragLeave (gDragContainer, where);
-		gDragContainer->forget ();
-		gDragContainer = 0;
-	}
-	return S_OK;
-}
-
-//-----------------------------------------------------------------------------
-STDMETHODIMP CDropTarget::Drop (IDataObject* dataObject, DWORD keyState, POINTL pt, DWORD* effect)
-{
-	if (gDragContainer && pFrame)
-	{
-		CPoint where;
-		pFrame->getCurrentMousePosition (where);
-		pFrame->getFrame ()->platformOnDrop (gDragContainer, where);
-		gDragContainer->forget ();
-		gDragContainer = 0;
-	}
-	return S_OK;
-}
-
-//-----------------------------------------------------------------------------
-// Win32DropSource
-//-----------------------------------------------------------------------------
-STDMETHODIMP Win32DropSource::QueryInterface (REFIID riid, void** object)
-{
-	if (riid == ::IID_IDropSource)
-	{
-		AddRef ();                                                 
-		*object = (::IDropSource*)this;                               
-		return S_OK;                                          
-	}
-	else if (riid == ::IID_IUnknown)                        
-	{                                                              
-		AddRef ();                                                 
-		*object = (::IUnknown*)this;                               
-		return S_OK;                                          
-	}
-	return E_NOINTERFACE;
-}
-
-//-----------------------------------------------------------------------------
-STDMETHODIMP Win32DropSource::QueryContinueDrag (BOOL escapePressed, DWORD keyState)
-{
-	if (escapePressed)
-		return DRAGDROP_S_CANCEL;
-	
-	if ((keyState & (MK_LBUTTON|MK_RBUTTON)) == 0)
-		return DRAGDROP_S_DROP;
-
-	return S_OK;	
-}
-
-//-----------------------------------------------------------------------------
-STDMETHODIMP Win32DropSource::GiveFeedback (DWORD effect)
-{
-	return DRAGDROP_S_USEDEFAULTCURSORS;
 }
 
 //-----------------------------------------------------------------------------

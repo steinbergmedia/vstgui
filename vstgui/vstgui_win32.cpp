@@ -13,6 +13,7 @@
 #include "lib/platform/win32/gdiplusdrawcontext.cpp"
 #include "lib/platform/win32/gdiplusgraphicspath.cpp"
 #include "lib/platform/win32/win32dragcontainer.cpp"
+#include "lib/platform/win32/win32dragging.cpp"
 #include "lib/platform/win32/win32frame.cpp"
 #include "lib/platform/win32/win32openglview.cpp"
 #include "lib/platform/win32/win32optionmenu.cpp"
