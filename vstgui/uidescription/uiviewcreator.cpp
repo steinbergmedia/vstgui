@@ -551,7 +551,7 @@ public:
 	IdStringPtr getViewName () const override { return kCView; }
 	IdStringPtr getBaseViewName () const override { return nullptr; }
 	UTF8StringPtr getDisplayName () const override { return "View"; }
-	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new SimpleCView (CRect (0, 0, 0, 0)); }
+	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new SimpleCView (CRect (0, 0, 50, 50)); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
 		CPoint p;
@@ -1232,7 +1232,7 @@ protected:
 	class DummyControl : public CControl
 	{
 	public:
-		DummyControl () : CControl (CRect (0, 0, 0, 0), nullptr, -1) {}
+		DummyControl () : CControl (CRect (0, 0, 40, 40), nullptr, -1) {}
 		void draw (CDrawContext* pContext) override { CView::draw (pContext); }
 		
 		CLASS_METHODS(DummyControl, CControl)
@@ -1370,7 +1370,7 @@ public:
 	IdStringPtr getViewName () const override { return kCOnOffButton; }
 	IdStringPtr getBaseViewName () const override { return kCControl; }
 	UTF8StringPtr getDisplayName () const override { return "OnOff Button"; }
-	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new COnOffButton (CRect (0, 0, 0, 0), nullptr, -1, nullptr); }
+	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new COnOffButton (CRect (0, 0, 20, 20), nullptr, -1, nullptr); }
 };
 COnOffButtonCreator __gCOnOffButtonCreator;
 
@@ -1538,7 +1538,7 @@ public:
 	IdStringPtr getViewName () const override { return kCParamDisplay; }
 	IdStringPtr getBaseViewName () const override { return kCControl; }
 	UTF8StringPtr getDisplayName () const override { return "Parameter Display"; }
-	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CParamDisplay (CRect (0, 0, 0, 0)); }
+	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CParamDisplay (CRect (0, 0, 100, 20)); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
 		CParamDisplay* display = dynamic_cast<CParamDisplay*> (view);
@@ -1799,7 +1799,7 @@ public:
 	IdStringPtr getViewName () const override { return kCOptionMenu; }
 	IdStringPtr getBaseViewName () const override { return kCParamDisplay; }
 	UTF8StringPtr getDisplayName () const override { return "Option Menu"; }
-	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new COptionMenu (); }
+	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new COptionMenu (CRect (0, 0, 100, 20), nullptr, -1); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
 		COptionMenu* menu = dynamic_cast<COptionMenu*> (view);
@@ -4294,7 +4294,7 @@ public:
 	IdStringPtr getViewName () const override { return kCXYPad; }
 	IdStringPtr getBaseViewName () const override { return kCParamDisplay; }
 	UTF8StringPtr getDisplayName () const override { return "XY Pad"; }
-	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CXYPad (CRect (0, 0, 100, 20)); }
+	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CXYPad (CRect (0, 0, 60, 60)); }
 };
 CXYPadCreator __gCXYPadCreator;
 
