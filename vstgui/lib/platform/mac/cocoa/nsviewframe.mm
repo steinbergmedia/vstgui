@@ -1255,7 +1255,7 @@ static NSImage* nsImageForDragOperation (CBitmap* bitmap)
 	if (!cgImage)
 		return nil;
 	auto scaleFactor = platformBitmap->getScaleFactor ();
-	return imageFromCGImageRef (cgImage, scaleFactor);
+	return [imageFromCGImageRef (cgImage, scaleFactor) autorelease];
 }
 
 //-----------------------------------------------------------------------------
