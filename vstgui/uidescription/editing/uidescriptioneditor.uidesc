@@ -870,8 +870,8 @@
 			<color-stop rgba="#646464ff" start="1"/>
 		</gradient>
 		<gradient name="Toolbar">
-			<color-stop rgba="#2a3340ff" start="0"/>
-			<color-stop rgba="#232a34ff" start="0.511184210526315796485619102895725518465"/>
+			<color-stop rgba="#454b54ff" start="0"/>
+			<color-stop rgba="#3f444bff" start="0.511184210526315796485619102895725518465"/>
 		</gradient>
 		<gradient name="Transparent">
 			<color-stop rgba="#ffffff00" start="0"/>
