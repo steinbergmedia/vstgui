@@ -764,9 +764,10 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 	
 	CView* _focusView = nullptr;
 	IFocusDrawing* _focusDrawing = nullptr;
-	if (getFrame ()->focusDrawingEnabled () && isChild (getFrame ()->getFocusView (), false) && getFrame ()->getFocusView ()->isVisible () && getFrame ()->getFocusView ()->wantsFocus ())
+	auto frame = getFrame ();
+	if (frame && frame->focusDrawingEnabled () && isChild (frame->getFocusView (), false) && frame->getFocusView ()->isVisible () && frame->getFocusView ()->wantsFocus ())
 	{
-		_focusView = getFrame ()->getFocusView ();
+		_focusView = frame->getFocusView ();
 		_focusDrawing = dynamic_cast<IFocusDrawing*> (_focusView);
 	}
 
@@ -781,7 +782,7 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 		{
 			if (pV->isVisible ())
 			{
-				if (_focusDrawing && _focusView == pV && !_focusDrawing->drawFocusOnTop ())
+				if (frame && _focusDrawing && _focusView == pV && !_focusDrawing->drawFocusOnTop ())
 				{
 					SharedPointer<CGraphicsPath> focusPath = owned (pContext->createGraphicsPath ());
 					if (focusPath)
@@ -793,7 +794,7 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 							{
 								pContext->setClipRect (oldClip2);
 								pContext->setDrawMode (kAntiAliasing|kNonIntegralMode);
-								pContext->setFillColor (getFrame ()->getFocusColor ());
+								pContext->setFillColor (frame->getFocusColor ());
 								pContext->drawGraphicsPath (focusPath, CDrawContext::kPathFilledEvenOdd);
 								lastDrawnFocus.extend (1, 1);
 								setLastDrawnFocus (lastDrawnFocus);
@@ -822,7 +823,7 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 	
 	pContext->setClipRect (oldClip2);
 
-	if (_focusView)
+	if (frame && _focusView)
 	{
 		SharedPointer<CGraphicsPath> focusPath = owned (pContext->createGraphicsPath ());
 		if (focusPath)
@@ -831,7 +832,7 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 				_focusDrawing->getFocusPath (*focusPath);
 			else
 			{
-				CCoord focusWidth = getFrame ()->getFocusWidth ();
+				CCoord focusWidth = frame->getFocusWidth ();
 				CRect r (_focusView->getVisibleViewSize ());
 				if (!r.isEmpty ())
 				{
@@ -844,7 +845,7 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 			if (!lastDrawnFocus.isEmpty ())
 			{
 				pContext->setDrawMode (kAntiAliasing|kNonIntegralMode);
-				pContext->setFillColor (getFrame ()->getFocusColor ());
+				pContext->setFillColor (frame->getFocusColor ());
 				pContext->drawGraphicsPath (focusPath, CDrawContext::kPathFilledEvenOdd);
 				lastDrawnFocus.extend (1, 1);
 				setLastDrawnFocus (lastDrawnFocus);
