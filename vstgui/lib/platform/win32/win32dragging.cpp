@@ -4,10 +4,84 @@
 
 #include "win32dragging.h"
 #include "win32support.h"
+#include "winstring.h"
+#include "../../cstring.h"
+#include "../../cdrawcontext.h"
 #include "../../cvstguitimer.h"
+#include "win32dll.h"
 #include <shlobj.h>
 
 namespace VSTGUI {
+
+//-----------------------------------------------------------------------------
+class Win32DragBitmapWindow
+{
+public:
+	Win32DragBitmapWindow (const SharedPointer<CBitmap>& bitmap, CPoint offset);
+	~Win32DragBitmapWindow () noexcept;
+
+	void updateBitmap (const SharedPointer<CBitmap>& bitmap, CPoint offset);
+	void mouseChanged ();
+private:
+	static LRESULT CALLBACK WndProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+	LRESULT proc (UINT message, WPARAM wParam, LPARAM lParam);
+
+	void registerWindowClass ();
+	void unregisterWindowClass ();
+
+	void createWindow ();
+	void releaseWindow ();
+	void showWindow ();
+
+	POINT calculateWindowPosition () const;
+	void updateScaleFactor (POINT p);
+	void updateWindowPosition (POINT where);
+	void setAlphaTransparency (float alpha);
+
+	void paint ();
+
+	SharedPointer<CBitmap> bitmap;
+	CPoint offset;
+	UTF8String windowClassName;
+	HWND hwnd {nullptr};
+	CCoord scaleFactor {2.};
+};
+
+//-----------------------------------------------------------------------------
+class Win32MouseObserverWhileDragging
+{
+public:
+	using Callback = std::function<void ()>;
+
+	Win32MouseObserverWhileDragging ()
+	{
+		gInstance = this;
+		mouseHook = SetWindowsHookEx (WH_MOUSE, MouseHookProc, GetInstance (), GetCurrentThreadId ());
+	}
+
+	~Win32MouseObserverWhileDragging () noexcept
+	{
+		if (mouseHook)
+			UnhookWindowsHookEx (mouseHook);
+		gInstance = nullptr;
+	}
+
+	void registerCallback (Callback&& c) { callbacks.emplace_back (std::move (c)); }
+private:
+	static Win32MouseObserverWhileDragging* gInstance;
+	static LRESULT CALLBACK MouseHookProc (int nCode, WPARAM wParam, LPARAM lParam)
+	{
+		if (gInstance)
+		{
+			for (auto& c : gInstance->callbacks)
+				c ();
+		}
+		return CallNextHookEx (nullptr, nCode, wParam, lParam);
+	}
+	HHOOK mouseHook {nullptr};
+	std::vector<Callback> callbacks;
+};
+Win32MouseObserverWhileDragging* Win32MouseObserverWhileDragging::gInstance = nullptr;
 
 //-----------------------------------------------------------------------------
 Win32DraggingSession::Win32DraggingSession (Win32Frame* frame)
@@ -27,37 +101,51 @@ bool Win32DraggingSession::doDrag (const DragDescription& dragDescription, const
 	auto lastCursor = frame->getLastSetCursor ();
 	frame->setMouseCursor (kCursorNotAllowed);
 
-	// TODO: implement drag bitmap
+	std::unique_ptr<Win32DragBitmapWindow> dragBitmapWindow;
+	std::unique_ptr<Win32MouseObserverWhileDragging> mouseObserver;
+
+	if (callback || dragDescription.bitmap)
+		mouseObserver = std::make_unique<Win32MouseObserverWhileDragging> ();
+
 	if (callback)
 	{
 		CPoint location;
 		frame->getCurrentMousePosition (location);
 		callback->dragWillBegin (this, location);
+
+		if (mouseObserver)
+		{
+			mouseObserver->registerCallback ([callback, location, this] () mutable {
+				CPoint newLocation;
+				frame->getCurrentMousePosition (newLocation);
+				if (newLocation != location)
+				{
+					callback->dragMoved (this, newLocation);
+					location = newLocation;
+				}
+			});
+		}
+	}
+
+	if (dragDescription.bitmap)
+	{
+		dragBitmapWindow = std::make_unique<Win32DragBitmapWindow> (dragDescription.bitmap,
+		                                                            dragDescription.bitmapOffset);
+		if (mouseObserver)
+		{
+			mouseObserver->registerCallback ([&] () { dragBitmapWindow->mouseChanged (); });
+		}
 	}
 
 	auto dataObject = new Win32DataObject (dragDescription.data);
 	auto dropSource = new Win32DropSource ();
 	DWORD outEffect;
 
-	SharedPointer<CVSTGUITimer> timer;
-	if (callback)
-	{
-		CPoint location;
-		frame->getCurrentMousePosition (location);
-		timer = makeOwned<CVSTGUITimer> ([&] (CVSTGUITimer* timer) {
-			CPoint newLocation;
-			frame->getCurrentMousePosition (newLocation);
-			if (newLocation != location)
-			{
-				callback->dragMoved (this, newLocation);
-				location = newLocation;
-			}
-		}, 16);
-	}
-
 	auto hResult = DoDragDrop (dataObject, dropSource, DROPEFFECT_COPY, &outEffect);
-	if (timer)
-		timer = nullptr;
+	if (mouseObserver)
+		mouseObserver = nullptr;
+	if (dragBitmapWindow)
+		dragBitmapWindow = nullptr;
 
 	if (callback)
 	{
@@ -467,6 +555,220 @@ STDMETHODIMP Win32DataObject::DUnadvise (DWORD dwConnection)
 STDMETHODIMP Win32DataObject::EnumDAdvise (IEnumSTATDATA** ppenumAdvise)
 {
 	return E_NOTIMPL;
+}
+
+//-----------------------------------------------------------------------------
+Win32DragBitmapWindow::Win32DragBitmapWindow (const SharedPointer<CBitmap>& bitmap, CPoint offset)
+: bitmap (bitmap)
+, offset (offset)
+{
+	registerWindowClass ();
+	auto initialWindowPosition = calculateWindowPosition ();
+	updateScaleFactor (initialWindowPosition);
+	createWindow ();
+	setAlphaTransparency (1.f);
+	updateWindowPosition (initialWindowPosition);
+	showWindow ();
+}
+
+//-----------------------------------------------------------------------------
+Win32DragBitmapWindow::~Win32DragBitmapWindow () noexcept
+{
+	releaseWindow ();
+	unregisterWindowClass ();
+}
+
+//-----------------------------------------------------------------------------
+void Win32DragBitmapWindow::updateBitmap (const SharedPointer<CBitmap>& bitmap, CPoint offset)
+{
+	this->bitmap = bitmap;
+	this->offset = offset;
+	updateWindowPosition (calculateWindowPosition ());
+	RECT r;
+	GetClientRect (hwnd, &r);
+	InvalidateRect (hwnd, &r, FALSE);
+}
+
+//-----------------------------------------------------------------------------
+void Win32DragBitmapWindow::createWindow ()
+{
+	auto winString = dynamic_cast<WinString*> (windowClassName.getPlatformString ());
+
+	DWORD exStyle = WS_EX_COMPOSITED | WS_EX_TRANSPARENT | WS_EX_TOPMOST | WS_EX_LAYERED | WS_EX_TOOLWINDOW;
+	DWORD dwStyle = WS_POPUP;
+
+	auto width = static_cast<int> (bitmap->getWidth () * scaleFactor);
+	auto height = static_cast<int> (bitmap->getHeight () * scaleFactor);
+
+	hwnd = CreateWindowEx (exStyle, winString->getWideString (), nullptr, dwStyle, -1000, -1000, width,
+	                       height, nullptr, nullptr, GetInstance (), nullptr);
+	SetWindowLongPtr (hwnd, GWLP_USERDATA, (__int3264) (LONG_PTR) this);
+
+	const Dwm::MARGINS margin = { -1 };
+	Dwm::instance ().extendFrameIntoClientArea (hwnd, &margin);
+}
+
+//-----------------------------------------------------------------------------
+void Win32DragBitmapWindow::releaseWindow ()
+{
+	if (hwnd)
+		DestroyWindow (hwnd);
+}
+
+//-----------------------------------------------------------------------------
+void Win32DragBitmapWindow::showWindow ()
+{
+	ShowWindow (hwnd, SW_SHOWNOACTIVATE);
+}
+
+//-----------------------------------------------------------------------------
+void Win32DragBitmapWindow::setAlphaTransparency (float alpha)
+{
+	if (!hwnd)
+		return;
+	SetLayeredWindowAttributes (hwnd, 0, static_cast<BYTE> (alpha * 255.), LWA_ALPHA);
+}
+
+//-----------------------------------------------------------------------------
+POINT Win32DragBitmapWindow::calculateWindowPosition () const
+{
+	POINT where;
+	GetCursorPos (&where);
+	where.x += static_cast<int> (offset.x * scaleFactor);
+	where.y += static_cast<int> (offset.y * scaleFactor);
+
+	return where;
+}
+
+//-----------------------------------------------------------------------------
+void Win32DragBitmapWindow::updateScaleFactor (POINT p)
+{
+	auto monitor = MonitorFromPoint (p, MONITOR_DEFAULTTONEAREST);
+	UINT dpiX, dpiY;
+	HiDPISupport::instance ().getDPIForMonitor (monitor, HiDPISupport::MDT_EFFECTIVE_DPI, &dpiX, &dpiY);
+	vstgui_assert (dpiX == dpiY);
+
+	scaleFactor = static_cast<CCoord> (dpiX) / 96.;
+}
+
+//-----------------------------------------------------------------------------
+void Win32DragBitmapWindow::updateWindowPosition (POINT where)
+{
+	auto width = static_cast<int> (bitmap->getWidth () * scaleFactor);
+	auto height = static_cast<int> (bitmap->getHeight () * scaleFactor);
+
+	SetWindowPos (hwnd, nullptr, where.x, where.y, width, height, SWP_NOCOPYBITS | SWP_NOACTIVATE | SWP_NOZORDER);
+}
+
+//-----------------------------------------------------------------------------
+void Win32DragBitmapWindow::paint ()
+{
+	PAINTSTRUCT ps;
+	HDC hdc = BeginPaint (hwnd, &ps);
+
+	RECT clientRect;
+	GetClientRect (hwnd, &clientRect);
+
+	CRect rect;
+	rect.setWidth (clientRect.right - clientRect.left);
+	rect.setHeight (clientRect.bottom - clientRect.top);
+
+	auto drawContext = owned (createDrawContext (hwnd, hdc, rect));
+	drawContext->beginDraw ();
+
+	drawContext->clearRect (rect);
+	drawContext->setGlobalAlpha (0.9f);
+	CDrawContext::Transform t (*drawContext, CGraphicsTransform ().scale (scaleFactor, scaleFactor));
+	bitmap->draw (drawContext, rect);
+
+	drawContext->endDraw ();
+	EndPaint (hwnd, &ps);
+}
+
+//-----------------------------------------------------------------------------
+LRESULT Win32DragBitmapWindow::proc (UINT message, WPARAM wParam, LPARAM lParam)
+{
+	switch (message)
+	{
+		case WM_DPICHANGED:
+		{
+			scaleFactor = static_cast<CCoord> (HIWORD (wParam)) / 96.;
+			updateWindowPosition (calculateWindowPosition ());
+			break;
+		}
+		case WM_GETMINMAXINFO:
+		{
+			auto minMax = reinterpret_cast<MINMAXINFO*> (lParam);
+			minMax->ptMinTrackSize.x = 1;
+			minMax->ptMinTrackSize.y = 1;
+			break;
+		}
+		case WM_ERASEBKGND:
+		{
+			return 0;
+		}
+		case WM_PAINT:
+		{
+			paint ();
+			return 0;
+		}
+		case WM_NCCALCSIZE:
+		{
+			return 0;
+		}
+		case WM_NCHITTEST:
+		{
+			return 0;
+		}
+	}
+	return DefWindowProc (hwnd, message, wParam, lParam);
+}
+
+//-----------------------------------------------------------------------------
+void Win32DragBitmapWindow::mouseChanged ()
+{
+	updateWindowPosition (calculateWindowPosition ());
+}
+
+//-----------------------------------------------------------------------------
+LRESULT CALLBACK Win32DragBitmapWindow::WndProc (HWND hWnd, UINT message, WPARAM wParam,
+                                                 LPARAM lParam)
+{
+	auto window = reinterpret_cast<Win32DragBitmapWindow*> ((LONG_PTR)GetWindowLongPtr (hWnd, GWLP_USERDATA));
+	if (window)
+		return window->proc (message, wParam, lParam);
+	return DefWindowProc (hWnd, message, wParam, lParam);
+}
+
+//-----------------------------------------------------------------------------
+void Win32DragBitmapWindow::registerWindowClass ()
+{
+	char tmp[32];
+	sprintf_s (tmp, 32, "%p", this);
+	windowClassName = "VSTGUI DragBitmap Window ";
+	windowClassName += tmp;
+
+	auto winString = dynamic_cast<WinString*> (windowClassName.getPlatformString ());
+
+	WNDCLASSEX wcex {};
+
+	wcex.cbSize = sizeof (WNDCLASSEX);
+
+	wcex.style = 0;
+	wcex.lpfnWndProc = WndProc;
+	wcex.hInstance = GetInstance ();
+	wcex.hCursor = LoadCursor (GetInstance (), IDC_ARROW);
+	wcex.hbrBackground = nullptr;
+	wcex.lpszClassName = winString->getWideString ();
+
+	RegisterClassEx (&wcex);
+}
+
+//-----------------------------------------------------------------------------
+void Win32DragBitmapWindow::unregisterWindowClass ()
+{
+	auto winString = dynamic_cast<WinString*> (windowClassName.getPlatformString ());
+	UnregisterClass (winString->getWideString (), GetInstance ());
 }
 
 } // namespace

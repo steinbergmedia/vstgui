@@ -208,6 +208,7 @@ set(${target}_win32_sources
     platform/win32/gdiplusgraphicspath.cpp
     platform/win32/gdiplusgraphicspath.h
     platform/win32/win32bitmapbase.h
+    platform/win32/win32dll.h
     platform/win32/win32dragcontainer.cpp
     platform/win32/win32dragcontainer.h
     platform/win32/win32dragging.cpp
