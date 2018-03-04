@@ -243,7 +243,7 @@ void Window::registerWindowClasses ()
 	static bool once = true;
 	if (!once)
 		return;
-	once = true;
+	once = false;
 
 	WNDCLASSEX wcex {};
 
