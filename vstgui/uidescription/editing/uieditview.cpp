@@ -1005,56 +1005,9 @@ CMouseEventResult UIEditView::onMouseExited (CPoint& where, const CButtonState& 
 }
 
 //----------------------------------------------------------------------------------------------------
-CBitmap* UIEditView::createBitmapFromSelection (UISelection* selection)
-{
-	CRect viewSize = getSelection ()->getBounds ();
-	auto scaleFactor = getFrame ()->getScaleFactor ();
-	auto context = COffscreenContext::create (getFrame (), viewSize.getWidth (), viewSize.getHeight (), scaleFactor);
-	context->beginDraw ();
-	context->setFillColor (CColor (0, 0, 0, 40));
-	context->setFrameColor (CColor (255, 255, 255, 40));
-	context->drawRect (CRect (0, 0, viewSize.getWidth (), viewSize.getHeight ()), kDrawFilledAndStroked);
-
-	{
-	
-	CDrawContext::Transform tr (*context, getTransform ());
-	getTransform ().inverse ().transform (viewSize);
-	CDrawContext::Transform tr2 (*context, CGraphicsTransform ().translate (-viewSize.left, -viewSize.top));
-	
-	for (auto view : *getSelection ())
-	{
-		if (!getSelection ()->containsParent (view))
-		{
-			CPoint p;
-			view->getParentView ()->localToFrame (p);
-			getTransform ().inverse ().transform (p);
-			CDrawContext::Transform transform (*context, CGraphicsTransform ().translate (p.x, p.y));
-			context->setClipRect (view->getViewSize ());
-			if (IPlatformViewLayerDelegate* layer = view.cast<IPlatformViewLayerDelegate> ())
-			{
-				CRect r (view->getViewSize ());
-				r.originize ();
-				layer->drawViewLayer (context, r);
-			}
-			else
-			{
-				view->drawRect (context, view->getViewSize ());
-			}
-		}
-	}
-
-	}
-
-	context->endDraw ();
-	CBitmap* bitmap = context->getBitmap ();
-	bitmap->remember ();
-	return bitmap;
-}
-
-//----------------------------------------------------------------------------------------------------
 void UIEditView::startDrag (CPoint& where)
 {
-	CBitmap* bitmap = createBitmapFromSelection (selection);
+	auto bitmap = createBitmapFromSelection (selection, getFrame (), this);
 	if (bitmap == nullptr)
 		return;
 
@@ -1080,8 +1033,6 @@ void UIEditView::startDrag (CPoint& where)
 
 	auto dropSource = CDropSource::create (stream.getBuffer (), static_cast<uint32_t>(stream.tell ()), CDropSource::kText);
 	doDrag (DragDescription (dropSource, offset, bitmap));
-	if (bitmap)
-		bitmap->forget ();
 }
 
 //----------------------------------------------------------------------------------------------------

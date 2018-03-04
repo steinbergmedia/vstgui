@@ -77,6 +77,9 @@ protected:
 	CPoint dragOffset;
 };
 
+//----------------------------------------------------------------------------------------------------
+SharedPointer<CBitmap> createBitmapFromSelection (UISelection* selection, CFrame* frame, CViewContainer* anchorView = nullptr);
+
 } // namespace
 
 #endif // VSTGUI_LIVE_EDITING

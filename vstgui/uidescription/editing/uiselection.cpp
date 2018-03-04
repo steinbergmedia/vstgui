@@ -11,6 +11,10 @@
 #include "../uiattributes.h"
 #include "../../lib/cviewcontainer.h"
 #include "../../lib/cframe.h"
+#include "../../lib/ccolor.h"
+#include "../../lib/coffscreencontext.h"
+#include "../../lib/clayeredviewcontainer.h"
+#include "../../lib/cbitmap.h"
 #include <sstream>
 #include <algorithm>
 
@@ -229,6 +233,56 @@ bool UISelection::restore (InputStream& stream, IUIDescription* uiDescription)
 		}
 	}
 	return false;
+}
+
+//----------------------------------------------------------------------------------------------------
+SharedPointer<CBitmap> createBitmapFromSelection (UISelection* selection, CFrame* frame,
+                                                  CViewContainer* anchorView)
+{
+	CRect viewSize = selection->getBounds ();
+	auto scaleFactor = frame->getScaleFactor ();
+	auto context =
+	    COffscreenContext::create (frame, viewSize.getWidth (), viewSize.getHeight (), scaleFactor);
+	context->beginDraw ();
+	{
+
+		CDrawContext::Transform tr (*context, anchorView ? anchorView->getTransform () :
+		                                                   CGraphicsTransform ());
+		if (anchorView)
+			anchorView->getTransform ().inverse ().transform (viewSize);
+		CDrawContext::Transform tr2 (
+		    *context, anchorView ? CGraphicsTransform ().translate (-viewSize.left, -viewSize.top) :
+		                           CGraphicsTransform ());
+
+		for (auto view : *selection)
+		{
+			if (!selection->containsParent (view))
+			{
+				CPoint p;
+				if (auto viewParent = view->getParentView ())
+					viewParent->localToFrame (p);
+				if (anchorView)
+					anchorView->getTransform ().inverse ().transform (p);
+				CDrawContext::Transform transform (*context,
+				                                   CGraphicsTransform ().translate (p.x, p.y));
+				context->setClipRect (view->getViewSize ());
+				if (IPlatformViewLayerDelegate* layer = view.cast<IPlatformViewLayerDelegate> ())
+				{
+					CRect r (view->getViewSize ());
+					r.originize ();
+					layer->drawViewLayer (context, r);
+				}
+				else
+				{
+					view->drawRect (context, view->getViewSize ());
+				}
+			}
+		}
+	}
+
+	context->endDraw ();
+	auto bitmap = shared (context->getBitmap ());
+	return bitmap;
 }
 
 } // namespace

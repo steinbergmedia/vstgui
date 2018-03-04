@@ -84,7 +84,6 @@ protected:
 	void doDragEditingMove (CPoint& where);
 	void doSizeEditingMove (CPoint& where);
 
-	CBitmap* createBitmapFromSelection (UISelection* selection);
 	void startDrag (CPoint& where);
 	UISelection* getSelectionOutOfDrag (IDataPackage* drag);
 	bool onDrop (IDataPackage* drag, const CPoint& where) override;
