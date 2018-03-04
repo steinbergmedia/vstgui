@@ -394,17 +394,53 @@ void UIViewFactory::collectRegisteredViewNames (StringPtrList& viewNames, IdStri
 }
 
 //-----------------------------------------------------------------------------
-auto UIViewFactory::collectRegisteredViewAndDisplayNames () const -> ViewAndDisplayNameList
+auto UIViewFactory::collectRegisteredViewAndDisplayNames (IdStringPtr baseClassNameFilter) const -> ViewAndDisplayNameList
 {
 	ViewAndDisplayNameList list;
 	ViewCreatorRegistry& registry = getCreatorRegistry ();
 	ViewCreatorRegistry::const_iterator iter = registry.begin ();
 	while (iter != registry.end ())
 	{
+		if (baseClassNameFilter)
+		{
+			UTF8StringView baseClassNameStr (baseClassNameFilter);
+			bool found = false;
+			ViewCreatorRegistry::const_iterator iter2 (iter);
+			while (iter2 != registry.end () && (*iter2).second->getBaseViewName ())
+			{
+				if (baseClassNameStr == (*iter2).second->getViewName () || baseClassNameStr == (*iter2).second->getBaseViewName ())
+				{
+					found = true;
+					break;
+				}
+				iter2 = registry.find ((*iter2).second->getBaseViewName ());
+			}
+			if (!found)
+			{
+				iter++;
+				continue;
+			}
+		}
 		list.emplace_back (&(*iter).first, (*iter).second->getDisplayName ());
 		iter++;
 	}
 	return list;
+}
+
+//------------------------------------------------------------------------
+UTF8StringPtr UIViewFactory::getViewDisplayName (CView* view) const
+{
+	if (auto viewName = getViewName (view))
+	{
+		UTF8StringView viewNameStr (viewName);
+		ViewCreatorRegistry& registry = getCreatorRegistry ();
+		for (auto& entry : registry)
+		{
+			if (viewNameStr == entry.second->getViewName ())
+				return entry.second->getDisplayName ();
+		}
+	}
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------

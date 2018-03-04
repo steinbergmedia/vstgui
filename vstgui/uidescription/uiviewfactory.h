@@ -45,7 +45,8 @@ public:
 	bool getPossibleAttributeListValues (CView* view, const std::string& attributeName, StringPtrList& values) const;
 	bool getAttributeValueRange (CView* view, const std::string& attributeName, double& minValue, double& maxValue) const;
 
-	ViewAndDisplayNameList collectRegisteredViewAndDisplayNames () const;
+	ViewAndDisplayNameList collectRegisteredViewAndDisplayNames (IdStringPtr baseClassNameFilter = nullptr) const;
+	UTF8StringPtr getViewDisplayName (CView* view) const;
 
 #if ENABLE_UNIT_TESTS
 	bool disableRememberAttributes {false};

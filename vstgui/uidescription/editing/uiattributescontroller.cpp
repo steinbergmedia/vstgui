@@ -1193,7 +1193,7 @@ void UIAttributesController::getConsolidatedAttributeNames (StringList& attrName
 //----------------------------------------------------------------------------------------------------
 void UIAttributesController::rebuildAttributesView ()
 {
-	const IViewFactory* viewFactory = editDescription->getViewFactory ();
+	auto viewFactory = dynamic_cast<const UIViewFactory*> (editDescription->getViewFactory ());
 	if (attributeView == nullptr || viewFactory == nullptr)
 		return;
 
@@ -1212,7 +1212,7 @@ void UIAttributesController::rebuildAttributesView ()
 			UTF8StringPtr viewname = nullptr;
 			for (auto view : *selection)
 			{
-				UTF8StringPtr name = viewFactory->getViewName (view);
+				UTF8StringPtr name = viewFactory->getViewDisplayName (view);
 				if (viewname != nullptr && UTF8StringView (name) != viewname)
 				{
 					viewname = nullptr;

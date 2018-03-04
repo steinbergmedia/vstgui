@@ -203,13 +203,13 @@ bool UIEditMenuController::validateMenuItem (CCommandMenuItem& item)
 		}
 		else if (cmdName == "Add New Template")
 		{
-			std::list<const std::string*> containerViewNames;
-			const UIViewFactory* factory = dynamic_cast<const UIViewFactory*> (description->getViewFactory ());
-			factory->collectRegisteredViewNames (containerViewNames, "CViewContainer");
 			auto submenu = makeOwned<COptionMenu> ();
-			for (auto& name : containerViewNames)
+			const UIViewFactory* factory = dynamic_cast<const UIViewFactory*> (description->getViewFactory ());
+			auto viewAndDisplayNames = factory->collectRegisteredViewAndDisplayNames ("CViewContainer");
+			viewAndDisplayNames.sort ([] (const auto& lhs, const auto& rhs) { return lhs.second < rhs.second; });
+			for (auto& entry : viewAndDisplayNames)
 			{
-				submenu->addEntry (new CCommandMenuItem (name->c_str (), this, "AddTemplate", name->c_str ()));
+				submenu->addEntry (new CCommandMenuItem (entry.second.data (), this, "AddTemplate", entry.first->data ()));
 			}
 			item.setSubmenu (submenu);
 			return true;
@@ -267,12 +267,12 @@ bool UIEditMenuController::validateMenuItem (CCommandMenuItem& item)
 				return true;
 			auto submenu = makeOwned<COptionMenu> ();
 			item.setSubmenu (submenu);
-			std::list<const std::string*> containerViewNames;
 			const UIViewFactory* factory = dynamic_cast<const UIViewFactory*> (description->getViewFactory ());
-			factory->collectRegisteredViewNames (containerViewNames, "CViewContainer");
-			for (auto& name : containerViewNames)
+			auto viewAndDisplayNames = factory->collectRegisteredViewAndDisplayNames ("CViewContainer");
+			viewAndDisplayNames.sort ([] (const auto& lhs, const auto& rhs) { return lhs.second < rhs.second; });
+			for (auto& entry : viewAndDisplayNames)
 			{
-				submenu->addEntry (new CCommandMenuItem (name->c_str (), this, "Embed", name->c_str ()));
+				submenu->addEntry (new CCommandMenuItem (entry.second.data (), this, "Embed", entry.first->data ()));
 			}
 			return true;
 		}
@@ -308,12 +308,12 @@ bool UIEditMenuController::validateMenuItem (CCommandMenuItem& item)
 				return true;
 			auto submenu = makeOwned<COptionMenu> ();
 			item.setSubmenu (submenu);
-			std::list<const std::string*> containerViewNames;
 			const UIViewFactory* factory = dynamic_cast<const UIViewFactory*> (description->getViewFactory ());
-			factory->collectRegisteredViewNames (containerViewNames);
-			for (auto& name : containerViewNames)
+			auto viewAndDisplayNames = factory->collectRegisteredViewAndDisplayNames ();
+			viewAndDisplayNames.sort ([] (const auto& lhs, const auto& rhs) { return lhs.second < rhs.second; });
+			for (auto& entry : viewAndDisplayNames)
 			{
-				submenu->addEntry (new CCommandMenuItem (name->c_str (), this, "Transform View Type", name->c_str ()));
+				submenu->addEntry (new CCommandMenuItem (entry.second.data (), this, "Transform View Type", entry.first->data ()));
 			}
 			return true;
 		}
