@@ -249,8 +249,6 @@ bool NSViewOptionMenu::initClass ()
 	return menuClass != nullptr;
 }
 
-#define VSTGUI_USE_NEW_NSMENU_POPUP	MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_6
-
 //-----------------------------------------------------------------------------
 PlatformOptionMenuResult NSViewOptionMenu::popup (COptionMenu* optionMenu)
 {
@@ -275,17 +273,11 @@ PlatformOptionMenuResult NSViewOptionMenu::popup (COptionMenu* optionMenu)
 	cellFrameRect.origin = nsPointFromCPoint (p);
 	cellFrameRect.size.width = static_cast<CGFloat> (globalSize.getWidth ());
 	cellFrameRect.size.height = static_cast<CGFloat> (globalSize.getHeight ());
-#if !VSTGUI_USE_NEW_NSMENU_POPUP
 	if (!(optionMenu->getStyle () & kPopupStyle))
-	{
-		NSMenuItem* item = [nsMenu insertItemWithTitle:@"" action:nil keyEquivalent:@"" atIndex:0];
-		[item setTag:-1];
-	}
-#endif
+		cellFrameRect.origin.y += cellFrameRect.size.height;
 	if (!multipleCheck && optionMenu->getStyle () & kCheckStyle)
 		[[nsMenu itemWithTag:(NSInteger)optionMenu->getCurrentIndex (true)] setState:NSOnState];
 
-#if VSTGUI_USE_NEW_NSMENU_POPUP
 	NSView* menuContainer = [[NSView alloc] initWithFrame:cellFrameRect];
 	[view addSubview:menuContainer];
 
@@ -298,27 +290,8 @@ PlatformOptionMenuResult NSViewOptionMenu::popup (COptionMenu* optionMenu)
 
 	[menuContainer removeFromSuperviewWithoutNeedingDisplay];
 	[menuContainer release];
-#else
-	NSView* cellContainer = [[NSView alloc] initWithFrame:cellFrameRect];
-	[view addSubview:cellContainer];
-	cellFrameRect.origin.x = 0;
-	cellFrameRect.origin.y = 0;
-
-	NSPopUpButtonCell* cell = [[NSPopUpButtonCell alloc] initTextCell:@"" pullsDown:optionMenu->getStyle () & kPopupStyle ? NO : YES];
-	[cell setAltersStateOfSelectedItem: NO];
-	[cell setAutoenablesItems:NO];
-	[cell setMenu:nsMenu];
-	if (optionMenu->getStyle () & kPopupStyle)
-		[cell selectItemWithTag:(NSInteger)optionMenu->getValue ()];
-	[cell performClickWithFrame:cellFrameRect inView:cellContainer];
-	[cellContainer removeFromSuperviewWithoutNeedingDisplay];
-	[cellContainer release];
-#endif
 	result.menu = (COptionMenu*)[nsMenu performSelector:@selector(selectedMenu)];
 	result.index = (int32_t)(intptr_t)[nsMenu performSelector:@selector(selectedItem)];
-#if !VSTGUI_USE_NEW_NSMENU_POPUP
-	[cell release];
-#endif
 	[nsMenu release];
 	
 	return result;
