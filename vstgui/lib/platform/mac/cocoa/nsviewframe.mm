@@ -572,39 +572,6 @@ static BOOL VSTGUI_NSView_performDragOperation (id self, SEL _cmd, id sender)
 }
 
 //------------------------------------------------------------------------------------
-struct VSTGUI_NSViewDraggingSession : public IDraggingSession
-{
-	VSTGUI_NSViewDraggingSession (NSDraggingSession* session) : session (session) {}
-	bool setBitmap (const SharedPointer<CBitmap>& bitmap, CPoint offset) override
-	{
-		[session
-		    enumerateDraggingItemsWithOptions:0
-		                              forView:nil
-		                              classes:[NSArray arrayWithObject:[NSPasteboardItem class]]
-		                        searchOptions:[NSDictionary<NSPasteboardReadingOptionKey, id> new]
-		                           usingBlock:^(NSDraggingItem* _Nonnull draggingItem,
-		                                        NSInteger idx, BOOL* _Nonnull stop) {
-			                         CGBitmap* cgBitmap =
-			                             bitmap ? bitmap->getPlatformBitmap ().cast<CGBitmap> () :
-			                                      nullptr;
-			                         CGImageRef cgImage =
-			                             cgBitmap ? cgBitmap->getCGImage () : nullptr;
-			                         auto nsImage =
-			                             cgImage ? [imageFromCGImageRef (cgImage) autorelease] :
-			                                       nil;
-			                         NSRect r;
-			                         r.origin = nsPointFromCPoint (offset);
-			                         r.origin.y -= [nsImage size].height;
-			                         r.size = nsImage.size;
-			                         [draggingItem setDraggingFrame:r contents:nsImage];
-			                         *stop = YES;
-		                           }];
-		return true;
-	}
-	NSDraggingSession* session;
-};
-
-//------------------------------------------------------------------------------------
 static NSDragOperation VSTGUI_NSView_draggingSessionSourceOperationMaskForDraggingContext (id self, SEL _cmd, NSDraggingSession* session, NSDraggingContext context)
 {
 	if (context == NSDraggingContextOutsideApplication)
@@ -626,41 +593,47 @@ static NSDragOperation VSTGUI_NSView_draggingSessionSourceOperationMaskForDraggi
 static void VSTGUI_NSView_draggingSessionWillBeginAtPoint (id self, SEL _cmd, NSDraggingSession* session, NSPoint position)
 {
 	NSViewFrame* frame = getNSViewFrame (self);
-	if (!frame || !frame->getDragCallback ())
+	if (!frame)
 		return;
-	position = [self convertPoint:position fromView:nil];
-	VSTGUI_NSViewDraggingSession ds (session);
-	frame->getDragCallback ()->dragWillBegin (&ds, pointFromNSPoint (position));
+	if (auto session = frame->getDraggingSession ())
+	{
+		auto pos = pointFromNSPoint ([self convertPoint:position fromView:nil]);
+		session->dragWillBegin (pos);
+	}
 }
 
 //------------------------------------------------------------------------------------
 static void VSTGUI_NSView_draggingSessionMovedToPoint (id self, SEL _cmd, NSDraggingSession* session, NSPoint position)
 {
 	NSViewFrame* frame = getNSViewFrame (self);
-	if (!frame || !frame->getDragCallback ())
+	if (!frame)
 		return;
-	position = [self convertPoint:position fromView:nil];
-	VSTGUI_NSViewDraggingSession ds (session);
-	frame->getDragCallback ()->dragMoved (&ds, pointFromNSPoint (position));
+	if (auto session = frame->getDraggingSession ())
+	{
+		auto pos = pointFromNSPoint ([self convertPoint:position fromView:nil]);
+		session->dragMoved (pos);
+	}
 }
 
 //------------------------------------------------------------------------------------
 static void VSTGUI_NSView_draggingSessionEndedAtPoint (id self, SEL _cmd, NSDraggingSession* session, NSPoint position, NSDragOperation operation)
 {
 	NSViewFrame* frame = getNSViewFrame (self);
-	if (!frame || !frame->getDragCallback ())
+	if (!frame)
 		return;
-	DragResult result;
-	switch (operation)
+	if (auto session = frame->getDraggingSession ())
 	{
-		case NSDragOperationNone: result = kDragRefused; break;
-		case NSDragOperationMove: result = kDragMoved; break;
-		default: result = kDragCopied; break;
+		DragResult result;
+		switch (operation)
+		{
+			case NSDragOperationNone: result = kDragRefused; break;
+			case NSDragOperationMove: result = kDragMoved; break;
+			default: result = kDragCopied; break;
+		}
+		auto pos = pointFromNSPoint ([self convertPoint:position fromView:nil]);
+		session->dragEnded (pos, result);
+		frame->clearDraggingSession ();
 	}
-	position = [self convertPoint:position fromView:nil];
-	VSTGUI_NSViewDraggingSession ds (session);
-	frame->getDragCallback ()->dragEnded (&ds, pointFromNSPoint (position), result);
-	frame->clearDragCallback ();
 }
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
@@ -1270,8 +1243,6 @@ bool NSViewFrame::doDrag (const DragDescription& dragDescription,
 							  [event type] == MacEventType::LeftMouseDragged))
 		return kDragRefused;
 
-	dragCallback = callback;
-
 	NSPoint bitmapOffset = {static_cast<CGFloat> (dragDescription.bitmapOffset.x),
 	                        static_cast<CGFloat> (dragDescription.bitmapOffset.y)};
 
@@ -1350,6 +1321,7 @@ bool NSViewFrame::doDrag (const DragDescription& dragDescription,
 	if (auto session = [nsView beginDraggingSessionWithItems:dragItems event:event source:draggingSource])
 	{
 		session.animatesToStartingPositionsOnCancelOrFail = YES;
+		draggingSession = makeOwned<NSViewDraggingSession> (session, dragDescription, callback);
 		return true;
 	}
 
@@ -1510,6 +1482,71 @@ void CocoaTooltipWindow::onTimer ()
 	else
 		[window setAlphaValue:newAlpha];
 }
+
+//------------------------------------------------------------------------
+NSViewDraggingSession::NSViewDraggingSession (NSDraggingSession* session,
+                                              const DragDescription& desc,
+                                              const SharedPointer<IDragCallback>& callback)
+: session (session), desc (desc), callback (callback)
+{
+}
+
+//------------------------------------------------------------------------
+bool NSViewDraggingSession::setBitmap (const SharedPointer<CBitmap>& bitmap, CPoint offset)
+{
+	[session
+	    enumerateDraggingItemsWithOptions:0
+	                              forView:nil
+	                              classes:[NSArray arrayWithObject:[NSPasteboardItem class]]
+	                        searchOptions:[NSDictionary<NSPasteboardReadingOptionKey, id> new]
+	                           usingBlock:[&] (NSDraggingItem* _Nonnull draggingItem, NSInteger idx,
+	                                           BOOL* _Nonnull stop) {
+		                           if (idx != 0)
+			                           return;
+		                           CGBitmap* cgBitmap =
+		                               bitmap ? bitmap->getPlatformBitmap ().cast<CGBitmap> () :
+		                                        nullptr;
+		                           CGImageRef cgImage =
+		                               cgBitmap ? cgBitmap->getCGImage () : nullptr;
+		                           auto nsImage =
+		                               cgImage ? [imageFromCGImageRef (cgImage) autorelease] : nil;
+		                           NSRect r;
+		                           r.origin = nsPointFromCPoint (offset);
+		                           r.origin.y -= [nsImage size].height;
+		                           r.size = nsImage.size;
+		                           [draggingItem setDraggingFrame:r contents:nsImage];
+		                           *stop = YES;
+	                           }];
+	desc.bitmap = bitmap;
+	desc.bitmapOffset = offset;
+	return true;
+}
+
+//------------------------------------------------------------------------
+void NSViewDraggingSession::dragWillBegin (CPoint pos)
+{
+	if (!callback)
+		return;
+	callback->dragWillBegin (this, pos);
+}
+
+//------------------------------------------------------------------------
+void NSViewDraggingSession::dragMoved (CPoint pos)
+{
+	if (!callback)
+		return;
+	callback->dragMoved (this, pos);
+}
+
+//------------------------------------------------------------------------
+void NSViewDraggingSession::dragEnded (CPoint pos, DragResult result)
+{
+	if (!callback)
+		return;
+	callback->dragEnded (this, pos, result);
+}
+
 } // namespace
 
 #endif // MAC_COCOA
+

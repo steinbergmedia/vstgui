@@ -19,10 +19,12 @@
 #else
 struct NSView;
 struct NSRect;
+struct NSDraggingSession;
 #endif
 
 namespace VSTGUI {
 class CocoaTooltipWindow;
+struct NSViewDraggingSession;
 
 //-----------------------------------------------------------------------------
 class NSViewFrame : public IPlatformFrame, public ICocoaPlatformFrame, public IPlatformFrameTouchBarExtension
@@ -34,8 +36,8 @@ public:
 	NSView* getNSView () const override { return nsView; }
 	IPlatformFrameCallback* getFrame () const { return frame; }
 	void* makeTouchBar () const;
-	IDragCallback* getDragCallback () const { return dragCallback; }
-	void clearDragCallback () { dragCallback = nullptr; }
+	NSViewDraggingSession* getDraggingSession () const { return draggingSession; }
+	void clearDraggingSession () { draggingSession = nullptr; }
 	
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 	void setLastDragOperationResult (DragResult result) { lastDragOperationResult = result; }
@@ -91,7 +93,7 @@ protected:
 	CocoaTooltipWindow* tooltipWindow;
 	SharedPointer<IDataPackage> dragDataPackage;
 	SharedPointer<ITouchBarCreator> touchBarCreator;
-	SharedPointer<IDragCallback> dragCallback;
+	SharedPointer<NSViewDraggingSession> draggingSession;
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 	DragResult lastDragOperationResult;
@@ -100,6 +102,22 @@ protected:
 	bool trackingAreaInitialized;
 	bool inDraw;
 	CCursorType cursor;
+};
+
+//------------------------------------------------------------------------
+struct NSViewDraggingSession : public IDraggingSession, public NonAtomicReferenceCounted
+{
+	NSViewDraggingSession (NSDraggingSession* session, const DragDescription& desc, const SharedPointer<IDragCallback>& callback);
+
+	bool setBitmap (const SharedPointer<CBitmap>& bitmap, CPoint offset) override;
+
+	void dragWillBegin (CPoint pos);
+	void dragMoved (CPoint pos);
+	void dragEnded (CPoint pos, DragResult result);
+private:
+	NSDraggingSession* session;
+	DragDescription desc;
+	SharedPointer<IDragCallback> callback;
 };
 
 } // namespace
