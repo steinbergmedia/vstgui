@@ -1,4 +1,4 @@
-// This file is part of VSTGUI. It is subject to the license terms
+﻿// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
@@ -781,6 +781,12 @@ bool Frame::hideTooltip ()
 {
 #warning TODO: Implementation
 	return false;
+}
+
+//------------------------------------------------------------------------
+void* Frame::getPlatformRepresentation () const
+{
+	return nullptr;
 }
 
 //------------------------------------------------------------------------
