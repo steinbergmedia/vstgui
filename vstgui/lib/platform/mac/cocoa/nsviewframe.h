@@ -12,6 +12,7 @@
 #include "../../platform_macos.h"
 #include "../../../cview.h"
 #include "../../../idatapackage.h"
+#include "nsviewdraggingsession.h"
 #include <list>
 
 #ifdef __OBJC__
@@ -102,22 +103,6 @@ protected:
 	bool trackingAreaInitialized;
 	bool inDraw;
 	CCursorType cursor;
-};
-
-//------------------------------------------------------------------------
-struct NSViewDraggingSession : public IDraggingSession, public NonAtomicReferenceCounted
-{
-	NSViewDraggingSession (NSDraggingSession* session, const DragDescription& desc, const SharedPointer<IDragCallback>& callback);
-
-	bool setBitmap (const SharedPointer<CBitmap>& bitmap, CPoint offset) override;
-
-	void dragWillBegin (CPoint pos);
-	void dragMoved (CPoint pos);
-	void dragEnded (CPoint pos, DragResult result);
-private:
-	NSDraggingSession* session;
-	DragDescription desc;
-	SharedPointer<IDragCallback> callback;
 };
 
 } // namespace

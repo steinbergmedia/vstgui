@@ -170,6 +170,8 @@ set(${target}_mac_sources
     platform/mac/cocoa/cocoaopenglview.mm
     platform/mac/cocoa/cocoatextedit.h
     platform/mac/cocoa/cocoatextedit.mm
+    platform/mac/cocoa/nsviewdraggingsession.h
+    platform/mac/cocoa/nsviewdraggingsession.mm
     platform/mac/cocoa/nsviewframe.h
     platform/mac/cocoa/nsviewframe.mm
     platform/mac/cocoa/nsviewoptionmenu.h
