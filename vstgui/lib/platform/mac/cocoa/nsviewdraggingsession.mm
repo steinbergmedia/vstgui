@@ -126,13 +126,20 @@ bool NSViewDraggingSession::setBitmap (const SharedPointer<CBitmap>& bitmap, CPo
 	                                                NSInteger idx, BOOL* _Nonnull stop) {
 		                                if (idx != 0)
 			                                return;
-		                                auto nsImage = nsImageForDragOperation (bitmap);
-		                                auto size = nsImage ? nsImage.size : NSMakeSize (0, 0);
-		                                NSRect r;
-		                                r.origin = nsPointFromCPoint (offset);
-		                                r.origin.y -= size.height;
-		                                r.size = size;
-		                                [draggingItem setDraggingFrame:r contents:nsImage];
+		                                if (auto nsImage = nsImageForDragOperation (bitmap))
+		                                {
+			                                NSRect r;
+			                                r.origin = nsPointFromCPoint (offset);
+			                                r.origin.y -= nsImage.size.height;
+			                                r.size = nsImage.size;
+			                                [draggingItem setDraggingFrame:r contents:nsImage];
+		                                }
+		                                else
+		                                {
+			                                [draggingItem
+			                                    setDraggingFrame:draggingItem.draggingFrame
+			                                            contents:nil];
+										}
 		                                *stop = YES;
 	                                }];
 	desc.bitmap = bitmap;
