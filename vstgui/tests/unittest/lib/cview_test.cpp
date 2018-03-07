@@ -6,6 +6,7 @@
 #include "../../../lib/cstring.h"
 #include "../../../lib/cview.h"
 #include "../../../lib/cviewcontainer.h"
+#include "../../../lib/dragging.h"
 #include "../../../lib/iviewlistener.h"
 #include "../../../lib/idatapackage.h"
 
@@ -262,9 +263,9 @@ TESTCASE(CViewTest,
 		EXPECT(v.onMouseEntered (p, kLButton) == kMouseEventNotImplemented);
 		EXPECT(v.onMouseExited (p, kLButton) == kMouseEventNotImplemented);
 		EXPECT(v.notify (nullptr, nullptr) == kMessageUnknown);
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-		EXPECT(v.doDrag (nullptr) == kDragError);
-#endif
+
+		EXPECT(v.doDrag (DragDescription (nullptr)) == false);
+
 		EXPECT(v.onDrop (nullptr, p) == false);
 		EXPECT(v.getEditor () == nullptr);
 		EXPECT(v.isDirty () == false);
