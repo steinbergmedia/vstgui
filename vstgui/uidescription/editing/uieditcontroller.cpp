@@ -1596,7 +1596,7 @@ void UIEditController::performLiveColorChange (UTF8StringPtr colorName, const CC
 //----------------------------------------------------------------------------------------------------
 void UIEditController::endLiveColorChange (UTF8StringPtr colorName)
 {
-	IDependency::DeferChanges dc (editDescription);
+	UIDescriptionListenerOff lo (this, editDescription);
 	CColor color;
 	editDescription->getColor (colorName, color);
 	performColorChange (colorName, color, false);
@@ -1627,13 +1627,16 @@ void UIEditController::performDeleteTemplate (UTF8StringPtr name)
 void UIEditController::performDuplicateTemplate (UTF8StringPtr name, UTF8StringPtr dupName)
 {
 	updateTemplate (name);
+	UIDescriptionListenerOff lo (this, editDescription);
 	undoManager->pushAndPerform (new DuplicateTemplateAction (editDescription, this, name, dupName));
 }
 
 //----------------------------------------------------------------------------------------------------
 void UIEditController::onTemplateCreation (UTF8StringPtr name, CView* view)
 {
-	templates.emplace_back (name, view);
+	auto it = std::find (templates.begin (), templates.end (), name);
+	if (it == templates.end ())
+		templates.emplace_back (name, view);
 	selection->setExclusive (view);
 }
 

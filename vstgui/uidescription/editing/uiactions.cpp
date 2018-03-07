@@ -1321,7 +1321,6 @@ UTF8StringPtr CreateNewTemplateAction::getName ()
 //----------------------------------------------------------------------------------------------------
 void CreateNewTemplateAction::perform ()
 {
-	IDependency::DeferChanges dc (description);
 	UIAttributes* attr = new UIAttributes ();
 	attr->setAttribute (UIViewCreator::kAttrClass, baseViewClassName);
 	attr->setAttribute ("size", "400,400");
@@ -1357,7 +1356,6 @@ UTF8StringPtr DuplicateTemplateAction::getName ()
 //----------------------------------------------------------------------------------------------------
 void DuplicateTemplateAction::perform ()
 {
-	IDependency::DeferChanges dc (description);
 	description->duplicateTemplate (name.c_str (), dupName.c_str ());
 	if (view == nullptr)
 		view = description->createView (dupName.c_str (), description->getController ());
@@ -1398,9 +1396,8 @@ void DeleteTemplateAction::perform ()
 //----------------------------------------------------------------------------------------------------
 void DeleteTemplateAction::undo ()
 {
-	IDependency::DeferChanges dc (description);
-	description->addNewTemplate (name.c_str (), attributes);
 	actionPerformer->onTemplateCreation (name.c_str (), view);
+	description->addNewTemplate (name.c_str (), attributes);
 }
 
 } // namespace

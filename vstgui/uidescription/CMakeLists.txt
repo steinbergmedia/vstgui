@@ -17,6 +17,7 @@ set(${target}_sources
     uiattributes.h
     uidescription.cpp
     uidescription.h
+    uidescriptionlistener.h
     uidescriptionfwd.h
     uiviewcreator.cpp
     uiviewcreator.h

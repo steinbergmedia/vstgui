@@ -30,14 +30,31 @@ public:
 class UIDescriptionListenerAdapter : public UIDescriptionListener
 {
 public:
-	bool doUIDescTemplateUpdate (UIDescription* desc, UTF8StringPtr name) override { return true; };
-	void onUIDescTagChanged (UIDescription* desc) override {};
-	void onUIDescColorChanged (UIDescription* desc) override {};
-	void onUIDescFontChanged (UIDescription* desc) override {};
-	void onUIDescBitmapChanged (UIDescription* desc) override {};
-	void onUIDescTemplateChanged (UIDescription* desc) override {};
-	void onUIDescGradientChanged (UIDescription* desc) override {};
-	void beforeUIDescSave (UIDescription* desc) override {};
+	bool doUIDescTemplateUpdate (UIDescription* desc, UTF8StringPtr name) override { return true; }
+	void onUIDescTagChanged (UIDescription* desc) override {}
+	void onUIDescColorChanged (UIDescription* desc) override {}
+	void onUIDescFontChanged (UIDescription* desc) override {}
+	void onUIDescBitmapChanged (UIDescription* desc) override {}
+	void onUIDescTemplateChanged (UIDescription* desc) override {}
+	void onUIDescGradientChanged (UIDescription* desc) override {}
+	void beforeUIDescSave (UIDescription* desc) override {}
+};
+
+//-----------------------------------------------------------------------------
+struct UIDescriptionListenerOff
+{
+	UIDescriptionListenerOff (UIDescriptionListener* listener, UIDescription* desc)
+	: listener (listener), desc (desc)
+	{
+		desc->unregisterListener (listener);
+	}
+	~UIDescriptionListenerOff () noexcept
+	{
+		desc->registerListener (listener);
+	}
+private:
+	UIDescriptionListener* listener;
+	UIDescription* desc;
 };
 
 } // VSTGUI
