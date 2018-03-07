@@ -258,7 +258,7 @@ bool VistaFileSelector::runModalInternal ()
 		}
 	}
 	auto win32Frame = dynamic_cast<IWin32PlatformFrame*> (frame->getPlatformFrame ());
-	hr = fileDialog->Show (win32Frame->getHWND ());
+	hr = fileDialog->Show (win32Frame ? win32Frame->getHWND () : nullptr);
 	if (SUCCEEDED (hr))
 	{
 		if (allowMultiFileSelection)
