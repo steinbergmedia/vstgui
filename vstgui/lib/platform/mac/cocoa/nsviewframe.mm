@@ -595,7 +595,8 @@ static void VSTGUI_NSView_draggingSessionWillBeginAtPoint (id self, SEL _cmd, NS
 		return;
 	if (auto session = frame->getDraggingSession ())
 	{
-		auto pos = pointFromNSPoint ([self convertPoint:position fromView:nil]);
+		auto r = [[self window] convertRectFromScreen:{position, NSMakeSize (0, 0)}];
+		auto pos = pointFromNSPoint ([self convertPoint:r.origin fromView:nil]);
 		session->dragWillBegin (pos);
 	}
 }
@@ -608,7 +609,8 @@ static void VSTGUI_NSView_draggingSessionMovedToPoint (id self, SEL _cmd, NSDrag
 		return;
 	if (auto session = frame->getDraggingSession ())
 	{
-		auto pos = pointFromNSPoint ([self convertPoint:position fromView:nil]);
+		auto r = [[self window] convertRectFromScreen:{position, NSMakeSize (0, 0)}];
+		auto pos = pointFromNSPoint ([self convertPoint:r.origin fromView:nil]);
 		session->dragMoved (pos);
 	}
 }
@@ -628,7 +630,8 @@ static void VSTGUI_NSView_draggingSessionEndedAtPoint (id self, SEL _cmd, NSDrag
 			case NSDragOperationMove: result = kDragMoved; break;
 			default: result = kDragCopied; break;
 		}
-		auto pos = pointFromNSPoint ([self convertPoint:position fromView:nil]);
+		auto r = [[self window] convertRectFromScreen:{position, NSMakeSize (0, 0)}];
+		auto pos = pointFromNSPoint ([self convertPoint:r.origin fromView:nil]);
 		session->dragEnded (pos, result);
 		frame->clearDraggingSession ();
 	}
