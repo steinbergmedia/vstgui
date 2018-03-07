@@ -11,21 +11,27 @@
 #include "win32frame.h"
 #include "win32dragcontainer.h"
 #include <windows.h>
+#include <memory>
 
 namespace VSTGUI {
 
+class Win32DragBitmapWindow;
+class Win32MouseObserverWhileDragging;
 
 //-----------------------------------------------------------------------------
 class Win32DraggingSession : public IDraggingSession
 {
 public:
 	Win32DraggingSession (Win32Frame* frame);
+	~Win32DraggingSession () noexcept;
 
 	bool setBitmap (const SharedPointer<CBitmap>& bitmap, CPoint offset) final;
 
 	bool doDrag (const DragDescription& dragDescription, const SharedPointer<IDragCallback>& callback);
 private:
 	Win32Frame* frame;
+	std::unique_ptr<Win32DragBitmapWindow> dragBitmapWindow;
+	std::unique_ptr<Win32MouseObserverWhileDragging> mouseObserver;
 };
 
 //-----------------------------------------------------------------------------

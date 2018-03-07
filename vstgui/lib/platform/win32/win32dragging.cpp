@@ -90,9 +90,25 @@ Win32DraggingSession::Win32DraggingSession (Win32Frame* frame)
 }
 
 //-----------------------------------------------------------------------------
+Win32DraggingSession::~Win32DraggingSession () noexcept = default;
+
+//-----------------------------------------------------------------------------
 bool Win32DraggingSession::setBitmap (const SharedPointer<CBitmap>& bitmap, CPoint offset)
 {
-	return false;
+	if (!dragBitmapWindow && bitmap)
+	{
+		dragBitmapWindow = std::make_unique<Win32DragBitmapWindow> (bitmap,
+		                                                            offset);
+		if (!mouseObserver)
+			mouseObserver = std::make_unique<Win32MouseObserverWhileDragging> ();
+
+		mouseObserver->registerCallback ([&] () { dragBitmapWindow->mouseChanged (); });
+	}
+	if (dragBitmapWindow)
+	{
+		dragBitmapWindow->updateBitmap (bitmap, offset);
+	}
+	return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -101,10 +117,7 @@ bool Win32DraggingSession::doDrag (const DragDescription& dragDescription, const
 	auto lastCursor = frame->getLastSetCursor ();
 	frame->setMouseCursor (kCursorNotAllowed);
 
-	std::unique_ptr<Win32DragBitmapWindow> dragBitmapWindow;
-	std::unique_ptr<Win32MouseObserverWhileDragging> mouseObserver;
-
-	if (callback || dragDescription.bitmap)
+	if (callback)
 		mouseObserver = std::make_unique<Win32MouseObserverWhileDragging> ();
 
 	if (callback)
@@ -127,15 +140,7 @@ bool Win32DraggingSession::doDrag (const DragDescription& dragDescription, const
 		}
 	}
 
-	if (dragDescription.bitmap)
-	{
-		dragBitmapWindow = std::make_unique<Win32DragBitmapWindow> (dragDescription.bitmap,
-		                                                            dragDescription.bitmapOffset);
-		if (mouseObserver)
-		{
-			mouseObserver->registerCallback ([&] () { dragBitmapWindow->mouseChanged (); });
-		}
-	}
+	setBitmap (dragDescription.bitmap, dragDescription.bitmapOffset);
 
 	auto dataObject = new Win32DataObject (dragDescription.data);
 	auto dropSource = new Win32DropSource ();
@@ -655,8 +660,8 @@ void Win32DragBitmapWindow::updateScaleFactor (POINT p)
 //-----------------------------------------------------------------------------
 void Win32DragBitmapWindow::updateWindowPosition (POINT where)
 {
-	auto width = static_cast<int> (bitmap->getWidth () * scaleFactor);
-	auto height = static_cast<int> (bitmap->getHeight () * scaleFactor);
+	auto width = bitmap ? static_cast<int> (bitmap->getWidth () * scaleFactor) : 0;
+	auto height = bitmap ? static_cast<int> (bitmap->getHeight () * scaleFactor) : 0;
 
 	SetWindowPos (hwnd, nullptr, where.x, where.y, width, height, SWP_NOCOPYBITS | SWP_NOACTIVATE | SWP_NOZORDER);
 }
