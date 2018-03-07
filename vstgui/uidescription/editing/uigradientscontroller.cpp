@@ -482,6 +482,7 @@ public:
 	std::string getSelectedGradientName ();
 	
 protected:
+	void onUIDescGradientChanged (UIDescription* desc) override;
 	void update () override;
 	void getNames (std::list<const std::string*>& names) override;
 	bool addItem (UTF8StringPtr name) override;
@@ -497,8 +498,14 @@ protected:
 
 //----------------------------------------------------------------------------------------------------
 UIGradientsDataSource::UIGradientsDataSource (UIDescription* description, IActionPerformer* actionPerformer, IGenericStringListDataBrowserSourceSelectionChanged* delegate)
-: UIBaseDataSource (description, actionPerformer, UIDescription::kMessageGradientChanged, delegate)
+: UIBaseDataSource (description, actionPerformer, delegate)
 {
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIGradientsDataSource::onUIDescGradientChanged (UIDescription* desc)
+{
+	onUIDescriptionUpdate ();
 }
 
 //----------------------------------------------------------------------------------------------------

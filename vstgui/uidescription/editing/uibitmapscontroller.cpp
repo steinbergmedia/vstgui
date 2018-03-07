@@ -145,6 +145,7 @@ public:
 
 	bool add () override;
 protected:
+	void onUIDescBitmapChanged (UIDescription* desc) override;
 	void getNames (std::list<const std::string*>& names) override;
 	bool addItem (UTF8StringPtr name) override;
 	bool removeItem (UTF8StringPtr name) override;
@@ -168,9 +169,15 @@ protected:
 
 //----------------------------------------------------------------------------------------------------
 UIBitmapsDataSource::UIBitmapsDataSource (UIDescription* description, IActionPerformer* actionPerformer, IGenericStringListDataBrowserSourceSelectionChanged* delegate)
-: UIBaseDataSource (description, actionPerformer, UIDescription::kMessageBitmapChanged, delegate)
+: UIBaseDataSource (description, actionPerformer, delegate)
 , dragContainsBitmaps (false)
 {
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIBitmapsDataSource::onUIDescBitmapChanged (UIDescription* desc)
+{
+	onUIDescriptionUpdate ();
 }
 
 //----------------------------------------------------------------------------------------------------

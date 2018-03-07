@@ -25,6 +25,7 @@ public:
 	~UIColorsDataSource () override;
 	
 protected:
+	void onUIDescColorChanged (UIDescription* desc) override;
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 	void update () override;
 	void getNames (std::list<const std::string*>& names) override;
@@ -54,7 +55,7 @@ protected:
 
 //----------------------------------------------------------------------------------------------------
 UIColorsDataSource::UIColorsDataSource (UIDescription* description, IActionPerformer* actionPerformer, UIColor* color)
-: UIBaseDataSource (description, actionPerformer, UIDescription::kMessageColorChanged)
+: UIBaseDataSource (description, actionPerformer)
 , color (color)
 , editing (false)
 , dragRow (-1)
@@ -66,6 +67,12 @@ UIColorsDataSource::UIColorsDataSource (UIDescription* description, IActionPerfo
 UIColorsDataSource::~UIColorsDataSource ()
 {
 	color->removeDependency (this);
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIColorsDataSource::onUIDescColorChanged (UIDescription* desc)
+{
+	onUIDescriptionUpdate ();
 }
 
 //----------------------------------------------------------------------------------------------------

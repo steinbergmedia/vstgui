@@ -141,13 +141,6 @@ public:
 	static bool parseColor (const std::string& colorString, CColor& color);
 	static CViewAttributeID kTemplateNameAttributeID;
 	
-	static IdStringPtr kMessageTagChanged;
-	static IdStringPtr kMessageColorChanged;
-	static IdStringPtr kMessageFontChanged;
-	static IdStringPtr kMessageBitmapChanged;
-	static IdStringPtr kMessageTemplateChanged;
-	static IdStringPtr kMessageGradientChanged;
-	static IdStringPtr kMessageBeforeSave;
 protected:
 	void addDefaultNodes ();
 
@@ -169,9 +162,9 @@ private:
 	UINode* findChildNodeByNameAttribute (UINode* node, UTF8StringPtr nameAttribute) const;
 	UINode* findNodeForView (CView* view) const;
 	bool updateAttributesForView (UINode* node, CView* view, bool deep = true);
-	void removeNode (UTF8StringPtr name, IdStringPtr mainNodeName, IdStringPtr changeMsg);
+	void removeNode (UTF8StringPtr name, IdStringPtr mainNodeName);
 	template<typename NodeType, typename ObjType, typename CompareFunction> UTF8StringPtr lookupName (const ObjType& obj, IdStringPtr mainNodeName, CompareFunction compare) const;
-	template<typename NodeType> void changeNodeName (UTF8StringPtr oldName, UTF8StringPtr newName, IdStringPtr mainNodeName, IdStringPtr changeMsg);
+	template<typename NodeType> void changeNodeName (UTF8StringPtr oldName, UTF8StringPtr newName, IdStringPtr mainNodeName);
 	template<typename NodeType> void collectNamesFromNode (IdStringPtr mainNodeName, std::list<const std::string*>& names) const;
 	
 	struct Impl;

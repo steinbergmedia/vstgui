@@ -23,6 +23,7 @@ public:
 	UIFontsDataSource (UIDescription* description, IActionPerformer* actionPerformer, IGenericStringListDataBrowserSourceSelectionChanged* delegate);
 	
 protected:
+	void onUIDescFontChanged (UIDescription* desc) override;
 	void getNames (std::list<const std::string*>& names) override;
 	bool addItem (UTF8StringPtr name) override;
 	bool removeItem (UTF8StringPtr name) override;
@@ -34,8 +35,14 @@ protected:
 
 //----------------------------------------------------------------------------------------------------
 UIFontsDataSource::UIFontsDataSource (UIDescription* description, IActionPerformer* actionPerformer, IGenericStringListDataBrowserSourceSelectionChanged* delegate)
-: UIBaseDataSource (description, actionPerformer, UIDescription::kMessageFontChanged, delegate)
+: UIBaseDataSource (description, actionPerformer, delegate)
 {
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIFontsDataSource::onUIDescFontChanged (UIDescription* desc)
+{
+	onUIDescriptionUpdate ();
 }
 
 //----------------------------------------------------------------------------------------------------

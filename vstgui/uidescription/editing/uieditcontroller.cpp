@@ -1618,7 +1618,7 @@ void UIEditController::performCreateNewTemplate (UTF8StringPtr name, UTF8StringP
 //----------------------------------------------------------------------------------------------------
 void UIEditController::performDeleteTemplate (UTF8StringPtr name)
 {
-	std::vector<Template>::iterator it = std::find (templates.begin (), templates.end (), name);
+	auto it = std::find (templates.begin (), templates.end (), name);
 	if (it != templates.end ())
 		undoManager->pushAndPerform (new DeleteTemplateAction (editDescription, this, (*it).view, (*it).name.c_str ()));
 }
@@ -1626,8 +1626,7 @@ void UIEditController::performDeleteTemplate (UTF8StringPtr name)
 //----------------------------------------------------------------------------------------------------
 void UIEditController::performDuplicateTemplate (UTF8StringPtr name, UTF8StringPtr dupName)
 {
-	// TODO: make this a non hack!
-	editDescription->changed (UIDescription::kMessageBeforeSave);
+	updateTemplate (name);
 	undoManager->pushAndPerform (new DuplicateTemplateAction (editDescription, this, name, dupName));
 }
 
@@ -1641,7 +1640,7 @@ void UIEditController::onTemplateCreation (UTF8StringPtr name, CView* view)
 //----------------------------------------------------------------------------------------------------
 void UIEditController::onTemplateNameChange (UTF8StringPtr oldName, UTF8StringPtr newName)
 {
-	std::vector<Template>::iterator it = std::find (templates.begin (), templates.end (), oldName);
+	auto it = std::find (templates.begin (), templates.end (), oldName);
 	if (it != templates.end ())
 	{
 		(*it).name = newName;
@@ -1663,7 +1662,7 @@ void UIEditController::updateTemplate (const std::vector<Template>::const_iterat
 //----------------------------------------------------------------------------------------------------
 void UIEditController::updateTemplate (UTF8StringPtr name)
 {
-	std::vector<Template>::const_iterator it = std::find (templates.begin (), templates.end (), name);
+	auto it = std::find (templates.begin (), templates.end (), name);
 	updateTemplate (it);
 }
 

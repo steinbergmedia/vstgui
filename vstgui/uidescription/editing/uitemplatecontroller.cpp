@@ -206,7 +206,7 @@ UITemplateController::UITemplateController (IController* baseController, UIDescr
 , mainViewDataSource (nullptr)
 , selectedTemplateName (nullptr)
 {
-	editDescription->addDependency (this);
+	editDescription->registerListener (this);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -214,7 +214,7 @@ UITemplateController::~UITemplateController ()
 {
 	if (mainViewDataSource)
 		mainViewDataSource->forget ();
-	editDescription->removeDependency (this);
+	editDescription->unregisterListener (this);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -299,37 +299,34 @@ void UITemplateController::dbSelectionChanged (int32_t selectedRow, GenericStrin
 }
 
 //----------------------------------------------------------------------------------------------------
-CMessageResult UITemplateController::notify (CBaseObject* sender, IdStringPtr message)
+void UITemplateController::onUIDescTemplateChanged (UIDescription* desc)
 {
-	if (templateDataBrowser && message == UIDescription::kMessageTemplateChanged)
+	if (!templateDataBrowser)
+		return;
+	auto dataSource = dynamic_cast<GenericStringListDataBrowserSource*>(templateDataBrowser->getDelegate ());
+	if (dataSource)
 	{
-		GenericStringListDataBrowserSource* dataSource = dynamic_cast<GenericStringListDataBrowserSource*>(templateDataBrowser->getDelegate ());
-		if (dataSource)
+		DeferChanges dc (this);
+		int32_t rowToSelect = templateDataBrowser->getSelectedRow ();
+		int32_t index = 0;
+		auto selectedTemplateStr = selectedTemplateName ? *selectedTemplateName : "";
+		templateNames.clear ();
+		dataSource->setStringList (&templateNames);
+		std::list<const std::string*> tmp;
+		editDescription->collectTemplateViewNames (tmp);
+		tmp.sort (UIEditController::std__stringCompare);
+		for (auto& name : tmp)
 		{
-			DeferChanges dc (this);
-			int32_t rowToSelect = templateDataBrowser->getSelectedRow ();
-			int32_t index = 0;
-			auto selectedTemplateStr = selectedTemplateName ? *selectedTemplateName : "";
-			templateNames.clear ();
-			dataSource->setStringList (&templateNames);
-			std::list<const std::string*> tmp;
-			editDescription->collectTemplateViewNames (tmp);
-			tmp.sort (UIEditController::std__stringCompare);
-			for (auto& name : tmp)
-			{
-				templateNames.emplace_back (*name);
-				if (*name == selectedTemplateStr)
-					rowToSelect = index;
-				++index;
-			}
-			if (rowToSelect < 0)
-				rowToSelect = 0;
-			dataSource->setStringList (&templateNames);
-			templateDataBrowser->setSelectedRow (rowToSelect, true);
+			templateNames.emplace_back (*name);
+			if (*name == selectedTemplateStr)
+				rowToSelect = index;
+			++index;
 		}
-		return kMessageNotified;
+		if (rowToSelect < 0)
+			rowToSelect = 0;
+		dataSource->setStringList (&templateNames);
+		templateDataBrowser->setSelectedRow (rowToSelect, true);
 	}
-	return kMessageUnknown;
 }
 
 //----------------------------------------------------------------------------------------------------

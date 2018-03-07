@@ -781,7 +781,7 @@ UIAttributesController::UIAttributesController (IController* baseController, UIS
 {
 	selection->addDependency (this);
 	undoManager->addDependency (this);
-	description->addDependency (this);
+	description->registerListener (this);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -789,7 +789,7 @@ UIAttributesController::~UIAttributesController ()
 {
 	selection->removeDependency (this);
 	undoManager->removeDependency (this);
-	editDescription->removeDependency (this);
+	editDescription->unregisterListener (this);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -946,6 +946,42 @@ IController* UIAttributesController::createSubController (IdStringPtr _name, con
 }
 
 //----------------------------------------------------------------------------------------------------
+void UIAttributesController::onUIDescTagChanged (UIDescription* desc)
+{
+	validateAttributeViews ();
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIAttributesController::onUIDescColorChanged (UIDescription* desc)
+{
+	validateAttributeViews ();
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIAttributesController::onUIDescFontChanged (UIDescription* desc)
+{
+	validateAttributeViews ();
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIAttributesController::onUIDescBitmapChanged (UIDescription* desc)
+{
+	validateAttributeViews ();
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIAttributesController::onUIDescTemplateChanged (UIDescription* desc)
+{
+	validateAttributeViews ();
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIAttributesController::onUIDescGradientChanged (UIDescription* desc)
+{
+	validateAttributeViews ();
+}
+
+//----------------------------------------------------------------------------------------------------
 CMessageResult UIAttributesController::notify (CBaseObject* sender, IdStringPtr message)
 {
 	if (message == UISelection::kMsgSelectionChanged)
@@ -958,15 +994,6 @@ CMessageResult UIAttributesController::notify (CBaseObject* sender, IdStringPtr 
 		return kMessageNotified;
 	}
 	else if (message == UISelection::kMsgSelectionViewChanged || message == UIUndoManager::kMsgChanged)
-	{
-		validateAttributeViews ();
-		return kMessageNotified;
-	}
-	else if (message == UIDescription::kMessageBitmapChanged
-			|| message == UIDescription::kMessageColorChanged
-			|| message == UIDescription::kMessageFontChanged
-			|| message == UIDescription::kMessageTagChanged
-			)
 	{
 		validateAttributeViews ();
 		return kMessageNotified;
