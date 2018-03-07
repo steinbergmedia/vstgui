@@ -4,6 +4,7 @@
 #include "cbitmap.h"
 #include "cpoint.h"
 #include "idatapackage.h"
+#include <functional>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -59,6 +60,36 @@ public:
 	void dragWillBegin (IDraggingSession* session, CPoint pos) override {}
 	void dragMoved (IDraggingSession* session, CPoint pos) override {}
 	void dragEnded (IDraggingSession* session, CPoint pos, DragResult result) override {}
+};
+
+//------------------------------------------------------------------------
+class DragCallbackFunctions : virtual public IDragCallback, public NonAtomicReferenceCounted
+{
+public:
+	using Func1 = std::function<void (IDraggingSession*, CPoint)>;
+	using Func2 = std::function<void (IDraggingSession*, CPoint, DragResult)>;
+
+	DragCallbackFunctions () = default;
+
+	void dragWillBegin (IDraggingSession* session, CPoint pos) override
+	{
+		if (willBeginFunc)
+			willBeginFunc (session, pos);
+	}
+	void dragMoved (IDraggingSession* session, CPoint pos) override
+	{
+		if (movedFunc)
+			movedFunc (session, pos);
+	}
+	void dragEnded (IDraggingSession* session, CPoint pos, DragResult result) override
+	{
+		if (endedFunc)
+			endedFunc (session, pos, result);
+	}
+
+	Func1 willBeginFunc;
+	Func1 movedFunc;
+	Func2 endedFunc;
 };
 
 //------------------------------------------------------------------------
