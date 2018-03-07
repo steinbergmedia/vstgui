@@ -147,6 +147,8 @@ bool Win32DraggingSession::doDrag (const DragDescription& dragDescription, const
 	if (dragBitmapWindow)
 		dragBitmapWindow = nullptr;
 
+	frame->setMouseCursor (lastCursor);
+
 	if (callback)
 	{
 		CPoint location;
@@ -167,7 +169,6 @@ bool Win32DraggingSession::doDrag (const DragDescription& dragDescription, const
 	dataObject->Release ();
 	dropSource->Release ();
 
-	frame->setMouseCursor (lastCursor);
 	return true;
 }
 
