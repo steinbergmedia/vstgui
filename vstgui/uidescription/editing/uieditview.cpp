@@ -1031,8 +1031,14 @@ void UIEditView::startDrag (CPoint& where)
 		return;
 	stream.end ();
 
+	auto callback = makeOwned<DragCallbackFunctions> ();
+	callback->endedFunc = [this] (IDraggingSession*, CPoint pos, DragResult) {
+		frameToLocal (pos);
+		onMouseMoved (pos, 0);
+	};
+
 	auto dropSource = CDropSource::create (stream.getBuffer (), static_cast<uint32_t>(stream.tell ()), CDropSource::kText);
-	doDrag (DragDescription (dropSource, offset, bitmap));
+	doDrag (DragDescription (dropSource, offset, bitmap), callback);
 }
 
 //----------------------------------------------------------------------------------------------------
