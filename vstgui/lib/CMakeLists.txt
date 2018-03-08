@@ -189,6 +189,7 @@ set(${target}_mac_sources
     platform/win32
     platform/linux
     platform/mac/ios
+    ../doxygen
 )
 
   ##########################################################################################

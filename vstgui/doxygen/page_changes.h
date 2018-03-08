@@ -21,6 +21,10 @@ It's recommended to start new projects with version 4 while old projects should 
 
 @section new_stuff New Stuff
 
+@subsection version4_7 Version 4.7
+
+- drags with bitmaps are now supported on Windows
+
 @subsection version4_6 Version 4.6
 
 - new Control: keyboardView
@@ -83,6 +87,13 @@ Note: All current deprecated methods will be removed in the next version. So mak
 - Direct2D drawing on Windows (Windows Vista or Windows 7)
 
 @section code_changes Changes for existing VSTGUI code
+
+@subsection code_changes_4_6_to_4_7 VSTGUI 4.6 -> VSTGUI 4.7
+
+- CView::doDrag is deprecated, instead use the asynchronous variant of it : CView::doDrag ;-)
+- the CControlEnum is gone and is moved into the classes where they are used: CParamDisplay/COptionMenu/CTextEdit/CSlider
+- CControl::kMessageTagWillChange and CControl::kMessageTagDidChange is gone, use IControlListener instead
+
 
 @subsection code_changes_4_3_to_4_5 VSTGUI 4.3 -> VSTGUI 4.5
 
