@@ -105,25 +105,25 @@ TESTCASE(CParamDisplayCreatorTest,
 	TEST(styles,
 		DummyUIDescription uiDesc;
 		testAttribute<CParamDisplay>(kCParamDisplay, kAttrStyle3DIn, true, &uiDesc, [&] (CParamDisplay* v) {
-			return v->getStyle() & k3DIn;
+			return v->getStyle() & CParamDisplay::k3DIn;
 		});
 		testAttribute<CParamDisplay>(kCParamDisplay, kAttrStyle3DOut, true, &uiDesc, [&] (CParamDisplay* v) {
-			return v->getStyle() & k3DOut;
+			return v->getStyle() & CParamDisplay::k3DOut;
 		});
 		testAttribute<CParamDisplay>(kCParamDisplay, kAttrStyleNoFrame, true, &uiDesc, [&] (CParamDisplay* v) {
-			return v->getStyle() & kNoFrame;
+			return v->getStyle() & CParamDisplay::kNoFrame;
 		});
 		testAttribute<CParamDisplay>(kCParamDisplay, kAttrStyleNoDraw, true, &uiDesc, [&] (CParamDisplay* v) {
-			return v->getStyle() & kNoDrawStyle;
+			return v->getStyle() & CParamDisplay::kNoDrawStyle;
 		});
 		testAttribute<CParamDisplay>(kCParamDisplay, kAttrStyleNoText, true, &uiDesc, [&] (CParamDisplay* v) {
-			return v->getStyle() & kNoTextStyle;
+			return v->getStyle() & CParamDisplay::kNoTextStyle;
 		});
 		testAttribute<CParamDisplay>(kCParamDisplay, kAttrStyleShadowText, true, &uiDesc, [&] (CParamDisplay* v) {
-			return v->getStyle() & kShadowText;
+			return v->getStyle() & CParamDisplay::kShadowText;
 		});
 		testAttribute<CParamDisplay>(kCParamDisplay, kAttrStyleRoundRect, true, &uiDesc, [&] (CParamDisplay* v) {
-			return v->getStyle() & kRoundRectStyle;
+			return v->getStyle() & CParamDisplay::kRoundRectStyle;
 		});
 	);
 

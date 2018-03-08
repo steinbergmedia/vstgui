@@ -139,7 +139,7 @@ CView* UIFontsController::verifyView (CView* view, const UIAttributes& attribute
 						fontMenu->addEntry (name.data ());
 					}
 				}
-				fontMenu->setStyle (fontMenu->getStyle () | kNoTextStyle);
+				fontMenu->setStyle (fontMenu->getStyle () | COptionMenu::kNoTextStyle);
 				fontMenu->setMouseEnabled (false);
 				break;
 			}
@@ -271,7 +271,7 @@ void UIFontsController::dbSelectionChanged (int32_t selectedRow, GenericStringLi
 				}
 				index++;
 			}
-			fontMenu->setStyle (fontMenu->getStyle () & ~kNoTextStyle);
+			fontMenu->setStyle (fontMenu->getStyle () & ~COptionMenu::kNoTextStyle);
 			fontMenu->setMouseEnabled (true);
 		}
 		if (sizeTextEdit)
@@ -317,7 +317,7 @@ void UIFontsController::dbSelectionChanged (int32_t selectedRow, GenericStringLi
 	{
 		if (fontMenu)
 		{
-			fontMenu->setStyle (fontMenu->getStyle () | kNoTextStyle);
+			fontMenu->setStyle (fontMenu->getStyle () | COptionMenu::kNoTextStyle);
 			fontMenu->setMouseEnabled (false);
 		}
 		if (boldControl)

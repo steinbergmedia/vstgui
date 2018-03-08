@@ -1584,13 +1584,13 @@ public:
 			display->setTextRotation (d);
 
 		int32_t style = display->getStyle ();
-		applyStyleMask (attributes.getAttributeValue (kAttrStyle3DIn), k3DIn, style);
-		applyStyleMask (attributes.getAttributeValue (kAttrStyle3DOut), k3DOut, style);
-		applyStyleMask (attributes.getAttributeValue (kAttrStyleNoFrame), kNoFrame, style);
-		applyStyleMask (attributes.getAttributeValue (kAttrStyleNoDraw), kNoDrawStyle, style);
-		applyStyleMask (attributes.getAttributeValue (kAttrStyleNoText), kNoTextStyle, style);
-		applyStyleMask (attributes.getAttributeValue (kAttrStyleShadowText), kShadowText, style);
-		applyStyleMask (attributes.getAttributeValue (kAttrStyleRoundRect), kRoundRectStyle, style);
+		applyStyleMask (attributes.getAttributeValue (kAttrStyle3DIn), CParamDisplay::k3DIn, style);
+		applyStyleMask (attributes.getAttributeValue (kAttrStyle3DOut), CParamDisplay::k3DOut, style);
+		applyStyleMask (attributes.getAttributeValue (kAttrStyleNoFrame), CParamDisplay::kNoFrame, style);
+		applyStyleMask (attributes.getAttributeValue (kAttrStyleNoDraw), CParamDisplay::kNoDrawStyle, style);
+		applyStyleMask (attributes.getAttributeValue (kAttrStyleNoText), CParamDisplay::kNoTextStyle, style);
+		applyStyleMask (attributes.getAttributeValue (kAttrStyleShadowText), CParamDisplay::kShadowText, style);
+		applyStyleMask (attributes.getAttributeValue (kAttrStyleRoundRect), CParamDisplay::kRoundRectStyle, style);
 		display->setStyle (style);
 
 		const std::string* precisionAttr = attributes.getAttributeValue (kAttrValuePrecision);
@@ -1704,37 +1704,37 @@ public:
 		}
 		else if (attributeName == kAttrStyle3DIn)
 		{
-			stringValue = pd->getStyle () & k3DIn ? strTrue : strFalse;
+			stringValue = pd->getStyle () & CParamDisplay::k3DIn ? strTrue : strFalse;
 			return true;
 		}
 		else if (attributeName == kAttrStyle3DOut)
 		{
-			stringValue = pd->getStyle () & k3DOut ? strTrue : strFalse;
+			stringValue = pd->getStyle () & CParamDisplay::k3DOut ? strTrue : strFalse;
 			return true;
 		}
 		else if (attributeName == kAttrStyleNoFrame)
 		{
-			stringValue = pd->getStyle () & kNoFrame ? strTrue : strFalse;
+			stringValue = pd->getStyle () & CParamDisplay::kNoFrame ? strTrue : strFalse;
 			return true;
 		}
 		else if (attributeName == kAttrStyleNoText)
 		{
-			stringValue = pd->getStyle () & kNoTextStyle ? strTrue : strFalse;
+			stringValue = pd->getStyle () & CParamDisplay::kNoTextStyle ? strTrue : strFalse;
 			return true;
 		}
 		else if (attributeName == kAttrStyleNoDraw)
 		{
-			stringValue = pd->getStyle () & kNoDrawStyle ? strTrue : strFalse;
+			stringValue = pd->getStyle () & CParamDisplay::kNoDrawStyle ? strTrue : strFalse;
 			return true;
 		}
 		else if (attributeName == kAttrStyleShadowText)
 		{
-			stringValue = pd->getStyle () & kShadowText ? strTrue : strFalse;
+			stringValue = pd->getStyle () & CParamDisplay::kShadowText ? strTrue : strFalse;
 			return true;
 		}
 		else if (attributeName == kAttrStyleRoundRect)
 		{
-			stringValue = pd->getStyle () & kRoundRectStyle ? strTrue : strFalse;
+			stringValue = pd->getStyle () & CParamDisplay::kRoundRectStyle ? strTrue : strFalse;
 			return true;
 		}
 		else if (attributeName == kAttrRoundRectRadius)

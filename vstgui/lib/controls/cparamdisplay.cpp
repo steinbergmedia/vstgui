@@ -20,16 +20,16 @@ Define a rectangle view where a text-value can be displayed with a given font an
 The user can specify its convert function (from float to char) by default the string format is "%2.2f".
 The text-value is centered in the given rect.
 */
-CParamDisplay::CParamDisplay (const CRect& size, CBitmap* background, int32_t style)
+CParamDisplay::CParamDisplay (const CRect& size, CBitmap* background, int32_t inStyle)
 : CControl (size, nullptr, -1, background)
 , horiTxtAlign (kCenterText)
-, style (style)
+, style (inStyle)
 , valuePrecision (2)
 , roundRectRadius (6.)
 , frameWidth (1.)
 , textRotation (0.)
-, bAntialias (true)
 {
+	setBit (style, kAntialias, true);
 	backOffset (0, 0);
 
 	fontID      = kNormalFont; fontID->remember ();
@@ -37,7 +37,7 @@ CParamDisplay::CParamDisplay (const CRect& size, CBitmap* background, int32_t st
 	backColor   = kBlackCColor;
 	frameColor  = kBlackCColor;
 	shadowColor = kRedCColor;
-	if (style & kNoDrawStyle)
+	if (hasBit (style, kNoDrawStyle))
 		setDirty (false);
 }
 
@@ -58,7 +58,6 @@ CParamDisplay::CParamDisplay (const CParamDisplay& v)
 , roundRectRadius (v.roundRectRadius)
 , frameWidth (v.frameWidth)
 , textRotation (v.textRotation)
-, bAntialias (v.bAntialias)
 {
 	fontID->remember ();
 }
@@ -79,11 +78,20 @@ bool CParamDisplay::removed (CView* parent)
 //------------------------------------------------------------------------
 void CParamDisplay::setStyle (int32_t val)
 {
+	setBit (val, kAntialias, hasBit (style, kAntialias));
 	if (style != val)
 	{
 		style = val;
 		drawStyleChanged ();
 	}
+}
+
+//------------------------------------------------------------------------
+int32_t CParamDisplay::getStyle () const
+{
+	auto tmp = style;
+	setBit (tmp, kAntialias, false);
+	return tmp;
 }
 
 //------------------------------------------------------------------------
@@ -144,7 +152,7 @@ bool CParamDisplay::getFocusPath (CGraphicsPath& outPath)
             lineWidth = 1.;
 		CCoord focusWidth = getFrame ()->getFocusWidth ();
 		CRect r (getViewSize ());
-		if (style & kRoundRectStyle)
+		if (hasBit (style, kRoundRectStyle))
 		{
 			r.inset (lineWidth / 2., lineWidth / 2.);
 			outPath.addRoundRect (r, roundRectRadius);
@@ -166,7 +174,7 @@ bool CParamDisplay::getFocusPath (CGraphicsPath& outPath)
 //------------------------------------------------------------------------
 void CParamDisplay::draw (CDrawContext *pContext)
 {
-	if (style & kNoDrawStyle)
+	if (hasBit (style, kNoDrawStyle))
 		return;
 
 	std::string string;
@@ -207,9 +215,9 @@ void CParamDisplay::drawBack (CDrawContext* pContext, CBitmap* newBack)
 	{
 		if (!getTransparency ())
 		{
-			bool strokePath = !(style & (k3DIn|k3DOut|kNoFrame));
+			bool strokePath = !(hasBit (style, (k3DIn|k3DOut|kNoFrame)));
 			pContext->setFillColor (backColor);
-			if (style & kRoundRectStyle)
+			if (hasBit (style, kRoundRectStyle))
 			{
 				CRect pathRect = getViewSize ();
 				pathRect.inset (lineWidth/2., lineWidth/2.);
@@ -265,14 +273,14 @@ void CParamDisplay::drawBack (CDrawContext* pContext, CBitmap* newBack)
 		}
 	}
 	// draw the frame for the 3D effect
-	if (style & (k3DIn|k3DOut)) 
+	if (hasBit (style, (k3DIn|k3DOut)))
 	{
 		CRect r (getViewSize ());
 		r.inset (lineWidth/2., lineWidth/2.);
 		pContext->setDrawMode (kAliasing);
 		pContext->setLineWidth (lineWidth);
 		pContext->setLineStyle (kLineSolid);
-		if (style & k3DIn)
+		if (hasBit (style, k3DIn))
 			pContext->setFrameColor (backColor);
 		else
 			pContext->setFrameColor (frameColor);
@@ -292,7 +300,7 @@ void CParamDisplay::drawBack (CDrawContext* pContext, CBitmap* newBack)
 			pContext->drawLine (CPoint (r.left, r.top), CPoint (r.right, r.top));
 		}
 
-		if (style & k3DIn)
+		if (hasBit (style, k3DIn))
 			pContext->setFrameColor (frameColor);
 		else
 			pContext->setFrameColor (backColor);
@@ -322,7 +330,7 @@ void CParamDisplay::drawPlatformText (CDrawContext* pContext, IPlatformString* s
 //------------------------------------------------------------------------
 void CParamDisplay::drawPlatformText (CDrawContext* pContext, IPlatformString* string, const CRect& size)
 {
-	if (!(style & kNoTextStyle))
+	if (!hasBit (style, kNoTextStyle))
 	{
 		pContext->saveGlobalState ();
 		CRect textRect (size);
@@ -343,15 +351,15 @@ void CParamDisplay::drawPlatformText (CDrawContext* pContext, IPlatformString* s
 		pContext->setFont (fontID);
 		
 		// draw darker text (as shadow)
-		if (style & kShadowText)
+		if (hasBit (style, kShadowText))
 		{
 			CRect newSize (textRect);
 			newSize.offset (shadowTextOffset);
 			pContext->setFontColor (shadowColor);
-			pContext->drawString (string, newSize, horiTxtAlign, bAntialias);
+			pContext->drawString (string, newSize, horiTxtAlign, hasBit (style, kAntialias));
 		}
 		pContext->setFontColor (fontColor);
-		pContext->drawString (string, textRect, horiTxtAlign, bAntialias);
+		pContext->drawString (string, textRect, horiTxtAlign, hasBit (style, kAntialias));
 		pContext->restoreGlobalState ();
 	}
 }

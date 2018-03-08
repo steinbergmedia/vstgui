@@ -235,7 +235,7 @@ void CMultiLineTextLabel::drawRect (CDrawContext* pContext, const CRect& updateR
 		for (const auto& line : lines)
 		{
 			if (line.r.rectOverlap (newClip))
-				pContext->drawString (line.str.getPlatformString (), line.r, getHoriAlign (), bAntialias);
+				pContext->drawString (line.str.getPlatformString (), line.r, getHoriAlign (), getAntialias ());
 		}
 	}
 
@@ -243,7 +243,7 @@ void CMultiLineTextLabel::drawRect (CDrawContext* pContext, const CRect& updateR
 	for (const auto& line : lines)
 	{
 		if (line.r.rectOverlap (newClip))
-			pContext->drawString (line.str.getPlatformString (), line.r, getHoriAlign (), bAntialias);
+			pContext->drawString (line.str.getPlatformString (), line.r, getHoriAlign (), getAntialias ());
 		else if (line.r.bottom > newClip.bottom)
 			break;
 	}
