@@ -20,7 +20,7 @@ Define a rectangle view where a text-value can be displayed with a given font an
 The user can specify its convert function (from float to char) by default the string format is "%2.2f".
 The text-value is centered in the given rect.
 */
-CParamDisplay::CParamDisplay (const CRect& size, CBitmap* background, const int32_t style)
+CParamDisplay::CParamDisplay (const CRect& size, CBitmap* background, int32_t style)
 : CControl (size, nullptr, -1, background)
 , horiTxtAlign (kCenterText)
 , style (style)

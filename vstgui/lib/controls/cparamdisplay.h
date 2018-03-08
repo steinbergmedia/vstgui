@@ -24,7 +24,7 @@ using CParamDisplayValueToStringProc = bool (*) (float value, char utf8String[25
 class CParamDisplay : public CControl
 {
 public:
-	CParamDisplay (const CRect& size, CBitmap* background = nullptr, const int32_t style = 0);
+	CParamDisplay (const CRect& size, CBitmap* background = nullptr, int32_t style = 0);
 	CParamDisplay (const CParamDisplay& paramDisplay);
 	
 	//-----------------------------------------------------------------------------
