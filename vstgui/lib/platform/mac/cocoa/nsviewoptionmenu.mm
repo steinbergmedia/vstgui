@@ -55,7 +55,7 @@ static id VSTGUI_NSMenu_Init (id self, SEL _cmd, void* _menu)
 		OBJC_SET_VALUE(self, _private, var);
 
 		int32_t index = -1;
-		bool multipleCheck = menu->getStyle () & (kMultipleCheckStyle & ~kCheckStyle);
+		bool multipleCheck = menu->isMultipleCheckStyle ();
 		CConstMenuItemIterator it = menu->getItems ()->begin ();
 		while (it != menu->getItems ()->end ())
 		{
@@ -265,7 +265,7 @@ PlatformOptionMenuResult NSViewOptionMenu::popup (COptionMenu* optionMenu)
 	CRect globalSize = optionMenu->translateToGlobal (optionMenu->getViewSize ());
 	globalSize.offset (-frame->getViewSize ().getTopLeft ());
 
-	bool multipleCheck = optionMenu->getStyle () & (kMultipleCheckStyle & ~kCheckStyle);
+	bool multipleCheck = optionMenu->isMultipleCheckStyle ();
 	NSView* view = nsViewFrame->getNSView ();
 	NSMenu* nsMenu = [[menuClass alloc] initWithOptionMenu:(id)optionMenu];
 	CPoint p = globalSize.getTopLeft ();
@@ -273,16 +273,16 @@ PlatformOptionMenuResult NSViewOptionMenu::popup (COptionMenu* optionMenu)
 	cellFrameRect.origin = nsPointFromCPoint (p);
 	cellFrameRect.size.width = static_cast<CGFloat> (globalSize.getWidth ());
 	cellFrameRect.size.height = static_cast<CGFloat> (globalSize.getHeight ());
-	if (!(optionMenu->getStyle () & kPopupStyle))
+	if (!optionMenu->isPopupStyle ())
 		cellFrameRect.origin.y += cellFrameRect.size.height;
-	if (!multipleCheck && optionMenu->getStyle () & kCheckStyle)
+	if (!multipleCheck && optionMenu->isCheckStyle ())
 		[[nsMenu itemWithTag:(NSInteger)optionMenu->getCurrentIndex (true)] setState:NSOnState];
 
 	NSView* menuContainer = [[NSView alloc] initWithFrame:cellFrameRect];
 	[view addSubview:menuContainer];
 
 	NSMenuItem* selectedItem = nil;
-	if (optionMenu->getStyle () & kPopupStyle)
+	if (optionMenu->isPopupStyle ())
 		selectedItem = [nsMenu itemAtIndex:optionMenu->getValue ()];
 	[nsMenu popUpMenuPositioningItem:selectedItem
 	                      atLocation:NSMakePoint (0, menuContainer.frame.size.height)

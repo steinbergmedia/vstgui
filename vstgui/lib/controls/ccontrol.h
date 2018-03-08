@@ -56,9 +56,6 @@ enum CControlEnum
 	kRight				= 1 << 4,
 	kTop				= 1 << 5,
 	kBottom				= 1 << 6,
-	kPopupStyle			= 1 << 9,
-	kCheckStyle			= 1 << 10,
-	kMultipleCheckStyle,
 	kDoubleClickStyle	= 1 << 13,
 };
 

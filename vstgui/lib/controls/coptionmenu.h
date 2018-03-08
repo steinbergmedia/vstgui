@@ -136,11 +136,29 @@ using CConstMenuItemIterator = CMenuItemList::const_iterator;
 //-----------------------------------------------------------------------------
 class COptionMenu : public CParamDisplay
 {
+private:
+	enum StyleEnum
+	{
+		StylePopup = CParamDisplay::LastStyle,
+		StyleCheck,
+		StyleMultipleCheck,
+	};
 public:
 	COptionMenu ();
 	COptionMenu (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background = nullptr, CBitmap* bgWhenClick = nullptr, const int32_t style = 0);
 	COptionMenu (const COptionMenu& menu);
 	~COptionMenu () noexcept override;
+
+	enum Style
+	{
+		kPopupStyle = 1 << StylePopup,
+		kCheckStyle = 1 << StyleCheck,
+		kMultipleCheckStyle = 1 << StyleMultipleCheck
+	};
+
+	bool isPopupStyle () const { return hasBit (getStyle (), kPopupStyle); }
+	bool isCheckStyle () const { return hasBit (getStyle (), kCheckStyle); }
+	bool isMultipleCheckStyle () const { return hasBit (getStyle (), kMultipleCheckStyle); }
 
 	//-----------------------------------------------------------------------------
 	/// @name COptionMenu Methods

@@ -378,7 +378,7 @@ CMouseEventResult Window::onMouseDown (CFrame* frame, const CPoint& where,
 		}
 		if (contextMenu.getNbEntries () > 0)
 		{
-			contextMenu.setStyle (kPopupStyle);
+			contextMenu.setStyle (COptionMenu::kPopupStyle);
 			contextMenu.popup (frame, where);
 			return kMouseEventHandled;
 		}

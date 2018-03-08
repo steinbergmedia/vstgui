@@ -58,7 +58,7 @@ PlatformOptionMenuResult Win32OptionMenu::popup (COptionMenu* optionMenu)
 
 	int32_t offset;
 
-	if (optionMenu->getStyle () & kPopupStyle)
+	if (optionMenu->isPopupStyle ())
 		offset = 0;
 	else
 		offset = static_cast<int32_t> (rect.getHeight ());
@@ -116,18 +116,7 @@ HMENU Win32OptionMenu::createMenu (COptionMenu* _menu, int32_t& offsetIdx)
 {
 	HMENU menu = CreatePopupMenu ();
 
-	bool multipleCheck = _menu->getStyle () & (kMultipleCheckStyle & ~kCheckStyle);
-
-#if 0
-	if (!multipleCheck && !(_menu->getStyle () & kCheckStyle))
-	{
-		MENUINFO mi = {0};
-		mi.cbSize = sizeof (MENUINFO);
-		mi.fMask = MIM_STYLE;
-		mi.dwStyle = MNS_NOCHECK;
-		SetMenuInfo (menu, &mi);
-	}
-#endif
+	bool multipleCheck = _menu->isMultipleCheckStyle ();
 
 	MENUINFO mi = {0};
 	mi.cbSize = sizeof (MENUINFO);
@@ -198,7 +187,7 @@ HMENU Win32OptionMenu::createMenu (COptionMenu* _menu, int32_t& offsetIdx)
 					if (item->isChecked ())
 						flags |= MF_CHECKED;
 				}
-				else if (_menu->getStyle () & kCheckStyle && inc == _menu->getCurrentIndex (true))
+				else if (_menu->isCheckStyle () && inc == _menu->getCurrentIndex (true))
 					flags |= MF_CHECKED;
 
 				if (!(flags & MF_CHECKED))

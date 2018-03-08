@@ -44,7 +44,7 @@ static void addEntriesToMenu (const UIEditing::MenuEntry* entries, COptionMenu* 
 		{
 			auto subMenu = makeOwned<COptionMenu> ();
 			if (entries[index].menuFlags & UIEditing::MenuEntry::kSubMenuCheckStyle)
-				subMenu->setStyle (kMultipleCheckStyle|kCheckStyle);
+				subMenu->setStyle (COptionMenu::kMultipleCheckStyle|COptionMenu::kCheckStyle);
 			menu->addEntry (new CMenuItem (entries[index].name, subMenu));
 			index++;
 			addEntriesToMenu(entries, subMenu, menuItemTarget, index);

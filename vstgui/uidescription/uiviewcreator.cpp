@@ -1805,8 +1805,8 @@ public:
 			return false;
 
 		int32_t style = menu->getStyle ();
-		applyStyleMask (attributes.getAttributeValue (kAttrMenuPopupStyle), kPopupStyle, style);
-		applyStyleMask (attributes.getAttributeValue (kAttrMenuCheckStyle), kCheckStyle, style);
+		applyStyleMask (attributes.getAttributeValue (kAttrMenuPopupStyle), COptionMenu::kPopupStyle, style);
+		applyStyleMask (attributes.getAttributeValue (kAttrMenuCheckStyle), COptionMenu::kCheckStyle, style);
 		menu->setStyle (style);
 
 		return true;
@@ -1830,12 +1830,12 @@ public:
 			return false;
 		if (attributeName == kAttrMenuPopupStyle)
 		{
-			stringValue = (menu->getStyle () & kPopupStyle) ? strTrue : strFalse;
+			stringValue = (menu->getStyle () & COptionMenu::kPopupStyle) ? strTrue : strFalse;
 			return true;
 		}
 		if (attributeName == kAttrMenuCheckStyle)
 		{
-			stringValue = (menu->getStyle () & kCheckStyle) ? strTrue : strFalse;
+			stringValue = (menu->getStyle () & COptionMenu::kCheckStyle) ? strTrue : strFalse;
 			return true;
 		}
 		return false;

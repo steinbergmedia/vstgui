@@ -1,4 +1,4 @@
-﻿// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms 
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
@@ -64,8 +64,8 @@ static void constructMenu (Gtk::Menu* menu, COptionMenu* optionMenu,
 {
 	menu->set_reserve_toggle_size (false);
 	auto style = optionMenu->getStyle ();
-	auto checkStyle = style & kCheckStyle || style & kMultipleCheckStyle;
-	auto popupStyle = style & kPopupStyle;
+	auto checkStyle = optionMenu->isCheckStyle () || optionMenu->isMultipleCheckStyle ();
+	auto popupStyle = optionMenu->isPopupStyle ();
 	int32_t index = 0;
 	for (auto item : *optionMenu->getItems ())
 	{
@@ -171,7 +171,7 @@ PlatformOptionMenuResult GTKOptionMenu::popup (COptionMenu* optionMenu)
 	menu->popup (
 		[&] (int& x, int& y, bool& push_in) {
 			x = size.left;
-			if (optionMenu->getStyle () & kPopupStyle)
+			if (optionMenu->isPopupStyle ())
 			{
 				auto selectedIndex = static_cast<uint32_t> (optionMenu->getValue ());
 				if (selectedIndex != 0)

@@ -23,6 +23,20 @@ using CParamDisplayValueToStringProc = bool (*) (float value, char utf8String[25
 //-----------------------------------------------------------------------------
 class CParamDisplay : public CControl
 {
+protected:
+	enum StyleEnum
+	{
+		StyleShadowText = 0,
+		Style3DIn,
+		Style3DOut,
+		StyleNoText,
+		StyleNoDraw,
+		StyleRoundRect,
+		StyleNoFrame,
+		StyleAntialias,
+		LastStyle
+	};
+
 public:
 	CParamDisplay (const CRect& size, CBitmap* background = nullptr, int32_t style = 0);
 	CParamDisplay (const CParamDisplay& paramDisplay);
@@ -80,13 +94,13 @@ public:
 
 	enum Style
 	{
-		kShadowText		= 1 << 0,
-		k3DIn			= 1 << 1,
-		k3DOut			= 1 << 2,
-		kNoTextStyle	= 1 << 3,
-		kNoDrawStyle	= 1 << 4,
-		kRoundRectStyle = 1 << 5,
-		kNoFrame		= 1 << 6,
+		kShadowText		= 1 << StyleShadowText,
+		k3DIn			= 1 << Style3DIn,
+		k3DOut			= 1 << Style3DOut,
+		kNoTextStyle	= 1 << StyleNoText,
+		kNoDrawStyle	= 1 << StyleNoDraw,
+		kRoundRectStyle = 1 << StyleRoundRect,
+		kNoFrame		= 1 << StyleNoFrame,
 	};
 	virtual void setStyle (int32_t val);
 	int32_t getStyle () const;
@@ -117,7 +131,7 @@ protected:
 	ValueToStringFunction2 valueToStringFunction;
 
 	enum StylePrivate {
-		kAntialias		= 1 << 7,
+		kAntialias		= 1 << StyleAntialias,
 	};
 
 	CHoriTxtAlign horiTxtAlign;

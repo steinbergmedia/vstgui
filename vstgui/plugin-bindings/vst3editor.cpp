@@ -803,7 +803,7 @@ CMouseEventResult VST3Editor::onMouseDown (CFrame* frame, const CPoint& where, c
 			else
 				controllerMenu->addSeparator ();
 			COptionMenu* zoomMenu = new COptionMenu ();
-			zoomMenu->setStyle (kMultipleCheckStyle);
+			zoomMenu->setStyle (COptionMenu::kMultipleCheckStyle);
 			char zoomFactorString[128];
 			int32_t zoomFactorTag = 0;
 			for (std::vector<double>::const_iterator it = allowedZoomFactors.begin (), end = allowedZoomFactors.end (); it != end; ++it, ++zoomFactorTag)
@@ -868,7 +868,7 @@ CMouseEventResult VST3Editor::onMouseDown (CFrame* frame, const CPoint& where, c
 	#endif
 		if (controllerMenu)
 		{
-			controllerMenu->setStyle (kPopupStyle|kMultipleCheckStyle);
+			controllerMenu->setStyle (COptionMenu::kPopupStyle|COptionMenu::kMultipleCheckStyle);
 			controllerMenu->popup (frame, where);
 			result = kMouseEventHandled;
 		}
