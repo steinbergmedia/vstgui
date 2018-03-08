@@ -74,8 +74,8 @@ CKnob::CKnob (const CRect& size, IControlListener* listener, int32_t tag, CBitma
 	colorHandle = kWhiteCColor;
 
 	rangeAngle = 1.f;
-	setStartAngle ((float)(3.f * kPI / 4.f));
-	setRangeAngle ((float)(3.f * kPI / 2.f));
+	setStartAngle ((float)(3.f * Constants::quarter_pi));
+	setRangeAngle ((float)(3.f * Constants::half_pi));
 	zoomFactor = 1.5f;
 
 	setWantsFocus (true);
@@ -191,7 +191,7 @@ void CKnob::addArc (CGraphicsPath* path, const CRect& r, double startAngle, doub
 		startAngle = atan2 (sin (startAngle) * h, cos (startAngle) * w);
 		endAngle = atan2 (sin (endAngle) * h, cos (endAngle) * w);
 	}
-	path->addArc (r, startAngle / kPI * 180, endAngle / kPI * 180, sweepAngle >= 0);
+	path->addArc (r, startAngle / Constants::pi * 180, endAngle / Constants::pi * 180, sweepAngle >= 0);
 }
 
 //------------------------------------------------------------------------
@@ -225,7 +225,7 @@ void CKnob::drawCorona (CDrawContext* pContext) const
 	CRect corona (getViewSize ());
 	corona.inset (coronaInset, coronaInset);
 	if (drawStyle & kCoronaFromCenter)
-		addArc (path, corona, 1.5 * kPI, rangeAngle * (coronaValue - 0.5));
+		addArc (path, corona, 1.5 * Constants::pi, rangeAngle * (coronaValue - 0.5));
 	else
 	{
 		if (drawStyle & kCoronaInverted)
@@ -576,10 +576,10 @@ float CKnob::valueFromPoint (CPoint &point) const
 	double dy = (point.y - c.y) / yradius;
 
 	double alpha = atan2 (dy, dx) - a;
-	while (alpha >= kPI)
-		alpha -= k2PI;
-	while (alpha < -kPI)
-		alpha += k2PI;
+	while (alpha >= Constants::pi)
+		alpha -= Constants::double_pi;
+	while (alpha < -Constants::pi)
+		alpha += Constants::double_pi;
 
 	if (d < 0.0)
 		alpha = -alpha;

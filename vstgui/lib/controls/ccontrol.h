@@ -12,38 +12,18 @@
 #include "icontrollistener.h"
 #include <list>
 
-//------------------
-// defines
-//------------------
-#ifndef kPI
-#define kPI    3.14159265358979323846
-#endif
-
-#ifndef k2PI
-#define k2PI   6.28318530717958647692
-#endif
-
-#ifndef kPI_2
-#define kPI_2  1.57079632679489661923f
-#endif
-
-#ifndef kPI_4
-#define kPI_4  0.78539816339744830962
-#endif
-
-#ifndef kE
-#define kE     2.7182818284590452354
-#endif
-
-#ifndef kLN2
-#define kLN2   0.69314718055994530942
-#endif
-
-#ifndef kSQRT2
-#define kSQRT2 1.41421356237309504880
-#endif
-
 namespace VSTGUI {
+namespace Constants {
+
+static constexpr auto pi = 3.14159265358979323846;
+static constexpr auto double_pi = 6.28318530717958647692;
+static constexpr auto half_pi = 1.57079632679489661923f;
+static constexpr auto quarter_pi = 0.78539816339744830962;
+static constexpr auto e = 2.7182818284590452354;
+static constexpr auto ln2 = 0.69314718055994530942;
+static constexpr auto sqrt2 = 1.41421356237309504880;
+
+} // Constants
 
 //-----------------------------------------------------------------------------
 // CControl Declaration

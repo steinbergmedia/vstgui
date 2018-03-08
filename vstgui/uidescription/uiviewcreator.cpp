@@ -2755,13 +2755,13 @@ public:
 		if (attributes.getDoubleAttribute (kAttrAngleStart, d))
 		{
 			// convert from degree
-			d = d / 180.f * (float)kPI;
+			d = d / 180.f * (float)Constants::pi;
 			knob->setStartAngle (static_cast<float>(d));
 		}
 		if (attributes.getDoubleAttribute (kAttrAngleRange, d))
 		{
 			// convert from degree
-			d = d / 180.f * (float)kPI;
+			d = d / 180.f * (float)Constants::pi;
 			knob->setRangeAngle (static_cast<float>(d));
 		}
 		if (attributes.getDoubleAttribute (kAttrValueInset, d))
@@ -2853,12 +2853,12 @@ public:
 
 		if (attributeName == kAttrAngleStart)
 		{
-			stringValue = numberToString ((knob->getStartAngle () / kPI * 180.));
+			stringValue = numberToString ((knob->getStartAngle () / Constants::pi * 180.));
 			return true;
 		}
 		else if (attributeName == kAttrAngleRange)
 		{
-			stringValue = numberToString ((knob->getRangeAngle () / kPI * 180.));
+			stringValue = numberToString ((knob->getRangeAngle () / Constants::pi * 180.));
 			return true;
 		}
 		else if (attributeName == kAttrValueInset)
