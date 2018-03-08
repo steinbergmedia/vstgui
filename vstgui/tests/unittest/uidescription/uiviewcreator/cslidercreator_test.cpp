@@ -61,10 +61,10 @@ TESTCASE(CSliderCreatorTest,
 	TEST(orientation,
 		DummyUIDescription uidesc;
 		testAttribute<CSlider>(kCSlider, kAttrOrientation, "horizontal", &uidesc, [&] (CSlider* v) {
-			return v->getStyle() & kHorizontal;
+			return v->getStyle() & CSlider::kHorizontal;
 		});
 		testAttribute<CSlider>(kCSlider, kAttrOrientation, "vertical", &uidesc, [&] (CSlider* v) {
-			return v->getStyle() & kVertical;
+			return v->getStyle() & CSlider::kVertical;
 		});
 	);
 
@@ -82,15 +82,15 @@ TESTCASE(CSliderCreatorTest,
 		DummyUIDescription uidesc;
 		testAttribute<CSlider>(kCSlider, kAttrReverseOrientation, true, &uidesc, [&] (CSlider* v) {
 			auto style = v->getStyle ();
-			if (style & kHorizontal)
-				return style & kRight;
-			return style & kTop;
+			if (style & CSlider::kHorizontal)
+				return style & CSlider::kRight;
+			return style & CSlider::kTop;
 		});
 		testAttribute<CSlider>(kCSlider, kAttrReverseOrientation, false, &uidesc, [&] (CSlider* v) {
 			auto style = v->getStyle ();
-			if (style & kHorizontal)
-				return style & kLeft;
-			return style & kBottom;
+			if (style & CSlider::kHorizontal)
+				return style & CSlider::kLeft;
+			return style & CSlider::kBottom;
 		});
 	);
 

@@ -2048,7 +2048,7 @@ public:
 			label->setImmediateTextChange (b);
 
 		int32_t style = label->getStyle ();
-		applyStyleMask (attributes.getAttributeValue (kAttrStyleDoubleClick), kDoubleClickStyle, style);
+		applyStyleMask (attributes.getAttributeValue (kAttrStyleDoubleClick), CTextEdit::kDoubleClickStyle, style);
 		label->setStyle (style);
 
 		if (auto placeholder = attributes.getAttributeValue (kAttrPlaceholderTitle))
@@ -2089,7 +2089,7 @@ public:
 		}
 		if (attributeName == kAttrStyleDoubleClick)
 		{
-			stringValue = label->getStyle () & kDoubleClickStyle ? strTrue : strFalse;
+			stringValue = label->getStyle () & CTextEdit::kDoubleClickStyle ? strTrue : strFalse;
 			return true;
 		}
 		if (attributeName == kAttrPlaceholderTitle)
@@ -3214,13 +3214,13 @@ public:
 			int32_t style = slider->getStyle ();
 			if (*orientationAttr == strVertical)
 			{
-				setBit (style, kHorizontal, false);
-				setBit (style, kVertical, true);
+				setBit (style, CSlider::kHorizontal, false);
+				setBit (style, CSlider::kVertical, true);
 			}
 			else
 			{
-				setBit (style, kVertical, false);
-				setBit (style, kHorizontal, true);
+				setBit (style, CSlider::kVertical, false);
+				setBit (style, CSlider::kHorizontal, true);
 			}
 			slider->setStyle (style);
 		}
@@ -3230,28 +3230,28 @@ public:
 			int32_t style = slider->getStyle ();
 			if (*reverseOrientationAttr == strTrue)
 			{
-				if (style & kVertical)
+				if (style & CSlider::kVertical)
 				{
-					setBit (style, kBottom, false);
-					setBit (style, kTop, true);
+					setBit (style, CSlider::kBottom, false);
+					setBit (style, CSlider::kTop, true);
 				}
-				else if (style & kHorizontal)
+				else if (style & CSlider::kHorizontal)
 				{
-					setBit (style, kLeft, false);
-					setBit (style, kRight, true);
+					setBit (style, CSlider::kLeft, false);
+					setBit (style, CSlider::kRight, true);
 				}
 			}
 			else
 			{
-				if (style & kVertical)
+				if (style & CSlider::kVertical)
 				{
-					setBit (style, kTop, false);
-					setBit (style, kBottom, true);
+					setBit (style, CSlider::kTop, false);
+					setBit (style, CSlider::kBottom, true);
 				}
-				else if (style & kHorizontal)
+				else if (style & CSlider::kHorizontal)
 				{
-					setBit (style, kRight, false);
-					setBit (style, kLeft, true);
+					setBit (style, CSlider::kRight, false);
+					setBit (style, CSlider::kLeft, true);
 				}
 			}
 			slider->setStyle (style);
@@ -3369,7 +3369,7 @@ public:
 		}
 		else if (attributeName == kAttrOrientation)
 		{
-			if (slider->getStyle () & kVertical)
+			if (slider->getStyle () & CSlider::kVertical)
 				stringValue = strVertical;
 			else
 				stringValue = strHorizontal;
@@ -3379,7 +3379,7 @@ public:
 		{
 			int32_t style = slider->getStyle ();
 			stringValue = strFalse;
-			if (((style & kVertical) && (style & kTop)) || ((style & kHorizontal) && (style & kRight)))
+			if (((style & CSlider::kVertical) && (style & CSlider::kTop)) || ((style & CSlider::kHorizontal) && (style & CSlider::kRight)))
 				stringValue = strTrue;
 			else
 				stringValue = strFalse;
@@ -3488,7 +3488,7 @@ public:
 
 		const std::string* attr = attributes.getAttributeValue (kAttrOrientation);
 		if (attr)
-			vuMeter->setStyle (*attr == strVertical ? kVertical : kHorizontal);
+			vuMeter->setStyle (*attr == strVertical ? CVuMeter::kVertical : CVuMeter::kHorizontal);
 		
 		int32_t numLed;
 		if (attributes.getIntegerAttribute(kAttrNumLed, numLed))
@@ -3531,7 +3531,7 @@ public:
 		}
 		else if (attributeName == kAttrOrientation)
 		{
-			if (vuMeter->getStyle () & kVertical)
+			if (vuMeter->getStyle () & CVuMeter::kVertical)
 				stringValue = strVertical;
 			else
 				stringValue = strHorizontal;

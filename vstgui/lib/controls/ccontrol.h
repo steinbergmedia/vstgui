@@ -45,20 +45,6 @@
 
 namespace VSTGUI {
 
-//------------------
-// CControlEnum type
-//------------------
-enum CControlEnum
-{
-	kHorizontal			= 1 << 0,
-	kVertical			= 1 << 1,
-	kLeft				= 1 << 3,
-	kRight				= 1 << 4,
-	kTop				= 1 << 5,
-	kBottom				= 1 << 6,
-	kDoubleClickStyle	= 1 << 13,
-};
-
 //-----------------------------------------------------------------------------
 // CControl Declaration
 //! @brief base class of all VSTGUI controls

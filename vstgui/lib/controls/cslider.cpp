@@ -539,9 +539,9 @@ CMouseEventResult CSlider::onMouseMoved (CPoint& where, const CButtonState& _but
 //------------------------------------------------------------------------
 static bool styleIsInverseStyle (int32_t style)
 {
-	if ((style & kVertical) && (style & kTop))
+	if ((style & CSlider::kVertical) && (style & CSlider::kTop))
 		return true;
-	if ((style & kHorizontal) && (style & kRight))
+	if ((style & CSlider::kHorizontal) && (style & CSlider::kRight))
 		return true;
 	return false;
 }

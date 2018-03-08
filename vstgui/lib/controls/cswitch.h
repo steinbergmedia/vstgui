@@ -108,7 +108,19 @@ protected:
 //-----------------------------------------------------------------------------
 class CRockerSwitch : public CControl, public IMultiBitmapControl
 {
+private:
+	enum StyleEnum
+	{
+		StyleHorizontal = 0,
+		StyleVertical,
+	};
 public:
+	enum Style
+	{
+		kHorizontal = 1 << StyleHorizontal,
+		kVertical = 1 << StyleVertical,
+	};
+
 	CRockerSwitch (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background, const CPoint& offset = CPoint (0, 0), const int32_t style = kHorizontal);
 	CRockerSwitch (const CRect& size, IControlListener* listener, int32_t tag, CCoord heightOfOneImage, CBitmap* background, const CPoint& offset = CPoint (0, 0), const int32_t style = kHorizontal);
 	CRockerSwitch (const CRockerSwitch& rswitch);

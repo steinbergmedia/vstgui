@@ -17,6 +17,16 @@ namespace VSTGUI {
 //-----------------------------------------------------------------------------
 class CSlider : public CControl
 {
+private:
+	enum StyleEnum
+	{
+		StyleHorizontal = 0,
+		StyleVertical,
+		StyleLeft,
+		StyleRight,
+		StyleTop,
+		StyleBottom,
+	};
 public:
 	CSlider (const CRect& size, IControlListener* listener, int32_t tag, int32_t iMinPos, int32_t iMaxPos, CBitmap* handle, CBitmap* background, const CPoint& offset = CPoint (0, 0), const int32_t style = kLeft|kHorizontal);
 	CSlider (const CRect& rect, IControlListener* listener, int32_t tag, const CPoint& offsetHandle, int32_t rangeHandle, CBitmap* handle, CBitmap* background, const CPoint& offset = CPoint (0, 0), const int32_t style = kLeft|kHorizontal);
@@ -39,6 +49,16 @@ public:
 	virtual CPoint getOffsetHandle () const { return offsetHandle; }
 	virtual void setOffset (const CPoint& val) { offset = val; }
 	virtual CPoint getOffset () const { return offset; }
+
+	enum Style
+	{
+		kHorizontal = 1 << StyleHorizontal,
+		kVertical = 1 << StyleVertical,
+		kLeft = 1 << StyleLeft,
+		kRight = 1 << StyleRight,
+		kTop = 1 << StyleTop,
+		kBottom = 1 << StyleBottom,
+	};
 
 	virtual void setStyle (int32_t style);
 	virtual int32_t getStyle () const { return style; }

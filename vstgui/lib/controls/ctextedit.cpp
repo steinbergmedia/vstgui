@@ -201,7 +201,7 @@ CMouseEventResult CTextEdit::onMouseDown (CPoint& where, const CButtonState& but
 	{
 		if (getFrame ()->getFocusView () != this)
 		{
-			if (style & kDoubleClickStyle)
+			if (isDoubleClickStyle ())
 			{
 				if (!(buttons & kDoubleClick))
 					return kMouseEventNotHandled;
@@ -332,7 +332,7 @@ void CTextEdit::createPlatformTextEdit ()
 //------------------------------------------------------------------------
 bool CTextEdit::wantsFocus () const
 {
-	if (getStyle () & kDoubleClickStyle && !platformControl)
+	if (isDoubleClickStyle () && !platformControl)
 		return false;
 	return CTextLabel::wantsFocus ();
 }

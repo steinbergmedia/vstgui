@@ -20,11 +20,23 @@ using CTextEditStringToValueProc = bool (*) (UTF8StringPtr txt, float& result, v
 //-----------------------------------------------------------------------------
 class CTextEdit : public CTextLabel, public IPlatformTextEditCallback
 {
+private:
+	enum StyleEnum
+	{
+		StyleDoubleClick = CParamDisplay::LastStyle,
+	};
 public:
 	using PlatformTextEditPtr = SharedPointer<IPlatformTextEdit>;
 
 	CTextEdit (const CRect& size, IControlListener* listener, int32_t tag, UTF8StringPtr txt = nullptr, CBitmap* background = nullptr, const int32_t style = 0);
 	CTextEdit (const CTextEdit& textEdit);
+
+	enum Style
+	{
+		kDoubleClickStyle = 1 << StyleDoubleClick,
+	};
+
+	bool isDoubleClickStyle () const { return hasBit (getStyle (), kDoubleClickStyle); }
 
 	//-----------------------------------------------------------------------------
 	/// @name CTextEdit Methods
