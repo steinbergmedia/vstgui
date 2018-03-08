@@ -140,8 +140,9 @@ TESTCASE(CParamDisplayCreatorTest,
 	);
 
 	TEST(backgroundOffset,
+		DummyUIDescription uiDesc;
 		CPoint offset (20, 20);
-		testAttribute<CParamDisplay>(kCParamDisplay, kAttrBackgroundOffset, offset, nullptr, [&] (CControl* v) {
+		testAttribute<CParamDisplay>(kCParamDisplay, kAttrBackgroundOffset, offset, &uiDesc, [&] (CParamDisplay* v) {
 			return v->getBackOffset() == offset;
 		});
 	);
