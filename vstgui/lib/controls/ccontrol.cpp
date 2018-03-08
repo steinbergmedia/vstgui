@@ -36,8 +36,6 @@ CControl::CControl (const CRect& size, IControlListener* listener, int32_t tag, 
 {
 	setTransparency (false);
 	setMouseEnabled (true);
-	backOffset (0 ,0);
-
 	setBackground (pBackground);
 }
 
@@ -180,18 +178,6 @@ void CControl::setDirty (bool val)
 	}
 	else
 		setOldValue (value);
-}
-
-//------------------------------------------------------------------------
-void CControl::setBackOffset (const CPoint &offset)
-{
-	backOffset = offset;
-}
-
-//-----------------------------------------------------------------------------
-void CControl::copyBackOffset ()
-{
-	backOffset (getViewSize ().left, getViewSize ().top);
 }
 
 //------------------------------------------------------------------------

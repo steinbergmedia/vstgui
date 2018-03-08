@@ -128,10 +128,6 @@ public:
 	/// @name Misc
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual void setBackOffset (const CPoint& offset);
-	virtual const CPoint& getBackOffset () const { return backOffset; }
-	virtual void copyBackOffset ();
-
 	virtual void setWheelInc (float val) { wheelInc = val; }
 	virtual float getWheelInc () const { return wheelInc; }
 	//@}
@@ -169,8 +165,6 @@ protected:
 	float vmax;
 	float wheelInc;
 	int32_t editing;
-
-	CPoint	backOffset;
 };
 
 //-----------------------------------------------------------------------------

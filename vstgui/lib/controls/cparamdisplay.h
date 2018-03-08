@@ -84,6 +84,10 @@ public:
 	virtual void setPrecision (uint8_t precision);
 	uint8_t getPrecision () const { return valuePrecision; }
 
+	virtual void setBackOffset (const CPoint& offset);
+	const CPoint& getBackOffset () const { return backOffset; }
+	void copyBackOffset ();
+
 	//@}
 
 	void draw (CDrawContext* pContext) override;
@@ -113,6 +117,7 @@ protected:
 	CColor		shadowColor;
 	CPoint		textInset;
 	CPoint		shadowTextOffset {1., 1.};
+	CPoint		backOffset;
 	CCoord		roundRectRadius;
 	CCoord		frameWidth;
 	double		textRotation;

@@ -1259,10 +1259,6 @@ public:
 		if (attributes.getDoubleAttribute (kAttrWheelIncValue, value))
 			control->setWheelInc (static_cast<float> (value));
 
-		CPoint p;
-		if (attributes.getPointAttribute (kAttrBackgroundOffset, p))
-			control->setBackOffset (p);
-
 		const std::string* controlTagAttr = attributes.getAttributeValue (kAttrControlTag);
 		if (controlTagAttr)
 		{
@@ -1301,7 +1297,6 @@ public:
 		attributeNames.emplace_back (kAttrMinValue);
 		attributeNames.emplace_back (kAttrMaxValue);
 		attributeNames.emplace_back (kAttrWheelIncValue);
-		attributeNames.emplace_back (kAttrBackgroundOffset);
 		return true;
 	}
 	AttrType getAttributeType (const std::string& attributeName) const override
@@ -1311,7 +1306,6 @@ public:
 		else if (attributeName == kAttrMinValue) return kFloatType;
 		else if (attributeName == kAttrMaxValue) return kFloatType;
 		else if (attributeName == kAttrWheelIncValue) return kFloatType;
-		else if (attributeName == kAttrBackgroundOffset) return kPointType;
 		return kUnknownType;
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const override
@@ -1349,11 +1343,6 @@ public:
 		else if (attributeName == kAttrWheelIncValue)
 		{
 			stringValue = numberToString (control->getWheelInc ());
-			return true;
-		}
-		else if (attributeName == kAttrBackgroundOffset)
-		{
-			pointToString (control->getBackOffset (), stringValue);
 			return true;
 		}
 		return false;
@@ -1570,6 +1559,8 @@ public:
 			display->setTextInset (p);
 		if (attributes.getPointAttribute (kAttrTextShadowOffset, p))
 			display->setShadowTextOffset (p);
+		if (attributes.getPointAttribute (kAttrBackgroundOffset, p))
+			display->setBackOffset (p);
 		bool b;
 		if (attributes.getBooleanAttribute(kAttrFontAntialias, b))
 			display->setAntialias (b);
@@ -1624,6 +1615,7 @@ public:
 		attributeNames.emplace_back (kAttrTextInset);
 		attributeNames.emplace_back (kAttrTextShadowOffset);
 		attributeNames.emplace_back (kAttrValuePrecision);
+		attributeNames.emplace_back (kAttrBackgroundOffset);
 		attributeNames.emplace_back (kAttrFontAntialias);
 		attributeNames.emplace_back (kAttrStyle3DIn);
 		attributeNames.emplace_back (kAttrStyle3DOut);
@@ -1657,6 +1649,7 @@ public:
 		else if (attributeName == kAttrTextShadowOffset) return kPointType;
 		else if (attributeName == kAttrValuePrecision) return kIntegerType;
 		else if (attributeName == kAttrTextRotation) return kFloatType;
+		else if (attributeName == kAttrBackgroundOffset) return kPointType;
 		return kUnknownType;
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const override
@@ -1773,6 +1766,11 @@ public:
 		else if (attributeName == kAttrTextRotation)
 		{
 			stringValue = numberToString (pd->getTextRotation ());
+			return true;
+		}
+		else if (attributeName == kAttrBackgroundOffset)
+		{
+			pointToString (pd->getBackOffset (), stringValue);
 			return true;
 		}
 		return false;

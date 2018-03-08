@@ -54,6 +54,7 @@ CParamDisplay::CParamDisplay (const CParamDisplay& v)
 , frameColor (v.frameColor)
 , shadowColor (v.shadowColor)
 , textInset (v.textInset)
+, backOffset (v.backOffset)
 , roundRectRadius (v.roundRectRadius)
 , frameWidth (v.frameWidth)
 , textRotation (v.textRotation)
@@ -478,6 +479,18 @@ void CParamDisplay::setFrameWidth (const CCoord& width)
 void CParamDisplay::drawStyleChanged ()
 {
 	setDirty ();
+}
+
+//------------------------------------------------------------------------
+void CParamDisplay::setBackOffset (const CPoint &offset)
+{
+	backOffset = offset;
+}
+
+//-----------------------------------------------------------------------------
+void CParamDisplay::copyBackOffset ()
+{
+	backOffset (getViewSize ().left, getViewSize ().top);
 }
 
 } // namespace

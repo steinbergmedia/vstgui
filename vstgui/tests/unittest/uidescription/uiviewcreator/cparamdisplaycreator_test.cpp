@@ -139,6 +139,13 @@ TESTCASE(CParamDisplayCreatorTest,
 		testMinMaxValues(kCParamDisplay, kAttrTextRotation, &uidesc, 0., 360.);
 	);
 
+	TEST(backgroundOffset,
+		CPoint offset (20, 20);
+		testAttribute<CParamDisplay>(kCParamDisplay, kAttrBackgroundOffset, offset, nullptr, [&] (CControl* v) {
+			return v->getBackOffset() == offset;
+		});
+	);
+
 );
 
 } // VSTGUI
