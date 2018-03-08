@@ -359,8 +359,6 @@ UIEditController::UIEditController (UIDescription* description)
 //----------------------------------------------------------------------------------------------------
 UIEditController::~UIEditController ()
 {
-	if (tabSwitchControl)
-		tabSwitchControl->removeDependency (this);
 	if (templateController)
 		templateController->removeDependency (this);
 	undoManager->removeDependency (this);
@@ -571,7 +569,6 @@ CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes
 					size_t numSegments = button->getSegments ().size ();
 					button->setMax (static_cast<float> (numSegments));
 					tabSwitchControl = button;
-					tabSwitchControl->addDependency (this);
 					int32_t value = 0;
 					getSettings ()->getIntegerAttribute ("TabSwitchValue", value);
 					button->setSelectedSegment (static_cast<uint32_t> (value));
@@ -677,6 +674,11 @@ void UIEditController::valueChanged (CControl* control)
 				}
 				break;
 			}
+			case kTabSwitchTag:
+			{
+				getSettings ()->setIntegerAttribute ("TabSwitchValue", static_cast<int32_t> (tabSwitchControl->getValue ()));
+				break;
+			}
 		}
 	}
 }
@@ -684,15 +686,7 @@ void UIEditController::valueChanged (CControl* control)
 //----------------------------------------------------------------------------------------------------
 CMessageResult UIEditController::notify (CBaseObject* sender, IdStringPtr message)
 {
-	if (message == CControl::kMessageValueChanged)
-	{
-		if (tabSwitchControl == dynamic_cast<CControl*> (sender))
-		{
-			getSettings ()->setIntegerAttribute ("TabSwitchValue", (int32_t)tabSwitchControl->getValue ());
-		}
-		return kMessageNotified;
-	}
-	else if (message == UITemplateController::kMsgTemplateChanged)
+	if (message == UITemplateController::kMsgTemplateChanged)
 	{
 		onTemplateSelectionChanged ();
 		return kMessageNotified;

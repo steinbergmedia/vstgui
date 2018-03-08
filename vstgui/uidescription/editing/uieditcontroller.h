@@ -30,7 +30,14 @@ class GenericStringListDataBrowserSource;
 class CCommandMenuItem;
 
 //----------------------------------------------------------------------------------------------------
-class UIEditController : public CBaseObject, public IController, public IContextMenuController, public ISplitViewController, public ISplitViewSeparatorDrawer, public IActionPerformer, public IKeyboardHook, public UIDescriptionListenerAdapter
+class UIEditController : public CBaseObject,
+                         public IController,
+                         public IContextMenuController,
+                         public ISplitViewController,
+                         public ISplitViewSeparatorDrawer,
+                         public IActionPerformer,
+                         public IKeyboardHook,
+                         public UIDescriptionListenerAdapter
 {
 public:
 	UIEditController (UIDescription* description);
