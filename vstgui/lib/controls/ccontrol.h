@@ -148,8 +148,6 @@ public:
 	static int32_t kDefaultValueModifier;	///< default value modifier key, per default is the control key
 
 	// messages send to dependent objects
-	static IdStringPtr kMessageTagWillChange;
-	static IdStringPtr kMessageTagDidChange;
 	static IdStringPtr kMessageValueChanged;
 	static IdStringPtr kMessageBeginEdit;
 	static IdStringPtr kMessageEndEdit;

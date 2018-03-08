@@ -12,50 +12,6 @@
 
 namespace VSTGUI {
 
-//------------------------------------------------------------------------
-namespace CControlPrivate {
-
-//------------------------------------------------------------------------
-struct ControlListenerCall
-{
-	CControl* control;
-	ControlListenerCall (CControl* control) : control (control) {}
-};
-
-//------------------------------------------------------------------------
-struct ControlBeginEdit : ControlListenerCall
-{
-	ControlBeginEdit (CControl* control) : ControlListenerCall (control) {}
-	void operator () (IControlListener* listener) const
-	{
-		listener->controlBeginEdit (control);
-	}
-};
-
-//------------------------------------------------------------------------
-struct ControlEndEdit : ControlListenerCall
-{
-	ControlEndEdit (CControl* control) : ControlListenerCall (control) {}
-	void operator () (IControlListener* listener) const
-	{
-		listener->controlEndEdit (control);
-	}
-};
-
-//------------------------------------------------------------------------
-struct ControlValueChanged : ControlListenerCall
-{
-	ControlValueChanged (CControl* control) : ControlListenerCall (control) {}
-	void operator () (IControlListener* listener) const
-	{
-		listener->valueChanged (control);
-	}
-};
-
-} // CControlPrivate
-
-IdStringPtr CControl::kMessageTagWillChange = "kMessageTagWillChange";
-IdStringPtr CControl::kMessageTagDidChange = "kMessageTagDidChange";
 IdStringPtr CControl::kMessageValueChanged = "kMessageValueChanged";
 IdStringPtr CControl::kMessageBeginEdit = "kMessageBeginEdit";
 IdStringPtr CControl::kMessageEndEdit = "kMessageEndEdit";
@@ -121,11 +77,9 @@ void CControl::setTag (int32_t val)
 {
 	if (listener)
 		listener->controlTagWillChange (this);
-	changed (kMessageTagWillChange);
 	tag = val;
 	if (listener)
 		listener->controlTagDidChange (this);
-	changed (kMessageTagDidChange);
 }
 
 //------------------------------------------------------------------------
@@ -137,7 +91,7 @@ void CControl::beginEdit ()
 	{
 		if (listener)
 			listener->controlBeginEdit (this);
-		subListeners.forEach (CControlPrivate::ControlBeginEdit (this));
+		subListeners.forEach ([this] (IControlListener* l) { l->controlBeginEdit (this); });
 		changed (kMessageBeginEdit);
 		if (getFrame ())
 			getFrame ()->beginEdit (tag);
@@ -158,7 +112,7 @@ void CControl::endEdit ()
 			getFrame ()->endEdit (tag);
 		if (listener)
 			listener->controlEndEdit (this);
-		subListeners.forEach (CControlPrivate::ControlEndEdit (this));
+		subListeners.forEach ([this] (IControlListener* l) { l->controlEndEdit (this); });
 		changed (kMessageEndEdit);
 	}
 #if VSTGUI_CCONTROL_LOG_EDITING
@@ -201,7 +155,7 @@ void CControl::valueChanged ()
 {
 	if (listener)
 		listener->valueChanged (this);
-	subListeners.forEach (CControlPrivate::ControlValueChanged (this));
+	subListeners.forEach ([this] (IControlListener* l) { l->valueChanged (this); });
 	changed (kMessageValueChanged);
 }
 
