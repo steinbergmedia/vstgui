@@ -241,10 +241,10 @@ bool UISelection::restore (InputStream& stream, IUIDescription* uiDescription)
 SharedPointer<CBitmap> createBitmapFromSelection (UISelection* selection, CFrame* frame,
                                                   CViewContainer* anchorView)
 {
-	CRect viewSize = selection->getBounds ();
+	CRect selectionRect = selection->getBounds ();
 	auto scaleFactor = frame->getScaleFactor ();
-	auto context =
-	    COffscreenContext::create (frame, viewSize.getWidth (), viewSize.getHeight (), scaleFactor);
+	auto context = COffscreenContext::create (frame, selectionRect.getWidth (),
+	                                          selectionRect.getHeight (), scaleFactor);
 	context->beginDraw ();
 	{
 		CGraphicsTransform tm;
@@ -253,8 +253,15 @@ SharedPointer<CBitmap> createBitmapFromSelection (UISelection* selection, CFrame
 		{
 			tm = anchorView->getTransform ();
 			invTm = tm.inverse ();
-			invTm.transform (viewSize);
-			tm = tm * CGraphicsTransform ().translate (-viewSize.left, -viewSize.top);
+			invTm.transform (selectionRect);
+			tm = tm * CGraphicsTransform ().translate (-selectionRect.left, -selectionRect.top);
+		}
+		double originalZoom = 1.;
+		if (anchorView && anchorView->isAttached ())
+		{
+			// reset frame zoom
+			originalZoom = anchorView->getFrame ()->getZoom ();
+			anchorView->getFrame ()->setZoom (1.);
 		}
 		CDrawContext::Transform tr (*context, tm);
 		for (auto view : *selection)
@@ -279,6 +286,10 @@ SharedPointer<CBitmap> createBitmapFromSelection (UISelection* selection, CFrame
 					view->drawRect (context, view->getViewSize ());
 				}
 			}
+		}
+		if (anchorView && anchorView->isAttached ())
+		{
+			anchorView->getFrame ()->setZoom (originalZoom);
 		}
 	}
 
