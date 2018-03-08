@@ -107,8 +107,7 @@ void CGDrawContext::endDraw ()
 	CGContextSynchronize (cgContext);
 	if (bitmap && bitmap->getPlatformBitmap ())
 	{
-		CGBitmap* cgBitmap = dynamic_cast<CGBitmap*> (bitmap->getPlatformBitmap ().get ());
-		if (cgBitmap)
+		if (auto cgBitmap = bitmap->getPlatformBitmap ().cast<CGBitmap> ())
 			cgBitmap->setDirty ();
 	}
 	bitmapDrawCount.clear ();
@@ -134,8 +133,7 @@ void CGDrawContext::drawGraphicsPath (CGraphicsPath* _path, PathDrawMode mode, C
 	if (path == nullptr)
 		return;
 
-	CGContextRef context = beginCGContext (true, getDrawMode ().integralMode ());
-	if (context)
+	if (auto context = beginCGContext (true, getDrawMode ().integralMode ()))
 	{
 		CGPathDrawingMode cgMode;
 		switch (mode)
@@ -193,8 +191,7 @@ void CGDrawContext::fillLinearGradient (CGraphicsPath* _path, const CGradient& g
 	if (cgGradient == nullptr)
 		return;
 
-	CGContextRef context = beginCGContext (true, getDrawMode ().integralMode ());
-	if (context)
+	if (auto context = beginCGContext (true, getDrawMode ().integralMode ()))
 	{
 		CGContextSaveGState (context);
 		CGPoint start = CGPointFromCPoint (startPoint);
@@ -237,8 +234,7 @@ void CGDrawContext::fillRadialGradient (CGraphicsPath* _path, const CGradient& g
 	if (cgGradient == nullptr)
 		return;
 
-	CGContextRef context = beginCGContext (true, getDrawMode ().integralMode ());
-	if (context)
+	if (auto context = beginCGContext (true, getDrawMode ().integralMode ()))
 	{
 		CGContextSaveGState (context);
 		if (t)
@@ -333,8 +329,7 @@ void CGDrawContext::resetClipRect ()
 //-----------------------------------------------------------------------------
 void CGDrawContext::drawLine (const LinePair& line)
 {
-	CGContextRef context = beginCGContext (true, getDrawMode ().integralMode ());
-	if (context)
+	if (auto context = beginCGContext (true, getDrawMode ().integralMode ()))
 	{
 		applyLineStyle (context);
 		
@@ -362,8 +357,7 @@ void CGDrawContext::drawLines (const LineList& lines)
 {
 	if (lines.size () == 0)
 		return;
-	CGContextRef context = beginCGContext (true, getDrawMode ().integralMode ());
-	if (context)
+	if (auto context = beginCGContext (true, getDrawMode ().integralMode ()))
 	{
 		applyLineStyle (context);
 		CGPoint* cgPoints = new CGPoint[lines.size () * 2];
@@ -404,8 +398,7 @@ void CGDrawContext::drawPolygon (const PointList& polygonPointList, const CDrawS
 {
 	if (polygonPointList.size () == 0)
 		return;
-	CGContextRef context = beginCGContext (true, getDrawMode ().integralMode ());
-	if (context)
+	if (auto context = beginCGContext (true, getDrawMode ().integralMode ()))
 	{
 		CGPathDrawingMode m;
 		switch (drawStyle)
@@ -444,8 +437,7 @@ void CGDrawContext::applyLineWidthCTM (CGContextRef context) const
 //-----------------------------------------------------------------------------
 void CGDrawContext::drawRect (const CRect &rect, const CDrawStyle drawStyle)
 {
-	CGContextRef context = beginCGContext (true, getDrawMode ().integralMode ());
-	if (context)
+	if (auto context = beginCGContext (true, getDrawMode ().integralMode ()))
 	{
 		CGRect r = CGRectFromCRect (rect);
 		if (drawStyle != kDrawFilled)
@@ -481,8 +473,7 @@ void CGDrawContext::drawRect (const CRect &rect, const CDrawStyle drawStyle)
 //-----------------------------------------------------------------------------
 void CGDrawContext::drawEllipse (const CRect &rect, const CDrawStyle drawStyle)
 {
-	CGContextRef context = beginCGContext (true, getDrawMode ().integralMode ());
-	if (context)
+	if (auto context = beginCGContext (true, getDrawMode ().integralMode ()))
 	{
 		CGRect r = CGRectFromCRect (rect);
 		if (drawStyle != kDrawFilled)
@@ -530,8 +521,7 @@ void CGDrawContext::drawPoint (const CPoint &point, const CColor& color)
 //-----------------------------------------------------------------------------
 void CGDrawContext::drawArc (const CRect &rect, const float _startAngle, const float _endAngle, const CDrawStyle drawStyle) // in degree
 {
-	CGContextRef context = beginCGContext (true, getDrawMode ().integralMode ());
-	if (context)
+	if (auto context = beginCGContext (true, getDrawMode ().integralMode ()))
 	{
 		CGPathDrawingMode m;
 		switch (drawStyle)
@@ -570,17 +560,17 @@ void CGDrawContext::fillRectWithBitmap (CBitmap* bitmap, const CRect& srcRect, c
 		return;
 	}
 
-	IPlatformBitmap* platformBitmap = bitmap->getBestPlatformBitmapForScaleFactor (scaleFactor);
+	auto platformBitmap = bitmap->getBestPlatformBitmapForScaleFactor (scaleFactor);
+	if (!platformBitmap)
+		return;
 	CPoint bitmapSize = platformBitmap->getSize ();
 	if (srcRect.right > bitmapSize.x || srcRect.bottom > bitmapSize.y)
 		return;
 
-	CGBitmap* cgBitmap = platformBitmap ? dynamic_cast<CGBitmap*> (platformBitmap) : nullptr;
-	CGImageRef image = cgBitmap ? cgBitmap->getCGImage () : nullptr;
-	if (image)
+	auto cgBitmap = platformBitmap.cast<CGBitmap> ();
+	if (CGImageRef image = cgBitmap ? cgBitmap->getCGImage () : nullptr)
 	{
-		CGContextRef context = beginCGContext (false, true);
-		if (context)
+		if (auto context = beginCGContext (false, true))
 		{
 			// TODO: Check if this works with retina images
 			CGRect clipRect = CGRectFromCRect (dstRect);
@@ -608,13 +598,13 @@ void CGDrawContext::drawBitmap (CBitmap* bitmap, const CRect& inRect, const CPoi
 	CGraphicsTransform t = getCurrentTransform ();
 	if (t.m11 == t.m22 && t.m12 == 0 && t.m21 == 0)
 		transformedScaleFactor *= t.m11;
-	IPlatformBitmap* platformBitmap = bitmap->getBestPlatformBitmapForScaleFactor (transformedScaleFactor);
-	CGBitmap* cgBitmap = platformBitmap ? dynamic_cast<CGBitmap*> (platformBitmap) : nullptr;
-	CGImageRef image = cgBitmap ? cgBitmap->getCGImage () : nullptr;
-	if (image)
+	auto platformBitmap = bitmap->getBestPlatformBitmapForScaleFactor (transformedScaleFactor);
+	if (!platformBitmap)
+		return;
+	auto cgBitmap = platformBitmap.cast<CGBitmap> ();
+	if (CGImageRef image = cgBitmap ? cgBitmap->getCGImage () : nullptr)
 	{
-		CGContextRef context = beginCGContext (false, true);
-		if (context)
+		if (auto context = beginCGContext (false, true))
 		{
 			CGLayerRef layer = cgBitmap->getCGLayer ();
 			if (layer == nullptr)
@@ -686,8 +676,7 @@ void CGDrawContext::drawCGImageRef (CGContextRef context, CGImageRef image, CGLa
 //-----------------------------------------------------------------------------
 void CGDrawContext::clearRect (const CRect& rect)
 {
-	CGContextRef context = beginCGContext (true, getDrawMode ().integralMode ());
-	if (context)
+	if (auto context = beginCGContext (true, getDrawMode ().integralMode ()))
 	{
 		CGRect cgRect = CGRectFromCRect (rect);
 		if (getDrawMode ().integralMode ())
@@ -842,4 +831,3 @@ CGPoint CGDrawContext::pixelAlligned (const CGPoint& p) const
 } // namespace
 
 #endif // MAC
-
