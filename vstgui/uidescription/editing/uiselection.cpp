@@ -139,7 +139,9 @@ CRect UISelection::getBounds () const
 CRect UISelection::getGlobalViewCoordinates (CView* view)
 {
 	CRect result = view->translateToGlobal (view->getViewSize ());
-	return view->getFrame () ? view->getFrame ()->getTransform ().inverse ().transform (result) : result;
+	if (auto frame = view->getFrame ())
+		return view->getFrame ()->getTransform ().inverse ().transform (result);
+	return result;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -245,24 +247,24 @@ SharedPointer<CBitmap> createBitmapFromSelection (UISelection* selection, CFrame
 	    COffscreenContext::create (frame, viewSize.getWidth (), viewSize.getHeight (), scaleFactor);
 	context->beginDraw ();
 	{
-
-		CDrawContext::Transform tr (*context, anchorView ? anchorView->getTransform () :
-		                                                   CGraphicsTransform ());
+		CGraphicsTransform tm;
+		CGraphicsTransform invTm;
 		if (anchorView)
-			anchorView->getTransform ().inverse ().transform (viewSize);
-		CDrawContext::Transform tr2 (
-		    *context, anchorView ? CGraphicsTransform ().translate (-viewSize.left, -viewSize.top) :
-		                           CGraphicsTransform ());
-
+		{
+			tm = anchorView->getTransform ();
+			invTm = tm.inverse ();
+			invTm.transform (viewSize);
+			tm = tm * CGraphicsTransform ().translate (-viewSize.left, -viewSize.top);
+		}
+		CDrawContext::Transform tr (*context, tm);
 		for (auto view : *selection)
 		{
 			if (!selection->containsParent (view))
 			{
 				CPoint p;
-				if (auto viewParent = view->getParentView ())
-					viewParent->localToFrame (p);
+				p = view->translateToGlobal (p);
 				if (anchorView)
-					anchorView->getTransform ().inverse ().transform (p);
+					invTm.transform (p);
 				CDrawContext::Transform transform (*context,
 				                                   CGraphicsTransform ().translate (p.x, p.y));
 				context->setClipRect (view->getViewSize ());
