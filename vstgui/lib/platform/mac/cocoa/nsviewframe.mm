@@ -811,9 +811,11 @@ NSViewFrame::NSViewFrame (IPlatformFrameCallback* frame, const CRect& size, NSVi
 		// few parts of a window are updated permanently when scrolling or manipulating a control
 		// while other parts are only updated when the malipulation ended, or CNinePartTiledBitmap
 		// are drawn incorrectly when scaled.
-		if (systemVersion.majorVersion >= 10 && systemVersion.minorVersion > 10)
+		if (systemVersion.majorVersion > 10 || (systemVersion.majorVersion >= 10 && systemVersion.minorVersion > 10))
 		{
 			[nsView setWantsLayer:YES];
+			if (systemVersion.majorVersion > 10 || (systemVersion.majorVersion >= 10 && systemVersion.minorVersion >= 13))
+				nsView.layer.drawsAsynchronously = YES;
 		}
 	}
 }
