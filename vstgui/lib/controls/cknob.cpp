@@ -16,6 +16,20 @@ static const float kCKnobRange = 300.f;
 static const float kCKnobRange = 200.f;
 #endif
 
+static constexpr CViewAttributeID kCKnobMouseStateAttribute = 'knms';
+//------------------------------------------------------------------------
+struct CKnob::MouseEditingState
+{
+	CPoint firstPoint;
+	CPoint lastPoint;
+	float startValue;
+	float entryState;
+	float range;
+	float coef;
+	CButtonState oldButton;
+	bool modeLinear;
+};
+
 //------------------------------------------------------------------------
 // CKnob
 //------------------------------------------------------------------------
@@ -289,6 +303,30 @@ void CKnob::drawHandle (CDrawContext *pContext)
 }
 
 //------------------------------------------------------------------------
+auto CKnob::getMouseEditingState () -> MouseEditingState&
+{
+	MouseEditingState* state = nullptr;
+	uint32_t size;
+	if (!getAttribute (kCKnobMouseStateAttribute, sizeof (MouseEditingState*), &state, size))
+	{
+		state = new MouseEditingState;
+		setAttribute (kCKnobMouseStateAttribute, sizeof (MouseEditingState*), &state);
+	}
+	return *state;
+}
+
+//------------------------------------------------------------------------
+void CKnob::clearMouseEditingState ()
+{
+	MouseEditingState* state = nullptr;
+	uint32_t size;
+	if (!getAttribute (kCKnobMouseStateAttribute, sizeof (MouseEditingState*), &state, size))
+		return;
+	delete state;
+	removeAttribute (kCKnobMouseStateAttribute);
+}
+
+//------------------------------------------------------------------------
 CMouseEventResult CKnob::onMouseDown (CPoint& where, const CButtonState& buttons)
 {
 	if (!buttons.isLeftButton ())
@@ -302,15 +340,16 @@ CMouseEventResult CKnob::onMouseDown (CPoint& where, const CButtonState& buttons
 		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 	}
 
-	firstPoint = where;
-	lastPoint (-1, -1);
-	startValue = getOldValue ();
+	auto& mouseState = getMouseEditingState ();
+	mouseState.firstPoint = where;
+	mouseState.lastPoint (-1, -1);
+	mouseState.startValue = getOldValue ();
 
-	modeLinear = false;
-	fEntryState = value;
-	range = kCKnobRange;
-	coef = (getMax () - getMin ()) / range;
-	oldButton = buttons;
+	mouseState.modeLinear = false;
+	mouseState.entryState = value;
+	mouseState.range = kCKnobRange;
+	mouseState.coef = (getMax () - getMin ()) / mouseState.range;
+	mouseState.oldButton = buttons;
 
 	int32_t mode    = kCircularMode;
 	int32_t newMode = getFrame ()->getKnobMode ();
@@ -327,17 +366,17 @@ CMouseEventResult CKnob::onMouseDown (CPoint& where, const CButtonState& buttons
 	if (mode == kLinearMode)
 	{
 		if (buttons & kZoomModifier)
-			range *= zoomFactor;
-		lastPoint = where;
-		modeLinear = true;
-		coef = (getMax () - getMin ()) / range;
+			mouseState.range *= zoomFactor;
+		mouseState.lastPoint = where;
+		mouseState.modeLinear = true;
+		mouseState.coef = (getMax () - getMin ()) / mouseState.range;
 	}
 	else
 	{
 		CPoint where2 (where);
 		where2.offset (-getViewSize ().left, -getViewSize ().top);
-		startValue = valueFromPoint (where2);
-		lastPoint = where;
+		mouseState.startValue = valueFromPoint (where2);
+		mouseState.lastPoint = where;
 	}
 
 	return onMouseMoved (where, buttons);
@@ -347,7 +386,10 @@ CMouseEventResult CKnob::onMouseDown (CPoint& where, const CButtonState& buttons
 CMouseEventResult CKnob::onMouseUp (CPoint& where, const CButtonState& buttons)
 {
 	if (isEditing ())
+	{
 		endEdit ();
+		clearMouseEditingState ();
+	}
 	return kMouseEventHandled;
 }
 
@@ -356,13 +398,15 @@ CMouseEventResult CKnob::onMouseCancel ()
 {
 	if (isEditing ())
 	{
-		value = startValue;
+		auto& mouseState = getMouseEditingState ();
+		value = mouseState.startValue;
 		if (isDirty ())
 		{
 			valueChanged ();
 			invalid ();
 		}
 		endEdit ();
+		clearMouseEditingState ();
 	}
 	return kMouseEventHandled;
 }
@@ -372,38 +416,40 @@ CMouseEventResult CKnob::onMouseMoved (CPoint& where, const CButtonState& button
 {
 	if (isEditing ())
 	{
+		auto& mouseState = getMouseEditingState ();
+
 		float middle = (getMax () - getMin ()) * 0.5f;
 
-		if (where != lastPoint)
+		if (where != mouseState.lastPoint)
 		{
-			lastPoint = where;
-			if (modeLinear)
+			mouseState.lastPoint = where;
+			if (mouseState.modeLinear)
 			{
-				CCoord diff = (firstPoint.y - where.y) + (where.x - firstPoint.x);
-				if (buttons != oldButton)
+				CCoord diff = (mouseState.firstPoint.y - where.y) + (where.x - mouseState.firstPoint.x);
+				if (buttons != mouseState.oldButton)
 				{
-					range = kCKnobRange;
+					mouseState.range = kCKnobRange;
 					if (buttons & kZoomModifier)
-						range *= zoomFactor;
+						mouseState.range *= zoomFactor;
 
-					float coef2 = (getMax () - getMin ()) / range;
-					fEntryState += (float)(diff * (coef - coef2));
-					coef = coef2;
-					oldButton = buttons;
+					float coef2 = (getMax () - getMin ()) / mouseState.range;
+					mouseState.entryState += (float)(diff * (mouseState.coef - coef2));
+					mouseState.coef = coef2;
+					mouseState.oldButton = buttons;
 				}
-				value = (float)(fEntryState + diff * coef);
+				value = (float)(mouseState.entryState + diff * mouseState.coef);
 				bounceValue ();
 			}
 			else
 			{
 				where.offset (-getViewSize ().left, -getViewSize ().top);
 				value = valueFromPoint (where);
-				if (startValue - value > middle)
+				if (mouseState.startValue - value > middle)
 					value = getMax ();
-				else if (value - startValue > middle)
+				else if (value - mouseState.startValue > middle)
 					value = getMin ();
 				else
-					startValue = value;
+					mouseState.startValue = value;
 			}
 			if (value != getOldValue ())
 				valueChanged ();

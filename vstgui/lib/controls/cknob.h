@@ -118,15 +118,10 @@ protected:
 	float zoomFactor;
 
 private:
-	CPoint firstPoint;
-	CPoint lastPoint;
-	float  startValue;
-	float  fEntryState;
-	float  range;
-	float  coef;
-	CButtonState   oldButton;
-	bool   modeLinear;
-	
+	struct MouseEditingState;
+
+	MouseEditingState& getMouseEditingState ();
+	void clearMouseEditingState ();
 };
 
 //-----------------------------------------------------------------------------
