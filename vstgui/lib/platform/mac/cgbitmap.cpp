@@ -268,7 +268,6 @@ CGImageRef CGBitmap::getCGImage ()
 		freeCGImage ();
 
 		size_t rowBytes = getBytesPerRow ();
-		size_t byteCount = rowBytes * static_cast<size_t> (size.y);
 		size_t bitDepth = 32;
 
 		CGBitmapInfo bitmapInfo = kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Big;

@@ -187,6 +187,7 @@ constexpr auto restoreViewUIDesc = R"(
 </vstgui-ui-description>
 )";
 
+#if 0
 constexpr auto completeExample = R"(
 <vstgui-ui-description version="1">
 	<colors>
@@ -268,6 +269,7 @@ constexpr auto completeExample = R"(
 	</gradients>
 </vstgui-ui-description>
 )";
+#endif
 
 } // anonymous
 
