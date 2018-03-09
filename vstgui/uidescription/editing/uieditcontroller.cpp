@@ -312,7 +312,7 @@ public:
 	{
 		if (view == zoomValueControl)
 		{
-			for (auto i = 50; i <= 200; i += 50)
+			for (auto i = 50; i <= 250; i += 25)
 			{
 				auto item = new CCommandMenuItem ("Zoom " + toString (i) + "%");
 				item->setActions ([this, i] (CCommandMenuItem*) {
