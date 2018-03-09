@@ -200,7 +200,7 @@ void UIBitmapsDataSource::dbDrawCell (CDrawContext* context, const CRect& size, 
 		CGraphicsTransform matrix;
 		matrix.scale (scaleX, scaleY);
 		CDrawContext::Transform t (*context, matrix);
-		matrix.inverse().transform (r);
+		matrix.inverse ().transform (r);
 		bitmap->CBitmap::draw (context, r);
 	}
 }
@@ -281,56 +281,57 @@ void UIBitmapsDataSource::dbOnDragExitBrowser (IDataPackage* drag, CDataBrowser*
 //----------------------------------------------------------------------------------------------------
 void UIBitmapsDataSource::dbOnDragEnterCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser)
 {
-#if DEBUG
-	DebugPrint ("enter cell: %d-%d\n", row, column);
-#endif
 }
 
 //----------------------------------------------------------------------------------------------------
 void UIBitmapsDataSource::dbOnDragExitCell (int32_t row, int32_t column, IDataPackage* drag, CDataBrowser* browser)
 {
-#if DEBUG
-	DebugPrint ("exit cell: %d-%d\n", row, column);
-#endif
 }
 
 //----------------------------------------------------------------------------------------------------
 bool UIBitmapsDataSource::dbOnDropInCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser)
 {
-	if (dragContainsBitmaps)
+	if (!dragContainsBitmaps)
+		return false;
+
+	bool didBeganGroupAction = false;
+	uint32_t index = 0;
+	IDataPackage::Type type;
+	const void* item = nullptr;
+	UTF8String firstNewBitmapName;
+	while (drag->getData (index++, item, type) > 0)
 	{
-		bool didBeganGroupAction = false;
-		uint32_t index = 0;
-		IDataPackage::Type type;
-		const void* item = nullptr;
-		while (drag->getData (index++, item, type) > 0)
+		if (type == IDataPackage::kFilePath)
 		{
-			if (type == IDataPackage::kFilePath)
+			auto path = static_cast<UTF8StringPtr> (item);
+			const char* ext = strrchr (path, '.');
+			if (ext)
 			{
-				const char* ext = strrchr (static_cast<const char*> (item), '.');
-				if (ext)
+				std::string extStr (ext);
+				std::transform (extStr.begin (), extStr.end (), extStr.begin (), ::tolower);
+				if (extStr == ".png" || extStr == ".bmp" || extStr == ".jpg" || extStr == ".jpeg")
 				{
-					std::string extStr (ext);
-					std::transform (extStr.begin (), extStr.end (), extStr.begin (), ::tolower);
-					if (extStr == ".png" || extStr == ".bmp" || extStr == ".jpg" || extStr == ".jpeg")
+					if (!didBeganGroupAction)
 					{
-						if (!didBeganGroupAction)
-						{
-							actionPerformer->beginGroupAction ("Add Bitmaps");
-							didBeganGroupAction = true;
-						}
-						std::string name;
-						addBitmap (static_cast<UTF8StringPtr> (item), name);
+						actionPerformer->beginGroupAction ("Add Bitmaps");
+						didBeganGroupAction = true;
 					}
+					std::string name;
+					addBitmap (path, name);
+					if (firstNewBitmapName.empty ())
+						firstNewBitmapName = name;
 				}
 			}
 		}
-		if (didBeganGroupAction)
-			actionPerformer->finishGroupAction ();
-		dragContainsBitmaps = false;
-		return true;
 	}
-	return false;
+	if (didBeganGroupAction)
+	{
+		actionPerformer->finishGroupAction ();
+		vstgui_assert (!firstNewBitmapName.empty ());
+		selectName (firstNewBitmapName);
+	}
+	dragContainsBitmaps = false;
+	return true;
 }
 
 //----------------------------------------------------------------------------------------------------
