@@ -119,7 +119,6 @@ endif()
 ##########################################################################################
 #include_directories(../)
 add_executable(${target} ${${target}_sources})
-add_dependencies(${target} vstgui vstgui_uidescription)
 target_link_libraries(${target}
 	${${target}_PLATFORM_LIBS}
 )
