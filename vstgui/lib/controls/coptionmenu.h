@@ -194,6 +194,9 @@ public:
 	bool popup (CFrame* frame, const CPoint& frameLocation);												///< pops up menu at frameLocation
 
 	CMenuItemList* getItems () const { return menuItems; }
+
+	/** remove separators as first and last item and double separators */
+	void cleanupSeparators (bool deep);
 	//@}
 
 	// overrides

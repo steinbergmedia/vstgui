@@ -477,6 +477,48 @@ bool COptionMenu::popup (CFrame* frame, const CPoint& frameLocation)
 }
 
 //------------------------------------------------------------------------
+void COptionMenu::cleanupSeparators (bool deep)
+{
+	if (getItems ()->empty ())
+		return;
+
+	std::list<int32_t>indicesToRemove;
+	bool lastEntryWasSeparator = true;
+	for (auto i = 0; i < getNbEntries () - 1; ++i)
+	{
+		auto entry = getEntry (i);
+		vstgui_assert (entry);
+		if (entry->isSeparator ())
+		{
+			if (lastEntryWasSeparator)
+			{
+				indicesToRemove.push_front (i);
+			}
+			lastEntryWasSeparator = true;
+		}
+		else
+			lastEntryWasSeparator = false;
+		if (deep)
+		{
+			if (auto subMenu = entry->getSubmenu ())
+			{
+				subMenu->cleanupSeparators (deep);
+			}
+		}
+	}
+	auto lastIndex = getNbEntries () - 1;
+	if (getEntry (lastIndex)->isSeparator ())
+	{
+		indicesToRemove.push_front (lastIndex);
+	}
+
+	for (auto index : indicesToRemove)
+	{
+		removeEntry (index);
+	}
+}
+
+//------------------------------------------------------------------------
 void COptionMenu::setPrefixNumbers (int32_t preCount)
 {
 	if (preCount >= 0 && preCount <= 4)
