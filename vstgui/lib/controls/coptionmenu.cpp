@@ -573,16 +573,16 @@ CMenuItem* COptionMenu::getCurrent () const
 //-----------------------------------------------------------------------------
 CMenuItem* COptionMenu::getEntry (int32_t index) const
 {
-	if (index < 0 || menuItems->empty () || index > getNbEntries ())
+	if (index < 0 || menuItems->empty () || index >= getNbEntries ())
 		return nullptr;
 	
-	return (*menuItems)[(size_t)index];
+	return (*menuItems)[static_cast<size_t> (index)];
 }
 
 //-----------------------------------------------------------------------------
 int32_t COptionMenu::getNbEntries () const
 {
-	return (int32_t) menuItems->size ();
+	return static_cast<int32_t> (menuItems->size ());
 }
 
 //------------------------------------------------------------------------
@@ -649,7 +649,7 @@ bool COptionMenu::setCurrent (int32_t index, bool countSeparator)
 //------------------------------------------------------------------------
 bool COptionMenu::removeEntry (int32_t index)
 {
-	if (index < 0 || menuItems->empty () || index > getNbEntries ())
+	if (index < 0 || menuItems->empty () || index >= getNbEntries ())
 		return false;
 	menuItems->erase (menuItems->begin () + index);
 	return true;
@@ -730,18 +730,18 @@ COptionMenu *COptionMenu::getLastItemMenu (int32_t &idxInMenu) const
 //------------------------------------------------------------------------
 void COptionMenu::setValue (float val)
 {
-	val = std::round (val);
-	if ((int32_t)val < 0 || (int32_t)val >= getNbEntries ())
+	auto newIndex = static_cast<int32_t> (std::round (val));
+	if (newIndex < 0 || newIndex >= getNbEntries ())
 		return;
 	
-	currentIndex = (int32_t)val;
+	currentIndex = newIndex;
 	if (style & (kMultipleCheckStyle & ~kCheckStyle))
 	{
 		CMenuItem* item = getCurrent ();
 		if (item)
 			item->setChecked (!item->isChecked ());
 	}
-	CParamDisplay::setValue (val);
+	CParamDisplay::setValue (static_cast<float> (newIndex));
 	
 	// to force the redraw
 	setDirty ();
@@ -755,7 +755,7 @@ void COptionMenu::takeFocus ()
 
 //------------------------------------------------------------------------
 void COptionMenu::looseFocus ()
-{	
+{
 	CView* receiver = getParentView () ? getParentView () : getFrame ();
 	while (receiver)
 	{
@@ -767,3 +767,4 @@ void COptionMenu::looseFocus ()
 }
 
 } // namespace
+
