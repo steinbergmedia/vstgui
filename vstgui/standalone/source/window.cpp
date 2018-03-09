@@ -350,11 +350,14 @@ bool Window::handleCommand (const Command& command)
 }
 
 //------------------------------------------------------------------------
-CMouseEventResult Window::onMouseDown (CFrame* frame, const CPoint& where,
+CMouseEventResult Window::onMouseDown (CFrame* frame, const CPoint& _where,
                                        const CButtonState& buttons)
 {
 	if (!buttons.isRightButton ())
 		return kMouseEventNotHandled;
+
+	CPoint where (_where);
+	frame->getTransform ().transform (where);
 
 	CViewContainer::ViewList views;
 	if (frame->getViewsAt (where, views, GetViewOptions ().deep ().includeViewContainer ()))
@@ -369,7 +372,7 @@ CMouseEventResult Window::onMouseDown (CFrame* frame, const CPoint& where,
 				continue;
 			if (contextMenu.getNbEntries () != 0)
 				contextMenu.addSeparator ();
-			CPoint p (where);
+			CPoint p (_where);
 			view->frameToLocal (p);
 			if (contextMenuController2)
 				contextMenuController2->appendContextMenuItems (contextMenu, view, p);
@@ -378,8 +381,9 @@ CMouseEventResult Window::onMouseDown (CFrame* frame, const CPoint& where,
 		}
 		if (contextMenu.getNbEntries () > 0)
 		{
+			contextMenu.cleanupSeparators (true);
 			contextMenu.setStyle (COptionMenu::kPopupStyle);
-			contextMenu.popup (frame, where);
+			contextMenu.popup (frame, _where);
 			return kMouseEventHandled;
 		}
 	}
