@@ -190,7 +190,7 @@ public:
 				{
 					testCase.teardown () (this);
 				}
-			} catch (const std::exception& exc)
+			} catch (const std::exception&)
 			{
 				result.failed++;
 			}
