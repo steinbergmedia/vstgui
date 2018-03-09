@@ -630,11 +630,13 @@ void UIEditMenuController::controlBeginEdit (CControl* pControl)
 	{
 		case kMenuFileTag:
 		{
+			fileMenu->cleanupSeparators (true);
 			label = fileLabel;
 			break;
 		}
 		case kMenuEditTag:
 		{
+			editMenu->cleanupSeparators (true);
 			label = editLabel;
 			break;
 		}

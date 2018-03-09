@@ -32,7 +32,7 @@ class CCommandMenuItem;
 //----------------------------------------------------------------------------------------------------
 class UIEditController : public CBaseObject,
                          public IController,
-                         public IContextMenuController,
+                         public IContextMenuController2,
                          public ISplitViewController,
                          public ISplitViewSeparatorDrawer,
                          public IActionPerformer,
@@ -73,8 +73,8 @@ protected:
 
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 
-	// IContextMenuController
-	void appendContextMenuItems (COptionMenu& contextMenu, const CPoint& where) override;
+	// IContextMenuController2
+	void appendContextMenuItems (COptionMenu& contextMenu, CView* view, const CPoint& where) override;
 
 	// ISplitViewController
 	bool getSplitViewSizeConstraint (int32_t index, CCoord& minSize, CCoord& maxSize, CSplitView* splitView) override;

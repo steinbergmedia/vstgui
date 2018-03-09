@@ -1697,13 +1697,27 @@ void UIEditController::onTemplatesChanged ()
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIEditController::appendContextMenuItems (COptionMenu& contextMenu, const CPoint& where)
+void UIEditController::appendContextMenuItems (COptionMenu& contextMenu, CView* view, const CPoint& where)
 {
-	if (editView == nullptr)
+	auto vc = view->asViewContainer ();
+	if (!vc || editView == nullptr)
+		return;
+	view = vc->getViewAt (where, GetViewOptions ().deep ().includeViewContainer ());
+	while (view && view != editView)
+	{
+		view = view->getParentView ();
+	}
+	if (view != editView)
 		return;
 	auto editMenu = getMenuController ()->getEditMenu ();
 	for (auto& entry : *editMenu->getItems ())
 	{
+		if (auto item = entry.cast<CCommandMenuItem> ())
+		{
+			item->validate ();
+		}
+		if (!entry->isEnabled ())
+			continue;
 		entry->remember ();
 		contextMenu.addEntry (entry);
 	}
