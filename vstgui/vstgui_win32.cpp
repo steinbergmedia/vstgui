@@ -8,10 +8,6 @@
 
 #include "vstgui.cpp"
 
-#include "lib/platform/win32/cfontwin32.cpp"
-#include "lib/platform/win32/gdiplusbitmap.cpp"
-#include "lib/platform/win32/gdiplusdrawcontext.cpp"
-#include "lib/platform/win32/gdiplusgraphicspath.cpp"
 #include "lib/platform/win32/win32dragcontainer.cpp"
 #include "lib/platform/win32/win32dragging.cpp"
 #include "lib/platform/win32/win32frame.cpp"

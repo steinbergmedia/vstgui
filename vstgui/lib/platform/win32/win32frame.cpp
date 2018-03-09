@@ -9,9 +9,6 @@
 #include <commctrl.h>
 #include <cmath>
 #include <windowsx.h>
-#include "gdiplusdrawcontext.h"
-#include "gdiplusbitmap.h"
-#include "gdiplusgraphicspath.h"
 #include "direct2d/d2ddrawcontext.h"
 #include "direct2d/d2dbitmap.h"
 #include "direct2d/d2dgraphicspath.h"
@@ -179,8 +176,6 @@ void Win32Frame::initWindowClass ()
 		RegisterClass (&windowClass);
 
 		bSwapped_mouse_buttons = GetSystemMetrics (SM_SWAPBUTTON) > 0;
-
-		GDIPlusGlobals::enter ();
 	}
 }
 
@@ -190,8 +185,6 @@ void Win32Frame::destroyWindowClass ()
 	gUseCount--;
 	if (gUseCount == 0)
 	{
-		GDIPlusGlobals::exit ();
-
 		UnregisterClass (gClassName, GetInstance ());
 		OleUninitialize ();
 	}
@@ -490,18 +483,9 @@ SharedPointer<IPlatformOpenGLView> Win32Frame::createPlatformOpenGLView ()
 //-----------------------------------------------------------------------------
 SharedPointer<COffscreenContext> Win32Frame::createOffscreenContext (CCoord width, CCoord height, double scaleFactor)
 {
-#if VSTGUI_DIRECT2D_SUPPORT
-	if (getD2DFactory ())
-	{
-		D2DBitmap* bitmap = new D2DBitmap (CPoint (width * scaleFactor, height * scaleFactor));
-		bitmap->setScaleFactor (scaleFactor);
-		auto context = owned<COffscreenContext> (new D2DDrawContext (bitmap));
-		bitmap->forget ();
-		return context;
-	}
-#endif
-	GdiplusBitmap* bitmap = new GdiplusBitmap (CPoint (width, height));
-	auto context = owned<COffscreenContext> (new GdiplusDrawContext (bitmap));
+	D2DBitmap* bitmap = new D2DBitmap (CPoint (width * scaleFactor, height * scaleFactor));
+	bitmap->setScaleFactor (scaleFactor);
+	auto context = owned<COffscreenContext> (new D2DDrawContext (bitmap));
 	bitmap->forget ();
 	return context;
 }

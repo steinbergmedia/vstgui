@@ -89,18 +89,14 @@
 		#if __cplusplus < 201103L
 			#error compiler not supported
 		#endif
-	#elif _MSC_VER < 1800
-		#error Visual Studio 2013 or newer needed
+	#elif _MSC_VER <= 1800
+		#error Visual Studio 2015 or newer needed
 	#endif
 	#include <type_traits>
 	#include <stdint.h>
 	#ifndef WINDOWS
 		#define WINDOWS 1
 	#endif
-	#if !defined(__GNUC__) && _MSC_VER == 1800
-		#define noexcept		// only supported since VS 2015
-	#endif
-	#define VSTGUI_DIRECT2D_SUPPORT	1
 	#define DEPRECATED_ATTRIBUTE __declspec(deprecated)
 	#ifdef _MSC_VER
 		#pragma warning(3 : 4189) // local variable is initialized but not referenced

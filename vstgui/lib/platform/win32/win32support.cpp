@@ -8,24 +8,20 @@
 
 #include "../../vstkeycode.h"
 
-#if VSTGUI_DIRECT2D_SUPPORT
-	#include <d2d1.h>
-	#include <dwrite.h>
-	#include <wincodec.h>
-
-#ifdef _MSC_VER
-#pragma comment (lib,"windowscodecs.lib")
-#endif
-
-#endif
+#include <d2d1.h>
+#include <dwrite.h>
+#include <wincodec.h>
 
 #include <shlwapi.h>
-#include "cfontwin32.h"
-#include "gdiplusbitmap.h"
-#include "gdiplusdrawcontext.h"
 #include "direct2d/d2ddrawcontext.h"
 #include "direct2d/d2dbitmap.h"
 #include "direct2d/d2dfont.h"
+
+#ifdef _MSC_VER
+#pragma comment (lib,"windowscodecs.lib")
+#pragma comment (lib,"d2d1.lib")
+#pragma comment (lib,"dwrite.lib")
+#endif
 
 extern void* hInstance;
 
@@ -52,37 +48,21 @@ const bool IsWindowsVistaOrGreater() {
 #endif
 
 //-----------------------------------------------------------------------------
-#if VSTGUI_DIRECT2D_SUPPORT
-typedef HRESULT (WINAPI *D2D1CreateFactoryProc) (D2D1_FACTORY_TYPE type, REFIID riid, CONST D2D1_FACTORY_OPTIONS *pFactoryOptions, void** factory);
-typedef HRESULT (WINAPI *DWriteCreateFactoryProc) (DWRITE_FACTORY_TYPE factoryType, REFIID iid, void** factory);
-
 class D2DFactory
 {
 public:
 	D2DFactory ()
 	{
-		d2d1Dll = LoadLibraryA ("d2d1.dll");
-		if (d2d1Dll)
-		{
-			_D2D1CreateFactory = (D2D1CreateFactoryProc)GetProcAddress (d2d1Dll, "D2D1CreateFactory");
-			dwriteDll = LoadLibraryA ("dwrite.dll");
-			if (dwriteDll)
-				_DWriteCreateFactory = (DWriteCreateFactoryProc)GetProcAddress (dwriteDll, "DWriteCreateFactory");
-		}
 	}
 
 	~D2DFactory () noexcept
 	{
 		CFontDesc::cleanup ();
 		releaseFactory ();
-		if (dwriteDll)
-			FreeLibrary (dwriteDll);
-		if (d2d1Dll)
-			FreeLibrary (d2d1Dll);
 	}
 	ID2D1Factory* getFactory () const
 	{
-		if (_D2D1CreateFactory && factory == nullptr)
+		if (factory == nullptr)
 		{
 			D2D1_FACTORY_OPTIONS* options = 0;
 		#if 0 //DEBUG
@@ -90,15 +70,15 @@ public:
 			debugOptions.debugLevel = D2D1_DEBUG_LEVEL_INFORMATION;
 			options = &debugOptions;
 		#endif
-			_D2D1CreateFactory (D2D1_FACTORY_TYPE_MULTI_THREADED, __uuidof(ID2D1Factory), options, (void**)&factory);
+			D2D1CreateFactory (D2D1_FACTORY_TYPE_MULTI_THREADED, __uuidof(ID2D1Factory), options, (void**)&factory);
 		}
 		return factory;
 	}
 	
 	IDWriteFactory* getWriteFactory ()
 	{
-		if (!writeFactory && _DWriteCreateFactory)
-			_DWriteCreateFactory (DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), (void**)&writeFactory);
+		if (!writeFactory)
+			DWriteCreateFactory (DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), (IUnknown**)&writeFactory);
 		return writeFactory;
 	}
 
@@ -143,13 +123,9 @@ private:
 		factory = nullptr;
 	}
 
-	D2D1CreateFactoryProc _D2D1CreateFactory {nullptr};
-	DWriteCreateFactoryProc _DWriteCreateFactory {nullptr};
 	ID2D1Factory* factory {nullptr};
 	IDWriteFactory* writeFactory {nullptr};
 	IWICImagingFactory* imagingFactory {nullptr};
-	HMODULE d2d1Dll {nullptr};
-	HMODULE dwriteDll {nullptr};
 	int32_t useCount {0};
 };
 
@@ -159,98 +135,58 @@ D2DFactory& getD2DFactoryInstance ()
 	static D2DFactory d2dFactory;
 	return d2dFactory;
 }
-#endif
 
 //-----------------------------------------------------------------------------
 ID2D1Factory* getD2DFactory ()
 {
-#if VSTGUI_DIRECT2D_SUPPORT
 	return getD2DFactoryInstance ().getFactory ();
-#else
-	return 0;
-#endif
 }
 
 //-----------------------------------------------------------------------------
 IWICImagingFactory* getWICImageingFactory ()
 {
-#if VSTGUI_DIRECT2D_SUPPORT
 	return getD2DFactoryInstance ().getImagingFactory ();
-#else
-	return nullptr;
-#endif
 }
 
 //-----------------------------------------------------------------------------
 void useD2D ()
 {
-#if VSTGUI_DIRECT2D_SUPPORT
 	getD2DFactoryInstance ().use ();
-#endif
 }
 
 //-----------------------------------------------------------------------------
 void unuseD2D ()
 {
-#if VSTGUI_DIRECT2D_SUPPORT
 	getD2DFactoryInstance ().unuse ();
-#endif
 }
 
 //-----------------------------------------------------------------------------
 IDWriteFactory* getDWriteFactory ()
 {
-#if VSTGUI_DIRECT2D_SUPPORT
 	return getD2DFactoryInstance ().getWriteFactory ();
-#else
-	return 0;
-#endif
 }
 
 //-----------------------------------------------------------------------------
 CDrawContext* createDrawContext (HWND window, HDC device, const CRect& surfaceRect)
 {
-#if VSTGUI_DIRECT2D_SUPPORT
-	if (getD2DFactory ())
-		return new D2DDrawContext (window, surfaceRect);
-#endif
-	return new GdiplusDrawContext (window, surfaceRect);
+	return new D2DDrawContext (window, surfaceRect);
 }
 
 //-----------------------------------------------------------------------------
 SharedPointer<IPlatformBitmap> IPlatformBitmap::create (CPoint* size)
 {
-#if VSTGUI_DIRECT2D_SUPPORT
-	if (getD2DFactory ())
-	{
-		if (size)
-			return owned<IPlatformBitmap> (new D2DBitmap (*size));
-		return owned<IPlatformBitmap> (new D2DBitmap ());
-	}
-#endif
 	if (size)
-		return owned<IPlatformBitmap> (new GdiplusBitmap (*size));
-	return owned<IPlatformBitmap> (new GdiplusBitmap ());
+		return owned<IPlatformBitmap> (new D2DBitmap (*size));
+	return owned<IPlatformBitmap> (new D2DBitmap ());
 }
 
 //------------------------------------------------------------------------
 static SharedPointer<IPlatformBitmap> createFromIStream (IStream* stream)
 {
-#if VSTGUI_DIRECT2D_SUPPORT
-	if (getD2DFactory ())
+	auto result = owned (new D2DBitmap ());
+	if (result->loadFromStream (stream))
 	{
-		auto result = owned (new D2DBitmap ());
-		if (result->loadFromStream (stream))
-		{
-			return shared<IPlatformBitmap> (result);
-		}
-		return nullptr;
-	}
-#endif
-	auto bitmap = owned (new GdiplusBitmap ());
-	if (bitmap->loadFromStream (stream))
-	{
-		return shared<IPlatformBitmap> (bitmap);
+		return shared<IPlatformBitmap> (result);
 	}
 	return nullptr;
 }
@@ -303,67 +239,13 @@ PNGBitmapBuffer IPlatformBitmap::createMemoryPNGRepresentation (const SharedPoin
 //-----------------------------------------------------------------------------
 SharedPointer<IPlatformFont> IPlatformFont::create (const UTF8String& name, const CCoord& size, const int32_t& style)
 {
-#if VSTGUI_DIRECT2D_SUPPORT
-	if (getD2DFactory ())
-	{
-		return owned<IPlatformFont> (new D2DFont (name, size, style));
-	}
-#endif
-	auto font = owned (new GdiPlusFont (name, size, style));
-	if (font->getFont ())
-		return shared<IPlatformFont> (font);
-	return nullptr;
+	return owned<IPlatformFont> (new D2DFont (name, size, style));
 }
 
 //-----------------------------------------------------------------------------
 bool IPlatformFont::getAllPlatformFontFamilies (std::list<std::string>& fontFamilyNames)
 {
-#if VSTGUI_DIRECT2D_SUPPORT
-	if (getD2DFactory ())
-	{
-		return D2DFont::getAllPlatformFontFamilies (fontFamilyNames);
-	}
-#endif
-	return GdiPlusFont::getAllPlatformFontFamilies (fontFamilyNames);
-}
-
-/// @cond ignore
-//-----------------------------------------------------------------------------
-GDIPlusGlobals* GDIPlusGlobals::gInstance = 0;
-
-//-----------------------------------------------------------------------------
-GDIPlusGlobals::GDIPlusGlobals ()
-{
-	Gdiplus::GdiplusStartupInput gdiplusStartupInput;
-	Gdiplus::GdiplusStartup (&gdiplusToken, &gdiplusStartupInput, NULL);
-}
-
-//-----------------------------------------------------------------------------
-GDIPlusGlobals::~GDIPlusGlobals () noexcept
-{
-	CFontDesc::cleanup ();
-	Gdiplus::GdiplusShutdown (gdiplusToken);
-}
-
-//-----------------------------------------------------------------------------
-void GDIPlusGlobals::enter ()
-{
-	if (gInstance)
-		gInstance->remember ();
-	else
-		gInstance = new GDIPlusGlobals;
-}
-
-//-----------------------------------------------------------------------------
-void GDIPlusGlobals::exit ()
-{
-	if (gInstance)
-	{
-		bool destroyed = (gInstance->getNbReference () == 1);
-		gInstance->forget ();
-		if (destroyed)
-			gInstance = 0;
-	}
+	return D2DFont::getAllPlatformFontFamilies (fontFamilyNames);
 }
 
 //-----------------------------------------------------------------------------

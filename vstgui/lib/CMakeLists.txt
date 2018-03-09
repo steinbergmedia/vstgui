@@ -194,8 +194,6 @@ set(${target}_mac_sources
 
   ##########################################################################################
 set(${target}_win32_sources
-    platform/win32/cfontwin32.cpp
-    platform/win32/cfontwin32.h
     platform/win32/direct2d/d2dbitmap.cpp
     platform/win32/direct2d/d2dbitmap.h
     platform/win32/direct2d/d2ddrawcontext.cpp
@@ -204,12 +202,6 @@ set(${target}_win32_sources
     platform/win32/direct2d/d2dfont.h
     platform/win32/direct2d/d2dgraphicspath.cpp
     platform/win32/direct2d/d2dgraphicspath.h
-    platform/win32/gdiplusbitmap.cpp
-    platform/win32/gdiplusbitmap.h
-    platform/win32/gdiplusdrawcontext.cpp
-    platform/win32/gdiplusdrawcontext.h
-    platform/win32/gdiplusgraphicspath.cpp
-    platform/win32/gdiplusgraphicspath.h
     platform/win32/win32bitmapbase.h
     platform/win32/win32dll.h
     platform/win32/win32dragcontainer.cpp
