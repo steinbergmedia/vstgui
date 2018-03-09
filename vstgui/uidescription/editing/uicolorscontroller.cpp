@@ -181,7 +181,7 @@ void UIColorsDataSource::dbDrawCell (CDrawContext* context, const CRect& size, i
 	{
 		context->setFillColor (color);
 		context->setFrameColor (dragRow == row ? kRedCColor : kBlackCColor);
-		context->setLineWidth (1);
+		context->setLineWidth (context->getHairlineSize ());
 		context->setLineStyle (kLineSolid);
 		context->setDrawMode (kAliasing);
 		r = size;

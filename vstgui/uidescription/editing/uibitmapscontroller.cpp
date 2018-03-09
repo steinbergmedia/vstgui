@@ -154,6 +154,7 @@ protected:
 
 	bool addBitmap (UTF8StringPtr path, std::string& outName);
 
+	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser) override;
 	void dbOnDragEnterBrowser (IDataPackage* drag, CDataBrowser* browser) override;
 	void dbOnDragExitBrowser (IDataPackage* drag, CDataBrowser* browser) override;
 	void dbOnDragEnterCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser) override;
@@ -178,6 +179,30 @@ UIBitmapsDataSource::UIBitmapsDataSource (UIDescription* description, IActionPer
 void UIBitmapsDataSource::onUIDescBitmapChanged (UIDescription* desc)
 {
 	onUIDescriptionUpdate ();
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIBitmapsDataSource::dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser)
+{
+	auto drawWidth = size.getHeight ();
+	GenericStringListDataBrowserSource::drawRowBackground (context, size, row, flags, browser);
+	CRect r (size);
+	r.right -= drawWidth;
+	GenericStringListDataBrowserSource::drawRowString (context, r, row, flags, browser);
+	if (auto bitmap = description->getBitmap (names.at (static_cast<uint32_t> (row)).data ()))
+	{
+		r = size;
+		r.left = r.right - drawWidth;
+		r.inset (2, 2);
+		auto bitmapSize = bitmap->getSize ();
+		auto scaleX = r.getWidth () / bitmapSize.x;
+		auto scaleY = r.getHeight () / bitmapSize.y;
+		CGraphicsTransform matrix;
+		matrix.scale (scaleX, scaleY);
+		CDrawContext::Transform t (*context, matrix);
+		matrix.inverse().transform (r);
+		bitmap->CBitmap::draw (context, r);
+	}
 }
 
 //----------------------------------------------------------------------------------------------------

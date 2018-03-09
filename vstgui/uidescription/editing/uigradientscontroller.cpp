@@ -574,7 +574,7 @@ void UIGradientsDataSource::dbDrawCell (CDrawContext* context, const CRect& size
 	if ((gradient = description->getGradient (names.at (static_cast<uint32_t> (row)).data ())))
 	{
 		context->setFrameColor (kBlackCColor);
-		context->setLineWidth (1);
+		context->setLineWidth (context->getHairlineSize ());
 		context->setLineStyle (kLineSolid);
 		context->setDrawMode (kAliasing);
 		r = size;
