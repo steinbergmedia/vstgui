@@ -9,7 +9,7 @@
 #if WINDOWS
 #include "../../dragging.h"
 #include "win32frame.h"
-#include "win32dragcontainer.h"
+#include "win32datapackage.h"
 #include <windows.h>
 #include <memory>
 
@@ -54,7 +54,7 @@ public:
 private:
 	int32_t refCount;
 	Win32Frame* pFrame;
-	WinDragContainer* gDragContainer;
+	Win32DataPackage* dragData;
 };
 
 //-----------------------------------------------------------------------------

@@ -204,8 +204,8 @@ set(${target}_win32_sources
     platform/win32/direct2d/d2dgraphicspath.h
     platform/win32/win32bitmapbase.h
     platform/win32/win32dll.h
-    platform/win32/win32dragcontainer.cpp
-    platform/win32/win32dragcontainer.h
+    platform/win32/win32datapackage.cpp
+    platform/win32/win32datapackage.h
     platform/win32/win32dragging.cpp
     platform/win32/win32dragging.h
     platform/win32/win32frame.cpp

@@ -182,7 +182,7 @@ bool Win32DraggingSession::doDrag (const DragDescription& dragDescription, const
 CDropTarget::CDropTarget (Win32Frame* pFrame)
 : refCount (0)
 , pFrame (pFrame)
-, gDragContainer (0)
+, dragData (0)
 {
 }
 
@@ -227,10 +227,10 @@ STDMETHODIMP CDropTarget::DragEnter (IDataObject* dataObject, DWORD keyState, PO
 {
 	if (dataObject && pFrame)
 	{
-		gDragContainer = new WinDragContainer (dataObject);
+		dragData = new Win32DataPackage (dataObject);
 		CPoint where;
 		pFrame->getCurrentMousePosition (where);
-		pFrame->getFrame ()->platformOnDragEnter (gDragContainer, where);
+		pFrame->getFrame ()->platformOnDragEnter (dragData, where);
 		if ((*effect) & DROPEFFECT_COPY) 
 			*effect = DROPEFFECT_COPY;
 		else if ((*effect) & DROPEFFECT_MOVE) 
@@ -248,11 +248,11 @@ STDMETHODIMP CDropTarget::DragEnter (IDataObject* dataObject, DWORD keyState, PO
 //-----------------------------------------------------------------------------
 STDMETHODIMP CDropTarget::DragOver (DWORD keyState, POINTL pt, DWORD* effect)
 {
-	if (gDragContainer && pFrame)
+	if (dragData && pFrame)
 	{
 		CPoint where;
 		pFrame->getCurrentMousePosition (where);
-		pFrame->getFrame ()->platformOnDragMove (gDragContainer, where);
+		pFrame->getFrame ()->platformOnDragMove (dragData, where);
 		if ((*effect) & DROPEFFECT_COPY) 
 			*effect = DROPEFFECT_COPY;
 		else if ((*effect) & DROPEFFECT_MOVE) 
@@ -268,13 +268,13 @@ STDMETHODIMP CDropTarget::DragOver (DWORD keyState, POINTL pt, DWORD* effect)
 //-----------------------------------------------------------------------------
 STDMETHODIMP CDropTarget::DragLeave (void)
 {
-	if (gDragContainer && pFrame)
+	if (dragData && pFrame)
 	{
 		CPoint where;
 		pFrame->getCurrentMousePosition (where);
-		pFrame->getFrame ()->platformOnDragLeave (gDragContainer, where);
-		gDragContainer->forget ();
-		gDragContainer = 0;
+		pFrame->getFrame ()->platformOnDragLeave (dragData, where);
+		dragData->forget ();
+		dragData = 0;
 	}
 	return S_OK;
 }
@@ -282,13 +282,13 @@ STDMETHODIMP CDropTarget::DragLeave (void)
 //-----------------------------------------------------------------------------
 STDMETHODIMP CDropTarget::Drop (IDataObject* dataObject, DWORD keyState, POINTL pt, DWORD* effect)
 {
-	if (gDragContainer && pFrame)
+	if (dragData && pFrame)
 	{
 		CPoint where;
 		pFrame->getCurrentMousePosition (where);
-		pFrame->getFrame ()->platformOnDrop (gDragContainer, where);
-		gDragContainer->forget ();
-		gDragContainer = 0;
+		pFrame->getFrame ()->platformOnDrop (dragData, where);
+		dragData->forget ();
+		dragData = 0;
 	}
 	return S_OK;
 }

@@ -15,7 +15,7 @@
 #include "win32textedit.h"
 #include "win32optionmenu.h"
 #include "win32support.h"
-#include "win32dragcontainer.h"
+#include "win32datapackage.h"
 #include "win32dragging.h"
 #include "../../cdropsource.h"
 #include "../../cgradient.h"

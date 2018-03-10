@@ -2,7 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#include "win32dragcontainer.h"
+#include "win32datapackage.h"
 
 #if WINDOWS
 
@@ -12,26 +12,26 @@
 
 namespace VSTGUI {
 
-FORMATETC WinDragContainer::formatTEXTDrop		= {CF_UNICODETEXT,0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
-FORMATETC WinDragContainer::formatHDrop			= {CF_HDROP, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
-FORMATETC WinDragContainer::formatBinaryDrop	= {CF_PRIVATEFIRST, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
+FORMATETC Win32DataPackage::formatTEXTDrop		= {CF_UNICODETEXT,0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
+FORMATETC Win32DataPackage::formatHDrop			= {CF_HDROP, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
+FORMATETC Win32DataPackage::formatBinaryDrop	= {CF_PRIVATEFIRST, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
 
 //-----------------------------------------------------------------------------
-WinDragContainer::WinDragContainer (IDataObject* platformDrag)
-: platformDrag (platformDrag)
+Win32DataPackage::Win32DataPackage (::IDataObject* platformDataObject)
+: platformDataObject (platformDataObject)
 , nbItems (0)
 , stringsAreFiles (false)
 , data (0)
 , dataSize (0)
 {
-	if (!platformDrag)
+	if (!platformDataObject)
 		return;
 
 	STGMEDIUM medium = {0};
-	HRESULT hr = platformDrag->QueryGetData (&formatTEXTDrop);
+	HRESULT hr = platformDataObject->QueryGetData (&formatTEXTDrop);
 	if (hr == S_OK) // text
 	{
-		hr = platformDrag->GetData (&formatTEXTDrop, &medium);
+		hr = platformDataObject->GetData (&formatTEXTDrop, &medium);
 		if (hr == S_OK)
 		{
 			void* data = GlobalLock (medium.hGlobal);
@@ -51,10 +51,10 @@ WinDragContainer::WinDragContainer (IDataObject* platformDrag)
 	}
 	else if (hr != S_OK)
 	{
-		hr = platformDrag->QueryGetData (&formatHDrop);
+		hr = platformDataObject->QueryGetData (&formatHDrop);
 		if (hr == S_OK)
 		{
-			hr = platformDrag->GetData (&formatHDrop, &medium);
+			hr = platformDataObject->GetData (&formatHDrop, &medium);
 			if (hr == S_OK)
 			{
 				nbItems = DragQueryFile ((HDROP)medium.hGlobal, 0xFFFFFFFFL, 0, 0);
@@ -73,9 +73,9 @@ WinDragContainer::WinDragContainer (IDataObject* platformDrag)
 				}
 			}
 		}
-		else if (platformDrag->QueryGetData (&formatBinaryDrop) == S_OK)
+		else if (platformDataObject->QueryGetData (&formatBinaryDrop) == S_OK)
 		{
-			if (platformDrag->GetData (&formatBinaryDrop, &medium) == S_OK)
+			if (platformDataObject->GetData (&formatBinaryDrop, &medium) == S_OK)
 			{
 				const void* blob = GlobalLock (medium.hGlobal);
 				dataSize = static_cast<uint32_t> (GlobalSize (medium.hGlobal));
@@ -96,7 +96,7 @@ WinDragContainer::WinDragContainer (IDataObject* platformDrag)
 }
 
 //-----------------------------------------------------------------------------
-WinDragContainer::~WinDragContainer () noexcept
+Win32DataPackage::~Win32DataPackage () noexcept
 {
 	if (data)
 	{
@@ -105,13 +105,13 @@ WinDragContainer::~WinDragContainer () noexcept
 }
 
 //-----------------------------------------------------------------------------
-uint32_t WinDragContainer::getCount () const
+uint32_t Win32DataPackage::getCount () const
 {
 	return nbItems;
 }
 
 //-----------------------------------------------------------------------------
-uint32_t WinDragContainer::getDataSize (uint32_t index) const
+uint32_t Win32DataPackage::getDataSize (uint32_t index) const
 {
 	if (index < nbItems)
 	{
@@ -123,7 +123,7 @@ uint32_t WinDragContainer::getDataSize (uint32_t index) const
 }
 
 //-----------------------------------------------------------------------------
-WinDragContainer::Type WinDragContainer::getDataType (uint32_t index) const
+Win32DataPackage::Type Win32DataPackage::getDataType (uint32_t index) const
 {
 	if (index < nbItems)
 	{
@@ -137,7 +137,7 @@ WinDragContainer::Type WinDragContainer::getDataType (uint32_t index) const
 }
 
 //-----------------------------------------------------------------------------
-uint32_t WinDragContainer::getData (uint32_t index, const void*& buffer, Type& type) const
+uint32_t Win32DataPackage::getData (uint32_t index, const void*& buffer, Type& type) const
 {
 	if (index < nbItems)
 	{
@@ -155,7 +155,7 @@ uint32_t WinDragContainer::getData (uint32_t index, const void*& buffer, Type& t
 }
 
 //-----------------------------------------------------------------------------
-bool WinDragContainer::checkResolveLink (const TCHAR* nativePath, TCHAR* resolved)
+bool Win32DataPackage::checkResolveLink (const TCHAR* nativePath, TCHAR* resolved)
 {
 	const TCHAR* ext = VSTGUI_STRRCHR (nativePath, '.');
 	if (ext && VSTGUI_STRICMP (ext, TEXT(".lnk")) == 0)
