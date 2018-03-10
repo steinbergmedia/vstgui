@@ -1,7 +1,8 @@
-// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
+#include "../../../../lib/platform/win32/win32dll.h"
 #include "../../../../lib/platform/win32/win32support.h"
 #include "../../../include/iappdelegate.h"
 #include "../../../include/iapplication.h"
@@ -11,15 +12,13 @@
 #include "../../window.h"
 #include "../iplatformwindow.h"
 #include "win32async.h"
+#include "win32commondirectories.h"
 #include "win32preference.h"
 #include "win32window.h"
-#include "win32commondirectories.h"
-#include <shellscalingapi.h>
-#include <windows.h>
 #include <array>
 #include <chrono>
+#include <windows.h>
 
-#pragma comment(lib, "Shcore.lib")
 #pragma comment(lib, "d2d1.lib")
 #pragma comment(lib, "dwrite.lib")
 
@@ -75,7 +74,7 @@ private:
 //------------------------------------------------------------------------
 void Application::init (HINSTANCE instance, LPWSTR commandLine)
 {
-	SetProcessDpiAwareness (PROCESS_PER_MONITOR_DPI_AWARE);
+	HiDPISupport::instance ().setProcessDpiAwareness (HiDPISupport::PROCESS_PER_MONITOR_DPI_AWARE);
 
 	IApplication::CommandLineArguments cmdArgs;
 	int numArgs = 0;
@@ -91,7 +90,7 @@ void Application::init (HINSTANCE instance, LPWSTR commandLine)
 
 	PlatformCallbacks callbacks;
 	callbacks.quit = [this] () { quit (); };
-	callbacks.onCommandUpdate = [this] () { 
+	callbacks.onCommandUpdate = [this] () {
 		if (!needCommandUpdate)
 		{
 			needCommandUpdate = true;

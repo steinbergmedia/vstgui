@@ -24,6 +24,7 @@ It's recommended to start new projects with version 4 while old projects should 
 @subsection version4_7 Version 4.7
 
 - drags with bitmaps are now supported on Windows
+- standalone library support for Windows 7
 
 @subsection version4_6 Version 4.6
 

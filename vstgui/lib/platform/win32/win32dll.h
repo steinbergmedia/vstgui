@@ -66,58 +66,51 @@ struct HiDPISupport : DllBase
 		return S_OK;
 	}
 
+	enum PROCESS_DPI_AWARENESS
+	{
+		PROCESS_DPI_UNAWARE = 0,
+		PROCESS_SYSTEM_DPI_AWARE = 1,
+		PROCESS_PER_MONITOR_DPI_AWARE = 2
+	};
+
+	HRESULT setProcessDpiAwareness (PROCESS_DPI_AWARENESS value)
+	{
+		if (setProcessDpiAwarenessFunc)
+			return setProcessDpiAwarenessFunc (value);
+		return S_FALSE;
+	}
+
+	bool enableNonClientDpiScaling (HWND window)
+	{
+		if (enableNonClientDpiScalingFunc)
+			return enableNonClientDpiScalingFunc (window);
+		return false;
+	}
+
 private:
 	using GetDpiForWindowFunc = UINT (WINAPI*) (HWND hWnd);
 	using GetDpiForMonitorFunc = HRESULT (WINAPI*) (_In_ HMONITOR hmonitor,
 	                                                _In_ MONITOR_DPI_TYPE dpiType, _Out_ UINT* dpiX,
 	                                                _Out_ UINT* dpiY);
 
+	using SetProcessDpiAwarnessFunc = HRESULT (WINAPI*) (_In_ PROCESS_DPI_AWARENESS value);
+	using EnableNonClientDpiScalingFunc = BOOL (WINAPI*) (_In_ HWND hwnd);
+
 	GetDpiForWindowFunc getDPIForWindowFunc {nullptr};
 	GetDpiForMonitorFunc getDpiForMonitorFunc {nullptr};
+	SetProcessDpiAwarnessFunc setProcessDpiAwarenessFunc {nullptr};
+	EnableNonClientDpiScalingFunc enableNonClientDpiScalingFunc {nullptr};
 	DllBase shCore {"Shcore.dll"};
 
 	HiDPISupport () : DllBase ("User32.dll")
 	{
 		getDPIForWindowFunc = getProcAddress<GetDpiForWindowFunc> ("GetDpiForWindow");
+		enableNonClientDpiScalingFunc =
+		    getProcAddress<EnableNonClientDpiScalingFunc> ("EnableNonClientDpiScaling");
 		getDpiForMonitorFunc = shCore.getProcAddress<GetDpiForMonitorFunc> ("GetDpiForMonitor");
+		setProcessDpiAwarenessFunc =
+		    shCore.getProcAddress<SetProcessDpiAwarnessFunc> ("SetProcessDpiAwareness");
 	}
-};
-
-//-----------------------------------------------------------------------------
-struct Dwm : DllBase
-{
-	struct MARGINS
-	{
-		int cxLeftWidth; // width of left border that retains its size
-		int cxRightWidth; // width of right border that retains its size
-		int cyTopHeight; // height of top border that retains its size
-		int cyBottomHeight; // height of bottom border that retains its size
-	};
-
-	static Dwm& instance ()
-	{
-		static Dwm singleton;
-		return singleton;
-	}
-
-	HRESULT extendFrameIntoClientArea (HWND hwnd, const MARGINS* marInset)
-	{
-		if (extendFrameIntoClientAreaFunc)
-			return extendFrameIntoClientAreaFunc (hwnd, marInset);
-		return S_FALSE;
-	}
-
-private:
-	using DwmExtendFrameIntoClientAreaFunc = HRESULT (WINAPI*) (HWND hWnd,
-	                                                            _In_ const MARGINS* pMarInset);
-
-	Dwm () : DllBase ("Dwmapi.dll")
-	{
-		extendFrameIntoClientAreaFunc =
-		    getProcAddress<DwmExtendFrameIntoClientAreaFunc> ("DwmExtendFrameIntoClientArea");
-	}
-
-	DwmExtendFrameIntoClientAreaFunc extendFrameIntoClientAreaFunc {nullptr};
 };
 
 //------------------------------------------------------------------------

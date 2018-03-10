@@ -9,6 +9,7 @@
 #include "../../cdrawcontext.h"
 #include "../../cvstguitimer.h"
 #include "win32dll.h"
+#include <dwmapi.h>
 #include <shlobj.h>
 
 namespace VSTGUI {
@@ -610,8 +611,9 @@ void Win32DragBitmapWindow::createWindow ()
 	                       height, nullptr, nullptr, GetInstance (), nullptr);
 	SetWindowLongPtr (hwnd, GWLP_USERDATA, (__int3264) (LONG_PTR) this);
 
-	const Dwm::MARGINS margin = { -1 };
-	Dwm::instance ().extendFrameIntoClientArea (hwnd, &margin);
+	MARGINS margin = { -1 };
+	auto res = DwmExtendFrameIntoClientArea (hwnd, &margin);
+	vstgui_assert (res == S_OK);
 }
 
 //-----------------------------------------------------------------------------
