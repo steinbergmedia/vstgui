@@ -380,7 +380,7 @@ STDMETHODIMP Win32DataObject::GetData (FORMATETC* format, STGMEDIUM* medium)
 				const void* buffer;
 				IDataPackage::Type type;
 				uint32_t bufferSize = dataPackage->getData (i, buffer, type);
-				UTF8StringHelper utf8String ((const char*)buffer);
+				UTF8StringHelper utf8String (static_cast<const char*> (buffer), bufferSize);
 				SIZE_T size = 0;
 				const void* data = 0;
 				if (format->cfFormat == CF_UNICODETEXT)

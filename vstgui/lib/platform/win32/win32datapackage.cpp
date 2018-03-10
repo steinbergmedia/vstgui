@@ -38,7 +38,7 @@ Win32DataPackage::Win32DataPackage (::IDataObject* platformDataObject)
 			uint32_t dataSize = static_cast<uint32_t> (GlobalSize (medium.hGlobal));
 			if (data && dataSize)
 			{
-				UTF8StringHelper wideString ((const WCHAR*)data);
+				UTF8StringHelper wideString (static_cast<const WCHAR*> (data), dataSize / 2);
 				strings.emplace_back (wideString);
 				nbItems = 1;
 			}
