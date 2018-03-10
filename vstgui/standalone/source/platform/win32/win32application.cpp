@@ -2,6 +2,11 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
+#include "win32async.h"
+#include "win32commondirectories.h"
+#include "win32preference.h"
+#include "win32window.h"
+
 #include "../../../../lib/platform/win32/win32dll.h"
 #include "../../../../lib/platform/win32/win32support.h"
 #include "../../../include/iappdelegate.h"
@@ -11,10 +16,6 @@
 #include "../../shareduiresources.h"
 #include "../../window.h"
 #include "../iplatformwindow.h"
-#include "win32async.h"
-#include "win32commondirectories.h"
-#include "win32preference.h"
-#include "win32window.h"
 #include <array>
 #include <chrono>
 #include <windows.h>
