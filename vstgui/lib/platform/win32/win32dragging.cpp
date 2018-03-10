@@ -541,9 +541,105 @@ STDMETHODIMP Win32DataObject::SetData (FORMATETC *pformatetc, STGMEDIUM *pmedium
 }
 
 //-----------------------------------------------------------------------------
+struct Win32DataObjectEnumerator : IEnumFORMATETC, AtomicReferenceCounted
+{
+	Win32DataObjectEnumerator (const SharedPointer<IDataPackage>& data) : data (data) {}
+
+	HRESULT STDMETHODCALLTYPE QueryInterface (REFIID riid, void** object) override
+	{
+		if (riid == ::IID_IEnumFORMATETC)
+		{
+			AddRef ();
+			*object = (::IEnumFORMATETC*)this;
+			return S_OK;
+		}
+		else if (riid == ::IID_IUnknown)
+		{
+			AddRef ();
+			*object = (::IUnknown*)this;
+			return S_OK;
+		}
+		return E_NOINTERFACE;
+	}
+
+	ULONG STDMETHODCALLTYPE AddRef (void) override
+	{
+		remember ();
+		return static_cast<ULONG> (getNbReference ());
+	}
+	ULONG STDMETHODCALLTYPE Release (void) override
+	{
+		ULONG refCount = static_cast<ULONG> (getNbReference ()) - 1;
+		forget ();
+		return refCount;
+	}
+
+	HRESULT STDMETHODCALLTYPE Next (ULONG celt, FORMATETC* rgelt, ULONG* pceltFetched) override
+	{
+		if (!rgelt)
+			return E_INVALIDARG;
+		const void* buffer;
+		IDataPackage::Type dataType;
+		auto dataSize = data->getData (index++, buffer, dataType);
+		if (dataSize)
+		{
+			if (dataType == IDataPackage::kText)
+			{
+				rgelt->cfFormat = CF_UNICODETEXT;
+				rgelt->ptd = nullptr;
+				rgelt->dwAspect = DVASPECT_CONTENT;
+				rgelt->lindex = -1;
+				rgelt->tymed = TYMED_HGLOBAL;
+				return S_OK;
+			}
+			if (dataType == IDataPackage::kFilePath)
+			{
+#if DEBUG
+				DebugPrint ("IDataPackage::kFilePath not yet tested!\n");
+#endif
+				rgelt->cfFormat = CF_HDROP;
+				rgelt->ptd = nullptr;
+				rgelt->dwAspect = DVASPECT_CONTENT;
+				rgelt->lindex = -1;
+				rgelt->tymed = TYMED_HGLOBAL;
+				return S_OK;
+			}
+		}
+		return S_FALSE;
+	}
+
+	HRESULT STDMETHODCALLTYPE Skip (ULONG celt) override
+	{
+		if (index + celt >= data->getCount ())
+			return S_FALSE;
+		index += celt;
+		return S_OK;
+	}
+
+	HRESULT STDMETHODCALLTYPE Reset (void) override
+	{
+		index = 0;
+		return S_OK;
+	}
+
+	HRESULT STDMETHODCALLTYPE Clone (IEnumFORMATETC** ppenum) override
+	{
+		return E_NOTIMPL;
+	}
+
+	SharedPointer<IDataPackage> data;
+	uint32_t index {0};
+};
+
+//-----------------------------------------------------------------------------
 STDMETHODIMP Win32DataObject::EnumFormatEtc (DWORD dwDirection, IEnumFORMATETC** ppenumFormatEtc)
 {
-	return E_NOTIMPL;
+	if (dwDirection != DATADIR_GET)
+		return E_INVALIDARG;
+
+	auto enumerator = new Win32DataObjectEnumerator (dataPackage);
+	*ppenumFormatEtc = enumerator;
+	return S_OK;
 }
 
 //-----------------------------------------------------------------------------
