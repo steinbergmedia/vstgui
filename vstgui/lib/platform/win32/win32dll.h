@@ -6,6 +6,24 @@
 
 #include <windows.h>
 
+#ifndef _DPI_AWARENESS_CONTEXTS_
+
+DECLARE_HANDLE(DPI_AWARENESS_CONTEXT);
+
+typedef enum DPI_AWARENESS {
+    DPI_AWARENESS_INVALID           = -1,
+    DPI_AWARENESS_UNAWARE           = 0,
+    DPI_AWARENESS_SYSTEM_AWARE      = 1,
+    DPI_AWARENESS_PER_MONITOR_AWARE = 2
+} DPI_AWARENESS;
+
+#define DPI_AWARENESS_CONTEXT_UNAWARE              ((DPI_AWARENESS_CONTEXT)-1)
+#define DPI_AWARENESS_CONTEXT_SYSTEM_AWARE         ((DPI_AWARENESS_CONTEXT)-2)
+#define DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE    ((DPI_AWARENESS_CONTEXT)-3)
+#define DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 ((DPI_AWARENESS_CONTEXT)-4)
+
+#endif
+
 //------------------------------------------------------------------------
 namespace VSTGUI {
 
@@ -87,6 +105,13 @@ struct HiDPISupport : DllBase
 		return false;
 	}
 
+	bool setProcessDpiAwarnessContext (DPI_AWARENESS_CONTEXT context)
+	{
+		if (setProcessDpiAwarenessContextFunc)
+			return setProcessDpiAwarenessContextFunc (context);
+		return false;
+	}
+
 private:
 	using GetDpiForWindowFunc = UINT (WINAPI*) (HWND hWnd);
 	using GetDpiForMonitorFunc = HRESULT (WINAPI*) (_In_ HMONITOR hmonitor,
@@ -95,11 +120,13 @@ private:
 
 	using SetProcessDpiAwarnessFunc = HRESULT (WINAPI*) (_In_ PROCESS_DPI_AWARENESS value);
 	using EnableNonClientDpiScalingFunc = BOOL (WINAPI*) (_In_ HWND hwnd);
+	using SetProcessDpiAwarenessContextFunc = BOOL (WINAPI*) (_In_ DPI_AWARENESS_CONTEXT value);
 
 	GetDpiForWindowFunc getDPIForWindowFunc {nullptr};
 	GetDpiForMonitorFunc getDpiForMonitorFunc {nullptr};
 	SetProcessDpiAwarnessFunc setProcessDpiAwarenessFunc {nullptr};
 	EnableNonClientDpiScalingFunc enableNonClientDpiScalingFunc {nullptr};
+	SetProcessDpiAwarenessContextFunc setProcessDpiAwarenessContextFunc {nullptr};
 	DllBase shCore {"Shcore.dll"};
 
 	HiDPISupport () : DllBase ("User32.dll")
@@ -110,6 +137,7 @@ private:
 		getDpiForMonitorFunc = shCore.getProcAddress<GetDpiForMonitorFunc> ("GetDpiForMonitor");
 		setProcessDpiAwarenessFunc =
 		    shCore.getProcAddress<SetProcessDpiAwarnessFunc> ("SetProcessDpiAwareness");
+		setProcessDpiAwarenessContextFunc = getProcAddress<SetProcessDpiAwarenessContextFunc> ("SetProcessDpiAwarenessContext");
 	}
 };
 
