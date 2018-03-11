@@ -8,6 +8,7 @@
 #include "../../uidescription/iuidescription.h"
 #include "../include/helpers/value.h"
 #include "../include/helpers/valuelistener.h"
+#include "../include/helpers/windowlistener.h"
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -60,6 +61,7 @@ const auto xmlText = R"(<?xml version="1.0" encoding="UTF-8"?>
 class AlertBoxController : public UIDesc::IModelBinding,
                            public UIDesc::ICustomization,
                            public ValueListenerAdapter,
+                           public WindowListenerAdapter,
                            public std::enable_shared_from_this<AlertBoxController>
 {
 public:
@@ -78,7 +80,11 @@ public:
 		    ->setActive (false);
 	}
 
-	void setWindow (const WindowPtr& w) { window = w; }
+	void setWindow (const WindowPtr& w)
+	{
+		window = w;
+		window->registerWindowListener (this);
+	}
 
 	const ValueList& getValues () const override { return values; }
 
@@ -99,18 +105,25 @@ public:
 		auto self = shared_from_this ();
 		if (value.getID () == "AlertBox.firstButton")
 		{
-			window->close ();
-			callback (AlertResult::DefaultButton);
+			alertResult = AlertResult::DefaultButton;
 		}
 		else if (value.getID () == "AlertBox.secondButton")
 		{
-			window->close ();
-			callback (AlertResult::SecondButton);
+			alertResult = AlertResult::SecondButton;
 		}
 		else if (value.getID () == "AlertBox.thirdButton")
 		{
-			window->close ();
-			callback (AlertResult::ThirdButton);
+			alertResult = AlertResult::ThirdButton;
+		}
+		window->close ();
+	}
+
+	void onClosed (const IWindow& window) override
+	{
+		if (callback)
+		{
+			callback (alertResult);
+			callback = nullptr;
 		}
 	}
 
@@ -167,6 +180,7 @@ private:
 	UTF8String firstButtonTitle;
 	UTF8String secondButtonTitle;
 	UTF8String thirdButtonTitle;
+	AlertResult alertResult {AlertResult::Error};
 };
 
 //------------------------------------------------------------------------

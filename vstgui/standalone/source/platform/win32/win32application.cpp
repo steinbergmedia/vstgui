@@ -115,8 +115,18 @@ void Application::init (HINSTANCE instance, LPWSTR commandLine)
 //------------------------------------------------------------------------
 AlertResult Application::showAlert (const AlertBoxConfig& config)
 {
+	bool alertDone = false;
 	AlertResult result = AlertResult::Error;
-	if (auto window = Detail::createAlertBox (config, [&] (AlertResult r) { result = r; }))
+	auto callback = [&] (AlertResult r) {
+		result = r;
+		alertDone = true;
+		for (auto& w : IApplication::instance ().getWindows ())
+		{
+			if (auto winWindow = toWin32Window (w))
+				winWindow->setModalWindow (nullptr);
+		}
+	};
+	if (auto window = Detail::createAlertBox (config, callback))
 	{
 		auto winModalWindow = toWin32Window (window);
 		vstgui_assert (winModalWindow);
@@ -130,18 +140,16 @@ AlertResult Application::showAlert (const AlertBoxConfig& config)
 		winModalWindow->center ();
 
 		window->show ();
-		MSG msg;
-		BOOL gmResult;
-		while (result == AlertResult::Error && (gmResult = GetMessage (&msg, NULL, 0, 0)))
-		{
-			TranslateMessage (&msg);
-			DispatchMessage (&msg);
-		}
-		for (auto& w : IApplication::instance ().getWindows ())
-		{
-			if (auto winWindow = toWin32Window (w))
-				winWindow->setModalWindow (nullptr);
-		}
+	}
+	else
+		return AlertResult::Error;
+
+	MSG msg;
+	BOOL gmResult;
+	while (!alertDone && (gmResult = GetMessage (&msg, NULL, 0, 0)))
+	{
+		TranslateMessage (&msg);
+		DispatchMessage (&msg);
 	}
 	return result;
 }
