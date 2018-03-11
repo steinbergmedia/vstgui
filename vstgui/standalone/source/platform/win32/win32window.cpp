@@ -429,6 +429,11 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 				size.x *= dpiScale;
 				size.y *= dpiScale;
 				frame->setSize (size.x, size.y);
+				if (isTransparent)
+				{
+					HRGN region = CreateRectRgn (0, 0, size.x, size.y);
+					SetWindowRgn (hwnd, region, FALSE);
+				}
 			}
 			break;
 		}
