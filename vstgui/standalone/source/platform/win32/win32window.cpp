@@ -426,8 +426,8 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 			delegate->onSizeChanged (size);
 			if (frame)
 			{
-				size.x *= dpiScale;
-				size.y *= dpiScale;
+				size.x = std::ceil (size.x * dpiScale);
+				size.y = std::ceil (size.y * dpiScale);
 				frame->setSize (size.x, size.y);
 				if (isTransparent)
 				{
@@ -746,7 +746,7 @@ CPoint Window::getSize () const
 		return initialSize;
 	RECT r;
 	GetClientRect (hwnd, &r);
-	return CPoint ((r.right - r.left) / dpiScale, (r.bottom - r.top) / dpiScale);
+	return CPoint (std::ceil ((r.right - r.left) / dpiScale), std::ceil ((r.bottom - r.top) / dpiScale));
 }
 
 //------------------------------------------------------------------------
