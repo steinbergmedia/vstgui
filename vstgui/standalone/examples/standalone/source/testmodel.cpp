@@ -50,7 +50,7 @@ void TestModel::onEndEdit (IValue& value)
 	{
 		AlertBoxForWindowConfig config;
 		config.headline = "Test Alert";
-		config.description = "This is an example alert box.";
+		config.description = "This is an example alert box.\nWith more than one line.\nIt even has more than two lines.";
 		config.secondButton = "Cancel";
 		config.thirdButton = "Do Quit";
 		config.window = IApplication::instance ().getWindows ().front ();
