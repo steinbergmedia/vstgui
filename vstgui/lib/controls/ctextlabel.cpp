@@ -190,7 +190,11 @@ void CMultiLineTextLabel::setAutoHeight (bool state)
 		return;
 	autoHeight = state;
 	if (autoHeight && isAttached ())
+	{
+		if (lines.empty ())
+			recalculateLines (nullptr);
 		recalculateHeight ();
+	}
 }
 
 //------------------------------------------------------------------------
