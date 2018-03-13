@@ -367,10 +367,17 @@ void Window::validateMenu (Win32Menu* menu)
 		{
 			command.name = item.title;
 			auto cmd = mapCommand (command);
-			auto canHandle = delegate->canHandleCommand (cmd);
-			if (!canHandle)
-				canHandle = appCommandHandler->canHandleCommand (cmd);
-			canHandle ? item.enable () : item.disable ();
+			if (cmd == Commands::CloseWindow)
+			{
+				item.enable ();
+			}
+			else
+			{
+				auto canHandle = delegate->canHandleCommand (cmd);
+				if (!canHandle)
+					canHandle = appCommandHandler->canHandleCommand (cmd);
+				canHandle ? item.enable () : item.disable ();
+			}
 			return true;
 		}
 		return false;
