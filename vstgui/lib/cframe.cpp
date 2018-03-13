@@ -646,8 +646,12 @@ int32_t CFrame::onKeyUp (VstKeyCode& keyCode)
 //------------------------------------------------------------------------
 bool CFrame::onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const CButtonState &buttons)
 {
-	bool result = false;
+	if (pImpl->modalView)
+	{
+		return pImpl->modalView->onWheel (where, axis, distance, buttons);
+	}
 
+	bool result = false;
 	if (getMouseDownView () == nullptr)
 	{
 		result = CViewContainer::onWheel (where, axis, distance, buttons);
