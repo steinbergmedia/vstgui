@@ -203,7 +203,11 @@ void Window::setContentView (const SharedPointer<CFrame>& newFrame)
 			controller->onSetContentView (*this, frame);
 		return;
 	}
-	frame->open (platformWindow->getPlatformHandle (), platformWindow->getPlatformType ());
+	auto frameConfig =
+	    controller ? controller->createPlatformFrameConfig (platformWindow->getPlatformType ()) :
+	                 nullptr;
+	frame->open (platformWindow->getPlatformHandle (), platformWindow->getPlatformType (),
+	             frameConfig.get ());
 	frame->registerMouseObserver (this);
 	platformWindow->onSetContentView (frame);
 	if (controller)
