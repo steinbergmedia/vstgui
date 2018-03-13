@@ -1,4 +1,4 @@
-// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
@@ -14,9 +14,9 @@
 #include "../../uidescription/detail/uiviewcreatorattributes.h"
 #include "../../uidescription/editing/uieditcontroller.h"
 #include "../../uidescription/editing/uieditmenucontroller.h"
+#include "../../uidescription/icontroller.h"
 #include "../../uidescription/uiattributes.h"
 #include "../../uidescription/uidescription.h"
-#include "../../uidescription/icontroller.h"
 #include "../include/helpers/menubuilder.h"
 #include "../include/helpers/valuelistener.h"
 #include "../include/helpers/windowcontroller.h"
@@ -53,6 +53,7 @@ public:
 	CPoint constraintSize (const IWindow& window, const CPoint& newSize) override;
 	bool canClose (const IWindow& window) override;
 	void beforeShow (IWindow& window) override;
+	PlatformFrameConfigPtr createPlatformFrameConfig (PlatformType platformType) override;
 	void onSetContentView (IWindow& window, const SharedPointer<CFrame>& contentView) override;
 
 	bool canHandleCommand (const Command& command) override;
@@ -326,6 +327,16 @@ struct WindowController::Impl : public IController, public ICommandHandler
 		return true;
 	}
 
+	PlatformFrameConfigPtr createPlatformFrameConfig (PlatformType platformType)
+	{
+		if (customization)
+		{
+			if (auto customController = dynamicPtrCast<IWindowController> (customization))
+				return customController->createPlatformFrameConfig (platformType);
+		}
+		return nullptr;
+	}
+
 	void onSetContentView (const SharedPointer<CFrame>& contentView)
 	{
 		if (customization)
@@ -475,9 +486,9 @@ struct WindowController::Impl : public IController, public ICommandHandler
 		{
 			if (auto view = currentCommandHandlerCandidate ())
 			{
-				if (auto viewController = getViewController(view, true))
+				if (auto viewController = getViewController (view, true))
 				{
-					if (auto viewCommandHandler = dynamic_cast<ICommandHandler*>(viewController))
+					if (auto viewCommandHandler = dynamic_cast<ICommandHandler*> (viewController))
 					{
 						canHandle = viewCommandHandler->canHandleCommand (command);
 					}
@@ -504,9 +515,9 @@ struct WindowController::Impl : public IController, public ICommandHandler
 		{
 			if (auto view = currentCommandHandlerCandidate ())
 			{
-				if (auto viewController = getViewController(view, true))
+				if (auto viewController = getViewController (view, true))
 				{
-					if (auto viewCommandHandler = dynamic_cast<ICommandHandler*>(viewController))
+					if (auto viewCommandHandler = dynamic_cast<ICommandHandler*> (viewController))
 					{
 						handled = viewCommandHandler->handleCommand (command);
 					}
@@ -867,6 +878,14 @@ void WindowController::beforeShow (IWindow& window)
 {
 	if (impl)
 		impl->beforeShow ();
+}
+
+//------------------------------------------------------------------------
+PlatformFrameConfigPtr WindowController::createPlatformFrameConfig (PlatformType platformType)
+{
+	if (impl)
+		return impl->createPlatformFrameConfig (platformType);
+	return nullptr;
 }
 
 //------------------------------------------------------------------------

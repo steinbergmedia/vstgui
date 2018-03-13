@@ -5,7 +5,7 @@
 #pragma once
 
 #include "iwindowlistener.h"
-#include "../../lib/vstguifwd.h"
+#include "../../lib/platform/iplatformframecallback.h"
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -25,6 +25,8 @@ public:
 	virtual bool canClose (const IWindow& window) = 0;
 	/** Window will show. */
 	virtual void beforeShow (IWindow& window) = 0;
+	/** Create the platform frame configuration object. Can be nullptr. */
+	virtual PlatformFrameConfigPtr createPlatformFrameConfig (PlatformType platformType) = 0;
 	/** Content view of window is changed. */
 	virtual void onSetContentView (IWindow& window, const SharedPointer<CFrame>& contentView) = 0;
 	/** Get the menu builder for this window. */
