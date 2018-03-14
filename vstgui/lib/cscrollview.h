@@ -41,13 +41,20 @@ public:
 	/** Scroll View Style Flags */
 	enum CScrollViewStyle
 	{
-		kHorizontalScrollbar	= 1 << kHorizontalScrollbarFlag,	///< add a horizontal scrollbar
-		kVerticalScrollbar 		= 1 << kVerticalScrollbarFlag,		///< add a vertical scrollbar
-		kDontDrawFrame			= 1 << kDontDrawFrameFlag,			///< don't draw frame
-		kAutoDragScrolling		= 1 << kAutoDragScollingFlag,		///< automatic scrolling for drag moves
-		kOverlayScrollbars		= 1 << kOverlayScrollbarsFlag,		///< scrollbars are overlayed of the content
-		kFollowFocusView		= 1 << kFollowFocusViewFlag, 		///< scroll to focus view when focus view changes
-		kAutoHideScrollbars		= 1 << kAutoHideScrollbarsFlag		///< automatically hides the scrollbar if the container size is smaller than the size of the scrollview
+		/** add a horizontal scrollbar */
+		kHorizontalScrollbar = 1 << kHorizontalScrollbarFlag,
+		/** add a vertical scrollbar */
+		kVerticalScrollbar = 1 << kVerticalScrollbarFlag,
+		/** don't draw frame */
+		kDontDrawFrame = 1 << kDontDrawFrameFlag,
+		/** automatic scrolling for drag moves */
+		kAutoDragScrolling = 1 << kAutoDragScollingFlag,
+		/** scrollbars are overlayed of the content */
+		kOverlayScrollbars = 1 << kOverlayScrollbarsFlag,
+		/** scroll to focus view when focus view changes */
+		kFollowFocusView = 1 << kFollowFocusViewFlag,
+		/** automatically hides the scrollbar if the container size is smaller than the size of the scrollview */
+		kAutoHideScrollbars = 1 << kAutoHideScrollbarsFlag
 	};
 
 	//-----------------------------------------------------------------------------
@@ -62,15 +69,20 @@ public:
 	CCoord getScrollbarWidth () const { return scrollbarWidth; }
 	void setScrollbarWidth (CCoord width);
 
-	virtual void setContainerSize (const CRect& cs, bool keepVisibleArea = false);	///< set the virtual size of this container
+	/** set the virtual size of this container */
+	virtual void setContainerSize (const CRect& cs, bool keepVisibleArea = false);
 	const CRect& getContainerSize () const { return containerSize; }
-	const CPoint& getScrollOffset () const;				///< get scroll offset
+	/** get scroll offset */
+	const CPoint& getScrollOffset () const;
 	void resetScrollOffset ();
 
-	CScrollbar* getVerticalScrollbar () const { return vsb; }	///< get the vertical scrollbar
-	CScrollbar* getHorizontalScrollbar () const { return hsb; }	///< get the horizontal scrollbar
+	/** get the vertical scrollbar */
+	CScrollbar* getVerticalScrollbar () const { return vsb; }
+	/** get the horizontal scrollbar */
+	CScrollbar* getHorizontalScrollbar () const { return hsb; }
 
-	virtual void makeRectVisible (const CRect& rect);	///< set scrollview to show rect
+	/** set scrollview to show rect */
+	virtual void makeRectVisible (const CRect& rect);
 	//@}
 
 	// overwrite

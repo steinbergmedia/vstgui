@@ -40,16 +40,22 @@ class CRowColumnView : public CAutoLayoutContainerView
 public:
 	enum Style 
 	{
-		kRowStyle,				///< subviews are arranged as rows (top to bottom)
-		kColumnStyle			///< subviews are arranged as columns (left to right)
+		/** subviews are arranged as rows (top to bottom) */
+		kRowStyle,
+		/** subviews are arranged as columns (left to right) */
+		kColumnStyle
 	};
 
 	enum LayoutStyle
 	{
-		kLeftTopEqualy,			///< subviews have the same left or top position (default)
-		kCenterEqualy,			///< subviews are centered to each other
-		kRightBottomEqualy,		///< subviews have the same right or bottom position
-		kStretchEqualy			///< stretch subviews to the same width and height
+		/** subviews have the same left or top position (default) */
+		kLeftTopEqualy,
+		/** subviews are centered to each other */
+		kCenterEqualy,
+		/** subviews have the same right or bottom position */
+		kRightBottomEqualy,
+		/** stretch subviews to the same width and height */
+		kStretchEqualy
 	};
 
 	CRowColumnView (const CRect& size, Style style = kRowStyle, LayoutStyle layoutStyle = kLeftTopEqualy, CCoord spacing = 0., const CRect& margin = CRect (0., 0., 0., 0.));

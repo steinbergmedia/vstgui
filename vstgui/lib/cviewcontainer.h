@@ -16,7 +16,8 @@
 
 namespace VSTGUI {
 
-extern IdStringPtr kMsgLooseFocus;				///< Message of a view loosing focus (only CTextEdit and COptionMenu send this yet)
+/** Message of a view loosing focus (only CTextEdit and COptionMenu send this) */
+extern IdStringPtr kMsgLooseFocus;
 
 //-----------------------------------------------------------------------------
 struct GetViewOptions
@@ -61,23 +62,37 @@ public:
 	/// @name Sub View Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	bool addView (CView* pView, const CRect& mouseableArea, bool mouseEnabled = true);	///< add a child view
-	virtual bool addView (CView* pView, CView* pBefore = nullptr);	///< add a child view before another view
-	virtual bool removeView (CView* pView, bool withForget = true);	///< remove a child view
-	virtual bool removeAll (bool withForget = true);	///< remove all child views
-	bool isChild (CView* pView) const;	///< check if pView is a child view of this container
-	virtual bool isChild (CView* pView, bool deep) const;	///< check if pView is a child view of this container
-	virtual bool hasChildren () const;						///< check if container has child views
-	virtual uint32_t getNbViews () const;			///< get the number of child views
-	virtual CView* getView (uint32_t index) const;	///< get the child view at index
-	virtual CView* getViewAt (const CPoint& where, const GetViewOptions& options = GetViewOptions ()) const;	///< get the view at point where
-	virtual CViewContainer* getContainerAt (const CPoint& where, const GetViewOptions& options = GetViewOptions ().deep ()) const;		///< get the container at point where
-	virtual bool getViewsAt (const CPoint& where, ViewList& views, const GetViewOptions& options = GetViewOptions ().deep ()) const;	///< get all views at point where, top->down
-	virtual bool changeViewZOrder (CView* view, uint32_t newIndex);	///< change view z order position
+	/** add a child view */
+	bool addView (CView* pView, const CRect& mouseableArea, bool mouseEnabled = true);
+	/** add a child view before another view */
+	virtual bool addView (CView* pView, CView* pBefore = nullptr);
+	/** remove a child view */
+	virtual bool removeView (CView* pView, bool withForget = true);
+	/** remove all child views */
+	virtual bool removeAll (bool withForget = true);
+	/** check if pView is a child view of this container */
+	bool isChild (CView* pView) const;
+	/** check if pView is a child view of this container */
+	virtual bool isChild (CView* pView, bool deep) const;
+	/** check if container has child views */
+	virtual bool hasChildren () const;
+	/** get the number of child views */
+	virtual uint32_t getNbViews () const;
+	/** get the child view at index */
+	virtual CView* getView (uint32_t index) const;
+	/** get the view at point where */
+	virtual CView* getViewAt (const CPoint& where, const GetViewOptions& options = GetViewOptions ()) const;
+	/** get the container at point where */
+	virtual CViewContainer* getContainerAt (const CPoint& where, const GetViewOptions& options = GetViewOptions ().deep ()) const;
+	/** get all views at point where, top->down */
+	virtual bool getViewsAt (const CPoint& where, ViewList& views, const GetViewOptions& options = GetViewOptions ().deep ()) const;
+	/** change view z order position */
+	virtual bool changeViewZOrder (CView* view, uint32_t newIndex);
 
 	virtual bool hitTestSubViews (const CPoint& where, const CButtonState& buttons = -1);
 
-	virtual void setAutosizingEnabled (bool state);					///< enable or disable autosizing subviews. Per default this is enabled.
+	/** enable or disable autosizing subviews. Per default this is enabled. */
+	virtual void setAutosizingEnabled (bool state);
 	bool getAutosizingEnabled () const { return hasViewFlag (kAutosizeSubviews); }
 
 	/** get child views of type ViewClass. ContainerClass must be a stdc++ container */
@@ -94,11 +109,16 @@ public:
 	/// @name Background Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual void setBackgroundColor (const CColor& color);	///< set the background color (will only be drawn if this container is not set to transparent and does not have a background bitmap)
-	virtual CColor getBackgroundColor () const;	///< get the background color
-	virtual void setBackgroundOffset (const CPoint& p);	///< set the offset of the background bitmap
-	virtual CPoint getBackgroundOffset () const;	///< get the offset of the background bitmap
-	virtual void drawBackgroundRect (CDrawContext* pContext, const CRect& _updateRect);	///< draw the background
+	/** set the background color (will only be drawn if this container is not set to transparent and does not have a background bitmap) */
+	virtual void setBackgroundColor (const CColor& color);
+	/** get the background color */
+	virtual CColor getBackgroundColor () const;
+	/** set the offset of the background bitmap */
+	virtual void setBackgroundOffset (const CPoint& p);
+	/** get the offset of the background bitmap */
+	virtual CPoint getBackgroundOffset () const;
+	/** draw the background */
+	virtual void drawBackgroundRect (CDrawContext* pContext, const CRect& _updateRect);
 	
 	virtual void setBackgroundColorDrawStyle (CDrawStyle style);
 	CDrawStyle getBackgroundColorDrawStyle () const;

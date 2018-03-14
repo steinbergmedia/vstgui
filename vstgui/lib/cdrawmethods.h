@@ -16,10 +16,14 @@ namespace CDrawMethods {
 
 //-----------------------------------------------------------------------------
 enum IconPosition {
-	kIconLeft,			///< icon left, text centered in the area next to the icon
-	kIconCenterAbove,	///< icon centered above the text, text centered
-	kIconCenterBelow,	///< icon centered below the text, text centered
-	kIconRight			///< icon right, text centered in the area next to the icon
+	/** icon left, text centered in the area next to the icon*/
+	kIconLeft,
+	/** icon centered above the text, text centered */
+	kIconCenterAbove,
+	/** icon centered below the text, text centered */
+	kIconCenterBelow,
+	/** icon right, text centered in the area next to the icon */
+	kIconRight
 };
 
 //-----------------------------------------------------------------------------

@@ -40,16 +40,26 @@ enum CMouseEventResult
 //----------------------------
 enum CCursorType
 {
-	kCursorDefault = 0,				///< arrow cursor
-	kCursorWait,					///< wait cursor
-	kCursorHSize,					///< horizontal size cursor
-	kCursorVSize,					///< vertical size cursor
-	kCursorSizeAll,					///< size all cursor
-	kCursorNESWSize,				///< northeast and southwest size cursor
-	kCursorNWSESize,				///< northwest and southeast size cursor
-	kCursorCopy,					///< copy cursor (mainly for drag&drop operations)
-	kCursorNotAllowed,				///< not allowed cursor (mainly for drag&drop operations)
-	kCursorHand						///< hand cursor
+	/** arrow cursor */
+	kCursorDefault = 0,
+	/** wait cursor */
+	kCursorWait,
+	/** horizontal size cursor */
+	kCursorHSize,
+	/** vertical size cursor */
+	kCursorVSize,
+	/** size all cursor */
+	kCursorSizeAll,
+	/** northeast and southwest size cursor */
+	kCursorNESWSize,
+	/** northwest and southeast size cursor */
+	kCursorNWSESize,
+	/** copy cursor (mainly for drag&drop operations) */
+	kCursorCopy,
+	/** not allowed cursor (mainly for drag&drop operations) */
+	kCursorNotAllowed,
+	/** hand cursor */
+	kCursorHand
 };
 
 //----------------------------
@@ -62,8 +72,8 @@ enum CViewAutosizing
 	kAutosizeTop			= 1 << 1,
 	kAutosizeRight			= 1 << 2,
 	kAutosizeBottom			= 1 << 3,
-	kAutosizeColumn			= 1 << 4,	///< view containers treat their children as columns
-	kAutosizeRow			= 1 << 5,	///< view containers treat their children as rows
+	kAutosizeColumn			= 1 << 4,
+	kAutosizeRow			= 1 << 5,
 	kAutosizeAll			= kAutosizeLeft | kAutosizeTop | kAutosizeRight | kAutosizeBottom
 };
 

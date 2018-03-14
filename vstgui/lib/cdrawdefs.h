@@ -14,9 +14,12 @@ namespace VSTGUI {
 //-----------
 enum CDrawModeFlags : uint32_t
 {
-	kAliasing = 0,					///< aliased drawing
-	kAntiAliasing = 1,				///< antialised drawing
-	kNonIntegralMode = 0xF0000000		///< do not round coordinates to pixel aligned values
+	/** aliased drawing */
+	kAliasing = 0,
+	/** antialised drawing */
+	kAntiAliasing = 1,
+	/** do not round coordinates to pixel aligned values */
+	kNonIntegralMode = 0xF0000000
 };
 
 //-----------

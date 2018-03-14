@@ -92,10 +92,14 @@ struct CColor
 	uint8_t getLightness () const;
 	//@}
 	
-	uint8_t red {255};			///< red component [0..255]
-	uint8_t green {255};		///< green component [0..255]
-	uint8_t blue {255};			///< blue component [0..255]
-	uint8_t alpha {255};		///< alpha component [0..255]
+	/** red component [0..255] */
+	uint8_t red {255};
+	/** green component [0..255] */
+	uint8_t green {255};
+	/** blue component [0..255] */
+	uint8_t blue {255};
+	/** alpha component [0..255] */
+	uint8_t alpha {255};
 };
 
 inline constexpr CColor MakeCColor (uint8_t red = 0, uint8_t green = 0, uint8_t blue = 0, uint8_t alpha = 255)

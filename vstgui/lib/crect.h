@@ -57,14 +57,16 @@ struct CRect
 	inline CRect& offset (const CPoint& p);
 	inline CRect& offsetInverse (const CPoint& p);
 
-	inline constexpr bool pointInside (const CPoint& where) const;	///< Checks if point is inside this rect
+	/** Checks if point is inside this rect */
+	inline constexpr bool pointInside (const CPoint& where) const;
 	inline constexpr bool isEmpty () const;
 	inline constexpr bool rectOverlap (const CRect& rect) const;
 	inline CRect& bound (const CRect& rect);
 	inline CRect& unite (const CRect& rect);
 	inline CRect& normalize ();
 	inline CRect& originize ();
-	inline CRect& centerInside (const CRect& r); ///< moves this rect to the center of r
+	/** moves this rect to the center of r */
+	inline CRect& centerInside (const CRect& r);
 	inline CRect& makeIntegral ();
 
 	CCoord left {0.};

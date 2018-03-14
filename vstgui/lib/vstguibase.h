@@ -203,11 +203,15 @@
 
 //----------------------------------------------------
 namespace VSTGUI {
-	
-using CCoord = double;					///< coordinate type
-using IdStringPtr = const char*;		///< ID String pointer
-using UTF8StringPtr = const char*;		///< UTF8 String pointer
-using UTF8StringBuffer = char*;			///< UTF8 String buffer pointer
+
+/** coordinate type */
+using CCoord = double;
+/** ID String pointer */
+using IdStringPtr = const char*;
+/** UTF8 String pointer */
+using UTF8StringPtr = const char*;
+/** UTF8 String buffer pointer */
+using UTF8StringBuffer = char*;
 
 //-----------------------------------------------------------------------------
 // @brief Byte Order
@@ -235,7 +239,9 @@ enum CMessageResult
 class IReference
 {
 public:
+	/** decrease refcount and delete object if refcount == 0 */
 	virtual void forget () = 0;
+	/** increase refcount */
 	virtual void remember () = 0;
 };
 
@@ -254,9 +260,10 @@ public:
 	/// @name Reference Counting Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	void forget () override { if (--nbReference == 0) { beforeDelete (); delete this; } }	///< decrease refcount and delete object if refcount == 0
-	void remember () override { nbReference++; }										///< increase refcount
-	virtual int32_t getNbReference () const { return nbReference; }					///< get refcount
+	void forget () override { if (--nbReference == 0) { beforeDelete (); delete this; } }
+	void remember () override { nbReference++; }
+	/** get refcount */
+	virtual int32_t getNbReference () const { return nbReference; }
 	virtual void beforeDelete () {}
 	//@}
 private:
