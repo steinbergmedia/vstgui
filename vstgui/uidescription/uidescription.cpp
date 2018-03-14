@@ -589,15 +589,25 @@ static UIViewFactory* getGenericViewFactory ()
 namespace UIDescriptionPrivate {
 
 //-----------------------------------------------------------------------------
-template <size_t numIndicators>
+template <bool nameHasExtension, size_t numIndicators>
 std::pair<size_t, size_t> rangeOfScaleFactor (const std::string& name,
                                               const char (&identicator)[numIndicators])
 {
 	auto result = std::make_pair (std::string::npos, std::string::npos);
-	size_t xIndex = name.find_last_of ("x");
+	size_t xIndex;
+	if (nameHasExtension)
+	{
+	 	xIndex = name.rfind ("x.");
+	}
+	else
+	{
+	 	if (name[name.size () - 1] != 'x')
+	 		return result;
+		xIndex = name.size () - 1;
+	}
 	if (xIndex == std::string::npos)
 		return result;
-
+	
 	for (auto i = 0u; i < numIndicators; ++i)
 	{
 		size_t indicatorIndex = name.find_last_of (identicator[i]);
@@ -617,7 +627,7 @@ template <size_t numIndicators>
 bool decodeScaleFactorFromName (const std::string& name, const char (&identicator)[numIndicators],
                                 double& scaleFactor)
 {
-	auto range = rangeOfScaleFactor (name, identicator);
+	auto range = rangeOfScaleFactor<true> (name, identicator);
 	if (range.first == std::string::npos)
 		return false;
 	std::string tmp (name);
@@ -641,7 +651,7 @@ static bool decodeScaleFactorFromName (const std::string& name, double& scaleFac
 //-----------------------------------------------------------------------------
 static std::string removeScaleFactorFromName (const std::string& name)
 {
-	auto range = rangeOfScaleFactor (name, scaleFactorIndicatorChars);
+	auto range = rangeOfScaleFactor<false> (name, scaleFactorIndicatorChars);
 	if (range.first == std::string::npos)
 		return "";
 	auto result = name.substr (0, range.second);
@@ -1566,7 +1576,7 @@ CBitmap* UIDescription::getBitmap (UTF8StringPtr name) const
 		if (bitmapNode->getScaledBitmapsAdded () == false)
 		{
 			double scaleFactor;
-			if (!UIDescriptionPrivate::decodeScaleFactorFromName (name, scaleFactor))
+			if (!UIDescriptionPrivate::decodeScaleFactorFromName (bitmap->getResourceDescription ().u.name, scaleFactor))
 			{
 				// find scaled versions for this bitmap
 				UINode* bitmapsNode = getBaseNode (MainNodeNames::kBitmap);
