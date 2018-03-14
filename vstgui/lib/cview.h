@@ -303,7 +303,7 @@ public:
 	static uint32_t idleRate;
 	//@}
 
-	/** weather this view wants to be informed if the window's active state changes */
+	/** whether this view wants to be informed if the window's active state changes */
 	virtual bool wantsWindowActiveStateChangeNotification () const { return false; }
 	/** called when the active state of the window changes */
 	virtual void onWindowActivate (bool state) {}
