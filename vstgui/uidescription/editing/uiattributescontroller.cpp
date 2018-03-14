@@ -838,7 +838,7 @@ void UIAttributesController::valueChanged (CControl* control)
 			{
 				filterString = searchField->getText ();
 				rebuildAttributesView ();
-				UIAttributes* attributes = editDescription->getCustomAttributes ("UIAttributesController", true);
+				auto attributes = editDescription->getCustomAttributes ("UIAttributesController", true);
 				if (attributes)
 				{
 					attributes->setAttribute("UIAttributesController", filterString);
@@ -866,7 +866,7 @@ CView* UIAttributesController::verifyView (CView* view, const UIAttributes& attr
 		if (textEdit && textEdit->getTag () == kSearchFieldTag)
 		{
 			searchField = textEdit;
-			UIAttributes* attributes = editDescription->getCustomAttributes ("UIAttributesController", true);
+			auto attributes = editDescription->getCustomAttributes ("UIAttributesController", true);
 			if (attributes)
 			{
 				const std::string* searchText = attributes->getAttributeValue ("SearchString");

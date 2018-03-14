@@ -280,7 +280,7 @@ void UITemplateController::dbSelectionChanged (int32_t selectedRow, GenericStrin
 		 || (newName != selectedTemplateName && *newName != *selectedTemplateName))
 		{
 			selectedTemplateName = newName;
-			UIAttributes* attr = editDescription->getCustomAttributes ("UITemplateController", true);
+			auto attr = editDescription->getCustomAttributes ("UITemplateController", true);
 			if (attr)
 			{
 				attr->setAttribute ("SelectedTemplate", selectedTemplateName ? selectedTemplateName->getString () : "");
@@ -374,7 +374,7 @@ CView* UITemplateController::createView (const UIAttributes& attributes, const I
 			for (auto& name : tmp)
 				templateNames.emplace_back (*name);
 			
-			UIAttributes* attr = editDescription->getCustomAttributes ("UITemplateController", true);
+			auto attr = editDescription->getCustomAttributes ("UITemplateController", true);
 			const std::string* templateName = attr ? attr->getAttributeValue ("SelectedTemplate") : nullptr;
 			UITemplatesDataSource* dataSource = new UITemplatesDataSource (this, editDescription, actionPerformer, templateName);
 			dataSource->setStringList (&templateNames);

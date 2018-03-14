@@ -46,7 +46,7 @@ public:
 	UIEditMenuController* getMenuController () const { return menuController; }
 	UIUndoManager* getUndoManager () const { return undoManager; }
 	const std::string& getEditTemplateName () const { return editTemplateName; }
-	UIAttributes* getSettings ();
+	SharedPointer<UIAttributes> getSettings ();
 	int32_t getSaveOptions ();
 	
 	void onZoomChanged (double zoom);

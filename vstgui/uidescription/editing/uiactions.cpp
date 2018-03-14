@@ -1321,7 +1321,7 @@ UTF8StringPtr CreateNewTemplateAction::getName ()
 //----------------------------------------------------------------------------------------------------
 void CreateNewTemplateAction::perform ()
 {
-	UIAttributes* attr = new UIAttributes ();
+	auto attr = makeOwned<UIAttributes> ();
 	attr->setAttribute (UIViewCreator::kAttrClass, baseViewClassName);
 	attr->setAttribute ("size", "400,400");
 	description->addNewTemplate (name.c_str (), attr);

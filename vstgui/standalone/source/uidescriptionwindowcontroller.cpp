@@ -635,7 +635,7 @@ struct WindowController::EditImpl : WindowController::Impl
 
 		if (!initUIDesc (fileName))
 		{
-			UIAttributes* attr = new UIAttributes ();
+			auto attr = makeOwned<UIAttributes> ();
 			attr->setAttribute (UIViewCreator::kAttrClass, "CViewContainer");
 			attr->setAttribute (UIViewCreator::kAttrSize, "300, 300");
 			attr->setAttribute (UIViewCreator::kAttrAutosize, "left right top bottom");

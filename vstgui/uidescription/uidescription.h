@@ -108,14 +108,14 @@ public:
 
 	void updateViewDescription (UTF8StringPtr name, CView* view);
 	bool getTemplateNameFromView (CView* view, std::string& templateName) const;
-	bool addNewTemplate (UTF8StringPtr name, UIAttributes* attr); // owns attributes
+	bool addNewTemplate (UTF8StringPtr name, const SharedPointer<UIAttributes>& attr);
 	bool removeTemplate (UTF8StringPtr name);
 	bool changeTemplateName (UTF8StringPtr name, UTF8StringPtr newName);
 	bool duplicateTemplate (UTF8StringPtr name, UTF8StringPtr duplicateName);
 
-	bool setCustomAttributes (UTF8StringPtr name, UIAttributes* attr); //owns attributes
-	UIAttributes* getCustomAttributes (UTF8StringPtr name) const;
-	UIAttributes* getCustomAttributes (UTF8StringPtr name, bool create);
+	bool setCustomAttributes (UTF8StringPtr name, const SharedPointer<UIAttributes>& attr);
+	SharedPointer<UIAttributes> getCustomAttributes (UTF8StringPtr name) const;
+	SharedPointer<UIAttributes> getCustomAttributes (UTF8StringPtr name, bool create);
 
 	bool getControlTagString (UTF8StringPtr tagName, std::string& tagString) const;
 	bool changeControlTagString  (UTF8StringPtr tagName, const std::string& newTagString, bool create = false);

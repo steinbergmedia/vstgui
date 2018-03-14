@@ -620,7 +620,7 @@ TESTCASE(UIDescriptionTests,
 		 UIDescription desc (&provider);
 		 EXPECT(desc.parse () == true);
 
-		 auto a = new UIAttributes ();
+		 auto a = makeOwned<UIAttributes> ();
 		 a->setAttribute (UIViewCreator::kAttrClass, "CViewContainer");
 		 EXPECT(desc.addNewTemplate ("addNewTemplate", a));
 		 StringPtrList names;

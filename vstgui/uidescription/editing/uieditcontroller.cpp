@@ -1056,7 +1056,7 @@ CMessageResult UIEditController::validateMenuItem (CCommandMenuItem* item)
 	{
 		if (cmdName == "Encode Bitmaps in XML")
 		{
-			UIAttributes* attr = getSettings ();
+			auto attr = getSettings ();
 			bool encodeBitmaps = false;
 			if (attr && attr->getBooleanAttribute (kEncodeBitmapsSettingsKey, encodeBitmaps))
 			{
@@ -1066,7 +1066,7 @@ CMessageResult UIEditController::validateMenuItem (CCommandMenuItem* item)
 		}
 		else if (cmdName == "Write Windows RC File on Save")
 		{
-			UIAttributes* attr = getSettings ();
+			auto attr = getSettings ();
 			bool encodeBitmaps = false;
 			if (attr && attr->getBooleanAttribute (kWriteWindowsRCFileSettingsKey, encodeBitmaps))
 			{
@@ -1262,7 +1262,7 @@ int32_t UIEditController::onKeyUp (const VstKeyCode& code, CFrame* frame)
 }
 
 //----------------------------------------------------------------------------------------------------
-UIAttributes* UIEditController::getSettings ()
+SharedPointer<UIAttributes> UIEditController::getSettings ()
 {
 	return editDescription->getCustomAttributes ("UIEditController", true);
 }
@@ -1271,7 +1271,7 @@ UIAttributes* UIEditController::getSettings ()
 int32_t UIEditController::getSaveOptions ()
 {
 	int32_t flags = 0;
-	UIAttributes* attributes = getSettings ();
+	auto attributes = getSettings ();
 	bool val;
 	if (attributes->getBooleanAttribute (UIEditController::kEncodeBitmapsSettingsKey, val) && val == true)
 	{

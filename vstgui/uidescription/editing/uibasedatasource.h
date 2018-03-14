@@ -178,7 +178,7 @@ protected:
 		UTF8StringPtr name = getDefaultsName ();
 		if (name)
 		{
-			UIAttributes* attributes = description->getCustomAttributes (name, true);
+			auto attributes = description->getCustomAttributes (name, true);
 			if (attributes)
 			{
 				attributes->setAttribute ("FilterString", filterString.getString ());
@@ -196,7 +196,7 @@ protected:
 		UTF8StringPtr name = getDefaultsName ();
 		if (name)
 		{
-			UIAttributes* attributes = description->getCustomAttributes (name, true);
+			auto attributes = description->getCustomAttributes (name, true);
 			if (attributes)
 			{
 				const std::string* str = attributes->getAttributeValue ("FilterString");
