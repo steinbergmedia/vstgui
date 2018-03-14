@@ -1631,7 +1631,7 @@ void UIEditController::onTemplateCreation (UTF8StringPtr name, CView* view)
 	auto it = std::find (templates.begin (), templates.end (), name);
 	if (it == templates.end ())
 		templates.emplace_back (name, view);
-	selection->setExclusive (view);
+	templateController->selectTemplate (name);
 }
 
 //----------------------------------------------------------------------------------------------------
