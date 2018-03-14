@@ -520,7 +520,7 @@ CView* UIEditView::getViewAt (const CPoint& p, const GetViewOptions& options) co
 	CView* view = CViewContainer::getViewAt (p, options);
 	if (editing)
 	{
-		const IViewFactory* factory = description->getViewFactory ();
+		auto factory = static_cast<const UIViewFactory*> (description->getViewFactory ());
 		if (factory)
 		{
 			while (view && factory->getViewName (view) == nullptr)
@@ -538,7 +538,7 @@ CViewContainer* UIEditView::getContainerAt (const CPoint& p, const GetViewOption
 	CViewContainer* view = CViewContainer::getContainerAt (p, options);
 	if (editing)
 	{
-		const IViewFactory* factory = description->getViewFactory ();
+		auto factory = static_cast<const UIViewFactory*> (description->getViewFactory ());
 		if (factory)
 		{
 			while (view && factory->getViewName (view) == nullptr)

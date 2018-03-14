@@ -164,9 +164,9 @@ protected:
 		headerTitle = "";
 		if (view)
 		{
-			headerTitle = viewFactory->getViewName (view);
+			headerTitle = viewFactory->getViewDisplayName (view);
 			if (headerTitle.empty () && view->getParentView ())
-				headerTitle = viewFactory->getViewName (view->getParentView ());
+				headerTitle = viewFactory->getViewDisplayName (view->getParentView ());
 		}
 		return headerTitle;
 	}
@@ -180,7 +180,7 @@ protected:
 	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser) override;
 
 	CViewContainer* view;
-	const IViewFactory* viewFactory;
+	const UIViewFactory* viewFactory;
 	UIViewListDataSource* next;
 	SharedPointer<UISelection> selection;
 	SharedPointer<UIUndoManager> undoManager;
@@ -435,7 +435,7 @@ void UITemplateController::appendContextMenuItems (COptionMenu& contextMenu, CVi
 UIViewListDataSource::UIViewListDataSource (CViewContainer* view, const IViewFactory* viewFactory, UISelection* selection, UIUndoManager* undoManager, IGenericStringListDataBrowserSourceSelectionChanged* delegate)
 : UINavigationDataSource (delegate)
 , view (view)
-, viewFactory (viewFactory)
+, viewFactory (dynamic_cast<const UIViewFactory*> (viewFactory))
 , next (nullptr)
 , selection (selection)
 , undoManager (undoManager)
@@ -467,7 +467,7 @@ bool UIViewListDataSource::update (CViewContainer* vc)
 	names.clear ();
 	subviews.clear ();
 	vc->forEachChild ([&] (CView* subview) {
-		IdStringPtr viewName = viewFactory->getViewName (subview);
+		IdStringPtr viewName = viewFactory->getViewDisplayName (subview);
 		if (viewName)
 		{
 			names.emplace_back (viewName);

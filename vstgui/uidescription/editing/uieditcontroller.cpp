@@ -1185,7 +1185,7 @@ void UIEditController::doSelectAllChildren ()
 {
 	CViewContainer* container = selection->first ()->asViewContainer ();
 	selection->empty ();
-	const IViewFactory* factory = editDescription->getViewFactory ();
+	auto factory = static_cast<const UIViewFactory*> (editDescription->getViewFactory ());
 	container->forEachChild ([&] (CView* view) {
 		if (factory->getViewName (view))
 			selection->add (view);

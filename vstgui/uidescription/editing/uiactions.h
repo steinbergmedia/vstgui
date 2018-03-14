@@ -63,7 +63,7 @@ public:
 
 protected:
 	void collectSubviews (CViewContainer* container, bool deep);
-	const IViewFactory* factory;
+	const UIViewFactory* factory;
 	SharedPointer<CViewContainer> containerView;
 	CViewContainer* parent;
 };

@@ -64,7 +64,7 @@ void SizeToFitOperation::undo ()
 //----------------------------------------------------------------------------------------------------
 UnembedViewOperation::UnembedViewOperation (UISelection* selection, const IViewFactory* factory)
 : BaseSelectionOperation<SharedPointer<CView> > (selection)
-, factory (factory)
+, factory (static_cast<const UIViewFactory*> (factory))
 {
 	containerView = selection->first ()->asViewContainer ();
 	collectSubviews (containerView, true);
