@@ -12,6 +12,10 @@
 #include <dwmapi.h>
 #include <shlobj.h>
 
+#ifdef _MSC_VER
+#pragma comment(lib, "Dwmapi.lib")
+#endif
+
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
