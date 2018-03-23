@@ -672,7 +672,7 @@
 		<view autosize="left right top bottom " back-color="db.font" background-offset="0, 0" class="COptionMenu" control-tag="attributes.optionmenu" default-value="0.5" font="~ NormalFont" font-antialias="true" font-color="db.background" frame-color="db.font" frame-width="-1" max-value="1.84467e+19" menu-check-style="true" menu-popup-style="true" min-value="0" mouse-enabled="true" opacity="1" origin="1, 1" round-rect-radius="6" shadow-color="~ RedCColor" size="398, 16" style-3D-in="false" style-3D-out="false" style-no-draw="true" style-no-frame="false" style-no-text="true" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" text-shadow-offset="1, 1" transparent="true" value-precision="2" wants-focus="true" wheel-inc-value="0.1"/>
 	</template>
 	<custom>
-		<attributes EditViewScale="1" EditorSize="0, 0, 1213, 921" EncodeBitmaps="true" SplitViewSize_0_0="0.7150837988826815871945541402965318411589" SplitViewSize_0_1="0.2625698324022346374917447064945008605719" SplitViewSize_1_0="0.4916201117318435565017864519177237525582" SplitViewSize_1_1="0.5027932960893854996697882597800344228745" SplitViewSize_2_0="0.6331409727947238108569649739365559071302" SplitViewSize_2_1="0.362737015663643858065512404209584929049" TabSwitchValue="3" Version="1" name="UIEditController"/>
+		<attributes EditViewScale="1" EditorSize="0, 0, 1161, 882" EncodeBitmaps="true" SplitViewSize_0_0="0.702102803738317793325052207364933565259" SplitViewSize_0_1="0.2745327102803738483771667233668267726898" SplitViewSize_1_0="0.5724299065420560550521145160018932074308" SplitViewSize_1_1="0.4217289719626168276178646010521333664656" SplitViewSize_2_0="0.7338501291989664165882345514546614140272" SplitViewSize_2_1="0.2618432385874246426382683239353355020285" TabSwitchValue="3" Version="1" name="UIEditController"/>
 		<attributes name="UIViewCreatorController"/>
 		<attributes Size="5, 5" name="UIGridController"/>
 		<attributes SelectedRow="11" name="UIViewCreatorDataSource"/>
@@ -681,7 +681,7 @@
 		<attributes SelectedRow="61" name="UITagsDataSource"/>
 		<attributes SelectedRow="0" name="UIFontsDataSource"/>
 		<attributes SelectedRow="17" name="UIBitmapsDataSource"/>
-		<attributes SelectedTemplate="gradient.editor" name="UITemplateController"/>
+		<attributes SelectedTemplate="dialog" name="UITemplateController"/>
 		<attributes color="focus" enabled="true" name="FocusDrawing" width="1.5"/>
 		<attributes SelectedRow="7" name="UIGradientsDataSource"/>
 	</custom>
@@ -790,9 +790,9 @@
 		<view autosize="left right top bottom " back-color="db.font" background-offset="0, 0" class="COptionMenu" control-tag="attributes.optionmenu" default-value="0.5" font="~ NormalFont" font-antialias="true" font-color="db.background" frame-color="db.font" frame-width="1" max-value="1.84467e+19" menu-check-style="true" menu-popup-style="true" min-value="0" mouse-enabled="true" opacity="1" origin="1, 1" round-rect-radius="6" shadow-color="~ RedCColor" size="398, 16" style-3D-in="false" style-3D-out="false" style-no-draw="true" style-no-frame="false" style-no-text="true" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" text-shadow-offset="1, 1" transparent="true" value-precision="2" wants-focus="true" wheel-inc-value="0.1"/>
 	</template>
 	<template background-color="~ TransparentCColor" background-color-draw-style="filled and stroked" class="CLayeredViewContainer" mouse-enabled="true" name="dialog" opacity="1" origin="0, 0" size="440, 435" transparent="true" wants-focus="false" z-index="0">
-		<view autosize="left right top bottom " background-color="db.font" background-color-draw-style="filled and stroked" class="CShadowViewContainer" mouse-enabled="true" opacity="1" origin="0, 0" shadow-blur-size="5" shadow-intensity="0.5" shadow-offset="-3, -5" size="440, 435" transparent="false" wants-focus="false">
+		<view autosize="left right top bottom " background-color="db.font" background-color-draw-style="filled and stroked" bitmap="0" class="CShadowViewContainer" mouse-enabled="true" opacity="1" origin="0, 0" shadow-blur-size="5" shadow-intensity="0.5" shadow-offset="-3, -5" size="440, 435" transparent="false" wants-focus="false">
 			<view autosize="left right top bottom " background-color="~ TransparentCColor" background-color-draw-style="filled and stroked" class="CViewContainer" mouse-enabled="true" opacity="1" origin="20, 20" size="400, 395" transparent="false" wants-focus="false">
-				<view autosize="left right top bottom " class="CGradientView" draw-antialiased="true" frame-color="control.frame" frame-width="-1" gradient="GradientView" gradient-angle="0" gradient-style="linear" mouse-enabled="true" opacity="1" origin="0, 0" radial-center="0.5, 0.5" radial-radius="1" round-rect-radius="6" size="400, 395" transparent="false" wants-focus="false"/>
+				<view autosize="left right top bottom " class="CGradientView" draw-antialiased="true" frame-color="control.frame" frame-width="1" gradient="GradientView" gradient-angle="0" gradient-style="linear" mouse-enabled="true" opacity="1" origin="0, 0" radial-center="0.5, 0.5" radial-radius="1" round-rect-radius="4" size="400, 395" transparent="false" wants-focus="false"/>
 				<view autosize="left right bottom " background-color="db.font" background-color-draw-style="filled and stroked" class="CViewContainer" custom-view-name="buttons" mouse-enabled="true" opacity="1" origin="10, 365" size="380, 25" transparent="true" wants-focus="false">
 					<view autosize="right bottom " class="CTextButton" control-tag="dialog.button.2" default-value="0.5" font="control.font" frame-color="control.frame" frame-color-highlighted="control.frame" frame-width="-1" gradient="Default TextButton Gradient" gradient-highlighted="Default TextButton Gradient Highlighted" icon-position="left" icon-text-margin="0" kick-style="true" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="165, 5" round-radius="4" size="100, 16" text-alignment="center" text-color="textbutton.text" text-color-highlighted="textbutton.text.highlighted" title="Button 2" transparent="false" wants-focus="true" wheel-inc-value="0.1"/>
 					<view autosize="right bottom " class="CTextButton" control-tag="dialog.button.1" default-value="0.5" font="control.font" frame-color="control.frame" frame-color-highlighted="control.frame" frame-width="-1" gradient="Default TextButton Gradient" gradient-highlighted="Default TextButton Gradient Highlighted" icon-position="left" icon-text-margin="0" kick-style="true" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="275, 5" round-radius="4" size="100, 16" text-alignment="center" text-color="textbutton.text" text-color-highlighted="textbutton.text.highlighted" title="Button 1" transparent="false" wants-focus="true" wheel-inc-value="0.1"/>
@@ -863,8 +863,8 @@
 			<color-stop rgba="#646464ff" start="1"/>
 		</gradient>
 		<gradient name="GradientView">
-			<color-stop rgba="#b4b4b4ff" start="0"/>
-			<color-stop rgba="#b9b9b9ff" start="1"/>
+			<color-stop rgba="#cdcdcdff" start="0"/>
+			<color-stop rgba="#d2d2d2ff" start="1"/>
 		</gradient>
 		<gradient name="TextButton Highlighted">
 			<color-stop rgba="#646464ff" start="0"/>
