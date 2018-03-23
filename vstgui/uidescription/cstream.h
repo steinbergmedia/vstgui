@@ -86,7 +86,8 @@ public:
 		kSeekEnd
 	};
 
-	virtual int64_t seek (int64_t pos, SeekMode mode) = 0;	///< returns -1 if seek fails otherwise new position
+	/** returns -1 if seek fails otherwise new position */
+	virtual int64_t seek (int64_t pos, SeekMode mode) = 0;
 	virtual int64_t tell () const = 0;
 	virtual void rewind () = 0;
 };

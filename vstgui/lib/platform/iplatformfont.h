@@ -35,10 +35,14 @@ public:
 	static SharedPointer<IPlatformFont> create (const UTF8String& name, const CCoord& size, const int32_t& style);
 	static bool getAllPlatformFontFamilies (std::list<std::string>& fontFamilyNames);
 	
-	virtual double getAscent () const = 0;		///< returns the ascent line offset of the baseline of this font. If not supported returns -1
-	virtual double getDescent () const = 0;		///< returns the descent line offset of the baseline of this font. If not supported returns -1
-	virtual double getLeading () const = 0;		///< returns the space between lines for this font. If not supported returns -1
-	virtual double getCapHeight () const = 0;	///< returns the height of the highest capital letter for this font. If not supported returns -1
+	/** returns the ascent line offset of the baseline of this font. If not supported returns -1 */
+	virtual double getAscent () const = 0;
+	/** returns the descent line offset of the baseline of this font. If not supported returns -1 */
+	virtual double getDescent () const = 0;
+	/** returns the space between lines for this font. If not supported returns -1 */
+	virtual double getLeading () const = 0;
+	/** returns the height of the highest capital letter for this font. If not supported returns -1 */
+	virtual double getCapHeight () const = 0;
 
 	virtual const IFontPainter* getPainter () const = 0;
 };

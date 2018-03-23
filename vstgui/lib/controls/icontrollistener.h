@@ -16,7 +16,8 @@ class IControlListener
 public:
 	virtual ~IControlListener () noexcept = default;
 	virtual void valueChanged (CControl* pControl) = 0;
-	virtual int32_t controlModifierClicked (CControl* pControl, CButtonState button) { return 0; }	///< return 1 if you want the control to not handle it, otherwise 0
+	/** return 1 if you want the control to not handle it, otherwise 0 */
+	virtual int32_t controlModifierClicked (CControl* pControl, CButtonState button) { return 0; }
 	virtual void controlBeginEdit (CControl* pControl) {}
 	virtual void controlEndEdit (CControl* pControl) {}
 	virtual void controlTagWillChange (CControl* pControl) {}

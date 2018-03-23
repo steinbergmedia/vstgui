@@ -28,11 +28,15 @@ public:
 	/// @name CAutoAnimation Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual void openWindow (void);			///< enabled drawing
-	virtual void closeWindow (void);		///< disable drawing
+	/** enabled drawing */
+	virtual void openWindow (void);
+	/** disable drawing */
+	virtual void closeWindow (void);
 
-	virtual void nextPixmap (void);			///< the next sub bitmap should be displayed
-	virtual void previousPixmap (void);		///< the previous sub bitmap should be displayed
+	/** the next sub bitmap should be displayed */
+	virtual void nextPixmap (void);
+	/** the previous sub bitmap should be displayed */
+	virtual void previousPixmap (void);
 
 	bool    isWindowOpened () const { return bWindowOpened; }
 	//@}

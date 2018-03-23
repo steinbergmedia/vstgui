@@ -19,9 +19,12 @@ class IAnimationTarget
 public:
 	virtual ~IAnimationTarget () noexcept = default;
 
-	virtual void animationStart (CView* view, IdStringPtr name) = 0;						///< animation starts
-	virtual void animationTick (CView* view, IdStringPtr name, float pos) = 0;				///< pos is a normalized value between zero and one
-	virtual void animationFinished (CView* view, IdStringPtr name, bool wasCanceled) = 0;	///< animation ended
+	/** animation starts */
+	virtual void animationStart (CView* view, IdStringPtr name) = 0;
+	/** pos is a normalized value between zero and one */
+	virtual void animationTick (CView* view, IdStringPtr name, float pos) = 0;
+	/** animation ended */
+	virtual void animationFinished (CView* view, IdStringPtr name, bool wasCanceled) = 0;
 };
 
 }} // namespaces

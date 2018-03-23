@@ -182,16 +182,22 @@ namespace Standard {
 	static const IdStringPtr kScaleLinear = "Scale Linear";
 
 	/** @brief Standard Bitmap Property Names */
-	namespace Property {
-	
-		static const IdStringPtr kInputBitmap = "InputBitmap"; ///< [Property::kObject - CBitmap]
-		static const IdStringPtr kOutputBitmap = "OutputBitmap"; ///< [Property::kObject - CBitmap]
-		static const IdStringPtr kRadius = "Radius"; ///< [Property::kInteger]
-		static const IdStringPtr kInputColor = "InputColor"; ///< [Property::kColor]
-		static const IdStringPtr kOutputColor = "OutputColor"; ///< [Property::kColor]
-		static const IdStringPtr kOutputRect = "OutputRect"; ///< [Property::kRect]
-		static const IdStringPtr kIgnoreAlphaColorValue = "IgnoreAlphaColorValue"; ///< [Property::kInteger]
-
+	namespace Property
+	{
+		/** [Property::kObject - CBitmap] */
+		static const IdStringPtr kInputBitmap = "InputBitmap";
+		/** [Property::kObject - CBitmap] */
+		static const IdStringPtr kOutputBitmap = "OutputBitmap";
+		/** [Property::kInteger] */
+		static const IdStringPtr kRadius = "Radius";
+		/** [Property::kColor] */
+		static const IdStringPtr kInputColor = "InputColor";
+		/** [Property::kColor] */
+		static const IdStringPtr kOutputColor = "OutputColor";
+		/** [Property::kRect] */
+		static const IdStringPtr kOutputRect = "OutputRect";
+		/** [Property::kInteger] */
+		static const IdStringPtr kIgnoreAlphaColorValue = "IgnoreAlphaColorValue";
 	} // namespace Property
 
 } // namespace Standard

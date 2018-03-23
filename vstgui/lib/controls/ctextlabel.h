@@ -25,21 +25,30 @@ public:
 	/// @name CTextLabel Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual void setText (const UTF8String& txt);			///< set text
-	virtual const UTF8String& getText () const;				///< read only access to text
+	/** set text */
+	virtual void setText (const UTF8String& txt);
+	/** read only access to text */
+	virtual const UTF8String& getText () const;
 
 	enum TextTruncateMode {
-		kTruncateNone = 0,						///< no characters will be removed
-		kTruncateHead,							///< characters will be removed from the beginning of the text
-		kTruncateTail							///< characters will be removed from the end of the text
+		/** no characters will be removed */
+		kTruncateNone = 0,
+		/** characters will be removed from the beginning of the text */
+		kTruncateHead,
+		/** characters will be removed from the end of the text */
+		kTruncateTail
 	};
 	
-	virtual void setTextTruncateMode (TextTruncateMode mode);					///< set text truncate mode
-	TextTruncateMode getTextTruncateMode () const { return textTruncateMode; }	///< get text truncate mode
-	const UTF8String& getTruncatedText () const { return truncatedText; }		///< get the truncated text
+	/** set text truncate mode */
+	virtual void setTextTruncateMode (TextTruncateMode mode);
+	/** get text truncate mode */
+	TextTruncateMode getTextTruncateMode () const { return textTruncateMode; }
+	/** get the truncated text */
+	const UTF8String& getTruncatedText () const { return truncatedText; }
 	//@}
 
-	static IdStringPtr kMsgTruncatedTextChanged;								///< message which is send to dependent objects when the truncated text changes
+	/** message which is send to dependent objects when the truncated text changes */
+	static IdStringPtr kMsgTruncatedTextChanged;
 	
 	void draw (CDrawContext* pContext) override;
 	bool sizeToFit () override;
@@ -72,9 +81,12 @@ public:
 	CMultiLineTextLabel (const CMultiLineTextLabel&) = default;
 
 	enum class LineLayout {
-		clip, ///< clip lines overflowing the view size width
-		truncate, ///< truncate lines overflowing the view size width
-		wrap ///< wrap overflowing words to next line
+		/** clip lines overflowing the view size width */
+		clip,
+		/** truncate lines overflowing the view size width */
+		truncate,
+		/** wrap overflowing words to next line */
+		wrap
 	};
 	void setLineLayout (LineLayout layout);
 	LineLayout getLineLayout () const { return lineLayout; }

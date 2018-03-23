@@ -59,7 +59,8 @@ public:
 	virtual void bounceValue ();
 	virtual bool checkDefaultValue (CButtonState button);
 	
-	virtual void valueChanged ();	///< notifies listener and dependent objects
+	/** notifies listener and dependent objects */
+	virtual void valueChanged ();
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -73,11 +74,15 @@ public:
 	virtual void endEdit ();
 	bool isEditing () const { return editing > 0; }
 
-	virtual IControlListener* getListener () const { return listener; }	///< get main listener
-	virtual void setListener (IControlListener* l) { listener = l; } ///< set main listener
+	/** get main listener */
+	virtual IControlListener* getListener () const { return listener; }
+	/** set main listener */
+	virtual void setListener (IControlListener* l) { listener = l; }
 
-	void registerControlListener (IControlListener* listener); ///< register a sub listener
-	void unregisterControlListener (IControlListener* listener); ///< unregister a sub listener
+	/** register a sub listener */
+	void registerControlListener (IControlListener* listener);
+	/** unregister a sub listener */
+	void unregisterControlListener (IControlListener* listener);
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -96,8 +101,10 @@ public:
 	bool drawFocusOnTop () override;
 	bool getFocusPath (CGraphicsPath& outPath) override;
 
-	static int32_t kZoomModifier;			///< zoom modifier key, per default is the shift key
-	static int32_t kDefaultValueModifier;	///< default value modifier key, per default is the control key
+	/** zoom modifier key, per default is the shift key */
+	static int32_t kZoomModifier;
+	/** default value modifier key, per default is the control key */
+	static int32_t kDefaultValueModifier;
 
 	// messages send to dependent objects
 	static IdStringPtr kMessageValueChanged;

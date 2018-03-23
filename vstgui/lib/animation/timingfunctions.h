@@ -73,7 +73,8 @@ public:
 	InterpolationTimingFunction (const InterpolationTimingFunction&) = default;
 	InterpolationTimingFunction& operator= (const InterpolationTimingFunction&) = default;
 
-	void addPoint (float time, float pos); ///< both values are normalized ones
+	/** both values are normalized ones */
+	void addPoint (float time, float pos);
 
 	float getPosition (uint32_t milliseconds) override;
 

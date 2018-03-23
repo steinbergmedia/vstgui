@@ -42,7 +42,7 @@ extern IdStringPtr kMsgViewSizeChanged;
 
 extern const CViewAttributeID kCViewAttributeReferencePointer;	// 'cvrp'
 extern const CViewAttributeID kCViewTooltipAttribute;			// 'cvtt'
-extern const CViewAttributeID kCViewControllerAttribute;		// 'ictr' ///< see @ref IController
+extern const CViewAttributeID kCViewControllerAttribute;		// 'ictr'
 
 //-----------------------------------------------------------------------------
 // CView Declaration
