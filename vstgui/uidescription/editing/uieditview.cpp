@@ -274,6 +274,7 @@ UIEditView::UIEditView (const CRect& size, UIDescription* uidescription)
 , grid (nullptr)
 {
 	setScale (1.);
+	setWantsFocus (true);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -654,6 +655,8 @@ CMouseEventResult UIEditView::onMouseDown (CPoint &where, const CButtonState& bu
 	{
 		if (buttons & kLButton)
 		{
+			getFrame ()->setFocusView (this);
+
 			CView* selectionHitView = nullptr;
 			CPoint where2 (where);
 			where2.offset (-getViewSize ().left, -getViewSize ().top);
@@ -788,6 +791,29 @@ CMouseEventResult UIEditView::onMouseUp (CPoint &where, const CButtonState& butt
 		return kMouseEventHandled;
 	}
 	return CViewContainer::onMouseUp (where, buttons);
+}
+
+//------------------------------------------------------------------------
+int32_t UIEditView::onKeyDown (VstKeyCode& keyCode)
+{
+	if (mouseEditMode != kNoEditing && keyCode.virt == VKEY_ESCAPE)
+	{
+		if (lines)
+		{
+			overlayView->removeView (lines);
+			lines = nullptr;
+		}
+		if (moveSizeOperation)
+		{
+			moveSizeOperation->undo ();
+			delete moveSizeOperation;
+			moveSizeOperation = nullptr;
+		}
+		mouseEditMode = kNoEditing;
+		getFrame ()->setCursor (kCursorDefault);
+		return 1;
+	}
+	return CViewContainer::onKeyDown (keyCode);
 }
 
 //-----------------------------------------------------------------------------
