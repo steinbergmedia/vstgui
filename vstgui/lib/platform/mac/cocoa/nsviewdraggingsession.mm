@@ -7,10 +7,92 @@
 #if MAC_COCOA
 
 #import "../cgbitmap.h"
+#import "../macclipboard.h"
 #import "cocoahelpers.h"
 
 //------------------------------------------------------------------------
+@interface NSObject (VSTGUI_BinaryDataType_Private)
+- (id)initWithData:(const void*)data andSize:(size_t)size;
+@end
+
+//------------------------------------------------------------------------
 namespace VSTGUI {
+
+//------------------------------------------------------------------------
+static NSString* getCocoaPasteboardTypeString ()
+{
+	return [NSString stringWithCString:VSTGUI::MacClipboard::getPasteboardBinaryType ()
+	                          encoding:NSASCIIStringEncoding];
+}
+
+//------------------------------------------------------------------------
+struct BinaryDataType
+{
+//------------------------------------------------------------------------
+	static Class& getClass ()
+	{
+		static BinaryDataType instance;
+		return instance.cl;
+	}
+
+private:
+//------------------------------------------------------------------------
+	static id Init (id self, SEL, const void* buffer, size_t bufferSize)
+	{
+		__OBJC_SUPER (self)
+		self = objc_msgSendSuper (SUPER, @selector (init));
+		if (self)
+		{
+			auto data = [[NSData alloc] initWithBytes:buffer length:bufferSize];
+			OBJC_SET_VALUE (self, _data, data);
+		}
+		return self;
+	}
+
+	static NSArray<NSPasteboardType>* WritableTypesForPasteboard (id, SEL, NSPasteboard*)
+	{
+		return @[getCocoaPasteboardTypeString ()];
+	}
+
+	static id PasteboardPropertyListForType (id self, SEL, NSPasteboardType)
+	{
+		return OBJC_GET_VALUE (self, _data);
+	}
+
+	Class cl {nullptr};
+
+	BinaryDataType () { initClass (cl); }
+
+	~BinaryDataType ()
+	{
+		if (cl)
+			objc_disposeClassPair (cl);
+	}
+
+	void initClass (Class& cl)
+	{
+		if (cl != nullptr)
+			return;
+
+		auto className =
+		    [[[NSMutableString alloc] initWithString:@"VSTGUI_BinaryDataType"] autorelease];
+		cl = generateUniqueClass (className, [NSObject class]);
+		VSTGUI_CHECK_YES (class_addProtocol (cl, objc_getProtocol ("NSPasteboardWriting")))
+		char funcSig[100];
+		sprintf (funcSig, "@@:@:%s:%s", @encode (const void*), @encode (size_t));
+		VSTGUI_CHECK_YES (
+		    class_addMethod (cl, @selector (initWithData:andSize:), IMP (Init), funcSig))
+		sprintf (funcSig, "%s@:@:%s", @encode (NSArray<NSPasteboardType>*),
+		         @encode (NSPasteboard*));
+		VSTGUI_CHECK_YES (class_addMethod (cl, @selector (writableTypesForPasteboard:),
+		                                   IMP (WritableTypesForPasteboard), funcSig))
+		sprintf (funcSig, "%s@:@:%s", @encode (id), @encode (NSPasteboardType));
+		VSTGUI_CHECK_YES (class_addMethod (cl, @selector (pasteboardPropertyListForType:),
+		                                   IMP (PasteboardPropertyListForType), funcSig))
+		VSTGUI_CHECK_YES (class_addIvar (cl, "_data", sizeof (NSData*),
+		                                 (uint8_t)log2 (sizeof (NSData*)), @encode (NSData*)))
+	}
+};
 
 //------------------------------------------------------------------------
 SharedPointer<NSViewDraggingSession> NSViewDraggingSession::create (
@@ -65,16 +147,11 @@ SharedPointer<NSViewDraggingSession> NSViewDraggingSession::create (
 				}
 				break;
 			}
-			case IDataPackage::kBinary: {
-#if 0
-				// TODO: write an object implementing NSPasteboardWriting to provide NSData
-				if (auto data = [NSData dataWithBytes:buffer length:size])
-				{
+			case IDataPackage::kBinary:
+			{
+				if (id data =
+				        [[BinaryDataType::getClass () alloc] initWithData:buffer andSize:size])
 					item = [[[NSDraggingItem alloc] initWithPasteboardWriter:data] autorelease];
-				}
-#else
-				vstgui_assert (false, "Not yet implemented");
-#endif
 				break;
 			}
 			case IDataPackage::kError: { continue;
@@ -139,7 +216,7 @@ bool NSViewDraggingSession::setBitmap (const SharedPointer<CBitmap>& bitmap, CPo
 			                                [draggingItem
 			                                    setDraggingFrame:draggingItem.draggingFrame
 			                                            contents:nil];
-										}
+		                                }
 		                                *stop = YES;
 	                                }];
 	desc.bitmap = bitmap;
