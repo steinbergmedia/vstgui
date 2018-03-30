@@ -438,6 +438,14 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 }
 
 //------------------------------------------------------------------------
+- (void)selectAll:(id)sender
+{
+	using namespace VSTGUI::Standalone;
+	Command command {CommandGroup::Edit, CommandName::SelectAll};
+	[self handleCommand:command];
+}
+
+//------------------------------------------------------------------------
 - (void) delete:(id)sender
 {
 	using namespace VSTGUI::Standalone;
