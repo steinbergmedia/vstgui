@@ -161,8 +161,8 @@ bool CMemoryStream::operator<< (const std::string& str)
 {
 	if (binaryMode)
 	{
-		if (!(static_cast<OutputStream&>(*this) << (uint32_t)'str ')) return false;
-		if (!(static_cast<OutputStream&>(*this) << (uint32_t)str.length ())) return false;
+		if (!((*this) << (uint32_t)'str ')) return false;
+		if (!((*this) << (uint32_t)str.length ())) return false;
 	}
 	return writeRaw (str.c_str (), static_cast<uint32_t> (str.length ())) == str.length ();
 }
@@ -315,7 +315,7 @@ bool CFileStream::operator<< (const std::string& str)
 	{
 		if (openMode & kBinaryMode)
 		{
-			if (!(*static_cast<OutputStream*> (this) << (int8_t)0))
+			if (!((*this) << (int8_t)0))
 				return false;
 		}
 		return true;

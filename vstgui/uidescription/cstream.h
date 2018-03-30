@@ -114,6 +114,9 @@ public:
 	bool operator<< (const std::string& str) override;
 	bool operator>> (std::string& string) override;
 
+	using OutputStream::operator<<;
+	using InputStream::operator>>;
+
 	bool end (); // write a zero byte if binaryMode is false
 protected:
 	bool resize (uint32_t newSize);
@@ -154,6 +157,9 @@ public:
 
 	bool operator<< (const std::string& str) override;
 	bool operator>> (std::string& string) override;
+
+	using OutputStream::operator<<;
+	using InputStream::operator>>;
 protected:
 	FILE* stream;
 	int32_t openMode;
