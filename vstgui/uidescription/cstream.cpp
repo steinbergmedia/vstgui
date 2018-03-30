@@ -486,42 +486,29 @@ void CResourceInputStream::rewind ()
 
 //-----------------------------------------------------------------------------
 template<typename T>
-bool writeEndianSwap (const T& value, OutputStream& s)
+void endianSwap (T& value)
 {
 	uint32_t size = sizeof (T);
-	const int8_t* ptr = reinterpret_cast<const int8_t*> (&value);
+	auto low = reinterpret_cast<uint8_t*> (&value);
+	auto high = low + size - 1;
 	while (size >= 2)
 	{
-		if (s.writeRaw (ptr + 1, 1) != 1)
-			return false;
-		if (s.writeRaw (ptr, 1) != 1)
-			return false;
+		auto tmp = *low;
+		*low = *high;
+		*high = tmp;
+		low += 2;
+		high -= 2;
 		size -= 2;
-		ptr += 2;
 	}
-	if (size)
-	{
-		if (s.writeRaw (ptr, 1) != 1)
-			return false;
-	}
-	return true;
 }
 
 //-----------------------------------------------------------------------------
 template<typename T>
-void endianSwap (T& value)
+bool writeEndianSwap (const T& value, OutputStream& s)
 {
-	uint32_t size = sizeof (T);
-	int8_t* ptr = reinterpret_cast<int8_t*> (&value);
-	int8_t tmp;
-	while (size >= 2)
-	{
-		tmp = ptr[0];
-		ptr[0] = ptr[1];
-		ptr[1] = tmp;
-		ptr += 2;
-		size -= 2;
-	}
+	auto tmp = value;
+	endianSwap (tmp);
+	return s.writeRaw (&tmp, sizeof (T)) == sizeof (T);
 }
 
 //-----------------------------------------------------------------------------
