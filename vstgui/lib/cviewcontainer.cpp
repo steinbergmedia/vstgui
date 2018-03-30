@@ -617,14 +617,19 @@ bool CViewContainer::changeViewZOrder (CView* view, uint32_t newIndex)
 {
 	if (newIndex < getNbViews ())
 	{
-		auto src = std::find (pImpl->children.begin (), pImpl->children.end (), view);
+		uint32_t oldIndex = 0;
+		auto src = pImpl->children.begin ();
+		for (;src != pImpl->children.end () && *src != view; ++src, ++oldIndex);
 		if (src != pImpl->children.end ())
 		{
+			if (newIndex == oldIndex)
+				return true;
 			auto dest = pImpl->children.begin ();
 			std::advance (dest, newIndex);
-			if (std::distance (src, dest) == 0)
-				return true;
-			pImpl->children.splice (dest, pImpl->children, src);
+			if (newIndex > oldIndex)
+				pImpl->children.splice (src, pImpl->children, dest);
+			else
+				pImpl->children.splice (dest, pImpl->children, src);
 			pImpl->viewContainerListeners.forEach ([&] (IViewContainerListener* listener) {
 				listener->viewContainerViewZOrderChanged (this, view);
 			});

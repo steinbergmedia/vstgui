@@ -128,12 +128,17 @@ TESTCASE(CViewContainerTest,
 		container->addView (view1);
 		container->addView (view2);
 		container->addView (view3);
+		EXPECT(container->changeViewZOrder (view3, 0));
+		EXPECT(container->getView (0) == view3);
+		EXPECT(container->getView (1) == view1);
+		EXPECT(container->getView (2) == view2);
+		EXPECT(container->getView (3) == nullptr);
+		EXPECT(container->changeViewZOrder (view3, 4) == false);
+		EXPECT(container->changeViewZOrder (view3, 0));
 		EXPECT(container->changeViewZOrder (view3, 1));
 		EXPECT(container->getView (0) == view1);
 		EXPECT(container->getView (1) == view3);
 		EXPECT(container->getView (2) == view2);
-		EXPECT(container->getView (3) == nullptr);
-		EXPECT(container->changeViewZOrder (view3, 4) == false);
 	);
 
 	TEST(addView,
