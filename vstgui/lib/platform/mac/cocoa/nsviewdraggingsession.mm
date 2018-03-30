@@ -19,16 +19,8 @@
 namespace VSTGUI {
 
 //------------------------------------------------------------------------
-static NSString* getCocoaPasteboardTypeString ()
-{
-	return [NSString stringWithCString:VSTGUI::MacClipboard::getPasteboardBinaryType ()
-	                          encoding:NSASCIIStringEncoding];
-}
-
-//------------------------------------------------------------------------
 struct BinaryDataType
 {
-//------------------------------------------------------------------------
 	static Class& getClass ()
 	{
 		static BinaryDataType instance;
@@ -36,7 +28,12 @@ struct BinaryDataType
 	}
 
 private:
-//------------------------------------------------------------------------
+	static NSString* getCocoaPasteboardTypeString ()
+	{
+		return [NSString stringWithCString:VSTGUI::MacClipboard::getPasteboardBinaryType ()
+		                          encoding:NSASCIIStringEncoding];
+	}
+
 	static id Init (id self, SEL, const void* buffer, size_t bufferSize)
 	{
 		__OBJC_SUPER (self)
@@ -61,7 +58,7 @@ private:
 
 	Class cl {nullptr};
 
-	BinaryDataType () { initClass (cl); }
+	BinaryDataType () { initClass (); }
 
 	~BinaryDataType ()
 	{
@@ -69,11 +66,8 @@ private:
 			objc_disposeClassPair (cl);
 	}
 
-	void initClass (Class& cl)
+	void initClass ()
 	{
-		if (cl != nullptr)
-			return;
-
 		auto className =
 		    [[[NSMutableString alloc] initWithString:@"VSTGUI_BinaryDataType"] autorelease];
 		cl = generateUniqueClass (className, [NSObject class]);
