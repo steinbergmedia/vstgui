@@ -617,21 +617,18 @@ bool CViewContainer::changeViewZOrder (CView* view, uint32_t newIndex)
 {
 	if (newIndex < getNbViews ())
 	{
-		CBaseObjectGuard guard (view);
-		auto it = std::find (pImpl->children.begin (), pImpl->children.end (), view);
-		if (it != pImpl->children.end ())
+		auto src = std::find (pImpl->children.begin (), pImpl->children.end (), view);
+		if (src != pImpl->children.end ())
 		{
-			pImpl->children.erase (it);
-			it = pImpl->children.begin ();
-			std::advance (it, newIndex);
-			bool result = pImpl->children.insert (it, view) != pImpl->children.end ();
-			if (result)
-			{
-				pImpl->viewContainerListeners.forEach ([&] (IViewContainerListener* listener) {
-					listener->viewContainerViewZOrderChanged (this, view);
-				});
-			}
-			return result;
+			auto dest = pImpl->children.begin ();
+			std::advance (dest, newIndex);
+			if (std::distance (src, dest) == 0)
+				return true;
+			pImpl->children.splice (dest, pImpl->children, src);
+			pImpl->viewContainerListeners.forEach ([&] (IViewContainerListener* listener) {
+				listener->viewContainerViewZOrderChanged (this, view);
+			});
+			return true;
 		}
 	}
 	return false;
