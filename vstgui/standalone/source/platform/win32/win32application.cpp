@@ -164,7 +164,8 @@ void Application::showAlertForWindow (const AlertBoxForWindowConfig& config)
 		    vstgui_assert (parentWinWindow);
 		    parentWinWindow->setModalWindow (nullptr);
 		    Async::perform (Async::Context::Main, [callback, r, parentWindow] () {
-			    callback (r);
+			    if (callback)
+					callback (r);
 			    if (auto winWindow = toWin32Window (parentWindow))
 				    winWindow->activate ();
 			});
