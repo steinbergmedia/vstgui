@@ -807,6 +807,8 @@ void Window::setPosition (const CPoint& newPosition)
 //------------------------------------------------------------------------
 void Window::setTitle (const UTF8String& newTitle)
 {
+	if (auto winStr = dynamic_cast<WinString*> (newTitle.getPlatformString ()))
+		SetWindowText (hwnd, winStr->getWideString ());
 }
 
 //------------------------------------------------------------------------
