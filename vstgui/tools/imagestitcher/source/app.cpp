@@ -4,6 +4,7 @@
 
 #include "documentcontroller.h"
 #include "vstgui/standalone/include/helpers/appdelegate.h"
+#include "vstgui/standalone/include/helpers/menubuilder.h"
 #include "vstgui/standalone/include/helpers/windowlistener.h"
 #include "vstgui/standalone/include/iapplication.h"
 #include "vstgui/standalone/include/icommand.h"
@@ -17,7 +18,9 @@ using namespace VSTGUI::Standalone;
 using namespace VSTGUI::Standalone::Application;
 
 //------------------------------------------------------------------------
-class ImageStitcherAppDelegate : public DelegateAdapter, public ICommandHandler
+class ImageStitcherAppDelegate : public DelegateAdapter,
+                                 public ICommandHandler,
+                                 public MenuBuilderAdapter
 {
 public:
 	ImageStitcherAppDelegate ()
@@ -105,6 +108,30 @@ public:
 			doOpenDocument ();
 		}
 		return false;
+	}
+
+	bool prependMenuSeparator (const Interface& context, const Command& cmd) const override
+	{
+		if (cmd == ExportCommand || cmd == Commands::CloseWindow)
+			return true;
+		return false;
+	}
+
+	SortFunction getCommandGroupSortFunction (const Interface& context,
+	                                          const UTF8String& group) const override
+	{
+		if (group == CommandGroup::File)
+		{
+			return [] (const UTF8String& lhs, const UTF8String& rhs) {
+				static auto order = {Commands::NewDocument.name,  Commands::OpenDocument.name,
+				                     Commands::SaveDocument.name, Commands::SaveDocumentAs.name,
+				                     ExportCommand.name,          Commands::CloseWindow.name};
+				auto leftIndex = std::find (order.begin (), order.end (), lhs);
+				auto rightIndex = std::find (order.begin (), order.end (), rhs);
+				return std::distance (leftIndex, rightIndex) > 0;
+			};
+		}
+		return {};
 	}
 };
 
