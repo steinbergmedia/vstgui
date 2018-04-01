@@ -266,7 +266,7 @@ TESTCASE(CViewTest,
 
 		EXPECT(v.doDrag (DragDescription (nullptr)) == false);
 
-		EXPECT(v.onDrop (nullptr, p) == false);
+		EXPECT(v.getDropTarget () == nullptr);
 		EXPECT(v.getEditor () == nullptr);
 		EXPECT(v.isDirty () == false);
 		EXPECT(v.sizeToFit () == false);
