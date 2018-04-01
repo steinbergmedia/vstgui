@@ -44,6 +44,7 @@ public:
 	using CommandWithKeyList = std::vector<CommandWithKey>;
 	using CommandListPair = std::pair<UTF8String, CommandWithKeyList>;
 	using CommandList = std::vector<CommandListPair>;
+	using OpenFilesList = std::vector<UTF8String>;
 
 	struct InitParams
 	{
@@ -51,6 +52,7 @@ public:
 		ICommonDirectories& commonDirectories;
 		IApplication::CommandLineArguments&& cmdArgs;
 		PlatformCallbacks&& callbacks;
+		OpenFilesList openFiles;
 	};
 
 	virtual void init (const InitParams& params) = 0;

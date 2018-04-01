@@ -491,13 +491,19 @@ static CommandWithKeyList getCommandList (const char* _Nonnull group)
 	auto app = Detail::getApplicationPlatformAccess ();
 	vstgui_assert (app);
 	[self setupMainMenu];
-	app->init ({prefs, commonDirecories, std::move (cmdArgs), std::move (callbacks)});
-	self.hasFinishedLaunching = YES;
-	if (self.startupOpenFiles)
+	IPlatformApplication::OpenFilesList openFilesList;
+	if (auto filenames = self.startupOpenFiles)
 	{
-		[self openFilesInternal:self.startupOpenFiles];
+		openFilesList.reserve (filenames.count);
+		for (NSString* filename in filenames)
+		{
+			openFilesList.emplace_back ([filename UTF8String]);
+		}
 		self.startupOpenFiles = nil;
 	}
+	self.hasFinishedLaunching = YES;
+	app->init ({prefs, commonDirecories, std::move (cmdArgs), std::move (callbacks),
+	            std::move (openFilesList)});
 }
 
 //------------------------------------------------------------------------

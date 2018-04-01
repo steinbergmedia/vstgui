@@ -94,6 +94,9 @@ void Application::init (const InitParams& params)
 	// TODO: make command registration configurable
 	registerStandardCommands ();
 
+	if (!params.openFiles.empty ())
+		getDelegate ().openFiles (params.openFiles);
+
 	getDelegate ().finishLaunching ();
 }
 

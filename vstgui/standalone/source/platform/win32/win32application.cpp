@@ -109,7 +109,10 @@ void Application::init (HINSTANCE instance, LPWSTR commandLine)
 
 	auto app = Detail::getApplicationPlatformAccess ();
 	vstgui_assert (app);
-	app->init ({prefs, commonDirectories, std::move (cmdArgs), std::move (callbacks)});
+	IPlatformApplication::OpenFilesList openFilesList;
+	/* TODO: fill openFilesList */
+	app->init ({prefs, commonDirectories, std::move (cmdArgs), std::move (callbacks),
+	            std::move (openFilesList)});
 }
 
 //------------------------------------------------------------------------
