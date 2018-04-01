@@ -220,6 +220,8 @@ public:
 	virtual void beginDraw () {}
 	virtual void endDraw () {}
 
+	const CRect& getSurfaceRect () const { return surfaceRect; }
+
 protected:
 	CDrawContext () = delete;
 	explicit CDrawContext (const CRect& surfaceRect);
@@ -257,6 +259,7 @@ protected:
 
 	const CDrawContextState& getCurrentState () const { return currentState; }
 	CDrawContextState& getCurrentState () { return currentState; }
+
 private:
 	UTF8String* drawStringHelper {nullptr};
 	CRect surfaceRect;

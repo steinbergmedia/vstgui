@@ -27,7 +27,6 @@ public:
 	~Context ();
 
 	bool valid () const { return cr != nullptr; }
-	CRect getSurfaceRect () const { return surfaceRect; }
 	const SurfaceHandle& getSurface () const { return surface; }
 	const ContextHandle& getCairo () const { return cr; }
 

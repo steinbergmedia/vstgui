@@ -1,11 +1,11 @@
-﻿// This file is part of VSTGUI. It is subject to the license terms
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "x11frame.h"
 #include "../../cbuttonstate.h"
 #include "../../crect.h"
-#include "../../idatapackage.h"
+#include "../../dragging.h"
 #include "../../vstkeycode.h"
 #include "../iplatformopenglview.h"
 #include "../iplatformviewlayer.h"
@@ -19,6 +19,10 @@
 #include <gtkmm/plug.h>
 #include <iostream>
 #include <unordered_map>
+
+#ifdef None
+#undef None
+#endif
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -468,11 +472,14 @@ struct GtkFrame : Gtk::DrawingArea
 		if (!dragSourcePackage)
 		{
 			dragSourcePackage = owned (new GtkDragSourcePackage (*this, context));
-			frame->platformOnDragEnter (dragSourcePackage, where);
+			DragEventData data {dragSourcePackage, where, 0 /*TODO:buttons*/};
+
+			frame->platformOnDragEnter (data);
 		}
 		else
 		{
-			frame->platformOnDragMove (dragSourcePackage, where);
+			DragEventData data {dragSourcePackage, where, 0 /*TODO:buttons*/};
+			frame->platformOnDragMove (data);
 		}
 		return true;
 	}
@@ -482,7 +489,8 @@ struct GtkFrame : Gtk::DrawingArea
 		assert (dragSourcePackage);
 		Glib::signal_timeout ().connect (
 		    [&] () {
-			    frame->platformOnDragLeave (dragSourcePackage, CPoint (-1., -1.));
+				DragEventData data {dragSourcePackage, CPoint (-1, -1), 0 /*TODO:buttons*/};
+			    frame->platformOnDragLeave (data);
 				dragSourcePackage = nullptr;
 				return false;
 			},
@@ -494,7 +502,8 @@ struct GtkFrame : Gtk::DrawingArea
 	{
 		assert (dragSourcePackage);
 		CPoint where (x, y);
-		auto result = frame->platformOnDrop (dragSourcePackage, where);
+		DragEventData data {dragSourcePackage, where, 0 /*TODO:buttons*/};
+		auto result = frame->platformOnDrop (data);
 		if (result)
 			context->drag_finish (true, false, time);
 		else
@@ -544,7 +553,13 @@ struct GtkFrame : Gtk::DrawingArea
 		auto result = doDrag (dragDescription.data, dragDescription.bitmapOffset, dragDescription.bitmap);
 		if (callback)
 		{
-			callback->dragEnded (nullptr, CPoint (), result);
+			DragOperation op = DragOperation::None;
+			if (result == kDragCopied)
+				op = DragOperation::Copy;
+			else if (result == kDragMoved)
+				op = DragOperation::Move;
+			callback->dragEnded (nullptr, CPoint (), op);
+			return true;
 		}
 		return false;
 	}
