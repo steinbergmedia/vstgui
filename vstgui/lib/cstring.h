@@ -13,6 +13,7 @@
 #include <functional>
 #include <algorithm>
 #include <cctype>
+#include <cstddef>
 
 namespace VSTGUI {
 
