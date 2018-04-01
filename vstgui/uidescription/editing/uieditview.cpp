@@ -1058,7 +1058,7 @@ void UIEditView::startDrag (CPoint& where)
 	stream.end ();
 
 	auto callback = makeOwned<DragCallbackFunctions> ();
-	callback->endedFunc = [this] (IDraggingSession*, CPoint pos, DragResult) {
+	callback->endedFunc = [this] (IDraggingSession*, CPoint pos, DragOperation) {
 		frameToLocal (pos);
 		onMouseMoved (pos, 0);
 	};
@@ -1093,103 +1093,92 @@ UISelection* UIEditView::getSelectionOutOfDrag (IDataPackage* drag)
 }
 
 //----------------------------------------------------------------------------------------------------
-bool UIEditView::onDrop (IDataPackage* drag, const CPoint& where)
+SharedPointer<IDropTarget> UIEditView::getDropTarget ()
 {
 	if (editing)
-	{
-		if (lines)
-		{
-			overlayView->removeView (lines);
-			lines = nullptr;
-		}
-		if (dragSelection)
-		{
-			if (highlightView)
-			{
-				highlightView->setHighlightView (nullptr);
-			}
-			CPoint where2 (where);
-			where2.offset (dragSelection->getDragOffset ().x, dragSelection->getDragOffset ().y);
-			where2.offset (-getViewSize ().left, -getViewSize ().top);
-			if (grid)
-			{
-				where2.offset (grid->getSize ().x / 2., grid->getSize ().y / 2.);
-				getTransform ().inverse ().transform (where2);
-				grid->process (where2);
-				getTransform ().transform (where2);
-			}
-			CViewContainer* viewContainer = getContainerAt (where2, GetViewOptions ().deep ());
-			if (viewContainer)
-			{
-				getTransform ().inverse ().transform (where2);
-				CPoint containerOffset;
-				viewContainer->localToFrame (containerOffset);
-				frameToLocal (containerOffset);
-				where2.offset (-containerOffset.x, -containerOffset.y);
-
-				IAction* action = new ViewCopyOperation (dragSelection, getSelection (), viewContainer, where2, description);
-				getUndoManager()->pushAndPerform (action);
-			}
-			dragSelection->forget ();
-			dragSelection = nullptr;
-		}
-		return true;
-	}
-	return CViewContainer::onDrop (drag, where);
+		return this;
+	return CViewContainer::getDropTarget ();
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIEditView::onDragEnter (IDataPackage* drag, const CPoint& where)
+bool UIEditView::onDrop (IDataPackage* drag, CPoint where, CButtonState buttons)
 {
-	if (editing)
+	if (lines)
 	{
-		dragSelection = getSelectionOutOfDrag (drag);
-		if (dragSelection)
-		{
-			if (!lines)
-			{
-				lines = new UICrossLines (this, UICrossLines::kDragStyle, crosslineBackgroundColor, crosslineForegroundColor);
-				overlayView->addView (lines);
-			}
-			getFrame ()->setCursor (kCursorCopy);
-			onDragMove (drag, where);
-		}
-		else
-		{
-			getFrame ()->setCursor (kCursorNotAllowed);
-		}
+		overlayView->removeView (lines);
+		lines = nullptr;
 	}
-	else
-		CViewContainer::onDragEnter (drag, where);
+	if (dragSelection)
+	{
+		if (highlightView)
+		{
+			highlightView->setHighlightView (nullptr);
+		}
+		CPoint where2 (where);
+		where2.offset (dragSelection->getDragOffset ().x, dragSelection->getDragOffset ().y);
+		where2.offset (-getViewSize ().left, -getViewSize ().top);
+		if (grid)
+		{
+			where2.offset (grid->getSize ().x / 2., grid->getSize ().y / 2.);
+			getTransform ().inverse ().transform (where2);
+			grid->process (where2);
+			getTransform ().transform (where2);
+		}
+		CViewContainer* viewContainer = getContainerAt (where2, GetViewOptions ().deep ());
+		if (viewContainer)
+		{
+			getTransform ().inverse ().transform (where2);
+			CPoint containerOffset;
+			viewContainer->localToFrame (containerOffset);
+			frameToLocal (containerOffset);
+			where2.offset (-containerOffset.x, -containerOffset.y);
+
+			IAction* action = new ViewCopyOperation (dragSelection, getSelection (), viewContainer, where2, description);
+			getUndoManager()->pushAndPerform (action);
+		}
+		dragSelection->forget ();
+		dragSelection = nullptr;
+	}
+	return true;
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIEditView::onDragLeave (IDataPackage* drag, const CPoint& where)
+DragOperation UIEditView::onDragEnter (IDataPackage* drag, CPoint where, CButtonState buttons)
+{
+	dragSelection = getSelectionOutOfDrag (drag);
+	if (dragSelection)
+	{
+		if (!lines)
+		{
+			lines = new UICrossLines (this, UICrossLines::kDragStyle, crosslineBackgroundColor, crosslineForegroundColor);
+			overlayView->addView (lines);
+		}
+		return onDragMove (drag, where, buttons);
+	}
+	return DragOperation::None;
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIEditView::onDragLeave (IDataPackage* drag, CPoint where, CButtonState buttons)
 {
 	if (dragSelection)
 	{
 		dragSelection->forget ();
 		dragSelection = nullptr;
 	}
-	if (editing)
+	if (highlightView)
 	{
-		if (highlightView)
-		{
-			highlightView->setHighlightView (nullptr);
-		}
-		if (lines)
-		{
-			overlayView->removeView (lines);
-			lines = nullptr;
-		}
-		getFrame ()->setCursor (kCursorNotAllowed);
+		highlightView->setHighlightView (nullptr);
 	}
-	else
-		CViewContainer::onDragLeave (drag, where);
+	if (lines)
+	{
+		overlayView->removeView (lines);
+		lines = nullptr;
+	}
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIEditView::onDragMove (IDataPackage* drag, const CPoint& where)
+DragOperation UIEditView::onDragMove (IDataPackage* drag, CPoint where, CButtonState buttons)
 {
 	if (editing)
 	{
@@ -1217,11 +1206,11 @@ void UIEditView::onDragMove (IDataPackage* drag, const CPoint& where)
 					where2.offset (-visibleRect.left, -visibleRect.top);
 					highlightView->setHighlightView (getContainerAt (where2, GetViewOptions ().deep ()));
 				}
+				return DragOperation::Copy;
 			}
 		}
 	}
-	else
-		CViewContainer::onDragMove (drag, where);
+	return DragOperation::None;
 }
 
 //-----------------------------------------------------------------------------

@@ -11,6 +11,7 @@
 
 #include "../../lib/cbitmap.h"
 #include "../../lib/ccolor.h"
+#include "../../lib/dragging.h"
 
 namespace VSTGUI {
 class UIUndoManager;
@@ -25,7 +26,7 @@ namespace UIEditViewInternal {
 } // namespace UIEditViewInternal
 
 //----------------------------------------------------------------------------------------------------
-class UIEditView : public CViewContainer
+class UIEditView : public CViewContainer, public IDropTarget
 {
 public:
 	UIEditView (const CRect& size, UIDescription* uidescription);
@@ -87,10 +88,12 @@ protected:
 
 	void startDrag (CPoint& where);
 	UISelection* getSelectionOutOfDrag (IDataPackage* drag);
-	bool onDrop (IDataPackage* drag, const CPoint& where) override;
-	void onDragEnter (IDataPackage* drag, const CPoint& where) override;
-	void onDragLeave (IDataPackage* drag, const CPoint& where) override;
-	void onDragMove (IDataPackage* drag, const CPoint& where) override;
+
+	SharedPointer<IDropTarget> getDropTarget () override;
+	bool onDrop (IDataPackage* drag, CPoint pos, CButtonState buttons) override;
+	DragOperation onDragEnter (IDataPackage* drag, CPoint pos, CButtonState buttons) override;
+	void onDragLeave (IDataPackage* drag, CPoint pos, CButtonState buttons) override;
+	DragOperation onDragMove (IDataPackage* drag, CPoint pos, CButtonState buttons) override;
 
 	void draw (CDrawContext *pContext) override;
 	void drawRect (CDrawContext *pContext, const CRect& updateRect) override;

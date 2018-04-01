@@ -3,6 +3,7 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "documentcontroller.h"
+#include "startupcontroller.h"
 #include "vstgui/standalone/include/helpers/appdelegate.h"
 #include "vstgui/standalone/include/helpers/menubuilder.h"
 #include "vstgui/standalone/include/helpers/windowlistener.h"
@@ -21,7 +22,8 @@ using namespace VSTGUI::Standalone::Application;
 //------------------------------------------------------------------------
 class ImageStitcherAppDelegate : public DelegateAdapter,
                                  public ICommandHandler,
-                                 public MenuBuilderAdapter
+                                 public MenuBuilderAdapter,
+                                 public WindowListenerAdapter
 {
 public:
 	ImageStitcherAppDelegate ()
@@ -38,6 +40,7 @@ public:
 				if (auto controller = DocumentWindowController::make (docContext))
 				{
 					controller->showWindow ();
+					controller->registerWindowListener (this);
 				}
 			}
 		}
@@ -55,7 +58,15 @@ public:
 
 		if (app.getWindows ().empty ())
 		{
-			doNewDocumentCommand ();
+			showStartupController ();
+		}
+	}
+
+	void onClosed (const IWindow& window) override
+	{
+		if (IApplication::instance ().getWindows ().empty ())
+		{
+			showStartupController ();
 		}
 	}
 
@@ -65,12 +76,11 @@ public:
 		if (auto controller = DocumentWindowController::make (docContext))
 		{
 			controller->showWindow ();
+			controller->registerWindowListener (this);
 
-			controller->doSaveAs ([controller] (bool success) {
+			controller->doSaveAs ([this, controller] (bool success) {
 				if (!success)
-				{
 					controller->closeWindow ();
-				}
 			});
 		}
 	}
@@ -81,11 +91,10 @@ public:
 		if (auto controller = DocumentWindowController::make (docContext))
 		{
 			controller->showWindow ();
-			controller->doOpenDocument ([controller] (bool success) {
+			controller->registerWindowListener (this);
+			controller->doOpenDocument ([this, controller] (bool success) {
 				if (!success)
-				{
 					controller->closeWindow ();
-				}
 			});
 		}
 	}
@@ -143,3 +152,4 @@ static Init gAppDelegate (std::make_unique<ImageStitcherAppDelegate> ());
 //------------------------------------------------------------------------
 } // ImageStitcher
 } // VSTGUI
+

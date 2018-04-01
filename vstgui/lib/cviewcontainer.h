@@ -152,10 +152,7 @@ public:
 	virtual void findSingleTouchEventTarget (ITouchEvent::Touch& event);
 #endif
 
-	bool onDrop (IDataPackage* drag, const CPoint& where) override;
-	void onDragEnter (IDataPackage* drag, const CPoint& where) override;
-	void onDragLeave (IDataPackage* drag, const CPoint& where) override;
-	void onDragMove (IDataPackage* drag, const CPoint& where) override;
+	SharedPointer<IDropTarget> getDropTarget () override;
 
 	void looseFocus () override;
 	void takeFocus () override;
@@ -255,9 +252,6 @@ protected:
 	const ViewList& getChildren () const;
 private:
 	void clearMouseDownView ();
-	void setDragView (CView* view);
-	CView* getDragView () const;
-	void clearDragView ();
 	CRect getLastDrawnFocus () const;
 	void setLastDrawnFocus (CRect r);
 

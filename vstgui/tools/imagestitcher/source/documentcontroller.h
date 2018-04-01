@@ -47,7 +47,8 @@ public:
 
 	void showWindow ();
 	void closeWindow ();
-
+	void registerWindowListener (Standalone::IWindowListener* listener);
+	
 	void doSaveAs (std::function<void(bool saved)>&& customAction = [] (bool) {});
 	void doOpenDocument (std::function<void(bool saved)>&& customAction = [] (bool) {});
 

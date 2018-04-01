@@ -9,6 +9,7 @@
 #include "../cdrawcontext.h"
 #include "../cframe.h"
 #include "../idatapackage.h"
+#include "../dragging.h"
 #include <string>
 
 namespace VSTGUI {
@@ -109,7 +110,7 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class ColorView : public CControl
+class ColorView : public CControl, public IDropTarget
 {
 public:
 	ColorView (const CRect& r, const CColor& initialColor, IControlListener* listener = nullptr, int32_t tag = -1, bool checkerBoardBack = true, const CColor& checkerBoardColor1 = kWhiteCColor, const CColor& checkerBoardColor2 = kBlackCColor)
@@ -206,7 +207,9 @@ public:
 		return false;
 	}
 
-	bool onDrop (IDataPackage* drag, const CPoint& where) override
+	SharedPointer<IDropTarget> getDropTarget () override { return this; }
+
+	bool onDrop (IDataPackage* drag, CPoint pos, CButtonState buttons) override
 	{
 		CColor color;
 		if (dragContainerHasColor (drag, &color))
@@ -218,21 +221,26 @@ public:
 		return false;
 	}
 	
-	void onDragEnter (IDataPackage* drag, const CPoint& where) override
+	DragOperation onDragEnter (IDataPackage* drag, CPoint pos, CButtonState buttons) override
 	{
-		if (dragContainerHasColor (drag, nullptr))
-			getFrame ()->setCursor (kCursorCopy);
-		else
-			getFrame ()->setCursor (kCursorNotAllowed);
+		dragOperation =
+		    dragContainerHasColor (drag, nullptr) ? DragOperation::Copy : DragOperation::None;
+		return dragOperation;
 	}
-	
-	void onDragLeave (IDataPackage* drag, const CPoint& where) override
+
+	DragOperation onDragMove (IDataPackage* drag, CPoint pos, CButtonState buttons) override
+	{
+		return dragOperation;
+	}
+
+	void onDragLeave (IDataPackage* drag, CPoint pos, CButtonState buttons) override
 	{
 		getFrame ()->setCursor (kCursorNotAllowed);
 	}
 	
 	CLASS_METHODS(ColorView, CControl)
 protected:
+	DragOperation dragOperation {DragOperation::None};
 	CColor color;
 	CColor checkerBoardColor1;
 	CColor checkerBoardColor2;
@@ -383,7 +391,7 @@ CColorChooser::CColorChooser (IColorChooserDelegate* delegate, const CColor& ini
 	newSize.right = colorView->getViewSize ().right+2;
 
 	setAutosizingEnabled (false);
-	setViewSize (newSize);	
+	setViewSize (newSize);
 	setMouseableArea (newSize);
 	setAutosizingEnabled (true);
 
@@ -608,4 +616,3 @@ void CColorChooser::updateState ()
 }
 
 } // namespace
-

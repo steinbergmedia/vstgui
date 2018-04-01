@@ -233,10 +233,10 @@ protected:
 	CMouseEventResult platformOnMouseUp (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult platformOnMouseExited (CPoint& where, const CButtonState& buttons) override;
 	bool platformOnMouseWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons) override;
-	bool platformOnDrop (IDataPackage* drag, const CPoint& where) override;
-	void platformOnDragEnter (IDataPackage* drag, const CPoint& where) override;
-	void platformOnDragLeave (IDataPackage* drag, const CPoint& where) override;
-	void platformOnDragMove (IDataPackage* drag, const CPoint& where) override;
+	DragOperation platformOnDragEnter (IDataPackage* dragData, CPoint pos, CButtonState buttons) override;
+	DragOperation platformOnDragMove (IDataPackage* dragData, CPoint pos, CButtonState buttons) override;
+	void platformOnDragLeave (IDataPackage* dragData, CPoint pos, CButtonState buttons) override;
+	bool platformOnDrop (IDataPackage* dragData, CPoint pos, CButtonState buttons) override;
 	bool platformOnKeyDown (VstKeyCode& keyCode) override;
 	bool platformOnKeyUp (VstKeyCode& keyCode) override;
 	void platformOnActivate (bool state) override;

@@ -201,6 +201,13 @@ void DocumentWindowController::closeWindow ()
 }
 
 //------------------------------------------------------------------------
+void DocumentWindowController::registerWindowListener (IWindowListener* listener)
+{
+	if (window)
+		window->registerWindowListener (listener);
+}
+
+//------------------------------------------------------------------------
 UIDesc::ModelBindingPtr DocumentWindowController::createModelBinding ()
 {
 	auto binding = UIDesc::ModelBindingCallbacks::make ();

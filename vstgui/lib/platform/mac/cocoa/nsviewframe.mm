@@ -517,11 +517,16 @@ static NSDragOperation VSTGUI_NSView_draggingEntered (id self, SEL _cmd, id send
 
 	CPoint where;
 	nsViewGetCurrentMouseLocation (self, where);
+	NSUInteger modifiers = [NSEvent modifierFlags];
+	CButtonState buttons = 0;
+	mapModifiers (modifiers, buttons);
 
-	getNSViewFrame (self)->setMouseCursor (kCursorNotAllowed);
+	auto result = frame->getFrame ()->platformOnDragEnter (frame->getDragDataPackage (), where, buttons);
+	if (result == DragOperation::Copy)
+		return NSDragOperationCopy;
+	if (result == DragOperation::Move)
+		return NSDragOperationMove;
 
-	frame->getFrame ()->platformOnDragEnter (frame->getDragDataPackage (), where);
-	
 	return NSDragOperationGeneric;
 }
 
@@ -534,9 +539,19 @@ static NSDragOperation VSTGUI_NSView_draggingUpdated (id self, SEL _cmd, id send
 
 	CPoint where;
 	nsViewGetCurrentMouseLocation (self, where);
-	frame->getFrame ()->platformOnDragMove (frame->getDragDataPackage (), where);
+	NSUInteger modifiers = [NSEvent modifierFlags];
+	CButtonState buttons = 0;
+	mapModifiers (modifiers, buttons);
 
-	return NSDragOperationGeneric;
+	auto result = frame->getFrame ()->platformOnDragMove (frame->getDragDataPackage (), where, buttons);
+	if (result == DragOperation::Copy)
+		return NSDragOperationCopy;
+	if (result == DragOperation::Move)
+		return NSDragOperationMove;
+
+	frame->setMouseCursor (kCursorNotAllowed);
+
+	return NSDragOperationNone;
 }
 
 //------------------------------------------------------------------------------------
@@ -548,10 +563,14 @@ static void VSTGUI_NSView_draggingExited (id self, SEL _cmd, id sender)
 
 	CPoint where;
 	nsViewGetCurrentMouseLocation (self, where);
-	frame->getFrame ()->platformOnDragLeave (frame->getDragDataPackage (), where);
-	[[NSCursor arrowCursor] set];
+	NSUInteger modifiers = [NSEvent modifierFlags];
+	CButtonState buttons = 0;
+	mapModifiers (modifiers, buttons);
 
+	frame->getFrame ()->platformOnDragLeave (frame->getDragDataPackage (), where, buttons);
 	frame->setDragDataPackage (nullptr);
+
+	[[NSCursor arrowCursor] set]; // we may should remember the cursor via [NSCursor currentCursor]
 }
 
 //------------------------------------------------------------------------------------
@@ -563,7 +582,11 @@ static BOOL VSTGUI_NSView_performDragOperation (id self, SEL _cmd, id sender)
 
 	CPoint where;
 	nsViewGetCurrentMouseLocation (self, where);
-	bool result = frame->getFrame ()->platformOnDrop (frame->getDragDataPackage (), where);
+	NSUInteger modifiers = [NSEvent modifierFlags];
+	CButtonState buttons = 0;
+	mapModifiers (modifiers, buttons);
+
+	bool result = frame->getFrame ()->platformOnDrop (frame->getDragDataPackage (), where, buttons);
 	frame->setMouseCursor (kCursorDefault);
 	frame->setDragDataPackage (nullptr);
 	return result;
@@ -623,12 +646,12 @@ static void VSTGUI_NSView_draggingSessionEndedAtPoint (id self, SEL _cmd, NSDrag
 		return;
 	if (auto session = frame->getDraggingSession ())
 	{
-		DragResult result;
+		DragOperation result;
 		switch (operation)
 		{
-			case NSDragOperationNone: result = kDragRefused; break;
-			case NSDragOperationMove: result = kDragMoved; break;
-			default: result = kDragCopied; break;
+			case NSDragOperationNone: result = DragOperation::None; break;
+			case NSDragOperationMove: result = DragOperation::Move; break;
+			default: result = DragOperation::Copy; break;
 		}
 		auto r = [[self window] convertRectFromScreen:{position, NSMakeSize (0, 0)}];
 		auto pos = pointFromNSPoint ([self convertPoint:r.origin fromView:nil]);

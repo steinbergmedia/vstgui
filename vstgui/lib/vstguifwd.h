@@ -84,6 +84,8 @@ enum DragResult {
 	kDragError = -1
 };
 
+enum class DragOperation;
+
 // simple structs
 struct CColor;
 struct CPoint;
@@ -113,6 +115,8 @@ class ISplitViewSeparatorDrawer;
 class IScrollbarDrawer;
 class IControlListener;
 class IDragCallback;
+class IDraggingSession;
+class IDropTarget;
 
 // classes
 class CBitmap;

@@ -8,6 +8,8 @@ set(${TargetName}_sources
   source/documentcontroller.h
   source/imageframesview.cpp
   source/imageframesview.h
+  source/startupcontroller.cpp
+  source/startupcontroller.h
 )
 
 if(CMAKE_HOST_APPLE)
@@ -28,6 +30,7 @@ if(CMAKE_HOST_APPLE)
   )
   set(${TargetName}_RESOURCES
     "resource/Window.uidesc"
+    "resource/StartupWindow.uidesc"
   )
   set_source_files_properties(${${TargetName}_RESOURCES} PROPERTIES
     MACOSX_PACKAGE_LOCATION Resources

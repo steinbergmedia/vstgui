@@ -6,6 +6,7 @@
 #include "cvstguitimer.h"
 #include "cdrawcontext.h"
 #include "cframe.h"
+#include "dragging.h"
 #include "controls/cscrollbar.h"
 #include <cmath>
 
@@ -31,15 +32,46 @@ public:
 
 	bool isDirty () const override;
 
-	void onDragMove (IDataPackage* drag, const CPoint& where) override;
 	void setAutoDragScroll (bool state) { autoDragScroll = state; }
 
 	bool attached (CView* parent) override;
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 
+	SharedPointer<IDropTarget> getDropTarget () override;
+	void onDragMove (CPoint where);
+
 	CLASS_METHODS(CScrollContainer, CViewContainer)
 //-----------------------------------------------------------------------------
 protected:
+	struct DropTarget : public IDropTarget, public NonAtomicReferenceCounted
+	{
+		DropTarget (CScrollContainer* scrollContainer, SharedPointer<IDropTarget>&& parent)
+		: scrollContainer (scrollContainer), parent (std::move (parent))
+		{
+		}
+
+		DragOperation onDragEnter (IDataPackage* drag, CPoint pos, CButtonState buttons) override
+		{
+			return parent->onDragEnter (drag, pos, buttons);
+		}
+		DragOperation onDragMove (IDataPackage* drag, CPoint pos, CButtonState buttons) override
+		{
+			scrollContainer->onDragMove (pos);
+			return parent->onDragMove (drag, pos, buttons);
+		}
+		void onDragLeave (IDataPackage* drag, CPoint pos, CButtonState buttons) override
+		{
+			return parent->onDragLeave (drag, pos, buttons);
+		}
+		bool onDrop (IDataPackage* drag, CPoint pos, CButtonState buttons) override
+		{
+			return parent->onDrop (drag, pos, buttons);
+		}
+
+		CScrollContainer* scrollContainer;
+		SharedPointer<IDropTarget> parent;
+	};
+
 	bool getScrollValue (const CPoint& where, float& x, float& y);
 
 	CRect containerSize;
@@ -191,23 +223,30 @@ bool CScrollContainer::getScrollValue (const CPoint& where, float& x, float& y)
 }
 
 //-----------------------------------------------------------------------------
-void CScrollContainer::onDragMove (IDataPackage* drag, const CPoint& where)
+SharedPointer<IDropTarget> CScrollContainer::getDropTarget ()
 {
+	auto dropTarget = CViewContainer::getDropTarget ();
 	if (autoDragScroll)
 	{
-		float x, y;
-		if (getScrollValue (where, x, y))
+		return makeOwned<DropTarget> (this, std::move (dropTarget));
+	}
+	return dropTarget;
+}
+
+//-----------------------------------------------------------------------------
+void CScrollContainer::onDragMove (CPoint where)
+{
+	float x, y;
+	if (getScrollValue (where, x, y))
+	{
+		CScrollView* scrollView = static_cast<CScrollView*> (getParentView ());
+		if (scrollView)
 		{
-			CScrollView* scrollView = static_cast<CScrollView*> (getParentView ());
-			if (scrollView)
-			{
-				CRect r (getViewSize ());
-				r.offset (x, y);
-				scrollView->makeRectVisible (r);
-			}
+			CRect r (getViewSize ());
+			r.offset (x, y);
+			scrollView->makeRectVisible (r);
 		}
 	}
-	return CViewContainer::onDragMove (drag, where);
 }
 
 //-----------------------------------------------------------------------------

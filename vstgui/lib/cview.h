@@ -137,18 +137,13 @@ public:
 	/// @name Drag & Drop Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	/** \deprecated start a drag operation. See CDropSource to create the source data package */
-	VSTGUI_DEPRECATED(DragResult doDrag (IDataPackage* source, const CPoint& offset = CPoint (0, 0), CBitmap* dragBitmap = nullptr);)
 	/** start a drag operation */
 	bool doDrag (const DragDescription& dragDescription, const SharedPointer<IDragCallback>& callback = {});
-	/** called if a drag is dropped onto this view */
-	virtual bool onDrop (IDataPackage* drag, const CPoint& where) { return false; }
-	/** called if a drag is entering this view */
-	virtual void onDragEnter (IDataPackage* drag, const CPoint& where) {}
-	/** called if a drag is leaving this view */
-	virtual void onDragLeave (IDataPackage* drag, const CPoint& where) {}
-	/** called if a drag is moved inside this view */
-	virtual void onDragMove (IDataPackage* drag, const CPoint& where) {}
+	/** get the drag target for drag and drop handling */
+	virtual SharedPointer<IDropTarget> getDropTarget ();
+
+	/** \deprecated start a drag operation. See CDropSource to create the source data package */
+	VSTGUI_DEPRECATED(DragResult doDrag (IDataPackage* source, const CPoint& offset = CPoint (0, 0), CBitmap* dragBitmap = nullptr);)
 	//@}
 
 	//-----------------------------------------------------------------------------

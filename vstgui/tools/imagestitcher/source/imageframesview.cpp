@@ -318,12 +318,8 @@ CMouseEventResult ImageFramesView::onMouseMoved (CPoint& where, const CButtonSta
 				dropSource->add (indices.data (),
 				                 static_cast<uint32_t> (indices.size () * sizeof (size_t)),
 				                 IDataPackage::kBinary);
-				auto callback = makeOwned<DragCallbackFunctions> ();
-				callback->endedFunc = [this] (IDraggingSession*, CPoint, DragResult) {
-					getFrame ()->setCursor (kCursorDefault);
-				};
 				DragDescription dragDesc (dropSource);
-				doDrag (dragDesc, callback);
+				doDrag (dragDesc);
 			}
 		}
 		return kMouseEventHandled;
@@ -332,7 +328,7 @@ CMouseEventResult ImageFramesView::onMouseMoved (CPoint& where, const CButtonSta
 }
 
 //------------------------------------------------------------------------
-bool ImageFramesView::onDrop (IDataPackage* drag, const CPoint& where)
+bool ImageFramesView::onDrop (IDataPackage* drag, CPoint where, CButtonState buttons)
 {
 	if (dropIndicatorPos == -1)
 		return false;
@@ -340,8 +336,7 @@ bool ImageFramesView::onDrop (IDataPackage* drag, const CPoint& where)
 	std::vector<size_t> indices;
 	if (getIndicesFromDataPackage (drag, &indices))
 	{
-		auto frame = getFrame ();
-		auto doCopy = (frame->getCurrentMouseButtons ().getModifierState () & kAlt);
+		auto doCopy = (buttons.getModifierState () & kAlt);
 		std::vector<Path> paths;
 		for (auto index : indices)
 			paths.emplace_back (imageList->at (index).path);
@@ -388,34 +383,31 @@ bool ImageFramesView::onDrop (IDataPackage* drag, const CPoint& where)
 }
 
 //------------------------------------------------------------------------
-void ImageFramesView::onDragEnter (IDataPackage* drag, const CPoint& where)
+DragOperation ImageFramesView::onDragEnter (IDataPackage* drag, CPoint where, CButtonState buttons)
 {
 	if (getIndicesFromDataPackage (drag))
-		getFrame ()->setCursor (kCursorDefault);
+		return DragOperation::Move;
 	else if (dragHasPngImages (drag))
 	{
-		getFrame ()->setCursor (kCursorCopy);
 		dragHasImages = true;
+		return DragOperation::Copy;
 	}
-	else
-		getFrame ()->setCursor (kCursorNotAllowed);
+	return DragOperation::None;
 }
 
 //------------------------------------------------------------------------
-void ImageFramesView::onDragLeave (IDataPackage* drag, const CPoint& where)
+void ImageFramesView::onDragLeave (IDataPackage* drag, CPoint where, CButtonState buttons)
 {
-	getFrame ()->setCursor (kCursorNotAllowed);
 	dropIndicatorPos = -1;
 	dragHasImages = false;
 	invalid ();
 }
 
 //------------------------------------------------------------------------
-void ImageFramesView::onDragMove (IDataPackage* drag, const CPoint& _where)
+DragOperation ImageFramesView::onDragMove (IDataPackage* drag, CPoint where, CButtonState buttons)
 {
 	if (dragHasImages || getIndicesFromDataPackage (drag))
 	{
-		CPoint where (_where);
 		where.offset (0, rowHeight / 2);
 		auto newIndex = posToIndex (where);
 		if (newIndex != dropIndicatorPos)
@@ -423,11 +415,11 @@ void ImageFramesView::onDragMove (IDataPackage* drag, const CPoint& _where)
 			dropIndicatorPos = newIndex;
 			invalid ();
 		}
-		auto frame = getFrame ();
 		auto doCopy =
-		    dragHasImages ? true : (frame->getCurrentMouseButtons ().getModifierState () & kAlt);
-		frame->setCursor (doCopy ? kCursorCopy : kCursorDefault);
+		    dragHasImages ? true : (buttons.getModifierState () & kAlt);
+		return doCopy ? DragOperation::Copy : DragOperation::Move;
 	}
+	return DragOperation::None;
 }
 
 //------------------------------------------------------------------------

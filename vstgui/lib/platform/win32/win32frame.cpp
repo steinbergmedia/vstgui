@@ -493,8 +493,8 @@ SharedPointer<COffscreenContext> Win32Frame::createOffscreenContext (CCoord widt
 class Win32LegacyDragSupport : virtual public DragCallbackAdapter, virtual public NonAtomicReferenceCounted
 {
 public:
-	void dragEnded (IDraggingSession*, CPoint, DragResult r) final { result = r; }
-	DragResult result {kDragError};
+	void dragEnded (IDraggingSession*, CPoint, DragOperation r) final { result = r; }
+	DragOperation result {DragOperation::None};
 };
 
 //------------------------------------------------------------------------------------
@@ -505,7 +505,12 @@ DragResult Win32Frame::doDrag (IDataPackage* source, const CPoint& offset, CBitm
 	Win32DraggingSession session (this);
 	if (session.doDrag (DragDescription (source, offset, dragBitmap), &dragSupport))
 	{
-		return dragSupport.result;
+		switch (dragSupport.result)
+		{
+			case DragOperation::Copy: return kDragCopied;
+			case DragOperation::Move: return kDragMoved;
+			case DragOperation::None: return kDragRefused;
+		}
 	}
 	return kDragRefused;
 }

@@ -151,7 +151,7 @@ bool Win32DraggingSession::doDrag (const DragDescription& dragDescription, const
 	auto dropSource = new Win32DropSource ();
 	DWORD outEffect;
 
-	auto hResult = DoDragDrop (dataObject, dropSource, DROPEFFECT_COPY, &outEffect);
+	auto hResult = DoDragDrop (dataObject, dropSource, DROPEFFECT_COPY | DROPEFFECT_MOVE, &outEffect);
 	if (mouseObserver)
 		mouseObserver = nullptr;
 	if (dragBitmapWindow)
@@ -166,13 +166,13 @@ bool Win32DraggingSession::doDrag (const DragDescription& dragDescription, const
 		if (hResult == DRAGDROP_S_DROP)
 		{
 			if (outEffect == DROPEFFECT_MOVE)
-				callback->dragEnded (this, location, kDragMoved);
+				callback->dragEnded (this, location, DragOperation::Move);
 			else
-				callback->dragEnded (this, location, kDragCopied);
+				callback->dragEnded (this, location, DragOperation::Copy);
 		}
 		else
 		{
-			callback->dragEnded (this, location, kDragRefused);
+			callback->dragEnded (this, location, DragOperation::None);
 		}
 	}
 
@@ -234,14 +234,14 @@ STDMETHODIMP CDropTarget::DragEnter (IDataObject* dataObject, DWORD keyState, PO
 		dragData = new Win32DataPackage (dataObject);
 		CPoint where;
 		pFrame->getCurrentMousePosition (where);
-		pFrame->getFrame ()->platformOnDragEnter (dragData, where);
-		if ((*effect) & DROPEFFECT_COPY) 
+		CButtonState buttons;
+		pFrame->getCurrentMouseButtons (buttons);
+		auto result = pFrame->getFrame ()->platformOnDragEnter (dragData, where, buttons);
+		if (result == DragOperation::Copy)
 			*effect = DROPEFFECT_COPY;
-		else if ((*effect) & DROPEFFECT_MOVE) 
+		else if (result == DragOperation::Move)
 			*effect = DROPEFFECT_MOVE;
-		else if ((*effect) & DROPEFFECT_LINK) 
-			*effect = DROPEFFECT_LINK;
-		if (pFrame->getLastSetCursor () == kCursorNotAllowed)
+		else
 			*effect = DROPEFFECT_NONE;
 	}
 	else
@@ -256,14 +256,14 @@ STDMETHODIMP CDropTarget::DragOver (DWORD keyState, POINTL pt, DWORD* effect)
 	{
 		CPoint where;
 		pFrame->getCurrentMousePosition (where);
-		pFrame->getFrame ()->platformOnDragMove (dragData, where);
-		if ((*effect) & DROPEFFECT_COPY) 
+		CButtonState buttons;
+		pFrame->getCurrentMouseButtons (buttons);
+		auto result = pFrame->getFrame ()->platformOnDragMove (dragData, where, buttons);
+		if (result == DragOperation::Copy)
 			*effect = DROPEFFECT_COPY;
-		else if ((*effect) & DROPEFFECT_MOVE) 
+		else if (result == DragOperation::Move)
 			*effect = DROPEFFECT_MOVE;
-		else if ((*effect) & DROPEFFECT_LINK) 
-			*effect = DROPEFFECT_LINK;
-		if (pFrame->getLastSetCursor () == kCursorNotAllowed)
+		else
 			*effect = DROPEFFECT_NONE;
 	}
 	return S_OK;
@@ -276,9 +276,11 @@ STDMETHODIMP CDropTarget::DragLeave (void)
 	{
 		CPoint where;
 		pFrame->getCurrentMousePosition (where);
-		pFrame->getFrame ()->platformOnDragLeave (dragData, where);
+		CButtonState buttons;
+		pFrame->getCurrentMouseButtons (buttons);
+		pFrame->getFrame ()->platformOnDragLeave (dragData, where, buttons);
 		dragData->forget ();
-		dragData = 0;
+		dragData = nullptr;
 	}
 	return S_OK;
 }
@@ -290,9 +292,11 @@ STDMETHODIMP CDropTarget::Drop (IDataObject* dataObject, DWORD keyState, POINTL 
 	{
 		CPoint where;
 		pFrame->getCurrentMousePosition (where);
-		pFrame->getFrame ()->platformOnDrop (dragData, where);
+		CButtonState buttons;
+		pFrame->getCurrentMouseButtons (buttons);
+		pFrame->getFrame ()->platformOnDrop (dragData, where, buttons);
 		dragData->forget ();
-		dragData = 0;
+		dragData = nullptr;
 	}
 	return S_OK;
 }

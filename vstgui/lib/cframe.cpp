@@ -1,4 +1,4 @@
-// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
@@ -1506,35 +1506,35 @@ bool CFrame::platformOnMouseWheel (const CPoint &where, const CMouseWheelAxis &a
 }
 
 //-----------------------------------------------------------------------------
-bool CFrame::platformOnDrop (IDataPackage* drag, const CPoint& where)
+DragOperation CFrame::platformOnDragEnter (IDataPackage* dragData, CPoint pos, CButtonState buttons)
 {
 	Impl::PostEventHandler peh (*pImpl);
 	CollectInvalidRects cir (this);
-	return onDrop (drag, where);
+	return getDropTarget ()->onDragEnter (dragData, pos, buttons);
 }
 
 //-----------------------------------------------------------------------------
-void CFrame::platformOnDragEnter (IDataPackage* drag, const CPoint& where)
+DragOperation CFrame::platformOnDragMove (IDataPackage* dragData, CPoint pos, CButtonState buttons)
 {
 	Impl::PostEventHandler peh (*pImpl);
 	CollectInvalidRects cir (this);
-	return onDragEnter (drag, where);
+	return getDropTarget ()->onDragMove (dragData, pos, buttons);
 }
 
 //-----------------------------------------------------------------------------
-void CFrame::platformOnDragLeave (IDataPackage* drag, const CPoint& where)
+void CFrame::platformOnDragLeave (IDataPackage* dragData, CPoint pos, CButtonState buttons)
 {
 	Impl::PostEventHandler peh (*pImpl);
 	CollectInvalidRects cir (this);
-	return onDragLeave (drag, where);
+	getDropTarget ()->onDragLeave (dragData, pos, buttons);
 }
 
 //-----------------------------------------------------------------------------
-void CFrame::platformOnDragMove (IDataPackage* drag, const CPoint& where)
+bool CFrame::platformOnDrop (IDataPackage* dragData, CPoint pos, CButtonState buttons)
 {
 	Impl::PostEventHandler peh (*pImpl);
 	CollectInvalidRects cir (this);
-	return onDragMove (drag, where);
+	return getDropTarget ()->onDrop (dragData, pos, buttons);
 }
 
 //-----------------------------------------------------------------------------

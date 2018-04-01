@@ -984,6 +984,11 @@ void CView::unregisterViewListener (IViewListener* listener)
 	pImpl->viewListeners.remove (listener);
 }
 
+//-----------------------------------------------------------------------------
+SharedPointer<IDropTarget> CView::getDropTarget ()
+{
+	return nullptr;
+}
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------

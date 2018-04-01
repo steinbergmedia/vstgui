@@ -235,7 +235,7 @@ void NSViewDraggingSession::dragMoved (CPoint pos)
 }
 
 //------------------------------------------------------------------------
-void NSViewDraggingSession::dragEnded (CPoint pos, DragResult result)
+void NSViewDraggingSession::dragEnded (CPoint pos, DragOperation result)
 {
 	if (!callback)
 		return;

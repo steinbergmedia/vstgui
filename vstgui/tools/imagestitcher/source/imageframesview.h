@@ -6,13 +6,14 @@
 #include "vstgui/lib/ccolor.h"
 #include "vstgui/lib/cfont.h"
 #include "vstgui/lib/cview.h"
+#include "vstgui/lib/dragging.h"
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
 namespace ImageStitcher {
 
 //------------------------------------------------------------------------
-class ImageFramesView : public CView
+class ImageFramesView : public CView, public IDropTarget
 {
 public:
 	ImageFramesView ();
@@ -29,10 +30,11 @@ private:
 	void drawRect (CDrawContext* context, const CRect& _updateRect) override;
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
-	bool onDrop (IDataPackage* drag, const CPoint& where) override;
-	void onDragEnter (IDataPackage* drag, const CPoint& where) override;
-	void onDragLeave (IDataPackage* drag, const CPoint& where) override;
-	void onDragMove (IDataPackage* drag, const CPoint& where) override;
+	SharedPointer<IDropTarget> getDropTarget () override { return this; }
+	DragOperation onDragEnter (IDataPackage* dragData, CPoint pos, CButtonState buttons) override;
+	DragOperation onDragMove (IDataPackage* dragData, CPoint pos, CButtonState buttons) override;
+	void onDragLeave (IDataPackage* dragData, CPoint pos, CButtonState buttons) override;
+	bool onDrop (IDataPackage* dragData, CPoint pos, CButtonState buttons) override;
 
 	CColor selectionColor = MakeCColor (164, 205, 255, 255);
 	CCoord titleHeight {8};
