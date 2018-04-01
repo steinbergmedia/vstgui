@@ -5,6 +5,7 @@
 #include "vstgui/lib/cframe.h"
 #include "vstgui/lib/cscrollview.h"
 #include "vstgui/lib/dragging.h"
+#include <cassert>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {

@@ -8,6 +8,7 @@
 #include "vstgui/standalone/include/iapplication.h"
 #include "vstgui/standalone/include/iasync.h"
 #include <memory>
+#include <cassert>
 
 using namespace VSTGUI::Standalone;
 
