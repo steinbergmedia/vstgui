@@ -37,13 +37,19 @@ class DocumentWindowController : public Standalone::WindowControllerAdapter,
                                  public IDocumentListener
 {
 public:
-	static Standalone::WindowPtr makeDocWindow (const DocumentContextPtr& doc);
+	static std::shared_ptr<DocumentWindowController> make (const DocumentContextPtr& doc);
 
 	DocumentWindowController (const DocumentContextPtr& doc);
 	~DocumentWindowController () noexcept;
 
 	const DocumentContextPtr& getDoc () const noexcept { return docContext; }
 	SharedPointer<CBitmap> createStitchedBitmap ();
+
+	void showWindow ();
+	void closeWindow ();
+
+	void doSaveAs (std::function<void(bool saved)>&& customAction = [] (bool) {});
+	void doOpenDocument (std::function<void(bool saved)>&& customAction = [] (bool) {});
 
 private:
 	void onImagePathAdded (const Path& newPath, size_t index) override;
@@ -53,6 +59,7 @@ private:
 	                               const IUIDescription* uiDesc) override;
 	void onSetContentView (Standalone::IWindow& w, const SharedPointer<CFrame>& cv) override;
 	void onClosed (const Standalone::IWindow& window) override;
+	bool canClose (const Standalone::IWindow& window) override;
 	Standalone::UIDesc::ModelBindingPtr createModelBinding ();
 
 	bool canHandleCommand (const Standalone::Command& command) override;
@@ -66,8 +73,6 @@ private:
 	void doStopAnimation ();
 	void doExport ();
 	void doSave ();
-	void doSaveAs ();
-	void doOpenDocument ();
 
 	bool somethingSelected () const;
 	size_t lastSelectedPos () const;

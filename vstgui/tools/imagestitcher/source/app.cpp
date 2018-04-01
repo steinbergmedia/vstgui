@@ -9,6 +9,7 @@
 #include "vstgui/standalone/include/iapplication.h"
 #include "vstgui/standalone/include/icommand.h"
 #include "vstgui/standalone/include/iuidescwindow.h"
+#include "vstgui/uidescription/cstream.h"
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -34,9 +35,9 @@ public:
 		{
 			if (auto docContext = DocumentContext::loadDocument (path.getString ()))
 			{
-				if (auto window = DocumentWindowController::makeDocWindow (docContext))
+				if (auto controller = DocumentWindowController::make (docContext))
 				{
-					window->show ();
+					controller->showWindow ();
 				}
 			}
 		}
@@ -51,6 +52,7 @@ public:
 		app.registerCommand (Commands::SaveDocument, 's');
 		app.registerCommand (Commands::SaveDocumentAs, 'S');
 		app.registerCommand (ExportCommand, 'e');
+
 		if (app.getWindows ().empty ())
 		{
 			doNewDocumentCommand ();
@@ -60,31 +62,32 @@ public:
 	void doNewDocumentCommand ()
 	{
 		auto docContext = DocumentContext::makeEmptyDocument ();
-		if (auto window = DocumentWindowController::makeDocWindow (docContext))
+		if (auto controller = DocumentWindowController::make (docContext))
 		{
-			window->show ();
+			controller->showWindow ();
+
+			controller->doSaveAs ([controller] (bool success) {
+				if (!success)
+				{
+					controller->closeWindow ();
+				}
+			});
 		}
 	}
 
 	void doOpenDocument ()
 	{
-		auto fs = owned (CNewFileSelector::create ());
-		if (!fs)
-			return;
-		fs->setAllowMultiFileSelection (false);
-		fs->setTitle ("Choose Document");
-		fs->setDefaultExtension (imageStitchExtension);
-		fs->run ([this] (CNewFileSelector* fs) {
-			if (fs->getNumSelectedFiles () == 0)
-				return;
-			if (auto docContext = DocumentContext::loadDocument (fs->getSelectedFile (0)))
-			{
-				if (auto window = DocumentWindowController::makeDocWindow (docContext))
+		auto docContext = DocumentContext::makeEmptyDocument ();
+		if (auto controller = DocumentWindowController::make (docContext))
+		{
+			controller->showWindow ();
+			controller->doOpenDocument ([controller] (bool success) {
+				if (!success)
 				{
-					window->show ();
+					controller->closeWindow ();
 				}
-			}
-		});
+			});
+		}
 	}
 
 	bool canHandleCommand (const Command& command) override

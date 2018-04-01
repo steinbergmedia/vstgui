@@ -153,7 +153,8 @@ private:
 };
 
 //------------------------------------------------------------------------
-WindowPtr DocumentWindowController::makeDocWindow (const DocumentContextPtr& doc)
+std::shared_ptr<DocumentWindowController> DocumentWindowController::make (
+    const DocumentContextPtr& doc)
 {
 	auto controller = std::make_shared<DocumentWindowController> (doc);
 
@@ -167,7 +168,7 @@ WindowPtr DocumentWindowController::makeDocWindow (const DocumentContextPtr& doc
 	config.modelBinding = controller->createModelBinding ();
 
 	controller->window = UIDesc::makeWindow (config);
-	return controller->window;
+	return controller;
 }
 
 //------------------------------------------------------------------------
@@ -183,6 +184,20 @@ DocumentWindowController::DocumentWindowController (const DocumentContextPtr& do
 DocumentWindowController::~DocumentWindowController () noexcept
 {
 	docContext->removeListener (this);
+}
+
+//------------------------------------------------------------------------
+void DocumentWindowController::showWindow ()
+{
+	if (window)
+		window->show ();
+}
+
+//------------------------------------------------------------------------
+void DocumentWindowController::closeWindow ()
+{
+	if (window)
+		window->close ();
 }
 
 //------------------------------------------------------------------------
@@ -254,6 +269,42 @@ void DocumentWindowController::onClosed (const IWindow& w)
 }
 
 //------------------------------------------------------------------------
+bool DocumentWindowController::canClose (const IWindow&)
+{
+	if (docIsDirty)
+	{
+		AlertBoxConfig alert;
+		alert.headline = "Do you want to save the changes made to the document \"";
+		alert.headline += getDisplayFilename (docContext->getPath ());
+		alert.headline += "\"?";
+		alert.description = "Your changes will be lost if you don't save them.";
+		alert.defaultButton = "Save";
+		alert.secondButton = "Cancel";
+		alert.thirdButton = "Don't Save";
+		auto result = IApplication::instance ().showAlertBox (alert);
+		switch (result)
+		{
+			case AlertResult::DefaultButton:
+			{
+				if (pathIsAbsolute (docContext->getPath ()))
+				{
+					doSave ();
+					return true;
+				}
+				doSaveAs ([this] (bool success) {
+					if (success)
+						window->close ();
+				});
+				return false;
+			}
+			case AlertResult::SecondButton: return false;
+			default: return true;
+		}
+	}
+	return true;
+}
+
+//------------------------------------------------------------------------
 static bool exportImage (const SharedPointer<CBitmap>& image, UTF8StringPtr path)
 {
 	auto platformBitmap = image->getPlatformBitmap ();
@@ -301,7 +352,7 @@ void DocumentWindowController::doSave ()
 }
 
 //------------------------------------------------------------------------
-void DocumentWindowController::doSaveAs ()
+void DocumentWindowController::doSaveAs (std::function<void (bool saved)>&& customAction)
 {
 	auto fs =
 	    owned (CNewFileSelector::create (contentView, CNewFileSelector::Style::kSelectSaveFile));
@@ -311,15 +362,21 @@ void DocumentWindowController::doSaveAs ()
 	fs->setDefaultExtension (imageStitchExtension);
 	fs->setInitialDirectory (docContext->getPath ().data ());
 	fs->setDefaultSaveName (getDisplayFilename (docContext->getPath ()).data ());
-	fs->run ([this] (CNewFileSelector* fs) {
+	fs->run ([this, customAction = std::move (customAction)] (CNewFileSelector * fs) {
 		if (fs->getNumSelectedFiles () == 0)
+		{
+			customAction (false);
 			return;
+		}
 		docContext->setPath (fs->getSelectedFile (0));
 		if (docContext->save ())
 		{
 			window->setTitle (getDisplayFilename (docContext->getPath ()));
 			docIsDirty = false;
+			customAction (true);
 		}
+		else
+			customAction (false);
 	});
 }
 
@@ -343,16 +400,19 @@ void DocumentWindowController::onImagePathRemoved (const Path& newPath, size_t i
 }
 
 //------------------------------------------------------------------------
-void DocumentWindowController::doOpenDocument ()
+void DocumentWindowController::doOpenDocument (std::function<void (bool saved)>&& customAction)
 {
 	auto fs = owned (CNewFileSelector::create (contentView));
 	if (!fs)
 		return;
 	fs->setTitle ("Choose Document");
 	fs->setDefaultExtension (imageStitchExtension);
-	fs->run ([this] (CNewFileSelector* fs) {
+	fs->run ([this, customAction = std::move (customAction)] (CNewFileSelector * fs) {
 		if (fs->getNumSelectedFiles () == 0)
+		{
+			customAction (false);
 			return;
+		}
 		if (auto newDocContext = DocumentContext::loadDocument (fs->getSelectedFile (0)))
 		{
 			docContext->replaceDocument (newDocContext->getDocument ());
@@ -360,7 +420,11 @@ void DocumentWindowController::doOpenDocument ()
 				onImagePathAdded (docContext->getImagePaths ()[index], index);
 			setDirty ();
 			window->setTitle (getDisplayFilename (docContext->getPath ()));
+			docIsDirty = false;
+			customAction (true);
 		}
+		else
+			customAction (false);
 	});
 }
 
@@ -526,8 +590,6 @@ bool DocumentWindowController::canHandleCommand (const Command& command)
 		return !imageList.empty ();
 	if (command == Commands::SaveDocument)
 		return !imageList.empty () && pathIsAbsolute (docContext->getPath ());
-	if (command == Commands::OpenDocument)
-		return true;
 	return false;
 }
 
@@ -557,11 +619,6 @@ bool DocumentWindowController::handleCommand (const Command& command)
 	if (command == Commands::SaveDocumentAs)
 	{
 		doSaveAs ();
-		return true;
-	}
-	if (command == Commands::OpenDocument)
-	{
-		doOpenDocument ();
 		return true;
 	}
 	return false;
