@@ -1506,35 +1506,35 @@ bool CFrame::platformOnMouseWheel (const CPoint &where, const CMouseWheelAxis &a
 }
 
 //-----------------------------------------------------------------------------
-DragOperation CFrame::platformOnDragEnter (IDataPackage* dragData, CPoint pos, CButtonState buttons)
+DragOperation CFrame::platformOnDragEnter (DragEventData data)
 {
 	Impl::PostEventHandler peh (*pImpl);
 	CollectInvalidRects cir (this);
-	return getDropTarget ()->onDragEnter (dragData, pos, buttons);
+	return getDropTarget ()->onDragEnter (data);
 }
 
 //-----------------------------------------------------------------------------
-DragOperation CFrame::platformOnDragMove (IDataPackage* dragData, CPoint pos, CButtonState buttons)
+DragOperation CFrame::platformOnDragMove (DragEventData data)
 {
 	Impl::PostEventHandler peh (*pImpl);
 	CollectInvalidRects cir (this);
-	return getDropTarget ()->onDragMove (dragData, pos, buttons);
+	return getDropTarget ()->onDragMove (data);
 }
 
 //-----------------------------------------------------------------------------
-void CFrame::platformOnDragLeave (IDataPackage* dragData, CPoint pos, CButtonState buttons)
+void CFrame::platformOnDragLeave (DragEventData data)
 {
 	Impl::PostEventHandler peh (*pImpl);
 	CollectInvalidRects cir (this);
-	getDropTarget ()->onDragLeave (dragData, pos, buttons);
+	getDropTarget ()->onDragLeave (data);
 }
 
 //-----------------------------------------------------------------------------
-bool CFrame::platformOnDrop (IDataPackage* dragData, CPoint pos, CButtonState buttons)
+bool CFrame::platformOnDrop (DragEventData data)
 {
 	Impl::PostEventHandler peh (*pImpl);
 	CollectInvalidRects cir (this);
-	return getDropTarget ()->onDrop (dragData, pos, buttons);
+	return getDropTarget ()->onDrop (data);
 }
 
 //-----------------------------------------------------------------------------

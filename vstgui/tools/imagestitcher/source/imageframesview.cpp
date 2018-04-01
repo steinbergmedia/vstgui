@@ -328,15 +328,15 @@ CMouseEventResult ImageFramesView::onMouseMoved (CPoint& where, const CButtonSta
 }
 
 //------------------------------------------------------------------------
-bool ImageFramesView::onDrop (IDataPackage* drag, CPoint where, CButtonState buttons)
+bool ImageFramesView::onDrop (DragEventData eventData)
 {
 	if (dropIndicatorPos == -1)
 		return false;
 	size_t dropPosition = static_cast<size_t> (dropIndicatorPos);
 	std::vector<size_t> indices;
-	if (getIndicesFromDataPackage (drag, &indices))
+	if (getIndicesFromDataPackage (eventData.drag, &indices))
 	{
-		auto doCopy = (buttons.getModifierState () & kAlt);
+		auto doCopy = (eventData.buttons.getModifierState () & kAlt);
 		std::vector<Path> paths;
 		for (auto index : indices)
 			paths.emplace_back (imageList->at (index).path);
@@ -366,7 +366,7 @@ bool ImageFramesView::onDrop (IDataPackage* drag, CPoint where, CButtonState but
 	}
 	else
 	{
-		auto imagePaths = getDragPngImagePaths (drag);
+		auto imagePaths = getDragPngImagePaths (eventData.drag);
 		if (!imagePaths.empty ())
 		{
 			for (auto& path : imagePaths)
@@ -383,11 +383,11 @@ bool ImageFramesView::onDrop (IDataPackage* drag, CPoint where, CButtonState but
 }
 
 //------------------------------------------------------------------------
-DragOperation ImageFramesView::onDragEnter (IDataPackage* drag, CPoint where, CButtonState buttons)
+DragOperation ImageFramesView::onDragEnter (DragEventData eventData)
 {
-	if (getIndicesFromDataPackage (drag))
+	if (getIndicesFromDataPackage (eventData.drag))
 		return DragOperation::Move;
-	else if (dragHasPngImages (drag))
+	else if (dragHasPngImages (eventData.drag))
 	{
 		dragHasImages = true;
 		return DragOperation::Copy;
@@ -396,7 +396,7 @@ DragOperation ImageFramesView::onDragEnter (IDataPackage* drag, CPoint where, CB
 }
 
 //------------------------------------------------------------------------
-void ImageFramesView::onDragLeave (IDataPackage* drag, CPoint where, CButtonState buttons)
+void ImageFramesView::onDragLeave (DragEventData eventData)
 {
 	dropIndicatorPos = -1;
 	dragHasImages = false;
@@ -404,19 +404,19 @@ void ImageFramesView::onDragLeave (IDataPackage* drag, CPoint where, CButtonStat
 }
 
 //------------------------------------------------------------------------
-DragOperation ImageFramesView::onDragMove (IDataPackage* drag, CPoint where, CButtonState buttons)
+DragOperation ImageFramesView::onDragMove (DragEventData eventData)
 {
-	if (dragHasImages || getIndicesFromDataPackage (drag))
+	if (dragHasImages || getIndicesFromDataPackage (eventData.drag))
 	{
-		where.offset (0, rowHeight / 2);
-		auto newIndex = posToIndex (where);
+		eventData.pos.offset (0, rowHeight / 2);
+		auto newIndex = posToIndex (eventData.pos);
 		if (newIndex != dropIndicatorPos)
 		{
 			dropIndicatorPos = newIndex;
 			invalid ();
 		}
 		auto doCopy =
-		    dragHasImages ? true : (buttons.getModifierState () & kAlt);
+		    dragHasImages ? true : (eventData.buttons.getModifierState () & kAlt);
 		return doCopy ? DragOperation::Copy : DragOperation::Move;
 	}
 	return DragOperation::None;

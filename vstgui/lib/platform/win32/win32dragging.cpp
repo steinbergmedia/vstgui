@@ -232,11 +232,12 @@ STDMETHODIMP CDropTarget::DragEnter (IDataObject* dataObject, DWORD keyState, PO
 	if (dataObject && pFrame)
 	{
 		dragData = new Win32DataPackage (dataObject);
-		CPoint where;
-		pFrame->getCurrentMousePosition (where);
-		CButtonState buttons;
-		pFrame->getCurrentMouseButtons (buttons);
-		auto result = pFrame->getFrame ()->platformOnDragEnter (dragData, where, buttons);
+
+		DragEventData data;
+		data.drag = dragData;
+		pFrame->getCurrentMousePosition (data.pos);
+		pFrame->getCurrentMouseButtons (data.buttons);
+		auto result = pFrame->getFrame ()->platformOnDragEnter (data);
 		if (result == DragOperation::Copy)
 			*effect = DROPEFFECT_COPY;
 		else if (result == DragOperation::Move)
@@ -254,11 +255,11 @@ STDMETHODIMP CDropTarget::DragOver (DWORD keyState, POINTL pt, DWORD* effect)
 {
 	if (dragData && pFrame)
 	{
-		CPoint where;
-		pFrame->getCurrentMousePosition (where);
-		CButtonState buttons;
-		pFrame->getCurrentMouseButtons (buttons);
-		auto result = pFrame->getFrame ()->platformOnDragMove (dragData, where, buttons);
+		DragEventData data;
+		data.drag = dragData;
+		pFrame->getCurrentMousePosition (data.pos);
+		pFrame->getCurrentMouseButtons (data.buttons);
+		auto result = pFrame->getFrame ()->platformOnDragMove (data);
 		if (result == DragOperation::Copy)
 			*effect = DROPEFFECT_COPY;
 		else if (result == DragOperation::Move)
@@ -274,11 +275,11 @@ STDMETHODIMP CDropTarget::DragLeave (void)
 {
 	if (dragData && pFrame)
 	{
-		CPoint where;
-		pFrame->getCurrentMousePosition (where);
-		CButtonState buttons;
-		pFrame->getCurrentMouseButtons (buttons);
-		pFrame->getFrame ()->platformOnDragLeave (dragData, where, buttons);
+		DragEventData data;
+		data.drag = dragData;
+		pFrame->getCurrentMousePosition (data.pos);
+		pFrame->getCurrentMouseButtons (data.buttons);
+		pFrame->getFrame ()->platformOnDragLeave (data);
 		dragData->forget ();
 		dragData = nullptr;
 	}
@@ -290,11 +291,11 @@ STDMETHODIMP CDropTarget::Drop (IDataObject* dataObject, DWORD keyState, POINTL 
 {
 	if (dragData && pFrame)
 	{
-		CPoint where;
-		pFrame->getCurrentMousePosition (where);
-		CButtonState buttons;
-		pFrame->getCurrentMouseButtons (buttons);
-		pFrame->getFrame ()->platformOnDrop (dragData, where, buttons);
+		DragEventData data;
+		data.drag = dragData;
+		pFrame->getCurrentMousePosition (data.pos);
+		pFrame->getCurrentMouseButtons (data.buttons);
+		pFrame->getFrame ()->platformOnDrop (data);
 		dragData->forget ();
 		dragData = nullptr;
 	}

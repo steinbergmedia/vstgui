@@ -56,29 +56,28 @@ struct CViewContainerDropTarget : public IDropTarget, public NonAtomicReferenceC
 		return where2;
 	}
 
-	DragOperation onDragEnter (IDataPackage* dragData, CPoint pos, CButtonState buttons) final
+	DragOperation onDragEnter (DragEventData data) final
 	{
 		assert (dropTarget == nullptr);
 
-		return onDragMove (dragData, pos, buttons);
+		return onDragMove (data);
 	}
 
-	DragOperation onDragMove (IDataPackage* dragData, CPoint pos, CButtonState buttons) final
+	DragOperation onDragMove (DragEventData data) final
 	{
-		auto where2 = getLocalPos (pos);
-
-		CView* view =
-		    container->getViewAt (pos, GetViewOptions ().mouseEnabled ().includeViewContainer ());
+		CView* view = container->getViewAt (
+		    data.pos, GetViewOptions ().mouseEnabled ().includeViewContainer ());
+		data.pos = getLocalPos (data.pos);
 		if (view == currentDragView)
 		{
 			if (dropTarget)
-				return dropTarget->onDragMove (dragData, where2, buttons);
+				return dropTarget->onDragMove (data);
 			return DragOperation::None;
 		}
 		if (currentDragView)
 		{
 			if (dropTarget)
-				dropTarget->onDragLeave (dragData, where2, buttons);
+				dropTarget->onDragLeave (data);
 			dropTarget = nullptr;
 			currentDragView = nullptr;
 		}
@@ -87,31 +86,33 @@ struct CViewContainerDropTarget : public IDropTarget, public NonAtomicReferenceC
 			currentDragView = view;
 			if ((dropTarget = currentDragView->getDropTarget ()))
 			{
-				dropTarget->onDragEnter (dragData, where2, buttons);
-				return dropTarget->onDragMove (dragData, where2, buttons);
+				dropTarget->onDragEnter (data);
+				return dropTarget->onDragMove (data);
 			}
 		}
 		return DragOperation::None;
 	}
 
-	void onDragLeave (IDataPackage* dragData, CPoint pos, CButtonState buttons) final
+	void onDragLeave (DragEventData data) final
 	{
 		if (currentDragView)
 		{
 			if (dropTarget)
 			{
-				dropTarget->onDragLeave (dragData, getLocalPos (pos), buttons);
+				data.pos = getLocalPos (data.pos);
+				dropTarget->onDragLeave (data);
 				dropTarget = nullptr;
 			}
 			currentDragView = nullptr;
 		}
 	}
 
-	bool onDrop (IDataPackage* dragData, CPoint pos, CButtonState buttons) final
+	bool onDrop (DragEventData data) final
 	{
 		if (dropTarget)
 		{
-			auto result = dropTarget->onDrop (dragData, getLocalPos (pos), buttons);
+			data.pos = getLocalPos (data.pos);
+			auto result = dropTarget->onDrop (data);
 			dropTarget = nullptr;
 			currentDragView = nullptr;
 			return result;

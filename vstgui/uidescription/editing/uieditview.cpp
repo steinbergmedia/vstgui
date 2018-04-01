@@ -1101,7 +1101,7 @@ SharedPointer<IDropTarget> UIEditView::getDropTarget ()
 }
 
 //----------------------------------------------------------------------------------------------------
-bool UIEditView::onDrop (IDataPackage* drag, CPoint where, CButtonState buttons)
+bool UIEditView::onDrop (DragEventData data)
 {
 	if (lines)
 	{
@@ -1114,7 +1114,7 @@ bool UIEditView::onDrop (IDataPackage* drag, CPoint where, CButtonState buttons)
 		{
 			highlightView->setHighlightView (nullptr);
 		}
-		CPoint where2 (where);
+		CPoint where2 (data.pos);
 		where2.offset (dragSelection->getDragOffset ().x, dragSelection->getDragOffset ().y);
 		where2.offset (-getViewSize ().left, -getViewSize ().top);
 		if (grid)
@@ -1143,9 +1143,9 @@ bool UIEditView::onDrop (IDataPackage* drag, CPoint where, CButtonState buttons)
 }
 
 //----------------------------------------------------------------------------------------------------
-DragOperation UIEditView::onDragEnter (IDataPackage* drag, CPoint where, CButtonState buttons)
+DragOperation UIEditView::onDragEnter (DragEventData data)
 {
-	dragSelection = getSelectionOutOfDrag (drag);
+	dragSelection = getSelectionOutOfDrag (data.drag);
 	if (dragSelection)
 	{
 		if (!lines)
@@ -1153,13 +1153,13 @@ DragOperation UIEditView::onDragEnter (IDataPackage* drag, CPoint where, CButton
 			lines = new UICrossLines (this, UICrossLines::kDragStyle, crosslineBackgroundColor, crosslineForegroundColor);
 			overlayView->addView (lines);
 		}
-		return onDragMove (drag, where, buttons);
+		return onDragMove (data);
 	}
 	return DragOperation::None;
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIEditView::onDragLeave (IDataPackage* drag, CPoint where, CButtonState buttons)
+void UIEditView::onDragLeave (DragEventData data)
 {
 	if (dragSelection)
 	{
@@ -1178,7 +1178,7 @@ void UIEditView::onDragLeave (IDataPackage* drag, CPoint where, CButtonState but
 }
 
 //----------------------------------------------------------------------------------------------------
-DragOperation UIEditView::onDragMove (IDataPackage* drag, CPoint where, CButtonState buttons)
+DragOperation UIEditView::onDragMove (DragEventData data)
 {
 	if (editing)
 	{
@@ -1186,7 +1186,7 @@ DragOperation UIEditView::onDragMove (IDataPackage* drag, CPoint where, CButtonS
 		{
 			if (dragSelection)
 			{
-				CPoint where2 (where);
+				CPoint where2 (data.pos);
 				where2.offset (dragSelection->getDragOffset ().x, dragSelection->getDragOffset ().y);
 				where2.offset (-getViewSize ().left, -getViewSize ().top);
 				if (grid)

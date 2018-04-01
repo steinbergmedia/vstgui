@@ -82,18 +82,18 @@ public:
 	}
 
 	SharedPointer<IDropTarget> getDropTarget () override { return this; }
-	DragOperation onDragEnter (IDataPackage* drag, CPoint pos, CButtonState buttons) override
+	DragOperation onDragEnter (DragEventData data) override
 	{
 		onDragEnterCalled = true;
 		return DragOperation::None;
 	}
 
-	void onDragLeave (IDataPackage* data, CPoint pos, CButtonState buttons) override
+	void onDragLeave (DragEventData data) override
 	{
 		onDragLeaveCalled = true;
 	}
 
-	DragOperation onDragMove (IDataPackage* data, CPoint pos, CButtonState buttons) override
+	DragOperation onDragMove (DragEventData data) override
 	{
 		onDragMoveCalled = true;
 		return DragOperation::None;
@@ -435,16 +435,19 @@ TESTCASE(CViewContainerTest,
 		container->addView (v1);
 		container->addView (v2);
 
-		CButtonState buttons (0);
-		CPoint p (10, 10);
+		DragEventData data;
+		data.drag = nullptr;
+		data.pos = CPoint (10, 10);
+		data.buttons = 0;
+
 		auto dropTarget = container->getDropTarget ();
-		dropTarget->onDragEnter (nullptr, p, buttons);
+		dropTarget->onDragEnter (data);
 		EXPECT(v1->onDragEnterCalled);
 		EXPECT(v2->onDragEnterCalled == false);
-		dropTarget->onDragMove (nullptr, p, buttons);
+		dropTarget->onDragMove (data);
 		EXPECT(v1->onDragMoveCalled);
 		EXPECT(v2->onDragMoveCalled == false);
-		dropTarget->onDragLeave (nullptr, p, buttons);
+		dropTarget->onDragLeave (data);
 		EXPECT(v1->onDragLeaveCalled);
 		EXPECT(v2->onDragLeaveCalled == false);
 	);
@@ -461,14 +464,17 @@ TESTCASE(CViewContainerTest,
 		container->addView (v1);
 		container->addView (v2);
 
-		CPoint p (10, 10);
-		CButtonState buttons (0);
+		DragEventData data;
+		data.drag = nullptr;
+		data.pos = CPoint (10, 10);
+		data.buttons = 0;
+
 		auto dropTarget = container->getDropTarget ();
-		dropTarget->onDragEnter (nullptr, p, buttons);
+		dropTarget->onDragEnter (data);
 		EXPECT(v1->onDragEnterCalled);
 		EXPECT(v2->onDragEnterCalled == false);
-		p (60, 10);
-		dropTarget->onDragMove (nullptr, p, buttons);
+		data.pos (60, 10);
+		dropTarget->onDragMove (data);
 		EXPECT(v1->onDragLeaveCalled);
 		EXPECT(v2->onDragEnterCalled);
 	);

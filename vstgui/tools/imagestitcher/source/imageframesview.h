@@ -31,10 +31,10 @@ private:
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
 	SharedPointer<IDropTarget> getDropTarget () override { return this; }
-	DragOperation onDragEnter (IDataPackage* dragData, CPoint pos, CButtonState buttons) override;
-	DragOperation onDragMove (IDataPackage* dragData, CPoint pos, CButtonState buttons) override;
-	void onDragLeave (IDataPackage* dragData, CPoint pos, CButtonState buttons) override;
-	bool onDrop (IDataPackage* dragData, CPoint pos, CButtonState buttons) override;
+	DragOperation onDragEnter (DragEventData eventData) override;
+	DragOperation onDragMove (DragEventData eventData) override;
+	void onDragLeave (DragEventData eventData) override;
+	bool onDrop (DragEventData eventData) override;
 
 	CColor selectionColor = MakeCColor (164, 205, 255, 255);
 	CCoord titleHeight {8};

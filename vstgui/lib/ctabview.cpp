@@ -56,7 +56,7 @@ public:
 	}
 
 	SharedPointer<IDropTarget> getDropTarget () override { return this; }
-	DragOperation onDragEnter (IDataPackage* dragData, CPoint pos, CButtonState buttons) override
+	DragOperation onDragEnter (DragEventData data) override
 	{
 		if (value == 0.f)
 		{

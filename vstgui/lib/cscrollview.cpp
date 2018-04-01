@@ -50,22 +50,22 @@ protected:
 		{
 		}
 
-		DragOperation onDragEnter (IDataPackage* drag, CPoint pos, CButtonState buttons) override
+		DragOperation onDragEnter (DragEventData data) override
 		{
-			return parent->onDragEnter (drag, pos, buttons);
+			return parent->onDragEnter (data);
 		}
-		DragOperation onDragMove (IDataPackage* drag, CPoint pos, CButtonState buttons) override
+		DragOperation onDragMove (DragEventData data) override
 		{
-			scrollContainer->onDragMove (pos);
-			return parent->onDragMove (drag, pos, buttons);
+			scrollContainer->onDragMove (data.pos);
+			return parent->onDragMove (data);
 		}
-		void onDragLeave (IDataPackage* drag, CPoint pos, CButtonState buttons) override
+		void onDragLeave (DragEventData data) override
 		{
-			return parent->onDragLeave (drag, pos, buttons);
+			return parent->onDragLeave (data);
 		}
-		bool onDrop (IDataPackage* drag, CPoint pos, CButtonState buttons) override
+		bool onDrop (DragEventData data) override
 		{
-			return parent->onDrop (drag, pos, buttons);
+			return parent->onDrop (data);
 		}
 
 		CScrollContainer* scrollContainer;

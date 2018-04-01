@@ -33,10 +33,10 @@ public:
 	CMouseEventResult onMouseExited (CPoint &where, const CButtonState& buttons) override;
 
 	SharedPointer<IDropTarget> getDropTarget () override { return this; }
-	DragOperation onDragEnter (IDataPackage* dragData, CPoint pos, CButtonState buttons) override;
-	DragOperation onDragMove (IDataPackage* dragData, CPoint pos, CButtonState buttons) override;
-	void onDragLeave (IDataPackage* dragData, CPoint pos, CButtonState buttons) override;
-	bool onDrop (IDataPackage* dragData, CPoint pos, CButtonState buttons) override;
+	DragOperation onDragEnter (DragEventData data) override;
+	DragOperation onDragMove (DragEventData data) override;
+	void onDragLeave (DragEventData data) override;
+	bool onDrop (DragEventData data) override;
 
 	int32_t onKeyDown (VstKeyCode& keyCode) override;
 
@@ -328,9 +328,9 @@ void CDataBrowser::recalculateLayout (bool rememberSelection)
 	
 	if (isAttached ())
 		invalid ();
-		
+	
 	validateSelection ();
- 
+	
 	if (!rememberSelection)
 		unselectAll ();
 }
@@ -979,17 +979,17 @@ CMouseEventResult CDataBrowserView::onMouseExited (CPoint &where, const CButtonS
 }
 
 //-----------------------------------------------------------------------------------------------
-bool CDataBrowserView::onDrop (IDataPackage* drag, CPoint where, CButtonState buttons)
+bool CDataBrowserView::onDrop (DragEventData data)
 {
-	CPoint cellPoint (where);
+	CPoint cellPoint (data.pos);
 	CDataBrowser::Cell cell;
-	if (getCell (where, cell))
+	if (getCell (data.pos, cell))
 	{
 		CRect r = browser->getCellBounds (cell);
 		cellPoint.x -= r.left;
 		cellPoint.y -= r.top;
 	}
-	return db->dbOnDropInCell (cell.row, cell.column, cellPoint, drag, browser);
+	return db->dbOnDropInCell (cell.row, cell.column, cellPoint, data.drag, browser);
 }
 
 //-----------------------------------------------------------------------------------------------
@@ -997,17 +997,17 @@ static const CViewAttributeID kDataBrowserViewDragRow = 'vddr';
 static const CViewAttributeID kDataBrowserViewDragColumn = 'vddc';
 
 //-----------------------------------------------------------------------------------------------
-DragOperation CDataBrowserView::onDragEnter (IDataPackage* drag, CPoint where, CButtonState buttons)
+DragOperation CDataBrowserView::onDragEnter (DragEventData data)
 {
-	db->dbOnDragEnterBrowser (drag, browser);
+	db->dbOnDragEnterBrowser (data.drag, browser);
 	CDataBrowser::Cell cell;
-	if (getCell (where, cell))
+	if (getCell (data.pos, cell))
 	{
 		CRect r = browser->getCellBounds (cell);
-		CPoint cellPoint (where);
+		CPoint cellPoint (data.pos);
 		cellPoint.x -= r.left;
 		cellPoint.y -= r.top;
-		db->dbOnDragEnterCell (cell.row, cell.column, cellPoint, drag, browser);
+		db->dbOnDragEnterCell (cell.row, cell.column, cellPoint, data.drag, browser);
 		setAttribute (kDataBrowserViewDragRow, sizeof (int32_t), &cell.row);
 		setAttribute (kDataBrowserViewDragColumn, sizeof (int32_t), &cell.column);
 		return DragOperation::Copy;
@@ -1016,7 +1016,7 @@ DragOperation CDataBrowserView::onDragEnter (IDataPackage* drag, CPoint where, C
 }
 
 //-----------------------------------------------------------------------------------------------
-void CDataBrowserView::onDragLeave (IDataPackage* drag, CPoint where, CButtonState buttons)
+void CDataBrowserView::onDragLeave (DragEventData data)
 {
 	uint32_t size;
 	int32_t oldRowNum = -1;
@@ -1025,15 +1025,15 @@ void CDataBrowserView::onDragLeave (IDataPackage* drag, CPoint where, CButtonSta
 	getAttribute (kDataBrowserViewDragColumn, sizeof (int32_t), &oldColNum, size);
 	if (oldRowNum != -1 && oldColNum != -1)
 	{
-		db->dbOnDragExitCell (oldRowNum, oldColNum, drag, browser);
+		db->dbOnDragExitCell (oldRowNum, oldColNum, data.drag, browser);
 		removeAttribute (kDataBrowserViewDragRow);
 		removeAttribute (kDataBrowserViewDragColumn);
 	}
-	db->dbOnDragExitBrowser (drag, browser);
+	db->dbOnDragExitBrowser (data.drag, browser);
 }
 
 //-----------------------------------------------------------------------------------------------
-DragOperation CDataBrowserView::onDragMove (IDataPackage* drag, CPoint where, CButtonState buttons)
+DragOperation CDataBrowserView::onDragMove (DragEventData data)
 {
 	uint32_t size;
 	int32_t oldRowNum = -1;
@@ -1041,29 +1041,29 @@ DragOperation CDataBrowserView::onDragMove (IDataPackage* drag, CPoint where, CB
 	getAttribute (kDataBrowserViewDragRow, sizeof (int32_t), &oldRowNum, size);
 	getAttribute (kDataBrowserViewDragColumn, sizeof (int32_t), &oldColNum, size);
 	CDataBrowser::Cell cell;
-	if (getCell (where, cell))
+	if (getCell (data.pos, cell))
 	{
 		CRect r = browser->getCellBounds (cell);
-		CPoint cellPoint (where);
+		CPoint cellPoint (data.pos);
 		cellPoint.x -= r.left;
 		cellPoint.y -= r.top;
 		if (oldRowNum != cell.row || oldColNum != cell.column)
 		{
 			if (oldRowNum != -1 && oldColNum != -1)
-				db->dbOnDragExitCell (oldRowNum, oldColNum, drag, browser);
-			db->dbOnDragEnterCell (cell.row, cell.column, cellPoint, drag, browser);
+				db->dbOnDragExitCell (oldRowNum, oldColNum, data.drag, browser);
+			db->dbOnDragEnterCell (cell.row, cell.column, cellPoint, data.drag, browser);
 			setAttribute (kDataBrowserViewDragRow, sizeof (int32_t), &cell.row);
 			setAttribute (kDataBrowserViewDragColumn, sizeof (int32_t), &cell.column);
 		}
 		else
 		{
-			db->dbOnDragMoveInCell (cell.row, cell.column, cellPoint, drag, browser);
+			db->dbOnDragMoveInCell (cell.row, cell.column, cellPoint, data.drag, browser);
 		}
 		return DragOperation::Copy;
 	}
 	else if (oldRowNum != -1 && oldColNum != -1)
 	{
-		db->dbOnDragExitCell (oldRowNum, oldColNum, drag, browser);
+		db->dbOnDragExitCell (oldRowNum, oldColNum, data.drag, browser);
 		removeAttribute (kDataBrowserViewDragRow);
 		removeAttribute (kDataBrowserViewDragColumn);
 	}

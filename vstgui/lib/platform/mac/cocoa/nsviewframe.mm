@@ -521,7 +521,8 @@ static NSDragOperation VSTGUI_NSView_draggingEntered (id self, SEL _cmd, id send
 	CButtonState buttons = 0;
 	mapModifiers (modifiers, buttons);
 
-	auto result = frame->getFrame ()->platformOnDragEnter (frame->getDragDataPackage (), where, buttons);
+	DragEventData data {frame->getDragDataPackage (), where, buttons};
+	auto result = frame->getFrame ()->platformOnDragEnter (data);
 	if (result == DragOperation::Copy)
 		return NSDragOperationCopy;
 	if (result == DragOperation::Move)
@@ -543,7 +544,8 @@ static NSDragOperation VSTGUI_NSView_draggingUpdated (id self, SEL _cmd, id send
 	CButtonState buttons = 0;
 	mapModifiers (modifiers, buttons);
 
-	auto result = frame->getFrame ()->platformOnDragMove (frame->getDragDataPackage (), where, buttons);
+	DragEventData data {frame->getDragDataPackage (), where, buttons};
+	auto result = frame->getFrame ()->platformOnDragMove (data);
 	if (result == DragOperation::Copy)
 		return NSDragOperationCopy;
 	if (result == DragOperation::Move)
@@ -567,7 +569,8 @@ static void VSTGUI_NSView_draggingExited (id self, SEL _cmd, id sender)
 	CButtonState buttons = 0;
 	mapModifiers (modifiers, buttons);
 
-	frame->getFrame ()->platformOnDragLeave (frame->getDragDataPackage (), where, buttons);
+	DragEventData data {frame->getDragDataPackage (), where, buttons};
+	frame->getFrame ()->platformOnDragLeave (data);
 	frame->setDragDataPackage (nullptr);
 
 	[[NSCursor arrowCursor] set]; // we may should remember the cursor via [NSCursor currentCursor]
@@ -586,7 +589,8 @@ static BOOL VSTGUI_NSView_performDragOperation (id self, SEL _cmd, id sender)
 	CButtonState buttons = 0;
 	mapModifiers (modifiers, buttons);
 
-	bool result = frame->getFrame ()->platformOnDrop (frame->getDragDataPackage (), where, buttons);
+	DragEventData data {frame->getDragDataPackage (), where, buttons};
+	bool result = frame->getFrame ()->platformOnDrop (data);
 	frame->setMouseCursor (kCursorDefault);
 	frame->setDragDataPackage (nullptr);
 	return result;

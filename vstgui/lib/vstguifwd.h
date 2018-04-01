@@ -94,6 +94,7 @@ struct CButtonState;
 struct CDrawMode;
 struct CGraphicsTransform;
 struct DragDescription;
+struct DragEventData;
 
 // interfaces
 class IViewListener;

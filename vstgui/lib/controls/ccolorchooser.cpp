@@ -209,10 +209,10 @@ public:
 
 	SharedPointer<IDropTarget> getDropTarget () override { return this; }
 
-	bool onDrop (IDataPackage* drag, CPoint pos, CButtonState buttons) override
+	bool onDrop (DragEventData data) override
 	{
 		CColor color;
-		if (dragContainerHasColor (drag, &color))
+		if (dragContainerHasColor (data.drag, &color))
 		{
 			setColor (color);
 			valueChanged ();
@@ -221,21 +221,21 @@ public:
 		return false;
 	}
 	
-	DragOperation onDragEnter (IDataPackage* drag, CPoint pos, CButtonState buttons) override
+	DragOperation onDragEnter (DragEventData data) override
 	{
 		dragOperation =
-		    dragContainerHasColor (drag, nullptr) ? DragOperation::Copy : DragOperation::None;
+		    dragContainerHasColor (data.drag, nullptr) ? DragOperation::Copy : DragOperation::None;
 		return dragOperation;
 	}
 
-	DragOperation onDragMove (IDataPackage* drag, CPoint pos, CButtonState buttons) override
+	DragOperation onDragMove (DragEventData data) override
 	{
 		return dragOperation;
 	}
 
-	void onDragLeave (IDataPackage* drag, CPoint pos, CButtonState buttons) override
+	void onDragLeave (DragEventData data) override
 	{
-		getFrame ()->setCursor (kCursorNotAllowed);
+		dragOperation = DragOperation::None;
 	}
 	
 	CLASS_METHODS(ColorView, CControl)

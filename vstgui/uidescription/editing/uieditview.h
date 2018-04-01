@@ -90,10 +90,10 @@ protected:
 	UISelection* getSelectionOutOfDrag (IDataPackage* drag);
 
 	SharedPointer<IDropTarget> getDropTarget () override;
-	bool onDrop (IDataPackage* drag, CPoint pos, CButtonState buttons) override;
-	DragOperation onDragEnter (IDataPackage* drag, CPoint pos, CButtonState buttons) override;
-	void onDragLeave (IDataPackage* drag, CPoint pos, CButtonState buttons) override;
-	DragOperation onDragMove (IDataPackage* drag, CPoint pos, CButtonState buttons) override;
+	bool onDrop (DragEventData data) override;
+	DragOperation onDragEnter (DragEventData data) override;
+	void onDragLeave (DragEventData data) override;
+	DragOperation onDragMove (DragEventData data) override;
 
 	void draw (CDrawContext *pContext) override;
 	void drawRect (CDrawContext *pContext, const CRect& updateRect) override;

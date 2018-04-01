@@ -45,13 +45,21 @@ public:
 };
 
 //------------------------------------------------------------------------
+struct DragEventData
+{
+	IDataPackage* drag;
+	CPoint pos;
+	CButtonState buttons;
+};
+
+//------------------------------------------------------------------------
 class IDropTarget : virtual public IReference
 {
 public:
-	virtual DragOperation onDragEnter (IDataPackage* data, CPoint pos, CButtonState buttons) = 0;
-	virtual DragOperation onDragMove (IDataPackage* data, CPoint pos, CButtonState buttons) = 0;
-	virtual void onDragLeave (IDataPackage* data, CPoint pos, CButtonState buttons) = 0;
-	virtual bool onDrop (IDataPackage* data, CPoint pos, CButtonState buttons) = 0;
+	virtual DragOperation onDragEnter (DragEventData data) = 0;
+	virtual DragOperation onDragMove (DragEventData data) = 0;
+	virtual void onDragLeave (DragEventData data) = 0;
+	virtual bool onDrop (DragEventData data) = 0;
 };
 
 //------------------------------------------------------------------------
@@ -119,16 +127,16 @@ public:
 class DropTargetAdapter : virtual public IDropTarget
 {
 public:
-	DragOperation onDragEnter (IDataPackage* data, CPoint pos, CButtonState buttons) override
+	DragOperation onDragEnter (DragEventData eventData) override
 	{
 		return DragOperation::None;
 	}
-	DragOperation onDragMove (IDataPackage* data, CPoint pos, CButtonState buttons) override
+	DragOperation onDragMove (DragEventData eventData) override
 	{
 		return DragOperation::None;
 	}
-	void onDragLeave (IDataPackage* data, CPoint pos, CButtonState buttons) override {}
-	bool onDrop (IDataPackage* data, CPoint pos, CButtonState buttons) override { return false; }
+	void onDragLeave (DragEventData eventData) override {}
+	bool onDrop (DragEventData eventData) override { return false; }
 };
 
 //------------------------------------------------------------------------
