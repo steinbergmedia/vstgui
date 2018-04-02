@@ -182,6 +182,7 @@ DocumentWindowController::DocumentWindowController (const DocumentContextPtr& do
 	for (auto index = 0u; index < docContext->getImagePaths ().size (); ++index)
 		onImagePathAdded (docContext->getImagePaths ()[index], index);
 	docContext->addListener (this);
+	docIsDirty = false;
 }
 
 //------------------------------------------------------------------------
