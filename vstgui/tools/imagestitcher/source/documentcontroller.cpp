@@ -396,7 +396,10 @@ void DocumentWindowController::onImagePathAdded (const Path& newPath, size_t ind
 {
 	auto platformBitmap = IPlatformBitmap::createFromPath (newPath.data ());
 	auto it = imageList.begin ();
-	std::advance (it, index);
+	if (index >= imageList.size ())
+		it = imageList.end ();
+	else
+		std::advance (it, index);
 	imageList.insert (it, {makeOwned<CBitmap> (platformBitmap), newPath, false});
 	setDirty ();
 }

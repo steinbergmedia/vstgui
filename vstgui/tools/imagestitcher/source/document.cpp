@@ -184,8 +184,6 @@ auto DocumentContext::removeImagePathAtIndex (size_t index) -> Result
 //------------------------------------------------------------------------
 auto DocumentContext::insertImagePathAtIndex (size_t index, const Path& path) -> Result
 {
-	if (doc->imagePaths.size () < index)
-		return Result::InvalidIndex;
 	auto imageSize = getImageSize (path);
 	if (!imageSize)
 		return Result::InvalidImage;
@@ -195,7 +193,10 @@ auto DocumentContext::insertImagePathAtIndex (size_t index, const Path& path) ->
 			return Result::ImageSizeMismatch;
 	}
 	auto it = doc->imagePaths.begin ();
-	std::advance (it, index);
+	if (index >= doc->imagePaths.size ())
+		it = doc->imagePaths.end ();
+	else
+		std::advance (it, index);
 	doc->imagePaths.insert (it, path);
 	if (doc->imagePaths.size () == 1)
 	{

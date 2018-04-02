@@ -340,12 +340,13 @@ bool ImageFramesView::onDrop (DragEventData eventData)
 	std::vector<size_t> indices;
 	if (getIndicesFromDataPackage (eventData.drag, &indices))
 	{
+		std::sort (indices.begin (), indices.end ());
 		auto doCopy = (eventData.buttons.getModifierState () & kAlt);
 		std::vector<Path> paths;
-		for (auto index : indices)
-			paths.emplace_back (imageList->at (index).path);
 		if (doCopy)
 		{
+			for (auto index : indices)
+				paths.emplace_back (imageList->at (index).path);
 			for (auto& path : paths)
 			{
 				docContext->insertImagePathAtIndex (dropPosition, path);
@@ -357,15 +358,13 @@ bool ImageFramesView::onDrop (DragEventData eventData)
 			for (auto it = indices.rbegin (); it != indices.rend (); ++it)
 			{
 				auto index = *it;
-				auto path = imageList->at (index).path;
-				if (index == dropPosition)
-					continue;
-				if (index < dropPosition)
-					dropPosition--;
+				paths.emplace_back (imageList->at (index).path);
 				docContext->removeImagePathAtIndex (index);
+				if (index < dropPosition)
+					--dropPosition;
 			}
 			for (auto& path : paths)
-				docContext->insertImagePathAtIndex (dropPosition++, path);
+				docContext->insertImagePathAtIndex (dropPosition, path);
 		}
 	}
 	else
@@ -419,8 +418,7 @@ DragOperation ImageFramesView::onDragMove (DragEventData eventData)
 			dropIndicatorPos = newIndex;
 			invalid ();
 		}
-		auto doCopy =
-		    dragHasImages ? true : (eventData.buttons.getModifierState () & kAlt);
+		auto doCopy = dragHasImages ? true : (eventData.buttons.getModifierState () & kAlt);
 		return doCopy ? DragOperation::Copy : DragOperation::Move;
 	}
 	return DragOperation::None;
