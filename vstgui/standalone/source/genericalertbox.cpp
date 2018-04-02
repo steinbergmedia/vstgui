@@ -22,11 +22,11 @@ namespace {
 const auto xmlText = R"(<?xml version="1.0" encoding="UTF-8"?>
 <vstgui-ui-description version="1">
 	<template autosize="left right top bottom " background-color="~ BlackCColor" background-color-draw-style="filled" class="CViewContainer" mouse-enabled="true" name="AlertBox" opacity="1" origin="0, 0" size="420, 110" sub-controller="ButtonController" transparent="true" wants-focus="false">
-		<view autosize="left right top bottom " class="CGradientView" draw-antialiased="true" frame-color="~ BlackCColor" frame-width="1" gradient="About Background" gradient-angle="0" gradient-style="linear" mouse-enabled="false" opacity="1" origin="0, 0" radial-center="0.5, 0.5" radial-radius="1" round-rect-radius="5" size="420, 110" transparent="false" wants-focus="false"/>
+		<view autosize="left right top bottom " class="CGradientView" draw-antialiased="true" frame-color="~ BlackCColor" frame-width="-1" gradient="About Background" gradient-angle="0" gradient-style="linear" mouse-enabled="false" opacity="1" origin="0, 0" radial-center="0.5, 0.5" radial-radius="1" round-rect-radius="5" size="420, 110" transparent="false" wants-focus="false"/>
 		<view autosize="right bottom " class="CTextButton" control-tag="AlertBox.firstButton" default-value="0.5" font="~ SystemFont" frame-color="~ BlackCColor" frame-color-highlighted="~ BlackCColor" frame-width="-1" gradient="Default TextButton Gradient" gradient-highlighted="Default TextButton Gradient Highlighted" icon-position="left" icon-text-margin="0" kick-style="false" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="180, 80" round-radius="4" size="100, 20" text-alignment="center" text-color="~ BlackCColor" text-color-highlighted="~ WhiteCColor" title="OK" transparent="false" wants-focus="true" wheel-inc-value="0.1"/>
 		<view autosize="right bottom " class="CTextButton" control-tag="AlertBox.secondButton" default-value="0.5" font="~ SystemFont" frame-color="~ BlackCColor" frame-color-highlighted="~ BlackCColor" frame-width="-1" gradient="Default TextButton Gradient" gradient-highlighted="Default TextButton Gradient Highlighted" icon-position="left" icon-text-margin="0" kick-style="false" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="300, 80" round-radius="4" size="100, 20" text-alignment="center" text-color="~ BlackCColor" text-color-highlighted="~ WhiteCColor" title="Cancel" transparent="false" wants-focus="true" wheel-inc-value="0.1"/>
 		<view autosize="left bottom " class="CTextButton" control-tag="AlertBox.thirdButton" default-value="0.5" font="~ SystemFont" frame-color="~ BlackCColor" frame-color-highlighted="~ BlackCColor" frame-width="-1" gradient="Default TextButton Gradient" gradient-highlighted="Default TextButton Gradient Highlighted" icon-position="left" icon-text-margin="0" kick-style="false" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="20, 80" round-radius="4" size="100, 20" text-alignment="center" text-color="~ BlackCColor" text-color-highlighted="~ WhiteCColor" title="Third" transparent="false" wants-focus="true" wheel-inc-value="0.1"/>
-		<view autosize="left right top " back-color="~ BlackCColor" background-offset="0, 0" class="CParamDisplay" control-tag="AlertBox.headline" default-value="0.5" font="~ NormalFontVeryBig" font-antialias="true" font-color="~ BlackCColor" frame-color="~ BlackCColor" frame-width="1" max-value="1" min-value="0" mouse-enabled="false" opacity="1" origin="10, 10" round-rect-radius="6" shadow-color="~ GreyCColor" size="400, 30" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" text-shadow-offset="1, 1" transparent="true" value-precision="2" wants-focus="false" wheel-inc-value="0.1"/>
+		<view auto-height="false" autosize="left right top " back-color="~ BlackCColor" background-offset="0, 0" class="CMultiLineTextLabel" control-tag="AlertBox.headline" default-value="0.5" font="~ NormalFontVeryBig" font-antialias="true" font-color="~ BlackCColor" frame-color="~ BlackCColor" frame-width="1" line-layout="wrap" max-value="1" min-value="0" mouse-enabled="false" opacity="1" origin="10, 10" round-rect-radius="6" shadow-color="~ GreyCColor" size="400, 30" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" text-shadow-offset="1, 1" title="This is a test headline" transparent="true" value-precision="2" wants-focus="false" wheel-inc-value="0.1"/>
 		<view auto-height="false" autosize="left right top " back-color="~ BlackCColor" background-offset="0, 0" class="CMultiLineTextLabel" control-tag="AlertBox.description" default-value="0.5" font="~ SystemFont" font-antialias="true" font-color="~ BlackCColor" frame-color="~ BlackCColor" frame-width="1" line-layout="wrap" max-value="1" min-value="0" mouse-enabled="false" opacity="1" origin="10, 40" round-rect-radius="6" shadow-color="~ RedCColor" size="400, 30" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="5, 5" text-rotation="0" text-shadow-offset="1, 1" title="This is a test description" transparent="true" value-precision="2" wants-focus="false" wheel-inc-value="0.1"/>
 	</template>
 	<control-tags>
@@ -134,13 +134,26 @@ public:
 		std::vector<CMultiLineTextLabel*> views; 
 		if (contentView->getChildViewsOfType<CMultiLineTextLabel> (views, true) == 0)
 			return;
-		auto descriptionLabel = views[0];
-		auto prevSize = descriptionLabel->getViewSize ();
-		descriptionLabel->setAutoHeight (true);
-		auto newSize = descriptionLabel->getViewSize ();
-		if (prevSize == newSize)
+		CCoord diffY = 0.;
+		CCoord lastViewBottom = 0.;
+		for (auto label : views)
+		{
+			auto prevSize = label->getViewSize ();
+			label->setAutoHeight (true);
+			auto newSize = label->getViewSize ();
+			diffY += newSize.getHeight () - prevSize.getHeight ();
+			if (lastViewBottom == 0)
+			{
+				lastViewBottom = newSize.bottom;
+			}
+			else
+			{
+				newSize.offset (0, lastViewBottom - newSize.top);
+				label->setViewSize (newSize);
+			}
+		}
+		if (diffY == 0.)
 			return;
-		auto diffY = newSize.getHeight () - prevSize.getHeight ();
 		auto windowSize = window.getSize ();
 		windowSize.y += diffY;
 		window.setSize (windowSize);
