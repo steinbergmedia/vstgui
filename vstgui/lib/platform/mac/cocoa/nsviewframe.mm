@@ -551,8 +551,6 @@ static NSDragOperation VSTGUI_NSView_draggingUpdated (id self, SEL _cmd, id send
 	if (result == DragOperation::Move)
 		return NSDragOperationMove;
 
-	frame->setMouseCursor (kCursorNotAllowed);
-
 	return NSDragOperationNone;
 }
 
