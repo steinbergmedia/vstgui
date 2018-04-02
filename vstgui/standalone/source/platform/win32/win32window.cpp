@@ -505,7 +505,8 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 		}
 		case WM_CLOSE:
 		{
-			windowWillClose ();
+			if (delegate->canClose ())
+				windowWillClose ();
 			return 1;
 		}
 		case WM_DESTROY:
