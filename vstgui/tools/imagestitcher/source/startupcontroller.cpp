@@ -80,14 +80,12 @@ private:
 		binding->addValue (Value::make ("CreateNewDocument"),
 		                   UIDesc::ValueCalls::onAction ([this] (auto& v) {
 			                   v.performEdit (0.);
-			                   createNewDocument ();
-			                   window->close ();
+							   handleCommand (Commands::NewDocument);
 		                   }));
 		binding->addValue (Value::make ("OpenDocument"),
 		                   UIDesc::ValueCalls::onAction ([this] (auto& v) {
 			                   v.performEdit (0.);
-			                   openDocument ();
-			                   window->close ();
+							   handleCommand (Commands::OpenDocument);
 		                   }));
 		binding->addValue (Value::make ("CloseWindow"),
 		                   UIDesc::ValueCalls::onAction ([this] (auto& v) {
@@ -127,6 +125,8 @@ private:
 	{
 		window = nullptr;
 		instance = nullptr;
+		if (IApplication::instance ().getWindows ().empty ())
+			IApplication::instance ().quit ();
 	}
 
 	static std::shared_ptr<StartupWindowController> instance;
