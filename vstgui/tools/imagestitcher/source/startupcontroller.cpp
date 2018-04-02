@@ -10,8 +10,8 @@
 #include "vstgui/standalone/include/iappdelegate.h"
 #include "vstgui/standalone/include/iapplication.h"
 #include "vstgui/standalone/include/iasync.h"
-#include <memory>
 #include <cassert>
+#include <memory>
 
 using namespace VSTGUI::Standalone;
 
@@ -21,7 +21,9 @@ namespace ImageStitcher {
 namespace {
 
 //------------------------------------------------------------------------
-class StartupWindowController : public WindowControllerAdapter, public UIDesc::CustomizationAdapter
+class StartupWindowController : public WindowControllerAdapter,
+                                public UIDesc::CustomizationAdapter,
+                                public ICommandHandler
 {
 public:
 	static std::shared_ptr<StartupWindowController> getInstance ()
@@ -78,14 +80,14 @@ private:
 		binding->addValue (Value::make ("CreateNewDocument"),
 		                   UIDesc::ValueCalls::onAction ([this] (auto& v) {
 			                   v.performEdit (0.);
-			                   window->close ();
 			                   createNewDocument ();
+			                   window->close ();
 		                   }));
 		binding->addValue (Value::make ("OpenDocument"),
 		                   UIDesc::ValueCalls::onAction ([this] (auto& v) {
 			                   v.performEdit (0.);
-			                   window->close ();
 			                   openDocument ();
+			                   window->close ();
 		                   }));
 		binding->addValue (Value::make ("CloseWindow"),
 		                   UIDesc::ValueCalls::onAction ([this] (auto& v) {
@@ -93,6 +95,32 @@ private:
 			                   IApplication::instance ().quit ();
 		                   }));
 		return binding;
+	}
+
+	bool canHandleCommand (const Command& command) override
+	{
+		if (command == Commands::OpenDocument)
+			return true;
+		if (command == Commands::NewDocument)
+			return true;
+		return false;
+	}
+	
+	bool handleCommand (const Command& command) override
+	{
+		if (command == Commands::OpenDocument)
+		{
+			openDocument ();
+			window->close ();
+			return true;
+		}
+		if (command == Commands::NewDocument)
+		{
+			createNewDocument ();
+			window->close ();
+			return true;
+		}
+		return false;
 	}
 
 	void onClosed (const IWindow&) override
