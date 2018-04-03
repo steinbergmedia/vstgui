@@ -88,7 +88,7 @@ private:
 							   handleCommand (Commands::OpenDocument);
 		                   }));
 		binding->addValue (Value::make ("CloseWindow"),
-		                   UIDesc::ValueCalls::onAction ([this] (auto& v) {
+		                   UIDesc::ValueCalls::onAction ([] (auto& v) {
 			                   v.performEdit (0.);
 			                   IApplication::instance ().quit ();
 		                   }));

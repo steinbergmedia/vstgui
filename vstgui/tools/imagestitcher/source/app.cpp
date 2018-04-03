@@ -78,7 +78,7 @@ public:
 			controller->showWindow ();
 			controller->registerWindowListener (this);
 
-			controller->doSaveAs ([this, controller] (bool success) {
+			controller->doSaveAs ([controller] (bool success) {
 				if (!success)
 					controller->closeWindow ();
 			});
@@ -92,7 +92,7 @@ public:
 		{
 			controller->showWindow ();
 			controller->registerWindowListener (this);
-			controller->doOpenDocument ([this, controller] (bool success) {
+			controller->doOpenDocument ([controller] (bool success) {
 				if (!success)
 					controller->closeWindow ();
 			});
