@@ -341,7 +341,7 @@ bool ImageFramesView::onDrop (DragEventData eventData)
 	if (getIndicesFromDataPackage (eventData.drag, &indices))
 	{
 		std::sort (indices.begin (), indices.end ());
-		auto doCopy = (eventData.buttons.getModifierState () & kAlt);
+		auto doCopy = (eventData.modifiers.getModifierState () & kAlt);
 		std::vector<Path> paths;
 		if (doCopy)
 		{
@@ -418,7 +418,7 @@ DragOperation ImageFramesView::onDragMove (DragEventData eventData)
 			dropIndicatorPos = newIndex;
 			invalid ();
 		}
-		auto doCopy = dragHasImages ? true : (eventData.buttons.getModifierState () & kAlt);
+		auto doCopy = dragHasImages ? true : (eventData.modifiers.getModifierState () & kAlt);
 		return doCopy ? DragOperation::Copy : DragOperation::Move;
 	}
 	return DragOperation::None;

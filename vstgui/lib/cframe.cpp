@@ -1510,6 +1510,7 @@ DragOperation CFrame::platformOnDragEnter (DragEventData data)
 {
 	Impl::PostEventHandler peh (*pImpl);
 	CollectInvalidRects cir (this);
+	data.modifiers = data.modifiers.getModifierState ();
 	return getDropTarget ()->onDragEnter (data);
 }
 
@@ -1518,6 +1519,7 @@ DragOperation CFrame::platformOnDragMove (DragEventData data)
 {
 	Impl::PostEventHandler peh (*pImpl);
 	CollectInvalidRects cir (this);
+	data.modifiers = data.modifiers.getModifierState ();
 	return getDropTarget ()->onDragMove (data);
 }
 
@@ -1526,6 +1528,7 @@ void CFrame::platformOnDragLeave (DragEventData data)
 {
 	Impl::PostEventHandler peh (*pImpl);
 	CollectInvalidRects cir (this);
+	data.modifiers = data.modifiers.getModifierState ();
 	getDropTarget ()->onDragLeave (data);
 }
 
@@ -1534,6 +1537,7 @@ bool CFrame::platformOnDrop (DragEventData data)
 {
 	Impl::PostEventHandler peh (*pImpl);
 	CollectInvalidRects cir (this);
+	data.modifiers = data.modifiers.getModifierState ();
 	return getDropTarget ()->onDrop (data);
 }
 

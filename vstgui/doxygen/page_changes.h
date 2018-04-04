@@ -23,6 +23,7 @@ It's recommended to start new projects with version 4 while old projects should 
 
 @subsection version4_7 Version 4.7
 
+- redesigned drag'n drop
 - drags with bitmaps are now supported on Windows
 - standalone library support for Windows 7
 - the GDI+ draw backend was removed, the Direct2D backend is the replacement
@@ -93,9 +94,9 @@ Note: All current deprecated methods will be removed in the next version. So mak
 @subsection code_changes_4_6_to_4_7 VSTGUI 4.6 -> VSTGUI 4.7
 
 - CView::doDrag is deprecated, instead use the asynchronous variant of it : CView::doDrag ;-)
+- CView don't has drop target methods (onDragEnter, onDragLeave, onDragMove and onDrop) anymore. Instead it has a method to return a drop target. See the documentation for IDropTarget on how to use it.
 - the CControlEnum is gone and is moved into the classes where they are used: CParamDisplay/COptionMenu/CTextEdit/CSlider
 - CControl::kMessageTagWillChange and CControl::kMessageTagDidChange is gone, use IControlListener instead
-
 
 @subsection code_changes_4_3_to_4_5 VSTGUI 4.3 -> VSTGUI 4.5
 
@@ -266,6 +267,10 @@ please see the "Migrating from 2.3.rtf" file in the Documentation folder.
  */
 //------------------------------------------------------------------------
 /*! @defgroup new_in_4_5 Version 4.5
+ *	@ingroup new_in
+ */
+//------------------------------------------------------------------------
+/*! @defgroup new_in_4_7 Version 4.7
  *	@ingroup new_in
  */
 //------------------------------------------------------------------------
