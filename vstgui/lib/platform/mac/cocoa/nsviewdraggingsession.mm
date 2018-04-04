@@ -40,7 +40,7 @@ private:
 		self = objc_msgSendSuper (SUPER, @selector (init));
 		if (self)
 		{
-			auto data = [[NSData alloc] initWithBytes:buffer length:bufferSize];
+			auto data = [[[NSData alloc] initWithBytes:buffer length:bufferSize] autorelease];
 			OBJC_SET_VALUE (self, _data, data);
 		}
 		return self;
