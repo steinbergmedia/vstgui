@@ -26,6 +26,7 @@ It's recommended to start new projects with version 4 while old projects should 
 - redesigned drag'n drop
 - drags with bitmaps are now supported on Windows
 - standalone library support for Windows 7
+- new ImageStitcher tool
 - the GDI+ draw backend was removed, the Direct2D backend is the replacement
 
 @subsection version4_6 Version 4.6
