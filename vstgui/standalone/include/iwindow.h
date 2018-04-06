@@ -170,6 +170,8 @@ public:
 	virtual void setTitle (const UTF8String& newTitle) = 0;
 	/** Set content view. */
 	virtual void setContentView (const SharedPointer<CFrame>& frame) = 0;
+	/** Set the path the contents of this window represents. */
+	virtual void setRepresentedPath (const UTF8String& path) = 0;
 
 	/** Show the window. */
 	virtual void show () = 0;

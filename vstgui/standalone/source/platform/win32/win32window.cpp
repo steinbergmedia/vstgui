@@ -55,6 +55,7 @@ public:
 	void setSize (const CPoint& newSize) override;
 	void setPosition (const CPoint& newPosition) override;
 	void setTitle (const UTF8String& newTitle) override;
+	void setRepresentedPath (const UTF8String& path) override {}
 
 	void show () override;
 	void hide () override;

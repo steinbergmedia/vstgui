@@ -91,6 +91,7 @@ public:
 		platformWindow->setTitle (newTitle);
 	}
 	void setContentView (const SharedPointer<CFrame>& newFrame) override;
+	void setRepresentedPath (const UTF8String& path) override;
 	void show () override;
 	void hide () override { platformWindow->hide (); }
 	void close () override { platformWindow->close (); }
@@ -212,6 +213,12 @@ void Window::setContentView (const SharedPointer<CFrame>& newFrame)
 	platformWindow->onSetContentView (frame);
 	if (controller)
 		controller->onSetContentView (*this, frame);
+}
+
+//------------------------------------------------------------------------
+void Window::setRepresentedPath (const UTF8String& path)
+{
+	platformWindow->setRepresentedPath (path);
 }
 
 //------------------------------------------------------------------------

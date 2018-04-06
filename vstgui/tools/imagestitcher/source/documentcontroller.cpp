@@ -384,6 +384,7 @@ void DocumentWindowController::doSaveAs (std::function<void (bool saved)>&& cust
 		if (docContext->save ())
 		{
 			window->setTitle (getDisplayFilename (docContext->getPath ()));
+			window->setRepresentedPath (UTF8String (docContext->getPath ()));
 			docIsDirty = false;
 			customAction (true);
 		}
@@ -435,6 +436,7 @@ void DocumentWindowController::doOpenDocument (std::function<void (bool saved)>&
 				onImagePathAdded (docContext->getImagePaths ()[index], index);
 			setDirty ();
 			window->setTitle (getDisplayFilename (docContext->getPath ()));
+			window->setRepresentedPath (UTF8String (docContext->getPath ()));
 			docIsDirty = false;
 			customAction (true);
 		}

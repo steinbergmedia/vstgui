@@ -84,6 +84,7 @@ public:
 	void setSize (const CPoint& newSize) override;
 	void setPosition (const CPoint& newPosition) override;
 	void setTitle (const UTF8String& newTitle) override;
+	void setRepresentedPath (const UTF8String& path) override;
 
 	void show () override;
 	void hide () override;
@@ -295,6 +296,17 @@ void Window::setTitle (const UTF8String& newTitle)
 	if (titleMacStr && titleMacStr->getCFString ())
 	{
 		nsWindow.title = (__bridge NSString*)titleMacStr->getCFString ();
+	}
+}
+
+//------------------------------------------------------------------------
+void Window::setRepresentedPath (const UTF8String& path)
+{
+	auto pathMacStr = dynamic_cast<MacString*> (path.getPlatformString ());
+	if (pathMacStr && pathMacStr->getCFString ())
+	{
+		auto url = [NSURL fileURLWithPath:(__bridge NSString*)pathMacStr->getCFString ()];
+		nsWindow.representedURL = url;
 	}
 }
 
