@@ -8,11 +8,16 @@
 #include "vstgui/lib/cframe.h"
 #include "vstgui/lib/cscrollview.h"
 #include "vstgui/lib/dragging.h"
+#include "vstgui/standalone/include/ialertbox.h"
+#include "vstgui/standalone/include/iapplication.h"
+#include "vstgui/standalone/include/iasync.h"
 #include <cassert>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
 namespace ImageStitcher {
+
+using namespace VSTGUI::Standalone;
 
 //------------------------------------------------------------------------
 ImageFramesView::ImageFramesView () : CView (CRect (0, 0, 10, 10))
@@ -203,6 +208,141 @@ void ImageFramesView::enlargeSelection (size_t index)
 	invalid ();
 }
 
+static constexpr size_t DragPackageID = 'isdp';
+
+//------------------------------------------------------------------------
+bool ImageFramesView::getIndicesFromDataPackage (IDataPackage* package, std::vector<size_t>* result)
+{
+	if (package->getDataType (0) == IDataPackage::kBinary)
+	{
+		const void* buffer;
+		IDataPackage::Type type;
+		if (auto dataSize = package->getData (0, buffer, type))
+		{
+			auto data = reinterpret_cast<const size_t*> (buffer);
+			if (data[0] == DragPackageID)
+			{
+				if (result)
+				{
+					for (auto index = 1u; index < dataSize / sizeof (size_t); ++index)
+					{
+						result->emplace_back (data[index]);
+					}
+				}
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+//------------------------------------------------------------------------
+std::vector<Path> ImageFramesView::getDragPngImagePaths (IDataPackage* drag)
+{
+	std::vector<Path> result;
+	auto count = drag->getCount ();
+	for (auto i = 0u; i < count; ++i)
+	{
+		if (drag->getDataType (i) != IDataPackage::kFilePath)
+			continue;
+		const void* buffer;
+		IDataPackage::Type type;
+		auto size = drag->getData (i, buffer, type);
+		Path p (reinterpret_cast<const char*> (buffer), size);
+		if (getImageSize (p))
+			result.emplace_back (std::move (p));
+	}
+	return result;
+}
+
+//------------------------------------------------------------------------
+bool ImageFramesView::dragHasPngImages (IDataPackage* drag)
+{
+	auto count = drag->getCount ();
+	for (auto i = 0u; i < count; ++i)
+	{
+		if (drag->getDataType (i) != IDataPackage::kFilePath)
+			continue;
+		const void* buffer;
+		IDataPackage::Type type;
+		auto size = drag->getData (i, buffer, type);
+		Path p (reinterpret_cast<const char*> (buffer), size);
+		if (getImageSize (p))
+			return true;
+	}
+	return false;
+}
+
+//------------------------------------------------------------------------
+void ImageFramesView::reorderImages (size_t position, bool doCopy, std::vector<size_t>& indices)
+{
+	std::sort (indices.begin (), indices.end ());
+	std::vector<Path> paths;
+	if (doCopy)
+	{
+		for (auto index : indices)
+			paths.emplace_back (imageList->at (index).path);
+		for (auto& path : paths)
+		{
+			docContext->insertImagePathAtIndex (position, path);
+			++position;
+		}
+	}
+	else
+	{
+		for (auto it = indices.rbegin (); it != indices.rend (); ++it)
+		{
+			auto index = *it;
+			paths.emplace_back (imageList->at (index).path);
+			docContext->removeImagePathAtIndex (index);
+			if (index < position)
+				--position;
+		}
+		for (auto& path : paths)
+			docContext->insertImagePathAtIndex (position, path);
+	}
+}
+
+//------------------------------------------------------------------------
+void ImageFramesView::addImages (size_t position, const std::vector<std::string>& imagePaths)
+{
+	std::string alertDescription;
+	for (auto& path : imagePaths)
+	{
+		auto res = docContext->insertImagePathAtIndex (position, path);
+		switch (res)
+		{
+			case DocumentContextResult::Success:
+			{
+				++position;
+				break;
+			}
+			case DocumentContextResult::ImageSizeMismatch:
+			{
+				alertDescription += "Image Size Mismatch :";
+				alertDescription += path;
+				alertDescription += "\n";
+				break;
+			}
+			case DocumentContextResult::InvalidImage:
+			case DocumentContextResult::InvalidIndex:
+			{
+				alertDescription += "Unexpected Error\n";
+				break;
+			}
+		}
+	}
+	if (!alertDescription.empty ())
+	{
+		Async::perform (Async::Context::Main, [alertDescription] () {
+			AlertBoxConfig alert;
+			alert.headline = "Error adding images!";
+			alert.description = alertDescription;
+			IApplication::instance ().showAlertBox (alert);
+		});
+	}
+}
+
 //------------------------------------------------------------------------
 CMouseEventResult ImageFramesView::onMouseDown (CPoint& where, const CButtonState& buttons)
 {
@@ -235,71 +375,6 @@ CMouseEventResult ImageFramesView::onMouseDown (CPoint& where, const CButtonStat
 		return kMouseEventHandled;
 	}
 	return kMouseEventNotHandled;
-}
-
-static constexpr size_t DragPackageID = 'isdp';
-
-//------------------------------------------------------------------------
-static bool getIndicesFromDataPackage (IDataPackage* package, std::vector<size_t>* result = nullptr)
-{
-	if (package->getDataType (0) == IDataPackage::kBinary)
-	{
-		const void* buffer;
-		IDataPackage::Type type;
-		if (auto dataSize = package->getData (0, buffer, type))
-		{
-			auto data = reinterpret_cast<const size_t*> (buffer);
-			if (data[0] == DragPackageID)
-			{
-				if (result)
-				{
-					for (auto index = 1u; index < dataSize / sizeof (size_t); ++index)
-					{
-						result->emplace_back (data[index]);
-					}
-				}
-				return true;
-			}
-		}
-	}
-	return false;
-}
-
-//------------------------------------------------------------------------
-std::vector<Path> getDragPngImagePaths (IDataPackage* drag)
-{
-	std::vector<Path> result;
-	auto count = drag->getCount ();
-	for (auto i = 0u; i < count; ++i)
-	{
-		if (drag->getDataType (i) != IDataPackage::kFilePath)
-			continue;
-		const void* buffer;
-		IDataPackage::Type type;
-		auto size = drag->getData (i, buffer, type);
-		Path p (reinterpret_cast<const char*> (buffer), size);
-		if (getImageSize (p))
-			result.emplace_back (std::move (p));
-	}
-	return result;
-}
-
-//------------------------------------------------------------------------
-static bool dragHasPngImages (IDataPackage* drag)
-{
-	auto count = drag->getCount ();
-	for (auto i = 0u; i < count; ++i)
-	{
-		if (drag->getDataType (i) != IDataPackage::kFilePath)
-			continue;
-		const void* buffer;
-		IDataPackage::Type type;
-		auto size = drag->getData (i, buffer, type);
-		Path p (reinterpret_cast<const char*> (buffer), size);
-		if (getImageSize (p))
-			return true;
-	}
-	return false;
 }
 
 //------------------------------------------------------------------------
@@ -340,46 +415,19 @@ bool ImageFramesView::onDrop (DragEventData eventData)
 	std::vector<size_t> indices;
 	if (getIndicesFromDataPackage (eventData.drag, &indices))
 	{
-		std::sort (indices.begin (), indices.end ());
 		auto doCopy = (eventData.modifiers.getModifierState () & kAlt);
-		std::vector<Path> paths;
-		if (doCopy)
-		{
-			for (auto index : indices)
-				paths.emplace_back (imageList->at (index).path);
-			for (auto& path : paths)
-			{
-				docContext->insertImagePathAtIndex (dropPosition, path);
-				++dropPosition;
-			}
-		}
-		else
-		{
-			for (auto it = indices.rbegin (); it != indices.rend (); ++it)
-			{
-				auto index = *it;
-				paths.emplace_back (imageList->at (index).path);
-				docContext->removeImagePathAtIndex (index);
-				if (index < dropPosition)
-					--dropPosition;
-			}
-			for (auto& path : paths)
-				docContext->insertImagePathAtIndex (dropPosition, path);
-		}
+		reorderImages (dropPosition, doCopy, indices);
 	}
 	else
 	{
 		auto imagePaths = getDragPngImagePaths (eventData.drag);
 		if (!imagePaths.empty ())
 		{
-			for (auto& path : imagePaths)
-			{
-				docContext->insertImagePathAtIndex (dropPosition, path);
-				++dropPosition;
-			}
+			addImages (dropPosition, imagePaths);
 		}
 	}
 
+	invalid ();
 	dropIndicatorPos = -1;
 	dragHasImages = false;
 	return true;

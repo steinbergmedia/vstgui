@@ -157,6 +157,12 @@ DocumentContext::DocumentContext (const DocumentPtr& doc) : doc (doc)
 void DocumentContext::replaceDocument (const DocumentPtr& newDoc)
 {
 	doc = newDoc;
+	size_t index = 0;
+	for (auto& path : doc->imagePaths)
+	{
+		listeners.forEach ([&] (auto& l) { l->onImagePathAdded (path, index); });
+		++index;
+	}
 }
 
 //------------------------------------------------------------------------

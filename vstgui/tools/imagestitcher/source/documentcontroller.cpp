@@ -432,9 +432,6 @@ void DocumentWindowController::doOpenDocument (std::function<void (bool saved)>&
 		if (auto newDocContext = DocumentContext::loadDocument (fs->getSelectedFile (0)))
 		{
 			docContext->replaceDocument (newDocContext->getDocument ());
-			for (auto index = 0u; index < docContext->getImagePaths ().size (); ++index)
-				onImagePathAdded (docContext->getImagePaths ()[index], index);
-			setDirty ();
 			window->setTitle (getDisplayFilename (docContext->getPath ()));
 			window->setRepresentedPath (UTF8String (docContext->getPath ()));
 			docIsDirty = false;

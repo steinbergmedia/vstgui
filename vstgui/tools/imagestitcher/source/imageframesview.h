@@ -25,10 +25,17 @@ public:
 	void setImageList (ImageList* list);
 
 private:
+	static std::vector<Path> getDragPngImagePaths (IDataPackage* drag);
+	static bool dragHasPngImages (IDataPackage* drag);
+	static bool getIndicesFromDataPackage (IDataPackage* package,
+	                                       std::vector<size_t>* result = nullptr);
+
 	int32_t posToIndex (CPoint where) const;
 	void selectExclusive (size_t index);
 	void enlargeSelection (size_t index);
 	void updateViewSize ();
+	void reorderImages (size_t position, bool doCopy, std::vector<size_t>& indices);
+	void addImages (size_t position, const std::vector<Path>& imagePaths);
 	void parentSizeChanged () override;
 	void drawRect (CDrawContext* context, const CRect& _updateRect) override;
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
