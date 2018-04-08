@@ -51,6 +51,9 @@ public:
 	virtual SharedPointer<IDataPackage> getClipboard () = 0;			///< get clipboard data
 
 	virtual PlatformType getPlatformType () const = 0;
+
+	/** called from IPlatformFrameCallback when it's closed */
+	virtual void onFrameClosed () = 0;
 //-----------------------------------------------------------------------------
 protected:
 	explicit IPlatformFrame (IPlatformFrameCallback* frame) : frame (frame) {}
