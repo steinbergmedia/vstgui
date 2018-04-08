@@ -51,6 +51,7 @@ public:
 	void setClipboard (const SharedPointer<IDataPackage>& data) override;
 	SharedPointer<IDataPackage> getClipboard () override;
 	PlatformType getPlatformType () const override { return PlatformType::kWindowRef; }
+	void onFrameClosed () override {}
 
 //-----------------------------------------------------------------------------
 protected:
