@@ -70,6 +70,7 @@ public:
 	void setClipboard (const SharedPointer<IDataPackage>& data) override;
 	SharedPointer<IDataPackage> getClipboard () override;
 	PlatformType getPlatformType () const override { return PlatformType::kNSView; }
+	void onFrameClosed () override {}
 
 	// IPlatformFrameTouchBarExtension
 	void setTouchBarCreator (const SharedPointer<ITouchBarCreator>& creator) override;

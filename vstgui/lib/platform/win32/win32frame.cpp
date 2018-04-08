@@ -612,6 +612,12 @@ SharedPointer<IDataPackage> Win32Frame::getClipboard ()
 }
 
 //-----------------------------------------------------------------------------
+void Win32Frame::onFrameClosed ()
+{
+	frame = nullptr;
+}
+
+//-----------------------------------------------------------------------------
 void Win32Frame::paint (HWND hwnd)
 {
 	HRGN rgn = CreateRectRgn (0, 0, 0, 0);
@@ -752,6 +758,9 @@ static unsigned char translateWinVirtualKey (WPARAM winVKey)
 //-----------------------------------------------------------------------------
 LONG_PTR WINAPI Win32Frame::proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+	if (getFrame () == nullptr)
+		return DefWindowProc (hwnd, message, wParam, lParam);
+
 	SharedPointer<Win32Frame> lifeGuard (this);
 	IPlatformFrameCallback* pFrame = getFrame ();
 	bool doubleClick = false;
