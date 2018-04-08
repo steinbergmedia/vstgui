@@ -612,6 +612,12 @@ SharedPointer<IDataPackage> Win32Frame::getClipboard ()
 }
 
 //-----------------------------------------------------------------------------
+void Win32Frame::onFrameClosed ()
+{
+	frame = nullptr;
+}
+
+//-----------------------------------------------------------------------------
 void Win32Frame::paint (HWND hwnd)
 {
 	HRGN rgn = CreateRectRgn (0, 0, 0, 0);
