@@ -151,7 +151,11 @@ void CFrame::beforeDelete ()
 	}
 #endif
 
-	pImpl->platformFrame = nullptr;
+	if (pImpl->platformFrame)
+	{
+		pImpl->platformFrame->onFrameClosed ();
+		pImpl->platformFrame = nullptr;
+	}
 
 	setViewFlag (kIsAttached, false);
 	
@@ -171,7 +175,11 @@ void CFrame::close ()
 	setCursor (kCursorDefault);
 	setParentFrame (nullptr);
 	removeAll ();
-	pImpl->platformFrame = nullptr;
+	if (pImpl->platformFrame)
+	{
+		pImpl->platformFrame->onFrameClosed ();
+		pImpl->platformFrame = nullptr;
+	}
 	forget ();
 }
 
