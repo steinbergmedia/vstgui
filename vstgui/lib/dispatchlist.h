@@ -14,7 +14,7 @@ template <typename T>
 class DispatchList
 {
 public:
-	DispatchList ();
+	DispatchList () = default;
 
 	void add (const T& obj);
 	void add (T&& obj);
@@ -38,12 +38,6 @@ private:
 	Array toAdd;
 	bool inForEach {false};
 };
-
-//------------------------------------------------------------------------
-template <typename T>
-inline DispatchList<T>::DispatchList ()
-{
-}
 
 //------------------------------------------------------------------------
 template <typename T>
@@ -106,15 +100,17 @@ inline void DispatchList<T>::postForEach ()
 {
 	if (!toAdd.empty ())
 	{
-		for (auto&& it : toAdd)
+		Array tmp;
+		toAdd.swap (tmp);
+		for (auto&& it : tmp)
 			add (std::move (it));
-		toAdd.clear ();
 	}
 	if (!toRemove.empty ())
 	{
-		for (auto&& it : toRemove)
+		Array tmp;
+		toRemove.swap (tmp);
+		for (auto&& it : tmp)
 			remove (std::move (it));
-		toRemove.clear ();
 	}
 }
 
