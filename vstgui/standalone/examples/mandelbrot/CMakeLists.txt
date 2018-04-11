@@ -11,7 +11,6 @@ set(${target}_sources
   "source/mandelbrotwindow.cpp"
   "source/mandelbrotwindow.h"
   "source/modelbinding.h"
-  "source/progressindicatorview.cpp"
 )
 
 ##########################################################################################
