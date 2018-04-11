@@ -348,6 +348,8 @@ void ControlValueAnimation::animationTick (CView* view, IdStringPtr name, float 
 	{
 		float value = startValue + (endValue - startValue) * pos;
 		control->setValue (value);
+		if (control->isDirty ())
+			control->invalid ();
 	}
 }
 
