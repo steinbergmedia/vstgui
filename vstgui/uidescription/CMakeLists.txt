@@ -5,6 +5,8 @@ set(target vstgui_uidescription)
 
 set(${target}_sources
     base64codec.h
+    compresseduidescription.cpp
+    compresseduidescription.h
     cstream.cpp
     cstream.h
     delegationcontroller.h

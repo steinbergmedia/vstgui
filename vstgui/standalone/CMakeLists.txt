@@ -2,6 +2,7 @@
 set(target vstgui_standalone)
 
 set(${target}_common_sources
+    include/appinit.h
     include/doc.h
     include/fwd.h
     include/ialertbox.h

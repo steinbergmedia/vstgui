@@ -8,7 +8,7 @@
 #include "../../lib/cfileselector.h"
 #include "../../lib/cframe.h"
 #include "../../uidescription/uiattributes.h"
-#include "../../uidescription/uidescription.h"
+#include "../../uidescription/compresseduidescription.h"
 #include "../include/ialertbox.h"
 #include "../include/iappdelegate.h"
 #include "../include/iapplication.h"
@@ -114,7 +114,11 @@ void SharedUIResources::load () const
 			filename = *absPath;
 #endif
 
-		auto description = makeOwned<UIDescription> (filename);
+		SharedPointer<UIDescription> description;
+		if (Detail::getApplicationPlatformAccess ()->useCompressedUIDescriptionFiles ())
+			description = makeOwned<CompressedUIDescription> (filename);
+		else
+			description = makeOwned<UIDescription> (filename);
 		if (!description->parse ())
 		{
 #if VSTGUI_LIVE_EDITING

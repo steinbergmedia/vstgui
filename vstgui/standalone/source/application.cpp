@@ -1,10 +1,10 @@
-// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "application.h"
 #include "../../lib/cview.h"
-#include "../include/iappdelegate.h"
+#include "../include/appinit.h"
 #include "../include/iapplication.h"
 #include "../include/icommand.h"
 #include "../include/imenubuilder.h"
@@ -25,8 +25,10 @@ public:
 	static Application& instance ();
 	Application () = default;
 
-	// IApplication
 	void setDelegate (Standalone::Application::DelegatePtr&& delegate);
+	void setConfiguration (Standalone::Application::Configuration&& config);
+
+	// IApplication
 	IPreference& getPreferences () const override;
 	const CommandLineArguments& getCommandLineArguments () const override;
 	const ISharedUIResources& getSharedUIResources () const override;
@@ -59,11 +61,14 @@ public:
 	const CommandList& getKeyCommandList () override;
 	bool canQuit () override;
 	bool dontClosePopupOnDeactivation (Platform::IWindow* window) override;
+	bool useCompressedUIDescriptionFiles () const override;
 
 private:
 	void registerStandardCommands ();
 	bool doCommandHandling (const Command& command, bool checkOnly);
 	CommandList getCommandList (const Interface& context, IMenuBuilder* menuBuilder);
+	bool inQuit () const { return hasBit (flags, flagInQuit); }
+	void setInQuit (bool state) { setBit (flags, flagInQuit, state); }
 
 	WindowList windows;
 	Standalone::Application::DelegatePtr delegate;
@@ -72,8 +77,14 @@ private:
 	PlatformCallbacks platform;
 	CommandList commandList;
 	CommandLineArguments commandLineArguments;
-	bool inQuit {false};
+	uint64_t flags {0};
 	uint16_t commandIDCounter {0};
+
+	enum Flags
+	{
+		flagInQuit = 1 << 0,
+		flagUseCompressedUIDescriptionFiles = 1 << 1,
+	};
 };
 
 //------------------------------------------------------------------------
@@ -120,6 +131,25 @@ void Application::registerStandardCommands ()
 void Application::setDelegate (Standalone::Application::DelegatePtr&& inDelegate)
 {
 	delegate = std::move (inDelegate);
+}
+
+//------------------------------------------------------------------------
+void Application::setConfiguration (Standalone::Application::Configuration&& config)
+{
+	using namespace VSTGUI::Standalone::Application;
+
+	for (auto c : config)
+	{
+		switch (c.first)
+		{
+			case ConfigKey::UseCompressedUIDescriptionFiles:
+			{
+				assert (c.second.type == ConfigValue::Type::Integer);
+				setBit (flags, flagUseCompressedUIDescriptionFiles, c.second.value.integer != 0);
+				break;
+			}
+		}
+	}
 }
 
 //------------------------------------------------------------------------
@@ -187,12 +217,12 @@ void Application::showAlertBoxForWindow (const AlertBoxForWindowConfig& config)
 //------------------------------------------------------------------------
 void Application::quit ()
 {
-	if (inQuit || !canQuit ())
+	if (inQuit () || !canQuit ())
 		return;
-	inQuit = true;
+	setInQuit (true);
 	if (platform.quit)
 		platform.quit ();
-	inQuit = false;
+	setInQuit (false);
 }
 
 //------------------------------------------------------------------------
@@ -238,7 +268,7 @@ auto Application::getCommandList (const Interface& context, IMenuBuilder* menuBu
 				std::sort (catListCopy.second.begin (), catListCopy.second.end (),
 				           [&] (const CommandWithKey& lhs, const CommandWithKey& rhs) {
 					           return func (lhs.name, rhs.name);
-					       });
+				           });
 			}
 			for (auto it = ++catListCopy.second.begin (); it != catListCopy.second.end (); ++it)
 			{
@@ -416,6 +446,12 @@ void Application::onActivated (const IWindow& window)
 	}
 }
 
+//------------------------------------------------------------------------
+bool Application::useCompressedUIDescriptionFiles () const
+{
+	return hasBit (flags, flagUseCompressedUIDescriptionFiles);
+}
+
 static std::vector<Platform::IWindow*> popupClosePreventionList;
 
 //------------------------------------------------------------------------
@@ -460,10 +496,11 @@ IApplication& IApplication::instance ()
 namespace Application {
 
 //------------------------------------------------------------------------
-Init::Init (DelegatePtr&& delegate)
+Init::Init (DelegatePtr&& delegate, Configuration&& config)
 {
 	CView::kDirtyCallAlwaysOnMainThread = true;
 	Detail::Application::instance ().setDelegate (std::move (delegate));
+	Detail::Application::instance ().setConfiguration (std::move (config));
 }
 
 //------------------------------------------------------------------------

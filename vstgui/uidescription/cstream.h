@@ -215,6 +215,8 @@ public:
 	int64_t seek (int64_t pos, SeekMode mode) override;
 	int64_t tell () const override;
 	void rewind () override;
+
+	using InputStream::operator>>;
 protected:
 	void* platformHandle;
 };

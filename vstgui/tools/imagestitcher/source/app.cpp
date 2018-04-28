@@ -147,9 +147,9 @@ public:
 	}
 };
 
-static Init gAppDelegate (std::make_unique<ImageStitcherAppDelegate> ());
+static Init gAppDelegate (std::make_unique<ImageStitcherAppDelegate> (),
+                          {{ConfigKey::UseCompressedUIDescriptionFiles, 1}});
 
 //------------------------------------------------------------------------
 } // ImageStitcher
 } // VSTGUI
-

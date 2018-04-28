@@ -5,7 +5,7 @@
 #ifndef __compresseduidescription__
 #define __compresseduidescription__
 
-#include "vstgui/uidescription/uidescription.h"
+#include "uidescription.h"
 
 //------------------------------------------------------------------------
 namespace VSTGUI {

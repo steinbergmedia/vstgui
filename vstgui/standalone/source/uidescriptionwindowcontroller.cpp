@@ -17,6 +17,7 @@
 #include "../../uidescription/icontroller.h"
 #include "../../uidescription/uiattributes.h"
 #include "../../uidescription/uidescription.h"
+#include "../../uidescription/compresseduidescription.h"
 #include "../include/helpers/menubuilder.h"
 #include "../include/helpers/valuelistener.h"
 #include "../include/helpers/windowcontroller.h"
@@ -411,7 +412,10 @@ struct WindowController::Impl : public IController, public ICommandHandler
 
 	bool initUIDesc (const char* fileName)
 	{
-		uiDesc = makeOwned<UIDescription> (fileName);
+		if (Detail::getApplicationPlatformAccess ()->useCompressedUIDescriptionFiles ())
+			uiDesc = makeOwned<CompressedUIDescription> (fileName);
+		else
+			uiDesc = makeOwned<UIDescription> (fileName);
 		uiDesc->setSharedResources (Detail::getSharedUIDescription ());
 		if (!uiDesc->parse ())
 		{

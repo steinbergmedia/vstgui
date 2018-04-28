@@ -1,15 +1,22 @@
-// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "compresseduidescription.h"
-#include "vstgui/uidescription/xmlparser.h"
-#include "vstgui/uidescription/cstream.h"
-
-#include <zlib.h>
+#include "cstream.h"
+#include "xmlparser.h"
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
+
+namespace {
+#define MINIZ_NO_STDIO
+#define MINIZ_NO_ARCHIVE_APIS
+#define MINIZ_NO_ARCHIVE_WRITING_APIS
+#include "miniz/miniz.c"
+};
+
+using z_streamp = mz_streamp;
 
 //-----------------------------------------------------------------------------
 class ZLibInputStream : public InputStream
@@ -72,7 +79,7 @@ bool CompressedUIDescription::parse ()
 	if (resStream.open (getXmlFile ()))
 	{
 		int64_t identifier;
-		static_cast<InputStream&> (resStream) >> identifier;
+		resStream >> identifier;
 		if (identifier == kUIDescIdentifier)
 		{
 			ZLibInputStream zin;
@@ -99,10 +106,10 @@ bool CompressedUIDescription::save (UTF8StringPtr filename, int32_t flags)
 	bool result = false;
 	CFileStream fileStream;
 	if (fileStream.open (filename, CFileStream::kWriteMode | CFileStream::kBinaryMode |
-									   CFileStream::kTruncateMode),
-		kLittleEndianByteOrder)
+	                                   CFileStream::kTruncateMode),
+	    kLittleEndianByteOrder)
 	{
-		static_cast<OutputStream&> (fileStream) << kUIDescIdentifier;
+		fileStream << kUIDescIdentifier;
 		ZLibOutputStream zout;
 		if (zout.open (fileStream))
 		{
@@ -119,8 +126,8 @@ bool CompressedUIDescription::save (UTF8StringPtr filename, int32_t flags)
 		xmlFileName.append (".xml");
 		CFileStream xmlFileStream;
 		if (xmlFileStream.open (xmlFileName.c_str (),
-								CFileStream::kWriteMode | CFileStream::kTruncateMode),
-			kLittleEndianByteOrder)
+		                        CFileStream::kWriteMode | CFileStream::kTruncateMode),
+		    kLittleEndianByteOrder)
 		{
 			saveToStream (xmlFileStream, flags);
 		}
@@ -224,7 +231,10 @@ ZLibOutputStream::ZLibOutputStream (ByteOrder byteOrder)
 }
 
 //-----------------------------------------------------------------------------
-ZLibOutputStream::~ZLibOutputStream () { close (); }
+ZLibOutputStream::~ZLibOutputStream ()
+{
+	close ();
+}
 
 //-----------------------------------------------------------------------------
 bool ZLibOutputStream::open (OutputStream& _stream, int32_t compressionLevel)
@@ -269,7 +279,7 @@ bool ZLibOutputStream::close ()
 			else if (zstream->avail_out != internalBufferSize)
 			{
 				uint32_t written =
-					stream->writeRaw (internalBuffer, internalBufferSize - zstream->avail_out);
+				    stream->writeRaw (internalBuffer, internalBufferSize - zstream->avail_out);
 				if (written != internalBufferSize - zstream->avail_out)
 				{
 					result = false;
@@ -308,7 +318,7 @@ uint32_t ZLibOutputStream::writeRaw (const void* buffer, uint32_t size)
 		if (zstream->avail_out != internalBufferSize)
 		{
 			uint32_t written =
-				stream->writeRaw (internalBuffer, internalBufferSize - zstream->avail_out);
+			    stream->writeRaw (internalBuffer, internalBufferSize - zstream->avail_out);
 			if (written != internalBufferSize - zstream->avail_out)
 				return -1;
 		}
