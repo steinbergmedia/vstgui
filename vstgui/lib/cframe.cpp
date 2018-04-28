@@ -1476,6 +1476,8 @@ bool CFrame::platformDrawRect (CDrawContext* context, const CRect& rect)
 //-----------------------------------------------------------------------------
 CMouseEventResult CFrame::platformOnMouseDown (CPoint& where, const CButtonState& buttons)
 {
+	if (!getMouseEnabled ())
+		return kMouseEventNotHandled;
 	Impl::PostEventHandler peh (*pImpl);
 	CollectInvalidRects cir (this);
 	return onMouseDown (where, buttons);
@@ -1484,6 +1486,8 @@ CMouseEventResult CFrame::platformOnMouseDown (CPoint& where, const CButtonState
 //-----------------------------------------------------------------------------
 CMouseEventResult CFrame::platformOnMouseMoved (CPoint& where, const CButtonState& buttons)
 {
+	if (!getMouseEnabled ())
+		return kMouseEventNotHandled;
 	Impl::PostEventHandler peh (*pImpl);
 	CollectInvalidRects cir (this);
 	return onMouseMoved (where, buttons);
@@ -1492,6 +1496,8 @@ CMouseEventResult CFrame::platformOnMouseMoved (CPoint& where, const CButtonStat
 //-----------------------------------------------------------------------------
 CMouseEventResult CFrame::platformOnMouseUp (CPoint& where, const CButtonState& buttons)
 {
+	if (!getMouseEnabled ())
+		return kMouseEventNotHandled;
 	Impl::PostEventHandler peh (*pImpl);
 	CollectInvalidRects cir (this);
 	return onMouseUp (where, buttons);
@@ -1500,6 +1506,8 @@ CMouseEventResult CFrame::platformOnMouseUp (CPoint& where, const CButtonState& 
 //-----------------------------------------------------------------------------
 CMouseEventResult CFrame::platformOnMouseExited (CPoint& where, const CButtonState& buttons)
 {
+	if (!getMouseEnabled ())
+		return kMouseEventNotHandled;
 	Impl::PostEventHandler peh (*pImpl);
 	CollectInvalidRects cir (this);
 	return onMouseExited (where, buttons);
@@ -1508,6 +1516,8 @@ CMouseEventResult CFrame::platformOnMouseExited (CPoint& where, const CButtonSta
 //-----------------------------------------------------------------------------
 bool CFrame::platformOnMouseWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const CButtonState &buttons)
 {
+	if (!getMouseEnabled ())
+		return kMouseEventNotHandled;
 	Impl::PostEventHandler peh (*pImpl);
 	CollectInvalidRects cir (this);
 	return onWheel (where, axis, distance, buttons);
@@ -1516,6 +1526,8 @@ bool CFrame::platformOnMouseWheel (const CPoint &where, const CMouseWheelAxis &a
 //-----------------------------------------------------------------------------
 DragOperation CFrame::platformOnDragEnter (DragEventData data)
 {
+	if (!getMouseEnabled ())
+		return DragOperation::None;
 	Impl::PostEventHandler peh (*pImpl);
 	CollectInvalidRects cir (this);
 	data.modifiers = data.modifiers.getModifierState ();
@@ -1525,6 +1537,8 @@ DragOperation CFrame::platformOnDragEnter (DragEventData data)
 //-----------------------------------------------------------------------------
 DragOperation CFrame::platformOnDragMove (DragEventData data)
 {
+	if (!getMouseEnabled ())
+		return DragOperation::None;
 	Impl::PostEventHandler peh (*pImpl);
 	CollectInvalidRects cir (this);
 	data.modifiers = data.modifiers.getModifierState ();
@@ -1534,6 +1548,8 @@ DragOperation CFrame::platformOnDragMove (DragEventData data)
 //-----------------------------------------------------------------------------
 void CFrame::platformOnDragLeave (DragEventData data)
 {
+	if (!getMouseEnabled ())
+		return;
 	Impl::PostEventHandler peh (*pImpl);
 	CollectInvalidRects cir (this);
 	data.modifiers = data.modifiers.getModifierState ();
@@ -1543,6 +1559,8 @@ void CFrame::platformOnDragLeave (DragEventData data)
 //-----------------------------------------------------------------------------
 bool CFrame::platformOnDrop (DragEventData data)
 {
+	if (!getMouseEnabled ())
+		return false;
 	Impl::PostEventHandler peh (*pImpl);
 	CollectInvalidRects cir (this);
 	data.modifiers = data.modifiers.getModifierState ();
@@ -1552,6 +1570,8 @@ bool CFrame::platformOnDrop (DragEventData data)
 //-----------------------------------------------------------------------------
 bool CFrame::platformOnKeyDown (VstKeyCode& keyCode)
 {
+	if (!getMouseEnabled ())
+		return false;
 	Impl::PostEventHandler peh (*pImpl);
 	CollectInvalidRects cir (this);
 	return onKeyDown (keyCode) == 1;
@@ -1560,6 +1580,8 @@ bool CFrame::platformOnKeyDown (VstKeyCode& keyCode)
 //-----------------------------------------------------------------------------
 bool CFrame::platformOnKeyUp (VstKeyCode& keyCode)
 {
+	if (!getMouseEnabled ())
+		return false;
 	Impl::PostEventHandler peh (*pImpl);
 	CollectInvalidRects cir (this);
 	return onKeyUp (keyCode) == 1;
