@@ -23,14 +23,22 @@ public:
 
 	void setDocContext (const DocumentContextPtr& dc);
 	void setImageList (ImageList* list);
+	void setSelectionColor (CColor color);
 
+	void takeFocus () override;
+	void looseFocus () override;
 private:
 	static std::vector<Path> getDragPngImagePaths (IDataPackage* drag);
 	static bool dragHasPngImages (IDataPackage* drag);
 	static bool getIndicesFromDataPackage (IDataPackage* package,
 	                                       std::vector<size_t>* result = nullptr);
 
+	CPoint sizeOfOneRow () const;
+	CRect indexToRect (int32_t index) const;
 	int32_t posToIndex (CPoint where) const;
+	int32_t firstSelectedIndex () const;
+	int32_t lastSelectedIndex () const;
+	void makeRectVisible (CRect r) const;
 	void selectExclusive (size_t index);
 	void enlargeSelection (size_t index);
 	void updateViewSize ();
@@ -45,8 +53,10 @@ private:
 	DragOperation onDragMove (DragEventData eventData) override;
 	void onDragLeave (DragEventData eventData) override;
 	bool onDrop (DragEventData eventData) override;
+	int32_t onKeyDown (VstKeyCode& keyCode) override;
 
-	CColor selectionColor = MakeCColor (164, 205, 255, 255);
+	CColor activeSelectionColor;
+	CColor inactiveSelectionColor;
 	CCoord titleHeight {8};
 	CCoord rowHeight {0};
 	CPoint mouseDownPos;

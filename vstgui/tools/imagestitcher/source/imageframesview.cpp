@@ -24,6 +24,7 @@ ImageFramesView::ImageFramesView () : CView (CRect (0, 0, 10, 10))
 {
 	font = makeOwned<CFontDesc> (*kSystemFont);
 	font->setSize (8);
+	setSelectionColor (MakeCColor (164, 205, 255, 255));
 }
 
 //------------------------------------------------------------------------
@@ -38,6 +39,17 @@ void ImageFramesView::setImageList (ImageList* list)
 	imageList = list;
 	updateViewSize ();
 	invalid ();
+}
+
+//------------------------------------------------------------------------
+void ImageFramesView::makeRectVisible (CRect r) const
+{
+	if (!isAttached ())
+		return;
+	if (auto scrollView = dynamic_cast<CScrollView*> (getParentView ()->getParentView ()))
+	{
+		scrollView->makeRectVisible (r);
+	}
 }
 
 //------------------------------------------------------------------------
@@ -85,6 +97,16 @@ void ImageFramesView::parentSizeChanged ()
 }
 
 //------------------------------------------------------------------------
+void ImageFramesView::setSelectionColor (CColor color)
+{
+	activeSelectionColor = inactiveSelectionColor = color;
+	double h, s, l;
+	inactiveSelectionColor.toHSL (h, s, l);
+	s = 0.;
+	inactiveSelectionColor.fromHSL (h, s, l);
+}
+
+//------------------------------------------------------------------------
 void ImageFramesView::drawRect (CDrawContext* context, const CRect& _updateRect)
 {
 	if (!imageList || imageList->empty ())
@@ -95,7 +117,9 @@ void ImageFramesView::drawRect (CDrawContext* context, const CRect& _updateRect)
 	CRect updateRect (_updateRect);
 	updateRect.offsetInverse (topLeft);
 
-	context->setFillColor (selectionColor);
+	context->setFillColor (getFrame ()->getFocusView () == this ? activeSelectionColor :
+	                                                              inactiveSelectionColor);
+
 	context->setFontColor (kBlackCColor);
 	context->setFont (font);
 	context->setDrawMode (kAntiAliasing);
@@ -148,16 +172,67 @@ void ImageFramesView::drawRect (CDrawContext* context, const CRect& _updateRect)
 }
 
 //------------------------------------------------------------------------
+void ImageFramesView::takeFocus ()
+{
+	CView::takeFocus ();
+}
+
+//------------------------------------------------------------------------
+void ImageFramesView::looseFocus ()
+{
+	CView::looseFocus ();
+}
+
+//------------------------------------------------------------------------
+int32_t ImageFramesView::firstSelectedIndex () const
+{
+	for (int32_t index = 0; index < imageList->size (); ++index)
+	{
+		if (imageList->at (index).selected)
+			return index;
+	}
+	return -1;
+}
+
+//------------------------------------------------------------------------
+int32_t ImageFramesView::lastSelectedIndex () const
+{
+	for (int32_t index = static_cast<int32_t> (imageList->size ()) - 1; index >= 0; --index)
+	{
+		if (imageList->at (index).selected)
+			return index;
+	}
+	return -1;
+}
+
+//------------------------------------------------------------------------
+CPoint ImageFramesView::sizeOfOneRow () const
+{
+	CPoint size;
+	size.x = getWidth ();
+	size.y = rowHeight;
+	return size;
+}
+
+//------------------------------------------------------------------------
+CRect ImageFramesView::indexToRect (int32_t index) const
+{
+	CRect r;
+	if (imageList->empty ())
+		return r;
+	auto size = sizeOfOneRow ();
+	r.setSize (size);
+	r.offset (0, size.y * index);
+	r.offset (getViewSize ().getTopLeft ());
+	return r;
+}
+
+//------------------------------------------------------------------------
 int32_t ImageFramesView::posToIndex (CPoint where) const
 {
 	if (imageList->empty ())
 		return 0;
-	CRect r;
-	auto size = imageList->front ().bitmap->getSize ();
-	size.y += titleHeight;
-	size.x = getWidth ();
-	r.setSize (size);
-	r.offset (getViewSize ().getTopLeft ());
+	CRect r = indexToRect (0);
 	for (auto index = 0u; index < imageList->size (); ++index)
 	{
 		if (r.pointInside (where))
@@ -173,9 +248,13 @@ void ImageFramesView::selectExclusive (size_t index)
 	for (auto i = 0u; i < imageList->size (); ++i)
 	{
 		auto& image = imageList->at (i);
-		image.selected = (i == index);
+		if (image.selected != (i == index))
+		{
+			image.selected = (i == index);
+			invalidRect (indexToRect (i));
+		}
 	}
-	invalid ();
+	makeRectVisible (indexToRect (index));
 }
 
 //------------------------------------------------------------------------
@@ -198,14 +277,25 @@ void ImageFramesView::enlargeSelection (size_t index)
 	if (nearest < 0)
 	{
 		for (auto i = index + nearest; i <= index; ++i)
-			imageList->at (i).selected = true;
+		{
+			if (!imageList->at (i).selected)
+			{
+				imageList->at (i).selected = true;
+				invalidRect (indexToRect (i));
+			}
+		}
 	}
 	else if (nearest > 0)
 	{
 		for (auto i = index; i < index + nearest; ++i)
-			imageList->at (i).selected = true;
+		{
+			if (!imageList->at (i).selected)
+			{
+				imageList->at (i).selected = true;
+				invalidRect (indexToRect (i));
+			}
+		}
 	}
-	invalid ();
 }
 
 static constexpr size_t DragPackageID = 'isdp';
@@ -369,7 +459,7 @@ CMouseEventResult ImageFramesView::onMouseDown (CPoint& where, const CButtonStat
 			else
 			{
 				imageList->at (index).selected = !imageList->at (index).selected;
-				invalid ();
+				invalidRect (indexToRect (index));
 			}
 		}
 		return kMouseEventHandled;
@@ -470,6 +560,36 @@ DragOperation ImageFramesView::onDragMove (DragEventData eventData)
 		return doCopy ? DragOperation::Copy : DragOperation::Move;
 	}
 	return DragOperation::None;
+}
+
+//------------------------------------------------------------------------
+int32_t ImageFramesView::onKeyDown (VstKeyCode& keyCode)
+{
+	if (keyCode.virt == 0 || !imageList || imageList->empty ())
+		return -1;
+	switch (keyCode.virt)
+	{
+		case VKEY_UP:
+		{
+			auto index = firstSelectedIndex ();
+			if (index <= 0)
+				index = imageList->size ();
+			--index;
+			selectExclusive (static_cast<size_t> (index));
+			return 1;
+		}
+		case VKEY_DOWN:
+		{
+			auto index = lastSelectedIndex ();
+			if (index == imageList->size () - 1)
+				index = 0;
+			else
+				++index;
+			selectExclusive (static_cast<size_t> (index));
+			return 1;
+		}
+	}
+	return -1;
 }
 
 //------------------------------------------------------------------------

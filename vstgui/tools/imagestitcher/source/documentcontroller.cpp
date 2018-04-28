@@ -47,6 +47,9 @@ public:
 			if (*name == "ImageView")
 			{
 				auto imageView = new ImageFramesView ();
+				CColor color;
+				if (description->getColor ("Focus", color))
+					imageView->setSelectionColor (color);
 				return imageView;
 			}
 		}
