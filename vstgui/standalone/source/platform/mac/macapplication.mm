@@ -6,6 +6,7 @@
 #import "../../../include/iappdelegate.h"
 #import "../../../include/iapplication.h"
 #import "../../application.h"
+#import "../../genericalertbox.h"
 #import "../../shareduiresources.h"
 #import "../../window.h"
 #import "VSTGUICommand.h"
@@ -413,7 +414,33 @@ static CommandWithKeyList getCommandList (const char* _Nonnull group)
 		return;
 	}
 
-	auto callback = config.callback;
+	auto callback = std::move (config.callback);
+
+#if VSTGUI_STANDALONE_USE_GENERIC_ALERTBOX_ON_MACOS
+	struct Params
+	{
+		NSWindow* sheet {nullptr};
+		NSWindow* parent {nullptr};
+	};
+
+	auto params = std::make_shared<Params> ();
+	params->parent = macWindow->getNSWindow ();
+	auto parentWindow = config.window;
+	auto alertWindow = Detail::createAlertBox (config, [=] (AlertResult r) {
+		if (callback)
+			callback (r);
+		[params->parent endSheet:params->sheet];
+	});
+	auto platformAlertWindow = VSTGUI::dynamicPtrCast<IPlatformWindowAccess> (alertWindow);
+	assert (platformAlertWindow);
+	auto macAlertWindow =
+	    VSTGUI::staticPtrCast<IMacWindow> (platformAlertWindow->getPlatformWindow ());
+	assert (macAlertWindow);
+	params->sheet = macAlertWindow->getNSWindow ();
+
+	[params->parent beginSheet:params->sheet completionHandler:^(NSModalResponse returnCode) {}];
+
+#else
 
 	NSAlert* alert = [self createAlert:config];
 	[alert beginSheetModalForWindow:macWindow->getNSWindow ()
@@ -430,6 +457,7 @@ static CommandWithKeyList getCommandList (const char* _Nonnull group)
 			            callback (result);
 		            }
 		          }];
+#endif
 }
 
 //------------------------------------------------------------------------
