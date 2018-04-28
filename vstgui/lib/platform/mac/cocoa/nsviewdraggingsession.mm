@@ -143,8 +143,8 @@ SharedPointer<NSViewDraggingSession> NSViewDraggingSession::create (
 			}
 			case IDataPackage::kBinary:
 			{
-				if (id data =
-				        [[BinaryDataType::getClass () alloc] initWithData:buffer andSize:size])
+				if (id data = [[[BinaryDataType::getClass () alloc] initWithData:buffer
+				                                                         andSize:size] autorelease])
 					item = [[[NSDraggingItem alloc] initWithPasteboardWriter:data] autorelease];
 				break;
 			}
