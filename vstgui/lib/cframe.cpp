@@ -1517,7 +1517,7 @@ CMouseEventResult CFrame::platformOnMouseExited (CPoint& where, const CButtonSta
 bool CFrame::platformOnMouseWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const CButtonState &buttons)
 {
 	if (!getMouseEnabled ())
-		return kMouseEventNotHandled;
+		return false;
 	Impl::PostEventHandler peh (*pImpl);
 	CollectInvalidRects cir (this);
 	return onWheel (where, axis, distance, buttons);

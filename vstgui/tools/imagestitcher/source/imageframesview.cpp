@@ -186,10 +186,10 @@ void ImageFramesView::looseFocus ()
 //------------------------------------------------------------------------
 int32_t ImageFramesView::firstSelectedIndex () const
 {
-	for (int32_t index = 0; index < imageList->size (); ++index)
+	for (auto index = 0u; index < imageList->size (); ++index)
 	{
 		if (imageList->at (index).selected)
-			return index;
+			return static_cast<int32_t> (index);
 	}
 	return -1;
 }
@@ -215,7 +215,7 @@ CPoint ImageFramesView::sizeOfOneRow () const
 }
 
 //------------------------------------------------------------------------
-CRect ImageFramesView::indexToRect (int32_t index) const
+CRect ImageFramesView::indexToRect (size_t index) const
 {
 	CRect r;
 	if (imageList->empty ())
@@ -573,7 +573,7 @@ int32_t ImageFramesView::onKeyDown (VstKeyCode& keyCode)
 		{
 			auto index = firstSelectedIndex ();
 			if (index <= 0)
-				index = imageList->size ();
+				index = static_cast<int32_t> (imageList->size ());
 			--index;
 			selectExclusive (static_cast<size_t> (index));
 			return 1;
@@ -581,7 +581,7 @@ int32_t ImageFramesView::onKeyDown (VstKeyCode& keyCode)
 		case VKEY_DOWN:
 		{
 			auto index = lastSelectedIndex ();
-			if (index == imageList->size () - 1)
+			if (index == static_cast<int32_t> (imageList->size ()) - 1)
 				index = 0;
 			else
 				++index;

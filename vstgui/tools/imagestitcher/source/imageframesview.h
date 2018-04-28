@@ -34,7 +34,7 @@ private:
 	                                       std::vector<size_t>* result = nullptr);
 
 	CPoint sizeOfOneRow () const;
-	CRect indexToRect (int32_t index) const;
+	CRect indexToRect (size_t index) const;
 	int32_t posToIndex (CPoint where) const;
 	int32_t firstSelectedIndex () const;
 	int32_t lastSelectedIndex () const;
