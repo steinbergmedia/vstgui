@@ -254,6 +254,11 @@ static CommandWithKeyList getCommandList (const char* _Nonnull group)
 	[menu addItemWithTitle:@"Merge All Windows"
 	                action:@selector (mergeAllWindows:)
 	         keyEquivalent:@""];
+	item = [menu addItemWithTitle:@"Show All Tabs"
+	                action:@selector (toggleTabOverview:)
+	         keyEquivalent:@"\\"];
+	item.keyEquivalentModifierMask =
+	    MacEventModifier::ShiftKeyMask | MacEventModifier::CommandKeyMask;
 
 	[menu addItem:[NSMenuItem separatorItem]];
 	[menu addItemWithTitle:@"Bring All to Front"
