@@ -525,9 +525,9 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 		else
 		{
 			if (action == @selector (undo))
-				menuItem.title = @"Undo";
+				menuItem.title = NSLocalizedString (@"Undo", "Menu Item");
 			else
-				menuItem.title = @"Redo";
+				menuItem.title = NSLocalizedString (@"Redo", "Menu Item");
 		}
 	}
 

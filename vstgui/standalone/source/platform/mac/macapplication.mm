@@ -1,4 +1,4 @@
-// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
@@ -177,12 +177,13 @@ static CommandWithKeyList getCommandList (const char* _Nonnull group)
 	NSString* appName = [self appName];
 	NSMenu* menu = [[NSMenu alloc] initWithTitle:appName];
 
-	[menu addItemWithTitle:[NSString stringWithFormat:@"About %@", appName]
+	[menu addItemWithTitle:[NSLocalizedString (@"About ", "Menu Item")
+	                           stringByAppendingString:appName]
 	                action:@selector (showAboutDialog:)
 	         keyEquivalent:@""];
 	[menu addItem:[NSMenuItem separatorItem]];
 
-	[menu addItemWithTitle:@"Preferences..."
+	[menu addItemWithTitle:NSLocalizedString (@"Preferences...", "Menu Item")
 	                action:@selector (showPreferenceDialog:)
 	         keyEquivalent:@","];
 
@@ -202,17 +203,21 @@ static CommandWithKeyList getCommandList (const char* _Nonnull group)
 	}
 
 	[menu addItem:[NSMenuItem separatorItem]];
-	[menu addItemWithTitle:[NSString stringWithFormat:@"Hide %@", appName]
-	                action:@selector (hide:)
-	         keyEquivalent:@"h"];
-	[menu addItemWithTitle:@"Hide Others"
+	[menu
+	    addItemWithTitle:[NSLocalizedString (@"Hide ", "Menu Item") stringByAppendingString:appName]
+	              action:@selector (hide:)
+	       keyEquivalent:@"h"];
+	[menu addItemWithTitle:NSLocalizedString (@"Hide Others", "Menu Item")
 	                action:@selector (hideOtherApplications:)
 	         keyEquivalent:@""];
-	[menu addItemWithTitle:@"Show All" action:@selector (unhideAllApplications:) keyEquivalent:@""];
+	[menu addItemWithTitle:NSLocalizedString (@"Show All", "Menu Item")
+	                action:@selector (unhideAllApplications:)
+	         keyEquivalent:@""];
 	[menu addItem:[NSMenuItem separatorItem]];
-	[menu addItemWithTitle:[NSString stringWithFormat:@"Quit %@", appName]
-	                action:@selector (terminate:)
-	         keyEquivalent:@"q"];
+	[menu
+	    addItemWithTitle:[NSLocalizedString (@"Quit ", "Menu Item") stringByAppendingString:appName]
+	              action:@selector (terminate:)
+	       keyEquivalent:@"q"];
 
 	return menu;
 }
@@ -229,12 +234,18 @@ static CommandWithKeyList getCommandList (const char* _Nonnull group)
 //------------------------------------------------------------------------
 - (nonnull NSMenu*)createWindowsMenu
 {
-	NSMenu* menu = [[NSMenu alloc] initWithTitle:@"Window"];
-	[menu addItemWithTitle:@"Minimize" action:@selector (performMiniaturize:) keyEquivalent:@"m"];
-	[menu addItemWithTitle:@"Zoom" action:@selector (performZoom:) keyEquivalent:@""];
-	NSMenuItem* item = [menu addItemWithTitle:@"Fullscreen"
-	                                   action:@selector (toggleFullScreen:)
-	                            keyEquivalent:@"f"];
+	NSMenu* menu =
+	    [[NSMenu alloc] initWithTitle:NSLocalizedString (@"Window", "Window Menu Title")];
+	[menu addItemWithTitle:NSLocalizedString (@"Minimize", "Menu Item in Window Menu")
+	                action:@selector (performMiniaturize:)
+	         keyEquivalent:@"m"];
+	[menu addItemWithTitle:NSLocalizedString (@"Zoom", "Menu Item in Window Menu")
+	                action:@selector (performZoom:)
+	         keyEquivalent:@""];
+	NSMenuItem* item =
+	    [menu addItemWithTitle:NSLocalizedString (@"Fullscreen", "Menu Item in Window Menu")
+	                    action:@selector (toggleFullScreen:)
+	             keyEquivalent:@"f"];
 	item.keyEquivalentModifierMask =
 	    MacEventModifier::CommandKeyMask | MacEventModifier::ControlKeyMask;
 	[menu addItem:[NSMenuItem separatorItem]];
@@ -242,31 +253,35 @@ static CommandWithKeyList getCommandList (const char* _Nonnull group)
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_12
 	if (@available (macOS 10.12, *))
 	{
-		item = [menu addItemWithTitle:@"Show Previous Tab"
-		                       action:@selector (selectPreviousTab:)
-		                keyEquivalent:@"\t"];
+		item = [menu
+		    addItemWithTitle:NSLocalizedString (@"Show Previous Tab", "Menu Item in Window Menu")
+		              action:@selector (selectPreviousTab:)
+		       keyEquivalent:@"\t"];
 		item.keyEquivalentModifierMask =
 		    MacEventModifier::ShiftKeyMask | MacEventModifier::ControlKeyMask;
-		item = [menu addItemWithTitle:@"Show Next Tab"
-		                       action:@selector (selectNextTab:)
-		                keyEquivalent:@"\t"];
+		item =
+		    [menu addItemWithTitle:NSLocalizedString (@"Show Next Tab", "Menu Item in Window Menu")
+		                    action:@selector (selectNextTab:)
+		             keyEquivalent:@"\t"];
 		item.keyEquivalentModifierMask = MacEventModifier::ControlKeyMask;
-		[menu addItemWithTitle:@"Move Tab To New Window"
+		[menu addItemWithTitle:NSLocalizedString (@"Move Tab To New Window",
+		                                          "Menu Item in Window Menu")
 		                action:@selector (moveTabToNewWindow:)
 		         keyEquivalent:@""];
-		[menu addItemWithTitle:@"Merge All Windows"
+		[menu addItemWithTitle:NSLocalizedString (@"Merge All Windows", "Menu Item in Window Menu")
 		                action:@selector (mergeAllWindows:)
 		         keyEquivalent:@""];
-		item = [menu addItemWithTitle:@"Show All Tabs"
-		                       action:@selector (toggleTabOverview:)
-		                keyEquivalent:@"\\"];
+		item =
+		    [menu addItemWithTitle:NSLocalizedString (@"Show All Tabs", "Menu Item in Window Menu")
+		                    action:@selector (toggleTabOverview:)
+		             keyEquivalent:@"\\"];
 		item.keyEquivalentModifierMask =
 		    MacEventModifier::ShiftKeyMask | MacEventModifier::CommandKeyMask;
 
 		[menu addItem:[NSMenuItem separatorItem]];
 	}
 #endif
-	[menu addItemWithTitle:@"Bring All to Front"
+	[menu addItemWithTitle:NSLocalizedString (@"Bring All to Front", "Menu Item in Window Menu")
 	                action:@selector (arrangeInFront:)
 	         keyEquivalent:@""];
 	[menu addItem:[NSMenuItem separatorItem]];
@@ -276,7 +291,7 @@ static CommandWithKeyList getCommandList (const char* _Nonnull group)
 //------------------------------------------------------------------------
 - (nonnull NSMenu*)createHelpMenu
 {
-	NSMenu* menu = [[NSMenu alloc] initWithTitle:@"Help"];
+	NSMenu* menu = [[NSMenu alloc] initWithTitle:NSLocalizedString (@"Help", "Help Menu Title")];
 	return menu;
 }
 
@@ -294,13 +309,17 @@ static CommandWithKeyList getCommandList (const char* _Nonnull group)
 		[mainMenu addItem:appMenuItem];
 
 		NSMenuItem* item =
-		    [[NSMenuItem alloc] initWithTitle:@"Window" action:nullptr keyEquivalent:@""];
+		    [[NSMenuItem alloc] initWithTitle:NSLocalizedString (@"Window", "Menu Name")
+		                               action:nullptr
+		                        keyEquivalent:@""];
 		NSMenu* windowsMenu = [self createWindowsMenu];
 		[NSApp setWindowsMenu:windowsMenu];
 		item.submenu = windowsMenu;
 		[mainMenu addItem:item];
 
-		item = [[NSMenuItem alloc] initWithTitle:@"Help" action:nullptr keyEquivalent:@""];
+		item = [[NSMenuItem alloc] initWithTitle:NSLocalizedString (@"Help", "Menu Name")
+		                                  action:nullptr
+		                           keyEquivalent:@""];
 		NSMenu* helpMenu = [self createHelpMenu];
 		[NSApp setHelpMenu:helpMenu];
 		item.submenu = helpMenu;
@@ -339,7 +358,8 @@ static CommandWithKeyList getCommandList (const char* _Nonnull group)
 					{
 						item = [self createMenuItemFromCommand:cmd];
 						NSString* appName = [self appName];
-						item.title = [appName stringByAppendingString:@" Help"];
+						item.title = [appName
+						    stringByAppendingString:NSLocalizedString (@" Help", "Menu Item")];
 						[helpMenu addItem:item];
 					}
 				}
@@ -362,25 +382,28 @@ static CommandWithKeyList getCommandList (const char* _Nonnull group)
 		}
 	}
 
-	NSMenuItem* editMenu = [mainMenu itemWithTitle:@"Edit"];
+	NSMenuItem* editMenu = [mainMenu itemWithTitle:NSLocalizedString (@"Edit", "Menu Name")];
 	if (editMenu && editMenu.submenu)
 	{
-		NSMenuItem* showCharacterPanelItem = [editMenu.submenu itemWithTitle:@"Characters"];
+		NSMenuItem* showCharacterPanelItem =
+		    [editMenu.submenu itemWithTitle:NSLocalizedString (@"Characters", "Menu Item")];
 		if (showCharacterPanelItem == nil)
 		{
 			[editMenu.submenu addItem:[NSMenuItem separatorItem]];
-			[editMenu.submenu addItemWithTitle:@"Emoji & Symbols"
-			                            action:@selector (orderFrontCharacterPalette:)
-			                     keyEquivalent:@""];
+			[editMenu.submenu
+			    addItemWithTitle:NSLocalizedString (@"Emoji & Symbols", "Menu Item in Edit Menu")
+			              action:@selector (orderFrontCharacterPalette:)
+			       keyEquivalent:@""];
 		}
 	}
 
 	// move Windows menu to the end
-	NSMenuItem* windowsMenuItem = [mainMenu itemWithTitle:@"Window"];
+	NSMenuItem* windowsMenuItem =
+	    [mainMenu itemWithTitle:NSLocalizedString (@"Window", "Menu Name")];
 	[mainMenu removeItem:windowsMenuItem];
 	[mainMenu addItem:windowsMenuItem];
 	// move Help menu to the end
-	NSMenuItem* helpMenuItem = [mainMenu itemWithTitle:@"Help"];
+	NSMenuItem* helpMenuItem = [mainMenu itemWithTitle:NSLocalizedString (@"Help", "Menu Name")];
 	[mainMenu removeItem:helpMenuItem];
 	[mainMenu addItem:helpMenuItem];
 }
@@ -484,7 +507,7 @@ static CommandWithKeyList getCommandList (const char* _Nonnull group)
 				            result = AlertResult::ThirdButton;
 			            callback (result);
 		            }
-		          }];
+	              }];
 #endif
 }
 
@@ -596,9 +619,7 @@ static CommandWithKeyList getCommandList (const char* _Nonnull group)
 @end
 
 //------------------------------------------------------------------------
-namespace VSTGUI {
-void* _Nullable gBundleRef = nullptr;
-}
+namespace VSTGUI { void* _Nullable gBundleRef = nullptr; }
 
 //------------------------------------------------------------------------
 int main (int argc, const char* _Nonnull* _Nonnull argv)
