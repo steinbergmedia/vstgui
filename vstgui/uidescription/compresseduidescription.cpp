@@ -5,6 +5,7 @@
 #include "compresseduidescription.h"
 #include "cstream.h"
 #include "xmlparser.h"
+#include "../lib/cresourcedescription.h"
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -70,6 +71,26 @@ CompressedUIDescription::CompressedUIDescription (const CResourceDescription& co
 }
 
 //-----------------------------------------------------------------------------
+bool CompressedUIDescription::parseWithStream (InputStream& stream)
+{
+	bool result = false;
+	int64_t identifier;
+	stream >> identifier;
+	if (identifier == kUIDescIdentifier)
+	{
+		ZLibInputStream zin;
+		if (zin.open (stream))
+		{
+			Xml::InputStreamContentProvider compressedContentProvider (zin);
+			setXmlContentProvider (&compressedContentProvider);
+			result = UIDescription::parse ();
+			setXmlContentProvider (nullptr);
+		}
+	}
+	return result;
+}
+
+//-----------------------------------------------------------------------------
 bool CompressedUIDescription::parse ()
 {
 	if (parsed ())
@@ -78,18 +99,15 @@ bool CompressedUIDescription::parse ()
 	CResourceInputStream resStream (kLittleEndianByteOrder);
 	if (resStream.open (getXmlFile ()))
 	{
-		int64_t identifier;
-		resStream >> identifier;
-		if (identifier == kUIDescIdentifier)
+		result = parseWithStream (resStream);
+	}
+	else if (getXmlFile ().type == CResourceDescription::kStringType)
+	{
+		CFileStream fileStream;
+		if (fileStream.open (getXmlFile ().u.name,
+		                     CFileStream::kReadMode | CFileStream::kBinaryMode))
 		{
-			ZLibInputStream zin;
-			if (zin.open (resStream))
-			{
-				Xml::InputStreamContentProvider compressedContentProvider (zin);
-				setXmlContentProvider (&compressedContentProvider);
-				result = UIDescription::parse ();
-				setXmlContentProvider (nullptr);
-			}
+			result = parseWithStream (fileStream);
 		}
 	}
 	if (!result)

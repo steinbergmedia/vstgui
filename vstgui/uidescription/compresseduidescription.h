@@ -18,6 +18,8 @@ public:
 
 	bool parse () override;
 	bool save (UTF8StringPtr filename, int32_t flags = kWriteWindowsResourceFile) override;
+private:
+	bool parseWithStream (InputStream& stream);
 };
 
 //------------------------------------------------------------------------
