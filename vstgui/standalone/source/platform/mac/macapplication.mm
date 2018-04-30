@@ -239,28 +239,33 @@ static CommandWithKeyList getCommandList (const char* _Nonnull group)
 	    MacEventModifier::CommandKeyMask | MacEventModifier::ControlKeyMask;
 	[menu addItem:[NSMenuItem separatorItem]];
 
-	item = [menu addItemWithTitle:@"Show Previous Tab"
-	                action:@selector (selectPreviousTab:)
-	         keyEquivalent:@"\t"];
-	item.keyEquivalentModifierMask =
-	    MacEventModifier::ShiftKeyMask | MacEventModifier::ControlKeyMask;
-	item = [menu addItemWithTitle:@"Show Next Tab"
-	                       action:@selector (selectNextTab:)
-	                keyEquivalent:@"\t"];
-	item.keyEquivalentModifierMask = MacEventModifier::ControlKeyMask;
-	[menu addItemWithTitle:@"Move Tab To New Window"
-	                action:@selector (moveTabToNewWindow:)
-	         keyEquivalent:@""];
-	[menu addItemWithTitle:@"Merge All Windows"
-	                action:@selector (mergeAllWindows:)
-	         keyEquivalent:@""];
-	item = [menu addItemWithTitle:@"Show All Tabs"
-	                action:@selector (toggleTabOverview:)
-	         keyEquivalent:@"\\"];
-	item.keyEquivalentModifierMask =
-	    MacEventModifier::ShiftKeyMask | MacEventModifier::CommandKeyMask;
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_12
+	if (@available (macOS 10.12, *))
+	{
+		item = [menu addItemWithTitle:@"Show Previous Tab"
+		                       action:@selector (selectPreviousTab:)
+		                keyEquivalent:@"\t"];
+		item.keyEquivalentModifierMask =
+		    MacEventModifier::ShiftKeyMask | MacEventModifier::ControlKeyMask;
+		item = [menu addItemWithTitle:@"Show Next Tab"
+		                       action:@selector (selectNextTab:)
+		                keyEquivalent:@"\t"];
+		item.keyEquivalentModifierMask = MacEventModifier::ControlKeyMask;
+		[menu addItemWithTitle:@"Move Tab To New Window"
+		                action:@selector (moveTabToNewWindow:)
+		         keyEquivalent:@""];
+		[menu addItemWithTitle:@"Merge All Windows"
+		                action:@selector (mergeAllWindows:)
+		         keyEquivalent:@""];
+		item = [menu addItemWithTitle:@"Show All Tabs"
+		                       action:@selector (toggleTabOverview:)
+		                keyEquivalent:@"\\"];
+		item.keyEquivalentModifierMask =
+		    MacEventModifier::ShiftKeyMask | MacEventModifier::CommandKeyMask;
 
-	[menu addItem:[NSMenuItem separatorItem]];
+		[menu addItem:[NSMenuItem separatorItem]];
+	}
+#endif
 	[menu addItemWithTitle:@"Bring All to Front"
 	                action:@selector (arrangeInFront:)
 	         keyEquivalent:@""];
