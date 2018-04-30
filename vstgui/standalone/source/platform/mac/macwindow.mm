@@ -1,12 +1,13 @@
-// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #import <Cocoa/Cocoa.h>
 
 #import "../../../../lib/cframe.h"
-#import "../../../../lib/platform/mac/macstring.h"
 #import "../../../../lib/platform/mac/cocoa/cocoahelpers.h"
+#import "../../../../lib/platform/mac/macstring.h"
+#import "../../../../lib/platform/platform_macos.h"
 #import "../../../include/iasync.h"
 #import "../../application.h"
 #import "../iplatformwindow.h"
@@ -112,6 +113,7 @@ private:
 	VSTGUIWindowDelegate* _Nullable nsWindowDelegate {nullptr};
 	IWindowDelegate* _Nullable delegate {nullptr};
 	CFrame* _Nullable frame {nullptr};
+	NSObject* sizeObserver {nullptr};
 };
 
 //------------------------------------------------------------------------
@@ -179,8 +181,35 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 	{
 		nsWindow.title = (__bridge NSString*)titleMacStr->getCFString ();
 	}
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_12
+	if (@available(macOS 10.12, *))
+	{
+		if (!config.groupIdentifier.empty ())
+		{
+			auto groupMacStr =
+			    dynamic_cast<MacString*> (config.groupIdentifier.getPlatformString ());
+			if (groupMacStr && groupMacStr->getCFString ())
+			{
+				nsWindow.tabbingIdentifier = (__bridge NSString*)groupMacStr->getCFString ();
+			}
+		}
+		else
+		{
+			nsWindow.tabbingMode = NSWindowTabbingModeDisallowed;
+		}
+	}
+#endif
 	[nsWindow setReleasedWhenClosed:NO];
 	[nsWindow center];
+
+	sizeObserver = [[NSNotificationCenter defaultCenter]
+	    addObserverForName:NSViewFrameDidChangeNotification
+	                object:nsWindow.contentView
+	                 queue:nil
+	            usingBlock:[this] (NSNotification* _Nonnull note) {
+		            auto contentViewSize = nsWindow.contentView.frame.size;
+		            windowDidResize ({contentViewSize.width, contentViewSize.height});
+	            }];
 
 	return true;
 }
@@ -208,6 +237,10 @@ void Window::windowDidResize (const CPoint& newSize)
 //------------------------------------------------------------------------
 void Window::windowWillClose ()
 {
+	if (sizeObserver)
+		[[NSNotificationCenter defaultCenter] removeObserver:sizeObserver];
+	sizeObserver = nullptr;
+
 	NSWindow* temp = nsWindow;
 	nsWindowDelegate = nil;
 	delegate->onClosed ();
@@ -525,17 +558,6 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 	r.size.height = p.y;
 	r = [sender frameRectForContentRect:r];
 	return r.size;
-}
-
-//------------------------------------------------------------------------
-- (void)windowDidResize:(nonnull NSNotification*)notification
-{
-	NSRect r = [[notification object] frame];
-	r = [self.macWindow->getNSWindow () contentRectForFrameRect:r];
-	VSTGUI::CPoint size;
-	size.x = r.size.width;
-	size.y = r.size.height;
-	self.macWindow->windowDidResize (size);
 }
 
 //------------------------------------------------------------------------

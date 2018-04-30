@@ -123,11 +123,22 @@ public:
  */
 struct WindowConfiguration
 {
+	/** Type of window */
 	WindowType type {WindowType::Document};
+	/** Window style */
 	WindowStyle style;
+	/** Initial window size */
 	CPoint size;
+	/** Window title */
 	UTF8String title;
+	/** Window save frame name */
 	UTF8String autoSaveFrameName;
+	/** Window group identifier [optional]
+	 *
+	 *	Windows with the same group identifier can be grouped together on some platforms like on
+	 *	macOS to tabs in a single window
+	 */
+	UTF8String groupIdentifier;
 };
 
 //------------------------------------------------------------------------

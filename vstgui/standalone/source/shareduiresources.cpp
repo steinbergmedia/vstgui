@@ -115,7 +115,9 @@ void SharedUIResources::load () const
 #endif
 
 		SharedPointer<UIDescription> description;
-		if (Detail::getApplicationPlatformAccess ()->useCompressedUIDescriptionFiles ())
+		if (Detail::getApplicationPlatformAccess ()
+		        ->getConfiguration ()
+		        .useCompressedUIDescriptionFiles)
 			description = makeOwned<CompressedUIDescription> (filename);
 		else
 			description = makeOwned<UIDescription> (filename);

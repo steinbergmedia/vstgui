@@ -238,6 +238,24 @@ static CommandWithKeyList getCommandList (const char* _Nonnull group)
 	item.keyEquivalentModifierMask =
 	    MacEventModifier::CommandKeyMask | MacEventModifier::ControlKeyMask;
 	[menu addItem:[NSMenuItem separatorItem]];
+
+	item = [menu addItemWithTitle:@"Show Previous Tab"
+	                action:@selector (selectPreviousTab:)
+	         keyEquivalent:@"\t"];
+	item.keyEquivalentModifierMask =
+	    MacEventModifier::ShiftKeyMask | MacEventModifier::ControlKeyMask;
+	item = [menu addItemWithTitle:@"Show Next Tab"
+	                       action:@selector (selectNextTab:)
+	                keyEquivalent:@"\t"];
+	item.keyEquivalentModifierMask = MacEventModifier::ControlKeyMask;
+	[menu addItemWithTitle:@"Move Tab To New Window"
+	                action:@selector (moveTabToNewWindow:)
+	         keyEquivalent:@""];
+	[menu addItemWithTitle:@"Merge All Windows"
+	                action:@selector (mergeAllWindows:)
+	         keyEquivalent:@""];
+
+	[menu addItem:[NSMenuItem separatorItem]];
 	[menu addItemWithTitle:@"Bring All to Front"
 	                action:@selector (arrangeInFront:)
 	         keyEquivalent:@""];
@@ -490,12 +508,6 @@ static CommandWithKeyList getCommandList (const char* _Nonnull group)
 	{
 		[NSApp terminate:nil];
 		return;
-	}
-
-	// disable tab support in macOS 10.12 and above until we support it correctly
-	if (auto m = [[NSWindow class] methodForSelector:@selector(setAllowsAutomaticWindowTabbing:)])
-	{
-		m ([NSWindow class], @selector(setAllowsAutomaticWindowTabbing:), NO);
 	}
 
 	IApplication::CommandLineArguments cmdArgs;

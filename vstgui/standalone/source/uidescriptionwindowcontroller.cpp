@@ -412,7 +412,9 @@ struct WindowController::Impl : public IController, public ICommandHandler
 
 	bool initUIDesc (const char* fileName)
 	{
-		if (Detail::getApplicationPlatformAccess ()->useCompressedUIDescriptionFiles ())
+		if (Detail::getApplicationPlatformAccess ()
+		        ->getConfiguration ()
+		        .useCompressedUIDescriptionFiles)
 			uiDesc = makeOwned<CompressedUIDescription> (fileName);
 		else
 			uiDesc = makeOwned<UIDescription> (fileName);

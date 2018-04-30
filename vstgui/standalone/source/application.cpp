@@ -61,7 +61,7 @@ public:
 	const CommandList& getKeyCommandList () override;
 	bool canQuit () override;
 	bool dontClosePopupOnDeactivation (Platform::IWindow* window) override;
-	bool useCompressedUIDescriptionFiles () const override;
+	const Configuration& getConfiguration () const override { return config; }
 
 private:
 	void registerStandardCommands ();
@@ -77,13 +77,13 @@ private:
 	PlatformCallbacks platform;
 	CommandList commandList;
 	CommandLineArguments commandLineArguments;
+	Configuration config;
 	uint64_t flags {0};
 	uint16_t commandIDCounter {0};
 
 	enum Flags
 	{
 		flagInQuit = 1 << 0,
-		flagUseCompressedUIDescriptionFiles = 1 << 1,
 	};
 };
 
@@ -134,18 +134,18 @@ void Application::setDelegate (Standalone::Application::DelegatePtr&& inDelegate
 }
 
 //------------------------------------------------------------------------
-void Application::setConfiguration (Standalone::Application::Configuration&& config)
+void Application::setConfiguration (Standalone::Application::Configuration&& configuration)
 {
 	using namespace VSTGUI::Standalone::Application;
 
-	for (auto c : config)
+	for (auto c : configuration)
 	{
 		switch (c.first)
 		{
 			case ConfigKey::UseCompressedUIDescriptionFiles:
 			{
 				assert (c.second.type == ConfigValue::Type::Integer);
-				setBit (flags, flagUseCompressedUIDescriptionFiles, c.second.value.integer != 0);
+				config.useCompressedUIDescriptionFiles = c.second.value.integer != 0;
 				break;
 			}
 		}
@@ -444,12 +444,6 @@ void Application::onActivated (const IWindow& window)
 		windows.erase (it);
 		windows.insert (windows.begin (), window);
 	}
-}
-
-//------------------------------------------------------------------------
-bool Application::useCompressedUIDescriptionFiles () const
-{
-	return hasBit (flags, flagUseCompressedUIDescriptionFiles);
 }
 
 static std::vector<Platform::IWindow*> popupClosePreventionList;

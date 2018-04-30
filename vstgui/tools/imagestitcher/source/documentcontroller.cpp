@@ -170,6 +170,7 @@ std::shared_ptr<DocumentWindowController> DocumentWindowController::make (
 	config.viewName = "Window";
 	config.windowConfig.title = getDisplayFilename (doc->getPath ());
 	config.windowConfig.autoSaveFrameName = "DocumentController";
+	config.windowConfig.groupIdentifier = "Document";
 	config.windowConfig.style.border ().close ().size ().centered ();
 	config.customization = controller;
 	config.modelBinding = controller->createModelBinding ();

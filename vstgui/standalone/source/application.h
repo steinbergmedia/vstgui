@@ -24,6 +24,12 @@ struct CommandWithKey : Command
 };
 
 //------------------------------------------------------------------------
+struct Configuration
+{
+	bool useCompressedUIDescriptionFiles {false};
+};
+
+//------------------------------------------------------------------------
 struct PlatformCallbacks
 {
 	using OnCommandUpdateFunc = std::function<void ()>;
@@ -61,7 +67,7 @@ public:
 	virtual const CommandList& getKeyCommandList () = 0;
 	virtual bool canQuit () = 0;
 	virtual bool dontClosePopupOnDeactivation (Platform::IWindow* window) = 0;
-	virtual bool useCompressedUIDescriptionFiles () const = 0;
+	virtual const Configuration& getConfiguration () const = 0;
 };
 
 //------------------------------------------------------------------------
