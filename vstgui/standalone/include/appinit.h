@@ -33,7 +33,7 @@ using Configuration = std::vector<std::pair<ConfigKey, ConfigValue>>;
  */
 enum class ConfigKey : uint64_t
 {
-	/** instead of plain xml files, use compressed ui description files.
+	/** Instead of plain xml files, use compressed ui description files.
 	 *
 	 *	This option expects an integer ConfigValue where 0 means that plain xml files are used and
 	 *	any other value means that the ui description file is compressed. In this case for
