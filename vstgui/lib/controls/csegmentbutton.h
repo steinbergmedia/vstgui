@@ -125,6 +125,7 @@ public:
 	void drawRect (CDrawContext* pContext, const CRect& dirtyRect) override;
 	bool drawFocusOnTop () override;
 	bool getFocusPath (CGraphicsPath& outPath) override;
+	void valueChanged () override;
 
 	CLASS_METHODS(CSegmentButton, CControl)
 private:

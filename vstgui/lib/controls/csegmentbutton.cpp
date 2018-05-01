@@ -66,14 +66,29 @@ void CSegmentButton::removeAllSegments ()
 }
 
 //-----------------------------------------------------------------------------
+void CSegmentButton::valueChanged ()
+{
+	if (getSelectionMode () == SelectionMode::kSingle)
+	{
+		auto index = static_cast<int64_t> (getSelectedSegment ());
+		for (auto& segment : segments)
+		{
+			segment.selected = index == 0;
+			--index;
+		}
+	}
+	CControl::valueChanged ();
+}
+
+//-----------------------------------------------------------------------------
 void CSegmentButton::setSelectedSegment (uint32_t index)
 {
 	if (index >= segments.size ())
 		return;
-	segments[getSelectedSegment ()].selected = false;
+	beginEdit ();
 	setValueNormalized (static_cast<float> (index) / static_cast<float> (segments.size () - 1));
-	segments[index].selected = true;
-	invalid ();
+	valueChanged ();
+	endEdit ();
 }
 
 //-----------------------------------------------------------------------------
@@ -269,13 +284,7 @@ CMouseEventResult CSegmentButton::onMouseDown (CPoint& where, const CButtonState
 					uint32_t currentIndex = getSegmentIndex (getValueNormalized ());
 					if (newIndex != currentIndex)
 					{
-						beginEdit ();
-						segments[currentIndex].selected = false;
 						setSelectedSegment (newIndex);
-						segment.selected = true;
-						valueChanged ();
-						endEdit ();
-						invalid ();
 					}
 				}
 				else
@@ -334,11 +343,7 @@ int32_t CSegmentButton::onKeyDown (VstKeyCode& keyCode)
 		}
 		if (newIndex != oldIndex)
 		{
-			beginEdit ();
 			setSelectedSegment (newIndex);
-			valueChanged ();
-			endEdit ();
-			invalid ();
 		}
 	}
 	return result;
