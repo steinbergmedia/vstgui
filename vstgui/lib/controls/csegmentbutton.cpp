@@ -1,4 +1,4 @@
-// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
@@ -12,15 +12,22 @@ namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
 CSegmentButton::CSegmentButton (const CRect& size, IControlListener* listener, int32_t tag)
-: CControl (size, listener, tag)
-, font (kNormalFont)
+: CControl (size, listener, tag), font (kNormalFont)
 {
 	setWantsFocus (true);
 }
 
 //-----------------------------------------------------------------------------
+bool CSegmentButton::canAddOneMoreSegment () const
+{
+	return (getSelectionMode () == SelectionMode::kSingle || segments.size () < 32);
+}
+
+//-----------------------------------------------------------------------------
 void CSegmentButton::addSegment (const Segment& segment, uint32_t index)
 {
+	if (!canAddOneMoreSegment ())
+		return;
 	if (index == kPushBack && segments.size () < kPushBack)
 		segments.emplace_back (segment);
 	else if (index < segments.size ())
@@ -35,6 +42,8 @@ void CSegmentButton::addSegment (const Segment& segment, uint32_t index)
 //-----------------------------------------------------------------------------
 void CSegmentButton::addSegment (Segment&& segment, uint32_t index)
 {
+	if (!canAddOneMoreSegment ())
+		return;
 	if (index == kPushBack && segments.size () < kPushBack)
 		segments.emplace_back (std::move (segment));
 	else if (index < segments.size ())
@@ -68,13 +77,38 @@ void CSegmentButton::removeAllSegments ()
 //-----------------------------------------------------------------------------
 void CSegmentButton::valueChanged ()
 {
-	if (getSelectionMode () == SelectionMode::kSingle)
+	switch (getSelectionMode ())
 	{
-		auto index = static_cast<int64_t> (getSelectedSegment ());
-		for (auto& segment : segments)
+		case SelectionMode::kSingle:
 		{
-			segment.selected = index == 0;
-			--index;
+			auto index = static_cast<int64_t> (getSelectedSegment ());
+			for (auto& segment : segments)
+			{
+				bool state = index == 0;
+				if (state != segment.selected)
+				{
+					segment.selected = state;
+					invalidRect (segment.rect);
+				}
+				--index;
+			}
+			break;
+		}
+		case SelectionMode::kMultiple:
+		{
+			auto bitset = static_cast<uint32_t> (value);
+			size_t index = 0;
+			for (auto& segment : segments)
+			{
+				bool state = (hasBit (bitset, 1 << index));
+				if (state != segment.selected)
+				{
+					segment.selected = state;
+					invalidRect (segment.rect);
+				}
+				++index;
+			}
+			break;
 		}
 	}
 	CControl::valueChanged ();
@@ -89,7 +123,6 @@ void CSegmentButton::setSelectedSegment (uint32_t index)
 	setValueNormalized (static_cast<float> (index) / static_cast<float> (segments.size () - 1));
 	valueChanged ();
 	endEdit ();
-	invalid ();
 }
 
 //-----------------------------------------------------------------------------
@@ -234,7 +267,7 @@ void CSegmentButton::setFrameWidth (CCoord newWidth)
 }
 
 //-----------------------------------------------------------------------------
-bool CSegmentButton::attached (CView *parent)
+bool CSegmentButton::attached (CView* parent)
 {
 	if (CControl::attached (parent))
 	{
@@ -255,11 +288,12 @@ void CSegmentButton::setViewSize (const CRect& rect, bool invalid)
 //------------------------------------------------------------------------
 void CSegmentButton::selectSegment (uint32_t index, bool state)
 {
-	segments[index].selected = state;
+	beginEdit ();
 	auto bitset = static_cast<uint32_t> (value);
 	setBit (bitset, (1 << index), state);
-	value = static_cast<float>(bitset);
-	invalidRect (segments[index].rect);
+	value = static_cast<float> (bitset);
+	valueChanged ();
+	endEdit ();
 }
 
 //------------------------------------------------------------------------
@@ -290,10 +324,7 @@ CMouseEventResult CSegmentButton::onMouseDown (CPoint& where, const CButtonState
 				}
 				else
 				{
-					beginEdit ();
 					selectSegment (newIndex, !segment.selected);
-					valueChanged ();
-					endEdit ();
 				}
 				break;
 			}
@@ -495,9 +526,9 @@ bool CSegmentButton::drawFocusOnTop ()
 //-----------------------------------------------------------------------------
 bool CSegmentButton::getFocusPath (CGraphicsPath& outPath)
 {
-    auto lineWidth = getFrameWidth ();
-    if (lineWidth < 0.)
-        lineWidth = 1.;
+	auto lineWidth = getFrameWidth ();
+	if (lineWidth < 0.)
+		lineWidth = 1.;
 	CRect r (getViewSize ());
 	r.inset (lineWidth / 2., lineWidth / 2.);
 	outPath.addRoundRect (r, getRoundRadius ());

@@ -129,6 +129,7 @@ public:
 
 	CLASS_METHODS(CSegmentButton, CControl)
 private:
+	bool canAddOneMoreSegment () const;
 	void updateSegmentSizes ();
 	void verifySelections ();
 	uint32_t getSegmentIndex (float value) const;
