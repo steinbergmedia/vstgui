@@ -24,12 +24,14 @@ class CSegmentButton : public CControl
 {
 public:
 	enum class Style {
+		/** horizontally layouted segments */
 		kHorizontal,
+		/** vertically layouted segments */
 		kVertical
 	};
 	
 	enum class SelectionMode {
-		/** only one segment may be selected */
+		/** a single segment is selected at any time */
 		kSingle,
 		/** multiple segments may be selected */
 		kMultiple,

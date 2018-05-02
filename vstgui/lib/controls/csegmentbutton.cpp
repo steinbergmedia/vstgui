@@ -414,8 +414,16 @@ void CSegmentButton::drawRect (CDrawContext* pContext, const CRect& dirtyRect)
 	}
 	if (gradient)
 	{
-		pContext->fillLinearGradient (path, *gradient, getViewSize ().getTopLeft (),
-		                              getViewSize ().getBottomLeft ());
+		if (isHorizontal)
+		{
+			pContext->fillLinearGradient (path, *gradient, getViewSize ().getTopLeft (),
+			                              getViewSize ().getBottomLeft ());
+		}
+		else
+		{
+			pContext->fillLinearGradient (path, *gradient, getViewSize ().getTopLeft (),
+			                              getViewSize ().getTopRight ());
+		}
 	}
 	for (uint32_t index = 0u, end = static_cast<uint32_t> (segments.size ()); index < end; ++index)
 	{
@@ -429,8 +437,18 @@ void CSegmentButton::drawRect (CDrawContext* pContext, const CRect& dirtyRect)
 		pContext->setClipRect (clipRect);
 		if (segment.selected && gradientHighlighted)
 		{
-			pContext->fillLinearGradient (path, *gradientHighlighted, segment.rect.getTopLeft (),
-			                              segment.rect.getBottomLeft ());
+			if (isHorizontal)
+			{
+				pContext->fillLinearGradient (path, *gradientHighlighted,
+				                              segment.rect.getTopLeft (),
+				                              segment.rect.getBottomLeft ());
+			}
+			else
+			{
+				pContext->fillLinearGradient (path, *gradientHighlighted,
+				                              segment.rect.getTopLeft (),
+				                              segment.rect.getTopRight ());
+			}
 		}
 		if (segment.selected && segment.backgroundHighlighted)
 		{
