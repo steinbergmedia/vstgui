@@ -89,6 +89,7 @@ void CSegmentButton::setSelectedSegment (uint32_t index)
 	setValueNormalized (static_cast<float> (index) / static_cast<float> (segments.size () - 1));
 	valueChanged ();
 	endEdit ();
+	invalid ();
 }
 
 //-----------------------------------------------------------------------------
