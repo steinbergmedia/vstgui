@@ -76,7 +76,7 @@ public:
 	}
 
 private:
-	void load () const;
+	bool load () const;
 
 	mutable bool loadDone {false};
 	mutable SharedPointer<UIDescription> uiDesc;
@@ -101,10 +101,10 @@ void SharedUIResources::cleanup ()
 }
 
 //------------------------------------------------------------------------
-void SharedUIResources::load () const
+bool SharedUIResources::load () const
 {
 	if (loadDone)
-		return;
+		return uiDesc != nullptr;
 	loadDone = true;
 	if (auto filename = IApplication::instance ().getDelegate ().getSharedUIResourceFilename ())
 	{
@@ -125,49 +125,51 @@ void SharedUIResources::load () const
 		{
 #if VSTGUI_LIVE_EDITING
 			if (!initUIDescAsNew (*description, nullptr))
-				return;
+				return false;
 			else
 #endif
-				return;
+				return false;
 		}
 		auto settings = description->getCustomAttributes ("UIDescFilePath", true);
 		auto filePath = settings->getAttributeValue ("path");
 		if (filePath)
 			description->setFilePath (filePath->data ());
 
-		uiDesc = description;
+		uiDesc = std::move (description);
 #if VSTGUI_LIVE_EDITING
 		auto res = Detail::checkAndUpdateUIDescFilePath (
-		    *description, nullptr, "The resource ui desc file location cannot be found.");
+		    *uiDesc, nullptr, "The resource ui desc file location cannot be found.");
 		if (res == UIDescCheckFilePathResult::Cancel)
 		{
 			IApplication::instance ().quit ();
-			return;
+			return false;
 		}
 		Detail::getEditFileMap ().set (
 		    IApplication::instance ().getDelegate ().getSharedUIResourceFilename (),
-		    description->getFilePath ());
+		    uiDesc->getFilePath ());
 		if (res == UIDescCheckFilePathResult::NewPathSet)
 			saveSharedUIDescription ();
 #endif
 	}
+	return uiDesc != nullptr;
 }
 
 //------------------------------------------------------------------------
 Optional<CColor> SharedUIResources::getColor (const UTF8String& name) const
 {
-	load ();
-	CColor c;
-	if (uiDesc && uiDesc->getColor (name, c))
-		return makeOptional (c);
+	if (load ())
+	{
+		CColor c;
+		if (uiDesc->getColor (name, c))
+			return makeOptional (c);
+	}
 	return {};
 }
 
 //------------------------------------------------------------------------
 Optional<CBitmap*> SharedUIResources::getBitmap (const UTF8String& name) const
 {
-	load ();
-	if (uiDesc)
+	if (load ())
 	{
 		if (auto bitmap = uiDesc->getBitmap (name))
 		{
@@ -180,8 +182,7 @@ Optional<CBitmap*> SharedUIResources::getBitmap (const UTF8String& name) const
 //------------------------------------------------------------------------
 Optional<CGradient*> SharedUIResources::getGradient (const UTF8String& name) const
 {
-	load ();
-	if (uiDesc)
+	if (load ())
 	{
 		if (auto gradient = uiDesc->getGradient (name))
 		{
@@ -194,8 +195,7 @@ Optional<CGradient*> SharedUIResources::getGradient (const UTF8String& name) con
 //------------------------------------------------------------------------
 Optional<CFontDesc*> SharedUIResources::getFont (const UTF8String& name) const
 {
-	load ();
-	if (uiDesc)
+	if (load ())
 	{
 		if (auto font = uiDesc->getFont (name))
 		{
