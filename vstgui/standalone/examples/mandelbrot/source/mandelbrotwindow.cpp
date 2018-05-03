@@ -393,6 +393,7 @@ VSTGUI::Standalone::WindowPtr makeMandelbrotWindow ()
 	config.customization = customization;
 	config.windowConfig.title = "Mandelbrot";
 	config.windowConfig.autoSaveFrameName = "Mandelbrot";
+	config.windowConfig.groupIdentifier = "Mandelbrot";
 	config.windowConfig.style.border ().close ().size ().centered ();
 	return UIDesc::makeWindow (config);
 }

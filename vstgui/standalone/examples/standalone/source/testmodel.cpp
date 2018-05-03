@@ -20,7 +20,7 @@ using namespace VSTGUI::Standalone;
 TestModel::TestModel ()
 {
 	addValue (Value::make ("Activate", 1.));
-	addValue (Value::make ("Test"));
+	addValue (Value::make ("Test", 0, Value::makeRangeConverter (0, 10, 2)));
 	addValue (Value::makeStepValue ("StepTest", 5, 0));
 	addValue (Value::make ("ShowAlert"));
 	addValue (Value::makeStringListValue ("StringList", {"one","two","three","four","five"}));
@@ -93,4 +93,3 @@ void TestModel::onEndEdit (IValue& value)
 
 //------------------------------------------------------------------------
 } // MyApp
-

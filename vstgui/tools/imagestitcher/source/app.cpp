@@ -62,9 +62,11 @@ public:
 		}
 	}
 
+	void onQuit () override { inQuit = true; }
+
 	void onClosed (const IWindow& window) override
 	{
-		if (IApplication::instance ().getWindows ().empty ())
+		if (!inQuit && IApplication::instance ().getWindows ().empty ())
 		{
 			showStartupController ();
 		}
@@ -145,6 +147,8 @@ public:
 		}
 		return {};
 	}
+
+	bool inQuit {false};
 };
 
 static Init gAppDelegate (std::make_unique<ImageStitcherAppDelegate> (),
