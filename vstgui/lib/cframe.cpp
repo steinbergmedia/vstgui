@@ -619,7 +619,10 @@ int32_t CFrame::onKeyDown (VstKeyCode& keyCode)
 	}
 
 	if (result == -1 && keyCode.virt == VKEY_TAB)
-		result = advanceNextFocusView (pImpl->focusView, (keyCode.modifier & MODIFIER_SHIFT) ? true : false) ? 1 : -1;
+	{
+		if (keyCode.modifier == 0 || keyCode.modifier == MODIFIER_SHIFT)
+			result = advanceNextFocusView (pImpl->focusView, (keyCode.modifier & MODIFIER_SHIFT) ? true : false) ? 1 : -1;
+	}
 
 	return result;
 }
