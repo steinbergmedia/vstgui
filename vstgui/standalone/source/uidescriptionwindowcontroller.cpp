@@ -147,7 +147,9 @@ public:
 			for (IStepValue::StepType i = 0; i < stepValue->getSteps (); ++i)
 			{
 				auto title = valueConverter.valueAsString (stepValue->stepToValue (i));
-				segmentButton->addSegment ({title});
+				CSegmentButton::Segment segment;
+				segment.name = title;
+				segmentButton->addSegment (std::move (segment));
 			}
 		}
 	}

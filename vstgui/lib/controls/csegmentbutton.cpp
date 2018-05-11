@@ -530,7 +530,7 @@ void CSegmentButton::verifySelections ()
 		auto bitset = static_cast<uint32_t> (value);
 		for (auto index = 0u; index < segments.size (); ++index)
 		{
-			segments[index].selected = bitset & (1 << index);
+			segments[index].selected = (bitset & (1 << index)) != 0;
 		}
 	}
 }

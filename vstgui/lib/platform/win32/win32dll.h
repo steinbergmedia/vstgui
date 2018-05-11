@@ -101,14 +101,14 @@ struct HiDPISupport : DllBase
 	bool enableNonClientDpiScaling (HWND window)
 	{
 		if (enableNonClientDpiScalingFunc)
-			return enableNonClientDpiScalingFunc (window);
+			return enableNonClientDpiScalingFunc (window) != 0;
 		return false;
 	}
 
 	bool setProcessDpiAwarnessContext (DPI_AWARENESS_CONTEXT context)
 	{
 		if (setProcessDpiAwarenessContextFunc)
-			return setProcessDpiAwarenessContextFunc (context);
+			return setProcessDpiAwarenessContextFunc (context) != 0;
 		return false;
 	}
 
