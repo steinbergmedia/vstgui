@@ -92,16 +92,6 @@ Win32Frame::Win32Frame (IPlatformFrameCallback* frame, const CRect& size, HWND p
 		initWindowClass ();
 
 		DWORD style = isParentLayered (parent) ? WS_EX_TRANSPARENT : 0;
-		#if !DEBUG_DRAWING
-		if (getD2DFactory ()) // workaround for Direct2D hotfix (KB2028560)
-		{
-			// when WS_EX_COMPOSITED is set drawing does not work correctly. This seems like a bug in Direct2D wich happens with this hotfix
-		}
-		else if (IsWindowsVistaOrGreater()) // Vista and above
-			style |= WS_EX_COMPOSITED;
-		else
-			backBuffer = createOffscreenContext (size.getWidth (), size.getHeight ());
-		#endif
 		windowHandle = CreateWindowEx (style, gClassName, TEXT("Window"),
 										WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, 
 										0, 0, (int)size.getWidth (), (int)size.getHeight (), 

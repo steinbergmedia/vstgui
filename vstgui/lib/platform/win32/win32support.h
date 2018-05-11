@@ -11,15 +11,8 @@
 
 #include "../../cbitmap.h"
 #include "../../optional.h"
-
 #include <algorithm>
-using std::min;
-using std::max;
 #include <windows.h>
-#if defined (WINAPI_FAMILY_SYSTEM)
-#include <versionhelpers.h>
-#endif
-
 #include <objidl.h>
 
 interface ID2D1Factory;
@@ -41,10 +34,6 @@ namespace VSTGUI {
 class CDrawContext;
 
 extern HINSTANCE GetInstance ();
-#ifndef VERSIONHELPERAPI
-extern const OSVERSIONINFOEX& getSystemVersion();
-extern const bool IsWindowsVistaOrGreater();
-#endif
 extern ID2D1Factory* getD2DFactory ();
 extern IWICImagingFactory* getWICImageingFactory ();
 extern void useD2D ();

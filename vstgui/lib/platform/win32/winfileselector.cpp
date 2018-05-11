@@ -104,34 +104,18 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
-class XPFileSelector : public CNewFileSelector
-{
-public:
-	XPFileSelector (CFrame* frame, Style style);
-
-	virtual bool runInternal (CBaseObject* delegate) override;
-	virtual void cancelInternal () override;
-	virtual bool runModalInternal () override;
-protected:
-	Style style;
-};
-
-
-//-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 CNewFileSelector* CNewFileSelector::create (CFrame* parent, Style style)
 {
-	if (parent == 0)
+	if (parent == nullptr)
 	{
 		#if DEBUG
 		DebugPrint ("Need frame for CNewFileSelector\n");
 		#endif
 		return 0;
 	}
-	if (IsWindowsVistaOrGreater()) // Vista
-		return new VistaFileSelector (parent, style);
-	return new XPFileSelector (parent, style);
+	return new VistaFileSelector (parent, style);
 }
 
 //-----------------------------------------------------------------------------
@@ -315,135 +299,6 @@ bool VistaFileSelector::runModalInternal ()
 	fileDialog = 0;
 	freeExtensionFilter (filters);
 	return SUCCEEDED (hr);
-}
-
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-XPFileSelector::XPFileSelector (CFrame* frame, Style style)
-: CNewFileSelector (frame)
-, style (style)
-{
-}
-
-//-----------------------------------------------------------------------------
-bool XPFileSelector::runInternal (CBaseObject* delegate)
-{
-	bool result = runModalInternal ();
-	if (result && delegate)
-	{
-		delegate->notify (this, kSelectEndMessage);
-	}
-	return result;
-}
-
-//-----------------------------------------------------------------------------
-void XPFileSelector::cancelInternal ()
-{
-}
-
-//-----------------------------------------------------------------------------
-bool XPFileSelector::runModalInternal ()
-{
-	auto win32Frame = dynamic_cast<IWin32PlatformFrame*> (frame->getPlatformFrame ());
-	vstgui_assert (win32Frame);
-
-#if DEBUG
-	if (allowMultiFileSelection)
-	{
-		DebugPrint ("CNewFileSelector TODO: multi file selection currently not supported. Please implement this and share it.");
-	}
-#endif
-
-	if (style == kSelectDirectory)
-	{
-		UTF8StringHelper titleW (title);
-		BROWSEINFO bi = {};
-		TCHAR szDisplayName[MAX_PATH]; 
-		szDisplayName[0] = 0;  
-		bi.hwndOwner = NULL; 
-		bi.pidlRoot = NULL; 
-		bi.pszDisplayName = szDisplayName; 
-		bi.lpszTitle = titleW.getWideString ();
-		bi.ulFlags = BIF_RETURNONLYFSDIRS;
-		bi.lParam = 0; 
-		bi.iImage = 0;  
-
-		LPITEMIDLIST pidl = SHBrowseForFolder (&bi);
-		TCHAR szPathName[MAX_PATH]; 
-		if (NULL != pidl)
-		{
-			if (SHGetPathFromIDList(pidl,szPathName))
-			{
-				char szPathNameC_[MAX_PATH];
-				char *szPathNameC= szPathNameC_;
-				WideCharToMultiByte (CP_ACP, WC_COMPOSITECHECK|WC_DEFAULTCHAR, szPathName, -1, szPathNameC, MAX_PATH, NULL, NULL); 
-				result.emplace_back (szPathNameC);
-				return true;
-			}
-		}
-		return false;
-	}
-
-	OPENFILENAME ofn = {0};
-	ofn.lStructSize  = sizeof (OPENFILENAME);
-	ofn.hwndOwner= win32Frame->getHWND ();
-	ofn.hInstance = GetInstance ();
-	std::string filter;
-	for (std::list<CFileExtension>::const_iterator it = extensions.begin (); it!=extensions.end (); it++)
-	{
-		std::string s1= std::string ((it == extensions.begin ()) ? "*." : ";*.");
-		std::string s2 = (std::string) (it->getExtension ());
-		filter = filter + (s1 + s2);
-	}
-	UTF8StringHelper filterW (filter.c_str ());
-	ofn.lpstrFilter = filterW.getWideString ();
-	ofn.nFilterIndex = 1;
-
-	WCHAR filePathBuffer[MAX_PATH];
-	*filePathBuffer=0;
-
-	UTF8StringHelper defaultSaveNameW (defaultSaveName);
-	if (!defaultSaveName.empty ())
-	{
-		wcscpy (filePathBuffer, defaultSaveNameW.getWideString ());
-	}
-	ofn.lpstrFile = filePathBuffer;
-	ofn.lpstrCustomFilter = NULL;
-	ofn.nMaxFile = MAX_PATH - 1;
-	ofn.lpstrFileTitle = NULL;
-
-	UTF8StringHelper initialPathW (initialPath);
-	if (!initialPath.empty ())
-	{
-		ofn.lpstrInitialDir = initialPathW.getWideString ();
-	}
-	else
-	{
-		ofn.lpstrInitialDir = ofn.lpstrFilter;
-	}
-	
-	UTF8StringHelper titleW (title);
-	if (!title.empty ())
-	{
-		ofn.lpstrTitle = titleW.getWideString ();
-	}
-	
-	ofn.Flags = OFN_EXPLORER | OFN_ENABLESIZING | OFN_HIDEREADONLY;
-
-	BOOL resultCode = (style == kSelectSaveFile) ? GetSaveFileName (&ofn) : GetOpenFileName (&ofn);
-	if (resultCode == 0)
-	{
-#if DEBUG
-		DWORD errcode = CommDlgExtendedError ();
-		DebugPrint ("%d\n", errcode);
-#endif
-		return false;
-	}
-
-	UTF8StringHelper str (filePathBuffer);
-	result.emplace_back (str.getUTF8String ());
-	return true;
 }
 
 } // namespace

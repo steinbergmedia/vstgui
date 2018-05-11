@@ -29,24 +29,6 @@ namespace VSTGUI {
 
 HINSTANCE GetInstance () { return (HINSTANCE)hInstance; }
 
-#ifndef VERSIONHELPERAPI
-const OSVERSIONINFOEX& getSystemVersion ()
-{
-	static OSVERSIONINFOEX gSystemVersion = {0};
-	static bool once = true;
-	if (once)
-	{
-		memset (&gSystemVersion, 0, sizeof (gSystemVersion));
-		gSystemVersion.dwOSVersionInfoSize = sizeof (gSystemVersion);
-		GetVersionEx ((OSVERSIONINFO *)&gSystemVersion);
-	}
-	return gSystemVersion;
-}
-const bool IsWindowsVistaOrGreater() {
-	return (getSystemVersion().dwMajorVersion >= 6);
-}
-#endif
-
 //-----------------------------------------------------------------------------
 class D2DFactory
 {

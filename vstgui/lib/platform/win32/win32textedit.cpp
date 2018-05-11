@@ -51,9 +51,9 @@ Win32TextEdit::Win32TextEdit (HWND parent, IPlatformTextEditCallback* textEdit)
 	UTF8StringHelper stringHelper (textEdit->platformGetText ());
 	text = stringHelper;
 
+	CColor backColor = textEdit->platformGetBackColor ();
 	DWORD wxStyle = WS_EX_LAYERED;
-	if (getD2DFactory () == 0 && IsWindowsVistaOrGreater()) // Vista and above
-		wxStyle = WS_EX_COMPOSITED;
+	wxStyle = WS_EX_COMPOSITED;
 	wstyle |= WS_CHILD | WS_VISIBLE | ES_AUTOHSCROLL;
 	if (textEdit->platformIsSecureTextEdit ())
 		wstyle |= ES_PASSWORD;
@@ -69,9 +69,10 @@ Win32TextEdit::Win32TextEdit (HWND parent, IPlatformTextEditCallback* textEdit)
 			(int)rect.left, (int)rect.top, (int)rect.getWidth (), (int)rect.getHeight (),
 			parent, NULL, GetInstance (), 0);
 	}
-
-	CColor backColor = textEdit->platformGetBackColor ();
-	SetLayeredWindowAttributes (platformControl, RGB (backColor.red, backColor.green, backColor.blue), 0, LWA_COLORKEY);
+	else
+	{
+		SetLayeredWindowAttributes (platformControl, RGB (backColor.red, backColor.green, backColor.blue), 0, LWA_COLORKEY);
+	}
 	platformBackColor = CreateSolidBrush (RGB (backColor.red, backColor.green, backColor.blue));
 
 	logfont.lfWeight = FW_NORMAL;
