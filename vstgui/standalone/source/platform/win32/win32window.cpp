@@ -177,7 +177,7 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 	{
 		isPopup = true;
 		exStyle = WS_EX_COMPOSITED;
-		dwStyle = WS_POPUP;
+		dwStyle = WS_POPUP | WS_CLIPCHILDREN;
 		if (config.style.hasBorder ())
 		{
 			if (config.style.canSize ())
@@ -196,6 +196,8 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 				dwStyle |= WS_SIZEBOX | WS_MAXIMIZEBOX; // TODO: WS_MINIMIZEBOX
 			if (config.style.canClose ())
 				dwStyle |= WS_CAPTION | WS_SYSMENU;
+			exStyle |= WS_EX_COMPOSITED;
+			dwStyle |= WS_CLIPCHILDREN;
 		}
 		else
 		{
