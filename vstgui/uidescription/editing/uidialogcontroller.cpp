@@ -119,7 +119,9 @@ void UIDialogController::viewSizeChanged (CView* view, const CRect& oldSize)
 	{
 		CView* dialog = frame->getModalView ();
 		CRect viewSize = dialog->getViewSize ();
-		viewSize.centerInside (frame->getViewSize ());
+		CRect frameSize = frame->getViewSize ();
+		frame->getTransform ().inverse ().transform (frameSize);
+		viewSize.centerInside (frameSize);
 		dialog->setViewSize (viewSize);
 		dialog->setMouseableArea (viewSize);
 	}
