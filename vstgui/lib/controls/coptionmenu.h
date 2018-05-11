@@ -6,7 +6,11 @@
 #define __coptionmenu__
 
 #include "cparamdisplay.h"
+#include "icommandmenuitemtarget.h"
+#include "ioptionmenulistener.h"
 #include "../cstring.h"
+#include "../dispatchlist.h"
+#include "../cbitmap.h"
 #include <vector>
 #include <functional>
 
@@ -108,12 +112,69 @@ protected:
 class CCommandMenuItem : public CMenuItem
 {
 public:
+	struct Desc
+	{
+		UTF8String title;
+		UTF8String commandCategory;
+		UTF8String commandName;
+		UTF8String keycode;
+		SharedPointer<ICommandMenuItemTarget> target;
+		SharedPointer<CBitmap> icon;
+		int32_t keyModifiers {0};
+		int32_t flags {kNoFlags};
+		
+		Desc () = default;
+		~Desc () noexcept = default;
+
+		Desc (const UTF8String& title, const UTF8String& keycode = nullptr,
+		                 int32_t keyModifiers = 0, CBitmap* icon = nullptr,
+		                 int32_t flags = kNoFlags, ICommandMenuItemTarget* target = nullptr,
+		                 const UTF8String& commandCategory = nullptr,
+		                 const UTF8String& commandName = nullptr)
+		: title (title)
+		, commandCategory (commandCategory)
+		, commandName (commandName)
+		, keycode (keycode)
+		, target (target)
+		, icon (icon)
+		, keyModifiers (keyModifiers)
+		, flags (flags)
+		{
+		}
+
+		Desc (const UTF8String& title, int32_t tag,
+		                 ICommandMenuItemTarget* target = nullptr,
+		                 const UTF8String& commandCategory = nullptr,
+		                 const UTF8String& commandName = nullptr)
+		: title (title)
+		, commandCategory (commandCategory)
+		, commandName (commandName)
+		, target (target)
+		{
+		}
+
+		Desc (const UTF8String& title, ICommandMenuItemTarget* target,
+		                 const UTF8String& commandCategory = nullptr,
+		                 const UTF8String& commandName = nullptr)
+		: title (title)
+		, commandCategory (commandCategory)
+		, commandName (commandName)
+		, target (target)
+		{
+		}
+	};
+
+	CCommandMenuItem (Desc&& args);
+	CCommandMenuItem (const Desc& args);
+	CCommandMenuItem (const CCommandMenuItem& item);
+	~CCommandMenuItem () noexcept override = default;
+
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 	CCommandMenuItem (const UTF8String& title, const UTF8String& keycode = nullptr, int32_t keyModifiers = 0, CBitmap* icon = nullptr, int32_t flags = kNoFlags, CBaseObject* target = nullptr, const UTF8String& commandCategory = nullptr, const UTF8String& commandName = nullptr);
 	CCommandMenuItem (const UTF8String& title, COptionMenu* submenu, CBitmap* icon = nullptr, CBaseObject* target = nullptr, const UTF8String& commandCategory = nullptr, const UTF8String& commandName = nullptr);
 	CCommandMenuItem (const UTF8String& title, int32_t tag, CBaseObject* target = nullptr, const UTF8String& commandCategory = nullptr, const UTF8String& commandName = nullptr);
 	CCommandMenuItem (const UTF8String& title, CBaseObject* target, const UTF8String& commandCategory = nullptr, const UTF8String& commandName = nullptr);
-	CCommandMenuItem (const CCommandMenuItem& item);
-	~CCommandMenuItem () noexcept override = default;
+#endif
 
 	//-----------------------------------------------------------------------------
 	/// @name CCommandMenuItem Methods
@@ -127,8 +188,13 @@ public:
 	const UTF8String& getCommandName () const { return commandName; }
 	bool isCommandName (const UTF8String& name) const;
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 	void setTarget (CBaseObject* target);
 	CBaseObject* getTarget () const { return target; }
+#endif
+
+	void setItemTarget (ICommandMenuItemTarget* target);
+	ICommandMenuItemTarget* getItemTarget () const { return itemTarget; }
 
 	using ValidateCallbackFunction = std::function<void(CCommandMenuItem* item)>;
 	using SelectedCallbackFunction = std::function<void(CCommandMenuItem* item)>;
@@ -139,22 +205,29 @@ public:
 	void execute ();
 	void validate ();
 
+	VSTGUI_DEPRECATED (
 	/** message send to the target before the item is shown */
 	static IdStringPtr kMsgMenuItemValidate;
+	)
+	VSTGUI_DEPRECATED (
 	/** message send to the target when this item was selected */
 	static IdStringPtr kMsgMenuItemSelected;
+	)
+
 protected:
 	ValidateCallbackFunction validateFunc;
 	SelectedCallbackFunction selectedFunc;
-	SharedPointer<CBaseObject> target;
 	UTF8String commandCategory;
 	UTF8String commandName;
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+	SharedPointer<CBaseObject> target;
+#endif
+	SharedPointer<ICommandMenuItemTarget> itemTarget;
 };
 
 using CMenuItemList = std::vector<SharedPointer<CMenuItem>>;
 using CMenuItemIterator = CMenuItemList::iterator;
 using CConstMenuItemIterator = CMenuItemList::const_iterator;
-
 
 //-----------------------------------------------------------------------------
 // COptionMenu Declaration
@@ -247,6 +320,9 @@ public:
 
 	/** remove separators as first and last item and double separators */
 	void cleanupSeparators (bool deep);
+
+	void registerOptionMenuListener (IOptionMenuListener* listener);
+	void unregisterOptionMenuListener (IOptionMenuListener* listener);
 	//@}
 
 	// overrides
@@ -263,12 +339,13 @@ public:
 	void takeFocus () override;
 	void looseFocus () override;
 
-	static IdStringPtr kMsgBeforePopup;
+	VSTGUI_DEPRECATED (static IdStringPtr kMsgBeforePopup;)
 	
 	CLASS_METHODS(COptionMenu, CParamDisplay)
 protected:
 	bool doPopup ();
 	void beforePopup ();
+	void afterPopup ();
 
 	CMenuItemList* menuItems;
 
@@ -280,6 +357,7 @@ protected:
 	int32_t prefixNumbers {0};
 	SharedPointer<CBitmap> bgWhenClick;
 	COptionMenu* lastMenu {nullptr};
+	DispatchList<IOptionMenuListener*> listeners;
 };
 
 } // namespace

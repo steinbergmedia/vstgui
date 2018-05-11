@@ -684,6 +684,18 @@ void UIEditController::valueChanged (CControl* control)
 }
 
 //----------------------------------------------------------------------------------------------------
+bool UIEditController::validateCommandMenuItem (CCommandMenuItem* item)
+{
+	return validateMenuItem (item) == kMessageNotified;
+}
+
+//----------------------------------------------------------------------------------------------------
+bool UIEditController::onCommandMenuItemSelected (CCommandMenuItem* item)
+{
+	return onMenuItemSelection (item) == kMessageNotified;
+}
+
+//----------------------------------------------------------------------------------------------------
 CMessageResult UIEditController::notify (CBaseObject* sender, IdStringPtr message)
 {
 	if (message == UITemplateController::kMsgTemplateChanged)
@@ -695,18 +707,6 @@ CMessageResult UIEditController::notify (CBaseObject* sender, IdStringPtr messag
 	{
 		onUndoManagerChanged ();
 		return kMessageNotified;
-	}
-	else if (message == CCommandMenuItem::kMsgMenuItemValidate)
-	{
-		CCommandMenuItem* item = dynamic_cast<CCommandMenuItem*>(sender);
-		if (item)
-			return validateMenuItem (item);
-	}
-	else if (message == CCommandMenuItem::kMsgMenuItemSelected)
-	{
-		CCommandMenuItem* item = dynamic_cast<CCommandMenuItem*>(sender);
-		if (item)
-			return onMenuItemSelection (item);
 	}
 	else if (message == UIEditView::kMsgAttached)
 	{

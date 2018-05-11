@@ -103,9 +103,6 @@ class IDataPackage;
 class IDependency;
 class IFocusDrawing;
 class IScaleFactorChangedListener;
-#if VSTGUI_TOUCH_EVENT_HANDLING
-class ITouchEvent;
-#endif
 class IDataBrowserDelegate;
 class IMouseObserver;
 class IKeyboardHook;
@@ -118,6 +115,13 @@ class IControlListener;
 class IDragCallback;
 class IDraggingSession;
 class IDropTarget;
+class ICommandMenuItemTarget;
+class IOptionMenuListener;
+class ITextLabelListener;
+
+#if VSTGUI_TOUCH_EVENT_HANDLING
+class ITouchEvent;
+#endif
 
 // classes
 class CBitmap;

@@ -9,7 +9,9 @@
 
 namespace VSTGUI {
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 IdStringPtr CTextLabel::kMsgTruncatedTextChanged = "CTextLabel::kMsgTruncatedTextChanged";
+#endif
 
 //------------------------------------------------------------------------
 // CTextLabel
@@ -38,6 +40,18 @@ CTextLabel::CTextLabel (const CTextLabel& v)
 , textTruncateMode (v.textTruncateMode)
 {
 	setText (v.getText ());
+}
+
+//------------------------------------------------------------------------
+void CTextLabel::registerTextLabelListener (ITextLabelListener* listener)
+{
+	listeners.add (listener);
+}
+
+//------------------------------------------------------------------------
+void CTextLabel::unregisterTextLabelListener (ITextLabelListener* listener)
+{
+	listeners.remove (listener);
 }
 
 //------------------------------------------------------------------------
@@ -75,7 +89,11 @@ void CTextLabel::calculateTruncatedText ()
 		truncatedText = CDrawMethods::createTruncatedText (mode, text, fontID, getWidth () - getTextInset ().x * 2.);
 		if (truncatedText == text)
 			truncatedText.clear ();
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 		changed (kMsgTruncatedTextChanged);
+#endif
+		listeners.forEach (
+		    [this] (ITextLabelListener* l) { l->onTextLabelTruncatedTextChanged (this); });
 	}
 	else if (!truncatedText.empty ())
 		truncatedText.clear ();

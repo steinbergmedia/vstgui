@@ -29,7 +29,10 @@ static constexpr auto sqrt2 = 1.41421356237309504880;
 // CControl Declaration
 //! @brief base class of all VSTGUI controls
 //-----------------------------------------------------------------------------
-class CControl : public CView, public IFocusDrawing, public IDependency
+class CControl : public CView, public IFocusDrawing
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+, public IDependency
+#endif
 {
 public:
 	CControl (const CRect& size, IControlListener* listener = nullptr, int32_t tag = 0, CBitmap* pBackground = nullptr);
@@ -107,9 +110,9 @@ public:
 	static int32_t kDefaultValueModifier;
 
 	// messages send to dependent objects
-	static IdStringPtr kMessageValueChanged;
-	static IdStringPtr kMessageBeginEdit;
-	static IdStringPtr kMessageEndEdit;
+	VSTGUI_DEPRECATED (static IdStringPtr kMessageValueChanged;)
+	VSTGUI_DEPRECATED (static IdStringPtr kMessageBeginEdit;)
+	VSTGUI_DEPRECATED (static IdStringPtr kMessageEndEdit;)
 	
 	CLASS_METHODS_VIRTUAL(CControl, CView)
 protected:

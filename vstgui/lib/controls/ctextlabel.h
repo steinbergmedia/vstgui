@@ -6,6 +6,8 @@
 #define __ctextlabel__
 
 #include "cparamdisplay.h"
+#include "itextlabellistener.h"
+#include "../dispatchlist.h"
 #include "../cstring.h"
 
 namespace VSTGUI {
@@ -45,11 +47,19 @@ public:
 	TextTruncateMode getTextTruncateMode () const { return textTruncateMode; }
 	/** get the truncated text */
 	const UTF8String& getTruncatedText () const { return truncatedText; }
+
+	/** register a text label listener */
+	void registerTextLabelListener (ITextLabelListener* listener);
+	/** unregister a text label listener */
+	void unregisterTextLabelListener (ITextLabelListener* listener);
 	//@}
 
-	/** message which is send to dependent objects when the truncated text changes */
+	VSTGUI_DEPRECATED (
+	/** message which is send to dependent objects when the truncated text changes. \deprecated
+	   use ITextLabelListener instead */
 	static IdStringPtr kMsgTruncatedTextChanged;
-	
+	)
+
 	void draw (CDrawContext* pContext) override;
 	bool sizeToFit () override;
 	void setViewSize (const CRect& rect, bool invalid = true) override;
@@ -68,6 +78,7 @@ protected:
 	TextTruncateMode textTruncateMode;
 	UTF8String text;
 	UTF8String truncatedText;
+	DispatchList<ITextLabelListener*> listeners;
 };
 
 //-----------------------------------------------------------------------------
@@ -91,7 +102,7 @@ public:
 	void setLineLayout (LineLayout layout);
 	LineLayout getLineLayout () const { return lineLayout; }
 
-	/** automatically resize the view according to the contents (only the height) 
+	/** automatically resize the view according to the contents (only the height)
 	 *	@param state on or off
 	 */
 	void setAutoHeight (bool state);

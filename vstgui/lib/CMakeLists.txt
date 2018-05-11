@@ -88,7 +88,10 @@ set(${target}_common_sources
     controls/cvumeter.h
     controls/cxypad.cpp
     controls/cxypad.h
+    controls/icommandmenuitemtarget.h
     controls/icontrollistener.h
+    controls/ioptionmenulistener.h
+    controls/itextlabellistener.h
     copenglview.cpp
     copenglview.h
     cpoint.cpp

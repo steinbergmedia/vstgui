@@ -153,6 +153,39 @@ void CMenuItem::setIsSeparator (bool state)
 	displayed and after it was selected. @see CCommandMenuItem::kMsgMenuItemValidate and @see CCommandMenuItem::kMsgMenuItemSelected
 */
 //------------------------------------------------------------------------
+CCommandMenuItem::CCommandMenuItem (Desc&& args)
+: CMenuItem (args.title, args.keycode, args.keyModifiers, args.icon, args.flags)
+, commandCategory (std::move (args.commandCategory))
+, commandName (std::move (args.commandName))
+, itemTarget (std::move (args.target))
+{
+}
+
+//------------------------------------------------------------------------
+CCommandMenuItem::CCommandMenuItem (const Desc& args)
+: CMenuItem (args.title, args.keycode, args.keyModifiers, args.icon, args.flags)
+, commandCategory (args.commandCategory)
+, commandName (args.commandName)
+, itemTarget (args.target)
+{
+}
+
+//------------------------------------------------------------------------
+CCommandMenuItem::CCommandMenuItem (const CCommandMenuItem& item)
+: CMenuItem (item)
+, validateFunc (item.validateFunc)
+, selectedFunc (item.selectedFunc)
+, commandCategory (item.commandCategory)
+, commandName (item.commandName)
+{
+	setItemTarget (item.itemTarget);
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+	setTarget (item.target);
+#endif
+}
+
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+//------------------------------------------------------------------------
 IdStringPtr CCommandMenuItem::kMsgMenuItemValidate = "kMsgMenuItemValidate";
 IdStringPtr CCommandMenuItem::kMsgMenuItemSelected = "kMsgMenuItemSelected";
 
@@ -193,14 +226,17 @@ CCommandMenuItem::CCommandMenuItem (const UTF8String& title, CBaseObject* _targe
 }
 
 //------------------------------------------------------------------------
-CCommandMenuItem::CCommandMenuItem (const CCommandMenuItem& item)
-: CMenuItem (item)
-, validateFunc (item.validateFunc)
-, selectedFunc (item.selectedFunc)
-, commandCategory (item.commandCategory)
-, commandName (item.commandName)
+void CCommandMenuItem::setTarget (CBaseObject* _target)
 {
-	setTarget (item.target);
+	target = _target;
+}
+
+#endif
+
+//------------------------------------------------------------------------
+void CCommandMenuItem::setItemTarget (ICommandMenuItemTarget* target)
+{
+	itemTarget = target;
 }
 
 //------------------------------------------------------------------------
@@ -228,12 +264,6 @@ bool CCommandMenuItem::isCommandName (const UTF8String& name) const
 }
 
 //------------------------------------------------------------------------
-void CCommandMenuItem::setTarget (CBaseObject* _target)
-{
-	target = _target;
-}
-
-//------------------------------------------------------------------------
 void CCommandMenuItem::setActions (SelectedCallbackFunction&& selected, ValidateCallbackFunction&& validate)
 {
 	selectedFunc = std::move (selected);
@@ -246,8 +276,13 @@ void CCommandMenuItem::execute ()
 	if (selectedFunc)
 		selectedFunc (this);
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 	if (getTarget ())
 		getTarget ()->notify (this, CCommandMenuItem::kMsgMenuItemSelected);
+#endif
+
+	if (itemTarget)
+		itemTarget->onCommandMenuItemSelected (this);
 }
 
 //------------------------------------------------------------------------
@@ -256,12 +291,19 @@ void CCommandMenuItem::validate ()
 	if (validateFunc)
 		validateFunc (this);
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 	if (getTarget ())
 		getTarget ()->notify (this, CCommandMenuItem::kMsgMenuItemValidate);
+#endif
+
+	if (itemTarget)
+		itemTarget->validateCommandMenuItem (this);
 }
 
 //------------------------------------------------------------------------
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 IdStringPtr COptionMenu::kMsgBeforePopup = "kMsgBeforePopup";
+#endif
 
 //------------------------------------------------------------------------
 // COptionMenu
@@ -320,6 +362,18 @@ COptionMenu::~COptionMenu () noexcept
 	removeAllEntry ();
 
 	delete menuItems;
+}
+
+//------------------------------------------------------------------------
+void COptionMenu::registerOptionMenuListener (IOptionMenuListener* listener)
+{
+	listeners.add (listener);
+}
+
+//------------------------------------------------------------------------
+void COptionMenu::unregisterOptionMenuListener (IOptionMenuListener* listener)
+{
+	listeners.remove (listener);
 }
 
 //------------------------------------------------------------------------
@@ -385,7 +439,10 @@ int32_t COptionMenu::onKeyDown (VstKeyCode& keyCode)
 //------------------------------------------------------------------------
 void COptionMenu::beforePopup ()
 {
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 	changed (kMsgBeforePopup);
+#endif
+	listeners.forEach ([this] (IOptionMenuListener* l) { l->onOptionMenuPrePopup (this); });
 	for (auto& menuItem : *menuItems)
 	{
 		CCommandMenuItem* commandItem = menuItem.cast<CCommandMenuItem> ();
@@ -394,6 +451,17 @@ void COptionMenu::beforePopup ()
 		if (menuItem->getSubmenu ())
 			menuItem->getSubmenu ()->beforePopup ();
 	}
+}
+
+//------------------------------------------------------------------------
+void COptionMenu::afterPopup ()
+{
+	for (auto& menuItem : *menuItems)
+	{
+		if (menuItem->getSubmenu ())
+			menuItem->getSubmenu ()->afterPopup ();
+	}
+	listeners.forEach ([this] (IOptionMenuListener* l) { l->onOptionMenuPostPopup (this); });
 }
 
 //------------------------------------------------------------------------
@@ -433,7 +501,9 @@ bool COptionMenu::popup ()
 			PlatformOptionMenuResult platformPopupResult = platformMenu->popup (this);
 			if (platformPopupResult.menu != nullptr)
 			{
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 				IDependency::DeferChanges dc (this);
+#endif
 				lastMenu = platformPopupResult.menu;
 				lastResult = platformPopupResult.index;
 				lastMenu->setValue ((float)lastResult);
@@ -767,4 +837,3 @@ void COptionMenu::looseFocus ()
 }
 
 } // namespace
-

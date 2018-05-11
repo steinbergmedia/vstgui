@@ -15,6 +15,7 @@
 #include "iaction.h"
 #include "../../lib/csplitview.h"
 #include "../../lib/cframe.h"
+#include "../../lib/controls/icommandmenuitemtarget.h"
 
 #include <vector>
 
@@ -37,6 +38,7 @@ class UIEditController : public CBaseObject,
                          public ISplitViewSeparatorDrawer,
                          public IActionPerformer,
                          public IKeyboardHook,
+                         public CommandMenuItemTargetAdapter,
                          public UIDescriptionListenerAdapter
 {
 public:
@@ -119,6 +121,10 @@ protected:
 	// IKeyboardHook
 	int32_t onKeyDown (const VstKeyCode& code, CFrame* frame) override;
 	int32_t onKeyUp (const VstKeyCode& code, CFrame* frame) override;
+
+	// CommandMenuItemTargetAdapter
+	bool validateCommandMenuItem (CCommandMenuItem* item) override;
+	bool onCommandMenuItemSelected (CCommandMenuItem* item) override;
 
 	SharedPointer<UIDescription> editDescription;
 	SharedPointer<UIDescription> editorDesc;

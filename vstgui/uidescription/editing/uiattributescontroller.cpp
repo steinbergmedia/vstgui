@@ -302,7 +302,7 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
-class TextController : public Controller, public IViewListenerAdapter
+class TextController : public Controller, public IViewListenerAdapter, public ITextLabelListener
 {
 public:
 	TextController (IController* baseController, const std::string& attrName)
@@ -313,10 +313,10 @@ public:
 		if (textLabel)
 		{
 			textLabel->unregisterViewListener (this);
-			textLabel->removeDependency (this);
+			textLabel->unregisterTextLabelListener (this);
 		}
 		if (slider)
-			slider->removeDependency (this);
+			slider->unregisterControlListener (this);
 	}
 	
 	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override
@@ -328,7 +328,7 @@ public:
 			{
 				textLabel = edit;
 				originalTextColor = textLabel->getFontColor ();
-				textLabel->addDependency (this);
+				textLabel->registerTextLabelListener (this);
 				textLabel->registerViewListener (this);
 			}
 		}
@@ -338,7 +338,7 @@ public:
 			if (sliderView)
 			{
 				slider = sliderView;
-				slider->addDependency (this);
+				slider->registerControlListener (this);
 			}
 		}
 		return controller->verifyView (view, attributes, description);
@@ -435,16 +435,12 @@ public:
 		}
 	}
 	
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override
+	void onTextLabelTruncatedTextChanged (CTextLabel* label) override
 	{
-		if (message == CTextLabel::kMsgTruncatedTextChanged)
-		{
-			UTF8StringPtr txt = textLabel->getTruncatedText ();
-			valueDisplayTruncated (txt);
-			return kMessageNotified;
-		}
-		return kMessageUnknown;
+		UTF8StringPtr txt = label->getTruncatedText ();
+		valueDisplayTruncated (txt);
 	}
+	
 protected:
 	SharedPointer<CTextLabel> textLabel;
 	SharedPointer<CSlider> slider;
@@ -452,7 +448,7 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
-class MenuController : public TextController
+class MenuController : public TextController, public OptionMenuListenerAdapter, public CommandMenuItemTargetAdapter
 {
 public:
 	MenuController (IController* baseController, const std::string& attrName, UIDescription* description, bool addNoneItem = true, bool sortItems = true)
@@ -461,7 +457,7 @@ public:
 	~MenuController () override
 	{
 		if (menu)
-			menu->removeDependency (this);
+			menu->unregisterOptionMenuListener (this);
 	}
 	
 	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override
@@ -470,7 +466,7 @@ public:
 		{
 			menu = dynamic_cast<COptionMenu*>(view);
 			if (menu)
-				menu->addDependency (this);
+				menu->registerOptionMenuListener (this);
 		}
 		return TextController::verifyView (view, attributes, description);
 	}
@@ -481,7 +477,7 @@ public:
 
 	virtual void addMenuEntry (const std::string* entryName)
 	{
-		CCommandMenuItem* item = new CCommandMenuItem (entryName->c_str (), this);
+		CCommandMenuItem* item = new CCommandMenuItem (CCommandMenuItem::Desc{entryName->data (), this});
 		validateMenuEntry (item);
 		menu->addEntry (item);
 		if (textLabel->getText () == *entryName)
@@ -497,33 +493,25 @@ public:
 		TextController::setValue (value);
 	}
 
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override
+	void onOptionMenuPrePopup (COptionMenu* menu) override
 	{
-		if (sender == menu && message == COptionMenu::kMsgBeforePopup)
-		{
-			menu->removeAllEntry ();
-			if (addNoneItem)
-				menu->addEntry (new CCommandMenuItem ("None", 100, this));
-			StringPtrList names;
-			collectMenuItemNames (names);
-			if (sortItems)
-				names.sort (UIEditController::std__stringCompare);
-			if (addNoneItem && !names.empty ())
-				menu->addSeparator ();
-			for (const auto& name : names)
-				addMenuEntry (name);
-			return kMessageNotified;
-		}
-		else if (message == CCommandMenuItem::kMsgMenuItemSelected)
-		{
-			CCommandMenuItem* item = dynamic_cast<CCommandMenuItem*>(sender);
-			if (item)
-			{
-				performValueChange (item->getTag () == 100 ? "" : item->getTitle ());
-			}
-			return kMessageNotified;
-		}
-		return TextController::notify (sender, message);
+		menu->removeAllEntry ();
+		if (addNoneItem)
+			menu->addEntry (new CCommandMenuItem (CCommandMenuItem::Desc{"None", 100, this}));
+		StringPtrList names;
+		collectMenuItemNames (names);
+		if (sortItems)
+			names.sort (UIEditController::std__stringCompare);
+		if (addNoneItem && !names.empty ())
+			menu->addSeparator ();
+		for (const auto& name : names)
+			addMenuEntry (name);
+	}
+
+	bool onCommandMenuItemSelected (CCommandMenuItem* item) override
+	{
+		performValueChange (item->getTag () == 100 ? "" : item->getTitle ());
+		return true;
 	}
 
 	void valueDisplayTruncated (UTF8StringPtr txt) override

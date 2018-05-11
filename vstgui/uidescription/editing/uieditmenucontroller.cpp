@@ -30,7 +30,7 @@ UIEditMenuController::UIEditMenuController (IController* baseController, UISelec
 }
 
 //----------------------------------------------------------------------------------------------------
-static void addEntriesToMenu (const UIEditing::MenuEntry* entries, COptionMenu* menu, CBaseObject* menuItemTarget, int32_t& index)
+static void addEntriesToMenu (const UIEditing::MenuEntry* entries, COptionMenu* menu, ICommandMenuItemTarget* menuItemTarget, int32_t& index)
 {
 	while (entries[index].category != nullptr)
 	{
@@ -51,7 +51,7 @@ static void addEntriesToMenu (const UIEditing::MenuEntry* entries, COptionMenu* 
 		}
 		else
 		{
-			CMenuItem* item = menu->addEntry (new CCommandMenuItem (entries[index].name, menuItemTarget, entries[index].category, entries[index].name));
+			CMenuItem* item = menu->addEntry (new CCommandMenuItem ({entries[index].name, menuItemTarget, entries[index].category, entries[index].name}));
 			if (entries[index].key)
 			{
 				item->setKey (entries[index].key, entries[index].modifier);
@@ -118,21 +118,21 @@ bool UIEditMenuController::createUniqueTemplateName (std::list<const std::string
 }
 
 //----------------------------------------------------------------------------------------------------
+bool UIEditMenuController::validateCommandMenuItem (CCommandMenuItem* item)
+{
+	return validateMenuItem (*item);
+}
+
+//----------------------------------------------------------------------------------------------------
+bool UIEditMenuController::onCommandMenuItemSelected (CCommandMenuItem* item)
+{
+	return handleCommand (item->getCommandCategory (), item->getCommandName ());
+}
+
+//----------------------------------------------------------------------------------------------------
 CMessageResult UIEditMenuController::notify (CBaseObject* sender, IdStringPtr message)
 {
-	if (message == CCommandMenuItem::kMsgMenuItemValidate)
-	{
-		CCommandMenuItem* item = dynamic_cast<CCommandMenuItem*> (sender);
-		if (item)
-			return validateMenuItem (*item) ? kMessageNotified : kMessageUnknown;
-	}
-	else if (message == CCommandMenuItem::kMsgMenuItemSelected)
-	{
-		CCommandMenuItem* item = dynamic_cast<CCommandMenuItem*> (sender);
-		if (handleCommand (item->getCommandCategory (), item->getCommandName ()))
-			return kMessageNotified;
-	}
-	else if (message == CVSTGUITimer::kMsgTimer)
+	if (message == CVSTGUITimer::kMsgTimer)
 	{
 		editLabel->setTransparency (true);
 		fileLabel->setTransparency (true);
@@ -209,7 +209,7 @@ bool UIEditMenuController::validateMenuItem (CCommandMenuItem& item)
 			viewAndDisplayNames.sort ([] (const auto& lhs, const auto& rhs) { return lhs.second < rhs.second; });
 			for (auto& entry : viewAndDisplayNames)
 			{
-				submenu->addEntry (new CCommandMenuItem (entry.second.data (), this, "AddTemplate", entry.first->data ()));
+				submenu->addEntry (new CCommandMenuItem (CCommandMenuItem::Desc{entry.second.data (), this, "AddTemplate", entry.first->data ()}));
 			}
 			item.setSubmenu (submenu);
 			return true;
@@ -227,7 +227,7 @@ bool UIEditMenuController::validateMenuItem (CCommandMenuItem& item)
 				item.setSubmenu (submenu);
 				for (auto& name : templateNames)
 				{
-					submenu->addEntry (new CCommandMenuItem (name->c_str (), this, "RemoveTemplate", name->c_str ()));
+					submenu->addEntry (new CCommandMenuItem (CCommandMenuItem::Desc{name->data (), this, "RemoveTemplate", name->data ()}));
 				}
 			}
 			return true;
@@ -245,7 +245,7 @@ bool UIEditMenuController::validateMenuItem (CCommandMenuItem& item)
 				item.setSubmenu (submenu);
 				for (auto& name : templateNames)
 				{
-					submenu->addEntry (new CCommandMenuItem (name->c_str (), this, "DuplicateTemplate", name->c_str ()));
+					submenu->addEntry (new CCommandMenuItem (CCommandMenuItem::Desc{name->data (), this, "DuplicateTemplate", name->data ()}));
 				}
 			}
 			return true;
@@ -272,7 +272,7 @@ bool UIEditMenuController::validateMenuItem (CCommandMenuItem& item)
 			viewAndDisplayNames.sort ([] (const auto& lhs, const auto& rhs) { return lhs.second < rhs.second; });
 			for (auto& entry : viewAndDisplayNames)
 			{
-				submenu->addEntry (new CCommandMenuItem (entry.second.data (), this, "Embed", entry.first->data ()));
+				submenu->addEntry (new CCommandMenuItem (CCommandMenuItem::Desc{entry.second.data (), this, "Embed", entry.first->data ()}));
 			}
 			return true;
 		}
@@ -313,7 +313,7 @@ bool UIEditMenuController::validateMenuItem (CCommandMenuItem& item)
 			viewAndDisplayNames.sort ([] (const auto& lhs, const auto& rhs) { return lhs.second < rhs.second; });
 			for (auto& entry : viewAndDisplayNames)
 			{
-				submenu->addEntry (new CCommandMenuItem (entry.second.data (), this, "Transform View Type", entry.first->data ()));
+				submenu->addEntry (new CCommandMenuItem (CCommandMenuItem::Desc{entry.second.data (), this, "Transform View Type", entry.first->data ()}));
 			}
 			return true;
 		}
@@ -333,15 +333,14 @@ bool UIEditMenuController::validateMenuItem (CCommandMenuItem& item)
 				item.setSubmenu (submenu);
 				for (auto& name : templateNames)
 				{
-					submenu->addEntry (new CCommandMenuItem (name->c_str (), this, "InsertTemplate", name->c_str ()));
+					submenu->addEntry (new CCommandMenuItem (CCommandMenuItem::Desc{name->data (), this, "InsertTemplate", name->data ()}));
 				}
 			}
 			return true;
 		}
 	}
-	CBaseObject* obj = dynamic_cast<CBaseObject*>(controller);
-	if (obj)
-		return obj->notify (&item, CCommandMenuItem::kMsgMenuItemValidate) == kMessageNotified;
+	if (auto obj = dynamic_cast<ICommandMenuItemTarget*> (controller))
+		return obj->validateCommandMenuItem (&item);
 	return false;
 }
 
@@ -480,10 +479,10 @@ bool UIEditMenuController::handleCommand (const UTF8StringPtr category, const UT
 		}
 		return true;
 	}
-	if (auto obj = dynamic_cast<CBaseObject*> (controller))
+	if (auto obj = dynamic_cast<ICommandMenuItemTarget*> (controller))
 	{
-		CCommandMenuItem item ("", 0, nullptr, category, name);
-		if (obj->notify (&item, CCommandMenuItem::kMsgMenuItemSelected) == kMessageNotified)
+		CCommandMenuItem item (CCommandMenuItem::Desc{"", 0, nullptr, category, name});
+		if (obj->onCommandMenuItemSelected (&item))
 			return true;
 	}
 	return false;
@@ -492,7 +491,7 @@ bool UIEditMenuController::handleCommand (const UTF8StringPtr category, const UT
 //------------------------------------------------------------------------
 bool UIEditMenuController::canHandleCommand (const UTF8StringPtr category, const UTF8StringPtr name) const
 {
-	CCommandMenuItem item ("", 0, nullptr, category, name);
+	CCommandMenuItem item (CCommandMenuItem::Desc{"", 0, nullptr, category, name});
 	if (const_cast<UIEditMenuController*> (this)->validateMenuItem (item))
 	{
 		return item.isEnabled ();
@@ -510,9 +509,9 @@ int32_t UIEditMenuController::processKeyCommand (const VstKeyCode& key)
 		baseMenu = fileMenu;
 		item = findKeyCommandItem (baseMenu, key);
 	}
-	if (item && item->getTarget ())
+	if (item && item->getItemTarget ())
 	{
-		item->getTarget ()->notify (item, CCommandMenuItem::kMsgMenuItemValidate);
+		item->getItemTarget ()->validateCommandMenuItem (item);
 		if (item->isEnabled ())
 		{
 			CTextLabel* label = nullptr;
@@ -536,7 +535,7 @@ int32_t UIEditMenuController::processKeyCommand (const VstKeyCode& key)
 			{
 				label->setTransparency (false);
 			}
-			item->getTarget ()->notify (item, CCommandMenuItem::kMsgMenuItemSelected);
+			item->getItemTarget ()->onCommandMenuItemSelected (item);
 			if (label)
 			{
 				highlightTimer = makeOwned<CVSTGUITimer> (this, 90u, true);
