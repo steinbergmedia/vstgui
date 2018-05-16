@@ -121,6 +121,8 @@ public:
 	void setValue (float val) override;
 private:
 	void drawStyleChanged () override;
+	void calculateWrapLine  (CDrawContext *context, std::pair<UTF8String, double> &element, const IFontPainter *const &fontPainter, double lineHeight, double lineWidth, double maxWidth, const CPoint &textInset, CCoord &y);
+	
 	void recalculateLines (CDrawContext* context);
 	void recalculateHeight ();
 	
