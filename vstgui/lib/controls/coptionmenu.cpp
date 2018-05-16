@@ -367,13 +367,16 @@ COptionMenu::~COptionMenu () noexcept
 //------------------------------------------------------------------------
 void COptionMenu::registerOptionMenuListener (IOptionMenuListener* listener)
 {
-	listeners.add (listener);
+	if (!listeners)
+		listeners = std::unique_ptr<MenuListenerList> (new MenuListenerList ());
+	listeners->add (listener);
 }
 
 //------------------------------------------------------------------------
 void COptionMenu::unregisterOptionMenuListener (IOptionMenuListener* listener)
 {
-	listeners.remove (listener);
+	if (listeners)
+		listeners->remove (listener);
 }
 
 //------------------------------------------------------------------------
@@ -442,7 +445,8 @@ void COptionMenu::beforePopup ()
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 	changed (kMsgBeforePopup);
 #endif
-	listeners.forEach ([this] (IOptionMenuListener* l) { l->onOptionMenuPrePopup (this); });
+	if (listeners)
+		listeners->forEach ([this] (IOptionMenuListener* l) { l->onOptionMenuPrePopup (this); });
 	for (auto& menuItem : *menuItems)
 	{
 		CCommandMenuItem* commandItem = menuItem.cast<CCommandMenuItem> ();
@@ -461,7 +465,8 @@ void COptionMenu::afterPopup ()
 		if (menuItem->getSubmenu ())
 			menuItem->getSubmenu ()->afterPopup ();
 	}
-	listeners.forEach ([this] (IOptionMenuListener* l) { l->onOptionMenuPostPopup (this); });
+	if (listeners)
+		listeners->forEach ([this] (IOptionMenuListener* l) { l->onOptionMenuPostPopup (this); });
 }
 
 //------------------------------------------------------------------------

@@ -357,7 +357,8 @@ protected:
 	int32_t prefixNumbers {0};
 	SharedPointer<CBitmap> bgWhenClick;
 	COptionMenu* lastMenu {nullptr};
-	DispatchList<IOptionMenuListener*> listeners;
+	using MenuListenerList = DispatchList<IOptionMenuListener*>;
+	std::unique_ptr<MenuListenerList> listeners;
 };
 
 } // namespace

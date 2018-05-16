@@ -78,7 +78,8 @@ protected:
 	TextTruncateMode textTruncateMode;
 	UTF8String text;
 	UTF8String truncatedText;
-	DispatchList<ITextLabelListener*> listeners;
+	using TextLabelListenerList = DispatchList<ITextLabelListener*>;
+	std::unique_ptr<TextLabelListenerList> listeners;
 };
 
 //-----------------------------------------------------------------------------

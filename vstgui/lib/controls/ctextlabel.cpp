@@ -45,13 +45,16 @@ CTextLabel::CTextLabel (const CTextLabel& v)
 //------------------------------------------------------------------------
 void CTextLabel::registerTextLabelListener (ITextLabelListener* listener)
 {
-	listeners.add (listener);
+	if (!listeners)
+		listeners = std::unique_ptr<TextLabelListenerList> (new TextLabelListenerList ());
+	listeners->add (listener);
 }
 
 //------------------------------------------------------------------------
 void CTextLabel::unregisterTextLabelListener (ITextLabelListener* listener)
 {
-	listeners.remove (listener);
+	if (listeners)
+		listeners->remove (listener);
 }
 
 //------------------------------------------------------------------------
@@ -92,8 +95,11 @@ void CTextLabel::calculateTruncatedText ()
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 		changed (kMsgTruncatedTextChanged);
 #endif
-		listeners.forEach (
-		    [this] (ITextLabelListener* l) { l->onTextLabelTruncatedTextChanged (this); });
+		if (listeners)
+		{
+			listeners->forEach (
+			    [this] (ITextLabelListener* l) { l->onTextLabelTruncatedTextChanged (this); });
+		}
 	}
 	else if (!truncatedText.empty ())
 		truncatedText.clear ();
