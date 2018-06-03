@@ -62,7 +62,8 @@ public:
 		if (++instance.users == 1)
 		{
 			instance.timer = makeOwned<CVSTGUITimer> (
-				[] (auto) { gUpdateHandlerInit.get ()->triggerDeferedUpdates (); }, 1000 / 30);
+			    [] (CVSTGUITimer*) { gUpdateHandlerInit.get ()->triggerDeferedUpdates (); },
+			    1000 / 30);
 		}
 	}
 
