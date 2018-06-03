@@ -17,22 +17,23 @@
 //------------------------------------------------------------------------
 namespace VSTGUI {
 
+//------------------------------------------------------------------------
+static Gtk::Window* getParent (CFrame* frame)
+{
+	if (!frame)
+		return nullptr;
+	if (auto x11Frame = dynamic_cast<X11::Frame*> (frame->getPlatformFrame ()))
+	{
+		return reinterpret_cast<Gtk::Window*> (x11Frame->getGtkWindow ());
+	}
+	return nullptr;
+}
+
 struct GtkFileSelector : CNewFileSelector
 {
 	GtkFileSelector (CFrame* parent, Style style)
-	: CNewFileSelector (parent), style (style), dialog (Gtk::FileChooserDialog (*getParent (), ""))
+	: CNewFileSelector (parent), style (style), dialog (Gtk::FileChooserDialog (*getParent (parent), ""))
 	{
-	}
-
-	Gtk::Window* getParent () const
-	{
-		if (!frame)
-			return nullptr;
-		if (auto x11Frame = dynamic_cast<X11::Frame*> (frame->getPlatformFrame ()))
-		{
-			return reinterpret_cast<Gtk::Window*> (x11Frame->getGtkWindow ());
-		}
-		return nullptr;
 	}
 
 	static std::string getDirectory (UTF8StringPtr str)
@@ -182,6 +183,8 @@ struct GtkFileSelector : CNewFileSelector
 //------------------------------------------------------------------------
 CNewFileSelector* CNewFileSelector::create (CFrame* parent, Style style)
 {
+	if (!getParent (parent))
+		return nullptr;
 	return new GtkFileSelector (parent, style);
 }
 

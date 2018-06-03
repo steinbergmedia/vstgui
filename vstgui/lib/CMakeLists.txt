@@ -266,7 +266,7 @@ endif()
 
 ##########################################################################################
 # Linux
-if(UNIX AND NOT CMAKE_HOST_APPLE)
+if(LINUX)
     set(${target}_sources ${${target}_common_sources} ${${target}_linux_sources})
 endif()
 
@@ -277,7 +277,7 @@ target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS})
 vstgui_set_cxx_version(${target} 11)
 vstgui_source_group_by_folder(${target})
 
-if(UNIX AND NOT CMAKE_HOST_APPLE)
+if(LINUX)
     target_include_directories(${target} PRIVATE ${X11_INCLUDE_DIR})
     target_include_directories(${target} PRIVATE ${GTK3_INCLUDE_DIRS})
     target_include_directories(${target} PRIVATE ${GTKMM3_INCLUDE_DIRS})

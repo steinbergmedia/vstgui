@@ -75,6 +75,17 @@ set(${target}_win32_sources
     source/platform/win32/win32window.h
 )
 
+set(${target}_gdk_sources
+    source/platform/gdk/gdkapplication.cpp
+    source/platform/gdk/gdkcommondirectories.cpp
+    source/platform/gdk/gdkcommondirectories.h
+    source/platform/gdk/gdkpreference.cpp
+    source/platform/gdk/gdkpreference.h
+    source/platform/gdk/gdkasync.cpp
+    source/platform/gdk/gdkwindow.cpp
+    source/platform/gdk/gdkwindow.h
+)
+
 ##########################################################################################
 if(CMAKE_HOST_APPLE)
     set(${target}_sources ${${target}_common_sources} ${${target}_mac_sources})
@@ -90,12 +101,25 @@ if(MSVC)
 endif()
 
 ##########################################################################################
+if(LINUX)
+    set(${target}_sources ${${target}_common_sources} ${${target}_gdk_sources})
+endif()
+
+##########################################################################################
 add_library(${target} STATIC ${${target}_sources})
 
 target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS})
 vstgui_set_cxx_version(${target} 14)
 vstgui_source_group_by_folder(${target})
 
-if(NOT VSTGUI_DISABLE_STANDALONE_EXAMPLES)
-    add_subdirectory(examples)
+# if(NOT VSTGUI_DISABLE_STANDALONE_EXAMPLES)
+#     add_subdirectory(examples)
+# endif()
+
+if(LINUX)
+    target_include_directories(${target} PRIVATE ${X11_INCLUDE_DIR})
+    target_include_directories(${target} PRIVATE ${GTK3_INCLUDE_DIRS})
+    target_include_directories(${target} PRIVATE ${GTKMM3_INCLUDE_DIRS})
+    target_include_directories(${target} PRIVATE ${FREETYPE_INCLUDE_DIRS})
+    target_link_libraries(${target} PRIVATE vstgui_uidescription ${LINUX_LIBRARIES} dl)
 endif()

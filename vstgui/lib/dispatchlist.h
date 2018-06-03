@@ -6,6 +6,7 @@
 #define __dispatchlist__
 
 #include <vector>
+#include <algorithm>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {

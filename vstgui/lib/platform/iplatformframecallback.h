@@ -21,6 +21,7 @@ enum PlatformType {
 	kUIView,	// iOS UIView
 	kHWNDTopLevel,	// Windows HWDN Top Level (non child)
 	kX11EmbedWindowID,	// X11 XID
+	kGtkWindow, // GtkWindow
 
 	kDefaultNative = -1
 };

@@ -98,7 +98,7 @@ vstgui_set_cxx_version(${target} 14)
 vstgui_source_group_by_folder(${target})
 
 ##########################################################################################
-if(UNIX AND NOT CMAKE_HOST_APPLE)
+if(LINUX)
     execute_process(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/editing/createuidescdata.sh WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/editing/ RESULT_VARIABLE result)
     target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS} "HAVE_EDITORUIDESC_H")
 endif()

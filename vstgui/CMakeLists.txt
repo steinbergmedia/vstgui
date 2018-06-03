@@ -8,6 +8,10 @@ endif()
 
 set(CMAKE_OSX_DEPLOYMENT_TARGET 10.9)
 
+if (UNIX AND NOT CMAKE_HOST_APPLE)
+    set(LINUX TRUE)
+endif()
+
 ##########################################################################################
 function(vstgui_set_cxx_version target version)
     set_property(TARGET ${target} PROPERTY CXX_STANDARD ${version})
@@ -63,7 +67,7 @@ if(CMAKE_HOST_APPLE)
     endif()
   set(VSTGUI_LTO_LINKER_FLAGS "")
 endif()
-if(UNIX AND NOT CMAKE_HOST_APPLE)
+if(LINUX)
     set(VSTGUI_LTO_COMPILER_FLAGS "-O3 -flto")
     set(VSTGUI_LTO_LINKER_FLAGS "")
     find_package(X11 REQUIRED)
@@ -135,8 +139,8 @@ endif()
 add_subdirectory(lib)
 add_subdirectory(uidescription)
 
-if(UNIX AND NOT CMAKE_HOST_APPLE)
-    set(VSTGUI_DISABLE_STANDALONE 1)
+if(LINUX)
+    set(VSTGUI_DISABLE_UNITTESTS  1)
 endif()
 
 if(NOT VSTGUI_DISABLE_STANDALONE)
