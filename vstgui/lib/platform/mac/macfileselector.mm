@@ -67,7 +67,7 @@ CocoaFileSelector::CocoaFileSelector (CFrame* frame, Style style)
 //-----------------------------------------------------------------------------
 void CocoaFileSelector::openPanelDidEnd (NSSavePanel* savePanel, NSInteger res)
 {
-	if (res == NSFileHandlingPanelOKButton)
+	if (res == NSModalResponseOK)
 	{
 		if (style == kSelectSaveFile)
 		{
@@ -193,7 +193,7 @@ bool CocoaFileSelector::runInternal (CBaseObject* _delegate)
 			openPanel.allowedFileTypes = typesArray;
 			NSInteger res = [openPanel runModal];
 			openPanelDidEnd (openPanel, res);
-			return res == NSFileHandlingPanelOKButton;
+			return res == NSModalResponseOK;
 		}
 	}
 	else if (savePanel)
@@ -216,7 +216,7 @@ bool CocoaFileSelector::runInternal (CBaseObject* _delegate)
 			savePanel.allowedFileTypes = typesArray;
 			NSInteger res = [savePanel runModal];
 			openPanelDidEnd (savePanel, res);
-			return res == NSFileHandlingPanelOKButton;
+			return res == NSModalResponseOK;
 		}
 	}
 	

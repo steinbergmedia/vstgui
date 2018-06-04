@@ -81,9 +81,9 @@ static id VSTGUI_NSMenu_Init (id self, SEL _cmd, void* _menu)
 				NSMenu* subMenu = [[[menuClass alloc] initWithOptionMenu:(id)item->getSubmenu ()] autorelease];
 				[nsMenu setSubmenu: subMenu forItem:nsItem];
 				if (multipleCheck && item->isChecked ())
-					[nsItem setState:NSOnState];
+					[nsItem setState:NSControlStateValueOn];
 				else
-					[nsItem setState:NSOffState];
+					[nsItem setState:NSControlStateValueOff];
 			}
 			else if (item->isSeparator ())
 			{
@@ -97,9 +97,9 @@ static id VSTGUI_NSMenu_Init (id self, SEL _cmd, void* _menu)
 				[nsItem setTarget:nsMenu];
 				[nsItem setTag: index];
 				if (multipleCheck && item->isChecked ())
-					[nsItem setState:NSOnState];
+					[nsItem setState:NSControlStateValueOn];
 				else
-					[nsItem setState:NSOffState];
+					[nsItem setState:NSControlStateValueOff];
 				NSString* keyEquivalent = nil;
 				if (!item->getKeycode ().empty ())
 				{
@@ -276,7 +276,7 @@ PlatformOptionMenuResult NSViewOptionMenu::popup (COptionMenu* optionMenu)
 	if (!optionMenu->isPopupStyle ())
 		cellFrameRect.origin.y += cellFrameRect.size.height;
 	if (!multipleCheck && optionMenu->isCheckStyle ())
-		[[nsMenu itemWithTag:(NSInteger)optionMenu->getCurrentIndex (true)] setState:NSOnState];
+		[[nsMenu itemWithTag:(NSInteger)optionMenu->getCurrentIndex (true)] setState:NSControlStateValueOn];
 
 	NSView* menuContainer = [[NSView alloc] initWithFrame:cellFrameRect];
 	[view addSubview:menuContainer];

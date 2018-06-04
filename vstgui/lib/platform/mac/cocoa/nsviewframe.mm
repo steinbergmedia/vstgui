@@ -88,7 +88,7 @@ static id VSTGUI_NSView_Init (id self, SEL _cmd, void* _frame, NSView* parentVie
 
 		[parentView addSubview: self];
 
-		[self registerForDraggedTypes:[NSArray arrayWithObjects:NSStringPboardType, NSFilenamesPboardType, NSColorPboardType, [NSString stringWithCString:MacClipboard::getPasteboardBinaryType () encoding:NSASCIIStringEncoding], nil]];
+		[self registerForDraggedTypes:[NSArray arrayWithObjects:NSPasteboardTypeString, NSPasteboardTypeFileURL, NSPasteboardTypeColor, [NSString stringWithCString:MacClipboard::getPasteboardBinaryType () encoding:NSASCIIStringEncoding], nil]];
 		
 		[self setFocusRingType:NSFocusRingTypeNone];
 	}
@@ -895,8 +895,13 @@ void NSViewFrame::drawRect (NSRect* rect)
 {
 	inDraw = true;
 	NSGraphicsContext* nsContext = [NSGraphicsContext currentContext];
-	
-	CGDrawContext drawContext ((CGContextRef)[nsContext graphicsPort], rectFromNSRect ([nsView bounds]));
+
+#if MAC_OS_X_VERSION_MIN_REQUIRED < MAX_OS_X_VERSION_10_10
+	auto cgContext = static_cast<CGContextRef> ([nsContext graphicsPort]);
+#else
+	auto cgContext = static_cast<CGContextRef> ([nsContext CGContext]);
+#endif
+	CGDrawContext drawContext (cgContext, rectFromNSRect ([nsView bounds]));
 	drawContext.beginDraw ();
 	const NSRect* dirtyRects;
 	NSInteger numDirtyRects;
@@ -1149,6 +1154,10 @@ SharedPointer<COffscreenContext> NSViewFrame::createOffscreenContext (CCoord wid
 //------------------------------------------------------------------------------------
 DragResult NSViewFrame::doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap)
 {
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 	lastDragOperationResult = kDragError;
 	if (nsView)
 	{
@@ -1227,17 +1236,16 @@ DragResult NSViewFrame::doDrag (IDataPackage* source, const CPoint& offset, CBit
 				return kDragError;
 			}
 		}
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-
 		[nsView dragImage:nsImage at:bitmapOffset offset:NSMakeSize (0, 0) event:event pasteboard:nsPasteboard source:nsView slideBack:dragBitmap ? YES : NO];
 
-#pragma clang diagnostic pop
 
 		[nsPasteboard clearContents];
 		return lastDragOperationResult;
 	}
 	return kDragError;
+
+#pragma clang diagnostic pop
+
 }
 #endif
 
