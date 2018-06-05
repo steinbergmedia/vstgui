@@ -355,12 +355,6 @@ bool UIViewFactory::getAttributesForView (CView* view, const IUIDescription* des
 }
 
 //-----------------------------------------------------------------------------
-static bool viewNamesSortFunc (const std::string* lhs, const std::string* rhs)
-{
-	return *lhs < *rhs;
-}
-
-//-----------------------------------------------------------------------------
 void UIViewFactory::collectRegisteredViewNames (StringPtrList& viewNames, IdStringPtr _baseClassNameFilter) const
 {
 	UTF8StringView baseClassNameFilter (_baseClassNameFilter);
@@ -390,7 +384,7 @@ void UIViewFactory::collectRegisteredViewNames (StringPtrList& viewNames, IdStri
 		viewNames.emplace_back (&(*iter).first);
 		iter++;
 	}
-	viewNames.sort (viewNamesSortFunc);
+	viewNames.sort ([] (const std::string* lhs, const std::string* rhs) { return *lhs < *rhs; });
 }
 
 //-----------------------------------------------------------------------------
