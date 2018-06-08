@@ -17,7 +17,7 @@ IdStringPtr UIColor::kMsgEndEditing = "UIColor::kMsgEndEditing";
 //----------------------------------------------------------------------------------------------------
 UIColor& UIColor::operator= (const CColor& c)
 {
-	red = c.red; green = c.green, blue = c.blue; alpha = c.alpha;
+	red = c.red; green = c.green; blue = c.blue; alpha = c.alpha;
 	r = red; g = green; b = blue;
 	updateHSL (kTo);
 	changed (kMsgChanged);
