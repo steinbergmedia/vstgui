@@ -1561,6 +1561,22 @@ bool VST3Editor::enableEditing (bool state)
 				double scaleFactor = getAbsScaleFactor ();
 				CCoord width = view->getWidth () * scaleFactor;
 				CCoord height = view->getHeight () * scaleFactor;
+
+				if (canResize () == Steinberg::kResultTrue)
+				{
+					Steinberg::ViewRect tmp;
+					if (getRect ().getWidth () != width)
+						tmp.right = getRect ().getWidth ();
+					if (getRect ().getHeight () != height)
+						tmp.bottom = getRect ().getHeight ();
+					if (tmp.getWidth () && tmp.getHeight ())
+					{
+						checkSizeConstraint (&tmp);
+						nonEditRect.setWidth (tmp.getWidth ());
+						nonEditRect.setHeight (tmp.getHeight ());
+					}
+				}
+
 				getFrame ()->setSize (width, height);
 				getFrame ()->addView (view);
 				getFrame ()->setTransform (CGraphicsTransform ().scale (scaleFactor, scaleFactor));
