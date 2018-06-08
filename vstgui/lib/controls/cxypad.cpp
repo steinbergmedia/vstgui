@@ -19,7 +19,7 @@ CXYPad::CXYPad (const CRect& size)
 //------------------------------------------------------------------------
 void CXYPad::draw (CDrawContext* context)
 {
-	CParamDisplay::drawBack (context);
+	drawBack (context);
 
 	float x, y;
 	calculateXY (getValue (), x, y);
@@ -33,6 +33,12 @@ void CXYPad::draw (CDrawContext* context)
 	context->setDrawMode (kAntiAliasing);
 	context->drawEllipse (r, kDrawFilled);
 	setDirty (false);
+}
+
+//------------------------------------------------------------------------
+void CXYPad::drawBack (CDrawContext* context, CBitmap* newBack)
+{
+	CParamDisplay::drawBack (context);
 }
 
 //------------------------------------------------------------------------
