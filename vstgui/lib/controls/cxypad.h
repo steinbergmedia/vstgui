@@ -20,7 +20,8 @@ public:
 	bool getStopTrackingOnMouseExit () const { return stopTrackingOnMouseExit; }
 
 	void draw (CDrawContext* context) override;
-	
+	void drawBack (CDrawContext* pContext, CBitmap* newBack = nullptr) override;
+
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
