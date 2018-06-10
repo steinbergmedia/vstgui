@@ -580,7 +580,6 @@ TESTCASE(CFrameTest,
 		EXPECT(platformHandle);
 		auto frame = new CFrame (CRect (0, 0, 100, 100), nullptr);
 		frame->open (platformHandle->getHandle (), platformHandle->getType ());
-		CPoint p;
 		EXPECT (frame->setPosition (10, 10));
 		CRect r;
 		frame->getSize (r);

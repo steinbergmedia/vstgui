@@ -379,7 +379,6 @@ float CSlider::calculateDelta (const CPoint& where, CRect* handleRect) const
 		if (style & kRight || style & kBottom)
 			normValue = 1.f - normValue;
 		CCoord actualPos;
-		CRect rect;
 		
 		actualPos = result + (int32_t)(normValue * rangeHandle);
 
