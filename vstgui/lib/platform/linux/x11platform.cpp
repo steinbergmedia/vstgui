@@ -7,6 +7,7 @@
 #include "../../cframe.h"
 #include "../../cstring.h"
 #include "x11frame.h"
+#include "cairobitmap.h"
 #include <cassert>
 #include <chrono>
 #include <dlfcn.h>
@@ -207,11 +208,17 @@ Platform& Platform::getInstance ()
 //------------------------------------------------------------------------
 Platform::Platform ()
 {
+	Cairo::Bitmap::setGetResourcePathFunc ([this] () {
+		auto path = getPath ();
+		path += "/Contents/Resources/";
+		return path;
+	});
 }
 
 //------------------------------------------------------------------------
 Platform::~Platform ()
 {
+	Cairo::Bitmap::setGetResourcePathFunc  ([] () { return std::string (); });
 }
 
 //------------------------------------------------------------------------

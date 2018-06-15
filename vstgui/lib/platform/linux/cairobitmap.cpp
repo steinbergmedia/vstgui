@@ -6,7 +6,6 @@
 #include "../../cresourcedescription.h"
 
 #include "cairobitmap.h"
-#include "x11platform.h"
 #include <memory>
 #include <vector>
 
@@ -129,6 +128,15 @@ private:
 } // CairoBitmapPrivate
 
 //-----------------------------------------------------------------------------
+Bitmap::GetResourcePathFunc Bitmap::getResourcePath = [] () { return std::string (); };
+
+//-----------------------------------------------------------------------------
+void Bitmap::setGetResourcePathFunc (GetResourcePathFunc&& func)
+{
+	getResourcePath = std::move (func);
+}
+
+//-----------------------------------------------------------------------------
 Bitmap::Bitmap (CPoint* _size)
 {
 	if (_size)
@@ -153,10 +161,9 @@ Bitmap::~Bitmap ()
 //-----------------------------------------------------------------------------
 bool Bitmap::load (const CResourceDescription& desc)
 {
-	auto path = X11::Platform::getInstance ().getPath ();
+	auto path = getResourcePath ();
 	if (!path.empty ())
 	{
-		path += "/Contents/Resources/";
 		if (desc.type == CResourceDescription::kIntegerType)
 		{
 			char filename[PATH_MAX];
