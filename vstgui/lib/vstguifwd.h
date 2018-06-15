@@ -13,6 +13,10 @@ namespace VSTGUI {
 //-----------------------------------------------------------------------------
 using CViewAttributeID = size_t;
 
+//-----------------------------------------------------------------------------
+static constexpr uint32_t kStreamIOError = std::numeric_limits<uint32_t>::max ();
+static constexpr int64_t kStreamSeekError = -1;
+
 // enums
 //----------------------------
 // @brief Mouse Wheel Axis
@@ -85,6 +89,14 @@ enum DragResult {
 };
 
 enum class DragOperation;
+
+// @brief Stream seek modes
+enum class SeekMode
+{
+	Set,
+	Current,
+	End
+};
 
 // simple structs
 struct CColor;
@@ -227,6 +239,7 @@ class IPlatformBitmapPixelAccess;
 class IPlatformFont;
 class IPlatformFrame;
 class IFontPainter;
+class IPlatformResourceInputStream;
 
 }
 

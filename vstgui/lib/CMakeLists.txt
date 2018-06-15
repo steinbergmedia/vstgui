@@ -229,6 +229,8 @@ set(${target}_win32_sources
 
  ##########################################################################################
 set(${target}_linux_sources
+    platform/common/fileresourceinputstream.cpp
+    platform/common/fileresourceinputstream.h
     platform/linux/cairobitmap.cpp
     platform/linux/cairobitmap.h
     platform/linux/cairocontext.cpp
@@ -240,18 +242,21 @@ set(${target}_linux_sources
     platform/linux/cairopath.cpp
     platform/linux/cairopath.h
     platform/linux/cairoutils.h
-    platform/linux/gtkoptionmenu.cpp
-    platform/linux/gtkoptionmenu.h
-    platform/linux/gtktextedit.cpp
-    platform/linux/gtktextedit.h
     platform/linux/linuxstring.cpp
     platform/linux/linuxstring.h
-    platform/linux/x11frame.cpp
-    platform/linux/x11frame.h
-    platform/linux/x11platform.cpp
-    platform/linux/x11platform.h
-    platform/linux/x11timer.cpp
-    platform/linux/x11timer.h
+    platform/linux/gdkframe.cpp
+    platform/linux/gdkframe.h
+    platform/linux/gdkfileselector.cpp
+    # platform/linux/gtkoptionmenu.cpp
+    # platform/linux/gtkoptionmenu.h
+    # platform/linux/gtktextedit.cpp
+    # platform/linux/gtktextedit.h
+    # platform/linux/x11frame.cpp
+    # platform/linux/x11frame.h
+    # platform/linux/x11platform.cpp
+    # platform/linux/x11platform.h
+    # platform/linux/x11timer.cpp
+    # platform/linux/x11timer.h
 )
 
 ##########################################################################################

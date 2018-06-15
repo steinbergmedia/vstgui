@@ -13,13 +13,14 @@ set(${target}_sources
   "source/modelbinding.h"
 )
 
+set(mandelbrot_resources
+"resource/Window.uidesc"
+)
+
 ##########################################################################################
 if(CMAKE_HOST_APPLE)
 	set(BUNDLE_PKG_INFO
     "resource/PkgInfo"
-	)
-	set(mandelbrot_resources
-		"resource/Window.uidesc"
 	)
 	set_source_files_properties(${BUNDLE_PKG_INFO} PROPERTIES
 		MACOSX_PACKAGE_LOCATION "."
@@ -60,17 +61,20 @@ endif()
 
 ##########################################################################################
 include_directories(../../../../)
-add_executable(${target}
-  ${${target}_sources}
-  ${mandelbrot_resources}
-)
-target_link_libraries(${target}
-	vstgui
-  vstgui_uidescription
-  vstgui_standalone
-	${${target}_PLATFORM_LIBS}
-)
 
+vstgui_add_executable(${target} "${${target}_sources}" "${mandelbrot_resources}")
 vstgui_set_cxx_version(${target} 14)
-set_target_properties(${target} PROPERTIES ${APP_PROPERTIES} ${VSTGUI_STANDALONE_EXAMPLES})
-target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS})
+
+# add_executable(${target}
+#   ${${target}_sources}
+#   ${mandelbrot_resources}
+# )
+# target_link_libraries(${target}
+# 	vstgui
+#   vstgui_uidescription
+#   vstgui_standalone
+# 	${${target}_PLATFORM_LIBS}
+# )
+
+# set_target_properties(${target} PROPERTIES ${APP_PROPERTIES} ${VSTGUI_STANDALONE_EXAMPLES})
+# target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS})

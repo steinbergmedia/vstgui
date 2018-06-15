@@ -46,8 +46,21 @@ private:
 //------------------------------------------------------------------------
 bool Window::init (const WindowConfiguration& config, IWindowDelegate& delegate)
 {
-	GdkWindowAttr attributes;
+	GdkWindowAttr attributes {};
+	attributes.x = 0;
+	attributes.y = 0;
+	attributes.width = config.size.x;
+	attributes.height = config.size.y;
+	attributes.wclass = GDK_INPUT_OUTPUT;
+	attributes.visual = nullptr;
+	attributes.window_type = GDK_WINDOW_TOPLEVEL;
+	attributes.cursor = nullptr;
+	attributes.wmclass_name = nullptr;
+	attributes.wmclass_class = nullptr;
+	attributes.override_redirect = false;
+	attributes.type_hint = GDK_WINDOW_TYPE_HINT_NORMAL;
 	gdkWindow = Gdk::Window::create (Gdk::Window::get_default_root_window (), &attributes, 0);
+
 	if (gdkWindow)
 	{
 		this->delegate = &delegate;
@@ -130,14 +143,13 @@ void Window::center () {}
 //------------------------------------------------------------------------
 PlatformType Window::getPlatformType () const
 {
-	return kGtkWindow;
+	return kGdkWindow;
 }
 
 //------------------------------------------------------------------------
 void* Window::getPlatformHandle () const
 {
-	assert (false);
-	return nullptr;
+	return gdkWindow->gobj ();
 }
 
 void Window::onSetContentView (CFrame* frame) {}

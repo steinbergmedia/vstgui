@@ -4,6 +4,7 @@
 
 #include "cstream.h"
 #include "../lib/cresourcedescription.h"
+#include "../lib/platform/iplatformresourceinputstream.h"
 #include <algorithm>
 #include <sstream>
 
@@ -13,8 +14,6 @@
 	#include "../lib/platform/win32/win32support.h"
 	#define fseeko _fseeki64
 	#define ftello _ftelli64
-#elif LINUX
-	#include "../lib/platform/linux/x11platform.h"
 #endif
 
 namespace VSTGUI {
@@ -348,8 +347,12 @@ CResourceInputStream::~CResourceInputStream () noexcept
 //-----------------------------------------------------------------------------
 bool CResourceInputStream::open (const CResourceDescription& res)
 {
-	if (platformHandle != nullptr)
+	if (platformStream || platformHandle)
 		return false;
+	platformStream = IPlatformResourceInputStream::create (res);
+	if (platformStream)
+		return true;
+
 #if MAC
 	if (res.type == CResourceDescription::kIntegerType)
 		return false;
@@ -377,15 +380,17 @@ bool CResourceInputStream::open (const CResourceDescription& res)
 		}
 	}
 #elif LINUX
-	if (res.type == CResourceDescription::kIntegerType)
-		return false;
-	auto path = X11::Platform::getInstance ().getPath ();
-	if (!path.empty ())
-	{
-		path += "/Contents/Resources/";
-		path += res.u.name;
-		platformHandle = fopen (path.data (), "rb");
-	}
+	return platformStream != nullptr;
+
+	// if (res.type == CResourceDescription::kIntegerType)
+	// 	return false;
+	// auto path = X11::Platform::getInstance ().getPath ();
+	// if (!path.empty ())
+	// {
+	// 	path += "/Contents/Resources/";
+	// 	path += res.u.name;
+	// 	platformHandle = fopen (path.data (), "rb");
+	// }
 #elif WINDOWS
 	platformHandle = new ResourceStream ();
 	if (!((ResourceStream*)platformHandle)->open (res, "DATA"))
@@ -400,6 +405,9 @@ bool CResourceInputStream::open (const CResourceDescription& res)
 //-----------------------------------------------------------------------------
 uint32_t CResourceInputStream::readRaw (void* buffer, uint32_t size)
 {
+	if (platformStream)
+		return platformStream->readRaw (buffer, size);
+
 	uint32_t readResult = kStreamIOError;
 	if (platformHandle)
 	{
@@ -425,6 +433,18 @@ uint32_t CResourceInputStream::readRaw (void* buffer, uint32_t size)
 //-----------------------------------------------------------------------------
 int64_t CResourceInputStream::seek (int64_t pos, SeekMode mode)
 {
+	if (platformStream)
+	{
+		VSTGUI::SeekMode sm = VSTGUI::SeekMode::Set;
+		switch (mode)
+		{
+			case kSeekCurrent: sm = VSTGUI::SeekMode::Current; break;
+			case kSeekSet: sm = VSTGUI::SeekMode::Set; break;
+			case kSeekEnd: sm = VSTGUI::SeekMode::End; break;
+		}
+		return platformStream->seek (pos, sm);
+	}
+
 	if (platformHandle)
 	{
 	#if MAC || LINUX
@@ -457,6 +477,9 @@ int64_t CResourceInputStream::seek (int64_t pos, SeekMode mode)
 //-----------------------------------------------------------------------------
 int64_t CResourceInputStream::tell () const
 {
+	if (platformStream)
+		return platformStream->tell ();
+
 	if (platformHandle)
 	{
 	#if MAC || LINUX
@@ -474,6 +497,8 @@ int64_t CResourceInputStream::tell () const
 //-----------------------------------------------------------------------------
 void CResourceInputStream::rewind ()
 {
+	if (platformStream)
+		platformStream->seek (0, VSTGUI::SeekMode::Set);
 	if (platformHandle)
 	{
 	#if MAC || LINUX

@@ -1,8 +1,11 @@
 #include "../../application.h"
+#include "../../../../lib/platform/linux/gdkframe.h"
+#include "../../../../lib/platform/common/fileresourceinputstream.h"
 #include "gdkcommondirectories.h"
 #include "gdkpreference.h"
 #include <gdkmm.h>
 #include <gdkmm/event.h>
+#include <libgen.h>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -39,6 +42,20 @@ bool Application::init (int argc, char* argv[])
 	for (auto i = 0; i < argc; ++i)
 		cmdArgs.push_back (argv[i]);
 
+	char result[PATH_MAX];
+	ssize_t count = readlink ("/proc/self/exe", result, PATH_MAX);
+	if (count == -1)
+		exit (-1);
+	auto execPath = dirname (result);
+	VSTGUI::GDK::Frame::createResourceInputStreamFunc = [&] (const CResourceDescription& desc) {
+		if (desc.type == CResourceDescription::kIntegerType)
+			return IPlatformResourceInputStream::Ptr ();
+		std::string path (execPath);
+		path += "/Resources/";
+		path += desc.u.name;
+		return FileResourceInputStream::create (path);
+	};
+
 	PlatformCallbacks callbacks;
 	callbacks.quit = [this]() { quit (); };
 	callbacks.onCommandUpdate = []() {};
@@ -54,7 +71,7 @@ bool Application::init (int argc, char* argv[])
 	/* TODO: fill openFilesList */
 	app->init ({prefs, commonDirectories, std::move (cmdArgs), std::move (callbacks),
 				std::move (openFilesList)});
-	return 0;
+	return true;
 }
 
 //------------------------------------------------------------------------

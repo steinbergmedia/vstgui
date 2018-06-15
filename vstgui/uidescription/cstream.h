@@ -9,11 +9,9 @@
 #include <algorithm>
 #include <string>
 #include <limits>
+#include <memory>
 
 namespace VSTGUI {
-
-static const uint32_t kStreamIOError = std::numeric_limits<uint32_t>::max ();
-static const int64_t kStreamSeekError = -1;
 
 /**
 	ByteOrder aware output stream interface
@@ -219,8 +217,8 @@ public:
 	using InputStream::operator>>;
 protected:
 	void* platformHandle;
+	std::unique_ptr<IPlatformResourceInputStream> platformStream;
 };
-
 
 } // namespace
 

@@ -14,17 +14,18 @@ set(${target}_sources
   "source/testmodel.h"
 )
 
+set(standalone_resources
+"resource/about.uidesc"
+"resource/alertbox.uidesc"
+"resource/resources.uidesc"
+"resource/test.uidesc"
+"resource/testpopup.uidesc"
+)
+
 ##########################################################################################
 if(CMAKE_HOST_APPLE)
 	set(BUNDLE_PKG_INFO
     "resource/PkgInfo"
-	)
-	set(standalone_resources
-		"resource/about.uidesc"
-		"resource/alertbox.uidesc"
-		"resource/resources.uidesc"
-		"resource/test.uidesc"
-		"resource/testpopup.uidesc"
 	)
 	set_source_files_properties(${BUNDLE_PKG_INFO} PROPERTIES
 		MACOSX_PACKAGE_LOCATION "."
@@ -60,17 +61,25 @@ endif()
 
 ##########################################################################################
 include_directories(../../../../)
-add_executable(${target}
-  ${${target}_sources}
-  ${standalone_resources}
-)
-target_link_libraries(${target}
-	vstgui
-  vstgui_uidescription
-  vstgui_standalone
-	${${target}_PLATFORM_LIBS}
-)
 
+vstgui_add_executable(${target} "${${target}_sources}" "${standalone_resources}")
 vstgui_set_cxx_version(${target} 14)
-set_target_properties(${target} PROPERTIES ${APP_PROPERTIES} ${VSTGUI_STANDALONE_EXAMPLES})
-target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS})
+
+# add_executable(${target}
+#   ${${target}_sources}
+#   ${standalone_resources}
+# )
+# target_link_libraries(${target}
+# 	vstgui
+#   vstgui_uidescription
+#   vstgui_standalone
+# 	${${target}_PLATFORM_LIBS}
+# )
+
+# set_target_properties(${target} PROPERTIES ${APP_PROPERTIES} ${VSTGUI_STANDALONE_EXAMPLES})
+# target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS})
+
+# if(LINUX)
+# 	get_target_property(OUTPUTDIR ${target} RUNTIME_OUTPUT_DIRECTORY)
+# 	set_target_properties(${target} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${OUTPUTDIR}/${target}")
+# endif()

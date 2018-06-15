@@ -1,3 +1,7 @@
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules")
+
+include(vstgui_add_executable)
+
 ##########################################################################################
 set(target vstgui_standalone)
 
