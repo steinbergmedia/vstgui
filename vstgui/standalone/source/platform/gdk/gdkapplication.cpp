@@ -31,6 +31,7 @@ private:
 	Preference prefs;
 
 	bool doRunning{true};
+	GMainLoop* mainLoop {nullptr};
 };
 
 //------------------------------------------------------------------------
@@ -77,15 +78,19 @@ bool Application::init (int argc, char* argv[])
 //------------------------------------------------------------------------
 int Application::run ()
 {
-	while (doRunning)
-	{
-		Gdk::Event event = Gdk::Event::get ();
-	}
+	mainLoop = g_main_loop_new (nullptr, true);
+	g_main_loop_run (mainLoop);
+	g_main_loop_unref (mainLoop);
+	mainLoop = nullptr;
 	return 0;
 }
 
 //------------------------------------------------------------------------
-void Application::quit () {}
+void Application::quit ()
+{
+	if (mainLoop)
+		g_main_loop_quit (mainLoop);
+}
 
 } // GDK
 } // Platform
