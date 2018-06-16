@@ -3,7 +3,7 @@ get_filename_component(PkgInfoResource "cmake/resources/PkgInfo" ABSOLUTE)
 function(vstgui_add_executable target sources resources)
 
   if(MSVC)
-    add_executable(${target} ${sources} ${resources})
+    add_executable(${target} ${sources})
     set_target_properties(${target} PROPERTIES LINK_FLAGS "/SUBSYSTEM:windows /INCLUDE:wWinMain")
   endif(MSVC)
 
@@ -66,4 +66,10 @@ function(vstgui_set_target_infoplist target infoplist)
       MACOSX_BUNDLE_INFO_PLIST ${InfoPlistFile}
     )
   endif(CMAKE_HOST_APPLE)
+endfunction()
+
+function(vstgui_set_target_rcfile target rcfile)
+  if(MSVC)
+    target_sources(${target} PRIVATE ${rcfile})
+  endif(MSVC)
 endfunction()
