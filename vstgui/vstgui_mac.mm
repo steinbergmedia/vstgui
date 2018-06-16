@@ -24,3 +24,4 @@
 #import "lib/platform/mac/cocoa/nsviewframe.mm"
 #import "lib/platform/mac/cocoa/nsviewoptionmenu.mm"
 #import "lib/platform/mac/cocoa/nsviewdraggingsession.mm"
+#import "lib/platform/common/fileresourceinputstream.cpp"

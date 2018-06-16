@@ -14,3 +14,5 @@
 
 #include "lib/platform/linux/gtkoptionmenu.cpp"
 #include "lib/platform/linux/gtktextedit.cpp"
+
+#include "lib/platform/common/fileresourceinputstream.cpp"

@@ -8,9 +8,7 @@
 #include <algorithm>
 #include <sstream>
 
-#if MAC
-	#include "../lib/platform/mac/macglobals.h"
-#elif WINDOWS
+#if WINDOWS
 	#include "../lib/platform/win32/win32support.h"
 	#define fseeko _fseeki64
 	#define ftello _ftelli64
@@ -336,9 +334,7 @@ CResourceInputStream::~CResourceInputStream () noexcept
 {
 	if (platformHandle)
 	{
-	#if MAC || LINUX
-		fclose ((FILE*)platformHandle);
-	#elif WINDOWS
+	#if WINDOWS
 		((ResourceStream*)platformHandle)->Release ();
 	#endif
 	}
@@ -353,45 +349,7 @@ bool CResourceInputStream::open (const CResourceDescription& res)
 	if (platformStream)
 		return true;
 
-#if MAC
-	if (res.type == CResourceDescription::kIntegerType)
-		return false;
-	if (res.type == CResourceDescription::kStringType && res.u.name[0] == '/')
-	{
-		// it's an absolute path, we can use it as is
-//		platformHandle = fopen (res.u.name, "rb");
-	}
-	if (platformHandle == nullptr && getBundleRef ())
-	{
-		CFStringRef cfStr = CFStringCreateWithCString (nullptr, res.u.name, kCFStringEncodingUTF8);
-		if (cfStr)
-		{
-			CFURLRef url = CFBundleCopyResourceURL (getBundleRef (), cfStr, nullptr, nullptr);
-			if (url)
-			{
-				char filePath[PATH_MAX];
-				if (CFURLGetFileSystemRepresentation (url, true, (UInt8*)filePath, PATH_MAX))
-				{
-					platformHandle = fopen (filePath, "rb");
-				}
-				CFRelease (url);
-			}
-			CFRelease (cfStr);
-		}
-	}
-#elif LINUX
-	return platformStream != nullptr;
-
-	// if (res.type == CResourceDescription::kIntegerType)
-	// 	return false;
-	// auto path = X11::Platform::getInstance ().getPath ();
-	// if (!path.empty ())
-	// {
-	// 	path += "/Contents/Resources/";
-	// 	path += res.u.name;
-	// 	platformHandle = fopen (path.data (), "rb");
-	// }
-#elif WINDOWS
+#if WINDOWS
 	platformHandle = new ResourceStream ();
 	if (!((ResourceStream*)platformHandle)->open (res, "DATA"))
 	{
@@ -411,21 +369,11 @@ uint32_t CResourceInputStream::readRaw (void* buffer, uint32_t size)
 	uint32_t readResult = kStreamIOError;
 	if (platformHandle)
 	{
-	#if MAC || LINUX
-		readResult = static_cast<uint32_t> (fread (buffer, 1, size, (FILE*)platformHandle));
-		if (readResult == 0)
-		{
-			if (ferror ((FILE*)platformHandle) != 0)
-			{
-				readResult = kStreamIOError;
-				clearerr ((FILE*)platformHandle);
-			}
-		}
-	#elif WINDOWS
+#if WINDOWS
 		ULONG read = 0;
 		if (((ResourceStream*)platformHandle)->Read (buffer, size, &read) == S_OK)
 			readResult = read;
-	#endif
+#endif
 	}
 	return readResult;
 }
@@ -447,17 +395,7 @@ int64_t CResourceInputStream::seek (int64_t pos, SeekMode mode)
 
 	if (platformHandle)
 	{
-	#if MAC || LINUX
-		int whence;
-		switch (mode)
-		{
-			case kSeekSet: whence = SEEK_SET; break;
-			case kSeekCurrent: whence = SEEK_CUR; break;
-			case kSeekEnd: whence = SEEK_END; break;
-		}
-		if (fseeko ((FILE*)platformHandle, pos, whence) == 0)
-			return tell ();
-	#elif WINDOWS
+#if WINDOWS
 		DWORD dwOrigin;
 		switch (mode)
 		{
@@ -469,7 +407,7 @@ int64_t CResourceInputStream::seek (int64_t pos, SeekMode mode)
 		li.QuadPart = pos;
 		if (((ResourceStream*)platformHandle)->Seek (li, dwOrigin, 0) == S_OK)
 			return tell ();
-	#endif
+#endif
 	}
 	return kStreamSeekError;
 }
@@ -482,14 +420,12 @@ int64_t CResourceInputStream::tell () const
 
 	if (platformHandle)
 	{
-	#if MAC || LINUX
-		return ftello ((FILE*)platformHandle);
-	#elif WINDOWS
+#if WINDOWS
 		ULARGE_INTEGER pos;
 		LARGE_INTEGER dummy = {};
 		if (((ResourceStream*)platformHandle)->Seek (dummy, STREAM_SEEK_CUR, &pos) == S_OK)
 			return (int64_t)pos.QuadPart;
-	#endif
+#endif
 	}
 	return kStreamSeekError;
 }
@@ -501,11 +437,9 @@ void CResourceInputStream::rewind ()
 		platformStream->seek (0, VSTGUI::SeekMode::Set);
 	if (platformHandle)
 	{
-	#if MAC || LINUX
-		fseek ((FILE*)platformHandle, 0L, SEEK_SET);
-	#elif WINDOWS
+#if WINDOWS
 		((ResourceStream*)platformHandle)->Revert ();
-	#endif
+#endif
 	}
 }
 
