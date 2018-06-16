@@ -62,6 +62,7 @@ set(${target}_mac_sources
     source/platform/mac/macwindow.h
     source/platform/mac/macwindow.mm
     source/platform/win32
+    cmake/modules/
 )
 
 ##########################################################################################

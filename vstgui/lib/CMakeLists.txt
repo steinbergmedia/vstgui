@@ -151,6 +151,8 @@ set(${target}_common_sources
 
   ##########################################################################################
 set(${target}_mac_sources
+    platform/common/fileresourceinputstream.cpp
+    platform/common/fileresourceinputstream.h
     platform/mac/carbon/hiviewframe.cpp
     platform/mac/carbon/hiviewframe.h
     platform/mac/carbon/hiviewoptionmenu.cpp
