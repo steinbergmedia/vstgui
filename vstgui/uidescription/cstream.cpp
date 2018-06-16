@@ -9,7 +9,6 @@
 #include <sstream>
 
 #if WINDOWS
-	#include "../lib/platform/win32/win32support.h"
 	#define fseeko _fseeki64
 	#define ftello _ftelli64
 #endif
@@ -325,39 +324,21 @@ bool CFileStream::operator<< (const std::string& str)
 //-----------------------------------------------------------------------------
 CResourceInputStream::CResourceInputStream (ByteOrder byteOrder)
 : InputStream (byteOrder)
-, platformHandle (nullptr)
 {
 }
 
 //-----------------------------------------------------------------------------
 CResourceInputStream::~CResourceInputStream () noexcept
 {
-	if (platformHandle)
-	{
-	#if WINDOWS
-		((ResourceStream*)platformHandle)->Release ();
-	#endif
-	}
 }
 
 //-----------------------------------------------------------------------------
 bool CResourceInputStream::open (const CResourceDescription& res)
 {
-	if (platformStream || platformHandle)
+	if (platformStream)
 		return false;
 	platformStream = IPlatformResourceInputStream::create (res);
-	if (platformStream)
-		return true;
-
-#if WINDOWS
-	platformHandle = new ResourceStream ();
-	if (!((ResourceStream*)platformHandle)->open (res, "DATA"))
-	{
-		((ResourceStream*)platformHandle)->Release ();
-		platformHandle = 0;
-	}
-#endif
-	return platformHandle != nullptr;
+	return platformStream != nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -365,17 +346,7 @@ uint32_t CResourceInputStream::readRaw (void* buffer, uint32_t size)
 {
 	if (platformStream)
 		return platformStream->readRaw (buffer, size);
-
-	uint32_t readResult = kStreamIOError;
-	if (platformHandle)
-	{
-#if WINDOWS
-		ULONG read = 0;
-		if (((ResourceStream*)platformHandle)->Read (buffer, size, &read) == S_OK)
-			readResult = read;
-#endif
-	}
-	return readResult;
+	return kStreamIOError;
 }
 
 //-----------------------------------------------------------------------------
@@ -392,23 +363,6 @@ int64_t CResourceInputStream::seek (int64_t pos, SeekMode mode)
 		}
 		return platformStream->seek (pos, sm);
 	}
-
-	if (platformHandle)
-	{
-#if WINDOWS
-		DWORD dwOrigin;
-		switch (mode)
-		{
-			case kSeekSet: dwOrigin = STREAM_SEEK_SET; break;
-			case kSeekCurrent: dwOrigin = STREAM_SEEK_CUR; break;
-			case kSeekEnd: dwOrigin = STREAM_SEEK_END; break;
-		}
-		LARGE_INTEGER li;
-		li.QuadPart = pos;
-		if (((ResourceStream*)platformHandle)->Seek (li, dwOrigin, 0) == S_OK)
-			return tell ();
-#endif
-	}
 	return kStreamSeekError;
 }
 
@@ -418,15 +372,6 @@ int64_t CResourceInputStream::tell () const
 	if (platformStream)
 		return platformStream->tell ();
 
-	if (platformHandle)
-	{
-#if WINDOWS
-		ULARGE_INTEGER pos;
-		LARGE_INTEGER dummy = {};
-		if (((ResourceStream*)platformHandle)->Seek (dummy, STREAM_SEEK_CUR, &pos) == S_OK)
-			return (int64_t)pos.QuadPart;
-#endif
-	}
 	return kStreamSeekError;
 }
 
@@ -435,12 +380,6 @@ void CResourceInputStream::rewind ()
 {
 	if (platformStream)
 		platformStream->seek (0, VSTGUI::SeekMode::Set);
-	if (platformHandle)
-	{
-#if WINDOWS
-		((ResourceStream*)platformHandle)->Revert ();
-#endif
-	}
 }
 
 //-----------------------------------------------------------------------------
