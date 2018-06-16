@@ -57,6 +57,7 @@ function(vstgui_add_executable target sources resources)
     vstgui_uidescription
     vstgui_standalone
   )
+  target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS})
 endfunction()
 
 function(vstgui_set_target_infoplist target infoplist)
