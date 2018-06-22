@@ -5,6 +5,7 @@
 
 #include "../../crect.h"
 #include "../iplatformframe.h"
+#include "irunloop.h"
 #include <memory>
 #include <functional>
 
@@ -13,39 +14,14 @@ namespace VSTGUI {
 namespace X11 {
 
 //------------------------------------------------------------------------
-class IEventHandler
-{
-public:
-	virtual void onEvent () = 0;
-};
-
-//------------------------------------------------------------------------
-class ITimerHandler
-{
-public:
-	virtual void onTimer () = 0;
-};
-
-//------------------------------------------------------------------------
-class IRunLoop : public AtomicReferenceCounted
-{
-public:
-	virtual bool registerEventHandler (int fd, IEventHandler* handler) = 0;
-	virtual bool unregisterEventHandler (IEventHandler* handler) = 0;
-
-	virtual bool registerTimer (uint64_t interval, ITimerHandler* handler) = 0;
-	virtual bool unregisterTimer (ITimerHandler* handler) = 0;
-};
-
-//------------------------------------------------------------------------
 class FrameConfig : public IPlatformFrameConfig
 {
 public:
-	SharedPointer<IRunLoop> runLoop;
+	SharedPointer<Platform::IRunLoop> runLoop;
 };
 
 //------------------------------------------------------------------------
-class Frame : public IPlatformFrame, public IEventHandler
+class Frame : public IPlatformFrame, public Platform::IEventHandler
 {
 public:
 	Frame (IPlatformFrameCallback* frame, const CRect& size, uint32_t parent,

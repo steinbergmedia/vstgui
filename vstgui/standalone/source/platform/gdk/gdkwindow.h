@@ -6,6 +6,12 @@
 
 #include "../iplatformwindow.h"
 
+extern "C"
+{
+	typedef union _GdkEvent GdkEvent;
+	typedef struct _GdkWindow GdkWindow;
+};
+
 //------------------------------------------------------------------------
 namespace VSTGUI {
 namespace Standalone {
@@ -13,10 +19,13 @@ namespace Platform {
 namespace GDK {
 
 //------------------------------------------------------------------------
-class IGdkWindow : public IWindow
+class IGdkWindow : public Interface
 {
 public:
+	virtual bool isGdkWindow (GdkWindow* window) = 0;
+	virtual void handleEvent (GdkEvent* event) = 0;
 
+	static IGdkWindow* find (GdkWindow* gdkWindow);
 };
 
 //------------------------------------------------------------------------

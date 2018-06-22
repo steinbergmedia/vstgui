@@ -5,14 +5,19 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
-			"name": "(gdb) ImageStitcher",
+			"name": "(gdb) simple_standalone",
 			"type": "cppdbg",
 			"request": "launch",
-			"program": "${workspaceFolder}/build/Debug/ImageStitcher",
-			"args": [],
-			"stopAtEntry": false,
+			"program": "${workspaceFolder}/build/Debug/simple_standalone/simple_standalone",
+			"args": ["--gdk-debug=eventloop"],
+			"stopAtEntry": true,
 			"cwd": "${workspaceFolder}/build/Debug/",
-			"environment": [],
+			"environment": [
+				{
+					"name": "LD_LIBRARY_PATH", 
+					"value": "/home/scheffle/tmp/gtk+3.0-3.22.11/debian/build/shared/gdk/.libs;/home/scheffle/tmp/gtkmm3.0-3.22.0/gdk/gdkmm/.libs;/home/scheffle/tmp/cairomm-1.12.0/debian/libcairomm-1.0-1v5/usr/lib/x86_64-linux-gnu"
+					}
+				],
 			"externalConsole": true,
 			"MIMode": "gdb",
 			"setupCommands": [

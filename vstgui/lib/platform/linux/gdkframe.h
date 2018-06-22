@@ -7,6 +7,8 @@
 #include "../../crect.h"
 #include "../iplatformframe.h"
 #include "../iplatformresourceinputstream.h"
+#include "../iplatformtimer.h"
+#include "irunloop.h"
 #include <memory>
 #include <functional>
 
@@ -18,19 +20,29 @@ namespace GDK {
 class Frame : public IPlatformFrame
 {
 public:
-	Frame (IPlatformFrameCallback* frame,
-		   const CRect& size,
-		   void* parent,
-		   IPlatformFrameConfig* config);
-
-	~Frame () noexcept override;
+	static Frame* create (IPlatformFrameCallback* frame,
+						  const CRect& size,
+						  void* parent,
+						  IPlatformFrameConfig* config);
 
 	using CreateIResourceInputStreamFunc =
 		std::function<IPlatformResourceInputStream::Ptr (const CResourceDescription& desc)>;
 
 	static CreateIResourceInputStreamFunc createResourceInputStreamFunc;
-	
+
+	using CreatePlatformTimerFunc =
+		std::function<SharedPointer<IPlatformTimer> (IPlatformTimerCallback*)>;
+
+	static CreatePlatformTimerFunc createPlatformTimerFunc;
+
+	void handleEvent (void* gdkEvent);
 private:
+	Frame (IPlatformFrameCallback* frame);
+
+	~Frame () noexcept override;
+
+	bool init (const CRect& size, void* parent, IPlatformFrameConfig* config);
+
 	bool getGlobalPosition (CPoint& pos) const override;
 	bool setSize (const CRect& newSize) override;
 	bool getSize (CRect& size) const override;
@@ -63,6 +75,9 @@ private:
 	SharedPointer<IDataPackage> getClipboard () override;
 	PlatformType getPlatformType () const override;
 	void onFrameClosed () override;
+
+//--------
+	void drawDirtyRegions ();
 
 	struct Impl;
 	std::unique_ptr<Impl> impl;

@@ -82,11 +82,13 @@ set(${target}_win32_sources
 
 set(${target}_gdk_sources
     source/platform/gdk/gdkapplication.cpp
+    source/platform/gdk/gdkasync.cpp
     source/platform/gdk/gdkcommondirectories.cpp
     source/platform/gdk/gdkcommondirectories.h
     source/platform/gdk/gdkpreference.cpp
     source/platform/gdk/gdkpreference.h
-    source/platform/gdk/gdkasync.cpp
+    source/platform/gdk/gdkrunloop.cpp
+    source/platform/gdk/gdkrunloop.h
     source/platform/gdk/gdkwindow.cpp
     source/platform/gdk/gdkwindow.h
 )

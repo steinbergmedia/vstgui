@@ -3,8 +3,11 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "gdkwindow.h"
+#include "../../../../lib/platform/linux/gdkframe.h"
+#include "../../../../lib/cframe.h"
 #include <gtkmm.h>
 #include <cassert>
+#include <vector>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -13,9 +16,71 @@ namespace Platform {
 namespace GDK {
 
 //------------------------------------------------------------------------
-class Window : public IGdkWindow
+namespace {
+
+using WindowVector = std::vector<IGdkWindow*>;
+
+//------------------------------------------------------------------------
+WindowVector& getWindows ()
+{
+	static WindowVector instance;
+	return instance;
+}
+
+//------------------------------------------------------------------------
+} // anonymous
+
+//------------------------------------------------------------------------
+IGdkWindow* IGdkWindow::find (GdkWindow* gdkWindow)
+{
+	auto& windows = getWindows ();
+	auto it = std::find_if (windows.begin (), windows.end (), [&](auto& w) {
+		if (w->isGdkWindow (gdkWindow))
+			return true;
+		return false;
+	});
+	return it == windows.end () ? nullptr : *it;
+}
+
+//------------------------------------------------------------------------
+class FrameChildWindow : public IGdkWindow
 {
 public:
+	FrameChildWindow (CFrame* frame) : frame (frame)
+	{
+		window = reinterpret_cast<GdkWindow*> (
+			frame->getPlatformFrame ()->getPlatformRepresentation ()); // TODO: correct access
+		getWindows ().push_back (this);
+	}
+	~FrameChildWindow () noexcept override
+	{
+		auto& windows = getWindows ();
+		auto it = std::find (windows.begin (), windows.end (), this);
+		if (it != windows.end ())
+			windows.erase (it);
+	}
+
+	bool isGdkWindow (GdkWindow* _window) override { return _window == window; }
+	void handleEvent (GdkEvent* event) override
+	{
+		auto gdkFrame = dynamic_cast<VSTGUI::GDK::Frame*> (frame->getPlatformFrame ());
+		gdkFrame->handleEvent (event);
+	}
+
+	CFrame* getFrame () const { return frame; }
+
+private:
+	CFrame* frame{nullptr};
+	GdkWindow* window{nullptr};
+};
+
+//------------------------------------------------------------------------
+class Window
+	: public IGdkWindow
+	, public IWindow
+{
+public:
+	~Window () noexcept override;
 	bool init (const WindowConfiguration& config, IWindowDelegate& delegate);
 
 	CPoint getSize () const override;
@@ -38,35 +103,70 @@ public:
 
 	void onSetContentView (CFrame* frame) override;
 
+	bool isGdkWindow (GdkWindow* window) override;
+	void handleEvent (GdkEvent* event) override;
+
 private:
-	IWindowDelegate* delegate {nullptr};
+	void handleEventConfigure (GdkEventConfigure* event);
+
+	CPoint lastPos;
+	CPoint lastSize;
+
+	IWindowDelegate* delegate{nullptr};
 	Glib::RefPtr<Gdk::Window> gdkWindow;
+	std::unique_ptr<FrameChildWindow> frameChild;
 };
+
+//------------------------------------------------------------------------
+Window::~Window () noexcept
+{
+	auto& windows = getWindows ();
+	auto it = std::find (windows.begin (), windows.end (), this);
+	if (it != windows.end ())
+		windows.erase (it);
+}
 
 //------------------------------------------------------------------------
 bool Window::init (const WindowConfiguration& config, IWindowDelegate& delegate)
 {
-	GdkWindowAttr attributes {};
+	getWindows ().push_back (this);
+
+	auto screen = gdk_screen_get_default ();
+	auto visual = gdk_screen_get_system_visual (screen);
+
+	GdkWindowAttr attributes{};
 	attributes.x = 0;
 	attributes.y = 0;
 	attributes.width = config.size.x;
 	attributes.height = config.size.y;
 	attributes.wclass = GDK_INPUT_OUTPUT;
-	attributes.visual = nullptr;
+	attributes.visual = visual;
 	attributes.window_type = GDK_WINDOW_TOPLEVEL;
 	attributes.cursor = nullptr;
 	attributes.wmclass_name = nullptr;
 	attributes.wmclass_class = nullptr;
 	attributes.override_redirect = false;
 	attributes.type_hint = GDK_WINDOW_TYPE_HINT_NORMAL;
-	gdkWindow = Gdk::Window::create (Gdk::Window::get_default_root_window (), &attributes, 0);
+	attributes.event_mask = GDK_STRUCTURE_MASK | GDK_EXPOSURE_MASK | GDK_FOCUS_CHANGE_MASK;
+	gdkWindow = Gdk::Window::create (Gdk::Window::get_default_root_window (), &attributes,
+									 GDK_WA_VISUAL | GDK_WA_TYPE_HINT);
 
-	if (gdkWindow)
-	{
-		this->delegate = &delegate;
-		return true;
-	}
-	return false;
+	if (!gdkWindow)
+		return false;
+
+	lastSize = config.size;
+
+	this->delegate = &delegate;
+
+	gdkWindow->set_accept_focus (true);
+	gdkWindow->set_focus_on_map (true);
+
+#if 0
+	Gdk::RGBA color;
+	color.set_rgba (0., 1., 0.);
+	gdkWindow->set_background (color);
+#endif
+	return true;
 }
 
 //------------------------------------------------------------------------
@@ -128,7 +228,10 @@ void Window::hide ()
 //------------------------------------------------------------------------
 void Window::close ()
 {
+	delegate->onClosed ();
+	frameChild = nullptr;
 	gdkWindow->withdraw ();
+	gdkWindow.reset ();
 }
 
 //------------------------------------------------------------------------
@@ -149,10 +252,98 @@ PlatformType Window::getPlatformType () const
 //------------------------------------------------------------------------
 void* Window::getPlatformHandle () const
 {
-	return gdkWindow->gobj ();
+	if (gdkWindow)
+	{
+		auto ptr = gdkWindow->gobj ();
+		return ptr;
+	}
+	return nullptr;
 }
 
-void Window::onSetContentView (CFrame* frame) {}
+//------------------------------------------------------------------------
+void Window::onSetContentView (CFrame* newFrame)
+{
+	frameChild = nullptr;
+	if (newFrame)
+		frameChild = std::unique_ptr<FrameChildWindow> (new FrameChildWindow (newFrame));
+}
+
+//------------------------------------------------------------------------
+bool Window::isGdkWindow (GdkWindow* window)
+{
+	assert (window);
+	return window == getPlatformHandle ();
+}
+
+//------------------------------------------------------------------------
+void Window::handleEvent (GdkEvent* ev)
+{
+	auto type = ev->type;
+	switch (type)
+	{
+		case GDK_EXPOSE:
+		{
+			break;
+		}
+		case GDK_CONFIGURE:
+		{
+			handleEventConfigure (reinterpret_cast<GdkEventConfigure*> (ev));
+			break;
+		}
+		case GDK_MAP:
+		{
+			delegate->onShow ();
+			break;
+		}
+		case GDK_UNMAP:
+		{
+			delegate->onHide ();
+			break;
+		}
+		case GDK_DELETE:
+		{
+			if (delegate->canClose ())
+			{
+				close ();
+			}
+			break;
+		}
+		case GDK_DESTROY:
+		{
+			delegate->onClosed ();
+			break;
+		}
+		case GDK_FOCUS_CHANGE:
+		{
+			auto event = reinterpret_cast<GdkEventFocus*> (ev);
+			auto hasFocus = event->in != 0;
+			if (hasFocus)
+				delegate->onActivated ();
+			else
+				delegate->onDeactivated ();
+			break;
+		}
+	}
+}
+
+//------------------------------------------------------------------------
+void Window::handleEventConfigure (GdkEventConfigure* event)
+{
+	CPoint newPos (event->x, event->y);
+	CPoint newSize (event->width, event->height);
+	if (newPos != lastPos)
+	{
+		lastPos = newPos;
+		delegate->onPositionChanged (newPos);
+	}
+	if (newSize != lastSize)
+	{
+		lastSize = newSize;
+		delegate->onSizeChanged (newSize);
+		if (frameChild)
+			frameChild->getFrame ()->setSize (newSize.x, newSize.y);
+	}
+}
 
 //------------------------------------------------------------------------
 } // GDK

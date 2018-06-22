@@ -1,10 +1,19 @@
+// This file is part of VSTGUI. It is subject to the license terms
+// in the LICENSE file found in the top-level directory of this
+// distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+
 #include "../../application.h"
 #include "../../../../lib/platform/linux/gdkframe.h"
 #include "../../../../lib/platform/common/fileresourceinputstream.h"
 #include "gdkcommondirectories.h"
 #include "gdkpreference.h"
+#include "gdkwindow.h"
+#include "gdkrunloop.h"
 #include <gdkmm.h>
+#include <glibmm.h>
+#include <giomm.h>
 #include <gdkmm/event.h>
+#include <gdkmm/wrap_init.h>
 #include <libgen.h>
 
 //------------------------------------------------------------------------
@@ -27,18 +36,23 @@ public:
 	void quit ();
 
 private:
+	static void gdkEventCallback (GdkEvent* ev, gpointer data);
+
 	CommonDirectories commonDirectories;
 	Preference prefs;
 
 	bool doRunning{true};
-	GMainLoop* mainLoop {nullptr};
 };
 
 //------------------------------------------------------------------------
 bool Application::init (int argc, char* argv[])
 {
+    Glib::init();
+    Gio::init();
 	if (!gdk_init_check (&argc, &argv))
 		return false;
+	Gdk::wrap_init ();
+
 	IApplication::CommandLineArguments cmdArgs;
 	for (auto i = 0; i < argc; ++i)
 		cmdArgs.push_back (argv[i]);
@@ -48,7 +62,7 @@ bool Application::init (int argc, char* argv[])
 	if (count == -1)
 		exit (-1);
 	auto execPath = dirname (result);
-	VSTGUI::GDK::Frame::createResourceInputStreamFunc = [&] (const CResourceDescription& desc) {
+	VSTGUI::GDK::Frame::createResourceInputStreamFunc = [&](const CResourceDescription& desc) {
 		if (desc.type == CResourceDescription::kIntegerType)
 			return IPlatformResourceInputStream::Ptr ();
 		std::string path (execPath);
@@ -78,20 +92,33 @@ bool Application::init (int argc, char* argv[])
 //------------------------------------------------------------------------
 int Application::run ()
 {
-	mainLoop = g_main_loop_new (nullptr, true);
-	g_main_loop_run (mainLoop);
-	g_main_loop_unref (mainLoop);
-	mainLoop = nullptr;
+	gdk_event_handler_set (gdkEventCallback, nullptr, nullptr);
+	RunLoop::instance ().run ();
 	return 0;
 }
 
 //------------------------------------------------------------------------
 void Application::quit ()
 {
-	if (mainLoop)
-		g_main_loop_quit (mainLoop);
+	RunLoop::instance ().quit ();
 }
 
+//------------------------------------------------------------------------
+void Application::gdkEventCallback (GdkEvent* ev, gpointer data)
+{
+	GdkWindow* gdkWindow = reinterpret_cast<GdkEventAny*> (ev)->window;
+	if (!gdkWindow)
+		return;
+
+	if (auto window = IGdkWindow::find (gdkWindow))
+		window->handleEvent (ev);
+	else
+	{
+		printf ("unknown gdk window \n");
+	}
+}
+
+//------------------------------------------------------------------------
 } // GDK
 } // Platform
 } // Standalone
