@@ -23,7 +23,7 @@ class IGdkWindow : public Interface
 {
 public:
 	virtual bool isGdkWindow (GdkWindow* window) = 0;
-	virtual void handleEvent (GdkEvent* event) = 0;
+	virtual bool handleEvent (GdkEvent* event) = 0;
 
 	static IGdkWindow* find (GdkWindow* gdkWindow);
 };

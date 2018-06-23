@@ -61,10 +61,10 @@ public:
 	}
 
 	bool isGdkWindow (GdkWindow* _window) override { return _window == window; }
-	void handleEvent (GdkEvent* event) override
+	bool handleEvent (GdkEvent* event) override
 	{
 		auto gdkFrame = dynamic_cast<VSTGUI::GDK::Frame*> (frame->getPlatformFrame ());
-		gdkFrame->handleEvent (event);
+		return gdkFrame->handleEvent (event);
 	}
 
 	CFrame* getFrame () const { return frame; }
@@ -104,7 +104,7 @@ public:
 	void onSetContentView (CFrame* frame) override;
 
 	bool isGdkWindow (GdkWindow* window) override;
-	void handleEvent (GdkEvent* event) override;
+	bool handleEvent (GdkEvent* event) override;
 
 private:
 	void handleEventConfigure (GdkEventConfigure* event);
@@ -112,6 +112,7 @@ private:
 	CPoint lastPos;
 	CPoint lastSize;
 
+	WindowStyle style;
 	IWindowDelegate* delegate{nullptr};
 	Glib::RefPtr<Gdk::Window> gdkWindow;
 	std::unique_ptr<FrameChildWindow> frameChild;
@@ -127,7 +128,7 @@ Window::~Window () noexcept
 }
 
 //------------------------------------------------------------------------
-bool Window::init (const WindowConfiguration& config, IWindowDelegate& delegate)
+bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegate)
 {
 	getWindows ().push_back (this);
 
@@ -146,7 +147,10 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& delegate)
 	attributes.wmclass_name = nullptr;
 	attributes.wmclass_class = nullptr;
 	attributes.override_redirect = false;
-	attributes.type_hint = GDK_WINDOW_TYPE_HINT_NORMAL;
+	if (config.type == WindowType::Document)
+		attributes.type_hint = GDK_WINDOW_TYPE_HINT_NORMAL;
+	else if (config.type == WindowType::Popup)
+		attributes.type_hint = GDK_WINDOW_TYPE_HINT_POPUP_MENU; // TODO: correct ?
 	attributes.event_mask = GDK_STRUCTURE_MASK | GDK_EXPOSURE_MASK | GDK_FOCUS_CHANGE_MASK;
 	gdkWindow = Gdk::Window::create (Gdk::Window::get_default_root_window (), &attributes,
 									 GDK_WA_VISUAL | GDK_WA_TYPE_HINT);
@@ -154,12 +158,63 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& delegate)
 	if (!gdkWindow)
 		return false;
 
+	style = config.style;
 	lastSize = config.size;
 
-	this->delegate = &delegate;
+	delegate = &inDelegate;
 
 	gdkWindow->set_accept_focus (true);
 	gdkWindow->set_focus_on_map (true);
+
+	uint32_t windowDeco = 0;
+	uint32_t windowFunctions = Gdk::FUNC_MOVE;
+
+	Gdk::Geometry geometry;
+	uint32_t geometryHints = 0;
+
+	if (config.type == WindowType::Document)
+	{
+		windowFunctions |= Gdk::FUNC_MINIMIZE;
+		windowDeco |= Gdk::DECOR_MINIMIZE;
+	}
+
+	if (style.canClose ())
+	{
+		windowFunctions |= Gdk::FUNC_CLOSE;
+	}
+	if (style.canSize ())
+	{
+		windowFunctions |= Gdk::FUNC_RESIZE;
+		windowFunctions |= Gdk::FUNC_MAXIMIZE;
+		windowDeco |= Gdk::DECOR_MAXIMIZE;
+		windowDeco |= Gdk::DECOR_RESIZEH;
+		auto minSize = delegate->constraintSize ({0, 0});
+		geometry.min_width = minSize.x;
+		geometry.min_height = minSize.y;
+		geometry.max_width = std::numeric_limits<gint>::max ();
+		geometry.max_height = std::numeric_limits<gint>::max ();
+		geometryHints |= Gdk::HINT_MIN_SIZE;
+		geometryHints |= Gdk::HINT_MAX_SIZE;
+	}
+	else
+	{
+		geometry.min_width = lastSize.x;
+		geometry.min_height = lastSize.y;
+		geometry.max_width = lastSize.x;
+		geometry.max_height = lastSize.y;
+		geometryHints |= Gdk::HINT_MIN_SIZE;
+		geometryHints |= Gdk::HINT_MAX_SIZE;
+	}
+	if (style.isTransparent ())
+	{
+	}
+	if (!config.title.empty ())
+		windowDeco |= Gdk::DECOR_TITLE;
+
+	gdkWindow->set_functions (static_cast<Gdk::WMFunction> (windowFunctions));
+	gdkWindow->set_decorations (static_cast<Gdk::WMDecoration> (windowDeco));
+
+	gdkWindow->set_geometry_hints (geometry, static_cast<Gdk::WindowHints> (geometryHints));
 
 #if 0
 	Gdk::RGBA color;
@@ -228,9 +283,10 @@ void Window::hide ()
 //------------------------------------------------------------------------
 void Window::close ()
 {
-	delegate->onClosed ();
+	if (!gdkWindow)
+		return;
 	frameChild = nullptr;
-	gdkWindow->withdraw ();
+	delegate->onClosed ();
 	gdkWindow.reset ();
 }
 
@@ -276,7 +332,7 @@ bool Window::isGdkWindow (GdkWindow* window)
 }
 
 //------------------------------------------------------------------------
-void Window::handleEvent (GdkEvent* ev)
+bool Window::handleEvent (GdkEvent* ev)
 {
 	auto type = ev->type;
 	switch (type)
@@ -310,11 +366,13 @@ void Window::handleEvent (GdkEvent* ev)
 		}
 		case GDK_DESTROY:
 		{
-			delegate->onClosed ();
+			vstgui_assert (false, "this should never be called from GDK.");
 			break;
 		}
 		case GDK_FOCUS_CHANGE:
 		{
+			if (frameChild)
+				frameChild->handleEvent (ev);
 			auto event = reinterpret_cast<GdkEventFocus*> (ev);
 			auto hasFocus = event->in != 0;
 			if (hasFocus)
@@ -323,7 +381,20 @@ void Window::handleEvent (GdkEvent* ev)
 				delegate->onDeactivated ();
 			break;
 		}
+		case GDK_KEY_PRESS:
+		{
+			if (frameChild)
+				frameChild->handleEvent (ev);
+			break;
+		}
+		case GDK_KEY_RELEASE:
+		{
+			if (frameChild)
+				frameChild->handleEvent (ev);
+			break;
+		}
 	}
+	return true;
 }
 
 //------------------------------------------------------------------------
@@ -331,6 +402,12 @@ void Window::handleEventConfigure (GdkEventConfigure* event)
 {
 	CPoint newPos (event->x, event->y);
 	CPoint newSize (event->width, event->height);
+	CPoint constraintSize = delegate->constraintSize (newSize);
+	if (constraintSize != newSize)
+	{
+		setSize (constraintSize);
+		newSize = constraintSize;
+	}
 	if (newPos != lastPos)
 	{
 		lastPos = newPos;

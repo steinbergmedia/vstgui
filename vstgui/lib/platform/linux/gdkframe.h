@@ -35,7 +35,7 @@ public:
 
 	static CreatePlatformTimerFunc createPlatformTimerFunc;
 
-	void handleEvent (void* gdkEvent);
+	bool handleEvent (void* gdkEvent);
 private:
 	Frame (IPlatformFrameCallback* frame);
 

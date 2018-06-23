@@ -5,12 +5,12 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
-			"name": "(gdb) simple_standalone",
+			"name": "(gdb) standalone",
 			"type": "cppdbg",
 			"request": "launch",
-			"program": "${workspaceFolder}/build/Debug/simple_standalone/simple_standalone",
+			"program": "${workspaceFolder}/build/Debug/standalone/standalone",
 			"args": ["--gdk-debug=eventloop"],
-			"stopAtEntry": true,
+			"stopAtEntry": false,
 			"cwd": "${workspaceFolder}/build/Debug/",
 			"environment": [
 				{

@@ -9,7 +9,7 @@
 		<color name="TextShadow" rgba="#0000002f"/>
 	</colors>
 	<custom>
-		<attributes name="UIDescFilePath" path="/Users/scheffle/Source/VST3/vstgui/vstgui/standalone/examples/standalone/resource/resources.uidesc"/>
+		<attributes name="UIDescFilePath" path="/home/scheffle/source/vstgui/vstgui/standalone/examples/standalone/resource/resources.uidesc"/>
 	</custom>
 	<gradients>
 		<gradient name="About Background">
