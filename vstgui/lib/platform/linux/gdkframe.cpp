@@ -259,13 +259,19 @@ void Frame::drawDirtyRegions ()
 		updateRegion = gdk_window_get_clip_region (impl->window->gobj ());
 	if (!updateRegion)
 		return;
-	auto region = ::Cairo::RefPtr< ::Cairo::Region>(new ::Cairo::Region(updateRegion, false));
-	auto cairoContext = impl->window->begin_draw_frame (region);
-
 	CRect size;
 	getSize (size);
 
+	auto region = ::Cairo::RefPtr<::Cairo::Region> (new ::Cairo::Region (updateRegion, false));
+
+#if GDK_VERSION_GT(3, 19)
+	auto cairoContext = impl->window->begin_draw_frame (region);
 	auto context = owned (new Cairo::Context (size, cairoContext->get_cairo_context ()->cobj ()));
+#else
+	impl->window->begin_paint_region (region);
+	auto cairoContext = impl->window->create_cairo_context ();
+	auto context = owned (new Cairo::Context (size, cairoContext->cobj ()));
+#endif
 
 	auto numRects = region->get_num_rectangles ();
 	for (auto i = 0; i < numRects; ++i)
@@ -279,7 +285,11 @@ void Frame::drawDirtyRegions ()
 		frame->platformDrawRect (context, r);
 	}
 
+#if GDK_VERSION_GT(3, 19)
 	impl->window->end_draw_frame (cairoContext);
+#else
+	impl->window->end_paint ();
+#endif
 }
 
 //------------------------------------------------------------------------
