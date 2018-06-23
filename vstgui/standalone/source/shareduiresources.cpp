@@ -277,6 +277,7 @@ bool initUIDescAsNew (UIDescription& uiDesc, CFrame* _frame)
 	if (!frame)
 		frame = makeOwned<CFrame> (CRect (), nullptr);
 	auto fs = owned (CNewFileSelector::create (frame, CNewFileSelector::kSelectSaveFile));
+	vstgui_assert (fs, "create new FileSelector failed");
 	VSTGUI::Standalone::Preferences prefs;
 	if (auto initPath = prefs.get (UIDescPathKey))
 		fs->setInitialDirectory (*initPath);

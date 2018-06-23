@@ -393,6 +393,15 @@ bool Window::handleEvent (GdkEvent* ev)
 				frameChild->handleEvent (ev);
 			break;
 		}
+		case GDK_BUTTON_PRESS:
+		{
+			if (style.isMovableByWindowBackground ())
+			{
+				auto event = reinterpret_cast<GdkEventButton*> (ev);
+				gdkWindow->begin_move_drag (event->button, event->x_root, event->y_root, event->time);
+			}
+			break;
+		}
 	}
 	return true;
 }

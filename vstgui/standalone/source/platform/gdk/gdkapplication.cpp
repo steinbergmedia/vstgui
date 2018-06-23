@@ -47,8 +47,8 @@ private:
 //------------------------------------------------------------------------
 bool Application::init (int argc, char* argv[])
 {
-    Glib::init();
-    Gio::init();
+	Glib::init ();
+	Gio::init ();
 	if (!gdk_init_check (&argc, &argv))
 		return false;
 	Gdk::wrap_init ();
@@ -104,18 +104,29 @@ void Application::quit ()
 }
 
 //------------------------------------------------------------------------
+static void handleEvent (GdkEvent* event, GdkWindow* gdkWindow)
+{
+	if (auto window = IGdkWindow::find (gdkWindow))
+	{
+		if (!window->handleEvent (event))
+		{
+			if (auto parent = gdk_window_get_parent (gdkWindow))
+				handleEvent (event, parent);
+		}
+	}
+	else
+	{
+		printf ("unknown gdk window \n");
+	}
+}
+
+//------------------------------------------------------------------------
 void Application::gdkEventCallback (GdkEvent* ev, gpointer data)
 {
 	GdkWindow* gdkWindow = reinterpret_cast<GdkEventAny*> (ev)->window;
 	if (!gdkWindow)
 		return;
-
-	if (auto window = IGdkWindow::find (gdkWindow))
-		window->handleEvent (ev);
-	else
-	{
-		printf ("unknown gdk window \n");
-	}
+	handleEvent (ev, gdkWindow);
 }
 
 //------------------------------------------------------------------------

@@ -437,21 +437,21 @@ bool Frame::handleEvent (void* gdkEvent)
 			auto event = reinterpret_cast<GdkEventButton*> (ev);
 			CPoint where{event->x, event->y};
 			auto eventButtonState = buttonState (event->button, event->state, event->type);
-			return frame->platformOnMouseDown (where, eventButtonState) == kMouseEventHandled;
+			return frame->platformOnMouseDown (where, eventButtonState) != kMouseEventNotHandled;
 		}
 		case GDK_BUTTON_RELEASE:
 		{
 			auto event = reinterpret_cast<GdkEventButton*> (ev);
 			CPoint where{event->x, event->y};
 			auto eventButtonState = buttonState (event->button, event->state, event->type);
-			return frame->platformOnMouseUp (where, eventButtonState) == kMouseEventHandled;
+			return frame->platformOnMouseUp (where, eventButtonState) != kMouseEventNotHandled;
 		}
 		case GDK_MOTION_NOTIFY:
 		{
 			auto event = reinterpret_cast<GdkEventMotion*> (ev);
 			CPoint where{event->x, event->y};
 			auto eventButtonState = buttonState (0, event->state);
-			return frame->platformOnMouseMoved (where, eventButtonState) == kMouseEventHandled;
+			return frame->platformOnMouseMoved (where, eventButtonState) != kMouseEventNotHandled;
 		}
 		case GDK_SCROLL:
 		{
@@ -469,13 +469,13 @@ bool Frame::handleEvent (void* gdkEvent)
 					{
 						result |=
 							frame->platformOnMouseWheel (where, kMouseWheelAxisX, -event->delta_x,
-														 eventButtonState) == kMouseEventHandled;
+														 eventButtonState) != kMouseEventNotHandled;
 					}
 					if (event->delta_y)
 					{
 						result |=
 							frame->platformOnMouseWheel (where, kMouseWheelAxisY, -event->delta_y,
-														 eventButtonState) == kMouseEventHandled;
+														 eventButtonState) != kMouseEventNotHandled;
 					}
 					break;
 				}
@@ -504,8 +504,8 @@ bool Frame::handleEvent (void* gdkEvent)
 					break;
 				}
 			}
-			return frame->platformOnMouseWheel (where, axis, distance, eventButtonState) ==
-				   kMouseEventHandled;
+			return frame->platformOnMouseWheel (where, axis, distance, eventButtonState) !=
+				   kMouseEventNotHandled;
 		}
 		case GDK_KEY_PRESS:
 		{
