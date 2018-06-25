@@ -36,7 +36,7 @@
 		<attributes EditViewScale="1" EditorSize="0, 0, 896, 638" SplitViewSize_0_0="0.6356209150326797008290213852887973189354" SplitViewSize_0_1="0.3316993464052287454713052738952683284879" SplitViewSize_1_0="0.5343137254901960675468330919102299958467" SplitViewSize_1_1="0.4591503267973855995087717474234523251653" SplitViewSize_2_0="0.6930803571428570952761560874932911247015" SplitViewSize_2_1="0.3013392857142856984253853624977637082338" TabSwitchValue="3" Version="1" name="UIEditController"/>
 		<attributes name="UIAttributesController"/>
 		<attributes SelectedRow="11" name="UIViewCreatorDataSource"/>
-		<attributes name="UIDescFilePath" path="/Users/scheffle/Source/VST3/vstgui/vstgui/standalone/examples/standalone/resource/test.uidesc"/>
+		<attributes name="UIDescFilePath" path="/home/scheffle/source/vstgui/vstgui/standalone/examples/standalone/resource/test.uidesc"/>
 		<attributes SelectedRow="-1" name="UITagsDataSource"/>
 		<attributes SelectedRow="6" name="UIGradientsDataSource"/>
 		<attributes SelectedRow="0" name="UIColorsDataSource"/>

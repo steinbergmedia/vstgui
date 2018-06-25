@@ -78,24 +78,6 @@ const VirtMap keyMap = {{GDK_KEY_BackSpace, VKEY_BACK},
 						{GDK_KEY_VoidSymbol, 0}};
 
 //------------------------------------------------------------------------
-VstKeyCode keyCodeFromEvent (GdkEventKey* event)
-{
-	VstKeyCode key{};
-	if (event->state & GDK_SHIFT_MASK)
-		key.modifier |= MODIFIER_SHIFT;
-	if (event->state & GDK_CONTROL_MASK)
-		key.modifier |= MODIFIER_CONTROL;
-	if (event->state & GDK_MOD1_MASK)
-		key.modifier |= MODIFIER_ALTERNATE;
-	auto it = keyMap.find (event->keyval);
-	if (it != keyMap.end ())
-		key.virt = it->second;
-	else
-		key.character = towlower (gdk_keyval_to_unicode (event->keyval));
-	return key;
-}
-
-//------------------------------------------------------------------------
 CButtonState buttonState (guint b, guint modifiers, GdkEventType eventType = GDK_BUTTON_PRESS)
 {
 	using namespace Gdk;
@@ -420,6 +402,25 @@ void Frame::drawDirtyRegions ()
 }
 
 //------------------------------------------------------------------------
+VstKeyCode Frame::keyCodeFromEvent (void* ev)
+{
+	auto event = reinterpret_cast<GdkEventKey*> (ev);
+	VstKeyCode key{};
+	if (event->state & GDK_SHIFT_MASK)
+		key.modifier |= MODIFIER_SHIFT;
+	if (event->state & GDK_CONTROL_MASK)
+		key.modifier |= MODIFIER_CONTROL;
+	if (event->state & GDK_MOD1_MASK)
+		key.modifier |= MODIFIER_ALTERNATE;
+	auto it = keyMap.find (event->keyval);
+	if (it != keyMap.end ())
+		key.virt = it->second;
+	else
+		key.character = towlower (gdk_keyval_to_unicode (event->keyval));
+	return key;
+}
+
+//------------------------------------------------------------------------
 bool Frame::handleEvent (void* gdkEvent)
 {
 	auto ev = reinterpret_cast<GdkEvent*> (gdkEvent);
@@ -467,15 +468,13 @@ bool Frame::handleEvent (void* gdkEvent)
 					bool result = false;
 					if (event->delta_x)
 					{
-						result |=
-							frame->platformOnMouseWheel (where, kMouseWheelAxisX, -event->delta_x,
-														 eventButtonState) != kMouseEventNotHandled;
+						result |= frame->platformOnMouseWheel (where, kMouseWheelAxisX,
+															   -event->delta_x, eventButtonState);
 					}
 					if (event->delta_y)
 					{
-						result |=
-							frame->platformOnMouseWheel (where, kMouseWheelAxisY, -event->delta_y,
-														 eventButtonState) != kMouseEventNotHandled;
+						result |= frame->platformOnMouseWheel (where, kMouseWheelAxisY,
+															   -event->delta_y, eventButtonState);
 					}
 					break;
 				}
@@ -504,20 +503,19 @@ bool Frame::handleEvent (void* gdkEvent)
 					break;
 				}
 			}
-			return frame->platformOnMouseWheel (where, axis, distance, eventButtonState) !=
-				   kMouseEventNotHandled;
+			return frame->platformOnMouseWheel (where, axis, distance, eventButtonState);
 		}
 		case GDK_KEY_PRESS:
 		{
 			auto event = reinterpret_cast<GdkEventKey*> (ev);
 			auto keyCode = keyCodeFromEvent (event);
-			return frame->platformOnKeyDown (keyCode) != -1;
+			return frame->platformOnKeyDown (keyCode);
 		}
 		case GDK_KEY_RELEASE:
 		{
 			auto event = reinterpret_cast<GdkEventKey*> (ev);
 			auto keyCode = keyCodeFromEvent (event);
-			return frame->platformOnKeyUp (keyCode) != -1;
+			return frame->platformOnKeyUp (keyCode);
 		}
 		case GDK_FOCUS_CHANGE:
 		{

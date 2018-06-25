@@ -35,6 +35,8 @@ public:
 
 	static CreatePlatformTimerFunc createPlatformTimerFunc;
 
+	static VstKeyCode keyCodeFromEvent (void* event);
+
 	bool handleEvent (void* gdkEvent);
 private:
 	Frame (IPlatformFrameCallback* frame);

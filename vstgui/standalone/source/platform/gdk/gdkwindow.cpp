@@ -3,6 +3,7 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "gdkwindow.h"
+#include "../../application.h"
 #include "../../../../lib/platform/linux/gdkframe.h"
 #include "../../../../lib/cframe.h"
 #include <gtkmm.h>
@@ -107,12 +108,14 @@ public:
 	bool handleEvent (GdkEvent* event) override;
 
 private:
+	void updateGeometryHints ();
 	void handleEventConfigure (GdkEventConfigure* event);
 
 	CPoint lastPos;
 	CPoint lastSize;
 
 	WindowStyle style;
+	WindowType type;
 	IWindowDelegate* delegate{nullptr};
 	Glib::RefPtr<Gdk::Window> gdkWindow;
 	std::unique_ptr<FrameChildWindow> frameChild;
@@ -159,6 +162,7 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 		return false;
 
 	style = config.style;
+	type = config.type;
 	lastSize = config.size;
 
 	delegate = &inDelegate;
@@ -168,9 +172,6 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 
 	uint32_t windowDeco = 0;
 	uint32_t windowFunctions = Gdk::FUNC_MOVE;
-
-	Gdk::Geometry geometry;
-	uint32_t geometryHints = 0;
 
 	if (config.type == WindowType::Document)
 	{
@@ -188,11 +189,42 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 		windowFunctions |= Gdk::FUNC_MAXIMIZE;
 		windowDeco |= Gdk::DECOR_MAXIMIZE;
 		windowDeco |= Gdk::DECOR_RESIZEH;
+	}
+	if (style.isTransparent ())
+	{
+	}
+	if (!style.hasBorder ())
+	{
+		windowDeco = 0;
+	}
+	if (!config.title.empty ())
+		windowDeco |= Gdk::DECOR_TITLE;
+
+	gdkWindow->set_functions (static_cast<Gdk::WMFunction> (windowFunctions));
+	gdkWindow->set_decorations (static_cast<Gdk::WMDecoration> (windowDeco));
+
+#if 0
+	Gdk::RGBA color;
+	color.set_rgba (0., 1., 0.);
+	gdkWindow->set_background (color);
+#endif
+	return true;
+}
+
+//------------------------------------------------------------------------
+void Window::updateGeometryHints ()
+{
+	Gdk::Geometry geometry;
+	uint32_t geometryHints = Gdk::HINT_USER_POS | Gdk::HINT_USER_SIZE;
+	if (style.canSize ())
+	{
 		auto minSize = delegate->constraintSize ({0, 0});
 		geometry.min_width = minSize.x;
 		geometry.min_height = minSize.y;
-		geometry.max_width = std::numeric_limits<gint>::max ();
-		geometry.max_height = std::numeric_limits<gint>::max ();
+		auto maxSize = delegate->constraintSize (
+			{std::numeric_limits<CCoord>::max (), std::numeric_limits<CCoord>::max ()});
+		geometry.max_width = maxSize.x;
+		geometry.max_height = maxSize.y;
 		geometryHints |= Gdk::HINT_MIN_SIZE;
 		geometryHints |= Gdk::HINT_MAX_SIZE;
 	}
@@ -205,23 +237,8 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 		geometryHints |= Gdk::HINT_MIN_SIZE;
 		geometryHints |= Gdk::HINT_MAX_SIZE;
 	}
-	if (style.isTransparent ())
-	{
-	}
-	if (!config.title.empty ())
-		windowDeco |= Gdk::DECOR_TITLE;
-
-	gdkWindow->set_functions (static_cast<Gdk::WMFunction> (windowFunctions));
-	gdkWindow->set_decorations (static_cast<Gdk::WMDecoration> (windowDeco));
 
 	gdkWindow->set_geometry_hints (geometry, static_cast<Gdk::WindowHints> (geometryHints));
-
-#if 0
-	Gdk::RGBA color;
-	color.set_rgba (0., 1., 0.);
-	gdkWindow->set_background (color);
-#endif
-	return true;
 }
 
 //------------------------------------------------------------------------
@@ -271,6 +288,7 @@ void Window::setRepresentedPath (const UTF8String& path) {}
 //------------------------------------------------------------------------
 void Window::show ()
 {
+	updateGeometryHints ();
 	gdkWindow->show ();
 }
 
@@ -285,9 +303,8 @@ void Window::close ()
 {
 	if (!gdkWindow)
 		return;
-	frameChild = nullptr;
+	gdkWindow->withdraw ();
 	delegate->onClosed ();
-	gdkWindow.reset ();
 }
 
 //------------------------------------------------------------------------
@@ -334,8 +351,7 @@ bool Window::isGdkWindow (GdkWindow* window)
 //------------------------------------------------------------------------
 bool Window::handleEvent (GdkEvent* ev)
 {
-	auto type = ev->type;
-	switch (type)
+	switch (ev->type)
 	{
 		case GDK_EXPOSE:
 		{
@@ -378,7 +394,15 @@ bool Window::handleEvent (GdkEvent* ev)
 			if (hasFocus)
 				delegate->onActivated ();
 			else
+			{
 				delegate->onDeactivated ();
+				if (type == WindowType::Popup)
+				{
+					if (!Detail::getApplicationPlatformAccess ()->dontClosePopupOnDeactivation (
+							this))
+						close ();
+				}
+			}
 			break;
 		}
 		case GDK_KEY_PRESS:
@@ -398,7 +422,8 @@ bool Window::handleEvent (GdkEvent* ev)
 			if (style.isMovableByWindowBackground ())
 			{
 				auto event = reinterpret_cast<GdkEventButton*> (ev);
-				gdkWindow->begin_move_drag (event->button, event->x_root, event->y_root, event->time);
+				gdkWindow->begin_move_drag (event->button, event->x_root, event->y_root,
+											event->time);
 			}
 			break;
 		}
