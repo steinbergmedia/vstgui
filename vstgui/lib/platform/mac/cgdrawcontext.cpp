@@ -582,6 +582,8 @@ void CGDrawContext::fillRectWithBitmap (CBitmap* bitmap, const CRect& srcRect, c
 			r.size.width = CGImageGetWidth (image);
 			r.size.height = CGImageGetHeight (image);
 			
+			setCGDrawContextQuality (context);
+
 			CGContextDrawTiledImage (context, r, image);
 			
 			releaseCGContext (context);
@@ -631,6 +633,8 @@ void CGDrawContext::drawBitmap (CBitmap* bitmap, const CRect& inRect, const CPoi
 //-----------------------------------------------------------------------------
 void CGDrawContext::drawCGImageRef (CGContextRef context, CGImageRef image, CGLayerRef layer, double bitmapScaleFactor, const CRect& inRect, const CPoint& inOffset, float alpha, CBitmap* bitmap)
 {
+	setCGDrawContextQuality (context);
+	
 	CRect rect (inRect);
 	CPoint offset (inOffset);
 	
@@ -670,6 +674,27 @@ void CGDrawContext::drawCGImageRef (CGContextRef context, CGImageRef image, CGLa
 	else
 	{
 		CGContextDrawImage (context, dest, image);
+	}
+}
+
+//-----------------------------------------------------------------------------
+
+void CGDrawContext::setCGDrawContextQuality (CGContextRef context)
+{
+	switch (interpolationQuality)
+	{
+		case kQualityLow:
+			CGContextSetShouldAntialias (context, false);
+			CGContextSetInterpolationQuality (context, kCGInterpolationNone);
+			break;
+			
+		case kQualityHigh:
+			CGContextSetShouldAntialias (context, true);
+			CGContextSetInterpolationQuality (context, kCGInterpolationHigh);
+			break;
+			
+		default:
+			break;
 	}
 }
 

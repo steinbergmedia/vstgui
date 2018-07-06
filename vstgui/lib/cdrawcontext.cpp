@@ -11,6 +11,12 @@
 
 namespace VSTGUI {
 
+
+//-----------------------------------------------------------------------------
+
+CDrawContext::BitmapInterpolationQuality
+	CDrawContext::interpolationQuality = kQualityDefault;
+
 //-----------------------------------------------------------------------------
 CDrawContext::CDrawContextState::CDrawContextState (const CDrawContextState& state)
 {
