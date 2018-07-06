@@ -12,7 +12,4 @@
 #include "lib/platform/linux/cairogradient.cpp"
 #include "lib/platform/linux/cairopath.cpp"
 
-#include "lib/platform/linux/gtkoptionmenu.cpp"
-#include "lib/platform/linux/gtktextedit.cpp"
-
 #include "lib/platform/common/fileresourceinputstream.cpp"

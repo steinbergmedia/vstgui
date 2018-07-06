@@ -1,5 +1,12 @@
+###########################################################################################
 get_filename_component(PkgInfoResource "cmake/resources/PkgInfo" ABSOLUTE)
 
+###########################################################################################
+if(LINUX)
+  pkg_check_modules(GTKMM3 REQUIRED gtkmm-3.0)
+endif(LINUX)
+
+###########################################################################################
 function(vstgui_add_executable target sources resources)
 
   if(MSVC)
@@ -11,6 +18,7 @@ function(vstgui_add_executable target sources resources)
     add_executable(${target} ${sources})
     get_target_property(OUTPUTDIR ${target} RUNTIME_OUTPUT_DIRECTORY)
     set_target_properties(${target} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${OUTPUTDIR}/${target}")
+    set(PLATFORM_LIBRARIES ${GTKMM3_LIBRARIES})
 
     set(resource_folder "${OUTPUTDIR}/${target}/Resources")
         if(NOT EXISTS ${resource_folder})
@@ -40,7 +48,7 @@ function(vstgui_add_executable target sources resources)
     )
     set(resources ${resources} ${PkgInfoResource})
     add_executable(${target} ${sources} ${resources})
-    target_link_libraries(${target}
+    set(PLATFORM_LIBRARIES
       "-framework Cocoa"
       "-framework OpenGL"
       "-framework QuartzCore"
@@ -56,10 +64,12 @@ function(vstgui_add_executable target sources resources)
     vstgui
     vstgui_uidescription
     vstgui_standalone
+    ${PLATFORM_LIBRARIES}
   )
   target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS})
 endfunction()
 
+###########################################################################################
 function(vstgui_set_target_infoplist target infoplist)
   if(CMAKE_HOST_APPLE)
     get_filename_component(InfoPlistFile "${infoplist}" ABSOLUTE)
@@ -69,6 +79,7 @@ function(vstgui_set_target_infoplist target infoplist)
   endif(CMAKE_HOST_APPLE)
 endfunction()
 
+###########################################################################################
 function(vstgui_set_target_rcfile target rcfile)
   if(MSVC)
     target_sources(${target} PRIVATE ${rcfile})

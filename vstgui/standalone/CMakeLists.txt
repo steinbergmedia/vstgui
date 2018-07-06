@@ -125,7 +125,6 @@ endif()
 
 if(LINUX)
     target_include_directories(${target} PRIVATE ${X11_INCLUDE_DIR})
-    target_include_directories(${target} PRIVATE ${GTK3_INCLUDE_DIRS})
     target_include_directories(${target} PRIVATE ${GTKMM3_INCLUDE_DIRS})
     target_include_directories(${target} PRIVATE ${FREETYPE_INCLUDE_DIRS})
     target_link_libraries(${target} PRIVATE vstgui_uidescription ${LINUX_LIBRARIES} dl)

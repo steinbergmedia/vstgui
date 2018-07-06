@@ -11,9 +11,9 @@
 #include <cassert>
 #include <chrono>
 #include <dlfcn.h>
-#include <gtkmm.h>
 #include <iostream>
 #include <link.h>
+#include <xcb/xcb.h>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {

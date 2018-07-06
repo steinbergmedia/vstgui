@@ -73,13 +73,11 @@ if(LINUX)
     find_package(X11 REQUIRED)
     find_package(Freetype REQUIRED)
     find_package(PkgConfig REQUIRED)
-    pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
-    pkg_check_modules(GTKMM3 REQUIRED gtkmm-3.0)
+    pkg_check_modules(LIBXCB REQUIRED xcb)
     set(LINUX_LIBRARIES
         ${X11_LIBRARIES}
         ${FREETYPE_LIBRARIES}
-        ${GTK3_LIBRARIES}
-        ${GTKMM3_LIBRARIES}
+        ${LIBXCB_LIBRARIES}
         cairo
         fontconfig
     )
