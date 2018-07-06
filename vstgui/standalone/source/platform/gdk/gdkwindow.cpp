@@ -3,9 +3,12 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "gdkwindow.h"
+#include "gdkrunloop.h"
 #include "../../application.h"
 #include "../../../../lib/cframe.h"
+#include "../../../../lib/platform/platform_x11.h"
 #include <gtkmm.h>
+#include <gdk/gdkx.h>
 #include <cassert>
 #include <vector>
 
@@ -107,6 +110,7 @@ public:
 	PlatformType getPlatformType () const override;
 	void* getPlatformHandle () const override;
 
+	PlatformFrameConfigPtr prepareFrameConfig (PlatformFrameConfigPtr&& controllerConfig) override;
 	void onSetContentView (CFrame* frame) override;
 
 	bool isGdkWindow (GdkWindow* window) override;
@@ -324,7 +328,7 @@ void Window::center () {}
 //------------------------------------------------------------------------
 PlatformType Window::getPlatformType () const
 {
-	return kGdkWindow;
+	return kX11EmbedWindowID;
 }
 
 //------------------------------------------------------------------------
@@ -333,9 +337,25 @@ void* Window::getPlatformHandle () const
 	if (gdkWindow)
 	{
 		auto ptr = gdkWindow->gobj ();
-		return ptr;
+		return reinterpret_cast<void*> (gdk_x11_window_get_xid (ptr));
 	}
 	return nullptr;
+}
+
+//------------------------------------------------------------------------
+PlatformFrameConfigPtr Window::prepareFrameConfig (PlatformFrameConfigPtr&& controllerConfig)
+{
+	if (controllerConfig)
+	{
+		if (auto config = dynamicPtrCast<X11::FrameConfig> (controllerConfig))
+		{
+			config->runLoop = &RunLoop::instance ();
+			return config;
+		}
+	}
+	auto config = std::make_shared<X11::FrameConfig> ();
+	config->runLoop = &RunLoop::instance ();
+	return config;
 }
 
 //------------------------------------------------------------------------

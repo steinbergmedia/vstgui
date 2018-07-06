@@ -207,6 +207,7 @@ void Window::setContentView (const SharedPointer<CFrame>& newFrame)
 	auto frameConfig =
 	    controller ? controller->createPlatformFrameConfig (platformWindow->getPlatformType ()) :
 	                 nullptr;
+	frameConfig = platformWindow->prepareFrameConfig (std::move (frameConfig));
 	frame->open (platformWindow->getPlatformHandle (), platformWindow->getPlatformType (),
 	             frameConfig.get ());
 	frame->registerMouseObserver (this);

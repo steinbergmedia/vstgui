@@ -65,6 +65,10 @@ public:
 
 	PlatformType getPlatformType () const override { return PlatformType::kHWNDTopLevel; }
 	void* getPlatformHandle () const override { return hwnd; }
+	PlatformFrameConfigPtr prepareFrameConfig (PlatformFrameConfigPtr&& controllerConfig) override
+	{
+		return controllerConfig;
+	}
 	void onSetContentView (CFrame* frame) override;
 
 	void updateCommands () const override;

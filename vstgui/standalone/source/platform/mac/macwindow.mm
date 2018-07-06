@@ -98,6 +98,10 @@ public:
 	{
 		return static_cast<void*> ((__bridge void*)nsWindow.contentView);
 	}
+	PlatformFrameConfigPtr prepareFrameConfig (PlatformFrameConfigPtr&& controllerConfig) override
+	{
+		return controllerConfig;
+	}
 	void onSetContentView (CFrame* _Nullable newFrame) override;
 
 	void windowDidResize (const CPoint& newSize);

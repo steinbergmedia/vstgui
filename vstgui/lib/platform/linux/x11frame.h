@@ -6,6 +6,7 @@
 #include "../../crect.h"
 #include "../iplatformframe.h"
 #include "../iplatformresourceinputstream.h"
+#include "../platform_x11.h"
 #include "irunloop.h"
 #include <memory>
 #include <functional>
@@ -13,13 +14,6 @@
 //------------------------------------------------------------------------
 namespace VSTGUI {
 namespace X11 {
-
-//------------------------------------------------------------------------
-class FrameConfig : public IPlatformFrameConfig
-{
-public:
-	SharedPointer<IRunLoop> runLoop;
-};
 
 //------------------------------------------------------------------------
 class Frame : public IPlatformFrame, public IEventHandler

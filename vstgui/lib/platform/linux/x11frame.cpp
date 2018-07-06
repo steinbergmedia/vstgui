@@ -19,9 +19,10 @@
 #include <iostream>
 #include <unordered_map>
 #include <X11/Xlib.h>
+#include <xcb/xcb.h>
 
 #ifdef None
-#undef None
+#	undef None
 #endif
 
 //------------------------------------------------------------------------
@@ -29,29 +30,63 @@ namespace VSTGUI {
 namespace X11 {
 
 //------------------------------------------------------------------------
-struct Frame::Impl
+struct SimpleWindow
 {
-	Impl (::Window parent)
+	SimpleWindow (::Window parentId, CPoint size)
 	{
+		auto connection = Platform::getInstance ().getXcbConnection ();
+		// const xcb_setup_t* setup = xcb_get_setup (connection);
+		// xcb_screen_iterator_t iter = xcb_setup_roots_iterator (setup);
+		// xcb_screen_t* screen = iter.data;
+
+		xcb_create_window (connection, XCB_COPY_FROM_PARENT, getWindow (), parentId, 0, 0, size.x,
+						   size.y, 10, XCB_WINDOW_CLASS_INPUT_OUTPUT, XCB_COPY_FROM_PARENT, 0,
+						   nullptr);
 	}
-	bool handlingEvents {false};
+
+	~SimpleWindow () noexcept {}
+
+	xcb_window_t getWindow () const { return id; }
+
+private:
+	xcb_window_t id{xcb_generate_id (Platform::getInstance ().getXcbConnection ())};
 };
 
 //------------------------------------------------------------------------
-Frame::Frame (IPlatformFrameCallback* frame, const CRect& size, uint32_t parent,
-			  IPlatformFrameConfig* config)
-: IPlatformFrame (frame)
+struct Frame::Impl : IFrameEventHandler
 {
-	impl = std::unique_ptr<Impl> (new Impl (parent));
+	SimpleWindow window;
+	bool handlingEvents{false};
 
-	frame->platformOnActivate (true);
+	Impl (::Window parent, CPoint size) : window (parent, size) {}
 
+	void onEvent (xcb_key_press_event_t& event) override {}
+	void onEvent (xcb_button_press_event_t& event) override {}
+	void onEvent (xcb_motion_notify_event_t& event) override {}
+	void onEvent (xcb_enter_notify_event_t& event) override {}
+	void onEvent (xcb_focus_in_event_t& event) override {}
+	void onEvent (xcb_expose_event_t& event) override {}
+};
+
+//------------------------------------------------------------------------
+Frame::Frame (IPlatformFrameCallback* frame,
+			  const CRect& size,
+			  uint32_t parent,
+			  IPlatformFrameConfig* config)
+	: IPlatformFrame (frame)
+{
 	auto cfg = dynamic_cast<FrameConfig*> (config);
 	if (cfg && cfg->runLoop)
 	{
 		RunLoop::init (cfg->runLoop);
-//		RunLoop::get ()->registerEventHandler (XConnectionNumber (xDisplay), this);
+		//		RunLoop::get ()->registerEventHandler (XConnectionNumber (xDisplay), this);
 	}
+
+	impl = std::unique_ptr<Impl> (new Impl (parent, {size.getWidth (), size.getHeight ()}));
+
+	frame->platformOnActivate (true);
+
+	Platform::getInstance ().registerWindowEventHandler (impl->window.getWindow (), impl.get ());
 
 #if 0 // DEBUG
 	auto id = impl->plug.get_id ();
@@ -66,7 +101,7 @@ Frame::~Frame ()
 {
 	if (auto runLoop = RunLoop::get ())
 	{
-//		runLoop->unregisterEventHandler (this);
+		//		runLoop->unregisterEventHandler (this);
 	}
 	RunLoop::exit ();
 }
@@ -157,7 +192,7 @@ SharedPointer<IPlatformOptionMenu> Frame::createPlatformOptionMenu ()
 //------------------------------------------------------------------------
 SharedPointer<IPlatformOpenGLView> Frame::createPlatformOpenGLView ()
 {
-#warning TODO: Implementation
+#	warning TODO: Implementation
 	return nullptr;
 }
 #endif
@@ -171,7 +206,8 @@ SharedPointer<IPlatformViewLayer> Frame::createPlatformViewLayer (
 }
 
 //------------------------------------------------------------------------
-SharedPointer<COffscreenContext> Frame::createOffscreenContext (CCoord width, CCoord height,
+SharedPointer<COffscreenContext> Frame::createOffscreenContext (CCoord width,
+																CCoord height,
 																double scaleFactor)
 {
 	CPoint size (width * scaleFactor, height * scaleFactor);
@@ -193,15 +229,14 @@ DragResult Frame::doDrag (IDataPackage* source, const CPoint& offset, CBitmap* d
 #endif
 
 //------------------------------------------------------------------------
-bool Frame::doDrag (const DragDescription& dragDescription, const SharedPointer<IDragCallback>& callback)
+bool Frame::doDrag (const DragDescription& dragDescription,
+					const SharedPointer<IDragCallback>& callback)
 {
 	return false;
 }
 
-
 //------------------------------------------------------------------------
-void Frame::setClipboard (const SharedPointer<IDataPackage>& data)
-{
+void Frame::setClipboard (const SharedPointer<IDataPackage>& data){
 #warning TODO: Implementation
 }
 
@@ -219,9 +254,7 @@ PlatformType Frame::getPlatformType () const
 }
 
 //------------------------------------------------------------------------
-void Frame::onEvent ()
-{
-}
+void Frame::onEvent () {}
 
 //------------------------------------------------------------------------
 Frame::CreateIResourceInputStreamFunc Frame::createResourceInputStreamFunc =
@@ -241,9 +274,10 @@ Frame::CreateIResourceInputStreamFunc Frame::createResourceInputStreamFunc =
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
 IPlatformFrame* IPlatformFrame::createPlatformFrame (IPlatformFrameCallback* frame,
-                                                     const CRect& size, void* parent,
-                                                     PlatformType parentType,
-                                                     IPlatformFrameConfig* config)
+													 const CRect& size,
+													 void* parent,
+													 PlatformType parentType,
+													 IPlatformFrameConfig* config)
 {
 	if (parentType == kDefaultNative || parentType == kX11EmbedWindowID)
 	{

@@ -50,6 +50,7 @@ public:
 	virtual PlatformType getPlatformType () const = 0;
 	virtual void* getPlatformHandle () const = 0;
 
+	virtual PlatformFrameConfigPtr prepareFrameConfig (PlatformFrameConfigPtr&& controllerConfig) = 0;
 	virtual void onSetContentView (CFrame* frame) = 0;
 };
 
