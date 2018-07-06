@@ -67,6 +67,21 @@ public:
 	//@}
 
 	//-----------------------------------------------------------------------------
+	// @name Bitmap Interpolation Quality
+	//-----------------------------------------------------------------------------
+	//@{
+	enum BitmapInterpolationQuality
+	{
+		kQualityDefault = 0,
+		kQualityLow,
+		kQualityHigh
+	};
+
+	static BitmapInterpolationQuality interpolationQuality;
+
+	//@}
+
+	//-----------------------------------------------------------------------------
 	/// @name Line Mode
 	//-----------------------------------------------------------------------------
 	//@{
