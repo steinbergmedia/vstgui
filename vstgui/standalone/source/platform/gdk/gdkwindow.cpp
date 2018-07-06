@@ -4,7 +4,6 @@
 
 #include "gdkwindow.h"
 #include "../../application.h"
-#include "../../../../lib/platform/linux/gdkframe.h"
 #include "../../../../lib/cframe.h"
 #include <gtkmm.h>
 #include <cassert>
@@ -49,9 +48,11 @@ class FrameChildWindow : public IGdkWindow
 public:
 	FrameChildWindow (CFrame* frame) : frame (frame)
 	{
-		window = reinterpret_cast<GdkWindow*> (
-			frame->getPlatformFrame ()->getPlatformRepresentation ()); // TODO: correct access
-		getWindows ().push_back (this);
+		if (auto platformFrame = frame->getPlatformFrame ())
+		{
+			window = reinterpret_cast<GdkWindow*> (platformFrame->getPlatformRepresentation ());
+			getWindows ().push_back (this);
+		}
 	}
 	~FrameChildWindow () noexcept override
 	{
@@ -64,8 +65,12 @@ public:
 	bool isGdkWindow (GdkWindow* _window) override { return _window == window; }
 	bool handleEvent (GdkEvent* event) override
 	{
+#if 0
 		auto gdkFrame = dynamic_cast<VSTGUI::GDK::Frame*> (frame->getPlatformFrame ());
 		return gdkFrame->handleEvent (event);
+#else
+		return false;
+#endif
 	}
 
 	CFrame* getFrame () const { return frame; }

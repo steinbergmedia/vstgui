@@ -77,16 +77,5 @@ private:
 };
 
 //------------------------------------------------------------------------
-struct LocalEventLoop
-{
-	void run ();
-	void stop ();
-
-	bool isRunning () const { return running; }
-private:
-	bool running {false};
-};
-
-//------------------------------------------------------------------------
 } // X11
 } // VSTGUI

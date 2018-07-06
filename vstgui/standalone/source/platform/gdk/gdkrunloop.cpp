@@ -23,7 +23,7 @@ RunLoop& RunLoop::instance ()
 //------------------------------------------------------------------------
 struct ExternalEventHandler
 {
-	VSTGUI::Platform::IEventHandler* eventHandler{nullptr};
+	VSTGUI::X11::IEventHandler* eventHandler{nullptr};
 	GSource* source{nullptr};
 	GIOChannel* ioChannel{nullptr};
 };

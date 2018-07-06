@@ -5,6 +5,7 @@
 
 #include "../../crect.h"
 #include "../iplatformframe.h"
+#include "../iplatformresourceinputstream.h"
 #include "irunloop.h"
 #include <memory>
 #include <functional>
@@ -17,16 +18,22 @@ namespace X11 {
 class FrameConfig : public IPlatformFrameConfig
 {
 public:
-	SharedPointer<Platform::IRunLoop> runLoop;
+	SharedPointer<IRunLoop> runLoop;
 };
 
 //------------------------------------------------------------------------
-class Frame : public IPlatformFrame, public Platform::IEventHandler
+class Frame : public IPlatformFrame, public IEventHandler
 {
 public:
 	Frame (IPlatformFrameCallback* frame, const CRect& size, uint32_t parent,
 		   IPlatformFrameConfig* config);
 	~Frame ();
+
+	using CreateIResourceInputStreamFunc =
+		std::function<IPlatformResourceInputStream::Ptr (const CResourceDescription& desc)>;
+
+	static CreateIResourceInputStreamFunc createResourceInputStreamFunc;
+private:
 
 	bool getGlobalPosition (CPoint& pos) const override;
 	bool setSize (const CRect& newSize) override;
@@ -61,7 +68,6 @@ public:
 
 	void onEvent () override;
 
-	void* getGtkWindow (); // return is Gtk::Window*
 private:
 	struct Impl;
 	std::unique_ptr<Impl> impl;

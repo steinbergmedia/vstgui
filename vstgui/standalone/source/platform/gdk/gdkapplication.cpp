@@ -4,7 +4,7 @@
 
 #include "../../application.h"
 #include "../../../../lib/vstkeycode.h"
-#include "../../../../lib/platform/linux/gdkframe.h"
+#include "../../../../lib/platform/linux/x11frame.h"
 #include "../../../../lib/platform/common/fileresourceinputstream.h"
 #include "gdkcommondirectories.h"
 #include "gdkpreference.h"
@@ -94,7 +94,7 @@ bool Application::init (int argc, char* argv[])
 	if (count == -1)
 		exit (-1);
 	std::string execPath = dirname (result);
-	VSTGUI::GDK::Frame::createResourceInputStreamFunc =
+	VSTGUI::X11::Frame::createResourceInputStreamFunc =
 		[execPath](const CResourceDescription& desc) {
 			if (desc.type == CResourceDescription::kIntegerType)
 				return IPlatformResourceInputStream::Ptr ();
@@ -181,6 +181,7 @@ static void handleEvent (GdkEvent* event, GdkWindow* gdkWindow)
 //------------------------------------------------------------------------
 bool Application::handleKeyEvent (GdkEvent* event)
 {
+#if 0
 	auto keyCode = VSTGUI::GDK::Frame::keyCodeFromEvent (event);
 	auto it = keyCommands.find (keyCode);
 	if (it != keyCommands.end ())
@@ -207,6 +208,7 @@ bool Application::handleKeyEvent (GdkEvent* event)
 			}
 		}
 	}
+#endif
 	return false;
 }
 

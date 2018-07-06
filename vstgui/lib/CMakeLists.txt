@@ -246,19 +246,12 @@ set(${target}_linux_sources
     platform/linux/cairoutils.h
     platform/linux/linuxstring.cpp
     platform/linux/linuxstring.h
-    platform/linux/gdkframe.cpp
-    platform/linux/gdkframe.h
-    platform/linux/gdkfileselector.cpp
-    # platform/linux/gtkoptionmenu.cpp
-    # platform/linux/gtkoptionmenu.h
-    # platform/linux/gtktextedit.cpp
-    # platform/linux/gtktextedit.h
-    # platform/linux/x11frame.cpp
-    # platform/linux/x11frame.h
-    # platform/linux/x11platform.cpp
-    # platform/linux/x11platform.h
-    # platform/linux/x11timer.cpp
-    # platform/linux/x11timer.h
+    platform/linux/x11frame.cpp
+    platform/linux/x11frame.h
+    platform/linux/x11platform.cpp
+    platform/linux/x11platform.h
+    platform/linux/x11timer.cpp
+    platform/linux/x11timer.h
 )
 
 ##########################################################################################
