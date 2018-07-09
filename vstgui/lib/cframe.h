@@ -7,6 +7,7 @@
 
 #include "vstguifwd.h"
 #include "cviewcontainer.h"
+#include "cdrawcontext.h"
 #include "platform/iplatformframecallback.h"
 
 namespace VSTGUI {
@@ -48,6 +49,9 @@ public:
 	bool setZoom (double zoomFactor);
 	/** get zoom factor */
 	double getZoom () const;
+
+	void setBitmapInterpolationQuality (CDrawContext::CBitmapInterpolationQuality quality);		///< set interpolation quality for bitmaps
+	CDrawContext::CBitmapInterpolationQuality getBitmapInterpolationQuality () const;			///< get interpolation quality for bitmaps
 
 	double getScaleFactor () const;
 
@@ -205,7 +209,8 @@ public:
 	//-------------------------------------------
 protected:
 	struct CollectInvalidRects;
-	
+	CDrawContext::CBitmapInterpolationQuality bitmapQuality;
+
 	~CFrame () noexcept override = default;
 	void beforeDelete () override;
 	

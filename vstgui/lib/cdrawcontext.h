@@ -78,14 +78,16 @@ public:
 	// @name Bitmap Interpolation Quality
 	//-----------------------------------------------------------------------------
 	//@{
-	enum BitmapInterpolationQuality
+	enum CBitmapInterpolationQuality
 	{
-		kQualityDefault = 0,
-		kQualityLow,
-		kQualityHigh
+		kQualityDefault = 0,	// Let system decide
+		kQualityLow,			// Nearest neighbour
+		kQualityMedium,			// Bilinear interpolation
+		kQualityHigh			// Bicubic interpolation (Bilinear on Windows)
 	};
 
-	static BitmapInterpolationQuality interpolationQuality;
+	virtual void setBitmapInterpolationQuality (CBitmapInterpolationQuality quality);	//< set the current bitmap interpolation quality
+	const CBitmapInterpolationQuality& getBitmapInterpolationQuality () const { return currentState.bitmapQuality; }	///< get the current bitmap interpolation quality
 
 	//@}
 
@@ -263,6 +265,7 @@ protected:
 		CLineStyle lineStyle {kLineOnOffDash};
 		CDrawMode drawMode {kAntiAliasing};
 		float globalAlpha {1.f};
+		CBitmapInterpolationQuality bitmapQuality {kQualityDefault};
 
 		CDrawContextState () = default;
 		CDrawContextState (const CDrawContextState& state);

@@ -11,12 +11,6 @@
 
 namespace VSTGUI {
 
-
-//-----------------------------------------------------------------------------
-
-CDrawContext::BitmapInterpolationQuality
-	CDrawContext::interpolationQuality = kQualityDefault;
-
 //-----------------------------------------------------------------------------
 CDrawContext::CDrawContextState::CDrawContextState (const CDrawContextState& state)
 {
@@ -113,6 +107,12 @@ void CDrawContext::restoreGlobalState ()
 		DebugPrint ("No saved global state in draw context !!!\n");
 		#endif
 	}
+}
+
+//-----------------------------------------------------------------------------
+void CDrawContext::setBitmapInterpolationQuality(CBitmapInterpolationQuality quality)
+{
+	currentState.bitmapQuality = quality;
 }
 
 //-----------------------------------------------------------------------------

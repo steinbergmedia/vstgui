@@ -111,7 +111,9 @@ On Windows it's a WS_CHILD Window.
 */
 //-----------------------------------------------------------------------------
 CFrame::CFrame (const CRect& inSize, VSTGUIEditorInterface* inEditor)
-: CViewContainer (inSize)
+:
+CViewContainer (inSize),
+bitmapQuality (CDrawContext::kQualityDefault)
 {
 	pImpl = new Impl;
 	pImpl->editor = inEditor;
@@ -250,13 +252,29 @@ bool CFrame::setZoom (double zoomFactor)
 	return result;
 }
 
-//------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 double CFrame::getZoom () const
 {
 	return pImpl->userScaleFactor;
 }
 
-//------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+void CFrame::setBitmapInterpolationQuality (CDrawContext::CBitmapInterpolationQuality quality)
+{
+	if (quality != bitmapQuality)
+	{
+		bitmapQuality = quality;
+		invalid ();
+	}
+}
+
+//-----------------------------------------------------------------------------
+CDrawContext::CBitmapInterpolationQuality CFrame::getBitmapInterpolationQuality () const
+{
+	return bitmapQuality;
+}
+
+//-----------------------------------------------------------------------------
 double CFrame::getScaleFactor () const
 {
 	return pImpl->platformScaleFactor * pImpl->userScaleFactor;
@@ -290,6 +308,8 @@ void CFrame::drawRect (CDrawContext* pContext, const CRect& updateRect)
 
 	if (pContext)
 		pContext->remember ();
+
+	pContext->setBitmapInterpolationQuality(bitmapQuality);
 
 	CRect oldClip;
 	pContext->getClipRect (oldClip);
