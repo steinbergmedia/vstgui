@@ -426,12 +426,13 @@ void D2DDrawContext::drawBitmap (CBitmap* bitmap, const CRect& dest, const CPoin
 				source.setHeight (d2d1Bitmap->GetSize ().height);
 
 				D2D1_BITMAP_INTERPOLATION_MODE mode;
-				switch (interpolationQuality)
+				switch (currentState.bitmapQuality)
 				{
 					case kQualityLow:
 						mode = D2D1_BITMAP_INTERPOLATION_MODE_NEAREST_NEIGHBOR;
 						break;
 
+					case kQualityMedium:
 					case kQualityHigh:
 					default:
 						mode = D2D1_BITMAP_INTERPOLATION_MODE_LINEAR;
