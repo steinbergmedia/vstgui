@@ -72,6 +72,7 @@ struct CFrame::Impl
 	bool active {false};
 	bool windowActive {false};
 	bool inEventHandling {false};
+	BitmapInterpolationQuality bitmapQuality {kQualityDefault};
 
 	struct PostEventHandler
 	{
@@ -110,10 +111,7 @@ On Windows it's a WS_CHILD Window.
 
 */
 //-----------------------------------------------------------------------------
-CFrame::CFrame (const CRect& inSize, VSTGUIEditorInterface* inEditor)
-:
-CViewContainer (inSize),
-bitmapQuality (CDrawContext::kQualityDefault)
+CFrame::CFrame (const CRect& inSize, VSTGUIEditorInterface* inEditor) : CViewContainer (inSize)
 {
 	pImpl = new Impl;
 	pImpl->editor = inEditor;
@@ -259,19 +257,21 @@ double CFrame::getZoom () const
 }
 
 //-----------------------------------------------------------------------------
-void CFrame::setBitmapInterpolationQuality (CDrawContext::CBitmapInterpolationQuality quality)
+void CFrame::setBitmapInterpolationQuality (BitmapInterpolationQuality quality)
 {
-	if (quality != bitmapQuality)
+	if (pImpl && pImpl->bitmapQuality != quality)
 	{
-		bitmapQuality = quality;
+		pImpl->bitmapQuality = quality;
 		invalid ();
 	}
 }
 
 //-----------------------------------------------------------------------------
-CDrawContext::CBitmapInterpolationQuality CFrame::getBitmapInterpolationQuality () const
+BitmapInterpolationQuality CFrame::getBitmapInterpolationQuality () const
 {
-	return bitmapQuality;
+	if (pImpl)
+		return pImpl->bitmapQuality;
+	return kQualityDefault;
 }
 
 //-----------------------------------------------------------------------------
@@ -309,7 +309,8 @@ void CFrame::drawRect (CDrawContext* pContext, const CRect& updateRect)
 	if (pContext)
 		pContext->remember ();
 
-	pContext->setBitmapInterpolationQuality(bitmapQuality);
+	if (pImpl)
+		pContext->setBitmapInterpolationQuality(pImpl->bitmapQuality);
 
 	CRect oldClip;
 	pContext->getClipRect (oldClip);
