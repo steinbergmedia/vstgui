@@ -110,7 +110,7 @@ void CDrawContext::restoreGlobalState ()
 }
 
 //-----------------------------------------------------------------------------
-void CDrawContext::setBitmapInterpolationQuality(CBitmapInterpolationQuality quality)
+void CDrawContext::setBitmapInterpolationQuality(BitmapInterpolationQuality quality)
 {
 	currentState.bitmapQuality = quality;
 }
