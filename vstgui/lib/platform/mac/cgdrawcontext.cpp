@@ -693,17 +693,17 @@ void CGDrawContext::setCGDrawContextQuality (CGContextRef context)
 {
 	switch (currentState.bitmapQuality)
 	{
-		case kQualityLow:
+		case BitmapInterpolationQuality::kLow:
 			CGContextSetShouldAntialias (context, false);
 			CGContextSetInterpolationQuality (context, kCGInterpolationNone);
 			break;
 
-		case kQualityMedium:
+		case BitmapInterpolationQuality::kMedium:
 			CGContextSetShouldAntialias (context, true);
 			CGContextSetInterpolationQuality (context, kCGInterpolationMedium);
 			break;
 
-		case kQualityHigh:
+		case BitmapInterpolationQuality::kHigh:
 			CGContextSetShouldAntialias (context, true);
 			CGContextSetInterpolationQuality (context, kCGInterpolationHigh);
 			break;
