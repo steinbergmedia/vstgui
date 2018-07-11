@@ -218,7 +218,7 @@ protected:
 		CLineStyle lineStyle {kLineOnOffDash};
 		CDrawMode drawMode {kAntiAliasing};
 		float globalAlpha {1.f};
-		BitmapInterpolationQuality bitmapQuality {kQualityDefault};
+		BitmapInterpolationQuality bitmapQuality {BitmapInterpolationQuality::kDefault};
 
 		CDrawContextState () = default;
 		CDrawContextState (const CDrawContextState& state);
