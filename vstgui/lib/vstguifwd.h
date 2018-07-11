@@ -77,12 +77,12 @@ enum DragResult {
 //----------------------------
 // @brief Bitmap Interpolation
 //----------------------------
-enum BitmapInterpolationQuality
+enum class BitmapInterpolationQuality
 {
-	kQualityDefault = 0,	///< Let system decide
-	kQualityLow,			///< Nearest neighbour
-	kQualityMedium,			///< Bilinear interpolation
-	kQualityHigh			///< Bicubic interpolation (Bilinear on Windows)
+	kDefault = 0,	///< Let system decide
+	kLow,			///< Nearest neighbour
+	kMedium,		///< Bilinear interpolation
+	kHigh			///< Bicubic interpolation (Bilinear on Windows)
 };
 
 // simple structs

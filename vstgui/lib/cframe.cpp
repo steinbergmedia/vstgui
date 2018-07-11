@@ -72,7 +72,7 @@ struct CFrame::Impl
 	bool active {false};
 	bool windowActive {false};
 	bool inEventHandling {false};
-	BitmapInterpolationQuality bitmapQuality {kQualityDefault};
+	BitmapInterpolationQuality bitmapQuality {BitmapInterpolationQuality::kDefault};
 
 	struct PostEventHandler
 	{
@@ -271,7 +271,7 @@ BitmapInterpolationQuality CFrame::getBitmapInterpolationQuality () const
 {
 	if (pImpl)
 		return pImpl->bitmapQuality;
-	return kQualityDefault;
+	return BitmapInterpolationQuality::kDefault;
 }
 
 //-----------------------------------------------------------------------------
