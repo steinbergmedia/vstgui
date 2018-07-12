@@ -425,8 +425,22 @@ void D2DDrawContext::drawBitmap (CBitmap* bitmap, const CRect& dest, const CPoin
 				source.setWidth (d2d1Bitmap->GetSize ().width);
 				source.setHeight (d2d1Bitmap->GetSize ().height);
 
+				D2D1_BITMAP_INTERPOLATION_MODE mode;
+				switch (currentState.bitmapQuality)
+				{
+					case BitmapInterpolationQuality::kLow:
+						mode = D2D1_BITMAP_INTERPOLATION_MODE_NEAREST_NEIGHBOR;
+						break;
+
+					case BitmapInterpolationQuality::kMedium:
+					case BitmapInterpolationQuality::kHigh:
+					default:
+						mode = D2D1_BITMAP_INTERPOLATION_MODE_LINEAR;
+						break;
+				}
+
 				D2D1_RECT_F sourceRect = makeD2DRect (source);
-				renderTarget->DrawBitmap (d2d1Bitmap, makeD2DRect (d), alpha * currentState.globalAlpha, D2D1_BITMAP_INTERPOLATION_MODE_LINEAR, &sourceRect);
+				renderTarget->DrawBitmap (d2d1Bitmap, makeD2DRect (d), alpha * currentState.globalAlpha, mode, &sourceRect);
 			}
 		}
 	}

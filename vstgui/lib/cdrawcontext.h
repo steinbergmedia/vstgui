@@ -67,6 +67,15 @@ public:
 	//@}
 
 	//-----------------------------------------------------------------------------
+	// @name Bitmap Interpolation Quality
+	//-----------------------------------------------------------------------------
+	//@{
+	virtual void setBitmapInterpolationQuality (BitmapInterpolationQuality quality);	///< set the current bitmap interpolation quality
+	const BitmapInterpolationQuality& getBitmapInterpolationQuality () const { return currentState.bitmapQuality; }	///< get the current bitmap interpolation quality
+
+	//@}
+
+	//-----------------------------------------------------------------------------
 	/// @name Line Mode
 	//-----------------------------------------------------------------------------
 	//@{
@@ -209,6 +218,7 @@ protected:
 		CLineStyle lineStyle {kLineOnOffDash};
 		CDrawMode drawMode {kAntiAliasing};
 		float globalAlpha {1.f};
+		BitmapInterpolationQuality bitmapQuality {BitmapInterpolationQuality::kDefault};
 
 		CDrawContextState () = default;
 		CDrawContextState (const CDrawContextState& state);
