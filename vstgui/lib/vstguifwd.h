@@ -74,6 +74,17 @@ enum DragResult {
 	kDragError = -1
 };
 
+//----------------------------
+// @brief Bitmap Interpolation
+//----------------------------
+enum class BitmapInterpolationQuality
+{
+	kDefault = 0,	///< Let system decide
+	kLow,			///< Nearest neighbour
+	kMedium,		///< Bilinear interpolation
+	kHigh			///< Bicubic interpolation (Bilinear on Windows)
+};
+
 // simple structs
 struct CColor;
 struct CPoint;
