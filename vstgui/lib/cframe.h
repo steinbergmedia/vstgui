@@ -44,6 +44,9 @@ public:
 	bool setZoom (double zoomFactor);				///< set zoom factor
 	double getZoom () const;						///< get zoom factor
 
+	void setBitmapInterpolationQuality (BitmapInterpolationQuality quality);	///< set interpolation quality for bitmaps
+	BitmapInterpolationQuality getBitmapInterpolationQuality () const;			///< get interpolation quality for bitmaps
+
 	double getScaleFactor () const;
 
 	void idle ();
@@ -179,7 +182,7 @@ public:
 	//-------------------------------------------
 protected:
 	struct CollectInvalidRects;
-	
+
 	~CFrame () noexcept override = default;
 	void beforeDelete () override;
 	

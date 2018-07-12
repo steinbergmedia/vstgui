@@ -78,6 +78,8 @@ protected:
 	void init () override;
 	void drawCGImageRef (CGContextRef context, CGImageRef image, CGLayerRef layer, double imageScaleFactor, const CRect& inRect, const CPoint& inOffset, float alpha, CBitmap* bitmap);
 
+	void setCGDrawContextQuality (CGContextRef context);
+
 	CGContextRef cgContext;
 
 	using BitmapDrawCountMap = std::map<CGBitmap*, int32_t>;
