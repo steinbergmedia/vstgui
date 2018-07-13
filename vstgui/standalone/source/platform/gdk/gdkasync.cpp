@@ -21,6 +21,7 @@ namespace Async {
 void perform (Context context, Task&& task)
 {
 	// TODO: Not implemented yet
+	task ();
 }
 
 //------------------------------------------------------------------------
