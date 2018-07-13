@@ -9,13 +9,14 @@
 #include <atomic>
 #include <memory>
 
-struct xcb_connection_t; // forward declaration
+struct xcb_connection_t;	  // forward declaration
 struct xcb_key_press_event_t; // forward declaration
 struct xcb_button_press_event_t;
 struct xcb_motion_notify_event_t;
 struct xcb_enter_notify_event_t;
 struct xcb_focus_in_event_t;
 struct xcb_expose_event_t;
+struct xcb_map_notify_event_t;
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -30,6 +31,7 @@ class Timer;
 //------------------------------------------------------------------------
 struct IFrameEventHandler
 {
+	virtual void onEvent (xcb_map_notify_event_t& event) = 0;
 	virtual void onEvent (xcb_key_press_event_t& event) = 0;
 	virtual void onEvent (xcb_button_press_event_t& event) = 0;
 	virtual void onEvent (xcb_motion_notify_event_t& event) = 0;
@@ -49,11 +51,6 @@ public:
 
 	std::string getPath ();
 
-	xcb_connection_t* getXcbConnection () const;
-
-	void registerWindowEventHandler (uint32_t windowId, IFrameEventHandler* handler);
-	void unregisterWindowEventHandler (uint32_t windowId);
-
 private:
 	Platform ();
 
@@ -64,32 +61,23 @@ private:
 //------------------------------------------------------------------------
 struct RunLoop
 {
-	static void init (const SharedPointer<IRunLoop>& runLoop)
-	{
-		if (++instance ().useCount == 1)
-		{
-			instance ().runLoop = runLoop;
-		}
-	}
+	static void init (const SharedPointer<IRunLoop>& runLoop);
+	static void exit ();
+	static const SharedPointer<IRunLoop> get ();
 
-	static void exit ()
-	{
-		if (--instance ().useCount == 0)
-		{
-			instance ().runLoop = nullptr;
-		}
-	}
+	xcb_connection_t* getXcbConnection () const;
 
-	static const SharedPointer<IRunLoop> get () { return instance ().runLoop; }
+	void registerWindowEventHandler (uint32_t windowId, IFrameEventHandler* handler);
+	void unregisterWindowEventHandler (uint32_t windowId);
+
+	static RunLoop& instance ();
 
 private:
-	static RunLoop& instance ()
-	{
-		static RunLoop gInstance;
-		return gInstance;
-	}
-	SharedPointer<IRunLoop> runLoop;
-	std::atomic<uint32_t> useCount{0};
+	RunLoop ();
+	~RunLoop () noexcept;
+
+	struct Impl;
+	std::unique_ptr<Impl> impl;
 };
 
 //------------------------------------------------------------------------

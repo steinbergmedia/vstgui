@@ -54,13 +54,100 @@ namespace {
 } // anonymous
 
 //------------------------------------------------------------------------
-struct Platform::Impl : IEventHandler
+struct Platform::Impl
+{
+	std::string path;
+};
+
+//------------------------------------------------------------------------
+Platform& Platform::getInstance ()
+{
+	static Platform gInstance;
+	return gInstance;
+}
+
+//------------------------------------------------------------------------
+Platform::Platform ()
+{
+	impl = std::unique_ptr<Impl> (new Impl);
+
+	Cairo::Bitmap::setGetResourcePathFunc ([this]() {
+		auto path = getPath ();
+		path += "/Contents/Resources/";
+		return path;
+	});
+}
+
+//------------------------------------------------------------------------
+Platform::~Platform ()
+{
+	Cairo::Bitmap::setGetResourcePathFunc ([]() { return std::string (); });
+}
+
+//------------------------------------------------------------------------
+uint64_t Platform::getCurrentTimeMs ()
+{
+	using namespace std::chrono;
+	return duration_cast<milliseconds> (steady_clock::now ().time_since_epoch ()).count ();
+}
+
+//------------------------------------------------------------------------
+std::string Platform::getPath ()
+{
+	if (impl->path.empty () && soHandle)
+	{
+		struct link_map* map;
+		if (dlinfo (soHandle, RTLD_DI_LINKMAP, &map) == 0)
+		{
+			auto path = std::string (map->l_name);
+			for (int i = 0; i < 3; i++)
+			{
+				int delPos = path.find_last_of ('/');
+				if (delPos == -1)
+				{
+					fprintf (stderr, "Could not determine bundle location.\n");
+					return {}; // unexpected
+				}
+				path.erase (delPos, path.length () - delPos);
+			}
+			auto rp = realpath (path.data (), nullptr);
+			path = rp;
+			free (rp);
+			std::swap (impl->path, path);
+		}
+	}
+	return impl->path;
+}
+
+//------------------------------------------------------------------------
+struct RunLoop::Impl : IEventHandler
 {
 	using WindowEventHandlerMap = std::unordered_map<uint32_t, IFrameEventHandler*>;
 
+	SharedPointer<IRunLoop> runLoop;
+	std::atomic<uint32_t> useCount{0};
 	xcb_connection_t* xcbConnection{nullptr};
-	std::string path;
 	WindowEventHandlerMap windowEventHandlerMap;
+
+	void init (const SharedPointer<IRunLoop>& inRunLoop)
+	{
+		if (++useCount != 1)
+			return;
+		runLoop = inRunLoop;
+		xcbConnection = xcb_connect (nullptr, nullptr);
+		runLoop->registerEventHandler (xcb_get_file_descriptor (xcbConnection), this);
+	}
+
+	void exit ()
+	{
+		if (--useCount != 0)
+			return;
+
+		if (xcbConnection)
+			xcb_disconnect (xcbConnection);
+		runLoop->unregisterEventHandler (this);
+		runLoop = nullptr;
+	}
 
 	template<typename T>
 	void dispatchEvent (T& event, xcb_window_t windowId)
@@ -133,6 +220,7 @@ struct Platform::Impl : IEventHandler
 				case XCB_MAP_NOTIFY:
 				{
 					auto ev = reinterpret_cast<xcb_map_notify_event_t*> (event);
+					dispatchEvent (*ev, ev->window);
 					break;
 				}
 				case XCB_CONFIGURE_NOTIFY:
@@ -147,56 +235,47 @@ struct Platform::Impl : IEventHandler
 };
 
 //------------------------------------------------------------------------
-Platform& Platform::getInstance ()
+RunLoop& RunLoop::instance ()
 {
-	static Platform gInstance;
+	static RunLoop gInstance;
 	return gInstance;
 }
 
 //------------------------------------------------------------------------
-Platform::Platform ()
+void RunLoop::init (const SharedPointer<IRunLoop>& runLoop)
+{
+	instance ().impl->init (runLoop);
+}
+
+//------------------------------------------------------------------------
+void RunLoop::exit ()
+{
+	instance ().impl->exit ();
+}
+
+//------------------------------------------------------------------------
+const SharedPointer<IRunLoop> RunLoop::get ()
+{
+	return instance ().impl->runLoop;
+}
+
+//------------------------------------------------------------------------
+RunLoop::RunLoop ()
 {
 	impl = std::unique_ptr<Impl> (new Impl);
-
-	impl->xcbConnection = xcb_connect (nullptr, nullptr);
-
-	Cairo::Bitmap::setGetResourcePathFunc ([this]() {
-		auto path = getPath ();
-		path += "/Contents/Resources/";
-		return path;
-	});
-
-	if (auto runLoop = RunLoop::get ())
-		runLoop->registerEventHandler (xcb_get_file_descriptor (impl->xcbConnection), impl.get ());
 }
 
 //------------------------------------------------------------------------
-Platform::~Platform ()
-{
-	Cairo::Bitmap::setGetResourcePathFunc ([]() { return std::string (); });
-
-	if (impl->xcbConnection)
-		xcb_disconnect (impl->xcbConnection);
-
-	if (auto runLoop = RunLoop::get ())
-		runLoop->unregisterEventHandler (impl.get ());
-}
+RunLoop::~RunLoop () noexcept = default;
 
 //------------------------------------------------------------------------
-uint64_t Platform::getCurrentTimeMs ()
-{
-	using namespace std::chrono;
-	return duration_cast<milliseconds> (steady_clock::now ().time_since_epoch ()).count ();
-}
-
-//------------------------------------------------------------------------
-void Platform::registerWindowEventHandler (uint32_t windowId, IFrameEventHandler* handler)
+void RunLoop::registerWindowEventHandler (uint32_t windowId, IFrameEventHandler* handler)
 {
 	impl->windowEventHandlerMap.emplace (windowId, handler);
 }
 
 //------------------------------------------------------------------------
-void Platform::unregisterWindowEventHandler (uint32_t windowId)
+void RunLoop::unregisterWindowEventHandler (uint32_t windowId)
 {
 	auto it = impl->windowEventHandlerMap.find (windowId);
 	if (it == impl->windowEventHandlerMap.end ())
@@ -205,37 +284,9 @@ void Platform::unregisterWindowEventHandler (uint32_t windowId)
 }
 
 //------------------------------------------------------------------------
-xcb_connection_t* Platform::getXcbConnection () const
+xcb_connection_t* RunLoop::getXcbConnection () const
 {
 	return impl->xcbConnection;
-}
-
-//------------------------------------------------------------------------
-std::string Platform::getPath ()
-{
-	if (impl->path.empty () && soHandle)
-	{
-		struct link_map* map;
-		if (dlinfo (soHandle, RTLD_DI_LINKMAP, &map) == 0)
-		{
-			auto path = std::string (map->l_name);
-			for (int i = 0; i < 3; i++)
-			{
-				int delPos = path.find_last_of ('/');
-				if (delPos == -1)
-				{
-					fprintf (stderr, "Could not determine bundle location.\n");
-					return {}; // unexpected
-				}
-				path.erase (delPos, path.length () - delPos);
-			}
-			auto rp = realpath (path.data (), nullptr);
-			path = rp;
-			free (rp);
-			std::swap (impl->path, path);
-		}
-	}
-	return impl->path;
 }
 
 //------------------------------------------------------------------------

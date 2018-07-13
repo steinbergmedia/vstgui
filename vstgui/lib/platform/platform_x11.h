@@ -25,7 +25,7 @@ public:
 };
 
 //------------------------------------------------------------------------
-class IRunLoop : public IReference
+class IRunLoop : public virtual IReference
 {
 public:
 	virtual bool registerEventHandler (int fd, IEventHandler* handler) = 0;

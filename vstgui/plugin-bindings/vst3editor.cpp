@@ -977,7 +977,7 @@ void VST3Editor::recreateView ()
 
 #if LINUX
 // Map Steinberg Vst Interface to VSTGUI Interface
-class RunLoop : public X11::IRunLoop
+class RunLoop : public X11::IRunLoop, public AtomicReferenceCounted
 {
 public:
 	struct EventHandler : Steinberg::Linux::IEventHandler, public Steinberg::FObject
@@ -1419,7 +1419,6 @@ void VST3Editor::syncParameterTags ()
 		IActionPerformer* actionPerformer = controller ? dynamic_cast<IActionPerformer*>(controller) : 0;
 		if (actionPerformer)
 		{
-			UIDescription::DeferChanges dc (description);
 			Steinberg::Vst::EditController* editController = getController ();
 
 			actionPerformer->beginGroupAction ("Sync Parameter Tags");

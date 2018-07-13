@@ -34,22 +34,41 @@ struct SimpleWindow
 {
 	SimpleWindow (::Window parentId, CPoint size)
 	{
-		auto connection = Platform::getInstance ().getXcbConnection ();
+		auto connection = RunLoop::instance ().getXcbConnection ();
 		// const xcb_setup_t* setup = xcb_get_setup (connection);
 		// xcb_screen_iterator_t iter = xcb_setup_roots_iterator (setup);
 		// xcb_screen_t* screen = iter.data;
 
-		xcb_create_window (connection, XCB_COPY_FROM_PARENT, getWindow (), parentId, 0, 0, size.x,
-						   size.y, 10, XCB_WINDOW_CLASS_INPUT_OUTPUT, XCB_COPY_FROM_PARENT, 0,
-						   nullptr);
+		const uint32_t valueList[] = {
+			XCB_EVENT_MASK_BUTTON_PRESS,   XCB_EVENT_MASK_BUTTON_RELEASE,
+			XCB_EVENT_MASK_ENTER_WINDOW,   XCB_EVENT_MASK_LEAVE_WINDOW,
+			XCB_EVENT_MASK_POINTER_MOTION, XCB_EVENT_MASK_POINTER_MOTION_HINT,
+			XCB_EVENT_MASK_BUTTON_MOTION,  XCB_EVENT_MASK_EXPOSURE,
+			XCB_EVENT_MASK_PROPERTY_CHANGE};
+		const uint32_t valueMask = XCB_CW_EVENT_MASK;
+
+		xcb_create_window (connection, XCB_COPY_FROM_PARENT, getID (), parentId, 0, 0, size.x,
+						   size.y, 10, XCB_WINDOW_CLASS_INPUT_OUTPUT, XCB_COPY_FROM_PARENT,
+						   valueMask, valueList);
+
+		static std::string xEmbedInfoStr = "_XEMBED_INFO";
+		auto cookie = xcb_intern_atom (connection, 0, xEmbedInfoStr.size (), xEmbedInfoStr.data ());
+		auto xEmbedAtom = xcb_intern_atom_reply (connection, cookie, nullptr)->atom;
+
+		// setup XEMBED
+		uint32_t data[2] = {1, 0};
+		xcb_change_property (connection, XCB_PROP_MODE_REPLACE, getID (), xEmbedAtom, xEmbedAtom,
+							 32, 2, data);
+
+		xcb_flush (connection);
 	}
 
 	~SimpleWindow () noexcept {}
 
-	xcb_window_t getWindow () const { return id; }
+	xcb_window_t getID () const { return id; }
 
 private:
-	xcb_window_t id{xcb_generate_id (Platform::getInstance ().getXcbConnection ())};
+	xcb_window_t id{xcb_generate_id (RunLoop::instance ().getXcbConnection ())};
 };
 
 //------------------------------------------------------------------------
@@ -58,8 +77,14 @@ struct Frame::Impl : IFrameEventHandler
 	SimpleWindow window;
 	bool handlingEvents{false};
 
-	Impl (::Window parent, CPoint size) : window (parent, size) {}
+	Impl (::Window parent, CPoint size) : window (parent, size)
+	{
+		RunLoop::instance ().registerWindowEventHandler (window.getID (), this);
+	}
 
+	~Impl () noexcept { RunLoop::instance ().unregisterWindowEventHandler (window.getID ()); }
+
+	void onEvent (xcb_map_notify_event_t& event) override {}
 	void onEvent (xcb_key_press_event_t& event) override {}
 	void onEvent (xcb_button_press_event_t& event) override {}
 	void onEvent (xcb_motion_notify_event_t& event) override {}
@@ -85,8 +110,6 @@ Frame::Frame (IPlatformFrameCallback* frame,
 	impl = std::unique_ptr<Impl> (new Impl (parent, {size.getWidth (), size.getHeight ()}));
 
 	frame->platformOnActivate (true);
-
-	Platform::getInstance ().registerWindowEventHandler (impl->window.getWindow (), impl.get ());
 
 #if 0 // DEBUG
 	auto id = impl->plug.get_id ();
