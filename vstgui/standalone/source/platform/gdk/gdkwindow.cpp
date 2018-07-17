@@ -370,7 +370,8 @@ void Window::onSetContentView (CFrame* newFrame)
 bool Window::isGdkWindow (GdkWindow* window)
 {
 	assert (window);
-	return window == getPlatformHandle ();
+	auto ptr = gdkWindow->gobj ();
+	return window == ptr;
 }
 
 //------------------------------------------------------------------------
