@@ -20,7 +20,7 @@ class Context : public COffscreenContext
 public:
 	using super = COffscreenContext;
 
-	Context (CRect& rect, const SurfaceHandle& surface);
+	Context (const CRect& rect, const SurfaceHandle& surface);
 	Context (CRect r, cairo_t* context);
 	Context (Bitmap* bitmap);
 

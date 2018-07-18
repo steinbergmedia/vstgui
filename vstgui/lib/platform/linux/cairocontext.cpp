@@ -94,7 +94,7 @@ DrawBlock DrawBlock::begin (Context& context)
 }
 
 //-----------------------------------------------------------------------------
-Context::Context (CRect& rect, const SurfaceHandle& surface) : super (rect), surface (surface)
+Context::Context (const CRect& rect, const SurfaceHandle& surface) : super (rect), surface (surface)
 {
 	init ();
 }
