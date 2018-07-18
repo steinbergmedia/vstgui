@@ -196,6 +196,7 @@ struct Frame::Impl : IFrameEventHandler
 	IPlatformFrameCallback* frame;
 	SharedPointer<RedrawTimerHandler> redrawTimer;
 	RectList dirtyRects;
+	uint64_t lastDrawTime{0};
 	bool pointerGrabed{false};
 
 	Impl (::Window parent, CPoint size, IPlatformFrameCallback* frame)
@@ -208,12 +209,19 @@ struct Frame::Impl : IFrameEventHandler
 
 	void setSize (const CRect& size)
 	{
-		surface.reset ();
 		window.setSize (size);
+		if (surface)
+		{
+			cairo_xcb_surface_set_size (surface, size.getWidth (), size.getHeight ());
+			dirtyRects.clear ();
+			dirtyRects.push_back (size);
+			redraw ();
+		}
 	}
 
 	void redraw ()
 	{
+		lastDrawTime = Platform::getCurrentTimeMs ();
 		prepareDrawContext ();
 		CRect backBufferSize;
 		backBufferSize.setSize (window.getSize ());
@@ -234,13 +242,16 @@ struct Frame::Impl : IFrameEventHandler
 	void invalidRect (CRect r)
 	{
 		dirtyRects.emplace_back (r);
-		if (redrawTimer == nullptr)
+		auto now = Platform::getCurrentTimeMs ();
+		if (now > lastDrawTime + 16)
+		{
+			redraw ();
+		}
+		else if (redrawTimer == nullptr)
 		{
 			redrawTimer = makeOwned<RedrawTimerHandler> ([this]() {
-				if (dirtyRects.empty ())
-					redrawTimer = nullptr;
-				else
-					redraw ();
+				redraw ();
+				redrawTimer = nullptr;
 			});
 		}
 	}
