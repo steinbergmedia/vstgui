@@ -170,10 +170,10 @@ struct RedrawTimerHandler
 {
 	using RedrawCallback = std::function<void()>;
 
-	RedrawTimerHandler (RedrawCallback&& redrawCallback)
+	RedrawTimerHandler (uint64_t delay, RedrawCallback&& redrawCallback)
 		: redrawCallback (std::move (redrawCallback))
 	{
-		RunLoop::instance ().get ()->registerTimer (16, this);
+		RunLoop::instance ().get ()->registerTimer (delay, this);
 	}
 	~RedrawTimerHandler () noexcept { RunLoop::instance ().get ()->unregisterTimer (this); }
 
@@ -237,11 +237,14 @@ struct Frame::Impl : IFrameEventHandler
 		}
 		dirtyRects.clear ();
 		xcb_flush (RunLoop::instance ().getXcbConnection ());
+		redrawTimer = nullptr;
 	}
 
 	void invalidRect (CRect r)
 	{
 		dirtyRects.emplace_back (r);
+		if (redrawTimer)
+			return;
 		auto now = Platform::getCurrentTimeMs ();
 		if (now > lastDrawTime + 16)
 		{
@@ -249,10 +252,8 @@ struct Frame::Impl : IFrameEventHandler
 		}
 		else if (redrawTimer == nullptr)
 		{
-			redrawTimer = makeOwned<RedrawTimerHandler> ([this]() {
-				redraw ();
-				redrawTimer = nullptr;
-			});
+			redrawTimer =
+				makeOwned<RedrawTimerHandler> ((lastDrawTime + 16) - now, [this]() { redraw (); });
 		}
 	}
 
