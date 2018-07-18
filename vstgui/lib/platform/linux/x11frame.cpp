@@ -273,26 +273,56 @@ struct Frame::Impl : IFrameEventHandler
 	void onEvent (xcb_button_press_event_t& event) override
 	{
 		CPoint where (event.event_x, event.event_y);
-		if ((event.response_type & ~0x80) == XCB_BUTTON_PRESS) // mouse down
+		if ((event.response_type & ~0x80) == XCB_BUTTON_PRESS) // mouse down or wheel
 		{
-			auto buttons = translateMouseButtons (event.detail);
-			buttons |= translateModifiers (event.state);
-			auto result = frame->platformOnMouseDown (where, buttons);
-			if (result == kMouseEventHandled)
+			if (event.detail >= 4 && event.detail <= 7) // mouse wheel
 			{
-				// grab the pointer
-				auto xcb = RunLoop::instance ().getXcbConnection ();
-				auto cookie =
-					xcb_grab_pointer (xcb, false, window.getID (),
-									  (XCB_EVENT_MASK_BUTTON_PRESS | XCB_EVENT_MASK_BUTTON_RELEASE |
-									   XCB_EVENT_MASK_BUTTON_MOTION | XCB_EVENT_MASK_ENTER_WINDOW |
-									   XCB_EVENT_MASK_LEAVE_WINDOW | XCB_EVENT_MASK_POINTER_MOTION),
-									  XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC, XCB_WINDOW_NONE,
-									  XCB_CURSOR_NONE, XCB_TIME_CURRENT_TIME);
-				auto reply = xcb_grab_pointer_reply (xcb, cookie, nullptr);
-				if (!(!reply || reply->status != XCB_GRAB_STATUS_SUCCESS))
-					pointerGrabed = true;
-				free (reply);
+				auto buttons = translateModifiers (event.state);
+				switch (event.detail)
+				{
+					case 4: // up
+					{
+						frame->platformOnMouseWheel (where, kMouseWheelAxisY, 1, buttons);
+						break;
+					}
+					case 5: // down
+					{
+						frame->platformOnMouseWheel (where, kMouseWheelAxisY, -1, buttons);
+						break;
+					}
+					case 6: // left
+					{
+						frame->platformOnMouseWheel (where, kMouseWheelAxisX, -1, buttons);
+						break;
+					}
+					case 7: // right
+					{
+						frame->platformOnMouseWheel (where, kMouseWheelAxisX, 1, buttons);
+						break;
+					}
+				}
+			}
+			else // mouse down
+			{
+				auto buttons = translateMouseButtons (event.detail);
+				buttons |= translateModifiers (event.state);
+				auto result = frame->platformOnMouseDown (where, buttons);
+				if (result == kMouseEventHandled)
+				{
+					// grab the pointer
+					auto xcb = RunLoop::instance ().getXcbConnection ();
+					auto cookie = xcb_grab_pointer (
+						xcb, false, window.getID (),
+						(XCB_EVENT_MASK_BUTTON_PRESS | XCB_EVENT_MASK_BUTTON_RELEASE |
+						 XCB_EVENT_MASK_BUTTON_MOTION | XCB_EVENT_MASK_ENTER_WINDOW |
+						 XCB_EVENT_MASK_LEAVE_WINDOW | XCB_EVENT_MASK_POINTER_MOTION),
+						XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC, XCB_WINDOW_NONE, XCB_CURSOR_NONE,
+						XCB_TIME_CURRENT_TIME);
+					auto reply = xcb_grab_pointer_reply (xcb, cookie, nullptr);
+					if (!(!reply || reply->status != XCB_GRAB_STATUS_SUCCESS))
+						pointerGrabed = true;
+					free (reply);
+				}
 			}
 		}
 		else // mouse up
