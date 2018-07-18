@@ -29,12 +29,21 @@ struct ExternalEventHandler
 };
 
 //------------------------------------------------------------------------
+struct ExternalTimerHandler
+{
+	VSTGUI::X11::ITimerHandler* timerHandler{nullptr};
+	GSource* source{nullptr};
+};
+
+//------------------------------------------------------------------------
 struct RunLoop::Impl
 {
 	using EventHandlerVector = std::vector<std::unique_ptr<ExternalEventHandler>>;
+	using TimerHandlerVector = std::vector<std::unique_ptr<ExternalTimerHandler>>;
 
 	GMainLoop* mainLoop{nullptr};
 	EventHandlerVector eventHandlers;
+	TimerHandlerVector timerHandlers;
 };
 
 //------------------------------------------------------------------------
@@ -104,12 +113,33 @@ bool RunLoop::unregisterEventHandler (IEventHandler* handler)
 //------------------------------------------------------------------------
 bool RunLoop::registerTimer (uint64_t interval, ITimerHandler* handler)
 {
-	return false;
+	std::unique_ptr<ExternalTimerHandler> timerHandler (new ExternalTimerHandler);
+	timerHandler->timerHandler = handler;
+	timerHandler->source = g_timeout_source_new (interval);
+	g_source_set_callback (timerHandler->source,
+						   [](gpointer userData) -> gboolean {
+							   auto handler = reinterpret_cast<ITimerHandler*> (userData);
+							   handler->onTimer ();
+							   return 1;
+						   },
+						   handler, nullptr);
+	g_source_attach (timerHandler->source, g_main_loop_get_context (impl->mainLoop));
+	impl->timerHandlers.emplace_back (std::move (timerHandler));
+	return true;
 }
 
 //------------------------------------------------------------------------
 bool RunLoop::unregisterTimer (ITimerHandler* handler)
 {
+	auto it = std::find_if (impl->timerHandlers.begin (), impl->timerHandlers.end (), [&] (const auto& p) {
+		return p->timerHandler == handler;
+	});
+	if (it != impl->timerHandlers.end ())
+	{
+		g_source_destroy ((*it)->source);
+		impl->timerHandlers.erase (it);
+		return true;
+	}
 	return false;
 }
 

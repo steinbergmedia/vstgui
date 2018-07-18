@@ -164,11 +164,39 @@ private:
 };
 
 //------------------------------------------------------------------------
+struct RedrawTimerHandler
+	: ITimerHandler
+	, NonAtomicReferenceCounted
+{
+	using RedrawCallback = std::function<void()>;
+
+	RedrawTimerHandler (RedrawCallback&& redrawCallback)
+		: redrawCallback (std::move (redrawCallback))
+	{
+		RunLoop::instance ().get ()->registerTimer (16, this);
+	}
+	~RedrawTimerHandler () noexcept { RunLoop::instance ().get ()->unregisterTimer (this); }
+
+	void onTimer () override
+	{
+		SharedPointer<RedrawTimerHandler> Self (this);
+		Self->redrawCallback ();
+	}
+
+	RedrawCallback redrawCallback;
+};
+
+//------------------------------------------------------------------------
 struct Frame::Impl : IFrameEventHandler
 {
+	using RectList = std::vector<CRect>;
+
 	SimpleWindow window;
 	Cairo::SurfaceHandle surface;
 	IPlatformFrameCallback* frame;
+	SharedPointer<RedrawTimerHandler> redrawTimer;
+	RectList dirtyRects;
+	bool pointerGrabed{false};
 
 	Impl (::Window parent, CPoint size, IPlatformFrameCallback* frame)
 		: window (parent, size), frame (frame)
@@ -184,6 +212,50 @@ struct Frame::Impl : IFrameEventHandler
 		window.setSize (size);
 	}
 
+	void redraw ()
+	{
+		prepareDrawContext ();
+		CRect backBufferSize;
+		backBufferSize.setSize (window.getSize ());
+		Cairo::Context context (backBufferSize, surface);
+		for (auto rect : dirtyRects)
+		{
+			context.saveGlobalState ();
+			context.setClipRect (rect);
+			context.saveGlobalState ();
+			frame->platformDrawRect (&context, rect);
+			context.restoreGlobalState ();
+			context.restoreGlobalState ();
+		}
+		dirtyRects.clear ();
+		xcb_flush (RunLoop::instance ().getXcbConnection ());
+	}
+
+	void invalidRect (CRect r)
+	{
+		dirtyRects.emplace_back (r);
+		if (redrawTimer == nullptr)
+		{
+			redrawTimer = makeOwned<RedrawTimerHandler> ([this]() {
+				if (dirtyRects.empty ())
+					redrawTimer = nullptr;
+				else
+					redraw ();
+			});
+		}
+	}
+
+	void prepareDrawContext ()
+	{
+		if (!surface)
+		{
+			auto s = cairo_xcb_surface_create (RunLoop::instance ().getXcbConnection (),
+											   window.getID (), window.getVisual (),
+											   window.getSize ().x, window.getSize ().y);
+			surface.assign (s);
+		}
+	}
+
 	void onEvent (xcb_map_notify_event_t& event) override {}
 	void onEvent (xcb_key_press_event_t& event) override {}
 	void onEvent (xcb_button_press_event_t& event) override
@@ -193,30 +265,68 @@ struct Frame::Impl : IFrameEventHandler
 		{
 			auto buttons = translateMouseButtons (event.detail);
 			buttons |= translateModifiers (event.state);
-			frame->platformOnMouseDown (where, buttons);
+			auto result = frame->platformOnMouseDown (where, buttons);
+			if (result == kMouseEventHandled)
+			{
+				// grab the pointer
+				auto xcb = RunLoop::instance ().getXcbConnection ();
+				auto cookie =
+					xcb_grab_pointer (xcb, false, window.getID (),
+									  (XCB_EVENT_MASK_BUTTON_PRESS | XCB_EVENT_MASK_BUTTON_RELEASE |
+									   XCB_EVENT_MASK_BUTTON_MOTION | XCB_EVENT_MASK_ENTER_WINDOW |
+									   XCB_EVENT_MASK_LEAVE_WINDOW | XCB_EVENT_MASK_POINTER_MOTION),
+									  XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC, XCB_WINDOW_NONE,
+									  XCB_CURSOR_NONE, XCB_TIME_CURRENT_TIME);
+				auto reply = xcb_grab_pointer_reply (xcb, cookie, nullptr);
+				if (!(!reply || reply->status != XCB_GRAB_STATUS_SUCCESS))
+					pointerGrabed = true;
+				free (reply);
+			}
 		}
 		else // mouse up
 		{
 			auto buttons = translateMouseButtons (event.detail);
 			buttons |= translateModifiers (event.state);
 			frame->platformOnMouseUp (where, buttons);
+			if (pointerGrabed)
+			{
+				auto xcb = RunLoop::instance ().getXcbConnection ();
+				xcb_ungrab_pointer (xcb, XCB_TIME_CURRENT_TIME);
+				pointerGrabed = false;
+			}
 		}
 	}
-	void onEvent (xcb_motion_notify_event_t& event) override {}
-	void onEvent (xcb_enter_notify_event_t& event) override {}
+	void onEvent (xcb_motion_notify_event_t& event) override
+	{
+		CPoint where (event.event_x, event.event_y);
+		auto buttons = translateMouseButtons (event.state);
+		frame->platformOnMouseMoved (where, buttons);
+		// make sure we get more motion events
+		auto xcb = RunLoop::instance ().getXcbConnection ();
+		xcb_get_motion_events (xcb, window.getID (), event.time, event.time + 100);
+		xcb_flush (xcb);
+	}
+	void onEvent (xcb_enter_notify_event_t& event) override
+	{
+		if ((event.response_type & ~0x80) == XCB_LEAVE_NOTIFY)
+		{
+			CPoint where (event.event_x, event.event_y);
+			auto buttons = translateMouseButtons (event.state);
+			buttons |= translateModifiers (event.state);
+			frame->platformOnMouseExited (where, buttons);
+		}
+	}
 	void onEvent (xcb_focus_in_event_t& event) override {}
 	void onEvent (xcb_expose_event_t& event) override
 	{
-		if (!surface)
-		{
-			auto s = cairo_xcb_surface_create (RunLoop::instance ().getXcbConnection (),
-											   window.getID (), window.getVisual (),
-											   window.getSize ().x, window.getSize ().y);
-			surface.assign (s);
-		}
-		CRect rect (CPoint (event.x, event.y), CPoint (event.width, event.height));
-		Cairo::Context context (rect, surface);
-		frame->platformDrawRect (&context, rect);
+		CRect r;
+		r.setTopLeft (CPoint (event.x, event.y));
+		r.setSize (CPoint (event.width, event.height));
+		invalidRect (r);
+		// prepareDrawContext ();
+		// CRect rect (CPoint (event.x, event.y), CPoint (event.width, event.height));
+		// Cairo::Context context (rect, surface);
+		// frame->platformDrawRect (&context, rect);
 	}
 };
 
@@ -286,7 +396,8 @@ bool Frame::setMouseCursor (CCursorType type)
 //------------------------------------------------------------------------
 bool Frame::invalidRect (const CRect& rect)
 {
-	return false;
+	impl->invalidRect (rect);
+	return true;
 }
 
 //------------------------------------------------------------------------
