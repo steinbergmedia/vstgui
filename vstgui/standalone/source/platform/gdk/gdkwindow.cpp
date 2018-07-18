@@ -189,6 +189,10 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 		windowFunctions |= Gdk::FUNC_MINIMIZE;
 		windowDeco |= Gdk::DECOR_MINIMIZE;
 	}
+	else
+	{
+		gdkWindow->set_skip_taskbar_hint (true);
+	}
 
 	if (style.canClose ())
 	{
