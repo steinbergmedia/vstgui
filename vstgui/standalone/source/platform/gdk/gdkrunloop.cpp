@@ -77,9 +77,8 @@ bool RunLoop::registerEventHandler (int fd, IEventHandler* handler)
 	std::unique_ptr<ExternalEventHandler> eventHandler (new ExternalEventHandler);
 	eventHandler->eventHandler = handler;
 	eventHandler->ioChannel = g_io_channel_unix_new (fd);
-	eventHandler->source =
-		g_io_create_watch (eventHandler->ioChannel,
-						   static_cast<GIOCondition> (G_IO_IN | G_IO_OUT | G_IO_ERR | G_IO_HUP));
+	eventHandler->source = g_io_create_watch (
+		eventHandler->ioChannel, static_cast<GIOCondition> (G_IO_IN | G_IO_ERR | G_IO_HUP));
 	g_source_set_callback (eventHandler->source, reinterpret_cast<GSourceFunc> (eventHandlerProc),
 						   handler, nullptr);
 	g_source_attach (eventHandler->source, g_main_loop_get_context (impl->mainLoop));

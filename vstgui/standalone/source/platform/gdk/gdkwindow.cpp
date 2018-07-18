@@ -120,6 +120,8 @@ private:
 	void updateGeometryHints ();
 	void handleEventConfigure (GdkEventConfigure* event);
 
+	static GdkFilterReturn xEventFilter (GdkXEvent* xevent, GdkEvent* event, gpointer data);
+
 	CPoint lastPos;
 	CPoint lastSize;
 
@@ -163,7 +165,7 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 		attributes.type_hint = GDK_WINDOW_TYPE_HINT_NORMAL;
 	else if (config.type == WindowType::Popup)
 		attributes.type_hint = GDK_WINDOW_TYPE_HINT_POPUP_MENU; // TODO: correct ?
-	attributes.event_mask = GDK_STRUCTURE_MASK | GDK_EXPOSURE_MASK | GDK_FOCUS_CHANGE_MASK;
+	attributes.event_mask = GDK_ALL_EVENTS_MASK;
 	gdkWindow = Gdk::Window::create (Gdk::Window::get_default_root_window (), &attributes,
 									 GDK_WA_VISUAL | GDK_WA_TYPE_HINT);
 
@@ -212,12 +214,35 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 	gdkWindow->set_functions (static_cast<Gdk::WMFunction> (windowFunctions));
 	gdkWindow->set_decorations (static_cast<Gdk::WMDecoration> (windowDeco));
 
-#if 0
+	gdkWindow->add_filter (xEventFilter, this);
+#if 1
 	Gdk::RGBA color;
 	color.set_rgba (0., 1., 0.);
 	gdkWindow->set_background (color);
 #endif
 	return true;
+}
+
+//------------------------------------------------------------------------
+GdkFilterReturn Window::xEventFilter (GdkXEvent* xevent, GdkEvent* event, gpointer data)
+{
+	GdkFilterReturn result = GDK_FILTER_CONTINUE;
+	auto e = static_cast<XEvent*> (xevent);
+	auto self = reinterpret_cast<Window*> (data);
+	::Window topLevelWindow = reinterpret_cast<::Window> (self->getPlatformHandle ());
+	switch (e->type)
+	{
+		case CreateNotify:
+		{
+			if (e->xcreatewindow.window == topLevelWindow)
+				break;
+			auto childWindow = e->xcreatewindow.window;
+			auto xDisplay = gdk_x11_display_get_xdisplay (gdk_display_get_default ());
+			XMapWindow (xDisplay, childWindow);
+			break;
+		}
+	}
+	return result;
 }
 
 //------------------------------------------------------------------------
@@ -451,6 +476,12 @@ bool Window::handleEvent (GdkEvent* ev)
 				gdkWindow->begin_move_drag (event->button, event->x_root, event->y_root,
 											event->time);
 			}
+			break;
+		}
+		case GDK_CLIENT_EVENT:
+		{
+			if (frameChild)
+				frameChild->handleEvent (ev);
 			break;
 		}
 	}

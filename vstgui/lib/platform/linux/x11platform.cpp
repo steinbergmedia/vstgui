@@ -179,31 +179,31 @@ struct RunLoop::Impl : IEventHandler
 				case XCB_BUTTON_PRESS:
 				{
 					auto ev = reinterpret_cast<xcb_button_press_event_t*> (event);
-					dispatchEvent (*ev, ev->child);
+					dispatchEvent (*ev, ev->event);
 					break;
 				}
 				case XCB_BUTTON_RELEASE:
 				{
 					auto ev = reinterpret_cast<xcb_button_release_event_t*> (event);
-					dispatchEvent (*ev, ev->child);
+					dispatchEvent (*ev, ev->event);
 					break;
 				}
 				case XCB_MOTION_NOTIFY:
 				{
 					auto ev = reinterpret_cast<xcb_motion_notify_event_t*> (event);
-					dispatchEvent (*ev, ev->child);
+					dispatchEvent (*ev, ev->event);
 					break;
 				}
 				case XCB_ENTER_NOTIFY:
 				{
 					auto ev = reinterpret_cast<xcb_enter_notify_event_t*> (event);
-					dispatchEvent (*ev, ev->child);
+					dispatchEvent (*ev, ev->event);
 					break;
 				}
 				case XCB_LEAVE_NOTIFY:
 				{
 					auto ev = reinterpret_cast<xcb_leave_notify_event_t*> (event);
-					dispatchEvent (*ev, ev->child);
+					dispatchEvent (*ev, ev->event);
 					break;
 				}
 				case XCB_EXPOSE:

@@ -20,6 +20,7 @@
 #include <unordered_map>
 #include <X11/Xlib.h>
 #include <xcb/xcb.h>
+#include <cairo/cairo-xcb.h>
 
 #ifdef None
 #	undef None
@@ -30,25 +31,98 @@ namespace VSTGUI {
 namespace X11 {
 
 //------------------------------------------------------------------------
+static uint32_t translateMouseButtons (xcb_button_t value)
+{
+	switch (value)
+	{
+		case 1:
+			return kLButton;
+		case 2:
+			return kMButton;
+		case 3:
+			return kRButton;
+		case 4:
+			return kButton4;
+		case 5:
+			return kButton5;
+	}
+	return 0;
+}
+
+//------------------------------------------------------------------------
+static uint32_t translateMouseButtons (int state)
+{
+	uint32_t buttons = 0;
+	if (state & XCB_BUTTON_MASK_1)
+		buttons |= kLButton;
+	if (state & XCB_BUTTON_MASK_2)
+		buttons |= kRButton;
+	if (state & XCB_BUTTON_MASK_3)
+		buttons |= kMButton;
+	if (state & XCB_BUTTON_MASK_4)
+		buttons |= kButton4;
+	if (state & XCB_BUTTON_MASK_5)
+		buttons |= kButton5;
+	return buttons;
+}
+
+//------------------------------------------------------------------------
+static uint32_t translateModifiers (int state)
+{
+	uint32_t buttons = 0;
+	if (state & XCB_MOD_MASK_CONTROL)
+		buttons |= kControl;
+	if (state & XCB_MOD_MASK_SHIFT)
+		buttons |= kShift;
+	if (state & (XCB_MOD_MASK_1 | XCB_MOD_MASK_5))
+		buttons |= kAlt;
+	return buttons;
+}
+
+//------------------------------------------------------------------------
+static xcb_visualtype_t* getVisualType (const xcb_screen_t* screen)
+{
+	auto depth_iter = xcb_screen_allowed_depths_iterator (screen);
+	for (; depth_iter.rem; xcb_depth_next (&depth_iter))
+	{
+		xcb_visualtype_iterator_t visual_iter;
+
+		visual_iter = xcb_depth_visuals_iterator (depth_iter.data);
+		for (; visual_iter.rem; xcb_visualtype_next (&visual_iter))
+		{
+			if (screen->root_visual == visual_iter.data->visual_id)
+			{
+				return visual_iter.data;
+			}
+		}
+	}
+	return nullptr;
+}
+
+//------------------------------------------------------------------------
 struct SimpleWindow
 {
-	SimpleWindow (::Window parentId, CPoint size)
+	SimpleWindow (::Window parentId, CPoint size) : size (size)
 	{
 		auto connection = RunLoop::instance ().getXcbConnection ();
-		// const xcb_setup_t* setup = xcb_get_setup (connection);
-		// xcb_screen_iterator_t iter = xcb_setup_roots_iterator (setup);
-		// xcb_screen_t* screen = iter.data;
-
+		auto setup = xcb_get_setup (connection);
+		auto iter = xcb_setup_roots_iterator (setup);
+		auto screen = iter.data;
+		visual = getVisualType (screen);
+#if 0
+		parentId = screen->root;
+#endif
 		const uint32_t valueList[] = {
-			XCB_EVENT_MASK_BUTTON_PRESS,   XCB_EVENT_MASK_BUTTON_RELEASE,
-			XCB_EVENT_MASK_ENTER_WINDOW,   XCB_EVENT_MASK_LEAVE_WINDOW,
-			XCB_EVENT_MASK_POINTER_MOTION, XCB_EVENT_MASK_POINTER_MOTION_HINT,
-			XCB_EVENT_MASK_BUTTON_MOTION,  XCB_EVENT_MASK_EXPOSURE,
-			XCB_EVENT_MASK_PROPERTY_CHANGE};
-		const uint32_t valueMask = XCB_CW_EVENT_MASK;
+			screen->white_pixel, XCB_EVENT_MASK_BUTTON_PRESS | XCB_EVENT_MASK_BUTTON_RELEASE |
+									 XCB_EVENT_MASK_ENTER_WINDOW | XCB_EVENT_MASK_LEAVE_WINDOW |
+									 XCB_EVENT_MASK_POINTER_MOTION |
+									 XCB_EVENT_MASK_POINTER_MOTION_HINT |
+									 XCB_EVENT_MASK_BUTTON_MOTION | XCB_EVENT_MASK_EXPOSURE |
+									 XCB_EVENT_MASK_PROPERTY_CHANGE | XCB_EVENT_MASK_EXPOSURE};
+		const uint32_t valueMask = XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK;
 
 		xcb_create_window (connection, XCB_COPY_FROM_PARENT, getID (), parentId, 0, 0, size.x,
-						   size.y, 10, XCB_WINDOW_CLASS_INPUT_OUTPUT, XCB_COPY_FROM_PARENT,
+						   size.y, 0, XCB_WINDOW_CLASS_INPUT_OUTPUT, XCB_COPY_FROM_PARENT,
 						   valueMask, valueList);
 
 		static std::string xEmbedInfoStr = "_XEMBED_INFO";
@@ -66,31 +140,84 @@ struct SimpleWindow
 	~SimpleWindow () noexcept {}
 
 	xcb_window_t getID () const { return id; }
+	xcb_visualtype_t* getVisual () const { return visual; }
+
+	void setSize (const CRect& rect)
+	{
+		size = rect.getSize ();
+		auto connection = RunLoop::instance ().getXcbConnection ();
+		uint16_t mask = XCB_CONFIG_WINDOW_X | XCB_CONFIG_WINDOW_Y | XCB_CONFIG_WINDOW_WIDTH |
+						XCB_CONFIG_WINDOW_HEIGHT;
+		uint32_t values[] = {static_cast<uint32_t> (rect.left), static_cast<uint32_t> (rect.top),
+							 static_cast<uint32_t> (rect.getWidth ()),
+							 static_cast<uint32_t> (rect.getHeight ())};
+		xcb_configure_window (connection, getID (), mask, values);
+		xcb_flush (connection);
+	}
+
+	const CPoint& getSize () const { return size; }
 
 private:
 	xcb_window_t id{xcb_generate_id (RunLoop::instance ().getXcbConnection ())};
+	CPoint size;
+	xcb_visualtype_t* visual{nullptr};
 };
 
 //------------------------------------------------------------------------
 struct Frame::Impl : IFrameEventHandler
 {
 	SimpleWindow window;
-	bool handlingEvents{false};
+	Cairo::SurfaceHandle surface;
+	IPlatformFrameCallback* frame;
 
-	Impl (::Window parent, CPoint size) : window (parent, size)
+	Impl (::Window parent, CPoint size, IPlatformFrameCallback* frame)
+		: window (parent, size), frame (frame)
 	{
 		RunLoop::instance ().registerWindowEventHandler (window.getID (), this);
 	}
 
 	~Impl () noexcept { RunLoop::instance ().unregisterWindowEventHandler (window.getID ()); }
 
+	void setSize (const CRect& size)
+	{
+		surface.reset ();
+		window.setSize (size);
+	}
+
 	void onEvent (xcb_map_notify_event_t& event) override {}
 	void onEvent (xcb_key_press_event_t& event) override {}
-	void onEvent (xcb_button_press_event_t& event) override {}
+	void onEvent (xcb_button_press_event_t& event) override
+	{
+		CPoint where (event.event_x, event.event_y);
+		if ((event.response_type & ~0x80) == XCB_BUTTON_PRESS) // mouse down
+		{
+			auto buttons = translateMouseButtons (event.detail);
+			buttons |= translateModifiers (event.state);
+			frame->platformOnMouseDown (where, buttons);
+		}
+		else // mouse up
+		{
+			auto buttons = translateMouseButtons (event.detail);
+			buttons |= translateModifiers (event.state);
+			frame->platformOnMouseUp (where, buttons);
+		}
+	}
 	void onEvent (xcb_motion_notify_event_t& event) override {}
 	void onEvent (xcb_enter_notify_event_t& event) override {}
 	void onEvent (xcb_focus_in_event_t& event) override {}
-	void onEvent (xcb_expose_event_t& event) override {}
+	void onEvent (xcb_expose_event_t& event) override
+	{
+		if (!surface)
+		{
+			auto s = cairo_xcb_surface_create (RunLoop::instance ().getXcbConnection (),
+											   window.getID (), window.getVisual (),
+											   window.getSize ().x, window.getSize ().y);
+			surface.assign (s);
+		}
+		CRect rect (CPoint (event.x, event.y), CPoint (event.width, event.height));
+		Cairo::Context context (rect, surface);
+		frame->platformDrawRect (&context, rect);
+	}
 };
 
 //------------------------------------------------------------------------
@@ -104,28 +231,17 @@ Frame::Frame (IPlatformFrameCallback* frame,
 	if (cfg && cfg->runLoop)
 	{
 		RunLoop::init (cfg->runLoop);
-		//		RunLoop::get ()->registerEventHandler (XConnectionNumber (xDisplay), this);
 	}
 
-	impl = std::unique_ptr<Impl> (new Impl (parent, {size.getWidth (), size.getHeight ()}));
+	impl = std::unique_ptr<Impl> (new Impl (parent, {size.getWidth (), size.getHeight ()}, frame));
 
 	frame->platformOnActivate (true);
-
-#if 0 // DEBUG
-	auto id = impl->plug.get_id ();
-	std::cout << "PlugID: " << std::hex << id << std::endl;
-
-	Gdk::Event::set_show_events (true);
-#endif
 }
 
 //------------------------------------------------------------------------
 Frame::~Frame ()
 {
-	if (auto runLoop = RunLoop::get ())
-	{
-		//		runLoop->unregisterEventHandler (this);
-	}
+	impl.reset ();
 	RunLoop::exit ();
 }
 
@@ -138,7 +254,9 @@ bool Frame::getGlobalPosition (CPoint& pos) const
 //------------------------------------------------------------------------
 bool Frame::setSize (const CRect& newSize)
 {
-	return false;
+	vstgui_assert (impl);
+	impl->setSize (newSize);
+	return true;
 }
 
 //------------------------------------------------------------------------
