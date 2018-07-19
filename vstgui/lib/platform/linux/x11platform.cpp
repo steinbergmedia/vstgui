@@ -162,7 +162,8 @@ struct RunLoop::Impl : IEventHandler
 	{
 		while (auto event = xcb_poll_for_event (xcbConnection))
 		{
-			switch (event->response_type & ~0x80)
+			auto type = event->response_type & ~0x80; 
+			switch (type)
 			{
 				case XCB_KEY_PRESS:
 				{
@@ -226,6 +227,18 @@ struct RunLoop::Impl : IEventHandler
 				case XCB_CONFIGURE_NOTIFY:
 				{
 					auto ev = reinterpret_cast<xcb_configure_notify_event_t*> (event);
+					break;
+				}
+				case XCB_PROPERTY_NOTIFY:
+				{
+					auto ev = reinterpret_cast<xcb_property_notify_event_t*> (event);
+					dispatchEvent (*ev, ev->window);
+					break;
+				}
+				case XCB_CLIENT_MESSAGE:
+				{
+					auto ev = reinterpret_cast<xcb_client_message_event_t*> (event);
+					dispatchEvent (*ev, ev->window);
 					break;
 				}
 			}

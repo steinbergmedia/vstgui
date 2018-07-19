@@ -7,6 +7,7 @@
 #include "../../crect.h"
 #include "../../dragging.h"
 #include "../../vstkeycode.h"
+#include "../../optional.h"
 #include "../iplatformopenglview.h"
 #include "../iplatformviewlayer.h"
 #include "../iplatformtextedit.h"
@@ -29,6 +30,21 @@
 //------------------------------------------------------------------------
 namespace VSTGUI {
 namespace X11 {
+
+//------------------------------------------------------------------------
+static std::string getAtomName (xcb_atom_t atom)
+{
+	std::string name;
+	auto xcb = RunLoop::instance ().getXcbConnection ();
+	auto cookie = xcb_get_atom_name (xcb, atom);
+	if (auto reply = xcb_get_atom_name_reply (xcb, cookie, nullptr))
+	{
+		auto length = xcb_get_atom_name_name_length (reply);
+		name = xcb_get_atom_name_name (reply);
+		free (reply);
+	}
+	return name;
+}
 
 //------------------------------------------------------------------------
 static uint32_t translateMouseButtons (xcb_button_t value)
@@ -100,6 +116,42 @@ static xcb_visualtype_t* getVisualType (const xcb_screen_t* screen)
 }
 
 //------------------------------------------------------------------------
+struct Atom
+{
+	Atom (const char* name) : name (name) {}
+
+	bool valid () const
+	{
+		create ();
+		return value ? true : false;
+	}
+	xcb_atom_t operator() () const
+	{
+		create ();
+		return *value;
+	}
+
+private:
+	void create () const
+	{
+		if (value)
+			return;
+		auto connection = RunLoop::instance ().getXcbConnection ();
+		auto cookie = xcb_intern_atom (connection, 0, name.size (), name.data ());
+		if (auto reply = xcb_intern_atom_reply (connection, cookie, nullptr))
+		{
+			value = Optional<xcb_atom_t> (reply->atom);
+			free (reply);
+		}
+	}
+
+	std::string name;
+	mutable Optional<xcb_atom_t> value;
+};
+
+static Atom xEmbedAtom ("_XEMBED_INFO");
+
+//------------------------------------------------------------------------
 struct SimpleWindow
 {
 	SimpleWindow (::Window parentId, CPoint size) : size (size)
@@ -125,14 +177,13 @@ struct SimpleWindow
 						   size.y, 0, XCB_WINDOW_CLASS_INPUT_OUTPUT, XCB_COPY_FROM_PARENT,
 						   valueMask, valueList);
 
-		static std::string xEmbedInfoStr = "_XEMBED_INFO";
-		auto cookie = xcb_intern_atom (connection, 0, xEmbedInfoStr.size (), xEmbedInfoStr.data ());
-		auto xEmbedAtom = xcb_intern_atom_reply (connection, cookie, nullptr)->atom;
-
 		// setup XEMBED
-		uint32_t data[2] = {1, 0};
-		xcb_change_property (connection, XCB_PROP_MODE_REPLACE, getID (), xEmbedAtom, xEmbedAtom,
-							 32, 2, data);
+		if (xEmbedAtom.valid ())
+		{
+			uint32_t data[2] = {1, 0};
+			xcb_change_property (connection, XCB_PROP_MODE_REPLACE, getID (), xEmbedAtom (),
+								 xEmbedAtom (), 32, 2, data);
+		}
 
 		xcb_flush (connection);
 	}
@@ -318,10 +369,12 @@ struct Frame::Impl : IFrameEventHandler
 						 XCB_EVENT_MASK_LEAVE_WINDOW | XCB_EVENT_MASK_POINTER_MOTION),
 						XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC, XCB_WINDOW_NONE, XCB_CURSOR_NONE,
 						XCB_TIME_CURRENT_TIME);
-					auto reply = xcb_grab_pointer_reply (xcb, cookie, nullptr);
-					if (!(!reply || reply->status != XCB_GRAB_STATUS_SUCCESS))
-						pointerGrabed = true;
-					free (reply);
+					if (auto reply = xcb_grab_pointer_reply (xcb, cookie, nullptr))
+					{
+						if (reply->status == XCB_GRAB_STATUS_SUCCESS)
+							pointerGrabed = true;
+						free (reply);
+					}
 				}
 			}
 		}
@@ -370,6 +423,15 @@ struct Frame::Impl : IFrameEventHandler
 		// Cairo::Context context (rect, surface);
 		// frame->platformDrawRect (&context, rect);
 	}
+	void onEvent (xcb_property_notify_event_t& event) override
+	{
+		if (xEmbedAtom.valid () && event.atom == xEmbedAtom ())
+		{
+			auto xcb = RunLoop::instance ().getXcbConnection ();
+			xcb_map_window (xcb, window.getID ());
+		}
+	}
+	void onEvent (xcb_client_message_event_t& event) override {}
 };
 
 //------------------------------------------------------------------------
@@ -556,7 +618,7 @@ Frame::CreateIResourceInputStreamFunc Frame::createResourceInputStreamFunc =
 	if (desc.type != CResourceDescription::kStringType)
 		return nullptr;
 	auto path = Platform::getInstance ().getPath ();
-	path += "/";
+	path += "/Contents/Resources/";
 	path += desc.u.name;
 	return FileResourceInputStream::create (path);
 };

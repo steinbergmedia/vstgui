@@ -17,6 +17,8 @@ struct xcb_enter_notify_event_t;
 struct xcb_focus_in_event_t;
 struct xcb_expose_event_t;
 struct xcb_map_notify_event_t;
+struct xcb_property_notify_event_t;
+struct xcb_client_message_event_t;
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -38,6 +40,8 @@ struct IFrameEventHandler
 	virtual void onEvent (xcb_enter_notify_event_t& event) = 0;
 	virtual void onEvent (xcb_focus_in_event_t& event) = 0;
 	virtual void onEvent (xcb_expose_event_t& event) = 0;
+	virtual void onEvent (xcb_property_notify_event_t& event) = 0;
+	virtual void onEvent (xcb_client_message_event_t& event) = 0;
 };
 
 //------------------------------------------------------------------------
