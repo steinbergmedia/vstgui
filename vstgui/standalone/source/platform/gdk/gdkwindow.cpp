@@ -328,6 +328,8 @@ void Window::show ()
 {
 	updateGeometryHints ();
 	gdkWindow->show ();
+	if (type == WindowType::Popup)
+		gdkWindow->focus (0);
 }
 
 //------------------------------------------------------------------------
