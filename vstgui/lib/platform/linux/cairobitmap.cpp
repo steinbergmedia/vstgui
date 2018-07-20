@@ -137,7 +137,7 @@ void Bitmap::setGetResourcePathFunc (GetResourcePathFunc&& func)
 }
 
 //-----------------------------------------------------------------------------
-Bitmap::Bitmap (CPoint* _size)
+Bitmap::Bitmap (const CPoint* _size)
 {
 	if (_size)
 	{

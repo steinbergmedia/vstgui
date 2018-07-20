@@ -20,7 +20,7 @@ namespace Cairo {
 class Bitmap : public IPlatformBitmap
 {
 public:
-	explicit Bitmap (CPoint* size);
+	explicit Bitmap (const CPoint* size);
 	explicit Bitmap (const SurfaceHandle& surface);
 	~Bitmap () override;
 
