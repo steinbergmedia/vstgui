@@ -151,6 +151,7 @@ private:
 };
 
 static Atom xEmbedInfoAtom ("_XEMBED_INFO");
+static Atom xEmbedAtom ("_XEMBED");
 
 //------------------------------------------------------------------------
 struct XEmbedInfo
@@ -464,13 +465,77 @@ struct Frame::Impl : IFrameEventHandler
 	}
 	void onEvent (xcb_property_notify_event_t& event) override
 	{
+#if 1 // needed for Reaper
 		if (xEmbedInfoAtom.valid () && event.atom == xEmbedInfoAtom ())
 		{
 			auto xcb = RunLoop::instance ().getXcbConnection ();
 			xcb_map_window (xcb, window.getID ());
 		}
+#endif
 	}
-	void onEvent (xcb_client_message_event_t& event) override {}
+	void onEvent (xcb_client_message_event_t& event) override
+	{
+		if (xEmbedAtom.valid () && event.type == xEmbedAtom ())
+		{
+			/* XEMBED messages */
+			enum XEmbedMessage
+			{
+				XEMBED_EMBEDDED_NOTIFY = 0,
+				XEMBED_WINDOW_ACTIVATE = 1,
+				XEMBED_WINDOW_DEACTIVATE = 2,
+				XEMBED_REQUEST_FOCUS = 3,
+				XEMBED_FOCUS_IN = 4,
+				XEMBED_FOCUS_OUT = 5,
+				XEMBED_FOCUS_NEXT = 6,
+				XEMBED_FOCUS_PREV = 7,
+				/* 8-9 were used for XEMBED_GRAB_KEY/XEMBED_UNGRAB_KEY */
+				XEMBED_MODALITY_ON = 10,
+				XEMBED_MODALITY_OFF = 11,
+				XEMBED_REGISTER_ACCELERATOR = 12,
+				XEMBED_UNREGISTER_ACCELERATOR = 13,
+				XEMBED_ACTIVATE_ACCELERATOR = 14,
+			};
+			switch (event.data.data32[1])
+			{
+				case XEMBED_EMBEDDED_NOTIFY:
+				{
+					auto xcb = RunLoop::instance ().getXcbConnection ();
+					xcb_map_window (xcb, window.getID ());
+					break;
+				}
+				case XEMBED_WINDOW_ACTIVATE:
+				{
+					frame->platformOnWindowActivate (true);
+					break;
+				}
+				case XEMBED_WINDOW_DEACTIVATE:
+				{
+					frame->platformOnWindowActivate (false);
+					break;
+				}
+				case XEMBED_REQUEST_FOCUS:
+					break;
+				case XEMBED_FOCUS_IN:
+				{
+					frame->platformOnActivate (true);
+					break;
+				}
+				case XEMBED_FOCUS_OUT:
+				{
+					frame->platformOnActivate (false);
+					break;
+				}
+				case XEMBED_FOCUS_NEXT:
+				{
+					break;
+				}
+				case XEMBED_FOCUS_PREV:
+				{
+					break;
+				}
+			}
+		}
+	}
 };
 
 //------------------------------------------------------------------------
