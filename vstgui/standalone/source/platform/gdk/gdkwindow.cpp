@@ -30,6 +30,52 @@ WindowVector& getWindows ()
 	return instance;
 }
 
+/* XEMBED messages */
+enum class XEmbedMessage
+{
+	EMBEDDED_NOTIFY = 0,
+	WINDOW_ACTIVATE = 1,
+	WINDOW_DEACTIVATE = 2,
+	REQUEST_FOCUS = 3,
+	FOCUS_IN = 4,
+	FOCUS_OUT = 5,
+	FOCUS_NEXT = 6,
+	FOCUS_PREV = 7,
+	/* 8-9 were used for GRAB_KEY/UNGRAB_KEY */
+	MODALITY_ON = 10,
+	MODALITY_OFF = 11,
+	REGISTER_ACCELERATOR = 12,
+	UNREGISTER_ACCELERATOR = 13,
+	ACTIVATE_ACCELERATOR = 14,
+};
+
+//------------------------------------------------------------------------
+void sendXEmbedProtocolMessage (::Window receiver,
+								::Window parentWindow,
+								XEmbedMessage message,
+								uint32_t detail = 0,
+								uint32_t xEmbedVersion = 1)
+{
+	auto xDisplay = gdk_x11_display_get_xdisplay (gdk_display_get_default ());
+
+	auto xEmbedAtom = XInternAtom (xDisplay, "_XEMBED", true);
+	if (xEmbedAtom == None)
+		return;
+
+	XEvent ev{};
+	ev.xclient.type = ClientMessage;
+	ev.xclient.window = receiver;
+	ev.xclient.message_type = xEmbedAtom;
+	ev.xclient.format = 32;
+	ev.xclient.data.l[0] = CurrentTime;
+	ev.xclient.data.l[1] = static_cast<long> (message);
+	ev.xclient.data.l[2] = detail;
+	ev.xclient.data.l[3] = parentWindow;
+	ev.xclient.data.l[4] = xEmbedVersion;
+	XSendEvent (xDisplay, receiver, False, NoEventMask, &ev);
+	XSync (xDisplay, False);
+}
+
 //------------------------------------------------------------------------
 } // anonymous
 
@@ -44,44 +90,6 @@ IGdkWindow* IGdkWindow::find (GdkWindow* gdkWindow)
 	});
 	return it == windows.end () ? nullptr : *it;
 }
-
-//------------------------------------------------------------------------
-class FrameChildWindow : public IGdkWindow
-{
-public:
-	FrameChildWindow (CFrame* frame) : frame (frame)
-	{
-		if (auto platformFrame = frame->getPlatformFrame ())
-		{
-			window = reinterpret_cast<GdkWindow*> (platformFrame->getPlatformRepresentation ());
-			getWindows ().push_back (this);
-		}
-	}
-	~FrameChildWindow () noexcept override
-	{
-		auto& windows = getWindows ();
-		auto it = std::find (windows.begin (), windows.end (), this);
-		if (it != windows.end ())
-			windows.erase (it);
-	}
-
-	bool isGdkWindow (GdkWindow* _window) override { return _window == window; }
-	bool handleEvent (GdkEvent* event) override
-	{
-#if 0
-		auto gdkFrame = dynamic_cast<VSTGUI::GDK::Frame*> (frame->getPlatformFrame ());
-		return gdkFrame->handleEvent (event);
-#else
-		return false;
-#endif
-	}
-
-	CFrame* getFrame () const { return frame; }
-
-private:
-	CFrame* frame{nullptr};
-	GdkWindow* window{nullptr};
-};
 
 //------------------------------------------------------------------------
 class Window
@@ -119,6 +127,7 @@ public:
 private:
 	void updateGeometryHints ();
 	void handleEventConfigure (GdkEventConfigure* event);
+	void sendXEmbedMessage (XEmbedMessage msg, uint32_t data = 0);
 
 	static GdkFilterReturn xEventFilter (GdkXEvent* xevent, GdkEvent* event, gpointer data);
 
@@ -129,7 +138,7 @@ private:
 	WindowType type;
 	IWindowDelegate* delegate{nullptr};
 	Glib::RefPtr<Gdk::Window> gdkWindow;
-	std::unique_ptr<FrameChildWindow> frameChild;
+	CFrame* contentView{nullptr};
 };
 
 //------------------------------------------------------------------------
@@ -232,17 +241,18 @@ GdkFilterReturn Window::xEventFilter (GdkXEvent* xevent, GdkEvent* event, gpoint
 {
 	GdkFilterReturn result = GDK_FILTER_CONTINUE;
 	auto e = static_cast<XEvent*> (xevent);
-	auto self = reinterpret_cast<Window*> (data);
-	::Window topLevelWindow = reinterpret_cast<::Window> (self->getPlatformHandle ());
 	switch (e->type)
 	{
 		case CreateNotify:
 		{
+			auto self = reinterpret_cast<Window*> (data);
+			::Window topLevelWindow = reinterpret_cast<::Window> (self->getPlatformHandle ());
 			if (e->xcreatewindow.window == topLevelWindow)
 				break;
 			auto childWindow = e->xcreatewindow.window;
 			auto xDisplay = gdk_x11_display_get_xdisplay (gdk_display_get_default ());
 			XMapWindow (xDisplay, childWindow);
+			sendXEmbedProtocolMessage (childWindow, topLevelWindow, XEmbedMessage::EMBEDDED_NOTIFY);
 			break;
 		}
 	}
@@ -392,9 +402,7 @@ PlatformFrameConfigPtr Window::prepareFrameConfig (PlatformFrameConfigPtr&& cont
 //------------------------------------------------------------------------
 void Window::onSetContentView (CFrame* newFrame)
 {
-	frameChild = nullptr;
-	if (newFrame)
-		frameChild = std::unique_ptr<FrameChildWindow> (new FrameChildWindow (newFrame));
+	contentView = newFrame;
 }
 
 //------------------------------------------------------------------------
@@ -403,6 +411,16 @@ bool Window::isGdkWindow (GdkWindow* window)
 	assert (window);
 	auto ptr = gdkWindow->gobj ();
 	return window == ptr;
+}
+
+//------------------------------------------------------------------------
+void Window::sendXEmbedMessage (XEmbedMessage msg, uint32_t data)
+{
+	if (!contentView)
+		return;
+	sendXEmbedProtocolMessage (
+		reinterpret_cast<::Window> (contentView->getPlatformFrame ()->getPlatformRepresentation ()),
+		reinterpret_cast<::Window> (getPlatformHandle ()), msg, data);
 }
 
 //------------------------------------------------------------------------
@@ -444,8 +462,6 @@ bool Window::handleEvent (GdkEvent* ev)
 		}
 		case GDK_FOCUS_CHANGE:
 		{
-			if (frameChild)
-				frameChild->handleEvent (ev);
 			auto event = reinterpret_cast<GdkEventFocus*> (ev);
 			auto hasFocus = event->in != 0;
 			if (hasFocus)
@@ -460,18 +476,24 @@ bool Window::handleEvent (GdkEvent* ev)
 						close ();
 				}
 			}
+			sendXEmbedMessage (hasFocus ? XEmbedMessage::WINDOW_ACTIVATE
+										: XEmbedMessage::WINDOW_DEACTIVATE);
+			sendXEmbedMessage (hasFocus ? XEmbedMessage::FOCUS_IN : XEmbedMessage::FOCUS_OUT);
+			break;
+		}
+		case GDK_WINDOW_STATE:
+		{
+#if 0
+			auto event = reinterpret_cast<GdkEventWindowState*> (ev);
+#endif
 			break;
 		}
 		case GDK_KEY_PRESS:
 		{
-			if (frameChild)
-				frameChild->handleEvent (ev);
 			break;
 		}
 		case GDK_KEY_RELEASE:
 		{
-			if (frameChild)
-				frameChild->handleEvent (ev);
 			break;
 		}
 		case GDK_BUTTON_PRESS:
@@ -486,8 +508,6 @@ bool Window::handleEvent (GdkEvent* ev)
 		}
 		case GDK_CLIENT_EVENT:
 		{
-			if (frameChild)
-				frameChild->handleEvent (ev);
 			break;
 		}
 	}
@@ -514,8 +534,8 @@ void Window::handleEventConfigure (GdkEventConfigure* event)
 	{
 		lastSize = newSize;
 		delegate->onSizeChanged (newSize);
-		if (frameChild)
-			frameChild->getFrame ()->setSize (newSize.x, newSize.y);
+		if (contentView)
+			contentView->setSize (newSize.x, newSize.y);
 	}
 }
 
