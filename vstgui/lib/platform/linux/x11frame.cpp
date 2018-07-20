@@ -149,7 +149,14 @@ private:
 	mutable Optional<xcb_atom_t> value;
 };
 
-static Atom xEmbedAtom ("_XEMBED_INFO");
+static Atom xEmbedInfoAtom ("_XEMBED_INFO");
+
+//------------------------------------------------------------------------
+struct XEmbedInfo
+{
+	uint32_t version{1};
+	uint32_t flags{0};
+};
 
 //------------------------------------------------------------------------
 struct SimpleWindow
@@ -178,11 +185,11 @@ struct SimpleWindow
 						   valueMask, valueList);
 
 		// setup XEMBED
-		if (xEmbedAtom.valid ())
+		if (xEmbedInfoAtom.valid ())
 		{
-			uint32_t data[2] = {1, 0};
-			xcb_change_property (connection, XCB_PROP_MODE_REPLACE, getID (), xEmbedAtom (),
-								 xEmbedAtom (), 32, 2, data);
+			XEmbedInfo info;
+			xcb_change_property (connection, XCB_PROP_MODE_REPLACE, getID (), xEmbedInfoAtom (),
+								 xEmbedInfoAtom (), 32, 2, &info);
 		}
 
 		xcb_flush (connection);
@@ -243,11 +250,12 @@ struct Frame::Impl : IFrameEventHandler
 	using RectList = std::vector<CRect>;
 
 	SimpleWindow window;
-	Cairo::SurfaceHandle surface;
+	Cairo::SurfaceHandle windowSurface;
+	Cairo::SurfaceHandle backBuffer;
 	IPlatformFrameCallback* frame;
 	SharedPointer<RedrawTimerHandler> redrawTimer;
+	SharedPointer<Cairo::Context> drawContext;
 	RectList dirtyRects;
-	uint64_t lastDrawTime{0};
 	bool pointerGrabed{false};
 
 	Impl (::Window parent, CPoint size, IPlatformFrameCallback* frame)
@@ -261,34 +269,53 @@ struct Frame::Impl : IFrameEventHandler
 	void setSize (const CRect& size)
 	{
 		window.setSize (size);
-		if (surface)
+		if (windowSurface)
 		{
-			cairo_xcb_surface_set_size (surface, size.getWidth (), size.getHeight ());
+			cairo_xcb_surface_set_size (windowSurface, size.getWidth (), size.getHeight ());
+			backBuffer = Cairo::SurfaceHandle (
+				cairo_surface_create_similar (windowSurface, CAIRO_CONTENT_COLOR_ALPHA,
+											  window.getSize ().x, window.getSize ().y));
+			drawContext = makeOwned<Cairo::Context> (size, backBuffer);
 			dirtyRects.clear ();
 			dirtyRects.push_back (size);
 			redraw ();
 		}
 	}
 
+	//------------------------------------------------------------------------
+	void blitBackbufferToWindow (const CRect& rect)
+	{
+		Cairo::ContextHandle windowContext (cairo_create (windowSurface));
+		cairo_rectangle (windowContext, rect.left, rect.top, rect.getWidth (), rect.getHeight ());
+		cairo_clip (windowContext);
+		cairo_set_source_surface (windowContext, backBuffer, 0, 0);
+		cairo_rectangle (windowContext, rect.left, rect.top, rect.getWidth (), rect.getHeight ());
+		cairo_fill (windowContext);
+		cairo_surface_flush (windowSurface);
+	}
+
 	void redraw ()
 	{
-		lastDrawTime = Platform::getCurrentTimeMs ();
 		prepareDrawContext ();
-		CRect backBufferSize;
-		backBufferSize.setSize (window.getSize ());
-		Cairo::Context context (backBufferSize, surface);
+
+		CRect copyRect;
+		drawContext->beginDraw ();
 		for (auto rect : dirtyRects)
 		{
-			context.saveGlobalState ();
-			context.setClipRect (rect);
-			context.saveGlobalState ();
-			frame->platformDrawRect (&context, rect);
-			context.restoreGlobalState ();
-			context.restoreGlobalState ();
+			drawContext->setClipRect (rect);
+			drawContext->saveGlobalState ();
+			frame->platformDrawRect (drawContext, rect);
+			drawContext->restoreGlobalState ();
+			if (copyRect.isEmpty ())
+				copyRect = rect;
+			else
+				copyRect.unite (rect);
 		}
-		dirtyRects.clear ();
+		drawContext->endDraw ();
+		blitBackbufferToWindow (copyRect);
+
 		xcb_flush (RunLoop::instance ().getXcbConnection ());
-		redrawTimer = nullptr;
+		dirtyRects.clear ();
 	}
 
 	void invalidRect (CRect r)
@@ -296,26 +323,25 @@ struct Frame::Impl : IFrameEventHandler
 		dirtyRects.emplace_back (r);
 		if (redrawTimer)
 			return;
-		auto now = Platform::getCurrentTimeMs ();
-		if (now > lastDrawTime + 16)
-		{
+		redrawTimer = makeOwned<RedrawTimerHandler> (16, [this]() {
+			if (dirtyRects.empty ())
+				return;
 			redraw ();
-		}
-		else if (redrawTimer == nullptr)
-		{
-			redrawTimer =
-				makeOwned<RedrawTimerHandler> ((lastDrawTime + 16) - now, [this]() { redraw (); });
-		}
+		});
 	}
 
 	void prepareDrawContext ()
 	{
-		if (!surface)
+		if (!windowSurface)
 		{
 			auto s = cairo_xcb_surface_create (RunLoop::instance ().getXcbConnection (),
 											   window.getID (), window.getVisual (),
 											   window.getSize ().x, window.getSize ().y);
-			surface.assign (s);
+			windowSurface.assign (s);
+			backBuffer = Cairo::SurfaceHandle (
+				cairo_surface_create_similar (windowSurface, CAIRO_CONTENT_COLOR_ALPHA,
+											  window.getSize ().x, window.getSize ().y));
+			drawContext = makeOwned<Cairo::Context> (CRect ({}, window.getSize ()), backBuffer);
 		}
 	}
 
@@ -418,14 +444,10 @@ struct Frame::Impl : IFrameEventHandler
 		r.setTopLeft (CPoint (event.x, event.y));
 		r.setSize (CPoint (event.width, event.height));
 		invalidRect (r);
-		// prepareDrawContext ();
-		// CRect rect (CPoint (event.x, event.y), CPoint (event.width, event.height));
-		// Cairo::Context context (rect, surface);
-		// frame->platformDrawRect (&context, rect);
 	}
 	void onEvent (xcb_property_notify_event_t& event) override
 	{
-		if (xEmbedAtom.valid () && event.atom == xEmbedAtom ())
+		if (xEmbedInfoAtom.valid () && event.atom == xEmbedInfoAtom ())
 		{
 			auto xcb = RunLoop::instance ().getXcbConnection ();
 			xcb_map_window (xcb, window.getID ());
