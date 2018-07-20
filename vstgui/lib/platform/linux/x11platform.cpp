@@ -434,48 +434,90 @@ xcb_connection_t* RunLoop::getXcbConnection () const
 }
 
 //------------------------------------------------------------------------
+namespace {
+
+template<typename T>
+uint32_t makeCursor (xcb_cursor_context_t* context, const T& names)
+{
+	for (auto& name : names)
+	{
+		auto result = xcb_cursor_load_cursor (context, name);
+		if (result != XCB_CURSOR_NONE)
+			return result;
+	}
+	return XCB_CURSOR_NONE;
+}
+
+template<size_t count>
+using CharPtrArray = std::array<const char*, count>;
+
+constexpr auto CursorDefaultNames = //
+	CharPtrArray<4>{"left_ptr", "arrow", "dnd-none", "op_left_arrow"};
+constexpr auto CursorWaitNames = //
+	CharPtrArray<3>{"wait", "watch", "progress"};
+constexpr auto CursorHSizeNames = //
+	CharPtrArray<8>{"size_hor", "sb_h_double_arrow", "h_double_arrow", "e-resize",
+					"w-resize", "row-resize",		 "right_side",	 "left_side"};
+constexpr auto CursorVSizeNames = //
+	CharPtrArray<12>{"size_ver",	  "sb_v_double_arrow", "v_double_arrow",   "n-resize",
+					 "s-resize",	  "col-resize",		   "top_side",		   "bottom_side",
+					 "base_arrow_up", "base_arrow_down",   "based_arrow_down", "based_arrow_up"};
+constexpr auto CursorNESWSizeNames = //
+	CharPtrArray<5>{"size_bdiag", "fd_double_arrow", "bottom_left_corner", "top_right_corner"};
+constexpr auto CursorNWSESizeNames = //
+	CharPtrArray<5>{"size_fdiag", "bd_double_arrow", "bottom_right_corner", "top_left_corner"};
+constexpr auto CursorSizeAllNames = //
+	CharPtrArray<4>{"cross", "diamond-cross", "cross-reverse", "crosshair"};
+constexpr auto CursorCopyNames = //
+	CharPtrArray<2>{"dnd-copy", "copy"};
+constexpr auto CursorNotAllowedNames = //
+	CharPtrArray<4>{"forbidden", "circle", "dnd-no-drop", "not-allowed"};
+constexpr auto CursorHandNames = //
+	CharPtrArray<4>{"hand1", "openhand", "all_scroll", "all-scroll"};
+
+//------------------------------------------------------------------------
+} // anonymous
+
+//------------------------------------------------------------------------
 uint32_t RunLoop::getCursorID (CCursorType cursor)
 {
 	if (impl->cursors[cursor] == XCB_CURSOR_NONE && impl->cursorContext)
 	{
-		const char* name = nullptr;
+		uint32_t cursorID = XCB_CURSOR_NONE;
 		switch (cursor)
 		{
 			case kCursorDefault:
-				name = "arrow";
+				cursorID = makeCursor (impl->cursorContext, CursorDefaultNames);
 				break;
 			case kCursorWait:
-				name = "watch";
+				cursorID = makeCursor (impl->cursorContext, CursorWaitNames);
 				break;
 			case kCursorHSize:
-				name = "sb_h_double_arrow";
+				cursorID = makeCursor (impl->cursorContext, CursorHSizeNames);
 				break;
 			case kCursorVSize:
-				name = "sb_v_double_arrow";
+				cursorID = makeCursor (impl->cursorContext, CursorVSizeNames);
 				break;
 			case kCursorNESWSize:
-				name = "cross";
+				cursorID = makeCursor (impl->cursorContext, CursorNESWSizeNames);
 				break;
 			case kCursorNWSESize:
-				name = "cross";
+				cursorID = makeCursor (impl->cursorContext, CursorNWSESizeNames);
 				break;
 			case kCursorSizeAll:
-				name = "cross";
+				cursorID = makeCursor (impl->cursorContext, CursorSizeAllNames);
 				break;
 			case kCursorCopy:
-				name = "copy";
+				cursorID = makeCursor (impl->cursorContext, CursorCopyNames);
 				break;
 			case kCursorNotAllowed:
-				name = "forbidden";
+				cursorID = makeCursor (impl->cursorContext, CursorNotAllowedNames);
 				break;
 			case kCursorHand:
-				name = "openhand";
+				cursorID = makeCursor (impl->cursorContext, CursorHandNames);
 				break;
 		}
-		if (name)
-		{
-			impl->cursors[cursor] = xcb_cursor_load_cursor (impl->cursorContext, name);
-		}
+		impl->cursors[cursor] = cursorID;
 	}
 	return impl->cursors[cursor];
 }
