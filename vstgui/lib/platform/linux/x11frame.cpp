@@ -21,6 +21,7 @@
 #include <unordered_map>
 #include <X11/Xlib.h>
 #include <xcb/xcb.h>
+#include <xcb/xcb_util.h>
 #include <cairo/cairo-xcb.h>
 
 #ifdef None
@@ -516,7 +517,12 @@ bool Frame::getCurrentMouseButtons (CButtonState& buttons) const
 //------------------------------------------------------------------------
 bool Frame::setMouseCursor (CCursorType type)
 {
-	return false;
+	auto xcb = RunLoop::instance ().getXcbConnection ();
+	xcb_params_cw_t params;
+	params.cursor = RunLoop::instance ().getCursorID (type);
+	xcb_aux_change_window_attributes (xcb, impl->window.getID (), XCB_CW_CURSOR, &params);
+
+	return true;
 }
 
 //------------------------------------------------------------------------

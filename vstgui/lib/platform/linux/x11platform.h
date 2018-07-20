@@ -74,6 +74,8 @@ struct RunLoop
 	void registerWindowEventHandler (uint32_t windowId, IFrameEventHandler* handler);
 	void unregisterWindowEventHandler (uint32_t windowId);
 
+	uint32_t getCursorID (CCursorType cursor);
+
 	static RunLoop& instance ();
 
 private:
