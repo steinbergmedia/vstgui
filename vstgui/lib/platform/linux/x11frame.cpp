@@ -172,18 +172,20 @@ struct SimpleWindow
 #if 0
 		parentId = screen->root;
 #endif
-		const uint32_t valueList[] = {
-			screen->white_pixel, XCB_EVENT_MASK_BUTTON_PRESS | XCB_EVENT_MASK_BUTTON_RELEASE |
-									 XCB_EVENT_MASK_ENTER_WINDOW | XCB_EVENT_MASK_LEAVE_WINDOW |
-									 XCB_EVENT_MASK_POINTER_MOTION |
-									 XCB_EVENT_MASK_POINTER_MOTION_HINT |
-									 XCB_EVENT_MASK_BUTTON_MOTION | XCB_EVENT_MASK_EXPOSURE |
-									 XCB_EVENT_MASK_PROPERTY_CHANGE | XCB_EVENT_MASK_EXPOSURE};
-		const uint32_t valueMask = XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK;
+		uint32_t paramMask = XCB_CW_BACK_PIXMAP | XCB_CW_BACKING_STORE | XCB_CW_EVENT_MASK;
+		xcb_params_cw_t params{};
+		params.back_pixel = XCB_BACK_PIXMAP_NONE;
+		params.backing_store = XCB_BACKING_STORE_WHEN_MAPPED;
+		params.event_mask = XCB_EVENT_MASK_KEY_PRESS | XCB_EVENT_MASK_KEY_RELEASE |
+							XCB_EVENT_MASK_BUTTON_PRESS | XCB_EVENT_MASK_BUTTON_RELEASE |
+							XCB_EVENT_MASK_ENTER_WINDOW | XCB_EVENT_MASK_LEAVE_WINDOW |
+							XCB_EVENT_MASK_POINTER_MOTION | XCB_EVENT_MASK_POINTER_MOTION_HINT |
+							XCB_EVENT_MASK_BUTTON_MOTION | XCB_EVENT_MASK_EXPOSURE |
+							XCB_EVENT_MASK_PROPERTY_CHANGE | XCB_EVENT_MASK_EXPOSURE;
 
-		xcb_create_window (connection, XCB_COPY_FROM_PARENT, getID (), parentId, 0, 0, size.x,
-						   size.y, 0, XCB_WINDOW_CLASS_INPUT_OUTPUT, XCB_COPY_FROM_PARENT,
-						   valueMask, valueList);
+		xcb_aux_create_window (connection, XCB_COPY_FROM_PARENT, getID (), parentId, 0, 0, size.x,
+							   size.y, 0, XCB_WINDOW_CLASS_INPUT_OUTPUT, XCB_COPY_FROM_PARENT,
+							   paramMask, &params);
 
 		// setup XEMBED
 		if (xEmbedInfoAtom.valid ())
@@ -347,7 +349,19 @@ struct Frame::Impl : IFrameEventHandler
 	}
 
 	void onEvent (xcb_map_notify_event_t& event) override {}
-	void onEvent (xcb_key_press_event_t& event) override {}
+	void onEvent (xcb_key_press_event_t& event) override
+	{
+		auto type = (event.response_type & ~0x80);
+		auto keyCode = RunLoop::instance ().makeKeyCode (event.detail, event.state);
+		if (type == XCB_KEY_PRESS)
+		{
+			frame->platformOnKeyDown (keyCode);
+		}
+		else
+		{
+			frame->platformOnKeyUp (keyCode);
+		}
+	}
 	void onEvent (xcb_button_press_event_t& event) override
 	{
 		CPoint where (event.event_x, event.event_y);
@@ -402,6 +416,8 @@ struct Frame::Impl : IFrameEventHandler
 							pointerGrabed = true;
 						free (reply);
 					}
+					xcb_set_input_focus (xcb, XCB_INPUT_FOCUS_PARENT, window.getID (),
+										 XCB_CURRENT_TIME);
 				}
 			}
 		}
