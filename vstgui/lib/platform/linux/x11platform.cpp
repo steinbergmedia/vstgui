@@ -16,8 +16,9 @@
 #include <link.h>
 #include <unordered_map>
 #include <xcb/xcb.h>
+#include <xcb/xcb_cursor.h>
+#include <xcb/xcb_util.h>
 #include <X11/Xlib.h>
-#include <X11/cursorfont.h>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -129,8 +130,8 @@ struct RunLoop::Impl : IEventHandler
 	SharedPointer<IRunLoop> runLoop;
 	std::atomic<uint32_t> useCount{0};
 	xcb_connection_t* xcbConnection{nullptr};
+	xcb_cursor_context_t* cursorContext{nullptr};
 	WindowEventHandlerMap windowEventHandlerMap;
-	uint32_t cursorFont{0};
 	std::array<xcb_cursor_t, CCursorType::kCursorHand> cursors{XCB_CURSOR_NONE};
 
 	void init (const SharedPointer<IRunLoop>& inRunLoop)
@@ -138,12 +139,11 @@ struct RunLoop::Impl : IEventHandler
 		if (++useCount != 1)
 			return;
 		runLoop = inRunLoop;
-		xcbConnection = xcb_connect (nullptr, nullptr);
+		int screenNo;
+		xcbConnection = xcb_connect (nullptr, &screenNo);
 		runLoop->registerEventHandler (xcb_get_file_descriptor (xcbConnection), this);
-
-		std::string cursor ("cursor");
-		cursorFont = xcb_generate_id (xcbConnection);
-		xcb_open_font (xcbConnection, cursorFont, cursor.size (), cursor.data ());
+		auto screen = xcb_aux_get_screen (xcbConnection, screenNo);
+		xcb_cursor_context_new (xcbConnection, screen, &cursorContext);
 	}
 
 	void exit ()
@@ -152,14 +152,14 @@ struct RunLoop::Impl : IEventHandler
 			return;
 		if (xcbConnection)
 		{
-			if (cursorFont)
+			if (cursorContext)
 			{
 				for (auto c : cursors)
 				{
 					if (c != XCB_CURSOR_NONE)
 						xcb_free_cursor (xcbConnection, c);
 				}
-				xcb_close_font (xcbConnection, cursorFont);
+				xcb_cursor_context_free (cursorContext);
 			}
 
 			xcb_disconnect (xcbConnection);
@@ -263,6 +263,7 @@ struct RunLoop::Impl : IEventHandler
 			}
 			std::free (event);
 		}
+		xcb_flush (xcbConnection);
 	}
 };
 
@@ -324,48 +325,26 @@ xcb_connection_t* RunLoop::getXcbConnection () const
 //------------------------------------------------------------------------
 uint32_t RunLoop::getCursorID (CCursorType cursor)
 {
-	if (impl->cursors[cursor] == XCB_CURSOR_NONE)
+	if (impl->cursors[cursor] == XCB_CURSOR_NONE && impl->cursorContext)
 	{
-		impl->cursors[cursor] = xcb_generate_id (impl->xcbConnection);
-		uint16_t which = XC_left_ptr;
+		const char* name = nullptr;
 		switch (cursor)
 		{
-			case kCursorDefault:
-			{
-				which = XC_left_ptr;
-				break;
-			}
-			case kCursorHSize:
-			{
-				which = XC_sb_h_double_arrow;
-				break;
-			}
-			case kCursorVSize:
-			{
-				which = XC_sb_v_double_arrow;
-				break;
-			}
-			case kCursorNESWSize:
-			case kCursorNWSESize:
-			case kCursorSizeAll:
-			{
-				which = XC_crosshair;
-				break;
-			}
-			case kCursorWait:
-			{
-				which = XC_watch;
-				break;
-			}
-			case kCursorHand:
-			{
-				which = XC_hand2;
-				break;
-			}
+			case kCursorDefault: name = "arrow"; break;
+			case kCursorWait: name = "watch"; break;
+			case kCursorHSize: name = "sb_h_double_arrow"; break;
+			case kCursorVSize: name = "sb_v_double_arrow"; break;
+			case kCursorNESWSize: name = "cross"; break;
+			case kCursorNWSESize: name = "cross"; break;
+			case kCursorSizeAll: name = "cross"; break;
+			case kCursorCopy: name = "copy"; break;
+			case kCursorNotAllowed: name = "forbidden"; break;
+			case kCursorHand: name = "openhand"; break;
 		}
-		xcb_create_glyph_cursor (impl->xcbConnection, impl->cursors[cursor], impl->cursorFont,
-								 impl->cursorFont, which, which + 1, 0, 0, 0, 0xffff, 0xffff,
-								 0xffff);
+		if (name)
+		{
+			impl->cursors[cursor] = xcb_cursor_load_cursor (impl->cursorContext, name);
+		}
 	}
 	return impl->cursors[cursor];
 }

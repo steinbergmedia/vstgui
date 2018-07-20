@@ -75,11 +75,13 @@ if(LINUX)
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(LIBXCB REQUIRED xcb)
     pkg_check_modules(LIBXCB_UTIL REQUIRED xcb-util)
+    pkg_check_modules(LIBXCB_CURSOR REQUIRED xcb-cursor)
     set(LINUX_LIBRARIES
         ${X11_LIBRARIES}
         ${FREETYPE_LIBRARIES}
         ${LIBXCB_LIBRARIES}
         ${LIBXCB_UTIL_LIBRARIES}
+        ${LIBXCB_CURSOR_LIBRARIES}
         cairo
         fontconfig
     )
