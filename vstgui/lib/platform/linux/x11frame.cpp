@@ -260,6 +260,7 @@ struct Frame::Impl : IFrameEventHandler
 	SharedPointer<RedrawTimerHandler> redrawTimer;
 	SharedPointer<Cairo::Context> drawContext;
 	RectList dirtyRects;
+	CCursorType currentCursor{kCursorDefault};
 	bool pointerGrabed{false};
 
 	Impl (::Window parent, CPoint size, IPlatformFrameCallback* frame)
@@ -284,6 +285,24 @@ struct Frame::Impl : IFrameEventHandler
 			dirtyRects.push_back (size);
 			redraw ();
 		}
+	}
+
+	//------------------------------------------------------------------------
+	void setCursor (CCursorType cursor)
+	{
+		if (currentCursor == cursor)
+			return;
+		currentCursor = cursor;
+		setCursorInternal (cursor);
+	}
+
+	//------------------------------------------------------------------------
+	void setCursorInternal (CCursorType cursor)
+	{
+		auto xcb = RunLoop::instance ().getXcbConnection ();
+		xcb_params_cw_t params;
+		params.cursor = RunLoop::instance ().getCursorID (cursor);
+		xcb_aux_change_window_attributes (xcb, window.getID (), XCB_CW_CURSOR, &params);
 	}
 
 	//------------------------------------------------------------------------
@@ -453,6 +472,11 @@ struct Frame::Impl : IFrameEventHandler
 			auto buttons = translateMouseButtons (event.state);
 			buttons |= translateModifiers (event.state);
 			frame->platformOnMouseExited (where, buttons);
+			setCursorInternal (kCursorDefault);
+		}
+		else
+		{
+			setCursorInternal (currentCursor);
 		}
 	}
 	void onEvent (xcb_focus_in_event_t& event) override {}
@@ -478,61 +502,68 @@ struct Frame::Impl : IFrameEventHandler
 		if (xEmbedAtom.valid () && event.type == xEmbedAtom ())
 		{
 			/* XEMBED messages */
-			enum XEmbedMessage
+			enum class XEMBED
 			{
-				XEMBED_EMBEDDED_NOTIFY = 0,
-				XEMBED_WINDOW_ACTIVATE = 1,
-				XEMBED_WINDOW_DEACTIVATE = 2,
-				XEMBED_REQUEST_FOCUS = 3,
-				XEMBED_FOCUS_IN = 4,
-				XEMBED_FOCUS_OUT = 5,
-				XEMBED_FOCUS_NEXT = 6,
-				XEMBED_FOCUS_PREV = 7,
-				/* 8-9 were used for XEMBED_GRAB_KEY/XEMBED_UNGRAB_KEY */
-				XEMBED_MODALITY_ON = 10,
-				XEMBED_MODALITY_OFF = 11,
-				XEMBED_REGISTER_ACCELERATOR = 12,
-				XEMBED_UNREGISTER_ACCELERATOR = 13,
-				XEMBED_ACTIVATE_ACCELERATOR = 14,
+				EMBEDDED_NOTIFY = 0,
+				WINDOW_ACTIVATE = 1,
+				WINDOW_DEACTIVATE = 2,
+				REQUEST_FOCUS = 3,
+				FOCUS_IN = 4,
+				FOCUS_OUT = 5,
+				FOCUS_NEXT = 6,
+				FOCUS_PREV = 7,
+				/* 8-9 were used for GRAB_KEY/UNGRAB_KEY */
+				MODALITY_ON = 10,
+				MODALITY_OFF = 11,
+				REGISTER_ACCELERATOR = 12,
+				UNREGISTER_ACCELERATOR = 13,
+				ACTIVATE_ACCELERATOR = 14,
 			};
-			switch (event.data.data32[1])
+			switch (static_cast<XEMBED> (event.data.data32[1]))
 			{
-				case XEMBED_EMBEDDED_NOTIFY:
+				case XEMBED::EMBEDDED_NOTIFY:
 				{
 					auto xcb = RunLoop::instance ().getXcbConnection ();
 					xcb_map_window (xcb, window.getID ());
 					break;
 				}
-				case XEMBED_WINDOW_ACTIVATE:
+				case XEMBED::WINDOW_ACTIVATE:
 				{
 					frame->platformOnWindowActivate (true);
 					break;
 				}
-				case XEMBED_WINDOW_DEACTIVATE:
+				case XEMBED::WINDOW_DEACTIVATE:
 				{
 					frame->platformOnWindowActivate (false);
 					break;
 				}
-				case XEMBED_REQUEST_FOCUS:
-					break;
-				case XEMBED_FOCUS_IN:
+				case XEMBED::FOCUS_IN:
 				{
 					frame->platformOnActivate (true);
 					break;
 				}
-				case XEMBED_FOCUS_OUT:
+				case XEMBED::FOCUS_OUT:
 				{
 					frame->platformOnActivate (false);
 					break;
 				}
-				case XEMBED_FOCUS_NEXT:
+				case XEMBED::FOCUS_NEXT:
 				{
+					// we could send a tab keycode here...
 					break;
 				}
-				case XEMBED_FOCUS_PREV:
+				case XEMBED::FOCUS_PREV:
 				{
+					// we could send a shift-tab keycode here...
 					break;
 				}
+				case XEMBED::MODALITY_ON:
+				case XEMBED::MODALITY_OFF:
+				case XEMBED::REGISTER_ACCELERATOR:
+				case XEMBED::UNREGISTER_ACCELERATOR:
+				case XEMBED::ACTIVATE_ACCELERATOR:
+				case XEMBED::REQUEST_FOCUS:
+					break;
 			}
 		}
 	}
@@ -598,11 +629,7 @@ bool Frame::getCurrentMouseButtons (CButtonState& buttons) const
 //------------------------------------------------------------------------
 bool Frame::setMouseCursor (CCursorType type)
 {
-	auto xcb = RunLoop::instance ().getXcbConnection ();
-	xcb_params_cw_t params;
-	params.cursor = RunLoop::instance ().getCursorID (type);
-	xcb_aux_change_window_attributes (xcb, impl->window.getID (), XCB_CW_CURSOR, &params);
-
+	impl->setCursor (type);
 	return true;
 }
 
@@ -638,7 +665,7 @@ bool Frame::hideTooltip ()
 //------------------------------------------------------------------------
 void* Frame::getPlatformRepresentation () const
 {
-	return nullptr;
+	return reinterpret_cast<void*> (impl->window.getID ());
 }
 
 //------------------------------------------------------------------------
@@ -717,9 +744,6 @@ PlatformType Frame::getPlatformType () const
 {
 	return kX11EmbedWindowID;
 }
-
-//------------------------------------------------------------------------
-void Frame::onEvent () {}
 
 //------------------------------------------------------------------------
 Frame::CreateIResourceInputStreamFunc Frame::createResourceInputStreamFunc =

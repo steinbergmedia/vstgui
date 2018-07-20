@@ -16,7 +16,7 @@ namespace VSTGUI {
 namespace X11 {
 
 //------------------------------------------------------------------------
-class Frame : public IPlatformFrame, public IEventHandler
+class Frame : public IPlatformFrame
 {
 public:
 	Frame (IPlatformFrameCallback* frame, const CRect& size, uint32_t parent,
@@ -59,8 +59,6 @@ private:
 
 	PlatformType getPlatformType () const override;
 	void onFrameClosed () override {}
-
-	void onEvent () override;
 
 private:
 	struct Impl;
