@@ -19,6 +19,7 @@
 #include <xcb/xcb_cursor.h>
 #include <xcb/xcb_util.h>
 #include <xcb/xcb_keysyms.h>
+#include <xcb/xcb_aux.h>
 #include <xkbcommon/xkbcommon.h>
 #include <xkbcommon/xkbcommon-x11.h>
 #include <X11/Xlib.h>
@@ -374,6 +375,7 @@ struct RunLoop::Impl : IEventHandler
 			}
 			std::free (event);
 		}
+		xcb_aux_sync (xcbConnection);
 		xcb_flush (xcbConnection);
 	}
 };
@@ -473,7 +475,7 @@ constexpr auto CursorCopyNames = //
 constexpr auto CursorNotAllowedNames = //
 	CharPtrArray<4>{"forbidden", "circle", "dnd-no-drop", "not-allowed"};
 constexpr auto CursorHandNames = //
-	CharPtrArray<4>{"hand1", "openhand", "all_scroll", "all-scroll"};
+	CharPtrArray<4>{"openhand", "hand1", "all_scroll", "all-scroll"};
 
 //------------------------------------------------------------------------
 } // anonymous

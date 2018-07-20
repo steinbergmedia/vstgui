@@ -303,6 +303,8 @@ struct Frame::Impl : IFrameEventHandler
 		xcb_params_cw_t params;
 		params.cursor = RunLoop::instance ().getCursorID (cursor);
 		xcb_aux_change_window_attributes (xcb, window.getID (), XCB_CW_CURSOR, &params);
+		xcb_aux_sync (xcb);
+		xcb_flush (xcb);
 	}
 
 	//------------------------------------------------------------------------
@@ -462,7 +464,6 @@ struct Frame::Impl : IFrameEventHandler
 		// make sure we get more motion events
 		auto xcb = RunLoop::instance ().getXcbConnection ();
 		xcb_get_motion_events (xcb, window.getID (), event.time, event.time + 100);
-		xcb_flush (xcb);
 	}
 	void onEvent (xcb_enter_notify_event_t& event) override
 	{
