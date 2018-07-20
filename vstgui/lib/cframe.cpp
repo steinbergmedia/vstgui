@@ -195,9 +195,13 @@ bool CFrame::open (void* systemWin, PlatformType systemWindowType, IPlatformFram
 		return false;
 	}
 
+	CollectInvalidRects cir (this);
+
 	attached (this);
 	
 	setParentView (nullptr);
+
+	invalid ();
 
 	return true;
 }
