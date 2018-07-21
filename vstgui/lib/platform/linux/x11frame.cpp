@@ -7,7 +7,6 @@
 #include "../../crect.h"
 #include "../../dragging.h"
 #include "../../vstkeycode.h"
-#include "../../optional.h"
 #include "../iplatformopenglview.h"
 #include "../iplatformviewlayer.h"
 #include "../iplatformtextedit.h"
@@ -16,6 +15,7 @@
 #include "cairobitmap.h"
 #include "cairocontext.h"
 #include "x11platform.h"
+#include "x11utils.h"
 #include <cassert>
 #include <iostream>
 #include <unordered_map>
@@ -31,9 +31,10 @@
 //------------------------------------------------------------------------
 namespace VSTGUI {
 namespace X11 {
+namespace {
 
 //------------------------------------------------------------------------
-static std::string getAtomName (xcb_atom_t atom)
+std::string getAtomName (xcb_atom_t atom)
 {
 	std::string name;
 	auto xcb = RunLoop::instance ().getXcbConnection ();
@@ -48,7 +49,7 @@ static std::string getAtomName (xcb_atom_t atom)
 }
 
 //------------------------------------------------------------------------
-static uint32_t translateMouseButtons (xcb_button_t value)
+inline uint32_t translateMouseButtons (xcb_button_t value)
 {
 	switch (value)
 	{
@@ -63,7 +64,7 @@ static uint32_t translateMouseButtons (xcb_button_t value)
 }
 
 //------------------------------------------------------------------------
-static uint32_t translateMouseButtons (int state)
+inline uint32_t translateMouseButtons (int state)
 {
 	uint32_t buttons = 0;
 	if (state & XCB_BUTTON_MASK_1)
@@ -76,7 +77,7 @@ static uint32_t translateMouseButtons (int state)
 }
 
 //------------------------------------------------------------------------
-static uint32_t translateModifiers (int state)
+inline uint32_t translateModifiers (int state)
 {
 	uint32_t buttons = 0;
 	if (state & XCB_MOD_MASK_CONTROL)
@@ -89,133 +90,7 @@ static uint32_t translateModifiers (int state)
 }
 
 //------------------------------------------------------------------------
-static xcb_visualtype_t* getVisualType (const xcb_screen_t* screen)
-{
-	auto depth_iter = xcb_screen_allowed_depths_iterator (screen);
-	for (; depth_iter.rem; xcb_depth_next (&depth_iter))
-	{
-		xcb_visualtype_iterator_t visual_iter;
-
-		visual_iter = xcb_depth_visuals_iterator (depth_iter.data);
-		for (; visual_iter.rem; xcb_visualtype_next (&visual_iter))
-		{
-			if (screen->root_visual == visual_iter.data->visual_id)
-			{
-				return visual_iter.data;
-			}
-		}
-	}
-	return nullptr;
-}
-
-//------------------------------------------------------------------------
-struct Atom
-{
-	Atom (const char* name) : name (name) {}
-
-	bool valid () const
-	{
-		create ();
-		return value ? true : false;
-	}
-	xcb_atom_t operator() () const
-	{
-		create ();
-		return *value;
-	}
-
-private:
-	void create () const
-	{
-		if (value)
-			return;
-		auto connection = RunLoop::instance ().getXcbConnection ();
-		auto cookie = xcb_intern_atom (connection, 0, name.size (), name.data ());
-		if (auto reply = xcb_intern_atom_reply (connection, cookie, nullptr))
-		{
-			value = Optional<xcb_atom_t> (reply->atom);
-			free (reply);
-		}
-	}
-
-	std::string name;
-	mutable Optional<xcb_atom_t> value;
-};
-
-static Atom xEmbedInfoAtom ("_XEMBED_INFO");
-static Atom xEmbedAtom ("_XEMBED");
-
-//------------------------------------------------------------------------
-struct XEmbedInfo
-{
-	uint32_t version{1};
-	uint32_t flags{0};
-};
-
-//------------------------------------------------------------------------
-struct SimpleWindow
-{
-	SimpleWindow (::Window parentId, CPoint size) : size (size)
-	{
-		auto connection = RunLoop::instance ().getXcbConnection ();
-		auto setup = xcb_get_setup (connection);
-		auto iter = xcb_setup_roots_iterator (setup);
-		auto screen = iter.data;
-		visual = getVisualType (screen);
-#if 0
-		parentId = screen->root;
-#endif
-		uint32_t paramMask = XCB_CW_BACK_PIXMAP | XCB_CW_BACKING_STORE | XCB_CW_EVENT_MASK;
-		xcb_params_cw_t params{};
-		params.back_pixel = XCB_BACK_PIXMAP_NONE;
-		params.backing_store = XCB_BACKING_STORE_WHEN_MAPPED;
-		params.event_mask = XCB_EVENT_MASK_KEY_PRESS | XCB_EVENT_MASK_KEY_RELEASE |
-							XCB_EVENT_MASK_BUTTON_PRESS | XCB_EVENT_MASK_BUTTON_RELEASE |
-							XCB_EVENT_MASK_ENTER_WINDOW | XCB_EVENT_MASK_LEAVE_WINDOW |
-							XCB_EVENT_MASK_POINTER_MOTION | XCB_EVENT_MASK_POINTER_MOTION_HINT |
-							XCB_EVENT_MASK_BUTTON_MOTION | XCB_EVENT_MASK_EXPOSURE |
-							XCB_EVENT_MASK_PROPERTY_CHANGE | XCB_EVENT_MASK_EXPOSURE;
-
-		xcb_aux_create_window (connection, XCB_COPY_FROM_PARENT, getID (), parentId, 0, 0, size.x,
-							   size.y, 0, XCB_WINDOW_CLASS_INPUT_OUTPUT, XCB_COPY_FROM_PARENT,
-							   paramMask, &params);
-
-		// setup XEMBED
-		if (xEmbedInfoAtom.valid ())
-		{
-			XEmbedInfo info;
-			xcb_change_property (connection, XCB_PROP_MODE_REPLACE, getID (), xEmbedInfoAtom (),
-								 xEmbedInfoAtom (), 32, 2, &info);
-		}
-
-		xcb_flush (connection);
-	}
-
-	~SimpleWindow () noexcept {}
-
-	xcb_window_t getID () const { return id; }
-	xcb_visualtype_t* getVisual () const { return visual; }
-
-	void setSize (const CRect& rect)
-	{
-		size = rect.getSize ();
-		auto connection = RunLoop::instance ().getXcbConnection ();
-		uint16_t mask = XCB_CONFIG_WINDOW_X | XCB_CONFIG_WINDOW_Y | XCB_CONFIG_WINDOW_WIDTH |
-						XCB_CONFIG_WINDOW_HEIGHT;
-		uint32_t values[] = {static_cast<uint32_t> (rect.left), static_cast<uint32_t> (rect.top),
-							 static_cast<uint32_t> (rect.getWidth ()),
-							 static_cast<uint32_t> (rect.getHeight ())};
-		xcb_configure_window (connection, getID (), mask, values);
-		xcb_flush (connection);
-	}
-
-	const CPoint& getSize () const { return size; }
-
-private:
-	xcb_window_t id{xcb_generate_id (RunLoop::instance ().getXcbConnection ())};
-	CPoint size;
-	xcb_visualtype_t* visual{nullptr};
-};
+} // anonymous
 
 //------------------------------------------------------------------------
 struct RedrawTimerHandler
@@ -241,42 +116,95 @@ struct RedrawTimerHandler
 };
 
 //------------------------------------------------------------------------
+struct DrawHandler
+{
+	DrawHandler (const ChildWindow& window)
+	{
+		auto s = cairo_xcb_surface_create (RunLoop::instance ().getXcbConnection (),
+										   window.getID (), window.getVisual (),
+										   window.getSize ().x, window.getSize ().y);
+		windowSurface.assign (s);
+		onSizeChanged (window.getSize ());
+	}
+
+	void onSizeChanged (const CPoint& size)
+	{
+		cairo_xcb_surface_set_size (windowSurface, size.x, size.y);
+		backBuffer = Cairo::SurfaceHandle (cairo_surface_create_similar (
+			windowSurface, CAIRO_CONTENT_COLOR_ALPHA, size.x, size.y));
+		CRect r;
+		r.setSize (size);
+		drawContext = makeOwned<Cairo::Context> (r, backBuffer);
+	}
+
+	template<typename RectList, typename Proc>
+	void draw (const RectList& dirtyRects, Proc proc)
+	{
+		CRect copyRect;
+		drawContext->beginDraw ();
+		for (auto rect : dirtyRects)
+		{
+			drawContext->setClipRect (rect);
+			drawContext->saveGlobalState ();
+			proc (drawContext, rect);
+			drawContext->restoreGlobalState ();
+			if (copyRect.isEmpty ())
+				copyRect = rect;
+			else
+				copyRect.unite (rect);
+		}
+		drawContext->endDraw ();
+		blitBackbufferToWindow (copyRect);
+		xcb_flush (RunLoop::instance ().getXcbConnection ());
+	}
+
+private:
+	Cairo::SurfaceHandle windowSurface;
+	Cairo::SurfaceHandle backBuffer;
+	SharedPointer<Cairo::Context> drawContext;
+
+	void blitBackbufferToWindow (const CRect& rect)
+	{
+		Cairo::ContextHandle windowContext (cairo_create (windowSurface));
+		cairo_rectangle (windowContext, rect.left, rect.top, rect.getWidth (), rect.getHeight ());
+		cairo_clip (windowContext);
+		cairo_set_source_surface (windowContext, backBuffer, 0, 0);
+		cairo_rectangle (windowContext, rect.left, rect.top, rect.getWidth (), rect.getHeight ());
+		cairo_fill (windowContext);
+		cairo_surface_flush (windowSurface);
+	}
+};
+
+//------------------------------------------------------------------------
 struct Frame::Impl : IFrameEventHandler
 {
 	using RectList = std::vector<CRect>;
 
-	SimpleWindow window;
-	Cairo::SurfaceHandle windowSurface;
-	Cairo::SurfaceHandle backBuffer;
+	ChildWindow window;
+	DrawHandler drawHandler;
 	IPlatformFrameCallback* frame;
 	SharedPointer<RedrawTimerHandler> redrawTimer;
-	SharedPointer<Cairo::Context> drawContext;
 	RectList dirtyRects;
 	CCursorType currentCursor{kCursorDefault};
 	bool pointerGrabed{false};
 
+	//------------------------------------------------------------------------
 	Impl (::Window parent, CPoint size, IPlatformFrameCallback* frame)
-		: window (parent, size), frame (frame)
+		: window (parent, size), drawHandler (window), frame (frame)
 	{
 		RunLoop::instance ().registerWindowEventHandler (window.getID (), this);
 	}
 
+	//------------------------------------------------------------------------
 	~Impl () noexcept { RunLoop::instance ().unregisterWindowEventHandler (window.getID ()); }
 
+	//------------------------------------------------------------------------
 	void setSize (const CRect& size)
 	{
 		window.setSize (size);
-		if (windowSurface)
-		{
-			cairo_xcb_surface_set_size (windowSurface, size.getWidth (), size.getHeight ());
-			backBuffer = Cairo::SurfaceHandle (
-				cairo_surface_create_similar (windowSurface, CAIRO_CONTENT_COLOR_ALPHA,
-											  window.getSize ().x, window.getSize ().y));
-			drawContext = makeOwned<Cairo::Context> (size, backBuffer);
-			dirtyRects.clear ();
-			dirtyRects.push_back (size);
-			redraw ();
-		}
+		drawHandler.onSizeChanged (size.getSize ());
+		dirtyRects.clear ();
+		dirtyRects.push_back (size);
 	}
 
 	//------------------------------------------------------------------------
@@ -300,41 +228,15 @@ struct Frame::Impl : IFrameEventHandler
 	}
 
 	//------------------------------------------------------------------------
-	void blitBackbufferToWindow (const CRect& rect)
-	{
-		Cairo::ContextHandle windowContext (cairo_create (windowSurface));
-		cairo_rectangle (windowContext, rect.left, rect.top, rect.getWidth (), rect.getHeight ());
-		cairo_clip (windowContext);
-		cairo_set_source_surface (windowContext, backBuffer, 0, 0);
-		cairo_rectangle (windowContext, rect.left, rect.top, rect.getWidth (), rect.getHeight ());
-		cairo_fill (windowContext);
-		cairo_surface_flush (windowSurface);
-	}
-
 	void redraw ()
 	{
-		prepareDrawContext ();
-
-		CRect copyRect;
-		drawContext->beginDraw ();
-		for (auto rect : dirtyRects)
-		{
-			drawContext->setClipRect (rect);
-			drawContext->saveGlobalState ();
-			frame->platformDrawRect (drawContext, rect);
-			drawContext->restoreGlobalState ();
-			if (copyRect.isEmpty ())
-				copyRect = rect;
-			else
-				copyRect.unite (rect);
-		}
-		drawContext->endDraw ();
-		blitBackbufferToWindow (copyRect);
-
-		xcb_flush (RunLoop::instance ().getXcbConnection ());
+		drawHandler.draw (dirtyRects, [&](CDrawContext* context, const CRect& rect) {
+			frame->platformDrawRect (context, rect);
+		});
 		dirtyRects.clear ();
 	}
 
+	//------------------------------------------------------------------------
 	void invalidRect (CRect r)
 	{
 		dirtyRects.emplace_back (r);
@@ -347,22 +249,10 @@ struct Frame::Impl : IFrameEventHandler
 		});
 	}
 
-	void prepareDrawContext ()
-	{
-		if (!windowSurface)
-		{
-			auto s = cairo_xcb_surface_create (RunLoop::instance ().getXcbConnection (),
-											   window.getID (), window.getVisual (),
-											   window.getSize ().x, window.getSize ().y);
-			windowSurface.assign (s);
-			backBuffer = Cairo::SurfaceHandle (
-				cairo_surface_create_similar (windowSurface, CAIRO_CONTENT_COLOR_ALPHA,
-											  window.getSize ().x, window.getSize ().y));
-			drawContext = makeOwned<Cairo::Context> (CRect ({}, window.getSize ()), backBuffer);
-		}
-	}
-
+	//------------------------------------------------------------------------
 	void onEvent (xcb_map_notify_event_t& event) override {}
+
+	//------------------------------------------------------------------------
 	void onEvent (xcb_key_press_event_t& event) override
 	{
 		auto type = (event.response_type & ~0x80);
@@ -376,6 +266,8 @@ struct Frame::Impl : IFrameEventHandler
 			frame->platformOnKeyUp (keyCode);
 		}
 	}
+
+	//------------------------------------------------------------------------
 	void onEvent (xcb_button_press_event_t& event) override
 	{
 		CPoint where (event.event_x, event.event_y);
@@ -454,6 +346,8 @@ struct Frame::Impl : IFrameEventHandler
 			}
 		}
 	}
+
+	//------------------------------------------------------------------------
 	void onEvent (xcb_motion_notify_event_t& event) override
 	{
 		CPoint where (event.event_x, event.event_y);
@@ -463,6 +357,8 @@ struct Frame::Impl : IFrameEventHandler
 		auto xcb = RunLoop::instance ().getXcbConnection ();
 		xcb_get_motion_events (xcb, window.getID (), event.time, event.time + 100);
 	}
+
+	//------------------------------------------------------------------------
 	void onEvent (xcb_enter_notify_event_t& event) override
 	{
 		if ((event.response_type & ~0x80) == XCB_LEAVE_NOTIFY)
@@ -478,7 +374,11 @@ struct Frame::Impl : IFrameEventHandler
 			setCursorInternal (currentCursor);
 		}
 	}
+
+	//------------------------------------------------------------------------
 	void onEvent (xcb_focus_in_event_t& event) override {}
+
+	//------------------------------------------------------------------------
 	void onEvent (xcb_expose_event_t& event) override
 	{
 		CRect r;
@@ -486,38 +386,24 @@ struct Frame::Impl : IFrameEventHandler
 		r.setSize (CPoint (event.width, event.height));
 		invalidRect (r);
 	}
+
+	//------------------------------------------------------------------------
 	void onEvent (xcb_property_notify_event_t& event) override
 	{
 #if 1 // needed for Reaper
-		if (xEmbedInfoAtom.valid () && event.atom == xEmbedInfoAtom ())
+		if (Atoms::xEmbedInfo.valid () && event.atom == Atoms::xEmbedInfo ())
 		{
 			auto xcb = RunLoop::instance ().getXcbConnection ();
 			xcb_map_window (xcb, window.getID ());
 		}
 #endif
 	}
+
+	//------------------------------------------------------------------------
 	void onEvent (xcb_client_message_event_t& event) override
 	{
-		if (xEmbedAtom.valid () && event.type == xEmbedAtom ())
+		if (Atoms::xEmbed.valid () && event.type == Atoms::xEmbed ())
 		{
-			/* XEMBED messages */
-			enum class XEMBED
-			{
-				EMBEDDED_NOTIFY = 0,
-				WINDOW_ACTIVATE = 1,
-				WINDOW_DEACTIVATE = 2,
-				REQUEST_FOCUS = 3,
-				FOCUS_IN = 4,
-				FOCUS_OUT = 5,
-				FOCUS_NEXT = 6,
-				FOCUS_PREV = 7,
-				/* 8-9 were used for GRAB_KEY/UNGRAB_KEY */
-				MODALITY_ON = 10,
-				MODALITY_OFF = 11,
-				REGISTER_ACCELERATOR = 12,
-				UNREGISTER_ACCELERATOR = 13,
-				ACTIVATE_ACCELERATOR = 14,
-			};
 			switch (static_cast<XEMBED> (event.data.data32[1]))
 			{
 				case XEMBED::EMBEDDED_NOTIFY:
@@ -610,7 +496,8 @@ bool Frame::setSize (const CRect& newSize)
 //------------------------------------------------------------------------
 bool Frame::getSize (CRect& size) const
 {
-	return false;
+	size.setSize (impl->window.getSize ());
+	return true;
 }
 
 //------------------------------------------------------------------------
