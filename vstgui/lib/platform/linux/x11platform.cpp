@@ -1,4 +1,4 @@
-// This file is part of VSTGUI. It is subject to the license terms
+﻿// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
@@ -370,6 +370,13 @@ struct RunLoop::Impl : IEventHandler
 				{
 					auto ev = reinterpret_cast<xcb_client_message_event_t*> (event);
 					dispatchEvent (*ev, ev->window);
+					break;
+				}
+				case XCB_FOCUS_IN:
+				case XCB_FOCUS_OUT:
+				{
+					auto ev = reinterpret_cast<xcb_focus_in_event_t*> (event);
+					dispatchEvent (*ev, ev->event);
 					break;
 				}
 			}
