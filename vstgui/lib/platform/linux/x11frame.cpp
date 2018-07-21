@@ -58,10 +58,6 @@ static uint32_t translateMouseButtons (xcb_button_t value)
 			return kMButton;
 		case 3:
 			return kRButton;
-		case 4:
-			return kButton4;
-		case 5:
-			return kButton5;
 	}
 	return 0;
 }
@@ -76,10 +72,6 @@ static uint32_t translateMouseButtons (int state)
 		buttons |= kRButton;
 	if (state & XCB_BUTTON_MASK_3)
 		buttons |= kMButton;
-	if (state & XCB_BUTTON_MASK_4)
-		buttons |= kButton4;
-	if (state & XCB_BUTTON_MASK_5)
-		buttons |= kButton5;
 	return buttons;
 }
 
