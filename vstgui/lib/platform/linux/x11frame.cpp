@@ -445,14 +445,20 @@ struct Frame::Impl : IFrameEventHandler
 		}
 		else // mouse up
 		{
-			auto buttons = translateMouseButtons (event.detail);
-			buttons |= translateModifiers (event.state);
-			frame->platformOnMouseUp (where, buttons);
-			if (pointerGrabed)
+			if (event.detail >= 4 && event.detail <= 7) // mouse wheel
 			{
-				auto xcb = RunLoop::instance ().getXcbConnection ();
-				xcb_ungrab_pointer (xcb, XCB_TIME_CURRENT_TIME);
-				pointerGrabed = false;
+			}
+			else
+			{
+				auto buttons = translateMouseButtons (event.detail);
+				buttons |= translateModifiers (event.state);
+				frame->platformOnMouseUp (where, buttons);
+				if (pointerGrabed)
+				{
+					auto xcb = RunLoop::instance ().getXcbConnection ();
+					xcb_ungrab_pointer (xcb, XCB_TIME_CURRENT_TIME);
+					pointerGrabed = false;
+				}
 			}
 		}
 	}
