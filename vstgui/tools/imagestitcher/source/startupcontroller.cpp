@@ -80,12 +80,12 @@ private:
 		binding->addValue (Value::make ("CreateNewDocument"),
 		                   UIDesc::ValueCalls::onAction ([this] (auto& v) {
 			                   v.performEdit (0.);
-							   handleCommand (Commands::NewDocument);
+							   this->handleCommand (Commands::NewDocument);
 		                   }));
 		binding->addValue (Value::make ("OpenDocument"),
 		                   UIDesc::ValueCalls::onAction ([this] (auto& v) {
 			                   v.performEdit (0.);
-							   handleCommand (Commands::OpenDocument);
+							   this->handleCommand (Commands::OpenDocument);
 		                   }));
 		binding->addValue (Value::make ("CloseWindow"),
 		                   UIDesc::ValueCalls::onAction ([] (auto& v) {

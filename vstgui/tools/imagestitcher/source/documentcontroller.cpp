@@ -221,11 +221,11 @@ UIDesc::ModelBindingPtr DocumentWindowController::createModelBinding ()
 {
 	auto binding = UIDesc::ModelBindingCallbacks::make ();
 	binding->addValue (Value::make ("AddPath"), UIDesc::ValueCalls::onAction ([this] (auto& v) {
-		                   doAddPathCommand ();
+		                   this->doAddPathCommand ();
 		                   v.performEdit (0.);
 	                   }));
 	binding->addValue (Value::make ("RemovePath"), UIDesc::ValueCalls::onAction ([this] (auto& v) {
-		                   doRemovePathCommand ();
+		                   this->doRemovePathCommand ();
 		                   v.performEdit (0.);
 	                   }));
 
@@ -235,15 +235,15 @@ UIDesc::ModelBindingPtr DocumentWindowController::createModelBinding ()
 	auto animationRunning = Value::make ("RunAnimation");
 	binding->addValue (animationRunning, UIDesc::ValueCalls::onPerformEdit ([this] (auto& v) {
 		                   if (v.getValue () >= 0.5)
-			                   doStartAnimation ();
+			                   this->doStartAnimation ();
 		                   else
-			                   doStopAnimation ();
+			                   this->doStopAnimation ();
 	                   }));
 	animationTimeValue = Value::make ("AnimationTime", 0, Value::makeRangeConverter (16, 500, 0));
 	binding->addValue (animationTimeValue,
 	                   UIDesc::ValueCalls::onPerformEdit ([this, animationRunning] (auto& v) {
 		                   if (animationRunning->getValue () >= 0.5)
-			                   doStartAnimation ();
+			                   this->doStartAnimation ();
 	                   }));
 	return binding;
 }

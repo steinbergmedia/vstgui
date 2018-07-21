@@ -1,4 +1,4 @@
-﻿// This file is part of VSTGUI. It is subject to the license terms
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
@@ -226,7 +226,7 @@ struct RunLoop::Impl : IEventHandler
 	xkb_state* xkbState{nullptr};
 	xkb_keymap* xkbKeymap{nullptr};
 	WindowEventHandlerMap windowEventHandlerMap;
-	std::array<xcb_cursor_t, CCursorType::kCursorHand> cursors{XCB_CURSOR_NONE};
+	std::array<xcb_cursor_t, CCursorType::kCursorHand> cursors{{XCB_CURSOR_NONE}};
 
 	void init (const SharedPointer<IRunLoop>& inRunLoop)
 	{
