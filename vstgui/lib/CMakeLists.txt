@@ -246,6 +246,7 @@ set(${target}_linux_sources
     platform/linux/cairoutils.h
     platform/linux/linuxstring.cpp
     platform/linux/linuxstring.h
+    platform/linux/x11fileselector.cpp
     platform/linux/x11frame.cpp
     platform/linux/x11frame.h
     platform/linux/x11platform.cpp
