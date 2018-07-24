@@ -109,6 +109,9 @@ endif()
 
 ##########################################################################################
 if(LINUX)
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(SQLITE3 REQUIRED sqlite3)
+
     set(${target}_sources ${${target}_common_sources} ${${target}_gdk_sources})
 endif()
 
@@ -127,5 +130,6 @@ if(LINUX)
     target_include_directories(${target} PRIVATE ${X11_INCLUDE_DIR})
     target_include_directories(${target} PRIVATE ${GTKMM3_INCLUDE_DIRS})
     target_include_directories(${target} PRIVATE ${FREETYPE_INCLUDE_DIRS})
-    target_link_libraries(${target} PRIVATE vstgui_uidescription ${LINUX_LIBRARIES} dl)
+    target_include_directories(${target} PRIVATE ${SQLITE3_INCLUDE_DIRS})
+    target_link_libraries(${target} PRIVATE vstgui_uidescription ${LINUX_LIBRARIES} dl ${SQLITE3_LIBRARIES})
 endif()

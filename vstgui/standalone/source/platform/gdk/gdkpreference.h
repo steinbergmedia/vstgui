@@ -5,6 +5,7 @@
 #pragma once
 
 #include "../../../include/ipreference.h"
+#include <sqlite3.h>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -12,6 +13,7 @@ namespace Standalone {
 namespace Platform {
 namespace GDK {
 
+//------------------------------------------------------------------------
 class Preference : public IPreference
 {
 public:
@@ -22,6 +24,9 @@ public:
 	Optional<UTF8String> get (const UTF8String& key) override;
 
 private:
+	bool prepare ();
+
+	sqlite3* db{nullptr};
 };
 
 //------------------------------------------------------------------------
