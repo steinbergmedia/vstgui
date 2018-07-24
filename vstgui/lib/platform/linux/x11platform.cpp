@@ -32,30 +32,6 @@
 //------------------------------------------------------------------------
 namespace VSTGUI {
 
-struct X11FileSelector : CNewFileSelector
-{
-	X11FileSelector (CFrame* parent, Style style) : CNewFileSelector (parent), style (style) {}
-
-	bool runInternal (CBaseObject* delegate) override
-	{
-		this->delegate = delegate;
-		return false;
-	}
-
-	void cancelInternal () override {}
-
-	bool runModalInternal () override { return false; }
-
-	Style style;
-	SharedPointer<CBaseObject> delegate;
-};
-
-//------------------------------------------------------------------------
-CNewFileSelector* CNewFileSelector::create (CFrame* parent, Style style)
-{
-	return new X11FileSelector (parent, style);
-}
-
 //------------------------------------------------------------------------
 namespace X11 {
 
