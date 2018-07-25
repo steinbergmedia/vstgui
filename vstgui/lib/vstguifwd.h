@@ -63,7 +63,9 @@ enum CCursorType
 	/** not allowed cursor (mainly for drag&drop operations) */
 	kCursorNotAllowed,
 	/** hand cursor */
-	kCursorHand
+	kCursorHand,
+	/** i beam cursor */
+	kCursorIBeam,
 };
 
 //----------------------------

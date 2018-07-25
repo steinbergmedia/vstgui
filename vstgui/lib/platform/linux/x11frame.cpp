@@ -12,6 +12,7 @@
 #include "../iplatformtextedit.h"
 #include "../iplatformoptionmenu.h"
 #include "../common/fileresourceinputstream.h"
+#include "../common/generictextedit.h"
 #include "cairobitmap.h"
 #include "cairocontext.h"
 #include "x11platform.h"
@@ -305,7 +306,7 @@ struct Frame::Impl : IFrameEventHandler
 				auto buttons = translateMouseButtons (event.detail);
 				buttons |= translateModifiers (event.state);
 				auto result = frame->platformOnMouseDown (where, buttons);
-				if (result == kMouseEventHandled)
+//				if (result == kMouseEventHandled)
 				{
 					// grab the pointer
 					auto xcb = RunLoop::instance ().getXcbConnection ();
@@ -557,7 +558,7 @@ void* Frame::getPlatformRepresentation () const
 //------------------------------------------------------------------------
 SharedPointer<IPlatformTextEdit> Frame::createPlatformTextEdit (IPlatformTextEditCallback* textEdit)
 {
-	return nullptr;
+	return makeOwned<GenericTextEdit> (textEdit);
 }
 
 //------------------------------------------------------------------------

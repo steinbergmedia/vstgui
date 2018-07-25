@@ -499,17 +499,17 @@ CMouseEventResult CFrame::onMouseDown (CPoint &where, const CButtonState& button
 	CPoint where2 (where);
 	getTransform ().inverse ().transform (where2);
 
-	// reset views
-	setMouseDownView (nullptr);
-	if (pImpl->focusView && dynamic_cast<CTextEdit*> (pImpl->focusView))
-		setFocusView (nullptr);
-
 	if (pImpl->tooltips)
 		pImpl->tooltips->onMouseDown (where2);
 
 	CMouseEventResult result = callMouseObserverMouseDown (where, buttons);
 	if (result != kMouseEventNotHandled)
 		return result;
+
+	// reset views
+	setMouseDownView (nullptr);
+	if (pImpl->focusView && dynamic_cast<CTextEdit*> (pImpl->focusView))
+		setFocusView (nullptr);
 
 	if (pImpl->modalView)
 	{

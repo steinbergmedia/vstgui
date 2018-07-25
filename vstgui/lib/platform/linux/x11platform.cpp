@@ -86,12 +86,14 @@ const VirtMap keyMap = {{XKB_KEY_BackSpace, VKEY_BACK},
 						{XKB_KEY_F12, VKEY_F12},
 						{XKB_KEY_Num_Lock, VKEY_NUMLOCK},
 						{XKB_KEY_Scroll_Lock, VKEY_SCROLL}, // correct ?
+#if 0
 						{XKB_KEY_Shift_L, VKEY_SHIFT},
 						{XKB_KEY_Shift_R, VKEY_SHIFT},
 						{XKB_KEY_Control_L, VKEY_CONTROL},
 						{XKB_KEY_Control_R, VKEY_CONTROL},
 						{XKB_KEY_Alt_L, VKEY_ALT},
 						{XKB_KEY_Alt_R, VKEY_ALT},
+#endif
 						{XKB_KEY_VoidSymbol, 0}};
 
 //------------------------------------------------------------------------
@@ -202,7 +204,7 @@ struct RunLoop::Impl : IEventHandler
 	xkb_state* xkbState{nullptr};
 	xkb_keymap* xkbKeymap{nullptr};
 	WindowEventHandlerMap windowEventHandlerMap;
-	std::array<xcb_cursor_t, CCursorType::kCursorHand> cursors{{XCB_CURSOR_NONE}};
+	std::array<xcb_cursor_t, CCursorType::kCursorIBeam + 1> cursors{{XCB_CURSOR_NONE}};
 
 	void init (const SharedPointer<IRunLoop>& inRunLoop)
 	{
@@ -459,6 +461,8 @@ constexpr auto CursorNotAllowedNames = //
 	CharPtrArray<4>{"forbidden", "circle", "dnd-no-drop", "not-allowed"};
 constexpr auto CursorHandNames = //
 	CharPtrArray<4>{"openhand", "hand1", "all_scroll", "all-scroll"};
+constexpr auto CursorIBeamNames = //
+	CharPtrArray<3>{"ibeam", "xterm", "text"};
 
 //------------------------------------------------------------------------
 } // anonymous
@@ -500,6 +504,9 @@ uint32_t RunLoop::getCursorID (CCursorType cursor)
 				break;
 			case kCursorHand:
 				cursorID = makeCursor (impl->cursorContext, CursorHandNames);
+				break;
+			case kCursorIBeam:
+				cursorID = makeCursor (impl->cursorContext, CursorIBeamNames);
 				break;
 		}
 		impl->cursors[cursor] = cursorID;

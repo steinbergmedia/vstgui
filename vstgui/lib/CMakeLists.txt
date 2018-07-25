@@ -233,6 +233,9 @@ set(${target}_win32_sources
 set(${target}_linux_sources
     platform/common/fileresourceinputstream.cpp
     platform/common/fileresourceinputstream.h
+    platform/common/generictextedit.cpp
+    platform/common/generictextedit.h
+    platform/common/stb_textedit.h
     platform/linux/cairobitmap.cpp
     platform/linux/cairobitmap.h
     platform/linux/cairocontext.cpp
