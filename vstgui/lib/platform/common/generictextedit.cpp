@@ -13,19 +13,19 @@ namespace VSTGUI {
 
 #define STB_TEXTEDIT_CHARTYPE char
 #define STB_TEXTEDIT_POSITIONTYPE size_t
-#define STB_TEXTEDIT_STRING STBTextEditLayoutView
+#define STB_TEXTEDIT_STRING STBTextEditView
 #define STB_TEXTEDIT_KEYTYPE uint32_t
 
 #include "stb_textedit.h"
 
 //-----------------------------------------------------------------------------
-class STBTextEditLayoutView
+class STBTextEditView
 	: public CTextLabel
 	, public IKeyboardHook
 	, public IMouseObserver
 {
 public:
-	STBTextEditLayoutView (IPlatformTextEditCallback* callback);
+	STBTextEditView (IPlatformTextEditCallback* callback);
 
 	void draw (CDrawContext* pContext) override;
 	void drawBack (CDrawContext* pContext, CBitmap* newBack = nullptr) override;
@@ -48,11 +48,10 @@ public:
 
 	void selectAll ();
 
-	static int deleteChars (STBTextEditLayoutView* self, size_t pos, size_t num);
-	static int
-	insertChars (STBTextEditLayoutView* self, size_t pos, const char* newtext, size_t numChars);
-	static void layout (StbTexteditRow* row, STBTextEditLayoutView* self, int start_i);
-	static float getCharWidth (STBTextEditLayoutView* self, int n, int i);
+	static int deleteChars (STBTextEditView* self, size_t pos, size_t num);
+	static int insertChars (STBTextEditView* self, size_t pos, const char* text, size_t num);
+	static void layout (StbTexteditRow* row, STBTextEditView* self, int start_i);
+	static float getCharWidth (STBTextEditView* self, int n, int i);
 
 private:
 	void onSelectionChanged ();
@@ -71,14 +70,14 @@ private:
 #define VIRTUAL_KEY_BIT 0x10000000
 
 #define STB_TEXTEDIT_STRINGLEN(tc) ((tc)->getText ().length ())
-#define STB_TEXTEDIT_LAYOUTROW STBTextEditLayoutView::layout
-#define STB_TEXTEDIT_GETWIDTH(tc, n, i) STBTextEditLayoutView::getCharWidth (tc, n, i)
+#define STB_TEXTEDIT_LAYOUTROW STBTextEditView::layout
+#define STB_TEXTEDIT_GETWIDTH(tc, n, i) STBTextEditView::getCharWidth (tc, n, i)
 #define STB_TEXTEDIT_KEYTOTEXT(key) (((key)&KEYDOWN_BIT) ? 0 : (key))
 #define STB_TEXTEDIT_GETCHAR(tc, i) ((tc)->getText ().getString ()[i])
 #define STB_TEXTEDIT_NEWLINE '\n'
 #define STB_TEXTEDIT_IS_SPACE(ch) isSpace (ch)
-#define STB_TEXTEDIT_DELETECHARS STBTextEditLayoutView::deleteChars
-#define STB_TEXTEDIT_INSERTCHARS STBTextEditLayoutView::insertChars
+#define STB_TEXTEDIT_DELETECHARS STBTextEditView::deleteChars
+#define STB_TEXTEDIT_INSERTCHARS STBTextEditView::insertChars
 
 #define STB_TEXTEDIT_K_SHIFT 0x40000000
 #define STB_TEXTEDIT_K_CONTROL 0x20000000
@@ -106,7 +105,7 @@ private:
 //-----------------------------------------------------------------------------
 struct GenericTextEdit::Impl
 {
-	STBTextEditLayoutView* view;
+	STBTextEditView* view;
 };
 
 //-----------------------------------------------------------------------------
@@ -114,7 +113,7 @@ GenericTextEdit::GenericTextEdit (IPlatformTextEditCallback* callback)
 	: IPlatformTextEdit (callback)
 {
 	impl = std::unique_ptr<Impl> (new Impl);
-	impl->view = new STBTextEditLayoutView (callback);
+	impl->view = new STBTextEditView (callback);
 	impl->view->setFont (callback->platformGetFont ());
 	impl->view->setFontColor (callback->platformGetFontColor ());
 	impl->view->setTextInset (callback->platformGetTextInset ());
@@ -158,7 +157,7 @@ bool GenericTextEdit::updateSize ()
 }
 
 //-----------------------------------------------------------------------------
-STBTextEditLayoutView::STBTextEditLayoutView (IPlatformTextEditCallback* callback)
+STBTextEditView::STBTextEditView (IPlatformTextEditCallback* callback)
 	: CTextLabel ({}), callback (callback)
 {
 	stb_textedit_initialize_state (&editState, true);
@@ -166,7 +165,7 @@ STBTextEditLayoutView::STBTextEditLayoutView (IPlatformTextEditCallback* callbac
 }
 
 //-----------------------------------------------------------------------------
-int32_t STBTextEditLayoutView::onKeyDown (const VstKeyCode& code, CFrame* frame)
+int32_t STBTextEditView::onKeyDown (const VstKeyCode& code, CFrame* frame)
 {
 	if (recursiveKeyEventGuard)
 		return -1;
@@ -197,7 +196,7 @@ int32_t STBTextEditLayoutView::onKeyDown (const VstKeyCode& code, CFrame* frame)
 }
 
 //-----------------------------------------------------------------------------
-int32_t STBTextEditLayoutView::onKeyUp (const VstKeyCode& code, CFrame* frame)
+int32_t STBTextEditView::onKeyUp (const VstKeyCode& code, CFrame* frame)
 {
 	auto key = code.character;
 	if (key == 0 && code.virt == 0)
@@ -235,9 +234,9 @@ int32_t STBTextEditLayoutView::onKeyUp (const VstKeyCode& code, CFrame* frame)
 }
 
 //-----------------------------------------------------------------------------
-CMouseEventResult STBTextEditLayoutView::onMouseDown (CFrame* frame,
-													  const CPoint& where,
-													  const CButtonState& buttons)
+CMouseEventResult STBTextEditView::onMouseDown (CFrame* frame,
+												const CPoint& where,
+												const CButtonState& buttons)
 {
 	if (buttons.isLeftButton () && hitTest (where, buttons))
 	{
@@ -257,9 +256,9 @@ CMouseEventResult STBTextEditLayoutView::onMouseDown (CFrame* frame,
 }
 
 //-----------------------------------------------------------------------------
-CMouseEventResult STBTextEditLayoutView::onMouseMoved (CFrame* frame,
-													   const CPoint& where,
-													   const CButtonState& buttons)
+CMouseEventResult STBTextEditView::onMouseMoved (CFrame* frame,
+												 const CPoint& where,
+												 const CButtonState& buttons)
 {
 	if (buttons.isLeftButton () && hitTest (where, buttons))
 	{
@@ -279,21 +278,21 @@ CMouseEventResult STBTextEditLayoutView::onMouseMoved (CFrame* frame,
 }
 
 //-----------------------------------------------------------------------------
-void STBTextEditLayoutView::onMouseEntered (CView* view, CFrame* frame)
+void STBTextEditView::onMouseEntered (CView* view, CFrame* frame)
 {
 	if (view == this)
 		getFrame ()->setCursor (kCursorIBeam);
 }
 
 //-----------------------------------------------------------------------------
-void STBTextEditLayoutView::onMouseExited (CView* view, CFrame* frame)
+void STBTextEditView::onMouseExited (CView* view, CFrame* frame)
 {
 	if (view == this)
 		getFrame ()->setCursor (kCursorDefault);
 }
 
 //-----------------------------------------------------------------------------
-bool STBTextEditLayoutView::attached (CView* parent)
+bool STBTextEditView::attached (CView* parent)
 {
 	if (auto frame = parent->getFrame ())
 	{
@@ -304,7 +303,7 @@ bool STBTextEditLayoutView::attached (CView* parent)
 }
 
 //-----------------------------------------------------------------------------
-bool STBTextEditLayoutView::removed (CView* parent)
+bool STBTextEditView::removed (CView* parent)
 {
 	if (auto frame = parent->getFrame ())
 	{
@@ -315,7 +314,7 @@ bool STBTextEditLayoutView::removed (CView* parent)
 }
 
 //-----------------------------------------------------------------------------
-void STBTextEditLayoutView::selectAll ()
+void STBTextEditView::selectAll ()
 {
 	editState.select_start = 0;
 	editState.select_end = getText ().length ();
@@ -323,20 +322,20 @@ void STBTextEditLayoutView::selectAll ()
 }
 
 //-----------------------------------------------------------------------------
-void STBTextEditLayoutView::onSelectionChanged ()
+void STBTextEditView::onSelectionChanged ()
 {
 	invalid ();
 }
 
 //-----------------------------------------------------------------------------
-void STBTextEditLayoutView::setText (const UTF8String& txt)
+void STBTextEditView::setText (const UTF8String& txt)
 {
 	charWidthCache.clear ();
 	CTextLabel::setText (txt);
 }
 
 //-----------------------------------------------------------------------------
-CCoord STBTextEditLayoutView::getCharWidth (char c, char pc) const
+CCoord STBTextEditView::getCharWidth (char c, char pc) const
 {
 	auto platformFont = getFont ()->getPlatformFont ();
 	assert (platformFont);
@@ -357,21 +356,21 @@ CCoord STBTextEditLayoutView::getCharWidth (char c, char pc) const
 }
 
 //-----------------------------------------------------------------------------
-void STBTextEditLayoutView::fillCharWidthCache ()
+void STBTextEditView::fillCharWidthCache ()
 {
 	if (!charWidthCache.empty ())
 		return;
-	auto numChars = getText ().length ();
-	charWidthCache.resize (numChars);
+	auto num = getText ().length ();
+	charWidthCache.resize (num);
 	const auto& str = getText ().getString ();
-	for (auto i = 0; i < numChars; ++i)
+	for (auto i = 0; i < num; ++i)
 	{
 		charWidthCache[i] = getCharWidth (str[i], i == 0 ? 0 : str[i - 1]);
 	}
 }
 
 //-----------------------------------------------------------------------------
-void STBTextEditLayoutView::draw (CDrawContext* context)
+void STBTextEditView::draw (CDrawContext* context)
 {
 	fillCharWidthCache ();
 
@@ -396,7 +395,7 @@ void STBTextEditLayoutView::draw (CDrawContext* context)
 }
 
 //-----------------------------------------------------------------------------
-void STBTextEditLayoutView::drawBack (CDrawContext* context, CBitmap* newBack)
+void STBTextEditView::drawBack (CDrawContext* context, CBitmap* newBack)
 {
 	CTextLabel::drawBack (context, newBack);
 
@@ -425,7 +424,7 @@ void STBTextEditLayoutView::drawBack (CDrawContext* context, CBitmap* newBack)
 }
 
 //-----------------------------------------------------------------------------
-int STBTextEditLayoutView::deleteChars (STBTextEditLayoutView* self, size_t pos, size_t num)
+int STBTextEditView::deleteChars (STBTextEditView* self, size_t pos, size_t num)
 {
 	auto str = self->text.getString ();
 	str.erase (pos, num);
@@ -434,19 +433,16 @@ int STBTextEditLayoutView::deleteChars (STBTextEditLayoutView* self, size_t pos,
 }
 
 //-----------------------------------------------------------------------------
-int STBTextEditLayoutView::insertChars (STBTextEditLayoutView* self,
-										size_t pos,
-										const char* newtext,
-										size_t numChars)
+int STBTextEditView::insertChars (STBTextEditView* self, size_t pos, const char* text, size_t num)
 {
 	auto str = self->text.getString ();
-	str.insert (pos, newtext, numChars);
+	str.insert (pos, text, num);
 	self->setText (str.data ());
 	return true; // success
 }
 
 //-----------------------------------------------------------------------------
-void STBTextEditLayoutView::layout (StbTexteditRow* row, STBTextEditLayoutView* self, int start_i)
+void STBTextEditView::layout (StbTexteditRow* row, STBTextEditView* self, int start_i)
 {
 	assert (start_i == 0);
 
@@ -482,7 +478,7 @@ void STBTextEditLayoutView::layout (StbTexteditRow* row, STBTextEditLayoutView* 
 }
 
 //-----------------------------------------------------------------------------
-float STBTextEditLayoutView::getCharWidth (STBTextEditLayoutView* self, int n, int i)
+float STBTextEditView::getCharWidth (STBTextEditView* self, int n, int i)
 {
 	self->fillCharWidthCache ();
 	return self->charWidthCache[i];
