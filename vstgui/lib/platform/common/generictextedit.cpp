@@ -6,6 +6,7 @@
 #include "../iplatformfont.h"
 #include "../../controls/ctextlabel.h"
 #include "../../cframe.h"
+#include <numeric>
 
 //-----------------------------------------------------------------------------
 namespace VSTGUI {
@@ -13,7 +14,7 @@ namespace VSTGUI {
 #define STB_TEXTEDIT_CHARTYPE char
 #define STB_TEXTEDIT_POSITIONTYPE size_t
 #define STB_TEXTEDIT_STRING STBTextEditLayoutView
-#define STB_TEXTEDIT_KEYTYPE int32_t
+#define STB_TEXTEDIT_KEYTYPE uint32_t
 
 #include "stb_textedit.h"
 
