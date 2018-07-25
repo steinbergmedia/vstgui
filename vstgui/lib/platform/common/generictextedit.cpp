@@ -60,6 +60,7 @@ private:
 
 	IPlatformTextEditCallback* callback;
 	STB_TexteditState editState;
+	CColor selectionColor{kBlueCColor};
 	bool recursiveKeyEventGuard{false};
 	std::vector<CCoord> charWidthCache;
 };
@@ -209,6 +210,10 @@ int32_t STBTextEditLayoutView::onKeyUp (const VstKeyCode& code, CFrame* frame)
 			{
 				key = 0x20;
 				break;
+			}
+			case VKEY_TAB:
+			{
+				return -1;
 			}
 			default:
 			{
@@ -360,7 +365,7 @@ void STBTextEditLayoutView::fillCharWidthCache ()
 	const auto& str = getText ().getString ();
 	for (auto i = 0; i < numChars; ++i)
 	{
-		charWidthCache[i] = getCharWidth (str[i], i == 0 ? 0 : str[i-1]);
+		charWidthCache[i] = getCharWidth (str[i], i == 0 ? 0 : str[i - 1]);
 	}
 }
 
@@ -413,7 +418,7 @@ void STBTextEditLayoutView::drawBack (CDrawContext* context, CBitmap* newBack)
 			selection.offset (charWidthCache[index], 0);
 		for (; index < selEnd; ++index)
 			selection.right += charWidthCache[index];
-		context->setFillColor (kBlueCColor);
+		context->setFillColor (selectionColor);
 		context->drawRect (selection, kDrawFilled);
 	}
 }
@@ -443,12 +448,10 @@ int STBTextEditLayoutView::insertChars (STBTextEditLayoutView* self,
 void STBTextEditLayoutView::layout (StbTexteditRow* row, STBTextEditLayoutView* self, int start_i)
 {
 	assert (start_i == 0);
-	auto platformFont = self->getFont ()->getPlatformFont ();
-	assert (platformFont);
-	auto fontPainter = platformFont->getPainter ();
-	assert (fontPainter);
 
-	auto textWidth = fontPainter->getStringWidth (nullptr, self->getText ().getPlatformString ());
+	self->fillCharWidthCache ();
+	CCoord textWidth =
+		std::accumulate (self->charWidthCache.begin (), self->charWidthCache.end (), 0.);
 
 	int remaining_chars = self->getText ().length ();
 	row->num_chars = remaining_chars;
