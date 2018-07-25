@@ -101,7 +101,7 @@ private:
 		if (!title.empty ())
 			command += " --title '" + title.getString () + "'";
         if (!initialPath.empty ())
-            command += "\"" + initialPath.getString () + "\"";
+            command += " \"" + initialPath.getString () + "\"";
 		if (startProcess (command.data ()))
 		{
 			return true;
