@@ -9,6 +9,7 @@
 
 #include "../vstguifwd.h"
 #include "../dragging.h"
+#include "../optional.h"
 #include "iplatformframecallback.h"
 
 namespace VSTGUI {
@@ -83,6 +84,9 @@ public:
 
 	/** called from IPlatformFrameCallback when it's closed */
 	virtual void onFrameClosed () = 0;
+
+	/** when called from a key down/up event converts the event to the actual text. */
+	virtual Optional<UTF8String> convertCurrentKeyEventToText () = 0;
 //-----------------------------------------------------------------------------
 protected:
 	explicit IPlatformFrame (IPlatformFrameCallback* frame) : frame (frame) {}

@@ -59,6 +59,7 @@ private:
 
 	PlatformType getPlatformType () const override;
 	void onFrameClosed () override {}
+	Optional<UTF8String> convertCurrentKeyEventToText () override;
 
 private:
 	struct Impl;

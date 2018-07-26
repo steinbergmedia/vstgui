@@ -55,6 +55,7 @@ public:
 	SharedPointer<IDataPackage> getClipboard () override;
 	PlatformType getPlatformType () const override { return PlatformType::kWindowRef; }
 	void onFrameClosed () override {}
+	Optional<UTF8String> convertCurrentKeyEventToText () override { return {}; }
 
 //-----------------------------------------------------------------------------
 protected:

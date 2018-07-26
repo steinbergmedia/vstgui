@@ -257,7 +257,7 @@ struct Frame::Impl : IFrameEventHandler
 	void onEvent (xcb_key_press_event_t& event) override
 	{
 		auto type = (event.response_type & ~0x80);
-		auto keyCode = RunLoop::instance ().makeKeyCode (event.detail, event.state);
+		auto keyCode = RunLoop::instance ().getCurrentKeyEvent ();
 		if (type == XCB_KEY_PRESS)
 		{
 			frame->platformOnKeyDown (keyCode);
@@ -306,7 +306,7 @@ struct Frame::Impl : IFrameEventHandler
 				auto buttons = translateMouseButtons (event.detail);
 				buttons |= translateModifiers (event.state);
 				auto result = frame->platformOnMouseDown (where, buttons);
-//				if (result == kMouseEventHandled)
+				//				if (result == kMouseEventHandled)
 				{
 					// grab the pointer
 					auto xcb = RunLoop::instance ().getXcbConnection ();
@@ -630,6 +630,12 @@ SharedPointer<IDataPackage> Frame::getClipboard ()
 PlatformType Frame::getPlatformType () const
 {
 	return kX11EmbedWindowID;
+}
+
+//------------------------------------------------------------------------
+Optional<UTF8String> Frame::convertCurrentKeyEventToText ()
+{
+	return RunLoop::instance ().convertCurrentKeyEventToText ();
 }
 
 //------------------------------------------------------------------------

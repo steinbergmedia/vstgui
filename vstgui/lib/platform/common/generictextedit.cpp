@@ -4,8 +4,10 @@
 
 #include "generictextedit.h"
 #include "../iplatformfont.h"
+#include "../iplatformframe.h"
 #include "../../controls/ctextlabel.h"
 #include "../../cframe.h"
+#include "../../cvstguitimer.h"
 #include <numeric>
 
 //-----------------------------------------------------------------------------
@@ -54,33 +56,47 @@ public:
 	static float getCharWidth (STBTextEditView* self, int n, int i);
 
 private:
-	void onSelectionChanged ();
+	template<typename Proc>
+	bool callSTB (Proc proc);
+	void onStateChanged ();
 	void fillCharWidthCache ();
 	CCoord getCharWidth (char c, char pc) const;
 
+	static constexpr auto BitRecursiveKeyGuard = 1 << 0;
+	static constexpr auto BitBlinkToggle = 1 << 1;
+	static constexpr auto BitCursorIsSet = 1 << 2;
+
+	bool isRecursiveKeyEventGuard () const { return hasBit (flags, BitRecursiveKeyGuard); }
+	bool isBlinkToggle () const { return hasBit (flags, BitBlinkToggle); }
+	bool isCursorSet () const { return hasBit (flags, BitCursorIsSet); }
+
+	void setRecursiveKeyEventGuard (bool state) { setBit (flags, BitRecursiveKeyGuard, state); }
+	void setBlinkToggle (bool state) { setBit (flags, BitBlinkToggle, state); }
+	void setCursorIsSet (bool state) { setBit (flags, BitCursorIsSet, state); }
+
+	SharedPointer<CVSTGUITimer> blinkTimer;
 	IPlatformTextEditCallback* callback;
 	STB_TexteditState editState;
-	CColor selectionColor{kBlueCColor};
-	bool recursiveKeyEventGuard{false};
 	std::vector<CCoord> charWidthCache;
+	CColor selectionColor{kBlueCColor};
+	uint32_t flags{0};
 };
 
 //-----------------------------------------------------------------------------
-#define KEYDOWN_BIT 0x80000000
-#define VIRTUAL_KEY_BIT 0x10000000
+#define VIRTUAL_KEY_BIT 0x80000000
+#define STB_TEXTEDIT_K_SHIFT 0x40000000
+#define STB_TEXTEDIT_K_CONTROL 0x20000000
 
 #define STB_TEXTEDIT_STRINGLEN(tc) ((tc)->getText ().length ())
 #define STB_TEXTEDIT_LAYOUTROW STBTextEditView::layout
 #define STB_TEXTEDIT_GETWIDTH(tc, n, i) STBTextEditView::getCharWidth (tc, n, i)
-#define STB_TEXTEDIT_KEYTOTEXT(key) (((key)&KEYDOWN_BIT) ? 0 : (key))
+#define STB_TEXTEDIT_KEYTOTEXT(key) ((key & STB_TEXTEDIT_K_CONTROL) ? 0 : (key & (~0xF0000000)));
 #define STB_TEXTEDIT_GETCHAR(tc, i) ((tc)->getText ().getString ()[i])
 #define STB_TEXTEDIT_NEWLINE '\n'
 #define STB_TEXTEDIT_IS_SPACE(ch) isSpace (ch)
 #define STB_TEXTEDIT_DELETECHARS STBTextEditView::deleteChars
 #define STB_TEXTEDIT_INSERTCHARS STBTextEditView::insertChars
 
-#define STB_TEXTEDIT_K_SHIFT 0x40000000
-#define STB_TEXTEDIT_K_CONTROL 0x20000000
 #define STB_TEXTEDIT_K_LEFT (VIRTUAL_KEY_BIT | VKEY_LEFT)
 #define STB_TEXTEDIT_K_RIGHT (VIRTUAL_KEY_BIT | VKEY_RIGHT)
 #define STB_TEXTEDIT_K_UP (VIRTUAL_KEY_BIT | VKEY_UP)
@@ -91,8 +107,8 @@ private:
 #define STB_TEXTEDIT_K_TEXTEND (STB_TEXTEDIT_K_LINEEND | STB_TEXTEDIT_K_CONTROL)
 #define STB_TEXTEDIT_K_DELETE (VIRTUAL_KEY_BIT | VKEY_DELETE)
 #define STB_TEXTEDIT_K_BACKSPACE (VIRTUAL_KEY_BIT | VKEY_BACK)
-#define STB_TEXTEDIT_K_UNDO (KEYDOWN_BIT | STB_TEXTEDIT_K_CONTROL | 'z')
-#define STB_TEXTEDIT_K_REDO (KEYDOWN_BIT | STB_TEXTEDIT_K_CONTROL | 'y')
+#define STB_TEXTEDIT_K_UNDO (STB_TEXTEDIT_K_CONTROL | 'z')
+#define STB_TEXTEDIT_K_REDO (STB_TEXTEDIT_K_CONTROL | 'y')
 #define STB_TEXTEDIT_K_INSERT (VIRTUAL_KEY_BIT | VKEY_INSERT)
 #define STB_TEXTEDIT_K_WORDLEFT (STB_TEXTEDIT_K_LEFT | STB_TEXTEDIT_K_CONTROL)
 #define STB_TEXTEDIT_K_WORDRIGHT (STB_TEXTEDIT_K_RIGHT | STB_TEXTEDIT_K_CONTROL)
@@ -165,22 +181,44 @@ STBTextEditView::STBTextEditView (IPlatformTextEditCallback* callback)
 }
 
 //-----------------------------------------------------------------------------
+template<typename Proc>
+bool STBTextEditView::callSTB (Proc proc)
+{
+	auto oldState = editState;
+	proc ();
+	if (memcmp (&oldState, &editState, sizeof (STB_TexteditState)) != 0)
+	{
+		onStateChanged ();
+		return true;
+	}
+	return false;
+}
+
+//-----------------------------------------------------------------------------
 int32_t STBTextEditView::onKeyDown (const VstKeyCode& code, CFrame* frame)
 {
-	if (recursiveKeyEventGuard)
+	if (isRecursiveKeyEventGuard ())
 		return -1;
-	recursiveKeyEventGuard = true;
+	setRecursiveKeyEventGuard (true);
 	if (callback->platformOnKeyDown (code))
 	{
-		recursiveKeyEventGuard = false;
+		setRecursiveKeyEventGuard (false);
 		return 1;
 	}
-	recursiveKeyEventGuard = false;
+	setRecursiveKeyEventGuard (false);
 
 	if (code.character == 0 && code.virt == 0)
 		return -1;
 
+	if (code.character == 'a' && code.modifier == MODIFIER_CONTROL)
+	{
+		selectAll ();
+		return 1;
+	}
+
 	auto key = code.character;
+	if (auto text = getFrame ()->getPlatformFrame ()->convertCurrentKeyEventToText ())
+		key = text->getString ()[0];
 	if (code.virt)
 	{
 		switch (code.virt)
@@ -205,11 +243,7 @@ int32_t STBTextEditView::onKeyDown (const VstKeyCode& code, CFrame* frame)
 		key |= STB_TEXTEDIT_K_CONTROL;
 	if (code.modifier & MODIFIER_SHIFT)
 		key |= STB_TEXTEDIT_K_SHIFT;
-	auto oldState = editState;
-	stb_textedit_key (this, &editState, key);
-	if (memcmp (&oldState, &editState, sizeof (STB_TexteditState)) != 0)
-		invalid ();
-	return 1;
+	return callSTB ([&]() { stb_textedit_key (this, &editState, key); }) ? 1 : -1;
 }
 
 //-----------------------------------------------------------------------------
@@ -228,13 +262,7 @@ CMouseEventResult STBTextEditView::onMouseDown (CFrame* frame,
 		CPoint where2 (where);
 		where2.x -= getViewSize ().left;
 		where2.y -= getViewSize ().top;
-		auto oldEditState = editState;
-		stb_textedit_click (this, &editState, where2.x, where2.y);
-		if (oldEditState.select_start != editState.select_start ||
-			oldEditState.select_end != editState.select_end)
-		{
-			onSelectionChanged ();
-		}
+		callSTB ([&]() { stb_textedit_click (this, &editState, where2.x, where2.y); });
 		return kMouseEventHandled;
 	}
 	return kMouseEventNotHandled;
@@ -250,13 +278,7 @@ CMouseEventResult STBTextEditView::onMouseMoved (CFrame* frame,
 		CPoint where2 (where);
 		where2.x -= getViewSize ().left;
 		where2.y -= getViewSize ().top;
-		auto oldEditState = editState;
-		stb_textedit_drag (this, &editState, where2.x, where2.y);
-		if (oldEditState.select_start != editState.select_start ||
-			oldEditState.select_end != editState.select_end)
-		{
-			onSelectionChanged ();
-		}
+		callSTB ([&]() { stb_textedit_drag (this, &editState, where2.x, where2.y); });
 		return kMouseEventHandled;
 	}
 	return kMouseEventNotHandled;
@@ -266,14 +288,20 @@ CMouseEventResult STBTextEditView::onMouseMoved (CFrame* frame,
 void STBTextEditView::onMouseEntered (CView* view, CFrame* frame)
 {
 	if (view == this)
+	{
+		setCursorIsSet (true);
 		getFrame ()->setCursor (kCursorIBeam);
+	}
 }
 
 //-----------------------------------------------------------------------------
 void STBTextEditView::onMouseExited (CView* view, CFrame* frame)
 {
 	if (view == this)
+	{
+		setCursorIsSet (false);
 		getFrame ()->setCursor (kCursorDefault);
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -292,8 +320,11 @@ bool STBTextEditView::removed (CView* parent)
 {
 	if (auto frame = parent->getFrame ())
 	{
+		blinkTimer = nullptr;
 		frame->unregisterMouseObserver (this);
 		frame->unregisterKeyboardHook (this);
+		if (isCursorSet ())
+			frame->setCursor (kCursorDefault);
 	}
 	return CTextLabel::removed (parent);
 }
@@ -303,12 +334,23 @@ void STBTextEditView::selectAll ()
 {
 	editState.select_start = 0;
 	editState.select_end = getText ().length ();
-	invalid ();
+	onStateChanged ();
 }
 
 //-----------------------------------------------------------------------------
-void STBTextEditView::onSelectionChanged ()
+void STBTextEditView::onStateChanged ()
 {
+	setBlinkToggle (true);
+	if (isAttached ())
+	{
+		blinkTimer = makeOwned<CVSTGUITimer> (
+			[&](CVSTGUITimer* timer) {
+				setBlinkToggle (!isBlinkToggle ());
+				if (editState.select_start == editState.select_end)
+					invalid ();
+			},
+			500);
+	}
 	invalid ();
 }
 
@@ -317,6 +359,8 @@ void STBTextEditView::setText (const UTF8String& txt)
 {
 	charWidthCache.clear ();
 	CTextLabel::setText (txt);
+	if (editState.select_start != editState.select_end)
+		selectAll ();
 }
 
 //-----------------------------------------------------------------------------
@@ -362,7 +406,7 @@ void STBTextEditView::draw (CDrawContext* context)
 	drawBack (context, nullptr);
 	drawPlatformText (context, getText ().getPlatformString ());
 
-	if (editState.select_start != editState.select_end)
+	if (!isBlinkToggle () || editState.select_start != editState.select_end)
 		return;
 
 	// draw cursor

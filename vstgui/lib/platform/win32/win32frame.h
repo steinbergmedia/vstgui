@@ -56,6 +56,7 @@ public:
 	SharedPointer<IDataPackage> getClipboard () override;
 	PlatformType getPlatformType () const override { return PlatformType::kHWND; }
 	void onFrameClosed () override;
+	Optional<UTF8String> convertCurrentKeyEventToText () override { return {}; }
 
 	LONG_PTR WINAPI proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 //-----------------------------------------------------------------------------

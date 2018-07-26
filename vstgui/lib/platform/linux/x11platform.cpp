@@ -13,8 +13,10 @@
 #include <array>
 #include <dlfcn.h>
 #include <iostream>
+#include <locale>
 #include <link.h>
 #include <unordered_map>
+#include <codecvt>
 #include <xcb/xcb.h>
 #include <xcb/xcb_cursor.h>
 #include <xcb/xcb_util.h>
@@ -97,32 +99,6 @@ const VirtMap keyMap = {{XKB_KEY_BackSpace, VKEY_BACK},
 						{XKB_KEY_VoidSymbol, 0}};
 
 //------------------------------------------------------------------------
-VstKeyCode internalMakeKeyCode (xkb_state* xkbState, xcb_keycode_t detail, uint16_t state)
-{
-	if (!xkbState)
-		return {};
-
-	VstKeyCode code{};
-
-	if (state & XCB_MOD_MASK_SHIFT)
-		code.modifier |= MODIFIER_SHIFT;
-	if (state & XCB_MOD_MASK_CONTROL)
-		code.modifier |= MODIFIER_CONTROL;
-	if (state & (XCB_MOD_MASK_1 | XCB_MOD_MASK_5))
-		code.modifier |= MODIFIER_ALTERNATE;
-
-	auto ksym = xkb_state_key_get_one_sym (xkbState, detail);
-
-	auto it = keyMap.find (ksym);
-	if (it != keyMap.end ())
-		code.virt = it->second;
-	else
-		code.character = xkb_state_key_get_utf32 (xkbState, detail);
-
-	return code;
-}
-
-//------------------------------------------------------------------------
 } // anonymous
 
 //------------------------------------------------------------------------
@@ -202,9 +178,12 @@ struct RunLoop::Impl : IEventHandler
 	xcb_cursor_context_t* cursorContext{nullptr};
 	xkb_context* xkbContext{nullptr};
 	xkb_state* xkbState{nullptr};
+	xkb_state* xkbUnprocessedState{nullptr};
 	xkb_keymap* xkbKeymap{nullptr};
 	WindowEventHandlerMap windowEventHandlerMap;
 	std::array<xcb_cursor_t, CCursorType::kCursorIBeam + 1> cursors{{XCB_CURSOR_NONE}};
+	VstKeyCode lastUnprocessedKeyEvent;
+	uint32_t lastUtf32KeyEventChar{0};
 
 	void init (const SharedPointer<IRunLoop>& inRunLoop)
 	{
@@ -227,6 +206,7 @@ struct RunLoop::Impl : IEventHandler
 			xkbKeymap = xkb_x11_keymap_new_from_device (xkbContext, xcbConnection, deviceId,
 														XKB_KEYMAP_COMPILE_NO_FLAGS);
 			xkbState = xkb_state_new (xkbKeymap);
+			xkbUnprocessedState = xkb_state_new (xkbKeymap);
 		}
 	}
 
@@ -236,6 +216,8 @@ struct RunLoop::Impl : IEventHandler
 			return;
 		if (xcbConnection)
 		{
+			if (xkbUnprocessedState)
+				xkb_state_unref (xkbUnprocessedState);
 			if (xkbState)
 				xkb_state_unref (xkbState);
 			if (xkbKeymap)
@@ -267,6 +249,34 @@ struct RunLoop::Impl : IEventHandler
 		it->second->onEvent (event);
 	}
 
+	//------------------------------------------------------------------------
+	void onKeyEvent (const xcb_key_press_event_t& event, bool isKeyDown)
+	{
+		if (!xkbUnprocessedState)
+			return;
+
+
+		VstKeyCode code{};
+
+		if (event.state & XCB_MOD_MASK_SHIFT)
+			code.modifier |= MODIFIER_SHIFT;
+		if (event.state & XCB_MOD_MASK_CONTROL)
+			code.modifier |= MODIFIER_CONTROL;
+		if (event.state & (XCB_MOD_MASK_1 | XCB_MOD_MASK_5))
+			code.modifier |= MODIFIER_ALTERNATE;
+
+		auto ksym = xkb_state_key_get_one_sym (xkbUnprocessedState, event.detail);
+		auto it = keyMap.find (ksym);
+		if (it != keyMap.end ())
+			code.virt = it->second;
+		else
+			code.character = xkb_keysym_to_utf32 (ksym);
+
+		xkb_state_update_key (xkbState, event.detail, isKeyDown ? XKB_KEY_DOWN : XKB_KEY_UP);
+		lastUtf32KeyEventChar = xkb_state_key_get_utf32 (xkbState, event.detail);
+		lastUnprocessedKeyEvent = code;
+	}
+
 	void onEvent () override
 	{
 		while (auto event = xcb_poll_for_event (xcbConnection))
@@ -277,12 +287,14 @@ struct RunLoop::Impl : IEventHandler
 				case XCB_KEY_PRESS:
 				{
 					auto ev = reinterpret_cast<xcb_key_press_event_t*> (event);
+					onKeyEvent (*ev, true);
 					dispatchEvent (*ev, ev->event);
 					break;
 				}
 				case XCB_KEY_RELEASE:
 				{
 					auto ev = reinterpret_cast<xcb_key_release_event_t*> (event);
+					onKeyEvent (*ev, false);
 					dispatchEvent (*ev, ev->event);
 					break;
 				}
@@ -515,9 +527,27 @@ uint32_t RunLoop::getCursorID (CCursorType cursor)
 }
 
 //------------------------------------------------------------------------
-VstKeyCode RunLoop::makeKeyCode (uint8_t detail, uint16_t state) const
+VstKeyCode RunLoop::getCurrentKeyEvent () const
 {
-	return internalMakeKeyCode (impl->xkbState, detail, state);
+	return impl->lastUnprocessedKeyEvent;
+}
+
+//------------------------------------------------------------------------
+Optional<UTF8String> RunLoop::convertCurrentKeyEventToText () const
+{
+	if (impl->lastUtf32KeyEventChar == 0)
+		return {};
+
+	try
+	{
+
+		std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> conv;
+		return Optional<UTF8String> (UTF8String (conv.to_bytes (impl->lastUtf32KeyEventChar)));
+	}
+	catch (...)
+	{
+	}
+	return {};
 }
 
 //------------------------------------------------------------------------
