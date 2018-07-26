@@ -82,7 +82,7 @@ public:
 	SharedPointer<IDataPackage> getClipboard () override;
 	PlatformType getPlatformType () const override { return PlatformType::kNSView; }
 	void onFrameClosed () override {}
-	Optional<UTF8String> convertCurrentKeyEventToText () override { return {}; }
+	Optional<UTF8String> convertCurrentKeyEventToText () override;
 
 	// IPlatformFrameTouchBarExtension
 	void setTouchBarCreator (const SharedPointer<ITouchBarCreator>& creator) override;

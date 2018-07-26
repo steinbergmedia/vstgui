@@ -10,6 +10,7 @@
 #include "../vstguifwd.h"
 #include "../dragging.h"
 #include "../optional.h"
+#include "../cstring.h"
 #include "iplatformframecallback.h"
 
 namespace VSTGUI {

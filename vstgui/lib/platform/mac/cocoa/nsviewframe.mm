@@ -1104,6 +1104,19 @@ bool NSViewFrame::hideTooltip ()
 }
 
 //-----------------------------------------------------------------------------
+Optional<UTF8String> NSViewFrame::convertCurrentKeyEventToText ()
+{
+	auto event = [NSApp currentEvent];
+	if (!event)
+		return {};
+	if (!(event.type == NSKeyDown || event.type == NSKeyUp))
+		return {};
+	if (event.characters.length <= 0)
+		return {};
+	return Optional<UTF8String> (event.characters.UTF8String);
+}
+
+//-----------------------------------------------------------------------------
 SharedPointer<IPlatformTextEdit> NSViewFrame::createPlatformTextEdit (IPlatformTextEditCallback* textEdit)
 {
 	return makeOwned<CocoaTextEdit> (nsView, textEdit);
