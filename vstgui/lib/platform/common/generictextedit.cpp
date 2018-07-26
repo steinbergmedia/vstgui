@@ -311,6 +311,7 @@ bool STBTextEditView::attached (CView* parent)
 	{
 		frame->registerMouseObserver (this);
 		frame->registerKeyboardHook (this);
+		selectionColor = frame->getFocusColor ();
 	}
 	return CTextLabel::attached (parent);
 }
