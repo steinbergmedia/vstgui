@@ -182,27 +182,6 @@ int32_t STBTextEditView::onKeyDown (const VstKeyCode& code, CFrame* frame)
 
 	auto key = code.character;
 	if (code.virt)
-		key = code.virt | VIRTUAL_KEY_BIT;
-	key |= KEYDOWN_BIT;
-	if (code.modifier & MODIFIER_CONTROL)
-		key |= STB_TEXTEDIT_K_CONTROL;
-	if (code.modifier & MODIFIER_SHIFT)
-		key |= STB_TEXTEDIT_K_SHIFT;
-	auto oldState = editState;
-	stb_textedit_key (this, &editState, key);
-	if (memcmp (&oldState, &editState, sizeof (STB_TexteditState)) != 0)
-		invalid ();
-	return 1;
-}
-
-//-----------------------------------------------------------------------------
-int32_t STBTextEditView::onKeyUp (const VstKeyCode& code, CFrame* frame)
-{
-	auto key = code.character;
-	if (key == 0 && code.virt == 0)
-		return -1;
-
-	if (code.virt)
 	{
 		switch (code.virt)
 		{
@@ -231,6 +210,12 @@ int32_t STBTextEditView::onKeyUp (const VstKeyCode& code, CFrame* frame)
 	if (memcmp (&oldState, &editState, sizeof (STB_TexteditState)) != 0)
 		invalid ();
 	return 1;
+}
+
+//-----------------------------------------------------------------------------
+int32_t STBTextEditView::onKeyUp (const VstKeyCode& code, CFrame* frame)
+{
+	return -1;
 }
 
 //-----------------------------------------------------------------------------
@@ -374,10 +359,11 @@ void STBTextEditView::draw (CDrawContext* context)
 {
 	fillCharWidthCache ();
 
-	context->saveGlobalState ();
 	drawBack (context, nullptr);
 	drawPlatformText (context, getText ().getPlatformString ());
-	context->restoreGlobalState ();
+
+	if (editState.select_start != editState.select_end)
+		return;
 
 	// draw cursor
 	StbTexteditRow row{};
