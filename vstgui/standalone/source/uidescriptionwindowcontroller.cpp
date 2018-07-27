@@ -74,20 +74,19 @@ class ValueWrapper : public ValueListenerAdapter,
                      public IViewListenerAdapter
 {
 public:
+	using ControlList = std::vector<CControl*>;
+
 	explicit ValueWrapper (const ValuePtr& value = nullptr) : value (value)
 	{
 		if (value)
 			value->registerListener (this);
 	}
-	~ValueWrapper () override
+	~ValueWrapper () noexcept override
 	{
 		if (value)
 			value->unregisterListener (this);
 		for (auto& control : controls)
-		{
-			control->unregisterViewListener (this);
-			control->unregisterControlListener (this);
-		}
+			onRemoveControl (control);
 	}
 
 	const UTF8String& getID () const { return value->getID (); }
@@ -209,6 +208,18 @@ public:
 
 	void removeControl (CControl* control)
 	{
+		auto it = std::find (controls.begin (), controls.end (), control);
+		vstgui_assert (it != controls.end ());
+		onRemoveControl (control);
+		controls.erase (it);
+	}
+
+	void viewWillDelete (CView* view) override { removeControl (dynamic_cast<CControl*> (view)); }
+
+	const ControlList& getControls () const { return controls; }
+protected:
+	void onRemoveControl (CControl* control)
+	{
 		if (auto paramDisplay = dynamic_cast<CParamDisplay*> (control))
 		{
 			paramDisplay->setValueToStringFunction (nullptr);
@@ -217,15 +228,7 @@ public:
 		}
 		control->unregisterViewListener (this);
 		control->unregisterControlListener (this);
-		auto it = std::find (controls.begin (), controls.end (), control);
-		vstgui_assert (it != controls.end ());
-		controls.erase (it);
 	}
-
-	void viewWillDelete (CView* view) override { removeControl (dynamic_cast<CControl*> (view)); }
-
-protected:
-	using ControlList = std::vector<CControl*>;
 
 	ValuePtr value;
 	ControlList controls;
@@ -251,6 +254,14 @@ struct WindowController::Impl : public IController, public ICommandHandler
 		if (uiDesc && uiDesc->getSharedResources ())
 		{
 			uiDesc->setSharedResources (nullptr);
+		}
+		for (auto& vw : valueWrappers)
+		{
+			for (auto control : vw->getControls ())
+			{
+				if (control->getListener () == this)
+					control->setListener (nullptr);
+			}
 		}
 	}
 
