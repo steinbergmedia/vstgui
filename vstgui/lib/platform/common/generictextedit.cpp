@@ -14,7 +14,7 @@
 namespace VSTGUI {
 
 #define STB_TEXTEDIT_CHARTYPE char
-#define STB_TEXTEDIT_POSITIONTYPE size_t
+#define STB_TEXTEDIT_POSITIONTYPE int
 #define STB_TEXTEDIT_STRING STBTextEditView
 #define STB_TEXTEDIT_KEYTYPE uint32_t
 
@@ -56,6 +56,13 @@ public:
 	static float getCharWidth (STBTextEditView* self, int n, int i);
 
 private:
+	using CTextLabel::onKeyDown;
+	using CTextLabel::onKeyUp;
+	using CTextLabel::onMouseEntered;
+	using CTextLabel::onMouseExited;
+	using CTextLabel::onMouseMoved;
+	using CTextLabel::onMouseDown;
+
 	template<typename Proc>
 	bool callSTB (Proc proc);
 	void onStateChanged ();
@@ -87,10 +94,10 @@ private:
 #define STB_TEXTEDIT_K_SHIFT 0x40000000
 #define STB_TEXTEDIT_K_CONTROL 0x20000000
 
-#define STB_TEXTEDIT_STRINGLEN(tc) ((tc)->getText ().length ())
+#define STB_TEXTEDIT_STRINGLEN(tc) (static_cast<int> (tc->getText ().length ()))
 #define STB_TEXTEDIT_LAYOUTROW STBTextEditView::layout
 #define STB_TEXTEDIT_GETWIDTH(tc, n, i) STBTextEditView::getCharWidth (tc, n, i)
-#define STB_TEXTEDIT_KEYTOTEXT(key) ((key & STB_TEXTEDIT_K_CONTROL) ? 0 : (key & (~0xF0000000)));
+#define STB_TEXTEDIT_KEYTOTEXT(key) ((key & VIRTUAL_KEY_BIT) ? 0 : ((key & STB_TEXTEDIT_K_CONTROL) ? 0 : (key & (~0xF0000000))));
 #define STB_TEXTEDIT_GETCHAR(tc, i) ((tc)->getText ().getString ()[i])
 #define STB_TEXTEDIT_NEWLINE '\n'
 #define STB_TEXTEDIT_IS_SPACE(ch) isSpace (ch)
@@ -130,16 +137,25 @@ GenericTextEdit::GenericTextEdit (IPlatformTextEditCallback* callback)
 {
 	impl = std::unique_ptr<Impl> (new Impl);
 	impl->view = new STBTextEditView (callback);
-	impl->view->setFont (callback->platformGetFont ());
+	auto view = dynamic_cast<CView*> (callback);
+	assert (view);
+	view->getFrame ()->addView (impl->view);
+
+	auto font = shared (callback->platformGetFont ());
+	auto fontSize = font->getSize () / impl->view->getGlobalTransform ().m11;
+	if (fontSize != font->getSize ())
+	{
+		font = makeOwned<CFontDesc> (*font);
+		font->setSize (fontSize);
+	}
+	impl->view->setFont (font);
 	impl->view->setFontColor (callback->platformGetFontColor ());
 	impl->view->setTextInset (callback->platformGetTextInset ());
 	impl->view->setText (callback->platformGetText ());
 	impl->view->selectAll ();
-	updateSize ();
 
-	auto view = dynamic_cast<CView*> (callback);
-	assert (view);
-	view->getFrame ()->addView (impl->view);
+
+	updateSize ();
 }
 
 //-----------------------------------------------------------------------------
@@ -167,8 +183,10 @@ bool GenericTextEdit::setText (const UTF8String& text)
 //-----------------------------------------------------------------------------
 bool GenericTextEdit::updateSize ()
 {
-	impl->view->setViewSize (textEdit->platformGetSize ());
-	impl->view->setMouseableArea (textEdit->platformGetSize ());
+	auto r = textEdit->platformGetSize ();
+	r = impl->view->getParentView ()->translateToLocal (r);
+	impl->view->setViewSize (r);
+	impl->view->setMouseableArea (r);
 	return true;
 }
 
@@ -199,6 +217,7 @@ int32_t STBTextEditView::onKeyDown (const VstKeyCode& code, CFrame* frame)
 {
 	if (isRecursiveKeyEventGuard ())
 		return -1;
+	auto selfGuard = SharedPointer<CBaseObject> (this);
 	setRecursiveKeyEventGuard (true);
 	if (callback->platformOnKeyDown (code))
 	{
@@ -218,7 +237,11 @@ int32_t STBTextEditView::onKeyDown (const VstKeyCode& code, CFrame* frame)
 
 	auto key = code.character;
 	if (auto text = getFrame ()->getPlatformFrame ()->convertCurrentKeyEventToText ())
+	{
+		if (text->length () != 1) // we can only handle one-byte UTF-8 characters currently
+			return -1;
 		key = text->getString ()[0];
+	}
 	if (code.virt)
 	{
 		switch (code.virt)
@@ -262,7 +285,10 @@ CMouseEventResult STBTextEditView::onMouseDown (CFrame* frame,
 		CPoint where2 (where);
 		where2.x -= getViewSize ().left;
 		where2.y -= getViewSize ().top;
-		callSTB ([&]() { stb_textedit_click (this, &editState, where2.x, where2.y); });
+		callSTB ([&] () {
+			stb_textedit_click (this, &editState, static_cast<float> (where2.x),
+			                    static_cast<float> (where2.y));
+		});
 		return kMouseEventHandled;
 	}
 	return kMouseEventNotHandled;
@@ -278,7 +304,10 @@ CMouseEventResult STBTextEditView::onMouseMoved (CFrame* frame,
 		CPoint where2 (where);
 		where2.x -= getViewSize ().left;
 		where2.y -= getViewSize ().top;
-		callSTB ([&]() { stb_textedit_drag (this, &editState, where2.x, where2.y); });
+		callSTB ([&] () {
+			stb_textedit_drag (this, &editState, static_cast<float> (where2.x),
+			                   static_cast<float> (where2.y));
+		});
 		return kMouseEventHandled;
 	}
 	return kMouseEventNotHandled;
@@ -334,7 +363,7 @@ bool STBTextEditView::removed (CView* parent)
 void STBTextEditView::selectAll ()
 {
 	editState.select_start = 0;
-	editState.select_end = getText ().length ();
+	editState.select_end = static_cast<int> (getText ().length ());
 	onStateChanged ();
 }
 
@@ -393,7 +422,7 @@ void STBTextEditView::fillCharWidthCache ()
 	auto num = getText ().length ();
 	charWidthCache.resize (num);
 	const auto& str = getText ().getString ();
-	for (auto i = 0; i < num; ++i)
+	for (auto i = 0u; i < num; ++i)
 	{
 		charWidthCache[i] = getCharWidth (str[i], i == 0 ? 0 : str[i - 1]);
 	}
@@ -478,25 +507,24 @@ void STBTextEditView::layout (StbTexteditRow* row, STBTextEditView* self, int st
 	assert (start_i == 0);
 
 	self->fillCharWidthCache ();
-	CCoord textWidth =
-		std::accumulate (self->charWidthCache.begin (), self->charWidthCache.end (), 0.);
+	auto textWidth =
+		static_cast<float> (std::accumulate (self->charWidthCache.begin (), self->charWidthCache.end (), 0.));
 
-	int remaining_chars = self->getText ().length ();
-	row->num_chars = remaining_chars;
+	row->num_chars = static_cast<int> (self->getText ().length ());
 	row->baseline_y_delta = 1.25;
 	row->ymin = 0.f;
-	row->ymax = self->getFont ()->getSize ();
+	row->ymax = static_cast<float> (self->getFont ()->getSize ());
 	switch (self->getHoriAlign ())
 	{
 		case kLeftText:
 		{
-			row->x0 = self->getTextInset ().x;
+			row->x0 = static_cast<float> (self->getTextInset ().x);
 			row->x1 = row->x0 + textWidth;
 			break;
 		}
 		case kCenterText:
 		{
-			row->x0 = (self->getViewSize ().getWidth () / 2.) - (textWidth / 2.);
+			row->x0 = static_cast<float> ((self->getViewSize ().getWidth () / 2.) - (textWidth / 2.));
 			row->x1 = row->x0 + textWidth;
 			break;
 		}
@@ -512,7 +540,7 @@ void STBTextEditView::layout (StbTexteditRow* row, STBTextEditView* self, int st
 float STBTextEditView::getCharWidth (STBTextEditView* self, int n, int i)
 {
 	self->fillCharWidthCache ();
-	return self->charWidthCache[i];
+	return static_cast<float> (self->charWidthCache[i]);
 }
 
 //-----------------------------------------------------------------------------
