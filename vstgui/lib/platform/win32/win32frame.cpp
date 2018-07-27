@@ -867,15 +867,17 @@ LONG_PTR WINAPI Win32Frame::proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 			if (GetAsyncKeyState (VK_MENU)    < 0)
 				key.modifier |= MODIFIER_ALTERNATE;
 			key.virt = translateWinVirtualKey (wParam);
-			if (key.virt)
+			key.character = MapVirtualKey (wParam, MAPVK_VK_TO_CHAR);
+			if (key.virt || key.character)
 			{
+				key.character = std::tolower (key.character);
 				if (pFrame->platformOnKeyDown (key))
 					return 0;
 			}
 
-			if(IsWindow(oldFocusWindow))
+			if (IsWindow (oldFocusWindow))
 			{
-				WNDPROC oldProc = (WNDPROC) GetWindowLongPtr(oldFocusWindow, GWLP_WNDPROC);
+				auto oldProc = reinterpret_cast<WNDPROC> (GetWindowLongPtr (oldFocusWindow, GWLP_WNDPROC));
 				if (oldProc && oldProc != WindowProc)
 					return CallWindowProc (oldProc, oldFocusWindow, message, wParam, lParam);
 			}
@@ -891,16 +893,17 @@ LONG_PTR WINAPI Win32Frame::proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 			if (GetAsyncKeyState (VK_MENU)    < 0)
 				key.modifier |= MODIFIER_ALTERNATE;
 			key.virt = translateWinVirtualKey (wParam);
-			if (key.virt)
+			key.character = MapVirtualKey (wParam, MAPVK_VK_TO_CHAR);
+			if (key.virt || key.character)
 			{
 				if (pFrame->platformOnKeyUp (key))
 					return 0;
 			}
 
-			if(IsWindow(oldFocusWindow))
+			if (IsWindow (oldFocusWindow))
 			{
-				WNDPROC oldProc = (WNDPROC) GetWindowLongPtr(oldFocusWindow, GWLP_WNDPROC);
-				if(oldProc && oldProc != WindowProc)
+				auto oldProc = reinterpret_cast<WNDPROC> (GetWindowLongPtr (oldFocusWindow, GWLP_WNDPROC));
+				if (oldProc && oldProc != WindowProc)
 					return CallWindowProc (oldProc, oldFocusWindow, message, wParam, lParam);
 			}
 			break;
