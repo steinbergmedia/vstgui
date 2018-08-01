@@ -47,6 +47,7 @@ public:
 
 	bool attached (CView* parent) override;
 	bool removed (CView* parent) override;
+	void drawStyleChanged () override;
 
 	void selectAll ();
 
@@ -67,25 +68,31 @@ private:
 	bool callSTB (Proc proc);
 	void onStateChanged ();
 	void fillCharWidthCache ();
+	void calcCursorSizes ();
 	CCoord getCharWidth (char c, char pc) const;
 
 	static constexpr auto BitRecursiveKeyGuard = 1 << 0;
 	static constexpr auto BitBlinkToggle = 1 << 1;
 	static constexpr auto BitCursorIsSet = 1 << 2;
+	static constexpr auto BitCursorSizesValid = 1 << 3;
 
 	bool isRecursiveKeyEventGuard () const { return hasBit (flags, BitRecursiveKeyGuard); }
 	bool isBlinkToggle () const { return hasBit (flags, BitBlinkToggle); }
 	bool isCursorSet () const { return hasBit (flags, BitCursorIsSet); }
+	bool cursorSizesValid () const { return hasBit (flags, BitCursorSizesValid); }
 
 	void setRecursiveKeyEventGuard (bool state) { setBit (flags, BitRecursiveKeyGuard, state); }
 	void setBlinkToggle (bool state) { setBit (flags, BitBlinkToggle, state); }
 	void setCursorIsSet (bool state) { setBit (flags, BitCursorIsSet, state); }
+	void setCursorSizesValid (bool state) { setBit (flags, BitCursorSizesValid, state); }
 
 	SharedPointer<CVSTGUITimer> blinkTimer;
 	IPlatformTextEditCallback* callback;
 	STB_TexteditState editState;
 	std::vector<CCoord> charWidthCache;
 	CColor selectionColor{kBlueCColor};
+	CCoord cursorOffset {0.};
+	CCoord cursorHeight {0.};
 	uint32_t flags{0};
 };
 
@@ -218,13 +225,9 @@ int32_t STBTextEditView::onKeyDown (const VstKeyCode& code, CFrame* frame)
 	if (isRecursiveKeyEventGuard ())
 		return -1;
 	auto selfGuard = SharedPointer<CBaseObject> (this);
-	setRecursiveKeyEventGuard (true);
+	BitScopeToggleT<uint32_t, uint32_t> br (flags, BitRecursiveKeyGuard);
 	if (callback->platformOnKeyDown (code))
-	{
-		setRecursiveKeyEventGuard (false);
 		return 1;
-	}
-	setRecursiveKeyEventGuard (false);
 
 	if (code.character == 0 && code.virt == 0)
 		return -1;
@@ -236,11 +239,14 @@ int32_t STBTextEditView::onKeyDown (const VstKeyCode& code, CFrame* frame)
 	}
 
 	auto key = code.character;
-	if (auto text = getFrame ()->getPlatformFrame ()->convertCurrentKeyEventToText ())
+	if (key)
 	{
-		if (text->length () != 1) // we can only handle one-byte UTF-8 characters currently
-			return -1;
-		key = text->getString ()[0];
+		if (auto text = getFrame ()->getPlatformFrame ()->convertCurrentKeyEventToText ())
+		{
+			if (text->length () != 1) // we can only handle one-byte UTF-8 characters currently
+				return -1;
+			key = text->getString ()[0];
+		}
 	}
 	if (code.virt)
 	{
@@ -341,6 +347,7 @@ bool STBTextEditView::attached (CView* parent)
 		frame->registerMouseObserver (this);
 		frame->registerKeyboardHook (this);
 		selectionColor = frame->getFocusColor ();
+		drawStyleChanged ();
 	}
 	return CTextLabel::attached (parent);
 }
@@ -357,6 +364,14 @@ bool STBTextEditView::removed (CView* parent)
 			frame->setCursor (kCursorDefault);
 	}
 	return CTextLabel::removed (parent);
+}
+
+//-----------------------------------------------------------------------------
+void STBTextEditView::drawStyleChanged ()
+{
+	setCursorSizesValid (false);
+	charWidthCache.clear ();
+	CTextLabel::drawStyleChanged ();
 }
 
 //-----------------------------------------------------------------------------
@@ -429,9 +444,27 @@ void STBTextEditView::fillCharWidthCache ()
 }
 
 //-----------------------------------------------------------------------------
+void STBTextEditView::calcCursorSizes ()
+{
+	if (cursorSizesValid ())
+		return;
+	
+	auto platformFont = getFont ()->getPlatformFont ();
+	assert (platformFont);
+	auto fontPainter = platformFont->getPainter ();
+	assert (fontPainter);
+
+	cursorHeight = platformFont->getAscent () + platformFont->getDescent ();
+	auto viewHeight = getViewSize ().getHeight ();
+	cursorOffset = (viewHeight / 2. - cursorHeight / 2.);
+	setCursorSizesValid (true);
+}
+
+//-----------------------------------------------------------------------------
 void STBTextEditView::draw (CDrawContext* context)
 {
 	fillCharWidthCache ();
+	calcCursorSizes ();
 
 	drawBack (context, nullptr);
 	drawPlatformText (context, getText ().getPlatformString ());
@@ -446,7 +479,8 @@ void STBTextEditView::draw (CDrawContext* context)
 	context->setFillColor (getFontColor ());
 	context->setDrawMode (kAntiAliasing);
 	CRect r = getViewSize ();
-	r.offset (row.x0, 0);
+	r.setHeight (cursorHeight);
+	r.offset (row.x0, cursorOffset);
 	r.setWidth (1);
 	for (auto i = 0; i < editState.cursor; ++i)
 		r.offset (charWidthCache[i], 0);
@@ -471,7 +505,8 @@ void STBTextEditView::drawBack (CDrawContext* context, CBitmap* newBack)
 
 		// draw selection
 		CRect selection = getViewSize ();
-		selection.offset (row.x0, 0);
+		selection.setHeight (cursorHeight);
+		selection.offset (row.x0, cursorOffset);
 		selection.setWidth (0);
 		auto index = 0;
 		for (; index < selStart; ++index)
