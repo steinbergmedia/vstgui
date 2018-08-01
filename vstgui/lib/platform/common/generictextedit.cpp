@@ -9,11 +9,20 @@
 #include "../../cframe.h"
 #include "../../cvstguitimer.h"
 #include <numeric>
+#include <string>
+#include <codecvt>
 
 //-----------------------------------------------------------------------------
 namespace VSTGUI {
 
+#define VSTGUI_STB_TEXTEDIT_USE_UNICODE 1
+
+#if VSTGUI_STB_TEXTEDIT_USE_UNICODE
+#define STB_TEXTEDIT_CHARTYPE char16_t
+using StringConvert = std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t>;
+#else
 #define STB_TEXTEDIT_CHARTYPE char
+#endif
 #define STB_TEXTEDIT_POSITIONTYPE int
 #define STB_TEXTEDIT_STRING STBTextEditView
 #define STB_TEXTEDIT_KEYTYPE uint32_t
@@ -52,9 +61,11 @@ public:
 	void selectAll ();
 
 	static int deleteChars (STBTextEditView* self, size_t pos, size_t num);
-	static int insertChars (STBTextEditView* self, size_t pos, const char* text, size_t num);
+	static int insertChars (STBTextEditView* self, size_t pos, const STB_TEXTEDIT_CHARTYPE* text, size_t num);
 	static void layout (StbTexteditRow* row, STBTextEditView* self, int start_i);
 	static float getCharWidth (STBTextEditView* self, int n, int i);
+	static STB_TEXTEDIT_CHARTYPE getChar (STBTextEditView* self, int pos);
+	static int getLength (STBTextEditView* self);
 
 private:
 	using CTextLabel::onKeyDown;
@@ -69,7 +80,7 @@ private:
 	void onStateChanged ();
 	void fillCharWidthCache ();
 	void calcCursorSizes ();
-	CCoord getCharWidth (char c, char pc) const;
+	CCoord getCharWidth (STB_TEXTEDIT_CHARTYPE c, STB_TEXTEDIT_CHARTYPE pc) const;
 
 	static constexpr auto BitRecursiveKeyGuard = 1 << 0;
 	static constexpr auto BitBlinkToggle = 1 << 1;
@@ -94,6 +105,9 @@ private:
 	CCoord cursorOffset {0.};
 	CCoord cursorHeight {0.};
 	uint32_t flags{0};
+#if VSTGUI_STB_TEXTEDIT_USE_UNICODE
+	std::u16string uString;
+#endif
 };
 
 //-----------------------------------------------------------------------------
@@ -101,11 +115,11 @@ private:
 #define STB_TEXTEDIT_K_SHIFT 0x40000000
 #define STB_TEXTEDIT_K_CONTROL 0x20000000
 
-#define STB_TEXTEDIT_STRINGLEN(tc) (static_cast<int> (tc->getText ().length ()))
+#define STB_TEXTEDIT_STRINGLEN(tc) STBTextEditView::getLength (tc)
 #define STB_TEXTEDIT_LAYOUTROW STBTextEditView::layout
 #define STB_TEXTEDIT_GETWIDTH(tc, n, i) STBTextEditView::getCharWidth (tc, n, i)
 #define STB_TEXTEDIT_KEYTOTEXT(key) ((key & VIRTUAL_KEY_BIT) ? 0 : ((key & STB_TEXTEDIT_K_CONTROL) ? 0 : (key & (~0xF0000000))));
-#define STB_TEXTEDIT_GETCHAR(tc, i) ((tc)->getText ().getString ()[i])
+#define STB_TEXTEDIT_GETCHAR(tc, i) STBTextEditView::getChar (tc, i)
 #define STB_TEXTEDIT_NEWLINE '\n'
 #define STB_TEXTEDIT_IS_SPACE(ch) isSpace (ch)
 #define STB_TEXTEDIT_DELETECHARS STBTextEditView::deleteChars
@@ -243,9 +257,16 @@ int32_t STBTextEditView::onKeyDown (const VstKeyCode& code, CFrame* frame)
 	{
 		if (auto text = getFrame ()->getPlatformFrame ()->convertCurrentKeyEventToText ())
 		{
+#if VSTGUI_STB_TEXTEDIT_USE_UNICODE
+			auto tmp =
+			    StringConvert {}.from_bytes (
+			        text->getString ());
+			key = tmp[0];
+#else
 			if (text->length () != 1) // we can only handle one-byte UTF-8 characters currently
 				return -1;
 			key = text->getString ()[0];
+#endif
 		}
 	}
 	if (code.virt)
@@ -406,16 +427,32 @@ void STBTextEditView::setText (const UTF8String& txt)
 	CTextLabel::setText (txt);
 	if (editState.select_start != editState.select_end)
 		selectAll ();
+#if VSTGUI_STB_TEXTEDIT_USE_UNICODE
+	uString = StringConvert {}.from_bytes (
+	    CTextLabel::getText ().getString ());
+#endif
 }
 
 //-----------------------------------------------------------------------------
-CCoord STBTextEditView::getCharWidth (char c, char pc) const
+CCoord STBTextEditView::getCharWidth (STB_TEXTEDIT_CHARTYPE c, STB_TEXTEDIT_CHARTYPE pc) const
 {
 	auto platformFont = getFont ()->getPlatformFont ();
 	assert (platformFont);
 	auto fontPainter = platformFont->getPainter ();
 	assert (fontPainter);
 
+#if VSTGUI_STB_TEXTEDIT_USE_UNICODE
+	if (pc)
+	{
+		UTF8String str (StringConvert {}.to_bytes (pc));
+		auto pcWidth = fontPainter->getStringWidth (nullptr, str.getPlatformString (), true);
+		str += StringConvert {}.to_bytes (c);
+		auto tcWidth = fontPainter->getStringWidth (nullptr, str.getPlatformString (), true);
+		return tcWidth - pcWidth;
+	}
+	UTF8String str (StringConvert {}.to_bytes (c));
+	return fontPainter->getStringWidth (nullptr, str.getPlatformString (), true);
+#else
 	if (pc)
 	{
 		UTF8String str (std::string (1, pc));
@@ -427,6 +464,7 @@ CCoord STBTextEditView::getCharWidth (char c, char pc) const
 
 	UTF8String str (std::string (1, c));
 	return fontPainter->getStringWidth (nullptr, str.getPlatformString (), true);
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -434,13 +472,18 @@ void STBTextEditView::fillCharWidthCache ()
 {
 	if (!charWidthCache.empty ())
 		return;
+#if VSTGUI_STB_TEXTEDIT_USE_UNICODE
+	auto num = uString.size ();
+	charWidthCache.resize (num);
+	for (auto i = 0u; i < num; ++i)
+		charWidthCache[i] = getCharWidth (uString[i], i == 0 ? 0 : uString[i - 1]);
+#else
 	auto num = getText ().length ();
 	charWidthCache.resize (num);
 	const auto& str = getText ().getString ();
 	for (auto i = 0u; i < num; ++i)
-	{
 		charWidthCache[i] = getCharWidth (str[i], i == 0 ? 0 : str[i - 1]);
-	}
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -521,19 +564,53 @@ void STBTextEditView::drawBack (CDrawContext* context, CBitmap* newBack)
 //-----------------------------------------------------------------------------
 int STBTextEditView::deleteChars (STBTextEditView* self, size_t pos, size_t num)
 {
+#if VSTGUI_STB_TEXTEDIT_USE_UNICODE
+	self->uString.erase (pos, num);
+	self->setText (StringConvert {}.to_bytes (
+	    self->uString));
+	return true;
+#else
 	auto str = self->text.getString ();
 	str.erase (pos, num);
 	self->setText (str.data ());
 	return true; // success
+#endif
 }
 
 //-----------------------------------------------------------------------------
-int STBTextEditView::insertChars (STBTextEditView* self, size_t pos, const char* text, size_t num)
+int STBTextEditView::insertChars (STBTextEditView* self, size_t pos,
+                                  const STB_TEXTEDIT_CHARTYPE* text, size_t num)
 {
+#if VSTGUI_STB_TEXTEDIT_USE_UNICODE
+	self->uString.insert (pos, text, num);
+	self->setText (StringConvert {}.to_bytes (self->uString));
+	return true;
+#else
 	auto str = self->text.getString ();
 	str.insert (pos, text, num);
 	self->setText (str.data ());
 	return true; // success
+#endif
+}
+
+//-----------------------------------------------------------------------------
+STB_TEXTEDIT_CHARTYPE STBTextEditView::getChar (STBTextEditView* self, int pos)
+{
+#if VSTGUI_STB_TEXTEDIT_USE_UNICODE
+	return self->uString[pos];
+#else
+	return self->getText ().getString ()[pos];
+#endif
+}
+
+//-----------------------------------------------------------------------------
+int STBTextEditView::getLength (STBTextEditView* self)
+{
+#if VSTGUI_STB_TEXTEDIT_USE_UNICODE
+	return self->uString.size ();
+#else
+	return static_cast<int> (self->getText ().length ());
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -542,8 +619,8 @@ void STBTextEditView::layout (StbTexteditRow* row, STBTextEditView* self, int st
 	assert (start_i == 0);
 
 	self->fillCharWidthCache ();
-	auto textWidth =
-		static_cast<float> (std::accumulate (self->charWidthCache.begin (), self->charWidthCache.end (), 0.));
+	auto textWidth = static_cast<float> (
+	    std::accumulate (self->charWidthCache.begin (), self->charWidthCache.end (), 0.));
 
 	row->num_chars = static_cast<int> (self->getText ().length ());
 	row->baseline_y_delta = 1.25;
