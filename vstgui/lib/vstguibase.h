@@ -510,6 +510,22 @@ inline constexpr bool hasBit (T storage, B bit)
 	return (storage & static_cast<T> (bit)) ? true : false;
 }
 
+//-----------------------------------------------------------------------------
+template <typename T, typename B>
+struct BitScopeToggleT
+{
+	BitScopeToggleT (T& storage, B bit) : storage (storage), bit (bit) { toggle (); }
+	~BitScopeToggleT () noexcept { toggle (); }
+
+	void toggle ()
+	{
+		bool state = hasBit (storage, bit);
+		setBit (storage, bit, !state);
+	}
+	T& storage;
+	B bit;
+};
+
 } // namespace
 
 //-----------------------------------------------------------------------------
