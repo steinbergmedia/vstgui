@@ -231,10 +231,32 @@ static constexpr auto UIDescPathKey = "VSTGUI::Standalone|Debug|UIDescPath";
 UIDescCheckFilePathResult checkAndUpdateUIDescFilePath (UIDescription& uiDesc, CFrame* _frame,
                                                         UTF8StringPtr notFoundText)
 {
+	auto originalPath = std::string (uiDesc.getFilePath ());
 	CFileStream stream;
-	if (stream.open (uiDesc.getFilePath (), CFileStream::kReadMode))
+	if (stream.open (originalPath.data (), CFileStream::kReadMode))
 		return UIDescCheckFilePathResult::Exists;
 
+	VSTGUI::Standalone::Preferences prefs;
+	auto savedPath = prefs.get (UIDescPathKey);
+	if (savedPath)
+	{
+		unixfyPath (originalPath);
+		if (auto uiDescName = lastPathComponent (originalPath))
+		{
+			auto directory = savedPath->getString ();
+			unixfyPath (directory);
+			removeLastPathComponent (directory);
+			directory += unixPathSeparator;
+			directory += *uiDescName;
+			if (stream.open (directory.data (), CFileStream::kReadMode))
+			{
+				uiDesc.setFilePath (directory.data ());
+				auto settings = uiDesc.getCustomAttributes ("UIDescFilePath", true);
+				settings->setAttribute ("path", uiDesc.getFilePath ());
+				return UIDescCheckFilePathResult::NewPathSet;
+			}
+		}
+	}
 	SharedPointer<CFrame> frame (_frame);
 	if (!frame)
 		frame = makeOwned<CFrame> (CRect (), nullptr);
@@ -250,9 +272,8 @@ UIDescCheckFilePathResult checkAndUpdateUIDescFilePath (UIDescription& uiDesc, C
 		return UIDescCheckFilePathResult::Cancel;
 	}
 	auto fs = owned (CNewFileSelector::create (frame, CNewFileSelector::kSelectFile));
-	VSTGUI::Standalone::Preferences prefs;
-	if (auto initPath = prefs.get (UIDescPathKey))
-		fs->setInitialDirectory (*initPath);
+	if (savedPath)
+		fs->setInitialDirectory (*savedPath);
 	fs->setDefaultExtension (CFileExtension ("UIDescription File", "uidesc"));
 	if (fs->runModal ())
 	{
