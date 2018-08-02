@@ -405,7 +405,7 @@ bool STBTextEditView::attached (CView* parent)
 //-----------------------------------------------------------------------------
 bool STBTextEditView::removed (CView* parent)
 {
-	if (auto frame = parent->getFrame ())
+	if (auto frame = getFrame ())
 	{
 		blinkTimer = nullptr;
 		frame->unregisterMouseObserver (this);
