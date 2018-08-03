@@ -228,6 +228,14 @@ void cleanupSharedUIResources ()
 static constexpr auto UIDescPathKey = "VSTGUI::Standalone|Debug|UIDescPath";
 
 //------------------------------------------------------------------------
+static void updateUIDescFilePath (const char* path, UIDescription& uiDesc)
+{
+	uiDesc.setFilePath (path);
+	auto settings = uiDesc.getCustomAttributes ("UIDescFilePath", true);
+	settings->setAttribute ("path", uiDesc.getFilePath ());
+}
+
+//------------------------------------------------------------------------
 UIDescCheckFilePathResult checkAndUpdateUIDescFilePath (UIDescription& uiDesc, CFrame* _frame,
                                                         UTF8StringPtr notFoundText)
 {
@@ -250,9 +258,7 @@ UIDescCheckFilePathResult checkAndUpdateUIDescFilePath (UIDescription& uiDesc, C
 			directory += *uiDescName;
 			if (stream.open (directory.data (), CFileStream::kReadMode))
 			{
-				uiDesc.setFilePath (directory.data ());
-				auto settings = uiDesc.getCustomAttributes ("UIDescFilePath", true);
-				settings->setAttribute ("path", uiDesc.getFilePath ());
+				updateUIDescFilePath (directory.data (), uiDesc);
 				return UIDescCheckFilePathResult::NewPathSet;
 			}
 		}
@@ -282,9 +288,7 @@ UIDescCheckFilePathResult checkAndUpdateUIDescFilePath (UIDescription& uiDesc, C
 			return UIDescCheckFilePathResult::Cancel;
 		}
 		auto path = fs->getSelectedFile (0);
-		uiDesc.setFilePath (path);
-		auto settings = uiDesc.getCustomAttributes ("UIDescFilePath", true);
-		settings->setAttribute ("path", uiDesc.getFilePath ());
+		updateUIDescFilePath (path, uiDesc);
 		prefs.set (UIDescPathKey, path);
 		return UIDescCheckFilePathResult::NewPathSet;
 	}
