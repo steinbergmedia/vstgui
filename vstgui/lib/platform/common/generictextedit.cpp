@@ -83,6 +83,7 @@ private:
 	template<typename Proc>
 	bool callSTB (Proc proc);
 	void onStateChanged ();
+	void onTextChange ();
 	void fillCharWidthCache ();
 	void calcCursorSizes ();
 	CCoord getCharWidth (STB_CharT c, STB_CharT pc) const;
@@ -91,16 +92,19 @@ private:
 	static constexpr auto BitBlinkToggle = 1 << 1;
 	static constexpr auto BitCursorIsSet = 1 << 2;
 	static constexpr auto BitCursorSizesValid = 1 << 3;
+	static constexpr auto BitNotifyTextChange = 1 << 4;
 
 	bool isRecursiveKeyEventGuard () const { return hasBit (flags, BitRecursiveKeyGuard); }
 	bool isBlinkToggle () const { return hasBit (flags, BitBlinkToggle); }
 	bool isCursorSet () const { return hasBit (flags, BitCursorIsSet); }
 	bool cursorSizesValid () const { return hasBit (flags, BitCursorSizesValid); }
+	bool notifyTextChange () const { return hasBit (flags, BitNotifyTextChange); }
 
 	void setRecursiveKeyEventGuard (bool state) { setBit (flags, BitRecursiveKeyGuard, state); }
 	void setBlinkToggle (bool state) { setBit (flags, BitBlinkToggle, state); }
 	void setCursorIsSet (bool state) { setBit (flags, BitCursorIsSet, state); }
 	void setCursorSizesValid (bool state) { setBit (flags, BitCursorSizesValid, state); }
+	void setNotifyTextChange (bool state) { setBit (flags, BitNotifyTextChange, state); }
 
 	SharedPointer<CVSTGUITimer> blinkTimer;
 	IPlatformTextEditCallback* callback;
@@ -660,17 +664,38 @@ void STBTextEditView::drawBack (CDrawContext* context, CBitmap* newBack)
 }
 
 //-----------------------------------------------------------------------------
+void STBTextEditView::onTextChange ()
+{
+	if (notifyTextChange ())
+		return;
+	if (auto frame = getFrame ())
+	{
+		if (frame->inEventProcessing ())
+		{
+			setNotifyTextChange (true);
+			auto self = shared (this);
+			frame->doAfterEventProcessing ([self] () {
+				self->setNotifyTextChange (false);
+				self->callback->platformTextDidChange ();
+			});
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
 int STBTextEditView::deleteChars (STBTextEditView* self, size_t pos, size_t num)
 {
 #if VSTGUI_STB_TEXTEDIT_USE_UNICODE
 	self->uString.erase (pos, num);
 	self->setText (StringConvert {}.to_bytes (
 	    self->uString));
+	self->onTextChange ();
 	return true;
 #else
 	auto str = self->text.getString ();
 	str.erase (pos, num);
 	self->setText (str.data ());
+	self->onTextChange ();
 	return true; // success
 #endif
 }
@@ -682,11 +707,13 @@ int STBTextEditView::insertChars (STBTextEditView* self, size_t pos, const STB_C
 #if VSTGUI_STB_TEXTEDIT_USE_UNICODE
 	self->uString.insert (pos, text, num);
 	self->setText (StringConvert {}.to_bytes (self->uString));
+	self->onTextChange ();
 	return true;
 #else
 	auto str = self->text.getString ();
 	str.insert (pos, text, num);
 	self->setText (str.data ());
+	self->onTextChange ();
 	return true; // success
 #endif
 }
