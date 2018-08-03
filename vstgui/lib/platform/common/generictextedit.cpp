@@ -179,7 +179,7 @@ GenericTextEdit::GenericTextEdit (IPlatformTextEditCallback* callback)
 	impl->view = new STBTextEditView (callback);
 	auto view = dynamic_cast<CView*> (callback);
 	assert (view);
-	view->getFrame ()->addView (impl->view);
+	view->getParentView ()->asViewContainer ()->addView (impl->view);
 
 	auto font = shared (callback->platformGetFont ());
 	auto fontSize = font->getSize () / impl->view->getGlobalTransform ().m11;
@@ -350,9 +350,11 @@ int32_t STBTextEditView::onKeyUp (const VstKeyCode& code, CFrame* frame)
 
 //-----------------------------------------------------------------------------
 CMouseEventResult STBTextEditView::onMouseDown (CFrame* frame,
-												const CPoint& where,
+												const CPoint& _where,
 												const CButtonState& buttons)
 {
+	auto where = _where;
+	getParentView ()->translateToLocal (where);
 	if (buttons.isLeftButton () && hitTest (where, buttons))
 	{
 		CPoint where2 (where);
@@ -369,9 +371,11 @@ CMouseEventResult STBTextEditView::onMouseDown (CFrame* frame,
 
 //-----------------------------------------------------------------------------
 CMouseEventResult STBTextEditView::onMouseMoved (CFrame* frame,
-												 const CPoint& where,
+												 const CPoint& _where,
 												 const CButtonState& buttons)
 {
+	auto where = _where;
+	getParentView ()->translateToLocal (where);
 	if (buttons.isLeftButton () && hitTest (where, buttons))
 	{
 		CPoint where2 (where);
