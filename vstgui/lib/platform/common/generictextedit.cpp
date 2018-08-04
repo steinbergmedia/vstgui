@@ -12,6 +12,7 @@
 #include <numeric>
 #include <string>
 #include <codecvt>
+#include <locale>
 
 //-----------------------------------------------------------------------------
 namespace VSTGUI {
