@@ -372,7 +372,11 @@ DeleteOperation::DeleteOperation (UISelection* selection)
 			{
 				if (*it == view)
 				{
-					nextView = *++it;
+					while (*it && selection->contains (*it))
+					{
+						++it;
+					}
+					nextView = *it;
 					break;
 				}
 				++it;
