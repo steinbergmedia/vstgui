@@ -537,6 +537,22 @@ protected:
 	std::string name;
 };
 
+//-----------------------------------------------------------------------------
+class ChangeFocusDrawingAction : public IAction
+{
+public:
+	ChangeFocusDrawingAction (UIDescription* description, const FocusDrawingSettings& newSettings);
+
+	UTF8StringPtr getName () override;
+	void perform () override;
+	void undo () override;
+protected:
+	SharedPointer<UIDescription> description;
+	FocusDrawingSettings oldSettings;
+	FocusDrawingSettings newSettings;
+};
+
+//-----------------------------------------------------------------------------
 } // namespace
 
 #endif // VSTGUI_LIVE_EDITING

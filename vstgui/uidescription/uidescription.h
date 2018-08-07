@@ -127,12 +127,7 @@ public:
 
 	void setBitmapCreator (IBitmapCreator* bitmapCreator);
 
-	struct FocusDrawing
-	{
-		bool enabled {false};
-		CCoord width {1};
-		UTF8String colorName;
-	};
+	using FocusDrawing = FocusDrawingSettings;
 	FocusDrawing getFocusDrawingSettings () const;
 	void setFocusDrawingSettings (const FocusDrawing& fd);
 	

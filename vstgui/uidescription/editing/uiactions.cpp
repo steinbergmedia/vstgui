@@ -1404,6 +1404,35 @@ void DeleteTemplateAction::undo ()
 	description->addNewTemplate (name.c_str (), attributes);
 }
 
+//----------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------
+ChangeFocusDrawingAction::ChangeFocusDrawingAction (UIDescription* description, const FocusDrawingSettings& newSettings)
+: description (description)
+, newSettings (newSettings)
+{
+	oldSettings = description->getFocusDrawingSettings ();
+}
+
+//----------------------------------------------------------------------------------------------------
+UTF8StringPtr ChangeFocusDrawingAction::getName ()
+{
+	return "Change Focus Drawing Settings";
+}
+
+//----------------------------------------------------------------------------------------------------
+void ChangeFocusDrawingAction::perform ()
+{
+	description->setFocusDrawingSettings (newSettings);
+}
+
+//----------------------------------------------------------------------------------------------------
+void ChangeFocusDrawingAction::undo ()
+{
+	description->setFocusDrawingSettings (oldSettings);
+}
+
+//----------------------------------------------------------------------------------------------------
 } // namespace
 
 #endif // VSTGUI_LIVE_EDITING

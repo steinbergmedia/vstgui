@@ -899,7 +899,7 @@ void UIEditController::showTemplateSettings ()
 void UIEditController::showFocusSettings ()
 {
 	UIDialogController* dc = new UIDialogController (this, editView->getFrame ());
-	UIFocusSettingsController* fsController = new UIFocusSettingsController (editDescription);
+	UIFocusSettingsController* fsController = new UIFocusSettingsController (editDescription, undoManager);
 	dc->run ("focus.settings", "Focus Drawing Settings", "OK", "Cancel", fsController, editorDesc);
 }
 

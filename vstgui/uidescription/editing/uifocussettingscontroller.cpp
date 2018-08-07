@@ -8,6 +8,7 @@
 
 #include "uidialogcontroller.h"
 #include "uieditcontroller.h"
+#include "uiactions.h"
 #include "../uiattributes.h"
 #include "../../lib/controls/ctextedit.h"
 #include "../../lib/controls/coptionmenu.h"
@@ -18,8 +19,9 @@ namespace VSTGUI {
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-UIFocusSettingsController::UIFocusSettingsController (UIDescription* description)
+UIFocusSettingsController::UIFocusSettingsController (UIDescription* description, UIUndoManager* undoManager)
 : editDescription (description)
+, undoManager (undoManager)
 {
 	for (auto& control : controls)
 		control = nullptr;
@@ -30,7 +32,7 @@ CMessageResult UIFocusSettingsController::notify (CBaseObject* sender, IdStringP
 {
 	if (message == UIDialogController::kMsgDialogButton1Clicked)
 	{
-		UIDescription::FocusDrawing fd;
+		FocusDrawingSettings fd;
 		
 		if (controls[kEnabledTag])
 			fd.enabled = (controls[kEnabledTag]->getValue () == controls[kEnabledTag]->getMax ()) ? true : false;
@@ -43,7 +45,7 @@ CMessageResult UIFocusSettingsController::notify (CBaseObject* sender, IdStringP
 		}
 		if (controls[kWidthTag])
 			fd.width = controls[kWidthTag]->getValue ();
-		editDescription->setFocusDrawingSettings (fd);
+		undoManager->pushAndPerform (new ChangeFocusDrawingAction (editDescription, fd));
 		return kMessageNotified;
 	}
 	return kMessageUnknown;
