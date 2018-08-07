@@ -225,8 +225,8 @@ bool GenericTextEdit::setText (const UTF8String& text)
 //-----------------------------------------------------------------------------
 bool GenericTextEdit::updateSize ()
 {
-	auto r = textEdit->platformGetSize ();
-	r = impl->view->getParentView ()->translateToLocal (r);
+	auto r = textEdit->platformGetVisibleSize ();
+	r = impl->view->translateToLocal (r);
 	impl->view->setViewSize (r);
 	impl->view->setMouseableArea (r);
 	return true;
