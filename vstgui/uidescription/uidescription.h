@@ -167,6 +167,10 @@ private:
 };
  
 //-----------------------------------------------------------------------------
+static constexpr auto kTemplateAttributeMinSize = "minSize";
+static constexpr auto kTemplateAttributeMaxSize = "maxSize";
+
+//-----------------------------------------------------------------------------
 class IBitmapCreator
 {
 public:

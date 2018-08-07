@@ -891,7 +891,7 @@ void UIEditController::showTemplateSettings ()
 		updateTemplate (editTemplateName.c_str ());
 	}
 	UIDialogController* dc = new UIDialogController (this, editView->getFrame ());
-	UITemplateSettingsController* tsController = new UITemplateSettingsController (editTemplateName, editDescription);
+	UITemplateSettingsController* tsController = new UITemplateSettingsController (editTemplateName, editDescription, this);
 	dc->run ("template.settings", "Template Settings", "OK", "Cancel", tsController, editorDesc);
 }
 
@@ -899,7 +899,7 @@ void UIEditController::showTemplateSettings ()
 void UIEditController::showFocusSettings ()
 {
 	UIDialogController* dc = new UIDialogController (this, editView->getFrame ());
-	UIFocusSettingsController* fsController = new UIFocusSettingsController (editDescription, undoManager);
+	UIFocusSettingsController* fsController = new UIFocusSettingsController (editDescription, this);
 	dc->run ("focus.settings", "Focus Drawing Settings", "OK", "Cancel", fsController, editorDesc);
 }
 
@@ -1411,6 +1411,12 @@ void UIEditController::finishGroupAction ()
 }
 
 //----------------------------------------------------------------------------------------------------
+void UIEditController::performChangeFocusDrawingSettings (const FocusDrawingSettings& newSettings)
+{
+	undoManager->pushAndPerform (new ChangeFocusDrawingAction (editDescription, newSettings));
+}
+
+//----------------------------------------------------------------------------------------------------
 void UIEditController::getTemplateViews (std::list<CView*>& views) const
 {
 	for (const auto& templateDesc : templates)
@@ -1601,6 +1607,13 @@ void UIEditController::endLiveColorChange (UTF8StringPtr colorName)
 void UIEditController::performTemplateNameChange (UTF8StringPtr oldName, UTF8StringPtr newName)
 {
 	undoManager->pushAndPerform (new TemplateNameChangeAction (editDescription, this, oldName, newName));
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIEditController::performTemplateMinMaxSizeChange (UTF8StringPtr templateName, CPoint minSize, CPoint maxSize)
+{
+	undoManager->pushAndPerform (
+	    new ChangeTemplateMinMaxAction (editDescription, templateName, minSize, maxSize));
 }
 
 //----------------------------------------------------------------------------------------------------

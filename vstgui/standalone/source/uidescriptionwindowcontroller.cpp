@@ -445,11 +445,11 @@ struct WindowController::Impl : public IController, public ICommandHandler
 		if (!attr)
 			return;
 		CPoint p;
-		if (attr->getPointAttribute ("minSize", p))
+		if (attr->getPointAttribute (kTemplateAttributeMinSize, p))
 			minSize = p;
 		else
 			minSize = {};
-		if (attr->getPointAttribute ("maxSize", p))
+		if (attr->getPointAttribute (kTemplateAttributeMaxSize, p))
 			maxSize = p;
 		else
 			maxSize = {};

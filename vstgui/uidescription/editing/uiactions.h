@@ -553,6 +553,26 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
+class ChangeTemplateMinMaxAction : public IAction
+{
+public:
+	ChangeTemplateMinMaxAction (UIDescription* description, UTF8StringPtr templateName, CPoint minSize, CPoint maxSize);
+
+	UTF8StringPtr getName () override;
+	void perform () override;
+	void undo () override;
+private:
+	void setMinMaxSize (CPoint minimum, CPoint maximum);
+
+	SharedPointer<UIDescription> description;
+	std::string templateName;
+	CPoint minSize;
+	CPoint maxSize;
+	CPoint oldMinSize;
+	CPoint oldMaxSize;
+};
+
+//-----------------------------------------------------------------------------
 } // namespace
 
 #endif // VSTGUI_LIVE_EDITING

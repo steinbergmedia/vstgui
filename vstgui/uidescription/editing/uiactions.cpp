@@ -1433,6 +1433,72 @@ void ChangeFocusDrawingAction::undo ()
 }
 
 //----------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------
+ChangeTemplateMinMaxAction::ChangeTemplateMinMaxAction (UIDescription* description, UTF8StringPtr templateName, CPoint minSize, CPoint maxSize)
+: description (description)
+, templateName (templateName)
+, minSize (minSize)
+, maxSize (maxSize)
+{
+	if (auto attr = description->getViewAttributes (templateName))
+	{
+		CPoint p;
+		if (attr->getPointAttribute (kTemplateAttributeMinSize, p))
+			oldMinSize = p;
+		else
+			oldMinSize = {-1, -1};
+		if (attr->getPointAttribute (kTemplateAttributeMaxSize, p))
+			oldMaxSize = p;
+		else
+			oldMaxSize = {-1, -1};
+	}
+}
+
+//----------------------------------------------------------------------------------------------------
+void ChangeTemplateMinMaxAction::setMinMaxSize (CPoint minimum, CPoint maximum)
+{
+	if (auto attr = const_cast<UIAttributes*> (description->getViewAttributes (templateName.data ())))
+	{
+		if (minimum.x == -1. && minimum.y == -1.)
+		{
+			attr->removeAttribute (kTemplateAttributeMinSize);
+		}
+		else
+		{
+			attr->setPointAttribute (kTemplateAttributeMinSize, minimum);
+		}
+		if (maximum.x == -1. && maximum.y == -1.)
+		{
+			attr->removeAttribute (kTemplateAttributeMaxSize);
+		}
+		else
+		{
+			attr->setPointAttribute (kTemplateAttributeMaxSize, maximum);
+		}
+	}
+
+}
+
+//----------------------------------------------------------------------------------------------------
+UTF8StringPtr ChangeTemplateMinMaxAction::getName ()
+{
+	return "Change Template Min/Max Sizes";
+}
+
+//----------------------------------------------------------------------------------------------------
+void ChangeTemplateMinMaxAction::perform ()
+{
+	setMinMaxSize (minSize, maxSize);
+}
+
+//----------------------------------------------------------------------------------------------------
+void ChangeTemplateMinMaxAction::undo ()
+{
+	setMinMaxSize (oldMinSize, oldMaxSize);
+}
+
+//----------------------------------------------------------------------------------------------------
 } // namespace
 
 #endif // VSTGUI_LIVE_EDITING
