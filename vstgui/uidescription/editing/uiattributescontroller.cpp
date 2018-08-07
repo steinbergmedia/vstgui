@@ -315,8 +315,6 @@ public:
 			textLabel->unregisterViewListener (this);
 			textLabel->unregisterTextLabelListener (this);
 		}
-		if (slider)
-			slider->unregisterControlListener (this);
 	}
 	
 	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override
@@ -336,10 +334,7 @@ public:
 		{
 			CSlider* sliderView = dynamic_cast<CSlider*>(view);
 			if (sliderView)
-			{
 				slider = sliderView;
-				slider->registerControlListener (this);
-			}
 		}
 		return controller->verifyView (view, attributes, description);
 	}
