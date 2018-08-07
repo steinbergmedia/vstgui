@@ -210,6 +210,23 @@ public:
 	bool setAttribute (const CViewAttributeID id, const uint32_t inSize, const void* inData);
 	/** remove an attribute */
 	bool removeAttribute (const CViewAttributeID id);
+
+	/** set an attribute */
+	template<typename T>
+	bool setAttribute (const CViewAttributeID id, const T& data)
+	{
+		return setAttribute (id, sizeof (T), &data);
+	}
+	
+	/** get an attribute */
+	template <typename T>
+	bool getAttribute (const CViewAttributeID id, T& data) const
+	{
+		uint32_t outSize;
+		if (getAttribute (id, sizeof (T), &data, outSize))
+			return outSize == sizeof (T);
+		return false;
+	}
 	//@}
 
 	//-----------------------------------------------------------------------------

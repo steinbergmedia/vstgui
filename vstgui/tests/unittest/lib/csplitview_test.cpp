@@ -266,7 +266,7 @@ TESTCASE(CSplitViewTests,
 		auto controller = new SplitViewController ();
 		auto container = owned (new CViewContainer (CRect (0, 0, 100, 100)));
 		auto sv = owned (new CSplitView (CRect (0, 0, 100, 100)));
-		sv->setAttribute (kCViewControllerAttribute, sizeof (IController*), &controller);
+		sv->setAttribute (kCViewControllerAttribute, controller);
 		sv->setStyle (CSplitView::kHorizontal);
 		sv->setSeparatorWidth (10);
 		auto view1 = new CView (CRect (0, 0, 40, 100));
@@ -305,7 +305,7 @@ TESTCASE(CSplitViewTests,
 		auto controller = new SplitViewController ();
 		auto container = owned (new CViewContainer (CRect (0, 0, 100, 100)));
 		auto sv = owned (new CSplitView (CRect (0, 0, 100, 100)));
-		sv->setAttribute (kCViewControllerAttribute, sizeof (IController*), &controller);
+		sv->setAttribute (kCViewControllerAttribute, controller);
 		sv->setStyle (CSplitView::kVertical);
 		sv->setSeparatorWidth (10);
 		auto view1 = new CView (CRect (0, 0, 100, 40));

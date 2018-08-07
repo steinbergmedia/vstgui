@@ -1232,8 +1232,7 @@ bool CFrame::focusDrawingEnabled () const
 CColor CFrame::getFocusColor () const
 {
 	CColor focusColor (kRedCColor);
-	uint32_t outSize;
-	getAttribute ('vfco', sizeof (CColor), &focusColor, outSize);
+	getAttribute ('vfco', focusColor);
 	return focusColor;
 }
 
@@ -1241,8 +1240,7 @@ CColor CFrame::getFocusColor () const
 CCoord CFrame::getFocusWidth () const
 {
 	CCoord focusWidth = 2;
-	uint32_t outSize;
-	getAttribute ('vfwi', sizeof (CCoord), &focusWidth, outSize);
+	getAttribute ('vfwi', focusWidth);
 	return focusWidth;
 }
 
@@ -1250,7 +1248,7 @@ CCoord CFrame::getFocusWidth () const
 void CFrame::setFocusDrawingEnabled (bool state)
 {
 	if (state)
-		setAttribute ('vfde', sizeof(bool), &state);
+		setAttribute ('vfde', state);
 	else
 		removeAttribute ('vfde');
 }
@@ -1258,13 +1256,13 @@ void CFrame::setFocusDrawingEnabled (bool state)
 //-----------------------------------------------------------------------------
 void CFrame::setFocusColor (const CColor& color)
 {
-	setAttribute ('vfco', sizeof (CColor), &color);
+	setAttribute ('vfco', color);
 }
 
 //-----------------------------------------------------------------------------
 void CFrame::setFocusWidth (CCoord width)
 {
-	setAttribute ('vfwi', sizeof (CCoord), &width);
+	setAttribute ('vfwi', width);
 }
 
 //-----------------------------------------------------------------------------

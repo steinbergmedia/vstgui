@@ -1134,7 +1134,7 @@ CView* UIAttributesController::createViewForAttribute (const std::string& attrNa
 		textEdit->setFont (kNormalFontSmall);
 		textEdit->setListener (controller);
 		valueView = textEdit;
-		valueView->setAttribute (kCViewControllerAttribute, sizeof (IController*), &controller);
+		valueView->setAttribute (kCViewControllerAttribute, controller);
 	}
 	if (valueView)
 	{

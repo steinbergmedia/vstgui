@@ -293,7 +293,7 @@ void CView::setHitTestPath (CGraphicsPath* path)
 	if (path)
 	{
 		path->remember ();
-		setAttribute (kCViewHitTestPathAttribute, sizeof (CGraphicsPath*), &path);
+		setAttribute (kCViewHitTestPathAttribute, path);
 	}
 }
 
@@ -301,8 +301,7 @@ void CView::setHitTestPath (CGraphicsPath* path)
 CGraphicsPath* CView::getHitTestPath () const
 {
 	CGraphicsPath* path = nullptr;
-	uint32_t size;
-	if (getAttribute (kCViewHitTestPathAttribute, sizeof (CGraphicsPath*), &path, size))
+	if (getAttribute (kCViewHitTestPathAttribute, path))
 		return path;
 	return nullptr;
 }

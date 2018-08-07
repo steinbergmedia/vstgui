@@ -376,7 +376,7 @@ CView* UIEditController::createEditView ()
 		CView* view = editorDesc->createView ("view", controller);
 		if (view)
 		{
-			view->setAttribute (kCViewControllerAttribute, sizeof (IController*), &controller);
+			view->setAttribute (kCViewControllerAttribute, controller);
 			CRect r;
 			if (getSettings ()->getRectAttribute ("EditorSize", r))
 			{
@@ -529,7 +529,7 @@ CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes
 			
 			zoomSettingController = new UIZoomSettingController (this); // not owned, shared with control
 			CTextEdit* textEdit = new CTextEdit (scaleMenuRect, zoomSettingController, 0);
-			textEdit->setAttribute (kCViewControllerAttribute, sizeof (IController*), &zoomSettingController);
+			textEdit->setAttribute (kCViewControllerAttribute, zoomSettingController);
 			CView* zoomView = zoomSettingController->verifyView (textEdit, UIAttributes (), editorDesc);
 			zoomView->setAutosizeFlags (kAutosizeRight|kAutosizeTop|kAutosizeBottom);
 			splitView->addViewToSeparator (0, zoomView);

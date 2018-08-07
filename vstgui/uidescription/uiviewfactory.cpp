@@ -152,7 +152,7 @@ CView* UIViewFactory::createViewByName (const std::string* className, const UIAt
 		if (view)
 		{
 			IdStringPtr viewName = (*iter).second->getViewName ();
-			view->setAttribute (kViewNameAttribute, sizeof (IdStringPtr), &viewName);
+			view->setAttribute (kViewNameAttribute, viewName);
 			UIAttributes evaluatedAttributes;
 			evaluateAttributesAndRemember (view, attributes, evaluatedAttributes, description);
 			while (iter != registry.end () && (*iter).second->apply (view, evaluatedAttributes, description))
@@ -209,7 +209,7 @@ bool UIViewFactory::applyCustomViewAttributeValues (CView* customView, IdStringP
 	if (iter != registry.end ())
 	{
 		IdStringPtr viewName = (*iter).second->getViewName ();
-		customView->setAttribute (kViewNameAttribute, sizeof (IdStringPtr), &viewName);
+		customView->setAttribute (kViewNameAttribute, viewName);
 	}
 	UIAttributes evaluatedAttributes;
 	evaluateAttributesAndRemember (customView, attributes, evaluatedAttributes, desc);

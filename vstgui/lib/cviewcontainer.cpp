@@ -161,8 +161,7 @@ CViewContainer::~CViewContainer () noexcept
 void CViewContainer::beforeDelete ()
 {
 	IDropTarget* dropTarget = nullptr;
-	uint32_t size = 0;
-	if (getAttribute (kCViewContainerDropTargetAttribute, sizeof (IDropTarget*), &dropTarget, size))
+	if (getAttribute (kCViewContainerDropTargetAttribute, dropTarget))
 	{
 		removeAttribute (kCViewContainerDropTargetAttribute);
 		dropTarget->forget ();
@@ -207,15 +206,14 @@ void CViewContainer::setMouseDownView (CView* view)
 			mouseDownView->onMouseUp (p, 0);
 		}
 	}
-	setAttribute (kCViewContainerMouseDownViewAttribute, sizeof (CView*), &view);
+	setAttribute (kCViewContainerMouseDownViewAttribute, view);
 }
 
 //-----------------------------------------------------------------------------
 CView* CViewContainer::getMouseDownView () const
 {
 	CView* view = nullptr;
-	uint32_t size = 0;
-	if (getAttribute (kCViewContainerMouseDownViewAttribute, sizeof (CView*), &view, size))
+	if (getAttribute (kCViewContainerMouseDownViewAttribute, view))
 		return view;
 	return nullptr;
 }
@@ -230,8 +228,7 @@ void CViewContainer::clearMouseDownView ()
 CRect CViewContainer::getLastDrawnFocus () const
 {
 	CRect r;
-	uint32_t size;
-	if (getAttribute (kCViewContainerLastDrawnFocusAttribute, sizeof (CRect), &r, size))
+	if (getAttribute (kCViewContainerLastDrawnFocusAttribute, r))
 		return r;
 	return {};
 }
@@ -242,7 +239,7 @@ void CViewContainer::setLastDrawnFocus (CRect r)
 	if (r.isEmpty ())
 		removeAttribute (kCViewContainerLastDrawnFocusAttribute);
 	else
-		setAttribute (kCViewContainerLastDrawnFocusAttribute, sizeof (CRect), &r);
+		setAttribute (kCViewContainerLastDrawnFocusAttribute, r);
 }
 
 //-----------------------------------------------------------------------------
@@ -442,15 +439,14 @@ void CViewContainer::setBackgroundOffset (const CPoint& p)
 	if (p == CPoint (0, 0))
 		removeAttribute (kCViewContainerBackgroundOffsetAttribute);
 	else
-		setAttribute (kCViewContainerBackgroundOffsetAttribute, sizeof (CPoint), &p);
+		setAttribute (kCViewContainerBackgroundOffsetAttribute, p);
 }
 
 //------------------------------------------------------------------------------
 CPoint CViewContainer::getBackgroundOffset () const
 {
 	CPoint p;
-	uint32_t size;
-	if (getAttribute (kCViewContainerBackgroundOffsetAttribute, sizeof (CPoint), &p, size))
+	if (getAttribute (kCViewContainerBackgroundOffsetAttribute, p))
 		return p;
 	return {};
 }
@@ -1099,10 +1095,10 @@ SharedPointer<IDropTarget> CViewContainer::getDropTarget ()
 	{
 		IDropTarget* dropTarget = nullptr;
 		uint32_t size = 0;
-		if (!getAttribute (kCViewContainerDropTargetAttribute, sizeof (IDropTarget*), &dropTarget, size))
+		if (!getAttribute (kCViewContainerDropTargetAttribute, dropTarget))
 		{
 			dropTarget = new CViewContainerDropTarget (this);
-			setAttribute (kCViewContainerDropTargetAttribute, sizeof (IDropTarget*), &dropTarget);
+			setAttribute (kCViewContainerDropTargetAttribute, dropTarget);
 		}
 		return dropTarget;
 	}

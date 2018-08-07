@@ -1287,7 +1287,7 @@ CView* UIDescription::createViewFromNode (UINode* node) const
 	if (subController)
 	{
 		if (result)
-			result->setAttribute (kCViewControllerAttribute, sizeof (IController*), &subController);
+			result->setAttribute (kCViewControllerAttribute, subController);
 		setController (impl->subControllerStack.back ());
 		impl->subControllerStack.pop_back ();
 		if (result == nullptr)

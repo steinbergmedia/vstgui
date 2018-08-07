@@ -553,8 +553,8 @@ void CDataBrowser::beginTextEdit (const Cell& cell, UTF8StringPtr initialText)
 	addView (te);
 	getFrame ()->setFocusView (te);
 	// save row and column
-	te->setAttribute ('row ', sizeof (int32_t), &cell.row);
-	te->setAttribute ('col ', sizeof (int32_t), &cell.column);
+	te->setAttribute ('row ', cell.row);
+	te->setAttribute ('col ', cell.column);
 }
 
 //-----------------------------------------------------------------------------------------------
@@ -568,9 +568,8 @@ CMessageResult CDataBrowser::notify (CBaseObject* sender, IdStringPtr message)
 			// get row and column
 			int32_t row = kNoSelection;
 			int32_t col = kNoSelection;
-			uint32_t outSize;
-			te->getAttribute ('row ', sizeof (int32_t), &row, outSize);
-			te->getAttribute ('col ', sizeof (int32_t), &col, outSize);
+			te->getAttribute ('row ', row);
+			te->getAttribute ('col ', col);
 			UTF8StringPtr newText = te->getText ();
 			db->dbCellTextChanged (row, col, newText, this);
 			removeView (te);
@@ -1008,8 +1007,8 @@ DragOperation CDataBrowserView::onDragEnter (DragEventData data)
 		cellPoint.x -= r.left;
 		cellPoint.y -= r.top;
 		db->dbOnDragEnterCell (cell.row, cell.column, cellPoint, data.drag, browser);
-		setAttribute (kDataBrowserViewDragRow, sizeof (int32_t), &cell.row);
-		setAttribute (kDataBrowserViewDragColumn, sizeof (int32_t), &cell.column);
+		setAttribute (kDataBrowserViewDragRow, cell.row);
+		setAttribute (kDataBrowserViewDragColumn, cell.column);
 		return DragOperation::Copy;
 	}
 	return DragOperation::None;
@@ -1018,11 +1017,10 @@ DragOperation CDataBrowserView::onDragEnter (DragEventData data)
 //-----------------------------------------------------------------------------------------------
 void CDataBrowserView::onDragLeave (DragEventData data)
 {
-	uint32_t size;
 	int32_t oldRowNum = -1;
 	int32_t oldColNum = -1;
-	getAttribute (kDataBrowserViewDragRow, sizeof (int32_t), &oldRowNum, size);
-	getAttribute (kDataBrowserViewDragColumn, sizeof (int32_t), &oldColNum, size);
+	getAttribute (kDataBrowserViewDragRow, oldRowNum);
+	getAttribute (kDataBrowserViewDragColumn, oldColNum);
 	if (oldRowNum != -1 && oldColNum != -1)
 	{
 		db->dbOnDragExitCell (oldRowNum, oldColNum, data.drag, browser);
@@ -1035,11 +1033,10 @@ void CDataBrowserView::onDragLeave (DragEventData data)
 //-----------------------------------------------------------------------------------------------
 DragOperation CDataBrowserView::onDragMove (DragEventData data)
 {
-	uint32_t size;
 	int32_t oldRowNum = -1;
 	int32_t oldColNum = -1;
-	getAttribute (kDataBrowserViewDragRow, sizeof (int32_t), &oldRowNum, size);
-	getAttribute (kDataBrowserViewDragColumn, sizeof (int32_t), &oldColNum, size);
+	getAttribute (kDataBrowserViewDragRow, oldRowNum);
+	getAttribute (kDataBrowserViewDragColumn, oldColNum);
 	CDataBrowser::Cell cell;
 	if (getCell (data.pos, cell))
 	{
@@ -1052,8 +1049,8 @@ DragOperation CDataBrowserView::onDragMove (DragEventData data)
 			if (oldRowNum != -1 && oldColNum != -1)
 				db->dbOnDragExitCell (oldRowNum, oldColNum, data.drag, browser);
 			db->dbOnDragEnterCell (cell.row, cell.column, cellPoint, data.drag, browser);
-			setAttribute (kDataBrowserViewDragRow, sizeof (int32_t), &cell.row);
-			setAttribute (kDataBrowserViewDragColumn, sizeof (int32_t), &cell.column);
+			setAttribute (kDataBrowserViewDragRow, cell.row);
+			setAttribute (kDataBrowserViewDragColumn, cell.column);
 		}
 		else
 		{

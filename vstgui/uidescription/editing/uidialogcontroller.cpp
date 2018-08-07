@@ -220,7 +220,7 @@ CView* UIDialogController::verifyView (CView* view, const UIAttributes& attribut
 			CView* subView = dialogDescription->createView (templateName.c_str (), controller);
 			if (subView)
 			{
-				subView->setAttribute (kCViewControllerAttribute, sizeof (IController*), &controller);
+				subView->setAttribute (kCViewControllerAttribute, controller);
 				sizeDiff.x = subView->getWidth () - view->getWidth ();
 				sizeDiff.y = subView->getHeight () - view->getHeight ();
 				CRect size = view->getViewSize ();
