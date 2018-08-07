@@ -654,7 +654,7 @@ void UIEditController::valueChanged (CControl* control)
 		{
 			case kEditingTag:
 			{
-				selection->empty ();
+				selection->clear ();
 				if (auto container = editView->getEditView () ? editView->getEditView ()->asViewContainer () : nullptr)
 					resetScrollViewOffsets (container);
 				editView->enableEditing (control->getValue () == control->getMax () ? true : false);
@@ -811,7 +811,7 @@ void UIEditController::onTemplateSelectionChanged ()
 			}
 			else
 			{
-				selection->empty ();
+				selection->clear ();
 				editView->setEditView (nullptr);
 				templateController->setTemplateView (nullptr);
 				editTemplateName = "";
@@ -823,7 +823,7 @@ void UIEditController::onTemplateSelectionChanged ()
 				selection->setExclusive (editView->getEditView ());
 		}
 		else
-			selection->empty ();
+			selection->clear ();
 	}
 }
 
@@ -1184,7 +1184,7 @@ bool UIEditController::doZOrderAction (bool lower)
 void UIEditController::doSelectAllChildren ()
 {
 	CViewContainer* container = selection->first ()->asViewContainer ();
-	selection->empty ();
+	selection->clear ();
 	auto factory = static_cast<const UIViewFactory*> (editDescription->getViewFactory ());
 	container->forEachChild ([&] (CView* view) {
 		if (factory->getViewName (view))
@@ -1221,7 +1221,7 @@ void UIEditController::onUndoManagerChanged ()
 				return;
 			}
 		}
-		selection->empty ();
+		selection->clear ();
 	}
 }
 

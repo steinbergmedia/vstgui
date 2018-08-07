@@ -293,7 +293,7 @@ void UITemplateController::dbSelectionChanged (int32_t selectedRow, GenericStrin
 			selection->setExclusive (templateView);
 		}
 		else
-			selection->empty ();
+			selection->clear ();
 		return;
 	}
 }

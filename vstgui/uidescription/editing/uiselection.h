@@ -18,19 +18,17 @@ class IUIDescription;
 class OutputStream;
 class InputStream;
 
-using UISelectionViewList = std::list<SharedPointer<CView>>;
 //----------------------------------------------------------------------------------------------------
-class UISelection : public CBaseObject, protected UISelectionViewList, public IDependency
+class UISelection : public CBaseObject, public IDependency
 //----------------------------------------------------------------------------------------------------
 {
 public:
-	using UISelectionViewList::const_iterator;
-	using UISelectionViewList::const_reverse_iterator;
-	using UISelectionViewList::begin;
-	using UISelectionViewList::end;
-	using UISelectionViewList::rbegin;
-	using UISelectionViewList::rend;
-	
+
+	using UISelectionViewList = std::list<SharedPointer<CView>>;
+
+	using const_iterator = UISelectionViewList::const_iterator;
+	using const_reverse_iterator = UISelectionViewList::const_reverse_iterator;
+
 	enum {
 		kMultiSelectionStyle,
 		kSingleSelectionStyle
@@ -39,12 +37,17 @@ public:
 	UISelection (int32_t style = kMultiSelectionStyle);
 	~UISelection () override;
 
+	const_iterator begin () const;
+	const_iterator end () const;
+	const_reverse_iterator rbegin () const;
+	const_reverse_iterator rend () const;
+	
 	void setStyle (int32_t style);
 
 	void add (CView* view);
 	void remove (CView* view);
 	void setExclusive (CView* view);
-	void empty ();
+	void clear ();
 
 	CView* first () const;
 
@@ -70,11 +73,11 @@ public:
 	bool store (OutputStream& stream, IUIDescription* uiDescription);
 	bool restore (InputStream& stream, IUIDescription* uiDescription);
 protected:
-
-	std::list<CBaseObject*> dependencies;
 	int32_t style;
 	
 	CPoint dragOffset;
+	
+	UISelectionViewList viewList;
 };
 
 //----------------------------------------------------------------------------------------------------

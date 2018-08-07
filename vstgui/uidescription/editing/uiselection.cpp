@@ -21,6 +21,13 @@
 namespace VSTGUI {
 
 //----------------------------------------------------------------------------------------------------
+IdStringPtr UISelection::kMsgSelectionWillChange = "kMsgSelectionWillChange";
+IdStringPtr UISelection::kMsgSelectionChanged = "kMsgSelectionChanged";
+IdStringPtr UISelection::kMsgSelectionViewChanged = "kMsgSelectionViewChanged";
+IdStringPtr UISelection::kMsgSelectionViewWillChange = "kMsgSelectionViewWillChange";
+
+
+//----------------------------------------------------------------------------------------------------
 UISelection::UISelection (int32_t style)
 : style (style)
 {
@@ -29,13 +36,32 @@ UISelection::UISelection (int32_t style)
 //----------------------------------------------------------------------------------------------------
 UISelection::~UISelection ()
 {
-	empty ();
+	clear ();
 }
 
-IdStringPtr UISelection::kMsgSelectionWillChange = "kMsgSelectionWillChange";
-IdStringPtr UISelection::kMsgSelectionChanged = "kMsgSelectionChanged";
-IdStringPtr UISelection::kMsgSelectionViewChanged = "kMsgSelectionViewChanged";
-IdStringPtr UISelection::kMsgSelectionViewWillChange = "kMsgSelectionViewWillChange";
+//----------------------------------------------------------------------------------------------------
+auto UISelection::begin () const -> const_iterator
+{
+	return viewList.begin ();
+}
+
+//----------------------------------------------------------------------------------------------------
+auto  UISelection::end () const -> const_iterator
+{
+	return viewList.end ();
+}
+
+//----------------------------------------------------------------------------------------------------
+auto UISelection::rbegin () const -> const_reverse_iterator
+{
+	return viewList.rbegin ();
+}
+
+//----------------------------------------------------------------------------------------------------
+auto UISelection::rend () const -> const_reverse_iterator
+{
+	return viewList.rend ();
+}
 
 //----------------------------------------------------------------------------------------------------
 void UISelection::setStyle (int32_t _style)
@@ -49,8 +75,8 @@ void UISelection::add (CView* view)
 	vstgui_assert (view, "view cannot be nullptr");
 	changed (kMsgSelectionWillChange);
 	if (style == kSingleSelectionStyle)
-		empty ();
-	emplace_back (view);
+		clear ();
+	viewList.emplace_back (view);
 	changed (kMsgSelectionChanged);
 }
 
@@ -61,7 +87,7 @@ void UISelection::remove (CView* view)
 	if (contains (view))
 	{
 		changed (kMsgSelectionWillChange);
-		std::list<SharedPointer<CView> >::remove (view);
+		viewList.remove (view);
 		changed (kMsgSelectionChanged);
 	}
 }
@@ -72,15 +98,15 @@ void UISelection::setExclusive (CView* view)
 	vstgui_assert (view, "view cannot be nullptr");
 	changed (kMsgSelectionWillChange);
 	DeferChanges dc (this);
-	erase (std::list<SharedPointer<CView> >::begin (), std::list<SharedPointer<CView> >::end ());
+	viewList.clear ();
 	add (view);
 }
 
 //----------------------------------------------------------------------------------------------------
-void UISelection::empty ()
+void UISelection::clear ()
 {
 	changed (kMsgSelectionWillChange);
-	erase (std::list<SharedPointer<CView> >::begin (), std::list<SharedPointer<CView> >::end ());
+	viewList.clear ();
 	changed (kMsgSelectionChanged);
 }
 
@@ -106,13 +132,13 @@ bool UISelection::containsParent (CView* view) const
 //----------------------------------------------------------------------------------------------------
 int32_t UISelection::total () const
 {
-	return (int32_t)size ();
+	return (int32_t)viewList.size ();
 }
 
 //----------------------------------------------------------------------------------------------------
 CView* UISelection::first () const
 {
-	if (size () > 0)
+	if (!viewList.empty ())
 		return *begin ();
 	return nullptr;
 }
@@ -121,7 +147,7 @@ CView* UISelection::first () const
 CRect UISelection::getBounds () const
 {
 	CRect result;
-	if (UISelectionViewList::empty ())
+	if (viewList.empty ())
 		return result;
 	const_iterator it = begin ();
 	result = getGlobalViewCoordinates (*it);
@@ -219,12 +245,12 @@ bool UISelection::store (OutputStream& stream, IUIDescription* uiDescription)
 //----------------------------------------------------------------------------------------------------
 bool UISelection::restore (InputStream& stream, IUIDescription* uiDescription)
 {
-	empty ();
+	clear ();
 	UIDescription* desc = dynamic_cast<UIDescription*>(uiDescription);
 	if (desc)
 	{
 		UIAttributes* attr = nullptr;
-		if (desc->restoreViews (stream, *this, &attr))
+		if (desc->restoreViews (stream, viewList, &attr))
 		{
 			if (attr)
 			{

@@ -197,7 +197,7 @@ void EmbedViewOperation::perform ()
 //-----------------------------------------------------------------------------
 void EmbedViewOperation::undo ()
 {
-	selection->empty ();
+	selection->clear ();
 	CRect parentRect = newContainer->getViewSize ();
 	const_reverse_iterator it = rbegin ();
 	while (it != rend ())
@@ -253,7 +253,7 @@ UTF8StringPtr ViewCopyOperation::getName ()
 //-----------------------------------------------------------------------------
 void ViewCopyOperation::perform ()
 {
-	workingSelection->empty ();
+	workingSelection->clear ();
 	for (auto& view : *this)
 	{
 		parent->addView (view);
@@ -266,7 +266,7 @@ void ViewCopyOperation::perform ()
 //-----------------------------------------------------------------------------
 void ViewCopyOperation::undo ()
 {
-	workingSelection->empty ();
+	workingSelection->clear ();
 	for (auto& view : *this)
 	{
 		view->invalid ();
@@ -314,7 +314,7 @@ void ViewSizeChangeOperation::perform ()
 //-----------------------------------------------------------------------------
 void ViewSizeChangeOperation::undo ()
 {
-	selection->empty ();
+	selection->clear ();
 	for (auto& element : *this)
 	{
 		CView* view = element.first;
@@ -397,7 +397,7 @@ UTF8StringPtr DeleteOperation::getName ()
 //----------------------------------------------------------------------------------------------------
 void DeleteOperation::perform ()
 {
-	selection->empty ();
+	selection->clear ();
 	for (auto& element : *this)
 		element.first->removeView (element.second.view);
 }
@@ -405,7 +405,7 @@ void DeleteOperation::perform ()
 //----------------------------------------------------------------------------------------------------
 void DeleteOperation::undo ()
 {
-	selection->empty ();
+	selection->clear ();
 	IDependency::DeferChanges dc (selection);
 	for (auto& element : *this)
 	{
@@ -583,7 +583,7 @@ void AttributeChangeAction::updateSelection ()
 		if (selection->contains (element.first) == false)
 		{
 			IDependency::DeferChanges dc (selection);
-			selection->empty ();
+			selection->clear ();
 			for (auto& it2 : *this)
 				selection->add (it2.first);
 			break;

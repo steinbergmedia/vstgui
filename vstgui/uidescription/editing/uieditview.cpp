@@ -665,7 +665,7 @@ CMouseEventResult UIEditView::onMouseDown (CPoint &where, const CButtonState& bu
 			CView* mouseHitView = getViewAt (where, GetViewOptions ().deep ().includeViewContainer ().includeInvisible ());
 			if (selectionHitView == nullptr && mouseHitView == nullptr)
 			{
-				getSelection ()->empty ();
+				getSelection ()->clear ();
 				return kMouseEventHandled;
 			}
 			if (getSelection ()->contains (mouseHitView))
