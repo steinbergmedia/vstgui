@@ -517,6 +517,7 @@ struct BitScopeToggleT
 	BitScopeToggleT (T& storage, B bit) : storage (storage), bit (bit) { toggle (); }
 	~BitScopeToggleT () noexcept { toggle (); }
 
+private:
 	void toggle ()
 	{
 		bool state = hasBit (storage, bit);
