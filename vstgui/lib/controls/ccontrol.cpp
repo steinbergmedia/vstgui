@@ -57,15 +57,16 @@ CControl::CControl (const CControl& c)
 }
 
 //------------------------------------------------------------------------
-void CControl::registerControlListener (IControlListener* listener)
+void CControl::registerControlListener (IControlListener* subListener)
 {
-	subListeners.add (listener);
+	vstgui_assert (listener != subListener, "the subListener is already the main listener");
+	subListeners.add (subListener);
 }
 
 //------------------------------------------------------------------------
-void CControl::unregisterControlListener (IControlListener* listener)
+void CControl::unregisterControlListener (IControlListener* subListener)
 {
-	subListeners.remove(listener);
+	subListeners.remove (subListener);
 }
 
 //------------------------------------------------------------------------
