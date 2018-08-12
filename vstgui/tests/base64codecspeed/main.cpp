@@ -11,7 +11,7 @@ using namespace VSTGUI;
 
 int main ()
 {
-	Malloc<uint8_t> origData;
+	Buffer<uint8_t> origData;
 	origData.allocate (1024*1024*500);
 
 	std::independent_bits_engine<std::default_random_engine, sizeof (uint16_t) * 8, uint16_t> rbe;

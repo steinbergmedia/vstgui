@@ -48,9 +48,9 @@ CTooltipSupport::~CTooltipSupport () noexcept
 }
 
 //------------------------------------------------------------------------
-static Malloc<char> getTooltipFromView (CView* view)
+static Buffer<char> getTooltipFromView (CView* view)
 {
-	Malloc<char> tooltip;
+	Buffer<char> tooltip;
 	uint32_t tooltipSize = 0;
 	if (view->getAttributeSize (kCViewTooltipAttribute, tooltipSize))
 	{

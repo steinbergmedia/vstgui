@@ -15,7 +15,7 @@ class Base64Codec
 public:
 	struct Result
 	{
-		Malloc<uint8_t> data;
+		Buffer<uint8_t> data;
 		uint32_t dataSize {0};
 	};
 

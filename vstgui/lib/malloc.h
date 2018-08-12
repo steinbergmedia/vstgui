@@ -18,17 +18,17 @@ struct MallocAllocator
 
 //-----------------------------------------------------------------------------
 template <typename T, typename Allocator = MallocAllocator>
-class Malloc
+class Buffer
 {
 public:
-	Malloc () = default;
-	Malloc (size_t objectCount) : count (objectCount)
+	Buffer () = default;
+	Buffer (size_t objectCount) : count (objectCount)
 	{
 		if (objectCount)
 			allocate (objectCount);
 	}
-	Malloc (Malloc&& other) { *this = std::move (other); }
-	Malloc& operator= (Malloc&& other)
+	Buffer (Buffer&& other) { *this = std::move (other); }
+	Buffer& operator= (Buffer&& other)
 	{
 		buffer = other.buffer;
 		count = other.count;
@@ -36,9 +36,9 @@ public:
 		other.count = 0;
 		return *this;
 	}
-	Malloc (const Malloc&) = delete;
-	Malloc& operator= (const Malloc&) = delete;
-	~Malloc () { deallocate (); }
+	Buffer (const Buffer&) = delete;
+	Buffer& operator= (const Buffer&) = delete;
+	~Buffer () { deallocate (); }
 
 	T* get () { return buffer; }
 	const T* get () const { return buffer; }
