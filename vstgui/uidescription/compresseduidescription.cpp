@@ -6,6 +6,7 @@
 #include "cstream.h"
 #include "xmlparser.h"
 #include "../lib/cresourcedescription.h"
+#include <array>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -34,8 +35,7 @@ public:
 protected:
 	z_streamp zstream;
 	InputStream* stream;
-	void* internalBuffer;
-	uint32_t internalBufferSize;
+	std::array<Bytef, 4096> internalBuffer;
 };
 
 //-----------------------------------------------------------------------------
@@ -57,12 +57,11 @@ public:
 protected:
 	z_streamp zstream;
 	OutputStream* stream;
-	void* internalBuffer;
-	uint32_t internalBufferSize;
+	std::array<Bytef, 4096> internalBuffer;
 };
 
 //-----------------------------------------------------------------------------
-static int64_t kUIDescIdentifier = 0x7072637365646975LL; // 8 byte identifier
+static constexpr int64_t kUIDescIdentifier = 0x7072637365646975LL; // 8 byte identifier
 
 //-----------------------------------------------------------------------------
 CompressedUIDescription::CompressedUIDescription (const CResourceDescription& compressedUIDescFile)
@@ -105,7 +104,8 @@ bool CompressedUIDescription::parse ()
 	{
 		CFileStream fileStream;
 		if (fileStream.open (getXmlFile ().u.name,
-		                     CFileStream::kReadMode | CFileStream::kBinaryMode))
+		                     CFileStream::kReadMode | CFileStream::kBinaryMode,
+		                     kLittleEndianByteOrder))
 		{
 			result = parseWithStream (fileStream);
 		}
@@ -123,9 +123,10 @@ bool CompressedUIDescription::save (UTF8StringPtr filename, int32_t flags)
 {
 	bool result = false;
 	CFileStream fileStream;
-	if (fileStream.open (filename, CFileStream::kWriteMode | CFileStream::kBinaryMode |
-	                                   CFileStream::kTruncateMode),
-	    kLittleEndianByteOrder)
+	if (fileStream.open (filename,
+	                     CFileStream::kWriteMode | CFileStream::kBinaryMode |
+	                         CFileStream::kTruncateMode,
+	                     kLittleEndianByteOrder))
 	{
 		fileStream << kUIDescIdentifier;
 		ZLibOutputStream zout;
@@ -144,8 +145,8 @@ bool CompressedUIDescription::save (UTF8StringPtr filename, int32_t flags)
 		xmlFileName.append (".xml");
 		CFileStream xmlFileStream;
 		if (xmlFileStream.open (xmlFileName.c_str (),
-		                        CFileStream::kWriteMode | CFileStream::kTruncateMode),
-		    kLittleEndianByteOrder)
+		                        CFileStream::kWriteMode | CFileStream::kTruncateMode,
+		                        kLittleEndianByteOrder))
 		{
 			saveToStream (xmlFileStream, flags);
 		}
@@ -157,11 +158,7 @@ bool CompressedUIDescription::save (UTF8StringPtr filename, int32_t flags)
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 ZLibInputStream::ZLibInputStream (ByteOrder byteOrder)
-: InputStream (byteOrder)
-, zstream (nullptr)
-, stream (nullptr)
-, internalBuffer (nullptr)
-, internalBufferSize (0)
+: InputStream (byteOrder), zstream (nullptr), stream (nullptr)
 {
 }
 
@@ -173,8 +170,6 @@ ZLibInputStream::~ZLibInputStream ()
 		inflateEnd (zstream);
 		free (zstream);
 	}
-	if (internalBuffer)
-		free (internalBuffer);
 }
 
 //-----------------------------------------------------------------------------
@@ -184,20 +179,14 @@ bool ZLibInputStream::open (InputStream& _stream)
 		return false;
 	stream = &_stream;
 
-	internalBufferSize = 1024;
-	internalBuffer = malloc (internalBufferSize);
-	uint32_t read = stream->readRaw (internalBuffer, internalBufferSize);
+	uint32_t read = stream->readRaw (internalBuffer.data (), internalBuffer.size ());
 	if (read == 0)
-	{
-		free (internalBuffer);
-		internalBuffer = nullptr;
 		return false;
-	}
 
 	zstream = static_cast<z_streamp> (malloc (sizeof (z_stream)));
 	memset (zstream, 0, sizeof (z_stream));
 
-	zstream->next_in = static_cast<Bytef*> (internalBuffer);
+	zstream->next_in = internalBuffer.data ();
 	zstream->avail_in = read;
 
 	if (inflateInit (zstream) != Z_OK)
@@ -218,10 +207,10 @@ uint32_t ZLibInputStream::readRaw (void* buffer, uint32_t size)
 	{
 		if (zstream->avail_in == 0)
 		{
-			uint32_t read = stream->readRaw (internalBuffer, internalBufferSize);
+			uint32_t read = stream->readRaw (internalBuffer.data (), internalBuffer.size ());
 			if (read > 0)
 			{
-				zstream->next_in = static_cast<Bytef*> (internalBuffer);
+				zstream->next_in = internalBuffer.data ();
 				zstream->avail_in = read;
 			}
 		}
@@ -240,11 +229,7 @@ uint32_t ZLibInputStream::readRaw (void* buffer, uint32_t size)
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 ZLibOutputStream::ZLibOutputStream (ByteOrder byteOrder)
-: OutputStream (byteOrder)
-, zstream (nullptr)
-, stream (nullptr)
-, internalBuffer (nullptr)
-, internalBufferSize (0)
+: OutputStream (byteOrder), zstream (nullptr), stream (nullptr)
 {
 }
 
@@ -260,9 +245,6 @@ bool ZLibOutputStream::open (OutputStream& _stream, int32_t compressionLevel)
 	if (zstream != nullptr || stream != nullptr)
 		return false;
 	stream = &_stream;
-
-	internalBufferSize = 1024;
-	internalBuffer = malloc (internalBufferSize);
 
 	zstream = static_cast<z_streamp> (malloc (sizeof (z_stream)));
 	memset (zstream, 0, sizeof (z_stream));
@@ -286,19 +268,19 @@ bool ZLibOutputStream::close ()
 		zstream->avail_in = 0;
 		while (true)
 		{
-			zstream->next_out = static_cast<Bytef*> (internalBuffer);
-			zstream->avail_out = internalBufferSize;
+			zstream->next_out = internalBuffer.data ();
+			zstream->avail_out = internalBuffer.size ();
 			int zres = deflate (zstream, Z_FINISH);
 			if (zres != Z_OK && zres != Z_BUF_ERROR && zres != Z_STREAM_END)
 			{
 				result = false;
 				break;
 			}
-			else if (zstream->avail_out != internalBufferSize)
+			else if (zstream->avail_out != internalBuffer.size ())
 			{
-				uint32_t written =
-				    stream->writeRaw (internalBuffer, internalBufferSize - zstream->avail_out);
-				if (written != internalBufferSize - zstream->avail_out)
+				uint32_t written = stream->writeRaw (internalBuffer.data (),
+				                                     internalBuffer.size () - zstream->avail_out);
+				if (written != internalBuffer.size () - zstream->avail_out)
 				{
 					result = false;
 					break;
@@ -311,11 +293,6 @@ bool ZLibOutputStream::close ()
 		free (zstream);
 		zstream = nullptr;
 	}
-	if (internalBuffer)
-	{
-		free (internalBuffer);
-		internalBuffer = nullptr;
-	}
 	return result;
 }
 
@@ -326,18 +303,18 @@ uint32_t ZLibOutputStream::writeRaw (const void* buffer, uint32_t size)
 	zstream->avail_in = size;
 	while (zstream->avail_in > 0)
 	{
-		zstream->next_out = static_cast<Bytef*> (internalBuffer);
-		zstream->avail_out = internalBufferSize;
+		zstream->next_out = internalBuffer.data ();
+		zstream->avail_out = internalBuffer.size ();
 		int zres = deflate (zstream, Z_NO_FLUSH);
 		if (zres == Z_STREAM_ERROR)
 		{
 			return -1;
 		}
-		if (zstream->avail_out != internalBufferSize)
+		if (zstream->avail_out != internalBuffer.size ())
 		{
-			uint32_t written =
-			    stream->writeRaw (internalBuffer, internalBufferSize - zstream->avail_out);
-			if (written != internalBufferSize - zstream->avail_out)
+			uint32_t written = stream->writeRaw (internalBuffer.data (),
+			                                     internalBuffer.size () - zstream->avail_out);
+			if (written != internalBuffer.size () - zstream->avail_out)
 				return -1;
 		}
 	}
