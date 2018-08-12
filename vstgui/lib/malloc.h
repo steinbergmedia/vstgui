@@ -18,7 +18,7 @@ struct MallocAllocator
 
 //-----------------------------------------------------------------------------
 template <typename T, typename Allocator = MallocAllocator>
-class Buffer
+class Buffer final
 {
 public:
 	Buffer () = default;
@@ -38,10 +38,19 @@ public:
 	}
 	Buffer (const Buffer&) = delete;
 	Buffer& operator= (const Buffer&) = delete;
-	~Buffer () { deallocate (); }
+	~Buffer () noexcept { deallocate (); }
 
-	T* get () { return buffer; }
-	const T* get () const { return buffer; }
+	T* data () { return buffer; }
+	const T* data () const { return buffer; }
+	T* get () { return data (); }
+	const T* get () const { return data (); }
+	T& operator[] (size_t index) { vstgui_assert (index < count); return buffer[index]; }
+	const T& operator[] (size_t index) const { vstgui_assert (index < count); return buffer[index]; }
+	T* begin () noexcept { return buffer; }
+	T* end () noexcept { return buffer + count; }
+	const T* begin () const noexcept { return buffer; }
+	const T* end () const noexcept { return buffer + count; }
+
 	size_t size () const { return count; }
 	bool empty () const { return count == 0; }
 
