@@ -1573,7 +1573,7 @@ CBitmap* UIDescription::getBitmap (UTF8StringPtr name) const
 			}
 			bitmapNode->setFilterProcessed ();
 		}
-		if (bitmapNode->getScaledBitmapsAdded () == false)
+		if (bitmap && bitmapNode->getScaledBitmapsAdded () == false)
 		{
 			double scaleFactor;
 			if (!UIDescriptionPrivate::decodeScaleFactorFromName (bitmap->getResourceDescription ().u.name, scaleFactor))
