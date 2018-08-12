@@ -2,11 +2,12 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
+#include "../lib/cresourcedescription.h"
 #include "compresseduidescription.h"
 #include "cstream.h"
 #include "xmlparser.h"
-#include "../lib/cresourcedescription.h"
 #include <array>
+#include <utility>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -18,7 +19,7 @@ namespace {
 #include "miniz/miniz.c"
 };
 
-using z_streamp = mz_streamp;
+using z_stream = mz_stream;
 
 //-----------------------------------------------------------------------------
 class ZLibInputStream : public InputStream
@@ -33,8 +34,8 @@ public:
 	uint32_t readRaw (void* buffer, uint32_t size) override;
 
 protected:
-	z_streamp zstream;
-	InputStream* stream;
+	std::unique_ptr<z_stream> zstream;
+	InputStream* stream {nullptr};
 	std::array<Bytef, 4096> internalBuffer;
 };
 
@@ -55,8 +56,8 @@ public:
 	uint32_t writeRaw (const void* buffer, uint32_t size) override;
 
 protected:
-	z_streamp zstream;
-	OutputStream* stream;
+	std::unique_ptr<z_stream> zstream;
+	OutputStream* stream {nullptr};
 	std::array<Bytef, 4096> internalBuffer;
 };
 
@@ -157,8 +158,7 @@ bool CompressedUIDescription::save (UTF8StringPtr filename, int32_t flags)
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-ZLibInputStream::ZLibInputStream (ByteOrder byteOrder)
-: InputStream (byteOrder), zstream (nullptr), stream (nullptr)
+ZLibInputStream::ZLibInputStream (ByteOrder byteOrder) : InputStream (byteOrder)
 {
 }
 
@@ -166,10 +166,7 @@ ZLibInputStream::ZLibInputStream (ByteOrder byteOrder)
 ZLibInputStream::~ZLibInputStream ()
 {
 	if (zstream)
-	{
-		inflateEnd (zstream);
-		free (zstream);
-	}
+		inflateEnd (zstream.get ());
 }
 
 //-----------------------------------------------------------------------------
@@ -179,19 +176,18 @@ bool ZLibInputStream::open (InputStream& _stream)
 		return false;
 	stream = &_stream;
 
-	uint32_t read = stream->readRaw (internalBuffer.data (), internalBuffer.size ());
-	if (read == 0)
+	auto read = stream->readRaw (internalBuffer.data (), internalBuffer.size ());
+	if (read == 0 || read == kStreamIOError)
 		return false;
 
-	zstream = static_cast<z_streamp> (malloc (sizeof (z_stream)));
-	memset (zstream, 0, sizeof (z_stream));
+	zstream = std::unique_ptr<z_stream> (new z_stream);
+	memset (zstream.get (), 0, sizeof (z_stream));
 
 	zstream->next_in = internalBuffer.data ();
 	zstream->avail_in = read;
 
-	if (inflateInit (zstream) != Z_OK)
+	if (inflateInit (zstream.get ()) != Z_OK)
 	{
-		free (zstream);
 		zstream = nullptr;
 	}
 
@@ -201,26 +197,28 @@ bool ZLibInputStream::open (InputStream& _stream)
 //-----------------------------------------------------------------------------
 uint32_t ZLibInputStream::readRaw (void* buffer, uint32_t size)
 {
+	if (!zstream || !buffer)
+		return kStreamIOError;
 	zstream->next_out = static_cast<Bytef*> (buffer);
 	zstream->avail_out = size;
 	while (zstream->avail_out > 0)
 	{
 		if (zstream->avail_in == 0)
 		{
-			uint32_t read = stream->readRaw (internalBuffer.data (), internalBuffer.size ());
-			if (read > 0)
+			auto read = stream->readRaw (internalBuffer.data (), internalBuffer.size ());
+			if (read > 0 && read != kStreamIOError)
 			{
 				zstream->next_in = internalBuffer.data ();
 				zstream->avail_in = read;
 			}
 		}
-		int zres = inflate (zstream, Z_SYNC_FLUSH);
+		auto zres = inflate (zstream.get (), Z_SYNC_FLUSH);
 		if (zres == Z_STREAM_END)
 		{
 			return size - zstream->avail_out;
 		}
 		else if (zres != Z_OK)
-			return -1;
+			return kStreamIOError;
 	}
 	return size;
 }
@@ -228,8 +226,7 @@ uint32_t ZLibInputStream::readRaw (void* buffer, uint32_t size)
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-ZLibOutputStream::ZLibOutputStream (ByteOrder byteOrder)
-: OutputStream (byteOrder), zstream (nullptr), stream (nullptr)
+ZLibOutputStream::ZLibOutputStream (ByteOrder byteOrder) : OutputStream (byteOrder)
 {
 }
 
@@ -246,12 +243,11 @@ bool ZLibOutputStream::open (OutputStream& _stream, int32_t compressionLevel)
 		return false;
 	stream = &_stream;
 
-	zstream = static_cast<z_streamp> (malloc (sizeof (z_stream)));
-	memset (zstream, 0, sizeof (z_stream));
+	zstream = std::unique_ptr<z_stream> (new z_stream);
+	memset (zstream.get (), 0, sizeof (z_stream));
 
-	if (deflateInit (zstream, compressionLevel) != Z_OK)
+	if (deflateInit (zstream.get (), compressionLevel) != Z_OK)
 	{
-		free (zstream);
 		zstream = nullptr;
 		return false;
 	}
@@ -270,7 +266,7 @@ bool ZLibOutputStream::close ()
 		{
 			zstream->next_out = internalBuffer.data ();
 			zstream->avail_out = internalBuffer.size ();
-			int zres = deflate (zstream, Z_FINISH);
+			auto zres = deflate (zstream.get (), Z_FINISH);
 			if (zres != Z_OK && zres != Z_BUF_ERROR && zres != Z_STREAM_END)
 			{
 				result = false;
@@ -278,8 +274,8 @@ bool ZLibOutputStream::close ()
 			}
 			else if (zstream->avail_out != internalBuffer.size ())
 			{
-				uint32_t written = stream->writeRaw (internalBuffer.data (),
-				                                     internalBuffer.size () - zstream->avail_out);
+				auto written = stream->writeRaw (internalBuffer.data (),
+				                                 internalBuffer.size () - zstream->avail_out);
 				if (written != internalBuffer.size () - zstream->avail_out)
 				{
 					result = false;
@@ -289,8 +285,7 @@ bool ZLibOutputStream::close ()
 			if (zres == Z_STREAM_END)
 				break;
 		}
-		deflateEnd (zstream);
-		free (zstream);
+		deflateEnd (zstream.get ());
 		zstream = nullptr;
 	}
 	return result;
@@ -299,23 +294,25 @@ bool ZLibOutputStream::close ()
 //-----------------------------------------------------------------------------
 uint32_t ZLibOutputStream::writeRaw (const void* buffer, uint32_t size)
 {
+	if (!zstream)
+		return kStreamIOError;
 	zstream->next_in = const_cast<Bytef*> (static_cast<const Bytef*> (buffer));
 	zstream->avail_in = size;
 	while (zstream->avail_in > 0)
 	{
 		zstream->next_out = internalBuffer.data ();
 		zstream->avail_out = internalBuffer.size ();
-		int zres = deflate (zstream, Z_NO_FLUSH);
+		auto zres = deflate (zstream.get (), Z_NO_FLUSH);
 		if (zres == Z_STREAM_ERROR)
 		{
-			return -1;
+			return kStreamIOError;
 		}
 		if (zstream->avail_out != internalBuffer.size ())
 		{
-			uint32_t written = stream->writeRaw (internalBuffer.data (),
-			                                     internalBuffer.size () - zstream->avail_out);
+			auto written = stream->writeRaw (internalBuffer.data (),
+			                                 internalBuffer.size () - zstream->avail_out);
 			if (written != internalBuffer.size () - zstream->avail_out)
-				return -1;
+				return kStreamIOError;
 		}
 	}
 	return size;
