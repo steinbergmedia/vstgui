@@ -678,10 +678,9 @@ void CGDrawContext::drawCGImageRef (CGContextRef context, CGImageRef image, CGLa
 }
 
 //-----------------------------------------------------------------------------
-
 void CGDrawContext::setCGDrawContextQuality (CGContextRef context)
 {
-	switch (currentState.bitmapQuality)
+	switch (getCurrentState ().bitmapQuality)
 	{
 		case BitmapInterpolationQuality::kLow:
 			CGContextSetShouldAntialias (context, false);
