@@ -110,6 +110,12 @@ void CDrawContext::restoreGlobalState ()
 }
 
 //-----------------------------------------------------------------------------
+void CDrawContext::setBitmapInterpolationQuality(BitmapInterpolationQuality quality)
+{
+	currentState.bitmapQuality = quality;
+}
+
+//-----------------------------------------------------------------------------
 void CDrawContext::setLineStyle (const CLineStyle& style)
 {
 	currentState.lineStyle = style;

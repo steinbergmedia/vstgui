@@ -131,7 +131,7 @@ bool CompressedUIDescription::save (UTF8StringPtr filename, int32_t flags)
 	{
 		fileStream << kUIDescIdentifier;
 		ZLibOutputStream zout;
-		if (zout.open (fileStream))
+		if (zout.open (fileStream, 1))
 		{
 			if (saveToStream (zout, flags))
 			{

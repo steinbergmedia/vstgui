@@ -1029,8 +1029,10 @@ bool UIDescription::saveToStream (OutputStream& stream, int32_t flags)
 		}
 	}
 	impl->nodes->getAttributes ()->setAttribute ("version", "1");
+	
+	BufferedOutputStream bufferedStream (stream);
 	UIDescWriter writer;
-	return writer.write (stream, impl->nodes);
+	return writer.write (bufferedStream, impl->nodes);
 }
 
 //-----------------------------------------------------------------------------

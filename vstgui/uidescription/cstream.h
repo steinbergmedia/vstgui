@@ -11,6 +11,7 @@
 #include <string>
 #include <limits>
 #include <memory>
+#include <vector>
 
 namespace VSTGUI {
 
@@ -227,6 +228,53 @@ public:
 	using InputStream::operator>>;
 protected:
 	std::unique_ptr<IPlatformResourceInputStream> platformStream;
+};
+
+//------------------------------------------------------------------------
+class BufferedOutputStream : public OutputStream
+{
+public:
+	BufferedOutputStream (OutputStream& stream, size_t bufferSize = 8192)
+	: stream (stream), bufferSize (bufferSize)
+	{
+		buffer.reserve (bufferSize);
+	}
+	~BufferedOutputStream () noexcept override { flush (); }
+	bool operator<< (const std::string& str) override
+	{
+		return writeRaw (str.c_str (), static_cast<uint32_t> (str.size ())) == str.size ();
+	}
+	uint32_t writeRaw (const void* inBuffer, uint32_t size) override
+	{
+		auto written = size;
+		const uint8_t* ptr = reinterpret_cast<const uint8_t*> (inBuffer);
+		while (size)
+		{
+			auto toWrite = 1;
+			buffer.emplace_back (*ptr);
+			if (buffer.size () == bufferSize)
+			{
+				if (!flush ())
+					return kStreamIOError;
+			}
+			size -= toWrite;
+			ptr += toWrite;
+		}
+		return written;
+	}
+	bool flush ()
+	{
+		if (buffer.empty ())
+			return true;
+		auto result = stream.writeRaw (buffer.data (), buffer.size ()) == buffer.size ();
+		buffer.clear ();
+		return result;
+	}
+
+private:
+	OutputStream& stream;
+	std::vector<uint8_t> buffer;
+	size_t bufferSize;
 };
 
 } // namespace
