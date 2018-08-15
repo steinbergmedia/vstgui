@@ -41,7 +41,7 @@ struct RunLoop::Impl
 	using EventHandlerVector = std::vector<std::unique_ptr<ExternalEventHandler>>;
 	using TimerHandlerVector = std::vector<std::unique_ptr<ExternalTimerHandler>>;
 
-	GMainLoop* mainLoop{nullptr};
+	GMainContext * mainContext{nullptr};
 	EventHandlerVector eventHandlers;
 	TimerHandlerVector timerHandlers;
 };
@@ -50,26 +50,13 @@ struct RunLoop::Impl
 RunLoop::RunLoop ()
 {
 	impl = std::unique_ptr<Impl> (new Impl);
-	impl->mainLoop = g_main_loop_new (g_main_context_default (), false);
+	impl->mainContext = g_main_context_ref (g_main_context_default ());
 }
 
 //------------------------------------------------------------------------
 RunLoop::~RunLoop () noexcept
 {
-	g_main_loop_unref (impl->mainLoop);
-}
-
-//------------------------------------------------------------------------
-void RunLoop::run ()
-{
-	g_main_loop_run (impl->mainLoop);
-}
-
-//------------------------------------------------------------------------
-void RunLoop::quit ()
-{
-	if (impl->mainLoop)
-		g_main_loop_quit (impl->mainLoop);
+	g_main_context_unref (impl->mainContext);
 }
 
 //------------------------------------------------------------------------
@@ -90,7 +77,7 @@ bool RunLoop::registerEventHandler (int fd, IEventHandler* handler)
 		eventHandler->ioChannel, static_cast<GIOCondition> (G_IO_IN | G_IO_ERR | G_IO_HUP));
 	g_source_set_callback (eventHandler->source, reinterpret_cast<GSourceFunc> (eventHandlerProc),
 						   handler, nullptr);
-	g_source_attach (eventHandler->source, g_main_loop_get_context (impl->mainLoop));
+	g_source_attach (eventHandler->source, impl->mainContext);
 	impl->eventHandlers.emplace_back (std::move (eventHandler));
 	return true;
 }
@@ -123,7 +110,7 @@ bool RunLoop::registerTimer (uint64_t interval, ITimerHandler* handler)
 							   return 1;
 						   },
 						   handler, nullptr);
-	g_source_attach (timerHandler->source, g_main_loop_get_context (impl->mainLoop));
+	g_source_attach (timerHandler->source, impl->mainContext);
 	impl->timerHandlers.emplace_back (std::move (timerHandler));
 	return true;
 }

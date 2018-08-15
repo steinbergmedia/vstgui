@@ -16,7 +16,7 @@ namespace VSTGUI {
 namespace X11 {
 
 //------------------------------------------------------------------------
-class Frame : public IPlatformFrame
+class Frame : public IPlatformFrame, public IX11Frame
 {
 public:
 	Frame (IPlatformFrameCallback* frame, const CRect& size, uint32_t parent,
@@ -59,6 +59,8 @@ private:
 	PlatformType getPlatformType () const override;
 	void onFrameClosed () override {}
 	Optional<UTF8String> convertCurrentKeyEventToText () override;
+
+	uint32_t getX11WindowID () const override;
 
 private:
 	struct Impl;

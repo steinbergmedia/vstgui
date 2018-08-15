@@ -82,6 +82,7 @@ set(${target}_win32_sources
 
 set(${target}_gdk_sources
     source/platform/gdk/gdkapplication.cpp
+    source/platform/gdk/gdkapplication.h
     source/platform/gdk/gdkasync.cpp
     source/platform/gdk/gdkcommondirectories.cpp
     source/platform/gdk/gdkcommondirectories.h

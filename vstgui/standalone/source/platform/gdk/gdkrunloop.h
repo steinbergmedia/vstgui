@@ -25,9 +25,6 @@ public:
 	RunLoop ();
 	~RunLoop () noexcept;
 
-	void run ();
-	void quit ();
-
 	bool registerEventHandler (int fd, IEventHandler* handler) override;
 	bool unregisterEventHandler (IEventHandler* handler) override;
 

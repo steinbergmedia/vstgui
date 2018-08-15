@@ -258,6 +258,7 @@ set(${target}_linux_sources
     platform/linux/x11timer.h
     platform/linux/x11utils.cpp
     platform/linux/x11utils.h
+    platform/platform_x11.h
 )
 
 ##########################################################################################

@@ -4,13 +4,7 @@
 
 #pragma once
 
-#include "../iplatformwindow.h"
-
-extern "C"
-{
-	typedef union _GdkEvent GdkEvent;
-	typedef struct _GdkWindow GdkWindow;
-};
+#include <gtkmm.h>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -18,11 +12,7 @@ namespace Standalone {
 namespace Platform {
 namespace GDK {
 
-//------------------------------------------------------------------------
-class IGdkWindow : public Interface
-{
-public:
-};
+Glib::RefPtr<Gtk::Application> gtkApp ();
 
 //------------------------------------------------------------------------
 } // GDK

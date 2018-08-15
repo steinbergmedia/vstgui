@@ -3,6 +3,8 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "../../application.h"
+#include "../../../include/iappdelegate.h"
+#include "../../../include/iapplication.h"
 #include "../../../../lib/vstkeycode.h"
 #include "../../../../lib/platform/linux/x11frame.h"
 #include "../../../../lib/platform/common/fileresourceinputstream.h"
@@ -10,11 +12,7 @@
 #include "gdkpreference.h"
 #include "gdkwindow.h"
 #include "gdkrunloop.h"
-#include <gdkmm.h>
-#include <glibmm.h>
-#include <giomm.h>
-#include <gdkmm/event.h>
-#include <gdkmm/wrap_init.h>
+#include <gtkmm.h>
 #include <libgen.h>
 #include <unordered_map>
 
@@ -53,6 +51,15 @@ namespace GDK {
 using namespace VSTGUI::Standalone::Detail;
 
 //------------------------------------------------------------------------
+Glib::RefPtr<Gtk::Application> app;
+
+//------------------------------------------------------------------------
+Glib::RefPtr<Gtk::Application> gtkApp ()
+{
+	return app;
+}
+
+//------------------------------------------------------------------------
 class Application
 {
 public:
@@ -63,172 +70,117 @@ public:
 
 private:
 	void doCommandUpdate ();
-	bool handleKeyEvent (GdkEvent* event);
+	void handleCommand (const CommandWithKey& command);
 
-	static void gdkEventCallback (GdkEvent* ev, gpointer data);
-
-	using KeyCommands = std::unordered_map<VstKeyCode, Command>;
-
-	KeyCommands keyCommands;
 	CommonDirectories commonDirectories;
 	Preference prefs;
 
-	bool doRunning{true};
+	bool isInitialized{false};
 };
 
 //------------------------------------------------------------------------
 bool Application::init (int argc, char* argv[])
 {
-	Glib::init ();
-	Gio::init ();
-	if (!gdk_init_check (&argc, &argv))
-		return false;
-	Gdk::wrap_init ();
+	const auto& appInfo = IApplication::instance ().getDelegate ().getInfo ();
+	app = Gtk::Application::create (argc, argv, appInfo.uri.data ());
+	Glib::set_application_name (appInfo.name.getString ());
 
 	IApplication::CommandLineArguments cmdArgs;
 	for (auto i = 0; i < argc; ++i)
 		cmdArgs.push_back (argv[i]);
 
-	char result[PATH_MAX];
-	ssize_t count = readlink ("/proc/self/exe", result, PATH_MAX);
-	if (count == -1)
-		exit (-1);
-	std::string execPath = dirname (result);
-	VSTGUI::X11::Frame::createResourceInputStreamFunc =
-		[execPath](const CResourceDescription& desc) {
-			if (desc.type == CResourceDescription::kIntegerType)
-				return IPlatformResourceInputStream::Ptr ();
-			std::string path (execPath);
-			path += "/Resources/";
-			path += desc.u.name;
-			return FileResourceInputStream::create (path);
+	app->signal_startup ().connect ([cmdArgs = std::move (cmdArgs), this]() mutable {
+		char result[PATH_MAX];
+		ssize_t count = readlink ("/proc/self/exe", result, PATH_MAX);
+		if (count == -1)
+			exit (-1);
+		std::string execPath = dirname (result);
+		VSTGUI::X11::Frame::createResourceInputStreamFunc =
+			[execPath](const CResourceDescription& desc) {
+				if (desc.type == CResourceDescription::kIntegerType)
+					return IPlatformResourceInputStream::Ptr ();
+				std::string path (execPath);
+				path += "/Resources/";
+				path += desc.u.name;
+				return FileResourceInputStream::create (path);
+			};
+
+		PlatformCallbacks callbacks;
+		callbacks.quit = [this]() { quit (); };
+		callbacks.onCommandUpdate = [this]() { doCommandUpdate (); };
+		callbacks.showAlert = [](const AlertBoxConfig& config) { return AlertResult::Error; };
+		callbacks.showAlertForWindow = [](const AlertBoxForWindowConfig& config) {
+			if (config.callback)
+				config.callback (AlertResult::Error);
 		};
 
-	PlatformCallbacks callbacks;
-	callbacks.quit = [this]() { quit (); };
-	callbacks.onCommandUpdate = [this]() { doCommandUpdate (); };
-	callbacks.showAlert = [](const AlertBoxConfig& config) { return AlertResult::Error; };
-	callbacks.showAlertForWindow = [](const AlertBoxForWindowConfig& config) {
-		if (config.callback)
-			config.callback (AlertResult::Error);
-	};
-
-	auto app = Detail::getApplicationPlatformAccess ();
-	vstgui_assert (app);
-	IPlatformApplication::OpenFilesList openFilesList;
-	/* TODO: fill openFilesList */
-	app->init ({prefs, commonDirectories, std::move (cmdArgs), std::move (callbacks),
-				std::move (openFilesList)});
+		auto appAccess = Detail::getApplicationPlatformAccess ();
+		vstgui_assert (appAccess);
+		IPlatformApplication::OpenFilesList openFilesList;
+		/* TODO: fill openFilesList */
+		appAccess->init ({prefs, commonDirectories, std::move (cmdArgs), std::move (callbacks),
+						  std::move (openFilesList)});
+		isInitialized = true;
+		doCommandUpdate ();
+	});
 	return true;
-}
-
-//------------------------------------------------------------------------
-void Application::doCommandUpdate ()
-{
-	keyCommands.clear ();
-	for (auto& grp : Detail::getApplicationPlatformAccess ()->getCommandList ())
-	{
-		for (auto& e : grp.second)
-		{
-			if (e.defaultKey)
-			{
-				VstKeyCode keyCode{};
-				keyCode.character = e.defaultKey;
-				keyCode.modifier = MODIFIER_CONTROL;
-				auto upperKey = toupper (e.defaultKey);
-				if (upperKey == e.defaultKey)
-				{
-					keyCode.modifier |= MODIFIER_SHIFT;
-					keyCode.character = tolower (e.defaultKey);
-				}
-				keyCommands.emplace (keyCode, e);
-			}
-		}
-	}
 }
 
 //------------------------------------------------------------------------
 int Application::run ()
 {
-	gdk_event_handler_set (gdkEventCallback, this, nullptr);
-	RunLoop::instance ().run ();
-	return 0;
+	return app->run ();
 }
 
 //------------------------------------------------------------------------
 void Application::quit ()
 {
-	RunLoop::instance ().quit ();
+	app->quit ();
 }
 
 //------------------------------------------------------------------------
-static void handleEvent (GdkEvent* event, GdkWindow* gdkWindow)
-{
-	if (auto window = IGdkWindow::find (gdkWindow))
-	{
-		if (!window->handleEvent (event))
-		{
-			if (auto parent = gdk_window_get_parent (gdkWindow))
-				handleEvent (event, parent);
-		}
-	}
-	else
-	{
-		printf ("unknown gdk window \n");
-	}
-}
+void Application::handleCommand (const CommandWithKey& command) {}
 
 //------------------------------------------------------------------------
-bool Application::handleKeyEvent (GdkEvent* event)
+void Application::doCommandUpdate ()
 {
-#if 0
-	auto keyCode = VSTGUI::GDK::Frame::keyCodeFromEvent (event);
-	auto it = keyCommands.find (keyCode);
-	if (it != keyCommands.end ())
+	if (!isInitialized)
+		return;
+	auto mainMenu = Gio::Menu::create ();
+	auto commandList = Detail::getApplicationPlatformAccess ()->getCommandList ();
+	for (auto& e : commandList)
 	{
-		auto& windows = Standalone::IApplication::instance ().getWindows ();
-		if (!windows.empty ())
+		auto subMenu = Gio::Menu::create ();
+		for (auto& command : e.second)
 		{
-			if (auto handler = windows.front ()->dynamicCast<ICommandHandler> ())
+			if (command.name == CommandName::MenuSeparator)
 			{
-				if (handler->canHandleCommand (it->second))
+				continue;
+			}
+			auto actionName = command.group.getString () + "." + command.name.getString ();
+			std::replace (actionName.begin (), actionName.end (), ' ', '_');
+			auto item = Gio::MenuItem::create (command.name.getString (), actionName);
+			if (command.defaultKey)
+			{
+				std::string accelKey ("<Primary>");
+				accelKey += command.defaultKey;
+				// TODO: map virtual characters
+				item->set_attribute_value ("accel",
+										   Glib::Variant<Glib::ustring>::create (accelKey));
+			}
+			subMenu->append_item (item);
+
+			if (!app->has_action (actionName))
+			{
+				if (auto action = app->add_action (actionName,
+												   [this, command]() { handleCommand (command); }))
 				{
-					if (handler->handleCommand (it->second))
-						return true;
 				}
 			}
 		}
-
-		if (auto commandHandler = Detail::getApplicationPlatformAccess ())
-		{
-			if (commandHandler->canHandleCommand (it->second))
-			{
-				if (commandHandler->handleCommand (it->second))
-					return true;
-			}
-		}
+		mainMenu->append_submenu (e.first.getString (), subMenu);
 	}
-#endif
-	return false;
-}
-
-//------------------------------------------------------------------------
-void Application::gdkEventCallback (GdkEvent* ev, gpointer data)
-{
-	if (ev->type == GDK_KEY_PRESS)
-	{
-		auto app = reinterpret_cast<Application*> (data);
-		if (app)
-		{
-			if (app->handleKeyEvent (ev))
-				return;
-		}
-	}
-
-	GdkWindow* gdkWindow = reinterpret_cast<GdkEventAny*> (ev)->window;
-	if (!gdkWindow)
-		return;
-	handleEvent (ev, gdkWindow);
+	app->set_menubar (mainMenu);
 }
 
 //------------------------------------------------------------------------
