@@ -9,6 +9,8 @@
 
 namespace VSTGUI {
 
+bool CSwitchBase::useLegacyIndexCalculation = false;
+
 //------------------------------------------------------------------------
 CSwitchBase::CSwitchBase (const CRect& size, IControlListener* listener, int32_t tag,
                           CBitmap* background, const CPoint& offset)
@@ -44,6 +46,8 @@ void CSwitchBase::draw (CDrawContext* pContext)
 	if (getDrawBackground ())
 	{
 		float norm = getValueNormalized ();
+		if (inverseBitmap)
+			norm = 1.f - norm;
 		// source position in bitmap
 		CPoint where (0, heightOfOneImage * normalizedToIndex (norm));
 
@@ -116,6 +120,8 @@ CMouseEventResult CSwitchBase::onMouseMoved (CPoint& where, const CButtonState& 
 	if (isEditing ())
 	{
 		float norm = calcNormFromPoint (where);
+		if (inverseBitmap)
+			norm = 1.f - norm;
 		value = getMin () + norm * (getMax () - getMin ());
 		bounceValue ();
 
@@ -126,6 +132,16 @@ CMouseEventResult CSwitchBase::onMouseMoved (CPoint& where, const CButtonState& 
 		}
 	}
 	return kMouseEventHandled;
+}
+
+//------------------------------------------------------------------------
+void CSwitchBase::setInverseBitmap (bool state)
+{
+	if (inverseBitmap != state)
+	{
+		inverseBitmap = state;
+		invalid ();
+	}
 }
 
 //------------------------------------------------------------------------
