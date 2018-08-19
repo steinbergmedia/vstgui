@@ -550,6 +550,12 @@ bool Frame::hideTooltip ()
 }
 
 //------------------------------------------------------------------------
+void* Frame::getPlatformRepresentation () const
+{
+	return reinterpret_cast<void*> (getX11WindowID ());
+}
+
+//------------------------------------------------------------------------
 uint32_t Frame::getX11WindowID () const
 {
 	return impl->window.getID ();

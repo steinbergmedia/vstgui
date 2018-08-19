@@ -39,6 +39,7 @@ private:
 	bool scrollRect (const CRect& src, const CPoint& distance) override;
 	bool showTooltip (const CRect& rect, const char* utf8Text) override;
 	bool hideTooltip () override;
+	void* getPlatformRepresentation () const override;
 	SharedPointer<IPlatformTextEdit> createPlatformTextEdit (
 		IPlatformTextEditCallback* textEdit) override;
 	SharedPointer<IPlatformOptionMenu> createPlatformOptionMenu () override;

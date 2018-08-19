@@ -3083,7 +3083,50 @@ public:
 CAnimKnobCreator __gCAnimKnobCreator;
 
 //-----------------------------------------------------------------------------
-class CVerticalSwitchCreator : public IMultiBitmapControlCreator
+class CSwitchBaseCreator : public IMultiBitmapControlCreator
+{
+public:
+	bool getAttributeNames (std::list<std::string>& attributeNames) const override
+	{
+		attributeNames.emplace_back (kAttrInverseBitmap);
+		return IMultiBitmapControlCreator::getAttributeNames (attributeNames);
+	}
+	AttrType getAttributeType (const std::string& attributeName) const override
+	{
+		if (attributeName == kAttrInverseBitmap) return kBooleanType;
+		return IMultiBitmapControlCreator::getAttributeType (attributeName);
+	}
+	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
+	{
+		auto control = dynamic_cast<CSwitchBase*> (view);
+		if (!control)
+			return false;
+
+		bool b;
+		if (attributes.getBooleanAttribute (kAttrInverseBitmap, b))
+		{
+			control->setInverseBitmap (b);
+		}
+
+		return IMultiBitmapControlCreator::apply (view, attributes, description);
+	}
+	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const override
+	{
+		auto control = dynamic_cast<CSwitchBase*> (view);
+		if (!control)
+			return false;
+
+		if (attributeName == kAttrInverseBitmap)
+		{
+			stringValue = control->getInverseBitmap() ? strTrue : strFalse;
+			return true;
+		}
+		return IMultiBitmapControlCreator::getAttributeValue (view, attributeName, stringValue, desc);
+	}
+};
+
+//-----------------------------------------------------------------------------
+class CVerticalSwitchCreator : public CSwitchBaseCreator
 {
 public:
 	CVerticalSwitchCreator () { UIViewFactory::registerViewCreator (*this); }
@@ -3095,7 +3138,7 @@ public:
 CVerticalSwitchCreator __gCVerticalSwitchCreator;
 
 //-----------------------------------------------------------------------------
-class CHorizontalSwitchCreator : public IMultiBitmapControlCreator
+class CHorizontalSwitchCreator : public CSwitchBaseCreator
 {
 public:
 	CHorizontalSwitchCreator () { UIViewFactory::registerViewCreator (*this); }

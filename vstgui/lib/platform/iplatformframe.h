@@ -47,6 +47,9 @@ public:
 	/** hide tooltip */
 	virtual bool hideTooltip () = 0;
 
+	/** TODO: remove this call later when everything is done */
+	virtual void* getPlatformRepresentation () const = 0;
+
 	/** create a native text edit control */
 	virtual SharedPointer<IPlatformTextEdit> createPlatformTextEdit (IPlatformTextEditCallback* textEdit) = 0;
 	/** create a native popup menu */
