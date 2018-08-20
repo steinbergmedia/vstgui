@@ -8,3 +8,4 @@ script:
     - cd build
     - cmake ../vstgui
     - cmake --build . --target unittests
+
