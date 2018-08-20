@@ -1,11 +1,14 @@
 language: cpp
+
 os: 
     - osx
     # - linux
 
+install: true
+
 script:
-    - mkdir build
+    - mkdir -p build
     - cd build
-    - cmake ../vstgui
+    - cmake -GXcode ../vstgui/
     - cmake --build . --target unittests
 
