@@ -4,6 +4,10 @@ os:
     - osx
     # - linux
 
+osx_image: 
+    - xcode6.4
+    - xcode9.4
+
 install: true
 
 script:
