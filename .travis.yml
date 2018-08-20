@@ -5,7 +5,7 @@ os:
     # - linux
 
 osx_image: 
-    - xcode6.4
+    - xcode7.3
     - xcode9.4
 
 install: true
