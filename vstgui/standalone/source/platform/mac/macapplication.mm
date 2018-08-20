@@ -250,7 +250,7 @@ static CommandWithKeyList getCommandList (const char* _Nonnull group)
 	    MacEventModifier::CommandKeyMask | MacEventModifier::ControlKeyMask;
 	[menu addItem:[NSMenuItem separatorItem]];
 
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_12
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_12 && __clang_major__ >= 9
 	if (@available (macOS 10.12, *))
 	{
 		item = [menu

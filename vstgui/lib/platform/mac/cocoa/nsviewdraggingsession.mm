@@ -15,6 +15,15 @@
 - (id)initWithData:(const void*)data andSize:(size_t)size;
 @end
 
+#ifndef MAC_OS_X_VERSION_10_13
+#define MAC_OS_X_VERSION_10_13 101300
+#endif
+
+#if MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_13
+typedef NSString *NSPasteboardType;
+typedef NSString *NSPasteboardReadingOptionKey;
+#endif
+
 //------------------------------------------------------------------------
 namespace VSTGUI {
 
