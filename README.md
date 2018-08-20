@@ -1,6 +1,5 @@
-[![Build Status](https://travis-ci.org/scheffle/vstgui.svg?branch=master)](https://travis-ci.org/scheffle/vstgui)
-
 # VSTGUI
+[![Build Status](https://travis-ci.org/scheffle/vstgui.svg?branch=master)](https://travis-ci.org/scheffle/vstgui)
 
 VSTGUI is a user interface toolkit mainly for audio plug-ins (VST, AAX, AudioUnit, etc...)
  and it is designed for working well with VST3 plug-ins.
