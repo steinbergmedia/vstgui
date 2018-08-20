@@ -1,0 +1,10 @@
+language: cpp
+os: 
+    - osx
+    # - linux
+
+script:
+    - mkdir build
+    - cd build
+    - cmake ../vstgui
+    - cmake --build . --target unittests
