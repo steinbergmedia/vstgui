@@ -44,7 +44,8 @@ protected:
 	{
 		if (useLegacyIndexCalculation)
 			return static_cast<int32_t> (norm * (getNumSubPixmaps () - 1) + 0.5f);
-		return std::min<int32_t> (getNumSubPixmaps () - 1, norm * getNumSubPixmaps ());
+		return std::min<int32_t> (getNumSubPixmaps () - 1,
+		                          static_cast<int32_t> (norm * getNumSubPixmaps ()));
 	}
 
 	float indexToNormalized (int32_t index) const
