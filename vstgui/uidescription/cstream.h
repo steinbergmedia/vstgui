@@ -258,7 +258,8 @@ public:
 	{
 		if (buffer.empty ())
 			return true;
-		auto result = stream.writeRaw (buffer.data (), buffer.size ()) == buffer.size ();
+		auto result = stream.writeRaw (buffer.data (), static_cast<uint32_t> (buffer.size ())) ==
+		              buffer.size ();
 		buffer.clear ();
 		return result;
 	}
