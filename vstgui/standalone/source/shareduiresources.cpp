@@ -304,7 +304,9 @@ void saveSharedUIDescription ()
 {
 	if (auto uiDesc = getSharedUIDescription ())
 	{
-		if (uiDesc->save (uiDesc->getFilePath (), UIDescription::kWriteImagesIntoXMLFile))
+		int32_t flags = UIDescription::kWriteImagesIntoXMLFile |
+		                CompressedUIDescription::kForceWriteCompressedDesc;
+		if (uiDesc->save (uiDesc->getFilePath (), flags))
 			return;
 		AlertBoxConfig config;
 		config.headline = "Saving the shared resources uidesc file failed.";

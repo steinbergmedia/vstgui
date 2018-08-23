@@ -2,10 +2,10 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
+#include "../lib/cresourcedescription.h"
 #include "compresseduidescription.h"
 #include "cstream.h"
 #include "xmlparser.h"
-#include "../lib/cresourcedescription.h"
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -50,7 +50,7 @@ public:
 
 	bool operator<< (const std::string& str) override
 	{
-		return writeRaw (str.c_str (), static_cast<uint32_t> (str.size ())) == str.size ();
+		return writeRaw (str.data (), static_cast<uint32_t> (str.size ())) == str.size ();
 	}
 	uint32_t writeRaw (const void* buffer, uint32_t size) override;
 
@@ -115,6 +115,7 @@ bool CompressedUIDescription::parse ()
 		// fallback, check if it is an uncompressed UIDescription file
 		return UIDescription::parse ();
 	}
+	originalIsCompressed = true;
 	return result;
 }
 
@@ -122,32 +123,37 @@ bool CompressedUIDescription::parse ()
 bool CompressedUIDescription::save (UTF8StringPtr filename, int32_t flags)
 {
 	bool result = false;
-	CFileStream fileStream;
-	if (fileStream.open (filename, CFileStream::kWriteMode | CFileStream::kBinaryMode |
-	                                   CFileStream::kTruncateMode),
-	    kLittleEndianByteOrder)
+	if (originalIsCompressed || (flags & kForceWriteCompressedDesc))
 	{
-		fileStream << kUIDescIdentifier;
-		ZLibOutputStream zout;
-		if (zout.open (fileStream, 1))
+		CFileStream fileStream;
+		if (fileStream.open (filename,
+		                     CFileStream::kWriteMode | CFileStream::kBinaryMode |
+		                         CFileStream::kTruncateMode,
+		                     kLittleEndianByteOrder))
 		{
-			if (saveToStream (zout, flags))
+			fileStream << kUIDescIdentifier;
+			ZLibOutputStream zout;
+			if (zout.open (fileStream, compressionLevel))
 			{
-				result = zout.close ();
+				if (saveToStream (zout, flags))
+				{
+					result = zout.close ();
+				}
 			}
 		}
 	}
-	if (result)
+	if (!(flags & kNoPlainXmlFileBackup))
 	{
 		// make a xml backup
 		std::string xmlFileName (filename);
-		xmlFileName.append (".xml");
+		if (originalIsCompressed|| (flags & kForceWriteCompressedDesc))
+			xmlFileName.append (".xml");
 		CFileStream xmlFileStream;
-		if (xmlFileStream.open (xmlFileName.c_str (),
-		                        CFileStream::kWriteMode | CFileStream::kTruncateMode),
-		    kLittleEndianByteOrder)
+		if (xmlFileStream.open (xmlFileName.data (),
+		                        CFileStream::kWriteMode | CFileStream::kTruncateMode,
+		                        kLittleEndianByteOrder))
 		{
-			saveToStream (xmlFileStream, flags);
+			result = saveToStream (xmlFileStream, flags);
 		}
 	}
 	return result;
