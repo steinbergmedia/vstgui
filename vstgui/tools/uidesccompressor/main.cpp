@@ -9,6 +9,8 @@ using namespace VSTGUI;
 #if MAC
 #include <CoreFoundation/CoreFoundation.h>
 namespace VSTGUI { void* gBundleRef = CFBundleGetMainBundle (); }
+#elif WINDOWS
+void* hInstance = nullptr;
 #endif
 
 //------------------------------------------------------------------------
