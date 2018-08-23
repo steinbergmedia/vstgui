@@ -3,15 +3,17 @@
 #include "vstgui/uidescription/compresseduidescription.h"
 #include <string>
 
-using namespace VSTGUI;
 
 //------------------------------------------------------------------------
 #if MAC
 #include <CoreFoundation/CoreFoundation.h>
 namespace VSTGUI { void* gBundleRef = CFBundleGetMainBundle (); }
 #elif WINDOWS
+#include <windows.h>
 void* hInstance = nullptr;
 #endif
+
+using namespace VSTGUI;
 
 //------------------------------------------------------------------------
 void printAndTerminate (const char* msg)
@@ -24,6 +26,9 @@ void printAndTerminate (const char* msg)
 //------------------------------------------------------------------------
 int main (int argv, char* argc[])
 {
+#if WINDOWS
+	CoInitialize (nullptr);
+#endif
 	std::string inputPath;
 	std::string outputPath;
 	bool noCompression = false;
@@ -72,6 +77,9 @@ int main (int argv, char* argc[])
 	}
 	else
 	{
+		if (inputPath == outputPath && uiDesc.getOriginalIsCompressed () == true)
+			return 0;
+
 		flags |= CompressedUIDescription::kNoPlainXmlFileBackup |
 		         CompressedUIDescription::kForceWriteCompressedDesc;
 		if (!uiDesc.save (outputPath.data (), flags))
