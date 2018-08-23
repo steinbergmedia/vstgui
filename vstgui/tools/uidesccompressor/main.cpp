@@ -1,8 +1,11 @@
+// This file is part of VSTGUI. It is subject to the license terms
+// in the LICENSE file found in the top-level directory of this
+// distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+
 #include "vstgui/lib/cresourcedescription.h"
 #include "vstgui/lib/cstring.h"
 #include "vstgui/uidescription/compresseduidescription.h"
 #include <string>
-
 
 //------------------------------------------------------------------------
 #if MAC
@@ -32,6 +35,7 @@ int main (int argv, char* argc[])
 	std::string inputPath;
 	std::string outputPath;
 	bool noCompression = false;
+	uint32_t compressionLevel = 1;
 	for (auto i = 0; i < argv; ++i)
 	{
 		UTF8StringView arg (argc[i]);
@@ -47,6 +51,12 @@ int main (int argv, char* argc[])
 				break;
 			outputPath = argc[i];
 		}
+		else if (arg == "-c")
+		{
+			if (++i >= argv)
+				break;
+			compressionLevel = static_cast<uint32_t> (UTF8StringView (argc[i]).toInteger ());
+		}
 		else if (arg == "--nocompression")
 		{
 			noCompression = true;
@@ -56,7 +66,7 @@ int main (int argv, char* argc[])
 	{
 		printAndTerminate ("No input or output path specified!");
 	}
-	printf ("Copy %s to %s%s", inputPath.data (), outputPath.data (),
+	printf ("Copy %s to %s%s\n", inputPath.data (), outputPath.data (),
 	        noCompression ? " [uncompressed]" : "[compressed]");
 
 	CompressedUIDescription uiDesc (CResourceDescription (inputPath.data ()));
@@ -82,6 +92,7 @@ int main (int argv, char* argc[])
 
 		flags |= CompressedUIDescription::kNoPlainXmlFileBackup |
 		         CompressedUIDescription::kForceWriteCompressedDesc;
+		uiDesc.setCompressionLevel (compressionLevel);
 		if (!uiDesc.save (outputPath.data (), flags))
 		{
 			printAndTerminate ("saving failed");
