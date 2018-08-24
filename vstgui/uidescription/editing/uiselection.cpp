@@ -166,7 +166,7 @@ CRect UISelection::getGlobalViewCoordinates (CView* view)
 {
 	CRect result = view->translateToGlobal (view->getViewSize ());
 	if (auto frame = view->getFrame ())
-		return view->getFrame ()->getTransform ().inverse ().transform (result);
+		return frame->getTransform ().inverse ().transform (result);
 	return result;
 }
 

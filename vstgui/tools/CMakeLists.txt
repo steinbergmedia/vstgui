@@ -1,4 +1,7 @@
 set(VSTGUI_TOOLS FOLDER "Tools")
 
-add_subdirectory(imagestitcher)
+if(VSTGUI_STANDALONE)
+    add_subdirectory(imagestitcher)
+endif()
+add_subdirectory(uidesccompressor)
 

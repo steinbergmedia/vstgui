@@ -123,7 +123,7 @@ target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS})
 vstgui_set_cxx_version(${target} 14)
 vstgui_source_group_by_folder(${target})
 
-if(NOT VSTGUI_DISABLE_STANDALONE_EXAMPLES)
+if(VSTGUI_STANDALONE_EXAMPLES)
     add_subdirectory(examples)
 endif()
 

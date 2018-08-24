@@ -26,6 +26,15 @@ static int32_t menuClassCount = 0;
 
 static Class menuClass = nullptr;
 
+#ifndef MAC_OS_X_VERSION_10_14
+#define MAC_OS_X_VERSION_10_14 101400
+#endif
+
+#if MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_14
+static constexpr auto NSControlStateValueOn = NSOnState;
+static constexpr auto NSControlStateValueOff = NSOffState;
+#endif
+
 //------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------

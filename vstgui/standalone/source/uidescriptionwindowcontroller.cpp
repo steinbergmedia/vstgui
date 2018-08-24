@@ -739,7 +739,9 @@ struct WindowController::EditImpl : WindowController::Impl
 		{
 			if (uiEditController->getUndoManager ()->isSavePosition () == false)
 				Detail::saveSharedUIDescription ();
-			if (!uiDesc->save (uiDesc->getFilePath (), UIDescription::kWriteImagesIntoXMLFile))
+			int32_t flags = UIDescription::kWriteImagesIntoXMLFile |
+			                CompressedUIDescription::kForceWriteCompressedDesc;
+			if (!uiDesc->save (uiDesc->getFilePath (), flags))
 			{
 				AlertBoxConfig config;
 				config.headline = "Saving the uidesc file failed.";

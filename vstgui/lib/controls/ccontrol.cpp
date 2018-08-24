@@ -220,6 +220,8 @@ bool CControl::checkDefaultValue (CButtonState button)
 
 			// end of edit parameter
 			endEdit ();
+			
+			setDirty ();
 		}
 		return true;
 	}

@@ -1,5 +1,6 @@
 ##########################################################################################
 cmake_minimum_required(VERSION 3.5)
+include(CMakeDependentOption)
 
 if(NOT PROJECT_NAME)
     project(vstgui)
@@ -151,12 +152,17 @@ if(LINUX)
     set(VSTGUI_DISABLE_UNITTESTS  1)
 endif()
 
-if(NOT VSTGUI_DISABLE_STANDALONE)
+if(NOT DEFINED VSTGUI_STANDALONE)
+    option(VSTGUI_STANDALONE "VSTGUI Standalone library" ON)
+    CMAKE_DEPENDENT_OPTION(VSTGUI_STANDALONE_EXAMPLES "VSTGUI Standalone examples" ON
+                           "NOT VSTGUI_STANDALONE" OFF)
+endif()
+
+option(VSTGUI_TOOLS "VSTGUI Tools" ON)
+
+if(VSTGUI_STANDALONE)
+    set(VSTGUI_STANDALONE_EXAMPLES FOLDER "Standalone Examples")
     add_subdirectory(standalone)
-    add_subdirectory(tools)
-    if(VSTGUI_UIDESCRIPTION_EDITOR)
-        add_subdirectory(tests/uidescriptioneditorapp)
-    endif()
     if(NOT VSTGUI_DISABLE_UNITTESTS)
         add_subdirectory(tests/gfxtest)
         add_subdirectory(tests/base64codecspeed)
@@ -164,6 +170,9 @@ if(NOT VSTGUI_DISABLE_STANDALONE)
 endif()
 if(NOT VSTGUI_DISABLE_UNITTESTS)
     add_subdirectory(tests)
+endif()
+if(VSTGUI_TOOLS)
+    add_subdirectory(tools)
 endif()
 
 get_directory_property(hasParent PARENT_DIRECTORY)
