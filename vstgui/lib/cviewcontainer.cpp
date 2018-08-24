@@ -1094,7 +1094,6 @@ SharedPointer<IDropTarget> CViewContainer::getDropTarget ()
 	if (getFrame () == this)
 	{
 		IDropTarget* dropTarget = nullptr;
-		uint32_t size = 0;
 		if (!getAttribute (kCViewContainerDropTargetAttribute, dropTarget))
 		{
 			dropTarget = new CViewContainerDropTarget (this);
