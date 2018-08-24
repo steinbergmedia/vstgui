@@ -481,19 +481,12 @@ bool COptionMenu::doPopup ()
 }
 
 //------------------------------------------------------------------------
-bool COptionMenu::popup ()
+bool COptionMenu::popup (const PopupCallback& callback)
 {
-	bool popupResult = false;
 	if (!getFrame ())
-		return popupResult;
-
-	CBaseObjectGuard objGuard (this);
+		return false;
 
 	beforePopup ();
-
-	inPopup = true;
-
-	beginEdit ();
 
 	lastResult = -1;
 	lastMenu = nullptr;
@@ -503,52 +496,58 @@ bool COptionMenu::popup ()
 		getFrame ()->onStartLocalEventLoop ();
 		if (auto platformMenu = getFrame ()->getPlatformFrame ()->createPlatformOptionMenu ())
 		{
-			PlatformOptionMenuResult platformPopupResult = platformMenu->popup (this);
-			if (platformPopupResult.menu != nullptr)
-			{
+			inPopup = true;
+			auto self = shared (this);
+			platformMenu->popup (this, [self, callback] (COptionMenu* menu, PlatformOptionMenuResult result) {
+				if (result.menu != nullptr)
+				{
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
-				IDependency::DeferChanges dc (this);
+					IDependency::DeferChanges dc (self);
 #endif
-				lastMenu = platformPopupResult.menu;
-				lastResult = platformPopupResult.index;
-				lastMenu->setValue ((float)lastResult);
-				valueChanged ();
-				invalid ();
-				popupResult = true;
-				CCommandMenuItem* commandItem = dynamic_cast<CCommandMenuItem*>(lastMenu->getEntry (lastResult));
-				if (commandItem)
-					commandItem->execute ();
-			}
+					self->beginEdit ();
+					self->lastMenu = result.menu;
+					self->lastResult = result.index;
+					self->lastMenu->setValue (static_cast<float> (self->lastResult));
+					self->valueChanged ();
+					self->invalid ();
+					if (auto commandItem = dynamic_cast<CCommandMenuItem*> (
+					        self->lastMenu->getEntry (self->lastResult)))
+						commandItem->execute ();
+					self->endEdit ();
+					self->afterPopup ();
+					if (callback)
+						callback (self);
+					self->inPopup = false;
+				}
+			});
 		}
 	}
-
-	endEdit ();
-	inPopup = false;
-	return popupResult;
+	return true;
 }
 
 //------------------------------------------------------------------------
-bool COptionMenu::popup (CFrame* frame, const CPoint& frameLocation)
+bool COptionMenu::popup (CFrame* frame, const CPoint& frameLocation, const PopupCallback& callback)
 {
 	if (frame == nullptr)
 		return false;
 	if (isAttached ())
 		return false;
-	CBaseObjectGuard guard (this);
-
 	CView* oldFocusView = frame->getFocusView ();
-	CBaseObjectGuard ofvg (oldFocusView);
-
 	CRect size (frameLocation, CPoint (0, 0));
 	setViewSize (size);
 	frame->addView (this);
-	popup ();
-	frame->removeView (this, false);
-	frame->setFocusView (oldFocusView);
-	int32_t index;
-	if (getLastItemMenu (index))
-		return true;
-	return false;
+
+	auto prevFocusView = shared (oldFocusView);
+	popup ([prevFocusView, callback] (COptionMenu* menu) {
+		if (auto frame = menu->getFrame ())
+		{
+			frame->removeView (menu, false);
+			frame->setFocusView (prevFocusView);
+		}
+		if (callback)
+			callback (menu);
+	});
+	return true;
 }
 
 //------------------------------------------------------------------------

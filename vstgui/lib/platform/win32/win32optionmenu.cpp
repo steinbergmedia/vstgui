@@ -48,8 +48,10 @@ COptionMenu* getItemMenu (int32_t idx, int32_t &idxInMenu, int32_t &offsetIdx, C
 }
 
 //-----------------------------------------------------------------------------
-PlatformOptionMenuResult Win32OptionMenu::popup (COptionMenu* optionMenu)
+void Win32OptionMenu::popup (COptionMenu* optionMenu, const Callback& callback)
 {
+	vstgui_assert (optionMenu && callback, "arguments are required");
+
 	PlatformOptionMenuResult result = {0};
 	
 	//---Transform local coordinates to global coordinates
@@ -108,7 +110,7 @@ PlatformOptionMenuResult Win32OptionMenu::popup (COptionMenu* optionMenu)
 		}
 		DestroyMenu (menu);
 	}
-	return result;
+	callback (optionMenu, result);
 }
 
 //-----------------------------------------------------------------------------

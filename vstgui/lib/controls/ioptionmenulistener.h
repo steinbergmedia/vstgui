@@ -15,9 +15,9 @@ namespace VSTGUI {
 class IOptionMenuListener
 {
 public:
-	/** called before the menu popup */
+	/** called before the menu pops up */
 	virtual void onOptionMenuPrePopup (COptionMenu* menu) = 0;
-	/** called after the menu popup */
+	/** called after the menu pops up */
 	virtual void onOptionMenuPostPopup (COptionMenu* menu) = 0;
 };
 

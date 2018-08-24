@@ -374,7 +374,7 @@ CMouseEventResult Window::onMouseDown (CFrame* frame, const CPoint& _where,
 	CViewContainer::ViewList views;
 	if (frame->getViewsAt (where, views, GetViewOptions ().deep ().includeViewContainer ()))
 	{
-		COptionMenu contextMenu;
+		auto contextMenu = makeOwned<COptionMenu> ();
 		for (const auto& view : views)
 		{
 			auto viewController = getViewController (view);
@@ -382,20 +382,20 @@ CMouseEventResult Window::onMouseDown (CFrame* frame, const CPoint& _where,
 			auto contextMenuController2 = dynamic_cast<IContextMenuController2*> (viewController);
 			if (contextMenuController == nullptr && contextMenuController2 == nullptr)
 				continue;
-			if (contextMenu.getNbEntries () != 0)
-				contextMenu.addSeparator ();
+			if (contextMenu->getNbEntries () != 0)
+				contextMenu->addSeparator ();
 			CPoint p (_where);
 			view->frameToLocal (p);
 			if (contextMenuController2)
-				contextMenuController2->appendContextMenuItems (contextMenu, view, p);
+				contextMenuController2->appendContextMenuItems (*contextMenu, view, p);
 			else if (contextMenuController)
-				contextMenuController->appendContextMenuItems (contextMenu, p);
+				contextMenuController->appendContextMenuItems (*contextMenu, p);
 		}
-		if (contextMenu.getNbEntries () > 0)
+		if (contextMenu->getNbEntries () > 0)
 		{
-			contextMenu.cleanupSeparators (true);
-			contextMenu.setStyle (COptionMenu::kPopupStyle);
-			contextMenu.popup (frame, _where);
+			contextMenu->cleanupSeparators (true);
+			contextMenu->setStyle (COptionMenu::kPopupStyle);
+			contextMenu->popup (frame, _where);
 			return kMouseEventHandled;
 		}
 	}

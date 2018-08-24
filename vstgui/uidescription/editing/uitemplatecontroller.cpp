@@ -679,34 +679,6 @@ CMouseEventResult UITemplatesDataSource::dbOnMouseDown (const CPoint& where, con
 		delegate->dbSelectionChanged (row, this);
 		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 	}
-	else if (buttons.isRightButton ())
-	{
-		COptionMenu menu;
-		menu.addEntry ("Duplicate");
-		menu.addEntry ("Delete");
-		CPoint p (where);
-		browser->CView::localToFrame (p);
-		if (menu.popup (browser->getFrame(), p))
-		{
-			switch (menu.getLastResult ())
-			{
-				case 0:
-				{
-					std::list<const std::string*> tmp;
-					description->collectTemplateViewNames (tmp);
-					std::string newName (getStringList ()->at (static_cast<uint32_t> (row)).data ());
-					UIEditMenuController::createUniqueTemplateName (tmp, newName);
-					actionPerformer->performDuplicateTemplate (getStringList ()->at (static_cast<uint32_t> (row)).data (), newName.data ());
-					break;
-				}
-				case 1:
-				{
-					actionPerformer->performDeleteTemplate (getStringList ()->at (static_cast<uint32_t> (row)).data ());
-					break;
-				}
-			}
-		}
-	}
 	return UINavigationDataSource::dbOnMouseDown (where, buttons, row, column, browser);
 }
 

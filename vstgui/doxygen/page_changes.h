@@ -98,6 +98,7 @@ Note: All current deprecated methods will be removed in the next version. So mak
 - CView don't has drop target methods (onDragEnter, onDragLeave, onDragMove and onDrop) anymore. Instead it has a method to return a drop target. See the documentation for IDropTarget on how to use it.
 - the CControlEnum is gone and is moved into the classes where they are used: CParamDisplay/COptionMenu/CTextEdit/CSlider
 - CControl::kMessageTagWillChange and CControl::kMessageTagDidChange is gone, use IControlListener instead
+- COptionMenu::popup has changed behaviour and got a callback function that will be called when the popup is closed. The return of COptionMenu::popup now only indicates if the popup was shown.
 
 @subsection code_changes_4_3_to_4_5 VSTGUI 4.3 -> VSTGUI 4.5
 

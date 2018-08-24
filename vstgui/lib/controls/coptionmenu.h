@@ -311,10 +311,13 @@ public:
 	/** get a submenu */
 	COptionMenu* getSubMenu (int32_t idx) const;
 
-	/** pops up menu */
-	bool popup ();
-	/** pops up menu at frameLocation */
-	bool popup (CFrame* frame, const CPoint& frameLocation);
+	/** popup callback function */
+	using PopupCallback = std::function<void (COptionMenu* menu)>;
+
+	/** pops up the menu */
+	bool popup (const PopupCallback& callback = {});
+	/** pops up the menu at frameLocation */
+	bool popup (CFrame* frame, const CPoint& frameLocation, const PopupCallback& callback = {});
 
 	CMenuItemList* getItems () const { return menuItems; }
 

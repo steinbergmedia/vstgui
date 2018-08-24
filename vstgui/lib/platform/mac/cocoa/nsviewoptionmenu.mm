@@ -259,16 +259,19 @@ bool NSViewOptionMenu::initClass ()
 }
 
 //-----------------------------------------------------------------------------
-PlatformOptionMenuResult NSViewOptionMenu::popup (COptionMenu* optionMenu)
+void NSViewOptionMenu::popup (COptionMenu* optionMenu, const Callback& callback)
 {
-	PlatformOptionMenuResult result = {nullptr};
+	vstgui_assert (optionMenu && callback, "arguments are required");
 
-	if (!initClass ())
-		return result;
+	PlatformOptionMenuResult result = {};
 
 	CFrame* frame = optionMenu->getFrame ();
-	if (!frame || !frame->getPlatformFrame ())
-		return result;
+	if (!initClass () || !frame || !frame->getPlatformFrame ())
+	{
+		callback (optionMenu, result);
+		return;
+	}
+
 	NSViewFrame* nsViewFrame = dynamic_cast<NSViewFrame*> (frame->getPlatformFrame ());
 
 	CRect globalSize = optionMenu->translateToGlobal (optionMenu->getViewSize ());
@@ -285,7 +288,10 @@ PlatformOptionMenuResult NSViewOptionMenu::popup (COptionMenu* optionMenu)
 	if (!optionMenu->isPopupStyle ())
 		cellFrameRect.origin.y += cellFrameRect.size.height;
 	if (!multipleCheck && optionMenu->isCheckStyle ())
-		[[nsMenu itemWithTag:(NSInteger)optionMenu->getCurrentIndex (true)] setState:NSControlStateValueOn];
+	{
+		[[nsMenu itemWithTag:static_cast<NSInteger> (optionMenu->getCurrentIndex (true))]
+		    setState:NSControlStateValueOn];
+	}
 
 	NSView* menuContainer = [[NSView alloc] initWithFrame:cellFrameRect];
 	[view addSubview:menuContainer];
@@ -302,8 +308,8 @@ PlatformOptionMenuResult NSViewOptionMenu::popup (COptionMenu* optionMenu)
 	result.menu = (COptionMenu*)[nsMenu performSelector:@selector(selectedMenu)];
 	result.index = (int32_t)(intptr_t)[nsMenu performSelector:@selector(selectedItem)];
 	[nsMenu release];
-	
-	return result;
+
+	callback (optionMenu, result);
 }
 
 
