@@ -867,7 +867,7 @@ LONG_PTR WINAPI Win32Frame::proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 			if (GetAsyncKeyState (VK_MENU)    < 0)
 				key.modifier |= MODIFIER_ALTERNATE;
 			key.virt = translateWinVirtualKey (wParam);
-			key.character = MapVirtualKey (wParam, MAPVK_VK_TO_CHAR);
+			key.character = MapVirtualKey (static_cast<UINT> (wParam), MAPVK_VK_TO_CHAR);
 			if (key.virt || key.character)
 			{
 				key.character = std::tolower (key.character);
@@ -893,7 +893,7 @@ LONG_PTR WINAPI Win32Frame::proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 			if (GetAsyncKeyState (VK_MENU)    < 0)
 				key.modifier |= MODIFIER_ALTERNATE;
 			key.virt = translateWinVirtualKey (wParam);
-			key.character = MapVirtualKey (wParam, MAPVK_VK_TO_CHAR);
+			key.character = MapVirtualKey (static_cast<UINT> (wParam), MAPVK_VK_TO_CHAR);
 			if (key.virt || key.character)
 			{
 				if (pFrame->platformOnKeyUp (key))
