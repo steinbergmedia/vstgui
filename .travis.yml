@@ -16,11 +16,11 @@ matrix:
     # linux
     - os: linux
       compiler: gcc
-      addons: &gcc6
+      addons: &gcc7
         apt:
           sources: ['ubuntu-toolchain-r-test']
           packages: [
-            'g++-6',
+            'g++-7',
             'libxcb-util0-dev', 
             'libxcb-xkb-dev', 
             'libgtkmm-3.0-dev', 
@@ -28,7 +28,7 @@ matrix:
             'libxkbcommon-dev', 
             'libxkbcommon-x11-dev'
           ]
-      env: COMPILER='g++-6' BUILD_TYPE='Debug'
+      env: COMPILER='g++-7' BUILD_TYPE='Debug'
 
 install:
   true
