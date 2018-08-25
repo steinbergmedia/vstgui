@@ -203,7 +203,7 @@ UTF8String trim (const UTF8String& str, TrimOptions options)
 				break;
 			pos = it;
 		}
-		string.erase (pos.base (), string.end ());
+		string.erase (pos.base (), string.cend ());
 	}
 	return UTF8String (std::move (string));
 }
