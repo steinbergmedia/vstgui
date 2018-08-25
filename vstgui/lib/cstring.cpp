@@ -191,7 +191,7 @@ UTF8String trim (const UTF8String& str, TrimOptions options)
 	if (options.trimLeft ())
 	{
 		auto it = std::find_if (Iterator (string.begin ()), Iterator (string.end ()), options);
-		string.erase (string.begin (), it.base ());
+		string.erase (string.cbegin (), it.base ());
 	}
 	if (options.trimRight ())
 	{
