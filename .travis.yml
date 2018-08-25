@@ -1,18 +1,45 @@
 language: cpp
 
-os: 
-    - osx
-    # - linux
+matrix:
+  include:
 
-osx_image: 
-    - xcode7.3
-    - xcode9.4
+    # macOS
+    - os: osx
+      osx_image: xcode7.3
+      compiler: clang
+      env: COMPILER='clang++' BUILD_TYPE='Debug'
+    - os: osx
+      osx_image: xcode9.4
+      compiler: clang
+      env: COMPILER='clang++' BUILD_TYPE='Debug'
 
-install: true
+    # linux
+    - os: linux
+      compiler: gcc
+      addons: &gcc6
+        apt:
+          sources: ['ubuntu-toolchain-r-test']
+          packages: ['g++-6']
+      env: COMPILER='g++-6' BUILD_TYPE='Debug'
+
+install:
+  - DEPS_DIR="${TRAVIS_BUILD_DIR}/deps"
+  - mkdir -p ${DEPS_DIR} && cd ${DEPS_DIR}
+  - |
+    if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
+      CMAKE_URL="https://cmake.org/files/v3.12/cmake-3.12.1-Linux-x86_64.tar.gz"
+      mkdir cmake && travis_retry wget --no-check-certificate --quiet -O - ${CMAKE_URL} | tar --strip-components=1 -xz -C cmake
+      export PATH=${DEPS_DIR}/cmake/bin:${PATH}
+    fi
 
 script:
-    - mkdir -p build
-    - cd build
-    - cmake -GXcode ../vstgui/
-    - cmake --build . --target unittests
+  - mkdir -p build
+  - cd build
+  - |
+    if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
+        cmake -GXcode ../vstgui/
+    elif [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
+        cmake ../vstgui/
+    fi
+  - cmake --build .
 
