@@ -14,6 +14,8 @@ namespace VSTGUI { void* gBundleRef = CFBundleGetMainBundle (); }
 #elif WINDOWS
 #include <windows.h>
 void* hInstance = nullptr;
+#elif LINUX
+namespace VSTGUI { void* soHandle = nullptr; }
 #endif
 
 using namespace VSTGUI;
