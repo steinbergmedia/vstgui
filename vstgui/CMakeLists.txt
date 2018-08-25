@@ -91,6 +91,7 @@ if(LINUX)
         ${LIBXKB_COMMON_X11_LIBRARIES}
         cairo
         fontconfig
+        dl
     )
     if(VSTGUI_WARN_EVERYTHING)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
