@@ -20,7 +20,7 @@ matrix:
         apt:
           sources: ['ubuntu-toolchain-r-test']
           packages: [
-            'g++-6',
+            'g++-',
             'libxcb-util0-dev', 
             'libxcb-xkb-dev', 
             'libgtkmm-3.0-dev', 
@@ -28,19 +28,20 @@ matrix:
             'libxkbcommon-dev', 
             'libxkbcommon-x11-dev'
           ]
-      env: CXX='g++-6' BUILD_TYPE='Debug'
+      env: COMPILER='g++-6' BUILD_TYPE='Debug'
 
 install:
   true
-  
+
 script:
+  - export CXX=${COMPILER}
   - mkdir -p build
   - cd build
   - |
     if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
-        cmake -GXcode ../vstgui/
+        cmake -GXcode -DCMAKE_BUILD_TYPE=${BUILD_TYPE} ../vstgui/
     elif [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
-        cmake ../vstgui/
+        cmake -DCMAKE_BUILD_TYPE=${BUILD_TYPE} ../vstgui/
     fi
   - cmake --build .
 
