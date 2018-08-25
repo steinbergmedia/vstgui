@@ -28,7 +28,7 @@ matrix:
             'libxkbcommon-dev', 
             'libxkbcommon-x11-dev'
           ]
-      env: COMPILER='g++-6' BUILD_TYPE='Debug'
+      env: CXX='g++-6' BUILD_TYPE='Debug'
 
 install:
   true
