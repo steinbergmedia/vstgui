@@ -26,7 +26,8 @@ matrix:
             'libgtkmm-3.0-dev', 
             'libxcb-cursor-dev', 
             'libxkbcommon-dev', 
-            'libxkbcommon-x11-dev'
+            'libxkbcommon-x11-dev',
+            'libxcb-keysyms1-dev'
           ]
       env: CPPCOMPILER='g++-7' CCOMPILER='gcc-7' BUILD_TYPE='Debug'
 
