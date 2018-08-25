@@ -20,7 +20,7 @@ matrix:
         apt:
           sources: ['ubuntu-toolchain-r-test']
           packages: [
-            'g++-',
+            'g++-6',
             'libxcb-util0-dev', 
             'libxcb-xkb-dev', 
             'libgtkmm-3.0-dev', 
