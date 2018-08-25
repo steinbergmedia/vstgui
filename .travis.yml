@@ -19,7 +19,15 @@ matrix:
       addons: &gcc6
         apt:
           sources: ['ubuntu-toolchain-r-test']
-          packages: ['g++-6','libxcb-util0-dev', 'libxcb-xkb-dev', 'libgtkmm-3.0-dev']
+          packages: [
+            'g++-6',
+            'libxcb-util0-dev', 
+            'libxcb-xkb-dev', 
+            'libgtkmm-3.0-dev', 
+            'libxcb-cursor-dev', 
+            'libxkbcommon-dev', 
+            'libxkbcommon-x11-dev'
+          ]
       env: COMPILER='g++-6' BUILD_TYPE='Debug'
 
 install:
