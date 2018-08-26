@@ -16,11 +16,11 @@ matrix:
     # linux
     - os: linux
       compiler: gcc
-      addons: &gcc8
+      addons: &gcc7
         apt:
           sources: ['ubuntu-toolchain-r-test']
           packages: [
-            'g++-8',
+            'g++-7',
             'libxcb-util0-dev', 
             'libxcb-xkb-dev', 
             'libgtkmm-3.0-dev', 
@@ -29,7 +29,7 @@ matrix:
             'libxkbcommon-x11-dev',
             'libxcb-keysyms1-dev'
           ]
-      env: CPPCOMPILER='g++-8' CCOMPILER='gcc-8' BUILD_TYPE='Debug'
+      env: CPPCOMPILER='g++-7' CCOMPILER='gcc-7' BUILD_TYPE='Debug'
 
 install:
   true
@@ -43,7 +43,7 @@ script:
     if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
         cmake -GXcode -DCMAKE_BUILD_TYPE=${BUILD_TYPE} ../vstgui/
     elif [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
-        cmake -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_BUILD_TYPE=${BUILD_TYPE} ../vstgui/
+        cmake -DVSTGUI_STANDALONE=OFF -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_BUILD_TYPE=${BUILD_TYPE} ../vstgui/
     fi
   - cmake --build .
 
