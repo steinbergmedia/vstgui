@@ -1,0 +1,46 @@
+// This file is part of VSTGUI. It is subject to the license terms
+// in the LICENSE file found in the top-level directory of this
+// distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+
+#pragma once
+
+#include "../iplatformoptionmenu.h"
+
+#include "../../ccolor.h"
+#include "../../cfont.h"
+#include "../../iviewlistener.h"
+
+//------------------------------------------------------------------------
+namespace VSTGUI {
+
+//------------------------------------------------------------------------
+struct GenericOptionMenuTheme
+{
+	SharedPointer<CFontDesc> font {kSystemFont};
+	CColor backgroundColor {MakeCColor (75, 75, 75, 252)};
+	CColor selectedBackgroundColor {MakeCColor (200, 200, 200, 235)};
+	CColor textColor {MakeCColor (255, 255, 255, 255)};
+	CColor selectedTextColor {MakeCColor (0, 0, 0, 255)};
+	CColor disabledTextColor {MakeCColor (150, 150, 150, 255)};
+};
+
+//------------------------------------------------------------------------
+class GenericOptionMenu : public IPlatformOptionMenu, public IViewMouseListenerAdapter
+{
+public:
+	GenericOptionMenu (CFrame* frame, CButtonState initialButtons,
+	                   GenericOptionMenuTheme theme = {});
+	~GenericOptionMenu () noexcept override;
+
+	void popup (COptionMenu* optionMenu, const Callback& callback) override;
+
+private:
+	void removeModalView (PlatformOptionMenuResult result);
+	CMouseEventResult viewOnMouseDown (CView* view, CPoint pos, CButtonState buttons) override;
+
+	struct Impl;
+	std::unique_ptr<Impl> impl;
+};
+
+//------------------------------------------------------------------------
+} // VSTGUI
