@@ -176,9 +176,11 @@ struct CView::Impl
 {
 	using ViewAttributes = std::unordered_map<CViewAttributeID, std::unique_ptr<CViewInternal::AttributeEntry>>;
 	using ViewListenerDispatcher = DispatchList<IViewListener*>;
-	
+	using ViewMouseListenerDispatcher = DispatchList<IViewMouseListener*>;
+
 	ViewAttributes attributes;
 	ViewListenerDispatcher viewListeners;
+	ViewMouseListenerDispatcher viewMouseListener;
 	
 	CRect size;
 	CRect mouseableArea;
@@ -981,6 +983,54 @@ void CView::registerViewListener (IViewListener* listener)
 void CView::unregisterViewListener (IViewListener* listener)
 {
 	pImpl->viewListeners.remove (listener);
+}
+
+//------------------------------------------------------------------------
+void CView::registerViewMouseListener (IViewMouseListener* listener)
+{
+	pImpl->viewMouseListener.add (listener);
+}
+
+//------------------------------------------------------------------------
+void CView::unregisterViewMouseListener (IViewMouseListener* listener)
+{
+	pImpl->viewMouseListener.remove (listener);
+}
+
+//-----------------------------------------------------------------------------
+CMouseEventResult CView::callMouseListener (MouseListenerCall type, CPoint pos, CButtonState buttons)
+{
+	CMouseEventResult result = kMouseEventNotHandled;
+	pImpl->viewMouseListener.forEachReverse (
+	    [&] (IViewMouseListener* l) {
+		    switch (type)
+		    {
+			    case MouseListenerCall::MouseDown: return l->viewOnMouseDown (this, pos, buttons);
+			    case MouseListenerCall::MouseUp: return l->viewOnMouseUp (this, pos, buttons);
+			    case MouseListenerCall::MouseMoved: return l->viewOnMouseMoved (this, pos, buttons);
+			    case MouseListenerCall::MouseCancel: return l->viewOnMouseCancel (this);
+		    }
+	    },
+	    [&] (CMouseEventResult res) {
+		    if (res != kMouseEventNotHandled && res != kMouseEventNotImplemented)
+		    {
+			    result = res;
+			    return true;
+		    }
+		    return false;
+	    });
+	return result;
+}
+
+//-----------------------------------------------------------------------------
+void CView::callMouseListenerEnteredExited (bool mouseEntered)
+{
+	pImpl->viewMouseListener.forEachReverse ([&] (IViewMouseListener* l) {
+		if (mouseEntered)
+			l->viewOnMouseEntered (this);
+		else
+			l->viewOnMouseExited (this);
+	});
 }
 
 //-----------------------------------------------------------------------------

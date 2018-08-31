@@ -124,6 +124,7 @@ struct DragEventData;
 // interfaces
 class IViewListener;
 class IViewContainerListener;
+class IViewMouseListener;
 class IDataPackage;
 class IDependency;
 class IFocusDrawing;

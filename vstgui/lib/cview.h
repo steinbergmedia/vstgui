@@ -326,6 +326,9 @@ public:
 	//@{
 	void registerViewListener (IViewListener* listener);
 	void unregisterViewListener (IViewListener* listener);
+	
+	void registerViewMouseListener (IViewMouseListener* listener);
+	void unregisterViewMouseListener (IViewMouseListener* listener);
 	//@}
 
 	CGraphicsTransform getGlobalTransform () const;
@@ -345,6 +348,16 @@ public:
 	virtual CViewContainer* asViewContainer () { return nullptr; }
 	virtual const CViewContainer* asViewContainer () const { return nullptr; }
 
+	enum class MouseListenerCall
+	{
+		MouseDown,
+		MouseMoved,
+		MouseUp,
+		MouseCancel
+	};
+	CMouseEventResult callMouseListener (MouseListenerCall type, CPoint pos, CButtonState buttons);
+	void callMouseListenerEnteredExited (bool mouseEntered);
+	
 	// overwrites
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 	void beforeDelete () override;

@@ -538,12 +538,15 @@ CMouseEventResult CFrame::onMouseDown (CPoint &where, const CButtonState& button
 
 		if (pImpl->modalView->isVisible () && pImpl->modalView->getMouseEnabled () && pImpl->modalView->hitTest (where2, buttons))
 		{
-			CMouseEventResult result = pImpl->modalView->onMouseDown (where2, buttons);
+			auto result = pImpl->modalView->callMouseListener (MouseListenerCall::MouseDown, where2, buttons);
+			if (result == kMouseEventNotHandled || result == kMouseEventNotImplemented)
+				result = pImpl->modalView->onMouseDown (where2, buttons);
 			if (result == kMouseEventHandled)
 			{
 				setMouseDownView (pImpl->modalView);
 				return kMouseEventHandled;
 			}
+			return result;
 		}
 	}
 	else
@@ -578,7 +581,9 @@ CMouseEventResult CFrame::onMouseMoved (CPoint &where, const CButtonState& butto
 	if (pImpl->modalView)
 	{
 		CBaseObjectGuard rg (pImpl->modalView);
-		result = pImpl->modalView->onMouseMoved (where2, buttons);
+		result = pImpl->modalView->callMouseListener (MouseListenerCall::MouseMoved, where2, buttons);
+		if (result == kMouseEventNotHandled || result == kMouseEventNotImplemented)
+			result = pImpl->modalView->onMouseMoved (where2, buttons);
 	}
 	else
 	{
@@ -1419,6 +1424,7 @@ void CFrame::unregisterMouseObserver (IMouseObserver* observer)
 //-----------------------------------------------------------------------------
 void CFrame::callMouseObserverMouseEntered (CView* view)
 {
+	view->callMouseListenerEnteredExited (true);
 	pImpl->mouseObservers.forEach ([&] (IMouseObserver* observer) {
 		observer->onMouseEntered (view, this);
 	});
@@ -1430,6 +1436,7 @@ void CFrame::callMouseObserverMouseExited (CView* view)
 	pImpl->mouseObservers.forEach ([&] (IMouseObserver* observer) {
 		observer->onMouseExited (view, this);
 	});
+	view->callMouseListenerEnteredExited (false);
 }
 
 //-----------------------------------------------------------------------------

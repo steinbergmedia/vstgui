@@ -1,4 +1,4 @@
-// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
@@ -6,6 +6,8 @@
 #define __iviewlistener__
 
 #include "vstguifwd.h"
+#include "cbuttonstate.h"
+#include "cpoint.h"
 
 namespace VSTGUI {
 
@@ -16,7 +18,7 @@ class IViewListener
 {
 public:
 	virtual ~IViewListener () noexcept = default;
-	
+
 	virtual void viewSizeChanged (CView* view, const CRect& oldSize) = 0;
 	virtual void viewAttached (CView* view) = 0;
 	virtual void viewRemoved (CView* view) = 0;
@@ -37,6 +39,22 @@ public:
 	virtual void viewContainerViewRemoved (CViewContainer* container, CView* view) = 0;
 	virtual void viewContainerViewZOrderChanged (CViewContainer* container, CView* view) = 0;
 	virtual void viewContainerTransformChanged (CViewContainer* container) = 0;
+};
+
+//-----------------------------------------------------------------------------
+/// @brief View Mouse Listener Interface
+//-----------------------------------------------------------------------------
+class IViewMouseListener
+{
+public:
+	virtual ~IViewMouseListener () noexcept = default;
+
+	virtual CMouseEventResult viewOnMouseDown (CView* view, CPoint pos, CButtonState buttons) = 0;
+	virtual CMouseEventResult viewOnMouseUp (CView* view, CPoint pos, CButtonState buttons) = 0;
+	virtual CMouseEventResult viewOnMouseMoved (CView* view, CPoint pos, CButtonState buttons) = 0;
+	virtual CMouseEventResult viewOnMouseCancel (CView* view) = 0;
+	virtual void viewOnMouseEntered (CView* view) = 0;
+	virtual void viewOnMouseExited (CView* view) = 0;
 };
 
 //-----------------------------------------------------------------------------
@@ -65,7 +83,29 @@ public:
 	void viewContainerTransformChanged (CViewContainer* container) override {}
 };
 
-}
+//-----------------------------------------------------------------------------
+/// @brief View Mouse Listener Interface Adapter
+//-----------------------------------------------------------------------------
+class IViewMouseListenerAdapter : public IViewMouseListener
+{
+public:
+	CMouseEventResult viewOnMouseDown (CView* view, CPoint pos, CButtonState buttons) override
+	{
+		return kMouseEventNotImplemented;
+	}
+	CMouseEventResult viewOnMouseUp (CView* view, CPoint pos, CButtonState buttons) override
+	{
+		return kMouseEventNotImplemented;
+	}
+	CMouseEventResult viewOnMouseMoved (CView* view, CPoint pos, CButtonState buttons) override
+	{
+		return kMouseEventNotImplemented;
+	}
+	CMouseEventResult viewOnMouseCancel (CView* view) override { return kMouseEventNotImplemented; }
+	void viewOnMouseEntered (CView* view) override {}
+	void viewOnMouseExited (CView* view) override {}
+};
 
+} // VSTGUI
 
 #endif // __iviewlistener__

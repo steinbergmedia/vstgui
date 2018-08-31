@@ -989,17 +989,22 @@ CMouseEventResult CViewContainer::onMouseDown (CPoint &where, const CButtonState
 		auto pV = *it;
 		if (pV && pV->isVisible () && pV->getMouseEnabled () && pV->hitTest (where2, buttons))
 		{
-			auto control = pV.cast<CControl> ();
-			if (control && control->getListener () && buttons & (kAlt | kShift | kControl | kApple | kRButton))
+			if (buttons & (kAlt | kShift | kControl | kApple | kRButton))
 			{
-				if (control->getListener ()->controlModifierClicked (control, buttons) != 0)
-					return kMouseEventHandled;
+				auto control = pV.cast<CControl> ();
+				if (control && control->getListener ())
+				{
+					if (control->getListener ()->controlModifierClicked (control, buttons) != 0)
+						return kMouseEventHandled;
+				}
 			}
 
 			if (pV->wantsFocus ())
 				getFrame ()->setFocusView (pV);
 
-			CMouseEventResult result = pV->onMouseDown (where2, buttons);
+			auto result = pV->callMouseListener (MouseListenerCall::MouseDown, where2, buttons);
+			if (result == kMouseEventNotHandled || result == kMouseEventNotImplemented)
+				result = pV->onMouseDown (where2, buttons);
 			if (result != kMouseEventNotHandled && result != kMouseEventNotImplemented)
 			{
 				if (pV->getNbReference () > 1 && result == kMouseEventHandled)
@@ -1016,14 +1021,16 @@ CMouseEventResult CViewContainer::onMouseDown (CPoint &where, const CButtonState
 //-----------------------------------------------------------------------------
 CMouseEventResult CViewContainer::onMouseUp (CPoint &where, const CButtonState& buttons)
 {
-	if (auto mouseDownView = getMouseDownView ())
+	if (auto view = getMouseDownView ())
 	{
-		CBaseObjectGuard crg (mouseDownView);
+		CBaseObjectGuard crg (view);
 
 		CPoint where2 (where);
 		where2.offset (-getViewSize ().left, -getViewSize ().top);
 		getTransform ().inverse ().transform (where2);
-		mouseDownView->onMouseUp (where2, buttons);
+		auto mouseResult = view->callMouseListener (MouseListenerCall::MouseUp, where2, buttons);
+		if (mouseResult == kMouseEventNotHandled || mouseResult == kMouseEventNotImplemented)
+			view->onMouseUp (where2, buttons);
 		clearMouseDownView ();
 		return kMouseEventHandled;
 	}
@@ -1033,14 +1040,16 @@ CMouseEventResult CViewContainer::onMouseUp (CPoint &where, const CButtonState& 
 //-----------------------------------------------------------------------------
 CMouseEventResult CViewContainer::onMouseMoved (CPoint &where, const CButtonState& buttons)
 {
-	if (auto mouseDownView = getMouseDownView ())
+	if (auto view = getMouseDownView ())
 	{
-		CBaseObjectGuard crg (mouseDownView);
+		CBaseObjectGuard crg (view);
 
 		CPoint where2 (where);
 		where2.offset (-getViewSize ().left, -getViewSize ().top);
 		getTransform ().inverse ().transform (where2);
-		CMouseEventResult mouseResult = mouseDownView->onMouseMoved (where2, buttons);
+		auto mouseResult = view->callMouseListener (MouseListenerCall::MouseMoved, where2, buttons);
+		if (mouseResult == kMouseEventNotHandled || mouseResult == kMouseEventNotImplemented)
+			mouseResult = view->onMouseMoved (where2, buttons);
 		if (mouseResult != kMouseEventHandled && mouseResult != kMouseEventNotImplemented)
 		{
 			clearMouseDownView ();
@@ -1057,6 +1066,7 @@ CMouseEventResult CViewContainer::onMouseCancel ()
 	if (auto mouseDownView = getMouseDownView ())
 	{
 		CBaseObjectGuard crg (mouseDownView);
+		mouseDownView->callMouseListener (MouseListenerCall::MouseCancel, {}, 0);
 		return mouseDownView->onMouseCancel ();
 	}
 	return kMouseEventHandled;

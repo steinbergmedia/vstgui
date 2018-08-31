@@ -26,8 +26,14 @@ public:
 	template <typename Procedure>
 	void forEach (Procedure proc);
 
+	template <typename Procedure, typename Condition>
+	void forEach (Procedure proc, Condition condition);
+
 	template <typename Procedure>
 	void forEachReverse (Procedure proc);
+
+	template <typename Procedure, typename Condition>
+	void forEachReverse (Procedure proc, Condition condition);
 
 private:
 	using Array = std::vector<T>;
@@ -144,6 +150,46 @@ inline void DispatchList<T>::forEachReverse (Procedure proc)
 	inForEach = true;
 	for (auto it = entries.rbegin (); it != entries.rend (); ++it)
 		proc (*it);
+	inForEach = wasInForEach;
+	if (!inForEach)
+		postForEach ();
+}
+
+//------------------------------------------------------------------------
+template <typename T>
+template <typename Procedure, typename Condition>
+inline void DispatchList<T>::forEach (Procedure proc, Condition condition)
+{
+	if (entries.empty ())
+		return;
+
+	bool wasInForEach = inForEach;
+	inForEach = true;
+	for (auto& it : entries)
+	{
+		if (condition (proc (it)))
+			break;
+	}
+	inForEach = wasInForEach;
+	if (!inForEach)
+		postForEach ();
+}
+
+//------------------------------------------------------------------------
+template <typename T>
+template <typename Procedure, typename Condition>
+inline void DispatchList<T>::forEachReverse (Procedure proc, Condition condition)
+{
+	if (entries.empty ())
+		return;
+	
+	bool wasInForEach = inForEach;
+	inForEach = true;
+	for (auto it = entries.rbegin (); it != entries.rend (); ++it)
+	{
+		if (condition (proc (*it)))
+			break;
+	}
 	inForEach = wasInForEach;
 	if (!inForEach)
 		postForEach ();
