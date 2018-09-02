@@ -61,7 +61,7 @@ void UIDialogController::run (UTF8StringPtr _templateName, UTF8StringPtr _dialog
 		view->setMouseableArea (size);
 		view->setAlphaValue (0.f);
 
-		frame->setModalView (view);
+		modalSession = frame->beginModalViewSession (view);
 		frame->registerKeyboardHook (this);
 		frame->registerViewListener (this);
 		view->registerViewListener (this);
@@ -102,12 +102,11 @@ void UIDialogController::close ()
 		button2->setListener (nullptr);
 	setOpenGLViewsVisible (true);
 
-	CView* dialog = frame->getModalView ();
-	if (dialog)
+	if (modalSession)
 	{
+		CView* dialog = frame->getModalView ();
 		dialog->unregisterViewListener (this);
-		frame->setModalView (nullptr);
-		dialog->forget ();
+		frame->endModalViewSession (modalSession);
 	}
 	forget ();
 }

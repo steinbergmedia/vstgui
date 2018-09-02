@@ -698,7 +698,12 @@ struct WindowController::EditImpl : WindowController::Impl
 		Impl::onClosed ();
 	}
 
-	bool canClose () override { return Impl::canClose (); }
+	bool canClose () override
+	{
+		if (frame->getModalView ())
+			return false;
+		return Impl::canClose ();
+	}
 
 	void initAsNew ()
 	{
@@ -824,7 +829,9 @@ struct WindowController::EditImpl : WindowController::Impl
 
 	bool canHandleCommand (const Command& command) override
 	{
-		if (command == ToggleEditingCommand || command == ResaveSharedResourcesCommand)
+		if (command == ToggleEditingCommand)
+			return frame->getModalView () == nullptr;
+		if (command == ResaveSharedResourcesCommand)
 			return true;
 		else if (uiEditController && uiEditController->getMenuController ()->canHandleCommand (
 		                                 command.group, command.name))

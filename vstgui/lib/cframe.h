@@ -71,8 +71,11 @@ public:
 	bool getSize (CRect* pSize) const;
 	bool getSize (CRect& pSize) const;
 
-	bool   setModalView (CView* pView);
+	VSTGUI_DEPRECATED (bool setModalView (CView* pView);)
 	CView* getModalView () const;
+
+	ModalViewSession* beginModalViewSession (CView* view);
+	bool endModalViewSession (ModalViewSession* session);
 
 	void  beginEdit (int32_t index);
 	void  endEdit (int32_t index);
@@ -250,6 +253,12 @@ protected:
 #endif
 
 private:
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+	void endLegacyModalViewSession ();
+#endif
+	void initModalViewSession (ModalViewSession* session);
+	void clearModalViewSessions ();
+
 	struct Impl;
 	Impl* pImpl {nullptr};
 };

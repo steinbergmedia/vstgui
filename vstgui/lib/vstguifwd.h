@@ -120,6 +120,7 @@ struct CDrawMode;
 struct CGraphicsTransform;
 struct DragDescription;
 struct DragEventData;
+struct ModalViewSession;
 
 // interfaces
 class IViewListener;
