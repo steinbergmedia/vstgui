@@ -179,8 +179,8 @@ struct CView::Impl
 	using ViewMouseListenerDispatcher = DispatchList<IViewMouseListener*>;
 
 	ViewAttributes attributes;
-	ViewListenerDispatcher viewListeners;
-	ViewMouseListenerDispatcher viewMouseListener;
+	std::unique_ptr<ViewListenerDispatcher> viewListeners;
+	std::unique_ptr<ViewMouseListenerDispatcher> viewMouseListener;
 	
 	CRect size;
 	CRect mouseableArea;
@@ -233,12 +233,15 @@ CView::~CView () noexcept = default;
 //-----------------------------------------------------------------------------
 void CView::beforeDelete ()
 {
-	pImpl->viewListeners.forEach ([&] (IViewListener* listener) {
-		listener->viewWillDelete (this);
-	});
+	if (pImpl->viewListeners)
+	{
+		pImpl->viewListeners->forEach ([&] (IViewListener* listener) {
+			listener->viewWillDelete (this);
+		});
+		vstgui_assert (pImpl->viewListeners->empty (), "View listeners not empty");
+	}
 
 	vstgui_assert (isAttached () == false, "View is still attached");
-	vstgui_assert (pImpl->viewListeners.empty (), "View listeners not empty");
 
 	setHitTestPath (nullptr);
 	
@@ -399,9 +402,11 @@ bool CView::attached (CView* parent)
 		pImpl->parentFrame->onViewAdded (this);
 	if (wantsIdle ())
 		CViewInternal::IdleViewUpdater::add (this);
-	pImpl->viewListeners.forEach ([&] (IViewListener* listener) {
-		listener->viewAttached (this);
-	});
+	if (pImpl->viewListeners)
+	{
+		pImpl->viewListeners->forEach (
+		    [&] (IViewListener* listener) { listener->viewAttached (this); });
+	}
 	return true;
 }
 
@@ -416,9 +421,11 @@ bool CView::removed (CView* parent)
 		return false;
 	if (wantsIdle ())
 		CViewInternal::IdleViewUpdater::remove (this);
-	pImpl->viewListeners.forEach ([&] (IViewListener* listener) {
-		listener->viewRemoved (this);
-	});
+	if (pImpl->viewListeners)
+	{
+		pImpl->viewListeners->forEach (
+		    [&] (IViewListener* listener) { listener->viewRemoved (this); });
+	}
 	if (pImpl->parentFrame)
 		pImpl->parentFrame->onViewRemoved (this);
 	pImpl->parentView = nullptr;
@@ -669,17 +676,19 @@ CMessageResult CView::notify (CBaseObject* sender, IdStringPtr message)
 //------------------------------------------------------------------------------
 void CView::looseFocus ()
 {
-	pImpl->viewListeners.forEach ([&] (IViewListener* listener) {
-		listener->viewLostFocus (this);
-	});
+	if (!pImpl->viewListeners)
+		return;
+	pImpl->viewListeners->forEach (
+	    [&] (IViewListener* listener) { listener->viewLostFocus (this); });
 }
 
 //------------------------------------------------------------------------------
 void CView::takeFocus ()
 {
-	pImpl->viewListeners.forEach ([&] (IViewListener* listener) {
-		listener->viewTookFocus (this);
-	});
+	if (!pImpl->viewListeners)
+		return;
+	pImpl->viewListeners->forEach (
+	    [&] (IViewListener* listener) { listener->viewTookFocus (this); });
 }
 
 //------------------------------------------------------------------------------
@@ -699,9 +708,11 @@ void CView::setViewSize (const CRect& newSize, bool doInvalid)
 			setDirty ();
 		if (getParentView ())
 			getParentView ()->notify (this, kMsgViewSizeChanged);
-		pImpl->viewListeners.forEach ([&] (IViewListener* listener) {
-			listener->viewSizeChanged (this, oldSize);
-		});
+		if (pImpl->viewListeners)
+		{
+			pImpl->viewListeners->forEach (
+			    [&] (IViewListener* listener) { listener->viewSizeChanged (this, oldSize); });
+		}
 	}
 }
 
@@ -976,32 +987,44 @@ void CView::dumpInfo ()
 //-----------------------------------------------------------------------------
 void CView::registerViewListener (IViewListener* listener)
 {
-	pImpl->viewListeners.add (listener);
+	if (!pImpl->viewListeners)
+		pImpl->viewListeners =
+		    std::unique_ptr<Impl::ViewListenerDispatcher> (new Impl::ViewListenerDispatcher);
+	pImpl->viewListeners->add (listener);
 }
 
 //-----------------------------------------------------------------------------
 void CView::unregisterViewListener (IViewListener* listener)
 {
-	pImpl->viewListeners.remove (listener);
+	if (!pImpl->viewListeners)
+		return;
+	pImpl->viewListeners->remove (listener);
 }
 
 //------------------------------------------------------------------------
 void CView::registerViewMouseListener (IViewMouseListener* listener)
 {
-	pImpl->viewMouseListener.add (listener);
+	if (!pImpl->viewMouseListener)
+		pImpl->viewMouseListener = std::unique_ptr<Impl::ViewMouseListenerDispatcher> (
+		    new Impl::ViewMouseListenerDispatcher);
+	pImpl->viewMouseListener->add (listener);
 }
 
 //------------------------------------------------------------------------
 void CView::unregisterViewMouseListener (IViewMouseListener* listener)
 {
-	pImpl->viewMouseListener.remove (listener);
+	if (!pImpl->viewMouseListener)
+		return;
+	pImpl->viewMouseListener->remove (listener);
 }
 
 //-----------------------------------------------------------------------------
 CMouseEventResult CView::callMouseListener (MouseListenerCall type, CPoint pos, CButtonState buttons)
 {
 	CMouseEventResult result = kMouseEventNotHandled;
-	pImpl->viewMouseListener.forEachReverse (
+	if (!pImpl->viewMouseListener)
+		return result;
+	pImpl->viewMouseListener->forEachReverse (
 	    [&] (IViewMouseListener* l) {
 		    switch (type)
 		    {
@@ -1025,7 +1048,9 @@ CMouseEventResult CView::callMouseListener (MouseListenerCall type, CPoint pos, 
 //-----------------------------------------------------------------------------
 void CView::callMouseListenerEnteredExited (bool mouseEntered)
 {
-	pImpl->viewMouseListener.forEachReverse ([&] (IViewMouseListener* l) {
+	if (!pImpl->viewMouseListener)
+		return;
+	pImpl->viewMouseListener->forEachReverse ([&] (IViewMouseListener* l) {
 		if (mouseEntered)
 			l->viewOnMouseEntered (this);
 		else
