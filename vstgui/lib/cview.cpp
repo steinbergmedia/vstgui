@@ -240,6 +240,10 @@ void CView::beforeDelete ()
 		});
 		vstgui_assert (pImpl->viewListeners->empty (), "View listeners not empty");
 	}
+	if (pImpl->viewMouseListener)
+	{
+		vstgui_assert (pImpl->viewMouseListener->empty (), "View mouse listeners not empty");
+	}
 
 	vstgui_assert (isAttached () == false, "View is still attached");
 
