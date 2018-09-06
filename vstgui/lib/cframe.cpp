@@ -546,7 +546,7 @@ CMouseEventResult CFrame::onMouseDown (CPoint &where, const CButtonState& button
 	{
 		CBaseObjectGuard rg (modalView);
 
-		if (modalView->isVisible () && modalView->getMouseEnabled () && modalView->hitTest (where2, buttons))
+		if (modalView->isVisible () && modalView->getMouseEnabled ())
 		{
 			auto result = modalView->callMouseListener (MouseListenerCall::MouseDown, where2, buttons);
 			if (result == kMouseEventNotHandled || result == kMouseEventNotImplemented)
