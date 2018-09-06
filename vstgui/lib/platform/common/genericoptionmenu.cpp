@@ -10,6 +10,7 @@
 #include "../../clayeredviewcontainer.h"
 #include "../../coffscreencontext.h"
 #include "../../controls/coptionmenu.h"
+#include "../../cgraphicspath.h"
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -150,6 +151,19 @@ public:
 		return kMouseEventHandled;
 	}
 
+	void drawCheckMark (CDrawContext* context, CRect size, bool selected)
+	{
+		if (auto checkMarkPath = owned (context->createGraphicsPath ()))
+		{
+			size.inset (3, 5);
+			checkMarkPath->beginSubpath ({size.left, size.top + size.getHeight () / 2.});
+			checkMarkPath->addLine ({size.left + size.getWidth () / 3., size.bottom});
+			checkMarkPath->addLine ({size.right, size.top});
+			context->setFrameColor (selected ? theme.selectedTextColor : theme.textColor);
+			context->drawGraphicsPath (checkMarkPath, CDrawContext::kPathStroked);
+		}
+	}
+
 	void dbDrawCell (CDrawContext* context,
 					 const CRect& size,
 					 int32_t row,
@@ -171,6 +185,7 @@ public:
 				return;
 			}
 			context->saveGlobalState ();
+			context->setDrawMode (kAntiAliasing);
 			if (flags & kRowSelected)
 			{
 				context->setFillColor (theme.selectedBackgroundColor);
@@ -187,7 +202,7 @@ public:
 			{
 				auto r = size;
 				r.setWidth (getCheckmarkSize (context));
-				context->drawString (CheckMarkString, r, kCenterText);
+				drawCheckMark (context, r, flags & kRowSelected);
 			}
 			auto r = size;
 			r.inset (getCheckmarkSize (context), 0);
@@ -218,12 +233,13 @@ private:
 	CCoord getCheckmarkSize (CDrawContext* context)
 	{
 		if (checkmarkSize == 0.)
-			checkmarkSize = context->getStringWidth (CheckMarkString) * 2.;
+			checkmarkSize = theme.font->getSize ();
 		return checkmarkSize;
 	}
 
 	COptionMenu* menu;
 	CDataBrowser* db{nullptr};
+	SharedPointer<CGraphicsPath> checkMarkPath;
 	ClickCallback clickCallback;
 	CCoord checkmarkSize{0.};
 	GenericOptionMenuTheme theme;
