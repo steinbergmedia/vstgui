@@ -173,6 +173,7 @@ public:
 	{
 		if (auto item = menu->getEntry (row))
 		{
+			context->setDrawMode (kAntiAliasing);
 			if (item->isSeparator ())
 			{
 				context->setFillColor (theme.backgroundColor);
@@ -185,7 +186,6 @@ public:
 				return;
 			}
 			context->saveGlobalState ();
-			context->setDrawMode (kAntiAliasing);
 			if (flags & kRowSelected)
 			{
 				context->setFillColor (theme.selectedBackgroundColor);
