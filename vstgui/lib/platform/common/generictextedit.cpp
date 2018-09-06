@@ -112,8 +112,8 @@ private:
 	STB_TexteditState editState;
 	std::vector<CCoord> charWidthCache;
 	CColor selectionColor{kBlueCColor};
-	CCoord cursorOffset {0.};
-	CCoord cursorHeight {0.};
+	CCoord cursorOffset{0.};
+	CCoord cursorHeight{0.};
 	uint32_t flags{0};
 #if VSTGUI_STB_TEXTEDIT_USE_UNICODE
 	std::u16string uString;
@@ -131,19 +131,19 @@ private:
 #define STB_TEXTEDIT_K_UP (VIRTUAL_KEY_BIT | VKEY_UP)
 #define STB_TEXTEDIT_K_DOWN (VIRTUAL_KEY_BIT | VKEY_DOWN)
 #if MAC
-#define STB_TEXTEDIT_K_LINESTART (STB_TEXTEDIT_K_CONTROL | STB_TEXTEDIT_K_LEFT)
-#define STB_TEXTEDIT_K_LINEEND (STB_TEXTEDIT_K_CONTROL | STB_TEXTEDIT_K_RIGHT)
-#define STB_TEXTEDIT_K_WORDLEFT (STB_TEXTEDIT_K_ALT | STB_TEXTEDIT_K_LEFT)
-#define STB_TEXTEDIT_K_WORDRIGHT (STB_TEXTEDIT_K_ALT | STB_TEXTEDIT_K_RIGHT)
-#define STB_TEXTEDIT_K_TEXTSTART (STB_TEXTEDIT_K_CONTROL | STB_TEXTEDIT_K_UP)
-#define STB_TEXTEDIT_K_TEXTEND (STB_TEXTEDIT_K_CONTROL | STB_TEXTEDIT_K_DOWN)
+#	define STB_TEXTEDIT_K_LINESTART (STB_TEXTEDIT_K_CONTROL | STB_TEXTEDIT_K_LEFT)
+#	define STB_TEXTEDIT_K_LINEEND (STB_TEXTEDIT_K_CONTROL | STB_TEXTEDIT_K_RIGHT)
+#	define STB_TEXTEDIT_K_WORDLEFT (STB_TEXTEDIT_K_ALT | STB_TEXTEDIT_K_LEFT)
+#	define STB_TEXTEDIT_K_WORDRIGHT (STB_TEXTEDIT_K_ALT | STB_TEXTEDIT_K_RIGHT)
+#	define STB_TEXTEDIT_K_TEXTSTART (STB_TEXTEDIT_K_CONTROL | STB_TEXTEDIT_K_UP)
+#	define STB_TEXTEDIT_K_TEXTEND (STB_TEXTEDIT_K_CONTROL | STB_TEXTEDIT_K_DOWN)
 #else
-#define STB_TEXTEDIT_K_LINESTART (VIRTUAL_KEY_BIT | VKEY_HOME)
-#define STB_TEXTEDIT_K_LINEEND (VIRTUAL_KEY_BIT | VKEY_END)
-#define STB_TEXTEDIT_K_WORDLEFT (STB_TEXTEDIT_K_LEFT | STB_TEXTEDIT_K_CONTROL)
-#define STB_TEXTEDIT_K_WORDRIGHT (STB_TEXTEDIT_K_RIGHT | STB_TEXTEDIT_K_CONTROL)
-#define STB_TEXTEDIT_K_TEXTSTART (STB_TEXTEDIT_K_LINESTART | STB_TEXTEDIT_K_CONTROL)
-#define STB_TEXTEDIT_K_TEXTEND (STB_TEXTEDIT_K_LINEEND | STB_TEXTEDIT_K_CONTROL)
+#	define STB_TEXTEDIT_K_LINESTART (VIRTUAL_KEY_BIT | VKEY_HOME)
+#	define STB_TEXTEDIT_K_LINEEND (VIRTUAL_KEY_BIT | VKEY_END)
+#	define STB_TEXTEDIT_K_WORDLEFT (STB_TEXTEDIT_K_LEFT | STB_TEXTEDIT_K_CONTROL)
+#	define STB_TEXTEDIT_K_WORDRIGHT (STB_TEXTEDIT_K_RIGHT | STB_TEXTEDIT_K_CONTROL)
+#	define STB_TEXTEDIT_K_TEXTSTART (STB_TEXTEDIT_K_LINESTART | STB_TEXTEDIT_K_CONTROL)
+#	define STB_TEXTEDIT_K_TEXTEND (STB_TEXTEDIT_K_LINEEND | STB_TEXTEDIT_K_CONTROL)
 #endif
 #define STB_TEXTEDIT_K_DELETE (VIRTUAL_KEY_BIT | VKEY_DELETE)
 #define STB_TEXTEDIT_K_BACKSPACE (VIRTUAL_KEY_BIT | VKEY_BACK)
@@ -156,7 +156,8 @@ private:
 #define STB_TEXTEDIT_STRINGLEN(tc) STBTextEditView::getLength (tc)
 #define STB_TEXTEDIT_LAYOUTROW STBTextEditView::layout
 #define STB_TEXTEDIT_GETWIDTH(tc, n, i) STBTextEditView::getCharWidth (tc, n, i)
-#define STB_TEXTEDIT_KEYTOTEXT(key) ((key & VIRTUAL_KEY_BIT) ? 0 : ((key & STB_TEXTEDIT_K_CONTROL) ? 0 : (key & (~0xF0000000))));
+#define STB_TEXTEDIT_KEYTOTEXT(key)                                                                \
+	((key & VIRTUAL_KEY_BIT) ? 0 : ((key & STB_TEXTEDIT_K_CONTROL) ? 0 : (key & (~0xF0000000))));
 #define STB_TEXTEDIT_GETCHAR(tc, i) STBTextEditView::getChar (tc, i)
 #define STB_TEXTEDIT_NEWLINE '\n'
 #define STB_TEXTEDIT_IS_SPACE(ch) isSpace (ch)
@@ -195,7 +196,6 @@ GenericTextEdit::GenericTextEdit (IPlatformTextEditCallback* callback)
 	impl->view->setHoriAlign (callback->platformGetHoriTxtAlign ());
 	impl->view->setText (callback->platformGetText ());
 	impl->view->selectAll ();
-
 
 	updateSize ();
 }
@@ -303,9 +303,7 @@ int32_t STBTextEditView::onKeyDown (const VstKeyCode& code, CFrame* frame)
 		if (auto text = getFrame ()->getPlatformFrame ()->convertCurrentKeyEventToText ())
 		{
 #if VSTGUI_STB_TEXTEDIT_USE_UNICODE
-			auto tmp =
-			    StringConvert {}.from_bytes (
-			        text->getString ());
+			auto tmp = StringConvert{}.from_bytes (text->getString ());
 			key = tmp[0];
 #else
 			if (text->length () != 1)
@@ -355,17 +353,20 @@ CMouseEventResult STBTextEditView::onMouseDown (CFrame* frame,
 												const CButtonState& buttons)
 {
 	auto where = _where;
-	getParentView ()->translateToLocal (where);
-	if (buttons.isLeftButton () && hitTest (where, buttons))
+	if (auto parent = getParentView ())
 	{
-		CPoint where2 (where);
-		where2.x -= getViewSize ().left;
-		where2.y -= getViewSize ().top;
-		callSTB ([&] () {
-			stb_textedit_click (this, &editState, static_cast<float> (where2.x),
-			                    static_cast<float> (where2.y));
-		});
-		return kMouseEventHandled;
+		parent->translateToLocal (where);
+		if (buttons.isLeftButton () && hitTest (where, buttons))
+		{
+			CPoint where2 (where);
+			where2.x -= getViewSize ().left;
+			where2.y -= getViewSize ().top;
+			callSTB ([&]() {
+				stb_textedit_click (this, &editState, static_cast<float> (where2.x),
+									static_cast<float> (where2.y));
+			});
+			return kMouseEventHandled;
+		}
 	}
 	return kMouseEventNotHandled;
 }
@@ -376,17 +377,20 @@ CMouseEventResult STBTextEditView::onMouseMoved (CFrame* frame,
 												 const CButtonState& buttons)
 {
 	auto where = _where;
-	getParentView ()->translateToLocal (where);
-	if (buttons.isLeftButton () && hitTest (where, buttons))
+	if (auto parent = getParentView ())
 	{
-		CPoint where2 (where);
-		where2.x -= getViewSize ().left;
-		where2.y -= getViewSize ().top;
-		callSTB ([&] () {
-			stb_textedit_drag (this, &editState, static_cast<float> (where2.x),
-			                   static_cast<float> (where2.y));
-		});
-		return kMouseEventHandled;
+		parent->translateToLocal (where);
+		if (buttons.isLeftButton () && hitTest (where, buttons))
+		{
+			CPoint where2 (where);
+			where2.x -= getViewSize ().left;
+			where2.y -= getViewSize ().top;
+			callSTB ([&]() {
+				stb_textedit_drag (this, &editState, static_cast<float> (where2.x),
+								   static_cast<float> (where2.y));
+			});
+			return kMouseEventHandled;
+		}
 	}
 	return kMouseEventNotHandled;
 }
@@ -459,7 +463,7 @@ bool STBTextEditView::doCut ()
 {
 	if (doCopy ())
 	{
-		callSTB ([&] () { stb_textedit_cut (this, &editState); });
+		callSTB ([&]() { stb_textedit_cut (this, &editState); });
 		return true;
 	}
 	return false;
@@ -471,11 +475,12 @@ bool STBTextEditView::doCopy ()
 	if (editState.select_start == editState.select_end)
 		return false;
 #if VSTGUI_STB_TEXTEDIT_USE_UNICODE
-	auto txt = StringConvert {}.to_bytes (uString.data () + editState.select_start,
-	                                      uString.data () + editState.select_end);
-	auto dataPackage = CDropSource::create (txt.data(), txt.size(), IDataPackage::kText);
+	auto txt = StringConvert{}.to_bytes (uString.data () + editState.select_start,
+										 uString.data () + editState.select_end);
+	auto dataPackage = CDropSource::create (txt.data (), txt.size (), IDataPackage::kText);
 #else
-	auto dataPackage = CDropSource::create (getText ().data(), getText ().length (), IDataPackage::kText);
+	auto dataPackage =
+		CDropSource::create (getText ().data (), getText ().length (), IDataPackage::kText);
 #endif
 	getFrame ()->getPlatformFrame ()->setClipboard (dataPackage);
 	return true;
@@ -496,12 +501,11 @@ bool STBTextEditView::doPaste ()
 			{
 				auto text = reinterpret_cast<const char*> (buffer);
 #if VSTGUI_STB_TEXTEDIT_USE_UNICODE
-				auto uText = StringConvert {}.from_bytes (text, text + size);
-				callSTB ([&] () {
-					stb_textedit_paste (this, &editState, uText.data (), uText.size ());
-				});
+				auto uText = StringConvert{}.from_bytes (text, text + size);
+				callSTB (
+					[&]() { stb_textedit_paste (this, &editState, uText.data (), uText.size ()); });
 #else
-				callSTB ([&] () { stb_textedit_paste (this, &editState, text, size); });
+				callSTB ([&]() { stb_textedit_paste (this, &editState, text, size); });
 #endif
 				return true;
 			}
@@ -535,8 +539,7 @@ void STBTextEditView::setText (const UTF8String& txt)
 	if (editState.select_start != editState.select_end)
 		selectAll ();
 #if VSTGUI_STB_TEXTEDIT_USE_UNICODE
-	uString = StringConvert {}.from_bytes (
-	    CTextLabel::getText ().getString ());
+	uString = StringConvert{}.from_bytes (CTextLabel::getText ().getString ());
 #endif
 }
 
@@ -551,13 +554,13 @@ CCoord STBTextEditView::getCharWidth (STB_CharT c, STB_CharT pc) const
 #if VSTGUI_STB_TEXTEDIT_USE_UNICODE
 	if (pc)
 	{
-		UTF8String str (StringConvert {}.to_bytes (pc));
+		UTF8String str (StringConvert{}.to_bytes (pc));
 		auto pcWidth = fontPainter->getStringWidth (nullptr, str.getPlatformString (), true);
-		str += StringConvert {}.to_bytes (c);
+		str += StringConvert{}.to_bytes (c);
 		auto tcWidth = fontPainter->getStringWidth (nullptr, str.getPlatformString (), true);
 		return tcWidth - pcWidth;
 	}
-	UTF8String str (StringConvert {}.to_bytes (c));
+	UTF8String str (StringConvert{}.to_bytes (c));
 	return fontPainter->getStringWidth (nullptr, str.getPlatformString (), true);
 #else
 	if (pc)
@@ -598,7 +601,7 @@ void STBTextEditView::calcCursorSizes ()
 {
 	if (cursorSizesValid ())
 		return;
-	
+
 	auto platformFont = getFont ()->getPlatformFont ();
 	assert (platformFont);
 	auto fontPainter = platformFont->getPainter ();
@@ -679,7 +682,7 @@ void STBTextEditView::onTextChange ()
 		{
 			setNotifyTextChange (true);
 			auto self = shared (this);
-			frame->doAfterEventProcessing ([self] () {
+			frame->doAfterEventProcessing ([self]() {
 				self->setNotifyTextChange (false);
 				self->callback->platformTextDidChange ();
 			});
@@ -692,8 +695,7 @@ int STBTextEditView::deleteChars (STBTextEditView* self, size_t pos, size_t num)
 {
 #if VSTGUI_STB_TEXTEDIT_USE_UNICODE
 	self->uString.erase (pos, num);
-	self->setText (StringConvert {}.to_bytes (
-	    self->uString));
+	self->setText (StringConvert{}.to_bytes (self->uString));
 	self->onTextChange ();
 	return true;
 #else
@@ -706,12 +708,14 @@ int STBTextEditView::deleteChars (STBTextEditView* self, size_t pos, size_t num)
 }
 
 //-----------------------------------------------------------------------------
-int STBTextEditView::insertChars (STBTextEditView* self, size_t pos, const STB_CharT* text,
-                                  size_t num)
+int STBTextEditView::insertChars (STBTextEditView* self,
+								  size_t pos,
+								  const STB_CharT* text,
+								  size_t num)
 {
 #if VSTGUI_STB_TEXTEDIT_USE_UNICODE
 	self->uString.insert (pos, text, num);
-	self->setText (StringConvert {}.to_bytes (self->uString));
+	self->setText (StringConvert{}.to_bytes (self->uString));
 	self->onTextChange ();
 	return true;
 #else
@@ -750,7 +754,7 @@ void STBTextEditView::layout (StbTexteditRow* row, STBTextEditView* self, int st
 
 	self->fillCharWidthCache ();
 	auto textWidth = static_cast<float> (
-	    std::accumulate (self->charWidthCache.begin (), self->charWidthCache.end (), 0.));
+		std::accumulate (self->charWidthCache.begin (), self->charWidthCache.end (), 0.));
 
 	row->num_chars = static_cast<int> (self->getText ().length ());
 	row->baseline_y_delta = 1.25;
@@ -766,7 +770,8 @@ void STBTextEditView::layout (StbTexteditRow* row, STBTextEditView* self, int st
 		}
 		case kCenterText:
 		{
-			row->x0 = static_cast<float> ((self->getViewSize ().getWidth () / 2.) - (textWidth / 2.));
+			row->x0 =
+				static_cast<float> ((self->getViewSize ().getWidth () / 2.) - (textWidth / 2.));
 			row->x1 = row->x0 + textWidth;
 			break;
 		}
