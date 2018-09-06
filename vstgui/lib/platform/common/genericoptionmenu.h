@@ -10,6 +10,8 @@
 #include "../../cfont.h"
 #include "../../iviewlistener.h"
 
+#include <memory>
+
 //------------------------------------------------------------------------
 namespace VSTGUI {
 
@@ -25,12 +27,23 @@ struct GenericOptionMenuTheme
 };
 
 //------------------------------------------------------------------------
+struct IGenericOptionMenuListener
+{
+	virtual ~IGenericOptionMenuListener () noexcept = default;
+	
+	virtual void optionMenuPopupStarted () = 0;
+	virtual void optionMenuPopupStopped () = 0;
+};
+
+//------------------------------------------------------------------------
 class GenericOptionMenu : public IPlatformOptionMenu, public IViewMouseListenerAdapter
 {
 public:
 	GenericOptionMenu (CFrame* frame, CButtonState initialButtons,
 	                   GenericOptionMenuTheme theme = {});
 	~GenericOptionMenu () noexcept override;
+
+	void setListener (IGenericOptionMenuListener* listener);
 
 	void popup (COptionMenu* optionMenu, const Callback& callback) override;
 

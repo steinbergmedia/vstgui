@@ -17,16 +17,17 @@ namespace GenericOptionMenuDetail {
 
 static constexpr auto CheckMarkString = "\xe2\x9c\x93";
 
-using ClickCallback = std::function<void (COptionMenu* menu, int32_t itemIndex)>;
+using ClickCallback = std::function<void(COptionMenu* menu, int32_t itemIndex)>;
 
 //------------------------------------------------------------------------
-class DataSource : public IDataBrowserDelegate,
-                   public IViewMouseListenerAdapter,
-                   public NonAtomicReferenceCounted
+class DataSource
+	: public IDataBrowserDelegate
+	, public IViewMouseListenerAdapter
+	, public NonAtomicReferenceCounted
 {
 public:
 	DataSource (COptionMenu* menu, const ClickCallback& clickCallback, GenericOptionMenuTheme theme)
-	: menu (menu), clickCallback (clickCallback), theme (theme)
+		: menu (menu), clickCallback (clickCallback), theme (theme)
 	{
 		vstgui_assert (menu->getNbEntries () > 0);
 	}
@@ -103,14 +104,18 @@ public:
 					clickCallback (menu, CDataBrowser::kNoSelection);
 					return 1;
 				}
-				default: break;
+				default:
+					break;
 			}
 		}
 		return -1;
 	}
 
-	CMouseEventResult dbOnMouseMoved (const CPoint& where, const CButtonState& buttons, int32_t row,
-	                                  int32_t column, CDataBrowser* browser) override
+	CMouseEventResult dbOnMouseMoved (const CPoint& where,
+									  const CButtonState& buttons,
+									  int32_t row,
+									  int32_t column,
+									  CDataBrowser* browser) override
 	{
 		if (auto item = menu->getEntry (row))
 		{
@@ -122,14 +127,20 @@ public:
 		return kMouseEventHandled;
 	}
 
-	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row,
-	                                 int32_t column, CDataBrowser* browser) override
+	CMouseEventResult dbOnMouseDown (const CPoint& where,
+									 const CButtonState& buttons,
+									 int32_t row,
+									 int32_t column,
+									 CDataBrowser* browser) override
 	{
 		return kMouseEventHandled;
 	}
 
-	CMouseEventResult dbOnMouseUp (const CPoint& where, const CButtonState& buttons, int32_t row,
-	                               int32_t column, CDataBrowser* browser) override
+	CMouseEventResult dbOnMouseUp (const CPoint& where,
+								   const CButtonState& buttons,
+								   int32_t row,
+								   int32_t column,
+								   CDataBrowser* browser) override
 	{
 		if (auto item = menu->getEntry (row))
 		{
@@ -139,8 +150,12 @@ public:
 		return kMouseEventHandled;
 	}
 
-	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column,
-	                 int32_t flags, CDataBrowser* browser) override
+	void dbDrawCell (CDrawContext* context,
+					 const CRect& size,
+					 int32_t row,
+					 int32_t column,
+					 int32_t flags,
+					 CDataBrowser* browser) override
 	{
 		if (auto item = menu->getEntry (row))
 		{
@@ -164,8 +179,8 @@ public:
 			}
 			else
 			{
-				context->setFontColor (item->isEnabled () ? theme.textColor :
-				                                            theme.disabledTextColor);
+				context->setFontColor (item->isEnabled () ? theme.textColor
+														  : theme.disabledTextColor);
 			}
 			context->setFont (theme.font);
 			if (item->isChecked ())
@@ -208,9 +223,9 @@ private:
 	}
 
 	COptionMenu* menu;
-	CDataBrowser* db {nullptr};
+	CDataBrowser* db{nullptr};
 	ClickCallback clickCallback;
-	CCoord checkmarkSize {0.};
+	CCoord checkmarkSize{0.};
 	GenericOptionMenuTheme theme;
 };
 
@@ -223,33 +238,28 @@ struct GenericOptionMenu::Impl
 	SharedPointer<CFrame> frame;
 	SharedPointer<COptionMenu> menu;
 	SharedPointer<CLayeredViewContainer> container;
-	SharedPointer<CView> prevModalView;
+	ModalViewSession* modalViewSession{nullptr};
+	IGenericOptionMenuListener* listener{nullptr};
 	GenericOptionMenuTheme theme;
 	Callback callback;
 	CButtonState initialButtons;
-	bool focusDrawingWasEnabled {false};
+	bool focusDrawingWasEnabled{false};
 };
 
 //------------------------------------------------------------------------
-GenericOptionMenu::GenericOptionMenu (CFrame* frame, CButtonState initialButtons,
-                                      GenericOptionMenuTheme theme)
+GenericOptionMenu::GenericOptionMenu (CFrame* frame,
+									  CButtonState initialButtons,
+									  GenericOptionMenuTheme theme)
 {
 	impl = std::unique_ptr<Impl> (new Impl);
 	impl->frame = frame;
 	impl->initialButtons = initialButtons;
 	impl->theme = theme;
-	impl->container = makeOwned<CLayeredViewContainer> (impl->frame->getViewSize ());
+	impl->container = new CLayeredViewContainer (impl->frame->getViewSize ());
 	impl->container->setZIndex (100);
 	impl->container->setTransparency (true);
 	impl->container->registerViewMouseListener (this);
-	if (auto modalView = impl->frame->getModalView ())
-	{
-		impl->prevModalView = modalView;
-		impl->frame->setModalView (nullptr);
-		impl->frame->addView (modalView);
-		modalView->remember (); // yes, strange
-	}
-	impl->frame->setModalView (impl->container);
+	impl->modalViewSession = impl->frame->beginModalViewSession (impl->container);
 	impl->focusDrawingWasEnabled = impl->frame->focusDrawingEnabled ();
 	impl->frame->setFocusDrawingEnabled (false);
 }
@@ -261,22 +271,30 @@ GenericOptionMenu::~GenericOptionMenu () noexcept
 }
 
 //------------------------------------------------------------------------
+void GenericOptionMenu::setListener (IGenericOptionMenuListener* listener)
+{
+	impl->listener = listener;
+}
+
+//------------------------------------------------------------------------
 void GenericOptionMenu::removeModalView (PlatformOptionMenuResult result)
 {
 	if (impl->callback)
 	{
-		auto callback = std::move (impl->callback);
-		impl->callback = nullptr;
+		if (impl->listener)
+			impl->listener->optionMenuPopupStopped ();
 
-		impl->container->unregisterViewMouseListener (this);
-		impl->frame->setModalView (nullptr);
-		callback (impl->menu, result);
-		impl->container = nullptr;
-		if (impl->prevModalView)
-		{
-			impl->frame->removeView (impl->prevModalView);
-			impl->frame->setModalView (impl->prevModalView);
-		}
+		auto self = shared (this);
+		auto f = [self, result]() {
+			auto callback = std::move (self->impl->callback);
+			self->impl->callback = nullptr;
+			self->impl->container->unregisterViewMouseListener (self);
+			self->impl->frame->endModalViewSession (self->impl->modalViewSession);
+			callback (self->impl->menu, result);
+			self->impl->container = nullptr;
+		};
+
+		impl->frame->doAfterEventProcessing (f);
 	}
 }
 
@@ -304,12 +322,12 @@ void GenericOptionMenu::popup (COptionMenu* optionMenu, const Callback& callback
 	impl->callback = callback;
 
 	auto self = shared (this);
-	auto clickCallback = [self] (COptionMenu* menu, int32_t index) {
+	auto clickCallback = [self](COptionMenu* menu, int32_t index) {
 		self->removeModalView ({menu, index});
 	};
 
 	auto dataSource =
-	    makeOwned<GenericOptionMenuDetail::DataSource> (optionMenu, clickCallback, impl->theme);
+		makeOwned<GenericOptionMenuDetail::DataSource> (optionMenu, clickCallback, impl->theme);
 	auto maxWidth = dataSource->calculateMaxWidth (impl->frame);
 	auto viewRect = optionMenu->translateToGlobal (optionMenu->getViewSize ());
 	auto where = viewRect.getCenter ();
@@ -346,12 +364,14 @@ void GenericOptionMenu::popup (COptionMenu* optionMenu, const Callback& callback
 	}
 	viewRect.makeIntegral ();
 	auto browser = new CDataBrowser (
-	    viewRect, dataSource, CDataBrowser::kDontDrawFrame | CDataBrowser::kVerticalScrollbar, 0);
+		viewRect, dataSource, CDataBrowser::kDontDrawFrame | CDataBrowser::kVerticalScrollbar, 0);
 	browser->setBackgroundColor (impl->theme.backgroundColor);
 	impl->container->addView (browser);
 
 	impl->frame->setFocusView (browser);
 	impl->frame->onMouseMoved (where, impl->initialButtons);
+	if (impl->listener)
+		impl->listener->optionMenuPopupStarted ();
 }
 
 //------------------------------------------------------------------------

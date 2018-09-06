@@ -4,6 +4,7 @@
 
 #include "x11frame.h"
 #include "../../cbuttonstate.h"
+#include "../../cframe.h"
 #include "../../crect.h"
 #include "../../dragging.h"
 #include "../../vstkeycode.h"
@@ -13,6 +14,7 @@
 #include "../iplatformoptionmenu.h"
 #include "../common/fileresourceinputstream.h"
 #include "../common/generictextedit.h"
+#include "../common/genericoptionmenu.h"
 #include "cairobitmap.h"
 #include "cairocontext.h"
 #include "x11platform.h"
@@ -187,7 +189,7 @@ struct Frame::Impl : IFrameEventHandler
 	SharedPointer<RedrawTimerHandler> redrawTimer;
 	RectList dirtyRects;
 	CCursorType currentCursor{kCursorDefault};
-	bool pointerGrabed{false};
+	uint32_t pointerGrabed{0};
 
 	//------------------------------------------------------------------------
 	Impl (::Window parent, CPoint size, IPlatformFrameCallback* frame)
@@ -251,6 +253,40 @@ struct Frame::Impl : IFrameEventHandler
 	}
 
 	//------------------------------------------------------------------------
+	void grabPointer ()
+	{
+		if (++pointerGrabed > 1)
+			return;
+
+		auto xcb = RunLoop::instance ().getXcbConnection ();
+		auto cookie =
+			xcb_grab_pointer (xcb, false, window.getID (),
+							  (XCB_EVENT_MASK_BUTTON_PRESS | XCB_EVENT_MASK_BUTTON_RELEASE |
+							   XCB_EVENT_MASK_BUTTON_MOTION | XCB_EVENT_MASK_ENTER_WINDOW |
+							   XCB_EVENT_MASK_LEAVE_WINDOW | XCB_EVENT_MASK_POINTER_MOTION),
+							  XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC, XCB_WINDOW_NONE,
+							  XCB_CURSOR_NONE, XCB_TIME_CURRENT_TIME);
+		if (auto reply = xcb_grab_pointer_reply (xcb, cookie, nullptr))
+		{
+			if (reply->status != XCB_GRAB_STATUS_SUCCESS)
+				pointerGrabed = 0;
+			free (reply);
+		}
+	}
+
+	//------------------------------------------------------------------------
+	void ungrabPointer ()
+	{
+		if (pointerGrabed == 0)
+			return;
+		if (--pointerGrabed > 0)
+			return;
+		vstgui_assert (pointerGrabed == 0);
+		auto xcb = RunLoop::instance ().getXcbConnection ();
+		xcb_ungrab_pointer (xcb, XCB_TIME_CURRENT_TIME);
+	}
+
+	//------------------------------------------------------------------------
 	void onEvent (xcb_map_notify_event_t& event) override {}
 
 	//------------------------------------------------------------------------
@@ -308,21 +344,8 @@ struct Frame::Impl : IFrameEventHandler
 				auto result = frame->platformOnMouseDown (where, buttons);
 				//				if (result == kMouseEventHandled)
 				{
-					// grab the pointer
+					grabPointer ();
 					auto xcb = RunLoop::instance ().getXcbConnection ();
-					auto cookie = xcb_grab_pointer (
-						xcb, false, window.getID (),
-						(XCB_EVENT_MASK_BUTTON_PRESS | XCB_EVENT_MASK_BUTTON_RELEASE |
-						 XCB_EVENT_MASK_BUTTON_MOTION | XCB_EVENT_MASK_ENTER_WINDOW |
-						 XCB_EVENT_MASK_LEAVE_WINDOW | XCB_EVENT_MASK_POINTER_MOTION),
-						XCB_GRAB_MODE_ASYNC, XCB_GRAB_MODE_ASYNC, XCB_WINDOW_NONE, XCB_CURSOR_NONE,
-						XCB_TIME_CURRENT_TIME);
-					if (auto reply = xcb_grab_pointer_reply (xcb, cookie, nullptr))
-					{
-						if (reply->status == XCB_GRAB_STATUS_SUCCESS)
-							pointerGrabed = true;
-						free (reply);
-					}
 					xcb_set_input_focus (xcb, XCB_INPUT_FOCUS_PARENT, window.getID (),
 										 XCB_CURRENT_TIME);
 				}
@@ -338,12 +361,7 @@ struct Frame::Impl : IFrameEventHandler
 				auto buttons = translateMouseButtons (event.detail);
 				buttons |= translateModifiers (event.state);
 				frame->platformOnMouseUp (where, buttons);
-				if (pointerGrabed)
-				{
-					auto xcb = RunLoop::instance ().getXcbConnection ();
-					xcb_ungrab_pointer (xcb, XCB_TIME_CURRENT_TIME);
-					pointerGrabed = false;
-				}
+				ungrabPointer ();
 			}
 		}
 	}
@@ -356,7 +374,7 @@ struct Frame::Impl : IFrameEventHandler
 		frame->platformOnMouseMoved (where, buttons);
 		// make sure we get more motion events
 		auto xcb = RunLoop::instance ().getXcbConnection ();
-		xcb_get_motion_events (xcb, window.getID (), event.time, event.time + 100);
+		xcb_get_motion_events (xcb, window.getID (), event.time, event.time + 10000000);
 	}
 
 	//------------------------------------------------------------------------
@@ -481,6 +499,18 @@ Frame::~Frame ()
 }
 
 //------------------------------------------------------------------------
+void Frame::optionMenuPopupStarted ()
+{
+	impl->grabPointer ();
+}
+
+//------------------------------------------------------------------------
+void Frame::optionMenuPopupStopped ()
+{
+	impl->ungrabPointer ();
+}
+
+//------------------------------------------------------------------------
 bool Frame::getGlobalPosition (CPoint& pos) const
 {
 	return false;
@@ -570,7 +600,9 @@ SharedPointer<IPlatformTextEdit> Frame::createPlatformTextEdit (IPlatformTextEdi
 //------------------------------------------------------------------------
 SharedPointer<IPlatformOptionMenu> Frame::createPlatformOptionMenu ()
 {
-	return nullptr;
+	auto optionMenu =  makeOwned<GenericOptionMenu> (dynamic_cast<CFrame*> (frame), 0);
+	optionMenu->setListener (this);
+	return optionMenu;
 }
 
 #if VSTGUI_OPENGL_SUPPORT
