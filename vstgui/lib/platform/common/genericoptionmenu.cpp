@@ -42,24 +42,43 @@ public:
 			return maxWidth;
 		auto context = COffscreenContext::create (frame, 1, 1);
 		maxWidth = 0.;
-		bool hasSubMenus = false;
+		maxTitleWidth = 0.;
+		hasRightMargin = false;
 		for (auto& item : *menu->getItems ())
 		{
 			if (item->isSeparator ())
 				continue;
 			auto width = context->getStringWidth (item->getTitle ());
-			hasSubMenus |= item->getSubmenu () ? true : false;
-			if (maxWidth < width)
-				maxWidth = width;
+			hasRightMargin |= item->getSubmenu () ? true : false;
+			hasRightMargin |= item->getIcon () ? true : false;
+			if (maxTitleWidth < width)
+				maxTitleWidth = width;
+			
 		}
-		maxWidth += getCheckmarkWidth () * 1.5;
-		if (hasSubMenus)
+		maxWidth = maxTitleWidth + getCheckmarkWidth () * 1.5;
+		if (hasRightMargin)
 			maxWidth += getSubmenuIndicatorWidth ();
 		return maxWidth;
 	}
 
 	CCoord calculateMaxHeight () { return menu->getNbEntries () * dbGetHeaderHeight (nullptr); }
 
+	bool setMaxWidth (CCoord width)
+	{
+		vstgui_assert (maxWidth >= 0.);
+		auto minWidth = getCheckmarkWidth () * 1.5;
+		if (hasRightMargin)
+			minWidth += getSubmenuIndicatorWidth ();
+		if (minWidth > width)
+			return false;
+		if (minWidth + maxTitleWidth < width)
+		{
+			return true;
+		}
+		maxWidth = width;
+		maxTitleWidth = maxWidth - minWidth;
+		return true;
+	}
 private:
 	void dbAttached (CDataBrowser* browser) override
 	{
@@ -108,7 +127,7 @@ private:
 		if (auto item = menu->getEntry (index))
 		{
 			if (item->isEnabled () && !item->isSeparator ())
-				db->setSelectedRow (index);
+				db->setSelectedRow (index, true);
 			else
 				alterSelection (index, direction);
 		}
@@ -153,7 +172,7 @@ private:
 			if (item->isSeparator () || !item->isEnabled ())
 				browser->setSelectedRow (CDataBrowser::kNoSelection);
 			else if (browser->getSelectedRow () != row)
-				browser->setSelectedRow (row);
+				browser->setSelectedRow (row, true);
 		}
 		return kMouseEventHandled;
 	}
@@ -212,6 +231,15 @@ private:
 		}
 	}
 
+	void drawItemIcon (CDrawContext* context, CRect size, CBitmap* bitmap)
+	{
+		ConcatClip cc (*context, size);
+		CRect iconRect;
+		iconRect.setSize (bitmap->getSize ());
+		iconRect.centerInside (size);
+		bitmap->draw (context, iconRect);
+	}
+
 	void dbDrawCell (CDrawContext* context,
 					 const CRect& size,
 					 int32_t row,
@@ -254,12 +282,20 @@ private:
 			}
 			auto r = size;
 			r.left += getCheckmarkWidth ();
-			r.right -= getCheckmarkWidth () / 2.;
-			context->drawString (item->getTitle ().getPlatformString (), r, kLeftText);
+			r.setWidth (maxTitleWidth);
+			{
+				ConcatClip cc (*context, r);
+				context->drawString (item->getTitle ().getPlatformString (), r, kLeftText);
+			}
+			r.right = size.right - getCheckmarkWidth () / 2.;
+			r.left = r.right - getSubmenuIndicatorWidth ();
 			if (item->getSubmenu ())
 			{
-				r.left = r.right - getSubmenuIndicatorWidth ();
 				drawSubmenuIndicator (context, r, flags & kRowSelected);
+			}
+			else if (auto icon = item->getIcon ())
+			{
+				drawItemIcon (context, r, icon);
 			}
 			context->restoreGlobalState ();
 		}
@@ -280,7 +316,9 @@ private:
 	CDataBrowser* db{nullptr};
 	ClickCallback clickCallback;
 	CCoord checkmarkSize{0.};
-	CCoord maxWidth {-1.};
+	CCoord maxWidth{-1.};
+	CCoord maxTitleWidth{-1.};
+	bool hasRightMargin{false};
 	GenericOptionMenuTheme theme;
 };
 
@@ -413,7 +451,9 @@ void GenericOptionMenu::popup (COptionMenu* optionMenu, const Callback& callback
 	viewRect.setHeight (dataSource->calculateMaxHeight ());
 	auto maxWidth = dataSource->calculateMaxWidth (impl->frame);
 	if (viewRect.getWidth () < maxWidth)
+	{
 		viewRect.setWidth (maxWidth);
+	}
 	if (auto fr = optionMenu->getFrame ())
 	{
 		auto frSize = fr->getViewSize ();
@@ -423,10 +463,21 @@ void GenericOptionMenu::popup (COptionMenu* optionMenu, const Callback& callback
 		{
 			viewRect.offset (0, frSize.bottom - viewRect.bottom);
 		}
+		if (frSize.top > viewRect.top)
+		{
+			viewRect.offset (0, frSize.top - viewRect.top);
+		}
 		if (frSize.right < viewRect.right)
 		{
 			viewRect.offset (-(viewRect.right - frSize.right), 0);
 		}
+		if (frSize.left > viewRect.left)
+		{
+			viewRect.offset (-(viewRect.left - frSize.left), 0);
+		}
+		viewRect.bound (frSize);
+		if (maxWidth > viewRect.getWidth ())
+			dataSource->setMaxWidth (viewRect.getWidth ());
 	}
 	viewRect.makeIntegral ();
 	viewRect.inset (-1, -1);
