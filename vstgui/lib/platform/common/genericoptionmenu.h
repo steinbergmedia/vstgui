@@ -19,11 +19,12 @@ namespace VSTGUI {
 struct GenericOptionMenuTheme
 {
 	SharedPointer<CFontDesc> font {kSystemFont};
-	CColor backgroundColor {MakeCColor (75, 75, 75, 252)};
+	CColor backgroundColor {MakeCColor (0x39, 0x3c, 0x3f, 252)};
 	CColor selectedBackgroundColor {MakeCColor (200, 200, 200, 235)};
 	CColor textColor {MakeCColor (255, 255, 255, 255)};
 	CColor selectedTextColor {MakeCColor (0, 0, 0, 255)};
 	CColor disabledTextColor {MakeCColor (150, 150, 150, 255)};
+	CColor separatorColor {MakeCColor (180, 180, 180, 255)};
 };
 
 //------------------------------------------------------------------------

@@ -16,8 +16,6 @@
 namespace VSTGUI {
 namespace GenericOptionMenuDetail {
 
-static constexpr auto CheckMarkString = "\xe2\x9c\x93";
-
 using ClickCallback = std::function<void(COptionMenu* menu, int32_t itemIndex)>;
 
 //------------------------------------------------------------------------
@@ -33,6 +31,36 @@ public:
 		vstgui_assert (menu->getNbEntries () > 0);
 	}
 
+	CCoord dbGetRowHeight (CDataBrowser* browser) override
+	{
+		return std::ceil (theme.font->getSize () + 8);
+	}
+
+	CCoord calculateMaxWidth (CFrame* frame)
+	{
+		if (maxWidth >= 0.)
+			return maxWidth;
+		auto context = COffscreenContext::create (frame, 1, 1);
+		maxWidth = 0.;
+		bool hasSubMenus = false;
+		for (auto& item : *menu->getItems ())
+		{
+			if (item->isSeparator ())
+				continue;
+			auto width = context->getStringWidth (item->getTitle ());
+			hasSubMenus |= item->getSubmenu () ? true : false;
+			if (maxWidth < width)
+				maxWidth = width;
+		}
+		maxWidth += getCheckmarkWidth () * 1.5;
+		if (hasSubMenus)
+			maxWidth += getSubmenuIndicatorWidth ();
+		return maxWidth;
+	}
+
+	CCoord calculateMaxHeight () { return menu->getNbEntries () * dbGetHeaderHeight (nullptr); }
+
+private:
 	void dbAttached (CDataBrowser* browser) override
 	{
 		db = browser;
@@ -47,6 +75,11 @@ public:
 		clickCallback (menu, CDataBrowser::kNoSelection);
 	}
 
+	void viewOnMouseEntered (CView* view) override
+	{
+	
+	}
+	
 	void viewOnMouseExited (CView* view) override
 	{
 		vstgui_assert (db, "unexpected");
@@ -59,10 +92,7 @@ public:
 	{
 		return browser->getWidth ();
 	}
-	CCoord dbGetRowHeight (CDataBrowser* browser) override
-	{
-		return std::ceil (theme.font->getSize () + 8);
-	}
+	
 	void dbDrawHeader (CDrawContext*, const CRect&, int32_t, int32_t, CDataBrowser*) override {}
 
 	void alterSelection (int32_t index, int32_t direction)
@@ -155,12 +185,30 @@ public:
 	{
 		if (auto checkMarkPath = owned (context->createGraphicsPath ()))
 		{
-			size.inset (3, 5);
-			checkMarkPath->beginSubpath ({size.left, size.top + size.getHeight () / 2.});
-			checkMarkPath->addLine ({size.left + size.getWidth () / 3., size.bottom});
-			checkMarkPath->addLine ({size.right, size.top});
+			CRect r (0., 0., size.getHeight () * 0.4, size.getHeight () * 0.4);
+			r.centerInside (size);
+			checkMarkPath->beginSubpath ({r.left, r.top + r.getHeight () / 2.});
+			checkMarkPath->addLine ({r.left + r.getWidth () / 3., r.bottom});
+			checkMarkPath->addLine ({r.right, r.top});
 			context->setFrameColor (selected ? theme.selectedTextColor : theme.textColor);
 			context->drawGraphicsPath (checkMarkPath, CDrawContext::kPathStroked);
+		}
+	}
+
+	void drawSubmenuIndicator (CDrawContext* context, CRect size, bool selected)
+	{
+		if (auto path = owned (context->createGraphicsPath ()))
+		{
+			CRect r = size;
+			r.setWidth (r.getWidth () / 2.);
+			r.setHeight (r.getHeight () / 2.);
+			r.offset (size.getHeight () / 2., size.getHeight () / 4.);
+			path->beginSubpath (r.getTopLeft ());
+			path->addLine (r.getBottomLeft ());
+			path->addLine ({r.right, r.top + r.getHeight () / 2.});
+			path->closeSubpath ();
+			context->setFillColor (selected ? theme.selectedTextColor : theme.textColor);
+			context->drawGraphicsPath (path, CDrawContext::kPathFilled);
 		}
 	}
 
@@ -178,7 +226,7 @@ public:
 			{
 				context->setFillColor (theme.backgroundColor);
 				context->drawRect (size, kDrawFilled);
-				context->setFillColor (theme.textColor);
+				context->setFillColor (theme.separatorColor);
 				auto r = size;
 				r.inset (0, r.getHeight () / 2);
 				r.setHeight (1.);
@@ -201,47 +249,38 @@ public:
 			if (item->isChecked ())
 			{
 				auto r = size;
-				r.setWidth (getCheckmarkSize (context));
+				r.setWidth (getCheckmarkWidth ());
 				drawCheckMark (context, r, flags & kRowSelected);
 			}
 			auto r = size;
-			r.inset (getCheckmarkSize (context), 0);
+			r.left += getCheckmarkWidth ();
+			r.right -= getCheckmarkWidth () / 2.;
 			context->drawString (item->getTitle ().getPlatformString (), r, kLeftText);
+			if (item->getSubmenu ())
+			{
+				r.left = r.right - getSubmenuIndicatorWidth ();
+				drawSubmenuIndicator (context, r, flags & kRowSelected);
+			}
 			context->restoreGlobalState ();
 		}
 	}
 
-	CCoord calculateMaxWidth (CFrame* frame)
-	{
-		auto context = COffscreenContext::create (frame, 1, 1);
-		CCoord maxWidth = 0.;
-		for (auto& item : *menu->getItems ())
-		{
-			if (item->isSeparator ())
-				continue;
-			auto width = context->getStringWidth (item->getTitle ());
-			if (maxWidth < width)
-				maxWidth = width;
-		}
-		maxWidth += getCheckmarkSize (context) * 2.;
-		return maxWidth;
-	}
-
-	CCoord calculateMaxHeight () { return menu->getNbEntries () * dbGetHeaderHeight (nullptr); }
-
-private:
-	CCoord getCheckmarkSize (CDrawContext* context)
+	CCoord getCheckmarkWidth ()
 	{
 		if (checkmarkSize == 0.)
-			checkmarkSize = theme.font->getSize ();
+			checkmarkSize = theme.font->getSize () * 1.6;
 		return checkmarkSize;
+	}
+	CCoord getSubmenuIndicatorWidth ()
+	{
+		return dbGetHeaderHeight (nullptr);
 	}
 
 	COptionMenu* menu;
 	CDataBrowser* db{nullptr};
-	SharedPointer<CGraphicsPath> checkMarkPath;
 	ClickCallback clickCallback;
 	CCoord checkmarkSize{0.};
+	CCoord maxWidth {-1.};
 	GenericOptionMenuTheme theme;
 };
 
@@ -260,6 +299,16 @@ struct GenericOptionMenu::Impl
 	Callback callback;
 	CButtonState initialButtons;
 	bool focusDrawingWasEnabled{false};
+
+	static CColor makeDarkerColor (CColor baseColor)
+	{
+		auto color = baseColor;
+		double h, s, l;
+		color.toHSL (h, s, l);
+		l *= 0.7;
+		color.fromHSL (h, s, l);
+		return color;
+	}
 };
 
 //------------------------------------------------------------------------
@@ -342,9 +391,9 @@ void GenericOptionMenu::popup (COptionMenu* optionMenu, const Callback& callback
 		self->removeModalView ({menu, index});
 	};
 
+	// ----
 	auto dataSource =
 		makeOwned<GenericOptionMenuDetail::DataSource> (optionMenu, clickCallback, impl->theme);
-	auto maxWidth = dataSource->calculateMaxWidth (impl->frame);
 	auto viewRect = optionMenu->translateToGlobal (optionMenu->getViewSize ());
 	auto where = viewRect.getCenter ();
 	if (optionMenu->isPopupStyle ())
@@ -362,6 +411,7 @@ void GenericOptionMenu::popup (COptionMenu* optionMenu, const Callback& callback
 		optionMenu->checkEntryAlone (static_cast<int32_t> (optionMenu->getValue ()));
 	}
 	viewRect.setHeight (dataSource->calculateMaxHeight ());
+	auto maxWidth = dataSource->calculateMaxWidth (impl->frame);
 	if (viewRect.getWidth () < maxWidth)
 		viewRect.setWidth (maxWidth);
 	if (auto fr = optionMenu->getFrame ())
@@ -379,11 +429,19 @@ void GenericOptionMenu::popup (COptionMenu* optionMenu, const Callback& callback
 		}
 	}
 	viewRect.makeIntegral ();
+	viewRect.inset (-1, -1);
+	auto decorView = new CViewContainer (viewRect);
+	decorView->setBackgroundColor (impl->makeDarkerColor (impl->theme.backgroundColor));
+	decorView->setBackgroundColorDrawStyle (kDrawStroked);
+	viewRect.originize ();
+	viewRect.inset (1., 1.);
 	auto browser = new CDataBrowser (
 		viewRect, dataSource, CDataBrowser::kDontDrawFrame | CDataBrowser::kVerticalScrollbar, 0);
 	browser->setBackgroundColor (impl->theme.backgroundColor);
-	impl->container->addView (browser);
+	decorView->addView (browser);
 
+	// ----
+	impl->container->addView (decorView);
 	impl->frame->setFocusView (browser);
 	impl->frame->onMouseMoved (where, impl->initialButtons);
 	if (impl->listener)
