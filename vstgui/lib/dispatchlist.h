@@ -109,9 +109,21 @@ inline bool DispatchList<T>::empty () const
 template<typename T>
 inline void DispatchList<T>::postForEach ()
 {
-	entries.erase (std::remove_if (
-		entries.begin (), entries.end (),
-		[](const typename Array::value_type& element) { return element.first == false; }), entries.end ());
+	AddArray toRemove;
+	for (auto& element : entries)
+	{
+		if (element.first)
+			continue;
+		toRemove.emplace_back (std::move (element.second));
+	}
+	if (!toRemove.empty ())
+	{
+		entries.erase (std::remove_if (entries.begin (), entries.end (),
+		                               [] (const typename Array::value_type& element) {
+			                               return element.first == false;
+		                               }),
+		               entries.end ());
+	}
 	if (!toAdd.empty ())
 	{
 		AddArray tmp;
