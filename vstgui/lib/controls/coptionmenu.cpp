@@ -514,11 +514,11 @@ bool COptionMenu::popup (const PopupCallback& callback)
 					        self->lastMenu->getEntry (self->lastResult)))
 						commandItem->execute ();
 					self->endEdit ();
-					self->afterPopup ();
-					if (callback)
-						callback (self);
-					self->inPopup = false;
 				}
+				self->afterPopup ();
+				if (callback)
+					callback (self);
+				self->inPopup = false;
 			});
 		}
 	}
@@ -528,7 +528,7 @@ bool COptionMenu::popup (const PopupCallback& callback)
 //------------------------------------------------------------------------
 bool COptionMenu::popup (CFrame* frame, const CPoint& frameLocation, const PopupCallback& callback)
 {
-	if (frame == nullptr)
+	if (frame == nullptr || menuItems->empty ())
 		return false;
 	if (isAttached ())
 		return false;
