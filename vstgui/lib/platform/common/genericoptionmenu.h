@@ -24,14 +24,16 @@ struct GenericOptionMenuTheme
 	CColor textColor {MakeCColor (255, 255, 255, 255)};
 	CColor selectedTextColor {MakeCColor (0, 0, 0, 255)};
 	CColor disabledTextColor {MakeCColor (150, 150, 150, 255)};
+	CColor titleTextColor {MakeCColor (150, 150, 150, 255)};
 	CColor separatorColor {MakeCColor (180, 180, 180, 255)};
+	uint32_t menuAnimationTime {120};
 };
 
 //------------------------------------------------------------------------
 struct IGenericOptionMenuListener
 {
 	virtual ~IGenericOptionMenuListener () noexcept = default;
-	
+
 	virtual void optionMenuPopupStarted () = 0;
 	virtual void optionMenuPopupStopped () = 0;
 };

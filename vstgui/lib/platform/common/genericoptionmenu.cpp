@@ -4,29 +4,45 @@
 
 #include "genericoptionmenu.h"
 
+#include "../../animation/animations.h"
+#include "../../animation/timingfunctions.h"
 #include "../../cdatabrowser.h"
 #include "../../cfont.h"
 #include "../../cframe.h"
+#include "../../cgraphicspath.h"
 #include "../../clayeredviewcontainer.h"
 #include "../../coffscreencontext.h"
 #include "../../controls/coptionmenu.h"
-#include "../../cgraphicspath.h"
+#include "../../controls/cscrollbar.h"
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
 namespace GenericOptionMenuDetail {
 
-using ClickCallback = std::function<void(COptionMenu* menu, int32_t itemIndex)>;
+using ClickCallback = std::function<void (COptionMenu* menu, int32_t itemIndex)>;
+
+class DataSource;
 
 //------------------------------------------------------------------------
-class DataSource
-	: public IDataBrowserDelegate
-	, public IViewMouseListenerAdapter
-	, public NonAtomicReferenceCounted
+template <typename Proc>
+CView* setupGenericOptionMenu (Proc clickCallback, CViewContainer* container,
+                               COptionMenu* optionMenu, GenericOptionMenuTheme& theme,
+                               CRect viewRect, DataSource* parentDataSource);
+
+//------------------------------------------------------------------------
+class DataSource : public IDataBrowserDelegate,
+                   public IViewMouseListenerAdapter,
+                   public NonAtomicReferenceCounted
 {
 public:
-	DataSource (COptionMenu* menu, const ClickCallback& clickCallback, GenericOptionMenuTheme theme)
-		: menu (menu), clickCallback (clickCallback), theme (theme)
+	DataSource (CViewContainer* mainContainer, COptionMenu* menu,
+	            const ClickCallback& clickCallback, GenericOptionMenuTheme theme,
+	            DataSource* parentDataSource)
+	: mainContainer (mainContainer)
+	, menu (menu)
+	, parentDataSource (parentDataSource)
+	, clickCallback (clickCallback)
+	, theme (theme)
 	{
 		vstgui_assert (menu->getNbEntries () > 0);
 	}
@@ -53,9 +69,8 @@ public:
 			hasRightMargin |= item->getIcon () ? true : false;
 			if (maxTitleWidth < width)
 				maxTitleWidth = width;
-			
 		}
-		maxWidth = maxTitleWidth + getCheckmarkWidth () * 1.5;
+		maxWidth = maxTitleWidth + getCheckmarkWidth () * 2.;
 		if (hasRightMargin)
 			maxWidth += getSubmenuIndicatorWidth ();
 		return maxWidth;
@@ -66,7 +81,7 @@ public:
 	bool setMaxWidth (CCoord width)
 	{
 		vstgui_assert (maxWidth >= 0.);
-		auto minWidth = getCheckmarkWidth () * 1.5;
+		auto minWidth = getCheckmarkWidth () * 2.;
 		if (hasRightMargin)
 			minWidth += getSubmenuIndicatorWidth ();
 		if (minWidth > width)
@@ -79,7 +94,10 @@ public:
 		maxTitleWidth = maxWidth - minWidth;
 		return true;
 	}
+
 private:
+	static constexpr int32_t ViewRemoved = -2;
+
 	void dbAttached (CDataBrowser* browser) override
 	{
 		db = browser;
@@ -89,16 +107,14 @@ private:
 	void dbRemoved (CDataBrowser* browser) override
 	{
 		vstgui_assert (db == browser, "unexpected");
+		closeSubMenu (false);
 		db->unregisterViewMouseListener (this);
 		db = nullptr;
-		clickCallback (menu, CDataBrowser::kNoSelection);
+		clickCallback (menu, ViewRemoved);
 	}
 
-	void viewOnMouseEntered (CView* view) override
-	{
-	
-	}
-	
+	void viewOnMouseEntered (CView* view) override {}
+
 	void viewOnMouseExited (CView* view) override
 	{
 		vstgui_assert (db, "unexpected");
@@ -111,7 +127,7 @@ private:
 	{
 		return browser->getWidth ();
 	}
-	
+
 	void dbDrawHeader (CDrawContext*, const CRect&, int32_t, int32_t, CDataBrowser*) override {}
 
 	void alterSelection (int32_t index, int32_t direction)
@@ -126,8 +142,11 @@ private:
 		index += direction;
 		if (auto item = menu->getEntry (index))
 		{
-			if (item->isEnabled () && !item->isSeparator ())
+			if (item->isEnabled () && !item->isSeparator () && !item->isTitle ())
+			{
+				closeSubMenu ();
 				db->setSelectedRow (index, true);
+			}
 			else
 				alterSelection (index, direction);
 		}
@@ -154,50 +173,115 @@ private:
 					clickCallback (menu, CDataBrowser::kNoSelection);
 					return 1;
 				}
-				default:
+				case VKEY_LEFT:
+				{
+					if (parentDataSource)
+					{
+						parentDataSource->closeSubMenu ();
+						return 1;
+					}
 					break;
+				}
+				case VKEY_RIGHT:
+				{
+					auto row = db->getSelectedRow ();
+					if (auto item = menu->getEntry (row))
+					{
+						if (auto subMenu = item->getSubmenu ())
+						{
+							auto r = db->getCellBounds ({row, 0});
+							browser->translateToGlobal (r);
+							openSubMenu (item, r);
+							return 1;
+						}
+					}
+				}
+				default: break;
 			}
 		}
 		return -1;
 	}
 
-	CMouseEventResult dbOnMouseMoved (const CPoint& where,
-									  const CButtonState& buttons,
-									  int32_t row,
-									  int32_t column,
-									  CDataBrowser* browser) override
+	CMouseEventResult dbOnMouseMoved (const CPoint& where, const CButtonState& buttons, int32_t row,
+	                                  int32_t column, CDataBrowser* browser) override
 	{
 		if (auto item = menu->getEntry (row))
 		{
-			if (item->isSeparator () || !item->isEnabled ())
-				browser->setSelectedRow (CDataBrowser::kNoSelection);
-			else if (browser->getSelectedRow () != row)
-				browser->setSelectedRow (row, true);
+			if (browser->getSelectedRow () != row)
+			{
+				closeSubMenu ();
+				if (item->isSeparator () || !item->isEnabled () || item->isTitle ())
+					browser->setSelectedRow (CDataBrowser::kNoSelection);
+				else
+				{
+					browser->setSelectedRow (row, true);
+					auto r = browser->getCellBounds ({row, column});
+					browser->translateToGlobal (r);
+					openSubMenu (item, r);
+				}
+			}
 		}
 		return kMouseEventHandled;
 	}
 
-	CMouseEventResult dbOnMouseDown (const CPoint& where,
-									 const CButtonState& buttons,
-									 int32_t row,
-									 int32_t column,
-									 CDataBrowser* browser) override
+	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row,
+	                                 int32_t column, CDataBrowser* browser) override
 	{
 		return kMouseEventHandled;
 	}
 
-	CMouseEventResult dbOnMouseUp (const CPoint& where,
-								   const CButtonState& buttons,
-								   int32_t row,
-								   int32_t column,
-								   CDataBrowser* browser) override
+	CMouseEventResult dbOnMouseUp (const CPoint& where, const CButtonState& buttons, int32_t row,
+	                               int32_t column, CDataBrowser* browser) override
 	{
 		if (auto item = menu->getEntry (row))
 		{
-			if (!item->isSeparator () && item->isEnabled () && clickCallback)
+			if (!item->isSeparator () && !item->isTitle () && item->isEnabled () && clickCallback)
 				clickCallback (menu, row);
 		}
 		return kMouseEventHandled;
+	}
+	void closeSubMenu (bool allowAnimation = true)
+	{
+		using namespace Animation;
+		if (subMenuView)
+		{
+			if (!allowAnimation)
+			{
+				subMenuView->getParentView ()->asViewContainer ()->removeView (subMenuView);
+			}
+			else
+			{
+				auto view = shared (subMenuView);
+				subMenuView = nullptr;
+				view->addAnimation (
+				    "AlphaAnimation", new AlphaValueAnimation (0.f, true),
+				    new CubicBezierTimingFunction (
+				        CubicBezierTimingFunction::easyIn (theme.menuAnimationTime)),
+				    [view] (CView*, const IdStringPtr, IAnimationTarget*) {
+					    if (view->isAttached ())
+						    view->getParentView ()->asViewContainer ()->removeView (view);
+				    });
+				if (db)
+				{
+					if (auto frame = db->getFrame ())
+						frame->setFocusView (db);
+				}
+			}
+		}
+	}
+
+	void openSubMenu (CMenuItem* item, CRect cellRect)
+	{
+		closeSubMenu ();
+		if (auto subMenu = item->getSubmenu ())
+		{
+			auto callback = [this] (COptionMenu* menu, int32_t index) {
+				if (index != ViewRemoved)
+					clickCallback (menu, index);
+			};
+			subMenuView =
+			    setupGenericOptionMenu (callback, mainContainer, subMenu, theme, cellRect, this);
+		}
 	}
 
 	void drawCheckMark (CDrawContext* context, CRect size, bool selected)
@@ -240,12 +324,8 @@ private:
 		bitmap->draw (context, iconRect);
 	}
 
-	void dbDrawCell (CDrawContext* context,
-					 const CRect& size,
-					 int32_t row,
-					 int32_t column,
-					 int32_t flags,
-					 CDataBrowser* browser) override
+	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column,
+	                 int32_t flags, CDataBrowser* browser) override
 	{
 		if (auto item = menu->getEntry (row))
 		{
@@ -270,10 +350,15 @@ private:
 			}
 			else
 			{
-				context->setFontColor (item->isEnabled () ? theme.textColor
-														  : theme.disabledTextColor);
+				CColor c = item->isTitle () ?
+				               theme.titleTextColor :
+				               item->isEnabled () ? theme.textColor : theme.disabledTextColor;
+				context->setFontColor (c);
 			}
-			context->setFont (theme.font);
+			if (item->isTitle ())
+				context->setFont (theme.font, 0, kBoldFace);
+			else
+				context->setFont (theme.font);
 			if (item->isChecked ())
 			{
 				auto r = size;
@@ -281,11 +366,19 @@ private:
 				drawCheckMark (context, r, flags & kRowSelected);
 			}
 			auto r = size;
-			r.left += getCheckmarkWidth ();
-			r.setWidth (maxTitleWidth);
+			CHoriTxtAlign textAlign = kLeftText;
+			if (item->isTitle ())
+			{
+				textAlign = kCenterText;
+			}
+			else
+			{
+				r.left += getCheckmarkWidth ();
+				r.setWidth (maxTitleWidth);
+			}
 			{
 				ConcatClip cc (*context, r);
-				context->drawString (item->getTitle ().getPlatformString (), r, kLeftText);
+				context->drawString (item->getTitle ().getPlatformString (), r, textAlign);
 			}
 			r.right = size.right - getCheckmarkWidth () / 2.;
 			r.left = r.right - getSubmenuIndicatorWidth ();
@@ -307,20 +400,123 @@ private:
 			checkmarkSize = theme.font->getSize () * 1.6;
 		return checkmarkSize;
 	}
-	CCoord getSubmenuIndicatorWidth ()
-	{
-		return dbGetHeaderHeight (nullptr);
-	}
+	CCoord getSubmenuIndicatorWidth () { return dbGetHeaderHeight (nullptr); }
 
+	CViewContainer* mainContainer;
 	COptionMenu* menu;
-	CDataBrowser* db{nullptr};
+	CDataBrowser* db {nullptr};
+	CView* subMenuView {nullptr};
+	DataSource* parentDataSource {nullptr};
 	ClickCallback clickCallback;
-	CCoord checkmarkSize{0.};
-	CCoord maxWidth{-1.};
-	CCoord maxTitleWidth{-1.};
-	bool hasRightMargin{false};
+	CCoord checkmarkSize {0.};
+	CCoord maxWidth {-1.};
+	CCoord maxTitleWidth {-1.};
+	bool hasRightMargin {false};
 	GenericOptionMenuTheme theme;
 };
+
+//------------------------------------------------------------------------
+inline CColor makeDarkerColor (CColor baseColor)
+{
+	auto color = baseColor;
+	double h, s, l;
+	color.toHSL (h, s, l);
+	l *= 0.7;
+	color.fromHSL (h, s, l);
+	return color;
+}
+
+//------------------------------------------------------------------------
+template <typename Proc>
+CView* setupGenericOptionMenu (Proc clickCallback, CViewContainer* container,
+                               COptionMenu* optionMenu, GenericOptionMenuTheme& theme,
+                               CRect viewRect, DataSource* parentDataSource)
+{
+	auto frame = container->getFrame ();
+	auto dataSource =
+	    makeOwned<DataSource> (container, optionMenu, clickCallback, theme, parentDataSource);
+	auto maxWidth = dataSource->calculateMaxWidth (frame);
+	if (parentDataSource)
+	{
+		viewRect.offset (viewRect.getWidth (), 0);
+		viewRect.setWidth (maxWidth);
+	}
+	else if (optionMenu->isPopupStyle ())
+	{
+		auto offset = optionMenu->getValue () * dataSource->dbGetRowHeight (nullptr);
+		viewRect.offset (0, -offset);
+	}
+	else
+	{
+		viewRect.top = viewRect.bottom;
+	}
+	bool multipleCheck = optionMenu->isMultipleCheckStyle ();
+	if (!multipleCheck && optionMenu->isCheckStyle ())
+	{
+		optionMenu->checkEntryAlone (static_cast<int32_t> (optionMenu->getValue ()));
+	}
+	viewRect.setHeight (dataSource->calculateMaxHeight ());
+	if (viewRect.getWidth () < maxWidth)
+	{
+		viewRect.setWidth (maxWidth);
+	}
+	if (frame)
+	{
+		auto frSize = frame->getViewSize ();
+		frSize.inset (6, 6); // frame margin
+
+		if (frSize.bottom < viewRect.bottom)
+		{
+			viewRect.offset (0, frSize.bottom - viewRect.bottom);
+		}
+		if (frSize.top > viewRect.top)
+		{
+			viewRect.offset (0, frSize.top - viewRect.top);
+		}
+		if (frSize.right < viewRect.right)
+		{
+			viewRect.offset (frSize.right - viewRect.right, 0);
+		}
+		if (frSize.left > viewRect.left)
+		{
+			viewRect.offset (frSize.left - viewRect.left, 0);
+		}
+		viewRect.bound (frSize);
+		if (maxWidth > viewRect.getWidth ())
+			dataSource->setMaxWidth (viewRect.getWidth ());
+	}
+	viewRect.makeIntegral ();
+	viewRect.inset (-1, -1);
+	viewRect.offset (1, 1);
+	auto decorView = new CViewContainer (viewRect);
+	decorView->setAlphaValue (0.f);
+	decorView->setBackgroundColor (
+	    GenericOptionMenuDetail::makeDarkerColor (theme.backgroundColor));
+	decorView->setBackgroundColorDrawStyle (kDrawStroked);
+	viewRect.originize ();
+	viewRect.inset (1., 1.);
+	auto browser =
+	    new CDataBrowser (viewRect, dataSource,
+	                      CDataBrowser::kDontDrawFrame | CDataBrowser::kVerticalScrollbar |
+	                          CDataBrowser::kOverlayScrollbars,
+	                      2);
+	if (auto sv = browser->getVerticalScrollbar ())
+	{
+		sv->setBackgroundColor (kTransparentCColor);
+		sv->setFrameColor (kTransparentCColor);
+		sv->setScrollerColor (theme.textColor);
+	}
+	browser->setBackgroundColor (theme.backgroundColor);
+	decorView->addView (browser);
+
+	container->addView (decorView);
+	using namespace Animation;
+	decorView->addAnimation ("AlphaAnimation", new AlphaValueAnimation (1.f, true),
+	                         new CubicBezierTimingFunction (
+	                             CubicBezierTimingFunction::easyIn (theme.menuAnimationTime)));
+	frame->setFocusView (browser);
+	return decorView;
+}
 
 //------------------------------------------------------------------------
 }
@@ -331,28 +527,17 @@ struct GenericOptionMenu::Impl
 	SharedPointer<CFrame> frame;
 	SharedPointer<COptionMenu> menu;
 	SharedPointer<CLayeredViewContainer> container;
-	ModalViewSession* modalViewSession{nullptr};
-	IGenericOptionMenuListener* listener{nullptr};
+	ModalViewSession* modalViewSession {nullptr};
+	IGenericOptionMenuListener* listener {nullptr};
 	GenericOptionMenuTheme theme;
 	Callback callback;
 	CButtonState initialButtons;
-	bool focusDrawingWasEnabled{false};
-
-	static CColor makeDarkerColor (CColor baseColor)
-	{
-		auto color = baseColor;
-		double h, s, l;
-		color.toHSL (h, s, l);
-		l *= 0.7;
-		color.fromHSL (h, s, l);
-		return color;
-	}
+	bool focusDrawingWasEnabled {false};
 };
 
 //------------------------------------------------------------------------
-GenericOptionMenu::GenericOptionMenu (CFrame* frame,
-									  CButtonState initialButtons,
-									  GenericOptionMenuTheme theme)
+GenericOptionMenu::GenericOptionMenu (CFrame* frame, CButtonState initialButtons,
+                                      GenericOptionMenuTheme theme)
 {
 	impl = std::unique_ptr<Impl> (new Impl);
 	impl->frame = frame;
@@ -382,22 +567,26 @@ void GenericOptionMenu::setListener (IGenericOptionMenuListener* listener)
 //------------------------------------------------------------------------
 void GenericOptionMenu::removeModalView (PlatformOptionMenuResult result)
 {
+	using namespace Animation;
 	if (impl->callback)
 	{
 		if (impl->listener)
 			impl->listener->optionMenuPopupStopped ();
 
 		auto self = shared (this);
-		auto f = [self, result]() {
-			auto callback = std::move (self->impl->callback);
-			self->impl->callback = nullptr;
-			self->impl->container->unregisterViewMouseListener (self);
-			self->impl->frame->endModalViewSession (self->impl->modalViewSession);
-			callback (self->impl->menu, result);
-			self->impl->container = nullptr;
-		};
+		impl->container->addAnimation (
+		    "OptionMenuDone", new AlphaValueAnimation (0.f, true),
+		    new CubicBezierTimingFunction (
+		        CubicBezierTimingFunction::easyIn (impl->theme.menuAnimationTime)),
+		    [self, result] (CView*, const IdStringPtr, IAnimationTarget*) {
 
-		impl->frame->doAfterEventProcessing (f);
+			    auto callback = std::move (self->impl->callback);
+			    self->impl->callback = nullptr;
+			    self->impl->container->unregisterViewMouseListener (self);
+			    self->impl->frame->endModalViewSession (self->impl->modalViewSession);
+			    callback (self->impl->menu, result);
+			    self->impl->container = nullptr;
+		    });
 	}
 }
 
@@ -425,75 +614,16 @@ void GenericOptionMenu::popup (COptionMenu* optionMenu, const Callback& callback
 	impl->callback = callback;
 
 	auto self = shared (this);
-	auto clickCallback = [self](COptionMenu* menu, int32_t index) {
+	auto clickCallback = [self] (COptionMenu* menu, int32_t index) {
 		self->removeModalView ({menu, index});
 	};
 
-	// ----
-	auto dataSource =
-		makeOwned<GenericOptionMenuDetail::DataSource> (optionMenu, clickCallback, impl->theme);
 	auto viewRect = optionMenu->translateToGlobal (optionMenu->getViewSize ());
 	auto where = viewRect.getCenter ();
-	if (optionMenu->isPopupStyle ())
-	{
-		auto offset = optionMenu->getValue () * dataSource->dbGetRowHeight (nullptr);
-		viewRect.offset (0, -offset);
-	}
-	else
-	{
-		viewRect.top = viewRect.bottom;
-	}
-	bool multipleCheck = optionMenu->isMultipleCheckStyle ();
-	if (!multipleCheck && optionMenu->isCheckStyle ())
-	{
-		optionMenu->checkEntryAlone (static_cast<int32_t> (optionMenu->getValue ()));
-	}
-	viewRect.setHeight (dataSource->calculateMaxHeight ());
-	auto maxWidth = dataSource->calculateMaxWidth (impl->frame);
-	if (viewRect.getWidth () < maxWidth)
-	{
-		viewRect.setWidth (maxWidth);
-	}
-	if (auto fr = optionMenu->getFrame ())
-	{
-		auto frSize = fr->getViewSize ();
-		frSize.inset (12, 12); // 12 pixel margin
 
-		if (frSize.bottom < viewRect.bottom)
-		{
-			viewRect.offset (0, frSize.bottom - viewRect.bottom);
-		}
-		if (frSize.top > viewRect.top)
-		{
-			viewRect.offset (0, frSize.top - viewRect.top);
-		}
-		if (frSize.right < viewRect.right)
-		{
-			viewRect.offset (-(viewRect.right - frSize.right), 0);
-		}
-		if (frSize.left > viewRect.left)
-		{
-			viewRect.offset (-(viewRect.left - frSize.left), 0);
-		}
-		viewRect.bound (frSize);
-		if (maxWidth > viewRect.getWidth ())
-			dataSource->setMaxWidth (viewRect.getWidth ());
-	}
-	viewRect.makeIntegral ();
-	viewRect.inset (-1, -1);
-	auto decorView = new CViewContainer (viewRect);
-	decorView->setBackgroundColor (impl->makeDarkerColor (impl->theme.backgroundColor));
-	decorView->setBackgroundColorDrawStyle (kDrawStroked);
-	viewRect.originize ();
-	viewRect.inset (1., 1.);
-	auto browser = new CDataBrowser (
-		viewRect, dataSource, CDataBrowser::kDontDrawFrame | CDataBrowser::kVerticalScrollbar, 0);
-	browser->setBackgroundColor (impl->theme.backgroundColor);
-	decorView->addView (browser);
+	GenericOptionMenuDetail::setupGenericOptionMenu (clickCallback, impl->container, optionMenu,
+	                                                 impl->theme, viewRect, nullptr);
 
-	// ----
-	impl->container->addView (decorView);
-	impl->frame->setFocusView (browser);
 	impl->frame->onMouseMoved (where, impl->initialButtons);
 	if (impl->listener)
 		impl->listener->optionMenuPopupStarted ();
