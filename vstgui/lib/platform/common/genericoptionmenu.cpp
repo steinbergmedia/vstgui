@@ -227,6 +227,11 @@ private:
 	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row,
 	                                 int32_t column, CDataBrowser* browser) override
 	{
+		if (auto item = menu->getEntry (row))
+		{
+			if (item->isTitle () || !item->isEnabled () || item->isSeparator ())
+				browser->setSelectedRow (CDataBrowser::kNoSelection);
+		}
 		return kMouseEventHandled;
 	}
 
@@ -579,7 +584,8 @@ void GenericOptionMenu::removeModalView (PlatformOptionMenuResult result)
 		    new CubicBezierTimingFunction (
 		        CubicBezierTimingFunction::easyIn (impl->theme.menuAnimationTime)),
 		    [self, result] (CView*, const IdStringPtr, IAnimationTarget*) {
-
+				if (!self->impl->container)
+					return;
 			    auto callback = std::move (self->impl->callback);
 			    self->impl->callback = nullptr;
 			    self->impl->container->unregisterViewMouseListener (self);
