@@ -634,7 +634,11 @@ void GenericOptionMenu::popup (COptionMenu* optionMenu, const Callback& callback
 	GenericOptionMenuDetail::setupGenericOptionMenu (clickCallback, impl->container, optionMenu,
 	                                                 impl->theme, viewRect, nullptr);
 
-	impl->frame->onMouseMoved (where, impl->initialButtons);
+	if (auto view = impl->frame->getViewAt (where, GetViewOptions ().deep ().includeInvisible ()))
+	{
+		view->translateToLocal (where);
+		view->onMouseMoved (where, impl->initialButtons);
+	}
 	if (impl->listener)
 		impl->listener->optionMenuPopupStarted ();
 }
