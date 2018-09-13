@@ -63,6 +63,7 @@ public:
 
 	virtual void setSliderMode (CSliderMode mode);
 	CSliderMode getSliderMode () const;
+	CSliderMode getEffectiveSliderMode () const;
 
 	static void setGlobalMode (CSliderMode mode);
 	static CSliderMode getGlobalMode ();

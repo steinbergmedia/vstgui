@@ -213,6 +213,14 @@ CSliderMode CSlider::getSliderMode () const
 }
 
 //------------------------------------------------------------------------
+CSliderMode CSlider::getEffectiveSliderMode () const
+{
+	if (mode == CSliderMode::UseGlobal)
+		return globalMode;
+	return mode;
+}
+
+//------------------------------------------------------------------------
 void CSlider::setGlobalMode (CSliderMode mode)
 {
 	vstgui_assert (mode != CSliderMode::UseGlobal, "do not set the global mode to use global");
@@ -434,7 +442,7 @@ float CSlider::calculateDelta (const CPoint& where, CRect* handleRect) const
 		result = getViewSize ().left + offsetHandle.x;
 	else
 		result = getViewSize ().top + offsetHandle.y;
-	if (getSliderMode () != CSliderMode::FreeClick)
+	if (getEffectiveSliderMode () != CSliderMode::FreeClick)
 	{
 		float normValue = getValueNormalized ();
 		if (style & kRight || style & kBottom)
@@ -483,16 +491,18 @@ CMouseEventResult CSlider::onMouseDown (CPoint& where, const CButtonState& butto
 		return kMouseEventNotHandled;
 
 	CRect handleRect;
-	delta = calculateDelta (where, getSliderMode () != CSliderMode::FreeClick ? &handleRect : nullptr);
-	if (getSliderMode () == CSliderMode::Touch && !handleRect.pointInside (where))
+	delta = calculateDelta (
+	    where, getEffectiveSliderMode () != CSliderMode::FreeClick ? &handleRect : nullptr);
+	if (getEffectiveSliderMode () == CSliderMode::Touch && !handleRect.pointInside (where))
 		return kMouseEventNotHandled;
 
 	oldVal    = getMin () - 1;
 	oldButton = buttons;
 
 	if (!pHandle ||
-	    (getSliderMode () == CSliderMode::RelativeTouch && handleRect.pointInside (where)) ||
-	    getSliderMode () != CSliderMode::RelativeTouch)
+	    (getEffectiveSliderMode () == CSliderMode::RelativeTouch &&
+	     handleRect.pointInside (where)) ||
+	    getEffectiveSliderMode () != CSliderMode::RelativeTouch)
 	{
 		if (checkDefaultValue (buttons))
 		{
