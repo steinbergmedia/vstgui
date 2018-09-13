@@ -11,6 +11,7 @@
 namespace VSTGUI {
 
 bool CSlider::kAlwaysUseZoomFactor = false;
+CSliderMode CSlider::globalMode = CSliderMode::FreeClick;
 
 //------------------------------------------------------------------------
 // CSlider
@@ -40,7 +41,7 @@ CSlider::CSlider (const CRect &rect, IControlListener* listener, int32_t tag, in
 , offset (offset)
 , pHandle (handle)
 , style (style)
-, mode (kFreeClickMode)
+, mode (CSliderMode::UseGlobal)
 , minPos (iMinPos)
 {
 	setDrawTransparentHandle (true);
@@ -98,7 +99,7 @@ CSlider::CSlider (const CRect &rect, IControlListener* listener, int32_t tag, co
 , offset (offset)
 , pHandle (handle) 
 , style (style)
-, mode (kFreeClickMode)
+, mode (CSliderMode::UseGlobal)
 , minPos (0)
 {
 	setDrawTransparentHandle (true);
@@ -162,6 +163,66 @@ CSlider::~CSlider () noexcept
 {
 	if (pHandle)
 		pHandle->forget ();
+}
+
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+//------------------------------------------------------------------------
+void CSlider::setMode (Mode newMode)
+{
+	switch (newMode)
+	{
+		case kTouchMode: setSliderMode (CSliderMode::Touch); break;
+		case kRelativeTouchMode: setSliderMode (CSliderMode::RelativeTouch); break;
+		case kFreeClickMode: setSliderMode (CSliderMode::FreeClick); break;
+	}
+}
+
+//------------------------------------------------------------------------
+auto CSlider::getMode () const -> Mode
+{
+	switch (mode)
+	{
+		case CSliderMode::Touch: return kTouchMode;
+		case CSliderMode::RelativeTouch: return kRelativeTouchMode;
+		case CSliderMode::FreeClick: return kFreeClickMode;
+		case CSliderMode::UseGlobal:
+		{
+			switch (globalMode)
+			{
+				case CSliderMode::Touch: return kTouchMode;
+				case CSliderMode::RelativeTouch: return kRelativeTouchMode;
+				case CSliderMode::FreeClick: return kFreeClickMode;
+				case CSliderMode::UseGlobal: vstgui_assert(false, ""); break;
+			}
+		}
+	}
+	return kTouchMode;
+}
+#endif
+
+//------------------------------------------------------------------------
+void CSlider::setSliderMode (CSliderMode newMode)
+{
+	vstgui_assert (newMode != CSliderMode::UseGlobal, "do not set the global mode to use global");
+	mode = newMode;
+}
+
+//------------------------------------------------------------------------
+CSliderMode CSlider::getSliderMode () const
+{
+	return mode;
+}
+
+//------------------------------------------------------------------------
+void CSlider::setGlobalMode (CSliderMode mode)
+{
+	globalMode = mode;
+}
+
+//------------------------------------------------------------------------
+CSliderMode CSlider::getGlobalMode ()
+{
+	return globalMode;
 }
 
 //------------------------------------------------------------------------
@@ -373,7 +434,7 @@ float CSlider::calculateDelta (const CPoint& where, CRect* handleRect) const
 		result = getViewSize ().left + offsetHandle.x;
 	else
 		result = getViewSize ().top + offsetHandle.y;
-	if (getMode () != kFreeClickMode)
+	if (getSliderMode () != CSliderMode::FreeClick)
 	{
 		float normValue = getValueNormalized ();
 		if (style & kRight || style & kBottom)
@@ -422,14 +483,16 @@ CMouseEventResult CSlider::onMouseDown (CPoint& where, const CButtonState& butto
 		return kMouseEventNotHandled;
 
 	CRect handleRect;
-	delta = calculateDelta (where, getMode () != kFreeClickMode ? &handleRect : nullptr);
-	if (getMode () == kTouchMode && !handleRect.pointInside (where))
+	delta = calculateDelta (where, getSliderMode () != CSliderMode::FreeClick ? &handleRect : nullptr);
+	if (getSliderMode () == CSliderMode::Touch && !handleRect.pointInside (where))
 		return kMouseEventNotHandled;
 
 	oldVal    = getMin () - 1;
 	oldButton = buttons;
 
-	if (!pHandle || (getMode () == kRelativeTouchMode && handleRect.pointInside (where)) || getMode () != kRelativeTouchMode)
+	if (!pHandle ||
+	    (getSliderMode () == CSliderMode::RelativeTouch && handleRect.pointInside (where)) ||
+	    getSliderMode () != CSliderMode::RelativeTouch)
 	{
 		if (checkDefaultValue (buttons))
 		{
@@ -501,7 +564,7 @@ CMouseEventResult CSlider::onMouseMoved (CPoint& where, const CButtonState& _but
 			
 			if (oldVal == getMin () - 1)
 				oldVal = (value - getMin ()) / getRange ();
-				
+			
 			if ((oldButton != buttons) && (buttons & kZoomModifier))
 			{
 				oldVal = (value - getMin ()) / getRange ();
@@ -523,7 +586,7 @@ CMouseEventResult CSlider::onMouseMoved (CPoint& where, const CButtonState& _but
 				normValue = oldVal + ((normValue - oldVal) / zoomFactor);
 
 			setValueNormalized (normValue);
-				
+			
 			if (isDirty ())
 			{
 				valueChanged ();
@@ -590,7 +653,7 @@ int32_t CSlider::onKeyDown (VstKeyCode& keyCode)
 		{
 			float distance = 1.f;
 			bool isInverse = styleIsInverseStyle (style);
-			if ((keyCode.virt == VKEY_DOWN && !isInverse) 
+			if ((keyCode.virt == VKEY_DOWN && !isInverse)
 			 || (keyCode.virt == VKEY_UP && isInverse)
 			 || (keyCode.virt == VKEY_LEFT && !isInverse)
 			 || (keyCode.virt == VKEY_RIGHT && isInverse))
