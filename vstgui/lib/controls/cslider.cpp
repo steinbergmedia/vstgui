@@ -203,7 +203,6 @@ auto CSlider::getMode () const -> Mode
 //------------------------------------------------------------------------
 void CSlider::setSliderMode (CSliderMode newMode)
 {
-	vstgui_assert (newMode != CSliderMode::UseGlobal, "do not set the global mode to use global");
 	mode = newMode;
 }
 
@@ -216,6 +215,7 @@ CSliderMode CSlider::getSliderMode () const
 //------------------------------------------------------------------------
 void CSlider::setGlobalMode (CSliderMode mode)
 {
+	vstgui_assert (mode != CSliderMode::UseGlobal, "do not set the global mode to use global");
 	globalMode = mode;
 }
 
