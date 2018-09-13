@@ -184,6 +184,12 @@ CCommandMenuItem::CCommandMenuItem (const CCommandMenuItem& item)
 #endif
 }
 
+//------------------------------------------------------------------------
+CCommandMenuItem::CCommandMenuItem (const char* title)
+: CMenuItem (title)
+{
+}
+
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 //------------------------------------------------------------------------
 IdStringPtr CCommandMenuItem::kMsgMenuItemValidate = "kMsgMenuItemValidate";
