@@ -167,7 +167,6 @@ public:
 	CCommandMenuItem (Desc&& args);
 	CCommandMenuItem (const Desc& args);
 	CCommandMenuItem (const CCommandMenuItem& item);
-	CCommandMenuItem (const char* title);
 	~CCommandMenuItem () noexcept override = default;
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
