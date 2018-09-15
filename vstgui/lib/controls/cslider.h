@@ -11,6 +11,15 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
+enum class CSliderMode
+{
+	Touch,
+	RelativeTouch,
+	FreeClick,
+	UseGlobal
+};
+
+//-----------------------------------------------------------------------------
 // CSlider Declaration
 //! @brief a slider control
 /// @ingroup controls
@@ -32,23 +41,32 @@ public:
 	CSlider (const CRect& rect, IControlListener* listener, int32_t tag, const CPoint& offsetHandle, int32_t rangeHandle, CBitmap* handle, CBitmap* background, const CPoint& offset = CPoint (0, 0), const int32_t style = kLeft|kHorizontal);
 	CSlider (const CSlider& slider);
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 	enum Mode {
 		kTouchMode,
 		kRelativeTouchMode,
 		kFreeClickMode
 	};
+#endif
 	//-----------------------------------------------------------------------------
 	/// @name CSlider Methods
 	//-----------------------------------------------------------------------------
 	//@{
 	virtual void setDrawTransparentHandle (bool val) { bDrawTransparentEnabled = val; }
 	virtual bool getDrawTransparentHandle () const { return bDrawTransparentEnabled; }
-	virtual void setMode (Mode newMode) { mode = newMode; }
-	virtual Mode getMode () const { return mode; }
+	VSTGUI_DEPRECATED (virtual void setMode (Mode newMode);)
+	VSTGUI_DEPRECATED (virtual Mode getMode () const;)
 	virtual void setOffsetHandle (const CPoint& val);
 	virtual CPoint getOffsetHandle () const { return offsetHandle; }
 	virtual void setOffset (const CPoint& val) { offset = val; }
 	virtual CPoint getOffset () const { return offset; }
+
+	virtual void setSliderMode (CSliderMode mode);
+	CSliderMode getSliderMode () const;
+	CSliderMode getEffectiveSliderMode () const;
+
+	static void setGlobalMode (CSliderMode mode);
+	static CSliderMode getGlobalMode ();
 
 	enum Style
 	{
@@ -123,7 +141,7 @@ protected:
 	CBitmap* pHandle;
 
 	int32_t	style;
-	Mode mode;
+	CSliderMode mode;
 
 	CCoord	widthOfSlider;
 	CCoord	heightOfSlider;
@@ -142,6 +160,8 @@ protected:
 	CColor  frameColor {kGreyCColor};
 	CColor  backColor {kBlackCColor};
 	CColor  valueColor {kWhiteCColor};
+
+	static CSliderMode globalMode;
 private:
 	CCoord	delta;
 	float	oldVal;

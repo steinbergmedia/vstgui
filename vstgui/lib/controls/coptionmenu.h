@@ -170,7 +170,7 @@ public:
 	~CCommandMenuItem () noexcept override = default;
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
-	CCommandMenuItem (const UTF8String& title, const UTF8String& keycode = nullptr, int32_t keyModifiers = 0, CBitmap* icon = nullptr, int32_t flags = kNoFlags, CBaseObject* target = nullptr, const UTF8String& commandCategory = nullptr, const UTF8String& commandName = nullptr);
+	CCommandMenuItem (const UTF8String& title, const UTF8String& keycode, int32_t keyModifiers = 0, CBitmap* icon = nullptr, int32_t flags = kNoFlags, CBaseObject* target = nullptr, const UTF8String& commandCategory = nullptr, const UTF8String& commandName = nullptr);
 	CCommandMenuItem (const UTF8String& title, COptionMenu* submenu, CBitmap* icon = nullptr, CBaseObject* target = nullptr, const UTF8String& commandCategory = nullptr, const UTF8String& commandName = nullptr);
 	CCommandMenuItem (const UTF8String& title, int32_t tag, CBaseObject* target = nullptr, const UTF8String& commandCategory = nullptr, const UTF8String& commandName = nullptr);
 	CCommandMenuItem (const UTF8String& title, CBaseObject* target, const UTF8String& commandCategory = nullptr, const UTF8String& commandName = nullptr);

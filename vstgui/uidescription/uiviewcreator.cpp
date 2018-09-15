@@ -3204,6 +3204,7 @@ public:
 	std::string kTouch = "touch";
 	std::string kRelativeTouch = "relative touch";
 	std::string kFreeClick = "free click";
+	std::string kUseGlobal = "use global";
 
 	CSliderCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCSlider; }
@@ -3220,7 +3221,7 @@ public:
 		const std::string* freeClickAttr = attributes.getAttributeValue ("free-click");
 		if (freeClickAttr)
 		{
-			slider->setMode (*freeClickAttr == strTrue ? CSlider::kFreeClickMode : CSlider::kTouchMode);
+			slider->setSliderMode (*freeClickAttr == strTrue ? CSliderMode::FreeClick : CSliderMode::Touch);
 		}
 
 		const std::string* transparentHandleAttr = attributes.getAttributeValue (kAttrTransparentHandle);
@@ -3231,11 +3232,13 @@ public:
 		if (modeAttr)
 		{
 			if (*modeAttr == kTouch)
-				slider->setMode (CSlider::kTouchMode);
+				slider->setSliderMode (CSliderMode::Touch);
 			else if (*modeAttr == kRelativeTouch)
-				slider->setMode (CSlider::kRelativeTouchMode);
+				slider->setSliderMode (CSliderMode::RelativeTouch);
 			else if (*modeAttr == kFreeClick)
-				slider->setMode (CSlider::kFreeClickMode);
+				slider->setSliderMode (CSliderMode::FreeClick);
+			else if (*modeAttr == kUseGlobal)
+				slider->setSliderMode (CSliderMode::UseGlobal);
 		}
 		CBitmap* bitmap;
 		if (stringToBitmap (attributes.getAttributeValue (kAttrHandleBitmap), bitmap, description))
@@ -3375,14 +3378,16 @@ public:
 		}
 		else if (attributeName == kAttrMode)
 		{
-			switch (slider->getMode ())
+			switch (slider->getSliderMode ())
 			{
-				case CSlider::kTouchMode:
+				case CSliderMode::Touch:
 					stringValue = kTouch; break;
-				case CSlider::kRelativeTouchMode:
+				case CSliderMode::RelativeTouch:
 					stringValue = kRelativeTouch; break;
-				case CSlider::kFreeClickMode:
+				case CSliderMode::FreeClick:
 					stringValue = kFreeClick; break;
+				case CSliderMode::UseGlobal:
+					stringValue = kUseGlobal; break;
 			}
 			return true;
 		}
@@ -3502,6 +3507,7 @@ public:
 			values.emplace_back (&kTouch);
 			values.emplace_back (&kRelativeTouch);
 			values.emplace_back (&kFreeClick);
+			values.emplace_back (&kUseGlobal);
 			return true;
 		}
 		return false;
