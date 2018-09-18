@@ -71,16 +71,6 @@ TESTCASE(CSliderCreatorTest,
 		});
 	);
 
-	TEST(transparentHandle,
-		DummyUIDescription uidesc;
-		testAttribute<CSlider>(kCSlider, kAttrTransparentHandle, true, &uidesc, [&] (CSlider* v) {
-			return v->getDrawTransparentHandle ();
-		});
-		testAttribute<CSlider>(kCSlider, kAttrTransparentHandle, false, &uidesc, [&] (CSlider* v) {
-			return !v->getDrawTransparentHandle ();
-		});
-	);
-
 	TEST(reverseOrientation,
 		DummyUIDescription uidesc;
 		testAttribute<CSlider>(kCSlider, kAttrReverseOrientation, true, &uidesc, [&] (CSlider* v) {
