@@ -3204,6 +3204,7 @@ public:
 	std::string kTouch = "touch";
 	std::string kRelativeTouch = "relative touch";
 	std::string kFreeClick = "free click";
+	std::string kRamp = "ramp";
 	std::string kUseGlobal = "use global";
 
 	CSliderCreator () { UIViewFactory::registerViewCreator (*this); }
@@ -3233,6 +3234,8 @@ public:
 				slider->setSliderMode (CSliderMode::RelativeTouch);
 			else if (*modeAttr == kFreeClick)
 				slider->setSliderMode (CSliderMode::FreeClick);
+			else if (*modeAttr == kRamp)
+				slider->setSliderMode (CSliderMode::Ramp);
 			else if (*modeAttr == kUseGlobal)
 				slider->setSliderMode (CSliderMode::UseGlobal);
 		}
@@ -3375,6 +3378,8 @@ public:
 					stringValue = kRelativeTouch; break;
 				case CSliderMode::FreeClick:
 					stringValue = kFreeClick; break;
+				case CSliderMode::Ramp:
+					stringValue = kRamp; break;
 				case CSliderMode::UseGlobal:
 					stringValue = kUseGlobal; break;
 			}
@@ -3496,6 +3501,7 @@ public:
 			values.emplace_back (&kTouch);
 			values.emplace_back (&kRelativeTouch);
 			values.emplace_back (&kFreeClick);
+			values.emplace_back (&kRamp);
 			values.emplace_back (&kUseGlobal);
 			return true;
 		}

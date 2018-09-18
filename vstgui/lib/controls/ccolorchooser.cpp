@@ -25,9 +25,9 @@ public:
 	: CSlider (size, listener, tag, 0, 0, nullptr, nullptr)
 	{
 		if (size.getWidth () > size.getHeight ())
-			heightOfSlider = widthOfSlider = size.getHeight ();
+			setSliderSize (size.getHeight (), size.getHeight ());
 		else
-			heightOfSlider = widthOfSlider = size.getWidth ();
+			setSliderSize (size.getWidth (), size.getWidth ());
 		CRect r (size);
 		setViewSize (r, false);
 		setWheelInc (10.f/255.f);
@@ -44,7 +44,11 @@ public:
 		CCoord backgroundFrameWidth = 1;
 		CCoord handleFrameWidth = 1;
 
-		CRect backgroundRect (0, 0, widthControl, heightControl);
+		auto controlSize = getControlSize ();
+		auto sliderSize = getSliderSize ();
+
+		CRect backgroundRect;
+		backgroundRect.setSize (controlSize);
 		backgroundRect.offset (getViewSize ().left, getViewSize ().top);
 		context->setDrawMode (kAntiAliasing);
 		context->setFillColor (backgroundFillColor);
@@ -52,52 +56,26 @@ public:
 		context->setLineWidth (backgroundFrameWidth);
 		context->setLineStyle (kLineSolid);
 		context->drawRect (backgroundRect, kDrawFilledAndStroked);
-		if (style & kHorizontal)
+		
+		if (getStyle () & kHorizontal)
 		{
-			backgroundRect.left += offsetHandle.x + widthOfSlider / 2;
-			backgroundRect.right -= offsetHandle.x + widthOfSlider / 2;
-			backgroundRect.top += heightControl/2 - 2;
-			backgroundRect.bottom -= heightControl/2 - 2;
+			backgroundRect.left += getOffsetHandle ().x + sliderSize.x / 2;
+			backgroundRect.right -= getOffsetHandle ().x + sliderSize.x / 2;
+			backgroundRect.top += controlSize.y / 2 - 2;
+			backgroundRect.bottom -= controlSize.y / 2 - 2;
 		}
 		else
 		{
-			backgroundRect.left += widthControl/2 - 2;
-			backgroundRect.right -= widthControl/2 - 2;
-			backgroundRect.top += offsetHandle.y + heightOfSlider / 2;
-			backgroundRect.bottom -= offsetHandle.y + heightOfSlider / 2;
+			backgroundRect.left += controlSize.x / 2 - 2;
+			backgroundRect.right -= controlSize.x / 2 - 2;
+			backgroundRect.top += getOffsetHandle ().y + sliderSize.y / 2;
+			backgroundRect.bottom -= getOffsetHandle ().y + sliderSize.y / 2;
 		}
 		context->setFillColor (bandColor);
 		context->drawRect (backgroundRect, kDrawFilled);
 
-		float fValue = value;
-		if (style & kRight || style & kBottom)
-			fValue = 1.f - value;
-		
 		// calc new coords of slider
-		CRect rectNew;
-		if (style & kHorizontal)
-		{
-			rectNew.top    = offsetHandle.y;
-			rectNew.bottom = rectNew.top + heightOfSlider;	
-
-			rectNew.left   = offsetHandle.x + (int32_t)(fValue * rangeHandle);
-			rectNew.left   = (rectNew.left < minTmp) ? minTmp : rectNew.left;
-
-			rectNew.right  = rectNew.left + widthOfSlider;
-			rectNew.right  = (rectNew.right > maxTmp) ? maxTmp : rectNew.right;
-		}
-		else
-		{
-			rectNew.left   = offsetHandle.x;
-			rectNew.right  = rectNew.left + widthOfSlider;	
-
-			rectNew.top    = offsetHandle.y + (int32_t)(fValue * rangeHandle);
-			rectNew.top    = (rectNew.top < minTmp) ? minTmp : rectNew.top;
-
-			rectNew.bottom = rectNew.top + heightOfSlider;
-			rectNew.bottom = (rectNew.bottom > maxTmp) ? maxTmp : rectNew.bottom;
-		}
-		rectNew.offset (getViewSize ().left, getViewSize ().top);
+		CRect rectNew = calculateHandleRect (getValueNormalized ());
 
 		context->setFillColor (handleFillColor);
 		context->setFrameColor (handleFrameColor);

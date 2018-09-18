@@ -26,6 +26,9 @@ TESTCASE(CSliderCreatorTest,
 		testAttribute<CSlider>(kCSlider, kAttrMode, "free click", &uidesc, [&] (CSlider* v) {
 			return v->getSliderMode () == CSliderMode::FreeClick;
 		});
+		testAttribute<CSlider>(kCSlider, kAttrMode, "ramp", &uidesc, [&] (CSlider* v) {
+			return v->getSliderMode () == CSliderMode::Ramp;
+		});
 		testAttribute<CSlider>(kCSlider, kAttrMode, "use global", &uidesc, [&] (CSlider* v) {
 			return v->getSliderMode () == CSliderMode::UseGlobal;
 		});
@@ -165,7 +168,7 @@ TESTCASE(CSliderCreatorTest,
 
 	TEST(modeValues,
 		DummyUIDescription uidesc;
-		testPossibleValues (kCSlider, kAttrMode, &uidesc, {"touch", "relative touch", "free click", "use global"});
+		testPossibleValues (kCSlider, kAttrMode, &uidesc, {"touch", "relative touch", "free click", "ramp", "use global"});
 	);
 
 );
