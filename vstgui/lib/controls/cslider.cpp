@@ -102,8 +102,6 @@ CSlider::CSlider (const CRect &rect, IControlListener* listener, int32_t tag, co
 , mode (CSliderMode::UseGlobal)
 , minPos (0)
 {
-	setDrawTransparentHandle (true);
-
 	if (pHandle)
 	{
 		pHandle->remember ();
@@ -148,7 +146,6 @@ CSlider::CSlider (const CSlider& v)
 , heightControl (v.heightControl)
 , frameWidth (v.frameWidth)
 , zoomFactor (v.zoomFactor)
-, bDrawTransparentEnabled (v.bDrawTransparentEnabled)
 , drawStyle (v.drawStyle)
 , frameColor (v.frameColor)
 , backColor (v.backColor)

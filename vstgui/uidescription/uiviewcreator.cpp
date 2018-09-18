@@ -3224,10 +3224,6 @@ public:
 			slider->setSliderMode (*freeClickAttr == strTrue ? CSliderMode::FreeClick : CSliderMode::Touch);
 		}
 
-		const std::string* transparentHandleAttr = attributes.getAttributeValue (kAttrTransparentHandle);
-		if (transparentHandleAttr)
-			slider->setDrawTransparentHandle (*transparentHandleAttr == strTrue);
-
 		const std::string* modeAttr = attributes.getAttributeValue (kAttrMode);
 		if (modeAttr)
 		{
@@ -3326,7 +3322,6 @@ public:
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const override
 	{
-		attributeNames.emplace_back (kAttrTransparentHandle);
 		attributeNames.emplace_back (kAttrMode);
 		attributeNames.emplace_back (kAttrHandleBitmap);
 		attributeNames.emplace_back (kAttrHandleOffset);
@@ -3347,7 +3342,6 @@ public:
 	}
 	AttrType getAttributeType (const std::string& attributeName) const override
 	{
-		if (attributeName == kAttrTransparentHandle) return kBooleanType;
 		if (attributeName == kAttrMode) return kListType;
 		if (attributeName == kAttrHandleBitmap) return kBitmapType;
 		if (attributeName == kAttrHandleOffset) return kPointType;
@@ -3371,12 +3365,7 @@ public:
 		CSlider* slider = dynamic_cast<CSlider*> (view);
 		if (!slider)
 			return false;
-		if (attributeName == kAttrTransparentHandle)
-		{
-			stringValue = slider->getDrawTransparentHandle () ? strTrue : strFalse;
-			return true;
-		}
-		else if (attributeName == kAttrMode)
+		if (attributeName == kAttrMode)
 		{
 			switch (slider->getSliderMode ())
 			{

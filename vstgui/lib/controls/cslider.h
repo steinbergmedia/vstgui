@@ -52,8 +52,8 @@ public:
 	/// @name CSlider Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual void setDrawTransparentHandle (bool val) { bDrawTransparentEnabled = val; }
-	virtual bool getDrawTransparentHandle () const { return bDrawTransparentEnabled; }
+	VSTGUI_DEPRECATED (virtual void setDrawTransparentHandle (bool val) {})
+	VSTGUI_DEPRECATED (virtual bool getDrawTransparentHandle () const { return true; })
 	VSTGUI_DEPRECATED (virtual void setMode (Mode newMode);)
 	VSTGUI_DEPRECATED (virtual Mode getMode () const;)
 	virtual void setOffsetHandle (const CPoint& val);
@@ -153,8 +153,6 @@ protected:
 	CCoord	heightControl;
 	CCoord	frameWidth {1.};
 	float	zoomFactor;
-
-	bool	bDrawTransparentEnabled;
 
 	int32_t	drawStyle {0};
 	CColor  frameColor {kGreyCColor};
