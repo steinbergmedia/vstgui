@@ -44,8 +44,6 @@ CSlider::CSlider (const CRect &rect, IControlListener* listener, int32_t tag, in
 , mode (CSliderMode::UseGlobal)
 , minPos (iMinPos)
 {
-	setDrawTransparentHandle (true);
-
 	if (pHandle)
 	{
 		pHandle->remember ();
