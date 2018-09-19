@@ -138,6 +138,7 @@ protected:
 	float calculateDelta (const CPoint& where, CRect* handleRect = nullptr) const;
 
 	CRect calculateHandleRect (float normValue) const;
+	void doRamping ();
 
 	// for sub-classes to access private variables:
 	void setSliderSize (CCoord width, CCoord height);

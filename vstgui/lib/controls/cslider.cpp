@@ -520,6 +520,52 @@ float CSlider::calculateDelta (const CPoint& where, CRect* handleRect) const
 }
 
 //------------------------------------------------------------------------
+void CSlider::doRamping ()
+{
+	float distance = 1.f;
+	float normValue = getValueNormalized ();
+
+	auto handleRect = calculateHandleRect (normValue);
+	if (impl->styleHorizontal ())
+		distance = impl->mouseStartPoint.x < handleRect.getCenter ().x ? -0.1f : 0.1f;
+	else
+		distance = impl->mouseStartPoint.y < handleRect.getCenter ().y ? 0.1f : -0.1f;
+
+	if (impl->styleIsInverseStyle ())
+		distance *= -1.f;
+
+	float delta;
+	if (impl->styleHorizontal ())
+		delta = getViewSize ().left + impl->offsetHandle.x + impl->widthOfSlider / 2 - 1;
+	else
+		delta = getViewSize ().top + impl->offsetHandle.y + impl->heightOfSlider / 2 - 1;
+
+	float clickValue;
+	if (impl->styleHorizontal ())
+		clickValue = (float)(impl->mouseStartPoint.x - delta) / (float)impl->rangeHandle;
+	else
+		clickValue = (float)(impl->mouseStartPoint.y - delta) / (float)impl->rangeHandle;
+
+	if (impl->styleRight () || impl->styleBottom ())
+		clickValue = 1.f - clickValue;
+
+	normValue += distance * wheelInc;
+	if ((clickValue > normValue && distance < 0.f) || (clickValue < normValue && distance > 0.f))
+	{
+		normValue = clickValue;
+		impl->rampTimer = nullptr;
+		impl->delta = delta;
+	}
+
+	setValueNormalized (normValue);
+	if (isDirty ())
+	{
+		valueChanged ();
+		invalid ();
+	}
+}
+
+//------------------------------------------------------------------------
 CMouseEventResult CSlider::onMouseDown (CPoint& where, const CButtonState& buttons)
 {
 	if (!(buttons & kLButton))
@@ -547,55 +593,7 @@ CMouseEventResult CSlider::onMouseDown (CPoint& where, const CButtonState& butto
 
 	if (getEffectiveSliderMode () == CSliderMode::Ramp && !handleRect.pointInside (where))
 	{
-		impl->rampTimer = owned (new CVSTGUITimer ([this] (CVSTGUITimer*) {
-
-			float distance = 1.f;
-			float normValue = getValueNormalized ();
-
-			auto handleRect = calculateHandleRect (normValue);
-			if (impl->styleHorizontal ())
-			{
-				distance = impl->mouseStartPoint.x < handleRect.getCenter ().x ? -0.1f : 0.1f;
-			}
-			else
-			{
-				distance = impl->mouseStartPoint.y < handleRect.getCenter ().y ? 0.1f : -0.1f;
-			}
-			if (impl->styleIsInverseStyle ())
-				distance *= -1.f;
-
-			float delta;
-			if (impl->styleHorizontal ())
-				delta = getViewSize ().left + impl->offsetHandle.x + impl->widthOfSlider / 2 - 1;
-			else
-				delta = getViewSize ().top + impl->offsetHandle.y + impl->heightOfSlider / 2 - 1;
-
-			float clickValue;
-			if (impl->styleHorizontal ())
-				clickValue = (float)(impl->mouseStartPoint.x - delta) / (float)impl->rangeHandle;
-			else
-				clickValue = (float)(impl->mouseStartPoint.y - delta) / (float)impl->rangeHandle;
-
-			if (impl->styleRight () || impl->styleBottom ())
-				clickValue = 1.f - clickValue;
-
-			normValue += distance * wheelInc;
-			if ((clickValue > normValue && distance < 0.f) ||
-			    (clickValue < normValue && distance > 0.f))
-			{
-				normValue = clickValue;
-				impl->rampTimer = nullptr;
-				impl->delta = delta;
-			}
-
-			setValueNormalized (normValue);
-			if (isDirty ())
-			{
-				valueChanged ();
-				invalid ();
-			}
-
-		}));
+		impl->rampTimer = owned (new CVSTGUITimer ([this] (CVSTGUITimer*) { doRamping (); }, 16));
 	}
 
 	impl->startVal = getValue ();
