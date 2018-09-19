@@ -1116,7 +1116,6 @@ bool UIEditView::onDrop (DragEventData data)
 		}
 		CPoint where2 (data.pos);
 		where2.offset (dragSelection->getDragOffset ().x, dragSelection->getDragOffset ().y);
-		where2.offset (-getViewSize ().left, -getViewSize ().top);
 		if (grid)
 		{
 			where2.offset (grid->getSize ().x / 2., grid->getSize ().y / 2.);
@@ -1127,6 +1126,7 @@ bool UIEditView::onDrop (DragEventData data)
 		CViewContainer* viewContainer = getContainerAt (where2, GetViewOptions ().deep ());
 		if (viewContainer)
 		{
+			where2.offset (-getViewSize ().left, -getViewSize ().top);
 			getTransform ().inverse ().transform (where2);
 			CPoint containerOffset;
 			viewContainer->localToFrame (containerOffset);
