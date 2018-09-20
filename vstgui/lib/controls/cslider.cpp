@@ -183,7 +183,7 @@ void CSlider::setMode (Mode newMode)
 //------------------------------------------------------------------------
 auto CSlider::getMode () const -> Mode
 {
-	switch (mode)
+	switch (impl->mode)
 	{
 		case CSliderMode::Touch: return kTouchMode;
 		case CSliderMode::RelativeTouch: return kRelativeTouchMode;

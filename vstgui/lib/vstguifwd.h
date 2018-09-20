@@ -95,6 +95,16 @@ enum class BitmapInterpolationQuality
 	kHigh			///< Bicubic interpolation (Bilinear on Windows)
 };
 
+//-----------------------------------------------------------------------------
+enum class CSliderMode
+{
+	Touch,
+	RelativeTouch,
+	FreeClick,
+	Ramp,
+	UseGlobal
+};
+
 enum class DragOperation;
 
 // simple structs

@@ -11,16 +11,6 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-enum class CSliderMode
-{
-	Touch,
-	RelativeTouch,
-	FreeClick,
-	Ramp,
-	UseGlobal
-};
-
-//-----------------------------------------------------------------------------
 // CSlider Declaration
 //! @brief a slider control
 /// @ingroup controls
