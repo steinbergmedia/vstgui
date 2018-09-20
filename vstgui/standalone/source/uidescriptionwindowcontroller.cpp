@@ -656,7 +656,13 @@ struct WindowController::EditImpl : WindowController::Impl
 			auto settings = uiDesc->getCustomAttributes ("UIDescFilePath", true);
 			auto filePath = settings->getAttributeValue ("path");
 			if (filePath)
-				uiDesc->setFilePath (filePath->data ());
+			{
+				if (auto file = fopen (filePath->data (), "rb"))
+				{
+					uiDesc->setFilePath (filePath->data ());
+					fclose (file);
+				}
+			}
 		}
 		this->templateName = templateName;
 
@@ -735,6 +741,8 @@ struct WindowController::EditImpl : WindowController::Impl
 				AlertBoxConfig config;
 				config.headline = "Saving the uidesc file failed.";
 				IApplication::instance ().showAlertBox (config);
+				uiDesc->setFilePath ("");
+				checkFileExists ();
 			}
 			else
 				Detail::getEditFileMap ().set (filename, uiDesc->getFilePath ());
