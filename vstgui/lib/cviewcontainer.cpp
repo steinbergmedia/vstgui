@@ -12,6 +12,7 @@
 #include "iviewlistener.h"
 #include "cgraphicspath.h"
 #include "controls/ccontrol.h"
+#include "dragging.h"
 
 #include <algorithm>
 #include <cassert>
@@ -19,6 +20,11 @@
 namespace VSTGUI {
 
 IdStringPtr kMsgLooseFocus = "LooseFocus";
+
+const CViewAttributeID kCViewContainerDropTargetAttribute = 'vcdt';
+const CViewAttributeID kCViewContainerMouseDownViewAttribute = 'vcmd';
+const CViewAttributeID kCViewContainerLastDrawnFocusAttribute = 'vclf';
+const CViewAttributeID kCViewContainerBackgroundOffsetAttribute = 'vcbo';
 
 //-----------------------------------------------------------------------------
 // CViewContainer Implementation
@@ -30,19 +36,94 @@ struct CViewContainer::Impl
 	ViewContainerListenerDispatcher viewContainerListeners;
 	CGraphicsTransform transform;
 	
-	/// @cond ignore
 	ViewList children;
-	/// @endcond
 	
 	CDrawStyle backgroundColorDrawStyle {kDrawFilledAndStroked};
 	CColor backgroundColor {kBlackCColor};
-	CPoint backgroundOffset;
-	
-	CRect lastDrawnFocus;
-	
-	CView* currentDragView {nullptr};
-	CView* mouseDownView {nullptr};
-	
+};
+
+//------------------------------------------------------------------------
+struct CViewContainerDropTarget : public IDropTarget, public NonAtomicReferenceCounted
+{
+	CViewContainerDropTarget (CViewContainer* container) : container (container) {}
+
+	CPoint getLocalPos (const CPoint& pos) const
+	{
+		auto viewSize = container->getViewSize ();
+		CPoint where2 (pos);
+		where2.offset (-viewSize.left, -viewSize.top);
+		container->getTransform ().inverse ().transform (where2);
+		return where2;
+	}
+
+	DragOperation onDragEnter (DragEventData data) final
+	{
+		assert (dropTarget == nullptr);
+
+		return onDragMove (data);
+	}
+
+	DragOperation onDragMove (DragEventData data) final
+	{
+		CView* view = container->getViewAt (
+		    data.pos, GetViewOptions ().mouseEnabled ().includeViewContainer ());
+		data.pos = getLocalPos (data.pos);
+		if (view == currentDragView)
+		{
+			if (dropTarget)
+				return dropTarget->onDragMove (data);
+			return DragOperation::None;
+		}
+		if (currentDragView)
+		{
+			if (dropTarget)
+				dropTarget->onDragLeave (data);
+			dropTarget = nullptr;
+			currentDragView = nullptr;
+		}
+		if (view)
+		{
+			currentDragView = view;
+			if ((dropTarget = currentDragView->getDropTarget ()))
+			{
+				dropTarget->onDragEnter (data);
+				return dropTarget->onDragMove (data);
+			}
+		}
+		return DragOperation::None;
+	}
+
+	void onDragLeave (DragEventData data) final
+	{
+		if (currentDragView)
+		{
+			if (dropTarget)
+			{
+				data.pos = getLocalPos (data.pos);
+				dropTarget->onDragLeave (data);
+				dropTarget = nullptr;
+			}
+			currentDragView = nullptr;
+		}
+	}
+
+	bool onDrop (DragEventData data) final
+	{
+		if (dropTarget)
+		{
+			data.pos = getLocalPos (data.pos);
+			auto result = dropTarget->onDrop (data);
+			dropTarget = nullptr;
+			currentDragView = nullptr;
+			return result;
+		}
+		currentDragView = nullptr;
+		return false;
+	}
+
+	CViewContainer* container;
+	SharedPointer<IDropTarget> dropTarget;
+	SharedPointer<CView> currentDragView;
 };
 
 //-----------------------------------------------------------------------------
@@ -62,10 +143,10 @@ CViewContainer::CViewContainer (const CViewContainer& v)
 : CView (v)
 {
 	pImpl = std::unique_ptr<Impl> (new Impl ());
-	pImpl->transform = v.pImpl->transform;
+	pImpl->transform = v.getTransform ();
 	pImpl->backgroundColorDrawStyle = v.pImpl->backgroundColorDrawStyle;
 	pImpl->backgroundColor = v.pImpl->backgroundColor;
-	pImpl->backgroundOffset = v.pImpl->backgroundOffset;
+	setBackgroundOffset (v.getBackgroundOffset ());
 	for (auto& view : v.pImpl->children)
 		addView (static_cast<CView*> (view->newCopy ()));
 }
@@ -79,6 +160,13 @@ CViewContainer::~CViewContainer () noexcept
 //-----------------------------------------------------------------------------
 void CViewContainer::beforeDelete ()
 {
+	IDropTarget* dropTarget = nullptr;
+	if (getAttribute (kCViewContainerDropTargetAttribute, dropTarget))
+	{
+		removeAttribute (kCViewContainerDropTargetAttribute);
+		dropTarget->forget ();
+	}
+
 	// remove all views
 	CViewContainer::removeAll (true);
 	CView::beforeDelete ();
@@ -106,24 +194,52 @@ void CViewContainer::parentSizeChanged ()
 //-----------------------------------------------------------------------------
 void CViewContainer::setMouseDownView (CView* view)
 {
-	if (pImpl->mouseDownView && pImpl->mouseDownView != view)
+	auto mouseDownView = getMouseDownView ();
+	if (mouseDownView && mouseDownView != view)
 	{
 		// make sure the old mouse down view get a mouse cancel or if not implemented a mouse up
-		if (auto cvc = pImpl->mouseDownView->asViewContainer ())
+		if (auto cvc = mouseDownView->asViewContainer ())
 			cvc->setMouseDownView (nullptr);
-		else if (pImpl->mouseDownView->onMouseCancel () == kMouseEventNotImplemented)
+		else if (mouseDownView->onMouseCancel () == kMouseEventNotImplemented)
 		{
-			CPoint p = pImpl->mouseDownView->getViewSize ().getTopLeft () - CPoint (10, 10);
-			pImpl->mouseDownView->onMouseUp (p, 0);
+			CPoint p = mouseDownView->getViewSize ().getTopLeft () - CPoint (10, 10);
+			mouseDownView->onMouseUp (p, 0);
 		}
 	}
-	pImpl->mouseDownView = view;
+	setAttribute (kCViewContainerMouseDownViewAttribute, view);
 }
 
 //-----------------------------------------------------------------------------
 CView* CViewContainer::getMouseDownView () const
 {
-	return pImpl->mouseDownView;
+	CView* view = nullptr;
+	if (getAttribute (kCViewContainerMouseDownViewAttribute, view))
+		return view;
+	return nullptr;
+}
+
+//-----------------------------------------------------------------------------
+void CViewContainer::clearMouseDownView ()
+{
+	removeAttribute (kCViewContainerMouseDownViewAttribute);
+}
+
+//-----------------------------------------------------------------------------
+CRect CViewContainer::getLastDrawnFocus () const
+{
+	CRect r;
+	if (getAttribute (kCViewContainerLastDrawnFocusAttribute, r))
+		return r;
+	return {};
+}
+
+//-----------------------------------------------------------------------------
+void CViewContainer::setLastDrawnFocus (CRect r)
+{
+	if (r.isEmpty ())
+		removeAttribute (kCViewContainerLastDrawnFocusAttribute);
+	else
+		setAttribute (kCViewContainerLastDrawnFocusAttribute, r);
 }
 
 //-----------------------------------------------------------------------------
@@ -135,7 +251,7 @@ auto CViewContainer::getChildren () const -> const ViewList&
 //-----------------------------------------------------------------------------
 void CViewContainer::setTransform (const CGraphicsTransform& t)
 {
-	if (pImpl->transform != t)
+	if (getTransform () != t)
 	{
 		pImpl->transform = t;
 		pImpl->viewContainerListeners.forEach ([this] (IViewContainerListener* listener) {
@@ -252,8 +368,8 @@ CRect CViewContainer::getVisibleSize (const CRect& rect) const
 	result.bound (viewSize);
 	if (getFrame () == this)
 	{}
-	else if (getParentView ())
-		result = static_cast<CViewContainer*> (getParentView ())->getVisibleSize (result);
+	else if (auto parent = getParentView ())
+		result = static_cast<CViewContainer*> (parent)->getVisibleSize (result);
 	result.offset (-viewSize.left, -viewSize.top);
 	return result;
 }
@@ -320,13 +436,19 @@ CColor CViewContainer::getBackgroundColor () const
 //------------------------------------------------------------------------------
 void CViewContainer::setBackgroundOffset (const CPoint& p)
 {
-	pImpl->backgroundOffset = p;
+	if (p == CPoint (0, 0))
+		removeAttribute (kCViewContainerBackgroundOffsetAttribute);
+	else
+		setAttribute (kCViewContainerBackgroundOffsetAttribute, p);
 }
 
 //------------------------------------------------------------------------------
-const CPoint& CViewContainer::getBackgroundOffset () const
+CPoint CViewContainer::getBackgroundOffset () const
 {
-	return pImpl->backgroundOffset;
+	CPoint p;
+	if (getAttribute (kCViewContainerBackgroundOffsetAttribute, p))
+		return p;
+	return {};
 }
 
 //------------------------------------------------------------------------------
@@ -361,21 +483,14 @@ CMessageResult CViewContainer::notify (CBaseObject* sender, IdStringPtr message)
 	}
 	else if (message == kMsgOldFocusView)
 	{
-		if (!pImpl->lastDrawnFocus.isEmpty ())
-			invalidRect (pImpl->lastDrawnFocus);
-		pImpl->lastDrawnFocus = CRect (0, 0, 0, 0);
+		auto ldf = getLastDrawnFocus ();
+		if (!ldf.isEmpty ())
+		{
+			invalidRect (ldf);
+			setLastDrawnFocus (CRect (0, 0, 0, 0));
+		}
 	}
 	return kMessageUnknown;
-}
-
-//-----------------------------------------------------------------------------
-/**
- * @param pView the view object to add to this container
- * @return true on success. false if view was already attached
- */
-bool CViewContainer::addView (CView* pView)
-{
-	return addView (pView, nullptr);
 }
 
 //-----------------------------------------------------------------------------
@@ -441,9 +556,7 @@ bool CViewContainer::addView (CView* pView, const CRect &mouseableArea, bool mou
  */
 bool CViewContainer::removeAll (bool withForget)
 {
-	if (pImpl->mouseDownView)
-		pImpl->mouseDownView = nullptr;
-	pImpl->currentDragView = nullptr;
+	clearMouseDownView ();
 	
 	auto it = pImpl->children.begin ();
 	while (it != pImpl->children.end ())
@@ -475,10 +588,8 @@ bool CViewContainer::removeView (CView *pView, bool withForget)
 	if (it != pImpl->children.end ())
 	{
 		pView->invalid ();
-		if (pView == pImpl->mouseDownView)
-			pImpl->mouseDownView = nullptr;
-		if (pView == pImpl->currentDragView)
-			pImpl->currentDragView = nullptr;
+		if (pView == getMouseDownView ())
+			clearMouseDownView ();
 		if (isAttached ())
 			pView->removed (this);
 		pView->setSubviewState (false);
@@ -570,21 +681,23 @@ bool CViewContainer::changeViewZOrder (CView* view, uint32_t newIndex)
 {
 	if (newIndex < getNbViews ())
 	{
-		CBaseObjectGuard guard (view);
-		auto it = std::find (pImpl->children.begin (), pImpl->children.end (), view);
-		if (it != pImpl->children.end ())
+		uint32_t oldIndex = 0;
+		auto src = pImpl->children.begin ();
+		for (;src != pImpl->children.end () && *src != view; ++src, ++oldIndex);
+		if (src != pImpl->children.end ())
 		{
-			pImpl->children.erase (it);
-			it = pImpl->children.begin ();
-			std::advance (it, newIndex);
-			bool result = pImpl->children.insert (it, view) != pImpl->children.end ();
-			if (result)
-			{
-				pImpl->viewContainerListeners.forEach ([&] (IViewContainerListener* listener) {
-					listener->viewContainerViewZOrderChanged (this, view);
-				});
-			}
-			return result;
+			if (newIndex == oldIndex)
+				return true;
+			auto dest = pImpl->children.begin ();
+			std::advance (dest, newIndex);
+			if (newIndex > oldIndex)
+				pImpl->children.splice (src, pImpl->children, dest);
+			else
+				pImpl->children.splice (dest, pImpl->children, src);
+			pImpl->viewContainerListeners.forEach ([&] (IViewContainerListener* listener) {
+				listener->viewContainerViewZOrderChanged (this, view);
+			});
+			return true;
 		}
 	}
 	return false;
@@ -597,8 +710,8 @@ bool CViewContainer::invalidateDirtyViews ()
 		return true;
 	if (CView::isDirty ())
 	{
-		if (getParentView ())
-			getParentView ()->invalidRect (getViewSize ());
+		if (auto parent = getParentView ())
+			parent->invalidRect (getViewSize ());
 		return true;
 	}
 	for (const auto& pV : pImpl->children)
@@ -620,8 +733,8 @@ void CViewContainer::invalid ()
 	if (!isVisible ())
 		return;
 	CRect _rect (getViewSize ());
-	if (getParentView ())
-		getParentView ()->invalidRect (_rect);
+	if (auto parent = getParentView ())
+		parent->invalidRect (_rect);
 }
 
 //-----------------------------------------------------------------------------
@@ -630,13 +743,13 @@ void CViewContainer::invalidRect (const CRect& rect)
 	if (!isVisible ())
 		return;
 	CRect _rect (rect);
-	pImpl->transform.transform (_rect);
+	getTransform ().transform (_rect);
 	_rect.offset (getViewSize ().left, getViewSize ().top);
 	_rect.bound (getViewSize ());
 	if (_rect.isEmpty ())
 		return;
-	if (getParentView ())
-		getParentView ()->invalidRect (_rect);
+	if (auto parent = getParentView ())
+		parent->invalidRect (_rect);
 }
 
 //-----------------------------------------------------------------------------
@@ -663,7 +776,7 @@ void CViewContainer::drawBackgroundRect (CDrawContext* pContext, const CRect& _u
 		newClip.bound (oldClip);
 		pContext->setClipRect (newClip);
 		CRect tr (0, 0, getViewSize ().getWidth (), getViewSize ().getHeight ());
-		getDrawBackground ()->draw (pContext, tr, pImpl->backgroundOffset);
+		getDrawBackground ()->draw (pContext, tr, getBackgroundOffset ());
 		pContext->setClipRect (oldClip);
 	}
 	else if ((pImpl->backgroundColor.alpha != 255 && getTransparency ()) || !getTransparency ())
@@ -717,39 +830,40 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 	
 	CView* _focusView = nullptr;
 	IFocusDrawing* _focusDrawing = nullptr;
-	if (getFrame ()->focusDrawingEnabled () && isChild (getFrame ()->getFocusView (), false) && getFrame ()->getFocusView ()->isVisible () && getFrame ()->getFocusView ()->wantsFocus ())
+	auto frame = getFrame ();
+	if (frame && frame->focusDrawingEnabled () && isChild (frame->getFocusView (), false) && frame->getFocusView ()->isVisible () && frame->getFocusView ()->wantsFocus ())
 	{
-		_focusView = getFrame ()->getFocusView ();
+		_focusView = frame->getFocusView ();
 		_focusDrawing = dynamic_cast<IFocusDrawing*> (_focusView);
 	}
 
 	{
-		CDrawContext::Transform tr (*pContext, pImpl->transform);
-		pImpl->transform.inverse ().transform (newClip);
-		pImpl->transform.inverse ().transform (clientRect);
-		pImpl->transform.transform (oldClip2);
+		CDrawContext::Transform tr (*pContext, getTransform ());
+		getTransform ().inverse ().transform (newClip);
+		getTransform ().inverse ().transform (clientRect);
+		getTransform ().transform (oldClip2);
 		
 		// draw each view
 		for (const auto& pV : pImpl->children)
 		{
 			if (pV->isVisible ())
 			{
-				if (_focusDrawing && _focusView == pV && !_focusDrawing->drawFocusOnTop ())
+				if (frame && _focusDrawing && _focusView == pV && !_focusDrawing->drawFocusOnTop ())
 				{
 					SharedPointer<CGraphicsPath> focusPath = owned (pContext->createGraphicsPath ());
 					if (focusPath)
 					{
 						if (_focusDrawing->getFocusPath (*focusPath))
 						{
-							pImpl->lastDrawnFocus = focusPath->getBoundingBox ();
-							if (!pImpl->lastDrawnFocus.isEmpty ())
+							auto lastDrawnFocus = focusPath->getBoundingBox ();
+							if (!lastDrawnFocus.isEmpty ())
 							{
 								pContext->setClipRect (oldClip2);
 								pContext->setDrawMode (kAntiAliasing|kNonIntegralMode);
-								pContext->setFillColor (getFrame ()->getFocusColor ());
+								pContext->setFillColor (frame->getFocusColor ());
 								pContext->drawGraphicsPath (focusPath, CDrawContext::kPathFilledEvenOdd);
-								pImpl->lastDrawnFocus = focusPath->getBoundingBox ();
-								pImpl->lastDrawnFocus.extend (1, 1);
+								lastDrawnFocus.extend (1, 1);
+								setLastDrawnFocus (lastDrawnFocus);
 							}
 							_focusDrawing = nullptr;
 							_focusView = nullptr;
@@ -775,7 +889,7 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 	
 	pContext->setClipRect (oldClip2);
 
-	if (_focusView)
+	if (frame && _focusView)
 	{
 		SharedPointer<CGraphicsPath> focusPath = owned (pContext->createGraphicsPath ());
 		if (focusPath)
@@ -784,7 +898,7 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 				_focusDrawing->getFocusPath (*focusPath);
 			else
 			{
-				CCoord focusWidth = getFrame ()->getFocusWidth ();
+				CCoord focusWidth = frame->getFocusWidth ();
 				CRect r (_focusView->getVisibleViewSize ());
 				if (!r.isEmpty ())
 				{
@@ -793,14 +907,14 @@ void CViewContainer::drawRect (CDrawContext* pContext, const CRect& updateRect)
 					focusPath->addRect (r);
 				}
 			}
-			pImpl->lastDrawnFocus = focusPath->getBoundingBox ();
-			if (!pImpl->lastDrawnFocus.isEmpty ())
+			auto lastDrawnFocus = focusPath->getBoundingBox ();
+			if (!lastDrawnFocus.isEmpty ())
 			{
 				pContext->setDrawMode (kAntiAliasing|kNonIntegralMode);
-				pContext->setFillColor (getFrame ()->getFocusColor ());
+				pContext->setFillColor (frame->getFocusColor ());
 				pContext->drawGraphicsPath (focusPath, CDrawContext::kPathFilledEvenOdd);
-				pImpl->lastDrawnFocus = focusPath->getBoundingBox ();
-				pImpl->lastDrawnFocus.extend (1, 1);
+				lastDrawnFocus.extend (1, 1);
+				setLastDrawnFocus (lastDrawnFocus);
 			}
 		}
 	}
@@ -830,7 +944,7 @@ bool CViewContainer::hitTestSubViews (const CPoint& where, const CButtonState& b
 {
 	CPoint where2 (where);
 	where2.offset (-getViewSize ().left, -getViewSize ().top);
-	pImpl->transform.inverse ().transform (where2);
+	getTransform ().inverse ().transform (where2);
 
 	for (auto it = pImpl->children.rbegin (), end = pImpl->children.rend (); it != end; ++it)
 	{
@@ -868,28 +982,33 @@ CMouseEventResult CViewContainer::onMouseDown (CPoint &where, const CButtonState
 	// convert to relativ pos
 	CPoint where2 (where);
 	where2.offset (-getViewSize ().left, -getViewSize ().top);
-	pImpl->transform.inverse ().transform (where2);
+	getTransform ().inverse ().transform (where2);
 
 	for (auto it = pImpl->children.rbegin (), end = pImpl->children.rend (); it != end; ++it)
 	{
 		auto pV = *it;
 		if (pV && pV->isVisible () && pV->getMouseEnabled () && pV->hitTest (where2, buttons))
 		{
-			auto control = pV.cast<CControl> ();
-			if (control && control->getListener () && buttons & (kAlt | kShift | kControl | kApple | kRButton))
+			if (buttons & (kAlt | kShift | kControl | kApple | kRButton))
 			{
-				if (control->getListener ()->controlModifierClicked (control, buttons) != 0)
-					return kMouseEventHandled;
+				auto control = pV.cast<CControl> ();
+				if (control && control->getListener ())
+				{
+					if (control->getListener ()->controlModifierClicked (control, buttons) != 0)
+						return kMouseEventHandled;
+				}
 			}
 
 			if (pV->wantsFocus ())
 				getFrame ()->setFocusView (pV);
 
-			CMouseEventResult result = pV->onMouseDown (where2, buttons);
+			auto result = pV->callMouseListener (MouseListenerCall::MouseDown, where2, buttons);
+			if (result == kMouseEventNotHandled || result == kMouseEventNotImplemented)
+				result = pV->onMouseDown (where2, buttons);
 			if (result != kMouseEventNotHandled && result != kMouseEventNotImplemented)
 			{
 				if (pV->getNbReference () > 1 && result == kMouseEventHandled)
-					pImpl->mouseDownView = pV;
+					setMouseDownView (pV);
 				return result;
 			}
 			if (!pV->getTransparency ())
@@ -902,15 +1021,17 @@ CMouseEventResult CViewContainer::onMouseDown (CPoint &where, const CButtonState
 //-----------------------------------------------------------------------------
 CMouseEventResult CViewContainer::onMouseUp (CPoint &where, const CButtonState& buttons)
 {
-	if (pImpl->mouseDownView)
+	if (auto view = getMouseDownView ())
 	{
-		CBaseObjectGuard crg (pImpl->mouseDownView);
+		CBaseObjectGuard crg (view);
 
 		CPoint where2 (where);
 		where2.offset (-getViewSize ().left, -getViewSize ().top);
-		pImpl->transform.inverse ().transform (where2);
-		pImpl->mouseDownView->onMouseUp (where2, buttons);
-		pImpl->mouseDownView = nullptr;
+		getTransform ().inverse ().transform (where2);
+		auto mouseResult = view->callMouseListener (MouseListenerCall::MouseUp, where2, buttons);
+		if (mouseResult == kMouseEventNotHandled || mouseResult == kMouseEventNotImplemented)
+			view->onMouseUp (where2, buttons);
+		clearMouseDownView ();
 		return kMouseEventHandled;
 	}
 	return kMouseEventNotHandled;
@@ -919,17 +1040,19 @@ CMouseEventResult CViewContainer::onMouseUp (CPoint &where, const CButtonState& 
 //-----------------------------------------------------------------------------
 CMouseEventResult CViewContainer::onMouseMoved (CPoint &where, const CButtonState& buttons)
 {
-	if (pImpl->mouseDownView)
+	if (auto view = getMouseDownView ())
 	{
-		CBaseObjectGuard crg (pImpl->mouseDownView);
+		CBaseObjectGuard crg (view);
 
 		CPoint where2 (where);
 		where2.offset (-getViewSize ().left, -getViewSize ().top);
-		pImpl->transform.inverse ().transform (where2);
-		CMouseEventResult mouseResult = pImpl->mouseDownView->onMouseMoved (where2, buttons);
+		getTransform ().inverse ().transform (where2);
+		auto mouseResult = view->callMouseListener (MouseListenerCall::MouseMoved, where2, buttons);
+		if (mouseResult == kMouseEventNotHandled || mouseResult == kMouseEventNotImplemented)
+			mouseResult = view->onMouseMoved (where2, buttons);
 		if (mouseResult != kMouseEventHandled && mouseResult != kMouseEventNotImplemented)
 		{
-			pImpl->mouseDownView = nullptr;
+			clearMouseDownView ();
 			return kMouseEventNotHandled;
 		}
 		return kMouseEventHandled;
@@ -940,10 +1063,11 @@ CMouseEventResult CViewContainer::onMouseMoved (CPoint &where, const CButtonStat
 //-----------------------------------------------------------------------------
 CMouseEventResult CViewContainer::onMouseCancel ()
 {
-	if (pImpl->mouseDownView)
+	if (auto mouseDownView = getMouseDownView ())
 	{
-		CBaseObjectGuard crg (pImpl->mouseDownView);
-		return pImpl->mouseDownView->onMouseCancel ();
+		CBaseObjectGuard crg (mouseDownView);
+		mouseDownView->callMouseListener (MouseListenerCall::MouseCancel, {}, 0);
+		return mouseDownView->onMouseCancel ();
 	}
 	return kMouseEventHandled;
 }
@@ -956,7 +1080,7 @@ bool CViewContainer::onWheel (const CPoint &where, const CMouseWheelAxis &axis, 
 		const auto& pV = *it;
 		CPoint where2 (where);
 		where2.offset (-getViewSize ().left, -getViewSize ().top);
-		pImpl->transform.inverse ().transform (where2);
+		getTransform ().inverse ().transform (where2);
 		if (pV && pV->isVisible () && pV->getMouseEnabled () && pV->getMouseableArea ().pointInside (where2))
 		{
 			if (pV->onWheel (where2, axis, distance, buttons))
@@ -975,76 +1099,19 @@ bool CViewContainer::onWheel (const CPoint &where, const float &distance, const 
 }
 
 //-----------------------------------------------------------------------------
-bool CViewContainer::onDrop (IDataPackage* drag, const CPoint& where)
+SharedPointer<IDropTarget> CViewContainer::getDropTarget ()
 {
-	bool result = false;
-
-	CPoint where2 (where);
-	where2.offset (-getViewSize ().left, -getViewSize ().top);
-	pImpl->transform.inverse ().transform (where2);
-
-	CView* view = getViewAt (where, GetViewOptions ().mouseEnabled ().includeViewContainer ());
-	if (view != pImpl->currentDragView)
+	if (getFrame () == this)
 	{
-		if (pImpl->currentDragView)
-			pImpl->currentDragView->onDragLeave (drag, where2);
-		pImpl->currentDragView = view;
+		IDropTarget* dropTarget = nullptr;
+		if (!getAttribute (kCViewContainerDropTargetAttribute, dropTarget))
+		{
+			dropTarget = new CViewContainerDropTarget (this);
+			setAttribute (kCViewContainerDropTargetAttribute, dropTarget);
+		}
+		return dropTarget;
 	}
-	if (pImpl->currentDragView)
-	{
-		result = pImpl->currentDragView->onDrop (drag, where2);
-		pImpl->currentDragView->onDragLeave (drag, where2);
-	}
-	pImpl->currentDragView = nullptr;
-	
-	return result;
-}
-
-//-----------------------------------------------------------------------------
-void CViewContainer::onDragEnter (IDataPackage* drag, const CPoint& where)
-{
-	CPoint where2 (where);
-	where2.offset (-getViewSize ().left, -getViewSize ().top);
-	pImpl->transform.inverse ().transform (where2);
-
-	if (pImpl->currentDragView)
-		pImpl->currentDragView->onDragLeave (drag, where2);
-	CView* view = getViewAt (where, GetViewOptions ().mouseEnabled ().includeViewContainer ());
-	pImpl->currentDragView = view;
-	if (view)
-		view->onDragEnter (drag, where2);
-}
-
-//-----------------------------------------------------------------------------
-void CViewContainer::onDragLeave (IDataPackage* drag, const CPoint& where)
-{
-	CPoint where2 (where);
-	where2.offset (-getViewSize ().left, -getViewSize ().top);
-	pImpl->transform.inverse ().transform (where2);
-
-	if (pImpl->currentDragView)
-		pImpl->currentDragView->onDragLeave (drag, where2);
-	pImpl->currentDragView = nullptr;
-}
-
-//-----------------------------------------------------------------------------
-void CViewContainer::onDragMove (IDataPackage* drag, const CPoint& where)
-{
-	CPoint where2 (where);
-	where2.offset (-getViewSize ().left, -getViewSize ().top);
-	pImpl->transform.inverse ().transform (where2);
-
-	CView* view = getViewAt (where, GetViewOptions ().mouseEnabled ().includeViewContainer ());
-	if (view != pImpl->currentDragView)
-	{
-		if (pImpl->currentDragView)
-			pImpl->currentDragView->onDragLeave (drag, where2);
-		if (view)
-			view->onDragEnter (drag, where2);
-		pImpl->currentDragView = view;
-	}
-	else if (pImpl->currentDragView)
-		pImpl->currentDragView->onDragMove (drag, where2);
+	return makeOwned<CViewContainerDropTarget> (this);
 }
 
 #if VSTGUI_TOUCH_EVENT_HANDLING
@@ -1221,7 +1288,7 @@ CView* CViewContainer::getViewAt (const CPoint& p, const GetViewOptions& options
 {
 	CPoint where (p);
 	where.offset (-getViewSize ().left, -getViewSize ().top);
-	pImpl->transform.inverse ().transform (where);
+	getTransform ().inverse ().transform (where);
 
 	for (auto it = pImpl->children.rbegin (), end = pImpl->children.rend (); it != end; ++it)
 	{
@@ -1265,7 +1332,7 @@ bool CViewContainer::getViewsAt (const CPoint& p, ViewList& views, const GetView
 
 	CPoint where (p);
 	where.offset (-getViewSize ().left, -getViewSize ().top);
-	pImpl->transform.inverse ().transform (where);
+	getTransform ().inverse ().transform (where);
 
 	for (auto it = pImpl->children.rbegin (), end = pImpl->children.rend (); it != end; ++it)
 	{
@@ -1307,7 +1374,7 @@ CViewContainer* CViewContainer::getContainerAt (const CPoint& p, const GetViewOp
 {
 	CPoint where (p);
 	where.offset (-getViewSize ().left, -getViewSize ().top);
-	pImpl->transform.inverse ().transform (where);
+	getTransform ().inverse ().transform (where);
 
 	for (auto it = pImpl->children.rbegin (), end = pImpl->children.rend (); it != end; ++it)
 	{
@@ -1337,8 +1404,8 @@ CViewContainer* CViewContainer::getContainerAt (const CPoint& p, const GetViewOp
 CPoint& CViewContainer::frameToLocal (CPoint& point) const
 {
 	point.offset (-getViewSize ().left, -getViewSize ().top);
-	if (getParentView ())
-		return getParentView ()->frameToLocal (point);
+	if (auto parent = getParentView ())
+		return parent->frameToLocal (point);
 	return point;
 }
 
@@ -1346,8 +1413,8 @@ CPoint& CViewContainer::frameToLocal (CPoint& point) const
 CPoint& CViewContainer::localToFrame (CPoint& point) const
 {
 	point.offset (getViewSize ().left, getViewSize ().top);
-	if (getParentView ())
-		return getParentView ()->localToFrame (point);
+	if (auto parent = getParentView ())
+		return parent->localToFrame (point);
 	return point;
 }
 

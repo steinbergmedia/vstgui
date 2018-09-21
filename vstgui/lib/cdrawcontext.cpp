@@ -57,8 +57,7 @@ CDrawContext::Transform::~Transform () noexcept
 
 //-----------------------------------------------------------------------------
 CDrawContext::CDrawContext (const CRect& surfaceRect)
-: drawStringHelper (nullptr)
-, surfaceRect (surfaceRect)
+: surfaceRect (surfaceRect)
 {
 	transformStack.push (CGraphicsTransform ());
 }

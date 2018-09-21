@@ -7,7 +7,7 @@
 
 #include "../../../cgraphicspath.h"
 
-#if WINDOWS && VSTGUI_DIRECT2D_SUPPORT
+#if WINDOWS
 
 #include <list>
 

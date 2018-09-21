@@ -313,16 +313,19 @@ TESTCASE(CFrameTest,
 
 	TEST(setModalView,
 		auto frame = owned (new CFrame (CRect (0, 0, 100, 100), nullptr));
-		auto view = owned (new View ());
+		auto view = shared (new View ());
 		EXPECT (frame->getModalView () == nullptr);
-		EXPECT (frame->setModalView (view));
+		auto session = frame->beginModalViewSession (view);
+		EXPECT (session != nullptr);
 		EXPECT (frame->getModalView () == view);
-		auto container = owned (new CViewContainer (CRect (0, 0, 0, 0)));
-		EXPECT (frame->setModalView (container) == false);
-		EXPECT (frame->setModalView (nullptr));
-		EXPECT (frame->setModalView (container));
+		auto container = shared (new CViewContainer (CRect (0, 0, 0, 0)));
+		auto session2 = frame->beginModalViewSession (container);
+		EXPECT (session2 != nullptr)
 		EXPECT (frame->getModalView () == container);
-		EXPECT (frame->setModalView (nullptr));
+		EXPECT (frame->endModalViewSession (session) == false);
+		EXPECT (frame->endModalViewSession (session2) == true);
+		EXPECT (frame->getModalView () == view);
+		EXPECT (frame->endModalViewSession (session) == true);
 		EXPECT (frame->getModalView () == nullptr);
 	);
 	
@@ -351,11 +354,11 @@ TESTCASE(CFrameTest,
 		key.virt = VKEY_TAB;
 		EXPECT (frame->onKeyDown (key) == 1);
 		EXPECT (frame->getFocusView() == view2);
-		auto view3 = owned (new View ());
-		frame->setModalView (view3);
+		auto view3 = shared (new View ());
+		auto modalSession = frame->beginModalViewSession (view3);
 		EXPECT (frame->onKeyDown (key) == 1);
 		EXPECT (view3->onKeyDownCalled);
-		frame->setModalView (nullptr);
+		frame->endModalViewSession (modalSession);
 	);
 
 	TEST(onKeyUp,
@@ -377,11 +380,11 @@ TESTCASE(CFrameTest,
 		frame->setFocusView (view2);
 		EXPECT (frame->onKeyUp (key) == 1);
 		EXPECT (container->onKeyUpCalled);
-		auto view3 = owned (new View ());
-		frame->setModalView (view3);
+		auto view3 = shared (new View ());
+		auto modalSession = frame->beginModalViewSession (view3);
 		EXPECT (frame->onKeyUp (key) == 1);
 		EXPECT (view3->onKeyUpCalled);
-		frame->setModalView (nullptr);
+		frame->endModalViewSession (modalSession);
 	);
 	
 	TEST(advanceNextFocusView,
@@ -436,19 +439,19 @@ TESTCASE(CFrameTest,
 	
 	TEST(advanceNextFocusViewInModalView,
 		auto frame = owned (new CFrame (CRect (0, 0, 100, 100), nullptr));
-		auto view = owned (new View ());
+		auto view = shared (new View ());
 		frame->attached (frame);
-		frame->setModalView (view);
+		auto modalSession = frame->beginModalViewSession (view);
 		EXPECT (frame->getFocusView () == nullptr);
 		frame->onActivate (true);
 		view->setWantsFocus (true);
 		frame->advanceNextFocusView (frame->getFocusView ());
 		EXPECT (frame->getFocusView () == view);
-		frame->setModalView (nullptr);
-		auto container = owned (new Container ());
+		frame->endModalViewSession (modalSession);
+		auto container = shared (new Container ());
 		auto view2 = new View ();
 		container->addView (view2);
-		frame->setModalView (container);
+		modalSession = frame->beginModalViewSession (container);
 		EXPECT (frame->getFocusView () == nullptr);
 		view2->setWantsFocus (true);
 		frame->advanceNextFocusView (frame->getFocusView ());
@@ -475,25 +478,25 @@ TESTCASE(CFrameTest,
 		frame->advanceNextFocusView (frame->getFocusView ());
 		EXPECT (frame->getFocusView () == view5);
 
-		frame->setModalView (nullptr);
+		frame->endModalViewSession (modalSession);
 	);
 
 	TEST(getViewAtModalView,
 		auto frame = owned (new CFrame (CRect (0, 0, 100, 100), nullptr));
-		auto container = owned (new Container);
+		auto container = shared (new Container);
 		auto view = new View ();
 		container->addView (view);
 		frame->attached (frame);
-		frame->setModalView (container);
+		auto modalSession = frame->beginModalViewSession (container);
 		EXPECT (frame->getViewAt (CPoint (1, 1)) == container);
 		EXPECT (frame->getViewAt (CPoint (1, 1), GetViewOptions (GetViewOptions::kDeep)) == view);
 		EXPECT (frame->getViewAt (CPoint (90, 90)) == nullptr);
-		frame->setModalView (nullptr);
+		frame->endModalViewSession (modalSession);
 	);
 	
 	TEST(getContainerAtModalView,
 		auto frame = owned (new CFrame (CRect (0, 0, 100, 100), nullptr));
-		auto container = owned (new Container ());
+		auto container = shared (new Container ());
 		CRect r (0, 0, 50, 50);
 		container->setViewSize (r);
 		container->setMouseableArea (r);
@@ -501,21 +504,21 @@ TESTCASE(CFrameTest,
 		container->addView (container2);
 		frame->attached (frame);
 		EXPECT (frame->getContainerAt (CPoint (1, 1)) == frame);
-		frame->setModalView (container);
+		auto modalSession = frame->beginModalViewSession (container);
 		EXPECT (frame->getContainerAt (CPoint (1, 1), GetViewOptions (GetViewOptions::kNone)) == container);
 		EXPECT (frame->getContainerAt (CPoint (1, 1), GetViewOptions (GetViewOptions::kDeep)) == container2);
 		EXPECT (frame->getContainerAt (CPoint (80, 80), GetViewOptions (GetViewOptions::kDeep)) == nullptr);
 		
-		frame->setModalView (nullptr);
+		frame->endModalViewSession (modalSession);
 	);
 	
 	TEST(mouseDownModalView,
 		auto frame = owned (new CFrame (CRect (0, 0, 100, 100), nullptr));
-		auto container = owned (new Container ());
+		auto container = shared (new Container ());
 		auto view1 = new View ();
 		container->addView (view1);
 		frame->attached (frame);
-		frame->setModalView (container);
+		auto modalSession = frame->beginModalViewSession (container);
 
 		CPoint p (80, 80);
 		EXPECT (frame->onMouseDown (p, 0) == kMouseEventNotHandled);
@@ -524,7 +527,7 @@ TESTCASE(CFrameTest,
 		EXPECT (frame->onMouseDown (p, 0) == kMouseEventHandled);
 		EXPECT (view1->onMouseDownCalled);
 
-		frame->setModalView (nullptr);
+		frame->endModalViewSession (modalSession);
 	);
 	
 	TEST(activate,
@@ -580,7 +583,6 @@ TESTCASE(CFrameTest,
 		EXPECT(platformHandle);
 		auto frame = new CFrame (CRect (0, 0, 100, 100), nullptr);
 		frame->open (platformHandle->getHandle (), platformHandle->getType ());
-		CPoint p;
 		EXPECT (frame->setPosition (10, 10));
 		CRect r;
 		frame->getSize (r);
@@ -608,5 +610,24 @@ TESTCASE(CFrameTest,
 //		frame->close ();
 //	);
 );
+
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+TESTCASE(CFrameLegacyTest,
+	TEST(setModalView,
+		auto frame = owned (new CFrame (CRect (0, 0, 100, 100), nullptr));
+		auto view = owned (new View ());
+		EXPECT (frame->getModalView () == nullptr);
+		EXPECT (frame->setModalView (view));
+		EXPECT (frame->getModalView () == view);
+		auto container = owned (new CViewContainer (CRect (0, 0, 0, 0)));
+		EXPECT (frame->setModalView (container) == false);
+		EXPECT (frame->setModalView (nullptr));
+		EXPECT (frame->setModalView (container));
+		EXPECT (frame->getModalView () == container);
+		EXPECT (frame->setModalView (nullptr));
+		EXPECT (frame->getModalView () == nullptr);
+	);
+);
+#endif
 
 } // VSTGUI

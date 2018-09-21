@@ -25,10 +25,20 @@ TESTCASE(CSegmentButtonCreatorTest,
 	TEST(style,
 		DummyUIDescription uidesc;
 		testAttribute<CSegmentButton>(kCSegmentButton, kAttrStyle, "horizontal", &uidesc, [&] (CSegmentButton* v) {
-			return v->getStyle () == CSegmentButton::kHorizontal;
+			return v->getStyle () == CSegmentButton::Style::kHorizontal;
 		});
 		testAttribute<CSegmentButton>(kCSegmentButton, kAttrStyle, "vertical", &uidesc, [&] (CSegmentButton* v) {
-			return v->getStyle () == CSegmentButton::kVertical;
+			return v->getStyle () == CSegmentButton::Style::kVertical;
+		});
+	);
+
+	TEST(selectionMode,
+		DummyUIDescription uidesc;
+		testAttribute<CSegmentButton>(kCSegmentButton, kAttrSelectionMode, "Single", &uidesc, [&] (CSegmentButton* v) {
+			return v->getSelectionMode () == CSegmentButton::SelectionMode::kSingle;
+		});
+		testAttribute<CSegmentButton>(kCSegmentButton, kAttrSelectionMode, "Multiple", &uidesc, [&] (CSegmentButton* v) {
+			return v->getSelectionMode () == CSegmentButton::SelectionMode::kMultiple;
 		});
 	);
 

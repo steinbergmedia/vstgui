@@ -25,7 +25,7 @@ TESTCASE(CTextEditCreatorTest,
 	TEST(doubleClick,
 		UIDescriptionAdapter uidesc;
 		testAttribute<CTextEdit>(kCTextEdit, kAttrStyleDoubleClick, true, &uidesc, [] (CTextEdit* v) {
-			return v->getStyle () & kDoubleClickStyle;
+			return v->getStyle () & CTextEdit::kDoubleClickStyle;
 		});
 	);
 );

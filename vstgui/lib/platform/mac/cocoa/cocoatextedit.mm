@@ -50,6 +50,19 @@ static id VSTGUI_NSTextField_Init (id self, SEL _cmd, void* textEdit)
 		NSView* containerView = [[NSView alloc] initWithFrame:editFrameRect];
 		[containerView setAutoresizesSubviews:YES];
 
+		if ([frameView wantsLayer])
+		{
+			containerView.wantsLayer = YES;
+			double maxZPosition = -1.;
+			for (CALayer* layer in frameView.layer.sublayers)
+			{
+				double zPosition = layer.zPosition;
+				if (zPosition > maxZPosition)
+					maxZPosition = zPosition;
+			}
+			[containerView layer].zPosition = static_cast<CGFloat> (maxZPosition + 1);
+		}
+		
 		CPoint textInset = tec->platformGetTextInset ();
 
 		editFrameRect.origin.x = static_cast<CGFloat> (textInset.x/2. - 1.);
@@ -148,18 +161,6 @@ static id VSTGUI_NSTextField_Init (id self, SEL _cmd, void* textEdit)
 				              [[self window] makeFirstResponder:self];
 			            });
 
-		if ([frameView wantsLayer])
-		{
-			double maxZPosition = -1.;
-			for (CALayer* layer in frameView.layer.sublayers)
-			{
-				double zPosition = layer.zPosition;
-				if (zPosition > maxZPosition)
-					maxZPosition = zPosition;
-			}
-			[containerView layer].zPosition = static_cast<CGFloat> (maxZPosition + 1);
-		}
-		
 	}
 	return self;
 }

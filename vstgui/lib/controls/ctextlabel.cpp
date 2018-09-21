@@ -9,7 +9,9 @@
 
 namespace VSTGUI {
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 IdStringPtr CTextLabel::kMsgTruncatedTextChanged = "CTextLabel::kMsgTruncatedTextChanged";
+#endif
 
 //------------------------------------------------------------------------
 // CTextLabel
@@ -38,6 +40,21 @@ CTextLabel::CTextLabel (const CTextLabel& v)
 , textTruncateMode (v.textTruncateMode)
 {
 	setText (v.getText ());
+}
+
+//------------------------------------------------------------------------
+void CTextLabel::registerTextLabelListener (ITextLabelListener* listener)
+{
+	if (!listeners)
+		listeners = std::unique_ptr<TextLabelListenerList> (new TextLabelListenerList ());
+	listeners->add (listener);
+}
+
+//------------------------------------------------------------------------
+void CTextLabel::unregisterTextLabelListener (ITextLabelListener* listener)
+{
+	if (listeners)
+		listeners->remove (listener);
 }
 
 //------------------------------------------------------------------------
@@ -75,7 +92,14 @@ void CTextLabel::calculateTruncatedText ()
 		truncatedText = CDrawMethods::createTruncatedText (mode, text, fontID, getWidth () - getTextInset ().x * 2.);
 		if (truncatedText == text)
 			truncatedText.clear ();
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 		changed (kMsgTruncatedTextChanged);
+#endif
+		if (listeners)
+		{
+			listeners->forEach (
+			    [this] (ITextLabelListener* l) { l->onTextLabelTruncatedTextChanged (this); });
+		}
 	}
 	else if (!truncatedText.empty ())
 		truncatedText.clear ();
@@ -190,7 +214,11 @@ void CMultiLineTextLabel::setAutoHeight (bool state)
 		return;
 	autoHeight = state;
 	if (autoHeight && isAttached ())
+	{
+		if (lines.empty ())
+			recalculateLines (nullptr);
 		recalculateHeight ();
+	}
 }
 
 //------------------------------------------------------------------------
@@ -235,7 +263,7 @@ void CMultiLineTextLabel::drawRect (CDrawContext* pContext, const CRect& updateR
 		for (const auto& line : lines)
 		{
 			if (line.r.rectOverlap (newClip))
-				pContext->drawString (line.str.getPlatformString (), line.r, getHoriAlign (), bAntialias);
+				pContext->drawString (line.str.getPlatformString (), line.r, getHoriAlign (), getAntialias ());
 		}
 	}
 
@@ -243,7 +271,7 @@ void CMultiLineTextLabel::drawRect (CDrawContext* pContext, const CRect& updateR
 	for (const auto& line : lines)
 	{
 		if (line.r.rectOverlap (newClip))
-			pContext->drawString (line.str.getPlatformString (), line.r, getHoriAlign (), bAntialias);
+			pContext->drawString (line.str.getPlatformString (), line.r, getHoriAlign (), getAntialias ());
 		else if (line.r.bottom > newClip.bottom)
 			break;
 	}
@@ -335,6 +363,52 @@ inline bool isLineBreakSeparator (char32_t c)
 }
 
 //------------------------------------------------------------------------
+void CMultiLineTextLabel::calculateWrapLine  (CDrawContext* context,
+                                       std::pair<UTF8String, double>& element,
+                                       const IFontPainter* const& fontPainter, double lineHeight,
+                                       double lineWidth, double maxWidth, const CPoint& textInset,
+                                       CCoord& y)
+{
+	auto start = element.first.begin ();
+	auto lastSeparator = start;
+	auto pos = start;
+	while (pos != element.first.end () && *pos != 0)
+	{
+		if (isspace (*pos))
+			lastSeparator = pos;
+		else if (isLineBreakSeparator (*pos))
+			lastSeparator = ++pos;
+		if (pos == element.first.end ())
+			break;
+		UTF8String tmp ({start.base (), ++(pos.base ())});
+		auto width = fontPainter->getStringWidth (context, tmp.getPlatformString ());
+		if (width > maxWidth)
+		{
+			if (lastSeparator == element.first.end ())
+				lastSeparator = pos;
+			if (start == lastSeparator)
+				lastSeparator = pos;
+			lines.emplace_back (
+			    Line {CRect (textInset.x, y, lineWidth, y + lineHeight + textInset.y),
+			          UTF8String ({start.base (), lastSeparator.base ()})});
+			y += lineHeight;
+			pos = lastSeparator;
+			start = pos;
+			if (isspace (*start))
+				++start;
+			lastSeparator = element.first.end ();
+		}
+		++pos;
+	}
+	if (start != element.first.end ())
+	{
+		lines.emplace_back (Line {CRect (textInset.x, y, lineWidth, y + lineHeight + textInset.y),
+		                          UTF8String ({start.base (), element.first.end ().base ()})});
+		y += lineHeight;
+	}
+}
+
+//------------------------------------------------------------------------
 void CMultiLineTextLabel::recalculateLines (CDrawContext* context)
 {
 	const auto& font = getFont ()->getPlatformFont ();
@@ -360,12 +434,14 @@ void CMultiLineTextLabel::recalculateLines (CDrawContext* context)
 	CCoord y = textInset.y;
 
 	auto lineWidth = getWidth () - textInset.x;
-	
+
 	for (auto& element : elements)
 	{
 		if (lineLayout == LineLayout::clip)
 		{
-			lines.emplace_back (Line {CRect (textInset.x, y, element.second + textInset.x, y + lineHeight + textInset.y), std::move (element.first)});
+			lines.emplace_back (Line {
+			    CRect (textInset.x, y, element.second + textInset.x, y + lineHeight + textInset.y),
+			    std::move (element.first)});
 		}
 		else
 		{
@@ -373,52 +449,22 @@ void CMultiLineTextLabel::recalculateLines (CDrawContext* context)
 			{
 				if (lineLayout == LineLayout::truncate)
 				{
-					element.first = CDrawMethods::createTruncatedText (CDrawMethods::kTextTruncateTail, element.first, fontID, maxWidth);
+					element.first = CDrawMethods::createTruncatedText (
+					    CDrawMethods::kTextTruncateTail, element.first, fontID, maxWidth);
 				}
 				else // wrap
 				{
-					auto start = element.first.begin ();
-					auto lastSeparator = start;
-					auto pos = start;
-					while (pos != element.first.end () && *pos != 0)
-					{
-						if (isspace (*pos))
-							lastSeparator = pos;
-						else if (isLineBreakSeparator (*pos))
-							lastSeparator = ++pos;
-						if (pos == element.first.end ())
-							break;
-						UTF8String tmp ({start.base (), ++(pos.base ())});
-						auto width = fontPainter->getStringWidth (context, tmp.getPlatformString ());
-						if (width > maxWidth)
-						{
-							if (lastSeparator == element.first.end ())
-								lastSeparator = pos;
-							if (start == lastSeparator)
-								lastSeparator = pos;
-							lines.emplace_back (Line {CRect (textInset.x, y, lineWidth, y + lineHeight + textInset.y), UTF8String ({start.base (), lastSeparator.base ()})});
-							y += lineHeight;
-							pos = lastSeparator;
-							start = pos;
-							if (isspace (*start))
-								++start;
-							lastSeparator = element.first.end ();
-						}
-						++pos;
-					}
-					if (start != element.first.end ())
-					{
-						lines.emplace_back (Line {CRect (textInset.x, y, lineWidth, y + lineHeight + textInset.y), UTF8String ({start.base (), element.first.end ().base ()})});
-						y += lineHeight;
-					}
+					calculateWrapLine (context, element, fontPainter, lineHeight, lineWidth,
+					                   maxWidth, textInset, y);
 					continue;
 				}
 			}
-			lines.emplace_back (Line {CRect (textInset.x, y, lineWidth, y + lineHeight + textInset.y), std::move (element.first)});
+			lines.emplace_back (
+			    Line {CRect (textInset.x, y, lineWidth, y + lineHeight + textInset.y),
+			          std::move (element.first)});
 		}
 		y += lineHeight;
 	}
-
 }
 
 } // namespace

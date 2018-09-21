@@ -302,7 +302,7 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
-class TextController : public Controller, public IViewListenerAdapter
+class TextController : public Controller, public IViewListenerAdapter, public ITextLabelListener
 {
 public:
 	TextController (IController* baseController, const std::string& attrName)
@@ -313,10 +313,8 @@ public:
 		if (textLabel)
 		{
 			textLabel->unregisterViewListener (this);
-			textLabel->removeDependency (this);
+			textLabel->unregisterTextLabelListener (this);
 		}
-		if (slider)
-			slider->removeDependency (this);
 	}
 	
 	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override
@@ -328,7 +326,7 @@ public:
 			{
 				textLabel = edit;
 				originalTextColor = textLabel->getFontColor ();
-				textLabel->addDependency (this);
+				textLabel->registerTextLabelListener (this);
 				textLabel->registerViewListener (this);
 			}
 		}
@@ -336,10 +334,7 @@ public:
 		{
 			CSlider* sliderView = dynamic_cast<CSlider*>(view);
 			if (sliderView)
-			{
 				slider = sliderView;
-				slider->addDependency (this);
-			}
 		}
 		return controller->verifyView (view, attributes, description);
 	}
@@ -435,16 +430,12 @@ public:
 		}
 	}
 	
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override
+	void onTextLabelTruncatedTextChanged (CTextLabel* label) override
 	{
-		if (message == CTextLabel::kMsgTruncatedTextChanged)
-		{
-			UTF8StringPtr txt = textLabel->getTruncatedText ();
-			valueDisplayTruncated (txt);
-			return kMessageNotified;
-		}
-		return kMessageUnknown;
+		UTF8StringPtr txt = label->getTruncatedText ();
+		valueDisplayTruncated (txt);
 	}
+	
 protected:
 	SharedPointer<CTextLabel> textLabel;
 	SharedPointer<CSlider> slider;
@@ -452,7 +443,7 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
-class MenuController : public TextController
+class MenuController : public TextController, public OptionMenuListenerAdapter, public CommandMenuItemTargetAdapter
 {
 public:
 	MenuController (IController* baseController, const std::string& attrName, UIDescription* description, bool addNoneItem = true, bool sortItems = true)
@@ -461,7 +452,7 @@ public:
 	~MenuController () override
 	{
 		if (menu)
-			menu->removeDependency (this);
+			menu->unregisterOptionMenuListener (this);
 	}
 	
 	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override
@@ -470,7 +461,7 @@ public:
 		{
 			menu = dynamic_cast<COptionMenu*>(view);
 			if (menu)
-				menu->addDependency (this);
+				menu->registerOptionMenuListener (this);
 		}
 		return TextController::verifyView (view, attributes, description);
 	}
@@ -481,7 +472,7 @@ public:
 
 	virtual void addMenuEntry (const std::string* entryName)
 	{
-		CCommandMenuItem* item = new CCommandMenuItem (entryName->c_str (), this);
+		CCommandMenuItem* item = new CCommandMenuItem (CCommandMenuItem::Desc{entryName->data (), this});
 		validateMenuEntry (item);
 		menu->addEntry (item);
 		if (textLabel->getText () == *entryName)
@@ -497,33 +488,25 @@ public:
 		TextController::setValue (value);
 	}
 
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override
+	void onOptionMenuPrePopup (COptionMenu* menu) override
 	{
-		if (sender == menu && message == COptionMenu::kMsgBeforePopup)
-		{
-			menu->removeAllEntry ();
-			if (addNoneItem)
-				menu->addEntry (new CCommandMenuItem ("None", 100, this));
-			StringPtrList names;
-			collectMenuItemNames (names);
-			if (sortItems)
-				names.sort (UIEditController::std__stringCompare);
-			if (addNoneItem && !names.empty ())
-				menu->addSeparator ();
-			for (const auto& name : names)
-				addMenuEntry (name);
-			return kMessageNotified;
-		}
-		else if (message == CCommandMenuItem::kMsgMenuItemSelected)
-		{
-			CCommandMenuItem* item = dynamic_cast<CCommandMenuItem*>(sender);
-			if (item)
-			{
-				performValueChange (item->getTag () == 100 ? "" : item->getTitle ());
-			}
-			return kMessageNotified;
-		}
-		return TextController::notify (sender, message);
+		menu->removeAllEntry ();
+		if (addNoneItem)
+			menu->addEntry (new CCommandMenuItem (CCommandMenuItem::Desc{"None", 100, this}));
+		StringPtrList names;
+		collectMenuItemNames (names);
+		if (sortItems)
+			names.sort (UIEditController::std__stringCompare);
+		if (addNoneItem && !names.empty ())
+			menu->addSeparator ();
+		for (const auto& name : names)
+			addMenuEntry (name);
+	}
+
+	bool onCommandMenuItemSelected (CCommandMenuItem* item) override
+	{
+		performValueChange (item->getTag () == 100 ? "" : item->getTitle ());
+		return true;
 	}
 
 	void valueDisplayTruncated (UTF8StringPtr txt) override
@@ -781,7 +764,7 @@ UIAttributesController::UIAttributesController (IController* baseController, UIS
 {
 	selection->addDependency (this);
 	undoManager->addDependency (this);
-	description->addDependency (this);
+	description->registerListener (this);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -789,7 +772,7 @@ UIAttributesController::~UIAttributesController ()
 {
 	selection->removeDependency (this);
 	undoManager->removeDependency (this);
-	editDescription->removeDependency (this);
+	editDescription->unregisterListener (this);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -838,7 +821,7 @@ void UIAttributesController::valueChanged (CControl* control)
 			{
 				filterString = searchField->getText ();
 				rebuildAttributesView ();
-				UIAttributes* attributes = editDescription->getCustomAttributes ("UIAttributesController", true);
+				auto attributes = editDescription->getCustomAttributes ("UIAttributesController", true);
 				if (attributes)
 				{
 					attributes->setAttribute("UIAttributesController", filterString);
@@ -866,7 +849,7 @@ CView* UIAttributesController::verifyView (CView* view, const UIAttributes& attr
 		if (textEdit && textEdit->getTag () == kSearchFieldTag)
 		{
 			searchField = textEdit;
-			UIAttributes* attributes = editDescription->getCustomAttributes ("UIAttributesController", true);
+			auto attributes = editDescription->getCustomAttributes ("UIAttributesController", true);
 			if (attributes)
 			{
 				const std::string* searchText = attributes->getAttributeValue ("SearchString");
@@ -946,6 +929,42 @@ IController* UIAttributesController::createSubController (IdStringPtr _name, con
 }
 
 //----------------------------------------------------------------------------------------------------
+void UIAttributesController::onUIDescTagChanged (UIDescription* desc)
+{
+	validateAttributeViews ();
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIAttributesController::onUIDescColorChanged (UIDescription* desc)
+{
+	validateAttributeViews ();
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIAttributesController::onUIDescFontChanged (UIDescription* desc)
+{
+	validateAttributeViews ();
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIAttributesController::onUIDescBitmapChanged (UIDescription* desc)
+{
+	validateAttributeViews ();
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIAttributesController::onUIDescTemplateChanged (UIDescription* desc)
+{
+	validateAttributeViews ();
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIAttributesController::onUIDescGradientChanged (UIDescription* desc)
+{
+	validateAttributeViews ();
+}
+
+//----------------------------------------------------------------------------------------------------
 CMessageResult UIAttributesController::notify (CBaseObject* sender, IdStringPtr message)
 {
 	if (message == UISelection::kMsgSelectionChanged)
@@ -958,15 +977,6 @@ CMessageResult UIAttributesController::notify (CBaseObject* sender, IdStringPtr 
 		return kMessageNotified;
 	}
 	else if (message == UISelection::kMsgSelectionViewChanged || message == UIUndoManager::kMsgChanged)
-	{
-		validateAttributeViews ();
-		return kMessageNotified;
-	}
-	else if (message == UIDescription::kMessageBitmapChanged
-			|| message == UIDescription::kMessageColorChanged
-			|| message == UIDescription::kMessageFontChanged
-			|| message == UIDescription::kMessageTagChanged
-			)
 	{
 		validateAttributeViews ();
 		return kMessageNotified;
@@ -1032,10 +1042,10 @@ CView* UIAttributesController::createValueViewForAttributeType (const UIViewFact
 			double minValue, maxValue;
 			if (viewFactory->getAttributeValueRange (view, attrName, minValue, maxValue))
 			{
-				CView* view = editorDescription->createView ("attributes.number", this);
-				if (view)
+				CView* valueView = editorDescription->createView ("attributes.number", this);
+				if (valueView)
 				{
-					if (auto container = view->asViewContainer ())
+					if (auto container = valueView->asViewContainer ())
 					{
 						std::vector<CSlider*> sliders;
 						if (container->getChildViewsOfType<CSlider> (sliders) == 1)
@@ -1044,7 +1054,7 @@ CView* UIAttributesController::createValueViewForAttributeType (const UIViewFact
 							sliders[0]->setMax (static_cast<float> (maxValue));
 						}
 					}
-					return view;
+					return valueView;
 				}
 			}
 		}
@@ -1119,7 +1129,7 @@ CView* UIAttributesController::createViewForAttribute (const std::string& attrNa
 		textEdit->setFont (kNormalFontSmall);
 		textEdit->setListener (controller);
 		valueView = textEdit;
-		valueView->setAttribute (kCViewControllerAttribute, sizeof (IController*), &controller);
+		valueView->setAttribute (kCViewControllerAttribute, controller);
 	}
 	if (valueView)
 	{
@@ -1193,7 +1203,7 @@ void UIAttributesController::getConsolidatedAttributeNames (StringList& attrName
 //----------------------------------------------------------------------------------------------------
 void UIAttributesController::rebuildAttributesView ()
 {
-	const IViewFactory* viewFactory = editDescription->getViewFactory ();
+	auto viewFactory = dynamic_cast<const UIViewFactory*> (editDescription->getViewFactory ());
 	if (attributeView == nullptr || viewFactory == nullptr)
 		return;
 
@@ -1212,7 +1222,7 @@ void UIAttributesController::rebuildAttributesView ()
 			UTF8StringPtr viewname = nullptr;
 			for (auto view : *selection)
 			{
-				UTF8StringPtr name = viewFactory->getViewName (view);
+				UTF8StringPtr name = viewFactory->getViewDisplayName (view);
 				if (viewname != nullptr && UTF8StringView (name) != viewname)
 				{
 					viewname = nullptr;

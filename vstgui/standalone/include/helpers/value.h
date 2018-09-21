@@ -21,6 +21,20 @@ public:
 };
 
 //------------------------------------------------------------------------
+class IMutableStepValue : public Interface
+{
+public:
+	virtual void setNumSteps (IStepValue::StepType numSteps) = 0;
+};
+
+//------------------------------------------------------------------------
+class IRangeValueConverter : public Interface
+{
+public:
+	virtual void setRange (IValue::Type minValue, IValue::Type maxValue) = 0;
+};
+
+//------------------------------------------------------------------------
 /**	%value create and helper functions
  *	@ingroup standalone
  */
@@ -120,7 +134,8 @@ ValueConverterPtr makePercentConverter ();
  *
  *	converts normalized values to the range [minValue..maxValue]
  */
-ValueConverterPtr makeRangeConverter (IValue::Type minValue, IValue::Type maxValue);
+ValueConverterPtr makeRangeConverter (IValue::Type minValue, IValue::Type maxValue,
+                                      uint32_t stringPrecision = 4);
 
 /** @} */
 

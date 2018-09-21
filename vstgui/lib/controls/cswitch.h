@@ -12,6 +12,10 @@ namespace VSTGUI {
 //-----------------------------------------------------------------------------
 class CSwitchBase : public CControl, public IMultiBitmapControl
 {
+public:
+	void setInverseBitmap (bool state);
+	bool getInverseBitmap () const { return inverseBitmap; }
+
 protected:
 	CSwitchBase (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background,
 	             const CPoint& offset = CPoint (0, 0));
@@ -38,7 +42,10 @@ protected:
 	double getCoef () const { return coef; }
 	int32_t normalizedToIndex (float norm) const
 	{
-		return static_cast<int32_t> (norm * (getNumSubPixmaps () - 1) + 0.5f);
+		if (useLegacyIndexCalculation)
+			return static_cast<int32_t> (norm * (getNumSubPixmaps () - 1) + 0.5f);
+		return std::min<int32_t> (getNumSubPixmaps () - 1,
+		                          static_cast<int32_t> (norm * getNumSubPixmaps ()));
 	}
 
 	float indexToNormalized (int32_t index) const
@@ -49,10 +56,13 @@ protected:
 	virtual double calculateCoef () const = 0;
 	virtual float calcNormFromPoint (const CPoint& where) const = 0;
 
+	static bool useLegacyIndexCalculation;
+
 private:
 	CPoint offset;
 	double coef;
 	float mouseStartValue;
+	bool inverseBitmap{false};
 };
 
 //-----------------------------------------------------------------------------
@@ -108,7 +118,19 @@ protected:
 //-----------------------------------------------------------------------------
 class CRockerSwitch : public CControl, public IMultiBitmapControl
 {
+private:
+	enum StyleEnum
+	{
+		StyleHorizontal = 0,
+		StyleVertical,
+	};
 public:
+	enum Style
+	{
+		kHorizontal = 1 << StyleHorizontal,
+		kVertical = 1 << StyleVertical,
+	};
+
 	CRockerSwitch (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background, const CPoint& offset = CPoint (0, 0), const int32_t style = kHorizontal);
 	CRockerSwitch (const CRect& size, IControlListener* listener, int32_t tag, CCoord heightOfOneImage, CBitmap* background, const CPoint& offset = CPoint (0, 0), const int32_t style = kHorizontal);
 	CRockerSwitch (const CRockerSwitch& rswitch);

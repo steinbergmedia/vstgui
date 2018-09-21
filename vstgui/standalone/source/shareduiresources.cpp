@@ -8,7 +8,7 @@
 #include "../../lib/cfileselector.h"
 #include "../../lib/cframe.h"
 #include "../../uidescription/uiattributes.h"
-#include "../../uidescription/uidescription.h"
+#include "../../uidescription/compresseduidescription.h"
 #include "../include/ialertbox.h"
 #include "../include/iappdelegate.h"
 #include "../include/iapplication.h"
@@ -76,7 +76,7 @@ public:
 	}
 
 private:
-	void load () const;
+	bool load () const;
 
 	mutable bool loadDone {false};
 	mutable SharedPointer<UIDescription> uiDesc;
@@ -101,10 +101,10 @@ void SharedUIResources::cleanup ()
 }
 
 //------------------------------------------------------------------------
-void SharedUIResources::load () const
+bool SharedUIResources::load () const
 {
 	if (loadDone)
-		return;
+		return uiDesc != nullptr;
 	loadDone = true;
 	if (auto filename = IApplication::instance ().getDelegate ().getSharedUIResourceFilename ())
 	{
@@ -114,54 +114,62 @@ void SharedUIResources::load () const
 			filename = *absPath;
 #endif
 
-		auto description = makeOwned<UIDescription> (filename);
+		SharedPointer<UIDescription> description;
+		if (Detail::getApplicationPlatformAccess ()
+		        ->getConfiguration ()
+		        .useCompressedUIDescriptionFiles)
+			description = makeOwned<CompressedUIDescription> (filename);
+		else
+			description = makeOwned<UIDescription> (filename);
 		if (!description->parse ())
 		{
 #if VSTGUI_LIVE_EDITING
 			if (!initUIDescAsNew (*description, nullptr))
-				return;
+				return false;
 			else
 #endif
-				return;
+				return false;
 		}
 		auto settings = description->getCustomAttributes ("UIDescFilePath", true);
 		auto filePath = settings->getAttributeValue ("path");
 		if (filePath)
 			description->setFilePath (filePath->data ());
 
-		uiDesc = description;
+		uiDesc = std::move (description);
 #if VSTGUI_LIVE_EDITING
 		auto res = Detail::checkAndUpdateUIDescFilePath (
-		    *description, nullptr, "The resource ui desc file location cannot be found.");
+		    *uiDesc, nullptr, "The resource ui desc file location cannot be found.");
 		if (res == UIDescCheckFilePathResult::Cancel)
 		{
 			IApplication::instance ().quit ();
-			return;
+			return false;
 		}
 		Detail::getEditFileMap ().set (
 		    IApplication::instance ().getDelegate ().getSharedUIResourceFilename (),
-		    description->getFilePath ());
+		    uiDesc->getFilePath ());
 		if (res == UIDescCheckFilePathResult::NewPathSet)
 			saveSharedUIDescription ();
 #endif
 	}
+	return uiDesc != nullptr;
 }
 
 //------------------------------------------------------------------------
 Optional<CColor> SharedUIResources::getColor (const UTF8String& name) const
 {
-	load ();
-	CColor c;
-	if (uiDesc && uiDesc->getColor (name, c))
-		return makeOptional (c);
+	if (load ())
+	{
+		CColor c;
+		if (uiDesc->getColor (name, c))
+			return makeOptional (c);
+	}
 	return {};
 }
 
 //------------------------------------------------------------------------
 Optional<CBitmap*> SharedUIResources::getBitmap (const UTF8String& name) const
 {
-	load ();
-	if (uiDesc)
+	if (load ())
 	{
 		if (auto bitmap = uiDesc->getBitmap (name))
 		{
@@ -174,8 +182,7 @@ Optional<CBitmap*> SharedUIResources::getBitmap (const UTF8String& name) const
 //------------------------------------------------------------------------
 Optional<CGradient*> SharedUIResources::getGradient (const UTF8String& name) const
 {
-	load ();
-	if (uiDesc)
+	if (load ())
 	{
 		if (auto gradient = uiDesc->getGradient (name))
 		{
@@ -188,8 +195,7 @@ Optional<CGradient*> SharedUIResources::getGradient (const UTF8String& name) con
 //------------------------------------------------------------------------
 Optional<CFontDesc*> SharedUIResources::getFont (const UTF8String& name) const
 {
-	load ();
-	if (uiDesc)
+	if (load ())
 	{
 		if (auto font = uiDesc->getFont (name))
 		{
@@ -222,13 +228,41 @@ void cleanupSharedUIResources ()
 static constexpr auto UIDescPathKey = "VSTGUI::Standalone|Debug|UIDescPath";
 
 //------------------------------------------------------------------------
+static void updateUIDescFilePath (const char* path, UIDescription& uiDesc)
+{
+	uiDesc.setFilePath (path);
+	auto settings = uiDesc.getCustomAttributes ("UIDescFilePath", true);
+	settings->setAttribute ("path", uiDesc.getFilePath ());
+}
+
+//------------------------------------------------------------------------
 UIDescCheckFilePathResult checkAndUpdateUIDescFilePath (UIDescription& uiDesc, CFrame* _frame,
                                                         UTF8StringPtr notFoundText)
 {
+	auto originalPath = std::string (uiDesc.getFilePath ());
 	CFileStream stream;
-	if (stream.open (uiDesc.getFilePath (), CFileStream::kReadMode))
+	if (stream.open (originalPath.data (), CFileStream::kReadMode))
 		return UIDescCheckFilePathResult::Exists;
 
+	VSTGUI::Standalone::Preferences prefs;
+	auto savedPath = prefs.get (UIDescPathKey);
+	if (savedPath)
+	{
+		unixfyPath (originalPath);
+		if (auto uiDescName = lastPathComponent (originalPath))
+		{
+			auto directory = savedPath->getString ();
+			unixfyPath (directory);
+			removeLastPathComponent (directory);
+			directory += unixPathSeparator;
+			directory += *uiDescName;
+			if (stream.open (directory.data (), CFileStream::kReadMode))
+			{
+				updateUIDescFilePath (directory.data (), uiDesc);
+				return UIDescCheckFilePathResult::NewPathSet;
+			}
+		}
+	}
 	SharedPointer<CFrame> frame (_frame);
 	if (!frame)
 		frame = makeOwned<CFrame> (CRect (), nullptr);
@@ -244,9 +278,8 @@ UIDescCheckFilePathResult checkAndUpdateUIDescFilePath (UIDescription& uiDesc, C
 		return UIDescCheckFilePathResult::Cancel;
 	}
 	auto fs = owned (CNewFileSelector::create (frame, CNewFileSelector::kSelectFile));
-	VSTGUI::Standalone::Preferences prefs;
-	if (auto initPath = prefs.get (UIDescPathKey))
-		fs->setInitialDirectory (*initPath);
+	if (savedPath)
+		fs->setInitialDirectory (*savedPath);
 	fs->setDefaultExtension (CFileExtension ("UIDescription File", "uidesc"));
 	if (fs->runModal ())
 	{
@@ -255,9 +288,7 @@ UIDescCheckFilePathResult checkAndUpdateUIDescFilePath (UIDescription& uiDesc, C
 			return UIDescCheckFilePathResult::Cancel;
 		}
 		auto path = fs->getSelectedFile (0);
-		uiDesc.setFilePath (path);
-		auto settings = uiDesc.getCustomAttributes ("UIDescFilePath", true);
-		settings->setAttribute ("path", uiDesc.getFilePath ());
+		updateUIDescFilePath (path, uiDesc);
 		prefs.set (UIDescPathKey, path);
 		return UIDescCheckFilePathResult::NewPathSet;
 	}
@@ -271,6 +302,7 @@ bool initUIDescAsNew (UIDescription& uiDesc, CFrame* _frame)
 	if (!frame)
 		frame = makeOwned<CFrame> (CRect (), nullptr);
 	auto fs = owned (CNewFileSelector::create (frame, CNewFileSelector::kSelectSaveFile));
+	vstgui_assert (fs, "create new FileSelector failed");
 	VSTGUI::Standalone::Preferences prefs;
 	if (auto initPath = prefs.get (UIDescPathKey))
 		fs->setInitialDirectory (*initPath);
@@ -298,7 +330,9 @@ void saveSharedUIDescription ()
 {
 	if (auto uiDesc = getSharedUIDescription ())
 	{
-		if (uiDesc->save (uiDesc->getFilePath (), UIDescription::kWriteImagesIntoXMLFile))
+		int32_t flags = UIDescription::kWriteImagesIntoXMLFile |
+		                CompressedUIDescription::kForceWriteCompressedDesc;
+		if (uiDesc->save (uiDesc->getFilePath (), flags))
 			return;
 		AlertBoxConfig config;
 		config.headline = "Saving the shared resources uidesc file failed.";

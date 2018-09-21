@@ -31,6 +31,10 @@ public:
 	}
 	bool canClose (const IWindow& window) override { return true; }
 	void beforeShow (IWindow& window) override {}
+	PlatformFrameConfigPtr createPlatformFrameConfig (PlatformType platformType) override
+	{
+		return nullptr;
+	}
 	void onSetContentView (IWindow& window, const SharedPointer<CFrame>& contentView) override {}
 	IMenuBuilder* getWindowMenuBuilder (const IWindow& window) const override { return nullptr; }
 };

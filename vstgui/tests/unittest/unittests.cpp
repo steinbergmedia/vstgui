@@ -190,7 +190,7 @@ public:
 				{
 					testCase.teardown () (this);
 				}
-			} catch (const std::exception& exc)
+			} catch (const std::exception&)
 			{
 				result.failed++;
 			}
@@ -220,7 +220,7 @@ public:
 		}
 		end = system_clock::now ();
 		intend--;
-		printf (" [%s] -> %ld µs\n", result ? "OK" : "Failed", duration_cast<microseconds> (end-start).count ());
+		printf (" [%s] -> %lld µs\n", result ? "OK" : "Failed", duration_cast<microseconds> (end-start).count ());
 		printOutput ();
 		return result;
 	}

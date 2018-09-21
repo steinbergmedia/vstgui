@@ -88,7 +88,10 @@ set(${target}_common_sources
     controls/cvumeter.h
     controls/cxypad.cpp
     controls/cxypad.h
+    controls/icommandmenuitemtarget.h
     controls/icontrollistener.h
+    controls/ioptionmenulistener.h
+    controls/itextlabellistener.h
     copenglview.cpp
     copenglview.h
     cpoint.cpp
@@ -116,6 +119,7 @@ set(${target}_common_sources
     cviewcontainer.h
     cvstguitimer.cpp
     cvstguitimer.h
+    dragging.h
     dispatchlist.h
     idatapackage.h
     idependency.h
@@ -147,6 +151,8 @@ set(${target}_common_sources
 
   ##########################################################################################
 set(${target}_mac_sources
+    platform/common/fileresourceinputstream.cpp
+    platform/common/fileresourceinputstream.h
     platform/mac/carbon/hiviewframe.cpp
     platform/mac/carbon/hiviewframe.h
     platform/mac/carbon/hiviewoptionmenu.cpp
@@ -169,6 +175,8 @@ set(${target}_mac_sources
     platform/mac/cocoa/cocoaopenglview.mm
     platform/mac/cocoa/cocoatextedit.h
     platform/mac/cocoa/cocoatextedit.mm
+    platform/mac/cocoa/nsviewdraggingsession.h
+    platform/mac/cocoa/nsviewdraggingsession.mm
     platform/mac/cocoa/nsviewframe.h
     platform/mac/cocoa/nsviewframe.mm
     platform/mac/cocoa/nsviewoptionmenu.h
@@ -184,12 +192,13 @@ set(${target}_mac_sources
     platform/mac/quartzgraphicspath.cpp
     platform/mac/quartzgraphicspath.h
     platform/win32
+    platform/linux
+    platform/mac/ios
+    ../doxygen
 )
 
   ##########################################################################################
 set(${target}_win32_sources
-    platform/win32/cfontwin32.cpp
-    platform/win32/cfontwin32.h
     platform/win32/direct2d/d2dbitmap.cpp
     platform/win32/direct2d/d2dbitmap.h
     platform/win32/direct2d/d2ddrawcontext.cpp
@@ -198,15 +207,12 @@ set(${target}_win32_sources
     platform/win32/direct2d/d2dfont.h
     platform/win32/direct2d/d2dgraphicspath.cpp
     platform/win32/direct2d/d2dgraphicspath.h
-    platform/win32/gdiplusbitmap.cpp
-    platform/win32/gdiplusbitmap.h
-    platform/win32/gdiplusdrawcontext.cpp
-    platform/win32/gdiplusdrawcontext.h
-    platform/win32/gdiplusgraphicspath.cpp
-    platform/win32/gdiplusgraphicspath.h
     platform/win32/win32bitmapbase.h
-    platform/win32/win32dragcontainer.cpp
-    platform/win32/win32dragcontainer.h
+    platform/win32/win32dll.h
+    platform/win32/win32datapackage.cpp
+    platform/win32/win32datapackage.h
+    platform/win32/win32dragging.cpp
+    platform/win32/win32dragging.h
     platform/win32/win32frame.cpp
     platform/win32/win32frame.h
     platform/win32/win32openglview.cpp
@@ -225,6 +231,13 @@ set(${target}_win32_sources
 
  ##########################################################################################
 set(${target}_linux_sources
+    platform/common/fileresourceinputstream.cpp
+    platform/common/fileresourceinputstream.h
+    platform/common/genericoptionmenu.cpp
+    platform/common/genericoptionmenu.h
+    platform/common/generictextedit.cpp
+    platform/common/generictextedit.h
+    platform/common/stb_textedit.h
     platform/linux/cairobitmap.cpp
     platform/linux/cairobitmap.h
     platform/linux/cairocontext.cpp
@@ -236,18 +249,18 @@ set(${target}_linux_sources
     platform/linux/cairopath.cpp
     platform/linux/cairopath.h
     platform/linux/cairoutils.h
-    platform/linux/gtkoptionmenu.cpp
-    platform/linux/gtkoptionmenu.h
-    platform/linux/gtktextedit.cpp
-    platform/linux/gtktextedit.h
     platform/linux/linuxstring.cpp
     platform/linux/linuxstring.h
+    platform/linux/x11fileselector.cpp
     platform/linux/x11frame.cpp
     platform/linux/x11frame.h
     platform/linux/x11platform.cpp
     platform/linux/x11platform.h
     platform/linux/x11timer.cpp
     platform/linux/x11timer.h
+    platform/linux/x11utils.cpp
+    platform/linux/x11utils.h
+    platform/platform_x11.h
 )
 
 ##########################################################################################
@@ -262,7 +275,7 @@ endif()
 
 ##########################################################################################
 # Linux
-if(UNIX AND NOT CMAKE_HOST_APPLE)
+if(LINUX)
     set(${target}_sources ${${target}_common_sources} ${${target}_linux_sources})
 endif()
 
@@ -273,10 +286,8 @@ target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS})
 vstgui_set_cxx_version(${target} 11)
 vstgui_source_group_by_folder(${target})
 
-if(UNIX AND NOT CMAKE_HOST_APPLE)
+if(LINUX)
     target_include_directories(${target} PRIVATE ${X11_INCLUDE_DIR})
-    target_include_directories(${target} PRIVATE ${GTK3_INCLUDE_DIRS})
-    target_include_directories(${target} PRIVATE ${GTKMM3_INCLUDE_DIRS})
     target_include_directories(${target} PRIVATE ${FREETYPE_INCLUDE_DIRS})
     target_link_libraries(${target} PRIVATE ${LINUX_LIBRARIES})
 endif()

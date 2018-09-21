@@ -498,7 +498,7 @@ void CCheckBox::draw (CDrawContext* context)
 		context->setDrawMode (kAntiAliasing);
 		context->setFrameColor (boxFrameColor);
 		context->setFillColor (boxFillColor);
-		if (auto path = context->createRoundRectGraphicsPath (checkBoxSize, roundRectRadius))
+		if (auto path = owned (context->createRoundRectGraphicsPath (checkBoxSize, roundRectRadius)))
 		{
 			context->drawGraphicsPath (path, CDrawContext::kPathFilled);
 			context->drawGraphicsPath (path, CDrawContext::kPathStroked);
@@ -515,7 +515,7 @@ void CCheckBox::draw (CDrawContext* context)
 			context->setFrameColor (hilightColor);
 			CRect r (checkBoxSize);
 			r.inset (lineWidth, lineWidth);
-			if (auto path = context->createRoundRectGraphicsPath (r, roundRectRadius))
+			if (auto path = owned (context->createRoundRectGraphicsPath (r, roundRectRadius)))
 			{
 				context->drawGraphicsPath (path, CDrawContext::kPathStroked);
 			}

@@ -1,12 +1,13 @@
-// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #import <Cocoa/Cocoa.h>
 
 #import "../../../../lib/cframe.h"
-#import "../../../../lib/platform/mac/macstring.h"
 #import "../../../../lib/platform/mac/cocoa/cocoahelpers.h"
+#import "../../../../lib/platform/mac/macstring.h"
+#import "../../../../lib/platform/platform_macos.h"
 #import "../../../include/iasync.h"
 #import "../../application.h"
 #import "../iplatformwindow.h"
@@ -84,6 +85,7 @@ public:
 	void setSize (const CPoint& newSize) override;
 	void setPosition (const CPoint& newPosition) override;
 	void setTitle (const UTF8String& newTitle) override;
+	void setRepresentedPath (const UTF8String& path) override;
 
 	void show () override;
 	void hide () override;
@@ -95,6 +97,10 @@ public:
 	void* _Nonnull getPlatformHandle () const override
 	{
 		return static_cast<void*> ((__bridge void*)nsWindow.contentView);
+	}
+	PlatformFrameConfigPtr prepareFrameConfig (PlatformFrameConfigPtr&& controllerConfig) override
+	{
+		return controllerConfig;
 	}
 	void onSetContentView (CFrame* _Nullable newFrame) override;
 
@@ -111,6 +117,7 @@ private:
 	VSTGUIWindowDelegate* _Nullable nsWindowDelegate {nullptr};
 	IWindowDelegate* _Nullable delegate {nullptr};
 	CFrame* _Nullable frame {nullptr};
+	NSObject* sizeObserver {nullptr};
 };
 
 //------------------------------------------------------------------------
@@ -178,8 +185,35 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 	{
 		nsWindow.title = (__bridge NSString*)titleMacStr->getCFString ();
 	}
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_12 && __clang_major__ >= 9
+	if (@available(macOS 10.12, *))
+	{
+		if (!config.groupIdentifier.empty ())
+		{
+			auto groupMacStr =
+			    dynamic_cast<MacString*> (config.groupIdentifier.getPlatformString ());
+			if (groupMacStr && groupMacStr->getCFString ())
+			{
+				nsWindow.tabbingIdentifier = (__bridge NSString*)groupMacStr->getCFString ();
+			}
+		}
+		else
+		{
+			nsWindow.tabbingMode = NSWindowTabbingModeDisallowed;
+		}
+	}
+#endif
 	[nsWindow setReleasedWhenClosed:NO];
 	[nsWindow center];
+
+	sizeObserver = [[NSNotificationCenter defaultCenter]
+	    addObserverForName:NSViewFrameDidChangeNotification
+	                object:nsWindow.contentView
+	                 queue:nil
+	            usingBlock:[this] (NSNotification* _Nonnull note) {
+		            auto contentViewSize = nsWindow.contentView.frame.size;
+		            windowDidResize ({contentViewSize.width, contentViewSize.height});
+	            }];
 
 	return true;
 }
@@ -207,6 +241,10 @@ void Window::windowDidResize (const CPoint& newSize)
 //------------------------------------------------------------------------
 void Window::windowWillClose ()
 {
+	if (sizeObserver)
+		[[NSNotificationCenter defaultCenter] removeObserver:sizeObserver];
+	sizeObserver = nullptr;
+
 	NSWindow* temp = nsWindow;
 	nsWindowDelegate = nil;
 	delegate->onClosed ();
@@ -295,6 +333,17 @@ void Window::setTitle (const UTF8String& newTitle)
 	if (titleMacStr && titleMacStr->getCFString ())
 	{
 		nsWindow.title = (__bridge NSString*)titleMacStr->getCFString ();
+	}
+}
+
+//------------------------------------------------------------------------
+void Window::setRepresentedPath (const UTF8String& path)
+{
+	auto pathMacStr = dynamic_cast<MacString*> (path.getPlatformString ());
+	if (pathMacStr && pathMacStr->getCFString ())
+	{
+		auto url = [NSURL fileURLWithPath:(__bridge NSString*)pathMacStr->getCFString ()];
+		nsWindow.representedURL = url;
 	}
 }
 
@@ -438,6 +487,14 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 }
 
 //------------------------------------------------------------------------
+- (void)selectAll:(id)sender
+{
+	using namespace VSTGUI::Standalone;
+	Command command {CommandGroup::Edit, CommandName::SelectAll};
+	[self handleCommand:command];
+}
+
+//------------------------------------------------------------------------
 - (void) delete:(id)sender
 {
 	using namespace VSTGUI::Standalone;
@@ -472,9 +529,9 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 		else
 		{
 			if (action == @selector (undo))
-				menuItem.title = @"Undo";
+				menuItem.title = NSLocalizedString (@"Undo", "Menu Item");
 			else
-				menuItem.title = @"Redo";
+				menuItem.title = NSLocalizedString (@"Redo", "Menu Item");
 		}
 	}
 
@@ -505,17 +562,6 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 	r.size.height = p.y;
 	r = [sender frameRectForContentRect:r];
 	return r.size;
-}
-
-//------------------------------------------------------------------------
-- (void)windowDidResize:(nonnull NSNotification*)notification
-{
-	NSRect r = [[notification object] frame];
-	r = [self.macWindow->getNSWindow () contentRectForFrameRect:r];
-	VSTGUI::CPoint size;
-	size.x = r.size.width;
-	size.y = r.size.height;
-	self.macWindow->windowDidResize (size);
 }
 
 //------------------------------------------------------------------------

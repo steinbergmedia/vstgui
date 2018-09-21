@@ -113,13 +113,6 @@ PNGBitmapBuffer IPlatformBitmap::createMemoryPNGRepresentation (const SharedPoin
 //-----------------------------------------------------------------------------
 CGBitmap::CGBitmap (const CPoint& inSize)
 : size (inSize)
-, image (nullptr)
-, imageSource (nullptr)
-, layer (nullptr)
-, bits (nullptr)
-, dirty (false)
-, bytesPerRow (0)
-, scaleFactor (1.)
 {
 	allocBits ();
 }
@@ -127,12 +120,6 @@ CGBitmap::CGBitmap (const CPoint& inSize)
 //-----------------------------------------------------------------------------
 CGBitmap::CGBitmap (CGImageRef image)
 : image (image)
-, imageSource (nullptr)
-, layer (nullptr)
-, bits (nullptr)
-, dirty (false)
-, bytesPerRow (0)
-, scaleFactor (1.)
 {
 	CGImageRetain (image);
 	size.x = CGImageGetWidth (image);
@@ -141,13 +128,6 @@ CGBitmap::CGBitmap (CGImageRef image)
 
 //-----------------------------------------------------------------------------
 CGBitmap::CGBitmap ()
-: image (nullptr)
-, imageSource (nullptr)
-, layer (nullptr)
-, bits (nullptr)
-, dirty (false)
-, bytesPerRow (0)
-, scaleFactor (1.)
 {
 }
 
@@ -160,8 +140,8 @@ CGBitmap::~CGBitmap () noexcept
 		CFRelease (layer);
 	if (imageSource)
 		CFRelease (imageSource);
-	if (bits)
-		std::free (bits);
+	if (bitsDataProvider)
+		CFRelease (bitsDataProvider);
 }
 
 //-----------------------------------------------------------------------------
@@ -288,13 +268,10 @@ CGImageRef CGBitmap::getCGImage ()
 		freeCGImage ();
 
 		size_t rowBytes = getBytesPerRow ();
-		size_t byteCount = rowBytes * static_cast<size_t> (size.y);
 		size_t bitDepth = 32;
 
-		CGDataProviderRef provider = CGDataProviderCreateWithData (nullptr, bits, byteCount, nullptr);
 		CGBitmapInfo bitmapInfo = kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Big;
-		image = CGImageCreate (static_cast<size_t> (size.x), static_cast<size_t> (size.y), 8, bitDepth, rowBytes, GetCGColorSpace (), bitmapInfo, provider, nullptr, false, kCGRenderingIntentDefault);
-		CGDataProviderRelease (provider);
+		image = CGImageCreate (static_cast<size_t> (size.x), static_cast<size_t> (size.y), 8, bitDepth, rowBytes, GetCGColorSpace (), bitmapInfo, bitsDataProvider, nullptr, false, kCGRenderingIntentDefault);
 		dirty = false;
 	}
 	return image;
@@ -362,6 +339,11 @@ void CGBitmap::allocBits ()
 			bytesPerRow += 16 - (bytesPerRow % 16);
 		uint32_t bitmapByteCount = bytesPerRow * static_cast<uint32_t> (size.y);
 		bits = calloc (1, bitmapByteCount);
+		bitsDataProvider = CGDataProviderCreateWithData (
+		    nullptr, bits, bitmapByteCount,
+		    [] (void* __nullable info, const void* data, size_t size) {
+			    std::free (const_cast<void*> (data));
+		    });
 	}
 }
 

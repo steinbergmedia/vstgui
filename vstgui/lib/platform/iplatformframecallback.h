@@ -21,6 +21,7 @@ enum PlatformType {
 	kUIView,	// iOS UIView
 	kHWNDTopLevel,	// Windows HWDN Top Level (non child)
 	kX11EmbedWindowID,	// X11 XID
+	kGdkWindow, // GdkWindow
 
 	kDefaultNative = -1
 };
@@ -39,10 +40,10 @@ public:
 	virtual CMouseEventResult platformOnMouseExited (CPoint& where, const CButtonState& buttons) = 0;
 	virtual bool platformOnMouseWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const CButtonState &buttons) = 0;
 
-	virtual bool platformOnDrop (IDataPackage* drag, const CPoint& where) = 0;
-	virtual void platformOnDragEnter (IDataPackage* drag, const CPoint& where) = 0;
-	virtual void platformOnDragLeave (IDataPackage* drag, const CPoint& where) = 0;
-	virtual void platformOnDragMove (IDataPackage* drag, const CPoint& where) = 0;
+	virtual DragOperation platformOnDragEnter (DragEventData data) = 0;
+	virtual DragOperation platformOnDragMove (DragEventData data) = 0;
+	virtual void platformOnDragLeave (DragEventData data) = 0;
+	virtual bool platformOnDrop (DragEventData data) = 0;
 
 	virtual bool platformOnKeyDown (VstKeyCode& keyCode) = 0;
 	virtual bool platformOnKeyUp (VstKeyCode& keyCode) = 0;

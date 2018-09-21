@@ -31,8 +31,10 @@ public:
 	//@{
 	virtual void unSplash ();
 
-	virtual void setDisplayArea (const CRect& rect)  { toDisplay = rect; }				///< set the area in which the splash will be displayed
-	virtual CRect& getDisplayArea (CRect& rect) const { rect = toDisplay; return rect; }	///< get the area in which the splash will be displayed
+	/** set the area in which the splash will be displayed */
+	virtual void setDisplayArea (const CRect& rect)  { toDisplay = rect; }
+	/** get the area in which the splash will be displayed */
+	virtual CRect& getDisplayArea (CRect& rect) const { rect = toDisplay; return rect; }
 	//@}
 
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
@@ -43,10 +45,11 @@ protected:
 	using CControl::valueChanged;
 	void valueChanged (CControl *pControl) override;
 
-	CRect	toDisplay;
-	CRect	keepSize;
-	CPoint	offset;
-	CView* modalView;
+	CRect toDisplay;
+	CRect keepSize;
+	CPoint offset;
+	CView* modalView{nullptr};
+	ModalViewSession* modalViewSession{nullptr};
 };
 
 //-----------------------------------------------------------------------------
@@ -90,8 +93,8 @@ public:
 protected:
 	~CAnimationSplashScreen () noexcept override = default;
 
-	uint32_t animationIndex;
-	uint32_t animationTime;
+	uint32_t animationIndex{0};
+	uint32_t animationTime{500};
 };
 
 } // namespace

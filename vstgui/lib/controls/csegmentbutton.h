@@ -23,9 +23,18 @@ namespace VSTGUI {
 class CSegmentButton : public CControl
 {
 public:
-	enum Style {
+	enum class Style {
+		/** horizontally layouted segments */
 		kHorizontal,
+		/** vertically layouted segments */
 		kVertical
+	};
+	
+	enum class SelectionMode {
+		/** a single segment is selected at any time */
+		kSingle,
+		/** multiple segments may be selected */
+		kMultiple,
 	};
 	
 	struct Segment {
@@ -37,9 +46,10 @@ public:
 		mutable CDrawMethods::IconPosition iconPosition;
 
 		CRect rect;
+		bool selected {false};
 	};
 	using Segments = std::vector<Segment>;
-	static uint32_t kPushBack;
+	static constexpr uint32_t kPushBack = std::numeric_limits<uint32_t>::max ();
 
 	CSegmentButton (const CRect& size, IControlListener* listener = nullptr, int32_t tag = -1);
 
@@ -47,13 +57,21 @@ public:
 	/// @name Segment Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	void addSegment (Segment segment, uint32_t index = kPushBack);
+	void addSegment (const Segment& segment, uint32_t index = kPushBack);
+	void addSegment (Segment&& segment, uint32_t index = kPushBack);
 	void removeSegment (uint32_t index);
 	void removeAllSegments ();
 	const Segments& getSegments () const { return segments; }
 
+	/** set the selected segment in single selection mode */
 	void setSelectedSegment (uint32_t index);
+	/** get the selected segment in single selection mode */
 	uint32_t getSelectedSegment () const;
+	
+	/** set selection state for a segment in multiple selection mode */
+	void selectSegment (uint32_t index, bool state);
+	/** get selection state for a segment in multiple selection mode */
+	bool isSegmentSelected (uint32_t index) const;
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -62,6 +80,9 @@ public:
 	//@{
 	void setStyle (Style newStyle);
 	Style getStyle () const { return style; }
+
+	void setSelectionMode (SelectionMode mode);
+	SelectionMode getSelectionMode () const { return selectionMode; }
 
 	void setTextTruncateMode (CDrawMethods::TextTruncateMode mode);
 	CDrawMethods::TextTruncateMode getTextTruncateMode () const { return textTruncateMode; }
@@ -106,10 +127,13 @@ public:
 	void drawRect (CDrawContext* pContext, const CRect& dirtyRect) override;
 	bool drawFocusOnTop () override;
 	bool getFocusPath (CGraphicsPath& outPath) override;
+	void valueChanged () override;
 
 	CLASS_METHODS(CSegmentButton, CControl)
 private:
+	bool canAddOneMoreSegment () const;
 	void updateSegmentSizes ();
+	void verifySelections ();
 	uint32_t getSegmentIndex (float value) const;
 
 	Segments segments;
@@ -123,7 +147,8 @@ private:
 	CCoord textMargin {0.};
 	CCoord roundRadius {5.};
 	CCoord frameWidth {1.};
-	Style style {kHorizontal};
+	Style style {Style::kHorizontal};
+	SelectionMode selectionMode {SelectionMode::kSingle};
 	CDrawMethods::TextTruncateMode textTruncateMode {CDrawMethods::kTextTruncateNone};
 };
 

@@ -1,4 +1,4 @@
-﻿// This file is part of VSTGUI. It is subject to the license terms 
+﻿// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
@@ -7,13 +7,18 @@
 #include "../../vstguifwd.h"
 #include "x11frame.h"
 #include <atomic>
-#include <list>
-#include <map>
 #include <memory>
-#include <mutex>
-#include <poll.h>
-#include <unistd.h>
-#include <unordered_map>
+
+struct xcb_connection_t;	  // forward declaration
+struct xcb_key_press_event_t; // forward declaration
+struct xcb_button_press_event_t;
+struct xcb_motion_notify_event_t;
+struct xcb_enter_notify_event_t;
+struct xcb_focus_in_event_t;
+struct xcb_expose_event_t;
+struct xcb_map_notify_event_t;
+struct xcb_property_notify_event_t;
+struct xcb_client_message_event_t;
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -24,6 +29,20 @@ namespace X11 {
 
 class Frame;
 class Timer;
+
+//------------------------------------------------------------------------
+struct IFrameEventHandler
+{
+	virtual void onEvent (xcb_map_notify_event_t& event) = 0;
+	virtual void onEvent (xcb_key_press_event_t& event) = 0;
+	virtual void onEvent (xcb_button_press_event_t& event) = 0;
+	virtual void onEvent (xcb_motion_notify_event_t& event) = 0;
+	virtual void onEvent (xcb_enter_notify_event_t& event) = 0;
+	virtual void onEvent (xcb_focus_in_event_t& event) = 0;
+	virtual void onEvent (xcb_expose_event_t& event) = 0;
+	virtual void onEvent (xcb_property_notify_event_t& event) = 0;
+	virtual void onEvent (xcb_client_message_event_t& event) = 0;
+};
 
 //------------------------------------------------------------------------
 class Platform
@@ -39,52 +58,34 @@ public:
 private:
 	Platform ();
 
-	std::string path;
+	struct Impl;
+	std::unique_ptr<Impl> impl;
 };
 
 //------------------------------------------------------------------------
 struct RunLoop
 {
-	static void init (const SharedPointer<IRunLoop>& runLoop)
-	{
-		if (++instance ().useCount == 1)
-		{
-			instance ().runLoop = runLoop;
-		}
-	}
+	static void init (const SharedPointer<IRunLoop>& runLoop);
+	static void exit ();
+	static const SharedPointer<IRunLoop> get ();
 
-	static void exit ()
-	{
-		if (--instance ().useCount == 0)
-		{
-			instance ().runLoop = nullptr;
-		}
-	}
+	xcb_connection_t* getXcbConnection () const;
 
-	static const SharedPointer<IRunLoop> get ()
-	{
-		return instance ().runLoop;
-	}
+	void registerWindowEventHandler (uint32_t windowId, IFrameEventHandler* handler);
+	void unregisterWindowEventHandler (uint32_t windowId);
+
+	uint32_t getCursorID (CCursorType cursor);
+	VstKeyCode getCurrentKeyEvent () const;
+	Optional<UTF8String> convertCurrentKeyEventToText () const;
+
+	static RunLoop& instance ();
 
 private:
-	static RunLoop& instance ()
-	{
-		static RunLoop gInstance;
-		return gInstance;
-	}
-	SharedPointer<IRunLoop> runLoop;
-	std::atomic<uint32_t> useCount {0};
-};
+	RunLoop ();
+	~RunLoop () noexcept;
 
-//------------------------------------------------------------------------
-struct LocalEventLoop
-{
-	void run ();
-	void stop ();
-
-	bool isRunning () const { return running; }
-private:
-	bool running {false};
+	struct Impl;
+	std::unique_ptr<Impl> impl;
 };
 
 //------------------------------------------------------------------------

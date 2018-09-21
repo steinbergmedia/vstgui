@@ -44,18 +44,27 @@ public:
 	/// @name Tab View Functions
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual bool addTab (CView* view, UTF8StringPtr name = nullptr, CBitmap* tabBitmap = nullptr);	///< add a tab
-	virtual bool addTab (CView* view, CControl* button);	///< add a tab
-	virtual bool removeTab (CView* view);	///< remove a tab
-	virtual bool removeAllTabs ();			///< remove all tabs
-	virtual bool selectTab (int32_t index);	///< select tab at index
-	virtual int32_t getCurrentSelectedTab () const { return currentTab; } ///< get current index of selected tab
+	/** add a tab */
+	virtual bool addTab (CView* view, UTF8StringPtr name = nullptr, CBitmap* tabBitmap = nullptr);
+	/** add a tab */
+	virtual bool addTab (CView* view, CControl* button);
+	/** remove a tab */
+	virtual bool removeTab (CView* view);
+	/** remove all tabs */
+	virtual bool removeAllTabs ();
+	/** select tab at index */
+	virtual bool selectTab (int32_t index);
+	/** get current index of selected tab */
+	virtual int32_t getCurrentSelectedTab () const { return currentTab; }
 
-	virtual CRect& getTabViewSize (CRect& rect) const;	///< the size of one tab
+	/** the size of one tab */
+	virtual CRect& getTabViewSize (CRect& rect) const;
 
-	virtual void setTabFontStyle (const CFontRef font, CCoord fontSize = 12, CColor selectedColor = kBlackCColor, CColor deselectedColor = kWhiteCColor); ///< call this after the tabs are added. Tabs added after this call will have the default font style.
+	/** call this after the tabs are added. Tabs added after this call will have the default font style. */
+	virtual void setTabFontStyle (const CFontRef font, CCoord fontSize = 12, CColor selectedColor = kBlackCColor, CColor deselectedColor = kWhiteCColor);
 
-	virtual void alignTabs (TabAlignment alignment = kAlignCenter); ///< call this after you have added all tabs to align them according to alignment
+	/** call this after you have added all tabs to align them according to alignment */
+	virtual void alignTabs (TabAlignment alignment = kAlignCenter);
 
 	virtual void setTabViewInsets (const CPoint& inset);
 	//@}

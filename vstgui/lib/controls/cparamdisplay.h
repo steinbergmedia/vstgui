@@ -23,8 +23,22 @@ using CParamDisplayValueToStringProc = bool (*) (float value, char utf8String[25
 //-----------------------------------------------------------------------------
 class CParamDisplay : public CControl
 {
+protected:
+	enum StyleEnum
+	{
+		StyleShadowText = 0,
+		Style3DIn,
+		Style3DOut,
+		StyleNoText,
+		StyleNoDraw,
+		StyleRoundRect,
+		StyleNoFrame,
+		StyleAntialias,
+		LastStyle
+	};
+
 public:
-	CParamDisplay (const CRect& size, CBitmap* background = nullptr, const int32_t style = 0);
+	CParamDisplay (const CRect& size, CBitmap* background = nullptr, int32_t style = 0);
 	CParamDisplay (const CParamDisplay& paramDisplay);
 	
 	//-----------------------------------------------------------------------------
@@ -49,8 +63,8 @@ public:
 	virtual void setShadowTextOffset (const CPoint& offset);
 	CPoint getShadowTextOffset () const { return shadowTextOffset; }
 
-	virtual void setAntialias (bool state) { bAntialias = state; }
-	bool getAntialias () const { return bAntialias; }
+	virtual void setAntialias (bool state) { setBit (style, kAntialias, state); }
+	bool getAntialias () const { return hasBit (style, kAntialias); }
 
 	virtual void setHoriAlign (CHoriTxtAlign hAlign);
 	CHoriTxtAlign getHoriAlign () const { return horiTxtAlign; }
@@ -68,7 +82,7 @@ public:
 	CCoord getFrameWidth () const { return frameWidth; }
 
 	using ValueToStringUserData = CParamDisplay;
-	using ValueToStringFunction = std::function<bool(float value, char utf8String[256], CParamDisplay* display)>;
+	using ValueToStringFunction = std::function<bool (float value, char utf8String[256], CParamDisplay* display)>;
 	
 	void setValueToStringFunction (const ValueToStringFunction& valueToStringFunc);
 	void setValueToStringFunction (ValueToStringFunction&& valueToStringFunc);
@@ -77,12 +91,26 @@ public:
 
 	void setValueToStringFunction2 (const ValueToStringFunction2& valueToStringFunc);
 	void setValueToStringFunction2 (ValueToStringFunction2&& valueToStringFunc);
-	
+
+	enum Style
+	{
+		kShadowText		= 1 << StyleShadowText,
+		k3DIn			= 1 << Style3DIn,
+		k3DOut			= 1 << Style3DOut,
+		kNoTextStyle	= 1 << StyleNoText,
+		kNoDrawStyle	= 1 << StyleNoDraw,
+		kRoundRectStyle = 1 << StyleRoundRect,
+		kNoFrame		= 1 << StyleNoFrame,
+	};
 	virtual void setStyle (int32_t val);
-	int32_t getStyle () const { return style; }
+	int32_t getStyle () const;
 
 	virtual void setPrecision (uint8_t precision);
 	uint8_t getPrecision () const { return valuePrecision; }
+
+	virtual void setBackOffset (const CPoint& offset);
+	const CPoint& getBackOffset () const { return backOffset; }
+	void copyBackOffset ();
 
 	//@}
 
@@ -102,6 +130,10 @@ protected:
 
 	ValueToStringFunction2 valueToStringFunction;
 
+	enum StylePrivate {
+		kAntialias		= 1 << StyleAntialias,
+	};
+
 	CHoriTxtAlign horiTxtAlign;
 	int32_t		style;
 	uint8_t		valuePrecision;
@@ -113,12 +145,13 @@ protected:
 	CColor		shadowColor;
 	CPoint		textInset;
 	CPoint		shadowTextOffset {1., 1.};
+	CPoint		backOffset;
 	CCoord		roundRectRadius;
 	CCoord		frameWidth;
 	double		textRotation;
-	bool		bAntialias;
 };
 
 } // namespace
 
 #endif
+

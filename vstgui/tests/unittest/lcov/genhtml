@@ -75,7 +75,7 @@ use Cwd qw/abs_path/;
 # Global constants
 our $title		= "LCOV - code coverage report";
 our $tool_dir		= abs_path(dirname($0));
-our $lcov_version	= "LCOV version 1.12";
+our $lcov_version	= "LCOV version 1.13";
 our $lcov_url		= "http://ltp.sourceforge.net/coverage/lcov.php";
 our $tool_name		= basename($0);
 
@@ -350,6 +350,9 @@ if (defined($opt_config_file)) {
 elsif (-r "/etc/lcovrc")
 {
 	$config = read_config("/etc/lcovrc");
+} elsif (-r "/usr/local/etc/lcovrc")
+{
+	$config = read_config("/usr/local/etc/lcovrc");
 }
 
 if ($config || %opt_rc)
@@ -3848,8 +3851,8 @@ sub fmt_centered($$)
 {
 	my ($width, $text) = @_;
 	my $w0 = length($text);
-	my $w1 = int(($width - $w0) / 2);
-	my $w2 = $width - $w0 - $w1;
+	my $w1 = $width > $w0 ? int(($width - $w0) / 2) : 0;
+	my $w2 = $width > $w0 ? $width - $w0 - $w1 : 0;
 
 	return (" "x$w1).$text.(" "x$w2);
 }
@@ -5325,6 +5328,7 @@ sub demangle_list($)
 	my $tmpfile;
 	my $handle;
 	my %demangle;
+	my $demangle_arg = "";
 	my %versions;
 
 	# Write function names to file
@@ -5333,8 +5337,14 @@ sub demangle_list($)
 	print($handle join("\n", @$list));
 	close($handle);
 
+	# Extra flag necessary on OS X so that symbols listed by gcov get demangled
+	# properly.
+	if ($^O eq "darwin") {
+		$demangle_arg = "--no-strip-underscores";
+	}
+
 	# Build translation hash from c++filt output
-	open($handle, "-|", "c++filt -n < $tmpfile") or
+	open($handle, "-|", "c++filt $demangle_arg < $tmpfile") or
 		die("ERROR: could not run c++filt: $!\n");
 	foreach my $func (@$list) {
 		my $translated = <$handle>;

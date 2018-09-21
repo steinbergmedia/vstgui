@@ -37,3 +37,6 @@ vstgui/Documentation/html
 /vstgui/uidescription/editing/editoruidesc.h
 CMakeLists.txt.user
 build
+vstgui/gdk
+vstgui/gdkmm
+vstgui/gtk

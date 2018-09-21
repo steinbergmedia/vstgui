@@ -72,7 +72,7 @@ use Cwd qw /abs_path getcwd/;
 
 # Global constants
 our $tool_dir		= abs_path(dirname($0));
-our $lcov_version	= "LCOV version 1.12";
+our $lcov_version	= "LCOV version 1.13";
 our $lcov_url		= "http://ltp.sourceforge.net/coverage/lcov.php";
 our $tool_name		= basename($0);
 
@@ -243,6 +243,9 @@ if (defined($opt_config_file)) {
 elsif (-r "/etc/lcovrc")
 {
 	$config = read_config("/etc/lcovrc");
+} elsif (-r "/usr/local/etc/lcovrc")
+{
+	$config = read_config("/usr/local/etc/lcovrc");
 }
 
 if ($config || %opt_rc)
@@ -2915,7 +2918,7 @@ sub remove()
 
 		foreach $pattern (@pattern_list)
 		{
-			$match_found ||= ($filename =~ (/$pattern$/));
+			$match_found ||= ($filename =~ (/^$pattern$/));
 		}
 
 
@@ -4250,7 +4253,6 @@ sub warn_handler($)
 {
 	my ($msg) = @_;
 
-	temp_cleanup();
 	warn("$tool_name: $msg");
 }
 

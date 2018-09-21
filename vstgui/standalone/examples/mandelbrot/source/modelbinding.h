@@ -82,7 +82,7 @@ struct ModelBinding : VSTGUI::Standalone::UIDesc::IModelBinding,
 	const ValuePtr& getProgressValue () const { return progressValue; }
 	const ValuePtr& getMaxIterationsValue () const { return maxIterations; }
 private:
-	static constexpr auto numMaxIterations = 2048.;
+	static constexpr auto numMaxIterations = 2048u;
 	ValueConverterPtr xConverter {VSTGUI::Standalone::Value::makeRangeConverter (-2.2, 1.2)};
 	ValueConverterPtr yConverter {VSTGUI::Standalone::Value::makeRangeConverter (-1.7, 1.7)};
 
