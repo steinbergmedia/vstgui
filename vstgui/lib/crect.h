@@ -16,17 +16,17 @@ namespace VSTGUI {
 //-----------------------------------------------------------------------------
 struct CRect
 {
-	CRect () = default;
-	inline CRect (CCoord left, CCoord top, CCoord right, CCoord bottom);
-	inline CRect (const CRect& r);
+	constexpr CRect () = default;
+	inline constexpr CRect (CCoord left, CCoord top, CCoord right, CCoord bottom);
+	inline constexpr CRect (const CRect& r);
 	inline CRect (const CPoint& origin, const CPoint& size);
 
 	inline CRect& operator () (CCoord left, CCoord top, CCoord right, CCoord bottom);
-	inline bool operator != (const CRect& other) const;
-	inline bool operator == (const CRect& other) const;
+	inline constexpr bool operator != (const CRect& other) const;
+	inline constexpr bool operator == (const CRect& other) const;
 	
-	inline CCoord getWidth () const;
-	inline CCoord getHeight () const;
+	inline constexpr CCoord getWidth () const;
+	inline constexpr CCoord getHeight () const;
 
 	inline CRect& setWidth (CCoord width);
 	inline CRect& setHeight (CCoord height);
@@ -57,14 +57,16 @@ struct CRect
 	inline CRect& offset (const CPoint& p);
 	inline CRect& offsetInverse (const CPoint& p);
 
-	inline bool pointInside (const CPoint& where) const;	///< Checks if point is inside this rect
-	inline bool isEmpty () const;
-	inline bool rectOverlap (const CRect& rect) const;
+	/** Checks if point is inside this rect */
+	inline constexpr bool pointInside (const CPoint& where) const;
+	inline constexpr bool isEmpty () const;
+	inline constexpr bool rectOverlap (const CRect& rect) const;
 	inline CRect& bound (const CRect& rect);
 	inline CRect& unite (const CRect& rect);
 	inline CRect& normalize ();
 	inline CRect& originize ();
-	inline CRect& centerInside (const CRect& r); ///< moves this rect to the center of r
+	/** moves this rect to the center of r */
+	inline CRect& centerInside (const CRect& r);
 	inline CRect& makeIntegral ();
 
 	CCoord left {0.};
@@ -74,12 +76,12 @@ struct CRect
 };
 
 //------------------------------------------------------------------------
-inline CRect::CRect (CCoord left, CCoord top, CCoord right, CCoord bottom)
+inline constexpr CRect::CRect (CCoord left, CCoord top, CCoord right, CCoord bottom)
 : left (left), top (top), right (right), bottom (bottom)
 {}
 
 //------------------------------------------------------------------------
-inline CRect::CRect (const CRect& r)
+inline constexpr CRect::CRect (const CRect& r)
 : left (r.left), top (r.top), right (r.right), bottom (r.bottom)
 {}
 
@@ -91,7 +93,7 @@ inline CRect::CRect (const CPoint& origin, const CPoint& size)
 }
 
 //------------------------------------------------------------------------
-CRect& CRect::operator () (CCoord _left, CCoord _top, CCoord _right, CCoord _bottom)
+inline CRect& CRect::operator () (CCoord _left, CCoord _top, CCoord _right, CCoord _bottom)
 {
 	if (_left < _right)
 	{
@@ -117,27 +119,27 @@ CRect& CRect::operator () (CCoord _left, CCoord _top, CCoord _right, CCoord _bot
 }
 
 //------------------------------------------------------------------------
-bool CRect::operator != (const CRect& other) const
+inline constexpr bool CRect::operator != (const CRect& other) const
 {
 	return (left != other.left || right != other.right ||
 			top != other.top || bottom != other.bottom);
 }
 
 //------------------------------------------------------------------------
-bool CRect::operator == (const CRect& other) const
+inline constexpr bool CRect::operator == (const CRect& other) const
 {
 	return (left == other.left && right == other.right &&
 			top == other.top && bottom == other.bottom);
 }
 
 //------------------------------------------------------------------------
-inline CCoord CRect::getWidth () const
+inline constexpr CCoord CRect::getWidth () const
 {
 	return right - left;
 }
 
 //------------------------------------------------------------------------
-inline CCoord CRect::getHeight () const
+inline constexpr CCoord CRect::getHeight () const
 {
 	return bottom - top;
 }
@@ -201,27 +203,15 @@ inline CRect& CRect::moveTo (CCoord x, CCoord y)
 }
 
 //------------------------------------------------------------------------
-inline bool CRect::isEmpty () const
+inline constexpr bool CRect::isEmpty () const
 {
-	if (right <= left)
-		return true;
-	if (bottom <= top)
-		return true;
-	return false;
+	return right <= left || bottom <= top;
 }
 
 //------------------------------------------------------------------------
-inline bool CRect::rectOverlap (const CRect& rect) const
+inline constexpr bool CRect::rectOverlap (const CRect& rect) const
 {
-	if (right < rect.left)
-		return false;
-	if (left > rect.right)
-		return false;
-	if (bottom < rect.top)
-		return false;
-	if (top > rect.bottom)
-		return false;
-	return true;
+	return right >= rect.left && left <= rect.right && bottom >= rect.top && top <= rect.bottom;
 }
 
 //------------------------------------------------------------------------
@@ -283,7 +273,7 @@ inline CRect& CRect::makeIntegral ()
 }
 
 //-----------------------------------------------------------------------------
-inline bool CRect::pointInside (const CPoint& where) const
+inline constexpr bool CRect::pointInside (const CPoint& where) const
 {
 	return where.x >= left && where.x < right && where.y >= top && where.y < bottom;
 }
@@ -410,3 +400,4 @@ inline CRect& CRect::offsetInverse (const CPoint& p)
 } // namespace
 
 #endif
+

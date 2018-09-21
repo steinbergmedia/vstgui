@@ -61,7 +61,7 @@ void UIDialogController::run (UTF8StringPtr _templateName, UTF8StringPtr _dialog
 		view->setMouseableArea (size);
 		view->setAlphaValue (0.f);
 
-		frame->setModalView (view);
+		modalSession = frame->beginModalViewSession (view);
 		frame->registerKeyboardHook (this);
 		frame->registerViewListener (this);
 		view->registerViewListener (this);
@@ -71,7 +71,8 @@ void UIDialogController::run (UTF8StringPtr _templateName, UTF8StringPtr _dialog
 		if (dialogController)
 			dialogController->notify (this, kMsgDialogShow);
 
-		view->addAnimation ("AlphaAnimation", new Animation::AlphaValueAnimation (1.f), new Animation::LinearTimingFunction (160));
+		using namespace Animation;
+		view->addAnimation ("AlphaAnimation", new AlphaValueAnimation (1.f), new CubicBezierTimingFunction (CubicBezierTimingFunction::easyInOut (160)));
 	}
 	else
 	{
@@ -101,12 +102,11 @@ void UIDialogController::close ()
 		button2->setListener (nullptr);
 	setOpenGLViewsVisible (true);
 
-	CView* dialog = frame->getModalView ();
-	if (dialog)
+	if (modalSession)
 	{
+		CView* dialog = frame->getModalView ();
 		dialog->unregisterViewListener (this);
-		frame->setModalView (nullptr);
-		dialog->forget ();
+		frame->endModalViewSession (modalSession);
 	}
 	forget ();
 }
@@ -118,7 +118,9 @@ void UIDialogController::viewSizeChanged (CView* view, const CRect& oldSize)
 	{
 		CView* dialog = frame->getModalView ();
 		CRect viewSize = dialog->getViewSize ();
-		viewSize.centerInside (frame->getViewSize ());
+		CRect frameSize = frame->getViewSize ();
+		frame->getTransform ().inverse ().transform (frameSize);
+		viewSize.centerInside (frameSize);
 		dialog->setViewSize (viewSize);
 		dialog->setMouseableArea (viewSize);
 	}
@@ -155,7 +157,8 @@ void UIDialogController::valueChanged (CControl* control)
 			}
 		}
 		CView* modalView = frame->getModalView ();
-		modalView->addAnimation ("AlphaAnimation", new Animation::AlphaValueAnimation (0.f), new Animation::LinearTimingFunction (160), this);
+		using namespace Animation;
+		modalView->addAnimation ("AlphaAnimation", new AlphaValueAnimation (0.f), new CubicBezierTimingFunction (CubicBezierTimingFunction::easyInOut (160)), this);
 	}
 }
 
@@ -216,7 +219,7 @@ CView* UIDialogController::verifyView (CView* view, const UIAttributes& attribut
 			CView* subView = dialogDescription->createView (templateName.c_str (), controller);
 			if (subView)
 			{
-				subView->setAttribute (kCViewControllerAttribute, sizeof (IController*), &controller);
+				subView->setAttribute (kCViewControllerAttribute, controller);
 				sizeDiff.x = subView->getWidth () - view->getWidth ();
 				sizeDiff.y = subView->getHeight () - view->getHeight ();
 				CRect size = view->getViewSize ();
@@ -295,19 +298,13 @@ int32_t UIDialogController::onKeyUp (const VstKeyCode& code, CFrame* frame)
 void UIDialogController::collectOpenGLViews (CViewContainer* container)
 {
 #if VSTGUI_OPENGL_SUPPORT
-	ViewIterator it (container);
-	while (*it)
-	{
-		COpenGLView* openGLView = dynamic_cast<COpenGLView*>(*it);
+	container->forEachChild ([this] (CView* view) {
+		auto openGLView = dynamic_cast<COpenGLView*> (view);
 		if (openGLView && openGLView->isVisible ())
 			openglViews.emplace_back (openGLView);
-		else
-		{
-			if (auto childContainer = (*it)->asViewContainer ())
-				collectOpenGLViews (childContainer);
-		}
-		it++;
-	}
+		else if (auto childContainer = view->asViewContainer ())
+			collectOpenGLViews (childContainer);
+	});
 #endif
 }
 
@@ -315,10 +312,8 @@ void UIDialogController::collectOpenGLViews (CViewContainer* container)
 void UIDialogController::setOpenGLViewsVisible (bool state)
 {
 #if VSTGUI_OPENGL_SUPPORT
-	for (std::list<SharedPointer<COpenGLView> >::const_iterator it = openglViews.begin(); it != openglViews.end (); it++)
-	{
-		(*it)->setVisible (state);
-	}
+	for (auto& v : openglViews)
+		v->setVisible (state);
 #endif
 }
 

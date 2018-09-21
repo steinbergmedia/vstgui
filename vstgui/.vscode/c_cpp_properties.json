@@ -1,0 +1,24 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "browse": {
+                "path": [
+                    "${workspaceFolder}"
+                ],
+                "limitSymbolsToIncludedHeaders": true
+            },
+            "includePath": [
+                "${workspaceFolder}"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/clang",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "compileCommands": "build/compile_commands.json",
+            "intelliSenseMode": "clang-x64",
+            "configurationProvider": "vector-of-bool.cmake-tools"
+        }
+    ],
+    "version": 4
+}

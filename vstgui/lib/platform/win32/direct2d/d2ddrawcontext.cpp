@@ -4,7 +4,7 @@
 
 #include "d2ddrawcontext.h"
 
-#if WINDOWS && VSTGUI_DIRECT2D_SUPPORT
+#if WINDOWS
 
 #include "../win32support.h"
 #include "../../../cgradient.h"
@@ -45,7 +45,7 @@ D2DDrawContext::D2DApplyClip::D2DApplyClip (D2DDrawContext* drawContext, bool ha
 			drawContext->getRenderTarget ()->PopAxisAlignedClip ();
 
 		ID2D1RectangleGeometry* geometry;
-		if (FAILED (getD2DFactory ()->CreateRectangleGeometry (makeD2DRect (drawContext->currentState.clipRect), &geometry)))
+		if (FAILED (getD2DFactory ()->CreateRectangleGeometry (makeD2DRect (drawContext->getCurrentState ().clipRect), &geometry)))
 			return;
 		auto d2dMatrix = convert (transform);
 		drawContext->getRenderTarget ()->PushLayer (
@@ -54,14 +54,14 @@ D2DDrawContext::D2DApplyClip::D2DApplyClip (D2DDrawContext* drawContext, bool ha
 		    nullptr);
 		drawContext->getRenderTarget ()->SetTransform (d2dMatrix);
 		geometry->Release ();
-		applyClip = drawContext->currentState.clipRect;
+		applyClip = drawContext->getCurrentState ().clipRect;
 		drawContext->currentClip = {};
 	}
 	else
 	{
-		if (drawContext->currentClip != drawContext->currentState.clipRect)
+		if (drawContext->currentClip != drawContext->getCurrentState ().clipRect)
 		{
-			CRect clip = drawContext->currentState.clipRect;
+			CRect clip = drawContext->getCurrentState ().clipRect;
 			if (drawContext->currentClip.isEmpty () == false)
 				drawContext->getRenderTarget ()->PopAxisAlignedClip ();
 			if (clip.isEmpty () == false)
@@ -280,7 +280,7 @@ ID2D1GradientStopCollection* D2DDrawContext::createGradientStopCollection (const
 	for (CGradient::ColorStopMap::const_iterator it = d2dGradient.getColorStops ().begin (); it != d2dGradient.getColorStops ().end (); ++it, ++index)
 	{
 		gradientStops[index].position = (FLOAT)it->first;
-		gradientStops[index].color = D2D1::ColorF (it->second.red/255.f, it->second.green/255.f, it->second.blue/255.f, it->second.alpha/255.f * currentState.globalAlpha);
+		gradientStops[index].color = D2D1::ColorF (it->second.red/255.f, it->second.green/255.f, it->second.blue/255.f, it->second.alpha/255.f * getCurrentState ().globalAlpha);
 	}
 	getRenderTarget ()->CreateGradientStopCollection (gradientStops, static_cast<UINT32> (d2dGradient.getColorStops ().size ()), &collection);
 	delete [] gradientStops;
@@ -380,7 +380,7 @@ void D2DDrawContext::clearRect (const CRect& rect)
 {
 	if (renderTarget)
 	{
-		CRect oldClip = currentState.clipRect;
+		CRect oldClip = getCurrentState ().clipRect;
 		setClipRect (rect);
 		D2DApplyClip ac (this);
 		renderTarget->Clear (D2D1::ColorF (1.f, 1.f, 1.f, 0.f));
@@ -426,7 +426,7 @@ void D2DDrawContext::drawBitmap (CBitmap* bitmap, const CRect& dest, const CPoin
 				source.setHeight (d2d1Bitmap->GetSize ().height);
 
 				D2D1_BITMAP_INTERPOLATION_MODE mode;
-				switch (currentState.bitmapQuality)
+				switch (getCurrentState ().bitmapQuality)
 				{
 					case BitmapInterpolationQuality::kLow:
 						mode = D2D1_BITMAP_INTERPOLATION_MODE_NEAREST_NEIGHBOR;
@@ -440,7 +440,7 @@ void D2DDrawContext::drawBitmap (CBitmap* bitmap, const CRect& dest, const CPoin
 				}
 
 				D2D1_RECT_F sourceRect = makeD2DRect (source);
-				renderTarget->DrawBitmap (d2d1Bitmap, makeD2DRect (d), alpha * currentState.globalAlpha, mode, &sourceRect);
+				renderTarget->DrawBitmap (d2d1Bitmap, makeD2DRect (d), alpha * getCurrentState ().globalAlpha, mode, &sourceRect);
 			}
 		}
 	}
@@ -449,13 +449,13 @@ void D2DDrawContext::drawBitmap (CBitmap* bitmap, const CRect& dest, const CPoin
 //-----------------------------------------------------------------------------
 void D2DDrawContext::drawLineInternal (CPoint start, CPoint end)
 {
-	renderTarget->DrawLine (makeD2DPoint (start), makeD2DPoint (end), strokeBrush, (FLOAT)currentState.frameWidth, strokeStyle);
+	renderTarget->DrawLine (makeD2DPoint (start), makeD2DPoint (end), strokeBrush, (FLOAT)getCurrentState ().frameWidth, strokeStyle);
 }
 
 //-----------------------------------------------------------------------------
 bool D2DDrawContext::needsHalfPointOffset () const
 {
-	return static_cast<int32_t> (currentState.frameWidth) % 2 != 0;
+	return static_cast<int32_t> (getCurrentState ().frameWidth) % 2 != 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -560,7 +560,7 @@ void D2DDrawContext::drawRect (const CRect &_rect, const CDrawStyle drawStyle)
 		{
 			rect.offset (0.5, 0.5);
 		}
-		renderTarget->DrawRectangle (makeD2DRect (rect), strokeBrush, (FLOAT)currentState.frameWidth, strokeStyle);
+		renderTarget->DrawRectangle (makeD2DRect (rect), strokeBrush, (FLOAT)getCurrentState ().frameWidth, strokeStyle);
 	}
 }
 
@@ -605,7 +605,7 @@ void D2DDrawContext::drawEllipse (const CRect &_rect, const CDrawStyle drawStyle
 	}
 	if (drawStyle == kDrawStroked || drawStyle == kDrawFilledAndStroked)
 	{
-		renderTarget->DrawEllipse (ellipse, strokeBrush, (FLOAT)currentState.frameWidth, strokeStyle);
+		renderTarget->DrawEllipse (ellipse, strokeBrush, (FLOAT)getCurrentState ().frameWidth, strokeStyle);
 	}
 }
 
@@ -624,7 +624,7 @@ void D2DDrawContext::drawPoint (const CPoint &point, const CColor& color)
 //-----------------------------------------------------------------------------
 void D2DDrawContext::setLineStyle (const CLineStyle& style)
 {
-	if (strokeStyle && currentState.lineStyle == style)
+	if (strokeStyle && getCurrentState ().lineStyle == style)
 		return;
 	setLineStyleInternal (style);
 	COffscreenContext::setLineStyle (style);
@@ -672,7 +672,7 @@ void D2DDrawContext::setLineStyleInternal (const CLineStyle& style)
 //-----------------------------------------------------------------------------
 void D2DDrawContext::setLineWidth (CCoord width)
 {
-	if (currentState.frameWidth == width)
+	if (getCurrentState ().frameWidth == width)
 		return;
 	COffscreenContext::setLineWidth (width);
 }
@@ -680,7 +680,7 @@ void D2DDrawContext::setLineWidth (CCoord width)
 //-----------------------------------------------------------------------------
 void D2DDrawContext::setDrawMode (CDrawMode mode)
 {
-	if (currentState.drawMode == mode && currentState.drawMode.integralMode () == mode.integralMode ())
+	if (getCurrentState ().drawMode == mode && getCurrentState ().drawMode.integralMode () == mode.integralMode ())
 		return;
 	setDrawModeInternal (mode);
 	COffscreenContext::setDrawMode (mode);
@@ -713,7 +713,7 @@ void D2DDrawContext::resetClipRect ()
 //-----------------------------------------------------------------------------
 void D2DDrawContext::setFillColor (const CColor& color)
 {
-	if (currentState.fillColor == color)
+	if (getCurrentState ().fillColor == color)
 		return;
 	setFillColorInternal (color);
 	COffscreenContext::setFillColor (color);
@@ -722,7 +722,7 @@ void D2DDrawContext::setFillColor (const CColor& color)
 //-----------------------------------------------------------------------------
 void D2DDrawContext::setFrameColor (const CColor& color)
 {
-	if (currentState.frameColor == color)
+	if (getCurrentState ().frameColor == color)
 		return;
 	setFrameColorInternal (color);
 	COffscreenContext::setFrameColor (color);
@@ -731,7 +731,7 @@ void D2DDrawContext::setFrameColor (const CColor& color)
 //-----------------------------------------------------------------------------
 void D2DDrawContext::setFontColor (const CColor& color)
 {
-	if (currentState.fontColor == color)
+	if (getCurrentState ().fontColor == color)
 		return;
 	setFontColorInternal (color);
 	COffscreenContext::setFontColor (color);
@@ -747,7 +747,7 @@ void D2DDrawContext::setFillColorInternal (const CColor& color)
 	}
 	if (renderTarget)
 	{
-		D2D1_COLOR_F d2Color = {color.red/255.f, color.green/255.f, color.blue/255.f, (color.alpha/255.f) * currentState.globalAlpha};
+		D2D1_COLOR_F d2Color = {color.red/255.f, color.green/255.f, color.blue/255.f, (color.alpha/255.f) * getCurrentState ().globalAlpha};
 		renderTarget->CreateSolidColorBrush (d2Color, &fillBrush);
 	}
 }
@@ -762,7 +762,7 @@ void D2DDrawContext::setFrameColorInternal (const CColor& color)
 	}
 	if (renderTarget)
 	{
-		D2D1_COLOR_F d2Color = {color.red/255.f, color.green/255.f, color.blue/255.f, (color.alpha/255.f) * currentState.globalAlpha};
+		D2D1_COLOR_F d2Color = {color.red/255.f, color.green/255.f, color.blue/255.f, (color.alpha/255.f) * getCurrentState ().globalAlpha};
 		renderTarget->CreateSolidColorBrush (d2Color, &strokeBrush);
 	}
 }
@@ -777,7 +777,7 @@ void D2DDrawContext::setFontColorInternal (const CColor& color)
 	}
 	if (renderTarget)
 	{
-		D2D1_COLOR_F d2Color = {color.red/255.f, color.green/255.f, color.blue/255.f, (color.alpha/255.f) * currentState.globalAlpha};
+		D2D1_COLOR_F d2Color = {color.red/255.f, color.green/255.f, color.blue/255.f, (color.alpha/255.f) * getCurrentState ().globalAlpha};
 		renderTarget->CreateSolidColorBrush (d2Color, &fontBrush);
 	}
 }
@@ -785,12 +785,12 @@ void D2DDrawContext::setFontColorInternal (const CColor& color)
 //-----------------------------------------------------------------------------
 void D2DDrawContext::setGlobalAlpha (float newAlpha)
 {
-	if (currentState.globalAlpha == newAlpha)
+	if (getCurrentState ().globalAlpha == newAlpha)
 		return;
 	COffscreenContext::setGlobalAlpha (newAlpha);
-	setFrameColorInternal (currentState.frameColor);
-	setFillColorInternal (currentState.fillColor);
-	setFontColorInternal (currentState.fontColor);
+	setFrameColorInternal (getCurrentState ().frameColor);
+	setFillColorInternal (getCurrentState ().fillColor);
+	setFontColorInternal (getCurrentState ().fontColor);
 }
 
 //-----------------------------------------------------------------------------
@@ -802,41 +802,41 @@ void D2DDrawContext::saveGlobalState ()
 //-----------------------------------------------------------------------------
 void D2DDrawContext::restoreGlobalState ()
 {
-	CColor prevFillColor = currentState.fillColor;
-	CColor prevFrameColor = currentState.frameColor;
-	CColor prevFontColor = currentState.fontColor;
-	CLineStyle prevLineStye = currentState.lineStyle;
-	CDrawMode prevDrawMode = currentState.drawMode;
-	float prevAlpha = currentState.globalAlpha;
+	CColor prevFillColor = getCurrentState ().fillColor;
+	CColor prevFrameColor = getCurrentState ().frameColor;
+	CColor prevFontColor = getCurrentState ().fontColor;
+	CLineStyle prevLineStye = getCurrentState ().lineStyle;
+	CDrawMode prevDrawMode = getCurrentState ().drawMode;
+	float prevAlpha = getCurrentState ().globalAlpha;
 	COffscreenContext::restoreGlobalState ();
-	if (prevAlpha != currentState.globalAlpha)
+	if (prevAlpha != getCurrentState ().globalAlpha)
 	{
-		float prevAlpha = currentState.globalAlpha;
-		currentState.globalAlpha = -1.f;
+		float prevAlpha = getCurrentState ().globalAlpha;
+		getCurrentState ().globalAlpha = -1.f;
 		setGlobalAlpha (prevAlpha);
 	}
 	else
 	{
-		if (prevFillColor != currentState.fillColor)
+		if (prevFillColor != getCurrentState ().fillColor)
 		{
-			setFillColorInternal (currentState.fillColor);
+			setFillColorInternal (getCurrentState ().fillColor);
 		}
-		if (prevFrameColor != currentState.frameColor)
+		if (prevFrameColor != getCurrentState ().frameColor)
 		{
-			setFrameColorInternal (currentState.frameColor);
+			setFrameColorInternal (getCurrentState ().frameColor);
 		}
-		if (prevFontColor != currentState.fontColor)
+		if (prevFontColor != getCurrentState ().fontColor)
 		{
-			setFontColorInternal (currentState.fontColor);
+			setFontColorInternal (getCurrentState ().fontColor);
 		}
 	}
-	if (prevLineStye != currentState.lineStyle)
+	if (prevLineStye != getCurrentState ().lineStyle)
 	{
-		setLineStyleInternal (currentState.lineStyle);
+		setLineStyleInternal (getCurrentState ().lineStyle);
 	}
-	if (prevDrawMode != currentState.drawMode)
+	if (prevDrawMode != getCurrentState ().drawMode)
 	{
-		setDrawModeInternal (currentState.drawMode);
+		setDrawModeInternal (getCurrentState ().drawMode);
 	}
 }
 

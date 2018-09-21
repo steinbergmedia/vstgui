@@ -7,13 +7,13 @@
 #include "win32async.h"
 #include "../../../../lib/platform/win32/direct2d/d2ddrawcontext.h"
 #include "../../../../lib/platform/win32/win32frame.h"
+#include "../../../../lib/platform/win32/win32dll.h"
 #include "../../../../lib/platform/win32/winstring.h"
 #include "../../../include/iappdelegate.h"
 #include "../../../include/iapplication.h"
 #include "../../application.h"
 #include "../iplatformwindow.h"
 #include <dwmapi.h>
-#include <shellscalingapi.h>
 #include <versionhelpers.h>
 #include <windows.h>
 #include <d2d1.h>
@@ -23,118 +23,6 @@
 #pragma comment(lib, "Comctl32.lib")
 
 extern void* hInstance;
-
-//------------------------------------------------------------------------
-struct User32Lib
-{
-	static User32Lib& instance ()
-	{
-		static User32Lib gInstance;
-		return gInstance;
-	}
-
-	template<typename T>
-	T getProcAddress (const char* name)
-	{
-		return reinterpret_cast<T> (GetProcAddress (module, name));
-	}
-
-	bool enableNonClientDpiScaling (HWND window)
-	{
-		if (enableNonClientDpiScalingFunc)
-			return enableNonClientDpiScalingFunc (window);
-		return false;
-	}
-
-private:
-	using EnableNonClientDpiScalingFunc = BOOL (WINAPI*) (_In_ HWND hwnd);
-
-	User32Lib ()
-	{
-		module = LoadLibrary (L"user32.dll");
-		enableNonClientDpiScalingFunc = getProcAddress<EnableNonClientDpiScalingFunc> ("EnableNonClientDpiScaling");
-	}
-
-	EnableNonClientDpiScalingFunc enableNonClientDpiScalingFunc;
-	HMODULE module;
-};
-
-//------------------------------------------------------------------------
-struct WindowComposition
-{
-	WindowComposition ()
-	{
-		auto user32lib = User32Lib::instance ();
-		get = user32lib.getProcAddress<GetProc> ("GetWindowCompositionAttribute");
-		set = user32lib.getProcAddress<SetProc> ("SetWindowCompositionAttribute");
-	}
-
-	bool setWindowTransparent (HWND hwnd)
-	{
-		// TODO: need manifest file to actually get the running version of Windows 8.1 or greater
-		auto accentState = IsWindowsVersionOrGreater (10, 0, 0) ?
-		                       AccentState::ACCENT_ENABLE_TRANSPARENT :
-		                       AccentState::ACCENT_ENABLE_BLURBEHIND;
-		return setAccentState (hwnd, accentState);
-	}
-
-//------------------------------------------------------------------------
-private:
-	enum AccentState
-	{
-		ACCENT_DISABLED = 0,
-		ACCENT_ENABLE_GRADIENT = 1,
-		ACCENT_ENABLE_TRANSPARENTGRADIENT = 2,
-		ACCENT_ENABLE_BLURBEHIND = 3, // use on Windows 8
-		ACCENT_ENABLE_TRANSPARENT = 4, // use on Windows 10
-		ACCENT_INVALID_STATE = 5
-	};
-
-	struct AccentPolicy
-	{
-		AccentState AccentState;
-		int32_t AccentFlags;
-		int32_t GradientColor;
-		int32_t AnimationId;
-	};
-
-	enum Attribute
-	{
-		// ...
-		WCA_ACCENT_POLICY = 19
-		// ...
-	};
-
-	struct Data
-	{
-		Attribute attribute;
-		PVOID pData;
-		ULONG dataSize;
-	};
-
-	typedef HRESULT (WINAPI* GetProc) (HWND, Data*);
-	typedef HRESULT (WINAPI* SetProc) (HWND, Data*);
-
-	GetProc get = nullptr;
-	SetProc set = nullptr;
-
-	bool setAccentState (HWND hwnd, AccentState state)
-	{
-		if (set)
-		{
-			AccentPolicy policy {};
-			policy.AccentState = state;
-			Data d;
-			d.attribute = Attribute::WCA_ACCENT_POLICY;
-			d.dataSize = sizeof (AccentPolicy);
-			d.pData = &policy;
-			auto result = set (hwnd, &d);
-			return result == 0;
-		}
-		return false;
-	}
-};
-static WindowComposition gWindowComposition;
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -167,6 +55,7 @@ public:
 	void setSize (const CPoint& newSize) override;
 	void setPosition (const CPoint& newPosition) override;
 	void setTitle (const UTF8String& newTitle) override;
+	void setRepresentedPath (const UTF8String& path) override {}
 
 	void show () override;
 	void hide () override;
@@ -176,6 +65,10 @@ public:
 
 	PlatformType getPlatformType () const override { return PlatformType::kHWNDTopLevel; }
 	void* getPlatformHandle () const override { return hwnd; }
+	PlatformFrameConfigPtr prepareFrameConfig (PlatformFrameConfigPtr&& controllerConfig) override
+	{
+		return controllerConfig;
+	}
 	void onSetContentView (CFrame* frame) override;
 
 	void updateCommands () const override;
@@ -233,7 +126,7 @@ static LRESULT CALLBACK WndProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 	if (window)
 		return window->proc (message, wParam, lParam);
 	if (message == WM_NCCREATE)
-		User32Lib::instance ().enableNonClientDpiScaling (hWnd);
+		HiDPISupport::instance ().enableNonClientDpiScaling (hWnd);
 	return DefWindowProc (hWnd, message, wParam, lParam);
 }
 
@@ -243,7 +136,7 @@ void Window::registerWindowClasses ()
 	static bool once = true;
 	if (!once)
 		return;
-	once = true;
+	once = false;
 
 	WNDCLASSEX wcex {};
 
@@ -287,8 +180,8 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 	if (config.type == WindowType::Popup)
 	{
 		isPopup = true;
-		exStyle = WS_EX_COMPOSITED | WS_EX_TRANSPARENT;
-		dwStyle = WS_POPUP;
+		exStyle = WS_EX_COMPOSITED;
+		dwStyle = WS_POPUP | WS_CLIPCHILDREN;
 		if (config.style.hasBorder ())
 		{
 			if (config.style.canSize ())
@@ -307,13 +200,17 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 				dwStyle |= WS_SIZEBOX | WS_MAXIMIZEBOX; // TODO: WS_MINIMIZEBOX
 			if (config.style.canClose ())
 				dwStyle |= WS_CAPTION | WS_SYSMENU;
+			exStyle |= WS_EX_COMPOSITED;
+			dwStyle |= WS_CLIPCHILDREN;
 		}
 		else
 		{
 			dwStyle = WS_POPUP | WS_CLIPCHILDREN;
-			exStyle = WS_EX_COMPOSITED | WS_EX_TRANSPARENT;
+			exStyle = WS_EX_COMPOSITED;
 		}
 	}
+	if (isTransparent)
+		exStyle |= WS_EX_LAYERED;
 	initialSize = config.size;
 	auto winStr = dynamic_cast<WinString*> (config.title.getPlatformString ());
 	hwnd = CreateWindowEx (exStyle, gWindowClassName, winStr ? winStr->getWideString () : nullptr,
@@ -477,10 +374,17 @@ void Window::validateMenu (Win32Menu* menu)
 		{
 			command.name = item.title;
 			auto cmd = mapCommand (command);
-			auto canHandle = delegate->canHandleCommand (cmd);
-			if (!canHandle)
-				canHandle = appCommandHandler->canHandleCommand (cmd);
-			canHandle ? item.enable () : item.disable ();
+			if (cmd == Commands::CloseWindow)
+			{
+				item.enable ();
+			}
+			else
+			{
+				auto canHandle = delegate->canHandleCommand (cmd);
+				if (!canHandle)
+					canHandle = appCommandHandler->canHandleCommand (cmd);
+				canHandle ? item.enable () : item.disable ();
+			}
 			return true;
 		}
 		return false;
@@ -512,7 +416,9 @@ static CPoint getRectSize (const RECT& r)
 //------------------------------------------------------------------------
 void Window::makeTransparent ()
 {
-	gWindowComposition.setWindowTransparent (hwnd);
+	MARGINS margin = { -1 };
+	auto res = DwmExtendFrameIntoClientArea (hwnd, &margin);
+	vstgui_assert (res == S_OK);
 }
 
 //------------------------------------------------------------------------
@@ -534,9 +440,15 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 			delegate->onSizeChanged (size);
 			if (frame)
 			{
-				size.x *= dpiScale;
-				size.y *= dpiScale;
+				size.x = std::ceil (size.x * dpiScale);
+				size.y = std::ceil (size.y * dpiScale);
 				frame->setSize (size.x, size.y);
+				if (isTransparent)
+				{
+					HRGN region =
+					    CreateRectRgn (0, 0, static_cast<int> (size.x), static_cast<int> (size.y));
+					SetWindowRgn (hwnd, region, FALSE);
+				}
 			}
 			break;
 		}
@@ -581,12 +493,6 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 				modalWindow->activate ();
 				return 0;
 			}
-			if (!hasBorder)
-			{
-				MARGINS margins = {0};
-				auto res = DwmExtendFrameIntoClientArea (hwnd, &margins);
-				vstgui_assert (res == S_OK);
-			}
 
 			if (action == WA_ACTIVE || action == WA_CLICKACTIVE)
 			{
@@ -606,7 +512,8 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 		}
 		case WM_CLOSE:
 		{
-			windowWillClose ();
+			if (delegate->canClose ())
+				windowWillClose ();
 			return 1;
 		}
 		case WM_DESTROY:
@@ -855,7 +762,7 @@ CPoint Window::getSize () const
 		return initialSize;
 	RECT r;
 	GetClientRect (hwnd, &r);
-	return CPoint ((r.right - r.left) / dpiScale, (r.bottom - r.top) / dpiScale);
+	return CPoint (std::ceil ((r.right - r.left) / dpiScale), std::ceil ((r.bottom - r.top) / dpiScale));
 }
 
 //------------------------------------------------------------------------
@@ -883,6 +790,12 @@ void Window::setSize (const CPoint& newSize)
 	LONG height = clientRect.bottom - clientRect.top;
 	SetWindowPos (hwnd, HWND_TOP, 0, 0, width, height,
 	              SWP_NOMOVE | SWP_NOCOPYBITS | SWP_NOACTIVATE);
+
+	if (isTransparent)
+	{
+		HRGN region = CreateRectRgn (0, 0, width, height);
+		SetWindowRgn (hwnd, region, FALSE);
+	}
 }
 
 //------------------------------------------------------------------------
@@ -902,6 +815,8 @@ void Window::setPosition (const CPoint& newPosition)
 //------------------------------------------------------------------------
 void Window::setTitle (const UTF8String& newTitle)
 {
+	if (auto winStr = dynamic_cast<WinString*> (newTitle.getPlatformString ()))
+		SetWindowText (hwnd, winStr->getWideString ());
 }
 
 //------------------------------------------------------------------------
@@ -909,7 +824,7 @@ void Window::updateDPI ()
 {
 	auto monitor = MonitorFromWindow (hwnd, MONITOR_DEFAULTTONEAREST);
 	UINT x, y;
-	GetDpiForMonitor (monitor, MDT_EFFECTIVE_DPI, &x, &y);
+	HiDPISupport::instance ().getDPIForMonitor (monitor, HiDPISupport::MDT_EFFECTIVE_DPI, &x, &y);
 	setNewDPI (x);
 }
 
@@ -920,7 +835,7 @@ double Window::getScaleFactor () const
 		return 1.;
 	auto monitor = MonitorFromWindow (hwnd, MONITOR_DEFAULTTONEAREST);
 	UINT x, y;
-	GetDpiForMonitor (monitor, MDT_EFFECTIVE_DPI, &x, &y);
+	HiDPISupport::instance ().getDPIForMonitor (monitor, HiDPISupport::MDT_EFFECTIVE_DPI, &x, &y);
 	return static_cast<CCoord> (x) * (100. / 96.) / 100.;
 }
 
@@ -940,6 +855,12 @@ void Window::show ()
 	LONG height = clientRect.bottom - clientRect.top;
 	SetWindowPos (hwnd, HWND_TOP, 0, 0, width, height,
 	              SWP_NOMOVE | SWP_NOCOPYBITS | SWP_SHOWWINDOW);
+
+	if (isTransparent)
+	{
+		HRGN region = CreateRectRgn (0, 0, width, height);
+		SetWindowRgn (hwnd, region, FALSE);
+	}
 }
 
 //------------------------------------------------------------------------

@@ -16,25 +16,28 @@ namespace VSTGUI {
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-UITemplateSettingsController::UITemplateSettingsController (const std::string& templateName, UIDescription* description)
+UITemplateSettingsController::UITemplateSettingsController (const std::string& templateName, UIDescription* description, IActionPerformer* actionPerformer)
 : description (description)
 , templateName (templateName)
 , newTemplateName (templateName)
+, actionPerformer (actionPerformer)
 {
-	const UIAttributes* attr = description->getViewAttributes (templateName.c_str());
+	const UIAttributes* attr = description->getViewAttributes (templateName.data ());
 	if (attr)
 	{
-		if (attr->getPointAttribute ("minSize", minSize) == false)
+		if (attr->getPointAttribute (kTemplateAttributeMinSize, minSize) == false)
 		{
 			minSize.x = -1.;
 			minSize.y = -1.;
 		}
-		if (attr->getPointAttribute ("maxSize", maxSize) == false)
+		if (attr->getPointAttribute (kTemplateAttributeMaxSize, maxSize) == false)
 		{
 			maxSize.x = -1.;
 			maxSize.y = -1.;
 		}
 	}
+	originalMinSize = minSize;
+	originalMaxSize = maxSize;
 	for (auto& control : controls)
 		control = nullptr;
 }
@@ -44,30 +47,18 @@ CMessageResult UITemplateSettingsController::notify (CBaseObject* sender, IdStri
 {
 	if (message == UIDialogController::kMsgDialogButton1Clicked)
 	{
+		actionPerformer->beginGroupAction ("Change Template Settings");
 		if (templateName != newTemplateName)
 		{
-			description->changeTemplateName (templateName.c_str (), newTemplateName.c_str ());
+			actionPerformer->performTemplateNameChange (templateName.data (),
+			                                            newTemplateName.data ());
 		}
-		UIAttributes* attr = const_cast<UIAttributes*> (description->getViewAttributes (templateName.c_str()));
-		if (attr)
+		if (minSize != originalMinSize || maxSize != originalMaxSize)
 		{
-			if (minSize.x == -1. && minSize.y == -1.)
-			{
-				attr->removeAttribute ("minSize");
-			}
-			else
-			{
-				attr->setPointAttribute ("minSize", minSize);
-			}
-			if (maxSize.x == -1. && maxSize.y == -1.)
-			{
-				attr->removeAttribute ("maxSize");
-			}
-			else
-			{
-				attr->setPointAttribute ("maxSize", maxSize);
-			}
+			actionPerformer->performTemplateMinMaxSizeChange (newTemplateName.data (), minSize,
+			                                                  maxSize);
 		}
+		actionPerformer->finishGroupAction ();
 		return kMessageNotified;
 	}
 	return kMessageUnknown;
@@ -84,7 +75,7 @@ CView* UITemplateSettingsController::verifyView (CView* view, const UIAttributes
 			case kNameTag:
 			{
 				controls[kNameTag] = control;
-				control->setText (templateName.c_str ());
+				control->setText (templateName.data ());
 				break;
 			}
 			case kMinWidthTag:
@@ -137,7 +128,7 @@ void UITemplateSettingsController::valueChanged (CControl* control)
 				if (!edit->getText ().empty ())
 					newTemplateName = edit->getText ();
 				else
-					edit->setText (newTemplateName.c_str ());
+					edit->setText (newTemplateName.data ());
 			}
 			break;
 		}
@@ -166,7 +157,7 @@ void UITemplateSettingsController::valueChanged (CControl* control)
 		{
 			if (control->getValue() == control->getMax())
 			{
-				const UIAttributes* attr = description->getViewAttributes (templateName.c_str());
+				const UIAttributes* attr = description->getViewAttributes (templateName.data ());
 				if (attr)
 				{
 					CPoint currentSize;
@@ -214,7 +205,7 @@ bool UITemplateSettingsController::valueToString (float value, char utf8String[2
 	int32_t intValue = (int32_t)value;
 	std::stringstream str;
 	str << intValue;
-	std::strcpy (utf8String, str.str ().c_str ());
+	std::strcpy (utf8String, str.str ().data ());
 	return true;
 }
 

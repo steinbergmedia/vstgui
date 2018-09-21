@@ -21,6 +21,7 @@ namespace VSTGUI {
 class IFocusDrawing
 {
 public:
+	virtual ~IFocusDrawing () noexcept = default;
 	/** draw focus before view will be drawn or afterwards */
 	virtual bool drawFocusOnTop () = 0;
 	/** the graphics path will be drawn filled with the evenodd method and the color set in CFrame::setFocusColor() */

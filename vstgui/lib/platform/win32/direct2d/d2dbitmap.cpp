@@ -4,7 +4,7 @@
 
 #include "d2dbitmap.h"
 
-#if WINDOWS && VSTGUI_DIRECT2D_SUPPORT
+#if WINDOWS
 
 #include "../win32support.h"
 #include <wincodec.h>

@@ -16,7 +16,7 @@ UIGridController::UIGridController (IController* baseController, UIDescription* 
 : DelegationController (baseController)
 , editDescription (description)
 {
-	UIAttributes* attributes = editDescription->getCustomAttributes ("UIGridController", true);
+	auto attributes = editDescription->getCustomAttributes ("UIGridController", true);
 	if (attributes)
 	{
 		attributes->getPointAttribute ("Size", size);
@@ -26,7 +26,7 @@ UIGridController::UIGridController (IController* baseController, UIDescription* 
 //----------------------------------------------------------------------------------------------------
 UIGridController::~UIGridController ()
 {
-	UIAttributes* attributes = editDescription->getCustomAttributes ("UIGridController", true);
+	auto attributes = editDescription->getCustomAttributes ("UIGridController", true);
 	if (attributes)
 	{
 		attributes->setPointAttribute ("Size", size);
@@ -49,7 +49,7 @@ void UIGridController::valueChanged (CControl* control)
 			break;
 		}
 	}
-	UIAttributes* attributes = editDescription->getCustomAttributes ("UIGridController", true);
+	auto attributes = editDescription->getCustomAttributes ("UIGridController", true);
 	if (attributes)
 	{
 		attributes->setPointAttribute ("Size", size);

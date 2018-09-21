@@ -13,6 +13,10 @@ namespace VSTGUI {
 //-----------------------------------------------------------------------------
 using CViewAttributeID = size_t;
 
+//-----------------------------------------------------------------------------
+static constexpr uint32_t kStreamIOError = std::numeric_limits<uint32_t>::max ();
+static constexpr int64_t kStreamSeekError = -1;
+
 // enums
 //----------------------------
 // @brief Mouse Wheel Axis
@@ -40,16 +44,28 @@ enum CMouseEventResult
 //----------------------------
 enum CCursorType
 {
-	kCursorDefault = 0,				///< arrow cursor
-	kCursorWait,					///< wait cursor
-	kCursorHSize,					///< horizontal size cursor
-	kCursorVSize,					///< vertical size cursor
-	kCursorSizeAll,					///< size all cursor
-	kCursorNESWSize,				///< northeast and southwest size cursor
-	kCursorNWSESize,				///< northwest and southeast size cursor
-	kCursorCopy,					///< copy cursor (mainly for drag&drop operations)
-	kCursorNotAllowed,				///< not allowed cursor (mainly for drag&drop operations)
-	kCursorHand						///< hand cursor
+	/** arrow cursor */
+	kCursorDefault = 0,
+	/** wait cursor */
+	kCursorWait,
+	/** horizontal size cursor */
+	kCursorHSize,
+	/** vertical size cursor */
+	kCursorVSize,
+	/** size all cursor */
+	kCursorSizeAll,
+	/** northeast and southwest size cursor */
+	kCursorNESWSize,
+	/** northwest and southeast size cursor */
+	kCursorNWSESize,
+	/** copy cursor (mainly for drag&drop operations) */
+	kCursorCopy,
+	/** not allowed cursor (mainly for drag&drop operations) */
+	kCursorNotAllowed,
+	/** hand cursor */
+	kCursorHand,
+	/** i beam cursor */
+	kCursorIBeam,
 };
 
 //----------------------------
@@ -62,8 +78,8 @@ enum CViewAutosizing
 	kAutosizeTop			= 1 << 1,
 	kAutosizeRight			= 1 << 2,
 	kAutosizeBottom			= 1 << 3,
-	kAutosizeColumn			= 1 << 4,	///< view containers treat their children as columns
-	kAutosizeRow			= 1 << 5,	///< view containers treat their children as rows
+	kAutosizeColumn			= 1 << 4,
+	kAutosizeRow			= 1 << 5,
 	kAutosizeAll			= kAutosizeLeft | kAutosizeTop | kAutosizeRight | kAutosizeBottom
 };
 
@@ -85,6 +101,26 @@ enum class BitmapInterpolationQuality
 	kHigh			///< Bicubic interpolation (Bilinear on Windows)
 };
 
+//-----------------------------------------------------------------------------
+enum class CSliderMode
+{
+	Touch,
+	RelativeTouch,
+	FreeClick,
+	Ramp,
+	UseGlobal
+};
+
+enum class DragOperation;
+
+// @brief Stream seek modes
+enum class SeekMode
+{
+	Set,
+	Current,
+	End
+};
+
 // simple structs
 struct CColor;
 struct CPoint;
@@ -92,17 +128,18 @@ struct CRect;
 struct CButtonState;
 struct CDrawMode;
 struct CGraphicsTransform;
+struct DragDescription;
+struct DragEventData;
+struct ModalViewSession;
 
 // interfaces
 class IViewListener;
 class IViewContainerListener;
+class IViewMouseListener;
 class IDataPackage;
 class IDependency;
 class IFocusDrawing;
 class IScaleFactorChangedListener;
-#if VSTGUI_TOUCH_EVENT_HANDLING
-class ITouchEvent;
-#endif
 class IDataBrowserDelegate;
 class IMouseObserver;
 class IKeyboardHook;
@@ -112,6 +149,16 @@ class ISplitViewController;
 class ISplitViewSeparatorDrawer;
 class IScrollbarDrawer;
 class IControlListener;
+class IDragCallback;
+class IDraggingSession;
+class IDropTarget;
+class ICommandMenuItemTarget;
+class IOptionMenuListener;
+class ITextLabelListener;
+
+#if VSTGUI_TOUCH_EVENT_HANDLING
+class ITouchEvent;
+#endif
 
 // classes
 class CBitmap;
@@ -217,6 +264,7 @@ class IPlatformBitmapPixelAccess;
 class IPlatformFont;
 class IPlatformFrame;
 class IFontPainter;
+class IPlatformResourceInputStream;
 
 }
 

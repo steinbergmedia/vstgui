@@ -6,6 +6,8 @@
 #define __ctextlabel__
 
 #include "cparamdisplay.h"
+#include "itextlabellistener.h"
+#include "../dispatchlist.h"
 #include "../cstring.h"
 
 namespace VSTGUI {
@@ -25,22 +27,39 @@ public:
 	/// @name CTextLabel Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual void setText (const UTF8String& txt);			///< set text
-	virtual const UTF8String& getText () const;				///< read only access to text
+	/** set text */
+	virtual void setText (const UTF8String& txt);
+	/** read only access to text */
+	virtual const UTF8String& getText () const;
 
 	enum TextTruncateMode {
-		kTruncateNone = 0,						///< no characters will be removed
-		kTruncateHead,							///< characters will be removed from the beginning of the text
-		kTruncateTail							///< characters will be removed from the end of the text
+		/** no characters will be removed */
+		kTruncateNone = 0,
+		/** characters will be removed from the beginning of the text */
+		kTruncateHead,
+		/** characters will be removed from the end of the text */
+		kTruncateTail
 	};
 	
-	virtual void setTextTruncateMode (TextTruncateMode mode);					///< set text truncate mode
-	TextTruncateMode getTextTruncateMode () const { return textTruncateMode; }	///< get text truncate mode
-	const UTF8String& getTruncatedText () const { return truncatedText; }		///< get the truncated text
+	/** set text truncate mode */
+	virtual void setTextTruncateMode (TextTruncateMode mode);
+	/** get text truncate mode */
+	TextTruncateMode getTextTruncateMode () const { return textTruncateMode; }
+	/** get the truncated text */
+	const UTF8String& getTruncatedText () const { return truncatedText; }
+
+	/** register a text label listener */
+	void registerTextLabelListener (ITextLabelListener* listener);
+	/** unregister a text label listener */
+	void unregisterTextLabelListener (ITextLabelListener* listener);
 	//@}
 
-	static IdStringPtr kMsgTruncatedTextChanged;								///< message which is send to dependent objects when the truncated text changes
-	
+	VSTGUI_DEPRECATED (
+	/** message which is send to dependent objects when the truncated text changes. \deprecated
+	   use ITextLabelListener instead */
+	static IdStringPtr kMsgTruncatedTextChanged;
+	)
+
 	void draw (CDrawContext* pContext) override;
 	bool sizeToFit () override;
 	void setViewSize (const CRect& rect, bool invalid = true) override;
@@ -59,6 +78,8 @@ protected:
 	TextTruncateMode textTruncateMode;
 	UTF8String text;
 	UTF8String truncatedText;
+	using TextLabelListenerList = DispatchList<ITextLabelListener*>;
+	std::unique_ptr<TextLabelListenerList> listeners;
 };
 
 //-----------------------------------------------------------------------------
@@ -72,14 +93,17 @@ public:
 	CMultiLineTextLabel (const CMultiLineTextLabel&) = default;
 
 	enum class LineLayout {
-		clip, ///< clip lines overflowing the view size width
-		truncate, ///< truncate lines overflowing the view size width
-		wrap ///< wrap overflowing words to next line
+		/** clip lines overflowing the view size width */
+		clip,
+		/** truncate lines overflowing the view size width */
+		truncate,
+		/** wrap overflowing words to next line */
+		wrap
 	};
 	void setLineLayout (LineLayout layout);
 	LineLayout getLineLayout () const { return lineLayout; }
 
-	/** automatically resize the view according to the contents (only the height) 
+	/** automatically resize the view according to the contents (only the height)
 	 *	@param state on or off
 	 */
 	void setAutoHeight (bool state);
@@ -97,6 +121,8 @@ public:
 	void setValue (float val) override;
 private:
 	void drawStyleChanged () override;
+	void calculateWrapLine  (CDrawContext *context, std::pair<UTF8String, double> &element, const IFontPainter *const &fontPainter, double lineHeight, double lineWidth, double maxWidth, const CPoint &textInset, CCoord &y);
+	
 	void recalculateLines (CDrawContext* context);
 	void recalculateHeight ();
 	

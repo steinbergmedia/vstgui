@@ -63,8 +63,10 @@ public:
 	CCheckBox (const CCheckBox& checkbox);
 
 	enum Styles {
-		kAutoSizeToFit = 1 << 0, ///< automatically adjusts the width so that the label is completely visible
-		kDrawCrossBox  = 1 << 1	 ///< draws a crossbox instead of a checkmark if no bitmap is provided
+		/** automatically adjusts the width so that the label is completely visible */
+		kAutoSizeToFit = 1 << 0,
+		/** draws a crossbox instead of a checkmark if no bitmap is provided */
+		kDrawCrossBox  = 1 << 1
 	};
 
 	//-----------------------------------------------------------------------------
@@ -167,7 +169,8 @@ protected:
 class CTextButton : public CControl
 {
 public:
-	enum Style ///< CTextButton style
+	/** CTextButton style */
+	enum Style
 	{
 		kKickStyle = 0,
 		kOnOffStyle

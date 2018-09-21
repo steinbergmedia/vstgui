@@ -5,6 +5,7 @@
 #include "ctooltipsupport.h"
 #include "cframe.h"
 #include "cvstguitimer.h"
+#include "malloc.h"
 #include "platform/iplatformframe.h"
 
 #if DEBUG
@@ -47,18 +48,17 @@ CTooltipSupport::~CTooltipSupport () noexcept
 }
 
 //------------------------------------------------------------------------
-static UTF8StringBuffer getTooltipFromView (CView* view)
+static Buffer<char> getTooltipFromView (CView* view)
 {
-	UTF8StringBuffer tooltip = nullptr;
+	Buffer<char> tooltip;
 	uint32_t tooltipSize = 0;
 	if (view->getAttributeSize (kCViewTooltipAttribute, tooltipSize))
 	{
-		tooltip = (UTF8StringBuffer)std::malloc (tooltipSize + 1);
-		memset (tooltip, 0, tooltipSize + 1);
-		if (!view->getAttribute (kCViewTooltipAttribute, tooltipSize, tooltip, tooltipSize))
+		tooltip.allocate (tooltipSize + 1);
+		memset (tooltip.get (), 0, tooltipSize + 1);
+		if (!view->getAttribute (kCViewTooltipAttribute, tooltipSize, tooltip.get (), tooltipSize))
 		{
-			std::free (tooltip);
-			tooltip = nullptr;
+			tooltip.deallocate ();
 		}
 	}
 	return tooltip;
@@ -212,17 +212,15 @@ bool CTooltipSupport::showTooltip ()
 		}
 		CRect r = currentView->translateToGlobal (currentView->getVisibleViewSize ());
 
-		UTF8StringBuffer tooltip = getTooltipFromView (currentView);
+		auto tooltip = getTooltipFromView (currentView);
 		
-		if (tooltip)
+		if (!tooltip.empty ())
 		{
 			state = kForceVisible;
 			
 			IPlatformFrame* platformFrame = frame->getPlatformFrame ();
 			if (platformFrame)
-				platformFrame->showTooltip (r, tooltip);
-
-			std::free (tooltip);
+				platformFrame->showTooltip (r, tooltip.get ());
 
 			#if DEBUGLOG
 			DebugPrint ("CTooltipSupport::showTooltip (%s)\n", currentView->getClassName ());

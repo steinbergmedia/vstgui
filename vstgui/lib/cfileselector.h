@@ -86,46 +86,63 @@ class CNewFileSelector : public CBaseObject
 {
 public:
 	enum Style {
-		kSelectFile,				///< select file(s) selector style
-		kSelectSaveFile,			///< select save file selector style
-		kSelectDirectory			///< select directory style
+		/** select file(s) selector style */
+		kSelectFile,
+		/** select save file selector style */
+		kSelectSaveFile,
+		/** select directory style */
+		kSelectDirectory
 	};
 	
 	//-----------------------------------------------------------------------------
 	/// @name CFileSelector running
 	//-----------------------------------------------------------------------------
 	//@{
-	static CNewFileSelector* create (CFrame* parent = nullptr, Style style = kSelectFile); ///< create a new instance
+	/** create a new instance */
+	static CNewFileSelector* create (CFrame* parent = nullptr, Style style = kSelectFile);
 
 	using CallbackFunc = std::function<void(CNewFileSelector*)>;
 	bool run (CallbackFunc&& callback);
-	bool run (CBaseObject* delegate);	///< the delegate will get a kSelectEndMessage throu the notify method where the sender is this CNewFileSelector object
-	void cancel ();						///< cancel running the file selector
-	bool runModal ();					///< run as modal dialog
+	/** the delegate will get a kSelectEndMessage throu the notify method where the sender is this CNewFileSelector object */
+	bool run (CBaseObject* delegate);
+	/** cancel running the file selector */
+	void cancel ();
+	/** run as modal dialog */
+	bool runModal ();
 	//@}
 
 	//-----------------------------------------------------------------------------
 	/// @name CFileSelector setup
 	//-----------------------------------------------------------------------------
 	//@{
-	void setTitle (const UTF8String& title);					///< set title of file selector
-	void setInitialDirectory (const UTF8String& path);			///< set initial directory (UTF8 string)
-	void setDefaultSaveName (const UTF8String& name);			///< set initial save name (UTF8 string)
-	void setDefaultExtension (const CFileExtension& extension);	///< set default file extension
-	void setAllowMultiFileSelection (bool state);				///< set allow multi file selection (only valid for kSelectFile selector style)
-	void addFileExtension (const CFileExtension& extension);	///< add a file extension
-	void addFileExtension (CFileExtension&& extension);			///< add a file extension
+	/** set title of file selector */
+	void setTitle (const UTF8String& title);
+	/** set initial directory (UTF8 string) */
+	void setInitialDirectory (const UTF8String& path);
+	/** set initial save name (UTF8 string) */
+	void setDefaultSaveName (const UTF8String& name);
+	/** set default file extension */
+	void setDefaultExtension (const CFileExtension& extension);
+	/** set allow multi file selection (only valid for kSelectFile selector style) */
+	void setAllowMultiFileSelection (bool state);
+	/** add a file extension */
+	void addFileExtension (const CFileExtension& extension);
+	/** add a file extension */
+	void addFileExtension (CFileExtension&& extension);
 	//@}
 
 	//-----------------------------------------------------------------------------
 	/// @name CFileSelector result
 	//-----------------------------------------------------------------------------
 	//@{
-	uint32_t getNumSelectedFiles () const;						///< get number of selected files
-	UTF8StringPtr getSelectedFile (uint32_t index) const;		///< get selected file. Result is only valid as long as the instance of CNewFileSelector is valid.
+	/** get number of selected files */
+	uint32_t getNumSelectedFiles () const;
+	/** get selected file. Result is only valid as long as the instance of CNewFileSelector is valid. */
+	UTF8StringPtr getSelectedFile (uint32_t index) const;
 	//@}
 
-	static const CFileExtension& getAllFilesExtension ();		///< get the all files extension
+	/** get the all files extension */
+	static const CFileExtension& getAllFilesExtension ();
 
 	static IdStringPtr kSelectEndMessage;
 //-----------------------------------------------------------------------------

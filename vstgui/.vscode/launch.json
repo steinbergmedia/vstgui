@@ -1,0 +1,36 @@
+{
+	// Use IntelliSense to learn about possible attributes.
+	// Hover to view descriptions of existing attributes.
+	// For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"name": "(gdb) standalone",
+			"type": "cppdbg",
+			"request": "launch",
+			"program": "${workspaceFolder}/build/Debug/standalone/standalone",
+			"args": [],
+			"stopAtEntry": false,
+			"cwd": "${workspaceFolder}/build/Debug/",
+			"environment": [
+				{
+					"name": "LD_LIBRARY_PATH", 
+					"value": "/home/scheffle/tmp/gtk+3.0-3.22.11/debian/build/shared/gdk/.libs;/home/scheffle/tmp/gtkmm3.0-3.22.0/gdk/gdkmm/.libs;/home/scheffle/tmp/cairomm-1.12.0/debian/libcairomm-1.0-1v5/usr/lib/x86_64-linux-gnu"
+					},
+					// {
+					// 	"name": "DISPLAY",
+					// 	"value": ":9"
+					// }
+				],
+			"externalConsole": true,
+			"MIMode": "gdb",
+			"setupCommands": [
+				{
+					"description": "Enable pretty-printing for gdb",
+					"text": "-enable-pretty-printing",
+					"ignoreFailures": true
+				}
+			]
+		}
+	]
+}

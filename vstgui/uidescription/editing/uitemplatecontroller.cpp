@@ -11,16 +11,13 @@
 #include "../../lib/controls/ctextedit.h"
 #include "../../lib/controls/coptionmenu.h"
 #include "../../lib/controls/cscrollbar.h"
+#include "../../lib/cgraphicspath.h"
 #include "uieditcontroller.h"
 #include "uiselection.h"
 #include "uiundomanager.h"
 #include "uiactions.h"
 #include "uieditmenucontroller.h"
 #include <cassert>
-
-#ifdef verify
-	#undef verify
-#endif
 
 namespace VSTGUI {
 
@@ -29,7 +26,7 @@ class UINavigationDataSource : public GenericStringListDataBrowserSource
 {
 public:
 	UINavigationDataSource (IGenericStringListDataBrowserSourceSelectionChanged* delegate)
-	: GenericStringListDataBrowserSource (nullptr, delegate) { textInset.x = 4.; headerBackgroundColor = kTransparentCColor; }
+	: GenericStringListDataBrowserSource (nullptr, delegate) { textInset.x = 4.; }
 
 	int32_t dbOnKeyDown (const VstKeyCode& key, CDataBrowser* browser) override
 	{
@@ -77,19 +74,19 @@ public:
 	void dbDrawHeader (CDrawContext* context, const CRect& size, int32_t column, int32_t flags, CDataBrowser* browser) override
 	{
 		context->setDrawMode (kAliasing);
-		context->setLineWidth (1);
-		if (headerBackgroundColor == kTransparentCColor)
+		if (!headerGradient)
 		{
-			double h,s,l;
-			rowAlternateBackColor.toHSL (h, s, l);
-			l /= 2.;
-			headerBackgroundColor.fromHSL (h, s, l);
-			headerBackgroundColor.alpha = rowAlternateBackColor.alpha;
+			headerGradient = UIEditController::getEditorDescription ()->getGradient ("shading.light");
+			UIEditController::getEditorDescription ()->getColor ("shading.light.frame", headerLineColor);
 		}
-		context->setFillColor (headerBackgroundColor);
-		context->drawRect (size, kDrawFilled);
-		context->setFrameColor (rowlineColor);
-		context->drawLine (CPoint (size.left, size.bottom-1), CPoint (size.right, size.bottom-1));
+		if (headerGradient)
+		{
+			if (auto path = owned (context->createGraphicsPath ()))
+			{
+				path->addRect (size);
+				context->fillLinearGradient (path, *headerGradient, CPoint (size.left, size.top), CPoint (size.left, size.bottom));
+			}
+		}
 		if (!getHeaderTitle ().empty ())
 		{
 			if (headerFont == nullptr)
@@ -102,11 +99,34 @@ public:
 			context->setFontColor (fontColor);
 			context->drawString (getHeaderTitle ().getPlatformString (), size, kCenterText);
 		}
+		auto hairlineSize = context->getHairlineSize ();
+		context->setLineWidth (hairlineSize);
+		context->setFrameColor (headerLineColor);
+		context->drawLine (CPoint (size.right-hairlineSize, size.top), CPoint (size.right-hairlineSize, size.bottom));
+		context->drawLine (CPoint (size.left, size.bottom), CPoint (size.right-hairlineSize, size.bottom));
 	}
+
+	static void drawTriangle (CDrawContext* context, const CRect& size)
+	{
+		if (auto path = owned (context->createGraphicsPath ()))
+		{
+			CRect r (size);
+			r.left = r.right - r.getHeight ();
+			r.inset (4, 4);
+			path->beginSubpath (r.getTopLeft ());
+			path->addLine (r.getBottomLeft ());
+			path->addLine (r.right, r.top + r.getHeight () / 2.);
+			path->closeSubpath ();
+			context->setFillColor (CColor (0, 0, 0, 30));
+			context->drawGraphicsPath (path);
+		}
+	}
+
 protected:
 	mutable UTF8String headerTitle;
-	CColor headerBackgroundColor;
+	CColor headerLineColor {kBlackCColor};
 	SharedPointer<CFontDesc> headerFont;
+	SharedPointer<CGradient> headerGradient;
 };
 
 //----------------------------------------------------------------------------------------------------
@@ -119,6 +139,7 @@ public:
 	void dbCellTextChanged (int32_t row, int32_t column, UTF8StringPtr newText, CDataBrowser* browser) override;
 	void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* textEditControl, CDataBrowser* browser) override;
 	void dbAttached (CDataBrowser* browser) override;
+	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser) override;
 protected:
 	SharedPointer<UIDescription> description;
 	IActionPerformer* actionPerformer;
@@ -143,23 +164,23 @@ protected:
 		headerTitle = "";
 		if (view)
 		{
-			headerTitle = viewFactory->getViewName (view);
+			headerTitle = viewFactory->getViewDisplayName (view);
 			if (headerTitle.empty () && view->getParentView ())
-				headerTitle = viewFactory->getViewName (view->getParentView ());
+				headerTitle = viewFactory->getViewDisplayName (view->getParentView ());
 		}
 		return headerTitle;
 	}
 	
-	void verify ();
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 
-	CCoord calculateSubViewWidth (CViewContainer* view);
+	CCoord calculateSubViewWidth (CViewContainer* view) const;
 	void dbSelectionChanged (CDataBrowser* browser) override;
 	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) override;
 	int32_t dbOnKeyDown (const VstKeyCode& key, CDataBrowser* browser) override;
+	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser) override;
 
 	CViewContainer* view;
-	const IViewFactory* viewFactory;
+	const UIViewFactory* viewFactory;
 	UIViewListDataSource* next;
 	SharedPointer<UISelection> selection;
 	SharedPointer<UIUndoManager> undoManager;
@@ -185,7 +206,7 @@ UITemplateController::UITemplateController (IController* baseController, UIDescr
 , mainViewDataSource (nullptr)
 , selectedTemplateName (nullptr)
 {
-	editDescription->addDependency (this);
+	editDescription->registerListener (this);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -193,7 +214,7 @@ UITemplateController::~UITemplateController ()
 {
 	if (mainViewDataSource)
 		mainViewDataSource->forget ();
-	editDescription->removeDependency (this);
+	editDescription->unregisterListener (this);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -259,7 +280,7 @@ void UITemplateController::dbSelectionChanged (int32_t selectedRow, GenericStrin
 		 || (newName != selectedTemplateName && *newName != *selectedTemplateName))
 		{
 			selectedTemplateName = newName;
-			UIAttributes* attr = editDescription->getCustomAttributes ("UITemplateController", true);
+			auto attr = editDescription->getCustomAttributes ("UITemplateController", true);
 			if (attr)
 			{
 				attr->setAttribute ("SelectedTemplate", selectedTemplateName ? selectedTemplateName->getString () : "");
@@ -272,43 +293,40 @@ void UITemplateController::dbSelectionChanged (int32_t selectedRow, GenericStrin
 			selection->setExclusive (templateView);
 		}
 		else
-			selection->empty ();
+			selection->clear ();
 		return;
 	}
 }
 
 //----------------------------------------------------------------------------------------------------
-CMessageResult UITemplateController::notify (CBaseObject* sender, IdStringPtr message)
+void UITemplateController::onUIDescTemplateChanged (UIDescription* desc)
 {
-	if (templateDataBrowser && message == UIDescription::kMessageTemplateChanged)
+	if (!templateDataBrowser)
+		return;
+	auto dataSource = dynamic_cast<GenericStringListDataBrowserSource*>(templateDataBrowser->getDelegate ());
+	if (dataSource)
 	{
-		GenericStringListDataBrowserSource* dataSource = dynamic_cast<GenericStringListDataBrowserSource*>(templateDataBrowser->getDelegate ());
-		if (dataSource)
+		DeferChanges dc (this);
+		int32_t rowToSelect = templateDataBrowser->getSelectedRow ();
+		int32_t index = 0;
+		auto selectedTemplateStr = selectedTemplateName ? *selectedTemplateName : "";
+		templateNames.clear ();
+		dataSource->setStringList (&templateNames);
+		std::list<const std::string*> tmp;
+		editDescription->collectTemplateViewNames (tmp);
+		tmp.sort (UIEditController::std__stringCompare);
+		for (auto& name : tmp)
 		{
-			DeferChanges dc (this);
-			int32_t rowToSelect = templateDataBrowser->getSelectedRow ();
-			int32_t index = 0;
-			auto selectedTemplateStr = selectedTemplateName ? *selectedTemplateName : "";
-			templateNames.clear ();
-			dataSource->setStringList (&templateNames);
-			std::list<const std::string*> tmp;
-			editDescription->collectTemplateViewNames (tmp);
-			tmp.sort (UIEditController::std__stringCompare);
-			for (auto& name : tmp)
-			{
-				templateNames.emplace_back (*name);
-				if (*name == selectedTemplateStr)
-					rowToSelect = index;
-				++index;
-			}
-			if (rowToSelect < 0)
-				rowToSelect = 0;
-			dataSource->setStringList (&templateNames);
-			templateDataBrowser->setSelectedRow (rowToSelect, true);
+			templateNames.emplace_back (*name);
+			if (*name == selectedTemplateStr)
+				rowToSelect = index;
+			++index;
 		}
-		return kMessageNotified;
+		if (rowToSelect < 0)
+			rowToSelect = 0;
+		dataSource->setStringList (&templateNames);
+		templateDataBrowser->setSelectedRow (rowToSelect, true);
 	}
-	return kMessageUnknown;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -356,7 +374,7 @@ CView* UITemplateController::createView (const UIAttributes& attributes, const I
 			for (auto& name : tmp)
 				templateNames.emplace_back (*name);
 			
-			UIAttributes* attr = editDescription->getCustomAttributes ("UITemplateController", true);
+			auto attr = editDescription->getCustomAttributes ("UITemplateController", true);
 			const std::string* templateName = attr ? attr->getAttributeValue ("SelectedTemplate") : nullptr;
 			UITemplatesDataSource* dataSource = new UITemplatesDataSource (this, editDescription, actionPerformer, templateName);
 			dataSource->setStringList (&templateNames);
@@ -417,7 +435,7 @@ void UITemplateController::appendContextMenuItems (COptionMenu& contextMenu, CVi
 UIViewListDataSource::UIViewListDataSource (CViewContainer* view, const IViewFactory* viewFactory, UISelection* selection, UIUndoManager* undoManager, IGenericStringListDataBrowserSourceSelectionChanged* delegate)
 : UINavigationDataSource (delegate)
 , view (view)
-, viewFactory (viewFactory)
+, viewFactory (dynamic_cast<const UIViewFactory*> (viewFactory))
 , next (nullptr)
 , selection (selection)
 , undoManager (undoManager)
@@ -448,18 +466,14 @@ bool UIViewListDataSource::update (CViewContainer* vc)
 	inUpdate = true;
 	names.clear ();
 	subviews.clear ();
-	ViewIterator it (vc);
-	while (*it)
-	{
-		CView* subview = *it;
-		IdStringPtr viewName = viewFactory->getViewName (subview);
+	vc->forEachChild ([&] (CView* subview) {
+		IdStringPtr viewName = viewFactory->getViewDisplayName (subview);
 		if (viewName)
 		{
 			names.emplace_back (viewName);
 			subviews.emplace_back (subview);
 		}
-		it++;
-	}
+	});
 	if (names.empty () && vc->getNbViews () > 0)
 	{
 		ViewIterator it (vc);
@@ -485,16 +499,13 @@ bool UIViewListDataSource::update (CViewContainer* vc)
 }
 
 //----------------------------------------------------------------------------------------------------
-CCoord UIViewListDataSource::calculateSubViewWidth (CViewContainer* view)
+CCoord UIViewListDataSource::calculateSubViewWidth (CViewContainer* view) const
 {
 	CCoord result = 0;
-	
-	ViewIterator it (view);
-	while (*it)
-	{
-		result += (*it)->getViewSize ().getWidth ();
-		it++;
-	}
+
+	view->forEachChild ([&result] (CView* view) {
+		result += view->getViewSize ().getWidth ();
+	});
 	return result;
 }
 
@@ -632,6 +643,17 @@ int32_t UIViewListDataSource::dbOnKeyDown (const VstKeyCode& key, CDataBrowser* 
 }
 
 //----------------------------------------------------------------------------------------------------
+void UIViewListDataSource::dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser)
+{
+	drawRowBackground (context, size, row, flags, browser);
+	auto subview = getSubview (row);
+	auto container = subview ? subview->asViewContainer () : nullptr;
+	if (container)
+		drawTriangle (context, size);
+	drawRowString (context, size, row, flags, browser);
+}
+
+//----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 UITemplatesDataSource::UITemplatesDataSource (IGenericStringListDataBrowserSourceSelectionChanged* delegate, UIDescription* description, IActionPerformer* actionPerformer, const std::string* templateName)
@@ -656,34 +678,6 @@ CMouseEventResult UITemplatesDataSource::dbOnMouseDown (const CPoint& where, con
 		}
 		delegate->dbSelectionChanged (row, this);
 		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
-	}
-	else if (buttons.isRightButton ())
-	{
-		COptionMenu menu;
-		menu.addEntry ("Duplicate");
-		menu.addEntry ("Delete");
-		CPoint p (where);
-		browser->CView::localToFrame (p);
-		if (menu.popup (browser->getFrame(), p))
-		{
-			switch (menu.getLastResult ())
-			{
-				case 0:
-				{
-					std::list<const std::string*> tmp;
-					description->collectTemplateViewNames (tmp);
-					std::string newName (getStringList ()->at (static_cast<uint32_t> (row)).data ());
-					UIEditMenuController::createUniqueTemplateName (tmp, newName);
-					actionPerformer->performDuplicateTemplate (getStringList ()->at (static_cast<uint32_t> (row)).data (), newName.data ());
-					break;
-				}
-				case 1:
-				{
-					actionPerformer->performDeleteTemplate (getStringList ()->at (static_cast<uint32_t> (row)).data ());
-					break;
-				}
-			}
-		}
 	}
 	return UINavigationDataSource::dbOnMouseDown (where, buttons, row, column, browser);
 }
@@ -712,6 +706,15 @@ void UITemplatesDataSource::dbCellSetupTextEdit (int32_t row, int32_t column, CT
 	textEditControl->setHoriAlign (kLeftText);
 	textEditControl->setTextInset (textInset);
 }
+
+//----------------------------------------------------------------------------------------------------
+void UITemplatesDataSource::dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser)
+{
+	drawRowBackground (context, size, row, flags, browser);
+	drawTriangle (context, size);
+	drawRowString (context, size, row, flags, browser);
+}
+
 
 //----------------------------------------------------------------------------------------------------
 void UITemplatesDataSource::dbAttached (CDataBrowser* browser)

@@ -12,53 +12,11 @@
 
 namespace VSTGUI {
 
-//------------------------------------------------------------------------
-namespace CControlPrivate {
-
-//------------------------------------------------------------------------
-struct ControlListenerCall
-{
-	CControl* control;
-	ControlListenerCall (CControl* control) : control (control) {}
-};
-
-//------------------------------------------------------------------------
-struct ControlBeginEdit : ControlListenerCall
-{
-	ControlBeginEdit (CControl* control) : ControlListenerCall (control) {}
-	void operator () (IControlListener* listener) const
-	{
-		listener->controlBeginEdit (control);
-	}
-};
-
-//------------------------------------------------------------------------
-struct ControlEndEdit : ControlListenerCall
-{
-	ControlEndEdit (CControl* control) : ControlListenerCall (control) {}
-	void operator () (IControlListener* listener) const
-	{
-		listener->controlEndEdit (control);
-	}
-};
-
-//------------------------------------------------------------------------
-struct ControlValueChanged : ControlListenerCall
-{
-	ControlValueChanged (CControl* control) : ControlListenerCall (control) {}
-	void operator () (IControlListener* listener) const
-	{
-		listener->valueChanged (control);
-	}
-};
-
-} // CControlPrivate
-
-IdStringPtr CControl::kMessageTagWillChange = "kMessageTagWillChange";
-IdStringPtr CControl::kMessageTagDidChange = "kMessageTagDidChange";
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 IdStringPtr CControl::kMessageValueChanged = "kMessageValueChanged";
 IdStringPtr CControl::kMessageBeginEdit = "kMessageBeginEdit";
 IdStringPtr CControl::kMessageEndEdit = "kMessageEndEdit";
+#endif
 
 //------------------------------------------------------------------------
 // CControl
@@ -80,8 +38,6 @@ CControl::CControl (const CRect& size, IControlListener* listener, int32_t tag, 
 {
 	setTransparency (false);
 	setMouseEnabled (true);
-	backOffset (0 ,0);
-
 	setBackground (pBackground);
 }
 
@@ -101,15 +57,16 @@ CControl::CControl (const CControl& c)
 }
 
 //------------------------------------------------------------------------
-void CControl::registerControlListener (IControlListener* listener)
+void CControl::registerControlListener (IControlListener* subListener)
 {
-	subListeners.add (listener);
+	vstgui_assert (listener != subListener, "the subListener is already the main listener");
+	subListeners.add (subListener);
 }
 
 //------------------------------------------------------------------------
-void CControl::unregisterControlListener (IControlListener* listener)
+void CControl::unregisterControlListener (IControlListener* subListener)
 {
-	subListeners.remove(listener);
+	subListeners.remove (subListener);
 }
 
 //------------------------------------------------------------------------
@@ -121,11 +78,9 @@ void CControl::setTag (int32_t val)
 {
 	if (listener)
 		listener->controlTagWillChange (this);
-	changed (kMessageTagWillChange);
 	tag = val;
 	if (listener)
 		listener->controlTagDidChange (this);
-	changed (kMessageTagDidChange);
 }
 
 //------------------------------------------------------------------------
@@ -137,8 +92,10 @@ void CControl::beginEdit ()
 	{
 		if (listener)
 			listener->controlBeginEdit (this);
-		subListeners.forEach (CControlPrivate::ControlBeginEdit (this));
+		subListeners.forEach ([this] (IControlListener* l) { l->controlBeginEdit (this); });
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 		changed (kMessageBeginEdit);
+#endif
 		if (getFrame ())
 			getFrame ()->beginEdit (tag);
 	}
@@ -158,8 +115,10 @@ void CControl::endEdit ()
 			getFrame ()->endEdit (tag);
 		if (listener)
 			listener->controlEndEdit (this);
-		subListeners.forEach (CControlPrivate::ControlEndEdit (this));
+		subListeners.forEach ([this] (IControlListener* l) { l->controlEndEdit (this); });
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 		changed (kMessageEndEdit);
+#endif
 	}
 #if VSTGUI_CCONTROL_LOG_EDITING
 	DebugPrint("endEdit [%d] - %d\n", tag, editing);
@@ -176,7 +135,9 @@ void CControl::setValue (float val)
 	if (val != value)
 	{
 		value = val;
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 		changed (kMessageValueChanged);
+#endif
 	}
 }
 
@@ -201,8 +162,10 @@ void CControl::valueChanged ()
 {
 	if (listener)
 		listener->valueChanged (this);
-	subListeners.forEach (CControlPrivate::ControlValueChanged (this));
+	subListeners.forEach ([this] (IControlListener* l) { l->valueChanged (this); });
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 	changed (kMessageValueChanged);
+#endif
 }
 
 //------------------------------------------------------------------------
@@ -226,18 +189,6 @@ void CControl::setDirty (bool val)
 	}
 	else
 		setOldValue (value);
-}
-
-//------------------------------------------------------------------------
-void CControl::setBackOffset (const CPoint &offset)
-{
-	backOffset = offset;
-}
-
-//-----------------------------------------------------------------------------
-void CControl::copyBackOffset ()
-{
-	backOffset (getViewSize ().left, getViewSize ().top);
 }
 
 //------------------------------------------------------------------------
@@ -269,6 +220,8 @@ bool CControl::checkDefaultValue (CButtonState button)
 
 			// end of edit parameter
 			endEdit ();
+			
+			setDirty ();
 		}
 		return true;
 	}

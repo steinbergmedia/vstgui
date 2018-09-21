@@ -98,6 +98,67 @@ float InterpolationTimingFunction::getPosition (uint32_t milliseconds)
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
+CubicBezierTimingFunction::CubicBezierTimingFunction (uint32_t milliseconds, CPoint p1, CPoint p2)
+: TimingFunctionBase (milliseconds), p1 (p1), p2 (p2)
+{
+}
+
+//-----------------------------------------------------------------------------
+inline CPoint operator* (CPoint p, double f)
+{
+	return CPoint (p.x * f, p.y * f);
+}
+
+//-----------------------------------------------------------------------------
+CPoint CubicBezierTimingFunction::lerp (CPoint p1, CPoint p2, float pos) const
+{
+	return p1 * (1.f - pos) + p2 * pos;
+}
+
+//-----------------------------------------------------------------------------
+float CubicBezierTimingFunction::getPosition (uint32_t milliseconds)
+{
+	constexpr CPoint p0 (0, 0);
+	constexpr CPoint p3 (1, 1);
+
+	auto t = static_cast<float> (milliseconds) / static_cast<float> (length);
+
+	auto a = lerp (p0, p1, t);
+	auto b = lerp (p1, p2, t);
+	auto c = lerp (p2, p3, t);
+	auto d = lerp (a, b, t);
+	auto e = lerp (b, c, t);
+	auto result = lerp (d, e, t).y;
+	return static_cast<float> (result);
+}
+
+//-----------------------------------------------------------------------------
+CubicBezierTimingFunction CubicBezierTimingFunction::easy (uint32_t time)
+{
+	return CubicBezierTimingFunction (time, CPoint (0.25, 0.1), CPoint (0.25, 1.));
+}
+
+//-----------------------------------------------------------------------------
+CubicBezierTimingFunction CubicBezierTimingFunction::easyIn (uint32_t time)
+{
+	return CubicBezierTimingFunction (time, CPoint (0.42, 0.), CPoint (1., 1.));
+}
+
+//-----------------------------------------------------------------------------
+CubicBezierTimingFunction CubicBezierTimingFunction::easyOut (uint32_t time)
+{
+	return CubicBezierTimingFunction (time, CPoint (0., 0.), CPoint (0.58, 1.));
+}
+
+//-----------------------------------------------------------------------------
+CubicBezierTimingFunction CubicBezierTimingFunction::easyInOut (uint32_t time)
+{
+	return CubicBezierTimingFunction (time, CPoint (0.42, 0.), CPoint (0.58, 1.));
+}
+
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 RepeatTimingFunction::RepeatTimingFunction (TimingFunctionBase* tf, int32_t repeatCount, bool autoReverse)
 : tf (tf)
 , repeatCount (repeatCount)
@@ -143,3 +204,4 @@ bool RepeatTimingFunction::isDone (uint32_t milliseconds)
 }
 
 }} // namespaces
+

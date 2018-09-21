@@ -21,8 +21,10 @@ using URefCon = UInt32;
 #endif
 
 //-----------------------------------------------------------------------------
-PlatformOptionMenuResult HIViewOptionMenu::popup (COptionMenu* optionMenu)
+void HIViewOptionMenu::popup (COptionMenu* optionMenu, const Callback& callback)
 {
+	vstgui_assert (optionMenu && callback, "arguments are required");
+
 	PlatformOptionMenuResult popupResult = {0};
 	
 	//---Transform local coordinates to global coordinates
@@ -71,7 +73,7 @@ PlatformOptionMenuResult HIViewOptionMenu::popup (COptionMenu* optionMenu)
 		CFRelease (menuRef);
 	}
 
-	return popupResult;
+	callback (optionMenu, result);
 }
 
 //-----------------------------------------------------------------------------

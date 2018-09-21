@@ -15,10 +15,6 @@ namespace VSTGUI {
 //-----------------------------------------------------------------------------
 UIViewSwitchContainer::UIViewSwitchContainer (const CRect& size)
 : CViewContainer (size)
-, controller (nullptr)
-, currentViewIndex (-1)
-, animationTime (120)
-, animationStyle (kFadeInOut)
 {
 }
 
@@ -43,6 +39,8 @@ void UIViewSwitchContainer::setController (IViewSwitchController* _controller)
 //-----------------------------------------------------------------------------
 void UIViewSwitchContainer::setCurrentViewIndex (int32_t viewIndex)
 {
+	using namespace Animation;
+
 	if (controller && viewIndex != currentViewIndex)
 	{
 		CView* view = controller->createViewForIndex (viewIndex);
@@ -61,37 +59,68 @@ void UIViewSwitchContainer::setCurrentViewIndex (int32_t viewIndex)
 				CView* oldView = getView (0);
 				if (oldView)
 				{
-					Animation::IAnimationTarget* animation = nullptr;
+					IAnimationTarget* animation = nullptr;
 					switch (animationStyle)
 					{
 						case kFadeInOut:
 						{
-							animation = new Animation::ExchangeViewAnimation (oldView, view, Animation::ExchangeViewAnimation::kAlphaValueFade);
+							animation = new ExchangeViewAnimation (oldView, view, ExchangeViewAnimation::kAlphaValueFade);
 							break;
 						}
 						case kMoveInOut:
 						{
-							Animation::ExchangeViewAnimation::AnimationStyle style = Animation::ExchangeViewAnimation::kPushInFromLeft;
+							ExchangeViewAnimation::AnimationStyle style = ExchangeViewAnimation::kPushInFromLeft;
 							if (viewIndex > currentViewIndex)
 							{
-								style = Animation::ExchangeViewAnimation::kPushInFromRight;
+								style = ExchangeViewAnimation::kPushInFromRight;
 							}
-							animation = new Animation::ExchangeViewAnimation (oldView, view, style);
+							animation = new ExchangeViewAnimation (oldView, view, style);
 							break;
 						}
 						case kPushInOut:
 						{
-							Animation::ExchangeViewAnimation::AnimationStyle style = Animation::ExchangeViewAnimation::kPushInOutFromLeft;
+							ExchangeViewAnimation::AnimationStyle style = ExchangeViewAnimation::kPushInOutFromLeft;
 							if (viewIndex > currentViewIndex)
 							{
-								style = Animation::ExchangeViewAnimation::kPushInOutFromRight;
+								style = ExchangeViewAnimation::kPushInOutFromRight;
 							}
-							animation = new Animation::ExchangeViewAnimation (oldView, view, style);
+							animation = new ExchangeViewAnimation (oldView, view, style);
 							break;
 						}
 					}
 					if (animation)
-						addAnimation ("UIViewSwitchContainer::setCurrentViewIndex", animation, new Animation::LinearTimingFunction (animationTime));
+					{
+						ITimingFunction* tf = nullptr;
+						switch (timingFunction)
+						{
+							case kEasyIn:
+							{
+								tf = new CubicBezierTimingFunction (CubicBezierTimingFunction::easyIn (animationTime));
+								break;
+							}
+							case kEasyOut:
+							{
+								tf = new CubicBezierTimingFunction (CubicBezierTimingFunction::easyOut (animationTime));
+								break;
+							}
+							case kEasyInOut:
+							{
+								tf = new CubicBezierTimingFunction (CubicBezierTimingFunction::easyInOut (animationTime));
+								break;
+							}
+							case kEasy:
+							{
+								tf = new CubicBezierTimingFunction (CubicBezierTimingFunction::easy (animationTime));
+								break;
+							}
+							default:
+							{
+								tf = new LinearTimingFunction (animationTime);
+								break;
+							}
+						}
+						addAnimation ("UIViewSwitchContainer::setCurrentViewIndex", animation, tf);
+					}
 					else
 					{
 						removeAll ();
@@ -125,6 +154,12 @@ void UIViewSwitchContainer::setAnimationTime (uint32_t ms)
 void UIViewSwitchContainer::setAnimationStyle (AnimationStyle style)
 {
 	animationStyle = style;
+}
+
+//-----------------------------------------------------------------------------
+void UIViewSwitchContainer::setTimingFunction (TimingFunction t)
+{
+	timingFunction = t;
 }
 
 //-----------------------------------------------------------------------------

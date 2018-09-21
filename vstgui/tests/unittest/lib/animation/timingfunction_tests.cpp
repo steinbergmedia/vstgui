@@ -74,6 +74,14 @@ TESTCASE(TimingFunctionTests,
 		EXPECT(tf.getPosition (200) == 0.f);
 		EXPECT(tf.isDone (200) == true);
 	);
+	TEST(cubicBezierTimingFunction,
+		CubicBezierTimingFunction f (100, CPoint (0.42, 0.), CPoint (0.58, 1.));
+		EXPECT (f.getPosition (0) == 0.f);
+		EXPECT (f.getPosition (25) < 0.25f);
+		EXPECT (f.getPosition (50) == 0.5f);
+		EXPECT (f.getPosition (75) > 0.75f);
+		EXPECT (f.getPosition (100) == 1.0f);
+	);
 );
 
 } // VSTGUI

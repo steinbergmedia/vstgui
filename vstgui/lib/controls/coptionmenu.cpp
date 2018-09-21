@@ -153,6 +153,39 @@ void CMenuItem::setIsSeparator (bool state)
 	displayed and after it was selected. @see CCommandMenuItem::kMsgMenuItemValidate and @see CCommandMenuItem::kMsgMenuItemSelected
 */
 //------------------------------------------------------------------------
+CCommandMenuItem::CCommandMenuItem (Desc&& args)
+: CMenuItem (args.title, args.keycode, args.keyModifiers, args.icon, args.flags)
+, commandCategory (std::move (args.commandCategory))
+, commandName (std::move (args.commandName))
+, itemTarget (std::move (args.target))
+{
+}
+
+//------------------------------------------------------------------------
+CCommandMenuItem::CCommandMenuItem (const Desc& args)
+: CMenuItem (args.title, args.keycode, args.keyModifiers, args.icon, args.flags)
+, commandCategory (args.commandCategory)
+, commandName (args.commandName)
+, itemTarget (args.target)
+{
+}
+
+//------------------------------------------------------------------------
+CCommandMenuItem::CCommandMenuItem (const CCommandMenuItem& item)
+: CMenuItem (item)
+, validateFunc (item.validateFunc)
+, selectedFunc (item.selectedFunc)
+, commandCategory (item.commandCategory)
+, commandName (item.commandName)
+{
+	setItemTarget (item.itemTarget);
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+	setTarget (item.target);
+#endif
+}
+
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+//------------------------------------------------------------------------
 IdStringPtr CCommandMenuItem::kMsgMenuItemValidate = "kMsgMenuItemValidate";
 IdStringPtr CCommandMenuItem::kMsgMenuItemSelected = "kMsgMenuItemSelected";
 
@@ -193,14 +226,17 @@ CCommandMenuItem::CCommandMenuItem (const UTF8String& title, CBaseObject* _targe
 }
 
 //------------------------------------------------------------------------
-CCommandMenuItem::CCommandMenuItem (const CCommandMenuItem& item)
-: CMenuItem (item)
-, validateFunc (item.validateFunc)
-, selectedFunc (item.selectedFunc)
-, commandCategory (item.commandCategory)
-, commandName (item.commandName)
+void CCommandMenuItem::setTarget (CBaseObject* _target)
 {
-	setTarget (item.target);
+	target = _target;
+}
+
+#endif
+
+//------------------------------------------------------------------------
+void CCommandMenuItem::setItemTarget (ICommandMenuItemTarget* target)
+{
+	itemTarget = target;
 }
 
 //------------------------------------------------------------------------
@@ -228,12 +264,6 @@ bool CCommandMenuItem::isCommandName (const UTF8String& name) const
 }
 
 //------------------------------------------------------------------------
-void CCommandMenuItem::setTarget (CBaseObject* _target)
-{
-	target = _target;
-}
-
-//------------------------------------------------------------------------
 void CCommandMenuItem::setActions (SelectedCallbackFunction&& selected, ValidateCallbackFunction&& validate)
 {
 	selectedFunc = std::move (selected);
@@ -246,8 +276,13 @@ void CCommandMenuItem::execute ()
 	if (selectedFunc)
 		selectedFunc (this);
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 	if (getTarget ())
 		getTarget ()->notify (this, CCommandMenuItem::kMsgMenuItemSelected);
+#endif
+
+	if (itemTarget)
+		itemTarget->onCommandMenuItemSelected (this);
 }
 
 //------------------------------------------------------------------------
@@ -256,12 +291,19 @@ void CCommandMenuItem::validate ()
 	if (validateFunc)
 		validateFunc (this);
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 	if (getTarget ())
 		getTarget ()->notify (this, CCommandMenuItem::kMsgMenuItemValidate);
+#endif
+
+	if (itemTarget)
+		itemTarget->validateCommandMenuItem (this);
 }
 
 //------------------------------------------------------------------------
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 IdStringPtr COptionMenu::kMsgBeforePopup = "kMsgBeforePopup";
+#endif
 
 //------------------------------------------------------------------------
 // COptionMenu
@@ -320,6 +362,21 @@ COptionMenu::~COptionMenu () noexcept
 	removeAllEntry ();
 
 	delete menuItems;
+}
+
+//------------------------------------------------------------------------
+void COptionMenu::registerOptionMenuListener (IOptionMenuListener* listener)
+{
+	if (!listeners)
+		listeners = std::unique_ptr<MenuListenerList> (new MenuListenerList ());
+	listeners->add (listener);
+}
+
+//------------------------------------------------------------------------
+void COptionMenu::unregisterOptionMenuListener (IOptionMenuListener* listener)
+{
+	if (listeners)
+		listeners->remove (listener);
 }
 
 //------------------------------------------------------------------------
@@ -385,7 +442,11 @@ int32_t COptionMenu::onKeyDown (VstKeyCode& keyCode)
 //------------------------------------------------------------------------
 void COptionMenu::beforePopup ()
 {
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 	changed (kMsgBeforePopup);
+#endif
+	if (listeners)
+		listeners->forEach ([this] (IOptionMenuListener* l) { l->onOptionMenuPrePopup (this); });
 	for (auto& menuItem : *menuItems)
 	{
 		CCommandMenuItem* commandItem = menuItem.cast<CCommandMenuItem> ();
@@ -394,6 +455,18 @@ void COptionMenu::beforePopup ()
 		if (menuItem->getSubmenu ())
 			menuItem->getSubmenu ()->beforePopup ();
 	}
+}
+
+//------------------------------------------------------------------------
+void COptionMenu::afterPopup ()
+{
+	for (auto& menuItem : *menuItems)
+	{
+		if (menuItem->getSubmenu ())
+			menuItem->getSubmenu ()->afterPopup ();
+	}
+	if (listeners)
+		listeners->forEach ([this] (IOptionMenuListener* l) { l->onOptionMenuPostPopup (this); });
 }
 
 //------------------------------------------------------------------------
@@ -408,19 +481,12 @@ bool COptionMenu::doPopup ()
 }
 
 //------------------------------------------------------------------------
-bool COptionMenu::popup ()
+bool COptionMenu::popup (const PopupCallback& callback)
 {
-	bool popupResult = false;
 	if (!getFrame ())
-		return popupResult;
-
-	CBaseObjectGuard objGuard (this);
+		return false;
 
 	beforePopup ();
-
-	inPopup = true;
-
-	beginEdit ();
 
 	lastResult = -1;
 	lastMenu = nullptr;
@@ -430,50 +496,100 @@ bool COptionMenu::popup ()
 		getFrame ()->onStartLocalEventLoop ();
 		if (auto platformMenu = getFrame ()->getPlatformFrame ()->createPlatformOptionMenu ())
 		{
-			PlatformOptionMenuResult platformPopupResult = platformMenu->popup (this);
-			if (platformPopupResult.menu != nullptr)
-			{
-				IDependency::DeferChanges dc (this);
-				lastMenu = platformPopupResult.menu;
-				lastResult = platformPopupResult.index;
-				lastMenu->setValue ((float)lastResult);
-				valueChanged ();
-				invalid ();
-				popupResult = true;
-				CCommandMenuItem* commandItem = dynamic_cast<CCommandMenuItem*>(lastMenu->getEntry (lastResult));
-				if (commandItem)
-					commandItem->execute ();
-			}
+			inPopup = true;
+			auto self = shared (this);
+			platformMenu->popup (this, [self, callback] (COptionMenu* menu, PlatformOptionMenuResult result) {
+				if (result.menu != nullptr)
+				{
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+					IDependency::DeferChanges dc (self);
+#endif
+					self->beginEdit ();
+					self->lastMenu = result.menu;
+					self->lastResult = result.index;
+					self->lastMenu->setValue (static_cast<float> (self->lastResult));
+					self->valueChanged ();
+					self->invalid ();
+					if (auto commandItem = dynamic_cast<CCommandMenuItem*> (
+					        self->lastMenu->getEntry (self->lastResult)))
+						commandItem->execute ();
+					self->endEdit ();
+				}
+				self->afterPopup ();
+				if (callback)
+					callback (self);
+				self->inPopup = false;
+			});
 		}
 	}
-
-	endEdit ();
-	inPopup = false;
-	return popupResult;
+	return true;
 }
 
 //------------------------------------------------------------------------
-bool COptionMenu::popup (CFrame* frame, const CPoint& frameLocation)
+bool COptionMenu::popup (CFrame* frame, const CPoint& frameLocation, const PopupCallback& callback)
 {
-	if (frame == nullptr)
+	if (frame == nullptr || menuItems->empty ())
 		return false;
 	if (isAttached ())
 		return false;
-	CBaseObjectGuard guard (this);
-
 	CView* oldFocusView = frame->getFocusView ();
-	CBaseObjectGuard ofvg (oldFocusView);
-
 	CRect size (frameLocation, CPoint (0, 0));
 	setViewSize (size);
 	frame->addView (this);
-	popup ();
-	frame->removeView (this, false);
-	frame->setFocusView (oldFocusView);
-	int32_t index;
-	if (getLastItemMenu (index))
-		return true;
-	return false;
+
+	auto prevFocusView = shared (oldFocusView);
+	popup ([prevFocusView, callback] (COptionMenu* menu) {
+		if (auto frame = menu->getFrame ())
+		{
+			frame->removeView (menu, false);
+			frame->setFocusView (prevFocusView);
+		}
+		if (callback)
+			callback (menu);
+	});
+	return true;
+}
+
+//------------------------------------------------------------------------
+void COptionMenu::cleanupSeparators (bool deep)
+{
+	if (getItems ()->empty ())
+		return;
+
+	std::list<int32_t>indicesToRemove;
+	bool lastEntryWasSeparator = true;
+	for (auto i = 0; i < getNbEntries () - 1; ++i)
+	{
+		auto entry = getEntry (i);
+		vstgui_assert (entry);
+		if (entry->isSeparator ())
+		{
+			if (lastEntryWasSeparator)
+			{
+				indicesToRemove.push_front (i);
+			}
+			lastEntryWasSeparator = true;
+		}
+		else
+			lastEntryWasSeparator = false;
+		if (deep)
+		{
+			if (auto subMenu = entry->getSubmenu ())
+			{
+				subMenu->cleanupSeparators (deep);
+			}
+		}
+	}
+	auto lastIndex = getNbEntries () - 1;
+	if (getEntry (lastIndex)->isSeparator ())
+	{
+		indicesToRemove.push_front (lastIndex);
+	}
+
+	for (auto index : indicesToRemove)
+	{
+		removeEntry (index);
+	}
 }
 
 //------------------------------------------------------------------------
@@ -531,16 +647,16 @@ CMenuItem* COptionMenu::getCurrent () const
 //-----------------------------------------------------------------------------
 CMenuItem* COptionMenu::getEntry (int32_t index) const
 {
-	if (index < 0 || menuItems->empty () || index > getNbEntries ())
+	if (index < 0 || menuItems->empty () || index >= getNbEntries ())
 		return nullptr;
 	
-	return (*menuItems)[(size_t)index];
+	return (*menuItems)[static_cast<size_t> (index)];
 }
 
 //-----------------------------------------------------------------------------
 int32_t COptionMenu::getNbEntries () const
 {
-	return (int32_t) menuItems->size ();
+	return static_cast<int32_t> (menuItems->size ());
 }
 
 //------------------------------------------------------------------------
@@ -607,7 +723,7 @@ bool COptionMenu::setCurrent (int32_t index, bool countSeparator)
 //------------------------------------------------------------------------
 bool COptionMenu::removeEntry (int32_t index)
 {
-	if (index < 0 || menuItems->empty () || index > getNbEntries ())
+	if (index < 0 || menuItems->empty () || index >= getNbEntries ())
 		return false;
 	menuItems->erase (menuItems->begin () + index);
 	return true;
@@ -688,18 +804,18 @@ COptionMenu *COptionMenu::getLastItemMenu (int32_t &idxInMenu) const
 //------------------------------------------------------------------------
 void COptionMenu::setValue (float val)
 {
-	val = std::round (val);
-	if ((int32_t)val < 0 || (int32_t)val >= getNbEntries ())
+	auto newIndex = static_cast<int32_t> (std::round (val));
+	if (newIndex < 0 || newIndex >= getNbEntries ())
 		return;
 	
-	currentIndex = (int32_t)val;
+	currentIndex = newIndex;
 	if (style & (kMultipleCheckStyle & ~kCheckStyle))
 	{
 		CMenuItem* item = getCurrent ();
 		if (item)
 			item->setChecked (!item->isChecked ());
 	}
-	CParamDisplay::setValue (val);
+	CParamDisplay::setValue (static_cast<float> (newIndex));
 	
 	// to force the redraw
 	setDirty ();
@@ -713,7 +829,7 @@ void COptionMenu::takeFocus ()
 
 //------------------------------------------------------------------------
 void COptionMenu::looseFocus ()
-{	
+{
 	CView* receiver = getParentView () ? getParentView () : getFrame ();
 	while (receiver)
 	{
