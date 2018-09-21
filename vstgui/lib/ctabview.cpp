@@ -6,6 +6,7 @@
 #include "cfont.h"
 #include "cbitmap.h"
 #include "cdrawcontext.h"
+#include "dragging.h"
 #include "controls/cbuttons.h"
 #include "cgraphicspath.h"
 
@@ -15,7 +16,7 @@ namespace VSTGUI {
 
 /// @cond ignore
 //-----------------------------------------------------------------------------
-class CTabButton : public COnOffButton
+class CTabButton : public COnOffButton, public DropTargetAdapter
 //-----------------------------------------------------------------------------
 {
 public:
@@ -54,13 +55,15 @@ public:
 		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 	}
 
-	void onDragEnter (IDataPackage* drag, const CPoint& where) override
+	SharedPointer<IDropTarget> getDropTarget () override { return this; }
+	DragOperation onDragEnter (DragEventData data) override
 	{
 		if (value == 0.f)
 		{
 			value = 1.f;
 			valueChanged ();
 		}
+		return DragOperation::None;
 	}
 
 	void setTextFont (CFontRef font) { if (textFont) textFont->forget (); textFont = font; textFont->remember ();}

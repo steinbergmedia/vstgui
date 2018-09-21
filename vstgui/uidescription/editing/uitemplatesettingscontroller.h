@@ -9,6 +9,7 @@
 
 #if VSTGUI_LIVE_EDITING
 
+#include "iaction.h"
 #include "../icontroller.h"
 #include "../../lib/controls/ctextedit.h"
 #include <string>
@@ -19,7 +20,7 @@ namespace VSTGUI {
 class UITemplateSettingsController : public CBaseObject, public IController
 {
 public:
-	UITemplateSettingsController (const std::string& templateName, UIDescription* description);
+	UITemplateSettingsController (const std::string& templateName, UIDescription* description, IActionPerformer* actionPerformer);
 	~UITemplateSettingsController () override = default;
 
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
@@ -34,6 +35,8 @@ protected:
 	std::string newTemplateName;
 	CPoint minSize;
 	CPoint maxSize;
+	CPoint originalMinSize;
+	CPoint originalMaxSize;
 
 	enum {
 		kNameTag = 0,
@@ -46,6 +49,7 @@ protected:
 		kNumTags
 	};
 	CControl* controls[kNumTags];
+	IActionPerformer* actionPerformer;
 };
 
 } // namespace

@@ -1,7 +1,12 @@
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules")
+
+include(vstgui_add_executable)
+
 ##########################################################################################
 set(target vstgui_standalone)
 
 set(${target}_common_sources
+    include/appinit.h
     include/doc.h
     include/fwd.h
     include/ialertbox.h
@@ -56,6 +61,8 @@ set(${target}_mac_sources
     source/platform/mac/macutilities.h
     source/platform/mac/macwindow.h
     source/platform/mac/macwindow.mm
+    source/platform/win32
+    cmake/modules/
 )
 
 ##########################################################################################
@@ -73,6 +80,20 @@ set(${target}_win32_sources
     source/platform/win32/win32window.h
 )
 
+set(${target}_gdk_sources
+    source/platform/gdk/gdkapplication.cpp
+    source/platform/gdk/gdkapplication.h
+    source/platform/gdk/gdkasync.cpp
+    source/platform/gdk/gdkcommondirectories.cpp
+    source/platform/gdk/gdkcommondirectories.h
+    source/platform/gdk/gdkpreference.cpp
+    source/platform/gdk/gdkpreference.h
+    source/platform/gdk/gdkrunloop.cpp
+    source/platform/gdk/gdkrunloop.h
+    source/platform/gdk/gdkwindow.cpp
+    source/platform/gdk/gdkwindow.h
+)
+
 ##########################################################################################
 if(CMAKE_HOST_APPLE)
     set(${target}_sources ${${target}_common_sources} ${${target}_mac_sources})
@@ -88,12 +109,28 @@ if(MSVC)
 endif()
 
 ##########################################################################################
+if(LINUX)
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(SQLITE3 REQUIRED sqlite3)
+
+    set(${target}_sources ${${target}_common_sources} ${${target}_gdk_sources})
+endif()
+
+##########################################################################################
 add_library(${target} STATIC ${${target}_sources})
 
 target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS})
 vstgui_set_cxx_version(${target} 14)
 vstgui_source_group_by_folder(${target})
 
-if(NOT VSTGUI_DISABLE_STANDALONE_EXAMPLES)
+if(VSTGUI_STANDALONE_EXAMPLES)
     add_subdirectory(examples)
+endif()
+
+if(LINUX)
+    target_include_directories(${target} PRIVATE ${X11_INCLUDE_DIR})
+    target_include_directories(${target} PRIVATE ${GTKMM3_INCLUDE_DIRS})
+    target_include_directories(${target} PRIVATE ${FREETYPE_INCLUDE_DIRS})
+    target_include_directories(${target} PRIVATE ${SQLITE3_INCLUDE_DIRS})
+    target_link_libraries(${target} PRIVATE vstgui_uidescription ${LINUX_LIBRARIES} dl ${SQLITE3_LIBRARIES})
 endif()

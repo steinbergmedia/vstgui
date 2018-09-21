@@ -109,17 +109,13 @@ void CRowColumnView::resizeSubView (CView* view, const CRect& newSize)
 //--------------------------------------------------------------------------------
 void CRowColumnView::getMaxChildViewSize (CPoint& maxSize)
 {
-	ViewIterator it (this);
-	while (*it)
-	{
-		CView* view = *it;
+	forEachChild ([&] (CView* view) {
 		CRect viewSize = view->getViewSize ();
 		if (viewSize.getWidth () > maxSize.x)
 			maxSize.x = viewSize.getWidth ();
 		if (viewSize.getHeight () > maxSize.y)
 			maxSize.y = viewSize.getHeight ();
-		++it;
-	}
+	});
 }
 
 //--------------------------------------------------------------------------------
@@ -132,10 +128,7 @@ void CRowColumnView::layoutViewsEqualSize ()
 	else
 		maxSize.y = getViewSize ().getHeight () - (margin.top + margin.bottom);
 	CPoint location = margin.getTopLeft ();
-	ViewIterator it (this);
-	while (*it)
-	{
-		CView* view = *it;
+	forEachChild ([&] (CView* view) {
 		CRect viewSize = view->getViewSize ();
 		viewSize.originize ();
 		viewSize.offset (location.x, location.y);
@@ -175,8 +168,7 @@ void CRowColumnView::layoutViewsEqualSize ()
 			location.x += spacing;
 			location.x += viewSize.getWidth ();
 		}
-		++it;
-	}
+	});
 }
 
 //--------------------------------------------------------------------------------
@@ -188,13 +180,12 @@ void CRowColumnView::layoutViews ()
 		layoutViewsEqualSize ();
 		if (hideClippedSubviews ())
 		{
-			for (auto& view : getChildren ())
-			{
+			forEachChild ([&] (CView* view) {
 				if (view->getVisibleViewSize () != view->getViewSize ())
 					view->setVisible (false);
 				else
 					view->setVisible (true);
-			}
+			});
 		}
 		layoutGuard = false;
 	}
@@ -207,28 +198,23 @@ bool CRowColumnView::sizeToFit ()
 	{
 		CRect viewSize = getViewSize ();
 		CPoint maxSize;
-		ViewIterator it (this);
 		if (style == kRowStyle)
 		{
-			while (*it)
-			{
-				CRect size = (*it)->getViewSize ();
+			forEachChild ([&] (CView* view) {
+				CRect size = view->getViewSize ();
 				if (size.getWidth () > maxSize.x)
 					maxSize.x = size.getWidth ();
 				maxSize.y += size.getHeight () + spacing;
-				++it;
-			}
+			});
 		}
 		else
 		{
-			while (*it)
-			{
-				CRect size = (*it)->getViewSize ();
+			forEachChild ([&] (CView* view) {
+				CRect size = view->getViewSize ();
 				maxSize.x += size.getWidth () + spacing;
 				if (size.bottom > maxSize.y)
 					maxSize.y = size.getHeight ();
-				++it;
-			}
+			});
 		}
 		viewSize.setWidth (maxSize.x + margin.left + margin.right);
 		viewSize.setHeight (maxSize.y + margin.top + margin.bottom);
@@ -280,30 +266,6 @@ void CAutoLayoutContainerView::setViewSize (const CRect& rect, bool invalid)
 	CViewContainer::setViewSize (rect, invalid);
 	if (isAttached ())
 		layoutViews ();
-}
-
-//--------------------------------------------------------------------------------
-bool CAutoLayoutContainerView::addView (CView* pView)
-{
-	if (CViewContainer::addView (pView, nullptr))
-	{
-		if (isAttached ())
-			layoutViews ();
-		return true;
-	}
-	return false;
-}
-
-//--------------------------------------------------------------------------------
-bool CAutoLayoutContainerView::addView (CView* pView, const CRect& mouseableArea, bool mouseEnabled)
-{
-	if (CViewContainer::addView (pView, mouseableArea, mouseEnabled))
-	{
-		if (isAttached ())
-			layoutViews ();
-		return true;
-	}
-	return false;
 }
 
 //--------------------------------------------------------------------------------

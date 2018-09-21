@@ -7,7 +7,7 @@
 
 #include "../../iplatformfont.h"
 
-#if WINDOWS && VSTGUI_DIRECT2D_SUPPORT
+#if WINDOWS
 
 struct IDWriteTextFormat;
 struct IDWriteTextLayout;
@@ -47,6 +47,6 @@ protected:
 
 } // namespace
 
-#endif // WINDOWS && VSTGUI_DIRECT2D_SUPPORT
+#endif // WINDOWS
 
 #endif // __d2dfont__

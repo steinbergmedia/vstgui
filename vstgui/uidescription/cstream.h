@@ -6,14 +6,14 @@
 #define __cstream__
 
 #include "../lib/vstguifwd.h"
+#include "../lib/optional.h"
 #include <algorithm>
 #include <string>
 #include <limits>
+#include <memory>
+#include <vector>
 
 namespace VSTGUI {
-
-static const uint32_t kStreamIOError = std::numeric_limits<uint32_t>::max ();
-static const int64_t kStreamSeekError = -1;
 
 /**
 	ByteOrder aware output stream interface
@@ -86,7 +86,8 @@ public:
 		kSeekEnd
 	};
 
-	virtual int64_t seek (int64_t pos, SeekMode mode) = 0;	///< returns -1 if seek fails otherwise new position
+	/** returns -1 if seek fails otherwise new position */
+	virtual int64_t seek (int64_t pos, SeekMode mode) = 0;
 	virtual int64_t tell () const = 0;
 	virtual void rewind () = 0;
 };
@@ -112,6 +113,9 @@ public:
 
 	bool operator<< (const std::string& str) override;
 	bool operator>> (std::string& string) override;
+
+	using OutputStream::operator<<;
+	using InputStream::operator>>;
 
 	bool end (); // write a zero byte if binaryMode is false
 protected:
@@ -153,6 +157,9 @@ public:
 
 	bool operator<< (const std::string& str) override;
 	bool operator>> (std::string& string) override;
+
+	using OutputStream::operator<<;
+	using InputStream::operator>>;
 protected:
 	FILE* stream;
 	int32_t openMode;
@@ -178,6 +185,15 @@ inline bool removeLastPathComponent (std::string& path)
 		return true;
 	}
 	return false;
+}
+
+//------------------------------------------------------------------------
+inline Optional<std::string> lastPathComponent (const std::string path)
+{
+	size_t sepPos = path.find_last_of (unixPathSeparator);
+	if (sepPos == std::string::npos)
+		return {};
+	return {path.substr (sepPos + 1)};
 }
 
 //------------------------------------------------------------------------
@@ -208,10 +224,59 @@ public:
 	int64_t seek (int64_t pos, SeekMode mode) override;
 	int64_t tell () const override;
 	void rewind () override;
+
+	using InputStream::operator>>;
 protected:
-	void* platformHandle;
+	std::unique_ptr<IPlatformResourceInputStream> platformStream;
 };
 
+//------------------------------------------------------------------------
+class BufferedOutputStream : public OutputStream
+{
+public:
+	BufferedOutputStream (OutputStream& stream, size_t bufferSize = 8192)
+	: stream (stream), bufferSize (bufferSize)
+	{
+		buffer.reserve (bufferSize);
+	}
+	~BufferedOutputStream () noexcept override { flush (); }
+	bool operator<< (const std::string& str) override
+	{
+		return writeRaw (str.c_str (), static_cast<uint32_t> (str.size ())) == str.size ();
+	}
+	uint32_t writeRaw (const void* inBuffer, uint32_t size) override
+	{
+		auto written = size;
+		const uint8_t* ptr = reinterpret_cast<const uint8_t*> (inBuffer);
+		while (size)
+		{
+			auto toWrite = 1;
+			buffer.emplace_back (*ptr);
+			if (buffer.size () == bufferSize)
+			{
+				if (!flush ())
+					return kStreamIOError;
+			}
+			size -= toWrite;
+			ptr += toWrite;
+		}
+		return written;
+	}
+	bool flush ()
+	{
+		if (buffer.empty ())
+			return true;
+		auto result = stream.writeRaw (buffer.data (), static_cast<uint32_t> (buffer.size ())) ==
+		              buffer.size ();
+		buffer.clear ();
+		return result;
+	}
+
+private:
+	OutputStream& stream;
+	std::vector<uint8_t> buffer;
+	size_t bufferSize;
+};
 
 } // namespace
 

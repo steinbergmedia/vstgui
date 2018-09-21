@@ -25,9 +25,10 @@ public:
 	// IViewFactory
 	CView* createView (const UIAttributes& attributes, const IUIDescription* description) const override;
 	bool applyAttributeValues (CView* view, const UIAttributes& attributes, const IUIDescription* desc) const override;
-	IdStringPtr getViewName (CView* view) const override;
 	bool applyCustomViewAttributeValues (CView* customView, IdStringPtr baseViewName, const UIAttributes& attributes, const IUIDescription* desc) const override;
 	
+	IdStringPtr getViewName (CView* view) const;
+
 	static void registerViewCreator (const IViewCreator& viewCreator);
 	static void unregisterViewCreator (const IViewCreator& viewCreator);
 
@@ -45,7 +46,8 @@ public:
 	bool getPossibleAttributeListValues (CView* view, const std::string& attributeName, StringPtrList& values) const;
 	bool getAttributeValueRange (CView* view, const std::string& attributeName, double& minValue, double& maxValue) const;
 
-	ViewAndDisplayNameList collectRegisteredViewAndDisplayNames () const;
+	ViewAndDisplayNameList collectRegisteredViewAndDisplayNames (IdStringPtr baseClassNameFilter = nullptr) const;
+	UTF8StringPtr getViewDisplayName (CView* view) const;
 
 #if ENABLE_UNIT_TESTS
 	bool disableRememberAttributes {false};

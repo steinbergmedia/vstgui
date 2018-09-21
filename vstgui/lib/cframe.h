@@ -21,8 +21,10 @@ enum CKnobMode
 	kLinearMode
 };
 
-extern IdStringPtr kMsgNewFocusView;			///< Message send to all parents of the new focus view
-extern IdStringPtr kMsgOldFocusView;			///< Message send to all parents of the old focus view
+/** Message send to all parents of the new focus view */
+extern IdStringPtr kMsgNewFocusView;
+/** Message send to all parents of the old focus view */
+extern IdStringPtr kMsgOldFocusView;
 
 //-----------------------------------------------------------------------------
 // CFrame Declaration
@@ -39,10 +41,13 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	bool open (void* pSystemWindow, PlatformType systemWindowType = kDefaultNative, IPlatformFrameConfig* = nullptr);
-	void close ();							///< closes the frame and calls forget
+	/** closes the frame and calls forget */
+	void close ();
 
-	bool setZoom (double zoomFactor);				///< set zoom factor
-	double getZoom () const;						///< get zoom factor
+	/** set zoom factor */
+	bool setZoom (double zoomFactor);
+	/** get zoom factor */
+	double getZoom () const;
 
 	void setBitmapInterpolationQuality (BitmapInterpolationQuality quality);	///< set interpolation quality for bitmaps
 	BitmapInterpolationQuality getBitmapInterpolationQuality () const;			///< get interpolation quality for bitmaps
@@ -51,10 +56,13 @@ public:
 
 	void idle ();
 
-	uint32_t getTicks () const;				///< get the current time (in ms)
+	/** get the current time (in ms) */
+	uint32_t getTicks () const;
 
-	static int32_t kDefaultKnobMode;				///< default knob mode if host does not provide one
-	int32_t getKnobMode () const;			///< get hosts knob mode
+	/** default knob mode if host does not provide one */
+	static int32_t kDefaultKnobMode;
+	/** get hosts knob mode */
+	int32_t getKnobMode () const;
 
 	bool setPosition (CCoord x, CCoord y);
 	bool getPosition (CCoord& x, CCoord& y) const;
@@ -63,15 +71,21 @@ public:
 	bool getSize (CRect* pSize) const;
 	bool getSize (CRect& pSize) const;
 
-	bool   setModalView (CView* pView);
+	VSTGUI_DEPRECATED (bool setModalView (CView* pView);)
 	CView* getModalView () const;
+
+	ModalViewSession* beginModalViewSession (CView* view);
+	bool endModalViewSession (ModalViewSession* session);
 
 	void  beginEdit (int32_t index);
 	void  endEdit (int32_t index);
 
-	bool getCurrentMouseLocation (CPoint& where) const;				///< get current mouse location
-	CButtonState getCurrentMouseButtons () const;					///< get current mouse buttons and key modifiers
-	void setCursor (CCursorType type);								///< set mouse cursor
+	/** get current mouse location */
+	bool getCurrentMouseLocation (CPoint& where) const;
+	/** get current mouse buttons and key modifiers */
+	CButtonState getCurrentMouseButtons () const;
+	/** set mouse cursor */
+	void setCursor (CCursorType type);
 
 	void   setFocusView (CView* pView);
 	CView* getFocusView () const;
@@ -80,27 +94,37 @@ public:
 	void onViewAdded (CView* pView);
 	void onViewRemoved (CView* pView);
 
-	void onActivate (bool state);									///< called when the platform view/window is activated/deactivated
+	/** called when the platform view/window is activated/deactivated */
+	void onActivate (bool state);
 
 	void invalidate (const CRect& rect);
 
-	void scrollRect (const CRect& src, const CPoint& distance);				///< scroll src rect by distance
+	/** scroll src rect by distance */
+	void scrollRect (const CRect& src, const CPoint& distance);
 
-	void enableTooltips (bool state);										///< enable or disable tooltips
+	/** enable or disable tooltips */
+	void enableTooltips (bool state);
 
-	Animation::Animator* getAnimator ();									///< get animator for this frame
+	/** get animator for this frame */
+	Animation::Animator* getAnimator ();
 
-	SharedPointer<IDataPackage> getClipboard ();							///< get the clipboard data. data is owned by the caller
-	void setClipboard (const SharedPointer<IDataPackage>& data);			///< set the clipboard data.
+	/** get the clipboard data. data is owned by the caller */
+	SharedPointer<IDataPackage> getClipboard ();
+	/** set the clipboard data. */
+	void setClipboard (const SharedPointer<IDataPackage>& data);
 
 	IViewAddedRemovedObserver* getViewAddedRemovedObserver () const;
 	void setViewAddedRemovedObserver (IViewAddedRemovedObserver* observer);
 
-	void registerKeyboardHook (IKeyboardHook* hook);						///< register a keyboard hook
-	void unregisterKeyboardHook (IKeyboardHook* hook);						///< unregister a keyboard hook
+	/** register a keyboard hook */
+	void registerKeyboardHook (IKeyboardHook* hook);
+	/** unregister a keyboard hook */
+	void unregisterKeyboardHook (IKeyboardHook* hook);
 
-	void registerMouseObserver (IMouseObserver* observer);					///< register a mouse observer
-	void unregisterMouseObserver (IMouseObserver* observer);				///< unregister a mouse observer
+	/** register a mouse observer */
+	void registerMouseObserver (IMouseObserver* observer);
+	/** unregister a mouse observer */
+	void unregisterMouseObserver (IMouseObserver* observer);
 
 	void registerScaleFactorChangedListeneer (IScaleFactorChangedListener* listener);
 	void unregisterScaleFactorChangedListeneer (IScaleFactorChangedListener* listener);
@@ -116,14 +140,20 @@ public:
 	//! Views can define their own shape with the IFocusDrawing interface.
 	//-----------------------------------------------------------------------------
 	//@{
-	void setFocusDrawingEnabled (bool state);				///< enable focus drawing
-	bool focusDrawingEnabled () const;						///< is focus drawing enabled
+	/** enable focus drawing */
+	void setFocusDrawingEnabled (bool state);
+	/** is focus drawing enabled */
+	bool focusDrawingEnabled () const;
 
-	void setFocusColor (const CColor& color);				///< set focus draw color
-	CColor getFocusColor () const;							///< get focus draw color
+	/** set focus draw color */
+	void setFocusColor (const CColor& color);
+	/** get focus draw color */
+	CColor getFocusColor () const;
 
-	void setFocusWidth (CCoord width);						///< set focus draw width
-	CCoord getFocusWidth () const;							///< get focus draw width
+	/** set focus draw width */
+	void setFocusWidth (CCoord width);
+	/** get focus draw width */
+	CCoord getFocusWidth () const;
 	//@}
 
 	using Function = std::function<void ()>;
@@ -167,7 +197,6 @@ public:
 	bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons) override;
 	int32_t onKeyDown (VstKeyCode& keyCode) override;
 	int32_t onKeyUp (VstKeyCode& keyCode) override;
-	DragResult doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap) override;
 	void setViewSize (const CRect& rect, bool invalid = true) override;
 
 	VSTGUIEditorInterface* getEditor () const override;
@@ -210,10 +239,10 @@ protected:
 	CMouseEventResult platformOnMouseUp (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult platformOnMouseExited (CPoint& where, const CButtonState& buttons) override;
 	bool platformOnMouseWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons) override;
-	bool platformOnDrop (IDataPackage* drag, const CPoint& where) override;
-	void platformOnDragEnter (IDataPackage* drag, const CPoint& where) override;
-	void platformOnDragLeave (IDataPackage* drag, const CPoint& where) override;
-	void platformOnDragMove (IDataPackage* drag, const CPoint& where) override;
+	DragOperation platformOnDragEnter (DragEventData data) override;
+	DragOperation platformOnDragMove (DragEventData data) override;
+	void platformOnDragLeave (DragEventData data) override;
+	bool platformOnDrop (DragEventData data) override;
 	bool platformOnKeyDown (VstKeyCode& keyCode) override;
 	bool platformOnKeyUp (VstKeyCode& keyCode) override;
 	void platformOnActivate (bool state) override;
@@ -224,6 +253,12 @@ protected:
 #endif
 
 private:
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+	void endLegacyModalViewSession ();
+#endif
+	void initModalViewSession (ModalViewSession* session);
+	void clearModalViewSessions ();
+
 	struct Impl;
 	Impl* pImpl {nullptr};
 };
@@ -238,7 +273,8 @@ public:
 	virtual void beginEdit (int32_t index) {}
 	virtual void endEdit (int32_t index) {}
 
-	virtual bool beforeSizeChange (const CRect& newSize, const CRect& oldSize) { return true; } ///< frame will change size, if this returns false the upstream implementation does not allow it and thus the size of the frame will not change
+	/** frame will change size, if this returns false the upstream implementation does not allow it and thus the size of the frame will not change */
+	virtual bool beforeSizeChange (const CRect& newSize, const CRect& oldSize) { return true; }
 
 	virtual CFrame* getFrame () const { return frame; }
 protected:
@@ -258,8 +294,10 @@ public:
 	virtual ~IMouseObserver() noexcept = default;
 	virtual void onMouseEntered (CView* view, CFrame* frame) = 0;
 	virtual void onMouseExited (CView* view, CFrame* frame) = 0;
-	virtual CMouseEventResult onMouseMoved (CFrame* frame, const CPoint& where, const CButtonState& buttons) { return kMouseEventNotHandled; }	///< a mouse move event happend on the frame at position where. If the observer handles this, the event won't be propagated further
-	virtual CMouseEventResult onMouseDown (CFrame* frame, const CPoint& where, const CButtonState& buttons) { return kMouseEventNotHandled; }	///< a mouse down event happend on the frame at position where. If the observer handles this, the event won't be propagated further
+	/** a mouse move event happend on the frame at position where. If the observer handles this, the event won't be propagated further */
+	virtual CMouseEventResult onMouseMoved (CFrame* frame, const CPoint& where, const CButtonState& buttons) { return kMouseEventNotHandled; }
+	/** a mouse down event happend on the frame at position where. If the observer handles this, the event won't be propagated further */
+	virtual CMouseEventResult onMouseDown (CFrame* frame, const CPoint& where, const CButtonState& buttons) { return kMouseEventNotHandled; }
 };
 
 //-----------------------------------------------------------------------------
@@ -272,8 +310,10 @@ class IKeyboardHook
 public:
 	virtual ~IKeyboardHook () noexcept = default;
 	
-	virtual int32_t onKeyDown (const VstKeyCode& code, CFrame* frame) = 0;	///< should return 1 if no further key down processing should apply, otherwise -1
-	virtual int32_t onKeyUp (const VstKeyCode& code, CFrame* frame) = 0;	///< should return 1 if no further key up processing should apply, otherwise -1
+	/** should return 1 if no further key down processing should apply, otherwise -1 */
+	virtual int32_t onKeyDown (const VstKeyCode& code, CFrame* frame) = 0;
+	/** should return 1 if no further key up processing should apply, otherwise -1 */
+	virtual int32_t onKeyUp (const VstKeyCode& code, CFrame* frame) = 0;
 };
 
 //-----------------------------------------------------------------------------

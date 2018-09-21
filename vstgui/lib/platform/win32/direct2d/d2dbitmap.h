@@ -7,7 +7,7 @@
 
 #include "../win32bitmapbase.h"
 
-#if WINDOWS && VSTGUI_DIRECT2D_SUPPORT
+#if WINDOWS
 
 #include "../../../cpoint.h"
 

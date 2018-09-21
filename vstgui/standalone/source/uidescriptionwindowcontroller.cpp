@@ -1,4 +1,4 @@
-// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
@@ -14,9 +14,10 @@
 #include "../../uidescription/detail/uiviewcreatorattributes.h"
 #include "../../uidescription/editing/uieditcontroller.h"
 #include "../../uidescription/editing/uieditmenucontroller.h"
+#include "../../uidescription/icontroller.h"
 #include "../../uidescription/uiattributes.h"
 #include "../../uidescription/uidescription.h"
-#include "../../uidescription/icontroller.h"
+#include "../../uidescription/compresseduidescription.h"
 #include "../include/helpers/menubuilder.h"
 #include "../include/helpers/valuelistener.h"
 #include "../include/helpers/windowcontroller.h"
@@ -53,6 +54,7 @@ public:
 	CPoint constraintSize (const IWindow& window, const CPoint& newSize) override;
 	bool canClose (const IWindow& window) override;
 	void beforeShow (IWindow& window) override;
+	PlatformFrameConfigPtr createPlatformFrameConfig (PlatformType platformType) override;
 	void onSetContentView (IWindow& window, const SharedPointer<CFrame>& contentView) override;
 
 	bool canHandleCommand (const Command& command) override;
@@ -72,20 +74,19 @@ class ValueWrapper : public ValueListenerAdapter,
                      public IViewListenerAdapter
 {
 public:
+	using ControlList = std::vector<CControl*>;
+
 	explicit ValueWrapper (const ValuePtr& value = nullptr) : value (value)
 	{
 		if (value)
 			value->registerListener (this);
 	}
-	~ValueWrapper () override
+	~ValueWrapper () noexcept override
 	{
 		if (value)
 			value->unregisterListener (this);
 		for (auto& control : controls)
-		{
-			control->unregisterViewListener (this);
-			control->unregisterControlListener (this);
-		}
+			onRemoveControl (control);
 	}
 
 	const UTF8String& getID () const { return value->getID (); }
@@ -145,7 +146,9 @@ public:
 			for (IStepValue::StepType i = 0; i < stepValue->getSteps (); ++i)
 			{
 				auto title = valueConverter.valueAsString (stepValue->stepToValue (i));
-				segmentButton->addSegment ({title});
+				CSegmentButton::Segment segment;
+				segment.name = title;
+				segmentButton->addSegment (std::move (segment));
 			}
 		}
 	}
@@ -205,6 +208,18 @@ public:
 
 	void removeControl (CControl* control)
 	{
+		auto it = std::find (controls.begin (), controls.end (), control);
+		vstgui_assert (it != controls.end ());
+		onRemoveControl (control);
+		controls.erase (it);
+	}
+
+	void viewWillDelete (CView* view) override { removeControl (dynamic_cast<CControl*> (view)); }
+
+	const ControlList& getControls () const { return controls; }
+protected:
+	void onRemoveControl (CControl* control)
+	{
 		if (auto paramDisplay = dynamic_cast<CParamDisplay*> (control))
 		{
 			paramDisplay->setValueToStringFunction (nullptr);
@@ -213,15 +228,7 @@ public:
 		}
 		control->unregisterViewListener (this);
 		control->unregisterControlListener (this);
-		auto it = std::find (controls.begin (), controls.end (), control);
-		vstgui_assert (it != controls.end ());
-		controls.erase (it);
 	}
-
-	void viewWillDelete (CView* view) override { removeControl (dynamic_cast<CControl*> (view)); }
-
-protected:
-	using ControlList = std::vector<CControl*>;
 
 	ValuePtr value;
 	ControlList controls;
@@ -247,6 +254,14 @@ struct WindowController::Impl : public IController, public ICommandHandler
 		if (uiDesc && uiDesc->getSharedResources ())
 		{
 			uiDesc->setSharedResources (nullptr);
+		}
+		for (auto& vw : valueWrappers)
+		{
+			for (auto control : vw->getControls ())
+			{
+				if (control->getListener () == this)
+					control->setListener (nullptr);
+			}
 		}
 	}
 
@@ -326,6 +341,16 @@ struct WindowController::Impl : public IController, public ICommandHandler
 		return true;
 	}
 
+	PlatformFrameConfigPtr createPlatformFrameConfig (PlatformType platformType)
+	{
+		if (customization)
+		{
+			if (auto customController = dynamicPtrCast<IWindowController> (customization))
+				return customController->createPlatformFrameConfig (platformType);
+		}
+		return nullptr;
+	}
+
 	void onSetContentView (const SharedPointer<CFrame>& contentView)
 	{
 		if (customization)
@@ -400,7 +425,12 @@ struct WindowController::Impl : public IController, public ICommandHandler
 
 	bool initUIDesc (const char* fileName)
 	{
-		uiDesc = makeOwned<UIDescription> (fileName);
+		if (Detail::getApplicationPlatformAccess ()
+		        ->getConfiguration ()
+		        .useCompressedUIDescriptionFiles)
+			uiDesc = makeOwned<CompressedUIDescription> (fileName);
+		else
+			uiDesc = makeOwned<UIDescription> (fileName);
 		uiDesc->setSharedResources (Detail::getSharedUIDescription ());
 		if (!uiDesc->parse ())
 		{
@@ -415,11 +445,11 @@ struct WindowController::Impl : public IController, public ICommandHandler
 		if (!attr)
 			return;
 		CPoint p;
-		if (attr->getPointAttribute ("minSize", p))
+		if (attr->getPointAttribute (kTemplateAttributeMinSize, p))
 			minSize = p;
 		else
 			minSize = {};
-		if (attr->getPointAttribute ("maxSize", p))
+		if (attr->getPointAttribute (kTemplateAttributeMaxSize, p))
 			maxSize = p;
 		else
 			maxSize = {};
@@ -451,34 +481,69 @@ struct WindowController::Impl : public IController, public ICommandHandler
 		window->setSize (view->getViewSize ().getSize ());
 	}
 
+	CView* currentCommandHandlerCandidate ()
+	{
+		if (auto focusView = frame->getFocusView ())
+			return focusView;
+		return frame->getView (0);
+	}
+
 	bool canHandleCommand (const Command& command) override
 	{
+		bool canHandle = false;
 		if (modelBinding)
 		{
 			if (auto commandHandler = dynamicPtrCast<ICommandHandler> (modelBinding))
-				return commandHandler->canHandleCommand (command);
+				canHandle = commandHandler->canHandleCommand (command);
 		}
-		if (customization)
+		if (!canHandle && customization)
 		{
 			if (auto commandHandler = dynamicPtrCast<ICommandHandler> (customization))
-				return commandHandler->canHandleCommand (command);
+				canHandle = commandHandler->canHandleCommand (command);
 		}
-		return false;
+		if (!canHandle)
+		{
+			if (auto view = currentCommandHandlerCandidate ())
+			{
+				if (auto viewController = getViewController (view, true))
+				{
+					if (auto viewCommandHandler = dynamic_cast<ICommandHandler*> (viewController))
+					{
+						canHandle = viewCommandHandler->canHandleCommand (command);
+					}
+				}
+			}
+		}
+		return canHandle;
 	}
 
 	bool handleCommand (const Command& command) override
 	{
+		bool handled = false;
 		if (modelBinding)
 		{
 			if (auto commandHandler = dynamicPtrCast<ICommandHandler> (modelBinding))
-				return commandHandler->handleCommand (command);
+				handled = commandHandler->handleCommand (command);
 		}
-		if (customization)
+		if (!handled && customization)
 		{
 			if (auto commandHandler = dynamicPtrCast<ICommandHandler> (customization))
-				return commandHandler->handleCommand (command);
+				handled = commandHandler->handleCommand (command);
 		}
-		return false;
+		if (!handled)
+		{
+			if (auto view = currentCommandHandlerCandidate ())
+			{
+				if (auto viewController = getViewController (view, true))
+				{
+					if (auto viewCommandHandler = dynamic_cast<ICommandHandler*> (viewController))
+					{
+						handled = viewCommandHandler->handleCommand (command);
+					}
+				}
+			}
+		}
+		return handled;
 	}
 
 	void initModelValues (const ModelBindingPtr& modelHandler)
@@ -589,7 +654,7 @@ struct WindowController::EditImpl : WindowController::Impl
 
 		if (!initUIDesc (fileName))
 		{
-			UIAttributes* attr = new UIAttributes ();
+			auto attr = makeOwned<UIAttributes> ();
 			attr->setAttribute (UIViewCreator::kAttrClass, "CViewContainer");
 			attr->setAttribute (UIViewCreator::kAttrSize, "300, 300");
 			attr->setAttribute (UIViewCreator::kAttrAutosize, "left right top bottom");
@@ -602,7 +667,13 @@ struct WindowController::EditImpl : WindowController::Impl
 			auto settings = uiDesc->getCustomAttributes ("UIDescFilePath", true);
 			auto filePath = settings->getAttributeValue ("path");
 			if (filePath)
-				uiDesc->setFilePath (filePath->data ());
+			{
+				if (auto file = fopen (filePath->data (), "rb"))
+				{
+					uiDesc->setFilePath (filePath->data ());
+					fclose (file);
+				}
+			}
 		}
 		this->templateName = templateName;
 
@@ -633,7 +704,12 @@ struct WindowController::EditImpl : WindowController::Impl
 		Impl::onClosed ();
 	}
 
-	bool canClose () override { return Impl::canClose (); }
+	bool canClose () override
+	{
+		if (frame->getModalView ())
+			return false;
+		return Impl::canClose ();
+	}
 
 	void initAsNew ()
 	{
@@ -674,11 +750,15 @@ struct WindowController::EditImpl : WindowController::Impl
 		{
 			if (uiEditController->getUndoManager ()->isSavePosition () == false)
 				Detail::saveSharedUIDescription ();
-			if (!uiDesc->save (uiDesc->getFilePath (), UIDescription::kWriteImagesIntoXMLFile))
+			int32_t flags = UIDescription::kWriteImagesIntoXMLFile |
+			                CompressedUIDescription::kForceWriteCompressedDesc;
+			if (!uiDesc->save (uiDesc->getFilePath (), flags))
 			{
 				AlertBoxConfig config;
 				config.headline = "Saving the uidesc file failed.";
 				IApplication::instance ().showAlertBox (config);
+				uiDesc->setFilePath ("");
+				checkFileExists ();
 			}
 			else
 				Detail::getEditFileMap ().set (filename, uiDesc->getFilePath ());
@@ -757,7 +837,9 @@ struct WindowController::EditImpl : WindowController::Impl
 
 	bool canHandleCommand (const Command& command) override
 	{
-		if (command == ToggleEditingCommand || command == ResaveSharedResourcesCommand)
+		if (command == ToggleEditingCommand)
+			return frame->getModalView () == nullptr;
+		if (command == ResaveSharedResourcesCommand)
 			return true;
 		else if (uiEditController && uiEditController->getMenuController ()->canHandleCommand (
 		                                 command.group, command.name))
@@ -832,6 +914,14 @@ void WindowController::beforeShow (IWindow& window)
 {
 	if (impl)
 		impl->beforeShow ();
+}
+
+//------------------------------------------------------------------------
+PlatformFrameConfigPtr WindowController::createPlatformFrameConfig (PlatformType platformType)
+{
+	if (impl)
+		return impl->createPlatformFrameConfig (platformType);
+	return nullptr;
 }
 
 //------------------------------------------------------------------------

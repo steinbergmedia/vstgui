@@ -61,28 +61,28 @@ CHARDATA
 TESTCASE(XMLParserTest,
 	
 	TEST(validParse,
-		MemoryContentProvider provider (validXML, strlen (validXML));
+		MemoryContentProvider provider (validXML, static_cast<uint32_t> (strlen (validXML)));
 		Handler handler;
 		Parser p;
 		EXPECT(p.parse (&provider, &handler) == true);
 	);
 
 	TEST(validParseWithJunkAtEnd,
-		MemoryContentProvider provider (validXMLWithJunkAtEnd, strlen (validXMLWithJunkAtEnd));
+		MemoryContentProvider provider (validXMLWithJunkAtEnd, static_cast<uint32_t> (strlen (validXMLWithJunkAtEnd)));
 		Handler handler;
 		Parser p;
 		EXPECT(p.parse (&provider, &handler) == true);
 	);
 
 	TEST(invalidParse,
-		MemoryContentProvider provider (invalidXML, strlen (invalidXML));
+		MemoryContentProvider provider (invalidXML, static_cast<uint32_t> (strlen (invalidXML)));
 		Handler handler;
 		Parser p;
 		EXPECT(p.parse (&provider, &handler) == false);
 	);
 
 	TEST(stopParse,
-		MemoryContentProvider provider (validXML, strlen (validXML));
+		MemoryContentProvider provider (validXML, static_cast<uint32_t> (strlen (validXML)));
 		Handler handler;
 		handler.stopOnStartElement = true;
 		Parser p;

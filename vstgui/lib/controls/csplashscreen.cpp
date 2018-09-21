@@ -62,7 +62,6 @@ CSplashScreen::CSplashScreen (const CRect& size, IControlListener* listener, int
 : CControl (size, listener, tag, background)
 , toDisplay (toDisplay)
 , offset (offset)
-, modalView (nullptr)
 {
 	modalView = new CDefaultSplashScreenView (toDisplay, this, background, offset);
 }
@@ -120,11 +119,12 @@ CMouseEventResult CSplashScreen::onMouseDown (CPoint& where, const CButtonState&
 	if (buttons & kLButton)
 	{
 		value = (value == getMax ()) ? getMin () : getMax ();
-		if (value == getMax ())
+		if (value == getMax () && !modalViewSession && modalView)
 		{
-			if (modalView && getFrame () && getFrame ()->setModalView (modalView))
+			if (auto frame = getFrame ())
 			{
-				CControl::valueChanged ();
+				if ((modalViewSession = frame->beginModalViewSession (modalView)))
+					CControl::valueChanged();
 			}
 		}
 		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
@@ -147,13 +147,14 @@ void CSplashScreen::unSplash ()
 {
 	value = getMin ();
 
-	if (getFrame ())
+	if (auto frame = getFrame ())
 	{
-		if (getFrame ()->getModalView () == modalView)
+		if (modalViewSession)
 		{
 			if (modalView)
 				modalView->invalid ();
-			getFrame ()->setModalView (nullptr);
+			frame->endModalViewSession (modalViewSession);
+			modalViewSession = nullptr;
 		}
 	}
 }
@@ -163,8 +164,6 @@ void CSplashScreen::unSplash ()
 //------------------------------------------------------------------------
 CAnimationSplashScreen::CAnimationSplashScreen (const CRect& size, int32_t tag, CBitmap* background, CBitmap* splashBitmap)
 : CSplashScreen (size, nullptr, tag, splashBitmap, CRect (0, 0, 0, 0))
-, animationIndex (0)
-, animationTime (500)
 {
 	CView::setBackground (background);
 }
@@ -220,15 +219,17 @@ void CAnimationSplashScreen::unSplash ()
 {
 	value = getMin ();
 
-	if (getFrame ())
+	if (auto frame = getFrame ())
 	{
-		if (getFrame ()->getModalView () == modalView)
+		if (frame->getModalView () == modalView)
 		{
 			if (!createAnimation (animationIndex, animationTime, modalView, true))
 			{
 				if (modalView)
 					modalView->invalid ();
-				getFrame ()->setModalView (nullptr);
+				
+				frame->endModalViewSession (modalViewSession);
+				modalViewSession = nullptr;
 				setMouseEnabled (true);
 			}
 		}
@@ -304,8 +305,9 @@ CMessageResult CAnimationSplashScreen::notify (CBaseObject* sender, IdStringPtr 
 			modalView->invalid ();
 			modalView->setMouseEnabled (true);
 		}
-		if (getFrame ())
-			getFrame ()->setModalView (nullptr);
+		if (auto frame = getFrame ())
+			frame->endModalViewSession (modalViewSession);
+		modalViewSession = nullptr;
 		setMouseEnabled (true);
 		return kMessageNotified;
 	}

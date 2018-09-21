@@ -12,6 +12,16 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
+HWND CreateEditControl (DWORD wxStyle, const WCHAR* string, DWORD wstyle, const CRect& rect,
+                        HWND parent)
+{
+	return CreateWindowEx (wxStyle, TEXT ("EDIT"), string, wstyle, static_cast<int> (rect.left),
+	                       static_cast<int> (rect.top), static_cast<int> (rect.getWidth ()),
+	                       static_cast<int> (rect.getHeight ()), parent, nullptr, GetInstance (),
+	                       nullptr);
+}
+
+//-----------------------------------------------------------------------------
 Win32TextEdit::Win32TextEdit (HWND parent, IPlatformTextEditCallback* textEdit)
 : IPlatformTextEdit (textEdit)
 , platformControl (0)
@@ -51,27 +61,27 @@ Win32TextEdit::Win32TextEdit (HWND parent, IPlatformTextEditCallback* textEdit)
 	UTF8StringHelper stringHelper (textEdit->platformGetText ());
 	text = stringHelper;
 
+	CColor backColor = textEdit->platformGetBackColor ();
 	DWORD wxStyle = WS_EX_LAYERED;
-	if (getD2DFactory () == 0 && IsWindowsVistaOrGreater()) // Vista and above
-		wxStyle = WS_EX_COMPOSITED;
+	wxStyle = WS_EX_COMPOSITED;
 	wstyle |= WS_CHILD | WS_VISIBLE | ES_AUTOHSCROLL;
 	if (textEdit->platformIsSecureTextEdit ())
 		wstyle |= ES_PASSWORD;
-	platformControl = CreateWindowEx (wxStyle,
-		TEXT("EDIT"), stringHelper, wstyle,
-		(int)rect.left, (int)rect.top, (int)rect.getWidth (), (int)rect.getHeight (),
-		parent, NULL, GetInstance (), 0);
+	platformControl = CreateEditControl (wxStyle, stringHelper.getWideString (), wstyle, rect, parent);
 	if (!platformControl)
 	{
 		wxStyle &= ~WS_EX_LAYERED;
-		platformControl = CreateWindowEx (wxStyle,
-			TEXT("EDIT"), stringHelper, wstyle,
-			(int)rect.left, (int)rect.top, (int)rect.getWidth (), (int)rect.getHeight (),
-			parent, NULL, GetInstance (), 0);
+		platformControl = CreateEditControl (wxStyle, stringHelper.getWideString (), wstyle, rect, parent);
+		if (!platformControl)
+		{
+			wxStyle &= ~WS_EX_COMPOSITED;
+			platformControl = CreateEditControl (wxStyle, stringHelper.getWideString (), wstyle, rect, parent);
+		}
 	}
-
-	CColor backColor = textEdit->platformGetBackColor ();
-	SetLayeredWindowAttributes (platformControl, RGB (backColor.red, backColor.green, backColor.blue), 0, LWA_COLORKEY);
+	else
+	{
+		SetLayeredWindowAttributes (platformControl, RGB (backColor.red, backColor.green, backColor.blue), 0, LWA_COLORKEY);
+	}
 	platformBackColor = CreateSolidBrush (RGB (backColor.red, backColor.green, backColor.blue));
 
 	logfont.lfWeight = FW_NORMAL;

@@ -5,6 +5,8 @@ set(target vstgui_uidescription)
 
 set(${target}_sources
     base64codec.h
+    compresseduidescription.cpp
+    compresseduidescription.h
     cstream.cpp
     cstream.h
     delegationcontroller.h
@@ -17,6 +19,7 @@ set(${target}_sources
     uiattributes.h
     uidescription.cpp
     uidescription.h
+    uidescriptionlistener.h
     uidescriptionfwd.h
     uiviewcreator.cpp
     uiviewcreator.h
@@ -95,7 +98,7 @@ vstgui_set_cxx_version(${target} 14)
 vstgui_source_group_by_folder(${target})
 
 ##########################################################################################
-if(UNIX AND NOT CMAKE_HOST_APPLE)
+if(LINUX)
     execute_process(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/editing/createuidescdata.sh WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/editing/ RESULT_VARIABLE result)
     target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS} "HAVE_EDITORUIDESC_H")
 endif()

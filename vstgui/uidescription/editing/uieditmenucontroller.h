@@ -12,6 +12,7 @@
 #include "uiselection.h"
 #include "uiundomanager.h"
 #include "../delegationcontroller.h"
+#include "../../lib/controls/icommandmenuitemtarget.h"
 
 namespace VSTGUI {
 class IActionPerformer;
@@ -128,7 +129,7 @@ static const MenuEntry fileMenu[] = {
 } // namespace UIEditing
 
 //----------------------------------------------------------------------------------------------------
-class UIEditMenuController : public CBaseObject, public DelegationController
+class UIEditMenuController : public CBaseObject, public DelegationController, public CommandMenuItemTargetAdapter
 {
 public:
 	UIEditMenuController (IController* baseController, UISelection* selection, UIUndoManager* undoManager, UIDescription* description, IActionPerformer* actionPerformer);
@@ -146,6 +147,9 @@ public:
 
 	static bool createUniqueTemplateName (std::list<const std::string*>& names, std::string& name);
 protected:
+	bool validateCommandMenuItem (CCommandMenuItem* item) override;
+	bool onCommandMenuItemSelected (CCommandMenuItem* item) override;
+
 	bool validateMenuItem (CCommandMenuItem& item);
 	CCommandMenuItem* findKeyCommandItem (COptionMenu* menu, const VstKeyCode& key);
 	void createEditMenu (COptionMenu* menu);

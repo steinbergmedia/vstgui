@@ -29,6 +29,7 @@ public:
 	UTF8String getText () override;
 	bool setText (const UTF8String& text) override;
 	bool updateSize () override;
+	bool drawsPlaceholder () const override { return true; }
 
 	NSTextField* getPlatformControl () const { return platformControl; }
 	NSView* getParent () const { return parent; }

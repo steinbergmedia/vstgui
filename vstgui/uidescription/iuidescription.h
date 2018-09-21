@@ -7,6 +7,7 @@
 
 #include "../lib/vstguifwd.h"
 #include "../lib/cfont.h"
+#include "../lib/cstring.h"
 #include <string>
 #include <list>
 
@@ -52,6 +53,18 @@ public:
 	static IdStringPtr kCustomViewName;
 };
 
+//-----------------------------------------------------------------------------
+struct FocusDrawingSettings
+{
+	bool enabled {false};
+	CCoord width {1};
+	UTF8String colorName;
+	
+	bool operator!= (const FocusDrawingSettings& o) const
+	{
+		return (enabled != o.enabled || width != o.width || colorName != o.colorName);
+	}
+};
 
 } // namespace VSTGUI
 

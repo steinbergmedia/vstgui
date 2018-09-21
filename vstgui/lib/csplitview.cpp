@@ -353,8 +353,10 @@ void CSplitView::setViewSize (const CRect& rect, bool invalid)
 }
 
 //-----------------------------------------------------------------------------
-bool CSplitView::addView (CView* pView)
+bool CSplitView::addView (CView* pView, CView* pBefore)
 {
+	vstgui_assert (pBefore == nullptr);
+	
 	CRect viewSize (pView->getViewSize ());
 	viewSize.originize ();
 	if (style == kHorizontal)
@@ -384,18 +386,6 @@ bool CSplitView::addView (CView* pView)
 	pView->setViewSize (viewSize);
 	pView->setMouseableArea (viewSize);
 	return CViewContainer::addView (pView, nullptr);
-}
-
-//-----------------------------------------------------------------------------
-bool CSplitView::addView (CView* pView, const CRect& mouseableArea, bool mouseEnabled)
-{
-	return addView (pView);
-}
-
-//-----------------------------------------------------------------------------
-bool CSplitView::addView (CView* pView, CView* pBefore)
-{
-	return addView (pView);
 }
 
 //-----------------------------------------------------------------------------

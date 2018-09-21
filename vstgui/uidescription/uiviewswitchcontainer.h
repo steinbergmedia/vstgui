@@ -39,15 +39,27 @@ public:
 	void setAnimationStyle (AnimationStyle style);
 	AnimationStyle getAnimationStyle () const { return animationStyle; }
 
+	enum TimingFunction {
+		kLinear,
+		kEasyIn,
+		kEasyOut,
+		kEasyInOut,
+		kEasy
+	};
+
+	void setTimingFunction (TimingFunction t);
+	TimingFunction getTimingFunction () const { return timingFunction; }
+
 	bool attached (CView* parent) override;
 	bool removed (CView* parent) override;
 //-----------------------------------------------------------------------------
 	CLASS_METHODS (UIViewSwitchContainer, CViewContainer)
 protected:
-	IViewSwitchController* controller;
-	int32_t currentViewIndex;
-	uint32_t animationTime;
-	AnimationStyle animationStyle;
+	IViewSwitchController* controller {nullptr};
+	int32_t currentViewIndex {-1};
+	uint32_t animationTime {120};
+	AnimationStyle animationStyle {kFadeInOut};
+	TimingFunction timingFunction {kLinear};
 };
 
 //-----------------------------------------------------------------------------

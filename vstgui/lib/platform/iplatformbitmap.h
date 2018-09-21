@@ -18,8 +18,10 @@ class IPlatformBitmapPixelAccess;
 class IPlatformBitmap : public AtomicReferenceCounted
 {
 public:
-	static SharedPointer<IPlatformBitmap> create (CPoint* size = nullptr); ///< if size pointer is not zero, create a bitmap which can be used as a draw surface
-	static SharedPointer<IPlatformBitmap> createFromPath (UTF8StringPtr absolutePath); ///< create a bitmap from an absolute path
+	/** if size pointer is not zero, create a bitmap which can be used as a draw surface */
+	static SharedPointer<IPlatformBitmap> create (CPoint* size = nullptr);
+	/** create a bitmap from an absolute path */
+	static SharedPointer<IPlatformBitmap> createFromPath (UTF8StringPtr absolutePath);
 
 	/** Create a platform bitmap from memory */
 	static SharedPointer<IPlatformBitmap> createFromMemory (const void* ptr, uint32_t memSize);

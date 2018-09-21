@@ -4,7 +4,7 @@
 
 #include "d2dfont.h"
 
-#if WINDOWS && VSTGUI_DIRECT2D_SUPPORT
+#if WINDOWS
 
 #include "../win32support.h"
 #include "../winstring.h"
@@ -163,4 +163,4 @@ CCoord D2DFont::getStringWidth (CDrawContext* context, IPlatformString* string, 
 
 } // namespace
 
-#endif // WINDOWS && VSTGUI_DIRECT2D_SUPPORT
+#endif // WINDOWS

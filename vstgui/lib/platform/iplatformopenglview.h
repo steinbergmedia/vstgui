@@ -27,7 +27,8 @@ struct PixelFormat
 
 	uint32_t depthBufferSize {32};
 	uint32_t stencilBufferSize {0};
-	uint32_t samples {0};								///< only used when kMultiSample is set
+	/** only used when kMultiSample is set */
+	uint32_t samples {0};
 	uint32_t flags {kDoubleBuffered};
 
 	PixelFormat () = default;
@@ -52,13 +53,16 @@ public:
 	virtual void remove () = 0;
 
 	virtual void invalidRect (const CRect& rect) = 0;
-	virtual void viewSizeChanged (const CRect& visibleSize) = 0; ///< visibleSize is cframe relative
-
-	virtual bool makeContextCurrent () = 0;	///< make OpenGL context active
-	virtual bool lockContext () = 0;		///< lock changes to context
-	virtual bool unlockContext () = 0;		///< unlock changes to context
-
-	virtual void swapBuffers () = 0;		///< swap buffers and clear active OpenGL context
+	/** visibleSize is cframe relative */
+	virtual void viewSizeChanged (const CRect& visibleSize) = 0;
+	/** make OpenGL context active */
+	virtual bool makeContextCurrent () = 0;
+	/** lock changes to context */
+	virtual bool lockContext () = 0;
+	/** unlock changes to context */
+	virtual bool unlockContext () = 0;
+	/** swap buffers and clear active OpenGL context */
+	virtual void swapBuffers () = 0;
 };
 
 } // namespace

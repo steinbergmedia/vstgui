@@ -4,17 +4,13 @@
 
 #include "cstream.h"
 #include "../lib/cresourcedescription.h"
+#include "../lib/platform/iplatformresourceinputstream.h"
 #include <algorithm>
 #include <sstream>
 
-#if MAC
-	#include "../lib/platform/mac/macglobals.h"
-#elif WINDOWS
-	#include "../lib/platform/win32/win32support.h"
+#if WINDOWS
 	#define fseeko _fseeki64
 	#define ftello _ftelli64
-#elif LINUX
-	#include "../lib/platform/linux/x11platform.h"
 #endif
 
 namespace VSTGUI {
@@ -161,8 +157,8 @@ bool CMemoryStream::operator<< (const std::string& str)
 {
 	if (binaryMode)
 	{
-		if (!(static_cast<OutputStream&>(*this) << (uint32_t)'str ')) return false;
-		if (!(static_cast<OutputStream&>(*this) << (uint32_t)str.length ())) return false;
+		if (!((*this) << (uint32_t)'str ')) return false;
+		if (!((*this) << (uint32_t)str.length ())) return false;
 	}
 	return writeRaw (str.c_str (), static_cast<uint32_t> (str.length ())) == str.length ();
 }
@@ -315,7 +311,7 @@ bool CFileStream::operator<< (const std::string& str)
 	{
 		if (openMode & kBinaryMode)
 		{
-			if (!(*static_cast<OutputStream*> (this) << (int8_t)0))
+			if (!((*this) << (int8_t)0))
 				return false;
 		}
 		return true;
@@ -328,128 +324,44 @@ bool CFileStream::operator<< (const std::string& str)
 //-----------------------------------------------------------------------------
 CResourceInputStream::CResourceInputStream (ByteOrder byteOrder)
 : InputStream (byteOrder)
-, platformHandle (nullptr)
 {
 }
 
 //-----------------------------------------------------------------------------
 CResourceInputStream::~CResourceInputStream () noexcept
 {
-	if (platformHandle)
-	{
-	#if MAC || LINUX
-		fclose ((FILE*)platformHandle);
-	#elif WINDOWS
-		((ResourceStream*)platformHandle)->Release ();
-	#endif
-	}
 }
 
 //-----------------------------------------------------------------------------
 bool CResourceInputStream::open (const CResourceDescription& res)
 {
-	if (platformHandle != nullptr)
+	if (platformStream)
 		return false;
-#if MAC
-	if (res.type == CResourceDescription::kIntegerType)
-		return false;
-	if (res.type == CResourceDescription::kStringType && res.u.name[0] == '/')
-	{
-		// it's an absolute path, we can use it as is
-//		platformHandle = fopen (res.u.name, "rb");
-	}
-	if (platformHandle == nullptr && getBundleRef ())
-	{
-		CFStringRef cfStr = CFStringCreateWithCString (nullptr, res.u.name, kCFStringEncodingUTF8);
-		if (cfStr)
-		{
-			CFURLRef url = CFBundleCopyResourceURL (getBundleRef (), cfStr, nullptr, nullptr);
-			if (url)
-			{
-				char filePath[PATH_MAX];
-				if (CFURLGetFileSystemRepresentation (url, true, (UInt8*)filePath, PATH_MAX))
-				{
-					platformHandle = fopen (filePath, "rb");
-				}
-				CFRelease (url);
-			}
-			CFRelease (cfStr);
-		}
-	}
-#elif LINUX
-	if (res.type == CResourceDescription::kIntegerType)
-		return false;
-	auto path = X11::Platform::getInstance ().getPath ();
-	if (!path.empty ())
-	{
-		path += "/Contents/Resources/";
-		path += res.u.name;
-		platformHandle = fopen (path.data (), "rb");
-	}
-#elif WINDOWS
-	platformHandle = new ResourceStream ();
-	if (!((ResourceStream*)platformHandle)->open (res, "DATA"))
-	{
-		((ResourceStream*)platformHandle)->Release ();
-		platformHandle = 0;
-	}
-#endif
-	return platformHandle != nullptr;
+	platformStream = IPlatformResourceInputStream::create (res);
+	return platformStream != nullptr;
 }
 
 //-----------------------------------------------------------------------------
 uint32_t CResourceInputStream::readRaw (void* buffer, uint32_t size)
 {
-	uint32_t readResult = kStreamIOError;
-	if (platformHandle)
-	{
-	#if MAC || LINUX
-		readResult = static_cast<uint32_t> (fread (buffer, 1, size, (FILE*)platformHandle));
-		if (readResult == 0)
-		{
-			if (ferror ((FILE*)platformHandle) != 0)
-			{
-				readResult = kStreamIOError;
-				clearerr ((FILE*)platformHandle);
-			}
-		}
-	#elif WINDOWS
-		ULONG read = 0;
-		if (((ResourceStream*)platformHandle)->Read (buffer, size, &read) == S_OK)
-			readResult = read;
-	#endif
-	}
-	return readResult;
+	if (platformStream)
+		return platformStream->readRaw (buffer, size);
+	return kStreamIOError;
 }
 
 //-----------------------------------------------------------------------------
 int64_t CResourceInputStream::seek (int64_t pos, SeekMode mode)
 {
-	if (platformHandle)
+	if (platformStream)
 	{
-	#if MAC || LINUX
-		int whence;
+		VSTGUI::SeekMode sm = VSTGUI::SeekMode::Set;
 		switch (mode)
 		{
-			case kSeekSet: whence = SEEK_SET; break;
-			case kSeekCurrent: whence = SEEK_CUR; break;
-			case kSeekEnd: whence = SEEK_END; break;
+			case kSeekCurrent: sm = VSTGUI::SeekMode::Current; break;
+			case kSeekSet: sm = VSTGUI::SeekMode::Set; break;
+			case kSeekEnd: sm = VSTGUI::SeekMode::End; break;
 		}
-		if (fseeko ((FILE*)platformHandle, pos, whence) == 0)
-			return tell ();
-	#elif WINDOWS
-		DWORD dwOrigin;
-		switch (mode)
-		{
-			case kSeekSet: dwOrigin = STREAM_SEEK_SET; break;
-			case kSeekCurrent: dwOrigin = STREAM_SEEK_CUR; break;
-			case kSeekEnd: dwOrigin = STREAM_SEEK_END; break;
-		}
-		LARGE_INTEGER li;
-		li.QuadPart = pos;
-		if (((ResourceStream*)platformHandle)->Seek (li, dwOrigin, 0) == S_OK)
-			return tell ();
-	#endif
+		return platformStream->seek (pos, sm);
 	}
 	return kStreamSeekError;
 }
@@ -457,54 +369,17 @@ int64_t CResourceInputStream::seek (int64_t pos, SeekMode mode)
 //-----------------------------------------------------------------------------
 int64_t CResourceInputStream::tell () const
 {
-	if (platformHandle)
-	{
-	#if MAC || LINUX
-		return ftello ((FILE*)platformHandle);
-	#elif WINDOWS
-		ULARGE_INTEGER pos;
-		LARGE_INTEGER dummy = {};
-		if (((ResourceStream*)platformHandle)->Seek (dummy, STREAM_SEEK_CUR, &pos) == S_OK)
-			return (int64_t)pos.QuadPart;
-	#endif
-	}
+	if (platformStream)
+		return platformStream->tell ();
+
 	return kStreamSeekError;
 }
 
 //-----------------------------------------------------------------------------
 void CResourceInputStream::rewind ()
 {
-	if (platformHandle)
-	{
-	#if MAC || LINUX
-		fseek ((FILE*)platformHandle, 0L, SEEK_SET);
-	#elif WINDOWS
-		((ResourceStream*)platformHandle)->Revert ();
-	#endif
-	}
-}
-
-//-----------------------------------------------------------------------------
-template<typename T>
-bool writeEndianSwap (const T& value, OutputStream& s)
-{
-	uint32_t size = sizeof (T);
-	const int8_t* ptr = reinterpret_cast<const int8_t*> (&value);
-	while (size >= 2)
-	{
-		if (s.writeRaw (ptr + 1, 1) != 1)
-			return false;
-		if (s.writeRaw (ptr, 1) != 1)
-			return false;
-		size -= 2;
-		ptr += 2;
-	}
-	if (size)
-	{
-		if (s.writeRaw (ptr, 1) != 1)
-			return false;
-	}
-	return true;
+	if (platformStream)
+		platformStream->seek (0, VSTGUI::SeekMode::Set);
 }
 
 //-----------------------------------------------------------------------------
@@ -512,16 +387,26 @@ template<typename T>
 void endianSwap (T& value)
 {
 	uint32_t size = sizeof (T);
-	int8_t* ptr = reinterpret_cast<int8_t*> (&value);
-	int8_t tmp;
+	auto low = reinterpret_cast<uint8_t*> (&value);
+	auto high = low + size - 1;
 	while (size >= 2)
 	{
-		tmp = ptr[0];
-		ptr[0] = ptr[1];
-		ptr[1] = tmp;
-		ptr += 2;
+		auto tmp = *low;
+		*low = *high;
+		*high = tmp;
+		low += 2;
+		high -= 2;
 		size -= 2;
 	}
+}
+
+//-----------------------------------------------------------------------------
+template<typename T>
+bool writeEndianSwap (const T& value, OutputStream& s)
+{
+	auto tmp = value;
+	endianSwap (tmp);
+	return s.writeRaw (&tmp, sizeof (T)) == sizeof (T);
 }
 
 //-----------------------------------------------------------------------------

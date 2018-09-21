@@ -21,7 +21,7 @@ class UINode;
 /// @brief XML description parser and view creator
 /// @ingroup new_in_4_0
 //-----------------------------------------------------------------------------
-class UIDescription : public NonAtomicReferenceCounted, public IUIDescription, public Xml::IHandler, public IDependency
+class UIDescription : public NonAtomicReferenceCounted, public IUIDescription, public Xml::IHandler
 {
 public:
 	UIDescription (const CResourceDescription& xmlFile, IViewFactory* viewFactory = nullptr);
@@ -108,14 +108,14 @@ public:
 
 	void updateViewDescription (UTF8StringPtr name, CView* view);
 	bool getTemplateNameFromView (CView* view, std::string& templateName) const;
-	bool addNewTemplate (UTF8StringPtr name, UIAttributes* attr); // owns attributes
+	bool addNewTemplate (UTF8StringPtr name, const SharedPointer<UIAttributes>& attr);
 	bool removeTemplate (UTF8StringPtr name);
 	bool changeTemplateName (UTF8StringPtr name, UTF8StringPtr newName);
 	bool duplicateTemplate (UTF8StringPtr name, UTF8StringPtr duplicateName);
 
-	bool setCustomAttributes (UTF8StringPtr name, UIAttributes* attr); //owns attributes
-	UIAttributes* getCustomAttributes (UTF8StringPtr name) const;
-	UIAttributes* getCustomAttributes (UTF8StringPtr name, bool create);
+	bool setCustomAttributes (UTF8StringPtr name, const SharedPointer<UIAttributes>& attr);
+	SharedPointer<UIAttributes> getCustomAttributes (UTF8StringPtr name) const;
+	SharedPointer<UIAttributes> getCustomAttributes (UTF8StringPtr name, bool create);
 
 	bool getControlTagString (UTF8StringPtr tagName, std::string& tagString) const;
 	bool changeControlTagString  (UTF8StringPtr tagName, const std::string& newTagString, bool create = false);
@@ -127,12 +127,7 @@ public:
 
 	void setBitmapCreator (IBitmapCreator* bitmapCreator);
 
-	struct FocusDrawing
-	{
-		bool enabled {false};
-		CCoord width {1};
-		UTF8String colorName;
-	};
+	using FocusDrawing = FocusDrawingSettings;
 	FocusDrawing getFocusDrawingSettings () const;
 	void setFocusDrawingSettings (const FocusDrawing& fd);
 	
@@ -141,13 +136,6 @@ public:
 	static bool parseColor (const std::string& colorString, CColor& color);
 	static CViewAttributeID kTemplateNameAttributeID;
 	
-	static IdStringPtr kMessageTagChanged;
-	static IdStringPtr kMessageColorChanged;
-	static IdStringPtr kMessageFontChanged;
-	static IdStringPtr kMessageBitmapChanged;
-	static IdStringPtr kMessageTemplateChanged;
-	static IdStringPtr kMessageGradientChanged;
-	static IdStringPtr kMessageBeforeSave;
 protected:
 	void addDefaultNodes ();
 
@@ -169,15 +157,19 @@ private:
 	UINode* findChildNodeByNameAttribute (UINode* node, UTF8StringPtr nameAttribute) const;
 	UINode* findNodeForView (CView* view) const;
 	bool updateAttributesForView (UINode* node, CView* view, bool deep = true);
-	void removeNode (UTF8StringPtr name, IdStringPtr mainNodeName, IdStringPtr changeMsg);
+	void removeNode (UTF8StringPtr name, IdStringPtr mainNodeName);
 	template<typename NodeType, typename ObjType, typename CompareFunction> UTF8StringPtr lookupName (const ObjType& obj, IdStringPtr mainNodeName, CompareFunction compare) const;
-	template<typename NodeType> void changeNodeName (UTF8StringPtr oldName, UTF8StringPtr newName, IdStringPtr mainNodeName, IdStringPtr changeMsg);
+	template<typename NodeType> void changeNodeName (UTF8StringPtr oldName, UTF8StringPtr newName, IdStringPtr mainNodeName);
 	template<typename NodeType> void collectNamesFromNode (IdStringPtr mainNodeName, std::list<const std::string*>& names) const;
 	
 	struct Impl;
 	std::unique_ptr<Impl> impl;
 };
  
+//-----------------------------------------------------------------------------
+static constexpr auto kTemplateAttributeMinSize = "minSize";
+static constexpr auto kTemplateAttributeMaxSize = "maxSize";
+
 //-----------------------------------------------------------------------------
 class IBitmapCreator
 {

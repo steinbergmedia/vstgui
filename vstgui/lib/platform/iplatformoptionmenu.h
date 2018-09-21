@@ -22,7 +22,8 @@ struct PlatformOptionMenuResult
 class IPlatformOptionMenu : public AtomicReferenceCounted
 {
 public:
-	virtual PlatformOptionMenuResult popup (COptionMenu* optionMenu) = 0;
+	using Callback = std::function<void (COptionMenu* optionMenu, PlatformOptionMenuResult result)>;
+	virtual void popup (COptionMenu* optionMenu, const Callback& callback) = 0;
 };
 
 } // namespace

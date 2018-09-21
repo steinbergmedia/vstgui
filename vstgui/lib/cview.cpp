@@ -14,6 +14,7 @@
 #include "malloc.h"
 #include "animation/animator.h"
 #include "../uidescription/icontroller.h"
+#include "platform/iplatformframe.h"
 #include <cassert>
 #include <unordered_map>
 #if DEBUG
@@ -88,7 +89,7 @@ public:
 	}
 	
 protected:
-	Malloc<int8_t> data;
+	Buffer<int8_t> data;
 };
 
 //-----------------------------------------------------------------------------
@@ -163,15 +164,23 @@ IdStringPtr kMsgViewSizeChanged = "kMsgViewSizeChanged";
 bool CView::kDirtyCallAlwaysOnMainThread = false;
 
 //-----------------------------------------------------------------------------
+const CViewAttributeID kCViewAttributeReferencePointer = 'cvrp';
+const CViewAttributeID kCViewTooltipAttribute = 'cvtt';
+const CViewAttributeID kCViewControllerAttribute = 'ictr';
+const CViewAttributeID kCViewHitTestPathAttribute = 'cvht';
+
+//-----------------------------------------------------------------------------
 // CView
 //-----------------------------------------------------------------------------
 struct CView::Impl
 {
 	using ViewAttributes = std::unordered_map<CViewAttributeID, std::unique_ptr<CViewInternal::AttributeEntry>>;
 	using ViewListenerDispatcher = DispatchList<IViewListener*>;
-	
+	using ViewMouseListenerDispatcher = DispatchList<IViewMouseListener*>;
+
 	ViewAttributes attributes;
-	ViewListenerDispatcher viewListeners;
+	std::unique_ptr<ViewListenerDispatcher> viewListeners;
+	std::unique_ptr<ViewMouseListenerDispatcher> viewMouseListener;
 	
 	CRect size;
 	CRect mouseableArea;
@@ -183,7 +192,6 @@ struct CView::Impl
 	
 	SharedPointer<CBitmap> background;
 	SharedPointer<CBitmap> disabledBackground;
-	SharedPointer<CGraphicsPath> hitTestPath;
 };
 
 //-----------------------------------------------------------------------------
@@ -213,7 +221,7 @@ CView::CView (const CView& v)
 	pImpl->alphaValue = v.pImpl->alphaValue;
 	pImpl->background = v.pImpl->background;
 	pImpl->disabledBackground = v.pImpl->disabledBackground;
-	pImpl->hitTestPath = v.pImpl->hitTestPath;
+	setHitTestPath (v.getHitTestPath ());
 
 	for (auto& attribute : v.pImpl->attributes)
 		setAttribute (attribute.first, attribute.second->getSize (), attribute.second->getData ());
@@ -225,12 +233,21 @@ CView::~CView () noexcept = default;
 //-----------------------------------------------------------------------------
 void CView::beforeDelete ()
 {
-	pImpl->viewListeners.forEach ([&] (IViewListener* listener) {
-		listener->viewWillDelete (this);
-	});
+	if (pImpl->viewListeners)
+	{
+		pImpl->viewListeners->forEach ([&] (IViewListener* listener) {
+			listener->viewWillDelete (this);
+		});
+		vstgui_assert (pImpl->viewListeners->empty (), "View listeners not empty");
+	}
+	if (pImpl->viewMouseListener)
+	{
+		vstgui_assert (pImpl->viewMouseListener->empty (), "View mouse listeners not empty");
+	}
 
 	vstgui_assert (isAttached () == false, "View is still attached");
-	vstgui_assert (pImpl->viewListeners.empty (), "View listeners not empty");
+
+	setHitTestPath (nullptr);
 	
 	IController* controller = nullptr;
 	uint32_t size = sizeof (IController*);
@@ -261,7 +278,7 @@ void CView::setMouseableArea (const CRect& rect)
 //-----------------------------------------------------------------------------
 CRect& CView::getMouseableArea (CRect& rect) const
 {
-	rect = pImpl->mouseableArea;
+	rect = getMouseableArea ();
 	return rect;
 }
 
@@ -272,9 +289,30 @@ const CRect& CView::getMouseableArea () const
 }
 
 //-----------------------------------------------------------------------------
+/**
+ * @param path the path to use for hit testing. The path will be translated by this views origin, so that the path must not be set again, if the view is moved. Otherwise when the size of the view changes, the path must also be set again.
+ */
+void CView::setHitTestPath (CGraphicsPath* path)
+{
+	if (auto p = getHitTestPath ())
+	{
+		p->forget ();
+		removeAttribute (kCViewHitTestPathAttribute);
+	}
+	if (path)
+	{
+		path->remember ();
+		setAttribute (kCViewHitTestPathAttribute, path);
+	}
+}
+
+//-----------------------------------------------------------------------------
 CGraphicsPath* CView::getHitTestPath () const
 {
-	return pImpl->hitTestPath;
+	CGraphicsPath* path = nullptr;
+	if (getAttribute (kCViewHitTestPathAttribute, path))
+		return path;
+	return nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -368,9 +406,11 @@ bool CView::attached (CView* parent)
 		pImpl->parentFrame->onViewAdded (this);
 	if (wantsIdle ())
 		CViewInternal::IdleViewUpdater::add (this);
-	pImpl->viewListeners.forEach ([&] (IViewListener* listener) {
-		listener->viewAttached (this);
-	});
+	if (pImpl->viewListeners)
+	{
+		pImpl->viewListeners->forEach (
+		    [&] (IViewListener* listener) { listener->viewAttached (this); });
+	}
 	return true;
 }
 
@@ -385,9 +425,11 @@ bool CView::removed (CView* parent)
 		return false;
 	if (wantsIdle ())
 		CViewInternal::IdleViewUpdater::remove (this);
-	pImpl->viewListeners.forEach ([&] (IViewListener* listener) {
-		listener->viewRemoved (this);
-	});
+	if (pImpl->viewListeners)
+	{
+		pImpl->viewListeners->forEach (
+		    [&] (IViewListener* listener) { listener->viewRemoved (this); });
+	}
 	if (pImpl->parentFrame)
 		pImpl->parentFrame->onViewRemoved (this);
 	pImpl->parentView = nullptr;
@@ -437,28 +479,19 @@ CMouseEventResult CView::onMouseCancel ()
 
 //-----------------------------------------------------------------------------
 /**
- * @param path the path to use for hit testing. The path will be translated by this views origin, so that the path must not be set again, if the view is moved. Otherwise when the size of the view changes, the path must also be set again.
- */
-void CView::setHitTestPath (CGraphicsPath* path)
-{
-	pImpl->hitTestPath = path;
-}
-
-//-----------------------------------------------------------------------------
-/**
  * @param where location
  * @param buttons button and modifier state
  * @return true if point hits this view
  */
 bool CView::hitTest (const CPoint& where, const CButtonState& buttons)
 {
-	if (pImpl->hitTestPath)
+	if (auto path = getHitTestPath ())
 	{
 		CPoint p (where);
 		p.offset (-getViewSize ().left, -getViewSize ().top);
-		return pImpl->hitTestPath->hitTest (p);
+		return path->hitTest (p);
 	}
-	return pImpl->mouseableArea.pointInside (where);
+	return getMouseableArea ().pointInside (where);
 }
 
 //-----------------------------------------------------------------------------
@@ -589,6 +622,7 @@ int32_t CView::onKeyUp (VstKeyCode& keyCode)
 	return -1;
 }
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //------------------------------------------------------------------------------
 /**
  * a drag can only be started from within onMouseDown
@@ -599,12 +633,37 @@ int32_t CView::onKeyUp (VstKeyCode& keyCode)
  */
 DragResult CView::doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap)
 {
-	CFrame* frame = getFrame ();
-	if (frame)
+	if (auto frame = getFrame ())
 	{
-		return frame->doDrag (source, offset, dragBitmap);
+		if (auto platformFrame = frame->getPlatformFrame ())
+		{
+			return platformFrame->doDrag (source, offset, dragBitmap);
+		}
 	}
 	return kDragError;
+}
+#endif
+
+//------------------------------------------------------------------------------
+/**
+ * A drag can only be started from within onMouseDown or onMouseMove.
+ * This method may return immediately before the drop occurs, if you want to be notified about the
+ * result you have to provide a callback object.
+ *
+ * @param dragDescription drag description
+ * @param callback callback
+ * @return true if the drag was started, otherwise false
+ */
+bool CView::doDrag (const DragDescription& dragDescription, const SharedPointer<IDragCallback>& callback)
+{
+	if (auto frame = getFrame ())
+	{
+		if (auto platformFrame = frame->getPlatformFrame ())
+		{
+			return platformFrame->doDrag (dragDescription, callback);
+		}
+	}
+	return false;
 }
 
 //------------------------------------------------------------------------------
@@ -621,17 +680,19 @@ CMessageResult CView::notify (CBaseObject* sender, IdStringPtr message)
 //------------------------------------------------------------------------------
 void CView::looseFocus ()
 {
-	pImpl->viewListeners.forEach ([&] (IViewListener* listener) {
-		listener->viewLostFocus (this);
-	});
+	if (!pImpl->viewListeners)
+		return;
+	pImpl->viewListeners->forEach (
+	    [&] (IViewListener* listener) { listener->viewLostFocus (this); });
 }
 
 //------------------------------------------------------------------------------
 void CView::takeFocus ()
 {
-	pImpl->viewListeners.forEach ([&] (IViewListener* listener) {
-		listener->viewTookFocus (this);
-	});
+	if (!pImpl->viewListeners)
+		return;
+	pImpl->viewListeners->forEach (
+	    [&] (IViewListener* listener) { listener->viewTookFocus (this); });
 }
 
 //------------------------------------------------------------------------------
@@ -651,9 +712,11 @@ void CView::setViewSize (const CRect& newSize, bool doInvalid)
 			setDirty ();
 		if (getParentView ())
 			getParentView ()->notify (this, kMsgViewSizeChanged);
-		pImpl->viewListeners.forEach ([&] (IViewListener* listener) {
-			listener->viewSizeChanged (this, oldSize);
-		});
+		if (pImpl->viewListeners)
+		{
+			pImpl->viewListeners->forEach (
+			    [&] (IViewListener* listener) { listener->viewSizeChanged (this, oldSize); });
+		}
 	}
 }
 
@@ -799,11 +862,6 @@ void CView::setDisabledBackground (CBitmap* background)
 }
 
 //-----------------------------------------------------------------------------
-const CViewAttributeID kCViewAttributeReferencePointer = 'cvrp';
-const CViewAttributeID kCViewTooltipAttribute = 'cvtt';
-const CViewAttributeID kCViewControllerAttribute = 'ictr';
-
-//-----------------------------------------------------------------------------
 /**
  * @param aId the ID of the Attribute
  * @param outSize on return the size of the attribute
@@ -933,15 +991,83 @@ void CView::dumpInfo ()
 //-----------------------------------------------------------------------------
 void CView::registerViewListener (IViewListener* listener)
 {
-	pImpl->viewListeners.add (listener);
+	if (!pImpl->viewListeners)
+		pImpl->viewListeners =
+		    std::unique_ptr<Impl::ViewListenerDispatcher> (new Impl::ViewListenerDispatcher);
+	pImpl->viewListeners->add (listener);
 }
 
 //-----------------------------------------------------------------------------
 void CView::unregisterViewListener (IViewListener* listener)
 {
-	pImpl->viewListeners.remove (listener);
+	if (!pImpl->viewListeners)
+		return;
+	pImpl->viewListeners->remove (listener);
 }
 
+//------------------------------------------------------------------------
+void CView::registerViewMouseListener (IViewMouseListener* listener)
+{
+	if (!pImpl->viewMouseListener)
+		pImpl->viewMouseListener = std::unique_ptr<Impl::ViewMouseListenerDispatcher> (
+		    new Impl::ViewMouseListenerDispatcher);
+	pImpl->viewMouseListener->add (listener);
+}
+
+//------------------------------------------------------------------------
+void CView::unregisterViewMouseListener (IViewMouseListener* listener)
+{
+	if (!pImpl->viewMouseListener)
+		return;
+	pImpl->viewMouseListener->remove (listener);
+}
+
+//-----------------------------------------------------------------------------
+CMouseEventResult CView::callMouseListener (MouseListenerCall type, CPoint pos, CButtonState buttons)
+{
+	CMouseEventResult result = kMouseEventNotHandled;
+	if (!pImpl->viewMouseListener)
+		return result;
+	pImpl->viewMouseListener->forEachReverse (
+	    [&] (IViewMouseListener* l) {
+		    switch (type)
+		    {
+			    case MouseListenerCall::MouseDown: return l->viewOnMouseDown (this, pos, buttons);
+			    case MouseListenerCall::MouseUp: return l->viewOnMouseUp (this, pos, buttons);
+			    case MouseListenerCall::MouseMoved: return l->viewOnMouseMoved (this, pos, buttons);
+			    case MouseListenerCall::MouseCancel: return l->viewOnMouseCancel (this);
+		    }
+			return kMouseEventNotHandled;
+	    },
+	    [&] (CMouseEventResult res) {
+		    if (res != kMouseEventNotHandled && res != kMouseEventNotImplemented)
+		    {
+			    result = res;
+			    return true;
+		    }
+		    return false;
+	    });
+	return result;
+}
+
+//-----------------------------------------------------------------------------
+void CView::callMouseListenerEnteredExited (bool mouseEntered)
+{
+	if (!pImpl->viewMouseListener)
+		return;
+	pImpl->viewMouseListener->forEachReverse ([&] (IViewMouseListener* l) {
+		if (mouseEntered)
+			l->viewOnMouseEntered (this);
+		else
+			l->viewOnMouseExited (this);
+	});
+}
+
+//-----------------------------------------------------------------------------
+SharedPointer<IDropTarget> CView::getDropTarget ()
+{
+	return nullptr;
+}
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------

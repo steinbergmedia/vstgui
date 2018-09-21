@@ -11,17 +11,9 @@
 
 #include "../../cbitmap.h"
 #include "../../optional.h"
-
 #include <algorithm>
-using std::min;
-using std::max;
 #include <windows.h>
-#if defined (WINAPI_FAMILY_SYSTEM)
-#include <versionhelpers.h>
-#endif
-
 #include <objidl.h>
-#include <gdiplus.h>
 
 interface ID2D1Factory;
 interface IDWriteFactory;
@@ -42,10 +34,6 @@ namespace VSTGUI {
 class CDrawContext;
 
 extern HINSTANCE GetInstance ();
-#ifndef VERSIONHELPERAPI
-extern const OSVERSIONINFOEX& getSystemVersion();
-extern const bool IsWindowsVistaOrGreater();
-#endif
 extern ID2D1Factory* getD2DFactory ();
 extern IWICImagingFactory* getWICImageingFactory ();
 extern void useD2D ();
@@ -55,25 +43,11 @@ extern CDrawContext* createDrawContext (HWND window, HDC device, const CRect& su
 extern void useD2DHardwareRenderer (bool state);
 extern Optional<VstKeyCode> keyMessageToKeyCode (WPARAM wParam, LPARAM lParam);
 
-/// @cond ignore
-class GDIPlusGlobals : public AtomicReferenceCounted
-{
-public:
-	static void enter ();
-	static void exit ();
-protected:
-	GDIPlusGlobals ();
-	~GDIPlusGlobals () noexcept;
-
-	static GDIPlusGlobals* gInstance;
-	ULONG_PTR gdiplusToken;
-};
-
 class UTF8StringHelper
 {
 public:
-	UTF8StringHelper (const char* utf8Str) : utf8Str (utf8Str), allocWideStr (0), allocStrIsWide (true) {}
-	UTF8StringHelper (const WCHAR* wideStr) : wideStr (wideStr), allocUTF8Str (0), allocStrIsWide (false) {}
+	UTF8StringHelper (const char* utf8Str, int numChars = -1) : utf8Str (utf8Str), allocWideStr (0), allocStrIsWide (true), numCharacters (numChars) {}
+	UTF8StringHelper (const WCHAR* wideStr, int numChars = -1) : wideStr (wideStr), allocUTF8Str (0), allocStrIsWide (false), numCharacters (numChars) {}
 	~UTF8StringHelper () noexcept
 	{
 		if (allocUTF8Str)
@@ -91,12 +65,14 @@ public:
 		{
 			if (!allocWideStr && utf8Str)
 			{
-				int numChars = MultiByteToWideChar (CP_UTF8, 0, utf8Str, -1, 0, 0);
-				allocWideStr = (WCHAR*)::std::malloc ((static_cast<size_t> (numChars)+1)*2);
-				if (MultiByteToWideChar (CP_UTF8, 0, utf8Str, -1, allocWideStr, numChars) == 0)
+				int numChars = MultiByteToWideChar (CP_UTF8, 0, utf8Str, numCharacters, 0, 0);
+				allocWideStr = (WCHAR*)::std::malloc ((static_cast<size_t> (numChars)+1)*sizeof (WCHAR));
+				if (MultiByteToWideChar (CP_UTF8, 0, utf8Str, numCharacters, allocWideStr, numChars) == 0)
 				{
 					allocWideStr[0] = 0;
 				}
+				else
+					allocWideStr[numChars] = 0;
 			}
 			return allocWideStr;
 		}
@@ -109,12 +85,14 @@ public:
 		{
 			if (!allocUTF8Str && wideStr)
 			{
-				int allocSize = WideCharToMultiByte (CP_UTF8, 0, wideStr, -1, 0, 0, 0, 0);
+				int allocSize = WideCharToMultiByte (CP_UTF8, 0, wideStr, numCharacters, 0, 0, 0, 0);
 				allocUTF8Str = (char*)::std::malloc (static_cast<size_t> (allocSize)+1);
-				if (WideCharToMultiByte (CP_UTF8, 0, wideStr, -1, allocUTF8Str, allocSize, 0, 0) == 0)
+				if (WideCharToMultiByte (CP_UTF8, 0, wideStr, numCharacters, allocUTF8Str, allocSize, 0, 0) == 0)
 				{
 					allocUTF8Str[0] = 0;
 				}
+				else
+					allocUTF8Str[allocSize] = 0;
 			}
 			return allocUTF8Str;
 		}
@@ -130,6 +108,7 @@ protected:
 	};
 
 	bool allocStrIsWide;
+	int numCharacters {-1};
 };
 
 class ResourceStream : public IStream

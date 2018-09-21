@@ -20,11 +20,23 @@ using CTextEditStringToValueProc = bool (*) (UTF8StringPtr txt, float& result, v
 //-----------------------------------------------------------------------------
 class CTextEdit : public CTextLabel, public IPlatformTextEditCallback
 {
+private:
+	enum StyleEnum
+	{
+		StyleDoubleClick = CParamDisplay::LastStyle,
+	};
 public:
 	using PlatformTextEditPtr = SharedPointer<IPlatformTextEdit>;
 
 	CTextEdit (const CRect& size, IControlListener* listener, int32_t tag, UTF8StringPtr txt = nullptr, CBitmap* background = nullptr, const int32_t style = 0);
 	CTextEdit (const CTextEdit& textEdit);
+
+	enum Style
+	{
+		kDoubleClickStyle = 1 << StyleDoubleClick,
+	};
+
+	bool isDoubleClickStyle () const { return hasBit (getStyle (), kDoubleClickStyle); }
 
 	//-----------------------------------------------------------------------------
 	/// @name CTextEdit Methods
@@ -36,12 +48,16 @@ public:
 	
 	void setStringToValueFunction (const StringToValueFunction& stringToValueFunc);
 	void setStringToValueFunction (StringToValueFunction&& stringToValueFunc);
-	
-	virtual void setImmediateTextChange (bool state);	///< enable/disable immediate text change behaviour.
-	bool getImmediateTextChange () const { return immediateTextChange; }	///< get immediate text change behaviour
 
-	void setSecureStyle (bool state);	///< enable/disable secure style
-	bool getSecureStyle () const;		///< get secure style
+	/** enable/disable immediate text change behaviour */
+	virtual void setImmediateTextChange (bool state);
+	/** get immediate text change behaviour */
+	bool getImmediateTextChange () const { return immediateTextChange; }
+
+	/** enable/disable secure style */
+	void setSecureStyle (bool state);
+	/** get secure style */
+	bool getSecureStyle () const;
 	
 	virtual void setPlaceholderString (const UTF8String& str);
 	const UTF8String& getPlaceholderString () const { return placeholderString; }
@@ -51,7 +67,7 @@ public:
 	void setText (const UTF8String& txt) override;
 	void valueChanged () override;
 	void setValue (float val) override;
-	void setTextRotation (double angle) override { return; } ///< not supported
+	void setTextRotation (double angle) override { return; } // not supported
 
 	void draw (CDrawContext* pContext) override;
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
@@ -59,7 +75,7 @@ public:
 
 	void takeFocus () override;
 	void looseFocus () override;
-	bool wantsFocus () const override;		///< check if view supports focus
+	bool wantsFocus () const override;
 
 	void setViewSize (const CRect& newSize, bool invalid = true) override;
 	void parentSizeChanged () override;

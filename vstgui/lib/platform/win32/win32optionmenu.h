@@ -20,7 +20,7 @@ class Win32OptionMenu : public IPlatformOptionMenu
 public:
 	Win32OptionMenu (HWND windowHandle);
 	
-	PlatformOptionMenuResult popup (COptionMenu* optionMenu) override;
+	void popup (COptionMenu* optionMenu, const Callback& callback) override;
 
 protected:
 	HMENU createMenu (COptionMenu* menu, int32_t& offsetIdx);

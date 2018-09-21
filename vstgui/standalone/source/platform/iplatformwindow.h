@@ -39,6 +39,7 @@ public:
 	virtual void setSize (const CPoint& newSize) = 0;
 	virtual void setPosition (const CPoint& newPosition) = 0;
 	virtual void setTitle (const UTF8String& newTitle) = 0;
+	virtual void setRepresentedPath (const UTF8String& path) = 0;
 
 	virtual void show () = 0;
 	virtual void hide () = 0;
@@ -49,6 +50,7 @@ public:
 	virtual PlatformType getPlatformType () const = 0;
 	virtual void* getPlatformHandle () const = 0;
 
+	virtual PlatformFrameConfigPtr prepareFrameConfig (PlatformFrameConfigPtr&& controllerConfig) = 0;
 	virtual void onSetContentView (CFrame* frame) = 0;
 };
 

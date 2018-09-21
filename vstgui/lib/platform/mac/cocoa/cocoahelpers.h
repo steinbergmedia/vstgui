@@ -100,9 +100,11 @@ HIDDEN inline NSColor* nsColorFromCColor (const VSTGUI::CColor& color)
 }
 
 //------------------------------------------------------------------------------------
-HIDDEN inline NSImage* imageFromCGImageRef (CGImageRef image)
+HIDDEN inline NSImage* imageFromCGImageRef (CGImageRef image, double scaleFactor = 1.)
 {
-	return [[NSImage alloc] initWithCGImage:image size:NSZeroSize];
+	auto width = CGImageGetWidth (image) / scaleFactor;
+	auto height = CGImageGetHeight (image) / scaleFactor;
+	return [[NSImage alloc] initWithCGImage:image size:NSMakeSize (width, height)];
 }
 
 //------------------------------------------------------------------------------------
