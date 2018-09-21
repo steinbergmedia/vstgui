@@ -1041,7 +1041,8 @@ pascal OSStatus HIViewFrame::carbonEventHandler (EventHandlerCallRef inHandlerCa
 						
 						CPoint where = GetMacDragMouse (hiviewframe, dragRef);
 						hiviewframe->setMouseCursor (kCursorNotAllowed);
-						frame->platformOnDragEnter (gDragContainer, where);
+						DragEventData data {gDragContainer, where, 0};
+						frame->platformOnDragEnter (data);
 
 						Boolean acceptDrop = true;
 						SetEventParameter (inEvent, kEventParamControlWouldAcceptDrop, typeBoolean, sizeof (Boolean), &acceptDrop);
@@ -1055,7 +1056,8 @@ pascal OSStatus HIViewFrame::carbonEventHandler (EventHandlerCallRef inHandlerCa
 					if (gDragContainer && GetEventParameter (inEvent, kEventParamDragRef, typeDragRef, NULL, sizeof (DragRef), NULL, &dragRef) == noErr)
 					{
 						CPoint where = GetMacDragMouse (hiviewframe, dragRef);
-						frame->platformOnDragMove (gDragContainer, where);
+						DragEventData data {gDragContainer, where, 0};
+						frame->platformOnDragMove (data);
 					}
 					result = noErr;
 					break;
@@ -1066,7 +1068,8 @@ pascal OSStatus HIViewFrame::carbonEventHandler (EventHandlerCallRef inHandlerCa
 					if (gDragContainer && GetEventParameter (inEvent, kEventParamDragRef, typeDragRef, NULL, sizeof (DragRef), NULL, &dragRef) == noErr)
 					{
 						CPoint where = GetMacDragMouse (hiviewframe, dragRef);
-						frame->platformOnDragLeave (gDragContainer, where);
+						DragEventData data {gDragContainer, where, 0};
+						frame->platformOnDragLeave (data);
 						hiviewframe->setMouseCursor (kCursorDefault);
 					}
 					result = noErr;
@@ -1078,7 +1081,8 @@ pascal OSStatus HIViewFrame::carbonEventHandler (EventHandlerCallRef inHandlerCa
 					if (gDragContainer && GetEventParameter (inEvent, kEventParamDragRef, typeDragRef, NULL, sizeof (DragRef), NULL, &dragRef) == noErr)
 					{
 						CPoint where = GetMacDragMouse (hiviewframe, dragRef);
-						frame->platformOnDrop (gDragContainer, where);
+						DragEventData data {gDragContainer, where, 0};
+						frame->platformOnDrop (data);
 						hiviewframe->setMouseCursor (kCursorDefault);
 						gDragContainer = nullptr;
 					}

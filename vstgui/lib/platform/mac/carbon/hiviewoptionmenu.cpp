@@ -35,7 +35,7 @@ void HIViewOptionMenu::popup (COptionMenu* optionMenu, const Callback& callback)
 
 	int32_t offset;
 
-	if (optionMenu->getStyle () & kPopupStyle)
+	if (optionMenu->isPopupStyle ())
 		offset = 0;
 	else
 		offset = (int32_t)optionMenu->getViewSize ().getHeight ();
@@ -52,7 +52,7 @@ void HIViewOptionMenu::popup (COptionMenu* optionMenu, const Callback& callback)
 		SInt16 menuWidth = GetMenuWidth (menuRef);
 		if (menuWidth < optionMenu->getViewSize ().getWidth ())
 			SetMenuWidth (menuRef, static_cast<SInt16> (optionMenu->getViewSize ().getWidth ()));
-		int32_t popUpItem = optionMenu->getStyle () & kPopupStyle ? (static_cast<int32_t> (optionMenu->getValue ()) + 1) : 1;
+		int32_t popUpItem = optionMenu->isPopupStyle () ? (static_cast<int32_t> (optionMenu->getValue ()) + 1) : 1;
 		int32_t PopUpMenuItem = PopUpMenuItem = PopUpMenuSelect (menuRef, static_cast<short> (gy), static_cast<short> (gx), static_cast<MenuItemIndex> (popUpItem));
 		
 		short result = LoWord (PopUpMenuItem) - 1;	
@@ -73,7 +73,7 @@ void HIViewOptionMenu::popup (COptionMenu* optionMenu, const Callback& callback)
 		CFRelease (menuRef);
 	}
 
-	callback (optionMenu, result);
+	callback (optionMenu, popupResult);
 }
 
 //-----------------------------------------------------------------------------
@@ -84,7 +84,7 @@ MenuRef HIViewOptionMenu::createMenu (COptionMenu* menu)
 	CMenuItemList* menuItems = menu->getItems ();
 	if (menuItems && CreateNewMenu (menuID, kMenuAttrCondenseSeparators, &menuRef) == noErr)
 	{
-		bool multipleCheck = menu->getStyle () & (kMultipleCheckStyle & ~kCheckStyle);
+		bool multipleCheck = menu->isMultipleCheckStyle () && !menu->isCheckStyle ();
 		CConstMenuItemIterator it = menuItems->begin ();
 		MenuItemIndex i = 0;
 		while (it != menuItems->end ())
@@ -166,7 +166,7 @@ MenuRef HIViewOptionMenu::createMenu (COptionMenu* menu)
 			}
 			it++;
 		}
-		if (menu->getStyle () & kCheckStyle && !multipleCheck)
+		if (menu->isCheckStyle () && !multipleCheck)
 			CheckMenuItem (menuRef, static_cast<MenuItemIndex> (menu->getCurrentIndex (true) + 1), true);
 		SetMenuItemRefCon (menuRef, 0, (URefCon)menu);
 		InsertMenu (menuRef, kInsertHierarchicalMenu);
