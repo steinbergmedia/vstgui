@@ -20,14 +20,14 @@ TESTCASE(CKnobCreatorTest,
 	TEST(angleStart,
 		DummyUIDescription uidesc;
 		testAttribute<CKnob>(kCKnob, kAttrAngleStart, 20., &uidesc, [&] (CKnob* v) {
-			return static_cast<int32_t> (v->getStartAngle () / kPI * 180.) == 20;
+			return static_cast<int32_t> (v->getStartAngle () / Constants::pi * 180.) == 20;
 		});
 	);
 
 	TEST(angleRange,
 		DummyUIDescription uidesc;
 		testAttribute<CKnob>(kCKnob, kAttrAngleRange, 100., &uidesc, [&] (CKnob* v) {
-			return static_cast<int32_t> (v->getRangeAngle () / kPI * 180.) == 100;
+			return static_cast<int32_t> (v->getRangeAngle () / Constants::pi * 180.) == 100;
 		});
 	);
 

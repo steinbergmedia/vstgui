@@ -10,6 +10,7 @@
 #include "../../vstguidebug.h"
 #include "../iplatformbitmap.h"
 #include "cairoutils.h"
+#include <functional>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -19,7 +20,7 @@ namespace Cairo {
 class Bitmap : public IPlatformBitmap
 {
 public:
-	explicit Bitmap (CPoint* size);
+	explicit Bitmap (const CPoint* size);
 	explicit Bitmap (const SurfaceHandle& surface);
 	~Bitmap () override;
 
@@ -41,11 +42,17 @@ public:
 	}
 
 	void unlock () { locked = false; }
+
+	using GetResourcePathFunc = std::function<std::string ()>;
+	static void setGetResourcePathFunc (GetResourcePathFunc&& func);
+
 private:
 	double scaleFactor {1.0};
 	SurfaceHandle surface;
 	CPoint size;
 	bool locked {false};
+
+	static GetResourcePathFunc getResourcePath;
 };
 
 //------------------------------------------------------------------------

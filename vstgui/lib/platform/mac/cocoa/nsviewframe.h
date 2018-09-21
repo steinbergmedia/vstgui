@@ -12,6 +12,7 @@
 #include "../../platform_macos.h"
 #include "../../../cview.h"
 #include "../../../idatapackage.h"
+#include "nsviewdraggingsession.h"
 #include <list>
 
 #ifdef __OBJC__
@@ -19,10 +20,12 @@
 #else
 struct NSView;
 struct NSRect;
+struct NSDraggingSession;
 #endif
 
 namespace VSTGUI {
 class CocoaTooltipWindow;
+struct NSViewDraggingSession;
 
 //-----------------------------------------------------------------------------
 class NSViewFrame : public IPlatformFrame, public ICocoaPlatformFrame, public IPlatformFrameTouchBarExtension
@@ -34,8 +37,12 @@ public:
 	NSView* getNSView () const override { return nsView; }
 	IPlatformFrameCallback* getFrame () const { return frame; }
 	void* makeTouchBar () const;
+	NSViewDraggingSession* getDraggingSession () const { return draggingSession; }
+	void clearDraggingSession () { draggingSession = nullptr; }
 	
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 	void setLastDragOperationResult (DragResult result) { lastDragOperationResult = result; }
+#endif
 	void setIgnoreNextResignFirstResponder (bool state) { ignoreNextResignFirstResponder = state; }
 	bool getIgnoreNextResignFirstResponder () const { return ignoreNextResignFirstResponder; }
 
@@ -66,11 +73,16 @@ public:
 #endif
 	SharedPointer<IPlatformViewLayer> createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer = nullptr) override;
 	SharedPointer<COffscreenContext> createOffscreenContext (CCoord width, CCoord height, double scaleFactor) override;
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 	DragResult doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap) override;
+#endif
+	bool doDrag (const DragDescription& dragDescription, const SharedPointer<IDragCallback>& callback) override;
+
 	void setClipboard (const SharedPointer<IDataPackage>& data) override;
 	SharedPointer<IDataPackage> getClipboard () override;
 	PlatformType getPlatformType () const override { return PlatformType::kNSView; }
 	void onFrameClosed () override {}
+	Optional<UTF8String> convertCurrentKeyEventToText () override;
 
 	// IPlatformFrameTouchBarExtension
 	void setTouchBarCreator (const SharedPointer<ITouchBarCreator>& creator) override;
@@ -84,8 +96,11 @@ protected:
 	CocoaTooltipWindow* tooltipWindow;
 	SharedPointer<IDataPackage> dragDataPackage;
 	SharedPointer<ITouchBarCreator> touchBarCreator;
+	SharedPointer<NSViewDraggingSession> draggingSession;
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 	DragResult lastDragOperationResult;
+#endif
 	bool ignoreNextResignFirstResponder;
 	bool trackingAreaInitialized;
 	bool inDraw;

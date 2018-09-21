@@ -18,17 +18,17 @@ struct MallocAllocator
 
 //-----------------------------------------------------------------------------
 template <typename T, typename Allocator = MallocAllocator>
-class Malloc
+class Buffer final
 {
 public:
-	Malloc () = default;
-	Malloc (size_t objectCount) : count (objectCount)
+	Buffer () = default;
+	Buffer (size_t objectCount) : count (objectCount)
 	{
 		if (objectCount)
 			allocate (objectCount);
 	}
-	Malloc (Malloc&& other) { *this = std::move (other); }
-	Malloc& operator= (Malloc&& other)
+	Buffer (Buffer&& other) { *this = std::move (other); }
+	Buffer& operator= (Buffer&& other)
 	{
 		buffer = other.buffer;
 		count = other.count;
@@ -36,13 +36,23 @@ public:
 		other.count = 0;
 		return *this;
 	}
-	Malloc (const Malloc&) = delete;
-	Malloc& operator= (const Malloc&) = delete;
-	~Malloc () { deallocate (); }
+	Buffer (const Buffer&) = delete;
+	Buffer& operator= (const Buffer&) = delete;
+	~Buffer () noexcept { deallocate (); }
 
-	T* get () { return buffer; }
-	const T* get () const { return buffer; }
+	T* data () { return buffer; }
+	const T* data () const { return buffer; }
+	T* get () { return data (); }
+	const T* get () const { return data (); }
+	T& operator[] (size_t index) { vstgui_assert (index < count); return buffer[index]; }
+	const T& operator[] (size_t index) const { vstgui_assert (index < count); return buffer[index]; }
+	T* begin () noexcept { return buffer; }
+	T* end () noexcept { return buffer + count; }
+	const T* begin () const noexcept { return buffer; }
+	const T* end () const noexcept { return buffer + count; }
+
 	size_t size () const { return count; }
+	bool empty () const { return count == 0; }
 
 	void allocate (size_t objectCount)
 	{

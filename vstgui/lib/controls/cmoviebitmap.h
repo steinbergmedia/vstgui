@@ -26,6 +26,7 @@ public:
 
 	void setNumSubPixmaps (int32_t numSubPixmaps) override { IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps); invalid (); }
 
+	static bool useLegacyFrameCalculation;
 	CLASS_METHODS(CMovieBitmap, CControl)
 protected:
 	~CMovieBitmap () noexcept override = default;

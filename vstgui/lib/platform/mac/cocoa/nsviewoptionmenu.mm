@@ -26,6 +26,15 @@ static int32_t menuClassCount = 0;
 
 static Class menuClass = nullptr;
 
+#ifndef MAC_OS_X_VERSION_10_14
+#define MAC_OS_X_VERSION_10_14 101400
+#endif
+
+#if MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_14
+static constexpr auto NSControlStateValueOn = NSOnState;
+static constexpr auto NSControlStateValueOff = NSOffState;
+#endif
+
 //------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------
@@ -55,7 +64,7 @@ static id VSTGUI_NSMenu_Init (id self, SEL _cmd, void* _menu)
 		OBJC_SET_VALUE(self, _private, var);
 
 		int32_t index = -1;
-		bool multipleCheck = menu->getStyle () & (kMultipleCheckStyle & ~kCheckStyle);
+		bool multipleCheck = menu->isMultipleCheckStyle ();
 		CConstMenuItemIterator it = menu->getItems ()->begin ();
 		while (it != menu->getItems ()->end ())
 		{
@@ -81,9 +90,9 @@ static id VSTGUI_NSMenu_Init (id self, SEL _cmd, void* _menu)
 				NSMenu* subMenu = [[[menuClass alloc] initWithOptionMenu:(id)item->getSubmenu ()] autorelease];
 				[nsMenu setSubmenu: subMenu forItem:nsItem];
 				if (multipleCheck && item->isChecked ())
-					[nsItem setState:NSOnState];
+					[nsItem setState:NSControlStateValueOn];
 				else
-					[nsItem setState:NSOffState];
+					[nsItem setState:NSControlStateValueOff];
 			}
 			else if (item->isSeparator ())
 			{
@@ -97,9 +106,9 @@ static id VSTGUI_NSMenu_Init (id self, SEL _cmd, void* _menu)
 				[nsItem setTarget:nsMenu];
 				[nsItem setTag: index];
 				if (multipleCheck && item->isChecked ())
-					[nsItem setState:NSOnState];
+					[nsItem setState:NSControlStateValueOn];
 				else
-					[nsItem setState:NSOffState];
+					[nsItem setState:NSControlStateValueOff];
 				NSString* keyEquivalent = nil;
 				if (!item->getKeycode ().empty ())
 				{
@@ -249,25 +258,26 @@ bool NSViewOptionMenu::initClass ()
 	return menuClass != nullptr;
 }
 
-#define VSTGUI_USE_NEW_NSMENU_POPUP	MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_6
-
 //-----------------------------------------------------------------------------
-PlatformOptionMenuResult NSViewOptionMenu::popup (COptionMenu* optionMenu)
+void NSViewOptionMenu::popup (COptionMenu* optionMenu, const Callback& callback)
 {
-	PlatformOptionMenuResult result = {nullptr};
+	vstgui_assert (optionMenu && callback, "arguments are required");
 
-	if (!initClass ())
-		return result;
+	PlatformOptionMenuResult result = {};
 
 	CFrame* frame = optionMenu->getFrame ();
-	if (!frame || !frame->getPlatformFrame ())
-		return result;
+	if (!initClass () || !frame || !frame->getPlatformFrame ())
+	{
+		callback (optionMenu, result);
+		return;
+	}
+
 	NSViewFrame* nsViewFrame = dynamic_cast<NSViewFrame*> (frame->getPlatformFrame ());
 
 	CRect globalSize = optionMenu->translateToGlobal (optionMenu->getViewSize ());
 	globalSize.offset (-frame->getViewSize ().getTopLeft ());
 
-	bool multipleCheck = optionMenu->getStyle () & (kMultipleCheckStyle & ~kCheckStyle);
+	bool multipleCheck = optionMenu->isMultipleCheckStyle ();
 	NSView* view = nsViewFrame->getNSView ();
 	NSMenu* nsMenu = [[menuClass alloc] initWithOptionMenu:(id)optionMenu];
 	CPoint p = globalSize.getTopLeft ();
@@ -275,22 +285,19 @@ PlatformOptionMenuResult NSViewOptionMenu::popup (COptionMenu* optionMenu)
 	cellFrameRect.origin = nsPointFromCPoint (p);
 	cellFrameRect.size.width = static_cast<CGFloat> (globalSize.getWidth ());
 	cellFrameRect.size.height = static_cast<CGFloat> (globalSize.getHeight ());
-#if !VSTGUI_USE_NEW_NSMENU_POPUP
-	if (!(optionMenu->getStyle () & kPopupStyle))
+	if (!optionMenu->isPopupStyle ())
+		cellFrameRect.origin.y += cellFrameRect.size.height;
+	if (!multipleCheck && optionMenu->isCheckStyle ())
 	{
-		NSMenuItem* item = [nsMenu insertItemWithTitle:@"" action:nil keyEquivalent:@"" atIndex:0];
-		[item setTag:-1];
+		[[nsMenu itemWithTag:static_cast<NSInteger> (optionMenu->getCurrentIndex (true))]
+		    setState:NSControlStateValueOn];
 	}
-#endif
-	if (!multipleCheck && optionMenu->getStyle () & kCheckStyle)
-		[[nsMenu itemWithTag:(NSInteger)optionMenu->getCurrentIndex (true)] setState:NSOnState];
 
-#if VSTGUI_USE_NEW_NSMENU_POPUP
 	NSView* menuContainer = [[NSView alloc] initWithFrame:cellFrameRect];
 	[view addSubview:menuContainer];
 
 	NSMenuItem* selectedItem = nil;
-	if (optionMenu->getStyle () & kPopupStyle)
+	if (optionMenu->isPopupStyle ())
 		selectedItem = [nsMenu itemAtIndex:optionMenu->getValue ()];
 	[nsMenu popUpMenuPositioningItem:selectedItem
 	                      atLocation:NSMakePoint (0, menuContainer.frame.size.height)
@@ -298,30 +305,11 @@ PlatformOptionMenuResult NSViewOptionMenu::popup (COptionMenu* optionMenu)
 
 	[menuContainer removeFromSuperviewWithoutNeedingDisplay];
 	[menuContainer release];
-#else
-	NSView* cellContainer = [[NSView alloc] initWithFrame:cellFrameRect];
-	[view addSubview:cellContainer];
-	cellFrameRect.origin.x = 0;
-	cellFrameRect.origin.y = 0;
-
-	NSPopUpButtonCell* cell = [[NSPopUpButtonCell alloc] initTextCell:@"" pullsDown:optionMenu->getStyle () & kPopupStyle ? NO : YES];
-	[cell setAltersStateOfSelectedItem: NO];
-	[cell setAutoenablesItems:NO];
-	[cell setMenu:nsMenu];
-	if (optionMenu->getStyle () & kPopupStyle)
-		[cell selectItemWithTag:(NSInteger)optionMenu->getValue ()];
-	[cell performClickWithFrame:cellFrameRect inView:cellContainer];
-	[cellContainer removeFromSuperviewWithoutNeedingDisplay];
-	[cellContainer release];
-#endif
 	result.menu = (COptionMenu*)[nsMenu performSelector:@selector(selectedMenu)];
 	result.index = (int32_t)(intptr_t)[nsMenu performSelector:@selector(selectedItem)];
-#if !VSTGUI_USE_NEW_NSMENU_POPUP
-	[cell release];
-#endif
 	[nsMenu release];
-	
-	return result;
+
+	callback (optionMenu, result);
 }
 
 

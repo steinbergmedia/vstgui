@@ -5,6 +5,7 @@ set(target base64codecspeed)
 
 set(${target}_sources
   "main.cpp"
+  "../../lib/vstguidebug.cpp"
 )
 
 ##########################################################################################

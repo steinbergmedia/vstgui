@@ -23,29 +23,44 @@ class IDataBrowserDelegate
 public:
 	/** @name Setup */
 	///	@{
-	virtual int32_t dbGetNumRows (CDataBrowser* browser) = 0;	///< return number of rows for CDataBrowser browser
-	virtual int32_t dbGetNumColumns (CDataBrowser* browser) = 0;	///< return number of columns for CDataBrowser browser
+	/** return number of rows for CDataBrowser browser */
+	virtual int32_t dbGetNumRows (CDataBrowser* browser) = 0;
+	/** return number of columns for CDataBrowser browser */
+	virtual int32_t dbGetNumColumns (CDataBrowser* browser) = 0;
+	/** */
 	virtual bool dbGetColumnDescription (int32_t index, CCoord& minWidth, CCoord& maxWidth, CDataBrowser* browser) { return false; }
-	virtual CCoord dbGetCurrentColumnWidth (int32_t index, CDataBrowser* browser) = 0;	///< return current width of index column
-	virtual void dbSetCurrentColumnWidth (int32_t index, const CCoord& width, CDataBrowser* browser) {}	///< the width of a column has changed
-	virtual CCoord dbGetRowHeight (CDataBrowser* browser) = 0;	///< return height of one row
-	virtual CCoord dbGetHeaderHeight (CDataBrowser* browser) { return dbGetRowHeight (browser); } ///< return height of header
-	virtual bool dbGetLineWidthAndColor (CCoord& width, CColor& color, CDataBrowser* browser) { return false; } ///< return the line width and color
-	virtual void dbAttached (CDataBrowser* browser) {}	///< databrowser view was attached to a parent
-	virtual void dbRemoved (CDataBrowser* browser) {}		///< databrowser view will be removed from its parent
+	/** return current width of index column */
+	virtual CCoord dbGetCurrentColumnWidth (int32_t index, CDataBrowser* browser) = 0;
+	/** the width of a column has changed */
+	virtual void dbSetCurrentColumnWidth (int32_t index, const CCoord& width, CDataBrowser* browser) {}
+	/** return height of one row */
+	virtual CCoord dbGetRowHeight (CDataBrowser* browser) = 0;
+	/** return height of header */
+	virtual CCoord dbGetHeaderHeight (CDataBrowser* browser) { return dbGetRowHeight (browser); }
+	/** return the line width and color */
+	virtual bool dbGetLineWidthAndColor (CCoord& width, CColor& color, CDataBrowser* browser) { return false; }
+	/** databrowser view was attached to a parent */
+	virtual void dbAttached (CDataBrowser* browser) {}
+	/** databrowser view will be removed from its parent */
+	virtual void dbRemoved (CDataBrowser* browser) {}
 	///	@}
 
 	/** @name Drawing */
 	///	@{
-	virtual void dbDrawHeader (CDrawContext* context, const CRect& size, int32_t column, int32_t flags, CDataBrowser* browser) = 0;	///< draw the db header
-	virtual void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser) = 0;	///< draw a db cell
+	/** draw the db header */
+	virtual void dbDrawHeader (CDrawContext* context, const CRect& size, int32_t column, int32_t flags, CDataBrowser* browser) = 0;
+	/** draw a db cell */
+	virtual void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser) = 0;
 	///	@}
 
 	/** @name Mouse Handling */
 	///	@{
-	virtual CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) { return kMouseDownEventHandledButDontNeedMovedOrUpEvents; } ///< mouse button was pressed on a cell
-	virtual CMouseEventResult dbOnMouseMoved (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) { return kMouseEventNotHandled; } ///< mouse was moved over a cell
-	virtual CMouseEventResult dbOnMouseUp (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) { return kMouseEventNotHandled; } ///< mouse button was released on a cell
+	/** mouse button was pressed on a cell */
+	virtual CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) { return kMouseDownEventHandledButDontNeedMovedOrUpEvents; }
+	/** mouse was moved over a cell */
+	virtual CMouseEventResult dbOnMouseMoved (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) { return kMouseEventNotHandled; }
+	/** mouse button was released on a cell */
+	virtual CMouseEventResult dbOnMouseUp (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) { return kMouseEventNotHandled; }
 	///	@}
 
 	/** @name Drag'n Drop Handling */
@@ -60,13 +75,16 @@ public:
 
 	/** @name Selection  */
 	///	@{
-	virtual void dbSelectionChanged (CDataBrowser* browser) {}	///< the selection of the db changed
+	/** the selection of the db changed */
+	virtual void dbSelectionChanged (CDataBrowser* browser) {}
 	///	@}
 
 	/** @name Cell Text Editing */
 	///	@{
-	virtual void dbCellTextChanged (int32_t row, int32_t column, UTF8StringPtr newText, CDataBrowser* browser) {} ///< the text of the cell changed beginTextEdit was called for
-	virtual void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* textEditControl, CDataBrowser* browser) {} ///< beginTextEdit calls this, so you can setup the textedit control
+	/** the text of the cell changed beginTextEdit was called for */
+	virtual void dbCellTextChanged (int32_t row, int32_t column, UTF8StringPtr newText, CDataBrowser* browser) {}
+	/** beginTextEdit calls this, so you can setup the textedit control */
+	virtual void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* textEditControl, CDataBrowser* browser) {}
 	//@}
 
 	/** @name Keyboard Handling */
@@ -132,25 +150,39 @@ public:
 	/// @name CDataBrowser Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual void recalculateLayout (bool rememberSelection = false);						///< trigger recalculation, call if numRows or numColumns changed
-	virtual void invalidate (const Cell& cell);												///< invalidates an individual cell
-	virtual void invalidateRow (int32_t row);												///< invalidates a complete row
-	virtual void makeRowVisible (int32_t row);												///< scrolls the scrollview so that row is visible
+	/** trigger recalculation, call if numRows or numColumns changed */
+	virtual void recalculateLayout (bool rememberSelection = false);
+	/** invalidates an individual cell */
+	virtual void invalidate (const Cell& cell);
+	/** invalidates a complete row */
+	virtual void invalidateRow (int32_t row);
+	/** scrolls the scrollview so that row is visible */
+	virtual void makeRowVisible (int32_t row);
 
-	virtual CRect getCellBounds (const Cell& cell);											///< get bounds of a cell
-	virtual Cell getCellAt (const CPoint& where) const;										///< get the cell at position where
+	/** get bounds of a cell */
+	virtual CRect getCellBounds (const Cell& cell);
+	/** get the cell at position where */
+	virtual Cell getCellAt (const CPoint& where) const;
 
-	virtual int32_t getSelectedRow () const;												///< get first selected row
-	virtual void setSelectedRow (int32_t row, bool makeVisible = false);					///< set the exclusive selected row
+	/** get first selected row */
+	virtual int32_t getSelectedRow () const;
+	/** set the exclusive selected row */
+	virtual void setSelectedRow (int32_t row, bool makeVisible = false);
 
-	const Selection& getSelection () const { return selection; }							///< get all selected rows
-	virtual void selectRow (int32_t row);													///< add row to selection
-	virtual void unselectRow (int32_t row);													///< remove row from selection
-	virtual void unselectAll ();															///< empty selection
+	/** get all selected rows */
+	const Selection& getSelection () const { return selection; }
+	/** add row to selection */
+	virtual void selectRow (int32_t row);
+	/** remove row from selection */
+	virtual void unselectRow (int32_t row);
+	/** empty selection */
+	virtual void unselectAll ();
 
-	virtual void beginTextEdit (const Cell& cell, UTF8StringPtr initialText);				///< starts a text edit for a cell
+	/** starts a text edit for a cell */
+	virtual void beginTextEdit (const Cell& cell, UTF8StringPtr initialText);
 
-	IDataBrowserDelegate* getDelegate () const { return db; }								///< get delegate object
+	/** get delegate object */
+	IDataBrowserDelegate* getDelegate () const { return db; }
 	//@}
 
 	void setAutosizeFlags (int32_t flags) override;

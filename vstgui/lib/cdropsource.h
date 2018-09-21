@@ -36,7 +36,7 @@ public:
 protected:
 	/// @cond ignore
 	struct CDropEntry {
-		Malloc<int8_t> buffer;
+		Buffer<int8_t> buffer;
 		Type type;
 		
 		CDropEntry (const void* buffer, uint32_t bufferSize, Type type);

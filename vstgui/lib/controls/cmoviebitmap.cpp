@@ -9,6 +9,9 @@
 namespace VSTGUI {
 
 //------------------------------------------------------------------------
+bool CMovieBitmap::useLegacyFrameCalculation = false;
+
+//------------------------------------------------------------------------
 // CMovieBitmap
 //------------------------------------------------------------------------
 /**
@@ -60,13 +63,23 @@ CMovieBitmap::CMovieBitmap (const CMovieBitmap& v)
 //------------------------------------------------------------------------
 void CMovieBitmap::draw (CDrawContext *pContext)
 {
-	CPoint where (offset.x, offset.y);
-
-	where.y += heightOfOneImage * (int32_t)(getValueNormalized () * (getNumSubPixmaps () - 1) + 0.5);
-
-	if (getDrawBackground ())
+	if (auto bitmap = getDrawBackground ())
 	{
-		getDrawBackground ()->draw (pContext, getViewSize (), where);
+		CPoint where (offset.x, offset.y);
+
+		if (useLegacyFrameCalculation)
+		{
+			where.y += heightOfOneImage *
+			           (int32_t) (getValueNormalized () * (getNumSubPixmaps () - 1) + 0.5);
+		}
+		else
+		{
+			auto step = static_cast<int32_t> (
+			    std::min (getNumSubPixmaps () - 1.f, getValueNormalized () * getNumSubPixmaps ()));
+			where.y += heightOfOneImage * step;
+		}
+
+		bitmap->draw (pContext, getViewSize (), where);
 	}
 	setDirty (false);
 }

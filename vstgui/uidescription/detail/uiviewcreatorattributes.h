@@ -205,6 +205,7 @@ static const std::string kAttrGradientHighlighted = "gradient-highlighted";
 // CSegmentButtonCreator attributes
 //-----------------------------------------------------------------------------
 static const std::string kAttrStyle = "style";
+static const std::string kAttrSelectionMode = "selection-mode";
 static const std::string kAttrSegmentNames = "segment-names";
 
 //-----------------------------------------------------------------------------
@@ -242,7 +243,6 @@ static const std::string kAttrInverseBitmap = "inverse-bitmap";
 //-----------------------------------------------------------------------------
 // CSliderCreator attributes
 //-----------------------------------------------------------------------------
-static const std::string kAttrTransparentHandle = "transparent-handle";
 static const std::string kAttrMode = "mode";
 static const std::string kAttrHandleOffset = "handle-offset";
 static const std::string kAttrBitmapOffset = "bitmap-offset";
@@ -277,6 +277,7 @@ static const std::string kAttrAnimationIndex = "animation-index";
 static const std::string kAttrTemplateNames = "template-names";
 static const std::string kAttrTemplateSwitchControl = "template-switch-control";
 static const std::string kAttrAnimationStyle = "animation-style";
+static const std::string kAttrAnimationTimingFunction = "animation-timing-function";
 
 //-----------------------------------------------------------------------------
 // CSplitViewCreator attributes

@@ -9,10 +9,14 @@
 #include "uibasedatasource.h"
 #include "uieditcontroller.h"
 #include "uidialogcontroller.h"
+#include "uiviewcreatecontroller.h"
+#include "../detail/uiviewcreatorattributes.h"
 #include "../../lib/cbitmap.h"
 #include "../../lib/cbitmapfilter.h"
+#include "../../lib/cdropsource.h"
 #include "../../lib/cfileselector.h"
 #include "../../lib/idatapackage.h"
+#include "../../lib/dragging.h"
 #include "../../lib/cvstguitimer.h"
 #include "../../lib/controls/ccolorchooser.h"
 #include "../../lib/controls/ctextedit.h"
@@ -141,6 +145,7 @@ public:
 
 	bool add () override;
 protected:
+	void onUIDescBitmapChanged (UIDescription* desc) override;
 	void getNames (std::list<const std::string*>& names) override;
 	bool addItem (UTF8StringPtr name) override;
 	bool removeItem (UTF8StringPtr name) override;
@@ -149,11 +154,15 @@ protected:
 
 	bool addBitmap (UTF8StringPtr path, std::string& outName);
 
+	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser) override;
 	void dbOnDragEnterBrowser (IDataPackage* drag, CDataBrowser* browser) override;
 	void dbOnDragExitBrowser (IDataPackage* drag, CDataBrowser* browser) override;
 	void dbOnDragEnterCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser) override;
 	void dbOnDragExitCell (int32_t row, int32_t column, IDataPackage* drag, CDataBrowser* browser) override;
 	bool dbOnDropInCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser) override;
+
+	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) override;
+	CMouseEventResult dbOnMouseMoved (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) override;
 
 	SharedPointer<CColorChooser> colorChooser;
 	bool dragContainsBitmaps;
@@ -161,9 +170,77 @@ protected:
 
 //----------------------------------------------------------------------------------------------------
 UIBitmapsDataSource::UIBitmapsDataSource (UIDescription* description, IActionPerformer* actionPerformer, IGenericStringListDataBrowserSourceSelectionChanged* delegate)
-: UIBaseDataSource (description, actionPerformer, UIDescription::kMessageBitmapChanged, delegate)
+: UIBaseDataSource (description, actionPerformer, delegate)
 , dragContainsBitmaps (false)
 {
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIBitmapsDataSource::onUIDescBitmapChanged (UIDescription* desc)
+{
+	onUIDescriptionUpdate ();
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIBitmapsDataSource::dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser)
+{
+	auto drawWidth = size.getHeight ();
+	GenericStringListDataBrowserSource::drawRowBackground (context, size, row, flags, browser);
+	CRect r (size);
+	r.right -= drawWidth;
+	GenericStringListDataBrowserSource::drawRowString (context, r, row, flags, browser);
+	if (auto bitmap = description->getBitmap (names.at (static_cast<uint32_t> (row)).data ()))
+	{
+		r = size;
+		r.left = r.right - drawWidth;
+		r.inset (2, 2);
+		auto bitmapSize = bitmap->getSize ();
+		auto scaleX = r.getWidth () / bitmapSize.x;
+		auto scaleY = r.getHeight () / bitmapSize.y;
+		CGraphicsTransform matrix;
+		matrix.scale (scaleX, scaleY);
+		CDrawContext::Transform t (*context, matrix);
+		matrix.inverse ().transform (r);
+		bitmap->CBitmap::draw (context, r);
+	}
+}
+
+//----------------------------------------------------------------------------------------------------
+CMouseEventResult UIBitmapsDataSource::dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser)
+{
+	UIBaseDataSource::dbOnMouseDown (where, buttons, row, column, browser);
+	return kMouseEventHandled;
+}
+
+//----------------------------------------------------------------------------------------------------
+CMouseEventResult UIBitmapsDataSource::dbOnMouseMoved (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser)
+{
+	if (buttons.isLeftButton ())
+	{
+		if (auto bitmap = getSelectedBitmap ())
+		{
+			UIAttributes attr;
+			attr.setAttribute (UIViewCreator::kAttrBitmap, getSelectedBitmapName ());
+			attr.setPointAttribute (UIViewCreator::kAttrSize, bitmap->getSize ());
+			const auto factory =
+			    dynamic_cast<const UIViewFactory*> (description->getViewFactory ());
+			if (auto selection = createSelectionFromViewName (UIViewCreator::kCView, factory,
+			                                                  description, &attr))
+			{
+				CMemoryStream stream (1024, 1024, false);
+				if (selection->store (stream, description))
+				{
+					stream.end ();
+					auto dropSource = CDropSource::create (stream.getBuffer (),
+					                                       static_cast<uint32_t> (stream.tell ()),
+					                                       CDropSource::kText);
+					browser->doDrag (DragDescription (dropSource, {}, bitmap));
+					return kMouseMoveEventHandledButDontNeedMoreEvents;
+				}
+			}
+		}
+	}
+	return kMouseEventHandled;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -204,56 +281,57 @@ void UIBitmapsDataSource::dbOnDragExitBrowser (IDataPackage* drag, CDataBrowser*
 //----------------------------------------------------------------------------------------------------
 void UIBitmapsDataSource::dbOnDragEnterCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser)
 {
-#if DEBUG
-	DebugPrint ("enter cell: %d-%d\n", row, column);
-#endif
 }
 
 //----------------------------------------------------------------------------------------------------
 void UIBitmapsDataSource::dbOnDragExitCell (int32_t row, int32_t column, IDataPackage* drag, CDataBrowser* browser)
 {
-#if DEBUG
-	DebugPrint ("exit cell: %d-%d\n", row, column);
-#endif
 }
 
 //----------------------------------------------------------------------------------------------------
 bool UIBitmapsDataSource::dbOnDropInCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser)
 {
-	if (dragContainsBitmaps)
+	if (!dragContainsBitmaps)
+		return false;
+
+	bool didBeganGroupAction = false;
+	uint32_t index = 0;
+	IDataPackage::Type type;
+	const void* item = nullptr;
+	UTF8String firstNewBitmapName;
+	while (drag->getData (index++, item, type) > 0)
 	{
-		bool didBeganGroupAction = false;
-		uint32_t index = 0;
-		IDataPackage::Type type;
-		const void* item = nullptr;
-		while (drag->getData (index++, item, type) > 0)
+		if (type == IDataPackage::kFilePath)
 		{
-			if (type == IDataPackage::kFilePath)
+			auto path = static_cast<UTF8StringPtr> (item);
+			const char* ext = strrchr (path, '.');
+			if (ext)
 			{
-				const char* ext = strrchr (static_cast<const char*> (item), '.');
-				if (ext)
+				std::string extStr (ext);
+				std::transform (extStr.begin (), extStr.end (), extStr.begin (), ::tolower);
+				if (extStr == ".png" || extStr == ".bmp" || extStr == ".jpg" || extStr == ".jpeg")
 				{
-					std::string extStr (ext);
-					std::transform (extStr.begin (), extStr.end (), extStr.begin (), ::tolower);
-					if (extStr == ".png" || extStr == ".bmp" || extStr == ".jpg" || extStr == ".jpeg")
+					if (!didBeganGroupAction)
 					{
-						if (!didBeganGroupAction)
-						{
-							actionPerformer->beginGroupAction ("Add Bitmaps");
-							didBeganGroupAction = true;
-						}
-						std::string name;
-						addBitmap (static_cast<UTF8StringPtr> (item), name);
+						actionPerformer->beginGroupAction ("Add Bitmaps");
+						didBeganGroupAction = true;
 					}
+					std::string name;
+					addBitmap (path, name);
+					if (firstNewBitmapName.empty ())
+						firstNewBitmapName = name;
 				}
 			}
 		}
-		if (didBeganGroupAction)
-			actionPerformer->finishGroupAction ();
-		dragContainsBitmaps = false;
-		return true;
 	}
-	return false;
+	if (didBeganGroupAction)
+	{
+		actionPerformer->finishGroupAction ();
+		vstgui_assert (!firstNewBitmapName.empty ());
+		selectName (firstNewBitmapName);
+	}
+	dragContainsBitmaps = false;
+	return true;
 }
 
 //----------------------------------------------------------------------------------------------------

@@ -20,14 +20,13 @@ class Context : public COffscreenContext
 public:
 	using super = COffscreenContext;
 
-	Context (CRect& rect, const SurfaceHandle& surface);
+	Context (const CRect& rect, const SurfaceHandle& surface);
 	Context (CRect r, cairo_t* context);
 	Context (Bitmap* bitmap);
 
 	~Context ();
 
 	bool valid () const { return cr != nullptr; }
-	CRect getSurfaceRect () const { return surfaceRect; }
 	const SurfaceHandle& getSurface () const { return surface; }
 	const ContextHandle& getCairo () const { return cr; }
 

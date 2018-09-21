@@ -16,9 +16,12 @@ class IDataPackage : public AtomicReferenceCounted
 {
 public:
 	enum Type {
-		kFilePath = 0,	///< File type (UTF-8 C-String)
-		kText,			///< Text type (UTF-8 C-String)
-		kBinary,		///< Binary type
+		/** File type (UTF-8 C-String) */
+		kFilePath = 0,
+		/** Text type (UTF-8 C-String) */
+		kText,
+		/** Binary type */
+		kBinary,
 
 		kError = -1
 	};

@@ -41,13 +41,19 @@ public:
 	/// @name Size, Name and Style Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	const UTF8String& getName () const { return name; }		///< get the name of the font
-	const CCoord& getSize () const { return size; }			///< get the height of the font
-	const int32_t& getStyle () const { return style; }		///< get the style of the font
+	/** get the name of the font */
+	const UTF8String& getName () const { return name; }
+	/** get the height of the font */
+	const CCoord& getSize () const { return size; }
+	/** get the style of the font */
+	const int32_t& getStyle () const { return style; }
 
-	virtual void setName (const UTF8String& newName);		///< set the name of the font
-	virtual void setSize (CCoord newSize);					///< set the height of the font
-	virtual void setStyle (int32_t newStyle);				///< set the style of the font @sa CTxtFace
+	/** set the name of the font */
+	virtual void setName (const UTF8String& newName);
+	/** set the height of the font */
+	virtual void setSize (CCoord newSize);
+	/** set the style of the font @sa CTxtFace */
+	virtual void setStyle (int32_t newStyle);
 	//@}
 
 	virtual const PlatformFontPtr getPlatformFont () const;

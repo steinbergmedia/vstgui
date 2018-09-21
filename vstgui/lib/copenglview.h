@@ -35,8 +35,9 @@ public:
 	explicit COpenGLView (const CRect& size);
 	~COpenGLView () noexcept override;
 
-	// IOpenGLView	
-	void drawOpenGL (const CRect& updateRect) override = 0;	///< will be called when the view was marked invalid or the view was resized
+	// IOpenGLView
+	/** will be called when the view was marked invalid or the view was resized */
+	void drawOpenGL (const CRect& updateRect) override = 0;
 	void reshape () override;
 
 	// CView
@@ -56,10 +57,14 @@ protected:
 	/// @name COpenGLView Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual void platformOpenGLViewCreated () {}			///< will be called after the platform opengl view was created
-	virtual void platformOpenGLViewWillDestroy () {}		///< will be called before the platform opengl view will be destroyed
-	virtual void platformOpenGLViewSizeChanged () {}		///< will be called whenever the platform opengl view size has changed
-	virtual PixelFormat* getPixelFormat () { return 0; }	///< subclasses should return a pixelformat here if they don't want to use the default one
+	/** will be called after the platform opengl view was created */
+	virtual void platformOpenGLViewCreated () {}
+	/** will be called before the platform opengl view will be destroyed */
+	virtual void platformOpenGLViewWillDestroy () {}
+	/** will be called whenever the platform opengl view size has changed */
+	virtual void platformOpenGLViewSizeChanged () {}
+	/** subclasses should return a pixelformat here if they don't want to use the default one */
+	virtual PixelFormat* getPixelFormat () { return 0; }
 	IPlatformOpenGLView* getPlatformOpenGLView () const { return platformOpenGLView; }
 	//@}
 

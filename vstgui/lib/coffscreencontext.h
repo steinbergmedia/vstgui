@@ -64,7 +64,8 @@ public:
 	/// @name COffscreenContext Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	void copyFrom (CDrawContext *pContext, CRect destRect, CPoint srcOffset = CPoint (0, 0));	///< copy from offscreen to pContext
+	/** copy from offscreen to pContext */
+	void copyFrom (CDrawContext *pContext, CRect destRect, CPoint srcOffset = CPoint (0, 0));
 
 	CCoord getWidth () const;
 	CCoord getHeight () const;

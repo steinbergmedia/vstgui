@@ -44,6 +44,7 @@ public:
 	virtual UTF8String getText () = 0;
 	virtual bool setText (const UTF8String& text) = 0;
 	virtual bool updateSize () = 0;
+	virtual bool drawsPlaceholder () const = 0;
 
 //-----------------------------------------------------------------------------
 protected:

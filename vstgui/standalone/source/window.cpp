@@ -91,6 +91,7 @@ public:
 		platformWindow->setTitle (newTitle);
 	}
 	void setContentView (const SharedPointer<CFrame>& newFrame) override;
+	void setRepresentedPath (const UTF8String& path) override;
 	void show () override;
 	void hide () override { platformWindow->hide (); }
 	void close () override { platformWindow->close (); }
@@ -203,11 +204,22 @@ void Window::setContentView (const SharedPointer<CFrame>& newFrame)
 			controller->onSetContentView (*this, frame);
 		return;
 	}
-	frame->open (platformWindow->getPlatformHandle (), platformWindow->getPlatformType ());
+	auto frameConfig =
+	    controller ? controller->createPlatformFrameConfig (platformWindow->getPlatformType ()) :
+	                 nullptr;
+	frameConfig = platformWindow->prepareFrameConfig (std::move (frameConfig));
+	frame->open (platformWindow->getPlatformHandle (), platformWindow->getPlatformType (),
+	             frameConfig.get ());
 	frame->registerMouseObserver (this);
 	platformWindow->onSetContentView (frame);
 	if (controller)
 		controller->onSetContentView (*this, frame);
+}
+
+//------------------------------------------------------------------------
+void Window::setRepresentedPath (const UTF8String& path)
+{
+	platformWindow->setRepresentedPath (path);
 }
 
 //------------------------------------------------------------------------
@@ -350,16 +362,19 @@ bool Window::handleCommand (const Command& command)
 }
 
 //------------------------------------------------------------------------
-CMouseEventResult Window::onMouseDown (CFrame* frame, const CPoint& where,
+CMouseEventResult Window::onMouseDown (CFrame* frame, const CPoint& _where,
                                        const CButtonState& buttons)
 {
 	if (!buttons.isRightButton ())
 		return kMouseEventNotHandled;
 
+	CPoint where (_where);
+	frame->getTransform ().transform (where);
+
 	CViewContainer::ViewList views;
 	if (frame->getViewsAt (where, views, GetViewOptions ().deep ().includeViewContainer ()))
 	{
-		COptionMenu contextMenu;
+		auto contextMenu = makeOwned<COptionMenu> ();
 		for (const auto& view : views)
 		{
 			auto viewController = getViewController (view);
@@ -367,19 +382,20 @@ CMouseEventResult Window::onMouseDown (CFrame* frame, const CPoint& where,
 			auto contextMenuController2 = dynamic_cast<IContextMenuController2*> (viewController);
 			if (contextMenuController == nullptr && contextMenuController2 == nullptr)
 				continue;
-			if (contextMenu.getNbEntries () != 0)
-				contextMenu.addSeparator ();
-			CPoint p (where);
+			if (contextMenu->getNbEntries () != 0)
+				contextMenu->addSeparator ();
+			CPoint p (_where);
 			view->frameToLocal (p);
 			if (contextMenuController2)
-				contextMenuController2->appendContextMenuItems (contextMenu, view, p);
+				contextMenuController2->appendContextMenuItems (*contextMenu, view, p);
 			else if (contextMenuController)
-				contextMenuController->appendContextMenuItems (contextMenu, p);
+				contextMenuController->appendContextMenuItems (*contextMenu, p);
 		}
-		if (contextMenu.getNbEntries () > 0)
+		if (contextMenu->getNbEntries () > 0)
 		{
-			contextMenu.setStyle (kPopupStyle);
-			contextMenu.popup (frame, where);
+			contextMenu->cleanupSeparators (true);
+			contextMenu->setStyle (COptionMenu::kPopupStyle);
+			contextMenu->popup (frame, _where);
 			return kMouseEventHandled;
 		}
 	}

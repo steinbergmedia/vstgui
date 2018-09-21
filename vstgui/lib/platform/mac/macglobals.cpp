@@ -8,6 +8,7 @@
 #include "../../cframe.h"
 #include "../../ccolor.h"
 #include "../iplatformframe.h"
+#include "../common/fileresourceinputstream.h"
 #include "../std_unorderedmap.h"
 #include <mach/mach_time.h>
 
@@ -128,6 +129,34 @@ public:
 CGColorSpaceRef GetCGColorSpace ()
 {
 	return GenericMacColorSpace::instance ().colorspace;
+}
+
+//-----------------------------------------------------------------------------
+auto IPlatformResourceInputStream::create (const CResourceDescription& desc) -> Ptr
+{
+	if (desc.type == CResourceDescription::kIntegerType)
+		return nullptr;
+	if (auto bundle = getBundleRef ())
+	{
+		Ptr result;
+		CFStringRef cfStr = CFStringCreateWithCString (nullptr, desc.u.name, kCFStringEncodingUTF8);
+		if (cfStr)
+		{
+			CFURLRef url = CFBundleCopyResourceURL (getBundleRef (), cfStr, nullptr, nullptr);
+			if (url)
+			{
+				char filePath[PATH_MAX];
+				if (CFURLGetFileSystemRepresentation (url, true, (UInt8*)filePath, PATH_MAX))
+				{
+					result = FileResourceInputStream::create (filePath);
+				}
+				CFRelease (url);
+			}
+			CFRelease (cfStr);
+		}
+		return result;
+	}
+	return nullptr;
 }
 
 } // namespace

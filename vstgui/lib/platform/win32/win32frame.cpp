@@ -6,20 +6,18 @@
 
 #if WINDOWS
 
-#include <shlobj.h>
 #include <commctrl.h>
 #include <cmath>
 #include <windowsx.h>
-#include "gdiplusdrawcontext.h"
-#include "gdiplusbitmap.h"
-#include "gdiplusgraphicspath.h"
 #include "direct2d/d2ddrawcontext.h"
 #include "direct2d/d2dbitmap.h"
 #include "direct2d/d2dgraphicspath.h"
 #include "win32textedit.h"
 #include "win32optionmenu.h"
 #include "win32support.h"
-#include "win32dragcontainer.h"
+#include "win32datapackage.h"
+#include "win32dragging.h"
+#include "../iplatformresourceinputstream.h"
 #include "../../cdropsource.h"
 #include "../../cgradient.h"
 
@@ -27,12 +25,9 @@
 #include "win32openglview.h"
 #endif
 
-#include <windowsx.h>
-
 // windows libraries VSTGUI depends on
 #ifdef _MSC_VER
 #pragma comment(lib, "Shlwapi.lib")
-#pragma comment(lib, "gdiplus.lib")
 #endif
 
 namespace VSTGUI {
@@ -42,77 +37,6 @@ namespace VSTGUI {
 //-----------------------------------------------------------------------------
 static TCHAR gClassName[100];
 static bool bSwapped_mouse_buttons = false; 
-
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-class CDropTarget : public ::IDropTarget
-{	
-public:
-	CDropTarget (Win32Frame* pFrame);
-	~CDropTarget () noexcept;
-
-	// IUnknown
-	STDMETHOD (QueryInterface) (REFIID riid, void** object);
-	STDMETHOD_ (ULONG, AddRef) (void);
-	STDMETHOD_ (ULONG, Release) (void);
-   
-	// IDropTarget
-	STDMETHOD (DragEnter) (IDataObject* dataObject, DWORD keyState, POINTL pt, DWORD* effect);
-	STDMETHOD (DragOver) (DWORD keyState, POINTL pt, DWORD* effect);
-	STDMETHOD (DragLeave) (void);
-	STDMETHOD (Drop) (IDataObject* dataObject, DWORD keyState, POINTL pt, DWORD* effect);
-private:
-	int32_t refCount;
-	Win32Frame* pFrame;
-	WinDragContainer* gDragContainer;
-};
-
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-class Win32DropSource : public AtomicReferenceCounted, public ::IDropSource
-{
-public:
-	Win32DropSource () {}
-
-	// IUnknown
-	STDMETHOD (QueryInterface) (REFIID riid, void** object);
-	STDMETHOD_ (ULONG, AddRef) (void) { remember (); return static_cast<ULONG> (getNbReference ());}
-	STDMETHOD_ (ULONG, Release) (void) { ULONG refCount = static_cast<ULONG> (getNbReference ()) - 1; forget (); return refCount; }
-	
-	// IDropSource
-	STDMETHOD (QueryContinueDrag) (BOOL escapePressed, DWORD keyState);
-	STDMETHOD (GiveFeedback) (DWORD effect);
-};
-
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-class Win32DataObject : public AtomicReferenceCounted, public ::IDataObject
-{
-public:
-	Win32DataObject (IDataPackage* dataPackage);
-	~Win32DataObject () noexcept;
-
-	// IUnknown
-	STDMETHOD (QueryInterface) (REFIID riid, void** object);
-	STDMETHOD_ (ULONG, AddRef) (void) { remember (); return static_cast<ULONG> (getNbReference ());}
-	STDMETHOD_ (ULONG, Release) (void) { ULONG refCount = static_cast<ULONG> (getNbReference ()) - 1; forget (); return refCount; }
-
-	// IDataObject
-	STDMETHOD (GetData) (FORMATETC *format, STGMEDIUM *medium);
-	STDMETHOD (GetDataHere) (FORMATETC *format, STGMEDIUM *medium);
-	STDMETHOD (QueryGetData) (FORMATETC *format);
-	STDMETHOD (GetCanonicalFormatEtc) (FORMATETC *formatIn, FORMATETC *formatOut);
-	STDMETHOD (SetData) (FORMATETC *format, STGMEDIUM *medium, BOOL release);
-	STDMETHOD (EnumFormatEtc) (DWORD direction, IEnumFORMATETC** enumFormat);
-	STDMETHOD (DAdvise) (FORMATETC* format, DWORD advf, IAdviseSink* advSink, DWORD* connection);
-	STDMETHOD (DUnadvise) (DWORD connection);
-	STDMETHOD (EnumDAdvise) (IEnumSTATDATA** enumAdvise);
-private:
-	IDataPackage* dataPackage;
-};
 
 //-----------------------------------------------------------------------------
 IPlatformFrame* IPlatformFrame::createPlatformFrame (IPlatformFrameCallback* frame, const CRect& size, void* parent, PlatformType parentType, IPlatformFrameConfig* config)
@@ -162,22 +86,13 @@ Win32Frame::Win32Frame (IPlatformFrameCallback* frame, const CRect& size, HWND p
 	{
 		windowHandle = parent;
 		parentWindow = nullptr;
+		RegisterDragDrop (windowHandle, new CDropTarget (this));
 	}
 	else
 	{
 		initWindowClass ();
 
 		DWORD style = isParentLayered (parent) ? WS_EX_TRANSPARENT : 0;
-		#if !DEBUG_DRAWING
-		if (getD2DFactory ()) // workaround for Direct2D hotfix (KB2028560)
-		{
-			// when WS_EX_COMPOSITED is set drawing does not work correctly. This seems like a bug in Direct2D wich happens with this hotfix
-		}
-		else if (IsWindowsVistaOrGreater()) // Vista and above
-			style |= WS_EX_COMPOSITED;
-		else
-			backBuffer = createOffscreenContext (size.getWidth (), size.getHeight ());
-		#endif
 		windowHandle = CreateWindowEx (style, gClassName, TEXT("Window"),
 										WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS, 
 										0, 0, (int)size.getWidth (), (int)size.getHeight (), 
@@ -203,11 +118,12 @@ Win32Frame::~Win32Frame () noexcept
 		DestroyWindow (tooltipWindow);
 	if (backBuffer)
 		backBuffer->forget ();
+	if (windowHandle)
+		RevokeDragDrop (windowHandle);
 	if (parentWindow)
 	{
 		if (windowHandle)
 		{
-			RevokeDragDrop (windowHandle);
 			SetWindowLongPtr (windowHandle, GWLP_USERDATA, (LONG_PTR)NULL);
 			DestroyWindow (windowHandle);
 		}
@@ -250,8 +166,6 @@ void Win32Frame::initWindowClass ()
 		RegisterClass (&windowClass);
 
 		bSwapped_mouse_buttons = GetSystemMetrics (SM_SWAPBUTTON) > 0;
-
-		GDIPlusGlobals::enter ();
 	}
 }
 
@@ -261,8 +175,6 @@ void Win32Frame::destroyWindowClass ()
 	gUseCount--;
 	if (gUseCount == 0)
 	{
-		GDIPlusGlobals::exit ();
-
 		UnregisterClass (gClassName, GetInstance ());
 		OleUninitialize ();
 	}
@@ -393,15 +305,13 @@ bool Win32Frame::getSize (CRect& size) const
 //-----------------------------------------------------------------------------
 bool Win32Frame::getCurrentMousePosition (CPoint& mousePosition) const
 {
-	HWND hwnd = windowHandle;
 	POINT _where;
 	GetCursorPos (&_where);
-	mousePosition ((CCoord)_where.x, (CCoord)_where.y);
-	if (hwnd)
+	mousePosition (static_cast<CCoord> (_where.x), static_cast<CCoord> (_where.y));
+	if (auto hwnd = getHWND ())
 	{
-		RECT rctTempWnd;
-		GetWindowRect (hwnd, &rctTempWnd);
-		mousePosition.offset ((CCoord)-rctTempWnd.left, (CCoord)-rctTempWnd.top);
+		ScreenToClient (hwnd, &_where);
+		mousePosition (static_cast<CCoord> (_where.x), static_cast<CCoord> (_where.y));
 		return true;
 	}
 	return false;
@@ -459,6 +369,7 @@ bool Win32Frame::setMouseCursor (CCursorType type)
 			cursor = LoadCursor (0, IDC_ARROW);
 			break;
 	}
+	lastSetCursor = type;
 	SetClassLongPtr (getPlatformWindow (), GCLP_HCURSOR, (__int3264)(LONG_PTR)(cursor));
 	return true;
 }
@@ -562,53 +473,67 @@ SharedPointer<IPlatformOpenGLView> Win32Frame::createPlatformOpenGLView ()
 //-----------------------------------------------------------------------------
 SharedPointer<COffscreenContext> Win32Frame::createOffscreenContext (CCoord width, CCoord height, double scaleFactor)
 {
-#if VSTGUI_DIRECT2D_SUPPORT
-	if (getD2DFactory ())
-	{
-		D2DBitmap* bitmap = new D2DBitmap (CPoint (width * scaleFactor, height * scaleFactor));
-		bitmap->setScaleFactor (scaleFactor);
-		auto context = owned<COffscreenContext> (new D2DDrawContext (bitmap));
-		bitmap->forget ();
-		return context;
-	}
-#endif
-	GdiplusBitmap* bitmap = new GdiplusBitmap (CPoint (width, height));
-	auto context = owned<COffscreenContext> (new GdiplusDrawContext (bitmap));
+	D2DBitmap* bitmap = new D2DBitmap (CPoint (width * scaleFactor, height * scaleFactor));
+	bitmap->setScaleFactor (scaleFactor);
+	auto context = owned<COffscreenContext> (new D2DDrawContext (bitmap));
 	bitmap->forget ();
 	return context;
 }
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+class Win32LegacyDragSupport : virtual public DragCallbackAdapter, virtual public NonAtomicReferenceCounted
+{
+public:
+	void dragEnded (IDraggingSession*, CPoint, DragOperation r) final { result = r; }
+	DragOperation result {DragOperation::None};
+};
+
 //------------------------------------------------------------------------------------
 DragResult Win32Frame::doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap)
 {
-	DragResult result = kDragRefused;
-	Win32DataObject* dataObject = new Win32DataObject (source);
-	Win32DropSource* dropSource = new Win32DropSource;
-	DWORD outEffect;
-	HRESULT hResult = DoDragDrop (dataObject, dropSource, DROPEFFECT_COPY, &outEffect);
-	dataObject->Release ();
-	dropSource->Release ();
-	if (hResult == DRAGDROP_S_DROP)
+	Win32LegacyDragSupport dragSupport;
+
+	Win32DraggingSession session (this);
+	if (session.doDrag (DragDescription (source, offset, dragBitmap), &dragSupport))
 	{
-		if (outEffect == DROPEFFECT_MOVE)
-			result = kDragMoved;
-		else
-			result = kDragCopied;
+		switch (dragSupport.result)
+		{
+			case DragOperation::Copy: return kDragCopied;
+			case DragOperation::Move: return kDragMoved;
+			case DragOperation::None: return kDragRefused;
+		}
 	}
-	return result;
+	return kDragRefused;
+}
+#endif
+
+//-----------------------------------------------------------------------------
+bool Win32Frame::doDrag (const DragDescription& dragDescription, const SharedPointer<IDragCallback>& callback)
+{
+	Win32DraggingSession session (this);
+	return session.doDrag (dragDescription, callback);
 }
 
 //-----------------------------------------------------------------------------
 void Win32Frame::setClipboard (const SharedPointer<IDataPackage>& data)
 {
-	// TODO: Implementation
+	auto dataObject = makeOwned<Win32DataObject> (data);
+	auto hr = OleSetClipboard (dataObject);
+	if (hr != S_OK)
+	{
+#if DEBUG
+		DebugPrint ("Setting clipboard failed!\n");
+#endif
+	}
 }
 
 //-----------------------------------------------------------------------------
 SharedPointer<IDataPackage> Win32Frame::getClipboard ()
 {
-	// TODO: Implementation
-	return nullptr;
+	IDataObject* dataObject = nullptr;;
+	if (OleGetClipboard (&dataObject) != S_OK)
+		return nullptr;
+	return makeOwned<Win32DataPackage> (dataObject);
 }
 
 //-----------------------------------------------------------------------------
@@ -942,15 +867,17 @@ LONG_PTR WINAPI Win32Frame::proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 			if (GetAsyncKeyState (VK_MENU)    < 0)
 				key.modifier |= MODIFIER_ALTERNATE;
 			key.virt = translateWinVirtualKey (wParam);
-			if (key.virt)
+			key.character = MapVirtualKey (static_cast<UINT> (wParam), MAPVK_VK_TO_CHAR);
+			if (key.virt || key.character)
 			{
+				key.character = std::tolower (key.character);
 				if (pFrame->platformOnKeyDown (key))
 					return 0;
 			}
 
-			if(IsWindow(oldFocusWindow))
+			if (IsWindow (oldFocusWindow))
 			{
-				WNDPROC oldProc = (WNDPROC) GetWindowLongPtr(oldFocusWindow, GWLP_WNDPROC);
+				auto oldProc = reinterpret_cast<WNDPROC> (GetWindowLongPtr (oldFocusWindow, GWLP_WNDPROC));
 				if (oldProc && oldProc != WindowProc)
 					return CallWindowProc (oldProc, oldFocusWindow, message, wParam, lParam);
 			}
@@ -966,16 +893,17 @@ LONG_PTR WINAPI Win32Frame::proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 			if (GetAsyncKeyState (VK_MENU)    < 0)
 				key.modifier |= MODIFIER_ALTERNATE;
 			key.virt = translateWinVirtualKey (wParam);
-			if (key.virt)
+			key.character = MapVirtualKey (static_cast<UINT> (wParam), MAPVK_VK_TO_CHAR);
+			if (key.virt || key.character)
 			{
 				if (pFrame->platformOnKeyUp (key))
 					return 0;
 			}
 
-			if(IsWindow(oldFocusWindow))
+			if (IsWindow (oldFocusWindow))
 			{
-				WNDPROC oldProc = (WNDPROC) GetWindowLongPtr(oldFocusWindow, GWLP_WNDPROC);
-				if(oldProc && oldProc != WindowProc)
+				auto oldProc = reinterpret_cast<WNDPROC> (GetWindowLongPtr (oldFocusWindow, GWLP_WNDPROC));
+				if (oldProc && oldProc != WindowProc)
 					return CallWindowProc (oldProc, oldFocusWindow, message, wParam, lParam);
 			}
 			break;
@@ -1037,391 +965,69 @@ LONG_PTR WINAPI Win32Frame::WindowProc (HWND hwnd, UINT message, WPARAM wParam, 
 }
 
 //-----------------------------------------------------------------------------
-CDropTarget::CDropTarget (Win32Frame* pFrame)
-: refCount (0)
-, pFrame (pFrame)
-, gDragContainer (0)
-{
-}
-
-//-----------------------------------------------------------------------------
-CDropTarget::~CDropTarget () noexcept
-{
-}
-
-//-----------------------------------------------------------------------------
-STDMETHODIMP CDropTarget::QueryInterface (REFIID riid, void** object)
-{
-	if (riid == IID_IDropTarget || riid == IID_IUnknown)
-	{
-		*object = this;
-		AddRef ();
-      return NOERROR;
-	}
-	*object = 0;
-	return E_NOINTERFACE;
-}
-
-//-----------------------------------------------------------------------------
-STDMETHODIMP_(ULONG) CDropTarget::AddRef (void)
-{
-	return static_cast<ULONG> (++refCount);
-}
-
-//-----------------------------------------------------------------------------
-STDMETHODIMP_(ULONG) CDropTarget::Release (void)
-{
-	refCount--;
-	if (refCount <= 0)
-	{
-		delete this;
-		return 0;
-	}
-	return static_cast<ULONG> (refCount);
-}
-
-//-----------------------------------------------------------------------------
-STDMETHODIMP CDropTarget::DragEnter (IDataObject* dataObject, DWORD keyState, POINTL pt, DWORD* effect)
-{
-	if (dataObject && pFrame)
-	{
-		gDragContainer = new WinDragContainer (dataObject);
-		CPoint where;
-		pFrame->getCurrentMousePosition (where);
-		pFrame->getFrame ()->platformOnDragEnter (gDragContainer, where);
-		if ((*effect) & DROPEFFECT_COPY) 
-			*effect = DROPEFFECT_COPY;
-		else if ((*effect) & DROPEFFECT_MOVE) 
-			*effect = DROPEFFECT_MOVE;
-		else if ((*effect) & DROPEFFECT_LINK) 
-			*effect = DROPEFFECT_LINK;
-	}
-	else
-		*effect = DROPEFFECT_NONE;
-	return S_OK;
-}
-
-//-----------------------------------------------------------------------------
-STDMETHODIMP CDropTarget::DragOver (DWORD keyState, POINTL pt, DWORD* effect)
-{
-	if (gDragContainer && pFrame)
-	{
-		CPoint where;
-		pFrame->getCurrentMousePosition (where);
-		pFrame->getFrame ()->platformOnDragMove (gDragContainer, where);
-		if ((*effect) & DROPEFFECT_COPY) 
-			*effect = DROPEFFECT_COPY;
-		else if ((*effect) & DROPEFFECT_MOVE) 
-			*effect = DROPEFFECT_MOVE;
-		else if ((*effect) & DROPEFFECT_LINK) 
-			*effect = DROPEFFECT_LINK;
-	}
-	return S_OK;
-}
-
-//-----------------------------------------------------------------------------
-STDMETHODIMP CDropTarget::DragLeave (void)
-{
-	if (gDragContainer && pFrame)
-	{
-		CPoint where;
-		pFrame->getCurrentMousePosition (where);
-		pFrame->getFrame ()->platformOnDragLeave (gDragContainer, where);
-		gDragContainer->forget ();
-		gDragContainer = 0;
-	}
-	return S_OK;
-}
-
-//-----------------------------------------------------------------------------
-STDMETHODIMP CDropTarget::Drop (IDataObject* dataObject, DWORD keyState, POINTL pt, DWORD* effect)
-{
-	if (gDragContainer && pFrame)
-	{
-		CPoint where;
-		pFrame->getCurrentMousePosition (where);
-		pFrame->getFrame ()->platformOnDrop (gDragContainer, where);
-		gDragContainer->forget ();
-		gDragContainer = 0;
-	}
-	return S_OK;
-}
-
-//-----------------------------------------------------------------------------
-// Win32DropSource
-//-----------------------------------------------------------------------------
-STDMETHODIMP Win32DropSource::QueryInterface (REFIID riid, void** object)
-{
-	if (riid == ::IID_IDropSource)
-	{
-		AddRef ();                                                 
-		*object = (::IDropSource*)this;                               
-		return S_OK;                                          
-	}
-	else if (riid == ::IID_IUnknown)                        
-	{                                                              
-		AddRef ();                                                 
-		*object = (::IUnknown*)this;                               
-		return S_OK;                                          
-	}
-	return E_NOINTERFACE;
-}
-
-//-----------------------------------------------------------------------------
-STDMETHODIMP Win32DropSource::QueryContinueDrag (BOOL escapePressed, DWORD keyState)
-{
-	if (escapePressed)
-		return DRAGDROP_S_CANCEL;
-	
-	if ((keyState & (MK_LBUTTON|MK_RBUTTON)) == 0)
-		return DRAGDROP_S_DROP;
-
-	return S_OK;	
-}
-
-//-----------------------------------------------------------------------------
-STDMETHODIMP Win32DropSource::GiveFeedback (DWORD effect)
-{
-	return DRAGDROP_S_USEDEFAULTCURSORS;
-}
-
-//-----------------------------------------------------------------------------
-// DataObject
-//-----------------------------------------------------------------------------
-Win32DataObject::Win32DataObject (IDataPackage* dataPackage)
-: dataPackage (dataPackage)
-{
-	dataPackage->remember ();
-}
-
-//-----------------------------------------------------------------------------
-Win32DataObject::~Win32DataObject () noexcept
-{
-	dataPackage->forget ();
-}
-
-//-----------------------------------------------------------------------------
-STDMETHODIMP Win32DataObject::QueryInterface (REFIID riid, void** object)
-{
-	if (riid == ::IID_IDataObject)                        
-	{                                                              
-		AddRef ();                                                 
-		*object = (::IDataObject*)this;                               
-		return S_OK;                                          
-	}
-	else if (riid == ::IID_IUnknown)                        
-	{                                                              
-		AddRef ();                                                 
-		*object = (::IUnknown*)this;                               
-		return S_OK;                                          
-	}
-	return E_NOINTERFACE;
-}
-
-//-----------------------------------------------------------------------------
-STDMETHODIMP Win32DataObject::GetData (FORMATETC* format, STGMEDIUM* medium)
-{
-	medium->tymed = 0;
-	medium->hGlobal = 0;
-	medium->pUnkForRelease = 0;
-
-	if (format->cfFormat == CF_TEXT || format->cfFormat == CF_UNICODETEXT)
-	{
-		for (uint32_t i = 0; i < dataPackage->getCount (); i++)
-		{
-			if (dataPackage->getDataType (i) == IDataPackage::kText)
-			{
-				const void* buffer;
-				IDataPackage::Type type;
-				uint32_t bufferSize = dataPackage->getData (i, buffer, type);
-				UTF8StringHelper utf8String ((const char*)buffer);
-				SIZE_T size = 0;
-				const void* data = 0;
-				if (format->cfFormat == CF_UNICODETEXT)
-				{
-					size = bufferSize * sizeof (WCHAR);
-					data = utf8String.getWideString ();
-				}
-				else
-				{
-					size = bufferSize * sizeof (char);
-					data = buffer;
-				}
-				if (data && size > 0)
-				{
-					HGLOBAL	memoryHandle = GlobalAlloc (GMEM_MOVEABLE, size); 
-					void* memory = GlobalLock (memoryHandle);
-					if (memory)
-					{
-						memcpy (memory, data, size);
-						GlobalUnlock (memoryHandle);
-					}
-
-					medium->hGlobal = memoryHandle;						
-					medium->tymed = TYMED_HGLOBAL;
-					return S_OK;
-				}
-			}
-		}
-	}
-	else if (format->cfFormat == CF_HDROP)
-	{
-		HRESULT result = E_UNEXPECTED;
-		UTF8StringHelper** wideStringFileNames = (UTF8StringHelper**)std::malloc (sizeof (UTF8StringHelper*) * dataPackage->getCount ());
-		memset (wideStringFileNames, 0, sizeof (UTF8StringHelper*) * dataPackage->getCount ());
-		uint32_t fileNamesIndex = 0;
-		uint32_t bufferSizeNeeded = 0;
-		for (uint32_t i = 0; i < dataPackage->getCount (); i++)
-		{
-			if (dataPackage->getDataType (i) == IDataPackage::kFilePath)
-			{
-				const void* buffer;
-				IDataPackage::Type type;
-				dataPackage->getData (i, buffer, type);
-
-				wideStringFileNames[fileNamesIndex] = new UTF8StringHelper ((UTF8StringPtr)buffer);
-				bufferSizeNeeded += static_cast<uint32_t> (wcslen (*wideStringFileNames[fileNamesIndex])) + 1;
-				fileNamesIndex++;
-			}
-		}
-		bufferSizeNeeded++;
-		bufferSizeNeeded *= sizeof (WCHAR);
-		bufferSizeNeeded += sizeof (DROPFILES);
-		HGLOBAL	memoryHandle = GlobalAlloc (GMEM_MOVEABLE, bufferSizeNeeded); 
-		void* memory = GlobalLock (memoryHandle);
-		if (memory)
-		{
-			DROPFILES* dropFiles = (DROPFILES*)memory;
-			dropFiles->pFiles = sizeof (DROPFILES);
-			dropFiles->pt.x   = 0; 
-			dropFiles->pt.y   = 0;
-			dropFiles->fNC    = FALSE;
-			dropFiles->fWide  = TRUE;
-			int8_t* memAddr = ((int8_t*)memory) + sizeof (DROPFILES);
-			for (uint32_t i = 0; i < fileNamesIndex; i++)
-			{
-				size_t len = (wcslen (wideStringFileNames[i]->getWideString ()) + 1) * 2;
-				memcpy (memAddr, wideStringFileNames[i]->getWideString (), len);
-				memAddr += len;
-			}
-			*memAddr = 0;
-			memAddr++;
-			*memAddr = 0;
-			memAddr++;
-			GlobalUnlock (memoryHandle);
-			medium->hGlobal = memoryHandle;
-			medium->tymed = TYMED_HGLOBAL;
-			result = S_OK;
-		}
-		for (uint32_t i = 0; i < fileNamesIndex; i++)
-			delete wideStringFileNames[i];
-		std::free (wideStringFileNames);
-		return result;
-	}
-	else if (format->cfFormat == CF_PRIVATEFIRST)
-	{
-		for (uint32_t i = 0; i < dataPackage->getCount (); i++)
-		{
-			if (dataPackage->getDataType (i) == IDataPackage::kBinary)
-			{
-				const void* buffer;
-				IDataPackage::Type type;
-				uint32_t bufferSize = dataPackage->getData (i, buffer, type);
-
-				HGLOBAL	memoryHandle = GlobalAlloc (GMEM_MOVEABLE, bufferSize); 
-				void* memory = GlobalLock (memoryHandle);
-				if (memory)
-				{
-					memcpy (memory, buffer, bufferSize);
-					GlobalUnlock (memoryHandle);
-				}
-
-				medium->hGlobal = memoryHandle;						
-				medium->tymed = TYMED_HGLOBAL;
-				return S_OK;
-			}
-		}
-	}
-
-	return E_UNEXPECTED;
-}
-
-//-----------------------------------------------------------------------------
-STDMETHODIMP Win32DataObject::GetDataHere (FORMATETC *format, STGMEDIUM *pmedium)
-{
-	return E_NOTIMPL;
-}
-
-//-----------------------------------------------------------------------------
-STDMETHODIMP Win32DataObject::QueryGetData (FORMATETC *format)
-{
-	if (format->cfFormat == CF_TEXT || format->cfFormat == CF_UNICODETEXT)
-	{
-		for (uint32_t i = 0; i < dataPackage->getCount (); i++)
-		{
-			if (dataPackage->getDataType (i) == IDataPackage::kText)
-				return S_OK;
-		}
-	}
-	else if (format->cfFormat == CF_PRIVATEFIRST)
-	{
-		for (uint32_t i = 0; i < dataPackage->getCount (); i++)
-		{
-			if (dataPackage->getDataType (i) == IDataPackage::kBinary)
-				return S_OK;
-		}
-	}
-	else if (format->cfFormat == CF_HDROP)
-	{
-		for (uint32_t i = 0; i < dataPackage->getCount (); i++)
-		{
-			if (dataPackage->getDataType (i) == IDataPackage::kFilePath)
-				return S_OK;
-		}
-	}
-	return DV_E_FORMATETC;
-}
-
-//-----------------------------------------------------------------------------
-STDMETHODIMP Win32DataObject::GetCanonicalFormatEtc (FORMATETC *formatIn, FORMATETC *formatOut)
-{
-	return E_NOTIMPL;
-}
-
-//-----------------------------------------------------------------------------
-STDMETHODIMP Win32DataObject::SetData (FORMATETC *pformatetc, STGMEDIUM *pmedium, BOOL fRelease)
-{
-	return E_NOTIMPL;
-}
-
-//-----------------------------------------------------------------------------
-STDMETHODIMP Win32DataObject::EnumFormatEtc (DWORD dwDirection, IEnumFORMATETC** ppenumFormatEtc)
-{
-	return E_NOTIMPL;
-}
-
-//-----------------------------------------------------------------------------
-STDMETHODIMP Win32DataObject::DAdvise (FORMATETC* pformatetc, DWORD advf, IAdviseSink* pAdvSink, DWORD* pdwConnection)
-{
-	return E_NOTIMPL;
-}
-
-//-----------------------------------------------------------------------------
-STDMETHODIMP Win32DataObject::DUnadvise (DWORD dwConnection)
-{
-	return E_NOTIMPL;
-}
-
-//-----------------------------------------------------------------------------
-STDMETHODIMP Win32DataObject::EnumDAdvise (IEnumSTATDATA** ppenumAdvise)
-{
-	return E_NOTIMPL;
-}
-
-//-----------------------------------------------------------------------------
 CGradient* CGradient::create (const ColorStopMap& colorStopMap)
 {
 	return new CGradient (colorStopMap);
+}
+
+//-----------------------------------------------------------------------------
+class WinResourceInputStream : public IPlatformResourceInputStream
+{
+public:
+	using ResourceStreamPtr = std::unique_ptr<ResourceStream>;
+	static Ptr create (const CResourceDescription& desc)
+	{
+		auto stream = ResourceStreamPtr (new ResourceStream ());
+		if (stream->open (desc, "DATA"))
+		{
+			return Ptr (new WinResourceInputStream (std::move (stream)));
+		}
+		return nullptr;
+	}
+
+private:
+	WinResourceInputStream (ResourceStreamPtr&& stream) : stream (std::move (stream)) {}
+
+	uint32_t readRaw (void* buffer, uint32_t size) override
+	{
+		ULONG read = 0;
+		if (stream->Read (buffer, size, &read) == S_OK)
+			return read;
+		return kStreamIOError;
+	}
+	
+	int64_t seek (int64_t pos, SeekMode mode) override
+	{
+		DWORD dwOrigin;
+		switch (mode)
+		{
+			case SeekMode::Set: dwOrigin = STREAM_SEEK_SET; break;
+			case SeekMode::Current: dwOrigin = STREAM_SEEK_CUR; break;
+			case SeekMode::End: dwOrigin = STREAM_SEEK_END; break;
+		}
+		LARGE_INTEGER li;
+		li.QuadPart = pos;
+		if (stream->Seek (li, dwOrigin, 0) == S_OK)
+			return tell ();
+		return kStreamSeekError;
+	}
+	
+	int64_t tell () override
+	{		
+		ULARGE_INTEGER pos;
+		LARGE_INTEGER dummy = {};
+		if (stream->Seek (dummy, STREAM_SEEK_CUR, &pos) == S_OK)
+			return static_cast<int64_t> (pos.QuadPart);
+		return kStreamSeekError;
+	}
+
+	ResourceStreamPtr stream;
+};
+
+//-----------------------------------------------------------------------------
+auto IPlatformResourceInputStream::create (const CResourceDescription& desc) -> Ptr
+{
+	return WinResourceInputStream::create (desc);
 }
 
 } // namespace

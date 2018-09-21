@@ -23,6 +23,7 @@ public:
 	UIFontsDataSource (UIDescription* description, IActionPerformer* actionPerformer, IGenericStringListDataBrowserSourceSelectionChanged* delegate);
 	
 protected:
+	void onUIDescFontChanged (UIDescription* desc) override;
 	void getNames (std::list<const std::string*>& names) override;
 	bool addItem (UTF8StringPtr name) override;
 	bool removeItem (UTF8StringPtr name) override;
@@ -34,8 +35,14 @@ protected:
 
 //----------------------------------------------------------------------------------------------------
 UIFontsDataSource::UIFontsDataSource (UIDescription* description, IActionPerformer* actionPerformer, IGenericStringListDataBrowserSourceSelectionChanged* delegate)
-: UIBaseDataSource (description, actionPerformer, UIDescription::kMessageFontChanged, delegate)
+: UIBaseDataSource (description, actionPerformer, delegate)
 {
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIFontsDataSource::onUIDescFontChanged (UIDescription* desc)
+{
+	onUIDescriptionUpdate ();
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -132,7 +139,7 @@ CView* UIFontsController::verifyView (CView* view, const UIAttributes& attribute
 						fontMenu->addEntry (name.data ());
 					}
 				}
-				fontMenu->setStyle (fontMenu->getStyle () | kNoTextStyle);
+				fontMenu->setStyle (fontMenu->getStyle () | COptionMenu::kNoTextStyle);
 				fontMenu->setMouseEnabled (false);
 				break;
 			}
@@ -264,7 +271,7 @@ void UIFontsController::dbSelectionChanged (int32_t selectedRow, GenericStringLi
 				}
 				index++;
 			}
-			fontMenu->setStyle (fontMenu->getStyle () & ~kNoTextStyle);
+			fontMenu->setStyle (fontMenu->getStyle () & ~COptionMenu::kNoTextStyle);
 			fontMenu->setMouseEnabled (true);
 		}
 		if (sizeTextEdit)
@@ -310,7 +317,7 @@ void UIFontsController::dbSelectionChanged (int32_t selectedRow, GenericStringLi
 	{
 		if (fontMenu)
 		{
-			fontMenu->setStyle (fontMenu->getStyle () | kNoTextStyle);
+			fontMenu->setStyle (fontMenu->getStyle () | COptionMenu::kNoTextStyle);
 			fontMenu->setMouseEnabled (false);
 		}
 		if (boldControl)

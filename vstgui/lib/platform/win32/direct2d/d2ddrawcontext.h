@@ -7,7 +7,7 @@
 
 #include "../../../coffscreencontext.h"
 
-#if WINDOWS && VSTGUI_DIRECT2D_SUPPORT
+#if WINDOWS
 
 #include "d2dbitmap.h"
 #include <windows.h>

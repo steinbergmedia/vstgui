@@ -14,7 +14,7 @@
 // VSTGUI Version
 //-----------------------------------------------------------------------------
 #define VSTGUI_VERSION_MAJOR  4
-#define VSTGUI_VERSION_MINOR  6
+#define VSTGUI_VERSION_MINOR  7
 
 //-----------------------------------------------------------------------------
 // Platform definitions
@@ -89,18 +89,14 @@
 		#if __cplusplus < 201103L
 			#error compiler not supported
 		#endif
-	#elif _MSC_VER < 1800
-		#error Visual Studio 2013 or newer needed
+	#elif _MSC_VER <= 1800
+		#error Visual Studio 2015 or newer needed
 	#endif
 	#include <type_traits>
 	#include <stdint.h>
 	#ifndef WINDOWS
 		#define WINDOWS 1
 	#endif
-	#if !defined(__GNUC__) && _MSC_VER == 1800
-		#define noexcept		// only supported since VS 2015
-	#endif
-	#define VSTGUI_DIRECT2D_SUPPORT	1
 	#define DEPRECATED_ATTRIBUTE __declspec(deprecated)
 	#ifdef _MSC_VER
 		#pragma warning(3 : 4189) // local variable is initialized but not referenced
@@ -109,6 +105,7 @@
 		#pragma warning(3 : 4431) // missing type specifier - int assumed. Note: C no longer supports default-int
 		#pragma warning(3 : 4254) // conversion from 'type1' to 'type2', possible loss of data
 		#pragma warning(3 : 4388) // signed/unsigned mismatch
+		#pragma warning(disable : 4250) // class1' : inherits 'class2::member' via dominance
 	#endif
 
 	#if defined (__clang__) && __clang__
@@ -150,7 +147,7 @@
 // Deprecation setting
 //----------------------------------------------------
 #ifndef VSTGUI_ENABLE_DEPRECATED_METHODS
-	#define VSTGUI_ENABLE_DEPRECATED_METHODS 0
+	#define VSTGUI_ENABLE_DEPRECATED_METHODS 1
 #endif
 
 #ifndef DEPRECATED_ATTRIBUTE
@@ -206,11 +203,15 @@
 
 //----------------------------------------------------
 namespace VSTGUI {
-	
-using CCoord = double;					///< coordinate type
-using IdStringPtr = const char*;		///< ID String pointer
-using UTF8StringPtr = const char*;		///< UTF8 String pointer
-using UTF8StringBuffer = char*;			///< UTF8 String buffer pointer
+
+/** coordinate type */
+using CCoord = double;
+/** ID String pointer */
+using IdStringPtr = const char*;
+/** UTF8 String pointer */
+using UTF8StringPtr = const char*;
+/** UTF8 String buffer pointer */
+using UTF8StringBuffer = char*;
 
 //-----------------------------------------------------------------------------
 // @brief Byte Order
@@ -238,13 +239,15 @@ enum CMessageResult
 class IReference
 {
 public:
+	/** decrease refcount and delete object if refcount == 0 */
 	virtual void forget () = 0;
+	/** increase refcount */
 	virtual void remember () = 0;
 };
 
 //-----------------------------------------------------------------------------
 template <typename T>
-class ReferenceCounted : public IReference
+class ReferenceCounted : virtual public IReference
 {
 public:
 	ReferenceCounted () = default;
@@ -257,9 +260,10 @@ public:
 	/// @name Reference Counting Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	void forget () override { if (--nbReference == 0) { beforeDelete (); delete this; } }	///< decrease refcount and delete object if refcount == 0
-	void remember () override { nbReference++; }										///< increase refcount
-	virtual int32_t getNbReference () const { return nbReference; }					///< get refcount
+	void forget () override { if (--nbReference == 0) { beforeDelete (); delete this; } }
+	void remember () override { nbReference++; }
+	/** get refcount */
+	virtual int32_t getNbReference () const { return nbReference; }
 	virtual void beforeDelete () {}
 	//@}
 private:
@@ -505,6 +509,23 @@ inline constexpr bool hasBit (T storage, B bit)
 	static_assert (sizeof (T) >= sizeof (B), "bit type is too big");
 	return (storage & static_cast<T> (bit)) ? true : false;
 }
+
+//-----------------------------------------------------------------------------
+template <typename T, typename B>
+struct BitScopeToggleT
+{
+	BitScopeToggleT (T& storage, B bit) : storage (storage), bit (bit) { toggle (); }
+	~BitScopeToggleT () noexcept { toggle (); }
+
+private:
+	void toggle ()
+	{
+		bool state = hasBit (storage, bit);
+		setBit (storage, bit, !state);
+	}
+	T& storage;
+	B bit;
+};
 
 } // namespace
 

@@ -79,6 +79,20 @@ private:
 };
 
 //------------------------------------------------------------------------
+/**	ICustomization adapter
+ *	@ingroup standalone
+ */
+class CustomizationAdapter : public ICustomization
+{
+public:
+	IController* createController (const UTF8StringView& name, IController* parent,
+	                               const IUIDescription* uiDesc) override
+	{
+		return nullptr;
+	}
+};
+
+//------------------------------------------------------------------------
 } // UIDesc
 } // Standalone
 } // VSTGUI
