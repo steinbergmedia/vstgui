@@ -61,7 +61,8 @@ protected:
 	/// @endcond
 };
 
-extern IdStringPtr kMsgAnimationFinished;	///< message sent to the notificationObject when the animation has finished, the sender parameter will be a FinishedMessage object.
+/** message sent to the notificationObject when the animation has finished, the sender parameter will be a FinishedMessage object. */
+extern IdStringPtr kMsgAnimationFinished;
 
 //-----------------------------------------------------------------------------
 /// @brief Animation Finished Message Object

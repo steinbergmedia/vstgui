@@ -5,6 +5,10 @@
 
 #include "../../crect.h"
 #include "../iplatformframe.h"
+#include "../iplatformresourceinputstream.h"
+#include "../platform_x11.h"
+#include "../common/genericoptionmenu.h"
+#include "irunloop.h"
 #include <memory>
 #include <functional>
 
@@ -13,45 +17,24 @@ namespace VSTGUI {
 namespace X11 {
 
 //------------------------------------------------------------------------
-class IEventHandler
+class Frame
+	: public IPlatformFrame
+	, public IX11Frame
+	, public IGenericOptionMenuListener
 {
 public:
-	virtual void onEvent () = 0;
-};
-
-//------------------------------------------------------------------------
-class ITimerHandler
-{
-public:
-	virtual void onTimer () = 0;
-};
-
-//------------------------------------------------------------------------
-class IRunLoop : public AtomicReferenceCounted
-{
-public:
-	virtual bool registerEventHandler (int fd, IEventHandler* handler) = 0;
-	virtual bool unregisterEventHandler (IEventHandler* handler) = 0;
-
-	virtual bool registerTimer (uint64_t interval, ITimerHandler* handler) = 0;
-	virtual bool unregisterTimer (ITimerHandler* handler) = 0;
-};
-
-//------------------------------------------------------------------------
-class FrameConfig : public IPlatformFrameConfig
-{
-public:
-	SharedPointer<IRunLoop> runLoop;
-};
-
-//------------------------------------------------------------------------
-class Frame : public IPlatformFrame, public IEventHandler
-{
-public:
-	Frame (IPlatformFrameCallback* frame, const CRect& size, uint32_t parent,
+	Frame (IPlatformFrameCallback* frame,
+		   const CRect& size,
+		   uint32_t parent,
 		   IPlatformFrameConfig* config);
 	~Frame ();
 
+	using CreateIResourceInputStreamFunc =
+		std::function<IPlatformResourceInputStream::Ptr (const CResourceDescription& desc)>;
+
+	static CreateIResourceInputStreamFunc createResourceInputStreamFunc;
+
+private:
 	bool getGlobalPosition (CPoint& pos) const override;
 	bool setSize (const CRect& newSize) override;
 	bool getSize (CRect& size) const override;
@@ -63,26 +46,34 @@ public:
 	bool showTooltip (const CRect& rect, const char* utf8Text) override;
 	bool hideTooltip () override;
 	void* getPlatformRepresentation () const override;
-	SharedPointer<IPlatformTextEdit> createPlatformTextEdit (
-		IPlatformTextEditCallback* textEdit) override;
+	SharedPointer<IPlatformTextEdit>
+	createPlatformTextEdit (IPlatformTextEditCallback* textEdit) override;
 	SharedPointer<IPlatformOptionMenu> createPlatformOptionMenu () override;
 #if VSTGUI_OPENGL_SUPPORT
 	SharedPointer<IPlatformOpenGLView> createPlatformOpenGLView () override;
 #endif
 	SharedPointer<IPlatformViewLayer> createPlatformViewLayer (
 		IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer) override;
-	SharedPointer<COffscreenContext> createOffscreenContext (CCoord width, CCoord height,
+	SharedPointer<COffscreenContext> createOffscreenContext (CCoord width,
+															 CCoord height,
 															 double scaleFactor) override;
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 	DragResult doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap) override;
+#endif
+	bool doDrag (const DragDescription& dragDescription,
+				 const SharedPointer<IDragCallback>& callback) override;
 	void setClipboard (const SharedPointer<IDataPackage>& data) override;
 	SharedPointer<IDataPackage> getClipboard () override;
 
 	PlatformType getPlatformType () const override;
 	void onFrameClosed () override {}
+	Optional<UTF8String> convertCurrentKeyEventToText () override;
 
-	void onEvent () override;
+	uint32_t getX11WindowID () const override;
 
-	void* getGtkWindow (); // return is Gtk::Window*
+	void optionMenuPopupStarted () override;
+	void optionMenuPopupStopped () override;
+
 private:
 	struct Impl;
 	std::unique_ptr<Impl> impl;

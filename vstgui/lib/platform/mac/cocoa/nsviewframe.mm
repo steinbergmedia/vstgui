@@ -17,15 +17,11 @@
 #import "../quartzgraphicspath.h"
 #import "../caviewlayer.h"
 #import "../../../cvstguitimer.h"
-#import "../../../cbitmap.h"
 
 #if MAC_CARBON
 	#import "../carbon/hiviewframe.h"
+	#import <Carbon/Carbon.h>
 #endif
-
-#import <Carbon/Carbon.h>
-
-#define VSTGUI_NSVIEW_USE_DRAGGING_SESSION 0
 
 using namespace VSTGUI;
 
@@ -92,7 +88,7 @@ static id VSTGUI_NSView_Init (id self, SEL _cmd, void* _frame, NSView* parentVie
 
 		[parentView addSubview: self];
 
-		[self registerForDraggedTypes:[NSArray arrayWithObjects:NSStringPboardType, NSFilenamesPboardType, NSColorPboardType, [NSString stringWithCString:MacClipboard::getPasteboardBinaryType () encoding:NSASCIIStringEncoding], nil]];
+		[self registerForDraggedTypes:[NSArray arrayWithObjects:NSPasteboardTypeString, NSFilenamesPboardType, NSPasteboardTypeColor, [NSString stringWithCString:MacClipboard::getPasteboardBinaryType () encoding:NSASCIIStringEncoding], nil]];
 		
 		[self setFocusRingType:NSFocusRingTypeNone];
 	}
@@ -521,11 +517,17 @@ static NSDragOperation VSTGUI_NSView_draggingEntered (id self, SEL _cmd, id send
 
 	CPoint where;
 	nsViewGetCurrentMouseLocation (self, where);
+	NSUInteger modifiers = [NSEvent modifierFlags];
+	CButtonState buttons = 0;
+	mapModifiers (modifiers, buttons);
 
-	getNSViewFrame (self)->setMouseCursor (kCursorNotAllowed);
+	DragEventData data {frame->getDragDataPackage (), where, buttons};
+	auto result = frame->getFrame ()->platformOnDragEnter (data);
+	if (result == DragOperation::Copy)
+		return NSDragOperationCopy;
+	if (result == DragOperation::Move)
+		return NSDragOperationMove;
 
-	frame->getFrame ()->platformOnDragEnter (frame->getDragDataPackage (), where);
-	
 	return NSDragOperationGeneric;
 }
 
@@ -538,9 +540,18 @@ static NSDragOperation VSTGUI_NSView_draggingUpdated (id self, SEL _cmd, id send
 
 	CPoint where;
 	nsViewGetCurrentMouseLocation (self, where);
-	frame->getFrame ()->platformOnDragMove (frame->getDragDataPackage (), where);
+	NSUInteger modifiers = [NSEvent modifierFlags];
+	CButtonState buttons = 0;
+	mapModifiers (modifiers, buttons);
 
-	return NSDragOperationGeneric;
+	DragEventData data {frame->getDragDataPackage (), where, buttons};
+	auto result = frame->getFrame ()->platformOnDragMove (data);
+	if (result == DragOperation::Copy)
+		return NSDragOperationCopy;
+	if (result == DragOperation::Move)
+		return NSDragOperationMove;
+
+	return NSDragOperationNone;
 }
 
 //------------------------------------------------------------------------------------
@@ -552,10 +563,15 @@ static void VSTGUI_NSView_draggingExited (id self, SEL _cmd, id sender)
 
 	CPoint where;
 	nsViewGetCurrentMouseLocation (self, where);
-	frame->getFrame ()->platformOnDragLeave (frame->getDragDataPackage (), where);
-	[[NSCursor arrowCursor] set];
+	NSUInteger modifiers = [NSEvent modifierFlags];
+	CButtonState buttons = 0;
+	mapModifiers (modifiers, buttons);
 
+	DragEventData data {frame->getDragDataPackage (), where, buttons};
+	frame->getFrame ()->platformOnDragLeave (data);
 	frame->setDragDataPackage (nullptr);
+
+	[[NSCursor arrowCursor] set]; // we may should remember the cursor via [NSCursor currentCursor]
 }
 
 //------------------------------------------------------------------------------------
@@ -567,13 +583,17 @@ static BOOL VSTGUI_NSView_performDragOperation (id self, SEL _cmd, id sender)
 
 	CPoint where;
 	nsViewGetCurrentMouseLocation (self, where);
-	bool result = frame->getFrame ()->platformOnDrop (frame->getDragDataPackage (), where);
+	NSUInteger modifiers = [NSEvent modifierFlags];
+	CButtonState buttons = 0;
+	mapModifiers (modifiers, buttons);
+
+	DragEventData data {frame->getDragDataPackage (), where, buttons};
+	bool result = frame->getFrame ()->platformOnDrop (data);
 	frame->setMouseCursor (kCursorDefault);
 	frame->setDragDataPackage (nullptr);
 	return result;
 }
 
-#if VSTGUI_NSVIEW_USE_DRAGGING_SESSION
 //------------------------------------------------------------------------------------
 static NSDragOperation VSTGUI_NSView_draggingSessionSourceOperationMaskForDraggingContext (id self, SEL _cmd, NSDraggingSession* session, NSDraggingContext context)
 {
@@ -591,7 +611,58 @@ static NSDragOperation VSTGUI_NSView_draggingSessionSourceOperationMaskForDraggi
 	}
 	return NSDragOperationGeneric;
 }
-#else
+
+//------------------------------------------------------------------------------------
+static void VSTGUI_NSView_draggingSessionWillBeginAtPoint (id self, SEL _cmd, NSDraggingSession* session, NSPoint position)
+{
+	NSViewFrame* frame = getNSViewFrame (self);
+	if (!frame)
+		return;
+	if (auto session = frame->getDraggingSession ())
+	{
+		auto r = [[self window] convertRectFromScreen:{position, NSMakeSize (0, 0)}];
+		auto pos = pointFromNSPoint ([self convertPoint:r.origin fromView:nil]);
+		session->dragWillBegin (pos);
+	}
+}
+
+//------------------------------------------------------------------------------------
+static void VSTGUI_NSView_draggingSessionMovedToPoint (id self, SEL _cmd, NSDraggingSession* session, NSPoint position)
+{
+	NSViewFrame* frame = getNSViewFrame (self);
+	if (!frame)
+		return;
+	if (auto session = frame->getDraggingSession ())
+	{
+		auto r = [[self window] convertRectFromScreen:{position, NSMakeSize (0, 0)}];
+		auto pos = pointFromNSPoint ([self convertPoint:r.origin fromView:nil]);
+		session->dragMoved (pos);
+	}
+}
+
+//------------------------------------------------------------------------------------
+static void VSTGUI_NSView_draggingSessionEndedAtPoint (id self, SEL _cmd, NSDraggingSession* session, NSPoint position, NSDragOperation operation)
+{
+	NSViewFrame* frame = getNSViewFrame (self);
+	if (!frame)
+		return;
+	if (auto session = frame->getDraggingSession ())
+	{
+		DragOperation result;
+		switch (operation)
+		{
+			case NSDragOperationNone: result = DragOperation::None; break;
+			case NSDragOperationMove: result = DragOperation::Move; break;
+			default: result = DragOperation::Copy; break;
+		}
+		auto r = [[self window] convertRectFromScreen:{position, NSMakeSize (0, 0)}];
+		auto pos = pointFromNSPoint ([self convertPoint:r.origin fromView:nil]);
+		session->dragEnded (pos, result);
+		frame->clearDraggingSession ();
+	}
+}
+
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //------------------------------------------------------------------------------------
 static void VSTGUI_NSView_draggedImageEndedAtOperation (id self, SEL _cmd, NSImage* image, NSPoint aPoint, NSDragOperation operation)
 {
@@ -708,12 +779,20 @@ void NSViewFrame::initClass ()
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(draggingExited:), IMP (VSTGUI_NSView_draggingExited), "v@:@:^:"))
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(performDragOperation:), IMP (VSTGUI_NSView_performDragOperation), "B@:@:^:"))
 
-#if VSTGUI_NSVIEW_USE_DRAGGING_SESSION
-		sprintf (funcSig, "%s@:@:^:%s", @encode(NSDragOperation), @encode(NSDraggingContext));
-		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(draggingSession:sourceOperationMaskForDraggingContext:), IMP (VSTGUI_NSView_draggingSessionSourceOperationMaskForDraggingContext), funcSig))
-		Protocol* nsDraggingSourceProtocol = objc_getProtocol ("NSDraggingSource");
-		class_addProtocol (viewClass, nsDraggingSourceProtocol);
-#else
+		if (auto nsDraggingSourceProtocol = objc_getProtocol ("NSDraggingSource"))
+		{
+			sprintf (funcSig, "%s@:@:^:%s", @encode(NSDragOperation), @encode(NSDraggingSession));
+			VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(draggingSession:sourceOperationMaskForDraggingContext:), IMP (VSTGUI_NSView_draggingSessionSourceOperationMaskForDraggingContext), funcSig))
+			sprintf (funcSig, "%s@:@:^:%s:%s", @encode(void), @encode(NSDraggingSession), @encode(NSPoint));
+			VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(draggingSession:willBeginAtPoint:), IMP (VSTGUI_NSView_draggingSessionWillBeginAtPoint), funcSig))
+			VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(draggingSession:movedToPoint:), IMP (VSTGUI_NSView_draggingSessionMovedToPoint), funcSig))
+			sprintf (funcSig, "%s@:@:^:%s:%s:%s", @encode(void), @encode(NSDraggingSession), @encode(NSPoint), @encode(NSDragOperation));
+			VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(draggingSession:endedAtPoint:operation:), IMP (VSTGUI_NSView_draggingSessionEndedAtPoint), funcSig))
+
+			class_addProtocol (viewClass, nsDraggingSourceProtocol);
+		}
+
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 		sprintf (funcSig, "v@:@:^:%s:%s", @encode(NSPoint), nsUIntegerEncoded);
 		VSTGUI_CHECK_YES(class_addMethod (viewClass, @selector(draggedImage:endedAt:operation:), IMP (VSTGUI_NSView_draggedImageEndedAtOperation), funcSig))
 #endif
@@ -757,9 +836,11 @@ NSViewFrame::NSViewFrame (IPlatformFrameCallback* frame, const CRect& size, NSVi
 		// few parts of a window are updated permanently when scrolling or manipulating a control
 		// while other parts are only updated when the malipulation ended, or CNinePartTiledBitmap
 		// are drawn incorrectly when scaled.
-		if (systemVersion.majorVersion >= 10 && systemVersion.minorVersion > 10)
+		if (systemVersion.majorVersion > 10 || (systemVersion.majorVersion >= 10 && systemVersion.minorVersion > 10))
 		{
 			[nsView setWantsLayer:YES];
+			if (systemVersion.majorVersion > 10 || (systemVersion.majorVersion >= 10 && systemVersion.minorVersion >= 13))
+				nsView.layer.drawsAsynchronously = YES;
 		}
 	}
 }
@@ -814,8 +895,13 @@ void NSViewFrame::drawRect (NSRect* rect)
 {
 	inDraw = true;
 	NSGraphicsContext* nsContext = [NSGraphicsContext currentContext];
-	
-	CGDrawContext drawContext ((CGContextRef)[nsContext graphicsPort], rectFromNSRect ([nsView bounds]));
+
+#if MAC_OS_X_VERSION_MIN_REQUIRED < MAX_OS_X_VERSION_10_10
+	auto cgContext = static_cast<CGContextRef> ([nsContext graphicsPort]);
+#else
+	auto cgContext = static_cast<CGContextRef> ([nsContext CGContext]);
+#endif
+	CGDrawContext drawContext (cgContext, rectFromNSRect ([nsView bounds]));
 	drawContext.beginDraw ();
 	const NSRect* dirtyRects;
 	NSInteger numDirtyRects;
@@ -946,6 +1032,7 @@ bool NSViewFrame::setMouseCursor (CCursorType type)
 		}
 		case kCursorNotAllowed: cur = [NSCursor performSelector:@selector(operationNotAllowedCursor)]; break;
 		case kCursorHand: cur = [NSCursor openHandCursor]; break;
+		case kCursorIBeam: cur = [NSCursor IBeamCursor]; break;
 		default: cur = [NSCursor arrowCursor]; break;
 	}
 	if (cur)
@@ -1018,6 +1105,19 @@ bool NSViewFrame::hideTooltip ()
 }
 
 //-----------------------------------------------------------------------------
+Optional<UTF8String> NSViewFrame::convertCurrentKeyEventToText ()
+{
+	auto event = [NSApp currentEvent];
+	if (!event)
+		return {};
+	if (!(event.type == NSKeyDown || event.type == NSKeyUp))
+		return {};
+	if (event.characters.length <= 0)
+		return {};
+	return Optional<UTF8String> (event.characters.UTF8String);
+}
+
+//-----------------------------------------------------------------------------
 SharedPointer<IPlatformTextEdit> NSViewFrame::createPlatformTextEdit (IPlatformTextEditCallback* textEdit)
 {
 	return makeOwned<CocoaTextEdit> (nsView, textEdit);
@@ -1064,9 +1164,14 @@ SharedPointer<COffscreenContext> NSViewFrame::createOffscreenContext (CCoord wid
 	return nullptr;
 }
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //------------------------------------------------------------------------------------
 DragResult NSViewFrame::doDrag (IDataPackage* source, const CPoint& offset, CBitmap* dragBitmap)
 {
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 	lastDragOperationResult = kDragError;
 	if (nsView)
 	{
@@ -1097,72 +1202,6 @@ DragResult NSViewFrame::doDrag (IDataPackage* source, const CPoint& offset, CBit
 			bitmapOffset.x += nsLocation.x;
 			bitmapOffset.y += nsLocation.y;
 		}
-#if VSTGUI_NSVIEW_USE_DRAGGING_SESSION
-		NSMutableArray* dragItems = [[NSMutableArray new] autorelease];
-		for (uint32_t index = 0, count = source->getCount (); index < count; ++index)
-		{
-			const void* buffer = nullptr;
-			IDataPackage::Type type {};
-			auto size = source->getData (index, buffer, type);
-			if (size == 0)
-				continue;
-			NSDraggingItem* item = nil;
-			switch (type)
-			{
-				case IDataPackage::kFilePath:
-				{
-					if (auto fileUrl = [NSURL fileURLWithPath:[NSString stringWithUTF8String:reinterpret_cast<const char*>(buffer)]])
-					{
-						item = [[[NSDraggingItem alloc] initWithPasteboardWriter:fileUrl] autorelease];
-					}
-					break;
-				}
-				case IDataPackage::kText:
-				{
-					if (auto string = [NSString stringWithUTF8String:reinterpret_cast<const char*>(buffer)])
-					{
-						item = [[[NSDraggingItem alloc] initWithPasteboardWriter:string] autorelease];
-					}
-					break;
-				}
-				case IDataPackage::kBinary:
-				{
-#if 0
-					// TODO: write an object implementing NSPasteboardWriting to provide NSData
-					if (auto data = [NSData dataWithBytes:buffer length:size])
-					{
-						item = [[[NSDraggingItem alloc] initWithPasteboardWriter:data] autorelease];
-					}
-#endif
-					break;
-				}
-				case IDataPackage::kError:
-				{
-					continue;
-				}
-			}
-			if (item)
-			{
-				if (cgImage && [dragItems count] == 0)
-				{
-					NSRect r;
-					r.origin = bitmapOffset;
-					r.origin.y -= [nsImage size].height;
-					r.size = nsImage.size;
-					[item setDraggingFrame:r contents:nsImage];
-				}
-				else
-					item.draggingFrame.origin = bitmapOffset;
-				[dragItems addObject:item];
-			}
-		}
-		NSView <NSDraggingSource>* draggingSource = (NSView <NSDraggingSource>*)nsView;
-		if (auto session = [nsView beginDraggingSessionWithItems:dragItems event:event source:draggingSource])
-		{
-			session.animatesToStartingPositionsOnCancelOrFail = YES;
-			return kDragAsynchronous;
-		}
-#else
 		NSPasteboard* nsPasteboard = [NSPasteboard pasteboardWithName:NSDragPboard];
 		IDataPackage::Type type = source->getDataType (0);
 		switch (type)
@@ -1211,18 +1250,28 @@ DragResult NSViewFrame::doDrag (IDataPackage* source, const CPoint& offset, CBit
 				return kDragError;
 			}
 		}
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-
 		[nsView dragImage:nsImage at:bitmapOffset offset:NSMakeSize (0, 0) event:event pasteboard:nsPasteboard source:nsView slideBack:dragBitmap ? YES : NO];
 
-#pragma clang diagnostic pop
 
 		[nsPasteboard clearContents];
 		return lastDragOperationResult;
-#endif
 	}
 	return kDragError;
+
+#pragma clang diagnostic pop
+
+}
+#endif
+
+//-----------------------------------------------------------------------------
+bool NSViewFrame::doDrag (const DragDescription& dragDescription,
+                          const SharedPointer<IDragCallback>& callback)
+{
+	if (!nsView)
+		return false;
+
+	draggingSession = NSViewDraggingSession::create (nsView, dragDescription, callback);
+	return draggingSession != nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -1311,19 +1360,22 @@ void CocoaTooltipWindow::set (NSViewFrame* nsViewFrame, const CRect& rect, const
 		[window setLevel:NSStatusWindowLevel];
 		[window setHidesOnDeactivate:YES];
 		[window setIgnoresMouseEvents:YES];
-		[window setBackgroundColor: [NSColor colorWithDeviceRed:1.0 green:0.96 blue:0.76 alpha:1.0]];
-		textfield = [[[NSTextField alloc] initWithFrame:[[window contentView] frame]] autorelease];
+		[window setBackgroundColor: [NSColor colorWithDeviceRed:0.94 green:0.94 blue:0.94 alpha:1.0]];
+		textfield = [[[NSTextField alloc] initWithFrame:NSMakeRect (2, 2, 8, 8)] autorelease];
 		[textfield setEditable:NO];
 		[textfield setSelectable:NO];
 		[textfield setBezeled:NO];
 		[textfield setBordered:NO];
 		[textfield setDrawsBackground:NO];
-		[window setContentView:textfield];
+		[window.contentView addSubview:textfield];
 	}
-	NSString* string = [NSString stringWithCString:tooltip encoding:NSUTF8StringEncoding];
-	NSDictionary* attributes = [NSDictionary dictionaryWithObjectsAndKeys:[NSFont controlContentFontOfSize:0], NSFontAttributeName, nil];
-	NSMutableAttributedString* attrString = [[[NSMutableAttributedString alloc] init] autorelease];
-	NSArray* lines = [string componentsSeparatedByString:@"\\n"];
+	auto paragrapheStyle = [NSMutableParagraphStyle new];
+	[paragrapheStyle setParagraphStyle:[NSParagraphStyle defaultParagraphStyle]];
+	paragrapheStyle.alignment = NSTextAlignmentCenter;
+	auto string = [NSString stringWithCString:tooltip encoding:NSUTF8StringEncoding];
+	auto attributes = [NSDictionary dictionaryWithObjectsAndKeys:[NSFont toolTipsFontOfSize:0], NSFontAttributeName, paragrapheStyle, NSParagraphStyleAttributeName, nil];
+	auto attrString = [[[NSMutableAttributedString alloc] init] autorelease];
+	auto lines = [string componentsSeparatedByString:@"\\n"];
 	bool first = true;
 	for (NSString* str in lines)
 	{
@@ -1335,7 +1387,10 @@ void CocoaTooltipWindow::set (NSViewFrame* nsViewFrame, const CRect& rect, const
 	}
 	[textfield setAttributedStringValue:attrString];
 	[textfield sizeToFit];
+
 	NSSize textSize = [textfield bounds].size;
+	textSize.width += 4;
+	textSize.height += 4;
 
 	CPoint p;
 	p.x = rect.left;
@@ -1344,8 +1399,8 @@ void CocoaTooltipWindow::set (NSViewFrame* nsViewFrame, const CRect& rect, const
 	convertPointToGlobal (nsView, nsp);
 	nsp.y -= (textSize.height + 4);
 	nsp.x += (rect.getWidth () - textSize.width) / 2;
-	
-	NSRect frameRect = { nsp, [textfield bounds].size };
+
+	NSRect frameRect = { nsp, textSize };
 	[window setFrame:frameRect display:NO];
 	[window setAlphaValue:0.95];
 	[window orderFront:nil];
@@ -1373,6 +1428,7 @@ void CocoaTooltipWindow::onTimer ()
 	else
 		[window setAlphaValue:newAlpha];
 }
+
 } // namespace
 
 #endif // MAC_COCOA

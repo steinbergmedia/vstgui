@@ -81,7 +81,7 @@ TESTCASE(CSegmentButtonTest,
 		s.name = "2";
 		b.addSegment(s);
 
-		b.setStyle (CSegmentButton::kHorizontal);
+		b.setStyle (CSegmentButton::Style::kHorizontal);
 		b.setSelectedSegment (0);
 		VstKeyCode keycode {};
 		keycode.virt = VKEY_RIGHT;
@@ -93,7 +93,7 @@ TESTCASE(CSegmentButtonTest,
 		EXPECT (b.getSelectedSegment () == 2);
 
 		b.setSelectedSegment (1);
-		b.setStyle (CSegmentButton::kVertical);
+		b.setStyle (CSegmentButton::Style::kVertical);
 		EXPECT (b.onKeyDown (keycode) == 1);
 		EXPECT (b.getSelectedSegment () == 1);
 		EXPECT (b.onKeyDown (keycode) == 1);
@@ -110,7 +110,7 @@ TESTCASE(CSegmentButtonTest,
 		s.name = "2";
 		b.addSegment(s);
 
-		b.setStyle (CSegmentButton::kHorizontal);
+		b.setStyle (CSegmentButton::Style::kHorizontal);
 		b.setSelectedSegment (2);
 		VstKeyCode keycode {};
 		keycode.virt = VKEY_LEFT;
@@ -122,7 +122,7 @@ TESTCASE(CSegmentButtonTest,
 		EXPECT (b.getSelectedSegment () == 0);
 
 		b.setSelectedSegment (1);
-		b.setStyle (CSegmentButton::kVertical);
+		b.setStyle (CSegmentButton::Style::kVertical);
 		EXPECT (b.onKeyDown (keycode) == 1);
 		EXPECT (b.getSelectedSegment () == 1);
 		EXPECT (b.onKeyDown (keycode) == 1);
@@ -139,7 +139,7 @@ TESTCASE(CSegmentButtonTest,
 		s.name = "2";
 		b.addSegment(s);
 
-		b.setStyle (CSegmentButton::kVertical);
+		b.setStyle (CSegmentButton::Style::kVertical);
 		b.setSelectedSegment (0);
 		VstKeyCode keycode {};
 		keycode.virt = VKEY_DOWN;
@@ -151,7 +151,7 @@ TESTCASE(CSegmentButtonTest,
 		EXPECT (b.getSelectedSegment () == 2);
 
 		b.setSelectedSegment (1);
-		b.setStyle (CSegmentButton::kHorizontal);
+		b.setStyle (CSegmentButton::Style::kHorizontal);
 		EXPECT (b.onKeyDown (keycode) == 1);
 		EXPECT (b.getSelectedSegment () == 1);
 		EXPECT (b.onKeyDown (keycode) == 1);
@@ -168,7 +168,7 @@ TESTCASE(CSegmentButtonTest,
 		s.name = "2";
 		b.addSegment(s);
 
-		b.setStyle (CSegmentButton::kVertical);
+		b.setStyle (CSegmentButton::Style::kVertical);
 		b.setSelectedSegment (2);
 		VstKeyCode keycode {};
 		keycode.virt = VKEY_UP;
@@ -180,7 +180,7 @@ TESTCASE(CSegmentButtonTest,
 		EXPECT (b.getSelectedSegment () == 0);
 
 		b.setSelectedSegment (1);
-		b.setStyle (CSegmentButton::kHorizontal);
+		b.setStyle (CSegmentButton::Style::kHorizontal);
 		EXPECT (b.onKeyDown (keycode) == 1);
 		EXPECT (b.getSelectedSegment () == 1);
 		EXPECT (b.onKeyDown (keycode) == 1);
@@ -191,7 +191,7 @@ TESTCASE(CSegmentButtonTest,
 		const auto numSegments = 5;
 		CRect r (0, 0, 100, 100);
 		auto b = new CSegmentButton (r);
-		b->setStyle (CSegmentButton::kHorizontal);
+		b->setStyle (CSegmentButton::Style::kHorizontal);
 		for (auto i = 0; i < numSegments; ++i)
 			b->addSegment ({});
 		for (const auto& s : b->getSegments())
@@ -213,7 +213,7 @@ TESTCASE(CSegmentButtonTest,
 		const auto numSegments = 5;
 		CRect r (0, 0, 100, 100);
 		auto b = new CSegmentButton (r);
-		b->setStyle (CSegmentButton::kVertical);
+		b->setStyle (CSegmentButton::Style::kVertical);
 		for (auto i = 0; i < numSegments; ++i)
 			b->addSegment ({});
 		for (const auto& s : b->getSegments())
@@ -234,7 +234,7 @@ TESTCASE(CSegmentButtonTest,
 	TEST(updateViewSize,
 		const auto numSegments = 5;
 		auto b = new CSegmentButton (CRect (0, 0, 50, 100));
-		b->setStyle (CSegmentButton::kHorizontal);
+		b->setStyle (CSegmentButton::Style::kHorizontal);
 		for (auto i = 0; i < numSegments; ++i)
 			b->addSegment ({});
 		for (const auto& s : b->getSegments())
@@ -263,7 +263,7 @@ TESTCASE(CSegmentButtonTest,
 		const auto numSegments = 5;
 		CRect r (0, 0, 100, 100);
 		auto b = new CSegmentButton (r);
-		b->setStyle (CSegmentButton::kHorizontal);
+		b->setStyle (CSegmentButton::Style::kHorizontal);
 		for (auto i = 0; i < numSegments; ++i)
 			b->addSegment ({});
 		for (const auto& s : b->getSegments())

@@ -63,7 +63,7 @@ public:
 
 protected:
 	void collectSubviews (CViewContainer* container, bool deep);
-	const IViewFactory* factory;
+	const UIViewFactory* factory;
 	SharedPointer<CViewContainer> containerView;
 	CViewContainer* parent;
 };
@@ -537,6 +537,42 @@ protected:
 	std::string name;
 };
 
+//-----------------------------------------------------------------------------
+class ChangeFocusDrawingAction : public IAction
+{
+public:
+	ChangeFocusDrawingAction (UIDescription* description, const FocusDrawingSettings& newSettings);
+
+	UTF8StringPtr getName () override;
+	void perform () override;
+	void undo () override;
+protected:
+	SharedPointer<UIDescription> description;
+	FocusDrawingSettings oldSettings;
+	FocusDrawingSettings newSettings;
+};
+
+//-----------------------------------------------------------------------------
+class ChangeTemplateMinMaxAction : public IAction
+{
+public:
+	ChangeTemplateMinMaxAction (UIDescription* description, UTF8StringPtr templateName, CPoint minSize, CPoint maxSize);
+
+	UTF8StringPtr getName () override;
+	void perform () override;
+	void undo () override;
+private:
+	void setMinMaxSize (CPoint minimum, CPoint maximum);
+
+	SharedPointer<UIDescription> description;
+	std::string templateName;
+	CPoint minSize;
+	CPoint maxSize;
+	CPoint oldMinSize;
+	CPoint oldMaxSize;
+};
+
+//-----------------------------------------------------------------------------
 } // namespace
 
 #endif // VSTGUI_LIVE_EDITING

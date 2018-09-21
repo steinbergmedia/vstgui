@@ -25,10 +25,10 @@ TESTCASE(CVuMeterCreatorTest,
 	TEST(orientation,
 		DummyUIDescription uidesc;
 		testAttribute<CVuMeter>(kCVuMeter, kAttrOrientation, "horizontal", &uidesc, [&] (CVuMeter* v) {
-			return v->getStyle() == kHorizontal;
+			return v->getStyle() == CVuMeter::kHorizontal;
 		});
 		testAttribute<CVuMeter>(kCVuMeter, kAttrOrientation, "vertical", &uidesc, [&] (CVuMeter* v) {
-			return v->getStyle() == kVertical;
+			return v->getStyle() == CVuMeter::kVertical;
 		});
 	);
 

@@ -17,16 +17,24 @@ namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
 // Definitions of special characters in a platform independent way
-extern UTF8StringPtr kDegreeSymbol;			///< degree sign
-extern UTF8StringPtr kInfiniteSymbol;		///< infinity
-extern UTF8StringPtr kCopyrightSymbol;		///< copyright sign
-extern UTF8StringPtr kTrademarkSymbol;		///< trade mark sign
-extern UTF8StringPtr kRegisteredSymbol;		///< registered sign
-extern UTF8StringPtr kMicroSymbol;			///< micro sign
-extern UTF8StringPtr kPerthousandSymbol;	///< per mille sign
+/** degree sign */
+extern UTF8StringPtr kDegreeSymbol;
+/** infinity sign */
+extern UTF8StringPtr kInfiniteSymbol;
+/** copyright sign */
+extern UTF8StringPtr kCopyrightSymbol;
+/** trade mark sign */
+extern UTF8StringPtr kTrademarkSymbol;
+/** registered sign */
+extern UTF8StringPtr kRegisteredSymbol;
+/** micro sign */
+extern UTF8StringPtr kMicroSymbol;
+/** per mille sign */
+extern UTF8StringPtr kPerthousandSymbol;
 
 //-----------------------------------------------------------------------------
-extern IdStringPtr kMsgViewSizeChanged;		///< Message send to parent that the size of the view has changed
+/** Message send to parent that the size of the view has changed */
+extern IdStringPtr kMsgViewSizeChanged;
 
 //-----------------------------------------------------------------------------
 // Attributes
@@ -34,7 +42,7 @@ extern IdStringPtr kMsgViewSizeChanged;		///< Message send to parent that the si
 
 extern const CViewAttributeID kCViewAttributeReferencePointer;	// 'cvrp'
 extern const CViewAttributeID kCViewTooltipAttribute;			// 'cvtt'
-extern const CViewAttributeID kCViewControllerAttribute;		// 'ictr' ///< see @ref IController
+extern const CViewAttributeID kCViewControllerAttribute;		// 'ictr'
 
 //-----------------------------------------------------------------------------
 // CView Declaration
@@ -51,45 +59,68 @@ public:
 	/// @name Draw and Update Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual void draw (CDrawContext *pContext);															///< called if the view should draw itself
-	virtual void drawRect (CDrawContext *pContext, const CRect& updateRect) { draw (pContext); }		///< called if the view should draw itself
+	/** called if the view should draw itself */
+	virtual void draw (CDrawContext *pContext);
+	/** called if the view should draw itself */
+	virtual void drawRect (CDrawContext *pContext, const CRect& updateRect) { draw (pContext); }
 	virtual bool checkUpdate (const CRect& updateRect) const { return updateRect.rectOverlap (getViewSize ()); }
 
-	virtual bool isDirty () const { return hasViewFlag (kDirty); }										///< check if view is dirty
-	virtual void setDirty (bool val = true);															///< set the view to dirty so that it is redrawn in the next idle. Thread Safe !
-	static bool kDirtyCallAlwaysOnMainThread;															///< if this is true, setting a view dirty will call invalid() instead of checking it in idle. Default value is false.
+	/** check if view is dirty */
+	virtual bool isDirty () const { return hasViewFlag (kDirty); }
+	/** set the view to dirty so that it is redrawn in the next idle. Thread Safe ! */
+	virtual void setDirty (bool val = true);
+	/** if this is true, setting a view dirty will call invalid() instead of checking it in idle. Default value is false. */
+	static bool kDirtyCallAlwaysOnMainThread;
 
-	virtual void invalidRect (const CRect& rect);														///< mark rect as invalid
-	virtual void invalid () { setDirty (false); invalidRect (getViewSize ()); }									///< mark whole view as invalid
+	/** mark rect as invalid */
+	virtual void invalidRect (const CRect& rect);
+	/** mark whole view as invalid */
+	virtual void invalid () { setDirty (false); invalidRect (getViewSize ()); }
 
-	virtual void setVisible (bool state);																///< set visibility state
-	bool isVisible () const { return hasViewFlag (kVisible) && getAlphaValue () > 0.f; }						///< get visibility state
+	/** set visibility state */
+	virtual void setVisible (bool state);
+	/** get visibility state */
+	bool isVisible () const { return hasViewFlag (kVisible) && getAlphaValue () > 0.f; }
 	//@}
 
 	//-----------------------------------------------------------------------------
 	/// @name Mouse Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons);											///< called when a mouse down event occurs
-	virtual CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons);											///< called when a mouse up event occurs
-	virtual CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons);										///< called when a mouse move event occurs
-	virtual CMouseEventResult onMouseCancel ();																					///< called when mouse tracking should be canceled
+	/** called when a mouse down event occurs */
+	virtual CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons);
+	/** called when a mouse up event occurs */
+	virtual CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons);
+	/** called when a mouse move event occurs */
+	virtual CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons);
+	/** called when mouse tracking should be canceled */
+	virtual CMouseEventResult onMouseCancel ();
 
-	virtual CMouseEventResult onMouseEntered (CPoint& where, const CButtonState& buttons) {return kMouseEventNotImplemented;}	///< called when the mouse enters this view
-	virtual CMouseEventResult onMouseExited (CPoint& where, const CButtonState& buttons) {return kMouseEventNotImplemented;}	///< called when the mouse leaves this view
+	/** called when the mouse enters this view */
+	virtual CMouseEventResult onMouseEntered (CPoint& where, const CButtonState& buttons) {return kMouseEventNotImplemented;}
+	/** called when the mouse leaves this view */
+	virtual CMouseEventResult onMouseExited (CPoint& where, const CButtonState& buttons) {return kMouseEventNotImplemented;}
 
 	void setHitTestPath (CGraphicsPath* path);
-	virtual bool hitTest (const CPoint& where, const CButtonState& buttons = -1);												///< check if where hits this view
+	/** check if where hits this view */
+	virtual bool hitTest (const CPoint& where, const CButtonState& buttons = -1);
 
-	virtual bool onWheel (const CPoint& where, const float& distance, const CButtonState& buttons);									///< called if a mouse wheel event is happening over this view
-	virtual bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons);	///< called if a mouse wheel event is happening over this view
+	/** called if a mouse wheel event is happening over this view */
+	virtual bool onWheel (const CPoint& where, const float& distance, const CButtonState& buttons);
+	/** called if a mouse wheel event is happening over this view */
+	virtual bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons);
 
-	virtual void setMouseEnabled (bool bEnable = true);											///< turn on/off mouse usage for this view
-	bool getMouseEnabled () const { return hasViewFlag (kMouseEnabled); }						///< get the state of wheather this view uses the mouse or not
+	/** turn on/off mouse usage for this view */
+	virtual void setMouseEnabled (bool bEnable = true);
+	/** get the state of wheather this view uses the mouse or not */
+	bool getMouseEnabled () const { return hasViewFlag (kMouseEnabled); }
 
-	virtual void setMouseableArea (const CRect& rect);											///< set the area in which the view reacts to the mouse
-	CRect& getMouseableArea (CRect& rect) const;												///< get the area in which the view reacts to the mouse
-	const CRect& getMouseableArea () const;														///< read only access to the mouseable area
+	/** set the area in which the view reacts to the mouse */
+	virtual void setMouseableArea (const CRect& rect);
+	/** get the area in which the view reacts to the mouse */
+	CRect& getMouseableArea (CRect& rect) const;
+	/** read only access to the mouseable area */
+	const CRect& getMouseableArea () const;
 	//@}
 
 #if VSTGUI_TOUCH_EVENT_HANDLING
@@ -106,68 +137,113 @@ public:
 	/// @name Drag & Drop Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual DragResult doDrag (IDataPackage* source, const CPoint& offset = CPoint (0, 0), CBitmap* dragBitmap = nullptr);	///< start a drag operation. See CDropSource to create the source data package
-	virtual bool onDrop (IDataPackage* drag, const CPoint& where) { return false; }				///< called if a drag is dropped onto this view
-	virtual void onDragEnter (IDataPackage* drag, const CPoint& where) {}						///< called if a drag is entering this view
-	virtual void onDragLeave (IDataPackage* drag, const CPoint& where) {}						///< called if a drag is leaving this view
-	virtual void onDragMove (IDataPackage* drag, const CPoint& where) {}						///< called if a drag is moved inside this view
+	/** start a drag operation */
+	bool doDrag (const DragDescription& dragDescription, const SharedPointer<IDragCallback>& callback = {});
+	/** get the drag target for drag and drop handling */
+	virtual SharedPointer<IDropTarget> getDropTarget ();
+
+	/** \deprecated start a drag operation. See CDropSource to create the source data package */
+	VSTGUI_DEPRECATED(DragResult doDrag (IDataPackage* source, const CPoint& offset = CPoint (0, 0), CBitmap* dragBitmap = nullptr);)
 	//@}
 
 	//-----------------------------------------------------------------------------
 	/// @name Keyboard Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual int32_t onKeyDown (VstKeyCode& keyCode);											///< called if a key down event occurs and this view has focus
-	virtual int32_t onKeyUp (VstKeyCode& keyCode);												///< called if a key up event occurs and this view has focus
+	/** called if a key down event occurs and this view has focus */
+	virtual int32_t onKeyDown (VstKeyCode& keyCode);
+	/** called if a key up event occurs and this view has focus */
+	virtual int32_t onKeyUp (VstKeyCode& keyCode);
 	//@}
 
 	//-----------------------------------------------------------------------------
 	/// @name View Size Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	CCoord getHeight () const { return getViewSize ().getHeight (); }							///< get the height of the view
-	CCoord getWidth ()  const { return getViewSize ().getWidth (); }							///< get the width of the view
-	virtual void setViewSize (const CRect& rect, bool invalid = true);							///< set views size
-	const CRect& getViewSize () const;															///< read only access to view size
-	virtual CRect getVisibleViewSize () const;													///< returns the visible size of the view
-	virtual void parentSizeChanged () {}														///< notification that one of the views parent has changed its size
-	virtual CPoint& frameToLocal (CPoint& point) const;											///< conversion from frame coordinates to local view coordinates
-	virtual CPoint& localToFrame (CPoint& point) const;											///< conversion from local view coordinates to frame coordinates
-	virtual void setAutosizeFlags (int32_t flags);												///< set autosize flags
-	int32_t getAutosizeFlags () const;															///< get autosize flags
-	virtual bool sizeToFit () { return false; }													///< resize view to optimal size
+	/** get the height of the view */
+	CCoord getHeight () const { return getViewSize ().getHeight (); }
+	/** get the width of the view */
+	CCoord getWidth ()  const { return getViewSize ().getWidth (); }
+	/** set views size */
+	virtual void setViewSize (const CRect& rect, bool invalid = true);
+	/** read only access to view size */
+	const CRect& getViewSize () const;
+	/** returns the visible size of the view */
+	virtual CRect getVisibleViewSize () const;
+	/** notification that one of the views parent has changed its size */
+	virtual void parentSizeChanged () {}
+	/** conversion from frame coordinates to local view coordinates */
+	virtual CPoint& frameToLocal (CPoint& point) const;
+	/** conversion from local view coordinates to frame coordinates */
+	virtual CPoint& localToFrame (CPoint& point) const;
+	/** set autosize flags */
+	virtual void setAutosizeFlags (int32_t flags);
+	/** get autosize flags */
+	int32_t getAutosizeFlags () const;
+	/** resize view to optimal size */
+	virtual bool sizeToFit () { return false; }
 	//@}
 
 	//-----------------------------------------------------------------------------
 	/// @name Focus Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual void looseFocus ();																	///< called if view should loose focus
-	virtual void takeFocus ();																	///< called if view should take focus
-	virtual bool wantsFocus () const { return hasViewFlag (kWantsFocus); }						///< check if view supports focus
-	virtual void setWantsFocus (bool state);													///< set focus support on/off
+	/** called if view should loose focus */
+	virtual void looseFocus ();
+	/** called if view should take focus */
+	virtual void takeFocus ();
+	/** check if view supports focus */
+	virtual bool wantsFocus () const { return hasViewFlag (kWantsFocus); }
+	/** set focus support on/off */
+	virtual void setWantsFocus (bool state);
 	//@}
 
 	//-----------------------------------------------------------------------------
 	/// @name Attribute Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	bool getAttributeSize (const CViewAttributeID id, uint32_t& outSize) const;										///< get the size of an attribute
-	bool getAttribute (const CViewAttributeID id, const uint32_t inSize, void* outData, uint32_t& outSize) const;	///< get an attribute
-	bool setAttribute (const CViewAttributeID id, const uint32_t inSize, const void* inData);						///< set an attribute
-	bool removeAttribute (const CViewAttributeID id);																///< remove an attribute
+	/** get the size of an attribute */
+	bool getAttributeSize (const CViewAttributeID id, uint32_t& outSize) const;
+	/** get an attribute */
+	bool getAttribute (const CViewAttributeID id, const uint32_t inSize, void* outData, uint32_t& outSize) const;
+	/** set an attribute */
+	bool setAttribute (const CViewAttributeID id, const uint32_t inSize, const void* inData);
+	/** remove an attribute */
+	bool removeAttribute (const CViewAttributeID id);
+
+	/** set an attribute */
+	template<typename T>
+	bool setAttribute (const CViewAttributeID id, const T& data)
+	{
+		return setAttribute (id, sizeof (T), &data);
+	}
+	
+	/** get an attribute */
+	template <typename T>
+	bool getAttribute (const CViewAttributeID id, T& data) const
+	{
+		uint32_t outSize;
+		if (getAttribute (id, sizeof (T), &data, outSize))
+			return outSize == sizeof (T);
+		return false;
+	}
 	//@}
 
 	//-----------------------------------------------------------------------------
 	/// @name Background Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual void setBackground (CBitmap* background);											///< set the background image of this view
-	CBitmap* getBackground () const;															///< get the background image of this view
+	/** set the background image of this view */
+	virtual void setBackground (CBitmap* background);
+	/** get the background image of this view */
+	CBitmap* getBackground () const;
 
-	virtual void setDisabledBackground (CBitmap* background);									///< set background image used when the mouse is not enabled
-	CBitmap* getDisabledBackground () const;													///< get background image used when the mouse is not enabled
+	/** set background image used when the mouse is not enabled */
+	virtual void setDisabledBackground (CBitmap* background);
+	/** get background image used when the mouse is not enabled */
+	CBitmap* getDisabledBackground () const;
 
+	/** get the bitmap which is drawn depending on the enabled state. */
 	CBitmap* getDrawBackground () const;
 	//@}
 
@@ -175,20 +251,27 @@ public:
 	/// @name Transparency Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual void setTransparency (bool val);													///< set views transparent state
-	bool getTransparency () const { return hasViewFlag (kTransparencyEnabled); }				///< get views transparent state
+	/** set views transparent state */
+	virtual void setTransparency (bool val);
+	/** get views transparent state */
+	bool getTransparency () const { return hasViewFlag (kTransparencyEnabled); }
 
-	virtual void setAlphaValue (float alpha);													///< set alpha value which will be applied when drawing this view
-	float getAlphaValue () const;																///< get alpha value
+	/** set alpha value which will be applied when drawing this view */
+	virtual void setAlphaValue (float alpha);
+	/** get alpha value */
+	float getAlphaValue () const;
 	//@}
 
 	//-----------------------------------------------------------------------------
 	/// @name Attaching Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual bool removed (CView* parent);														///< view is removed from parent view
-	virtual bool attached (CView* parent);														///< view is attached to a parent view
-	bool isAttached () const { return hasViewFlag (kIsAttached); }								///< is view attached to a parentView
+	/** view is removed from parent view */
+	virtual bool removed (CView* parent);
+	/** view is attached to a parent view */
+	virtual bool attached (CView* parent);
+	/** is view attached to a parentView */
+	bool isAttached () const { return hasViewFlag (kIsAttached); }
 	//@}
 
 	void setSubviewState (bool state);
@@ -198,9 +281,12 @@ public:
 	/// @name Parent Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	CView* getParentView () const;																///< get parent view
-	CFrame* getFrame () const;																	///< get frame
-	virtual VSTGUIEditorInterface* getEditor () const;											///< get editor
+	/** get parent view */
+	CView* getParentView () const;
+	/** get frame */
+	CFrame* getFrame () const;
+	/** get editor */
+	virtual VSTGUIEditorInterface* getEditor () const;
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -219,13 +305,17 @@ public:
 	//! The onIdle() method will be called only if the view is attached.
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual void onIdle () {}																	///< called on idle when view wants idle
-	void setWantsIdle (bool state);																///< enable/disable onIdle() callback
-	bool wantsIdle () const { return hasViewFlag (kWantsIdle); }								///< returns if the view wants idle callback or not
-	static uint32_t idleRate;																	///< global idle rate in Hz, defaults to 30 Hz
+	/** called on idle when view wants idle */
+	virtual void onIdle () {}
+	/** enable/disable onIdle() callback */
+	void setWantsIdle (bool state);
+	/** returns if the view wants idle callback or not */
+	bool wantsIdle () const { return hasViewFlag (kWantsIdle); }
+	/** global idle rate in Hz, defaults to 30 Hz*/
+	static uint32_t idleRate;
 	//@}
 
-	/** weather this view wants to be informed if the window's active state changes */
+	/** whether this view wants to be informed if the window's active state changes */
 	virtual bool wantsWindowActiveStateChangeNotification () const { return false; }
 	/** called when the active state of the window changes */
 	virtual void onWindowActivate (bool state) {}
@@ -236,13 +326,20 @@ public:
 	//@{
 	void registerViewListener (IViewListener* listener);
 	void unregisterViewListener (IViewListener* listener);
+	
+	void registerViewMouseListener (IViewMouseListener* listener);
+	void unregisterViewMouseListener (IViewMouseListener* listener);
 	//@}
 
 	CGraphicsTransform getGlobalTransform () const;
-	template<typename T> T& translateToGlobal (T& t) const { getGlobalTransform ().transform (t); return t; } ///< translates a local coordinate to a global one using parent transforms
-	template<typename T> T translateToGlobal (const T& t) const { T tmp (t); getGlobalTransform ().transform (tmp); return tmp; } ///< translates a local coordinate to a global one using parent transforms
-	template<typename T> T& translateToLocal (T& t) const { getGlobalTransform ().inverse ().transform (t); return t; } ///< translates a global coordinate to a local one using parent transforms
-	template<typename T> T translateToLocal (const T& t) const { T tmp (t); getGlobalTransform ().inverse ().transform (tmp); return tmp; } ///< translates a local coordinate to a global one using parent transforms
+	/** translates a local coordinate to a global one using parent transforms */
+	template<typename T> T& translateToGlobal (T& t) const { getGlobalTransform ().transform (t); return t; }
+	/** translates a local coordinate to a global one using parent transforms */
+	template<typename T> T translateToGlobal (const T& t) const { T tmp (t); getGlobalTransform ().transform (tmp); return tmp; }
+	/** translates a global coordinate to a local one using parent transforms */
+	template<typename T> T& translateToLocal (T& t) const { getGlobalTransform ().inverse ().transform (t); return t; }
+	/** translates a local coordinate to a global one using parent transforms */
+	template<typename T> T translateToLocal (const T& t) const { T tmp (t); getGlobalTransform ().inverse ().transform (tmp); return tmp; }
 
 	#if DEBUG
 	virtual void dumpInfo ();
@@ -251,6 +348,16 @@ public:
 	virtual CViewContainer* asViewContainer () { return nullptr; }
 	virtual const CViewContainer* asViewContainer () const { return nullptr; }
 
+	enum class MouseListenerCall
+	{
+		MouseDown,
+		MouseMoved,
+		MouseUp,
+		MouseCancel
+	};
+	CMouseEventResult callMouseListener (MouseListenerCall type, CPoint pos, CButtonState buttons);
+	void callMouseListenerEnteredExited (bool mouseEntered);
+	
 	// overwrites
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 	void beforeDelete () override;
@@ -303,9 +410,12 @@ public:
 	int32_t getCount () const;
 	
 	enum CDragType {
-		kFile = 0,								///< File (MacOSX = UTF8 String)
-		kText,									///< ASCII Text
-		kUnicodeText,							///< UTF8 Text
+		/** File (MacOSX = UTF8 String) */
+		kFile = 0,
+		/** ASCII Text */
+		kText,
+		/** UTF8 Text */
+		kUnicodeText,
 		
 		kUnknown = -1,
 		kError = -2

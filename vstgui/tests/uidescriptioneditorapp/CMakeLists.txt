@@ -1,6 +1,10 @@
 ##########################################################################################
 # VSTGUI UIDescriptionEditor Application
 ##########################################################################################
+option(VSTGUI_UIDESCRIPTIONEDITOR_APPLICATION "UIDescriptionEditorApp Target" OFF)
+
+if(VSTGUI_UIDESCRIPTIONEDITOR_APPLICATION)
+
 set(target UIDescriptionEditorApp)
 
 set(${target}_sources
@@ -62,3 +66,5 @@ target_link_libraries(${target}
 vstgui_set_cxx_version(${target} 14)
 set_target_properties(${target} PROPERTIES ${APP_PROPERTIES} FOLDER Tests)
 target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS})
+
+endif(VSTGUI_UIDESCRIPTIONEDITOR_APPLICATION)

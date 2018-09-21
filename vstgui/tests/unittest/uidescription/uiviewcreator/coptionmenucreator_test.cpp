@@ -18,14 +18,14 @@ TESTCASE(COptionMenuCreatorTest,
 	TEST(popupStyle,
 		UIDescriptionAdapter uidesc;
 		testAttribute<COptionMenu>(kCOptionMenu, kAttrMenuPopupStyle, true, &uidesc, [] (COptionMenu* v) {
-			return v->getStyle () & kPopupStyle;
+			return v->getStyle () & COptionMenu::kPopupStyle;
 		});
 	);
 
 	TEST(checkStyle,
 		UIDescriptionAdapter uidesc;
 		testAttribute<COptionMenu>(kCOptionMenu, kAttrMenuCheckStyle, true, &uidesc, [] (COptionMenu* v) {
-			return v->getStyle () & kCheckStyle;
+			return v->getStyle () & COptionMenu::kCheckStyle;
 		});
 	);
 );

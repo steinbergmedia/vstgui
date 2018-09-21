@@ -50,15 +50,17 @@ protected:
 	void freeCGImage ();
 
 	CPoint size;
-	CGImageRef image;
-	CGImageSourceRef imageSource;
+	CGImageRef image {nullptr};
+	CGImageSourceRef imageSource {nullptr};
 
-	CGLayerRef layer;
+	CGLayerRef layer {nullptr};
+	
+	CGDataProviderRef bitsDataProvider {nullptr};
 
-	void* bits;
-	bool dirty;
-	uint32_t bytesPerRow;
-	double scaleFactor;
+	void* bits {nullptr};
+	bool dirty {false};
+	uint32_t bytesPerRow {0};
+	double scaleFactor {1.};
 };
 
 } // namespace

@@ -11,6 +11,7 @@
 
 #include "../../lib/cbitmap.h"
 #include "../../lib/ccolor.h"
+#include "../../lib/dragging.h"
 
 namespace VSTGUI {
 class UIUndoManager;
@@ -25,7 +26,7 @@ namespace UIEditViewInternal {
 } // namespace UIEditViewInternal
 
 //----------------------------------------------------------------------------------------------------
-class UIEditView : public CViewContainer
+class UIEditView : public CViewContainer, public IDropTarget
 {
 public:
 	UIEditView (const CRect& size, UIDescription* uidescription);
@@ -80,17 +81,19 @@ protected:
 	CMouseEventResult onMouseMoved (CPoint &where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseExited (CPoint& where, const CButtonState& buttons) override;
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
+	int32_t onKeyDown (VstKeyCode& keyCode) override;
 
 	void doDragEditingMove (CPoint& where);
 	void doSizeEditingMove (CPoint& where);
 
-	CBitmap* createBitmapFromSelection (UISelection* selection);
 	void startDrag (CPoint& where);
 	UISelection* getSelectionOutOfDrag (IDataPackage* drag);
-	bool onDrop (IDataPackage* drag, const CPoint& where) override;
-	void onDragEnter (IDataPackage* drag, const CPoint& where) override;
-	void onDragLeave (IDataPackage* drag, const CPoint& where) override;
-	void onDragMove (IDataPackage* drag, const CPoint& where) override;
+
+	SharedPointer<IDropTarget> getDropTarget () override;
+	bool onDrop (DragEventData data) override;
+	DragOperation onDragEnter (DragEventData data) override;
+	void onDragLeave (DragEventData data) override;
+	DragOperation onDragMove (DragEventData data) override;
 
 	void draw (CDrawContext *pContext) override;
 	void drawRect (CDrawContext *pContext, const CRect& updateRect) override;

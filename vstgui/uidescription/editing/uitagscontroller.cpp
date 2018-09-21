@@ -28,7 +28,8 @@ protected:
 	UTF8StringPtr getDefaultsName () override;
 
 	void update () override;
-	
+	void onUIDescTagChanged (UIDescription* desc) override;
+
 	int32_t dbGetNumColumns (CDataBrowser* browser) override { return 2; }
 	CCoord dbGetCurrentColumnWidth (int32_t index, CDataBrowser* browser) override;
 	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser) override;
@@ -41,7 +42,7 @@ protected:
 
 //----------------------------------------------------------------------------------------------------
 UITagsDataSource::UITagsDataSource (UIDescription* description, IActionPerformer* actionPerformer)
-: UIBaseDataSource (description, actionPerformer, UIDescription::kMessageTagChanged)
+: UIBaseDataSource (description, actionPerformer)
 {
 }
 
@@ -89,6 +90,12 @@ void UITagsDataSource::update ()
 		description->getControlTagString (name.data (), tagString);
 		tags.emplace_back (std::move (tagString));
 	}
+}
+
+//----------------------------------------------------------------------------------------------------
+void UITagsDataSource::onUIDescTagChanged (UIDescription* desc)
+{
+	onUIDescriptionUpdate ();
 }
 
 //----------------------------------------------------------------------------------------------------

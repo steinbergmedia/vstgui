@@ -15,6 +15,7 @@
 #include "iaction.h"
 #include "../../lib/csplitview.h"
 #include "../../lib/cframe.h"
+#include "../../lib/controls/icommandmenuitemtarget.h"
 
 #include <vector>
 
@@ -30,7 +31,15 @@ class GenericStringListDataBrowserSource;
 class CCommandMenuItem;
 
 //----------------------------------------------------------------------------------------------------
-class UIEditController : public CBaseObject, public IController, public IContextMenuController, public ISplitViewController, public ISplitViewSeparatorDrawer, public IActionPerformer, public IKeyboardHook, public UIDescriptionListenerAdapter
+class UIEditController : public CBaseObject,
+                         public IController,
+                         public IContextMenuController2,
+                         public ISplitViewController,
+                         public ISplitViewSeparatorDrawer,
+                         public IActionPerformer,
+                         public IKeyboardHook,
+                         public CommandMenuItemTargetAdapter,
+                         public UIDescriptionListenerAdapter
 {
 public:
 	UIEditController (UIDescription* description);
@@ -39,7 +48,7 @@ public:
 	UIEditMenuController* getMenuController () const { return menuController; }
 	UIUndoManager* getUndoManager () const { return undoManager; }
 	const std::string& getEditTemplateName () const { return editTemplateName; }
-	UIAttributes* getSettings ();
+	SharedPointer<UIAttributes> getSettings ();
 	int32_t getSaveOptions ();
 	
 	void onZoomChanged (double zoom);
@@ -66,8 +75,8 @@ protected:
 
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 
-	// IContextMenuController
-	void appendContextMenuItems (COptionMenu& contextMenu, const CPoint& where) override;
+	// IContextMenuController2
+	void appendContextMenuItems (COptionMenu& contextMenu, CView* view, const CPoint& where) override;
 
 	// ISplitViewController
 	bool getSplitViewSizeConstraint (int32_t index, CCoord& minSize, CCoord& maxSize, CSplitView* splitView) override;
@@ -99,6 +108,7 @@ protected:
 	void endLiveColorChange (UTF8StringPtr colorName) override;
 
 	void performTemplateNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) override;
+	void performTemplateMinMaxSizeChange (UTF8StringPtr templateName, CPoint minSize, CPoint maxSize) override;
 	void performCreateNewTemplate (UTF8StringPtr name, UTF8StringPtr baseViewClassName) override;
 	void performDeleteTemplate (UTF8StringPtr name) override;
 	void performDuplicateTemplate (UTF8StringPtr name, UTF8StringPtr dupName) override;
@@ -106,12 +116,18 @@ protected:
 	void onTemplateCreation (UTF8StringPtr name, CView* view) override;
 	void onTemplateNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) override;
 
+	void performChangeFocusDrawingSettings (const FocusDrawingSettings& newSettings) override;
+
 	void beginGroupAction (UTF8StringPtr name) override;
 	void finishGroupAction () override;
 
 	// IKeyboardHook
 	int32_t onKeyDown (const VstKeyCode& code, CFrame* frame) override;
 	int32_t onKeyUp (const VstKeyCode& code, CFrame* frame) override;
+
+	// CommandMenuItemTargetAdapter
+	bool validateCommandMenuItem (CCommandMenuItem* item) override;
+	bool onCommandMenuItemSelected (CCommandMenuItem* item) override;
 
 	SharedPointer<UIDescription> editDescription;
 	SharedPointer<UIDescription> editorDesc;

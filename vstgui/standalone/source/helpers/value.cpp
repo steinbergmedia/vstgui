@@ -54,13 +54,22 @@ public:
 class DefaultValueConverter : public IValueConverter
 {
 public:
+	DefaultValueConverter (uint32_t stringPrecision = 40) : stringPrecision (stringPrecision) {}
+
 	UTF8String valueAsString (IValue::Type value) const override
 	{
 		UTF8String result;
 		if (value < 0. || value > 1.)
 			return result;
-
-		result = std::to_string (normalizedToPlain (value));
+		value = normalizedToPlain (value);
+		std::stringstream sstream;
+		sstream.imbue (std::locale::classic ());
+		sstream.precision (stringPrecision);
+		if (stringPrecision)
+			sstream << std::showpoint;
+		sstream << std::fixed;
+		sstream << value;
+		result = sstream.str ();
 		return result;
 	}
 
@@ -69,7 +78,7 @@ public:
 		IValue::Type value;
 		std::istringstream sstream (string.getString ());
 		sstream.imbue (std::locale::classic ());
-		sstream.precision (40);
+		sstream.precision (stringPrecision);
 		sstream >> value;
 		value = plainToNormalized (value);
 		if (value < 0. || value > 1.)
@@ -80,14 +89,16 @@ public:
 	IValue::Type plainToNormalized (IValue::Type plain) const override { return plain; }
 
 	IValue::Type normalizedToPlain (IValue::Type normalized) const override { return normalized; }
+private:
+	uint32_t stringPrecision {40};
 };
 
 //------------------------------------------------------------------------
-class RangeValueConverter : public DefaultValueConverter
+class RangeValueConverter : public DefaultValueConverter, public IRangeValueConverter
 {
 public:
-	RangeValueConverter (IValue::Type minValue, IValue::Type maxValue)
-	: minValue (minValue), maxValue (maxValue)
+	RangeValueConverter (IValue::Type minValue, IValue::Type maxValue, uint32_t stringPrecision)
+	: DefaultValueConverter (stringPrecision), minValue (minValue), maxValue (maxValue)
 	{
 	}
 
@@ -99,6 +110,12 @@ public:
 	IValue::Type normalizedToPlain (IValue::Type normalized) const override
 	{
 		return normalized * (maxValue - minValue) + minValue;
+	}
+
+	void setRange (IValue::Type _min, IValue::Type _max) override
+	{
+		minValue = _min;
+		maxValue = _max;
 	}
 
 private:
@@ -233,7 +250,7 @@ private:
 };
 
 //------------------------------------------------------------------------
-class StepValue : public Value, public IStepValue, public IValueConverter
+class StepValue : public Value, public IStepValue, public IValueConverter, public IMutableStepValue
 {
 public:
 	StepValue (const UTF8String& id, StepType initialSteps, Type initialValue,
@@ -252,7 +269,7 @@ public:
 
 	const IValueConverter& getConverter () const override;
 
-	void setNumSteps (StepType numSteps);
+	void setNumSteps (StepType numSteps) override;
 
 private:
 	StepType steps;
@@ -523,9 +540,10 @@ ValueConverterPtr makePercentConverter ()
 }
 
 //------------------------------------------------------------------------
-ValueConverterPtr makeRangeConverter (IValue::Type minValue, IValue::Type maxValue)
+ValueConverterPtr makeRangeConverter (IValue::Type minValue, IValue::Type maxValue,
+                                      uint32_t stringPrecision)
 {
-	return std::make_shared<Detail::RangeValueConverter> (minValue, maxValue);
+	return std::make_shared<Detail::RangeValueConverter> (minValue, maxValue, stringPrecision);
 }
 
 //------------------------------------------------------------------------

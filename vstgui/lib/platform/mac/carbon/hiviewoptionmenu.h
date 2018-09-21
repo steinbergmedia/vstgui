@@ -17,8 +17,7 @@ namespace VSTGUI {
 class HIViewOptionMenu : public IPlatformOptionMenu
 {
 public:
-
-	PlatformOptionMenuResult popup (COptionMenu* optionMenu) override;
+	void popup (COptionMenu* optionMenu, const Callback& callback) override;
 
 protected:
 	MenuRef createMenu (COptionMenu* menu);

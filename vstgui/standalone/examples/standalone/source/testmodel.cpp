@@ -20,7 +20,7 @@ using namespace VSTGUI::Standalone;
 TestModel::TestModel ()
 {
 	addValue (Value::make ("Activate", 1.));
-	addValue (Value::make ("Test"));
+	addValue (Value::make ("Test", 0, Value::makeRangeConverter (0, 10, 2)));
 	addValue (Value::makeStepValue ("StepTest", 5, 0));
 	addValue (Value::make ("ShowAlert"));
 	addValue (Value::makeStringListValue ("StringList", {"one","two","three","four","five"}));
@@ -50,7 +50,7 @@ void TestModel::onEndEdit (IValue& value)
 	{
 		AlertBoxForWindowConfig config;
 		config.headline = "Test Alert";
-		config.description = "This is an example alert box.";
+		config.description = "This is an example alert box.\nWith more than one line.\nIt even has more than two lines.";
 		config.secondButton = "Cancel";
 		config.thirdButton = "Do Quit";
 		config.window = IApplication::instance ().getWindows ().front ();
@@ -93,4 +93,3 @@ void TestModel::onEndEdit (IValue& value)
 
 //------------------------------------------------------------------------
 } // MyApp
-

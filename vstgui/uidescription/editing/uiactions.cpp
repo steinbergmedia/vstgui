@@ -64,7 +64,7 @@ void SizeToFitOperation::undo ()
 //----------------------------------------------------------------------------------------------------
 UnembedViewOperation::UnembedViewOperation (UISelection* selection, const IViewFactory* factory)
 : BaseSelectionOperation<SharedPointer<CView> > (selection)
-, factory (factory)
+, factory (static_cast<const UIViewFactory*> (factory))
 {
 	containerView = selection->first ()->asViewContainer ();
 	collectSubviews (containerView, true);
@@ -74,20 +74,17 @@ UnembedViewOperation::UnembedViewOperation (UISelection* selection, const IViewF
 //----------------------------------------------------------------------------------------------------
 void UnembedViewOperation::collectSubviews (CViewContainer* container, bool deep)
 {
-	ViewIterator it (container);
-	while (*it)
-	{
-		if (factory->getViewName (*it))
+	container->forEachChild ([&] (CView* view) {
+		if (factory->getViewName (view))
 		{
-			emplace_back (*it);
+			emplace_back (view);
 		}
 		else if (deep)
 		{
-			if (auto c = (*it)->asViewContainer ())
+			if (auto c = view->asViewContainer ())
 				collectSubviews (c, false);
 		}
-		++it;
-	}
+	});
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -200,7 +197,7 @@ void EmbedViewOperation::perform ()
 //-----------------------------------------------------------------------------
 void EmbedViewOperation::undo ()
 {
-	selection->empty ();
+	selection->clear ();
 	CRect parentRect = newContainer->getViewSize ();
 	const_reverse_iterator it = rbegin ();
 	while (it != rend ())
@@ -256,7 +253,7 @@ UTF8StringPtr ViewCopyOperation::getName ()
 //-----------------------------------------------------------------------------
 void ViewCopyOperation::perform ()
 {
-	workingSelection->empty ();
+	workingSelection->clear ();
 	for (auto& view : *this)
 	{
 		parent->addView (view);
@@ -269,7 +266,7 @@ void ViewCopyOperation::perform ()
 //-----------------------------------------------------------------------------
 void ViewCopyOperation::undo ()
 {
-	workingSelection->empty ();
+	workingSelection->clear ();
 	for (auto& view : *this)
 	{
 		view->invalid ();
@@ -317,7 +314,7 @@ void ViewSizeChangeOperation::perform ()
 //-----------------------------------------------------------------------------
 void ViewSizeChangeOperation::undo ()
 {
-	selection->empty ();
+	selection->clear ();
 	for (auto& element : *this)
 	{
 		CView* view = element.first;
@@ -375,7 +372,11 @@ DeleteOperation::DeleteOperation (UISelection* selection)
 			{
 				if (*it == view)
 				{
-					nextView = *++it;
+					while (*it && selection->contains (*it))
+					{
+						++it;
+					}
+					nextView = *it;
 					break;
 				}
 				++it;
@@ -396,7 +397,7 @@ UTF8StringPtr DeleteOperation::getName ()
 //----------------------------------------------------------------------------------------------------
 void DeleteOperation::perform ()
 {
-	selection->empty ();
+	selection->clear ();
 	for (auto& element : *this)
 		element.first->removeView (element.second.view);
 }
@@ -404,7 +405,7 @@ void DeleteOperation::perform ()
 //----------------------------------------------------------------------------------------------------
 void DeleteOperation::undo ()
 {
-	selection->empty ();
+	selection->clear ();
 	IDependency::DeferChanges dc (selection);
 	for (auto& element : *this)
 	{
@@ -499,10 +500,7 @@ void TransformViewTypeOperation::exchangeSubViews (CViewContainer* src, CViewCon
 	{
 		std::list<CView*> temp;
 
-		ViewIterator it (src);
-		while (*it)
-		{
-			CView* childView = *it;
+		src->forEachChild ([&] (CView* childView) {
 			if (factory->getViewName (childView))
 			{
 				temp.emplace_back (childView);
@@ -511,8 +509,7 @@ void TransformViewTypeOperation::exchangeSubViews (CViewContainer* src, CViewCon
 			{
 				exchangeSubViews (container, dst);
 			}
-			++it;
-		}
+		});
 		for (auto& view : temp)
 		{
 			src->removeView (view, false);
@@ -586,7 +583,7 @@ void AttributeChangeAction::updateSelection ()
 		if (selection->contains (element.first) == false)
 		{
 			IDependency::DeferChanges dc (selection);
-			selection->empty ();
+			selection->clear ();
 			for (auto& it2 : *this)
 				selection->add (it2.first);
 			break;
@@ -675,12 +672,9 @@ void MultipleAttributeChangeAction::collectAllSubViews (CView* view, std::list<C
 	views.emplace_back (view);
 	if (auto container = view->asViewContainer ())
 	{
-		ViewIterator it (container);
-		while (*it)
-		{
-			collectAllSubViews (*it, views);
-			++it;
-		}
+		container->forEachChild ([&] (CView* view) {
+			collectAllSubViews (view, views);
+		});
 	}
 }
 
@@ -1331,8 +1325,7 @@ UTF8StringPtr CreateNewTemplateAction::getName ()
 //----------------------------------------------------------------------------------------------------
 void CreateNewTemplateAction::perform ()
 {
-	IDependency::DeferChanges dc (description);
-	UIAttributes* attr = new UIAttributes ();
+	auto attr = makeOwned<UIAttributes> ();
 	attr->setAttribute (UIViewCreator::kAttrClass, baseViewClassName);
 	attr->setAttribute ("size", "400,400");
 	description->addNewTemplate (name.c_str (), attr);
@@ -1367,7 +1360,6 @@ UTF8StringPtr DuplicateTemplateAction::getName ()
 //----------------------------------------------------------------------------------------------------
 void DuplicateTemplateAction::perform ()
 {
-	IDependency::DeferChanges dc (description);
 	description->duplicateTemplate (name.c_str (), dupName.c_str ());
 	if (view == nullptr)
 		view = description->createView (dupName.c_str (), description->getController ());
@@ -1408,11 +1400,105 @@ void DeleteTemplateAction::perform ()
 //----------------------------------------------------------------------------------------------------
 void DeleteTemplateAction::undo ()
 {
-	IDependency::DeferChanges dc (description);
-	description->addNewTemplate (name.c_str (), attributes);
 	actionPerformer->onTemplateCreation (name.c_str (), view);
+	description->addNewTemplate (name.c_str (), attributes);
 }
 
+//----------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------
+ChangeFocusDrawingAction::ChangeFocusDrawingAction (UIDescription* description, const FocusDrawingSettings& newSettings)
+: description (description)
+, newSettings (newSettings)
+{
+	oldSettings = description->getFocusDrawingSettings ();
+}
+
+//----------------------------------------------------------------------------------------------------
+UTF8StringPtr ChangeFocusDrawingAction::getName ()
+{
+	return "Change Focus Drawing Settings";
+}
+
+//----------------------------------------------------------------------------------------------------
+void ChangeFocusDrawingAction::perform ()
+{
+	description->setFocusDrawingSettings (newSettings);
+}
+
+//----------------------------------------------------------------------------------------------------
+void ChangeFocusDrawingAction::undo ()
+{
+	description->setFocusDrawingSettings (oldSettings);
+}
+
+//----------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------
+ChangeTemplateMinMaxAction::ChangeTemplateMinMaxAction (UIDescription* description, UTF8StringPtr templateName, CPoint minSize, CPoint maxSize)
+: description (description)
+, templateName (templateName)
+, minSize (minSize)
+, maxSize (maxSize)
+{
+	if (auto attr = description->getViewAttributes (templateName))
+	{
+		CPoint p;
+		if (attr->getPointAttribute (kTemplateAttributeMinSize, p))
+			oldMinSize = p;
+		else
+			oldMinSize = {-1, -1};
+		if (attr->getPointAttribute (kTemplateAttributeMaxSize, p))
+			oldMaxSize = p;
+		else
+			oldMaxSize = {-1, -1};
+	}
+}
+
+//----------------------------------------------------------------------------------------------------
+void ChangeTemplateMinMaxAction::setMinMaxSize (CPoint minimum, CPoint maximum)
+{
+	if (auto attr = const_cast<UIAttributes*> (description->getViewAttributes (templateName.data ())))
+	{
+		if (minimum.x == -1. && minimum.y == -1.)
+		{
+			attr->removeAttribute (kTemplateAttributeMinSize);
+		}
+		else
+		{
+			attr->setPointAttribute (kTemplateAttributeMinSize, minimum);
+		}
+		if (maximum.x == -1. && maximum.y == -1.)
+		{
+			attr->removeAttribute (kTemplateAttributeMaxSize);
+		}
+		else
+		{
+			attr->setPointAttribute (kTemplateAttributeMaxSize, maximum);
+		}
+	}
+
+}
+
+//----------------------------------------------------------------------------------------------------
+UTF8StringPtr ChangeTemplateMinMaxAction::getName ()
+{
+	return "Change Template Min/Max Sizes";
+}
+
+//----------------------------------------------------------------------------------------------------
+void ChangeTemplateMinMaxAction::perform ()
+{
+	setMinMaxSize (minSize, maxSize);
+}
+
+//----------------------------------------------------------------------------------------------------
+void ChangeTemplateMinMaxAction::undo ()
+{
+	setMinMaxSize (oldMinSize, oldMaxSize);
+}
+
+//----------------------------------------------------------------------------------------------------
 } // namespace
 
 #endif // VSTGUI_LIVE_EDITING

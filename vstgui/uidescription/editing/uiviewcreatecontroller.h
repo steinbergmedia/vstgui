@@ -10,8 +10,10 @@
 #if VSTGUI_LIVE_EDITING
 
 #include "../delegationcontroller.h"
-#include <vector>
+#include "../uiviewfactory.h"
+#include "uiselection.h"
 #include <string>
+#include <vector>
 
 namespace VSTGUI {
 class UIViewCreatorDataSource;
@@ -44,6 +46,12 @@ protected:
 	};
 
 };
+
+//----------------------------------------------------------------------------------------------------
+SharedPointer<UISelection> createSelectionFromViewName (const std::string& viewName,
+                                                        const UIViewFactory* factory,
+                                                        const UIDescription* description,
+                                                        const UIAttributes* optionalAttributes);
 
 } // namespace
 

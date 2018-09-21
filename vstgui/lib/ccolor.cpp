@@ -7,17 +7,6 @@
 
 namespace VSTGUI {
 
-const CColor kTransparentCColor	= CColor (255, 255, 255,   0);
-const CColor kBlackCColor		= CColor (  0,   0,   0, 255);
-const CColor kWhiteCColor		= CColor (255, 255, 255, 255);
-const CColor kGreyCColor		= CColor (127, 127, 127, 255);
-const CColor kRedCColor			= CColor (255,   0,   0, 255);
-const CColor kGreenCColor		= CColor (  0, 255,   0, 255);
-const CColor kBlueCColor		= CColor (  0,   0, 255, 255);
-const CColor kYellowCColor		= CColor (255, 255,   0, 255);
-const CColor kMagentaCColor		= CColor (255,   0, 255, 255);
-const CColor kCyanCColor		= CColor (  0, 255, 255, 255);
-
 /// @cond ignore
 //-----------------------------------------------------------------------------
 template<typename _Tp>

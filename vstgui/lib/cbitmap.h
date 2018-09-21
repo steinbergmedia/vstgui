@@ -23,9 +23,12 @@ class CBitmap : public AtomicReferenceCounted
 public:
 	using PlatformBitmapPtr = SharedPointer<IPlatformBitmap>;
 
-	explicit CBitmap (const CResourceDescription& desc);				///< Create an image from a resource identifier.
-	CBitmap (CCoord width, CCoord height);								///< Create an image with a given size.
-	CBitmap (CPoint size, double scaleFactor = 1.);						///< Create an image with a given size.
+	/** Create an image from a resource identifier */
+	explicit CBitmap (const CResourceDescription& desc);
+	/** Create an image with a given size */
+	CBitmap (CCoord width, CCoord height);
+	/** Create an image with a given size and scale factor */
+	CBitmap (CPoint size, double scaleFactor = 1.);
 	explicit CBitmap (const PlatformBitmapPtr& platformBitmap);
 	~CBitmap () noexcept override = default;
 
@@ -35,11 +38,15 @@ public:
 	//@{
 	virtual void draw (CDrawContext* context, const CRect& rect, const CPoint& offset = CPoint (0, 0), float alpha = 1.f);
 
-	CCoord getWidth () const;		///< get the width of the image
-	CCoord getHeight () const;		///< get the height of the image
-	CPoint getSize () const;		///< get size of image
+	/** get the width of the image */
+	CCoord getWidth () const;
+	/** get the height of the image */
+	CCoord getHeight () const;
+	/** get size of image */
+	CPoint getSize () const;
 
-	bool isLoaded () const { return getPlatformBitmap () ? true : false; }	///< check if image is loaded
+	/** check if image is loaded */
+	bool isLoaded () const { return getPlatformBitmap () ? true : false; }
 
 	const CResourceDescription& getResourceDescription () const { return resourceDesc; }
 
@@ -144,15 +151,23 @@ protected:
 class CBitmapPixelAccess : public AtomicReferenceCounted
 {
 public:
-	inline bool operator++ ();								///< advance position
-	inline bool setPosition (uint32_t x, uint32_t y);		///< set current position
-	inline uint32_t getX () const { return x; }			///< return current x position
-	inline uint32_t getY () const { return y; }			///< return current y position
-	virtual void getColor (CColor& c) const = 0;	///< get color of current pixel
-	virtual void setColor (const CColor& c) = 0;	///< set color of current pixel
+	/** advance position */
+	inline bool operator++ ();
+	/** set current position */
+	inline bool setPosition (uint32_t x, uint32_t y);
+	/** return current x position */
+	inline uint32_t getX () const { return x; }
+	/** return current y position */
+	inline uint32_t getY () const { return y; }
+	/** get color of current pixel */
+	virtual void getColor (CColor& c) const = 0;
+	/** set color of current pixel */
+	virtual void setColor (const CColor& c) = 0;
 
-	inline void getValue (uint32_t& value);			///< get native color value
-	inline void setValue (uint32_t value);			///< set native color value
+	/** get native color value */
+	inline void getValue (uint32_t& value);
+	/** set native color value */
+	inline void setValue (uint32_t value);
 
 	inline uint32_t getBitmapWidth () const { return maxX+1; }
 	inline uint32_t getBitmapHeight () const { return maxY+1; }

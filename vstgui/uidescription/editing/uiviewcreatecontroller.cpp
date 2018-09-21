@@ -8,11 +8,10 @@
 
 #include "uieditcontroller.h"
 #include "uibasedatasource.h"
-#include "../uiviewfactory.h"
 #include "../../lib/cdropsource.h"
+#include "../../lib/dragging.h"
 #include "../../lib/controls/coptionmenu.h"
 #include "../../lib/controls/csearchtextedit.h"
-#include "uiselection.h"
 #include "../detail/uiviewcreatorattributes.h"
 
 namespace VSTGUI {
@@ -147,17 +146,19 @@ void UIViewCreatorDataSource::addViewToCurrentEditView (int32_t row)
 }
 
 //----------------------------------------------------------------------------------------------------
-SharedPointer<UISelection> UIViewCreatorDataSource::createSelection (int32_t row)
+SharedPointer<UISelection> createSelectionFromViewName (const std::string& viewName,
+                                                        const UIViewFactory* factory,
+                                                        const UIDescription* description,
+                                                        const UIAttributes* optionalAttributes)
 {
 	SharedPointer<UISelection> selection;
-	auto viewDisplayName = getStringList ()->at (static_cast<uint32_t> (row)).getString ();
-	auto it = std::find_if (viewAndDisplayNameList.begin (), viewAndDisplayNameList.end (), [&] (const auto& entry) {
-		return entry.second == viewDisplayName;
-	});
-	if (it == viewAndDisplayNameList.end ())
-		return nullptr;
 	UIAttributes viewAttr;
-	viewAttr.setAttribute (UIViewCreator::kAttrClass, *it->first);
+	viewAttr.setAttribute (UIViewCreator::kAttrClass, viewName);
+	if (optionalAttributes)
+	{
+		for (auto& a : *optionalAttributes)
+			viewAttr.setAttribute (a.first, a.second);
+	}
 	CView* view = factory->createView (viewAttr, description);
 	if (view)
 	{
@@ -172,6 +173,18 @@ SharedPointer<UISelection> UIViewCreatorDataSource::createSelection (int32_t row
 		view->forget ();
 	}
 	return selection;
+}
+
+//----------------------------------------------------------------------------------------------------
+SharedPointer<UISelection> UIViewCreatorDataSource::createSelection (int32_t row)
+{
+	SharedPointer<UISelection> selection;
+	auto viewDisplayName = getStringList ()->at (static_cast<uint32_t> (row)).getString ();
+	auto it = std::find_if (viewAndDisplayNameList.begin (), viewAndDisplayNameList.end (),
+	                        [&] (const auto& entry) { return entry.second == viewDisplayName; });
+	if (it == viewAndDisplayNameList.end ())
+		return nullptr;
+	return createSelectionFromViewName (*it->first, factory, description, nullptr);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -198,7 +211,8 @@ CMouseEventResult UIViewCreatorDataSource::dbOnMouseMoved (const CPoint& where, 
 		{
 			stream.end ();
 			auto dropSource = CDropSource::create (stream.getBuffer (), static_cast<uint32_t> (stream.tell ()), CDropSource::kText);
-			browser->doDrag (dropSource);
+			auto bitmap = createBitmapFromSelection (selection, dataBrowser->getFrame ());
+			browser->doDrag (DragDescription (dropSource, CPoint (), bitmap));
 		}
 		return kMouseMoveEventHandledButDontNeedMoreEvents;
 	}
@@ -208,3 +222,4 @@ CMouseEventResult UIViewCreatorDataSource::dbOnMouseMoved (const CPoint& where, 
 } // namespace
 
 #endif // VSTGUI_LIVE_EDITING
+

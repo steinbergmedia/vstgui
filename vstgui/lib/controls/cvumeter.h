@@ -16,7 +16,19 @@ namespace VSTGUI {
 //-----------------------------------------------------------------------------
 class CVuMeter : public CControl
 {
+private:
+	enum StyleEnum
+	{
+		StyleHorizontal = 0,
+		StyleVertical,
+	};
 public:
+	enum Style
+	{
+		kHorizontal = 1 << StyleHorizontal,
+		kVertical = 1 << StyleVertical,
+	};
+
 	CVuMeter (const CRect& size, CBitmap* onBitmap, CBitmap* offBitmap, int32_t nbLed, int32_t style = kVertical);
 	CVuMeter (const CVuMeter& vuMeter);
   

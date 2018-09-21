@@ -24,6 +24,12 @@ struct CommandWithKey : Command
 };
 
 //------------------------------------------------------------------------
+struct Configuration
+{
+	bool useCompressedUIDescriptionFiles {false};
+};
+
+//------------------------------------------------------------------------
 struct PlatformCallbacks
 {
 	using OnCommandUpdateFunc = std::function<void ()>;
@@ -44,6 +50,7 @@ public:
 	using CommandWithKeyList = std::vector<CommandWithKey>;
 	using CommandListPair = std::pair<UTF8String, CommandWithKeyList>;
 	using CommandList = std::vector<CommandListPair>;
+	using OpenFilesList = std::vector<UTF8String>;
 
 	struct InitParams
 	{
@@ -51,6 +58,7 @@ public:
 		ICommonDirectories& commonDirectories;
 		IApplication::CommandLineArguments&& cmdArgs;
 		PlatformCallbacks&& callbacks;
+		OpenFilesList openFiles;
 	};
 
 	virtual void init (const InitParams& params) = 0;
@@ -58,8 +66,8 @@ public:
 	virtual CommandList getCommandList (const Platform::IWindow* window = nullptr) = 0;
 	virtual const CommandList& getKeyCommandList () = 0;
 	virtual bool canQuit () = 0;
-
 	virtual bool dontClosePopupOnDeactivation (Platform::IWindow* window) = 0;
+	virtual const Configuration& getConfiguration () const = 0;
 };
 
 //------------------------------------------------------------------------

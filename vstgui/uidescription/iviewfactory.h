@@ -19,7 +19,6 @@ public:
 	
 	virtual CView* createView (const UIAttributes& attributes, const IUIDescription* description) const = 0;
 	virtual bool applyAttributeValues (CView* view, const UIAttributes& attributes, const IUIDescription* desc) const = 0;
-	virtual IdStringPtr getViewName (CView* view) const = 0;
 	virtual bool applyCustomViewAttributeValues (CView* customView, IdStringPtr baseViewName, const UIAttributes& attributes, const IUIDescription* desc) const = 0;
 };
 

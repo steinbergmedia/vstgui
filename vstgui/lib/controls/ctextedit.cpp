@@ -167,6 +167,14 @@ void CTextEdit::draw (CDrawContext *pContext)
 	if (platformControl)
 	{
 		drawBack (pContext);
+		if (!platformControl->drawsPlaceholder () && !placeholderString.empty () &&
+		    platformControl->getText ().empty ())
+		{
+			pContext->saveGlobalState ();
+			pContext->setGlobalAlpha (pContext->getGlobalAlpha () * 0.5f);
+			drawPlatformText (pContext, placeholderString.getPlatformString ());
+			pContext->restoreGlobalState ();
+		}
 		setDirty (false);
 		return;
 	}
@@ -201,7 +209,7 @@ CMouseEventResult CTextEdit::onMouseDown (CPoint& where, const CButtonState& but
 	{
 		if (getFrame ()->getFocusView () != this)
 		{
-			if (style & kDoubleClickStyle)
+			if (isDoubleClickStyle ())
 			{
 				if (!(buttons & kDoubleClick))
 					return kMouseEventNotHandled;
@@ -332,7 +340,7 @@ void CTextEdit::createPlatformTextEdit ()
 //------------------------------------------------------------------------
 bool CTextEdit::wantsFocus () const
 {
-	if (getStyle () & kDoubleClickStyle && !platformControl)
+	if (isDoubleClickStyle () && !platformControl)
 		return false;
 	return CTextLabel::wantsFocus ();
 }

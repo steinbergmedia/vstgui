@@ -108,6 +108,7 @@ bool Delegate::handleCommand (const Command& command)
 		{
 			config.uiDescFileName = "test.uidesc";
 			config.windowConfig.style.border ();
+			config.windowConfig.style.movableByWindowBackground ();
 		}
 		if (auto window = UIDesc::makeWindow (config))
 		{

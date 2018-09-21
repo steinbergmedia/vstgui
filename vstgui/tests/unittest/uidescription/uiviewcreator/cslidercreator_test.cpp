@@ -18,13 +18,19 @@ TESTCASE(CSliderCreatorTest,
 	TEST(mode,
 		DummyUIDescription uidesc;
 		testAttribute<CSlider>(kCSlider, kAttrMode, "touch", &uidesc, [&] (CSlider* v) {
-			return v->getMode() == CSlider::kTouchMode;
+			return v->getSliderMode () == CSliderMode::Touch;
 		});
 		testAttribute<CSlider>(kCSlider, kAttrMode, "relative touch", &uidesc, [&] (CSlider* v) {
-			return v->getMode() == CSlider::kRelativeTouchMode;
+			return v->getSliderMode () == CSliderMode::RelativeTouch;
 		});
 		testAttribute<CSlider>(kCSlider, kAttrMode, "free click", &uidesc, [&] (CSlider* v) {
-			return v->getMode() == CSlider::kFreeClickMode;
+			return v->getSliderMode () == CSliderMode::FreeClick;
+		});
+		testAttribute<CSlider>(kCSlider, kAttrMode, "ramp", &uidesc, [&] (CSlider* v) {
+			return v->getSliderMode () == CSliderMode::Ramp;
+		});
+		testAttribute<CSlider>(kCSlider, kAttrMode, "use global", &uidesc, [&] (CSlider* v) {
+			return v->getSliderMode () == CSliderMode::UseGlobal;
 		});
 	);
 
@@ -61,20 +67,10 @@ TESTCASE(CSliderCreatorTest,
 	TEST(orientation,
 		DummyUIDescription uidesc;
 		testAttribute<CSlider>(kCSlider, kAttrOrientation, "horizontal", &uidesc, [&] (CSlider* v) {
-			return v->getStyle() & kHorizontal;
+			return v->getStyle() & CSlider::kHorizontal;
 		});
 		testAttribute<CSlider>(kCSlider, kAttrOrientation, "vertical", &uidesc, [&] (CSlider* v) {
-			return v->getStyle() & kVertical;
-		});
-	);
-
-	TEST(transparentHandle,
-		DummyUIDescription uidesc;
-		testAttribute<CSlider>(kCSlider, kAttrTransparentHandle, true, &uidesc, [&] (CSlider* v) {
-			return v->getDrawTransparentHandle ();
-		});
-		testAttribute<CSlider>(kCSlider, kAttrTransparentHandle, false, &uidesc, [&] (CSlider* v) {
-			return !v->getDrawTransparentHandle ();
+			return v->getStyle() & CSlider::kVertical;
 		});
 	);
 
@@ -82,15 +78,15 @@ TESTCASE(CSliderCreatorTest,
 		DummyUIDescription uidesc;
 		testAttribute<CSlider>(kCSlider, kAttrReverseOrientation, true, &uidesc, [&] (CSlider* v) {
 			auto style = v->getStyle ();
-			if (style & kHorizontal)
-				return style & kRight;
-			return style & kTop;
+			if (style & CSlider::kHorizontal)
+				return style & CSlider::kRight;
+			return style & CSlider::kTop;
 		});
 		testAttribute<CSlider>(kCSlider, kAttrReverseOrientation, false, &uidesc, [&] (CSlider* v) {
 			auto style = v->getStyle ();
-			if (style & kHorizontal)
-				return style & kLeft;
-			return style & kBottom;
+			if (style & CSlider::kHorizontal)
+				return style & CSlider::kLeft;
+			return style & CSlider::kBottom;
 		});
 	);
 
@@ -172,7 +168,7 @@ TESTCASE(CSliderCreatorTest,
 
 	TEST(modeValues,
 		DummyUIDescription uidesc;
-		testPossibleValues (kCSlider, kAttrMode, &uidesc, {"touch", "relative touch", "free click"});
+		testPossibleValues (kCSlider, kAttrMode, &uidesc, {"touch", "relative touch", "free click", "ramp", "use global"});
 	);
 
 );

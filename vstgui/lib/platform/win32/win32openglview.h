@@ -26,7 +26,7 @@ public:
 	void remove () override;
 
 	void invalidRect (const CRect& rect) override;
-	void viewSizeChanged (const CRect& visibleSize) override; ///< visibleSize is cframe relative
+	void viewSizeChanged (const CRect& visibleSize) override;
 
 	bool makeContextCurrent () override;
 	bool lockContext () override;
