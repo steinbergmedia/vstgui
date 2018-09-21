@@ -5,6 +5,7 @@
 #include "../../../lib/cframe.h"
 #include "../../../lib/iviewlistener.h"
 #include "../../../lib/ccolor.h"
+#include "../../../lib/dragging.h"
 #include "../unittests.h"
 #include <vector>
 
@@ -42,7 +43,7 @@ public:
 	TestView2 () : CView (CRect (10, 10, 20, 20)) {}
 };
 
-class MouseEventCheckView : public CView
+class MouseEventCheckView : public CView, public DropTargetAdapter
 {
 public:
 	MouseEventCheckView () : CView (CRect ()) {}
@@ -80,22 +81,22 @@ public:
 		return kMouseEventHandled;
 	}
 
-	void onDragEnter (IDataPackage* drag, const CPoint& where) override
+	SharedPointer<IDropTarget> getDropTarget () override { return this; }
+	DragOperation onDragEnter (DragEventData data) override
 	{
 		onDragEnterCalled = true;
-		CView::onDragEnter (drag, where);
+		return DragOperation::None;
 	}
 
-	void onDragLeave (IDataPackage* drag, const CPoint& where) override
+	void onDragLeave (DragEventData data) override
 	{
 		onDragLeaveCalled = true;
-		CView::onDragLeave (drag, where);
 	}
 
-	void onDragMove (IDataPackage* drag, const CPoint& where) override
+	DragOperation onDragMove (DragEventData data) override
 	{
 		onDragMoveCalled = true;
-		CView::onDragMove (drag, where);
+		return DragOperation::None;
 	}
 
 	bool onWheel (const CPoint &where, const CMouseWheelAxis &axis, const float &distance, const CButtonState &buttons) override
@@ -128,12 +129,17 @@ TESTCASE(CViewContainerTest,
 		container->addView (view1);
 		container->addView (view2);
 		container->addView (view3);
+		EXPECT(container->changeViewZOrder (view3, 0));
+		EXPECT(container->getView (0) == view3);
+		EXPECT(container->getView (1) == view1);
+		EXPECT(container->getView (2) == view2);
+		EXPECT(container->getView (3) == nullptr);
+		EXPECT(container->changeViewZOrder (view3, 4) == false);
+		EXPECT(container->changeViewZOrder (view3, 0));
 		EXPECT(container->changeViewZOrder (view3, 1));
 		EXPECT(container->getView (0) == view1);
 		EXPECT(container->getView (1) == view3);
 		EXPECT(container->getView (2) == view2);
-		EXPECT(container->getView (3) == nullptr);
-		EXPECT(container->changeViewZOrder (view3, 4) == false);
 	);
 
 	TEST(addView,
@@ -372,7 +378,6 @@ TESTCASE(CViewContainerTest,
 		EXPECT(container->onMouseCancel () == kMouseEventHandled);
 		EXPECT(container->onWheel (p, kMouseWheelAxisX, 1.f, 0) == false);
 		EXPECT(container->onWheel (p, 1.f, 0) == false);
-		EXPECT(container->onDrop (nullptr, p) == false);
 	);
 
 	TEST(mouseEvents,
@@ -430,14 +435,19 @@ TESTCASE(CViewContainerTest,
 		container->addView (v1);
 		container->addView (v2);
 
-		CPoint p (10, 10);
-		container->onDragEnter (nullptr, p);
+		DragEventData data;
+		data.drag = nullptr;
+		data.pos = CPoint (10, 10);
+		data.modifiers = 0;
+
+		auto dropTarget = container->getDropTarget ();
+		dropTarget->onDragEnter (data);
 		EXPECT(v1->onDragEnterCalled);
 		EXPECT(v2->onDragEnterCalled == false);
-		container->onDragMove (nullptr, p);
+		dropTarget->onDragMove (data);
 		EXPECT(v1->onDragMoveCalled);
 		EXPECT(v2->onDragMoveCalled == false);
-		container->onDragLeave (nullptr, p);
+		dropTarget->onDragLeave (data);
 		EXPECT(v1->onDragLeaveCalled);
 		EXPECT(v2->onDragLeaveCalled == false);
 	);
@@ -453,12 +463,18 @@ TESTCASE(CViewContainerTest,
 		v2->setMouseableArea (r2);
 		container->addView (v1);
 		container->addView (v2);
-		CPoint p (10, 10);
-		container->onDragEnter (nullptr, p);
+
+		DragEventData data;
+		data.drag = nullptr;
+		data.pos = CPoint (10, 10);
+		data.modifiers = 0;
+
+		auto dropTarget = container->getDropTarget ();
+		dropTarget->onDragEnter (data);
 		EXPECT(v1->onDragEnterCalled);
 		EXPECT(v2->onDragEnterCalled == false);
-		p (60, 10);
-		container->onDragMove (nullptr, p);
+		data.pos (60, 10);
+		dropTarget->onDragMove (data);
 		EXPECT(v1->onDragLeaveCalled);
 		EXPECT(v2->onDragEnterCalled);
 	);

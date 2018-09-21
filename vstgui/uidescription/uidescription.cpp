@@ -107,8 +107,8 @@ class UINode : public NonAtomicReferenceCounted
 public:
 	using DataStorage = std::string;
 
-	UINode (const std::string& name, UIAttributes* attributes = nullptr, bool needsFastChildNameAttributeLookup = false);
-	UINode (const std::string& name, UIDescList* children, UIAttributes* attributes = nullptr);
+	UINode (const std::string& name, const SharedPointer<UIAttributes>& attributes = {}, bool needsFastChildNameAttributeLookup = false);
+	UINode (const std::string& name, const SharedPointer<UIDescList>& children, const SharedPointer<UIAttributes>& attributes = {});
 	UINode (const UINode& n);
 	~UINode () noexcept override;
 
@@ -116,7 +116,7 @@ public:
 	DataStorage& getData () { return data; }
 	const DataStorage& getData () const { return data; }
 
-	UIAttributes* getAttributes () const { return attributes; }
+	const SharedPointer<UIAttributes>& getAttributes () const { return attributes; }
 	UIDescList& getChildren () const { return *children; }
 	bool hasChildren () const;
 	void childAttributeChanged (UINode* child, const char* attributeName, const char* oldAttributeValue);
@@ -136,8 +136,8 @@ public:
 protected:
 	std::string name;
 	DataStorage data;
-	UIAttributes* attributes;
-	UIDescList* children;
+	SharedPointer<UIAttributes> attributes;
+	SharedPointer<UIDescList> children;
 	int32_t flags;
 };
 
@@ -152,7 +152,7 @@ public:
 class UIVariableNode : public UINode
 {
 public:
-	UIVariableNode (const std::string& name, UIAttributes* attributes);
+	UIVariableNode (const std::string& name, const SharedPointer<UIAttributes>& attributes);
 	
 	enum Type {
 		kNumber,
@@ -173,7 +173,7 @@ protected:
 class UIControlTagNode : public UINode
 {
 public:
-	UIControlTagNode (const std::string& name, UIAttributes* attributes);
+	UIControlTagNode (const std::string& name, const SharedPointer<UIAttributes>& attributes);
 	int32_t getTag ();
 	void setTag (int32_t newTag);
 	
@@ -188,7 +188,7 @@ protected:
 class UIBitmapNode : public UINode
 {
 public:
-	UIBitmapNode (const std::string& name, UIAttributes* attributes);
+	UIBitmapNode (const std::string& name, const SharedPointer<UIAttributes>& attributes);
 	CBitmap* getBitmap (const std::string& pathHint);
 	void setBitmap (UTF8StringPtr bitmapName);
 	void setNinePartTiledOffset (const CRect* offsets);
@@ -217,7 +217,7 @@ protected:
 class UIFontNode : public UINode
 {
 public:
-	UIFontNode (const std::string& name, UIAttributes* attributes);
+	UIFontNode (const std::string& name, const SharedPointer<UIAttributes>& attributes);
 	CFontRef getFont ();
 	void setFont (CFontRef newFont);
 	void setAlternativeFontNames (UTF8StringPtr fontNames);
@@ -233,7 +233,7 @@ protected:
 class UIColorNode : public UINode
 {
 public:
-	UIColorNode (const std::string& name, UIAttributes* attributes);
+	UIColorNode (const std::string& name, const SharedPointer<UIAttributes>& attributes);
 	const CColor& getColor () const { return color; }
 	void setColor (const CColor& newColor);
 protected:
@@ -244,7 +244,7 @@ protected:
 class UIGradientNode : public UINode
 {
 public:
-	UIGradientNode (const std::string& name, UIAttributes* attributes);
+	UIGradientNode (const std::string& name, const SharedPointer<UIAttributes>& attributes);
 	CGradient* getGradient ();
 	void setGradient (CGradient* g);
 
@@ -589,15 +589,25 @@ static UIViewFactory* getGenericViewFactory ()
 namespace UIDescriptionPrivate {
 
 //-----------------------------------------------------------------------------
-template <size_t numIndicators>
+template <bool nameHasExtension, size_t numIndicators>
 std::pair<size_t, size_t> rangeOfScaleFactor (const std::string& name,
                                               const char (&identicator)[numIndicators])
 {
 	auto result = std::make_pair (std::string::npos, std::string::npos);
-	size_t xIndex = name.find_last_of ("x");
+	size_t xIndex;
+	if (nameHasExtension)
+	{
+	 	xIndex = name.rfind ("x.");
+	}
+	else
+	{
+	 	if (name[name.size () - 1] != 'x')
+	 		return result;
+		xIndex = name.size () - 1;
+	}
 	if (xIndex == std::string::npos)
 		return result;
-
+	
 	for (auto i = 0u; i < numIndicators; ++i)
 	{
 		size_t indicatorIndex = name.find_last_of (identicator[i]);
@@ -617,7 +627,7 @@ template <size_t numIndicators>
 bool decodeScaleFactorFromName (const std::string& name, const char (&identicator)[numIndicators],
                                 double& scaleFactor)
 {
-	auto range = rangeOfScaleFactor (name, identicator);
+	auto range = rangeOfScaleFactor<true> (name, identicator);
 	if (range.first == std::string::npos)
 		return false;
 	std::string tmp (name);
@@ -641,7 +651,7 @@ static bool decodeScaleFactorFromName (const std::string& name, double& scaleFac
 //-----------------------------------------------------------------------------
 static std::string removeScaleFactorFromName (const std::string& name)
 {
-	auto range = rangeOfScaleFactor (name, scaleFactorIndicatorChars);
+	auto range = rangeOfScaleFactor<false> (name, scaleFactorIndicatorChars);
 	if (range.first == std::string::npos)
 		return "";
 	auto result = name.substr (0, range.second);
@@ -651,15 +661,6 @@ static std::string removeScaleFactorFromName (const std::string& name)
 } // UIDescriptionPrivate
 
 IdStringPtr IUIDescription::kCustomViewName = "custom-view-name";
-
-//-----------------------------------------------------------------------------
-IdStringPtr UIDescription::kMessageTagChanged = "kMessageTagChanged";
-IdStringPtr UIDescription::kMessageColorChanged = "kMessageColorChanged";
-IdStringPtr UIDescription::kMessageFontChanged = "kMessageFontChanged";
-IdStringPtr UIDescription::kMessageBitmapChanged = "kMessageBitmapChanged";
-IdStringPtr UIDescription::kMessageTemplateChanged = "kMessageTemplateChanged";
-IdStringPtr UIDescription::kMessageGradientChanged = "kMessageGradientChanged";
-IdStringPtr UIDescription::kMessageBeforeSave = "kMessageBeforeSave";
 
 //-----------------------------------------------------------------------------
 struct UIDescription::Impl
@@ -768,7 +769,7 @@ void UIDescription::addDefaultNodes ()
 		int32_t i = 0;
 		while (defaultFonts[i].name != nullptr)
 		{
-			UIAttributes* attr = new UIAttributes;
+			auto attr = makeOwned<UIAttributes> ();
 			attr->setAttribute ("name", defaultFonts[i].name);
 			UIFontNode* node = new UIFontNode ("font", attr);
 			node->setFont (defaultFonts[i].font);
@@ -802,7 +803,7 @@ void UIDescription::addDefaultNodes ()
 		int32_t i = 0;
 		while (defaultColors[i].name != nullptr)
 		{
-			UIAttributes* attr = new UIAttributes;
+			auto attr = makeOwned<UIAttributes> ();
 			attr->setAttribute ("name", defaultColors[i].name);
 			std::string colorStr;
 			UIViewCreator::colorToString (defaultColors[i].color, colorStr, nullptr);
@@ -1006,7 +1007,6 @@ bool UIDescription::save (UTF8StringPtr filename, int32_t flags)
 //-----------------------------------------------------------------------------
 bool UIDescription::saveToStream (OutputStream& stream, int32_t flags)
 {
-	changed (kMessageBeforeSave);
 	impl->listeners.forEach ([this] (UIDescriptionListener* l) {
 		l->beforeUIDescSave (this);
 	});
@@ -1029,8 +1029,10 @@ bool UIDescription::saveToStream (OutputStream& stream, int32_t flags)
 		}
 	}
 	impl->nodes->getAttributes ()->setAttribute ("version", "1");
+	
+	BufferedOutputStream bufferedStream (stream);
 	UIDescWriter writer;
-	return writer.write (stream, impl->nodes);
+	return writer.write (bufferedStream, impl->nodes);
 }
 
 //-----------------------------------------------------------------------------
@@ -1115,40 +1117,40 @@ UINode* UIDescription::findNodeForView (CView* view) const
 //-----------------------------------------------------------------------------
 bool UIDescription::storeViews (const std::list<CView*>& views, OutputStream& stream, UIAttributes* customData) const
 {
-	UIDescList nodeList (false);
+	auto nodeList = makeOwned<UIDescList> (false);
 	for (auto& view : views)
 	{
 		UINode* node = findNodeForView (view);
 		if (node)
 		{
-			nodeList.add (node);
+			nodeList->add (node);
 		}
 		else
 		{
 		#if VSTGUI_LIVE_EDITING
-			UIAttributes* attr = new UIAttributes;
+			auto attr = makeOwned<UIAttributes> ();
 			UIViewFactory* factory = dynamic_cast<UIViewFactory*> (impl->viewFactory);
 			if (factory)
 			{
 				if (factory->getAttributesForView (view, const_cast<UIDescription*> (this), *attr) == false)
 					return false;
 				UINode* node = new UINode ("view", attr);
-				nodeList.add (node);
+				nodeList->add (node);
 				node->forget ();
 			}
 		#endif
 		}
 	}
-	if (!nodeList.empty ())
+	if (!nodeList->empty ())
 	{
 		if (customData)
 		{
 			UINode* customNode = new UINode (MainNodeNames::kCustom, customData);
-			nodeList.add (customNode);
+			nodeList->add (customNode);
 			customNode->forget ();
 			customData->remember ();
 		}
-		UINode baseNode ("vstgui-ui-description-view-list", &nodeList);
+		UINode baseNode ("vstgui-ui-description-view-list", nodeList);
 		UIDescWriter writer;
 		return writer.write (stream, &baseNode);
 	}
@@ -1287,7 +1289,7 @@ CView* UIDescription::createViewFromNode (UINode* node) const
 	if (subController)
 	{
 		if (result)
-			result->setAttribute (kCViewControllerAttribute, sizeof (IController*), &subController);
+			result->setAttribute (kCViewControllerAttribute, subController);
 		setController (impl->subControllerStack.back ());
 		impl->subControllerStack.pop_back ();
 		if (result == nullptr)
@@ -1573,10 +1575,10 @@ CBitmap* UIDescription::getBitmap (UTF8StringPtr name) const
 			}
 			bitmapNode->setFilterProcessed ();
 		}
-		if (bitmapNode->getScaledBitmapsAdded () == false)
+		if (bitmap && bitmapNode->getScaledBitmapsAdded () == false)
 		{
 			double scaleFactor;
-			if (!UIDescriptionPrivate::decodeScaleFactorFromName (name, scaleFactor))
+			if (!UIDescriptionPrivate::decodeScaleFactorFromName (bitmap->getResourceDescription ().u.name, scaleFactor))
 			{
 				// find scaled versions for this bitmap
 				UINode* bitmapsNode = getBaseNode (MainNodeNames::kBitmap);
@@ -1705,7 +1707,8 @@ UTF8StringPtr UIDescription::lookupControlTagName (const int32_t tag) const
 }
 
 //-----------------------------------------------------------------------------
-template<typename NodeType> void UIDescription::changeNodeName (UTF8StringPtr oldName, UTF8StringPtr newName, IdStringPtr mainNodeName, IdStringPtr changeMsg)
+template<typename NodeType>
+void UIDescription::changeNodeName (UTF8StringPtr oldName, UTF8StringPtr newName, IdStringPtr mainNodeName)
 {
 	UINode* mainNode = getBaseNode (mainNodeName);
 	NodeType* node = dynamic_cast<NodeType*> (findChildNodeByNameAttribute(mainNode, oldName));
@@ -1714,14 +1717,13 @@ template<typename NodeType> void UIDescription::changeNodeName (UTF8StringPtr ol
 		node->getAttributes ()->setAttribute ("name", newName);
 		mainNode->childAttributeChanged (node, "name", oldName);
 		mainNode->sortChildren ();
-		changed (changeMsg);
 	}
 }
 
 //-----------------------------------------------------------------------------
 void UIDescription::changeColorName (UTF8StringPtr oldName, UTF8StringPtr newName)
 {
-	changeNodeName<UIColorNode> (oldName, newName, MainNodeNames::kColor, kMessageColorChanged);
+	changeNodeName<UIColorNode> (oldName, newName, MainNodeNames::kColor);
 	impl->listeners.forEach ([this] (UIDescriptionListener* l) {
 		l->onUIDescColorChanged (this);
 	});
@@ -1730,7 +1732,7 @@ void UIDescription::changeColorName (UTF8StringPtr oldName, UTF8StringPtr newNam
 //-----------------------------------------------------------------------------
 void UIDescription::changeTagName (UTF8StringPtr oldName, UTF8StringPtr newName)
 {
-	changeNodeName<UIControlTagNode> (oldName, newName, MainNodeNames::kControlTag, kMessageTagChanged);
+	changeNodeName<UIControlTagNode> (oldName, newName, MainNodeNames::kControlTag);
 	impl->listeners.forEach ([this] (UIDescriptionListener* l) {
 		l->onUIDescTagChanged (this);
 	});
@@ -1739,7 +1741,7 @@ void UIDescription::changeTagName (UTF8StringPtr oldName, UTF8StringPtr newName)
 //-----------------------------------------------------------------------------
 void UIDescription::changeFontName (UTF8StringPtr oldName, UTF8StringPtr newName)
 {
-	changeNodeName<UIFontNode> (oldName, newName, MainNodeNames::kFont, kMessageFontChanged);
+	changeNodeName<UIFontNode> (oldName, newName, MainNodeNames::kFont);
 	impl->listeners.forEach ([this] (UIDescriptionListener* l) {
 		l->onUIDescFontChanged (this);
 	});
@@ -1748,7 +1750,7 @@ void UIDescription::changeFontName (UTF8StringPtr oldName, UTF8StringPtr newName
 //-----------------------------------------------------------------------------
 void UIDescription::changeBitmapName (UTF8StringPtr oldName, UTF8StringPtr newName)
 {
-	changeNodeName<UIBitmapNode> (oldName, newName, MainNodeNames::kBitmap, kMessageBitmapChanged);
+	changeNodeName<UIBitmapNode> (oldName, newName, MainNodeNames::kBitmap);
 	impl->listeners.forEach ([this] (UIDescriptionListener* l) {
 		l->onUIDescBitmapChanged (this);
 	});
@@ -1757,7 +1759,7 @@ void UIDescription::changeBitmapName (UTF8StringPtr oldName, UTF8StringPtr newNa
 //-----------------------------------------------------------------------------
 void UIDescription::changeGradientName (UTF8StringPtr oldName, UTF8StringPtr newName)
 {
-	changeNodeName<UIGradientNode> (oldName, newName, MainNodeNames::kGradient, kMessageGradientChanged);
+	changeNodeName<UIGradientNode> (oldName, newName, MainNodeNames::kGradient);
 	impl->listeners.forEach ([this] (UIDescriptionListener* l) {
 		l->onUIDescGradientChanged (this);
 	});
@@ -1773,7 +1775,6 @@ void UIDescription::changeColor (UTF8StringPtr name, const CColor& newColor)
 		if (!node->noExport ())
 		{
 			node->setColor (newColor);
-			changed (kMessageColorChanged);
 			impl->listeners.forEach ([this] (UIDescriptionListener* l) {
 				l->onUIDescColorChanged (this);
 			});
@@ -1783,7 +1784,7 @@ void UIDescription::changeColor (UTF8StringPtr name, const CColor& newColor)
 	{
 		if (colorsNode)
 		{
-			UIAttributes* attr = new UIAttributes;
+			auto attr = makeOwned<UIAttributes> ();
 			attr->setAttribute ("name", name);
 			std::string colorStr;
 			UIViewCreator::colorToString (newColor, colorStr, nullptr);
@@ -1791,7 +1792,6 @@ void UIDescription::changeColor (UTF8StringPtr name, const CColor& newColor)
 			UIColorNode* node = new UIColorNode ("color", attr);
 			colorsNode->getChildren ().add (node);
 			colorsNode->sortChildren ();
-			changed (kMessageColorChanged);
 			impl->listeners.forEach ([this] (UIDescriptionListener* l) {
 				l->onUIDescColorChanged (this);
 			});
@@ -1809,7 +1809,6 @@ void UIDescription::changeFont (UTF8StringPtr name, CFontRef newFont)
 		if (!node->noExport ())
 		{
 			node->setFont (newFont);
-			changed (kMessageFontChanged);
 			impl->listeners.forEach ([this] (UIDescriptionListener* l) {
 				l->onUIDescFontChanged (this);
 			});
@@ -1819,13 +1818,12 @@ void UIDescription::changeFont (UTF8StringPtr name, CFontRef newFont)
 	{
 		if (fontsNode)
 		{
-			UIAttributes* attr = new UIAttributes;
+			auto attr = makeOwned<UIAttributes> ();
 			attr->setAttribute ("name", name);
 			UIFontNode* node = new UIFontNode ("font", attr);
 			node->setFont (newFont);
 			fontsNode->getChildren ().add (node);
 			fontsNode->sortChildren ();
-			changed (kMessageFontChanged);
 			impl->listeners.forEach ([this] (UIDescriptionListener* l) {
 				l->onUIDescFontChanged (this);
 			});
@@ -1843,7 +1841,6 @@ void UIDescription::changeGradient (UTF8StringPtr name, CGradient* newGradient)
 		if (!node->noExport ())
 		{
 			node->setGradient (newGradient);
-			changed (kMessageGradientChanged);
 			impl->listeners.forEach ([this] (UIDescriptionListener* l) {
 				l->onUIDescGradientChanged (this);
 			});
@@ -1853,13 +1850,12 @@ void UIDescription::changeGradient (UTF8StringPtr name, CGradient* newGradient)
 	{
 		if (gradientsNode)
 		{
-			UIAttributes* attr = new UIAttributes;
+			auto attr = makeOwned<UIAttributes> ();
 			attr->setAttribute ("name", name);
 			UIGradientNode* node = new UIGradientNode ("gradient", attr);
 			node->setGradient (newGradient);
 			gradientsNode->getChildren ().add (node);
 			gradientsNode->sortChildren ();
-			changed (kMessageGradientChanged);
 			impl->listeners.forEach ([this] (UIDescriptionListener* l) {
 				l->onUIDescGradientChanged (this);
 			});
@@ -1878,7 +1874,6 @@ void UIDescription::changeBitmap (UTF8StringPtr name, UTF8StringPtr newName, con
 		{
 			node->setBitmap (newName);
 			node->setNinePartTiledOffset (nineparttiledOffset);
-			changed (kMessageBitmapChanged);
 			impl->listeners.forEach ([this] (UIDescriptionListener* l) {
 				l->onUIDescBitmapChanged (this);
 			});
@@ -1888,7 +1883,7 @@ void UIDescription::changeBitmap (UTF8StringPtr name, UTF8StringPtr newName, con
 	{
 		if (bitmapsNode)
 		{
-			UIAttributes* attr = new UIAttributes;
+			auto attr = makeOwned<UIAttributes> ();
 			attr->setAttribute ("name", name);
 			UIBitmapNode* node = new UIBitmapNode ("bitmap", attr);
 			if (nineparttiledOffset)
@@ -1896,7 +1891,6 @@ void UIDescription::changeBitmap (UTF8StringPtr name, UTF8StringPtr newName, con
 			node->setBitmap (newName);
 			bitmapsNode->getChildren ().add (node);
 			bitmapsNode->sortChildren ();
-			changed (kMessageBitmapChanged);
 			impl->listeners.forEach ([this] (UIDescriptionListener* l) {
 				l->onUIDescBitmapChanged (this);
 			});
@@ -1930,7 +1924,6 @@ void UIDescription::changeBitmapFilters (UTF8StringPtr bitmapName, const std::li
 			bitmapNode->getChildren ().add (filterNode);
 		}
 		bitmapNode->invalidBitmap ();
-		changed (kMessageBitmapChanged);
 		impl->listeners.forEach ([this] (UIDescriptionListener* l) {
 			l->onUIDescBitmapChanged (this);
 		});
@@ -1950,7 +1943,7 @@ void UIDescription::collectBitmapFilters (UTF8StringPtr bitmapName, std::list<Sh
 				const std::string* filterName = childNode->getAttributes ()->getAttributeValue ("name");
 				if (filterName == nullptr)
 					continue;
-				UIAttributes* attributes = new UIAttributes ();
+				auto attributes = makeOwned<UIAttributes> ();
 				attributes->setAttribute ("name", *filterName);
 				for (auto& it2 : childNode->getChildren ())
 				{
@@ -1965,7 +1958,6 @@ void UIDescription::collectBitmapFilters (UTF8StringPtr bitmapName, std::list<Sh
 					}
 				}
 				filters.emplace_back (attributes);
-				attributes->forget ();
 			}
 		}
 	}
@@ -1988,20 +1980,19 @@ static void removeChildNode (UINode* baseNode, UTF8StringPtr nodeName)
 }
 
 //-----------------------------------------------------------------------------
-void UIDescription::removeNode (UTF8StringPtr name, IdStringPtr mainNodeName, IdStringPtr changeMsg)
+void UIDescription::removeNode (UTF8StringPtr name, IdStringPtr mainNodeName)
 {
 	UINode* node = getBaseNode (mainNodeName);
 	if (node)
 	{
 		removeChildNode (node, name);
-		changed (changeMsg);
 	}
 }
 
 //-----------------------------------------------------------------------------
 void UIDescription::removeColor (UTF8StringPtr name)
 {
-	removeNode (name, MainNodeNames::kColor, kMessageColorChanged);
+	removeNode (name, MainNodeNames::kColor);
 	impl->listeners.forEach ([this] (UIDescriptionListener* l) {
 		l->onUIDescColorChanged (this);
 	});
@@ -2010,7 +2001,7 @@ void UIDescription::removeColor (UTF8StringPtr name)
 //-----------------------------------------------------------------------------
 void UIDescription::removeTag (UTF8StringPtr name)
 {
-	removeNode (name, MainNodeNames::kControlTag, kMessageTagChanged);
+	removeNode (name, MainNodeNames::kControlTag);
 	impl->listeners.forEach ([this] (UIDescriptionListener* l) {
 		l->onUIDescTagChanged (this);
 	});
@@ -2019,7 +2010,7 @@ void UIDescription::removeTag (UTF8StringPtr name)
 //-----------------------------------------------------------------------------
 void UIDescription::removeFont (UTF8StringPtr name)
 {
-	removeNode (name, MainNodeNames::kFont, kMessageFontChanged);
+	removeNode (name, MainNodeNames::kFont);
 	impl->listeners.forEach ([this] (UIDescriptionListener* l) {
 		l->onUIDescFontChanged (this);
 	});
@@ -2028,7 +2019,7 @@ void UIDescription::removeFont (UTF8StringPtr name)
 //-----------------------------------------------------------------------------
 void UIDescription::removeBitmap (UTF8StringPtr name)
 {
-	removeNode (name, MainNodeNames::kBitmap, kMessageBitmapChanged);
+	removeNode (name, MainNodeNames::kBitmap);
 	impl->listeners.forEach ([this] (UIDescriptionListener* l) {
 		l->onUIDescBitmapChanged (this);
 	});
@@ -2037,7 +2028,7 @@ void UIDescription::removeBitmap (UTF8StringPtr name)
 //-----------------------------------------------------------------------------
 void UIDescription::removeGradient (UTF8StringPtr name)
 {
-	removeNode (name, MainNodeNames::kGradient, kMessageGradientChanged);
+	removeNode (name, MainNodeNames::kGradient);
 	impl->listeners.forEach ([this] (UIDescriptionListener* l) {
 		l->onUIDescGradientChanged (this);
 	});
@@ -2050,7 +2041,6 @@ void UIDescription::changeAlternativeFontNames (UTF8StringPtr name, UTF8StringPt
 	if (node)
 	{
 		node->setAlternativeFontNames (alternativeFonts);
-		changed (kMessageFontChanged);
 		impl->listeners.forEach ([this] (UIDescriptionListener* l) {
 			l->onUIDescFontChanged (this);
 		});
@@ -2163,7 +2153,7 @@ bool UIDescription::updateAttributesForView (UINode* node, CView* view, bool dee
 			std::string subTemplateName;
 			if (getTemplateNameFromView (subView, subTemplateName))
 			{
-				UIAttributes* attr = new UIAttributes;
+				auto attr = makeOwned<UIAttributes> ();
 				attr->setAttribute (MainNodeNames::kTemplate, subTemplateName);
 				UINode* subNode = new UINode ("view", attr);
 				node->getChildren ().add (subNode);
@@ -2246,7 +2236,7 @@ void UIDescription::updateViewDescription (UTF8StringPtr name, CView* view)
 }
 
 //-----------------------------------------------------------------------------
-bool UIDescription::addNewTemplate (UTF8StringPtr name, UIAttributes* attr)
+bool UIDescription::addNewTemplate (UTF8StringPtr name, const SharedPointer<UIAttributes>& attr)
 {
 #if VSTGUI_LIVE_EDITING
 	vstgui_assert (impl->nodes);
@@ -2256,7 +2246,6 @@ bool UIDescription::addNewTemplate (UTF8StringPtr name, UIAttributes* attr)
 		UINode* newNode = new UINode (MainNodeNames::kTemplate, attr);
 		attr->setAttribute ("name", name);
 		impl->nodes->getChildren ().add (newNode);
-		changed (kMessageTemplateChanged);
 		impl->listeners.forEach ([this] (UIDescriptionListener* l) {
 			l->onUIDescTemplateChanged (this);
 		});
@@ -2274,7 +2263,6 @@ bool UIDescription::removeTemplate (UTF8StringPtr name)
 	if (templateNode)
 	{
 		impl->nodes->getChildren ().remove (templateNode);
-		changed (kMessageTemplateChanged);
 		impl->listeners.forEach ([this] (UIDescriptionListener* l) {
 			l->onUIDescTemplateChanged (this);
 		});
@@ -2292,7 +2280,6 @@ bool UIDescription::changeTemplateName (UTF8StringPtr name, UTF8StringPtr newNam
 	if (templateNode)
 	{
 		templateNode->getAttributes()->setAttribute ("name", newName);
-		changed (kMessageTemplateChanged);
 		impl->listeners.forEach ([this] (UIDescriptionListener* l) {
 			l->onUIDescTemplateChanged (this);
 		});
@@ -2315,7 +2302,6 @@ bool UIDescription::duplicateTemplate (UTF8StringPtr name, UTF8StringPtr duplica
 		{
 			duplicate->getAttributes()->setAttribute ("name", duplicateName);
 			impl->nodes->getChildren ().add (duplicate);
-			changed (kMessageTemplateChanged);
 			impl->listeners.forEach ([this] (UIDescriptionListener* l) {
 				l->onUIDescTemplateChanged (this);
 			});
@@ -2327,7 +2313,7 @@ bool UIDescription::duplicateTemplate (UTF8StringPtr name, UTF8StringPtr duplica
 }
 
 //-----------------------------------------------------------------------------
-bool UIDescription::setCustomAttributes (UTF8StringPtr name, UIAttributes* attr)
+bool UIDescription::setCustomAttributes (UTF8StringPtr name, const SharedPointer<UIAttributes>& attr)
 {
 	UINode* customNode = findChildNodeByNameAttribute (getBaseNode (MainNodeNames::kCustom), name);
 	if (customNode)
@@ -2341,23 +2327,23 @@ bool UIDescription::setCustomAttributes (UTF8StringPtr name, UIAttributes* attr)
 }
 
 //-----------------------------------------------------------------------------
-UIAttributes* UIDescription::getCustomAttributes (UTF8StringPtr name) const
+SharedPointer<UIAttributes> UIDescription::getCustomAttributes (UTF8StringPtr name) const
 {
 	auto node = findChildNodeByNameAttribute (getBaseNode (MainNodeNames::kCustom), name);
 	return node ? node->getAttributes () : nullptr;
 }
 
 //-----------------------------------------------------------------------------
-UIAttributes* UIDescription::getCustomAttributes (UTF8StringPtr name, bool create)
+SharedPointer<UIAttributes> UIDescription::getCustomAttributes (UTF8StringPtr name, bool create)
 {
 	auto attributes = getCustomAttributes (name);
 	if (attributes)
 		return attributes;
 	if (create)
 	{
-		UIAttributes* attributes = new UIAttributes ();
-		setCustomAttributes (name, attributes);
-		return attributes;
+		auto attributes = makeOwned<UIAttributes> ();
+		if (setCustomAttributes (name, attributes))
+			return attributes;
 	}
 	return nullptr;
 }
@@ -2414,7 +2400,6 @@ bool UIDescription::changeControlTagString  (UTF8StringPtr tagName, const std::s
 		if (create)
 			return false;
 		controlTagNode->setTagString (newTagString);
-		changed (kMessageTagChanged);
 		impl->listeners.forEach ([this] (UIDescriptionListener* l) {
 			l->onUIDescTagChanged (this);
 		});
@@ -2424,13 +2409,12 @@ bool UIDescription::changeControlTagString  (UTF8StringPtr tagName, const std::s
 	{
 		if (tagsNode)
 		{
-			UIAttributes* attr = new UIAttributes;
+			auto attr = makeOwned<UIAttributes> ();
 			attr->setAttribute ("name", tagName);
 			UIControlTagNode* node = new UIControlTagNode ("control-tag", attr);
-			node->setTagString(newTagString);
+			node->setTagString (newTagString);
 			tagsNode->getChildren ().add (node);
 			tagsNode->sortChildren ();
-			changed (kMessageTagChanged);
 			impl->listeners.forEach ([this] (UIDescriptionListener* l) {
 				l->onUIDescTagChanged (this);
 			});
@@ -2821,7 +2805,7 @@ void UIDescription::startXmlElement (Xml::Parser* parser, IdStringPtr elementNam
 			{
 				parser->stop ();
 			}
-			newNode = new UINode (name, new UIAttributes (elementAttributes));
+			newNode = new UINode (name, makeOwned<UIAttributes> (elementAttributes));
 		}
 		else
 		{
@@ -2829,58 +2813,58 @@ void UIDescription::startXmlElement (Xml::Parser* parser, IdStringPtr elementNam
 			{
 				// only allowed second level elements
 				if (name == MainNodeNames::kControlTag || name == MainNodeNames::kColor || name == MainNodeNames::kBitmap)
-					newNode = new UINode (name, new UIAttributes (elementAttributes), true);
+					newNode = new UINode (name, makeOwned<UIAttributes> (elementAttributes), true);
 				else if (name == MainNodeNames::kFont || name == MainNodeNames::kTemplate
 					  || name == MainNodeNames::kControlTag || name == MainNodeNames::kCustom
 					  || name == MainNodeNames::kVariable || name == MainNodeNames::kGradient)
-					newNode = new UINode (name, new UIAttributes (elementAttributes));
+					newNode = new UINode (name, makeOwned<UIAttributes> (elementAttributes));
 				else
 					parser->stop ();
 			}
 			else if (parent->getName () == MainNodeNames::kBitmap)
 			{
 				if (name == "bitmap")
-					newNode = new UIBitmapNode (name, new UIAttributes (elementAttributes));
+					newNode = new UIBitmapNode (name, makeOwned<UIAttributes> (elementAttributes));
 				else
 					parser->stop ();
 			}
 			else if (parent->getName () == MainNodeNames::kFont)
 			{
 				if (name == "font")
-					newNode = new UIFontNode (name, new UIAttributes (elementAttributes));
+					newNode = new UIFontNode (name, makeOwned<UIAttributes> (elementAttributes));
 				else
 					parser->stop ();
 			}
 			else if (parent->getName () == MainNodeNames::kColor)
 			{
 				if (name == "color")
-					newNode = new UIColorNode (name, new UIAttributes (elementAttributes));
+					newNode = new UIColorNode (name, makeOwned<UIAttributes> (elementAttributes));
 				else
 					parser->stop ();
 			}
 			else if (parent->getName () == MainNodeNames::kControlTag)
 			{
 				if (name == "control-tag")
-					newNode = new UIControlTagNode (name, new UIAttributes (elementAttributes));
+					newNode = new UIControlTagNode (name, makeOwned<UIAttributes> (elementAttributes));
 				else
 					parser->stop ();
 			}
 			else if (parent->getName () == MainNodeNames::kVariable)
 			{
 				if (name == "var")
-					newNode = new UIVariableNode (name, new UIAttributes (elementAttributes));
+					newNode = new UIVariableNode (name, makeOwned<UIAttributes> (elementAttributes));
 				else
 					parser->stop ();
 			}
 			else if (parent->getName () == MainNodeNames::kGradient)
 			{
 				if (name == "gradient")
-					newNode = new UIGradientNode (name, new UIAttributes (elementAttributes));
+					newNode = new UIGradientNode (name, makeOwned<UIAttributes> (elementAttributes));
 				else
 					parser->stop ();
 			}
 			else
-				newNode = new UINode (name, new UIAttributes (elementAttributes));
+				newNode = new UINode (name, makeOwned<UIAttributes> (elementAttributes));
 		}
 		if (newNode)
 		{
@@ -2890,13 +2874,13 @@ void UIDescription::startXmlElement (Xml::Parser* parser, IdStringPtr elementNam
 	}
 	else if (name == "vstgui-ui-description")
 	{
-		impl->nodes = makeOwned<UINode> (name, new UIAttributes (elementAttributes));
+		impl->nodes = makeOwned<UINode> (name, makeOwned<UIAttributes> (elementAttributes));
 		impl->nodeStack.emplace_back (impl->nodes);
 	}
 	else if (name == "vstgui-ui-description-view-list")
 	{
 		vstgui_assert (impl->nodes == nullptr);
-		impl->nodes = makeOwned<UINode> (name, new UIAttributes (elementAttributes));
+		impl->nodes = makeOwned<UINode> (name, makeOwned<UIAttributes> (elementAttributes));
 		impl->nodeStack.emplace_back (impl->nodes);
 		impl->restoreViewsMode = true;
 	}
@@ -2965,35 +2949,37 @@ void UIDescription::xmlComment (Xml::Parser* parser, IdStringPtr comment)
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-UINode::UINode (const std::string& _name, UIAttributes* _attributes, bool needsFastChildNameAttributeLookup)
+UINode::UINode (const std::string& _name, const SharedPointer<UIAttributes>& _attributes, bool needsFastChildNameAttributeLookup)
 : name (_name)
 , attributes (_attributes)
-, children (needsFastChildNameAttributeLookup ? new UIDescListWithFastFindAttributeNameChild: new UIDescList)
 , flags (0)
 {
+	if (needsFastChildNameAttributeLookup)
+		children = makeOwned<UIDescListWithFastFindAttributeNameChild> ();
+	else
+		children = makeOwned<UIDescList> ();
 	if (attributes == nullptr)
-		attributes = new UIAttributes ();
+		attributes = makeOwned<UIAttributes> ();
 }
 
 //-----------------------------------------------------------------------------
-UINode::UINode (const std::string& _name, UIDescList* _children, UIAttributes* _attributes)
+UINode::UINode (const std::string& _name, const SharedPointer<UIDescList>& _children, const SharedPointer<UIAttributes>& _attributes)
 : name (_name)
 , attributes (_attributes)
 , children (_children)
 , flags (0)
 {
 	vstgui_assert (children != nullptr);
-	children->remember ();
 	if (attributes == nullptr)
-		attributes = new UIAttributes ();
+		attributes = makeOwned<UIAttributes> ();
 }
 
 //-----------------------------------------------------------------------------
 UINode::UINode (const UINode& n)
 : name (n.name)
 , data (n.data)
-, attributes (new UIAttributes (*n.attributes))
-, children (new UIDescList (*n.children))
+, attributes (makeOwned<UIAttributes> (*n.attributes))
+, children (makeOwned<UIDescList> (*n.children))
 , flags (n.flags)
 {
 }
@@ -3001,9 +2987,6 @@ UINode::UINode (const UINode& n)
 //-----------------------------------------------------------------------------
 UINode::~UINode () noexcept
 {
-	if (attributes)
-		attributes->forget ();
-	children->forget ();
 }
 
 //-----------------------------------------------------------------------------
@@ -3036,7 +3019,7 @@ UICommentNode::UICommentNode (const std::string& comment)
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-UIVariableNode::UIVariableNode (const std::string& name, UIAttributes* attributes)
+UIVariableNode::UIVariableNode (const std::string& name, const SharedPointer<UIAttributes>& attributes)
 : UINode (name, attributes)
 , type (kUnknown)
 , number (0)
@@ -3099,7 +3082,7 @@ const std::string& UIVariableNode::getString () const
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-UIControlTagNode::UIControlTagNode (const std::string& name, UIAttributes* attributes)
+UIControlTagNode::UIControlTagNode (const std::string& name, const SharedPointer<UIAttributes>& attributes)
 : UINode (name, attributes)
 , tag (-1)
 {
@@ -3155,7 +3138,7 @@ void UIControlTagNode::setTagString (const std::string& str)
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-UIBitmapNode::UIBitmapNode (const std::string& name, UIAttributes* attributes)
+UIBitmapNode::UIBitmapNode (const std::string& name, const SharedPointer<UIAttributes>& attributes)
 : UINode (name, attributes)
 , bitmap (nullptr)
 , filterProcessed (false)
@@ -3394,7 +3377,7 @@ void UIBitmapNode::invalidBitmap ()
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-UIFontNode::UIFontNode (const std::string& name, UIAttributes* attributes)
+UIFontNode::UIFontNode (const std::string& name, const SharedPointer<UIAttributes>& attributes)
 : UINode (name, attributes)
 , font (nullptr)
 {
@@ -3524,7 +3507,7 @@ bool UIFontNode::getAlternativeFontNames (std::string& fontNames)
 }
 
 //-----------------------------------------------------------------------------
-UIColorNode::UIColorNode (const std::string& name, UIAttributes* attributes)
+UIColorNode::UIColorNode (const std::string& name, const SharedPointer<UIAttributes>& attributes)
 : UINode (name, attributes)
 {
 	color.alpha = 255;
@@ -3562,7 +3545,7 @@ void UIColorNode::setColor (const CColor& newColor)
 }
 
 //-----------------------------------------------------------------------------
-UIGradientNode::UIGradientNode (const std::string& name, UIAttributes* attributes)
+UIGradientNode::UIGradientNode (const std::string& name, const SharedPointer<UIAttributes>& attributes)
 : UINode (name, attributes)
 {
 }

@@ -10,6 +10,7 @@
 #if VSTGUI_LIVE_EDITING
 
 #include "../uiattributes.h"
+#include "../uidescriptionlistener.h"
 #include "../../lib/cdatabrowser.h"
 #include "../../lib/controls/csearchtextedit.h"
 #include "../../lib/controls/cscrollbar.h"
@@ -19,21 +20,21 @@
 namespace VSTGUI {
 
 //----------------------------------------------------------------------------------------------------
-class UIBaseDataSource : public GenericStringListDataBrowserSource, public IControlListener
+class UIBaseDataSource : public GenericStringListDataBrowserSource, public IControlListener, public UIDescriptionListenerAdapter
 {
 public:
 	using StringVector = GenericStringListDataBrowserSource::StringVector;
 
-	UIBaseDataSource (UIDescription* description, IActionPerformer* actionPerformer, IdStringPtr descriptionMessage, IGenericStringListDataBrowserSourceSelectionChanged* delegate = nullptr)
-	: GenericStringListDataBrowserSource (0, delegate) , description (description), actionPerformer (actionPerformer), descriptionMessage (descriptionMessage)
+	UIBaseDataSource (UIDescription* description, IActionPerformer* actionPerformer, IGenericStringListDataBrowserSourceSelectionChanged* delegate = nullptr)
+	: GenericStringListDataBrowserSource (0, delegate) , description (description), actionPerformer (actionPerformer)
 	{
-		description->addDependency (this);
+		description->registerListener (this);
 		textInset.x = 4;
 	}
 	
 	~UIBaseDataSource () override
 	{
-		description->removeDependency (this);
+		description->unregisterListener (this);
 	}
 
 	void setSearchFieldControl (CSearchTextEdit* searchControl)
@@ -155,26 +156,21 @@ protected:
 			}
 		}
 	}
-	
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override
+
+	void beforeUIDescSave (UIDescription* desc) override
 	{
-		if (message == descriptionMessage)
-		{
-			int32_t selectedRow = dataBrowser ? dataBrowser->getSelectedRow () : CDataBrowser::kNoSelection;
-			std::string selectedName;
-			if (selectedRow != CDataBrowser::kNoSelection)
-				selectedName = names.at (static_cast<uint32_t> (selectedRow));
-			update ();
-			if (selectedRow != CDataBrowser::kNoSelection)
-				selectName (selectedName.data ());
-			return kMessageNotified;
-		}
-		else if (message == UIDescription::kMessageBeforeSave)
-		{
-			saveDefaults ();
-			return kMessageNotified;
-		}
-		return kMessageUnknown;
+		saveDefaults ();
+	};
+
+	void onUIDescriptionUpdate ()
+	{
+		int32_t selectedRow = dataBrowser ? dataBrowser->getSelectedRow () : CDataBrowser::kNoSelection;
+		std::string selectedName;
+		if (selectedRow != CDataBrowser::kNoSelection)
+			selectedName = names.at (static_cast<uint32_t> (selectedRow));
+		update ();
+		if (selectedRow != CDataBrowser::kNoSelection)
+			selectName (selectedName.data ());
 	}
 
 	virtual void saveDefaults ()
@@ -182,7 +178,7 @@ protected:
 		UTF8StringPtr name = getDefaultsName ();
 		if (name)
 		{
-			UIAttributes* attributes = description->getCustomAttributes (name, true);
+			auto attributes = description->getCustomAttributes (name, true);
 			if (attributes)
 			{
 				attributes->setAttribute ("FilterString", filterString.getString ());
@@ -200,7 +196,7 @@ protected:
 		UTF8StringPtr name = getDefaultsName ();
 		if (name)
 		{
-			UIAttributes* attributes = description->getCustomAttributes (name, true);
+			auto attributes = description->getCustomAttributes (name, true);
 			if (attributes)
 			{
 				const std::string* str = attributes->getAttributeValue ("FilterString");
@@ -298,7 +294,6 @@ protected:
 	SharedPointer<CSearchTextEdit> searchField;
 	SharedPointer<CTextEdit> textEditControl;
 	IActionPerformer* actionPerformer;
-	IdStringPtr descriptionMessage;
 
 	StringVector names;
 	UTF8String filterString;

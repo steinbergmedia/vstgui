@@ -1,29 +1,33 @@
-// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#include "mandelbrotwindow.h"
 #include "mandelbrot.h"
 #include "mandelbrotview.h"
+#include "mandelbrotwindow.h"
 #include "modelbinding.h"
 #include "touchbarsupport.h"
+#include "vstgui/lib/animation/animations.h"
+#include "vstgui/lib/animation/ianimationtarget.h"
+#include "vstgui/lib/animation/timingfunctions.h"
 #include "vstgui/lib/cbitmap.h"
 #include "vstgui/lib/ccolor.h"
-#include "vstgui/lib/cframe.h"
 #include "vstgui/lib/cfileselector.h"
+#include "vstgui/lib/cframe.h"
+#include "vstgui/lib/controls/ccontrol.h"
 #include "vstgui/lib/iscalefactorchangedlistener.h"
 #include "vstgui/lib/iviewlistener.h"
 #include "vstgui/standalone/include/helpers/uidesc/customization.h"
 #include "vstgui/standalone/include/helpers/value.h"
 #include "vstgui/standalone/include/helpers/valuelistener.h"
 #include "vstgui/standalone/include/helpers/windowcontroller.h"
-#include "vstgui/standalone/include/iasync.h"
 #include "vstgui/standalone/include/iapplication.h"
+#include "vstgui/standalone/include/iasync.h"
 #include "vstgui/standalone/include/iuidescwindow.h"
+#include "vstgui/uidescription/cstream.h"
 #include "vstgui/uidescription/delegationcontroller.h"
 #include "vstgui/uidescription/iuidescription.h"
 #include "vstgui/uidescription/uiattributes.h"
-#include "vstgui/uidescription/cstream.h"
 #include <atomic>
 #include <cassert>
 #include <thread>
@@ -127,6 +131,59 @@ inline void calculateMandelbrotBitmap (Model model, SharedPointer<CBitmap> bitma
 }
 
 //------------------------------------------------------------------------
+struct ProgressController : DelegationController, ValueListenerAdapter
+{
+	ProgressController (ValuePtr progressValue, IController* parent)
+	: DelegationController (parent), progressValue (progressValue)
+	{
+		progressValue->registerListener (this);
+	}
+
+	~ProgressController () noexcept override { progressValue->unregisterListener (this); }
+
+	CView* verifyView (CView* view, const UIAttributes& attributes,
+	                   const IUIDescription* description) override
+	{
+		assert (control == nullptr);
+		control = dynamic_cast<CControl*> (view);
+		assert (control);
+
+		return controller->verifyView (view, attributes, description);
+	}
+
+	void onPerformEdit (IValue& value, IValue::Type newValue) override
+	{
+		if (!control || !control->isAttached ())
+			return;
+
+		if (newValue >= 0.5)
+		{
+			control->setValue (0.f);
+			auto tf = new Animation::LinearTimingFunction (800);
+			control->addAnimation ("Animation", new Animation::ControlValueAnimation (1.f),
+			                       new Animation::RepeatTimingFunction (tf, -1, false));
+			control->setAlphaValue (0.f);
+			control->addAnimation ("Alpha", new Animation::AlphaValueAnimation (1.f),
+			                       new Animation::CubicBezierTimingFunction (
+			                           Animation::CubicBezierTimingFunction::easyIn (200)));
+		}
+		else
+		{
+			control->addAnimation (
+			    "Alpha", new Animation::AlphaValueAnimation (0.f),
+			    new Animation::CubicBezierTimingFunction (
+			        Animation::CubicBezierTimingFunction::easyOut (100)),
+			    [] (CView* view, const IdStringPtr, Animation::IAnimationTarget*) {
+				    view->removeAnimation ("Animation");
+			    });
+		}
+	}
+
+	CControl* control {nullptr};
+	ValuePtr progressValue;
+};
+
+//------------------------------------------------------------------------
 struct ViewController : DelegationController,
                         IViewListenerAdapter,
                         IModelChangeListener,
@@ -160,6 +217,13 @@ struct ViewController : DelegationController,
 			}
 		}
 		return controller->createView (attributes, description);
+	}
+
+	IController* createSubController (IdStringPtr name, const IUIDescription* description) override
+	{
+		if (UTF8StringView (name) == "ProgressController")
+			return new ProgressController (progressValue, this);
+		return controller->createSubController (name, description);
 	}
 
 	void viewSizeChanged (CView* view, const CRect& oldSize) override { updateMandelbrot (); }
@@ -218,7 +282,7 @@ struct ViewController : DelegationController,
 				                           This->mandelbrotView->setBackground (bitmap);
 				                           Value::performSingleEdit (*This->progressValue, 0.);
 			                           }
-			                       });
+		                           });
 	}
 
 	void saveBitmap (OutputStream& stream)
@@ -230,7 +294,7 @@ struct ViewController : DelegationController,
 				auto bytes = IPlatformBitmap::createMemoryPNGRepresentation (platformBitmap);
 				if (!bytes.empty ())
 				{
-					stream.writeRaw (bytes.data (), bytes.size ());
+					stream.writeRaw (bytes.data (), static_cast<uint32_t> (bytes.size ()));
 				}
 			}
 		}
@@ -238,6 +302,7 @@ struct ViewController : DelegationController,
 
 	Model::Ptr model;
 	ValuePtr progressValue;
+	CControl* progressControl {nullptr};
 	CView* mandelbrotView {nullptr};
 	double scaleFactor {1.};
 	std::atomic<uint32_t> taskID {0};
@@ -246,11 +311,13 @@ struct ViewController : DelegationController,
 static const Command saveCommand {"File", "Save Bitmap"};
 
 //------------------------------------------------------------------------
-struct WindowCustomization : public UIDesc::Customization, public WindowControllerAdapter, public ICommandHandler
+struct WindowCustomization : public UIDesc::Customization,
+                             public WindowControllerAdapter,
+                             public ICommandHandler
 {
 	static std::shared_ptr<WindowCustomization> make (const ValuePtr& maxIterations)
 	{
-		auto obj = std::make_shared<WindowCustomization>();
+		auto obj = std::make_shared<WindowCustomization> ();
 		obj->maxIterations = maxIterations;
 		return obj;
 	}
@@ -260,7 +327,8 @@ struct WindowCustomization : public UIDesc::Customization, public WindowControll
 		frame = contentView;
 		if (!contentView)
 			return;
-		if (auto touchBarExt = dynamic_cast<IPlatformFrameTouchBarExtension*> (contentView->getPlatformFrame ()))
+		if (auto touchBarExt =
+		        dynamic_cast<IPlatformFrameTouchBarExtension*> (contentView->getPlatformFrame ()))
 		{
 			installTouchbarSupport (touchBarExt, maxIterations);
 		}
@@ -276,10 +344,11 @@ struct WindowCustomization : public UIDesc::Customization, public WindowControll
 	{
 		if (frame && command == saveCommand)
 		{
-			if (auto fs = owned (CNewFileSelector::create (frame, CNewFileSelector::kSelectSaveFile)))
+			if (auto fs =
+			        owned (CNewFileSelector::create (frame, CNewFileSelector::kSelectSaveFile)))
 			{
 				fs->addFileExtension ({"PNG File", "png", "image/png"});
-				fs->run ([frame = shared (frame)] (CNewFileSelector* fs) {
+				fs->run ([frame = shared (frame)] (CNewFileSelector * fs) {
 					if (fs->getNumSelectedFiles () == 0)
 						return;
 					if (auto controller = findViewController<ViewController> (frame))
@@ -287,7 +356,8 @@ struct WindowCustomization : public UIDesc::Customization, public WindowControll
 						auto path = fs->getSelectedFile (0);
 						assert (path != nullptr);
 						CFileStream stream;
-						if (!stream.open (path, CFileStream::kWriteMode | CFileStream::kBinaryMode | CFileStream::kTruncateMode))
+						if (!stream.open (path, CFileStream::kWriteMode | CFileStream::kBinaryMode |
+						                            CFileStream::kTruncateMode))
 							return;
 						controller->saveBitmap (stream);
 					}
@@ -297,11 +367,10 @@ struct WindowCustomization : public UIDesc::Customization, public WindowControll
 		}
 		return false;
 	}
-	
+
 	ValuePtr maxIterations;
 	CFrame* frame {nullptr};
 };
-
 
 //------------------------------------------------------------------------
 VSTGUI::Standalone::WindowPtr makeMandelbrotWindow ()
@@ -315,7 +384,7 @@ VSTGUI::Standalone::WindowPtr makeMandelbrotWindow ()
 	customization->addCreateViewControllerFunc (
 	    "mandelbrotviewcontroller", [=] (const auto& name, auto parent, const auto uiDesc) {
 		    return new ViewController (parent, model, modelBinding->getProgressValue ());
-		});
+	    });
 
 	UIDesc::Config config;
 	config.uiDescFileName = "Window.uidesc";
@@ -324,6 +393,7 @@ VSTGUI::Standalone::WindowPtr makeMandelbrotWindow ()
 	config.customization = customization;
 	config.windowConfig.title = "Mandelbrot";
 	config.windowConfig.autoSaveFrameName = "Mandelbrot";
+	config.windowConfig.groupIdentifier = "Mandelbrot";
 	config.windowConfig.style.border ().close ().size ().centered ();
 	return UIDesc::makeWindow (config);
 }

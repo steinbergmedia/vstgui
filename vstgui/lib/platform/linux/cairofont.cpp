@@ -351,8 +351,7 @@ CCoord Font::getStringWidth (CDrawContext* context, IPlatformString* string, boo
 	{
 		cairo_text_extents_t e;
 		cairo_scaled_font_text_extents (impl->font, linuxString->get ().data (), &e);
-		// TODO: somehow this is not exactly what is drawn
-		return e.width;
+		return e.x_advance;
 	}
 	return 0;
 }

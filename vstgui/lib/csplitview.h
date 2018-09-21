@@ -21,16 +21,22 @@ class CSplitView : public CViewContainer
 {
 public:
 	enum Style {
-		kHorizontal,			///< subviews will be horizontally arranged
-		kVertical				///< subviews will be vertically arranged
+		/** subviews will be horizontally arranged */
+		kHorizontal,
+		/** subviews will be vertically arranged */
+		kVertical
 	};
 
 	/** Method how to resize the subviews if the size of the split view changes */
 	enum ResizeMethod {
-		kResizeFirstView,		///< only the first view will be resized
-		kResizeSecondView,		///< only the second view will be resized
-		kResizeLastView,		///< only the last view will be resized
-		kResizeAllViews			///< all views will be resized equally
+		/** only the first view will be resized */
+		kResizeFirstView,
+		/** only the second view will be resized */
+		kResizeSecondView,
+		/** only the last view will be resized */
+		kResizeLastView,
+		/** all views will be resized equally */
+		kResizeAllViews
 	};
 	
 	CSplitView (const CRect& size, Style style = kHorizontal, CCoord separatorWidth = 10., ISplitViewSeparatorDrawer* drawer = nullptr);
@@ -40,14 +46,20 @@ public:
 	/// @name CSplitView Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual void setStyle (Style s);								///< set the style of the split view, see @ref CSplitView::Style
-	Style getStyle () const { return style; }						///< get the style of the split view, see @ref CSplitView::Style
+	/** set the style of the split view, see @ref CSplitView::Style */
+	virtual void setStyle (Style s);
+	/** get the style of the split view, see @ref CSplitView::Style */
+	Style getStyle () const { return style; }
 
-	virtual void setResizeMethod (ResizeMethod method);				///< set the resize method, see @ref CSplitView::ResizeMethod
-	ResizeMethod getResizeMethod () const { return resizeMethod; }	///< get the resize method, see @ref CSplitView::ResizeMethod
+	/** set the resize method, see @ref CSplitView::ResizeMethod */
+	virtual void setResizeMethod (ResizeMethod method);
+	/** get the resize method, see @ref CSplitView::ResizeMethod */
+	ResizeMethod getResizeMethod () const { return resizeMethod; }
 
-	virtual void setSeparatorWidth (CCoord width);					///< set the width of the separators
-	CCoord getSeparatorWidth () const { return separatorWidth; }	///< get the width of the separators
+	/** set the width of the separators */
+	virtual void setSeparatorWidth (CCoord width);
+	/** get the width of the separators */
+	CCoord getSeparatorWidth () const { return separatorWidth; }
 
 	ISplitViewSeparatorDrawer* getDrawer ();
 	void storeViewSizes ();
@@ -56,9 +68,7 @@ public:
 	//@}
 	
 	// overrides
-	bool addView (CView* pView) override;
-	bool addView (CView* pView, const CRect& mouseableArea, bool mouseEnabled = true) override;
-	bool addView (CView* pView, CView* pBefore) override;
+	bool addView (CView* pView, CView* pBefore = nullptr) override;
 	bool removeView (CView* pView, bool withForget = true) override;
 	bool removeAll (bool withForget = true) override;
 	void setViewSize (const CRect& rect, bool invalid = true) override;

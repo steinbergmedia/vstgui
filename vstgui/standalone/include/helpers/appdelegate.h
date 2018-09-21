@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../iappdelegate.h"
+#include "../appinit.h"
 
 //------------------------------------------------------------------------
 namespace VSTGUI {

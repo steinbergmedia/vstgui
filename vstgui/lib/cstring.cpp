@@ -191,7 +191,7 @@ UTF8String trim (const UTF8String& str, TrimOptions options)
 	if (options.trimLeft ())
 	{
 		auto it = std::find_if (Iterator (string.begin ()), Iterator (string.end ()), options);
-		string.erase (string.begin (), it.base ());
+		string.erase (0, std::distance (string.cbegin (), it.base ()));
 	}
 	if (options.trimRight ())
 	{
@@ -203,7 +203,7 @@ UTF8String trim (const UTF8String& str, TrimOptions options)
 				break;
 			pos = it;
 		}
-		string.erase (pos.base (), string.end ());
+		string.erase (std::distance (string.cbegin (), pos.base ()));
 	}
 	return UTF8String (std::move (string));
 }

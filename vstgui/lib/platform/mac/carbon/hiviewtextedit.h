@@ -23,6 +23,7 @@ public:
 	UTF8String getText () override;
 	bool setText (const UTF8String& text) override;
 	bool updateSize () override;
+	bool drawsPlaceholder () const override { return false; }
 
 	HIViewRef getPlatformControl () const { return platformControl; }
 //-----------------------------------------------------------------------------

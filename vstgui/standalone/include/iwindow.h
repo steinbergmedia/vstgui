@@ -123,11 +123,22 @@ public:
  */
 struct WindowConfiguration
 {
+	/** Type of window */
 	WindowType type {WindowType::Document};
+	/** Window style */
 	WindowStyle style;
+	/** Initial window size */
 	CPoint size;
+	/** Window title */
 	UTF8String title;
+	/** Window save frame name */
 	UTF8String autoSaveFrameName;
+	/** Window group identifier [optional]
+	 *
+	 *	Windows with the same group identifier can be grouped together on some platforms like on
+	 *	macOS to tabs in a single window
+	 */
+	UTF8String groupIdentifier;
 };
 
 //------------------------------------------------------------------------
@@ -170,6 +181,8 @@ public:
 	virtual void setTitle (const UTF8String& newTitle) = 0;
 	/** Set content view. */
 	virtual void setContentView (const SharedPointer<CFrame>& frame) = 0;
+	/** Set the path the contents of this window represents. */
+	virtual void setRepresentedPath (const UTF8String& path) = 0;
 
 	/** Show the window. */
 	virtual void show () = 0;

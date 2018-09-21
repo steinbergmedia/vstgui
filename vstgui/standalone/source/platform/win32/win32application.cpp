@@ -1,7 +1,13 @@
-// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
+#include "win32async.h"
+#include "win32commondirectories.h"
+#include "win32preference.h"
+#include "win32window.h"
+
+#include "../../../../lib/platform/win32/win32dll.h"
 #include "../../../../lib/platform/win32/win32support.h"
 #include "../../../include/iappdelegate.h"
 #include "../../../include/iapplication.h"
@@ -10,16 +16,10 @@
 #include "../../shareduiresources.h"
 #include "../../window.h"
 #include "../iplatformwindow.h"
-#include "win32async.h"
-#include "win32preference.h"
-#include "win32window.h"
-#include "win32commondirectories.h"
-#include <shellscalingapi.h>
-#include <windows.h>
 #include <array>
 #include <chrono>
+#include <windows.h>
 
-#pragma comment(lib, "Shcore.lib")
 #pragma comment(lib, "d2d1.lib")
 #pragma comment(lib, "dwrite.lib")
 
@@ -75,7 +75,9 @@ private:
 //------------------------------------------------------------------------
 void Application::init (HINSTANCE instance, LPWSTR commandLine)
 {
-	SetProcessDpiAwareness (PROCESS_PER_MONITOR_DPI_AWARE);
+	auto& hidpiSupport = HiDPISupport::instance ();
+	if (!hidpiSupport.setProcessDpiAwarnessContext (DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2))
+		hidpiSupport.setProcessDpiAwareness (HiDPISupport::PROCESS_PER_MONITOR_DPI_AWARE);
 
 	IApplication::CommandLineArguments cmdArgs;
 	int numArgs = 0;
@@ -91,7 +93,7 @@ void Application::init (HINSTANCE instance, LPWSTR commandLine)
 
 	PlatformCallbacks callbacks;
 	callbacks.quit = [this] () { quit (); };
-	callbacks.onCommandUpdate = [this] () { 
+	callbacks.onCommandUpdate = [this] () {
 		if (!needCommandUpdate)
 		{
 			needCommandUpdate = true;
@@ -107,14 +109,27 @@ void Application::init (HINSTANCE instance, LPWSTR commandLine)
 
 	auto app = Detail::getApplicationPlatformAccess ();
 	vstgui_assert (app);
-	app->init ({prefs, commonDirectories, std::move (cmdArgs), std::move (callbacks)});
+	IPlatformApplication::OpenFilesList openFilesList;
+	/* TODO: fill openFilesList */
+	app->init ({prefs, commonDirectories, std::move (cmdArgs), std::move (callbacks),
+	            std::move (openFilesList)});
 }
 
 //------------------------------------------------------------------------
 AlertResult Application::showAlert (const AlertBoxConfig& config)
 {
+	bool alertDone = false;
 	AlertResult result = AlertResult::Error;
-	if (auto window = Detail::createAlertBox (config, [&] (AlertResult r) { result = r; }))
+	auto callback = [&] (AlertResult r) {
+		result = r;
+		alertDone = true;
+		for (auto& w : IApplication::instance ().getWindows ())
+		{
+			if (auto winWindow = toWin32Window (w))
+				winWindow->setModalWindow (nullptr);
+		}
+	};
+	if (auto window = Detail::createAlertBox (config, callback))
 	{
 		auto winModalWindow = toWin32Window (window);
 		vstgui_assert (winModalWindow);
@@ -128,18 +143,16 @@ AlertResult Application::showAlert (const AlertBoxConfig& config)
 		winModalWindow->center ();
 
 		window->show ();
-		MSG msg;
-		BOOL gmResult;
-		while (result == AlertResult::Error && (gmResult = GetMessage (&msg, NULL, 0, 0)))
-		{
-			TranslateMessage (&msg);
-			DispatchMessage (&msg);
-		}
-		for (auto& w : IApplication::instance ().getWindows ())
-		{
-			if (auto winWindow = toWin32Window (w))
-				winWindow->setModalWindow (nullptr);
-		}
+	}
+	else
+		return AlertResult::Error;
+
+	MSG msg;
+	BOOL gmResult;
+	while (!alertDone && (gmResult = GetMessage (&msg, NULL, 0, 0)))
+	{
+		TranslateMessage (&msg);
+		DispatchMessage (&msg);
 	}
 	return result;
 }
@@ -154,7 +167,8 @@ void Application::showAlertForWindow (const AlertBoxForWindowConfig& config)
 		    vstgui_assert (parentWinWindow);
 		    parentWinWindow->setModalWindow (nullptr);
 		    Async::perform (Async::Context::Main, [callback, r, parentWindow] () {
-			    callback (r);
+			    if (callback)
+					callback (r);
 			    if (auto winWindow = toWin32Window (parentWindow))
 				    winWindow->activate ();
 			});
@@ -276,7 +290,7 @@ void* hInstance = nullptr; // for VSTGUI
 int APIENTRY wWinMain (_In_ HINSTANCE instance, _In_opt_ HINSTANCE prevInstance,
                        _In_ LPWSTR lpCmdLine, _In_ int nCmdShow)
 {
-	HRESULT hr = CoInitialize (NULL);
+	HRESULT hr = OleInitialize (NULL);
 	if (FAILED (hr))
 		return FALSE;
 
@@ -287,6 +301,6 @@ int APIENTRY wWinMain (_In_ HINSTANCE instance, _In_opt_ HINSTANCE prevInstance,
 	app.init (instance, lpCmdLine);
 	app.run ();
 
-	CoUninitialize ();
+	OleUninitialize ();
 	return 0;
 }

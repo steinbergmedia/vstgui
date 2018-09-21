@@ -8,6 +8,7 @@
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
+class IPlatformFrameConfig;
 namespace Standalone {
 
 class IWindow;
@@ -27,6 +28,7 @@ using WindowPtr = std::shared_ptr<IWindow>;
 using WindowControllerPtr = std::shared_ptr<IWindowController>;
 using ValuePtr = std::shared_ptr<IValue>;
 using ValueConverterPtr = std::shared_ptr<IValueConverter>;
+using PlatformFrameConfigPtr = std::shared_ptr<IPlatformFrameConfig>;
 
 struct Command;
 struct AlertBoxConfig;

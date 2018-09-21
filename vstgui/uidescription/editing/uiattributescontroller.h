@@ -12,6 +12,7 @@
 #include "uiselection.h"
 #include "../delegationcontroller.h"
 #include "../iviewcreator.h"
+#include "../uidescriptionlistener.h"
 #include "uiundomanager.h"
 #include "../../lib/controls/ctextedit.h"
 
@@ -24,7 +25,7 @@ class Controller;
 }
 
 //----------------------------------------------------------------------------------------------------
-class UIAttributesController : public CBaseObject, public DelegationController
+class UIAttributesController : public CBaseObject, public DelegationController, public UIDescriptionListenerAdapter
 {
 public:
 	UIAttributesController (IController* baseController, UISelection* selection, UIUndoManager* undoManager, UIDescription* description);
@@ -46,6 +47,13 @@ protected:
 	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;
 	IController* createSubController (IdStringPtr name, const IUIDescription* description) override;
 	IControlListener* getControlListener (UTF8StringPtr name) override;
+
+	void onUIDescTagChanged (UIDescription* desc) override;
+	void onUIDescColorChanged (UIDescription* desc) override;
+	void onUIDescFontChanged (UIDescription* desc) override;
+	void onUIDescBitmapChanged (UIDescription* desc) override;
+	void onUIDescTemplateChanged (UIDescription* desc) override;
+	void onUIDescGradientChanged (UIDescription* desc) override;
 
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 

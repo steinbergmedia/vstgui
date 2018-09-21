@@ -1,5 +1,6 @@
 ##########################################################################################
 cmake_minimum_required(VERSION 3.5)
+include(CMakeDependentOption)
 
 if(NOT PROJECT_NAME)
     project(vstgui)
@@ -7,6 +8,10 @@ if(NOT PROJECT_NAME)
 endif()
 
 set(CMAKE_OSX_DEPLOYMENT_TARGET 10.9)
+
+if (UNIX AND NOT CMAKE_HOST_APPLE)
+    set(LINUX TRUE)
+endif()
 
 ##########################################################################################
 function(vstgui_set_cxx_version target version)
@@ -63,21 +68,30 @@ if(CMAKE_HOST_APPLE)
     endif()
   set(VSTGUI_LTO_LINKER_FLAGS "")
 endif()
-if(UNIX AND NOT CMAKE_HOST_APPLE)
+if(LINUX)
     set(VSTGUI_LTO_COMPILER_FLAGS "-O3 -flto")
     set(VSTGUI_LTO_LINKER_FLAGS "")
     find_package(X11 REQUIRED)
     find_package(Freetype REQUIRED)
     find_package(PkgConfig REQUIRED)
-    pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
-    pkg_check_modules(GTKMM3 REQUIRED gtkmm-3.0)
+    pkg_check_modules(LIBXCB REQUIRED xcb)
+    pkg_check_modules(LIBXCB_UTIL REQUIRED xcb-util)
+    pkg_check_modules(LIBXCB_CURSOR REQUIRED xcb-cursor)
+    pkg_check_modules(LIBXCB_XKB REQUIRED xcb-xkb)
+    pkg_check_modules(LIBXKB_COMMON REQUIRED xkbcommon)
+    pkg_check_modules(LIBXKB_COMMON_X11 REQUIRED xkbcommon-x11)
     set(LINUX_LIBRARIES
         ${X11_LIBRARIES}
         ${FREETYPE_LIBRARIES}
-        ${GTK3_LIBRARIES}
-        ${GTKMM3_LIBRARIES}
+        ${LIBXCB_LIBRARIES}
+        ${LIBXCB_UTIL_LIBRARIES}
+        ${LIBXCB_CURSOR_LIBRARIES}
+        ${LIBXCB_XKB_LIBRARIES}
+        ${LIBXKB_COMMON_LIBRARIES}
+        ${LIBXKB_COMMON_X11_LIBRARIES}
         cairo
         fontconfig
+        dl
     )
     if(VSTGUI_WARN_EVERYTHING)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
@@ -135,18 +149,21 @@ endif()
 add_subdirectory(lib)
 add_subdirectory(uidescription)
 
-if(UNIX AND NOT CMAKE_HOST_APPLE)
-    set(VSTGUI_DISABLE_STANDALONE 1)
+if(LINUX)
+    set(VSTGUI_DISABLE_UNITTESTS  1)
 endif()
 
-if(NOT VSTGUI_DISABLE_STANDALONE)
-    if(NOT VSTGUI_DISABLE_STANDALONE_EXAMPLES)
-        set(VSTGUI_STANDALONE_EXAMPLES FOLDER "Standalone Examples")
-    endif()
+if(NOT DEFINED VSTGUI_STANDALONE)
+    option(VSTGUI_STANDALONE "VSTGUI Standalone library" ON)
+    CMAKE_DEPENDENT_OPTION(VSTGUI_STANDALONE_EXAMPLES "VSTGUI Standalone examples" ON
+                           "NOT VSTGUI_STANDALONE" OFF)
+endif()
+
+option(VSTGUI_TOOLS "VSTGUI Tools" ON)
+
+if(VSTGUI_STANDALONE)
+    set(VSTGUI_STANDALONE_EXAMPLES FOLDER "Standalone Examples")
     add_subdirectory(standalone)
-    if(VSTGUI_UIDESCRIPTION_EDITOR)
-        add_subdirectory(tests/uidescriptioneditorapp)
-    endif()
     if(NOT VSTGUI_DISABLE_UNITTESTS)
         add_subdirectory(tests/gfxtest)
         add_subdirectory(tests/base64codecspeed)
@@ -154,6 +171,9 @@ if(NOT VSTGUI_DISABLE_STANDALONE)
 endif()
 if(NOT VSTGUI_DISABLE_UNITTESTS)
     add_subdirectory(tests)
+endif()
+if(VSTGUI_TOOLS)
+    add_subdirectory(tools)
 endif()
 
 get_directory_property(hasParent PARENT_DIRECTORY)

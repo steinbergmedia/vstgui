@@ -2,6 +2,8 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
+#define GL_SILENCE_DEPRECATION
+
 #import "cocoaopenglview.h"
 
 #if MAC_COCOA

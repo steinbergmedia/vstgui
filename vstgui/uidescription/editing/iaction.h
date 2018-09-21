@@ -12,6 +12,7 @@
 
 namespace VSTGUI {
 class UIAttributes;
+struct FocusDrawingSettings;
 
 //----------------------------------------------------------------------------------------------------
 class IAction
@@ -53,11 +54,14 @@ public:
 	virtual void endLiveColorChange (UTF8StringPtr colorName) = 0;
 
 	virtual void performTemplateNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) = 0;
+	virtual void performTemplateMinMaxSizeChange (UTF8StringPtr templateName, CPoint minSize, CPoint maxSize) = 0;
 	virtual void performCreateNewTemplate (UTF8StringPtr name, UTF8StringPtr baseViewClassName) = 0;
 	virtual void performDeleteTemplate (UTF8StringPtr name) = 0;
 	virtual void performDuplicateTemplate (UTF8StringPtr name, UTF8StringPtr dupName) = 0;
 	virtual void onTemplateCreation (UTF8StringPtr name, CView* view) = 0;
 	virtual void onTemplateNameChange (UTF8StringPtr oldName, UTF8StringPtr newName) = 0;
+
+	virtual void performChangeFocusDrawingSettings (const FocusDrawingSettings& newSettings) = 0;
 
 	virtual void beginGroupAction (UTF8StringPtr name) = 0;
 	virtual void finishGroupAction () = 0;

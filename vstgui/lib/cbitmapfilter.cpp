@@ -648,7 +648,6 @@ private:
 		uint32_t origBytesPerRow = originalBitmap.getPlatformBitmapPixelAccess ()->getBytesPerRow ();
 		uint32_t copyBytesPerRow = copyBitmap.getPlatformBitmapPixelAccess ()->getBytesPerRow ();
 
-		CColor c;
 		int32_t ix;
 		int32_t iy = -1;
 		int32_t* origPixel = nullptr;

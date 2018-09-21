@@ -8,7 +8,7 @@
 
 #if WINDOWS
 
-#include "../iplatformviewlayer.h"
+#include "iplatformviewlayer.h"
 
 #include <windows.h>
 

@@ -9,8 +9,8 @@
 #include <expat.h>
 #else
 #define XML_STATIC 1
-#define XML_NS 1
-#define XML_DTD 1
+#define XML_NS 0
+#define XML_DTD 0
 #define XML_CONTEXT_BYTES 1024
 #define XML_LARGE_SIZE 1
 

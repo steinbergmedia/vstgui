@@ -9,6 +9,7 @@
 
 #if VSTGUI_LIVE_EDITING
 
+#include "iaction.h"
 #include "../icontroller.h"
 #include "../../lib/controls/ctextedit.h"
 #include <string>
@@ -19,7 +20,7 @@ namespace VSTGUI {
 class UIFocusSettingsController : public CBaseObject, public IController
 {
 public:
-	UIFocusSettingsController (UIDescription* description);
+	UIFocusSettingsController (UIDescription* description, IActionPerformer* actionPerformer);
 	~UIFocusSettingsController () override = default;
 
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
@@ -30,6 +31,7 @@ protected:
 	static bool stringToValue (UTF8StringPtr txt, float& result, CTextEdit::StringToValueUserData* userData);
 
 	SharedPointer<UIDescription> editDescription;
+	IActionPerformer* actionPerformer;
 
 	enum {
 		kEnabledTag = 0,
@@ -38,6 +40,7 @@ protected:
 		kNumTags
 	};
 	CControl* controls[kNumTags];
+	FocusDrawingSettings originalSettings;
 };
 
 } // namespace

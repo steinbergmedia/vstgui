@@ -94,7 +94,7 @@ public:
 protected:
 	CGraphicsPath () {}
 
-	virtual void dirty () = 0; ///< platform object should be released
+	virtual void dirty () = 0; // platform object should be released
 
 	/// @cond ignore
 

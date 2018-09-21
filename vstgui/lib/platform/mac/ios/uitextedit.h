@@ -30,6 +30,7 @@ public:
 	UTF8String getText () override;
 	bool setText (const UTF8String& text) override;
 	bool updateSize () override;
+	bool drawsPlaceholder () const override { return true; }
 
 protected:
 	UITextField* platformControl;

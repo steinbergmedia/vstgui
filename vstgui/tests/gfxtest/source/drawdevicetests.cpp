@@ -98,7 +98,7 @@ private:
 				                                        CFileStream::kWriteMode |
 				                                        CFileStream::kTruncateMode))
 					return;
-				stream.writeRaw (buffer.data (), buffer.size ());
+				stream.writeRaw (buffer.data (), static_cast<uint32_t> (buffer.size ()));
 			}
 		}
 	}

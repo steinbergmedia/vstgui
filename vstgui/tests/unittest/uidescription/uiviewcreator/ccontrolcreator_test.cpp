@@ -48,13 +48,6 @@ TESTCASE(CControlCreatorTest,
 		});
 	);
 
-	TEST(backgroundOffset,
-		CPoint offset (20, 20);
-		testAttribute<CControl>(kCControl, kAttrBackgroundOffset, offset, nullptr, [&] (CControl* v) {
-			return v->getBackOffset() == offset;
-		});
-	);
-
 	TEST(tagUnknown,
 		DummyUIDescription uidesc;
 		testAttribute<CControl>(kCControl, kAttrControlTag, kTagName, &uidesc, [&] (CControl* v) {

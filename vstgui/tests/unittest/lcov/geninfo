@@ -63,7 +63,7 @@ if( $^O eq "msys" )
 
 # Constants
 our $tool_dir		= abs_path(dirname($0));
-our $lcov_version	= "LCOV version 1.12";
+our $lcov_version	= "LCOV version 1.13";
 our $lcov_url		= "http://ltp.sourceforge.net/coverage/lcov.php";
 our $gcov_tool		= "gcov";
 our $tool_name		= basename($0);
@@ -160,6 +160,8 @@ sub solve_relative_path($$);
 sub read_gcov_header($);
 sub read_gcov_file($);
 sub info(@);
+sub map_llvm_version($);
+sub version_to_str($);
 sub get_gcov_version();
 sub system_no_output($@);
 sub read_config($);
@@ -194,8 +196,8 @@ sub read_gcno_word(*;$$);
 sub read_gcno_value(*$;$$);
 sub read_gcno_string(*$);
 sub read_gcno_lines_record(*$$$$$$);
-sub determine_gcno_split_crc($$$);
-sub read_gcno_function_record(*$$$$);
+sub determine_gcno_split_crc($$$$);
+sub read_gcno_function_record(*$$$$$);
 sub read_gcno($);
 sub get_gcov_capabilities();
 sub get_overall_line($$$$);
@@ -304,6 +306,9 @@ if (defined($opt_config_file)) {
 elsif (-r "/etc/lcovrc")
 {
 	$config = read_config("/etc/lcovrc");
+} elsif (-r "/usr/local/etc/lcovrc")
+{
+	$config = read_config("/usr/local/etc/lcovrc");
 }
 
 if ($config || %opt_rc)
@@ -413,6 +418,8 @@ else
 }
 
 @data_directory = @ARGV;
+
+debug("$lcov_version\n");
 
 # Check for help option
 if ($help)
@@ -1898,6 +1905,36 @@ sub read_gcov_file($)
 }
 
 
+# Map LLVM versions to the version of GCC gcov which they emulate.
+
+sub map_llvm_version($)
+{
+	my ($ver) = @_;
+
+	return 0x040200 if ($ver >= 0x030400);
+
+	warn("WARNING: This version of LLVM's gcov is unknown.  ".
+	     "Assuming it emulates GCC gcov version 4.2.\n");
+
+	return 0x040200;
+}
+
+
+# Return a readable version of encoded gcov version.
+
+sub version_to_str($)
+{
+	my ($ver) = @_;
+	my ($a, $b, $c);
+
+	$a = $ver >> 16 & 0xff;
+	$b = $ver >> 8 & 0xff;
+	$c = $ver & 0xff;
+
+	return "$a.$b.$c";
+}
+
+
 #
 # Get the GCOV tool version. Return an integer number which represents the
 # GCOV version. Version numbers can be compared using standard integer
@@ -1909,58 +1946,48 @@ sub get_gcov_version()
 	local *HANDLE;
 	my $version_string;
 	my $result;
-	my $pipe_next_line;
+	my ($a, $b, $c) = (4, 2, 0);	# Fallback version
+
+	# Examples for gcov version output:
+	#
+	# gcov (GCC) 4.4.7 20120313 (Red Hat 4.4.7-3)
+	#
+	# gcov (crosstool-NG 1.18.0) 4.7.2
+	#
+	# LLVM (http://llvm.org/):
+	#   LLVM version 3.4svn
+	#
+	# Apple LLVM version 8.0.0 (clang-800.0.38)
+	#       Optimized build.
+	#       Default target: x86_64-apple-darwin16.0.0
+	#       Host CPU: haswell
 
 	open(GCOV_PIPE, "-|", "$gcov_tool --version")
 		or die("ERROR: cannot retrieve gcov version!\n");
+	local $/;
 	$version_string = <GCOV_PIPE>;
-	# LLVM gcov keeps version information on the second line.
-	# For example, gcov --version yields:
-	# LLVM (http://llvm.org/):
-	#   LLVM version 3.4svn
-
-	$pipe_next_line = <GCOV_PIPE>;	
-	# In case version information is on first line.
-	# For example, with Xcode 7.0 gcov --version yields:
-	# Apple LLVM 7.0.0 (clang-700.0.65)
-
-	$version_string = $pipe_next_line if ($pipe_next_line && $version_string =~ /LLVM/);
 	close(GCOV_PIPE);
 
-	# Remove version information in parenthesis to cope with the following:
-	# - gcov (GCC) 4.4.7 20120313 (Red Hat 4.4.7-3)
-	# - gcov (crosstool-NG 1.18.0) 4.7.2
+	# Remove all bracketed information
 	$version_string =~ s/\([^\)]*\)//g;
 
-	$result = 0;
-	if ($version_string =~ /(\d+)\.(\d+)(\.(\d+))?/)
-	{
-		if (defined($4))
-		{
-			info("Found gcov version: $1.$2.$4\n");
-			$result = $1 << 16 | $2 << 8 | $4;
-		}
-		else
-		{
-			info("Found gcov version: $1.$2\n");
-			$result = $1 << 16 | $2 << 8;
-		}
+	if ($version_string =~ /(\d+)\.(\d+)(\.(\d+))?/) {
+		($a, $b, $c) = ($1, $2, $4);
+		$c = 0 if (!defined($c));
+	} else {
+		warn("WARNING: cannot determine gcov version - ".
+		     "assuming $a.$b.$c\n");
 	}
-	if ($version_string =~ /LLVM/)
-	{
-		# Map LLVM versions to the version of GCC gcov which
-		# they emulate
-		if ($result >= 0x030400)
-		{
-			info("Found LLVM gcov version 3.4, which emulates gcov version 4.2\n");
-			$result = 0x040200;
-		}
-		else
-		{
-			warn("This version of LLVM's gcov is unknown.  Assuming it emulates GCC gcov version 4.2.\n");
-			$result = 0x040200;
-		}
+	$result = $a << 16 | $b << 8 | $c;
+
+	if ($version_string =~ /LLVM/) {
+		$result = map_llvm_version($result);
+		info("Found LLVM gcov version $a.$b.$c, which emulates gcov ".
+		     "version ".version_to_str($result)."\n");
+	} else {
+		info("Found gcov version: ".version_to_str($result)."\n");
 	}
+
 	return ($result, $version_string);
 }
 
@@ -3338,20 +3365,20 @@ sub read_gcno_lines_record(*$$$$$$)
 }
 
 #
-# determine_gcno_split_crc(handle, big_endian, rec_length)
+# determine_gcno_split_crc(handle, big_endian, rec_length, version)
 #
 # Determine if HANDLE refers to a .gcno file with a split checksum function
 # record format. Return non-zero in case of split checksum format, zero
 # otherwise, undef in case of read error.
 #
 
-sub determine_gcno_split_crc($$$)
+sub determine_gcno_split_crc($$$$)
 {
-	my ($handle, $big_endian, $rec_length) = @_;
+	my ($handle, $big_endian, $rec_length, $version) = @_;
 	my $strlen;
 	my $overlong_string;
 
-	return 1 if ($gcov_version >= $GCOV_VERSION_4_7_0);
+	return 1 if ($version >= $GCOV_VERSION_4_7_0);
 	return 1 if (is_compat($COMPAT_MODE_SPLIT_CRC));
 
 	# Heuristic:
@@ -3383,15 +3410,15 @@ sub determine_gcno_split_crc($$$)
 }
 
 #
-# read_gcno_function_record(handle, graph, big_endian, rec_length)
+# read_gcno_function_record(handle, graph, big_endian, rec_length, version)
 #
 # Read a gcno format function record from handle and add the relevant data
 # to graph. Return (filename, function) on success, undef on error. 
 #
 
-sub read_gcno_function_record(*$$$$)
+sub read_gcno_function_record(*$$$$$)
 {
-	my ($handle, $bb, $fileorder, $big_endian, $rec_length) = @_;
+	my ($handle, $bb, $fileorder, $big_endian, $rec_length, $version) = @_;
 	my $filename;
 	my $function;
 	my $lineno;
@@ -3403,7 +3430,8 @@ sub read_gcno_function_record(*$$$$)
 	# Determine if this is a function record with split checksums
 	if (!defined($gcno_split_crc)) {
 		$gcno_split_crc = determine_gcno_split_crc($handle, $big_endian,
-							   $rec_length);
+							   $rec_length,
+							   $version);
 		return undef if (!defined($gcno_split_crc));
 	}
 	# Skip cfg checksum word in case of split checksums
@@ -3424,6 +3452,33 @@ sub read_gcno_function_record(*$$$$)
 	graph_add_order($fileorder, $function, $filename);
 
 	return ($filename, $function);
+}
+
+#
+# map_gcno_version
+#
+# Map version number as found in .gcno files to the format used in geninfo.
+#
+
+sub map_gcno_version($)
+{
+	my ($version) = @_;
+	my ($a, $b, $c);
+	my ($major, $minor);
+
+	$a = $version >> 24;
+	$b = $version >> 16 & 0xff;
+	$c = $version >> 8 & 0xff;
+
+	if ($a < ord('A')) {
+		$major = $a - ord('0');
+		$minor = ($b - ord('0')) * 10 + $c - ord('0');
+	} else {
+		$major = ($a - ord('A')) * 10 + $b - ord('0');
+		$minor = $c - ord('0');
+	}
+
+	return $major << 16 | $minor << 8;
 }
 
 #
@@ -3456,6 +3511,7 @@ sub read_gcno($)
 	my $instr;
 	my $graph;
 	my $filelength;
+	my $version;
 	local *HANDLE;
 
 	open(HANDLE, "<", $gcno_filename) or goto open_error;
@@ -3472,8 +3528,12 @@ sub read_gcno($)
 	} else {
 		goto magic_error;
 	}
-	# Skip version and stamp
-	graph_skip(*HANDLE, 8, "version and stamp") or goto incomplete;
+	# Read version
+	$version = read_gcno_value(*HANDLE, $big_endian, "compiler version");
+	$version = map_gcno_version($version);
+	debug(sprintf("found version 0x%08x\n", $version));
+	# Skip stamp
+	graph_skip(*HANDLE, 4, "file timestamp") or goto incomplete;
 	while (!eof(HANDLE)) {
 		my $next_pos;
 		my $curr_pos;
@@ -3503,7 +3563,7 @@ sub read_gcno($)
 		if ($tag == $tag_function) {
 			($filename, $function) = read_gcno_function_record(
 				*HANDLE, $bb, $fileorder, $big_endian,
-				$length);
+				$length, $version);
 			goto incomplete if (!defined($function));
 		} elsif ($tag == $tag_lines) {
 			# Read lines record

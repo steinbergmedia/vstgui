@@ -13,6 +13,7 @@
 #include "uiundomanager.h"
 #include "iaction.h"
 #include "../delegationcontroller.h"
+#include "../uidescriptionlistener.h"
 #include "../../lib/cdatabrowser.h"
 #include <vector>
 #include <list>
@@ -21,7 +22,7 @@ namespace VSTGUI {
 class UIViewListDataSource;
 
 //----------------------------------------------------------------------------------------------------
-class UITemplateController : public CBaseObject, public DelegationController, public IContextMenuController2, public IGenericStringListDataBrowserSourceSelectionChanged, public IDependency
+class UITemplateController : public CBaseObject, public DelegationController, public IContextMenuController2, public IGenericStringListDataBrowserSourceSelectionChanged, public IDependency, public UIDescriptionListenerAdapter
 {
 public:
 	UITemplateController (IController* baseController, UIDescription* description, UISelection* selection, UIUndoManager* undoManager, IActionPerformer* actionPerformer);
@@ -37,6 +38,7 @@ public:
 	static IdStringPtr kMsgTemplateChanged;
 	static IdStringPtr kMsgTemplateNameChanged;
 protected:
+	void onUIDescTemplateChanged (UIDescription* desc) override;
 	void valueChanged (CControl* pControl) override {}
 	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override;
 	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;
@@ -45,8 +47,6 @@ protected:
 	void dbSelectionChanged (int32_t selectedRow, GenericStringListDataBrowserSource* source) override;
 
 	void appendContextMenuItems (COptionMenu& contextMenu, CView* view, const CPoint& where) override;
-
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 
 	SharedPointer<UIDescription> editDescription;
 	SharedPointer<UISelection> selection;
