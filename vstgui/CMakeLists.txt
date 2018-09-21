@@ -155,14 +155,15 @@ endif()
 
 if(NOT DEFINED VSTGUI_STANDALONE)
     option(VSTGUI_STANDALONE "VSTGUI Standalone library" ON)
-    CMAKE_DEPENDENT_OPTION(VSTGUI_STANDALONE_EXAMPLES "VSTGUI Standalone examples" ON
-                           "NOT VSTGUI_STANDALONE" OFF)
+    if(NOT DEFINED VSTGUI_STANDALONE_EXAMPLES)
+      CMAKE_DEPENDENT_OPTION(VSTGUI_STANDALONE_EXAMPLES "VSTGUI Standalone examples" ON
+                             "NOT VSTGUI_STANDALONE" OFF)
+    endif()
 endif()
 
 option(VSTGUI_TOOLS "VSTGUI Tools" ON)
 
 if(VSTGUI_STANDALONE)
-    set(VSTGUI_STANDALONE_EXAMPLES FOLDER "Standalone Examples")
     add_subdirectory(standalone)
     if(NOT VSTGUI_DISABLE_UNITTESTS)
         add_subdirectory(tests/gfxtest)
