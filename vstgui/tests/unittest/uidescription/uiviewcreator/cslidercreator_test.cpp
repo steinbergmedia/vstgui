@@ -26,6 +26,9 @@ TESTCASE(CSliderCreatorTest,
 		testAttribute<CSlider>(kCSlider, kAttrMode, "free click", &uidesc, [&] (CSlider* v) {
 			return v->getSliderMode () == CSliderMode::FreeClick;
 		});
+		testAttribute<CSlider>(kCSlider, kAttrMode, "ramp", &uidesc, [&] (CSlider* v) {
+			return v->getSliderMode () == CSliderMode::Ramp;
+		});
 		testAttribute<CSlider>(kCSlider, kAttrMode, "use global", &uidesc, [&] (CSlider* v) {
 			return v->getSliderMode () == CSliderMode::UseGlobal;
 		});
@@ -68,16 +71,6 @@ TESTCASE(CSliderCreatorTest,
 		});
 		testAttribute<CSlider>(kCSlider, kAttrOrientation, "vertical", &uidesc, [&] (CSlider* v) {
 			return v->getStyle() & CSlider::kVertical;
-		});
-	);
-
-	TEST(transparentHandle,
-		DummyUIDescription uidesc;
-		testAttribute<CSlider>(kCSlider, kAttrTransparentHandle, true, &uidesc, [&] (CSlider* v) {
-			return v->getDrawTransparentHandle ();
-		});
-		testAttribute<CSlider>(kCSlider, kAttrTransparentHandle, false, &uidesc, [&] (CSlider* v) {
-			return !v->getDrawTransparentHandle ();
 		});
 	);
 
@@ -175,7 +168,7 @@ TESTCASE(CSliderCreatorTest,
 
 	TEST(modeValues,
 		DummyUIDescription uidesc;
-		testPossibleValues (kCSlider, kAttrMode, &uidesc, {"touch", "relative touch", "free click", "use global"});
+		testPossibleValues (kCSlider, kAttrMode, &uidesc, {"touch", "relative touch", "free click", "ramp", "use global"});
 	);
 
 );

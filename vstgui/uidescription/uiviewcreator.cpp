@@ -3204,6 +3204,7 @@ public:
 	std::string kTouch = "touch";
 	std::string kRelativeTouch = "relative touch";
 	std::string kFreeClick = "free click";
+	std::string kRamp = "ramp";
 	std::string kUseGlobal = "use global";
 
 	CSliderCreator () { UIViewFactory::registerViewCreator (*this); }
@@ -3224,10 +3225,6 @@ public:
 			slider->setSliderMode (*freeClickAttr == strTrue ? CSliderMode::FreeClick : CSliderMode::Touch);
 		}
 
-		const std::string* transparentHandleAttr = attributes.getAttributeValue (kAttrTransparentHandle);
-		if (transparentHandleAttr)
-			slider->setDrawTransparentHandle (*transparentHandleAttr == strTrue);
-
 		const std::string* modeAttr = attributes.getAttributeValue (kAttrMode);
 		if (modeAttr)
 		{
@@ -3237,6 +3234,8 @@ public:
 				slider->setSliderMode (CSliderMode::RelativeTouch);
 			else if (*modeAttr == kFreeClick)
 				slider->setSliderMode (CSliderMode::FreeClick);
+			else if (*modeAttr == kRamp)
+				slider->setSliderMode (CSliderMode::Ramp);
 			else if (*modeAttr == kUseGlobal)
 				slider->setSliderMode (CSliderMode::UseGlobal);
 		}
@@ -3326,7 +3325,6 @@ public:
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const override
 	{
-		attributeNames.emplace_back (kAttrTransparentHandle);
 		attributeNames.emplace_back (kAttrMode);
 		attributeNames.emplace_back (kAttrHandleBitmap);
 		attributeNames.emplace_back (kAttrHandleOffset);
@@ -3347,7 +3345,6 @@ public:
 	}
 	AttrType getAttributeType (const std::string& attributeName) const override
 	{
-		if (attributeName == kAttrTransparentHandle) return kBooleanType;
 		if (attributeName == kAttrMode) return kListType;
 		if (attributeName == kAttrHandleBitmap) return kBitmapType;
 		if (attributeName == kAttrHandleOffset) return kPointType;
@@ -3371,12 +3368,7 @@ public:
 		CSlider* slider = dynamic_cast<CSlider*> (view);
 		if (!slider)
 			return false;
-		if (attributeName == kAttrTransparentHandle)
-		{
-			stringValue = slider->getDrawTransparentHandle () ? strTrue : strFalse;
-			return true;
-		}
-		else if (attributeName == kAttrMode)
+		if (attributeName == kAttrMode)
 		{
 			switch (slider->getSliderMode ())
 			{
@@ -3386,6 +3378,8 @@ public:
 					stringValue = kRelativeTouch; break;
 				case CSliderMode::FreeClick:
 					stringValue = kFreeClick; break;
+				case CSliderMode::Ramp:
+					stringValue = kRamp; break;
 				case CSliderMode::UseGlobal:
 					stringValue = kUseGlobal; break;
 			}
@@ -3507,6 +3501,7 @@ public:
 			values.emplace_back (&kTouch);
 			values.emplace_back (&kRelativeTouch);
 			values.emplace_back (&kFreeClick);
+			values.emplace_back (&kRamp);
 			values.emplace_back (&kUseGlobal);
 			return true;
 		}

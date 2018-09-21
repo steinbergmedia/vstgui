@@ -11,15 +11,6 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-enum class CSliderMode
-{
-	Touch,
-	RelativeTouch,
-	FreeClick,
-	UseGlobal
-};
-
-//-----------------------------------------------------------------------------
 // CSlider Declaration
 //! @brief a slider control
 /// @ingroup controls
@@ -45,21 +36,22 @@ public:
 	enum Mode {
 		kTouchMode,
 		kRelativeTouchMode,
-		kFreeClickMode
+		kFreeClickMode,
+		kRampMode
 	};
 #endif
 	//-----------------------------------------------------------------------------
 	/// @name CSlider Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual void setDrawTransparentHandle (bool val) { bDrawTransparentEnabled = val; }
-	virtual bool getDrawTransparentHandle () const { return bDrawTransparentEnabled; }
+	VSTGUI_DEPRECATED (virtual void setDrawTransparentHandle (bool val) {})
+	VSTGUI_DEPRECATED (virtual bool getDrawTransparentHandle () const { return true; })
 	VSTGUI_DEPRECATED (virtual void setMode (Mode newMode);)
 	VSTGUI_DEPRECATED (virtual Mode getMode () const;)
 	virtual void setOffsetHandle (const CPoint& val);
-	virtual CPoint getOffsetHandle () const { return offsetHandle; }
-	virtual void setOffset (const CPoint& val) { offset = val; }
-	virtual CPoint getOffset () const { return offset; }
+	virtual CPoint getOffsetHandle () const;
+	virtual void setOffset (const CPoint& val);
+	virtual CPoint getOffset () const;
 
 	virtual void setSliderMode (CSliderMode mode);
 	CSliderMode getSliderMode () const;
@@ -79,13 +71,13 @@ public:
 	};
 
 	virtual void setStyle (int32_t style);
-	virtual int32_t getStyle () const { return style; }
+	virtual int32_t getStyle () const;
 
 	virtual void     setHandle (CBitmap* pHandle);
-	virtual CBitmap* getHandle () const { return pHandle; }
+	virtual CBitmap* getHandle () const;
 
-	virtual void  setZoomFactor (float val) { zoomFactor = val; }
-	virtual float getZoomFactor () const { return zoomFactor; }
+	virtual void  setZoomFactor (float val);
+	virtual float getZoomFactor () const;
 	//@}
 
 	//-----------------------------------------------------------------------------
@@ -106,11 +98,11 @@ public:
 	virtual void setBackColor (CColor color);
 	virtual void setValueColor (CColor color);
 
-	int32_t getDrawStyle () const { return drawStyle; }
-	CCoord getFrameWidth () const { return frameWidth; }
-	CColor getFrameColor () const { return frameColor; }
-	CColor getBackColor () const { return backColor; }
-	CColor getValueColor () const { return valueColor; }
+	int32_t getDrawStyle () const;
+	CCoord getFrameWidth () const;
+	CColor getFrameColor () const;
+	CColor getBackColor () const;
+	CColor getValueColor () const;
 	//@}
 
 	// overrides
@@ -134,40 +126,19 @@ protected:
 	void setViewSize (const CRect& rect, bool invalid) override;
 	
 	float calculateDelta (const CPoint& where, CRect* handleRect = nullptr) const;
-	
-	CPoint	offset;
-	CPoint	offsetHandle;
 
-	CBitmap* pHandle;
+	CRect calculateHandleRect (float normValue) const;
+	void doRamping ();
 
-	int32_t	style;
-	CSliderMode mode;
+	// for sub-classes to access private variables:
+	void setSliderSize (CCoord width, CCoord height);
+	CPoint getSliderSize () const;
+	CPoint getControlSize () const;
 
-	CCoord	widthOfSlider;
-	CCoord	heightOfSlider;
-	CCoord	rangeHandle;
-	CCoord	minTmp;
-	CCoord	maxTmp;
-	CCoord	minPos;
-	CCoord	widthControl;
-	CCoord	heightControl;
-	CCoord	frameWidth {1.};
-	float	zoomFactor;
-
-	bool	bDrawTransparentEnabled;
-
-	int32_t	drawStyle {0};
-	CColor  frameColor {kGreyCColor};
-	CColor  backColor {kBlackCColor};
-	CColor  valueColor {kWhiteCColor};
+	struct Impl;
+	std::unique_ptr<Impl> impl;
 
 	static CSliderMode globalMode;
-private:
-	CCoord	delta;
-	float	oldVal;
-	float	startVal;
-	CButtonState oldButton;
-	CPoint mouseStartPoint;
 };
 
 //-----------------------------------------------------------------------------

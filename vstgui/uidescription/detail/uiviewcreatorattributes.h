@@ -243,7 +243,6 @@ static const std::string kAttrInverseBitmap = "inverse-bitmap";
 //-----------------------------------------------------------------------------
 // CSliderCreator attributes
 //-----------------------------------------------------------------------------
-static const std::string kAttrTransparentHandle = "transparent-handle";
 static const std::string kAttrMode = "mode";
 static const std::string kAttrHandleOffset = "handle-offset";
 static const std::string kAttrBitmapOffset = "bitmap-offset";
