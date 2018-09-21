@@ -1134,7 +1134,7 @@ bool PLUGIN_API VST3Editor::open (void* parent, const PlatformType& type)
 		    }
 		    return -1;
 	    },
-	    [this] (const VstKeyCode&, CFrame*) { return -1; });
+	    [] (const VstKeyCode&, CFrame*) { return -1; });
 	getFrame ()->registerKeyboardHook (keyboardHook);
 #endif
 	getFrame ()->enableTooltips (tooltipsEnabled);
