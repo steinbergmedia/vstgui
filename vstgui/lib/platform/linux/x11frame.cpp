@@ -52,7 +52,7 @@ std::string getAtomName (xcb_atom_t atom)
 }
 
 //------------------------------------------------------------------------
-inline uint32_t translateMouseButtons (xcb_button_t value)
+inline CButtonState translateMouseButtons (xcb_button_t value)
 {
 	switch (value)
 	{
@@ -67,9 +67,9 @@ inline uint32_t translateMouseButtons (xcb_button_t value)
 }
 
 //------------------------------------------------------------------------
-inline uint32_t translateMouseButtons (int state)
+inline CButtonState translateMouseButtons (int state)
 {
-	uint32_t buttons = 0;
+	CButtonState buttons = 0;
 	if (state & XCB_BUTTON_MASK_1)
 		buttons |= kLButton;
 	if (state & XCB_BUTTON_MASK_2)
@@ -179,12 +179,84 @@ private:
 };
 
 //------------------------------------------------------------------------
+struct DoubleClickDetector
+{
+	void onMouseDown (CPoint where, CButtonState& buttons, xcb_timestamp_t time)
+	{
+		switch (state)
+		{
+			case State::MouseDown:
+			case State::Uninitialized:
+			{
+				state = State::MouseDown;
+				firstClickState = buttons;
+				firstClickTime = time;
+				point = where;
+				break;
+			}
+			case State::MouseUp:
+			{
+				if (timeInside (time) && pointInside (where))
+				{
+					buttons |= kDoubleClick;
+				}
+				state = State::Uninitialized;
+				break;
+			}
+		}
+	}
+
+	void onMouseUp (CPoint where, CButtonState buttons, xcb_timestamp_t time)
+	{
+		if (state == State::MouseDown && pointInside (where))
+			state = State::MouseUp;
+		else
+			state = State::Uninitialized;
+	}
+
+	void onMouseMove (CPoint where, CButtonState buttons, xcb_timestamp_t time)
+	{
+		if (!pointInside (where))
+			state = State::Uninitialized;
+	}
+
+private:
+	bool timeInside (xcb_timestamp_t time)
+	{
+		constexpr xcb_timestamp_t threshold = 250; // in milliseconds
+		return (time - firstClickTime) < threshold;
+	}
+
+	bool pointInside (CPoint p) const
+	{
+		CRect r;
+		r.setTopLeft (point);
+		r.setBottomRight (point);
+		r.inset (-5, -5);
+		return r.pointInside (p);
+	}
+
+	enum class State
+	{
+		Uninitialized,
+		MouseDown,
+		MouseUp,
+	};
+
+	State state{State::Uninitialized};
+	CPoint point;
+	CButtonState firstClickState;
+	xcb_timestamp_t firstClickTime{0};
+};
+
+//------------------------------------------------------------------------
 struct Frame::Impl : IFrameEventHandler
 {
 	using RectList = std::vector<CRect>;
 
 	ChildWindow window;
 	DrawHandler drawHandler;
+	DoubleClickDetector doubleClickDetector;
 	IPlatformFrameCallback* frame;
 	SharedPointer<RedrawTimerHandler> redrawTimer;
 	RectList dirtyRects;
@@ -341,10 +413,11 @@ struct Frame::Impl : IFrameEventHandler
 			{
 				auto buttons = translateMouseButtons (event.detail);
 				buttons |= translateModifiers (event.state);
+				doubleClickDetector.onMouseDown (where, buttons, event.time);
 				auto result = frame->platformOnMouseDown (where, buttons);
-				//				if (result == kMouseEventHandled)
+				grabPointer ();
+				if (result != kMouseEventNotHandled)
 				{
-					grabPointer ();
 					auto xcb = RunLoop::instance ().getXcbConnection ();
 					xcb_set_input_focus (xcb, XCB_INPUT_FOCUS_PARENT, window.getID (),
 										 XCB_CURRENT_TIME);
@@ -360,6 +433,7 @@ struct Frame::Impl : IFrameEventHandler
 			{
 				auto buttons = translateMouseButtons (event.detail);
 				buttons |= translateModifiers (event.state);
+				doubleClickDetector.onMouseUp (where, buttons, event.time);
 				frame->platformOnMouseUp (where, buttons);
 				ungrabPointer ();
 			}
@@ -371,6 +445,7 @@ struct Frame::Impl : IFrameEventHandler
 	{
 		CPoint where (event.event_x, event.event_y);
 		auto buttons = translateMouseButtons (event.state);
+		doubleClickDetector.onMouseMove (where, buttons, event.time);
 		frame->platformOnMouseMoved (where, buttons);
 		// make sure we get more motion events
 		auto xcb = RunLoop::instance ().getXcbConnection ();
@@ -600,7 +675,7 @@ SharedPointer<IPlatformTextEdit> Frame::createPlatformTextEdit (IPlatformTextEdi
 //------------------------------------------------------------------------
 SharedPointer<IPlatformOptionMenu> Frame::createPlatformOptionMenu ()
 {
-	auto optionMenu =  makeOwned<GenericOptionMenu> (dynamic_cast<CFrame*> (frame), 0);
+	auto optionMenu = makeOwned<GenericOptionMenu> (dynamic_cast<CFrame*> (frame), 0);
 	optionMenu->setListener (this);
 	return optionMenu;
 }
