@@ -1,4 +1,4 @@
-set(VSTGUI_TOOLS FOLDER "Tools")
+set(VSTGUI_TOOLS FOLDER "VSTGUI Tools")
 
 if(VSTGUI_STANDALONE)
     add_subdirectory(imagestitcher)
