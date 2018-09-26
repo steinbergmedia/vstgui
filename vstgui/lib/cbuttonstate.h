@@ -55,10 +55,28 @@ public:
 
 	/** returns true if only the left button is set. Ignores modifier state */
 	bool isLeftButton () const { return getButtonState () == kLButton; }
+	/** returns true if only the middle button is set. Ignores modifier state */
+	bool isMiddleButton () const { return getButtonState () == kMButton; }
 	/** returns true if only the right button is set. Ignores modifier state */
 	bool isRightButton () const { return getButtonState () == kRButton; }
+	/** returns true if only the 4th button is set. Ignores modifier state */
+	bool isButton4 () const { return getButtonState () == kButton4; }
+	/** returns true if only the 5th button is set. Ignores modifier state */
+	bool isButton5 () const { return getButtonState () == kButton5; }
 
+	/** returns true if the double click flag is set. */
 	bool isDoubleClick () const { return hasBit<int32_t> (state, kDoubleClick); }
+
+	/** returns true if the shift modifier is set. */
+	bool isShiftSet () const { return hasBit<int32_t> (state, kShift); }
+	/** returns true if the alt modifier is set. */
+	bool isAltSet () const { return hasBit<int32_t> (state, kAlt); }
+	/** returns true if the control modifier is set. */
+	bool isControlSet () const { return hasBit<int32_t> (state, kControl); }
+	/** returns true if the apple modifier is set. */
+	bool isAppleSet () const { return hasBit<int32_t> (state, kApple); }
+
+	bool isMouseWheelInverted () const { return hasBit<int32_t> (state, kMouseWheelInverted); }
 
 	int32_t operator() () const { return state; }
 	CButtonState& operator= (int32_t s) { state = s; return *this; }
