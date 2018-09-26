@@ -15,6 +15,7 @@
 #include "../uiattributes.h"
 #include "../uidescription.h"
 #include "../uiviewfactory.h"
+#include "../detail/uiviewcreatorattributes.h"
 #include "../../lib/cvstguitimer.h"
 #include "../../lib/cframe.h"
 #include "../../lib/cscrollview.h"
@@ -23,6 +24,7 @@
 #include "../../lib/clayeredviewcontainer.h"
 #include "../../lib/dragging.h"
 #include "../../lib/idatapackage.h"
+#include "../../lib/controls/ctextedit.h"
 #include <cassert>
 
 namespace VSTGUI {
@@ -653,7 +655,7 @@ CMouseEventResult UIEditView::onMouseDown (CPoint &where, const CButtonState& bu
 {
 	if (editing)
 	{
-		if (buttons & kLButton)
+		if (buttons.isLeftButton ())
 		{
 			getFrame ()->setFocusView (this);
 
@@ -670,7 +672,7 @@ CMouseEventResult UIEditView::onMouseDown (CPoint &where, const CButtonState& bu
 			}
 			if (getSelection ()->contains (mouseHitView))
 			{
-				if (buttons & kControl)
+				if (buttons.isControlSet ())
 				{
 					getSelection ()->remove (mouseHitView);
 					onMouseMoved (where, CButtonState (buttons.getModifierState ()));
@@ -679,7 +681,7 @@ CMouseEventResult UIEditView::onMouseDown (CPoint &where, const CButtonState& bu
 			}
 			else if (mouseHitView && sizeMode == kSizeModeNone)
 			{
-				if (buttons & kControl || buttons & kShift)
+				if (buttons.isControlSet () || buttons.isShiftSet ())
 				{
 					getSelection ()->add (mouseHitView);
 					selectionHitView = mouseHitView;
@@ -694,7 +696,12 @@ CMouseEventResult UIEditView::onMouseDown (CPoint &where, const CButtonState& bu
 			}
 			if (selectionHitView)
 			{
-				if (buttons & kAlt && !getSelection ()->contains (getView (0)))
+				if (buttons.isDoubleClick ())
+				{
+					onDoubleClickEditing (selectionHitView);
+					return kMouseEventHandled;
+				}
+				if (buttons.isAltSet () && !getSelection ()->contains (getView (0)))
 				{
 					mouseEditMode = kDragEditing;
 					invalidSelection ();
@@ -1211,6 +1218,59 @@ DragOperation UIEditView::onDragMove (DragEventData data)
 		}
 	}
 	return DragOperation::None;
+}
+
+//-----------------------------------------------------------------------------
+void UIEditView::onDoubleClickEditing (CView* view)
+{
+	struct AttributeInlineEditorController : IViewListenerAdapter
+	{
+		AttributeInlineEditorController (CTextEdit* edit, UIDescription* desc,
+		                                 UISelection* selection, UIUndoManager* undoManager)
+		: edit (edit), desc (desc), selection (selection), undoManager (undoManager)
+		{
+			edit->registerViewListener (this);
+			initialString = edit->getText ();
+		}
+		void viewWillDelete (CView*) override
+		{
+			edit->unregisterViewListener (this);
+			delete this;
+		}
+		void viewLostFocus (CView*) override
+		{
+			const auto& text = edit->getText ();
+			if (text != initialString)
+			{
+				auto action = new AttributeChangeAction (desc, selection, UIViewCreator::kAttrTitle,
+				                                         text.getString ());
+				undoManager->pushAndPerform (action);
+			}
+			edit->getParentView ()->asViewContainer ()->removeView (edit);
+		}
+
+	private:
+		CTextEdit* edit;
+		UIDescription* desc;
+		UISelection* selection;
+		UIUndoManager* undoManager;
+		UTF8String initialString;
+	};
+
+	auto factory = static_cast<const UIViewFactory*> (description->getViewFactory ());
+	vstgui_assert (factory);
+	std::string value;
+	if (!factory->getAttributeValue (view, UIViewCreator::kAttrTitle, value, description))
+		return;
+
+	auto r = selection->getGlobalViewCoordinates (view);
+	r.offsetInverse (getViewSize ().getTopLeft ());
+	translateToLocal (r);
+	auto textEdit = new CTextEdit (r, nullptr, 0);
+	textEdit->setText (value.data ());
+	addView (textEdit);
+	new AttributeInlineEditorController (textEdit, description, selection, getUndoManager ());
+	getFrame ()->setFocusView (textEdit);
 }
 
 //-----------------------------------------------------------------------------
