@@ -1,6 +1,5 @@
 ##########################################################################################
 cmake_minimum_required(VERSION 3.5)
-include(CMakeDependentOption)
 
 if(NOT PROJECT_NAME)
     project(vstgui)
@@ -156,9 +155,12 @@ endif()
 if(NOT DEFINED VSTGUI_STANDALONE)
     option(VSTGUI_STANDALONE "VSTGUI Standalone library" ON)
     if(NOT DEFINED VSTGUI_STANDALONE_EXAMPLES)
-      CMAKE_DEPENDENT_OPTION(VSTGUI_STANDALONE_EXAMPLES "VSTGUI Standalone examples" ON
-                             "NOT VSTGUI_STANDALONE" OFF)
+      option(VSTGUI_STANDALONE_EXAMPLES "VSTGUI Standalone examples" ON)
     endif()
+endif()
+
+if(NOT VSTGUI_STANDALONE AND VSTGUI_STANDALONE_EXAMPLES)
+  set(VSTGUI_STANDALONE_EXAMPLES OFF)
 endif()
 
 option(VSTGUI_TOOLS "VSTGUI Tools" ON)
