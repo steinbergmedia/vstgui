@@ -540,7 +540,7 @@ CGraphicsTransform CView::getGlobalTransform () const
 	}
 
 	if (auto This = this->asViewContainer ())
-		transform = This->getTransform () * transform;
+		transform = transform * This->getTransform ();
 	return transform;
 }
 
