@@ -85,6 +85,7 @@ protected:
 
 	void doDragEditingMove (CPoint& where);
 	void doSizeEditingMove (CPoint& where);
+	void onDoubleClickEditing (CView* view);
 
 	void startDrag (CPoint& where);
 	UISelection* getSelectionOutOfDrag (IDataPackage* drag);
