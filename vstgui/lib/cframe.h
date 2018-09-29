@@ -103,7 +103,7 @@ public:
 	void scrollRect (const CRect& src, const CPoint& distance);
 
 	/** enable or disable tooltips */
-	void enableTooltips (bool state);
+	void enableTooltips (bool state, uint32_t delayTimeInMs = 1000);
 
 	/** get animator for this frame */
 	Animation::Animator* getAnimator ();
