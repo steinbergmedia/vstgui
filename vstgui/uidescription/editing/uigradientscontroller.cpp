@@ -28,6 +28,7 @@ public:
 
 	void setGradient (CGradient* gradient);
 	
+	void setCurrentStartOffset (double startOffset);
 	double getSelectedColorStart () const { return editStartOffset; }
 	const CGradient::ColorStopMap& getColorStopMap () const { return colorStopMap; }
 
@@ -46,7 +47,6 @@ private:
 
 	void addColorStop (double startOffset);
 	void removeColorStop (double startOffset);
-	void setCurrentStartOffset (double startOffset);
 	void selectNextColorStop ();
 	void selectPrevColorStop ();
 
@@ -89,6 +89,7 @@ void UIColorStopEditView::selectNextColorStop ()
 	}
 	editStartOffset = pos->first;
 	*editColor = pos->second;
+	changed (kChanged);
 	invalid ();
 }
 
@@ -101,6 +102,7 @@ void UIColorStopEditView::selectPrevColorStop ()
 	pos--;
 	editStartOffset = pos->first;
 	*editColor = pos->second;
+	changed (kChanged);
 	invalid ();
 }
 
@@ -223,6 +225,7 @@ CMouseEventResult UIColorStopEditView::onMouseDown (CPoint& where, const CButton
 				{
 					editStartOffset = colorStop.first;
 					*editColor = colorStop.second;
+					changed (kChanged);
 				}
 				mouseDownStartPosOffset = pos - editStartOffset;
 				return kMouseEventHandled;
@@ -363,12 +366,18 @@ public:
 	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override;
 	IController* createSubController (UTF8StringPtr name, const IUIDescription* description) override;
 protected:
+	enum {
+		kApplyTag = 1,
+		kPositionTag = 2,
+	};
 	void apply ();
+	void updatePositionEdit ();
 	
 	SharedPointer<UIDescription> editDescription;
 	SharedPointer<UIColorStopEditView> colorStopEditView;
 	SharedPointer<CGradient> gradient;
 	SharedPointer<UIColor> editColor;
+	CTextEdit* positionEdit {nullptr};
 	IActionPerformer* actionPerformer;
 	std::string gradientName;
 };
@@ -401,6 +410,13 @@ void UIGradientEditorController::apply ()
 }
 
 //----------------------------------------------------------------------------------------------------
+void UIGradientEditorController::updatePositionEdit ()
+{
+	if (positionEdit && colorStopEditView)
+		positionEdit->setValue (colorStopEditView->getSelectedColorStart ());
+}
+
+//----------------------------------------------------------------------------------------------------
 CMessageResult UIGradientEditorController::notify (CBaseObject* sender, IdStringPtr message)
 {
 	if (message == UIColor::kMsgChanged || message == UIColor::kMsgEditChange)
@@ -412,6 +428,7 @@ CMessageResult UIGradientEditorController::notify (CBaseObject* sender, IdString
 			it->second = editColor->base ();
 			gradient = CGradient::create (colorStopMap);
 			colorStopEditView->setGradient (gradient);
+			updatePositionEdit ();
 		}
 		return kMessageNotified;
 	}
@@ -419,6 +436,7 @@ CMessageResult UIGradientEditorController::notify (CBaseObject* sender, IdString
 	{
 		gradient = CGradient::create (colorStopEditView->getColorStopMap ());
 		colorStopEditView->setGradient (gradient);
+		updatePositionEdit ();
 		return kMessageNotified;
 	}
 	else if (message == UIDialogController::kMsgDialogButton1Clicked)
@@ -442,15 +460,38 @@ IController* UIGradientEditorController::createSubController (UTF8StringPtr name
 //----------------------------------------------------------------------------------------------------
 void UIGradientEditorController::valueChanged (CControl* pControl)
 {
-	if (pControl->getTag () == 1 && pControl->getValue () > 0.f)
+	switch (pControl->getTag ())
 	{
-		apply ();
+		case kApplyTag:
+		{
+			if (pControl->getValue () > 0.f)
+				apply ();
+			break;
+		}
+		case kPositionTag:
+		{
+			colorStopEditView->setCurrentStartOffset (pControl->getValue ());
+			break;
+		}
 	}
 }
 
 //----------------------------------------------------------------------------------------------------
 CView* UIGradientEditorController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
 {
+	if (auto control = dynamic_cast<CTextEdit*>(view))
+	{
+		if (control->getTag () == kPositionTag)
+		{
+			control->setStringToValueFunction ([] (UTF8StringPtr txt, float& result, CTextEdit*) {
+				UTF8StringView t (txt);
+				result = t.toFloat ();
+				return true;
+			});
+			positionEdit = control;
+			updatePositionEdit ();
+		}
+	}
 	return view;
 }
 
