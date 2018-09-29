@@ -609,9 +609,9 @@ public:
 		if (tooltipAttr)
 		{
 			if (tooltipAttr->size () > 0)
-				view->setAttribute (kCViewTooltipAttribute, static_cast<uint32_t> (tooltipAttr->size () + 1), tooltipAttr->c_str ());
+				view->setTooltipText (tooltipAttr->data ());
 			else
-				view->removeAttribute (kCViewTooltipAttribute);
+				view->setTooltipText (nullptr);
 		}
 
 		const std::string* customViewAttr = attributes.getAttributeValue (kAttrCustomViewName);

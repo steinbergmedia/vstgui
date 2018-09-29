@@ -322,6 +322,8 @@ public:
 	/** called when the active state of the window changes */
 	virtual void onWindowActivate (bool state) {}
 	
+	void setTooltipText (UTF8StringPtr text);
+	
 	//-----------------------------------------------------------------------------
 	/// @name View Listener Methods
 	//-----------------------------------------------------------------------------
@@ -333,6 +335,11 @@ public:
 	void unregisterViewMouseListener (IViewMouseListener* listener);
 	//@}
 
+	//-----------------------------------------------------------------------------
+	/// @name Coordinate translation Methods
+	//-----------------------------------------------------------------------------
+	//@{
+	/** get the active global transform for this view */
 	CGraphicsTransform getGlobalTransform () const;
 	/** translates a local coordinate to a global one using parent transforms */
 	template<typename T> T& translateToGlobal (T& t) const { getGlobalTransform ().transform (t); return t; }
@@ -342,10 +349,7 @@ public:
 	template<typename T> T& translateToLocal (T& t) const { getGlobalTransform ().inverse ().transform (t); return t; }
 	/** translates a local coordinate to a global one using parent transforms */
 	template<typename T> T translateToLocal (const T& t) const { T tmp (t); getGlobalTransform ().inverse ().transform (tmp); return tmp; }
-
-	#if DEBUG
-	virtual void dumpInfo ();
-	#endif
+	//@}
 
 	virtual CViewContainer* asViewContainer () { return nullptr; }
 	virtual const CViewContainer* asViewContainer () const { return nullptr; }
@@ -364,6 +368,9 @@ public:
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 	void beforeDelete () override;
 
+	#if DEBUG
+	virtual void dumpInfo ();
+	#endif
 	//-------------------------------------------
 	CLASS_METHODS(CView, CBaseObject)
 protected:
