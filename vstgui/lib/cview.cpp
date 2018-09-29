@@ -168,6 +168,7 @@ const CViewAttributeID kCViewAttributeReferencePointer = 'cvrp';
 const CViewAttributeID kCViewTooltipAttribute = 'cvtt';
 const CViewAttributeID kCViewControllerAttribute = 'ictr';
 const CViewAttributeID kCViewHitTestPathAttribute = 'cvht';
+const CViewAttributeID kCViewCustomDropTarget = 'cvdt';
 
 //-----------------------------------------------------------------------------
 // CView
@@ -248,7 +249,8 @@ void CView::beforeDelete ()
 	vstgui_assert (isAttached () == false, "View is still attached");
 
 	setHitTestPath (nullptr);
-	
+	setDropTarget (nullptr);
+
 	IController* controller = nullptr;
 	uint32_t size = sizeof (IController*);
 	if (getAttribute (kCViewControllerAttribute, sizeof (IController*), &controller, size) == true)
@@ -1066,7 +1068,28 @@ void CView::callMouseListenerEnteredExited (bool mouseEntered)
 //-----------------------------------------------------------------------------
 SharedPointer<IDropTarget> CView::getDropTarget ()
 {
+	IDropTarget* dropTarget = nullptr;
+	if (getAttribute (kCViewCustomDropTarget, dropTarget))
+		return dropTarget;
 	return nullptr;
+}
+
+//-----------------------------------------------------------------------------
+void CView::setDropTarget (const SharedPointer<IDropTarget>& dt)
+{
+	IDropTarget* dropTarget = nullptr;
+	if (getAttribute (kCViewCustomDropTarget, dropTarget))
+		dropTarget->forget ();
+	dropTarget = dt;
+	if (dropTarget)
+	{
+		setAttribute (kCViewCustomDropTarget, dropTarget);
+		dropTarget->remember ();
+	}
+	else
+	{
+		removeAttribute (kCViewCustomDropTarget);
+	}
 }
 
 //-----------------------------------------------------------------------------
