@@ -14,6 +14,7 @@
 #include "iaction.h"
 #include "../delegationcontroller.h"
 #include "../../lib/cdatabrowser.h"
+#include "../../lib/genericstringlistdatabrowsersource.h"
 
 namespace VSTGUI {
 class UIBitmapsDataSource;

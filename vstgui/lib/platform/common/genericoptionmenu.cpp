@@ -12,6 +12,7 @@
 #include "../../cgraphicspath.h"
 #include "../../clayeredviewcontainer.h"
 #include "../../coffscreencontext.h"
+#include "../../idatabrowserdelegate.h"
 #include "../../controls/coptionmenu.h"
 #include "../../controls/cscrollbar.h"
 
@@ -30,7 +31,7 @@ CView* setupGenericOptionMenu (Proc clickCallback, CViewContainer* container,
                                CRect viewRect, DataSource* parentDataSource);
 
 //------------------------------------------------------------------------
-class DataSource : public IDataBrowserDelegate,
+class DataSource : public IDataBrowserDelegateAdapter,
                    public IViewMouseListenerAdapter,
                    public NonAtomicReferenceCounted
 {

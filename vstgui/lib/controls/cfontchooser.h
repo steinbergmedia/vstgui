@@ -9,6 +9,7 @@
 #include "../cviewcontainer.h"
 #include "../cfont.h"
 #include "../cdatabrowser.h"
+#include "../genericstringlistdatabrowsersource.h"
 #include "icontrollistener.h"
 
 namespace VSTGUI {

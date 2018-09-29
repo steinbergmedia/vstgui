@@ -121,6 +121,9 @@ set(${target}_common_sources
     cvstguitimer.h
     dragging.h
     dispatchlist.h
+    genericstringlistdatabrowsersource.cpp
+    genericstringlistdatabrowsersource.h
+    idatabrowserdelegate.h
     idatapackage.h
     idependency.h
     ifocusdrawing.h
@@ -153,6 +156,10 @@ set(${target}_common_sources
 set(${target}_mac_sources
     platform/common/fileresourceinputstream.cpp
     platform/common/fileresourceinputstream.h
+    platform/common/genericoptionmenu.cpp
+    platform/common/genericoptionmenu.h
+    platform/common/generictextedit.cpp
+    platform/common/generictextedit.h
     platform/mac/carbon/hiviewframe.cpp
     platform/mac/carbon/hiviewframe.h
     platform/mac/carbon/hiviewoptionmenu.cpp
