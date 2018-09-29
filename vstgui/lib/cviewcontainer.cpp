@@ -1111,6 +1111,8 @@ SharedPointer<IDropTarget> CViewContainer::getDropTarget ()
 		}
 		return dropTarget;
 	}
+	if (auto customDropTarget = CView::getDropTarget ())
+		return customDropTarget;
 	return makeOwned<CViewContainerDropTarget> (this);
 }
 

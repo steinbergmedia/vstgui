@@ -141,6 +141,8 @@ public:
 	bool doDrag (const DragDescription& dragDescription, const SharedPointer<IDragCallback>& callback = {});
 	/** get the drag target for drag and drop handling */
 	virtual SharedPointer<IDropTarget> getDropTarget ();
+	/** set a custom drop target */
+	void setDropTarget (const SharedPointer<IDropTarget>& dt);
 
 	/** \deprecated start a drag operation. See CDropSource to create the source data package */
 	VSTGUI_DEPRECATED(DragResult doDrag (IDataPackage* source, const CPoint& offset = CPoint (0, 0), CBitmap* dragBitmap = nullptr);)
