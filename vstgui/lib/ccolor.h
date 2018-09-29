@@ -6,6 +6,7 @@
 #define __ccolor__
 
 #include "vstguibase.h"
+#include "vstguifwd.h"
 
 namespace VSTGUI {
 
@@ -92,6 +93,10 @@ struct CColor
 	uint8_t getLightness () const;
 	//@}
 	
+	bool fromString (UTF8StringPtr str);
+	UTF8String toString () const;
+	static bool isColorRepresentation (UTF8StringPtr str);
+
 	/** red component [0..255] */
 	uint8_t red {255};
 	/** green component [0..255] */
