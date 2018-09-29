@@ -1093,6 +1093,15 @@ void CView::setDropTarget (const SharedPointer<IDropTarget>& dt)
 }
 
 //-----------------------------------------------------------------------------
+void CView::setTooltipText (UTF8StringPtr text)
+{
+	if (text)
+		setAttribute (kCViewTooltipAttribute, static_cast<uint32_t> (strlen (text) + 1), text);
+	else
+		removeAttribute (kCViewTooltipAttribute);
+}
+
+//-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 CDragContainerHelper::CDragContainerHelper (IDataPackage* drag)
