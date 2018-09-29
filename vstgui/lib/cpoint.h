@@ -25,8 +25,12 @@ struct CPoint
 
 	CPoint& operator+= (const CPoint& other) { x += other.x; y += other.y; return *this; }
 	CPoint& operator-= (const CPoint& other) { x -= other.x; y -= other.y; return *this; }
+	CPoint& operator*= (double factor) { x *= factor; y *= factor; return *this; }
+	CPoint& operator/= (double factor) { x /= factor; y /= factor; return *this; }
 	constexpr CPoint operator+ (const CPoint& other) const { return CPoint (x + other.x, y + other.y); }
 	constexpr CPoint operator- (const CPoint& other) const { return CPoint (x - other.x, y - other.y); }
+	constexpr CPoint operator* (double factor) const { return CPoint (x * factor, y * factor); }
+	constexpr CPoint operator/ (double factor) const { return CPoint (x / factor, y / factor); }
 	constexpr CPoint operator- () const { return CPoint (-x, -y); }
 	
 	CPoint& offset (const CCoord c) { *this += CPoint (c, c); return *this; }
