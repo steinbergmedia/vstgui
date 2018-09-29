@@ -17,6 +17,22 @@
 
 namespace VSTGUI {
 
+//-----------------------------------------------------------------------------------------------
+DragOperation IDataBrowserDelegate::dbOnDragEnterCell (int32_t row, int32_t column,
+                                                       const CPoint& where, IDataPackage* drag,
+                                                       CDataBrowser* browser)
+{
+	return DragOperation::None;
+}
+
+//-----------------------------------------------------------------------------------------------
+DragOperation IDataBrowserDelegate::dbOnDragMoveInCell (int32_t row, int32_t column,
+                                                        const CPoint& where, IDataPackage* drag,
+                                                        CDataBrowser* browser)
+{
+	return DragOperation::None;
+}
+
 /// @cond ignore
 //-----------------------------------------------------------------------------------------------
 class CDataBrowserView : public CView, public IFocusDrawing, public IDropTarget
@@ -1000,18 +1016,15 @@ DragOperation CDataBrowserView::onDragEnter (DragEventData data)
 {
 	db->dbOnDragEnterBrowser (data.drag, browser);
 	CDataBrowser::Cell cell;
-	if (getCell (data.pos, cell))
-	{
-		CRect r = browser->getCellBounds (cell);
-		CPoint cellPoint (data.pos);
-		cellPoint.x -= r.left;
-		cellPoint.y -= r.top;
-		db->dbOnDragEnterCell (cell.row, cell.column, cellPoint, data.drag, browser);
-		setAttribute (kDataBrowserViewDragRow, cell.row);
-		setAttribute (kDataBrowserViewDragColumn, cell.column);
-		return DragOperation::Copy;
-	}
-	return DragOperation::None;
+	getCell (data.pos, cell);
+	CRect r = browser->getCellBounds (cell);
+	CPoint cellPoint (data.pos);
+	cellPoint.x -= r.left;
+	cellPoint.y -= r.top;
+	auto result = db->dbOnDragEnterCell (cell.row, cell.column, cellPoint, data.drag, browser);
+	setAttribute (kDataBrowserViewDragRow, cell.row);
+	setAttribute (kDataBrowserViewDragColumn, cell.column);
+	return result;
 }
 
 //-----------------------------------------------------------------------------------------------
@@ -1021,50 +1034,39 @@ void CDataBrowserView::onDragLeave (DragEventData data)
 	int32_t oldColNum = -1;
 	getAttribute (kDataBrowserViewDragRow, oldRowNum);
 	getAttribute (kDataBrowserViewDragColumn, oldColNum);
-	if (oldRowNum != -1 && oldColNum != -1)
-	{
-		db->dbOnDragExitCell (oldRowNum, oldColNum, data.drag, browser);
-		removeAttribute (kDataBrowserViewDragRow);
-		removeAttribute (kDataBrowserViewDragColumn);
-	}
+	db->dbOnDragExitCell (oldRowNum, oldColNum, data.drag, browser);
+	removeAttribute (kDataBrowserViewDragRow);
+	removeAttribute (kDataBrowserViewDragColumn);
 	db->dbOnDragExitBrowser (data.drag, browser);
 }
 
 //-----------------------------------------------------------------------------------------------
 DragOperation CDataBrowserView::onDragMove (DragEventData data)
 {
+	DragOperation result = DragOperation::None;
 	int32_t oldRowNum = -1;
 	int32_t oldColNum = -1;
 	getAttribute (kDataBrowserViewDragRow, oldRowNum);
 	getAttribute (kDataBrowserViewDragColumn, oldColNum);
 	CDataBrowser::Cell cell;
-	if (getCell (data.pos, cell))
+	getCell (data.pos, cell);
+	CRect r = browser->getCellBounds (cell);
+	CPoint cellPoint (data.pos);
+	cellPoint.x -= r.left;
+	cellPoint.y -= r.top;
+	if (oldRowNum != cell.row || oldColNum != cell.column)
 	{
-		CRect r = browser->getCellBounds (cell);
-		CPoint cellPoint (data.pos);
-		cellPoint.x -= r.left;
-		cellPoint.y -= r.top;
-		if (oldRowNum != cell.row || oldColNum != cell.column)
-		{
-			if (oldRowNum != -1 && oldColNum != -1)
-				db->dbOnDragExitCell (oldRowNum, oldColNum, data.drag, browser);
-			db->dbOnDragEnterCell (cell.row, cell.column, cellPoint, data.drag, browser);
-			setAttribute (kDataBrowserViewDragRow, cell.row);
-			setAttribute (kDataBrowserViewDragColumn, cell.column);
-		}
-		else
-		{
-			db->dbOnDragMoveInCell (cell.row, cell.column, cellPoint, data.drag, browser);
-		}
-		return DragOperation::Copy;
+		if (oldRowNum != -1 && oldColNum != -1)
+			db->dbOnDragExitCell (oldRowNum, oldColNum, data.drag, browser);
+		result = db->dbOnDragEnterCell (cell.row, cell.column, cellPoint, data.drag, browser);
+		setAttribute (kDataBrowserViewDragRow, cell.row);
+		setAttribute (kDataBrowserViewDragColumn, cell.column);
 	}
-	else if (oldRowNum != -1 && oldColNum != -1)
+	else
 	{
-		db->dbOnDragExitCell (oldRowNum, oldColNum, data.drag, browser);
-		removeAttribute (kDataBrowserViewDragRow);
-		removeAttribute (kDataBrowserViewDragColumn);
+		result = db->dbOnDragMoveInCell (cell.row, cell.column, cellPoint, data.drag, browser);
 	}
-	return DragOperation::None;
+	return result;
 }
 
 //-----------------------------------------------------------------------------------------------
@@ -1346,4 +1348,3 @@ CMessageResult GenericStringListDataBrowserSource::notify (CBaseObject* sender, 
 }
 
 } // namespace
-
