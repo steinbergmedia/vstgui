@@ -397,6 +397,18 @@ static CommandWithKeyList getCommandList (const char* _Nonnull group)
 		}
 	}
 
+	NSMenuItem* debugMenu = [mainMenu itemWithTitle:@"Debug"];
+	if (debugMenu && debugMenu.submenu)
+	{
+		if ([debugMenu.submenu itemWithTitle:@"Color Panel"] == nil)
+		{
+			[debugMenu.submenu addItem:[NSMenuItem separatorItem]];
+			[debugMenu.submenu addItemWithTitle:@"Color Panel"
+			                             action:@selector (orderFrontColorPanel:)
+			                      keyEquivalent:@""];
+		}
+	}
+
 	// move Windows menu to the end
 	NSMenuItem* windowsMenuItem =
 	    [mainMenu itemWithTitle:NSLocalizedString (@"Window", "Menu Name")];
