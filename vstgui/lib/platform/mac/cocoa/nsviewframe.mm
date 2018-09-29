@@ -1360,7 +1360,7 @@ void CocoaTooltipWindow::set (NSViewFrame* nsViewFrame, const CRect& rect, const
 		[window setLevel:NSStatusWindowLevel];
 		[window setHidesOnDeactivate:YES];
 		[window setIgnoresMouseEvents:YES];
-		[window setBackgroundColor: [NSColor colorWithDeviceRed:0.94 green:0.94 blue:0.94 alpha:1.0]];
+		[window setBackgroundColor: [NSColor textBackgroundColor]];
 		textfield = [[[NSTextField alloc] initWithFrame:NSMakeRect (2, 2, 8, 8)] autorelease];
 		[textfield setEditable:NO];
 		[textfield setSelectable:NO];
