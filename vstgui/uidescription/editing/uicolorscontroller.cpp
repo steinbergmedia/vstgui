@@ -13,10 +13,9 @@
 #include "../../lib/cdropsource.h"
 #include "../../lib/coffscreencontext.h"
 #include "../../lib/dragging.h"
+#include "../../lib/optional.h"
 #include "../../lib/idatapackage.h"
 #include "../../lib/controls/csearchtextedit.h"
-#include <sstream>
-#include <iomanip>
 
 namespace VSTGUI {
 
@@ -54,7 +53,7 @@ protected:
 	
 	SharedPointer<UIColor> color;
 	bool editing;
-	std::string colorString;
+	Optional<CColor> dragColor;
 	int32_t dragRow;
 };
 
@@ -229,18 +228,8 @@ CMouseEventResult UIColorsDataSource::dbOnMouseMoved (const CPoint& where,
 			CColor color;
 			if (description->getColor (names.at (static_cast<uint32_t> (row)).data (), color))
 			{
-				std::stringstream str;
-				str << "#";
-				str << std::hex << std::setw (2) << std::setfill ('0')
-				    << static_cast<int32_t> (color.red);
-				str << std::hex << std::setw (2) << std::setfill ('0')
-				    << static_cast<int32_t> (color.green);
-				str << std::hex << std::setw (2) << std::setfill ('0')
-				    << static_cast<int32_t> (color.blue);
-				str << std::hex << std::setw (2) << std::setfill ('0')
-				    << static_cast<int32_t> (color.alpha);
-				auto colorStr = str.str ();
-				auto dropSource = CDropSource::create (colorStr.data (), colorStr.size () + 1,
+				auto colorStr = color.toString ();
+				auto dropSource = CDropSource::create (colorStr.data (), colorStr.length () + 1,
 				                                       CDropSource::kText);
 				auto df = makeOwned<DragCallbackFunctions> ();
 				df->endedFunc = [browser] (IDraggingSession*, CPoint, DragOperation) {
@@ -273,10 +262,11 @@ void UIColorsDataSource::dbOnDragEnterBrowser (IDataPackage* drag, CDataBrowser*
 	const void* item;
 	if (drag->getData (0, item, type) > 0 && type == IDataPackage::kText)
 	{
-		std::string tmp (static_cast<const char*> (item));
-		if (tmp.length () == 9 && tmp[0] == '#')
+		if (CColor::isColorRepresentation (static_cast<UTF8StringPtr> (item)))
 		{
-			colorString = tmp;
+			CColor c;
+			c.fromString (static_cast<UTF8StringPtr> (item));
+			dragColor = Optional<CColor> (c);
 		}
 	}
 }
@@ -284,18 +274,25 @@ void UIColorsDataSource::dbOnDragEnterBrowser (IDataPackage* drag, CDataBrowser*
 //----------------------------------------------------------------------------------------------------
 void UIColorsDataSource::dbOnDragExitBrowser (IDataPackage* drag, CDataBrowser* browser)
 {
-	colorString.clear ();
+	dragColor = {};
 	dragRow = -1;
 }
 
 //----------------------------------------------------------------------------------------------------
 DragOperation UIColorsDataSource::dbOnDragEnterCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser)
 {
-	if (!colorString.empty () && row >= 0)
+	if (dragColor && row >= 0)
 	{
-		dragRow = row;
-		browser->invalidateRow (dragRow);
-		return DragOperation::Copy;
+		CColor color;
+		if (description->getColor (names.at (static_cast<uint32_t> (row)).data (), color) &&
+		    color != *dragColor)
+		{
+			dragRow = row;
+			browser->invalidateRow (dragRow);
+			return DragOperation::Copy;
+		}
+		else
+			dragRow = -1;
 	}
 	return DragOperation::None;
 }
@@ -303,13 +300,13 @@ DragOperation UIColorsDataSource::dbOnDragEnterCell (int32_t row, int32_t column
 //----------------------------------------------------------------------------------------------------
 DragOperation UIColorsDataSource::dbOnDragMoveInCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser)
 {
-	return colorString.empty () ? DragOperation::None : DragOperation::Copy;
+	return (dragColor && (dragRow >= 0 || row == -1)) ? DragOperation::Copy : DragOperation::None;
 }
 
 //----------------------------------------------------------------------------------------------------
 void UIColorsDataSource::dbOnDragExitCell (int32_t row, int32_t column, IDataPackage* drag, CDataBrowser* browser)
 {
-	if (!colorString.empty ())
+	if (dragColor)
 	{
 		if (dragRow >= 0)
 			browser->invalidateRow (dragRow);
@@ -320,33 +317,30 @@ void UIColorsDataSource::dbOnDragExitCell (int32_t row, int32_t column, IDataPac
 //----------------------------------------------------------------------------------------------------
 bool UIColorsDataSource::dbOnDropInCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser)
 {
-	if (!colorString.empty ())
+	if (dragColor)
 	{
-		CColor dragColor;
-		std::string rv (colorString.substr (1, 2));
-		std::string gv (colorString.substr (3, 2));
-		std::string bv (colorString.substr (5, 2));
-		std::string av (colorString.substr (7, 2));
-		dragColor.red = (uint8_t)strtol (rv.data (), nullptr, 16);
-		dragColor.green = (uint8_t)strtol (gv.data (), nullptr, 16);
-		dragColor.blue = (uint8_t)strtol (bv.data (), nullptr, 16);
-		dragColor.alpha = (uint8_t)strtol (av.data (), nullptr, 16);
-		
 		if (row >= 0)
 		{
-			actionPerformer->performColorChange (names[static_cast<uint32_t> (row)].data (), dragColor);
-			selectName (names[static_cast<uint32_t> (row)].data ());
+			CColor color;
+			if (description->getColor (names.at (static_cast<uint32_t> (row)).data (), color))
+			{
+				if (color != *dragColor)
+				{
+					actionPerformer->performColorChange (names[static_cast<uint32_t> (row)].data (), *dragColor);
+					selectName (names[static_cast<uint32_t> (row)].data ());
+				}
+			}
 		}
 		else
 		{
 			std::string newName (filterString.empty () ? "New" : filterString);
 			if (createUniqueName (newName))
 			{
-				actionPerformer->performColorChange (newName.data (), dragColor);
+				actionPerformer->performColorChange (newName.data (), *dragColor);
 				selectName (newName.data ());
 			}
 		}
-		colorString.clear ();
+		dragColor = {};
 		dragRow = -1;
 		return true;
 	}
