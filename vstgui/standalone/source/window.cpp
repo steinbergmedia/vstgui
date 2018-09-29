@@ -394,7 +394,7 @@ CMouseEventResult Window::onMouseDown (CFrame* frame, const CPoint& _where,
 		if (contextMenu->getNbEntries () > 0)
 		{
 			contextMenu->cleanupSeparators (true);
-			contextMenu->setStyle (COptionMenu::kPopupStyle);
+			contextMenu->setStyle (COptionMenu::kPopupStyle | COptionMenu::kMultipleCheckStyle);
 			contextMenu->popup (frame, _where);
 			return kMouseEventHandled;
 		}
