@@ -3,7 +3,10 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "ccolor.h"
+#include "cstring.h"
 #include <cmath>
+#include <sstream>
+#include <iomanip>
 
 namespace VSTGUI {
 
@@ -273,6 +276,44 @@ void CColor::fromHSV (double hue, double saturation, double value)
 	red = static_cast<uint8_t> (floor (r * 255. + 0.5));
 	green = static_cast<uint8_t> (floor (g * 255. + 0.5));
 	blue = static_cast<uint8_t> (floor (b * 255. + 0.5));
+}
+
+//-----------------------------------------------------------------------------
+bool CColor::isColorRepresentation (UTF8StringPtr str)
+{
+	if (str && str[0] == '#' && strlen (str) == 9)
+		return true;
+	return false;
+}
+
+//-----------------------------------------------------------------------------
+bool CColor::fromString (UTF8StringPtr str)
+{
+	if (!str)
+		return false;
+	if (!isColorRepresentation (str))
+		return false;
+	std::string rv (str + 1, 2);
+	std::string gv (str + 3, 2);
+	std::string bv (str + 5, 2);
+	std::string av (str + 7, 2);
+	red = (uint8_t)strtol (rv.data (), nullptr, 16);
+	green = (uint8_t)strtol (gv.data (), nullptr, 16);
+	blue = (uint8_t)strtol (bv.data (), nullptr, 16);
+	alpha = (uint8_t)strtol (av.data (), nullptr, 16);
+	return true;
+}
+
+//-----------------------------------------------------------------------------
+UTF8String CColor::toString () const
+{
+	std::stringstream str;
+	str << "#";
+	str << std::hex << std::setw (2) << std::setfill ('0') << static_cast<int32_t> (red);
+	str << std::hex << std::setw (2) << std::setfill ('0') << static_cast<int32_t> (green);
+	str << std::hex << std::setw (2) << std::setfill ('0') << static_cast<int32_t> (blue);
+	str << std::hex << std::setw (2) << std::setfill ('0') << static_cast<int32_t> (alpha);
+	return UTF8String (str.str ());
 }
 
 } // namespace

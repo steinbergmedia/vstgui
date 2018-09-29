@@ -43,7 +43,10 @@ public:
 
 	void beginEdit ();
 	void endEdit ();
-	
+
+	using CColor::operator==;
+	using CColor::operator!=;
+
 	static IdStringPtr kMsgChanged;
 	static IdStringPtr kMsgEditChange;
 	static IdStringPtr kMsgBeginEditing;
