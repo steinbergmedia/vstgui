@@ -172,7 +172,12 @@ SharedPointer<NSViewDraggingSession> NSViewDraggingSession::create (
 				[item setDraggingFrame:r contents:nsImage];
 			}
 			else
-				item.draggingFrame.origin = bitmapOffset;
+			{
+				NSRect r;
+				r.origin = bitmapOffset;
+				r.size = CGSizeMake (1, 1);
+				item.draggingFrame = r;
+			}
 			[dragItems addObject:item];
 		}
 	}
