@@ -57,7 +57,7 @@ static Command ShowAlertBoxDesign {CommandGroup::File, "Show AlertBox Design"};
 //------------------------------------------------------------------------
 Delegate::Delegate ()
 : Application::DelegateAdapter (
-      {"VSTGUIStandalone", "1.0.0", "vstgui.examples.standalone"})
+      {"VSTGUI Standalone", "1.0.0", "vstgui.examples.standalone"})
 {
 }
 
