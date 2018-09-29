@@ -157,7 +157,7 @@ protected:
 	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser) override;
 	void dbOnDragEnterBrowser (IDataPackage* drag, CDataBrowser* browser) override;
 	void dbOnDragExitBrowser (IDataPackage* drag, CDataBrowser* browser) override;
-	void dbOnDragEnterCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser) override;
+	DragOperation dbOnDragEnterCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser) override;
 	void dbOnDragExitCell (int32_t row, int32_t column, IDataPackage* drag, CDataBrowser* browser) override;
 	bool dbOnDropInCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser) override;
 
@@ -279,8 +279,9 @@ void UIBitmapsDataSource::dbOnDragExitBrowser (IDataPackage* drag, CDataBrowser*
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIBitmapsDataSource::dbOnDragEnterCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser)
+DragOperation UIBitmapsDataSource::dbOnDragEnterCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser)
 {
+	return dragContainsBitmaps ? DragOperation::Copy : DragOperation::None;
 }
 
 //----------------------------------------------------------------------------------------------------

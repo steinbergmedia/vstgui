@@ -67,8 +67,8 @@ public:
 	///	@{
 	virtual void dbOnDragEnterBrowser (IDataPackage* drag, CDataBrowser* browser) {}
 	virtual void dbOnDragExitBrowser (IDataPackage* drag, CDataBrowser* browser) {}
-	virtual void dbOnDragEnterCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser) {}
-	virtual void dbOnDragMoveInCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser) {}
+	virtual DragOperation dbOnDragEnterCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser);
+	virtual DragOperation dbOnDragMoveInCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser);
 	virtual void dbOnDragExitCell (int32_t row, int32_t column, IDataPackage* drag, CDataBrowser* browser) {}
 	virtual bool dbOnDropInCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser) { return false; }
 	///	@}
