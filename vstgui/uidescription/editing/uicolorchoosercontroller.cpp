@@ -10,9 +10,62 @@
 #include "uicolorslider.h"
 #include "../uiattributes.h"
 #include "../iuidescription.h"
+#include "../../lib/dragging.h"
 #include <sstream>
 
 namespace VSTGUI {
+
+//----------------------------------------------------------------------------------------------------
+class UIColorChooserDropTarget : public NonAtomicReferenceCounted, public DropTargetAdapter
+{
+public:
+	UIColorChooserDropTarget (UIColor* color) : color (color) {}
+	DragOperation onDragEnter (DragEventData eventData) override
+	{
+		IDataPackage::Type type;
+		const void* item;
+		if (eventData.drag->getData (0, item, type) > 0 && type == IDataPackage::kText)
+		{
+			std::string tmp (static_cast<const char*> (item));
+			if (tmp.length () == 9 && tmp[0] == '#')
+			{
+				colorString = std::move (tmp);
+				return DragOperation::Copy;
+			}
+		}
+
+		return DragOperation::None;
+	}
+	DragOperation onDragMove (DragEventData eventData) override
+	{
+		return colorString.empty () ? DragOperation::None : DragOperation::Copy;
+	}
+	void onDragLeave (DragEventData eventData) override { colorString.clear(); }
+	bool onDrop (DragEventData eventData) override
+	{
+		if (!colorString.empty ())
+		{
+			CColor dragColor;
+			std::string rv (colorString.substr (1, 2));
+			std::string gv (colorString.substr (3, 2));
+			std::string bv (colorString.substr (5, 2));
+			std::string av (colorString.substr (7, 2));
+			dragColor.red = (uint8_t)strtol (rv.data (), nullptr, 16);
+			dragColor.green = (uint8_t)strtol (gv.data (), nullptr, 16);
+			dragColor.blue = (uint8_t)strtol (bv.data (), nullptr, 16);
+			dragColor.alpha = (uint8_t)strtol (av.data (), nullptr, 16);
+			color->beginEdit ();
+			*color = dragColor;
+			color->endEdit ();
+			return true;
+		}
+		return false;
+	}
+
+private:
+	UIColor* color;
+	std::string colorString;
+};
 
 //----------------------------------------------------------------------------------------------------
 UIColorChooserController::UIColorChooserController (IController* baseController, UIColor* color)
@@ -187,6 +240,10 @@ CView* UIColorChooserController::verifyView (CView* view, const UIAttributes& at
 			textEdit->setStringToValueFunction (stringToValue);
 		}
 		updateColorSlider (control);
+	}
+	else if (auto container = view->asViewContainer ())
+	{
+		container->setDropTarget (makeOwned<UIColorChooserDropTarget> (color));
 	}
 	return view;
 }
