@@ -32,6 +32,8 @@
 #include "../../lib/cdropsource.h"
 #include "../../lib/cgraphicspath.h"
 #include "../../lib/coffscreencontext.h"
+#include "../../lib/iviewlistener.h"
+#include "../../lib/cvstguitimer.h"
 
 #include <sstream>
 #include <algorithm>
@@ -205,12 +207,15 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
-class UIZoomSettingController : public IController, public IContextMenuController2, public CBaseObject
+class UIZoomSettingController : public IController,
+                                public IContextMenuController2,
+                                public IViewMouseListenerAdapter,
+                                public IViewListenerAdapter,
+                                public CBaseObject
 {
 public:
 	UIZoomSettingController (UIEditController* editController)
 	: editController (editController)
-	, zoomValueControl (nullptr)
 	{}
 
 	~UIZoomSettingController () override = default;
@@ -297,6 +302,10 @@ public:
 				zoomValueControl->setBackColor (backColor);
 				zoomValueControl->setFrameColor (frameColor);
 				zoomValueControl->setFrameWidth (-1);
+				zoomValueControl->setTooltipText ("Editor Zoom");
+				zoomValueControl->registerViewListener (this);
+				zoomValueControl->registerViewMouseListener (this);
+				zoomValueControl->setStyle (zoomValueControl->getStyle () | CTextEdit::kDoubleClickStyle);
 			}
 		}
 		return view;
@@ -318,9 +327,39 @@ public:
 				item->setActions ([this, i] (CCommandMenuItem*) {
 					updateZoom (static_cast<float> (i));
 				});
+				if (zoomValueControl->getValue () == static_cast<float> (i))
+					item->setChecked (true);
 				contextMenu.addEntry (item);
 			}
 		}
+	}
+
+	CMouseEventResult viewOnMouseDown (CView* view, CPoint pos, CButtonState buttons) override
+	{
+		vstgui_assert (view == zoomValueControl);
+		if (buttons.isDoubleClick ())
+			popupTimer = nullptr;
+		else if (buttons.isLeftButton () && buttons.getModifierState () == 0)
+		{
+			popupTimer = makeOwned<CVSTGUITimer> ([this] (CVSTGUITimer*) {
+				popupTimer = nullptr;
+				auto menu = makeOwned<COptionMenu> ();
+				menu->setStyle (COptionMenu::kPopupStyle | COptionMenu::kMultipleCheckStyle);
+				appendContextMenuItems (*menu, zoomValueControl, CPoint ());
+				menu->popup (zoomValueControl->getFrame (),
+				             zoomValueControl->translateToGlobal (
+				                 zoomValueControl->getViewSize ().getTopLeft ()));
+			}, 250);
+		}
+		return kMouseEventNotHandled;
+	}
+
+	void viewWillDelete (CView* view) override
+	{
+		vstgui_assert (view == zoomValueControl);
+		view->unregisterViewListener (this);
+		view->unregisterViewMouseListener (this);
+		zoomValueControl = nullptr;
 	}
 
 private:
@@ -333,8 +372,9 @@ private:
 		}
 	}
 	
-	UIEditController* editController;
-	CTextEdit* zoomValueControl;
+	UIEditController* editController{nullptr};
+	CTextEdit* zoomValueControl{nullptr};
+	SharedPointer<CVSTGUITimer> popupTimer;
 };
 
 //----------------------------------------------------------------------------------------------------
@@ -511,6 +551,7 @@ CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes
 				segment.icon = segment.iconHighlighted = createColorBitmap ({bitmapSize, bitmapSize}, color);
 				backSelectControl->addSegment (std::move (segment));
 			}
+			backSelectControl->setTooltipText ("Editor Background Color");
 			splitView->addViewToSeparator (0, backSelectControl);
 
 			// Add Title
