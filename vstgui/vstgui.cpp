@@ -30,6 +30,7 @@
 #include "lib/cview.cpp"
 #include "lib/cviewcontainer.cpp"
 #include "lib/cvstguitimer.cpp"
+#include "lib/genericstringlistdatabrowsersource.cpp"
 #include "lib/vstguidebug.cpp"
 
 #include "lib/controls/cautoanimation.cpp"

@@ -15,6 +15,7 @@
 #include "../delegationcontroller.h"
 #include "../uidescriptionlistener.h"
 #include "../../lib/cdatabrowser.h"
+#include "../../lib/genericstringlistdatabrowsersource.h"
 #include <vector>
 #include <list>
 

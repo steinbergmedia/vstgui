@@ -12,6 +12,7 @@
 #include "../uiattributes.h"
 #include "../uidescriptionlistener.h"
 #include "../../lib/cdatabrowser.h"
+#include "../../lib/genericstringlistdatabrowsersource.h"
 #include "../../lib/controls/csearchtextedit.h"
 #include "../../lib/controls/cscrollbar.h"
 #include <sstream>
