@@ -231,11 +231,21 @@ CMouseEventResult UIColorsDataSource::dbOnMouseMoved (const CPoint& where,
 				auto colorStr = color.toString ();
 				auto dropSource = CDropSource::create (colorStr.data (), colorStr.length () + 1,
 				                                       CDropSource::kText);
+				SharedPointer<CBitmap> dragBitmap;
+				if (auto offscreen = COffscreenContext::create (browser->getFrame (), r.getWidth (), r.getHeight ()))
+				{
+					offscreen->beginDraw ();
+					offscreen->setFillColor (color);
+					offscreen->drawRect (CRect (0, 0, r.getWidth(), r.getHeight()), kDrawFilled);
+					offscreen->endDraw();
+					dragBitmap = offscreen->getBitmap ();
+				}
+				
 				auto df = makeOwned<DragCallbackFunctions> ();
 				df->endedFunc = [browser] (IDraggingSession*, CPoint, DragOperation) {
 					browser->getFrame ()->setCursor (kCursorDefault);
 				};
-				browser->doDrag (DragDescription (dropSource, CPoint (), nullptr), df);
+				browser->doDrag (DragDescription (dropSource, -r.getSize () / 2., dragBitmap), df);
 			}
 		}
 		else
