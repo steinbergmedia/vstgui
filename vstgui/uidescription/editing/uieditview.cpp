@@ -972,6 +972,8 @@ CMouseEventResult UIEditView::onMouseMoved (CPoint &where, const CButtonState& b
 {
 	if (editing)
 	{
+		if (inlineAttrTextEditOpen)
+			return kMouseEventHandled;
 		CPoint where2 (where);
 		where2.offset (-getViewSize ().left, -getViewSize ().top);
 		getTransform ().inverse ().transform (where2);
@@ -1225,12 +1227,11 @@ void UIEditView::onDoubleClickEditing (CView* view)
 {
 	struct AttributeInlineEditorController : IViewListenerAdapter
 	{
-		AttributeInlineEditorController (CTextEdit* edit, UIDescription* desc,
-		                                 UISelection* selection, UIUndoManager* undoManager)
-		: edit (edit), desc (desc), selection (selection), undoManager (undoManager)
+		using Callback = std::function<void ()>;
+		AttributeInlineEditorController (CTextEdit* edit, Callback&& callback)
+		: edit (edit), callback (std::move (callback))
 		{
 			edit->registerViewListener (this);
-			initialString = edit->getText ();
 		}
 		void viewWillDelete (CView*) override
 		{
@@ -1239,38 +1240,42 @@ void UIEditView::onDoubleClickEditing (CView* view)
 		}
 		void viewLostFocus (CView*) override
 		{
-			const auto& text = edit->getText ();
-			if (text != initialString)
-			{
-				auto action = new AttributeChangeAction (desc, selection, UIViewCreator::kAttrTitle,
-				                                         text.getString ());
-				undoManager->pushAndPerform (action);
-			}
-			edit->getParentView ()->asViewContainer ()->removeView (edit);
+			callback ();
 		}
 
 	private:
 		CTextEdit* edit;
-		UIDescription* desc;
-		UISelection* selection;
-		UIUndoManager* undoManager;
-		UTF8String initialString;
+		Callback callback;
 	};
 
 	auto factory = static_cast<const UIViewFactory*> (description->getViewFactory ());
 	vstgui_assert (factory);
-	std::string value;
-	if (!factory->getAttributeValue (view, UIViewCreator::kAttrTitle, value, description))
+	std::string attrValue;
+	if (!factory->getAttributeValue (view, UIViewCreator::kAttrTitle, attrValue, description))
 		return;
+
+	auto frame = getFrame ();
+	frame->setCursor (kCursorDefault);
 
 	auto r = selection->getGlobalViewCoordinates (view);
 	r.offsetInverse (getViewSize ().getTopLeft ());
 	translateToLocal (r);
 	auto textEdit = new CTextEdit (r, nullptr, 0);
-	textEdit->setText (value.data ());
+	textEdit->setText (attrValue.data ());
 	addView (textEdit);
-	new AttributeInlineEditorController (textEdit, description, selection, getUndoManager ());
-	getFrame ()->setFocusView (textEdit);
+	new AttributeInlineEditorController (textEdit, [this, textEdit, attrValue] () {
+		const auto& text = textEdit->getText ();
+		if (text != attrValue)
+		{
+			auto action = new AttributeChangeAction (description, selection,
+			                                         UIViewCreator::kAttrTitle, text.getString ());
+			getUndoManager ()->pushAndPerform (action);
+		}
+		textEdit->getParentView ()->asViewContainer ()->removeView (textEdit);
+		inlineAttrTextEditOpen = false;
+	});
+	frame->setFocusView (textEdit);
+	inlineAttrTextEditOpen = true;
 }
 
 //-----------------------------------------------------------------------------

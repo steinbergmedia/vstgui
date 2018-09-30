@@ -110,6 +110,7 @@ protected:
 
 	bool editing {true};
 	bool autosizing {true};
+	bool inlineAttrTextEditOpen {false};
 	MouseEditMode mouseEditMode {kNoEditing};
 	MouseSizeMode mouseSizeMode {kSizeModeNone};
 	CPoint mouseStartPoint;
