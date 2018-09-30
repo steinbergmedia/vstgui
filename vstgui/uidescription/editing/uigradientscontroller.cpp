@@ -516,7 +516,7 @@ CView* UIGradientEditorController::createView (const UIAttributes& attributes, c
 class UIGradientsDataSource : public UIBaseDataSource
 {
 public:
-	UIGradientsDataSource (UIDescription* description, IActionPerformer* actionPerformer, IGenericStringListDataBrowserSourceSelectionChanged* delegate);
+	UIGradientsDataSource (UIDescription* description, IActionPerformer* actionPerformer, GenericStringListDataBrowserSourceSelectionChanged* delegate);
 	~UIGradientsDataSource () override = default;
 
 	CGradient* getSelectedGradient ();
@@ -538,7 +538,7 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
-UIGradientsDataSource::UIGradientsDataSource (UIDescription* description, IActionPerformer* actionPerformer, IGenericStringListDataBrowserSourceSelectionChanged* delegate)
+UIGradientsDataSource::UIGradientsDataSource (UIDescription* description, IActionPerformer* actionPerformer, GenericStringListDataBrowserSourceSelectionChanged* delegate)
 : UIBaseDataSource (description, actionPerformer, delegate)
 {
 }

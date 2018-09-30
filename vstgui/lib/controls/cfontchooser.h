@@ -62,7 +62,7 @@ struct CFontChooserUIDefinition
 
 ///	@ingroup new_in_4_0
 //-----------------------------------------------------------------------------
-class CFontChooser : public CViewContainer, public IControlListener, public IGenericStringListDataBrowserSourceSelectionChanged
+class CFontChooser : public CViewContainer, public IControlListener, public GenericStringListDataBrowserSourceSelectionChanged
 {
 public:
 	CFontChooser (IFontChooserDelegate* delegate, CFontRef initialFont = nullptr, const CFontChooserUIDefinition& uiDef = CFontChooserUIDefinition ());

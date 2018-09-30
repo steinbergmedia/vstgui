@@ -60,7 +60,7 @@ public:
 //-----------------------------------------------------------------------------
 /// @brief View Listener Interface Adapter
 //-----------------------------------------------------------------------------
-class IViewListenerAdapter : public IViewListener
+class ViewListenerAdapter : public IViewListener
 {
 public:
 	void viewSizeChanged (CView* view, const CRect& oldSize) override {}
@@ -74,7 +74,7 @@ public:
 //-----------------------------------------------------------------------------
 /// @brief ViewContainer Listener Interface Adapter
 //-----------------------------------------------------------------------------
-class IViewContainerListenerAdapter : public IViewContainerListener
+class ViewContainerListenerAdapter : public IViewContainerListener
 {
 public:
 	void viewContainerViewAdded (CViewContainer* container, CView* view) override {}
@@ -86,7 +86,7 @@ public:
 //-----------------------------------------------------------------------------
 /// @brief View Mouse Listener Interface Adapter
 //-----------------------------------------------------------------------------
-class IViewMouseListenerAdapter : public IViewMouseListener
+class ViewMouseListenerAdapter : public IViewMouseListener
 {
 public:
 	CMouseEventResult viewOnMouseDown (CView* view, CPoint pos, CButtonState buttons) override

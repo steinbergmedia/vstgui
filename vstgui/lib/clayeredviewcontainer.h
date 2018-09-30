@@ -20,7 +20,10 @@ namespace VSTGUI {
 //! A CLayeredViewContainer creates a platform layer on top of a parent layer or the platform view of CFrame
 //! if available on that platform and draws into it, otherwise it acts exactly like a CViewContainer
 //-----------------------------------------------------------------------------
-class CLayeredViewContainer : public CViewContainer, public IPlatformViewLayerDelegate, public IViewContainerListenerAdapter, public IScaleFactorChangedListener
+class CLayeredViewContainer : public CViewContainer,
+                              public IPlatformViewLayerDelegate,
+                              public ViewContainerListenerAdapter,
+                              public IScaleFactorChangedListener
 {
 public:
 	explicit CLayeredViewContainer (const CRect& r = CRect (0, 0, 0, 0));

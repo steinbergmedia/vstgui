@@ -138,7 +138,7 @@ protected:
 class UIBitmapsDataSource : public UIBaseDataSource
 {
 public:
-	UIBitmapsDataSource (UIDescription* description, IActionPerformer* actionPerformer, IGenericStringListDataBrowserSourceSelectionChanged* delegate);
+	UIBitmapsDataSource (UIDescription* description, IActionPerformer* actionPerformer, GenericStringListDataBrowserSourceSelectionChanged* delegate);
 	
 	CBitmap* getSelectedBitmap ();
 	UTF8StringPtr getSelectedBitmapName ();
@@ -169,7 +169,7 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
-UIBitmapsDataSource::UIBitmapsDataSource (UIDescription* description, IActionPerformer* actionPerformer, IGenericStringListDataBrowserSourceSelectionChanged* delegate)
+UIBitmapsDataSource::UIBitmapsDataSource (UIDescription* description, IActionPerformer* actionPerformer, GenericStringListDataBrowserSourceSelectionChanged* delegate)
 : UIBaseDataSource (description, actionPerformer, delegate)
 , dragContainsBitmaps (false)
 {

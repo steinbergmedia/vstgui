@@ -20,7 +20,9 @@ namespace VSTGUI {
 class UIBitmapsDataSource;
 
 //----------------------------------------------------------------------------------------------------
-class UIBitmapsController : public CBaseObject, public DelegationController, public IGenericStringListDataBrowserSourceSelectionChanged
+class UIBitmapsController : public CBaseObject,
+                            public DelegationController,
+                            public GenericStringListDataBrowserSourceSelectionChanged
 {
 public:
 	UIBitmapsController (IController* baseController, UIDescription* description, IActionPerformer* actionPerformer);

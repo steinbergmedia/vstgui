@@ -185,7 +185,7 @@ struct ProgressController : DelegationController, ValueListenerAdapter
 
 //------------------------------------------------------------------------
 struct ViewController : DelegationController,
-                        IViewListenerAdapter,
+                        ViewListenerAdapter,
                         IModelChangeListener,
                         IScaleFactorChangedListener,
                         AtomicReferenceCounted
