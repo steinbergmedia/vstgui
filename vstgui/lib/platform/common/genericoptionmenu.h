@@ -39,7 +39,7 @@ struct IGenericOptionMenuListener
 };
 
 //------------------------------------------------------------------------
-class GenericOptionMenu : public IPlatformOptionMenu, public IViewMouseListenerAdapter
+class GenericOptionMenu : public IPlatformOptionMenu, public ViewMouseListenerAdapter
 {
 public:
 	GenericOptionMenu (CFrame* frame, CButtonState initialButtons,

@@ -25,7 +25,7 @@ namespace VSTGUI {
 class UINavigationDataSource : public GenericStringListDataBrowserSource
 {
 public:
-	UINavigationDataSource (IGenericStringListDataBrowserSourceSelectionChanged* delegate)
+	UINavigationDataSource (GenericStringListDataBrowserSourceSelectionChanged* delegate)
 	: GenericStringListDataBrowserSource (nullptr, delegate) { textInset.x = 4.; }
 
 	int32_t dbOnKeyDown (const VstKeyCode& key, CDataBrowser* browser) override
@@ -133,7 +133,7 @@ protected:
 class UITemplatesDataSource : public UINavigationDataSource
 {
 public:
-	UITemplatesDataSource (IGenericStringListDataBrowserSourceSelectionChanged* delegate, UIDescription* description, IActionPerformer* actionPerformer, const std::string* templateName);
+	UITemplatesDataSource (GenericStringListDataBrowserSourceSelectionChanged* delegate, UIDescription* description, IActionPerformer* actionPerformer, const std::string* templateName);
 	
 	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) override;
 	void dbCellTextChanged (int32_t row, int32_t column, UTF8StringPtr newText, CDataBrowser* browser) override;
@@ -150,7 +150,7 @@ protected:
 class UIViewListDataSource : public UINavigationDataSource
 {
 public:
-	UIViewListDataSource (CViewContainer* view, const IViewFactory* viewFactory, UISelection* selection, UIUndoManager* undoManager ,IGenericStringListDataBrowserSourceSelectionChanged* delegate);
+	UIViewListDataSource (CViewContainer* view, const IViewFactory* viewFactory, UISelection* selection, UIUndoManager* undoManager ,GenericStringListDataBrowserSourceSelectionChanged* delegate);
 	~UIViewListDataSource () override;
 
 	CViewContainer* getView () const { return view; }
@@ -432,7 +432,7 @@ void UITemplateController::appendContextMenuItems (COptionMenu& contextMenu, CVi
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-UIViewListDataSource::UIViewListDataSource (CViewContainer* view, const IViewFactory* viewFactory, UISelection* selection, UIUndoManager* undoManager, IGenericStringListDataBrowserSourceSelectionChanged* delegate)
+UIViewListDataSource::UIViewListDataSource (CViewContainer* view, const IViewFactory* viewFactory, UISelection* selection, UIUndoManager* undoManager, GenericStringListDataBrowserSourceSelectionChanged* delegate)
 : UINavigationDataSource (delegate)
 , view (view)
 , viewFactory (dynamic_cast<const UIViewFactory*> (viewFactory))
@@ -656,7 +656,7 @@ void UIViewListDataSource::dbDrawCell (CDrawContext* context, const CRect& size,
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-UITemplatesDataSource::UITemplatesDataSource (IGenericStringListDataBrowserSourceSelectionChanged* delegate, UIDescription* description, IActionPerformer* actionPerformer, const std::string* templateName)
+UITemplatesDataSource::UITemplatesDataSource (GenericStringListDataBrowserSourceSelectionChanged* delegate, UIDescription* description, IActionPerformer* actionPerformer, const std::string* templateName)
 : UINavigationDataSource (delegate)
 , description (description)
 , actionPerformer (actionPerformer)

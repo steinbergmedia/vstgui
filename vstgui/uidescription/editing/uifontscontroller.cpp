@@ -20,7 +20,7 @@ namespace VSTGUI {
 class UIFontsDataSource : public UIBaseDataSource
 {
 public:
-	UIFontsDataSource (UIDescription* description, IActionPerformer* actionPerformer, IGenericStringListDataBrowserSourceSelectionChanged* delegate);
+	UIFontsDataSource (UIDescription* description, IActionPerformer* actionPerformer, GenericStringListDataBrowserSourceSelectionChanged* delegate);
 	
 protected:
 	void onUIDescFontChanged (UIDescription* desc) override;
@@ -34,7 +34,7 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
-UIFontsDataSource::UIFontsDataSource (UIDescription* description, IActionPerformer* actionPerformer, IGenericStringListDataBrowserSourceSelectionChanged* delegate)
+UIFontsDataSource::UIFontsDataSource (UIDescription* description, IActionPerformer* actionPerformer, GenericStringListDataBrowserSourceSelectionChanged* delegate)
 : UIBaseDataSource (description, actionPerformer, delegate)
 {
 }

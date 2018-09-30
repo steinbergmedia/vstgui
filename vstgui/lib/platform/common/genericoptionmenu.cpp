@@ -31,8 +31,8 @@ CView* setupGenericOptionMenu (Proc clickCallback, CViewContainer* container,
                                CRect viewRect, DataSource* parentDataSource);
 
 //------------------------------------------------------------------------
-class DataSource : public IDataBrowserDelegateAdapter,
-                   public IViewMouseListenerAdapter,
+class DataSource : public DataBrowserDelegateAdapter,
+                   public ViewMouseListenerAdapter,
                    public NonAtomicReferenceCounted
 {
 public:

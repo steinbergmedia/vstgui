@@ -23,7 +23,12 @@ namespace VSTGUI {
 class UIViewListDataSource;
 
 //----------------------------------------------------------------------------------------------------
-class UITemplateController : public CBaseObject, public DelegationController, public IContextMenuController2, public IGenericStringListDataBrowserSourceSelectionChanged, public IDependency, public UIDescriptionListenerAdapter
+class UITemplateController : public CBaseObject,
+                             public DelegationController,
+                             public IContextMenuController2,
+                             public GenericStringListDataBrowserSourceSelectionChanged,
+                             public IDependency,
+                             public UIDescriptionListenerAdapter
 {
 public:
 	UITemplateController (IController* baseController, UIDescription* description, UISelection* selection, UIUndoManager* undoManager, IActionPerformer* actionPerformer);

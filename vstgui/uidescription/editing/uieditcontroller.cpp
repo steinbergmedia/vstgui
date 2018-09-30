@@ -209,8 +209,8 @@ protected:
 //----------------------------------------------------------------------------------------------------
 class UIZoomSettingController : public IController,
                                 public IContextMenuController2,
-                                public IViewMouseListenerAdapter,
-                                public IViewListenerAdapter,
+                                public ViewMouseListenerAdapter,
+                                public ViewListenerAdapter,
                                 public CBaseObject
 {
 public:

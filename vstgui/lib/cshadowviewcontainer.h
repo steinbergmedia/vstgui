@@ -17,7 +17,9 @@ namespace VSTGUI {
 /// @ingroup containerviews
 /// @ingroup new_in_4_1
 //-----------------------------------------------------------------------------
-class CShadowViewContainer : public CViewContainer, public IScaleFactorChangedListener, public IViewContainerListenerAdapter
+class CShadowViewContainer : public CViewContainer,
+                             public IScaleFactorChangedListener,
+                             public ViewContainerListenerAdapter
 {
 public:
 	explicit CShadowViewContainer (const CRect& size);
