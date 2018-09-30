@@ -609,31 +609,31 @@ UIEditView::MouseSizeMode UIEditView::selectionHitTest (const CPoint& _where, CV
 				*resultView = view;
 			r.inset (kResizeHandleSize, kResizeHandleSize);
 			if (UIEditViewInternal::pointInResizeHandleRect (where, r.getBottomRight ()))
-				return kSizeModeBottomRight;
+				return MouseSizeMode::BottomRight;
 			if (!isMainView)
 			{
 				if (UIEditViewInternal::pointInResizeHandleRect (where, r.getBottomLeft ()))
-					return kSizeModeBottomLeft;
+					return MouseSizeMode::BottomLeft;
 				if (UIEditViewInternal::pointInResizeHandleRect (where, r.getTopLeft ()))
-					return kSizeModeTopLeft;
+					return MouseSizeMode::TopLeft;
 				if (UIEditViewInternal::pointInResizeHandleRect (where, r.getTopRight ()))
-					return kSizeModeTopRight;
+					return MouseSizeMode::TopRight;
 				CPoint hp (r.getTopLeft ());
 				hp.y += r.getHeight () /2.;
 				if (UIEditViewInternal::pointInResizeHandleRect (where, hp))
-					return kSizeModeLeft;
+					return MouseSizeMode::Left;
 				hp.x += r.getWidth ();
 				if (UIEditViewInternal::pointInResizeHandleRect (where, hp))
-					return kSizeModeRight;
+					return MouseSizeMode::Right;
 				hp = r.getTopLeft ();
 				hp.x += r.getWidth () / 2.;
 				if (UIEditViewInternal::pointInResizeHandleRect (where, hp))
-					return kSizeModeTop;
+					return MouseSizeMode::Top;
 				hp.y += r.getHeight ();
 				if (UIEditViewInternal::pointInResizeHandleRect (where, hp))
-					return kSizeModeBottom;
+					return MouseSizeMode::Bottom;
 				if (r.pointInside (where))
-					return kSizeModeNone;
+					return MouseSizeMode::None;
 			}
 			if (resultView)
 				*resultView = nullptr;
@@ -641,7 +641,7 @@ UIEditView::MouseSizeMode UIEditView::selectionHitTest (const CPoint& _where, CV
 	}
 	if (resultView)
 		*resultView = nullptr;
-	return kSizeModeNone;
+	return MouseSizeMode::None;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -679,7 +679,7 @@ CMouseEventResult UIEditView::onMouseDown (CPoint &where, const CButtonState& bu
 					return kMouseEventHandled;
 				}
 			}
-			else if (mouseHitView && sizeMode == kSizeModeNone)
+			else if (mouseHitView && sizeMode == MouseSizeMode::None)
 			{
 				if (buttons.isControlSet () || buttons.isShiftSet ())
 				{
@@ -703,20 +703,20 @@ CMouseEventResult UIEditView::onMouseDown (CPoint &where, const CButtonState& bu
 				}
 				if (buttons.isAltSet () && !getSelection ()->contains (getView (0)))
 				{
-					mouseEditMode = kDragEditing;
+					mouseEditMode = MouseEditMode::DragEditing;
 					invalidSelection ();
 					startDrag (where);
-					mouseEditMode = kNoEditing;
+					mouseEditMode = MouseEditMode::NoEditing;
 					invalidSelection ();
 					return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
 				}
-				if (sizeMode == kSizeModeNone)
+				if (sizeMode == MouseSizeMode::None)
 				{
 					if (getSelection ()->contains (getView (0)))
 					{
 						return kMouseEventHandled;
 					}
-					mouseEditMode = kDragEditing;
+					mouseEditMode = MouseEditMode::DragEditing;
 					mouseStartPoint = where2;
 					if (grid)
 						grid->process (mouseStartPoint);
@@ -728,7 +728,7 @@ CMouseEventResult UIEditView::onMouseDown (CPoint &where, const CButtonState& bu
 				}
 				else
 				{
-					mouseEditMode = kSizeEditing;
+					mouseEditMode = MouseEditMode::SizeEditing;
 					mouseStartPoint = where2;
 					if (grid)
 						grid->process (mouseStartPoint);
@@ -738,10 +738,10 @@ CMouseEventResult UIEditView::onMouseDown (CPoint &where, const CButtonState& bu
 						int32_t crossLineMode = 0;
 						switch (sizeMode)
 						{
-							case kSizeModeLeft:
-							case kSizeModeRight:
-							case kSizeModeTop:
-							case kSizeModeBottom: crossLineMode = UICrossLines::kSelectionStyle; break;
+							case MouseSizeMode::Left:
+							case MouseSizeMode::Right:
+							case MouseSizeMode::Top:
+							case MouseSizeMode::Bottom: crossLineMode = UICrossLines::kSelectionStyle; break;
 							default : crossLineMode = UICrossLines::kDragStyle; break;
 						}
 						lines = new UICrossLines (this, crossLineMode, crosslineBackgroundColor, crosslineForegroundColor);
@@ -770,7 +770,7 @@ CMouseEventResult UIEditView::onMouseUp (CPoint &where, const CButtonState& butt
 			editTimer->forget ();
 			editTimer = nullptr;
 		}
-		if (mouseEditMode != kNoEditing && !moveSizeOperation && buttons == kLButton && !lines)
+		if (mouseEditMode != MouseEditMode::NoEditing && !moveSizeOperation && buttons == kLButton && !lines)
 		{
 			CView* view = getViewAt (where, GetViewOptions ().deep ().includeViewContainer ().includeInvisible ());
 			if (view == this)
@@ -785,7 +785,7 @@ CMouseEventResult UIEditView::onMouseUp (CPoint &where, const CButtonState& butt
 			overlayView->removeView (lines);
 			lines = nullptr;
 		}
-		mouseEditMode = kNoEditing;
+		mouseEditMode = MouseEditMode::NoEditing;
 		if (moveSizeOperation)
 		{
 			if (moveSizeOperation->didChange ())
@@ -803,7 +803,7 @@ CMouseEventResult UIEditView::onMouseUp (CPoint &where, const CButtonState& butt
 //------------------------------------------------------------------------
 int32_t UIEditView::onKeyDown (VstKeyCode& keyCode)
 {
-	if (mouseEditMode != kNoEditing && keyCode.virt == VKEY_ESCAPE)
+	if (mouseEditMode != MouseEditMode::NoEditing && keyCode.virt == VKEY_ESCAPE)
 	{
 		if (lines)
 		{
@@ -816,7 +816,7 @@ int32_t UIEditView::onKeyDown (VstKeyCode& keyCode)
 			delete moveSizeOperation;
 			moveSizeOperation = nullptr;
 		}
-		mouseEditMode = kNoEditing;
+		mouseEditMode = MouseEditMode::NoEditing;
 		getFrame ()->setCursor (kCursorDefault);
 		return 1;
 	}
@@ -909,45 +909,45 @@ void UIEditView::doSizeEditingMove (CPoint& where)
 	CRect diff;
 	switch (mouseSizeMode)
 	{
-		case kSizeModeLeft:
+		case MouseSizeMode::Left:
 		{
 			diff.left = where.x - mouseStartPoint.x;
 			break;
 		}
-		case kSizeModeRight:
+		case MouseSizeMode::Right:
 		{
 			diff.right = where.x - mouseStartPoint.x;
 			break;
 		}
-		case kSizeModeTop:
+		case MouseSizeMode::Top:
 		{
 			diff.top = where.y - mouseStartPoint.y;
 			break;
 		}
-		case kSizeModeBottom:
+		case MouseSizeMode::Bottom:
 		{
 			diff.bottom = where.y - mouseStartPoint.y;
 			break;
 		}
-		case kSizeModeTopLeft:
+		case MouseSizeMode::TopLeft:
 		{
 			diff.left = where.x - mouseStartPoint.x;
 			diff.top = where.y - mouseStartPoint.y;
 			break;
 		}
-		case kSizeModeTopRight:
+		case MouseSizeMode::TopRight:
 		{
 			diff.right = where.x - mouseStartPoint.x;
 			diff.top = where.y - mouseStartPoint.y;
 			break;
 		}
-		case kSizeModeBottomRight:
+		case MouseSizeMode::BottomRight:
 		{
 			diff.right = where.x - mouseStartPoint.x;
 			diff.bottom = where.y - mouseStartPoint.y;
 			break;
 		}
-		case kSizeModeBottomLeft:
+		case MouseSizeMode::BottomLeft:
 		{
 			diff.left = where.x - mouseStartPoint.x;
 			diff.bottom = where.y - mouseStartPoint.y;
@@ -981,11 +981,11 @@ CMouseEventResult UIEditView::onMouseMoved (CPoint &where, const CButtonState& b
 		{
 			if (getSelection ()->total () > 0)
 			{
-				if (mouseEditMode == kDragEditing)
+				if (mouseEditMode == MouseEditMode::DragEditing)
 				{
 					doDragEditingMove (where2);
 				}
-				else if (mouseEditMode == kSizeEditing)
+				else if (mouseEditMode == MouseEditMode::SizeEditing)
 				{
 					doSizeEditingMove (where2);
 				}
@@ -1001,20 +1001,20 @@ CMouseEventResult UIEditView::onMouseMoved (CPoint &where, const CButtonState& b
 		{
 			CView* view = nullptr;
 			CCursorType ctype = kCursorDefault;
-			int32_t mode = selectionHitTest (where, &view);
+			auto mode = selectionHitTest (where, &view);
 			if (view)
 			{
 				switch (mode)
 				{
-					case kSizeModeRight:
-					case kSizeModeLeft: ctype = kCursorHSize; break;
-					case kSizeModeTop:
-					case kSizeModeBottom: ctype = kCursorVSize; break;
-					case kSizeModeTopLeft:
-					case kSizeModeBottomRight: ctype = kCursorNWSESize; break;
-					case kSizeModeTopRight:
-					case kSizeModeBottomLeft: ctype = kCursorNESWSize; break;
-					case kSizeModeNone:
+					case MouseSizeMode::Right:
+					case MouseSizeMode::Left: ctype = kCursorHSize; break;
+					case MouseSizeMode::Top:
+					case MouseSizeMode::Bottom: ctype = kCursorVSize; break;
+					case MouseSizeMode::TopLeft:
+					case MouseSizeMode::BottomRight: ctype = kCursorNWSESize; break;
+					case MouseSizeMode::TopRight:
+					case MouseSizeMode::BottomLeft: ctype = kCursorNESWSize; break;
+					case MouseSizeMode::None:
 					{
 						if (getSelection ()->contains (getView (0)) == false)
 							ctype = kCursorHand;
