@@ -114,7 +114,7 @@ public:
 //-----------------------------------------------------------------------------
 // IDataBrowserDelegateAdapter
 //-----------------------------------------------------------------------------------------------
-class IDataBrowserDelegateAdapter : public IDataBrowserDelegate
+class DataBrowserDelegateAdapter : public IDataBrowserDelegate
 {
 public:
 	int32_t dbGetNumRows (CDataBrowser* browser) override = 0;

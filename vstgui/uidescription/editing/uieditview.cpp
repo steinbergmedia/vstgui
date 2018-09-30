@@ -32,7 +32,7 @@ namespace VSTGUI {
 namespace UIEditViewInternal {
 	
 //----------------------------------------------------------------------------------------------------
-class UIEditViewOverlay : public CView, public IViewListenerAdapter
+class UIEditViewOverlay : public CView, public ViewListenerAdapter
 //----------------------------------------------------------------------------------------------------
 {
 public:
@@ -1225,7 +1225,7 @@ DragOperation UIEditView::onDragMove (DragEventData data)
 //-----------------------------------------------------------------------------
 void UIEditView::onDoubleClickEditing (CView* view)
 {
-	struct AttributeInlineEditorController : IViewListenerAdapter
+	struct AttributeInlineEditorController : ViewListenerAdapter
 	{
 		using Callback = std::function<void ()>;
 		AttributeInlineEditorController (CTextEdit* edit, Callback&& callback)

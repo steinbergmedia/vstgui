@@ -18,7 +18,7 @@ namespace VSTGUI {
 class UISelection;
 
 //----------------------------------------------------------------------------------------------------
-class UICrossLines : public CView, public IViewListenerAdapter
+class UICrossLines : public CView, public ViewListenerAdapter
 {
 public:
 	enum {

@@ -19,7 +19,10 @@
 namespace VSTGUI {
 
 //----------------------------------------------------------------------------------------------------
-class UIDialogController : public CBaseObject, public DelegationController, public IKeyboardHook, public IViewListenerAdapter
+class UIDialogController : public CBaseObject,
+                           public DelegationController,
+                           public IKeyboardHook,
+                           public ViewListenerAdapter
 {
 public:
 	UIDialogController (IController* baseController, CFrame* frame);

@@ -92,6 +92,15 @@ Note: All current deprecated methods will be removed in the next version. So mak
 
 @section code_changes Changes for existing VSTGUI code
 
+@subsection code_changes_4_7_to_4_8 VSTGUI 4.7 -> VSTGUI 4.8
+
+- IDataBrowserDelegate is now a real virtual interface class, use DataBrowserDelegateAdapter instead if you get compile/linker errors.
+- renamed the following interface adapter classes :
+	- IViewListenerAdapter -> ViewListenerAdapter
+	- IViewContainerListenerAdapter -> ViewContainerListenerAdapter
+	- IViewMouseListenerAdapter -> ViewMouseListenerAdapter
+	- IGenericStringListDataBrowserSourceSelectionChanged -> GenericStringListDataBrowserSourceSelectionChanged
+
 @subsection code_changes_4_6_to_4_7 VSTGUI 4.6 -> VSTGUI 4.7
 
 - CView::doDrag is deprecated, instead use the asynchronous variant of it : CView::doDrag ;-)

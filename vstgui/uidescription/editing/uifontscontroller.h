@@ -20,7 +20,9 @@
 namespace VSTGUI {
 class UIFontsDataSource;
 //----------------------------------------------------------------------------------------------------
-class UIFontsController : public NonAtomicReferenceCounted, public DelegationController, public IGenericStringListDataBrowserSourceSelectionChanged
+class UIFontsController : public NonAtomicReferenceCounted,
+                          public DelegationController,
+                          public GenericStringListDataBrowserSourceSelectionChanged
 {
 public:
 	UIFontsController (IController* baseController, UIDescription* description, IActionPerformer* actionPerformer);

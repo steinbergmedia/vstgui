@@ -302,7 +302,7 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
-class TextController : public Controller, public IViewListenerAdapter, public ITextLabelListener
+class TextController : public Controller, public ViewListenerAdapter, public ITextLabelListener
 {
 public:
 	TextController (IController* baseController, const std::string& attrName)

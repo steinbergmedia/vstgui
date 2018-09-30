@@ -13,7 +13,7 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-class IGenericStringListDataBrowserSourceSelectionChanged
+class GenericStringListDataBrowserSourceSelectionChanged
 {
 public:
 	virtual void dbSelectionChanged (int32_t selectedRow,
@@ -25,14 +25,14 @@ public:
 // GenericStringListDataBrowserSource Declaration
 //! @brief Generic string list data browser source
 //-----------------------------------------------------------------------------
-class GenericStringListDataBrowserSource : public IDataBrowserDelegateAdapter, public CBaseObject
+class GenericStringListDataBrowserSource : public DataBrowserDelegateAdapter, public CBaseObject
 {
 public:
 	using StringVector = std::vector<UTF8String>;
 
 	GenericStringListDataBrowserSource (
 	    const StringVector* stringList,
-	    IGenericStringListDataBrowserSourceSelectionChanged* delegate = nullptr);
+	    GenericStringListDataBrowserSourceSelectionChanged* delegate = nullptr);
 	~GenericStringListDataBrowserSource () noexcept override;
 
 	void setStringList (const StringVector* stringList);
@@ -110,7 +110,7 @@ protected:
 	CHoriTxtAlign textAlignment;
 	SharedPointer<CFontDesc> drawFont;
 	CDataBrowser* dataBrowser;
-	IGenericStringListDataBrowserSourceSelectionChanged* delegate;
+	GenericStringListDataBrowserSourceSelectionChanged* delegate;
 
 	SharedPointer<CVSTGUITimer> timer;
 	std::string keyDownFindString;

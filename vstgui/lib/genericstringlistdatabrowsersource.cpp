@@ -14,7 +14,7 @@ namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
 GenericStringListDataBrowserSource::GenericStringListDataBrowserSource (
-    const StringVector* stringList, IGenericStringListDataBrowserSourceSelectionChanged* delegate)
+    const StringVector* stringList, GenericStringListDataBrowserSourceSelectionChanged* delegate)
 : stringList (stringList)
 , rowHeight (-1)
 , fontColor (kWhiteCColor)
