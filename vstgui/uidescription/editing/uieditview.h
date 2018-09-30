@@ -55,22 +55,22 @@ public:
 	static IdStringPtr kMsgAttached;
 	static IdStringPtr kMsgRemoved;
 protected:
-	enum MouseEditMode {
-		kNoEditing,
-		kDragEditing,
-		kSizeEditing
+	enum class MouseEditMode {
+		NoEditing,
+		DragEditing,
+		SizeEditing
 	};
 
-	enum MouseSizeMode {
-		kSizeModeNone = 0,
-		kSizeModeBottomRight,
-		kSizeModeBottomLeft,
-		kSizeModeTopRight,
-		kSizeModeTopLeft,
-		kSizeModeLeft,
-		kSizeModeRight,
-		kSizeModeTop,
-		kSizeModeBottom
+	enum class MouseSizeMode {
+		None,
+		BottomRight,
+		BottomLeft,
+		TopRight,
+		TopLeft,
+		Left,
+		Right,
+		Top,
+		Bottom
 	};
 
 	void invalidSelection ();
@@ -111,8 +111,8 @@ protected:
 	bool editing {true};
 	bool autosizing {true};
 	bool inlineAttrTextEditOpen {false};
-	MouseEditMode mouseEditMode {kNoEditing};
-	MouseSizeMode mouseSizeMode {kSizeModeNone};
+	MouseEditMode mouseEditMode {MouseEditMode::NoEditing};
+	MouseSizeMode mouseSizeMode {MouseSizeMode::None};
 	CPoint mouseStartPoint;
  
 	SharedPointer<UIUndoManager> undoManger;
