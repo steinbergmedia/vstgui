@@ -955,8 +955,31 @@ void UIEditView::doSizeEditingMove (CPoint& where)
 		}
 		default: break;
 	}
-
+	std::vector<bool> oldAutosizeState;
+	if (!autosizing)
+	{
+		for (auto& view : *selection)
+		{
+			if (auto container = view->asViewContainer ())
+			{
+				oldAutosizeState.emplace_back (container->getAutosizingEnabled ());
+				container->setAutosizingEnabled (false);
+			}
+		}
+	}
 	selection->sizeBy (diff);
+	if (!autosizing)
+	{
+		size_t index = 0;
+		for (auto& view : *selection)
+		{
+			if (auto container = view->asViewContainer ())
+			{
+				container->setAutosizingEnabled (oldAutosizeState[index]);
+				++index;
+			}
+		}
+	}
 	mouseStartPoint = where;
 	if (lines)
 	{
