@@ -138,12 +138,14 @@ set(${target}_common_sources
     platform/iplatformframecallback.h
     platform/iplatformopenglview.h
     platform/iplatformoptionmenu.h
+    platform/iplatformresourceinputstream.h
     platform/iplatformstring.h
     platform/iplatformtextedit.h
     platform/iplatformtimer.h
     platform/iplatformviewlayer.h
     platform/platform_macos.h
     platform/platform_win32.h
+    platform/platform_x11.h
     platform/std_unorderedmap.h
     vstguibase.h
     vstguidebug.cpp
@@ -206,6 +208,8 @@ set(${target}_mac_sources
 
   ##########################################################################################
 set(${target}_win32_sources
+    platform/common/fileresourceinputstream.cpp
+    platform/common/fileresourceinputstream.h
     platform/win32/direct2d/d2dbitmap.cpp
     platform/win32/direct2d/d2dbitmap.h
     platform/win32/direct2d/d2ddrawcontext.cpp
@@ -267,7 +271,6 @@ set(${target}_linux_sources
     platform/linux/x11timer.h
     platform/linux/x11utils.cpp
     platform/linux/x11utils.h
-    platform/platform_x11.h
 )
 
 ##########################################################################################

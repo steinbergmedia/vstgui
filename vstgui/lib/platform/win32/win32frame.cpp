@@ -18,6 +18,7 @@
 #include "win32datapackage.h"
 #include "win32dragging.h"
 #include "../iplatformresourceinputstream.h"
+#include "../common/fileresourceinputstream.h"
 #include "../../cdropsource.h"
 #include "../../cgradient.h"
 
@@ -1025,10 +1026,32 @@ private:
 };
 
 //-----------------------------------------------------------------------------
+static std::function<IPlatformResourceInputStream::Ptr (const CResourceDescription& desc)>
+    gCreateResourceInputStream =
+        [] (const CResourceDescription& desc) { return WinResourceInputStream::create (desc); };
+
+//-----------------------------------------------------------------------------
+void IWin32PlatformFrame::setResourceBasePath (const UTF8String& _basePath)
+{
+	UTF8String basePath (_basePath);
+	if (!UTF8StringView (basePath).endsWith ("\\"))
+		basePath += "\\";
+	gCreateResourceInputStream = [basePath] (const CResourceDescription& desc) {
+		IPlatformResourceInputStream::Ptr result = nullptr;
+		if (desc.type == CResourceDescription::kIntegerType)
+			return result;
+		UTF8String path (basePath);
+		path += desc.u.name;
+		return FileResourceInputStream::create (path.getString ());
+	};
+}
+
+//-----------------------------------------------------------------------------
 auto IPlatformResourceInputStream::create (const CResourceDescription& desc) -> Ptr
 {
-	return WinResourceInputStream::create (desc);
+	return gCreateResourceInputStream (desc);
 }
+
 
 } // namespace
 
