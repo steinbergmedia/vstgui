@@ -21,6 +21,8 @@ class IWin32PlatformFrame
 {
 public:
 	virtual HWND getHWND () const = 0;
+
+	static void setResourceBasePath (const UTF8String& basePath);
 };
 
 //-----------------------------------------------------------------------------

@@ -1,5 +1,5 @@
 ###########################################################################################
-get_filename_component(PkgInfoResource "cmake/resources/PkgInfo" ABSOLUTE)
+get_filename_component(PkgInfoResource "${CMAKE_CURRENT_SOURCE_DIR}/cmake/resources/PkgInfo" ABSOLUTE)
 
 ###########################################################################################
 if(LINUX)
