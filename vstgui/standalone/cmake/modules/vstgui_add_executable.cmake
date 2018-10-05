@@ -10,8 +10,8 @@ endif(LINUX)
 function(vstgui_add_executable target sources resources)
 
   if(MSVC)
-    add_executable(${target} ${sources})
-    set_target_properties(${target} PROPERTIES LINK_FLAGS "/SUBSYSTEM:windows /INCLUDE:wWinMain")
+    add_executable(${target} WIN32 ${sources})
+    set_target_properties(${target} PROPERTIES LINK_FLAGS "/INCLUDE:wWinMain")
   endif(MSVC)
 
   if(LINUX)
