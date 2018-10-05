@@ -1,6 +1,7 @@
 set(TargetName ImageStitcher)
 
 set(${TargetName}_sources
+  Readme.md
   source/app.cpp
   source/document.cpp
   source/document.h
