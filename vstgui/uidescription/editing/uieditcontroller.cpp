@@ -1620,16 +1620,20 @@ void UIEditController::beginLiveColorChange (UTF8StringPtr colorName)
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIEditController::performLiveColorChange (UTF8StringPtr colorName, const CColor& newColor)
+void UIEditController::performLiveColorChange (UTF8StringPtr _colorName, const CColor& newColor)
 {
-	IAction* action = new ColorChangeAction (editDescription, colorName, newColor, false, true);
+	std::string colorName (_colorName);
+
+	IAction* action =
+	    new ColorChangeAction (editDescription, colorName.data (), newColor, false, true);
 	action->perform ();
 	delete action;
 
 	std::list<CView*> views;
 	getTemplateViews (views);
 
-	action = new MultipleAttributeChangeAction (editDescription, views, IViewCreator::kColorType, colorName, colorName);
+	action = new MultipleAttributeChangeAction (editDescription, views, IViewCreator::kColorType,
+	                                            colorName.data (), colorName.data ());
 	action->perform ();
 	delete action;
 }
