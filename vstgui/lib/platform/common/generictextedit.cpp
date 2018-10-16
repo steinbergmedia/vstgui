@@ -604,8 +604,6 @@ void STBTextEditView::calcCursorSizes ()
 
 	auto platformFont = getFont ()->getPlatformFont ();
 	assert (platformFont);
-	auto fontPainter = platformFont->getPainter ();
-	assert (fontPainter);
 
 	cursorHeight = platformFont->getAscent () + platformFont->getDescent ();
 	auto viewHeight = getViewSize ().getHeight ();
