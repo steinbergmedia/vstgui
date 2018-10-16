@@ -292,7 +292,8 @@ void NSViewOptionMenu::popup (COptionMenu* optionMenu, const Callback& callback)
 		[[nsMenu itemWithTag:static_cast<NSInteger> (optionMenu->getCurrentIndex (true))]
 		    setState:NSControlStateValueOn];
 	}
-
+	nsMenu.minimumWidth = cellFrameRect.size.width;
+	
 	NSView* menuContainer = [[NSView alloc] initWithFrame:cellFrameRect];
 	[view addSubview:menuContainer];
 
