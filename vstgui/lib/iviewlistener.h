@@ -12,7 +12,8 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-/// @brief View Listener Interface
+/** @brief View Listener Interface
+ */
 //-----------------------------------------------------------------------------
 class IViewListener
 {
@@ -28,7 +29,8 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-/// @brief ViewContainer Listener Interface
+/** @brief ViewContainer Listener Interface
+ */
 //-----------------------------------------------------------------------------
 class IViewContainerListener
 {
@@ -42,7 +44,10 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-/// @brief View Mouse Listener Interface
+/** @brief View Mouse Listener Interface
+ *
+ *	@ingroup new_in_4_7
+ */
 //-----------------------------------------------------------------------------
 class IViewMouseListener
 {
@@ -58,7 +63,8 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-/// @brief View Listener Interface Adapter
+/** @brief View Listener Interface Adapter
+ */
 //-----------------------------------------------------------------------------
 class ViewListenerAdapter : public IViewListener
 {
@@ -72,7 +78,8 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-/// @brief ViewContainer Listener Interface Adapter
+/** @brief ViewContainer Listener Interface Adapter
+ */
 //-----------------------------------------------------------------------------
 class ViewContainerListenerAdapter : public IViewContainerListener
 {
@@ -84,7 +91,10 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-/// @brief View Mouse Listener Interface Adapter
+/** @brief View Mouse Listener Interface Adapter
+ *
+ *	@ingroup new_in_4_7
+ */
 //-----------------------------------------------------------------------------
 class ViewMouseListenerAdapter : public IViewMouseListener
 {

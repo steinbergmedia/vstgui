@@ -30,9 +30,9 @@ Currently VSTGUI compiles on
 - 8 (32 and 64 bit)
 - 10 (32 and 64 bit)
 \par Apple Mac OS X (with gcc 4.0/4.2 or Clang 2.0)
-- 10.6 - 10.12 (32 and 64 bit)
+- 10.8 - 10.14 (32 and 64 bit)
 \par Apple iOS
-- 7.0 - 10.0 (32 and 64 bit)
+- 7.0 - 12.0 (32 and 64 bit)
 \par Linux (with gcc >= 5.4 or clang >= 3.8)
 - Ubuntu 2016.04 or newer
 
@@ -68,13 +68,17 @@ to your IDE project and add a search path to the parent of the root folder of vs
 - Accelerate
 - QuartzCore
 
-\par On Linux you have to install gtkmm3 and their dependencies:
+\par On Linux you have to install xcb, freetype, fontconfig and cairo
 
-Ubuntu based distribution:
-- libgtkmm-3.0-dev
+Debian/Ubuntu based distribution:
 
-@verbatim
-sudo apt-get install libgtkmm-3.0-dev
-@endverbatim
+- libx11-xcb-dev
+- libxcb-util-dev
+- libxcb-cursor-dev
+- libxcb-xkb-dev
+- libxkbcommon-dev
+- libxkbcommon-x11-dev
+- libfontconfig1-dev
+- libcairo2-dev
 
 */
