@@ -17,8 +17,6 @@
 #include "win32support.h"
 #include "win32datapackage.h"
 #include "win32dragging.h"
-#include "../iplatformresourceinputstream.h"
-#include "../common/fileresourceinputstream.h"
 #include "../../cdropsource.h"
 #include "../../cgradient.h"
 
@@ -970,88 +968,6 @@ CGradient* CGradient::create (const ColorStopMap& colorStopMap)
 {
 	return new CGradient (colorStopMap);
 }
-
-//-----------------------------------------------------------------------------
-class WinResourceInputStream : public IPlatformResourceInputStream
-{
-public:
-	using ResourceStreamPtr = std::unique_ptr<ResourceStream>;
-	static Ptr create (const CResourceDescription& desc)
-	{
-		auto stream = ResourceStreamPtr (new ResourceStream ());
-		if (stream->open (desc, "DATA"))
-		{
-			return Ptr (new WinResourceInputStream (std::move (stream)));
-		}
-		return nullptr;
-	}
-
-private:
-	WinResourceInputStream (ResourceStreamPtr&& stream) : stream (std::move (stream)) {}
-
-	uint32_t readRaw (void* buffer, uint32_t size) override
-	{
-		ULONG read = 0;
-		if (stream->Read (buffer, size, &read) == S_OK)
-			return read;
-		return kStreamIOError;
-	}
-	
-	int64_t seek (int64_t pos, SeekMode mode) override
-	{
-		DWORD dwOrigin;
-		switch (mode)
-		{
-			case SeekMode::Set: dwOrigin = STREAM_SEEK_SET; break;
-			case SeekMode::Current: dwOrigin = STREAM_SEEK_CUR; break;
-			case SeekMode::End: dwOrigin = STREAM_SEEK_END; break;
-		}
-		LARGE_INTEGER li;
-		li.QuadPart = pos;
-		if (stream->Seek (li, dwOrigin, 0) == S_OK)
-			return tell ();
-		return kStreamSeekError;
-	}
-	
-	int64_t tell () override
-	{		
-		ULARGE_INTEGER pos;
-		LARGE_INTEGER dummy = {};
-		if (stream->Seek (dummy, STREAM_SEEK_CUR, &pos) == S_OK)
-			return static_cast<int64_t> (pos.QuadPart);
-		return kStreamSeekError;
-	}
-
-	ResourceStreamPtr stream;
-};
-
-//-----------------------------------------------------------------------------
-static std::function<IPlatformResourceInputStream::Ptr (const CResourceDescription& desc)>
-    gCreateResourceInputStream =
-        [] (const CResourceDescription& desc) { return WinResourceInputStream::create (desc); };
-
-//-----------------------------------------------------------------------------
-void IWin32PlatformFrame::setResourceBasePath (const UTF8String& _basePath)
-{
-	UTF8String basePath (_basePath);
-	if (!UTF8StringView (basePath).endsWith ("\\"))
-		basePath += "\\";
-	gCreateResourceInputStream = [basePath] (const CResourceDescription& desc) {
-		IPlatformResourceInputStream::Ptr result = nullptr;
-		if (desc.type == CResourceDescription::kIntegerType)
-			return result;
-		UTF8String path (basePath);
-		path += desc.u.name;
-		return FileResourceInputStream::create (path.getString ());
-	};
-}
-
-//-----------------------------------------------------------------------------
-auto IPlatformResourceInputStream::create (const CResourceDescription& desc) -> Ptr
-{
-	return gCreateResourceInputStream (desc);
-}
-
 
 } // namespace
 
