@@ -58,3 +58,5 @@
 #include "lib/animation/animations.cpp"
 #include "lib/animation/animator.cpp"
 #include "lib/animation/timingfunctions.cpp"
+
+#include "lib/platform/common/fileresourceinputstream.cpp"
