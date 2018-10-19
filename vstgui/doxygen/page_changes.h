@@ -92,15 +92,6 @@ Note: All current deprecated methods will be removed in the next version. So mak
 
 @section code_changes Changes for existing VSTGUI code
 
-@subsection code_changes_4_7_to_4_8 VSTGUI 4.7 -> VSTGUI 4.8
-
-- IDataBrowserDelegate is now a real virtual interface class, use DataBrowserDelegateAdapter instead if you get compile/linker errors.
-- renamed the following interface adapter classes :
-	- IViewListenerAdapter -> ViewListenerAdapter
-	- IViewContainerListenerAdapter -> ViewContainerListenerAdapter
-	- IViewMouseListenerAdapter -> ViewMouseListenerAdapter
-	- IGenericStringListDataBrowserSourceSelectionChanged -> GenericStringListDataBrowserSourceSelectionChanged
-
 @subsection code_changes_4_6_to_4_7 VSTGUI 4.6 -> VSTGUI 4.7
 
 - CView::doDrag is deprecated, instead use the asynchronous variant of it : CView::doDrag ;-)
@@ -108,6 +99,12 @@ Note: All current deprecated methods will be removed in the next version. So mak
 - the CControlEnum is gone and is moved into the classes where they are used: CParamDisplay/COptionMenu/CTextEdit/CSlider
 - CControl::kMessageTagWillChange and CControl::kMessageTagDidChange is gone, use IControlListener instead
 - COptionMenu::popup has changed behaviour and got a callback function that will be called when the popup is closed. The return of COptionMenu::popup now only indicates if the popup was shown.
+- IDataBrowserDelegate is now a real virtual interface class, use DataBrowserDelegateAdapter instead if you get compile/linker errors.
+- renamed the following interface adapter classes :
+	- IViewListenerAdapter -> ViewListenerAdapter
+	- IViewContainerListenerAdapter -> ViewContainerListenerAdapter
+	- IViewMouseListenerAdapter -> ViewMouseListenerAdapter
+	- IGenericStringListDataBrowserSourceSelectionChanged -> GenericStringListDataBrowserSourceSelectionChanged
 
 @subsection code_changes_4_3_to_4_5 VSTGUI 4.3 -> VSTGUI 4.5
 
