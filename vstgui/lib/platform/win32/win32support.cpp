@@ -7,6 +7,8 @@
 #if WINDOWS
 
 #include "../../vstkeycode.h"
+#include "../common/fileresourceinputstream.h"
+#include "../platform_win32.h"
 
 #include <d2d1.h>
 #include <dwrite.h>
@@ -453,6 +455,102 @@ Optional<VstKeyCode> keyMessageToKeyCode (WPARAM wParam, LPARAM lParam)
 	}
 	return {};
 }
+
+//-----------------------------------------------------------------------------
+auto WinResourceInputStream::create (const CResourceDescription& desc) -> Ptr
+{
+	auto stream = ResourceStreamPtr (new ResourceStream ());
+	if (stream->open (desc, "DATA"))
+	{
+		return Ptr (new WinResourceInputStream (std::move (stream)));
+	}
+	return nullptr;
+}
+
+//-----------------------------------------------------------------------------
+WinResourceInputStream::WinResourceInputStream (ResourceStreamPtr&& stream)
+: stream (std::move (stream))
+{
+}
+
+//-----------------------------------------------------------------------------
+uint32_t WinResourceInputStream::readRaw (void* buffer, uint32_t size)
+{
+	ULONG read = 0;
+	if (stream->Read (buffer, size, &read) == S_OK)
+		return read;
+	return kStreamIOError;
+}
+
+//-----------------------------------------------------------------------------
+int64_t WinResourceInputStream::seek (int64_t pos, SeekMode mode)
+{
+	DWORD dwOrigin;
+	switch (mode)
+	{
+		case SeekMode::Set: dwOrigin = STREAM_SEEK_SET; break;
+		case SeekMode::Current: dwOrigin = STREAM_SEEK_CUR; break;
+		case SeekMode::End: dwOrigin = STREAM_SEEK_END; break;
+	}
+	LARGE_INTEGER li;
+	li.QuadPart = pos;
+	if (stream->Seek (li, dwOrigin, 0) == S_OK)
+		return tell ();
+	return kStreamSeekError;
+}
+
+//-----------------------------------------------------------------------------
+int64_t WinResourceInputStream::tell ()
+{
+	ULARGE_INTEGER pos;
+	LARGE_INTEGER dummy = {};
+	if (stream->Seek (dummy, STREAM_SEEK_CUR, &pos) == S_OK)
+		return static_cast<int64_t> (pos.QuadPart);
+	return kStreamSeekError;
+}
+
+//-----------------------------------------------------------------------------
+static UTF8String gWinResourceBasePath;
+
+//-----------------------------------------------------------------------------
+Optional<UTF8String> WinResourceInputStream::getBasePath ()
+{
+	if (!gWinResourceBasePath.empty ())
+		return {UTF8String (gWinResourceBasePath)};
+	return {};
+}
+
+//-----------------------------------------------------------------------------
+static std::function<IPlatformResourceInputStream::Ptr (const CResourceDescription& desc)>
+    gCreateResourceInputStream =
+        [] (const CResourceDescription& desc) { return WinResourceInputStream::create (desc); };
+
+//-----------------------------------------------------------------------------
+void IWin32PlatformFrame::setResourceBasePath (const UTF8String& _basePath)
+{
+	gWinResourceBasePath = _basePath;
+	if (!UTF8StringView (gWinResourceBasePath).endsWith ("\\"))
+		gWinResourceBasePath += "\\";
+	gCreateResourceInputStream = [] (const CResourceDescription& desc) {
+		IPlatformResourceInputStream::Ptr result = nullptr;
+		if (desc.type == CResourceDescription::kStringType)
+		{
+			if (auto path = WinResourceInputStream::getBasePath ())
+			{
+				*path += desc.u.name;
+				result = FileResourceInputStream::create (path->getString ());
+			}
+		}
+		return result;
+	};
+}
+
+//-----------------------------------------------------------------------------
+auto IPlatformResourceInputStream::create (const CResourceDescription& desc) -> Ptr
+{
+	return gCreateResourceInputStream (desc);
+}
+
 
 /// @endcond ignore
 
