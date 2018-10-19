@@ -218,7 +218,11 @@ public:
 	: editController (editController)
 	{}
 
-	~UIZoomSettingController () override = default;
+	~UIZoomSettingController () noexcept override
+	{
+		if (zoomValueControl)
+			viewWillDelete (zoomValueControl);
+	}
 
 	void restoreSetting (const UIAttributes& attributes)
 	{
