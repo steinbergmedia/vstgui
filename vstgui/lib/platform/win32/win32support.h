@@ -11,6 +11,7 @@
 
 #include "../../cbitmap.h"
 #include "../../optional.h"
+#include "../iplatformresourceinputstream.h"
 #include <algorithm>
 #include <windows.h>
 #include <objidl.h>
@@ -139,6 +140,25 @@ protected:
 	uint32_t streamPos;
 	uint32_t resSize;
 	LONG _refcount;
+};
+
+//-----------------------------------------------------------------------------
+class WinResourceInputStream : public IPlatformResourceInputStream
+{
+public:
+	using ResourceStreamPtr = std::unique_ptr<ResourceStream>;
+	static Ptr create (const CResourceDescription& desc);
+
+	static Optional<UTF8String> getBasePath ();
+
+private:
+	WinResourceInputStream (ResourceStreamPtr&& stream);
+
+	uint32_t readRaw (void* buffer, uint32_t size) override;
+	int64_t seek (int64_t pos, SeekMode mode) override;
+	int64_t tell () override;
+
+	ResourceStreamPtr stream;
 };
 
 /// @endcond
