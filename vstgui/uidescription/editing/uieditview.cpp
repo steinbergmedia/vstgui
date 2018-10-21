@@ -84,7 +84,7 @@ void UIEditViewOverlay::viewSizeChanged (CView* view, const CRect& oldSize)
 }
 
 //----------------------------------------------------------------------------------------------------
-class UISelectionView : public UIEditViewOverlay
+class UISelectionView : public UIEditViewOverlay, public UISelectionListenerAdapter
 //----------------------------------------------------------------------------------------------------
 {
 public:
@@ -94,8 +94,14 @@ public:
 private:
 	void draw (CDrawContext* pContext) override;
 	void drawResizeHandle (const CPoint& p, CDrawContext* pContext);
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
-	
+
+	void selectionWillChange (UISelection* selection) override { onSelectionChanged (); }
+	void selectionDidChange (UISelection* selection) override { onSelectionChanged (); }
+	void selectionViewsWillChange (UISelection* selection) override { onSelectionChanged (); }
+	void selectionViewsDidChange (UISelection* selection) override { onSelectionChanged (); }
+
+	void onSelectionChanged ();
+
 	SharedPointer<UISelection> selection;
 	CColor selectionColor;
 	CCoord handleInset;
@@ -108,13 +114,13 @@ UISelectionView::UISelectionView (CViewContainer* editView, UISelection* selecti
 , selectionColor (selectionColor)
 , handleInset (handleSize / 2.)
 {
-	selection->addDependency (this);
+	selection->registerListener (this);
 }
 
 //----------------------------------------------------------------------------------------------------
 UISelectionView::~UISelectionView ()
 {
-	selection->removeDependency (this);
+	selection->unregisterListener (this);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -184,22 +190,17 @@ void UISelectionView::draw (CDrawContext* pContext)
 }
 
 //----------------------------------------------------------------------------------------------------
-CMessageResult UISelectionView::notify (CBaseObject* sender, IdStringPtr message)
+void UISelectionView::onSelectionChanged ()
 {
-	if (message == UISelection::kMsgSelectionChanged || message == UISelection::kMsgSelectionWillChange || message == UISelection::kMsgSelectionViewChanged || message == UISelection::kMsgSelectionViewWillChange)
+	CPoint p;
+	frameToLocal (p);
+	for (auto view : *selection)
 	{
-		CPoint p;
-		frameToLocal (p);
-		for (auto view : *selection)
-		{
-			CRect vs = selection->getGlobalViewCoordinates (view);
-			vs.offsetInverse (p);
-			vs.extend (handleInset + 2, handleInset + 2);
-			invalidRect (vs);
-		}
-		return kMessageNotified;
+		CRect vs = selection->getGlobalViewCoordinates (view);
+		vs.offsetInverse (p);
+		vs.extend (handleInset + 2, handleInset + 2);
+		invalidRect (vs);
 	}
-	return kMessageUnknown;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -372,15 +373,7 @@ UIUndoManager* UIEditView::getUndoManager ()
 //----------------------------------------------------------------------------------------------------
 void UIEditView::setSelection (UISelection* inSelection)
 {
-	if (selection)
-	{
-		selection->removeDependency (this);
-	}
 	selection = inSelection;
-	if (selection)
-	{
-		selection->addDependency (this);
-	}
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -389,7 +382,6 @@ UISelection* UIEditView::getSelection ()
 	if (selection == nullptr)
 	{
 		selection = makeOwned<UISelection> ();
-		selection->addDependency (this);
 	}
 	return selection;
 }
@@ -473,11 +465,6 @@ CMessageResult UIEditView::notify (CBaseObject* sender, IdStringPtr message)
 				getParentView ()->invalid ();
 			}
 		}
-	}
-	else if (message == UISelection::kMsgSelectionViewWillChange || message == UISelection::kMsgSelectionViewChanged)
-	{
-		invalidSelection ();
-		return kMessageNotified;
 	}
 	return CViewContainer::notify (sender, message);
 }
@@ -848,7 +835,7 @@ void UIEditView::doKeySize (const CPoint& delta)
 	{
 		if (!moveSizeOperation)
 			moveSizeOperation = new ViewSizeChangeOperation (selection, true, autosizing);
-		getSelection ()->changed (UISelection::kMsgSelectionViewWillChange);
+		getSelection ()->viewsWillChange ();
 		for (auto view : *selection)
 		{
 			CRect viewSize = view->getViewSize ();
@@ -858,7 +845,7 @@ void UIEditView::doKeySize (const CPoint& delta)
 			view->setViewSize (viewSize);
 			view->setMouseableArea (viewSize);
 		}
-		getSelection ()->changed (UISelection::kMsgSelectionViewChanged);
+		getSelection ()->viewsDidChange ();
 		getUndoManager ()->pushAndPerform (moveSizeOperation);
 		moveSizeOperation = nullptr;
 	}

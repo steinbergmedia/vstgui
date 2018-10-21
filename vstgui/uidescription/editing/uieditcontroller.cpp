@@ -1228,6 +1228,7 @@ bool UIEditController::doZOrderAction (bool lower)
 //----------------------------------------------------------------------------------------------------
 void UIEditController::doSelectAllChildren ()
 {
+	UISelection::DeferChange dc (*selection);
 	CViewContainer* container = selection->first ()->asViewContainer ();
 	selection->clear ();
 	auto factory = static_cast<const UIViewFactory*> (editDescription->getViewFactory ());

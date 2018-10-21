@@ -8,7 +8,7 @@
 #if VSTGUI_LIVE_EDITING
 
 #include "../../lib/cview.h"
-#include "../../lib/idependency.h"
+#include "../../lib/dispatchlist.h"
 #include <list>
 #include <string>
 
@@ -17,9 +17,32 @@ class UIViewFactory;
 class IUIDescription;
 class OutputStream;
 class InputStream;
+class UISelection;
+
+//------------------------------------------------------------------------
+class IUISelectionListener
+{
+public:
+	virtual ~IUISelectionListener () noexcept = default;
+	
+	virtual void selectionWillChange (UISelection* selection) = 0;
+	virtual void selectionDidChange (UISelection* selection) = 0;
+	virtual void selectionViewsWillChange (UISelection* selection) = 0;
+	virtual void selectionViewsDidChange (UISelection* selection) = 0;
+};
 
 //----------------------------------------------------------------------------------------------------
-class UISelection : public CBaseObject, public IDependency
+class UISelectionListenerAdapter : public IUISelectionListener
+{
+public:
+	void selectionWillChange (UISelection* selection) override {}
+	void selectionDidChange (UISelection* selection) override {}
+	void selectionViewsWillChange (UISelection* selection) override {}
+	void selectionViewsDidChange (UISelection* selection) override {}
+};
+
+//----------------------------------------------------------------------------------------------------
+class UISelection : public CBaseObject
 //----------------------------------------------------------------------------------------------------
 {
 public:
@@ -64,20 +87,42 @@ public:
 
 	void setDragOffset (const CPoint& p) { dragOffset = p; }
 	const CPoint& getDragOffset () const { return dragOffset; }
+
+	void willChange ();
+	void didChange ();
 	
-	static IdStringPtr kMsgSelectionWillChange;
-	static IdStringPtr kMsgSelectionChanged;
-	static IdStringPtr kMsgSelectionViewWillChange;
-	static IdStringPtr kMsgSelectionViewChanged;
+	void viewsWillChange ();
+	void viewsDidChange ();
+
+	void registerListener (IUISelectionListener* listener);
+	void unregisterListener (IUISelectionListener* listener);
 
 	bool store (OutputStream& stream, IUIDescription* uiDescription);
 	bool restore (InputStream& stream, IUIDescription* uiDescription);
+
+	struct DeferChange
+	{
+		DeferChange (UISelection& selection) : selection (selection)
+		{
+			selection.willChange ();
+		}
+		~DeferChange () noexcept
+		{
+			selection.didChange ();
+		}
+	private:
+		UISelection& selection;
+	};
 protected:
 	int32_t style;
 	
 	CPoint dragOffset;
 	
 	UISelectionViewList viewList;
+	DispatchList<IUISelectionListener*> listeners;
+	
+	int32_t inChange {0};
+	int32_t inViewsChange {0};
 };
 
 //----------------------------------------------------------------------------------------------------

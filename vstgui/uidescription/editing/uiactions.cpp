@@ -35,20 +35,20 @@ UTF8StringPtr SizeToFitOperation::getName ()
 //----------------------------------------------------------------------------------------------------
 void SizeToFitOperation::perform ()
 {
-	selection->changed (UISelection::kMsgSelectionViewWillChange);
+	selection->viewsWillChange ();
 	for (auto& element : *this)
 	{
 		element.first->invalid ();
 		element.first->sizeToFit ();
 		element.first->invalid ();
 	}
-	selection->changed (UISelection::kMsgSelectionViewChanged);
+	selection->viewsDidChange ();
 }
 
 //----------------------------------------------------------------------------------------------------
 void SizeToFitOperation::undo ()
 {
-	selection->changed (UISelection::kMsgSelectionViewWillChange);
+	selection->viewsWillChange ();
 	for (auto& element : *this)
 	{
 		element.first->invalid ();
@@ -56,7 +56,7 @@ void SizeToFitOperation::undo ()
 		element.first->setMouseableArea (element.second);
 		element.first->invalid ();
 	}
-	selection->changed (UISelection::kMsgSelectionViewChanged);
+	selection->viewsDidChange ();
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -96,7 +96,7 @@ UTF8StringPtr UnembedViewOperation::getName ()
 //----------------------------------------------------------------------------------------------------
 void UnembedViewOperation::perform ()
 {
-	IDependency::DeferChanges dc (selection);
+	UISelection::DeferChange dc (*selection);
 	selection->remove (containerView);
 	CRect containerViewSize = containerView->getViewSize ();
 	const_reverse_iterator it = rbegin ();
@@ -406,7 +406,7 @@ void DeleteOperation::perform ()
 void DeleteOperation::undo ()
 {
 	selection->clear ();
-	IDependency::DeferChanges dc (selection);
+	UISelection::DeferChange dc (*selection);
 	for (auto& element : *this)
 	{
 		if (element.second.nextView)
@@ -582,7 +582,7 @@ void AttributeChangeAction::updateSelection ()
 	{
 		if (selection->contains (element.first) == false)
 		{
-			IDependency::DeferChanges dc (selection);
+			UISelection::DeferChange dc (*selection);
 			selection->clear ();
 			for (auto& it2 : *this)
 				selection->add (it2.first);
@@ -597,14 +597,14 @@ void AttributeChangeAction::perform ()
 	const IViewFactory* viewFactory = desc->getViewFactory ();
 	UIAttributes attr;
 	attr.setAttribute (attrName, attrValue);
-	selection->changed (UISelection::kMsgSelectionViewWillChange);
+	selection->viewsWillChange ();
 	for (auto& element : *this)
 	{
 		element.first->invalid ();	// we need to invalid before changing anything as the size may change
 		viewFactory->applyAttributeValues (element.first, attr, desc);
 		element.first->invalid ();	// and afterwards also
 	}
-	selection->changed (UISelection::kMsgSelectionViewChanged);
+	selection->viewsDidChange ();
 	updateSelection ();
 }
 
@@ -612,7 +612,7 @@ void AttributeChangeAction::perform ()
 void AttributeChangeAction::undo ()
 {
 	const IViewFactory* viewFactory = desc->getViewFactory ();
-	selection->changed (UISelection::kMsgSelectionViewWillChange);
+	selection->viewsWillChange ();
 	for (auto& element : *this)
 	{
 		UIAttributes attr;
@@ -621,7 +621,7 @@ void AttributeChangeAction::undo ()
 		viewFactory->applyAttributeValues (element.first, attr, desc);
 		element.first->invalid ();	// and afterwards also
 	}
-	selection->changed (UISelection::kMsgSelectionViewChanged);
+	selection->viewsDidChange ();
 	updateSelection ();
 }
 
@@ -1261,8 +1261,9 @@ void HierarchyMoveViewOperation::perform ()
 		it++;
 		currentIndex++;
 	}
+	selection->willChange ();
 	parent->changeViewZOrder (view, up ? currentIndex - 1 : currentIndex + 1);
-	selection->changed (UISelection::kMsgSelectionChanged);
+	selection->didChange ();
 	parent->invalid ();
 }
 

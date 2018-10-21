@@ -18,7 +18,6 @@
 #include "../../lib/iviewlistener.h"
 #include "../../lib/cstring.h"
 #include "../../lib/cgraphicspath.h"
-#include "../../lib/cvstguitimer.h"
 #include <sstream>
 #include <algorithm>
 #include <cassert>
@@ -762,7 +761,7 @@ UIAttributesController::UIAttributesController (IController* baseController, UIS
 , attributeView (nullptr)
 , currentAttributeName (nullptr)
 {
-	selection->addDependency (this);
+	selection->registerListener (this);
 	undoManager->addDependency (this);
 	description->registerListener (this);
 }
@@ -770,7 +769,7 @@ UIAttributesController::UIAttributesController (IController* baseController, UIS
 //----------------------------------------------------------------------------------------------------
 UIAttributesController::~UIAttributesController ()
 {
-	selection->removeDependency (this);
+	selection->unregisterListener (this);
 	undoManager->removeDependency (this);
 	editDescription->unregisterListener (this);
 }
@@ -965,26 +964,38 @@ void UIAttributesController::onUIDescGradientChanged (UIDescription* desc)
 }
 
 //----------------------------------------------------------------------------------------------------
+void UIAttributesController::selectionDidChange (UISelection* selection)
+{
+	if (!rebuildRequested && attributeView)
+	{
+		if (auto frame = attributeView->getFrame ())
+		{
+			if (frame->inEventProcessing ())
+			{
+				rebuildRequested = true;
+				frame->doAfterEventProcessing ([this] () {
+					rebuildAttributesView ();
+					rebuildRequested = false;
+				});
+			}
+		}
+		if (!rebuildRequested)
+			rebuildAttributesView ();
+	}
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIAttributesController::selectionViewsDidChange (UISelection* selection)
+{
+	validateAttributeViews ();
+}
+
+//----------------------------------------------------------------------------------------------------
 CMessageResult UIAttributesController::notify (CBaseObject* sender, IdStringPtr message)
 {
-	if (message == UISelection::kMsgSelectionChanged)
-	{
-		if (timer == nullptr)
-		{
-			timer = makeOwned<CVSTGUITimer> (this, 10u);
-			timer->start ();
-		}
-		return kMessageNotified;
-	}
-	else if (message == UISelection::kMsgSelectionViewChanged || message == UIUndoManager::kMsgChanged)
+	if (message == UIUndoManager::kMsgChanged)
 	{
 		validateAttributeViews ();
-		return kMessageNotified;
-	}
-	else if (message == CVSTGUITimer::kMsgTimer)
-	{
-		rebuildAttributesView ();
-		timer = nullptr;
 		return kMessageNotified;
 	}
 	return kMessageUnknown;

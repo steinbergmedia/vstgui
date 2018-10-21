@@ -25,7 +25,10 @@ class Controller;
 }
 
 //----------------------------------------------------------------------------------------------------
-class UIAttributesController : public CBaseObject, public DelegationController, public UIDescriptionListenerAdapter
+class UIAttributesController : public CBaseObject,
+                               public DelegationController,
+                               public UIDescriptionListenerAdapter,
+                               public UISelectionListenerAdapter
 {
 public:
 	UIAttributesController (IController* baseController, UISelection* selection, UIUndoManager* undoManager, UIDescription* description);
@@ -55,12 +58,14 @@ protected:
 	void onUIDescTemplateChanged (UIDescription* desc) override;
 	void onUIDescGradientChanged (UIDescription* desc) override;
 
+	void selectionDidChange (UISelection* selection) override;
+	void selectionViewsDidChange (UISelection* selection) override;
+
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 
 	SharedPointer<UISelection> selection;
 	SharedPointer<UIUndoManager> undoManager;
 	SharedPointer<UIDescription> editDescription;
-	SharedPointer<CVSTGUITimer> timer;
 	IAction* liveAction;
 
 	using UIAttributeControllerList = std::list<UIAttributeControllers::Controller*>;
@@ -78,6 +83,8 @@ protected:
 	std::string filterString;
 
 	const std::string* currentAttributeName;
+	
+	bool rebuildRequested{false};
 };
 
 } // namespace
