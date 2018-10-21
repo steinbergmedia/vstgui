@@ -147,7 +147,7 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
-class UIViewListDataSource : public UINavigationDataSource, public UIUndoManager::IListener
+class UIViewListDataSource : public UINavigationDataSource, public IUIUndoManagerListener
 {
 public:
 	UIViewListDataSource (CViewContainer* view, const IViewFactory* viewFactory, UISelection* selection, UIUndoManager* undoManager ,GenericStringListDataBrowserSourceSelectionChanged* delegate);
@@ -177,8 +177,8 @@ protected:
 	int32_t dbOnKeyDown (const VstKeyCode& key, CDataBrowser* browser) override;
 	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser) override;
 
-	// UIUndoManager::IListener
-	void onChange (UIUndoManager*) override;
+	// IUIUndoManagerListener
+	void onChange () override;
 
 	CViewContainer* view;
 	const UIViewFactory* viewFactory;
@@ -590,7 +590,7 @@ CMouseEventResult UIViewListDataSource::dbOnMouseDown (const CPoint& where, cons
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIViewListDataSource::onChange (UIUndoManager*)
+void UIViewListDataSource::onChange ()
 {
 	update (view);
 	if (selectedView)
@@ -604,7 +604,7 @@ void UIViewListDataSource::onChange (UIUndoManager*)
 				if (*it == selectedView)
 				{
 					dataBrowser->setSelectedRow (index, true);
-					return kMessageNotified;
+					return;
 				}
 			}
 		}

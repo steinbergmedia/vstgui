@@ -37,7 +37,9 @@ public:
 };
 
 //----------------------------------------------------------------------------------------------------
-class UIColor : protected CColor, public CBaseObject
+class UIColor : public NonAtomicReferenceCounted,
+                public ListenerDispatcher<UIColor, IUIColorListener>,
+                protected CColor
 {
 public:
 	UIColor () : CColor (kTransparentCColor), hue (0), saturation (0), lightness (0) {}
@@ -66,9 +68,6 @@ public:
 	void beginEdit ();
 	void endEdit ();
 
-	void registerListener (IUIColorListener* listener);
-	void unregisterListener (IUIColorListener* listener);
-
 	using CColor::operator==;
 	using CColor::operator!=;
 private:
@@ -83,8 +82,6 @@ private:
 	
 	double hue, saturation, lightness;
 	double r, g, b;
-	
-	DispatchList<IUIColorListener*> listeners;
 };
 
 } // namespace

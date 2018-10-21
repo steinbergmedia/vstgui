@@ -16,10 +16,18 @@
 namespace VSTGUI {
 class IAction;
 class UIGroupAction;
+class UIUndoManager;
 
 //----------------------------------------------------------------------------------------------------
-class UIUndoManager : public CBaseObject,
-                      public GenericChangeT<UIUndoManager>,
+struct IUIUndoManagerListener
+{
+	virtual ~IUIUndoManagerListener () noexcept = default;
+	virtual void onChange () = 0;
+};
+
+//----------------------------------------------------------------------------------------------------
+class UIUndoManager : public NonAtomicReferenceCounted,
+                      public ListenerDispatcher<UIUndoManager, IUIUndoManagerListener>,
                       protected std::list<IAction*>
 {
 public:

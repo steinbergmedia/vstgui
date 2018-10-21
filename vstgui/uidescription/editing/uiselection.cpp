@@ -218,14 +218,14 @@ void UISelection::invalidRects () const
 void UISelection::willChange ()
 {
 	if (++inChange == 1)
-		listeners.forEach ([this] (IUISelectionListener* l) { l->selectionWillChange (this); });
+		dispatchChange ([this] (IUISelectionListener* l) { l->selectionWillChange (this); });
 }
 
 //----------------------------------------------------------------------------------------------------
 void UISelection::didChange ()
 {
 	if (--inChange == 0)
-		listeners.forEach ([this] (IUISelectionListener* l) { l->selectionDidChange (this); });
+		dispatchChange ([this] (IUISelectionListener* l) { l->selectionDidChange (this); });
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -234,7 +234,7 @@ void UISelection::viewsWillChange ()
 	if (++inViewsChange == 1)
 	{
 		invalidRects ();
-		listeners.forEach ([this] (IUISelectionListener* l) { l->selectionViewsWillChange (this); });
+		dispatchChange ([this] (IUISelectionListener* l) { l->selectionViewsWillChange (this); });
 	}
 }
 
@@ -244,20 +244,8 @@ void UISelection::viewsDidChange ()
 	if (--inViewsChange == 0)
 	{
 		invalidRects ();
-		listeners.forEach ([this] (IUISelectionListener* l) { l->selectionViewsDidChange (this); });
+		dispatchChange ([this] (IUISelectionListener* l) { l->selectionViewsDidChange (this); });
 	}
-}
-
-//----------------------------------------------------------------------------------------------------
-void UISelection::registerListener (IUISelectionListener* listener)
-{
-	listeners.add (listener);
-}
-
-//----------------------------------------------------------------------------------------------------
-void UISelection::unregisterListener (IUISelectionListener* listener)
-{
-	listeners.remove (listener);
 }
 
 //----------------------------------------------------------------------------------------------------

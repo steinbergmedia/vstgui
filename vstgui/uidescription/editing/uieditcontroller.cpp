@@ -211,7 +211,7 @@ class UIZoomSettingController : public IController,
                                 public IContextMenuController2,
                                 public ViewMouseListenerAdapter,
                                 public ViewListenerAdapter,
-                                public CBaseObject
+                                public NonAtomicReferenceCounted
 {
 public:
 	UIZoomSettingController (UIEditController* editController)
@@ -741,7 +741,7 @@ bool UIEditController::onCommandMenuItemSelected (CCommandMenuItem* item)
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIEditController::onChange (UIUndoManager*)
+void UIEditController::onChange ()
 {
 	onUndoManagerChanged ();
 }

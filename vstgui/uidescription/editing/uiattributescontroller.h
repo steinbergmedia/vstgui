@@ -25,11 +25,11 @@ class Controller;
 }
 
 //----------------------------------------------------------------------------------------------------
-class UIAttributesController : public CBaseObject,
+class UIAttributesController : public NonAtomicReferenceCounted,
                                public DelegationController,
                                public UIDescriptionListenerAdapter,
                                public UISelectionListenerAdapter,
-                               public UIUndoManager::IListener
+                               public IUIUndoManagerListener
 {
 public:
 	UIAttributesController (IController* baseController, UISelection* selection, UIUndoManager* undoManager, UIDescription* description);
@@ -62,7 +62,7 @@ protected:
 	void selectionDidChange (UISelection* selection) override;
 	void selectionViewsDidChange (UISelection* selection) override;
 
-	void onChange (UIUndoManager*) override;
+	void onChange () override;
 
 	SharedPointer<UISelection> selection;
 	SharedPointer<UIUndoManager> undoManager;

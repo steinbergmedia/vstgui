@@ -47,29 +47,24 @@ private:
 };
 
 //------------------------------------------------------------------------
-template <typename T>
-class GenericChangeT
+template <typename T, typename ListenerInterface>
+class ListenerDispatcher
 {
 public:
 //------------------------------------------------------------------------
-	class IListener
-	{
-	public:
-		virtual void onChange (T* obj) = 0;
-	};
-
-	void registerListener (IListener* listener) { listeners.add (listener); }
-	void unregisterListener (IListener* listener) { listeners.remove (listener); }
+	void registerListener (ListenerInterface* listener) { listeners.add (listener); }
+	void unregisterListener (ListenerInterface* listener) { listeners.remove (listener); }
 
 protected:
-	void dispatchChange ()
+	template<typename Proc>
+	void dispatchChange (Proc proc)
 	{
 		listeners.forEach (
-		    [this] (IListener* listener) { listener->onChange (static_cast<T*> (this)); });
+		    [&] (ListenerInterface* listener) { proc (listener); });
 	}
 
 private:
-	DispatchList<IListener*> listeners;
+	DispatchList<ListenerInterface*> listeners;
 };
 
 //------------------------------------------------------------------------

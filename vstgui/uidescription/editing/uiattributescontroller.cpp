@@ -27,7 +27,7 @@ namespace VSTGUI {
 namespace UIAttributeControllers {
 
 //----------------------------------------------------------------------------------------------------
-class Controller : public CBaseObject, public DelegationController
+class Controller : public NonAtomicReferenceCounted, public DelegationController
 {
 public:
 	Controller (IController* baseController, const std::string& attrName)
@@ -991,7 +991,7 @@ void UIAttributesController::selectionViewsDidChange (UISelection* selection)
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIAttributesController::onChange (UIUndoManager*)
+void UIAttributesController::onChange ()
 {
 	validateAttributeViews ();
 }

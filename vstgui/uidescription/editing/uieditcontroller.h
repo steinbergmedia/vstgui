@@ -23,7 +23,6 @@
 namespace VSTGUI {
 class UIEditView;
 class UISelection;
-class UIUndoManager;
 class UITemplateController;
 class UIEditMenuController;
 class UIGridController;
@@ -41,7 +40,7 @@ class UIEditController : public CBaseObject,
                          public IKeyboardHook,
                          public CommandMenuItemTargetAdapter,
                          public UIDescriptionListenerAdapter,
-                         public UIUndoManager::IListener
+                         public IUIUndoManagerListener
 {
 public:
 	UIEditController (UIDescription* description);
@@ -77,8 +76,8 @@ protected:
 
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 
-	// UIUndoManager::IListener
-	void onChange (UIUndoManager*) override;
+	// IUIUndoManagerListener
+	void onChange () override;
 
 	// IContextMenuController2
 	void appendContextMenuItems (COptionMenu& contextMenu, CView* view, const CPoint& where) override;

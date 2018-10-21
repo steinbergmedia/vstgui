@@ -19,7 +19,7 @@ class UIColorsDataSource;
 class UIColor;
 
 //----------------------------------------------------------------------------------------------------
-class UIColorsController : public CBaseObject, public DelegationController
+class UIColorsController : public NonAtomicReferenceCounted, public DelegationController
 {
 public:
 	UIColorsController (IController* baseController, UIDescription* description, IActionPerformer* actionPerformer);

@@ -42,7 +42,8 @@ public:
 };
 
 //----------------------------------------------------------------------------------------------------
-class UISelection : public CBaseObject
+class UISelection : public NonAtomicReferenceCounted,
+                    public ListenerDispatcher<UISelection, IUISelectionListener>
 //----------------------------------------------------------------------------------------------------
 {
 public:
@@ -94,9 +95,6 @@ public:
 	void viewsWillChange ();
 	void viewsDidChange ();
 
-	void registerListener (IUISelectionListener* listener);
-	void unregisterListener (IUISelectionListener* listener);
-
 	bool store (OutputStream& stream, IUIDescription* uiDescription);
 	bool restore (InputStream& stream, IUIDescription* uiDescription);
 
@@ -119,7 +117,6 @@ protected:
 	CPoint dragOffset;
 	
 	UISelectionViewList viewList;
-	DispatchList<IUISelectionListener*> listeners;
 	
 	int32_t inChange {0};
 	int32_t inViewsChange {0};

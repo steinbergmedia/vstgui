@@ -17,7 +17,7 @@ namespace VSTGUI {
 class UIColor;
 
 //----------------------------------------------------------------------------------------------------
-class UIColorChooserController : public CBaseObject,
+class UIColorChooserController : public NonAtomicReferenceCounted,
                                  public DelegationController,
                                  public UIColorListenerAdapter
 {

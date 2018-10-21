@@ -89,7 +89,7 @@ void UIUndoManager::pushAndPerform (IAction* action)
 	position = end ();
 	position--;
 	action->perform ();
-	dispatchChange ();
+	dispatchChange ([] (IUIUndoManagerListener* l) { l->onChange (); });
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -99,7 +99,7 @@ void UIUndoManager::performUndo ()
 	{
 		(*position)->undo ();
 		position--;
-		dispatchChange ();
+		dispatchChange ([] (IUIUndoManagerListener* l) { l->onChange (); });
 	}
 }
 
@@ -112,7 +112,7 @@ void UIUndoManager::performRedo ()
 		if (position != end ())
 		{
 			(*position)->perform ();
-			dispatchChange ();
+			dispatchChange ([] (IUIUndoManagerListener* l) { l->onChange (); });
 		}
 	}
 }
@@ -164,7 +164,7 @@ void UIUndoManager::clear ()
 	emplace_back (new UndoStackTop);
 	position = end ();
 	savePosition = begin ();
-	dispatchChange ();
+	dispatchChange ([] (IUIUndoManagerListener* l) { l->onChange (); });
 }
 
 //----------------------------------------------------------------------------------------------------

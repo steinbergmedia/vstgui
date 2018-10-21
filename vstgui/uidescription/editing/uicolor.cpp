@@ -103,31 +103,19 @@ void UIColor::setAlpha (double na)
 //----------------------------------------------------------------------------------------------------
 void UIColor::beginEdit ()
 {
-	listeners.forEach ([this] (IUIColorListener* l) { l->uiColorBeginEditing (this); });
+	dispatchChange ([this] (IUIColorListener* l) { l->uiColorBeginEditing (this); });
 }
 
 //----------------------------------------------------------------------------------------------------
 void UIColor::endEdit ()
 {
-	listeners.forEach ([this] (IUIColorListener* l) { l->uiColorEndEditing (this); });
+	dispatchChange ([this] (IUIColorListener* l) { l->uiColorEndEditing (this); });
 }
 
 //----------------------------------------------------------------------------------------------------
 void UIColor::editChange ()
 {
-	listeners.forEach ([this] (IUIColorListener* l) { l->uiColorChanged (this); });
-}
-
-//----------------------------------------------------------------------------------------------------
-void UIColor::registerListener (IUIColorListener* listener)
-{
-	listeners.add (listener);
-}
-
-//----------------------------------------------------------------------------------------------------
-void UIColor::unregisterListener (IUIColorListener* listener)
-{
-	listeners.remove (listener);
+	dispatchChange ([this] (IUIColorListener* l) { l->uiColorChanged (this); });
 }
 
 } // VSTGUI
