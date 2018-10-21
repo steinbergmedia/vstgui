@@ -486,6 +486,38 @@
 		<color name="textbutton.text" rgba="#000000ff"/>
 		<color name="textbutton.text.highlighted" rgba="#ffffffff"/>
 	</colors>
+	<gradients>
+		<gradient name="Default TextButton Gradient">
+			<color-stop rgba="#dcdcdcff" start="0"/>
+			<color-stop rgba="#b4b4b4ff" start="1"/>
+		</gradient>
+		<gradient name="Default TextButton Gradient Highlighted">
+			<color-stop rgba="#b4b4b4ff" start="0"/>
+			<color-stop rgba="#646464ff" start="1"/>
+		</gradient>
+		<gradient name="GradientView">
+			<color-stop rgba="#cdcdcdff" start="0"/>
+			<color-stop rgba="#d2d2d2ff" start="1"/>
+		</gradient>
+		<gradient name="Toolbar">
+			<color-stop rgba="#454b54ff" start="0"/>
+			<color-stop rgba="#3f444bff" start="0.511184210526315796485619102895725518465"/>
+		</gradient>
+		<gradient name="Transparent">
+			<color-stop rgba="#ffffff00" start="0"/>
+			<color-stop rgba="#ffffff00" start="1"/>
+		</gradient>
+		<gradient name="shading.light">
+			<color-stop rgba="#edededff" start="0"/>
+			<color-stop rgba="#cacacaff" start="0.5"/>
+			<color-stop rgba="#bfbfbfff" start="1"/>
+		</gradient>
+		<gradient name="tabswitch.selected">
+			<color-stop rgba="#32c3ffff" start="0"/>
+			<color-stop rgba="#0f79ffff" start="0.689999997615814208984375"/>
+			<color-stop rgba="#3991ffff" start="1"/>
+		</gradient>
+	</gradients>
 	<control-tags>
 		<control-tag name="attributes.boolean" tag="0"/>
 		<control-tag name="attributes.editfield" tag="0"/>
@@ -849,36 +881,4 @@
 		<view back-color="db.font" background-offset="0, 0" class="CTextLabel" default-value="0.5" font="control.small.font" font-antialias="true" font-color="~ BlackCColor" frame-color="db.font" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="15, 225" round-rect-radius="6" shadow-color="editView.view.selection" size="70, 15" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="right" text-inset="0, 0" text-rotation="0" text-shadow-offset="1, 1" title="Color Position :" transparent="true" value-precision="2" wants-focus="false" wheel-inc-value="0.1"/>
 		<view autosize="right " back-color="~ TransparentCColor" background-offset="0, 0" class="CTextEdit" control-tag="gradients.edit.position" default-value="0.5" font="control.small.font" font-antialias="true" font-color="~ BlackCColor" frame-color="control.frame" frame-width="-1" immediate-text-change="false" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="90, 225" round-rect-radius="2" secure-style="false" shadow-color="editView.view.selection" size="40, 15" style-3D-in="false" style-3D-out="false" style-doubleclick="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="true" style-shadow-text="false" text-alignment="center" text-inset="5, 0" text-rotation="0" text-shadow-offset="1, 1" title="0.1234" transparent="false" value-precision="4" wants-focus="true" wheel-inc-value="0.1"/>
 	</template>
-	<gradients>
-		<gradient name="Default TextButton Gradient">
-			<color-stop rgba="#dcdcdcff" start="0"/>
-			<color-stop rgba="#b4b4b4ff" start="1"/>
-		</gradient>
-		<gradient name="Default TextButton Gradient Highlighted">
-			<color-stop rgba="#b4b4b4ff" start="0"/>
-			<color-stop rgba="#646464ff" start="1"/>
-		</gradient>
-		<gradient name="GradientView">
-			<color-stop rgba="#cdcdcdff" start="0"/>
-			<color-stop rgba="#d2d2d2ff" start="1"/>
-		</gradient>
-		<gradient name="Toolbar">
-			<color-stop rgba="#454b54ff" start="0"/>
-			<color-stop rgba="#3f444bff" start="0.511184210526315796485619102895725518465"/>
-		</gradient>
-		<gradient name="Transparent">
-			<color-stop rgba="#ffffff00" start="0"/>
-			<color-stop rgba="#ffffff00" start="1"/>
-		</gradient>
-		<gradient name="shading.light">
-			<color-stop rgba="#edededff" start="0"/>
-			<color-stop rgba="#cacacaff" start="0.5"/>
-			<color-stop rgba="#bfbfbfff" start="1"/>
-		</gradient>
-		<gradient name="tabswitch.selected">
-			<color-stop rgba="#32c3ffff" start="0"/>
-			<color-stop rgba="#0f79ffff" start="0.689999997615814208984375"/>
-			<color-stop rgba="#3991ffff" start="1"/>
-		</gradient>
-	</gradients>
 </vstgui-ui-description>
