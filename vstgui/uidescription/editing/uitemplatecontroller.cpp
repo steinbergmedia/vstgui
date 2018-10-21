@@ -147,7 +147,7 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
-class UIViewListDataSource : public UINavigationDataSource
+class UIViewListDataSource : public UINavigationDataSource, public UIUndoManager::IListener
 {
 public:
 	UIViewListDataSource (CViewContainer* view, const IViewFactory* viewFactory, UISelection* selection, UIUndoManager* undoManager ,GenericStringListDataBrowserSourceSelectionChanged* delegate);
@@ -171,13 +171,14 @@ protected:
 		return headerTitle;
 	}
 	
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
-
 	CCoord calculateSubViewWidth (CViewContainer* view) const;
 	void dbSelectionChanged (CDataBrowser* browser) override;
 	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) override;
 	int32_t dbOnKeyDown (const VstKeyCode& key, CDataBrowser* browser) override;
 	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser) override;
+
+	// UIUndoManager::IListener
+	void onChange (UIUndoManager*) override;
 
 	CViewContainer* view;
 	const UIViewFactory* viewFactory;
@@ -443,13 +444,13 @@ UIViewListDataSource::UIViewListDataSource (CViewContainer* view, const IViewFac
 , inUpdate (false)
 {
 	update (view);
-	undoManager->addDependency (this);
+	undoManager->registerListener (this);
 }
 
 //----------------------------------------------------------------------------------------------------
 UIViewListDataSource::~UIViewListDataSource ()
 {
-	undoManager->removeDependency (this);
+	undoManager->unregisterListener (this);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -589,35 +590,31 @@ CMouseEventResult UIViewListDataSource::dbOnMouseDown (const CPoint& where, cons
 }
 
 //----------------------------------------------------------------------------------------------------
-CMessageResult UIViewListDataSource::notify (CBaseObject* sender, IdStringPtr message)
+void UIViewListDataSource::onChange (UIUndoManager*)
 {
-	if (message == UIUndoManager::kMsgChanged)
+	update (view);
+	if (selectedView)
 	{
-		update (view);
-		if (selectedView)
+		if (dataBrowser)
 		{
-			if (dataBrowser)
+			int32_t index = 0;
+			for (std::vector<CView*>::const_iterator it = subviews.begin (); it != subviews.end ();
+			     ++it, index++)
 			{
-				int32_t index = 0;
-				for (std::vector<CView*>::const_iterator it = subviews.begin (); it != subviews.end (); ++it, index++)
+				if (*it == selectedView)
 				{
-					if (*it == selectedView)
-					{
-						dataBrowser->setSelectedRow (index, true);
-						return kMessageNotified;
-					}
+					dataBrowser->setSelectedRow (index, true);
+					return kMessageNotified;
 				}
 			}
-			selectedView = nullptr;
-			if (next)
-			{
-				next->remove ();
-				next = nullptr;
-			}
 		}
-		return kMessageNotified;
+		selectedView = nullptr;
+		if (next)
+		{
+			next->remove ();
+			next = nullptr;
+		}
 	}
-	return GenericStringListDataBrowserSource::notify (sender, message);
 }
 
 //----------------------------------------------------------------------------------------------------

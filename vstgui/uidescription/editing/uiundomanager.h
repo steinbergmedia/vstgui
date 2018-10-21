@@ -9,7 +9,7 @@
 
 #if VSTGUI_LIVE_EDITING
 
-#include "../../lib/idependency.h"
+#include "../../lib/dispatchlist.h"
 #include <list>
 #include <deque>
 
@@ -18,7 +18,9 @@ class IAction;
 class UIGroupAction;
 
 //----------------------------------------------------------------------------------------------------
-class UIUndoManager : public CBaseObject, protected std::list<IAction*>, public IDependency
+class UIUndoManager : public CBaseObject,
+                      public GenericChangeT<UIUndoManager>,
+                      protected std::list<IAction*>
 {
 public:
 	UIUndoManager ();
@@ -42,8 +44,6 @@ public:
 
 	void markSavePosition ();
 	bool isSavePosition () const;
-	
-	static IdStringPtr kMsgChanged;
 protected:
 	iterator position;
 	iterator savePosition;

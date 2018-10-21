@@ -762,7 +762,7 @@ UIAttributesController::UIAttributesController (IController* baseController, UIS
 , currentAttributeName (nullptr)
 {
 	selection->registerListener (this);
-	undoManager->addDependency (this);
+	undoManager->registerListener (this);
 	description->registerListener (this);
 }
 
@@ -770,7 +770,7 @@ UIAttributesController::UIAttributesController (IController* baseController, UIS
 UIAttributesController::~UIAttributesController ()
 {
 	selection->unregisterListener (this);
-	undoManager->removeDependency (this);
+	undoManager->unregisterListener (this);
 	editDescription->unregisterListener (this);
 }
 
@@ -991,14 +991,9 @@ void UIAttributesController::selectionViewsDidChange (UISelection* selection)
 }
 
 //----------------------------------------------------------------------------------------------------
-CMessageResult UIAttributesController::notify (CBaseObject* sender, IdStringPtr message)
+void UIAttributesController::onChange (UIUndoManager*)
 {
-	if (message == UIUndoManager::kMsgChanged)
-	{
-		validateAttributeViews ();
-		return kMessageNotified;
-	}
-	return kMessageUnknown;
+	validateAttributeViews ();
 }
 
 //----------------------------------------------------------------------------------------------------

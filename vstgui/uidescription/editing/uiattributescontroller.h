@@ -28,7 +28,8 @@ class Controller;
 class UIAttributesController : public CBaseObject,
                                public DelegationController,
                                public UIDescriptionListenerAdapter,
-                               public UISelectionListenerAdapter
+                               public UISelectionListenerAdapter,
+                               public UIUndoManager::IListener
 {
 public:
 	UIAttributesController (IController* baseController, UISelection* selection, UIUndoManager* undoManager, UIDescription* description);
@@ -61,7 +62,7 @@ protected:
 	void selectionDidChange (UISelection* selection) override;
 	void selectionViewsDidChange (UISelection* selection) override;
 
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
+	void onChange (UIUndoManager*) override;
 
 	SharedPointer<UISelection> selection;
 	SharedPointer<UIUndoManager> undoManager;

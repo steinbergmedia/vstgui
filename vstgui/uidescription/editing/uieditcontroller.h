@@ -13,6 +13,7 @@
 #include "../icontroller.h"
 #include "../uidescriptionlistener.h"
 #include "iaction.h"
+#include "uiundomanager.h"
 #include "../../lib/csplitview.h"
 #include "../../lib/cframe.h"
 #include "../../lib/controls/icommandmenuitemtarget.h"
@@ -39,7 +40,8 @@ class UIEditController : public CBaseObject,
                          public IActionPerformer,
                          public IKeyboardHook,
                          public CommandMenuItemTargetAdapter,
-                         public UIDescriptionListenerAdapter
+                         public UIDescriptionListenerAdapter,
+                         public UIUndoManager::IListener
 {
 public:
 	UIEditController (UIDescription* description);
@@ -74,6 +76,9 @@ protected:
 	IController* createSubController (UTF8StringPtr name, const IUIDescription* description) override;
 
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
+
+	// UIUndoManager::IListener
+	void onChange (UIUndoManager*) override;
 
 	// IContextMenuController2
 	void appendContextMenuItems (COptionMenu& contextMenu, CView* view, const CPoint& where) override;

@@ -51,11 +51,6 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
-IdStringPtr UIUndoManager::kMsgChanged = "UIUndoManagerChanged";
-
-static void deleteUndoManagerAction (IAction* action) { delete action; }
-
-//----------------------------------------------------------------------------------------------------
 UIUndoManager::UIUndoManager ()
 {
 	emplace_back (new UndoStackTop);
@@ -66,7 +61,7 @@ UIUndoManager::UIUndoManager ()
 //----------------------------------------------------------------------------------------------------
 UIUndoManager::~UIUndoManager ()
 {
-	std::for_each (begin (), end (), deleteUndoManagerAction);
+	std::for_each (begin (), end (), [] (IAction* action) { delete action; });
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -94,7 +89,7 @@ void UIUndoManager::pushAndPerform (IAction* action)
 	position = end ();
 	position--;
 	action->perform ();
-	changed (kMsgChanged);
+	dispatchChange ();
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -104,7 +99,7 @@ void UIUndoManager::performUndo ()
 	{
 		(*position)->undo ();
 		position--;
-		changed (kMsgChanged);
+		dispatchChange ();
 	}
 }
 
@@ -117,7 +112,7 @@ void UIUndoManager::performRedo ()
 		if (position != end ())
 		{
 			(*position)->perform ();
-			changed (kMsgChanged);
+			dispatchChange ();
 		}
 	}
 }
@@ -164,12 +159,12 @@ UTF8StringPtr UIUndoManager::getRedoName ()
 //----------------------------------------------------------------------------------------------------
 void UIUndoManager::clear ()
 {
-	std::for_each (begin (), end (), deleteUndoManagerAction);
+	std::for_each (begin (), end (), [] (IAction* action) { delete action; });
 	std::list<IAction*>::clear ();
 	emplace_back (new UndoStackTop);
 	position = end ();
 	savePosition = begin ();
-	changed (kMsgChanged);
+	dispatchChange ();
 }
 
 //----------------------------------------------------------------------------------------------------

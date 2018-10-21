@@ -394,7 +394,7 @@ UIEditController::UIEditController (UIDescription* description)
 , dirty (false)
 {
 	editorDesc = getEditorDescription ();
-	undoManager->addDependency (this);
+	undoManager->registerListener (this);
 	editDescription->registerListener (this);
 	menuController = new UIEditMenuController (this, selection, undoManager, editDescription, this);
 	onTemplatesChanged ();
@@ -405,7 +405,7 @@ UIEditController::~UIEditController ()
 {
 	if (templateController)
 		templateController->removeDependency (this);
-	undoManager->removeDependency (this);
+	undoManager->unregisterListener (this);
 	editDescription->unregisterListener (this);
 	editorDesc = nullptr;
 	gUIDescription.tryFree ();
@@ -741,16 +741,17 @@ bool UIEditController::onCommandMenuItemSelected (CCommandMenuItem* item)
 }
 
 //----------------------------------------------------------------------------------------------------
+void UIEditController::onChange (UIUndoManager*)
+{
+	onUndoManagerChanged ();
+}
+
+//----------------------------------------------------------------------------------------------------
 CMessageResult UIEditController::notify (CBaseObject* sender, IdStringPtr message)
 {
 	if (message == UITemplateController::kMsgTemplateChanged)
 	{
 		onTemplateSelectionChanged ();
-		return kMessageNotified;
-	}
-	else if (message == UIUndoManager::kMsgChanged)
-	{
-		onUndoManagerChanged ();
 		return kMessageNotified;
 	}
 	else if (message == UIEditView::kMsgAttached)
