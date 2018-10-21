@@ -692,8 +692,6 @@ struct UIDescription::Impl : ListenerDispatcher<Impl, UIDescriptionListener>
 		}
 		return *variableBaseNode;
 	}
-
-	friend class UIDescription;
 };
 
 //-----------------------------------------------------------------------------
@@ -1007,7 +1005,7 @@ bool UIDescription::save (UTF8StringPtr filename, int32_t flags)
 //-----------------------------------------------------------------------------
 bool UIDescription::saveToStream (OutputStream& stream, int32_t flags)
 {
-	impl->dispatchChange ([this] (UIDescriptionListener* l) {
+	impl->forEachListener ([this] (UIDescriptionListener* l) {
 		l->beforeUIDescSave (this);
 	});
 	if (!impl->sharedResources)
@@ -1724,7 +1722,7 @@ void UIDescription::changeNodeName (UTF8StringPtr oldName, UTF8StringPtr newName
 void UIDescription::changeColorName (UTF8StringPtr oldName, UTF8StringPtr newName)
 {
 	changeNodeName<UIColorNode> (oldName, newName, MainNodeNames::kColor);
-	impl->dispatchChange ([this] (UIDescriptionListener* l) {
+	impl->forEachListener ([this] (UIDescriptionListener* l) {
 		l->onUIDescColorChanged (this);
 	});
 }
@@ -1733,7 +1731,7 @@ void UIDescription::changeColorName (UTF8StringPtr oldName, UTF8StringPtr newNam
 void UIDescription::changeTagName (UTF8StringPtr oldName, UTF8StringPtr newName)
 {
 	changeNodeName<UIControlTagNode> (oldName, newName, MainNodeNames::kControlTag);
-	impl->dispatchChange ([this] (UIDescriptionListener* l) {
+	impl->forEachListener ([this] (UIDescriptionListener* l) {
 		l->onUIDescTagChanged (this);
 	});
 }
@@ -1742,7 +1740,7 @@ void UIDescription::changeTagName (UTF8StringPtr oldName, UTF8StringPtr newName)
 void UIDescription::changeFontName (UTF8StringPtr oldName, UTF8StringPtr newName)
 {
 	changeNodeName<UIFontNode> (oldName, newName, MainNodeNames::kFont);
-	impl->dispatchChange ([this] (UIDescriptionListener* l) {
+	impl->forEachListener ([this] (UIDescriptionListener* l) {
 		l->onUIDescFontChanged (this);
 	});
 }
@@ -1751,7 +1749,7 @@ void UIDescription::changeFontName (UTF8StringPtr oldName, UTF8StringPtr newName
 void UIDescription::changeBitmapName (UTF8StringPtr oldName, UTF8StringPtr newName)
 {
 	changeNodeName<UIBitmapNode> (oldName, newName, MainNodeNames::kBitmap);
-	impl->dispatchChange ([this] (UIDescriptionListener* l) {
+	impl->forEachListener ([this] (UIDescriptionListener* l) {
 		l->onUIDescBitmapChanged (this);
 	});
 }
@@ -1760,7 +1758,7 @@ void UIDescription::changeBitmapName (UTF8StringPtr oldName, UTF8StringPtr newNa
 void UIDescription::changeGradientName (UTF8StringPtr oldName, UTF8StringPtr newName)
 {
 	changeNodeName<UIGradientNode> (oldName, newName, MainNodeNames::kGradient);
-	impl->dispatchChange ([this] (UIDescriptionListener* l) {
+	impl->forEachListener ([this] (UIDescriptionListener* l) {
 		l->onUIDescGradientChanged (this);
 	});
 }
@@ -1775,7 +1773,7 @@ void UIDescription::changeColor (UTF8StringPtr name, const CColor& newColor)
 		if (!node->noExport ())
 		{
 			node->setColor (newColor);
-			impl->dispatchChange ([this] (UIDescriptionListener* l) {
+			impl->forEachListener ([this] (UIDescriptionListener* l) {
 				l->onUIDescColorChanged (this);
 			});
 		}
@@ -1792,7 +1790,7 @@ void UIDescription::changeColor (UTF8StringPtr name, const CColor& newColor)
 			UIColorNode* node = new UIColorNode ("color", attr);
 			colorsNode->getChildren ().add (node);
 			colorsNode->sortChildren ();
-			impl->dispatchChange ([this] (UIDescriptionListener* l) {
+			impl->forEachListener ([this] (UIDescriptionListener* l) {
 				l->onUIDescColorChanged (this);
 			});
 		}
@@ -1809,7 +1807,7 @@ void UIDescription::changeFont (UTF8StringPtr name, CFontRef newFont)
 		if (!node->noExport ())
 		{
 			node->setFont (newFont);
-			impl->dispatchChange ([this] (UIDescriptionListener* l) {
+			impl->forEachListener ([this] (UIDescriptionListener* l) {
 				l->onUIDescFontChanged (this);
 			});
 		}
@@ -1824,7 +1822,7 @@ void UIDescription::changeFont (UTF8StringPtr name, CFontRef newFont)
 			node->setFont (newFont);
 			fontsNode->getChildren ().add (node);
 			fontsNode->sortChildren ();
-			impl->dispatchChange ([this] (UIDescriptionListener* l) {
+			impl->forEachListener ([this] (UIDescriptionListener* l) {
 				l->onUIDescFontChanged (this);
 			});
 		}
@@ -1841,7 +1839,7 @@ void UIDescription::changeGradient (UTF8StringPtr name, CGradient* newGradient)
 		if (!node->noExport ())
 		{
 			node->setGradient (newGradient);
-			impl->dispatchChange ([this] (UIDescriptionListener* l) {
+			impl->forEachListener ([this] (UIDescriptionListener* l) {
 				l->onUIDescGradientChanged (this);
 			});
 		}
@@ -1856,7 +1854,7 @@ void UIDescription::changeGradient (UTF8StringPtr name, CGradient* newGradient)
 			node->setGradient (newGradient);
 			gradientsNode->getChildren ().add (node);
 			gradientsNode->sortChildren ();
-			impl->dispatchChange ([this] (UIDescriptionListener* l) {
+			impl->forEachListener ([this] (UIDescriptionListener* l) {
 				l->onUIDescGradientChanged (this);
 			});
 		}
@@ -1874,7 +1872,7 @@ void UIDescription::changeBitmap (UTF8StringPtr name, UTF8StringPtr newName, con
 		{
 			node->setBitmap (newName);
 			node->setNinePartTiledOffset (nineparttiledOffset);
-			impl->dispatchChange ([this] (UIDescriptionListener* l) {
+			impl->forEachListener ([this] (UIDescriptionListener* l) {
 				l->onUIDescBitmapChanged (this);
 			});
 		}
@@ -1891,7 +1889,7 @@ void UIDescription::changeBitmap (UTF8StringPtr name, UTF8StringPtr newName, con
 			node->setBitmap (newName);
 			bitmapsNode->getChildren ().add (node);
 			bitmapsNode->sortChildren ();
-			impl->dispatchChange ([this] (UIDescriptionListener* l) {
+			impl->forEachListener ([this] (UIDescriptionListener* l) {
 				l->onUIDescBitmapChanged (this);
 			});
 		}
@@ -1924,7 +1922,7 @@ void UIDescription::changeBitmapFilters (UTF8StringPtr bitmapName, const std::li
 			bitmapNode->getChildren ().add (filterNode);
 		}
 		bitmapNode->invalidBitmap ();
-		impl->dispatchChange ([this] (UIDescriptionListener* l) {
+		impl->forEachListener ([this] (UIDescriptionListener* l) {
 			l->onUIDescBitmapChanged (this);
 		});
 	}
@@ -1993,7 +1991,7 @@ void UIDescription::removeNode (UTF8StringPtr name, IdStringPtr mainNodeName)
 void UIDescription::removeColor (UTF8StringPtr name)
 {
 	removeNode (name, MainNodeNames::kColor);
-	impl->dispatchChange ([this] (UIDescriptionListener* l) {
+	impl->forEachListener ([this] (UIDescriptionListener* l) {
 		l->onUIDescColorChanged (this);
 	});
 }
@@ -2002,7 +2000,7 @@ void UIDescription::removeColor (UTF8StringPtr name)
 void UIDescription::removeTag (UTF8StringPtr name)
 {
 	removeNode (name, MainNodeNames::kControlTag);
-	impl->dispatchChange ([this] (UIDescriptionListener* l) {
+	impl->forEachListener ([this] (UIDescriptionListener* l) {
 		l->onUIDescTagChanged (this);
 	});
 }
@@ -2011,7 +2009,7 @@ void UIDescription::removeTag (UTF8StringPtr name)
 void UIDescription::removeFont (UTF8StringPtr name)
 {
 	removeNode (name, MainNodeNames::kFont);
-	impl->dispatchChange ([this] (UIDescriptionListener* l) {
+	impl->forEachListener ([this] (UIDescriptionListener* l) {
 		l->onUIDescFontChanged (this);
 	});
 }
@@ -2020,7 +2018,7 @@ void UIDescription::removeFont (UTF8StringPtr name)
 void UIDescription::removeBitmap (UTF8StringPtr name)
 {
 	removeNode (name, MainNodeNames::kBitmap);
-	impl->dispatchChange ([this] (UIDescriptionListener* l) {
+	impl->forEachListener ([this] (UIDescriptionListener* l) {
 		l->onUIDescBitmapChanged (this);
 	});
 }
@@ -2029,7 +2027,7 @@ void UIDescription::removeBitmap (UTF8StringPtr name)
 void UIDescription::removeGradient (UTF8StringPtr name)
 {
 	removeNode (name, MainNodeNames::kGradient);
-	impl->dispatchChange ([this] (UIDescriptionListener* l) {
+	impl->forEachListener ([this] (UIDescriptionListener* l) {
 		l->onUIDescGradientChanged (this);
 	});
 }
@@ -2041,7 +2039,7 @@ void UIDescription::changeAlternativeFontNames (UTF8StringPtr name, UTF8StringPt
 	if (node)
 	{
 		node->setAlternativeFontNames (alternativeFonts);
-		impl->dispatchChange ([this] (UIDescriptionListener* l) {
+		impl->forEachListener ([this] (UIDescriptionListener* l) {
 			l->onUIDescFontChanged (this);
 		});
 	}
@@ -2202,7 +2200,7 @@ void UIDescription::updateViewDescription (UTF8StringPtr name, CView* view)
 {
 #if VSTGUI_LIVE_EDITING
 	bool doIt = true;
-	impl->dispatchChange ([&] (UIDescriptionListener* l) {
+	impl->forEachListener ([&] (UIDescriptionListener* l) {
 		if (!l->doUIDescTemplateUpdate (this, name))
 			doIt = false;
 	});
@@ -2246,7 +2244,7 @@ bool UIDescription::addNewTemplate (UTF8StringPtr name, const SharedPointer<UIAt
 		UINode* newNode = new UINode (MainNodeNames::kTemplate, attr);
 		attr->setAttribute ("name", name);
 		impl->nodes->getChildren ().add (newNode);
-		impl->dispatchChange ([this] (UIDescriptionListener* l) {
+		impl->forEachListener ([this] (UIDescriptionListener* l) {
 			l->onUIDescTemplateChanged (this);
 		});
 		return true;
@@ -2263,7 +2261,7 @@ bool UIDescription::removeTemplate (UTF8StringPtr name)
 	if (templateNode)
 	{
 		impl->nodes->getChildren ().remove (templateNode);
-		impl->dispatchChange ([this] (UIDescriptionListener* l) {
+		impl->forEachListener ([this] (UIDescriptionListener* l) {
 			l->onUIDescTemplateChanged (this);
 		});
 		return true;
@@ -2280,7 +2278,7 @@ bool UIDescription::changeTemplateName (UTF8StringPtr name, UTF8StringPtr newNam
 	if (templateNode)
 	{
 		templateNode->getAttributes()->setAttribute ("name", newName);
-		impl->dispatchChange ([this] (UIDescriptionListener* l) {
+		impl->forEachListener ([this] (UIDescriptionListener* l) {
 			l->onUIDescTemplateChanged (this);
 		});
 		return true;
@@ -2302,7 +2300,7 @@ bool UIDescription::duplicateTemplate (UTF8StringPtr name, UTF8StringPtr duplica
 		{
 			duplicate->getAttributes()->setAttribute ("name", duplicateName);
 			impl->nodes->getChildren ().add (duplicate);
-			impl->dispatchChange ([this] (UIDescriptionListener* l) {
+			impl->forEachListener ([this] (UIDescriptionListener* l) {
 				l->onUIDescTemplateChanged (this);
 			});
 			return true;
@@ -2400,7 +2398,7 @@ bool UIDescription::changeControlTagString  (UTF8StringPtr tagName, const std::s
 		if (create)
 			return false;
 		controlTagNode->setTagString (newTagString);
-		impl->dispatchChange ([this] (UIDescriptionListener* l) {
+		impl->forEachListener ([this] (UIDescriptionListener* l) {
 			l->onUIDescTagChanged (this);
 		});
 		return true;
@@ -2415,7 +2413,7 @@ bool UIDescription::changeControlTagString  (UTF8StringPtr tagName, const std::s
 			node->setTagString (newTagString);
 			tagsNode->getChildren ().add (node);
 			tagsNode->sortChildren ();
-			impl->dispatchChange ([this] (UIDescriptionListener* l) {
+			impl->forEachListener ([this] (UIDescriptionListener* l) {
 				l->onUIDescTagChanged (this);
 			});
 			return true;

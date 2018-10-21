@@ -27,10 +27,11 @@ struct IUIColorStopEditViewListener
 };
 
 //------------------------------------------------------------------------
-class UIColorStopEditView : public CView,
-                            public ListenerDispatcher<UIColorStopEditView, IUIColorStopEditViewListener>,
-                            public IFocusDrawing,
-                            public UIColorListenerAdapter
+class UIColorStopEditView
+: public CView,
+  protected ListenerDispatcher<UIColorStopEditView, IUIColorStopEditViewListener>,
+  public IFocusDrawing,
+  public UIColorListenerAdapter
 {
 public:
 	UIColorStopEditView (UIColor* editColor);
@@ -41,6 +42,9 @@ public:
 	void setCurrentStartOffset (double startOffset);
 	double getSelectedColorStart () const { return editStartOffset; }
 	const CGradient::ColorStopMap& getColorStopMap () const { return colorStopMap; }
+
+	using ListenerDispatcher<UIColorStopEditView, IUIColorStopEditViewListener>::registerListener;
+	using ListenerDispatcher<UIColorStopEditView, IUIColorStopEditViewListener>::unregisterListener;
 private:
 	void draw (CDrawContext* context) override;
 	bool drawFocusOnTop () override;
@@ -96,7 +100,7 @@ void UIColorStopEditView::selectNextColorStop ()
 	}
 	editStartOffset = pos->first;
 	*editColor = pos->second;
-	dispatchChange ([] (IUIColorStopEditViewListener* l) { l->onChange (); });
+	forEachListener ([] (IUIColorStopEditViewListener* l) { l->onChange (); });
 	invalid ();
 }
 
@@ -109,7 +113,7 @@ void UIColorStopEditView::selectPrevColorStop ()
 	pos--;
 	editStartOffset = pos->first;
 	*editColor = pos->second;
-	dispatchChange ([] (IUIColorStopEditViewListener* l) { l->onChange (); });
+	forEachListener ([] (IUIColorStopEditViewListener* l) { l->onChange (); });
 	invalid ();
 }
 
@@ -127,7 +131,7 @@ void UIColorStopEditView::setCurrentStartOffset (double startOffset)
 		colorStopMap.erase (pos);
 		colorStopMap.emplace (startOffset, color);
 		editStartOffset = startOffset;
-		dispatchChange ([] (IUIColorStopEditViewListener* l) { l->onChange (); });
+		forEachListener ([] (IUIColorStopEditViewListener* l) { l->onChange (); });
 		invalid ();
 	}
 }
@@ -137,7 +141,7 @@ void UIColorStopEditView::addColorStop (double startOffset)
 {
 	colorStopMap.emplace (startOffset, editColor->base ());
 	editStartOffset = startOffset;
-	dispatchChange ([] (IUIColorStopEditViewListener* l) { l->onChange (); });
+	forEachListener ([] (IUIColorStopEditViewListener* l) { l->onChange (); });
 	invalid ();
 }
 
@@ -149,7 +153,7 @@ void UIColorStopEditView::removeColorStop (double startOffset)
 	if (getSelectedColorStart () == startOffset)
 		selectNextColorStop ();
 	colorStopMap.erase (startOffset);
-	dispatchChange ([] (IUIColorStopEditViewListener* l) { l->onChange (); });
+	forEachListener ([] (IUIColorStopEditViewListener* l) { l->onChange (); });
 	invalid ();
 }
 
@@ -232,7 +236,7 @@ CMouseEventResult UIColorStopEditView::onMouseDown (CPoint& where, const CButton
 				{
 					editStartOffset = colorStop.first;
 					*editColor = colorStop.second;
-					dispatchChange ([] (IUIColorStopEditViewListener* l) { l->onChange (); });
+					forEachListener ([] (IUIColorStopEditViewListener* l) { l->onChange (); });
 				}
 				mouseDownStartPosOffset = pos - editStartOffset;
 				return kMouseEventHandled;

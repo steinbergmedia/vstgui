@@ -27,7 +27,7 @@ struct IUIUndoManagerListener
 
 //----------------------------------------------------------------------------------------------------
 class UIUndoManager : public NonAtomicReferenceCounted,
-                      public ListenerDispatcher<UIUndoManager, IUIUndoManagerListener>,
+                      protected ListenerDispatcher<UIUndoManager, IUIUndoManagerListener>,
                       protected std::list<IAction*>
 {
 public:
@@ -52,6 +52,9 @@ public:
 
 	void markSavePosition ();
 	bool isSavePosition () const;
+	
+	using ListenerDispatcher<UIUndoManager, IUIUndoManagerListener>::registerListener;
+	using ListenerDispatcher<UIUndoManager, IUIUndoManagerListener>::unregisterListener;
 protected:
 	iterator position;
 	iterator savePosition;

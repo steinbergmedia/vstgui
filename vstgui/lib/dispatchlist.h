@@ -48,23 +48,25 @@ private:
 
 //------------------------------------------------------------------------
 template <typename T, typename ListenerInterface>
-class ListenerDispatcher
+struct ListenerDispatcher
 {
-public:
 //------------------------------------------------------------------------
+	using List = DispatchList<ListenerInterface*>;
+
 	void registerListener (ListenerInterface* listener) { listeners.add (listener); }
 	void unregisterListener (ListenerInterface* listener) { listeners.remove (listener); }
 
-protected:
 	template<typename Proc>
-	void dispatchChange (Proc proc)
+	void forEachListener (Proc proc)
 	{
 		listeners.forEach (
 		    [&] (ListenerInterface* listener) { proc (listener); });
 	}
 
+	List& getListeners () { return listeners; }
+	const List& getListeners () const { return listeners; }
 private:
-	DispatchList<ListenerInterface*> listeners;
+	List listeners;
 };
 
 //------------------------------------------------------------------------

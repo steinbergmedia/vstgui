@@ -218,14 +218,14 @@ void UISelection::invalidRects () const
 void UISelection::willChange ()
 {
 	if (++inChange == 1)
-		dispatchChange ([this] (IUISelectionListener* l) { l->selectionWillChange (this); });
+		forEachListener ([this] (IUISelectionListener* l) { l->selectionWillChange (this); });
 }
 
 //----------------------------------------------------------------------------------------------------
 void UISelection::didChange ()
 {
 	if (--inChange == 0)
-		dispatchChange ([this] (IUISelectionListener* l) { l->selectionDidChange (this); });
+		forEachListener ([this] (IUISelectionListener* l) { l->selectionDidChange (this); });
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -234,7 +234,7 @@ void UISelection::viewsWillChange ()
 	if (++inViewsChange == 1)
 	{
 		invalidRects ();
-		dispatchChange ([this] (IUISelectionListener* l) { l->selectionViewsWillChange (this); });
+		forEachListener ([this] (IUISelectionListener* l) { l->selectionViewsWillChange (this); });
 	}
 }
 
@@ -244,7 +244,7 @@ void UISelection::viewsDidChange ()
 	if (--inViewsChange == 0)
 	{
 		invalidRects ();
-		dispatchChange ([this] (IUISelectionListener* l) { l->selectionViewsDidChange (this); });
+		forEachListener ([this] (IUISelectionListener* l) { l->selectionViewsDidChange (this); });
 	}
 }
 
