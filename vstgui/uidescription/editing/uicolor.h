@@ -10,7 +10,6 @@
 #if VSTGUI_LIVE_EDITING
 
 #include "../../lib/ccolor.h"
-#include "../../lib/idependency.h"
 #include "../../lib/dispatchlist.h"
 
 namespace VSTGUI {
