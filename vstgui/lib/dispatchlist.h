@@ -47,6 +47,32 @@ private:
 };
 
 //------------------------------------------------------------------------
+template <typename T>
+class GenericChangeT
+{
+public:
+//------------------------------------------------------------------------
+	class IListener
+	{
+	public:
+		virtual void onChange (T* obj) = 0;
+	};
+
+	void registerListener (IListener* listener) { listeners.add (listener); }
+	void unregisterListener (IListener* listener) { listeners.remove (listener); }
+
+protected:
+	void dispatchChange ()
+	{
+		listeners.forEach (
+		    [this] (IListener* listener) { listener->onChange (static_cast<T*> (this)); });
+	}
+
+private:
+	DispatchList<IListener*> listeners;
+};
+
+//------------------------------------------------------------------------
 template<typename T>
 inline void DispatchList<T>::add (const T& obj)
 {
