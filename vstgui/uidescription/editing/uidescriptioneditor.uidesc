@@ -608,6 +608,20 @@
 		<control-tag name="textswitch" tag="123456"/>
 		<control-tag name="viewcreator.search" tag="100"/>
 	</control-tags>
+	<custom>
+		<attributes EditViewScale="1" EditorSize="0, 0, 1054, 882" EncodeBitmaps="true" SplitViewSize_0_0="0.702102803738317793325052207364933565259" SplitViewSize_0_1="0.2745327102803738483771667233668267726898" SplitViewSize_1_0="0.5724299065420560550521145160018932074308" SplitViewSize_1_1="0.4217289719626168276178646010521333664656" SplitViewSize_2_0="0.7068311195445919903335152412182651460171" SplitViewSize_2_1="0.2884250474383301954262037725129630416632" TabSwitchValue="3" Version="1" name="UIEditController"/>
+		<attributes name="UIViewCreatorController"/>
+		<attributes Size="5, 5" name="UIGridController"/>
+		<attributes SelectedRow="11" name="UIViewCreatorDataSource"/>
+		<attributes name="UIAttributesController"/>
+		<attributes SelectedRow="5" name="UIColorsDataSource"/>
+		<attributes SelectedRow="69" name="UITagsDataSource"/>
+		<attributes SelectedRow="0" name="UIFontsDataSource"/>
+		<attributes SelectedRow="17" name="UIBitmapsDataSource"/>
+		<attributes SelectedTemplate="gradient.editor" name="UITemplateController"/>
+		<attributes color="focus" enabled="true" name="FocusDrawing" width="1.5"/>
+		<attributes SelectedRow="6" name="UIGradientsDataSource"/>
+	</custom>
 	<template autosize="left right top bottom " background-color="background" background-color-draw-style="filled and stroked" class="CViewContainer" mouse-enabled="true" name="view" opacity="1" origin="0, 0" size="500, 500" transparent="true" wants-focus="false">
 		<view autosize="left right top " background-color="shading.light.bottom" background-color-draw-style="filled and stroked" class="CViewContainer" mouse-enabled="true" opacity="1" origin="0, 0" size="500, 26" transparent="true" wants-focus="false">
 			<view autosize="left right top bottom " class="CGradientView" draw-antialiased="true" frame-color="shading.dark.frame" frame-width="0" gradient="Toolbar" gradient-angle="0" gradient-style="linear" mouse-enabled="false" opacity="1" origin="0, 0" radial-center="0.5, 0.5" radial-radius="1" round-rect-radius="0" size="500, 26" transparent="false" wants-focus="false"/>
@@ -697,20 +711,6 @@
 		<view autosize="left right top bottom " back-color="control.back" background-offset="0, 0" class="CTextLabel" control-tag="attributes.label" default-value="0.5" font="db.font" font-antialias="true" font-color="control.font" frame-color="control.frame" frame-width="-1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="1, 1" round-rect-radius="2" shadow-color="~ RedCColor" size="398, 16" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="4, 0" text-rotation="0" text-shadow-offset="1, 1" transparent="false" truncate-mode="tail" value-precision="2" wants-focus="false" wheel-inc-value="0.1"/>
 		<view autosize="left right top bottom " back-color="db.font" background-offset="0, 0" class="COptionMenu" control-tag="attributes.optionmenu" default-value="0.5" font="~ NormalFont" font-antialias="true" font-color="db.background" frame-color="db.font" frame-width="-1" max-value="1.84467e+19" menu-check-style="true" menu-popup-style="true" min-value="0" mouse-enabled="true" opacity="1" origin="1, 1" round-rect-radius="6" shadow-color="~ RedCColor" size="398, 16" style-3D-in="false" style-3D-out="false" style-no-draw="true" style-no-frame="false" style-no-text="true" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" text-shadow-offset="1, 1" transparent="true" value-precision="2" wants-focus="true" wheel-inc-value="0.1"/>
 	</template>
-	<custom>
-		<attributes EditViewScale="1" EditorSize="0, 0, 1054, 882" EncodeBitmaps="true" SplitViewSize_0_0="0.702102803738317793325052207364933565259" SplitViewSize_0_1="0.2745327102803738483771667233668267726898" SplitViewSize_1_0="0.5724299065420560550521145160018932074308" SplitViewSize_1_1="0.4217289719626168276178646010521333664656" SplitViewSize_2_0="0.7068311195445919903335152412182651460171" SplitViewSize_2_1="0.2884250474383301954262037725129630416632" TabSwitchValue="3" Version="1" name="UIEditController"/>
-		<attributes name="UIViewCreatorController"/>
-		<attributes Size="5, 5" name="UIGridController"/>
-		<attributes SelectedRow="11" name="UIViewCreatorDataSource"/>
-		<attributes name="UIAttributesController"/>
-		<attributes SelectedRow="5" name="UIColorsDataSource"/>
-		<attributes SelectedRow="69" name="UITagsDataSource"/>
-		<attributes SelectedRow="0" name="UIFontsDataSource"/>
-		<attributes SelectedRow="17" name="UIBitmapsDataSource"/>
-		<attributes SelectedTemplate="gradient.editor" name="UITemplateController"/>
-		<attributes color="focus" enabled="true" name="FocusDrawing" width="1.5"/>
-		<attributes SelectedRow="7" name="UIGradientsDataSource"/>
-	</custom>
 	<template autosize="left right top bottom " background-color="background" background-color-draw-style="filled and stroked" class="CViewContainer" mouse-enabled="true" name="bitmapediting" opacity="1" origin="0, 0" size="170, 223" sub-controller="BitmapEditController" transparent="false" wants-focus="false">
 		<view auto-drag-scrolling="false" auto-hide-scrollbars="true" autosize="left right top bottom " background-color="db.background" background-color-draw-style="filled and stroked" bordered="false" class="CScrollView" container-size="170, 140" custom-view-name="BitmapsBrowser" follow-focus-view="false" horizontal-scrollbar="false" mouse-enabled="true" opacity="1" origin="0, 0" overlay-scrollbars="false" scrollbar-background-color="scrollbar.background" scrollbar-frame-color="scrollbar.frame" scrollbar-scroller-color="scrollbar.scroller" scrollbar-width="12" size="170, 160" transparent="false" vertical-scrollbar="true" wants-focus="true"/>
 		<view autosize="left right bottom " class="CView" custom-view-name="ShadingViewVerticalTopLine" mouse-enabled="true" opacity="1" origin="0, 160" size="170, 43" transparent="false" wants-focus="false"/>
