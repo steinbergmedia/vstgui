@@ -469,8 +469,6 @@
 		<color name="db.row.back" rgba="#f3f3f319"/>
 		<color name="db.row.line" rgba="#d5d5d5ff"/>
 		<color name="db.selection" rgba="#81b9ffff"/>
-		<color name="dialog.back" rgba="#cececefa"/>
-		<color name="dialog.back2" rgba="#b4b4b4fa"/>
 		<color name="editView.backgrund" rgba="#f2f2f2ff"/>
 		<color name="editView.crosslines.background" rgba="#ffffff96"/>
 		<color name="editView.crosslines.foreground" rgba="#00000096"/>
@@ -483,15 +481,8 @@
 		<color name="scrollbar.background" rgba="#fafafaff"/>
 		<color name="scrollbar.frame" rgba="#9b9b9b1e"/>
 		<color name="scrollbar.scroller" rgba="#909090ff"/>
-		<color name="shading.dark.bottom" rgba="#4d4d4dff"/>
-		<color name="shading.dark.frame" rgba="#353535ff"/>
-		<color name="shading.dark.top" rgba="#686868ff"/>
 		<color name="shading.light.bottom" rgba="#bfbfbfff"/>
 		<color name="shading.light.frame" rgba="#a6a6a6ff"/>
-		<color name="textbutton.gradient.end" rgba="#b4b4b4ff"/>
-		<color name="textbutton.gradient.end.highlighted" rgba="#646464ff"/>
-		<color name="textbutton.gradient.start" rgba="#dcdcdcff"/>
-		<color name="textbutton.gradient.start.highlighted" rgba="#b4b4b4ff"/>
 		<color name="textbutton.text" rgba="#000000ff"/>
 		<color name="textbutton.text.highlighted" rgba="#ffffffff"/>
 	</colors>
@@ -868,10 +859,6 @@
 		<gradient name="GradientView">
 			<color-stop rgba="#cdcdcdff" start="0"/>
 			<color-stop rgba="#d2d2d2ff" start="1"/>
-		</gradient>
-		<gradient name="TextButton Highlighted">
-			<color-stop rgba="#646464ff" start="0"/>
-			<color-stop rgba="#646464ff" start="1"/>
 		</gradient>
 		<gradient name="Toolbar">
 			<color-stop rgba="#454b54ff" start="0"/>
