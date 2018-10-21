@@ -11,11 +11,34 @@
 
 #include "../../lib/ccolor.h"
 #include "../../lib/idependency.h"
+#include "../../lib/dispatchlist.h"
 
 namespace VSTGUI {
 
+class UIColor;
+
 //----------------------------------------------------------------------------------------------------
-class UIColor : protected CColor, public CBaseObject, public IDependency
+class IUIColorListener
+{
+public:
+	virtual ~IUIColorListener () noexcept = default;
+	
+	virtual void uiColorChanged (UIColor* c) = 0;
+	virtual void uiColorBeginEditing (UIColor* c) = 0;
+	virtual void uiColorEndEditing (UIColor* c) = 0;
+};
+
+//----------------------------------------------------------------------------------------------------
+class UIColorListenerAdapter : public IUIColorListener
+{
+public:
+	void uiColorChanged (UIColor* c) override {}
+	void uiColorBeginEditing (UIColor* c) override {}
+	void uiColorEndEditing (UIColor* c) override {}
+};
+
+//----------------------------------------------------------------------------------------------------
+class UIColor : protected CColor, public CBaseObject
 {
 public:
 	UIColor () : CColor (kTransparentCColor), hue (0), saturation (0), lightness (0) {}
@@ -44,13 +67,11 @@ public:
 	void beginEdit ();
 	void endEdit ();
 
+	void registerListener (IUIColorListener* listener);
+	void unregisterListener (IUIColorListener* listener);
+
 	using CColor::operator==;
 	using CColor::operator!=;
-
-	static IdStringPtr kMsgChanged;
-	static IdStringPtr kMsgEditChange;
-	static IdStringPtr kMsgBeginEditing;
-	static IdStringPtr kMsgEndEditing;
 private:
 	enum HSLUpdateDirection
 	{
@@ -59,9 +80,12 @@ private:
 	};
 
 	void updateHSL (HSLUpdateDirection direction);
+	void editChange ();
 	
 	double hue, saturation, lightness;
 	double r, g, b;
+	
+	DispatchList<IUIColorListener*> listeners;
 };
 
 } // namespace

@@ -9,6 +9,7 @@
 
 #if VSTGUI_LIVE_EDITING
 
+#include "uicolor.h"
 #include "../delegationcontroller.h"
 #include "../../lib/controls/ctextedit.h"
 
@@ -16,14 +17,15 @@ namespace VSTGUI {
 class UIColor;
 
 //----------------------------------------------------------------------------------------------------
-class UIColorChooserController : public CBaseObject, public DelegationController
+class UIColorChooserController : public CBaseObject,
+                                 public DelegationController,
+                                 public UIColorListenerAdapter
 {
 public:
 	UIColorChooserController (IController* baseController, UIColor* color);
 	~UIColorChooserController () override;
 	
 protected:
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override;
 	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;
 	IControlListener* getControlListener (UTF8StringPtr name) override;
@@ -33,6 +35,8 @@ protected:
 
 	void updateColorSlider (CControl* control);
 	void updateColorSliders ();
+
+	void uiColorChanged (UIColor* c) override;
 
 	static bool valueToString (float value, char utf8String[256], CParamDisplay::ValueToStringUserData* userData);
 	static bool stringToValue (UTF8StringPtr txt, float& result, CTextEdit::StringToValueUserData* userData);

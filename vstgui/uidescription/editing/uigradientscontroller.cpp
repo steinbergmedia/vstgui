@@ -20,7 +20,10 @@
 namespace VSTGUI {
 
 //------------------------------------------------------------------------
-class UIColorStopEditView : public CView, public IDependency, public IFocusDrawing
+class UIColorStopEditView : public CView,
+                            public IDependency,
+                            public IFocusDrawing,
+                            public UIColorListenerAdapter
 {
 public:
 	UIColorStopEditView (UIColor* editColor);
@@ -34,7 +37,6 @@ public:
 
 	static IdStringPtr kChanged;
 private:
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 	void draw (CDrawContext* context) override;
 	bool drawFocusOnTop () override;
 	bool getFocusPath (CGraphicsPath& outPath) override;
@@ -42,6 +44,7 @@ private:
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
+	void uiColorChanged (UIColor* c) override;
 
 	double gradientStartPosFromMousePos (const CPoint& where) const;
 
@@ -67,7 +70,7 @@ UIColorStopEditView::UIColorStopEditView (UIColor* editColor)
 , editStartOffset (-1.)
 , mouseDownStartPosOffset (0.)
 {
-	editColor->addDependency (this);
+	editColor->registerListener (this);
 	setWantsFocus (true);
 	stopWidth = 12.;
 }
@@ -75,7 +78,7 @@ UIColorStopEditView::UIColorStopEditView (UIColor* editColor)
 //----------------------------------------------------------------------------------------------------
 UIColorStopEditView::~UIColorStopEditView ()
 {
-	editColor->removeDependency (this);
+	editColor->unregisterListener (this);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -254,14 +257,9 @@ CMouseEventResult UIColorStopEditView::onMouseMoved (CPoint& where, const CButto
 }
 
 //----------------------------------------------------------------------------------------------------
-CMessageResult UIColorStopEditView::notify (CBaseObject* sender, IdStringPtr message)
+void UIColorStopEditView::uiColorChanged (UIColor* c)
 {
-	if (message == UIColor::kMsgChanged || message == UIColor::kMsgEditChange)
-	{
-		invalid ();
-		return kMessageNotified;
-	}
-	return CView::notify (sender, message);
+	invalid ();
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -354,7 +352,7 @@ bool UIColorStopEditView::getFocusPath (CGraphicsPath& outPath)
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-class UIGradientEditorController : public CBaseObject, public IController
+class UIGradientEditorController : public CBaseObject, public IController, public UIColorListenerAdapter
 {
 public:
 	UIGradientEditorController (const std::string& gradientName, CGradient* gradient, UIDescription* description, IActionPerformer* actionPerformer);
@@ -370,6 +368,7 @@ protected:
 		kApplyTag = 1,
 		kPositionTag = 2,
 	};
+	void uiColorChanged (UIColor* c) override;
 	void apply ();
 	void updatePositionEdit ();
 	
@@ -391,14 +390,14 @@ UIGradientEditorController::UIGradientEditorController (const std::string& gradi
 , gradientName (gradientName)
 {
 	*editColor = gradient->getColorStops ().begin ()->second;
-	editColor->addDependency (this);
+	editColor->registerListener (this);
 }
 
 //----------------------------------------------------------------------------------------------------
 UIGradientEditorController::~UIGradientEditorController ()
 {
 	colorStopEditView->removeDependency (this);
-	editColor->removeDependency (this);
+	editColor->unregisterListener (this);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -417,22 +416,23 @@ void UIGradientEditorController::updatePositionEdit ()
 }
 
 //----------------------------------------------------------------------------------------------------
+void UIGradientEditorController::uiColorChanged (UIColor* c)
+{
+	CGradient::ColorStopMap colorStopMap = gradient->getColorStops ();
+	CGradient::ColorStopMap::iterator it = colorStopMap.find (colorStopEditView->getSelectedColorStart ());
+	if (it != colorStopMap.end () && it->second != editColor->base ())
+	{
+		it->second = editColor->base ();
+		gradient = CGradient::create (colorStopMap);
+		colorStopEditView->setGradient (gradient);
+		updatePositionEdit ();
+	}
+}
+
+//----------------------------------------------------------------------------------------------------
 CMessageResult UIGradientEditorController::notify (CBaseObject* sender, IdStringPtr message)
 {
-	if (message == UIColor::kMsgChanged || message == UIColor::kMsgEditChange)
-	{
-		CGradient::ColorStopMap colorStopMap = gradient->getColorStops ();
-		CGradient::ColorStopMap::iterator it = colorStopMap.find (colorStopEditView->getSelectedColorStart ());
-		if (it != colorStopMap.end () && it->second != editColor->base ())
-		{
-			it->second = editColor->base ();
-			gradient = CGradient::create (colorStopMap);
-			colorStopEditView->setGradient (gradient);
-			updatePositionEdit ();
-		}
-		return kMessageNotified;
-	}
-	else if (message == UIColorStopEditView::kChanged)
+	if (message == UIColorStopEditView::kChanged)
 	{
 		gradient = CGradient::create (colorStopEditView->getColorStopMap ());
 		colorStopEditView->setGradient (gradient);
@@ -538,7 +538,9 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
-UIGradientsDataSource::UIGradientsDataSource (UIDescription* description, IActionPerformer* actionPerformer, GenericStringListDataBrowserSourceSelectionChanged* delegate)
+UIGradientsDataSource::UIGradientsDataSource (
+    UIDescription* description, IActionPerformer* actionPerformer,
+    GenericStringListDataBrowserSourceSelectionChanged* delegate)
 : UIBaseDataSource (description, actionPerformer, delegate)
 {
 }

@@ -9,6 +9,7 @@
 
 #if VSTGUI_LIVE_EDITING
 
+#include "uicolor.h"
 #include "../../lib/controls/cslider.h"
 
 namespace VSTGUI {
@@ -19,7 +20,7 @@ class UIColor;
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-class UIColorSlider : public CSlider
+class UIColorSlider : public CSlider, public UIColorListenerAdapter
 {
 public:
 	enum {
@@ -37,7 +38,7 @@ public:
 protected:
 	void draw (CDrawContext* context) override;
 	void setViewSize (const CRect& rect, bool invalid = true) override;
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
+	void uiColorChanged (UIColor* c) override;
 	void updateBackground (CDrawContext* context);
 	void updateHandle (CDrawContext* context);
 
