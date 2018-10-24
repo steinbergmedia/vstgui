@@ -162,7 +162,8 @@ protected:
 class TransformViewTypeOperation : public IAction
 {
 public:
-	TransformViewTypeOperation (UISelection* selection, IdStringPtr viewClassName, UIDescription* desc, const UIViewFactory* factory);
+	TransformViewTypeOperation (UISelection* selection, CView* view, IdStringPtr viewClassName,
+	                            UIDescription* desc, const UIViewFactory* factory);
 	~TransformViewTypeOperation () override;
 
 	UTF8StringPtr getName () override;
@@ -173,7 +174,7 @@ public:
 protected:
 	SharedPointer<CView> view;
 	CView* newView;
-	SharedPointer<CView> beforeView;
+	int32_t insertIndex;
 	SharedPointer<CViewContainer> parent;
 	SharedPointer<UISelection> selection;
 	const UIViewFactory* factory;

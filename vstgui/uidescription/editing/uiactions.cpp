@@ -453,10 +453,13 @@ void InsertViewOperation::undo ()
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-TransformViewTypeOperation::TransformViewTypeOperation (UISelection* selection, IdStringPtr viewClassName, UIDescription* desc, const UIViewFactory* factory)
-: view (selection->first ())
+TransformViewTypeOperation::TransformViewTypeOperation (UISelection* selection, CView* view,
+                                                        IdStringPtr viewClassName,
+                                                        UIDescription* desc,
+                                                        const UIViewFactory* factory)
+: view (view)
 , newView (nullptr)
-, beforeView (nullptr)
+, insertIndex (-1)
 , parent (view->getParentView ()->asViewContainer ())
 , selection (selection)
 , factory (factory)
@@ -470,11 +473,9 @@ TransformViewTypeOperation::TransformViewTypeOperation (UISelection* selection, 
 		ViewIterator it (parent);
 		while (*it)
 		{
+			++insertIndex;
 			if (*it == view)
-			{
-				beforeView = *++it;
 				break;
-			}
 			++it;
 		}
 	}
@@ -525,10 +526,9 @@ void TransformViewTypeOperation::perform ()
 	{
 		newView->remember ();
 		parent->removeView (view);
-		if (beforeView)
-			parent->addView (newView, beforeView);
-		else
-			parent->addView (newView);
+		parent->addView (newView);
+		if (insertIndex >= 0)
+			parent->changeViewZOrder (newView, static_cast<uint32_t> (insertIndex));
 		exchangeSubViews (view->asViewContainer (), newView->asViewContainer ());
 		selection->setExclusive (newView);
 	}
@@ -541,10 +541,9 @@ void TransformViewTypeOperation::undo ()
 	{
 		view->remember ();
 		parent->removeView (newView);
-		if (beforeView)
-			parent->addView (view, beforeView);
-		else
-			parent->addView (view);
+		parent->addView (view);
+		if (insertIndex >= 0)
+			parent->changeViewZOrder (view, static_cast<uint32_t> (insertIndex));
 		exchangeSubViews (newView->asViewContainer (), view->asViewContainer ());
 		selection->setExclusive (view);
 	}
