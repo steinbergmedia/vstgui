@@ -741,7 +741,7 @@ bool UIEditController::onCommandMenuItemSelected (CCommandMenuItem* item)
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIEditController::onChange ()
+void UIEditController::onUndoManagerChange ()
 {
 	onUndoManagerChanged ();
 }

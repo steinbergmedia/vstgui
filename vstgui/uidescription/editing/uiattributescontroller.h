@@ -62,7 +62,7 @@ protected:
 	void selectionDidChange (UISelection* selection) override;
 	void selectionViewsDidChange (UISelection* selection) override;
 
-	void onChange () override;
+	void onUndoManagerChange () override;
 
 	SharedPointer<UISelection> selection;
 	SharedPointer<UIUndoManager> undoManager;

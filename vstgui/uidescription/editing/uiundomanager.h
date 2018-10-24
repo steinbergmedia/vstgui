@@ -22,7 +22,7 @@ class UIUndoManager;
 struct IUIUndoManagerListener
 {
 	virtual ~IUIUndoManagerListener () noexcept = default;
-	virtual void onChange () = 0;
+	virtual void onUndoManagerChange () = 0;
 };
 
 //----------------------------------------------------------------------------------------------------

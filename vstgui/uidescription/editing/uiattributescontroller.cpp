@@ -991,7 +991,7 @@ void UIAttributesController::selectionViewsDidChange (UISelection* selection)
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIAttributesController::onChange ()
+void UIAttributesController::onUndoManagerChange ()
 {
 	validateAttributeViews ();
 }

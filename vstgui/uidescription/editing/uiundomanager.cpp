@@ -89,7 +89,7 @@ void UIUndoManager::pushAndPerform (IAction* action)
 	position = end ();
 	position--;
 	action->perform ();
-	forEachListener ([] (IUIUndoManagerListener* l) { l->onChange (); });
+	forEachListener ([] (IUIUndoManagerListener* l) { l->onUndoManagerChange (); });
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -99,7 +99,7 @@ void UIUndoManager::performUndo ()
 	{
 		(*position)->undo ();
 		position--;
-		forEachListener ([] (IUIUndoManagerListener* l) { l->onChange (); });
+		forEachListener ([] (IUIUndoManagerListener* l) { l->onUndoManagerChange (); });
 	}
 }
 
@@ -112,7 +112,7 @@ void UIUndoManager::performRedo ()
 		if (position != end ())
 		{
 			(*position)->perform ();
-			forEachListener ([] (IUIUndoManagerListener* l) { l->onChange (); });
+			forEachListener ([] (IUIUndoManagerListener* l) { l->onUndoManagerChange (); });
 		}
 	}
 }
@@ -164,7 +164,7 @@ void UIUndoManager::clear ()
 	emplace_back (new UndoStackTop);
 	position = end ();
 	savePosition = begin ();
-	forEachListener ([] (IUIUndoManagerListener* l) { l->onChange (); });
+	forEachListener ([] (IUIUndoManagerListener* l) { l->onUndoManagerChange (); });
 }
 
 //----------------------------------------------------------------------------------------------------

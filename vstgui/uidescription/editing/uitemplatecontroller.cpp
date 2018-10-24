@@ -178,7 +178,7 @@ protected:
 	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser) override;
 
 	// IUIUndoManagerListener
-	void onChange () override;
+	void onUndoManagerChange () override;
 
 	CViewContainer* view;
 	const UIViewFactory* viewFactory;
@@ -590,7 +590,7 @@ CMouseEventResult UIViewListDataSource::dbOnMouseDown (const CPoint& where, cons
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIViewListDataSource::onChange ()
+void UIViewListDataSource::onUndoManagerChange ()
 {
 	update (view);
 	if (selectedView)

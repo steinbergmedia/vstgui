@@ -77,7 +77,7 @@ protected:
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 
 	// IUIUndoManagerListener
-	void onChange () override;
+	void onUndoManagerChange () override;
 
 	// IContextMenuController2
 	void appendContextMenuItems (COptionMenu& contextMenu, CView* view, const CPoint& where) override;
