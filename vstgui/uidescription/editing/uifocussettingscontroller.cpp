@@ -28,29 +28,35 @@ UIFocusSettingsController::UIFocusSettingsController (UIDescription* description
 		control = nullptr;
 }
 
-//----------------------------------------------------------------------------------------------------
-CMessageResult UIFocusSettingsController::notify (CBaseObject* sender, IdStringPtr message)
+//------------------------------------------------------------------------
+void UIFocusSettingsController::onDialogButton1Clicked (UIDialogController*)
 {
-	if (message == UIDialogController::kMsgDialogButton1Clicked)
+	FocusDrawingSettings fd;
+
+	if (controls[kEnabledTag])
+		fd.enabled =
+		    (controls[kEnabledTag]->getValue () == controls[kEnabledTag]->getMax ()) ? true : false;
+	if (controls[kColorTag])
 	{
-		FocusDrawingSettings fd;
-		
-		if (controls[kEnabledTag])
-			fd.enabled = (controls[kEnabledTag]->getValue () == controls[kEnabledTag]->getMax ()) ? true : false;
-		if (controls[kColorTag])
-		{
-			COptionMenu* menu = dynamic_cast<COptionMenu*>(controls[kColorTag]);
-			CMenuItem* item = menu->getCurrent ();
-			if (item)
-				fd.colorName = item->getTitle ();
-		}
-		if (controls[kWidthTag])
-			fd.width = controls[kWidthTag]->getValue ();
-		if (originalSettings != fd)
-			actionPerformer->performChangeFocusDrawingSettings (fd);
-		return kMessageNotified;
+		COptionMenu* menu = dynamic_cast<COptionMenu*> (controls[kColorTag]);
+		CMenuItem* item = menu->getCurrent ();
+		if (item)
+			fd.colorName = item->getTitle ();
 	}
-	return kMessageUnknown;
+	if (controls[kWidthTag])
+		fd.width = controls[kWidthTag]->getValue ();
+	if (originalSettings != fd)
+		actionPerformer->performChangeFocusDrawingSettings (fd);
+}
+
+//------------------------------------------------------------------------
+void UIFocusSettingsController::onDialogButton2Clicked (UIDialogController*)
+{
+}
+
+//------------------------------------------------------------------------
+void UIFocusSettingsController::onDialogShow (UIDialogController*)
+{
 }
 
 //----------------------------------------------------------------------------------------------------

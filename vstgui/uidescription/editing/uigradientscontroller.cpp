@@ -361,7 +361,7 @@ bool UIColorStopEditView::getFocusPath (CGraphicsPath& outPath)
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 class UIGradientEditorController : public CBaseObject,
-                                   public IController,
+                                   public IDialogController,
                                    public UIColorListenerAdapter,
                                    public IUIColorStopEditViewListener
 {
@@ -369,11 +369,13 @@ public:
 	UIGradientEditorController (const std::string& gradientName, CGradient* gradient, UIDescription* description, IActionPerformer* actionPerformer);
 	~UIGradientEditorController () override;
 
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 	void valueChanged (CControl* pControl) override;
 	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;
 	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override;
 	IController* createSubController (UTF8StringPtr name, const IUIDescription* description) override;
+	void onDialogButton1Clicked (UIDialogController*) override;
+	void onDialogButton2Clicked (UIDialogController*) override;
+	void onDialogShow (UIDialogController*) override;
 protected:
 	enum {
 		kApplyTag = 1,
@@ -449,15 +451,20 @@ void UIGradientEditorController::onChange ()
 	updatePositionEdit ();
 }
 
-//----------------------------------------------------------------------------------------------------
-CMessageResult UIGradientEditorController::notify (CBaseObject* sender, IdStringPtr message)
+//------------------------------------------------------------------------
+void UIGradientEditorController::onDialogButton1Clicked (UIDialogController*)
 {
-	if (message == UIDialogController::kMsgDialogButton1Clicked)
-	{
-		apply ();
-		return kMessageNotified;
-	}
-	return kMessageUnknown;
+	apply ();
+}
+
+//------------------------------------------------------------------------
+void UIGradientEditorController::onDialogButton2Clicked (UIDialogController*)
+{
+}
+
+//------------------------------------------------------------------------
+void UIGradientEditorController::onDialogShow (UIDialogController*)
+{
 }
 
 //----------------------------------------------------------------------------------------------------

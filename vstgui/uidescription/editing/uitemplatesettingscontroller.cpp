@@ -42,26 +42,30 @@ UITemplateSettingsController::UITemplateSettingsController (const std::string& t
 		control = nullptr;
 }
 
-//----------------------------------------------------------------------------------------------------
-CMessageResult UITemplateSettingsController::notify (CBaseObject* sender, IdStringPtr message)
+//------------------------------------------------------------------------
+void UITemplateSettingsController::onDialogButton1Clicked (UIDialogController*)
 {
-	if (message == UIDialogController::kMsgDialogButton1Clicked)
+	actionPerformer->beginGroupAction ("Change Template Settings");
+	if (templateName != newTemplateName)
 	{
-		actionPerformer->beginGroupAction ("Change Template Settings");
-		if (templateName != newTemplateName)
-		{
-			actionPerformer->performTemplateNameChange (templateName.data (),
-			                                            newTemplateName.data ());
-		}
-		if (minSize != originalMinSize || maxSize != originalMaxSize)
-		{
-			actionPerformer->performTemplateMinMaxSizeChange (newTemplateName.data (), minSize,
-			                                                  maxSize);
-		}
-		actionPerformer->finishGroupAction ();
-		return kMessageNotified;
+		actionPerformer->performTemplateNameChange (templateName.data (), newTemplateName.data ());
 	}
-	return kMessageUnknown;
+	if (minSize != originalMinSize || maxSize != originalMaxSize)
+	{
+		actionPerformer->performTemplateMinMaxSizeChange (newTemplateName.data (), minSize,
+		                                                  maxSize);
+	}
+	actionPerformer->finishGroupAction ();
+}
+
+//------------------------------------------------------------------------
+void UITemplateSettingsController::onDialogButton2Clicked (UIDialogController*)
+{
+}
+
+//------------------------------------------------------------------------
+void UITemplateSettingsController::onDialogShow (UIDialogController*)
+{
 }
 
 //----------------------------------------------------------------------------------------------------

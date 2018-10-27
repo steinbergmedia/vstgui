@@ -10,6 +10,7 @@
 #if VSTGUI_LIVE_EDITING
 
 #include "iaction.h"
+#include "uidialogcontroller.h"
 #include "../icontroller.h"
 #include "../../lib/controls/ctextedit.h"
 #include <string>
@@ -17,15 +18,17 @@
 namespace VSTGUI {
 
 //----------------------------------------------------------------------------------------------------
-class UITemplateSettingsController : public CBaseObject, public IController
+class UITemplateSettingsController : public CBaseObject, public IDialogController
 {
 public:
 	UITemplateSettingsController (const std::string& templateName, UIDescription* description, IActionPerformer* actionPerformer);
 	~UITemplateSettingsController () override = default;
 
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;
 	void valueChanged (CControl* control) override;
+	void onDialogButton1Clicked (UIDialogController*) override;
+	void onDialogButton2Clicked (UIDialogController*) override;
+	void onDialogShow (UIDialogController*) override;
 protected:
 	static bool valueToString (float value, char utf8String[256], CParamDisplay::ValueToStringUserData* userData);
 	static bool stringToValue (UTF8StringPtr txt, float& result, CTextEdit::StringToValueUserData* userData);

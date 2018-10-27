@@ -21,11 +21,6 @@
 namespace VSTGUI {
 
 //----------------------------------------------------------------------------------------------------
-IdStringPtr UIDialogController::kMsgDialogButton1Clicked = "UIDialogController::kMsgDialogButton1Clicked";
-IdStringPtr UIDialogController::kMsgDialogButton2Clicked = "UIDialogController::kMsgDialogButton2Clicked";
-IdStringPtr UIDialogController::kMsgDialogShow = "UIDialogController::kMsgDialogShow";
-
-//----------------------------------------------------------------------------------------------------
 UIDialogController::UIDialogController (IController* baseController, CFrame* frame)
 : DelegationController (baseController)
 , frame (frame)
@@ -33,7 +28,10 @@ UIDialogController::UIDialogController (IController* baseController, CFrame* fra
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIDialogController::run (UTF8StringPtr _templateName, UTF8StringPtr _dialogTitle, UTF8StringPtr _button1, UTF8StringPtr _button2, IController* _dialogController, UIDescription* _description)
+void UIDialogController::run (UTF8StringPtr _templateName, UTF8StringPtr _dialogTitle,
+                              UTF8StringPtr _button1, UTF8StringPtr _button2,
+                              const SharedPointer<IDialogController>& _dialogController,
+                              UIDescription* _description)
 {
 	collectOpenGLViews (frame);
 
@@ -41,7 +39,7 @@ void UIDialogController::run (UTF8StringPtr _templateName, UTF8StringPtr _dialog
 	dialogTitle = _dialogTitle;
 	dialogButton1 = _button1;
 	dialogButton2 = _button2 != nullptr ? _button2 : "";
-	dialogController = dynamic_cast<CBaseObject*> (_dialogController);
+	dialogController = _dialogController;
 	dialogDescription = _description;
 	CView* view = UIEditController::getEditorDescription ()->createView ("dialog", this);
 	if (view)
@@ -69,10 +67,12 @@ void UIDialogController::run (UTF8StringPtr _templateName, UTF8StringPtr _dialog
 			frame->setFocusView (button1);
 		setOpenGLViewsVisible (false);
 		if (dialogController)
-			dialogController->notify (this, kMsgDialogShow);
+			dialogController->onDialogShow (this);
 
 		using namespace Animation;
-		view->addAnimation ("AlphaAnimation", new AlphaValueAnimation (1.f), new CubicBezierTimingFunction (CubicBezierTimingFunction::easyInOut (160)));
+		view->addAnimation (
+		    "AlphaAnimation", new AlphaValueAnimation (1.f),
+		    new CubicBezierTimingFunction (CubicBezierTimingFunction::easyInOut (160)));
 	}
 	else
 	{
@@ -146,19 +146,21 @@ void UIDialogController::valueChanged (CControl* control)
 			case kButton1Tag:
 			{
 				if (dialogController)
-					dialogController->notify (this, kMsgDialogButton1Clicked);
+					dialogController->onDialogButton1Clicked (this);
 				break;
 			}
 			case kButton2Tag:
 			{
 				if (dialogController)
-					dialogController->notify (this, kMsgDialogButton2Clicked);
+					dialogController->onDialogButton2Clicked (this);
 				break;
 			}
 		}
 		CView* modalView = frame->getModalView ();
 		using namespace Animation;
-		modalView->addAnimation ("AlphaAnimation", new AlphaValueAnimation (0.f), new CubicBezierTimingFunction (CubicBezierTimingFunction::easyInOut (160)), this);
+		modalView->addAnimation (
+		    "AlphaAnimation", new AlphaValueAnimation (0.f),
+		    new CubicBezierTimingFunction (CubicBezierTimingFunction::easyInOut (160)), this);
 	}
 }
 
@@ -169,7 +171,8 @@ IControlListener* UIDialogController::getControlListener (UTF8StringPtr controlT
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIDialogController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
+CView* UIDialogController::verifyView (CView* view, const UIAttributes& attributes,
+                                       const IUIDescription* description)
 {
 	CControl* control = dynamic_cast<CControl*>(view);
 	if (control)
@@ -253,7 +256,7 @@ void UIDialogController::layoutButtons ()
 		button1->setMouseableArea (b1r2);
 
 		b2r2.offset (b2r1.getWidth () - b2r2.getWidth (), b2r1.getHeight () - b2r2.getHeight ());
-		b2r2.offset ((b1r2.left - margin) - b2r2.right, 0); 
+		b2r2.offset ((b1r2.left - margin) - b2r2.right, 0);
 		button2->setViewSize (b2r2);
 		button2->setMouseableArea (b2r2);
 	}
