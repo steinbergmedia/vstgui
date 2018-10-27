@@ -192,10 +192,6 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
-IdStringPtr UITemplateController::kMsgTemplateChanged = "UITemplateController::kMsgTemplateChanged";
-IdStringPtr UITemplateController::kMsgTemplateNameChanged = "UITemplateController::kMsgTemplateNameChanged";
-
-//----------------------------------------------------------------------------------------------------
 UITemplateController::UITemplateController (IController* baseController, UIDescription* description, UISelection* selection, UIUndoManager* undoManager, IActionPerformer* actionPerformer)
 : DelegationController (baseController)
 , editDescription (description)
@@ -287,7 +283,7 @@ void UITemplateController::dbSelectionChanged (int32_t selectedRow, GenericStrin
 				attr->setAttribute ("SelectedTemplate", selectedTemplateName ? selectedTemplateName->getString () : "");
 			}
 
-			changed (kMsgTemplateChanged);
+			forEachListener ([] (IUITemplateControllerListener* l) { l->onTemplateSelectionChanged ();});
 		}
 		else if (templateView)
 		{
@@ -307,7 +303,6 @@ void UITemplateController::onUIDescTemplateChanged (UIDescription* desc)
 	auto dataSource = dynamic_cast<GenericStringListDataBrowserSource*>(templateDataBrowser->getDelegate ());
 	if (dataSource)
 	{
-		DeferChanges dc (this);
 		int32_t rowToSelect = templateDataBrowser->getSelectedRow ();
 		int32_t index = 0;
 		auto selectedTemplateStr = selectedTemplateName ? *selectedTemplateName : "";

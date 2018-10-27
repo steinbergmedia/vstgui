@@ -81,17 +81,6 @@ void UIDialogController::run (UTF8StringPtr _templateName, UTF8StringPtr _dialog
 }
 
 //----------------------------------------------------------------------------------------------------
-CMessageResult UIDialogController::notify (CBaseObject* sender, IdStringPtr message)
-{
-	if (message == Animation::kMsgAnimationFinished)
-	{
-		close ();
-		return kMessageNotified;
-	}
-	return kMessageUnknown;
-}
-
-//----------------------------------------------------------------------------------------------------
 void UIDialogController::close ()
 {
 	frame->unregisterKeyboardHook (this);
@@ -160,7 +149,8 @@ void UIDialogController::valueChanged (CControl* control)
 		using namespace Animation;
 		modalView->addAnimation (
 		    "AlphaAnimation", new AlphaValueAnimation (0.f),
-		    new CubicBezierTimingFunction (CubicBezierTimingFunction::easyInOut (160)), this);
+		    new CubicBezierTimingFunction (CubicBezierTimingFunction::easyInOut (160)),
+		    [this] (CView*, const IdStringPtr, IAnimationTarget*) { close (); });
 	}
 }
 
@@ -265,7 +255,7 @@ void UIDialogController::layoutButtons ()
 //----------------------------------------------------------------------------------------------------
 int32_t UIDialogController::onKeyDown (const VstKeyCode& code, CFrame* frame)
 {
-	CBaseObjectGuard guard (this);
+	auto guard = shared (this);
 	int32_t result = -1;
 	CView* focusView = frame->getFocusView ();
 	if (focusView)

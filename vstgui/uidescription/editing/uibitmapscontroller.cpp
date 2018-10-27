@@ -454,7 +454,7 @@ bool UIBitmapsDataSource::add ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-class UIBitmapSettingsController : public CBaseObject, public IDialogController
+class UIBitmapSettingsController : public NonAtomicReferenceCounted, public IDialogController
 {
 public:
 	UIBitmapSettingsController (CBitmap* bitmap, const std::string& bitmapName, UIDescription* description, IActionPerformer* actionPerformer);

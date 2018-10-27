@@ -30,7 +30,7 @@ public:
 };
 
 //----------------------------------------------------------------------------------------------------
-class UIDialogController : public CBaseObject,
+class UIDialogController : public NonAtomicReferenceCounted,
                            public DelegationController,
                            public IKeyboardHook,
                            public ViewListenerAdapter
@@ -46,7 +46,6 @@ protected:
 	void valueChanged (CControl* pControl) override;
 	IControlListener* getControlListener (UTF8StringPtr controlTagName) override;
 	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 
 	void viewSizeChanged (CView* view, const CRect& oldSize) override;
 	void viewRemoved (CView* view) override;

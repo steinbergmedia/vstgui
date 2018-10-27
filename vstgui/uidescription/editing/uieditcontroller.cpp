@@ -404,7 +404,7 @@ UIEditController::UIEditController (UIDescription* description)
 UIEditController::~UIEditController ()
 {
 	if (templateController)
-		templateController->removeDependency (this);
+		templateController->unregisterListener (this);
 	undoManager->unregisterListener (this);
 	editDescription->unregisterListener (this);
 	editorDesc = nullptr;
@@ -647,7 +647,7 @@ IController* UIEditController::createSubController (UTF8StringPtr name, const IU
 	{
 		vstgui_assert (templateController == nullptr);
 		templateController = new UITemplateController (this, editDescription, selection, undoManager, this);
-		templateController->addDependency (this);
+		templateController->registerListener (this);
 		return templateController;
 	}
 	else if (subControllerName == "MenuController")
@@ -747,14 +747,52 @@ void UIEditController::onUndoManagerChange ()
 }
 
 //----------------------------------------------------------------------------------------------------
+void UIEditController::onTemplateSelectionChanged ()
+{
+	if (editView && templateController)
+	{
+		const auto& name = templateController->getSelectedTemplateName ();
+		if ((name && *name != editTemplateName) || name == nullptr)
+		{
+			if (undoManager->canUndo () && !editTemplateName.empty ())
+				updateTemplate (editTemplateName.c_str ());
+			if (name)
+			{
+				for (auto& it : templates)
+				{
+					if (*name == it.name)
+					{
+						CView* view = it.view;
+						editView->setEditView (view);
+						templateController->setTemplateView (static_cast<CViewContainer*> (view));
+						editTemplateName = *templateController->getSelectedTemplateName ();
+						view->remember ();
+						break;
+					}
+				}
+			}
+			else
+			{
+				selection->clear ();
+				editView->setEditView (nullptr);
+				templateController->setTemplateView (nullptr);
+				editTemplateName = "";
+			}
+		}
+		if (editView->getEditView ())
+		{
+			if (!(selection->first () && editView->getEditView ()->asViewContainer ()->isChild (selection->first (), true)))
+				selection->setExclusive (editView->getEditView ());
+		}
+		else
+			selection->clear ();
+	}
+}
+
+//----------------------------------------------------------------------------------------------------
 CMessageResult UIEditController::notify (CBaseObject* sender, IdStringPtr message)
 {
-	if (message == UITemplateController::kMsgTemplateChanged)
-	{
-		onTemplateSelectionChanged ();
-		return kMessageNotified;
-	}
-	else if (message == UIEditView::kMsgAttached)
+	if (message == UIEditView::kMsgAttached)
 	{
 		vstgui_assert (editView);
 		editView->getFrame ()->registerKeyboardHook (this);
@@ -827,49 +865,6 @@ void UIEditController::beforeSave ()
 		if (zoomSettingController)
 			zoomSettingController->storeSetting (*getSettings ());
 		setDirty (false);
-	}
-}
-
-//----------------------------------------------------------------------------------------------------
-void UIEditController::onTemplateSelectionChanged ()
-{
-	if (editView && templateController)
-	{
-		const auto& name = templateController->getSelectedTemplateName ();
-		if ((name && *name != editTemplateName) || name == nullptr)
-		{
-			if (undoManager->canUndo () && !editTemplateName.empty ())
-				updateTemplate (editTemplateName.c_str ());
-			if (name)
-			{
-				for (auto& it : templates)
-				{
-					if (*name == it.name)
-					{
-						CView* view = it.view;
-						editView->setEditView (view);
-						templateController->setTemplateView (static_cast<CViewContainer*> (view));
-						editTemplateName = *templateController->getSelectedTemplateName ();
-						view->remember ();
-						break;
-					}
-				}
-			}
-			else
-			{
-				selection->clear ();
-				editView->setEditView (nullptr);
-				templateController->setTemplateView (nullptr);
-				editTemplateName = "";
-			}
-		}
-		if (editView->getEditView ())
-		{
-			if (!(selection->first () && editView->getEditView ()->asViewContainer ()->isChild (selection->first (), true)))
-				selection->setExclusive (editView->getEditView ());
-		}
-		else
-			selection->clear ();
 	}
 }
 

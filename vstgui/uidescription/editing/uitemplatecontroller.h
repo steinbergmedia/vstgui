@@ -15,6 +15,7 @@
 #include "../delegationcontroller.h"
 #include "../uidescriptionlistener.h"
 #include "../../lib/cdatabrowser.h"
+#include "../../lib/dispatchlist.h"
 #include "../../lib/genericstringlistdatabrowsersource.h"
 #include <vector>
 #include <list>
@@ -23,12 +24,22 @@ namespace VSTGUI {
 class UIViewListDataSource;
 
 //----------------------------------------------------------------------------------------------------
-class UITemplateController : public CBaseObject,
-                             public DelegationController,
-                             public IContextMenuController2,
-                             public GenericStringListDataBrowserSourceSelectionChanged,
-                             public IDependency,
-                             public UIDescriptionListenerAdapter
+class IUITemplateControllerListener
+{
+public:
+	virtual ~IUITemplateControllerListener () noexcept = default;
+	
+	virtual void onTemplateSelectionChanged () = 0;
+};
+
+//----------------------------------------------------------------------------------------------------
+class UITemplateController
+: public NonAtomicReferenceCounted,
+  public DelegationController,
+  public IContextMenuController2,
+  public GenericStringListDataBrowserSourceSelectionChanged,
+  public UIDescriptionListenerAdapter,
+  public ListenerDispatcher<UITemplateController, IUITemplateControllerListener>
 {
 public:
 	UITemplateController (IController* baseController, UIDescription* description, UISelection* selection, UIUndoManager* undoManager, IActionPerformer* actionPerformer);
@@ -40,9 +51,6 @@ public:
 	void setTemplateView (CViewContainer* view);
 	
 	static void setupDataBrowser (CDataBrowser* orignalBrowser, CDataBrowser* dataBrowser);
-
-	static IdStringPtr kMsgTemplateChanged;
-	static IdStringPtr kMsgTemplateNameChanged;
 protected:
 	void onUIDescTemplateChanged (UIDescription* desc) override;
 	void valueChanged (CControl* pControl) override {}

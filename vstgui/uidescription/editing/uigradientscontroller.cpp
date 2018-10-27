@@ -360,7 +360,7 @@ bool UIColorStopEditView::getFocusPath (CGraphicsPath& outPath)
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-class UIGradientEditorController : public CBaseObject,
+class UIGradientEditorController : public NonAtomicReferenceCounted,
                                    public IDialogController,
                                    public UIColorListenerAdapter,
                                    public IUIColorStopEditViewListener

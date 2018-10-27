@@ -14,6 +14,7 @@
 #include "../uidescriptionlistener.h"
 #include "iaction.h"
 #include "uiundomanager.h"
+#include "uitemplatecontroller.h"
 #include "../../lib/csplitview.h"
 #include "../../lib/cframe.h"
 #include "../../lib/controls/icommandmenuitemtarget.h"
@@ -40,7 +41,8 @@ class UIEditController : public CBaseObject,
                          public IKeyboardHook,
                          public CommandMenuItemTargetAdapter,
                          public UIDescriptionListenerAdapter,
-                         public IUIUndoManagerListener
+                         public IUIUndoManagerListener,
+                         public IUITemplateControllerListener
 {
 public:
 	UIEditController (UIDescription* description);
@@ -75,6 +77,9 @@ protected:
 	IController* createSubController (UTF8StringPtr name, const IUIDescription* description) override;
 
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
+
+	// IUITemplateControllerListener
+	void onTemplateSelectionChanged () override;
 
 	// IUIUndoManagerListener
 	void onUndoManagerChange () override;
@@ -175,7 +180,6 @@ private:
 	bool doUIDescTemplateUpdate (UIDescription* desc, UTF8StringPtr name) override;
 
 	void beforeSave ();
-	void onTemplateSelectionChanged ();
 	CMessageResult validateMenuItem (CCommandMenuItem* item);
 	CMessageResult onMenuItemSelection (CCommandMenuItem* item);
 	void doCopy (bool cut = false);
