@@ -206,11 +206,13 @@ class InvalidateRegionTestView : public CView
 public:
 	InvalidateRegionTestView (const CRect& size) : CView (size) {}
 
-	void printRect (const CRect& r)
+	void printRect (const char* prefix, const CRect& r)
 	{
-		DebugPrint ("%d,%d (%dx%d)", static_cast<int32_t> (r.left), static_cast<int32_t> (r.top),
-		            static_cast<int32_t> (r.right - r.left),
+#if DEBUG
+		DebugPrint ("%s, %d,%d (%dx%d)\n", prefix, static_cast<int32_t> (r.left),
+		            static_cast<int32_t> (r.top), static_cast<int32_t> (r.right - r.left),
 		            static_cast<int32_t> (r.bottom - r.top));
+#endif
 	}
 
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& state) override
@@ -237,10 +239,8 @@ public:
 
 	void invalRect (const CRect& r)
 	{
+		printRect ("InvalidRect: ", r);
 		invalidRect (r);
-		DebugPrint ("InvalidRect: ");
-		printRect (r);
-		DebugPrint ("\n");
 	}
 
 	void drawRect (CDrawContext* context, const CRect& r) override
@@ -252,9 +252,7 @@ public:
 		}
 		else
 		{
-			DebugPrint ("DrawRect: ");
-			printRect (r);
-			DebugPrint ("\n");
+			printRect ("DrawRect: ", r);
 
 			double h, s, v;
 			color.toHSV (h, s, v);
