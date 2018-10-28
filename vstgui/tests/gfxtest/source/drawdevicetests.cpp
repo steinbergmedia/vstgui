@@ -1,4 +1,4 @@
-// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
@@ -201,6 +201,75 @@ void drawRects (CDrawContext& context, CPoint size)
 }
 
 //------------------------------------------------------------------------
+class InvalidateRegionTestView : public CView
+{
+public:
+	InvalidateRegionTestView (const CRect& size) : CView (size) {}
+
+	void printRect (const CRect& r)
+	{
+		DebugPrint ("%d,%d (%dx%d)", static_cast<int32_t> (r.left), static_cast<int32_t> (r.top),
+		            static_cast<int32_t> (r.right - r.left),
+		            static_cast<int32_t> (r.bottom - r.top));
+	}
+
+	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& state) override
+	{
+		auto r1 = getViewSize ();
+		r1.setWidth (r1.getWidth () / 2.);
+		auto r2 = r1;
+		r2.offset (r2.getWidth (), 0);
+
+		r2.inset (10, 50);
+		r2.setHeight (r2.getHeight () / 2.);
+		auto r3 = r2;
+		r2.inset (0, 10);
+		r3.offset (0, r3.getHeight ());
+		r3.inset (0, 10);
+
+		r1.inset (10, 0);
+
+		invalRect (r1);
+		invalRect (r2);
+		invalRect (r3);
+		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
+	}
+
+	void invalRect (const CRect& r)
+	{
+		invalidRect (r);
+		DebugPrint ("InvalidRect: ");
+		printRect (r);
+		DebugPrint ("\n");
+	}
+
+	void drawRect (CDrawContext* context, const CRect& r) override
+	{
+		if (r == getViewSize ())
+		{
+			context->setFillColor (kWhiteCColor);
+			context->drawRect (r, kDrawFilled);
+		}
+		else
+		{
+			DebugPrint ("DrawRect: ");
+			printRect (r);
+			DebugPrint ("\n");
+
+			double h, s, v;
+			color.toHSV (h, s, v);
+			h += 40;
+			color.fromHSV (h, s, v);
+			context->setFillColor (color);
+			context->drawRect (r, kDrawFilled);
+		}
+		setDirty (false);
+	}
+	bool toggle {false};
+	CColor color {kRedCColor};
+};
+
+//------------------------------------------------------------------------
 class ViewCreator : public DelegationController
 {
 public:
@@ -214,8 +283,9 @@ public:
 			{
 				return new CustomDrawView ([] (auto& ctx, auto size) { drawRects (ctx, size); });
 			}
-			else if (*customViewName == "PathsView")
+			else if (*customViewName == "InvalidRegionView")
 			{
+				return new InvalidateRegionTestView (CRect (0, 0, 500, 500));
 			}
 		}
 		return DelegationController::createView (attributes, description);
