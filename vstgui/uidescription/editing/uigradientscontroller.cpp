@@ -426,7 +426,7 @@ void UIGradientEditorController::apply ()
 void UIGradientEditorController::updatePositionEdit ()
 {
 	if (positionEdit && colorStopEditView)
-		positionEdit->setValue (colorStopEditView->getSelectedColorStart ());
+		positionEdit->setValue (static_cast<float> (colorStopEditView->getSelectedColorStart ()));
 }
 
 //----------------------------------------------------------------------------------------------------
