@@ -1126,10 +1126,10 @@ bool UIDescription::storeViews (const std::list<CView*>& views, OutputStream& st
 		else
 		{
 		#if VSTGUI_LIVE_EDITING
-			auto attr = makeOwned<UIAttributes> ();
 			UIViewFactory* factory = dynamic_cast<UIViewFactory*> (impl->viewFactory);
 			if (factory)
 			{
+				auto attr = makeOwned<UIAttributes> ();
 				if (factory->getAttributesForView (view, const_cast<UIDescription*> (this), *attr) == false)
 					return false;
 				UINode* node = new UINode ("view", attr);
