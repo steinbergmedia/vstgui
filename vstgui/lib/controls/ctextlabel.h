@@ -54,12 +54,6 @@ public:
 	void unregisterTextLabelListener (ITextLabelListener* listener);
 	//@}
 
-	VSTGUI_DEPRECATED (
-	/** message which is send to dependent objects when the truncated text changes. \deprecated
-	   use ITextLabelListener instead */
-	static IdStringPtr kMsgTruncatedTextChanged;
-	)
-
 	void draw (CDrawContext* pContext) override;
 	bool sizeToFit () override;
 	void setViewSize (const CRect& rect, bool invalid = true) override;
