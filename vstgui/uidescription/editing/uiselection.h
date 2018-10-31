@@ -43,7 +43,7 @@ public:
 
 //----------------------------------------------------------------------------------------------------
 class UISelection : public NonAtomicReferenceCounted,
-                    protected ListenerDispatcher<UISelection, IUISelectionListener>
+                    protected ListenerProvider<UISelection, IUISelectionListener>
 //----------------------------------------------------------------------------------------------------
 {
 public:
@@ -112,8 +112,8 @@ public:
 		UISelection& selection;
 	};
 	
-	using ListenerDispatcher<UISelection, IUISelectionListener>::registerListener;
-	using ListenerDispatcher<UISelection, IUISelectionListener>::unregisterListener;
+	using ListenerProvider<UISelection, IUISelectionListener>::registerListener;
+	using ListenerProvider<UISelection, IUISelectionListener>::unregisterListener;
 protected:
 	int32_t style;
 	

@@ -39,7 +39,7 @@ class UITemplateController
   public IContextMenuController2,
   public GenericStringListDataBrowserSourceSelectionChanged,
   public UIDescriptionListenerAdapter,
-  public ListenerDispatcher<UITemplateController, IUITemplateControllerListener>
+  public ListenerProvider<UITemplateController, IUITemplateControllerListener>
 {
 public:
 	UITemplateController (IController* baseController, UIDescription* description, UISelection* selection, UIUndoManager* undoManager, IActionPerformer* actionPerformer);

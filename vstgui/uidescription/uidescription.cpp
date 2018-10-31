@@ -663,7 +663,7 @@ static std::string removeScaleFactorFromName (const std::string& name)
 IdStringPtr IUIDescription::kCustomViewName = "custom-view-name";
 
 //-----------------------------------------------------------------------------
-struct UIDescription::Impl : ListenerDispatcher<Impl, UIDescriptionListener>
+struct UIDescription::Impl : ListenerProvider<Impl, UIDescriptionListener>
 {
 	CResourceDescription xmlFile;
 	std::string filePath;

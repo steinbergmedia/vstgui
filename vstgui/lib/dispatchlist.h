@@ -48,7 +48,7 @@ private:
 
 //------------------------------------------------------------------------
 template <typename T, typename ListenerInterface>
-struct ListenerDispatcher
+struct ListenerProvider
 {
 //------------------------------------------------------------------------
 	using List = DispatchList<ListenerInterface*>;
