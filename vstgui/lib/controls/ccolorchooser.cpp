@@ -294,10 +294,6 @@ bool CColorChooser::convertAngle (UTF8StringPtr string, float& output, CTextEdit
 }
 
 //-----------------------------------------------------------------------------
-IdStringPtr CColorChooser::kMsgBeginColorChange = "CColorChooser::kMsgBeginColorChange";
-IdStringPtr CColorChooser::kMsgEndColorChange = "CColorChooser::kMsgEndColorChange";
-
-//-----------------------------------------------------------------------------
 CColorChooser::CColorChooser (IColorChooserDelegate* delegate, const CColor& initialColor, const CColorChooserUISettings& settings)
 : CViewContainer (CRect (0, 0, 0, 0))
 , delegate (delegate)
@@ -542,13 +538,15 @@ void CColorChooser::valueChanged (CControl* control)
 //-----------------------------------------------------------------------------
 void CColorChooser::controlBeginEdit (CControl* pControl)
 {
-	changed (kMsgBeginColorChange);
+	if (delegate)
+		delegate->onBeginColorChange (this);
 }
 
 //-----------------------------------------------------------------------------
 void CColorChooser::controlEndEdit (CControl* pControl)
 {
-	changed (kMsgEndColorChange);
+	if (delegate)
+		delegate->onEndColorChange (this);
 }
 
 //-----------------------------------------------------------------------------
