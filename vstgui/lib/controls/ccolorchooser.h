@@ -23,6 +23,8 @@ class IColorChooserDelegate
 {
 public:
 	virtual void colorChanged (CColorChooser* chooser, const CColor& color) = 0;
+	virtual void onBeginColorChange (CColorChooser* chooser) = 0;
+	virtual void onEndColorChange (CColorChooser* chooser) = 0;
 };
 
 //-----------------------------------------------------------------------------
@@ -39,16 +41,13 @@ struct CColorChooserUISettings
 
 ///	@ingroup new_in_4_0
 //-----------------------------------------------------------------------------
-class CColorChooser : public CViewContainer, public IControlListener, public IDependency
+class CColorChooser : public CViewContainer, public IControlListener
 {
 public:
 	CColorChooser (IColorChooserDelegate* delegate = 0, const CColor& initialColor = kTransparentCColor, const CColorChooserUISettings& settings = CColorChooserUISettings ());
 	~CColorChooser () noexcept override = default;
 
 	void setColor (const CColor& newColor);
-	
-	static IdStringPtr kMsgBeginColorChange;
-	static IdStringPtr kMsgEndColorChange;
 //-----------------------------------------------------------------------------
 protected:
 	void valueChanged (CControl* pControl) override;
