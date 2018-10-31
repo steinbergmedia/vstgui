@@ -38,7 +38,7 @@ public:
 
 //----------------------------------------------------------------------------------------------------
 class UIColor : public NonAtomicReferenceCounted,
-                protected ListenerDispatcher<UIColor, IUIColorListener>,
+                protected ListenerProvider<UIColor, IUIColorListener>,
                 protected CColor
 {
 public:
@@ -68,8 +68,8 @@ public:
 	void beginEdit ();
 	void endEdit ();
 
-	using ListenerDispatcher<UIColor, IUIColorListener>::registerListener;
-	using ListenerDispatcher<UIColor, IUIColorListener>::unregisterListener;
+	using ListenerProvider<UIColor, IUIColorListener>::registerListener;
+	using ListenerProvider<UIColor, IUIColorListener>::unregisterListener;
 	using CColor::operator==;
 	using CColor::operator!=;
 private:

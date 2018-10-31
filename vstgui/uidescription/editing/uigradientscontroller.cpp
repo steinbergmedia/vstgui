@@ -29,7 +29,7 @@ struct IUIColorStopEditViewListener
 //------------------------------------------------------------------------
 class UIColorStopEditView
 : public CView,
-  protected ListenerDispatcher<UIColorStopEditView, IUIColorStopEditViewListener>,
+  protected ListenerProvider<UIColorStopEditView, IUIColorStopEditViewListener>,
   public IFocusDrawing,
   public UIColorListenerAdapter
 {
@@ -43,8 +43,8 @@ public:
 	double getSelectedColorStart () const { return editStartOffset; }
 	const CGradient::ColorStopMap& getColorStopMap () const { return colorStopMap; }
 
-	using ListenerDispatcher<UIColorStopEditView, IUIColorStopEditViewListener>::registerListener;
-	using ListenerDispatcher<UIColorStopEditView, IUIColorStopEditViewListener>::unregisterListener;
+	using ListenerProvider<UIColorStopEditView, IUIColorStopEditViewListener>::registerListener;
+	using ListenerProvider<UIColorStopEditView, IUIColorStopEditViewListener>::unregisterListener;
 private:
 	void draw (CDrawContext* context) override;
 	bool drawFocusOnTop () override;
