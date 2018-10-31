@@ -6,6 +6,9 @@
 #define __idependency__
 
 #include "vstguibase.h"
+
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+
 #include "vstguidebug.h"
 #include <list>
 #include <set>
@@ -59,7 +62,7 @@ protected:
 	int32_t deferChangeCount {0};
 	DeferedChangesSet deferedChanges;
 	DependentList dependents;
-};
+} VSTGUI_DEPRECATED_ATTRIBUTE;
 
 //----------------------------------------------------------------------------------------------------
 inline void IDependency::addDependency (CBaseObject* obj)
@@ -113,5 +116,7 @@ inline IDependency::~IDependency () noexcept
 }
 
 } // namespace
+
+#endif // VSTGUI_ENABLE_DEPRECATED_METHODS
 
 #endif
