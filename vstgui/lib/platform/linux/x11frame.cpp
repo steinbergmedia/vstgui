@@ -503,7 +503,13 @@ struct Frame::Impl : IFrameEventHandler
 				case XEMBED::EMBEDDED_NOTIFY:
 				{
 					auto xcb = RunLoop::instance ().getXcbConnection ();
-					xcb_map_window (xcb, window.getID ());
+                                        auto cookie = xcb_map_window_checked (xcb, window.getID ());
+                                        auto error = xcb_request_check(xcb, cookie);
+                                        if (error)
+                                        {
+                                            std::cerr << "VSTGUI: xcb_map_window() failed: " << xcb_event_get_error_label(error->error_code) << std::endl;
+                                            ::free(error);
+                                        }
 					break;
 				}
 				case XEMBED::WINDOW_ACTIVATE:

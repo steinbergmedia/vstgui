@@ -1,3 +1,4 @@
+#include <iostream>
 
 #include "x11utils.h"
 #include <xcb/xcb.h>
@@ -40,10 +41,7 @@ ChildWindow::ChildWindow (::Window parentId, CPoint size)
 	auto setup = xcb_get_setup (connection);
 	auto iter = xcb_setup_roots_iterator (setup);
 	auto screen = iter.data;
-	visual = getVisualType (screen);
-#if 0
-		parentId = screen->root;
-#endif
+        visual = getVisualType (screen);
 	uint32_t paramMask = XCB_CW_BACK_PIXMAP | XCB_CW_BACKING_STORE | XCB_CW_EVENT_MASK;
 	xcb_params_cw_t params{};
 	params.back_pixel = XCB_BACK_PIXMAP_NONE;
@@ -55,9 +53,11 @@ ChildWindow::ChildWindow (::Window parentId, CPoint size)
 		XCB_EVENT_MASK_BUTTON_MOTION | XCB_EVENT_MASK_EXPOSURE | XCB_EVENT_MASK_PROPERTY_CHANGE |
 		XCB_EVENT_MASK_EXPOSURE | XCB_EVENT_MASK_FOCUS_CHANGE;
 
-	xcb_aux_create_window (connection, XCB_COPY_FROM_PARENT, getID (), parentId, 0, 0, size.x,
-						   size.y, 0, XCB_WINDOW_CLASS_INPUT_OUTPUT, XCB_COPY_FROM_PARENT,
-						   paramMask, &params);
+        xcb_aux_create_window (connection, XCB_COPY_FROM_PARENT, getID (),
+                               parentId == BadWindow ? screen->root : parentId,
+                               0, 0, size.x,
+                               size.y, 0, XCB_WINDOW_CLASS_INPUT_OUTPUT, XCB_COPY_FROM_PARENT,
+                               paramMask, &params);
 
 	// setup XEMBED
 	if (Atoms::xEmbedInfo.valid ())
@@ -67,7 +67,24 @@ ChildWindow::ChildWindow (::Window parentId, CPoint size)
 							 Atoms::xEmbedInfo (), 32, 2, &info);
 	}
 
-	xcb_flush (connection);
+        // Classic xcb reparenting
+        auto cookie = xcb_reparent_window_checked(connection, id, parentId, 0, 0);
+        auto error = xcb_request_check(connection, cookie);
+        if (error)
+        {
+            std::cerr << "xcb_reparent_window failed: " << xcb_event_get_error_label(error->error_code) << std::endl;
+            free(error);
+        }
+
+        cookie = xcb_map_window_checked(connection, id);
+        error = xcb_request_check(connection, cookie);
+        if (error)
+        {
+            std::cerr << "xcb_map_window failed: " << xcb_event_get_error_label(error->error_code) << std::endl;
+            free(error);
+        }
+
+        // no xcb_flush() needed, because the above xcb_request_check() did flush+sync.
 }
 
 //------------------------------------------------------------------------
