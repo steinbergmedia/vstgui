@@ -60,31 +60,34 @@ ChildWindow::ChildWindow (::Window parentId, CPoint size)
                                paramMask, &params);
 
 	// setup XEMBED
-	if (Atoms::xEmbedInfo.valid ())
+        if (Atoms::xEmbed.valid () && Atoms::xEmbedInfo.valid ())
 	{
 		XEmbedInfo info;
 		xcb_change_property (connection, XCB_PROP_MODE_REPLACE, getID (), Atoms::xEmbedInfo (),
 							 Atoms::xEmbedInfo (), 32, 2, &info);
 	}
 
-        // Classic xcb reparenting
-        auto cookie = xcb_reparent_window_checked(connection, id, parentId, 0, 0);
-        auto error = xcb_request_check(connection, cookie);
-        if (error)
+        // Check if the parent is using XEmbed
+        xcb_generic_error_t *error = nullptr;
+        auto parentEmbedInfoCookie = xcb_get_property(connection, false, parentId, Atoms::xEmbedInfo (), Atoms::xEmbedInfo (), 0, 2);
+        auto parentEmbedInfo = xcb_get_property_reply(connection, parentEmbedInfoCookie, &error);
+
+        if (error || !parentEmbedInfo || parentEmbedInfo->length < 2)
         {
-            std::cerr << "xcb_reparent_window failed: " << xcb_event_get_error_label(error->error_code) << std::endl;
-            free(error);
+            // The parent does not have XEmbed
+            ::free(error);
+
+            // Classic xcb reparenting
+            auto cookie = xcb_map_window_checked (connection, id);
+            error = xcb_request_check (connection, cookie);
+            if (error)
+            {
+                std::cerr << "xcb_map_window failed: " << xcb_event_get_error_label(error->error_code) << std::endl;
+                ::free (error);
+            }
         }
 
-        cookie = xcb_map_window_checked(connection, id);
-        error = xcb_request_check(connection, cookie);
-        if (error)
-        {
-            std::cerr << "xcb_map_window failed: " << xcb_event_get_error_label(error->error_code) << std::endl;
-            free(error);
-        }
-
-        // no xcb_flush() needed, because the above xcb_request_check() did flush+sync.
+        xcb_aux_sync(connection);
 }
 
 //------------------------------------------------------------------------
