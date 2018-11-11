@@ -295,8 +295,10 @@ public:
 	/// @name Animation Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	void addAnimation (IdStringPtr name, Animation::IAnimationTarget* target, Animation::ITimingFunction* timingFunction, CBaseObject* notificationObject = nullptr);
-	void addAnimation (IdStringPtr name, Animation::IAnimationTarget* target, Animation::ITimingFunction* timingFunction, const Animation::DoneFunction& doneFunc);
+	VSTGUI_DEPRECATED(void addAnimation (IdStringPtr name, Animation::IAnimationTarget* target, Animation::ITimingFunction* timingFunction, CBaseObject* notificationObject);)
+	void addAnimation (IdStringPtr name, Animation::IAnimationTarget* target,
+	                   Animation::ITimingFunction* timingFunction,
+	                   const Animation::DoneFunction& doneFunc = nullptr);
 	void removeAnimation (IdStringPtr name);
 	void removeAllAnimations ();
 	//@}
