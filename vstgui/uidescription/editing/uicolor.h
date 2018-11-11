@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __uicolor__
-#define __uicolor__
+#pragma once
 
 #include "../../lib/vstguibase.h"
 
@@ -86,8 +85,6 @@ private:
 	double r, g, b;
 };
 
-} // namespace
+} // VSTGUI
 
 #endif // VSTGUI_LIVE_EDITING
-
-#endif // __uicolor__

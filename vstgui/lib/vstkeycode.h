@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __vstkeycode__
-#define __vstkeycode__
+#pragma once
 
 #ifndef __aeffectx__
 // define VstKeyCode for non VST useage
@@ -90,6 +89,4 @@ enum VstModifierKey
 	MODIFIER_COMMAND   = 1<<2, // Control on Mac
 	MODIFIER_CONTROL   = 1<<3  // Ctrl on PC, Apple on Mac
 };
-#endif
-
 #endif

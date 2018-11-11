@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __nsviewframe__
-#define __nsviewframe__
+#pragma once
 
 #include "../../../vstguifwd.h"
 
@@ -107,7 +106,6 @@ protected:
 	CCursorType cursor;
 };
 
-} // namespace
+} // VSTGUI
 
 #endif // MAC_COCOA
-#endif // __nsviewframe__

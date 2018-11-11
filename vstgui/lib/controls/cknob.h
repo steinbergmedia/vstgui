@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __cknob__
-#define __cknob__
+#pragma once
 
 #include "ccontrol.h"
 #include "../ccolor.h"
@@ -157,6 +156,4 @@ protected:
 	bool	bInverseBitmap;
 };
 
-} // namespace
-
-#endif
+} // VSTGUI

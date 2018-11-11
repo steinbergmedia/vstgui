@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __ifocusdrawing__
-#define __ifocusdrawing__
+#pragma once
 
 #include "vstguifwd.h"
 
@@ -28,6 +27,4 @@ public:
 	virtual bool getFocusPath (CGraphicsPath& outPath) = 0;
 };
 
-} // namespace
-
-#endif
+} // VSTGUI

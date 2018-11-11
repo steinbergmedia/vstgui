@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __uiundomanager__
-#define __uiundomanager__
+#pragma once
 
 #include "../../lib/vstguibase.h"
 
@@ -62,8 +61,6 @@ protected:
 	GroupActionDeque groupQueue;
 };
 
-} // namespace
+} // VSTGUI
 
 #endif // VSTGUI_LIVE_EDITING
-
-#endif // __uiundomanager__

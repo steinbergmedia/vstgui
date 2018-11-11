@@ -445,6 +445,6 @@ SharedPointer<IPlatformBitmapPixelAccess> CGBitmap::lockPixels (bool alphaPremul
 	return nullptr;
 }
 
-} // namespace
+} // VSTGUI
 
 #endif // MAC

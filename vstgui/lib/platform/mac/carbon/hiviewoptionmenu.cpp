@@ -174,7 +174,7 @@ MenuRef HIViewOptionMenu::createMenu (COptionMenu* menu)
 	return menuRef;
 }
 
-} // namespace
+} // VSTGUI
 
 #pragma clang diagnostic pop
 

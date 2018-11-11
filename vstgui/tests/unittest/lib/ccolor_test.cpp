@@ -102,4 +102,4 @@ TESTCASE(CColorTest,
 	);
 );
 
-} // namespace
+} // VSTGUI

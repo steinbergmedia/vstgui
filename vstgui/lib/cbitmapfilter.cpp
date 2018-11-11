@@ -923,7 +923,7 @@ void registerStandardFilters (Factory& factory)
 	factory.registerFilter (kScaleLinear, ScaleLinear::CreateFunction);
 }
 
-} // namespace Standard
+} // Standard
 
 ///@end cond
 

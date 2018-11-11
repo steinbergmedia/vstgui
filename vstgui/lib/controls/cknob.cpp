@@ -813,4 +813,4 @@ void CAnimKnob::draw (CDrawContext *pContext)
 	setDirty (false);
 }
 
-} // namespace
+} // VSTGUI

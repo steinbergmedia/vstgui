@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __cpoint__
-#define __cpoint__
+#pragma once
 
 #include "vstguibase.h"
 #include <cmath>
@@ -52,7 +51,4 @@ inline CPoint& CPoint::makeIntegral ()
 	return *this;
 }
 
-
-} // namespace
-
-#endif
+} // VSTGUI

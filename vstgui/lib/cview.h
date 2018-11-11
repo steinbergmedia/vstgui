@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __cview__
-#define __cview__
+#pragma once
 
 #include "vstguifwd.h"
 #include "cpoint.h"
@@ -437,6 +436,4 @@ protected:
 	int32_t index {0};
 };
 
-} // namespace
-
-#endif
+} // VSTGUI

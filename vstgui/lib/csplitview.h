@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __csplitview__
-#define __csplitview__
+#pragma once
 
 #include "vstguifwd.h"
 #include "cviewcontainer.h"
@@ -131,6 +130,4 @@ public:
 	virtual void drawSplitViewSeparator (CDrawContext* context, const CRect& size, int32_t flags, int32_t index, CSplitView* splitView) = 0;
 };
 
-}
-
-#endif // __csplitview__
+} // VSTGUI

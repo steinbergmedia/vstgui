@@ -66,7 +66,7 @@ void DebugPrint (const char *format, ...)
 	#endif
 }
 
-} // namespace
+} // VSTGUI
 
 #endif // DEBUG
 
@@ -111,4 +111,4 @@ void doAssert (const char* filename, const char* line, const char* desc) noexcep
 #endif // DEBUG
 }
 	
-} // namespace
+} // VSTGUI

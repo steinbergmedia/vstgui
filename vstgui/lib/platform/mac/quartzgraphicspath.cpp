@@ -378,7 +378,7 @@ CGradient* CGradient::create (const ColorStopMap& colorStopMap)
 	return new QuartzGradient (colorStopMap);
 }
 
-} // namespace
+} // VSTGUI
 
 
 #endif

@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __uigrid__
-#define __uigrid__
+#pragma once
 
 #include "../../lib/cpoint.h"
 
@@ -35,8 +34,6 @@ protected:
 	CPoint size;
 };
 
-} // namespace
+} // VSTGUI
 
 #endif // VSTGUI_LIVE_EDITING
-
-#endif // __uigrid__

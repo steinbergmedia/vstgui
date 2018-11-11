@@ -152,6 +152,6 @@ void UIColorSlider::updateHandle (CDrawContext* context)
 	}
 }
 
-} // namespace
+} // VSTGUI
 
 #endif // VSTGUI_LIVE_EDITING

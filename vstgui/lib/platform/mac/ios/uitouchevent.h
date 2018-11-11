@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __uitouchevent__
-#define __uitouchevent__
+#pragma once
 
 #include "../../../itouchevent.h"
 
@@ -32,8 +31,6 @@ public:
 	double getTimeStamp () const override { return currentTime; }
 };
 
-} // namespace
+} // VSTGUI
 
 #endif // VSTGUI_TOUCH_EVENT_HANDLING
-
-#endif // __uitouchevent__

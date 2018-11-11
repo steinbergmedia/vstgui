@@ -306,6 +306,6 @@ void UIColorChooserController::valueChanged (CControl* pControl)
 	}
 }
 
-} // namespace
+} // VSTGUI
 
 #endif // VSTGUI_LIVE_EDITING

@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __quartzgraphicspath__
-#define __quartzgraphicspath__
+#pragma once
 
 #include "../../cgraphicspath.h"
 #include "../../cgradient.h"
@@ -69,8 +68,6 @@ protected:
 	mutable CGGradientRef gradient;
 };
 
-} // namespace
+} // VSTGUI
 
 #endif
-
-#endif // __quartzgraphicspath__

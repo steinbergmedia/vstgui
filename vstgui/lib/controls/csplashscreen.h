@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __csplashscreen__
-#define __csplashscreen__
+#pragma once
 
 #include "ccontrol.h"
 #include "icontrollistener.h"
@@ -96,6 +95,4 @@ protected:
 	uint32_t animationTime{500};
 };
 
-} // namespace
-
-#endif
+} // VSTGUI

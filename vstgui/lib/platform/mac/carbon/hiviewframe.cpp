@@ -1265,7 +1265,7 @@ pascal OSStatus HIViewFrame::carbonEventHandler (EventHandlerCallRef inHandlerCa
 }
 
 
-} // namespace
+} // VSTGUI
 
 #pragma clang diagnostic pop
 

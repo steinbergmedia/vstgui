@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __ccolorchooser__
-#define __ccolorchooser__
+#pragma once
 
 #include "../vstguifwd.h"
 #include "../cviewcontainer.h"
@@ -93,6 +92,4 @@ protected:
 
 };
 
-} // namespace
-
-#endif
+} // VSTGUI

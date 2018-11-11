@@ -304,5 +304,5 @@ bool CAutoLayoutContainerView::changeViewZOrder (CView* view, uint32_t newIndex)
 	return false;
 }
 
-} // namespace
+} // VSTGUI
 

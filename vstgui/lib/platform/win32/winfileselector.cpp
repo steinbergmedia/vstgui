@@ -301,6 +301,6 @@ bool VistaFileSelector::runModalInternal ()
 	return SUCCEEDED (hr);
 }
 
-} // namespace
+} // VSTGUI
 
 #endif // WINDOWS

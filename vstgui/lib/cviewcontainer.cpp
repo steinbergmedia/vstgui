@@ -1475,4 +1475,4 @@ void CViewContainer::dumpHierarchy ()
 
 #endif
 
-} // namespace
+} // VSTGUI

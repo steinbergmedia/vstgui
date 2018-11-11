@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __itouchevent__
-#define __itouchevent__
+#pragma once
 
 #include "vstguifwd.h"
 #include "cpoint.h"
@@ -86,8 +85,6 @@ protected:
 	TouchMap touches;
 };
 
-} // namespace
+} // VSTGUI
 
 #endif // VSTGUI_TOUCH_EVENT_HANDLING
-
-#endif // __itouchevent__

@@ -352,6 +352,6 @@ SharedPointer<CBitmap> createBitmapFromSelection (UISelection* selection, CFrame
 	return bitmap;
 }
 
-} // namespace
+} // VSTGUI
 
 #endif // VSTGUI_LIVE_EDITING

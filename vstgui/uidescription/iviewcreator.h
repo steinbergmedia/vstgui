@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __iviewcreator__
-#define __iviewcreator__
+#pragma once
 
 #include "../lib/vstguifwd.h"
 #include <string>
@@ -68,6 +67,4 @@ public:
 	UTF8StringPtr getDisplayName () const override { return getViewName (); }
 };
 
-} // namespace
-
-#endif // __iviewcreator__
+} // VSTGUI

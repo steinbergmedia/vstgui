@@ -33,7 +33,7 @@ static constexpr auto Center = ::NSCenterTextAlignment;
 #endif
 
 //------------------------------------------------------------------------------------
-} // namespace MacTextAlignment
+} // MacTextAlignment
 
 //------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------
@@ -335,6 +335,6 @@ bool CocoaTextEdit::setText (const UTF8String& text)
 	return true;
 }
 
-} // namespace
+} // VSTGUI
 
 #endif // MAC_COCOA

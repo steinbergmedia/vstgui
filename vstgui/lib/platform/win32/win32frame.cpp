@@ -990,6 +990,6 @@ CGradient* CGradient::create (const ColorStopMap& colorStopMap)
 	return new CGradient (colorStopMap);
 }
 
-} // namespace
+} // VSTGUI
 
 #endif // WINDOWS

@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __uicolorchoosercontroller__
-#define __uicolorchoosercontroller__
+#pragma once
 
 #include "../../lib/vstguibase.h"
 
@@ -57,8 +56,6 @@ protected:
 	};
 };
 	
-} // namespace
+} // VSTGUI
 
 #endif // VSTGUI_LIVE_EDITING
-
-#endif // __uicolorchoosercontroller__

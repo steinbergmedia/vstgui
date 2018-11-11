@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __ccontrol__
-#define __ccontrol__
+#pragma once
 
 #include "../cview.h"
 #include "../ifocusdrawing.h"
@@ -146,6 +145,4 @@ protected:
 	int32_t subPixmaps;
 };
 
-} // namespace
-
-#endif
+} // VSTGUI

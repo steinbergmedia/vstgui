@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __cresourcedescription__
-#define __cresourcedescription__
+#pragma once
 
 #include "vstguibase.h"
 
@@ -32,6 +31,4 @@ public:
 	} u;
 };
 
-}
-
-#endif // __cresourcedescription__
+} // VSTGUI

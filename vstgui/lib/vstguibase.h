@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __vstguibase__
-#define __vstguibase__
+#pragma once
 
 #include <cstdlib>
 #include <cstdio>
@@ -529,9 +528,7 @@ private:
 	B bit;
 };
 
-} // namespace
+} // VSTGUI
 
 //-----------------------------------------------------------------------------
 #include "vstguidebug.h"
-
-#endif

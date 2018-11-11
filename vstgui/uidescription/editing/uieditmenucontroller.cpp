@@ -680,6 +680,6 @@ void UIEditMenuController::controlEndEdit (CControl* pControl)
 		label->setTransparency (true);
 }
 
-} // namespace
+} // VSTGUI
 
 #endif // VSTGUI_LIVE_EDITING

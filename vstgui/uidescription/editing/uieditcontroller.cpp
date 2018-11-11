@@ -1782,6 +1782,6 @@ void UIEditController::appendContextMenuItems (COptionMenu& contextMenu, CView* 
 	}
 }
 
-} // namespace
+} // VSTGUI
 
 #endif // VSTGUI_LIVE_EDITING

@@ -734,6 +734,6 @@ void UITemplatesDataSource::dbAttached (CDataBrowser* browser)
 	}
 }
 
-} // namespace
+} // VSTGUI
 
 #endif // VSTGUI_LIVE_EDITING

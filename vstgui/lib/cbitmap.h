@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __cbitmap__
-#define __cbitmap__
+#pragma once
 
 #include "vstguifwd.h"
 #include "cpoint.h"
@@ -236,6 +235,4 @@ inline void CBitmapPixelAccess::setValue (uint32_t value)
 	*(uint32_t*) (currentPos) = value;
 }
 
-} // namespace VSTGUI
-
-#endif
+} // VSTGUI

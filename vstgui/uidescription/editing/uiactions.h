@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __uiactions__
-#define __uiactions__
+#pragma once
 
 #include "iaction.h"
 
@@ -574,8 +573,6 @@ private:
 };
 
 //-----------------------------------------------------------------------------
-} // namespace
+} // VSTGUI
 
 #endif // VSTGUI_LIVE_EDITING
-
-#endif // __uiactions__

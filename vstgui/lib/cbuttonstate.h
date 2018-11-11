@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __cbuttonstate__
-#define __cbuttonstate__
+#pragma once
 
 #include "vstguibase.h"
 
@@ -93,6 +92,4 @@ protected:
 	int32_t state;
 };
 
-}
-
-#endif // __cbuttonstate__
+} // VSTGUI

@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __dispatchlist__
-#define __dispatchlist__
+#pragma once
 
 #include <vector>
 #include <algorithm>
@@ -244,5 +243,3 @@ inline void DispatchList<T>::forEachReverse (Procedure proc, Condition condition
 
 //------------------------------------------------------------------------
 } // VSTGUI
-
-#endif // __dispatchlist__

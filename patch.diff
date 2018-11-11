@@ -1,0 +1,5370 @@
+From 1d9ce150dd6d345d2642036ddce701e18b8d23a8 Mon Sep 17 00:00:00 2001
+From: scheffle <scheffle@users.noreply.github.com>
+Date: Sun, 4 Nov 2018 09:53:09 +0100
+Subject: [PATCH] disable IDependency test when deprecations are off
+
+---
+ vstgui/tests/unittest/lib/idependency_test.cpp | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/vstgui/tests/unittest/lib/idependency_test.cpp b/vstgui/tests/unittest/lib/idependency_test.cpp
+index 4b04517b..e54b1a00 100644
+--- a/vstgui/tests/unittest/lib/idependency_test.cpp
++++ b/vstgui/tests/unittest/lib/idependency_test.cpp
+@@ -3,6 +3,9 @@
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+ #include "../unittests.h"
++
++#if VSTGUI_ENABLE_DEPRECATED_METHODS
++
+ #include "../../../lib/idependency.h"
+ 
+ namespace VSTGUI {
+@@ -74,3 +77,5 @@ TESTCASE(IDependencyTest,
+ );
+ 
+ } // namespace
++
++#endif // VSTGUI_ENABLE_DEPRECATED_METHODS
+-- 
+2.18.0
+
+From 67f897cc32a9a3daaeb9d017e4410b90434e2027 Mon Sep 17 00:00:00 2001
+From: scheffle <scheffle@users.noreply.github.com>
+Date: Sun, 4 Nov 2018 09:54:35 +0100
+Subject: [PATCH] deprecate old addAnimation with notification message function
+
+---
+ vstgui/lib/animation/animator.cpp             |  4 +++
+ vstgui/lib/animation/animator.h               |  8 +++--
+ vstgui/lib/controls/csplashscreen.cpp         | 34 ++++++++-----------
+ vstgui/lib/controls/csplashscreen.h           |  1 -
+ vstgui/lib/cview.cpp                          |  2 ++
+ vstgui/lib/cview.h                            |  6 ++--
+ .../unittest/lib/animation/animator_test.cpp  |  4 +++
+ 7 files changed, 34 insertions(+), 25 deletions(-)
+
+diff --git a/vstgui/lib/animation/animator.cpp b/vstgui/lib/animation/animator.cpp
+index 741beb5e..844c25c8 100644
+--- a/vstgui/lib/animation/animator.cpp
++++ b/vstgui/lib/animation/animator.cpp
+@@ -271,6 +271,7 @@ void Animator::addAnimation (CView* view, IdStringPtr name, IAnimationTarget* ta
+ #endif
+ }
+ 
++#if VSTGUI_ENABLE_DEPRECATED_METHODS
+ //-----------------------------------------------------------------------------
+ void Animator::addAnimation (CView* view, IdStringPtr name, IAnimationTarget* target, ITimingFunction* timingFunction, CBaseObject* notificationObject)
+ {
+@@ -285,6 +286,7 @@ void Animator::addAnimation (CView* view, IdStringPtr name, IAnimationTarget* ta
+ 	}
+ 	addAnimation (view, name, target, timingFunction, std::move (notification));
+ }
++#endif
+ 
+ //-----------------------------------------------------------------------------
+ void Animator::removeAnimation (CView* view, IdStringPtr name)
+@@ -359,6 +361,8 @@ void Animator::onTimer ()
+ 		Detail::Timer::removeAnimator (this);
+ }
+ 
++#if VSTGUI_ENABLE_DEPRECATED_METHODS
+ IdStringPtr kMsgAnimationFinished = "kMsgAnimationFinished";
++#endif
+ 
+ }} // namespaces
+diff --git a/vstgui/lib/animation/animator.h b/vstgui/lib/animation/animator.h
+index b09d7b66..e2a78f3f 100644
+--- a/vstgui/lib/animation/animator.h
++++ b/vstgui/lib/animation/animator.h
+@@ -24,19 +24,21 @@ public:
+ 	/// @name Adding and removing Animations
+ 	//-----------------------------------------------------------------------------
+ 	//@{
++	VSTGUI_DEPRECATED(
+ 	/** adds an animation.
+ 		Animation and timingFunction is now owned by the animator.
+ 		An already running animation for view with name will be canceled.
+ 		If a notificationObject is supplied, it will be notified when the animation has finished @see FinishedMessage.
+ 	*/
+-	void addAnimation (CView* view, IdStringPtr name, IAnimationTarget* target, ITimingFunction* timingFunction, CBaseObject* notificationObject = nullptr);
++	void addAnimation (CView* view, IdStringPtr name, IAnimationTarget* target, ITimingFunction* timingFunction, CBaseObject* notificationObject);)
+ 
+ 	/** adds an animation.
+ 		Animation and timingFunction is now owned by the animator.
+ 		An already running animation for view with name will be canceled.
+ 		The notification function will be called when the animation has finished.
+ 	*/
+-	void addAnimation (CView* view, IdStringPtr name, IAnimationTarget* target, ITimingFunction* timingFunction, DoneFunction notification);
++	void addAnimation (CView* view, IdStringPtr name, IAnimationTarget* target,
++	                   ITimingFunction* timingFunction, DoneFunction notification = nullptr);
+ 
+ 	/** removes an animation.
+ 		If animation has the IReference interface forget() will be called otherwise it is deleted.
+@@ -61,6 +63,7 @@ protected:
+ 	/// @endcond
+ };
+ 
++#if VSTGUI_ENABLE_DEPRECATED_METHODS
+ /** message sent to the notificationObject when the animation has finished, the sender parameter will be a FinishedMessage object. */
+ extern IdStringPtr kMsgAnimationFinished;
+ 
+@@ -85,6 +88,7 @@ protected:
+ 	const std::string& name;
+ 	IAnimationTarget* target;
+ };
++#endif
+ 
+ }} // namespaces
+ 
+diff --git a/vstgui/lib/controls/csplashscreen.cpp b/vstgui/lib/controls/csplashscreen.cpp
+index 5d52468d..d539665b 100644
+--- a/vstgui/lib/controls/csplashscreen.cpp
++++ b/vstgui/lib/controls/csplashscreen.cpp
+@@ -281,7 +281,20 @@ bool CAnimationSplashScreen::createAnimation (uint32_t animationIndex, uint32_t
+ 			if (removeViewAnimation)
+ 			{
+ 				splashView->setMouseEnabled (false);
+-				splashView->addAnimation ("AnimationSplashScreenAnimation", new Animation::AlphaValueAnimation (0.f), new Animation::PowerTimingFunction (animationTime, 2), this);
++				splashView->addAnimation (
++				    "AnimationSplashScreenAnimation", new Animation::AlphaValueAnimation (0.f),
++				    new Animation::PowerTimingFunction (animationTime, 2),
++				    [this] (CView*, const IdStringPtr, Animation::IAnimationTarget*) {
++					    if (modalView)
++					    {
++						    modalView->invalid ();
++						    modalView->setMouseEnabled (true);
++					    }
++					    if (auto frame = getFrame ())
++						    frame->endModalViewSession (modalViewSession);
++					    modalViewSession = nullptr;
++					    setMouseEnabled (true);
++				    });
+ 			}
+ 			else
+ 			{
+@@ -295,23 +308,4 @@ bool CAnimationSplashScreen::createAnimation (uint32_t animationIndex, uint32_t
+ 	return false;
+ }
+ 
+-//------------------------------------------------------------------------
+-CMessageResult CAnimationSplashScreen::notify (CBaseObject* sender, IdStringPtr message)
+-{
+-	if (message == Animation::kMsgAnimationFinished)
+-	{
+-		if (modalView)
+-		{
+-			modalView->invalid ();
+-			modalView->setMouseEnabled (true);
+-		}
+-		if (auto frame = getFrame ())
+-			frame->endModalViewSession (modalViewSession);
+-		modalViewSession = nullptr;
+-		setMouseEnabled (true);
+-		return kMessageNotified;
+-	}
+-	return CSplashScreen::notify (sender, message);
+-}
+-
+ } // namespace
+diff --git a/vstgui/lib/controls/csplashscreen.h b/vstgui/lib/controls/csplashscreen.h
+index e293cd2e..5905b5a2 100644
+--- a/vstgui/lib/controls/csplashscreen.h
++++ b/vstgui/lib/controls/csplashscreen.h
+@@ -88,7 +88,6 @@ public:
+ 	void draw (CDrawContext*) override;
+ 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
+ 	bool sizeToFit () override;
+-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
+ 
+ protected:
+ 	~CAnimationSplashScreen () noexcept override = default;
+diff --git a/vstgui/lib/cview.cpp b/vstgui/lib/cview.cpp
+index 1f586b2f..ff2626b9 100644
+--- a/vstgui/lib/cview.cpp
++++ b/vstgui/lib/cview.cpp
+@@ -936,6 +936,7 @@ bool CView::removeAttribute (const CViewAttributeID aId)
+ 	return false;
+ }
+ 
++#if VSTGUI_ENABLE_DEPRECATED_METHODS
+ //-----------------------------------------------------------------------------
+ void CView::addAnimation (IdStringPtr name, Animation::IAnimationTarget* target, Animation::ITimingFunction* timingFunction, CBaseObject* notificationObject)
+ {
+@@ -945,6 +946,7 @@ void CView::addAnimation (IdStringPtr name, Animation::IAnimationTarget* target,
+ 		frame->getAnimator ()->addAnimation (this, name, target, timingFunction, notificationObject);
+ 	}
+ }
++#endif
+ 
+ //-----------------------------------------------------------------------------
+ void CView::addAnimation (IdStringPtr name, Animation::IAnimationTarget* target, Animation::ITimingFunction* timingFunction, const Animation::DoneFunction& doneFunc)
+diff --git a/vstgui/lib/cview.h b/vstgui/lib/cview.h
+index 4b219d2f..7d795b98 100644
+--- a/vstgui/lib/cview.h
++++ b/vstgui/lib/cview.h
+@@ -295,8 +295,10 @@ public:
+ 	/// @name Animation Methods
+ 	//-----------------------------------------------------------------------------
+ 	//@{
+-	void addAnimation (IdStringPtr name, Animation::IAnimationTarget* target, Animation::ITimingFunction* timingFunction, CBaseObject* notificationObject = nullptr);
+-	void addAnimation (IdStringPtr name, Animation::IAnimationTarget* target, Animation::ITimingFunction* timingFunction, const Animation::DoneFunction& doneFunc);
++	VSTGUI_DEPRECATED(void addAnimation (IdStringPtr name, Animation::IAnimationTarget* target, Animation::ITimingFunction* timingFunction, CBaseObject* notificationObject);)
++	void addAnimation (IdStringPtr name, Animation::IAnimationTarget* target,
++	                   Animation::ITimingFunction* timingFunction,
++	                   const Animation::DoneFunction& doneFunc = nullptr);
+ 	void removeAnimation (IdStringPtr name);
+ 	void removeAllAnimations ();
+ 	//@}
+diff --git a/vstgui/tests/unittest/lib/animation/animator_test.cpp b/vstgui/tests/unittest/lib/animation/animator_test.cpp
+index e4eaf588..968bd0cd 100644
+--- a/vstgui/tests/unittest/lib/animation/animator_test.cpp
++++ b/vstgui/tests/unittest/lib/animation/animator_test.cpp
+@@ -32,6 +32,7 @@ struct RemoveAnimationInCallback : public IAnimationTarget
+ 
+ };
+ 
++#if VSTGUI_ENABLE_DEPRECATED_METHODS
+ struct MessageReceiver : public CBaseObject
+ {
+ 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override
+@@ -43,6 +44,7 @@ struct MessageReceiver : public CBaseObject
+ 	
+ 	bool messageReceived {false};
+ };
++#endif
+ 
+ } // anonymous
+ 
+@@ -78,6 +80,7 @@ TESTCASE(AnimatorTest,
+ 		CFRunLoopRun ();
+ 	);
+ 	
++#if VSTGUI_ENABLE_DEPRECATED_METHODS
+ 	TEST(animationMessage,
+ 		auto a = owned (new Animator ());
+ 		auto view = owned (new CView (CRect (0, 0, 0, 0)));
+@@ -86,6 +89,7 @@ TESTCASE(AnimatorTest,
+ 		CFRunLoopRun ();
+ 		EXPECT(recevier.messageReceived == true)
+ 	);
++#endif
+ );
+ 
+ } // VSTGUI
+-- 
+2.18.0
+
+From 4ed009e0385067485aef345fa8f5686a09180efd Mon Sep 17 00:00:00 2001
+From: scheffle <scheffle@users.noreply.github.com>
+Date: Sun, 4 Nov 2018 10:38:32 +0100
+Subject: [PATCH] use #pragma once everywhere
+
+---
+ vstgui/lib/animation/animations.h                  |  7 +++----
+ vstgui/lib/animation/animator.h                    |  8 +++-----
+ vstgui/lib/animation/ianimationtarget.h            |  8 +++-----
+ vstgui/lib/animation/itimingfunction.h             |  8 +++-----
+ vstgui/lib/animation/timingfunctions.h             |  8 +++-----
+ vstgui/lib/cbitmap.cpp                             |  2 +-
+ vstgui/lib/cbitmap.h                               |  7 ++-----
+ vstgui/lib/cbitmapfilter.cpp                       |  2 +-
+ vstgui/lib/cbitmapfilter.h                         | 14 +++++---------
+ vstgui/lib/cbuttonstate.h                          |  7 ++-----
+ vstgui/lib/ccolor.cpp                              |  2 +-
+ vstgui/lib/ccolor.h                                |  7 ++-----
+ vstgui/lib/cdatabrowser.cpp                        |  2 +-
+ vstgui/lib/cdatabrowser.h                          |  5 +----
+ vstgui/lib/cdrawcontext.cpp                        |  2 +-
+ vstgui/lib/cdrawcontext.h                          |  7 ++-----
+ vstgui/lib/cdrawdefs.h                             |  7 ++-----
+ vstgui/lib/cdrawmethods.h                          |  9 +++------
+ vstgui/lib/cdropsource.cpp                         |  2 +-
+ vstgui/lib/cdropsource.h                           |  7 ++-----
+ vstgui/lib/cfileselector.cpp                       |  2 +-
+ vstgui/lib/cfileselector.h                         |  7 ++-----
+ vstgui/lib/cfont.cpp                               |  2 +-
+ vstgui/lib/cfont.h                                 |  7 ++-----
+ vstgui/lib/cframe.cpp                              |  2 +-
+ vstgui/lib/cframe.h                                |  7 ++-----
+ vstgui/lib/cgradient.h                             |  7 ++-----
+ vstgui/lib/cgradientview.cpp                       |  2 +-
+ vstgui/lib/cgradientview.h                         |  7 ++-----
+ vstgui/lib/cgraphicspath.cpp                       |  2 +-
+ vstgui/lib/cgraphicspath.h                         |  7 ++-----
+ vstgui/lib/cgraphicstransform.h                    |  8 ++------
+ vstgui/lib/clayeredviewcontainer.h                 |  7 ++-----
+ vstgui/lib/clinestyle.h                            |  7 ++-----
+ vstgui/lib/coffscreencontext.cpp                   |  2 +-
+ vstgui/lib/coffscreencontext.h                     |  7 ++-----
+ vstgui/lib/controls/cautoanimation.cpp             |  2 +-
+ vstgui/lib/controls/cautoanimation.h               |  7 ++-----
+ vstgui/lib/controls/cbuttons.cpp                   |  2 +-
+ vstgui/lib/controls/cbuttons.h                     |  7 ++-----
+ vstgui/lib/controls/ccolorchooser.cpp              |  4 ++--
+ vstgui/lib/controls/ccolorchooser.h                |  7 ++-----
+ vstgui/lib/controls/ccontrol.cpp                   |  2 +-
+ vstgui/lib/controls/ccontrol.h                     |  7 ++-----
+ vstgui/lib/controls/cfontchooser.cpp               |  4 ++--
+ vstgui/lib/controls/cfontchooser.h                 |  6 ++----
+ vstgui/lib/controls/cknob.cpp                      |  2 +-
+ vstgui/lib/controls/cknob.h                        |  7 ++-----
+ vstgui/lib/controls/cmoviebitmap.cpp               |  2 +-
+ vstgui/lib/controls/cmoviebitmap.h                 |  7 ++-----
+ vstgui/lib/controls/cmoviebutton.cpp               |  2 +-
+ vstgui/lib/controls/cmoviebutton.h                 |  7 ++-----
+ vstgui/lib/controls/coptionmenu.cpp                |  2 +-
+ vstgui/lib/controls/coptionmenu.h                  |  7 ++-----
+ vstgui/lib/controls/cparamdisplay.cpp              |  2 +-
+ vstgui/lib/controls/cparamdisplay.h                |  8 ++------
+ vstgui/lib/controls/cscrollbar.h                   |  8 ++------
+ vstgui/lib/controls/csearchtextedit.cpp            |  2 +-
+ vstgui/lib/controls/csearchtextedit.h              |  7 ++-----
+ vstgui/lib/controls/csegmentbutton.cpp             |  2 +-
+ vstgui/lib/controls/csegmentbutton.h               |  7 ++-----
+ vstgui/lib/controls/cslider.cpp                    |  2 +-
+ vstgui/lib/controls/cslider.h                      |  7 ++-----
+ vstgui/lib/controls/cspecialdigit.cpp              |  2 +-
+ vstgui/lib/controls/cspecialdigit.h                |  7 ++-----
+ vstgui/lib/controls/csplashscreen.cpp              |  2 +-
+ vstgui/lib/controls/csplashscreen.h                |  7 ++-----
+ vstgui/lib/controls/cswitch.cpp                    |  2 +-
+ vstgui/lib/controls/cswitch.h                      |  7 ++-----
+ vstgui/lib/controls/ctextedit.cpp                  |  2 +-
+ vstgui/lib/controls/ctextedit.h                    |  7 ++-----
+ vstgui/lib/controls/ctextlabel.cpp                 |  2 +-
+ vstgui/lib/controls/ctextlabel.h                   |  7 ++-----
+ vstgui/lib/controls/cvumeter.cpp                   |  2 +-
+ vstgui/lib/controls/cvumeter.h                     |  7 ++-----
+ vstgui/lib/controls/cxypad.cpp                     |  2 +-
+ vstgui/lib/controls/cxypad.h                       |  8 ++------
+ vstgui/lib/controls/icontrollistener.h             |  7 ++-----
+ vstgui/lib/copenglview.cpp                         |  2 +-
+ vstgui/lib/copenglview.h                           |  6 ++----
+ vstgui/lib/cpoint.h                                |  8 ++------
+ vstgui/lib/crect.cpp                               |  2 +-
+ vstgui/lib/crect.h                                 |  8 ++------
+ vstgui/lib/cresourcedescription.h                  |  7 ++-----
+ vstgui/lib/crowcolumnview.cpp                      |  2 +-
+ vstgui/lib/crowcolumnview.h                        |  7 ++-----
+ vstgui/lib/cscrollview.cpp                         |  2 +-
+ vstgui/lib/cscrollview.h                           |  7 ++-----
+ vstgui/lib/cshadowviewcontainer.cpp                |  2 +-
+ vstgui/lib/cshadowviewcontainer.h                  |  7 ++-----
+ vstgui/lib/csplitview.cpp                          |  2 +-
+ vstgui/lib/csplitview.h                            |  7 ++-----
+ vstgui/lib/cstring.cpp                             |  2 +-
+ vstgui/lib/cstring.h                               |  7 ++-----
+ vstgui/lib/ctabview.cpp                            |  2 +-
+ vstgui/lib/ctabview.h                              |  7 ++-----
+ vstgui/lib/ctooltipsupport.cpp                     |  2 +-
+ vstgui/lib/ctooltipsupport.h                       |  8 ++------
+ vstgui/lib/cview.cpp                               |  2 +-
+ vstgui/lib/cview.h                                 |  7 ++-----
+ vstgui/lib/cviewcontainer.cpp                      |  2 +-
+ vstgui/lib/cviewcontainer.h                        |  7 ++-----
+ vstgui/lib/cvstguitimer.cpp                        |  2 +-
+ vstgui/lib/cvstguitimer.h                          |  7 ++-----
+ vstgui/lib/dispatchlist.h                          |  5 +----
+ vstgui/lib/idatapackage.h                          |  7 ++-----
+ vstgui/lib/idependency.h                           |  7 ++-----
+ vstgui/lib/ifocusdrawing.h                         |  7 ++-----
+ vstgui/lib/iscalefactorchangedlistener.h           |  7 ++-----
+ vstgui/lib/itouchevent.h                           |  7 ++-----
+ vstgui/lib/iviewlistener.h                         |  5 +----
+ vstgui/lib/platform/iplatformbitmap.h              |  7 ++-----
+ vstgui/lib/platform/iplatformfont.h                |  7 ++-----
+ vstgui/lib/platform/iplatformframe.h               |  7 ++-----
+ vstgui/lib/platform/iplatformframecallback.h       |  7 ++-----
+ vstgui/lib/platform/iplatformopenglview.h          |  8 ++------
+ vstgui/lib/platform/iplatformoptionmenu.h          |  7 ++-----
+ vstgui/lib/platform/iplatformstring.h              |  7 ++-----
+ vstgui/lib/platform/iplatformtextedit.h            |  7 ++-----
+ vstgui/lib/platform/iplatformtimer.h               |  7 ++-----
+ vstgui/lib/platform/iplatformviewlayer.h           |  7 ++-----
+ vstgui/lib/platform/mac/carbon/hiviewframe.cpp     |  2 +-
+ vstgui/lib/platform/mac/carbon/hiviewframe.h       |  6 ++----
+ .../lib/platform/mac/carbon/hiviewoptionmenu.cpp   |  2 +-
+ vstgui/lib/platform/mac/carbon/hiviewoptionmenu.h  |  6 ++----
+ vstgui/lib/platform/mac/carbon/hiviewtextedit.cpp  |  2 +-
+ vstgui/lib/platform/mac/carbon/hiviewtextedit.h    |  7 ++-----
+ vstgui/lib/platform/mac/caviewlayer.h              |  7 ++-----
+ vstgui/lib/platform/mac/caviewlayer.mm             |  2 +-
+ vstgui/lib/platform/mac/cfontmac.h                 |  7 ++-----
+ vstgui/lib/platform/mac/cfontmac.mm                |  2 +-
+ vstgui/lib/platform/mac/cgbitmap.cpp               |  2 +-
+ vstgui/lib/platform/mac/cgbitmap.h                 |  6 ++----
+ vstgui/lib/platform/mac/cgdrawcontext.cpp          |  2 +-
+ vstgui/lib/platform/mac/cgdrawcontext.h            |  8 ++------
+ vstgui/lib/platform/mac/cocoa/autoreleasepool.h    |  7 ++-----
+ vstgui/lib/platform/mac/cocoa/autoreleasepool.mm   |  2 +-
+ vstgui/lib/platform/mac/cocoa/cocoahelpers.h       |  4 +---
+ vstgui/lib/platform/mac/cocoa/cocoaopenglview.h    |  7 ++-----
+ vstgui/lib/platform/mac/cocoa/cocoaopenglview.mm   |  2 +-
+ vstgui/lib/platform/mac/cocoa/cocoatextedit.h      |  7 ++-----
+ vstgui/lib/platform/mac/cocoa/cocoatextedit.mm     |  4 ++--
+ vstgui/lib/platform/mac/cocoa/nsviewframe.h        |  6 ++----
+ vstgui/lib/platform/mac/cocoa/nsviewframe.mm       |  2 +-
+ vstgui/lib/platform/mac/cocoa/nsviewoptionmenu.h   |  7 ++-----
+ vstgui/lib/platform/mac/cocoa/nsviewoptionmenu.mm  |  2 +-
+ vstgui/lib/platform/mac/ios/uiopenglview.h         |  7 ++-----
+ vstgui/lib/platform/mac/ios/uiopenglview.mm        |  2 +-
+ vstgui/lib/platform/mac/ios/uitextedit.h           |  7 ++-----
+ vstgui/lib/platform/mac/ios/uitextedit.mm          |  2 +-
+ vstgui/lib/platform/mac/ios/uitouchevent.h         |  7 ++-----
+ vstgui/lib/platform/mac/ios/uiviewframe.h          |  7 ++-----
+ vstgui/lib/platform/mac/macclipboard.h             |  5 +----
+ vstgui/lib/platform/mac/macglobals.cpp             |  2 +-
+ vstgui/lib/platform/mac/macglobals.h               |  6 ++----
+ vstgui/lib/platform/mac/macstring.h                |  7 ++-----
+ vstgui/lib/platform/mac/macstring.mm               |  2 +-
+ vstgui/lib/platform/mac/quartzgraphicspath.cpp     |  2 +-
+ vstgui/lib/platform/mac/quartzgraphicspath.h       |  7 ++-----
+ vstgui/lib/platform/win32/direct2d/d2dbitmap.cpp   |  2 +-
+ vstgui/lib/platform/win32/direct2d/d2dbitmap.h     |  7 ++-----
+ .../lib/platform/win32/direct2d/d2ddrawcontext.cpp |  2 +-
+ .../lib/platform/win32/direct2d/d2ddrawcontext.h   |  7 ++-----
+ vstgui/lib/platform/win32/direct2d/d2dfont.cpp     |  2 +-
+ vstgui/lib/platform/win32/direct2d/d2dfont.h       |  7 ++-----
+ .../platform/win32/direct2d/d2dgraphicspath.cpp    |  2 +-
+ .../lib/platform/win32/direct2d/d2dgraphicspath.h  |  7 ++-----
+ vstgui/lib/platform/win32/win32bitmapbase.h        |  7 ++-----
+ vstgui/lib/platform/win32/win32datapackage.cpp     |  2 +-
+ vstgui/lib/platform/win32/win32datapackage.h       |  2 +-
+ vstgui/lib/platform/win32/win32dragging.cpp        |  2 +-
+ vstgui/lib/platform/win32/win32dragging.h          |  2 +-
+ vstgui/lib/platform/win32/win32frame.cpp           |  2 +-
+ vstgui/lib/platform/win32/win32frame.h             |  7 ++-----
+ vstgui/lib/platform/win32/win32openglview.cpp      |  2 +-
+ vstgui/lib/platform/win32/win32openglview.h        |  7 ++-----
+ vstgui/lib/platform/win32/win32optionmenu.cpp      |  2 +-
+ vstgui/lib/platform/win32/win32optionmenu.h        |  6 ++----
+ vstgui/lib/platform/win32/win32support.cpp         |  2 +-
+ vstgui/lib/platform/win32/win32support.h           |  7 ++-----
+ vstgui/lib/platform/win32/win32textedit.cpp        |  2 +-
+ vstgui/lib/platform/win32/win32textedit.h          |  7 ++-----
+ vstgui/lib/platform/win32/winfileselector.cpp      |  2 +-
+ vstgui/lib/platform/win32/winstring.cpp            |  2 +-
+ vstgui/lib/platform/win32/winstring.h              |  7 ++-----
+ vstgui/lib/vstguibase.h                            |  7 ++-----
+ vstgui/lib/vstguidebug.cpp                         |  4 ++--
+ vstgui/lib/vstguidebug.h                           |  7 ++-----
+ vstgui/lib/vstguifwd.h                             |  7 ++-----
+ vstgui/lib/vstkeycode.h                            |  5 +----
+ vstgui/tests/unittest/lib/ccolor_test.cpp          |  2 +-
+ vstgui/tests/unittest/lib/crect_test.cpp           |  2 +-
+ vstgui/tests/unittest/lib/idependency_test.cpp     |  2 +-
+ vstgui/tests/unittest/unittests.h                  |  5 +----
+ vstgui/uidescription/base64codec.h                 |  7 ++-----
+ vstgui/uidescription/compresseduidescription.cpp   |  2 +-
+ vstgui/uidescription/compresseduidescription.h     |  7 ++-----
+ vstgui/uidescription/cstream.cpp                   |  2 +-
+ vstgui/uidescription/cstream.h                     |  7 ++-----
+ vstgui/uidescription/delegationcontroller.h        |  7 ++-----
+ vstgui/uidescription/editing/iaction.h             |  7 ++-----
+ vstgui/uidescription/editing/uiactions.cpp         |  2 +-
+ vstgui/uidescription/editing/uiactions.h           |  7 ++-----
+ .../editing/uiattributescontroller.cpp             |  4 ++--
+ .../uidescription/editing/uiattributescontroller.h |  7 ++-----
+ vstgui/uidescription/editing/uibasedatasource.h    |  7 ++-----
+ .../uidescription/editing/uibitmapscontroller.cpp  |  2 +-
+ vstgui/uidescription/editing/uibitmapscontroller.h |  7 ++-----
+ vstgui/uidescription/editing/uicolor.h             |  7 ++-----
+ .../editing/uicolorchoosercontroller.cpp           |  2 +-
+ .../editing/uicolorchoosercontroller.h             |  7 ++-----
+ .../uidescription/editing/uicolorscontroller.cpp   |  2 +-
+ vstgui/uidescription/editing/uicolorscontroller.h  |  7 ++-----
+ vstgui/uidescription/editing/uicolorslider.cpp     |  2 +-
+ vstgui/uidescription/editing/uicolorslider.h       |  7 ++-----
+ vstgui/uidescription/editing/uicrosslines.h        |  7 ++-----
+ .../uidescription/editing/uidialogcontroller.cpp   |  2 +-
+ vstgui/uidescription/editing/uidialogcontroller.h  |  7 ++-----
+ vstgui/uidescription/editing/uieditcontroller.cpp  |  2 +-
+ vstgui/uidescription/editing/uieditcontroller.h    |  7 ++-----
+ .../uidescription/editing/uieditmenucontroller.cpp |  2 +-
+ .../uidescription/editing/uieditmenucontroller.h   |  9 +++------
+ vstgui/uidescription/editing/uieditview.cpp        |  6 +++---
+ vstgui/uidescription/editing/uieditview.h          |  9 +++------
+ .../editing/uifocussettingscontroller.cpp          |  2 +-
+ .../editing/uifocussettingscontroller.h            |  7 ++-----
+ vstgui/uidescription/editing/uifontscontroller.cpp |  2 +-
+ vstgui/uidescription/editing/uifontscontroller.h   |  7 ++-----
+ .../editing/uigradientscontroller.cpp              |  2 +-
+ .../uidescription/editing/uigradientscontroller.h  |  7 ++-----
+ vstgui/uidescription/editing/uigrid.h              |  7 ++-----
+ vstgui/uidescription/editing/uigridcontroller.cpp  |  2 +-
+ vstgui/uidescription/editing/uigridcontroller.h    |  7 ++-----
+ vstgui/uidescription/editing/uiselection.cpp       |  2 +-
+ vstgui/uidescription/editing/uiselection.h         |  7 ++-----
+ vstgui/uidescription/editing/uitagscontroller.cpp  |  2 +-
+ vstgui/uidescription/editing/uitagscontroller.h    |  7 ++-----
+ .../uidescription/editing/uitemplatecontroller.cpp |  2 +-
+ .../uidescription/editing/uitemplatecontroller.h   |  7 ++-----
+ .../editing/uitemplatesettingscontroller.cpp       |  2 +-
+ .../editing/uitemplatesettingscontroller.h         |  7 ++-----
+ vstgui/uidescription/editing/uiundomanager.cpp     |  2 +-
+ vstgui/uidescription/editing/uiundomanager.h       |  7 ++-----
+ .../editing/uiviewcreatecontroller.cpp             |  2 +-
+ .../uidescription/editing/uiviewcreatecontroller.h |  7 ++-----
+ vstgui/uidescription/icontroller.h                 |  7 ++-----
+ vstgui/uidescription/iuidescription.h              |  7 ++-----
+ vstgui/uidescription/iviewcreator.h                |  7 ++-----
+ vstgui/uidescription/iviewfactory.h                |  8 ++------
+ vstgui/uidescription/uiattributes.h                |  7 ++-----
+ vstgui/uidescription/uidescription.cpp             |  4 ++--
+ vstgui/uidescription/uidescription.h               |  7 ++-----
+ vstgui/uidescription/uidescriptionfwd.h            |  7 ++-----
+ vstgui/uidescription/uidescriptionlistener.h       |  5 +----
+ vstgui/uidescription/uiviewcreator.cpp             |  2 +-
+ vstgui/uidescription/uiviewcreator.h               |  5 +----
+ vstgui/uidescription/uiviewfactory.cpp             |  2 +-
+ vstgui/uidescription/uiviewfactory.h               |  8 ++------
+ vstgui/uidescription/uiviewswitchcontainer.cpp     |  2 +-
+ vstgui/uidescription/uiviewswitchcontainer.h       |  7 ++-----
+ vstgui/uidescription/xmlparser.h                   |  5 +----
+ 261 files changed, 425 insertions(+), 887 deletions(-)
+
+diff --git a/vstgui/lib/animation/animations.h b/vstgui/lib/animation/animations.h
+index c9de3b2d..c1811cc1 100644
+--- a/vstgui/lib/animation/animations.h
++++ b/vstgui/lib/animation/animations.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __animation__
+-#define __animation__
++#pragma once
+ 
+ #include "../vstguifwd.h"
+ #include "ianimationtarget.h"
+@@ -115,6 +114,6 @@ protected:
+ 	bool forceEndValueOnFinish;
+ };
+ 
+-}} // namespaces
++} // Animation
++} // VSTGUI
+ 
+-#endif // __animation__
+diff --git a/vstgui/lib/animation/animator.h b/vstgui/lib/animation/animator.h
+index e2a78f3f..f25fc619 100644
+--- a/vstgui/lib/animation/animator.h
++++ b/vstgui/lib/animation/animator.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __animator__
+-#define __animator__
++#pragma once
+ 
+ #include "../vstguifwd.h"
+ #include <string>
+@@ -90,6 +89,5 @@ protected:
+ };
+ #endif
+ 
+-}} // namespaces
+-
+-#endif // __animator__
++} // Animation
++} // VSTGUI
+diff --git a/vstgui/lib/animation/ianimationtarget.h b/vstgui/lib/animation/ianimationtarget.h
+index 2784514e..17650697 100644
+--- a/vstgui/lib/animation/ianimationtarget.h
++++ b/vstgui/lib/animation/ianimationtarget.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __ianimationtarget__
+-#define __ianimationtarget__
++#pragma once
+ 
+ #include "../vstguifwd.h"
+ 
+@@ -27,6 +26,5 @@ public:
+ 	virtual void animationFinished (CView* view, IdStringPtr name, bool wasCanceled) = 0;
+ };
+ 
+-}} // namespaces
+-
+-#endif // __ianimationtarget__
++} // Animation
++} // VSTGUI
+diff --git a/vstgui/lib/animation/itimingfunction.h b/vstgui/lib/animation/itimingfunction.h
+index 373a1e2c..7d0adfd9 100644
+--- a/vstgui/lib/animation/itimingfunction.h
++++ b/vstgui/lib/animation/itimingfunction.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __itimingfunction__
+-#define __itimingfunction__
++#pragma once
+ 
+ #include "../vstguibase.h"
+ 
+@@ -23,6 +22,5 @@ public:
+ 	virtual bool isDone (uint32_t milliseconds) = 0;
+ };
+ 
+-}} // namespaces
+-
+-#endif // __itimingfunction__
++} // Animation
++} // VSTGUI
+diff --git a/vstgui/lib/animation/timingfunctions.h b/vstgui/lib/animation/timingfunctions.h
+index 70f60a04..818a8eb1 100644
+--- a/vstgui/lib/animation/timingfunctions.h
++++ b/vstgui/lib/animation/timingfunctions.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __timingfunctions__
+-#define __timingfunctions__
++#pragma once
+ 
+ #include "animator.h"
+ #include "itimingfunction.h"
+@@ -130,6 +129,5 @@ protected:
+ 	bool isReverse;
+ };
+ 
+-}} // namespaces
+-
+-#endif // __timingfunctions__
++} // Animation
++} // VSTGUI
+diff --git a/vstgui/lib/cbitmap.cpp b/vstgui/lib/cbitmap.cpp
+index 1f05b475..d8c92e3b 100644
+--- a/vstgui/lib/cbitmap.cpp
++++ b/vstgui/lib/cbitmap.cpp
+@@ -302,5 +302,5 @@ CBitmapPixelAccess* CBitmapPixelAccess::create (CBitmap* bitmap, bool alphaPremu
+ 	return result;
+ }
+ 
+-} // namespace VSTGUI
++} // VSTGUI
+ 
+diff --git a/vstgui/lib/cbitmap.h b/vstgui/lib/cbitmap.h
+index 6ed52bca..1319a6bc 100644
+--- a/vstgui/lib/cbitmap.h
++++ b/vstgui/lib/cbitmap.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __cbitmap__
+-#define __cbitmap__
++#pragma once
+ 
+ #include "vstguifwd.h"
+ #include "cpoint.h"
+@@ -236,6 +235,4 @@ inline void CBitmapPixelAccess::setValue (uint32_t value)
+ 	*(uint32_t*) (currentPos) = value;
+ }
+ 
+-} // namespace VSTGUI
+-
+-#endif
++} // VSTGUI
+diff --git a/vstgui/lib/cbitmapfilter.cpp b/vstgui/lib/cbitmapfilter.cpp
+index a3ae6eb4..d313ee16 100644
+--- a/vstgui/lib/cbitmapfilter.cpp
++++ b/vstgui/lib/cbitmapfilter.cpp
+@@ -923,7 +923,7 @@ void registerStandardFilters (Factory& factory)
+ 	factory.registerFilter (kScaleLinear, ScaleLinear::CreateFunction);
+ }
+ 
+-} // namespace Standard
++} // Standard
+ 
+ ///@end cond
+ 
+diff --git a/vstgui/lib/cbitmapfilter.h b/vstgui/lib/cbitmapfilter.h
+index 22e77ae4..98fd804c 100644
+--- a/vstgui/lib/cbitmapfilter.h
++++ b/vstgui/lib/cbitmapfilter.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __cbitmapfilter__
+-#define __cbitmapfilter__
++#pragma once
+ 
+ #include "vstguifwd.h"
+ #include <vector>
+@@ -198,9 +197,9 @@ namespace Standard {
+ 		static const IdStringPtr kOutputRect = "OutputRect";
+ 		/** [Property::kInteger] */
+ 		static const IdStringPtr kIgnoreAlphaColorValue = "IgnoreAlphaColorValue";
+-	} // namespace Property
++	} // Property
+ 
+-} // namespace Standard
++} // Standard
+ 
+ //----------------------------------------------------------------------------------------------------
+ /// @brief A Base Class for Implementing Bitmap Filters
+@@ -230,8 +229,5 @@ private:
+ 	PropertyMap properties;
+ };
+ 
+-} // namespace BitmapFilter
+-
+-} // namespace
+-
+-#endif // __cbitmapfilter__
++} // BitmapFilter
++} // VSTGUI
+diff --git a/vstgui/lib/cbuttonstate.h b/vstgui/lib/cbuttonstate.h
+index 51cdaadc..a62b45c4 100644
+--- a/vstgui/lib/cbuttonstate.h
++++ b/vstgui/lib/cbuttonstate.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __cbuttonstate__
+-#define __cbuttonstate__
++#pragma once
+ 
+ #include "vstguibase.h"
+ 
+@@ -93,6 +92,4 @@ protected:
+ 	int32_t state;
+ };
+ 
+-}
+-
+-#endif // __cbuttonstate__
++} // VSTGUI
+diff --git a/vstgui/lib/ccolor.cpp b/vstgui/lib/ccolor.cpp
+index bb943aca..f1b52d8a 100644
+--- a/vstgui/lib/ccolor.cpp
++++ b/vstgui/lib/ccolor.cpp
+@@ -316,4 +316,4 @@ UTF8String CColor::toString () const
+ 	return UTF8String (str.str ());
+ }
+ 
+-} // namespace
++} // VSTGUI
+diff --git a/vstgui/lib/ccolor.h b/vstgui/lib/ccolor.h
+index b1fb0ba5..8cce184e 100644
+--- a/vstgui/lib/ccolor.h
++++ b/vstgui/lib/ccolor.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __ccolor__
+-#define __ccolor__
++#pragma once
+ 
+ #include "vstguibase.h"
+ #include "vstguifwd.h"
+@@ -124,6 +123,4 @@ constexpr const CColor kYellowCColor		= CColor (255, 255,   0, 255);
+ constexpr const CColor kMagentaCColor		= CColor (255,   0, 255, 255);
+ constexpr const CColor kCyanCColor			= CColor (  0, 255, 255, 255);
+ 
+-} // namespace
+-
+-#endif
++} // VSTGUI
+diff --git a/vstgui/lib/cdatabrowser.cpp b/vstgui/lib/cdatabrowser.cpp
+index b30ca918..d346c5c9 100644
+--- a/vstgui/lib/cdatabrowser.cpp
++++ b/vstgui/lib/cdatabrowser.cpp
+@@ -1108,4 +1108,4 @@ bool CDataBrowserView::getFocusPath (CGraphicsPath& outPath)
+ /// @endcond
+ 
+ //-----------------------------------------------------------------------------------------------
+-} // namespace
++} // VSTGUI
+diff --git a/vstgui/lib/cdatabrowser.h b/vstgui/lib/cdatabrowser.h
+index 301a5fe3..b45a7d53 100644
+--- a/vstgui/lib/cdatabrowser.h
++++ b/vstgui/lib/cdatabrowser.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __cdatabrowser__
+-#define __cdatabrowser__
++#pragma once
+ 
+ #include "vstguifwd.h"
+ #include "cscrollview.h"
+@@ -128,5 +127,3 @@ protected:
+ 
+ //-----------------------------------------------------------------------------
+ } // VSTGUI
+-
+-#endif
+diff --git a/vstgui/lib/cdrawcontext.cpp b/vstgui/lib/cdrawcontext.cpp
+index a75d7547..cc61c182 100644
+--- a/vstgui/lib/cdrawcontext.cpp
++++ b/vstgui/lib/cdrawcontext.cpp
+@@ -378,4 +378,4 @@ CCoord CDrawContext::getHairlineSize () const
+ 	return 1. / (getScaleFactor () * getCurrentTransform ().m11);
+ }
+ 
+-} // namespace
++} // VSTGUI
+diff --git a/vstgui/lib/cdrawcontext.h b/vstgui/lib/cdrawcontext.h
+index ab61195f..a8d5012c 100644
+--- a/vstgui/lib/cdrawcontext.h
++++ b/vstgui/lib/cdrawcontext.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __cdrawcontext__
+-#define __cdrawcontext__
++#pragma once
+ 
+ #include "vstguifwd.h"
+ 
+@@ -300,6 +299,4 @@ private:
+ 	CRect origClip;
+ };
+ 
+-} // namespace
+-
+-#endif
++} // VSTGUI
+diff --git a/vstgui/lib/cdrawdefs.h b/vstgui/lib/cdrawdefs.h
+index e14d75da..c6f9fc73 100644
+--- a/vstgui/lib/cdrawdefs.h
++++ b/vstgui/lib/cdrawdefs.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __cdrawdefs__
+-#define __cdrawdefs__
++#pragma once
+ 
+ #include "vstguifwd.h"
+ 
+@@ -66,6 +65,4 @@ enum CDrawStyle
+ 	kDrawFilledAndStroked
+ };
+ 
+-}
+-
+-#endif // __cdrawdefs__
++} // VSTGUI
+diff --git a/vstgui/lib/cdrawmethods.h b/vstgui/lib/cdrawmethods.h
+index c64f9649..b6f88a2a 100644
+--- a/vstgui/lib/cdrawmethods.h
++++ b/vstgui/lib/cdrawmethods.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __cdrawmethods__
+-#define __cdrawmethods__
++#pragma once
+ 
+ #include "vstguifwd.h"
+ #include "cdrawdefs.h"
+@@ -11,7 +10,6 @@
+ #include "cpoint.h"
+ 
+ namespace VSTGUI {
+-
+ namespace CDrawMethods {
+ 
+ //-----------------------------------------------------------------------------
+@@ -68,6 +66,5 @@ UTF8String createTruncatedText (TextTruncateMode mode, const UTF8String& text, C
+  */
+ void drawIconAndText (CDrawContext* context, CBitmap* iconToDraw, IconPosition iconPosition, CHoriTxtAlign textAlignment, CCoord textIconMargin, CRect drawRect, const UTF8String& title, CFontRef font, CColor textColor, TextTruncateMode truncateMode = kTextTruncateNone);
+ 	
+-}} // namespaces
+-
+-#endif // __cdrawmethods__
++} // CDrawMethods
++} // VSTGUI
+diff --git a/vstgui/lib/cdropsource.cpp b/vstgui/lib/cdropsource.cpp
+index 0560e2dd..80c3ee17 100644
+--- a/vstgui/lib/cdropsource.cpp
++++ b/vstgui/lib/cdropsource.cpp
+@@ -86,4 +86,4 @@ SharedPointer<IDataPackage> CDropSource::create (const void* buffer, uint32_t bu
+ 	return makeOwned<CDropSource> (buffer, bufferSize, type);
+ }
+ 
+-} // namespace
++} // VSTGUI
+diff --git a/vstgui/lib/cdropsource.h b/vstgui/lib/cdropsource.h
+index d3c66d58..77c92b85 100644
+--- a/vstgui/lib/cdropsource.h
++++ b/vstgui/lib/cdropsource.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __cdropsource__
+-#define __cdropsource__
++#pragma once
+ 
+ #include "vstguibase.h"
+ #include "idatapackage.h"
+@@ -48,6 +47,4 @@ protected:
+ 	DropEntryVector entries;
+ };
+ 
+-} // namespace
+-
+-#endif // __cdropsource__
++} // VSTGUI
+diff --git a/vstgui/lib/cfileselector.cpp b/vstgui/lib/cfileselector.cpp
+index 27ad9730..1a051463 100644
+--- a/vstgui/lib/cfileselector.cpp
++++ b/vstgui/lib/cfileselector.cpp
+@@ -238,5 +238,5 @@ UTF8StringPtr CNewFileSelector::getSelectedFile (uint32_t index) const
+ 	return nullptr;
+ }
+ 
+-} // namespace
++} // VSTGUI
+ 
+diff --git a/vstgui/lib/cfileselector.h b/vstgui/lib/cfileselector.h
+index 6f94d092..8bd748d2 100644
+--- a/vstgui/lib/cfileselector.h
++++ b/vstgui/lib/cfileselector.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __cfileselector__
+-#define __cfileselector__
++#pragma once
+ 
+ #include "vstguifwd.h"
+ #include "cstring.h"
+@@ -167,6 +166,4 @@ protected:
+ 	std::vector<UTF8String> result;
+ };
+ 
+-} // namespace
+-
+-#endif
++} // VSTGUI
+diff --git a/vstgui/lib/cfont.cpp b/vstgui/lib/cfont.cpp
+index e8e1bbf0..f2e3e215 100644
+--- a/vstgui/lib/cfont.cpp
++++ b/vstgui/lib/cfont.cpp
+@@ -174,4 +174,4 @@ void CFontDesc::cleanup ()
+ 	gSymbolFont.freePlatformFont ();
+ }
+ 
+-} // namespace
++} // VSTGUI
+diff --git a/vstgui/lib/cfont.h b/vstgui/lib/cfont.h
+index 44a850f6..0bb3aec1 100644
+--- a/vstgui/lib/cfont.h
++++ b/vstgui/lib/cfont.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __cfont__
+-#define __cfont__
++#pragma once
+ 
+ #include "vstguifwd.h"
+ #include "cstring.h"
+@@ -89,6 +88,4 @@ extern const CFontRef kNormalFontSmaller;
+ extern const CFontRef kNormalFontVerySmall;
+ extern const CFontRef kSymbolFont;
+ 
+-} // namespace
+-
+-#endif
++} // VSTGUI
+diff --git a/vstgui/lib/cframe.cpp b/vstgui/lib/cframe.cpp
+index 0407bc86..579b3d1e 100644
+--- a/vstgui/lib/cframe.cpp
++++ b/vstgui/lib/cframe.cpp
+@@ -1929,4 +1929,4 @@ void CFrame::CollectInvalidRects::addRect (const CRect& rect)
+ 	}
+ }
+ 
+-} // namespace
++} // VSTGUI
+diff --git a/vstgui/lib/cframe.h b/vstgui/lib/cframe.h
+index b9fb018a..757e0e07 100644
+--- a/vstgui/lib/cframe.h
++++ b/vstgui/lib/cframe.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __cframe__
+-#define __cframe__
++#pragma once
+ 
+ #include "vstguifwd.h"
+ #include "cviewcontainer.h"
+@@ -343,6 +342,4 @@ public:
+ 	virtual void onFocusViewChanged (CFrame* frame, CView* newFocusView, CView* oldFocusView) = 0;
+ };
+ 
+-} // namespace
+-
+-#endif
++} // VSTGUI
+diff --git a/vstgui/lib/cgradient.h b/vstgui/lib/cgradient.h
+index 0d4897cc..c0dcfb4c 100644
+--- a/vstgui/lib/cgradient.h
++++ b/vstgui/lib/cgradient.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __cgradient__
+-#define __cgradient__
++#pragma once
+ 
+ #include "vstguifwd.h"
+ #include "ccolor.h"
+@@ -63,6 +62,4 @@ protected:
+ 	ColorStopMap colorStops;
+ };
+ 
+-}
+-
+-#endif // __cgradient__
++} // VSTGUI
+diff --git a/vstgui/lib/cgradientview.cpp b/vstgui/lib/cgradientview.cpp
+index dc0fc953..0452f5aa 100644
+--- a/vstgui/lib/cgradientview.cpp
++++ b/vstgui/lib/cgradientview.cpp
+@@ -168,4 +168,4 @@ void CGradientView::draw (CDrawContext* context)
+ 	}
+ }
+ 
+-} // namespace
++} // VSTGUI
+diff --git a/vstgui/lib/cgradientview.h b/vstgui/lib/cgradientview.h
+index d9823311..0c3d4657 100644
+--- a/vstgui/lib/cgradientview.h
++++ b/vstgui/lib/cgradientview.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __cgradientview__
+-#define __cgradientview__
++#pragma once
+ 
+ #include "vstguifwd.h"
+ #include "cview.h"
+@@ -71,6 +70,4 @@ protected:
+ 	SharedPointer<CGradient> gradient;
+ };
+ 	
+-} // namespace
+-
+-#endif // __cgradientview__
++} // VSTGUI
+diff --git a/vstgui/lib/cgraphicspath.cpp b/vstgui/lib/cgraphicspath.cpp
+index f5de18c8..dcad078b 100644
+--- a/vstgui/lib/cgraphicspath.cpp
++++ b/vstgui/lib/cgraphicspath.cpp
+@@ -149,4 +149,4 @@ void CGraphicsPath::closeSubpath ()
+ 	dirty ();
+ }
+ 
+-} // namespace
++} // VSTGUI
+diff --git a/vstgui/lib/cgraphicspath.h b/vstgui/lib/cgraphicspath.h
+index 72d6acab..d68b702e 100644
+--- a/vstgui/lib/cgraphicspath.h
++++ b/vstgui/lib/cgraphicspath.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __cgraphicspath__
+-#define __cgraphicspath__
++#pragma once
+ 
+ #include "vstguifwd.h"
+ #include "ccolor.h"
+@@ -151,6 +150,4 @@ protected:
+ 	ElementList elements;
+ };
+ 
+-} // namespace
+-
+-#endif
++} // VSTGUI
+diff --git a/vstgui/lib/cgraphicstransform.h b/vstgui/lib/cgraphicstransform.h
+index 3e37e061..dc713465 100644
+--- a/vstgui/lib/cgraphicstransform.h
++++ b/vstgui/lib/cgraphicstransform.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __cgraphicstransform__
+-#define __cgraphicstransform__
++#pragma once
+ 
+ #include "cpoint.h"
+ #include "crect.h"
+@@ -152,7 +151,4 @@ struct CGraphicsTransform
+ 	}
+ };
+ 
+-
+-}
+-
+-#endif // __cgraphicstransform__
++} // VSTGUI
+diff --git a/vstgui/lib/clayeredviewcontainer.h b/vstgui/lib/clayeredviewcontainer.h
+index a414d545..73c95841 100644
+--- a/vstgui/lib/clayeredviewcontainer.h
++++ b/vstgui/lib/clayeredviewcontainer.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __clayeredviewcontainer__
+-#define __clayeredviewcontainer__
++#pragma once
+ 
+ #include "cviewcontainer.h"
+ #include "iviewlistener.h"
+@@ -56,6 +55,4 @@ protected:
+ 	uint32_t zIndex {0};
+ };
+ 
+-} // namespace
+-
+-#endif // __clayeredviewcontainer__
++} // VSTGUI
+diff --git a/vstgui/lib/clinestyle.h b/vstgui/lib/clinestyle.h
+index 310048ce..c3a97dd9 100644
+--- a/vstgui/lib/clinestyle.h
++++ b/vstgui/lib/clinestyle.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __clinestyle__
+-#define __clinestyle__
++#pragma once
+ 
+ #include "vstguifwd.h"
+ #include <vector>
+@@ -67,6 +66,4 @@ protected:
+ extern const CLineStyle kLineSolid;
+ extern const CLineStyle kLineOnOffDash;
+ 
+-}
+-
+-#endif // __clinestyle__
++} // VSTGUI
+diff --git a/vstgui/lib/coffscreencontext.cpp b/vstgui/lib/coffscreencontext.cpp
+index 66f7c5a7..ece08e43 100644
+--- a/vstgui/lib/coffscreencontext.cpp
++++ b/vstgui/lib/coffscreencontext.cpp
+@@ -53,4 +53,4 @@ CCoord COffscreenContext::getHeight () const
+ 	return bitmap ? bitmap->getHeight () : 0.;
+ }
+ 
+-} // namespace
++} // VSTGUI
+diff --git a/vstgui/lib/coffscreencontext.h b/vstgui/lib/coffscreencontext.h
+index 2fade2f7..c6b0e580 100644
+--- a/vstgui/lib/coffscreencontext.h
++++ b/vstgui/lib/coffscreencontext.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __coffscreencontext__
+-#define __coffscreencontext__
++#pragma once
+ 
+ #include "vstguifwd.h"
+ #include "cdrawcontext.h"
+@@ -80,6 +79,4 @@ protected:
+ 	SharedPointer<CBitmap> bitmap;
+ };
+ 
+-} // namespace
+-
+-#endif // __coffscreencontext__
++} // VSTGUI
+diff --git a/vstgui/lib/controls/cautoanimation.cpp b/vstgui/lib/controls/cautoanimation.cpp
+index 5fe4025c..73ba959e 100644
+--- a/vstgui/lib/controls/cautoanimation.cpp
++++ b/vstgui/lib/controls/cautoanimation.cpp
+@@ -142,4 +142,4 @@ void CAutoAnimation::previousPixmap ()
+ 		value = (float)(totalHeightOfBitmap - heightOfOneImage - 1);
+ }
+ 
+-} // namespace
++} // VSTGUI
+diff --git a/vstgui/lib/controls/cautoanimation.h b/vstgui/lib/controls/cautoanimation.h
+index f3811532..cb93079a 100644
+--- a/vstgui/lib/controls/cautoanimation.h
++++ b/vstgui/lib/controls/cautoanimation.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __cautoanimation__
+-#define __cautoanimation__
++#pragma once
+ 
+ #include "ccontrol.h"
+ 
+@@ -54,6 +53,4 @@ protected:
+ 	bool	bWindowOpened;
+ };
+ 
+-} // namespace
+-
+-#endif
++} // VSTGUI
+diff --git a/vstgui/lib/controls/cbuttons.cpp b/vstgui/lib/controls/cbuttons.cpp
+index 0fca303c..35c88b6b 100644
+--- a/vstgui/lib/controls/cbuttons.cpp
++++ b/vstgui/lib/controls/cbuttons.cpp
+@@ -1069,4 +1069,4 @@ int32_t CTextButton::onKeyUp (VstKeyCode& keyCode)
+ 	return -1;
+ }
+ 
+-} // namespace
++} // VSTGUI
+diff --git a/vstgui/lib/controls/cbuttons.h b/vstgui/lib/controls/cbuttons.h
+index 678e5248..3f5712dc 100644
+--- a/vstgui/lib/controls/cbuttons.h
++++ b/vstgui/lib/controls/cbuttons.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __cbuttons__
+-#define __cbuttons__
++#pragma once
+ 
+ #include "ccontrol.h"
+ #include "../cfont.h"
+@@ -274,6 +273,4 @@ private:
+ 	float fEntryState;
+ };
+ 
+-} // namespace
+-
+-#endif
++} // VSTGUI
+diff --git a/vstgui/lib/controls/ccolorchooser.cpp b/vstgui/lib/controls/ccolorchooser.cpp
+index 6a984779..145eb04f 100644
+--- a/vstgui/lib/controls/ccolorchooser.cpp
++++ b/vstgui/lib/controls/ccolorchooser.cpp
+@@ -233,7 +233,7 @@ static void setupParamDisplay (CParamDisplay* display, const CColorChooserUISett
+ 	display->setTransparency (true);
+ }
+ 
+-} // namespace CColorChooserInternal
++} // CColorChooserInternal
+ 
+ /// @endcond
+ 
+@@ -591,4 +591,4 @@ void CColorChooser::updateState ()
+ 	colorView->invalid ();
+ }
+ 
+-} // namespace
++} // VSTGUI
+diff --git a/vstgui/lib/controls/ccolorchooser.h b/vstgui/lib/controls/ccolorchooser.h
+index 06309b47..517cecbd 100644
+--- a/vstgui/lib/controls/ccolorchooser.h
++++ b/vstgui/lib/controls/ccolorchooser.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __ccolorchooser__
+-#define __ccolorchooser__
++#pragma once
+ 
+ #include "../vstguifwd.h"
+ #include "../cviewcontainer.h"
+@@ -93,6 +92,4 @@ protected:
+ 
+ };
+ 
+-} // namespace
+-
+-#endif
++} // VSTGUI
+diff --git a/vstgui/lib/controls/ccontrol.cpp b/vstgui/lib/controls/ccontrol.cpp
+index 8a7bc3d7..ee42de87 100644
+--- a/vstgui/lib/controls/ccontrol.cpp
++++ b/vstgui/lib/controls/ccontrol.cpp
+@@ -261,4 +261,4 @@ void IMultiBitmapControl::autoComputeHeightOfOneImage ()
+ 	}
+ }
+ 
+-} // namespace
++} // VSTGUI
+diff --git a/vstgui/lib/controls/ccontrol.h b/vstgui/lib/controls/ccontrol.h
+index 3cb33ba4..068e4400 100644
+--- a/vstgui/lib/controls/ccontrol.h
++++ b/vstgui/lib/controls/ccontrol.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __ccontrol__
+-#define __ccontrol__
++#pragma once
+ 
+ #include "../cview.h"
+ #include "../ifocusdrawing.h"
+@@ -146,6 +145,4 @@ protected:
+ 	int32_t subPixmaps;
+ };
+ 
+-} // namespace
+-
+-#endif
++} // VSTGUI
+diff --git a/vstgui/lib/controls/cfontchooser.cpp b/vstgui/lib/controls/cfontchooser.cpp
+index 71fd00cb..8cac2a3a 100644
+--- a/vstgui/lib/controls/cfontchooser.cpp
++++ b/vstgui/lib/controls/cfontchooser.cpp
+@@ -72,7 +72,7 @@ enum {
+ 	kFontChooserStrikeoutTag
+ };
+ 
+-} // namespace CFontChooserInternal
++} // CFontChooserInternal
+ 
+ /// @endcond
+ 
+@@ -294,4 +294,4 @@ int32_t CFontChooser::onKeyDown (VstKeyCode& keyCode)
+ 	return fontBrowser->onKeyDown (keyCode);
+ }
+ 
+-} // namespace
++} // VSTGUI
+diff --git a/vstgui/lib/controls/cfontchooser.h b/vstgui/lib/controls/cfontchooser.h
+index c93749f2..2f92b1f5 100644
+--- a/vstgui/lib/controls/cfontchooser.h
++++ b/vstgui/lib/controls/cfontchooser.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __cfontchooser__
+-#define __cfontchooser__
++#pragma once
+ 
+ #include "../vstguifwd.h"
+ #include "../cviewcontainer.h"
+@@ -89,6 +88,5 @@ protected:
+ 	CFontRef selFont;
+ };
+ 
+-} // namespace
++} // VSTGUI
+ 
+-#endif
+diff --git a/vstgui/lib/controls/cknob.cpp b/vstgui/lib/controls/cknob.cpp
+index 21458b3a..1f26767e 100644
+--- a/vstgui/lib/controls/cknob.cpp
++++ b/vstgui/lib/controls/cknob.cpp
+@@ -813,4 +813,4 @@ void CAnimKnob::draw (CDrawContext *pContext)
+ 	setDirty (false);
+ }
+ 
+-} // namespace
++} // VSTGUI
+diff --git a/vstgui/lib/controls/cknob.h b/vstgui/lib/controls/cknob.h
+index 87aec1e9..593588d9 100644
+--- a/vstgui/lib/controls/cknob.h
++++ b/vstgui/lib/controls/cknob.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __cknob__
+-#define __cknob__
++#pragma once
+ 
+ #include "ccontrol.h"
+ #include "../ccolor.h"
+@@ -157,6 +156,4 @@ protected:
+ 	bool	bInverseBitmap;
+ };
+ 
+-} // namespace
+-
+-#endif
++} // VSTGUI
+diff --git a/vstgui/lib/controls/cmoviebitmap.cpp b/vstgui/lib/controls/cmoviebitmap.cpp
+index 4055e2fe..4f4387a5 100644
+--- a/vstgui/lib/controls/cmoviebitmap.cpp
++++ b/vstgui/lib/controls/cmoviebitmap.cpp
+@@ -99,4 +99,4 @@ bool CMovieBitmap::sizeToFit ()
+ 	return false;
+ }
+ 
+-} // namespace
++} // VSTGUI
+diff --git a/vstgui/lib/controls/cmoviebitmap.h b/vstgui/lib/controls/cmoviebitmap.h
+index 5b58d007..1d5b48a4 100644
+--- a/vstgui/lib/controls/cmoviebitmap.h
++++ b/vstgui/lib/controls/cmoviebitmap.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __cmoviebitmap__
+-#define __cmoviebitmap__
++#pragma once
+ 
+ #include "ccontrol.h"
+ 
+@@ -33,6 +32,4 @@ protected:
+ 	CPoint	offset;
+ };
+ 
+-} // namespace
+-
+-#endif
++} // VSTGUI
+diff --git a/vstgui/lib/controls/cmoviebutton.cpp b/vstgui/lib/controls/cmoviebutton.cpp
+index 8fccd79c..cdbbc43b 100644
+--- a/vstgui/lib/controls/cmoviebutton.cpp
++++ b/vstgui/lib/controls/cmoviebutton.cpp
+@@ -165,4 +165,4 @@ bool CMovieButton::sizeToFit ()
+ 	return false;
+ }
+ 
+-} // namespace
++} // VSTGUI
+diff --git a/vstgui/lib/controls/cmoviebutton.h b/vstgui/lib/controls/cmoviebutton.h
+index b40c4a3d..e51774e2 100644
+--- a/vstgui/lib/controls/cmoviebutton.h
++++ b/vstgui/lib/controls/cmoviebutton.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __cmoviebutton__
+-#define __cmoviebutton__
++#pragma once
+ 
+ #include "ccontrol.h"
+ 
+@@ -42,6 +41,4 @@ private:
+ 	float    fEntryState;
+ };
+ 
+-} // namespace
+-
+-#endif
++} // VSTGUI
+diff --git a/vstgui/lib/controls/coptionmenu.cpp b/vstgui/lib/controls/coptionmenu.cpp
+index baa25370..86a10a22 100644
+--- a/vstgui/lib/controls/coptionmenu.cpp
++++ b/vstgui/lib/controls/coptionmenu.cpp
+@@ -767,4 +767,4 @@ void COptionMenu::looseFocus ()
+ 	CParamDisplay::looseFocus ();
+ }
+ 
+-} // namespace
++} // VSTGUI
+diff --git a/vstgui/lib/controls/coptionmenu.h b/vstgui/lib/controls/coptionmenu.h
+index 66b4b410..115bbd19 100644
+--- a/vstgui/lib/controls/coptionmenu.h
++++ b/vstgui/lib/controls/coptionmenu.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __coptionmenu__
+-#define __coptionmenu__
++#pragma once
+ 
+ #include "cparamdisplay.h"
+ #include "icommandmenuitemtarget.h"
+@@ -338,6 +337,4 @@ protected:
+ 	std::unique_ptr<MenuListenerList> listeners;
+ };
+ 
+-} // namespace
+-
+-#endif
++} // VSTGUI
+diff --git a/vstgui/lib/controls/cparamdisplay.cpp b/vstgui/lib/controls/cparamdisplay.cpp
+index d9799117..35585c94 100644
+--- a/vstgui/lib/controls/cparamdisplay.cpp
++++ b/vstgui/lib/controls/cparamdisplay.cpp
+@@ -501,4 +501,4 @@ void CParamDisplay::copyBackOffset ()
+ 	backOffset (getViewSize ().left, getViewSize ().top);
+ }
+ 
+-} // namespace
++} // VSTGUI
+diff --git a/vstgui/lib/controls/cparamdisplay.h b/vstgui/lib/controls/cparamdisplay.h
+index 80dad002..67f9a599 100644
+--- a/vstgui/lib/controls/cparamdisplay.h
++++ b/vstgui/lib/controls/cparamdisplay.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __cparamdisplay__
+-#define __cparamdisplay__
++#pragma once
+ 
+ #include "ccontrol.h"
+ #include "../cfont.h"
+@@ -151,7 +150,4 @@ protected:
+ 	double		textRotation;
+ };
+ 
+-} // namespace
+-
+-#endif
+-
++} // VSTGUI
+diff --git a/vstgui/lib/controls/cscrollbar.h b/vstgui/lib/controls/cscrollbar.h
+index b820bec6..d9916b0c 100644
+--- a/vstgui/lib/controls/cscrollbar.h
++++ b/vstgui/lib/controls/cscrollbar.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __cscrollbar__
+-#define __cscrollbar__
++#pragma once
+ 
+ #include "ccontrol.h"
+ #include "../ccolor.h"
+@@ -107,7 +106,4 @@ public:
+ 	virtual void drawScrollbarScroller (CDrawContext* pContext, const CRect& size, CScrollbar::ScrollbarDirection direction, CScrollbar* bar) = 0;
+ };
+ 
+-
+-}
+-
+-#endif // __cscrollbar__
++} // VSTGUI
+diff --git a/vstgui/lib/controls/csearchtextedit.cpp b/vstgui/lib/controls/csearchtextedit.cpp
+index 7d8d747b..f1bf281b 100644
+--- a/vstgui/lib/controls/csearchtextedit.cpp
++++ b/vstgui/lib/controls/csearchtextedit.cpp
+@@ -162,4 +162,4 @@ void CSearchTextEdit::platformTextDidChange ()
+ }
+ 
+ //------------------------------------------------------------------------
+-} // namespace
++} // VSTGUI
+diff --git a/vstgui/lib/controls/csearchtextedit.h b/vstgui/lib/controls/csearchtextedit.h
+index 42b5b456..69d99449 100644
+--- a/vstgui/lib/controls/csearchtextedit.h
++++ b/vstgui/lib/controls/csearchtextedit.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __csearchtextedit__
+-#define __csearchtextedit__
++#pragma once
+ 
+ #include "ctextedit.h"
+ 
+@@ -35,6 +34,4 @@ protected:
+ 	CPoint clearMarkInset {2., 2.};
+ };
+ 
+-} // namespace
+-
+-#endif // __csearchtextedit__
++} // VSTGUI
+diff --git a/vstgui/lib/controls/csegmentbutton.cpp b/vstgui/lib/controls/csegmentbutton.cpp
+index 3fd9a695..a6f276a6 100644
+--- a/vstgui/lib/controls/csegmentbutton.cpp
++++ b/vstgui/lib/controls/csegmentbutton.cpp
+@@ -556,4 +556,4 @@ bool CSegmentButton::getFocusPath (CGraphicsPath& outPath)
+ 	return true;
+ }
+ 
+-} // namespace
++} // VSTGUI
+diff --git a/vstgui/lib/controls/csegmentbutton.h b/vstgui/lib/controls/csegmentbutton.h
+index ade8bf8d..386c2b1a 100644
+--- a/vstgui/lib/controls/csegmentbutton.h
++++ b/vstgui/lib/controls/csegmentbutton.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __csegmentbutton__
+-#define __csegmentbutton__
++#pragma once
+ 
+ #include "ccontrol.h"
+ #include "../cdrawmethods.h"
+@@ -152,6 +151,4 @@ private:
+ 	CDrawMethods::TextTruncateMode textTruncateMode {CDrawMethods::kTextTruncateNone};
+ };
+ 
+-} // namespace
+-
+-#endif // __csegmentbutton__
++} // VSTGUI
+diff --git a/vstgui/lib/controls/cslider.cpp b/vstgui/lib/controls/cslider.cpp
+index 316dcd07..e47581c1 100644
+--- a/vstgui/lib/controls/cslider.cpp
++++ b/vstgui/lib/controls/cslider.cpp
+@@ -998,4 +998,4 @@ CHorizontalSlider::CHorizontalSlider (const CRect &rect, IControlListener* liste
+ : CSlider (rect, listener, tag, offsetHandle, rangeHandle, handle, background, offset, style|kHorizontal)
+ {}
+ 
+-} // namespace
++} // VSTGUI
+diff --git a/vstgui/lib/controls/cslider.h b/vstgui/lib/controls/cslider.h
+index 5ff8e0f9..53eb1d72 100644
+--- a/vstgui/lib/controls/cslider.h
++++ b/vstgui/lib/controls/cslider.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __cslider__
+-#define __cslider__
++#pragma once
+ 
+ #include "ccontrol.h"
+ #include "../ccolor.h"
+@@ -167,6 +166,4 @@ public:
+ 	CHorizontalSlider (const CHorizontalSlider& slider) = default;
+ };
+ 
+-} // namespace
+-
+-#endif
++} // VSTGUI
+diff --git a/vstgui/lib/controls/cspecialdigit.cpp b/vstgui/lib/controls/cspecialdigit.cpp
+index 6bdfbf4b..2e434cda 100644
+--- a/vstgui/lib/controls/cspecialdigit.cpp
++++ b/vstgui/lib/controls/cspecialdigit.cpp
+@@ -128,4 +128,4 @@ void CSpecialDigit::draw (CDrawContext *pContext)
+ 	setDirty (false);
+ }
+ 
+-} // namespace
++} // VSTGUI
+diff --git a/vstgui/lib/controls/cspecialdigit.h b/vstgui/lib/controls/cspecialdigit.h
+index fa6d44c2..9345d41f 100644
+--- a/vstgui/lib/controls/cspecialdigit.h
++++ b/vstgui/lib/controls/cspecialdigit.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __cspecialdigit__
+-#define __cspecialdigit__
++#pragma once
+ 
+ #include "ccontrol.h"
+ 
+@@ -32,6 +31,4 @@ protected:
+ 	int32_t     height;
+ };
+ 
+-} // namespace
+-
+-#endif
++} // VSTGUI
+diff --git a/vstgui/lib/controls/csplashscreen.cpp b/vstgui/lib/controls/csplashscreen.cpp
+index d539665b..be45774c 100644
+--- a/vstgui/lib/controls/csplashscreen.cpp
++++ b/vstgui/lib/controls/csplashscreen.cpp
+@@ -308,4 +308,4 @@ bool CAnimationSplashScreen::createAnimation (uint32_t animationIndex, uint32_t
+ 	return false;
+ }
+ 
+-} // namespace
++} // VSTGUI
+diff --git a/vstgui/lib/controls/csplashscreen.h b/vstgui/lib/controls/csplashscreen.h
+index 5905b5a2..f9d0f0e2 100644
+--- a/vstgui/lib/controls/csplashscreen.h
++++ b/vstgui/lib/controls/csplashscreen.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __csplashscreen__
+-#define __csplashscreen__
++#pragma once
+ 
+ #include "ccontrol.h"
+ #include "icontrollistener.h"
+@@ -96,6 +95,4 @@ protected:
+ 	uint32_t animationTime{500};
+ };
+ 
+-} // namespace
+-
+-#endif
++} // VSTGUI
+diff --git a/vstgui/lib/controls/cswitch.cpp b/vstgui/lib/controls/cswitch.cpp
+index 5ea2e98a..2857c523 100644
+--- a/vstgui/lib/controls/cswitch.cpp
++++ b/vstgui/lib/controls/cswitch.cpp
+@@ -621,4 +621,4 @@ bool CRockerSwitch::sizeToFit ()
+ 	return false;
+ }
+ 
+-} // namespace
++} // VSTGUI
+diff --git a/vstgui/lib/controls/cswitch.h b/vstgui/lib/controls/cswitch.h
+index e385bf69..927f4b2f 100644
+--- a/vstgui/lib/controls/cswitch.h
++++ b/vstgui/lib/controls/cswitch.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __cswitch__
+-#define __cswitch__
++#pragma once
+ 
+ #include "ccontrol.h"
+ 
+@@ -163,6 +162,4 @@ private:
+ 	float mouseStartValue;
+ };
+ 
+-} // namespace
+-
+-#endif
++} // VSTGUI
+diff --git a/vstgui/lib/controls/ctextedit.cpp b/vstgui/lib/controls/ctextedit.cpp
+index ed82be29..e4bdd265 100644
+--- a/vstgui/lib/controls/ctextedit.cpp
++++ b/vstgui/lib/controls/ctextedit.cpp
+@@ -400,5 +400,5 @@ void CTextEdit::updateText (IPlatformTextEdit* pte)
+ 	}
+ }
+ 
+-} // namespace
++} // VSTGUI
+ 
+diff --git a/vstgui/lib/controls/ctextedit.h b/vstgui/lib/controls/ctextedit.h
+index 96303943..373436bb 100644
+--- a/vstgui/lib/controls/ctextedit.h
++++ b/vstgui/lib/controls/ctextedit.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __ctextedit__
+-#define __ctextedit__
++#pragma once
+ 
+ #include "ctextlabel.h"
+ #include "../platform/iplatformtextedit.h"
+@@ -115,6 +114,4 @@ protected:
+ 	UTF8String placeholderString;
+ };
+ 
+-} // namespace
+-
+-#endif
++} // VSTGUI
+diff --git a/vstgui/lib/controls/ctextlabel.cpp b/vstgui/lib/controls/ctextlabel.cpp
+index c907d46a..33ac173a 100644
+--- a/vstgui/lib/controls/ctextlabel.cpp
++++ b/vstgui/lib/controls/ctextlabel.cpp
+@@ -460,4 +460,4 @@ void CMultiLineTextLabel::recalculateLines (CDrawContext* context)
+ 	}
+ }
+ 
+-} // namespace
++} // VSTGUI
+diff --git a/vstgui/lib/controls/ctextlabel.h b/vstgui/lib/controls/ctextlabel.h
+index 0454b1c3..66c61294 100644
+--- a/vstgui/lib/controls/ctextlabel.h
++++ b/vstgui/lib/controls/ctextlabel.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __ctextlabel__
+-#define __ctextlabel__
++#pragma once
+ 
+ #include "cparamdisplay.h"
+ #include "itextlabellistener.h"
+@@ -132,6 +131,4 @@ private:
+ 	Lines lines;
+ };
+ 
+-} // namespace
+-
+-#endif
++} // VSTGUI
+diff --git a/vstgui/lib/controls/cvumeter.cpp b/vstgui/lib/controls/cvumeter.cpp
+index a9256f43..6d493886 100644
+--- a/vstgui/lib/controls/cvumeter.cpp
++++ b/vstgui/lib/controls/cvumeter.cpp
+@@ -154,4 +154,4 @@ void CVuMeter::draw (CDrawContext *_pContext)
+ 	setDirty (false);
+ }
+ 
+-} // namespace
++} // VSTGUI
+diff --git a/vstgui/lib/controls/cvumeter.h b/vstgui/lib/controls/cvumeter.h
+index 51b6f08e..237edf21 100644
+--- a/vstgui/lib/controls/cvumeter.h
++++ b/vstgui/lib/controls/cvumeter.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __cvumeter__
+-#define __cvumeter__
++#pragma once
+ 
+ #include "ccontrol.h"
+ 
+@@ -73,6 +72,4 @@ protected:
+ 	CRect    rectOff;
+ };
+ 
+-} // namespace
+-
+-#endif
++} // VSTGUI
+diff --git a/vstgui/lib/controls/cxypad.cpp b/vstgui/lib/controls/cxypad.cpp
+index 330c40ac..ad48949c 100644
+--- a/vstgui/lib/controls/cxypad.cpp
++++ b/vstgui/lib/controls/cxypad.cpp
+@@ -162,4 +162,4 @@ void CXYPad::boundValues (float& x, float& y)
+ 		y = 1.f;
+ }
+ 
+-} // namespace
++} // VSTGUI
+diff --git a/vstgui/lib/controls/cxypad.h b/vstgui/lib/controls/cxypad.h
+index 75100c3a..34d0fcaf 100644
+--- a/vstgui/lib/controls/cxypad.h
++++ b/vstgui/lib/controls/cxypad.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __cxypad__
+-#define __cxypad__
++#pragma once
+ 
+ #include "cparamdisplay.h"
+ #include <cmath>
+@@ -55,7 +54,4 @@ protected:
+ 	SharedPointer<CBaseObject> endEditTimer = nullptr;
+ };
+ 
+-
+-} // namespace
+-
+-#endif // __cxypad__
++} // VSTGUI
+diff --git a/vstgui/lib/controls/icontrollistener.h b/vstgui/lib/controls/icontrollistener.h
+index 3c4f39b9..4aeec51e 100644
+--- a/vstgui/lib/controls/icontrollistener.h
++++ b/vstgui/lib/controls/icontrollistener.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __icontrollistener__
+-#define __icontrollistener__
++#pragma once
+ 
+ #include "../vstguifwd.h"
+ #include "../cbuttonstate.h"
+@@ -24,6 +23,4 @@ public:
+ 	virtual void controlTagDidChange (CControl* pControl) {}
+ };
+ 
+-}
+-
+-#endif // __icontrollistener__
++} // VSTGUI
+diff --git a/vstgui/lib/copenglview.cpp b/vstgui/lib/copenglview.cpp
+index 9febb959..aa119991 100644
+--- a/vstgui/lib/copenglview.cpp
++++ b/vstgui/lib/copenglview.cpp
+@@ -183,6 +183,6 @@ void COpenGLView::onScaleFactorChanged (CFrame* frame, double newScaleFactor)
+ 	updatePlatformOpenGLViewSize ();
+ }
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // VSTGUI_OPENGL_SUPPORT
+diff --git a/vstgui/lib/copenglview.h b/vstgui/lib/copenglview.h
+index 5eb55e18..cbc4423a 100644
+--- a/vstgui/lib/copenglview.h
++++ b/vstgui/lib/copenglview.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __copenglview__
+-#define __copenglview__
++#pragma once
+ 
+ #include "cview.h"
+ #include "iscalefactorchangedlistener.h"
+@@ -78,7 +77,6 @@ private:
+ 	SharedPointer<IPlatformOpenGLView> platformOpenGLView;
+ };
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // VSTGUI_OPENGL_SUPPORT
+-#endif // __copenglview__
+diff --git a/vstgui/lib/cpoint.h b/vstgui/lib/cpoint.h
+index 1d5f3593..bc38fc3a 100644
+--- a/vstgui/lib/cpoint.h
++++ b/vstgui/lib/cpoint.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __cpoint__
+-#define __cpoint__
++#pragma once
+ 
+ #include "vstguibase.h"
+ #include <cmath>
+@@ -52,7 +51,4 @@ inline CPoint& CPoint::makeIntegral ()
+ 	return *this;
+ }
+ 
+-
+-} // namespace
+-
+-#endif
++} // VSTGUI
+diff --git a/vstgui/lib/crect.cpp b/vstgui/lib/crect.cpp
+index b066e606..57d99de1 100644
+--- a/vstgui/lib/crect.cpp
++++ b/vstgui/lib/crect.cpp
+@@ -7,4 +7,4 @@
+ 
+ namespace VSTGUI {
+ 
+-} // namespace
++} // VSTGUI
+diff --git a/vstgui/lib/crect.h b/vstgui/lib/crect.h
+index 333751eb..1dba3a4f 100644
+--- a/vstgui/lib/crect.h
++++ b/vstgui/lib/crect.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __crect__
+-#define __crect__
++#pragma once
+ 
+ #include "vstguibase.h"
+ #include "cpoint.h"
+@@ -397,7 +396,4 @@ inline CRect& CRect::offsetInverse (const CPoint& p)
+ 	return offset (-p.x, -p.y);
+ }
+ 
+-} // namespace
+-
+-#endif
+-
++} // VSTGUI
+diff --git a/vstgui/lib/cresourcedescription.h b/vstgui/lib/cresourcedescription.h
+index de517e66..bfb55f52 100644
+--- a/vstgui/lib/cresourcedescription.h
++++ b/vstgui/lib/cresourcedescription.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __cresourcedescription__
+-#define __cresourcedescription__
++#pragma once
+ 
+ #include "vstguibase.h"
+ 
+@@ -32,6 +31,4 @@ public:
+ 	} u;
+ };
+ 
+-}
+-
+-#endif // __cresourcedescription__
++} // VSTGUI
+diff --git a/vstgui/lib/crowcolumnview.cpp b/vstgui/lib/crowcolumnview.cpp
+index 9ce81ec7..3efeaf1b 100644
+--- a/vstgui/lib/crowcolumnview.cpp
++++ b/vstgui/lib/crowcolumnview.cpp
+@@ -304,5 +304,5 @@ bool CAutoLayoutContainerView::changeViewZOrder (CView* view, uint32_t newIndex)
+ 	return false;
+ }
+ 
+-} // namespace
++} // VSTGUI
+ 
+diff --git a/vstgui/lib/crowcolumnview.h b/vstgui/lib/crowcolumnview.h
+index 7ffba34a..0eee783b 100644
+--- a/vstgui/lib/crowcolumnview.h
++++ b/vstgui/lib/crowcolumnview.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __crowcolumnview__
+-#define __crowcolumnview__
++#pragma once
+ 
+ #include "cviewcontainer.h"
+ 
+@@ -105,6 +104,4 @@ protected:
+ 	uint32_t viewResizeAnimationTime;
+ };
+ 
+-} // namespace
+-
+-#endif // __crowcolumnview__
++} // VSTGUI
+diff --git a/vstgui/lib/cscrollview.cpp b/vstgui/lib/cscrollview.cpp
+index 41e32d6a..bbd154b2 100644
+--- a/vstgui/lib/cscrollview.cpp
++++ b/vstgui/lib/cscrollview.cpp
+@@ -802,5 +802,5 @@ void CScrollView::viewWillDelete (CView* view)
+ 		view->unregisterViewListener (this);
+ }
+ 
+-} // namespace
++} // VSTGUI
+ 
+diff --git a/vstgui/lib/cscrollview.h b/vstgui/lib/cscrollview.h
+index e6b55776..93a09ba9 100644
+--- a/vstgui/lib/cscrollview.h
++++ b/vstgui/lib/cscrollview.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __cscrollview__
+-#define __cscrollview__
++#pragma once
+ 
+ #include "vstguifwd.h"
+ #include "cviewcontainer.h"
+@@ -125,6 +124,4 @@ protected:
+ 	};
+ };
+ 
+-} // namespace
+-
+-#endif
++} // VSTGUI
+diff --git a/vstgui/lib/cshadowviewcontainer.cpp b/vstgui/lib/cshadowviewcontainer.cpp
+index a64c5ebf..22b319f0 100644
+--- a/vstgui/lib/cshadowviewcontainer.cpp
++++ b/vstgui/lib/cshadowviewcontainer.cpp
+@@ -247,4 +247,4 @@ void CShadowViewContainer::viewContainerViewZOrderChanged (CViewContainer* conta
+ 	invalidateShadow ();
+ }
+ 
+-} // namespace
++} // VSTGUI
+diff --git a/vstgui/lib/cshadowviewcontainer.h b/vstgui/lib/cshadowviewcontainer.h
+index 430b5a0f..f80477d6 100644
+--- a/vstgui/lib/cshadowviewcontainer.h
++++ b/vstgui/lib/cshadowviewcontainer.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __cshadowviewcontainer__
+-#define __cshadowviewcontainer__
++#pragma once
+ 
+ #include "cviewcontainer.h"
+ #include "iviewlistener.h"
+@@ -67,6 +66,4 @@ protected:
+ 	double scaleFactorUsed;
+ };
+ 
+-} // namespace
+-
+-#endif // __cshadowviewcontainer__
++} // VSTGUI
+diff --git a/vstgui/lib/csplitview.cpp b/vstgui/lib/csplitview.cpp
+index 121ce407..a6c19860 100644
+--- a/vstgui/lib/csplitview.cpp
++++ b/vstgui/lib/csplitview.cpp
+@@ -859,4 +859,4 @@ bool CSplitViewSeparatorView::removed (CView* parent)
+ 	return CViewContainer::removed (parent);
+ }
+ 
+-} // namespace
++} // VSTGUI
+diff --git a/vstgui/lib/csplitview.h b/vstgui/lib/csplitview.h
+index 41fe1981..99cb4db1 100644
+--- a/vstgui/lib/csplitview.h
++++ b/vstgui/lib/csplitview.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __csplitview__
+-#define __csplitview__
++#pragma once
+ 
+ #include "vstguifwd.h"
+ #include "cviewcontainer.h"
+@@ -131,6 +130,4 @@ public:
+ 	virtual void drawSplitViewSeparator (CDrawContext* context, const CRect& size, int32_t flags, int32_t index, CSplitView* splitView) = 0;
+ };
+ 
+-}
+-
+-#endif // __csplitview__
++} // VSTGUI
+diff --git a/vstgui/lib/cstring.cpp b/vstgui/lib/cstring.cpp
+index a6f44ffa..d5c897e8 100644
+--- a/vstgui/lib/cstring.cpp
++++ b/vstgui/lib/cstring.cpp
+@@ -233,4 +233,4 @@ void free (UTF8StringBuffer buffer)
+ 
+ #endif // VSTGUI_ENABLE_DEPRECATED_METHODS
+ 
+-} // namespace
++} // VSTGUI
+diff --git a/vstgui/lib/cstring.h b/vstgui/lib/cstring.h
+index b5b6fcaf..4f0d140e 100644
+--- a/vstgui/lib/cstring.h
++++ b/vstgui/lib/cstring.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __cstring__
+-#define __cstring__
++#pragma once
+ 
+ #include "vstguifwd.h"
+ #include "optional.h"
+@@ -603,6 +602,4 @@ inline typename UTF8CodePointIterator<BaseIterator>::CodePoint UTF8CodePointIter
+ 	return codePoint;
+ }
+ 
+-} // namespace
+-
+-#endif // __cstring__
++} // VSTGUI
+diff --git a/vstgui/lib/ctabview.cpp b/vstgui/lib/ctabview.cpp
+index 9cbbd682..c8e7350b 100644
+--- a/vstgui/lib/ctabview.cpp
++++ b/vstgui/lib/ctabview.cpp
+@@ -551,4 +551,4 @@ void CTabView::setViewSize (const CRect &rect, bool invalid)
+ }
+ 
+ 
+-} // namespace
++} // VSTGUI
+diff --git a/vstgui/lib/ctabview.h b/vstgui/lib/ctabview.h
+index 9fe055f2..d9e23861 100644
+--- a/vstgui/lib/ctabview.h
++++ b/vstgui/lib/ctabview.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __ctabview__
+-#define __ctabview__
++#pragma once
+ 
+ #include "vstguifwd.h"
+ #include "cviewcontainer.h"
+@@ -91,6 +90,4 @@ protected:
+ 	CTabChildView* currentChild;
+ };
+ 
+-} // namespace
+-
+-#endif
++} // VSTGUI
+diff --git a/vstgui/lib/ctooltipsupport.cpp b/vstgui/lib/ctooltipsupport.cpp
+index 87a6fbc5..81acc092 100644
+--- a/vstgui/lib/ctooltipsupport.cpp
++++ b/vstgui/lib/ctooltipsupport.cpp
+@@ -264,4 +264,4 @@ CMessageResult CTooltipSupport::notify (CBaseObject* sender, IdStringPtr msg)
+ 	return kMessageUnknown;
+ }
+ 
+-} // namespace
++} // VSTGUI
+diff --git a/vstgui/lib/ctooltipsupport.h b/vstgui/lib/ctooltipsupport.h
+index 81821801..26f0639a 100644
+--- a/vstgui/lib/ctooltipsupport.h
++++ b/vstgui/lib/ctooltipsupport.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __ctooltipsupport__
+-#define __ctooltipsupport__
++#pragma once
+ 
+ #include "vstguifwd.h"
+ #include "cpoint.h"
+@@ -51,7 +50,4 @@ protected:
+ 	CPoint lastMouseMove;
+ };
+ 
+-} // namespace
+-
+-#endif
+-
++} // VSTGUI
+diff --git a/vstgui/lib/cview.cpp b/vstgui/lib/cview.cpp
+index ff2626b9..75098e52 100644
+--- a/vstgui/lib/cview.cpp
++++ b/vstgui/lib/cview.cpp
+@@ -1189,4 +1189,4 @@ int32_t CDragContainerHelper::getCount () const
+ 	return static_cast<int32_t> (drag->getCount ());
+ }
+ 
+-} // namespace
++} // VSTGUI
+diff --git a/vstgui/lib/cview.h b/vstgui/lib/cview.h
+index 7d795b98..1dbd278c 100644
+--- a/vstgui/lib/cview.h
++++ b/vstgui/lib/cview.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __cview__
+-#define __cview__
++#pragma once
+ 
+ #include "vstguifwd.h"
+ #include "cpoint.h"
+@@ -437,6 +436,4 @@ protected:
+ 	int32_t index {0};
+ };
+ 
+-} // namespace
+-
+-#endif
++} // VSTGUI
+diff --git a/vstgui/lib/cviewcontainer.cpp b/vstgui/lib/cviewcontainer.cpp
+index 729a07f0..961a15ce 100644
+--- a/vstgui/lib/cviewcontainer.cpp
++++ b/vstgui/lib/cviewcontainer.cpp
+@@ -1475,4 +1475,4 @@ void CViewContainer::dumpHierarchy ()
+ 
+ #endif
+ 
+-} // namespace
++} // VSTGUI
+diff --git a/vstgui/lib/cviewcontainer.h b/vstgui/lib/cviewcontainer.h
+index f18d3191..15dc306a 100644
+--- a/vstgui/lib/cviewcontainer.h
++++ b/vstgui/lib/cviewcontainer.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __cviewcontainer__
+-#define __cviewcontainer__
++#pragma once
+ 
+ #include "vstguifwd.h"
+ #include "cview.h"
+@@ -294,6 +293,4 @@ inline void CViewContainer::forEachChild (Proc proc) const
+ 	}
+ }
+ 
+-} // namespace
+-
+-#endif
++} // VSTGUI
+diff --git a/vstgui/lib/cvstguitimer.cpp b/vstgui/lib/cvstguitimer.cpp
+index 8c8c2089..408ab09c 100644
+--- a/vstgui/lib/cvstguitimer.cpp
++++ b/vstgui/lib/cvstguitimer.cpp
+@@ -110,5 +110,5 @@ void CVSTGUITimer::fire ()
+ 		callbackFunc (this);
+ }
+ 
+-} // namespace
++} // VSTGUI
+ 
+diff --git a/vstgui/lib/cvstguitimer.h b/vstgui/lib/cvstguitimer.h
+index f45318e4..e6b5ede0 100644
+--- a/vstgui/lib/cvstguitimer.h
++++ b/vstgui/lib/cvstguitimer.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __cvstguitimer__
+-#define __cvstguitimer__
++#pragma once
+ 
+ #include "vstguibase.h"
+ #include "platform/iplatformtimer.h"
+@@ -66,6 +65,4 @@ namespace Call
+ 	}
+ };
+ 
+-} // namespace
+-
+-#endif
++} // VSTGUI
+diff --git a/vstgui/lib/dispatchlist.h b/vstgui/lib/dispatchlist.h
+index f1e9e771..764247a8 100644
+--- a/vstgui/lib/dispatchlist.h
++++ b/vstgui/lib/dispatchlist.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __dispatchlist__
+-#define __dispatchlist__
++#pragma once
+ 
+ #include <vector>
+ #include <algorithm>
+@@ -244,5 +243,3 @@ inline void DispatchList<T>::forEachReverse (Procedure proc, Condition condition
+ 
+ //------------------------------------------------------------------------
+ } // VSTGUI
+-
+-#endif // __dispatchlist__
+diff --git a/vstgui/lib/idatapackage.h b/vstgui/lib/idatapackage.h
+index 86d8d06e..58978243 100644
+--- a/vstgui/lib/idatapackage.h
++++ b/vstgui/lib/idatapackage.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __idatapackage__
+-#define __idatapackage__
++#pragma once
+ 
+ #include "vstguibase.h"
+ 
+@@ -35,6 +34,4 @@ protected:
+ 	IDataPackage () {}
+ };
+ 
+-}
+-
+-#endif // __idatapackage__
++} // VSTGUI
+diff --git a/vstgui/lib/idependency.h b/vstgui/lib/idependency.h
+index 4f0914b5..c51b098e 100644
+--- a/vstgui/lib/idependency.h
++++ b/vstgui/lib/idependency.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __idependency__
+-#define __idependency__
++#pragma once
+ 
+ #include "vstguibase.h"
+ 
+@@ -115,8 +114,6 @@ inline IDependency::~IDependency () noexcept
+ 	vstgui_assert (dependents.size () == 0);
+ }
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // VSTGUI_ENABLE_DEPRECATED_METHODS
+-
+-#endif
+diff --git a/vstgui/lib/ifocusdrawing.h b/vstgui/lib/ifocusdrawing.h
+index 99ae332f..cd33bcc7 100644
+--- a/vstgui/lib/ifocusdrawing.h
++++ b/vstgui/lib/ifocusdrawing.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __ifocusdrawing__
+-#define __ifocusdrawing__
++#pragma once
+ 
+ #include "vstguifwd.h"
+ 
+@@ -28,6 +27,4 @@ public:
+ 	virtual bool getFocusPath (CGraphicsPath& outPath) = 0;
+ };
+ 
+-} // namespace
+-
+-#endif
++} // VSTGUI
+diff --git a/vstgui/lib/iscalefactorchangedlistener.h b/vstgui/lib/iscalefactorchangedlistener.h
+index 2db15d6e..a1444d0e 100644
+--- a/vstgui/lib/iscalefactorchangedlistener.h
++++ b/vstgui/lib/iscalefactorchangedlistener.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __iscalefactorchangedlistener__
+-#define __iscalefactorchangedlistener__
++#pragma once
+ 
+ #include "vstguifwd.h"
+ 
+@@ -18,6 +17,4 @@ public:
+ 	virtual void onScaleFactorChanged (CFrame* frame, double newScaleFactor) = 0;
+ };
+ 
+-} // namespace
+-
+-#endif // __iscalefactorchangedlistener__
++} // VSTGUI
+diff --git a/vstgui/lib/itouchevent.h b/vstgui/lib/itouchevent.h
+index abae3f43..98349391 100644
+--- a/vstgui/lib/itouchevent.h
++++ b/vstgui/lib/itouchevent.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __itouchevent__
+-#define __itouchevent__
++#pragma once
+ 
+ #include "vstguifwd.h"
+ #include "cpoint.h"
+@@ -86,8 +85,6 @@ protected:
+ 	TouchMap touches;
+ };
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // VSTGUI_TOUCH_EVENT_HANDLING
+-
+-#endif // __itouchevent__
+diff --git a/vstgui/lib/iviewlistener.h b/vstgui/lib/iviewlistener.h
+index 48348bd5..dd6fcd34 100644
+--- a/vstgui/lib/iviewlistener.h
++++ b/vstgui/lib/iviewlistener.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __iviewlistener__
+-#define __iviewlistener__
++#pragma once
+ 
+ #include "vstguifwd.h"
+ #include "cbuttonstate.h"
+@@ -117,5 +116,3 @@ public:
+ };
+ 
+ } // VSTGUI
+-
+-#endif // __iviewlistener__
+diff --git a/vstgui/lib/platform/iplatformbitmap.h b/vstgui/lib/platform/iplatformbitmap.h
+index d48f3b2b..148edf0f 100644
+--- a/vstgui/lib/platform/iplatformbitmap.h
++++ b/vstgui/lib/platform/iplatformbitmap.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __iplatformbitmap__
+-#define __iplatformbitmap__
++#pragma once
+ 
+ /// @cond ignore
+ 
+@@ -54,8 +53,6 @@ public:
+ 	virtual PixelFormat getPixelFormat () const = 0;
+ };
+ 
+-} // namespace
++} // VSTGUI
+ 
+ /// @endcond
+-
+-#endif // __iplatformbitmap__
+diff --git a/vstgui/lib/platform/iplatformfont.h b/vstgui/lib/platform/iplatformfont.h
+index 403f52a4..6b6dce2e 100644
+--- a/vstgui/lib/platform/iplatformfont.h
++++ b/vstgui/lib/platform/iplatformfont.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __iplatformfont__
+-#define __iplatformfont__
++#pragma once
+ 
+ #include "../vstguifwd.h"
+ #include <list>
+@@ -47,6 +46,4 @@ public:
+ 	virtual const IFontPainter* getPainter () const = 0;
+ };
+ 
+-}
+-
+-#endif // __iplatformfont__
++} // VSTGUI
+diff --git a/vstgui/lib/platform/iplatformframe.h b/vstgui/lib/platform/iplatformframe.h
+index e2a84b64..6c2ec8c2 100644
+--- a/vstgui/lib/platform/iplatformframe.h
++++ b/vstgui/lib/platform/iplatformframe.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __iplatformframe__
+-#define __iplatformframe__
++#pragma once
+ 
+ /// @cond ignore
+ 
+@@ -116,8 +115,6 @@ public:
+ 	virtual void recreateTouchBar () = 0;
+ };
+ 
+-} // namespace
++} // VSTGUI
+ 
+ /// @endcond
+-
+-#endif // __iplatformframe__
+diff --git a/vstgui/lib/platform/iplatformframecallback.h b/vstgui/lib/platform/iplatformframecallback.h
+index 95a5f2e5..d1140514 100644
+--- a/vstgui/lib/platform/iplatformframecallback.h
++++ b/vstgui/lib/platform/iplatformframecallback.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __iplatformframecallback__
+-#define __iplatformframecallback__
++#pragma once
+ 
+ /// @cond ignore
+ 
+@@ -67,8 +66,6 @@ public:
+ };
+ 
+ //------------------------------------------------------------------------------------
+-} // namespace
++} // VSTGUI
+ 
+ /// @endcond
+-
+-#endif // __iplatformframecallback__
+diff --git a/vstgui/lib/platform/iplatformopenglview.h b/vstgui/lib/platform/iplatformopenglview.h
+index 4f94f8cf..3f868db3 100644
+--- a/vstgui/lib/platform/iplatformopenglview.h
++++ b/vstgui/lib/platform/iplatformopenglview.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __iplatformopenglview__
+-#define __iplatformopenglview__
++#pragma once
+ 
+ #include "../vstguifwd.h"
+ 
+@@ -65,11 +64,8 @@ public:
+ 	virtual void swapBuffers () = 0;
+ };
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // VSTGUI_OPENGL_SUPPORT
+ 
+ /// @endcond
+-
+-#endif // __iplatformopenglview__
+-
+diff --git a/vstgui/lib/platform/iplatformoptionmenu.h b/vstgui/lib/platform/iplatformoptionmenu.h
+index 9b635530..e93f268a 100644
+--- a/vstgui/lib/platform/iplatformoptionmenu.h
++++ b/vstgui/lib/platform/iplatformoptionmenu.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __iplatformoptionmenu__
+-#define __iplatformoptionmenu__
++#pragma once
+ 
+ /// @cond ignore
+ 
+@@ -26,8 +25,6 @@ public:
+ 	virtual void popup (COptionMenu* optionMenu, const Callback& callback) = 0;
+ };
+ 
+-} // namespace
++} // VSTGUI
+ 
+ /// @endcond
+-
+-#endif // __iplatformtextedit__
+diff --git a/vstgui/lib/platform/iplatformstring.h b/vstgui/lib/platform/iplatformstring.h
+index be6da4d6..a1ecc60f 100644
+--- a/vstgui/lib/platform/iplatformstring.h
++++ b/vstgui/lib/platform/iplatformstring.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __iplatformstring__
+-#define __iplatformstring__
++#pragma once
+ 
+ #include "../vstguibase.h"
+ 
+@@ -20,8 +19,6 @@ public:
+ 	virtual void setUTF8String (UTF8StringPtr utf8String) = 0;
+ };
+ 
+-} // namespace
++} // VSTGUI
+ 
+ /// @endcond
+-
+-#endif // __iplatformstring__
+diff --git a/vstgui/lib/platform/iplatformtextedit.h b/vstgui/lib/platform/iplatformtextedit.h
+index 30b39e53..f34c2882 100644
+--- a/vstgui/lib/platform/iplatformtextedit.h
++++ b/vstgui/lib/platform/iplatformtextedit.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __iplatformtextedit__
+-#define __iplatformtextedit__
++#pragma once
+ 
+ /// @cond ignore
+ 
+@@ -52,8 +51,6 @@ protected:
+ 	IPlatformTextEditCallback* textEdit;
+ };
+ 
+-} // namespace
++} // VSTGUI
+ 
+ /// @endcond
+-
+-#endif // __iplatformtextedit__
+diff --git a/vstgui/lib/platform/iplatformtimer.h b/vstgui/lib/platform/iplatformtimer.h
+index 7eeba941..fcaae13a 100644
+--- a/vstgui/lib/platform/iplatformtimer.h
++++ b/vstgui/lib/platform/iplatformtimer.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __iplatformtimer__
+-#define __iplatformtimer__
++#pragma once
+ 
+ #include "../vstguibase.h"
+ 
+@@ -26,6 +25,4 @@ public:
+ 	virtual bool stop () = 0;
+ };
+ 
+-}
+-
+-#endif
++} // VSTGUI
+diff --git a/vstgui/lib/platform/iplatformviewlayer.h b/vstgui/lib/platform/iplatformviewlayer.h
+index 3bd55f55..e1bbfc44 100644
+--- a/vstgui/lib/platform/iplatformviewlayer.h
++++ b/vstgui/lib/platform/iplatformviewlayer.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __iplatformviewlayer__
+-#define __iplatformviewlayer__
++#pragma once
+ 
+ #include "../vstguifwd.h"
+ 
+@@ -33,6 +32,4 @@ public:
+ 	virtual void onScaleFactorChanged (double newScaleFactor) = 0;
+ };
+ 
+-}
+-
+-#endif // __iplatformviewlayer__
++} // VSTGUI
+diff --git a/vstgui/lib/platform/mac/carbon/hiviewframe.cpp b/vstgui/lib/platform/mac/carbon/hiviewframe.cpp
+index 0498cd59..27234660 100644
+--- a/vstgui/lib/platform/mac/carbon/hiviewframe.cpp
++++ b/vstgui/lib/platform/mac/carbon/hiviewframe.cpp
+@@ -1265,7 +1265,7 @@ pascal OSStatus HIViewFrame::carbonEventHandler (EventHandlerCallRef inHandlerCa
+ }
+ 
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #pragma clang diagnostic pop
+ 
+diff --git a/vstgui/lib/platform/mac/carbon/hiviewframe.h b/vstgui/lib/platform/mac/carbon/hiviewframe.h
+index 7d3fdcd9..791ab7e2 100644
+--- a/vstgui/lib/platform/mac/carbon/hiviewframe.h
++++ b/vstgui/lib/platform/mac/carbon/hiviewframe.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __hiviewframe__
+-#define __hiviewframe__
++#pragma once
+ 
+ #include "../../../cframe.h"
+ 
+@@ -71,7 +70,6 @@ protected:
+ 	CPoint hiScrollOffset;
+ };
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // MAC_CARBON
+-#endif // __hiviewframe__
+diff --git a/vstgui/lib/platform/mac/carbon/hiviewoptionmenu.cpp b/vstgui/lib/platform/mac/carbon/hiviewoptionmenu.cpp
+index 4cddcdea..32178ae8 100644
+--- a/vstgui/lib/platform/mac/carbon/hiviewoptionmenu.cpp
++++ b/vstgui/lib/platform/mac/carbon/hiviewoptionmenu.cpp
+@@ -174,7 +174,7 @@ MenuRef HIViewOptionMenu::createMenu (COptionMenu* menu)
+ 	return menuRef;
+ }
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #pragma clang diagnostic pop
+ 
+diff --git a/vstgui/lib/platform/mac/carbon/hiviewoptionmenu.h b/vstgui/lib/platform/mac/carbon/hiviewoptionmenu.h
+index 92a79b57..54ec9a3d 100644
+--- a/vstgui/lib/platform/mac/carbon/hiviewoptionmenu.h
++++ b/vstgui/lib/platform/mac/carbon/hiviewoptionmenu.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __hiviewoptionmenu__
+-#define __hiviewoptionmenu__
++#pragma once
+ 
+ #include "../../iplatformoptionmenu.h"
+ 
+@@ -23,7 +22,6 @@ protected:
+ 	MenuRef createMenu (COptionMenu* menu);
+ };
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // MAC_CARBON
+-#endif // __hiviewoptionmenu__
+diff --git a/vstgui/lib/platform/mac/carbon/hiviewtextedit.cpp b/vstgui/lib/platform/mac/carbon/hiviewtextedit.cpp
+index 4144c33b..23aca343 100644
+--- a/vstgui/lib/platform/mac/carbon/hiviewtextedit.cpp
++++ b/vstgui/lib/platform/mac/carbon/hiviewtextedit.cpp
+@@ -298,7 +298,7 @@ pascal OSStatus HIViewTextEdit::CarbonEventsTextControlProc (EventHandlerCallRef
+ 	return result;
+ }
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #pragma clang diagnostic pop
+ 
+diff --git a/vstgui/lib/platform/mac/carbon/hiviewtextedit.h b/vstgui/lib/platform/mac/carbon/hiviewtextedit.h
+index 08cbfe1e..23770a58 100644
+--- a/vstgui/lib/platform/mac/carbon/hiviewtextedit.h
++++ b/vstgui/lib/platform/mac/carbon/hiviewtextedit.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __hiviewtextedit__
+-#define __hiviewtextedit__
++#pragma once
+ 
+ #include "../../iplatformtextedit.h"
+ 
+@@ -37,8 +36,6 @@ protected:
+ 	static pascal OSStatus CarbonEventsTextControlProc (EventHandlerCallRef inHandlerCallRef, EventRef inEvent, void *inUserData);
+ };
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // MAC_CARBON
+-
+-#endif // __hiviewtextedit__
+diff --git a/vstgui/lib/platform/mac/caviewlayer.h b/vstgui/lib/platform/mac/caviewlayer.h
+index c49b252d..b1eaef1f 100644
+--- a/vstgui/lib/platform/mac/caviewlayer.h
++++ b/vstgui/lib/platform/mac/caviewlayer.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __caviewlayer__
+-#define __caviewlayer__
++#pragma once
+ 
+ #include "../iplatformviewlayer.h"
+ 
+@@ -36,8 +35,6 @@ protected:
+ 	CALayer* layer;
+ };
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // MAC_COCOA
+-
+-#endif // __caviewlayer__
+diff --git a/vstgui/lib/platform/mac/caviewlayer.mm b/vstgui/lib/platform/mac/caviewlayer.mm
+index 5209a789..c677d348 100644
+--- a/vstgui/lib/platform/mac/caviewlayer.mm
++++ b/vstgui/lib/platform/mac/caviewlayer.mm
+@@ -253,6 +253,6 @@ void CAViewLayer::onScaleFactorChanged (double newScaleFactor)
+ 		layer.contentsScale = newScaleFactor;
+ }
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // MAC_COCOA
+diff --git a/vstgui/lib/platform/mac/cfontmac.h b/vstgui/lib/platform/mac/cfontmac.h
+index f77929d4..e193f962 100644
+--- a/vstgui/lib/platform/mac/cfontmac.h
++++ b/vstgui/lib/platform/mac/cfontmac.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __cfontmac__
+-#define __cfontmac__
++#pragma once
+ 
+ #include "../iplatformfont.h"
+ 
+@@ -56,8 +55,6 @@ protected:
+ 	double capHeight;
+ };
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // MAC
+-
+-#endif
+diff --git a/vstgui/lib/platform/mac/cfontmac.mm b/vstgui/lib/platform/mac/cfontmac.mm
+index 5fd2c9fc..50f25f4b 100644
+--- a/vstgui/lib/platform/mac/cfontmac.mm
++++ b/vstgui/lib/platform/mac/cfontmac.mm
+@@ -288,6 +288,6 @@ CCoord CoreTextFont::getStringWidth (CDrawContext* context, IPlatformString* str
+ 	return result;
+ }
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // MAC
+diff --git a/vstgui/lib/platform/mac/cgbitmap.cpp b/vstgui/lib/platform/mac/cgbitmap.cpp
+index f07e1a84..18f3bfcc 100644
+--- a/vstgui/lib/platform/mac/cgbitmap.cpp
++++ b/vstgui/lib/platform/mac/cgbitmap.cpp
+@@ -445,6 +445,6 @@ SharedPointer<IPlatformBitmapPixelAccess> CGBitmap::lockPixels (bool alphaPremul
+ 	return nullptr;
+ }
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // MAC
+diff --git a/vstgui/lib/platform/mac/cgbitmap.h b/vstgui/lib/platform/mac/cgbitmap.h
+index 4c513911..5f87df04 100644
+--- a/vstgui/lib/platform/mac/cgbitmap.h
++++ b/vstgui/lib/platform/mac/cgbitmap.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __cgbitmap__
+-#define __cgbitmap__
++#pragma once
+ 
+ #include "../iplatformbitmap.h"
+ 
+@@ -63,7 +62,6 @@ protected:
+ 	double scaleFactor {1.};
+ };
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // MAC
+-#endif // __cgbitmap__
+diff --git a/vstgui/lib/platform/mac/cgdrawcontext.cpp b/vstgui/lib/platform/mac/cgdrawcontext.cpp
+index 5fb01789..341bb47e 100644
+--- a/vstgui/lib/platform/mac/cgdrawcontext.cpp
++++ b/vstgui/lib/platform/mac/cgdrawcontext.cpp
+@@ -857,6 +857,6 @@ CGPoint CGDrawContext::pixelAlligned (const CGPoint& p) const
+ 	return result;
+ }
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // MAC
+diff --git a/vstgui/lib/platform/mac/cgdrawcontext.h b/vstgui/lib/platform/mac/cgdrawcontext.h
+index df090c43..0af18c90 100644
+--- a/vstgui/lib/platform/mac/cgdrawcontext.h
++++ b/vstgui/lib/platform/mac/cgdrawcontext.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __cgdrawcontext__
+-#define __cgdrawcontext__
++#pragma once
+ 
+ #include "../../coffscreencontext.h"
+ 
+@@ -88,9 +87,6 @@ protected:
+ 	double scaleFactor;
+ };
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // MAC
+-
+-#endif // __cgdrawcontext__
+-
+diff --git a/vstgui/lib/platform/mac/cocoa/autoreleasepool.h b/vstgui/lib/platform/mac/cocoa/autoreleasepool.h
+index 8ec19780..10d4a448 100644
+--- a/vstgui/lib/platform/mac/cocoa/autoreleasepool.h
++++ b/vstgui/lib/platform/mac/cocoa/autoreleasepool.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __autoreleasepool__
+-#define __autoreleasepool__
++#pragma once
+ 
+ #include "../../../vstguibase.h"
+ 
+@@ -29,8 +28,6 @@ protected:
+ 	NSAutoreleasePool* pool;
+ };
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // MAC
+-
+-#endif // __autoreleasepool__
+diff --git a/vstgui/lib/platform/mac/cocoa/autoreleasepool.mm b/vstgui/lib/platform/mac/cocoa/autoreleasepool.mm
+index bc20beae..c753ddbc 100644
+--- a/vstgui/lib/platform/mac/cocoa/autoreleasepool.mm
++++ b/vstgui/lib/platform/mac/cocoa/autoreleasepool.mm
+@@ -22,6 +22,6 @@ AutoreleasePool::~AutoreleasePool () noexcept
+ 	[pool drain];
+ }
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // MAC
+diff --git a/vstgui/lib/platform/mac/cocoa/cocoahelpers.h b/vstgui/lib/platform/mac/cocoa/cocoahelpers.h
+index e6031467..0db0b1dc 100644
+--- a/vstgui/lib/platform/mac/cocoa/cocoahelpers.h
++++ b/vstgui/lib/platform/mac/cocoa/cocoahelpers.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __cocoahelpers__
+-#define __cocoahelpers__
++#pragma once
+ 
+ #import "../../../crect.h"
+ #import "../../../cpoint.h"
+@@ -161,4 +160,3 @@ namespace MacWindowStyleMask
+ }
+ 
+ #endif // MAC_COCOA
+-#endif // __cocoahelpers__
+diff --git a/vstgui/lib/platform/mac/cocoa/cocoaopenglview.h b/vstgui/lib/platform/mac/cocoa/cocoaopenglview.h
+index 8e02f684..a512ba3a 100644
+--- a/vstgui/lib/platform/mac/cocoa/cocoaopenglview.h
++++ b/vstgui/lib/platform/mac/cocoa/cocoaopenglview.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __cocoaopenglview__
+-#define __cocoaopenglview__
++#pragma once
+ 
+ #include "../../iplatformopenglview.h"
+ 
+@@ -50,9 +49,7 @@ protected:
+ 	PixelFormat pixelFormat;
+ };
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // MAC_COCOA
+ #endif // VSTGUI_OPENGL_SUPPORT
+-
+-#endif // __cocoaopenglview__
+diff --git a/vstgui/lib/platform/mac/cocoa/cocoaopenglview.mm b/vstgui/lib/platform/mac/cocoa/cocoaopenglview.mm
+index b8dbd4b0..ca73561d 100644
+--- a/vstgui/lib/platform/mac/cocoa/cocoaopenglview.mm
++++ b/vstgui/lib/platform/mac/cocoa/cocoaopenglview.mm
+@@ -333,7 +333,7 @@ void CocoaOpenGLView::initClass ()
+ 	}
+ }
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // VSTGUI_OPENGL_SUPPORT
+ #endif // MAC_COCOA
+diff --git a/vstgui/lib/platform/mac/cocoa/cocoatextedit.h b/vstgui/lib/platform/mac/cocoa/cocoatextedit.h
+index 002d1fb3..7ff42b32 100644
+--- a/vstgui/lib/platform/mac/cocoa/cocoatextedit.h
++++ b/vstgui/lib/platform/mac/cocoa/cocoatextedit.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __cocoatextedit__
+-#define __cocoatextedit__
++#pragma once
+ 
+ #include "../../iplatformtextedit.h"
+ 
+@@ -43,8 +42,6 @@ protected:
+ 	NSView* parent;
+ };
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // MAC_COCOA
+-
+-#endif // __cocoatextedit__
+diff --git a/vstgui/lib/platform/mac/cocoa/cocoatextedit.mm b/vstgui/lib/platform/mac/cocoa/cocoatextedit.mm
+index 8497af8b..1be1a7a6 100644
+--- a/vstgui/lib/platform/mac/cocoa/cocoatextedit.mm
++++ b/vstgui/lib/platform/mac/cocoa/cocoatextedit.mm
+@@ -33,7 +33,7 @@ static constexpr auto Center = ::NSCenterTextAlignment;
+ #endif
+ 
+ //------------------------------------------------------------------------------------
+-} // namespace MacTextAlignment
++} // MacTextAlignment
+ 
+ //------------------------------------------------------------------------------------
+ //------------------------------------------------------------------------------------
+@@ -335,6 +335,6 @@ bool CocoaTextEdit::setText (const UTF8String& text)
+ 	return true;
+ }
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // MAC_COCOA
+diff --git a/vstgui/lib/platform/mac/cocoa/nsviewframe.h b/vstgui/lib/platform/mac/cocoa/nsviewframe.h
+index 109ca864..2cf781c0 100644
+--- a/vstgui/lib/platform/mac/cocoa/nsviewframe.h
++++ b/vstgui/lib/platform/mac/cocoa/nsviewframe.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __nsviewframe__
+-#define __nsviewframe__
++#pragma once
+ 
+ #include "../../../vstguifwd.h"
+ 
+@@ -107,7 +106,6 @@ protected:
+ 	CCursorType cursor;
+ };
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // MAC_COCOA
+-#endif // __nsviewframe__
+diff --git a/vstgui/lib/platform/mac/cocoa/nsviewframe.mm b/vstgui/lib/platform/mac/cocoa/nsviewframe.mm
+index 2afb3d45..3326cf71 100644
+--- a/vstgui/lib/platform/mac/cocoa/nsviewframe.mm
++++ b/vstgui/lib/platform/mac/cocoa/nsviewframe.mm
+@@ -1429,6 +1429,6 @@ void CocoaTooltipWindow::onTimer ()
+ 		[window setAlphaValue:newAlpha];
+ }
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // MAC_COCOA
+diff --git a/vstgui/lib/platform/mac/cocoa/nsviewoptionmenu.h b/vstgui/lib/platform/mac/cocoa/nsviewoptionmenu.h
+index f3eb8fe1..8c3e1561 100644
+--- a/vstgui/lib/platform/mac/cocoa/nsviewoptionmenu.h
++++ b/vstgui/lib/platform/mac/cocoa/nsviewoptionmenu.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __nsviewoptionmenu__
+-#define __nsviewoptionmenu__
++#pragma once
+ 
+ #include "../../iplatformoptionmenu.h"
+ 
+@@ -22,8 +21,6 @@ protected:
+ 	static bool initClass ();
+ };
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // MAC_COCOA
+-
+-#endif // __nsviewoptionmenu__
+diff --git a/vstgui/lib/platform/mac/cocoa/nsviewoptionmenu.mm b/vstgui/lib/platform/mac/cocoa/nsviewoptionmenu.mm
+index 6eeb9cb1..18d7cb24 100644
+--- a/vstgui/lib/platform/mac/cocoa/nsviewoptionmenu.mm
++++ b/vstgui/lib/platform/mac/cocoa/nsviewoptionmenu.mm
+@@ -314,6 +314,6 @@ void NSViewOptionMenu::popup (COptionMenu* optionMenu, const Callback& callback)
+ }
+ 
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // MAC_COCOA
+diff --git a/vstgui/lib/platform/mac/ios/uiopenglview.h b/vstgui/lib/platform/mac/ios/uiopenglview.h
+index 206d1ecb..0f00bbe2 100644
+--- a/vstgui/lib/platform/mac/ios/uiopenglview.h
++++ b/vstgui/lib/platform/mac/ios/uiopenglview.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __uiopenglview__
+-#define __uiopenglview__
++#pragma once
+ 
+ #include "../../iplatformopenglview.h"
+ 
+@@ -50,9 +49,7 @@ protected:
+ 	PixelFormat pixelFormat;
+ };
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // VSTGUI_OPENGL_SUPPORT
+ #endif // TARGET_OS_IPHONE
+-
+-#endif // __uiopenglview__
+diff --git a/vstgui/lib/platform/mac/ios/uiopenglview.mm b/vstgui/lib/platform/mac/ios/uiopenglview.mm
+index 70e7ef11..8cb1e16f 100644
+--- a/vstgui/lib/platform/mac/ios/uiopenglview.mm
++++ b/vstgui/lib/platform/mac/ios/uiopenglview.mm
+@@ -179,7 +179,7 @@ void GLKitOpenGLView::doDraw (const CRect& r)
+ 	
+ }
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // VSTGUI_OPENGL_SUPPORT
+ #endif // TARGET_OS_IPHONE
+diff --git a/vstgui/lib/platform/mac/ios/uitextedit.h b/vstgui/lib/platform/mac/ios/uitextedit.h
+index 32aa9b45..06db0eda 100644
+--- a/vstgui/lib/platform/mac/ios/uitextedit.h
++++ b/vstgui/lib/platform/mac/ios/uitextedit.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __uitextfield__
+-#define __uitextfield__
++#pragma once
+ 
+ #include "../../iplatformtextedit.h"
+ 
+@@ -38,8 +37,6 @@ protected:
+ 	UIView* parent;
+ };
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // TARGET_OS_IPHONE
+-
+-#endif // __uitextfield__
+diff --git a/vstgui/lib/platform/mac/ios/uitextedit.mm b/vstgui/lib/platform/mac/ios/uitextedit.mm
+index 312ee60d..c20abba9 100644
+--- a/vstgui/lib/platform/mac/ios/uitextedit.mm
++++ b/vstgui/lib/platform/mac/ios/uitextedit.mm
+@@ -177,6 +177,6 @@ bool UITextEdit::updateSize ()
+ 	return false;
+ }
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif
+diff --git a/vstgui/lib/platform/mac/ios/uitouchevent.h b/vstgui/lib/platform/mac/ios/uitouchevent.h
+index ba1c6cf1..888b653e 100644
+--- a/vstgui/lib/platform/mac/ios/uitouchevent.h
++++ b/vstgui/lib/platform/mac/ios/uitouchevent.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __uitouchevent__
+-#define __uitouchevent__
++#pragma once
+ 
+ #include "../../../itouchevent.h"
+ 
+@@ -32,8 +31,6 @@ public:
+ 	double getTimeStamp () const override { return currentTime; }
+ };
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // VSTGUI_TOUCH_EVENT_HANDLING
+-
+-#endif // __uitouchevent__
+diff --git a/vstgui/lib/platform/mac/ios/uiviewframe.h b/vstgui/lib/platform/mac/ios/uiviewframe.h
+index c44757e4..7cb2e46d 100644
+--- a/vstgui/lib/platform/mac/ios/uiviewframe.h
++++ b/vstgui/lib/platform/mac/ios/uiviewframe.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __uiviewframe__
+-#define __uiviewframe__
++#pragma once
+ 
+ #include "../../../vstguifwd.h"
+ #include "../../../cview.h"
+@@ -64,8 +63,6 @@ protected:
+ 	UIView* uiView;
+ };
+ 
+-}
++} // VSTGUI
+ 
+ #endif // TARGET_OS_IPHONE
+-
+-#endif
+diff --git a/vstgui/lib/platform/mac/macclipboard.h b/vstgui/lib/platform/mac/macclipboard.h
+index 1fef354a..fe5015d4 100644
+--- a/vstgui/lib/platform/mac/macclipboard.h
++++ b/vstgui/lib/platform/mac/macclipboard.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __macclipboard__
+-#define __macclipboard__
++#pragma once
+ 
+ #include "../../vstguibase.h"
+ 
+@@ -32,5 +31,3 @@ extern SharedPointer<IDataPackage> createCarbonDragDataPackage (DragRef drag);
+ #endif
+ 
+ }} // namespaces
+-
+-#endif // __macclipboard__
+diff --git a/vstgui/lib/platform/mac/macglobals.cpp b/vstgui/lib/platform/mac/macglobals.cpp
+index 2286c8e2..138b945a 100644
+--- a/vstgui/lib/platform/mac/macglobals.cpp
++++ b/vstgui/lib/platform/mac/macglobals.cpp
+@@ -159,6 +159,6 @@ auto IPlatformResourceInputStream::create (const CResourceDescription& desc) ->
+ 	return nullptr;
+ }
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // MAC
+diff --git a/vstgui/lib/platform/mac/macglobals.h b/vstgui/lib/platform/mac/macglobals.h
+index cccf22ee..0ba226e8 100644
+--- a/vstgui/lib/platform/mac/macglobals.h
++++ b/vstgui/lib/platform/mac/macglobals.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __macglobals__
+-#define __macglobals__
++#pragma once
+ 
+ #include "../../vstguibase.h"
+ 
+@@ -58,7 +57,6 @@ inline CGSize CGSizeFromCPoint (const CPoint& p)
+ 	return CGSizeMake (static_cast<CGFloat> (p.x), static_cast<CGFloat> (p.y));
+ }
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // MAC
+-#endif // __macglobals__
+diff --git a/vstgui/lib/platform/mac/macstring.h b/vstgui/lib/platform/mac/macstring.h
+index fec30772..2dd55a6e 100644
+--- a/vstgui/lib/platform/mac/macstring.h
++++ b/vstgui/lib/platform/mac/macstring.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __macstring__
+-#define __macstring__
++#pragma once
+ 
+ #include "../iplatformstring.h"
+ 
+@@ -72,8 +71,6 @@ inline NSString* fromUTF8String (const UTF8String& str)
+ }
+ #endif // __OBJC__
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // MAC
+-
+-#endif // __macstring__
+diff --git a/vstgui/lib/platform/mac/macstring.mm b/vstgui/lib/platform/mac/macstring.mm
+index 1a6bf198..a0f10c6f 100644
+--- a/vstgui/lib/platform/mac/macstring.mm
++++ b/vstgui/lib/platform/mac/macstring.mm
+@@ -62,6 +62,6 @@ void MacString::setCTLine (CTLineRef line, const void* fontRef, const CColor& co
+ 	ctLineColor = color;
+ }
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // MAC
+diff --git a/vstgui/lib/platform/mac/quartzgraphicspath.cpp b/vstgui/lib/platform/mac/quartzgraphicspath.cpp
+index 63114bc6..c476ee08 100644
+--- a/vstgui/lib/platform/mac/quartzgraphicspath.cpp
++++ b/vstgui/lib/platform/mac/quartzgraphicspath.cpp
+@@ -378,7 +378,7 @@ CGradient* CGradient::create (const ColorStopMap& colorStopMap)
+ 	return new QuartzGradient (colorStopMap);
+ }
+ 
+-} // namespace
++} // VSTGUI
+ 
+ 
+ #endif
+diff --git a/vstgui/lib/platform/mac/quartzgraphicspath.h b/vstgui/lib/platform/mac/quartzgraphicspath.h
+index 7eeed3e5..a6ebe8b0 100644
+--- a/vstgui/lib/platform/mac/quartzgraphicspath.h
++++ b/vstgui/lib/platform/mac/quartzgraphicspath.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __quartzgraphicspath__
+-#define __quartzgraphicspath__
++#pragma once
+ 
+ #include "../../cgraphicspath.h"
+ #include "../../cgradient.h"
+@@ -69,8 +68,6 @@ protected:
+ 	mutable CGGradientRef gradient;
+ };
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif
+-
+-#endif // __quartzgraphicspath__
+diff --git a/vstgui/lib/platform/win32/direct2d/d2dbitmap.cpp b/vstgui/lib/platform/win32/direct2d/d2dbitmap.cpp
+index b69973b7..8c0286e1 100644
+--- a/vstgui/lib/platform/win32/direct2d/d2dbitmap.cpp
++++ b/vstgui/lib/platform/win32/direct2d/d2dbitmap.cpp
+@@ -461,6 +461,6 @@ D2DBitmapCache* D2DBitmapCache::instance ()
+ 	return gD2DBitmapCache;
+ }
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // WINDOWS
+diff --git a/vstgui/lib/platform/win32/direct2d/d2dbitmap.h b/vstgui/lib/platform/win32/direct2d/d2dbitmap.h
+index 28b9f3e6..946aba2b 100644
+--- a/vstgui/lib/platform/win32/direct2d/d2dbitmap.h
++++ b/vstgui/lib/platform/win32/direct2d/d2dbitmap.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __d2dbitmap__
+-#define __d2dbitmap__
++#pragma once
+ 
+ #include "../win32bitmapbase.h"
+ 
+@@ -93,8 +92,6 @@ protected:
+ 	BitmapCache cache;
+ };
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // WINDOWS
+-
+-#endif // __d2dbitmap__
+diff --git a/vstgui/lib/platform/win32/direct2d/d2ddrawcontext.cpp b/vstgui/lib/platform/win32/direct2d/d2ddrawcontext.cpp
+index 79755253..146a1e07 100644
+--- a/vstgui/lib/platform/win32/direct2d/d2ddrawcontext.cpp
++++ b/vstgui/lib/platform/win32/direct2d/d2ddrawcontext.cpp
+@@ -840,6 +840,6 @@ void D2DDrawContext::restoreGlobalState ()
+ 	}
+ }
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // WINDOWS
+diff --git a/vstgui/lib/platform/win32/direct2d/d2ddrawcontext.h b/vstgui/lib/platform/win32/direct2d/d2ddrawcontext.h
+index 44bb72cf..01d8d79e 100644
+--- a/vstgui/lib/platform/win32/direct2d/d2ddrawcontext.h
++++ b/vstgui/lib/platform/win32/direct2d/d2ddrawcontext.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __d2ddrawcontext__
+-#define __d2ddrawcontext__
++#pragma once
+ 
+ #include "../../../coffscreencontext.h"
+ 
+@@ -147,8 +146,6 @@ static inline D2D1_MATRIX_3X2_F convert (const CGraphicsTransform& t)
+ 	return matrix;
+ }
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // WINDOWS
+-
+-#endif // __d2ddrawcontext__
+diff --git a/vstgui/lib/platform/win32/direct2d/d2dfont.cpp b/vstgui/lib/platform/win32/direct2d/d2dfont.cpp
+index f2fefe56..bd942423 100644
+--- a/vstgui/lib/platform/win32/direct2d/d2dfont.cpp
++++ b/vstgui/lib/platform/win32/direct2d/d2dfont.cpp
+@@ -161,6 +161,6 @@ CCoord D2DFont::getStringWidth (CDrawContext* context, IPlatformString* string,
+ 	return result;
+ }
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // WINDOWS
+diff --git a/vstgui/lib/platform/win32/direct2d/d2dfont.h b/vstgui/lib/platform/win32/direct2d/d2dfont.h
+index f3385108..fc719acd 100644
+--- a/vstgui/lib/platform/win32/direct2d/d2dfont.h
++++ b/vstgui/lib/platform/win32/direct2d/d2dfont.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __d2dfont__
+-#define __d2dfont__
++#pragma once
+ 
+ #include "../../iplatformfont.h"
+ 
+@@ -45,8 +44,6 @@ protected:
+ 	int32_t style;
+ };
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // WINDOWS
+-
+-#endif // __d2dfont__
+\ No newline at end of file
+diff --git a/vstgui/lib/platform/win32/direct2d/d2dgraphicspath.cpp b/vstgui/lib/platform/win32/direct2d/d2dgraphicspath.cpp
+index 4884901a..af4ad834 100644
+--- a/vstgui/lib/platform/win32/direct2d/d2dgraphicspath.cpp
++++ b/vstgui/lib/platform/win32/direct2d/d2dgraphicspath.cpp
+@@ -640,6 +640,6 @@ ID2D1Geometry* D2DGraphicsPath::createPath (int32_t fillMode, D2DDrawContext* co
+ 	return path;
+ }
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // WINDOWS
+diff --git a/vstgui/lib/platform/win32/direct2d/d2dgraphicspath.h b/vstgui/lib/platform/win32/direct2d/d2dgraphicspath.h
+index f9ed7c36..19eb705f 100644
+--- a/vstgui/lib/platform/win32/direct2d/d2dgraphicspath.h
++++ b/vstgui/lib/platform/win32/direct2d/d2dgraphicspath.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __d2dgraphicspath__
+-#define __d2dgraphicspath__
++#pragma once
+ 
+ #include "../../../cgraphicspath.h"
+ 
+@@ -40,8 +39,6 @@ protected:
+ 	int32_t currentPathFillMode;
+ };
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // WINDOWS
+-
+-#endif // __d2dgraphicspath__
+diff --git a/vstgui/lib/platform/win32/win32bitmapbase.h b/vstgui/lib/platform/win32/win32bitmapbase.h
+index 9211aa21..aa426d18 100644
+--- a/vstgui/lib/platform/win32/win32bitmapbase.h
++++ b/vstgui/lib/platform/win32/win32bitmapbase.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __win32bitmapbase__
+-#define __win32bitmapbase__
++#pragma once
+ 
+ #include "../iplatformbitmap.h"
+ 
+@@ -22,8 +21,6 @@ public:
+ 	virtual PNGBitmapBuffer createMemoryPNGRepresentation () = 0;
+ };
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // WINDOWS
+-
+-#endif // __win32bitmapbase__
+diff --git a/vstgui/lib/platform/win32/win32datapackage.cpp b/vstgui/lib/platform/win32/win32datapackage.cpp
+index f8b15e87..b25e53b7 100644
+--- a/vstgui/lib/platform/win32/win32datapackage.cpp
++++ b/vstgui/lib/platform/win32/win32datapackage.cpp
+@@ -196,6 +196,6 @@ bool Win32DataPackage::checkResolveLink (const TCHAR* nativePath, TCHAR* resolve
+ 	return false;	
+ }
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // WINDOWS
+diff --git a/vstgui/lib/platform/win32/win32datapackage.h b/vstgui/lib/platform/win32/win32datapackage.h
+index eefc2a11..730c5991 100644
+--- a/vstgui/lib/platform/win32/win32datapackage.h
++++ b/vstgui/lib/platform/win32/win32datapackage.h
+@@ -42,6 +42,6 @@ protected:
+ 	uint32_t dataSize;
+ };
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // WINDOWS
+diff --git a/vstgui/lib/platform/win32/win32dragging.cpp b/vstgui/lib/platform/win32/win32dragging.cpp
+index f5fed225..efbd2b67 100644
+--- a/vstgui/lib/platform/win32/win32dragging.cpp
++++ b/vstgui/lib/platform/win32/win32dragging.cpp
+@@ -884,4 +884,4 @@ void Win32DragBitmapWindow::unregisterWindowClass ()
+ 	UnregisterClass (winString->getWideString (), GetInstance ());
+ }
+ 
+-} // namespace
++} // VSTGUI
+diff --git a/vstgui/lib/platform/win32/win32dragging.h b/vstgui/lib/platform/win32/win32dragging.h
+index 30b2f8f5..dcbc3aeb 100644
+--- a/vstgui/lib/platform/win32/win32dragging.h
++++ b/vstgui/lib/platform/win32/win32dragging.h
+@@ -97,6 +97,6 @@ private:
+ 	IDataPackage* dataPackage;
+ };
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif
+diff --git a/vstgui/lib/platform/win32/win32frame.cpp b/vstgui/lib/platform/win32/win32frame.cpp
+index e341d3e5..715c8605 100644
+--- a/vstgui/lib/platform/win32/win32frame.cpp
++++ b/vstgui/lib/platform/win32/win32frame.cpp
+@@ -990,6 +990,6 @@ CGradient* CGradient::create (const ColorStopMap& colorStopMap)
+ 	return new CGradient (colorStopMap);
+ }
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // WINDOWS
+diff --git a/vstgui/lib/platform/win32/win32frame.h b/vstgui/lib/platform/win32/win32frame.h
+index f4b7e1ed..b30ed453 100644
+--- a/vstgui/lib/platform/win32/win32frame.h
++++ b/vstgui/lib/platform/win32/win32frame.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __win32frame__
+-#define __win32frame__
++#pragma once
+ 
+ #include "../platform_win32.h"
+ 
+@@ -85,8 +84,6 @@ protected:
+ 	CCursorType lastSetCursor;
+ };
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // WINDOWS
+-
+-#endif // __win32frame__
+diff --git a/vstgui/lib/platform/win32/win32openglview.cpp b/vstgui/lib/platform/win32/win32openglview.cpp
+index 5507a344..d18f2e8e 100644
+--- a/vstgui/lib/platform/win32/win32openglview.cpp
++++ b/vstgui/lib/platform/win32/win32openglview.cpp
+@@ -261,6 +261,6 @@ void Win32OpenGLView::swapBuffers ()
+ 	}
+ }
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // WINDOWS && VSTGUI_OPENGL_SUPPORT
+diff --git a/vstgui/lib/platform/win32/win32openglview.h b/vstgui/lib/platform/win32/win32openglview.h
+index fa99f9c8..c791973b 100644
+--- a/vstgui/lib/platform/win32/win32openglview.h
++++ b/vstgui/lib/platform/win32/win32openglview.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __win32openglview__
+-#define __win32openglview__
++#pragma once
+ 
+ #include "../iplatformopenglview.h"
+ 
+@@ -51,9 +50,7 @@ protected:
+ 	static int32_t instanceCount;
+ };
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // WINDOWS
+ #endif // VSTGUI_OPENGL_SUPPORT
+-
+-#endif // __win32openglview__
+diff --git a/vstgui/lib/platform/win32/win32optionmenu.cpp b/vstgui/lib/platform/win32/win32optionmenu.cpp
+index 109ee511..bc9cad7f 100644
+--- a/vstgui/lib/platform/win32/win32optionmenu.cpp
++++ b/vstgui/lib/platform/win32/win32optionmenu.cpp
+@@ -224,6 +224,6 @@ HMENU Win32OptionMenu::createMenu (COptionMenu* _menu, int32_t& offsetIdx)
+ 	return menu;
+ }
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // WINDOWS
+diff --git a/vstgui/lib/platform/win32/win32optionmenu.h b/vstgui/lib/platform/win32/win32optionmenu.h
+index 2ba96ad6..51807208 100644
+--- a/vstgui/lib/platform/win32/win32optionmenu.h
++++ b/vstgui/lib/platform/win32/win32optionmenu.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __win32optionmenu__
+-#define __win32optionmenu__
++#pragma once
+ 
+ #include "../iplatformoptionmenu.h"
+ 
+@@ -30,7 +29,6 @@ protected:
+ 	std::list<HBITMAP> bitmaps;
+ };
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // WINDOWS
+-#endif // __win32optionmenu__
+diff --git a/vstgui/lib/platform/win32/win32support.cpp b/vstgui/lib/platform/win32/win32support.cpp
+index 39510e1e..d2cb9ebe 100644
+--- a/vstgui/lib/platform/win32/win32support.cpp
++++ b/vstgui/lib/platform/win32/win32support.cpp
+@@ -554,6 +554,6 @@ auto IPlatformResourceInputStream::create (const CResourceDescription& desc) ->
+ 
+ /// @endcond ignore
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // WINDOWS
+diff --git a/vstgui/lib/platform/win32/win32support.h b/vstgui/lib/platform/win32/win32support.h
+index b3c38b83..264de2e3 100644
+--- a/vstgui/lib/platform/win32/win32support.h
++++ b/vstgui/lib/platform/win32/win32support.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __win32support__
+-#define __win32support__
++#pragma once
+ 
+ #include "../../vstguibase.h"
+ 
+@@ -163,8 +162,6 @@ private:
+ 
+ /// @endcond
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // WINDOWS
+-
+-#endif
+diff --git a/vstgui/lib/platform/win32/win32textedit.cpp b/vstgui/lib/platform/win32/win32textedit.cpp
+index 075e8c3e..fb5e66cd 100644
+--- a/vstgui/lib/platform/win32/win32textedit.cpp
++++ b/vstgui/lib/platform/win32/win32textedit.cpp
+@@ -227,6 +227,6 @@ LONG_PTR WINAPI Win32TextEdit::procEdit (HWND hwnd, UINT message, WPARAM wParam,
+ 	return DefWindowProc (hwnd, message, wParam, lParam);
+ }
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // WINDOWS
+diff --git a/vstgui/lib/platform/win32/win32textedit.h b/vstgui/lib/platform/win32/win32textedit.h
+index aa681994..001dfa9b 100644
+--- a/vstgui/lib/platform/win32/win32textedit.h
++++ b/vstgui/lib/platform/win32/win32textedit.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __win32textedit__
+-#define __win32textedit__
++#pragma once
+ 
+ #include "../iplatformtextedit.h"
+ 
+@@ -48,8 +47,6 @@ protected:
+ 	static LONG_PTR WINAPI procEdit (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
+ };
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // WINDOWS
+-
+-#endif // __win32textedit__
+diff --git a/vstgui/lib/platform/win32/winfileselector.cpp b/vstgui/lib/platform/win32/winfileselector.cpp
+index d923d3d8..8f7c84b8 100644
+--- a/vstgui/lib/platform/win32/winfileselector.cpp
++++ b/vstgui/lib/platform/win32/winfileselector.cpp
+@@ -301,6 +301,6 @@ bool VistaFileSelector::runModalInternal ()
+ 	return SUCCEEDED (hr);
+ }
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // WINDOWS
+diff --git a/vstgui/lib/platform/win32/winstring.cpp b/vstgui/lib/platform/win32/winstring.cpp
+index cb3ac601..f036e836 100644
+--- a/vstgui/lib/platform/win32/winstring.cpp
++++ b/vstgui/lib/platform/win32/winstring.cpp
+@@ -55,6 +55,6 @@ void WinString::setUTF8String (UTF8StringPtr utf8String)
+ 		wideString[0] = 0;
+ }
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // WINDOWS
+diff --git a/vstgui/lib/platform/win32/winstring.h b/vstgui/lib/platform/win32/winstring.h
+index 2ee41690..b35232cc 100644
+--- a/vstgui/lib/platform/win32/winstring.h
++++ b/vstgui/lib/platform/win32/winstring.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __winstring__
+-#define __winstring__
++#pragma once
+ 
+ #include "../iplatformstring.h"
+ 
+@@ -29,8 +28,6 @@ protected:
+ 	int wideStringBufferSize;
+ };
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // WINDOWS
+-
+-#endif // __winstring__
+diff --git a/vstgui/lib/vstguibase.h b/vstgui/lib/vstguibase.h
+index 7399f3e1..362f3a4b 100644
+--- a/vstgui/lib/vstguibase.h
++++ b/vstgui/lib/vstguibase.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __vstguibase__
+-#define __vstguibase__
++#pragma once
+ 
+ #include <cstdlib>
+ #include <cstdio>
+@@ -529,9 +528,7 @@ private:
+ 	B bit;
+ };
+ 
+-} // namespace
++} // VSTGUI
+ 
+ //-----------------------------------------------------------------------------
+ #include "vstguidebug.h"
+-
+-#endif
+diff --git a/vstgui/lib/vstguidebug.cpp b/vstgui/lib/vstguidebug.cpp
+index 03e09802..0a6c6c03 100644
+--- a/vstgui/lib/vstguidebug.cpp
++++ b/vstgui/lib/vstguidebug.cpp
+@@ -66,7 +66,7 @@ void DebugPrint (const char *format, ...)
+ 	#endif
+ }
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // DEBUG
+ 
+@@ -111,4 +111,4 @@ void doAssert (const char* filename, const char* line, const char* desc) noexcep
+ #endif // DEBUG
+ }
+ 	
+-} // namespace
++} // VSTGUI
+diff --git a/vstgui/lib/vstguidebug.h b/vstgui/lib/vstguidebug.h
+index e944eac3..3a628227 100644
+--- a/vstgui/lib/vstguidebug.h
++++ b/vstgui/lib/vstguidebug.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __vstguidebug__
+-#define __vstguidebug__
++#pragma once
+ 
+ #include "vstguibase.h"
+ #include <functional>
+@@ -45,10 +44,8 @@ protected:
+ 	std::clock_t startTime;
+ };
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #else
+ 
+ #endif // DEBUG
+-
+-#endif
+diff --git a/vstgui/lib/vstguifwd.h b/vstgui/lib/vstguifwd.h
+index 306a5e90..07a54376 100644
+--- a/vstgui/lib/vstguifwd.h
++++ b/vstgui/lib/vstguifwd.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __vstguifwd__
+-#define __vstguifwd__
++#pragma once
+ 
+ #include "vstguibase.h"
+ #include <functional>
+@@ -266,6 +265,4 @@ class IPlatformFrame;
+ class IFontPainter;
+ class IPlatformResourceInputStream;
+ 
+-}
+-
+-#endif // __vstguifwd__
++} // VSTGUI
+diff --git a/vstgui/lib/vstkeycode.h b/vstgui/lib/vstkeycode.h
+index 73b44b3b..337c9215 100644
+--- a/vstgui/lib/vstkeycode.h
++++ b/vstgui/lib/vstkeycode.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __vstkeycode__
+-#define __vstkeycode__
++#pragma once
+ 
+ #ifndef __aeffectx__
+ // define VstKeyCode for non VST useage
+@@ -91,5 +90,3 @@ enum VstModifierKey
+ 	MODIFIER_CONTROL   = 1<<3  // Ctrl on PC, Apple on Mac
+ };
+ #endif
+-
+-#endif
+diff --git a/vstgui/tests/unittest/lib/ccolor_test.cpp b/vstgui/tests/unittest/lib/ccolor_test.cpp
+index 3339efa4..d212de01 100644
+--- a/vstgui/tests/unittest/lib/ccolor_test.cpp
++++ b/vstgui/tests/unittest/lib/ccolor_test.cpp
+@@ -102,4 +102,4 @@ TESTCASE(CColorTest,
+ 	);
+ );
+ 
+-} // namespace
++} // VSTGUI
+diff --git a/vstgui/tests/unittest/lib/crect_test.cpp b/vstgui/tests/unittest/lib/crect_test.cpp
+index 12e713af..20cd5e27 100644
+--- a/vstgui/tests/unittest/lib/crect_test.cpp
++++ b/vstgui/tests/unittest/lib/crect_test.cpp
+@@ -200,4 +200,4 @@ TESTCASE(CRectTest,
+ 
+ ); // TESTCASE
+ 
+-} // namespace
++} // VSTGUI
+diff --git a/vstgui/tests/unittest/lib/idependency_test.cpp b/vstgui/tests/unittest/lib/idependency_test.cpp
+index e54b1a00..380f02cd 100644
+--- a/vstgui/tests/unittest/lib/idependency_test.cpp
++++ b/vstgui/tests/unittest/lib/idependency_test.cpp
+@@ -76,6 +76,6 @@ TESTCASE(IDependencyTest,
+ 	);
+ );
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // VSTGUI_ENABLE_DEPRECATED_METHODS
+diff --git a/vstgui/tests/unittest/unittests.h b/vstgui/tests/unittest/unittests.h
+index 5d13f262..deddb745 100644
+--- a/vstgui/tests/unittest/unittests.h
++++ b/vstgui/tests/unittest/unittests.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef vstgui_unittests_h
+-#define vstgui_unittests_h
++#pragma once
+ 
+ #if ENABLE_UNIT_TESTS
+ 
+@@ -169,5 +168,3 @@ public:
+ #define TESTCASE(x,y)
+ 
+ #endif
+-
+-#endif
+diff --git a/vstgui/uidescription/base64codec.h b/vstgui/uidescription/base64codec.h
+index e62c0ce8..459a5cf1 100644
+--- a/vstgui/uidescription/base64codec.h
++++ b/vstgui/uidescription/base64codec.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __base64codec__
+-#define __base64codec__
++#pragma once
+ 
+ #include "../lib/malloc.h"
+ 
+@@ -134,6 +133,4 @@ private:
+ 	}
+ };
+ 
+-} // namespace VSTGUI
+-
+-#endif // __base64codec__
++} // VSTGUI
+diff --git a/vstgui/uidescription/compresseduidescription.cpp b/vstgui/uidescription/compresseduidescription.cpp
+index 990aee08..dabb5bd1 100644
+--- a/vstgui/uidescription/compresseduidescription.cpp
++++ b/vstgui/uidescription/compresseduidescription.cpp
+@@ -324,4 +324,4 @@ uint32_t ZLibOutputStream::writeRaw (const void* buffer, uint32_t size)
+ }
+ 
+ //------------------------------------------------------------------------
+-} // namespace
++} // VSTGUI
+diff --git a/vstgui/uidescription/compresseduidescription.h b/vstgui/uidescription/compresseduidescription.h
+index f6fa1271..6b6057de 100644
+--- a/vstgui/uidescription/compresseduidescription.h
++++ b/vstgui/uidescription/compresseduidescription.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __compresseduidescription__
+-#define __compresseduidescription__
++#pragma once
+ 
+ #include "uidescription.h"
+ 
+@@ -36,6 +35,4 @@ private:
+ };
+ 
+ //------------------------------------------------------------------------
+-} // namespace
+-
+-#endif
++} // VSTGUI
+diff --git a/vstgui/uidescription/cstream.cpp b/vstgui/uidescription/cstream.cpp
+index f49b6a0d..047360a3 100644
+--- a/vstgui/uidescription/cstream.cpp
++++ b/vstgui/uidescription/cstream.cpp
+@@ -606,4 +606,4 @@ bool InputStream::operator>> (double& output)
+ 	return false;
+ }
+ 
+-} // namespace
++} // VSTGUI
+diff --git a/vstgui/uidescription/cstream.h b/vstgui/uidescription/cstream.h
+index 8c261d96..c5b8417f 100644
+--- a/vstgui/uidescription/cstream.h
++++ b/vstgui/uidescription/cstream.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __cstream__
+-#define __cstream__
++#pragma once
+ 
+ #include "../lib/vstguifwd.h"
+ #include "../lib/optional.h"
+@@ -278,6 +277,4 @@ private:
+ 	size_t bufferSize;
+ };
+ 
+-} // namespace
+-
+-#endif
++} // VSTGUI
+diff --git a/vstgui/uidescription/delegationcontroller.h b/vstgui/uidescription/delegationcontroller.h
+index 50ff92d7..d559f9aa 100644
+--- a/vstgui/uidescription/delegationcontroller.h
++++ b/vstgui/uidescription/delegationcontroller.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __delegationcontroller__
+-#define __delegationcontroller__
++#pragma once
+ 
+ #include "icontroller.h"
+ 
+@@ -32,6 +31,4 @@ protected:
+ 	IController* controller;
+ };
+ 
+-}
+-
+-#endif // __delegationcontroller__
++} // VSTGUI
+diff --git a/vstgui/uidescription/editing/iaction.h b/vstgui/uidescription/editing/iaction.h
+index 92bd72a3..107f9365 100644
+--- a/vstgui/uidescription/editing/iaction.h
++++ b/vstgui/uidescription/editing/iaction.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __iaction__
+-#define __iaction__
++#pragma once
+ 
+ #include "../../lib/vstguifwd.h"
+ 
+@@ -67,8 +66,6 @@ public:
+ 	virtual void finishGroupAction () = 0;
+ };
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // VSTGUI_LIVE_EDITING
+-
+-#endif // __iaction__
+diff --git a/vstgui/uidescription/editing/uiactions.cpp b/vstgui/uidescription/editing/uiactions.cpp
+index 3a5f446a..e8fbfae6 100644
+--- a/vstgui/uidescription/editing/uiactions.cpp
++++ b/vstgui/uidescription/editing/uiactions.cpp
+@@ -1499,6 +1499,6 @@ void ChangeTemplateMinMaxAction::undo ()
+ }
+ 
+ //----------------------------------------------------------------------------------------------------
+-} // namespace
++} // VSTGUI
+ 
+ #endif // VSTGUI_LIVE_EDITING
+diff --git a/vstgui/uidescription/editing/uiactions.h b/vstgui/uidescription/editing/uiactions.h
+index 8e0f52d1..ce7afe6a 100644
+--- a/vstgui/uidescription/editing/uiactions.h
++++ b/vstgui/uidescription/editing/uiactions.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __uiactions__
+-#define __uiactions__
++#pragma once
+ 
+ #include "iaction.h"
+ 
+@@ -574,8 +573,6 @@ private:
+ };
+ 
+ //-----------------------------------------------------------------------------
+-} // namespace
++} // VSTGUI
+ 
+ #endif // VSTGUI_LIVE_EDITING
+-
+-#endif // __uiactions__
+diff --git a/vstgui/uidescription/editing/uiattributescontroller.cpp b/vstgui/uidescription/editing/uiattributescontroller.cpp
+index de0caf24..a73a2c42 100644
+--- a/vstgui/uidescription/editing/uiattributescontroller.cpp
++++ b/vstgui/uidescription/editing/uiattributescontroller.cpp
+@@ -747,7 +747,7 @@ protected:
+ };
+ 
+ 
+-} // namespace
++} // VSTGUI
+ 
+ 
+ //----------------------------------------------------------------------------------------------------
+@@ -1293,6 +1293,6 @@ void UIAttributesController::rebuildAttributesView ()
+ 	attributeView->invalid ();
+ }
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // VSTGUI_LIVE_EDITING
+diff --git a/vstgui/uidescription/editing/uiattributescontroller.h b/vstgui/uidescription/editing/uiattributescontroller.h
+index 1717063d..5f5b098a 100644
+--- a/vstgui/uidescription/editing/uiattributescontroller.h
++++ b/vstgui/uidescription/editing/uiattributescontroller.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __uiattributescontroller__
+-#define __uiattributescontroller__
++#pragma once
+ 
+ #include "../uidescription.h"
+ 
+@@ -88,8 +87,6 @@ protected:
+ 	bool rebuildRequested{false};
+ };
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // VSTGUI_LIVE_EDITING
+-
+-#endif // __uiattributescontroller__
+diff --git a/vstgui/uidescription/editing/uibasedatasource.h b/vstgui/uidescription/editing/uibasedatasource.h
+index 89547458..b58db333 100644
+--- a/vstgui/uidescription/editing/uibasedatasource.h
++++ b/vstgui/uidescription/editing/uibasedatasource.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __uibasedatasource__
+-#define __uibasedatasource__
++#pragma once
+ 
+ #include "../iuidescription.h"
+ 
+@@ -300,8 +299,6 @@ protected:
+ 	UTF8String filterString;
+ };
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // VSTGUI_LIVE_EDITING
+-
+-#endif // __uibasedatasource__
+diff --git a/vstgui/uidescription/editing/uibitmapscontroller.cpp b/vstgui/uidescription/editing/uibitmapscontroller.cpp
+index 338d65e3..77963414 100644
+--- a/vstgui/uidescription/editing/uibitmapscontroller.cpp
++++ b/vstgui/uidescription/editing/uibitmapscontroller.cpp
+@@ -946,6 +946,6 @@ bool UIBitmapsController::stringToValue (UTF8StringPtr txt, float& result, void*
+ 	return true;
+ }
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // VSTGUI_LIVE_EDITING
+diff --git a/vstgui/uidescription/editing/uibitmapscontroller.h b/vstgui/uidescription/editing/uibitmapscontroller.h
+index 6886fb39..d417ca2c 100644
+--- a/vstgui/uidescription/editing/uibitmapscontroller.h
++++ b/vstgui/uidescription/editing/uibitmapscontroller.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __uibitmapscontroller__
+-#define __uibitmapscontroller__
++#pragma once
+ 
+ #include "../uidescription.h"
+ 
+@@ -57,8 +56,6 @@ protected:
+ 	};
+ };
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // VSTGUI_LIVE_EDITING
+-
+-#endif // __uibitmapscontroller__
+diff --git a/vstgui/uidescription/editing/uicolor.h b/vstgui/uidescription/editing/uicolor.h
+index 9f390f1b..9fc49a5f 100644
+--- a/vstgui/uidescription/editing/uicolor.h
++++ b/vstgui/uidescription/editing/uicolor.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __uicolor__
+-#define __uicolor__
++#pragma once
+ 
+ #include "../../lib/vstguibase.h"
+ 
+@@ -86,8 +85,6 @@ private:
+ 	double r, g, b;
+ };
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // VSTGUI_LIVE_EDITING
+-
+-#endif // __uicolor__
+diff --git a/vstgui/uidescription/editing/uicolorchoosercontroller.cpp b/vstgui/uidescription/editing/uicolorchoosercontroller.cpp
+index 3f163083..f993d2b4 100644
+--- a/vstgui/uidescription/editing/uicolorchoosercontroller.cpp
++++ b/vstgui/uidescription/editing/uicolorchoosercontroller.cpp
+@@ -306,6 +306,6 @@ void UIColorChooserController::valueChanged (CControl* pControl)
+ 	}
+ }
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // VSTGUI_LIVE_EDITING
+diff --git a/vstgui/uidescription/editing/uicolorchoosercontroller.h b/vstgui/uidescription/editing/uicolorchoosercontroller.h
+index 79b5fa2e..d00130e2 100644
+--- a/vstgui/uidescription/editing/uicolorchoosercontroller.h
++++ b/vstgui/uidescription/editing/uicolorchoosercontroller.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __uicolorchoosercontroller__
+-#define __uicolorchoosercontroller__
++#pragma once
+ 
+ #include "../../lib/vstguibase.h"
+ 
+@@ -57,8 +56,6 @@ protected:
+ 	};
+ };
+ 	
+-} // namespace
++} // VSTGUI
+ 
+ #endif // VSTGUI_LIVE_EDITING
+-
+-#endif // __uicolorchoosercontroller__
+diff --git a/vstgui/uidescription/editing/uicolorscontroller.cpp b/vstgui/uidescription/editing/uicolorscontroller.cpp
+index 61fc6ea4..5aa8ad4a 100644
+--- a/vstgui/uidescription/editing/uicolorscontroller.cpp
++++ b/vstgui/uidescription/editing/uicolorscontroller.cpp
+@@ -445,6 +445,6 @@ IController* UIColorsController::createSubController (IdStringPtr name, const IU
+ 	return controller->createSubController (name, description);
+ }
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // VSTGUI_LIVE_EDITING
+diff --git a/vstgui/uidescription/editing/uicolorscontroller.h b/vstgui/uidescription/editing/uicolorscontroller.h
+index 22ff8508..62d9b6dc 100644
+--- a/vstgui/uidescription/editing/uicolorscontroller.h
++++ b/vstgui/uidescription/editing/uicolorscontroller.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __uicolorscontroller__
+-#define __uicolorscontroller__
++#pragma once
+ 
+ #include "../uidescription.h"
+ 
+@@ -44,8 +43,6 @@ protected:
+ 	};
+ };
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // VSTGUI_LIVE_EDITING
+-
+-#endif // __uicolorscontroller__
+diff --git a/vstgui/uidescription/editing/uicolorslider.cpp b/vstgui/uidescription/editing/uicolorslider.cpp
+index 3a798805..986920dc 100644
+--- a/vstgui/uidescription/editing/uicolorslider.cpp
++++ b/vstgui/uidescription/editing/uicolorslider.cpp
+@@ -152,6 +152,6 @@ void UIColorSlider::updateHandle (CDrawContext* context)
+ 	}
+ }
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // VSTGUI_LIVE_EDITING
+diff --git a/vstgui/uidescription/editing/uicolorslider.h b/vstgui/uidescription/editing/uicolorslider.h
+index d6ff8b47..dcf1d545 100644
+--- a/vstgui/uidescription/editing/uicolorslider.h
++++ b/vstgui/uidescription/editing/uicolorslider.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __uicolorslider__
+-#define __uicolorslider__
++#pragma once
+ 
+ #include "../../lib/vstguibase.h"
+ 
+@@ -47,8 +46,6 @@ protected:
+ };
+ 
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // VSTGUI_LIVE_EDITING
+-
+-#endif // __uicolorslider__
+diff --git a/vstgui/uidescription/editing/uicrosslines.h b/vstgui/uidescription/editing/uicrosslines.h
+index 61399377..482e60c1 100644
+--- a/vstgui/uidescription/editing/uicrosslines.h
++++ b/vstgui/uidescription/editing/uicrosslines.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __uicrosslines__
+-#define __uicrosslines__
++#pragma once
+ 
+ #include "../../lib/vstguifwd.h"
+ 
+@@ -47,8 +46,6 @@ protected:
+ 	CColor foreground;
+ };
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // VSTGUI_LIVE_EDITING
+-
+-#endif // __uicrosslines__
+diff --git a/vstgui/uidescription/editing/uidialogcontroller.cpp b/vstgui/uidescription/editing/uidialogcontroller.cpp
+index c58277c1..31001b93 100644
+--- a/vstgui/uidescription/editing/uidialogcontroller.cpp
++++ b/vstgui/uidescription/editing/uidialogcontroller.cpp
+@@ -310,6 +310,6 @@ void UIDialogController::setOpenGLViewsVisible (bool state)
+ #endif
+ }
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // VSTGUI_LIVE_EDITING
+diff --git a/vstgui/uidescription/editing/uidialogcontroller.h b/vstgui/uidescription/editing/uidialogcontroller.h
+index 7394dd69..320fe7a6 100644
+--- a/vstgui/uidescription/editing/uidialogcontroller.h
++++ b/vstgui/uidescription/editing/uidialogcontroller.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __uidialogcontroller__
+-#define __uidialogcontroller__
++#pragma once
+ 
+ #include "../uidescription.h"
+ 
+@@ -81,8 +80,6 @@ protected:
+ 	};
+ };
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // VSTGUI_LIVE_EDITING
+-
+-#endif // __uidialogcontroller__
+diff --git a/vstgui/uidescription/editing/uieditcontroller.cpp b/vstgui/uidescription/editing/uieditcontroller.cpp
+index 0b175bc2..17b73775 100644
+--- a/vstgui/uidescription/editing/uieditcontroller.cpp
++++ b/vstgui/uidescription/editing/uieditcontroller.cpp
+@@ -1782,6 +1782,6 @@ void UIEditController::appendContextMenuItems (COptionMenu& contextMenu, CView*
+ 	}
+ }
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // VSTGUI_LIVE_EDITING
+diff --git a/vstgui/uidescription/editing/uieditcontroller.h b/vstgui/uidescription/editing/uieditcontroller.h
+index 9e6948ae..4bb60e42 100644
+--- a/vstgui/uidescription/editing/uieditcontroller.h
++++ b/vstgui/uidescription/editing/uieditcontroller.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __uieditcontroller__
+-#define __uieditcontroller__
++#pragma once
+ 
+ #include "../uidescription.h"
+ 
+@@ -197,8 +196,6 @@ private:
+ 	std::string onlyTemplateToUpdateName;
+ };
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // VSTGUI_LIVE_EDITING
+-
+-#endif // __uieditcontroller__
+diff --git a/vstgui/uidescription/editing/uieditmenucontroller.cpp b/vstgui/uidescription/editing/uieditmenucontroller.cpp
+index 2d840ed3..9356bd22 100644
+--- a/vstgui/uidescription/editing/uieditmenucontroller.cpp
++++ b/vstgui/uidescription/editing/uieditmenucontroller.cpp
+@@ -680,6 +680,6 @@ void UIEditMenuController::controlEndEdit (CControl* pControl)
+ 		label->setTransparency (true);
+ }
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // VSTGUI_LIVE_EDITING
+diff --git a/vstgui/uidescription/editing/uieditmenucontroller.h b/vstgui/uidescription/editing/uieditmenucontroller.h
+index bed8c5c7..e87d47cb 100644
+--- a/vstgui/uidescription/editing/uieditmenucontroller.h
++++ b/vstgui/uidescription/editing/uieditmenucontroller.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __uieditmenucontroller__
+-#define __uieditmenucontroller__
++#pragma once
+ 
+ #include "../uidescription.h"
+ 
+@@ -126,7 +125,7 @@ static const MenuEntry fileMenu[] = {
+ 	{0}
+ };
+ 
+-} // namespace UIEditing
++} // UIEditing
+ 
+ //----------------------------------------------------------------------------------------------------
+ class UIEditMenuController : public CBaseObject, public DelegationController, public CommandMenuItemTargetAdapter
+@@ -178,8 +177,6 @@ protected:
+ 
+ };
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // VSTGUI_LIVE_EDITING
+-
+-#endif // __uieditmenucontroller__
+diff --git a/vstgui/uidescription/editing/uieditview.cpp b/vstgui/uidescription/editing/uieditview.cpp
+index 3f54bde7..4881850b 100644
+--- a/vstgui/uidescription/editing/uieditview.cpp
++++ b/vstgui/uidescription/editing/uieditview.cpp
+@@ -260,7 +260,7 @@ void UIHighlightView::draw (CDrawContext* pContext)
+ 	pContext->drawRect (r, kDrawFilledAndStroked);
+ }
+ 
+-} // namespace UIEditViewInternal
++} // UIEditViewInternal
+ 
+ //----------------------------------------------------------------------------------------------------
+ //----------------------------------------------------------------------------------------------------
+@@ -572,7 +572,7 @@ static bool pointInResizeHandleRect (const CPoint& where, const CPoint& handle)
+ 	return r.pointInside (where);
+ }
+ 
+-} // namespace UIEditViewInternal
++} // UIEditViewInternal
+ 
+ //----------------------------------------------------------------------------------------------------
+ UIEditView::MouseSizeMode UIEditView::selectionHitTest (const CPoint& _where, CView** resultView)
+@@ -1348,6 +1348,6 @@ void UIEditView::setupColors (const IUIDescription* description)
+ 	description->getColor ("editView.view.selection", viewSelectionColor);
+ }
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // VSTGUI_LIVE_EDITING
+diff --git a/vstgui/uidescription/editing/uieditview.h b/vstgui/uidescription/editing/uieditview.h
+index e92cf0b1..04e61d50 100644
+--- a/vstgui/uidescription/editing/uieditview.h
++++ b/vstgui/uidescription/editing/uieditview.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __uieditview__
+-#define __uieditview__
++#pragma once
+ 
+ #include "../../lib/cviewcontainer.h"
+ 
+@@ -23,7 +22,7 @@ class ViewSizeChangeOperation;
+ class UIGrid;
+ namespace UIEditViewInternal {
+ 	class UIHighlightView;
+-} // namespace UIEditViewInternal
++} // UIEditViewInternal
+ 
+ //----------------------------------------------------------------------------------------------------
+ class UIEditView : public CViewContainer, public IDropTarget
+@@ -133,8 +132,6 @@ protected:
+ 	CColor viewSelectionColor;
+ };
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // VSTGUI_LIVE_EDITING
+-
+-#endif // __uieditview__
+diff --git a/vstgui/uidescription/editing/uifocussettingscontroller.cpp b/vstgui/uidescription/editing/uifocussettingscontroller.cpp
+index 50bcd022..968ecddd 100644
+--- a/vstgui/uidescription/editing/uifocussettingscontroller.cpp
++++ b/vstgui/uidescription/editing/uifocussettingscontroller.cpp
+@@ -139,6 +139,6 @@ bool UIFocusSettingsController::stringToValue (UTF8StringPtr txt, float& result,
+ 	return false;
+ }
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // VSTGUI_LIVE_EDITING
+diff --git a/vstgui/uidescription/editing/uifocussettingscontroller.h b/vstgui/uidescription/editing/uifocussettingscontroller.h
+index a3245aea..42d5e876 100644
+--- a/vstgui/uidescription/editing/uifocussettingscontroller.h
++++ b/vstgui/uidescription/editing/uifocussettingscontroller.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __uifocussettingscontroller__
+-#define __uifocussettingscontroller__
++#pragma once
+ 
+ #include "../uidescription.h"
+ 
+@@ -46,8 +45,6 @@ protected:
+ 	FocusDrawingSettings originalSettings;
+ };
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // VSTGUI_LIVE_EDITING
+-
+-#endif // __uifocussettingscontroller__
+diff --git a/vstgui/uidescription/editing/uifontscontroller.cpp b/vstgui/uidescription/editing/uifontscontroller.cpp
+index 9e29fd64..628be37b 100644
+--- a/vstgui/uidescription/editing/uifontscontroller.cpp
++++ b/vstgui/uidescription/editing/uifontscontroller.cpp
+@@ -364,6 +364,6 @@ bool UIFontsController::stringToValue (UTF8StringPtr txt, float& result, CTextEd
+ }
+ 
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // VSTGUI_LIVE_EDITING
+diff --git a/vstgui/uidescription/editing/uifontscontroller.h b/vstgui/uidescription/editing/uifontscontroller.h
+index aa89b1bd..4012f24c 100644
+--- a/vstgui/uidescription/editing/uifontscontroller.h
++++ b/vstgui/uidescription/editing/uifontscontroller.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __uifontscontroller__
+-#define __uifontscontroller__
++#pragma once
+ 
+ #include "../uidescription.h"
+ 
+@@ -67,8 +66,6 @@ protected:
+ 	};
+ };
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // VSTGUI_LIVE_EDITING
+-
+-#endif // __uifontscontroller__
+diff --git a/vstgui/uidescription/editing/uigradientscontroller.cpp b/vstgui/uidescription/editing/uigradientscontroller.cpp
+index c41414d1..ceb4f2c3 100644
+--- a/vstgui/uidescription/editing/uigradientscontroller.cpp
++++ b/vstgui/uidescription/editing/uigradientscontroller.cpp
+@@ -775,6 +775,6 @@ void UIGradientsController::showEditDialog ()
+ 	dc->run ("gradient.editor", "Gradient Editor", "OK", "Cancel", fsController, UIEditController::getEditorDescription ());
+ }
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // VSTGUI_LIVE_EDITING
+diff --git a/vstgui/uidescription/editing/uigradientscontroller.h b/vstgui/uidescription/editing/uigradientscontroller.h
+index c765be1f..68167b64 100644
+--- a/vstgui/uidescription/editing/uigradientscontroller.h
++++ b/vstgui/uidescription/editing/uigradientscontroller.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __uigradientscontroller__
+-#define __uigradientscontroller__
++#pragma once
+ 
+ #include "../uidescription.h"
+ 
+@@ -49,8 +48,6 @@ protected:
+ 	};
+ };
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // VSTGUI_LIVE_EDITING
+-
+-#endif // __uigradientscontroller__
+diff --git a/vstgui/uidescription/editing/uigrid.h b/vstgui/uidescription/editing/uigrid.h
+index ac09d85b..18a5f8cd 100644
+--- a/vstgui/uidescription/editing/uigrid.h
++++ b/vstgui/uidescription/editing/uigrid.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __uigrid__
+-#define __uigrid__
++#pragma once
+ 
+ #include "../../lib/cpoint.h"
+ 
+@@ -35,8 +34,6 @@ protected:
+ 	CPoint size;
+ };
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // VSTGUI_LIVE_EDITING
+-
+-#endif // __uigrid__
+diff --git a/vstgui/uidescription/editing/uigridcontroller.cpp b/vstgui/uidescription/editing/uigridcontroller.cpp
+index 8cb6c0c5..8d2e14e0 100644
+--- a/vstgui/uidescription/editing/uigridcontroller.cpp
++++ b/vstgui/uidescription/editing/uigridcontroller.cpp
+@@ -109,6 +109,6 @@ bool UIGridController::stringToValue (UTF8StringPtr txt, float& result, CTextEdi
+ 	return true;
+ }
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // VSTGUI_LIVE_EDITING
+diff --git a/vstgui/uidescription/editing/uigridcontroller.h b/vstgui/uidescription/editing/uigridcontroller.h
+index cec84bf4..f04023e4 100644
+--- a/vstgui/uidescription/editing/uigridcontroller.h
++++ b/vstgui/uidescription/editing/uigridcontroller.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __uigridcontroller__
+-#define __uigridcontroller__
++#pragma once
+ 
+ #include "../uidescription.h"
+ 
+@@ -39,8 +38,6 @@ protected:
+ 	};
+ };
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // VSTGUI_LIVE_EDITING
+-
+-#endif // __uigridcontroller__
+diff --git a/vstgui/uidescription/editing/uiselection.cpp b/vstgui/uidescription/editing/uiselection.cpp
+index dc3e921b..6dcb2d92 100644
+--- a/vstgui/uidescription/editing/uiselection.cpp
++++ b/vstgui/uidescription/editing/uiselection.cpp
+@@ -352,6 +352,6 @@ SharedPointer<CBitmap> createBitmapFromSelection (UISelection* selection, CFrame
+ 	return bitmap;
+ }
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // VSTGUI_LIVE_EDITING
+diff --git a/vstgui/uidescription/editing/uiselection.h b/vstgui/uidescription/editing/uiselection.h
+index 472081dc..814904bf 100644
+--- a/vstgui/uidescription/editing/uiselection.h
++++ b/vstgui/uidescription/editing/uiselection.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __uiselection__
+-#define __uiselection__
++#pragma once
+ 
+ #if VSTGUI_LIVE_EDITING
+ 
+@@ -128,8 +127,6 @@ protected:
+ //----------------------------------------------------------------------------------------------------
+ SharedPointer<CBitmap> createBitmapFromSelection (UISelection* selection, CFrame* frame, CViewContainer* anchorView = nullptr);
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // VSTGUI_LIVE_EDITING
+-
+-#endif // __uiselection__
+diff --git a/vstgui/uidescription/editing/uitagscontroller.cpp b/vstgui/uidescription/editing/uitagscontroller.cpp
+index 2e657730..0c2d3783 100644
+--- a/vstgui/uidescription/editing/uitagscontroller.cpp
++++ b/vstgui/uidescription/editing/uitagscontroller.cpp
+@@ -234,6 +234,6 @@ void UITagsController::valueChanged (CControl* pControl)
+ 	}
+ }
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // VSTGUI_LIVE_EDITING
+diff --git a/vstgui/uidescription/editing/uitagscontroller.h b/vstgui/uidescription/editing/uitagscontroller.h
+index 0acc39f7..f2910512 100644
+--- a/vstgui/uidescription/editing/uitagscontroller.h
++++ b/vstgui/uidescription/editing/uitagscontroller.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __uitagscontroller__
+-#define __uitagscontroller__
++#pragma once
+ 
+ #include "../uidescription.h"
+ 
+@@ -41,8 +40,6 @@ protected:
+ 	};
+ };
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // VSTGUI_LIVE_EDITING
+-
+-#endif // __uitagscontroller__
+diff --git a/vstgui/uidescription/editing/uitemplatecontroller.cpp b/vstgui/uidescription/editing/uitemplatecontroller.cpp
+index 409bbf3c..f1aca087 100644
+--- a/vstgui/uidescription/editing/uitemplatecontroller.cpp
++++ b/vstgui/uidescription/editing/uitemplatecontroller.cpp
+@@ -734,6 +734,6 @@ void UITemplatesDataSource::dbAttached (CDataBrowser* browser)
+ 	}
+ }
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // VSTGUI_LIVE_EDITING
+diff --git a/vstgui/uidescription/editing/uitemplatecontroller.h b/vstgui/uidescription/editing/uitemplatecontroller.h
+index ba97afc2..6d2b939c 100644
+--- a/vstgui/uidescription/editing/uitemplatecontroller.h
++++ b/vstgui/uidescription/editing/uitemplatecontroller.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __uitemplatecontroller__
+-#define __uitemplatecontroller__
++#pragma once
+ 
+ #include "../uidescription.h"
+ 
+@@ -73,8 +72,6 @@ protected:
+ 	const UTF8String* selectedTemplateName;
+ };
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // VSTGUI_LIVE_EDITING
+-
+-#endif // __uitemplatecontroller__
+diff --git a/vstgui/uidescription/editing/uitemplatesettingscontroller.cpp b/vstgui/uidescription/editing/uitemplatesettingscontroller.cpp
+index b48fa832..9817a36c 100644
+--- a/vstgui/uidescription/editing/uitemplatesettingscontroller.cpp
++++ b/vstgui/uidescription/editing/uitemplatesettingscontroller.cpp
+@@ -221,6 +221,6 @@ bool UITemplateSettingsController::stringToValue (UTF8StringPtr txt, float& resu
+ 	return true;
+ }
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // VSTGUI_LIVE_EDITING
+diff --git a/vstgui/uidescription/editing/uitemplatesettingscontroller.h b/vstgui/uidescription/editing/uitemplatesettingscontroller.h
+index f0fa54ab..1e8d8fb2 100644
+--- a/vstgui/uidescription/editing/uitemplatesettingscontroller.h
++++ b/vstgui/uidescription/editing/uitemplatesettingscontroller.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __uitemplatesettingscontroller__
+-#define __uitemplatesettingscontroller__
++#pragma once
+ 
+ #include "../uidescription.h"
+ 
+@@ -55,8 +54,6 @@ protected:
+ 	IActionPerformer* actionPerformer;
+ };
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // VSTGUI_LIVE_EDITING
+-
+-#endif // __uitemplatesettingscontroller__
+diff --git a/vstgui/uidescription/editing/uiundomanager.cpp b/vstgui/uidescription/editing/uiundomanager.cpp
+index 7c12cd28..a14f77a9 100644
+--- a/vstgui/uidescription/editing/uiundomanager.cpp
++++ b/vstgui/uidescription/editing/uiundomanager.cpp
+@@ -216,6 +216,6 @@ bool UIUndoManager::isSavePosition () const
+ }
+ 	
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // VSTGUI_LIVE_EDITING
+diff --git a/vstgui/uidescription/editing/uiundomanager.h b/vstgui/uidescription/editing/uiundomanager.h
+index 76cbc06f..9ca8cdcb 100644
+--- a/vstgui/uidescription/editing/uiundomanager.h
++++ b/vstgui/uidescription/editing/uiundomanager.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __uiundomanager__
+-#define __uiundomanager__
++#pragma once
+ 
+ #include "../../lib/vstguibase.h"
+ 
+@@ -62,8 +61,6 @@ protected:
+ 	GroupActionDeque groupQueue;
+ };
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // VSTGUI_LIVE_EDITING
+-
+-#endif // __uiundomanager__
+diff --git a/vstgui/uidescription/editing/uiviewcreatecontroller.cpp b/vstgui/uidescription/editing/uiviewcreatecontroller.cpp
+index 40ce526e..6ec14cee 100644
+--- a/vstgui/uidescription/editing/uiviewcreatecontroller.cpp
++++ b/vstgui/uidescription/editing/uiviewcreatecontroller.cpp
+@@ -219,7 +219,7 @@ CMouseEventResult UIViewCreatorDataSource::dbOnMouseMoved (const CPoint& where,
+ 	return kMouseEventNotHandled;
+ }
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // VSTGUI_LIVE_EDITING
+ 
+diff --git a/vstgui/uidescription/editing/uiviewcreatecontroller.h b/vstgui/uidescription/editing/uiviewcreatecontroller.h
+index 0f0e0ca5..44c2e3d2 100644
+--- a/vstgui/uidescription/editing/uiviewcreatecontroller.h
++++ b/vstgui/uidescription/editing/uiviewcreatecontroller.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __uiviewcreatorcontroller__
+-#define __uiviewcreatorcontroller__
++#pragma once
+ 
+ #include "../uidescription.h"
+ 
+@@ -53,8 +52,6 @@ SharedPointer<UISelection> createSelectionFromViewName (const std::string& viewN
+                                                         const UIDescription* description,
+                                                         const UIAttributes* optionalAttributes);
+ 
+-} // namespace
++} // VSTGUI
+ 
+ #endif // VSTGUI_LIVE_EDITING
+-
+-#endif // __uiviewcreatorcontroller__
+diff --git a/vstgui/uidescription/icontroller.h b/vstgui/uidescription/icontroller.h
+index 499c1434..dd68c20e 100644
+--- a/vstgui/uidescription/icontroller.h
++++ b/vstgui/uidescription/icontroller.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __icontroller__
+-#define __icontroller__
++#pragma once
+ 
+ #include "../lib/controls/icontrollistener.h"
+ #include "../lib/cviewcontainer.h"
+@@ -89,6 +88,4 @@ inline T* findViewController (const CViewContainer* view)
+ }
+ 
+ //-----------------------------------------------------------------------------
+-} // namespace
+-
+-#endif // __icontroller__
++} // VSTGUI
+diff --git a/vstgui/uidescription/iuidescription.h b/vstgui/uidescription/iuidescription.h
+index 39aa5774..658301fd 100644
+--- a/vstgui/uidescription/iuidescription.h
++++ b/vstgui/uidescription/iuidescription.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __iuidescription__
+-#define __iuidescription__
++#pragma once
+ 
+ #include "../lib/vstguifwd.h"
+ #include "../lib/cfont.h"
+@@ -66,6 +65,4 @@ struct FocusDrawingSettings
+ 	}
+ };
+ 
+-} // namespace VSTGUI
+-
+-#endif // __iuidescription__
++} // VSTGUI VSTGUI
+diff --git a/vstgui/uidescription/iviewcreator.h b/vstgui/uidescription/iviewcreator.h
+index 7d1619e2..6be1bf5d 100644
+--- a/vstgui/uidescription/iviewcreator.h
++++ b/vstgui/uidescription/iviewcreator.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __iviewcreator__
+-#define __iviewcreator__
++#pragma once
+ 
+ #include "../lib/vstguifwd.h"
+ #include <string>
+@@ -68,6 +67,4 @@ public:
+ 	UTF8StringPtr getDisplayName () const override { return getViewName (); }
+ };
+ 
+-} // namespace
+-
+-#endif // __iviewcreator__
++} // VSTGUI
+diff --git a/vstgui/uidescription/iviewfactory.h b/vstgui/uidescription/iviewfactory.h
+index 2f5ceed3..8da200ab 100644
+--- a/vstgui/uidescription/iviewfactory.h
++++ b/vstgui/uidescription/iviewfactory.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __iviewfactory__
+-#define __iviewfactory__
++#pragma once
+ 
+ #include "../lib/vstguifwd.h"
+ 
+@@ -22,7 +21,4 @@ public:
+ 	virtual bool applyCustomViewAttributeValues (CView* customView, IdStringPtr baseViewName, const UIAttributes& attributes, const IUIDescription* desc) const = 0;
+ };
+ 
+-} // namespace VSTGUI
+-
+-
+-#endif // __iviewfactory__
++} // VSTGUI VSTGUI
+diff --git a/vstgui/uidescription/uiattributes.h b/vstgui/uidescription/uiattributes.h
+index 9a0cd1d2..d06fb28a 100644
+--- a/vstgui/uidescription/uiattributes.h
++++ b/vstgui/uidescription/uiattributes.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __uiattributes__
+-#define __uiattributes__
++#pragma once
+ 
+ #include "../lib/vstguifwd.h"
+ #include "../lib/cstring.h"
+@@ -64,6 +63,4 @@ public:
+ 	bool restore (InputStream& stream);
+ };
+ 
+-}
+-
+-#endif // __uiattributes__
++} // VSTGUI
+diff --git a/vstgui/uidescription/uidescription.cpp b/vstgui/uidescription/uidescription.cpp
+index a4df3fdd..a4383191 100644
+--- a/vstgui/uidescription/uidescription.cpp
++++ b/vstgui/uidescription/uidescription.cpp
+@@ -2717,7 +2717,7 @@ static bool computeTokens (StringTokenList& tokens, double& result)
+ 	return true;
+ }
+ 
+-} // namespace UIDescriptionPrivate
++} // UIDescriptionPrivate
+ 
+ //-----------------------------------------------------------------------------
+ bool UIDescription::calculateStringValue (UTF8StringPtr _str, double& result) const
+@@ -3600,4 +3600,4 @@ void UIGradientNode::setGradient (CGradient* g)
+ 	}
+ }
+ 
+-} // namespace
++} // VSTGUI
+diff --git a/vstgui/uidescription/uidescription.h b/vstgui/uidescription/uidescription.h
+index 276671e8..f737df3f 100644
+--- a/vstgui/uidescription/uidescription.h
++++ b/vstgui/uidescription/uidescription.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __uidescription__
+-#define __uidescription__
++#pragma once
+ 
+ #include "../lib/idependency.h"
+ #include "iuidescription.h"
+@@ -179,6 +178,4 @@ public:
+ 	virtual SharedPointer<IPlatformBitmap> createBitmap (const UIAttributes& attributes) = 0;
+ };
+ 
+-} // namespace
+-
+-#endif
++} // VSTGUI
+diff --git a/vstgui/uidescription/uidescriptionfwd.h b/vstgui/uidescription/uidescriptionfwd.h
+index 244a7674..9a114636 100644
+--- a/vstgui/uidescription/uidescriptionfwd.h
++++ b/vstgui/uidescription/uidescriptionfwd.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __uidescriptionfwd__
+-#define __uidescriptionfwd__
++#pragma once
+ 
+ namespace VSTGUI {
+ 
+@@ -18,6 +17,4 @@ class InputStream;
+ class OutputStream;
+ class IBitmapCreator;
+ 
+-} // namespace
+-
+-#endif // __uidescriptionfwd__
++} // VSTGUI
+diff --git a/vstgui/uidescription/uidescriptionlistener.h b/vstgui/uidescription/uidescriptionlistener.h
+index 02811ebd..cc659e27 100644
+--- a/vstgui/uidescription/uidescriptionlistener.h
++++ b/vstgui/uidescription/uidescriptionlistener.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __uidescriptionlistener__
+-#define __uidescriptionlistener__
++#pragma once
+ 
+ #include "../lib/vstguibase.h"
+ #include "uidescriptionfwd.h"
+@@ -58,5 +57,3 @@ private:
+ };
+ 
+ } // VSTGUI
+-
+-#endif // __uidescriptionlistener__
+diff --git a/vstgui/uidescription/uiviewcreator.cpp b/vstgui/uidescription/uiviewcreator.cpp
+index c7aa9276..d41b6a9f 100644
+--- a/vstgui/uidescription/uiviewcreator.cpp
++++ b/vstgui/uidescription/uiviewcreator.cpp
+@@ -4375,7 +4375,7 @@ static bool getStandardAttributeListValues (const std::string& attributeName, st
+ 	}
+ 	return false;
+ }
+-}} // namespace
++}} // VSTGUI
+ 
+ /**
+ @endcond ignore
+diff --git a/vstgui/uidescription/uiviewcreator.h b/vstgui/uidescription/uiviewcreator.h
+index ba2c035d..e950790a 100644
+--- a/vstgui/uidescription/uiviewcreator.h
++++ b/vstgui/uidescription/uiviewcreator.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __uiviewcreator__
+-#define __uiviewcreator__
++#pragma once
+ 
+ /// @cond ignore
+ 
+@@ -25,5 +24,3 @@ extern bool stringToBitmap (const std::string* value, CBitmap*& bitmap, const IU
+ } } // namespaces
+ 
+ /// @endcond
+-
+-#endif // __uiviewcreator__
+diff --git a/vstgui/uidescription/uiviewfactory.cpp b/vstgui/uidescription/uiviewfactory.cpp
+index 3c5fa256..53c42c7c 100644
+--- a/vstgui/uidescription/uiviewfactory.cpp
++++ b/vstgui/uidescription/uiviewfactory.cpp
+@@ -490,4 +490,4 @@ void UIViewFactory::unregisterViewCreator (const IViewCreator& viewCreator)
+ 	registry.remove (&viewCreator);
+ }
+ 
+-} // namespace
++} // VSTGUI
+diff --git a/vstgui/uidescription/uiviewfactory.h b/vstgui/uidescription/uiviewfactory.h
+index de8a2e86..7b2a7f44 100644
+--- a/vstgui/uidescription/uiviewfactory.h
++++ b/vstgui/uidescription/uiviewfactory.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __uiviewfactory__
+-#define __uiviewfactory__
++#pragma once
+ 
+ #include "../lib/vstguifwd.h"
+ #include "iuidescription.h"
+@@ -65,7 +64,4 @@ protected:
+ #endif
+ };
+ 
+-} // namespace
+-
+-#endif // __uiviewfactory__
+-
++} // VSTGUI
+diff --git a/vstgui/uidescription/uiviewswitchcontainer.cpp b/vstgui/uidescription/uiviewswitchcontainer.cpp
+index eb9c0568..dfb4a878 100644
+--- a/vstgui/uidescription/uiviewswitchcontainer.cpp
++++ b/vstgui/uidescription/uiviewswitchcontainer.cpp
+@@ -322,4 +322,4 @@ void UIDescriptionViewSwitchController::getTemplateNames (std::string& str)
+ 	}
+ }
+ 
+-} // namespace
++} // VSTGUI
+diff --git a/vstgui/uidescription/uiviewswitchcontainer.h b/vstgui/uidescription/uiviewswitchcontainer.h
+index 131d4e5e..5fe44d42 100644
+--- a/vstgui/uidescription/uiviewswitchcontainer.h
++++ b/vstgui/uidescription/uiviewswitchcontainer.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __uiviewswitchcontainer__
+-#define __uiviewswitchcontainer__
++#pragma once
+ 
+ #include "../lib/cviewcontainer.h"
+ #include "../lib/controls/icontrollistener.h"
+@@ -106,6 +105,4 @@ protected:
+ 	std::vector<std::string> templateNames;
+ };
+ 
+-} // namespace
+-
+-#endif // __uiviewswitchcontainer__
++} // VSTGUI
+diff --git a/vstgui/uidescription/xmlparser.h b/vstgui/uidescription/xmlparser.h
+index 4123bac5..0512d3c2 100644
+--- a/vstgui/uidescription/xmlparser.h
++++ b/vstgui/uidescription/xmlparser.h
+@@ -2,8 +2,7 @@
+ // in the LICENSE file found in the top-level directory of this
+ // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+ 
+-#ifndef __xmlparser__
+-#define __xmlparser__
++#pragma once
+ 
+ #include "../lib/vstguibase.h"
+ #include "cstream.h"
+@@ -72,5 +71,3 @@ protected:
+ };
+ 
+ }} // namespaces
+-
+-#endif
+-- 
+2.18.0
+

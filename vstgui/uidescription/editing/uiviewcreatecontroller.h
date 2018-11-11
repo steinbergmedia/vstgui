@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __uiviewcreatorcontroller__
-#define __uiviewcreatorcontroller__
+#pragma once
 
 #include "../uidescription.h"
 
@@ -53,8 +52,6 @@ SharedPointer<UISelection> createSelectionFromViewName (const std::string& viewN
                                                         const UIDescription* description,
                                                         const UIAttributes* optionalAttributes);
 
-} // namespace
+} // VSTGUI
 
 #endif // VSTGUI_LIVE_EDITING
-
-#endif // __uiviewcreatorcontroller__

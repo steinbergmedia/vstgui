@@ -460,4 +460,4 @@ void CMultiLineTextLabel::recalculateLines (CDrawContext* context)
 	}
 }
 
-} // namespace
+} // VSTGUI

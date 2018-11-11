@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __clayeredviewcontainer__
-#define __clayeredviewcontainer__
+#pragma once
 
 #include "cviewcontainer.h"
 #include "iviewlistener.h"
@@ -56,6 +55,4 @@ protected:
 	uint32_t zIndex {0};
 };
 
-} // namespace
-
-#endif // __clayeredviewcontainer__
+} // VSTGUI

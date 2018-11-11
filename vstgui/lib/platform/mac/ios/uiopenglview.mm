@@ -179,7 +179,7 @@ void GLKitOpenGLView::doDraw (const CRect& r)
 	
 }
 
-} // namespace
+} // VSTGUI
 
 #endif // VSTGUI_OPENGL_SUPPORT
 #endif // TARGET_OS_IPHONE

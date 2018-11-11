@@ -234,6 +234,6 @@ void UITagsController::valueChanged (CControl* pControl)
 	}
 }
 
-} // namespace
+} // VSTGUI
 
 #endif // VSTGUI_LIVE_EDITING

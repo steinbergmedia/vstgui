@@ -946,6 +946,6 @@ bool UIBitmapsController::stringToValue (UTF8StringPtr txt, float& result, void*
 	return true;
 }
 
-} // namespace
+} // VSTGUI
 
 #endif // VSTGUI_LIVE_EDITING

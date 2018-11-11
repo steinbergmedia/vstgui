@@ -998,4 +998,4 @@ CHorizontalSlider::CHorizontalSlider (const CRect &rect, IControlListener* liste
 : CSlider (rect, listener, tag, offsetHandle, rangeHandle, handle, background, offset, style|kHorizontal)
 {}
 
-} // namespace
+} // VSTGUI

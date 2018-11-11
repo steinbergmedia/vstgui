@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __copenglview__
-#define __copenglview__
+#pragma once
 
 #include "cview.h"
 #include "iscalefactorchangedlistener.h"
@@ -78,7 +77,6 @@ private:
 	SharedPointer<IPlatformOpenGLView> platformOpenGLView;
 };
 
-} // namespace
+} // VSTGUI
 
 #endif // VSTGUI_OPENGL_SUPPORT
-#endif // __copenglview__

@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __cgdrawcontext__
-#define __cgdrawcontext__
+#pragma once
 
 #include "../../coffscreencontext.h"
 
@@ -88,9 +87,6 @@ protected:
 	double scaleFactor;
 };
 
-} // namespace
+} // VSTGUI
 
 #endif // MAC
-
-#endif // __cgdrawcontext__
-

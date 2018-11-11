@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __uidescriptionlistener__
-#define __uidescriptionlistener__
+#pragma once
 
 #include "../lib/vstguibase.h"
 #include "uidescriptionfwd.h"
@@ -58,5 +57,3 @@ private:
 };
 
 } // VSTGUI
-
-#endif // __uidescriptionlistener__

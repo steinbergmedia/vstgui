@@ -2717,7 +2717,7 @@ static bool computeTokens (StringTokenList& tokens, double& result)
 	return true;
 }
 
-} // namespace UIDescriptionPrivate
+} // UIDescriptionPrivate
 
 //-----------------------------------------------------------------------------
 bool UIDescription::calculateStringValue (UTF8StringPtr _str, double& result) const
@@ -3600,4 +3600,4 @@ void UIGradientNode::setGradient (CGradient* g)
 	}
 }
 
-} // namespace
+} // VSTGUI

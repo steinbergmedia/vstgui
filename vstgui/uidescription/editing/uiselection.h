@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __uiselection__
-#define __uiselection__
+#pragma once
 
 #if VSTGUI_LIVE_EDITING
 
@@ -128,8 +127,6 @@ protected:
 //----------------------------------------------------------------------------------------------------
 SharedPointer<CBitmap> createBitmapFromSelection (UISelection* selection, CFrame* frame, CViewContainer* anchorView = nullptr);
 
-} // namespace
+} // VSTGUI
 
 #endif // VSTGUI_LIVE_EDITING
-
-#endif // __uiselection__

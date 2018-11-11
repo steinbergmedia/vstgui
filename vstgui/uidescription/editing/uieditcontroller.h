@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __uieditcontroller__
-#define __uieditcontroller__
+#pragma once
 
 #include "../uidescription.h"
 
@@ -197,8 +196,6 @@ private:
 	std::string onlyTemplateToUpdateName;
 };
 
-} // namespace
+} // VSTGUI
 
 #endif // VSTGUI_LIVE_EDITING
-
-#endif // __uieditcontroller__

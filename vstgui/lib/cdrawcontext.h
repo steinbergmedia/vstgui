@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __cdrawcontext__
-#define __cdrawcontext__
+#pragma once
 
 #include "vstguifwd.h"
 
@@ -300,6 +299,4 @@ private:
 	CRect origClip;
 };
 
-} // namespace
-
-#endif
+} // VSTGUI

@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __uifontscontroller__
-#define __uifontscontroller__
+#pragma once
 
 #include "../uidescription.h"
 
@@ -67,8 +66,6 @@ protected:
 	};
 };
 
-} // namespace
+} // VSTGUI
 
 #endif // VSTGUI_LIVE_EDITING
-
-#endif // __uifontscontroller__

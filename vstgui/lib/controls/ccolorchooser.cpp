@@ -233,7 +233,7 @@ static void setupParamDisplay (CParamDisplay* display, const CColorChooserUISett
 	display->setTransparency (true);
 }
 
-} // namespace CColorChooserInternal
+} // CColorChooserInternal
 
 /// @endcond
 
@@ -591,4 +591,4 @@ void CColorChooser::updateState ()
 	colorView->invalid ();
 }
 
-} // namespace
+} // VSTGUI

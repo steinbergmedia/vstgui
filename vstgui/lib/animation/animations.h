@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __animation__
-#define __animation__
+#pragma once
 
 #include "../vstguifwd.h"
 #include "ianimationtarget.h"
@@ -115,6 +114,6 @@ protected:
 	bool forceEndValueOnFinish;
 };
 
-}} // namespaces
+} // Animation
+} // VSTGUI
 
-#endif // __animation__
