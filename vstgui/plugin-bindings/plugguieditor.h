@@ -53,13 +53,6 @@ public :
 	virtual int32_t setKnobMode (int32_t val);
 	virtual int32_t getKnobMode () const { return knobMode; }
 
-	// get the CFrame object
-	#if USE_NAMESPACE
-	VSTGUI::CFrame *getFrame () { return frame; }
-	#else
-	CFrame *getFrame () { return frame; }
-	#endif
-
 	virtual void beginEdit (int32_t index) {}
 	virtual void endEdit (int32_t index) {}
 
@@ -72,7 +65,6 @@ protected:
 
 private:
 	uint32_t lLastTicks;
-	bool inIdleStuff;
 
 	static int32_t knobMode;
 };
