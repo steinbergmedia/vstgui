@@ -281,7 +281,20 @@ bool CAnimationSplashScreen::createAnimation (uint32_t animationIndex, uint32_t 
 			if (removeViewAnimation)
 			{
 				splashView->setMouseEnabled (false);
-				splashView->addAnimation ("AnimationSplashScreenAnimation", new Animation::AlphaValueAnimation (0.f), new Animation::PowerTimingFunction (animationTime, 2), this);
+				splashView->addAnimation (
+				    "AnimationSplashScreenAnimation", new Animation::AlphaValueAnimation (0.f),
+				    new Animation::PowerTimingFunction (animationTime, 2),
+				    [this] (CView*, const IdStringPtr, Animation::IAnimationTarget*) {
+					    if (modalView)
+					    {
+						    modalView->invalid ();
+						    modalView->setMouseEnabled (true);
+					    }
+					    if (auto frame = getFrame ())
+						    frame->endModalViewSession (modalViewSession);
+					    modalViewSession = nullptr;
+					    setMouseEnabled (true);
+				    });
 			}
 			else
 			{
@@ -293,25 +306,6 @@ bool CAnimationSplashScreen::createAnimation (uint32_t animationIndex, uint32_t 
 		}
 	}
 	return false;
-}
-
-//------------------------------------------------------------------------
-CMessageResult CAnimationSplashScreen::notify (CBaseObject* sender, IdStringPtr message)
-{
-	if (message == Animation::kMsgAnimationFinished)
-	{
-		if (modalView)
-		{
-			modalView->invalid ();
-			modalView->setMouseEnabled (true);
-		}
-		if (auto frame = getFrame ())
-			frame->endModalViewSession (modalViewSession);
-		modalViewSession = nullptr;
-		setMouseEnabled (true);
-		return kMessageNotified;
-	}
-	return CSplashScreen::notify (sender, message);
 }
 
 } // namespace

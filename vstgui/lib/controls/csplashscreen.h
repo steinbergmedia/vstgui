@@ -88,7 +88,6 @@ public:
 	void draw (CDrawContext*) override;
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
 	bool sizeToFit () override;
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 
 protected:
 	~CAnimationSplashScreen () noexcept override = default;

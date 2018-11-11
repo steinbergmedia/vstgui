@@ -24,19 +24,21 @@ public:
 	/// @name Adding and removing Animations
 	//-----------------------------------------------------------------------------
 	//@{
+	VSTGUI_DEPRECATED(
 	/** adds an animation.
 		Animation and timingFunction is now owned by the animator.
 		An already running animation for view with name will be canceled.
 		If a notificationObject is supplied, it will be notified when the animation has finished @see FinishedMessage.
 	*/
-	void addAnimation (CView* view, IdStringPtr name, IAnimationTarget* target, ITimingFunction* timingFunction, CBaseObject* notificationObject = nullptr);
+	void addAnimation (CView* view, IdStringPtr name, IAnimationTarget* target, ITimingFunction* timingFunction, CBaseObject* notificationObject);)
 
 	/** adds an animation.
 		Animation and timingFunction is now owned by the animator.
 		An already running animation for view with name will be canceled.
 		The notification function will be called when the animation has finished.
 	*/
-	void addAnimation (CView* view, IdStringPtr name, IAnimationTarget* target, ITimingFunction* timingFunction, DoneFunction notification);
+	void addAnimation (CView* view, IdStringPtr name, IAnimationTarget* target,
+	                   ITimingFunction* timingFunction, DoneFunction notification = nullptr);
 
 	/** removes an animation.
 		If animation has the IReference interface forget() will be called otherwise it is deleted.
@@ -61,6 +63,7 @@ protected:
 	/// @endcond
 };
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 /** message sent to the notificationObject when the animation has finished, the sender parameter will be a FinishedMessage object. */
 extern IdStringPtr kMsgAnimationFinished;
 
@@ -85,6 +88,7 @@ protected:
 	const std::string& name;
 	IAnimationTarget* target;
 };
+#endif
 
 }} // namespaces
 

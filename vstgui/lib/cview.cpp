@@ -936,6 +936,7 @@ bool CView::removeAttribute (const CViewAttributeID aId)
 	return false;
 }
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //-----------------------------------------------------------------------------
 void CView::addAnimation (IdStringPtr name, Animation::IAnimationTarget* target, Animation::ITimingFunction* timingFunction, CBaseObject* notificationObject)
 {
@@ -945,6 +946,7 @@ void CView::addAnimation (IdStringPtr name, Animation::IAnimationTarget* target,
 		frame->getAnimator ()->addAnimation (this, name, target, timingFunction, notificationObject);
 	}
 }
+#endif
 
 //-----------------------------------------------------------------------------
 void CView::addAnimation (IdStringPtr name, Animation::IAnimationTarget* target, Animation::ITimingFunction* timingFunction, const Animation::DoneFunction& doneFunc)
