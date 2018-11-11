@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __cdrawmethods__
-#define __cdrawmethods__
+#pragma once
 
 #include "vstguifwd.h"
 #include "cdrawdefs.h"
@@ -11,7 +10,6 @@
 #include "cpoint.h"
 
 namespace VSTGUI {
-
 namespace CDrawMethods {
 
 //-----------------------------------------------------------------------------
@@ -68,6 +66,5 @@ UTF8String createTruncatedText (TextTruncateMode mode, const UTF8String& text, C
  */
 void drawIconAndText (CDrawContext* context, CBitmap* iconToDraw, IconPosition iconPosition, CHoriTxtAlign textAlignment, CCoord textIconMargin, CRect drawRect, const UTF8String& title, CFontRef font, CColor textColor, TextTruncateMode truncateMode = kTextTruncateNone);
 	
-}} // namespaces
-
-#endif // __cdrawmethods__
+} // CDrawMethods
+} // VSTGUI

@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __iviewlistener__
-#define __iviewlistener__
+#pragma once
 
 #include "vstguifwd.h"
 #include "cbuttonstate.h"
@@ -117,5 +116,3 @@ public:
 };
 
 } // VSTGUI
-
-#endif // __iviewlistener__

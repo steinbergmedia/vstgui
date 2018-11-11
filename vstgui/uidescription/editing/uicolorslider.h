@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __uicolorslider__
-#define __uicolorslider__
+#pragma once
 
 #include "../../lib/vstguibase.h"
 
@@ -47,8 +46,6 @@ protected:
 };
 
 
-} // namespace
+} // VSTGUI
 
 #endif // VSTGUI_LIVE_EDITING
-
-#endif // __uicolorslider__

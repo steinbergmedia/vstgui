@@ -253,6 +253,6 @@ void CAViewLayer::onScaleFactorChanged (double newScaleFactor)
 		layer.contentsScale = newScaleFactor;
 }
 
-} // namespace
+} // VSTGUI
 
 #endif // MAC_COCOA

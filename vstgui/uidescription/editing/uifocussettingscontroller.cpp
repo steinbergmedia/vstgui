@@ -139,6 +139,6 @@ bool UIFocusSettingsController::stringToValue (UTF8StringPtr txt, float& result,
 	return false;
 }
 
-} // namespace
+} // VSTGUI
 
 #endif // VSTGUI_LIVE_EDITING

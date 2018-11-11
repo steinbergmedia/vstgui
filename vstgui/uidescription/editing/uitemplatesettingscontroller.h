@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __uitemplatesettingscontroller__
-#define __uitemplatesettingscontroller__
+#pragma once
 
 #include "../uidescription.h"
 
@@ -55,8 +54,6 @@ protected:
 	IActionPerformer* actionPerformer;
 };
 
-} // namespace
+} // VSTGUI
 
 #endif // VSTGUI_LIVE_EDITING
-
-#endif // __uitemplatesettingscontroller__

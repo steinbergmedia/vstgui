@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __delegationcontroller__
-#define __delegationcontroller__
+#pragma once
 
 #include "icontroller.h"
 
@@ -32,6 +31,4 @@ protected:
 	IController* controller;
 };
 
-}
-
-#endif // __delegationcontroller__
+} // VSTGUI

@@ -556,4 +556,4 @@ bool CSegmentButton::getFocusPath (CGraphicsPath& outPath)
 	return true;
 }
 
-} // namespace
+} // VSTGUI

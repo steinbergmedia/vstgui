@@ -1929,4 +1929,4 @@ void CFrame::CollectInvalidRects::addRect (const CRect& rect)
 	}
 }
 
-} // namespace
+} // VSTGUI

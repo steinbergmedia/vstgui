@@ -400,5 +400,5 @@ void CTextEdit::updateText (IPlatformTextEdit* pte)
 	}
 }
 
-} // namespace
+} // VSTGUI
 

@@ -159,6 +159,6 @@ auto IPlatformResourceInputStream::create (const CResourceDescription& desc) -> 
 	return nullptr;
 }
 
-} // namespace
+} // VSTGUI
 
 #endif // MAC

@@ -316,4 +316,4 @@ UTF8String CColor::toString () const
 	return UTF8String (str.str ());
 }
 
-} // namespace
+} // VSTGUI

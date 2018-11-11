@@ -551,4 +551,4 @@ void CTabView::setViewSize (const CRect &rect, bool invalid)
 }
 
 
-} // namespace
+} // VSTGUI

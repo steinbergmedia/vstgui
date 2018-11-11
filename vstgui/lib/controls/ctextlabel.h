@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __ctextlabel__
-#define __ctextlabel__
+#pragma once
 
 #include "cparamdisplay.h"
 #include "itextlabellistener.h"
@@ -132,6 +131,4 @@ private:
 	Lines lines;
 };
 
-} // namespace
-
-#endif
+} // VSTGUI

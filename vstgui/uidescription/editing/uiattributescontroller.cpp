@@ -747,7 +747,7 @@ protected:
 };
 
 
-} // namespace
+} // VSTGUI
 
 
 //----------------------------------------------------------------------------------------------------
@@ -1293,6 +1293,6 @@ void UIAttributesController::rebuildAttributesView ()
 	attributeView->invalid ();
 }
 
-} // namespace
+} // VSTGUI
 
 #endif // VSTGUI_LIVE_EDITING

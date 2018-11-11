@@ -461,6 +461,6 @@ D2DBitmapCache* D2DBitmapCache::instance ()
 	return gD2DBitmapCache;
 }
 
-} // namespace
+} // VSTGUI
 
 #endif // WINDOWS

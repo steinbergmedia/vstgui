@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __nsviewoptionmenu__
-#define __nsviewoptionmenu__
+#pragma once
 
 #include "../../iplatformoptionmenu.h"
 
@@ -22,8 +21,6 @@ protected:
 	static bool initClass ();
 };
 
-} // namespace
+} // VSTGUI
 
 #endif // MAC_COCOA
-
-#endif // __nsviewoptionmenu__

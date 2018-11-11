@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __hiviewtextedit__
-#define __hiviewtextedit__
+#pragma once
 
 #include "../../iplatformtextedit.h"
 
@@ -37,8 +36,6 @@ protected:
 	static pascal OSStatus CarbonEventsTextControlProc (EventHandlerCallRef inHandlerCallRef, EventRef inEvent, void *inUserData);
 };
 
-} // namespace
+} // VSTGUI
 
 #endif // MAC_CARBON
-
-#endif // __hiviewtextedit__

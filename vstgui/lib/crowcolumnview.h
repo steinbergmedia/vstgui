@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __crowcolumnview__
-#define __crowcolumnview__
+#pragma once
 
 #include "cviewcontainer.h"
 
@@ -105,6 +104,4 @@ protected:
 	uint32_t viewResizeAnimationTime;
 };
 
-} // namespace
-
-#endif // __crowcolumnview__
+} // VSTGUI

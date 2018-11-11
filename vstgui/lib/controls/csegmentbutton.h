@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __csegmentbutton__
-#define __csegmentbutton__
+#pragma once
 
 #include "ccontrol.h"
 #include "../cdrawmethods.h"
@@ -152,6 +151,4 @@ private:
 	CDrawMethods::TextTruncateMode textTruncateMode {CDrawMethods::kTextTruncateNone};
 };
 
-} // namespace
-
-#endif // __csegmentbutton__
+} // VSTGUI

@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __cmoviebitmap__
-#define __cmoviebitmap__
+#pragma once
 
 #include "ccontrol.h"
 
@@ -33,6 +32,4 @@ protected:
 	CPoint	offset;
 };
 
-} // namespace
-
-#endif
+} // VSTGUI

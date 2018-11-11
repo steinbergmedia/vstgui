@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __iplatformstring__
-#define __iplatformstring__
+#pragma once
 
 #include "../vstguibase.h"
 
@@ -20,8 +19,6 @@ public:
 	virtual void setUTF8String (UTF8StringPtr utf8String) = 0;
 };
 
-} // namespace
+} // VSTGUI
 
 /// @endcond
-
-#endif // __iplatformstring__

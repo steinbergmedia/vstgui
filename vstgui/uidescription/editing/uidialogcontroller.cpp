@@ -310,6 +310,6 @@ void UIDialogController::setOpenGLViewsVisible (bool state)
 #endif
 }
 
-} // namespace
+} // VSTGUI
 
 #endif // VSTGUI_LIVE_EDITING

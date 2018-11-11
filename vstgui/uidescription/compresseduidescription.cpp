@@ -324,4 +324,4 @@ uint32_t ZLibOutputStream::writeRaw (const void* buffer, uint32_t size)
 }
 
 //------------------------------------------------------------------------
-} // namespace
+} // VSTGUI

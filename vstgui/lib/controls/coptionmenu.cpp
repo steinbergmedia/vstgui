@@ -767,4 +767,4 @@ void COptionMenu::looseFocus ()
 	CParamDisplay::looseFocus ();
 }
 
-} // namespace
+} // VSTGUI

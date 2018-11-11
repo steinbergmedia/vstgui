@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __macstring__
-#define __macstring__
+#pragma once
 
 #include "../iplatformstring.h"
 
@@ -72,8 +71,6 @@ inline NSString* fromUTF8String (const UTF8String& str)
 }
 #endif // __OBJC__
 
-} // namespace
+} // VSTGUI
 
 #endif // MAC
-
-#endif // __macstring__

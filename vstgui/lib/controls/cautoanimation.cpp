@@ -142,4 +142,4 @@ void CAutoAnimation::previousPixmap ()
 		value = (float)(totalHeightOfBitmap - heightOfOneImage - 1);
 }
 
-} // namespace
+} // VSTGUI

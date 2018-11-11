@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __icontroller__
-#define __icontroller__
+#pragma once
 
 #include "../lib/controls/icontrollistener.h"
 #include "../lib/cviewcontainer.h"
@@ -89,6 +88,4 @@ inline T* findViewController (const CViewContainer* view)
 }
 
 //-----------------------------------------------------------------------------
-} // namespace
-
-#endif // __icontroller__
+} // VSTGUI

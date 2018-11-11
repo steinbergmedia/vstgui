@@ -161,6 +161,6 @@ CCoord D2DFont::getStringWidth (CDrawContext* context, IPlatformString* string, 
 	return result;
 }
 
-} // namespace
+} // VSTGUI
 
 #endif // WINDOWS

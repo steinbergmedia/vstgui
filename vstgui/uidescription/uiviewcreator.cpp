@@ -4375,7 +4375,7 @@ static bool getStandardAttributeListValues (const std::string& attributeName, st
 	}
 	return false;
 }
-}} // namespace
+}} // VSTGUI
 
 /**
 @endcond ignore

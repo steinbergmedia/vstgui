@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __winstring__
-#define __winstring__
+#pragma once
 
 #include "../iplatformstring.h"
 
@@ -29,8 +28,6 @@ protected:
 	int wideStringBufferSize;
 };
 
-} // namespace
+} // VSTGUI
 
 #endif // WINDOWS
-
-#endif // __winstring__

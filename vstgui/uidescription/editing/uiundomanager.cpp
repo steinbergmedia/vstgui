@@ -216,6 +216,6 @@ bool UIUndoManager::isSavePosition () const
 }
 	
 
-} // namespace
+} // VSTGUI
 
 #endif // VSTGUI_LIVE_EDITING

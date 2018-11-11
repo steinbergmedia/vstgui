@@ -168,4 +168,4 @@ void CGradientView::draw (CDrawContext* context)
 	}
 }
 
-} // namespace
+} // VSTGUI

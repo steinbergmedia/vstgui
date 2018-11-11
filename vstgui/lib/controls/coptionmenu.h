@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __coptionmenu__
-#define __coptionmenu__
+#pragma once
 
 #include "cparamdisplay.h"
 #include "icommandmenuitemtarget.h"
@@ -338,6 +337,4 @@ protected:
 	std::unique_ptr<MenuListenerList> listeners;
 };
 
-} // namespace
-
-#endif
+} // VSTGUI

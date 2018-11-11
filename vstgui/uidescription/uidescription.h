@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __uidescription__
-#define __uidescription__
+#pragma once
 
 #include "../lib/idependency.h"
 #include "iuidescription.h"
@@ -179,6 +178,4 @@ public:
 	virtual SharedPointer<IPlatformBitmap> createBitmap (const UIAttributes& attributes) = 0;
 };
 
-} // namespace
-
-#endif
+} // VSTGUI

@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __idependency__
-#define __idependency__
+#pragma once
 
 #include "vstguibase.h"
 
@@ -115,8 +114,6 @@ inline IDependency::~IDependency () noexcept
 	vstgui_assert (dependents.size () == 0);
 }
 
-} // namespace
+} // VSTGUI
 
 #endif // VSTGUI_ENABLE_DEPRECATED_METHODS
-
-#endif

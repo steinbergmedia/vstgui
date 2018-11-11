@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __cspecialdigit__
-#define __cspecialdigit__
+#pragma once
 
 #include "ccontrol.h"
 
@@ -32,6 +31,4 @@ protected:
 	int32_t     height;
 };
 
-} // namespace
-
-#endif
+} // VSTGUI

@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __animator__
-#define __animator__
+#pragma once
 
 #include "../vstguifwd.h"
 #include <string>
@@ -90,6 +89,5 @@ protected:
 };
 #endif
 
-}} // namespaces
-
-#endif // __animator__
+} // Animation
+} // VSTGUI

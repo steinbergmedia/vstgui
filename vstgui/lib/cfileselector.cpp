@@ -238,5 +238,5 @@ UTF8StringPtr CNewFileSelector::getSelectedFile (uint32_t index) const
 	return nullptr;
 }
 
-} // namespace
+} // VSTGUI
 

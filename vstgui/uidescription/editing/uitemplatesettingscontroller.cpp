@@ -221,6 +221,6 @@ bool UITemplateSettingsController::stringToValue (UTF8StringPtr txt, float& resu
 	return true;
 }
 
-} // namespace
+} // VSTGUI
 
 #endif // VSTGUI_LIVE_EDITING

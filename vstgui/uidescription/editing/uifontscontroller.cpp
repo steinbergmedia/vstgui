@@ -364,6 +364,6 @@ bool UIFontsController::stringToValue (UTF8StringPtr txt, float& result, CTextEd
 }
 
 
-} // namespace
+} // VSTGUI
 
 #endif // VSTGUI_LIVE_EDITING

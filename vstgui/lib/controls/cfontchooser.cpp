@@ -72,7 +72,7 @@ enum {
 	kFontChooserStrikeoutTag
 };
 
-} // namespace CFontChooserInternal
+} // CFontChooserInternal
 
 /// @endcond
 
@@ -294,4 +294,4 @@ int32_t CFontChooser::onKeyDown (VstKeyCode& keyCode)
 	return fontBrowser->onKeyDown (keyCode);
 }
 
-} // namespace
+} // VSTGUI

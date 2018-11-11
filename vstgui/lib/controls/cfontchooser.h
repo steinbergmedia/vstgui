@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __cfontchooser__
-#define __cfontchooser__
+#pragma once
 
 #include "../vstguifwd.h"
 #include "../cviewcontainer.h"
@@ -89,6 +88,5 @@ protected:
 	CFontRef selFont;
 };
 
-} // namespace
+} // VSTGUI
 
-#endif

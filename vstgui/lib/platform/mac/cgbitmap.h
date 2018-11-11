@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __cgbitmap__
-#define __cgbitmap__
+#pragma once
 
 #include "../iplatformbitmap.h"
 
@@ -63,7 +62,6 @@ protected:
 	double scaleFactor {1.};
 };
 
-} // namespace
+} // VSTGUI
 
 #endif // MAC
-#endif // __cgbitmap__

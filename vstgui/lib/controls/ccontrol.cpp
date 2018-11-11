@@ -261,4 +261,4 @@ void IMultiBitmapControl::autoComputeHeightOfOneImage ()
 	}
 }
 
-} // namespace
+} // VSTGUI

@@ -1108,4 +1108,4 @@ bool CDataBrowserView::getFocusPath (CGraphicsPath& outPath)
 /// @endcond
 
 //-----------------------------------------------------------------------------------------------
-} // namespace
+} // VSTGUI

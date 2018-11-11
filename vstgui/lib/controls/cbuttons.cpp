@@ -1069,4 +1069,4 @@ int32_t CTextButton::onKeyUp (VstKeyCode& keyCode)
 	return -1;
 }
 
-} // namespace
+} // VSTGUI

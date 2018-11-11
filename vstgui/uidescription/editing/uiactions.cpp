@@ -1499,6 +1499,6 @@ void ChangeTemplateMinMaxAction::undo ()
 }
 
 //----------------------------------------------------------------------------------------------------
-} // namespace
+} // VSTGUI
 
 #endif // VSTGUI_LIVE_EDITING

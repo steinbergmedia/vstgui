@@ -308,4 +308,4 @@ bool CAnimationSplashScreen::createAnimation (uint32_t animationIndex, uint32_t 
 	return false;
 }
 
-} // namespace
+} // VSTGUI

@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __uiattributes__
-#define __uiattributes__
+#pragma once
 
 #include "../lib/vstguifwd.h"
 #include "../lib/cstring.h"
@@ -64,6 +63,4 @@ public:
 	bool restore (InputStream& stream);
 };
 
-}
-
-#endif // __uiattributes__
+} // VSTGUI

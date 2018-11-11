@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __uiviewcreator__
-#define __uiviewcreator__
+#pragma once
 
 /// @cond ignore
 
@@ -25,5 +24,3 @@ extern bool stringToBitmap (const std::string* value, CBitmap*& bitmap, const IU
 } } // namespaces
 
 /// @endcond
-
-#endif // __uiviewcreator__

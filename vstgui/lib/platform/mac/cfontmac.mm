@@ -288,6 +288,6 @@ CCoord CoreTextFont::getStringWidth (CDrawContext* context, IPlatformString* str
 	return result;
 }
 
-} // namespace
+} // VSTGUI
 
 #endif // MAC

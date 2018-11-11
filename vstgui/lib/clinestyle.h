@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __clinestyle__
-#define __clinestyle__
+#pragma once
 
 #include "vstguifwd.h"
 #include <vector>
@@ -67,6 +66,4 @@ protected:
 extern const CLineStyle kLineSolid;
 extern const CLineStyle kLineOnOffDash;
 
-}
-
-#endif // __clinestyle__
+} // VSTGUI

@@ -1189,4 +1189,4 @@ int32_t CDragContainerHelper::getCount () const
 	return static_cast<int32_t> (drag->getCount ());
 }
 
-} // namespace
+} // VSTGUI

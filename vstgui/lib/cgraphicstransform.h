@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __cgraphicstransform__
-#define __cgraphicstransform__
+#pragma once
 
 #include "cpoint.h"
 #include "crect.h"
@@ -152,7 +151,4 @@ struct CGraphicsTransform
 	}
 };
 
-
-}
-
-#endif // __cgraphicstransform__
+} // VSTGUI

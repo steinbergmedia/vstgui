@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __iplatformopenglview__
-#define __iplatformopenglview__
+#pragma once
 
 #include "../vstguifwd.h"
 
@@ -65,11 +64,8 @@ public:
 	virtual void swapBuffers () = 0;
 };
 
-} // namespace
+} // VSTGUI
 
 #endif // VSTGUI_OPENGL_SUPPORT
 
 /// @endcond
-
-#endif // __iplatformopenglview__
-

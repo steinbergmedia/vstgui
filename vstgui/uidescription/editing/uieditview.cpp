@@ -260,7 +260,7 @@ void UIHighlightView::draw (CDrawContext* pContext)
 	pContext->drawRect (r, kDrawFilledAndStroked);
 }
 
-} // namespace UIEditViewInternal
+} // UIEditViewInternal
 
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
@@ -572,7 +572,7 @@ static bool pointInResizeHandleRect (const CPoint& where, const CPoint& handle)
 	return r.pointInside (where);
 }
 
-} // namespace UIEditViewInternal
+} // UIEditViewInternal
 
 //----------------------------------------------------------------------------------------------------
 UIEditView::MouseSizeMode UIEditView::selectionHitTest (const CPoint& _where, CView** resultView)
@@ -1348,6 +1348,6 @@ void UIEditView::setupColors (const IUIDescription* description)
 	description->getColor ("editView.view.selection", viewSelectionColor);
 }
 
-} // namespace
+} // VSTGUI
 
 #endif // VSTGUI_LIVE_EDITING

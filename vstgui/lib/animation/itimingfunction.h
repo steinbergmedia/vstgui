@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __itimingfunction__
-#define __itimingfunction__
+#pragma once
 
 #include "../vstguibase.h"
 
@@ -23,6 +22,5 @@ public:
 	virtual bool isDone (uint32_t milliseconds) = 0;
 };
 
-}} // namespaces
-
-#endif // __itimingfunction__
+} // Animation
+} // VSTGUI

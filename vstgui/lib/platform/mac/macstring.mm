@@ -62,6 +62,6 @@ void MacString::setCTLine (CTLineRef line, const void* fontRef, const CColor& co
 	ctLineColor = color;
 }
 
-} // namespace
+} // VSTGUI
 
 #endif // MAC

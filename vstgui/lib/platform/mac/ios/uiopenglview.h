@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __uiopenglview__
-#define __uiopenglview__
+#pragma once
 
 #include "../../iplatformopenglview.h"
 
@@ -50,9 +49,7 @@ protected:
 	PixelFormat pixelFormat;
 };
 
-} // namespace
+} // VSTGUI
 
 #endif // VSTGUI_OPENGL_SUPPORT
 #endif // TARGET_OS_IPHONE
-
-#endif // __uiopenglview__

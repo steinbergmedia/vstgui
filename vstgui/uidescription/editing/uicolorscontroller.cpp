@@ -445,6 +445,6 @@ IController* UIColorsController::createSubController (IdStringPtr name, const IU
 	return controller->createSubController (name, description);
 }
 
-} // namespace
+} // VSTGUI
 
 #endif // VSTGUI_LIVE_EDITING

@@ -490,4 +490,4 @@ void UIViewFactory::unregisterViewCreator (const IViewCreator& viewCreator)
 	registry.remove (&viewCreator);
 }
 
-} // namespace
+} // VSTGUI

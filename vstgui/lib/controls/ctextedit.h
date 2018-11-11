@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __ctextedit__
-#define __ctextedit__
+#pragma once
 
 #include "ctextlabel.h"
 #include "../platform/iplatformtextedit.h"
@@ -115,6 +114,4 @@ protected:
 	UTF8String placeholderString;
 };
 
-} // namespace
-
-#endif
+} // VSTGUI

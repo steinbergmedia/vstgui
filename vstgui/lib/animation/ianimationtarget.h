@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __ianimationtarget__
-#define __ianimationtarget__
+#pragma once
 
 #include "../vstguifwd.h"
 
@@ -27,6 +26,5 @@ public:
 	virtual void animationFinished (CView* view, IdStringPtr name, bool wasCanceled) = 0;
 };
 
-}} // namespaces
-
-#endif // __ianimationtarget__
+} // Animation
+} // VSTGUI
