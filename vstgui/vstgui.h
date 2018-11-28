@@ -65,8 +65,4 @@
 #include "lib/animation/animator.h"
 #include "lib/animation/timingfunctions.h"
 
-#if !defined (VSTGUI_DISABLE_GLOBAL_NAMESPACE_POLLUTION) || VSTGUI_DISABLE_GLOBAL_NAMESPACE_POLLUTION == 0
-using namespace VSTGUI;
-#endif
-
 #endif	// __vstgui__
