@@ -7,6 +7,8 @@
 
 #include "../vstgui.h"
 
+namespace VSTGUI {
+
 //----------------------------------------------------------------------
 struct ERect
 {
@@ -68,5 +70,7 @@ private:
 
 	static int32_t knobMode;
 };
+
+} // VSTGUI
 
 #endif
