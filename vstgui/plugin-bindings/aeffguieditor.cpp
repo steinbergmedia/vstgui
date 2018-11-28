@@ -23,9 +23,15 @@
 
 #if MAC
 #include <Carbon/Carbon.h>
+#include "getpluginbundle.h"
+
+namespace VSTGUI {
 static void InitMachOLibrary ();
 static void ExitMachOLibrary ();
+} // VSTGUI
 #endif
+
+namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
 // AEffGUIEditor Implementation
@@ -261,28 +267,21 @@ bool AEffGUIEditor::beforeSizeChange (const CRect& newSize, const CRect& oldSize
 
 #if MAC
 // -----------------------------------------------------------------------------
-// -----------------------------------------------------------------------------
-#include "getpluginbundle.h"
-
-namespace VSTGUI {
-
 void* gBundleRef = 0;
-
-} // namespace VSTGUI
-
-#define VSTGUI_BUNDLEREF VSTGUI::gBundleRef
 
 // -----------------------------------------------------------------------------
 void InitMachOLibrary ()
 {
-	VSTGUI_BUNDLEREF = GetPluginBundle ();
+	gBundleRef = GetPluginBundle ();
 }
 
 // -----------------------------------------------------------------------------
 void ExitMachOLibrary ()
 {
-	if (VSTGUI_BUNDLEREF)
-		CFRelease (VSTGUI_BUNDLEREF);
+	if (gBundleRef)
+		CFRelease (gBundleRef);
 }
 
 #endif
+
+} // VSTGUI
