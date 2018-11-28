@@ -75,6 +75,7 @@ Debian/Ubuntu based distribution:
 - libx11-xcb-dev
 - libxcb-util-dev
 - libxcb-cursor-dev
+- libxcb-keysyms1-dev
 - libxcb-xkb-dev
 - libxkbcommon-dev
 - libxkbcommon-x11-dev
