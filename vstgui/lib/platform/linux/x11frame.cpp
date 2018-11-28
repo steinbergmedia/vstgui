@@ -609,7 +609,14 @@ bool Frame::getSize (CRect& size) const
 //------------------------------------------------------------------------
 bool Frame::getCurrentMousePosition (CPoint& mousePosition) const
 {
-	return false;
+	xcb_query_pointer_cookie_t cookie = xcb_query_pointer(RunLoop::instance ().getXcbConnection (), getX11WindowID ());
+	xcb_query_pointer_reply_t* reply = xcb_query_pointer_reply(RunLoop::instance ().getXcbConnection (), cookie, nullptr);
+	if(!reply)
+		return false;
+
+	mousePosition.x = reply->win_x;
+	mousePosition.y = reply->win_y;
+	return true;
 }
 
 //------------------------------------------------------------------------
