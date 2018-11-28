@@ -16,9 +16,15 @@
 
 #if MAC
 #include <Carbon/Carbon.h>
+#include "getpluginbundle.h"
+
+namespace VSTGUI {
 static void InitMachOLibrary ();
 static void ExitMachOLibrary ();
+} // VSTGUI
 #endif
+
+namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
 // PluginGUIEditor Implementation
@@ -55,22 +61,6 @@ PluginGUIEditor::~PluginGUIEditor ()
 //-----------------------------------------------------------------------------
 void PluginGUIEditor::draw (ERect *ppErect)
 {
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	if (frame)
-	{
-		CRect r;
-		if (ppErect)
-			r (ppErect->left, ppErect->top, ppErect->right, ppErect->bottom);
-		else
-			r = frame->getViewSize ();
-		CDrawContext* context = frame->createDrawContext ();
-		if (context)
-		{
-			frame->drawRect (context, r);
-			context->forget();
-		}
-	}
-#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -172,11 +162,8 @@ bool PluginGUIEditor::getRect (ERect **ppErect)
 #if MAC
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
-#include "getpluginbundle.h"
 
-namespace VSTGUI {
-	void* gBundleRef = 0;
-}
+void* gBundleRef = 0;
 
 // -----------------------------------------------------------------------------
 void InitMachOLibrary ()
@@ -192,3 +179,5 @@ void ExitMachOLibrary ()
 }
 
 #endif
+
+} // VSTGUI
