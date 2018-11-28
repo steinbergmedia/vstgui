@@ -76,6 +76,7 @@ if(LINUX)
     pkg_check_modules(LIBXCB REQUIRED xcb)
     pkg_check_modules(LIBXCB_UTIL REQUIRED xcb-util)
     pkg_check_modules(LIBXCB_CURSOR REQUIRED xcb-cursor)
+    pkg_check_modules(LIBXCB_KEYSYMS REQUIRED xcb-keysyms)
     pkg_check_modules(LIBXCB_XKB REQUIRED xcb-xkb)
     pkg_check_modules(LIBXKB_COMMON REQUIRED xkbcommon)
     pkg_check_modules(LIBXKB_COMMON_X11 REQUIRED xkbcommon-x11)
@@ -85,6 +86,7 @@ if(LINUX)
         ${LIBXCB_LIBRARIES}
         ${LIBXCB_UTIL_LIBRARIES}
         ${LIBXCB_CURSOR_LIBRARIES}
+        ${LIBXCB_KEYSYMS_LIBRARIES}
         ${LIBXCB_XKB_LIBRARIES}
         ${LIBXKB_COMMON_LIBRARIES}
         ${LIBXKB_COMMON_X11_LIBRARIES}
