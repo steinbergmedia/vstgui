@@ -203,7 +203,7 @@
 
 //----------------------------------------------------
 namespace VSTGUI {
-
+	
 /** coordinate type */
 using CCoord = double;
 /** ID String pointer */

@@ -113,7 +113,7 @@ void UIColorStopEditView::setCurrentStartOffset (double startOffset)
 		startOffset = 0.;
 	else if (startOffset > 1.)
 		startOffset = 1.;
-	CGradient::ColorStopMap::iterator pos = colorStopMap.find (getSelectedColorStart ());
+	auto pos = colorStopMap.find (getSelectedColorStart ());
 	if (pos != colorStopMap.end () && pos->first != startOffset)
 	{
 		CColor color = pos->second;
@@ -413,7 +413,7 @@ void UIGradientEditorController::apply ()
 void UIGradientEditorController::updatePositionEdit ()
 {
 	if (positionEdit && colorStopEditView)
-		positionEdit->setValue (colorStopEditView->getSelectedColorStart ());
+		positionEdit->setValue (static_cast<float>(colorStopEditView->getSelectedColorStart ()));
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -422,7 +422,7 @@ CMessageResult UIGradientEditorController::notify (CBaseObject* sender, IdString
 	if (message == UIColor::kMsgChanged || message == UIColor::kMsgEditChange)
 	{
 		CGradient::ColorStopMap colorStopMap = gradient->getColorStops ();
-		CGradient::ColorStopMap::iterator it = colorStopMap.find (colorStopEditView->getSelectedColorStart ());
+		auto it = colorStopMap.find (colorStopEditView->getSelectedColorStart ());
 		if (it != colorStopMap.end () && it->second != editColor->base ())
 		{
 			it->second = editColor->base ();
@@ -684,10 +684,10 @@ CView* UIGradientsController::createView (const UIAttributes& attributes, const 
 //----------------------------------------------------------------------------------------------------
 CView* UIGradientsController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
 {
-	CControl* control = dynamic_cast<CControl*> (view);
+	auto* control = dynamic_cast<CControl*> (view);
 	if (control)
 	{
-		auto searchField = dynamic_cast<CSearchTextEdit*> (control);
+		auto* searchField = dynamic_cast<CSearchTextEdit*> (control);
 		if (searchField && searchField->getTag () == kSearchTag)
 		{
 			dataSource->setSearchFieldControl (searchField);
@@ -748,7 +748,7 @@ void UIGradientsController::dbSelectionChanged (int32_t selectedRow, GenericStri
 //----------------------------------------------------------------------------------------------------
 void UIGradientsController::showEditDialog ()
 {
-	UIDialogController* dc = new UIDialogController (this, editButton->getFrame ());
+	auto* dc = new UIDialogController (this, editButton->getFrame ());
 	UIGradientEditorController* fsController = new UIGradientEditorController (dataSource->getSelectedGradientName (), dataSource->getSelectedGradient (), editDescription, actionPerformer);
 	dc->run ("gradient.editor", "Gradient Editor", "OK", "Cancel", fsController, UIEditController::getEditorDescription ());
 }

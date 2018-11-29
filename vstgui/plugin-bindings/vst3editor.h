@@ -31,17 +31,23 @@ class VST3EditorDelegate
 public:
 	virtual ~VST3EditorDelegate () {}
 	
-	virtual CView* createCustomView (UTF8StringPtr name, const UIAttributes& attributes, const IUIDescription* description, VST3Editor* editor) { return 0; } ///< create a custom view
+	virtual CView* createCustomView (UTF8StringPtr name, const UIAttributes& attributes, const IUIDescription* description, VST3Editor* editor) { return nullptr; } ///< create a custom view
 	virtual CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description, VST3Editor* editor) { return view; } ///< verify a view after it was created
 	virtual bool findParameter (const CPoint& pos, Steinberg::Vst::ParamID& paramID, VST3Editor* editor) { return false; } ///< find a parameter
 	virtual bool isPrivateParameter (const Steinberg::Vst::ParamID paramID) { return false; } ///< check if parameter ID is private and should not be exposed to the host
 	virtual void didOpen (VST3Editor* editor) {}	///< called after the editor was opened
 	virtual void willClose (VST3Editor* editor) {}	///< called before the editor will close
-	virtual COptionMenu* createContextMenu (const CPoint& pos, VST3Editor* editor) { return 0; }	///< create the context menu for the editor, will be added to the host menu
+	virtual COptionMenu* createContextMenu (const CPoint& pos, VST3Editor* editor) { return nullptr; }	///< create the context menu for the editor, will be added to the host menu
 
 	/** called when a sub controller should be created.
-	    The controller is now owned by the editor, which will call forget() if it is a CBaseObject, release() if it is a Steinberg::FObject or it will be simply deleted if the frame gets closed. */
-	virtual IController* createSubController (UTF8StringPtr name, const IUIDescription* description, VST3Editor* editor) { return 0; } ///< create a sub controller
+	    The controller is now owned by the editor, which will call forget() if it is a CBaseObject,
+	   release() if it is a Steinberg::FObject or it will be simply deleted if the frame gets
+	   closed. */
+	virtual IController* createSubController (UTF8StringPtr name, const IUIDescription* description,
+	                                          VST3Editor* editor)
+	{
+		return nullptr;
+	} ///< create a sub controller
 };
 
 //-----------------------------------------------------------------------------
@@ -59,7 +65,7 @@ class VST3Editor : public Steinberg::Vst::VSTGUIEditor,
 {
 public:
 	VST3Editor (Steinberg::Vst::EditController* controller, UTF8StringPtr templateName, UTF8StringPtr xmlFile);
-	VST3Editor (UIDescription* desc, Steinberg::Vst::EditController* controller, UTF8StringPtr templateName, UTF8StringPtr xmlFile = 0);
+	VST3Editor (UIDescription* desc, Steinberg::Vst::EditController* controller, UTF8StringPtr templateName, UTF8StringPtr xmlFile = nullptr);
 
 	bool exchangeView (UTF8StringPtr templateName);
 	void enableTooltips (bool state);
@@ -77,7 +83,7 @@ public:
 	DELEGATE_REFCOUNT(Steinberg::Vst::VSTGUIEditor)
 	Steinberg::tresult PLUGIN_API queryInterface (const ::Steinberg::TUID iid, void** obj) override;
 protected:
-	~VST3Editor ();
+	~VST3Editor () override;
 	void init ();
 	double getAbsScaleFactor () const;
 	ParameterChangeListener* getParameterChangeListener (int32_t tag) const;
@@ -134,7 +140,7 @@ protected:
 	UIDescription* description {nullptr};
 	VST3EditorDelegate* delegate {nullptr};
 	IController* originalController {nullptr};
-	typedef std::map<int32_t, ParameterChangeListener*> ParameterChangeListenerMap;
+	using ParameterChangeListenerMap = std::map<int32_t, ParameterChangeListener*>;
 	ParameterChangeListenerMap paramChangeListeners;
 	std::string viewName;
 	std::string xmlFile;

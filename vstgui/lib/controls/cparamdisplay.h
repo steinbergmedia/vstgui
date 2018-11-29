@@ -91,7 +91,7 @@ public:
 
 	void setValueToStringFunction2 (const ValueToStringFunction2& valueToStringFunc);
 	void setValueToStringFunction2 (ValueToStringFunction2&& valueToStringFunc);
-
+	
 	enum Style
 	{
 		kShadowText		= 1 << StyleShadowText,

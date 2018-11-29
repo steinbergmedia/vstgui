@@ -26,13 +26,12 @@ class PluginGUIEditor : public VSTGUIEditorInterface
 public :
 
 	PluginGUIEditor (void *pEffect);
-
-	virtual ~PluginGUIEditor ();
+	~PluginGUIEditor () override;
 
 	virtual void setParameter (int32_t index, float value) {} 
 	virtual bool getRect (ERect **ppRect);
 	virtual bool open (void *ptr);
-	virtual void close () { systemWindow = 0; }
+	virtual void close () { systemWindow = nullptr; }
 	virtual void idle ();
 	virtual void draw (ERect *pRect);
 
@@ -43,7 +42,7 @@ public :
 	uint32_t getTicks ();
 
 	// feedback to appli.
-	virtual void doIdleStuff ();
+	void doIdleStuff () override;
 
 	// get the effect attached to this editor
 	void *getEffect () { return effect; }
@@ -53,10 +52,10 @@ public :
 
 	// set/get the knob mode
 	virtual int32_t setKnobMode (int32_t val);
-	virtual int32_t getKnobMode () const { return knobMode; }
+	int32_t getKnobMode () const override { return knobMode; }
 
-	virtual void beginEdit (int32_t index) {}
-	virtual void endEdit (int32_t index) {}
+	void beginEdit (int32_t index) override {}
+	void endEdit (int32_t index) override {}
 
 //---------------------------------------
 protected:

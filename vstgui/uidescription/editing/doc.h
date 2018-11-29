@@ -300,7 +300,7 @@ public:
 	
 	CView* verifyView (CView* view, const UIAttributes& attributes, IUIDescription* description)
 	{
-		CControl* control = dynamic_cast<CControl*> (view);
+		auto* control = dynamic_cast<CControl*> (view);
 		if (control && control->getTag () == 20)
 		{
 			controlView = control;

@@ -668,7 +668,7 @@ CMouseEventResult CSlider::onMouseMoved (CPoint& where, const CButtonState& _but
 			
 			if (impl->oldVal == getMin () - 1)
 				impl->oldVal = (value - getMin ()) / getRange ();
-			
+				
 			if ((impl->oldButton != buttons) && (buttons & kZoomModifier))
 			{
 				impl->oldVal = (value - getMin ()) / getRange ();
@@ -690,7 +690,7 @@ CMouseEventResult CSlider::onMouseMoved (CPoint& where, const CButtonState& _but
 				normValue = impl->oldVal + ((normValue - impl->oldVal) / impl->zoomFactor);
 
 			setValueNormalized (normValue);
-			
+				
 			if (isDirty ())
 			{
 				valueChanged ();
@@ -747,7 +747,7 @@ int32_t CSlider::onKeyDown (VstKeyCode& keyCode)
 		{
 			float distance = 1.f;
 			bool isInverse = impl->styleIsInverseStyle ();
-			if ((keyCode.virt == VKEY_DOWN && !isInverse)
+			if ((keyCode.virt == VKEY_DOWN && !isInverse) 
 			 || (keyCode.virt == VKEY_UP && isInverse)
 			 || (keyCode.virt == VKEY_LEFT && !isInverse)
 			 || (keyCode.virt == VKEY_RIGHT && isInverse))
