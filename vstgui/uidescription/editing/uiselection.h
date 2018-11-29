@@ -28,7 +28,7 @@ public:
 
 	using const_iterator = UISelectionViewList::const_iterator;
 	using const_reverse_iterator = UISelectionViewList::const_reverse_iterator;
-
+	
 	enum {
 		kMultiSelectionStyle,
 		kSingleSelectionStyle

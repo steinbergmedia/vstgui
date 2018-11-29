@@ -55,14 +55,14 @@ struct CViewContainerDropTarget : public IDropTarget, public NonAtomicReferenceC
 		container->getTransform ().inverse ().transform (where2);
 		return where2;
 	}
-
+	
 	DragOperation onDragEnter (DragEventData data) final
 	{
 		assert (dropTarget == nullptr);
-
+	
 		return onDragMove (data);
 	}
-
+	
 	DragOperation onDragMove (DragEventData data) final
 	{
 		CView* view = container->getViewAt (

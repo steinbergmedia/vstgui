@@ -502,7 +502,7 @@ bool UIViewListDataSource::update (CViewContainer* vc)
 CCoord UIViewListDataSource::calculateSubViewWidth (CViewContainer* view) const
 {
 	CCoord result = 0;
-
+	
 	view->forEachChild ([&result] (CView* view) {
 		result += view->getViewSize ().getWidth ();
 	});

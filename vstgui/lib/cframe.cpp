@@ -1,4 +1,4 @@
-// This file is part of VSTGUI. It is subject to the license terms
+// This file is part of VSTGUI. It is subject to the license terms 
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
@@ -898,7 +898,7 @@ bool CFrame::setModalView (CView* pView)
 		endLegacyModalViewSession ();
 	else
 		pImpl->legacyModalViewSession = beginModalViewSession (pView);
-
+	
 	return true;
 }
 

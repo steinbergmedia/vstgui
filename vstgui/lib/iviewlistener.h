@@ -1,4 +1,4 @@
-// This file is part of VSTGUI. It is subject to the license terms
+// This file is part of VSTGUI. It is subject to the license terms 
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
@@ -19,7 +19,7 @@ class IViewListener
 {
 public:
 	virtual ~IViewListener () noexcept = default;
-
+	
 	virtual void viewSizeChanged (CView* view, const CRect& oldSize) = 0;
 	virtual void viewAttached (CView* view) = 0;
 	virtual void viewRemoved (CView* view) = 0;

@@ -122,7 +122,7 @@ CView* UIFontsController::verifyView (CView* view, const UIAttributes& attribute
 		dataSource->setSearchFieldControl (searchField);
 		return searchField;
 	}
-	CControl* control = dynamic_cast<CControl*>(view);
+	auto* control = dynamic_cast<CControl*>(view);
 	if (control)
 	{
 		switch (control->getTag ())
@@ -259,7 +259,7 @@ void UIFontsController::dbSelectionChanged (int32_t selectedRow, GenericStringLi
 	{
 		if (fontMenu && !font->getName ().empty ())
 		{
-			auto fontName = font->getName ();
+			const auto& fontName = font->getName ();
 			CMenuItemList* items = fontMenu->getItems ();
 			int32_t index = 0;
 			for (auto& item : *items)
@@ -344,7 +344,7 @@ void UIFontsController::dbSelectionChanged (int32_t selectedRow, GenericStringLi
 //----------------------------------------------------------------------------------------------------
 bool UIFontsController::valueToString (float value, char utf8String[256], CParamDisplay::ValueToStringUserData* userData)
 {
-	CTextEdit* edit = static_cast<CTextEdit*> (userData);
+	auto* edit = static_cast<CTextEdit*> (userData);
 	if (edit && edit->getMouseEnabled () == false)
 		return true;
 		

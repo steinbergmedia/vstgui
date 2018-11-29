@@ -23,7 +23,7 @@ public:
 	CVSTGUITimer (const CallbackFunc& callback, uint32_t fireTime = 100, bool doStart = true);
 	CVSTGUITimer (CallbackFunc&& callback, uint32_t fireTime = 100, bool doStart = true);
 	CVSTGUITimer (CBaseObject* timerObject, uint32_t fireTime = 100, bool doStart = false);
-
+	
 	/** starts the timer */
 	bool start ();
 	/** stops the timer, returns whether timer was running or not */

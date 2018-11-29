@@ -217,10 +217,10 @@ void EmbedViewOperation::undo ()
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-ViewCopyOperation::ViewCopyOperation (UISelection* copySelection, UISelection* workingSelection, CViewContainer* parent, const CPoint& offset, IUIDescription* desc)
-: parent (parent)
-, copySelection (copySelection)
-, workingSelection (workingSelection)
+ViewCopyOperation::ViewCopyOperation (UISelection* copySelection, UISelection* workingSelection,
+                                      CViewContainer* parent, const CPoint& offset,
+                                      IUIDescription* desc)
+: parent (parent), copySelection (copySelection), workingSelection (workingSelection)
 {
 	CRect selectionBounds = copySelection->getBounds ();
 	for (auto view : *copySelection)

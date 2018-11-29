@@ -607,7 +607,7 @@ std::pair<size_t, size_t> rangeOfScaleFactor (const std::string& name,
 	}
 	if (xIndex == std::string::npos)
 		return result;
-	
+
 	for (auto i = 0u; i < numIndicators; ++i)
 	{
 		size_t indicatorIndex = name.find_last_of (identicator[i]);

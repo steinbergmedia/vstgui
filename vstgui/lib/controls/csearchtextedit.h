@@ -16,7 +16,9 @@ namespace VSTGUI {
 class CSearchTextEdit : public CTextEdit
 {
 public:
-	CSearchTextEdit (const CRect& size, IControlListener* listener, int32_t tag, UTF8StringPtr txt = nullptr, CBitmap* background = nullptr, const int32_t style = 0);
+	CSearchTextEdit (const CRect& size, IControlListener* listener, int32_t tag,
+	                 UTF8StringPtr txt = nullptr, CBitmap* background = nullptr,
+	                 const int32_t style = 0);
 
 	void setClearMarkInset (CPoint inset);
 	CPoint getClearMarkInset () const;

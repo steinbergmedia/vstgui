@@ -5,6 +5,7 @@
 #pragma once
 
 #include <windows.h>
+#include <windef.h>
 
 #ifndef _DPI_AWARENESS_CONTEXTS_
 
@@ -105,10 +106,18 @@ struct HiDPISupport : DllBase
 		return false;
 	}
 
-	bool setProcessDpiAwarnessContext (DPI_AWARENESS_CONTEXT context)
+	enum AWARENESS_CONTEXT
+	{
+		AWARENESS_CONTEXT_UNAWARE = -1,
+		AWARENESS_CONTEXT_SYSTEM_AWARE = -2,
+		AWARENESS_CONTEXT_PER_MONITOR_AWARE = -3,
+		AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 = -4
+	};
+
+	bool setProcessDpiAwarnessContext (AWARENESS_CONTEXT context)
 	{
 		if (setProcessDpiAwarenessContextFunc)
-			return setProcessDpiAwarenessContextFunc (context) != 0;
+			return setProcessDpiAwarenessContextFunc (reinterpret_cast<DPI_AWARENESS_CONTEXT> (context)) != 0;
 		return false;
 	}
 

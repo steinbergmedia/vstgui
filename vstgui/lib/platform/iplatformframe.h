@@ -61,7 +61,7 @@ public:
 	
 	/** create a native view layer, may return 0 if not supported */
 	virtual SharedPointer<IPlatformViewLayer> createPlatformViewLayer (IPlatformViewLayerDelegate* drawDelegate, IPlatformViewLayer* parentLayer = nullptr) = 0;
-	
+
 	/** create an offscreen draw device */
 	virtual SharedPointer<COffscreenContext> createOffscreenContext (CCoord width, CCoord height, double scaleFactor = 1.) = 0;
 
