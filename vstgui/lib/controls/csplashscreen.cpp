@@ -123,8 +123,14 @@ CMouseEventResult CSplashScreen::onMouseDown (CPoint& where, const CButtonState&
 		{
 			if (auto frame = getFrame ())
 			{
-				if ((modalViewSession = frame->beginModalViewSession (modalView)))
-					CControl::valueChanged();
+				if (modalView)
+				{
+					if ((modalViewSession = frame->beginModalViewSession (modalView)))
+					{
+						modalView->remember ();
+						CControl::valueChanged ();
+					}
+				}
 			}
 		}
 		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
