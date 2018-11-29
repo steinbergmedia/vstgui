@@ -76,7 +76,7 @@ private:
 void Application::init (HINSTANCE instance, LPWSTR commandLine)
 {
 	auto& hidpiSupport = HiDPISupport::instance ();
-	if (!hidpiSupport.setProcessDpiAwarnessContext (DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2))
+	if (!hidpiSupport.setProcessDpiAwarnessContext (HiDPISupport::AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2))
 		hidpiSupport.setProcessDpiAwareness (HiDPISupport::PROCESS_PER_MONITOR_DPI_AWARE);
 
 	IApplication::CommandLineArguments cmdArgs;
