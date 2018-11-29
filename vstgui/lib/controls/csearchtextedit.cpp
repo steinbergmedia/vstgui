@@ -10,7 +10,8 @@
 namespace VSTGUI {
 
 //----------------------------------------------------------------------------------------------------
-CSearchTextEdit::CSearchTextEdit (const CRect& size, IControlListener* listener, int32_t tag, UTF8StringPtr txt, CBitmap* background, const int32_t style)
+CSearchTextEdit::CSearchTextEdit (const CRect& size, IControlListener* listener, int32_t tag,
+                                  UTF8StringPtr txt, CBitmap* background, const int32_t style)
 : CTextEdit (size, listener, tag, nullptr, background, style)
 {
 	setPlaceholderString ("Search");

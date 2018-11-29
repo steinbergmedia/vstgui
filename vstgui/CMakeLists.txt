@@ -165,7 +165,7 @@ if(NOT VSTGUI_STANDALONE AND VSTGUI_STANDALONE_EXAMPLES)
   set(VSTGUI_STANDALONE_EXAMPLES OFF)
 endif()
 
-option(VSTGUI_TOOLS "VSTGUI Tools" ON)
+option(SMTG_VSTGUI_TOOLS "Build VSTGUI Tools" ON)
 
 if(VSTGUI_STANDALONE)
     add_subdirectory(standalone)
@@ -177,7 +177,7 @@ endif()
 if(NOT VSTGUI_DISABLE_UNITTESTS)
     add_subdirectory(tests)
 endif()
-if(VSTGUI_TOOLS)
+if(SMTG_VSTGUI_TOOLS)
     add_subdirectory(tools)
 endif()
 

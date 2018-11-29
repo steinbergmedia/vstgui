@@ -3,20 +3,21 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 /**
-@page page_vst2_tutorial Getting Started Tutorial (VST 2.x)
+@page page_vst2_tutorial Getting Started Tutorial
 
 This tutorial should give you a brief overview on how to get started using VSTGUI.
 
-- @ref vstintegration @n
+- @ref vstintegration2 @n
+- @ref vstintegration3 @n
 - @ref addingviewsandcontrols @n
 - @ref controllistener @n
 
 Note: If you are new to VST in general, consider using the VST3 SDK so that you can use @ref page_vst3_inline_editing.
 The VST3 SDK includes a wrapper so that the VST3 plug-in can be used in hosts which only supports VST2. 
 
-@section vstintegration VST Integration
+@section vstintegration2 VST Integration (VST 2.x)
 
-To add a user interface to a VST Plug-In with VSTGUI is quite simple.
+To add a user interface to a VST 2.x Plug-In with VSTGUI is quite simple.
 
 Create a new class which inherits from AEffGUIEditor. Overwrite AEffGUIEditor::open and AEffGUIEditor::close.
 @code
@@ -56,6 +57,13 @@ setEditor (new MyEditor (this));
 @endcode
 
 So you have your own editor for a VST Plug-In. Now you need to add controls to it.
+
+@section vstintegration3 VST Integration (VST 3.x)
+
+Adding a GUI to a VST 3.x Plug-In is even easier.
+
+See:
+@ref page_vst3_inline_editing
 
 @section addingviewsandcontrols Adding views and controls
 - @ref loading_bitmaps @n

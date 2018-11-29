@@ -39,7 +39,7 @@ CMessageResult UIFocusSettingsController::notify (CBaseObject* sender, IdStringP
 			fd.enabled = (controls[kEnabledTag]->getValue () == controls[kEnabledTag]->getMax ()) ? true : false;
 		if (controls[kColorTag])
 		{
-			COptionMenu* menu = dynamic_cast<COptionMenu*>(controls[kColorTag]);
+			auto* menu = dynamic_cast<COptionMenu*>(controls[kColorTag]);
 			CMenuItem* item = menu->getCurrent ();
 			if (item)
 				fd.colorName = item->getTitle ();
@@ -56,7 +56,7 @@ CMessageResult UIFocusSettingsController::notify (CBaseObject* sender, IdStringP
 //----------------------------------------------------------------------------------------------------
 CView* UIFocusSettingsController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
 {
-	CControl* control = dynamic_cast<CControl*>(view);
+	auto* control = dynamic_cast<CControl*>(view);
 	if (control)
 	{
 		switch (control->getTag ())
@@ -69,7 +69,7 @@ CView* UIFocusSettingsController::verifyView (CView* view, const UIAttributes& a
 			}
 			case kColorTag:
 			{
-				COptionMenu* menu = dynamic_cast<COptionMenu*>(control);
+				auto* menu = dynamic_cast<COptionMenu*>(control);
 				if (menu)
 				{
 					controls[kColorTag] = control;
@@ -92,7 +92,7 @@ CView* UIFocusSettingsController::verifyView (CView* view, const UIAttributes& a
 			case kWidthTag:
 			{
 				controls[kWidthTag] = control;
-				CTextEdit* edit = dynamic_cast<CTextEdit*>(control);
+				auto* edit = dynamic_cast<CTextEdit*>(control);
 				if (edit)
 				{
 					edit->setStringToValueFunction (stringToValue);

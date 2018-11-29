@@ -35,7 +35,7 @@ public:
 	explicit COpenGLView (const CRect& size);
 	~COpenGLView () noexcept override;
 
-	// IOpenGLView
+	// IOpenGLView	
 	/** will be called when the view was marked invalid or the view was resized */
 	void drawOpenGL (const CRect& updateRect) override = 0;
 	void reshape () override;

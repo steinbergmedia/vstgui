@@ -59,7 +59,7 @@ public:
 	   use ITextLabelListener instead */
 	static IdStringPtr kMsgTruncatedTextChanged;
 	)
-
+	
 	void draw (CDrawContext* pContext) override;
 	bool sizeToFit () override;
 	void setViewSize (const CRect& rect, bool invalid = true) override;
@@ -103,7 +103,7 @@ public:
 	void setLineLayout (LineLayout layout);
 	LineLayout getLineLayout () const { return lineLayout; }
 
-	/** automatically resize the view according to the contents (only the height)
+	/** automatically resize the view according to the contents (only the height) 
 	 *	@param state on or off
 	 */
 	void setAutoHeight (bool state);
