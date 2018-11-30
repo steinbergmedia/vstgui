@@ -705,7 +705,9 @@ bool CFrame::onWheel (const CPoint &where, const CMouseWheelAxis &axis, const fl
 {
 	if (auto modalView = getModalView ())
 	{
-		return modalView->onWheel (where, axis, distance, buttons);
+		CPoint where2 (where);
+		getTransform ().inverse ().transform (where2);
+		return modalView->onWheel (where2, axis, distance, buttons);
 	}
 
 	bool result = false;
