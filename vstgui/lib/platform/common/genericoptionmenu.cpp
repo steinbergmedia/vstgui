@@ -466,9 +466,9 @@ CView* setupGenericOptionMenu (Proc clickCallback, CViewContainer* container,
 	{
 		viewRect.setWidth (maxWidth);
 	}
-	if (frame)
+	if (container)
 	{
-		auto frSize = frame->getViewSize ();
+		auto frSize = container->getViewSize();
 		frSize.inset (6, 6); // frame margin
 
 		if (frSize.bottom < viewRect.bottom)
@@ -549,11 +549,14 @@ struct GenericOptionMenu::Impl
 GenericOptionMenu::GenericOptionMenu (CFrame* frame, CButtonState initialButtons,
                                       GenericOptionMenuTheme theme)
 {
+	auto frameSize = frame->getViewSize ();
+	frame->getTransform().inverse().transform(frameSize);
+
 	impl = std::unique_ptr<Impl> (new Impl);
 	impl->frame = frame;
 	impl->initialButtons = initialButtons;
 	impl->theme = theme;
-	impl->container = new CLayeredViewContainer (impl->frame->getViewSize ());
+	impl->container = new CLayeredViewContainer (frameSize);
 	impl->container->setZIndex (100);
 	impl->container->setTransparency (true);
 	impl->container->registerViewMouseListener (this);
@@ -629,7 +632,10 @@ void GenericOptionMenu::popup (COptionMenu* optionMenu, const Callback& callback
 		self->removeModalView ({menu, index});
 	};
 
-	auto viewRect = optionMenu->translateToGlobal (optionMenu->getViewSize ());
+	auto viewRect = optionMenu->getViewSize ();
+	CPoint p;
+	optionMenu->localToFrame (p);
+	viewRect.offset (p);
 	auto where = viewRect.getCenter ();
 
 	GenericOptionMenuDetail::setupGenericOptionMenu (clickCallback, impl->container, optionMenu,
