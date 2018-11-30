@@ -61,8 +61,8 @@ public:
 		auto& instance = get ();
 		if (++instance.users == 1)
 		{
-			instance.timer = makeOwned<CVSTGUITimer> (
-			    [] (CVSTGUITimer*) { gUpdateHandlerInit.get ()->triggerDeferedUpdates (); },
+			instance.timer = VSTGUI::makeOwned<VSTGUI::CVSTGUITimer> (
+			    [] (VSTGUI::CVSTGUITimer*) { gUpdateHandlerInit.get ()->triggerDeferedUpdates (); },
 			    1000 / 30);
 		}
 	}
@@ -83,7 +83,7 @@ protected:
 		return gInstance;
 	}
 
-	VSTGUI::SharedPointer<CVSTGUITimer> timer;
+	VSTGUI::SharedPointer<VSTGUI::CVSTGUITimer> timer;
 	std::atomic<uint32_t> users {0};
 };
 
@@ -438,7 +438,7 @@ void VST3Editor::init ()
 		#if DEBUG
 		else
 		{
-			UIAttributes* attr = new UIAttributes ();
+			auto* attr = new UIAttributes ();
 			attr->setAttribute (UIViewCreator::kAttrClass, "CViewContainer");
 			attr->setAttribute ("size", "300, 300");
 			description->addNewTemplate (viewName.c_str (), attr);
@@ -452,7 +452,7 @@ void VST3Editor::init ()
 	#if DEBUG
 	else
 	{
-		UIAttributes* attr = new UIAttributes ();
+		auto* attr = new UIAttributes ();
 		attr->setAttribute (UIViewCreator::kAttrClass, "CViewContainer");
 		attr->setAttribute ("size", "300, 300");
 		description->addNewTemplate (viewName.c_str (), attr);
@@ -821,7 +821,7 @@ CMouseEventResult VST3Editor::onMouseDown (CFrame* frame, const CPoint& where, c
 	#if VSTGUI_LIVE_EDITING
 		if (editingEnabled == false)
 		{
-			if (controllerMenu == 0)
+			if (controllerMenu == nullptr)
 				controllerMenu = new COptionMenu ();
 			else
 				controllerMenu->addSeparator ();
@@ -1124,7 +1124,7 @@ bool PLUGIN_API VST3Editor::open (void* parent, const PlatformType& type)
 	// will delete itself when the frame will be destroyed
 	keyboardHook = new KeyboardHook (
 	    [this] (const VstKeyCode& code, CFrame* frame) {
-		    if (code.modifier == MODIFIER_CONTROL && frame->getModalView () == 0)
+		    if (code.modifier == MODIFIER_CONTROL && frame->getModalView () == nullptr)
 		    {
 			    if (code.character == 'e')
 			    {
@@ -1258,7 +1258,7 @@ CMessageResult VST3Editor::notify (CBaseObject* sender, IdStringPtr message)
 	#if VSTGUI_LIVE_EDITING
 	else if (message == CCommandMenuItem::kMsgMenuItemValidate)
 	{
-		CCommandMenuItem* item = dynamic_cast<CCommandMenuItem*>(sender);
+		auto* item = dynamic_cast<CCommandMenuItem*>(sender);
 		if (item)
 		{
 			if (strcmp (item->getCommandCategory(), "File") == 0)
@@ -1283,7 +1283,7 @@ CMessageResult VST3Editor::notify (CBaseObject* sender, IdStringPtr message)
 	}
 	else if (message == CCommandMenuItem::kMsgMenuItemSelected)
 	{
-		CCommandMenuItem* item = dynamic_cast<CCommandMenuItem*>(sender);
+		auto* item = dynamic_cast<CCommandMenuItem*>(sender);
 		if (item)
 		{
 			UTF8StringView cmdCategory = item->getCommandCategory ();
@@ -1343,7 +1343,7 @@ static int32_t getUIDescriptionSaveOptions (CFrame* frame)
 {
 	int32_t flags = 0;
 #if VSTGUI_LIVE_EDITING
-	UIEditController* editController = dynamic_cast<UIEditController*> (getViewController (frame->getView (0)));
+	auto* editController = dynamic_cast<UIEditController*> (getViewController (frame->getView (0)));
 	if (editController)
 	{
 		UIAttributes* attributes = editController->getSettings ();
@@ -1416,7 +1416,7 @@ void VST3Editor::syncParameterTags ()
 	if (view)
 	{
 		IController* controller = getViewController (view);
-		IActionPerformer* actionPerformer = controller ? dynamic_cast<IActionPerformer*>(controller) : 0;
+		IActionPerformer* actionPerformer = controller ? dynamic_cast<IActionPerformer*>(controller) : nullptr;
 		if (actionPerformer)
 		{
 			Steinberg::Vst::EditController* editController = getController ();
@@ -1452,7 +1452,7 @@ void VST3Editor::syncParameterTags ()
 							paramTitle.insertAt (0, it->second.name);
 						}
 					}
-					else if (units.size () > 0)
+					else if (!units.empty ())
 					{
 						paramTitle.insertAt (0, "::");
 						paramTitle.insertAt (0, "Root");
@@ -1511,7 +1511,7 @@ bool VST3Editor::enableEditing (bool state)
 			getFrame ()->setTransform (CGraphicsTransform ());
 			nonEditRect = getFrame ()->getViewSize ();
 			description->setController (this);
-			UIEditController* editController = new UIEditController (description);
+			auto* editController = new UIEditController (description);
 			CView* view = editController->createEditView ();
 			if (view)
 			{
