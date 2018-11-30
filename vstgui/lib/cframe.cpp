@@ -1,4 +1,4 @@
-// This file is part of VSTGUI. It is subject to the license terms
+// This file is part of VSTGUI. It is subject to the license terms 
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
@@ -705,7 +705,9 @@ bool CFrame::onWheel (const CPoint &where, const CMouseWheelAxis &axis, const fl
 {
 	if (auto modalView = getModalView ())
 	{
-		return modalView->onWheel (where, axis, distance, buttons);
+		CPoint where2 (where);
+		getTransform ().inverse ().transform (where2);
+		return modalView->onWheel (where2, axis, distance, buttons);
 	}
 
 	bool result = false;
@@ -898,7 +900,7 @@ bool CFrame::setModalView (CView* pView)
 		endLegacyModalViewSession ();
 	else
 		pImpl->legacyModalViewSession = beginModalViewSession (pView);
-
+	
 	return true;
 }
 

@@ -45,7 +45,7 @@ public:
 			CRect r (getViewSize ());
 			matrix.inverse ().transform (r);
 			bitmap->CBitmap::draw (context, r);
-			CNinePartTiledBitmap* nptBitmap = dynamic_cast<CNinePartTiledBitmap*>(bitmap);
+			auto* nptBitmap = dynamic_cast<CNinePartTiledBitmap*>(bitmap);
 			if (nptBitmap)
 			{
 				static const CCoord kDefaultOnOffDashLength2[] = {2, 2};
@@ -426,7 +426,7 @@ bool UIBitmapsDataSource::add ()
 		fs->setAllowMultiFileSelection (true);
 		if (fs->runModal ())
 		{
-			uint32_t numFiles = static_cast<uint32_t> (fs->getNumSelectedFiles ());
+			auto numFiles = static_cast<uint32_t> (fs->getNumSelectedFiles ());
 			if (numFiles > 1)
 				actionPerformer->beginGroupAction ("Add Bitmaps");
 			for (uint32_t i = 0; i < numFiles; i++)
@@ -509,7 +509,7 @@ UIBitmapSettingsController::UIBitmapSettingsController (CBitmap* bitmap, const s
 //----------------------------------------------------------------------------------------------------
 void UIBitmapSettingsController::updateNinePartTiledControls ()
 {
-	CNinePartTiledBitmap* nptb = bitmap.cast<CNinePartTiledBitmap> ();
+	auto* nptb = bitmap.cast<CNinePartTiledBitmap> ();
 	if (nptb)
 	{
 		controls[kNinePartTiledTag]->setValueNormalized (1);
@@ -524,7 +524,7 @@ void UIBitmapSettingsController::updateNinePartTiledControls ()
 		controls[kNinePartTiledTag]->setValueNormalized (0.);
 		for (int32_t i = kNinePartTiledLeftTag; i <= kNinePartTiledBottomTag; i++)
 		{
-			CTextLabel* label = dynamic_cast<CTextLabel*>(controls[i]);
+			auto* label = dynamic_cast<CTextLabel*>(controls[i]);
 			if (label)
 				label->setText ("");
 		}
@@ -542,7 +542,7 @@ void UIBitmapSettingsController::valueChanged (CControl* control)
 	{
 		case kBitmapPathTag:
 		{
-			CTextEdit* edit = dynamic_cast<CTextEdit*>(control);
+			auto* edit = dynamic_cast<CTextEdit*>(control);
 			if (edit)
 			{
 				actionPerformer->performBitmapChange (bitmapName.data (), edit->getText ());
@@ -554,7 +554,7 @@ void UIBitmapSettingsController::valueChanged (CControl* control)
 		}
 		case kNinePartTiledTag:
 		{
-			CNinePartTiledBitmap* nptb = bitmap.cast<CNinePartTiledBitmap> ();
+			auto* nptb = bitmap.cast<CNinePartTiledBitmap> ();
 			if (nptb)
 			{
 				origOffsets.left = nptb->getPartOffsets ().left;
@@ -634,7 +634,7 @@ CMessageResult UIBitmapSettingsController::notify (CBaseObject* sender, IdString
 //----------------------------------------------------------------------------------------------------
 CView* UIBitmapSettingsController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
 {
-	CControl* control = dynamic_cast<CControl*>(view);
+	auto* control = dynamic_cast<CControl*>(view);
 	if (control && control->getTag () >= 0 && control->getTag () < kNumTags)
 	{
 		controls[control->getTag ()] = control;
@@ -642,14 +642,14 @@ CView* UIBitmapSettingsController::verifyView (CView* view, const UIAttributes& 
 		{
 			case kBitmapPathTag:
 			{
-				CTextEdit* bitmapPathEdit = dynamic_cast<CTextEdit*> (control);
+				auto* bitmapPathEdit = dynamic_cast<CTextEdit*> (control);
 				if (bitmapPathEdit)
 					bitmapPathEdit->setText (bitmap->getResourceDescription ().u.name);
 				break;
 			}
 			case kBitmapWidthTag:
 			{
-				CTextLabel* label = dynamic_cast<CTextLabel*>(control);
+				auto* label = dynamic_cast<CTextLabel*>(control);
 				if (label)
 				{
 					float width = bitmap->getPlatformBitmap () ? (float)bitmap->getPlatformBitmap ()->getSize ().x : 0.f;
@@ -662,7 +662,7 @@ CView* UIBitmapSettingsController::verifyView (CView* view, const UIAttributes& 
 			}
 			case kBitmapHeightTag:
 			{
-				CTextLabel* label = dynamic_cast<CTextLabel*>(control);
+				auto* label = dynamic_cast<CTextLabel*>(control);
 				if (label)
 				{
 					float height = bitmap->getPlatformBitmap () ? (float)bitmap->getPlatformBitmap ()->getSize ().y : 0.f;
@@ -691,7 +691,7 @@ CView* UIBitmapSettingsController::verifyView (CView* view, const UIAttributes& 
 			case kNinePartTiledLeftTag:
 			case kNinePartTiledRightTag:
 			{
-				CTextEdit* textEdit = dynamic_cast<CTextEdit*>(control);
+				auto* textEdit = dynamic_cast<CTextEdit*>(control);
 				if (textEdit)
 				{
 					textEdit->setPrecision (0);
@@ -703,7 +703,7 @@ CView* UIBitmapSettingsController::verifyView (CView* view, const UIAttributes& 
 			case kNinePartTiledTopTag:
 			case kNinePartTiledBottomTag:
 			{
-				CTextEdit* textEdit = dynamic_cast<CTextEdit*>(control);
+				auto* textEdit = dynamic_cast<CTextEdit*>(control);
 				if (textEdit)
 				{
 					textEdit->setPrecision (0);
@@ -719,7 +719,7 @@ CView* UIBitmapSettingsController::verifyView (CView* view, const UIAttributes& 
 			}
 			case kZoomTextTag:
 			{
-				CTextLabel* label = dynamic_cast<CTextLabel*>(control);
+				auto* label = dynamic_cast<CTextLabel*>(control);
 				if (label)
 				{
 					label->setValueToStringFunction (valueToString);
@@ -749,7 +749,7 @@ CView* UIBitmapSettingsController::createView (const UIAttributes& attributes, c
 //----------------------------------------------------------------------------------------------------
 bool UIBitmapSettingsController::valueToString (float value, char utf8String[256], CParamDisplay::ValueToStringUserData* userData)
 {
-	int32_t intValue = (int32_t)value;
+	auto intValue = (int32_t)value;
 	std::stringstream str;
 	str << intValue;
 	str << "%";
@@ -788,7 +788,7 @@ UIBitmapsController::~UIBitmapsController ()
 //----------------------------------------------------------------------------------------------------
 void UIBitmapsController::showSettingsDialog ()
 {
-	UIDialogController* dc = new UIDialogController (this, bitmapPathEdit->getFrame ());
+	auto* dc = new UIDialogController (this, bitmapPathEdit->getFrame ());
 	UIBitmapSettingsController* fsController = new UIBitmapSettingsController (dataSource->getSelectedBitmap (), dataSource->getSelectedBitmapName (), editDescription, actionPerformer);
 	dc->run ("bitmap.settings", "Bitmap Settings", "Close", nullptr, fsController, UIEditController::getEditorDescription ());
 }
@@ -822,7 +822,7 @@ CView* UIBitmapsController::verifyView (CView* view, const UIAttributes& attribu
 		dataSource->setSearchFieldControl (searchField);
 		return searchField;
 	}
-	CTextEdit* textEdit = dynamic_cast<CTextEdit*>(view);
+	auto* textEdit = dynamic_cast<CTextEdit*>(view);
 	if (textEdit)
 	{
 		switch (textEdit->getTag ())
@@ -837,7 +837,7 @@ CView* UIBitmapsController::verifyView (CView* view, const UIAttributes& attribu
 	}
 	else
 	{
-		CControl* control = dynamic_cast<CControl*> (view);
+		auto* control = dynamic_cast<CControl*> (view);
 		if (control)
 		{
 			if (control->getTag () == kSettingsTag)
@@ -882,7 +882,7 @@ void UIBitmapsController::valueChanged (CControl* pControl)
 			UTF8StringPtr bitmapName = dataSource->getSelectedBitmapName ();
 			if (bitmapName)
 			{
-				CTextEdit* edit = dynamic_cast<CTextEdit*>(pControl);
+				auto* edit = dynamic_cast<CTextEdit*>(pControl);
 				if (edit)
 					actionPerformer->performBitmapChange (bitmapName, edit->getText ());
 			}
@@ -927,7 +927,7 @@ void UIBitmapsController::dbSelectionChanged (int32_t selectedRow, GenericString
 //----------------------------------------------------------------------------------------------------
 bool UIBitmapsController::valueToString (float value, char utf8String[256], void* userData)
 {
-	int32_t intValue = (int32_t)value;
+	auto intValue = (int32_t)value;
 	std::stringstream str;
 	str << intValue;
 	std::strcpy (utf8String, str.str ().data ());

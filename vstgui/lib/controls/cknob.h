@@ -119,7 +119,7 @@ protected:
 
 private:
 	struct MouseEditingState;
-
+	
 	MouseEditingState& getMouseEditingState ();
 	void clearMouseEditingState ();
 };

@@ -229,7 +229,7 @@ CMouseEventResult UIColorsDataSource::dbOnMouseMoved (const CPoint& where,
 			if (description->getColor (names.at (static_cast<uint32_t> (row)).data (), color))
 			{
 				auto colorStr = color.toString ();
-				auto dropSource = CDropSource::create (colorStr.data (), colorStr.length () + 1,
+				auto dropSource = CDropSource::create (colorStr.data (), static_cast<uint32_t>(colorStr.length () + 1),
 				                                       CDropSource::kText);
 				SharedPointer<CBitmap> dragBitmap;
 				if (auto offscreen = COffscreenContext::create (browser->getFrame (), r.getWidth (), r.getHeight ()))

@@ -43,7 +43,7 @@ public:
 
 	void beginEdit ();
 	void endEdit ();
-
+	
 	using CColor::operator==;
 	using CColor::operator!=;
 

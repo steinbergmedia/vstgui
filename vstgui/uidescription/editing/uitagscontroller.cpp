@@ -29,7 +29,7 @@ protected:
 
 	void update () override;
 	void onUIDescTagChanged (UIDescription* desc) override;
-
+	
 	int32_t dbGetNumColumns (CDataBrowser* browser) override { return 2; }
 	CCoord dbGetCurrentColumnWidth (int32_t index, CDataBrowser* browser) override;
 	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser) override;

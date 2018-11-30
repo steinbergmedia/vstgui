@@ -1,7 +1,6 @@
-set(VSTGUI_TOOLS FOLDER "VSTGUI Tools")
+set(SMTG_VSTGUI_TOOLS FOLDER "VSTGUI Tools")
 
-if(VSTGUI_STANDALONE)
+if(VSTGUI_STANDALONE AND NOT (WIN32 AND CMAKE_SIZEOF_VOID_P EQUAL 4))
     add_subdirectory(imagestitcher)
 endif()
 add_subdirectory(uidesccompressor)
-

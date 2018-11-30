@@ -35,7 +35,7 @@ PadController::~PadController ()
 CView* PadController::verifyView (CView* view, const UIAttributes& attributes,
                                   const IUIDescription* description)
 {
-	CXYPad* pad = dynamic_cast<CXYPad*> (view);
+	auto* pad = dynamic_cast<CXYPad*> (view);
 	if (pad)
 	{
 		padControl = pad;
@@ -103,7 +103,7 @@ void PLUGIN_API PadController::update (Steinberg::FUnknown* changedUnknown,
 {
 	if (padControl)
 	{
-		Steinberg::Vst::Parameter* p = Steinberg::FCast<Steinberg::Vst::Parameter> (changedUnknown);
+		auto* p = Steinberg::FCast<Steinberg::Vst::Parameter> (changedUnknown);
 		if (p && (p == xParam || p == yParam))
 		{
 			if (message == kChanged)

@@ -1,4 +1,4 @@
-// This file is part of VSTGUI. It is subject to the license terms
+// This file is part of VSTGUI. It is subject to the license terms 
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
@@ -18,7 +18,6 @@
 #include "../iplatformwindow.h"
 #include <array>
 #include <chrono>
-#include <windows.h>
 
 #pragma comment(lib, "d2d1.lib")
 #pragma comment(lib, "dwrite.lib")
@@ -76,7 +75,7 @@ private:
 void Application::init (HINSTANCE instance, LPWSTR commandLine)
 {
 	auto& hidpiSupport = HiDPISupport::instance ();
-	if (!hidpiSupport.setProcessDpiAwarnessContext (DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2))
+	if (!hidpiSupport.setProcessDpiAwarnessContext (HiDPISupport::AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2))
 		hidpiSupport.setProcessDpiAwareness (HiDPISupport::PROCESS_PER_MONITOR_DPI_AWARE);
 
 	IApplication::CommandLineArguments cmdArgs;
@@ -85,7 +84,7 @@ void Application::init (HINSTANCE instance, LPWSTR commandLine)
 	for (int i = 0; i < numArgs; ++i)
 	{
 		UTF8StringHelper str (cmdArgsArray[i]);
-		cmdArgs.push_back (str.getUTF8String ());
+		cmdArgs.emplace_back (str.getUTF8String ());
 	}
 	LocalFree (cmdArgsArray);
 
@@ -93,7 +92,7 @@ void Application::init (HINSTANCE instance, LPWSTR commandLine)
 
 	PlatformCallbacks callbacks;
 	callbacks.quit = [this] () { quit (); };
-	callbacks.onCommandUpdate = [this] () {
+	callbacks.onCommandUpdate = [this] () { 
 		if (!needCommandUpdate)
 		{
 			needCommandUpdate = true;
@@ -149,7 +148,7 @@ AlertResult Application::showAlert (const AlertBoxConfig& config)
 
 	MSG msg;
 	BOOL gmResult;
-	while (!alertDone && (gmResult = GetMessage (&msg, NULL, 0, 0)))
+	while (!alertDone && (gmResult = GetMessage (&msg, nullptr, 0, 0)))
 	{
 		TranslateMessage (&msg);
 		DispatchMessage (&msg);
@@ -259,7 +258,7 @@ void Application::run ()
 	using namespace std::chrono;
 	auto lastPaintMessageTime = steady_clock::now ();
 	MSG msg;
-	while (GetMessage (&msg, NULL, 0, 0))
+	while (GetMessage (&msg, nullptr, 0, 0))
 	{
 		if (keyboardAccelerators && TranslateAccelerator (msg.hwnd, keyboardAccelerators, &msg))
 			continue;
@@ -290,7 +289,7 @@ void* hInstance = nullptr; // for VSTGUI
 int APIENTRY wWinMain (_In_ HINSTANCE instance, _In_opt_ HINSTANCE prevInstance,
                        _In_ LPWSTR lpCmdLine, _In_ int nCmdShow)
 {
-	HRESULT hr = OleInitialize (NULL);
+	HRESULT hr = OleInitialize (nullptr);
 	if (FAILED (hr))
 		return FALSE;
 

@@ -16,7 +16,12 @@ namespace VSTGUI {
 class CDefaultSplashScreenView : public CControl
 {
 public:
-	CDefaultSplashScreenView (const CRect& size, IControlListener* listener, CBitmap* bitmap, const CPoint& offset) : CControl (size, listener), offset (offset) { setBackground (bitmap); }
+	CDefaultSplashScreenView (const CRect& size, IControlListener* listener, CBitmap* bitmap,
+	                          const CPoint& offset)
+	: CControl (size, listener), offset (offset)
+	{
+		setBackground (bitmap);
+	}
 
 	void draw (CDrawContext *pContext) override
 	{
@@ -58,10 +63,9 @@ and another click on the displayed area will leave the modal mode.
  * @param offset offset of background bitmap
  */
 //------------------------------------------------------------------------
-CSplashScreen::CSplashScreen (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background, const CRect& toDisplay, const CPoint& offset)
-: CControl (size, listener, tag, background)
-, toDisplay (toDisplay)
-, offset (offset)
+CSplashScreen::CSplashScreen (const CRect& size, IControlListener* listener, int32_t tag,
+                              CBitmap* background, const CRect& toDisplay, const CPoint& offset)
+: CControl (size, listener, tag, background), toDisplay (toDisplay), offset (offset)
 {
 	modalView = new CDefaultSplashScreenView (toDisplay, this, background, offset);
 }
@@ -123,8 +127,14 @@ CMouseEventResult CSplashScreen::onMouseDown (CPoint& where, const CButtonState&
 		{
 			if (auto frame = getFrame ())
 			{
-				if ((modalViewSession = frame->beginModalViewSession (modalView)))
-					CControl::valueChanged();
+				if (modalView)
+				{
+					if ((modalViewSession = frame->beginModalViewSession (modalView)))
+					{
+						modalView->remember ();
+						CControl::valueChanged ();
+					}
+				}
 			}
 		}
 		return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
@@ -270,7 +280,8 @@ bool CAnimationSplashScreen::sizeToFit ()
 }
 
 //------------------------------------------------------------------------
-bool CAnimationSplashScreen::createAnimation (uint32_t animationIndex, uint32_t animationTime, CView* splashView, bool removeViewAnimation)
+bool CAnimationSplashScreen::createAnimation (uint32_t animationIndex, uint32_t animationTime,
+                                              CView* splashView, bool removeViewAnimation)
 {
 	if (!isAttached ())
 		return false;
