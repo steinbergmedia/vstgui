@@ -45,7 +45,7 @@ AEffGUIEditor::AEffGUIEditor (void* pEffect)
 	lLastTicks   = getTicks ();
 
 	#if WINDOWS
-	OleInitialize (0);
+	OleInitialize (nullptr);
 	#endif
 	#if MAC
 	InitMachOLibrary ();
@@ -183,7 +183,7 @@ void AEffGUIEditor::doIdleStuff ()
 
 	#if WINDOWS
 	struct tagMSG windowsMessage;
-	if (PeekMessage (&windowsMessage, NULL, WM_PAINT, WM_PAINT, PM_REMOVE))
+	if (PeekMessage (&windowsMessage, nullptr, WM_PAINT, WM_PAINT, PM_REMOVE))
 		DispatchMessage (&windowsMessage);
 
 	#endif
@@ -233,7 +233,7 @@ bool AEffGUIEditor::beforeSizeChange (const CRect& newSize, const CRect& oldSize
 	
 	hTempWnd = (HWND)getFrame ()->getPlatformFrame ()->getPlatformRepresentation ();
 	
-	while ((diffWidth != iFrame) && (hTempWnd != NULL)) // look for FrameWindow
+	while ((diffWidth != iFrame) && (hTempWnd != nullptr)) // look for FrameWindow
 	{
 		HWND hTempParentWnd = GetParent (hTempWnd);
 		TCHAR buffer[1024];

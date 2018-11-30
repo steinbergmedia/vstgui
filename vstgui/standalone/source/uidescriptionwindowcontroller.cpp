@@ -1,4 +1,4 @@
-// This file is part of VSTGUI. It is subject to the license terms
+// This file is part of VSTGUI. It is subject to the license terms 
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
@@ -596,7 +596,7 @@ struct WindowController::Impl : public IController, public ICommandHandler
 	CView* verifyView (CView* view, const UIAttributes& attributes,
 	                   const IUIDescription* description) override
 	{
-		auto control = dynamic_cast<CControl*> (view);
+		auto* control = dynamic_cast<CControl*> (view);
 		if (control)
 		{
 			auto index = static_cast<ValueWrapperList::size_type> (control->getTag ());

@@ -178,7 +178,7 @@ struct CView::Impl
 	using ViewAttributes = std::unordered_map<CViewAttributeID, std::unique_ptr<CViewInternal::AttributeEntry>>;
 	using ViewListenerDispatcher = DispatchList<IViewListener*>;
 	using ViewMouseListenerDispatcher = DispatchList<IViewMouseListener*>;
-
+	
 	ViewAttributes attributes;
 	std::unique_ptr<ViewListenerDispatcher> viewListeners;
 	std::unique_ptr<ViewMouseListenerDispatcher> viewMouseListener;
@@ -250,7 +250,7 @@ void CView::beforeDelete ()
 
 	setHitTestPath (nullptr);
 	setDropTarget (nullptr);
-
+	
 	IController* controller = nullptr;
 	uint32_t size = sizeof (IController*);
 	if (getAttribute (kCViewControllerAttribute, sizeof (IController*), &controller, size) == true)
