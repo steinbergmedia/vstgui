@@ -20,7 +20,7 @@ class PadController : public Steinberg::FObject, public DelegationController
 public:
 	PadController (IController* baseController, Steinberg::Vst::EditController* editController,
 	               Steinberg::Vst::Parameter* xParam, Steinberg::Vst::Parameter* yParam);
-	~PadController ();
+	~PadController () override;
 
 	CView* verifyView (CView* view, const UIAttributes& attributes,
 	                   const IUIDescription* description) override;

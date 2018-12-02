@@ -335,7 +335,7 @@ ControlValueAnimation::ControlValueAnimation (float endValue, bool forceEndValue
 //-----------------------------------------------------------------------------
 void ControlValueAnimation::animationStart (CView* view, IdStringPtr name)
 {
-	CControl* control = dynamic_cast<CControl*> (view);
+	auto* control = dynamic_cast<CControl*> (view);
 	if (control)
 		startValue = control->getValue ();
 }
@@ -343,7 +343,7 @@ void ControlValueAnimation::animationStart (CView* view, IdStringPtr name)
 //-----------------------------------------------------------------------------
 void ControlValueAnimation::animationTick (CView* view, IdStringPtr name, float pos)
 {
-	CControl* control = dynamic_cast<CControl*> (view);
+	auto* control = dynamic_cast<CControl*> (view);
 	if (control)
 	{
 		float value = startValue + (endValue - startValue) * pos;
@@ -356,7 +356,7 @@ void ControlValueAnimation::animationTick (CView* view, IdStringPtr name, float 
 //-----------------------------------------------------------------------------
 void ControlValueAnimation::animationFinished (CView* view, IdStringPtr name, bool wasCanceled)
 {
-	CControl* control = dynamic_cast<CControl*> (view);
+	auto* control = dynamic_cast<CControl*> (view);
 	if (control)
 	{
 		if (!wasCanceled || forceEndValueOnFinish)

@@ -36,11 +36,11 @@ the VSTGUI lib to build without VST dependencies.
 PluginGUIEditor::PluginGUIEditor (void *pEffect) 
 	: effect (pEffect)
 {
-	systemWindow = 0;
+	systemWindow = nullptr;
 	lLastTicks   = getTicks ();
 
 	#if WINDOWS
-	OleInitialize (0);
+	OleInitialize (nullptr);
 	#endif
 	#if MAC
 	InitMachOLibrary ();
@@ -135,7 +135,7 @@ void PluginGUIEditor::doIdleStuff ()
 
 	#if WINDOWS
 	struct tagMSG windowsMessage;
-	if (PeekMessage (&windowsMessage, NULL, WM_PAINT, WM_PAINT, PM_REMOVE))
+	if (PeekMessage (&windowsMessage, nullptr, WM_PAINT, WM_PAINT, PM_REMOVE))
 		DispatchMessage (&windowsMessage);
 
 	#elif MAC && !__LP64__

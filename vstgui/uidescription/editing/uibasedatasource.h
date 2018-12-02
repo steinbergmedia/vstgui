@@ -156,7 +156,7 @@ protected:
 			}
 		}
 	}
-
+	
 	void beforeUIDescSave (UIDescription* desc) override
 	{
 		saveDefaults ();

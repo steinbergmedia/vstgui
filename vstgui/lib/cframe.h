@@ -210,7 +210,7 @@ public:
 	//-------------------------------------------
 protected:
 	struct CollectInvalidRects;
-
+	
 	~CFrame () noexcept override = default;
 	void beforeDelete () override;
 	

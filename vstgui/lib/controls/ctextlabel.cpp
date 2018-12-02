@@ -427,7 +427,7 @@ void CMultiLineTextLabel::recalculateLines (CDrawContext* context)
 	CCoord y = textInset.y;
 
 	auto lineWidth = getWidth () - textInset.x;
-
+	
 	for (auto& element : elements)
 	{
 		if (lineLayout == LineLayout::clip)

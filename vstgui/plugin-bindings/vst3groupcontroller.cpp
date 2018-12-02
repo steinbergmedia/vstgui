@@ -25,7 +25,7 @@ GroupController::~GroupController ()
 //------------------------------------------------------------------------
 CView* GroupController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
 {
-	CControl* control = dynamic_cast<CControl*>(view);
+	auto* control = dynamic_cast<CControl*>(view);
 	if (control)
 	{
 		controls.push_back (control);
@@ -61,7 +61,7 @@ void GroupController::controlEndEdit (CControl* pControl)
 //------------------------------------------------------------------------
 void PLUGIN_API GroupController::update (Steinberg::FUnknown* changedUnknown, Steinberg::int32 message)
 {
-	Steinberg::Vst::Parameter* p = Steinberg::FCast<Steinberg::Vst::Parameter> (changedUnknown);
+	auto* p = Steinberg::FCast<Steinberg::Vst::Parameter> (changedUnknown);
 	if (p && p == parameter)
 	{
 		Steinberg::Vst::ParamValue plainValue = parameter->toPlain (parameter->getNormalized ());

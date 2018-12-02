@@ -756,7 +756,7 @@ void COptionMenu::takeFocus ()
 
 //------------------------------------------------------------------------
 void COptionMenu::looseFocus ()
-{
+{	
 	CView* receiver = getParentView () ? getParentView () : getFrame ();
 	while (receiver)
 	{

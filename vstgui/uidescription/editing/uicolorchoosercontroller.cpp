@@ -141,7 +141,7 @@ void UIColorChooserController::uiColorChanged (UIColor* c)
 //----------------------------------------------------------------------------------------------------
 bool UIColorChooserController::valueToString (float value, char utf8String[256], CParamDisplay::ValueToStringUserData* userData)
 {
-	CParamDisplay* display = static_cast<CParamDisplay*>(userData);
+	auto* display = static_cast<CParamDisplay*>(userData);
 	std::stringstream str;
 	switch (display->getTag ())
 	{
@@ -180,7 +180,7 @@ bool UIColorChooserController::stringToValue (UTF8StringPtr txt, float& result, 
 	std::locale::global (origLocale);
 	if (endptr != txt)
 	{
-		CParamDisplay* display = static_cast<CParamDisplay*>(userData);
+		auto* display = static_cast<CParamDisplay*>(userData);
 		switch (display->getTag ())
 		{
 			case kSaturationTag:
@@ -220,11 +220,11 @@ CView* UIColorChooserController::createView (const UIAttributes& attributes, con
 //----------------------------------------------------------------------------------------------------
 CView* UIColorChooserController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
 {
-	CControl* control = dynamic_cast<CControl*>(view);
+	auto* control = dynamic_cast<CControl*>(view);
 	if (control && control->getTag () >= 0)
 	{
 		controls.emplace_back (control);
-		CTextEdit* textEdit = dynamic_cast<CTextEdit*> (control);
+		auto* textEdit = dynamic_cast<CTextEdit*> (control);
 		if (textEdit)
 		{
 			textEdit->setValueToStringFunction (valueToString);

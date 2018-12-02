@@ -94,7 +94,7 @@ CFontChooser::CFontChooser (IFontChooserDelegate* delegate, CFontRef initialFont
 		fontNames.emplace_back (*it);
 		++it;
 	}
-	GenericStringListDataBrowserSource* dbSource = new GenericStringListDataBrowserSource (&fontNames, this);
+	auto* dbSource = new GenericStringListDataBrowserSource (&fontNames, this);
 	dbSource->setupUI (uiDef.selectionColor, uiDef.fontColor, uiDef.rowlineColor, uiDef.rowBackColor, uiDef.rowAlternateBackColor, uiDef.font, uiDef.rowHeight);
 	int32_t dbStyle = CDataBrowser::kDrawRowLines | CScrollView::kVerticalScrollbar | CScrollView::kDontDrawFrame | CScrollView::kOverlayScrollbars;
 	fontBrowser = new CDataBrowser (CRect (0, 0, 200, 500), dbSource, dbStyle, uiDef.scrollbarWidth);
@@ -110,7 +110,7 @@ CFontChooser::CFontChooser (IFontChooserDelegate* delegate, CFontRef initialFont
 	}
 	addView (fontBrowser);
 	CRect controlRect (210, 0, 300, 20);
-	CTextLabel* label = new CTextLabel (controlRect, "Size:");
+	auto* label = new CTextLabel (controlRect, "Size:");
 	label->setFont (uiDef.font);
 	label->setFontColor (uiDef.fontColor);
 	label->sizeToFit ();

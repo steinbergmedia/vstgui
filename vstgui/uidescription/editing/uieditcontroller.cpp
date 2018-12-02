@@ -524,7 +524,7 @@ CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes
 		editView->setBackgroundColor (editViewBackgroundColors ()[0]);
 		return view;
 	}
-	CSplitView* splitView = dynamic_cast<CSplitView*>(view);
+	auto* splitView = dynamic_cast<CSplitView*>(view);
 	if (splitView)
 	{
 		splitViews.emplace_back (splitView);
@@ -573,7 +573,7 @@ CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes
 			scaleMenuRect.inset (2, 2);
 			
 			zoomSettingController = new UIZoomSettingController (this); // not owned, shared with control
-			CTextEdit* textEdit = new CTextEdit (scaleMenuRect, zoomSettingController, 0);
+			auto* textEdit = new CTextEdit (scaleMenuRect, zoomSettingController, 0);
 			textEdit->setAttribute (kCViewControllerAttribute, zoomSettingController);
 			CView* zoomView = zoomSettingController->verifyView (textEdit, UIAttributes (), editorDesc);
 			zoomView->setAutosizeFlags (kAutosizeRight|kAutosizeTop|kAutosizeBottom);
@@ -582,7 +582,7 @@ CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes
 			
 		}
 	}
-	CControl* control = dynamic_cast<CControl*>(view);
+	auto* control = dynamic_cast<CControl*>(view);
 	if (control)
 	{
 		switch (control->getTag ())
@@ -608,7 +608,7 @@ CView* UIEditController::verifyView (CView* view, const UIAttributes& attributes
 			}
 			case kTabSwitchTag:
 			{
-				CSegmentButton* button = dynamic_cast<CSegmentButton*>(control);
+				auto* button = dynamic_cast<CSegmentButton*>(control);
 				if (button)
 				{
 					size_t numSegments = button->getSegments ().size ();
@@ -913,7 +913,7 @@ void UIEditController::doPaste ()
 			if (size > 0)
 			{
 				CMemoryStream stream ((const int8_t*)data, size, false);
-				UISelection* copySelection = new UISelection ();
+				auto* copySelection = new UISelection ();
 				if (copySelection->restore (stream, editDescription))
 				{
 					addSelectionToCurrentView (copySelection);
@@ -931,16 +931,16 @@ void UIEditController::showTemplateSettings ()
 	{
 		updateTemplate (editTemplateName.c_str ());
 	}
-	UIDialogController* dc = new UIDialogController (this, editView->getFrame ());
-	UITemplateSettingsController* tsController = new UITemplateSettingsController (editTemplateName, editDescription, this);
+	auto* dc = new UIDialogController (this, editView->getFrame ());
+	auto* tsController = new UITemplateSettingsController (editTemplateName, editDescription, this);
 	dc->run ("template.settings", "Template Settings", "OK", "Cancel", tsController, editorDesc);
 }
 
 //----------------------------------------------------------------------------------------------------
 void UIEditController::showFocusSettings ()
 {
-	UIDialogController* dc = new UIDialogController (this, editView->getFrame ());
-	UIFocusSettingsController* fsController = new UIFocusSettingsController (editDescription, this);
+	auto* dc = new UIDialogController (this, editView->getFrame ());
+	auto* fsController = new UIFocusSettingsController (editDescription, this);
 	dc->run ("focus.settings", "Focus Drawing Settings", "OK", "Cancel", fsController, editorDesc);
 }
 
@@ -1271,7 +1271,7 @@ void UIEditController::onUndoManagerChanged ()
 void UIEditController::resetScrollViewOffsets (CViewContainer* view)
 {
 	view->forEachChild ([&] (CView* view) {
-		CScrollView* scrollView = dynamic_cast<CScrollView*>(view);
+		auto* scrollView = dynamic_cast<CScrollView*>(view);
 		if (scrollView)
 		{
 			scrollView->resetScrollOffset ();
@@ -1288,7 +1288,7 @@ int32_t UIEditController::onKeyDown (const VstKeyCode& code, CFrame* frame)
 	{
 		if (frame->getFocusView ())
 		{
-			CTextEdit* edit = dynamic_cast<CTextEdit*>(frame->getFocusView ());
+			auto* edit = dynamic_cast<CTextEdit*>(frame->getFocusView ());
 			if (edit && edit->getPlatformTextEdit ())
 				return -1;
 		}
@@ -1471,7 +1471,7 @@ void UIEditController::performColorChange (UTF8StringPtr colorName, const CColor
 	std::list<CView*> views;
 	getTemplateViews (views);
 
-	ColorChangeAction* action = new ColorChangeAction (editDescription, colorName, newColor, remove, true);
+	auto* action = new ColorChangeAction (editDescription, colorName, newColor, remove, true);
 	undoManager->startGroupAction (remove ? "Delete Color" : action->isAddColor () ? "Add New Color" : "Change Color");
 	undoManager->pushAndPerform (action);
 	undoManager->pushAndPerform (new MultipleAttributeChangeAction (editDescription, views, IViewCreator::kColorType, colorName, remove ? "" : colorName));
@@ -1485,7 +1485,7 @@ void UIEditController::performTagChange (UTF8StringPtr tagName, UTF8StringPtr ta
 	std::list<CView*> views;
 	getTemplateViews (views);
 
-	TagChangeAction* action = new TagChangeAction (editDescription, tagName, tagStr, remove, true);
+	auto* action = new TagChangeAction (editDescription, tagName, tagStr, remove, true);
 	undoManager->startGroupAction (remove ? "Delete Tag" : action->isAddTag () ? "Add New Tag" : "Change Tag");
 	undoManager->pushAndPerform (action);
 	undoManager->pushAndPerform (new MultipleAttributeChangeAction (editDescription, views, IViewCreator::kTagType, tagName, remove ? "" : tagName));
@@ -1499,7 +1499,7 @@ void UIEditController::performBitmapChange (UTF8StringPtr bitmapName, UTF8String
 	std::list<CView*> views;
 	getTemplateViews (views);
 
-	BitmapChangeAction* action = new BitmapChangeAction (editDescription, bitmapName, bitmapPath, remove, true);
+	auto* action = new BitmapChangeAction (editDescription, bitmapName, bitmapPath, remove, true);
 	undoManager->startGroupAction (remove ? "Delete Bitmap" : action->isAddBitmap () ? "Add New Bitmap" :"Change Bitmap");
 	undoManager->pushAndPerform (action);
 	undoManager->pushAndPerform (new MultipleAttributeChangeAction (editDescription, views, IViewCreator::kBitmapType, bitmapName, remove ? "" : bitmapName));
@@ -1513,7 +1513,7 @@ void UIEditController::performGradientChange (UTF8StringPtr gradientName, CGradi
 	std::list<CView*> views;
 	getTemplateViews (views);
 	
-	GradientChangeAction* action = new GradientChangeAction (editDescription, gradientName, newGradient, remove, true);
+	auto* action = new GradientChangeAction (editDescription, gradientName, newGradient, remove, true);
 	undoManager->startGroupAction (remove ? "Delete Bitmap" : action->isAddGradient () ? "Add New Gradient" :"Change Gradient");
 	undoManager->pushAndPerform (action);
 	undoManager->pushAndPerform (new MultipleAttributeChangeAction (editDescription, views, IViewCreator::kGradientType, gradientName, remove ? "" : gradientName));
@@ -1527,7 +1527,7 @@ void UIEditController::performFontChange (UTF8StringPtr fontName, CFontRef newFo
 	std::list<CView*> views;
 	getTemplateViews (views);
 
-	FontChangeAction* action = new FontChangeAction (editDescription, fontName, newFont, remove, true);
+	auto* action = new FontChangeAction (editDescription, fontName, newFont, remove, true);
 	undoManager->startGroupAction (remove ? "Delete Font" : action->isAddFont () ? "Add New Font" : "Change Font");
 	undoManager->pushAndPerform (action);
 	undoManager->pushAndPerform (new MultipleAttributeChangeAction (editDescription, views, IViewCreator::kFontType, fontName, remove ? "" : fontName));
