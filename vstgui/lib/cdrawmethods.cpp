@@ -12,7 +12,8 @@ namespace VSTGUI {
 namespace CDrawMethods {
 
 //------------------------------------------------------------------------
-UTF8String createTruncatedText (TextTruncateMode mode, const UTF8String& text, CFontRef font, CCoord maxWidth, const CPoint& textInset, uint32_t flags)
+UTF8String createTruncatedText (TextTruncateMode mode, const UTF8String& text, CFontRef font,
+                                CCoord maxWidth, const CPoint& textInset, uint32_t flags)
 {
 	if (mode == kTextTruncateNone)
 		return text;
@@ -57,7 +58,10 @@ UTF8String createTruncatedText (TextTruncateMode mode, const UTF8String& text, C
 }
 
 //------------------------------------------------------------------------
-void drawIconAndText (CDrawContext* context, CBitmap* iconToDraw, IconPosition iconPosition, CHoriTxtAlign textAlignment, CCoord textIconMargin, CRect drawRect, const UTF8String& title, CFontRef font, CColor textColor, TextTruncateMode textTruncateMode)
+void drawIconAndText (CDrawContext* context, CBitmap* iconToDraw, IconPosition iconPosition,
+                      CHoriTxtAlign textAlignment, CCoord textIconMargin, CRect drawRect,
+                      const UTF8String& title, CFontRef font, CColor textColor,
+                      TextTruncateMode textTruncateMode)
 {
 	if (iconToDraw)
 	{
@@ -67,7 +71,8 @@ void drawIconAndText (CDrawContext* context, CBitmap* iconToDraw, IconPosition i
 		{
 			case kIconLeft:
 			{
-				iconRect.offset (textIconMargin, drawRect.getHeight () / 2. - iconRect.getHeight () / 2.);
+				iconRect.offset (textIconMargin,
+				                 drawRect.getHeight () / 2. - iconRect.getHeight () / 2.);
 				drawRect.left = iconRect.right;
 				drawRect.right -= textIconMargin;
 				if (textAlignment == kLeftText)
@@ -76,7 +81,8 @@ void drawIconAndText (CDrawContext* context, CBitmap* iconToDraw, IconPosition i
 			}
 			case kIconRight:
 			{
-				iconRect.offset (drawRect.getWidth () - (textIconMargin + iconRect.getWidth ()), drawRect.getHeight () / 2. - iconRect.getHeight () / 2.);
+				iconRect.offset (drawRect.getWidth () - (textIconMargin + iconRect.getWidth ()),
+				                 drawRect.getHeight () / 2. - iconRect.getHeight () / 2.);
 				drawRect.right = iconRect.left;
 				drawRect.left += textIconMargin;
 				if (textAlignment == kRightText)
@@ -90,7 +96,9 @@ void drawIconAndText (CDrawContext* context, CBitmap* iconToDraw, IconPosition i
 					iconRect.offset (0, drawRect.getHeight () / 2. - iconRect.getHeight () / 2.);
 				else
 				{
-					iconRect.offset (0, drawRect.getHeight () / 2. - (iconRect.getHeight () / 2. + (textIconMargin + font->getSize ()) / 2.));
+					iconRect.offset (0, drawRect.getHeight () / 2. -
+					                        (iconRect.getHeight () / 2. +
+					                         (textIconMargin + font->getSize ()) / 2.));
 					drawRect.top = iconRect.bottom + textIconMargin;
 					drawRect.setHeight (font->getSize ());
 					if (textAlignment == kLeftText)
@@ -107,7 +115,8 @@ void drawIconAndText (CDrawContext* context, CBitmap* iconToDraw, IconPosition i
 					iconRect.offset (0, drawRect.getHeight () / 2. - iconRect.getHeight () / 2.);
 				else
 				{
-					iconRect.offset (0, drawRect.getHeight () / 2. - (iconRect.getHeight () / 2.) + (textIconMargin + font->getSize ()) / 2.);
+					iconRect.offset (0, drawRect.getHeight () / 2. - (iconRect.getHeight () / 2.) +
+					                        (textIconMargin + font->getSize ()) / 2.);
 					drawRect.top = iconRect.top - (textIconMargin + font->getSize ());
 					drawRect.setHeight (font->getSize ());
 					if (textAlignment == kLeftText)
@@ -133,12 +142,14 @@ void drawIconAndText (CDrawContext* context, CBitmap* iconToDraw, IconPosition i
 		context->setFontColor (textColor);
 		if (textTruncateMode != kTextTruncateNone)
 		{
-			UTF8String truncatedText = createTruncatedText (textTruncateMode, title, font, drawRect.getWidth (), CPoint (0, 0), kReturnEmptyIfTruncationIsPlaceholderOnly);
+			UTF8String truncatedText =
+			    createTruncatedText (textTruncateMode, title, font, drawRect.getWidth (),
+			                         CPoint (0, 0), kReturnEmptyIfTruncationIsPlaceholderOnly);
 			context->drawString (truncatedText.getPlatformString (), drawRect, textAlignment);
 		}
 		else
 			context->drawString (title.getPlatformString (), drawRect, textAlignment);
 	}
 }
-
-}} // namespaces
+}
+} // namespaces

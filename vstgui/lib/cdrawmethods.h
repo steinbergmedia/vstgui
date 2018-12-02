@@ -2,7 +2,8 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#pragma once
+#ifndef __cdrawmethods__
+#define __cdrawmethods__
 
 #include "vstguifwd.h"
 #include "cdrawdefs.h"
@@ -10,12 +11,13 @@
 #include "cpoint.h"
 
 namespace VSTGUI {
+
 namespace CDrawMethods {
 
 //-----------------------------------------------------------------------------
-enum IconPosition {
+enum IconPosition : uint16_t {
 	/** icon left, text centered in the area next to the icon*/
-	kIconLeft,
+	kIconLeft = 0,
 	/** icon centered above the text, text centered */
 	kIconCenterAbove,
 	/** icon centered below the text, text centered */
@@ -25,14 +27,14 @@ enum IconPosition {
 };
 
 //-----------------------------------------------------------------------------
-enum TextTruncateMode {
-	kTextTruncateNone,
+enum TextTruncateMode : uint16_t {
+	kTextTruncateNone = 0,
 	kTextTruncateHead,
 	kTextTruncateTail
 };
 
 //-----------------------------------------------------------------------------
-enum CreateTextTruncateFlags {
+enum CreateTextTruncateFlags : uint16_t {
 	/** return an empty string if the truncated text is only the placeholder string */
 	kReturnEmptyIfTruncationIsPlaceholderOnly = 1 << 0,
 };
@@ -48,7 +50,9 @@ enum CreateTextTruncateFlags {
  *	@param flags		flags see CreateTextTruncateFlags
  *	@return				truncated text or original text if no truncation needed
  */
-UTF8String createTruncatedText (TextTruncateMode mode, const UTF8String& text, CFontRef font, CCoord maxWidth, const CPoint& textInset = CPoint (0, 0), uint32_t flags = 0);
+UTF8String createTruncatedText (TextTruncateMode mode, const UTF8String& text, CFontRef font,
+                                CCoord maxWidth, const CPoint& textInset = CPoint (0, 0),
+                                uint32_t flags = 0);
 
 //-----------------------------------------------------------------------------
 /** draws an icon and a string into a rectangle
@@ -62,9 +66,12 @@ UTF8String createTruncatedText (TextTruncateMode mode, const UTF8String& text, C
  *  @param title         	string
  *  @param font          	font
  *  @param textColor     	font color
- *	@param truncateMode		trunaction mode
+ *	@param truncateMode		truncation mode
  */
-void drawIconAndText (CDrawContext* context, CBitmap* iconToDraw, IconPosition iconPosition, CHoriTxtAlign textAlignment, CCoord textIconMargin, CRect drawRect, const UTF8String& title, CFontRef font, CColor textColor, TextTruncateMode truncateMode = kTextTruncateNone);
-	
-} // CDrawMethods
-} // VSTGUI
+void drawIconAndText (CDrawContext* context, CBitmap* iconToDraw, IconPosition iconPosition,
+                      CHoriTxtAlign textAlignment, CCoord textIconMargin, CRect drawRect,
+                      const UTF8String& title, CFontRef font, CColor textColor,
+                      TextTruncateMode truncateMode = kTextTruncateNone);
+}} // namespaces
+
+#endif // __cdrawmethods__

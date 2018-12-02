@@ -44,7 +44,7 @@ void UIDialogController::run (UTF8StringPtr _templateName, UTF8StringPtr _dialog
 	CView* view = UIEditController::getEditorDescription ()->createView ("dialog", this);
 	if (view)
 	{
-		CLayeredViewContainer* layeredView = dynamic_cast<CLayeredViewContainer*>(view);
+		auto* layeredView = dynamic_cast<CLayeredViewContainer*>(view);
 		if (layeredView)
 			layeredView->setZIndex (10);
 
@@ -164,12 +164,12 @@ IControlListener* UIDialogController::getControlListener (UTF8StringPtr controlT
 CView* UIDialogController::verifyView (CView* view, const UIAttributes& attributes,
                                        const IUIDescription* description)
 {
-	CControl* control = dynamic_cast<CControl*>(view);
+	auto* control = dynamic_cast<CControl*>(view);
 	if (control)
 	{
 		if (control->getTag () == kButton1Tag)
 		{
-			CTextButton* button = dynamic_cast<CTextButton*>(control);
+			auto* button = dynamic_cast<CTextButton*>(control);
 			if (button)
 			{
 				button1 = button;
@@ -179,7 +179,7 @@ CView* UIDialogController::verifyView (CView* view, const UIAttributes& attribut
 		}
 		else if (control->getTag () == kButton2Tag)
 		{
-			CTextButton* button = dynamic_cast<CTextButton*>(control);
+			auto* button = dynamic_cast<CTextButton*>(control);
 			if (button)
 			{
 				button2 = button;
@@ -196,7 +196,7 @@ CView* UIDialogController::verifyView (CView* view, const UIAttributes& attribut
 		}
 		else if (control->getTag () == kTitleTag)
 		{
-			CTextLabel* label = dynamic_cast<CTextLabel*>(control);
+			auto* label = dynamic_cast<CTextLabel*>(control);
 			if (label)
 			{
 				label->setText (dialogTitle.c_str ());
@@ -208,7 +208,7 @@ CView* UIDialogController::verifyView (CView* view, const UIAttributes& attribut
 	{
 		if (*name == "view")
 		{
-			IController* controller = dialogController.cast<IController> ();
+			auto* controller = dialogController.cast<IController> ();
 			CView* subView = dialogDescription->createView (templateName.c_str (), controller);
 			if (subView)
 			{

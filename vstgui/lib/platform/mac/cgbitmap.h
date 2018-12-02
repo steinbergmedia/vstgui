@@ -53,7 +53,7 @@ protected:
 	CGImageSourceRef imageSource {nullptr};
 
 	CGLayerRef layer {nullptr};
-	
+
 	CGDataProviderRef bitsDataProvider {nullptr};
 
 	void* bits {nullptr};

@@ -62,7 +62,7 @@ public:
 
 	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override
 	{
-		CControl* control = dynamic_cast<CControl*>(view);
+		auto* control = dynamic_cast<CControl*>(view);
 		if (control)
 		{
 			int32_t tag = control->getTag ();
@@ -146,7 +146,7 @@ public:
 
 	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override
 	{
-		CControl* control = dynamic_cast<CControl*>(view);
+		auto* control = dynamic_cast<CControl*>(view);
 		if (control)
 		{
 			int32_t tag = control->getTag ();
@@ -154,7 +154,7 @@ public:
 				controls[tag] = control;
 			if (tag >= kRowTag && tag <= kColTag)
 			{
-				for (auto view : *selection)
+				for (const auto& view : *selection)
 				{
 					if (view->asViewContainer () == nullptr)
 					{
@@ -320,7 +320,7 @@ public:
 	{
 		if (textLabel == nullptr)
 		{
-			CTextLabel* edit = dynamic_cast<CTextLabel*>(view);
+			auto* edit = dynamic_cast<CTextLabel*>(view);
 			if (edit)
 			{
 				textLabel = edit;
@@ -331,7 +331,7 @@ public:
 		}
 		if (slider == nullptr)
 		{
-			CSlider* sliderView = dynamic_cast<CSlider*>(view);
+			auto* sliderView = dynamic_cast<CSlider*>(view);
 			if (sliderView)
 				slider = sliderView;
 		}
@@ -735,7 +735,7 @@ public:
 
 	void collectMenuItemNames (StringPtrList& names) override
 	{
-		const UIViewFactory* viewFactory = dynamic_cast<const UIViewFactory*>(description->getViewFactory ());
+		const auto* viewFactory = dynamic_cast<const UIViewFactory*>(description->getViewFactory ());
 		if (viewFactory)
 		{
 			viewFactory->getPossibleAttributeListValues (selection->first (), attrName, names);
@@ -836,7 +836,7 @@ CView* UIAttributesController::verifyView (CView* view, const UIAttributes& attr
 {
 	if (attributeView == nullptr)
 	{
-		CRowColumnView* rcv = dynamic_cast<CRowColumnView*>(view);
+		auto* rcv = dynamic_cast<CRowColumnView*>(view);
 		if (rcv)
 		{
 			attributeView = rcv;
@@ -844,7 +844,7 @@ CView* UIAttributesController::verifyView (CView* view, const UIAttributes& attr
 	}
 	if (searchField == nullptr)
 	{
-		CTextEdit* textEdit = dynamic_cast<CTextEdit*>(view);
+		auto* textEdit = dynamic_cast<CTextEdit*>(view);
 		if (textEdit && textEdit->getTag () == kSearchFieldTag)
 		{
 			searchField = textEdit;
@@ -861,7 +861,7 @@ CView* UIAttributesController::verifyView (CView* view, const UIAttributes& attr
 	}
 	if (viewNameLabel == nullptr)
 	{
-		CTextLabel* textLabel = dynamic_cast<CTextLabel*>(view);
+		auto* textLabel = dynamic_cast<CTextLabel*>(view);
 		if (textLabel && textLabel->getTag () == kViewNameTag)
 		{
 			viewNameLabel = textLabel;
@@ -999,14 +999,14 @@ void UIAttributesController::onUndoManagerChange ()
 //----------------------------------------------------------------------------------------------------
 void UIAttributesController::validateAttributeViews ()
 {
-	const UIViewFactory* viewFactory = static_cast<const UIViewFactory*> (editDescription->getViewFactory ());
+	const auto* viewFactory = static_cast<const UIViewFactory*> (editDescription->getViewFactory ());
 
 	for (auto& controller : attributeControllers)
 	{
 		std::string attrValue;
 		bool first = true;
 		bool hasDifferentValues = false;
-		for (auto view : *selection)
+		for (const auto& view : *selection)
 		{
 			std::string temp;
 			viewFactory->getAttributeValue (view, controller->getAttributeName (), temp, editDescription);
@@ -1093,11 +1093,11 @@ CView* UIAttributesController::createViewForAttribute (const std::string& attrNa
 	
 	bool hasDifferentValues = false;
 
-	const UIViewFactory* viewFactory = static_cast<const UIViewFactory*> (editDescription->getViewFactory ());
+	const auto* viewFactory = static_cast<const UIViewFactory*> (editDescription->getViewFactory ());
 
 	std::string attrValue;
 	bool first = true;
-	for (auto view : *selection)
+	for (const auto& view : *selection)
 	{
 		std::string temp;
 		viewFactory->getAttributeValue (view, attrName, temp, editDescription);
@@ -1128,7 +1128,7 @@ CView* UIAttributesController::createViewForAttribute (const std::string& attrNa
 	if (valueView == nullptr) // fallcack if attributes.text template not defined
 	{
 		IController* controller = new UIAttributeControllers::TextController (this, *currentAttributeName);
-		CTextEdit* textEdit = new CTextEdit (r, this, -1);
+		auto* textEdit = new CTextEdit (r, this, -1);
 		textEdit->setText (attrValue.c_str ());
 		textEdit->setTransparency (true);
 		textEdit->setFontColor (kBlackCColor);
@@ -1142,7 +1142,7 @@ CView* UIAttributesController::createViewForAttribute (const std::string& attrNa
 		IController* controller = getViewController (valueView, true);
 		if (controller)
 		{
-			UIAttributeControllers::Controller* c = dynamic_cast<UIAttributeControllers::Controller*>(controller);
+			auto* c = dynamic_cast<UIAttributeControllers::Controller*>(controller);
 			if (c)
 			{
 				c->hasDifferentValues (hasDifferentValues);
@@ -1165,10 +1165,10 @@ CView* UIAttributesController::createViewForAttribute (const std::string& attrNa
 //----------------------------------------------------------------------------------------------------
 void UIAttributesController::getConsolidatedAttributeNames (StringList& attrNames, const std::string& filter)
 {
-	const UIViewFactory* viewFactory = dynamic_cast<const UIViewFactory*> (editDescription->getViewFactory ());
+	const auto* viewFactory = dynamic_cast<const UIViewFactory*> (editDescription->getViewFactory ());
 	vstgui_assert (viewFactory);
 	
-	for (auto view : *selection)
+	for (const auto& view : *selection)
 	{
 		StringList temp;
 		if (viewFactory->getAttributeNamesForView (view, temp))
@@ -1190,7 +1190,7 @@ void UIAttributesController::getConsolidatedAttributeNames (StringList& attrName
 			}
 			if (!filter.empty ())
 			{
-				for (StringList::reverse_iterator rit = temp.rbegin (); rit != temp.rend (); ++rit)
+				for (auto rit = temp.rbegin (); rit != temp.rend (); ++rit)
 				{
 					std::string lowerCaseName (*rit);
 					std::transform (lowerCaseName.begin (), lowerCaseName.end (), lowerCaseName.begin (), ::tolower);
@@ -1226,7 +1226,7 @@ void UIAttributesController::rebuildAttributesView ()
 		if (selectedViews > 0)
 		{
 			UTF8StringPtr viewname = nullptr;
-			for (auto view : *selection)
+			for (const auto& view : *selection)
 			{
 				UTF8StringPtr name = viewFactory->getViewDisplayName (view);
 				if (viewname != nullptr && UTF8StringView (name) != viewname)

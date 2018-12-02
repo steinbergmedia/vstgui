@@ -188,7 +188,9 @@ bool UIViewSwitchContainer::removed (CView* parent)
 }
 
 //-----------------------------------------------------------------------------
-UIDescriptionViewSwitchController::UIDescriptionViewSwitchController (UIViewSwitchContainer* viewSwitch, const IUIDescription* uiDescription, IController* uiController)
+UIDescriptionViewSwitchController::UIDescriptionViewSwitchController (
+    UIViewSwitchContainer* viewSwitch, const IUIDescription* uiDescription,
+    IController* uiController)
 : IViewSwitchController (viewSwitch)
 , uiDescription (uiDescription)
 , uiController (uiController)
@@ -217,7 +219,7 @@ static CControl* findControlForTag (CViewContainer* parent, int32_t tag, bool re
 	while (*it)
 	{
 		CView* view = *it;
-		CControl* control = dynamic_cast<CControl*> (view);
+		auto* control = dynamic_cast<CControl*> (view);
 		if (control)
 		{
 			if (control->getTag () == tag)

@@ -47,7 +47,7 @@ public:
 	
 	void setStringToValueFunction (const StringToValueFunction& stringToValueFunc);
 	void setStringToValueFunction (StringToValueFunction&& stringToValueFunc);
-
+	
 	/** enable/disable immediate text change behaviour */
 	virtual void setImmediateTextChange (bool state);
 	/** get immediate text change behaviour */

@@ -28,7 +28,7 @@ public:
 			setSliderSize (size.getHeight (), size.getHeight ());
 		else
 			setSliderSize (size.getWidth (), size.getWidth ());
-		CRect r (size);
+		const CRect& r (size);
 		setViewSize (r, false);
 		setWheelInc (10.f/255.f);
 	}
@@ -144,7 +144,7 @@ public:
 		const void* item;
 		if (drag->getData (0, item, type) > 0 && type == IDataPackage::kText)
 		{
-			UTF8StringPtr text = static_cast<UTF8StringPtr> (item);
+			auto text = static_cast<UTF8StringPtr> (item);
 			std::string colorString (text);
 			if (colorString.length () == 7)
 			{
@@ -205,7 +205,7 @@ public:
 		    dragContainerHasColor (data.drag, nullptr) ? DragOperation::Copy : DragOperation::None;
 		return dragOperation;
 	}
-
+	
 	DragOperation onDragMove (DragEventData data) override
 	{
 		return dragOperation;
@@ -365,7 +365,7 @@ CColorChooser::CColorChooser (IColorChooserDelegate* delegate, const CColor& ini
 	newSize.right = colorView->getViewSize ().right+2;
 
 	setAutosizingEnabled (false);
-	setViewSize (newSize);
+	setViewSize (newSize);	
 	setMouseableArea (newSize);
 	setAutosizingEnabled (true);
 
@@ -373,7 +373,7 @@ CColorChooser::CColorChooser (IColorChooserDelegate* delegate, const CColor& ini
 	r.offset (0, r.bottom + yMargin);
 	r.setWidth (labelWidth);
 	r.setHeight (controlHeight);
-	CTextLabel* label = new CTextLabel (r, "Red");
+	auto* label = new CTextLabel (r, "Red");
 	CColorChooserInternal::setupParamDisplay (label, settings);
 	label->setAutosizeFlags (kAutosizeLeft|kAutosizeBottom);
 	addView (label);

@@ -319,7 +319,7 @@ public:
 	CView* create (const UIAttributes& attributes, IUIDescription* description) const { return new CView (CRect (0, 0, 0, 0)); }
 	bool apply (CView* view, const UIAttributes& attributes, IUIDescription* description) const
 	{
-		CControl* control = dynamic_cast<CControl*> (view);
+		auto* control = dynamic_cast<CControl*> (view);
 		if (control == 0)
 			return false;
 		return true;
@@ -474,7 +474,7 @@ static void addGradientToUIDescription (const IUIDescription* description, CGrad
 {
 	if (!description->lookupGradientName (gradient))
 	{
-		UIDescription* uiDesc = dynamic_cast<UIDescription*>(const_cast<IUIDescription*> (description));
+		auto* uiDesc = dynamic_cast<UIDescription*>(const_cast<IUIDescription*> (description));
 		if (uiDesc)
 		{
 			uint32_t index = 0;
@@ -608,7 +608,7 @@ public:
 		const std::string* tooltipAttr = attributes.getAttributeValue (kAttrTooltip);
 		if (tooltipAttr)
 		{
-			if (tooltipAttr->size () > 0)
+			if (!tooltipAttr->empty ())
 				view->setTooltipText (tooltipAttr->data ());
 			else
 				view->setTooltipText (nullptr);
@@ -872,7 +872,7 @@ public:
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CLayeredViewContainer (CRect (0, 0, 100, 100)); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
-		CLayeredViewContainer* lvc = dynamic_cast<CLayeredViewContainer*>(view);
+		auto* lvc = dynamic_cast<CLayeredViewContainer*>(view);
 		if (lvc == nullptr)
 			return false;
 		int32_t zIndex;
@@ -892,7 +892,7 @@ public:
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const override
 	{
-		CLayeredViewContainer* lvc = dynamic_cast<CLayeredViewContainer*>(view);
+		auto* lvc = dynamic_cast<CLayeredViewContainer*>(view);
 		if (lvc == nullptr)
 			return false;
 		if (attributeName == kAttrZIndex)
@@ -921,7 +921,7 @@ public:
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CRowColumnView (CRect (0, 0, 100, 100)); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
-		CRowColumnView* rcv = dynamic_cast<CRowColumnView*> (view);
+		auto* rcv = dynamic_cast<CRowColumnView*> (view);
 		if (rcv == nullptr)
 			return false;
 		const std::string* attr = attributes.getAttributeValue (kAttrRowStyle);
@@ -986,7 +986,7 @@ public:
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const override
 	{
-		CRowColumnView* rcv = dynamic_cast<CRowColumnView*> (view);
+		auto* rcv = dynamic_cast<CRowColumnView*> (view);
 		if (rcv == nullptr)
 			return false;
 		if (attributeName == kAttrRowStyle)
@@ -1068,7 +1068,7 @@ public:
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CScrollView (CRect (0, 0, 100, 100), CRect (0, 0, 200, 200), CScrollView::kHorizontalScrollbar|CScrollView::kVerticalScrollbar); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
-		CScrollView* scrollView = dynamic_cast<CScrollView*> (view);
+		auto* scrollView = dynamic_cast<CScrollView*> (view);
 		if (scrollView == nullptr)
 			return false;
 		
@@ -1150,7 +1150,7 @@ public:
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const override
 	{
-		CScrollView* sc = dynamic_cast<CScrollView*> (view);
+		auto* sc = dynamic_cast<CScrollView*> (view);
 		if (sc == nullptr)
 			return false;
 		if (attributeName == kAttrContainerSize)
@@ -1245,7 +1245,7 @@ public:
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new DummyControl (); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
-		CControl* control = dynamic_cast<CControl*> (view);
+		auto* control = dynamic_cast<CControl*> (view);
 		if (control == nullptr)
 			return false;
 		
@@ -1310,7 +1310,7 @@ public:
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const override
 	{
-		CControl* control = dynamic_cast<CControl*> (view);
+		auto* control = dynamic_cast<CControl*> (view);
 		if (control == nullptr)
 			return false;
 		if (attributeName == kAttrControlTag)
@@ -1374,7 +1374,7 @@ public:
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CCheckBox (CRect (0, 0, 100, 20), nullptr, -1, "Title"); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
-		CCheckBox* checkbox = dynamic_cast<CCheckBox*> (view);
+		auto* checkbox = dynamic_cast<CCheckBox*> (view);
 		if (!checkbox)
 			return false;
 		
@@ -1448,7 +1448,7 @@ public:
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const override
 	{
-		CCheckBox* checkbox = dynamic_cast<CCheckBox*> (view);
+		auto* checkbox = dynamic_cast<CCheckBox*> (view);
 		if (!checkbox)
 			return false;
 		
@@ -1540,7 +1540,7 @@ public:
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CParamDisplay (CRect (0, 0, 100, 20)); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
-		CParamDisplay* display = dynamic_cast<CParamDisplay*> (view);
+		auto* display = dynamic_cast<CParamDisplay*> (view);
 		if (!display)
 			return false;
 		
@@ -1664,7 +1664,7 @@ public:
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const override
 	{
-		CParamDisplay* pd = dynamic_cast<CParamDisplay*> (view);
+		auto* pd = dynamic_cast<CParamDisplay*> (view);
 		if (pd == nullptr)
 			return false;
 		if (attributeName == kAttrFont)
@@ -1810,7 +1810,7 @@ public:
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new COptionMenu (CRect (0, 0, 100, 20), nullptr, -1); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
-		COptionMenu* menu = dynamic_cast<COptionMenu*> (view);
+		auto* menu = dynamic_cast<COptionMenu*> (view);
 		if (!menu)
 			return false;
 
@@ -1835,7 +1835,7 @@ public:
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const override
 	{
-		COptionMenu* menu = dynamic_cast<COptionMenu*> (view);
+		auto* menu = dynamic_cast<COptionMenu*> (view);
 		if (!menu)
 			return false;
 		if (attributeName == kAttrMenuPopupStyle)
@@ -1865,7 +1865,7 @@ public:
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CTextLabel (CRect (0, 0, 100, 20)); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
-		CTextLabel* label = dynamic_cast<CTextLabel*> (view);
+		auto* label = dynamic_cast<CTextLabel*> (view);
 		if (!label)
 			return false;
 
@@ -1913,7 +1913,7 @@ public:
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const override
 	{
-		CTextLabel* label = dynamic_cast<CTextLabel*> (view);
+		auto* label = dynamic_cast<CTextLabel*> (view);
 		if (!label)
 			return false;
 		if (attributeName == kAttrTitle)
@@ -2047,7 +2047,7 @@ public:
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CTextEdit (CRect (0, 0, 100, 20), nullptr, -1); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
-		CTextEdit* label = dynamic_cast<CTextEdit*> (view);
+		auto* label = dynamic_cast<CTextEdit*> (view);
 		if (!label)
 			return false;
 
@@ -2084,7 +2084,7 @@ public:
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const override
 	{
-		CTextEdit* label = dynamic_cast<CTextEdit*> (view);
+		auto* label = dynamic_cast<CTextEdit*> (view);
 		if (!label)
 			return false;
 		if (attributeName == kAttrSecureStyle)
@@ -2184,7 +2184,7 @@ public:
 	}
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
-		CTextButton* button = dynamic_cast<CTextButton*> (view);
+		auto* button = dynamic_cast<CTextButton*> (view);
 		if (!button)
 			return false;
 
@@ -2336,7 +2336,7 @@ public:
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const override
 	{
-		CTextButton* button = dynamic_cast<CTextButton*> (view);
+		auto* button = dynamic_cast<CTextButton*> (view);
 		if (!button)
 			return false;
 		if (attributeName == kAttrTitle)
@@ -2493,7 +2493,7 @@ public:
 	}
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
-		CSegmentButton* button = dynamic_cast<CSegmentButton*> (view);
+		auto* button = dynamic_cast<CSegmentButton*> (view);
 		if (!button)
 			return false;
 
@@ -2624,7 +2624,7 @@ public:
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const override
 	{
-		CSegmentButton* button = dynamic_cast<CSegmentButton*> (view);
+		auto* button = dynamic_cast<CSegmentButton*> (view);
 		if (!button)
 			return false;
 		if (attributeName == kAttrFont)
@@ -2757,7 +2757,7 @@ public:
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CKnob (CRect (0, 0, 0, 0), nullptr, -1, nullptr, nullptr); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
-		CKnob* knob = dynamic_cast<CKnob*> (view);
+		auto* knob = dynamic_cast<CKnob*> (view);
 		if (!knob)
 			return false;
 
@@ -2857,7 +2857,7 @@ public:
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const override
 	{
-		CKnob* knob = dynamic_cast<CKnob*> (view);
+		auto* knob = dynamic_cast<CKnob*> (view);
 		if (!knob)
 			return false;
 
@@ -2995,7 +2995,7 @@ class IMultiBitmapControlCreator : public ViewCreatorAdapter
 public:
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
-		IMultiBitmapControl* multiBitmapControl = dynamic_cast<IMultiBitmapControl*> (view);
+		auto* multiBitmapControl = dynamic_cast<IMultiBitmapControl*> (view);
 		if (!multiBitmapControl)
 			return false;
 
@@ -3023,7 +3023,7 @@ public:
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const override
 	{
-		IMultiBitmapControl* multiBitmapControl = dynamic_cast<IMultiBitmapControl*> (view);
+		auto* multiBitmapControl = dynamic_cast<IMultiBitmapControl*> (view);
 		if (!multiBitmapControl)
 			return false;
 
@@ -3054,7 +3054,7 @@ public:
 
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
-		CAnimKnob* animKnob = dynamic_cast<CAnimKnob*> (view);
+		auto* animKnob = dynamic_cast<CAnimKnob*> (view);
 		if (!animKnob)
 			return false;
 
@@ -3078,7 +3078,7 @@ public:
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const override
 	{
-		CAnimKnob* animKnob = dynamic_cast<CAnimKnob*> (view);
+		auto* animKnob = dynamic_cast<CAnimKnob*> (view);
 		if (!animKnob)
 			return false;
 
@@ -3224,7 +3224,7 @@ public:
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CSlider (CRect (0, 0, 0, 0), nullptr, -1, 0, 0, nullptr, nullptr); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
-		CSlider* slider = dynamic_cast<CSlider*> (view);
+		auto* slider = dynamic_cast<CSlider*> (view);
 		if (!slider)
 			return false;
 
@@ -3375,7 +3375,7 @@ public:
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const override
 	{
-		CSlider* slider = dynamic_cast<CSlider*> (view);
+		auto* slider = dynamic_cast<CSlider*> (view);
 		if (!slider)
 			return false;
 		if (attributeName == kAttrMode)
@@ -3532,7 +3532,7 @@ public:
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CVuMeter (CRect (0, 0, 0, 0), nullptr, nullptr, 100); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
-		CVuMeter* vuMeter = dynamic_cast<CVuMeter*> (view);
+		auto* vuMeter = dynamic_cast<CVuMeter*> (view);
 		if (!vuMeter)
 			return false;
 
@@ -3571,7 +3571,7 @@ public:
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const override
 	{
-		CVuMeter* vuMeter = dynamic_cast<CVuMeter*> (view);
+		auto* vuMeter = dynamic_cast<CVuMeter*> (view);
 		if (!vuMeter)
 			return false;
 		if (attributeName == kAttrOffBitmap)
@@ -3626,7 +3626,7 @@ public:
 	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CAnimationSplashScreen (CRect (0, 0, 0, 0), -1, nullptr, nullptr); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
-		CAnimationSplashScreen* splashScreen = dynamic_cast<CAnimationSplashScreen*> (view);
+		auto* splashScreen = dynamic_cast<CAnimationSplashScreen*> (view);
 		if (!splashScreen)
 			return false;
 
@@ -3677,7 +3677,7 @@ public:
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const override
 	{
-		CAnimationSplashScreen* splashScreen = dynamic_cast<CAnimationSplashScreen*> (view);
+		auto* splashScreen = dynamic_cast<CAnimationSplashScreen*> (view);
 		if (!splashScreen)
 			return false;
 
@@ -3743,13 +3743,13 @@ public:
 
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
-		UIViewSwitchContainer* viewSwitch = dynamic_cast<UIViewSwitchContainer*> (view);
+		auto* viewSwitch = dynamic_cast<UIViewSwitchContainer*> (view);
 		if (!viewSwitch)
 			return false;
 		const std::string* attr = attributes.getAttributeValue (kAttrTemplateNames);
 		if (attr)
 		{
-			UIDescriptionViewSwitchController* controller = dynamic_cast<UIDescriptionViewSwitchController*> (viewSwitch->getController ());
+			auto* controller = dynamic_cast<UIDescriptionViewSwitchController*> (viewSwitch->getController ());
 			if (controller)
 			{
 				controller->setTemplateNames (attr->c_str ());
@@ -3758,7 +3758,7 @@ public:
 		attr = attributes.getAttributeValue (kAttrTemplateSwitchControl);
 		if (attr)
 		{
-			UIDescriptionViewSwitchController* controller = dynamic_cast<UIDescriptionViewSwitchController*> (viewSwitch->getController ());
+			auto* controller = dynamic_cast<UIDescriptionViewSwitchController*> (viewSwitch->getController ());
 			if (controller)
 			{
 				int32_t tag = description->getTagForName (attr->c_str ());
@@ -3818,12 +3818,12 @@ public:
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const override
 	{
-		UIViewSwitchContainer* viewSwitch = dynamic_cast<UIViewSwitchContainer*> (view);
+		auto* viewSwitch = dynamic_cast<UIViewSwitchContainer*> (view);
 		if (!viewSwitch)
 			return false;
 		if (attributeName == kAttrTemplateNames)
 		{
-			UIDescriptionViewSwitchController* controller = dynamic_cast<UIDescriptionViewSwitchController*> (viewSwitch->getController ());
+			auto* controller = dynamic_cast<UIDescriptionViewSwitchController*> (viewSwitch->getController ());
 			if (controller)
 			{
 				controller->getTemplateNames (stringValue);
@@ -3832,7 +3832,7 @@ public:
 		}
 		else if (attributeName == kAttrTemplateSwitchControl)
 		{
-			UIDescriptionViewSwitchController* controller = dynamic_cast<UIDescriptionViewSwitchController*> (viewSwitch->getController ());
+			auto* controller = dynamic_cast<UIDescriptionViewSwitchController*> (viewSwitch->getController ());
 			if (controller)
 			{
 				UTF8StringPtr controlTag = desc->lookupControlTagName (controller->getSwitchControlTag ());
@@ -3944,7 +3944,7 @@ public:
 
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
-		CSplitView* splitView = dynamic_cast<CSplitView*> (view);
+		auto* splitView = dynamic_cast<CSplitView*> (view);
 		if (!splitView)
 			return false;
 
@@ -4002,7 +4002,7 @@ public:
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const override
 	{
-		CSplitView* splitView = dynamic_cast<CSplitView*> (view);
+		auto* splitView = dynamic_cast<CSplitView*> (view);
 		if (!splitView)
 			return false;
 		if (attributeName == kAttrSeparatorWidth)
@@ -4078,7 +4078,7 @@ public:
 
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
-		CShadowViewContainer* shadowView = dynamic_cast<CShadowViewContainer*> (view);
+		auto* shadowView = dynamic_cast<CShadowViewContainer*> (view);
 		if (!shadowView)
 			return false;
 		double d;
@@ -4107,7 +4107,7 @@ public:
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const override
 	{
-		CShadowViewContainer* shadowView = dynamic_cast<CShadowViewContainer*> (view);
+		auto* shadowView = dynamic_cast<CShadowViewContainer*> (view);
 		if (!shadowView)
 			return false;
 		if (attributeName == kAttrShadowIntensity)
@@ -4164,7 +4164,7 @@ public:
 		{
 			std::list<const std::string*> gradients;
 			description->collectGradientNames (gradients);
-			if (gradients.size () > 0)
+			if (!gradients.empty ())
 			{
 				gradientView->setGradient (description->getGradient (gradients.front ()->c_str ()));
 			}
@@ -4173,7 +4173,7 @@ public:
 	}
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
-		CGradientView* gv = dynamic_cast<CGradientView*> (view);
+		auto* gv = dynamic_cast<CGradientView*> (view);
 		if (gv == nullptr)
 			return false;
 		CColor color;
@@ -4262,7 +4262,7 @@ public:
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const override
 	{
-		CGradientView* gv = dynamic_cast<CGradientView*> (view);
+		auto* gv = dynamic_cast<CGradientView*> (view);
 		if (gv == nullptr)
 			return false;
 		if (attributeName == kAttrFrameColor)

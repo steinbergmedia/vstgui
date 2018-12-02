@@ -35,7 +35,7 @@ public:
 	DragOperation onDragMove (DragEventData data) override;
 	void onDragLeave (DragEventData data) override;
 	bool onDrop (DragEventData data) override;
-
+	
 	int32_t onKeyDown (VstKeyCode& keyCode) override;
 
 	CRect getRowBounds (int32_t row);
@@ -326,9 +326,9 @@ void CDataBrowser::recalculateLayout (bool rememberSelection)
 	
 	if (isAttached ())
 		invalid ();
-	
+		
 	validateSelection ();
-	
+ 
 	if (!rememberSelection)
 		unselectAll ();
 }
