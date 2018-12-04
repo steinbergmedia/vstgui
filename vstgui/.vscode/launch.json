@@ -5,7 +5,7 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
-			"name": "(gdb) standalone",
+			"name": "Linux standalone",
 			"type": "cppdbg",
 			"request": "launch",
 			"program": "${workspaceFolder}/build/Debug/standalone/standalone",
@@ -24,6 +24,26 @@
 				],
 			"externalConsole": true,
 			"MIMode": "gdb",
+			"setupCommands": [
+				{
+					"description": "Enable pretty-printing for gdb",
+					"text": "-enable-pretty-printing",
+					"ignoreFailures": true
+				}
+			]
+		},
+		{
+			"name": "macOS standalone",
+			"type": "cppdbg",
+			"request": "launch",
+			"program": "${workspaceFolder}/build/Debug/standalone.app/Contents/MacOS/standalone",
+			"args": [],
+			"stopAtEntry": false,
+			"cwd": "${workspaceFolder}/build/Debug/",
+			"environment": [
+				],
+			"externalConsole": false,
+			"MIMode": "lldb",
 			"setupCommands": [
 				{
 					"description": "Enable pretty-printing for gdb",
