@@ -15,9 +15,13 @@ namespace Standalone {
 //------------------------------------------------------------------------
 enum class CommonDirectoryLocation
 {
+	/** Path to the application. */
 	AppPath,
+	/** Path to the folder where application preferences are stored. */
 	AppPreferencesPath,
+	/** Path to the folder for application specific cache files. */
 	AppCachesPath,
+	/** Path to the users documents folder. */
 	UserDocumentsPath,
 };
 
