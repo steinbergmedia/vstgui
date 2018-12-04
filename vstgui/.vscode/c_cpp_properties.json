@@ -1,7 +1,7 @@
 {
     "configurations": [
         {
-            "name": "Linux",
+            "name": "Linux/macOS",
             "browse": {
                 "path": [
                     "${workspaceFolder}"

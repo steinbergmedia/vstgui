@@ -48,4 +48,8 @@
 		"typeinfo": "cpp"
 	},
 	"cmake.configureOnOpen": true,
+    "files.insertFinalNewline": true,
+    "files.trimFinalNewlines": true,
+	"files.trimTrailingWhitespace": true,
+	"editor.formatOnSave": true
 }
