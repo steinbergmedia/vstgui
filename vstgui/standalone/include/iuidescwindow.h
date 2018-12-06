@@ -53,6 +53,12 @@ public:
 	 */
 	virtual IController* createController (const UTF8StringView& name, IController* parent,
 	                                       const IUIDescription* uiDesc) = 0;
+	/** Notification that the UIDescription was sucessfully parsed
+	 *
+	 *	This can be used to get some resources from the UIDescription instance.
+	 *	@param uiDesc the UIDescription instance
+	 */
+	virtual void onUIDescriptionParsed (const IUIDescription* uiDesc) = 0;
 };
 
 //------------------------------------------------------------------------

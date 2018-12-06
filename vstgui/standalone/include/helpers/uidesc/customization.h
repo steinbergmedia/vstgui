@@ -14,6 +14,22 @@ namespace Standalone {
 namespace UIDesc {
 
 //------------------------------------------------------------------------
+/**	ICustomization adapter
+ *	@ingroup standalone
+ */
+class CustomizationAdapter : public ICustomization
+{
+public:
+	IController* createController (const UTF8StringView& name, IController* parent,
+	                               const IUIDescription* uiDesc) override
+	{
+		return nullptr;
+	}
+
+	void onUIDescriptionParsed (const IUIDescription* uiDesc) override {}
+};
+
+//------------------------------------------------------------------------
 /** Customization helper for an UIDesc window
  *
  *	Use this class to create controllers for your views
@@ -48,7 +64,7 @@ namespace UIDesc {
  *
  *	@ingroup standalone
  */
-class Customization : public ICustomization
+class Customization : public CustomizationAdapter
 {
 public:
 	static std::shared_ptr<Customization> make () { return std::make_shared<Customization> (); }
@@ -76,20 +92,6 @@ private:
 	using CreateViewControllerMap = std::unordered_map<std::string, CreateViewControllerFunc>;
 
 	CreateViewControllerMap createViewControllerMap;
-};
-
-//------------------------------------------------------------------------
-/**	ICustomization adapter
- *	@ingroup standalone
- */
-class CustomizationAdapter : public ICustomization
-{
-public:
-	IController* createController (const UTF8StringView& name, IController* parent,
-	                               const IUIDescription* uiDesc) override
-	{
-		return nullptr;
-	}
 };
 
 //------------------------------------------------------------------------
