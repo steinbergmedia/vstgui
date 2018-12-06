@@ -11,5 +11,3 @@
 #include "lib/platform/linux/cairofont.cpp"
 #include "lib/platform/linux/cairogradient.cpp"
 #include "lib/platform/linux/cairopath.cpp"
-
-#include "lib/platform/common/fileresourceinputstream.cpp"
