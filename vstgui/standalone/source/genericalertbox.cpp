@@ -136,11 +136,14 @@ public:
 		auto self = shared_from_this ();
 		if (value.getID () == Button1TagName)
 		{
-			alertResult = AlertResult::DefaultButton;
+			if (usedButtons == 1)
+				alertResult = AlertResult::DefaultButton;
+			else
+				alertResult = AlertResult::SecondButton;
 		}
 		else if (value.getID () == Button2TagName)
 		{
-			alertResult = AlertResult::SecondButton;
+			alertResult = AlertResult::DefaultButton;
 		}
 		else if (value.getID () == Button3TagName)
 		{
