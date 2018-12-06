@@ -28,6 +28,16 @@ TESTCASE(CAnimKnobCreatorTest,
 			return v->getNumSubPixmaps () == 11;
 		});
 	);
+
+	TEST(inverseBitmap,
+		DummyUIDescription uidesc;
+		testAttribute<CAnimKnob>(kCAnimKnob, kAttrInverseBitmap, true, &uidesc, [] (CAnimKnob* v) {
+			return v->getInverseBitmap () == true;
+		});
+		testAttribute<CAnimKnob>(kCAnimKnob, kAttrInverseBitmap, false, &uidesc, [] (CAnimKnob* v) {
+			return v->getInverseBitmap () == false;
+		});
+	);
 );
 
 } // VSTGUI

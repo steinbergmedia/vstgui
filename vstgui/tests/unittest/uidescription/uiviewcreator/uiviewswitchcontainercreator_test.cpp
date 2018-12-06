@@ -61,6 +61,30 @@ TESTCASE(UIViewSwitchContainerCreatorTest,
 		testPossibleValues (kUIViewSwitchContainer, kAttrAnimationStyle, &uidesc, {"fade", "move", "push"});
 	);
 	
+	TEST(animationTimingFunction,
+		DummyUIDescription uidesc;
+		testAttribute<UIViewSwitchContainer>(kUIViewSwitchContainer, kAttrAnimationTimingFunction, "linear", &uidesc, [] (UIViewSwitchContainer* v) {
+			return v->getTimingFunction() == UIViewSwitchContainer::kLinear;
+		});
+		testAttribute<UIViewSwitchContainer>(kUIViewSwitchContainer, kAttrAnimationTimingFunction, "easy-in", &uidesc, [] (UIViewSwitchContainer* v) {
+			return v->getTimingFunction() == UIViewSwitchContainer::kEasyIn;
+		});
+		testAttribute<UIViewSwitchContainer>(kUIViewSwitchContainer, kAttrAnimationTimingFunction, "easy-out", &uidesc, [] (UIViewSwitchContainer* v) {
+			return v->getTimingFunction() == UIViewSwitchContainer::kEasyOut;
+		});
+		testAttribute<UIViewSwitchContainer>(kUIViewSwitchContainer, kAttrAnimationTimingFunction, "easy-in-out", &uidesc, [] (UIViewSwitchContainer* v) {
+			return v->getTimingFunction() == UIViewSwitchContainer::kEasyInOut;
+		});
+		testAttribute<UIViewSwitchContainer>(kUIViewSwitchContainer, kAttrAnimationTimingFunction, "easy", &uidesc, [] (UIViewSwitchContainer* v) {
+			return v->getTimingFunction() == UIViewSwitchContainer::kEasy;
+		});
+	);
+
+	TEST(animationTimingFunctionValues,
+		DummyUIDescription uidesc;
+		testPossibleValues (kUIViewSwitchContainer, kAttrAnimationTimingFunction, &uidesc, {"linear", "easy-in", "easy-out", "easy-in-out", "easy"});
+	);
+	
 );
 
 } // VSTGUI

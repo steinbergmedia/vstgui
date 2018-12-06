@@ -171,6 +171,13 @@ TESTCASE(CSliderCreatorTest,
 		testPossibleValues (kCSlider, kAttrMode, &uidesc, {"touch", "relative touch", "free click", "ramp", "use global"});
 	);
 
+	TEST(frameWidth,
+		DummyUIDescription uidesc;
+		testAttribute<CSlider>(kCSlider, kAttrFrameWidth, 10, &uidesc, [&] (CSlider* v) {
+			return v->getFrameWidth() == 10;
+		});
+	);
+
 );
 
 } // VSTGUI
