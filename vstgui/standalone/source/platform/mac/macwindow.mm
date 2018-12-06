@@ -178,6 +178,7 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 	{
 		nsWindow.backgroundColor = [NSColor clearColor];
 		nsWindow.opaque = NO;
+		nsWindow.hasShadow = YES;
 	}
 
 	auto titleMacStr = dynamic_cast<MacString*> (config.title.getPlatformString ());
@@ -354,6 +355,8 @@ void Window::show ()
 	{
 		delegate->onShow ();
 		[nsWindow makeKeyAndOrderFront:nil];
+		if (!nsWindow.opaque)
+			[nsWindow invalidateShadow];
 	}
 }
 
