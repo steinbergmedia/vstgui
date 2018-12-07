@@ -365,7 +365,7 @@ public:
 		}
 		else if (slider == pControl)
 		{
-			performValueChange (UIAttributes::doubleToString (slider->getValue ()));
+			performValueChange (UIAttributes::doubleToString (slider->getValue ()).data ());
 		}
 	}
 	
