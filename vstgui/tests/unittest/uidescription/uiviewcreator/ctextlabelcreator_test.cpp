@@ -22,6 +22,14 @@ TESTCASE(CTextLabelCreatorTest,
 		});
 	);
 
+	TEST(titleWithNewLines,
+		UIDescriptionAdapter uidesc;
+		const auto title = "This\\nIs\\nA Title";
+		testAttribute<CTextLabel>(kCTextLabel, kAttrTitle, title, &uidesc, [&] (CTextLabel* v) {
+			return v->getText() == "This\nIs\nA Title";
+		});
+	);
+
 	TEST(truncateMode,
 		UIDescriptionAdapter uidesc;
 		testAttribute<CTextLabel>(kCTextLabel, kAttrTruncateMode, "head", &uidesc, [] (CTextLabel* v) {

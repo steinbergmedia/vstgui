@@ -167,6 +167,14 @@ TESTCASE(CKnobCreatorTest,
 		});
 	);
 
+	TEST(coronaOutlineWithAdd,
+		DummyUIDescription uidesc;
+		testAttribute<CKnob>(kCKnob, kAttrCoronaOutlineWidthAdd, 10., &uidesc, [&] (CKnob* v) {
+			return v->getCoronaOutlineWidthAdd () == 10.;
+		});
+	);
+
+
 );
 
 } // VSTGUI
