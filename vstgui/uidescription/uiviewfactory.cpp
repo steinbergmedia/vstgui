@@ -41,12 +41,9 @@ namespace VSTGUI {
 			MyView* myView = dynamic_cast<MyView*> (view);
 			if (myView == 0)
 				return false;
-			const std::string* attr = attributes.getAttributeValue ("my-custom-attribute");
-			if (attr)
-			{
-				int32_t value = (int32_t)strtol (attr->c_str (), 0, 10);
+			int32_t value;
+			if (attributes.getIntegerAttribute ("my-custom-attribute", value))
 				myView->setCustomAttribute (value);
-			}
 			return true;
 		}
 
@@ -73,9 +70,7 @@ namespace VSTGUI {
 				return false;
 			if (attributeName == "my-custom-attribute")
 			{
-				std::stringstream stream;
-				stream << (int32_t)myView->getCustomAttribute ();
-				stringValue = stream.str ();
+				stringValue = UIAttributes::integerToString (myView->getCustomAttribute ());
 				return true;
 			}
 			return false;

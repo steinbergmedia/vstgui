@@ -3,6 +3,7 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "../../unittests.h"
+#include "../uidescriptionadapter.h"
 #include "../../../../uidescription/uiviewcreator.h"
 #include "../../../../lib/cstring.h"
 #include "../../../../lib/cpoint.h"
@@ -14,20 +15,41 @@ using namespace UIViewCreator;
 
 TESTCASE(UIViewCreatorTest,
 
-	TEST(parseSize,
-		CPoint p;
-		EXPECT(parseSize ("10, 10", p));
-		EXPECT(p == CPoint (10, 10));
-		EXPECT(parseSize ("hola", p) == false);
+	TEST(bitmapToString,
+		UIDescriptionAdapter uidesc;
+		std::string str;
+		CBitmap bitmap (CResourceDescription ("test.png"));
+		EXPECT(bitmapToString (&bitmap, str, &uidesc) == true);
+		EXPECT(str == "test.png");
+		CBitmap bitmap2 (CResourceDescription (100));
+		EXPECT(bitmapToString (&bitmap2, str, &uidesc) == true);
+		EXPECT(str == "100");
 	);
 
-	TEST(pointToString,
-		CPoint p (10, 10);
-		std::string result;
-		EXPECT(pointToString (p, result));
-		EXPECT(result == "10, 10");
-	);
-
+	TEST(colorToString,
+		UIDescriptionAdapter uidesc;
+		std::string str;
+		CColor c (0, 0, 0, 255);
+		EXPECT(colorToString (c, str, &uidesc) == true);
+		EXPECT(str == "#000000ff")
+		c = CColor (0, 0, 255, 0);
+		EXPECT(colorToString (c, str, &uidesc) == true);
+		EXPECT(str == "#0000ff00")
+		c = CColor (0, 255, 0, 0);
+		EXPECT(colorToString (c, str, &uidesc) == true);
+		EXPECT(str == "#00ff0000")
+		c = CColor (255, 0, 0, 0);
+		EXPECT(colorToString (c, str, &uidesc) == true);
+		EXPECT(str == "#ff000000")
+	)
+	
+	TEST(emptyStringToTransparentColor,
+		UIDescriptionAdapter uidesc;
+		std::string str = "";
+		CColor c;
+		EXPECT(stringToColor(&str, c, &uidesc) == true);
+		EXPECT(c == kTransparentCColor);
+	)
 );
 
 } // VSTGUI

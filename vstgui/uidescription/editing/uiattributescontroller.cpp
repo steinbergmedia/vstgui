@@ -342,9 +342,7 @@ public:
 	{
 		if (pControl == slider)
 		{
-			std::stringstream sstream;
-			sstream << slider->getValue ();
-			getAttributesController ()->beginLiveAttributeChange (attrName, sstream.str ());
+			getAttributesController ()->beginLiveAttributeChange (attrName, UIAttributes::doubleToString (slider->getValue ()));
 		}
 		Controller::controlBeginEdit (pControl);
 	}
@@ -367,9 +365,7 @@ public:
 		}
 		else if (slider == pControl)
 		{
-			std::stringstream sstream;
-			sstream << slider->getValue ();
-			performValueChange (sstream.str ().c_str ());
+			performValueChange (UIAttributes::doubleToString (slider->getValue ()));
 		}
 	}
 	
