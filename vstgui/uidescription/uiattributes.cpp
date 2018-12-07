@@ -11,6 +11,37 @@
 #include <algorithm>
 
 namespace VSTGUI {
+namespace {
+
+//------------------------------------------------------------------------
+template<bool OnlyInteger>
+Optional<std::string> trimmedNumericalString (const std::string& str, size_t from, size_t numChars)
+{
+	std::string result;
+	auto strSize = str.size ();
+	if (from >= strSize)
+		return {};
+	auto points = 0u;
+	auto to = numChars == std::string::npos ? strSize : from + numChars;
+	for (auto i = from; i < to && i < strSize; ++i)
+	{
+		auto c = str[i];
+		if (!std::isspace (c))
+		{
+			if (!std::isdigit (c))
+			{
+				if (!OnlyInteger && c == '.' && points == 0u)
+					++points;
+				else
+					return {};
+			}
+			result.push_back (c);
+		}
+	}
+	return Optional<std::string> {std::move (result)};
+}
+
+} // anonymous
 
 //-----------------------------------------------------------------------------
 std::string UIAttributes::pointToString (CPoint p)
@@ -32,11 +63,19 @@ bool UIAttributes::stringToPoint (const std::string& str, CPoint& p)
 		std::vector<std::string> subStrings;
 		while (pos != std::string::npos)
 		{
-			subStrings.emplace_back (str, start, pos - start);
+			if (subStrings.size () > 1)
+				return false;
+			if (auto subStr = trimmedNumericalString<false> (str, start, pos - start))
+				subStrings.emplace_back (std::move (*subStr));
+			else
+				return false;
 			start = pos + 1;
 			pos = str.find (",", start, 1);
 		}
-		subStrings.emplace_back (str, start, std::string::npos);
+		if (auto subStr = trimmedNumericalString<false> (str, start, std::string::npos))
+			subStrings.emplace_back (std::move (*subStr));
+		else
+			return false;
 		if (subStrings.size () == 2)
 		{
 			p.x = UTF8StringView (subStrings[0].data ()).toDouble ();
@@ -60,10 +99,14 @@ std::string UIAttributes::doubleToString (double value, uint32_t precision)
 //-----------------------------------------------------------------------------
 bool UIAttributes::stringToDouble (const std::string& str, double& value)
 {
-	std::istringstream sstream (str);
-	sstream.imbue (std::locale::classic ());
-	sstream >> value;
-	return sstream.fail () == false;
+	if (auto string = trimmedNumericalString<false> (str, 0, str.size ()))
+	{
+		std::istringstream sstream (*string);
+		sstream.imbue (std::locale::classic ());
+		sstream >> value;
+		return sstream.fail () == false;
+	}
+	return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -99,10 +142,14 @@ std::string UIAttributes::integerToString (int32_t value)
 //-----------------------------------------------------------------------------
 bool UIAttributes::stringToInteger (const std::string& str, int32_t& value)
 {
-	std::istringstream sstream (str);
-	sstream.imbue (std::locale::classic ());
-	sstream >> value;
-	return sstream.fail () == false;
+	if (auto string = trimmedNumericalString<true> (str, 0, str.size ()))
+	{
+		std::istringstream sstream (*string);
+		sstream.imbue (std::locale::classic ());
+		sstream >> value;
+		return sstream.fail () == false;
+	}
+	return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -131,13 +178,19 @@ bool UIAttributes::stringToRect (const std::string& str, CRect& r)
 		std::vector<std::string> subStrings;
 		while (pos != std::string::npos)
 		{
-			subStrings.emplace_back (str, start, pos - start);
+			if (subStrings.size () > 3)
+				return false;
+			if (auto subStr = trimmedNumericalString<false> (str, start, pos - start))
+				subStrings.emplace_back (std::move (*subStr));
+			else
+				return false;
 			start = pos + 1;
 			pos = str.find (",", start, 1);
-			if (subStrings.size () > 4)
-				break;
 		}
-		subStrings.emplace_back (str, start, std::string::npos);
+		if (auto subStr = trimmedNumericalString<false> (str, start, std::string::npos))
+			subStrings.emplace_back (std::move (*subStr));
+		else
+			return false;
 		if (subStrings.size () == 4)
 		{
 			r.left = UTF8StringView (subStrings[0].data ()).toDouble ();
