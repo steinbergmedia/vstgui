@@ -1513,16 +1513,6 @@ public:
 			stringValue = numberToString (checkbox->getRoundRectRadius ());
 			return true;
 		}
-		else if (attributeName == kAttrFrameWidth)
-		{
-			stringValue = numberToString (checkbox->getFrameWidth ());
-			return true;
-		}
-		else if (attributeName == kAttrRoundRectRadius)
-		{
-			stringValue = numberToString (checkbox->getRoundRectRadius ());
-			return true;
-		}
 		return false;
 	}
 

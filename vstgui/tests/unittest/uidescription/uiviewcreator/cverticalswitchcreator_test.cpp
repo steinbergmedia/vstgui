@@ -28,6 +28,17 @@ TESTCASE(CVerticalSwitchCreatorTest,
 			return v->getNumSubPixmaps () == 11;
 		});
 	);
+
+	TEST(inverseBitmap,
+		DummyUIDescription uidesc;
+		testAttribute<CVerticalSwitch>(kCVerticalSwitch, kAttrInverseBitmap, true, &uidesc, [] (CVerticalSwitch* v) {
+			return v->getInverseBitmap () == true;
+		});
+		testAttribute<CVerticalSwitch>(kCVerticalSwitch, kAttrInverseBitmap, false, &uidesc, [] (CVerticalSwitch* v) {
+			return v->getInverseBitmap () == false;
+		});
+	);
+
 );
 
 } // VSTGUI
