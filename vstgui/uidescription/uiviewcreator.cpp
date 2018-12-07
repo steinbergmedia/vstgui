@@ -367,37 +367,20 @@ static constexpr auto strLeft = "left";
 static constexpr auto strRight = "right";
 static constexpr auto strCenter = "center";
 
-//-----------------------------------------------------------------------------
-template<typename T> std::string numberToString (T value)
-{
-	std::stringstream str;
-	str << value;
-	return str.str ();
-}
-
+#if VSTGUI_ENABLED_DEPRECATED_METHODS
 //-----------------------------------------------------------------------------
 bool parseSize (const std::string& str, CPoint& point)
 {
-	size_t sep = str.find (',', 0);
-	if (sep != std::string::npos)
-	{
-		point.x = strtol (str.c_str (), nullptr, 10);
-		point.y = strtol (str.c_str () + sep+1, nullptr, 10);
-		return true;
-	}
-	return false;
+	return UIAttributes::stringToPoint (str, point);
 }
 
 //-----------------------------------------------------------------------------
 bool pointToString (const CPoint& p, std::string& string)
 {
-	std::stringstream stream;
-	stream << p.x;
-	stream << ", ";
-	stream << p.y;
-	string = stream.str ();
+	string = UIAttributes::pointToString (p);
 	return true;
 }
+#endif
 
 //-----------------------------------------------------------------------------
 bool bitmapToString (CBitmap* bitmap, std::string& string, const IUIDescription* desc)
@@ -411,7 +394,7 @@ bool bitmapToString (CBitmap* bitmap, std::string& string, const IUIDescription*
 		if (res.type == CResourceDescription::kStringType)
 			string = res.u.name;
 		else
-			string = numberToString (res.u.id);
+			string = UIAttributes::integerToString (res.u.id);
 	}
 	return true;
 }
@@ -664,17 +647,17 @@ public:
 	{
 		if (attributeName == kAttrOrigin)
 		{
-			pointToString (view->getViewSize ().getTopLeft (), stringValue);
+			stringValue = UIAttributes::pointToString (view->getViewSize ().getTopLeft ());
 			return true;
 		}
 		else if (attributeName == kAttrSize)
 		{
-			pointToString (view->getViewSize ().getSize (), stringValue);
+			stringValue = UIAttributes::pointToString (view->getViewSize ().getSize ());
 			return true;
 		}
 		else if (attributeName == kAttrOpacity)
 		{
-			stringValue = numberToString (view->getAlphaValue ());
+			stringValue = UIAttributes::doubleToString (view->getAlphaValue ());
 			return true;
 		}
 		else if (attributeName == kAttrTransparent)
@@ -897,7 +880,7 @@ public:
 			return false;
 		if (attributeName == kAttrZIndex)
 		{
-			stringValue = numberToString (static_cast<int32_t>(lvc->getZIndex ()));
+			stringValue = UIAttributes::integerToString (static_cast<int32_t>(lvc->getZIndex ()));
 			return true;
 		}
 		return false;
@@ -1006,26 +989,17 @@ public:
 		}
 		if (attributeName == kAttrSpacing)
 		{
-			stringValue = numberToString ((int32_t)rcv->getSpacing ());
+			stringValue = UIAttributes::integerToString (static_cast<int32_t> (rcv->getSpacing ()));
 			return true;
 		}
 		if (attributeName == kAttrViewResizeAnimationTime)
 		{
-			stringValue = numberToString (rcv->getViewResizeAnimationTime ());
+			stringValue = UIAttributes::integerToString (static_cast<int32_t> (rcv->getViewResizeAnimationTime ()));
 			return true;
 		}
 		if (attributeName == kAttrMargin)
 		{
-			const CRect& margin = rcv->getMargin ();
-			std::stringstream str;
-			str << (int32_t)margin.left;
-			str << ",";
-			str << (int32_t)margin.top;
-			str << ",";
-			str << (int32_t)margin.right;
-			str << ",";
-			str << (int32_t)margin.bottom;
-			stringValue = str.str ();
+			stringValue = UIAttributes::rectToString (rcv->getMargin ());
 			return true;
 		}
 		if (attributeName == kAttrEqualSizeLayout)
@@ -1155,12 +1129,12 @@ public:
 			return false;
 		if (attributeName == kAttrContainerSize)
 		{
-			pointToString (sc->getContainerSize ().getSize (), stringValue);
+			stringValue = UIAttributes::pointToString (sc->getContainerSize ().getSize ());
 			return true;
 		}
 		if (attributeName == kAttrScrollbarWidth)
 		{
-			stringValue = numberToString (sc->getScrollbarWidth ());
+			stringValue = UIAttributes::doubleToString (sc->getScrollbarWidth ());
 			return true;
 		}
 		CScrollbar* scrollbar = sc->getVerticalScrollbar ();
@@ -1327,22 +1301,22 @@ public:
 		}
 		else if (attributeName == kAttrDefaultValue)
 		{
-			stringValue = numberToString (control->getDefaultValue ());
+			stringValue = UIAttributes::doubleToString (control->getDefaultValue ());
 			return true;
 		}
 		else if (attributeName == kAttrMinValue)
 		{
-			stringValue = numberToString (control->getMin ());
+			stringValue = UIAttributes::doubleToString (control->getMin ());
 			return true;
 		}
 		else if (attributeName == kAttrMaxValue)
 		{
-			stringValue = numberToString (control->getMax ());
+			stringValue = UIAttributes::doubleToString (control->getMax ());
 			return true;
 		}
 		else if (attributeName == kAttrWheelIncValue)
 		{
-			stringValue = numberToString (control->getWheelInc ());
+			stringValue = UIAttributes::doubleToString (control->getWheelInc ());
 			return true;
 		}
 		return false;
@@ -1505,12 +1479,12 @@ public:
 		}
 		else if (attributeName == kAttrFrameWidth)
 		{
-			stringValue = numberToString (checkbox->getFrameWidth ());
+			stringValue = UIAttributes::doubleToString (checkbox->getFrameWidth ());
 			return true;
 		}
 		else if (attributeName == kAttrRoundRectRadius)
 		{
-			stringValue = numberToString (checkbox->getRoundRectRadius ());
+			stringValue = UIAttributes::doubleToString (checkbox->getRoundRectRadius ());
 			return true;
 		}
 		return false;
@@ -1689,12 +1663,12 @@ public:
 		}
 		else if (attributeName == kAttrTextInset)
 		{
-			pointToString (pd->getTextInset (), stringValue);
+			stringValue = UIAttributes::pointToString (pd->getTextInset ());
 			return true;
 		}
 		else if (attributeName == kAttrTextShadowOffset)
 		{
-			pointToString (pd->getShadowTextOffset (), stringValue);
+			stringValue = UIAttributes::pointToString (pd->getShadowTextOffset ());
 			return true;
 		}
 		else if (attributeName == kAttrFontAntialias)
@@ -1739,12 +1713,12 @@ public:
 		}
 		else if (attributeName == kAttrRoundRectRadius)
 		{
-			stringValue = numberToString (pd->getRoundRectRadius ());
+			stringValue = UIAttributes::doubleToString (pd->getRoundRectRadius ());
 			return true;
 		}
 		else if (attributeName == kAttrFrameWidth)
 		{
-			stringValue = numberToString (pd->getFrameWidth ());
+			stringValue = UIAttributes::doubleToString (pd->getFrameWidth ());
 			return true;
 		}
 		else if (attributeName == kAttrTextAlignment)
@@ -1760,17 +1734,17 @@ public:
 		}
 		else if (attributeName == kAttrValuePrecision)
 		{
-			stringValue = numberToString ((uint32_t)pd->getPrecision ());
+			stringValue = UIAttributes::integerToString (static_cast<int32_t> (pd->getPrecision ()));
 			return true;
 		}
 		else if (attributeName == kAttrTextRotation)
 		{
-			stringValue = numberToString (pd->getTextRotation ());
+			stringValue = UIAttributes::doubleToString (pd->getTextRotation ());
 			return true;
 		}
 		else if (attributeName == kAttrBackgroundOffset)
 		{
-			pointToString (pd->getBackOffset (), stringValue);
+			stringValue = UIAttributes::pointToString (pd->getBackOffset ());
 			return true;
 		}
 		return false;
@@ -2144,7 +2118,7 @@ public:
 			return false;
 		if (attributeName == kAttrClearMarkInset)
 		{
-			pointToString (ste->getClearMarkInset (), stringValue);
+			stringValue = UIAttributes::pointToString (ste->getClearMarkInset ());
 			return true;
 		}
 		return false;
@@ -2366,12 +2340,12 @@ public:
 		}
 		else if (attributeName == kAttrFrameWidth)
 		{
-			stringValue = numberToString (button->getFrameWidth ());
+			stringValue = UIAttributes::doubleToString (button->getFrameWidth ());
 			return true;
 		}
 		else if (attributeName == kAttrRoundRadius)
 		{
-			stringValue = numberToString (button->getRoundRadius ());
+			stringValue = UIAttributes::doubleToString (button->getRoundRadius ());
 			return true;
 		}
 		else if (attributeName == kAttrKickStyle)
@@ -2404,7 +2378,7 @@ public:
 		}
 		else if (attributeName == kAttrIconTextMargin)
 		{
-			stringValue = numberToString (button->getTextMargin ());
+			stringValue = UIAttributes::doubleToString (button->getTextMargin ());
 			return true;
 		}
 		else if (attributeName == kAttrTextAlignment)
@@ -2633,7 +2607,7 @@ public:
 			UIAttributes::StringArray stringArray;
 			for (const auto& segment : segments)
 				stringArray.emplace_back (segment.name.getString ());
-			stringValue = UIAttributes::createStringArrayValue (stringArray);
+			stringValue = UIAttributes::stringArrayToString (stringArray);
 			return true;
 		}
 		else if (attributeName == kAttrTextColor)
@@ -2653,12 +2627,12 @@ public:
 		}
 		else if (attributeName == kAttrFrameWidth)
 		{
-			stringValue = numberToString (button->getFrameWidth ());
+			stringValue = UIAttributes::doubleToString (button->getFrameWidth ());
 			return true;
 		}
 		else if (attributeName == kAttrRoundRadius)
 		{
-			stringValue = numberToString (button->getRoundRadius ());
+			stringValue = UIAttributes::doubleToString (button->getRoundRadius ());
 			return true;
 		}
 		else if (attributeName == kAttrStyle)
@@ -2669,7 +2643,7 @@ public:
 		}
 		else if (attributeName == kAttrIconTextMargin)
 		{
-			stringValue = numberToString (button->getTextMargin ());
+			stringValue = UIAttributes::doubleToString (button->getTextMargin ());
 			return true;
 		}
 		else if (attributeName == kAttrTextAlignment)
@@ -2853,37 +2827,37 @@ public:
 
 		if (attributeName == kAttrAngleStart)
 		{
-			stringValue = numberToString ((knob->getStartAngle () / Constants::pi * 180.));
+			stringValue = UIAttributes::doubleToString ((knob->getStartAngle () / Constants::pi * 180.), 5);
 			return true;
 		}
 		else if (attributeName == kAttrAngleRange)
 		{
-			stringValue = numberToString ((knob->getRangeAngle () / Constants::pi * 180.));
+			stringValue = UIAttributes::doubleToString ((knob->getRangeAngle () / Constants::pi * 180.), 5);
 			return true;
 		}
 		else if (attributeName == kAttrValueInset)
 		{
-			stringValue = numberToString (knob->getInsetValue ());
+			stringValue = UIAttributes::doubleToString (knob->getInsetValue ());
 			return true;
 		}
 		else if (attributeName == kAttrCoronaInset)
 		{
-			stringValue = numberToString (knob->getCoronaInset ());
+			stringValue = UIAttributes::doubleToString (knob->getCoronaInset ());
 			return true;
 		}
 		else if (attributeName == kAttrZoomFactor)
 		{
-			stringValue = numberToString (knob->getZoomFactor ());
+			stringValue = UIAttributes::doubleToString (knob->getZoomFactor ());
 			return true;
 		}
 		else if (attributeName == kAttrHandleLineWidth)
 		{
-			stringValue = numberToString (knob->getHandleLineWidth ());
+			stringValue = UIAttributes::doubleToString (knob->getHandleLineWidth ());
 			return true;
 		}
 		else if (attributeName == kAttrCoronaOutlineWidthAdd)
 		{
-			stringValue = numberToString (knob->getCoronaOutlineWidthAdd ());
+			stringValue = UIAttributes::doubleToString (knob->getCoronaOutlineWidthAdd ());
 			return true;
 		}
 		else if (attributeName == kAttrCoronaColor)
@@ -3019,12 +2993,12 @@ public:
 
 		if (attributeName == kAttrHeightOfOneImage)
 		{
-			stringValue = numberToString ((int32_t)multiBitmapControl->getHeightOfOneImage ());
+			stringValue = UIAttributes::integerToString (static_cast<int32_t> (multiBitmapControl->getHeightOfOneImage ()));
 			return true;
 		}
 		if (attributeName == kAttrSubPixmaps)
 		{
-			stringValue = numberToString (multiBitmapControl->getNumSubPixmaps ());
+			stringValue = UIAttributes::integerToString (multiBitmapControl->getNumSubPixmaps ());
 			return true;
 		}
 		return false;
@@ -3396,17 +3370,17 @@ public:
 		}
 		else if (attributeName == kAttrHandleOffset)
 		{
-			pointToString (slider->getOffsetHandle (), stringValue);
+			stringValue = UIAttributes::pointToString (slider->getOffsetHandle ());
 			return true;
 		}
 		else if (attributeName == kAttrBitmapOffset)
 		{
-			pointToString (slider->getOffset (), stringValue);
+			stringValue = UIAttributes::pointToString (slider->getOffset ());
 			return true;
 		}
 		else if (attributeName == kAttrZoomFactor)
 		{
-			stringValue = numberToString (slider->getZoomFactor ());
+			stringValue = UIAttributes::doubleToString (slider->getZoomFactor ());
 			return true;
 		}
 		else if (attributeName == kAttrOrientation)
@@ -3484,7 +3458,7 @@ public:
 		}
 		else if (attributeName == kAttrFrameWidth)
 		{
-			stringValue = numberToString (slider->getFrameWidth ());
+			stringValue = UIAttributes::doubleToString (slider->getFrameWidth ());
 			return true;
 		}
 
@@ -3583,12 +3557,12 @@ public:
 		}
 		else if (attributeName == kAttrNumLed)
 		{
-			stringValue = numberToString (vuMeter->getNbLed ());
+			stringValue = UIAttributes::integerToString (vuMeter->getNbLed ());
 			return true;
 		}
 		else if (attributeName == kAttrDecreaseStepValue)
 		{
-			stringValue = numberToString (vuMeter->getDecreaseStepValue ());
+			stringValue = UIAttributes::doubleToString (vuMeter->getDecreaseStepValue ());
 			return true;
 		}
 		return false;
@@ -3682,22 +3656,22 @@ public:
 		}
 		else if (attributeName == kAttrSplashOrigin)
 		{
-			pointToString (splashScreen->getSplashRect ().getTopLeft (), stringValue);
+			stringValue = UIAttributes::pointToString (splashScreen->getSplashRect ().getTopLeft ());
 			return true;
 		}
 		else if (attributeName == kAttrSplashSize)
 		{
-			pointToString (splashScreen->getSplashRect ().getSize (), stringValue);
+			stringValue = UIAttributes::pointToString (splashScreen->getSplashRect ().getSize ());
 			return true;
 		}
 		else if (attributeName == kAttrAnimationIndex)
 		{
-			stringValue = numberToString (splashScreen->getAnimationIndex ());
+			stringValue = UIAttributes::integerToString (splashScreen->getAnimationIndex ());
 			return true;
 		}
 		else if (attributeName == kAttrAnimationTime)
 		{
-			stringValue = numberToString (splashScreen->getAnimationTime ());
+			stringValue = UIAttributes::integerToString (splashScreen->getAnimationTime ());
 			return true;
 		}
 		return false;
@@ -3836,7 +3810,7 @@ public:
 		}
 		else if (attributeName == kAttrAnimationTime)
 		{
-			stringValue = numberToString ((int32_t)viewSwitch->getAnimationTime ());
+			stringValue = UIAttributes::integerToString (static_cast<int32_t> (viewSwitch->getAnimationTime ()));
 			return true;
 		}
 		else if (attributeName == kAttrAnimationStyle)
@@ -3997,7 +3971,7 @@ public:
 			return false;
 		if (attributeName == kAttrSeparatorWidth)
 		{
-			stringValue = numberToString ((int32_t)splitView->getSeparatorWidth ());
+			stringValue = UIAttributes::integerToString (static_cast<int32_t> (splitView->getSeparatorWidth ()));
 			return true;
 		}
 		if (attributeName == kAttrOrientation)
@@ -4102,17 +4076,17 @@ public:
 			return false;
 		if (attributeName == kAttrShadowIntensity)
 		{
-			stringValue = numberToString (shadowView->getShadowIntensity ());
+			stringValue = UIAttributes::doubleToString (shadowView->getShadowIntensity ());
 			return true;
 		}
 		else if (attributeName == kAttrShadowBlurSize)
 		{
-			stringValue = numberToString (shadowView->getShadowBlurSize ());
+			stringValue = UIAttributes::doubleToString (shadowView->getShadowBlurSize ());
 			return true;
 		}
 		else if (attributeName == kAttrShadowOffset)
 		{
-			pointToString (shadowView->getShadowOffset (), stringValue);
+			stringValue = UIAttributes::pointToString (shadowView->getShadowOffset ());
 			return true;
 		}
 		return false;
@@ -4262,17 +4236,17 @@ public:
 		}
 		if (attributeName == kAttrGradientAngle)
 		{
-			stringValue = numberToString (gv->getGradientAngle ());
+			stringValue = UIAttributes::doubleToString (gv->getGradientAngle ());
 			return true;
 		}
 		if (attributeName == kAttrRoundRectRadius)
 		{
-			stringValue = numberToString (gv->getRoundRectRadius ());
+			stringValue = UIAttributes::doubleToString (gv->getRoundRectRadius ());
 			return true;
 		}
 		if (attributeName == kAttrFrameWidth)
 		{
-			stringValue = numberToString (gv->getFrameWidth ());
+			stringValue = UIAttributes::doubleToString (gv->getFrameWidth ());
 			return true;
 		}
 		if (attributeName == kAttrDrawAntialiased)
@@ -4287,12 +4261,12 @@ public:
 		}
 		if (attributeName == kAttrRadialRadius)
 		{
-			stringValue = numberToString (gv->getRadialRadius ());
+			stringValue = UIAttributes::doubleToString (gv->getRadialRadius ());
 			return true;
 		}
 		if (attributeName == kAttrRadialCenter)
 		{
-			pointToString (gv->getRadialCenter (), stringValue);
+			stringValue = UIAttributes::pointToString (gv->getRadialCenter ());
 			return true;
 		}
 		if (attributeName == kAttrGradient)

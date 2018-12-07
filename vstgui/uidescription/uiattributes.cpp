@@ -13,6 +13,170 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
+std::string UIAttributes::pointToString (CPoint p)
+{
+	std::stringstream str;
+	str << p.x;
+	str << ", ";
+	str << p.y;
+	return str.str ();
+}
+
+//-----------------------------------------------------------------------------
+bool UIAttributes::stringToPoint (const std::string& str, CPoint& p)
+{
+	size_t start = 0;
+	size_t pos = str.find (",", start, 1);
+	if (pos != std::string::npos)
+	{
+		std::vector<std::string> subStrings;
+		while (pos != std::string::npos)
+		{
+			subStrings.emplace_back (str, start, pos - start);
+			start = pos + 1;
+			pos = str.find (",", start, 1);
+		}
+		subStrings.emplace_back (str, start, std::string::npos);
+		if (subStrings.size () == 2)
+		{
+			p.x = UTF8StringView (subStrings[0].data ()).toDouble ();
+			p.y = UTF8StringView (subStrings[1].data ()).toDouble ();
+			return true;
+		}
+	}
+	return false;
+}
+
+//------------------------------------------------------------------------
+std::string UIAttributes::doubleToString (double value, uint32_t precision)
+{
+	std::stringstream str;
+	str.imbue (std::locale::classic ());
+	str.precision (precision);
+	str << value;
+	return str.str ();
+}
+
+//-----------------------------------------------------------------------------
+bool UIAttributes::stringToDouble (const std::string& str, double& value)
+{
+	std::istringstream sstream (str);
+	sstream.imbue (std::locale::classic ());
+	sstream >> value;
+	return sstream.fail () == false;
+}
+
+//-----------------------------------------------------------------------------
+std::string UIAttributes::boolToString (bool value)
+{
+	return value ? "true" : "false";
+}
+
+//-----------------------------------------------------------------------------
+bool UIAttributes::stringToBool (const std::string& str, bool& value)
+{
+	if (str == "true")
+	{
+		value = true;
+		return true;
+	}
+	if (str == "false")
+	{
+		value = false;
+		return true;
+	}
+	return false;
+}
+
+//-----------------------------------------------------------------------------
+std::string UIAttributes::integerToString (int32_t value)
+{
+	std::stringstream str;
+	str << value;
+	return str.str ();
+}
+
+//-----------------------------------------------------------------------------
+bool UIAttributes::stringToInteger (const std::string& str, int32_t& value)
+{
+	std::istringstream sstream (str);
+	sstream.imbue (std::locale::classic ());
+	sstream >> value;
+	return sstream.fail () == false;
+}
+
+//-----------------------------------------------------------------------------
+std::string UIAttributes::rectToString (CRect r, uint32_t precision)
+{
+	std::stringstream str;
+	str.imbue (std::locale::classic ());
+	str.precision (precision);
+	str << r.left;
+	str << ", ";
+	str << r.top;
+	str << ", ";
+	str << r.right;
+	str << ", ";
+	str << r.bottom;
+	return str.str ();
+}
+
+//-----------------------------------------------------------------------------
+bool UIAttributes::stringToRect (const std::string& str, CRect& r)
+{
+	size_t start = 0;
+	size_t pos = str.find (",", start, 1);
+	if (pos != std::string::npos)
+	{
+		std::vector<std::string> subStrings;
+		while (pos != std::string::npos)
+		{
+			subStrings.emplace_back (str, start, pos - start);
+			start = pos + 1;
+			pos = str.find (",", start, 1);
+			if (subStrings.size () > 4)
+				break;
+		}
+		subStrings.emplace_back (str, start, std::string::npos);
+		if (subStrings.size () == 4)
+		{
+			r.left = UTF8StringView (subStrings[0].data ()).toDouble ();
+			r.top = UTF8StringView (subStrings[1].data ()).toDouble ();
+			r.right = UTF8StringView (subStrings[2].data ()).toDouble ();
+			r.bottom = UTF8StringView (subStrings[3].data ()).toDouble ();
+			return true;
+		}
+	}
+	return false;
+}
+
+//-----------------------------------------------------------------------------
+std::string UIAttributes::stringArrayToString (const StringArray& values)
+{
+	std::string value;
+	size_t numValues = values.size ();
+	for (size_t i = 0; i < numValues - 1; i++)
+	{
+		value += values[i];
+		value += ',';
+	}
+	value += values[numValues-1];
+	return value;
+}
+
+//-----------------------------------------------------------------------------
+bool UIAttributes::stringToStringArray (const std::string& str, std::vector<std::string>& values)
+{
+	std::stringstream ss (str);
+	std::string item;
+	while (std::getline (ss, item, ','))
+	{
+		values.emplace_back (std::move (item));
+	}
+	return true;
+}
+
+//-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 UIAttributes::UIAttributes (UTF8StringPtr* attributes)
@@ -86,193 +250,85 @@ void UIAttributes::removeAttribute (const std::string& name)
 //-----------------------------------------------------------------------------
 void UIAttributes::setDoubleAttribute (const std::string& name, double value)
 {
-	std::stringstream str;
-	str.imbue (std::locale::classic ());
-	str.precision (40);
-	str << value;
-	setAttribute (name, str.str ());
+	setAttribute (name, doubleToString (value));
 }
 
 //-----------------------------------------------------------------------------
 bool UIAttributes::getDoubleAttribute (const std::string& name, double& value) const
 {
-	const std::string* str = getAttributeValue (name);
-	if (str)
-	{
-		std::istringstream sstream (*str);
-		sstream.imbue (std::locale::classic ());
-		sstream.precision (40);
-		sstream >> value;
-		return true;
-	}
+	if (auto str = getAttributeValue (name))
+		return stringToDouble (*str, value);
 	return false;
 }
 
 //-----------------------------------------------------------------------------
 void UIAttributes::setBooleanAttribute (const std::string& name, bool value)
 {
-	setAttribute (name, value ? "true" : "false");
+	setAttribute (name, boolToString (value));
 }
 
 //-----------------------------------------------------------------------------
 bool UIAttributes::getBooleanAttribute (const std::string& name, bool& value) const
 {
-	const std::string* str = getAttributeValue (name);
-	if (str)
-	{
-		if (*str == "true")
-		{
-			value = true;
-			return true;
-		}
-		else if (*str == "false")
-		{
-			value = false;
-			return true;
-		}
-	}
+	if (auto str = getAttributeValue (name))
+		return stringToBool (*str, value);
 	return false;
 }
 
 //-----------------------------------------------------------------------------
 void UIAttributes::setIntegerAttribute (const std::string& name, int32_t value)
 {
-	std::stringstream str;
-	str << value;
-	setAttribute (name, str.str ());
+	setAttribute (name, integerToString (value));
 }
 
 //-----------------------------------------------------------------------------
 bool UIAttributes::getIntegerAttribute (const std::string& name, int32_t& value) const
 {
-	const std::string* str = getAttributeValue (name);
-	if (str)
-	{
-		value = (int32_t)strtol (str->c_str (), nullptr, 10);
-		return true;
-	}
+	if (auto str = getAttributeValue (name))
+		return stringToInteger(*str, value);
 	return false;
 }
 
 //-----------------------------------------------------------------------------
 void UIAttributes::setPointAttribute (const std::string& name, const CPoint& p)
 {
-	std::stringstream str;
-	str << p.x;
-	str << ", ";
-	str << p.y;
-	setAttribute (name, str.str ());
+	setAttribute (name, pointToString (p));
 }
 
 //-----------------------------------------------------------------------------
 bool UIAttributes::getPointAttribute (const std::string& name, CPoint& p) const
 {
-	const std::string* str = getAttributeValue (name);
-	if (str)
-	{
-		size_t start = 0;
-		size_t pos = str->find (",", start, 1);
-		if (pos != std::string::npos)
-		{
-			StringArray subStrings;
-			while (pos != std::string::npos)
-			{
-				subStrings.emplace_back (*str, start, pos - start);
-				start = pos+1;
-				pos = str->find (",", start, 1);
-			}
-			subStrings.emplace_back (*str, start, std::string::npos);
-			if (subStrings.size () == 2)
-			{
-				p.x = UTF8StringView (subStrings[0].c_str ()).toDouble ();
-				p.y = UTF8StringView (subStrings[1].c_str ()).toDouble ();
-				return true;
-			}
-		}
-	}
+	if (auto str = getAttributeValue (name))
+		return stringToPoint (*str, p);
 	return false;
 }
 
 //-----------------------------------------------------------------------------
 void UIAttributes::setRectAttribute (const std::string& name, const CRect& r)
 {
-	std::stringstream str;
-	str << r.left;
-	str << ", ";
-	str << r.top;
-	str << ", ";
-	str << r.right;
-	str << ", ";
-	str << r.bottom;
-	setAttribute (name, str.str ());
+	setAttribute (name, rectToString (r));
 }
 
 //-----------------------------------------------------------------------------
 bool UIAttributes::getRectAttribute (const std::string& name, CRect& r) const
 {
-	const std::string* str = getAttributeValue (name);
-	if (str)
-	{
-		size_t start = 0;
-		size_t pos = str->find (",", start, 1);
-		if (pos != std::string::npos)
-		{
-			StringArray subStrings;
-			while (pos != std::string::npos)
-			{
-				subStrings.emplace_back (*str, start, pos - start);
-				start = pos+1;
-				pos = str->find (",", start, 1);
-			}
-			subStrings.emplace_back (*str, start, std::string::npos);
-			if (subStrings.size () == 4)
-			{
-				r.left = UTF8StringView (subStrings[0].c_str ()).toDouble ();
-				r.top = UTF8StringView (subStrings[1].c_str ()).toDouble ();
-				r.right = UTF8StringView (subStrings[2].c_str ()).toDouble ();
-				r.bottom = UTF8StringView (subStrings[3].c_str ()).toDouble ();
-				return true;
-			}
-		}
-	}
+	if (auto str = getAttributeValue (name))
+		return stringToRect (*str, r);
 	return false;
 }
 
 //-----------------------------------------------------------------------------
 void UIAttributes::setStringArrayAttribute (const std::string& name, const StringArray& values)
 {
-	setAttribute (name, createStringArrayValue (values));
+	setAttribute (name, stringArrayToString (values));
 }
 
 //-----------------------------------------------------------------------------
 bool UIAttributes::getStringArrayAttribute (const std::string& name, StringArray& values) const
 {
-	const std::string* str = getAttributeValue (name);
-	if (str)
-	{
-		std::stringstream ss (*str);
-		std::string item;
-		while (std::getline (ss, item, ','))
-		{
-			values.emplace_back (std::move (item));
-		}
-		return true;
-	}
+	if (auto str = getAttributeValue (name))
+		return stringToStringArray(*str, values);
 	return false;
-}
-
-//-----------------------------------------------------------------------------
-std::string UIAttributes::createStringArrayValue (const StringArray& values)
-{
-	std::string value;
-	size_t numValues = values.size ();
-	for (size_t i = 0; i < numValues - 1; i++)
-	{
-		value += values[i];
-		value += ',';
-	}
-	value += values[numValues-1];
-	return value;
 }
 
 //-----------------------------------------------------------------------------
