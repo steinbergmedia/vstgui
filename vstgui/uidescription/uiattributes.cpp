@@ -46,11 +46,7 @@ Optional<std::string> trimmedNumericalString (const std::string& str, size_t fro
 //-----------------------------------------------------------------------------
 std::string UIAttributes::pointToString (CPoint p)
 {
-	std::stringstream str;
-	str << p.x;
-	str << ", ";
-	str << p.y;
-	return str.str ();
+	return doubleToString (p.x) + ", " + doubleToString (p.y);
 }
 
 //-----------------------------------------------------------------------------
@@ -63,7 +59,7 @@ bool UIAttributes::stringToPoint (const std::string& str, CPoint& p)
 		std::vector<std::string> subStrings;
 		while (pos != std::string::npos)
 		{
-			if (subStrings.size () > 1)
+			if (subStrings.size () >= 1)
 				return false;
 			if (auto subStr = trimmedNumericalString<false> (str, start, pos - start))
 				subStrings.emplace_back (std::move (*subStr));
@@ -155,17 +151,8 @@ bool UIAttributes::stringToInteger (const std::string& str, int32_t& value)
 //-----------------------------------------------------------------------------
 std::string UIAttributes::rectToString (CRect r, uint32_t precision)
 {
-	std::stringstream str;
-	str.imbue (std::locale::classic ());
-	str.precision (precision);
-	str << r.left;
-	str << ", ";
-	str << r.top;
-	str << ", ";
-	str << r.right;
-	str << ", ";
-	str << r.bottom;
-	return str.str ();
+	return doubleToString (r.left) + ", " + doubleToString (r.top) + ", " +
+	       doubleToString (r.right) + ", " + doubleToString (r.bottom);
 }
 
 //-----------------------------------------------------------------------------
@@ -178,7 +165,7 @@ bool UIAttributes::stringToRect (const std::string& str, CRect& r)
 		std::vector<std::string> subStrings;
 		while (pos != std::string::npos)
 		{
-			if (subStrings.size () > 3)
+			if (subStrings.size () >= 3)
 				return false;
 			if (auto subStr = trimmedNumericalString<false> (str, start, pos - start))
 				subStrings.emplace_back (std::move (*subStr));
