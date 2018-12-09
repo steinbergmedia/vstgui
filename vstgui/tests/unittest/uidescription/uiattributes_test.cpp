@@ -132,6 +132,11 @@ TESTCASE(UIAttributesTest,
 		CMemoryStream s;
 		UIAttributes a;
 		EXPECT(a.restore(s) == false);
+		s.rewind ();
+		uint32_t someValue = 0;
+		s.writeRaw (&someValue, sizeof (someValue));
+		s.rewind ();
+		EXPECT(a.restore(s) == false);
 	);
 	
 	TEST(stringToBool,
@@ -167,7 +172,9 @@ TESTCASE(UIAttributesTest,
 	TEST(stringToPoint,
 		CPoint p;
 		EXPECT(UIAttributes::stringToPoint ("30, 20, 50", p) == false)
+		EXPECT(UIAttributes::stringToPoint ("30, 20a", p) == false)
 		EXPECT(UIAttributes::stringToPoint ("a, b", p) == false)
+		EXPECT(UIAttributes::stringToPoint ("20", p) == false)
 
 		EXPECT(UIAttributes::stringToPoint ("15, 25", p) && p == CPoint (15, 25))
 		EXPECT(UIAttributes::stringToPoint ("1.768, 25", p) && p == CPoint (1.768, 25))
@@ -176,6 +183,8 @@ TESTCASE(UIAttributesTest,
 	TEST(stringToRect,
 		CRect r;
 		EXPECT(UIAttributes::stringToRect ("30, 20, 50", r) == false)
+		EXPECT(UIAttributes::stringToRect ("30, 20, 50, 60, 80", r) == false)
+		EXPECT(UIAttributes::stringToRect ("30, 20, 50, 60a", r) == false)
 		EXPECT(UIAttributes::stringToRect ("a, b, c, d", r) == false)
 
 		EXPECT(UIAttributes::stringToRect ("0, 12.5, 5, 8", r) && r == CRect (0, 12.5, 5, 8))
