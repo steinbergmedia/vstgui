@@ -56,8 +56,8 @@ public:
 	/// @name Segment Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	void addSegment (const Segment& segment, uint32_t index = kPushBack);
-	void addSegment (Segment&& segment, uint32_t index = kPushBack);
+	bool addSegment (const Segment& segment, uint32_t index = kPushBack);
+	bool addSegment (Segment&& segment, uint32_t index = kPushBack);
 	void removeSegment (uint32_t index);
 	void removeAllSegments ();
 	const Segments& getSegments () const { return segments; }

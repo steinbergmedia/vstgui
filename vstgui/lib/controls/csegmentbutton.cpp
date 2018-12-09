@@ -24,10 +24,10 @@ bool CSegmentButton::canAddOneMoreSegment () const
 }
 
 //-----------------------------------------------------------------------------
-void CSegmentButton::addSegment (const Segment& segment, uint32_t index)
+bool CSegmentButton::addSegment (const Segment& segment, uint32_t index)
 {
 	if (!canAddOneMoreSegment ())
-		return;
+		return false;
 	if (index == kPushBack && segments.size () < kPushBack)
 		segments.emplace_back (segment);
 	else if (index < segments.size ())
@@ -37,13 +37,14 @@ void CSegmentButton::addSegment (const Segment& segment, uint32_t index)
 		segments.insert (it, segment);
 	}
 	updateSegmentSizes ();
+	return true;
 }
 
 //-----------------------------------------------------------------------------
-void CSegmentButton::addSegment (Segment&& segment, uint32_t index)
+bool CSegmentButton::addSegment (Segment&& segment, uint32_t index)
 {
 	if (!canAddOneMoreSegment ())
-		return;
+		return false;
 	if (index == kPushBack && segments.size () < kPushBack)
 		segments.emplace_back (std::move (segment));
 	else if (index < segments.size ())
@@ -53,6 +54,7 @@ void CSegmentButton::addSegment (Segment&& segment, uint32_t index)
 		segments.insert (it, std::move (segment));
 	}
 	updateSegmentSizes ();
+	return true;
 }
 
 //-----------------------------------------------------------------------------

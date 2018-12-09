@@ -29,6 +29,17 @@ TESTCASE(CSegmentButtonTest,
 		EXPECT (b.getSegments()[2].name == "2");
 	);
 
+	TEST(insertSegment,
+		CSegmentButton b (CRect (0, 0, 10, 10));
+		CSegmentButton::Segment s;
+		s.name = "0";
+		b.addSegment (std::move (s));
+		s.name = "1";
+		b.addSegment (std::move (s), 0);
+		EXPECT(b.getSegments ()[0].name == "1");
+		EXPECT(b.getSegments ()[1].name == "0");
+	);
+
 	TEST(removeSegment,
 		CSegmentButton b (CRect (0, 0, 10, 10));
 		CSegmentButton::Segment s;
@@ -295,6 +306,32 @@ TESTCASE(CSegmentButtonTest,
 	TEST(focusPathSetting,
 		CSegmentButton b (CRect (0, 0, 10, 10));
 		EXPECT (b.drawFocusOnTop () == false);
+	);
+
+	TEST(multiSelection,
+		CSegmentButton b (CRect (0, 0, 10, 10));
+		b.setSelectionMode (CSegmentButton::SelectionMode::kMultiple);
+		b.addSegment ({});
+		b.addSegment ({});
+		b.addSegment ({});
+		b.selectSegment (0, true);
+		b.selectSegment (1, false);
+		b.selectSegment (2, true);
+		EXPECT(b.isSegmentSelected (0) == true);
+		EXPECT(b.isSegmentSelected (1) == false);
+		EXPECT(b.isSegmentSelected (2) == true);
+	);
+
+	TEST(multiSelectionMaxEntries,
+		CSegmentButton b (CRect (0, 0, 10, 10));
+		b.setSelectionMode (CSegmentButton::SelectionMode::kMultiple);
+		CSegmentButton::Segment s;
+		for (auto i = 0; i < 32; ++i)
+		{
+			EXPECT(b.addSegment (s) == true);
+		}
+		EXPECT(b.addSegment (s) == false);
+		EXPECT(b.addSegment (std::move (s)) == false);
 	);
 );
 
