@@ -59,6 +59,26 @@ TESTCASE(CXYPadTest,
 		pad.onMouseUp (p, kLButton);
 	);
 
+	TEST(cancelMouseInteraction,
+		CXYPad pad (CRect (0, 0, 100, 100));
+		float startX;
+		float startY;
+		pad.calculateXY (pad.getValue (), startX, startY);
+		CPoint p (0, 0);
+		pad.onMouseDown (p, kLButton);
+		p (10, 10);
+		pad.onMouseMoved (p, kLButton);
+		float x;
+		float y;
+		pad.calculateXY (pad.getValue (), x, y);
+		EXPECT(startX != x);
+		EXPECT(startY != y);
+		pad.onMouseCancel ();
+		pad.calculateXY (pad.getValue (), x, y);
+		EXPECT(startX == x);
+		EXPECT(startY == y);
+	);
+
 	TEST(otherMouseInteraction,
 		CXYPad pad (CRect (0, 0, 100, 100));
 		CPoint p (0, 0);
@@ -80,6 +100,21 @@ TESTCASE(CXYPadTest,
 		p (150, 150);
 		EXPECT (pad.onMouseMoved (p, kLButton) == kMouseMoveEventHandledButDontNeedMoreEvents);
 		EXPECT (pad.isEditing () == false);
+	);
+	
+	TEST(mouseWheel,
+		CXYPad pad (CRect (0, 0, 100, 100));
+		float x = 1.f;
+		float y = 1.f;
+		CXYPad::calculateXY (pad.getValue (), x, y);
+		EXPECT(x == 0.f && y == 0.f);
+		pad.onWheel (CPoint (1, 1), CMouseWheelAxis::kMouseWheelAxisX, 1.f, 0);
+		CXYPad::calculateXY (pad.getValue (), x, y);
+		EXPECT(x == pad.getWheelInc () && y == 0.f);
+		pad.onWheel (CPoint (1, 1), CMouseWheelAxis::kMouseWheelAxisY, 1.f, 0);
+		CXYPad::calculateXY (pad.getValue (), x, y);
+		EXPECT(x == pad.getWheelInc () && y == pad.getWheelInc ());
+
 	);
 );
 
