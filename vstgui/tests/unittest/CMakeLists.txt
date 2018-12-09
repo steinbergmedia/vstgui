@@ -156,7 +156,7 @@ if(CMAKE_HOST_APPLE)
     )
 
     vstgui_set_cxx_version(${target} 14)
-    target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS} ENABLE_UNIT_TESTS=1 VSTGUI_LIVE_EDITING=1)
+    target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS} ENABLE_UNIT_TESTS=1 VSTGUI_LIVE_EDITING=1 VSTGUI_ENABLE_DEPRECATED_METHODS=0)
     vstgui_source_group_by_folder(${target})
     target_compile_options(${target} PUBLIC "--coverage")
     add_custom_command(TARGET ${target} POST_BUILD COMMAND "/usr/bin/ruby" "${CMAKE_CURRENT_SOURCE_DIR}/lcov/generate.rb" "${PROJECT_SOURCE_DIR}" "${CMAKE_CURRENT_BINARY_DIR}/vstgui.build/Debug/codecoverage.build/Objects-normal/x86_64" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${target}" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/coverage_output" VERBATIM)
