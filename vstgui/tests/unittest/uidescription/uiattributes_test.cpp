@@ -167,6 +167,7 @@ TESTCASE(UIAttributesTest,
 
 		EXPECT(UIAttributes::stringToDouble ("25.5", d) && d == 25.5)
 		EXPECT(UIAttributes::stringToDouble (".5", d) && d == 0.5)
+		EXPECT(UIAttributes::stringToDouble (" -0.5", d) && d == -0.5)
 	)
 
 	TEST(stringToPoint,

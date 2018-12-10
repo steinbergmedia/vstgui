@@ -28,10 +28,13 @@ Optional<std::string> trimmedNumericalString (const std::string& str, size_t fro
 		auto c = str[i];
 		if (!std::isspace (c))
 		{
-			if (!std::isdigit (c))
+			if (!std::isdigit (c) && c != '-' && c != '+')
 			{
 				if (!OnlyInteger && c == '.' && points == 0u)
 					++points;
+				else if (points == 1u && c == 'e')
+				{
+				}
 				else
 					return {};
 			}
