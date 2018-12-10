@@ -41,7 +41,7 @@ begin
   system ("./lcov --remove #{COVERAGE_FILE} --output-file #{COVERAGE_FILE} #{VSTGUI_DIR}/vstgui_mac.mm")
   removeDataFromTrace(COVERAGE_FILE, "#{VSTGUI_DIR}/uidescription/expat")
   removeDataFromTrace(COVERAGE_FILE, "#{VSTGUI_DIR}/tests/unittest")
-  removeDataFromTrace(COVERAGE_FILE, "#{VSTGUI_DIR}/lib/platform/mac")
+  removeDataFromTrace(COVERAGE_FILE, "#{VSTGUI_DIR}/lib/platform")
   # system ("./lcov --remove vstgui-coverage.info --output-file vstgui-coverage.info #{VSTGUI_DIR}/tests/unittest/**")
   if ($? != 0)
     raise "lcov error"
