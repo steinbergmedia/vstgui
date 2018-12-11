@@ -8,6 +8,7 @@
 #include "ccolor.h"
 #include "cgraphicspath.h"
 #include "cgraphicstransform.h"
+#include "malloc.h"
 #include <cassert>
 #include <algorithm>
 #include <memory>
@@ -402,6 +403,7 @@ private:
 	{
 		registerProperty (Property::kInputBitmap, BitmapFilter::Property (BitmapFilter::Property::kObject));
 		registerProperty (Property::kRadius, BitmapFilter::Property ((int32_t)2));
+		registerProperty (Property::kAlphaChannelOnly, BitmapFilter::Property ((int32_t)0));
 	}
 
 	bool run (bool replace) override
@@ -410,6 +412,7 @@ private:
 		uint32_t radius = static_cast<uint32_t>(static_cast<double>(getProperty (Property::kRadius).getInteger ()) * inputBitmap->getPlatformBitmap ()->getScaleFactor ());
 		if (inputBitmap == nullptr || radius == UINT_MAX)
 			return false;
+		bool alphaChannelOnly = getProperty (Property::kAlphaChannelOnly).getInteger () > 0 ? true : false;
 		if (radius < 2)
 		{
 			if (replace)
@@ -421,7 +424,7 @@ private:
 			SharedPointer<CBitmapPixelAccess> inputAccessor = owned (CBitmapPixelAccess::create (inputBitmap));
 			if (inputAccessor == nullptr)
 				return false;
-			run (*inputAccessor, *inputAccessor, radius);
+			run (*inputAccessor, *inputAccessor, radius, alphaChannelOnly);
 			return registerProperty (Property::kOutputBitmap, BitmapFilter::Property (inputBitmap));
 		}
 		SharedPointer<CBitmap> outputBitmap = owned (new CBitmap (inputBitmap->getWidth (), inputBitmap->getHeight ()));
@@ -432,13 +435,13 @@ private:
 			if (inputAccessor == nullptr || outputAccessor == nullptr)
 				return false;
 
-			run (*inputAccessor, *outputAccessor, radius);
+			run (*inputAccessor, *outputAccessor, radius, alphaChannelOnly);
 			return registerProperty (Property::kOutputBitmap, BitmapFilter::Property (outputBitmap));
 		}
 		return false;
 	}
 
-	void run (CBitmapPixelAccess& inputAccessor, CBitmapPixelAccess& outputAccessor, uint32_t radius)
+	void run (CBitmapPixelAccess& inputAccessor, CBitmapPixelAccess& outputAccessor, uint32_t radius, bool alphaChannelOnly)
 	{
 		auto inputPbpa = inputAccessor.getPlatformBitmapPixelAccess ();
 		auto outputPbpa = outputAccessor.getPlatformBitmapPixelAccess ();
@@ -446,135 +449,212 @@ private:
 		auto outputAddressPtr = outputPbpa->getAddress ();
 		auto width = inputPbpa->getBytesPerRow () / 4;
 		auto height = inputAccessor.getBitmapHeight ();
-		switch (inputPbpa->getPixelFormat ())
+		if (alphaChannelOnly)
 		{
-			case IPlatformBitmapPixelAccess::kARGB:
-			case IPlatformBitmapPixelAccess::kABGR:
+			switch (inputPbpa->getPixelFormat ())
 			{
-				algo<0, 1, 2, 3> (inputAddressPtr, outputAddressPtr, width, height,
-				                  static_cast<int32_t> (radius / 2));
-				break;
+				case IPlatformBitmapPixelAccess::kARGB:
+				case IPlatformBitmapPixelAccess::kABGR:
+				{
+					algo<true, false, false, false> (inputAddressPtr, outputAddressPtr, width, height, static_cast<int32_t> (radius / 2));
+					break;
+				}
+				case IPlatformBitmapPixelAccess::kRGBA:
+				case IPlatformBitmapPixelAccess::kBGRA:
+				{
+					algo<false, false, false, true> (inputAddressPtr, outputAddressPtr, width, height, static_cast<int32_t> (radius / 2));
+					break;
+				}
 			}
-			case IPlatformBitmapPixelAccess::kRGBA:
-			case IPlatformBitmapPixelAccess::kBGRA:
-			{
-				algo<1, 2, 3, 0> (inputAddressPtr, outputAddressPtr, width, height,
-				                  static_cast<int32_t> (radius / 2));
-				break;
-			}
+		
+		}
+		else
+		{
+			algo<true, true, true, true> (inputAddressPtr, outputAddressPtr, width, height, static_cast<int32_t> (radius / 2));
 		}
 	}
 
-	template <int32_t redPos, int32_t greenPos, int32_t bluePos, int32_t alphaPos>
-	void algo (uint8_t* inputPixel, uint8_t* outputPixel, int32_t width, int32_t height,
-	           int32_t radius)
+	Buffer<uint8_t> pc0;
+	Buffer<uint8_t> pc1;
+	Buffer<uint8_t> pc2;
+	Buffer<uint8_t> pc3;
+	Buffer<int32_t> vMin;
+	Buffer<int32_t> vMax;
+	Buffer<uint8_t> dv;
+
+	template<bool plane0, bool plane1, bool plane2, bool plane3>
+	void algo (uint8_t* inPixel, uint8_t* outPixel, int32_t width, int32_t height, int32_t radius)
 	{
 		vstgui_assert (radius > 0);
+
+		constexpr int32_t pos0 = 0;
+		constexpr int32_t pos1 = 1;
+		constexpr int32_t pos2 = 2;
+		constexpr int32_t pos3 = 3;
 		constexpr int32_t numComponents = 4;
+
 		int32_t wm = width - 1;
 		int32_t hm = height - 1;
 		int32_t areaSize = width * height;
 		int32_t div = radius + radius + 1;
-		auto red = std::unique_ptr<uint8_t[]> (new uint8_t[areaSize]);
-		auto green = std::unique_ptr<uint8_t[]> (new uint8_t[areaSize]);
-		auto blue = std::unique_ptr<uint8_t[]> (new uint8_t[areaSize]);
-		auto vMin = std::unique_ptr<int32_t[]> (new int32_t[std::max (width, height)]);
-		auto vMax = std::unique_ptr<int32_t[]> (new int32_t[std::max (width, height)]);
+		
+		if (plane0)
+			pc0.allocate (areaSize);
+		if (plane1)
+			pc1.allocate (areaSize);
+		if (plane2)
+			pc2.allocate (areaSize);
+		if (plane3)
+			pc3.allocate (areaSize);
+		vMin.allocate (std::max (width, height));
+		vMax.allocate (std::max (width, height));
+		dv.allocate (256 * div);
 
-		auto dv = std::unique_ptr<uint8_t[]> (new uint8_t[256 * div]);
-
-		for (auto i = 0; i < 256 * div; ++i)
+		for (auto i = 0; i < dv.size (); ++i)
 			dv[i] = (i / div);
 
-		int32_t rsum, gsum, bsum;
+		int32_t sum0, sum1, sum2, sum3;
 		for (auto y = 0, yw = 0, yi = 0; y < height; ++y, yw += width)
 		{
-			rsum = gsum = bsum = 0;
+			sum0 = sum1 = sum2 = sum3 = 0;
 			for (auto i = -radius; i <= radius; i++)
 			{
 				auto p = (yi + std::min (wm, std::max (i, 0))) * numComponents;
-				rsum += inputPixel[p + redPos];
-				gsum += inputPixel[p + greenPos];
-				bsum += inputPixel[p + bluePos];
+				if (plane0)
+					sum0 += inPixel[p + pos0];
+				if (plane1)
+					sum1 += inPixel[p + pos1];
+				if (plane2)
+					sum2 += inPixel[p + pos2];
+				if (plane3)
+					sum3 += inPixel[p + pos3];
 			}
 			if (y == 0)
 			{
 				for (auto x = 0; x < width; ++x, ++yi)
 				{
-					red[yi] = dv[rsum];
-					green[yi] = dv[gsum];
-					blue[yi] = dv[bsum];
+					if (plane0)
+						pc0[yi] = dv[sum0];
+					if (plane1)
+						pc1[yi] = dv[sum1];
+					if (plane2)
+						pc2[yi] = dv[sum2];
+					if (plane3)
+						pc3[yi] = dv[sum3];
 					vMin[x] = std::min (x + radius + 1, wm);
 					vMax[x] = std::max (x - radius, 0);
 					auto p1 = (yw + vMin[x]) * numComponents;
 					auto p2 = (yw + vMax[x]) * numComponents;
-					rsum += inputPixel[p1 + redPos] - inputPixel[p2 + redPos];
-					gsum += inputPixel[p1 + greenPos] - inputPixel[p2 + greenPos];
-					bsum += inputPixel[p1 + bluePos] - inputPixel[p2 + bluePos];
+					if (plane0)
+						sum0 += inPixel[p1 + pos0] - inPixel[p2 + pos0];
+					if (plane1)
+						sum1 += inPixel[p1 + pos1] - inPixel[p2 + pos1];
+					if (plane2)
+						sum2 += inPixel[p1 + pos2] - inPixel[p2 + pos2];
+					if (plane3)
+						sum3 += inPixel[p1 + pos3] - inPixel[p2 + pos3];
 				}
 			}
 			else
 			{
 				for (auto x = 0; x < width; ++x, ++yi)
 				{
-					red[yi] = dv[rsum];
-					green[yi] = dv[gsum];
-					blue[yi] = dv[bsum];
+					if (plane0)
+						pc0[yi] = dv[sum0];
+					if (plane1)
+						pc1[yi] = dv[sum1];
+					if (plane2)
+						pc2[yi] = dv[sum2];
+					if (plane3)
+						pc3[yi] = dv[sum3];
 					auto p1 = (yw + vMin[x]) * numComponents;
 					auto p2 = (yw + vMax[x]) * numComponents;
-					rsum += inputPixel[p1 + redPos] - inputPixel[p2 + redPos];
-					gsum += inputPixel[p1 + greenPos] - inputPixel[p2 + greenPos];
-					bsum += inputPixel[p1 + bluePos] - inputPixel[p2 + bluePos];
+					if (plane0)
+						sum0 += inPixel[p1 + pos0] - inPixel[p2 + pos0];
+					if (plane1)
+						sum1 += inPixel[p1 + pos1] - inPixel[p2 + pos1];
+					if (plane2)
+						sum2 += inPixel[p1 + pos2] - inPixel[p2 + pos2];
+					if (plane3)
+						sum3 += inPixel[p1 + pos3] - inPixel[p2 + pos3];
 				}
 			}
 		}
 
-		rsum = gsum = bsum = 0;
+		sum0 = sum1 = sum2 = sum3 = 0;
 		for (auto i = -radius, yp = -radius * width; i <= radius; ++i, yp += width)
 		{
 			auto yi = std::max (0, yp);
-			rsum += red[yi];
-			gsum += green[yi];
-			bsum += blue[yi];
+			if (plane0)
+				sum0 += pc0[yi];
+			if (plane1)
+				sum1 += pc1[yi];
+			if (plane2)
+				sum2 += pc2[yi];
+			if (plane3)
+				sum3 += pc3[yi];
 		}
 		for (auto y = 0, yi = 0; y < height; ++y, yi += width)
 		{
 			auto pos = yi * numComponents;
-			outputPixel[pos + redPos] = dv[rsum];
-			outputPixel[pos + greenPos] = dv[gsum];
-			outputPixel[pos + bluePos] = dv[bsum];
-			outputPixel[pos + alphaPos] = inputPixel[pos + alphaPos];
+			if (plane0)
+				outPixel[pos + pos0] = dv[sum0];
+			if (plane1)
+				outPixel[pos + pos1] = dv[sum1];
+			if (plane2)
+				outPixel[pos + pos2] = dv[sum2];
+			if (plane3)
+				outPixel[pos + pos3] = dv[sum3];
 			vMin[y] = std::min (y + radius + 1, hm) * width;
 			vMax[y] = std::max (y - radius, 0) * width;
 			auto p1 = vMin[y];
 			auto p2 = vMax[y];
-			rsum += red[p1] - red[p2];
-			gsum += green[p1] - green[p2];
-			bsum += blue[p1] - blue[p2];
+			if (plane0)
+				sum0 += pc0[p1] - pc0[p2];
+			if (plane1)
+				sum1 += pc1[p1] - pc1[p2];
+			if (plane2)
+				sum2 += pc2[p1] - pc2[p2];
+			if (plane3)
+				sum3 += pc3[p1] - pc3[p2];
 		}
 
 		for (auto x = 1; x < width; ++x)
 		{
-			rsum = gsum = bsum = 0;
+			sum0 = sum1 = sum2 = sum3 = 0;
 			for (auto i = -radius, yp = -radius * width; i <= radius; ++i, yp += width)
 			{
 				auto yi = std::max (0, yp) + x;
-				rsum += red[yi];
-				gsum += green[yi];
-				bsum += blue[yi];
+				if (plane0)
+					sum0 += pc0[yi];
+				if (plane1)
+					sum1 += pc1[yi];
+				if (plane2)
+					sum2 += pc2[yi];
+				if (plane3)
+					sum3 += pc3[yi];
 			}
 			for (auto y = 0, yi = x; y < height; ++y, yi += width)
 			{
 				auto pos = yi * numComponents;
-				outputPixel[pos + redPos] = dv[rsum];
-				outputPixel[pos + greenPos] = dv[gsum];
-				outputPixel[pos + bluePos] = dv[bsum];
-				outputPixel[pos + alphaPos] = inputPixel[pos + alphaPos];
+				if (plane0)
+					outPixel[pos + pos0] = dv[sum0];
+				if (plane1)
+					outPixel[pos + pos1] = dv[sum1];
+				if (plane2)
+					outPixel[pos + pos2] = dv[sum2];
+				if (plane3)
+					outPixel[pos + pos3] = dv[sum3];
 				auto p1 = x + vMin[y];
 				auto p2 = x + vMax[y];
-				rsum += red[p1] - red[p2];
-				gsum += green[p1] - green[p2];
-				bsum += blue[p1] - blue[p2];
+				if (plane0)
+					sum0 += pc0[p1] - pc0[p2];
+				if (plane1)
+					sum1 += pc1[p1] - pc1[p2];
+				if (plane2)
+					sum2 += pc2[p1] - pc2[p2];
+				if (plane3)
+					sum3 += pc3[p1] - pc3[p2];
 			}
 		}
 	}
@@ -621,7 +701,7 @@ protected:
 //----------------------------------------------------------------------------------------------------
 class ScaleLinear : public ScaleBase
 {
-public:	
+public:
 	static IFilter* CreateFunction (IdStringPtr _name)
 	{
 		return new ScaleLinear ();
