@@ -129,6 +129,7 @@ namespace Standard {
 		Properties:
 			- Property::kInputBitmap
 			- Property::kOutputBitmap
+			- Property::kAlphaChannelOnly
 	 */
 	static const IdStringPtr kGrayscale = "Grayscale";
 
@@ -198,7 +199,9 @@ namespace Standard {
 		static const IdStringPtr kOutputRect = "OutputRect";
 		/** [Property::kInteger] */
 		static const IdStringPtr kIgnoreAlphaColorValue = "IgnoreAlphaColorValue";
-	} // namespace Property
+		/** [Property::kInteger] */
+		static const IdStringPtr kAlphaChannelOnly = "AlphaChannelOnly";
+	} // Property
 
 } // namespace Standard
 

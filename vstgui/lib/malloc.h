@@ -56,6 +56,8 @@ public:
 
 	void allocate (size_t objectCount)
 	{
+		if (count == objectCount)
+			return;
 		if (buffer)
 			deallocate ();
 		if (objectCount)
