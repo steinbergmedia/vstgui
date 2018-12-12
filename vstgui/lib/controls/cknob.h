@@ -10,11 +10,65 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
+class CKnobBase : public CControl
+{
+public:
+	//-----------------------------------------------------------------------------
+	/// @name CKnobBase Methods
+	//-----------------------------------------------------------------------------
+	//@{
+	virtual void  valueToPoint (CPoint& point) const;
+	virtual float valueFromPoint (CPoint& point) const;
+
+	virtual void  setStartAngle (float val);
+	virtual float getStartAngle () const { return startAngle; }
+
+	virtual void  setRangeAngle (float val);
+	virtual float getRangeAngle () const { return rangeAngle; }
+
+	virtual void  setZoomFactor (float val) { zoomFactor = val; }
+	virtual float getZoomFactor () const { return zoomFactor; }
+
+	virtual CCoord getInsetValue () const { return inset; }
+	virtual void setInsetValue (CCoord val) { inset = val; }
+	//@}
+
+	// overrides
+	bool onWheel (const CPoint& where, const float& distance, const CButtonState& buttons) override;
+	int32_t onKeyDown (VstKeyCode& keyCode) override;
+	void setViewSize (const CRect &rect, bool invalid = true) override;
+	bool sizeToFit () override;
+	void setMin (float val) override;
+	void setMax (float val) override;
+
+	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseCancel () override;
+	
+	CLASS_METHODS_VIRTUAL(CKnobBase, CControl)
+protected:
+	CKnobBase (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background);
+	CKnobBase (const CKnobBase& knob);
+	void compute ();
+
+	float startAngle, rangeAngle;
+	float zoomFactor;
+	CCoord inset;
+
+private:
+	struct MouseEditingState;
+	
+	MouseEditingState& getMouseEditingState ();
+	void clearMouseEditingState ();
+};
+
+//-----------------------------------------------------------------------------
 // CKnob Declaration
 //! @brief a knob control
 /// @ingroup controls
 //-----------------------------------------------------------------------------
-class CKnob : public CControl
+class CKnob : public CKnobBase
 {
 public:
 	enum DrawStyle {
@@ -36,18 +90,6 @@ public:
 	/// @name CKnob Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual void  setStartAngle (float val);
-	virtual float getStartAngle () const { return startAngle; }
-
-	virtual void  setRangeAngle (float val);
-	virtual float getRangeAngle () const { return rangeAngle; }
-
-	virtual void  valueToPoint (CPoint& point) const;
-	virtual float valueFromPoint (CPoint& point) const;
-
-	virtual CCoord getInsetValue () const { return inset; }
-	virtual void setInsetValue (CCoord val) { inset = val; }
-
 	virtual int32_t getDrawStyle () const { return drawStyle; }
 	virtual void setDrawStyle (int32_t style);
 	
@@ -71,36 +113,23 @@ public:
 
 	virtual CBitmap* getHandleBitmap () const { return pHandle; }
 	virtual void setHandleBitmap (CBitmap* bitmap);
-
-	virtual void  setZoomFactor (float val) { zoomFactor = val; }
-	virtual float getZoomFactor () const { return zoomFactor; }
 	//@}
 
 	// overrides
 	void draw (CDrawContext* pContext) override;
-	bool onWheel (const CPoint& where, const float& distance, const CButtonState& buttons) override;
-	int32_t onKeyDown (VstKeyCode& keyCode) override;
-	void setViewSize (const CRect &rect, bool invalid = true) override;
-	bool sizeToFit () override;
-	void setMin (float val) override;
-	void setMax (float val) override;
 	bool getFocusPath (CGraphicsPath& outPath) override;
 	bool drawFocusOnTop () override;
 
-	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
-	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
-	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
-	CMouseEventResult onMouseCancel () override;
-	
-	CLASS_METHODS(CKnob, CControl)
+	CLASS_METHODS(CKnob, CKnobBase)
 protected:
 	~CKnob () noexcept override;
+
 	virtual void drawHandle (CDrawContext* pContext);
 	virtual void drawCoronaOutline (CDrawContext* pContext) const;
 	virtual void drawCorona (CDrawContext* pContext) const;
 	virtual void drawHandleAsCircle (CDrawContext* pContext) const;
 	virtual void drawHandleAsLine (CDrawContext* pContext) const;
-	void compute ();
+
 	void addArc (CGraphicsPath* path, const CRect& r, double startAngle, double sweepAngle) const;
 
 	CPoint offset;
@@ -108,19 +137,10 @@ protected:
 	int32_t drawStyle;
 	CColor colorHandle, colorShadowHandle, coronaColor;
 	CCoord handleLineWidth;
-	CCoord inset;
 	CCoord coronaInset;
 	CCoord coronaOutlineWidthAdd;
 
 	CBitmap* pHandle;
-	float startAngle, rangeAngle;
-	float zoomFactor;
-
-private:
-	struct MouseEditingState;
-	
-	MouseEditingState& getMouseEditingState ();
-	void clearMouseEditingState ();
 };
 
 //-----------------------------------------------------------------------------
@@ -128,7 +148,7 @@ private:
 //! @brief a bitmap knob control
 /// @ingroup controls
 //-----------------------------------------------------------------------------
-class CAnimKnob : public CKnob, public IMultiBitmapControl
+class CAnimKnob : public CKnobBase, public IMultiBitmapControl
 {
 public:
 	CAnimKnob (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background, const CPoint& offset = CPoint (0, 0));
@@ -150,7 +170,7 @@ public:
 	void setBackground (CBitmap *background) override;
 	void setNumSubPixmaps (int32_t numSubPixmaps) override { IMultiBitmapControl::setNumSubPixmaps (numSubPixmaps); invalid (); }
 
-	CLASS_METHODS(CAnimKnob, CKnob)
+	CLASS_METHODS(CAnimKnob, CKnobBase)
 protected:
 	~CAnimKnob () noexcept override = default;
 	bool	bInverseBitmap;
