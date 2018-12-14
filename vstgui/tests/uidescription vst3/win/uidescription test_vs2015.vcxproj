@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -23,6 +23,7 @@
     <RootNamespace>uidescriptiontest</RootNamespace>
     <Keyword>Win32Proj</Keyword>
     <ProjectName>uidescription test</ProjectName>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
@@ -112,7 +113,7 @@
     <ClCompile>
       <AdditionalOptions>/MP /Zc:inline %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>../../../../;../../../../../VST3SDK/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../../../../;../../../../;../../../../../VST3SDK/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WINDOWS;VSTGUI_LIVE_EDITING=1;DEBUG;DEVELOPMENT=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -177,6 +178,28 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\..\..\base\source\baseiids.cpp" />
+    <ClCompile Include="..\..\..\..\..\base\source\classfactory.cpp" />
+    <ClCompile Include="..\..\..\..\..\base\source\fbuffer.cpp" />
+    <ClCompile Include="..\..\..\..\..\base\source\fdebug.cpp" />
+    <ClCompile Include="..\..\..\..\..\base\source\fobject.cpp" />
+    <ClCompile Include="..\..\..\..\..\base\source\fstreamer.cpp" />
+    <ClCompile Include="..\..\..\..\..\base\source\fstring.cpp" />
+    <ClCompile Include="..\..\..\..\..\base\source\timer.cpp" />
+    <ClCompile Include="..\..\..\..\..\base\source\updatehandler.cpp" />
+    <ClCompile Include="..\..\..\..\..\base\thread\source\fatomic.cpp" />
+    <ClCompile Include="..\..\..\..\..\base\thread\source\flock.cpp" />
+    <ClCompile Include="..\..\..\..\..\base\thread\source\fthread.cpp" />
+    <ClCompile Include="..\..\..\..\..\pluginterfaces\base\conststringtable.cpp" />
+    <ClCompile Include="..\..\..\..\..\pluginterfaces\base\coreiids.cpp" />
+    <ClCompile Include="..\..\..\..\..\pluginterfaces\base\funknown.cpp" />
+    <ClCompile Include="..\..\..\..\..\pluginterfaces\base\ustring.cpp" />
+    <ClCompile Include="..\..\..\..\..\public.sdk\source\common\pluginview.cpp" />
+    <ClCompile Include="..\..\..\..\..\public.sdk\source\main\pluginfactoryvst3.cpp" />
+    <ClCompile Include="..\..\..\..\..\public.sdk\source\vst3stdsdk.cpp" />
+    <ClCompile Include="..\..\..\..\..\public.sdk\source\vst\vst2wrapper\vst2wrapper.sdk.cpp" />
+    <ClCompile Include="..\..\..\..\..\public.sdk\source\vst\vstguieditor.cpp" />
+    <ClCompile Include="..\..\..\..\..\public.sdk\source\vst\vstinitiids.cpp" />
     <ClCompile Include="..\..\..\plugin-bindings\vst3groupcontroller.cpp" />
     <ClCompile Include="..\source\animationtest.cpp" />
     <ClCompile Include="..\source\edituidescriptioneditor.cpp" />
@@ -192,6 +215,22 @@
     <ClCompile Include="..\source\zoomtest.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\..\..\base\source\classfactory.h" />
+    <ClInclude Include="..\..\..\..\..\base\source\fbuffer.h" />
+    <ClInclude Include="..\..\..\..\..\base\source\fdebug.h" />
+    <ClInclude Include="..\..\..\..\..\base\source\fobject.h" />
+    <ClInclude Include="..\..\..\..\..\base\source\fstreamer.h" />
+    <ClInclude Include="..\..\..\..\..\base\source\fstring.h" />
+    <ClInclude Include="..\..\..\..\..\base\source\timer.h" />
+    <ClInclude Include="..\..\..\..\..\base\source\updatehandler.h" />
+    <ClInclude Include="..\..\..\..\..\pluginterfaces\base\conststringtable.h" />
+    <ClInclude Include="..\..\..\..\..\pluginterfaces\base\fplatform.h" />
+    <ClInclude Include="..\..\..\..\..\pluginterfaces\base\ftypes.h" />
+    <ClInclude Include="..\..\..\..\..\pluginterfaces\base\funknown.h" />
+    <ClInclude Include="..\..\..\..\..\pluginterfaces\base\ustring.h" />
+    <ClInclude Include="..\..\..\..\..\public.sdk\source\common\pluginview.h" />
+    <ClInclude Include="..\..\..\..\..\public.sdk\source\main\pluginfactoryvst3.h" />
+    <ClInclude Include="..\..\..\..\..\public.sdk\source\vst\vstguieditor.h" />
     <ClInclude Include="..\..\..\plugin-bindings\vst3groupcontroller.h" />
     <ClInclude Include="..\source\animationtest.h" />
     <ClInclude Include="..\source\edituidescriptioneditor.h" />

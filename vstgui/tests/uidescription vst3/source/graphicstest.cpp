@@ -311,7 +311,8 @@ void GraphicsView::draw (CDrawContext *pContext)
 		CGraphicsTransform t2;
 		t2.rotate (pathRotation, pathBounds.getCenter ());
 		t2.scale (scaleX, scaleY);
-		t2.translate (size.left + getWidth () / 2. - (pathBounds.getWidth () * scaleX) / 2., size.top + getHeight () / 2. - (pathBounds.getHeight () * scaleY) / 2.);
+		t2.translate (getViewSize ().left + getWidth () / 2. - (pathBounds.getWidth () * scaleX) / 2.,
+			getViewSize ().top + getHeight () / 2. - (pathBounds.getHeight () * scaleY) / 2.);
 		if (strokePath)
 			pContext->drawGraphicsPath (drawPath, CDrawContext::kPathStroked, &t2);
 		if (fillGradient)
@@ -324,7 +325,8 @@ void GraphicsView::draw (CDrawContext *pContext)
 				gradient = drawPath->createGradient (0.0, 0.7, c1, c2);
 			}
 			if (gradient)
-				pContext->fillLinearGradient (drawPath, *gradient, size.getTopLeft (), size.getBottomRight (), false, &t2);
+				pContext->fillLinearGradient (drawPath, *gradient, getViewSize ().getTopLeft (),
+											  getViewSize ().getBottomRight (), false, &t2);
 		}
 		else
 		{
