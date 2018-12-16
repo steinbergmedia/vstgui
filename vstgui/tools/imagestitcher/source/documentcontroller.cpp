@@ -270,6 +270,11 @@ IController* DocumentWindowController::createController (const UTF8StringView& n
 }
 
 //------------------------------------------------------------------------
+void DocumentWindowController::onUIDescriptionParsed (const IUIDescription* uiDesc)
+{
+}
+
+//------------------------------------------------------------------------
 void DocumentWindowController::onSetContentView (IWindow& w, const SharedPointer<CFrame>& cv)
 {
 	contentView = cv;
