@@ -181,6 +181,7 @@ void CShadowViewContainer::drawRect (CDrawContext* pContext, const CRect& update
 							auto boxSizes = boxesForGauss<3> (shadowBlurSize);
 							boxBlurFilter->setProperty (BitmapFilter::Standard::Property::kInputBitmap, bitmap);
 							boxBlurFilter->setProperty (BitmapFilter::Standard::Property::kRadius, boxSizes[0]);
+							boxBlurFilter->setProperty (BitmapFilter::Standard::Property::kAlphaChannelOnly, 1);
 							if (boxBlurFilter->run (true))
 							{
 								boxBlurFilter->setProperty (BitmapFilter::Standard::Property::kRadius, boxSizes[1]);
