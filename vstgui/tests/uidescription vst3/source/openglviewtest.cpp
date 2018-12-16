@@ -4,7 +4,7 @@
 
 #include "openglviewtest.h"
 #include "base/source/fobject.h"
-#include "base/source/fthread.h"
+#include "base/thread/include/fthread.h"
 #include "vstgui/uidescription/delegationcontroller.h"
 #include "vstgui/uidescription/uiattributes.h"
 
@@ -191,12 +191,12 @@ public:
 	PixelFormat* getPixelFormat () override
 	{
 		static PixelFormat pixelFormat;
-		pixelFormat.flags = PixelFormat::kAccelerated | PixelFormat::kMultiSample;
+		pixelFormat.flags = PixelFormat::kMultiSample;
 		pixelFormat.samples = 4;
 		return &pixelFormat;
 	}
 protected:
-	class Thread : public FThread
+	class Thread : public Base::Thread::FThread
 	{
 	public:
 		Thread (TestOpenGLView* openGLView)
@@ -211,7 +211,7 @@ protected:
 			while (cancelDrawLoop == false)
 			{
 				openGLView->drawOpenGLThreaded ();
-				FThreadSleep (16);
+				Base::Thread::FThreadSleep (16);
 			}
 			return 0;
 		}

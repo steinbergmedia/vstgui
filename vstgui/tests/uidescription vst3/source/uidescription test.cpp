@@ -4,6 +4,7 @@
 
 #include "uidescription test.h"
 #include "vstgui/uidescription/delegationcontroller.h"
+#include "vstgui/lib/platform/iplatformfont.h" 
 #include "pluginterfaces/base/ibstream.h"
 #include "pluginterfaces/vst/ivstparameterchanges.h"
 #include <cmath>
@@ -13,7 +14,6 @@ using namespace Steinberg;
 using namespace Steinberg::Vst;
 
 namespace VSTGUI {
-
 //------------------------------------------------------------------------
 FUID UIDescriptionTestProcessor::cid (0x49BAF003, 0xB44D455E, 0x9CBDE54F, 0x7FF2CBA1);
 FUID UIDescriptionTestController::cid (0xF0FF3C24, 0x3F2F4C94, 0x84F6B6AE, 0xEF7BF28B);
@@ -643,7 +643,7 @@ COptionMenu* UIDescriptionTestController::createContextMenu (const CPoint& pos, 
 	{
 		UIDescriptionTestControllerMenuHandler* menuHandler = new UIDescriptionTestControllerMenuHandler (tabParameter);
 		COptionMenu* menu = new COptionMenu ();
-		menu->setStyle (kMultipleCheckStyle);
+		menu->setStyle (COptionMenu::kMultipleCheckStyle);
 		for (int32 i = 0; i <= tabParameter->getInfo ().stepCount; i++)
 		{
 			String128 valueString;
