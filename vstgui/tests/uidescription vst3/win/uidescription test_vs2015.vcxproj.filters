@@ -56,6 +56,72 @@
     <ClCompile Include="..\source\edituidescriptioneditor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\..\public.sdk\source\vst\vstguieditor.cpp">
+      <Filter>Source Files\VST3 SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\base\source\baseiids.cpp">
+      <Filter>Source Files\VST3 SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\base\source\classfactory.cpp">
+      <Filter>Source Files\VST3 SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\base\source\fbuffer.cpp">
+      <Filter>Source Files\VST3 SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\base\source\fobject.cpp">
+      <Filter>Source Files\VST3 SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\base\source\fstreamer.cpp">
+      <Filter>Source Files\VST3 SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\base\source\fstring.cpp">
+      <Filter>Source Files\VST3 SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\base\thread\source\fatomic.cpp">
+      <Filter>Source Files\VST3 SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\base\thread\source\fthread.cpp">
+      <Filter>Source Files\VST3 SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\base\source\updatehandler.cpp">
+      <Filter>Source Files\VST3 SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\base\thread\source\flock.cpp">
+      <Filter>Source Files\VST3 SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\base\source\fdebug.cpp">
+      <Filter>Source Files\VST3 SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\pluginterfaces\base\coreiids.cpp">
+      <Filter>Source Files\VST3 SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\pluginterfaces\base\conststringtable.cpp">
+      <Filter>Source Files\VST3 SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\pluginterfaces\base\funknown.cpp">
+      <Filter>Source Files\VST3 SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\pluginterfaces\base\ustring.cpp">
+      <Filter>Source Files\VST3 SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\public.sdk\source\common\pluginview.cpp">
+      <Filter>Source Files\VST3 SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\public.sdk\source\main\pluginfactoryvst3.cpp">
+      <Filter>Source Files\VST3 SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\public.sdk\source\vst\vstinitiids.cpp">
+      <Filter>Source Files\VST3 SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\public.sdk\source\vst3stdsdk.cpp">
+      <Filter>Source Files\VST3 SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\public.sdk\source\vst\vst2wrapper\vst2wrapper.sdk.cpp">
+      <Filter>Source Files\VST3 SDK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\base\source\timer.cpp">
+      <Filter>Source Files\VST3 SDK</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\source\animationtest.h">
@@ -84,6 +150,54 @@
     </ClInclude>
     <ClInclude Include="..\source\edituidescriptioneditor.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\public.sdk\source\vst\vstguieditor.h">
+      <Filter>Source Files\VST3 SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\base\source\classfactory.h">
+      <Filter>Source Files\VST3 SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\base\source\fbuffer.h">
+      <Filter>Source Files\VST3 SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\base\source\fobject.h">
+      <Filter>Source Files\VST3 SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\base\source\fstreamer.h">
+      <Filter>Source Files\VST3 SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\base\source\fstring.h">
+      <Filter>Source Files\VST3 SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\base\source\updatehandler.h">
+      <Filter>Source Files\VST3 SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\base\source\fdebug.h">
+      <Filter>Source Files\VST3 SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\pluginterfaces\base\conststringtable.h">
+      <Filter>Source Files\VST3 SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\pluginterfaces\base\fplatform.h">
+      <Filter>Source Files\VST3 SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\pluginterfaces\base\ftypes.h">
+      <Filter>Source Files\VST3 SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\pluginterfaces\base\funknown.h">
+      <Filter>Source Files\VST3 SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\pluginterfaces\base\ustring.h">
+      <Filter>Source Files\VST3 SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\public.sdk\source\common\pluginview.h">
+      <Filter>Source Files\VST3 SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\public.sdk\source\main\pluginfactoryvst3.h">
+      <Filter>Source Files\VST3 SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\..\base\source\timer.h">
+      <Filter>Source Files\VST3 SDK</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
