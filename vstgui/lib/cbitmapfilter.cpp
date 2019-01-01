@@ -409,8 +409,10 @@ private:
 	bool run (bool replace) override
 	{
 		CBitmap* inputBitmap = getInputBitmap ();
+		if (inputBitmap == nullptr)
+			return false;
 		uint32_t radius = static_cast<uint32_t>(static_cast<double>(getProperty (Property::kRadius).getInteger ()) * inputBitmap->getPlatformBitmap ()->getScaleFactor ());
-		if (inputBitmap == nullptr || radius == UINT_MAX)
+		if (radius == UINT_MAX)
 			return false;
 		bool alphaChannelOnly = getProperty (Property::kAlphaChannelOnly).getInteger () > 0 ? true : false;
 		if (radius < 2)
