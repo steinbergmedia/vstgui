@@ -320,8 +320,7 @@ void CFrame::drawRect (CDrawContext* pContext, const CRect& updateRect)
 	if (updateRect.getWidth () <= 0 || updateRect.getHeight () <= 0 || pContext == nullptr)
 		return;
 
-	if (pContext)
-		pContext->remember ();
+	pContext->remember ();
 
 	if (pImpl)
 		pContext->setBitmapInterpolationQuality(pImpl->bitmapQuality);
