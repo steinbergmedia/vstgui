@@ -2863,12 +2863,12 @@ public:
 
 		if (attributeName == kAttrAngleStart)
 		{
-			stringValue = numberToString ((knob->getStartAngle () / Constants::pi * 180.));
+			stringValue = numberToString (knob->getStartAngle () / Constants::pi * 180.);
 			return true;
 		}
 		else if (attributeName == kAttrAngleRange)
 		{
-			stringValue = numberToString ((knob->getRangeAngle () / Constants::pi * 180.));
+			stringValue = numberToString (knob->getRangeAngle () / Constants::pi * 180.);
 			return true;
 		}
 		else if (attributeName == kAttrValueInset)
