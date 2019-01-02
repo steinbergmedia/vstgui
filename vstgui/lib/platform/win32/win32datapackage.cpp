@@ -196,6 +196,6 @@ bool Win32DataPackage::checkResolveLink (const TCHAR* nativePath, TCHAR* resolve
 	return false;	
 }
 
-} // namespace
+} // VSTGUI
 
 #endif // WINDOWS

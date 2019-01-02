@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __iplatformtimer__
-#define __iplatformtimer__
+#pragma once
 
 #include "../vstguibase.h"
 
@@ -26,6 +25,4 @@ public:
 	virtual bool stop () = 0;
 };
 
-}
-
-#endif
+} // VSTGUI

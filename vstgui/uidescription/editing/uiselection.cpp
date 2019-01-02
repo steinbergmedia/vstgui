@@ -21,13 +21,6 @@
 namespace VSTGUI {
 
 //----------------------------------------------------------------------------------------------------
-IdStringPtr UISelection::kMsgSelectionWillChange = "kMsgSelectionWillChange";
-IdStringPtr UISelection::kMsgSelectionChanged = "kMsgSelectionChanged";
-IdStringPtr UISelection::kMsgSelectionViewChanged = "kMsgSelectionViewChanged";
-IdStringPtr UISelection::kMsgSelectionViewWillChange = "kMsgSelectionViewWillChange";
-
-
-//----------------------------------------------------------------------------------------------------
 UISelection::UISelection (int32_t style)
 : style (style)
 {
@@ -73,11 +66,11 @@ void UISelection::setStyle (int32_t _style)
 void UISelection::add (CView* view)
 {
 	vstgui_assert (view, "view cannot be nullptr");
-	changed (kMsgSelectionWillChange);
+	willChange ();
 	if (style == kSingleSelectionStyle)
 		clear ();
 	viewList.emplace_back (view);
-	changed (kMsgSelectionChanged);
+	didChange ();
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -86,9 +79,9 @@ void UISelection::remove (CView* view)
 	vstgui_assert (view, "view cannot be nullptr");
 	if (contains (view))
 	{
-		changed (kMsgSelectionWillChange);
+		willChange ();
 		viewList.remove (view);
-		changed (kMsgSelectionChanged);
+		didChange ();
 	}
 }
 
@@ -96,8 +89,9 @@ void UISelection::remove (CView* view)
 void UISelection::setExclusive (CView* view)
 {
 	vstgui_assert (view, "view cannot be nullptr");
-	changed (kMsgSelectionWillChange);
-	DeferChanges dc (this);
+	if (viewList.size () == 1 && viewList.front () == view)
+		return;
+	UISelection::DeferChange dc (*this);
 	viewList.clear ();
 	add (view);
 }
@@ -105,9 +99,9 @@ void UISelection::setExclusive (CView* view)
 //----------------------------------------------------------------------------------------------------
 void UISelection::clear ()
 {
-	changed (kMsgSelectionWillChange);
+	willChange ();
 	viewList.clear ();
-	changed (kMsgSelectionChanged);
+	didChange ();
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -173,7 +167,7 @@ CRect UISelection::getGlobalViewCoordinates (CView* view)
 //----------------------------------------------------------------------------------------------------
 void UISelection::moveBy (const CPoint& p)
 {
-	changed (kMsgSelectionViewWillChange);
+	viewsWillChange ();
 	const_iterator it = begin ();
 	while (it != end ())
 	{
@@ -186,13 +180,13 @@ void UISelection::moveBy (const CPoint& p)
 		}
 		it++;
 	}
-	changed (kMsgSelectionViewChanged);
+	viewsDidChange ();
 }
 
 //----------------------------------------------------------------------------------------------------
 void UISelection::sizeBy (const CRect& r)
 {
-	changed (kMsgSelectionViewWillChange);
+	viewsWillChange ();
 	for (auto view : *this)
 	{
 		auto viewSize = view->getViewSize ();
@@ -203,7 +197,7 @@ void UISelection::sizeBy (const CRect& r)
 		view->setViewSize (viewSize);
 		view->setMouseableArea (viewSize);
 	}
-	changed (kMsgSelectionViewChanged);
+	viewsDidChange ();
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -217,6 +211,40 @@ void UISelection::invalidRects () const
 			(*it)->invalid ();
 		}
 		it++;
+	}
+}
+
+//----------------------------------------------------------------------------------------------------
+void UISelection::willChange ()
+{
+	if (++inChange == 1)
+		forEachListener ([this] (IUISelectionListener* l) { l->selectionWillChange (this); });
+}
+
+//----------------------------------------------------------------------------------------------------
+void UISelection::didChange ()
+{
+	if (--inChange == 0)
+		forEachListener ([this] (IUISelectionListener* l) { l->selectionDidChange (this); });
+}
+
+//----------------------------------------------------------------------------------------------------
+void UISelection::viewsWillChange ()
+{
+	if (++inViewsChange == 1)
+	{
+		invalidRects ();
+		forEachListener ([this] (IUISelectionListener* l) { l->selectionViewsWillChange (this); });
+	}
+}
+
+//----------------------------------------------------------------------------------------------------
+void UISelection::viewsDidChange ()
+{
+	if (--inViewsChange == 0)
+	{
+		invalidRects ();
+		forEachListener ([this] (IUISelectionListener* l) { l->selectionViewsDidChange (this); });
 	}
 }
 
@@ -324,6 +352,6 @@ SharedPointer<CBitmap> createBitmapFromSelection (UISelection* selection, CFrame
 	return bitmap;
 }
 
-} // namespace
+} // VSTGUI
 
 #endif // VSTGUI_LIVE_EDITING

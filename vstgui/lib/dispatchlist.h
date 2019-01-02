@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __dispatchlist__
-#define __dispatchlist__
+#pragma once
 
 #include <vector>
 #include <algorithm>
@@ -44,6 +43,29 @@ private:
 	Array entries;
 	AddArray toAdd;
 	bool inForEach{false};
+};
+
+//------------------------------------------------------------------------
+template <typename T, typename ListenerInterface>
+struct ListenerProvider
+{
+//------------------------------------------------------------------------
+	using List = DispatchList<ListenerInterface*>;
+
+	void registerListener (ListenerInterface* listener) { listeners.add (listener); }
+	void unregisterListener (ListenerInterface* listener) { listeners.remove (listener); }
+
+	template<typename Proc>
+	void forEachListener (Proc proc)
+	{
+		listeners.forEach (
+		    [&] (ListenerInterface* listener) { proc (listener); });
+	}
+
+	List& getListeners () { return listeners; }
+	const List& getListeners () const { return listeners; }
+private:
+	List listeners;
 };
 
 //------------------------------------------------------------------------
@@ -221,5 +243,3 @@ inline void DispatchList<T>::forEachReverse (Procedure proc, Condition condition
 
 //------------------------------------------------------------------------
 } // VSTGUI
-
-#endif // __dispatchlist__

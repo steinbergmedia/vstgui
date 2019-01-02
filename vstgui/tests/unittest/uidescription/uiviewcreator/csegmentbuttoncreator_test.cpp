@@ -40,6 +40,7 @@ TESTCASE(CSegmentButtonCreatorTest,
 		testAttribute<CSegmentButton>(kCSegmentButton, kAttrSelectionMode, "Multiple", &uidesc, [&] (CSegmentButton* v) {
 			return v->getSelectionMode () == CSegmentButton::SelectionMode::kMultiple;
 		});
+		testPossibleValues (kCSegmentButton, kAttrSelectionMode, &uidesc, {"Single", "Multiple"});
 	);
 
 	TEST(textColor,

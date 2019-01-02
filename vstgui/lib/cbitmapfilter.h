@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __cbitmapfilter__
-#define __cbitmapfilter__
+#pragma once
 
 #include "vstguifwd.h"
 #include <vector>
@@ -203,7 +202,7 @@ namespace Standard {
 		static const IdStringPtr kAlphaChannelOnly = "AlphaChannelOnly";
 	} // Property
 
-} // namespace Standard
+} // Standard
 
 //----------------------------------------------------------------------------------------------------
 /// @brief A Base Class for Implementing Bitmap Filters
@@ -233,8 +232,5 @@ private:
 	PropertyMap properties;
 };
 
-} // namespace BitmapFilter
-
-} // namespace
-
-#endif // __cbitmapfilter__
+} // BitmapFilter
+} // VSTGUI

@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __cscrollview__
-#define __cscrollview__
+#pragma once
 
 #include "vstguifwd.h"
 #include "cviewcontainer.h"
@@ -125,6 +124,4 @@ protected:
 	};
 };
 
-} // namespace
-
-#endif
+} // VSTGUI

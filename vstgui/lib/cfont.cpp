@@ -174,4 +174,4 @@ void CFontDesc::cleanup ()
 	gSymbolFont.freePlatformFont ();
 }
 
-} // namespace
+} // VSTGUI

@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __uieditcontroller__
-#define __uieditcontroller__
+#pragma once
 
 #include "../uidescription.h"
 
@@ -13,6 +12,8 @@
 #include "../icontroller.h"
 #include "../uidescriptionlistener.h"
 #include "iaction.h"
+#include "uiundomanager.h"
+#include "uitemplatecontroller.h"
 #include "../../lib/csplitview.h"
 #include "../../lib/cframe.h"
 #include "../../lib/controls/icommandmenuitemtarget.h"
@@ -22,7 +23,6 @@
 namespace VSTGUI {
 class UIEditView;
 class UISelection;
-class UIUndoManager;
 class UITemplateController;
 class UIEditMenuController;
 class UIGridController;
@@ -39,7 +39,9 @@ class UIEditController : public CBaseObject,
                          public IActionPerformer,
                          public IKeyboardHook,
                          public CommandMenuItemTargetAdapter,
-                         public UIDescriptionListenerAdapter
+                         public UIDescriptionListenerAdapter,
+                         public IUIUndoManagerListener,
+                         public IUITemplateControllerListener
 {
 public:
 	UIEditController (UIDescription* description);
@@ -74,6 +76,12 @@ protected:
 	IController* createSubController (UTF8StringPtr name, const IUIDescription* description) override;
 
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
+
+	// IUITemplateControllerListener
+	void onTemplateSelectionChanged () override;
+
+	// IUIUndoManagerListener
+	void onUndoManagerChange () override;
 
 	// IContextMenuController2
 	void appendContextMenuItems (COptionMenu& contextMenu, CView* view, const CPoint& where) override;
@@ -171,7 +179,6 @@ private:
 	bool doUIDescTemplateUpdate (UIDescription* desc, UTF8StringPtr name) override;
 
 	void beforeSave ();
-	void onTemplateSelectionChanged ();
 	CMessageResult validateMenuItem (CCommandMenuItem* item);
 	CMessageResult onMenuItemSelection (CCommandMenuItem* item);
 	void doCopy (bool cut = false);
@@ -189,8 +196,6 @@ private:
 	std::string onlyTemplateToUpdateName;
 };
 
-} // namespace
+} // VSTGUI
 
 #endif // VSTGUI_LIVE_EDITING
-
-#endif // __uieditcontroller__

@@ -55,6 +55,6 @@ void WinString::setUTF8String (UTF8StringPtr utf8String)
 		wideString[0] = 0;
 }
 
-} // namespace
+} // VSTGUI
 
 #endif // WINDOWS

@@ -324,4 +324,4 @@ void UIDescriptionViewSwitchController::getTemplateNames (std::string& str)
 	}
 }
 
-} // namespace
+} // VSTGUI

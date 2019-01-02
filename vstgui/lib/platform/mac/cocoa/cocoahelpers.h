@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __cocoahelpers__
-#define __cocoahelpers__
+#pragma once
 
 #import "../../../crect.h"
 #import "../../../cpoint.h"
@@ -161,4 +160,3 @@ namespace MacWindowStyleMask
 }
 
 #endif // MAC_COCOA
-#endif // __cocoahelpers__

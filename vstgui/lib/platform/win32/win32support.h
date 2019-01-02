@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __win32support__
-#define __win32support__
+#pragma once
 
 #include "../../vstguibase.h"
 
@@ -163,8 +162,6 @@ private:
 
 /// @endcond
 
-} // namespace
+} // VSTGUI
 
 #endif // WINDOWS
-
-#endif

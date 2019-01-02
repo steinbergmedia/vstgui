@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __caviewlayer__
-#define __caviewlayer__
+#pragma once
 
 #include "../iplatformviewlayer.h"
 
@@ -36,8 +35,6 @@ protected:
 	CALayer* layer;
 };
 
-} // namespace
+} // VSTGUI
 
 #endif // MAC_COCOA
-
-#endif // __caviewlayer__

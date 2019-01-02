@@ -200,4 +200,4 @@ TESTCASE(CRectTest,
 
 ); // TESTCASE
 
-} // namespace
+} // VSTGUI

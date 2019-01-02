@@ -606,4 +606,4 @@ bool InputStream::operator>> (double& output)
 	return false;
 }
 
-} // namespace
+} // VSTGUI

@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __base64codec__
-#define __base64codec__
+#pragma once
 
 #include "../lib/malloc.h"
 
@@ -134,6 +133,4 @@ private:
 	}
 };
 
-} // namespace VSTGUI
-
-#endif // __base64codec__
+} // VSTGUI

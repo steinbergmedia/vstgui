@@ -20,7 +20,18 @@
 namespace VSTGUI {
 
 //------------------------------------------------------------------------
-class UIColorStopEditView : public CView, public IDependency, public IFocusDrawing
+struct IUIColorStopEditViewListener
+{
+	virtual ~IUIColorStopEditViewListener () noexcept = default;
+	virtual void onChange () = 0;
+};
+
+//------------------------------------------------------------------------
+class UIColorStopEditView
+: public CView,
+  protected ListenerProvider<UIColorStopEditView, IUIColorStopEditViewListener>,
+  public IFocusDrawing,
+  public UIColorListenerAdapter
 {
 public:
 	UIColorStopEditView (UIColor* editColor);
@@ -32,9 +43,9 @@ public:
 	double getSelectedColorStart () const { return editStartOffset; }
 	const CGradient::ColorStopMap& getColorStopMap () const { return colorStopMap; }
 
-	static IdStringPtr kChanged;
+	using ListenerProvider<UIColorStopEditView, IUIColorStopEditViewListener>::registerListener;
+	using ListenerProvider<UIColorStopEditView, IUIColorStopEditViewListener>::unregisterListener;
 private:
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 	void draw (CDrawContext* context) override;
 	bool drawFocusOnTop () override;
 	bool getFocusPath (CGraphicsPath& outPath) override;
@@ -42,6 +53,7 @@ private:
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
 	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
+	void uiColorChanged (UIColor* c) override;
 
 	double gradientStartPosFromMousePos (const CPoint& where) const;
 
@@ -59,7 +71,6 @@ private:
 	double mouseDownStartPosOffset;
 };
 
-IdStringPtr UIColorStopEditView::kChanged = "UIColorStopEditView::kChanged";
 //----------------------------------------------------------------------------------------------------
 UIColorStopEditView::UIColorStopEditView (UIColor* editColor)
 : CView (CRect (0, 0, 0, 0))
@@ -67,7 +78,7 @@ UIColorStopEditView::UIColorStopEditView (UIColor* editColor)
 , editStartOffset (-1.)
 , mouseDownStartPosOffset (0.)
 {
-	editColor->addDependency (this);
+	editColor->registerListener (this);
 	setWantsFocus (true);
 	stopWidth = 12.;
 }
@@ -75,7 +86,7 @@ UIColorStopEditView::UIColorStopEditView (UIColor* editColor)
 //----------------------------------------------------------------------------------------------------
 UIColorStopEditView::~UIColorStopEditView ()
 {
-	editColor->removeDependency (this);
+	editColor->unregisterListener (this);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -89,7 +100,7 @@ void UIColorStopEditView::selectNextColorStop ()
 	}
 	editStartOffset = pos->first;
 	*editColor = pos->second;
-	changed (kChanged);
+	forEachListener ([] (IUIColorStopEditViewListener* l) { l->onChange (); });
 	invalid ();
 }
 
@@ -102,7 +113,7 @@ void UIColorStopEditView::selectPrevColorStop ()
 	pos--;
 	editStartOffset = pos->first;
 	*editColor = pos->second;
-	changed (kChanged);
+	forEachListener ([] (IUIColorStopEditViewListener* l) { l->onChange (); });
 	invalid ();
 }
 
@@ -113,14 +124,14 @@ void UIColorStopEditView::setCurrentStartOffset (double startOffset)
 		startOffset = 0.;
 	else if (startOffset > 1.)
 		startOffset = 1.;
-	auto pos = colorStopMap.find (getSelectedColorStart ());
+	CGradient::ColorStopMap::iterator pos = colorStopMap.find (getSelectedColorStart ());
 	if (pos != colorStopMap.end () && pos->first != startOffset)
 	{
 		CColor color = pos->second;
 		colorStopMap.erase (pos);
 		colorStopMap.emplace (startOffset, color);
 		editStartOffset = startOffset;
-		changed (kChanged);
+		forEachListener ([] (IUIColorStopEditViewListener* l) { l->onChange (); });
 		invalid ();
 	}
 }
@@ -130,7 +141,7 @@ void UIColorStopEditView::addColorStop (double startOffset)
 {
 	colorStopMap.emplace (startOffset, editColor->base ());
 	editStartOffset = startOffset;
-	changed (kChanged);
+	forEachListener ([] (IUIColorStopEditViewListener* l) { l->onChange (); });
 	invalid ();
 }
 
@@ -142,7 +153,7 @@ void UIColorStopEditView::removeColorStop (double startOffset)
 	if (getSelectedColorStart () == startOffset)
 		selectNextColorStop ();
 	colorStopMap.erase (startOffset);
-	changed (kChanged);
+	forEachListener ([] (IUIColorStopEditViewListener* l) { l->onChange (); });
 	invalid ();
 }
 
@@ -225,7 +236,7 @@ CMouseEventResult UIColorStopEditView::onMouseDown (CPoint& where, const CButton
 				{
 					editStartOffset = colorStop.first;
 					*editColor = colorStop.second;
-					changed (kChanged);
+					forEachListener ([] (IUIColorStopEditViewListener* l) { l->onChange (); });
 				}
 				mouseDownStartPosOffset = pos - editStartOffset;
 				return kMouseEventHandled;
@@ -254,14 +265,9 @@ CMouseEventResult UIColorStopEditView::onMouseMoved (CPoint& where, const CButto
 }
 
 //----------------------------------------------------------------------------------------------------
-CMessageResult UIColorStopEditView::notify (CBaseObject* sender, IdStringPtr message)
+void UIColorStopEditView::uiColorChanged (UIColor* c)
 {
-	if (message == UIColor::kMsgChanged || message == UIColor::kMsgEditChange)
-	{
-		invalid ();
-		return kMessageNotified;
-	}
-	return CView::notify (sender, message);
+	invalid ();
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -354,22 +360,29 @@ bool UIColorStopEditView::getFocusPath (CGraphicsPath& outPath)
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-class UIGradientEditorController : public CBaseObject, public IController
+class UIGradientEditorController : public NonAtomicReferenceCounted,
+                                   public IDialogController,
+                                   public UIColorListenerAdapter,
+                                   public IUIColorStopEditViewListener
 {
 public:
 	UIGradientEditorController (const std::string& gradientName, CGradient* gradient, UIDescription* description, IActionPerformer* actionPerformer);
 	~UIGradientEditorController () override;
 
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 	void valueChanged (CControl* pControl) override;
 	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;
 	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override;
 	IController* createSubController (UTF8StringPtr name, const IUIDescription* description) override;
+	void onDialogButton1Clicked (UIDialogController*) override;
+	void onDialogButton2Clicked (UIDialogController*) override;
+	void onDialogShow (UIDialogController*) override;
 protected:
 	enum {
 		kApplyTag = 1,
 		kPositionTag = 2,
 	};
+	void uiColorChanged (UIColor* c) override;
+	void onChange () override;
 	void apply ();
 	void updatePositionEdit ();
 	
@@ -391,14 +404,14 @@ UIGradientEditorController::UIGradientEditorController (const std::string& gradi
 , gradientName (gradientName)
 {
 	*editColor = gradient->getColorStops ().begin ()->second;
-	editColor->addDependency (this);
+	editColor->registerListener (this);
 }
 
 //----------------------------------------------------------------------------------------------------
 UIGradientEditorController::~UIGradientEditorController ()
 {
-	colorStopEditView->removeDependency (this);
-	editColor->removeDependency (this);
+	colorStopEditView->unregisterListener (this);
+	editColor->unregisterListener (this);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -413,38 +426,45 @@ void UIGradientEditorController::apply ()
 void UIGradientEditorController::updatePositionEdit ()
 {
 	if (positionEdit && colorStopEditView)
-		positionEdit->setValue (static_cast<float>(colorStopEditView->getSelectedColorStart ()));
+		positionEdit->setValue (static_cast<float> (colorStopEditView->getSelectedColorStart ()));
 }
 
 //----------------------------------------------------------------------------------------------------
-CMessageResult UIGradientEditorController::notify (CBaseObject* sender, IdStringPtr message)
+void UIGradientEditorController::uiColorChanged (UIColor* c)
 {
-	if (message == UIColor::kMsgChanged || message == UIColor::kMsgEditChange)
+	CGradient::ColorStopMap colorStopMap = gradient->getColorStops ();
+	CGradient::ColorStopMap::iterator it = colorStopMap.find (colorStopEditView->getSelectedColorStart ());
+	if (it != colorStopMap.end () && it->second != editColor->base ())
 	{
-		CGradient::ColorStopMap colorStopMap = gradient->getColorStops ();
-		auto it = colorStopMap.find (colorStopEditView->getSelectedColorStart ());
-		if (it != colorStopMap.end () && it->second != editColor->base ())
-		{
-			it->second = editColor->base ();
-			gradient = CGradient::create (colorStopMap);
-			colorStopEditView->setGradient (gradient);
-			updatePositionEdit ();
-		}
-		return kMessageNotified;
-	}
-	else if (message == UIColorStopEditView::kChanged)
-	{
-		gradient = CGradient::create (colorStopEditView->getColorStopMap ());
+		it->second = editColor->base ();
+		gradient = CGradient::create (colorStopMap);
 		colorStopEditView->setGradient (gradient);
 		updatePositionEdit ();
-		return kMessageNotified;
 	}
-	else if (message == UIDialogController::kMsgDialogButton1Clicked)
-	{
-		apply ();
-		return kMessageNotified;
-	}
-	return kMessageUnknown;
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIGradientEditorController::onChange ()
+{
+	gradient = CGradient::create (colorStopEditView->getColorStopMap ());
+	colorStopEditView->setGradient (gradient);
+	updatePositionEdit ();
+}
+
+//------------------------------------------------------------------------
+void UIGradientEditorController::onDialogButton1Clicked (UIDialogController*)
+{
+	apply ();
+}
+
+//------------------------------------------------------------------------
+void UIGradientEditorController::onDialogButton2Clicked (UIDialogController*)
+{
+}
+
+//------------------------------------------------------------------------
+void UIGradientEditorController::onDialogShow (UIDialogController*)
+{
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -505,7 +525,7 @@ CView* UIGradientEditorController::createView (const UIAttributes& attributes, c
 		{
 			colorStopEditView = new UIColorStopEditView (editColor);
 			colorStopEditView->setGradient (gradient);
-			colorStopEditView->addDependency (this);
+			colorStopEditView->registerListener (this);
 			return colorStopEditView;
 		}
 	}
@@ -538,7 +558,9 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
-UIGradientsDataSource::UIGradientsDataSource (UIDescription* description, IActionPerformer* actionPerformer, GenericStringListDataBrowserSourceSelectionChanged* delegate)
+UIGradientsDataSource::UIGradientsDataSource (
+    UIDescription* description, IActionPerformer* actionPerformer,
+    GenericStringListDataBrowserSourceSelectionChanged* delegate)
 : UIBaseDataSource (description, actionPerformer, delegate)
 {
 }
@@ -684,10 +706,10 @@ CView* UIGradientsController::createView (const UIAttributes& attributes, const 
 //----------------------------------------------------------------------------------------------------
 CView* UIGradientsController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
 {
-	auto* control = dynamic_cast<CControl*> (view);
+	CControl* control = dynamic_cast<CControl*> (view);
 	if (control)
 	{
-		auto* searchField = dynamic_cast<CSearchTextEdit*> (control);
+		auto searchField = dynamic_cast<CSearchTextEdit*> (control);
 		if (searchField && searchField->getTag () == kSearchTag)
 		{
 			dataSource->setSearchFieldControl (searchField);
@@ -748,11 +770,11 @@ void UIGradientsController::dbSelectionChanged (int32_t selectedRow, GenericStri
 //----------------------------------------------------------------------------------------------------
 void UIGradientsController::showEditDialog ()
 {
-	auto* dc = new UIDialogController (this, editButton->getFrame ());
+	UIDialogController* dc = new UIDialogController (this, editButton->getFrame ());
 	UIGradientEditorController* fsController = new UIGradientEditorController (dataSource->getSelectedGradientName (), dataSource->getSelectedGradient (), editDescription, actionPerformer);
 	dc->run ("gradient.editor", "Gradient Editor", "OK", "Cancel", fsController, UIEditController::getEditorDescription ());
 }
 
-} // namespace
+} // VSTGUI
 
 #endif // VSTGUI_LIVE_EDITING

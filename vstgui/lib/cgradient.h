@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __cgradient__
-#define __cgradient__
+#pragma once
 
 #include "vstguifwd.h"
 #include "ccolor.h"
@@ -63,6 +62,4 @@ protected:
 	ColorStopMap colorStops;
 };
 
-}
-
-#endif // __cgradient__
+} // VSTGUI

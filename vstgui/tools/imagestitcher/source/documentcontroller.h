@@ -61,6 +61,7 @@ private:
 
 	IController* createController (const UTF8StringView& name, IController* parent,
 	                               const IUIDescription* uiDesc) override;
+	void onUIDescriptionParsed (const IUIDescription* uiDesc) override;
 	void onSetContentView (Standalone::IWindow& w, const SharedPointer<CFrame>& cv) override;
 	void onClosed (const Standalone::IWindow& window) override;
 	bool canClose (const Standalone::IWindow& window) override;

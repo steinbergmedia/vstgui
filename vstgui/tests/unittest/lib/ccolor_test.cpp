@@ -4,6 +4,7 @@
 
 #include "../unittests.h"
 #include "../../../lib/ccolor.h"
+#include "../../../lib/cstring.h"
 
 namespace VSTGUI {
 
@@ -100,6 +101,29 @@ TESTCASE(CColorTest,
 			}
 		}
 	);
+	
+	TEST(isColorRepresentation,
+		EXPECT(CColor::isColorRepresentation ("#FF00FFFF"));
+	);
+
+	TEST(toString,
+		auto str = CColor (255, 255, 255).toString ();
+		EXPECT(str == "#ffffffff")
+	);
+
+	TEST(fromString,
+		CColor c;
+		EXPECT(c.fromString ("#FFFFFFFF"));
+		EXPECT(c == CColor (255, 255, 255));
+		c.fromString ("#FF0000FF");
+		EXPECT(c == CColor (255, 0, 0));
+		c.fromString ("#00FF00FF");
+		EXPECT(c == CColor (0, 255, 0));
+		c.fromString ("#0000FFFF");
+		EXPECT(c == CColor (0, 0, 255));
+		c.fromString ("#0000FF00");
+		EXPECT(c == CColor (0, 0, 255, 0));
+	);
 );
 
-} // namespace
+} // VSTGUI

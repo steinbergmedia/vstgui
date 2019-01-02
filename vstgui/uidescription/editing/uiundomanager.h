@@ -2,23 +2,32 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __uiundomanager__
-#define __uiundomanager__
+#pragma once
 
 #include "../../lib/vstguibase.h"
 
 #if VSTGUI_LIVE_EDITING
 
-#include "../../lib/idependency.h"
+#include "../../lib/dispatchlist.h"
 #include <list>
 #include <deque>
 
 namespace VSTGUI {
 class IAction;
 class UIGroupAction;
+class UIUndoManager;
 
 //----------------------------------------------------------------------------------------------------
-class UIUndoManager : public CBaseObject, protected std::list<IAction*>, public IDependency
+struct IUIUndoManagerListener
+{
+	virtual ~IUIUndoManagerListener () noexcept = default;
+	virtual void onUndoManagerChange () = 0;
+};
+
+//----------------------------------------------------------------------------------------------------
+class UIUndoManager : public NonAtomicReferenceCounted,
+                      protected ListenerProvider<UIUndoManager, IUIUndoManagerListener>,
+                      protected std::list<IAction*>
 {
 public:
 	UIUndoManager ();
@@ -43,7 +52,8 @@ public:
 	void markSavePosition ();
 	bool isSavePosition () const;
 	
-	static IdStringPtr kMsgChanged;
+	using ListenerProvider<UIUndoManager, IUIUndoManagerListener>::registerListener;
+	using ListenerProvider<UIUndoManager, IUIUndoManagerListener>::unregisterListener;
 protected:
 	iterator position;
 	iterator savePosition;
@@ -51,8 +61,6 @@ protected:
 	GroupActionDeque groupQueue;
 };
 
-} // namespace
+} // VSTGUI
 
 #endif // VSTGUI_LIVE_EDITING
-
-#endif // __uiundomanager__

@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __uieditview__
-#define __uieditview__
+#pragma once
 
 #include "../../lib/cviewcontainer.h"
 
@@ -23,7 +22,7 @@ class ViewSizeChangeOperation;
 class UIGrid;
 namespace UIEditViewInternal {
 	class UIHighlightView;
-} // namespace UIEditViewInternal
+} // UIEditViewInternal
 
 //----------------------------------------------------------------------------------------------------
 class UIEditView : public CViewContainer, public IDropTarget
@@ -133,8 +132,6 @@ protected:
 	CColor viewSelectionColor;
 };
 
-} // namespace
+} // VSTGUI
 
 #endif // VSTGUI_LIVE_EDITING
-
-#endif // __uieditview__

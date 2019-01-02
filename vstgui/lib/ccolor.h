@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __ccolor__
-#define __ccolor__
+#pragma once
 
 #include "vstguibase.h"
 #include "vstguifwd.h"
@@ -124,6 +123,4 @@ constexpr const CColor kYellowCColor		= CColor (255, 255,   0, 255);
 constexpr const CColor kMagentaCColor		= CColor (255,   0, 255, 255);
 constexpr const CColor kCyanCColor			= CColor (  0, 255, 255, 255);
 
-} // namespace
-
-#endif
+} // VSTGUI

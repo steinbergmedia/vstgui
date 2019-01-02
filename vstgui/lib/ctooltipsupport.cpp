@@ -264,4 +264,4 @@ CMessageResult CTooltipSupport::notify (CBaseObject* sender, IdStringPtr msg)
 	return kMessageUnknown;
 }
 
-} // namespace
+} // VSTGUI

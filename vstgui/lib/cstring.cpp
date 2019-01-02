@@ -233,4 +233,4 @@ void free (UTF8StringBuffer buffer)
 
 #endif // VSTGUI_ENABLE_DEPRECATED_METHODS
 
-} // namespace
+} // VSTGUI

@@ -520,7 +520,8 @@ CView* setupGenericOptionMenu (Proc clickCallback, CViewContainer* container,
 	decorView->addAnimation ("AlphaAnimation", new AlphaValueAnimation (1.f, true),
 	                         new CubicBezierTimingFunction (
 	                             CubicBezierTimingFunction::easyIn (theme.menuAnimationTime)));
-	frame->setFocusView (browser);
+	if (frame)
+		frame->setFocusView (browser);
 	if (!parentDataSource && optionMenu->isCheckStyle ())
 	{
 		browser->makeRowVisible (optionMenu->getValue ());

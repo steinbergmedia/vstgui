@@ -302,5 +302,5 @@ CBitmapPixelAccess* CBitmapPixelAccess::create (CBitmap* bitmap, bool alphaPremu
 	return result;
 }
 
-} // namespace VSTGUI
+} // VSTGUI
 

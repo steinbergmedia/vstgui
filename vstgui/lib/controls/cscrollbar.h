@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __cscrollbar__
-#define __cscrollbar__
+#pragma once
 
 #include "ccontrol.h"
 #include "../ccolor.h"
@@ -107,7 +106,4 @@ public:
 	virtual void drawScrollbarScroller (CDrawContext* pContext, const CRect& size, CScrollbar::ScrollbarDirection direction, CScrollbar* bar) = 0;
 };
 
-
-}
-
-#endif // __cscrollbar__
+} // VSTGUI

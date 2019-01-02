@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __csplashscreen__
-#define __csplashscreen__
+#pragma once
 
 #include "ccontrol.h"
 #include "icontrollistener.h"
@@ -88,7 +87,6 @@ public:
 	void draw (CDrawContext*) override;
 	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
 	bool sizeToFit () override;
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 
 protected:
 	~CAnimationSplashScreen () noexcept override = default;
@@ -97,6 +95,4 @@ protected:
 	uint32_t animationTime{500};
 };
 
-} // namespace
-
-#endif
+} // VSTGUI

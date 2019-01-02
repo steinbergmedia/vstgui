@@ -147,7 +147,7 @@ protected:
 };
 
 //----------------------------------------------------------------------------------------------------
-class UIViewListDataSource : public UINavigationDataSource
+class UIViewListDataSource : public UINavigationDataSource, public IUIUndoManagerListener
 {
 public:
 	UIViewListDataSource (CViewContainer* view, const IViewFactory* viewFactory, UISelection* selection, UIUndoManager* undoManager ,GenericStringListDataBrowserSourceSelectionChanged* delegate);
@@ -171,13 +171,14 @@ protected:
 		return headerTitle;
 	}
 	
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
-
 	CCoord calculateSubViewWidth (CViewContainer* view) const;
 	void dbSelectionChanged (CDataBrowser* browser) override;
 	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) override;
 	int32_t dbOnKeyDown (const VstKeyCode& key, CDataBrowser* browser) override;
 	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser) override;
+
+	// IUIUndoManagerListener
+	void onUndoManagerChange () override;
 
 	CViewContainer* view;
 	const UIViewFactory* viewFactory;
@@ -189,10 +190,6 @@ protected:
 	std::vector<CView*> subviews;
 	bool inUpdate;
 };
-
-//----------------------------------------------------------------------------------------------------
-IdStringPtr UITemplateController::kMsgTemplateChanged = "UITemplateController::kMsgTemplateChanged";
-IdStringPtr UITemplateController::kMsgTemplateNameChanged = "UITemplateController::kMsgTemplateNameChanged";
 
 //----------------------------------------------------------------------------------------------------
 UITemplateController::UITemplateController (IController* baseController, UIDescription* description, UISelection* selection, UIUndoManager* undoManager, IActionPerformer* actionPerformer)
@@ -286,7 +283,7 @@ void UITemplateController::dbSelectionChanged (int32_t selectedRow, GenericStrin
 				attr->setAttribute ("SelectedTemplate", selectedTemplateName ? selectedTemplateName->getString () : "");
 			}
 
-			changed (kMsgTemplateChanged);
+			forEachListener ([] (IUITemplateControllerListener* l) { l->onTemplateSelectionChanged ();});
 		}
 		else if (templateView)
 		{
@@ -306,7 +303,6 @@ void UITemplateController::onUIDescTemplateChanged (UIDescription* desc)
 	auto dataSource = dynamic_cast<GenericStringListDataBrowserSource*>(templateDataBrowser->getDelegate ());
 	if (dataSource)
 	{
-		DeferChanges dc (this);
 		int32_t rowToSelect = templateDataBrowser->getSelectedRow ();
 		int32_t index = 0;
 		auto selectedTemplateStr = selectedTemplateName ? *selectedTemplateName : "";
@@ -443,13 +439,13 @@ UIViewListDataSource::UIViewListDataSource (CViewContainer* view, const IViewFac
 , inUpdate (false)
 {
 	update (view);
-	undoManager->addDependency (this);
+	undoManager->registerListener (this);
 }
 
 //----------------------------------------------------------------------------------------------------
 UIViewListDataSource::~UIViewListDataSource ()
 {
-	undoManager->removeDependency (this);
+	undoManager->unregisterListener (this);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -589,35 +585,31 @@ CMouseEventResult UIViewListDataSource::dbOnMouseDown (const CPoint& where, cons
 }
 
 //----------------------------------------------------------------------------------------------------
-CMessageResult UIViewListDataSource::notify (CBaseObject* sender, IdStringPtr message)
+void UIViewListDataSource::onUndoManagerChange ()
 {
-	if (message == UIUndoManager::kMsgChanged)
+	update (view);
+	if (selectedView)
 	{
-		update (view);
-		if (selectedView)
+		if (dataBrowser)
 		{
-			if (dataBrowser)
+			int32_t index = 0;
+			for (std::vector<CView*>::const_iterator it = subviews.begin (); it != subviews.end ();
+			     ++it, index++)
 			{
-				int32_t index = 0;
-				for (std::vector<CView*>::const_iterator it = subviews.begin (); it != subviews.end (); ++it, index++)
+				if (*it == selectedView)
 				{
-					if (*it == selectedView)
-					{
-						dataBrowser->setSelectedRow (index, true);
-						return kMessageNotified;
-					}
+					dataBrowser->setSelectedRow (index, true);
+					return;
 				}
 			}
-			selectedView = nullptr;
-			if (next)
-			{
-				next->remove ();
-				next = nullptr;
-			}
 		}
-		return kMessageNotified;
+		selectedView = nullptr;
+		if (next)
+		{
+			next->remove ();
+			next = nullptr;
+		}
 	}
-	return GenericStringListDataBrowserSource::notify (sender, message);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -742,6 +734,6 @@ void UITemplatesDataSource::dbAttached (CDataBrowser* browser)
 	}
 }
 
-} // namespace
+} // VSTGUI
 
 #endif // VSTGUI_LIVE_EDITING

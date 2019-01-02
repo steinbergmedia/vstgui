@@ -9,18 +9,11 @@
 namespace VSTGUI {
 
 //----------------------------------------------------------------------------------------------------
-IdStringPtr UIColor::kMsgChanged = "UIColor::kMsgChanged";
-IdStringPtr UIColor::kMsgEditChange = "UIColor::kMsgEditChange";
-IdStringPtr UIColor::kMsgBeginEditing = "UIColor::kMsgBeginEditing";
-IdStringPtr UIColor::kMsgEndEditing = "UIColor::kMsgEndEditing";
-
-//----------------------------------------------------------------------------------------------------
 UIColor& UIColor::operator= (const CColor& c)
 {
 	red = c.red; green = c.green; blue = c.blue; alpha = c.alpha;
 	r = red; g = green; b = blue;
 	updateHSL (kTo);
-	changed (kMsgChanged);
 	return *this;
 }
 
@@ -34,7 +27,7 @@ void UIColor::updateHSL (HSLUpdateDirection direction)
 		fromHSL (hue, saturation, lightness);
 		r = red; g = green; b = blue;
 	}
-	changed (kMsgEditChange);
+	editChange ();
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -104,22 +97,27 @@ void UIColor::setBlue (double nb)
 void UIColor::setAlpha (double na)
 {
 	alpha = static_cast<uint8_t> (na);
-	changed (kMsgEditChange);
+	editChange ();
 }
 
 //----------------------------------------------------------------------------------------------------
 void UIColor::beginEdit ()
 {
-	changed (kMsgBeginEditing);
+	forEachListener ([this] (IUIColorListener* l) { l->uiColorBeginEditing (this); });
 }
 
 //----------------------------------------------------------------------------------------------------
 void UIColor::endEdit ()
 {
-	changed (kMsgEndEditing);
+	forEachListener ([this] (IUIColorListener* l) { l->uiColorEndEditing (this); });
 }
 
+//----------------------------------------------------------------------------------------------------
+void UIColor::editChange ()
+{
+	forEachListener ([this] (IUIColorListener* l) { l->uiColorChanged (this); });
 }
+
+} // VSTGUI
 
 #endif // VSTGUI_LIVE_EDITING
-

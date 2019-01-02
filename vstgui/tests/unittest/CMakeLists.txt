@@ -44,12 +44,14 @@ set(${target}_sources
 	"${VSTGUI_TEST_BASE}uidescription/uiviewcreator/clayeredviewcontainercreator_test.cpp"
 	"${VSTGUI_TEST_BASE}uidescription/uiviewcreator/cmoviebitmapcreator_test.cpp"
 	"${VSTGUI_TEST_BASE}uidescription/uiviewcreator/cmoviebuttoncreator_test.cpp"
+	"${VSTGUI_TEST_BASE}uidescription/uiviewcreator/cmultilinetextlabelcreator_test.cpp"
 	"${VSTGUI_TEST_BASE}uidescription/uiviewcreator/conoffbuttoncreator_test.cpp"
 	"${VSTGUI_TEST_BASE}uidescription/uiviewcreator/coptionmenucreator_test.cpp"
 	"${VSTGUI_TEST_BASE}uidescription/uiviewcreator/cparamdisplaycreator_test.cpp"
 	"${VSTGUI_TEST_BASE}uidescription/uiviewcreator/crockerswitchcreator_test.cpp"
 	"${VSTGUI_TEST_BASE}uidescription/uiviewcreator/crowcolumnviewcreator_test.cpp"
 	"${VSTGUI_TEST_BASE}uidescription/uiviewcreator/cscrollviewcreator_test.cpp"
+	"${VSTGUI_TEST_BASE}uidescription/uiviewcreator/csearchtexteditcreator_test.cpp"
 	"${VSTGUI_TEST_BASE}uidescription/uiviewcreator/csegmentbuttoncreator_test.cpp"
 	"${VSTGUI_TEST_BASE}uidescription/uiviewcreator/cshadowviewcontainercreator_test.cpp"
 	"${VSTGUI_TEST_BASE}uidescription/uiviewcreator/cslidercreator_test.cpp"
@@ -63,6 +65,7 @@ set(${target}_sources
 	"${VSTGUI_TEST_BASE}uidescription/uiviewcreator/cvumetercreator_test.cpp"
 	"${VSTGUI_TEST_BASE}uidescription/uiviewcreator/cxypadcreator_test.cpp"
 	"${VSTGUI_TEST_BASE}uidescription/uiviewcreator/helpers.h"
+	"${VSTGUI_TEST_BASE}uidescription/uiviewcreator/uiviewcreator_test.cpp"
 	"${VSTGUI_TEST_BASE}uidescription/uiviewcreator/uiviewswitchcontainercreator_test.cpp"
 	"${VSTGUI_TEST_BASE}uidescription/base64codec.cpp"
 	"${VSTGUI_TEST_BASE}uidescription/cstream_test.cpp"
@@ -153,7 +156,7 @@ if(CMAKE_HOST_APPLE)
     )
 
     vstgui_set_cxx_version(${target} 14)
-    target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS} ENABLE_UNIT_TESTS=1 VSTGUI_LIVE_EDITING=1)
+    target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS} ENABLE_UNIT_TESTS=1 VSTGUI_LIVE_EDITING=1 VSTGUI_ENABLE_DEPRECATED_METHODS=0)
     vstgui_source_group_by_folder(${target})
     target_compile_options(${target} PUBLIC "--coverage")
     add_custom_command(TARGET ${target} POST_BUILD COMMAND "/usr/bin/ruby" "${CMAKE_CURRENT_SOURCE_DIR}/lcov/generate.rb" "${PROJECT_SOURCE_DIR}" "${CMAKE_CURRENT_BINARY_DIR}/vstgui.build/Debug/codecoverage.build/Objects-normal/x86_64" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${target}" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/coverage_output" VERBATIM)

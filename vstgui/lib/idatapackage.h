@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __idatapackage__
-#define __idatapackage__
+#pragma once
 
 #include "vstguibase.h"
 
@@ -35,6 +34,4 @@ protected:
 	IDataPackage () {}
 };
 
-}
-
-#endif // __idatapackage__
+} // VSTGUI

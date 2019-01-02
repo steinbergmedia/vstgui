@@ -857,6 +857,6 @@ CGPoint CGDrawContext::pixelAlligned (const CGPoint& p) const
 	return result;
 }
 
-} // namespace
+} // VSTGUI
 
 #endif // MAC

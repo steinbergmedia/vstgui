@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __d2dfont__
-#define __d2dfont__
+#pragma once
 
 #include "../../iplatformfont.h"
 
@@ -45,8 +44,6 @@ protected:
 	int32_t style;
 };
 
-} // namespace
+} // VSTGUI
 
 #endif // WINDOWS
-
-#endif // __d2dfont__

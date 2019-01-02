@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __timingfunctions__
-#define __timingfunctions__
+#pragma once
 
 #include "animator.h"
 #include "itimingfunction.h"
@@ -130,6 +129,5 @@ protected:
 	bool isReverse;
 };
 
-}} // namespaces
-
-#endif // __timingfunctions__
+} // Animation
+} // VSTGUI

@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __uicolorscontroller__
-#define __uicolorscontroller__
+#pragma once
 
 #include "../uidescription.h"
 
@@ -19,7 +18,7 @@ class UIColorsDataSource;
 class UIColor;
 
 //----------------------------------------------------------------------------------------------------
-class UIColorsController : public CBaseObject, public DelegationController
+class UIColorsController : public NonAtomicReferenceCounted, public DelegationController
 {
 public:
 	UIColorsController (IController* baseController, UIDescription* description, IActionPerformer* actionPerformer);
@@ -44,8 +43,6 @@ protected:
 	};
 };
 
-} // namespace
+} // VSTGUI
 
 #endif // VSTGUI_LIVE_EDITING
-
-#endif // __uicolorscontroller__

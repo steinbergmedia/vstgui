@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __vstguibase__
-#define __vstguibase__
+#pragma once
 
 #include <cstdlib>
 #include <cstdio>
@@ -67,6 +66,8 @@
 	#endif
 	#include <type_traits>
 
+	#define VSTGUI_DEPRECATED_ATTRIBUTE __attribute__((deprecated))
+
 	#if defined (__clang__) && __clang_major__ > 4
 		#if defined (VSTGUI_WARN_EVERYTHING) && VSTGUI_WARN_EVERYTHING == 1
 			#pragma clang diagnostic warning "-Weverything"
@@ -97,7 +98,7 @@
 	#ifndef WINDOWS
 		#define WINDOWS 1
 	#endif
-	#define DEPRECATED_ATTRIBUTE __declspec(deprecated)
+	#define VSTGUI_DEPRECATED_ATTRIBUTE __declspec(deprecated)
 	#ifdef _MSC_VER
 		#pragma warning(3 : 4189) // local variable is initialized but not referenced
 		#pragma warning(3 : 4702) // unreachable code
@@ -150,12 +151,12 @@
 	#define VSTGUI_ENABLE_DEPRECATED_METHODS 1
 #endif
 
-#ifndef DEPRECATED_ATTRIBUTE
-	#define DEPRECATED_ATTRIBUTE
+#ifndef VSTGUI_DEPRECATED_ATTRIBUTE
+	#define VSTGUI_DEPRECATED_ATTRIBUTE
 #endif
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
-	#define VSTGUI_DEPRECATED(x)	DEPRECATED_ATTRIBUTE	x
+	#define VSTGUI_DEPRECATED(x)	VSTGUI_DEPRECATED_ATTRIBUTE	x
 #else
 	#define VSTGUI_DEPRECATED(x)
 #endif
@@ -527,9 +528,7 @@ private:
 	B bit;
 };
 
-} // namespace
+} // VSTGUI
 
 //-----------------------------------------------------------------------------
 #include "vstguidebug.h"
-
-#endif

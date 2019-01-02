@@ -3,6 +3,9 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "../unittests.h"
+
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+
 #include "../../../lib/idependency.h"
 
 namespace VSTGUI {
@@ -73,4 +76,6 @@ TESTCASE(IDependencyTest,
 	);
 );
 
-} // namespace
+} // VSTGUI
+
+#endif // VSTGUI_ENABLE_DEPRECATED_METHODS

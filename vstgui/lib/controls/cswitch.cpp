@@ -621,4 +621,4 @@ bool CRockerSwitch::sizeToFit ()
 	return false;
 }
 
-} // namespace
+} // VSTGUI

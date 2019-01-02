@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __d2dgraphicspath__
-#define __d2dgraphicspath__
+#pragma once
 
 #include "../../../cgraphicspath.h"
 
@@ -40,8 +39,6 @@ protected:
 	int32_t currentPathFillMode;
 };
 
-} // namespace
+} // VSTGUI
 
 #endif // WINDOWS
-
-#endif // __d2dgraphicspath__

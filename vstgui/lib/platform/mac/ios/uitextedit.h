@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __uitextfield__
-#define __uitextfield__
+#pragma once
 
 #include "../../iplatformtextedit.h"
 
@@ -38,8 +37,6 @@ protected:
 	UIView* parent;
 };
 
-} // namespace
+} // VSTGUI
 
 #endif // TARGET_OS_IPHONE
-
-#endif // __uitextfield__

@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __iviewfactory__
-#define __iviewfactory__
+#pragma once
 
 #include "../lib/vstguifwd.h"
 
@@ -22,7 +21,4 @@ public:
 	virtual bool applyCustomViewAttributeValues (CView* customView, IdStringPtr baseViewName, const UIAttributes& attributes, const IUIDescription* desc) const = 0;
 };
 
-} // namespace VSTGUI
-
-
-#endif // __iviewfactory__
+} // VSTGUI VSTGUI

@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __ctabview__
-#define __ctabview__
+#pragma once
 
 #include "vstguifwd.h"
 #include "cviewcontainer.h"
@@ -91,6 +90,4 @@ protected:
 	CTabChildView* currentChild;
 };
 
-} // namespace
-
-#endif
+} // VSTGUI

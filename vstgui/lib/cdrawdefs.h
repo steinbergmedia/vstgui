@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __cdrawdefs__
-#define __cdrawdefs__
+#pragma once
 
 #include "vstguifwd.h"
 
@@ -66,6 +65,4 @@ enum CDrawStyle
 	kDrawFilledAndStroked
 };
 
-}
-
-#endif // __cdrawdefs__
+} // VSTGUI

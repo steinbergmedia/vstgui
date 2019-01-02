@@ -60,6 +60,32 @@ TESTCASE(UTF8StringTest,
 		EXPECT(str1 != str2);
 	);
 
+	TEST(addOperator,
+		UTF8String str1 ("str");
+		str1 += "ing";
+		EXPECT(str1 == "string");
+
+		auto str2 = str1 + "1";
+		EXPECT(str2 == "string1");
+		EXPECT(str1 == "string");
+	);
+
+	TEST(clear,
+		UTF8String str1 ("string");
+		EXPECT(str1 == "string");
+		str1.clear ();
+		EXPECT(str1 == "");
+	);
+
+	TEST(copy,
+		UTF8String str1 ("string");
+		char buffer[3] {1};
+		str1.copy (buffer, sizeof (buffer));
+		EXPECT(buffer[0] == 's');
+		EXPECT(buffer[1] == 't');
+		EXPECT(buffer[2] == 0);
+	);
+
 	TEST(codePointIterator,
 		 UTF8String str ("\xc3\x84\xe0\xa5\xb4\xf0\xaa\x80\x9a\0"); // u8"Äॴ𪀚"
 		 auto charCount = 0;

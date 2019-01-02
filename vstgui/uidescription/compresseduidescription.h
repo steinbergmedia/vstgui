@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __compresseduidescription__
-#define __compresseduidescription__
+#pragma once
 
 #include "uidescription.h"
 
@@ -36,6 +35,4 @@ private:
 };
 
 //------------------------------------------------------------------------
-} // namespace
-
-#endif
+} // VSTGUI

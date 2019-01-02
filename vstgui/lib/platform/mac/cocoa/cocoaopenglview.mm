@@ -333,7 +333,7 @@ void CocoaOpenGLView::initClass ()
 	}
 }
 
-} // namespace
+} // VSTGUI
 
 #endif // VSTGUI_OPENGL_SUPPORT
 #endif // MAC_COCOA

@@ -179,59 +179,7 @@ CCommandMenuItem::CCommandMenuItem (const CCommandMenuItem& item)
 , commandName (item.commandName)
 {
 	setItemTarget (item.itemTarget);
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	setTarget (item.target);
-#endif
 }
-
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-//------------------------------------------------------------------------
-IdStringPtr CCommandMenuItem::kMsgMenuItemValidate = "kMsgMenuItemValidate";
-IdStringPtr CCommandMenuItem::kMsgMenuItemSelected = "kMsgMenuItemSelected";
-
-//------------------------------------------------------------------------
-CCommandMenuItem::CCommandMenuItem (const UTF8String& title, const UTF8String& keycode, int32_t keyModifiers, CBitmap* icon, int32_t flags, CBaseObject* _target, const UTF8String& _commandCategory, const UTF8String& _commandName)
-: CMenuItem (title, keycode, keyModifiers, icon, flags)
-{
-	setTarget (_target);
-	setCommandCategory (_commandCategory);
-	setCommandName (_commandName);
-}
-
-//------------------------------------------------------------------------
-CCommandMenuItem::CCommandMenuItem (const UTF8String& title, COptionMenu* submenu, CBitmap* icon, CBaseObject* _target, const UTF8String& _commandCategory, const UTF8String& _commandName)
-: CMenuItem (title, submenu, icon)
-{
-	setTarget (_target);
-	setCommandCategory (_commandCategory);
-	setCommandName (_commandName);
-}
-
-//------------------------------------------------------------------------
-CCommandMenuItem::CCommandMenuItem (const UTF8String& title, int32_t tag, CBaseObject* _target, const UTF8String& _commandCategory, const UTF8String& _commandName)
-: CMenuItem (title, tag)
-{
-	setTarget (_target);
-	setCommandCategory (_commandCategory);
-	setCommandName (_commandName);
-}
-
-//------------------------------------------------------------------------
-CCommandMenuItem::CCommandMenuItem (const UTF8String& title, CBaseObject* _target, const UTF8String& _commandCategory, const UTF8String& _commandName)
-: CMenuItem (title, -1)
-{
-	setTarget (_target);
-	setCommandCategory (_commandCategory);
-	setCommandName (_commandName);
-}
-
-//------------------------------------------------------------------------
-void CCommandMenuItem::setTarget (CBaseObject* _target)
-{
-	target = _target;
-}
-
-#endif
 
 //------------------------------------------------------------------------
 void CCommandMenuItem::setItemTarget (ICommandMenuItemTarget* target)
@@ -276,11 +224,6 @@ void CCommandMenuItem::execute ()
 	if (selectedFunc)
 		selectedFunc (this);
 
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	if (getTarget ())
-		getTarget ()->notify (this, CCommandMenuItem::kMsgMenuItemSelected);
-#endif
-
 	if (itemTarget)
 		itemTarget->onCommandMenuItemSelected (this);
 }
@@ -291,19 +234,9 @@ void CCommandMenuItem::validate ()
 	if (validateFunc)
 		validateFunc (this);
 
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	if (getTarget ())
-		getTarget ()->notify (this, CCommandMenuItem::kMsgMenuItemValidate);
-#endif
-
 	if (itemTarget)
 		itemTarget->validateCommandMenuItem (this);
 }
-
-//------------------------------------------------------------------------
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-IdStringPtr COptionMenu::kMsgBeforePopup = "kMsgBeforePopup";
-#endif
 
 //------------------------------------------------------------------------
 // COptionMenu
@@ -442,9 +375,6 @@ int32_t COptionMenu::onKeyDown (VstKeyCode& keyCode)
 //------------------------------------------------------------------------
 void COptionMenu::beforePopup ()
 {
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	changed (kMsgBeforePopup);
-#endif
 	if (listeners)
 		listeners->forEach ([this] (IOptionMenuListener* l) { l->onOptionMenuPrePopup (this); });
 	for (auto& menuItem : *menuItems)
@@ -501,9 +431,6 @@ bool COptionMenu::popup (const PopupCallback& callback)
 			platformMenu->popup (this, [self, callback] (COptionMenu* menu, PlatformOptionMenuResult result) {
 				if (result.menu != nullptr)
 				{
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-					IDependency::DeferChanges dc (self);
-#endif
 					self->beginEdit ();
 					self->lastMenu = result.menu;
 					self->lastResult = result.index;
@@ -840,4 +767,4 @@ void COptionMenu::looseFocus ()
 	CParamDisplay::looseFocus ();
 }
 
-} // namespace
+} // VSTGUI

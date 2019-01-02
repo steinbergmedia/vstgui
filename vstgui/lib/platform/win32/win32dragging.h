@@ -97,6 +97,6 @@ private:
 	IDataPackage* dataPackage;
 };
 
-} // namespace
+} // VSTGUI
 
 #endif

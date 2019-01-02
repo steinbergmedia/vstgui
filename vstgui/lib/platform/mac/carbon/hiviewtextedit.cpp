@@ -298,7 +298,7 @@ pascal OSStatus HIViewTextEdit::CarbonEventsTextControlProc (EventHandlerCallRef
 	return result;
 }
 
-} // namespace
+} // VSTGUI
 
 #pragma clang diagnostic pop
 

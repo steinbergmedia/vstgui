@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __win32frame__
-#define __win32frame__
+#pragma once
 
 #include "../platform_win32.h"
 
@@ -77,7 +76,6 @@ protected:
 	COffscreenContext* backBuffer;
 	CDrawContext* deviceContext;
 
-	CRect paintRect;
 	bool inPaint;
 	bool mouseInside;
 
@@ -86,8 +84,6 @@ protected:
 	CCursorType lastSetCursor;
 };
 
-} // namespace
+} // VSTGUI
 
 #endif // WINDOWS
-
-#endif // __win32frame__

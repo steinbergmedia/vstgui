@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __uieditmenucontroller__
-#define __uieditmenucontroller__
+#pragma once
 
 #include "../uidescription.h"
 
@@ -126,7 +125,7 @@ static const MenuEntry fileMenu[] = {
 	{0}
 };
 
-} // namespace UIEditing
+} // UIEditing
 
 //----------------------------------------------------------------------------------------------------
 class UIEditMenuController : public CBaseObject, public DelegationController, public CommandMenuItemTargetAdapter
@@ -178,8 +177,6 @@ protected:
 
 };
 
-} // namespace
+} // VSTGUI
 
 #endif // VSTGUI_LIVE_EDITING
-
-#endif // __uieditmenucontroller__

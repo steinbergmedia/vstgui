@@ -1429,6 +1429,6 @@ void CocoaTooltipWindow::onTimer ()
 		[window setAlphaValue:newAlpha];
 }
 
-} // namespace
+} // VSTGUI
 
 #endif // MAC_COCOA

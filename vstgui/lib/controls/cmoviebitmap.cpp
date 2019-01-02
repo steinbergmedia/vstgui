@@ -99,4 +99,4 @@ bool CMovieBitmap::sizeToFit ()
 	return false;
 }
 
-} // namespace
+} // VSTGUI

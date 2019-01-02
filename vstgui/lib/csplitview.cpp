@@ -859,4 +859,4 @@ bool CSplitViewSeparatorView::removed (CView* parent)
 	return CViewContainer::removed (parent);
 }
 
-} // namespace
+} // VSTGUI

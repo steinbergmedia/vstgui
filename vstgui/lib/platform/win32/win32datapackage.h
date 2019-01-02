@@ -42,6 +42,6 @@ protected:
 	uint32_t dataSize;
 };
 
-} // namespace
+} // VSTGUI
 
 #endif // WINDOWS

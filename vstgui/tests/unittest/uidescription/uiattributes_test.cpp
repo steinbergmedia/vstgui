@@ -132,7 +132,65 @@ TESTCASE(UIAttributesTest,
 		CMemoryStream s;
 		UIAttributes a;
 		EXPECT(a.restore(s) == false);
+		s.rewind ();
+		uint32_t someValue = 0;
+		s.writeRaw (&someValue, sizeof (someValue));
+		s.rewind ();
+		EXPECT(a.restore(s) == false);
 	);
+	
+	TEST(stringToBool,
+		bool b;
+		EXPECT(UIAttributes::stringToBool ("hola", b) == false)
+		EXPECT(UIAttributes::stringToBool ("true 5", b) == false)
+
+		EXPECT(UIAttributes::stringToBool ("true", b) && b == true)
+		EXPECT(UIAttributes::stringToBool ("false", b) && b == false)
+	)
+
+	TEST(stringToInteger,
+		int32_t i;
+		EXPECT(UIAttributes::stringToInteger ("s5s5", i) == false)
+		EXPECT(UIAttributes::stringToInteger ("5s5", i) == false)
+		EXPECT(UIAttributes::stringToInteger ("1.0", i) == false)
+		EXPECT(UIAttributes::stringToInteger ("hola", i) == false)
+
+		EXPECT(UIAttributes::stringToInteger ("151515", i) && i == 151515)
+	)
+
+	TEST(stringToDouble,
+		double d;
+		EXPECT(UIAttributes::stringToDouble ("as5.5", d) == false)
+		EXPECT(UIAttributes::stringToDouble ("5.5sa", d) == false)
+		EXPECT(UIAttributes::stringToDouble ("5.567.5", d) == false)
+		EXPECT(UIAttributes::stringToDouble ("hola", d) == false)
+
+		EXPECT(UIAttributes::stringToDouble ("25.5", d) && d == 25.5)
+		EXPECT(UIAttributes::stringToDouble (".5", d) && d == 0.5)
+		EXPECT(UIAttributes::stringToDouble (" -0.5", d) && d == -0.5)
+	)
+
+	TEST(stringToPoint,
+		CPoint p;
+		EXPECT(UIAttributes::stringToPoint ("30, 20, 50", p) == false)
+		EXPECT(UIAttributes::stringToPoint ("30, 20a", p) == false)
+		EXPECT(UIAttributes::stringToPoint ("a, b", p) == false)
+		EXPECT(UIAttributes::stringToPoint ("20", p) == false)
+
+		EXPECT(UIAttributes::stringToPoint ("15, 25", p) && p == CPoint (15, 25))
+		EXPECT(UIAttributes::stringToPoint ("1.768, 25", p) && p == CPoint (1.768, 25))
+	)
+
+	TEST(stringToRect,
+		CRect r;
+		EXPECT(UIAttributes::stringToRect ("30, 20, 50", r) == false)
+		EXPECT(UIAttributes::stringToRect ("30, 20, 50, 60, 80", r) == false)
+		EXPECT(UIAttributes::stringToRect ("30, 20, 50, 60a", r) == false)
+		EXPECT(UIAttributes::stringToRect ("a, b, c, d", r) == false)
+
+		EXPECT(UIAttributes::stringToRect ("0, 12.5, 5, 8", r) && r == CRect (0, 12.5, 5, 8))
+	)
+
 );
 
 } // VSTGUI

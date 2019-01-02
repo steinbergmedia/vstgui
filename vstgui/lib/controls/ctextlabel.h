@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __ctextlabel__
-#define __ctextlabel__
+#pragma once
 
 #include "cparamdisplay.h"
 #include "itextlabellistener.h"
@@ -54,12 +53,6 @@ public:
 	void unregisterTextLabelListener (ITextLabelListener* listener);
 	//@}
 
-	VSTGUI_DEPRECATED (
-	/** message which is send to dependent objects when the truncated text changes. \deprecated
-	   use ITextLabelListener instead */
-	static IdStringPtr kMsgTruncatedTextChanged;
-	)
-	
 	void draw (CDrawContext* pContext) override;
 	bool sizeToFit () override;
 	void setViewSize (const CRect& rect, bool invalid = true) override;
@@ -103,7 +96,7 @@ public:
 	void setLineLayout (LineLayout layout);
 	LineLayout getLineLayout () const { return lineLayout; }
 
-	/** automatically resize the view according to the contents (only the height) 
+	/** automatically resize the view according to the contents (only the height)
 	 *	@param state on or off
 	 */
 	void setAutoHeight (bool state);
@@ -138,6 +131,4 @@ private:
 	Lines lines;
 };
 
-} // namespace
-
-#endif
+} // VSTGUI

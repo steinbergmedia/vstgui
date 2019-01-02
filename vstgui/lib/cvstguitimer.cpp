@@ -110,5 +110,5 @@ void CVSTGUITimer::fire ()
 		callbackFunc (this);
 }
 
-} // namespace
+} // VSTGUI
 
