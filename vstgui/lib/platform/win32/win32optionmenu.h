@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __win32optionmenu__
-#define __win32optionmenu__
+#pragma once
 
 #include "../iplatformoptionmenu.h"
 
@@ -30,7 +29,6 @@ protected:
 	std::list<HBITMAP> bitmaps;
 };
 
-} // namespace
+} // VSTGUI
 
 #endif // WINDOWS
-#endif // __win32optionmenu__

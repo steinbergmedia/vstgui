@@ -21,6 +21,8 @@ It's recommended to start new projects with version 4 while old projects should 
 
 @section new_stuff New Stuff
 
+@subsection version4_8 Version 4.8
+
 @subsection version4_7 Version 4.7
 
 - redesigned drag'n drop
@@ -91,6 +93,9 @@ Note: All current deprecated methods will be removed in the next version. So mak
 - Direct2D drawing on Windows (Windows Vista or Windows 7)
 
 @section code_changes Changes for existing VSTGUI code
+
+@subsection code_changes_4_7_to_4_8 VSTGUI 4.7 -> VSTGUI 4.8
+
 
 @subsection code_changes_4_6_to_4_7 VSTGUI 4.6 -> VSTGUI 4.7
 

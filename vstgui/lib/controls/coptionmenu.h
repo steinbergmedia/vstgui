@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __coptionmenu__
-#define __coptionmenu__
+#pragma once
 
 #include "cparamdisplay.h"
 #include "icommandmenuitemtarget.h"
@@ -169,13 +168,6 @@ public:
 	CCommandMenuItem (const CCommandMenuItem& item);
 	~CCommandMenuItem () noexcept override = default;
 
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	CCommandMenuItem (const UTF8String& title, const UTF8String& keycode, int32_t keyModifiers = 0, CBitmap* icon = nullptr, int32_t flags = kNoFlags, CBaseObject* target = nullptr, const UTF8String& commandCategory = nullptr, const UTF8String& commandName = nullptr);
-	CCommandMenuItem (const UTF8String& title, COptionMenu* submenu, CBitmap* icon = nullptr, CBaseObject* target = nullptr, const UTF8String& commandCategory = nullptr, const UTF8String& commandName = nullptr);
-	CCommandMenuItem (const UTF8String& title, int32_t tag, CBaseObject* target = nullptr, const UTF8String& commandCategory = nullptr, const UTF8String& commandName = nullptr);
-	CCommandMenuItem (const UTF8String& title, CBaseObject* target, const UTF8String& commandCategory = nullptr, const UTF8String& commandName = nullptr);
-#endif
-
 	//-----------------------------------------------------------------------------
 	/// @name CCommandMenuItem Methods
 	//-----------------------------------------------------------------------------
@@ -187,11 +179,6 @@ public:
 	void setCommandName (const UTF8String& name);
 	const UTF8String& getCommandName () const { return commandName; }
 	bool isCommandName (const UTF8String& name) const;
-
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	void setTarget (CBaseObject* target);
-	CBaseObject* getTarget () const { return target; }
-#endif
 
 	void setItemTarget (ICommandMenuItemTarget* target);
 	ICommandMenuItemTarget* getItemTarget () const { return itemTarget; }
@@ -205,23 +192,11 @@ public:
 	void execute ();
 	void validate ();
 
-	VSTGUI_DEPRECATED (
-	/** message send to the target before the item is shown */
-	static IdStringPtr kMsgMenuItemValidate;
-	)
-	VSTGUI_DEPRECATED (
-	/** message send to the target when this item was selected */
-	static IdStringPtr kMsgMenuItemSelected;
-	)
-
 protected:
 	ValidateCallbackFunction validateFunc;
 	SelectedCallbackFunction selectedFunc;
 	UTF8String commandCategory;
 	UTF8String commandName;
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	SharedPointer<CBaseObject> target;
-#endif
 	SharedPointer<ICommandMenuItemTarget> itemTarget;
 };
 
@@ -342,8 +317,6 @@ public:
 	void takeFocus () override;
 	void looseFocus () override;
 
-	VSTGUI_DEPRECATED (static IdStringPtr kMsgBeforePopup;)
-	
 	CLASS_METHODS(COptionMenu, CParamDisplay)
 protected:
 	bool doPopup ();
@@ -364,6 +337,4 @@ protected:
 	std::unique_ptr<MenuListenerList> listeners;
 };
 
-} // namespace
-
-#endif
+} // VSTGUI

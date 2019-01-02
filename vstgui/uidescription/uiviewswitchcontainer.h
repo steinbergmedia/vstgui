@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __uiviewswitchcontainer__
-#define __uiviewswitchcontainer__
+#pragma once
 
 #include "../lib/cviewcontainer.h"
 #include "../lib/controls/icontrollistener.h"
@@ -106,6 +105,4 @@ protected:
 	std::vector<std::string> templateNames;
 };
 
-} // namespace
-
-#endif // __uiviewswitchcontainer__
+} // VSTGUI

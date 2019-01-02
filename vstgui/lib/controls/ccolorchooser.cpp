@@ -233,7 +233,7 @@ static void setupParamDisplay (CParamDisplay* display, const CColorChooserUISett
 	display->setTransparency (true);
 }
 
-} // namespace CColorChooserInternal
+} // CColorChooserInternal
 
 /// @endcond
 
@@ -292,10 +292,6 @@ bool CColorChooser::convertAngle (UTF8StringPtr string, float& output, CTextEdit
 	output /= 359.f;
 	return true;
 }
-
-//-----------------------------------------------------------------------------
-IdStringPtr CColorChooser::kMsgBeginColorChange = "CColorChooser::kMsgBeginColorChange";
-IdStringPtr CColorChooser::kMsgEndColorChange = "CColorChooser::kMsgEndColorChange";
 
 //-----------------------------------------------------------------------------
 CColorChooser::CColorChooser (IColorChooserDelegate* delegate, const CColor& initialColor, const CColorChooserUISettings& settings)
@@ -542,13 +538,15 @@ void CColorChooser::valueChanged (CControl* control)
 //-----------------------------------------------------------------------------
 void CColorChooser::controlBeginEdit (CControl* pControl)
 {
-	changed (kMsgBeginColorChange);
+	if (delegate)
+		delegate->onBeginColorChange (this);
 }
 
 //-----------------------------------------------------------------------------
 void CColorChooser::controlEndEdit (CControl* pControl)
 {
-	changed (kMsgEndColorChange);
+	if (delegate)
+		delegate->onEndColorChange (this);
 }
 
 //-----------------------------------------------------------------------------
@@ -593,4 +591,4 @@ void CColorChooser::updateState ()
 	colorView->invalid ();
 }
 
-} // namespace
+} // VSTGUI

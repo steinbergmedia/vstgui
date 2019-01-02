@@ -2,20 +2,43 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __uicolor__
-#define __uicolor__
+#pragma once
 
 #include "../../lib/vstguibase.h"
 
 #if VSTGUI_LIVE_EDITING
 
 #include "../../lib/ccolor.h"
-#include "../../lib/idependency.h"
+#include "../../lib/dispatchlist.h"
 
 namespace VSTGUI {
 
+class UIColor;
+
 //----------------------------------------------------------------------------------------------------
-class UIColor : protected CColor, public CBaseObject, public IDependency
+class IUIColorListener
+{
+public:
+	virtual ~IUIColorListener () noexcept = default;
+	
+	virtual void uiColorChanged (UIColor* c) = 0;
+	virtual void uiColorBeginEditing (UIColor* c) = 0;
+	virtual void uiColorEndEditing (UIColor* c) = 0;
+};
+
+//----------------------------------------------------------------------------------------------------
+class UIColorListenerAdapter : public IUIColorListener
+{
+public:
+	void uiColorChanged (UIColor* c) override {}
+	void uiColorBeginEditing (UIColor* c) override {}
+	void uiColorEndEditing (UIColor* c) override {}
+};
+
+//----------------------------------------------------------------------------------------------------
+class UIColor : public NonAtomicReferenceCounted,
+                protected ListenerProvider<UIColor, IUIColorListener>,
+                protected CColor
 {
 public:
 	UIColor () : CColor (kTransparentCColor), hue (0), saturation (0), lightness (0) {}
@@ -43,14 +66,11 @@ public:
 
 	void beginEdit ();
 	void endEdit ();
-	
+
+	using ListenerProvider<UIColor, IUIColorListener>::registerListener;
+	using ListenerProvider<UIColor, IUIColorListener>::unregisterListener;
 	using CColor::operator==;
 	using CColor::operator!=;
-
-	static IdStringPtr kMsgChanged;
-	static IdStringPtr kMsgEditChange;
-	static IdStringPtr kMsgBeginEditing;
-	static IdStringPtr kMsgEndEditing;
 private:
 	enum HSLUpdateDirection
 	{
@@ -59,13 +79,12 @@ private:
 	};
 
 	void updateHSL (HSLUpdateDirection direction);
+	void editChange ();
 	
 	double hue, saturation, lightness;
 	double r, g, b;
 };
 
-} // namespace
+} // VSTGUI
 
 #endif // VSTGUI_LIVE_EDITING
-
-#endif // __uicolor__

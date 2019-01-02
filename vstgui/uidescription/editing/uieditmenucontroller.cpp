@@ -296,24 +296,32 @@ bool UIEditMenuController::validateMenuItem (CCommandMenuItem& item)
 		else if (cmdName == "Transform View Type")
 		{
 			item.setSubmenu (nullptr);
-			bool enabled = false;
-			if (selection->total () == 1)
+			auto numViewContainers = 0u;
+			auto numNonViewContainers = 0u;
+			for (auto& entry : *selection)
 			{
-				CViewContainer* container = selection->first ()->asViewContainer ();
-				if (container == nullptr || (container && dynamic_cast<UIEditView*>(container->getParentView ()) == nullptr))
-					enabled = true;
+				if (entry->asViewContainer ())
+					++numViewContainers;
+				else
+					++numNonViewContainers;
 			}
-			item.setEnabled (enabled);
-			if (enabled == false)
+			if (numViewContainers != 0 && numNonViewContainers != 0)
+			{
+				item.setEnabled (false);
 				return true;
+			}
+
 			auto submenu = makeOwned<COptionMenu> ();
 			item.setSubmenu (submenu);
-			const UIViewFactory* factory = dynamic_cast<const UIViewFactory*> (description->getViewFactory ());
+			const UIViewFactory* factory =
+			    dynamic_cast<const UIViewFactory*> (description->getViewFactory ());
 			auto viewAndDisplayNames = factory->collectRegisteredViewAndDisplayNames ();
-			viewAndDisplayNames.sort ([] (const auto& lhs, const auto& rhs) { return lhs.second < rhs.second; });
+			viewAndDisplayNames.sort (
+			    [] (const auto& lhs, const auto& rhs) { return lhs.second < rhs.second; });
 			for (auto& entry : viewAndDisplayNames)
 			{
-				submenu->addEntry (new CCommandMenuItem (CCommandMenuItem::Desc{entry.second.data (), this, "Transform View Type", entry.first->data ()}));
+				submenu->addEntry (new CCommandMenuItem (CCommandMenuItem::Desc {
+				    entry.second.data (), this, "Transform View Type", entry.first->data ()}));
 			}
 			return true;
 		}
@@ -463,8 +471,15 @@ bool UIEditMenuController::handleCommand (const UTF8StringPtr category, const UT
 	}
 	else if (cmdCategory == "Transform View Type")
 	{
-		IAction* action = new TransformViewTypeOperation (selection, cmdName, description, dynamic_cast<const UIViewFactory*> (description->getViewFactory ()));
-		undoManager->pushAndPerform (action);
+		undoManager->startGroupAction ("Transform View Type");
+		for (auto& entry : *selection)
+		{
+			IAction* action = new TransformViewTypeOperation (
+			    selection, entry, cmdName, description,
+			    dynamic_cast<const UIViewFactory*> (description->getViewFactory ()));
+			undoManager->pushAndPerform (action);
+		}
+		undoManager->endGroupAction ();
 		return true;
 	}
 	else if (cmdCategory == "InsertTemplate")
@@ -665,6 +680,6 @@ void UIEditMenuController::controlEndEdit (CControl* pControl)
 		label->setTransparency (true);
 }
 
-} // namespace
+} // VSTGUI
 
 #endif // VSTGUI_LIVE_EDITING

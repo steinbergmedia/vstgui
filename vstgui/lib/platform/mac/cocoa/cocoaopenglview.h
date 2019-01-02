@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __cocoaopenglview__
-#define __cocoaopenglview__
+#pragma once
 
 #include "../../iplatformopenglview.h"
 
@@ -50,9 +49,7 @@ protected:
 	PixelFormat pixelFormat;
 };
 
-} // namespace
+} // VSTGUI
 
 #endif // MAC_COCOA
 #endif // VSTGUI_OPENGL_SUPPORT
-
-#endif // __cocoaopenglview__

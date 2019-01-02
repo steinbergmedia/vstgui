@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __iplatformviewlayer__
-#define __iplatformviewlayer__
+#pragma once
 
 #include "../vstguifwd.h"
 
@@ -33,6 +32,4 @@ public:
 	virtual void onScaleFactorChanged (double newScaleFactor) = 0;
 };
 
-}
-
-#endif // __iplatformviewlayer__
+} // VSTGUI

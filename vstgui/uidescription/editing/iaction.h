@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __iaction__
-#define __iaction__
+#pragma once
 
 #include "../../lib/vstguifwd.h"
 
@@ -67,8 +66,6 @@ public:
 	virtual void finishGroupAction () = 0;
 };
 
-} // namespace
+} // VSTGUI
 
 #endif // VSTGUI_LIVE_EDITING
-
-#endif // __iaction__

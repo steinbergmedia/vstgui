@@ -840,6 +840,6 @@ void D2DDrawContext::restoreGlobalState ()
 	}
 }
 
-} // namespace
+} // VSTGUI
 
 #endif // WINDOWS

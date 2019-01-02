@@ -18,7 +18,6 @@
 #include "../../lib/iviewlistener.h"
 #include "../../lib/cstring.h"
 #include "../../lib/cgraphicspath.h"
-#include "../../lib/cvstguitimer.h"
 #include <sstream>
 #include <algorithm>
 #include <cassert>
@@ -28,7 +27,7 @@ namespace VSTGUI {
 namespace UIAttributeControllers {
 
 //----------------------------------------------------------------------------------------------------
-class Controller : public CBaseObject, public DelegationController
+class Controller : public NonAtomicReferenceCounted, public DelegationController
 {
 public:
 	Controller (IController* baseController, const std::string& attrName)
@@ -343,9 +342,7 @@ public:
 	{
 		if (pControl == slider)
 		{
-			std::stringstream sstream;
-			sstream << slider->getValue ();
-			getAttributesController ()->beginLiveAttributeChange (attrName, sstream.str ());
+			getAttributesController ()->beginLiveAttributeChange (attrName, UIAttributes::doubleToString (slider->getValue ()));
 		}
 		Controller::controlBeginEdit (pControl);
 	}
@@ -368,9 +365,7 @@ public:
 		}
 		else if (slider == pControl)
 		{
-			std::stringstream sstream;
-			sstream << slider->getValue ();
-			performValueChange (sstream.str ().c_str ());
+			performValueChange (UIAttributes::doubleToString (slider->getValue ()).data ());
 		}
 	}
 	
@@ -748,7 +743,7 @@ protected:
 };
 
 
-} // namespace
+} // VSTGUI
 
 
 //----------------------------------------------------------------------------------------------------
@@ -762,16 +757,16 @@ UIAttributesController::UIAttributesController (IController* baseController, UIS
 , attributeView (nullptr)
 , currentAttributeName (nullptr)
 {
-	selection->addDependency (this);
-	undoManager->addDependency (this);
+	selection->registerListener (this);
+	undoManager->registerListener (this);
 	description->registerListener (this);
 }
 
 //----------------------------------------------------------------------------------------------------
 UIAttributesController::~UIAttributesController ()
 {
-	selection->removeDependency (this);
-	undoManager->removeDependency (this);
+	selection->unregisterListener (this);
+	undoManager->unregisterListener (this);
 	editDescription->unregisterListener (this);
 }
 
@@ -965,29 +960,36 @@ void UIAttributesController::onUIDescGradientChanged (UIDescription* desc)
 }
 
 //----------------------------------------------------------------------------------------------------
-CMessageResult UIAttributesController::notify (CBaseObject* sender, IdStringPtr message)
+void UIAttributesController::selectionDidChange (UISelection* selection)
 {
-	if (message == UISelection::kMsgSelectionChanged)
+	if (!rebuildRequested && attributeView)
 	{
-		if (timer == nullptr)
+		if (auto frame = attributeView->getFrame ())
 		{
-			timer = makeOwned<CVSTGUITimer> (this, 10u);
-			timer->start ();
+			if (frame->inEventProcessing ())
+			{
+				rebuildRequested = true;
+				frame->doAfterEventProcessing ([this] () {
+					rebuildAttributesView ();
+					rebuildRequested = false;
+				});
+			}
 		}
-		return kMessageNotified;
+		if (!rebuildRequested)
+			rebuildAttributesView ();
 	}
-	else if (message == UISelection::kMsgSelectionViewChanged || message == UIUndoManager::kMsgChanged)
-	{
-		validateAttributeViews ();
-		return kMessageNotified;
-	}
-	else if (message == CVSTGUITimer::kMsgTimer)
-	{
-		rebuildAttributesView ();
-		timer = nullptr;
-		return kMessageNotified;
-	}
-	return kMessageUnknown;
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIAttributesController::selectionViewsDidChange (UISelection* selection)
+{
+	validateAttributeViews ();
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIAttributesController::onUndoManagerChange ()
+{
+	validateAttributeViews ();
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -1287,6 +1289,6 @@ void UIAttributesController::rebuildAttributesView ()
 	attributeView->invalid ();
 }
 
-} // namespace
+} // VSTGUI
 
 #endif // VSTGUI_LIVE_EDITING

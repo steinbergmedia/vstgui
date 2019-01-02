@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __cdatabrowser__
-#define __cdatabrowser__
+#pragma once
 
 #include "vstguifwd.h"
 #include "cscrollview.h"
@@ -128,5 +127,3 @@ protected:
 
 //-----------------------------------------------------------------------------
 } // VSTGUI
-
-#endif

@@ -261,6 +261,6 @@ void Win32OpenGLView::swapBuffers ()
 	}
 }
 
-} // namespace
+} // VSTGUI
 
 #endif // WINDOWS && VSTGUI_OPENGL_SUPPORT

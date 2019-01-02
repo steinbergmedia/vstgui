@@ -501,4 +501,4 @@ void CParamDisplay::copyBackOffset ()
 	backOffset (getViewSize ().left, getViewSize ().top);
 }
 
-} // namespace
+} // VSTGUI

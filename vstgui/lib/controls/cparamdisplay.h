@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __cparamdisplay__
-#define __cparamdisplay__
+#pragma once
 
 #include "ccontrol.h"
 #include "../cfont.h"
@@ -151,7 +150,4 @@ protected:
 	double		textRotation;
 };
 
-} // namespace
-
-#endif
-
+} // VSTGUI

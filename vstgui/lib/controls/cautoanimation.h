@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __cautoanimation__
-#define __cautoanimation__
+#pragma once
 
 #include "ccontrol.h"
 
@@ -54,6 +53,4 @@ protected:
 	bool	bWindowOpened;
 };
 
-} // namespace
-
-#endif
+} // VSTGUI

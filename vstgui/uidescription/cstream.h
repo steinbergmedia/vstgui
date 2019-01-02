@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __cstream__
-#define __cstream__
+#pragma once
 
 #include "../lib/vstguifwd.h"
 #include "../lib/optional.h"
@@ -278,6 +277,4 @@ private:
 	size_t bufferSize;
 };
 
-} // namespace
-
-#endif
+} // VSTGUI

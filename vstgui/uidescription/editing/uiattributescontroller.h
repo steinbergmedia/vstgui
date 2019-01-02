@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __uiattributescontroller__
-#define __uiattributescontroller__
+#pragma once
 
 #include "../uidescription.h"
 
@@ -25,7 +24,11 @@ class Controller;
 }
 
 //----------------------------------------------------------------------------------------------------
-class UIAttributesController : public CBaseObject, public DelegationController, public UIDescriptionListenerAdapter
+class UIAttributesController : public NonAtomicReferenceCounted,
+                               public DelegationController,
+                               public UIDescriptionListenerAdapter,
+                               public UISelectionListenerAdapter,
+                               public IUIUndoManagerListener
 {
 public:
 	UIAttributesController (IController* baseController, UISelection* selection, UIUndoManager* undoManager, UIDescription* description);
@@ -55,12 +58,14 @@ protected:
 	void onUIDescTemplateChanged (UIDescription* desc) override;
 	void onUIDescGradientChanged (UIDescription* desc) override;
 
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
+	void selectionDidChange (UISelection* selection) override;
+	void selectionViewsDidChange (UISelection* selection) override;
+
+	void onUndoManagerChange () override;
 
 	SharedPointer<UISelection> selection;
 	SharedPointer<UIUndoManager> undoManager;
 	SharedPointer<UIDescription> editDescription;
-	SharedPointer<CVSTGUITimer> timer;
 	IAction* liveAction;
 
 	using UIAttributeControllerList = std::list<UIAttributeControllers::Controller*>;
@@ -78,10 +83,10 @@ protected:
 	std::string filterString;
 
 	const std::string* currentAttributeName;
+	
+	bool rebuildRequested{false};
 };
 
-} // namespace
+} // VSTGUI
 
 #endif // VSTGUI_LIVE_EDITING
-
-#endif // __uiattributescontroller__

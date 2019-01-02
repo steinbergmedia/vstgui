@@ -2,10 +2,12 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __idependency__
-#define __idependency__
+#pragma once
 
 #include "vstguibase.h"
+
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
+
 #include "vstguidebug.h"
 #include <list>
 #include <set>
@@ -59,7 +61,7 @@ protected:
 	int32_t deferChangeCount {0};
 	DeferedChangesSet deferedChanges;
 	DependentList dependents;
-};
+} VSTGUI_DEPRECATED_ATTRIBUTE;
 
 //----------------------------------------------------------------------------------------------------
 inline void IDependency::addDependency (CBaseObject* obj)
@@ -112,6 +114,6 @@ inline IDependency::~IDependency () noexcept
 	vstgui_assert (dependents.size () == 0);
 }
 
-} // namespace
+} // VSTGUI
 
-#endif
+#endif // VSTGUI_ENABLE_DEPRECATED_METHODS

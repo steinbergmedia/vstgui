@@ -149,4 +149,4 @@ void CGraphicsPath::closeSubpath ()
 	dirty ();
 }
 
-} // namespace
+} // VSTGUI

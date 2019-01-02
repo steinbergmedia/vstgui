@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __macglobals__
-#define __macglobals__
+#pragma once
 
 #include "../../vstguibase.h"
 
@@ -58,7 +57,6 @@ inline CGSize CGSizeFromCPoint (const CPoint& p)
 	return CGSizeMake (static_cast<CGFloat> (p.x), static_cast<CGFloat> (p.y));
 }
 
-} // namespace
+} // VSTGUI
 
 #endif // MAC
-#endif // __macglobals__

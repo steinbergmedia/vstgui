@@ -314,6 +314,6 @@ void NSViewOptionMenu::popup (COptionMenu* optionMenu, const Callback& callback)
 }
 
 
-} // namespace
+} // VSTGUI
 
 #endif // MAC_COCOA

@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __cframe__
-#define __cframe__
+#pragma once
 
 #include "vstguifwd.h"
 #include "cviewcontainer.h"
@@ -343,6 +342,4 @@ public:
 	virtual void onFocusViewChanged (CFrame* frame, CView* newFocusView, CView* oldFocusView) = 0;
 };
 
-} // namespace
-
-#endif
+} // VSTGUI

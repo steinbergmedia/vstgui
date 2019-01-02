@@ -162,4 +162,4 @@ void CXYPad::boundValues (float& x, float& y)
 		y = 1.f;
 }
 
-} // namespace
+} // VSTGUI

@@ -9,10 +9,6 @@
 
 namespace VSTGUI {
 
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-IdStringPtr CTextLabel::kMsgTruncatedTextChanged = "CTextLabel::kMsgTruncatedTextChanged";
-#endif
-
 //------------------------------------------------------------------------
 // CTextLabel
 //------------------------------------------------------------------------
@@ -92,9 +88,6 @@ void CTextLabel::calculateTruncatedText ()
 		truncatedText = CDrawMethods::createTruncatedText (mode, text, fontID, getWidth () - getTextInset ().x * 2.);
 		if (truncatedText == text)
 			truncatedText.clear ();
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-		changed (kMsgTruncatedTextChanged);
-#endif
 		if (listeners)
 		{
 			listeners->forEach (
@@ -467,4 +460,4 @@ void CMultiLineTextLabel::recalculateLines (CDrawContext* context)
 	}
 }
 
-} // namespace
+} // VSTGUI

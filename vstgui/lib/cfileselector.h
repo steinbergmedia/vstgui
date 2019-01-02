@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __cfileselector__
-#define __cfileselector__
+#pragma once
 
 #include "vstguifwd.h"
 #include "cstring.h"
@@ -167,6 +166,4 @@ protected:
 	std::vector<UTF8String> result;
 };
 
-} // namespace
-
-#endif
+} // VSTGUI

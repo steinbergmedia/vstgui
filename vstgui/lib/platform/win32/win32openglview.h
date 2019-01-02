@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __win32openglview__
-#define __win32openglview__
+#pragma once
 
 #include "../iplatformopenglview.h"
 
@@ -51,9 +50,7 @@ protected:
 	static int32_t instanceCount;
 };
 
-} // namespace
+} // VSTGUI
 
 #endif // WINDOWS
 #endif // VSTGUI_OPENGL_SUPPORT
-
-#endif // __win32openglview__

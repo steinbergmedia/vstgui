@@ -163,4 +163,4 @@ void CSearchTextEdit::platformTextDidChange ()
 }
 
 //------------------------------------------------------------------------
-} // namespace
+} // VSTGUI

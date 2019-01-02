@@ -6,7 +6,6 @@
 
 #if VSTGUI_LIVE_EDITING
 
-#include "uicolor.h"
 #include "../../lib/coffscreencontext.h"
 
 namespace VSTGUI {
@@ -17,13 +16,13 @@ UIColorSlider::UIColorSlider (UIColor* color, int32_t style)
 , color (color)
 , style (style)
 {
-	color->addDependency (this);
+	color->registerListener (this);
 }
 
 //----------------------------------------------------------------------------------------------------
 UIColorSlider::~UIColorSlider ()
 {
-	color->removeDependency (this);
+	color->unregisterListener (this);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -49,14 +48,9 @@ void UIColorSlider::setViewSize (const CRect& rect, bool invalid)
 }
 
 //----------------------------------------------------------------------------------------------------
-CMessageResult UIColorSlider::notify (CBaseObject* sender, IdStringPtr message)
+void UIColorSlider::uiColorChanged (UIColor* c)
 {
-	if (message == UIColor::kMsgChanged || message == UIColor::kMsgEditChange)
-	{
-		setBackground (nullptr);
-		return kMessageNotified;
-	}
-	return CSlider::notify (sender, message);
+	setBackground (nullptr);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -158,6 +152,6 @@ void UIColorSlider::updateHandle (CDrawContext* context)
 	}
 }
 
-} // namespace
+} // VSTGUI
 
 #endif // VSTGUI_LIVE_EDITING

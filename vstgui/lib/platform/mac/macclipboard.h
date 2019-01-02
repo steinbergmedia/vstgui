@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __macclipboard__
-#define __macclipboard__
+#pragma once
 
 #include "../../vstguibase.h"
 
@@ -32,5 +31,3 @@ extern SharedPointer<IDataPackage> createCarbonDragDataPackage (DragRef drag);
 #endif
 
 }} // namespaces
-
-#endif // __macclipboard__

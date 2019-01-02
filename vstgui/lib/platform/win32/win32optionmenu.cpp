@@ -224,6 +224,6 @@ HMENU Win32OptionMenu::createMenu (COptionMenu* _menu, int32_t& offsetIdx)
 	return menu;
 }
 
-} // namespace
+} // VSTGUI
 
 #endif // WINDOWS

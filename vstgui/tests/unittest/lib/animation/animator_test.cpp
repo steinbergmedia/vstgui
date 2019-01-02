@@ -32,6 +32,7 @@ struct RemoveAnimationInCallback : public IAnimationTarget
 
 };
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 struct MessageReceiver : public CBaseObject
 {
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override
@@ -43,6 +44,7 @@ struct MessageReceiver : public CBaseObject
 	
 	bool messageReceived {false};
 };
+#endif
 
 } // anonymous
 
@@ -78,6 +80,7 @@ TESTCASE(AnimatorTest,
 		CFRunLoopRun ();
 	);
 	
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 	TEST(animationMessage,
 		auto a = owned (new Animator ());
 		auto view = owned (new CView (CRect (0, 0, 0, 0)));
@@ -86,6 +89,7 @@ TESTCASE(AnimatorTest,
 		CFRunLoopRun ();
 		EXPECT(recevier.messageReceived == true)
 	);
+#endif
 );
 
 } // VSTGUI

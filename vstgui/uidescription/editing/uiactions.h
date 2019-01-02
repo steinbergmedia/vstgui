@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __uiactions__
-#define __uiactions__
+#pragma once
 
 #include "iaction.h"
 
@@ -162,7 +161,8 @@ protected:
 class TransformViewTypeOperation : public IAction
 {
 public:
-	TransformViewTypeOperation (UISelection* selection, IdStringPtr viewClassName, UIDescription* desc, const UIViewFactory* factory);
+	TransformViewTypeOperation (UISelection* selection, CView* view, IdStringPtr viewClassName,
+	                            UIDescription* desc, const UIViewFactory* factory);
 	~TransformViewTypeOperation () override;
 
 	UTF8StringPtr getName () override;
@@ -173,7 +173,7 @@ public:
 protected:
 	SharedPointer<CView> view;
 	CView* newView;
-	SharedPointer<CView> beforeView;
+	int32_t insertIndex;
 	SharedPointer<CViewContainer> parent;
 	SharedPointer<UISelection> selection;
 	const UIViewFactory* factory;
@@ -573,8 +573,6 @@ private:
 };
 
 //-----------------------------------------------------------------------------
-} // namespace
+} // VSTGUI
 
 #endif // VSTGUI_LIVE_EDITING
-
-#endif // __uiactions__

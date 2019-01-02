@@ -20,7 +20,7 @@
 namespace VSTGUI {
 
 //----------------------------------------------------------------------------------------------------
-class UIColorsDataSource : public UIBaseDataSource
+class UIColorsDataSource : public UIBaseDataSource, public UIColorListenerAdapter
 {
 public:
 	UIColorsDataSource (UIDescription* description, IActionPerformer* actionPerformer, UIColor* color);
@@ -28,7 +28,6 @@ public:
 	
 protected:
 	void onUIDescColorChanged (UIDescription* desc) override;
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 	void update () override;
 	void getNames (std::list<const std::string*>& names) override;
 	bool addItem (UTF8StringPtr name) override;
@@ -50,7 +49,11 @@ protected:
 	CMouseEventResult dbOnMouseMoved (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) override;
 
 	CCoord getColorIconWith ();
-	
+
+	void uiColorChanged (UIColor* c) override;
+	void uiColorBeginEditing (UIColor* c) override;
+	void uiColorEndEditing (UIColor* c) override;
+
 	SharedPointer<UIColor> color;
 	bool editing;
 	Optional<CColor> dragColor;
@@ -64,13 +67,13 @@ UIColorsDataSource::UIColorsDataSource (UIDescription* description, IActionPerfo
 , editing (false)
 , dragRow (-1)
 {
-	color->addDependency (this);
+	color->registerListener (this);
 }
 
 //----------------------------------------------------------------------------------------------------
 UIColorsDataSource::~UIColorsDataSource ()
 {
-	color->removeDependency (this);
+	color->unregisterListener (this);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -80,43 +83,42 @@ void UIColorsDataSource::onUIDescColorChanged (UIDescription* desc)
 }
 
 //----------------------------------------------------------------------------------------------------
-CMessageResult UIColorsDataSource::notify (CBaseObject* sender, IdStringPtr message)
+void UIColorsDataSource::uiColorChanged (UIColor* c)
 {
-	CMessageResult result = UIBaseDataSource::notify (sender, message);
-	if (result != kMessageNotified)
+	if (editing)
 	{
-		if (message == UIColor::kMsgBeginEditing)
+		int32_t selectedRow = dataBrowser->getSelectedRow ();
+		if (selectedRow != CDataBrowser::kNoSelection)
 		{
-			int32_t selectedRow = dataBrowser->getSelectedRow ();
-			if (selectedRow != CDataBrowser::kNoSelection)
-			{
-				actionPerformer->beginLiveColorChange (names.at (static_cast<uint32_t> (selectedRow)).data ());
-				editing = true;
-			}
-		}
-		else if (message == UIColor::kMsgEndEditing)
-		{
-			int32_t selectedRow = dataBrowser->getSelectedRow ();
-			if (selectedRow != CDataBrowser::kNoSelection)
-			{
-				actionPerformer->endLiveColorChange (names.at (static_cast<uint32_t> (selectedRow)).data ());
-				editing = false;
-			}
-		}
-		else if (message == UIColor::kMsgEditChange)
-		{
-			if (editing)
-			{
-				int32_t selectedRow = dataBrowser->getSelectedRow ();
-				if (selectedRow != CDataBrowser::kNoSelection)
-				{
-					actionPerformer->performLiveColorChange (names.at (static_cast<uint32_t> (selectedRow)).data (), color->base ());
-					dataBrowser->setSelectedRow (selectedRow);
-				}
-			}
+			actionPerformer->performLiveColorChange (
+			    names.at (static_cast<uint32_t> (selectedRow)).data (), color->base ());
+			dataBrowser->setSelectedRow (selectedRow);
 		}
 	}
-	return result;
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIColorsDataSource::uiColorBeginEditing (UIColor* c)
+{
+	int32_t selectedRow = dataBrowser->getSelectedRow ();
+	if (selectedRow != CDataBrowser::kNoSelection)
+	{
+		actionPerformer->beginLiveColorChange (
+		    names.at (static_cast<uint32_t> (selectedRow)).data ());
+		editing = true;
+	}
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIColorsDataSource::uiColorEndEditing (UIColor* c)
+{
+	int32_t selectedRow = dataBrowser->getSelectedRow ();
+	if (selectedRow != CDataBrowser::kNoSelection)
+	{
+		actionPerformer->endLiveColorChange (
+		    names.at (static_cast<uint32_t> (selectedRow)).data ());
+		editing = false;
+	}
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -229,8 +231,9 @@ CMouseEventResult UIColorsDataSource::dbOnMouseMoved (const CPoint& where,
 			if (description->getColor (names.at (static_cast<uint32_t> (row)).data (), color))
 			{
 				auto colorStr = color.toString ();
-				auto dropSource = CDropSource::create (colorStr.data (), static_cast<uint32_t>(colorStr.length () + 1),
-				                                       CDropSource::kText);
+				auto dropSource = CDropSource::create (
+				    colorStr.data (), static_cast<uint32_t> (colorStr.length () + 1),
+				    CDropSource::kText);
 				SharedPointer<CBitmap> dragBitmap;
 				if (auto offscreen = COffscreenContext::create (browser->getFrame (), r.getWidth (), r.getHeight ()))
 				{
@@ -442,6 +445,6 @@ IController* UIColorsController::createSubController (IdStringPtr name, const IU
 	return controller->createSubController (name, description);
 }
 
-} // namespace
+} // VSTGUI
 
 #endif // VSTGUI_LIVE_EDITING

@@ -53,4 +53,4 @@ CCoord COffscreenContext::getHeight () const
 	return bitmap ? bitmap->getHeight () : 0.;
 }
 
-} // namespace
+} // VSTGUI

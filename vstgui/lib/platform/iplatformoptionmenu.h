@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __iplatformoptionmenu__
-#define __iplatformoptionmenu__
+#pragma once
 
 /// @cond ignore
 
@@ -26,8 +25,6 @@ public:
 	virtual void popup (COptionMenu* optionMenu, const Callback& callback) = 0;
 };
 
-} // namespace
+} // VSTGUI
 
 /// @endcond
-
-#endif // __iplatformtextedit__

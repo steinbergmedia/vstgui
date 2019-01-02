@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __crect__
-#define __crect__
+#pragma once
 
 #include "vstguibase.h"
 #include "cpoint.h"
@@ -397,7 +396,4 @@ inline CRect& CRect::offsetInverse (const CPoint& p)
 	return offset (-p.x, -p.y);
 }
 
-} // namespace
-
-#endif
-
+} // VSTGUI

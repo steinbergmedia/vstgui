@@ -165,4 +165,4 @@ bool CMovieButton::sizeToFit ()
 	return false;
 }
 
-} // namespace
+} // VSTGUI

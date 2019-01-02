@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __cstring__
-#define __cstring__
+#pragma once
 
 #include "vstguifwd.h"
 #include "optional.h"
@@ -603,6 +602,4 @@ inline typename UTF8CodePointIterator<BaseIterator>::CodePoint UTF8CodePointIter
 	return codePoint;
 }
 
-} // namespace
-
-#endif // __cstring__
+} // VSTGUI

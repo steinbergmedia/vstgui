@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __cdropsource__
-#define __cdropsource__
+#pragma once
 
 #include "vstguibase.h"
 #include "idatapackage.h"
@@ -48,6 +47,4 @@ protected:
 	DropEntryVector entries;
 };
 
-} // namespace
-
-#endif // __cdropsource__
+} // VSTGUI

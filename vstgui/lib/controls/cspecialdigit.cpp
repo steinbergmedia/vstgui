@@ -128,4 +128,4 @@ void CSpecialDigit::draw (CDrawContext *pContext)
 	setDirty (false);
 }
 
-} // namespace
+} // VSTGUI

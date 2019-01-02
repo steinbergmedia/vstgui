@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __xmlparser__
-#define __xmlparser__
+#pragma once
 
 #include "../lib/vstguibase.h"
 #include "cstream.h"
@@ -72,5 +71,3 @@ protected:
 };
 
 }} // namespaces
-
-#endif

@@ -581,20 +581,41 @@ void Win32Frame::paint (HWND hwnd)
 					updateRegionList = (RGNDATA*) std::malloc (updateRegionListSize);
 				}
 				GetRegionData (rgn, len, updateRegionList);
-				if (updateRegionList->rdh.nCount > 0)
+				if (updateRegionList->rdh.nCount > 1)
 				{
+					std::vector<CRect> dirtyRects;
+					dirtyRects.reserve (updateRegionList->rdh.nCount);
 					RECT* rp = (RECT*)updateRegionList->Buffer;
-					for (uint32_t i = 0; i < updateRegionList->rdh.nCount; i++)
+					dirtyRects.emplace_back (CRect (rp->left, rp->top, rp->right, rp->bottom));
+					++rp;
+					for (uint32_t i = 1; i < updateRegionList->rdh.nCount; ++i, ++rp)
 					{
 						CRect ur (rp->left, rp->top, rp->right, rp->bottom);
-						paintRect = ur;
-						drawContext->clearRect (ur);
-						getFrame ()->platformDrawRect (drawContext, ur);
-						rp++;
+						auto mustAdd = true;
+						for (auto& r : dirtyRects)
+						{
+							auto cr = ur;
+							cr.unite (r);
+							if (cr.getWidth () * cr.getHeight () ==
+							    ur.getWidth () * ur.getHeight () + r.getWidth () * r.getHeight ())
+							{
+								r = cr;
+								mustAdd = false;
+								break;
+							}
+						}
+						if (mustAdd)
+							dirtyRects.emplace_back (ur);
+					}
+					for (auto& updateRect : dirtyRects)
+					{
+						drawContext->clearRect (updateRect);
+						getFrame ()->platformDrawRect (drawContext, updateRect);
 					}
 				}
 				else
 				{
+					drawContext->clearRect (updateRect);
 					getFrame ()->platformDrawRect (drawContext, updateRect);
 				}
 			}
@@ -969,6 +990,6 @@ CGradient* CGradient::create (const ColorStopMap& colorStopMap)
 	return new CGradient (colorStopMap);
 }
 
-} // namespace
+} // VSTGUI
 
 #endif // WINDOWS

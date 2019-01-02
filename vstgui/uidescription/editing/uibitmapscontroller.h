@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __uibitmapscontroller__
-#define __uibitmapscontroller__
+#pragma once
 
 #include "../uidescription.h"
 
@@ -20,7 +19,7 @@ namespace VSTGUI {
 class UIBitmapsDataSource;
 
 //----------------------------------------------------------------------------------------------------
-class UIBitmapsController : public CBaseObject,
+class UIBitmapsController : public NonAtomicReferenceCounted,
                             public DelegationController,
                             public GenericStringListDataBrowserSourceSelectionChanged
 {
@@ -57,8 +56,6 @@ protected:
 	};
 };
 
-} // namespace
+} // VSTGUI
 
 #endif // VSTGUI_LIVE_EDITING
-
-#endif // __uibitmapscontroller__

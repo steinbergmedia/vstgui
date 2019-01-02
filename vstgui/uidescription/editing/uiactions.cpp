@@ -35,20 +35,20 @@ UTF8StringPtr SizeToFitOperation::getName ()
 //----------------------------------------------------------------------------------------------------
 void SizeToFitOperation::perform ()
 {
-	selection->changed (UISelection::kMsgSelectionViewWillChange);
+	selection->viewsWillChange ();
 	for (auto& element : *this)
 	{
 		element.first->invalid ();
 		element.first->sizeToFit ();
 		element.first->invalid ();
 	}
-	selection->changed (UISelection::kMsgSelectionViewChanged);
+	selection->viewsDidChange ();
 }
 
 //----------------------------------------------------------------------------------------------------
 void SizeToFitOperation::undo ()
 {
-	selection->changed (UISelection::kMsgSelectionViewWillChange);
+	selection->viewsWillChange ();
 	for (auto& element : *this)
 	{
 		element.first->invalid ();
@@ -56,7 +56,7 @@ void SizeToFitOperation::undo ()
 		element.first->setMouseableArea (element.second);
 		element.first->invalid ();
 	}
-	selection->changed (UISelection::kMsgSelectionViewChanged);
+	selection->viewsDidChange ();
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -96,7 +96,7 @@ UTF8StringPtr UnembedViewOperation::getName ()
 //----------------------------------------------------------------------------------------------------
 void UnembedViewOperation::perform ()
 {
-	IDependency::DeferChanges dc (selection);
+	UISelection::DeferChange dc (*selection);
 	selection->remove (containerView);
 	CRect containerViewSize = containerView->getViewSize ();
 	const_reverse_iterator it = rbegin ();
@@ -406,7 +406,7 @@ void DeleteOperation::perform ()
 void DeleteOperation::undo ()
 {
 	selection->clear ();
-	IDependency::DeferChanges dc (selection);
+	UISelection::DeferChange dc (*selection);
 	for (auto& element : *this)
 	{
 		if (element.second.nextView)
@@ -453,10 +453,13 @@ void InsertViewOperation::undo ()
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-TransformViewTypeOperation::TransformViewTypeOperation (UISelection* selection, IdStringPtr viewClassName, UIDescription* desc, const UIViewFactory* factory)
-: view (selection->first ())
+TransformViewTypeOperation::TransformViewTypeOperation (UISelection* selection, CView* view,
+                                                        IdStringPtr viewClassName,
+                                                        UIDescription* desc,
+                                                        const UIViewFactory* factory)
+: view (view)
 , newView (nullptr)
-, beforeView (nullptr)
+, insertIndex (-1)
 , parent (view->getParentView ()->asViewContainer ())
 , selection (selection)
 , factory (factory)
@@ -470,11 +473,9 @@ TransformViewTypeOperation::TransformViewTypeOperation (UISelection* selection, 
 		ViewIterator it (parent);
 		while (*it)
 		{
+			++insertIndex;
 			if (*it == view)
-			{
-				beforeView = *++it;
 				break;
-			}
 			++it;
 		}
 	}
@@ -525,10 +526,9 @@ void TransformViewTypeOperation::perform ()
 	{
 		newView->remember ();
 		parent->removeView (view);
-		if (beforeView)
-			parent->addView (newView, beforeView);
-		else
-			parent->addView (newView);
+		parent->addView (newView);
+		if (insertIndex >= 0)
+			parent->changeViewZOrder (newView, static_cast<uint32_t> (insertIndex));
 		exchangeSubViews (view->asViewContainer (), newView->asViewContainer ());
 		selection->setExclusive (newView);
 	}
@@ -541,10 +541,9 @@ void TransformViewTypeOperation::undo ()
 	{
 		view->remember ();
 		parent->removeView (newView);
-		if (beforeView)
-			parent->addView (view, beforeView);
-		else
-			parent->addView (view);
+		parent->addView (view);
+		if (insertIndex >= 0)
+			parent->changeViewZOrder (view, static_cast<uint32_t> (insertIndex));
 		exchangeSubViews (newView->asViewContainer (), view->asViewContainer ());
 		selection->setExclusive (view);
 	}
@@ -582,7 +581,7 @@ void AttributeChangeAction::updateSelection ()
 	{
 		if (selection->contains (element.first) == false)
 		{
-			IDependency::DeferChanges dc (selection);
+			UISelection::DeferChange dc (*selection);
 			selection->clear ();
 			for (auto& it2 : *this)
 				selection->add (it2.first);
@@ -597,14 +596,14 @@ void AttributeChangeAction::perform ()
 	const IViewFactory* viewFactory = desc->getViewFactory ();
 	UIAttributes attr;
 	attr.setAttribute (attrName, attrValue);
-	selection->changed (UISelection::kMsgSelectionViewWillChange);
+	selection->viewsWillChange ();
 	for (auto& element : *this)
 	{
 		element.first->invalid ();	// we need to invalid before changing anything as the size may change
 		viewFactory->applyAttributeValues (element.first, attr, desc);
 		element.first->invalid ();	// and afterwards also
 	}
-	selection->changed (UISelection::kMsgSelectionViewChanged);
+	selection->viewsDidChange ();
 	updateSelection ();
 }
 
@@ -612,7 +611,7 @@ void AttributeChangeAction::perform ()
 void AttributeChangeAction::undo ()
 {
 	const IViewFactory* viewFactory = desc->getViewFactory ();
-	selection->changed (UISelection::kMsgSelectionViewWillChange);
+	selection->viewsWillChange ();
 	for (auto& element : *this)
 	{
 		UIAttributes attr;
@@ -621,7 +620,7 @@ void AttributeChangeAction::undo ()
 		viewFactory->applyAttributeValues (element.first, attr, desc);
 		element.first->invalid ();	// and afterwards also
 	}
-	selection->changed (UISelection::kMsgSelectionViewChanged);
+	selection->viewsDidChange ();
 	updateSelection ();
 }
 
@@ -1261,8 +1260,9 @@ void HierarchyMoveViewOperation::perform ()
 		it++;
 		currentIndex++;
 	}
+	selection->willChange ();
 	parent->changeViewZOrder (view, up ? currentIndex - 1 : currentIndex + 1);
-	selection->changed (UISelection::kMsgSelectionChanged);
+	selection->didChange ();
 	parent->invalid ();
 }
 
@@ -1499,6 +1499,6 @@ void ChangeTemplateMinMaxAction::undo ()
 }
 
 //----------------------------------------------------------------------------------------------------
-} // namespace
+} // VSTGUI
 
 #endif // VSTGUI_LIVE_EDITING

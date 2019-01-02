@@ -109,6 +109,6 @@ bool UIGridController::stringToValue (UTF8StringPtr txt, float& result, CTextEdi
 	return true;
 }
 
-} // namespace
+} // VSTGUI
 
 #endif // VSTGUI_LIVE_EDITING

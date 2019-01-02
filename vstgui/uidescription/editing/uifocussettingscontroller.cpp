@@ -28,35 +28,41 @@ UIFocusSettingsController::UIFocusSettingsController (UIDescription* description
 		control = nullptr;
 }
 
-//----------------------------------------------------------------------------------------------------
-CMessageResult UIFocusSettingsController::notify (CBaseObject* sender, IdStringPtr message)
+//------------------------------------------------------------------------
+void UIFocusSettingsController::onDialogButton1Clicked (UIDialogController*)
 {
-	if (message == UIDialogController::kMsgDialogButton1Clicked)
+	FocusDrawingSettings fd;
+
+	if (controls[kEnabledTag])
+		fd.enabled =
+		    (controls[kEnabledTag]->getValue () == controls[kEnabledTag]->getMax ()) ? true : false;
+	if (controls[kColorTag])
 	{
-		FocusDrawingSettings fd;
-		
-		if (controls[kEnabledTag])
-			fd.enabled = (controls[kEnabledTag]->getValue () == controls[kEnabledTag]->getMax ()) ? true : false;
-		if (controls[kColorTag])
-		{
-			auto* menu = dynamic_cast<COptionMenu*>(controls[kColorTag]);
-			CMenuItem* item = menu->getCurrent ();
-			if (item)
-				fd.colorName = item->getTitle ();
-		}
-		if (controls[kWidthTag])
-			fd.width = controls[kWidthTag]->getValue ();
-		if (originalSettings != fd)
-			actionPerformer->performChangeFocusDrawingSettings (fd);
-		return kMessageNotified;
+		COptionMenu* menu = dynamic_cast<COptionMenu*> (controls[kColorTag]);
+		CMenuItem* item = menu->getCurrent ();
+		if (item)
+			fd.colorName = item->getTitle ();
 	}
-	return kMessageUnknown;
+	if (controls[kWidthTag])
+		fd.width = controls[kWidthTag]->getValue ();
+	if (originalSettings != fd)
+		actionPerformer->performChangeFocusDrawingSettings (fd);
+}
+
+//------------------------------------------------------------------------
+void UIFocusSettingsController::onDialogButton2Clicked (UIDialogController*)
+{
+}
+
+//------------------------------------------------------------------------
+void UIFocusSettingsController::onDialogShow (UIDialogController*)
+{
 }
 
 //----------------------------------------------------------------------------------------------------
 CView* UIFocusSettingsController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
 {
-	auto* control = dynamic_cast<CControl*>(view);
+	CControl* control = dynamic_cast<CControl*>(view);
 	if (control)
 	{
 		switch (control->getTag ())
@@ -69,7 +75,7 @@ CView* UIFocusSettingsController::verifyView (CView* view, const UIAttributes& a
 			}
 			case kColorTag:
 			{
-				auto* menu = dynamic_cast<COptionMenu*>(control);
+				COptionMenu* menu = dynamic_cast<COptionMenu*>(control);
 				if (menu)
 				{
 					controls[kColorTag] = control;
@@ -92,7 +98,7 @@ CView* UIFocusSettingsController::verifyView (CView* view, const UIAttributes& a
 			case kWidthTag:
 			{
 				controls[kWidthTag] = control;
-				auto* edit = dynamic_cast<CTextEdit*>(control);
+				CTextEdit* edit = dynamic_cast<CTextEdit*>(control);
 				if (edit)
 				{
 					edit->setStringToValueFunction (stringToValue);
@@ -133,6 +139,6 @@ bool UIFocusSettingsController::stringToValue (UTF8StringPtr txt, float& result,
 	return false;
 }
 
-} // namespace
+} // VSTGUI
 
 #endif // VSTGUI_LIVE_EDITING

@@ -6,7 +6,6 @@
 
 #if VSTGUI_LIVE_EDITING
 
-#include "uicolor.h"
 #include "uicolorslider.h"
 #include "../uiattributes.h"
 #include "../iuidescription.h"
@@ -69,13 +68,13 @@ UIColorChooserController::UIColorChooserController (IController* baseController,
 : DelegationController (baseController)
 , color (color)
 {
-	color->addDependency (this);
+	color->registerListener (this);
 }
 
 //----------------------------------------------------------------------------------------------------
 UIColorChooserController::~UIColorChooserController ()
 {
-	color->removeDependency (this);
+	color->unregisterListener (this);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -134,14 +133,9 @@ void UIColorChooserController::updateColorSliders ()
 }
 
 //----------------------------------------------------------------------------------------------------
-CMessageResult UIColorChooserController::notify (CBaseObject* sender, IdStringPtr message)
+void UIColorChooserController::uiColorChanged (UIColor* c)
 {
-	if (message == UIColor::kMsgChanged || message == UIColor::kMsgEditChange)
-	{
-		updateColorSliders ();
-		return kMessageNotified;
-	}
-	return kMessageUnknown;
+	updateColorSliders ();
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -312,6 +306,6 @@ void UIColorChooserController::valueChanged (CControl* pControl)
 	}
 }
 
-} // namespace
+} // VSTGUI
 
 #endif // VSTGUI_LIVE_EDITING

@@ -86,4 +86,4 @@ SharedPointer<IDataPackage> CDropSource::create (const void* buffer, uint32_t bu
 	return makeOwned<CDropSource> (buffer, bufferSize, type);
 }
 
-} // namespace
+} // VSTGUI

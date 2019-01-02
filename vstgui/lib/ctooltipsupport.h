@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __ctooltipsupport__
-#define __ctooltipsupport__
+#pragma once
 
 #include "vstguifwd.h"
 #include "cpoint.h"
@@ -51,7 +50,4 @@ protected:
 	CPoint lastMouseMove;
 };
 
-} // namespace
-
-#endif
-
+} // VSTGUI

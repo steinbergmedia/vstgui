@@ -227,6 +227,6 @@ LONG_PTR WINAPI Win32TextEdit::procEdit (HWND hwnd, UINT message, WPARAM wParam,
 	return DefWindowProc (hwnd, message, wParam, lParam);
 }
 
-} // namespace
+} // VSTGUI
 
 #endif // WINDOWS

@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __cswitch__
-#define __cswitch__
+#pragma once
 
 #include "ccontrol.h"
 
@@ -163,6 +162,4 @@ private:
 	float mouseStartValue;
 };
 
-} // namespace
-
-#endif
+} // VSTGUI

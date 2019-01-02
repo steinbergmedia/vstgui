@@ -22,6 +22,6 @@ AutoreleasePool::~AutoreleasePool () noexcept
 	[pool drain];
 }
 
-} // namespace
+} // VSTGUI
 
 #endif // MAC

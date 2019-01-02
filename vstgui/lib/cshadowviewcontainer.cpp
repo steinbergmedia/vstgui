@@ -248,4 +248,4 @@ void CShadowViewContainer::viewContainerViewZOrderChanged (CViewContainer* conta
 	invalidateShadow ();
 }
 
-} // namespace
+} // VSTGUI

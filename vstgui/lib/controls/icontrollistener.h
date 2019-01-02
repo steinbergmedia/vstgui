@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __icontrollistener__
-#define __icontrollistener__
+#pragma once
 
 #include "../vstguifwd.h"
 #include "../cbuttonstate.h"
@@ -24,6 +23,4 @@ public:
 	virtual void controlTagDidChange (CControl* pControl) {}
 };
 
-}
-
-#endif // __icontrollistener__
+} // VSTGUI

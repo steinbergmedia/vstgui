@@ -287,6 +287,9 @@ struct WindowController::Impl : public IController, public ICommandHandler
 		uiDesc = makeOwned<UIDescription> (&xmlContentProvider);
 		if (!uiDesc->parse ())
 			return false;
+		if (customization)
+			customization->onUIDescriptionParsed (uiDesc);
+
 		frame = makeOwned<CFrame> (CRect (), nullptr);
 		frame->setTransparency (true);
 		this->templateName = templateName;
@@ -436,6 +439,8 @@ struct WindowController::Impl : public IController, public ICommandHandler
 		{
 			return false;
 		}
+		if (customization)
+			customization->onUIDescriptionParsed (uiDesc);
 		return true;
 	}
 
