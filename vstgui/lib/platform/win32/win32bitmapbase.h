@@ -9,7 +9,7 @@
 #if WINDOWS
 
 #include <windows.h>
-#include <objidl.h>
+struct IStream;
 
 namespace VSTGUI {
 

@@ -7,10 +7,13 @@
 #include "../../vstguifwd.h"
 
 #if WINDOWS
+struct IUnknown;
+
 #include "../../dragging.h"
 #include "win32frame.h"
 #include "win32datapackage.h"
 #include <windows.h>
+#include <oleidl.h>
 #include <memory>
 
 namespace VSTGUI {

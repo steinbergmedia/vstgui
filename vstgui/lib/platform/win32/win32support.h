@@ -8,12 +8,14 @@
 
 #if WINDOWS
 
+struct IUnknown;
+
 #include "../../cbitmap.h"
 #include "../../optional.h"
 #include "../iplatformresourceinputstream.h"
 #include <algorithm>
 #include <windows.h>
-#include <objidl.h>
+#include <combaseapi.h>
 
 interface ID2D1Factory;
 interface IDWriteFactory;

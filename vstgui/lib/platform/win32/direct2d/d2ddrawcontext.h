@@ -7,6 +7,7 @@
 #include "../../../coffscreencontext.h"
 
 #if WINDOWS
+struct IUnknown;
 
 #include "d2dbitmap.h"
 #include <windows.h>
