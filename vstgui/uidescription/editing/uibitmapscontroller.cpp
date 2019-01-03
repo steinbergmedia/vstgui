@@ -114,7 +114,7 @@ public:
 
 	void setBackground (CBitmap *background) override
 	{
-		IPlatformBitmap* platformBitmap = background ? background->getPlatformBitmap () : nullptr;
+		auto platformBitmap = background ? background->getPlatformBitmap () : nullptr;
 		if (platformBitmap && platformBitmap->getScaleFactor () != 1.)
 		{
 			// get rid of the scale factor
