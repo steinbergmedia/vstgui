@@ -62,13 +62,13 @@ public:
 
 	static std::string pointToString (CPoint p);
 	static bool stringToPoint (const std::string& str, CPoint& p);
-	static std::string doubleToString (double value, uint32_t precision = 40);
+	static std::string doubleToString (double value, uint32_t precision = 6);
 	static bool stringToDouble (const std::string& str, double& value);
 	static std::string boolToString (bool value);
 	static bool stringToBool (const std::string& str, bool& value);
 	static std::string integerToString (int32_t value);
 	static bool stringToInteger (const std::string& str, int32_t& value);
-	static std::string rectToString (CRect r, uint32_t precision = 40);
+	static std::string rectToString (CRect r, uint32_t precision = 6);
 	static bool stringToRect (const std::string& str, CRect& r);
 	static std::string stringArrayToString (const StringArray& values);
 	static bool stringToStringArray (const std::string& str, StringArray& values);

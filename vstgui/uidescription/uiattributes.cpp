@@ -293,7 +293,7 @@ void UIAttributes::removeAttribute (const std::string& name)
 //-----------------------------------------------------------------------------
 void UIAttributes::setDoubleAttribute (const std::string& name, double value)
 {
-	setAttribute (name, doubleToString (value));
+	setAttribute (name, doubleToString (value, 40));
 }
 
 //-----------------------------------------------------------------------------
