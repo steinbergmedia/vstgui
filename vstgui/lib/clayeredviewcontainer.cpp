@@ -33,7 +33,7 @@ void CLayeredViewContainer::updateLayerSize ()
 	getTransform ().transform (newSize);
 
 	CViewContainer* parent = static_cast<CViewContainer*> (getParentView ());
-	while (parent)
+	while (parent && parent != getFrame ())
 	{
 		CRect parentSize = parent->getViewSize ();
 		parent->getTransform ().transform (newSize);
@@ -215,7 +215,7 @@ CGraphicsTransform CLayeredViewContainer::getDrawTransform () const
 	ParentViews parents;
 
 	CViewContainer* parent = static_cast<CViewContainer*> (getParentView ());
-	while (parent)
+	while (parent && parent != getFrame ())
 	{
 		parents.push_front (parent);
 		parent = static_cast<CViewContainer*> (parent->getParentView ());

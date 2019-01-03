@@ -191,7 +191,6 @@ private:
 						if (auto subMenu = item->getSubmenu ())
 						{
 							auto r = db->getCellBounds ({row, 0});
-							browser->translateToGlobal (r);
 							openSubMenu (item, r);
 							return 1;
 						}
@@ -217,7 +216,6 @@ private:
 				{
 					browser->setSelectedRow (row, true);
 					auto r = browser->getCellBounds ({row, column});
-					browser->translateToGlobal (r);
 					openSubMenu (item, r);
 				}
 			}
@@ -285,6 +283,7 @@ private:
 				if (index != ViewRemoved)
 					clickCallback (menu, index);
 			};
+			db->translateToGlobal (cellRect, true);
 			subMenuView =
 			    setupGenericOptionMenu (callback, mainContainer, subMenu, theme, cellRect, this);
 		}
@@ -466,10 +465,10 @@ CView* setupGenericOptionMenu (Proc clickCallback, CViewContainer* container,
 	{
 		viewRect.setWidth (maxWidth);
 	}
-	if (frame)
+	if (container)
 	{
-		auto frSize = frame->getViewSize ();
-		frSize.inset (6, 6); // frame margin
+		auto frSize = container->getViewSize ();
+		frSize.inset (theme.inset);
 
 		if (frSize.bottom < viewRect.bottom)
 		{
@@ -550,11 +549,15 @@ struct GenericOptionMenu::Impl
 GenericOptionMenu::GenericOptionMenu (CFrame* frame, CButtonState initialButtons,
                                       GenericOptionMenuTheme theme)
 {
+	auto frameSize = frame->getViewSize ();
+	frame->getTransform ().inverse ().transform (frameSize);
+	frameSize.originize ();
+
 	impl = std::unique_ptr<Impl> (new Impl);
 	impl->frame = frame;
 	impl->initialButtons = initialButtons;
 	impl->theme = theme;
-	impl->container = new CLayeredViewContainer (impl->frame->getViewSize ());
+	impl->container = new CLayeredViewContainer (frameSize);
 	impl->container->setZIndex (100);
 	impl->container->setTransparency (true);
 	impl->container->registerViewMouseListener (this);
@@ -630,7 +633,7 @@ void GenericOptionMenu::popup (COptionMenu* optionMenu, const Callback& callback
 		self->removeModalView ({menu, index});
 	};
 
-	auto viewRect = optionMenu->translateToGlobal (optionMenu->getViewSize ());
+	auto viewRect = optionMenu->translateToGlobal (optionMenu->getViewSize (), true);
 	auto where = viewRect.getCenter ();
 
 	GenericOptionMenuDetail::setupGenericOptionMenu (clickCallback, impl->container, optionMenu,
