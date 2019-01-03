@@ -34,8 +34,8 @@ static COMDLG_FILTERSPEC* buildExtensionFilter (std::list<CFileExtension>& exten
 		std::list<CFileExtension>::iterator it = extensions.begin ();
 		while (it != extensions.end ())
 		{
-			UTF8StringHelper desc ((*it).getDescription ());
-			UTF8StringHelper ext ((*it).getExtension ());
+			UTF8StringHelper desc ((*it).getDescription ().data ());
+			UTF8StringHelper ext ((*it).getExtension ().data ());
 			WCHAR* wDesc = (WCHAR*)std::malloc ((wcslen (desc)+1) * sizeof (WCHAR));
 			WCHAR* wSpec = (WCHAR*)std::malloc ((wcslen (ext)+3) * sizeof (WCHAR));
 			memcpy (wDesc, desc.getWideString (), (wcslen (desc)+1) * sizeof (WCHAR));
@@ -177,7 +177,7 @@ bool VistaFileSelector::runModalInternal ()
 		hr = CoCreateInstance (CLSID_FileSaveDialog, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARG(IFileDialog, &fileDialog));
 		if (!defaultSaveName.empty ())
 		{
-			fileDialog->SetFileName (UTF8StringHelper (defaultSaveName));
+			fileDialog->SetFileName (UTF8StringHelper (defaultSaveName.data ()));
 		}
 	}
 	else
@@ -220,7 +220,7 @@ bool VistaFileSelector::runModalInternal ()
 	}
 
 	if (!title.empty ())
-		hr = fileDialog->SetTitle (UTF8StringHelper (title));
+		hr = fileDialog->SetTitle (UTF8StringHelper (title.data ()));
 
 	DWORD numExtensions = 0;
 	DWORD defaultFileTypeIndex = 0;
@@ -234,7 +234,7 @@ bool VistaFileSelector::runModalInternal ()
 	if (!initialPath.empty () && _SHCreateItemFromParsingName)
 	{
 		IShellItem* shellItem;
-		hr = _SHCreateItemFromParsingName (UTF8StringHelper (initialPath), 0, IID_PPV_ARG (IShellItem, &shellItem));
+		hr = _SHCreateItemFromParsingName (UTF8StringHelper (initialPath.data ()), 0, IID_PPV_ARG (IShellItem, &shellItem));
 		if (SUCCEEDED (hr))
 		{
 			fileDialog->SetFolder (shellItem);

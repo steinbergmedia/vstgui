@@ -35,7 +35,7 @@ UTF8String GetKnownFolderPathStr (REFKNOWNFOLDERID folderID, bool create)
 //------------------------------------------------------------------------
 bool createDirectoryRecursive (const UTF8String& path)
 {
-	UTF8StringHelper helper (path);
+	UTF8StringHelper helper (path.data ());
 	auto res = SHCreateDirectoryEx (nullptr, helper.getWideString (), nullptr);
 	if (!(res == ERROR_SUCCESS || res == ERROR_ALREADY_EXISTS))
 		return false;
