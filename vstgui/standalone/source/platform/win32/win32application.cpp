@@ -16,6 +16,7 @@
 #include "../../shareduiresources.h"
 #include "../../window.h"
 #include "../iplatformwindow.h"
+#include <shellapi.h>
 #include <array>
 #include <chrono>
 
