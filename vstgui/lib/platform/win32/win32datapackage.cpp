@@ -5,6 +5,7 @@
 #include "win32datapackage.h"
 
 #if WINDOWS
+struct IUnknown;
 
 #include <shlobj.h>
 #include <shellapi.h>
@@ -12,9 +13,9 @@
 
 namespace VSTGUI {
 
-FORMATETC Win32DataPackage::formatTEXTDrop		= {CF_UNICODETEXT,0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
-FORMATETC Win32DataPackage::formatHDrop			= {CF_HDROP, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
-FORMATETC Win32DataPackage::formatBinaryDrop	= {CF_PRIVATEFIRST, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
+static FORMATETC formatTEXTDrop		= {CF_UNICODETEXT,0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
+static FORMATETC formatHDrop		= {CF_HDROP, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
+static FORMATETC formatBinaryDrop	= {CF_PRIVATEFIRST, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
 
 //-----------------------------------------------------------------------------
 Win32DataPackage::Win32DataPackage (::IDataObject* platformDataObject)

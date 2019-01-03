@@ -9,9 +9,10 @@
 #if WINDOWS
 
 #include <windows.h>
-#include <objidl.h>
 #include <vector>
 #include <string>
+
+struct IDataObject;
 
 namespace VSTGUI {
 
@@ -30,9 +31,6 @@ public:
 //-----------------------------------------------------------------------------
 protected:
 	static bool checkResolveLink (const TCHAR* nativePath, TCHAR* resolved);
-	static FORMATETC formatTEXTDrop;
-	static FORMATETC formatHDrop;
-	static FORMATETC formatBinaryDrop;
 
 	::IDataObject* platformDataObject;
 	uint32_t nbItems;

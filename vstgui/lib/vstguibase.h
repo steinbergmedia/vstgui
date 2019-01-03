@@ -82,6 +82,10 @@
 	#ifndef NOMINMAX
 		#define NOMINMAX
 	#endif
+	#ifndef WIN32_LEAN_AND_MEAN
+		#define WIN32_LEAN_AND_MEAN
+	#endif
+
 	#include <sdkddkver.h>
 	#if _WIN32_WINNT < 0x601
 		#error unsupported Platform SDK you need at least the Windows 7 Platform SDK to compile VSTGUI
