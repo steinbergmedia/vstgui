@@ -58,7 +58,7 @@ Win32TextEdit::Win32TextEdit (HWND parent, IPlatformTextEditCallback* textEdit)
 		rect.top += adjust;
 		rect.bottom -= adjust;
 	}
-	UTF8StringHelper stringHelper (textEdit->platformGetText ());
+	UTF8StringHelper stringHelper (textEdit->platformGetText ().data ());
 	text = stringHelper;
 
 	CColor backColor = textEdit->platformGetBackColor ();
@@ -87,7 +87,7 @@ Win32TextEdit::Win32TextEdit (HWND parent, IPlatformTextEditCallback* textEdit)
 	logfont.lfWeight = FW_NORMAL;
 	logfont.lfHeight = (LONG)-fontH;
 	logfont.lfPitchAndFamily = VARIABLE_PITCH | FF_SWISS;
-	UTF8StringHelper fontNameHelper (fontID->getName ());
+	UTF8StringHelper fontNameHelper (fontID->getName ().data ());
 	VSTGUI_STRCPY (logfont.lfFaceName, fontNameHelper);
 
 	logfont.lfClipPrecision	 = CLIP_STROKE_PRECIS;
@@ -147,7 +147,7 @@ bool Win32TextEdit::setText (const UTF8String& _text)
 {
 	if (platformControl && text != _text)
 	{
-		UTF8StringHelper windowText (_text);
+		UTF8StringHelper windowText (_text.data ());
 		return SetWindowText (platformControl, windowText) ? true : false;
 	}
 	return false;

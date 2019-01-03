@@ -57,7 +57,7 @@ D2DFont::D2DFont (const UTF8String& name, const CCoord& size, const int32_t& sty
 {
 	DWRITE_FONT_STYLE fontStyle = (style & kItalicFace) ? DWRITE_FONT_STYLE_ITALIC : DWRITE_FONT_STYLE_NORMAL;
 	DWRITE_FONT_WEIGHT fontWeight = (style & kBoldFace) ? DWRITE_FONT_WEIGHT_BOLD : DWRITE_FONT_WEIGHT_NORMAL;
-	UTF8StringHelper nameStr (name);
+	UTF8StringHelper nameStr (name.data ());
 	getDWriteFactory ()->CreateTextFormat (nameStr, NULL, fontWeight, fontStyle, DWRITE_FONT_STRETCH_NORMAL, (FLOAT)size, L"en-us", &textFormat);
 	if (textFormat)
 	{

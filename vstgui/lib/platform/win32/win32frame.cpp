@@ -411,7 +411,7 @@ bool Win32Frame::showTooltip (const CRect& rect, const char* utf8Text)
 			str.erase (pos, 2);
 			str.insert (pos, "\r\n");
 		}
-		UTF8StringHelper tooltipText (str.c_str ());
+		UTF8StringHelper tooltipText (str.data ());
 		RECT rc;
 		rc.left = (LONG)rect.left;
 		rc.top = (LONG)rect.top;
