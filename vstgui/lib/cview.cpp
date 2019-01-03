@@ -521,16 +521,19 @@ CPoint& CView::localToFrame (CPoint& point) const
 }
 
 //-----------------------------------------------------------------------------
-CGraphicsTransform CView::getGlobalTransform () const
+CGraphicsTransform CView::getGlobalTransform (bool ignoreFrame) const
 {
 	using ParentViews = std::list<CViewContainer*>;
 
 	CGraphicsTransform transform;
 	ParentViews parents;
+	auto frame = ignoreFrame ? getFrame () : nullptr;
 	
 	CViewContainer* parent = getParentView () ? getParentView ()->asViewContainer () : nullptr;
 	while (parent)
 	{
+		if (ignoreFrame && parent == frame)
+			break;
 		parents.push_front (parent);
 		parent = parent->getParentView () ? parent->getParentView ()->asViewContainer () : nullptr;
 	}

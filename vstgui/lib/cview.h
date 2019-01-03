@@ -341,15 +341,15 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	/** get the active global transform for this view */
-	CGraphicsTransform getGlobalTransform () const;
+	CGraphicsTransform getGlobalTransform (bool ignoreFrame = false) const;
 	/** translates a local coordinate to a global one using parent transforms */
-	template<typename T> T& translateToGlobal (T& t) const { getGlobalTransform ().transform (t); return t; }
+	template<typename T> T& translateToGlobal (T& t, bool ignoreFrame = false) const { getGlobalTransform (ignoreFrame).transform (t); return t; }
 	/** translates a local coordinate to a global one using parent transforms */
-	template<typename T> T translateToGlobal (const T& t) const { T tmp (t); getGlobalTransform ().transform (tmp); return tmp; }
+	template<typename T> T translateToGlobal (const T& t, bool ignoreFrame = false) const { T tmp (t); getGlobalTransform (ignoreFrame).transform (tmp); return tmp; }
 	/** translates a global coordinate to a local one using parent transforms */
-	template<typename T> T& translateToLocal (T& t) const { getGlobalTransform ().inverse ().transform (t); return t; }
+	template<typename T> T& translateToLocal (T& t, bool ignoreFrame = false) const { getGlobalTransform (ignoreFrame).inverse ().transform (t); return t; }
 	/** translates a local coordinate to a global one using parent transforms */
-	template<typename T> T translateToLocal (const T& t) const { T tmp (t); getGlobalTransform ().inverse ().transform (tmp); return tmp; }
+	template<typename T> T translateToLocal (const T& t, bool ignoreFrame = false) const { T tmp (t); getGlobalTransform (ignoreFrame).inverse ().transform (tmp); return tmp; }
 	//@}
 
 	virtual CViewContainer* asViewContainer () { return nullptr; }

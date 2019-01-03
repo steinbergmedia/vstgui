@@ -26,6 +26,7 @@ struct GenericOptionMenuTheme
 	CColor disabledTextColor {MakeCColor (150, 150, 150, 255)};
 	CColor titleTextColor {MakeCColor (150, 150, 150, 255)};
 	CColor separatorColor {MakeCColor (180, 180, 180, 255)};
+	CPoint inset {6., 6.};
 	uint32_t menuAnimationTime {120};
 };
 
