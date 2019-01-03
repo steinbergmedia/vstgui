@@ -512,7 +512,7 @@ private:
 		vMax.allocate (std::max (width, height));
 		dv.allocate (256 * div);
 
-		for (auto i = 0; i < dv.size (); ++i)
+		for (auto i = 0u; i < dv.size (); ++i)
 			dv[i] = (i / div);
 
 		int32_t sum0, sum1, sum2, sum3;
