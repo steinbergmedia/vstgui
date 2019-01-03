@@ -2758,7 +2758,7 @@ public:
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const override
 	{
-		auto* knob = dynamic_cast<CKnob*> (view);
+		auto* knob = dynamic_cast<CKnobBase*> (view);
 		if (!knob)
 			return false;
 
