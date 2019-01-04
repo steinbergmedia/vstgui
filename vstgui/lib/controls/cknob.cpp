@@ -34,6 +34,10 @@ struct CKnobBase::MouseEditingState
 CKnobBase::CKnobBase (const CRect& size, IControlListener* listener, int32_t tag, CBitmap* background)
 : CControl (size, listener, tag, background)
 {
+	rangeAngle = 1.f;
+	setStartAngle ((float)(3.f * Constants::quarter_pi));
+	setRangeAngle ((float)(3.f * Constants::half_pi));
+	zoomFactor = 1.5f;
 }
 
 //------------------------------------------------------------------------
@@ -422,11 +426,6 @@ CKnob::CKnob (const CRect& size, IControlListener* listener, int32_t tag, CBitma
 	
 	colorShadowHandle = kGreyCColor;
 	colorHandle = kWhiteCColor;
-
-	rangeAngle = 1.f;
-	setStartAngle ((float)(3.f * Constants::quarter_pi));
-	setRangeAngle ((float)(3.f * Constants::half_pi));
-	zoomFactor = 1.5f;
 
 	setWantsFocus (true);
 }
