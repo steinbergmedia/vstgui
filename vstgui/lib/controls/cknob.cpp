@@ -359,9 +359,10 @@ float CKnobBase::valueFromPoint (CPoint &point) const
 	else if (alpha < -d)
 		v = getMin ();
 	else
+	{
 		v = float (0.5 + alpha / rangeAngle);
-
-	v *= (getMax () - getMin ());
+		v = getMin () + (v * getRange ());
+	}
 
 	return v;
 }
