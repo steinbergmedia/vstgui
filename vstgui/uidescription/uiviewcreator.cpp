@@ -2794,7 +2794,21 @@ public:
 	IdStringPtr getViewName () const override { return kCKnob; }
 	IdStringPtr getBaseViewName () const override { return kCControl; }
 	UTF8StringPtr getDisplayName () const override { return "Knob"; }
-	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CKnob (CRect (0, 0, 0, 0), nullptr, -1, nullptr, nullptr); }
+	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override
+	{
+		auto knob = new CKnob (CRect (0, 0, 70, 70), nullptr, -1, nullptr, nullptr);
+		knob->setDrawStyle (CKnob::kCoronaDrawing | CKnob::kCoronaOutline |
+		                    CKnob::kCoronaLineDashDot | CKnob::kCoronaLineCapButt |
+		                    CKnob::kSkipHandleDrawing);
+		knob->setCoronaColor (kRedCColor);
+		knob->setColorShadowHandle (kBlackCColor);
+		knob->setHandleLineWidth (8.);
+		knob->setCoronaInset (12);
+		knob->setCoronaOutlineWidthAdd (2.);
+		knob->setCoronaDashDotLengths ({1.26, 0.1});
+		knob->setValue (1.f);
+		return knob;
+	}
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
 		auto* knob = dynamic_cast<CKnob*> (view);
@@ -2816,6 +2830,21 @@ public:
 			knob->setColorShadowHandle (color);
 		if (stringToColor (attributes.getAttributeValue (kAttrHandleColor), color, description))
 			knob->setColorHandle (color);
+
+		UIAttributes::StringArray dashLengthsStrings;
+		if (attributes.getStringArrayAttribute (kAttrCoronaDashDotLengths, dashLengthsStrings))
+		{
+			CLineStyle::CoordVector lengths;
+			for (auto& str : dashLengthsStrings)
+			{
+				double value;
+				if (UIAttributes::stringToDouble (str, value))
+				{
+					lengths.emplace_back (value);
+				}
+			}
+			knob->setCoronaDashDotLengths (lengths);
+		}
 
 		CBitmap* bitmap;
 		if (stringToBitmap (attributes.getAttributeValue (kAttrHandleBitmap), bitmap, description))
@@ -2849,6 +2878,7 @@ public:
 		attributeNames.emplace_back (kAttrHandleColor);
 		attributeNames.emplace_back (kAttrHandleLineWidth);
 		attributeNames.emplace_back (kAttrCoronaOutlineWidthAdd);
+		attributeNames.emplace_back (kAttrCoronaDashDotLengths);
 		attributeNames.emplace_back (kAttrHandleBitmap);
 		return CKnobBaseCreator::getAttributeNames (attributeNames);
 	}
@@ -2868,6 +2898,7 @@ public:
 		if (attributeName == kAttrHandleColor) return kColorType;
 		if (attributeName == kAttrHandleLineWidth) return kFloatType;
 		if (attributeName == kAttrCoronaOutlineWidthAdd) return kFloatType;
+		if (attributeName == kAttrCoronaDashDotLengths) return kStringType;
 		if (attributeName == kAttrHandleBitmap) return kBitmapType;
 		return CKnobBaseCreator::getAttributeType (attributeName);
 	}
@@ -2977,6 +3008,17 @@ public:
 				stringValue = strTrue;
 			else
 				stringValue = strFalse;
+			return true;
+		}
+		if (attributeName == kAttrCoronaDashDotLengths)
+		{
+			const auto& lengths = knob->getCoronaDashDotLengths ();
+			UIAttributes::StringArray lengthStrings;
+			for (auto value : lengths)
+			{
+				lengthStrings.emplace_back (UIAttributes::doubleToString (value));
+			}
+			stringValue = UIAttributes::stringArrayToString (lengthStrings);
 			return true;
 		}
 		return CKnobBaseCreator::getAttributeValue (view, attributeName, stringValue, desc);

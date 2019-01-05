@@ -427,6 +427,8 @@ CKnob::CKnob (const CRect& size, IControlListener* listener, int32_t tag, CBitma
 	
 	colorShadowHandle = kGreyCColor;
 	colorHandle = kWhiteCColor;
+	coronaLineStyle = kLineOnOffDash;
+	coronaLineStyle.getDashLengths ()[1] = 2.;
 
 	setWantsFocus (true);
 }
@@ -441,6 +443,7 @@ CKnob::CKnob (const CKnob& v)
 , handleLineWidth (v.handleLineWidth)
 , coronaInset (v.coronaInset)
 , coronaOutlineWidthAdd (v.coronaInset)
+, coronaLineStyle (v.coronaLineStyle)
 , pHandle (v.pHandle)
 {
 	if (pHandle)
@@ -505,7 +508,7 @@ void CKnob::draw (CDrawContext *pContext)
 }
 
 //------------------------------------------------------------------------
-void CKnob::addArc (CGraphicsPath* path, const CRect& r, double startAngle, double sweepAngle) const
+void CKnob::addArc (CGraphicsPath* path, const CRect& r, double startAngle, double sweepAngle)
 {
 	CCoord w = r.getWidth ();
 	CCoord h = r.getHeight ();
@@ -526,7 +529,15 @@ void CKnob::drawCoronaOutline (CDrawContext* pContext) const
 		return;
 	CRect corona (getViewSize ());
 	corona.inset (coronaInset, coronaInset);
-	addArc (path, corona, startAngle, rangeAngle);
+	auto start = startAngle;
+	auto range = rangeAngle;
+	if (coronaOutlineWidthAdd && (drawStyle & kCoronaLineCapButt))
+	{
+		auto a = coronaOutlineWidthAdd / getWidth ();
+		start -= a;
+		range += a * 2.;
+	}
+	addArc (path, corona, start, range);
 	pContext->setFrameColor (colorShadowHandle);
 	CLineStyle lineStyle (kLineSolid);
 	if (!(drawStyle & kCoronaLineCapButt))
@@ -558,12 +569,17 @@ void CKnob::drawCorona (CDrawContext* pContext) const
 			addArc (path, corona, startAngle, rangeAngle * coronaValue);
 	}
 	pContext->setFrameColor (coronaColor);
-	CLineStyle lineStyle ((drawStyle & kCoronaLineDashDot) ? kLineOnOffDash : kLineSolid);
 	if (!(drawStyle & kCoronaLineCapButt))
+	{
+		CLineStyle lineStyle (kLineSolid);
 		lineStyle.setLineCap (CLineStyle::kLineCapRound);
-	if (drawStyle & kCoronaLineDashDot)
-		lineStyle.getDashLengths ()[1] = 2;
-	pContext->setLineStyle (lineStyle);
+		pContext->setLineStyle (lineStyle);
+	}
+	else if (drawStyle & kCoronaLineDashDot)
+		pContext->setLineStyle (coronaLineStyle);
+	else
+		pContext->setLineStyle (kLineSolid);
+
 	pContext->setLineWidth (handleLineWidth);
 	pContext->setDrawMode (kAntiAliasing | kNonIntegralMode);
 	pContext->drawGraphicsPath (path, CDrawContext::kPathStroked);
@@ -682,6 +698,22 @@ void CKnob::setCoronaOutlineWidthAdd (CCoord width)
 	if (width != coronaOutlineWidthAdd)
 	{
 		coronaOutlineWidthAdd = width;
+		setDirty ();
+	}
+}
+
+//------------------------------------------------------------------------
+const CLineStyle::CoordVector& CKnob::getCoronaDashDotLengths () const
+{
+	return coronaLineStyle.getDashLengths ();
+}
+
+//------------------------------------------------------------------------
+void CKnob::setCoronaDashDotLengths (const CLineStyle::CoordVector& lengths)
+{
+	if (coronaLineStyle.getDashLengths () != lengths)
+	{
+		coronaLineStyle.getDashLengths () = lengths;
 		setDirty ();
 	}
 }

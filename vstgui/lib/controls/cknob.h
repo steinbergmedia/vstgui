@@ -6,6 +6,7 @@
 
 #include "ccontrol.h"
 #include "../ccolor.h"
+#include "../clinestyle.h"
 
 namespace VSTGUI {
 
@@ -90,29 +91,32 @@ public:
 	/// @name CKnob Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	virtual int32_t getDrawStyle () const { return drawStyle; }
+	int32_t getDrawStyle () const { return drawStyle; }
 	virtual void setDrawStyle (int32_t style);
 	
-	virtual CColor getCoronaColor () const { return coronaColor; }
+	CColor getCoronaColor () const { return coronaColor; }
 	virtual void setCoronaColor (CColor color);
 
-	virtual CCoord getCoronaInset () const { return coronaInset; }
+	CCoord getCoronaInset () const { return coronaInset; }
 	virtual void setCoronaInset (CCoord inset);
 	
-	virtual CColor getColorShadowHandle () const { return colorShadowHandle; }
+	CColor getColorShadowHandle () const { return colorShadowHandle; }
 	virtual void setColorShadowHandle (CColor color);
 
-	virtual CColor getColorHandle () const { return colorHandle; }
+	CColor getColorHandle () const { return colorHandle; }
 	virtual void setColorHandle (CColor color);
 
-	virtual CCoord getHandleLineWidth () const { return handleLineWidth; }
+	CCoord getHandleLineWidth () const { return handleLineWidth; }
 	virtual void setHandleLineWidth (CCoord width);
 
-	virtual CCoord getCoronaOutlineWidthAdd () const { return coronaOutlineWidthAdd; }
+	CCoord getCoronaOutlineWidthAdd () const { return coronaOutlineWidthAdd; }
 	virtual void setCoronaOutlineWidthAdd (CCoord width);
 
-	virtual CBitmap* getHandleBitmap () const { return pHandle; }
-	virtual void setHandleBitmap (CBitmap* bitmap);
+	const CLineStyle::CoordVector& getCoronaDashDotLengths () const;
+	virtual void setCoronaDashDotLengths (const CLineStyle::CoordVector& lengths);
+
+	CBitmap* getHandleBitmap () const { return pHandle; }
+	void setHandleBitmap (CBitmap* bitmap);
 	//@}
 
 	// overrides
@@ -130,7 +134,7 @@ protected:
 	virtual void drawHandleAsCircle (CDrawContext* pContext) const;
 	virtual void drawHandleAsLine (CDrawContext* pContext) const;
 
-	void addArc (CGraphicsPath* path, const CRect& r, double startAngle, double sweepAngle) const;
+	static void addArc (CGraphicsPath* path, const CRect& r, double startAngle, double sweepAngle);
 
 	CPoint offset;
 	
@@ -140,6 +144,7 @@ protected:
 	CCoord coronaInset;
 	CCoord coronaOutlineWidthAdd;
 
+	CLineStyle coronaLineStyle;
 	CBitmap* pHandle;
 };
 
