@@ -533,9 +533,9 @@ void CKnob::drawCoronaOutline (CDrawContext* pContext) const
 	auto range = rangeAngle;
 	if (coronaOutlineWidthAdd && (drawStyle & kCoronaLineCapButt))
 	{
-		auto a = coronaOutlineWidthAdd / getWidth ();
+		auto a = static_cast<float> (coronaOutlineWidthAdd / getWidth ());
 		start -= a;
-		range += a * 2.;
+		range += a * 2.f;
 	}
 	addArc (path, corona, start, range);
 	pContext->setFrameColor (colorShadowHandle);
