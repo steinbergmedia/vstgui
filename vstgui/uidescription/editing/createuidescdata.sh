@@ -1,4 +1,4 @@
-# /bin/bash
+#!/bin/bash
 echo `pwd`
 rm -f editoruidesc.h
 echo -n "constexpr auto editorUIDesc = R\"====(" >> editoruidesc.h
