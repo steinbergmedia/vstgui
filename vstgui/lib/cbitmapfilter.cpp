@@ -411,16 +411,24 @@ private:
 		CBitmap* inputBitmap = getInputBitmap ();
 		if (inputBitmap == nullptr)
 			return false;
-		uint32_t radius = static_cast<uint32_t>(static_cast<double>(getProperty (Property::kRadius).getInteger ()) * inputBitmap->getPlatformBitmap ()->getScaleFactor ());
+		const auto& radiusProp = getProperty (Property::kRadius);
+		if (radiusProp.getType () != BitmapFilter::Property::kInteger)
+			return false;
+		uint32_t radius =
+		    static_cast<uint32_t> (static_cast<double> (radiusProp.getInteger ()) *
+		                           inputBitmap->getPlatformBitmap ()->getScaleFactor ());
 		if (radius == UINT_MAX)
 			return false;
-		bool alphaChannelOnly = getProperty (Property::kAlphaChannelOnly).getInteger () > 0 ? true : false;
 		if (radius < 2)
 		{
 			if (replace)
 				return true;
 			return false; // TODO: We should just copy the input bitmap to the output bitmap
 		}
+		const auto& alphaChannelOnlyProp = getProperty (Property::kAlphaChannelOnly);
+		if (alphaChannelOnlyProp.getType () != BitmapFilter::Property::kInteger)
+			return false;
+		bool alphaChannelOnly = alphaChannelOnlyProp.getInteger () > 0 ? true : false;
 		if (replace)
 		{
 			SharedPointer<CBitmapPixelAccess> inputAccessor = owned (CBitmapPixelAccess::create (inputBitmap));
@@ -677,7 +685,10 @@ protected:
 	{
 		if (replace)
 			return false;
-		CRect outSize = getProperty (Property::kOutputRect).getRect ();
+		const auto& outSizeProp = getProperty (Property::kOutputRect);
+		if (outSizeProp.getType () != BitmapFilter::Property::kRect)
+			return false;
+		CRect outSize = outSizeProp.getRect ();
 		outSize.makeIntegral ();
 		if (outSize.getWidth () <= 0 || outSize.getHeight () <= 0)
 			return false;
@@ -924,8 +935,13 @@ private:
 
 	bool run (bool replace) override
 	{
-		inputColor = getProperty (Property::kInputColor).getColor ();
-		ignoreAlpha = getProperty (Property::kIgnoreAlphaColorValue).getInteger () > 0;
+		const auto& inputColorProp = getProperty (Property::kInputColor);
+		const auto& ignoreAlphaProp = getProperty (Property::kIgnoreAlphaColorValue);
+		if (inputColorProp.getType () != BitmapFilter::Property::kColor ||
+		    ignoreAlphaProp.getType () != BitmapFilter::Property::kInteger)
+			return false;
+		inputColor = inputColorProp.getColor ();
+		ignoreAlpha = ignoreAlphaProp.getInteger () > 0;
 		return SimpleFilter<SimpleFilterProcessFunction>::run (replace);
 	}
 };
@@ -985,11 +1001,15 @@ private:
 
 	bool run (bool replace) override
 	{
-		inputColor = getProperty (Property::kInputColor).getColor ();
-		outputColor = getProperty (Property::kOutputColor).getColor ();
+		const auto& inputColorProp = getProperty (Property::kInputColor);
+		const auto& outputColorProp = getProperty (Property::kOutputColor);
+		if (inputColorProp.getType () != BitmapFilter::Property::kColor ||
+		    outputColorProp.getType () != BitmapFilter::Property::kColor)
+			return false;
+		inputColor = inputColorProp.getColor ();
+		outputColor = outputColorProp.getColor ();
 		return SimpleFilter<SimpleFilterProcessFunction>::run (replace);
 	}
-
 };
 
 //----------------------------------------------------------------------------------------------------

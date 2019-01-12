@@ -85,20 +85,19 @@ CSpecialDigit::CSpecialDigit (const CSpecialDigit& v)
 //------------------------------------------------------------------------
 void CSpecialDigit::draw (CDrawContext *pContext)
 {
-	CPoint  where;
-	CRect   rectDest;
-	int32_t    i, j;
-	int32_t    dwValue;
-	int32_t     one_digit[16];
-  
-	if ((int32_t)value >= getMax ()) 
-		dwValue = (int32_t)getMax ();
-	else if ((int32_t)value < getMin ()) 
-		dwValue = (int32_t)getMin ();
-	else
-		dwValue = (int32_t)value;
+	CPoint where;
+	CRect rectDest;
+	int32_t i, j;
+	int32_t one_digit[16] = {};
+
+	int32_t dwValue = static_cast<int32_t> (getValue ());
+	int32_t intMax = static_cast<int32_t> (getMax ());
+	if (dwValue > intMax)
+		dwValue = intMax;
+	else if (dwValue < static_cast<int32_t> (getMin ()))
+		dwValue = static_cast<int32_t> (getMin ());
 	
-	for (i = 0, j = ((int32_t)getMax () + 1) / 10; i < iNumbers; i++, j /= 10)
+	for (i = 0, j = (intMax + 1) / 10; i < iNumbers; i++, j /= 10)
 	{
 		one_digit[i] = dwValue / j;
 		dwValue -= (one_digit[i] * j);

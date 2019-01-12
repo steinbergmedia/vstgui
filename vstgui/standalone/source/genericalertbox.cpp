@@ -113,8 +113,8 @@ public:
 			case 2:
 			case 3: focusButton = buttons[1]; break;
 		}
-		vstgui_assert (focusButton != nullptr);
-		focusButton->getFrame ()->setFocusView (focusButton);
+		if (focusButton)
+			focusButton->getFrame ()->setFocusView (focusButton);
 	}
 
 	const ValueList& getValues () const override { return values; }
