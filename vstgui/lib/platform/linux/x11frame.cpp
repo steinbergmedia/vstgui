@@ -128,6 +128,13 @@ struct DrawHandler
 										   window.getSize ().x, window.getSize ().y);
 		windowSurface.assign (s);
 		onSizeChanged (window.getSize ());
+		device = cairo_device_reference(cairo_surface_get_device(s));
+	}
+
+	~DrawHandler()
+	{
+		cairo_device_finish(device);
+		cairo_device_destroy(device);
 	}
 
 	void onSizeChanged (const CPoint& size)
@@ -162,6 +169,7 @@ struct DrawHandler
 	}
 
 private:
+	cairo_device_t *device = nullptr;
 	Cairo::SurfaceHandle windowSurface;
 	Cairo::SurfaceHandle backBuffer;
 	SharedPointer<Cairo::Context> drawContext;
