@@ -1,6 +1,8 @@
-version: 1.0.0.{build}
-os:
-- Windows Server 2016
+version: 1.0.{build}
+branches:
+  only:
+  - appveyor
+image: Visual Studio 2017
 environment:
   BUILD_TYPE: Release
   ARCH: Win64
@@ -10,6 +12,11 @@ build_script:
 - cmd: >-
     cd %APPVEYOR_BUILD_FOLDER%
 
+
+    cd vstgui
+
+
     cmake -H. -Bbuild -G"%GENERATOR%"
+
 
     cmake --build build --config %BUILD_TYPE%
