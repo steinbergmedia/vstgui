@@ -1,6 +1,6 @@
 # VSTGUI
 [![Build Status](https://travis-ci.com/steinbergmedia/vstgui.svg?branch=develop)](https://travis-ci.com/steinbergmedia/vstgui)
-[![Build status](https://ci.appveyor.com/api/projects/status/github/steinbergmedia/vstgui/develop?svg=true)](https://ci.appveyor.com/project/steinbergmedia/vstgui)
+[![Build status](https://ci.appveyor.com/api/projects/status/github/steinbergmedia/vstgui?svg=true)](https://ci.appveyor.com/project/steinbergmedia/vstgui)
 
 VSTGUI is a user interface toolkit mainly for audio plug-ins (VST, AAX, AudioUnit, etc...)
  and it is designed for working well with VST3 plug-ins.
