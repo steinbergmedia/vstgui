@@ -1,8 +1,7 @@
-version: 1.0.{build}
-branches:
-  only:
-  - appveyor
-image: Visual Studio 2017
+version: 4.8.{build}
+skip_tags: true
+image: 
+  - Visual Studio 2017
 environment:
   BUILD_TYPE: Release
   ARCH: Win64
