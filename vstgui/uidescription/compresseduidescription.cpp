@@ -16,9 +16,9 @@ namespace {
 #define MINIZ_NO_ARCHIVE_APIS
 #define MINIZ_NO_ARCHIVE_WRITING_APIS
 #include "miniz/miniz.c"
+};
 
 using z_stream = mz_stream;
-};
 
 //-----------------------------------------------------------------------------
 class ZLibInputStream : public InputStream

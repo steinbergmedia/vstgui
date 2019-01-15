@@ -505,7 +505,7 @@ bool ImageFramesView::onDrop (DragEventData eventData)
 	std::vector<size_t> indices;
 	if (getIndicesFromDataPackage (eventData.drag, &indices))
 	{
-		auto doCopy = (eventData.modifiers.getModifierState () & kAlt) != 0;
+		auto doCopy = (eventData.modifiers.getModifierState () & kAlt);
 		reorderImages (dropPosition, doCopy, indices);
 	}
 	else
