@@ -234,13 +234,11 @@ void CMultiLineTextLabel::drawRect (CDrawContext* pContext, const CRect& updateR
 	if (getText ().empty () == false && lines.empty ())
 		recalculateLines (pContext);
 	drawBack (pContext);
-	pContext->saveGlobalState ();
-	CRect oldClip;
-	pContext->getClipRect (oldClip);
+	
 	CRect newClip (updateRect);
 	newClip.inset (getTextInset ());
-	newClip.bound (oldClip);
-	pContext->setClipRect (newClip);
+	ConcatClip clip (*pContext, newClip);
+	newClip = clip.get ();
 
 	pContext->setDrawMode (kAntiAliasing);
 	pContext->setFont (getFont ());
@@ -269,7 +267,6 @@ void CMultiLineTextLabel::drawRect (CDrawContext* pContext, const CRect& updateR
 			break;
 	}
 
-	pContext->restoreGlobalState ();
 	setDirty (false);
 }
 

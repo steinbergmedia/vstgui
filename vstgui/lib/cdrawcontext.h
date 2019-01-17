@@ -282,21 +282,34 @@ private:
 //-----------------------------------------------------------------------------
 struct ConcatClip
 {
-	ConcatClip (CDrawContext& context, CRect rect)
-	: context (context)
+	ConcatClip (CDrawContext& context, const CRect& rect)
+	: context (context), newClip (rect)
 	{
 		context.getClipRect (origClip);
-		rect.normalize ();
-		rect.bound (origClip);
-		context.setClipRect (rect);
+		newClip.normalize ();
+		newClip.bound (origClip);
+		context.setClipRect (newClip);
 	}
 	~ConcatClip () noexcept
 	{
 		context.setClipRect (origClip);
 	}
+	
+	bool isEmpty () const { return newClip.isEmpty (); }
+	const CRect& get () const { return newClip; }
 private:
 	CDrawContext& context;
 	CRect origClip;
+	CRect newClip;
 };
+
+//-----------------------------------------------------------------------------
+template<typename Proc>
+void drawClipped (CDrawContext* context, const CRect& clip, Proc proc)
+{
+	ConcatClip cc (*context, clip);
+	if (!cc.isEmpty ())
+		proc ();
+}
 
 } // VSTGUI

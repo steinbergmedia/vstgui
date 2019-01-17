@@ -432,39 +432,36 @@ void CSegmentButton::drawRect (CDrawContext* pContext, const CRect& dirtyRect)
 		const auto& segment = segments[index];
 		if (!dirtyRect.rectOverlap (segment.rect))
 			continue;
-		CRect oldClip;
-		pContext->getClipRect (oldClip);
-		CRect clipRect (segment.rect);
-		clipRect.bound (oldClip);
-		pContext->setClipRect (clipRect);
-		if (segment.selected && gradientHighlighted)
-		{
-			if (isHorizontal)
+
+		drawClipped (pContext, segment.rect, [&] () {
+			if (segment.selected && gradientHighlighted)
 			{
-				pContext->fillLinearGradient (path, *gradientHighlighted,
-				                              segment.rect.getTopLeft (),
-				                              segment.rect.getBottomLeft ());
+				if (isHorizontal)
+				{
+					pContext->fillLinearGradient (path, *gradientHighlighted,
+					                              segment.rect.getTopLeft (),
+					                              segment.rect.getBottomLeft ());
+				}
+				else
+				{
+					pContext->fillLinearGradient (path, *gradientHighlighted,
+					                              segment.rect.getTopLeft (),
+					                              segment.rect.getTopRight ());
+				}
 			}
-			else
+			if (segment.selected && segment.backgroundHighlighted)
 			{
-				pContext->fillLinearGradient (path, *gradientHighlighted,
-				                              segment.rect.getTopLeft (),
-				                              segment.rect.getTopRight ());
+				segment.backgroundHighlighted->draw (pContext, segment.rect);
 			}
-		}
-		if (segment.selected && segment.backgroundHighlighted)
-		{
-			segment.backgroundHighlighted->draw (pContext, segment.rect);
-		}
-		else if (segment.background)
-		{
-			segment.background->draw (pContext, segment.rect);
-		}
-		CDrawMethods::drawIconAndText (
-		    pContext, segment.selected ? segment.iconHighlighted : segment.icon,
-		    segment.iconPosition, textAlignment, textMargin, segment.rect, segment.name, font,
-		    segment.selected ? textColorHighlighted : textColor, textTruncateMode);
-		pContext->setClipRect (oldClip);
+			else if (segment.background)
+			{
+				segment.background->draw (pContext, segment.rect);
+			}
+			CDrawMethods::drawIconAndText (
+			    pContext, segment.selected ? segment.iconHighlighted : segment.icon,
+			    segment.iconPosition, textAlignment, textMargin, segment.rect, segment.name, font,
+			    segment.selected ? textColorHighlighted : textColor, textTruncateMode);
+		});
 		if (drawLines && index > 0 && index < segments.size ())
 		{
 			path->beginSubpath (segment.rect.getTopLeft ());
