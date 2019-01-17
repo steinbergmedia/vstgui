@@ -487,10 +487,7 @@ void UIEditView::drawRect (CDrawContext *pContext, const CRect& updateRect)
 
 	if (!editing && focusDrawing)
 		getFrame ()->setFocusDrawingEnabled (focusDrawing);
-
-	CRect oldClip = pContext->getClipRect (oldClip);
-	CRect newClip (updateRect);
-	newClip.offset (-getViewSize ().left, -getViewSize ().top);
+	
 	pContext->setClipRect (updateRect);
 
 	CDrawContext::Transform transform (*pContext, CGraphicsTransform ().translate (getViewSize ().left, getViewSize ().top));

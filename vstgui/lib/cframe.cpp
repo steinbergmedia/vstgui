@@ -320,23 +320,15 @@ void CFrame::drawRect (CDrawContext* pContext, const CRect& updateRect)
 	if (updateRect.getWidth () <= 0 || updateRect.getHeight () <= 0 || pContext == nullptr)
 		return;
 
-	pContext->remember ();
+	auto lifeGuard = shared (pContext);
 
 	if (pImpl)
-		pContext->setBitmapInterpolationQuality(pImpl->bitmapQuality);
+		pContext->setBitmapInterpolationQuality (pImpl->bitmapQuality);
 
-	CRect oldClip;
-	pContext->getClipRect (oldClip);
-	CRect newClip (updateRect);
-	newClip.bound (oldClip);
-	pContext->setClipRect (newClip);
-
-	// draw the background and the children
-	CViewContainer::drawRect (pContext, updateRect);
-
-	pContext->setClipRect (oldClip);
-
-	pContext->forget ();
+	drawClipped (pContext, updateRect, [&] () {
+		// draw the background and the children
+		CViewContainer::drawRect (pContext, updateRect);
+	});
 }
 
 //-----------------------------------------------------------------------------
