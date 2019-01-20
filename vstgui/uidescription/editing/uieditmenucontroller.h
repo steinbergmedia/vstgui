@@ -88,6 +88,8 @@ static const MenuEntry editMenu[] = {
 	{ "SelectionZOrder", "Raise" , 0, kAlt, VKEY_DOWN },
 	kSubMenuEnd,
 	kMenuSeparator,
+	{ "Selection", "Select SubViews Of Type" , 0, 0, 0 },
+	kMenuSeparator,
 	{ "Selection", "Select All Children" , 0, 0, 0 },
 	
 	kSubMenuEnd,

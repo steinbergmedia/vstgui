@@ -347,6 +347,25 @@ bool UIEditMenuController::validateMenuItem (CCommandMenuItem& item)
 			return true;
 		}
 	}
+	else if (cmdCategory == "Selection")
+	{
+		if (cmdName == "Select SubViews Of Type")
+		{
+			auto submenu = makeOwned<COptionMenu> ();
+			item.setSubmenu (submenu);
+			const UIViewFactory* factory =
+			    dynamic_cast<const UIViewFactory*> (description->getViewFactory ());
+			auto viewAndDisplayNames = factory->collectRegisteredViewAndDisplayNames ();
+			viewAndDisplayNames.sort (
+			    [] (const auto& lhs, const auto& rhs) { return lhs.second < rhs.second; });
+			for (auto& entry : viewAndDisplayNames)
+			{
+				submenu->addEntry (new CCommandMenuItem (CCommandMenuItem::Desc {
+				    entry.second.data (), this, "Select SubViews Of Type", entry.first->data ()}));
+			}
+			return true;
+		}
+	}
 	if (auto obj = dynamic_cast<ICommandMenuItemTarget*> (controller))
 		return obj->validateCommandMenuItem (&item);
 	return false;
@@ -480,6 +499,29 @@ bool UIEditMenuController::handleCommand (const UTF8StringPtr category, const UT
 			undoManager->pushAndPerform (action);
 		}
 		undoManager->endGroupAction ();
+		return true;
+	}
+	else if (cmdCategory == "Select SubViews Of Type")
+	{
+		auto viewFactory = dynamic_cast<const UIViewFactory*> (description->getViewFactory ());
+		if (!viewFactory)
+			return false;
+		std::vector<CView*> newSelection;
+		for (auto& entry : *selection)
+		{
+			if (auto viewContainer = entry->asViewContainer ())
+			{
+				viewContainer->forEachChild ([&] (auto view) {
+					if (cmdName == viewFactory->getViewName (view))
+					{
+						newSelection.emplace_back (view);
+					}
+				});
+			}
+		}
+		selection->clear ();
+		for (auto& view : newSelection)
+			selection->add (view);
 		return true;
 	}
 	else if (cmdCategory == "InsertTemplate")
