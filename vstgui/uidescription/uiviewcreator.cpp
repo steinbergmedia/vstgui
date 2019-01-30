@@ -2418,6 +2418,8 @@ class CSegmentButtonCreator : public ViewCreatorAdapter
 public:
 	std::string SelectionModeSingle = "Single";
 	std::string SelectionModeMultiple = "Multiple";
+	std::string strHorizontalInverse = "horizontal-inverse";
+	std::string strVerticalInverse = "vertical-inverse";
 
 	CSegmentButtonCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCSegmentButton; }
@@ -2473,7 +2475,16 @@ public:
 
 		attr = attributes.getAttributeValue (kAttrStyle);
 		if (attr)
-			button->setStyle (*attr == strHorizontal ? CSegmentButton::Style::kHorizontal : CSegmentButton::Style::kVertical);
+		{
+			if (*attr == strHorizontal)
+				button->setStyle(CSegmentButton::Style::kHorizontal);
+			else if (*attr == strVertical)
+				button->setStyle(CSegmentButton::Style::kVertical);
+			else if (*attr == strHorizontalInverse)
+				button->setStyle(CSegmentButton::Style::kHorizontalInverse);
+			else if (*attr == strVerticalInverse)
+				button->setStyle(CSegmentButton::Style::kVerticalInverse);
+		}
 
 		CColor color;
 		if (stringToColor (attributes.getAttributeValue (kAttrTextColor), color, description))
@@ -2572,7 +2583,12 @@ public:
 	{
 		if (attributeName == kAttrStyle)
 		{
-			return getStandardAttributeListValues (kAttrOrientation, values);
+			if (getStandardAttributeListValues (kAttrOrientation, values))
+			{
+				values.emplace_back (&strHorizontalInverse);
+				values.emplace_back (&strVerticalInverse);
+				return true;
+			}
 		}
 		else if (attributeName == kAttrSelectionMode)
 		{
@@ -2637,9 +2653,29 @@ public:
 		}
 		else if (attributeName == kAttrStyle)
 		{
-			stringValue = button->getStyle () == CSegmentButton::Style::kHorizontal ? strHorizontal :
-			                                                                          strVertical;
-			return true;
+			switch (button->getStyle ())
+			{
+				case CSegmentButton::Style::kHorizontal:
+				{
+					stringValue = strHorizontal;
+					return true;
+				}
+				case CSegmentButton::Style::kHorizontalInverse:
+				{
+					stringValue = strHorizontalInverse;
+					return true;
+				}
+				case CSegmentButton::Style::kVertical:
+				{
+					stringValue = strVertical;
+					return true;
+				}
+				case CSegmentButton::Style::kVerticalInverse:
+				{
+					stringValue = strVerticalInverse;
+					return true;
+				}
+			}
 		}
 		else if (attributeName == kAttrIconTextMargin)
 		{

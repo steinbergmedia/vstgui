@@ -350,6 +350,8 @@ int32_t CSegmentButton::onKeyDown (VstKeyCode& keyCode)
 			{
 				if (style == Style::kHorizontal && newIndex > 0)
 					newIndex--;
+				else if (style == Style::kHorizontalInverse && newIndex < segments.size () - 1)
+					newIndex++;
 				result = 1;
 				break;
 			}
@@ -357,6 +359,8 @@ int32_t CSegmentButton::onKeyDown (VstKeyCode& keyCode)
 			{
 				if (style == Style::kHorizontal && newIndex < segments.size () - 1)
 					newIndex++;
+				else if (style == Style::kHorizontalInverse && newIndex > 0)
+					newIndex--;
 				result = 1;
 				break;
 			}
@@ -364,6 +368,8 @@ int32_t CSegmentButton::onKeyDown (VstKeyCode& keyCode)
 			{
 				if (style == Style::kVertical && newIndex > 0)
 					newIndex--;
+				else if (style == Style::kVerticalInverse && newIndex < segments.size () - 1)
+					newIndex++;
 				result = 1;
 				break;
 			}
@@ -371,6 +377,8 @@ int32_t CSegmentButton::onKeyDown (VstKeyCode& keyCode)
 			{
 				if (style == Style::kVertical && newIndex < segments.size () - 1)
 					newIndex++;
+				else if (style == Style::kVerticalInverse && newIndex > 0)
+					newIndex--;
 				result = 1;
 				break;
 			}
@@ -392,7 +400,7 @@ void CSegmentButton::draw (CDrawContext* pContext)
 //-----------------------------------------------------------------------------
 void CSegmentButton::drawRect (CDrawContext* pContext, const CRect& dirtyRect)
 {
-	bool isHorizontal = style == Style::kHorizontal;
+	bool isHorizontal = isHorizontalStyle (style);
 	bool drawLines = getFrameWidth () != 0. && getFrameColor ().alpha != 0;
 	auto lineWidth = getFrameWidth ();
 	if (lineWidth < 0.)
@@ -427,6 +435,14 @@ void CSegmentButton::drawRect (CDrawContext* pContext, const CRect& dirtyRect)
 			                              getViewSize ().getTopRight ());
 		}
 	}
+	auto lineIndexStart = 1;
+	auto lineIndexEnd = segments.size ();
+	if (isInverseStyle (style))
+	{
+		--lineIndexStart;
+		--lineIndexEnd;
+	}
+
 	for (uint32_t index = 0u, end = static_cast<uint32_t> (segments.size ()); index < end; ++index)
 	{
 		const auto& segment = segments[index];
@@ -462,7 +478,7 @@ void CSegmentButton::drawRect (CDrawContext* pContext, const CRect& dirtyRect)
 			    segment.iconPosition, textAlignment, textMargin, segment.rect, segment.name, font,
 			    segment.selected ? textColorHighlighted : textColor, textTruncateMode);
 		});
-		if (drawLines && index > 0 && index < segments.size ())
+		if (drawLines && index >= lineIndexStart && index < lineIndexEnd)
 		{
 			path->beginSubpath (segment.rect.getTopLeft ());
 			path->addLine (isHorizontal ? segment.rect.getBottomLeft () :
@@ -487,26 +503,55 @@ void CSegmentButton::updateSegmentSizes ()
 {
 	if (isAttached () && !segments.empty ())
 	{
-		if (style == Style::kHorizontal)
+		switch (style)
 		{
-			CCoord width = getWidth () / segments.size ();
-			CRect r (getViewSize ());
-			r.setWidth (width);
-			for (auto& segment : segments)
+			case Style::kHorizontal:
 			{
-				segment.rect = r;
-				r.offset (width, 0);
+				CCoord width = getWidth () / segments.size ();
+				CRect r (getViewSize ());
+				r.setWidth (width);
+				for (auto& segment : segments)
+				{
+					segment.rect = r;
+					r.offset (width, 0);
+				}
+				break;
 			}
-		}
-		else
-		{
-			CCoord height = getHeight () / segments.size ();
-			CRect r (getViewSize ());
-			r.setHeight (height);
-			for (auto& segment : segments)
+			case Style::kHorizontalInverse:
 			{
-				segment.rect = r;
-				r.offset (0, height);
+				CCoord width = getWidth () / segments.size ();
+				CRect r (getViewSize ());
+				r.setWidth (width);
+				for (auto it = segments.rbegin(); it != segments.rend(); ++it)
+				{
+					(*it).rect = r;
+					r.offset (width, 0);
+				}
+				break;
+			}
+			case Style::kVertical:
+			{
+				CCoord height = getHeight () / segments.size ();
+				CRect r (getViewSize ());
+				r.setHeight (height);
+				for (auto& segment : segments)
+				{
+					segment.rect = r;
+					r.offset (0, height);
+				}
+				break;
+			}
+			case Style::kVerticalInverse:
+			{
+				CCoord height = getHeight () / segments.size ();
+				CRect r (getViewSize ());
+				r.setHeight (height);
+				for (auto it = segments.rbegin(); it != segments.rend(); ++it)
+				{
+					(*it).rect = r;
+					r.offset (0, height);
+				}
+				break;
 			}
 		}
 	}
