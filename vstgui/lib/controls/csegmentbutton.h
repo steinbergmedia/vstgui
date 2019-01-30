@@ -26,7 +26,11 @@ public:
 		/** horizontally layouted segments */
 		kHorizontal,
 		/** vertically layouted segments */
-		kVertical
+		kVertical,
+		/** horizontally invsere layouted segments */
+		kHorizontalInverse,
+		/** vertically invsere layouted segments */
+		kVerticalInverse,
 	};
 	
 	enum class SelectionMode {
@@ -128,7 +132,22 @@ public:
 	bool getFocusPath (CGraphicsPath& outPath) override;
 	void valueChanged () override;
 
-	CLASS_METHODS(CSegmentButton, CControl)
+	static bool isHorizontalStyle (Style style)
+	{
+		return style == Style::kHorizontal || style == Style::kHorizontalInverse;
+	}
+
+	static bool isVerticalStyle (Style style)
+	{
+		return style == Style::kVertical || style == Style::kVerticalInverse;
+	}
+
+	static bool isInverseStyle (Style style)
+	{
+		return style == Style::kHorizontalInverse || style == Style::kVerticalInverse;
+	}
+
+	CLASS_METHODS (CSegmentButton, CControl)
 private:
 	bool canAddOneMoreSegment () const;
 	void updateSegmentSizes ();
