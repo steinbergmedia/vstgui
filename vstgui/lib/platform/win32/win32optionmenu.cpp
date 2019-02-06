@@ -177,7 +177,7 @@ HMENU Win32OptionMenu::createMenu (COptionMenu* _menu, int32_t& offsetIdx)
 					flags |= MF_CHECKED;
 					AppendMenu (menu, flags|MF_POPUP|MF_ENABLED, (UINT_PTR)submenu, (const TCHAR*)entryText);
 				}
-			}	
+			}
 			else
 			{
 				if (item->isEnabled ())
