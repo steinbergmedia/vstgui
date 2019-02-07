@@ -783,7 +783,15 @@ LONG_PTR WINAPI Win32Frame::proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM
 
 			CPoint where (GET_X_LPARAM (lParam), GET_Y_LPARAM (lParam));
 			if (pFrame->platformOnMouseDown (where, buttons) == kMouseEventHandled && getPlatformWindow ())
-				SetCapture (getPlatformWindow ());
+            {
+                /*
+                ** only set capture on mousedown if not left button or left button is still 
+                ** down. It is not after calling trackpopup menu
+                */
+                if ((buttons & kLButton) == 0 || GetAsyncKeyState (VK_LBUTTON) < 0)
+                    SetCapture (getPlatformWindow ());
+            }
+
 			return 0;
 		}
 		case WM_MOUSELEAVE:
