@@ -66,9 +66,9 @@ public:
 		{
 			if (!allocWideStr && utf8Str)
 			{
-				int numChars = MultiByteToWideChar (CP_UTF8, 0, utf8Str, numCharacters, 0, 0);
+				int numChars = MultiByteToWideChar (CP_ACP, 0, utf8Str, numCharacters, 0, 0);
 				allocWideStr = (WCHAR*)::std::malloc ((static_cast<size_t> (numChars)+1)*sizeof (WCHAR));
-				if (MultiByteToWideChar (CP_UTF8, 0, utf8Str, numCharacters, allocWideStr, numChars) == 0)
+				if (MultiByteToWideChar (CP_ACP, 0, utf8Str, numCharacters, allocWideStr, numChars) == 0)
 				{
 					allocWideStr[0] = 0;
 				}
@@ -86,9 +86,9 @@ public:
 		{
 			if (!allocUTF8Str && wideStr)
 			{
-				int allocSize = WideCharToMultiByte (CP_UTF8, 0, wideStr, numCharacters, 0, 0, 0, 0);
+				int allocSize = WideCharToMultiByte (CP_ACP, 0, wideStr, numCharacters, 0, 0, 0, 0);
 				allocUTF8Str = (char*)::std::malloc (static_cast<size_t> (allocSize)+1);
-				if (WideCharToMultiByte (CP_UTF8, 0, wideStr, numCharacters, allocUTF8Str, allocSize, 0, 0) == 0)
+				if (WideCharToMultiByte (CP_ACP, 0, wideStr, numCharacters, allocUTF8Str, allocSize, 0, 0) == 0)
 				{
 					allocUTF8Str[0] = 0;
 				}
