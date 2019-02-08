@@ -30,6 +30,12 @@ TESTCASE(CSegmentButtonCreatorTest,
 		testAttribute<CSegmentButton>(kCSegmentButton, kAttrStyle, "vertical", &uidesc, [&] (CSegmentButton* v) {
 			return v->getStyle () == CSegmentButton::Style::kVertical;
 		});
+		testAttribute<CSegmentButton>(kCSegmentButton, kAttrStyle, "horizontal-inverse", &uidesc, [&] (CSegmentButton* v) {
+			return v->getStyle () == CSegmentButton::Style::kHorizontalInverse;
+		});
+		testAttribute<CSegmentButton>(kCSegmentButton, kAttrStyle, "vertical-inverse", &uidesc, [&] (CSegmentButton* v) {
+			return v->getStyle () == CSegmentButton::Style::kVerticalInverse;
+		});
 	);
 
 	TEST(selectionMode,
@@ -37,10 +43,13 @@ TESTCASE(CSegmentButtonCreatorTest,
 		testAttribute<CSegmentButton>(kCSegmentButton, kAttrSelectionMode, "Single", &uidesc, [&] (CSegmentButton* v) {
 			return v->getSelectionMode () == CSegmentButton::SelectionMode::kSingle;
 		});
+		testAttribute<CSegmentButton>(kCSegmentButton, kAttrSelectionMode, "Single-Toggle", &uidesc, [&] (CSegmentButton* v) {
+			return v->getSelectionMode () == CSegmentButton::SelectionMode::kSingleToggle;
+		});
 		testAttribute<CSegmentButton>(kCSegmentButton, kAttrSelectionMode, "Multiple", &uidesc, [&] (CSegmentButton* v) {
 			return v->getSelectionMode () == CSegmentButton::SelectionMode::kMultiple;
 		});
-		testPossibleValues (kCSegmentButton, kAttrSelectionMode, &uidesc, {"Single", "Multiple"});
+		testPossibleValues (kCSegmentButton, kAttrSelectionMode, &uidesc, {"Single", "Single-Toggle", "Multiple"});
 	);
 
 	TEST(textColor,
@@ -142,7 +151,7 @@ TESTCASE(CSegmentButtonCreatorTest,
 
 	TEST(orientationValues,
 		DummyUIDescription uidesc;
-		testPossibleValues (kCSegmentButton, kAttrStyle, &uidesc, {"horizontal", "vertical"});
+		testPossibleValues (kCSegmentButton, kAttrStyle, &uidesc, {"horizontal", "vertical", "horizontal-inverse", "vertical-inverse"});
 	);
 
 );
