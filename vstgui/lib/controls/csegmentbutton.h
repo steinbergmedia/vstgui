@@ -27,19 +27,23 @@ public:
 		kHorizontal,
 		/** vertically layouted segments */
 		kVertical,
-		/** horizontally invsere layouted segments */
+		/** horizontally inverse layouted segments */
 		kHorizontalInverse,
-		/** vertically invsere layouted segments */
+		/** vertically inverse layouted segments */
 		kVerticalInverse,
 	};
-	
-	enum class SelectionMode {
+
+	enum class SelectionMode
+	{
 		/** a single segment is selected at any time */
 		kSingle,
+		/** a single segment is selected at any time, when a segment is clicked which is already
+		   selected, the next segment is selected */
+		kSingleToggle,
 		/** multiple segments may be selected */
 		kMultiple,
 	};
-	
+
 	struct Segment {
 		mutable UTF8String name;
 		mutable SharedPointer<CBitmap> icon;

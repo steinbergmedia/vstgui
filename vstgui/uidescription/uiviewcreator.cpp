@@ -2417,6 +2417,7 @@ class CSegmentButtonCreator : public ViewCreatorAdapter
 {
 public:
 	std::string SelectionModeSingle = "Single";
+	std::string SelectionModeSingleToggle = "Single-Toggle";
 	std::string SelectionModeMultiple = "Multiple";
 	std::string strHorizontalInverse = "horizontal-inverse";
 	std::string strVerticalInverse = "vertical-inverse";
@@ -2538,6 +2539,8 @@ public:
 		{
 			if (*attr == SelectionModeSingle)
 				button->setSelectionMode (CSegmentButton::SelectionMode::kSingle);
+			else if (*attr == SelectionModeSingleToggle)
+				button->setSelectionMode (CSegmentButton::SelectionMode::kSingleToggle);
 			else if (*attr == SelectionModeMultiple)
 				button->setSelectionMode (CSegmentButton::SelectionMode::kMultiple);
 		}
@@ -2593,6 +2596,7 @@ public:
 		else if (attributeName == kAttrSelectionMode)
 		{
 			values.push_back (&SelectionModeSingle);
+			values.push_back (&SelectionModeSingleToggle);
 			values.push_back (&SelectionModeMultiple);
 			return true;
 		}
@@ -2730,6 +2734,11 @@ public:
 				case CSegmentButton::SelectionMode::kSingle:
 				{
 					stringValue = SelectionModeSingle;
+					break;
+				}
+				case CSegmentButton::SelectionMode::kSingleToggle:
+				{
+					stringValue = SelectionModeSingleToggle;
 					break;
 				}
 				case CSegmentButton::SelectionMode::kMultiple:

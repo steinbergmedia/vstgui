@@ -20,7 +20,7 @@ CSegmentButton::CSegmentButton (const CRect& size, IControlListener* listener, i
 //-----------------------------------------------------------------------------
 bool CSegmentButton::canAddOneMoreSegment () const
 {
-	return (getSelectionMode () == SelectionMode::kSingle || segments.size () < 32);
+	return (getSelectionMode () != SelectionMode::kMultiple || segments.size () < 32);
 }
 
 //-----------------------------------------------------------------------------
@@ -82,6 +82,7 @@ void CSegmentButton::valueChanged ()
 	switch (getSelectionMode ())
 	{
 		case SelectionMode::kSingle:
+		case SelectionMode::kSingleToggle:
 		{
 			auto index = static_cast<int64_t> (getSelectedSegment ());
 			for (auto& segment : segments)
@@ -316,19 +317,36 @@ CMouseEventResult CSegmentButton::onMouseDown (CPoint& where, const CButtonState
 			if (segment.rect.pointInside (where))
 			{
 				uint32_t newIndex = getSegmentIndex (newValue);
-				if (selectionMode == SelectionMode::kSingle)
+				switch (selectionMode)
 				{
-					uint32_t currentIndex = getSegmentIndex (getValueNormalized ());
-					if (newIndex != currentIndex)
+					case SelectionMode::kSingle:
 					{
-						setSelectedSegment (newIndex);
+						uint32_t currentIndex = getSegmentIndex (getValueNormalized ());
+						if (newIndex != currentIndex)
+							setSelectedSegment (newIndex);
+						break;
+					}
+					case SelectionMode::kSingleToggle:
+					{
+						uint32_t currentIndex = getSegmentIndex (getValueNormalized ());
+						if (newIndex != currentIndex)
+							setSelectedSegment (newIndex);
+						else
+						{
+							++currentIndex;
+							if (getSegments().size() < currentIndex)
+								currentIndex = 0;
+							setSelectedSegment (currentIndex);
+						}
+						break;
+					}
+					case SelectionMode::kMultiple:
+					{
+						selectSegment (newIndex, !segment.selected);
+						break;
 					}
 				}
-				else
-				{
-					selectSegment (newIndex, !segment.selected);
-				}
-				break;
+				break; // out of for loop
 			}
 			newValue += valueOffset;
 		}
@@ -340,7 +358,8 @@ CMouseEventResult CSegmentButton::onMouseDown (CPoint& where, const CButtonState
 int32_t CSegmentButton::onKeyDown (VstKeyCode& keyCode)
 {
 	int32_t result = -1;
-	if (selectionMode == SelectionMode::kSingle && keyCode.modifier == 0 && keyCode.character == 0)
+	if (selectionMode != SelectionMode::kMultiple && keyCode.modifier == 0 &&
+	    keyCode.character == 0)
 	{
 		uint32_t newIndex = getSegmentIndex (getValueNormalized ());
 		uint32_t oldIndex = newIndex;
@@ -560,7 +579,15 @@ void CSegmentButton::updateSegmentSizes ()
 //-----------------------------------------------------------------------------
 void CSegmentButton::verifySelections ()
 {
-	if (selectionMode == SelectionMode::kSingle)
+	if (selectionMode == SelectionMode::kMultiple)
+	{
+		auto bitset = static_cast<uint32_t> (value);
+		for (auto index = 0u; index < segments.size (); ++index)
+		{
+			segments[index].selected = (bitset & (1 << index)) != 0;
+		}
+	}
+	else
 	{
 		auto selectedIndex = getSelectedSegment ();
 		if (selectedIndex > segments.size ())
@@ -568,14 +595,6 @@ void CSegmentButton::verifySelections ()
 		for (auto& segment : segments)
 			segment.selected = false;
 		setSelectedSegment (selectedIndex);
-	}
-	else
-	{
-		auto bitset = static_cast<uint32_t> (value);
-		for (auto index = 0u; index < segments.size (); ++index)
-		{
-			segments[index].selected = (bitset & (1 << index)) != 0;
-		}
 	}
 }
 
