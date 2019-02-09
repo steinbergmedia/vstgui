@@ -1075,9 +1075,8 @@ void UIEditView::startDrag (CPoint& where)
 }
 
 //----------------------------------------------------------------------------------------------------
-UISelection* UIEditView::getSelectionOutOfDrag (IDataPackage* drag)
+SharedPointer<UISelection> UIEditView::getSelectionOutOfDrag (IDataPackage* drag) const
 {
-	
 	IDataPackage::Type type;
 	const void* dragData;
 	uint32_t size;
@@ -1087,14 +1086,13 @@ UISelection* UIEditView::getSelectionOutOfDrag (IDataPackage* drag)
 		if (controller)
 			description->setController (controller);
 		CMemoryStream stream (static_cast<const int8_t*> (dragData), size, false);
-		UISelection* newSelection = new UISelection;
+		auto newSelection = makeOwned<UISelection> ();
 		if (newSelection->restore (stream, description))
 		{
 			description->setController (nullptr);
 			return newSelection;
 		}
 		description->setController (nullptr);
-		newSelection->forget ();
 	}
 	return nullptr;
 }
@@ -1143,7 +1141,6 @@ bool UIEditView::onDrop (DragEventData data)
 			IAction* action = new ViewCopyOperation (dragSelection, getSelection (), viewContainer, where2, description);
 			getUndoManager()->pushAndPerform (action);
 		}
-		dragSelection->forget ();
 		dragSelection = nullptr;
 	}
 	return true;
@@ -1168,11 +1165,7 @@ DragOperation UIEditView::onDragEnter (DragEventData data)
 //----------------------------------------------------------------------------------------------------
 void UIEditView::onDragLeave (DragEventData data)
 {
-	if (dragSelection)
-	{
-		dragSelection->forget ();
-		dragSelection = nullptr;
-	}
+	dragSelection = nullptr;
 	if (highlightView)
 	{
 		highlightView->setHighlightView (nullptr);

@@ -87,7 +87,7 @@ protected:
 	void onDoubleClickEditing (CView* view);
 
 	void startDrag (CPoint& where);
-	UISelection* getSelectionOutOfDrag (IDataPackage* drag);
+	SharedPointer<UISelection> getSelectionOutOfDrag (IDataPackage* drag) const;
 
 	SharedPointer<IDropTarget> getDropTarget () override;
 	bool onDrop (DragEventData data) override;
@@ -116,7 +116,7 @@ protected:
  
 	SharedPointer<UIUndoManager> undoManger;
 	SharedPointer<UISelection> selection;
-	UISelection* dragSelection {nullptr};
+	SharedPointer<UISelection> dragSelection;
 	UIDescription* description {nullptr};
 	SharedPointer<UIGrid> grid;
 	
