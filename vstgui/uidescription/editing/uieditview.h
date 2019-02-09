@@ -124,7 +124,7 @@ protected:
 	CLayeredViewContainer* overlayView {nullptr};
 	UICrossLines* lines {nullptr};
 	ViewSizeChangeOperation* moveSizeOperation {nullptr};
-	CVSTGUITimer* editTimer {nullptr};
+	SharedPointer<CVSTGUITimer> editTimer;
 	
 	CColor crosslineForegroundColor;
 	CColor crosslineBackgroundColor;

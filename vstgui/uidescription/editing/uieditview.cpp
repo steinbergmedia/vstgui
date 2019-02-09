@@ -283,8 +283,7 @@ UIEditView::UIEditView (const CRect& size, UIDescription* uidescription)
 //----------------------------------------------------------------------------------------------------
 UIEditView::~UIEditView ()
 {
-	if (editTimer)
-		editTimer->forget ();
+	editTimer = nullptr;
 	setUndoManager (nullptr);
 	setSelection (nullptr);
 }
@@ -442,7 +441,6 @@ CMessageResult UIEditView::notify (CBaseObject* sender, IdStringPtr message)
 				lines->update (selection);
 				getFrame ()->setCursor (kCursorHand);
 			}
-			editTimer->forget ();
 			editTimer = nullptr;
 		}
 		return kMessageNotified;
@@ -704,9 +702,7 @@ CMouseEventResult UIEditView::onMouseDown (CPoint &where, const CButtonState& bu
 					mouseStartPoint = where2;
 					if (grid)
 						grid->process (mouseStartPoint);
-					if (editTimer)
-						editTimer->forget ();
-					editTimer = new CVSTGUITimer (this, 500);
+					editTimer = owned (new CVSTGUITimer (this, 500));
 					editTimer->start ();
 					return kMouseEventHandled;
 				}
@@ -749,11 +745,7 @@ CMouseEventResult UIEditView::onMouseUp (CPoint &where, const CButtonState& butt
 {
 	if (editing)
 	{
-		if (editTimer)
-		{
-			editTimer->forget ();
-			editTimer = nullptr;
-		}
+		editTimer = nullptr;
 		if (mouseEditMode != MouseEditMode::NoEditing && !moveSizeOperation && buttons == kLButton && !lines)
 		{
 			CView* view = getViewAt (where, GetViewOptions ().deep ().includeViewContainer ().includeInvisible ());
@@ -862,7 +854,6 @@ void UIEditView::doDragEditingMove (CPoint& where)
 		mouseStartPoint = where;
 		if (editTimer)
 		{
-			editTimer->forget ();
 			editTimer = nullptr;
 			if (!lines)
 			{
