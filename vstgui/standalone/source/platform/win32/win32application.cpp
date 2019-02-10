@@ -141,7 +141,7 @@ AlertResult Application::showAlert (const AlertBoxConfig& config)
 				winWindow->setModalWindow (window);
 		}
 		winModalWindow->center ();
-
+		SetCapture (winModalWindow->getHWND ());
 		window->show ();
 	}
 	else
