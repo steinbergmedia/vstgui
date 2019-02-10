@@ -454,7 +454,7 @@ void CSegmentButton::drawRect (CDrawContext* pContext, const CRect& dirtyRect)
 			                              getViewSize ().getTopRight ());
 		}
 	}
-	auto lineIndexStart = 1;
+	auto lineIndexStart = 1u;
 	auto lineIndexEnd = segments.size ();
 	if (isInverseStyle (style))
 	{
