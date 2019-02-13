@@ -62,7 +62,7 @@ void UIFocusSettingsController::onDialogShow (UIDialogController*)
 //----------------------------------------------------------------------------------------------------
 CView* UIFocusSettingsController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
 {
-	CControl* control = dynamic_cast<CControl*>(view);
+	auto* control = dynamic_cast<CControl*>(view);
 	if (control)
 	{
 		switch (control->getTag ())
@@ -75,7 +75,7 @@ CView* UIFocusSettingsController::verifyView (CView* view, const UIAttributes& a
 			}
 			case kColorTag:
 			{
-				COptionMenu* menu = dynamic_cast<COptionMenu*>(control);
+				auto* menu = dynamic_cast<COptionMenu*>(control);
 				if (menu)
 				{
 					controls[kColorTag] = control;
@@ -98,7 +98,7 @@ CView* UIFocusSettingsController::verifyView (CView* view, const UIAttributes& a
 			case kWidthTag:
 			{
 				controls[kWidthTag] = control;
-				CTextEdit* edit = dynamic_cast<CTextEdit*>(control);
+				auto* edit = dynamic_cast<CTextEdit*>(control);
 				if (edit)
 				{
 					edit->setStringToValueFunction (stringToValue);
