@@ -468,6 +468,13 @@ CView* setupGenericOptionMenu (Proc clickCallback, CViewContainer* container,
 	}
 	if (frame)
 	{
+		/*
+		** Our calculations above have been in non-transformed space, so to do fit calculations, we
+		** need to transform our size by the frame zoom
+		*/
+		CPoint szx = viewRect.getSize();
+		frame->getTransform().transform(szx);
+		viewRect.setSize(szx);
 		auto frSize = frame->getViewSize ();
 		frSize.inset (6, 6); // frame margin
 
@@ -490,6 +497,14 @@ CView* setupGenericOptionMenu (Proc clickCallback, CViewContainer* container,
 		viewRect.bound (frSize);
 		if (maxWidth > viewRect.getWidth ())
 			dataSource->setMaxWidth (viewRect.getWidth ());
+
+		/*
+		** Our result is in non-transformed space; we need to bring it back
+		** into screen coordinate space by applying inverse transform once
+		** we have done fit and finish above in pixel space
+		*/
+		frame->getTransform().inverse().transform(viewRect);
+
 	}
 	viewRect.makeIntegral ();
 	viewRect.inset (-1, -1);

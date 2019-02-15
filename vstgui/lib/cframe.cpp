@@ -1012,7 +1012,7 @@ bool CFrame::getCurrentMouseLocation (CPoint &where) const
 	{
 		if (pImpl->platformFrame->getCurrentMousePosition (where))
 		{
-			getTransform().transform (where);
+			getTransform().inverse().transform (where);
 			return true;
 		}
 	}
