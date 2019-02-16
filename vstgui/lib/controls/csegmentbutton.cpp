@@ -334,7 +334,7 @@ CMouseEventResult CSegmentButton::onMouseDown (CPoint& where, const CButtonState
 						else
 						{
 							++currentIndex;
-							if (getSegments().size() < currentIndex)
+							if (getSegments ().size () - 1 < currentIndex)
 								currentIndex = 0;
 							setSelectedSegment (currentIndex);
 						}
