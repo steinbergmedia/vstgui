@@ -42,6 +42,16 @@ namespace VSTGUI {
 	static CFontDesc gNormalFontVerySmall ("Arial", 9);
 	static CFontDesc gSymbolFont ("Symbol", 13);
 
+#elif LINUX
+	static CFontDesc gSystemFont ("sans-serif", 12);
+	static CFontDesc gNormalFontVeryBig ("sans-serif", 18);
+	static CFontDesc gNormalFontBig ("sans-serif", 14);
+	static CFontDesc gNormalFont ("sans-serif", 12);
+	static CFontDesc gNormalFontSmall ("sans-serif", 11);
+	static CFontDesc gNormalFontSmaller ("sans-serif", 10);
+	static CFontDesc gNormalFontVerySmall ("sans-serif", 9);
+	static CFontDesc gSymbolFont ("Symbol", 13);
+
 #else
 	static CFontDesc gSystemFont ("Arial", 12);
 	static CFontDesc gNormalFontVeryBig ("Arial", 18);
