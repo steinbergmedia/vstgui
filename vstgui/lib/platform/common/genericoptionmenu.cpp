@@ -174,6 +174,13 @@ private:
 					clickCallback (menu, CDataBrowser::kNoSelection);
 					return 1;
 				}
+				case VKEY_RETURN:
+				case VKEY_ENTER:
+				{
+					if (clickCallback)
+						clickCallback (menu,browser->getSelectedRow ());
+					return 1;
+				}
 				case VKEY_LEFT:
 				{
 					if (parentDataSource)
