@@ -8,6 +8,8 @@
 
 #if WINDOWS
 
+#include "../win32support.h"
+
 struct IDWriteTextFormat;
 struct IDWriteTextLayout;
 
@@ -20,6 +22,8 @@ public:
 	D2DFont (const UTF8String& name, const CCoord& size, const int32_t& style);
 
 	IDWriteTextLayout* createTextLayout (IPlatformString* string) const;
+
+	bool asLogFont (LOGFONTW& logfont) const;
 
 	static bool getAllPlatformFontFamilies (std::list<std::string>& fontFamilyNames);
 
