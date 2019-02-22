@@ -6,6 +6,7 @@
 #include "icontrollistener.h"
 #include "../cframe.h"
 #include "../cgraphicspath.h"
+#include "../cvstguitimer.h"
 #include <cassert>
 
 #define VSTGUI_CCONTROL_LOG_EDITING 0 //DEBUG
@@ -259,6 +260,30 @@ void IMultiBitmapControl::autoComputeHeightOfOneImage ()
 		const CRect& viewSize = view->getViewSize ();
 		heightOfOneImage = viewSize.getHeight ();
 	}
+}
+
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
+void CMouseWheelEditingSupport::onMouseWheelEditing (CControl* control)
+{
+	if (!control->isEditing ())
+		control->beginEdit ();
+	endEditTimer = makeOwned<CVSTGUITimer> (
+	    [control] (CVSTGUITimer* timer) {
+		    control->endEdit ();
+		    timer->stop ();
+	    },
+	    500);
+}
+
+//------------------------------------------------------------------------
+void CMouseWheelEditingSupport::invalidMouseWheelEditTimer (CControl* control)
+{
+	if (endEditTimer)
+		endEditTimer = nullptr;
+	if (control->isEditing ())
+		control->endEdit ();
 }
 
 } // VSTGUI

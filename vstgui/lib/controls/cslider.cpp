@@ -571,6 +571,8 @@ CMouseEventResult CSlider::onMouseDown (CPoint& where, const CButtonState& butto
 	if (!(buttons & kLButton))
 		return kMouseEventNotHandled;
 
+	invalidMouseWheelEditTimer (this);
+
 	CRect handleRect;
 	impl->delta = calculateDelta (
 	    where, getEffectiveSliderMode () != CSliderMode::FreeClick ? &handleRect : nullptr);
@@ -708,6 +710,8 @@ bool CSlider::onWheel (const CPoint& where, const float &distance, const CButton
 	if (!getMouseEnabled ())
 		return false;
 
+	onMouseWheelEditing (this);
+
 	float _distance = distance;
 	if (impl->styleIsInverseStyle ())
 		_distance *= -1.f;
@@ -722,14 +726,8 @@ bool CSlider::onWheel (const CPoint& where, const float &distance, const CButton
 	if (isDirty ())
 	{
 		invalid ();
-		
-		// begin of edit parameter
-		beginEdit ();
-	
+
 		valueChanged ();
-	
-		// end of edit parameter
-		endEdit ();
 	}
 
 	return true;

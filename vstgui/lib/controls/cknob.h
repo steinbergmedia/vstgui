@@ -11,7 +11,7 @@
 namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
-class CKnobBase : public CControl
+class CKnobBase : public CControl, protected CMouseWheelEditingSupport
 {
 public:
 	//-----------------------------------------------------------------------------

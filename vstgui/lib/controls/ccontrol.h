@@ -145,4 +145,17 @@ protected:
 	int32_t subPixmaps;
 };
 
+//-----------------------------------------------------------------------------
+// CMouseWheelEditingSupport Declaration
+//! @brief Helper class for mouse wheel editing
+//-----------------------------------------------------------------------------
+class CMouseWheelEditingSupport
+{
+protected:
+	void invalidMouseWheelEditTimer (CControl* control);
+	void onMouseWheelEditing (CControl* control);
+private:
+	SharedPointer<CBaseObject> endEditTimer {nullptr};
+};
+
 } // VSTGUI

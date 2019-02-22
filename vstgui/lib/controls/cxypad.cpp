@@ -4,7 +4,6 @@
 
 #include "cxypad.h"
 #include "../cdrawcontext.h"
-#include "../cvstguitimer.h"
 
 namespace VSTGUI {
 
@@ -46,6 +45,7 @@ CMouseEventResult CXYPad::onMouseDown (CPoint& where, const CButtonState& button
 {
 	if (buttons.isLeftButton ())
 	{
+		invalidMouseWheelEditTimer (this);
 		mouseStartValue = getValue ();
 		mouseChangeStartPoint = where;
 		mouseChangeStartPoint.offset (-getViewSize ().left - getRoundRectRadius () / 2.,
@@ -134,16 +134,11 @@ bool CXYPad::onWheel (const CPoint& where, const CMouseWheelAxis& axis, const fl
 	else
 		y += distance;
 	boundValues (x, y);
+	onMouseWheelEditing (this);
 	setValue (calculateValue (x, y));
 	if (isDirty ())
 	{
 		invalid ();
-		if (!isEditing ())
-			beginEdit ();
-		endEditTimer = makeOwned<CVSTGUITimer> ([this] (CVSTGUITimer* timer) {
-			endEdit ();
-			timer->stop ();
-		}, 500);
 		valueChanged ();
 	}
 	return true;

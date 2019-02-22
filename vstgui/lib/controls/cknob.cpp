@@ -7,6 +7,7 @@
 #include "../cdrawcontext.h"
 #include "../cframe.h"
 #include "../cgraphicspath.h"
+#include "../cvstguitimer.h"
 #include <cmath>
 
 namespace VSTGUI {
@@ -102,6 +103,7 @@ CMouseEventResult CKnobBase::onMouseDown (CPoint& where, const CButtonState& but
 	if (!buttons.isLeftButton ())
 		return kMouseEventNotHandled;
 
+	invalidMouseWheelEditTimer (this);
 	beginEdit ();
 
 	if (checkDefaultValue (buttons))
@@ -237,6 +239,8 @@ bool CKnobBase::onWheel (const CPoint& where, const float &distance, const CButt
 	if (!getMouseEnabled ())
 		return false;
 
+	onMouseWheelEditing (this);
+
 	float v = getValueNormalized ();
 	if (buttons & kZoomModifier)
 		v += 0.1f * distance * wheelInc;
@@ -247,14 +251,7 @@ bool CKnobBase::onWheel (const CPoint& where, const float &distance, const CButt
 	if (isDirty ())
 	{
 		invalid ();
-
-		// begin of edit parameter
-		beginEdit ();
-	
 		valueChanged ();
-	
-		// end of edit parameter
-		endEdit ();
 	}
 	return true;
 }

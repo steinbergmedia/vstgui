@@ -14,7 +14,7 @@ namespace VSTGUI {
 //! @brief a slider control
 /// @ingroup controls
 //-----------------------------------------------------------------------------
-class CSlider : public CControl
+class CSlider : public CControl, protected CMouseWheelEditingSupport
 {
 private:
 	enum StyleEnum
