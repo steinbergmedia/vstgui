@@ -102,6 +102,9 @@
 	#ifndef WINDOWS
 		#define WINDOWS 1
 	#endif
+	#if (defined(_M_ARM64) || defined(_M_ARM))
+		#define VSTGUI_OPENGL_SUPPORT 0	
+	#endif
 	#define VSTGUI_DEPRECATED_ATTRIBUTE __declspec(deprecated)
 	#ifdef _MSC_VER
 		#pragma warning(3 : 4189) // local variable is initialized but not referenced
