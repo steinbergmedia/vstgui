@@ -191,7 +191,7 @@ inline Optional<std::string> lastPathComponent (const std::string path)
 {
 	size_t sepPos = path.find_last_of (unixPathSeparator);
 	if (sepPos == std::string::npos)
-		return {};
+		return Optional<std::string> (path);
 	return {path.substr (sepPos + 1)};
 }
 

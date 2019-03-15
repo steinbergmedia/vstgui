@@ -225,7 +225,7 @@ void cleanupSharedUIResources ()
 
 #if VSTGUI_LIVE_EDITING
 //------------------------------------------------------------------------
-static constexpr auto UIDescPathKey = "VSTGUI::Standalone|Debug|UIDescPath";
+static constexpr auto UIDescPathKey = "VSTGUI::Standalone|Debug|UIDescPath|" __FILE__;
 
 //------------------------------------------------------------------------
 static void updateUIDescFilePath (const char* path, UIDescription& uiDesc)
