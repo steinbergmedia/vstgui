@@ -26,6 +26,7 @@ set(${target}_common_sources
     include/iwindowcontroller.h
     include/iwindowlistener.h
     include/helpers/appdelegate.h
+    include/helpers/async.h
     include/helpers/menubuilder.h
     include/helpers/preferences.h
     include/helpers/value.h

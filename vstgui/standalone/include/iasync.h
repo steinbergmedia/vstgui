@@ -15,29 +15,44 @@ namespace Standalone {
  */
 namespace Async {
 
+//------------------------------------------------------------------------
 using Task = std::function<void ()>;
 
 //------------------------------------------------------------------------
-/** Asynchronous context. */
-enum class Context
-{
-	/** Main thread context. */
-	Main,
-	/** Background thread context. */
-	Background
-};
+/** Get main/UI serial queue.
+ *
+ *	Tasks scheduled on this queue are performed serially on the main/ui thread.
+ */
+const QueuePtr& mainQueue ();
 
 //------------------------------------------------------------------------
-/** Schedule a task to be performed asynchronous either on a background thread or on the main
- *	thread.
+/** Get background concurrent queue.
+ *
+ *	Tasks scheduled on this queue are performed concurrently on background threads.
+ *	The number of background threads are depending on the systems number of CPU cores.
+ */
+const QueuePtr& backgroundQueue ();
+
+//------------------------------------------------------------------------
+/** Make a new serial queue.
+ *
+ *	Tasks scheduled on this queue are performed serially on a background thread.
+ *
+ *	@param name		the name of the serial queue (optional)
+ *	@return 		a new serial queue
+ */
+QueuePtr makeSerialQueue (const char* name);
+
+//------------------------------------------------------------------------
+/** Schedule a task to be performed asynchronous on a queue.
  *
  *	Can be called from any thread, but should not be called from realtime constraint threads as it
  *	may involves locks and memory allocations
  *
- *	@param context	background or main thread
+ *	@param queue	on which queue to perform the task
  *	@param task		task to be performed
  */
-void perform (Context context, Task&& task);
+void schedule (QueuePtr queue, Task&& task);
 
 //------------------------------------------------------------------------
 } // Async

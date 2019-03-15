@@ -1,4 +1,4 @@
-// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
@@ -10,6 +10,7 @@
 #include "../../lib/crect.h"
 #include "../../lib/cvstguitimer.h"
 #include "../../lib/iviewlistener.h"
+#include "../../uidescription/compresseduidescription.h"
 #include "../../uidescription/cstream.h"
 #include "../../uidescription/detail/uiviewcreatorattributes.h"
 #include "../../uidescription/editing/uieditcontroller.h"
@@ -17,7 +18,6 @@
 #include "../../uidescription/icontroller.h"
 #include "../../uidescription/uiattributes.h"
 #include "../../uidescription/uidescription.h"
-#include "../../uidescription/compresseduidescription.h"
 #include "../include/helpers/menubuilder.h"
 #include "../include/helpers/valuelistener.h"
 #include "../include/helpers/windowcontroller.h"
@@ -182,7 +182,7 @@ public:
 			    [this] (float value, std::string& utf8String, CParamDisplay* display) {
 				    utf8String = this->value->getConverter ().valueAsString (value);
 				    return true;
-				});
+			    });
 			if (auto textEdit = dynamic_cast<CTextEdit*> (paramDisplay))
 			{
 				textEdit->setStringToValueFunction (
@@ -192,7 +192,7 @@ public:
 						    v = value->getValue ();
 					    result = static_cast<float> (v);
 					    return true;
-					});
+				    });
 			}
 		}
 		updateControlOnStateChange (control);
@@ -217,6 +217,7 @@ public:
 	void viewWillDelete (CView* view) override { removeControl (dynamic_cast<CControl*> (view)); }
 
 	const ControlList& getControls () const { return controls; }
+
 protected:
 	void onRemoveControl (CControl* control)
 	{
@@ -728,7 +729,7 @@ struct WindowController::EditImpl : WindowController::Impl
 		}
 		else
 		{
-			Async::perform (Async::Context::Main, [this] () { window->close (); });
+			Async::schedule (Async::mainQueue (), [this] () { window->close (); });
 		}
 	}
 
@@ -789,7 +790,7 @@ struct WindowController::EditImpl : WindowController::Impl
 			auto it = std::find_if (valueWrappers.begin (), valueWrappers.end (),
 			                        [&] (const ValueWrapperList::value_type& value) {
 				                        return value->getID () == *name;
-				                    });
+			                        });
 			if (it == valueWrappers.end ())
 				uiDesc->removeTag (name->data ());
 		}

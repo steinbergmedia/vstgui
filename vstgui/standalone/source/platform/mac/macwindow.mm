@@ -187,7 +187,7 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 		nsWindow.title = (__bridge NSString*)titleMacStr->getCFString ();
 	}
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_12 && __clang_major__ >= 9
-	if (@available(macOS 10.12, *))
+	if (@available (macOS 10.12, *))
 	{
 		if (!config.groupIdentifier.empty ())
 		{
@@ -634,7 +634,7 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 			return;
 	}
 	VSTGUIWindow* window = self;
-	Async::perform (Async::Context::Main, [=] () { [window close]; });
+	Async::schedule (Async::mainQueue (), [=] () { [window close]; });
 }
 
 //------------------------------------------------------------------------
@@ -731,7 +731,7 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 {
 	using namespace VSTGUI::Standalone;
 	VSTGUIPopup* popup = self;
-	Async::perform (Async::Context::Main, [=] () { [popup close]; });
+	Async::schedule (Async::mainQueue (), [=] () { [popup close]; });
 }
 
 //------------------------------------------------------------------------

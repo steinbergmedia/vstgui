@@ -18,10 +18,39 @@ namespace GDK {
 namespace Async {
 
 //------------------------------------------------------------------------
-void perform (Context context, Task&& task)
+struct Queue
 {
-	// TODO: Not implemented yet
-	task ();
+	void schedule (Task&& task)
+	{
+		// TODO: scheduling not implemented yet
+		task ();
+	}
+};
+
+//------------------------------------------------------------------------
+const QueuePtr& mainQueue ()
+{
+	static QueuePtr q = std::make_shared<Queue> ();
+	return q;
+}
+
+//------------------------------------------------------------------------
+const QueuePtr& backgroundQueue ()
+{
+	static QueuePtr q = std::make_shared<Queue> ();
+	return q;
+}
+
+//------------------------------------------------------------------------
+QueuePtr makeSerialQueue (const char* name)
+{
+	return std::make_shared<Queue> ();
+}
+
+//------------------------------------------------------------------------
+void schedule (QueuePtr queue, Task&& task)
+{
+	queue->schedule (std::move (task));
 }
 
 //------------------------------------------------------------------------

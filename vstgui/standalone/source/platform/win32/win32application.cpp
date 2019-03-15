@@ -1,4 +1,4 @@
-// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
@@ -16,9 +16,9 @@
 #include "../../shareduiresources.h"
 #include "../../window.h"
 #include "../iplatformwindow.h"
-#include <shellapi.h>
 #include <array>
 #include <chrono>
+#include <shellapi.h>
 
 #pragma comment(lib, "d2d1.lib")
 #pragma comment(lib, "dwrite.lib")
@@ -76,7 +76,8 @@ private:
 void Application::init (HINSTANCE instance, LPWSTR commandLine)
 {
 	auto& hidpiSupport = HiDPISupport::instance ();
-	if (!hidpiSupport.setProcessDpiAwarnessContext (HiDPISupport::AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2))
+	if (!hidpiSupport.setProcessDpiAwarnessContext (
+	        HiDPISupport::AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2))
 		hidpiSupport.setProcessDpiAwareness (HiDPISupport::PROCESS_PER_MONITOR_DPI_AWARE);
 
 	IApplication::CommandLineArguments cmdArgs;
@@ -93,13 +94,11 @@ void Application::init (HINSTANCE instance, LPWSTR commandLine)
 
 	PlatformCallbacks callbacks;
 	callbacks.quit = [this] () { quit (); };
-	callbacks.onCommandUpdate = [this] () { 
+	callbacks.onCommandUpdate = [this] () {
 		if (!needCommandUpdate)
 		{
 			needCommandUpdate = true;
-			Async::perform (Async::Context::Main, [this] () {
-				onCommandUpdate ();
-			});
+			Async::schedule (Async::mainQueue (), [this] () { onCommandUpdate (); });
 		}
 	};
 	callbacks.showAlert = [this] (const AlertBoxConfig& config) { return showAlert (config); };
@@ -166,13 +165,13 @@ void Application::showAlertForWindow (const AlertBoxForWindowConfig& config)
 		    auto parentWinWindow = toWin32Window (parentWindow);
 		    vstgui_assert (parentWinWindow);
 		    parentWinWindow->setModalWindow (nullptr);
-		    Async::perform (Async::Context::Main, [callback, r, parentWindow] () {
+		    Async::schedule (Async::mainQueue (), [callback, r, parentWindow] () {
 			    if (callback)
-					callback (r);
+				    callback (r);
 			    if (auto winWindow = toWin32Window (parentWindow))
 				    winWindow->activate ();
-			});
-		}))
+		    });
+	    }))
 	{
 		auto parentWinWindow = toWin32Window (config.window);
 		vstgui_assert (parentWinWindow);
@@ -226,7 +225,7 @@ void Application::onCommandUpdate ()
 //------------------------------------------------------------------------
 void Application::quit ()
 {
-	Async::perform (Async::Context::Main, [] () {
+	Async::schedule (Async::mainQueue (), [] () {
 		auto windows = IApplication::instance ().getWindows (); // Yes, copy the window list
 		for (auto& w : windows)
 		{

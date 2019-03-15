@@ -428,7 +428,7 @@ static CommandWithKeyList getCommandList (const char* _Nonnull group)
 	if (self.hasTriggeredSetupMainMenu)
 		return;
 	self.hasTriggeredSetupMainMenu = YES;
-	Async::perform (Async::Context::Main, [self] () {
+	Async::schedule (Async::mainQueue (), [self] () {
 		[self setupMainMenu];
 		self.hasTriggeredSetupMainMenu = NO;
 	});

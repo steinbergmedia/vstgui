@@ -59,5 +59,17 @@ using DelegatePtr = std::unique_ptr<IDelegate>;
 } // Application
 
 //------------------------------------------------------------------------
+namespace Async {
+
+struct Queue;
+using QueuePtr = std::shared_ptr<Queue>;
+
+struct Group;
+using GroupPtr = std::shared_ptr<Group>;
+
+//------------------------------------------------------------------------
+} // Async
+
+//------------------------------------------------------------------------
 } // Standalone
 } // VSTGUI

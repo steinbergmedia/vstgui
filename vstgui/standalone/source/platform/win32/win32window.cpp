@@ -1,10 +1,11 @@
-// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "win32window.h"
 #include "win32menu.h"
 #include "win32async.h"
+
 #include "../../../../lib/platform/win32/direct2d/d2ddrawcontext.h"
 #include "../../../../lib/platform/win32/win32frame.h"
 #include "../../../../lib/platform/win32/win32dll.h"
@@ -219,7 +220,7 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 		return false;
 
 	delegate = &inDelegate;
-	SetWindowLongPtr (hwnd, GWLP_USERDATA, (__int3264) (LONG_PTR) this);
+	SetWindowLongPtr (hwnd, GWLP_USERDATA, (__int3264) (LONG_PTR)this);
 	if (hasBorder)
 		hasMenu = true;
 	if (isTransparent)
@@ -254,8 +255,8 @@ void Window::setNewDPI (uint32_t newDpi)
 }
 
 //------------------------------------------------------------------------
-static std::shared_ptr<Win32Menu> createSubMenu (const UTF8String& group,
-                            const Detail::IPlatformApplication::CommandWithKeyList& commands)
+static std::shared_ptr<Win32Menu> createSubMenu (
+    const UTF8String& group, const Detail::IPlatformApplication::CommandWithKeyList& commands)
 {
 	auto menu = std::make_shared<Win32Menu> (group);
 	for (auto& e : commands)
@@ -416,7 +417,7 @@ static CPoint getRectSize (const RECT& r)
 //------------------------------------------------------------------------
 void Window::makeTransparent ()
 {
-	MARGINS margin = { -1 };
+	MARGINS margin = {-1};
 	auto res = DwmExtendFrameIntoClientArea (hwnd, &margin);
 	vstgui_assert (res == S_OK);
 }
@@ -504,7 +505,8 @@ LRESULT CALLBACK Window::proc (UINT message, WPARAM wParam, LPARAM lParam)
 				delegate->onDeactivated ();
 				if (isPopup)
 				{
-					if (!Detail::getApplicationPlatformAccess ()->dontClosePopupOnDeactivation (this))
+					if (!Detail::getApplicationPlatformAccess ()->dontClosePopupOnDeactivation (
+					        this))
 						close ();
 				}
 			}
@@ -762,7 +764,8 @@ CPoint Window::getSize () const
 		return initialSize;
 	RECT r;
 	GetClientRect (hwnd, &r);
-	return CPoint (std::ceil ((r.right - r.left) / dpiScale), std::ceil ((r.bottom - r.top) / dpiScale));
+	return CPoint (std::ceil ((r.right - r.left) / dpiScale),
+	               std::ceil ((r.bottom - r.top) / dpiScale));
 }
 
 //------------------------------------------------------------------------
@@ -876,7 +879,7 @@ void Window::close ()
 	auto call = [self] () {
 		self->onQuit (); // TODO: rename method !
 	};
-	Async::perform (Async::Context::Main, call);
+	Async::schedule (Async::mainQueue (), call);
 }
 
 //------------------------------------------------------------------------
