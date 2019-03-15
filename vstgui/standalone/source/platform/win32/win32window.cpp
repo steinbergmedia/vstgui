@@ -67,7 +67,7 @@ public:
 	void* getPlatformHandle () const override { return hwnd; }
 	PlatformFrameConfigPtr prepareFrameConfig (PlatformFrameConfigPtr&& controllerConfig) override
 	{
-		return controllerConfig;
+		return std::move (controllerConfig);
 	}
 	void onSetContentView (CFrame* frame) override;
 

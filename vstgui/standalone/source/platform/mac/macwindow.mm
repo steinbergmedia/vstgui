@@ -100,7 +100,7 @@ public:
 	}
 	PlatformFrameConfigPtr prepareFrameConfig (PlatformFrameConfigPtr&& controllerConfig) override
 	{
-		return controllerConfig;
+		return std::move (controllerConfig);
 	}
 	void onSetContentView (CFrame* _Nullable newFrame) override;
 
