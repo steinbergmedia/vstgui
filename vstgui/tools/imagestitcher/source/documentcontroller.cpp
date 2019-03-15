@@ -684,7 +684,7 @@ void DocumentWindowController::setDirty ()
 	if (asyncUpdateTriggered)
 		return;
 	asyncUpdateTriggered = true;
-	Async::perform (Async::Context::Main, [this] () {
+	Async::schedule (Async::mainQueue (), [this] () {
 		if (auto v = displayFrameValue->dynamicCast<IMutableStepValue> ())
 			v->setNumSteps (static_cast<uint32_t> (imageList.size ()));
 		if (imageView)
