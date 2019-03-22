@@ -114,13 +114,14 @@ bool CocoaFileSelector::runInternal (CBaseObject* _delegate)
 	NSWindow* parentWindow = nil;
 	if (_delegate)
 	{
-		#if MAC_COCOA
-		if (frame && frame->getPlatformFrame ())
+	#if MAC_COCOA
+		if (frame && frame->getPlatformFrame () &&
+		    frame->getPlatformFrame ()->getPlatformType () == PlatformType::kNSView)
 		{
-			NSViewFrame* nsViewFrame = static_cast<NSViewFrame*> (frame->getPlatformFrame ());
-			parentWindow = nsViewFrame ? [(nsViewFrame->getNSView ()) window] : nullptr;
+			auto nsViewFrame = static_cast<NSViewFrame*> (frame->getPlatformFrame ());
+			parentWindow = [(nsViewFrame->getNSView ())window];
 		}
-		#endif
+	#endif
 		delegate = _delegate;
 	}
 	NSOpenPanel* openPanel = nil;
