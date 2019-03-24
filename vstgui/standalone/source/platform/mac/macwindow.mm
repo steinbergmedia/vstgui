@@ -151,8 +151,6 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 		nsWindowDelegate = [VSTGUIPopupDelegate new];
 		nsWindowDelegate.macWindow = this;
 		[nsWindow setAnimationBehavior:NSWindowAnimationBehaviorUtilityWindow];
-		nsWindow.collectionBehavior =
-		    NSWindowCollectionBehaviorFullScreenAuxiliary | nsWindow.collectionBehavior;
 	}
 	else
 	{
@@ -168,10 +166,14 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 		[nsWindow setAnimationBehavior:NSWindowAnimationBehaviorNone];
 		if (!config.style.canClose ())
 			window.nonClosable = true;
-		nsWindow.collectionBehavior = NSWindowCollectionBehaviorFullScreenPrimary |
-		                              NSWindowCollectionBehaviorFullScreenAuxiliary |
-		                              nsWindow.collectionBehavior;
+		if (config.style.canSize ())
+		{
+			nsWindow.collectionBehavior =
+			    NSWindowCollectionBehaviorFullScreenPrimary | nsWindow.collectionBehavior;
+		}
 	}
+	nsWindow.collectionBehavior =
+	    NSWindowCollectionBehaviorFullScreenAuxiliary | nsWindow.collectionBehavior;
 	[nsWindow setDelegate:nsWindowDelegate];
 
 	if (config.style.isTransparent ())
