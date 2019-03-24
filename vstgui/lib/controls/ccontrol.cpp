@@ -140,7 +140,10 @@ void CControl::setValueNormalized (float val)
 //------------------------------------------------------------------------
 float CControl::getValueNormalized () const
 {
-	return (value - getMin ()) / getRange ();
+	auto range = getRange ();
+	if (range == 0.f)
+		return 0.f;
+	return (value - getMin ()) / range;
 }
 
 //------------------------------------------------------------------------
