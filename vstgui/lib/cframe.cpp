@@ -447,7 +447,7 @@ void CFrame::checkMouseViews (const CPoint& where, const CButtonState& buttons)
 		auto it2 = pImpl->mouseViews.end ();
 		--it2;
 		CView* container = mouseView;
-		while ((vc = static_cast<CViewContainer*> (container->getParentView ())) != *it2)
+		while ((vc = static_cast<CViewContainer*> (container->getParentView ())) != *it2 && vc)
 		{
 			pImpl->mouseViews.emplace_back (vc);
 			vc->remember ();
@@ -474,7 +474,7 @@ void CFrame::checkMouseViews (const CPoint& where, const CButtonState& buttons)
 		vstgui_assert (pImpl->mouseViews.empty ());
 		pImpl->mouseViews.emplace_back (mouseView);
 		mouseView->remember ();
-		while ((vc = static_cast<CViewContainer*> (mouseView->getParentView ())) != this)
+		while ((vc = static_cast<CViewContainer*> (mouseView->getParentView ())) != this && vc)
 		{
 			pImpl->mouseViews.push_front (vc);
 			vc->remember ();
@@ -597,10 +597,14 @@ CMouseEventResult CFrame::onMouseMoved (CPoint &where, const CButtonState& butto
 		while (it != pImpl->mouseViews.rend ())
 		{
 			CPoint p = where2;
-			(*it)->getParentView ()->frameToLocal (p);
-			result = (*it)->onMouseMoved (p, buttons2);
-			if (result == kMouseEventHandled)
-				break;
+			auto parent = (*it)->getParentView ();
+			if (parent)
+			{
+				parent->frameToLocal (p);
+				result = (*it)->onMouseMoved (p, buttons2);
+				if (result == kMouseEventHandled)
+					break;
+			}
 			++it;
 		}
 	}
@@ -634,7 +638,7 @@ int32_t CFrame::onKeyDown (VstKeyCode& keyCode)
 		if (result == -1)
 		{
 			CView* parent = pImpl->focusView->getParentView ();
-			while (parent != this && result == -1)
+			while (parent && parent != this && result == -1)
 			{
 				if (parent->getMouseEnabled ())
 					result = parent->onKeyDown (keyCode);
@@ -673,7 +677,7 @@ int32_t CFrame::onKeyUp (VstKeyCode& keyCode)
 		if (result == -1)
 		{
 			CView* parent = pImpl->focusView->getParentView ();
-			while (parent != this && result == -1)
+			while (parent && parent != this && result == -1)
 			{
 				if (parent->getMouseEnabled ())
 					result = parent->onKeyUp (keyCode);
