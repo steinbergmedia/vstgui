@@ -71,6 +71,7 @@ to your IDE project and add a search path to the parent of the root folder of vs
 
 Debian/Ubuntu based distribution:
 
+- libx11-dev
 - libx11-xcb-dev
 - libxcb-util-dev
 - libxcb-cursor-dev
@@ -80,5 +81,6 @@ Debian/Ubuntu based distribution:
 - libxkbcommon-x11-dev
 - libfontconfig1-dev
 - libcairo2-dev
+- libfreetype6-dev
 
 */
