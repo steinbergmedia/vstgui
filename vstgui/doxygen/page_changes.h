@@ -23,7 +23,7 @@ It's recommended to start new projects with version 4 while old projects should 
 
 @subsection version4_8 Version 4.8
 
-- new CSegmentButton selection mode "kSingleToggle" and styles "kHorizontalInverse" and "kVerticalInverse".
+- new VSTGUI::CSegmentButton selection mode \link VSTGUI::CSegmentButton::SelectionMode::kSingleToggle kSingleToggle\endlink and styles \link VSTGUI::CSegmentButton::Style::kHorizontalInverse kHorizontalInverse\endlink and  \link VSTGUI::CSegmentButton::Style::kVerticalInverse kVerticalInverse\endlink.
 
 @subsection version4_7 Version 4.7
 
@@ -35,7 +35,7 @@ It's recommended to start new projects with version 4 while old projects should 
 
 @subsection version4_6 Version 4.6
 
-- new Control: keyboardView
+- new Control: VSTGUI::KeyboardView
 - cmake cleanup
 - fix static object initialization order
 - fix build warnings/errors depending on macOS SDK use

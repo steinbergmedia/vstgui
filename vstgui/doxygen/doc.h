@@ -10,8 +10,7 @@ Welcome to VSTGUI
 
 - @ref intro @n
 - @ref page_news_and_changes @n
-- @ref page_vst3_inline_editing @n
-- @ref page_vst2_tutorial @n
+- @ref page_uidescription_editor @n
 - @ref page_changelog @n
 - @ref page_license @n
 
@@ -29,8 +28,8 @@ Currently VSTGUI compiles on
 - 7 (32 and 64 bit)
 - 8 (32 and 64 bit)
 - 10 (32 and 64 bit)
-\par Apple Mac OS X (with gcc 4.0/4.2 or Clang 2.0)
-- 10.8 - 10.14 (32 and 64 bit)
+\par Apple macOS (with Xcode 7.3 or newer)
+- 10.9 - 10.14 (32 and 64 bit)
 \par Apple iOS
 - 7.0 - 12.0 (32 and 64 bit)
 \par Linux (with gcc >= 5.4 or clang >= 3.8)
