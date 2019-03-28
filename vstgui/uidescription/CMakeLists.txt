@@ -100,7 +100,11 @@ vstgui_source_group_by_folder(${target})
 ##########################################################################################
 if(LINUX)
     execute_process(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/editing/createuidescdata.sh WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/editing/ RESULT_VARIABLE result)
-    target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS} "HAVE_EDITORUIDESC_H")
+    if(result EQUAL 0)
+        target_compile_definitions(${target} ${VSTGUI_COMPILE_DEFINITIONS} "HAVE_EDITORUIDESC_H")
+    else()
+        message(FATAL_ERROR "Generating editoruidesc.h failed: ${result}")
+    endif()
 endif()
 ##########################################################################################
 find_package(EXPAT)
