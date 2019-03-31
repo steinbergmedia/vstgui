@@ -639,7 +639,7 @@ CMouseEventResult CSlider::onMouseUp (CPoint& where, const CButtonState& buttons
 //------------------------------------------------------------------------
 CMouseEventResult CSlider::onMouseMoved (CPoint& where, const CButtonState& _buttons)
 {
-	if (isEditing ())
+	if (_buttons.isLeftButton () && isEditing ())
 	{
 		CButtonState buttons (_buttons);
 		if (kAlwaysUseZoomFactor)

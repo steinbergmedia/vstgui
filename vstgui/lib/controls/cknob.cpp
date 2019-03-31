@@ -186,7 +186,7 @@ CMouseEventResult CKnobBase::onMouseCancel ()
 //------------------------------------------------------------------------
 CMouseEventResult CKnobBase::onMouseMoved (CPoint& where, const CButtonState& buttons)
 {
-	if (isEditing ())
+	if (buttons.isLeftButton () && isEditing ())
 	{
 		auto& mouseState = getMouseEditingState ();
 
