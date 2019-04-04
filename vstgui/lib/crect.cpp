@@ -7,4 +7,4 @@
 
 namespace VSTGUI {
 
-} // namespace
+} // VSTGUI

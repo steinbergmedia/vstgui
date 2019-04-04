@@ -884,4 +884,4 @@ void Win32DragBitmapWindow::unregisterWindowClass ()
 	UnregisterClass (winString->getWideString (), GetInstance ());
 }
 
-} // namespace
+} // VSTGUI

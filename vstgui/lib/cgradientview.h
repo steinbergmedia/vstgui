@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __cgradientview__
-#define __cgradientview__
+#pragma once
 
 #include "vstguifwd.h"
 #include "cview.h"
@@ -71,6 +70,4 @@ protected:
 	SharedPointer<CGradient> gradient;
 };
 	
-} // namespace
-
-#endif // __cgradientview__
+} // VSTGUI

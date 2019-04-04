@@ -21,6 +21,10 @@ It's recommended to start new projects with version 4 while old projects should 
 
 @section new_stuff New Stuff
 
+@subsection version4_8 Version 4.8
+
+- new VSTGUI::CSegmentButton selection mode \link VSTGUI::CSegmentButton::SelectionMode::kSingleToggle kSingleToggle\endlink and styles \link VSTGUI::CSegmentButton::Style::kHorizontalInverse kHorizontalInverse\endlink and  \link VSTGUI::CSegmentButton::Style::kVerticalInverse kVerticalInverse\endlink.
+
 @subsection version4_7 Version 4.7
 
 - redesigned drag'n drop
@@ -31,7 +35,7 @@ It's recommended to start new projects with version 4 while old projects should 
 
 @subsection version4_6 Version 4.6
 
-- new Control: keyboardView
+- new Control: VSTGUI::KeyboardView
 - cmake cleanup
 - fix static object initialization order
 - fix build warnings/errors depending on macOS SDK use
@@ -91,6 +95,17 @@ Note: All current deprecated methods will be removed in the next version. So mak
 - Direct2D drawing on Windows (Windows Vista or Windows 7)
 
 @section code_changes Changes for existing VSTGUI code
+
+@subsection code_changes_4_7_to_4_8 VSTGUI 4.7 -> VSTGUI 4.8
+
+- CCommandMenuItem constructor takes a CCommandMenuItem::Desc argument now. You will get compiler errors when not adopting to this change.
+- removed Message sending for:
+    - kMsgMenuItemValidate, kMsgMenuItemSelected -> use ICommandMenuItemTarget
+    - kMessageValueChanged, kMessageBeginEdit, kMessageEndEdit -> use IControlListener
+    - kMsgTruncatedTextChanged -> use ITextLabelListener
+    - kMsgBeforePopup -> use IOptionMenuListener
+- IDependency is deprecated. Please use explicit interfaces for communicating changes.
+- removed "using namespace VSTGUI" from vstgui.h
 
 @subsection code_changes_4_6_to_4_7 VSTGUI 4.6 -> VSTGUI 4.7
 

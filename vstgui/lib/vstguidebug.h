@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __vstguidebug__
-#define __vstguidebug__
+#pragma once
 
 #include "vstguibase.h"
 #include <functional>
@@ -45,10 +44,8 @@ protected:
 	std::clock_t startTime;
 };
 
-} // namespace
+} // VSTGUI
 
 #else
 
 #endif // DEBUG
-
-#endif

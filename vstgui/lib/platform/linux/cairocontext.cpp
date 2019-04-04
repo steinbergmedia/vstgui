@@ -1,4 +1,4 @@
-// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
@@ -167,12 +167,15 @@ void Context::setSourceColor (CColor color)
 //-----------------------------------------------------------------------------
 void Context::setupCurrentStroke ()
 {
-	cairo_set_line_width (cr, getLineWidth ());
+	auto lineWidth = getLineWidth ();
+	cairo_set_line_width (cr, lineWidth);
 	const auto& style = getLineStyle ();
 	if (!style.getDashLengths ().empty ())
 	{
-		cairo_set_dash (cr, style.getDashLengths ().data (), style.getDashLengths ().size (),
-						style.getDashPhase ());
+		auto lengths = style.getDashLengths ();
+		for (auto& l : lengths)
+			l *= lineWidth;
+		cairo_set_dash (cr, lengths.data (), lengths.size (), style.getDashPhase ());
 	}
 	cairo_line_cap_t lineCap;
 	switch (style.getLineCap ())

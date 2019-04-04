@@ -1,0 +1,21 @@
+version: 4.8.{build}
+skip_tags: true
+image: 
+  - Visual Studio 2017
+environment:
+  BUILD_TYPE: Release
+  ARCH: Win64
+  matrix:
+  - GENERATOR: Visual Studio 15 2017 %ARCH%
+build_script:
+- cmd: >-
+    cd %APPVEYOR_BUILD_FOLDER%
+
+
+    cd vstgui
+
+
+    cmake -H. -Bbuild -G"%GENERATOR%"
+
+
+    cmake --build build --config %BUILD_TYPE%

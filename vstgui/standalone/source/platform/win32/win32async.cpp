@@ -1,13 +1,13 @@
-// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "win32async.h"
+#include <atomic>
 #include <deque>
 #include <memory>
 #include <mutex>
 #include <ppltasks.h>
-#include <atomic>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -107,22 +107,94 @@ struct TaskWrapper : std::enable_shared_from_this<TaskWrapper>
 namespace Async {
 
 //------------------------------------------------------------------------
-void perform (Context context, Task&& task)
+struct Queue
 {
-	switch (context)
+	virtual void schedule (Task&& task) = 0;
+};
+
+//------------------------------------------------------------------------
+namespace {
+
+//------------------------------------------------------------------------
+struct MainQueue final : Queue
+{
+	void schedule (Task&& task) override { Platform::Win32::postAsyncMainTask (std::move (task)); }
+};
+
+//------------------------------------------------------------------------
+struct BackgroundQueue final : Queue
+{
+	void schedule (Task&& task) override
 	{
-		case Context::Main:
+		auto p = std::make_shared<Platform::Win32::TaskWrapper> (std::move (task));
+		p->run ();
+	}
+};
+
+//------------------------------------------------------------------------
+struct SerialQueue final : Queue, std::enable_shared_from_this<SerialQueue>
+{
+	SerialQueue (const char* n)
+	{
+		if (n)
+			name = n;
+	}
+
+	void schedule (Task&& task) override
+	{
+		++Platform::Win32::gBackgroundTaskCount;
+		auto t = [f = std::move (task), queue = shared_from_this ()] ()
 		{
-			Platform::Win32::postAsyncMainTask (std::move (task));
-			break;
+			f ();
+			--Platform::Win32::gBackgroundTaskCount;
+		};
+
+		std::lock_guard<std::mutex> guard (mutex);
+		if (hasTask)
+		{
+			ctask = ctask.then (std::move (t));
 		}
-		case Context::Background:
+		else
 		{
-			auto p = std::make_shared<Platform::Win32::TaskWrapper> (std::move (task));
-			p->run ();
-			break;
+			hasTask = true;
+			ctask = concurrency::task<void> (std::move (t));
 		}
 	}
+
+private:
+	bool hasTask {false};
+	std::string name;
+	concurrency::task<void> ctask;
+	std::mutex mutex;
+};
+
+//------------------------------------------------------------------------
+} // anonymous
+
+//------------------------------------------------------------------------
+const QueuePtr& mainQueue ()
+{
+	static QueuePtr q = std::make_shared<MainQueue> ();
+	return q;
+}
+
+//------------------------------------------------------------------------
+const QueuePtr& backgroundQueue ()
+{
+	static QueuePtr q = std::make_shared<BackgroundQueue> ();
+	return q;
+}
+
+//------------------------------------------------------------------------
+QueuePtr makeSerialQueue (const char* name)
+{
+	return std::make_shared<SerialQueue> (name);
+}
+
+//------------------------------------------------------------------------
+void schedule (QueuePtr queue, Task&& task)
+{
+	queue->schedule (std::move (task));
 }
 
 //------------------------------------------------------------------------

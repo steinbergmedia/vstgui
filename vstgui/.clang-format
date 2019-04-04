@@ -12,40 +12,40 @@ AllowShortCaseLabelsOnASingleLine: false
 AllowShortFunctionsOnASingleLine: Inline
 AllowShortIfStatementsOnASingleLine: false
 AllowShortLoopsOnASingleLine: false
-# AlwaysBreakAfterDefinitionReturnType: None
 AlwaysBreakAfterReturnType: None
 AlwaysBreakBeforeMultilineStrings: false
 AlwaysBreakTemplateDeclarations: true
 BinPackArguments: true
-BinPackParameters: false
+BinPackParameters: true
 BreakBeforeBraces: Custom
-BraceWrapping:   
-  AfterClass:      true
-  AfterControlStatement: true
-  AfterEnum:       true
-  AfterFunction:   true
-  AfterNamespace:  false
-  AfterObjCDeclaration: true
-  AfterStruct:     true
-  AfterUnion:      true
-  AfterExternBlock: true
-  BeforeCatch:     true
-  BeforeElse:      true
-  IndentBraces:    false
-  SplitEmptyFunction: true
-  SplitEmptyRecord: true
-  SplitEmptyNamespace: true
+BraceWrapping:
+  AfterClass:             true
+  AfterControlStatement:  true
+  AfterEnum:              true
+  AfterFunction:          true
+  AfterNamespace:         false
+  AfterObjCDeclaration:   true
+  AfterStruct:            true
+  AfterUnion:             true
+  AfterExternBlock:       true
+  BeforeCatch:            true
+  BeforeElse:             true
+  IndentBraces:           false
+  SplitEmptyFunction:     true
+  SplitEmptyRecord:       true
+  SplitEmptyNamespace:    true
 BreakBeforeBinaryOperators: None
 BreakBeforeInheritanceComma: true
 BreakBeforeTernaryOperators: true
 BreakConstructorInitializers: BeforeComma
 BreakAfterJavaFieldAnnotations: false
+BreakInheritanceList: BeforeComma
 BreakStringLiterals: true
 ColumnLimit:     100
 # CommentPragmas:  '^ IWYU pragma:'
 CompactNamespaces: false
 ConstructorInitializerAllOnOneLineOrOnePerLine: true
-ConstructorInitializerIndentWidth: 4
+ConstructorInitializerIndentWidth: 0
 ContinuationIndentWidth: 4
 Cpp11BracedListStyle: true
 DerivePointerAlignment: false
@@ -66,7 +66,7 @@ IncludeBlocks:   Preserve
 #     Priority:        1
 # IncludeIsMainRegex: '(Test)?$'
 IndentCaseLabels: true
-IndentPPDirectives: AfterHash
+IndentPPDirectives: None
 IndentWidth:     4
 IndentWrappedFunctionNames: false
 JavaScriptQuotes: Leave
@@ -93,7 +93,10 @@ SortUsingDeclarations: false
 SpaceAfterCStyleCast: false
 SpaceAfterTemplateKeyword: false
 SpaceBeforeAssignmentOperators: true
+SpaceBeforeCpp11BracedList: true
+SpaceBeforeInheritanceColon: true
 SpaceBeforeParens: Always
+SpaceBeforeRangeBasedForLoopColon: true
 SpaceInEmptyParentheses: false
 SpacesBeforeTrailingComments: 1
 SpacesInAngles:  false

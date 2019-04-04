@@ -2,12 +2,13 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __d2dfont__
-#define __d2dfont__
+#pragma once
 
 #include "../../iplatformfont.h"
 
 #if WINDOWS
+
+#include "../win32support.h"
 
 struct IDWriteTextFormat;
 struct IDWriteTextLayout;
@@ -21,6 +22,8 @@ public:
 	D2DFont (const UTF8String& name, const CCoord& size, const int32_t& style);
 
 	IDWriteTextLayout* createTextLayout (IPlatformString* string) const;
+
+	bool asLogFont (LOGFONTW& logfont) const;
 
 	static bool getAllPlatformFontFamilies (std::list<std::string>& fontFamilyNames);
 
@@ -45,8 +48,6 @@ protected:
 	int32_t style;
 };
 
-} // namespace
+} // VSTGUI
 
 #endif // WINDOWS
-
-#endif // __d2dfont__

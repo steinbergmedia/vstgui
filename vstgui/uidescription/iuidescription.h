@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __iuidescription__
-#define __iuidescription__
+#pragma once
 
 #include "../lib/vstguifwd.h"
 #include "../lib/cfont.h"
@@ -66,6 +65,4 @@ struct FocusDrawingSettings
 	}
 };
 
-} // namespace VSTGUI
-
-#endif // __iuidescription__
+} // VSTGUI VSTGUI

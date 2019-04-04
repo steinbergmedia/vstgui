@@ -271,6 +271,7 @@ void Animator::addAnimation (CView* view, IdStringPtr name, IAnimationTarget* ta
 #endif
 }
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //-----------------------------------------------------------------------------
 void Animator::addAnimation (CView* view, IdStringPtr name, IAnimationTarget* target, ITimingFunction* timingFunction, CBaseObject* notificationObject)
 {
@@ -285,6 +286,7 @@ void Animator::addAnimation (CView* view, IdStringPtr name, IAnimationTarget* ta
 	}
 	addAnimation (view, name, target, timingFunction, std::move (notification));
 }
+#endif
 
 //-----------------------------------------------------------------------------
 void Animator::removeAnimation (CView* view, IdStringPtr name)
@@ -359,6 +361,8 @@ void Animator::onTimer ()
 		Detail::Timer::removeAnimator (this);
 }
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 IdStringPtr kMsgAnimationFinished = "kMsgAnimationFinished";
+#endif
 
 }} // namespaces

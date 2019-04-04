@@ -4,6 +4,7 @@
 
 #include "../unittests.h"
 #include "../../../uidescription/uidescription.h"
+#include "../../../uidescription/uidescriptionlistener.h"
 #include "../../../uidescription/uiattributes.h"
 #include "../../../uidescription/icontroller.h"
 #include "../../../uidescription/xmlparser.h"
@@ -112,7 +113,19 @@ constexpr auto withAllNodesUIDesc = R"(<?xml version="1.0" encoding="UTF-8"?>
 	</fonts>
 	<!-- a comment -->
 	<bitmaps>
-		<bitmap name="b1" path="b1.png"/>
+		<bitmap name="b1" path="b1.png">
+			<data encoding="base64">
+				iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAYAAABWdVznAAABe2lDQ1BJQ0MgUHJvZmlsZQAAKJF9kE0rRF
+				EYx38zXjNkwcLC4jaG1RCjvGyUmYSaxTRGedvcueZFmXG7c4VsLJTtFCU23hZ8AjYWylopRUrKVyA20vUc
+				Q+OlPHXO+Z3nPM+/5/zB7ddNc7a0HTJZ24oOBrWx8Qmt4gEX5XjQ8OpGzuyPRMJIfJ0/4+VaqiWuWpXW3/
+				d/wzOdyBngqhTuM0zLFh4SblqwTcVKr96SoYRXFKcKvKE4XuCjj5pYNCR8KqwZaX1a+E7Yb6StDLiVvi/+
+				rSb1jTOz88bnPOon1Yns6IicXlmN5IgySFC8GGaAEF100Ct7F60EaJMbdmLRVs2hOXPJmkmlba1fnEhow1
+				mjza8F2ju6Qfn6269ibm4Xep6hJF/MxTfhZA0abos53w7UrsLxualb+keqRJY7mYTHQ6gZh7pLqJrMJTsD
+				hR9VB6Hs3nGemqFiHd7yjvO65zhv+9IsHp1lCx59anFwA7FlCF/A1ja0iHbt1Dv7WWccXX/QZQAAAExJRE
+				FUKBVjZEAALSAzDMFFYa0C8q6BRJhQhBEcUSAThIkGDUCVIIwBcNmAoRAmMKoBFhL4aEagJLYYhkXaazTN
+				q1jQBGBcdIUwcQYAOGIGVqwWW9EAAAAASUVORK5CYII=
+			</data>
+		</bitmap>
 		<bitmap name="b1#2.0x" path="b1#2.0x.png" scale-factor="2"/>
 		<bitmap name="dataBitmap" path="dataBitmap.png"/>
 	</bitmaps>
@@ -131,6 +144,39 @@ constexpr auto withAllNodesUIDesc = R"(<?xml version="1.0" encoding="UTF-8"?>
 		<var name="test" type="number" value="10"/>
 		<var name="test" type="string" value="this is a string"/>
 	</variables>
+</vstgui-ui-description>
+)";
+
+constexpr auto sharedResourcesUIDesc = R"(<?xml version="1.0" encoding="UTF-8"?>
+<vstgui-ui-description version="1">
+	<colors>
+		<color name="c1" rgba="#000000ff"/>
+	</colors>
+	<fonts>
+		<font font-name="Arial" name="f1" size="8"/>
+	</fonts>
+	<bitmaps>
+		<bitmap name="b1" path="b1.png">
+			<data encoding="base64">
+				iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAYAAABWdVznAAABe2lDQ1BJQ0MgUHJvZmlsZQAAKJF9kE0rRF
+				EYx38zXjNkwcLC4jaG1RCjvGyUmYSaxTRGedvcueZFmXG7c4VsLJTtFCU23hZ8AjYWylopRUrKVyA20vUc
+				Q+OlPHXO+Z3nPM+/5/zB7ddNc7a0HTJZ24oOBrWx8Qmt4gEX5XjQ8OpGzuyPRMJIfJ0/4+VaqiWuWpXW3/
+				d/wzOdyBngqhTuM0zLFh4SblqwTcVKr96SoYRXFKcKvKE4XuCjj5pYNCR8KqwZaX1a+E7Yb6StDLiVvi/+
+				rSb1jTOz88bnPOon1Yns6IicXlmN5IgySFC8GGaAEF100Ct7F60EaJMbdmLRVs2hOXPJmkmlba1fnEhow1
+				mjza8F2ju6Qfn6269ibm4Xep6hJF/MxTfhZA0abos53w7UrsLxualb+keqRJY7mYTHQ6gZh7pLqJrMJTsD
+				hR9VB6Hs3nGemqFiHd7yjvO65zhv+9IsHp1lCx59anFwA7FlCF/A1ja0iHbt1Dv7WWccXX/QZQAAAExJRE
+				FUKBVjZEAALSAzDMFFYa0C8q6BRJhQhBEcUSAThIkGDUCVIIwBcNmAoRAmMKoBFhL4aEagJLYYhkXaazTN
+				q1jQBGBcdIUwcQYAOGIGVqwWW9EAAAAASUVORK5CYII=
+			</data>
+		</bitmap>
+	</bitmaps>
+	<gradients>
+		<gradient name="g1">
+			<color-stop rgba="#000000ff" start="0"/>
+			<color-stop rgba="#ff0000ff" start="0.5"/>
+			<color-stop rgba="#ffffffff" start="1"/>
+		</gradient>
+	</gradients>
 </vstgui-ui-description>
 )";
 
@@ -187,7 +233,6 @@ constexpr auto restoreViewUIDesc = R"(
 </vstgui-ui-description>
 )";
 
-#if 0
 constexpr auto completeExample = R"(
 <vstgui-ui-description version="1">
 	<colors>
@@ -269,7 +314,76 @@ constexpr auto completeExample = R"(
 	</gradients>
 </vstgui-ui-description>
 )";
-#endif
+
+enum class UIDescTestCase
+{
+	TagChanged,
+	ColorChanged,
+	FontChanged,
+	BitmapChanged,
+	TemplateChanged,
+	GradientChanged,
+	BeforeSave
+};
+
+//-----------------------------------------------------------------------------
+class DescriptionListenerMock : public UIDescriptionListenerAdapter
+{
+public:
+	DescriptionListenerMock (UIDescTestCase tc) { setTestCase (tc); }
+
+	void setTestCase (UIDescTestCase tc)
+	{
+		testCase = tc;
+		called = 0u;
+	}
+
+	uint32_t callCount () const { return called; }
+
+	bool doUIDescTemplateUpdate (UIDescription* desc, UTF8StringPtr name) override
+	{
+		EXPECT (false);
+		return true;
+	}
+	void onUIDescTagChanged (UIDescription* desc) override
+	{
+		++called;
+		EXPECT (testCase == UIDescTestCase::TagChanged)
+	}
+	void onUIDescColorChanged (UIDescription* desc) override
+	{
+		++called;
+		EXPECT (testCase == UIDescTestCase::ColorChanged)
+	}
+	void onUIDescFontChanged (UIDescription* desc) override
+	{
+		++called;
+		EXPECT (testCase == UIDescTestCase::FontChanged)
+	}
+	void onUIDescBitmapChanged (UIDescription* desc) override
+	{
+		++called;
+		EXPECT (testCase == UIDescTestCase::BitmapChanged)
+	}
+	void onUIDescTemplateChanged (UIDescription* desc) override
+	{
+		++called;
+		EXPECT (testCase == UIDescTestCase::TemplateChanged)
+	}
+	void onUIDescGradientChanged (UIDescription* desc) override
+	{
+		++called;
+		EXPECT (testCase == UIDescTestCase::GradientChanged)
+	}
+	void beforeUIDescSave (UIDescription* desc) override
+	{
+		++called;
+		EXPECT (testCase == UIDescTestCase::BeforeSave)
+	}
+private:
+	UIDescTestCase testCase;
+	uint32_t called;
+};
 
 } // anonymous
 
@@ -705,6 +819,140 @@ TESTCASE(UIDescriptionTests,
 		EXPECT(desc.setCustomAttributes("Test", nullptr) == false);
 	);
 
+	TEST(listeners,
+		Xml::MemoryContentProvider provider (completeExample, static_cast<uint32_t> (strlen(completeExample)));
+		UIDescription desc (&provider);
+		EXPECT(desc.parse () == true);
+
+		DescriptionListenerMock mok (UIDescTestCase::TagChanged);
+		desc.registerListener (&mok);
+		
+		desc.changeControlTagString ("NewTag", "5", true);
+		EXPECT(mok.callCount () == 1);
+		desc.changeControlTagString ("NewTag", "5", false);
+		EXPECT(mok.callCount () == 2);
+		desc.changeTagName ("NewTag", "NewTagNew");
+		EXPECT(mok.callCount () == 3);
+		desc.removeTag ("NewTagNew");
+		EXPECT(mok.callCount () == 4);
+
+		mok.setTestCase (UIDescTestCase::ColorChanged);
+		EXPECT(mok.callCount () == 0);
+
+		CColor newColor;
+		desc.changeColor ("NewColor", newColor);
+		EXPECT(mok.callCount () == 1);
+		desc.changeColor ("NewColor", newColor);
+		EXPECT(mok.callCount () == 2);
+		desc.changeColorName ("NewColor", "NewColorNew");
+		EXPECT(mok.callCount () == 3);
+		desc.removeColor ("NewColorNew");
+		EXPECT(mok.callCount () == 4);
+
+		mok.setTestCase (UIDescTestCase::FontChanged);
+		EXPECT(mok.callCount () == 0);
+		
+		auto font = makeOwned<CFontDesc> ();
+		desc.changeFont ("NewFont", font);
+		EXPECT(mok.callCount () == 1);
+		desc.changeFont ("NewFont", font);
+		EXPECT(mok.callCount () == 2);
+		desc.changeFontName ("NewFont", "NewFontNew");
+		EXPECT(mok.callCount () == 3);
+		desc.changeAlternativeFontNames ("NewFontNew", "Hack, Menlo");
+		EXPECT(mok.callCount () == 4);
+		desc.removeFont ("NewFontNew");
+		EXPECT(mok.callCount () == 5);
+
+		mok.setTestCase (UIDescTestCase::BitmapChanged);
+		EXPECT(mok.callCount () == 0);
+
+		auto bitmap = makeOwned<CBitmap> (CPoint (10, 10));
+		desc.changeBitmap ("NewBitmap", "bitmappath");
+		EXPECT(mok.callCount () == 1);
+		desc.changeBitmap ("NewBitmap", "bitmappath");
+		EXPECT(mok.callCount () == 2);
+		desc.changeBitmapName ("NewBitmap", "NewBitmapNew");
+		EXPECT(mok.callCount () == 3);
+		desc.removeBitmap ("NewBitmapNew");
+		EXPECT(mok.callCount () == 4);
+
+		mok.setTestCase (UIDescTestCase::GradientChanged);
+		EXPECT(mok.callCount () == 0);
+
+		auto gradient = owned (CGradient::create (0., 0., newColor, newColor));
+		desc.changeGradient ("NewGradient", gradient);
+		EXPECT(mok.callCount () == 1);
+		desc.changeGradient ("NewGradient", gradient);
+		EXPECT(mok.callCount () == 2);
+		desc.changeGradientName ("NewGradient", "NewGradientNew");
+		EXPECT(mok.callCount () == 3);
+		desc.removeGradient ("NewGradientNew");
+		EXPECT(mok.callCount () == 4);
+
+		mok.setTestCase (UIDescTestCase::TemplateChanged);
+		EXPECT(mok.callCount () == 0);
+
+		desc.addNewTemplate ("NewTemplate", makeOwned<UIAttributes> ());
+		EXPECT(mok.callCount () == 1);
+		desc.changeTemplateName ("NewTemplate", "NewTemplateNew");
+		EXPECT(mok.callCount () == 2);
+		desc.duplicateTemplate ("NewTemplateNew", "NewTemplateNewDup");
+		EXPECT(mok.callCount () == 3);
+		desc.removeTemplate ("NewTemplateNew");
+		EXPECT(mok.callCount () == 4);
+		desc.removeTemplate ("NewTemplateNewDup");
+		EXPECT(mok.callCount () == 5);
+
+		desc.unregisterListener (&mok);
+
+	);
+
+	TEST(focusSettings,
+		Xml::MemoryContentProvider provider (emptyUIDesc, static_cast<uint32_t> (strlen(emptyUIDesc)));
+		UIDescription desc (&provider);
+		EXPECT(desc.parse () == true);
+
+		FocusDrawingSettings fd;
+		fd.enabled = true;
+		fd.width = 1.5;
+		fd.colorName = "FocusColor";
+		
+		desc.setFocusDrawingSettings (fd);
+		auto fd2 = desc.getFocusDrawingSettings ();
+		EXPECT (!(fd != fd2));
+	);
+
+	TEST(sharedResources,
+		Xml::MemoryContentProvider provider (emptyUIDesc, static_cast<uint32_t> (strlen(emptyUIDesc)));
+		UIDescription desc (&provider);
+		EXPECT(desc.parse () == true);
+
+		CColor color1;
+		CColor color2;
+		EXPECT(desc.getColor ("c1", color1) == false);
+		EXPECT(desc.getFont ("f1") == nullptr);
+		EXPECT(desc.getGradient ("g1") == nullptr);
+		EXPECT(desc.getBitmap ("b1") == nullptr);
+
+		Xml::MemoryContentProvider resProvider (sharedResourcesUIDesc, static_cast<uint32_t> (strlen(sharedResourcesUIDesc)));
+		UIDescription resDesc (&resProvider);
+		EXPECT(resDesc.parse () == true);
+
+		desc.setSharedResources (&resDesc);
+		EXPECT(desc.getSharedResources () == &resDesc);
+		EXPECT(desc.getColor ("c1", color1) == true);
+		EXPECT(resDesc.getColor ("c1", color2) == true);
+		EXPECT(color1 == color2);
+		EXPECT(desc.getFont ("f1") != nullptr);
+		EXPECT(desc.getFont ("f1") == resDesc.getFont ("f1"));
+		EXPECT(desc.getGradient ("g1") != nullptr);
+		EXPECT(desc.getGradient ("g1") == resDesc.getGradient ("g1"));
+		EXPECT(desc.getBitmap ("b1") != nullptr);
+		EXPECT(desc.getBitmap ("b1") == resDesc.getBitmap ("b1"));
+
+		desc.setSharedResources (nullptr);
+	);
 );
 
 #if 0

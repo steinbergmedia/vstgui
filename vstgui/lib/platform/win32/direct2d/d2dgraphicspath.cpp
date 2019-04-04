@@ -640,6 +640,6 @@ ID2D1Geometry* D2DGraphicsPath::createPath (int32_t fillMode, D2DDrawContext* co
 	return path;
 }
 
-} // namespace
+} // VSTGUI
 
 #endif // WINDOWS

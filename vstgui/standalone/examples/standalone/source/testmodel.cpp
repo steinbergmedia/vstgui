@@ -23,6 +23,8 @@ TestModel::TestModel ()
 	addValue (Value::make ("Test", 0, Value::makeRangeConverter (0, 10, 2)));
 	addValue (Value::makeStepValue ("StepTest", 5, 0));
 	addValue (Value::make ("ShowAlert"));
+	addValue (Value::make ("ShowAlert2"));
+	addValue (Value::make ("ShowAlert3"));
 	addValue (Value::makeStringListValue ("StringList", {"one","two","three","four","five"}));
 	addValue (Value::make ("ShowPopup"));
 }
@@ -63,10 +65,27 @@ void TestModel::onEndEdit (IValue& value)
 		else
 			IApplication::instance ().showAlertBox (config);
 	}
+	else if (value.getID () == "ShowAlert2")
+	{
+		AlertBoxForWindowConfig config;
+		config.headline = "Test Alert 2";
+		config.description = "This is an example alert box.\nWith more than one line.\nIt even has more than two lines.";
+		config.defaultButton = "Close";
+		config.secondButton = "Cancel";
+		config.window = IApplication::instance ().getWindows ().front ();
+		IApplication::instance ().showAlertBox (config);
+	}
+	else if (value.getID () == "ShowAlert3")
+	{
+		AlertBoxForWindowConfig config;
+		config.headline = "Test Alert 2";
+		config.defaultButton = "YES";
+		config.window = IApplication::instance ().getWindows ().front ();
+		IApplication::instance ().showAlertBox (config);
+	}
 	else if (value.getID () == "ShowPopup" && value.getValue () > 0.5)
 	{
-		auto v = values[5];
-		v->performEdit (0.);
+		value.performEdit (0.);
 		auto window = IApplication::instance ().getWindows ().front ();
 		vstgui_assert (window);
 		auto rect = window->getFocusViewRect ();

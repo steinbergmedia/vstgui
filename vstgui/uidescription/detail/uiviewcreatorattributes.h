@@ -221,6 +221,7 @@ static const std::string kAttrCoronaOutline = "corona-outline";
 static const std::string kAttrCoronaInverted = "corona-inverted";
 static const std::string kAttrCoronaFromCenter = "corona-from-center";
 static const std::string kAttrCoronaDashDot = "corona-dash-dot";
+static const std::string kAttrCoronaDashDotLengths = "corona-dash-dot-lengths";
 static const std::string kAttrHandleColor = "handle-color";
 static const std::string kAttrHandleShadowColor = "handle-shadow-color";
 static const std::string kAttrHandleLineWidth = "handle-line-width";

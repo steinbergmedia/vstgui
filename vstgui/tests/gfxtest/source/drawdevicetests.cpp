@@ -1,4 +1,4 @@
-// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
@@ -337,8 +337,9 @@ public:
 				return new CustomDrawView (
 				    [] (auto view, auto& ctx, auto size) { drawBitmapFilter (view, ctx, size); });
 			}
-			else if (*customViewName == "PathsView")
+			else if (*customViewName == "InvalidRegionView")
 			{
+				return new InvalidateRegionTestView (CRect (0, 0, 500, 500));
 			}
 		}
 		return DelegationController::createView (attributes, description);

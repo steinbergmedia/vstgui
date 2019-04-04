@@ -335,31 +335,27 @@ void CParamDisplay::drawPlatformText (CDrawContext* pContext, IPlatformString* s
 		pContext->saveGlobalState ();
 		CRect textRect (size);
 		textRect.inset (textInset.x, textInset.y);
-		
-		CRect oldClip;
-		pContext->getClipRect (oldClip);
-		CRect newClip (textRect);
-		newClip.bound (oldClip);
-		pContext->setClipRect (newClip);
-		
-		CPoint center (textRect.getCenter ());
-		CGraphicsTransform transform;
-		transform.rotate (textRotation, center);
-		CDrawContext::Transform ctxTransform (*pContext, transform);
-		
-		pContext->setDrawMode (kAntiAliasing);
-		pContext->setFont (fontID);
-		
-		// draw darker text (as shadow)
-		if (hasBit (style, kShadowText))
-		{
-			CRect newSize (textRect);
-			newSize.offset (shadowTextOffset);
-			pContext->setFontColor (shadowColor);
-			pContext->drawString (string, newSize, horiTxtAlign, hasBit (style, kAntialias));
-		}
-		pContext->setFontColor (fontColor);
-		pContext->drawString (string, textRect, horiTxtAlign, hasBit (style, kAntialias));
+
+		drawClipped (pContext, textRect, [&] () {
+			CPoint center (textRect.getCenter ());
+			CGraphicsTransform transform;
+			transform.rotate (textRotation, center);
+			CDrawContext::Transform ctxTransform (*pContext, transform);
+
+			pContext->setDrawMode (kAntiAliasing);
+			pContext->setFont (fontID);
+
+			// draw darker text (as shadow)
+			if (hasBit (style, kShadowText))
+			{
+				CRect newSize (textRect);
+				newSize.offset (shadowTextOffset);
+				pContext->setFontColor (shadowColor);
+				pContext->drawString (string, newSize, horiTxtAlign, hasBit (style, kAntialias));
+			}
+			pContext->setFontColor (fontColor);
+			pContext->drawString (string, textRect, horiTxtAlign, hasBit (style, kAntialias));
+		});
 		pContext->restoreGlobalState ();
 	}
 }
@@ -501,4 +497,4 @@ void CParamDisplay::copyBackOffset ()
 	backOffset (getViewSize ().left, getViewSize ().top);
 }
 
-} // namespace
+} // VSTGUI

@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __uiviewfactory__
-#define __uiviewfactory__
+#pragma once
 
 #include "../lib/vstguifwd.h"
 #include "iuidescription.h"
@@ -65,7 +64,4 @@ protected:
 #endif
 };
 
-} // namespace
-
-#endif // __uiviewfactory__
-
+} // VSTGUI

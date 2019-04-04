@@ -21,6 +21,8 @@
 static_assert (false, "Need newer clang compiler!");
 #endif
 
+#define VSTGUI_STANDALONE_USE_GENERIC_ALERTBOX_ON_MACOS 0
+
 //------------------------------------------------------------------------
 @interface VSTGUIApplicationDelegate : NSObject <NSApplicationDelegate>
 {
@@ -426,12 +428,13 @@ static CommandWithKeyList getCommandList (const char* _Nonnull group)
 	if (self.hasTriggeredSetupMainMenu)
 		return;
 	self.hasTriggeredSetupMainMenu = YES;
-	Async::perform (Async::Context::Main, [self] () {
+	Async::schedule (Async::mainQueue (), [self] () {
 		[self setupMainMenu];
 		self.hasTriggeredSetupMainMenu = NO;
 	});
 }
 
+#if !VSTGUI_STANDALONE_USE_GENERIC_ALERTBOX_ON_MACOS
 //------------------------------------------------------------------------
 - (nonnull NSAlert*)createAlert:(const AlertBoxConfig&)config
 {
@@ -447,10 +450,28 @@ static CommandWithKeyList getCommandList (const char* _Nonnull group)
 		[alert addButtonWithTitle:stringFromUTF8String (config.thirdButton)];
 	return alert;
 }
+#endif
 
 //------------------------------------------------------------------------
 - (AlertResult)showAlert:(const AlertBoxConfig&)config
 {
+#if VSTGUI_STANDALONE_USE_GENERIC_ALERTBOX_ON_MACOS
+	AlertResult result = AlertResult::Error;
+	auto alertWindow = Detail::createAlertBox (config, [&] (AlertResult r) {
+		result = r;
+		[NSApp abortModal];
+	});
+	auto platformAlertWindow = VSTGUI::dynamicPtrCast<IPlatformWindowAccess> (alertWindow);
+	assert (platformAlertWindow);
+	auto macAlertWindow =
+	    VSTGUI::staticPtrCast<IMacWindow> (platformAlertWindow->getPlatformWindow ());
+	assert (macAlertWindow);
+	auto nsWindow = macAlertWindow->getNSWindow ();
+	macAlertWindow->center ();
+	macAlertWindow->show ();
+	[NSApp runModalForWindow:nsWindow];
+	return result;
+#else
 	NSAlert* alert = [self createAlert:config];
 	NSModalResponse response = [alert runModal];
 	if (response == NSAlertSecondButtonReturn)
@@ -458,6 +479,7 @@ static CommandWithKeyList getCommandList (const char* _Nonnull group)
 	if (response == NSAlertThirdButtonReturn)
 		return AlertResult::ThirdButton;
 	return AlertResult::DefaultButton;
+#endif
 }
 
 //------------------------------------------------------------------------

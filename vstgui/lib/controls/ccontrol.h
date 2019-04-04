@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __ccontrol__
-#define __ccontrol__
+#pragma once
 
 #include "../cview.h"
 #include "../ifocusdrawing.h"
@@ -30,9 +29,6 @@ static constexpr auto sqrt2 = 1.41421356237309504880;
 //! @brief base class of all VSTGUI controls
 //-----------------------------------------------------------------------------
 class CControl : public CView, public IFocusDrawing
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-, public IDependency
-#endif
 {
 public:
 	CControl (const CRect& size, IControlListener* listener = nullptr, int32_t tag = 0, CBitmap* pBackground = nullptr);
@@ -109,11 +105,6 @@ public:
 	/** default value modifier key, per default is the control key */
 	static int32_t kDefaultValueModifier;
 
-	// messages send to dependent objects
-	VSTGUI_DEPRECATED (static IdStringPtr kMessageValueChanged;)
-	VSTGUI_DEPRECATED (static IdStringPtr kMessageBeginEdit;)
-	VSTGUI_DEPRECATED (static IdStringPtr kMessageEndEdit;)
-	
 	CLASS_METHODS_VIRTUAL(CControl, CView)
 protected:
 	~CControl () noexcept override = default;
@@ -154,6 +145,17 @@ protected:
 	int32_t subPixmaps;
 };
 
-} // namespace
+//-----------------------------------------------------------------------------
+// CMouseWheelEditingSupport Declaration
+//! @brief Helper class for mouse wheel editing
+//-----------------------------------------------------------------------------
+class CMouseWheelEditingSupport
+{
+protected:
+	void invalidMouseWheelEditTimer (CControl* control);
+	void onMouseWheelEditing (CControl* control);
+private:
+	SharedPointer<CBaseObject> endEditTimer {nullptr};
+};
 
-#endif
+} // VSTGUI

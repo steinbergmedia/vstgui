@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __iplatformframecallback__
-#define __iplatformframecallback__
+#pragma once
 
 /// @cond ignore
 
@@ -67,8 +66,6 @@ public:
 };
 
 //------------------------------------------------------------------------------------
-} // namespace
+} // VSTGUI
 
 /// @endcond
-
-#endif // __iplatformframecallback__

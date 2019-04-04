@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __csegmentbutton__
-#define __csegmentbutton__
+#pragma once
 
 #include "ccontrol.h"
 #include "../cdrawmethods.h"
@@ -27,16 +26,24 @@ public:
 		/** horizontally layouted segments */
 		kHorizontal,
 		/** vertically layouted segments */
-		kVertical
+		kVertical,
+		/** horizontally inverse layouted segments */
+		kHorizontalInverse,
+		/** vertically inverse layouted segments */
+		kVerticalInverse,
 	};
-	
-	enum class SelectionMode {
+
+	enum class SelectionMode
+	{
 		/** a single segment is selected at any time */
 		kSingle,
+		/** a single segment is selected at any time, when a segment is clicked which is already
+		   selected, the next segment is selected */
+		kSingleToggle,
 		/** multiple segments may be selected */
 		kMultiple,
 	};
-	
+
 	struct Segment {
 		mutable UTF8String name;
 		mutable SharedPointer<CBitmap> icon;
@@ -57,8 +64,8 @@ public:
 	/// @name Segment Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	void addSegment (const Segment& segment, uint32_t index = kPushBack);
-	void addSegment (Segment&& segment, uint32_t index = kPushBack);
+	bool addSegment (const Segment& segment, uint32_t index = kPushBack);
+	bool addSegment (Segment&& segment, uint32_t index = kPushBack);
 	void removeSegment (uint32_t index);
 	void removeAllSegments ();
 	const Segments& getSegments () const { return segments; }
@@ -129,7 +136,22 @@ public:
 	bool getFocusPath (CGraphicsPath& outPath) override;
 	void valueChanged () override;
 
-	CLASS_METHODS(CSegmentButton, CControl)
+	static bool isHorizontalStyle (Style style)
+	{
+		return style == Style::kHorizontal || style == Style::kHorizontalInverse;
+	}
+
+	static bool isVerticalStyle (Style style)
+	{
+		return style == Style::kVertical || style == Style::kVerticalInverse;
+	}
+
+	static bool isInverseStyle (Style style)
+	{
+		return style == Style::kHorizontalInverse || style == Style::kVerticalInverse;
+	}
+
+	CLASS_METHODS (CSegmentButton, CControl)
 private:
 	bool canAddOneMoreSegment () const;
 	void updateSegmentSizes ();
@@ -152,6 +174,4 @@ private:
 	CDrawMethods::TextTruncateMode textTruncateMode {CDrawMethods::kTextTruncateNone};
 };
 
-} // namespace
-
-#endif // __csegmentbutton__
+} // VSTGUI

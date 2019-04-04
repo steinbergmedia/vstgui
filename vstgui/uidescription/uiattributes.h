@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __uiattributes__
-#define __uiattributes__
+#pragma once
 
 #include "../lib/vstguifwd.h"
 #include "../lib/cstring.h"
@@ -56,14 +55,24 @@ public:
 	void setStringArrayAttribute (const std::string& name, const StringArray& values);
 	bool getStringArrayAttribute (const std::string& name, StringArray& values) const;
 	
-	static std::string createStringArrayValue (const StringArray& values);
-	
 	void removeAll () { clear (); }
 
 	bool store (OutputStream& stream) const;
 	bool restore (InputStream& stream);
+
+	static std::string pointToString (CPoint p);
+	static bool stringToPoint (const std::string& str, CPoint& p);
+	static std::string doubleToString (double value, uint32_t precision = 6);
+	static bool stringToDouble (const std::string& str, double& value);
+	static std::string boolToString (bool value);
+	static bool stringToBool (const std::string& str, bool& value);
+	static std::string integerToString (int32_t value);
+	static bool stringToInteger (const std::string& str, int32_t& value);
+	static std::string rectToString (CRect r, uint32_t precision = 6);
+	static bool stringToRect (const std::string& str, CRect& r);
+	static std::string stringArrayToString (const StringArray& values);
+	static bool stringToStringArray (const std::string& str, StringArray& values);
+	
 };
 
-}
-
-#endif // __uiattributes__
+} // VSTGUI

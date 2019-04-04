@@ -37,10 +37,6 @@
 /// @cond ignore
 namespace Steinberg {
 
-#ifdef VST3_CONTENT_SCALE_SUPPORT
-DEF_CLASS_IID (IPlugViewContentScaleSupport)
-#endif
-
 //-----------------------------------------------------------------------------
 class UpdateHandlerInit
 {
@@ -810,8 +806,8 @@ CMouseEventResult VST3Editor::onMouseDown (CFrame* frame, const CPoint& where, c
 			for (std::vector<double>::const_iterator it = allowedZoomFactors.begin (), end = allowedZoomFactors.end (); it != end; ++it, ++zoomFactorTag)
 			{
 				sprintf (zoomFactorString, "%d%%", static_cast<int>((*it) * 100));
-				CMenuItem* item = zoomMenu->addEntry (new CCommandMenuItem (zoomFactorString, this, "Zoom", zoomFactorString));
-				item->setTag (zoomFactorTag);
+				CMenuItem* item = zoomMenu->addEntry (new CCommandMenuItem (
+				    {zoomFactorString, zoomFactorTag, this, "Zoom", zoomFactorString}));
 				if (zoomFactor == *it)
 					item->setChecked (true);
 			}
@@ -825,7 +821,8 @@ CMouseEventResult VST3Editor::onMouseDown (CFrame* frame, const CPoint& where, c
 				controllerMenu = new COptionMenu ();
 			else
 				controllerMenu->addSeparator ();
-			CMenuItem* item = controllerMenu->addEntry (new CCommandMenuItem ("Open UIDescription Editor", this, "File", "Open UIDescription Editor"));
+			CMenuItem* item = controllerMenu->addEntry (new CCommandMenuItem (
+			    {"Open UIDescription Editor", this, "File", "Open UIDescription Editor"}));
 			item->setKey ("e", kControl);
 		}
 	#endif
@@ -1248,6 +1245,87 @@ Steinberg::tresult PLUGIN_API VST3Editor::checkSizeConstraint (Steinberg::ViewRe
 }
 
 //------------------------------------------------------------------------
+bool VST3Editor::validateCommandMenuItem (CCommandMenuItem* item)
+{
+#if VSTGUI_LIVE_EDITING
+	if (item->getCommandCategory () == "File")
+	{
+		if (item->getCommandName () == "Save")
+		{
+			bool enable = false;
+			UIAttributes* attributes = description->getCustomAttributes ("VST3Editor", true);
+			if (attributes)
+			{
+				const std::string* filePath = attributes->getAttributeValue ("Path");
+				if (filePath)
+				{
+					enable = true;
+				}
+			}
+			item->setEnabled (enable);
+			return true;
+		}
+	}
+#endif
+	return false;
+}
+
+//------------------------------------------------------------------------
+bool VST3Editor::onCommandMenuItemSelected (CCommandMenuItem* item)
+{
+	auto& cmdCategory = item->getCommandCategory ();
+	auto& cmdName = item->getCommandName ();
+#if VSTGUI_LIVE_EDITING
+	if (cmdCategory == "Edit")
+	{
+		if (cmdName == "Sync Parameter Tags")
+		{
+			syncParameterTags ();
+			return true;
+		}
+	}
+	else if (cmdCategory == "File")
+	{
+		if (cmdName == "Open UIDescription Editor")
+		{
+			editingEnabled = true;
+			doCreateView = true;
+			return true;
+		}
+		else if (cmdName == "Close UIDescription Editor")
+		{
+			editingEnabled = false;
+			doCreateView = true;
+			return true;
+		}
+		else if (cmdName == "Save")
+		{
+			save (false);
+			item->setChecked (false);
+			return true;
+		}
+		else if (cmdName == "Save As")
+		{
+			save (true);
+			item->setChecked (false);
+			return true;
+		}
+	}
+	else
+#endif
+	    if (cmdCategory == "Zoom")
+	{
+		size_t index = static_cast<size_t> (item->getTag ());
+		if (index < allowedZoomFactors.size ())
+		{
+			setZoomFactor (allowedZoomFactors[index]);
+		}
+		return true;
+	}
+	return false;
+}
+
+//------------------------------------------------------------------------
 CMessageResult VST3Editor::notify (CBaseObject* sender, IdStringPtr message)
 {
 	if (message == CVSTGUITimer::kMsgTimer)
@@ -1255,86 +1333,7 @@ CMessageResult VST3Editor::notify (CBaseObject* sender, IdStringPtr message)
 		if (doCreateView)
 			recreateView ();
  	}
-	#if VSTGUI_LIVE_EDITING
-	else if (message == CCommandMenuItem::kMsgMenuItemValidate)
-	{
-		auto* item = dynamic_cast<CCommandMenuItem*>(sender);
-		if (item)
-		{
-			if (strcmp (item->getCommandCategory(), "File") == 0)
-			{
-				if (strcmp (item->getCommandName(), "Save") == 0)
-				{
-					bool enable = false;
-					UIAttributes* attributes = description->getCustomAttributes ("VST3Editor", true);
-					if (attributes)
-					{
-						const std::string* filePath = attributes->getAttributeValue ("Path");
-						if (filePath)
-						{
-							enable = true;
-						}
-					}
-					item->setEnabled (enable);
-					return kMessageNotified;
-				}
-			}
-		}
-	}
-	else if (message == CCommandMenuItem::kMsgMenuItemSelected)
-	{
-		auto* item = dynamic_cast<CCommandMenuItem*>(sender);
-		if (item)
-		{
-			UTF8StringView cmdCategory = item->getCommandCategory ();
-			UTF8StringView cmdName = item->getCommandName ();
-			if (cmdCategory == "Edit")
-			{
-				if (cmdName == "Sync Parameter Tags")
-				{
-					syncParameterTags ();
-					return kMessageNotified;
-				}
-			}
-			else if (cmdCategory == "File")
-			{
-				if (cmdName == "Open UIDescription Editor")
-				{
-					editingEnabled = true;
-					doCreateView = true;
-					return kMessageNotified;
-				}
-				else if (cmdName == "Close UIDescription Editor")
-				{
-					editingEnabled = false;
-					doCreateView = true;
-					return kMessageNotified;
-				}
-				else if (cmdName == "Save")
-				{
-					save (false);
-					item->setChecked (false);
-					return kMessageNotified;
-				}
-				else if (cmdName == "Save As")
-				{
-					save (true);
-					item->setChecked (false);
-					return kMessageNotified;
-				}
-			}
-			else if (cmdCategory == "Zoom")
-			{
-				size_t index = static_cast<size_t> (item->getTag ());
-				if (index < allowedZoomFactors.size ())
-				{
-					setZoomFactor (allowedZoomFactors[index]);
-				}
-			}
-		}
-	}
-	#endif
- 	return VSTGUIEditor::notify (sender, message); 
+ 	return VSTGUIEditor::notify (sender, message);
 }
 
 namespace VST3EditorInternal {
@@ -1533,18 +1532,22 @@ bool VST3Editor::enableEditing (bool state)
 				COptionMenu* fileMenu = editController->getMenuController ()->getFileMenu ();
 				if (fileMenu)
 				{
-					CMenuItem* item = fileMenu->addEntry (new CCommandMenuItem ("Save", this, "File", "Save"), 0);
+					CMenuItem* item = fileMenu->addEntry (
+					    new CCommandMenuItem ({"Save", this, "File", "Save"}), 0);
 					item->setKey ("s", kControl);
-					item = fileMenu->addEntry (new CCommandMenuItem ("Save As..", this, "File", "Save As"), 1);
-					item->setKey ("s", kShift|kControl);
-					item = fileMenu->addEntry (new CCommandMenuItem ("Close Editor", this, "File", "Close UIDescription Editor"));
+					item = fileMenu->addEntry (
+					    new CCommandMenuItem ({"Save As..", this, "File", "Save As"}), 1);
+					item->setKey ("s", kShift | kControl);
+					item = fileMenu->addEntry (new CCommandMenuItem (
+					    {"Close Editor", this, "File", "Close UIDescription Editor"}));
 					item->setKey ("e", kControl);
 				}
 				COptionMenu* editMenu = editController->getMenuController ()->getEditMenu ();
 				if (editMenu)
 				{
 					editMenu->addSeparator ();
-					editMenu->addEntry (new CCommandMenuItem ("Sync Parameter Tags", this, "Edit", "Sync Parameter Tags"));
+					editMenu->addEntry (new CCommandMenuItem (
+					    {"Sync Parameter Tags", this, "Edit", "Sync Parameter Tags"}));
 				}
 				return true;
 			}

@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __uidialogcontroller__
-#define __uidialogcontroller__
+#pragma once
 
 #include "../uidescription.h"
 
@@ -18,8 +17,19 @@
 
 namespace VSTGUI {
 
+class UIDialogController;
+
+//------------------------------------------------------------------------
+class IDialogController : public IController, public virtual IReference
+{
+public:
+	virtual void onDialogButton1Clicked (UIDialogController*) = 0;
+	virtual void onDialogButton2Clicked (UIDialogController*) = 0;
+	virtual void onDialogShow (UIDialogController*) = 0;
+};
+
 //----------------------------------------------------------------------------------------------------
-class UIDialogController : public CBaseObject,
+class UIDialogController : public NonAtomicReferenceCounted,
                            public DelegationController,
                            public IKeyboardHook,
                            public ViewListenerAdapter
@@ -27,17 +37,14 @@ class UIDialogController : public CBaseObject,
 public:
 	UIDialogController (IController* baseController, CFrame* frame);
 	~UIDialogController () override = default;
-	
-	void run (UTF8StringPtr templateName, UTF8StringPtr dialogTitle, UTF8StringPtr button1, UTF8StringPtr button2, IController* controller, UIDescription* description);
 
-	static IdStringPtr kMsgDialogButton1Clicked;
-	static IdStringPtr kMsgDialogButton2Clicked;
-	static IdStringPtr kMsgDialogShow;
+	void run (UTF8StringPtr templateName, UTF8StringPtr dialogTitle, UTF8StringPtr button1,
+	          UTF8StringPtr button2, const SharedPointer<IDialogController>& controller,
+	          UIDescription* description);
 protected:
 	void valueChanged (CControl* pControl) override;
 	IControlListener* getControlListener (UTF8StringPtr controlTagName) override;
 	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 
 	void viewSizeChanged (CView* view, const CRect& oldSize) override;
 	void viewRemoved (CView* view) override;
@@ -52,7 +59,7 @@ protected:
 
 	CFrame* frame;
 	ModalViewSession* modalSession {nullptr};
-	SharedPointer<CBaseObject> dialogController;
+	SharedPointer<IDialogController> dialogController;
 	UIDescription* dialogDescription;
 	SharedPointer<CControl> button1;
 	SharedPointer<CControl> button2;
@@ -73,8 +80,6 @@ protected:
 	};
 };
 
-} // namespace
+} // VSTGUI
 
 #endif // VSTGUI_LIVE_EDITING
-
-#endif // __uidialogcontroller__

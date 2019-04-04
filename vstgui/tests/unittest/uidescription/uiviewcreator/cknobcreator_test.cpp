@@ -146,6 +146,35 @@ TESTCASE(CKnobCreatorTest,
 			return !(v->getDrawStyle() & CKnob::kCoronaOutline);
 		});
 	);
+
+	TEST(coronaLineCapButt,
+		DummyUIDescription uidesc;
+		testAttribute<CKnob>(kCKnob, kAttrCoronaLineCapButt, true, &uidesc, [&] (CKnob* v) {
+			return v->getDrawStyle() & CKnob::kCoronaLineCapButt;
+		});
+		testAttribute<CKnob>(kCKnob, kAttrCoronaLineCapButt, false, &uidesc, [&] (CKnob* v) {
+			return !(v->getDrawStyle() & CKnob::kCoronaLineCapButt);
+		});
+	);
+
+	TEST(skipHandleDrawing,
+		DummyUIDescription uidesc;
+		testAttribute<CKnob>(kCKnob, kAttrSkipHandleDrawing, true, &uidesc, [&] (CKnob* v) {
+			return v->getDrawStyle() & CKnob::kSkipHandleDrawing;
+		});
+		testAttribute<CKnob>(kCKnob, kAttrSkipHandleDrawing, false, &uidesc, [&] (CKnob* v) {
+			return !(v->getDrawStyle() & CKnob::kSkipHandleDrawing);
+		});
+	);
+
+	TEST(coronaOutlineWithAdd,
+		DummyUIDescription uidesc;
+		testAttribute<CKnob>(kCKnob, kAttrCoronaOutlineWidthAdd, 10., &uidesc, [&] (CKnob* v) {
+			return v->getCoronaOutlineWidthAdd () == 10.;
+		});
+	);
+
+
 );
 
 } // VSTGUI

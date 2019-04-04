@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __win32textedit__
-#define __win32textedit__
+#pragma once
 
 #include "../iplatformtextedit.h"
 
@@ -48,8 +47,6 @@ protected:
 	static LONG_PTR WINAPI procEdit (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 };
 
-} // namespace
+} // VSTGUI
 
 #endif // WINDOWS
-
-#endif // __win32textedit__

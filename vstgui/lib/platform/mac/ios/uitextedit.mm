@@ -177,6 +177,6 @@ bool UITextEdit::updateSize ()
 	return false;
 }
 
-} // namespace
+} // VSTGUI
 
 #endif

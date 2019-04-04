@@ -147,6 +147,14 @@ TESTCASE(CParamDisplayCreatorTest,
 		});
 	);
 
+	TEST(shadowOffset,
+		DummyUIDescription uiDesc;
+		CPoint offset (15, 9);
+		testAttribute<CParamDisplay>(kCParamDisplay, kAttrTextShadowOffset, offset, &uiDesc, [&] (CParamDisplay* v) {
+			return v->getShadowTextOffset () == offset;
+		});
+	);
+
 );
 
 } // VSTGUI

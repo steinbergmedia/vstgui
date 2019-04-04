@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __cframe__
-#define __cframe__
+#pragma once
 
 #include "vstguifwd.h"
 #include "cviewcontainer.h"
@@ -184,6 +183,8 @@ public:
 	CView* getViewAt (const CPoint& where, const GetViewOptions& options = GetViewOptions ()) const override;
 	CViewContainer* getContainerAt (const CPoint& where, const GetViewOptions& options = GetViewOptions ().deep ()) const override;
 	bool hitTestSubViews (const CPoint& where, const CButtonState& buttons = -1) override;
+	CPoint& frameToLocal (CPoint& point) const override { return point; }
+	CPoint& localToFrame (CPoint& point) const override { return point; }
 
 	// CView
 	bool attached (CView* parent) override;
@@ -343,6 +344,4 @@ public:
 	virtual void onFocusViewChanged (CFrame* frame, CView* newFocusView, CView* oldFocusView) = 0;
 };
 
-} // namespace
-
-#endif
+} // VSTGUI

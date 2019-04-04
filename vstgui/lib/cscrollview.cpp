@@ -802,5 +802,5 @@ void CScrollView::viewWillDelete (CView* view)
 		view->unregisterViewListener (this);
 }
 
-} // namespace
+} // VSTGUI
 

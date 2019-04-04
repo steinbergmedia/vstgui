@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __hiviewoptionmenu__
-#define __hiviewoptionmenu__
+#pragma once
 
 #include "../../iplatformoptionmenu.h"
 
@@ -23,7 +22,6 @@ protected:
 	MenuRef createMenu (COptionMenu* menu);
 };
 
-} // namespace
+} // VSTGUI
 
 #endif // MAC_CARBON
-#endif // __hiviewoptionmenu__

@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __iplatformframe__
-#define __iplatformframe__
+#pragma once
 
 /// @cond ignore
 
@@ -116,8 +115,6 @@ public:
 	virtual void recreateTouchBar () = 0;
 };
 
-} // namespace
+} // VSTGUI
 
 /// @endcond
-
-#endif // __iplatformframe__

@@ -770,14 +770,10 @@ void CViewContainer::drawBackgroundRect (CDrawContext* pContext, const CRect& _u
 {
 	if (getDrawBackground ())
 	{
-		CRect oldClip;
-		pContext->getClipRect (oldClip);
-		CRect newClip (_updateRect);
-		newClip.bound (oldClip);
-		pContext->setClipRect (newClip);
-		CRect tr (0, 0, getViewSize ().getWidth (), getViewSize ().getHeight ());
-		getDrawBackground ()->draw (pContext, tr, getBackgroundOffset ());
-		pContext->setClipRect (oldClip);
+		drawClipped (pContext, _updateRect, [&] () {
+			CRect tr (0, 0, getViewSize ().getWidth (), getViewSize ().getHeight ());
+			getDrawBackground ()->draw (pContext, tr, getBackgroundOffset ());
+		});
 	}
 	else if ((pImpl->backgroundColor.alpha != 255 && getTransparency ()) || !getTransparency ())
 	{
@@ -1475,4 +1471,4 @@ void CViewContainer::dumpHierarchy ()
 
 #endif
 
-} // namespace
+} // VSTGUI

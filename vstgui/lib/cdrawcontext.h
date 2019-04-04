@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __cdrawcontext__
-#define __cdrawcontext__
+#pragma once
 
 #include "vstguifwd.h"
 
@@ -283,23 +282,34 @@ private:
 //-----------------------------------------------------------------------------
 struct ConcatClip
 {
-	ConcatClip (CDrawContext& context, CRect rect)
-	: context (context)
+	ConcatClip (CDrawContext& context, const CRect& rect)
+	: context (context), newClip (rect)
 	{
 		context.getClipRect (origClip);
-		rect.normalize ();
-		rect.bound (origClip);
-		context.setClipRect (rect);
+		newClip.normalize ();
+		newClip.bound (origClip);
+		context.setClipRect (newClip);
 	}
 	~ConcatClip () noexcept
 	{
 		context.setClipRect (origClip);
 	}
+	
+	bool isEmpty () const { return newClip.isEmpty (); }
+	const CRect& get () const { return newClip; }
 private:
 	CDrawContext& context;
 	CRect origClip;
+	CRect newClip;
 };
 
-} // namespace
+//-----------------------------------------------------------------------------
+template<typename Proc>
+void drawClipped (CDrawContext* context, const CRect& clip, Proc proc)
+{
+	ConcatClip cc (*context, clip);
+	if (!cc.isEmpty ())
+		proc ();
+}
 
-#endif
+} // VSTGUI

@@ -56,7 +56,7 @@ public:
 private:
 	void createNewDocument ()
 	{
-		Async::perform (Async::Context::Main, [] () {
+		Async::schedule (Async::mainQueue (), [] () {
 			auto commandHandler =
 			    IApplication::instance ().getDelegate ().dynamicCast<ICommandHandler> ();
 			assert (commandHandler);
@@ -66,7 +66,7 @@ private:
 
 	void openDocument ()
 	{
-		Async::perform (Async::Context::Main, [] () {
+		Async::schedule (Async::mainQueue (), [] () {
 			auto commandHandler =
 			    IApplication::instance ().getDelegate ().dynamicCast<ICommandHandler> ();
 			assert (commandHandler);

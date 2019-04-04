@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __hiviewframe__
-#define __hiviewframe__
+#pragma once
 
 #include "../../../cframe.h"
 
@@ -71,7 +70,6 @@ protected:
 	CPoint hiScrollOffset;
 };
 
-} // namespace
+} // VSTGUI
 
 #endif // MAC_CARBON
-#endif // __hiviewframe__

@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __cshadowviewcontainer__
-#define __cshadowviewcontainer__
+#pragma once
 
 #include "cviewcontainer.h"
 #include "iviewlistener.h"
@@ -67,6 +66,4 @@ protected:
 	double scaleFactorUsed;
 };
 
-} // namespace
-
-#endif // __cshadowviewcontainer__
+} // VSTGUI

@@ -6,17 +6,12 @@
 #include "icontrollistener.h"
 #include "../cframe.h"
 #include "../cgraphicspath.h"
+#include "../cvstguitimer.h"
 #include <cassert>
 
 #define VSTGUI_CCONTROL_LOG_EDITING 0 //DEBUG
 
 namespace VSTGUI {
-
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-IdStringPtr CControl::kMessageValueChanged = "kMessageValueChanged";
-IdStringPtr CControl::kMessageBeginEdit = "kMessageBeginEdit";
-IdStringPtr CControl::kMessageEndEdit = "kMessageEndEdit";
-#endif
 
 //------------------------------------------------------------------------
 // CControl
@@ -93,9 +88,6 @@ void CControl::beginEdit ()
 		if (listener)
 			listener->controlBeginEdit (this);
 		subListeners.forEach ([this] (IControlListener* l) { l->controlBeginEdit (this); });
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-		changed (kMessageBeginEdit);
-#endif
 		if (getFrame ())
 			getFrame ()->beginEdit (tag);
 	}
@@ -116,9 +108,6 @@ void CControl::endEdit ()
 		if (listener)
 			listener->controlEndEdit (this);
 		subListeners.forEach ([this] (IControlListener* l) { l->controlEndEdit (this); });
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-		changed (kMessageEndEdit);
-#endif
 	}
 #if VSTGUI_CCONTROL_LOG_EDITING
 	DebugPrint("endEdit [%d] - %d\n", tag, editing);
@@ -135,9 +124,6 @@ void CControl::setValue (float val)
 	if (val != value)
 	{
 		value = val;
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-		changed (kMessageValueChanged);
-#endif
 	}
 }
 
@@ -154,7 +140,10 @@ void CControl::setValueNormalized (float val)
 //------------------------------------------------------------------------
 float CControl::getValueNormalized () const
 {
-	return (value - getMin ()) / getRange ();
+	auto range = getRange ();
+	if (range == 0.f)
+		return 0.f;
+	return (value - getMin ()) / range;
 }
 
 //------------------------------------------------------------------------
@@ -163,9 +152,6 @@ void CControl::valueChanged ()
 	if (listener)
 		listener->valueChanged (this);
 	subListeners.forEach ([this] (IControlListener* l) { l->valueChanged (this); });
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	changed (kMessageValueChanged);
-#endif
 }
 
 //------------------------------------------------------------------------
@@ -279,4 +265,28 @@ void IMultiBitmapControl::autoComputeHeightOfOneImage ()
 	}
 }
 
-} // namespace
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
+//------------------------------------------------------------------------
+void CMouseWheelEditingSupport::onMouseWheelEditing (CControl* control)
+{
+	if (!control->isEditing ())
+		control->beginEdit ();
+	endEditTimer = makeOwned<CVSTGUITimer> (
+	    [control] (CVSTGUITimer* timer) {
+		    control->endEdit ();
+		    timer->stop ();
+	    },
+	    500);
+}
+
+//------------------------------------------------------------------------
+void CMouseWheelEditingSupport::invalidMouseWheelEditTimer (CControl* control)
+{
+	if (endEditTimer)
+		endEditTimer = nullptr;
+	if (control->isEditing ())
+		control->endEdit ();
+}
+
+} // VSTGUI

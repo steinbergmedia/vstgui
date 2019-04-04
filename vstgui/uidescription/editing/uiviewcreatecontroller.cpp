@@ -219,7 +219,7 @@ CMouseEventResult UIViewCreatorDataSource::dbOnMouseMoved (const CPoint& where, 
 	return kMouseEventNotHandled;
 }
 
-} // namespace
+} // VSTGUI
 
 #endif // VSTGUI_LIVE_EDITING
 

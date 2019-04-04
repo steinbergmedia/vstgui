@@ -2,19 +2,20 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __win32support__
-#define __win32support__
+#pragma once
 
 #include "../../vstguibase.h"
 
 #if WINDOWS
+
+struct IUnknown;
 
 #include "../../cbitmap.h"
 #include "../../optional.h"
 #include "../iplatformresourceinputstream.h"
 #include <algorithm>
 #include <windows.h>
-#include <objidl.h>
+#include <combaseapi.h>
 
 interface ID2D1Factory;
 interface IDWriteFactory;
@@ -163,8 +164,6 @@ private:
 
 /// @endcond
 
-} // namespace
+} // VSTGUI
 
 #endif // WINDOWS
-
-#endif

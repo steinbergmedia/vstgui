@@ -70,6 +70,20 @@ TESTCASE(COnOffButtonCreatorTest,
 			return b->getStyle () & CCheckBox::kAutoSizeToFit;
 		});
 	);
+
+	TEST(frameWidth,
+		DummyUIDescription uidesc;
+		testAttribute<CCheckBox> (kCCheckBox, kAttrFrameWidth, 15., &uidesc, [&] (CCheckBox* b) {
+			return b->getFrameWidth () == 15.;
+		});
+	);
+
+	TEST(roundRectRadius,
+		DummyUIDescription uidesc;
+		testAttribute<CCheckBox> (kCCheckBox, kAttrRoundRectRadius, 12., &uidesc, [&] (CCheckBox* b) {
+			return b->getRoundRectRadius () == 12.;
+		});
+	);
 );
 
 } // VSTGUI

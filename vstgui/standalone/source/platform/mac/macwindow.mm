@@ -100,7 +100,7 @@ public:
 	}
 	PlatformFrameConfigPtr prepareFrameConfig (PlatformFrameConfigPtr&& controllerConfig) override
 	{
-		return controllerConfig;
+		return std::move (controllerConfig);
 	}
 	void onSetContentView (CFrame* _Nullable newFrame) override;
 
@@ -151,8 +151,6 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 		nsWindowDelegate = [VSTGUIPopupDelegate new];
 		nsWindowDelegate.macWindow = this;
 		[nsWindow setAnimationBehavior:NSWindowAnimationBehaviorUtilityWindow];
-		nsWindow.collectionBehavior =
-		    NSWindowCollectionBehaviorFullScreenAuxiliary | nsWindow.collectionBehavior;
 	}
 	else
 	{
@@ -168,16 +166,21 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 		[nsWindow setAnimationBehavior:NSWindowAnimationBehaviorNone];
 		if (!config.style.canClose ())
 			window.nonClosable = true;
-		nsWindow.collectionBehavior = NSWindowCollectionBehaviorFullScreenPrimary |
-		                              NSWindowCollectionBehaviorFullScreenAuxiliary |
-		                              nsWindow.collectionBehavior;
+		if (config.style.canSize ())
+		{
+			nsWindow.collectionBehavior =
+			    NSWindowCollectionBehaviorFullScreenPrimary | nsWindow.collectionBehavior;
+		}
 	}
+	nsWindow.collectionBehavior =
+	    NSWindowCollectionBehaviorFullScreenAuxiliary | nsWindow.collectionBehavior;
 	[nsWindow setDelegate:nsWindowDelegate];
 
 	if (config.style.isTransparent ())
 	{
 		nsWindow.backgroundColor = [NSColor clearColor];
 		nsWindow.opaque = NO;
+		nsWindow.hasShadow = YES;
 	}
 
 	auto titleMacStr = dynamic_cast<MacString*> (config.title.getPlatformString ());
@@ -186,7 +189,7 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 		nsWindow.title = (__bridge NSString*)titleMacStr->getCFString ();
 	}
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_12 && __clang_major__ >= 9
-	if (@available(macOS 10.12, *))
+	if (@available (macOS 10.12, *))
 	{
 		if (!config.groupIdentifier.empty ())
 		{
@@ -354,6 +357,8 @@ void Window::show ()
 	{
 		delegate->onShow ();
 		[nsWindow makeKeyAndOrderFront:nil];
+		if (!nsWindow.opaque)
+			[nsWindow invalidateShadow];
 	}
 }
 
@@ -631,7 +636,7 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 			return;
 	}
 	VSTGUIWindow* window = self;
-	Async::perform (Async::Context::Main, [=] () { [window close]; });
+	Async::schedule (Async::mainQueue (), [=] () { [window close]; });
 }
 
 //------------------------------------------------------------------------
@@ -728,7 +733,7 @@ WindowPtr makeWindow (const WindowConfiguration& config, IWindowDelegate& delega
 {
 	using namespace VSTGUI::Standalone;
 	VSTGUIPopup* popup = self;
-	Async::perform (Async::Context::Main, [=] () { [popup close]; });
+	Async::schedule (Async::mainQueue (), [=] () { [popup close]; });
 }
 
 //------------------------------------------------------------------------

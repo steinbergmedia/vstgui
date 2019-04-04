@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __d2dbitmap__
-#define __d2dbitmap__
+#pragma once
 
 #include "../win32bitmapbase.h"
 
@@ -93,8 +92,6 @@ protected:
 	BitmapCache cache;
 };
 
-} // namespace
+} // VSTGUI
 
 #endif // WINDOWS
-
-#endif // __d2dbitmap__

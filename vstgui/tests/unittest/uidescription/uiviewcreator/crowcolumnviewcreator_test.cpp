@@ -59,6 +59,11 @@ TESTCASE(CRowColumnViewCreatorTest,
 	TEST(equalSizeLayoutValues,
 		testPossibleValues(kCRowColumnView, kAttrEqualSizeLayout, nullptr, {"left-top", "stretch", "center", "right-bottom"});
 	);
+
+	TEST(hideClippedSubviews,
+		testAttribute<CRowColumnView> (kCRowColumnView, kAttrHideClippedSubviews, true, nullptr, [] (CRowColumnView* v) { return v->hideClippedSubviews (); });
+	);
+
 );
 
 } // VSTGUI

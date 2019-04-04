@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __cfontmac__
-#define __cfontmac__
+#pragma once
 
 #include "../iplatformfont.h"
 
@@ -56,8 +55,6 @@ protected:
 	double capHeight;
 };
 
-} // namespace
+} // VSTGUI
 
 #endif // MAC
-
-#endif

@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __iscalefactorchangedlistener__
-#define __iscalefactorchangedlistener__
+#pragma once
 
 #include "vstguifwd.h"
 
@@ -18,6 +17,4 @@ public:
 	virtual void onScaleFactorChanged (CFrame* frame, double newScaleFactor) = 0;
 };
 
-} // namespace
-
-#endif // __iscalefactorchangedlistener__
+} // VSTGUI

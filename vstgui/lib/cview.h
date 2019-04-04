@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __cview__
-#define __cview__
+#pragma once
 
 #include "vstguifwd.h"
 #include "cpoint.h"
@@ -295,8 +294,10 @@ public:
 	/// @name Animation Methods
 	//-----------------------------------------------------------------------------
 	//@{
-	void addAnimation (IdStringPtr name, Animation::IAnimationTarget* target, Animation::ITimingFunction* timingFunction, CBaseObject* notificationObject = nullptr);
-	void addAnimation (IdStringPtr name, Animation::IAnimationTarget* target, Animation::ITimingFunction* timingFunction, const Animation::DoneFunction& doneFunc);
+	VSTGUI_DEPRECATED(void addAnimation (IdStringPtr name, Animation::IAnimationTarget* target, Animation::ITimingFunction* timingFunction, CBaseObject* notificationObject);)
+	void addAnimation (IdStringPtr name, Animation::IAnimationTarget* target,
+	                   Animation::ITimingFunction* timingFunction,
+	                   const Animation::DoneFunction& doneFunc = nullptr);
 	void removeAnimation (IdStringPtr name);
 	void removeAllAnimations ();
 	//@}
@@ -340,15 +341,15 @@ public:
 	//-----------------------------------------------------------------------------
 	//@{
 	/** get the active global transform for this view */
-	CGraphicsTransform getGlobalTransform () const;
+	CGraphicsTransform getGlobalTransform (bool ignoreFrame = false) const;
 	/** translates a local coordinate to a global one using parent transforms */
-	template<typename T> T& translateToGlobal (T& t) const { getGlobalTransform ().transform (t); return t; }
+	template<typename T> T& translateToGlobal (T& t, bool ignoreFrame = false) const { getGlobalTransform (ignoreFrame).transform (t); return t; }
 	/** translates a local coordinate to a global one using parent transforms */
-	template<typename T> T translateToGlobal (const T& t) const { T tmp (t); getGlobalTransform ().transform (tmp); return tmp; }
+	template<typename T> T translateToGlobal (const T& t, bool ignoreFrame = false) const { T tmp (t); getGlobalTransform (ignoreFrame).transform (tmp); return tmp; }
 	/** translates a global coordinate to a local one using parent transforms */
-	template<typename T> T& translateToLocal (T& t) const { getGlobalTransform ().inverse ().transform (t); return t; }
+	template<typename T> T& translateToLocal (T& t, bool ignoreFrame = false) const { getGlobalTransform (ignoreFrame).inverse ().transform (t); return t; }
 	/** translates a local coordinate to a global one using parent transforms */
-	template<typename T> T translateToLocal (const T& t) const { T tmp (t); getGlobalTransform ().inverse ().transform (tmp); return tmp; }
+	template<typename T> T translateToLocal (const T& t, bool ignoreFrame = false) const { T tmp (t); getGlobalTransform (ignoreFrame).inverse ().transform (tmp); return tmp; }
 	//@}
 
 	virtual CViewContainer* asViewContainer () { return nullptr; }
@@ -435,6 +436,4 @@ protected:
 	int32_t index {0};
 };
 
-} // namespace
-
-#endif
+} // VSTGUI

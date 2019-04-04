@@ -9,6 +9,7 @@
 #include "pluginterfaces/vst/ivstplugview.h"
 #include "../uidescription/uidescription.h"
 #include "../uidescription/icontroller.h"
+#include "../lib/controls/icommandmenuitemtarget.h"
 #include <string>
 #include <vector>
 #include <map>
@@ -58,7 +59,8 @@ class VST3Editor : public Steinberg::Vst::VSTGUIEditor,
                    public Steinberg::Vst::IParameterFinder,
                    public IController,
                    public IViewAddedRemovedObserver,
-                   public IMouseObserver
+                   public IMouseObserver,
+                   public CommandMenuItemTargetAdapter
 #ifdef VST3_CONTENT_SCALE_SUPPORT
 				 , public Steinberg::IPlugViewContentScaleSupport
 #endif
@@ -130,6 +132,10 @@ protected:
 	void onMouseExited (CView* view, CFrame* frame) override {}
 	CMouseEventResult onMouseMoved (CFrame* frame, const CPoint& where, const CButtonState& buttons) override { return kMouseEventNotHandled; }
 	CMouseEventResult onMouseDown (CFrame* frame, const CPoint& where, const CButtonState& buttons) override;
+
+	// CommandMenuItemTargetAdapter
+	bool validateCommandMenuItem (CCommandMenuItem* item) override;
+	bool onCommandMenuItemSelected (CCommandMenuItem* item) override;
 
 #ifdef VST3_CONTENT_SCALE_SUPPORT
 	Steinberg::tresult PLUGIN_API setContentScaleFactor (ScaleFactor factor) override;

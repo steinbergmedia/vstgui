@@ -554,6 +554,6 @@ auto IPlatformResourceInputStream::create (const CResourceDescription& desc) -> 
 
 /// @endcond ignore
 
-} // namespace
+} // VSTGUI
 
 #endif // WINDOWS

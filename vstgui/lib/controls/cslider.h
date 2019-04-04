@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __cslider__
-#define __cslider__
+#pragma once
 
 #include "ccontrol.h"
 #include "../ccolor.h"
@@ -15,7 +14,7 @@ namespace VSTGUI {
 //! @brief a slider control
 /// @ingroup controls
 //-----------------------------------------------------------------------------
-class CSlider : public CControl
+class CSlider : public CControl, protected CMouseWheelEditingSupport
 {
 private:
 	enum StyleEnum
@@ -167,6 +166,4 @@ public:
 	CHorizontalSlider (const CHorizontalSlider& slider) = default;
 };
 
-} // namespace
-
-#endif
+} // VSTGUI

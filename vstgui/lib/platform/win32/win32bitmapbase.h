@@ -2,15 +2,14 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __win32bitmapbase__
-#define __win32bitmapbase__
+#pragma once
 
 #include "../iplatformbitmap.h"
 
 #if WINDOWS
 
 #include <windows.h>
-#include <objidl.h>
+struct IStream;
 
 namespace VSTGUI {
 
@@ -22,8 +21,6 @@ public:
 	virtual PNGBitmapBuffer createMemoryPNGRepresentation () = 0;
 };
 
-} // namespace
+} // VSTGUI
 
 #endif // WINDOWS
-
-#endif // __win32bitmapbase__

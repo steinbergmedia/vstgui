@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __coffscreencontext__
-#define __coffscreencontext__
+#pragma once
 
 #include "vstguifwd.h"
 #include "cdrawcontext.h"
@@ -80,6 +79,4 @@ protected:
 	SharedPointer<CBitmap> bitmap;
 };
 
-} // namespace
-
-#endif // __coffscreencontext__
+} // VSTGUI

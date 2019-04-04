@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __cbuttons__
-#define __cbuttons__
+#pragma once
 
 #include "ccontrol.h"
 #include "../cfont.h"
@@ -274,6 +273,4 @@ private:
 	float fEntryState;
 };
 
-} // namespace
-
-#endif
+} // VSTGUI

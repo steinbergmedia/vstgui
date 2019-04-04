@@ -9,11 +9,12 @@
 		<color name="TextShadow" rgba="#0000002f"/>
 	</colors>
 	<custom>
-		<attributes name="UIDescFilePath" path="/home/scheffle/source/vstgui/vstgui/standalone/examples/standalone/resource/resources.uidesc"/>
+		<attributes name="UIDescFilePath" path="/Users/scheffle/git/vstgui/vstgui/standalone/examples/standalone/resource/resources.uidesc"/>
 	</custom>
 	<gradients>
 		<gradient name="About Background">
 			<color-stop rgba="#dcdcdcff" start="0"/>
+			<color-stop rgba="#b3b3b3ff" start="0.5"/>
 			<color-stop rgba="#b4b4b4ff" start="1"/>
 		</gradient>
 		<gradient name="Background">
@@ -27,6 +28,11 @@
 		<gradient name="Default TextButton Gradient Highlighted">
 			<color-stop rgba="#b4b4b4ff" start="0"/>
 			<color-stop rgba="#646464ff" start="1"/>
+		</gradient>
+		<gradient name="Focused TextButton Gradient">
+			<color-stop rgba="#dcdcdcff" start="0"/>
+			<color-stop rgba="#9b9b9bff" start="0.660000026226043701171875"/>
+			<color-stop rgba="#b4b4b4ff" start="1"/>
 		</gradient>
 		<gradient name="New">
 			<color-stop rgba="#a0a0a0d2" start="0"/>

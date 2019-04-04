@@ -20,14 +20,14 @@ CSegmentButton::CSegmentButton (const CRect& size, IControlListener* listener, i
 //-----------------------------------------------------------------------------
 bool CSegmentButton::canAddOneMoreSegment () const
 {
-	return (getSelectionMode () == SelectionMode::kSingle || segments.size () < 32);
+	return (getSelectionMode () != SelectionMode::kMultiple || segments.size () < 32);
 }
 
 //-----------------------------------------------------------------------------
-void CSegmentButton::addSegment (const Segment& segment, uint32_t index)
+bool CSegmentButton::addSegment (const Segment& segment, uint32_t index)
 {
 	if (!canAddOneMoreSegment ())
-		return;
+		return false;
 	if (index == kPushBack && segments.size () < kPushBack)
 		segments.emplace_back (segment);
 	else if (index < segments.size ())
@@ -37,13 +37,14 @@ void CSegmentButton::addSegment (const Segment& segment, uint32_t index)
 		segments.insert (it, segment);
 	}
 	updateSegmentSizes ();
+	return true;
 }
 
 //-----------------------------------------------------------------------------
-void CSegmentButton::addSegment (Segment&& segment, uint32_t index)
+bool CSegmentButton::addSegment (Segment&& segment, uint32_t index)
 {
 	if (!canAddOneMoreSegment ())
-		return;
+		return false;
 	if (index == kPushBack && segments.size () < kPushBack)
 		segments.emplace_back (std::move (segment));
 	else if (index < segments.size ())
@@ -53,6 +54,7 @@ void CSegmentButton::addSegment (Segment&& segment, uint32_t index)
 		segments.insert (it, std::move (segment));
 	}
 	updateSegmentSizes ();
+	return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -80,6 +82,7 @@ void CSegmentButton::valueChanged ()
 	switch (getSelectionMode ())
 	{
 		case SelectionMode::kSingle:
+		case SelectionMode::kSingleToggle:
 		{
 			auto index = static_cast<int64_t> (getSelectedSegment ());
 			for (auto& segment : segments)
@@ -314,19 +317,36 @@ CMouseEventResult CSegmentButton::onMouseDown (CPoint& where, const CButtonState
 			if (segment.rect.pointInside (where))
 			{
 				uint32_t newIndex = getSegmentIndex (newValue);
-				if (selectionMode == SelectionMode::kSingle)
+				switch (selectionMode)
 				{
-					uint32_t currentIndex = getSegmentIndex (getValueNormalized ());
-					if (newIndex != currentIndex)
+					case SelectionMode::kSingle:
 					{
-						setSelectedSegment (newIndex);
+						uint32_t currentIndex = getSegmentIndex (getValueNormalized ());
+						if (newIndex != currentIndex)
+							setSelectedSegment (newIndex);
+						break;
+					}
+					case SelectionMode::kSingleToggle:
+					{
+						uint32_t currentIndex = getSegmentIndex (getValueNormalized ());
+						if (newIndex != currentIndex)
+							setSelectedSegment (newIndex);
+						else
+						{
+							++currentIndex;
+							if (getSegments ().size () - 1 < currentIndex)
+								currentIndex = 0;
+							setSelectedSegment (currentIndex);
+						}
+						break;
+					}
+					case SelectionMode::kMultiple:
+					{
+						selectSegment (newIndex, !segment.selected);
+						break;
 					}
 				}
-				else
-				{
-					selectSegment (newIndex, !segment.selected);
-				}
-				break;
+				break; // out of for loop
 			}
 			newValue += valueOffset;
 		}
@@ -338,7 +358,8 @@ CMouseEventResult CSegmentButton::onMouseDown (CPoint& where, const CButtonState
 int32_t CSegmentButton::onKeyDown (VstKeyCode& keyCode)
 {
 	int32_t result = -1;
-	if (selectionMode == SelectionMode::kSingle && keyCode.modifier == 0 && keyCode.character == 0)
+	if (selectionMode != SelectionMode::kMultiple && keyCode.modifier == 0 &&
+	    keyCode.character == 0)
 	{
 		uint32_t newIndex = getSegmentIndex (getValueNormalized ());
 		uint32_t oldIndex = newIndex;
@@ -348,6 +369,8 @@ int32_t CSegmentButton::onKeyDown (VstKeyCode& keyCode)
 			{
 				if (style == Style::kHorizontal && newIndex > 0)
 					newIndex--;
+				else if (style == Style::kHorizontalInverse && newIndex < segments.size () - 1)
+					newIndex++;
 				result = 1;
 				break;
 			}
@@ -355,6 +378,8 @@ int32_t CSegmentButton::onKeyDown (VstKeyCode& keyCode)
 			{
 				if (style == Style::kHorizontal && newIndex < segments.size () - 1)
 					newIndex++;
+				else if (style == Style::kHorizontalInverse && newIndex > 0)
+					newIndex--;
 				result = 1;
 				break;
 			}
@@ -362,6 +387,8 @@ int32_t CSegmentButton::onKeyDown (VstKeyCode& keyCode)
 			{
 				if (style == Style::kVertical && newIndex > 0)
 					newIndex--;
+				else if (style == Style::kVerticalInverse && newIndex < segments.size () - 1)
+					newIndex++;
 				result = 1;
 				break;
 			}
@@ -369,6 +396,8 @@ int32_t CSegmentButton::onKeyDown (VstKeyCode& keyCode)
 			{
 				if (style == Style::kVertical && newIndex < segments.size () - 1)
 					newIndex++;
+				else if (style == Style::kVerticalInverse && newIndex > 0)
+					newIndex--;
 				result = 1;
 				break;
 			}
@@ -390,7 +419,7 @@ void CSegmentButton::draw (CDrawContext* pContext)
 //-----------------------------------------------------------------------------
 void CSegmentButton::drawRect (CDrawContext* pContext, const CRect& dirtyRect)
 {
-	bool isHorizontal = style == Style::kHorizontal;
+	bool isHorizontal = isHorizontalStyle (style);
 	bool drawLines = getFrameWidth () != 0. && getFrameColor ().alpha != 0;
 	auto lineWidth = getFrameWidth ();
 	if (lineWidth < 0.)
@@ -425,45 +454,50 @@ void CSegmentButton::drawRect (CDrawContext* pContext, const CRect& dirtyRect)
 			                              getViewSize ().getTopRight ());
 		}
 	}
+	auto lineIndexStart = 1u;
+	auto lineIndexEnd = segments.size ();
+	if (isInverseStyle (style))
+	{
+		--lineIndexStart;
+		--lineIndexEnd;
+	}
+
 	for (uint32_t index = 0u, end = static_cast<uint32_t> (segments.size ()); index < end; ++index)
 	{
 		const auto& segment = segments[index];
 		if (!dirtyRect.rectOverlap (segment.rect))
 			continue;
-		CRect oldClip;
-		pContext->getClipRect (oldClip);
-		CRect clipRect (segment.rect);
-		clipRect.bound (oldClip);
-		pContext->setClipRect (clipRect);
-		if (segment.selected && gradientHighlighted)
-		{
-			if (isHorizontal)
+
+		drawClipped (pContext, segment.rect, [&] () {
+			if (segment.selected && gradientHighlighted)
 			{
-				pContext->fillLinearGradient (path, *gradientHighlighted,
-				                              segment.rect.getTopLeft (),
-				                              segment.rect.getBottomLeft ());
+				if (isHorizontal)
+				{
+					pContext->fillLinearGradient (path, *gradientHighlighted,
+					                              segment.rect.getTopLeft (),
+					                              segment.rect.getBottomLeft ());
+				}
+				else
+				{
+					pContext->fillLinearGradient (path, *gradientHighlighted,
+					                              segment.rect.getTopLeft (),
+					                              segment.rect.getTopRight ());
+				}
 			}
-			else
+			if (segment.selected && segment.backgroundHighlighted)
 			{
-				pContext->fillLinearGradient (path, *gradientHighlighted,
-				                              segment.rect.getTopLeft (),
-				                              segment.rect.getTopRight ());
+				segment.backgroundHighlighted->draw (pContext, segment.rect);
 			}
-		}
-		if (segment.selected && segment.backgroundHighlighted)
-		{
-			segment.backgroundHighlighted->draw (pContext, segment.rect);
-		}
-		else if (segment.background)
-		{
-			segment.background->draw (pContext, segment.rect);
-		}
-		CDrawMethods::drawIconAndText (
-		    pContext, segment.selected ? segment.iconHighlighted : segment.icon,
-		    segment.iconPosition, textAlignment, textMargin, segment.rect, segment.name, font,
-		    segment.selected ? textColorHighlighted : textColor, textTruncateMode);
-		pContext->setClipRect (oldClip);
-		if (drawLines && index > 0 && index < segments.size ())
+			else if (segment.background)
+			{
+				segment.background->draw (pContext, segment.rect);
+			}
+			CDrawMethods::drawIconAndText (
+			    pContext, segment.selected ? segment.iconHighlighted : segment.icon,
+			    segment.iconPosition, textAlignment, textMargin, segment.rect, segment.name, font,
+			    segment.selected ? textColorHighlighted : textColor, textTruncateMode);
+		});
+		if (drawLines && index >= lineIndexStart && index < lineIndexEnd)
 		{
 			path->beginSubpath (segment.rect.getTopLeft ());
 			path->addLine (isHorizontal ? segment.rect.getBottomLeft () :
@@ -488,26 +522,55 @@ void CSegmentButton::updateSegmentSizes ()
 {
 	if (isAttached () && !segments.empty ())
 	{
-		if (style == Style::kHorizontal)
+		switch (style)
 		{
-			CCoord width = getWidth () / segments.size ();
-			CRect r (getViewSize ());
-			r.setWidth (width);
-			for (auto& segment : segments)
+			case Style::kHorizontal:
 			{
-				segment.rect = r;
-				r.offset (width, 0);
+				CCoord width = getWidth () / segments.size ();
+				CRect r (getViewSize ());
+				r.setWidth (width);
+				for (auto& segment : segments)
+				{
+					segment.rect = r;
+					r.offset (width, 0);
+				}
+				break;
 			}
-		}
-		else
-		{
-			CCoord height = getHeight () / segments.size ();
-			CRect r (getViewSize ());
-			r.setHeight (height);
-			for (auto& segment : segments)
+			case Style::kHorizontalInverse:
 			{
-				segment.rect = r;
-				r.offset (0, height);
+				CCoord width = getWidth () / segments.size ();
+				CRect r (getViewSize ());
+				r.setWidth (width);
+				for (auto it = segments.rbegin(); it != segments.rend(); ++it)
+				{
+					(*it).rect = r;
+					r.offset (width, 0);
+				}
+				break;
+			}
+			case Style::kVertical:
+			{
+				CCoord height = getHeight () / segments.size ();
+				CRect r (getViewSize ());
+				r.setHeight (height);
+				for (auto& segment : segments)
+				{
+					segment.rect = r;
+					r.offset (0, height);
+				}
+				break;
+			}
+			case Style::kVerticalInverse:
+			{
+				CCoord height = getHeight () / segments.size ();
+				CRect r (getViewSize ());
+				r.setHeight (height);
+				for (auto it = segments.rbegin(); it != segments.rend(); ++it)
+				{
+					(*it).rect = r;
+					r.offset (0, height);
+				}
+				break;
 			}
 		}
 	}
@@ -516,7 +579,15 @@ void CSegmentButton::updateSegmentSizes ()
 //-----------------------------------------------------------------------------
 void CSegmentButton::verifySelections ()
 {
-	if (selectionMode == SelectionMode::kSingle)
+	if (selectionMode == SelectionMode::kMultiple)
+	{
+		auto bitset = static_cast<uint32_t> (value);
+		for (auto index = 0u; index < segments.size (); ++index)
+		{
+			segments[index].selected = (bitset & (1 << index)) != 0;
+		}
+	}
+	else
 	{
 		auto selectedIndex = getSelectedSegment ();
 		if (selectedIndex > segments.size ())
@@ -524,14 +595,6 @@ void CSegmentButton::verifySelections ()
 		for (auto& segment : segments)
 			segment.selected = false;
 		setSelectedSegment (selectedIndex);
-	}
-	else
-	{
-		auto bitset = static_cast<uint32_t> (value);
-		for (auto index = 0u; index < segments.size (); ++index)
-		{
-			segments[index].selected = (bitset & (1 << index)) != 0;
-		}
 	}
 }
 
@@ -556,4 +619,4 @@ bool CSegmentButton::getFocusPath (CGraphicsPath& outPath)
 	return true;
 }
 
-} // namespace
+} // VSTGUI

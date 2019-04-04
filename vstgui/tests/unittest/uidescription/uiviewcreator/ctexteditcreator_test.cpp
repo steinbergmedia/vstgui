@@ -28,6 +28,22 @@ TESTCASE(CTextEditCreatorTest,
 			return v->getStyle () & CTextEdit::kDoubleClickStyle;
 		});
 	);
+
+	TEST(autoSizeToFit,
+		DummyUIDescription uidesc;
+		testAttribute<CTextEdit> (kCTextEdit, kAttrSecureStyle, true, &uidesc, [&] (CTextEdit* v) {
+			return v->getSecureStyle () == true;
+		});
+	);
+
+	TEST(autoSizeToFit,
+		DummyUIDescription uidesc;
+		auto testValue = "This is a placeholder";
+		testAttribute<CTextEdit> (kCTextEdit, kAttrPlaceholderTitle, testValue, &uidesc, [&] (CTextEdit* b) {
+			return b->getPlaceholderString () == testValue;
+		});
+	);
+
 );
 
 } // VSTGUI

@@ -12,7 +12,9 @@
 #include <CoreFoundation/CoreFoundation.h>
 namespace VSTGUI { void* gBundleRef = CFBundleGetMainBundle (); }
 #elif WINDOWS
+struct IUnknown;
 #include <windows.h>
+#include <Shlobj.h>
 void* hInstance = nullptr;
 #elif LINUX
 namespace VSTGUI { void* soHandle = nullptr; }

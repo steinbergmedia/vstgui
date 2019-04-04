@@ -154,4 +154,4 @@ void CVuMeter::draw (CDrawContext *_pContext)
 	setDirty (false);
 }
 
-} // namespace
+} // VSTGUI

@@ -2,12 +2,12 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __d2ddrawcontext__
-#define __d2ddrawcontext__
+#pragma once
 
 #include "../../../coffscreencontext.h"
 
 #if WINDOWS
+struct IUnknown;
 
 #include "d2dbitmap.h"
 #include <windows.h>
@@ -147,8 +147,6 @@ static inline D2D1_MATRIX_3X2_F convert (const CGraphicsTransform& t)
 	return matrix;
 }
 
-} // namespace
+} // VSTGUI
 
 #endif // WINDOWS
-
-#endif // __d2ddrawcontext__

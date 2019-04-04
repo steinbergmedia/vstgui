@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __cfont__
-#define __cfont__
+#pragma once
 
 #include "vstguifwd.h"
 #include "cstring.h"
@@ -89,6 +88,4 @@ extern const CFontRef kNormalFontSmaller;
 extern const CFontRef kNormalFontVerySmall;
 extern const CFontRef kSymbolFont;
 
-} // namespace
-
-#endif
+} // VSTGUI

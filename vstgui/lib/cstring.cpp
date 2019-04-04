@@ -121,7 +121,7 @@ void UTF8String::clear () noexcept
 void UTF8String::copy (UTF8StringBuffer dst, SizeType dstSize) const noexcept
 {
 #if WINDOWS
-	strcpy_s (dst, dstSize, string.data ());
+	strncpy_s (dst, dstSize, string.data (), _TRUNCATE);
 #elif LINUX
 	strncpy (dst, string.data (), dstSize);
 #else
@@ -233,4 +233,4 @@ void free (UTF8StringBuffer buffer)
 
 #endif // VSTGUI_ENABLE_DEPRECATED_METHODS
 
-} // namespace
+} // VSTGUI

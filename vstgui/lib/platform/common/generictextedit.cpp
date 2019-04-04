@@ -180,7 +180,7 @@ GenericTextEdit::GenericTextEdit (IPlatformTextEditCallback* callback)
 	impl = std::unique_ptr<Impl> (new Impl);
 	impl->view = new STBTextEditView (callback);
 	auto view = dynamic_cast<CView*> (callback);
-	assert (view);
+	vstgui_assert (view);
 	view->getParentView ()->asViewContainer ()->addView (impl->view);
 
 	auto font = shared (callback->platformGetFont ());
@@ -547,9 +547,9 @@ void STBTextEditView::setText (const UTF8String& txt)
 CCoord STBTextEditView::getCharWidth (STB_CharT c, STB_CharT pc) const
 {
 	auto platformFont = getFont ()->getPlatformFont ();
-	assert (platformFont);
+	vstgui_assert (platformFont);
 	auto fontPainter = platformFont->getPainter ();
-	assert (fontPainter);
+	vstgui_assert (fontPainter);
 
 #if VSTGUI_STB_TEXTEDIT_USE_UNICODE
 	if (pc)
@@ -603,7 +603,7 @@ void STBTextEditView::calcCursorSizes ()
 		return;
 
 	auto platformFont = getFont ()->getPlatformFont ();
-	assert (platformFont);
+	vstgui_assert (platformFont);
 
 	cursorHeight = platformFont->getAscent () + platformFont->getDescent ();
 	auto viewHeight = getViewSize ().getHeight ();
@@ -748,7 +748,7 @@ int STBTextEditView::getLength (STBTextEditView* self)
 //-----------------------------------------------------------------------------
 void STBTextEditView::layout (StbTexteditRow* row, STBTextEditView* self, int start_i)
 {
-	assert (start_i == 0);
+	vstgui_assert (start_i == 0);
 
 	self->fillCharWidthCache ();
 	auto textWidth = static_cast<float> (

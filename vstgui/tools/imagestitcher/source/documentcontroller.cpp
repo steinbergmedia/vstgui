@@ -270,6 +270,11 @@ IController* DocumentWindowController::createController (const UTF8StringView& n
 }
 
 //------------------------------------------------------------------------
+void DocumentWindowController::onUIDescriptionParsed (const IUIDescription* uiDesc)
+{
+}
+
+//------------------------------------------------------------------------
 void DocumentWindowController::onSetContentView (IWindow& w, const SharedPointer<CFrame>& cv)
 {
 	contentView = cv;
@@ -401,6 +406,11 @@ void DocumentWindowController::doSaveAs (std::function<void (bool saved)>&& cust
 void DocumentWindowController::onImagePathAdded (const Path& newPath, size_t index)
 {
 	auto platformBitmap = IPlatformBitmap::createFromPath (newPath.data ());
+	if (!platformBitmap)
+	{
+		CPoint size (docContext->getWidth (), docContext->getHeight ());
+		platformBitmap = IPlatformBitmap::create (&size);
+	}
 	auto it = imageList.begin ();
 	if (index >= imageList.size ())
 		it = imageList.end ();
@@ -674,7 +684,7 @@ void DocumentWindowController::setDirty ()
 	if (asyncUpdateTriggered)
 		return;
 	asyncUpdateTriggered = true;
-	Async::perform (Async::Context::Main, [this] () {
+	Async::schedule (Async::mainQueue (), [this] () {
 		if (auto v = displayFrameValue->dynamicCast<IMutableStepValue> ())
 			v->setNumSteps (static_cast<uint32_t> (imageList.size ()));
 		if (imageView)

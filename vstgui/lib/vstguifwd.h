@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __vstguifwd__
-#define __vstguifwd__
+#pragma once
 
 #include "vstguibase.h"
 #include <functional>
@@ -266,6 +265,4 @@ class IPlatformFrame;
 class IFontPainter;
 class IPlatformResourceInputStream;
 
-}
-
-#endif // __vstguifwd__
+} // VSTGUI

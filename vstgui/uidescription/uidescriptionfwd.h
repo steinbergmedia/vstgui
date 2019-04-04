@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __uidescriptionfwd__
-#define __uidescriptionfwd__
+#pragma once
 
 namespace VSTGUI {
 
@@ -18,6 +17,4 @@ class InputStream;
 class OutputStream;
 class IBitmapCreator;
 
-} // namespace
-
-#endif // __uidescriptionfwd__
+} // VSTGUI

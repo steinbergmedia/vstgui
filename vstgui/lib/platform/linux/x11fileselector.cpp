@@ -11,6 +11,7 @@ namespace VSTGUI {
 namespace X11 {
 
 static constexpr auto kdialogpath = "/usr/bin/kdialog";
+static constexpr auto zenitypath = "/usr/bin/zenity";
 
 //------------------------------------------------------------------------
 struct FileSelector : CNewFileSelector
@@ -31,9 +32,9 @@ struct FileSelector : CNewFileSelector
 		switch (exDialogType)
 		{
 			case ExDialogType::kdialog:
-				return runKDilaog ();
+				return runKDialog ();
 			case ExDialogType::zenity:
-				break;
+				return runZenity ();
 			case ExDialogType::none:
 				break;
 		}
@@ -84,9 +85,14 @@ private:
 			fclose (file);
 			exDialogType = ExDialogType::kdialog;
 		}
+		else if (auto file = fopen (zenitypath, "r"))
+		{
+			fclose (file);
+			exDialogType = ExDialogType::zenity;
+		}
 	}
 
-	bool runKDilaog ()
+	bool runKDialog ()
 	{
 		std::string command = kdialogpath;
 		command += " ";
@@ -97,11 +103,31 @@ private:
 		else if (style == Style::kSelectDirectory)
 			command += "--getexistingdirectory";
         if (allowMultiFileSelection)
-            command += "--multiple";
+            command += " --multiple";
 		if (!title.empty ())
 			command += " --title '" + title.getString () + "'";
         if (!initialPath.empty ())
             command += " \"" + initialPath.getString () + "\"";
+		if (startProcess (command.data ()))
+		{
+			return true;
+		}
+		return false;
+	}
+
+	bool runZenity ()
+	{
+		std::string command = zenitypath;
+		command += " --file-selection ";
+		if (style == Style::kSelectDirectory)
+			command += "--directory";
+		else if (style == Style::kSelectSaveFile)
+			command += "--save --confirm-overwrite";
+		if (!title.empty ())
+			command += "--title=\"" + title.getString () + "\"";
+		if (!initialPath.empty ())
+			command += "--filename=\"" + initialPath.getString () + "\"";
+
 		if (startProcess (command.data ()))
 		{
 			return true;

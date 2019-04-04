@@ -17,12 +17,12 @@
 #include "vstgui/lib/controls/ccontrol.h"
 #include "vstgui/lib/iscalefactorchangedlistener.h"
 #include "vstgui/lib/iviewlistener.h"
+#include "vstgui/standalone/include/helpers/async.h"
 #include "vstgui/standalone/include/helpers/uidesc/customization.h"
 #include "vstgui/standalone/include/helpers/value.h"
 #include "vstgui/standalone/include/helpers/valuelistener.h"
 #include "vstgui/standalone/include/helpers/windowcontroller.h"
 #include "vstgui/standalone/include/iapplication.h"
-#include "vstgui/standalone/include/iasync.h"
 #include "vstgui/standalone/include/iuidescwindow.h"
 #include "vstgui/uidescription/cstream.h"
 #include "vstgui/uidescription/delegationcontroller.h"
@@ -99,12 +99,12 @@ inline void calculateMandelbrotBitmap (Model model, SharedPointer<CBitmap> bitma
 
 		const auto maxIterationInv = 1. / model.getIterations ();
 
+		auto asyncGroup = Async::Group::make (Async::backgroundQueue ());
+
 		auto pixelAccess = shared (pa->getPlatformBitmapPixelAccess ());
 		auto colorToInt32 = getColorToInt32 (pixelAccess->getPixelFormat ());
-		auto counter = std::make_shared<uint32_t> (0);
 		for (auto y = 0u; y < static_cast<uint32_t> (size.y); y += numLinesPerTask)
 		{
-			++(*counter);
 			auto task = [=, &taskID] () {
 				for (auto i = 0u; i < numLinesPerTask; ++i)
 				{
@@ -118,15 +118,14 @@ inline void calculateMandelbrotBitmap (Model model, SharedPointer<CBitmap> bitma
 						pixelPtr++;
 					});
 				}
-				Async::perform (Async::Context::Main, [readyCallback, counter, bitmap, id] () {
-					if (--(*counter) == 0)
-					{
-						readyCallback (id, bitmap);
-					}
-				});
 			};
-			Async::perform (Async::Context::Background, std::move (task));
+			asyncGroup->add (std::move (task));
 		}
+
+		asyncGroup->start ([callback = std::move (readyCallback), bitmap, id] () {
+			Async::schedule (Async::mainQueue (),
+			                [call = std::move (callback), bitmap, id] () { call (id, bitmap); });
+		});
 	}
 }
 

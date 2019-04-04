@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __iplatformbitmap__
-#define __iplatformbitmap__
+#pragma once
 
 /// @cond ignore
 
@@ -54,8 +53,6 @@ public:
 	virtual PixelFormat getPixelFormat () const = 0;
 };
 
-} // namespace
+} // VSTGUI
 
 /// @endcond
-
-#endif // __iplatformbitmap__

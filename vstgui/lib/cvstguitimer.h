@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __cvstguitimer__
-#define __cvstguitimer__
+#pragma once
 
 #include "vstguibase.h"
 #include "platform/iplatformtimer.h"
@@ -66,6 +65,4 @@ namespace Call
 	}
 };
 
-} // namespace
-
-#endif
+} // VSTGUI

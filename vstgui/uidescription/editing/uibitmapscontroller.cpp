@@ -114,7 +114,7 @@ public:
 
 	void setBackground (CBitmap *background) override
 	{
-		IPlatformBitmap* platformBitmap = background ? background->getPlatformBitmap () : nullptr;
+		auto platformBitmap = background ? background->getPlatformBitmap () : nullptr;
 		if (platformBitmap && platformBitmap->getScaleFactor () != 1.)
 		{
 			// get rid of the scale factor
@@ -454,18 +454,21 @@ bool UIBitmapsDataSource::add ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-class UIBitmapSettingsController : public CBaseObject, public IController
+class UIBitmapSettingsController : public NonAtomicReferenceCounted, public IDialogController
 {
 public:
 	UIBitmapSettingsController (CBitmap* bitmap, const std::string& bitmapName, UIDescription* description, IActionPerformer* actionPerformer);
 	~UIBitmapSettingsController () noexcept override = default;
 
-	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;
 	CView* createView (const UIAttributes& attributes, const IUIDescription* description) override;
 	void valueChanged (CControl* pControl) override;
 	void controlBeginEdit (CControl* pControl) override;
 	void controlEndEdit (CControl* pControl) override;
+
+	void onDialogButton1Clicked (UIDialogController*) override;
+	void onDialogButton2Clicked (UIDialogController*) override;
+	void onDialogShow (UIDialogController*) override;
 protected:
 	void updateNinePartTiledControls ();
 	static bool stringToValue (UTF8StringPtr txt, float& result, CTextEdit::StringToValueUserData* userData);
@@ -616,19 +619,20 @@ void UIBitmapSettingsController::controlEndEdit (CControl* control)
 }
 
 //----------------------------------------------------------------------------------------------------
-CMessageResult UIBitmapSettingsController::notify (CBaseObject* sender, IdStringPtr message)
+void UIBitmapSettingsController::onDialogButton1Clicked (UIDialogController*)
 {
-	if (message == UIDialogController::kMsgDialogButton1Clicked)
-	{
-		return kMessageNotified;
-	}
-	else if (message == UIDialogController::kMsgDialogShow)
-	{
-		bitmapView->setBackground (bitmap);
-		updateNinePartTiledControls ();
-		return kMessageNotified;
-	}
-	return kMessageUnknown;
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIBitmapSettingsController::onDialogButton2Clicked (UIDialogController*)
+{
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIBitmapSettingsController::onDialogShow (UIDialogController*)
+{
+	bitmapView->setBackground (bitmap);
+	updateNinePartTiledControls ();
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -942,6 +946,6 @@ bool UIBitmapsController::stringToValue (UTF8StringPtr txt, float& result, void*
 	return true;
 }
 
-} // namespace
+} // VSTGUI
 
 #endif // VSTGUI_LIVE_EDITING

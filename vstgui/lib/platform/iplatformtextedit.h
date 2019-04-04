@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __iplatformtextedit__
-#define __iplatformtextedit__
+#pragma once
 
 /// @cond ignore
 
@@ -52,8 +51,6 @@ protected:
 	IPlatformTextEditCallback* textEdit;
 };
 
-} // namespace
+} // VSTGUI
 
 /// @endcond
-
-#endif // __iplatformtextedit__

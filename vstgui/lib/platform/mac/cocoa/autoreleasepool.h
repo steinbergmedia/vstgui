@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __autoreleasepool__
-#define __autoreleasepool__
+#pragma once
 
 #include "../../../vstguibase.h"
 
@@ -29,8 +28,6 @@ protected:
 	NSAutoreleasePool* pool;
 };
 
-} // namespace
+} // VSTGUI
 
 #endif // MAC
-
-#endif // __autoreleasepool__

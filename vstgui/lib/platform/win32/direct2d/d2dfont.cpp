@@ -8,6 +8,7 @@
 
 #include "../win32support.h"
 #include "../winstring.h"
+#include "../comptr.h"
 #include "d2ddrawcontext.h"
 #include <dwrite.h>
 #include <d2d1.h>
@@ -47,6 +48,34 @@ bool D2DFont::getAllPlatformFontFamilies (std::list<std::string>& fontFamilyName
 }
 
 //-----------------------------------------------------------------------------
+static COM::Ptr<IDWriteFont> getFont (IDWriteTextFormat* format, int32_t style)
+{
+	DWRITE_FONT_STYLE fontStyle = (style & kItalicFace) ? DWRITE_FONT_STYLE_ITALIC : DWRITE_FONT_STYLE_NORMAL;
+	DWRITE_FONT_WEIGHT fontWeight = (style & kBoldFace) ? DWRITE_FONT_WEIGHT_BOLD : DWRITE_FONT_WEIGHT_NORMAL;
+	IDWriteFontCollection* fontCollection = nullptr;
+	format->GetFontCollection (&fontCollection);
+	if (!fontCollection)
+		return {};
+	auto nameLength = format->GetFontFamilyNameLength () + 1;
+	auto familyName = std::unique_ptr<WCHAR[]> (new WCHAR [nameLength]);
+	if (FAILED (format->GetFontFamilyName (familyName.get (), nameLength)))
+		return {};
+	UINT32 index = 0;
+	BOOL exists = FALSE;
+	if (FAILED (fontCollection->FindFamilyName (familyName.get (), &index, &exists)))
+		return {};
+	COM::Ptr<IDWriteFontFamily> fontFamily;
+	fontCollection->GetFontFamily (index, fontFamily.adoptPtr ());
+	if (fontFamily)
+	{
+		COM::Ptr<IDWriteFont> font;
+		fontFamily->GetFirstMatchingFont (fontWeight, DWRITE_FONT_STRETCH_NORMAL, fontStyle, font.adoptPtr ());
+		return font;
+	}
+	return {};
+}
+
+//-----------------------------------------------------------------------------
 D2DFont::D2DFont (const UTF8String& name, const CCoord& size, const int32_t& style)
 : textFormat (0)
 , ascent (-1)
@@ -57,30 +86,18 @@ D2DFont::D2DFont (const UTF8String& name, const CCoord& size, const int32_t& sty
 {
 	DWRITE_FONT_STYLE fontStyle = (style & kItalicFace) ? DWRITE_FONT_STYLE_ITALIC : DWRITE_FONT_STYLE_NORMAL;
 	DWRITE_FONT_WEIGHT fontWeight = (style & kBoldFace) ? DWRITE_FONT_WEIGHT_BOLD : DWRITE_FONT_WEIGHT_NORMAL;
-	UTF8StringHelper nameStr (name);
+	UTF8StringHelper nameStr (name.data ());
 	getDWriteFactory ()->CreateTextFormat (nameStr, NULL, fontWeight, fontStyle, DWRITE_FONT_STRETCH_NORMAL, (FLOAT)size, L"en-us", &textFormat);
 	if (textFormat)
 	{
-		IDWriteFontCollection* fontCollection = 0;
-		textFormat->GetFontCollection (&fontCollection);
-		if (fontCollection)
+		if (auto font = getFont (textFormat, style))
 		{
-			IDWriteFontFamily* fontFamily = 0;
-			fontCollection->GetFontFamily (0, &fontFamily);
-			if (fontFamily)
-			{
-				IDWriteFont* font;
-				fontFamily->GetFirstMatchingFont (fontWeight, DWRITE_FONT_STRETCH_NORMAL, fontStyle, &font);
-				if (font)
-				{
-					DWRITE_FONT_METRICS fontMetrics;
-					font->GetMetrics (&fontMetrics);
-					ascent = fontMetrics.ascent * (size / fontMetrics.designUnitsPerEm);
-					descent = fontMetrics.descent * (size / fontMetrics.designUnitsPerEm);
-					leading = fontMetrics.lineGap * (size / fontMetrics.designUnitsPerEm);
-					capHeight = fontMetrics.capHeight * (size / fontMetrics.designUnitsPerEm);
-				}
-			}
+			DWRITE_FONT_METRICS fontMetrics;
+			font->GetMetrics (&fontMetrics);
+			ascent = fontMetrics.ascent * (size / fontMetrics.designUnitsPerEm);
+			descent = fontMetrics.descent * (size / fontMetrics.designUnitsPerEm);
+			leading = fontMetrics.lineGap * (size / fontMetrics.designUnitsPerEm);
+			capHeight = fontMetrics.capHeight * (size / fontMetrics.designUnitsPerEm);
 		}
 	}
 }
@@ -90,6 +107,26 @@ D2DFont::~D2DFont ()
 {
 	if (textFormat)
 		textFormat->Release ();
+}
+
+//-----------------------------------------------------------------------------
+bool D2DFont::asLogFont (LOGFONTW& logfont) const
+{
+	if (!textFormat)
+		return false;
+	COM::Ptr<IDWriteGdiInterop> interOp;
+	if (FAILED (getDWriteFactory ()->GetGdiInterop (interOp.adoptPtr ())))
+		return false;
+	if (auto font = getFont (textFormat, style))
+	{
+		BOOL isSystemFont;
+		if (SUCCEEDED (interOp->ConvertFontToLOGFONT (font.get (), &logfont, &isSystemFont)))
+		{
+			logfont.lfHeight = -static_cast<LONG> (std::round (textFormat->GetFontSize ()));
+			return true;
+		}
+	}
+	return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -161,6 +198,6 @@ CCoord D2DFont::getStringWidth (CDrawContext* context, IPlatformString* string, 
 	return result;
 }
 
-} // namespace
+} // VSTGUI
 
 #endif // WINDOWS

@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __cxypad__
-#define __cxypad__
+#pragma once
 
 #include "cparamdisplay.h"
 #include <cmath>
@@ -11,7 +10,7 @@
 namespace VSTGUI {
 
 //------------------------------------------------------------------------
-class CXYPad : public CParamDisplay
+class CXYPad : public CParamDisplay, protected CMouseWheelEditingSupport
 {
 public:
 	explicit CXYPad (const CRect& size = CRect (0, 0, 0, 0));
@@ -51,11 +50,6 @@ protected:
 	CPoint mouseChangeStartPoint;
 	CPoint lastMouseChangePoint;
 	bool stopTrackingOnMouseExit;
-	
-	SharedPointer<CBaseObject> endEditTimer = nullptr;
 };
 
-
-} // namespace
-
-#endif // __cxypad__
+} // VSTGUI

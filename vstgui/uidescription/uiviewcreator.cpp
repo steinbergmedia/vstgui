@@ -367,37 +367,20 @@ static constexpr auto strLeft = "left";
 static constexpr auto strRight = "right";
 static constexpr auto strCenter = "center";
 
-//-----------------------------------------------------------------------------
-template<typename T> std::string numberToString (T value)
-{
-	std::stringstream str;
-	str << value;
-	return str.str ();
-}
-
+#if VSTGUI_ENABLED_DEPRECATED_METHODS
 //-----------------------------------------------------------------------------
 bool parseSize (const std::string& str, CPoint& point)
 {
-	size_t sep = str.find (',', 0);
-	if (sep != std::string::npos)
-	{
-		point.x = strtol (str.c_str (), nullptr, 10);
-		point.y = strtol (str.c_str () + sep+1, nullptr, 10);
-		return true;
-	}
-	return false;
+	return UIAttributes::stringToPoint (str, point);
 }
 
 //-----------------------------------------------------------------------------
 bool pointToString (const CPoint& p, std::string& string)
 {
-	std::stringstream stream;
-	stream << p.x;
-	stream << ", ";
-	stream << p.y;
-	string = stream.str ();
+	string = UIAttributes::pointToString (p);
 	return true;
 }
+#endif
 
 //-----------------------------------------------------------------------------
 bool bitmapToString (CBitmap* bitmap, std::string& string, const IUIDescription* desc)
@@ -411,7 +394,7 @@ bool bitmapToString (CBitmap* bitmap, std::string& string, const IUIDescription*
 		if (res.type == CResourceDescription::kStringType)
 			string = res.u.name;
 		else
-			string = numberToString (res.u.id);
+			string = UIAttributes::integerToString (res.u.id);
 	}
 	return true;
 }
@@ -664,17 +647,17 @@ public:
 	{
 		if (attributeName == kAttrOrigin)
 		{
-			pointToString (view->getViewSize ().getTopLeft (), stringValue);
+			stringValue = UIAttributes::pointToString (view->getViewSize ().getTopLeft ());
 			return true;
 		}
 		else if (attributeName == kAttrSize)
 		{
-			pointToString (view->getViewSize ().getSize (), stringValue);
+			stringValue = UIAttributes::pointToString (view->getViewSize ().getSize ());
 			return true;
 		}
 		else if (attributeName == kAttrOpacity)
 		{
-			stringValue = numberToString (view->getAlphaValue ());
+			stringValue = UIAttributes::doubleToString (view->getAlphaValue ());
 			return true;
 		}
 		else if (attributeName == kAttrTransparent)
@@ -897,7 +880,7 @@ public:
 			return false;
 		if (attributeName == kAttrZIndex)
 		{
-			stringValue = numberToString (static_cast<int32_t>(lvc->getZIndex ()));
+			stringValue = UIAttributes::integerToString (static_cast<int32_t>(lvc->getZIndex ()));
 			return true;
 		}
 		return false;
@@ -1006,26 +989,17 @@ public:
 		}
 		if (attributeName == kAttrSpacing)
 		{
-			stringValue = numberToString ((int32_t)rcv->getSpacing ());
+			stringValue = UIAttributes::integerToString (static_cast<int32_t> (rcv->getSpacing ()));
 			return true;
 		}
 		if (attributeName == kAttrViewResizeAnimationTime)
 		{
-			stringValue = numberToString (rcv->getViewResizeAnimationTime ());
+			stringValue = UIAttributes::integerToString (static_cast<int32_t> (rcv->getViewResizeAnimationTime ()));
 			return true;
 		}
 		if (attributeName == kAttrMargin)
 		{
-			const CRect& margin = rcv->getMargin ();
-			std::stringstream str;
-			str << (int32_t)margin.left;
-			str << ",";
-			str << (int32_t)margin.top;
-			str << ",";
-			str << (int32_t)margin.right;
-			str << ",";
-			str << (int32_t)margin.bottom;
-			stringValue = str.str ();
+			stringValue = UIAttributes::rectToString (rcv->getMargin ());
 			return true;
 		}
 		if (attributeName == kAttrEqualSizeLayout)
@@ -1155,12 +1129,12 @@ public:
 			return false;
 		if (attributeName == kAttrContainerSize)
 		{
-			pointToString (sc->getContainerSize ().getSize (), stringValue);
+			stringValue = UIAttributes::pointToString (sc->getContainerSize ().getSize ());
 			return true;
 		}
 		if (attributeName == kAttrScrollbarWidth)
 		{
-			stringValue = numberToString (sc->getScrollbarWidth ());
+			stringValue = UIAttributes::doubleToString (sc->getScrollbarWidth ());
 			return true;
 		}
 		CScrollbar* scrollbar = sc->getVerticalScrollbar ();
@@ -1327,22 +1301,22 @@ public:
 		}
 		else if (attributeName == kAttrDefaultValue)
 		{
-			stringValue = numberToString (control->getDefaultValue ());
+			stringValue = UIAttributes::doubleToString (control->getDefaultValue ());
 			return true;
 		}
 		else if (attributeName == kAttrMinValue)
 		{
-			stringValue = numberToString (control->getMin ());
+			stringValue = UIAttributes::doubleToString (control->getMin ());
 			return true;
 		}
 		else if (attributeName == kAttrMaxValue)
 		{
-			stringValue = numberToString (control->getMax ());
+			stringValue = UIAttributes::doubleToString (control->getMax ());
 			return true;
 		}
 		else if (attributeName == kAttrWheelIncValue)
 		{
-			stringValue = numberToString (control->getWheelInc ());
+			stringValue = UIAttributes::doubleToString (control->getWheelInc (), 5);
 			return true;
 		}
 		return false;
@@ -1505,22 +1479,12 @@ public:
 		}
 		else if (attributeName == kAttrFrameWidth)
 		{
-			stringValue = numberToString (checkbox->getFrameWidth ());
+			stringValue = UIAttributes::doubleToString (checkbox->getFrameWidth ());
 			return true;
 		}
 		else if (attributeName == kAttrRoundRectRadius)
 		{
-			stringValue = numberToString (checkbox->getRoundRectRadius ());
-			return true;
-		}
-		else if (attributeName == kAttrFrameWidth)
-		{
-			stringValue = numberToString (checkbox->getFrameWidth ());
-			return true;
-		}
-		else if (attributeName == kAttrRoundRectRadius)
-		{
-			stringValue = numberToString (checkbox->getRoundRectRadius ());
+			stringValue = UIAttributes::doubleToString (checkbox->getRoundRectRadius ());
 			return true;
 		}
 		return false;
@@ -1699,12 +1663,12 @@ public:
 		}
 		else if (attributeName == kAttrTextInset)
 		{
-			pointToString (pd->getTextInset (), stringValue);
+			stringValue = UIAttributes::pointToString (pd->getTextInset ());
 			return true;
 		}
 		else if (attributeName == kAttrTextShadowOffset)
 		{
-			pointToString (pd->getShadowTextOffset (), stringValue);
+			stringValue = UIAttributes::pointToString (pd->getShadowTextOffset ());
 			return true;
 		}
 		else if (attributeName == kAttrFontAntialias)
@@ -1749,12 +1713,12 @@ public:
 		}
 		else if (attributeName == kAttrRoundRectRadius)
 		{
-			stringValue = numberToString (pd->getRoundRectRadius ());
+			stringValue = UIAttributes::doubleToString (pd->getRoundRectRadius ());
 			return true;
 		}
 		else if (attributeName == kAttrFrameWidth)
 		{
-			stringValue = numberToString (pd->getFrameWidth ());
+			stringValue = UIAttributes::doubleToString (pd->getFrameWidth ());
 			return true;
 		}
 		else if (attributeName == kAttrTextAlignment)
@@ -1770,17 +1734,17 @@ public:
 		}
 		else if (attributeName == kAttrValuePrecision)
 		{
-			stringValue = numberToString ((uint32_t)pd->getPrecision ());
+			stringValue = UIAttributes::integerToString (static_cast<int32_t> (pd->getPrecision ()));
 			return true;
 		}
 		else if (attributeName == kAttrTextRotation)
 		{
-			stringValue = numberToString (pd->getTextRotation ());
+			stringValue = UIAttributes::doubleToString (pd->getTextRotation ());
 			return true;
 		}
 		else if (attributeName == kAttrBackgroundOffset)
 		{
-			pointToString (pd->getBackOffset (), stringValue);
+			stringValue = UIAttributes::pointToString (pd->getBackOffset ());
 			return true;
 		}
 		return false;
@@ -2154,7 +2118,7 @@ public:
 			return false;
 		if (attributeName == kAttrClearMarkInset)
 		{
-			pointToString (ste->getClearMarkInset (), stringValue);
+			stringValue = UIAttributes::pointToString (ste->getClearMarkInset ());
 			return true;
 		}
 		return false;
@@ -2376,12 +2340,12 @@ public:
 		}
 		else if (attributeName == kAttrFrameWidth)
 		{
-			stringValue = numberToString (button->getFrameWidth ());
+			stringValue = UIAttributes::doubleToString (button->getFrameWidth ());
 			return true;
 		}
 		else if (attributeName == kAttrRoundRadius)
 		{
-			stringValue = numberToString (button->getRoundRadius ());
+			stringValue = UIAttributes::doubleToString (button->getRoundRadius ());
 			return true;
 		}
 		else if (attributeName == kAttrKickStyle)
@@ -2414,7 +2378,7 @@ public:
 		}
 		else if (attributeName == kAttrIconTextMargin)
 		{
-			stringValue = numberToString (button->getTextMargin ());
+			stringValue = UIAttributes::doubleToString (button->getTextMargin ());
 			return true;
 		}
 		else if (attributeName == kAttrTextAlignment)
@@ -2453,7 +2417,10 @@ class CSegmentButtonCreator : public ViewCreatorAdapter
 {
 public:
 	std::string SelectionModeSingle = "Single";
+	std::string SelectionModeSingleToggle = "Single-Toggle";
 	std::string SelectionModeMultiple = "Multiple";
+	std::string strHorizontalInverse = "horizontal-inverse";
+	std::string strVerticalInverse = "vertical-inverse";
 
 	CSegmentButtonCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCSegmentButton; }
@@ -2509,7 +2476,16 @@ public:
 
 		attr = attributes.getAttributeValue (kAttrStyle);
 		if (attr)
-			button->setStyle (*attr == strHorizontal ? CSegmentButton::Style::kHorizontal : CSegmentButton::Style::kVertical);
+		{
+			if (*attr == strHorizontal)
+				button->setStyle(CSegmentButton::Style::kHorizontal);
+			else if (*attr == strVertical)
+				button->setStyle(CSegmentButton::Style::kVertical);
+			else if (*attr == strHorizontalInverse)
+				button->setStyle(CSegmentButton::Style::kHorizontalInverse);
+			else if (*attr == strVerticalInverse)
+				button->setStyle(CSegmentButton::Style::kVerticalInverse);
+		}
 
 		CColor color;
 		if (stringToColor (attributes.getAttributeValue (kAttrTextColor), color, description))
@@ -2563,6 +2539,8 @@ public:
 		{
 			if (*attr == SelectionModeSingle)
 				button->setSelectionMode (CSegmentButton::SelectionMode::kSingle);
+			else if (*attr == SelectionModeSingleToggle)
+				button->setSelectionMode (CSegmentButton::SelectionMode::kSingleToggle);
 			else if (*attr == SelectionModeMultiple)
 				button->setSelectionMode (CSegmentButton::SelectionMode::kMultiple);
 		}
@@ -2608,11 +2586,17 @@ public:
 	{
 		if (attributeName == kAttrStyle)
 		{
-			return getStandardAttributeListValues (kAttrOrientation, values);
+			if (getStandardAttributeListValues (kAttrOrientation, values))
+			{
+				values.emplace_back (&strHorizontalInverse);
+				values.emplace_back (&strVerticalInverse);
+				return true;
+			}
 		}
 		else if (attributeName == kAttrSelectionMode)
 		{
 			values.push_back (&SelectionModeSingle);
+			values.push_back (&SelectionModeSingleToggle);
 			values.push_back (&SelectionModeMultiple);
 			return true;
 		}
@@ -2643,7 +2627,7 @@ public:
 			UIAttributes::StringArray stringArray;
 			for (const auto& segment : segments)
 				stringArray.emplace_back (segment.name.getString ());
-			stringValue = UIAttributes::createStringArrayValue (stringArray);
+			stringValue = UIAttributes::stringArrayToString (stringArray);
 			return true;
 		}
 		else if (attributeName == kAttrTextColor)
@@ -2663,23 +2647,43 @@ public:
 		}
 		else if (attributeName == kAttrFrameWidth)
 		{
-			stringValue = numberToString (button->getFrameWidth ());
+			stringValue = UIAttributes::doubleToString (button->getFrameWidth ());
 			return true;
 		}
 		else if (attributeName == kAttrRoundRadius)
 		{
-			stringValue = numberToString (button->getRoundRadius ());
+			stringValue = UIAttributes::doubleToString (button->getRoundRadius ());
 			return true;
 		}
 		else if (attributeName == kAttrStyle)
 		{
-			stringValue = button->getStyle () == CSegmentButton::Style::kHorizontal ? strHorizontal :
-			                                                                          strVertical;
-			return true;
+			switch (button->getStyle ())
+			{
+				case CSegmentButton::Style::kHorizontal:
+				{
+					stringValue = strHorizontal;
+					return true;
+				}
+				case CSegmentButton::Style::kHorizontalInverse:
+				{
+					stringValue = strHorizontalInverse;
+					return true;
+				}
+				case CSegmentButton::Style::kVertical:
+				{
+					stringValue = strVertical;
+					return true;
+				}
+				case CSegmentButton::Style::kVerticalInverse:
+				{
+					stringValue = strVerticalInverse;
+					return true;
+				}
+			}
 		}
 		else if (attributeName == kAttrIconTextMargin)
 		{
-			stringValue = numberToString (button->getTextMargin ());
+			stringValue = UIAttributes::doubleToString (button->getTextMargin ());
 			return true;
 		}
 		else if (attributeName == kAttrTextAlignment)
@@ -2732,6 +2736,11 @@ public:
 					stringValue = SelectionModeSingle;
 					break;
 				}
+				case CSegmentButton::SelectionMode::kSingleToggle:
+				{
+					stringValue = SelectionModeSingleToggle;
+					break;
+				}
 				case CSegmentButton::SelectionMode::kMultiple:
 				{
 					stringValue = SelectionModeMultiple;
@@ -2747,17 +2756,12 @@ public:
 CSegmentButtonCreator __gCSegmentButtonCreator;
 
 //-----------------------------------------------------------------------------
-class CKnobCreator : public ViewCreatorAdapter
+class CKnobBaseCreator : public ViewCreatorAdapter
 {
 public:
-	CKnobCreator () { UIViewFactory::registerViewCreator (*this); }
-	IdStringPtr getViewName () const override { return kCKnob; }
-	IdStringPtr getBaseViewName () const override { return kCControl; }
-	UTF8StringPtr getDisplayName () const override { return "Knob"; }
-	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CKnob (CRect (0, 0, 0, 0), nullptr, -1, nullptr, nullptr); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
-		auto* knob = dynamic_cast<CKnob*> (view);
+		auto* knob = dynamic_cast<CKnobBase*> (view);
 		if (!knob)
 			return false;
 
@@ -2765,21 +2769,100 @@ public:
 		if (attributes.getDoubleAttribute (kAttrAngleStart, d))
 		{
 			// convert from degree
-			d = d / 180.f * (float)Constants::pi;
+			d = d / 180.f * static_cast<float> (Constants::pi);
 			knob->setStartAngle (static_cast<float>(d));
 		}
 		if (attributes.getDoubleAttribute (kAttrAngleRange, d))
 		{
 			// convert from degree
-			d = d / 180.f * (float)Constants::pi;
+			d = d / 180.f * static_cast<float> (Constants::pi);
 			knob->setRangeAngle (static_cast<float>(d));
 		}
 		if (attributes.getDoubleAttribute (kAttrValueInset, d))
 			knob->setInsetValue (d);
-		if (attributes.getDoubleAttribute (kAttrCoronaInset, d))
-			knob->setCoronaInset (d);
 		if (attributes.getDoubleAttribute (kAttrZoomFactor, d))
 			knob->setZoomFactor (static_cast<float>(d));
+
+		return true;
+	}
+	bool getAttributeNames (std::list<std::string>& attributeNames) const override
+	{
+		attributeNames.emplace_back (kAttrAngleStart);
+		attributeNames.emplace_back (kAttrAngleRange);
+		attributeNames.emplace_back (kAttrValueInset);
+		attributeNames.emplace_back (kAttrZoomFactor);
+		return true;
+	}
+	AttrType getAttributeType (const std::string& attributeName) const override
+	{
+		if (attributeName == kAttrAngleStart) return kFloatType;
+		if (attributeName == kAttrAngleRange) return kFloatType;
+		if (attributeName == kAttrValueInset) return kFloatType;
+		if (attributeName == kAttrZoomFactor) return kFloatType;
+		return kUnknownType;
+	}
+	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const override
+	{
+		auto* knob = dynamic_cast<CKnobBase*> (view);
+		if (!knob)
+			return false;
+
+		if (attributeName == kAttrAngleStart)
+		{
+			stringValue = UIAttributes::doubleToString ((knob->getStartAngle () / Constants::pi * 180.), 5);
+			return true;
+		}
+		if (attributeName == kAttrAngleRange)
+		{
+			stringValue = UIAttributes::doubleToString ((knob->getRangeAngle () / Constants::pi * 180.), 5);
+			return true;
+		}
+		if (attributeName == kAttrValueInset)
+		{
+			stringValue = UIAttributes::doubleToString (knob->getInsetValue ());
+			return true;
+		}
+		if (attributeName == kAttrZoomFactor)
+		{
+			stringValue = UIAttributes::doubleToString (knob->getZoomFactor ());
+			return true;
+		}
+		return false;
+	}
+};
+
+//-----------------------------------------------------------------------------
+class CKnobCreator : public CKnobBaseCreator
+{
+public:
+	CKnobCreator () { UIViewFactory::registerViewCreator (*this); }
+	IdStringPtr getViewName () const override { return kCKnob; }
+	IdStringPtr getBaseViewName () const override { return kCControl; }
+	UTF8StringPtr getDisplayName () const override { return "Knob"; }
+	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override
+	{
+		auto knob = new CKnob (CRect (0, 0, 70, 70), nullptr, -1, nullptr, nullptr);
+		knob->setDrawStyle (CKnob::kCoronaDrawing | CKnob::kCoronaOutline |
+		                    CKnob::kCoronaLineDashDot | CKnob::kCoronaLineCapButt |
+		                    CKnob::kSkipHandleDrawing);
+		knob->setCoronaColor (kRedCColor);
+		knob->setColorShadowHandle (kBlackCColor);
+		knob->setHandleLineWidth (8.);
+		knob->setCoronaInset (12);
+		knob->setCoronaOutlineWidthAdd (2.);
+		knob->setCoronaDashDotLengths ({1.26, 0.1});
+		knob->setValue (1.f);
+		return knob;
+	}
+	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
+	{
+		auto* knob = dynamic_cast<CKnob*> (view);
+		if (!knob)
+			return false;
+
+		double d;
+		if (attributes.getDoubleAttribute (kAttrCoronaInset, d))
+			knob->setCoronaInset (d);
 		if (attributes.getDoubleAttribute (kAttrHandleLineWidth, d))
 			knob->setHandleLineWidth (d);
 		if (attributes.getDoubleAttribute (kAttrCoronaOutlineWidthAdd, d))
@@ -2792,6 +2875,21 @@ public:
 			knob->setColorShadowHandle (color);
 		if (stringToColor (attributes.getAttributeValue (kAttrHandleColor), color, description))
 			knob->setColorHandle (color);
+
+		UIAttributes::StringArray dashLengthsStrings;
+		if (attributes.getStringArrayAttribute (kAttrCoronaDashDotLengths, dashLengthsStrings))
+		{
+			CLineStyle::CoordVector lengths;
+			for (auto& str : dashLengthsStrings)
+			{
+				double value;
+				if (UIAttributes::stringToDouble (str, value))
+				{
+					lengths.emplace_back (value);
+				}
+			}
+			knob->setCoronaDashDotLengths (lengths);
+		}
 
 		CBitmap* bitmap;
 		if (stringToBitmap (attributes.getAttributeValue (kAttrHandleBitmap), bitmap, description))
@@ -2807,14 +2905,10 @@ public:
 		applyStyleMask (attributes.getAttributeValue (kAttrCoronaLineCapButt), CKnob::kCoronaLineCapButt, drawStyle);
 		applyStyleMask (attributes.getAttributeValue (kAttrSkipHandleDrawing), CKnob::kSkipHandleDrawing, drawStyle);
 		knob->setDrawStyle (drawStyle);
-		return true;
+		return CKnobBaseCreator::apply (view, attributes, description);
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const override
 	{
-		attributeNames.emplace_back (kAttrAngleStart);
-		attributeNames.emplace_back (kAttrAngleRange);
-		attributeNames.emplace_back (kAttrValueInset);
-		attributeNames.emplace_back (kAttrZoomFactor);
 		attributeNames.emplace_back (kAttrCircleDrawing);
 		attributeNames.emplace_back (kAttrCoronaDrawing);
 		attributeNames.emplace_back (kAttrCoronaOutline);
@@ -2829,31 +2923,29 @@ public:
 		attributeNames.emplace_back (kAttrHandleColor);
 		attributeNames.emplace_back (kAttrHandleLineWidth);
 		attributeNames.emplace_back (kAttrCoronaOutlineWidthAdd);
+		attributeNames.emplace_back (kAttrCoronaDashDotLengths);
 		attributeNames.emplace_back (kAttrHandleBitmap);
-		return true;
+		return CKnobBaseCreator::getAttributeNames (attributeNames);
 	}
 	AttrType getAttributeType (const std::string& attributeName) const override
 	{
-		if (attributeName == kAttrAngleStart) return kFloatType;
-		else if (attributeName == kAttrAngleRange) return kFloatType;
-		else if (attributeName == kAttrValueInset) return kFloatType;
-		else if (attributeName == kAttrZoomFactor) return kFloatType;
-		else if (attributeName == kAttrCircleDrawing) return kBooleanType;
-		else if (attributeName == kAttrCoronaDrawing) return kBooleanType;
-		else if (attributeName == kAttrCoronaOutline) return kBooleanType;
-		else if (attributeName == kAttrCoronaFromCenter) return kBooleanType;
-		else if (attributeName == kAttrCoronaInverted) return kBooleanType;
-		else if (attributeName == kAttrCoronaDashDot) return kBooleanType;
-		else if (attributeName == kAttrCoronaLineCapButt) return kBooleanType;
-		else if (attributeName == kAttrSkipHandleDrawing) return kBooleanType;
-		else if (attributeName == kAttrCoronaInset) return kFloatType;
-		else if (attributeName == kAttrCoronaColor) return kColorType;
-		else if (attributeName == kAttrHandleShadowColor) return kColorType;
-		else if (attributeName == kAttrHandleColor) return kColorType;
-		else if (attributeName == kAttrHandleLineWidth) return kFloatType;
-		else if (attributeName == kAttrCoronaOutlineWidthAdd) return kFloatType;
-		else if (attributeName == kAttrHandleBitmap) return kBitmapType;
-		return kUnknownType;
+		if (attributeName == kAttrCircleDrawing) return kBooleanType;
+		if (attributeName == kAttrCoronaDrawing) return kBooleanType;
+		if (attributeName == kAttrCoronaOutline) return kBooleanType;
+		if (attributeName == kAttrCoronaFromCenter) return kBooleanType;
+		if (attributeName == kAttrCoronaInverted) return kBooleanType;
+		if (attributeName == kAttrCoronaDashDot) return kBooleanType;
+		if (attributeName == kAttrCoronaLineCapButt) return kBooleanType;
+		if (attributeName == kAttrSkipHandleDrawing) return kBooleanType;
+		if (attributeName == kAttrCoronaInset) return kFloatType;
+		if (attributeName == kAttrCoronaColor) return kColorType;
+		if (attributeName == kAttrHandleShadowColor) return kColorType;
+		if (attributeName == kAttrHandleColor) return kColorType;
+		if (attributeName == kAttrHandleLineWidth) return kFloatType;
+		if (attributeName == kAttrCoronaOutlineWidthAdd) return kFloatType;
+		if (attributeName == kAttrCoronaDashDotLengths) return kStringType;
+		if (attributeName == kAttrHandleBitmap) return kBitmapType;
+		return CKnobBaseCreator::getAttributeType (attributeName);
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const override
 	{
@@ -2861,57 +2953,37 @@ public:
 		if (!knob)
 			return false;
 
-		if (attributeName == kAttrAngleStart)
+		if (attributeName == kAttrCoronaInset)
 		{
-			stringValue = numberToString ((knob->getStartAngle () / Constants::pi * 180.));
+			stringValue = UIAttributes::doubleToString (knob->getCoronaInset ());
 			return true;
 		}
-		else if (attributeName == kAttrAngleRange)
+		if (attributeName == kAttrHandleLineWidth)
 		{
-			stringValue = numberToString ((knob->getRangeAngle () / Constants::pi * 180.));
+			stringValue = UIAttributes::doubleToString (knob->getHandleLineWidth ());
 			return true;
 		}
-		else if (attributeName == kAttrValueInset)
+		if (attributeName == kAttrCoronaOutlineWidthAdd)
 		{
-			stringValue = numberToString (knob->getInsetValue ());
+			stringValue = UIAttributes::doubleToString (knob->getCoronaOutlineWidthAdd ());
 			return true;
 		}
-		else if (attributeName == kAttrCoronaInset)
-		{
-			stringValue = numberToString (knob->getCoronaInset ());
-			return true;
-		}
-		else if (attributeName == kAttrZoomFactor)
-		{
-			stringValue = numberToString (knob->getZoomFactor ());
-			return true;
-		}
-		else if (attributeName == kAttrHandleLineWidth)
-		{
-			stringValue = numberToString (knob->getHandleLineWidth ());
-			return true;
-		}
-		else if (attributeName == kAttrCoronaOutlineWidthAdd)
-		{
-			stringValue = numberToString (knob->getCoronaOutlineWidthAdd ());
-			return true;
-		}
-		else if (attributeName == kAttrCoronaColor)
+		if (attributeName == kAttrCoronaColor)
 		{
 			colorToString (knob->getCoronaColor (), stringValue, desc);
 			return true;
 		}
-		else if (attributeName == kAttrHandleShadowColor)
+		if (attributeName == kAttrHandleShadowColor)
 		{
 			colorToString (knob->getColorShadowHandle (), stringValue, desc);
 			return true;
 		}
-		else if (attributeName == kAttrHandleColor)
+		if (attributeName == kAttrHandleColor)
 		{
 			colorToString (knob->getColorHandle (), stringValue, desc);
 			return true;
 		}
-		else if (attributeName == kAttrHandleBitmap)
+		if (attributeName == kAttrHandleBitmap)
 		{
 			CBitmap* bitmap = knob->getHandleBitmap ();
 			if (bitmap)
@@ -2919,7 +2991,7 @@ public:
 				return bitmapToString (bitmap, stringValue, desc);
 			}
 		}
-		else if (attributeName == kAttrCircleDrawing)
+		if (attributeName == kAttrCircleDrawing)
 		{
 			if (knob->getDrawStyle () & CKnob::kHandleCircleDrawing)
 				stringValue = strTrue;
@@ -2927,7 +2999,7 @@ public:
 				stringValue = strFalse;
 			return true;
 		}
-		else if (attributeName == kAttrCoronaDrawing)
+		if (attributeName == kAttrCoronaDrawing)
 		{
 			if (knob->getDrawStyle () & CKnob::kCoronaDrawing)
 				stringValue = strTrue;
@@ -2935,7 +3007,7 @@ public:
 				stringValue = strFalse;
 			return true;
 		}
-		else if (attributeName == kAttrCoronaFromCenter)
+		if (attributeName == kAttrCoronaFromCenter)
 		{
 			if (knob->getDrawStyle () & CKnob::kCoronaFromCenter)
 				stringValue = strTrue;
@@ -2943,7 +3015,7 @@ public:
 				stringValue = strFalse;
 			return true;
 		}
-		else if (attributeName == kAttrCoronaInverted)
+		if (attributeName == kAttrCoronaInverted)
 		{
 			if (knob->getDrawStyle () & CKnob::kCoronaInverted)
 				stringValue = strTrue;
@@ -2951,7 +3023,7 @@ public:
 				stringValue = strFalse;
 			return true;
 		}
-		else if (attributeName == kAttrCoronaDashDot)
+		if (attributeName == kAttrCoronaDashDot)
 		{
 			if (knob->getDrawStyle () & CKnob::kCoronaLineDashDot)
 				stringValue = strTrue;
@@ -2959,7 +3031,7 @@ public:
 				stringValue = strFalse;
 			return true;
 		}
-		else if (attributeName == kAttrCoronaOutline)
+		if (attributeName == kAttrCoronaOutline)
 		{
 			if (knob->getDrawStyle () & CKnob::kCoronaOutline)
 				stringValue = strTrue;
@@ -2967,7 +3039,7 @@ public:
 				stringValue = strFalse;
 			return true;
 		}
-		else if (attributeName == kAttrCoronaLineCapButt)
+		if (attributeName == kAttrCoronaLineCapButt)
 		{
 			if (knob->getDrawStyle () & CKnob::kCoronaLineCapButt)
 				stringValue = strTrue;
@@ -2975,7 +3047,7 @@ public:
 				stringValue = strFalse;
 			return true;
 		}
-		else if (attributeName == kAttrSkipHandleDrawing)
+		if (attributeName == kAttrSkipHandleDrawing)
 		{
 			if (knob->getDrawStyle () & CKnob::kSkipHandleDrawing)
 				stringValue = strTrue;
@@ -2983,17 +3055,28 @@ public:
 				stringValue = strFalse;
 			return true;
 		}
-		return false;
+		if (attributeName == kAttrCoronaDashDotLengths)
+		{
+			const auto& lengths = knob->getCoronaDashDotLengths ();
+			UIAttributes::StringArray lengthStrings;
+			for (auto value : lengths)
+			{
+				lengthStrings.emplace_back (UIAttributes::doubleToString (value));
+			}
+			stringValue = UIAttributes::stringArrayToString (lengthStrings);
+			return true;
+		}
+		return CKnobBaseCreator::getAttributeValue (view, attributeName, stringValue, desc);
 	}
 
 };
 CKnobCreator __CKnobCreator;
 
 //-----------------------------------------------------------------------------
-class IMultiBitmapControlCreator : public ViewCreatorAdapter
+class IMultiBitmapControlCreator
 {
 public:
-	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
+	static bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description)
 	{
 		auto* multiBitmapControl = dynamic_cast<IMultiBitmapControl*> (view);
 		if (!multiBitmapControl)
@@ -3009,19 +3092,19 @@ public:
 			multiBitmapControl->setNumSubPixmaps (value);
 		return true;
 	}
-	bool getAttributeNames (std::list<std::string>& attributeNames) const override
+	static bool getAttributeNames (std::list<std::string>& attributeNames)
 	{
 		attributeNames.emplace_back (kAttrHeightOfOneImage);
 		attributeNames.emplace_back (kAttrSubPixmaps);
 		return true;
 	}
-	AttrType getAttributeType (const std::string& attributeName) const override
+	static IViewCreator::AttrType getAttributeType (const std::string& attributeName)
 	{
-		if (attributeName == kAttrHeightOfOneImage) return kIntegerType;
-		if (attributeName == kAttrSubPixmaps) return kIntegerType;
-		return kUnknownType;
+		if (attributeName == kAttrHeightOfOneImage) return IViewCreator::AttrType::kIntegerType;
+		if (attributeName == kAttrSubPixmaps) return IViewCreator::AttrType::kIntegerType;
+		return IViewCreator::AttrType::kUnknownType;
 	}
-	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const override
+	static bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc)
 	{
 		auto* multiBitmapControl = dynamic_cast<IMultiBitmapControl*> (view);
 		if (!multiBitmapControl)
@@ -3029,12 +3112,12 @@ public:
 
 		if (attributeName == kAttrHeightOfOneImage)
 		{
-			stringValue = numberToString ((int32_t)multiBitmapControl->getHeightOfOneImage ());
+			stringValue = UIAttributes::integerToString (static_cast<int32_t> (multiBitmapControl->getHeightOfOneImage ()));
 			return true;
 		}
 		if (attributeName == kAttrSubPixmaps)
 		{
-			stringValue = numberToString (multiBitmapControl->getNumSubPixmaps ());
+			stringValue = UIAttributes::integerToString (multiBitmapControl->getNumSubPixmaps ());
 			return true;
 		}
 		return false;
@@ -3043,40 +3126,72 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-class CAnimKnobCreator : public IMultiBitmapControlCreator
+class MultiBitmapControlCreator : public ViewCreatorAdapter
+{
+public:
+	bool getAttributeNames (std::list<std::string>& attributeNames) const override
+	{
+		return IMultiBitmapControlCreator::getAttributeNames (attributeNames);
+	}
+	AttrType getAttributeType (const std::string& attributeName) const override
+	{
+		return IMultiBitmapControlCreator::getAttributeType (attributeName);
+	}
+	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
+	{
+		return IMultiBitmapControlCreator::apply (view, attributes, description);
+	}
+	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const override
+	{
+		return IMultiBitmapControlCreator::getAttributeValue (view, attributeName, stringValue, desc);
+	}
+};
+
+//-----------------------------------------------------------------------------
+class CAnimKnobCreator : public CKnobBaseCreator
 {
 public:
 	CAnimKnobCreator () { UIViewFactory::registerViewCreator (*this); }
 	IdStringPtr getViewName () const override { return kCAnimKnob; }
-	IdStringPtr getBaseViewName () const override { return kCKnob; }
+	IdStringPtr getBaseViewName () const override { return kCControl; }
 	UTF8StringPtr getDisplayName () const override { return "Animation Knob"; }
-	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CAnimKnob (CRect (0, 0, 0, 0), nullptr, -1, nullptr); }
+	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override
+	{
+		return new CAnimKnob (CRect (0, 0, 0, 0), nullptr, -1, nullptr);
+	}
 
-	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
+	bool apply (CView* view, const UIAttributes& attributes,
+	            const IUIDescription* description) const override
 	{
 		auto* animKnob = dynamic_cast<CAnimKnob*> (view);
 		if (!animKnob)
 			return false;
 
 		bool b;
-		if (attributes.getBooleanAttribute(kAttrInverseBitmap, b))
+		if (attributes.getBooleanAttribute (kAttrInverseBitmap, b))
 		{
 			animKnob->setInverseBitmap (b);
 		}
-
-		return IMultiBitmapControlCreator::apply (view, attributes, description);
+		IMultiBitmapControlCreator::apply (view, attributes, description);
+		return CKnobBaseCreator::apply (view, attributes, description);
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const override
 	{
 		attributeNames.emplace_back (kAttrInverseBitmap);
-		return IMultiBitmapControlCreator::getAttributeNames (attributeNames);
+		IMultiBitmapControlCreator::getAttributeNames (attributeNames);
+		return CKnobBaseCreator::getAttributeNames (attributeNames);
 	}
 	AttrType getAttributeType (const std::string& attributeName) const override
 	{
-		if (attributeName == kAttrInverseBitmap) return kBooleanType;
+		if (attributeName == kAttrInverseBitmap)
+			return kBooleanType;
+		auto res = CKnobBaseCreator::getAttributeType (attributeName);
+		if (res != kUnknownType)
+			return res;
 		return IMultiBitmapControlCreator::getAttributeType (attributeName);
 	}
-	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const override
+	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue,
+	                        const IUIDescription* desc) const override
 	{
 		auto* animKnob = dynamic_cast<CAnimKnob*> (view);
 		if (!animKnob)
@@ -3084,16 +3199,19 @@ public:
 
 		if (attributeName == kAttrInverseBitmap)
 		{
-			stringValue = animKnob->getInverseBitmap() ? strTrue : strFalse;
+			stringValue = animKnob->getInverseBitmap () ? strTrue : strFalse;
 			return true;
 		}
-		return IMultiBitmapControlCreator::getAttributeValue (view, attributeName, stringValue, desc);
+		if (CKnobBaseCreator::getAttributeValue (view, attributeName, stringValue, desc))
+			return true;
+		return IMultiBitmapControlCreator::getAttributeValue (view, attributeName, stringValue,
+		                                                      desc);
 	}
 };
 CAnimKnobCreator __gCAnimKnobCreator;
 
 //-----------------------------------------------------------------------------
-class CSwitchBaseCreator : public IMultiBitmapControlCreator
+class CSwitchBaseCreator : public ViewCreatorAdapter
 {
 public:
 	bool getAttributeNames (std::list<std::string>& attributeNames) const override
@@ -3160,7 +3278,7 @@ public:
 CHorizontalSwitchCreator __gCHorizontalSwitchCreator;
 
 //-----------------------------------------------------------------------------
-class CRockerSwitchCreator : public IMultiBitmapControlCreator
+class CRockerSwitchCreator : public MultiBitmapControlCreator
 {
 public:
 	CRockerSwitchCreator () { UIViewFactory::registerViewCreator (*this); }
@@ -3172,7 +3290,7 @@ public:
 CRockerSwitchCreator __gCRockerSwitchCreator;
 
 //-----------------------------------------------------------------------------
-class CMovieBitmapCreator : public IMultiBitmapControlCreator
+class CMovieBitmapCreator : public MultiBitmapControlCreator
 {
 public:
 	CMovieBitmapCreator () { UIViewFactory::registerViewCreator (*this); }
@@ -3184,7 +3302,7 @@ public:
 CMovieBitmapCreator __gCMovieBitmapCreator;
 
 //-----------------------------------------------------------------------------
-class CMovieButtonCreator : public IMultiBitmapControlCreator
+class CMovieButtonCreator : public MultiBitmapControlCreator
 {
 public:
 	CMovieButtonCreator () { UIViewFactory::registerViewCreator (*this); }
@@ -3196,7 +3314,7 @@ public:
 CMovieButtonCreator __gCMovieButtonCreator;
 
 //-----------------------------------------------------------------------------
-class CKickButtonCreator : public IMultiBitmapControlCreator
+class CKickButtonCreator : public MultiBitmapControlCreator
 {
 public:
 	CKickButtonCreator () { UIViewFactory::registerViewCreator (*this); }
@@ -3406,17 +3524,17 @@ public:
 		}
 		else if (attributeName == kAttrHandleOffset)
 		{
-			pointToString (slider->getOffsetHandle (), stringValue);
+			stringValue = UIAttributes::pointToString (slider->getOffsetHandle ());
 			return true;
 		}
 		else if (attributeName == kAttrBitmapOffset)
 		{
-			pointToString (slider->getOffset (), stringValue);
+			stringValue = UIAttributes::pointToString (slider->getOffset ());
 			return true;
 		}
 		else if (attributeName == kAttrZoomFactor)
 		{
-			stringValue = numberToString (slider->getZoomFactor ());
+			stringValue = UIAttributes::doubleToString (slider->getZoomFactor ());
 			return true;
 		}
 		else if (attributeName == kAttrOrientation)
@@ -3494,7 +3612,7 @@ public:
 		}
 		else if (attributeName == kAttrFrameWidth)
 		{
-			stringValue = numberToString (slider->getFrameWidth ());
+			stringValue = UIAttributes::doubleToString (slider->getFrameWidth ());
 			return true;
 		}
 
@@ -3593,12 +3711,12 @@ public:
 		}
 		else if (attributeName == kAttrNumLed)
 		{
-			stringValue = numberToString (vuMeter->getNbLed ());
+			stringValue = UIAttributes::integerToString (vuMeter->getNbLed ());
 			return true;
 		}
 		else if (attributeName == kAttrDecreaseStepValue)
 		{
-			stringValue = numberToString (vuMeter->getDecreaseStepValue ());
+			stringValue = UIAttributes::doubleToString (vuMeter->getDecreaseStepValue ());
 			return true;
 		}
 		return false;
@@ -3692,22 +3810,22 @@ public:
 		}
 		else if (attributeName == kAttrSplashOrigin)
 		{
-			pointToString (splashScreen->getSplashRect ().getTopLeft (), stringValue);
+			stringValue = UIAttributes::pointToString (splashScreen->getSplashRect ().getTopLeft ());
 			return true;
 		}
 		else if (attributeName == kAttrSplashSize)
 		{
-			pointToString (splashScreen->getSplashRect ().getSize (), stringValue);
+			stringValue = UIAttributes::pointToString (splashScreen->getSplashRect ().getSize ());
 			return true;
 		}
 		else if (attributeName == kAttrAnimationIndex)
 		{
-			stringValue = numberToString (splashScreen->getAnimationIndex ());
+			stringValue = UIAttributes::integerToString (splashScreen->getAnimationIndex ());
 			return true;
 		}
 		else if (attributeName == kAttrAnimationTime)
 		{
-			stringValue = numberToString (splashScreen->getAnimationTime ());
+			stringValue = UIAttributes::integerToString (splashScreen->getAnimationTime ());
 			return true;
 		}
 		return false;
@@ -3846,7 +3964,7 @@ public:
 		}
 		else if (attributeName == kAttrAnimationTime)
 		{
-			stringValue = numberToString ((int32_t)viewSwitch->getAnimationTime ());
+			stringValue = UIAttributes::integerToString (static_cast<int32_t> (viewSwitch->getAnimationTime ()));
 			return true;
 		}
 		else if (attributeName == kAttrAnimationStyle)
@@ -4007,7 +4125,7 @@ public:
 			return false;
 		if (attributeName == kAttrSeparatorWidth)
 		{
-			stringValue = numberToString ((int32_t)splitView->getSeparatorWidth ());
+			stringValue = UIAttributes::integerToString (static_cast<int32_t> (splitView->getSeparatorWidth ()));
 			return true;
 		}
 		if (attributeName == kAttrOrientation)
@@ -4112,17 +4230,17 @@ public:
 			return false;
 		if (attributeName == kAttrShadowIntensity)
 		{
-			stringValue = numberToString (shadowView->getShadowIntensity ());
+			stringValue = UIAttributes::doubleToString (shadowView->getShadowIntensity ());
 			return true;
 		}
 		else if (attributeName == kAttrShadowBlurSize)
 		{
-			stringValue = numberToString (shadowView->getShadowBlurSize ());
+			stringValue = UIAttributes::doubleToString (shadowView->getShadowBlurSize ());
 			return true;
 		}
 		else if (attributeName == kAttrShadowOffset)
 		{
-			pointToString (shadowView->getShadowOffset (), stringValue);
+			stringValue = UIAttributes::pointToString (shadowView->getShadowOffset ());
 			return true;
 		}
 		return false;
@@ -4272,17 +4390,17 @@ public:
 		}
 		if (attributeName == kAttrGradientAngle)
 		{
-			stringValue = numberToString (gv->getGradientAngle ());
+			stringValue = UIAttributes::doubleToString (gv->getGradientAngle ());
 			return true;
 		}
 		if (attributeName == kAttrRoundRectRadius)
 		{
-			stringValue = numberToString (gv->getRoundRectRadius ());
+			stringValue = UIAttributes::doubleToString (gv->getRoundRectRadius ());
 			return true;
 		}
 		if (attributeName == kAttrFrameWidth)
 		{
-			stringValue = numberToString (gv->getFrameWidth ());
+			stringValue = UIAttributes::doubleToString (gv->getFrameWidth ());
 			return true;
 		}
 		if (attributeName == kAttrDrawAntialiased)
@@ -4297,12 +4415,12 @@ public:
 		}
 		if (attributeName == kAttrRadialRadius)
 		{
-			stringValue = numberToString (gv->getRadialRadius ());
+			stringValue = UIAttributes::doubleToString (gv->getRadialRadius ());
 			return true;
 		}
 		if (attributeName == kAttrRadialCenter)
 		{
-			pointToString (gv->getRadialCenter (), stringValue);
+			stringValue = UIAttributes::pointToString (gv->getRadialCenter ());
 			return true;
 		}
 		if (attributeName == kAttrGradient)
@@ -4375,7 +4493,7 @@ static bool getStandardAttributeListValues (const std::string& attributeName, st
 	}
 	return false;
 }
-}} // namespace
+}} // VSTGUI
 
 /**
 @endcond ignore

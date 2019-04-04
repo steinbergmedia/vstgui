@@ -183,6 +183,6 @@ void COpenGLView::onScaleFactorChanged (CFrame* frame, double newScaleFactor)
 	updatePlatformOpenGLViewSize ();
 }
 
-} // namespace
+} // VSTGUI
 
 #endif // VSTGUI_OPENGL_SUPPORT
