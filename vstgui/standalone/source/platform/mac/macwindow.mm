@@ -86,6 +86,7 @@ public:
 	void setPosition (const CPoint& newPosition) override;
 	void setTitle (const UTF8String& newTitle) override;
 	void setRepresentedPath (const UTF8String& path) override;
+	WindowStyle changeStyle (WindowStyle stylesToAdd, WindowStyle stylesToRemove) override;
 
 	void show () override;
 	void hide () override;
@@ -113,6 +114,7 @@ public:
 private:
 	NSRect validateFrameRect (NSRect r) const;
 
+	WindowStyle style;
 	NSWindow* _Nullable nsWindow {nullptr};
 	VSTGUIWindowDelegate* _Nullable nsWindowDelegate {nullptr};
 	IWindowDelegate* _Nullable delegate {nullptr};
@@ -123,12 +125,14 @@ private:
 //------------------------------------------------------------------------
 bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegate)
 {
+	style = config.style;
+
 	NSUInteger styleMask = 0;
-	if (config.style.hasBorder ())
+	if (style.hasBorder ())
 		styleMask |= MacWindowStyleMask::Titled;
-	if (config.style.canSize ())
+	if (style.canSize ())
 		styleMask |= MacWindowStyleMask::Resizable | MacWindowStyleMask::Miniaturizable;
-	if (config.style.canClose ())
+	if (style.canClose ())
 		styleMask |= MacWindowStyleMask::Closable;
 
 	delegate = &inDelegate;
@@ -145,7 +149,7 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 
 		popup.becomesKeyOnlyIfNeeded = NO;
 		popup.level = NSFloatingWindowLevel;
-		popup.supportMovableByWindowBackground = config.style.isMovableByWindowBackground ();
+		popup.supportMovableByWindowBackground = style.isMovableByWindowBackground ();
 
 		nsWindow = popup;
 		nsWindowDelegate = [VSTGUIPopupDelegate new];
@@ -158,15 +162,15 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 		                                                       styleMask:styleMask
 		                                                         backing:NSBackingStoreBuffered
 		                                                           defer:YES];
-		window.supportMovableByWindowBackground = config.style.isMovableByWindowBackground ();
+		window.supportMovableByWindowBackground = style.isMovableByWindowBackground ();
 		nsWindow = window;
 
 		nsWindowDelegate = [VSTGUIWindowDelegate new];
 		nsWindowDelegate.macWindow = this;
 		[nsWindow setAnimationBehavior:NSWindowAnimationBehaviorNone];
-		if (!config.style.canClose ())
+		if (!style.canClose ())
 			window.nonClosable = true;
-		if (config.style.canSize ())
+		if (style.canSize ())
 		{
 			nsWindow.collectionBehavior =
 			    NSWindowCollectionBehaviorFullScreenPrimary | nsWindow.collectionBehavior;
@@ -176,7 +180,7 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 	    NSWindowCollectionBehaviorFullScreenAuxiliary | nsWindow.collectionBehavior;
 	[nsWindow setDelegate:nsWindowDelegate];
 
-	if (config.style.isTransparent ())
+	if (style.isTransparent ())
 	{
 		nsWindow.backgroundColor = [NSColor clearColor];
 		nsWindow.opaque = NO;
@@ -348,6 +352,24 @@ void Window::setRepresentedPath (const UTF8String& path)
 		auto url = [NSURL fileURLWithPath:(__bridge NSString*)pathMacStr->getCFString ()];
 		nsWindow.representedURL = url;
 	}
+}
+
+//------------------------------------------------------------------------
+WindowStyle Window::changeStyle (WindowStyle stylesToAdd, WindowStyle stylesToRemove)
+{
+	auto styleMask = nsWindow.styleMask;
+	if (stylesToAdd.canSize ())
+	{
+		styleMask |= MacWindowStyleMask::Resizable | MacWindowStyleMask::Miniaturizable;
+		style += WindowStyle ().size ();
+	}
+	else if (stylesToRemove.canSize ())
+	{
+		styleMask &= ~(MacWindowStyleMask::Resizable | MacWindowStyleMask::Miniaturizable);
+		style -= WindowStyle ().size ();
+	}
+	nsWindow.styleMask = styleMask;
+	return style;
 }
 
 //------------------------------------------------------------------------

@@ -92,6 +92,7 @@ public:
 	}
 	void setContentView (const SharedPointer<CFrame>& newFrame) override;
 	void setRepresentedPath (const UTF8String& path) override;
+	WindowStyle changeStyle (WindowStyle stylesToAdd, WindowStyle stylesToRemove) override;
 	void show () override;
 	void hide () override { platformWindow->hide (); }
 	void close () override { platformWindow->close (); }
@@ -221,6 +222,14 @@ void Window::setRepresentedPath (const UTF8String& path)
 {
 	platformWindow->setRepresentedPath (path);
 }
+
+//------------------------------------------------------------------------
+WindowStyle Window::changeStyle (WindowStyle stylesToAdd, WindowStyle stylesToRemove)
+{
+	windowStyle = platformWindow->changeStyle (stylesToAdd, stylesToRemove);
+	return windowStyle;
+}
+
 
 //------------------------------------------------------------------------
 CRect Window::getFocusViewRect () const

@@ -88,6 +88,7 @@ public:
 	void setPosition (const CPoint& newPosition) override;
 	void setTitle (const UTF8String& newTitle) override;
 	void setRepresentedPath (const UTF8String& path) override;
+	WindowStyle changeStyle (WindowStyle stylesToAdd, WindowStyle stylesToRemove) override;
 
 	void show () override;
 	void hide () override;
@@ -282,6 +283,13 @@ void Window::setTitle (const UTF8String& newTitle)
 
 //------------------------------------------------------------------------
 void Window::setRepresentedPath (const UTF8String& path) {}
+
+//------------------------------------------------------------------------
+WindowStyle Window::changeStyle (WindowStyle stylesToAdd, WindowStyle stylesToRemove)
+{
+	// TODO: Implementation
+	return style;
+}
 
 //------------------------------------------------------------------------
 void Window::show ()
