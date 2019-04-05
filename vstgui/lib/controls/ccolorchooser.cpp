@@ -25,9 +25,9 @@ public:
 	: CSlider (size, listener, tag, 0, 0, nullptr, nullptr)
 	{
 		if (size.getWidth () > size.getHeight ())
-			setHandleSize (size.getHeight (), size.getHeight ());
+			setHandleSizePrivate (size.getHeight (), size.getHeight ());
 		else
-			setHandleSize (size.getWidth (), size.getWidth ());
+			setHandleSizePrivate (size.getWidth (), size.getWidth ());
 		const CRect& r (size);
 		setViewSize (r, false);
 		setWheelInc (10.f/255.f);
@@ -44,8 +44,8 @@ public:
 		CCoord backgroundFrameWidth = 1;
 		CCoord handleFrameWidth = 1;
 
-		auto controlSize = getControlSize ();
-		auto sliderSize = getHandleSize ();
+		auto controlSize = getControlSizePrivate ();
+		auto sliderSize = getHandleSizePrivate ();
 
 		CRect backgroundRect;
 		backgroundRect.setSize (controlSize);

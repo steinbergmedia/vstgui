@@ -13,7 +13,6 @@ namespace VSTGUI {
 
 //------------------------------------------------------------------------
 bool CSliderBase::kAlwaysUseZoomFactor = false;
-CSliderMode CSliderBase::globalMode = CSliderMode::FreeClick;
 
 //------------------------------------------------------------------------
 struct CSliderBase::Impl
@@ -39,7 +38,12 @@ struct CSliderBase::Impl
 	float meStartValue;
 	CButtonState meOldButton;
 	CCoord meDelta {0.};
+
+	static CSliderMode globalMode;
 };
+
+//------------------------------------------------------------------------
+CSliderMode CSliderBase::Impl::globalMode = CSliderMode::FreeClick;
 
 //------------------------------------------------------------------------
 CSliderBase::CSliderBase (const CRect& size, IControlListener* listener, int32_t tag)
@@ -60,21 +64,21 @@ CSliderBase::~CSliderBase () noexcept
 }
 
 //------------------------------------------------------------------------
-void CSliderBase::setHandleRange (CCoord range)
+void CSliderBase::setHandleRangePrivate (CCoord range)
 {
 	impl->rangeHandle = range;
 	updateInternalHandleValues ();
 }
 
 //------------------------------------------------------------------------
-void CSliderBase::setHandleMinPos (CCoord pos)
+void CSliderBase::setHandleMinPosPrivate (CCoord pos)
 {
 	impl->minPos = pos;
 	updateInternalHandleValues ();
 }
 
 //------------------------------------------------------------------------
-CCoord CSliderBase::getHandleMinPos () const
+CCoord CSliderBase::getHandleMinPosPrivate () const
 {
 	return impl->minPos;
 }
@@ -93,7 +97,7 @@ CPoint CSliderBase::getOffsetHandle () const
 }
 
 //------------------------------------------------------------------------
-void CSliderBase::setHandleSize (CCoord width, CCoord height)
+void CSliderBase::setHandleSizePrivate (CCoord width, CCoord height)
 {
 	impl->handleSize.x = width;
 	impl->handleSize.y = height;
@@ -101,13 +105,13 @@ void CSliderBase::setHandleSize (CCoord width, CCoord height)
 }
 
 //------------------------------------------------------------------------
-CPoint CSliderBase::getHandleSize () const
+CPoint CSliderBase::getHandleSizePrivate () const
 {
 	return impl->handleSize;
 }
 
 //------------------------------------------------------------------------
-CPoint CSliderBase::getControlSize () const
+CPoint CSliderBase::getControlSizePrivate () const
 {
 	return {getWidth (), getHeight ()};
 }
@@ -181,7 +185,7 @@ CSliderMode CSliderBase::getSliderMode () const
 CSliderMode CSliderBase::getEffectiveSliderMode () const
 {
 	if (impl->mode == CSliderMode::UseGlobal)
-		return globalMode;
+		return Impl::globalMode;
 	return impl->mode;
 }
 
@@ -189,13 +193,13 @@ CSliderMode CSliderBase::getEffectiveSliderMode () const
 void CSliderBase::setGlobalMode (CSliderMode mode)
 {
 	vstgui_assert (mode != CSliderMode::UseGlobal, "do not set the global mode to use global");
-	globalMode = mode;
+	Impl::globalMode = mode;
 }
 
 //------------------------------------------------------------------------
 CSliderMode CSliderBase::getGlobalMode ()
 {
-	return globalMode;
+	return Impl::globalMode;
 }
 
 //------------------------------------------------------------------------
@@ -627,13 +631,13 @@ CSlider::CSlider (const CRect& rect, IControlListener* listener, int32_t tag, in
 
 	if (style & kHorizontal)
 	{
-		setHandleMinPos (iMinPos - getViewSize ().left);
-		setHandleRange ((CCoord)iMaxPos - iMinPos);
+		setHandleMinPosPrivate (iMinPos - getViewSize ().left);
+		setHandleRangePrivate ((CCoord)iMaxPos - iMinPos);
 	}
 	else
 	{
-		setHandleMinPos (iMinPos - getViewSize ().top);
-		setHandleRange ((CCoord)iMaxPos - iMinPos);
+		setHandleMinPosPrivate (iMinPos - getViewSize ().top);
+		setHandleRangePrivate ((CCoord)iMaxPos - iMinPos);
 	}
 
 	setWantsFocus (true);
@@ -666,9 +670,9 @@ CSlider::CSlider (const CRect& rect, IControlListener* listener, int32_t tag,
 	setHandle (handle);
 
 	if (isStyleHorizontal ())
-		setHandleRange (_rangeHandle - getHandleSize ().x);
+		setHandleRangePrivate (_rangeHandle - getHandleSizePrivate ().x);
 	else
-		setHandleRange (_rangeHandle - getHandleSize ().y);
+		setHandleRangePrivate (_rangeHandle - getHandleSizePrivate ().y);
 
 	setOffsetHandle (offsetHandle);
 
@@ -688,42 +692,6 @@ CSlider::~CSlider () noexcept
 
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 //------------------------------------------------------------------------
-void CSlider::setMode (Mode newMode)
-{
-	switch (newMode)
-	{
-		case kTouchMode: setSliderMode (CSliderMode::Touch); break;
-		case kRelativeTouchMode: setSliderMode (CSliderMode::RelativeTouch); break;
-		case kFreeClickMode: setSliderMode (CSliderMode::FreeClick); break;
-		case kRampMode: setSliderMode (CSliderMode::Ramp); break;
-	}
-}
-
-//------------------------------------------------------------------------
-auto CSlider::getMode () const -> Mode
-{
-	switch (getSliderMode ())
-	{
-		case CSliderMode::Touch: return kTouchMode;
-		case CSliderMode::RelativeTouch: return kRelativeTouchMode;
-		case CSliderMode::FreeClick: return kFreeClickMode;
-		case CSliderMode::Ramp: return kRampMode;
-		case CSliderMode::UseGlobal:
-		{
-			switch (getGlobalMode ())
-			{
-				case CSliderMode::Touch: return kTouchMode;
-				case CSliderMode::RelativeTouch: return kRelativeTouchMode;
-				case CSliderMode::FreeClick: return kFreeClickMode;
-				case CSliderMode::Ramp: return kRampMode;
-				case CSliderMode::UseGlobal: vstgui_assert (false, ""); break;
-			}
-		}
-	}
-	return kTouchMode;
-}
-
-//------------------------------------------------------------------------
 void CSlider::setOffset (const CPoint& val)
 {
 	setBackgroundOffset (val);
@@ -734,7 +702,6 @@ CPoint CSlider::getOffset () const
 {
 	return getBackgroundOffset ();
 }
-
 #endif
 
 //------------------------------------------------------------------------
@@ -772,7 +739,7 @@ void CSlider::draw (CDrawContext* pContext)
 	// draw background
 	if (getDrawBackground ())
 	{
-		CRect rect (0, 0, getControlSize ().x, getControlSize ().y);
+		CRect rect (0, 0, getControlSizePrivate ().x, getControlSizePrivate ().y);
 		rect.offset (getViewSize ().left, getViewSize ().top);
 		getDrawBackground ()->draw (drawContext, rect, getBackgroundOffset ());
 	}
@@ -885,12 +852,12 @@ void CSlider::setHandle (CBitmap* _pHandle)
 	impl->pHandle = _pHandle;
 	if (impl->pHandle)
 	{
-		setHandleSize (impl->pHandle->getWidth (), impl->pHandle->getHeight ());
+		setHandleSizePrivate (impl->pHandle->getWidth (), impl->pHandle->getHeight ());
 		setViewSize (getViewSize (), true);
 	}
 	else
 	{
-		setHandleSize (1., 1.);
+		setHandleSizePrivate (1., 1.);
 	}
 }
 

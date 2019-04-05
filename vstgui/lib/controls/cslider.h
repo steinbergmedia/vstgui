@@ -76,12 +76,12 @@ protected:
 	CRect calculateHandleRect (float normValue) const;
 
 	// for sub-classes to access private variables:
-	void setHandleSize (CCoord width, CCoord height);
-	CPoint getHandleSize () const;
-	CPoint getControlSize () const;
-	void setHandleRange (CCoord range);
-	void setHandleMinPos (CCoord pos);
-	CCoord getHandleMinPos () const;
+	void setHandleSizePrivate (CCoord width, CCoord height);
+	CPoint getHandleSizePrivate () const;
+	CPoint getControlSizePrivate () const;
+	void setHandleRangePrivate (CCoord range);
+	void setHandleMinPosPrivate (CCoord pos);
+	CCoord getHandleMinPosPrivate () const;
 
 private:
 	void updateInternalHandleValues ();
@@ -90,8 +90,6 @@ private:
 
 	struct Impl;
 	std::unique_ptr<Impl> impl;
-
-	static CSliderMode globalMode;
 };
 
 //------------------------------------------------------------------------
@@ -111,25 +109,16 @@ public:
 	         const CPoint& offset = CPoint (0, 0), const int32_t style = kLeft | kHorizontal);
 	CSlider (const CSlider& slider);
 
-#if VSTGUI_ENABLE_DEPRECATED_METHODS
-	enum Mode
-	{
-		kTouchMode,
-		kRelativeTouchMode,
-		kFreeClickMode,
-		kRampMode
-	};
-#endif
 //------------------------------------------------------------------------
 	/// @name CSlider Methods
 //------------------------------------------------------------------------
 	//@{
-	VSTGUI_DEPRECATED (virtual void setDrawTransparentHandle (bool val) {})
-	VSTGUI_DEPRECATED (virtual bool getDrawTransparentHandle () const { return true; })
-	VSTGUI_DEPRECATED (virtual void setMode (Mode newMode);)
-	VSTGUI_DEPRECATED (virtual Mode getMode () const;)
-	VSTGUI_DEPRECATED (virtual void setOffset (const CPoint& val);)
-	VSTGUI_DEPRECATED (virtual CPoint getOffset () const;)
+	VSTGUI_DEPRECATED (
+	    /** \deprecated use setBackgroundOffset */
+	    virtual void setOffset (const CPoint& val);)
+	VSTGUI_DEPRECATED (
+	    /** \deprecated use getBackgroundOffset*/
+	    virtual CPoint getOffset () const;)
 
 	/** set background draw offset */
 	void setBackgroundOffset (const CPoint& offset);
