@@ -594,7 +594,7 @@ void CSegmentButton::verifySelections ()
 			selectedIndex = 0;
 		for (auto& segment : segments)
 			segment.selected = false;
-		setSelectedSegment (selectedIndex);
+		segments[selectedIndex].selected = true;
 	}
 }
 
