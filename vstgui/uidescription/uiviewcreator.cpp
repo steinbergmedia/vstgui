@@ -3326,23 +3326,17 @@ public:
 CKickButtonCreator __gCKickButtonCreator;
 
 //-----------------------------------------------------------------------------
-class CSliderCreator : public ViewCreatorAdapter
+struct CSliderBaseCreator : public ViewCreatorAdapter
 {
-public:
 	std::string kTouch = "touch";
 	std::string kRelativeTouch = "relative touch";
 	std::string kFreeClick = "free click";
 	std::string kRamp = "ramp";
 	std::string kUseGlobal = "use global";
 
-	CSliderCreator () { UIViewFactory::registerViewCreator (*this); }
-	IdStringPtr getViewName () const override { return kCSlider; }
-	IdStringPtr getBaseViewName () const override { return kCControl; }
-	UTF8StringPtr getDisplayName () const override { return "Slider"; }
-	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CSlider (CRect (0, 0, 0, 0), nullptr, -1, 0, 0, nullptr, nullptr); }
 	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
 	{
-		auto* slider = dynamic_cast<CSlider*> (view);
+		auto* slider = dynamic_cast<CSliderBase*> (view);
 		if (!slider)
 			return false;
 
@@ -3367,15 +3361,10 @@ public:
 			else if (*modeAttr == kUseGlobal)
 				slider->setSliderMode (CSliderMode::UseGlobal);
 		}
-		CBitmap* bitmap;
-		if (stringToBitmap (attributes.getAttributeValue (kAttrHandleBitmap), bitmap, description))
-			slider->setHandle (bitmap);
 
 		CPoint p;
 		if (attributes.getPointAttribute (kAttrHandleOffset, p))
 			slider->setOffsetHandle (p);
-		if (attributes.getPointAttribute (kAttrBitmapOffset, p))
-			slider->setOffset (p);
 
 		double d;
 		if (attributes.getDoubleAttribute (kAttrZoomFactor, d))
@@ -3430,6 +3419,122 @@ public:
 			slider->setStyle (style);
 		}
 
+		return true;
+	}
+
+	bool getAttributeNames (std::list<std::string>& attributeNames) const override
+	{
+		attributeNames.emplace_back (kAttrMode);
+		attributeNames.emplace_back (kAttrOrientation);
+		attributeNames.emplace_back (kAttrReverseOrientation);
+		attributeNames.emplace_back (kAttrHandleOffset);
+		attributeNames.emplace_back (kAttrZoomFactor);
+		return true;
+	}
+	AttrType getAttributeType (const std::string& attributeName) const override
+	{
+		if (attributeName == kAttrMode) return kListType;
+		if (attributeName == kAttrHandleOffset) return kPointType;
+		if (attributeName == kAttrZoomFactor) return kFloatType;
+		if (attributeName == kAttrOrientation) return kListType;
+		if (attributeName == kAttrReverseOrientation) return kBooleanType;
+		return kUnknownType;
+	}
+	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const override
+	{
+		auto* slider = dynamic_cast<CSliderBase*> (view);
+		if (!slider)
+			return false;
+
+		if (attributeName == kAttrMode)
+		{
+			switch (slider->getSliderMode ())
+			{
+				case CSliderMode::Touch:
+					stringValue = kTouch; break;
+				case CSliderMode::RelativeTouch:
+					stringValue = kRelativeTouch; break;
+				case CSliderMode::FreeClick:
+					stringValue = kFreeClick; break;
+				case CSliderMode::Ramp:
+					stringValue = kRamp; break;
+				case CSliderMode::UseGlobal:
+					stringValue = kUseGlobal; break;
+			}
+			return true;
+		}
+		if (attributeName == kAttrHandleOffset)
+		{
+			stringValue = UIAttributes::pointToString (slider->getOffsetHandle ());
+			return true;
+		}
+		if (attributeName == kAttrZoomFactor)
+		{
+			stringValue = UIAttributes::doubleToString (slider->getZoomFactor ());
+			return true;
+		}
+		if (attributeName == kAttrOrientation)
+		{
+			if (slider->getStyle () & CSlider::kVertical)
+				stringValue = strVertical;
+			else
+				stringValue = strHorizontal;
+			return true;
+		}
+		if (attributeName == kAttrReverseOrientation)
+		{
+			int32_t style = slider->getStyle ();
+			stringValue = strFalse;
+			if (((style & CSlider::kVertical) && (style & CSlider::kTop)) || ((style & CSlider::kHorizontal) && (style & CSlider::kRight)))
+				stringValue = strTrue;
+			else
+				stringValue = strFalse;
+			return true;
+		}
+		return false;
+	}
+	bool getPossibleListValues (const std::string& attributeName, std::list<const std::string*>& values) const override
+	{
+		if (attributeName == kAttrOrientation)
+		{
+			return getStandardAttributeListValues (kAttrOrientation, values);
+		}
+		if (attributeName == kAttrMode)
+		{
+			values.emplace_back (&kTouch);
+			values.emplace_back (&kRelativeTouch);
+			values.emplace_back (&kFreeClick);
+			values.emplace_back (&kRamp);
+			values.emplace_back (&kUseGlobal);
+			return true;
+		}
+		return false;
+	}
+};
+
+//-----------------------------------------------------------------------------
+class CSliderCreator : public CSliderBaseCreator
+{
+public:
+	CSliderCreator () { UIViewFactory::registerViewCreator (*this); }
+	IdStringPtr getViewName () const override { return kCSlider; }
+	IdStringPtr getBaseViewName () const override { return kCControl; }
+	UTF8StringPtr getDisplayName () const override { return "Slider"; }
+	CView* create (const UIAttributes& attributes, const IUIDescription* description) const override { return new CSlider (CRect (0, 0, 0, 0), nullptr, -1, 0, 0, nullptr, nullptr); }
+	bool apply (CView* view, const UIAttributes& attributes, const IUIDescription* description) const override
+	{
+		auto* slider = dynamic_cast<CSlider*> (view);
+		if (!slider)
+			return false;
+
+		CBitmap* bitmap;
+		if (stringToBitmap (attributes.getAttributeValue (kAttrHandleBitmap), bitmap, description))
+			slider->setHandle (bitmap);
+
+		CPoint p;
+		if (attributes.getPointAttribute (kAttrBitmapOffset, p))
+			slider->setBackgroundOffset (p);
+
 		int32_t drawStyle = slider->getDrawStyle ();
 		applyStyleMask (attributes.getAttributeValue (kAttrDrawFrame), CSlider::kDrawFrame, drawStyle);
 		applyStyleMask (attributes.getAttributeValue (kAttrDrawBack), CSlider::kDrawBack, drawStyle);
@@ -3449,17 +3554,13 @@ public:
 			slider->setBackColor (color);
 		if (stringToColor (attributes.getAttributeValue (kAttrDrawValueColor), color, description))
 			slider->setValueColor (color);
-		return true;
+		return CSliderBaseCreator::apply (view, attributes, description);
 	}
 	bool getAttributeNames (std::list<std::string>& attributeNames) const override
 	{
-		attributeNames.emplace_back (kAttrMode);
+		CSliderBaseCreator::getAttributeNames (attributeNames);
 		attributeNames.emplace_back (kAttrHandleBitmap);
-		attributeNames.emplace_back (kAttrHandleOffset);
 		attributeNames.emplace_back (kAttrBitmapOffset);
-		attributeNames.emplace_back (kAttrZoomFactor);
-		attributeNames.emplace_back (kAttrOrientation);
-		attributeNames.emplace_back (kAttrReverseOrientation);
 		attributeNames.emplace_back (kAttrDrawFrame);
 		attributeNames.emplace_back (kAttrDrawBack);
 		attributeNames.emplace_back (kAttrDrawValue);
@@ -3473,13 +3574,8 @@ public:
 	}
 	AttrType getAttributeType (const std::string& attributeName) const override
 	{
-		if (attributeName == kAttrMode) return kListType;
 		if (attributeName == kAttrHandleBitmap) return kBitmapType;
-		if (attributeName == kAttrHandleOffset) return kPointType;
 		if (attributeName == kAttrBitmapOffset) return kPointType;
-		if (attributeName == kAttrZoomFactor) return kFloatType;
-		if (attributeName == kAttrOrientation) return kListType;
-		if (attributeName == kAttrReverseOrientation) return kBooleanType;
 		if (attributeName == kAttrDrawFrame) return kBooleanType;
 		if (attributeName == kAttrDrawBack) return kBooleanType;
 		if (attributeName == kAttrDrawValue) return kBooleanType;
@@ -3489,31 +3585,14 @@ public:
 		if (attributeName == kAttrDrawFrameColor) return kColorType;
 		if (attributeName == kAttrDrawBackColor) return kColorType;
 		if (attributeName == kAttrDrawValueColor) return kColorType;
-		return kUnknownType;
+		return CSliderBaseCreator::getAttributeType (attributeName);
 	}
 	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue, const IUIDescription* desc) const override
 	{
 		auto* slider = dynamic_cast<CSlider*> (view);
 		if (!slider)
 			return false;
-		if (attributeName == kAttrMode)
-		{
-			switch (slider->getSliderMode ())
-			{
-				case CSliderMode::Touch:
-					stringValue = kTouch; break;
-				case CSliderMode::RelativeTouch:
-					stringValue = kRelativeTouch; break;
-				case CSliderMode::FreeClick:
-					stringValue = kFreeClick; break;
-				case CSliderMode::Ramp:
-					stringValue = kRamp; break;
-				case CSliderMode::UseGlobal:
-					stringValue = kUseGlobal; break;
-			}
-			return true;
-		}
-		else if (attributeName == kAttrHandleBitmap)
+		if (attributeName == kAttrHandleBitmap)
 		{
 			CBitmap* bitmap = slider->getHandle ();
 			if (bitmap)
@@ -3522,40 +3601,12 @@ public:
 			}
 			return true;
 		}
-		else if (attributeName == kAttrHandleOffset)
+		if (attributeName == kAttrBitmapOffset)
 		{
-			stringValue = UIAttributes::pointToString (slider->getOffsetHandle ());
+			stringValue = UIAttributes::pointToString (slider->getBackgroundOffset ());
 			return true;
 		}
-		else if (attributeName == kAttrBitmapOffset)
-		{
-			stringValue = UIAttributes::pointToString (slider->getOffset ());
-			return true;
-		}
-		else if (attributeName == kAttrZoomFactor)
-		{
-			stringValue = UIAttributes::doubleToString (slider->getZoomFactor ());
-			return true;
-		}
-		else if (attributeName == kAttrOrientation)
-		{
-			if (slider->getStyle () & CSlider::kVertical)
-				stringValue = strVertical;
-			else
-				stringValue = strHorizontal;
-			return true;
-		}
-		else if (attributeName == kAttrReverseOrientation)
-		{
-			int32_t style = slider->getStyle ();
-			stringValue = strFalse;
-			if (((style & CSlider::kVertical) && (style & CSlider::kTop)) || ((style & CSlider::kHorizontal) && (style & CSlider::kRight)))
-				stringValue = strTrue;
-			else
-				stringValue = strFalse;
-			return true;
-		}
-		else if (attributeName == kAttrDrawFrame)
+		if (attributeName == kAttrDrawFrame)
 		{
 			if (slider->getDrawStyle () & CSlider::kDrawFrame)
 				stringValue = strTrue;
@@ -3563,7 +3614,7 @@ public:
 				stringValue = strFalse;
 			return true;
 		}
-		else if (attributeName == kAttrDrawBack)
+		if (attributeName == kAttrDrawBack)
 		{
 			if (slider->getDrawStyle () & CSlider::kDrawBack)
 				stringValue = strTrue;
@@ -3571,7 +3622,7 @@ public:
 				stringValue = strFalse;
 			return true;
 		}
-		else if (attributeName == kAttrDrawValue)
+		if (attributeName == kAttrDrawValue)
 		{
 			if (slider->getDrawStyle () & CSlider::kDrawValue)
 				stringValue = strTrue;
@@ -3579,7 +3630,7 @@ public:
 				stringValue = strFalse;
 			return true;
 		}
-		else if (attributeName == kAttrDrawValueFromCenter)
+		if (attributeName == kAttrDrawValueFromCenter)
 		{
 			if (slider->getDrawStyle () & CSlider::kDrawValueFromCenter)
 				stringValue = strTrue;
@@ -3587,7 +3638,7 @@ public:
 				stringValue = strFalse;
 			return true;
 		}
-		else if (attributeName == kAttrDrawValueInverted)
+		if (attributeName == kAttrDrawValueInverted)
 		{
 			if (slider->getDrawStyle () & CSlider::kDrawInverted)
 				stringValue = strTrue;
@@ -3595,45 +3646,27 @@ public:
 				stringValue = strFalse;
 			return true;
 		}
-		else if (attributeName == kAttrDrawFrameColor)
+		if (attributeName == kAttrDrawFrameColor)
 		{
 			colorToString (slider->getFrameColor (), stringValue, desc);
 			return true;
 		}
-		else if (attributeName == kAttrDrawBackColor)
+		if (attributeName == kAttrDrawBackColor)
 		{
 			colorToString (slider->getBackColor (), stringValue, desc);
 			return true;
 		}
-		else if (attributeName == kAttrDrawValueColor)
+		if (attributeName == kAttrDrawValueColor)
 		{
 			colorToString (slider->getValueColor (), stringValue, desc);
 			return true;
 		}
-		else if (attributeName == kAttrFrameWidth)
+		if (attributeName == kAttrFrameWidth)
 		{
 			stringValue = UIAttributes::doubleToString (slider->getFrameWidth ());
 			return true;
 		}
-
-		return false;
-	}
-	bool getPossibleListValues (const std::string& attributeName, std::list<const std::string*>& values) const override
-	{
-		if (attributeName == kAttrOrientation)
-		{
-			return getStandardAttributeListValues (kAttrOrientation, values);
-		}
-		if (attributeName == kAttrMode)
-		{
-			values.emplace_back (&kTouch);
-			values.emplace_back (&kRelativeTouch);
-			values.emplace_back (&kFreeClick);
-			values.emplace_back (&kRamp);
-			values.emplace_back (&kUseGlobal);
-			return true;
-		}
-		return false;
+		return CSliderBaseCreator::getAttributeValue (view, attributeName, stringValue, desc);
 	}
 
 };

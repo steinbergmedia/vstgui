@@ -21,6 +21,7 @@ extern bool colorToString (const CColor& color, std::string& string, const IUIDe
 extern bool stringToColor (const std::string* value, CColor& color, const IUIDescription* desc);
 extern bool stringToBitmap (const std::string* value, CBitmap*& bitmap, const IUIDescription* desc);
 
-} } // namespaces
+} // UIViewCreator
+} // VSTGUI
 
 /// @endcond
