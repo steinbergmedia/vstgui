@@ -78,6 +78,22 @@ set(${target}_sources
     editing/uiundomanager.h
     editing/uiviewcreatecontroller.cpp
     editing/uiviewcreatecontroller.h
+    viewcreator/animationsplashscreencreator.cpp
+    viewcreator/animationsplashscreencreator.h
+    viewcreator/gradientviewcreator.cpp
+    viewcreator/gradientviewcreator.h
+    viewcreator/shadowviewcontainercreator.cpp
+    viewcreator/shadowviewcontainercreator.h
+    viewcreator/sliderviewcreator.cpp
+    viewcreator/sliderviewcreator.h
+    viewcreator/splitviewcreator.cpp
+    viewcreator/splitviewcreator.h
+    viewcreator/uiviewswitchcontainercreator.cpp
+    viewcreator/uiviewswitchcontainercreator.h
+    viewcreator/vumetercreator.cpp
+    viewcreator/vumetercreator.h
+    viewcreator/xypadviewcreator.cpp
+    viewcreator/xypadviewcreator.h
 )
 
 ##########################################################################################
