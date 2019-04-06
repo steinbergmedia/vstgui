@@ -1,0 +1,197 @@
+// This file is part of VSTGUI. It is subject to the license terms
+// in the LICENSE file found in the top-level directory of this
+// distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
+
+#include "rowcolumnviewcreator.h"
+
+#include "../../lib/crowcolumnview.h"
+#include "../detail/uiviewcreatorattributes.h"
+#include "../uiattributes.h"
+#include "../uiviewcreator.h"
+#include "../uiviewfactory.h"
+
+//------------------------------------------------------------------------
+namespace VSTGUI {
+namespace UIViewCreator {
+
+//------------------------------------------------------------------------
+CRowColumnViewCreator::CRowColumnViewCreator ()
+{
+	UIViewFactory::registerViewCreator (*this);
+}
+
+//------------------------------------------------------------------------
+IdStringPtr CRowColumnViewCreator::getViewName () const
+{
+	return kCRowColumnView;
+}
+
+//------------------------------------------------------------------------
+IdStringPtr CRowColumnViewCreator::getBaseViewName () const
+{
+	return kCViewContainer;
+}
+
+//------------------------------------------------------------------------
+UTF8StringPtr CRowColumnViewCreator::getDisplayName () const
+{
+	return "Row Column View Container";
+}
+
+//------------------------------------------------------------------------
+CView* CRowColumnViewCreator::create (const UIAttributes& attributes,
+                                      const IUIDescription* description) const
+{
+	return new CRowColumnView (CRect (0, 0, 100, 100));
+}
+
+//------------------------------------------------------------------------
+bool CRowColumnViewCreator::apply (CView* view, const UIAttributes& attributes,
+                                   const IUIDescription* description) const
+{
+	auto* rcv = dynamic_cast<CRowColumnView*> (view);
+	if (rcv == nullptr)
+		return false;
+	const std::string* attr = attributes.getAttributeValue (kAttrRowStyle);
+	if (attr)
+		rcv->setStyle (*attr == strTrue ? CRowColumnView::kRowStyle : CRowColumnView::kColumnStyle);
+	attr = attributes.getAttributeValue (kAttrSpacing);
+	if (attr)
+	{
+		CCoord spacing = UTF8StringView (attr->c_str ()).toDouble ();
+		rcv->setSpacing (spacing);
+	}
+	CRect margin;
+	if (attributes.getRectAttribute (kAttrMargin, margin))
+		rcv->setMargin (margin);
+	attr = attributes.getAttributeValue (kAttrAnimateViewResizing);
+	if (attr)
+		rcv->setAnimateViewResizing (*attr == strTrue ? true : false);
+	attr = attributes.getAttributeValue (kAttrHideClippedSubviews);
+	if (attr)
+		rcv->setHideClippedSubviews (*attr == strTrue ? true : false);
+	attr = attributes.getAttributeValue (kAttrEqualSizeLayout);
+	if (attr)
+	{
+		if (*attr == kStretch)
+			rcv->setLayoutStyle (CRowColumnView::kStretchEqualy);
+		else if (*attr == kCenter)
+			rcv->setLayoutStyle (CRowColumnView::kCenterEqualy);
+		else if (*attr == kRightBottom)
+			rcv->setLayoutStyle (CRowColumnView::kRightBottomEqualy);
+		else
+			rcv->setLayoutStyle (CRowColumnView::kLeftTopEqualy);
+	}
+	attr = attributes.getAttributeValue (kAttrViewResizeAnimationTime);
+	if (attr)
+	{
+		uint32_t time = (uint32_t)strtol (attr->c_str (), nullptr, 10);
+		rcv->setViewResizeAnimationTime (time);
+	}
+	return true;
+}
+
+//------------------------------------------------------------------------
+bool CRowColumnViewCreator::getAttributeNames (std::list<std::string>& attributeNames) const
+{
+	attributeNames.emplace_back (kAttrRowStyle);
+	attributeNames.emplace_back (kAttrSpacing);
+	attributeNames.emplace_back (kAttrMargin);
+	attributeNames.emplace_back (kAttrEqualSizeLayout);
+	attributeNames.emplace_back (kAttrHideClippedSubviews);
+	attributeNames.emplace_back (kAttrAnimateViewResizing);
+	attributeNames.emplace_back (kAttrViewResizeAnimationTime);
+	return true;
+}
+
+//------------------------------------------------------------------------
+auto CRowColumnViewCreator::getAttributeType (const std::string& attributeName) const -> AttrType
+{
+	if (attributeName == kAttrRowStyle)
+		return kBooleanType;
+	if (attributeName == kAttrSpacing)
+		return kIntegerType;
+	if (attributeName == kAttrMargin)
+		return kRectType;
+	if (attributeName == kAttrEqualSizeLayout)
+		return kListType;
+	if (attributeName == kAttrHideClippedSubviews)
+		return kBooleanType;
+	if (attributeName == kAttrAnimateViewResizing)
+		return kBooleanType;
+	if (attributeName == kAttrViewResizeAnimationTime)
+		return kIntegerType;
+	return kUnknownType;
+}
+
+//------------------------------------------------------------------------
+bool CRowColumnViewCreator::getAttributeValue (CView* view, const std::string& attributeName,
+                                               std::string& stringValue,
+                                               const IUIDescription* desc) const
+{
+	auto* rcv = dynamic_cast<CRowColumnView*> (view);
+	if (rcv == nullptr)
+		return false;
+	if (attributeName == kAttrRowStyle)
+	{
+		stringValue = rcv->getStyle () == CRowColumnView::kRowStyle ? strTrue : strFalse;
+		return true;
+	}
+	if (attributeName == kAttrAnimateViewResizing)
+	{
+		stringValue = rcv->isAnimateViewResizing () ? strTrue : strFalse;
+		return true;
+	}
+	if (attributeName == kAttrHideClippedSubviews)
+	{
+		stringValue = rcv->hideClippedSubviews () ? strTrue : strFalse;
+		return true;
+	}
+	if (attributeName == kAttrSpacing)
+	{
+		stringValue = UIAttributes::integerToString (static_cast<int32_t> (rcv->getSpacing ()));
+		return true;
+	}
+	if (attributeName == kAttrViewResizeAnimationTime)
+	{
+		stringValue = UIAttributes::integerToString (
+		    static_cast<int32_t> (rcv->getViewResizeAnimationTime ()));
+		return true;
+	}
+	if (attributeName == kAttrMargin)
+	{
+		stringValue = UIAttributes::rectToString (rcv->getMargin ());
+		return true;
+	}
+	if (attributeName == kAttrEqualSizeLayout)
+	{
+		switch (rcv->getLayoutStyle ())
+		{
+			case CRowColumnView::kLeftTopEqualy: stringValue = kLeftTop; break;
+			case CRowColumnView::kStretchEqualy: stringValue = kStretch; break;
+			case CRowColumnView::kCenterEqualy: stringValue = kCenter; break;
+			case CRowColumnView::kRightBottomEqualy: stringValue = kRightBottom; break;
+		}
+		return true;
+	}
+	return false;
+}
+
+//------------------------------------------------------------------------
+bool CRowColumnViewCreator::getPossibleListValues (const std::string& attributeName,
+                                                   std::list<const std::string*>& values) const
+{
+	if (attributeName == kAttrEqualSizeLayout)
+	{
+		values.emplace_back (&kLeftTop);
+		values.emplace_back (&kStretch);
+		values.emplace_back (&kCenter);
+		values.emplace_back (&kRightBottom);
+		return true;
+	}
+	return false;
+}
+
+//------------------------------------------------------------------------
+} // UIViewCreator
+} // VSTGUI

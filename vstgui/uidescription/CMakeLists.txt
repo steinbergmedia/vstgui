@@ -80,8 +80,26 @@ set(${target}_sources
     editing/uiviewcreatecontroller.h
     viewcreator/animationsplashscreencreator.cpp
     viewcreator/animationsplashscreencreator.h
+    viewcreator/checkboxcreator.cpp
+    viewcreator/checkboxcreator.h
+    viewcreator/controlcreator.cpp
+    viewcreator/controlcreator.h
     viewcreator/gradientviewcreator.cpp
     viewcreator/gradientviewcreator.h
+    viewcreator/layeredviewcontainercreator.cpp
+    viewcreator/layeredviewcontainercreator.h
+    viewcreator/onoffbuttoncreator.cpp
+    viewcreator/onoffbuttoncreator.h
+    viewcreator/optionmenucreator.cpp
+    viewcreator/optionmenucreator.h
+    viewcreator/paramdisplaycreator.cpp
+    viewcreator/paramdisplaycreator.h
+    viewcreator/rowcolumnviewcreator.cpp
+    viewcreator/rowcolumnviewcreator.h
+    viewcreator/scrollviewcreator.cpp
+    viewcreator/scrollviewcreator.h
+    viewcreator/segmentbuttoncreator.cpp
+    viewcreator/segmentbuttoncreator.h
     viewcreator/shadowviewcontainercreator.cpp
     viewcreator/shadowviewcontainercreator.h
     viewcreator/sliderviewcreator.cpp
@@ -90,6 +108,10 @@ set(${target}_sources
     viewcreator/splitviewcreator.h
     viewcreator/uiviewswitchcontainercreator.cpp
     viewcreator/uiviewswitchcontainercreator.h
+    viewcreator/viewcontainercreator.cpp
+    viewcreator/viewcontainercreator.h
+    viewcreator/viewcreator.cpp
+    viewcreator/viewcreator.h
     viewcreator/vumetercreator.cpp
     viewcreator/vumetercreator.h
     viewcreator/xypadviewcreator.cpp
