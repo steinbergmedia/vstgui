@@ -30,15 +30,10 @@ struct UIViewSwitchContainerCreator : ViewCreatorAdapter
 	                            ConstStringPtrList& values) const override;
 
 private:
-	string kLinear = "linear";
-	string kEasyIn = "easy-in";
-	string kEasyOut = "easy-out";
-	string kEasyInOut = "easy-in-out";
-	string kEasy = "easy";
-
-	string kFadeInOut = "fade";
-	string kMoveInOut = "move";
-	string kPushInOut = "push";
+	using TimingFunctionStrings = std::array<string, 5>;
+	using AnimationStyleStrings = std::array<string, 3>;
+	static TimingFunctionStrings& timingFunctionStrings ();
+	static AnimationStyleStrings& animationStyleStrings ();
 };
 
 //------------------------------------------------------------------------

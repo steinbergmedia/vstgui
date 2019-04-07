@@ -9,10 +9,18 @@
 #include "../uiattributes.h"
 #include "../uiviewcreator.h"
 #include "../uiviewfactory.h"
+#include <array>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
 namespace UIViewCreator {
+
+//------------------------------------------------------------------------
+auto SliderBaseCreator::modeStrings () -> ModeStrings&
+{
+	static ModeStrings strings = {"touch", "relative touch", "free click", "ramp", "use global"};
+	return strings;
+}
 
 //------------------------------------------------------------------------
 bool SliderBaseCreator::apply (CView* view, const UIAttributes& attributes,
@@ -33,16 +41,14 @@ bool SliderBaseCreator::apply (CView* view, const UIAttributes& attributes,
 	const auto* modeAttr = attributes.getAttributeValue (kAttrMode);
 	if (modeAttr)
 	{
-		if (*modeAttr == kTouchMode)
-			slider->setSliderMode (CSliderMode::Touch);
-		else if (*modeAttr == kRelativeTouchMode)
-			slider->setSliderMode (CSliderMode::RelativeTouch);
-		else if (*modeAttr == kFreeClickMode)
-			slider->setSliderMode (CSliderMode::FreeClick);
-		else if (*modeAttr == kRampMode)
-			slider->setSliderMode (CSliderMode::Ramp);
-		else if (*modeAttr == kUseGlobalMode)
-			slider->setSliderMode (CSliderMode::UseGlobal);
+		for (auto index = 0u; index <= static_cast<size_t> (CSliderMode::UseGlobal); ++index)
+		{
+			if (*modeAttr == modeStrings ()[index])
+			{
+				slider->setSliderMode (static_cast<CSliderMode> (index));
+				break;
+			}
+		}
 	}
 
 	CPoint p;
@@ -142,14 +148,7 @@ bool SliderBaseCreator::getAttributeValue (CView* view, const string& attributeN
 
 	if (attributeName == kAttrMode)
 	{
-		switch (slider->getSliderMode ())
-		{
-			case CSliderMode::Touch: stringValue = kTouchMode; break;
-			case CSliderMode::RelativeTouch: stringValue = kRelativeTouchMode; break;
-			case CSliderMode::FreeClick: stringValue = kFreeClickMode; break;
-			case CSliderMode::Ramp: stringValue = kRampMode; break;
-			case CSliderMode::UseGlobal: stringValue = kUseGlobalMode; break;
-		}
+		stringValue = modeStrings ()[static_cast<size_t> (slider->getSliderMode ())];
 		return true;
 	}
 	if (attributeName == kAttrHandleOffset)
@@ -194,11 +193,8 @@ bool SliderBaseCreator::getPossibleListValues (const string& attributeName,
 	}
 	if (attributeName == kAttrMode)
 	{
-		values.emplace_back (&kTouchMode);
-		values.emplace_back (&kRelativeTouchMode);
-		values.emplace_back (&kFreeClickMode);
-		values.emplace_back (&kRampMode);
-		values.emplace_back (&kUseGlobalMode);
+		for (auto& str : modeStrings ())
+			values.emplace_back (&str);
 		return true;
 	}
 	return false;

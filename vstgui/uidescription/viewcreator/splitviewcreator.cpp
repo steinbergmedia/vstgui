@@ -9,10 +9,18 @@
 #include "../uiattributes.h"
 #include "../uiviewcreator.h"
 #include "../uiviewfactory.h"
+#include <array>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
 namespace UIViewCreator {
+
+//------------------------------------------------------------------------
+auto SplitViewCreator::resizeModeStrings () -> ResizeModeStrings&
+{
+	static ResizeModeStrings strings = {"first", "second", "last", "all"};
+	return strings;
+}
 
 //------------------------------------------------------------------------
 SplitViewCreator::SplitViewCreator ()
@@ -71,21 +79,13 @@ bool SplitViewCreator::apply (CView* view, const UIAttributes& attributes,
 	attr = attributes.getAttributeValue (kAttrResizeMethod);
 	if (attr)
 	{
-		if (*attr == kFirst)
+		for (auto index = 0u; index <= CSplitView::kResizeAllViews; ++index)
 		{
-			splitView->setResizeMethod (CSplitView::kResizeFirstView);
-		}
-		if (*attr == kSecond)
-		{
-			splitView->setResizeMethod (CSplitView::kResizeSecondView);
-		}
-		else if (*attr == kLast)
-		{
-			splitView->setResizeMethod (CSplitView::kResizeLastView);
-		}
-		else if (*attr == kAll)
-		{
-			splitView->setResizeMethod (CSplitView::kResizeAllViews);
+			if (*attr == resizeModeStrings ()[index])
+			{
+				splitView->setResizeMethod (static_cast<CSplitView::ResizeMethod> (index));
+				break;
+			}
 		}
 	}
 
@@ -134,29 +134,8 @@ bool SplitViewCreator::getAttributeValue (CView* view, const string& attributeNa
 	}
 	if (attributeName == kAttrResizeMethod)
 	{
-		switch (splitView->getResizeMethod ())
-		{
-			case CSplitView::kResizeFirstView:
-			{
-				stringValue = kFirst;
-				return true;
-			}
-			case CSplitView::kResizeSecondView:
-			{
-				stringValue = kSecond;
-				return true;
-			}
-			case CSplitView::kResizeLastView:
-			{
-				stringValue = kLast;
-				return true;
-			}
-			case CSplitView::kResizeAllViews:
-			{
-				stringValue = kAll;
-				return true;
-			}
-		}
+		stringValue = resizeModeStrings ()[splitView->getResizeMethod ()];
+		return true;
 	}
 	return false;
 }
@@ -171,10 +150,8 @@ bool SplitViewCreator::getPossibleListValues (const string& attributeName,
 	}
 	else if (attributeName == kAttrResizeMethod)
 	{
-		values.emplace_back (&kFirst);
-		values.emplace_back (&kSecond);
-		values.emplace_back (&kLast);
-		values.emplace_back (&kAll);
+		for (auto& str : resizeModeStrings ())
+			values.emplace_back (&str);
 		return true;
 	}
 	return false;

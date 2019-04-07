@@ -29,9 +29,8 @@ struct MultiLineTextLabelCreator : ViewCreatorAdapter
 	                            ConstStringPtrList& values) const override;
 
 private:
-	string kClip = "clip";
-	string kTruncate = "truncate";
-	string kWrap = "wrap";
+	using LineLayoutStrings = std::array<string, 3>;
+	static LineLayoutStrings& lineLayoutStrings ();
 };
 
 //------------------------------------------------------------------------

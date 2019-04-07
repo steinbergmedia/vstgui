@@ -9,10 +9,18 @@
 #include "../uiattributes.h"
 #include "../uiviewcreator.h"
 #include "../uiviewfactory.h"
+#include <array>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
 namespace UIViewCreator {
+
+//------------------------------------------------------------------------
+auto GradientViewCreator::styleStrings () -> StyleStrings&
+{
+	static StyleStrings strings = {"linear", "radial"};
+	return strings;
+}
 
 //-----------------------------------------------------------------------------
 GradientViewCreator::GradientViewCreator ()
@@ -81,7 +89,7 @@ bool GradientViewCreator::apply (CView* view, const UIAttributes& attributes,
 	const auto* attr = attributes.getAttributeValue (kAttrGradientStyle);
 	if (attr)
 	{
-		if (*attr == kRadial)
+		if (*attr == styleStrings ()[CGradientView::kRadialGradient])
 			gv->setGradientStyle (CGradientView::kRadialGradient);
 		else
 			gv->setGradientStyle (CGradientView::kLinearGradient);
@@ -167,8 +175,7 @@ auto GradientViewCreator::getAttributeType (const string& attributeName) const -
 
 //------------------------------------------------------------------------
 bool GradientViewCreator::getAttributeValue (CView* view, const string& attributeName,
-                                             string& stringValue,
-                                             const IUIDescription* desc) const
+                                             string& stringValue, const IUIDescription* desc) const
 {
 	auto* gv = dynamic_cast<CGradientView*> (view);
 	if (gv == nullptr)
@@ -200,7 +207,7 @@ bool GradientViewCreator::getAttributeValue (CView* view, const string& attribut
 	}
 	if (attributeName == kAttrGradientStyle)
 	{
-		stringValue = gv->getGradientStyle () == CGradientView::kLinearGradient ? kLinear : kRadial;
+		stringValue = styleStrings ()[gv->getGradientStyle ()];
 		return true;
 	}
 	if (attributeName == kAttrRadialRadius)
@@ -229,16 +236,16 @@ bool GradientViewCreator::getPossibleListValues (const string& attributeName,
 {
 	if (attributeName == kAttrGradientStyle)
 	{
-		values.emplace_back (&kLinear);
-		values.emplace_back (&kRadial);
+		for (auto& str : styleStrings ())
+			values.emplace_back (&str);
 		return true;
 	}
 	return false;
 }
 
 //------------------------------------------------------------------------
-bool GradientViewCreator::getAttributeValueRange (const string& attributeName,
-                                                  double& minValue, double& maxValue) const
+bool GradientViewCreator::getAttributeValueRange (const string& attributeName, double& minValue,
+                                                  double& maxValue) const
 {
 	if (attributeName == kAttrGradientAngle)
 	{

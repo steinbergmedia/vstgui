@@ -9,10 +9,18 @@
 #include "../uiattributes.h"
 #include "../uiviewcreator.h"
 #include "../uiviewfactory.h"
+#include <array>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
 namespace UIViewCreator {
+
+//------------------------------------------------------------------------
+auto SegmentButtonCreator::selectionModeStrings ()->SelectionModeStrings&
+{
+	static SelectionModeStrings strings = {"Single", "Single-Toggle", "Multiple"};
+	return strings;
+}
 
 //------------------------------------------------------------------------
 SegmentButtonCreator::SegmentButtonCreator ()
@@ -161,12 +169,15 @@ bool SegmentButtonCreator::apply (CView* view, const UIAttributes& attributes,
 	attr = attributes.getAttributeValue (kAttrSelectionMode);
 	if (attr)
 	{
-		if (*attr == SelectionModeSingle)
-			button->setSelectionMode (CSegmentButton::SelectionMode::kSingle);
-		else if (*attr == SelectionModeSingleToggle)
-			button->setSelectionMode (CSegmentButton::SelectionMode::kSingleToggle);
-		else if (*attr == SelectionModeMultiple)
-			button->setSelectionMode (CSegmentButton::SelectionMode::kMultiple);
+		using SelectionMode = CSegmentButton::SelectionMode;
+		for (auto index = 0u; index <= static_cast<size_t> (SelectionMode::kMultiple); ++index)
+		{
+			if (*attr == selectionModeStrings ()[index])
+			{
+				button->setSelectionMode (static_cast<SelectionMode> (index));
+				break;
+			}
+		}
 	}
 	return true;
 }
@@ -233,16 +244,18 @@ bool SegmentButtonCreator::getPossibleListValues (const string& attributeName,
 	{
 		if (getStandardAttributeListValues (kAttrOrientation, values))
 		{
-			values.emplace_back (&strHorizontalInverse);
-			values.emplace_back (&strVerticalInverse);
+			static std::string kHorizontalInverse = strHorizontalInverse;
+			static std::string kVerticalInverse = strVerticalInverse;
+
+			values.emplace_back (&kHorizontalInverse);
+			values.emplace_back (&kVerticalInverse);
 			return true;
 		}
 	}
 	else if (attributeName == kAttrSelectionMode)
 	{
-		values.push_back (&SelectionModeSingle);
-		values.push_back (&SelectionModeSingleToggle);
-		values.push_back (&SelectionModeMultiple);
+		for (auto& str : selectionModeStrings ())
+			values.emplace_back (&str);
 		return true;
 	}
 	else if (attributeName == kAttrTruncateMode)
@@ -377,24 +390,7 @@ bool SegmentButtonCreator::getAttributeValue (CView* view, const string& attribu
 	}
 	else if (attributeName == kAttrSelectionMode)
 	{
-		switch (button->getSelectionMode ())
-		{
-			case CSegmentButton::SelectionMode::kSingle:
-			{
-				stringValue = SelectionModeSingle;
-				break;
-			}
-			case CSegmentButton::SelectionMode::kSingleToggle:
-			{
-				stringValue = SelectionModeSingleToggle;
-				break;
-			}
-			case CSegmentButton::SelectionMode::kMultiple:
-			{
-				stringValue = SelectionModeMultiple;
-				break;
-			}
-		}
+		stringValue = selectionModeStrings ()[static_cast<size_t> (button->getSelectionMode ())];
 		return true;
 	}
 	return false;

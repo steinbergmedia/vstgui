@@ -10,10 +10,18 @@
 #include "../uiattributes.h"
 #include "../uiviewcreator.h"
 #include "../uiviewfactory.h"
+#include <array>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
 namespace UIViewCreator {
+
+//------------------------------------------------------------------------
+auto ViewContainerCreator::backgroundColorDrawStyleStrings () -> BackgroundColorDrawStyleStrings&
+{
+	static BackgroundColorDrawStyleStrings strings = {"stroked", "filled", "filled and stroked"};
+	return strings;
+}
 
 //------------------------------------------------------------------------
 ViewContainerCreator::ViewContainerCreator ()
@@ -59,16 +67,14 @@ bool ViewContainerCreator::apply (CView* view, const UIAttributes& attributes,
 	const auto* attr = attributes.getAttributeValue (kAttrBackgroundColorDrawStyle);
 	if (attr)
 	{
-		CDrawStyle drawStyle = kDrawFilledAndStroked;
-		if (*attr == kStroked)
+		for (auto index = 0u; index <= kDrawFilledAndStroked; ++index)
 		{
-			drawStyle = kDrawStroked;
+			if (*attr == backgroundColorDrawStyleStrings ()[index])
+			{
+				viewContainer->setBackgroundColorDrawStyle (static_cast<CDrawStyle> (index));
+				break;
+			}
 		}
-		else if (*attr == kFilled)
-		{
-			drawStyle = kDrawFilled;
-		}
-		viewContainer->setBackgroundColorDrawStyle (drawStyle);
 	}
 	return true;
 }
@@ -105,12 +111,7 @@ bool ViewContainerCreator::getAttributeValue (CView* view, const string& attribu
 	}
 	if (attributeName == kAttrBackgroundColorDrawStyle)
 	{
-		switch (vc->getBackgroundColorDrawStyle ())
-		{
-			case kDrawStroked: stringValue = kStroked; break;
-			case kDrawFilledAndStroked: stringValue = kFilledAndStroked; break;
-			case kDrawFilled: stringValue = kFilled; break;
-		}
+		stringValue = backgroundColorDrawStyleStrings ()[vc->getBackgroundColorDrawStyle ()];
 		return true;
 	}
 	return false;
@@ -122,9 +123,8 @@ bool ViewContainerCreator::getPossibleListValues (const string& attributeName,
 {
 	if (attributeName == kAttrBackgroundColorDrawStyle)
 	{
-		values.emplace_back (&kStroked);
-		values.emplace_back (&kFilledAndStroked);
-		values.emplace_back (&kFilled);
+		for (auto& str : backgroundColorDrawStyleStrings ())
+			values.emplace_back (&str);
 		return true;
 	}
 	return false;

@@ -311,6 +311,8 @@ static constexpr auto strTrue = "true";
 static constexpr auto strFalse = "false";
 static constexpr auto strHorizontal = "horizontal";
 static constexpr auto strVertical = "vertical";
+static constexpr auto strHorizontalInverse = "horizontal-inverse";
+static constexpr auto strVerticalInverse = "vertical-inverse";
 
 static constexpr auto strNone = "none";
 static constexpr auto strHead = "head";

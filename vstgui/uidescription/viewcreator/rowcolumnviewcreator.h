@@ -30,10 +30,8 @@ struct RowColumnViewCreator : ViewCreatorAdapter
 	                            ConstStringPtrList& values) const override;
 
 private:
-	string kLeftTop = "left-top";
-	string kStretch = "stretch";
-	string kCenter = "center";
-	string kRightBottom = "right-bottom";
+	using LayoutStrings = std::array<string, 4>;
+	static LayoutStrings& layoutStrings ();
 };
 
 //------------------------------------------------------------------------

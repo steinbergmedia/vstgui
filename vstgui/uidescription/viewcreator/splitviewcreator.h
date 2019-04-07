@@ -30,10 +30,8 @@ struct SplitViewCreator : ViewCreatorAdapter
 	                            ConstStringPtrList& values) const override;
 
 private:
-	string kFirst = "first";
-	string kSecond = "second";
-	string kLast = "last";
-	string kAll = "all";
+	using ResizeModeStrings = std::array<string, 4>;
+	static ResizeModeStrings& resizeModeStrings ();
 };
 //------------------------------------------------------------------------
 } // UIViewCreator

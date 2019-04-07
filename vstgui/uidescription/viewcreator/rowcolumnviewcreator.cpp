@@ -9,10 +9,18 @@
 #include "../uiattributes.h"
 #include "../uiviewcreator.h"
 #include "../uiviewfactory.h"
+#include <array>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
 namespace UIViewCreator {
+
+//------------------------------------------------------------------------
+auto RowColumnViewCreator::layoutStrings () -> LayoutStrings&
+{
+	static LayoutStrings strings = {"left-top", "center", "right-bottom", "stretch"};
+	return strings;
+}
 
 //------------------------------------------------------------------------
 RowColumnViewCreator::RowColumnViewCreator ()
@@ -73,14 +81,14 @@ bool RowColumnViewCreator::apply (CView* view, const UIAttributes& attributes,
 	attr = attributes.getAttributeValue (kAttrEqualSizeLayout);
 	if (attr)
 	{
-		if (*attr == kStretch)
-			rcv->setLayoutStyle (CRowColumnView::kStretchEqualy);
-		else if (*attr == kCenter)
-			rcv->setLayoutStyle (CRowColumnView::kCenterEqualy);
-		else if (*attr == kRightBottom)
-			rcv->setLayoutStyle (CRowColumnView::kRightBottomEqualy);
-		else
-			rcv->setLayoutStyle (CRowColumnView::kLeftTopEqualy);
+		for (auto index = 0u; index <= CRowColumnView::kStretchEqualy; ++index)
+		{
+			if (*attr == layoutStrings ()[index])
+			{
+				rcv->setLayoutStyle (static_cast<CRowColumnView::LayoutStyle> (index));
+				break;
+			}
+		}
 	}
 	attr = attributes.getAttributeValue (kAttrViewResizeAnimationTime);
 	if (attr)
@@ -164,13 +172,7 @@ bool RowColumnViewCreator::getAttributeValue (CView* view, const string& attribu
 	}
 	if (attributeName == kAttrEqualSizeLayout)
 	{
-		switch (rcv->getLayoutStyle ())
-		{
-			case CRowColumnView::kLeftTopEqualy: stringValue = kLeftTop; break;
-			case CRowColumnView::kStretchEqualy: stringValue = kStretch; break;
-			case CRowColumnView::kCenterEqualy: stringValue = kCenter; break;
-			case CRowColumnView::kRightBottomEqualy: stringValue = kRightBottom; break;
-		}
+		stringValue = layoutStrings ()[rcv->getLayoutStyle ()];
 		return true;
 	}
 	return false;
@@ -182,10 +184,8 @@ bool RowColumnViewCreator::getPossibleListValues (const string& attributeName,
 {
 	if (attributeName == kAttrEqualSizeLayout)
 	{
-		values.emplace_back (&kLeftTop);
-		values.emplace_back (&kStretch);
-		values.emplace_back (&kCenter);
-		values.emplace_back (&kRightBottom);
+		for (auto& str : layoutStrings ())
+			values.emplace_back (&str);
 		return true;
 	}
 	return false;

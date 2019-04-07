@@ -23,11 +23,8 @@ struct SliderBaseCreator : ViewCreatorAdapter
 	                            ConstStringPtrList& values) const override;
 
 private:
-	const string kTouchMode = "touch";
-	const string kRelativeTouchMode = "relative touch";
-	const string kFreeClickMode = "free click";
-	const string kRampMode = "ramp";
-	const string kUseGlobalMode = "use global";
+	using ModeStrings = std::array<string, 5>;
+	static ModeStrings& modeStrings ();
 };
 
 //------------------------------------------------------------------------

@@ -9,10 +9,25 @@
 #include "../uiviewcreator.h"
 #include "../uiviewfactory.h"
 #include "../uiviewswitchcontainer.h"
+#include <array>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
 namespace UIViewCreator {
+
+//------------------------------------------------------------------------
+auto UIViewSwitchContainerCreator::timingFunctionStrings () -> TimingFunctionStrings&
+{
+	static TimingFunctionStrings strings = {"linear", "easy-in", "easy-out", "easy-in-out", "easy"};
+	return strings;
+}
+
+//------------------------------------------------------------------------
+auto UIViewSwitchContainerCreator::animationStyleStrings () -> AnimationStyleStrings&
+{
+	static AnimationStyleStrings strings = {"fade", "move", "push"};
+	return strings;
+}
 
 //------------------------------------------------------------------------
 UIViewSwitchContainerCreator::UIViewSwitchContainerCreator ()
@@ -78,27 +93,29 @@ bool UIViewSwitchContainerCreator::apply (CView* view, const UIAttributes& attri
 	attr = attributes.getAttributeValue (kAttrAnimationStyle);
 	if (attr)
 	{
-		UIViewSwitchContainer::AnimationStyle style = UIViewSwitchContainer::kFadeInOut;
-		if (*attr == kMoveInOut)
-			style = UIViewSwitchContainer::kMoveInOut;
-		else if (*attr == kPushInOut)
-			style = UIViewSwitchContainer::kPushInOut;
-		viewSwitch->setAnimationStyle (style);
+		for (auto index = 0u; index <= UIViewSwitchContainer::kPushInOut; ++index)
+		{
+			if (*attr == animationStyleStrings ()[index])
+			{
+				viewSwitch->setAnimationStyle (
+				    static_cast<UIViewSwitchContainer::AnimationStyle> (index));
+				break;
+			}
+		}
 	}
 
 	attr = attributes.getAttributeValue (kAttrAnimationTimingFunction);
 	if (attr)
 	{
-		UIViewSwitchContainer::TimingFunction tf = UIViewSwitchContainer::kLinear;
-		if (*attr == kEasyIn)
-			tf = UIViewSwitchContainer::kEasyIn;
-		else if (*attr == kEasyOut)
-			tf = UIViewSwitchContainer::kEasyOut;
-		else if (*attr == kEasyInOut)
-			tf = UIViewSwitchContainer::kEasyInOut;
-		else if (*attr == kEasy)
-			tf = UIViewSwitchContainer::kEasy;
-		viewSwitch->setTimingFunction (tf);
+		for (auto index = 0u; index <= UIViewSwitchContainer::kEasy; ++index)
+		{
+			if (*attr == timingFunctionStrings ()[index])
+			{
+				viewSwitch->setTimingFunction (
+				    static_cast<UIViewSwitchContainer::TimingFunction> (index));
+				break;
+			}
+		}
 	}
 
 	int32_t animationTime;
@@ -178,55 +195,13 @@ bool UIViewSwitchContainerCreator::getAttributeValue (CView* view, const string&
 	}
 	else if (attributeName == kAttrAnimationStyle)
 	{
-		switch (viewSwitch->getAnimationStyle ())
-		{
-			case UIViewSwitchContainer::kFadeInOut:
-			{
-				stringValue = kFadeInOut;
-				return true;
-			}
-			case UIViewSwitchContainer::kMoveInOut:
-			{
-				stringValue = kMoveInOut;
-				return true;
-			}
-			case UIViewSwitchContainer::kPushInOut:
-			{
-				stringValue = kPushInOut;
-				return true;
-			}
-		}
+		stringValue = animationStyleStrings ()[viewSwitch->getAnimationStyle ()];
+		return true;
 	}
 	else if (attributeName == kAttrAnimationTimingFunction)
 	{
-		switch (viewSwitch->getTimingFunction ())
-		{
-			case UIViewSwitchContainer::kLinear:
-			{
-				stringValue = kLinear;
-				return true;
-			}
-			case UIViewSwitchContainer::kEasyIn:
-			{
-				stringValue = kEasyIn;
-				return true;
-			}
-			case UIViewSwitchContainer::kEasyOut:
-			{
-				stringValue = kEasyOut;
-				return true;
-			}
-			case UIViewSwitchContainer::kEasyInOut:
-			{
-				stringValue = kEasyInOut;
-				return true;
-			}
-			case UIViewSwitchContainer::kEasy:
-			{
-				stringValue = kEasy;
-				return true;
-			}
-		}
+		stringValue = timingFunctionStrings ()[viewSwitch->getTimingFunction ()];
+		return true;
 	}
 	return false;
 }
@@ -237,18 +212,14 @@ bool UIViewSwitchContainerCreator::getPossibleListValues (const string& attribut
 {
 	if (attributeName == kAttrAnimationStyle)
 	{
-		values.emplace_back (&kFadeInOut);
-		values.emplace_back (&kMoveInOut);
-		values.emplace_back (&kPushInOut);
+		for (auto& str : animationStyleStrings ())
+			values.emplace_back (&str);
 		return true;
 	}
 	if (attributeName == kAttrAnimationTimingFunction)
 	{
-		values.emplace_back (&kLinear);
-		values.emplace_back (&kEasyIn);
-		values.emplace_back (&kEasyOut);
-		values.emplace_back (&kEasyInOut);
-		values.emplace_back (&kEasy);
+		for (auto& str : timingFunctionStrings ())
+			values.emplace_back (&str);
 		return true;
 	}
 	return false;

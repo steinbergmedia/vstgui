@@ -29,9 +29,8 @@ struct ViewContainerCreator : ViewCreatorAdapter
 	                            ConstStringPtrList& values) const override;
 
 private:
-	string kStroked = "stroked";
-	string kFilledAndStroked = "filled and stroked";
-	string kFilled = "filled";
+	using BackgroundColorDrawStyleStrings = std::array<string, 3>;
+	static BackgroundColorDrawStyleStrings& backgroundColorDrawStyleStrings ();
 };
 
 //------------------------------------------------------------------------

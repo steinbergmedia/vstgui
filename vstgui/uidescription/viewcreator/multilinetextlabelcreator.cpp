@@ -9,10 +9,18 @@
 #include "../uiattributes.h"
 #include "../uiviewcreator.h"
 #include "../uiviewfactory.h"
+#include <array>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
 namespace UIViewCreator {
+
+//------------------------------------------------------------------------
+auto MultiLineTextLabelCreator::lineLayoutStrings () -> LineLayoutStrings&
+{
+	static LineLayoutStrings strings = {"clip", "truncate", "wrap"};
+	return strings;
+}
 
 //------------------------------------------------------------------------
 MultiLineTextLabelCreator::MultiLineTextLabelCreator ()
@@ -49,6 +57,8 @@ CView* MultiLineTextLabelCreator::create (const UIAttributes& attributes,
 bool MultiLineTextLabelCreator::apply (CView* view, const UIAttributes& attributes,
                                        const IUIDescription* description) const
 {
+	using LineLayout = CMultiLineTextLabel::LineLayout;
+
 	auto label = dynamic_cast<CMultiLineTextLabel*> (view);
 	if (!label)
 		return false;
@@ -56,12 +66,11 @@ bool MultiLineTextLabelCreator::apply (CView* view, const UIAttributes& attribut
 	auto attr = attributes.getAttributeValue (kAttrLineLayout);
 	if (attr)
 	{
-		if (*attr == kTruncate)
-			label->setLineLayout (CMultiLineTextLabel::LineLayout::truncate);
-		else if (*attr == kWrap)
-			label->setLineLayout (CMultiLineTextLabel::LineLayout::wrap);
-		else
-			label->setLineLayout (CMultiLineTextLabel::LineLayout::clip);
+		for (auto index = 0u; index <= static_cast<size_t> (LineLayout::wrap); ++index)
+		{
+			if (*attr == lineLayoutStrings ()[index])
+				label->setLineLayout (static_cast<LineLayout> (index));
+		}
 	}
 	bool autoHeight;
 	if (attributes.getBooleanAttribute (kAttrAutoHeight, autoHeight))
@@ -98,12 +107,7 @@ bool MultiLineTextLabelCreator::getAttributeValue (CView* view, const string& at
 		return false;
 	if (attributeName == kAttrLineLayout)
 	{
-		switch (label->getLineLayout ())
-		{
-			case CMultiLineTextLabel::LineLayout::truncate: stringValue = kTruncate; break;
-			case CMultiLineTextLabel::LineLayout::wrap: stringValue = kWrap; break;
-			case CMultiLineTextLabel::LineLayout::clip: stringValue = kClip; break;
-		}
+		stringValue = lineLayoutStrings ()[static_cast<size_t> (label->getLineLayout ())];
 		return true;
 	}
 	else if (attributeName == kAttrAutoHeight)
@@ -121,9 +125,8 @@ bool MultiLineTextLabelCreator::getPossibleListValues (const string& attributeNa
 {
 	if (attributeName == kAttrLineLayout)
 	{
-		values.emplace_back (&kClip);
-		values.emplace_back (&kTruncate);
-		values.emplace_back (&kWrap);
+		for (auto& str : lineLayoutStrings ())
+			values.emplace_back (&str);
 		return true;
 	}
 	return false;

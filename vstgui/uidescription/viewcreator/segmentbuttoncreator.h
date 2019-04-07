@@ -33,11 +33,8 @@ private:
 	void updateSegmentCount (CSegmentButton* button, uint32_t numSegments) const;
 	void updateSegments (CSegmentButton* button, const UIAttributes::StringArray& names) const;
 
-	string SelectionModeSingle = "Single";
-	string SelectionModeSingleToggle = "Single-Toggle";
-	string SelectionModeMultiple = "Multiple";
-	string strHorizontalInverse = "horizontal-inverse";
-	string strVerticalInverse = "vertical-inverse";
+	using SelectionModeStrings = std::array<string, 3>;
+	static SelectionModeStrings& selectionModeStrings ();
 };
 
 //------------------------------------------------------------------------

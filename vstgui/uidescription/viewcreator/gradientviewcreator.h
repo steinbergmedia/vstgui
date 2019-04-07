@@ -31,8 +31,8 @@ struct GradientViewCreator : ViewCreatorAdapter
 	                             double& maxValue) const override;
 
 private:
-	const string kLinear = "linear";
-	const string kRadial = "radial";
+	using StyleStrings = std::array<string, 2>;
+	static StyleStrings& styleStrings ();
 };
 //------------------------------------------------------------------------
 } // UIViewCreator
