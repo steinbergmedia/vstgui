@@ -140,8 +140,8 @@ set(${target}_sources
     viewcreator/viewcreator.h
     viewcreator/vumetercreator.cpp
     viewcreator/vumetercreator.h
-    viewcreator/xypadviewcreator.cpp
-    viewcreator/xypadviewcreator.h
+    viewcreator/xypadcreator.cpp
+    viewcreator/xypadcreator.h
 )
 
 ##########################################################################################
