@@ -15,39 +15,39 @@ namespace VSTGUI {
 namespace UIViewCreator {
 
 //------------------------------------------------------------------------
-CTextLabelCreator::CTextLabelCreator ()
+TextLabelCreator::TextLabelCreator ()
 {
 	UIViewFactory::registerViewCreator (*this);
 }
 
 //------------------------------------------------------------------------
-IdStringPtr CTextLabelCreator::getViewName () const
+IdStringPtr TextLabelCreator::getViewName () const
 {
 	return kCTextLabel;
 }
 
 //------------------------------------------------------------------------
-IdStringPtr CTextLabelCreator::getBaseViewName () const
+IdStringPtr TextLabelCreator::getBaseViewName () const
 {
 	return kCParamDisplay;
 }
 
 //------------------------------------------------------------------------
-UTF8StringPtr CTextLabelCreator::getDisplayName () const
+UTF8StringPtr TextLabelCreator::getDisplayName () const
 {
 	return "Label";
 }
 
 //------------------------------------------------------------------------
-CView* CTextLabelCreator::create (const UIAttributes& attributes,
-                                  const IUIDescription* description) const
+CView* TextLabelCreator::create (const UIAttributes& attributes,
+                                 const IUIDescription* description) const
 {
 	return new CTextLabel (CRect (0, 0, 100, 20));
 }
 
 //------------------------------------------------------------------------
-bool CTextLabelCreator::apply (CView* view, const UIAttributes& attributes,
-                               const IUIDescription* description) const
+bool TextLabelCreator::apply (CView* view, const UIAttributes& attributes,
+                              const IUIDescription* description) const
 {
 	auto* label = dynamic_cast<CTextLabel*> (view);
 	if (!label)
@@ -85,7 +85,7 @@ bool CTextLabelCreator::apply (CView* view, const UIAttributes& attributes,
 }
 
 //------------------------------------------------------------------------
-bool CTextLabelCreator::getAttributeNames (std::list<std::string>& attributeNames) const
+bool TextLabelCreator::getAttributeNames (std::list<std::string>& attributeNames) const
 {
 	attributeNames.emplace_back (kAttrTitle);
 	attributeNames.emplace_back (kAttrTruncateMode);
@@ -93,7 +93,7 @@ bool CTextLabelCreator::getAttributeNames (std::list<std::string>& attributeName
 }
 
 //------------------------------------------------------------------------
-auto CTextLabelCreator::getAttributeType (const std::string& attributeName) const -> AttrType
+auto TextLabelCreator::getAttributeType (const std::string& attributeName) const -> AttrType
 {
 	if (attributeName == kAttrTitle)
 		return kStringType;
@@ -103,9 +103,9 @@ auto CTextLabelCreator::getAttributeType (const std::string& attributeName) cons
 }
 
 //------------------------------------------------------------------------
-bool CTextLabelCreator::getAttributeValue (CView* view, const std::string& attributeName,
-                                           std::string& stringValue,
-                                           const IUIDescription* desc) const
+bool TextLabelCreator::getAttributeValue (CView* view, const std::string& attributeName,
+                                          std::string& stringValue,
+                                          const IUIDescription* desc) const
 {
 	auto* label = dynamic_cast<CTextLabel*> (view);
 	if (!label)
@@ -135,8 +135,8 @@ bool CTextLabelCreator::getAttributeValue (CView* view, const std::string& attri
 }
 
 //------------------------------------------------------------------------
-bool CTextLabelCreator::getPossibleListValues (const std::string& attributeName,
-                                               std::list<const std::string*>& values) const
+bool TextLabelCreator::getPossibleListValues (const std::string& attributeName,
+                                              std::list<const std::string*>& values) const
 {
 	if (attributeName == kAttrTruncateMode)
 	{

@@ -15,32 +15,32 @@ namespace VSTGUI {
 namespace UIViewCreator {
 
 //-----------------------------------------------------------------------------
-CGradientViewCreator::CGradientViewCreator ()
+GradientViewCreator::GradientViewCreator ()
 {
 	UIViewFactory::registerViewCreator (*this);
 }
 
 //------------------------------------------------------------------------
-IdStringPtr CGradientViewCreator::getViewName () const
+IdStringPtr GradientViewCreator::getViewName () const
 {
 	return kCGradientView;
 }
 
 //------------------------------------------------------------------------
-IdStringPtr CGradientViewCreator::getBaseViewName () const
+IdStringPtr GradientViewCreator::getBaseViewName () const
 {
 	return kCView;
 }
 
 //------------------------------------------------------------------------
-UTF8StringPtr CGradientViewCreator::getDisplayName () const
+UTF8StringPtr GradientViewCreator::getDisplayName () const
 {
 	return "Gradient View";
 }
 
 //------------------------------------------------------------------------
-CView* CGradientViewCreator::create (const UIAttributes& attributes,
-                                     const IUIDescription* description) const
+CView* GradientViewCreator::create (const UIAttributes& attributes,
+                                    const IUIDescription* description) const
 {
 	CGradientView* gradientView = new CGradientView (CRect (0, 0, 100, 100));
 	if (description)
@@ -56,8 +56,8 @@ CView* CGradientViewCreator::create (const UIAttributes& attributes,
 }
 
 //------------------------------------------------------------------------
-bool CGradientViewCreator::apply (CView* view, const UIAttributes& attributes,
-                                  const IUIDescription* description) const
+bool GradientViewCreator::apply (CView* view, const UIAttributes& attributes,
+                                 const IUIDescription* description) const
 {
 	auto* gv = dynamic_cast<CGradientView*> (view);
 	if (gv == nullptr)
@@ -127,7 +127,7 @@ bool CGradientViewCreator::apply (CView* view, const UIAttributes& attributes,
 }
 
 //------------------------------------------------------------------------
-bool CGradientViewCreator::getAttributeNames (std::list<std::string>& attributeNames) const
+bool GradientViewCreator::getAttributeNames (std::list<std::string>& attributeNames) const
 {
 	attributeNames.emplace_back (kAttrGradientStyle);
 	attributeNames.emplace_back (kAttrGradient);
@@ -142,7 +142,7 @@ bool CGradientViewCreator::getAttributeNames (std::list<std::string>& attributeN
 }
 
 //------------------------------------------------------------------------
-auto CGradientViewCreator::getAttributeType (const std::string& attributeName) const -> AttrType
+auto GradientViewCreator::getAttributeType (const std::string& attributeName) const -> AttrType
 {
 	if (attributeName == kAttrGradientStyle)
 		return kListType;
@@ -166,9 +166,9 @@ auto CGradientViewCreator::getAttributeType (const std::string& attributeName) c
 }
 
 //------------------------------------------------------------------------
-bool CGradientViewCreator::getAttributeValue (CView* view, const std::string& attributeName,
-                                              std::string& stringValue,
-                                              const IUIDescription* desc) const
+bool GradientViewCreator::getAttributeValue (CView* view, const std::string& attributeName,
+                                             std::string& stringValue,
+                                             const IUIDescription* desc) const
 {
 	auto* gv = dynamic_cast<CGradientView*> (view);
 	if (gv == nullptr)
@@ -224,8 +224,8 @@ bool CGradientViewCreator::getAttributeValue (CView* view, const std::string& at
 }
 
 //------------------------------------------------------------------------
-bool CGradientViewCreator::getPossibleListValues (const std::string& attributeName,
-                                                  std::list<const std::string*>& values) const
+bool GradientViewCreator::getPossibleListValues (const std::string& attributeName,
+                                                 std::list<const std::string*>& values) const
 {
 	if (attributeName == kAttrGradientStyle)
 	{
@@ -237,8 +237,8 @@ bool CGradientViewCreator::getPossibleListValues (const std::string& attributeNa
 }
 
 //------------------------------------------------------------------------
-bool CGradientViewCreator::getAttributeValueRange (const std::string& attributeName,
-                                                   double& minValue, double& maxValue) const
+bool GradientViewCreator::getAttributeValueRange (const std::string& attributeName,
+                                                  double& minValue, double& maxValue) const
 {
 	if (attributeName == kAttrGradientAngle)
 	{

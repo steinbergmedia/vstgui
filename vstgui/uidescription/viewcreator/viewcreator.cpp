@@ -39,7 +39,7 @@ public:
 		constexpr auto width = 5.;
 		CRect viewSize = getViewSize ();
 		auto r = viewSize;
-		r.setSize ({width,width});
+		r.setSize ({width, width});
 		uint32_t row = 0u;
 		while (r.top < viewSize.bottom)
 		{
@@ -66,39 +66,38 @@ using SimpleCView = CView;
 #endif
 
 //------------------------------------------------------------------------
-CViewCreator::CViewCreator ()
+ViewCreator::ViewCreator ()
 {
 	UIViewFactory::registerViewCreator (*this);
 }
 
 //------------------------------------------------------------------------
-IdStringPtr CViewCreator::getViewName () const
+IdStringPtr ViewCreator::getViewName () const
 {
 	return kCView;
 }
 
 //------------------------------------------------------------------------
-IdStringPtr CViewCreator::getBaseViewName () const
+IdStringPtr ViewCreator::getBaseViewName () const
 {
 	return nullptr;
 }
 
 //------------------------------------------------------------------------
-UTF8StringPtr CViewCreator::getDisplayName () const
+UTF8StringPtr ViewCreator::getDisplayName () const
 {
 	return "View";
 }
 
 //------------------------------------------------------------------------
-CView* CViewCreator::create (const UIAttributes& attributes,
-                             const IUIDescription* description) const
+CView* ViewCreator::create (const UIAttributes& attributes, const IUIDescription* description) const
 {
 	return new SimpleCView (CRect (0, 0, 50, 50));
 }
 
 //------------------------------------------------------------------------
-bool CViewCreator::apply (CView* view, const UIAttributes& attributes,
-                          const IUIDescription* description) const
+bool ViewCreator::apply (CView* view, const UIAttributes& attributes,
+                         const IUIDescription* description) const
 {
 	CPoint p;
 	CRect size;
@@ -179,7 +178,7 @@ bool CViewCreator::apply (CView* view, const UIAttributes& attributes,
 }
 
 //------------------------------------------------------------------------
-bool CViewCreator::getAttributeNames (std::list<std::string>& attributeNames) const
+bool ViewCreator::getAttributeNames (std::list<std::string>& attributeNames) const
 {
 	attributeNames.emplace_back (kAttrOrigin);
 	attributeNames.emplace_back (kAttrSize);
@@ -197,7 +196,7 @@ bool CViewCreator::getAttributeNames (std::list<std::string>& attributeNames) co
 }
 
 //------------------------------------------------------------------------
-auto CViewCreator::getAttributeType (const std::string& attributeName) const -> AttrType
+auto ViewCreator::getAttributeType (const std::string& attributeName) const -> AttrType
 {
 	if (attributeName == kAttrOrigin)
 		return kPointType;
@@ -227,8 +226,8 @@ auto CViewCreator::getAttributeType (const std::string& attributeName) const -> 
 }
 
 //------------------------------------------------------------------------
-bool CViewCreator::getAttributeValue (CView* view, const std::string& attributeName,
-                                      std::string& stringValue, const IUIDescription* desc) const
+bool ViewCreator::getAttributeValue (CView* view, const std::string& attributeName,
+                                     std::string& stringValue, const IUIDescription* desc) const
 {
 	if (attributeName == kAttrOrigin)
 	{
@@ -315,8 +314,8 @@ bool CViewCreator::getAttributeValue (CView* view, const std::string& attributeN
 }
 
 //------------------------------------------------------------------------
-bool CViewCreator::getAttributeValueRange (const std::string& attributeName, double& minValue,
-                                           double& maxValue) const
+bool ViewCreator::getAttributeValueRange (const std::string& attributeName, double& minValue,
+                                          double& maxValue) const
 {
 	if (attributeName == kAttrOpacity)
 	{
@@ -328,8 +327,8 @@ bool CViewCreator::getAttributeValueRange (const std::string& attributeName, dou
 }
 
 //------------------------------------------------------------------------
-bool CViewCreator::getViewAttributeString (CView* view, const CViewAttributeID attrID,
-                                           std::string& value)
+bool ViewCreator::getViewAttributeString (CView* view, const CViewAttributeID attrID,
+                                          std::string& value)
 {
 	uint32_t attrSize = 0;
 	if (view->getAttributeSize (attrID, attrSize))

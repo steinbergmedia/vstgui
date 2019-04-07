@@ -15,39 +15,39 @@ namespace VSTGUI {
 namespace UIViewCreator {
 
 //------------------------------------------------------------------------
-CMultiLineTextLabelCreator::CMultiLineTextLabelCreator ()
+MultiLineTextLabelCreator::MultiLineTextLabelCreator ()
 {
 	UIViewFactory::registerViewCreator (*this);
 }
 
 //------------------------------------------------------------------------
-IdStringPtr CMultiLineTextLabelCreator::getViewName () const
+IdStringPtr MultiLineTextLabelCreator::getViewName () const
 {
 	return kCMultiLineTextLabel;
 }
 
 //------------------------------------------------------------------------
-IdStringPtr CMultiLineTextLabelCreator::getBaseViewName () const
+IdStringPtr MultiLineTextLabelCreator::getBaseViewName () const
 {
 	return kCTextLabel;
 }
 
 //------------------------------------------------------------------------
-UTF8StringPtr CMultiLineTextLabelCreator::getDisplayName () const
+UTF8StringPtr MultiLineTextLabelCreator::getDisplayName () const
 {
 	return "Multiline Label";
 }
 
 //------------------------------------------------------------------------
-CView* CMultiLineTextLabelCreator::create (const UIAttributes& attributes,
-                                           const IUIDescription* description) const
+CView* MultiLineTextLabelCreator::create (const UIAttributes& attributes,
+                                          const IUIDescription* description) const
 {
 	return new CMultiLineTextLabel (CRect (0, 0, 100, 20));
 }
 
 //------------------------------------------------------------------------
-bool CMultiLineTextLabelCreator::apply (CView* view, const UIAttributes& attributes,
-                                        const IUIDescription* description) const
+bool MultiLineTextLabelCreator::apply (CView* view, const UIAttributes& attributes,
+                                       const IUIDescription* description) const
 {
 	auto label = dynamic_cast<CMultiLineTextLabel*> (view);
 	if (!label)
@@ -71,7 +71,7 @@ bool CMultiLineTextLabelCreator::apply (CView* view, const UIAttributes& attribu
 }
 
 //------------------------------------------------------------------------
-bool CMultiLineTextLabelCreator::getAttributeNames (std::list<std::string>& attributeNames) const
+bool MultiLineTextLabelCreator::getAttributeNames (std::list<std::string>& attributeNames) const
 {
 	attributeNames.emplace_back (kAttrLineLayout);
 	attributeNames.emplace_back (kAttrAutoHeight);
@@ -79,7 +79,7 @@ bool CMultiLineTextLabelCreator::getAttributeNames (std::list<std::string>& attr
 }
 
 //------------------------------------------------------------------------
-auto CMultiLineTextLabelCreator::getAttributeType (const std::string& attributeName) const
+auto MultiLineTextLabelCreator::getAttributeType (const std::string& attributeName) const
     -> AttrType
 {
 	if (attributeName == kAttrLineLayout)
@@ -90,9 +90,9 @@ auto CMultiLineTextLabelCreator::getAttributeType (const std::string& attributeN
 }
 
 //------------------------------------------------------------------------
-bool CMultiLineTextLabelCreator::getAttributeValue (CView* view, const std::string& attributeName,
-                                                    std::string& stringValue,
-                                                    const IUIDescription* desc) const
+bool MultiLineTextLabelCreator::getAttributeValue (CView* view, const std::string& attributeName,
+                                                   std::string& stringValue,
+                                                   const IUIDescription* desc) const
 {
 	auto label = dynamic_cast<CMultiLineTextLabel*> (view);
 	if (!label)
@@ -117,8 +117,8 @@ bool CMultiLineTextLabelCreator::getAttributeValue (CView* view, const std::stri
 }
 
 //------------------------------------------------------------------------
-bool CMultiLineTextLabelCreator::getPossibleListValues (const std::string& attributeName,
-                                                        std::list<const std::string*>& values) const
+bool MultiLineTextLabelCreator::getPossibleListValues (const std::string& attributeName,
+                                                       std::list<const std::string*>& values) const
 {
 	if (attributeName == kAttrLineLayout)
 	{

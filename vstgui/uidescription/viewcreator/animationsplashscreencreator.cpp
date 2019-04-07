@@ -15,39 +15,39 @@ namespace VSTGUI {
 namespace UIViewCreator {
 
 //------------------------------------------------------------------------
-CAnimationSplashScreenCreator::CAnimationSplashScreenCreator ()
+AnimationSplashScreenCreator::AnimationSplashScreenCreator ()
 {
 	UIViewFactory::registerViewCreator (*this);
 }
 
 //------------------------------------------------------------------------
-IdStringPtr CAnimationSplashScreenCreator::getViewName () const
+IdStringPtr AnimationSplashScreenCreator::getViewName () const
 {
 	return kCAnimationSplashScreen;
 }
 
 //------------------------------------------------------------------------
-IdStringPtr CAnimationSplashScreenCreator::getBaseViewName () const
+IdStringPtr AnimationSplashScreenCreator::getBaseViewName () const
 {
 	return kCControl;
 }
 
 //------------------------------------------------------------------------
-UTF8StringPtr CAnimationSplashScreenCreator::getDisplayName () const
+UTF8StringPtr AnimationSplashScreenCreator::getDisplayName () const
 {
 	return "Animation Splash Screen";
 }
 
 //------------------------------------------------------------------------
-CView* CAnimationSplashScreenCreator::create (const UIAttributes& attributes,
-                                              const IUIDescription* description) const
+CView* AnimationSplashScreenCreator::create (const UIAttributes& attributes,
+                                             const IUIDescription* description) const
 {
 	return new CAnimationSplashScreen (CRect (0, 0, 0, 0), -1, nullptr, nullptr);
 }
 
 //------------------------------------------------------------------------
-bool CAnimationSplashScreenCreator::apply (CView* view, const UIAttributes& attributes,
-                                           const IUIDescription* description) const
+bool AnimationSplashScreenCreator::apply (CView* view, const UIAttributes& attributes,
+                                          const IUIDescription* description) const
 {
 	auto* splashScreen = dynamic_cast<CAnimationSplashScreen*> (view);
 	if (!splashScreen)
@@ -82,7 +82,7 @@ bool CAnimationSplashScreenCreator::apply (CView* view, const UIAttributes& attr
 }
 
 //------------------------------------------------------------------------
-bool CAnimationSplashScreenCreator::getAttributeNames (std::list<std::string>& attributeNames) const
+bool AnimationSplashScreenCreator::getAttributeNames (std::list<std::string>& attributeNames) const
 {
 	attributeNames.emplace_back (kAttrSplashBitmap);
 	attributeNames.emplace_back (kAttrSplashOrigin);
@@ -93,7 +93,7 @@ bool CAnimationSplashScreenCreator::getAttributeNames (std::list<std::string>& a
 }
 
 //------------------------------------------------------------------------
-auto CAnimationSplashScreenCreator::getAttributeType (const std::string& attributeName) const
+auto AnimationSplashScreenCreator::getAttributeType (const std::string& attributeName) const
     -> AttrType
 {
 	if (attributeName == kAttrSplashBitmap)
@@ -110,10 +110,9 @@ auto CAnimationSplashScreenCreator::getAttributeType (const std::string& attribu
 }
 
 //------------------------------------------------------------------------
-bool CAnimationSplashScreenCreator::getAttributeValue (CView* view,
-                                                       const std::string& attributeName,
-                                                       std::string& stringValue,
-                                                       const IUIDescription* desc) const
+bool AnimationSplashScreenCreator::getAttributeValue (CView* view, const std::string& attributeName,
+                                                      std::string& stringValue,
+                                                      const IUIDescription* desc) const
 {
 	auto* splashScreen = dynamic_cast<CAnimationSplashScreen*> (view);
 	if (!splashScreen)

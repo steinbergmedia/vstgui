@@ -15,39 +15,39 @@ namespace VSTGUI {
 namespace UIViewCreator {
 
 //------------------------------------------------------------------------
-CSplitViewCreator::CSplitViewCreator ()
+SplitViewCreator::SplitViewCreator ()
 {
 	UIViewFactory::registerViewCreator (*this);
 }
 
 //------------------------------------------------------------------------
-IdStringPtr CSplitViewCreator::getViewName () const
+IdStringPtr SplitViewCreator::getViewName () const
 {
 	return kCSplitView;
 }
 
 //------------------------------------------------------------------------
-IdStringPtr CSplitViewCreator::getBaseViewName () const
+IdStringPtr SplitViewCreator::getBaseViewName () const
 {
 	return kCViewContainer;
 }
 
 //------------------------------------------------------------------------
-UTF8StringPtr CSplitViewCreator::getDisplayName () const
+UTF8StringPtr SplitViewCreator::getDisplayName () const
 {
 	return "Split View";
 }
 
 //------------------------------------------------------------------------
-CView* CSplitViewCreator::create (const UIAttributes& attributes,
-                                  const IUIDescription* description) const
+CView* SplitViewCreator::create (const UIAttributes& attributes,
+                                 const IUIDescription* description) const
 {
 	return new CSplitView (CRect (0, 0, 100, 100));
 }
 
 //------------------------------------------------------------------------
-bool CSplitViewCreator::apply (CView* view, const UIAttributes& attributes,
-                               const IUIDescription* description) const
+bool SplitViewCreator::apply (CView* view, const UIAttributes& attributes,
+                              const IUIDescription* description) const
 {
 	auto* splitView = dynamic_cast<CSplitView*> (view);
 	if (!splitView)
@@ -93,7 +93,7 @@ bool CSplitViewCreator::apply (CView* view, const UIAttributes& attributes,
 }
 
 //------------------------------------------------------------------------
-bool CSplitViewCreator::getAttributeNames (std::list<std::string>& attributeNames) const
+bool SplitViewCreator::getAttributeNames (std::list<std::string>& attributeNames) const
 {
 	attributeNames.emplace_back (kAttrOrientation);
 	attributeNames.emplace_back (kAttrResizeMethod);
@@ -102,7 +102,7 @@ bool CSplitViewCreator::getAttributeNames (std::list<std::string>& attributeName
 }
 
 //------------------------------------------------------------------------
-auto CSplitViewCreator::getAttributeType (const std::string& attributeName) const -> AttrType
+auto SplitViewCreator::getAttributeType (const std::string& attributeName) const -> AttrType
 {
 	if (attributeName == kAttrOrientation)
 		return kListType;
@@ -114,9 +114,9 @@ auto CSplitViewCreator::getAttributeType (const std::string& attributeName) cons
 }
 
 //------------------------------------------------------------------------
-bool CSplitViewCreator::getAttributeValue (CView* view, const std::string& attributeName,
-                                           std::string& stringValue,
-                                           const IUIDescription* desc) const
+bool SplitViewCreator::getAttributeValue (CView* view, const std::string& attributeName,
+                                          std::string& stringValue,
+                                          const IUIDescription* desc) const
 {
 	auto* splitView = dynamic_cast<CSplitView*> (view);
 	if (!splitView)
@@ -163,8 +163,8 @@ bool CSplitViewCreator::getAttributeValue (CView* view, const std::string& attri
 }
 
 //------------------------------------------------------------------------
-bool CSplitViewCreator::getPossibleListValues (const std::string& attributeName,
-                                               std::list<const std::string*>& values) const
+bool SplitViewCreator::getPossibleListValues (const std::string& attributeName,
+                                              std::list<const std::string*>& values) const
 {
 	if (attributeName == kAttrOrientation)
 	{

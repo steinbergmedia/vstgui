@@ -10,10 +10,10 @@
 namespace VSTGUI {
 namespace UIViewCreator {
 
-//-----------------------------------------------------------------------------
-struct CShadowViewContainerCreator : ViewCreatorAdapter
+//------------------------------------------------------------------------
+struct ShadowViewContainerCreator : ViewCreatorAdapter
 {
-	CShadowViewContainerCreator ();
+	ShadowViewContainerCreator ();
 	IdStringPtr getViewName () const override;
 	IdStringPtr getBaseViewName () const override;
 	UTF8StringPtr getDisplayName () const override;

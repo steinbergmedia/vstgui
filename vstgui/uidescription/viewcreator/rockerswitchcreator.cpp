@@ -15,32 +15,32 @@ namespace VSTGUI {
 namespace UIViewCreator {
 
 //------------------------------------------------------------------------
-CRockerSwitchCreator::CRockerSwitchCreator ()
+RockerSwitchCreator::RockerSwitchCreator ()
 {
 	UIViewFactory::registerViewCreator (*this);
 }
 
 //------------------------------------------------------------------------
-IdStringPtr CRockerSwitchCreator::getViewName () const
+IdStringPtr RockerSwitchCreator::getViewName () const
 {
 	return kCRockerSwitch;
 }
 
 //------------------------------------------------------------------------
-IdStringPtr CRockerSwitchCreator::getBaseViewName () const
+IdStringPtr RockerSwitchCreator::getBaseViewName () const
 {
 	return kCControl;
 }
 
 //------------------------------------------------------------------------
-UTF8StringPtr CRockerSwitchCreator::getDisplayName () const
+UTF8StringPtr RockerSwitchCreator::getDisplayName () const
 {
 	return "Rocker Switch";
 }
 
 //------------------------------------------------------------------------
-CView* CRockerSwitchCreator::create (const UIAttributes& attributes,
-                                     const IUIDescription* description) const
+CView* RockerSwitchCreator::create (const UIAttributes& attributes,
+                                    const IUIDescription* description) const
 {
 	return new CRockerSwitch (CRect (0, 0, 0, 0), nullptr, -1, nullptr);
 }

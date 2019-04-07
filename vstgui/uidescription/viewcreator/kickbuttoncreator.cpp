@@ -15,32 +15,32 @@ namespace VSTGUI {
 namespace UIViewCreator {
 
 //------------------------------------------------------------------------
-CKickButtonCreator::CKickButtonCreator ()
+KickButtonCreator::KickButtonCreator ()
 {
 	UIViewFactory::registerViewCreator (*this);
 }
 
 //------------------------------------------------------------------------
-IdStringPtr CKickButtonCreator::getViewName () const
+IdStringPtr KickButtonCreator::getViewName () const
 {
 	return kCKickButton;
 }
 
 //------------------------------------------------------------------------
-IdStringPtr CKickButtonCreator::getBaseViewName () const
+IdStringPtr KickButtonCreator::getBaseViewName () const
 {
 	return kCControl;
 }
 
 //------------------------------------------------------------------------
-UTF8StringPtr CKickButtonCreator::getDisplayName () const
+UTF8StringPtr KickButtonCreator::getDisplayName () const
 {
 	return "Kick Button";
 }
 
 //------------------------------------------------------------------------
-CView* CKickButtonCreator::create (const UIAttributes& attributes,
-                                   const IUIDescription* description) const
+CView* KickButtonCreator::create (const UIAttributes& attributes,
+                                  const IUIDescription* description) const
 {
 	return new CKickButton (CRect (0, 0, 0, 0), nullptr, -1, nullptr);
 }

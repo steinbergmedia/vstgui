@@ -11,9 +11,9 @@ namespace VSTGUI {
 namespace UIViewCreator {
 
 //------------------------------------------------------------------------
-struct CSearchTextEditCreator : ViewCreatorAdapter
+struct SearchTextEditCreator : ViewCreatorAdapter
 {
-	CSearchTextEditCreator ();
+	SearchTextEditCreator ();
 	IdStringPtr getViewName () const override;
 	IdStringPtr getBaseViewName () const override;
 	UTF8StringPtr getDisplayName () const override;

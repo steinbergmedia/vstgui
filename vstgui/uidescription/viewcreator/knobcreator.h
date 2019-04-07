@@ -10,8 +10,8 @@
 namespace VSTGUI {
 namespace UIViewCreator {
 
-//-----------------------------------------------------------------------------
-struct CKnobBaseCreator : ViewCreatorAdapter
+//------------------------------------------------------------------------
+struct KnobBaseCreator : ViewCreatorAdapter
 {
 	bool apply (CView* view, const UIAttributes& attributes,
 	            const IUIDescription* description) const override;
@@ -21,10 +21,10 @@ struct CKnobBaseCreator : ViewCreatorAdapter
 	                        const IUIDescription* desc) const override;
 };
 
-//-----------------------------------------------------------------------------
-struct CKnobCreator : CKnobBaseCreator
+//------------------------------------------------------------------------
+struct KnobCreator : KnobBaseCreator
 {
-	CKnobCreator ();
+	KnobCreator ();
 	IdStringPtr getViewName () const override;
 	IdStringPtr getBaseViewName () const override;
 	UTF8StringPtr getDisplayName () const override;

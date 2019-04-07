@@ -15,39 +15,39 @@ namespace VSTGUI {
 namespace UIViewCreator {
 
 //------------------------------------------------------------------------
-CSearchTextEditCreator::CSearchTextEditCreator ()
+SearchTextEditCreator::SearchTextEditCreator ()
 {
 	UIViewFactory::registerViewCreator (*this);
 }
 
 //------------------------------------------------------------------------
-IdStringPtr CSearchTextEditCreator::getViewName () const
+IdStringPtr SearchTextEditCreator::getViewName () const
 {
 	return kCSearchTextEdit;
 }
 
 //------------------------------------------------------------------------
-IdStringPtr CSearchTextEditCreator::getBaseViewName () const
+IdStringPtr SearchTextEditCreator::getBaseViewName () const
 {
 	return kCTextEdit;
 }
 
 //------------------------------------------------------------------------
-UTF8StringPtr CSearchTextEditCreator::getDisplayName () const
+UTF8StringPtr SearchTextEditCreator::getDisplayName () const
 {
 	return "Search Text Edit";
 }
 
 //------------------------------------------------------------------------
-CView* CSearchTextEditCreator::create (const UIAttributes& attributes,
-                                       const IUIDescription* description) const
+CView* SearchTextEditCreator::create (const UIAttributes& attributes,
+                                      const IUIDescription* description) const
 {
 	return new CSearchTextEdit (CRect (0, 0, 100, 20), nullptr, -1);
 }
 
 //------------------------------------------------------------------------
-bool CSearchTextEditCreator::apply (CView* view, const UIAttributes& attributes,
-                                    const IUIDescription* description) const
+bool SearchTextEditCreator::apply (CView* view, const UIAttributes& attributes,
+                                   const IUIDescription* description) const
 {
 	auto ste = dynamic_cast<CSearchTextEdit*> (view);
 	if (!ste)
@@ -59,14 +59,14 @@ bool CSearchTextEditCreator::apply (CView* view, const UIAttributes& attributes,
 }
 
 //------------------------------------------------------------------------
-bool CSearchTextEditCreator::getAttributeNames (std::list<std::string>& attributeNames) const
+bool SearchTextEditCreator::getAttributeNames (std::list<std::string>& attributeNames) const
 {
 	attributeNames.emplace_back (kAttrClearMarkInset);
 	return true;
 }
 
 //------------------------------------------------------------------------
-auto CSearchTextEditCreator::getAttributeType (const std::string& attributeName) const -> AttrType
+auto SearchTextEditCreator::getAttributeType (const std::string& attributeName) const -> AttrType
 {
 	if (attributeName == kAttrClearMarkInset)
 		return kPointType;
@@ -74,9 +74,9 @@ auto CSearchTextEditCreator::getAttributeType (const std::string& attributeName)
 }
 
 //------------------------------------------------------------------------
-bool CSearchTextEditCreator::getAttributeValue (CView* view, const std::string& attributeName,
-                                                std::string& stringValue,
-                                                const IUIDescription* desc) const
+bool SearchTextEditCreator::getAttributeValue (CView* view, const std::string& attributeName,
+                                               std::string& stringValue,
+                                               const IUIDescription* desc) const
 {
 	auto ste = dynamic_cast<CSearchTextEdit*> (view);
 	if (!ste)

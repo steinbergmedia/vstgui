@@ -15,39 +15,39 @@ namespace VSTGUI {
 namespace UIViewCreator {
 
 //------------------------------------------------------------------------
-CCheckBoxCreator::CCheckBoxCreator ()
+CheckBoxCreator::CheckBoxCreator ()
 {
 	UIViewFactory::registerViewCreator (*this);
 }
 
 //------------------------------------------------------------------------
-IdStringPtr CCheckBoxCreator::getViewName () const
+IdStringPtr CheckBoxCreator::getViewName () const
 {
 	return kCCheckBox;
 }
 
 //------------------------------------------------------------------------
-IdStringPtr CCheckBoxCreator::getBaseViewName () const
+IdStringPtr CheckBoxCreator::getBaseViewName () const
 {
 	return kCControl;
 }
 
 //------------------------------------------------------------------------
-UTF8StringPtr CCheckBoxCreator::getDisplayName () const
+UTF8StringPtr CheckBoxCreator::getDisplayName () const
 {
 	return "Checkbox";
 }
 
 //------------------------------------------------------------------------
-CView* CCheckBoxCreator::create (const UIAttributes& attributes,
-                                 const IUIDescription* description) const
+CView* CheckBoxCreator::create (const UIAttributes& attributes,
+                                const IUIDescription* description) const
 {
 	return new CCheckBox (CRect (0, 0, 100, 20), nullptr, -1, "Title");
 }
 
 //------------------------------------------------------------------------
-bool CCheckBoxCreator::apply (CView* view, const UIAttributes& attributes,
-                              const IUIDescription* description) const
+bool CheckBoxCreator::apply (CView* view, const UIAttributes& attributes,
+                             const IUIDescription* description) const
 {
 	auto* checkbox = dynamic_cast<CCheckBox*> (view);
 	if (!checkbox)
@@ -96,7 +96,7 @@ bool CCheckBoxCreator::apply (CView* view, const UIAttributes& attributes,
 }
 
 //------------------------------------------------------------------------
-bool CCheckBoxCreator::getAttributeNames (std::list<std::string>& attributeNames) const
+bool CheckBoxCreator::getAttributeNames (std::list<std::string>& attributeNames) const
 {
 	attributeNames.emplace_back (kAttrTitle);
 	attributeNames.emplace_back (kAttrFont);
@@ -112,7 +112,7 @@ bool CCheckBoxCreator::getAttributeNames (std::list<std::string>& attributeNames
 }
 
 //------------------------------------------------------------------------
-auto CCheckBoxCreator::getAttributeType (const std::string& attributeName) const -> AttrType
+auto CheckBoxCreator::getAttributeType (const std::string& attributeName) const -> AttrType
 {
 	if (attributeName == kAttrTitle)
 		return kStringType;
@@ -138,9 +138,8 @@ auto CCheckBoxCreator::getAttributeType (const std::string& attributeName) const
 }
 
 //------------------------------------------------------------------------
-bool CCheckBoxCreator::getAttributeValue (CView* view, const std::string& attributeName,
-                                          std::string& stringValue,
-                                          const IUIDescription* desc) const
+bool CheckBoxCreator::getAttributeValue (CView* view, const std::string& attributeName,
+                                         std::string& stringValue, const IUIDescription* desc) const
 {
 	auto* checkbox = dynamic_cast<CCheckBox*> (view);
 	if (!checkbox)

@@ -10,10 +10,10 @@
 namespace VSTGUI {
 namespace UIViewCreator {
 
-//-----------------------------------------------------------------------------
-struct COptionMenuCreator : ViewCreatorAdapter
+//------------------------------------------------------------------------
+struct OptionMenuCreator : ViewCreatorAdapter
 {
-	COptionMenuCreator ();
+	OptionMenuCreator ();
 	IdStringPtr getViewName () const override;
 	IdStringPtr getBaseViewName () const override;
 	UTF8StringPtr getDisplayName () const override;

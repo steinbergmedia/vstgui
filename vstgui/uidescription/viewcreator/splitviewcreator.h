@@ -10,10 +10,10 @@
 namespace VSTGUI {
 namespace UIViewCreator {
 
-//-----------------------------------------------------------------------------
-struct CSplitViewCreator : ViewCreatorAdapter
+//------------------------------------------------------------------------
+struct SplitViewCreator : ViewCreatorAdapter
 {
-	CSplitViewCreator ();
+	SplitViewCreator ();
 	IdStringPtr getViewName () const override;
 	IdStringPtr getBaseViewName () const override;
 	UTF8StringPtr getDisplayName () const override;

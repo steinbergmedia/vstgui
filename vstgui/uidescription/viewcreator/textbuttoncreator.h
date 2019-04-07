@@ -10,10 +10,10 @@
 namespace VSTGUI {
 namespace UIViewCreator {
 
-//-----------------------------------------------------------------------------
-struct CTextButtonCreator : ViewCreatorAdapter
+//------------------------------------------------------------------------
+struct TextButtonCreator : ViewCreatorAdapter
 {
-	CTextButtonCreator ();
+	TextButtonCreator ();
 	IdStringPtr getViewName () const override;
 	IdStringPtr getBaseViewName () const override;
 	UTF8StringPtr getDisplayName () const override;

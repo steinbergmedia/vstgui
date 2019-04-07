@@ -10,10 +10,10 @@
 namespace VSTGUI {
 namespace UIViewCreator {
 
-//-----------------------------------------------------------------------------
-struct CTextEditCreator : ViewCreatorAdapter
+//------------------------------------------------------------------------
+struct TextEditCreator : ViewCreatorAdapter
 {
-	CTextEditCreator ();
+	TextEditCreator ();
 	IdStringPtr getViewName () const override;
 	IdStringPtr getBaseViewName () const override;
 	UTF8StringPtr getDisplayName () const override;

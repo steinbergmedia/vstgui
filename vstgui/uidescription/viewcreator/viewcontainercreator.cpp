@@ -4,8 +4,8 @@
 
 #include "viewcontainercreator.h"
 
-#include "../../lib/cviewcontainer.h"
 #include "../../lib/ccolor.h"
+#include "../../lib/cviewcontainer.h"
 #include "../detail/uiviewcreatorattributes.h"
 #include "../uiattributes.h"
 #include "../uiviewcreator.h"
@@ -16,39 +16,39 @@ namespace VSTGUI {
 namespace UIViewCreator {
 
 //------------------------------------------------------------------------
-CViewContainerCreator::CViewContainerCreator ()
+ViewContainerCreator::ViewContainerCreator ()
 {
 	UIViewFactory::registerViewCreator (*this);
 }
 
 //------------------------------------------------------------------------
-IdStringPtr CViewContainerCreator::getViewName () const
+IdStringPtr ViewContainerCreator::getViewName () const
 {
 	return kCViewContainer;
 }
 
 //------------------------------------------------------------------------
-IdStringPtr CViewContainerCreator::getBaseViewName () const
+IdStringPtr ViewContainerCreator::getBaseViewName () const
 {
 	return kCView;
 }
 
 //------------------------------------------------------------------------
-UTF8StringPtr CViewContainerCreator::getDisplayName () const
+UTF8StringPtr ViewContainerCreator::getDisplayName () const
 {
 	return "View Container";
 }
 
 //------------------------------------------------------------------------
-CView* CViewContainerCreator::create (const UIAttributes& attributes,
-                                      const IUIDescription* description) const
+CView* ViewContainerCreator::create (const UIAttributes& attributes,
+                                     const IUIDescription* description) const
 {
 	return new CViewContainer (CRect (0, 0, 100, 100));
 }
 
 //------------------------------------------------------------------------
-bool CViewContainerCreator::apply (CView* view, const UIAttributes& attributes,
-                                   const IUIDescription* description) const
+bool ViewContainerCreator::apply (CView* view, const UIAttributes& attributes,
+                                  const IUIDescription* description) const
 {
 	CViewContainer* viewContainer = view->asViewContainer ();
 	if (viewContainer == nullptr)
@@ -74,7 +74,7 @@ bool CViewContainerCreator::apply (CView* view, const UIAttributes& attributes,
 }
 
 //------------------------------------------------------------------------
-bool CViewContainerCreator::getAttributeNames (std::list<std::string>& attributeNames) const
+bool ViewContainerCreator::getAttributeNames (std::list<std::string>& attributeNames) const
 {
 	attributeNames.emplace_back (kAttrBackgroundColor);
 	attributeNames.emplace_back (kAttrBackgroundColorDrawStyle);
@@ -82,7 +82,7 @@ bool CViewContainerCreator::getAttributeNames (std::list<std::string>& attribute
 }
 
 //------------------------------------------------------------------------
-auto CViewContainerCreator::getAttributeType (const std::string& attributeName) const -> AttrType
+auto ViewContainerCreator::getAttributeType (const std::string& attributeName) const -> AttrType
 {
 	if (attributeName == kAttrBackgroundColor)
 		return kColorType;
@@ -92,9 +92,9 @@ auto CViewContainerCreator::getAttributeType (const std::string& attributeName) 
 }
 
 //------------------------------------------------------------------------
-bool CViewContainerCreator::getAttributeValue (CView* view, const std::string& attributeName,
-                                               std::string& stringValue,
-                                               const IUIDescription* desc) const
+bool ViewContainerCreator::getAttributeValue (CView* view, const std::string& attributeName,
+                                              std::string& stringValue,
+                                              const IUIDescription* desc) const
 {
 	CViewContainer* vc = view->asViewContainer ();
 	if (vc == nullptr)
@@ -118,8 +118,8 @@ bool CViewContainerCreator::getAttributeValue (CView* view, const std::string& a
 }
 
 //------------------------------------------------------------------------
-bool CViewContainerCreator::getPossibleListValues (const std::string& attributeName,
-                                                   std::list<const std::string*>& values) const
+bool ViewContainerCreator::getPossibleListValues (const std::string& attributeName,
+                                                  std::list<const std::string*>& values) const
 {
 	if (attributeName == kAttrBackgroundColorDrawStyle)
 	{

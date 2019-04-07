@@ -10,10 +10,10 @@
 namespace VSTGUI {
 namespace UIViewCreator {
 
-//-----------------------------------------------------------------------------
-struct CCheckBoxCreator : ViewCreatorAdapter
+//------------------------------------------------------------------------
+struct CheckBoxCreator : ViewCreatorAdapter
 {
-	CCheckBoxCreator ();
+	CheckBoxCreator ();
 	IdStringPtr getViewName () const override;
 	IdStringPtr getBaseViewName () const override;
 	UTF8StringPtr getDisplayName () const override;

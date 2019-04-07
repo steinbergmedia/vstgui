@@ -15,39 +15,39 @@ namespace VSTGUI {
 namespace UIViewCreator {
 
 //------------------------------------------------------------------------
-CShadowViewContainerCreator::CShadowViewContainerCreator ()
+ShadowViewContainerCreator::ShadowViewContainerCreator ()
 {
 	UIViewFactory::registerViewCreator (*this);
 }
 
 //------------------------------------------------------------------------
-IdStringPtr CShadowViewContainerCreator::getViewName () const
+IdStringPtr ShadowViewContainerCreator::getViewName () const
 {
 	return kCShadowViewContainer;
 }
 
 //------------------------------------------------------------------------
-IdStringPtr CShadowViewContainerCreator::getBaseViewName () const
+IdStringPtr ShadowViewContainerCreator::getBaseViewName () const
 {
 	return kCViewContainer;
 }
 
 //------------------------------------------------------------------------
-UTF8StringPtr CShadowViewContainerCreator::getDisplayName () const
+UTF8StringPtr ShadowViewContainerCreator::getDisplayName () const
 {
 	return "Shadow View Container";
 }
 
 //------------------------------------------------------------------------
-CView* CShadowViewContainerCreator::create (const UIAttributes& attributes,
-                                            const IUIDescription* description) const
+CView* ShadowViewContainerCreator::create (const UIAttributes& attributes,
+                                           const IUIDescription* description) const
 {
 	return new CShadowViewContainer (CRect (0, 0, 200, 200));
 }
 
 //------------------------------------------------------------------------
-bool CShadowViewContainerCreator::apply (CView* view, const UIAttributes& attributes,
-                                         const IUIDescription* description) const
+bool ShadowViewContainerCreator::apply (CView* view, const UIAttributes& attributes,
+                                        const IUIDescription* description) const
 {
 	auto* shadowView = dynamic_cast<CShadowViewContainer*> (view);
 	if (!shadowView)
@@ -64,7 +64,7 @@ bool CShadowViewContainerCreator::apply (CView* view, const UIAttributes& attrib
 }
 
 //------------------------------------------------------------------------
-bool CShadowViewContainerCreator::getAttributeNames (std::list<std::string>& attributeNames) const
+bool ShadowViewContainerCreator::getAttributeNames (std::list<std::string>& attributeNames) const
 {
 	attributeNames.emplace_back (kAttrShadowIntensity);
 	attributeNames.emplace_back (kAttrShadowOffset);
@@ -73,7 +73,7 @@ bool CShadowViewContainerCreator::getAttributeNames (std::list<std::string>& att
 }
 
 //------------------------------------------------------------------------
-auto CShadowViewContainerCreator::getAttributeType (const std::string& attributeName) const
+auto ShadowViewContainerCreator::getAttributeType (const std::string& attributeName) const
     -> AttrType
 {
 	if (attributeName == kAttrShadowIntensity)
@@ -86,9 +86,9 @@ auto CShadowViewContainerCreator::getAttributeType (const std::string& attribute
 }
 
 //------------------------------------------------------------------------
-bool CShadowViewContainerCreator::getAttributeValue (CView* view, const std::string& attributeName,
-                                                     std::string& stringValue,
-                                                     const IUIDescription* desc) const
+bool ShadowViewContainerCreator::getAttributeValue (CView* view, const std::string& attributeName,
+                                                    std::string& stringValue,
+                                                    const IUIDescription* desc) const
 {
 	auto* shadowView = dynamic_cast<CShadowViewContainer*> (view);
 	if (!shadowView)
@@ -112,8 +112,8 @@ bool CShadowViewContainerCreator::getAttributeValue (CView* view, const std::str
 }
 
 //------------------------------------------------------------------------
-bool CShadowViewContainerCreator::getAttributeValueRange (const std::string& attributeName,
-                                                          double& minValue, double& maxValue) const
+bool ShadowViewContainerCreator::getAttributeValueRange (const std::string& attributeName,
+                                                         double& minValue, double& maxValue) const
 {
 	if (attributeName == kAttrShadowBlurSize)
 	{

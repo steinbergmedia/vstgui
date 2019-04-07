@@ -10,10 +10,10 @@
 namespace VSTGUI {
 namespace UIViewCreator {
 
-//-----------------------------------------------------------------------------
-struct CAnimationSplashScreenCreator : ViewCreatorAdapter
+//------------------------------------------------------------------------
+struct AnimationSplashScreenCreator : ViewCreatorAdapter
 {
-	CAnimationSplashScreenCreator ();
+	AnimationSplashScreenCreator ();
 	IdStringPtr getViewName () const override;
 	IdStringPtr getBaseViewName () const override;
 	UTF8StringPtr getDisplayName () const override;

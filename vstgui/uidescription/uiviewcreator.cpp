@@ -525,38 +525,38 @@ bool getStandardAttributeListValues (const std::string& attributeName, std::list
 }
 
 //------------------------------------------------------------------------
-CAnimationSplashScreenCreator __gAnimationSplashScreenCreator;
-CAnimKnobCreator __gAnimKnobCreator;
-CCheckBoxCreator __gCheckBoxCreator;
-CControlCreator __gControlCreator;
-CGradientViewCreator __gGradientViewCreator;
-CKickButtonCreator __gKickButtonCreator;
-CKnobCreator __gKnobCreator;
-CLayeredViewContainerCreator __gLayeredViewContainerCreator;
-CMovieBitmapCreator __gMovieBitmapCreator;
-CMovieButtonCreator __gMovieButtonCreator;
-CMultiLineTextLabelCreator __gMultiLineTextLabelCreator;
-COnOffButtonCreator __gOnOffButtonCreator;
-COptionMenuCreator __gOptionMenuCreator;
-CParamDisplayCreator __gParamDisplayCreator;
-CRowColumnViewCreator __gRowColumnViewCreator;
-CScrollViewCreator __gScrollViewCreator;
-CSearchTextEditCreator __gSearchTextEditCreator;
-CSegmentButtonCreator __gSegmentButtonCreator;
-CShadowViewContainerCreator __gShadowViewContainerCreator;
-CSliderCreator __gSliderCreator;
-CSplitViewCreator __gSplitViewCreator;
-CTextButtonCreator __gTextButtonCreator;
-CTextEditCreator __gTextEditCreator;
-CTextLabelCreator __gTextLabelCreator;
+AnimationSplashScreenCreator __gAnimationSplashScreenCreator;
+AnimKnobCreator __gAnimKnobCreator;
+CheckBoxCreator __gCheckBoxCreator;
+ControlCreator __gControlCreator;
+GradientViewCreator __gGradientViewCreator;
+KickButtonCreator __gKickButtonCreator;
+KnobCreator __gKnobCreator;
+LayeredViewContainerCreator __gLayeredViewContainerCreator;
+MovieBitmapCreator __gMovieBitmapCreator;
+MovieButtonCreator __gMovieButtonCreator;
+MultiLineTextLabelCreator __gMultiLineTextLabelCreator;
+OnOffButtonCreator __gOnOffButtonCreator;
+OptionMenuCreator __gOptionMenuCreator;
+ParamDisplayCreator __gParamDisplayCreator;
+RowColumnViewCreator __gRowColumnViewCreator;
+ScrollViewCreator __gScrollViewCreator;
+SearchTextEditCreator __gSearchTextEditCreator;
+SegmentButtonCreator __gSegmentButtonCreator;
+ShadowViewContainerCreator __gShadowViewContainerCreator;
+SliderCreator __gSliderCreator;
+SplitViewCreator __gSplitViewCreator;
+TextButtonCreator __gTextButtonCreator;
+TextEditCreator __gTextEditCreator;
+TextLabelCreator __gTextLabelCreator;
 UIViewSwitchContainerCreator __gUIViewSwitchContainerCreator;
-CViewContainerCreator __gViewContainerCreator;
-CViewCreator __gViewCreator;
-CVuMeterCreator __gVuMeterCreator;
-CXYPadCreator __gCXYPadCreator;
-CVerticalSwitchCreator __gVerticalSwitchCreator;
-CHorizontalSwitchCreator __gHorizontalSwitchCreator;
-CRockerSwitchCreator __gRockerSwitchCreator;
+ViewContainerCreator __gViewContainerCreator;
+ViewCreator __gViewCreator;
+VuMeterCreator __gVuMeterCreator;
+XYPadCreator __gCXYPadCreator;
+VerticalSwitchCreator __gVerticalSwitchCreator;
+HorizontalSwitchCreator __gHorizontalSwitchCreator;
+RockerSwitchCreator __gRockerSwitchCreator;
 
 //------------------------------------------------------------------------
 }} // VSTGUI

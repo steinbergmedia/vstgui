@@ -11,9 +11,9 @@ namespace VSTGUI {
 namespace UIViewCreator {
 
 //------------------------------------------------------------------------
-struct CXYPadCreator : ViewCreatorAdapter
+struct XYPadCreator : ViewCreatorAdapter
 {
-	CXYPadCreator ();
+	XYPadCreator ();
 	IdStringPtr getViewName () const override;
 	IdStringPtr getBaseViewName () const override;
 	UTF8StringPtr getDisplayName () const override;

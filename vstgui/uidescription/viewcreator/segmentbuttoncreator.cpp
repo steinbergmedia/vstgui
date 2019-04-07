@@ -15,32 +15,32 @@ namespace VSTGUI {
 namespace UIViewCreator {
 
 //------------------------------------------------------------------------
-CSegmentButtonCreator::CSegmentButtonCreator ()
+SegmentButtonCreator::SegmentButtonCreator ()
 {
 	UIViewFactory::registerViewCreator (*this);
 }
 
 //------------------------------------------------------------------------
-IdStringPtr CSegmentButtonCreator::getViewName () const
+IdStringPtr SegmentButtonCreator::getViewName () const
 {
 	return kCSegmentButton;
 }
 
 //------------------------------------------------------------------------
-IdStringPtr CSegmentButtonCreator::getBaseViewName () const
+IdStringPtr SegmentButtonCreator::getBaseViewName () const
 {
 	return kCControl;
 }
 
 //------------------------------------------------------------------------
-UTF8StringPtr CSegmentButtonCreator::getDisplayName () const
+UTF8StringPtr SegmentButtonCreator::getDisplayName () const
 {
 	return "Segment Button";
 }
 
 //------------------------------------------------------------------------
-CView* CSegmentButtonCreator::create (const UIAttributes& attributes,
-                                      const IUIDescription* description) const
+CView* SegmentButtonCreator::create (const UIAttributes& attributes,
+                                     const IUIDescription* description) const
 {
 	CSegmentButton* button = new CSegmentButton (CRect (0, 0, 200, 20));
 	updateSegmentCount (button, 4);
@@ -48,7 +48,7 @@ CView* CSegmentButtonCreator::create (const UIAttributes& attributes,
 }
 
 //------------------------------------------------------------------------
-void CSegmentButtonCreator::updateSegmentCount (CSegmentButton* button, uint32_t numSegments) const
+void SegmentButtonCreator::updateSegmentCount (CSegmentButton* button, uint32_t numSegments) const
 {
 	if (button->getSegments ().size () != numSegments)
 	{
@@ -66,8 +66,8 @@ void CSegmentButtonCreator::updateSegmentCount (CSegmentButton* button, uint32_t
 }
 
 //------------------------------------------------------------------------
-void CSegmentButtonCreator::updateSegments (CSegmentButton* button,
-                                            const UIAttributes::StringArray& names) const
+void SegmentButtonCreator::updateSegments (CSegmentButton* button,
+                                           const UIAttributes::StringArray& names) const
 {
 	button->removeAllSegments ();
 	for (const auto& name : names)
@@ -79,8 +79,8 @@ void CSegmentButtonCreator::updateSegments (CSegmentButton* button,
 }
 
 //------------------------------------------------------------------------
-bool CSegmentButtonCreator::apply (CView* view, const UIAttributes& attributes,
-                                   const IUIDescription* description) const
+bool SegmentButtonCreator::apply (CView* view, const UIAttributes& attributes,
+                                  const IUIDescription* description) const
 {
 	auto* button = dynamic_cast<CSegmentButton*> (view);
 	if (!button)
@@ -173,7 +173,7 @@ bool CSegmentButtonCreator::apply (CView* view, const UIAttributes& attributes,
 }
 
 //------------------------------------------------------------------------
-bool CSegmentButtonCreator::getAttributeNames (std::list<std::string>& attributeNames) const
+bool SegmentButtonCreator::getAttributeNames (std::list<std::string>& attributeNames) const
 {
 	attributeNames.emplace_back (kAttrStyle);
 	attributeNames.emplace_back (kAttrSelectionMode);
@@ -193,7 +193,7 @@ bool CSegmentButtonCreator::getAttributeNames (std::list<std::string>& attribute
 }
 
 //------------------------------------------------------------------------
-auto CSegmentButtonCreator::getAttributeType (const std::string& attributeName) const -> AttrType
+auto SegmentButtonCreator::getAttributeType (const std::string& attributeName) const -> AttrType
 {
 	if (attributeName == kAttrStyle)
 		return kListType;
@@ -227,8 +227,8 @@ auto CSegmentButtonCreator::getAttributeType (const std::string& attributeName) 
 }
 
 //------------------------------------------------------------------------
-bool CSegmentButtonCreator::getPossibleListValues (const std::string& attributeName,
-                                                   std::list<const std::string*>& values) const
+bool SegmentButtonCreator::getPossibleListValues (const std::string& attributeName,
+                                                  std::list<const std::string*>& values) const
 {
 	if (attributeName == kAttrStyle)
 	{
@@ -254,9 +254,9 @@ bool CSegmentButtonCreator::getPossibleListValues (const std::string& attributeN
 }
 
 //------------------------------------------------------------------------
-bool CSegmentButtonCreator::getAttributeValue (CView* view, const std::string& attributeName,
-                                               std::string& stringValue,
-                                               const IUIDescription* desc) const
+bool SegmentButtonCreator::getAttributeValue (CView* view, const std::string& attributeName,
+                                              std::string& stringValue,
+                                              const IUIDescription* desc) const
 {
 	auto* button = dynamic_cast<CSegmentButton*> (view);
 	if (!button)

@@ -10,10 +10,10 @@
 namespace VSTGUI {
 namespace UIViewCreator {
 
-//-----------------------------------------------------------------------------
-struct CGradientViewCreator : ViewCreatorAdapter
+//------------------------------------------------------------------------
+struct GradientViewCreator : ViewCreatorAdapter
 {
-	CGradientViewCreator ();
+	GradientViewCreator ();
 	IdStringPtr getViewName () const override;
 	IdStringPtr getBaseViewName () const override;
 	UTF8StringPtr getDisplayName () const override;
@@ -29,6 +29,7 @@ struct CGradientViewCreator : ViewCreatorAdapter
 	                            std::list<const std::string*>& values) const override;
 	bool getAttributeValueRange (const std::string& attributeName, double& minValue,
 	                             double& maxValue) const override;
+
 private:
 	const std::string kLinear = "linear";
 	const std::string kRadial = "radial";

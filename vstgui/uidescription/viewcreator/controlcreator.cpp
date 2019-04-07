@@ -24,39 +24,39 @@ struct CControlCreatorDummyControl : CControl
 };
 
 //------------------------------------------------------------------------
-CControlCreator::CControlCreator ()
+ControlCreator::ControlCreator ()
 {
 	UIViewFactory::registerViewCreator (*this);
 }
 
 //------------------------------------------------------------------------
-IdStringPtr CControlCreator::getViewName () const
+IdStringPtr ControlCreator::getViewName () const
 {
 	return kCControl;
 }
 
 //------------------------------------------------------------------------
-IdStringPtr CControlCreator::getBaseViewName () const
+IdStringPtr ControlCreator::getBaseViewName () const
 {
 	return kCView;
 }
 
 //------------------------------------------------------------------------
-UTF8StringPtr CControlCreator::getDisplayName () const
+UTF8StringPtr ControlCreator::getDisplayName () const
 {
 	return "Control";
 }
 
 //------------------------------------------------------------------------
-CView* CControlCreator::create (const UIAttributes& attributes,
-                                const IUIDescription* description) const
+CView* ControlCreator::create (const UIAttributes& attributes,
+                               const IUIDescription* description) const
 {
 	return new CControlCreatorDummyControl ();
 }
 
 //------------------------------------------------------------------------
-bool CControlCreator::apply (CView* view, const UIAttributes& attributes,
-                             const IUIDescription* description) const
+bool ControlCreator::apply (CView* view, const UIAttributes& attributes,
+                            const IUIDescription* description) const
 {
 	auto* control = dynamic_cast<CControl*> (view);
 	if (control == nullptr)
@@ -106,7 +106,7 @@ bool CControlCreator::apply (CView* view, const UIAttributes& attributes,
 }
 
 //------------------------------------------------------------------------
-bool CControlCreator::getAttributeNames (std::list<std::string>& attributeNames) const
+bool ControlCreator::getAttributeNames (std::list<std::string>& attributeNames) const
 {
 	attributeNames.emplace_back (kAttrControlTag);
 	attributeNames.emplace_back (kAttrDefaultValue);
@@ -117,7 +117,7 @@ bool CControlCreator::getAttributeNames (std::list<std::string>& attributeNames)
 }
 
 //------------------------------------------------------------------------
-auto CControlCreator::getAttributeType (const std::string& attributeName) const -> AttrType
+auto ControlCreator::getAttributeType (const std::string& attributeName) const -> AttrType
 {
 	if (attributeName == kAttrControlTag)
 		return kTagType;
@@ -133,8 +133,8 @@ auto CControlCreator::getAttributeType (const std::string& attributeName) const 
 }
 
 //------------------------------------------------------------------------
-bool CControlCreator::getAttributeValue (CView* view, const std::string& attributeName,
-                                         std::string& stringValue, const IUIDescription* desc) const
+bool ControlCreator::getAttributeValue (CView* view, const std::string& attributeName,
+                                        std::string& stringValue, const IUIDescription* desc) const
 {
 	auto* control = dynamic_cast<CControl*> (view);
 	if (control == nullptr)

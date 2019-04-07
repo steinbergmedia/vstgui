@@ -10,8 +10,8 @@
 namespace VSTGUI {
 namespace UIViewCreator {
 
-//-----------------------------------------------------------------------------
-struct CSliderBaseCreator : ViewCreatorAdapter
+//------------------------------------------------------------------------
+struct SliderBaseCreator : ViewCreatorAdapter
 {
 	bool apply (CView* view, const UIAttributes& attributes,
 	            const IUIDescription* description) const override;
@@ -30,10 +30,10 @@ private:
 	const std::string kUseGlobalMode = "use global";
 };
 
-//-----------------------------------------------------------------------------
-struct CSliderCreator : CSliderBaseCreator
+//------------------------------------------------------------------------
+struct SliderCreator : SliderBaseCreator
 {
-	CSliderCreator ();
+	SliderCreator ();
 	IdStringPtr getViewName () const override;
 	IdStringPtr getBaseViewName () const override;
 	UTF8StringPtr getDisplayName () const override;

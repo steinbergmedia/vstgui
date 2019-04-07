@@ -16,7 +16,7 @@ namespace VSTGUI {
 namespace UIViewCreator {
 
 //------------------------------------------------------------------------
-auto CTextButtonCreator::getPositionStrings () -> PositionStringArray&
+auto TextButtonCreator::getPositionStrings () -> PositionStringArray&
 {
 	static PositionStringArray positionsStrings = {
 	    {strLeft, "center above text", "center below text", strRight}};
@@ -25,32 +25,32 @@ auto CTextButtonCreator::getPositionStrings () -> PositionStringArray&
 }
 
 //------------------------------------------------------------------------
-CTextButtonCreator::CTextButtonCreator ()
+TextButtonCreator::TextButtonCreator ()
 {
 	UIViewFactory::registerViewCreator (*this);
 }
 
 //------------------------------------------------------------------------
-IdStringPtr CTextButtonCreator::getViewName () const
+IdStringPtr TextButtonCreator::getViewName () const
 {
 	return kCTextButton;
 }
 
 //------------------------------------------------------------------------
-IdStringPtr CTextButtonCreator::getBaseViewName () const
+IdStringPtr TextButtonCreator::getBaseViewName () const
 {
 	return kCControl;
 }
 
 //------------------------------------------------------------------------
-UTF8StringPtr CTextButtonCreator::getDisplayName () const
+UTF8StringPtr TextButtonCreator::getDisplayName () const
 {
 	return "Text Button";
 }
 
 //------------------------------------------------------------------------
-CView* CTextButtonCreator::create (const UIAttributes& attributes,
-                                   const IUIDescription* description) const
+CView* TextButtonCreator::create (const UIAttributes& attributes,
+                                  const IUIDescription* description) const
 {
 	CTextButton* button = new CTextButton (CRect (0, 0, 100, 20), nullptr, -1, "");
 	if (!description->lookupGradientName (button->getGradient ()))
@@ -63,8 +63,8 @@ CView* CTextButtonCreator::create (const UIAttributes& attributes,
 }
 
 //------------------------------------------------------------------------
-bool CTextButtonCreator::apply (CView* view, const UIAttributes& attributes,
-                                const IUIDescription* description) const
+bool TextButtonCreator::apply (CView* view, const UIAttributes& attributes,
+                               const IUIDescription* description) const
 {
 	auto* button = dynamic_cast<CTextButton*> (view);
 	if (!button)
@@ -179,7 +179,7 @@ bool CTextButtonCreator::apply (CView* view, const UIAttributes& attributes,
 }
 
 //------------------------------------------------------------------------
-bool CTextButtonCreator::getAttributeNames (std::list<std::string>& attributeNames) const
+bool TextButtonCreator::getAttributeNames (std::list<std::string>& attributeNames) const
 {
 	attributeNames.emplace_back (kAttrKickStyle);
 	attributeNames.emplace_back (kAttrTitle);
@@ -201,7 +201,7 @@ bool CTextButtonCreator::getAttributeNames (std::list<std::string>& attributeNam
 }
 
 //------------------------------------------------------------------------
-auto CTextButtonCreator::getAttributeType (const std::string& attributeName) const -> AttrType
+auto TextButtonCreator::getAttributeType (const std::string& attributeName) const -> AttrType
 {
 	if (attributeName == kAttrTitle)
 		return kStringType;
@@ -239,8 +239,8 @@ auto CTextButtonCreator::getAttributeType (const std::string& attributeName) con
 }
 
 //------------------------------------------------------------------------
-bool CTextButtonCreator::getPossibleListValues (const std::string& attributeName,
-                                                std::list<const std::string*>& values) const
+bool TextButtonCreator::getPossibleListValues (const std::string& attributeName,
+                                               std::list<const std::string*>& values) const
 {
 	if (attributeName == kAttrIconPosition)
 	{
@@ -252,9 +252,9 @@ bool CTextButtonCreator::getPossibleListValues (const std::string& attributeName
 }
 
 //------------------------------------------------------------------------
-bool CTextButtonCreator::getAttributeValue (CView* view, const std::string& attributeName,
-                                            std::string& stringValue,
-                                            const IUIDescription* desc) const
+bool TextButtonCreator::getAttributeValue (CView* view, const std::string& attributeName,
+                                           std::string& stringValue,
+                                           const IUIDescription* desc) const
 {
 	auto* button = dynamic_cast<CTextButton*> (view);
 	if (!button)

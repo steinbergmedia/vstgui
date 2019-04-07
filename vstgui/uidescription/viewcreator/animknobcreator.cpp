@@ -16,39 +16,39 @@ namespace VSTGUI {
 namespace UIViewCreator {
 
 //------------------------------------------------------------------------
-CAnimKnobCreator::CAnimKnobCreator ()
+AnimKnobCreator::AnimKnobCreator ()
 {
 	UIViewFactory::registerViewCreator (*this);
 }
 
 //------------------------------------------------------------------------
-IdStringPtr CAnimKnobCreator::getViewName () const
+IdStringPtr AnimKnobCreator::getViewName () const
 {
 	return kCAnimKnob;
 }
 
 //------------------------------------------------------------------------
-IdStringPtr CAnimKnobCreator::getBaseViewName () const
+IdStringPtr AnimKnobCreator::getBaseViewName () const
 {
 	return kCControl;
 }
 
 //------------------------------------------------------------------------
-UTF8StringPtr CAnimKnobCreator::getDisplayName () const
+UTF8StringPtr AnimKnobCreator::getDisplayName () const
 {
 	return "Animation Knob";
 }
 
 //------------------------------------------------------------------------
-CView* CAnimKnobCreator::create (const UIAttributes& attributes,
-                                 const IUIDescription* description) const
+CView* AnimKnobCreator::create (const UIAttributes& attributes,
+                                const IUIDescription* description) const
 {
 	return new CAnimKnob (CRect (0, 0, 0, 0), nullptr, -1, nullptr);
 }
 
 //------------------------------------------------------------------------
-bool CAnimKnobCreator::apply (CView* view, const UIAttributes& attributes,
-                              const IUIDescription* description) const
+bool AnimKnobCreator::apply (CView* view, const UIAttributes& attributes,
+                             const IUIDescription* description) const
 {
 	auto* animKnob = dynamic_cast<CAnimKnob*> (view);
 	if (!animKnob)
@@ -60,32 +60,31 @@ bool CAnimKnobCreator::apply (CView* view, const UIAttributes& attributes,
 		animKnob->setInverseBitmap (b);
 	}
 	IMultiBitmapControlCreator::apply (view, attributes, description);
-	return CKnobBaseCreator::apply (view, attributes, description);
+	return KnobBaseCreator::apply (view, attributes, description);
 }
 
 //------------------------------------------------------------------------
-bool CAnimKnobCreator::getAttributeNames (std::list<std::string>& attributeNames) const
+bool AnimKnobCreator::getAttributeNames (std::list<std::string>& attributeNames) const
 {
 	attributeNames.emplace_back (kAttrInverseBitmap);
 	IMultiBitmapControlCreator::getAttributeNames (attributeNames);
-	return CKnobBaseCreator::getAttributeNames (attributeNames);
+	return KnobBaseCreator::getAttributeNames (attributeNames);
 }
 
 //------------------------------------------------------------------------
-auto CAnimKnobCreator::getAttributeType (const std::string& attributeName) const -> AttrType
+auto AnimKnobCreator::getAttributeType (const std::string& attributeName) const -> AttrType
 {
 	if (attributeName == kAttrInverseBitmap)
 		return kBooleanType;
-	auto res = CKnobBaseCreator::getAttributeType (attributeName);
+	auto res = KnobBaseCreator::getAttributeType (attributeName);
 	if (res != kUnknownType)
 		return res;
 	return IMultiBitmapControlCreator::getAttributeType (attributeName);
 }
 
 //------------------------------------------------------------------------
-bool CAnimKnobCreator::getAttributeValue (CView* view, const std::string& attributeName,
-                                          std::string& stringValue,
-                                          const IUIDescription* desc) const
+bool AnimKnobCreator::getAttributeValue (CView* view, const std::string& attributeName,
+                                         std::string& stringValue, const IUIDescription* desc) const
 {
 	auto* animKnob = dynamic_cast<CAnimKnob*> (view);
 	if (!animKnob)
@@ -96,7 +95,7 @@ bool CAnimKnobCreator::getAttributeValue (CView* view, const std::string& attrib
 		stringValue = animKnob->getInverseBitmap () ? strTrue : strFalse;
 		return true;
 	}
-	if (CKnobBaseCreator::getAttributeValue (view, attributeName, stringValue, desc))
+	if (KnobBaseCreator::getAttributeValue (view, attributeName, stringValue, desc))
 		return true;
 	return IMultiBitmapControlCreator::getAttributeValue (view, attributeName, stringValue, desc);
 }

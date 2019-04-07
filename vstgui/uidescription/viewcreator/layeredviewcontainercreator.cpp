@@ -15,39 +15,39 @@ namespace VSTGUI {
 namespace UIViewCreator {
 
 //-----------------------------------------------------------------------------
-CLayeredViewContainerCreator::CLayeredViewContainerCreator ()
+LayeredViewContainerCreator::LayeredViewContainerCreator ()
 {
 	UIViewFactory::registerViewCreator (*this);
 }
 
 //------------------------------------------------------------------------
-IdStringPtr CLayeredViewContainerCreator::getViewName () const
+IdStringPtr LayeredViewContainerCreator::getViewName () const
 {
 	return kCLayeredViewContainer;
 }
 
 //------------------------------------------------------------------------
-IdStringPtr CLayeredViewContainerCreator::getBaseViewName () const
+IdStringPtr LayeredViewContainerCreator::getBaseViewName () const
 {
 	return kCViewContainer;
 }
 
 //------------------------------------------------------------------------
-UTF8StringPtr CLayeredViewContainerCreator::getDisplayName () const
+UTF8StringPtr LayeredViewContainerCreator::getDisplayName () const
 {
 	return "Layered View Container";
 }
 
 //------------------------------------------------------------------------
-CView* CLayeredViewContainerCreator::create (const UIAttributes& attributes,
-                                             const IUIDescription* description) const
+CView* LayeredViewContainerCreator::create (const UIAttributes& attributes,
+                                            const IUIDescription* description) const
 {
 	return new CLayeredViewContainer (CRect (0, 0, 100, 100));
 }
 
 //------------------------------------------------------------------------
-bool CLayeredViewContainerCreator::apply (CView* view, const UIAttributes& attributes,
-                                          const IUIDescription* description) const
+bool LayeredViewContainerCreator::apply (CView* view, const UIAttributes& attributes,
+                                         const IUIDescription* description) const
 {
 	auto* lvc = dynamic_cast<CLayeredViewContainer*> (view);
 	if (lvc == nullptr)
@@ -59,14 +59,14 @@ bool CLayeredViewContainerCreator::apply (CView* view, const UIAttributes& attri
 }
 
 //------------------------------------------------------------------------
-bool CLayeredViewContainerCreator::getAttributeNames (std::list<std::string>& attributeNames) const
+bool LayeredViewContainerCreator::getAttributeNames (std::list<std::string>& attributeNames) const
 {
 	attributeNames.emplace_back (kAttrZIndex);
 	return true;
 }
 
 //------------------------------------------------------------------------
-auto CLayeredViewContainerCreator::getAttributeType (const std::string& attributeName) const
+auto LayeredViewContainerCreator::getAttributeType (const std::string& attributeName) const
     -> AttrType
 {
 	if (attributeName == kAttrZIndex)
@@ -75,9 +75,9 @@ auto CLayeredViewContainerCreator::getAttributeType (const std::string& attribut
 }
 
 //------------------------------------------------------------------------
-bool CLayeredViewContainerCreator::getAttributeValue (CView* view, const std::string& attributeName,
-                                                      std::string& stringValue,
-                                                      const IUIDescription* desc) const
+bool LayeredViewContainerCreator::getAttributeValue (CView* view, const std::string& attributeName,
+                                                     std::string& stringValue,
+                                                     const IUIDescription* desc) const
 {
 	auto* lvc = dynamic_cast<CLayeredViewContainer*> (view);
 	if (lvc == nullptr)

@@ -10,10 +10,10 @@
 namespace VSTGUI {
 namespace UIViewCreator {
 
-//-----------------------------------------------------------------------------
-struct CMultiLineTextLabelCreator : ViewCreatorAdapter
+//------------------------------------------------------------------------
+struct MultiLineTextLabelCreator : ViewCreatorAdapter
 {
-	CMultiLineTextLabelCreator ();
+	MultiLineTextLabelCreator ();
 	IdStringPtr getViewName () const override;
 	IdStringPtr getBaseViewName () const override;
 	UTF8StringPtr getDisplayName () const override;

@@ -15,32 +15,32 @@ namespace VSTGUI {
 namespace UIViewCreator {
 
 //------------------------------------------------------------------------
-CMovieBitmapCreator::CMovieBitmapCreator ()
+MovieBitmapCreator::MovieBitmapCreator ()
 {
 	UIViewFactory::registerViewCreator (*this);
 }
 
 //------------------------------------------------------------------------
-IdStringPtr CMovieBitmapCreator::getViewName () const
+IdStringPtr MovieBitmapCreator::getViewName () const
 {
 	return kCMovieBitmap;
 }
 
 //------------------------------------------------------------------------
-IdStringPtr CMovieBitmapCreator::getBaseViewName () const
+IdStringPtr MovieBitmapCreator::getBaseViewName () const
 {
 	return kCControl;
 }
 
 //------------------------------------------------------------------------
-UTF8StringPtr CMovieBitmapCreator::getDisplayName () const
+UTF8StringPtr MovieBitmapCreator::getDisplayName () const
 {
 	return "Movie Bitmap";
 }
 
 //------------------------------------------------------------------------
-CView* CMovieBitmapCreator::create (const UIAttributes& attributes,
-                                    const IUIDescription* description) const
+CView* MovieBitmapCreator::create (const UIAttributes& attributes,
+                                   const IUIDescription* description) const
 {
 	return new CMovieBitmap (CRect (0, 0, 0, 0), nullptr, -1, nullptr);
 }

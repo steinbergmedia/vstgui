@@ -11,9 +11,9 @@ namespace VSTGUI {
 namespace UIViewCreator {
 
 //------------------------------------------------------------------------
-struct CRockerSwitchCreator : MultiBitmapControlCreator
+struct RockerSwitchCreator : MultiBitmapControlCreator
 {
-	CRockerSwitchCreator ();
+	RockerSwitchCreator ();
 	IdStringPtr getViewName () const override;
 	IdStringPtr getBaseViewName () const override;
 	UTF8StringPtr getDisplayName () const override;

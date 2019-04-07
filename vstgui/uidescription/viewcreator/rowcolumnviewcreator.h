@@ -4,17 +4,17 @@
 
 #pragma once
 
-#include "../iviewcreator.h"
 #include "../detail/uiviewcreatorattributes.h"
+#include "../iviewcreator.h"
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
 namespace UIViewCreator {
 
-//-----------------------------------------------------------------------------
-struct CRowColumnViewCreator : ViewCreatorAdapter
+//------------------------------------------------------------------------
+struct RowColumnViewCreator : ViewCreatorAdapter
 {
-	CRowColumnViewCreator ();
+	RowColumnViewCreator ();
 	IdStringPtr getViewName () const override;
 	IdStringPtr getBaseViewName () const override;
 	UTF8StringPtr getDisplayName () const override;

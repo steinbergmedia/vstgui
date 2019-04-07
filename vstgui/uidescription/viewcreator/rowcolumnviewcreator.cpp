@@ -15,39 +15,39 @@ namespace VSTGUI {
 namespace UIViewCreator {
 
 //------------------------------------------------------------------------
-CRowColumnViewCreator::CRowColumnViewCreator ()
+RowColumnViewCreator::RowColumnViewCreator ()
 {
 	UIViewFactory::registerViewCreator (*this);
 }
 
 //------------------------------------------------------------------------
-IdStringPtr CRowColumnViewCreator::getViewName () const
+IdStringPtr RowColumnViewCreator::getViewName () const
 {
 	return kCRowColumnView;
 }
 
 //------------------------------------------------------------------------
-IdStringPtr CRowColumnViewCreator::getBaseViewName () const
+IdStringPtr RowColumnViewCreator::getBaseViewName () const
 {
 	return kCViewContainer;
 }
 
 //------------------------------------------------------------------------
-UTF8StringPtr CRowColumnViewCreator::getDisplayName () const
+UTF8StringPtr RowColumnViewCreator::getDisplayName () const
 {
 	return "Row Column View Container";
 }
 
 //------------------------------------------------------------------------
-CView* CRowColumnViewCreator::create (const UIAttributes& attributes,
-                                      const IUIDescription* description) const
+CView* RowColumnViewCreator::create (const UIAttributes& attributes,
+                                     const IUIDescription* description) const
 {
 	return new CRowColumnView (CRect (0, 0, 100, 100));
 }
 
 //------------------------------------------------------------------------
-bool CRowColumnViewCreator::apply (CView* view, const UIAttributes& attributes,
-                                   const IUIDescription* description) const
+bool RowColumnViewCreator::apply (CView* view, const UIAttributes& attributes,
+                                  const IUIDescription* description) const
 {
 	auto* rcv = dynamic_cast<CRowColumnView*> (view);
 	if (rcv == nullptr)
@@ -92,7 +92,7 @@ bool CRowColumnViewCreator::apply (CView* view, const UIAttributes& attributes,
 }
 
 //------------------------------------------------------------------------
-bool CRowColumnViewCreator::getAttributeNames (std::list<std::string>& attributeNames) const
+bool RowColumnViewCreator::getAttributeNames (std::list<std::string>& attributeNames) const
 {
 	attributeNames.emplace_back (kAttrRowStyle);
 	attributeNames.emplace_back (kAttrSpacing);
@@ -105,7 +105,7 @@ bool CRowColumnViewCreator::getAttributeNames (std::list<std::string>& attribute
 }
 
 //------------------------------------------------------------------------
-auto CRowColumnViewCreator::getAttributeType (const std::string& attributeName) const -> AttrType
+auto RowColumnViewCreator::getAttributeType (const std::string& attributeName) const -> AttrType
 {
 	if (attributeName == kAttrRowStyle)
 		return kBooleanType;
@@ -125,9 +125,9 @@ auto CRowColumnViewCreator::getAttributeType (const std::string& attributeName) 
 }
 
 //------------------------------------------------------------------------
-bool CRowColumnViewCreator::getAttributeValue (CView* view, const std::string& attributeName,
-                                               std::string& stringValue,
-                                               const IUIDescription* desc) const
+bool RowColumnViewCreator::getAttributeValue (CView* view, const std::string& attributeName,
+                                              std::string& stringValue,
+                                              const IUIDescription* desc) const
 {
 	auto* rcv = dynamic_cast<CRowColumnView*> (view);
 	if (rcv == nullptr)
@@ -178,8 +178,8 @@ bool CRowColumnViewCreator::getAttributeValue (CView* view, const std::string& a
 }
 
 //------------------------------------------------------------------------
-bool CRowColumnViewCreator::getPossibleListValues (const std::string& attributeName,
-                                                   std::list<const std::string*>& values) const
+bool RowColumnViewCreator::getPossibleListValues (const std::string& attributeName,
+                                                  std::list<const std::string*>& values) const
 {
 	if (attributeName == kAttrEqualSizeLayout)
 	{

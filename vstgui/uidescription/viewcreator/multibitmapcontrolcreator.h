@@ -10,7 +10,7 @@
 namespace VSTGUI {
 namespace UIViewCreator {
 
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------
 struct IMultiBitmapControlCreator
 {
 	static bool apply (CView* view, const UIAttributes& attributes,
@@ -21,10 +21,9 @@ struct IMultiBitmapControlCreator
 	                               std::string& stringValue, const IUIDescription* desc);
 };
 
-//-----------------------------------------------------------------------------
-class MultiBitmapControlCreator : public ViewCreatorAdapter
+//------------------------------------------------------------------------
+struct MultiBitmapControlCreator : ViewCreatorAdapter
 {
-public:
 	bool getAttributeNames (std::list<std::string>& attributeNames) const override
 	{
 		return IMultiBitmapControlCreator::getAttributeNames (attributeNames);

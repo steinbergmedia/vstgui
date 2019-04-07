@@ -11,7 +11,7 @@ namespace VSTGUI {
 namespace UIViewCreator {
 
 //------------------------------------------------------------------------
-struct CSwitchBaseCreator : ViewCreatorAdapter
+struct SwitchBaseCreator : ViewCreatorAdapter
 {
 	bool getAttributeNames (std::list<std::string>& attributeNames) const override;
 	AttrType getAttributeType (const std::string& attributeName) const override;
@@ -22,9 +22,9 @@ struct CSwitchBaseCreator : ViewCreatorAdapter
 };
 
 //------------------------------------------------------------------------
-struct CVerticalSwitchCreator : CSwitchBaseCreator
+struct VerticalSwitchCreator : SwitchBaseCreator
 {
-	CVerticalSwitchCreator ();
+	VerticalSwitchCreator ();
 	IdStringPtr getViewName () const override;
 	IdStringPtr getBaseViewName () const override;
 	UTF8StringPtr getDisplayName () const override;
@@ -33,9 +33,9 @@ struct CVerticalSwitchCreator : CSwitchBaseCreator
 };
 
 //------------------------------------------------------------------------
-struct CHorizontalSwitchCreator : CSwitchBaseCreator
+struct HorizontalSwitchCreator : SwitchBaseCreator
 {
-	CHorizontalSwitchCreator ();
+	HorizontalSwitchCreator ();
 	IdStringPtr getViewName () const override;
 	IdStringPtr getBaseViewName () const override;
 	UTF8StringPtr getDisplayName () const override;

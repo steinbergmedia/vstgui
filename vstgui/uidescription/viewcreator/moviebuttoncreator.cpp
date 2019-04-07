@@ -15,32 +15,32 @@ namespace VSTGUI {
 namespace UIViewCreator {
 
 //------------------------------------------------------------------------
-CMovieButtonCreator::CMovieButtonCreator ()
+MovieButtonCreator::MovieButtonCreator ()
 {
 	UIViewFactory::registerViewCreator (*this);
 }
 
 //------------------------------------------------------------------------
-IdStringPtr CMovieButtonCreator::getViewName () const
+IdStringPtr MovieButtonCreator::getViewName () const
 {
 	return kCMovieButton;
 }
 
 //------------------------------------------------------------------------
-IdStringPtr CMovieButtonCreator::getBaseViewName () const
+IdStringPtr MovieButtonCreator::getBaseViewName () const
 {
 	return kCControl;
 }
 
 //------------------------------------------------------------------------
-UTF8StringPtr CMovieButtonCreator::getDisplayName () const
+UTF8StringPtr MovieButtonCreator::getDisplayName () const
 {
 	return "Movie Button";
 }
 
 //------------------------------------------------------------------------
-CView* CMovieButtonCreator::create (const UIAttributes& attributes,
-                                    const IUIDescription* description) const
+CView* MovieButtonCreator::create (const UIAttributes& attributes,
+                                   const IUIDescription* description) const
 {
 	return new CMovieButton (CRect (0, 0, 0, 0), nullptr, -1, nullptr);
 }

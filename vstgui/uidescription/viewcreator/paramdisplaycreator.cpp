@@ -15,39 +15,39 @@ namespace VSTGUI {
 namespace UIViewCreator {
 
 //------------------------------------------------------------------------
-CParamDisplayCreator::CParamDisplayCreator ()
+ParamDisplayCreator::ParamDisplayCreator ()
 {
 	UIViewFactory::registerViewCreator (*this);
 }
 
 //------------------------------------------------------------------------
-IdStringPtr CParamDisplayCreator::getViewName () const
+IdStringPtr ParamDisplayCreator::getViewName () const
 {
 	return kCParamDisplay;
 }
 
 //------------------------------------------------------------------------
-IdStringPtr CParamDisplayCreator::getBaseViewName () const
+IdStringPtr ParamDisplayCreator::getBaseViewName () const
 {
 	return kCControl;
 }
 
 //------------------------------------------------------------------------
-UTF8StringPtr CParamDisplayCreator::getDisplayName () const
+UTF8StringPtr ParamDisplayCreator::getDisplayName () const
 {
 	return "Parameter Display";
 }
 
 //------------------------------------------------------------------------
-CView* CParamDisplayCreator::create (const UIAttributes& attributes,
-                                     const IUIDescription* description) const
+CView* ParamDisplayCreator::create (const UIAttributes& attributes,
+                                    const IUIDescription* description) const
 {
 	return new CParamDisplay (CRect (0, 0, 100, 20));
 }
 
 //------------------------------------------------------------------------
-bool CParamDisplayCreator::apply (CView* view, const UIAttributes& attributes,
-                                  const IUIDescription* description) const
+bool ParamDisplayCreator::apply (CView* view, const UIAttributes& attributes,
+                                 const IUIDescription* description) const
 {
 	auto* display = dynamic_cast<CParamDisplay*> (view);
 	if (!display)
@@ -128,7 +128,7 @@ bool CParamDisplayCreator::apply (CView* view, const UIAttributes& attributes,
 }
 
 //------------------------------------------------------------------------
-bool CParamDisplayCreator::getAttributeNames (std::list<std::string>& attributeNames) const
+bool ParamDisplayCreator::getAttributeNames (std::list<std::string>& attributeNames) const
 {
 	attributeNames.emplace_back (kAttrFont);
 	attributeNames.emplace_back (kAttrFontColor);
@@ -155,7 +155,7 @@ bool CParamDisplayCreator::getAttributeNames (std::list<std::string>& attributeN
 }
 
 //------------------------------------------------------------------------
-auto CParamDisplayCreator::getAttributeType (const std::string& attributeName) const -> AttrType
+auto ParamDisplayCreator::getAttributeType (const std::string& attributeName) const -> AttrType
 {
 	if (attributeName == kAttrFont)
 		return kFontType;
@@ -203,9 +203,9 @@ auto CParamDisplayCreator::getAttributeType (const std::string& attributeName) c
 }
 
 //------------------------------------------------------------------------
-bool CParamDisplayCreator::getAttributeValue (CView* view, const std::string& attributeName,
-                                              std::string& stringValue,
-                                              const IUIDescription* desc) const
+bool ParamDisplayCreator::getAttributeValue (CView* view, const std::string& attributeName,
+                                             std::string& stringValue,
+                                             const IUIDescription* desc) const
 {
 	auto* pd = dynamic_cast<CParamDisplay*> (view);
 	if (pd == nullptr)
@@ -330,8 +330,8 @@ bool CParamDisplayCreator::getAttributeValue (CView* view, const std::string& at
 }
 
 //------------------------------------------------------------------------
-bool CParamDisplayCreator::getAttributeValueRange (const std::string& attributeName,
-                                                   double& minValue, double& maxValue) const
+bool ParamDisplayCreator::getAttributeValueRange (const std::string& attributeName,
+                                                  double& minValue, double& maxValue) const
 {
 	if (attributeName == kAttrTextRotation)
 	{

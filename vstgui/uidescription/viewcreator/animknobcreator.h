@@ -10,10 +10,10 @@
 namespace VSTGUI {
 namespace UIViewCreator {
 
-//-----------------------------------------------------------------------------
-struct CAnimKnobCreator : CKnobBaseCreator
+//------------------------------------------------------------------------
+struct AnimKnobCreator : KnobBaseCreator
 {
-	CAnimKnobCreator ();
+	AnimKnobCreator ();
 	IdStringPtr getViewName () const override;
 	IdStringPtr getBaseViewName () const override;
 	UTF8StringPtr getDisplayName () const override;

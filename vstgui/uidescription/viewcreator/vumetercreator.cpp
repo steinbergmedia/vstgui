@@ -15,39 +15,39 @@ namespace VSTGUI {
 namespace UIViewCreator {
 
 //------------------------------------------------------------------------
-CVuMeterCreator::CVuMeterCreator ()
+VuMeterCreator::VuMeterCreator ()
 {
 	UIViewFactory::registerViewCreator (*this);
 }
 
 //------------------------------------------------------------------------
-IdStringPtr CVuMeterCreator::getViewName () const
+IdStringPtr VuMeterCreator::getViewName () const
 {
 	return kCVuMeter;
 }
 
 //------------------------------------------------------------------------
-IdStringPtr CVuMeterCreator::getBaseViewName () const
+IdStringPtr VuMeterCreator::getBaseViewName () const
 {
 	return kCControl;
 }
 
 //------------------------------------------------------------------------
-UTF8StringPtr CVuMeterCreator::getDisplayName () const
+UTF8StringPtr VuMeterCreator::getDisplayName () const
 {
 	return "VU Meter";
 }
 
 //------------------------------------------------------------------------
-CView* CVuMeterCreator::create (const UIAttributes& attributes,
-                                const IUIDescription* description) const
+CView* VuMeterCreator::create (const UIAttributes& attributes,
+                               const IUIDescription* description) const
 {
 	return new CVuMeter (CRect (0, 0, 0, 0), nullptr, nullptr, 100);
 }
 
 //------------------------------------------------------------------------
-bool CVuMeterCreator::apply (CView* view, const UIAttributes& attributes,
-                             const IUIDescription* description) const
+bool VuMeterCreator::apply (CView* view, const UIAttributes& attributes,
+                            const IUIDescription* description) const
 {
 	auto* vuMeter = dynamic_cast<CVuMeter*> (view);
 	if (!vuMeter)
@@ -72,7 +72,7 @@ bool CVuMeterCreator::apply (CView* view, const UIAttributes& attributes,
 }
 
 //------------------------------------------------------------------------
-bool CVuMeterCreator::getAttributeNames (std::list<std::string>& attributeNames) const
+bool VuMeterCreator::getAttributeNames (std::list<std::string>& attributeNames) const
 {
 	attributeNames.emplace_back (kAttrOffBitmap);
 	attributeNames.emplace_back (kAttrNumLed);
@@ -82,7 +82,7 @@ bool CVuMeterCreator::getAttributeNames (std::list<std::string>& attributeNames)
 }
 
 //------------------------------------------------------------------------
-auto CVuMeterCreator::getAttributeType (const std::string& attributeName) const -> AttrType
+auto VuMeterCreator::getAttributeType (const std::string& attributeName) const -> AttrType
 {
 	if (attributeName == kAttrOffBitmap)
 		return kBitmapType;
@@ -96,8 +96,8 @@ auto CVuMeterCreator::getAttributeType (const std::string& attributeName) const 
 }
 
 //------------------------------------------------------------------------
-bool CVuMeterCreator::getAttributeValue (CView* view, const std::string& attributeName,
-                                         std::string& stringValue, const IUIDescription* desc) const
+bool VuMeterCreator::getAttributeValue (CView* view, const std::string& attributeName,
+                                        std::string& stringValue, const IUIDescription* desc) const
 {
 	auto* vuMeter = dynamic_cast<CVuMeter*> (view);
 	if (!vuMeter)
@@ -133,8 +133,8 @@ bool CVuMeterCreator::getAttributeValue (CView* view, const std::string& attribu
 }
 
 //------------------------------------------------------------------------
-bool CVuMeterCreator::getPossibleListValues (const std::string& attributeName,
-                                             std::list<const std::string*>& values) const
+bool VuMeterCreator::getPossibleListValues (const std::string& attributeName,
+                                            std::list<const std::string*>& values) const
 {
 	if (attributeName == kAttrOrientation)
 	{

@@ -15,32 +15,32 @@ namespace VSTGUI {
 namespace UIViewCreator {
 
 //------------------------------------------------------------------------
-COnOffButtonCreator::COnOffButtonCreator ()
+OnOffButtonCreator::OnOffButtonCreator ()
 {
 	UIViewFactory::registerViewCreator (*this);
 }
 
 //------------------------------------------------------------------------
-IdStringPtr COnOffButtonCreator::getViewName () const
+IdStringPtr OnOffButtonCreator::getViewName () const
 {
 	return kCOnOffButton;
 }
 
 //------------------------------------------------------------------------
-IdStringPtr COnOffButtonCreator::getBaseViewName () const
+IdStringPtr OnOffButtonCreator::getBaseViewName () const
 {
 	return kCControl;
 }
 
 //------------------------------------------------------------------------
-UTF8StringPtr COnOffButtonCreator::getDisplayName () const
+UTF8StringPtr OnOffButtonCreator::getDisplayName () const
 {
 	return "OnOff Button";
 }
 
 //------------------------------------------------------------------------
-CView* COnOffButtonCreator::create (const UIAttributes& attributes,
-                                    const IUIDescription* description) const
+CView* OnOffButtonCreator::create (const UIAttributes& attributes,
+                                   const IUIDescription* description) const
 {
 	return new COnOffButton (CRect (0, 0, 20, 20), nullptr, -1, nullptr);
 }

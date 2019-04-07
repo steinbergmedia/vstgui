@@ -15,8 +15,8 @@ namespace VSTGUI {
 namespace UIViewCreator {
 
 //------------------------------------------------------------------------
-bool CKnobBaseCreator::apply (CView* view, const UIAttributes& attributes,
-                              const IUIDescription* description) const
+bool KnobBaseCreator::apply (CView* view, const UIAttributes& attributes,
+                             const IUIDescription* description) const
 {
 	auto* knob = dynamic_cast<CKnobBase*> (view);
 	if (!knob)
@@ -44,7 +44,7 @@ bool CKnobBaseCreator::apply (CView* view, const UIAttributes& attributes,
 }
 
 //------------------------------------------------------------------------
-bool CKnobBaseCreator::getAttributeNames (std::list<std::string>& attributeNames) const
+bool KnobBaseCreator::getAttributeNames (std::list<std::string>& attributeNames) const
 {
 	attributeNames.emplace_back (kAttrAngleStart);
 	attributeNames.emplace_back (kAttrAngleRange);
@@ -54,7 +54,7 @@ bool CKnobBaseCreator::getAttributeNames (std::list<std::string>& attributeNames
 }
 
 //------------------------------------------------------------------------
-auto CKnobBaseCreator::getAttributeType (const std::string& attributeName) const -> AttrType
+auto KnobBaseCreator::getAttributeType (const std::string& attributeName) const -> AttrType
 {
 	if (attributeName == kAttrAngleStart)
 		return kFloatType;
@@ -68,9 +68,8 @@ auto CKnobBaseCreator::getAttributeType (const std::string& attributeName) const
 }
 
 //------------------------------------------------------------------------
-bool CKnobBaseCreator::getAttributeValue (CView* view, const std::string& attributeName,
-                                          std::string& stringValue,
-                                          const IUIDescription* desc) const
+bool KnobBaseCreator::getAttributeValue (CView* view, const std::string& attributeName,
+                                         std::string& stringValue, const IUIDescription* desc) const
 {
 	auto* knob = dynamic_cast<CKnobBase*> (view);
 	if (!knob)
@@ -102,32 +101,31 @@ bool CKnobBaseCreator::getAttributeValue (CView* view, const std::string& attrib
 }
 
 //------------------------------------------------------------------------
-CKnobCreator::CKnobCreator ()
+KnobCreator::KnobCreator ()
 {
 	UIViewFactory::registerViewCreator (*this);
 }
 
 //------------------------------------------------------------------------
-IdStringPtr CKnobCreator::getViewName () const
+IdStringPtr KnobCreator::getViewName () const
 {
 	return kCKnob;
 }
 
 //------------------------------------------------------------------------
-IdStringPtr CKnobCreator::getBaseViewName () const
+IdStringPtr KnobCreator::getBaseViewName () const
 {
 	return kCControl;
 }
 
 //------------------------------------------------------------------------
-UTF8StringPtr CKnobCreator::getDisplayName () const
+UTF8StringPtr KnobCreator::getDisplayName () const
 {
 	return "Knob";
 }
 
 //------------------------------------------------------------------------
-CView* CKnobCreator::create (const UIAttributes& attributes,
-                             const IUIDescription* description) const
+CView* KnobCreator::create (const UIAttributes& attributes, const IUIDescription* description) const
 {
 	auto knob = new CKnob (CRect (0, 0, 70, 70), nullptr, -1, nullptr, nullptr);
 	knob->setDrawStyle (CKnob::kCoronaDrawing | CKnob::kCoronaOutline | CKnob::kCoronaLineDashDot |
@@ -143,8 +141,8 @@ CView* CKnobCreator::create (const UIAttributes& attributes,
 }
 
 //------------------------------------------------------------------------
-bool CKnobCreator::apply (CView* view, const UIAttributes& attributes,
-                          const IUIDescription* description) const
+bool KnobCreator::apply (CView* view, const UIAttributes& attributes,
+                         const IUIDescription* description) const
 {
 	auto* knob = dynamic_cast<CKnob*> (view);
 	if (!knob)
@@ -203,11 +201,11 @@ bool CKnobCreator::apply (CView* view, const UIAttributes& attributes,
 	applyStyleMask (attributes.getAttributeValue (kAttrSkipHandleDrawing),
 	                CKnob::kSkipHandleDrawing, drawStyle);
 	knob->setDrawStyle (drawStyle);
-	return CKnobBaseCreator::apply (view, attributes, description);
+	return KnobBaseCreator::apply (view, attributes, description);
 }
 
 //------------------------------------------------------------------------
-bool CKnobCreator::getAttributeNames (std::list<std::string>& attributeNames) const
+bool KnobCreator::getAttributeNames (std::list<std::string>& attributeNames) const
 {
 	attributeNames.emplace_back (kAttrCircleDrawing);
 	attributeNames.emplace_back (kAttrCoronaDrawing);
@@ -225,11 +223,11 @@ bool CKnobCreator::getAttributeNames (std::list<std::string>& attributeNames) co
 	attributeNames.emplace_back (kAttrCoronaOutlineWidthAdd);
 	attributeNames.emplace_back (kAttrCoronaDashDotLengths);
 	attributeNames.emplace_back (kAttrHandleBitmap);
-	return CKnobBaseCreator::getAttributeNames (attributeNames);
+	return KnobBaseCreator::getAttributeNames (attributeNames);
 }
 
 //------------------------------------------------------------------------
-auto CKnobCreator::getAttributeType (const std::string& attributeName) const -> AttrType
+auto KnobCreator::getAttributeType (const std::string& attributeName) const -> AttrType
 {
 	if (attributeName == kAttrCircleDrawing)
 		return kBooleanType;
@@ -263,12 +261,12 @@ auto CKnobCreator::getAttributeType (const std::string& attributeName) const -> 
 		return kStringType;
 	if (attributeName == kAttrHandleBitmap)
 		return kBitmapType;
-	return CKnobBaseCreator::getAttributeType (attributeName);
+	return KnobBaseCreator::getAttributeType (attributeName);
 }
 
 //------------------------------------------------------------------------
-bool CKnobCreator::getAttributeValue (CView* view, const std::string& attributeName,
-                                      std::string& stringValue, const IUIDescription* desc) const
+bool KnobCreator::getAttributeValue (CView* view, const std::string& attributeName,
+                                     std::string& stringValue, const IUIDescription* desc) const
 {
 	auto* knob = dynamic_cast<CKnob*> (view);
 	if (!knob)
@@ -387,7 +385,7 @@ bool CKnobCreator::getAttributeValue (CView* view, const std::string& attributeN
 		stringValue = UIAttributes::stringArrayToString (lengthStrings);
 		return true;
 	}
-	return CKnobBaseCreator::getAttributeValue (view, attributeName, stringValue, desc);
+	return KnobBaseCreator::getAttributeValue (view, attributeName, stringValue, desc);
 }
 
 //------------------------------------------------------------------------

@@ -13,32 +13,32 @@ namespace VSTGUI {
 namespace UIViewCreator {
 
 //------------------------------------------------------------------------
-CXYPadCreator::CXYPadCreator ()
+XYPadCreator::XYPadCreator ()
 {
 	UIViewFactory::registerViewCreator (*this);
 }
 
 //------------------------------------------------------------------------
-IdStringPtr CXYPadCreator::getViewName () const
+IdStringPtr XYPadCreator::getViewName () const
 {
 	return kCXYPad;
 }
 
 //------------------------------------------------------------------------
-IdStringPtr CXYPadCreator::getBaseViewName () const
+IdStringPtr XYPadCreator::getBaseViewName () const
 {
 	return kCParamDisplay;
 }
 
 //------------------------------------------------------------------------
-UTF8StringPtr CXYPadCreator::getDisplayName () const
+UTF8StringPtr XYPadCreator::getDisplayName () const
 {
 	return "XY Pad";
 }
 
 //------------------------------------------------------------------------
-CView* CXYPadCreator::create (const UIAttributes& attributes,
-                              const IUIDescription* description) const
+CView* XYPadCreator::create (const UIAttributes& attributes,
+                             const IUIDescription* description) const
 {
 	return new CXYPad (CRect (0, 0, 60, 60));
 }

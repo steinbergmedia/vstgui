@@ -16,40 +16,40 @@ namespace VSTGUI {
 namespace UIViewCreator {
 
 //------------------------------------------------------------------------
-CScrollViewCreator::CScrollViewCreator ()
+ScrollViewCreator::ScrollViewCreator ()
 {
 	UIViewFactory::registerViewCreator (*this);
 }
 
 //------------------------------------------------------------------------
-IdStringPtr CScrollViewCreator::getViewName () const
+IdStringPtr ScrollViewCreator::getViewName () const
 {
 	return kCScrollView;
 }
 
 //------------------------------------------------------------------------
-IdStringPtr CScrollViewCreator::getBaseViewName () const
+IdStringPtr ScrollViewCreator::getBaseViewName () const
 {
 	return kCViewContainer;
 }
 
 //------------------------------------------------------------------------
-UTF8StringPtr CScrollViewCreator::getDisplayName () const
+UTF8StringPtr ScrollViewCreator::getDisplayName () const
 {
 	return "Scroll View";
 }
 
 //------------------------------------------------------------------------
-CView* CScrollViewCreator::create (const UIAttributes& attributes,
-                                   const IUIDescription* description) const
+CView* ScrollViewCreator::create (const UIAttributes& attributes,
+                                  const IUIDescription* description) const
 {
 	return new CScrollView (CRect (0, 0, 100, 100), CRect (0, 0, 200, 200),
 	                        CScrollView::kHorizontalScrollbar | CScrollView::kVerticalScrollbar);
 }
 
 //------------------------------------------------------------------------
-bool CScrollViewCreator::apply (CView* view, const UIAttributes& attributes,
-                                const IUIDescription* description) const
+bool ScrollViewCreator::apply (CView* view, const UIAttributes& attributes,
+                               const IUIDescription* description) const
 {
 	auto* scrollView = dynamic_cast<CScrollView*> (view);
 	if (scrollView == nullptr)
@@ -115,7 +115,7 @@ bool CScrollViewCreator::apply (CView* view, const UIAttributes& attributes,
 }
 
 //------------------------------------------------------------------------
-bool CScrollViewCreator::getAttributeNames (std::list<std::string>& attributeNames) const
+bool ScrollViewCreator::getAttributeNames (std::list<std::string>& attributeNames) const
 {
 	attributeNames.emplace_back (kAttrContainerSize);
 	attributeNames.emplace_back (kAttrScrollbarBackgroundColor);
@@ -133,7 +133,7 @@ bool CScrollViewCreator::getAttributeNames (std::list<std::string>& attributeNam
 }
 
 //------------------------------------------------------------------------
-auto CScrollViewCreator::getAttributeType (const std::string& attributeName) const -> AttrType
+auto ScrollViewCreator::getAttributeType (const std::string& attributeName) const -> AttrType
 {
 	if (attributeName == kAttrContainerSize)
 		return kPointType;
@@ -163,9 +163,9 @@ auto CScrollViewCreator::getAttributeType (const std::string& attributeName) con
 }
 
 //------------------------------------------------------------------------
-bool CScrollViewCreator::getAttributeValue (CView* view, const std::string& attributeName,
-                                            std::string& stringValue,
-                                            const IUIDescription* desc) const
+bool ScrollViewCreator::getAttributeValue (CView* view, const std::string& attributeName,
+                                           std::string& stringValue,
+                                           const IUIDescription* desc) const
 {
 	auto* sc = dynamic_cast<CScrollView*> (view);
 	if (sc == nullptr)

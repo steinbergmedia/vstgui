@@ -10,10 +10,10 @@
 namespace VSTGUI {
 namespace UIViewCreator {
 
-//-----------------------------------------------------------------------------
-struct CParamDisplayCreator : ViewCreatorAdapter
+//------------------------------------------------------------------------
+struct ParamDisplayCreator : ViewCreatorAdapter
 {
-	CParamDisplayCreator ();
+	ParamDisplayCreator ();
 	IdStringPtr getViewName () const override;
 	IdStringPtr getBaseViewName () const override;
 	UTF8StringPtr getDisplayName () const override;

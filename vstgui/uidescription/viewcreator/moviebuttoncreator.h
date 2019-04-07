@@ -11,9 +11,9 @@ namespace VSTGUI {
 namespace UIViewCreator {
 
 //------------------------------------------------------------------------
-struct CMovieButtonCreator : MultiBitmapControlCreator
+struct MovieButtonCreator : MultiBitmapControlCreator
 {
-	CMovieButtonCreator ();
+	MovieButtonCreator ();
 	IdStringPtr getViewName () const override;
 	IdStringPtr getBaseViewName () const override;
 	UTF8StringPtr getDisplayName () const override;

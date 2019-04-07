@@ -10,10 +10,10 @@
 namespace VSTGUI {
 namespace UIViewCreator {
 
-//-----------------------------------------------------------------------------
-struct CScrollViewCreator : ViewCreatorAdapter
+//------------------------------------------------------------------------
+struct ScrollViewCreator : ViewCreatorAdapter
 {
-	CScrollViewCreator ();
+	ScrollViewCreator ();
 	IdStringPtr getViewName () const override;
 	IdStringPtr getBaseViewName () const override;
 	UTF8StringPtr getDisplayName () const override;

@@ -10,7 +10,7 @@
 namespace VSTGUI {
 namespace UIViewCreator {
 
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------
 struct UIViewSwitchContainerCreator : ViewCreatorAdapter
 {
 
