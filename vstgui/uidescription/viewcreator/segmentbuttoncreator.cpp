@@ -86,7 +86,7 @@ bool SegmentButtonCreator::apply (CView* view, const UIAttributes& attributes,
 	if (!button)
 		return false;
 
-	const std::string* attr = attributes.getAttributeValue (kAttrFont);
+	const auto* attr = attributes.getAttributeValue (kAttrFont);
 	if (attr)
 	{
 		CFontRef font = description->getFont (attr->c_str ());
@@ -136,11 +136,10 @@ bool SegmentButtonCreator::apply (CView* view, const UIAttributes& attributes,
 			align = kRightText;
 		button->setTextAlignment (align);
 	}
-	const std::string* gradientName = attributes.getAttributeValue (kAttrGradient);
+	const auto* gradientName = attributes.getAttributeValue (kAttrGradient);
 	if (gradientName)
 		button->setGradient (description->getGradient (gradientName->c_str ()));
-	const std::string* gradientHighlightedName =
-	    attributes.getAttributeValue (kAttrGradientHighlighted);
+	const auto* gradientHighlightedName = attributes.getAttributeValue (kAttrGradientHighlighted);
 	if (gradientHighlightedName)
 		button->setGradientHighlighted (
 		    description->getGradient (gradientHighlightedName->c_str ()));
@@ -173,7 +172,7 @@ bool SegmentButtonCreator::apply (CView* view, const UIAttributes& attributes,
 }
 
 //------------------------------------------------------------------------
-bool SegmentButtonCreator::getAttributeNames (std::list<std::string>& attributeNames) const
+bool SegmentButtonCreator::getAttributeNames (StringList& attributeNames) const
 {
 	attributeNames.emplace_back (kAttrStyle);
 	attributeNames.emplace_back (kAttrSelectionMode);
@@ -193,7 +192,7 @@ bool SegmentButtonCreator::getAttributeNames (std::list<std::string>& attributeN
 }
 
 //------------------------------------------------------------------------
-auto SegmentButtonCreator::getAttributeType (const std::string& attributeName) const -> AttrType
+auto SegmentButtonCreator::getAttributeType (const string& attributeName) const -> AttrType
 {
 	if (attributeName == kAttrStyle)
 		return kListType;
@@ -227,8 +226,8 @@ auto SegmentButtonCreator::getAttributeType (const std::string& attributeName) c
 }
 
 //------------------------------------------------------------------------
-bool SegmentButtonCreator::getPossibleListValues (const std::string& attributeName,
-                                                  std::list<const std::string*>& values) const
+bool SegmentButtonCreator::getPossibleListValues (const string& attributeName,
+                                                  ConstStringPtrList& values) const
 {
 	if (attributeName == kAttrStyle)
 	{
@@ -254,9 +253,8 @@ bool SegmentButtonCreator::getPossibleListValues (const std::string& attributeNa
 }
 
 //------------------------------------------------------------------------
-bool SegmentButtonCreator::getAttributeValue (CView* view, const std::string& attributeName,
-                                              std::string& stringValue,
-                                              const IUIDescription* desc) const
+bool SegmentButtonCreator::getAttributeValue (CView* view, const string& attributeName,
+                                              string& stringValue, const IUIDescription* desc) const
 {
 	auto* button = dynamic_cast<CSegmentButton*> (view);
 	if (!button)

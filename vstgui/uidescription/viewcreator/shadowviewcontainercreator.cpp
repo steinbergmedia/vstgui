@@ -64,7 +64,7 @@ bool ShadowViewContainerCreator::apply (CView* view, const UIAttributes& attribu
 }
 
 //------------------------------------------------------------------------
-bool ShadowViewContainerCreator::getAttributeNames (std::list<std::string>& attributeNames) const
+bool ShadowViewContainerCreator::getAttributeNames (StringList& attributeNames) const
 {
 	attributeNames.emplace_back (kAttrShadowIntensity);
 	attributeNames.emplace_back (kAttrShadowOffset);
@@ -73,8 +73,7 @@ bool ShadowViewContainerCreator::getAttributeNames (std::list<std::string>& attr
 }
 
 //------------------------------------------------------------------------
-auto ShadowViewContainerCreator::getAttributeType (const std::string& attributeName) const
-    -> AttrType
+auto ShadowViewContainerCreator::getAttributeType (const string& attributeName) const -> AttrType
 {
 	if (attributeName == kAttrShadowIntensity)
 		return kFloatType;
@@ -86,8 +85,8 @@ auto ShadowViewContainerCreator::getAttributeType (const std::string& attributeN
 }
 
 //------------------------------------------------------------------------
-bool ShadowViewContainerCreator::getAttributeValue (CView* view, const std::string& attributeName,
-                                                    std::string& stringValue,
+bool ShadowViewContainerCreator::getAttributeValue (CView* view, const string& attributeName,
+                                                    string& stringValue,
                                                     const IUIDescription* desc) const
 {
 	auto* shadowView = dynamic_cast<CShadowViewContainer*> (view);
@@ -112,7 +111,7 @@ bool ShadowViewContainerCreator::getAttributeValue (CView* view, const std::stri
 }
 
 //------------------------------------------------------------------------
-bool ShadowViewContainerCreator::getAttributeValueRange (const std::string& attributeName,
+bool ShadowViewContainerCreator::getAttributeValueRange (const string& attributeName,
                                                          double& minValue, double& maxValue) const
 {
 	if (attributeName == kAttrShadowBlurSize)

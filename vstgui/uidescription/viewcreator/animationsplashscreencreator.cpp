@@ -82,7 +82,7 @@ bool AnimationSplashScreenCreator::apply (CView* view, const UIAttributes& attri
 }
 
 //------------------------------------------------------------------------
-bool AnimationSplashScreenCreator::getAttributeNames (std::list<std::string>& attributeNames) const
+bool AnimationSplashScreenCreator::getAttributeNames (StringList& attributeNames) const
 {
 	attributeNames.emplace_back (kAttrSplashBitmap);
 	attributeNames.emplace_back (kAttrSplashOrigin);
@@ -93,8 +93,7 @@ bool AnimationSplashScreenCreator::getAttributeNames (std::list<std::string>& at
 }
 
 //------------------------------------------------------------------------
-auto AnimationSplashScreenCreator::getAttributeType (const std::string& attributeName) const
-    -> AttrType
+auto AnimationSplashScreenCreator::getAttributeType (const string& attributeName) const -> AttrType
 {
 	if (attributeName == kAttrSplashBitmap)
 		return kBitmapType;
@@ -110,8 +109,8 @@ auto AnimationSplashScreenCreator::getAttributeType (const std::string& attribut
 }
 
 //------------------------------------------------------------------------
-bool AnimationSplashScreenCreator::getAttributeValue (CView* view, const std::string& attributeName,
-                                                      std::string& stringValue,
+bool AnimationSplashScreenCreator::getAttributeValue (CView* view, const string& attributeName,
+                                                      string& stringValue,
                                                       const IUIDescription* desc) const
 {
 	auto* splashScreen = dynamic_cast<CAnimationSplashScreen*> (view);

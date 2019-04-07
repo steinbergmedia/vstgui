@@ -71,7 +71,7 @@ bool MultiLineTextLabelCreator::apply (CView* view, const UIAttributes& attribut
 }
 
 //------------------------------------------------------------------------
-bool MultiLineTextLabelCreator::getAttributeNames (std::list<std::string>& attributeNames) const
+bool MultiLineTextLabelCreator::getAttributeNames (StringList& attributeNames) const
 {
 	attributeNames.emplace_back (kAttrLineLayout);
 	attributeNames.emplace_back (kAttrAutoHeight);
@@ -79,8 +79,7 @@ bool MultiLineTextLabelCreator::getAttributeNames (std::list<std::string>& attri
 }
 
 //------------------------------------------------------------------------
-auto MultiLineTextLabelCreator::getAttributeType (const std::string& attributeName) const
-    -> AttrType
+auto MultiLineTextLabelCreator::getAttributeType (const string& attributeName) const -> AttrType
 {
 	if (attributeName == kAttrLineLayout)
 		return kListType;
@@ -90,8 +89,8 @@ auto MultiLineTextLabelCreator::getAttributeType (const std::string& attributeNa
 }
 
 //------------------------------------------------------------------------
-bool MultiLineTextLabelCreator::getAttributeValue (CView* view, const std::string& attributeName,
-                                                   std::string& stringValue,
+bool MultiLineTextLabelCreator::getAttributeValue (CView* view, const string& attributeName,
+                                                   string& stringValue,
                                                    const IUIDescription* desc) const
 {
 	auto label = dynamic_cast<CMultiLineTextLabel*> (view);
@@ -117,8 +116,8 @@ bool MultiLineTextLabelCreator::getAttributeValue (CView* view, const std::strin
 }
 
 //------------------------------------------------------------------------
-bool MultiLineTextLabelCreator::getPossibleListValues (const std::string& attributeName,
-                                                       std::list<const std::string*>& values) const
+bool MultiLineTextLabelCreator::getPossibleListValues (const string& attributeName,
+                                                       ConstStringPtrList& values) const
 {
 	if (attributeName == kAttrLineLayout)
 	{

@@ -57,7 +57,7 @@ bool VuMeterCreator::apply (CView* view, const UIAttributes& attributes,
 	if (stringToBitmap (attributes.getAttributeValue (kAttrOffBitmap), bitmap, description))
 		vuMeter->setOffBitmap (bitmap);
 
-	const std::string* attr = attributes.getAttributeValue (kAttrOrientation);
+	const auto* attr = attributes.getAttributeValue (kAttrOrientation);
 	if (attr)
 		vuMeter->setStyle (*attr == strVertical ? CVuMeter::kVertical : CVuMeter::kHorizontal);
 
@@ -72,7 +72,7 @@ bool VuMeterCreator::apply (CView* view, const UIAttributes& attributes,
 }
 
 //------------------------------------------------------------------------
-bool VuMeterCreator::getAttributeNames (std::list<std::string>& attributeNames) const
+bool VuMeterCreator::getAttributeNames (StringList& attributeNames) const
 {
 	attributeNames.emplace_back (kAttrOffBitmap);
 	attributeNames.emplace_back (kAttrNumLed);
@@ -82,7 +82,7 @@ bool VuMeterCreator::getAttributeNames (std::list<std::string>& attributeNames) 
 }
 
 //------------------------------------------------------------------------
-auto VuMeterCreator::getAttributeType (const std::string& attributeName) const -> AttrType
+auto VuMeterCreator::getAttributeType (const string& attributeName) const -> AttrType
 {
 	if (attributeName == kAttrOffBitmap)
 		return kBitmapType;
@@ -96,8 +96,8 @@ auto VuMeterCreator::getAttributeType (const std::string& attributeName) const -
 }
 
 //------------------------------------------------------------------------
-bool VuMeterCreator::getAttributeValue (CView* view, const std::string& attributeName,
-                                        std::string& stringValue, const IUIDescription* desc) const
+bool VuMeterCreator::getAttributeValue (CView* view, const string& attributeName,
+                                        string& stringValue, const IUIDescription* desc) const
 {
 	auto* vuMeter = dynamic_cast<CVuMeter*> (view);
 	if (!vuMeter)
@@ -133,8 +133,8 @@ bool VuMeterCreator::getAttributeValue (CView* view, const std::string& attribut
 }
 
 //------------------------------------------------------------------------
-bool VuMeterCreator::getPossibleListValues (const std::string& attributeName,
-                                            std::list<const std::string*>& values) const
+bool VuMeterCreator::getPossibleListValues (const string& attributeName,
+                                            ConstStringPtrList& values) const
 {
 	if (attributeName == kAttrOrientation)
 	{

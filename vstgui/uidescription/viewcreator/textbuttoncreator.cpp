@@ -70,7 +70,7 @@ bool TextButtonCreator::apply (CView* view, const UIAttributes& attributes,
 	if (!button)
 		return false;
 
-	const std::string* attr = attributes.getAttributeValue (kAttrTitle);
+	const auto* attr = attributes.getAttributeValue (kAttrTitle);
 	if (attr)
 		button->setTitle (attr->c_str ());
 
@@ -136,11 +136,10 @@ bool TextButtonCreator::apply (CView* view, const UIAttributes& attributes,
 			align = kRightText;
 		button->setTextAlignment (align);
 	}
-	const std::string* gradientName = attributes.getAttributeValue (kAttrGradient);
+	const auto* gradientName = attributes.getAttributeValue (kAttrGradient);
 	if (gradientName)
 		button->setGradient (description->getGradient (gradientName->c_str ()));
-	const std::string* gradientHighlightedName =
-	    attributes.getAttributeValue (kAttrGradientHighlighted);
+	const auto* gradientHighlightedName = attributes.getAttributeValue (kAttrGradientHighlighted);
 	if (gradientHighlightedName)
 		button->setGradientHighlighted (
 		    description->getGradient (gradientHighlightedName->c_str ()));
@@ -179,7 +178,7 @@ bool TextButtonCreator::apply (CView* view, const UIAttributes& attributes,
 }
 
 //------------------------------------------------------------------------
-bool TextButtonCreator::getAttributeNames (std::list<std::string>& attributeNames) const
+bool TextButtonCreator::getAttributeNames (StringList& attributeNames) const
 {
 	attributeNames.emplace_back (kAttrKickStyle);
 	attributeNames.emplace_back (kAttrTitle);
@@ -201,7 +200,7 @@ bool TextButtonCreator::getAttributeNames (std::list<std::string>& attributeName
 }
 
 //------------------------------------------------------------------------
-auto TextButtonCreator::getAttributeType (const std::string& attributeName) const -> AttrType
+auto TextButtonCreator::getAttributeType (const string& attributeName) const -> AttrType
 {
 	if (attributeName == kAttrTitle)
 		return kStringType;
@@ -239,8 +238,8 @@ auto TextButtonCreator::getAttributeType (const std::string& attributeName) cons
 }
 
 //------------------------------------------------------------------------
-bool TextButtonCreator::getPossibleListValues (const std::string& attributeName,
-                                               std::list<const std::string*>& values) const
+bool TextButtonCreator::getPossibleListValues (const string& attributeName,
+                                               ConstStringPtrList& values) const
 {
 	if (attributeName == kAttrIconPosition)
 	{
@@ -252,9 +251,8 @@ bool TextButtonCreator::getPossibleListValues (const std::string& attributeName,
 }
 
 //------------------------------------------------------------------------
-bool TextButtonCreator::getAttributeValue (CView* view, const std::string& attributeName,
-                                           std::string& stringValue,
-                                           const IUIDescription* desc) const
+bool TextButtonCreator::getAttributeValue (CView* view, const string& attributeName,
+                                           string& stringValue, const IUIDescription* desc) const
 {
 	auto* button = dynamic_cast<CTextButton*> (view);
 	if (!button)

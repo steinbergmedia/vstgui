@@ -16,14 +16,14 @@ namespace VSTGUI {
 namespace UIViewCreator {
 
 //------------------------------------------------------------------------
-bool SwitchBaseCreator::getAttributeNames (std::list<std::string>& attributeNames) const
+bool SwitchBaseCreator::getAttributeNames (StringList& attributeNames) const
 {
 	attributeNames.emplace_back (kAttrInverseBitmap);
 	return IMultiBitmapControlCreator::getAttributeNames (attributeNames);
 }
 
 //------------------------------------------------------------------------
-auto SwitchBaseCreator::getAttributeType (const std::string& attributeName) const -> AttrType
+auto SwitchBaseCreator::getAttributeType (const string& attributeName) const -> AttrType
 {
 	if (attributeName == kAttrInverseBitmap)
 		return kBooleanType;
@@ -48,9 +48,8 @@ bool SwitchBaseCreator::apply (CView* view, const UIAttributes& attributes,
 }
 
 //------------------------------------------------------------------------
-bool SwitchBaseCreator::getAttributeValue (CView* view, const std::string& attributeName,
-                                           std::string& stringValue,
-                                           const IUIDescription* desc) const
+bool SwitchBaseCreator::getAttributeValue (CView* view, const string& attributeName,
+                                           string& stringValue, const IUIDescription* desc) const
 {
 	auto control = dynamic_cast<CSwitchBase*> (view);
 	if (!control)

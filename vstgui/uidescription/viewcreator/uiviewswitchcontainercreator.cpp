@@ -54,7 +54,7 @@ bool UIViewSwitchContainerCreator::apply (CView* view, const UIAttributes& attri
 	auto* viewSwitch = dynamic_cast<UIViewSwitchContainer*> (view);
 	if (!viewSwitch)
 		return false;
-	const std::string* attr = attributes.getAttributeValue (kAttrTemplateNames);
+	const auto* attr = attributes.getAttributeValue (kAttrTemplateNames);
 	if (attr)
 	{
 		auto* controller =
@@ -110,7 +110,7 @@ bool UIViewSwitchContainerCreator::apply (CView* view, const UIAttributes& attri
 }
 
 //------------------------------------------------------------------------
-bool UIViewSwitchContainerCreator::getAttributeNames (std::list<std::string>& attributeNames) const
+bool UIViewSwitchContainerCreator::getAttributeNames (StringList& attributeNames) const
 {
 	attributeNames.emplace_back (kAttrTemplateNames);
 	attributeNames.emplace_back (kAttrTemplateSwitchControl);
@@ -121,8 +121,7 @@ bool UIViewSwitchContainerCreator::getAttributeNames (std::list<std::string>& at
 }
 
 //------------------------------------------------------------------------
-auto UIViewSwitchContainerCreator::getAttributeType (const std::string& attributeName) const
-    -> AttrType
+auto UIViewSwitchContainerCreator::getAttributeType (const string& attributeName) const -> AttrType
 {
 	if (attributeName == kAttrTemplateNames)
 		return kStringType;
@@ -138,8 +137,8 @@ auto UIViewSwitchContainerCreator::getAttributeType (const std::string& attribut
 }
 
 //------------------------------------------------------------------------
-bool UIViewSwitchContainerCreator::getAttributeValue (CView* view, const std::string& attributeName,
-                                                      std::string& stringValue,
+bool UIViewSwitchContainerCreator::getAttributeValue (CView* view, const string& attributeName,
+                                                      string& stringValue,
                                                       const IUIDescription* desc) const
 {
 	auto* viewSwitch = dynamic_cast<UIViewSwitchContainer*> (view);
@@ -233,8 +232,8 @@ bool UIViewSwitchContainerCreator::getAttributeValue (CView* view, const std::st
 }
 
 //------------------------------------------------------------------------
-bool UIViewSwitchContainerCreator::getPossibleListValues (
-    const std::string& attributeName, std::list<const std::string*>& values) const
+bool UIViewSwitchContainerCreator::getPossibleListValues (const string& attributeName,
+                                                          ConstStringPtrList& values) const
 {
 	if (attributeName == kAttrAnimationStyle)
 	{

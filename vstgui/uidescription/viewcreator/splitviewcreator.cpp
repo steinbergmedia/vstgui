@@ -56,7 +56,7 @@ bool SplitViewCreator::apply (CView* view, const UIAttributes& attributes,
 	int32_t width;
 	if (attributes.getIntegerAttribute (kAttrSeparatorWidth, width))
 		splitView->setSeparatorWidth (width);
-	const std::string* attr = attributes.getAttributeValue (kAttrOrientation);
+	const auto* attr = attributes.getAttributeValue (kAttrOrientation);
 	if (attr)
 	{
 		if (*attr == strHorizontal)
@@ -93,7 +93,7 @@ bool SplitViewCreator::apply (CView* view, const UIAttributes& attributes,
 }
 
 //------------------------------------------------------------------------
-bool SplitViewCreator::getAttributeNames (std::list<std::string>& attributeNames) const
+bool SplitViewCreator::getAttributeNames (StringList& attributeNames) const
 {
 	attributeNames.emplace_back (kAttrOrientation);
 	attributeNames.emplace_back (kAttrResizeMethod);
@@ -102,7 +102,7 @@ bool SplitViewCreator::getAttributeNames (std::list<std::string>& attributeNames
 }
 
 //------------------------------------------------------------------------
-auto SplitViewCreator::getAttributeType (const std::string& attributeName) const -> AttrType
+auto SplitViewCreator::getAttributeType (const string& attributeName) const -> AttrType
 {
 	if (attributeName == kAttrOrientation)
 		return kListType;
@@ -114,9 +114,8 @@ auto SplitViewCreator::getAttributeType (const std::string& attributeName) const
 }
 
 //------------------------------------------------------------------------
-bool SplitViewCreator::getAttributeValue (CView* view, const std::string& attributeName,
-                                          std::string& stringValue,
-                                          const IUIDescription* desc) const
+bool SplitViewCreator::getAttributeValue (CView* view, const string& attributeName,
+                                          string& stringValue, const IUIDescription* desc) const
 {
 	auto* splitView = dynamic_cast<CSplitView*> (view);
 	if (!splitView)
@@ -163,8 +162,8 @@ bool SplitViewCreator::getAttributeValue (CView* view, const std::string& attrib
 }
 
 //------------------------------------------------------------------------
-bool SplitViewCreator::getPossibleListValues (const std::string& attributeName,
-                                              std::list<const std::string*>& values) const
+bool SplitViewCreator::getPossibleListValues (const string& attributeName,
+                                              ConstStringPtrList& values) const
 {
 	if (attributeName == kAttrOrientation)
 	{

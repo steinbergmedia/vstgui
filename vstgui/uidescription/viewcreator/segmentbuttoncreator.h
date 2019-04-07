@@ -22,22 +22,22 @@ struct SegmentButtonCreator : ViewCreatorAdapter
 	               const IUIDescription* description) const override;
 	bool apply (CView* view, const UIAttributes& attributes,
 	            const IUIDescription* description) const override;
-	bool getAttributeNames (std::list<std::string>& attributeNames) const override;
-	AttrType getAttributeType (const std::string& attributeName) const override;
-	bool getPossibleListValues (const std::string& attributeName,
-	                            std::list<const std::string*>& values) const override;
-	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue,
+	bool getAttributeNames (StringList& attributeNames) const override;
+	AttrType getAttributeType (const string& attributeName) const override;
+	bool getPossibleListValues (const string& attributeName,
+	                            ConstStringPtrList& values) const override;
+	bool getAttributeValue (CView* view, const string& attributeName, string& stringValue,
 	                        const IUIDescription* desc) const override;
 
 private:
 	void updateSegmentCount (CSegmentButton* button, uint32_t numSegments) const;
 	void updateSegments (CSegmentButton* button, const UIAttributes::StringArray& names) const;
 
-	std::string SelectionModeSingle = "Single";
-	std::string SelectionModeSingleToggle = "Single-Toggle";
-	std::string SelectionModeMultiple = "Multiple";
-	std::string strHorizontalInverse = "horizontal-inverse";
-	std::string strVerticalInverse = "vertical-inverse";
+	string SelectionModeSingle = "Single";
+	string SelectionModeSingleToggle = "Single-Toggle";
+	string SelectionModeMultiple = "Multiple";
+	string strHorizontalInverse = "horizontal-inverse";
+	string strVerticalInverse = "vertical-inverse";
 };
 
 //------------------------------------------------------------------------

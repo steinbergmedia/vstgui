@@ -70,7 +70,7 @@ bool ScrollViewCreator::apply (CView* view, const UIAttributes& attributes,
 	                CScrollView::kVerticalScrollbar, style);
 	applyStyleMask (attributes.getAttributeValue (kAttrAutoDragScrolling),
 	                CScrollView::kAutoDragScrolling, style);
-	const std::string* attr = attributes.getAttributeValue (kAttrBordered);
+	const auto* attr = attributes.getAttributeValue (kAttrBordered);
 	if (attr)
 	{
 		setBit (style, CScrollView::kDontDrawFrame, *attr != strTrue);
@@ -115,7 +115,7 @@ bool ScrollViewCreator::apply (CView* view, const UIAttributes& attributes,
 }
 
 //------------------------------------------------------------------------
-bool ScrollViewCreator::getAttributeNames (std::list<std::string>& attributeNames) const
+bool ScrollViewCreator::getAttributeNames (StringList& attributeNames) const
 {
 	attributeNames.emplace_back (kAttrContainerSize);
 	attributeNames.emplace_back (kAttrScrollbarBackgroundColor);
@@ -133,7 +133,7 @@ bool ScrollViewCreator::getAttributeNames (std::list<std::string>& attributeName
 }
 
 //------------------------------------------------------------------------
-auto ScrollViewCreator::getAttributeType (const std::string& attributeName) const -> AttrType
+auto ScrollViewCreator::getAttributeType (const string& attributeName) const -> AttrType
 {
 	if (attributeName == kAttrContainerSize)
 		return kPointType;
@@ -163,9 +163,8 @@ auto ScrollViewCreator::getAttributeType (const std::string& attributeName) cons
 }
 
 //------------------------------------------------------------------------
-bool ScrollViewCreator::getAttributeValue (CView* view, const std::string& attributeName,
-                                           std::string& stringValue,
-                                           const IUIDescription* desc) const
+bool ScrollViewCreator::getAttributeValue (CView* view, const string& attributeName,
+                                           string& stringValue, const IUIDescription* desc) const
 {
 	auto* sc = dynamic_cast<CScrollView*> (view);
 	if (sc == nullptr)

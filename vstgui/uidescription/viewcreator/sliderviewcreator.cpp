@@ -23,14 +23,14 @@ bool SliderBaseCreator::apply (CView* view, const UIAttributes& attributes,
 		return false;
 
 	// support old attribute name and convert it
-	const std::string* freeClickAttr = attributes.getAttributeValue ("free-click");
+	const auto* freeClickAttr = attributes.getAttributeValue ("free-click");
 	if (freeClickAttr)
 	{
 		slider->setSliderMode (*freeClickAttr == strTrue ? CSliderMode::FreeClick :
 		                                                   CSliderMode::Touch);
 	}
 
-	const std::string* modeAttr = attributes.getAttributeValue (kAttrMode);
+	const auto* modeAttr = attributes.getAttributeValue (kAttrMode);
 	if (modeAttr)
 	{
 		if (*modeAttr == kTouchMode)
@@ -53,7 +53,7 @@ bool SliderBaseCreator::apply (CView* view, const UIAttributes& attributes,
 	if (attributes.getDoubleAttribute (kAttrZoomFactor, d))
 		slider->setZoomFactor (static_cast<float> (d));
 
-	const std::string* orientationAttr = attributes.getAttributeValue (kAttrOrientation);
+	const auto* orientationAttr = attributes.getAttributeValue (kAttrOrientation);
 	if (orientationAttr)
 	{
 		int32_t style = slider->getStyle ();
@@ -69,8 +69,7 @@ bool SliderBaseCreator::apply (CView* view, const UIAttributes& attributes,
 		}
 		slider->setStyle (style);
 	}
-	const std::string* reverseOrientationAttr =
-	    attributes.getAttributeValue (kAttrReverseOrientation);
+	const auto* reverseOrientationAttr = attributes.getAttributeValue (kAttrReverseOrientation);
 	if (reverseOrientationAttr)
 	{
 		int32_t style = slider->getStyle ();
@@ -107,7 +106,7 @@ bool SliderBaseCreator::apply (CView* view, const UIAttributes& attributes,
 }
 
 //------------------------------------------------------------------------
-bool SliderBaseCreator::getAttributeNames (std::list<std::string>& attributeNames) const
+bool SliderBaseCreator::getAttributeNames (StringList& attributeNames) const
 {
 	attributeNames.emplace_back (kAttrMode);
 	attributeNames.emplace_back (kAttrOrientation);
@@ -118,7 +117,7 @@ bool SliderBaseCreator::getAttributeNames (std::list<std::string>& attributeName
 }
 
 //------------------------------------------------------------------------
-auto SliderBaseCreator::getAttributeType (const std::string& attributeName) const -> AttrType
+auto SliderBaseCreator::getAttributeType (const string& attributeName) const -> AttrType
 {
 	if (attributeName == kAttrMode)
 		return kListType;
@@ -134,9 +133,8 @@ auto SliderBaseCreator::getAttributeType (const std::string& attributeName) cons
 }
 
 //------------------------------------------------------------------------
-bool SliderBaseCreator::getAttributeValue (CView* view, const std::string& attributeName,
-                                           std::string& stringValue,
-                                           const IUIDescription* desc) const
+bool SliderBaseCreator::getAttributeValue (CView* view, const string& attributeName,
+                                           string& stringValue, const IUIDescription* desc) const
 {
 	auto* slider = dynamic_cast<CSliderBase*> (view);
 	if (!slider)
@@ -187,8 +185,8 @@ bool SliderBaseCreator::getAttributeValue (CView* view, const std::string& attri
 }
 
 //------------------------------------------------------------------------
-bool SliderBaseCreator::getPossibleListValues (const std::string& attributeName,
-                                               std::list<const std::string*>& values) const
+bool SliderBaseCreator::getPossibleListValues (const string& attributeName,
+                                               ConstStringPtrList& values) const
 {
 	if (attributeName == kAttrOrientation)
 	{
@@ -278,7 +276,7 @@ bool SliderCreator::apply (CView* view, const UIAttributes& attributes,
 }
 
 //------------------------------------------------------------------------
-bool SliderCreator::getAttributeNames (std::list<std::string>& attributeNames) const
+bool SliderCreator::getAttributeNames (StringList& attributeNames) const
 {
 	SliderBaseCreator::getAttributeNames (attributeNames);
 	attributeNames.emplace_back (kAttrHandleBitmap);
@@ -296,7 +294,7 @@ bool SliderCreator::getAttributeNames (std::list<std::string>& attributeNames) c
 }
 
 //------------------------------------------------------------------------
-auto SliderCreator::getAttributeType (const std::string& attributeName) const -> AttrType
+auto SliderCreator::getAttributeType (const string& attributeName) const -> AttrType
 {
 	if (attributeName == kAttrHandleBitmap)
 		return kBitmapType;
@@ -324,8 +322,8 @@ auto SliderCreator::getAttributeType (const std::string& attributeName) const ->
 }
 
 //------------------------------------------------------------------------
-bool SliderCreator::getAttributeValue (CView* view, const std::string& attributeName,
-                                       std::string& stringValue, const IUIDescription* desc) const
+bool SliderCreator::getAttributeValue (CView* view, const string& attributeName,
+                                       string& stringValue, const IUIDescription* desc) const
 {
 	auto* slider = dynamic_cast<CSlider*> (view);
 	if (!slider)

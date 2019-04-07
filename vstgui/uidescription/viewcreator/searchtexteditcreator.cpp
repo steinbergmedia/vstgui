@@ -59,14 +59,14 @@ bool SearchTextEditCreator::apply (CView* view, const UIAttributes& attributes,
 }
 
 //------------------------------------------------------------------------
-bool SearchTextEditCreator::getAttributeNames (std::list<std::string>& attributeNames) const
+bool SearchTextEditCreator::getAttributeNames (StringList& attributeNames) const
 {
 	attributeNames.emplace_back (kAttrClearMarkInset);
 	return true;
 }
 
 //------------------------------------------------------------------------
-auto SearchTextEditCreator::getAttributeType (const std::string& attributeName) const -> AttrType
+auto SearchTextEditCreator::getAttributeType (const string& attributeName) const -> AttrType
 {
 	if (attributeName == kAttrClearMarkInset)
 		return kPointType;
@@ -74,8 +74,8 @@ auto SearchTextEditCreator::getAttributeType (const std::string& attributeName) 
 }
 
 //------------------------------------------------------------------------
-bool SearchTextEditCreator::getAttributeValue (CView* view, const std::string& attributeName,
-                                               std::string& stringValue,
+bool SearchTextEditCreator::getAttributeValue (CView* view, const string& attributeName,
+                                               string& stringValue,
                                                const IUIDescription* desc) const
 {
 	auto ste = dynamic_cast<CSearchTextEdit*> (view);

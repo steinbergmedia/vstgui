@@ -2,7 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#include "xypadviewcreator.h"
+#include "xypadcreator.h"
 
 #include "../../lib/controls/cxypad.h"
 #include "../detail/uiviewcreatorattributes.h"

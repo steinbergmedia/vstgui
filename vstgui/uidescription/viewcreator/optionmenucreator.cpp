@@ -64,7 +64,7 @@ bool OptionMenuCreator::apply (CView* view, const UIAttributes& attributes,
 }
 
 //------------------------------------------------------------------------
-bool OptionMenuCreator::getAttributeNames (std::list<std::string>& attributeNames) const
+bool OptionMenuCreator::getAttributeNames (StringList& attributeNames) const
 {
 	attributeNames.emplace_back (kAttrMenuPopupStyle);
 	attributeNames.emplace_back (kAttrMenuCheckStyle);
@@ -72,7 +72,7 @@ bool OptionMenuCreator::getAttributeNames (std::list<std::string>& attributeName
 }
 
 //------------------------------------------------------------------------
-auto OptionMenuCreator::getAttributeType (const std::string& attributeName) const -> AttrType
+auto OptionMenuCreator::getAttributeType (const string& attributeName) const -> AttrType
 {
 	if (attributeName == kAttrMenuPopupStyle)
 		return kBooleanType;
@@ -82,9 +82,8 @@ auto OptionMenuCreator::getAttributeType (const std::string& attributeName) cons
 }
 
 //------------------------------------------------------------------------
-bool OptionMenuCreator::getAttributeValue (CView* view, const std::string& attributeName,
-                                           std::string& stringValue,
-                                           const IUIDescription* desc) const
+bool OptionMenuCreator::getAttributeValue (CView* view, const string& attributeName,
+                                           string& stringValue, const IUIDescription* desc) const
 {
 	auto* menu = dynamic_cast<COptionMenu*> (view);
 	if (!menu)

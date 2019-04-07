@@ -53,7 +53,7 @@ bool CheckBoxCreator::apply (CView* view, const UIAttributes& attributes,
 	if (!checkbox)
 		return false;
 
-	const std::string* attr = attributes.getAttributeValue (kAttrTitle);
+	const auto* attr = attributes.getAttributeValue (kAttrTitle);
 	if (attr)
 		checkbox->setTitle (attr->c_str ());
 
@@ -96,7 +96,7 @@ bool CheckBoxCreator::apply (CView* view, const UIAttributes& attributes,
 }
 
 //------------------------------------------------------------------------
-bool CheckBoxCreator::getAttributeNames (std::list<std::string>& attributeNames) const
+bool CheckBoxCreator::getAttributeNames (StringList& attributeNames) const
 {
 	attributeNames.emplace_back (kAttrTitle);
 	attributeNames.emplace_back (kAttrFont);
@@ -112,7 +112,7 @@ bool CheckBoxCreator::getAttributeNames (std::list<std::string>& attributeNames)
 }
 
 //------------------------------------------------------------------------
-auto CheckBoxCreator::getAttributeType (const std::string& attributeName) const -> AttrType
+auto CheckBoxCreator::getAttributeType (const string& attributeName) const -> AttrType
 {
 	if (attributeName == kAttrTitle)
 		return kStringType;
@@ -138,8 +138,8 @@ auto CheckBoxCreator::getAttributeType (const std::string& attributeName) const 
 }
 
 //------------------------------------------------------------------------
-bool CheckBoxCreator::getAttributeValue (CView* view, const std::string& attributeName,
-                                         std::string& stringValue, const IUIDescription* desc) const
+bool CheckBoxCreator::getAttributeValue (CView* view, const string& attributeName,
+                                         string& stringValue, const IUIDescription* desc) const
 {
 	auto* checkbox = dynamic_cast<CCheckBox*> (view);
 	if (!checkbox)

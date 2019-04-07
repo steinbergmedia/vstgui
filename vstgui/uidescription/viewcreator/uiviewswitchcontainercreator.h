@@ -22,23 +22,23 @@ struct UIViewSwitchContainerCreator : ViewCreatorAdapter
 	               const IUIDescription* description) const override;
 	bool apply (CView* view, const UIAttributes& attributes,
 	            const IUIDescription* description) const override;
-	bool getAttributeNames (std::list<std::string>& attributeNames) const override;
-	AttrType getAttributeType (const std::string& attributeName) const override;
-	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue,
+	bool getAttributeNames (StringList& attributeNames) const override;
+	AttrType getAttributeType (const string& attributeName) const override;
+	bool getAttributeValue (CView* view, const string& attributeName, string& stringValue,
 	                        const IUIDescription* desc) const override;
-	bool getPossibleListValues (const std::string& attributeName,
-	                            std::list<const std::string*>& values) const override;
+	bool getPossibleListValues (const string& attributeName,
+	                            ConstStringPtrList& values) const override;
 
 private:
-	std::string kLinear = "linear";
-	std::string kEasyIn = "easy-in";
-	std::string kEasyOut = "easy-out";
-	std::string kEasyInOut = "easy-in-out";
-	std::string kEasy = "easy";
+	string kLinear = "linear";
+	string kEasyIn = "easy-in";
+	string kEasyOut = "easy-out";
+	string kEasyInOut = "easy-in-out";
+	string kEasy = "easy";
 
-	std::string kFadeInOut = "fade";
-	std::string kMoveInOut = "move";
-	std::string kPushInOut = "push";
+	string kFadeInOut = "fade";
+	string kMoveInOut = "move";
+	string kPushInOut = "push";
 };
 
 //------------------------------------------------------------------------

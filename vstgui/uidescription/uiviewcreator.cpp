@@ -324,7 +324,7 @@ public:
 			return false;
 		return true;
 	}
-	bool getAttributeNames (std::list<std::string>& attributeNames) const
+	bool getAttributeNames (StringList& attributeNames) const
 	{
 		attributeNames.emplace_back ("empty");
 		return true;
@@ -379,7 +379,7 @@ public:
 #include "viewcreator/viewcontainercreator.h"
 #include "viewcreator/viewcreator.h"
 #include "viewcreator/vumetercreator.h"
-#include "viewcreator/xypadviewcreator.h"
+#include "viewcreator/xypadcreator.h"
 
 #include "../vstgui.h"
 #include <sstream>

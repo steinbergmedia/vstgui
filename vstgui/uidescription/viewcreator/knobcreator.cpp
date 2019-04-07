@@ -44,7 +44,7 @@ bool KnobBaseCreator::apply (CView* view, const UIAttributes& attributes,
 }
 
 //------------------------------------------------------------------------
-bool KnobBaseCreator::getAttributeNames (std::list<std::string>& attributeNames) const
+bool KnobBaseCreator::getAttributeNames (StringList& attributeNames) const
 {
 	attributeNames.emplace_back (kAttrAngleStart);
 	attributeNames.emplace_back (kAttrAngleRange);
@@ -54,7 +54,7 @@ bool KnobBaseCreator::getAttributeNames (std::list<std::string>& attributeNames)
 }
 
 //------------------------------------------------------------------------
-auto KnobBaseCreator::getAttributeType (const std::string& attributeName) const -> AttrType
+auto KnobBaseCreator::getAttributeType (const string& attributeName) const -> AttrType
 {
 	if (attributeName == kAttrAngleStart)
 		return kFloatType;
@@ -68,8 +68,8 @@ auto KnobBaseCreator::getAttributeType (const std::string& attributeName) const 
 }
 
 //------------------------------------------------------------------------
-bool KnobBaseCreator::getAttributeValue (CView* view, const std::string& attributeName,
-                                         std::string& stringValue, const IUIDescription* desc) const
+bool KnobBaseCreator::getAttributeValue (CView* view, const string& attributeName,
+                                         string& stringValue, const IUIDescription* desc) const
 {
 	auto* knob = dynamic_cast<CKnobBase*> (view);
 	if (!knob)
@@ -205,7 +205,7 @@ bool KnobCreator::apply (CView* view, const UIAttributes& attributes,
 }
 
 //------------------------------------------------------------------------
-bool KnobCreator::getAttributeNames (std::list<std::string>& attributeNames) const
+bool KnobCreator::getAttributeNames (StringList& attributeNames) const
 {
 	attributeNames.emplace_back (kAttrCircleDrawing);
 	attributeNames.emplace_back (kAttrCoronaDrawing);
@@ -227,7 +227,7 @@ bool KnobCreator::getAttributeNames (std::list<std::string>& attributeNames) con
 }
 
 //------------------------------------------------------------------------
-auto KnobCreator::getAttributeType (const std::string& attributeName) const -> AttrType
+auto KnobCreator::getAttributeType (const string& attributeName) const -> AttrType
 {
 	if (attributeName == kAttrCircleDrawing)
 		return kBooleanType;
@@ -265,8 +265,8 @@ auto KnobCreator::getAttributeType (const std::string& attributeName) const -> A
 }
 
 //------------------------------------------------------------------------
-bool KnobCreator::getAttributeValue (CView* view, const std::string& attributeName,
-                                     std::string& stringValue, const IUIDescription* desc) const
+bool KnobCreator::getAttributeValue (CView* view, const string& attributeName, string& stringValue,
+                                     const IUIDescription* desc) const
 {
 	auto* knob = dynamic_cast<CKnob*> (view);
 	if (!knob)

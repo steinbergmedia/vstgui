@@ -53,14 +53,14 @@ bool TextLabelCreator::apply (CView* view, const UIAttributes& attributes,
 	if (!label)
 		return false;
 
-	const std::string* attr = attributes.getAttributeValue (kAttrTitle);
+	const auto* attr = attributes.getAttributeValue (kAttrTitle);
 	if (attr)
 	{
 		auto index = attr->find ("\\n");
-		if (index != std::string::npos)
+		if (index != string::npos)
 		{
 			auto str = *attr;
-			while (index != std::string::npos)
+			while (index != string::npos)
 			{
 				str.replace (index, 2, "\n");
 				index = str.find ("\\n");
@@ -85,7 +85,7 @@ bool TextLabelCreator::apply (CView* view, const UIAttributes& attributes,
 }
 
 //------------------------------------------------------------------------
-bool TextLabelCreator::getAttributeNames (std::list<std::string>& attributeNames) const
+bool TextLabelCreator::getAttributeNames (StringList& attributeNames) const
 {
 	attributeNames.emplace_back (kAttrTitle);
 	attributeNames.emplace_back (kAttrTruncateMode);
@@ -93,7 +93,7 @@ bool TextLabelCreator::getAttributeNames (std::list<std::string>& attributeNames
 }
 
 //------------------------------------------------------------------------
-auto TextLabelCreator::getAttributeType (const std::string& attributeName) const -> AttrType
+auto TextLabelCreator::getAttributeType (const string& attributeName) const -> AttrType
 {
 	if (attributeName == kAttrTitle)
 		return kStringType;
@@ -103,9 +103,8 @@ auto TextLabelCreator::getAttributeType (const std::string& attributeName) const
 }
 
 //------------------------------------------------------------------------
-bool TextLabelCreator::getAttributeValue (CView* view, const std::string& attributeName,
-                                          std::string& stringValue,
-                                          const IUIDescription* desc) const
+bool TextLabelCreator::getAttributeValue (CView* view, const string& attributeName,
+                                          string& stringValue, const IUIDescription* desc) const
 {
 	auto* label = dynamic_cast<CTextLabel*> (view);
 	if (!label)
@@ -114,7 +113,7 @@ bool TextLabelCreator::getAttributeValue (CView* view, const std::string& attrib
 	{
 		stringValue = label->getText ().getString ();
 		auto index = stringValue.find ("\n");
-		while (index != std::string::npos)
+		while (index != string::npos)
 		{
 			stringValue.replace (index, 1, "\\n");
 			index = stringValue.find ("\n");
@@ -135,8 +134,8 @@ bool TextLabelCreator::getAttributeValue (CView* view, const std::string& attrib
 }
 
 //------------------------------------------------------------------------
-bool TextLabelCreator::getPossibleListValues (const std::string& attributeName,
-                                              std::list<const std::string*>& values) const
+bool TextLabelCreator::getPossibleListValues (const string& attributeName,
+                                              ConstStringPtrList& values) const
 {
 	if (attributeName == kAttrTruncateMode)
 	{

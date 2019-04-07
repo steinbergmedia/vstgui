@@ -133,25 +133,25 @@ bool ViewCreator::apply (CView* view, const UIAttributes& attributes,
 	    attributes.getBooleanAttribute (kAttrWantsFocus, b))
 		view->setWantsFocus (b);
 
-	const std::string* autosizeAttr = attributes.getAttributeValue (kAttrAutosize);
+	const auto* autosizeAttr = attributes.getAttributeValue (kAttrAutosize);
 	if (autosizeAttr)
 	{
 		int32_t autosize = kAutosizeNone;
-		if (autosizeAttr->find ("left") != std::string::npos)
+		if (autosizeAttr->find ("left") != string::npos)
 			autosize |= kAutosizeLeft;
-		if (autosizeAttr->find ("top") != std::string::npos)
+		if (autosizeAttr->find ("top") != string::npos)
 			autosize |= kAutosizeTop;
-		if (autosizeAttr->find ("right") != std::string::npos)
+		if (autosizeAttr->find ("right") != string::npos)
 			autosize |= kAutosizeRight;
-		if (autosizeAttr->find ("bottom") != std::string::npos)
+		if (autosizeAttr->find ("bottom") != string::npos)
 			autosize |= kAutosizeBottom;
-		if (autosizeAttr->find ("row") != std::string::npos)
+		if (autosizeAttr->find ("row") != string::npos)
 			autosize |= kAutosizeRow;
-		if (autosizeAttr->find ("column") != std::string::npos)
+		if (autosizeAttr->find ("column") != string::npos)
 			autosize |= kAutosizeColumn;
 		view->setAutosizeFlags (autosize);
 	}
-	const std::string* tooltipAttr = attributes.getAttributeValue (kAttrTooltip);
+	const auto* tooltipAttr = attributes.getAttributeValue (kAttrTooltip);
 	if (tooltipAttr)
 	{
 		if (!tooltipAttr->empty ())
@@ -160,12 +160,12 @@ bool ViewCreator::apply (CView* view, const UIAttributes& attributes,
 			view->setTooltipText (nullptr);
 	}
 
-	const std::string* customViewAttr = attributes.getAttributeValue (kAttrCustomViewName);
+	const auto* customViewAttr = attributes.getAttributeValue (kAttrCustomViewName);
 	if (customViewAttr)
 		view->setAttribute ('uicv', static_cast<uint32_t> (customViewAttr->size () + 1),
 		                    customViewAttr->c_str ());
 
-	const std::string* subControllerAttr = attributes.getAttributeValue (kAttrSubController);
+	const auto* subControllerAttr = attributes.getAttributeValue (kAttrSubController);
 	if (subControllerAttr)
 		view->setAttribute ('uisc', static_cast<uint32_t> (subControllerAttr->size () + 1),
 		                    subControllerAttr->c_str ());
@@ -178,7 +178,7 @@ bool ViewCreator::apply (CView* view, const UIAttributes& attributes,
 }
 
 //------------------------------------------------------------------------
-bool ViewCreator::getAttributeNames (std::list<std::string>& attributeNames) const
+bool ViewCreator::getAttributeNames (StringList& attributeNames) const
 {
 	attributeNames.emplace_back (kAttrOrigin);
 	attributeNames.emplace_back (kAttrSize);
@@ -196,7 +196,7 @@ bool ViewCreator::getAttributeNames (std::list<std::string>& attributeNames) con
 }
 
 //------------------------------------------------------------------------
-auto ViewCreator::getAttributeType (const std::string& attributeName) const -> AttrType
+auto ViewCreator::getAttributeType (const string& attributeName) const -> AttrType
 {
 	if (attributeName == kAttrOrigin)
 		return kPointType;
@@ -226,8 +226,8 @@ auto ViewCreator::getAttributeType (const std::string& attributeName) const -> A
 }
 
 //------------------------------------------------------------------------
-bool ViewCreator::getAttributeValue (CView* view, const std::string& attributeName,
-                                     std::string& stringValue, const IUIDescription* desc) const
+bool ViewCreator::getAttributeValue (CView* view, const string& attributeName, string& stringValue,
+                                     const IUIDescription* desc) const
 {
 	if (attributeName == kAttrOrigin)
 	{
@@ -314,7 +314,7 @@ bool ViewCreator::getAttributeValue (CView* view, const std::string& attributeNa
 }
 
 //------------------------------------------------------------------------
-bool ViewCreator::getAttributeValueRange (const std::string& attributeName, double& minValue,
+bool ViewCreator::getAttributeValueRange (const string& attributeName, double& minValue,
                                           double& maxValue) const
 {
 	if (attributeName == kAttrOpacity)
@@ -327,8 +327,7 @@ bool ViewCreator::getAttributeValueRange (const std::string& attributeName, doub
 }
 
 //------------------------------------------------------------------------
-bool ViewCreator::getViewAttributeString (CView* view, const CViewAttributeID attrID,
-                                          std::string& value)
+bool ViewCreator::getViewAttributeString (CView* view, const CViewAttributeID attrID, string& value)
 {
 	uint32_t attrSize = 0;
 	if (view->getAttributeSize (attrID, attrSize))

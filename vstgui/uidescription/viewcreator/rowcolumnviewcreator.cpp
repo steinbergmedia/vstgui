@@ -52,7 +52,7 @@ bool RowColumnViewCreator::apply (CView* view, const UIAttributes& attributes,
 	auto* rcv = dynamic_cast<CRowColumnView*> (view);
 	if (rcv == nullptr)
 		return false;
-	const std::string* attr = attributes.getAttributeValue (kAttrRowStyle);
+	const auto* attr = attributes.getAttributeValue (kAttrRowStyle);
 	if (attr)
 		rcv->setStyle (*attr == strTrue ? CRowColumnView::kRowStyle : CRowColumnView::kColumnStyle);
 	attr = attributes.getAttributeValue (kAttrSpacing);
@@ -92,7 +92,7 @@ bool RowColumnViewCreator::apply (CView* view, const UIAttributes& attributes,
 }
 
 //------------------------------------------------------------------------
-bool RowColumnViewCreator::getAttributeNames (std::list<std::string>& attributeNames) const
+bool RowColumnViewCreator::getAttributeNames (StringList& attributeNames) const
 {
 	attributeNames.emplace_back (kAttrRowStyle);
 	attributeNames.emplace_back (kAttrSpacing);
@@ -105,7 +105,7 @@ bool RowColumnViewCreator::getAttributeNames (std::list<std::string>& attributeN
 }
 
 //------------------------------------------------------------------------
-auto RowColumnViewCreator::getAttributeType (const std::string& attributeName) const -> AttrType
+auto RowColumnViewCreator::getAttributeType (const string& attributeName) const -> AttrType
 {
 	if (attributeName == kAttrRowStyle)
 		return kBooleanType;
@@ -125,9 +125,8 @@ auto RowColumnViewCreator::getAttributeType (const std::string& attributeName) c
 }
 
 //------------------------------------------------------------------------
-bool RowColumnViewCreator::getAttributeValue (CView* view, const std::string& attributeName,
-                                              std::string& stringValue,
-                                              const IUIDescription* desc) const
+bool RowColumnViewCreator::getAttributeValue (CView* view, const string& attributeName,
+                                              string& stringValue, const IUIDescription* desc) const
 {
 	auto* rcv = dynamic_cast<CRowColumnView*> (view);
 	if (rcv == nullptr)
@@ -178,8 +177,8 @@ bool RowColumnViewCreator::getAttributeValue (CView* view, const std::string& at
 }
 
 //------------------------------------------------------------------------
-bool RowColumnViewCreator::getPossibleListValues (const std::string& attributeName,
-                                                  std::list<const std::string*>& values) const
+bool RowColumnViewCreator::getPossibleListValues (const string& attributeName,
+                                                  ConstStringPtrList& values) const
 {
 	if (attributeName == kAttrEqualSizeLayout)
 	{

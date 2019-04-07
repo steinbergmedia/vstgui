@@ -15,19 +15,19 @@ struct SliderBaseCreator : ViewCreatorAdapter
 {
 	bool apply (CView* view, const UIAttributes& attributes,
 	            const IUIDescription* description) const override;
-	bool getAttributeNames (std::list<std::string>& attributeNames) const override;
-	AttrType getAttributeType (const std::string& attributeName) const override;
-	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue,
+	bool getAttributeNames (StringList& attributeNames) const override;
+	AttrType getAttributeType (const string& attributeName) const override;
+	bool getAttributeValue (CView* view, const string& attributeName, string& stringValue,
 	                        const IUIDescription* desc) const override;
-	bool getPossibleListValues (const std::string& attributeName,
-	                            std::list<const std::string*>& values) const override;
+	bool getPossibleListValues (const string& attributeName,
+	                            ConstStringPtrList& values) const override;
 
 private:
-	const std::string kTouchMode = "touch";
-	const std::string kRelativeTouchMode = "relative touch";
-	const std::string kFreeClickMode = "free click";
-	const std::string kRampMode = "ramp";
-	const std::string kUseGlobalMode = "use global";
+	const string kTouchMode = "touch";
+	const string kRelativeTouchMode = "relative touch";
+	const string kFreeClickMode = "free click";
+	const string kRampMode = "ramp";
+	const string kUseGlobalMode = "use global";
 };
 
 //------------------------------------------------------------------------
@@ -41,9 +41,9 @@ struct SliderCreator : SliderBaseCreator
 	               const IUIDescription* description) const override;
 	bool apply (CView* view, const UIAttributes& attributes,
 	            const IUIDescription* description) const override;
-	bool getAttributeNames (std::list<std::string>& attributeNames) const override;
-	AttrType getAttributeType (const std::string& attributeName) const override;
-	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue,
+	bool getAttributeNames (StringList& attributeNames) const override;
+	AttrType getAttributeType (const string& attributeName) const override;
+	bool getAttributeValue (CView* view, const string& attributeName, string& stringValue,
 	                        const IUIDescription* desc) const override;
 };
 //------------------------------------------------------------------------

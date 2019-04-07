@@ -34,7 +34,7 @@ bool IMultiBitmapControlCreator::apply (CView* view, const UIAttributes& attribu
 }
 
 //------------------------------------------------------------------------
-bool IMultiBitmapControlCreator::getAttributeNames (std::list<std::string>& attributeNames)
+bool IMultiBitmapControlCreator::getAttributeNames (StringList& attributeNames)
 {
 	attributeNames.emplace_back (kAttrHeightOfOneImage);
 	attributeNames.emplace_back (kAttrSubPixmaps);
@@ -42,8 +42,7 @@ bool IMultiBitmapControlCreator::getAttributeNames (std::list<std::string>& attr
 }
 
 //------------------------------------------------------------------------
-IViewCreator::AttrType IMultiBitmapControlCreator::getAttributeType (
-    const std::string& attributeName)
+IViewCreator::AttrType IMultiBitmapControlCreator::getAttributeType (const string& attributeName)
 {
 	if (attributeName == kAttrHeightOfOneImage)
 		return IViewCreator::AttrType::kIntegerType;
@@ -53,9 +52,8 @@ IViewCreator::AttrType IMultiBitmapControlCreator::getAttributeType (
 }
 
 //------------------------------------------------------------------------
-bool IMultiBitmapControlCreator::getAttributeValue (CView* view, const std::string& attributeName,
-                                                    std::string& stringValue,
-                                                    const IUIDescription* desc)
+bool IMultiBitmapControlCreator::getAttributeValue (CView* view, const string& attributeName,
+                                                    string& stringValue, const IUIDescription* desc)
 {
 	auto* multiBitmapControl = dynamic_cast<IMultiBitmapControl*> (view);
 	if (!multiBitmapControl)

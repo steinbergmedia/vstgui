@@ -64,7 +64,7 @@ bool AnimKnobCreator::apply (CView* view, const UIAttributes& attributes,
 }
 
 //------------------------------------------------------------------------
-bool AnimKnobCreator::getAttributeNames (std::list<std::string>& attributeNames) const
+bool AnimKnobCreator::getAttributeNames (StringList& attributeNames) const
 {
 	attributeNames.emplace_back (kAttrInverseBitmap);
 	IMultiBitmapControlCreator::getAttributeNames (attributeNames);
@@ -72,7 +72,7 @@ bool AnimKnobCreator::getAttributeNames (std::list<std::string>& attributeNames)
 }
 
 //------------------------------------------------------------------------
-auto AnimKnobCreator::getAttributeType (const std::string& attributeName) const -> AttrType
+auto AnimKnobCreator::getAttributeType (const string& attributeName) const -> AttrType
 {
 	if (attributeName == kAttrInverseBitmap)
 		return kBooleanType;
@@ -83,8 +83,8 @@ auto AnimKnobCreator::getAttributeType (const std::string& attributeName) const 
 }
 
 //------------------------------------------------------------------------
-bool AnimKnobCreator::getAttributeValue (CView* view, const std::string& attributeName,
-                                         std::string& stringValue, const IUIDescription* desc) const
+bool AnimKnobCreator::getAttributeValue (CView* view, const string& attributeName,
+                                         string& stringValue, const IUIDescription* desc) const
 {
 	auto* animKnob = dynamic_cast<CAnimKnob*> (view);
 	if (!animKnob)

@@ -59,15 +59,14 @@ bool LayeredViewContainerCreator::apply (CView* view, const UIAttributes& attrib
 }
 
 //------------------------------------------------------------------------
-bool LayeredViewContainerCreator::getAttributeNames (std::list<std::string>& attributeNames) const
+bool LayeredViewContainerCreator::getAttributeNames (StringList& attributeNames) const
 {
 	attributeNames.emplace_back (kAttrZIndex);
 	return true;
 }
 
 //------------------------------------------------------------------------
-auto LayeredViewContainerCreator::getAttributeType (const std::string& attributeName) const
-    -> AttrType
+auto LayeredViewContainerCreator::getAttributeType (const string& attributeName) const -> AttrType
 {
 	if (attributeName == kAttrZIndex)
 		return kIntegerType;
@@ -75,8 +74,8 @@ auto LayeredViewContainerCreator::getAttributeType (const std::string& attribute
 }
 
 //------------------------------------------------------------------------
-bool LayeredViewContainerCreator::getAttributeValue (CView* view, const std::string& attributeName,
-                                                     std::string& stringValue,
+bool LayeredViewContainerCreator::getAttributeValue (CView* view, const string& attributeName,
+                                                     string& stringValue,
                                                      const IUIDescription* desc) const
 {
 	auto* lvc = dynamic_cast<CLayeredViewContainer*> (view);

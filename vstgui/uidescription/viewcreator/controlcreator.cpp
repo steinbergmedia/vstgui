@@ -72,7 +72,7 @@ bool ControlCreator::apply (CView* view, const UIAttributes& attributes,
 	if (attributes.getDoubleAttribute (kAttrWheelIncValue, value))
 		control->setWheelInc (static_cast<float> (value));
 
-	const std::string* controlTagAttr = attributes.getAttributeValue (kAttrControlTag);
+	const auto* controlTagAttr = attributes.getAttributeValue (kAttrControlTag);
 	if (controlTagAttr)
 	{
 		if (controlTagAttr->length () == 0)
@@ -106,7 +106,7 @@ bool ControlCreator::apply (CView* view, const UIAttributes& attributes,
 }
 
 //------------------------------------------------------------------------
-bool ControlCreator::getAttributeNames (std::list<std::string>& attributeNames) const
+bool ControlCreator::getAttributeNames (StringList& attributeNames) const
 {
 	attributeNames.emplace_back (kAttrControlTag);
 	attributeNames.emplace_back (kAttrDefaultValue);
@@ -117,7 +117,7 @@ bool ControlCreator::getAttributeNames (std::list<std::string>& attributeNames) 
 }
 
 //------------------------------------------------------------------------
-auto ControlCreator::getAttributeType (const std::string& attributeName) const -> AttrType
+auto ControlCreator::getAttributeType (const string& attributeName) const -> AttrType
 {
 	if (attributeName == kAttrControlTag)
 		return kTagType;
@@ -133,8 +133,8 @@ auto ControlCreator::getAttributeType (const std::string& attributeName) const -
 }
 
 //------------------------------------------------------------------------
-bool ControlCreator::getAttributeValue (CView* view, const std::string& attributeName,
-                                        std::string& stringValue, const IUIDescription* desc) const
+bool ControlCreator::getAttributeValue (CView* view, const string& attributeName,
+                                        string& stringValue, const IUIDescription* desc) const
 {
 	auto* control = dynamic_cast<CControl*> (view);
 	if (control == nullptr)

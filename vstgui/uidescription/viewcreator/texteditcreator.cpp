@@ -71,7 +71,7 @@ bool TextEditCreator::apply (CView* view, const UIAttributes& attributes,
 }
 
 //------------------------------------------------------------------------
-bool TextEditCreator::getAttributeNames (std::list<std::string>& attributeNames) const
+bool TextEditCreator::getAttributeNames (StringList& attributeNames) const
 {
 	attributeNames.emplace_back (kAttrSecureStyle);
 	attributeNames.emplace_back (kAttrImmediateTextChange);
@@ -81,7 +81,7 @@ bool TextEditCreator::getAttributeNames (std::list<std::string>& attributeNames)
 }
 
 //------------------------------------------------------------------------
-auto TextEditCreator::getAttributeType (const std::string& attributeName) const -> AttrType
+auto TextEditCreator::getAttributeType (const string& attributeName) const -> AttrType
 {
 	if (attributeName == kAttrSecureStyle)
 		return kBooleanType;
@@ -95,8 +95,8 @@ auto TextEditCreator::getAttributeType (const std::string& attributeName) const 
 }
 
 //------------------------------------------------------------------------
-bool TextEditCreator::getAttributeValue (CView* view, const std::string& attributeName,
-                                         std::string& stringValue, const IUIDescription* desc) const
+bool TextEditCreator::getAttributeValue (CView* view, const string& attributeName,
+                                         string& stringValue, const IUIDescription* desc) const
 {
 	auto* label = dynamic_cast<CTextEdit*> (view);
 	if (!label)

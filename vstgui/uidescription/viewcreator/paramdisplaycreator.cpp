@@ -53,7 +53,7 @@ bool ParamDisplayCreator::apply (CView* view, const UIAttributes& attributes,
 	if (!display)
 		return false;
 
-	const std::string* fontAttr = attributes.getAttributeValue (kAttrFont);
+	const auto* fontAttr = attributes.getAttributeValue (kAttrFont);
 	if (fontAttr)
 	{
 		CFontRef font = description->getFont (fontAttr->c_str ());
@@ -84,7 +84,7 @@ bool ParamDisplayCreator::apply (CView* view, const UIAttributes& attributes,
 	if (attributes.getBooleanAttribute (kAttrFontAntialias, b))
 		display->setAntialias (b);
 
-	const std::string* textAlignmentAttr = attributes.getAttributeValue (kAttrTextAlignment);
+	const auto* textAlignmentAttr = attributes.getAttributeValue (kAttrTextAlignment);
 	if (textAlignmentAttr)
 	{
 		CHoriTxtAlign align = kCenterText;
@@ -117,7 +117,7 @@ bool ParamDisplayCreator::apply (CView* view, const UIAttributes& attributes,
 	                CParamDisplay::kRoundRectStyle, style);
 	display->setStyle (style);
 
-	const std::string* precisionAttr = attributes.getAttributeValue (kAttrValuePrecision);
+	const auto* precisionAttr = attributes.getAttributeValue (kAttrValuePrecision);
 	if (precisionAttr)
 	{
 		uint8_t precision = (uint8_t)strtol (precisionAttr->c_str (), nullptr, 10);
@@ -128,7 +128,7 @@ bool ParamDisplayCreator::apply (CView* view, const UIAttributes& attributes,
 }
 
 //------------------------------------------------------------------------
-bool ParamDisplayCreator::getAttributeNames (std::list<std::string>& attributeNames) const
+bool ParamDisplayCreator::getAttributeNames (StringList& attributeNames) const
 {
 	attributeNames.emplace_back (kAttrFont);
 	attributeNames.emplace_back (kAttrFontColor);
@@ -155,7 +155,7 @@ bool ParamDisplayCreator::getAttributeNames (std::list<std::string>& attributeNa
 }
 
 //------------------------------------------------------------------------
-auto ParamDisplayCreator::getAttributeType (const std::string& attributeName) const -> AttrType
+auto ParamDisplayCreator::getAttributeType (const string& attributeName) const -> AttrType
 {
 	if (attributeName == kAttrFont)
 		return kFontType;
@@ -203,9 +203,8 @@ auto ParamDisplayCreator::getAttributeType (const std::string& attributeName) co
 }
 
 //------------------------------------------------------------------------
-bool ParamDisplayCreator::getAttributeValue (CView* view, const std::string& attributeName,
-                                             std::string& stringValue,
-                                             const IUIDescription* desc) const
+bool ParamDisplayCreator::getAttributeValue (CView* view, const string& attributeName,
+                                             string& stringValue, const IUIDescription* desc) const
 {
 	auto* pd = dynamic_cast<CParamDisplay*> (view);
 	if (pd == nullptr)
@@ -330,8 +329,8 @@ bool ParamDisplayCreator::getAttributeValue (CView* view, const std::string& att
 }
 
 //------------------------------------------------------------------------
-bool ParamDisplayCreator::getAttributeValueRange (const std::string& attributeName,
-                                                  double& minValue, double& maxValue) const
+bool ParamDisplayCreator::getAttributeValueRange (const string& attributeName, double& minValue,
+                                                  double& maxValue) const
 {
 	if (attributeName == kAttrTextRotation)
 	{

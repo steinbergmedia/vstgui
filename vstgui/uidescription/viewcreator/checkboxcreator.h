@@ -21,9 +21,9 @@ struct CheckBoxCreator : ViewCreatorAdapter
 	               const IUIDescription* description) const override;
 	bool apply (CView* view, const UIAttributes& attributes,
 	            const IUIDescription* description) const override;
-	bool getAttributeNames (std::list<std::string>& attributeNames) const override;
-	AttrType getAttributeType (const std::string& attributeName) const override;
-	bool getAttributeValue (CView* view, const std::string& attributeName, std::string& stringValue,
+	bool getAttributeNames (StringList& attributeNames) const override;
+	AttrType getAttributeType (const string& attributeName) const override;
+	bool getAttributeValue (CView* view, const string& attributeName, string& stringValue,
 	                        const IUIDescription* desc) const override;
 };
 
