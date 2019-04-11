@@ -660,7 +660,7 @@ bool CScrollView::removeView (CView *pView, bool withForget)
 //-----------------------------------------------------------------------------
 bool CScrollView::removeAll (bool withForget)
 {
-	return sc->removeAll ();
+	return sc->removeAll (withForget);
 }
 
 //-----------------------------------------------------------------------------
