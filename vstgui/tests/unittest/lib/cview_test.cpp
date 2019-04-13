@@ -254,7 +254,6 @@ TESTCASE(CViewTest,
 		EXPECT(v.onKeyUp (key) == -1);
 		EXPECT(v.onWheel (CPoint (0, 0), kMouseWheelAxisX, 1.f, 0) == false);
 		EXPECT(v.onWheel (CPoint (0, 0), kMouseWheelAxisY, 1.f, 0) == false);
-		EXPECT(v.onWheel (CPoint (0, 0), 1.f, 0) == false);
 		CPoint p (0, 0);
 		EXPECT(v.onMouseDown (p, kLButton) == kMouseEventNotImplemented);
 		EXPECT(v.onMouseUp (p, kLButton) == kMouseEventNotImplemented);
