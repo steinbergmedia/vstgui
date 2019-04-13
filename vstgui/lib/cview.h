@@ -38,10 +38,9 @@ extern IdStringPtr kMsgViewSizeChanged;
 //-----------------------------------------------------------------------------
 // Attributes
 //		all attributes where the first letter is lowercase are reserved for the vstgui lib
-
-extern const CViewAttributeID kCViewAttributeReferencePointer;	// 'cvrp'
-extern const CViewAttributeID kCViewTooltipAttribute;			// 'cvtt'
-extern const CViewAttributeID kCViewControllerAttribute;		// 'ictr'
+static constexpr CViewAttributeID kCViewAttributeReferencePointer = 'cvrp';
+static constexpr CViewAttributeID kCViewTooltipAttribute = 'cvtt';
+static constexpr CViewAttributeID kCViewControllerAttribute = 'ictr';
 
 //-----------------------------------------------------------------------------
 // CView Declaration

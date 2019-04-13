@@ -164,11 +164,8 @@ IdStringPtr kMsgViewSizeChanged = "kMsgViewSizeChanged";
 bool CView::kDirtyCallAlwaysOnMainThread = false;
 
 //-----------------------------------------------------------------------------
-const CViewAttributeID kCViewAttributeReferencePointer = 'cvrp';
-const CViewAttributeID kCViewTooltipAttribute = 'cvtt';
-const CViewAttributeID kCViewControllerAttribute = 'ictr';
-const CViewAttributeID kCViewHitTestPathAttribute = 'cvht';
-const CViewAttributeID kCViewCustomDropTarget = 'cvdt';
+static constexpr CViewAttributeID kCViewHitTestPathAttribute = 'cvht';
+static constexpr CViewAttributeID kCViewCustomDropTarget = 'cvdt';
 
 //-----------------------------------------------------------------------------
 // CView
