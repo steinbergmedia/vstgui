@@ -234,7 +234,7 @@ CMouseEventResult CKnobBase::onMouseMoved (CPoint& where, const CButtonState& bu
 }
 
 //------------------------------------------------------------------------
-bool CKnobBase::onWheel (const CPoint& where, const float &distance, const CButtonState &buttons)
+bool CKnobBase::onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float &distance, const CButtonState &buttons)
 {
 	if (!getMouseEnabled ())
 		return false;

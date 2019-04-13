@@ -103,8 +103,9 @@ public:
 	/** check if where hits this view */
 	virtual bool hitTest (const CPoint& where, const CButtonState& buttons = -1);
 
+	VSTGUI_DEPRECATED(
 	/** called if a mouse wheel event is happening over this view */
-	virtual bool onWheel (const CPoint& where, const float& distance, const CButtonState& buttons);
+	virtual bool onWheel (const CPoint& where, const float& distance, const CButtonState& buttons) final { return false; })
 	/** called if a mouse wheel event is happening over this view */
 	virtual bool onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons);
 

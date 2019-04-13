@@ -572,18 +572,6 @@ void CView::draw (CDrawContext* pContext)
 	setDirty (false);
 }
 
-//-----------------------------------------------------------------------------
-/**
- * @param where location
- * @param distance wheel distance
- * @param buttons button and modifier state
- * @return true if handled
- */
-bool CView::onWheel (const CPoint &where, const float &distance, const CButtonState &buttons)
-{
-	return false;
-}
-
 //------------------------------------------------------------------------
 /**
  * @param where location
@@ -594,14 +582,7 @@ bool CView::onWheel (const CPoint &where, const float &distance, const CButtonSt
  */
 bool CView::onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance, const CButtonState& buttons)
 {
-	if (axis == kMouseWheelAxisX)
-	{
-		#if MAC	// mac os x 10.4.x swaps the axis if the shift modifier is down
-		if (!(buttons & kShift))
-		#endif
-		return onWheel (where, distance*-1, buttons);
-	}
-	return onWheel (where, distance, buttons);
+	return false;
 }
 
 //------------------------------------------------------------------------------

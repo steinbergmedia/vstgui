@@ -1089,12 +1089,6 @@ bool CViewContainer::onWheel (const CPoint &where, const CMouseWheelAxis &axis, 
 }
 
 //-----------------------------------------------------------------------------
-bool CViewContainer::onWheel (const CPoint &where, const float &distance, const CButtonState &buttons)
-{
-	return onWheel (where, kMouseWheelAxisY, distance, buttons);
-}
-
-//-----------------------------------------------------------------------------
 SharedPointer<IDropTarget> CViewContainer::getDropTarget ()
 {
 	if (getFrame () == this)

@@ -558,7 +558,8 @@ int32_t CRockerSwitch::onKeyUp (VstKeyCode& keyCode)
 }
 
 //------------------------------------------------------------------------
-bool CRockerSwitch::onWheel (const CPoint& where, const float &distance, const CButtonState &buttons)
+bool CRockerSwitch::onWheel (const CPoint& where, const CMouseWheelAxis& axis,
+                             const float& distance, const CButtonState& buttons)
 {
 	if (!getMouseEnabled ())
 		return false;

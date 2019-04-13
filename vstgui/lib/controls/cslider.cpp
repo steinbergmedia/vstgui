@@ -504,9 +504,14 @@ CMouseEventResult CSliderBase::onMouseMoved (CPoint& where, const CButtonState& 
 }
 
 //------------------------------------------------------------------------
-bool CSliderBase::onWheel (const CPoint& where, const float& distance, const CButtonState& buttons)
+bool CSliderBase::onWheel (const CPoint& where, const CMouseWheelAxis& axis, const float& distance,
+                           const CButtonState& buttons)
 {
 	if (!getMouseEnabled ())
+		return false;
+
+	if ((isStyleHorizontal () && axis == kMouseWheelAxisY) ||
+	    (!isStyleHorizontal () && axis == kMouseWheelAxisX))
 		return false;
 
 	onMouseWheelEditing (this);
