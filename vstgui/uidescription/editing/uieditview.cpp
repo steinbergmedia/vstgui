@@ -1250,7 +1250,7 @@ void UIEditView::onDoubleClickEditing (CView* view)
 
 	auto r = selection->getGlobalViewCoordinates (view);
 	r.offsetInverse (getViewSize ().getTopLeft ());
-	translateToLocal (r);
+	translateToLocal (r, true);
 	auto textEdit = new CTextEdit (r, nullptr, 0);
 	textEdit->setText (attrValue.data ());
 	addView (textEdit);
