@@ -62,7 +62,7 @@ Win32TextEdit::Win32TextEdit (HWND parent, IPlatformTextEditCallback* textEdit)
 	CColor backColor = textEdit->platformGetBackColor ();
 	DWORD wxStyle = WS_EX_LAYERED;
 	wxStyle = WS_EX_COMPOSITED;
-	wstyle |= WS_CHILD | WS_VISIBLE | ES_AUTOHSCROLL;
+	wstyle |= WS_CHILD | WS_VISIBLE | ES_AUTOHSCROLL | WS_CLIPSIBLINGS | WS_CLIPCHILDREN;
 	if (textEdit->platformIsSecureTextEdit ())
 		wstyle |= ES_PASSWORD;
 	platformControl = CreateEditControl (wxStyle, stringHelper.getWideString (), wstyle, rect, parent);

@@ -185,7 +185,7 @@ bool Window::init (const WindowConfiguration& config, IWindowDelegate& inDelegat
 	else
 	{
 		exStyle = WS_EX_APPWINDOW;
-		dwStyle = 0;
+		dwStyle = WS_CLIPSIBLINGS;
 		if (style.hasBorder ())
 		{
 			if (style.canSize ())
