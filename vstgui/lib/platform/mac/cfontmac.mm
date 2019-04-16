@@ -66,6 +66,7 @@ private:
 		                                             fontType, CFSTR ("Fonts")))
 		{
 			CFArrayAppendArray (array, a, CFRangeMake (0, CFArrayGetCount (a)));
+			CFRelease (a);
 		}
 	}
 
