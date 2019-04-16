@@ -312,6 +312,8 @@ void* hInstance = nullptr; // for VSTGUI
 int APIENTRY wWinMain (_In_ HINSTANCE instance, _In_opt_ HINSTANCE prevInstance,
                        _In_ LPWSTR lpCmdLine, _In_ int nCmdShow)
 {
+	HeapSetInformation (NULL, HeapEnableTerminationOnCorruption, NULL, 0);
+
 	HRESULT hr = OleInitialize (nullptr);
 	if (FAILED (hr))
 		return FALSE;
