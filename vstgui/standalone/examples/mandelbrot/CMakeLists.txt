@@ -26,7 +26,8 @@ if(CMAKE_HOST_APPLE)
 endif()
 
 ##########################################################################################
-vstgui_add_executable(${target} "${${target}_sources}" "${mandelbrot_resources}")
+vstgui_add_executable(${target} "${${target}_sources}")
+vstgui_add_resources(${target} "${mandelbrot_resources}")
 vstgui_set_target_infoplist(${target} "resource/Info.plist")
 vstgui_set_target_rcfile(${target} "resource/mandelbrot.rc")
 vstgui_set_cxx_version(${target} 14)

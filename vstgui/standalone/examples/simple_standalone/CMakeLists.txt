@@ -12,7 +12,8 @@ set(simple_standalone_resources
 )
 
 ##########################################################################################
-vstgui_add_executable(${target} "${${target}_sources}" "${simple_standalone_resources}")
+vstgui_add_executable(${target} "${${target}_sources}" )
+vstgui_add_resources(${target} "${simple_standalone_resources}")
 vstgui_set_target_infoplist(${target} "resource/Info.plist")
 vstgui_set_target_rcfile(${target} "resource/simple_standalone.rc")
 vstgui_set_cxx_version(${target} 14)
