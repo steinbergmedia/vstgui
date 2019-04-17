@@ -352,7 +352,7 @@ public:
 				appendContextMenuItems (*menu, zoomValueControl, CPoint ());
 				menu->popup (zoomValueControl->getFrame (),
 				             zoomValueControl->translateToGlobal (
-				                 zoomValueControl->getViewSize ().getTopLeft ()));
+				                 zoomValueControl->getViewSize ().getTopLeft (), true));
 			}, 250);
 		}
 		return kMouseEventNotHandled;
