@@ -28,8 +28,8 @@ public:
 	using reference = char32_t&;
 
 	using CodePoint = value_type;
-	
-	UTF8CodePointIterator () noexcept = default;
+
+	UTF8CodePointIterator () = default;
 	UTF8CodePointIterator (const UTF8CodePointIterator& o) noexcept : it (o.it) {}
 	explicit UTF8CodePointIterator (const BaseIterator& iterator) noexcept : it (iterator) {}
 	

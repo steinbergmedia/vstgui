@@ -283,7 +283,6 @@ void D2DFont::drawString (CDrawContext* context, IPlatformString* string, const 
 				if (context->getDrawMode ().integralMode ())
 					pos.makeIntegral ();
 				pos.y += 0.5;
-				CRect clipRect;
 				
 				D2D1_POINT_2F origin = {(FLOAT)(p.x), (FLOAT)(pos.y)};
 				d2dContext->getRenderTarget ()->DrawTextLayout (origin, textLayout, d2dContext->getFontBrush ());
