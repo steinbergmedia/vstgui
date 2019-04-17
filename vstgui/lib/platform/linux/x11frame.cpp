@@ -778,6 +778,9 @@ Frame::CreateIResourceInputStreamFunc Frame::createResourceInputStreamFunc =
 };
 
 //------------------------------------------------------------------------
+UTF8String Frame::resourcePath = Platform::getInstance ().getPath () + "/Contents/Resources/";
+
+//------------------------------------------------------------------------
 } // X11
 
 //------------------------------------------------------------------------

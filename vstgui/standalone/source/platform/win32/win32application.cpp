@@ -9,6 +9,7 @@
 
 #include "../../../../lib/platform/win32/win32dll.h"
 #include "../../../../lib/platform/win32/win32support.h"
+#include "../../../../lib/platform/platform_win32.h"
 #include "../../../include/iappdelegate.h"
 #include "../../../include/iapplication.h"
 #include "../../application.h"
@@ -50,6 +51,16 @@ static IWin32Window* toWin32Window (const VSTGUI::Standalone::WindowPtr& window)
 }
 
 //------------------------------------------------------------------------
+static Optional<std::string> ascendPath (std::string& path, char delimiter = '\\')
+{
+	auto index = path.find_last_of (delimiter);
+	if (index == std::string::npos)
+		return {};
+	path.erase (index);
+	return Optional<std::string> (std::move (path));
+}
+
+//------------------------------------------------------------------------
 class Application
 {
 public:
@@ -79,6 +90,18 @@ void Application::init (HINSTANCE instance, LPWSTR commandLine)
 	if (!hidpiSupport.setProcessDpiAwarnessContext (
 	        HiDPISupport::AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2))
 		hidpiSupport.setProcessDpiAwareness (HiDPISupport::PROCESS_PER_MONITOR_DPI_AWARE);
+
+	WCHAR path[MAX_PATH];
+	if (SUCCEEDED (GetModuleFileNameW (static_cast<HMODULE> (instance), path, MAX_PATH)))
+	{
+		UTF8StringHelper helper (path);
+		auto utf8Path = std::string (helper.getUTF8String ());
+		if (auto p = ascendPath (utf8Path))
+		{
+			*p += "\\Resources";
+			IWin32PlatformFrame::setResourceBasePath (UTF8String (*p));
+		}
+	}
 
 	IApplication::CommandLineArguments cmdArgs;
 	int numArgs = 0;
@@ -289,6 +312,8 @@ void* hInstance = nullptr; // for VSTGUI
 int APIENTRY wWinMain (_In_ HINSTANCE instance, _In_opt_ HINSTANCE prevInstance,
                        _In_ LPWSTR lpCmdLine, _In_ int nCmdShow)
 {
+	HeapSetInformation (NULL, HeapEnableTerminationOnCorruption, NULL, 0);
+
 	HRESULT hr = OleInitialize (nullptr);
 	if (FAILED (hr))
 		return FALSE;

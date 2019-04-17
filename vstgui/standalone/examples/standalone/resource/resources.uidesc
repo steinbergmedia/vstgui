@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <vstgui-ui-description version="1">
 	<fonts>
-		<font alternative-font-names="Segoe UI, Avenir" font-name="Segoe UI" name="New" size="18"/>
+		<font font-name="EffectsEighty" name="EffectsEighty" size="32"/>
 	</fonts>
 	<colors>
 		<color name="Black Alpha 140" rgba="#0000008c"/>
