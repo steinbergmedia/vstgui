@@ -34,6 +34,8 @@ public:
 
 	static CreateIResourceInputStreamFunc createResourceInputStreamFunc;
 
+	static UTF8String resourcePath;
+
 private:
 	bool getGlobalPosition (CPoint& pos) const override;
 	bool setSize (const CRect& newSize) override;
