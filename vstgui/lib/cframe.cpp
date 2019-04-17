@@ -1895,8 +1895,14 @@ void CFrame::CollectInvalidRects::addRect (const CRect& rect)
 	numAddedRects++;
 #endif
 	bool add = true;
-	for (InvalidRects::iterator it = invalidRects.begin (), end = invalidRects.end (); it != end; ++it)
+	for (auto it = invalidRects.begin (), end = invalidRects.end (); it != end; ++it)
 	{
+		if (it->rectInside (rect))
+		{
+			add = false;
+			break;
+		}
+		
 		CRect r (rect);
 		if (r.bound (*it) == rect)
 		{

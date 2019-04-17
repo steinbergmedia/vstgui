@@ -60,6 +60,8 @@ struct CRect
 	inline constexpr bool pointInside (const CPoint& where) const;
 	inline constexpr bool isEmpty () const;
 	inline constexpr bool rectOverlap (const CRect& rect) const;
+	/** Checks if rect is inside this rect */
+	inline constexpr bool rectInside (const CRect& rect) const;
 	inline CRect& bound (const CRect& rect);
 	inline CRect& unite (const CRect& rect);
 	inline CRect& normalize ();
@@ -275,6 +277,12 @@ inline CRect& CRect::makeIntegral ()
 inline constexpr bool CRect::pointInside (const CPoint& where) const
 {
 	return where.x >= left && where.x < right && where.y >= top && where.y < bottom;
+}
+
+//-----------------------------------------------------------------------------
+inline constexpr bool CRect::rectInside (const CRect& rect) const
+{
+	return rect.left >= left && rect.right <= right && rect.top >= top && rect.bottom <= bottom;
 }
 
 //-----------------------------------------------------------------------------
