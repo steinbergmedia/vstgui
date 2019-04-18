@@ -995,16 +995,19 @@ CMouseEventResult CViewContainer::onMouseDown (CPoint &where, const CButtonState
 				}
 			}
 
-			if (pV->wantsFocus ())
-				getFrame ()->setFocusView (pV);
-
 			auto result = pV->callMouseListener (MouseListenerCall::MouseDown, where2, buttons);
 			if (result == kMouseEventNotHandled || result == kMouseEventNotImplemented)
 				result = pV->onMouseDown (where2, buttons);
 			if (result != kMouseEventNotHandled && result != kMouseEventNotImplemented)
 			{
-				if (pV->getNbReference () > 1 && result == kMouseEventHandled)
-					setMouseDownView (pV);
+				if (pV->getNbReference () >1)
+				{
+					if (pV->wantsFocus ())
+						getFrame ()->setFocusView (pV);
+
+					if (result == kMouseEventHandled)
+						setMouseDownView (pV);
+				}
 				return result;
 			}
 			if (!pV->getTransparency ())
