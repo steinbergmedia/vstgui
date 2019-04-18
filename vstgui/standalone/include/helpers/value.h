@@ -118,6 +118,28 @@ ValuePtr makeStaticStringValue (const UTF8String& id, const UTF8String& value);
  */
 ValuePtr makeStaticStringValue (const UTF8String& id, UTF8String&& value);
 
+//------------------------------------------------------------------------
+/** make a string value
+ *
+ *	a string value has always the same numerical but different string representations
+ *
+ *	@param id value ID
+ *	@param value initial string
+ *	@return shared value pointer
+ */
+ValuePtr makeStringValue (const UTF8String& id, const UTF8String& initialString);
+
+//------------------------------------------------------------------------
+/** make a string value
+ *
+ *	a string value has always the same numerical but different string representations
+ *
+ *	@param id value ID
+ *	@param value initial string
+ *	@return shared value pointer
+ */
+ValuePtr makeStringValue (const UTF8String& id, UTF8String&& initialString);
+
 /** @} */
 /** @name %Create value converters
  *	@{ */

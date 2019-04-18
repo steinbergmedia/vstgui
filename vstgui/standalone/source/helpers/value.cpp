@@ -209,7 +209,6 @@ public:
 	bool isEditing () const override { return false; }
 	
 	const IValueConverter& getConverter () const override { return *this; }
-	
 
 	UTF8String valueAsString (IValue::Type) const override { return value; }
 	IValue::Type stringAsValue (const UTF8String&) const override { return 0.; }
@@ -247,6 +246,35 @@ private:
 	bool active {true};
 	uint32_t editCount {0};
 	ValueConverterPtr valueConverter;
+};
+
+//------------------------------------------------------------------------
+class StringValue : public Value, public IValueConverter
+{
+public:
+	StringValue (const UTF8String& id, const UTF8String& value)
+	: Value (id, 0, nullptr), str (value)
+	{
+	}
+
+	StringValue (const UTF8String& id, UTF8String&& value)
+	: Value (id, 0, nullptr), str (std::move (value))
+	{
+	}
+
+	const IValueConverter& getConverter () const override { return *this; }
+
+	UTF8String valueAsString (IValue::Type) const override { return str; }
+	IValue::Type stringAsValue (const UTF8String& s) const override
+	{
+		if (isEditing ())
+			str = s;
+		return 0.;
+	}
+	IValue::Type plainToNormalized (IValue::Type) const override { return 0.; }
+	IValue::Type normalizedToPlain (IValue::Type) const override { return 0.; }
+private:
+	mutable UTF8String str;
 };
 
 //------------------------------------------------------------------------
@@ -531,6 +559,18 @@ ValuePtr makeStaticStringValue (const UTF8String& id, const UTF8String& value)
 ValuePtr makeStaticStringValue (const UTF8String& id, UTF8String&& value)
 {
 	return std::make_shared<Detail::StaticStringValue> (id, std::move (value));
+}
+
+//------------------------------------------------------------------------
+ValuePtr makeStringValue (const UTF8String& id, const UTF8String& initialString)
+{
+	return std::make_shared<Detail::StringValue> (id, initialString);
+}
+
+//------------------------------------------------------------------------
+ValuePtr makeStringValue (const UTF8String& id, UTF8String&& initialString)
+{
+	return std::make_shared<Detail::StringValue> (id, std::move (initialString));
 }
 
 //------------------------------------------------------------------------

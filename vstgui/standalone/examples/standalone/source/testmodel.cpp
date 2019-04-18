@@ -27,6 +27,7 @@ TestModel::TestModel ()
 	addValue (Value::make ("ShowAlert3"));
 	addValue (Value::makeStringListValue ("StringList", {"one","two","three","four","five"}));
 	addValue (Value::make ("ShowPopup"));
+	addValue (Value::makeStringValue ("MutableString", "This is a string value"));
 }
 
 //------------------------------------------------------------------------
