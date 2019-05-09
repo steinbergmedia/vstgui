@@ -995,6 +995,7 @@ CMouseEventResult CViewContainer::onMouseDown (CPoint &where, const CButtonState
 				}
 			}
 
+			auto previousFocusView = getFrame ()->getFocusView ();
 			auto result = pV->callMouseListener (MouseListenerCall::MouseDown, where2, buttons);
 			if (result == kMouseEventNotHandled || result == kMouseEventNotImplemented)
 				result = pV->onMouseDown (where2, buttons);
@@ -1002,7 +1003,7 @@ CMouseEventResult CViewContainer::onMouseDown (CPoint &where, const CButtonState
 			{
 				if (pV->getNbReference () >1)
 				{
-					if (pV->wantsFocus ())
+					if (pV->wantsFocus () && getFrame ()->getFocusView () == previousFocusView)
 						getFrame ()->setFocusView (pV);
 
 					if (result == kMouseEventHandled)
