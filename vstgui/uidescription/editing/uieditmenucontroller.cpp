@@ -604,7 +604,7 @@ int32_t UIEditMenuController::processKeyCommand (const VstKeyCode& key)
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIEditMenuController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
+CView* UIEditMenuController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription*)
 {
 	COptionMenu* menu = dynamic_cast<COptionMenu*>(view);
 	if (menu)

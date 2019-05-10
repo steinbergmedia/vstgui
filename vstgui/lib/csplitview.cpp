@@ -141,7 +141,7 @@ void CSplitView::resizeFirstView (CPoint diff)
 	}
 	for (auto& seperatorView : separators)
 	{
-		CRect r (seperatorView->getViewSize ());
+		r = seperatorView->getViewSize ();
 		requestNewSeparatorSize (seperatorView, r);
 	}
 }
@@ -197,7 +197,7 @@ void CSplitView::resizeSecondView (CPoint diff)
 	}
 	for (auto& seperatorView : separators)
 	{
-		CRect r (seperatorView->getViewSize ());
+		r = seperatorView->getViewSize ();
 		requestNewSeparatorSize (seperatorView, r);
 	}
 }
@@ -239,7 +239,7 @@ void CSplitView::resizeLastView (CPoint diff)
 	}
 	for (auto& seperatorView : separators)
 	{
-		CRect r (seperatorView->getViewSize ());
+		r = seperatorView->getViewSize ();
 		requestNewSeparatorSize (seperatorView, r);
 	}
 }
@@ -314,7 +314,7 @@ void CSplitView::resizeViewsEqual (CPoint diff)
 	}
 	for (auto& seperatorView : separators)
 	{
-		CRect r (seperatorView->getViewSize ());
+		r = seperatorView->getViewSize ();
 		requestNewSeparatorSize (seperatorView, r);
 	}
 }

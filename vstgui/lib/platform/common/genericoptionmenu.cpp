@@ -286,9 +286,9 @@ private:
 		closeSubMenu ();
 		if (auto subMenu = item->getSubmenu ())
 		{
-			auto callback = [this] (COptionMenu* menu, int32_t index) {
+			auto callback = [this] (COptionMenu* m, int32_t index) {
 				if (index != ViewRemoved)
-					clickCallback (menu, index);
+					clickCallback (m, index);
 			};
 			db->translateToGlobal (cellRect, true);
 			subMenuView =

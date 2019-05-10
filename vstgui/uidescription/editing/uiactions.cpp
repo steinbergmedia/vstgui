@@ -511,10 +511,10 @@ void TransformViewTypeOperation::exchangeSubViews (CViewContainer* src, CViewCon
 				exchangeSubViews (container, dst);
 			}
 		});
-		for (auto& view : temp)
+		for (auto& viewToMove : temp)
 		{
-			src->removeView (view, false);
-			dst->addView (view);
+			src->removeView (viewToMove, false);
+			dst->addView (viewToMove);
 		}
 	}
 }

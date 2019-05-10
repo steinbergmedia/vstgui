@@ -95,10 +95,10 @@ private:
 	void draw (CDrawContext* pContext) override;
 	void drawResizeHandle (const CPoint& p, CDrawContext* pContext);
 
-	void selectionWillChange (UISelection* selection) override { onSelectionChanged (); }
-	void selectionDidChange (UISelection* selection) override { onSelectionChanged (); }
-	void selectionViewsWillChange (UISelection* selection) override { onSelectionChanged (); }
-	void selectionViewsDidChange (UISelection* selection) override { onSelectionChanged (); }
+	void selectionWillChange (UISelection*) override { onSelectionChanged (); }
+	void selectionDidChange (UISelection*) override { onSelectionChanged (); }
+	void selectionViewsWillChange (UISelection*) override { onSelectionChanged (); }
+	void selectionViewsDidChange (UISelection*) override { onSelectionChanged (); }
 
 	void onSelectionChanged ();
 
@@ -386,9 +386,9 @@ UISelection* UIEditView::getSelection ()
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIEditView::setGrid (UIGrid* grid)
+void UIEditView::setGrid (UIGrid* inGrid)
 {
-	this->grid = grid;
+	grid = inGrid;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -1321,12 +1321,12 @@ bool UIEditView::removed (CView* parent)
 }
 
 //-----------------------------------------------------------------------------
-void UIEditView::setupColors (const IUIDescription* description)
+void UIEditView::setupColors (const IUIDescription* desc)
 {
-	description->getColor ("editView.crosslines.background", crosslineBackgroundColor);
-	description->getColor ("editView.crosslines.foreground", crosslineForegroundColor);
-	description->getColor ("editView.view.highlight", viewHighlightColor);
-	description->getColor ("editView.view.selection", viewSelectionColor);
+	desc->getColor ("editView.crosslines.background", crosslineBackgroundColor);
+	desc->getColor ("editView.crosslines.foreground", crosslineForegroundColor);
+	desc->getColor ("editView.view.highlight", viewHighlightColor);
+	desc->getColor ("editView.view.selection", viewSelectionColor);
 }
 
 } // VSTGUI

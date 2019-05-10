@@ -361,12 +361,13 @@ void CParamDisplay::drawPlatformText (CDrawContext* pContext, IPlatformString* s
 }
 
 //------------------------------------------------------------------------
-void CParamDisplay::setFont (CFontRef fontID)
+void CParamDisplay::setFont (CFontRef inFontID)
 {
-	if (this->fontID)
-		this->fontID->forget ();
-	this->fontID = fontID;
-	fontID->remember ();
+	if (fontID)
+		fontID->forget ();
+	fontID = inFontID;
+	if (fontID)
+		fontID->remember ();
 	drawStyleChanged ();
 }
 

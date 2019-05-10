@@ -55,11 +55,11 @@ void CRowColumnView::setMargin (const CRect& newMargin)
 }
 
 //--------------------------------------------------------------------------------
-void CRowColumnView::setLayoutStyle (LayoutStyle style)
+void CRowColumnView::setLayoutStyle (LayoutStyle inLayoutStyle)
 {
-	if (style != layoutStyle)
+	if (inLayoutStyle != layoutStyle)
 	{
-		layoutStyle = style;
+		layoutStyle = inLayoutStyle;
 		if (isAttached ())
 			layoutViews ();
 	}

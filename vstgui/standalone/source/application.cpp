@@ -186,10 +186,10 @@ const ICommonDirectories& Application::getCommonDirectories () const
 }
 
 //------------------------------------------------------------------------
-WindowPtr Application::createWindow (const WindowConfiguration& config,
+WindowPtr Application::createWindow (const WindowConfiguration& inConfig,
                                      const WindowControllerPtr& controller)
 {
-	auto window = makeWindow (config, controller);
+	auto window = makeWindow (inConfig, controller);
 	if (window)
 	{
 		windows.emplace_back (window);
@@ -199,19 +199,19 @@ WindowPtr Application::createWindow (const WindowConfiguration& config,
 }
 
 //------------------------------------------------------------------------
-AlertResult Application::showAlertBox (const AlertBoxConfig& config)
+AlertResult Application::showAlertBox (const AlertBoxConfig& inConfig)
 {
 	if (platform.showAlert)
-		return platform.showAlert (config);
+		return platform.showAlert (inConfig);
 	return AlertResult::Error;
 }
 
 //------------------------------------------------------------------------
-void Application::showAlertBoxForWindow (const AlertBoxForWindowConfig& config)
+void Application::showAlertBoxForWindow (const AlertBoxForWindowConfig& inConfig)
 {
-	vstgui_assert (config.window);
+	vstgui_assert (inConfig.window);
 	if (platform.showAlertForWindow)
-		platform.showAlertForWindow (config);
+		platform.showAlertForWindow (inConfig);
 }
 
 //------------------------------------------------------------------------
@@ -440,9 +440,9 @@ void Application::onActivated (const IWindow& window)
 	});
 	if (it != windows.begin ())
 	{
-		auto window = *it;
+		auto windowPtr = *it;
 		windows.erase (it);
-		windows.insert (windows.begin (), window);
+		windows.insert (windows.begin (), windowPtr);
 	}
 }
 

@@ -51,11 +51,11 @@ public:
 					CView* focusView = dynamic_cast<CView*> (browser->getFrame()->getFocusView ());
 					if (focusView)
 					{
-						CViewContainer* parent = focusView->getParentView ()->asViewContainer ();
-						while (parent != browser->getFrame ())
+						CViewContainer* parent2 = focusView->getParentView ()->asViewContainer ();
+						while (parent2 != browser->getFrame ())
 						{
-							parent = parent->getParentView ()->asViewContainer ();
-							CDataBrowser* focusBrowser = dynamic_cast<CDataBrowser*>(parent);
+							parent2 = parent2->getParentView ()->asViewContainer ();
+							CDataBrowser* focusBrowser = dynamic_cast<CDataBrowser*>(parent2);
 							if (focusBrowser)
 							{
 								if (focusBrowser->getSelectedRow() == CDataBrowser::kNoSelection)
@@ -367,8 +367,8 @@ CView* UITemplateController::createView (const UIAttributes& attributes, const I
 			std::list<const std::string*> tmp;
 			editDescription->collectTemplateViewNames (tmp);
 			tmp.sort (UIEditController::std__stringCompare);
-			for (auto& name : tmp)
-				templateNames.emplace_back (*name);
+			for (auto& name2 : tmp)
+				templateNames.emplace_back (*name2);
 			
 			auto attr = editDescription->getCustomAttributes ("UITemplateController", true);
 			const std::string* templateName = attr ? attr->getAttributeValue ("SelectedTemplate") : nullptr;
@@ -495,12 +495,12 @@ bool UIViewListDataSource::update (CViewContainer* vc)
 }
 
 //----------------------------------------------------------------------------------------------------
-CCoord UIViewListDataSource::calculateSubViewWidth (CViewContainer* view) const
+CCoord UIViewListDataSource::calculateSubViewWidth (CViewContainer* inView) const
 {
 	CCoord result = 0;
 	
-	view->forEachChild ([&result] (CView* view) {
-		result += view->getViewSize ().getWidth ();
+	inView->forEachChild ([&result] (CView* subView) {
+		result += subView->getViewSize ().getWidth ();
 	});
 	return result;
 }

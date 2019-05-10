@@ -182,10 +182,10 @@ void UIColorsDataSource::dbDrawCell (CDrawContext* context, const CRect& size, i
 	CRect r (size);
 	r.right -= getColorIconWith ();
 	GenericStringListDataBrowserSource::drawRowString (context, r, row, flags, browser);
-	CColor color;
-	if (description->getColor (names.at (static_cast<uint32_t> (row)).data (), color))
+	CColor cellColor;
+	if (description->getColor (names.at (static_cast<uint32_t> (row)).data (), cellColor))
 	{
-		context->setFillColor (color);
+		context->setFillColor (cellColor);
 		context->setFrameColor (dragRow == row ? kRedCColor : kBlackCColor);
 		context->setLineWidth (context->getHairlineSize ());
 		context->setLineStyle (kLineSolid);
@@ -227,10 +227,10 @@ CMouseEventResult UIColorsDataSource::dbOnMouseMoved (const CPoint& where,
 	{
 		if (buttons.isLeftButton ())
 		{
-			CColor color;
-			if (description->getColor (names.at (static_cast<uint32_t> (row)).data (), color))
+			CColor cellColor;
+			if (description->getColor (names.at (static_cast<uint32_t> (row)).data (), cellColor))
 			{
-				auto colorStr = color.toString ();
+				auto colorStr = cellColor.toString ();
 				auto dropSource = CDropSource::create (
 				    colorStr.data (), static_cast<uint32_t> (colorStr.length () + 1),
 				    CDropSource::kText);
@@ -238,7 +238,7 @@ CMouseEventResult UIColorsDataSource::dbOnMouseMoved (const CPoint& where,
 				if (auto offscreen = COffscreenContext::create (browser->getFrame (), r.getWidth (), r.getHeight ()))
 				{
 					offscreen->beginDraw ();
-					offscreen->setFillColor (color);
+					offscreen->setFillColor (cellColor);
 					offscreen->drawRect (CRect (0, 0, r.getWidth(), r.getHeight()), kDrawFilled);
 					offscreen->endDraw();
 					dragBitmap = offscreen->getBitmap ();
@@ -296,9 +296,9 @@ DragOperation UIColorsDataSource::dbOnDragEnterCell (int32_t row, int32_t column
 {
 	if (dragColor && row >= 0)
 	{
-		CColor color;
-		if (description->getColor (names.at (static_cast<uint32_t> (row)).data (), color) &&
-		    color != *dragColor)
+		CColor cellColor;
+		if (description->getColor (names.at (static_cast<uint32_t> (row)).data (), cellColor) &&
+		    cellColor != *dragColor)
 		{
 			dragRow = row;
 			browser->invalidateRow (dragRow);
@@ -334,10 +334,10 @@ bool UIColorsDataSource::dbOnDropInCell (int32_t row, int32_t column, const CPoi
 	{
 		if (row >= 0)
 		{
-			CColor color;
-			if (description->getColor (names.at (static_cast<uint32_t> (row)).data (), color))
+			CColor cellColor;
+			if (description->getColor (names.at (static_cast<uint32_t> (row)).data (), cellColor))
 			{
-				if (color != *dragColor)
+				if (cellColor != *dragColor)
 				{
 					actionPerformer->performColorChange (names[static_cast<uint32_t> (row)].data (), *dragColor);
 					selectName (names[static_cast<uint32_t> (row)].data ());

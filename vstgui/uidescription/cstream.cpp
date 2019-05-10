@@ -4,6 +4,7 @@
 
 #include "cstream.h"
 #include "../lib/cresourcedescription.h"
+#include "../lib/malloc.h"
 #include "../lib/platform/iplatformresourceinputstream.h"
 #include <algorithm>
 #include <sstream>
@@ -130,11 +131,10 @@ bool CMemoryStream::operator>> (std::string& string)
 		{
 			uint32_t length;
 			if (!(*static_cast<InputStream*> (this) >> length)) return false;
-			int8_t* buffer = (int8_t*)std::malloc (length);
-			uint32_t read = readRaw (buffer, length);
+			Buffer<int8_t> buf (length);
+			uint32_t read = readRaw (buf.data (), length);
 			if (read == length)
-				string.assign ((const char*)buffer, length);
-			std::free (buffer);
+				string.assign ((const char*)buf.data (), length);
 			return read == length;
 		}
 	}

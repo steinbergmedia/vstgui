@@ -189,10 +189,10 @@ public:
 
 	bool onDrop (DragEventData data) override
 	{
-		CColor color;
-		if (dragContainerHasColor (data.drag, &color))
+		CColor dragColor;
+		if (dragContainerHasColor (data.drag, &dragColor))
 		{
-			setColor (color);
+			setColor (dragColor);
 			valueChanged ();
 			return true;
 		}

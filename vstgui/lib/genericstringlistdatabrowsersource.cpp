@@ -46,9 +46,9 @@ void GenericStringListDataBrowserSource::dbRemoved (CDataBrowser* browser)
 }
 
 //-----------------------------------------------------------------------------
-void GenericStringListDataBrowserSource::setStringList (const StringVector* stringList)
+void GenericStringListDataBrowserSource::setStringList (const StringVector* inStringList)
 {
-	this->stringList = stringList;
+	stringList = inStringList;
 	if (dataBrowser)
 		dataBrowser->recalculateLayout (true);
 }

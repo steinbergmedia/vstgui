@@ -101,32 +101,32 @@ void CScrollbar::calculateScrollerLength ()
 //-----------------------------------------------------------------------------
 CRect CScrollbar::getScrollerRect ()
 {
-	CRect scrollerRect (scrollerArea);
+	CRect sr (scrollerArea);
 	CCoord l = (direction == kHorizontal) ? scrollerArea.getWidth () : scrollerArea.getHeight ();
 	CCoord scrollerOffset = (CCoord) (value * (l - scrollerLength));
 	if (direction == kHorizontal)
 	{
-		scrollerRect.setWidth (scrollerLength);
-		scrollerRect.offset (scrollerOffset, 0);
+		sr.setWidth (scrollerLength);
+		sr.offset (scrollerOffset, 0);
 	}
 	else
 	{
-		scrollerRect.setHeight (scrollerLength);
-		scrollerRect.offset (0, scrollerOffset);
+		sr.setHeight (scrollerLength);
+		sr.offset (0, scrollerOffset);
 	}
-	return scrollerRect;
+	return sr;
 }
 
 //-----------------------------------------------------------------------------
 void CScrollbar::doStepping ()
 {
-	CRect scrollerRect = getScrollerRect ();
+	CRect sr = getScrollerRect ();
 	if (timer)
 	{
-		if (!getViewSize ().pointInside (startPoint) || scrollerRect.pointInside (startPoint))
+		if (!getViewSize ().pointInside (startPoint) || sr.pointInside (startPoint))
 			return;
 	}
-	bool dir = (direction == kHorizontal && startPoint.x < scrollerRect.left) || (direction == kVertical && startPoint.y < scrollerRect.top);
+	bool dir = (direction == kHorizontal && startPoint.x < sr.left) || (direction == kVertical && startPoint.y < sr.top);
 	float newValue;
 	if (direction == kHorizontal)
 	{
@@ -393,8 +393,8 @@ void CScrollbar::draw (CDrawContext* pContext)
 	drawBackground (pContext);
 	if (scrollerLength > 0)
 	{
-		CRect scrollerRect = getScrollerRect ();
-		drawScroller (pContext, scrollerRect);
+		CRect sr = getScrollerRect ();
+		drawScroller (pContext, sr);
 	}
 	setDirty (false);
 }

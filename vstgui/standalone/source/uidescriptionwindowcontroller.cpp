@@ -91,7 +91,7 @@ public:
 
 	const UTF8String& getID () const { return value->getID (); }
 
-	void onBeginEdit (IValue& value) override
+	void onBeginEdit (IValue&) override
 	{
 		for (auto& c : controls)
 		{
@@ -100,7 +100,7 @@ public:
 		}
 	}
 
-	void onEndEdit (IValue& value) override
+	void onEndEdit (IValue&) override
 	{
 		for (auto& c : controls)
 		{
@@ -109,7 +109,7 @@ public:
 		}
 	}
 
-	void onPerformEdit (IValue& value, IValue::Type newValue) override
+	void onPerformEdit (IValue&, IValue::Type newValue) override
 	{
 		auto newControlValue = static_cast<float> (newValue);
 		for (auto& c : controls)
@@ -153,7 +153,7 @@ public:
 		}
 	}
 
-	void onStateChange (IValue& value) override
+	void onStateChange (IValue&) override
 	{
 		for (auto& c : controls)
 		{
@@ -179,8 +179,8 @@ public:
 		if (auto paramDisplay = dynamic_cast<CParamDisplay*> (control))
 		{
 			paramDisplay->setValueToStringFunction2 (
-			    [this] (float value, std::string& utf8String, CParamDisplay* display) {
-				    utf8String = this->value->getConverter ().valueAsString (value);
+			    [this] (float val, std::string& utf8String, CParamDisplay* display) {
+				    utf8String = this->value->getConverter ().valueAsString (val);
 				    return true;
 			    });
 			if (auto textEdit = dynamic_cast<CTextEdit*> (paramDisplay))
@@ -266,14 +266,14 @@ struct WindowController::Impl : public IController, public ICommandHandler
 		}
 	}
 
-	virtual bool init (WindowPtr& inWindow, const char* fileName, const char* templateName)
+	virtual bool init (WindowPtr& inWindow, const char* inFileName, const char* inTemplateName)
 	{
 		window = inWindow.get ();
-		if (!initUIDesc (fileName))
+		if (!initUIDesc (inFileName))
 			return false;
 		frame = makeOwned<CFrame> (CRect (), nullptr);
 		frame->setTransparency (true);
-		this->templateName = templateName;
+		templateName = inTemplateName;
 
 		showView ();
 
@@ -281,10 +281,11 @@ struct WindowController::Impl : public IController, public ICommandHandler
 		return true;
 	}
 
-	bool initStatic (WindowPtr& inWindow, UTF8String xml, const char* templateName)
+	bool initStatic (WindowPtr& inWindow, UTF8String inXml, const char* inTemplateName)
 	{
 		window = inWindow.get ();
-		Xml::MemoryContentProvider xmlContentProvider (xml, static_cast<uint32_t> (xml.length ()));
+		Xml::MemoryContentProvider xmlContentProvider (inXml,
+		                                               static_cast<uint32_t> (inXml.length ()));
 		uiDesc = makeOwned<UIDescription> (&xmlContentProvider);
 		if (!uiDesc->parse ())
 			return false;
@@ -293,7 +294,7 @@ struct WindowController::Impl : public IController, public ICommandHandler
 
 		frame = makeOwned<CFrame> (CRect (), nullptr);
 		frame->setTransparency (true);
-		this->templateName = templateName;
+		templateName = inTemplateName;
 
 		showView ();
 

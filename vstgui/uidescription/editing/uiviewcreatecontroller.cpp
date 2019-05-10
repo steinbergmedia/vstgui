@@ -72,14 +72,14 @@ CView* UIViewCreatorController::createView (const UIAttributes& attributes, cons
 }
 
 //----------------------------------------------------------------------------------------------------
-CView* UIViewCreatorController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description)
+CView* UIViewCreatorController::verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* desc)
 {
 	auto searchField = dynamic_cast<CSearchTextEdit*>(view);
 	if (searchField && searchField->getTag () == kSearchFieldTag)
 	{
 		dataSource->setSearchFieldControl (searchField);
 	}
-	return DelegationController::verifyView (view, attributes, description);
+	return DelegationController::verifyView (view, attributes, desc);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -204,8 +204,8 @@ CMouseEventResult UIViewCreatorDataSource::dbOnMouseMoved (const CPoint& where, 
 {
 	if (buttons.isLeftButton () && row != -1 && column != -1)
 	{
-		auto row = dataBrowser->getSelection().front ();
-		SharedPointer<UISelection> selection = createSelection (row);
+		auto selRow = dataBrowser->getSelection().front ();
+		SharedPointer<UISelection> selection = createSelection (selRow);
 		CMemoryStream stream (1024, 1024, false);
 		if (selection->store (stream, description))
 		{

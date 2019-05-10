@@ -475,7 +475,7 @@ bool UIDescWriter::writeNodeData (UINode::DataStorage& str, OutputStream& stream
 		{
 			stream << "\n";
 			i = 0;
-			for (int32_t i = 0; i < intendLevel; i++) stream << "\t";
+			for (int32_t i2 = 0; i2 < intendLevel; i2++) stream << "\t";
 		}
 	}
 	stream << "\n";
@@ -1136,9 +1136,9 @@ bool UIDescription::storeViews (const std::list<CView*>& views, OutputStream& st
 				auto attr = makeOwned<UIAttributes> ();
 				if (factory->getAttributesForView (view, const_cast<UIDescription*> (this), *attr) == false)
 					return false;
-				UINode* node = new UINode ("view", attr);
-				nodeList->add (node);
-				node->forget ();
+				UINode* newNode = new UINode ("view", attr);
+				nodeList->add (newNode);
+				newNode->forget ();
 			}
 		#endif
 		}
@@ -1506,37 +1506,37 @@ CBitmap* UIDescription::getBitmap (UTF8StringPtr name) const
 					{
 						if (propertyNode->getName () != "property")
 							continue;
-						const std::string* name = propertyNode->getAttributes ()->getAttributeValue ("name");
-						if (name == nullptr)
+						const std::string* propName = propertyNode->getAttributes ()->getAttributeValue ("name");
+						if (propName == nullptr)
 							continue;
-						switch (filter->getProperty (name->c_str ()).getType ())
+						switch (filter->getProperty (propName->c_str ()).getType ())
 						{
 							case BitmapFilter::Property::kInteger:
 							{
 								int32_t intValue;
 								if (propertyNode->getAttributes ()->getIntegerAttribute ("value", intValue))
-									filter->setProperty (name->c_str (), intValue);
+									filter->setProperty (propName->c_str (), intValue);
 								break;
 							}
 							case BitmapFilter::Property::kFloat:
 							{
 								double floatValue;
 								if (propertyNode->getAttributes ()->getDoubleAttribute ("value", floatValue))
-									filter->setProperty (name->c_str (), floatValue);
+									filter->setProperty (propName->c_str (), floatValue);
 								break;
 							}
 							case BitmapFilter::Property::kPoint:
 							{
 								CPoint pointValue;
 								if (propertyNode->getAttributes ()->getPointAttribute ("value", pointValue))
-									filter->setProperty (name->c_str (), pointValue);
+									filter->setProperty (propName->c_str (), pointValue);
 								break;
 							}
 							case BitmapFilter::Property::kRect:
 							{
 								CRect rectValue;
 								if (propertyNode->getAttributes ()->getRectAttribute ("value", rectValue))
-									filter->setProperty (name->c_str (), rectValue);
+									filter->setProperty (propName->c_str (), rectValue);
 								break;
 							}
 							case BitmapFilter::Property::kColor:
@@ -1546,7 +1546,7 @@ CBitmap* UIDescription::getBitmap (UTF8StringPtr name) const
 								{
 									CColor color;
 									if (getColor (colorString->c_str (), color))
-										filter->setProperty(name->c_str (), color);
+										filter->setProperty(propName->c_str (), color);
 								}
 								break;
 							}
@@ -1791,8 +1791,8 @@ void UIDescription::changeColor (UTF8StringPtr name, const CColor& newColor)
 			std::string colorStr;
 			UIViewCreator::colorToString (newColor, colorStr, nullptr);
 			attr->setAttribute ("rgba", colorStr);
-			UIColorNode* node = new UIColorNode ("color", attr);
-			colorsNode->getChildren ().add (node);
+			UIColorNode* newNode = new UIColorNode ("color", attr);
+			colorsNode->getChildren ().add (newNode);
 			colorsNode->sortChildren ();
 			impl->forEachListener ([this] (UIDescriptionListener* l) {
 				l->onUIDescColorChanged (this);
@@ -1822,9 +1822,9 @@ void UIDescription::changeFont (UTF8StringPtr name, CFontRef newFont)
 		{
 			auto attr = makeOwned<UIAttributes> ();
 			attr->setAttribute ("name", name);
-			UIFontNode* node = new UIFontNode ("font", attr);
-			node->setFont (newFont);
-			fontsNode->getChildren ().add (node);
+			UIFontNode* newNode = new UIFontNode ("font", attr);
+			newNode->setFont (newFont);
+			fontsNode->getChildren ().add (newNode);
 			fontsNode->sortChildren ();
 			impl->forEachListener ([this] (UIDescriptionListener* l) {
 				l->onUIDescFontChanged (this);
@@ -1854,9 +1854,9 @@ void UIDescription::changeGradient (UTF8StringPtr name, CGradient* newGradient)
 		{
 			auto attr = makeOwned<UIAttributes> ();
 			attr->setAttribute ("name", name);
-			UIGradientNode* node = new UIGradientNode ("gradient", attr);
-			node->setGradient (newGradient);
-			gradientsNode->getChildren ().add (node);
+			UIGradientNode* newNode = new UIGradientNode ("gradient", attr);
+			newNode->setGradient (newGradient);
+			gradientsNode->getChildren ().add (newNode);
 			gradientsNode->sortChildren ();
 			impl->forEachListener ([this] (UIDescriptionListener* l) {
 				l->onUIDescGradientChanged (this);
@@ -1887,11 +1887,11 @@ void UIDescription::changeBitmap (UTF8StringPtr name, UTF8StringPtr newName, con
 		{
 			auto attr = makeOwned<UIAttributes> ();
 			attr->setAttribute ("name", name);
-			UIBitmapNode* node = new UIBitmapNode ("bitmap", attr);
+			UIBitmapNode* newNode = new UIBitmapNode ("bitmap", attr);
 			if (nineparttiledOffset)
-				node->setNinePartTiledOffset (nineparttiledOffset);
-			node->setBitmap (newName);
-			bitmapsNode->getChildren ().add (node);
+				newNode->setNinePartTiledOffset (nineparttiledOffset);
+			newNode->setBitmap (newName);
+			bitmapsNode->getChildren ().add (newNode);
 			bitmapsNode->sortChildren ();
 			impl->forEachListener ([this] (UIDescriptionListener* l) {
 				l->onUIDescBitmapChanged (this);
@@ -2086,10 +2086,10 @@ template<typename NodeType> void UIDescription::collectNamesFromNode (IdStringPt
 		UIDescList& children = node->getChildren ();
 		for (const auto& itNode : children)
 		{
-			NodeType* node = dynamic_cast<NodeType*>(itNode);
-			if (node)
+			NodeType* nodeType = dynamic_cast<NodeType*>(itNode);
+			if (nodeType)
 			{
-				const std::string* name = node->getAttributes ()->getAttributeValue ("name");
+				const std::string* name = nodeType->getAttributes ()->getAttributeValue ("name");
 				if (name)
 					names.emplace_back (name);
 			}
@@ -2343,9 +2343,9 @@ SharedPointer<UIAttributes> UIDescription::getCustomAttributes (UTF8StringPtr na
 		return attributes;
 	if (create)
 	{
-		auto attributes = makeOwned<UIAttributes> ();
-		if (setCustomAttributes (name, attributes))
-			return attributes;
+		auto attrs = makeOwned<UIAttributes> ();
+		if (setCustomAttributes (name, attrs))
+			return attrs;
 	}
 	return nullptr;
 }
@@ -3213,9 +3213,9 @@ void UIBitmapNode::createXMLData (const std::string& pathHint)
 			getChildren ().remove (node);
 			node = nullptr;
 		}
-		else if (auto bitmap = getBitmap (pathHint))
+		else if (auto bm = getBitmap (pathHint))
 		{
-			if (auto platformBitmap = bitmap->getPlatformBitmap ())
+			if (auto platformBitmap = bm->getPlatformBitmap ())
 			{
 				if (auto dataBitmap = createBitmapFromDataNode ())
 				{
@@ -3230,9 +3230,9 @@ void UIBitmapNode::createXMLData (const std::string& pathHint)
 	}
 	if (node == nullptr)
 	{
-		if (CBitmap* bitmap = getBitmap (pathHint))
+		if (auto bm = getBitmap (pathHint))
 		{
-			if (auto platformBitmap = bitmap->getPlatformBitmap ())
+			if (auto platformBitmap = bm->getPlatformBitmap ())
 			{
 				auto buffer = IPlatformBitmap::createMemoryPNGRepresentation (platformBitmap);
 				if (!buffer.empty ())

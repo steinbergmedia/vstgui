@@ -159,14 +159,14 @@ void CTabView::setAutosizeFlags (int32_t flags)
 }
 
 //-----------------------------------------------------------------------------
-bool CTabView::addTab (CView* view, UTF8StringPtr name, CBitmap* tabBitmap)
+bool CTabView::addTab (CView* view, UTF8StringPtr name, CBitmap* inTabBitmap)
 {
 	if (!view)
 		return false;
-	if (tabBitmap == nullptr)
-		tabBitmap = this->tabBitmap;
+	if (inTabBitmap == nullptr)
+		inTabBitmap = tabBitmap;
 
-	CTabButton* b = new CTabButton (CRect (0, 0, 0, 0), nullptr, 0, tabBitmap, name);
+	CTabButton* b = new CTabButton (CRect (0, 0, 0, 0), nullptr, 0, inTabBitmap, name);
 	b->setTransparency (true);
 
 	return addTab (view, b);

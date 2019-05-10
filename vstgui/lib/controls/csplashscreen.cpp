@@ -280,12 +280,12 @@ bool CAnimationSplashScreen::sizeToFit ()
 }
 
 //------------------------------------------------------------------------
-bool CAnimationSplashScreen::createAnimation (uint32_t animationIndex, uint32_t animationTime,
+bool CAnimationSplashScreen::createAnimation (uint32_t animIndex, uint32_t animTime,
                                               CView* splashView, bool removeViewAnimation)
 {
 	if (!isAttached ())
 		return false;
-	switch (animationIndex)
+	switch (animIndex)
 	{
 		case 0:
 		{
@@ -294,7 +294,7 @@ bool CAnimationSplashScreen::createAnimation (uint32_t animationIndex, uint32_t 
 				splashView->setMouseEnabled (false);
 				splashView->addAnimation (
 				    "AnimationSplashScreenAnimation", new Animation::AlphaValueAnimation (0.f),
-				    new Animation::PowerTimingFunction (animationTime, 2),
+				    new Animation::PowerTimingFunction (animTime, 2),
 				    [this] (CView*, const IdStringPtr, Animation::IAnimationTarget*) {
 					    if (modalView)
 					    {
@@ -311,7 +311,7 @@ bool CAnimationSplashScreen::createAnimation (uint32_t animationIndex, uint32_t 
 			{
 				setMouseEnabled (false);
 				splashView->setAlphaValue (0.f);
-				splashView->addAnimation ("AnimationSplashScreenAnimation", new Animation::AlphaValueAnimation (1.f), new Animation::PowerTimingFunction (animationTime, 2));
+				splashView->addAnimation ("AnimationSplashScreenAnimation", new Animation::AlphaValueAnimation (1.f), new Animation::PowerTimingFunction (animTime, 2));
 			}
 			return true;
 		}

@@ -118,10 +118,9 @@ public:
 	bool handleCommand (const Command& command) override;
 
 	// IMouseObserver
-	void onMouseEntered (CView* view, CFrame* frame) override {};
-	void onMouseExited (CView* view, CFrame* frame) override {};
-	CMouseEventResult onMouseMoved (CFrame* frame, const CPoint& where,
-	                                const CButtonState& buttons) override
+	void onMouseEntered (CView*, CFrame* ) override {};
+	void onMouseExited (CView*, CFrame* ) override {};
+	CMouseEventResult onMouseMoved (CFrame*, const CPoint&, const CButtonState&) override
 	{
 		return kMouseEventNotHandled;
 	}
@@ -371,17 +370,17 @@ bool Window::handleCommand (const Command& command)
 }
 
 //------------------------------------------------------------------------
-CMouseEventResult Window::onMouseDown (CFrame* frame, const CPoint& _where,
+CMouseEventResult Window::onMouseDown (CFrame* inFrame, const CPoint& _where,
                                        const CButtonState& buttons)
 {
 	if (!buttons.isRightButton ())
 		return kMouseEventNotHandled;
 
 	CPoint where (_where);
-	frame->getTransform ().transform (where);
+	inFrame->getTransform ().transform (where);
 
 	CViewContainer::ViewList views;
-	if (frame->getViewsAt (where, views, GetViewOptions ().deep ().includeViewContainer ()))
+	if (inFrame->getViewsAt (where, views, GetViewOptions ().deep ().includeViewContainer ()))
 	{
 		auto contextMenu = makeOwned<COptionMenu> ();
 		for (const auto& view : views)
@@ -404,7 +403,7 @@ CMouseEventResult Window::onMouseDown (CFrame* frame, const CPoint& _where,
 		{
 			contextMenu->cleanupSeparators (true);
 			contextMenu->setStyle (COptionMenu::kPopupStyle | COptionMenu::kMultipleCheckStyle);
-			contextMenu->popup (frame, _where);
+			contextMenu->popup (inFrame, _where);
 			return kMouseEventHandled;
 		}
 	}

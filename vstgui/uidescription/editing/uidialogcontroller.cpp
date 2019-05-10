@@ -253,11 +253,11 @@ void UIDialogController::layoutButtons ()
 }
 
 //----------------------------------------------------------------------------------------------------
-int32_t UIDialogController::onKeyDown (const VstKeyCode& code, CFrame* frame)
+int32_t UIDialogController::onKeyDown (const VstKeyCode& code, CFrame* inFrame)
 {
 	auto guard = shared (this);
 	int32_t result = -1;
-	CView* focusView = frame->getFocusView ();
+	CView* focusView = inFrame->getFocusView ();
 	if (focusView)
 		result = focusView->onKeyDown (const_cast<VstKeyCode&> (code));
 	if (result == -1)
@@ -279,9 +279,9 @@ int32_t UIDialogController::onKeyDown (const VstKeyCode& code, CFrame* frame)
 }
 
 //----------------------------------------------------------------------------------------------------
-int32_t UIDialogController::onKeyUp (const VstKeyCode& code, CFrame* frame)
+int32_t UIDialogController::onKeyUp (const VstKeyCode& code, CFrame* inFrame)
 {
-	CView* focusView = frame->getFocusView ();
+	CView* focusView = inFrame->getFocusView ();
 	if (focusView)
 		return focusView->onKeyUp (const_cast<VstKeyCode&> (code));
 	return -1;

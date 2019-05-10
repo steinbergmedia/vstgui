@@ -534,10 +534,10 @@ CGraphicsTransform CView::getGlobalTransform (bool ignoreFrame) const
 		parents.push_front (parent);
 		parent = parent->getParentView () ? parent->getParentView ()->asViewContainer () : nullptr;
 	}
-	for (const auto& parent : parents)
+	for (const auto& parent2 : parents)
 	{
-		CGraphicsTransform t = parent->getTransform ();
-		t.translate (parent->getViewSize ().getTopLeft ());
+		CGraphicsTransform t = parent2->getTransform ();
+		t.translate (parent2->getViewSize ().getTopLeft ());
 		transform = transform * t;
 	}
 

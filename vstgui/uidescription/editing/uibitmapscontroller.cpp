@@ -53,31 +53,31 @@ public:
 
 				const CNinePartTiledDescription& offsets = nptBitmap->getPartOffsets ();
 
-				CRect r;
-				r.setWidth (nptBitmap->getWidth());
-				r.setHeight (nptBitmap->getHeight());
+				CRect r2;
+				r2.setWidth (nptBitmap->getWidth());
+				r2.setHeight (nptBitmap->getHeight());
 				CPoint p = getViewSize ().getTopLeft ();
 				matrix.inverse ().transform (p);
-				r.offset (p.x, p.y);
+				r2.offset (p.x, p.y);
 
 				context->setDrawMode (kAntiAliasing);
 				context->setFrameColor (kBlueCColor);
 				context->setLineWidth (1);
 				context->setLineStyle (kLineSolid);
 				
-				context->drawLine (CPoint (r.left, r.top + offsets.top), CPoint (r.right, r.top + offsets.top));
-				context->drawLine (CPoint (r.left, r.bottom - offsets.bottom), CPoint (r.right, r.bottom - offsets.bottom));
-				context->drawLine (CPoint (r.left + offsets.left, r.top), CPoint (r.left + offsets.left, r.bottom));
-				context->drawLine (CPoint (r.right - offsets.right, r.top), CPoint (r.right - offsets.right, r.bottom));
+				context->drawLine (CPoint (r2.left, r2.top + offsets.top), CPoint (r2.right, r2.top + offsets.top));
+				context->drawLine (CPoint (r2.left, r2.bottom - offsets.bottom), CPoint (r2.right, r2.bottom - offsets.bottom));
+				context->drawLine (CPoint (r2.left + offsets.left, r2.top), CPoint (r2.left + offsets.left, r2.bottom));
+				context->drawLine (CPoint (r2.right - offsets.right, r2.top), CPoint (r2.right - offsets.right, r2.bottom));
 
 				context->setFrameColor (kRedCColor);
 				context->setLineWidth (1);
 				context->setLineStyle (kLineOnOffDash2);
 
-				context->drawLine (CPoint (r.left, r.top + offsets.top), CPoint (r.right, r.top + offsets.top));
-				context->drawLine (CPoint (r.left, r.bottom - offsets.bottom), CPoint (r.right, r.bottom - offsets.bottom));
-				context->drawLine (CPoint (r.left + offsets.left, r.top), CPoint (r.left + offsets.left, r.bottom));
-				context->drawLine (CPoint (r.right - offsets.right, r.top), CPoint (r.right - offsets.right, r.bottom));
+				context->drawLine (CPoint (r2.left, r2.top + offsets.top), CPoint (r2.right, r2.top + offsets.top));
+				context->drawLine (CPoint (r2.left, r2.bottom - offsets.bottom), CPoint (r2.right, r2.bottom - offsets.bottom));
+				context->drawLine (CPoint (r2.left + offsets.left, r2.top), CPoint (r2.left + offsets.left, r2.bottom));
+				context->drawLine (CPoint (r2.right - offsets.right, r2.top), CPoint (r2.right - offsets.right, r2.bottom));
 			}
 		}
 	}

@@ -271,13 +271,13 @@ void UIColorStopEditView::uiColorChanged (UIColor* c)
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIColorStopEditView::setGradient (CGradient* gradient)
+void UIColorStopEditView::setGradient (CGradient* inGradient)
 {
-	colorStopMap = gradient->getColorStops ();
+	colorStopMap = inGradient->getColorStops ();
 	CGradient::ColorStopMap::const_iterator it = colorStopMap.find (editStartOffset);
 	if (it == colorStopMap.end ())
 		editStartOffset = colorStopMap.begin ()->first;
-	this->gradient = gradient;
+	gradient = inGradient;
 }
 
 //----------------------------------------------------------------------------------------------------

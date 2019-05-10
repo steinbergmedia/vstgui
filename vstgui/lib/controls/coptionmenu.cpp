@@ -627,11 +627,11 @@ bool COptionMenu::setCurrent (int32_t index, bool countSeparator)
 	else
 	{
 		int32_t i = 0;
-		for (auto& item : *menuItems)
+		for (auto& menuItem : *menuItems)
 		{
 			if (i > index)
 				break;
-			if (item->isSeparator ())
+			if (menuItem->isSeparator ())
 				index++;
 			i++;
 		}
