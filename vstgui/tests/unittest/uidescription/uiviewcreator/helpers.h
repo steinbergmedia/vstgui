@@ -23,19 +23,19 @@ constexpr IdStringPtr kTagName = "tagname";
 class DummyUIDescription : public UIDescriptionAdapter
 {
 public:
-	bool getColor (UTF8StringPtr name, CColor& color) const override
+	bool getColor (UTF8StringPtr name, CColor& c) const override
 	{
 		if (UTF8StringView(name) == kColorName)
 		{
-			color = this->color;
+			c = this->color;
 			return true;
 		}
 		return false;
 	}
 
-	UTF8StringPtr lookupColorName (const CColor& color) const override
+	UTF8StringPtr lookupColorName (const CColor& c) const override
 	{
-		if (this->color == color)
+		if (this->color == c)
 			return kColorName;
 		return nullptr;
 	}
@@ -47,9 +47,9 @@ public:
 		return nullptr;
 	}
 	
-	UTF8StringPtr lookupFontName (const CFontRef font) const override
+	UTF8StringPtr lookupFontName (const CFontRef f) const override
 	{
-		if (font == this->font)
+		if (f == this->font)
 			return kFontName;
 		return nullptr;
 	}
@@ -75,9 +75,9 @@ public:
 		return nullptr;
 	}
 	
-	UTF8StringPtr lookupGradientName (const CGradient* gradient) const override
+	UTF8StringPtr lookupGradientName (const CGradient* g) const override
 	{
-		if (gradient == this->gradient)
+		if (g == this->gradient)
 			return kGradientName;
 		return nullptr;
 	}
@@ -88,9 +88,9 @@ public:
 			return tag;
 		return -1;
 	}
-	UTF8StringPtr lookupControlTagName (const int32_t tag) const override
+	UTF8StringPtr lookupControlTagName (const int32_t t) const override
 	{
-		if (this->tag != -1 && tag == this->tag)
+		if (this->tag != -1 && t == this->tag)
 			return kTagName;
 		return nullptr;
 	}

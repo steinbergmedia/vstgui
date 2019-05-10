@@ -22,10 +22,9 @@ class Buffer final
 {
 public:
 	Buffer () = default;
-	Buffer (size_t objectCount) : count (objectCount)
+	Buffer (size_t objectCount)
 	{
-		if (objectCount)
-			allocate (objectCount);
+		allocate (objectCount);
 	}
 	Buffer (Buffer&& other) { *this = std::move (other); }
 	Buffer& operator= (Buffer&& other)
