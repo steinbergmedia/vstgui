@@ -200,6 +200,7 @@ public:
 	
 	void createXMLData (const std::string& pathHint);
 	void removeXMLData ();
+	bool hasXMLData () const;
 
 	void freePlatformResources () override;
 protected:
@@ -1019,7 +1020,10 @@ bool UIDescription::saveToStream (OutputStream& stream, int32_t flags)
 				if (bitmapNode)
 				{
 					if (flags & kWriteImagesIntoXMLFile)
-						bitmapNode->createXMLData (impl->filePath);
+					{
+						if (!(flags & kDoNotVerifyImageXMLData) || !bitmapNode->hasXMLData ())
+							bitmapNode->createXMLData (impl->filePath);
+					}
 					else
 						bitmapNode->removeXMLData ();
 				}
@@ -3190,6 +3194,12 @@ bool UIBitmapNode::imagesEqual (IPlatformBitmap* b1, IPlatformBitmap* b2)
 			return false;
 	}
 	return true;
+}
+
+//-----------------------------------------------------------------------------
+bool UIBitmapNode::hasXMLData () const
+{
+	return getChildren ().findChildNode ("data") != nullptr;
 }
 
 //-----------------------------------------------------------------------------

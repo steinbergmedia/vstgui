@@ -12,13 +12,20 @@ namespace VSTGUI {
 //------------------------------------------------------------------------
 class CompressedUIDescription : public UIDescription
 {
+protected:
+	enum CompressedSaveFlagBits
+	{
+		NoPlainXmlFileBackupBit = UIDescription::LastSaveFlagBit,
+		ForceWriteCompressedDesc,
+		LastCompressedSaveFlagBit,
+	};
 public:
 	CompressedUIDescription (const CResourceDescription& compressedUIDescFile);
 
 	enum SaveFlags
 	{
-		kNoPlainXmlFileBackup = 1 << 2,
-		kForceWriteCompressedDesc = 1 << 3
+		kNoPlainXmlFileBackup = 1 << NoPlainXmlFileBackupBit,
+		kForceWriteCompressedDesc = 1 << ForceWriteCompressedDesc
 	};
 
 	bool parse () override;

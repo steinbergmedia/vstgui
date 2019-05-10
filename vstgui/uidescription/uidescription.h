@@ -22,6 +22,14 @@ class UINode;
 //-----------------------------------------------------------------------------
 class UIDescription : public NonAtomicReferenceCounted, public IUIDescription, public Xml::IHandler
 {
+protected:
+	enum SaveFlagBits
+	{
+		WriteWindowsResourceFileBit = 0,
+		WriteImagesIntoXMLFileBit,
+		DoNotVerifyImageXMLDataBit,
+		LastSaveFlagBit,
+	};
 public:
 	UIDescription (const CResourceDescription& xmlFile, IViewFactory* viewFactory = nullptr);
 	UIDescription (Xml::IContentProvider* xmlContentProvider, IViewFactory* viewFactory = nullptr);
@@ -30,8 +38,9 @@ public:
 	virtual bool parse ();
 
 	enum SaveFlags {
-		kWriteWindowsResourceFile	= 1 << 0,
-		kWriteImagesIntoXMLFile		= 1 << 1
+		kWriteWindowsResourceFile	= 1 << WriteWindowsResourceFileBit,
+		kWriteImagesIntoXMLFile		= 1 << WriteImagesIntoXMLFileBit,
+		kDoNotVerifyImageXMLData	= 1 << DoNotVerifyImageXMLDataBit,
 	};
 
 	virtual bool save (UTF8StringPtr filename, int32_t flags = kWriteWindowsResourceFile);
