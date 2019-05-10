@@ -281,7 +281,7 @@ void NSViewOptionMenu::popup (COptionMenu* optionMenu, const Callback& callback)
 	NSView* view = nsViewFrame->getNSView ();
 	NSMenu* nsMenu = [[menuClass alloc] initWithOptionMenu:(id)optionMenu];
 	CPoint p = globalSize.getTopLeft ();
-	NSRect cellFrameRect = {{0}};
+	NSRect cellFrameRect = {};
 	cellFrameRect.origin = nsPointFromCPoint (p);
 	cellFrameRect.size.width = static_cast<CGFloat> (globalSize.getWidth ());
 	cellFrameRect.size.height = static_cast<CGFloat> (globalSize.getHeight ());

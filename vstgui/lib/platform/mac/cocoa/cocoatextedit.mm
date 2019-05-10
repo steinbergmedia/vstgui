@@ -218,7 +218,7 @@ static BOOL VSTGUI_NSTextField_DoCommandBySelector (id self, SEL _cmd, NSControl
 	IPlatformTextEditCallback* tec = te->getTextEdit ();
 	if (commandSelector == @selector (insertNewline:))
 	{
-		VstKeyCode keyCode = {0};
+		VstKeyCode keyCode = {};
 		keyCode.virt = VKEY_RETURN;
 		if (tec->platformOnKeyDown (keyCode))
 		{
@@ -227,7 +227,7 @@ static BOOL VSTGUI_NSTextField_DoCommandBySelector (id self, SEL _cmd, NSControl
 	}
 	else if (commandSelector == @selector (insertTab:))
 	{
-		VstKeyCode keyCode = {0};
+		VstKeyCode keyCode = {};
 		keyCode.virt = VKEY_TAB;
 		if (tec->platformOnKeyDown (keyCode))
 		{
@@ -236,7 +236,7 @@ static BOOL VSTGUI_NSTextField_DoCommandBySelector (id self, SEL _cmd, NSControl
 	}
 	else if (commandSelector == @selector (insertBacktab:))
 	{
-		VstKeyCode keyCode = {0};
+		VstKeyCode keyCode = {};
 		keyCode.virt = VKEY_TAB;
 		keyCode.modifier = MODIFIER_SHIFT;
 		if (tec->platformOnKeyDown (keyCode))
@@ -246,7 +246,7 @@ static BOOL VSTGUI_NSTextField_DoCommandBySelector (id self, SEL _cmd, NSControl
 	}
 	else if (commandSelector == @selector (cancelOperation:))
 	{
-		VstKeyCode keyCode = {0};
+		VstKeyCode keyCode = {};
 		keyCode.virt = VKEY_ESCAPE;
 		if (tec->platformOnKeyDown (keyCode))
 		{

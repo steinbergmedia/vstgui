@@ -49,7 +49,7 @@ bool MacTimer::start (uint32_t fireTime)
 {
 	if (timer)
 		return false;
-	CFRunLoopTimerContext timerContext = {0};
+	CFRunLoopTimerContext timerContext = {};
 	timerContext.info = callback;
 	timer = CFRunLoopTimerCreate (kCFAllocatorDefault, CFAbsoluteTimeGetCurrent () + fireTime * 0.001f, fireTime * 0.001f, 0, 0, timerCallback, &timerContext);
 	if (timer)

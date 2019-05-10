@@ -20,12 +20,12 @@ namespace UIEditing {
 
 //----------------------------------------------------------------------------------------------------
 struct MenuEntry {
-	UTF8StringPtr category;
-	UTF8StringPtr name;
-	UTF8StringPtr key;
-	int32_t modifier;
-	int32_t virtualKey;
-	int32_t menuFlags;
+	UTF8StringPtr category {nullptr};
+	UTF8StringPtr name {nullptr};
+	UTF8StringPtr key {nullptr};
+	int32_t modifier {0};
+	int32_t virtualKey {0};
+	int32_t menuFlags {0};
 	
 	enum {
 		kSubMenu			= (1 << 0),
