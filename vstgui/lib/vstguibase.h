@@ -75,6 +75,7 @@
 			#pragma clang diagnostic ignored "-Wreorder"
 		#else
 			#pragma clang diagnostic warning "-Wunreachable-code"
+			#pragma clang diagnostic warning "-Wshadow"
 		#endif
 	#endif
 
