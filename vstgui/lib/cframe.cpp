@@ -915,6 +915,10 @@ CView* CFrame::getModalView () const
 //-----------------------------------------------------------------------------
 void CFrame::initModalViewSession (ModalViewSession* session)
 {
+	if (auto view = getMouseDownView ())
+	{
+		onMouseCancel ();
+	}
 	clearMouseViews (CPoint (0, 0), 0, true);
 	if (auto container = session->view->asViewContainer ())
 		container->advanceNextFocusView (nullptr, false);

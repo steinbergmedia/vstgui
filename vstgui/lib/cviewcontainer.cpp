@@ -1067,7 +1067,9 @@ CMouseEventResult CViewContainer::onMouseCancel ()
 	{
 		CBaseObjectGuard crg (mouseDownView);
 		mouseDownView->callMouseListener (MouseListenerCall::MouseCancel, {}, 0);
-		return mouseDownView->onMouseCancel ();
+		auto result = mouseDownView->onMouseCancel ();
+		clearMouseDownView ();
+		return result;
 	}
 	return kMouseEventHandled;
 }
