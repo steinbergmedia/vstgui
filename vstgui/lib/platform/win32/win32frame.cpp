@@ -19,6 +19,7 @@
 #include "win32dragging.h"
 #include "../../cdropsource.h"
 #include "../../cgradient.h"
+#include "../../common/genericoptionmenu.h"
 
 #if VSTGUI_OPENGL_SUPPORT
 #include "win32openglview.h"
@@ -458,6 +459,13 @@ SharedPointer<IPlatformTextEdit> Win32Frame::createPlatformTextEdit (IPlatformTe
 //-----------------------------------------------------------------------------
 SharedPointer<IPlatformOptionMenu> Win32Frame::createPlatformOptionMenu ()
 {
+	if (genericOptionMenuTheme)
+	{
+		CButtonState buttons;
+		getCurrentMouseButtons (buttons);
+		return makeOwned<GenericOptionMenu> (dynamic_cast<CFrame*> (frame), buttons,
+		                                     *genericOptionMenuTheme.get ());
+	}
 	return owned<IPlatformOptionMenu> (new Win32OptionMenu (windowHandle));
 }
 
@@ -539,6 +547,23 @@ SharedPointer<IDataPackage> Win32Frame::getClipboard ()
 void Win32Frame::onFrameClosed ()
 {
 	frame = nullptr;
+}
+
+//-----------------------------------------------------------------------------
+bool Win32Frame::setupGenericOptionMenu (bool use, GenericOptionMenuTheme* theme)
+{
+	if (!use)
+	{
+		genericOptionMenuTheme = nullptr;
+	}
+	else
+	{
+		if (theme)
+			genericOptionMenuTheme = std::unique_ptr<GenericOptionMenuTheme> (new GenericOptionMenuTheme (*theme));
+		else
+			genericOptionMenuTheme = std::unique_ptr<GenericOptionMenuTheme> (new GenericOptionMenuTheme);
+	}
+	return true;
 }
 
 //-----------------------------------------------------------------------------

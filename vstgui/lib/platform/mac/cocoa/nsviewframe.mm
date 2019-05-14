@@ -17,6 +17,8 @@
 #import "../quartzgraphicspath.h"
 #import "../caviewlayer.h"
 #import "../../../cvstguitimer.h"
+#import "../../common/genericoptionmenu.h"
+#import "../../../cframe.h"
 
 #if MAC_CARBON
 	#import "../carbon/hiviewframe.h"
@@ -1118,6 +1120,23 @@ Optional<UTF8String> NSViewFrame::convertCurrentKeyEventToText ()
 }
 
 //-----------------------------------------------------------------------------
+bool NSViewFrame::setupGenericOptionMenu (bool use, GenericOptionMenuTheme* theme)
+{
+	if (!use)
+	{
+		genericOptionMenuTheme = nullptr;
+	}
+	else
+	{
+		if (theme)
+			genericOptionMenuTheme = std::unique_ptr<GenericOptionMenuTheme> (new GenericOptionMenuTheme (*theme));
+		else
+			genericOptionMenuTheme = std::unique_ptr<GenericOptionMenuTheme> (new GenericOptionMenuTheme);
+	}
+	return true;
+}
+
+//-----------------------------------------------------------------------------
 SharedPointer<IPlatformTextEdit> NSViewFrame::createPlatformTextEdit (IPlatformTextEditCallback* textEdit)
 {
 	return makeOwned<CocoaTextEdit> (nsView, textEdit);
@@ -1126,6 +1145,13 @@ SharedPointer<IPlatformTextEdit> NSViewFrame::createPlatformTextEdit (IPlatformT
 //-----------------------------------------------------------------------------
 SharedPointer<IPlatformOptionMenu> NSViewFrame::createPlatformOptionMenu ()
 {
+	if (genericOptionMenuTheme)
+	{
+		CButtonState buttons;
+		getCurrentMouseButtons (buttons);
+		return makeOwned<GenericOptionMenu> (dynamic_cast<CFrame*> (frame), buttons,
+		                                     *genericOptionMenuTheme.get ());
+	}
 	return makeOwned<NSViewOptionMenu> ();
 }
 

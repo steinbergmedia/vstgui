@@ -266,6 +266,7 @@ struct Frame::Impl : IFrameEventHandler
 	DrawHandler drawHandler;
 	DoubleClickDetector doubleClickDetector;
 	IPlatformFrameCallback* frame;
+	std::unique_ptr<GenericOptionMenuTheme> genericOptionMenuTheme;
 	SharedPointer<RedrawTimerHandler> redrawTimer;
 	RectList dirtyRects;
 	CCursorType currentCursor{kCursorDefault};
@@ -690,7 +691,9 @@ SharedPointer<IPlatformTextEdit> Frame::createPlatformTextEdit (IPlatformTextEdi
 //------------------------------------------------------------------------
 SharedPointer<IPlatformOptionMenu> Frame::createPlatformOptionMenu ()
 {
-	auto optionMenu = makeOwned<GenericOptionMenu> (dynamic_cast<CFrame*> (frame), 0);
+	auto optionMenu = makeOwned<GenericOptionMenu> (
+	    dynamic_cast<CFrame*> (frame), 0,
+	    impl->genericOptionMenuTheme ? *impl->genericOptionMenuTheme.get () : {});
 	optionMenu->setListener (this);
 	return optionMenu;
 }
@@ -764,6 +767,17 @@ PlatformType Frame::getPlatformType () const
 Optional<UTF8String> Frame::convertCurrentKeyEventToText ()
 {
 	return RunLoop::instance ().convertCurrentKeyEventToText ();
+}
+
+//------------------------------------------------------------------------
+bool Frame::setupGenericOptionMenu (bool use, GenericOptionMenuTheme* theme)
+{
+	if (theme)
+		impl->genericOptionMenuTheme =
+		    std::unique_ptr<GenericOptionMenuTheme> (new GenericOptionMenuTheme (*theme));
+	else
+		impl->genericOptionMenuTheme = nullptr;
+	return true;
 }
 
 //------------------------------------------------------------------------

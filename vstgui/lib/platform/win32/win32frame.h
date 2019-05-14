@@ -56,6 +56,7 @@ public:
 	PlatformType getPlatformType () const override { return PlatformType::kHWND; }
 	void onFrameClosed () override;
 	Optional<UTF8String> convertCurrentKeyEventToText () override { return {}; }
+	bool setupGenericOptionMenu (bool use, GenericOptionMenuTheme* theme = nullptr) override;
 
 	LONG_PTR WINAPI proc (HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
 //-----------------------------------------------------------------------------
@@ -75,6 +76,7 @@ protected:
 
 	COffscreenContext* backBuffer;
 	CDrawContext* deviceContext;
+	std::unique_ptr<GenericOptionMenuTheme> genericOptionMenuTheme;
 
 	bool inPaint;
 	bool mouseInside;
