@@ -863,6 +863,11 @@ void CDataBrowserView::drawRect (CDrawContext* context, const CRect& updateRect)
 //-----------------------------------------------------------------------------------------------
 bool CDataBrowserView::getCell (const CPoint& where, CDataBrowser::Cell& cell)
 {
+	CPoint _where (where);
+	_where.offset (-getViewSize ().left, -getViewSize ().top);
+	if (_where.x < 0)
+		return false;
+	
 	CCoord lineWidth = 0;
 	if (browser->getStyle () & CDataBrowser::kDrawRowLines || browser->getStyle () & CDataBrowser::kDrawColumnLines)
 	{
@@ -872,8 +877,6 @@ bool CDataBrowserView::getCell (const CPoint& where, CDataBrowser::Cell& cell)
 	CCoord rowHeight = db->dbGetRowHeight (browser);
 	int32_t numColumns = db->dbGetNumColumns (browser);
 
-	CPoint _where (where);
-	_where.offset (-getViewSize ().left, -getViewSize ().top);
 	if (browser->getStyle () & CDataBrowser::kDrawRowLines)
 		rowHeight += lineWidth;
 	int32_t rowNum = (int32_t)(_where.y / rowHeight);
@@ -955,7 +958,7 @@ CMouseEventResult CDataBrowserView::onMouseMoved (CPoint &where, const CButtonSt
 	{
 		return db->dbOnMouseMoved (where, buttons, cell.row, cell.column, browser);
 	}
-	return kMouseEventNotHandled;
+	return kMouseEventHandled;
 }
 
 //-----------------------------------------------------------------------------------------------

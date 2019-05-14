@@ -54,6 +54,7 @@ public:
 private:
 	void removeModalView (PlatformOptionMenuResult result);
 	CMouseEventResult viewOnMouseDown (CView* view, CPoint pos, CButtonState buttons) override;
+	CMouseEventResult viewOnMouseUp (CView* view, CPoint pos, CButtonState buttons) override;
 
 	struct Impl;
 	std::unique_ptr<Impl> impl;
