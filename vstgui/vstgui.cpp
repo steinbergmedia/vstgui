@@ -60,3 +60,4 @@
 #include "lib/animation/timingfunctions.cpp"
 
 #include "lib/platform/common/fileresourceinputstream.cpp"
+#include "lib/platform/common/genericoptionmenu.cpp"
