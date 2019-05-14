@@ -533,7 +533,7 @@ CView* setupGenericOptionMenu (Proc clickCallback, CViewContainer* container,
 	                             CubicBezierTimingFunction::easyIn (theme.menuAnimationTime)));
 	if (!parentDataSource && optionMenu->isCheckStyle ())
 	{
-		browser->makeRowVisible (optionMenu->getValue ());
+		browser->makeRowVisible (static_cast<int32_t> (optionMenu->getValue ()));
 	}
 	return decorView;
 }
