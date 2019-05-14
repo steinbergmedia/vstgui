@@ -691,9 +691,11 @@ SharedPointer<IPlatformTextEdit> Frame::createPlatformTextEdit (IPlatformTextEdi
 //------------------------------------------------------------------------
 SharedPointer<IPlatformOptionMenu> Frame::createPlatformOptionMenu ()
 {
-	auto optionMenu = makeOwned<GenericOptionMenu> (
-	    dynamic_cast<CFrame*> (frame), 0,
-	    impl->genericOptionMenuTheme ? *impl->genericOptionMenuTheme.get () : {});
+	auto cFrame = dynamic_cast<CFrame*> (frame);
+	GenericOptionMenuTheme theme;
+	if (impl->genericOptionMenuTheme)
+		theme = *impl->genericOptionMenuTheme.get ();
+	auto optionMenu = makeOwned<GenericOptionMenu> (cFrame, 0, theme);
 	optionMenu->setListener (this);
 	return optionMenu;
 }
