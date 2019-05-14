@@ -17,9 +17,9 @@
 #include "win32support.h"
 #include "win32datapackage.h"
 #include "win32dragging.h"
+#include "../common/genericoptionmenu.h"
 #include "../../cdropsource.h"
 #include "../../cgradient.h"
-#include "../../common/genericoptionmenu.h"
 
 #if VSTGUI_OPENGL_SUPPORT
 #include "win32openglview.h"
