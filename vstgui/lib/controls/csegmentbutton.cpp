@@ -419,6 +419,9 @@ void CSegmentButton::draw (CDrawContext* pContext)
 //-----------------------------------------------------------------------------
 void CSegmentButton::drawRect (CDrawContext* pContext, const CRect& dirtyRect)
 {
+	if (getOldValue () != getValue ())
+		verifySelections ();
+
 	bool isHorizontal = isHorizontalStyle (style);
 	bool drawLines = getFrameWidth () != 0. && getFrameColor ().alpha != 0;
 	auto lineWidth = getFrameWidth ();
