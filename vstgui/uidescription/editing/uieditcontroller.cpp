@@ -1036,6 +1036,11 @@ CMessageResult UIEditController::onMenuItemSelection (CCommandMenuItem* item)
 			doSelectAllChildren ();
 			return kMessageNotified;
 		}
+		if (cmdName == "Select Parent(s)")
+		{
+			doSelectParents ();
+			return kMessageNotified;
+		}
 	}
 	else if (cmdCategory == "Zoom")
 	{
@@ -1161,8 +1166,17 @@ CMessageResult UIEditController::validateMenuItem (CCommandMenuItem* item)
 	{
 		if (cmdName == "Select All Children")
 		{
-			bool enable = selection->total () == 1 && selection->first () && selection->first ()->asViewContainer ();
+			bool enable = selection->total () == 1 && selection->first () &&
+			              selection->first ()->asViewContainer ();
 			item->setEnabled (enable);
+			return kMessageNotified;
+		}
+		if (cmdName == "Select Parent(s)")
+		{
+			bool enable =
+			    selection->total () > 0 && selection->first () != editView->getEditView ();
+			item->setEnabled (enable);
+			item->setTitle (selection->total () > 1 ? "Select Parents" : "Select Parent");
 			return kMessageNotified;
 		}
 	}
@@ -1232,6 +1246,29 @@ void UIEditController::doSelectAllChildren ()
 		if (factory->getViewName (view))
 			selection->add (view);
 	});
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIEditController::doSelectParents ()
+{
+	UISelection::DeferChange dc (*selection);
+	std::vector<CView*> parents;
+	auto factory = static_cast<const UIViewFactory*> (editDescription->getViewFactory ());
+	for (auto& view : *selection)
+	{
+		if (auto parent = view->getParentView ())
+		{
+			while (factory->getViewName (parent) == nullptr)
+			{
+				parent = parent->getParentView ();
+			}
+			if (parent && std::find (parents.begin (), parents.end (), parent) == parents.end ())
+				parents.emplace_back (parent);
+		}
+	}
+	selection->clear ();
+	for (auto& parent : parents)
+		selection->add (parent);
 }
 
 //----------------------------------------------------------------------------------------------------

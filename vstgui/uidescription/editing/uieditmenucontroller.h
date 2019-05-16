@@ -90,6 +90,7 @@ static const MenuEntry editMenu[] = {
 	kMenuSeparator,
 	{ "Selection", "Select SubViews Of Type" , 0, 0, 0 },
 	kMenuSeparator,
+	{ "Selection", "Select Parent(s)" , 0, 0, 0 },
 	{ "Selection", "Select All Children" , 0, 0, 0 },
 	
 	kSubMenuEnd,

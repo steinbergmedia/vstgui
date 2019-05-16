@@ -189,6 +189,7 @@ private:
 	bool doSelectionSize (const UTF8String& commandName, bool useGrid) const;
 	bool doZOrderAction (bool lower);
 	void doSelectAllChildren ();
+	void doSelectParents ();
 	
 	void onUndoManagerChanged ();
 	template<typename NameChangeAction, IViewCreator::AttrType attrType> void performNameChange (UTF8StringPtr oldName, UTF8StringPtr newName, IdStringPtr groupActionName);
