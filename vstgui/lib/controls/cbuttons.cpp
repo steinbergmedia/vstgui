@@ -896,7 +896,7 @@ bool CTextButton::sizeToFit ()
 //------------------------------------------------------------------------
 void CTextButton::draw (CDrawContext* context)
 {
-	bool highlight = value > 0.5 ? true : false;
+	bool highlight = value == getMax () ? true : false;
 	auto lineWidth = getFrameWidth ();
 	if (lineWidth < 0.)
 		lineWidth = context->getHairlineSize ();
