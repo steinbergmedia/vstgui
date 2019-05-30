@@ -1043,6 +1043,7 @@ void UIEditView::startDrag (CPoint& where)
 	auto bitmap = createBitmapFromSelection (selection, getFrame (), this);
 	if (bitmap == nullptr)
 		return;
+	where.makeIntegral ();
 
 	CRect selectionBounds = getSelection ()->getBounds ();
 	CPoint p;
@@ -1138,6 +1139,7 @@ bool UIEditView::onDrop (DragEventData data)
 			frameToLocal (containerOffset);
 			where2.offset (-containerOffset.x, -containerOffset.y);
 
+			where2.makeIntegral ();
 			IAction* action = new ViewCopyOperation (dragSelection, getSelection (), viewContainer, where2, description);
 			getUndoManager()->pushAndPerform (action);
 		}
