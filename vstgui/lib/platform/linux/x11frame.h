@@ -70,7 +70,7 @@ private:
 	PlatformType getPlatformType () const override;
 	void onFrameClosed () override {}
 	Optional<UTF8String> convertCurrentKeyEventToText () override;
-	bool setupGenericOptionMenu (bool use, GenericOptionMenuTheme* theme = nullptr) override { return false; }
+	bool setupGenericOptionMenu (bool use, GenericOptionMenuTheme* theme = nullptr) override;
 
 	uint32_t getX11WindowID () const override;
 
