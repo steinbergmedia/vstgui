@@ -11,7 +11,8 @@ set(${target}_sources
   "source/app.cpp"
 )
 
-vstgui_add_executable(${target} "${${target}_sources}" "${target_resources}")
+vstgui_add_executable(${target} "${${target}_sources}")
+vstgui_add_resources(${target} "${target_resources}")
 vstgui_set_target_infoplist(${target} "resource/Info.plist")
 vstgui_set_target_rcfile(${target} "resource/winresources.rc")
 vstgui_set_cxx_version(${target} 14)
