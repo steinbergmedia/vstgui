@@ -337,6 +337,11 @@ void CView::setMouseEnabled (bool state)
 		{
 			setDirty (true);
 		}
+		if (pImpl->viewMouseListener)
+		{
+			pImpl->viewMouseListener->forEach (
+			    [&] (IViewMouseListener* listener) { listener->viewOnMouseEnabled (this, state); });
+		}
 	}
 }
 

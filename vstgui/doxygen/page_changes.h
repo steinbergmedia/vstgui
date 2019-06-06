@@ -99,6 +99,7 @@ Note: All current deprecated methods will be removed in the next version. So mak
 @subsection code_changes_4_8_to_4_9 VSTGUI 4.8 -> VSTGUI 4.9
 
 - removed method CView::onWheel (..) where the axis of the event was not included. You have to use the other onWheel method for your custom classes now.
+- new interface method IViewMouseListener::viewOnMouseEnabled
 
 @subsection code_changes_4_7_to_4_8 VSTGUI 4.7 -> VSTGUI 4.8
 
