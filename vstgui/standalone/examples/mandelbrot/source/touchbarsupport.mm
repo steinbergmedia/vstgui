@@ -49,7 +49,7 @@ public:
 		return touchbar;
 	}
 
-	void onPerformEdit (IValue& value, IValue::Type newValue) override
+	void onPerformEdit (IValue&, IValue::Type newValue) override
 	{
 		if (sliderBinding)
 		{

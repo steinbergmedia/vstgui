@@ -259,7 +259,7 @@ struct ViewController : DelegationController,
 		}
 	}
 
-	void modelChanged (const Model& model) override { updateMandelbrot (); }
+	void modelChanged (const Model&) override { updateMandelbrot (); }
 
 	void updateMandelbrot ()
 	{

@@ -45,10 +45,10 @@ void TestModel::onEndEdit (IValue& value)
 	auto activeValue = values[0];
 	if (&value == activeValue.get ())
 	{
-		for (auto& v : values)
+		for (auto& val : values)
 		{
-			if (v != values[0])
-				v->setActive (activeValue->getValue () == 1.);
+			if (val != values[0])
+				val->setActive (activeValue->getValue () == 1.);
 		}
 	}
 	else if (value.getID () == "ShowAlert")

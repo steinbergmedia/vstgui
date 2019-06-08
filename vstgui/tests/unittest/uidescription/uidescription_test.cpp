@@ -486,9 +486,9 @@ TESTCASE(UIDescriptionTests,
 		StringPtrList names;
 		desc.collectFontNames (names);
 		uint32_t numNames = 0;
-		for (auto& name : names)
+		for (auto& n : names)
 		{
-			if (name->at (0) != '~')
+			if (n->at (0) != '~')
 				numNames++;
 		}
 		EXPECT(numNames == 6);
