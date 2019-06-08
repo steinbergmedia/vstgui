@@ -304,6 +304,23 @@ static const std::string kAttrDrawAntialiased = "draw-antialiased";
 static const std::string kAttrRadialCenter = "radial-center";
 static const std::string kAttrRadialRadius = "radial-radius";
 
+//------------------------------------------------------------------------
+// Some globally used strings
+//------------------------------------------------------------------------
+static constexpr auto strTrue = "true";
+static constexpr auto strFalse = "false";
+static constexpr auto strHorizontal = "horizontal";
+static constexpr auto strVertical = "vertical";
+static constexpr auto strHorizontalInverse = "horizontal-inverse";
+static constexpr auto strVerticalInverse = "vertical-inverse";
+
+static constexpr auto strNone = "none";
+static constexpr auto strHead = "head";
+static constexpr auto strTail = "tail";
+
+static constexpr auto strLeft = "left";
+static constexpr auto strRight = "right";
+static constexpr auto strCenter = "center";
 
 } // UIViewCreator
 } // VSTGUI
