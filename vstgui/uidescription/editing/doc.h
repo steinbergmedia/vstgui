@@ -14,7 +14,6 @@ TODO:
 		- grid handling improvements (like custom magnetic lines)
 		- more custom attribute editing
 		- view z-index editing via drag&drop
-		- inline text editing for CLabel/CTextEdit/CCheckbox
 		- editing of uidescription variables
 		
 	Known Bugs:
