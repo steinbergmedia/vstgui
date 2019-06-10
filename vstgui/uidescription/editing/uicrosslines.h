@@ -22,7 +22,8 @@ class UICrossLines : public CView, public ViewListenerAdapter
 public:
 	enum {
 		kSelectionStyle,
-		kDragStyle
+		kDragStyle,
+		kLassoStyle,
 	};
 	
 	UICrossLines (CViewContainer* editView, int32_t style, const CColor& background = kWhiteCColor, const CColor& foreground = kBlackCColor);
@@ -32,6 +33,7 @@ public:
 
 	void update (UISelection* selection);
 	void update (const CPoint& point);
+	void update (const CRect& rect);
 	void invalid () override;
 	void draw (CDrawContext* pContext) override;
 protected:

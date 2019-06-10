@@ -79,8 +79,30 @@ void UICrossLines::update (const CPoint& point)
 }
 
 //----------------------------------------------------------------------------------------------------
+void UICrossLines::update (const CRect& rect)
+{
+	invalid ();
+	currentRect = rect;
+	editView->getTransform ().transform (currentRect);
+	CPoint p;
+	getParentView ()->frameToLocal (p);
+	currentRect.offset (p.x, p.y);
+	editView->localToFrame (p);
+	currentRect.offset (p.x, p.y);
+	invalid ();
+}
+
+//----------------------------------------------------------------------------------------------------
 void UICrossLines::invalid ()
 {
+	if (style == kLassoStyle)
+	{
+		auto r = currentRect;
+		r.makeIntegral ();
+		if (!r.isEmpty ())
+			invalidRect (r);
+		return;
+	}
 	CRect frameRect = getViewSize ();
 	invalidRect (CRect (currentRect.left-3, frameRect.top, currentRect.left+3, frameRect.bottom));
 	invalidRect (CRect (frameRect.left, currentRect.top-3, frameRect.right, currentRect.top+3));
@@ -108,12 +130,23 @@ void UICrossLines::draw (CDrawContext* pContext)
 {
 	CRect size = getViewSize ();
 
-	CRect selectionSize (currentRect);
-
 	pContext->setDrawMode (kAliasing);
 	pContext->setLineStyle (kLineSolid);
 	pContext->setFrameColor (background);
 	pContext->setLineWidth (1);
+
+	if (style == kLassoStyle)
+	{
+		auto r = currentRect;
+		r.makeIntegral ();
+		if (r.isEmpty ())
+			return;
+		pContext->setFillColor (foreground);
+		pContext->drawRect (r, kDrawFilledAndStroked);
+		return;
+	}
+
+	CRect selectionSize (currentRect);
 	drawLines (pContext, size, selectionSize);
 
 	static const CCoord dashLength [] = {3,3};
@@ -124,6 +157,6 @@ void UICrossLines::draw (CDrawContext* pContext)
 	drawLines (pContext, size, selectionSize);
 }
 
-}
+} // VSTGUI
 
 #endif // VSTGUI_LIVE_EDITING
