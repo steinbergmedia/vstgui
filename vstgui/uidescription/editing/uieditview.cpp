@@ -635,145 +635,206 @@ bool UIEditView::hitTestSubViews (const CPoint& where, const CButtonState& butto
 //----------------------------------------------------------------------------------------------------
 CMouseEventResult UIEditView::onMouseDown (CPoint &where, const CButtonState& buttons)
 {
-	if (editing)
-	{
-		if (buttons.isLeftButton ())
-		{
-			getFrame ()->setFocusView (this);
+	if (!editing)
+		return CViewContainer::onMouseDown (where, buttons);
+	if (!buttons.isLeftButton ())
+		return kMouseEventHandled;
 
-			CView* selectionHitView = nullptr;
-			CPoint where2 (where);
-			where2.offset (-getViewSize ().left, -getViewSize ().top);
-			getTransform ().inverse ().transform (where2);
-			MouseSizeMode sizeMode = selectionHitTest (where, &selectionHitView);
-			CView* mouseHitView = getViewAt (where, GetViewOptions ().deep ().includeViewContainer ().includeInvisible ());
-			if (selectionHitView == nullptr && mouseHitView == nullptr)
-			{
-				getSelection ()->clear ();
-				return kMouseEventHandled;
-			}
-			if (getSelection ()->contains (mouseHitView))
-			{
-				if (buttons.isControlSet ())
-				{
-					getSelection ()->remove (mouseHitView);
-					onMouseMoved (where, CButtonState (buttons.getModifierState ()));
-					return kMouseEventHandled;
-				}
-			}
-			else if (mouseHitView && sizeMode == MouseSizeMode::None)
-			{
-				if (buttons.isControlSet () || buttons.isShiftSet ())
-				{
-					getSelection ()->add (mouseHitView);
-					selectionHitView = mouseHitView;
-					onMouseMoved (where, CButtonState (buttons.getModifierState ()));
-				}
-				else if (selectionHitView == nullptr || selectionHitView == getView (0))
-				{
-					getSelection ()->setExclusive (mouseHitView);
-					selectionHitView = mouseHitView;
-					onMouseMoved (where, CButtonState (buttons.getModifierState ()));
-				}
-			}
-			if (selectionHitView)
-			{
-				if (buttons.isDoubleClick ())
-				{
-					onDoubleClickEditing (selectionHitView);
-					return kMouseEventHandled;
-				}
-				if (buttons.isAltSet () && !getSelection ()->contains (getView (0)))
-				{
-					mouseEditMode = MouseEditMode::DragEditing;
-					invalidSelection ();
-					startDrag (where);
-					mouseEditMode = MouseEditMode::NoEditing;
-					invalidSelection ();
-					return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
-				}
-				if (sizeMode == MouseSizeMode::None)
-				{
-					if (getSelection ()->contains (getView (0)))
-					{
-						return kMouseEventHandled;
-					}
-					mouseEditMode = MouseEditMode::DragEditing;
-					mouseStartPoint = where2;
-					if (grid)
-						grid->process (mouseStartPoint);
-					editTimer = owned (new CVSTGUITimer (this, 500));
-					editTimer->start ();
-					return kMouseEventHandled;
-				}
-				else
-				{
-					mouseEditMode = MouseEditMode::SizeEditing;
-					mouseStartPoint = where2;
-					if (grid)
-						grid->process (mouseStartPoint);
-					mouseSizeMode = sizeMode;
-					if (true)
-					{
-						int32_t crossLineMode = 0;
-						switch (sizeMode)
-						{
-							case MouseSizeMode::Left:
-							case MouseSizeMode::Right:
-							case MouseSizeMode::Top:
-							case MouseSizeMode::Bottom: crossLineMode = UICrossLines::kSelectionStyle; break;
-							default : crossLineMode = UICrossLines::kDragStyle; break;
-						}
-						lines = new UICrossLines (this, crossLineMode, crosslineBackgroundColor, crosslineForegroundColor);
-						overlayView->addView (lines);
-						if (crossLineMode == UICrossLines::kSelectionStyle)
-							lines->update (selection);
-						else
-							lines->update (CPoint (mouseStartPoint.x, mouseStartPoint.y));
-					}
-					return kMouseEventHandled;
-				}
-			}
-		}
+	getFrame ()->setFocusView (this);
+
+	CView* selectionHitView = nullptr;
+	CPoint where2 (where);
+	where2.offset (-getViewSize ().left, -getViewSize ().top);
+	getTransform ().inverse ().transform (where2);
+	MouseSizeMode sizeMode = selectionHitTest (where, &selectionHitView);
+	CView* mouseHitView = getViewAt (where, GetViewOptions ().deep ().includeViewContainer ().includeInvisible ());
+	if (selectionHitView == nullptr && mouseHitView == nullptr)
+	{
+		getSelection ()->clear ();
 		return kMouseEventHandled;
 	}
-	return CViewContainer::onMouseDown (where, buttons);
+	if (getSelection ()->contains (mouseHitView))
+	{
+		if (buttons.isControlSet ())
+		{
+			getSelection ()->remove (mouseHitView);
+			onMouseMoved (where, CButtonState (buttons.getModifierState ()));
+			return kMouseEventHandled;
+		}
+	}
+	else if (mouseHitView && sizeMode == MouseSizeMode::None)
+	{
+		if (buttons.isControlSet () || buttons.isShiftSet ())
+		{
+			getSelection ()->add (mouseHitView);
+			selectionHitView = mouseHitView;
+			onMouseMoved (where, CButtonState (buttons.getModifierState ()));
+		}
+		else if (selectionHitView == nullptr || selectionHitView == getView (0))
+		{
+			getSelection ()->setExclusive (mouseHitView);
+			selectionHitView = mouseHitView;
+			onMouseMoved (where, CButtonState (buttons.getModifierState ()));
+		}
+	}
+	if (selectionHitView)
+	{
+		if (buttons.isDoubleClick ())
+		{
+			onDoubleClickEditing (selectionHitView);
+			return kMouseEventHandled;
+		}
+		if (buttons.isAltSet () && !getSelection ()->contains (getView (0)))
+		{
+			mouseEditMode = MouseEditMode::DragEditing;
+			invalidSelection ();
+			startDrag (where);
+			mouseEditMode = MouseEditMode::NoEditing;
+			invalidSelection ();
+			return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
+		}
+		if (sizeMode == MouseSizeMode::None)
+		{
+			if (getSelection ()->contains (getView (0)))
+			{
+				return kMouseEventHandled;
+			}
+			mouseEditMode = MouseEditMode::DragEditing;
+			mouseStartPoint = where2;
+			if (grid)
+				grid->process (mouseStartPoint);
+			editTimer = owned (new CVSTGUITimer (this, 500));
+			editTimer->start ();
+			return kMouseEventHandled;
+		}
+		else
+		{
+			mouseEditMode = MouseEditMode::SizeEditing;
+			mouseStartPoint = where2;
+			if (grid)
+				grid->process (mouseStartPoint);
+			mouseSizeMode = sizeMode;
+			if (true)
+			{
+				int32_t crossLineMode = 0;
+				switch (sizeMode)
+				{
+					case MouseSizeMode::Left:
+					case MouseSizeMode::Right:
+					case MouseSizeMode::Top:
+					case MouseSizeMode::Bottom: crossLineMode = UICrossLines::kSelectionStyle; break;
+					default : crossLineMode = UICrossLines::kDragStyle; break;
+				}
+				lines = new UICrossLines (this, crossLineMode, crosslineBackgroundColor, crosslineForegroundColor);
+				overlayView->addView (lines);
+				if (crossLineMode == UICrossLines::kSelectionStyle)
+					lines->update (selection);
+				else
+					lines->update (CPoint (mouseStartPoint.x, mouseStartPoint.y));
+			}
+			return kMouseEventHandled;
+		}
+	}
+	return kMouseEventHandled;
 }
 
 //----------------------------------------------------------------------------------------------------
 CMouseEventResult UIEditView::onMouseUp (CPoint &where, const CButtonState& buttons)
 {
-	if (editing)
+	if (!editing)
+		return CViewContainer::onMouseUp (where, buttons);
+
+	editTimer = nullptr;
+	if (mouseEditMode != MouseEditMode::NoEditing && !moveSizeOperation && buttons == kLButton && !lines)
 	{
-		editTimer = nullptr;
-		if (mouseEditMode != MouseEditMode::NoEditing && !moveSizeOperation && buttons == kLButton && !lines)
+		CView* view = getViewAt (where, GetViewOptions ().deep ().includeViewContainer ().includeInvisible ());
+		if (view == this)
+			view = nullptr;
+		if (view)
 		{
-			CView* view = getViewAt (where, GetViewOptions ().deep ().includeViewContainer ().includeInvisible ());
-			if (view == this)
-				view = nullptr;
-			if (view)
+			getSelection ()->setExclusive (view);
+		}
+	}
+	if (lines)
+	{
+		overlayView->removeView (lines);
+		lines = nullptr;
+	}
+	mouseEditMode = MouseEditMode::NoEditing;
+	if (moveSizeOperation)
+	{
+		if (moveSizeOperation->didChange ())
+			getUndoManager ()->pushAndPerform (moveSizeOperation);
+		else
+			delete moveSizeOperation;
+		moveSizeOperation = nullptr;
+	}
+	onMouseMoved (where, CButtonState (buttons.getModifierState ()));
+	return kMouseEventHandled;
+}
+
+//----------------------------------------------------------------------------------------------------
+CMouseEventResult UIEditView::onMouseMoved (CPoint &where, const CButtonState& buttons)
+{
+	if (!editing)
+		return CViewContainer::onMouseMoved (where, buttons);
+	if (inlineAttrTextEditOpen)
+		return kMouseEventHandled;
+
+	CPoint where2 (where);
+	where2.offset (-getViewSize ().left, -getViewSize ().top);
+	getTransform ().inverse ().transform (where2);
+	if (buttons & kLButton)
+	{
+		if (getSelection ()->total () > 0)
+		{
+			if (mouseEditMode == MouseEditMode::DragEditing)
 			{
-				getSelection ()->setExclusive (view);
+				doDragEditingMove (where2);
+			}
+			else if (mouseEditMode == MouseEditMode::SizeEditing)
+			{
+				doSizeEditingMove (where2);
 			}
 		}
-		if (lines)
+		CScrollView* scrollView = dynamic_cast<CScrollView*>(getParentView ()->getParentView ());
+		if (scrollView)
 		{
-			overlayView->removeView (lines);
-			lines = nullptr;
+			scrollView->makeRectVisible (CRect (where, CPoint (1, 1)));
 		}
-		mouseEditMode = MouseEditMode::NoEditing;
-		if (moveSizeOperation)
-		{
-			if (moveSizeOperation->didChange ())
-				getUndoManager ()->pushAndPerform (moveSizeOperation);
-			else
-				delete moveSizeOperation;
-			moveSizeOperation = nullptr;
-		}
-		onMouseMoved (where, CButtonState (buttons.getModifierState ()));
 		return kMouseEventHandled;
 	}
-	return CViewContainer::onMouseUp (where, buttons);
+	else if (buttons.getButtonState () == 0)
+	{
+		CView* view = nullptr;
+		CCursorType ctype = kCursorDefault;
+		auto mode = selectionHitTest (where, &view);
+		if (view)
+		{
+			switch (mode)
+			{
+				case MouseSizeMode::Right:
+				case MouseSizeMode::Left: ctype = kCursorHSize; break;
+				case MouseSizeMode::Top:
+				case MouseSizeMode::Bottom: ctype = kCursorVSize; break;
+				case MouseSizeMode::TopLeft:
+				case MouseSizeMode::BottomRight: ctype = kCursorNWSESize; break;
+				case MouseSizeMode::TopRight:
+				case MouseSizeMode::BottomLeft: ctype = kCursorNESWSize; break;
+				case MouseSizeMode::None:
+				{
+					if (getSelection ()->contains (getView (0)) == false)
+						ctype = kCursorHand;
+					break;
+				}
+				default: ctype = kCursorDefault; break;
+			}
+		}
+		getFrame ()->setCursor (ctype);
+	}
+	else
+		getFrame ()->setCursor (kCursorDefault);
+	return kMouseEventHandled;
 }
 
 //------------------------------------------------------------------------
@@ -963,71 +1024,6 @@ void UIEditView::doSizeEditingMove (CPoint& where)
 		else
 			lines->update (mouseStartPoint);
 	}
-}
-
-//----------------------------------------------------------------------------------------------------
-CMouseEventResult UIEditView::onMouseMoved (CPoint &where, const CButtonState& buttons)
-{
-	if (editing)
-	{
-		if (inlineAttrTextEditOpen)
-			return kMouseEventHandled;
-		CPoint where2 (where);
-		where2.offset (-getViewSize ().left, -getViewSize ().top);
-		getTransform ().inverse ().transform (where2);
-		if (buttons & kLButton)
-		{
-			if (getSelection ()->total () > 0)
-			{
-				if (mouseEditMode == MouseEditMode::DragEditing)
-				{
-					doDragEditingMove (where2);
-				}
-				else if (mouseEditMode == MouseEditMode::SizeEditing)
-				{
-					doSizeEditingMove (where2);
-				}
-			}
-			CScrollView* scrollView = dynamic_cast<CScrollView*>(getParentView ()->getParentView ());
-			if (scrollView)
-			{
-				scrollView->makeRectVisible (CRect (where, CPoint (1, 1)));
-			}
-			return kMouseEventHandled;
-		}
-		else if (buttons.getButtonState () == 0)
-		{
-			CView* view = nullptr;
-			CCursorType ctype = kCursorDefault;
-			auto mode = selectionHitTest (where, &view);
-			if (view)
-			{
-				switch (mode)
-				{
-					case MouseSizeMode::Right:
-					case MouseSizeMode::Left: ctype = kCursorHSize; break;
-					case MouseSizeMode::Top:
-					case MouseSizeMode::Bottom: ctype = kCursorVSize; break;
-					case MouseSizeMode::TopLeft:
-					case MouseSizeMode::BottomRight: ctype = kCursorNWSESize; break;
-					case MouseSizeMode::TopRight:
-					case MouseSizeMode::BottomLeft: ctype = kCursorNESWSize; break;
-					case MouseSizeMode::None:
-					{
-						if (getSelection ()->contains (getView (0)) == false)
-							ctype = kCursorHand;
-						break;	
-					}
-					default: ctype = kCursorDefault; break;
-				}
-			}
-			getFrame ()->setCursor (ctype);
-		}
-		else
-			getFrame ()->setCursor (kCursorDefault);
-		return kMouseEventHandled;
-	}
-	return CViewContainer::onMouseMoved (where, buttons);
 }
 
 //----------------------------------------------------------------------------------------------------
