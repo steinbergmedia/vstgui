@@ -10,7 +10,6 @@ TODO:
 		- finish documentation
 
 	Nice To Have:
-		- better selection mouse handling in UIEditView
 		- grid handling improvements (like custom magnetic lines)
 		- more custom attribute editing
 		- view z-index editing via drag&drop
