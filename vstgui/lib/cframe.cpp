@@ -1060,10 +1060,10 @@ void CFrame::onViewRemoved (CView* pView)
 	}
 	if (getViewAddedRemovedObserver ())
 		getViewAddedRemovedObserver ()->onViewRemoved (this, pView);
-	if (pImpl->animator)
-		pImpl->animator->removeAnimations (pView);
 	if (pView->wantsWindowActiveStateChangeNotification ())
 		pImpl->windowActiveStateChangeViews.remove (pView);
+	if (pImpl->animator)
+		pImpl->animator->removeAnimations (pView);
 }
 
 //-----------------------------------------------------------------------------
