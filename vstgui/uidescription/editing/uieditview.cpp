@@ -642,10 +642,24 @@ CMouseEventResult UIEditView::onMouseDown (CPoint &where, const CButtonState& bu
 
 	getFrame ()->setFocusView (this);
 
-	CView* selectionHitView = nullptr;
 	CPoint where2 (where);
 	where2.offset (-getViewSize ().left, -getViewSize ().top);
 	getTransform ().inverse ().transform (where2);
+
+	if (buttons.isShiftSet ())
+	{
+		getSelection ()->clear ();
+		mouseEditMode = MouseEditMode::LassoSelection;
+		mouseStartPoint = where2;
+
+		lines = new UICrossLines (this, UICrossLines::kLassoStyle, lassoFrameColor, lassoFillColor);
+		overlayView->addView (lines);
+		lines->update (where2);
+		getFrame ()->setCursor (kCursorDefault);
+		return kMouseEventHandled;
+	}
+
+	CView* selectionHitView = nullptr;
 	MouseSizeMode sizeMode = selectionHitTest (where, &selectionHitView);
 	CView* mouseHitView = getViewAt (where, GetViewOptions ().deep ().includeViewContainer ().includeInvisible ());
 	if (selectionHitView == nullptr && mouseHitView == nullptr)
@@ -664,7 +678,7 @@ CMouseEventResult UIEditView::onMouseDown (CPoint &where, const CButtonState& bu
 	}
 	else if (mouseHitView && sizeMode == MouseSizeMode::None)
 	{
-		if (buttons.isControlSet () || buttons.isShiftSet ())
+		if (buttons.isControlSet ())
 		{
 			getSelection ()->add (mouseHitView);
 			selectionHitView = mouseHitView;
@@ -745,7 +759,25 @@ CMouseEventResult UIEditView::onMouseUp (CPoint &where, const CButtonState& butt
 		return CViewContainer::onMouseUp (where, buttons);
 
 	editTimer = nullptr;
-	if (mouseEditMode != MouseEditMode::NoEditing && !moveSizeOperation && buttons == kLButton && !lines)
+	if (mouseEditMode == MouseEditMode::LassoSelection)
+	{
+		CPoint where2 (where);
+		where2.offset (-getViewSize ().left, -getViewSize ().top);
+		getTransform ().inverse ().transform (where2);
+
+		CRect area;
+		area.setTopLeft (mouseStartPoint);
+		area.setBottomRight (where2);
+		area.normalize ();
+		auto result = findChildsInArea (getView (0)->asViewContainer (), area);
+		auto factory = static_cast<const UIViewFactory*> (description->getViewFactory ());
+		for (auto& view : result)
+		{
+			if (factory->getViewName (view))
+				getSelection ()->add (view);
+		}
+	}
+	else if (mouseEditMode != MouseEditMode::NoEditing && !moveSizeOperation && buttons == kLButton && !lines)
 	{
 		CView* view = getViewAt (where, GetViewOptions ().deep ().includeViewContainer ().includeInvisible ());
 		if (view == this)
@@ -786,7 +818,19 @@ CMouseEventResult UIEditView::onMouseMoved (CPoint &where, const CButtonState& b
 	getTransform ().inverse ().transform (where2);
 	if (buttons & kLButton)
 	{
-		if (getSelection ()->total () > 0)
+		if (mouseEditMode == MouseEditMode::LassoSelection)
+		{
+			if (lines)
+			{
+				CRect r;
+				r.setTopLeft (mouseStartPoint);
+				r.setBottomRight (where2);
+				r.normalize ();
+				lines->update (r);
+			}
+			getFrame ()->setCursor (kCursorDefault);
+		}
+		else if (getSelection ()->total () > 0)
 		{
 			if (mouseEditMode == MouseEditMode::DragEditing)
 			{
@@ -804,7 +848,7 @@ CMouseEventResult UIEditView::onMouseMoved (CPoint &where, const CButtonState& b
 		}
 		return kMouseEventHandled;
 	}
-	else if (buttons.getButtonState () == 0)
+	else if (buttons.getButtonState () == 0 && !buttons.isShiftSet ())
 	{
 		CView* view = nullptr;
 		CCursorType ctype = kCursorDefault;
@@ -899,6 +943,35 @@ void UIEditView::doKeySize (const CPoint& delta)
 		getUndoManager ()->pushAndPerform (moveSizeOperation);
 		moveSizeOperation = nullptr;
 	}
+}
+
+//----------------------------------------------------------------------------------------------------
+std::vector<CView*> UIEditView::findChildsInArea (CViewContainer* view, CRect r) const
+{
+	std::vector<CView*> views;
+	view->forEachChild ([&] (CView* child) {
+		if (r.rectOverlap (child->getViewSize ()))
+		{
+			if (auto container = child->asViewContainer ())
+			{
+				auto r2 = r;
+				auto viewSize = container->getViewSize ();
+				r2.bound (viewSize);
+				if (!r2.isEmpty ())
+				{
+					r2.offsetInverse (viewSize.getTopLeft ());
+					auto res2 = findChildsInArea (container, r2);
+					std::move (res2.begin (), res2.end (), std::back_inserter (views));
+				}
+			}
+			else
+			{
+				views.push_back (child);
+			}
+		}
+	});
+
+	return views;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -1323,6 +1396,8 @@ void UIEditView::setupColors (const IUIDescription* desc)
 {
 	desc->getColor ("editView.crosslines.background", crosslineBackgroundColor);
 	desc->getColor ("editView.crosslines.foreground", crosslineForegroundColor);
+	desc->getColor ("editView.lasso.fill", lassoFillColor);
+	desc->getColor ("editView.lasso.frame", lassoFrameColor);
 	desc->getColor ("editView.view.highlight", viewHighlightColor);
 	desc->getColor ("editView.view.selection", viewSelectionColor);
 }

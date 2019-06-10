@@ -57,7 +57,8 @@ protected:
 	enum class MouseEditMode {
 		NoEditing,
 		DragEditing,
-		SizeEditing
+		SizeEditing,
+		LassoSelection,
 	};
 
 	enum class MouseSizeMode {
@@ -81,6 +82,8 @@ protected:
 	CMouseEventResult onMouseExited (CPoint& where, const CButtonState& buttons) override;
 	CMessageResult notify (CBaseObject* sender, IdStringPtr message) override;
 	int32_t onKeyDown (VstKeyCode& keyCode) override;
+
+	std::vector<CView*> findChildsInArea (CViewContainer* view, CRect r) const;
 
 	void doDragEditingMove (CPoint& where);
 	void doSizeEditingMove (CPoint& where);
@@ -128,6 +131,8 @@ protected:
 	
 	CColor crosslineForegroundColor;
 	CColor crosslineBackgroundColor;
+	CColor lassoFillColor;
+	CColor lassoFrameColor;
 	CColor viewHighlightColor;
 	CColor viewSelectionColor;
 };
