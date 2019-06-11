@@ -50,8 +50,8 @@ enum class ConfigKey : uint64_t
 struct ConfigValue
 {
 	ConfigValue () = delete;
-	ConfigValue (int64_t v) : type (Type::Integer) { value.integer = v; }
-	ConfigValue (const char* s) : type (Type::String) { value.string = s; }
+	constexpr ConfigValue (int64_t v) : type (Type::Integer) { value.integer = v; }
+	constexpr ConfigValue (const char* s) : type (Type::String) { value.string = s; }
 
 	enum class Type
 	{
