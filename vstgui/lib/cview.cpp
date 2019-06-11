@@ -249,8 +249,7 @@ void CView::beforeDelete ()
 	setDropTarget (nullptr);
 	
 	IController* controller = nullptr;
-	uint32_t size = sizeof (IController*);
-	if (getAttribute (kCViewControllerAttribute, sizeof (IController*), &controller, size) == true)
+	if (getAttribute (kCViewControllerAttribute, controller) == true)
 	{
 		auto obj = dynamic_cast<IReference*> (controller);
 		if (obj)

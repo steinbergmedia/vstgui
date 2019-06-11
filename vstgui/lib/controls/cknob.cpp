@@ -77,11 +77,10 @@ bool CKnobBase::sizeToFit ()
 auto CKnobBase::getMouseEditingState () -> MouseEditingState&
 {
 	MouseEditingState* state = nullptr;
-	uint32_t size;
-	if (!getAttribute (kCKnobMouseStateAttribute, sizeof (MouseEditingState*), &state, size))
+	if (!getAttribute (kCKnobMouseStateAttribute, state))
 	{
 		state = new MouseEditingState;
-		setAttribute (kCKnobMouseStateAttribute, sizeof (MouseEditingState*), &state);
+		setAttribute (kCKnobMouseStateAttribute, state);
 	}
 	return *state;
 }
@@ -91,7 +90,7 @@ void CKnobBase::clearMouseEditingState ()
 {
 	MouseEditingState* state = nullptr;
 	uint32_t size;
-	if (!getAttribute (kCKnobMouseStateAttribute, sizeof (MouseEditingState*), &state, size))
+	if (!getAttribute (kCKnobMouseStateAttribute, state))
 		return;
 	delete state;
 	removeAttribute (kCKnobMouseStateAttribute);
