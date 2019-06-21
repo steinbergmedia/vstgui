@@ -89,7 +89,6 @@ auto CKnobBase::getMouseEditingState () -> MouseEditingState&
 void CKnobBase::clearMouseEditingState ()
 {
 	MouseEditingState* state = nullptr;
-	uint32_t size;
 	if (!getAttribute (kCKnobMouseStateAttribute, state))
 		return;
 	delete state;
