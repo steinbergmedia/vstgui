@@ -371,6 +371,7 @@ public:
 #include "viewcreator/shadowviewcontainercreator.h"
 #include "viewcreator/sliderviewcreator.h"
 #include "viewcreator/splitviewcreator.h"
+#include "viewcreator/stringlistcontrolcreator.h"
 #include "viewcreator/switchcreators.h"
 #include "viewcreator/textbuttoncreator.h"
 #include "viewcreator/texteditcreator.h"
@@ -546,6 +547,7 @@ SegmentButtonCreator __gSegmentButtonCreator;
 ShadowViewContainerCreator __gShadowViewContainerCreator;
 SliderCreator __gSliderCreator;
 SplitViewCreator __gSplitViewCreator;
+StringListControlCreator __gStringListControlCreator;
 TextButtonCreator __gTextButtonCreator;
 TextEditCreator __gTextEditCreator;
 TextLabelCreator __gTextLabelCreator;

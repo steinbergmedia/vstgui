@@ -136,6 +136,8 @@ public:
 
 	UTF8String valueAsString (IValue::Type value) const override
 	{
+		if (strings.empty ())
+			return "";
 		auto index =
 		    convertValueToStep (value, static_cast<IStepValue::StepType> (strings.size () - 1));
 		return strings[index];

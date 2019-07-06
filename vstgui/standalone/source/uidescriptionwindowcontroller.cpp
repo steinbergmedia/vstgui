@@ -4,6 +4,7 @@
 
 #include "../../lib/cfileselector.h"
 #include "../../lib/cframe.h"
+#include "../../lib/controls/clistcontrol.h"
 #include "../../lib/controls/coptionmenu.h"
 #include "../../lib/controls/csegmentbutton.h"
 #include "../../lib/controls/ctextedit.h"
@@ -140,7 +141,7 @@ public:
 				menu->addEntry (title);
 			}
 		}
-		if (auto segmentButton = dynamic_cast<CSegmentButton*> (control))
+		else if (auto segmentButton = dynamic_cast<CSegmentButton*> (control))
 		{
 			segmentButton->removeAllSegments ();
 			for (IStepValue::StepType i = 0; i < stepValue->getSteps (); ++i)
@@ -150,6 +151,11 @@ public:
 				segment.name = title;
 				segmentButton->addSegment (std::move (segment));
 			}
+		}
+		else if (auto listcontrol = dynamic_cast<CListControl*>(control))
+		{
+			control->setMin (0.f);
+			control->setMax (stepValue->getSteps () - 1);
 		}
 	}
 
@@ -193,6 +199,19 @@ public:
 					    result = static_cast<float> (v);
 					    return true;
 				    });
+			}
+		}
+		else if (auto listControl = dynamic_cast<CListControl*> (control))
+		{
+			if (auto stringListDrawer =
+			        dynamic_cast<StringListControlDrawer*> (listControl->getDrawer ()))
+			{
+				stringListDrawer->setGetStringFunc ([this] (int32_t row) {
+					auto min = this->value->getConverter ().normalizedToPlain (0.);
+					auto norm = this->value->getConverter ().plainToNormalized (row + min);
+					auto string = this->value->getConverter ().valueAsString (norm);
+					return shared (string.getPlatformString ());
+				});
 			}
 		}
 		updateControlOnStateChange (control);

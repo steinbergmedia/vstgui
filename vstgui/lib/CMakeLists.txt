@@ -58,6 +58,8 @@ set(${target}_common_sources
     controls/cfontchooser.h
     controls/cknob.cpp
     controls/cknob.h
+    controls/clistcontrol.cpp
+    controls/clistcontrol.h
     controls/cmoviebitmap.cpp
     controls/cmoviebitmap.h
     controls/cmoviebutton.cpp

@@ -124,6 +124,8 @@ set(${target}_sources
     viewcreator/sliderviewcreator.h
     viewcreator/splitviewcreator.cpp
     viewcreator/splitviewcreator.h
+    viewcreator/stringlistcontrolcreator.cpp
+    viewcreator/stringlistcontrolcreator.h
     viewcreator/switchcreators.cpp
     viewcreator/switchcreators.h
     viewcreator/textbuttoncreator.cpp
