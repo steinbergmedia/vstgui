@@ -4,9 +4,9 @@
 
 #include "../../lib/cfileselector.h"
 #include "../../lib/cframe.h"
-#include "../../lib/controls/clistcontrol.h"
 #include "../../lib/controls/coptionmenu.h"
 #include "../../lib/controls/csegmentbutton.h"
+#include "../../lib/controls/cstringlist.h"
 #include "../../lib/controls/ctextedit.h"
 #include "../../lib/crect.h"
 #include "../../lib/cvstguitimer.h"

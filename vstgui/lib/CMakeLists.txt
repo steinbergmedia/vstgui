@@ -80,6 +80,8 @@ set(${target}_common_sources
     controls/cspecialdigit.h
     controls/csplashscreen.cpp
     controls/csplashscreen.h
+    controls/cstringlist.cpp
+    controls/cstringlist.h
     controls/cswitch.cpp
     controls/cswitch.h
     controls/ctextedit.cpp

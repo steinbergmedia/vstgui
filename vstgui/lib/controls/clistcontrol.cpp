@@ -51,11 +51,13 @@ void CListControl::recalculateHeight ()
 	CCoord height = 0.;
 	auto numRows = getNumRows ();
 	rowDescriptions.resize (static_cast<size_t> (numRows));
-
+	doHoverCheck = false;
+	
 	for (auto row = 0; row < numRows; ++row)
 	{
 		rowDescriptions[row] = configurator->getRowDesc (row);
 		height += rowDescriptions[row].height;
+		doHoverCheck |= rowDescriptions[row].flags & CListControlRowDesc::Hoverable;
 	}
 
 	auto viewSize = getViewSize ();
@@ -118,23 +120,28 @@ void CListControl::drawRect (CDrawContext* context, const CRect& updateRect)
 	if (!drawer)
 		return;
 
-	auto topLeft = getViewSize ().getTopLeft ();
-	CDrawContext::Transform t (*context, CGraphicsTransform ().translate (topLeft.x, topLeft.y));
+	if (!getTransparency ())
+		drawer->drawBackground (context, getViewSize ());
+
 	CRect rowSize;
+	rowSize.setTopLeft (getViewSize ().getTopLeft ());
 	rowSize.setWidth (getWidth ());
+	rowSize.setHeight (0);
 	auto numRows = getNumRows ();
 	for (auto row = 0; row < numRows; ++row)
 	{
 		rowSize.setHeight (rowDescriptions[row].height);
-		// TODO: if row is not covered by update rect do not draw
-		int32_t flags = getIntValue () == row ? IListControlDrawer::Selected : 0;
-		if (rowDescriptions[row].flags & CListControlRowDesc::Selectable)
-			flags |= IListControlDrawer::Selectable;
-		if (hoveredRow == row)
-			flags |= IListControlDrawer::Hovered;
-		if (row == numRows)
-			flags |= IListControlDrawer::LastRow;
-		drawer->drawRow (context, rowSize, row, flags);
+		if (updateRect.rectOverlap (rowSize))
+		{
+			int32_t flags = getIntValue () == row ? IListControlDrawer::Selected : 0;
+			if (rowDescriptions[row].flags & CListControlRowDesc::Selectable)
+				flags |= IListControlDrawer::Selectable;
+			if (hoveredRow == row)
+				flags |= IListControlDrawer::Hovered;
+			if (row == numRows)
+				flags |= IListControlDrawer::LastRow;
+			drawer->drawRow (context, rowSize, row, flags);
+		}
 		rowSize.offset (0, rowDescriptions[row].height);
 	}
 }
@@ -164,16 +171,18 @@ CMouseEventResult CListControl::onMouseDown (CPoint& where, const CButtonState& 
 //------------------------------------------------------------------------
 CMouseEventResult CListControl::onMouseMoved (CPoint& where, const CButtonState& buttons)
 {
-	// TODO: row hover
-	auto row = getRowAtPoint (where);
-	if (row != -1 && row != hoveredRow)
+	if (doHoverCheck)
 	{
-		if (rowDescriptions[row].flags & CListControlRowDesc::Hoverable)
+		auto row = getRowAtPoint (where);
+		if (row != -1 && row != hoveredRow)
 		{
-			if (hoveredRow != -1)
-				invalidRow (hoveredRow);
-			hoveredRow = row;
-			invalidRow (row);
+			if (rowDescriptions[row].flags & CListControlRowDesc::Hoverable)
+			{
+				if (hoveredRow != -1)
+					invalidRow (hoveredRow);
+				hoveredRow = row;
+				invalidRow (row);
+			}
 		}
 	}
 	return kMouseEventHandled;

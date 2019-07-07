@@ -4,7 +4,7 @@
 
 #include "stringlistcontrolcreator.h"
 
-#include "../../lib/controls/clistcontrol.h"
+#include "../../lib/controls/cstringlist.h"
 #include "../detail/uiviewcreatorattributes.h"
 #include "../uiattributes.h"
 #include "../uiviewcreator.h"
@@ -19,7 +19,9 @@ static const std::string kAttrSelectedFontColor = "font-color-selected";
 static const std::string kAttrSelectedBackColor = "back-color-selected";
 static const std::string kAttrLineColor = "line-color";
 static const std::string kAttrLineWidth = "line-width";
+static const std::string kAttrHoverColor = "hover-color";
 static const std::string kAttrRowHeight = "row-height";
+static const std::string kAttrStyleHover = "style-hover";
 
 //------------------------------------------------------------------------
 StringListControlCreator::StringListControlCreator ()
@@ -49,7 +51,7 @@ UTF8StringPtr StringListControlCreator::getDisplayName () const
 CView* StringListControlCreator::create (const UIAttributes& attributes,
                                          const IUIDescription* description) const
 {
-	auto control = new CListControl (CRect (0, 0, 100, 200), nullptr, -1);
+	auto control = new CListControl (CRect (0, 0, 100, 200));
 	auto drawer = makeOwned<StringListControlDrawer> ();
 	control->setDrawer (drawer);
 	auto configurator = makeOwned<StaticListControlConfigurator> (12.);
@@ -60,15 +62,18 @@ CView* StringListControlCreator::create (const UIAttributes& attributes,
 //------------------------------------------------------------------------
 bool StringListControlCreator::getAttributeNames (StringList& attributeNames) const
 {
+	attributeNames.emplace_back (kAttrStyleHover);
 	attributeNames.emplace_back (kAttrFont);
 	attributeNames.emplace_back (kAttrFontColor);
 	attributeNames.emplace_back (kAttrSelectedFontColor);
 	attributeNames.emplace_back (kAttrBackColor);
 	attributeNames.emplace_back (kAttrSelectedBackColor);
+	attributeNames.emplace_back (kAttrHoverColor);
 	attributeNames.emplace_back (kAttrLineColor);
 	attributeNames.emplace_back (kAttrLineWidth);
 	attributeNames.emplace_back (kAttrTextInset);
 	attributeNames.emplace_back (kAttrRowHeight);
+	attributeNames.emplace_back (kAttrTextAlignment);
 	return true;
 }
 
@@ -85,6 +90,8 @@ auto StringListControlCreator::getAttributeType (const string& attributeName) co
 		return kColorType;
 	if (attributeName == kAttrSelectedBackColor)
 		return kColorType;
+	if (attributeName == kAttrHoverColor)
+		return kColorType;
 	if (attributeName == kAttrLineColor)
 		return kColorType;
 	if (attributeName == kAttrLineWidth)
@@ -93,6 +100,10 @@ auto StringListControlCreator::getAttributeType (const string& attributeName) co
 		return kFloatType;
 	if (attributeName == kAttrRowHeight)
 		return kFloatType;
+	if (attributeName == kAttrStyleHover)
+		return kBooleanType;
+	if (attributeName == kAttrTextAlignment)
+		return kStringType;
 	return kUnknownType;
 }
 
@@ -108,11 +119,19 @@ bool StringListControlCreator::apply (CView* view, const UIAttributes& attribute
 	if (!drawer || !configurator)
 		return false;
 
-	const auto* fontAttr = attributes.getAttributeValue (kAttrFont);
-	if (fontAttr)
+	if (const auto* fontAttr = attributes.getAttributeValue (kAttrFont))
 	{
 		if (auto font = description->getFont (fontAttr->data ()))
 			drawer->setFont (font);
+	}
+	if (const auto* textAlignmentAttr = attributes.getAttributeValue (kAttrTextAlignment))
+	{
+		CHoriTxtAlign align = kCenterText;
+		if (*textAlignmentAttr == strLeft)
+			align = kLeftText;
+		else if (*textAlignmentAttr == strRight)
+			align = kRightText;
+		drawer->setTextAlign (align);
 	}
 	CColor color;
 	if (stringToColor (attributes.getAttributeValue (kAttrFontColor), color, description))
@@ -123,6 +142,8 @@ bool StringListControlCreator::apply (CView* view, const UIAttributes& attribute
 		drawer->setBackColor (color);
 	if (stringToColor (attributes.getAttributeValue (kAttrSelectedBackColor), color, description))
 		drawer->setSelectedBackColor (color);
+	if (stringToColor (attributes.getAttributeValue (kAttrHoverColor), color, description))
+		drawer->setHoverColor (color);
 	if (stringToColor (attributes.getAttributeValue (kAttrLineColor), color, description))
 		drawer->setLineColor (color);
 	double d;
@@ -132,6 +153,10 @@ bool StringListControlCreator::apply (CView* view, const UIAttributes& attribute
 		drawer->setTextInset (d);
 	if (attributes.getDoubleAttribute (kAttrRowHeight, d))
 		configurator->setRowHeight (d);
+	bool b;
+	if (attributes.getBooleanAttribute (kAttrStyleHover, b))
+		configurator->setFlags (CListControlRowDesc::Selectable |
+		                        (b ? CListControlRowDesc::Hoverable : 0));
 
 	control->invalid ();
 	control->recalculateHeight ();
@@ -182,6 +207,11 @@ bool StringListControlCreator::getAttributeValue (CView* view, const string& att
 		colorToString (drawer->getSelectedBackColor (), stringValue, desc);
 		return true;
 	}
+	else if (attributeName == kAttrHoverColor)
+	{
+		colorToString (drawer->getHoverColor (), stringValue, desc);
+		return true;
+	}
 	else if (attributeName == kAttrLineColor)
 	{
 		colorToString (drawer->getLineColor (), stringValue, desc);
@@ -200,6 +230,23 @@ bool StringListControlCreator::getAttributeValue (CView* view, const string& att
 	else if (attributeName == kAttrRowHeight)
 	{
 		stringValue = UIAttributes::doubleToString (configurator->getRowHeight ());
+		return true;
+	}
+	else if (attributeName == kAttrStyleHover)
+	{
+		stringValue =
+		    UIAttributes::boolToString (configurator->getFlags () & CListControlRowDesc::Hoverable);
+		return true;
+	}
+	else if (attributeName == kAttrTextAlignment)
+	{
+		CHoriTxtAlign align = drawer->getTextAlign ();
+		switch (align)
+		{
+			case kLeftText: stringValue = strLeft; break;
+			case kRightText: stringValue = strRight; break;
+			case kCenterText: stringValue = strCenter; break;
+		}
 		return true;
 	}
 
