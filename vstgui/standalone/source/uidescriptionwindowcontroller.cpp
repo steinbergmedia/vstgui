@@ -625,6 +625,8 @@ struct WindowController::Impl : public IController, public ICommandHandler
 		auto* control = dynamic_cast<CControl*> (view);
 		if (control)
 		{
+			if (control->getListener () == nullptr)
+				control->setListener (this);
 			auto index = static_cast<ValueWrapperList::size_type> (control->getTag ());
 			if (index < valueWrappers.size ())
 			{

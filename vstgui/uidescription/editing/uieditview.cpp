@@ -1152,17 +1152,17 @@ SharedPointer<UISelection> UIEditView::getSelectionOutOfDrag (IDataPackage* drag
 	uint32_t size;
 	if ((size = drag->getData (0, dragData, type)) > 0 && type == IDataPackage::kText)
 	{
-		IController* controller = getEditor () ? dynamic_cast<IController*> (getEditor ()) : nullptr;
-		if (controller)
+		auto oldController = description->getController ();
+		if (auto* controller = getEditor () ? dynamic_cast<IController*> (getEditor ()) : nullptr)
 			description->setController (controller);
 		CMemoryStream stream (static_cast<const int8_t*> (dragData), size, false);
 		auto newSelection = makeOwned<UISelection> ();
 		if (newSelection->restore (stream, description))
 		{
-			description->setController (nullptr);
+			description->setController (oldController);
 			return newSelection;
 		}
-		description->setController (nullptr);
+		description->setController (oldController);
 	}
 	return nullptr;
 }
