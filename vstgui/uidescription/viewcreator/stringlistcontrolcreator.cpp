@@ -159,7 +159,7 @@ bool StringListControlCreator::apply (CView* view, const UIAttributes& attribute
 		                        (b ? CListControlRowDesc::Hoverable : 0));
 
 	control->invalid ();
-	control->recalculateHeight ();
+	control->recalculateLayout ();
 
 	return true;
 }

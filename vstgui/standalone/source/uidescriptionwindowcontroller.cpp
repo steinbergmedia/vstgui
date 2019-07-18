@@ -246,6 +246,14 @@ protected:
 			if (auto textEdit = dynamic_cast<CTextEdit*> (paramDisplay))
 				textEdit->setStringToValueFunction (nullptr);
 		}
+		else if (auto listControl = dynamic_cast<CListControl*> (control))
+		{
+			if (auto stringListDrawer =
+			        dynamic_cast<StringListControlDrawer*> (listControl->getDrawer ()))
+			{
+				stringListDrawer->setGetStringFunc (nullptr);
+			}
+		}
 		control->unregisterViewListener (this);
 		control->unregisterControlListener (this);
 	}

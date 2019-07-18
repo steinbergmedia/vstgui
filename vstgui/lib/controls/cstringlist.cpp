@@ -3,6 +3,7 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "cstringlist.h"
+#include "../cdrawcontext.h"
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
@@ -147,16 +148,15 @@ void StringListControlDrawer::drawBackground (CDrawContext* context, CRect size)
 }
 
 //------------------------------------------------------------------------
-void StringListControlDrawer::drawRow (CDrawContext* context, CRect size, int32_t row,
-                                       int32_t flags)
+void StringListControlDrawer::drawRow (CDrawContext* context, CRect size, Row row)
 {
 	context->setDrawMode (kAntiAliasing);
-	if (flags & Hovered)
+	if (row.isHovered ())
 	{
 		context->setFillColor (hoverColor);
 		context->drawRect (size, kDrawFilled);
 	}
-	if (flags & Selected)
+	if (row.isSelected ())
 	{
 		context->setFillColor (backColorSelected);
 		context->drawRect (size, kDrawFilled);
@@ -165,24 +165,26 @@ void StringListControlDrawer::drawRow (CDrawContext* context, CRect size, int32_
 	auto lw = lineWidth < 0. ? context->getHairlineSize () : lineWidth;
 	size.bottom -= lw * 0.5;
 
-	if (!(flags & LastRow) && lw != 0.)
+	if (!(row.isLastRow ()) && lw != 0.)
 	{
+		context->setDrawMode (kAntiAliasing | kNonIntegralMode);
 		context->setFrameColor (lineColor);
 		context->setLineWidth (lw);
 		context->drawLine (size.getBottomLeft (), size.getBottomRight ());
 	}
-	SharedPointer<IPlatformString> string;
-	if (func)
-		string = func (row);
-	else
-		string = IPlatformString::createWithUTF8String (toString (row));
-	if (string)
+	if (auto string = getString (row))
 	{
 		size.inset (textInset, 0);
-		context->setFontColor (flags & Selected ? fontColorSelected : fontColor);
+		context->setFontColor (row.isSelected () ? fontColorSelected : fontColor);
 		context->setFont (font);
 		context->drawString (string, size, textAlign);
 	}
+}
+
+//------------------------------------------------------------------------
+SharedPointer<IPlatformString> StringListControlDrawer::getString (int32_t row) const
+{
+	return func ? func (row) : IPlatformString::createWithUTF8String (toString (row));
 }
 
 //------------------------------------------------------------------------

@@ -98,6 +98,10 @@ bool ControlCreator::apply (CView* view, const UIAttributes& attributes,
 					    description->getControlListener (controlTagAttr->c_str ()));
 					control->setTag (tag);
 				}
+				else
+				{
+					control->setTag (-1);
+				}
 			}
 		}
 	}

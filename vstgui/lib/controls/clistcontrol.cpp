@@ -4,29 +4,57 @@
 
 #include "../cbitmap.h"
 #include "../cdrawcontext.h"
+#include "../cscrollview.h"
 #include "clistcontrol.h"
+#include <vector>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
 
 //------------------------------------------------------------------------
+struct CListControl::Impl
+{
+	SharedPointer<IListControlDrawer> drawer;
+	SharedPointer<IListControlConfigurator> configurator;
+
+	std::vector<CListControlRowDesc> rowDescriptions;
+	Optional<int32_t> hoveredRow {};
+	bool doHoverCheck {false};
+};
+
+//------------------------------------------------------------------------
 CListControl::CListControl (const CRect& size, IControlListener* listener, int32_t tag)
 : CControl (size, listener, tag)
 {
+	impl = std::unique_ptr<Impl> (new Impl);
 }
+
+//------------------------------------------------------------------------
+CListControl::~CListControl () = default;
 
 //------------------------------------------------------------------------
 void CListControl::setDrawer (IListControlDrawer* d)
 {
-	drawer = d;
+	impl->drawer = d;
 }
 
 //------------------------------------------------------------------------
 void CListControl::setConfigurator (IListControlConfigurator* c)
 {
-	configurator = c;
-	if (configurator)
-		recalculateHeight ();
+	impl->configurator = c;
+	recalculateLayout ();
+}
+
+//------------------------------------------------------------------------
+IListControlDrawer* CListControl::getDrawer () const
+{
+	return impl->drawer;
+}
+
+//------------------------------------------------------------------------
+IListControlConfigurator* CListControl::getConfigurator () const
+{
+	return impl->configurator;
 }
 
 //------------------------------------------------------------------------
@@ -39,25 +67,25 @@ int32_t CListControl::getNumRows () const
 //------------------------------------------------------------------------
 int32_t CListControl::getIntValue () const
 {
-	return static_cast<int32_t> (std::round (getValue () - getMin ()));
+	return static_cast<int32_t> (std::round (getValue ()));
 }
 
 //------------------------------------------------------------------------
-void CListControl::recalculateHeight ()
+void CListControl::recalculateLayout ()
 {
-	if (!configurator)
+	if (!impl->configurator)
 		return;
 
 	CCoord height = 0.;
 	auto numRows = getNumRows ();
-	rowDescriptions.resize (static_cast<size_t> (numRows));
-	doHoverCheck = false;
-	
+	impl->rowDescriptions.resize (static_cast<size_t> (numRows));
+	impl->doHoverCheck = false;
+
 	for (auto row = 0; row < numRows; ++row)
 	{
-		rowDescriptions[row] = configurator->getRowDesc (row);
-		height += rowDescriptions[row].height;
-		doHoverCheck |= rowDescriptions[row].flags & CListControlRowDesc::Hoverable;
+		impl->rowDescriptions[row] = impl->configurator->getRowDesc (row);
+		height += impl->rowDescriptions[row].height;
+		impl->doHoverCheck |= impl->rowDescriptions[row].flags & CListControlRowDesc::Hoverable;
 	}
 
 	auto viewSize = getViewSize ();
@@ -70,34 +98,42 @@ void CListControl::recalculateHeight ()
 }
 
 //------------------------------------------------------------------------
-void CListControl::invalidRow (int32_t row)
+Optional<CRect> CListControl::getRowRect (int32_t row) const
 {
+	row -= getMinRowIndex ();
 	CRect rowSize;
 	rowSize.setWidth (getWidth ());
-	for (auto i = 0u; i < rowDescriptions.size (); ++i)
+	for (auto i = 0u; i < impl->rowDescriptions.size (); ++i)
 	{
-		rowSize.setHeight (rowDescriptions[row].height);
+		rowSize.setHeight (impl->rowDescriptions[i].height);
 		if (i == row)
 			break;
-		rowSize.offset (0, rowDescriptions[row].height);
+		rowSize.offset (0, impl->rowDescriptions[i].height);
 	}
 	rowSize.offset (getViewSize ().getTopLeft ());
-	invalidRect (rowSize);
+	return rowSize;
 }
 
 //------------------------------------------------------------------------
-int32_t CListControl::getRowAtPoint (CPoint where) const
+void CListControl::invalidRow (int32_t row)
+{
+	if (auto rect = getRowRect (row))
+		invalidRect (*rect);
+}
+
+//------------------------------------------------------------------------
+Optional<int32_t> CListControl::getRowAtPoint (CPoint where) const
 {
 	where.offsetInverse (getViewSize ().getTopLeft ());
 
 	auto numRows = getNumRows ();
 	for (auto row = 0; row < numRows; ++row)
 	{
-		if (where.y < rowDescriptions[row].height)
-			return row;
-		where.y -= rowDescriptions[row].height;
+		if (where.y < impl->rowDescriptions[row].height)
+			return {row + getMinRowIndex ()};
+		where.y -= impl->rowDescriptions[row].height;
 	}
-	return -1;
+	return {};
 }
 
 //------------------------------------------------------------------------
@@ -117,47 +153,70 @@ void CListControl::drawRect (CDrawContext* context, const CRect& updateRect)
 	if (auto bitmap = getDrawBackground ())
 		bitmap->draw (context, getViewSize ());
 
-	if (!drawer)
+	if (!impl->drawer)
 		return;
 
 	if (!getTransparency ())
-		drawer->drawBackground (context, getViewSize ());
+		impl->drawer->drawBackground (context, getViewSize ());
 
 	CRect rowSize;
 	rowSize.setTopLeft (getViewSize ().getTopLeft ());
 	rowSize.setWidth (getWidth ());
 	rowSize.setHeight (0);
 	auto numRows = getNumRows ();
+	auto selectedRow = getNormalizedRowIndex (getIntValue ());
 	for (auto row = 0; row < numRows; ++row)
 	{
-		rowSize.setHeight (rowDescriptions[row].height);
+		rowSize.setHeight (impl->rowDescriptions[row].height);
 		if (updateRect.rectOverlap (rowSize))
 		{
-			int32_t flags = getIntValue () == row ? IListControlDrawer::Selected : 0;
-			if (rowDescriptions[row].flags & CListControlRowDesc::Selectable)
-				flags |= IListControlDrawer::Selectable;
-			if (hoveredRow == row)
-				flags |= IListControlDrawer::Hovered;
-			if (row == numRows)
-				flags |= IListControlDrawer::LastRow;
-			drawer->drawRow (context, rowSize, row, flags);
+			int32_t flags = selectedRow == row ? IListControlDrawer::Row::Selected : 0;
+			if (impl->rowDescriptions[row].flags & CListControlRowDesc::Selectable)
+				flags |= IListControlDrawer::Row::Selectable;
+			if (impl->hoveredRow && *impl->hoveredRow == row + getMinRowIndex ())
+				flags |= IListControlDrawer::Row::Hovered;
+			if (row == numRows - 1)
+				flags |= IListControlDrawer::Row::LastRow;
+			impl->drawer->drawRow (context, rowSize, {row + getMinRowIndex (), flags});
 		}
-		rowSize.offset (0, rowDescriptions[row].height);
+		rowSize.offset (0, impl->rowDescriptions[row].height);
 	}
+}
+
+//------------------------------------------------------------------------
+bool CListControl::attached (CView* parent)
+{
+	recalculateLayout ();
+	return CControl::attached (parent);
 }
 
 //------------------------------------------------------------------------
 void CListControl::setMin (float val)
 {
-	CControl::setMin (val);
-	recalculateHeight ();
+	if (getMin () != val && val < getMax ())
+	{
+		CControl::setMin (val);
+		if (isAttached ())
+			recalculateLayout ();
+	}
 }
 
 //------------------------------------------------------------------------
 void CListControl::setMax (float val)
 {
-	CControl::setMax (val);
-	recalculateHeight ();
+	if (getMax () != val && val > getMin ())
+	{
+		CControl::setMax (val);
+		if (isAttached ())
+			recalculateLayout ();
+	}
+}
+
+//------------------------------------------------------------------------
+size_t CListControl::getNormalizedRowIndex (int32_t row) const
+{
+	vstgui_assert (row >= getMinRowIndex ());
+	return row - getMinRowIndex ();
 }
 
 //------------------------------------------------------------------------
@@ -169,21 +228,38 @@ CMouseEventResult CListControl::onMouseDown (CPoint& where, const CButtonState& 
 }
 
 //------------------------------------------------------------------------
+void CListControl::clearHoveredRow ()
+{
+	if (impl->hoveredRow)
+	{
+		invalidRow (*impl->hoveredRow);
+		impl->hoveredRow.reset ();
+	}
+}
+
+//------------------------------------------------------------------------
 CMouseEventResult CListControl::onMouseMoved (CPoint& where, const CButtonState& buttons)
 {
-	if (doHoverCheck)
+	if (impl->doHoverCheck)
 	{
 		auto row = getRowAtPoint (where);
-		if (row != -1 && row != hoveredRow)
+		if (row)
 		{
-			if (rowDescriptions[row].flags & CListControlRowDesc::Hoverable)
+			if (impl->rowDescriptions[getNormalizedRowIndex (*row)].flags &
+			    CListControlRowDesc::Hoverable)
 			{
-				if (hoveredRow != -1)
-					invalidRow (hoveredRow);
-				hoveredRow = row;
-				invalidRow (row);
+				if (!impl->hoveredRow || *impl->hoveredRow != *row)
+				{
+					clearHoveredRow ();
+					impl->hoveredRow = makeOptional (*row);
+					invalidRow (*row);
+				}
 			}
+			else
+				clearHoveredRow ();
 		}
+		else
+			clearHoveredRow ();
 	}
 	return kMouseEventHandled;
 }
@@ -191,17 +267,17 @@ CMouseEventResult CListControl::onMouseMoved (CPoint& where, const CButtonState&
 //------------------------------------------------------------------------
 CMouseEventResult CListControl::onMouseUp (CPoint& where, const CButtonState& buttons)
 {
-	if (rowDescriptions.empty () || !buttons.isLeftButton ())
+	if (impl->rowDescriptions.empty () || !buttons.isLeftButton ())
 		return kMouseEventHandled;
 
 	auto row = getRowAtPoint (where);
-	if (row != -1 && getIntValue () != row)
+	if (row && getIntValue () != *row)
 	{
-		if (rowDescriptions[row].flags & CListControlRowDesc::Selectable)
+		if (rowSelectable (*row))
 		{
 			invalidRow (getIntValue ());
 			beginEdit ();
-			setValue (row);
+			setValue (*row);
 			valueChanged ();
 			endEdit ();
 			invalidRow (getIntValue ());
@@ -214,12 +290,184 @@ CMouseEventResult CListControl::onMouseUp (CPoint& where, const CButtonState& bu
 //------------------------------------------------------------------------
 CMouseEventResult CListControl::onMouseExited (CPoint& where, const CButtonState& buttons)
 {
-	if (hoveredRow != -1)
-	{
-		invalidRow (hoveredRow);
-		hoveredRow = -1;
-	}
+	clearHoveredRow ();
 	return kMouseEventHandled;
+}
+
+//------------------------------------------------------------------------
+int32_t CListControl::getMinRowIndex () const
+{
+	return static_cast<int32_t> (getMin ());
+}
+
+//------------------------------------------------------------------------
+int32_t CListControl::getMaxRowIndex () const
+{
+	return static_cast<int32_t> (getMax ());
+}
+
+//------------------------------------------------------------------------
+int32_t CListControl::getNextSelectableRow (int32_t r, int32_t direction) const
+{
+	auto minRowIndex = getMinRowIndex ();
+	auto maxRowIndex = getMaxRowIndex ();
+	int32_t row = r;
+	do
+	{
+		row += direction;
+		if (row > maxRowIndex)
+			row = minRowIndex;
+		else if (row < minRowIndex)
+			row = maxRowIndex;
+		if (rowSelectable (row))
+			break;
+	} while (row != r);
+	return row;
+}
+
+//------------------------------------------------------------------------
+bool CListControl::rowSelectable (int32_t row) const
+{
+	return (impl->rowDescriptions[getNormalizedRowIndex (row)].flags &
+	        CListControlRowDesc::Selectable) != 0;
+}
+
+//------------------------------------------------------------------------
+int32_t CListControl::onKeyDown (VstKeyCode& keyCode)
+{
+	if (getMouseEnabled () && keyCode.character == 0)
+	{
+		int32_t newRow = getIntValue ();
+		switch (keyCode.virt)
+		{
+			case VKEY_HOME:
+			{
+				if (keyCode.modifier != 0)
+					break;
+				newRow = getMinRowIndex ();
+				if (!rowSelectable (newRow))
+					newRow = getNextSelectableRow (newRow, 1);
+				break;
+			}
+			case VKEY_END:
+			{
+				if (keyCode.modifier != 0)
+					break;
+				newRow = getMaxRowIndex ();
+				if (!rowSelectable (newRow))
+					newRow = getNextSelectableRow (newRow, -1);
+				break;
+			}
+			case VKEY_UP:
+			{
+				if (keyCode.modifier != 0)
+					break;
+				newRow = getNextSelectableRow (newRow, -1);
+				break;
+			}
+			case VKEY_DOWN:
+			{
+				if (keyCode.modifier != 0)
+					break;
+				newRow = getNextSelectableRow (newRow, 1);
+				break;
+			}
+			case VKEY_PAGEUP:
+			{
+				if (keyCode.modifier != 0)
+					break;
+				auto vr = getVisibleViewSize ();
+				auto rr = getRowRect (newRow);
+				if (rr && !vr.rectOverlap (*rr))
+				{
+					if (auto scrollView =
+					        dynamic_cast<CScrollView*> (getParentView ()->getParentView ()))
+					{
+						scrollView->makeRectVisible (*rr);
+						return onKeyDown (keyCode);
+					}
+				}
+				vr.top += 2;
+				if (auto firstVisibleRow = getRowAtPoint (vr.getTopLeft ()))
+				{
+					if (*firstVisibleRow == getIntValue ())
+					{
+						vr.offset (0, -vr.getHeight ());
+						if ((firstVisibleRow = getRowAtPoint (vr.getTopLeft ())))
+							newRow = *firstVisibleRow;
+						else
+							newRow = getMinRowIndex ();
+					}
+					else
+					{
+						newRow = *firstVisibleRow;
+					}
+				}
+				if (!rowSelectable (newRow))
+					newRow = getNextSelectableRow (newRow, -1);
+				break;
+			}
+			case VKEY_PAGEDOWN:
+			{
+				if (keyCode.modifier != 0)
+					break;
+				auto vr = getVisibleViewSize ();
+				auto rr = getRowRect (newRow);
+				if (rr && !vr.rectOverlap (*rr))
+				{
+					if (auto scrollView =
+					        dynamic_cast<CScrollView*> (getParentView ()->getParentView ()))
+					{
+						scrollView->makeRectVisible (*rr);
+						return onKeyDown (keyCode);
+					}
+				}
+				vr.bottom -= 2;
+				if (auto lastVisibleRow = getRowAtPoint (vr.getBottomLeft ()))
+				{
+					if (*lastVisibleRow == getIntValue ())
+					{
+						vr.offset (0, vr.getHeight ());
+						if ((lastVisibleRow = getRowAtPoint (vr.getBottomLeft ())))
+							newRow = *lastVisibleRow;
+						else
+							newRow = getMaxRowIndex ();
+					}
+					else
+					{
+						newRow = *lastVisibleRow;
+					}
+				}
+				if (!rowSelectable (newRow))
+					newRow = getNextSelectableRow (newRow, 1);
+				break;
+			}
+		}
+		if (newRow != getIntValue () && rowSelectable (newRow))
+		{
+			invalidRow (getIntValue ());
+			beginEdit ();
+			setValue (newRow);
+			valueChanged ();
+			endEdit ();
+			if (auto rowRect = getRowRect (getIntValue ()))
+			{
+				invalidRect (*rowRect);
+				if (auto scrollView =
+				        dynamic_cast<CScrollView*> (getParentView ()->getParentView ()))
+					scrollView->makeRectVisible (*rowRect);
+			}
+			return 1;
+		}
+	}
+	return -1;
+}
+
+//------------------------------------------------------------------------
+void CListControl::setViewSize (const CRect& rect, bool invalid)
+{
+	CControl::setViewSize (rect, invalid);
+	impl->hoveredRow.reset ();
 }
 
 //------------------------------------------------------------------------

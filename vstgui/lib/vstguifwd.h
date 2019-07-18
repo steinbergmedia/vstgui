@@ -186,6 +186,8 @@ class GenericStringListDataBrowserSource;
 class StaticListControlConfigurator;
 class StringListControlDrawer;
 
+using CFontRef = CFontDesc*;
+
 // views
 class CFrame;
 class CDataBrowser;

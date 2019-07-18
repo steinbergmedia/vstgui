@@ -4,13 +4,58 @@
 
 #pragma once
 
+#include "../optional.h"
 #include "ccontrol.h"
-#include <vector>
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
 
-class CListControl; // TODO: move to fwd header
+//------------------------------------------------------------------------
+class CListControl final : public CControl
+{
+public:
+	CListControl (const CRect& size, IControlListener* listener = nullptr, int32_t tag = -1);
+	~CListControl () override;
+
+	void setDrawer (IListControlDrawer* d);
+	void setConfigurator (IListControlConfigurator* c);
+
+	IListControlDrawer* getDrawer () const;
+	IListControlConfigurator* getConfigurator () const;
+
+	void recalculateLayout ();
+
+	void invalidRow (int32_t row);
+	Optional<int32_t> getRowAtPoint (CPoint where) const;
+	Optional<CRect> getRowRect (int32_t row) const;
+
+	void setMin (float val) override;
+	void setMax (float val) override;
+
+	CLASS_METHODS_NOCOPY (CListControl, CControl)
+private:
+	bool attached (CView* parent) override;
+	void draw (CDrawContext* context) override;
+	void drawRect (CDrawContext* context, const CRect& updateRect) override;
+	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
+	CMouseEventResult onMouseExited (CPoint& where, const CButtonState& buttons) override;
+	int32_t onKeyDown (VstKeyCode& keyCode) override;
+	void setViewSize (const CRect& rect, bool invalid = true) override;
+
+	int32_t getNextSelectableRow (int32_t r, int32_t direction) const;
+	int32_t getNumRows () const;
+	int32_t getIntValue () const;
+	int32_t getMinRowIndex () const;
+	int32_t getMaxRowIndex () const;
+	size_t getNormalizedRowIndex (int32_t row) const;
+	bool rowSelectable (int32_t row) const;
+	void clearHoveredRow ();
+
+	struct Impl;
+	std::unique_ptr<Impl> impl;
+};
 
 //------------------------------------------------------------------------
 struct CListControlRowDesc
@@ -33,16 +78,33 @@ class IListControlDrawer : virtual public IReference
 public:
 	virtual ~IListControlDrawer () noexcept {}
 
-	enum Flags
+	struct Row
 	{
-		Selectable = 1 << 0,
-		Selected = 1 << 1,
-		Hovered = 1 << 2,
-		LastRow = 1 << 3,
+		enum
+		{
+			Selectable = 1 << 0,
+			Selected = 1 << 1,
+			Hovered = 1 << 2,
+			LastRow = 1 << 3,
+		};
+
+		operator int32_t () const { return getIndex (); }
+		int32_t getIndex () const { return index; }
+
+		bool isSelectable () const { return (flags & Selectable) != 0; }
+		bool isSelected () const { return (flags & Selected) != 0; }
+		bool isHovered () const { return (flags & Hovered) != 0; }
+		bool isLastRow () const { return (flags & LastRow) != 0; }
+
+		Row (int32_t index, int32_t flags) : index (index), flags (flags) {}
+
+	private:
+		int32_t index;
+		int32_t flags;
 	};
 
 	virtual void drawBackground (CDrawContext* context, CRect size) = 0;
-	virtual void drawRow (CDrawContext* context, CRect size, int32_t row, int32_t flags) = 0;
+	virtual void drawRow (CDrawContext* context, CRect size, Row row) = 0;
 };
 
 //------------------------------------------------------------------------
@@ -51,47 +113,7 @@ class IListControlConfigurator : virtual public IReference
 public:
 	virtual ~IListControlConfigurator () noexcept {}
 
-	virtual CListControlRowDesc getRowDesc (int32_t row) = 0;
-};
-
-//------------------------------------------------------------------------
-class CListControl : public CControl
-{
-public:
-	CListControl (const CRect& size, IControlListener* listener = nullptr, int32_t tag = -1);
-
-	void setDrawer (IListControlDrawer* d);
-	void setConfigurator (IListControlConfigurator* c);
-
-	IListControlDrawer* getDrawer () const { return drawer; }
-	IListControlConfigurator* getConfigurator () const { return configurator; }
-
-	void recalculateHeight ();
-	void invalidRow (int32_t row);
-
-	void draw (CDrawContext* context) override;
-	void drawRect (CDrawContext* context, const CRect& updateRect) override;
-
-	void setMin (float val) override;
-	void setMax (float val) override;
-
-	CMouseEventResult onMouseDown (CPoint& where, const CButtonState& buttons) override;
-	CMouseEventResult onMouseMoved (CPoint& where, const CButtonState& buttons) override;
-	CMouseEventResult onMouseUp (CPoint& where, const CButtonState& buttons) override;
-	CMouseEventResult onMouseExited (CPoint& where, const CButtonState& buttons) override;
-
-	CLASS_METHODS_NOCOPY (CListControl, CControl)
-private:
-	int32_t getNumRows () const;
-	int32_t getIntValue () const;
-	int32_t getRowAtPoint (CPoint where) const;
-
-	SharedPointer<IListControlDrawer> drawer;
-	SharedPointer<IListControlConfigurator> configurator;
-
-	std::vector<CListControlRowDesc> rowDescriptions;
-	int32_t hoveredRow {-1};
-	bool doHoverCheck {false};
+	virtual CListControlRowDesc getRowDesc (int32_t row) const = 0;
 };
 
 //------------------------------------------------------------------------
@@ -111,7 +133,7 @@ public:
 	CCoord getRowHeight () const { return rowHeight; }
 	int32_t getFlags () const { return flags; }
 
-	CListControlRowDesc getRowDesc (int32_t row) override { return {rowHeight, flags}; }
+	CListControlRowDesc getRowDesc (int32_t row) const override { return {rowHeight, flags}; }
 
 private:
 	CCoord rowHeight;

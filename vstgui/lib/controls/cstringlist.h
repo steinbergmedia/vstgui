@@ -5,7 +5,8 @@
 #pragma once
 
 #include "../ccolor.h"
-#include "../cdrawcontext.h"
+#include "../cdrawdefs.h"
+#include "../cfont.h"
 #include "clistcontrol.h"
 
 //------------------------------------------------------------------------
@@ -43,12 +44,13 @@ public:
 	CCoord getLineWidth () const;
 	CCoord getTextInset () const;
 	CHoriTxtAlign getTextAlign () const;
-	
-	void drawBackground (CDrawContext* context, CRect size) override;
 
-	void drawRow (CDrawContext* context, CRect size, int32_t row, int32_t flags) override;
+	void drawBackground (CDrawContext* context, CRect size) override;
+	void drawRow (CDrawContext* context, CRect size, Row row) override;
 
 private:
+	SharedPointer<IPlatformString> getString (int32_t row) const;
+
 	Func func;
 
 	SharedPointer<CFontDesc> font {kNormalFont};
