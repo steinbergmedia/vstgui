@@ -108,6 +108,8 @@ void CListControl::recalculateLayout ()
 //------------------------------------------------------------------------
 Optional<CRect> CListControl::getRowRect (int32_t row) const
 {
+	if (row < getMinRowIndex () || row > getMaxRowIndex ())
+		return {};
 	row -= getMinRowIndex ();
 	CRect rowSize;
 	rowSize.setWidth (getWidth ());
@@ -119,7 +121,7 @@ Optional<CRect> CListControl::getRowRect (int32_t row) const
 		rowSize.offset (0, impl->rowDescriptions[i].height);
 	}
 	rowSize.offset (getViewSize ().getTopLeft ());
-	return rowSize;
+	return makeOptional (rowSize);
 }
 
 //------------------------------------------------------------------------
