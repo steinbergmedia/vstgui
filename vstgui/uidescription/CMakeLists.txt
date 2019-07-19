@@ -78,6 +78,7 @@ set(${target}_sources
     editing/uiundomanager.h
     editing/uiviewcreatecontroller.cpp
     editing/uiviewcreatecontroller.h
+    detail/uiviewcreatorattributes.h
     viewcreator/animationsplashscreencreator.cpp
     viewcreator/animationsplashscreencreator.h
     viewcreator/animknobcreator.cpp
@@ -124,6 +125,8 @@ set(${target}_sources
     viewcreator/sliderviewcreator.h
     viewcreator/splitviewcreator.cpp
     viewcreator/splitviewcreator.h
+    viewcreator/stringlistcontrolcreator.cpp
+    viewcreator/stringlistcontrolcreator.h
     viewcreator/switchcreators.cpp
     viewcreator/switchcreators.h
     viewcreator/textbuttoncreator.cpp

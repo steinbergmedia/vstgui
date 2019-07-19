@@ -57,6 +57,7 @@
 #include "uidescription/viewcreator/shadowviewcontainercreator.cpp"
 #include "uidescription/viewcreator/sliderviewcreator.cpp"
 #include "uidescription/viewcreator/splitviewcreator.cpp"
+#include "uidescription/viewcreator/stringlistcontrolcreator.cpp"
 #include "uidescription/viewcreator/switchcreators.cpp"
 #include "uidescription/viewcreator/textbuttoncreator.cpp"
 #include "uidescription/viewcreator/texteditcreator.cpp"

@@ -1,4 +1,4 @@
-// This file is part of VSTGUI. It is subject to the license terms 
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
@@ -35,6 +35,14 @@ public:
 };
 
 //------------------------------------------------------------------------
+class IStringValue : public Interface
+{
+public:
+	virtual void setString (const UTF8String& str) = 0;
+	virtual const UTF8String& getString () const = 0;
+};
+
+//------------------------------------------------------------------------
 /**	%value create and helper functions
  *	@ingroup standalone
  */
@@ -43,7 +51,7 @@ namespace Value {
 //------------------------------------------------------------------------
 /** @name %Create values
  *	@{ */
- 
+
 //------------------------------------------------------------------------
 /** make a value in the normalized range [0..1]
  *
@@ -99,7 +107,7 @@ ValuePtr makeStringListValue (const UTF8String& id, const IStringListValue::Stri
 //------------------------------------------------------------------------
 /** make a static string value
  *
- *	a static string value is an inactive unchangeable value 
+ *	a static string value is an inactive unchangeable value
  *
  *	@param id value ID
  *	@param value static string
@@ -228,6 +236,19 @@ inline bool performSingleStepEdit (IValue& value, IStepValue::StepType step)
 	if (auto stepValue = value.dynamicCast<IStepValue> ())
 	{
 		performSingleEdit (value, stepValue->stepToValue (step));
+		return true;
+	}
+	return false;
+}
+
+//------------------------------------------------------------------------
+inline bool performStringValueEdit (IValue& value, const UTF8String& str)
+{
+	if (auto stringValue = value.dynamicCast<IStringValue> ())
+	{
+		value.beginEdit ();
+		stringValue->setString (str);
+		value.endEdit ();
 		return true;
 	}
 	return false;

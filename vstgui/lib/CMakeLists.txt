@@ -58,6 +58,8 @@ set(${target}_common_sources
     controls/cfontchooser.h
     controls/cknob.cpp
     controls/cknob.h
+    controls/clistcontrol.cpp
+    controls/clistcontrol.h
     controls/cmoviebitmap.cpp
     controls/cmoviebitmap.h
     controls/cmoviebutton.cpp
@@ -78,6 +80,8 @@ set(${target}_common_sources
     controls/cspecialdigit.h
     controls/csplashscreen.cpp
     controls/csplashscreen.h
+    controls/cstringlist.cpp
+    controls/cstringlist.h
     controls/cswitch.cpp
     controls/cswitch.h
     controls/ctextedit.cpp

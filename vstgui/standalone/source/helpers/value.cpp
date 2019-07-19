@@ -136,6 +136,8 @@ public:
 
 	UTF8String valueAsString (IValue::Type value) const override
 	{
+		if (strings.empty ())
+			return "";
 		auto index =
 		    convertValueToStep (value, static_cast<IStepValue::StepType> (strings.size () - 1));
 		return strings[index];
@@ -249,7 +251,7 @@ private:
 };
 
 //------------------------------------------------------------------------
-class StringValue : public Value, public IValueConverter
+class StringValue : public Value, public IValueConverter, public IStringValue
 {
 public:
 	StringValue (const UTF8String& id, const UTF8String& value)
@@ -273,6 +275,18 @@ public:
 	}
 	IValue::Type plainToNormalized (IValue::Type) const override { return 0.; }
 	IValue::Type normalizedToPlain (IValue::Type) const override { return 0.; }
+	
+	void setString (const UTF8String& s) override
+	{
+		str = s;
+		if (isEditing ())
+			performEdit (0.);
+	}
+	const UTF8String& getString () const override
+	{
+		return str;
+	}
+
 private:
 	mutable UTF8String str;
 };
