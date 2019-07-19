@@ -5,6 +5,7 @@
 #include "stringlistcontrolcreator.h"
 
 #include "../../lib/controls/cstringlist.h"
+#include "../../lib/ccolor.h"
 #include "../detail/uiviewcreatorattributes.h"
 #include "../uiattributes.h"
 #include "../uiviewcreator.h"
@@ -13,15 +14,6 @@
 //------------------------------------------------------------------------
 namespace VSTGUI {
 namespace UIViewCreator {
-
-//------------------------------------------------------------------------
-static const std::string kAttrSelectedFontColor = "font-color-selected";
-static const std::string kAttrSelectedBackColor = "back-color-selected";
-static const std::string kAttrLineColor = "line-color";
-static const std::string kAttrLineWidth = "line-width";
-static const std::string kAttrHoverColor = "hover-color";
-static const std::string kAttrRowHeight = "row-height";
-static const std::string kAttrStyleHover = "style-hover";
 
 //------------------------------------------------------------------------
 StringListControlCreator::StringListControlCreator ()

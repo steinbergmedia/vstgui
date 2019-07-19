@@ -4,24 +4,31 @@
 
 #pragma once
 
-#include "../ccolor.h"
-#include "../cdrawdefs.h"
-#include "../cfont.h"
 #include "clistcontrol.h"
+#include "../cdrawdefs.h"
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
 
+//------------------------------------------------------------------------
+/** A specialized list control drawer to draw strings
+ *
+ *	You set an instance of this class as the drawer in a CListControl instance and it draws the
+ *	strings you setup via the provider function.
+ *
+ *	@ingroup new_in_4_9
+ */
 //------------------------------------------------------------------------
 class StringListControlDrawer : public IListControlDrawer, public NonAtomicReferenceCounted
 {
 public:
 	using Func = std::function<SharedPointer<IPlatformString> (int32_t row)>;
 
-	StringListControlDrawer () = default;
+	StringListControlDrawer ();
+	~StringListControlDrawer () noexcept override;
 
-	void setGetStringFunc (Func&& getStringFunc);
-	void setGetStringFunc (const Func& getStringFunc);
+	void setStringProvider (Func&& getStringFunc);
+	void setStringProvider (const Func& getStringFunc);
 
 	void setFont (CFontRef f);
 	void setFontColor (CColor color);
@@ -51,18 +58,8 @@ public:
 private:
 	SharedPointer<IPlatformString> getString (int32_t row) const;
 
-	Func func;
-
-	SharedPointer<CFontDesc> font {kNormalFont};
-	CColor fontColor {kBlackCColor};
-	CColor fontColorSelected {kWhiteCColor};
-	CColor backColor {kWhiteCColor};
-	CColor backColorSelected {kBlueCColor};
-	CColor hoverColor {MakeCColor (0, 0, 0, 100)};
-	CColor lineColor {kBlackCColor};
-	CCoord lineWidth {1.};
-	CCoord textInset {5.};
-	CHoriTxtAlign textAlign {kLeftText};
+	struct Impl;
+	std::unique_ptr<Impl> impl;
 };
 
 //------------------------------------------------------------------------

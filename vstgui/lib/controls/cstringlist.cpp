@@ -4,146 +4,175 @@
 
 #include "cstringlist.h"
 #include "../cdrawcontext.h"
+#include "../ccolor.h"
+#include "../cfont.h"
 
 //------------------------------------------------------------------------
 namespace VSTGUI {
 
 //------------------------------------------------------------------------
-void StringListControlDrawer::setGetStringFunc (Func&& getStringFunc)
+struct StringListControlDrawer::Impl
 {
-	func = std::move (getStringFunc);
+	Func func;
+
+	SharedPointer<CFontDesc> font {kNormalFont};
+	CColor fontColor {kBlackCColor};
+	CColor fontColorSelected {kWhiteCColor};
+	CColor backColor {kWhiteCColor};
+	CColor backColorSelected {kBlueCColor};
+	CColor hoverColor {MakeCColor (0, 0, 0, 100)};
+	CColor lineColor {kBlackCColor};
+	CCoord lineWidth {1.};
+	CCoord textInset {5.};
+	CHoriTxtAlign textAlign {kLeftText};
+
+};
+
+//------------------------------------------------------------------------
+StringListControlDrawer::StringListControlDrawer ()
+{
+	impl = std::unique_ptr<Impl> (new Impl);
 }
 
 //------------------------------------------------------------------------
-void StringListControlDrawer::setGetStringFunc (const Func& getStringFunc)
+StringListControlDrawer::~StringListControlDrawer () noexcept = default;
+
+//------------------------------------------------------------------------
+void StringListControlDrawer::setStringProvider (Func&& getStringFunc)
 {
-	func = getStringFunc;
+	impl->func = std::move (getStringFunc);
+}
+
+//------------------------------------------------------------------------
+void StringListControlDrawer::setStringProvider (const Func& getStringFunc)
+{
+	impl->func = getStringFunc;
 }
 
 //------------------------------------------------------------------------
 void StringListControlDrawer::setFont (CFontRef f)
 {
-	font = f;
+	impl->font = f;
 }
 
 //------------------------------------------------------------------------
 void StringListControlDrawer::setFontColor (CColor color)
 {
-	fontColor = color;
+	impl->fontColor = color;
 }
 
 //------------------------------------------------------------------------
 void StringListControlDrawer::setSelectedFontColor (CColor color)
 {
-	fontColorSelected = color;
+	impl->fontColorSelected = color;
 }
 
 //------------------------------------------------------------------------
 void StringListControlDrawer::setBackColor (CColor color)
 {
-	backColor = color;
+	impl->backColor = color;
 }
 
 //------------------------------------------------------------------------
 void StringListControlDrawer::setSelectedBackColor (CColor color)
 {
-	backColorSelected = color;
+	impl->backColorSelected = color;
 }
 
 //------------------------------------------------------------------------
 void StringListControlDrawer::setHoverColor (CColor color)
 {
-	hoverColor = color;
+	impl->hoverColor = color;
 }
 
 //------------------------------------------------------------------------
 void StringListControlDrawer::setLineColor (CColor color)
 {
-	lineColor = color;
+	impl->lineColor = color;
 }
 
 //------------------------------------------------------------------------
 void StringListControlDrawer::setLineWidth (CCoord width)
 {
-	lineWidth = width;
+	impl->lineWidth = width;
 }
 
 //------------------------------------------------------------------------
 void StringListControlDrawer::setTextInset (CCoord inset)
 {
-	textInset = inset;
+	impl->textInset = inset;
 }
 
 //------------------------------------------------------------------------
 void StringListControlDrawer::setTextAlign (CHoriTxtAlign align)
 {
-	textAlign = align;
+	impl->textAlign = align;
 }
 
 //------------------------------------------------------------------------
 CFontRef StringListControlDrawer::getFont () const
 {
-	return font;
+	return impl->font;
 }
 
 //------------------------------------------------------------------------
 CColor StringListControlDrawer::getFontColor () const
 {
-	return fontColor;
+	return impl->fontColor;
 }
 
 //------------------------------------------------------------------------
 CColor StringListControlDrawer::getSelectedFontColor () const
 {
-	return fontColorSelected;
+	return impl->fontColorSelected;
 }
 
 //------------------------------------------------------------------------
 CColor StringListControlDrawer::getBackColor () const
 {
-	return backColor;
+	return impl->backColor;
 }
 
 //------------------------------------------------------------------------
 CColor StringListControlDrawer::getSelectedBackColor () const
 {
-	return backColorSelected;
+	return impl->backColorSelected;
 }
 
 //------------------------------------------------------------------------
 CColor StringListControlDrawer::getHoverColor () const
 {
-	return hoverColor;
+	return impl->hoverColor;
 }
 
 //------------------------------------------------------------------------
 CColor StringListControlDrawer::getLineColor () const
 {
-	return lineColor;
+	return impl->lineColor;
 }
 
 //------------------------------------------------------------------------
 CCoord StringListControlDrawer::getLineWidth () const
 {
-	return lineWidth;
+	return impl->lineWidth;
 }
 
 //------------------------------------------------------------------------
 CCoord StringListControlDrawer::getTextInset () const
 {
-	return textInset;
+	return impl->textInset;
 }
 
 //------------------------------------------------------------------------
 CHoriTxtAlign StringListControlDrawer::getTextAlign () const
 {
-	return textAlign;
+	return impl->textAlign;
 }
 
 //------------------------------------------------------------------------
 void StringListControlDrawer::drawBackground (CDrawContext* context, CRect size)
 {
-	context->setFillColor (backColor);
+	context->setFillColor (impl->backColor);
 	context->drawRect (size, kDrawFilled);
 }
 
@@ -153,38 +182,38 @@ void StringListControlDrawer::drawRow (CDrawContext* context, CRect size, Row ro
 	context->setDrawMode (kAntiAliasing);
 	if (row.isHovered ())
 	{
-		context->setFillColor (hoverColor);
+		context->setFillColor (impl->hoverColor);
 		context->drawRect (size, kDrawFilled);
 	}
 	if (row.isSelected ())
 	{
-		context->setFillColor (backColorSelected);
+		context->setFillColor (impl->backColorSelected);
 		context->drawRect (size, kDrawFilled);
 	}
 
-	auto lw = lineWidth < 0. ? context->getHairlineSize () : lineWidth;
+	auto lw = impl->lineWidth < 0. ? context->getHairlineSize () : impl->lineWidth;
 	size.bottom -= lw * 0.5;
 
 	if (!(row.isLastRow ()) && lw != 0.)
 	{
 		context->setDrawMode (kAntiAliasing | kNonIntegralMode);
-		context->setFrameColor (lineColor);
+		context->setFrameColor (impl->lineColor);
 		context->setLineWidth (lw);
 		context->drawLine (size.getBottomLeft (), size.getBottomRight ());
 	}
 	if (auto string = getString (row))
 	{
-		size.inset (textInset, 0);
-		context->setFontColor (row.isSelected () ? fontColorSelected : fontColor);
-		context->setFont (font);
-		context->drawString (string, size, textAlign);
+		size.inset (impl->textInset, 0);
+		context->setFontColor (row.isSelected () ? impl->fontColorSelected : impl->fontColor);
+		context->setFont (impl->font);
+		context->drawString (string, size, impl->textAlign);
 	}
 }
 
 //------------------------------------------------------------------------
 SharedPointer<IPlatformString> StringListControlDrawer::getString (int32_t row) const
 {
-	return func ? func (row) : IPlatformString::createWithUTF8String (toString (row));
+	return impl->func ? impl->func (row) : IPlatformString::createWithUTF8String (toString (row));
 }
 
 //------------------------------------------------------------------------

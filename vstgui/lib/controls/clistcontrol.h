@@ -11,6 +11,18 @@
 namespace VSTGUI {
 
 //------------------------------------------------------------------------
+/**	Control which draws a list of configurable rows
+ *
+ *	This control needs to be setup with an instance of a IListControlDrawer and a
+ *	IListControlConfigurator. The number of rows is configured via the min and max values. And the
+ *	selected row is the value of this control.
+ *	The actual drawing is done via the IListControlDrawer instance. And the row configuration is
+ *	handled via the IListControlConfigurator instance. Every row can have different heights and
+ *	flags.
+ *
+ *	@ingroup new_in_4_9
+ */
+//------------------------------------------------------------------------
 class CListControl final : public CControl
 {
 public:
@@ -28,12 +40,12 @@ public:
 	void invalidRow (int32_t row);
 	Optional<int32_t> getRowAtPoint (CPoint where) const;
 	Optional<CRect> getRowRect (int32_t row) const;
+	Optional<int32_t> getHoveredRow () const;
 
+	// overrides
 	void setMin (float val) override;
 	void setMax (float val) override;
 
-	CLASS_METHODS_NOCOPY (CListControl, CControl)
-private:
 	bool attached (CView* parent) override;
 	void draw (CDrawContext* context) override;
 	void drawRect (CDrawContext* context, const CRect& updateRect) override;
@@ -44,6 +56,8 @@ private:
 	int32_t onKeyDown (VstKeyCode& keyCode) override;
 	void setViewSize (const CRect& rect, bool invalid = true) override;
 
+	CLASS_METHODS_NOCOPY (CListControl, CControl)
+private:
 	int32_t getNextSelectableRow (int32_t r, int32_t direction) const;
 	int32_t getNumRows () const;
 	int32_t getIntValue () const;
@@ -58,20 +72,38 @@ private:
 };
 
 //------------------------------------------------------------------------
+/** The description of one row for the CListControl
+ *
+ *	This is returned by an instance of IListControlConfigurator for every row.
+ *
+ *	@ingroup new_in_4_9
+ */
+//------------------------------------------------------------------------
 struct CListControlRowDesc
 {
 	enum Flags
 	{
+		/** Indicates that the row is selectable */
 		Selectable = 1 << 0,
+		/** Indicates that the row should be redrawn when the mouse hovers it */
 		Hoverable = 1 << 1,
 	};
+	/** The height of the row */
 	CCoord height {0};
+	/** The flags of the row, see the Flags enum above */
 	int32_t flags {Selectable};
 
 	CListControlRowDesc () = default;
 	CListControlRowDesc (CCoord h, int32_t f) : height (h), flags (f) {}
 };
 
+//------------------------------------------------------------------------
+/** The list control drawer interface
+ *
+ *	This is used to do the actual drawing of the list control.
+ *
+ *	@ingroup new_in_4_9
+ */
 //------------------------------------------------------------------------
 class IListControlDrawer : virtual public IReference
 {
@@ -108,6 +140,11 @@ public:
 };
 
 //------------------------------------------------------------------------
+/** The list control configurator interface
+ *
+ *	@ingroup new_in_4_9
+ */
+//------------------------------------------------------------------------
 class IListControlConfigurator : virtual public IReference
 {
 public:
@@ -116,6 +153,13 @@ public:
 	virtual CListControlRowDesc getRowDesc (int32_t row) const = 0;
 };
 
+//------------------------------------------------------------------------
+/** A list control configurator implementation.
+ *
+ *	Returns the same row description for all row indices
+ *
+ *	@ingroup new_in_4_9
+ */
 //------------------------------------------------------------------------
 class StaticListControlConfigurator : public IListControlConfigurator,
                                       public NonAtomicReferenceCounted

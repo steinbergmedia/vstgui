@@ -78,6 +78,7 @@ set(${target}_sources
     editing/uiundomanager.h
     editing/uiviewcreatecontroller.cpp
     editing/uiviewcreatecontroller.h
+    detail/uiviewcreatorattributes.h
     viewcreator/animationsplashscreencreator.cpp
     viewcreator/animationsplashscreencreator.h
     viewcreator/animknobcreator.cpp

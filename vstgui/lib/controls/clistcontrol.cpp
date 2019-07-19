@@ -58,6 +58,14 @@ IListControlConfigurator* CListControl::getConfigurator () const
 }
 
 //------------------------------------------------------------------------
+Optional<int32_t> CListControl::getHoveredRow () const
+{
+	if (impl->hoveredRow)
+	 	return makeOptional (*impl->hoveredRow);
+	return {};
+}
+
+//------------------------------------------------------------------------
 int32_t CListControl::getNumRows () const
 {
 	auto numRows = static_cast<int32_t> (std::round (getRange ())) + 1;
@@ -380,11 +388,13 @@ int32_t CListControl::onKeyDown (VstKeyCode& keyCode)
 				auto rr = getRowRect (newRow);
 				if (rr && !vr.rectOverlap (*rr))
 				{
-					if (auto scrollView =
-					        dynamic_cast<CScrollView*> (getParentView ()->getParentView ()))
+					if (auto parent = getParentView ())
 					{
-						scrollView->makeRectVisible (*rr);
-						return onKeyDown (keyCode);
+						if (auto scrollView = dynamic_cast<CScrollView*> (parent->getParentView ()))
+						{
+							scrollView->makeRectVisible (*rr);
+							return onKeyDown (keyCode);
+						}
 					}
 				}
 				vr.top += 2;
@@ -415,11 +425,13 @@ int32_t CListControl::onKeyDown (VstKeyCode& keyCode)
 				auto rr = getRowRect (newRow);
 				if (rr && !vr.rectOverlap (*rr))
 				{
-					if (auto scrollView =
-					        dynamic_cast<CScrollView*> (getParentView ()->getParentView ()))
+					if (auto parent = getParentView ())
 					{
-						scrollView->makeRectVisible (*rr);
-						return onKeyDown (keyCode);
+						if (auto scrollView = dynamic_cast<CScrollView*> (parent->getParentView ()))
+						{
+							scrollView->makeRectVisible (*rr);
+							return onKeyDown (keyCode);
+						}
 					}
 				}
 				vr.bottom -= 2;
@@ -453,9 +465,11 @@ int32_t CListControl::onKeyDown (VstKeyCode& keyCode)
 			if (auto rowRect = getRowRect (getIntValue ()))
 			{
 				invalidRect (*rowRect);
-				if (auto scrollView =
-				        dynamic_cast<CScrollView*> (getParentView ()->getParentView ()))
-					scrollView->makeRectVisible (*rowRect);
+				if (auto parent = getParentView ())
+				{
+					if (auto scrollView = dynamic_cast<CScrollView*> (parent->getParentView ()))
+						scrollView->makeRectVisible (*rowRect);
+				}
 			}
 			return 1;
 		}

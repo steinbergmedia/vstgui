@@ -206,7 +206,7 @@ public:
 			if (auto stringListDrawer =
 			        dynamic_cast<StringListControlDrawer*> (listControl->getDrawer ()))
 			{
-				stringListDrawer->setGetStringFunc ([this] (int32_t row) {
+				stringListDrawer->setStringProvider ([this] (int32_t row) {
 					auto min = this->value->getConverter ().normalizedToPlain (0.);
 					auto norm = this->value->getConverter ().plainToNormalized (row + min);
 					auto string = this->value->getConverter ().valueAsString (norm);
@@ -251,7 +251,7 @@ protected:
 			if (auto stringListDrawer =
 			        dynamic_cast<StringListControlDrawer*> (listControl->getDrawer ()))
 			{
-				stringListDrawer->setGetStringFunc (nullptr);
+				stringListDrawer->setStringProvider (nullptr);
 			}
 		}
 		control->unregisterViewListener (this);
