@@ -472,7 +472,7 @@
 		<color name="editView.backgrund" rgba="#f2f2f2ff"/>
 		<color name="editView.crosslines.background" rgba="#ffffff96"/>
 		<color name="editView.crosslines.foreground" rgba="#00000096"/>
-		<color name="editView.lasso.fill" rgba="#00000014"/>
+		<color name="editView.lasso.fill" rgba="#0000d814"/>
 		<color name="editView.lasso.frame" rgba="#ffffffdc"/>
 		<color name="editView.view.highlight" rgba="#ffffff5a"/>
 		<color name="editView.view.selection" rgba="#ff0000c8"/>
