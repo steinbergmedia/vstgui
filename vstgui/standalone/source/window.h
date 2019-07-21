@@ -19,6 +19,7 @@ class IPlatformWindowAccess : public IWindow
 {
 public:
 	virtual InterfacePtr getPlatformWindow () const = 0;
+	virtual CFrame* getFrame () const = 0;
 };
 
 //------------------------------------------------------------------------

@@ -3,7 +3,7 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "application.h"
-#include "../../lib/cview.h"
+#include "../../lib/cframe.h"
 #include "../include/appinit.h"
 #include "../include/iapplication.h"
 #include "../include/icommand.h"
@@ -40,12 +40,13 @@ public:
 	AlertResult showAlertBox (const AlertBoxConfig& config) override;
 	void showAlertBoxForWindow (const AlertBoxForWindowConfig& config) override;
 	void registerCommand (const Command& command, char16_t defaultCommandKey = 0) override;
+	void enableTooltips (bool state) override;
 	void quit () override;
 
 	// IWindowListener
 	void onSizeChanged (const IWindow& window, const CPoint& newSize) override {};
 	void onPositionChanged (const IWindow& window, const CPoint& newPosition) override {};
-	void onShow (const IWindow& window) override {};
+	void onShow (const IWindow& window) override;
 	void onHide (const IWindow& window) override {};
 	void onClosed (const IWindow& window) override;
 	void onActivated (const IWindow& window) override;
@@ -78,12 +79,13 @@ private:
 	CommandList commandList;
 	CommandLineArguments commandLineArguments;
 	Configuration config;
-	uint64_t flags {0};
+	uint64_t flags {flagTooltipsEnabled};
 	uint16_t commandIDCounter {0};
 
 	enum Flags
 	{
 		flagInQuit = 1 << 0,
+		flagTooltipsEnabled = 1 << 1,
 	};
 };
 
@@ -212,6 +214,17 @@ void Application::showAlertBoxForWindow (const AlertBoxForWindowConfig& inConfig
 	vstgui_assert (inConfig.window);
 	if (platform.showAlertForWindow)
 		platform.showAlertForWindow (inConfig);
+}
+
+//------------------------------------------------------------------------
+void Application::enableTooltips (bool state)
+{
+	setBit (flags, flagTooltipsEnabled, state);
+	for (auto& window : windows)
+	{
+		if (auto frame = staticPtrCast<IPlatformWindowAccess> (window)->getFrame ())
+			frame->enableTooltips (state);
+	}
 }
 
 //------------------------------------------------------------------------
@@ -415,6 +428,21 @@ bool Application::doCommandHandling (const Command& command, bool checkOnly)
 		}
 	}
 	return result;
+}
+
+//------------------------------------------------------------------------
+void Application::onShow (const IWindow& window)
+{
+	auto it = std::find_if (windows.begin (), windows.end (), [&] (const WindowPtr& w) {
+		if (&window == w.get ())
+			return true;
+		return false;
+	});
+	if (it != windows.end ())
+	{
+		if (auto frame = staticPtrCast<IPlatformWindowAccess> (*it)->getFrame ())
+			frame->enableTooltips (hasBit (flags, flagTooltipsEnabled));
+	}
 }
 
 //------------------------------------------------------------------------

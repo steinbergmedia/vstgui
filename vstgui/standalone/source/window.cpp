@@ -102,6 +102,7 @@ public:
 
 	// IPlatformWindowAccess
 	InterfacePtr getPlatformWindow () const override { return platformWindow; }
+	CFrame* getFrame () const override { return frame; }
 
 	// Platform::IWindowDelegate
 	CPoint constraintSize (const CPoint& newSize) override;

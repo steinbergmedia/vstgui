@@ -2,6 +2,7 @@
 <vstgui-ui-description version="1">
 	<fonts>
 		<font font-name="EffectsEighty" name="EffectsEighty" size="32"/>
+		<font font-name="Arial" name="View Label" size="8"/>
 	</fonts>
 	<colors>
 		<color name="Black Alpha 140" rgba="#0000008c"/>
