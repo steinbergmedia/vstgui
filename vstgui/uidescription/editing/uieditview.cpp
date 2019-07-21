@@ -641,7 +641,8 @@ CMouseEventResult UIEditView::onMouseDown (CPoint &where, const CButtonState& bu
 
 	if (buttons.isShiftSet ())
 	{
-		getSelection ()->clear ();
+		if (!buttons.isControlSet ())
+			getSelection ()->clear ();
 		mouseEditMode = MouseEditMode::LassoSelection;
 		mouseStartPoint = where2;
 
@@ -766,7 +767,7 @@ CMouseEventResult UIEditView::onMouseUp (CPoint &where, const CButtonState& butt
 		auto factory = static_cast<const UIViewFactory*> (description->getViewFactory ());
 		for (auto& view : result)
 		{
-			if (factory->getViewName (view))
+			if (factory->getViewName (view) && !getSelection ()->contains (view))
 				getSelection ()->add (view);
 		}
 	}
