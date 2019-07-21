@@ -268,7 +268,8 @@ void UIHighlightView::draw (CDrawContext* pContext)
 IdStringPtr UIEditView::kMsgAttached = "UIEditView::kMsgAttached";
 IdStringPtr UIEditView::kMsgRemoved = "UIEditView::kMsgRemoved";
 
-static const CCoord kResizeHandleSize = 6.;
+static constexpr auto kResizeHandleSize = 6.;
+static constexpr auto UIEditViewMargin = 8.;
 
 //----------------------------------------------------------------------------------------------------
 UIEditView::UIEditView (const CRect& size, UIDescription* uidescription)
@@ -288,17 +289,17 @@ UIEditView::~UIEditView ()
 	setSelection (nullptr);
 }
 
-//----------------------------------------------------------------------------------------------------
-void UIEditView::setScale (double scale)
+//------------------------------------------------------------------------
+void UIEditView::updateSize ()
 {
-	scale = std::round (scale * 100) / 100.;
-	setTransform (CGraphicsTransform ().scale (scale, scale));
 	if (CView* view = getEditView ())
 	{
 		CRect r (getViewSize ());
 		CPoint size (view->getWidth (), view->getHeight ());
 		getTransform ().transform (size);
 		r.setSize (size);
+		r.right += UIEditViewMargin;
+		r.bottom += UIEditViewMargin;
 		if (r != getViewSize ())
 		{
 			setAutosizingEnabled (false);
@@ -307,8 +308,15 @@ void UIEditView::setScale (double scale)
 			setAutosizingEnabled (true);
 			getParentView ()->invalid ();
 		}
-		
 	}
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIEditView::setScale (double scale)
+{
+	scale = std::round (scale * 100) / 100.;
+	setTransform (CGraphicsTransform ().scale (scale, scale));
+	updateSize ();
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -401,14 +409,8 @@ void UIEditView::setEditView (CView* view)
 		CRect vs (getViewSize ());
 		if (view)
 		{
-			vs.setWidth (view->getWidth ());
-			vs.setHeight(view->getHeight ());
-			vs.offset (-getViewSize ().left, -getViewSize ().top);
-			getTransform ().transform (vs);
-			vs.offset (getViewSize ().left, getViewSize ().top);
-			setViewSize (vs);
-			setMouseableArea (getViewSize ());
 			addView (view);
+			updateSize ();
 		}
 		else
 		{
@@ -450,18 +452,7 @@ CMessageResult UIEditView::notify (CBaseObject* sender, IdStringPtr message)
 		CView* view = dynamic_cast<CView*> (sender);
 		if (view && view == getView (0))
 		{
-			CRect r = getViewSize ();
-			r.setWidth (view->getWidth ());
-			r.setHeight (view->getHeight ());
-			getTransform ().transform (r);
-			if (r != getViewSize ())
-			{
-				setAutosizingEnabled (false);
-				setViewSize (r);
-				setMouseableArea (r);
-				setAutosizingEnabled (true);
-				getParentView ()->invalid ();
-			}
+			updateSize ();
 		}
 	}
 	return CViewContainer::notify (sender, message);
@@ -496,7 +487,9 @@ void UIEditView::drawRect (CDrawContext *pContext, const CRect& updateRect)
 	pContext->setLineWidth (1);
 	pContext->setDrawMode (kAliasing);
 	pContext->setFrameColor (kBlueCColor);
-	pContext->drawRect (CRect (0, 0, getWidth (), getHeight ()), kDrawStroked);
+	pContext->drawRect (
+	    CRect (0, 0, getWidth () - UIEditViewMargin, getHeight () - UIEditViewMargin),
+	    kDrawStroked);
 }
 
 //----------------------------------------------------------------------------------------------------

@@ -73,6 +73,7 @@ protected:
 		Bottom
 	};
 
+	void updateSize ();
 	void invalidSelection ();
 	MouseSizeMode selectionHitTest (const CPoint& where, CView** resultView);
 	bool hitTestSubViews (const CPoint& where, const CButtonState& buttons = -1) override;
