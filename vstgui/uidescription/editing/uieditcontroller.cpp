@@ -409,6 +409,7 @@ UIEditController::~UIEditController ()
 	undoManager->unregisterListener (this);
 	editDescription->unregisterListener (this);
 	editorDesc = nullptr;
+	undoManager->clear ();
 	gUIDescription.tryFree ();
 }
 
