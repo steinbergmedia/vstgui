@@ -34,6 +34,10 @@ struct CRect
 	inline CPoint getTopRight () const;
 	inline CPoint getBottomLeft () const;
 	inline CPoint getBottomRight () const;
+	inline CPoint getTopCenter () const;
+	inline CPoint getBottomCenter () const;
+	inline CPoint getLeftCenter () const;
+	inline CPoint getRightCenter () const;
 	inline CRect& setTopLeft (const CPoint& inPoint);
 	inline CRect& setTopRight (const CPoint& inPoint);
 	inline CRect& setBottomLeft (const CPoint& inPoint);
@@ -288,29 +292,57 @@ inline constexpr bool CRect::rectInside (const CRect& rect) const
 //-----------------------------------------------------------------------------
 inline CPoint CRect::getTopLeft () const
 {
-	CPoint myPoint (left, top);
-	return myPoint;
+	return {left, top};
 }
 
 //-----------------------------------------------------------------------------
 inline CPoint CRect::getTopRight () const
 {
-	CPoint myPoint (right, top);
-	return myPoint;
+	return {right, top};
 }
 
 //-----------------------------------------------------------------------------
 inline CPoint CRect::getBottomLeft () const
 {
-	CPoint myPoint (left, bottom);
-	return myPoint;
+	return {left, bottom};
 }
 
 //-----------------------------------------------------------------------------
 inline CPoint CRect::getBottomRight () const
 {
-	CPoint myPoint (right, bottom);
-	return myPoint;
+	return {right, bottom};
+}
+
+//-----------------------------------------------------------------------------
+inline CPoint CRect::getTopCenter () const
+{
+	auto p = getTopLeft ();
+	p.x += getWidth () * 0.5;
+	return p;
+}
+
+//-----------------------------------------------------------------------------
+inline CPoint CRect::getBottomCenter () const
+{
+	auto p = getBottomLeft ();
+	p.x += getWidth () * 0.5;
+	return p;
+}
+
+//-----------------------------------------------------------------------------
+inline CPoint CRect::getLeftCenter () const
+{
+	auto p = getTopLeft ();
+	p.y += getHeight () * 0.5;
+	return p;
+}
+
+//-----------------------------------------------------------------------------
+inline CPoint CRect::getRightCenter () const
+{
+	auto p = getTopRight ();
+	p.y += getHeight () * 0.5;
+	return p;
 }
 
 //-----------------------------------------------------------------------------
