@@ -166,24 +166,18 @@ void UISelectionView::draw (CDrawContext* pContext)
 				drawResizeHandle (vs.getTopLeft (), pContext);
 				drawResizeHandle (vs.getBottomLeft (), pContext);
 				drawResizeHandle (vs.getTopRight (), pContext);
-				if (vs.getHeight () > handleInset * 4)
-				{
-					CPoint hp (vs.getTopLeft ());
-					hp.y += vs.getHeight ()/ 2.;
-					drawResizeHandle (hp, pContext);
-					hp = vs.getTopRight ();
-					hp.y += vs.getHeight ()/ 2.;
-					drawResizeHandle (hp, pContext);
-				}
-				if (vs.getWidth () > handleInset * 4)
-				{
-					CPoint hp (vs.getTopLeft ());
-					hp.x += vs.getWidth ()/ 2.;
-					drawResizeHandle (hp, pContext);
-					hp = vs.getBottomLeft ();
-					hp.x += vs.getWidth ()/ 2.;
-					drawResizeHandle (hp, pContext);
-				}
+			}
+			if (vs.getHeight () > handleInset * 4)
+			{
+				drawResizeHandle (vs.getRightCenter (), pContext);
+				if (view != mainView)
+					drawResizeHandle (vs.getLeftCenter (), pContext);
+			}
+			if (vs.getWidth () > handleInset * 4)
+			{
+				drawResizeHandle (vs.getBottomCenter (), pContext);
+				if (view != mainView)
+					drawResizeHandle (vs.getTopCenter (), pContext);
 			}
 		}
 	}
@@ -402,7 +396,7 @@ void UIEditView::setGrid (UIGrid* inGrid)
 //----------------------------------------------------------------------------------------------------
 void UIEditView::setEditView (CView* view)
 {
-	if (view != getView (0))
+	if (view != getEditView ())
 	{
 		invalid ();
 		removeAll ();
@@ -450,7 +444,7 @@ CMessageResult UIEditView::notify (CBaseObject* sender, IdStringPtr message)
 	else if (message == kMsgViewSizeChanged)
 	{
 		CView* view = dynamic_cast<CView*> (sender);
-		if (view && view == getView (0))
+		if (view && view == getEditView ())
 		{
 			updateSize ();
 		}
@@ -570,7 +564,7 @@ UIEditView::MouseSizeMode UIEditView::selectionHitTest (const CPoint& _where, CV
 	CPoint p;
 	frameToLocal (p);
 
-	CView* mainView = getView (0);
+	CView* mainView = getEditView ();
 	for (auto it = getSelection ()->rbegin (), end = getSelection ()->rend (); it != end; ++it)
 	{
 		auto view = (*it);
@@ -585,28 +579,22 @@ UIEditView::MouseSizeMode UIEditView::selectionHitTest (const CPoint& _where, CV
 			r.inset (kResizeHandleSize, kResizeHandleSize);
 			if (UIEditViewInternal::pointInResizeHandleRect (where, r.getBottomRight ()))
 				return MouseSizeMode::BottomRight;
+			if (UIEditViewInternal::pointInResizeHandleRect (where, r.getRightCenter ()))
+				return MouseSizeMode::Right;
+			if (UIEditViewInternal::pointInResizeHandleRect (where, r.getBottomCenter ()))
+				return MouseSizeMode::Bottom;
 			if (!isMainView)
 			{
+				if (UIEditViewInternal::pointInResizeHandleRect (where, r.getLeftCenter ()))
+					return MouseSizeMode::Left;
+				if (UIEditViewInternal::pointInResizeHandleRect (where, r.getTopCenter ()))
+					return MouseSizeMode::Top;
 				if (UIEditViewInternal::pointInResizeHandleRect (where, r.getBottomLeft ()))
 					return MouseSizeMode::BottomLeft;
 				if (UIEditViewInternal::pointInResizeHandleRect (where, r.getTopLeft ()))
 					return MouseSizeMode::TopLeft;
 				if (UIEditViewInternal::pointInResizeHandleRect (where, r.getTopRight ()))
 					return MouseSizeMode::TopRight;
-				CPoint hp (r.getTopLeft ());
-				hp.y += r.getHeight () /2.;
-				if (UIEditViewInternal::pointInResizeHandleRect (where, hp))
-					return MouseSizeMode::Left;
-				hp.x += r.getWidth ();
-				if (UIEditViewInternal::pointInResizeHandleRect (where, hp))
-					return MouseSizeMode::Right;
-				hp = r.getTopLeft ();
-				hp.x += r.getWidth () / 2.;
-				if (UIEditViewInternal::pointInResizeHandleRect (where, hp))
-					return MouseSizeMode::Top;
-				hp.y += r.getHeight ();
-				if (UIEditViewInternal::pointInResizeHandleRect (where, hp))
-					return MouseSizeMode::Bottom;
 				if (r.pointInside (where))
 					return MouseSizeMode::None;
 			}
@@ -675,7 +663,7 @@ CMouseEventResult UIEditView::onMouseDown (CPoint &where, const CButtonState& bu
 			selectionHitView = mouseHitView;
 			onMouseMoved (where, CButtonState (buttons.getModifierState ()));
 		}
-		else if (selectionHitView == nullptr || selectionHitView == getView (0))
+		else if (selectionHitView == nullptr || selectionHitView == getEditView ())
 		{
 			getSelection ()->setExclusive (mouseHitView);
 			selectionHitView = mouseHitView;
@@ -689,7 +677,7 @@ CMouseEventResult UIEditView::onMouseDown (CPoint &where, const CButtonState& bu
 			onDoubleClickEditing (selectionHitView);
 			return kMouseEventHandled;
 		}
-		if (buttons.isAltSet () && !getSelection ()->contains (getView (0)))
+		if (buttons.isAltSet () && !getSelection ()->contains (getEditView ()))
 		{
 			mouseEditMode = MouseEditMode::WaitDrag;
 			dragStartMouseObserver.init (where);
@@ -697,7 +685,7 @@ CMouseEventResult UIEditView::onMouseDown (CPoint &where, const CButtonState& bu
 		}
 		if (sizeMode == MouseSizeMode::None)
 		{
-			if (getSelection ()->contains (getView (0)))
+			if (getSelection ()->contains (getEditView ()))
 			{
 				return kMouseEventHandled;
 			}
@@ -757,7 +745,7 @@ CMouseEventResult UIEditView::onMouseUp (CPoint &where, const CButtonState& butt
 		area.setTopLeft (mouseStartPoint);
 		area.setBottomRight (where2);
 		area.normalize ();
-		auto result = findChildsInArea (getView (0)->asViewContainer (), area);
+		auto result = findChildsInArea (getEditView ()->asViewContainer (), area);
 		auto factory = static_cast<const UIViewFactory*> (description->getViewFactory ());
 		for (auto& view : result)
 		{
@@ -878,7 +866,7 @@ CMouseEventResult UIEditView::onMouseMoved (CPoint &where, const CButtonState& b
 				case MouseSizeMode::BottomLeft: ctype = kCursorNESWSize; break;
 				case MouseSizeMode::None:
 				{
-					if (getSelection ()->contains (getView (0)) == false)
+					if (getSelection ()->contains (getEditView ()) == false)
 						ctype = kCursorHand;
 					break;
 				}
