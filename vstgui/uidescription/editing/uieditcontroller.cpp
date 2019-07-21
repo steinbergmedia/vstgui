@@ -403,6 +403,7 @@ UIEditController::UIEditController (UIDescription* description)
 //----------------------------------------------------------------------------------------------------
 UIEditController::~UIEditController ()
 {
+	selection->clear ();
 	if (templateController)
 		templateController->unregisterListener (this);
 	undoManager->unregisterListener (this);
