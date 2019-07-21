@@ -8,15 +8,16 @@
 #include "vstgui/standalone/include/helpers/windowlistener.h"
 
 using namespace VSTGUI::Standalone;
-using namespace VSTGUI::Standalone::Application;
 
-class MyApplication : public DelegateAdapter, public WindowListenerAdapter
+class MyApplication : public Application::DelegateAdapter, public WindowListenerAdapter
 {
 public:
 	MyApplication ()
-	: DelegateAdapter ({"simple_standalone", "1.0.0", "vstgui.examples.simplestandalone"})
-	{}
-	
+	: Application::DelegateAdapter (
+	      {"simple_standalone", "1.0.0", "vstgui.examples.simplestandalone"})
+	{
+	}
+
 	void finishLaunching () override
 	{
 		UIDesc::Config config;
@@ -42,4 +43,4 @@ public:
 	
 };
 
-static Init gAppDelegate (std::make_unique<MyApplication> ());
+static Application::Init gAppDelegate (std::make_unique<MyApplication> ());
