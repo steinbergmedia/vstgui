@@ -433,16 +433,8 @@ bool Application::doCommandHandling (const Command& command, bool checkOnly)
 //------------------------------------------------------------------------
 void Application::onShow (const IWindow& window)
 {
-	auto it = std::find_if (windows.begin (), windows.end (), [&] (const WindowPtr& w) {
-		if (&window == w.get ())
-			return true;
-		return false;
-	});
-	if (it != windows.end ())
-	{
-		if (auto frame = staticPtrCast<IPlatformWindowAccess> (*it)->getFrame ())
-			frame->enableTooltips (hasBit (flags, flagTooltipsEnabled));
-	}
+	if (auto frame = static_cast<const IPlatformWindowAccess&> (window).getFrame ())
+		frame->enableTooltips (hasBit (flags, flagTooltipsEnabled));
 }
 
 //------------------------------------------------------------------------
