@@ -1003,8 +1003,11 @@ CMouseEventResult CViewContainer::onMouseDown (CPoint &where, const CButtonState
 			{
 				if (pV->getNbReference () >1)
 				{
-					if (pV->wantsFocus () && frame && frame->getFocusView () == previousFocusView)
+					if (pV->wantsFocus () && frame && frame->getFocusView () == previousFocusView &&
+					    dynamic_cast<CControl*> (pV.get ()))
+					{
 						getFrame ()->setFocusView (pV);
+					}
 
 					if (result == kMouseEventHandled)
 						setMouseDownView (pV);
