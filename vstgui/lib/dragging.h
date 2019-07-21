@@ -209,4 +209,31 @@ public:
 };
 
 //------------------------------------------------------------------------
+/** Helper method to be used to decide if a mouse move is far enough to start a drag operation.
+ *	\sa DragStartMouseObserver
+ *
+ *	@ingroup new_in_4_9
+ */
+inline bool shouldStartDrag (CPoint mouseDownPos, CPoint mouseMovePos)
+{
+	constexpr auto minDiff = 4;
+	return (std::abs (mouseDownPos.x - mouseMovePos.x) >= minDiff ||
+	        std::abs (mouseDownPos.y - mouseMovePos.y) >= minDiff);
+}
+
+//------------------------------------------------------------------------
+/** Helper object to be used to device if a mouse move is far enough to start a drag operation
+ *	\sa shouldStartDrag
+ *
+ *	@ingroup new_in_4_9
+ */
+struct DragStartMouseObserver
+{
+	void init (CPoint mousePos) { pos = mousePos; }
+	bool shouldStartDrag (CPoint mousePos) const { return VSTGUI::shouldStartDrag (pos, mousePos); }
+private:
+	CPoint pos {};
+};
+
+//------------------------------------------------------------------------
 } // VSTGUI

@@ -59,6 +59,8 @@ protected:
 		DragEditing,
 		SizeEditing,
 		LassoSelection,
+		WaitDrag,
+		WaitLasso,
 	};
 
 	enum class MouseSizeMode {
@@ -129,6 +131,7 @@ protected:
 	UICrossLines* lines {nullptr};
 	ViewSizeChangeOperation* moveSizeOperation {nullptr};
 	SharedPointer<CVSTGUITimer> editTimer;
+	DragStartMouseObserver dragStartMouseObserver;
 	
 	CColor crosslineForegroundColor;
 	CColor crosslineBackgroundColor;

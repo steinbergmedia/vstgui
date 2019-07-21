@@ -36,6 +36,7 @@ protected:
 	SharedPointer<UISelection> createSelection (int32_t row);
 	UIViewFactory::ViewAndDisplayNameList viewAndDisplayNameList;
 	const UIViewFactory* factory;
+	DragStartMouseObserver dragStartMouseObserver;
 };
 
 //----------------------------------------------------------------------------------------------------
@@ -192,6 +193,7 @@ CMouseEventResult UIViewCreatorDataSource::dbOnMouseDown (const CPoint& where, c
 {
 	if (buttons.isLeftButton ())
 	{
+		dragStartMouseObserver.init (where);
 		if (!buttons.isDoubleClick ())
 			return kMouseEventHandled;
 		addViewToCurrentEditView (row);
@@ -204,17 +206,22 @@ CMouseEventResult UIViewCreatorDataSource::dbOnMouseMoved (const CPoint& where, 
 {
 	if (buttons.isLeftButton () && row != -1 && column != -1)
 	{
-		auto selRow = dataBrowser->getSelection().front ();
-		SharedPointer<UISelection> selection = createSelection (selRow);
-		CMemoryStream stream (1024, 1024, false);
-		if (selection->store (stream, description))
+		if (dragStartMouseObserver.shouldStartDrag (where))
 		{
-			stream.end ();
-			auto dropSource = CDropSource::create (stream.getBuffer (), static_cast<uint32_t> (stream.tell ()), CDropSource::kText);
-			auto bitmap = createBitmapFromSelection (selection, dataBrowser->getFrame ());
-			browser->doDrag (DragDescription (dropSource, CPoint (), bitmap));
+			auto selRow = dataBrowser->getSelection ().front ();
+			SharedPointer<UISelection> selection = createSelection (selRow);
+			CMemoryStream stream (1024, 1024, false);
+			if (selection->store (stream, description))
+			{
+				stream.end ();
+				auto dropSource = CDropSource::create (stream.getBuffer (),
+				                                       static_cast<uint32_t> (stream.tell ()),
+				                                       CDropSource::kText);
+				auto bitmap = createBitmapFromSelection (selection, dataBrowser->getFrame ());
+				browser->doDrag (DragDescription (dropSource, CPoint (), bitmap));
+			}
 		}
-		return kMouseMoveEventHandledButDontNeedMoreEvents;
+		return kMouseEventHandled;
 	}
 	return kMouseEventNotHandled;
 }
@@ -222,4 +229,3 @@ CMouseEventResult UIViewCreatorDataSource::dbOnMouseMoved (const CPoint& where, 
 } // VSTGUI
 
 #endif // VSTGUI_LIVE_EDITING
-

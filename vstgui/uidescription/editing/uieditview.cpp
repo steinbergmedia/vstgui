@@ -643,13 +643,10 @@ CMouseEventResult UIEditView::onMouseDown (CPoint &where, const CButtonState& bu
 	{
 		if (!buttons.isControlSet ())
 			getSelection ()->clear ();
-		mouseEditMode = MouseEditMode::LassoSelection;
-		mouseStartPoint = where2;
 
-		lines = new UICrossLines (this, UICrossLines::kLassoStyle, lassoFrameColor, lassoFillColor);
-		overlayView->addView (lines);
-		lines->update (where2);
-		getFrame ()->setCursor (kCursorDefault);
+		mouseEditMode = MouseEditMode::WaitLasso;
+		dragStartMouseObserver.init (where);
+		mouseStartPoint = where2;
 		return kMouseEventHandled;
 	}
 
@@ -694,12 +691,9 @@ CMouseEventResult UIEditView::onMouseDown (CPoint &where, const CButtonState& bu
 		}
 		if (buttons.isAltSet () && !getSelection ()->contains (getView (0)))
 		{
-			mouseEditMode = MouseEditMode::DragEditing;
-			invalidSelection ();
-			startDrag (where);
-			mouseEditMode = MouseEditMode::NoEditing;
-			invalidSelection ();
-			return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
+			mouseEditMode = MouseEditMode::WaitDrag;
+			dragStartMouseObserver.init (where);
+			return kMouseEventHandled;
 		}
 		if (sizeMode == MouseSizeMode::None)
 		{
@@ -824,6 +818,18 @@ CMouseEventResult UIEditView::onMouseMoved (CPoint &where, const CButtonState& b
 			}
 			getFrame ()->setCursor (kCursorDefault);
 		}
+		else if (mouseEditMode == MouseEditMode::WaitLasso && buttons.isShiftSet ())
+		{
+			if (dragStartMouseObserver.shouldStartDrag (where))
+			{
+				mouseEditMode = MouseEditMode::LassoSelection;
+				lines = new UICrossLines (this, UICrossLines::kLassoStyle, lassoFrameColor,
+										  lassoFillColor);
+				overlayView->addView (lines);
+				getFrame ()->setCursor (kCursorDefault);
+				CViewContainer::onMouseMoved (where, buttons);
+			}
+		}
 		else if (getSelection ()->total () > 0)
 		{
 			if (mouseEditMode == MouseEditMode::DragEditing)
@@ -833,6 +839,17 @@ CMouseEventResult UIEditView::onMouseMoved (CPoint &where, const CButtonState& b
 			else if (mouseEditMode == MouseEditMode::SizeEditing)
 			{
 				doSizeEditingMove (where2);
+			}
+			else if (mouseEditMode == MouseEditMode::WaitDrag)
+			{
+				if (dragStartMouseObserver.shouldStartDrag (where))
+				{
+					mouseEditMode = MouseEditMode::DragEditing;
+					invalidSelection ();
+					startDrag (where);
+					mouseEditMode = MouseEditMode::NoEditing;
+					invalidSelection ();
+				}
 			}
 		}
 		CScrollView* scrollView = dynamic_cast<CScrollView*>(getParentView ()->getParentView ());

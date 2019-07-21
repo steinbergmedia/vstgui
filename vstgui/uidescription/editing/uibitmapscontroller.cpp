@@ -165,6 +165,7 @@ protected:
 	CMouseEventResult dbOnMouseMoved (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) override;
 
 	SharedPointer<CColorChooser> colorChooser;
+	DragStartMouseObserver dragStartMouseObserver;
 	bool dragContainsBitmaps;
 };
 
@@ -208,6 +209,7 @@ void UIBitmapsDataSource::dbDrawCell (CDrawContext* context, const CRect& size, 
 //----------------------------------------------------------------------------------------------------
 CMouseEventResult UIBitmapsDataSource::dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser)
 {
+	dragStartMouseObserver.init (where);
 	UIBaseDataSource::dbOnMouseDown (where, buttons, row, column, browser);
 	return kMouseEventHandled;
 }
@@ -215,7 +217,7 @@ CMouseEventResult UIBitmapsDataSource::dbOnMouseDown (const CPoint& where, const
 //----------------------------------------------------------------------------------------------------
 CMouseEventResult UIBitmapsDataSource::dbOnMouseMoved (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser)
 {
-	if (buttons.isLeftButton ())
+	if (buttons.isLeftButton () && dragStartMouseObserver.shouldStartDrag (where))
 	{
 		if (auto bitmap = getSelectedBitmap ())
 		{
