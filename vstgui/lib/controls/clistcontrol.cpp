@@ -93,7 +93,7 @@ void CListControl::recalculateLayout ()
 	{
 		impl->rowDescriptions[row] = impl->configurator->getRowDesc (row);
 		height += impl->rowDescriptions[row].height;
-		impl->doHoverCheck |= impl->rowDescriptions[row].flags & CListControlRowDesc::Hoverable;
+		impl->doHoverCheck |= (impl->rowDescriptions[row].flags & CListControlRowDesc::Hoverable) != 0;
 	}
 
 	auto viewSize = getViewSize ();
@@ -174,7 +174,7 @@ void CListControl::drawRect (CDrawContext* context, const CRect& updateRect)
 	rowSize.setWidth (getWidth ());
 	rowSize.setHeight (0);
 	auto numRows = getNumRows ();
-	auto selectedRow = getNormalizedRowIndex (getIntValue ());
+	auto selectedRow = static_cast<int32_t> (getNormalizedRowIndex (getIntValue ()));
 	for (auto row = 0; row < numRows; ++row)
 	{
 		rowSize.setHeight (impl->rowDescriptions[row].height);
@@ -287,7 +287,7 @@ CMouseEventResult CListControl::onMouseUp (CPoint& where, const CButtonState& bu
 		{
 			invalidRow (getIntValue ());
 			beginEdit ();
-			setValue (*row);
+			setValue (static_cast<float> (*row));
 			valueChanged ();
 			endEdit ();
 			invalidRow (getIntValue ());
@@ -461,7 +461,7 @@ int32_t CListControl::onKeyDown (VstKeyCode& keyCode)
 		{
 			invalidRow (getIntValue ());
 			beginEdit ();
-			setValue (newRow);
+			setValue (static_cast<float> (newRow));
 			valueChanged ();
 			endEdit ();
 			if (auto rowRect = getRowRect (getIntValue ()))

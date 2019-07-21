@@ -18,7 +18,7 @@ static SharedPointer<CListControl> createTestListControl (
 	auto listControl = makeOwned<CListControl> (CRect (0, 0, 100, 100));
 	auto config = makeOwned<StaticListControlConfigurator> (rowHeight, rowFlags);
 	listControl->setMin (0.f);
-	listControl->setMax (numRows);
+	listControl->setMax (static_cast<float> (numRows));
 	listControl->setConfigurator (config);
 	listControl->recalculateLayout ();
 	listControl->setValue (0.f);

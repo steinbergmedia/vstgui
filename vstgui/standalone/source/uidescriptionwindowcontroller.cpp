@@ -155,7 +155,7 @@ public:
 		else if (auto listcontrol = dynamic_cast<CListControl*>(control))
 		{
 			control->setMin (0.f);
-			control->setMax (stepValue->getSteps () - 1);
+			control->setMax (static_cast<float> (stepValue->getSteps () - 1));
 		}
 	}
 
