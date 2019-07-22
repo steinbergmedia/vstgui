@@ -92,7 +92,9 @@ static const MenuEntry editMenu[] = {
 	kMenuSeparator,
 	{ "Selection", "Select Parent(s)" , 0, 0, 0 },
 	{ "Selection", "Select All Children" , 0, 0, 0 },
-	
+	kMenuSeparator,
+	{ "Selection", "Select View in Hierarchy Browser" , 0, 0, 0 },
+
 	kSubMenuEnd,
 	kMenuSeparator,
 	{ "Zoom", "Zoom" , 0, 0, 0, MenuEntry::kSubMenu},

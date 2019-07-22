@@ -8,10 +8,12 @@
 
 #include "../uiviewfactory.h"
 #include "../uiattributes.h"
+#include "../viewcreator/viewcreator.h"
 #include "../../lib/controls/ctextedit.h"
 #include "../../lib/controls/coptionmenu.h"
 #include "../../lib/controls/cscrollbar.h"
 #include "../../lib/cgraphicspath.h"
+#include "../../lib/malloc.h"
 #include "uieditcontroller.h"
 #include "uiselection.h"
 #include "uiundomanager.h"
@@ -155,18 +157,34 @@ public:
 
 	CViewContainer* getView () const { return view; }
 	CView* getSubview (int32_t index);
-	
+	bool setSelectedView (CView* view);
+	UIViewListDataSource* getNext () const { return next; }
+
 	bool update (CViewContainer* vc);
 	void remove ();
 protected:
+	UTF8String getViewDisplayString (CView* v) const
+	{
+		uint32_t outSize = 0;
+		if (v->getAttributeSize (UIViewCreator::ViewCreator::labelAttrID, outSize))
+		{
+			Buffer<char> buffer (outSize);
+			if (v->getAttribute (UIViewCreator::ViewCreator::labelAttrID, outSize, buffer.data (),
+			                     outSize))
+			{
+				return buffer.data ();
+			}
+		}
+		return viewFactory->getViewDisplayName (v);
+	}
 	const UTF8String& getHeaderTitle () const override
 	{
 		headerTitle = "";
 		if (view)
 		{
-			headerTitle = viewFactory->getViewDisplayName (view);
+			headerTitle = getViewDisplayString (view);
 			if (headerTitle.empty () && view->getParentView ())
-				headerTitle = viewFactory->getViewDisplayName (view->getParentView ());
+				headerTitle = getViewDisplayString (view->getParentView ());
 		}
 		return headerTitle;
 	}
@@ -355,6 +373,37 @@ void UITemplateController::setTemplateView (CViewContainer* view)
 	}
 }
 
+//------------------------------------------------------------------------
+void UITemplateController::navigateTo (CView* view)
+{
+	std::list<CView*> parents;
+	CView* v = view;
+	while (auto parent = v->getParentView ())
+	{
+		if (parent == parent->getFrame ())
+			return; // view is not a child of the templateView
+		if (parent == templateView)
+			break;
+		if (UIViewFactory::getViewName (parent) == nullptr)
+		{
+			v = parent;
+			continue;
+		}
+		parents.emplace_front (parent);
+		v = parent;
+	}
+	UIViewListDataSource* dataSource = mainViewDataSource;
+	for (auto parent : parents)
+	{
+		dataSource->setSelectedView (parent);
+		dataSource = dataSource->getNext ();
+		if (dataSource == nullptr)
+			break;
+	}
+	if (dataSource)
+		dataSource->setSelectedView (view);
+}
+
 //----------------------------------------------------------------------------------------------------
 CView* UITemplateController::createView (const UIAttributes& attributes, const IUIDescription* description)
 {
@@ -463,10 +512,10 @@ bool UIViewListDataSource::update (CViewContainer* vc)
 	names.clear ();
 	subviews.clear ();
 	vc->forEachChild ([&] (CView* subview) {
-		IdStringPtr viewName = viewFactory->getViewDisplayName (subview);
-		if (viewName)
+		auto viewName = getViewDisplayString (subview);
+		if (!viewName.empty ())
 		{
-			names.emplace_back (viewName);
+			names.emplace_back (std::move (viewName));
 			subviews.emplace_back (subview);
 		}
 	});
@@ -506,27 +555,29 @@ CCoord UIViewListDataSource::calculateSubViewWidth (CViewContainer* inView) cons
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIViewListDataSource::dbSelectionChanged (CDataBrowser* browser)
+bool UIViewListDataSource::setSelectedView (CView* newView)
 {
-	CView* subview = getSubview (browser->getSelectedRow ());
-	if (subview == selectedView || inUpdate)
-		return;
-	selectedView = subview;
+	auto it = std::find (subviews.begin (), subviews.end (), newView);
+	if (it == subviews.end ())
+		return false;
+
+	selectedView = newView;
+	dataBrowser->selectRow (std::distance (subviews.begin (), it));
+
 	if (next)
 	{
 		next->remove ();
 		next = nullptr;
 	}
-	GenericStringListDataBrowserSource::dbSelectionChanged (browser);
-	if (auto container = subview ? subview->asViewContainer () : nullptr)
+	if (auto container = selectedView ? selectedView->asViewContainer () : nullptr)
 	{
 		UIViewListDataSource* dataSource = new UIViewListDataSource (container, viewFactory, selection, undoManager, delegate);
 		UIEditController::setupDataSource (dataSource);
-		CRect r (browser->getViewSize ());
+		CRect r (dataBrowser->getViewSize ());
 		r.offset (r.getWidth (), 0);
 		CDataBrowser* newDataBrowser = new CDataBrowser (r, dataSource);
-		UITemplateController::setupDataBrowser (browser, newDataBrowser);
-		CViewContainer* parentView = static_cast<CViewContainer*>(browser->getParentView ());
+		UITemplateController::setupDataBrowser (dataBrowser, newDataBrowser);
+		CViewContainer* parentView = static_cast<CViewContainer*>(dataBrowser->getParentView ());
 		parentView->addView (newDataBrowser);
 		next = dataSource;
 		dataSource->forget ();
@@ -538,6 +589,17 @@ void UIViewListDataSource::dbSelectionChanged (CDataBrowser* browser)
 			scrollView->setContainerSize (containerSize, true);
 		}
 	}
+	return true;
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIViewListDataSource::dbSelectionChanged (CDataBrowser* browser)
+{
+	CView* subview = getSubview (browser->getSelectedRow ());
+	if (subview == selectedView || inUpdate)
+		return;
+	setSelectedView (subview);
+	GenericStringListDataBrowserSource::dbSelectionChanged (dataBrowser);
 }
 
 //----------------------------------------------------------------------------------------------------

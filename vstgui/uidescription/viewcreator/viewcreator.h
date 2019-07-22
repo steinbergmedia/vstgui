@@ -28,6 +28,8 @@ struct ViewCreator : ViewCreatorAdapter
 	bool getAttributeValueRange (const string& attributeName, double& minValue,
 	                             double& maxValue) const override;
 
+	static constexpr CViewAttributeID labelAttrID = 'uilb';
+
 private:
 	static bool getViewAttributeString (CView* view, const CViewAttributeID attrID, string& value);
 };
