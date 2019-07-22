@@ -1521,8 +1521,8 @@ CMouseEventResult CFrame::callMouseObserverMouseDown (const CPoint& _where, cons
 
 	pImpl->mouseObservers.forEach ([&] (IMouseObserver* observer) {
 		CMouseEventResult result2 = observer->onMouseDown (this, where, buttons);
-		if (result2 == kMouseEventHandled)
-			eventResult = kMouseEventHandled;
+		if (result2 != kMouseEventNotHandled)
+			eventResult = result2;
 	});
 
 	return eventResult;
