@@ -125,10 +125,18 @@ public:
 
 	void updateControlOnStateChange (CControl* control) const
 	{
+		control->setMouseEnabled (value->isActive ());
+
+		auto listcontrol = dynamic_cast<CListControl*>(control);
+		auto stepValue = dynamicPtrCast<const IStepValue> (value);
+		if (listcontrol && stepValue)
+		{
+			control->setMin (0.f);
+			control->setMax (static_cast<float> (stepValue->getSteps () - 1));
+			return;
+		}
 		control->setMin (0.f);
 		control->setMax (1.f);
-		control->setMouseEnabled (value->isActive ());
-		auto stepValue = dynamicPtrCast<const IStepValue> (value);
 		if (!stepValue)
 			return;
 		const auto& valueConverter = value->getConverter ();
@@ -151,11 +159,6 @@ public:
 				segment.name = title;
 				segmentButton->addSegment (std::move (segment));
 			}
-		}
-		else if (auto listcontrol = dynamic_cast<CListControl*>(control))
-		{
-			control->setMin (0.f);
-			control->setMax (static_cast<float> (stepValue->getSteps () - 1));
 		}
 	}
 
