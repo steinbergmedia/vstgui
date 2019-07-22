@@ -19,6 +19,7 @@
 #include "vstgui/lib/crect.h"
 #include "vstgui/lib/iviewlistener.h"
 #include "vstgui/lib/controls/ccontrol.h"
+#include "vstgui/lib/controls/clistcontrol.h"
 
 #include "vstgui/standalone/source/genericalertbox.h"
 
@@ -93,6 +94,45 @@ public:
 };
 
 //------------------------------------------------------------------------
+class WeekdaysListConfigurator : public StaticListControlConfigurator
+{
+public:
+	WeekdaysListConfigurator (const StaticListControlConfigurator& c)
+	: StaticListControlConfigurator (c.getRowHeight (), c.getFlags ())
+	{
+	}
+	
+	CListControlRowDesc getRowDesc (int32_t row) const override
+	{
+		if (row == 0)
+			return {getRowHeight () * 2., 0};
+		return {getRowHeight (), getFlags ()};
+	}
+};
+
+//------------------------------------------------------------------------
+class WeekdaysController : public DelegationController
+{
+public:
+	WeekdaysController (IController* parent) : DelegationController (parent) {}
+	
+	CView* verifyView (CView* view, const UIAttributes& attributes,
+	                   const IUIDescription* description) override
+	{
+		if (auto listControl = dynamic_cast<CListControl*> (view))
+		{
+			auto configurator = dynamic_cast<StaticListControlConfigurator*> (listControl->getConfigurator ());
+			if (configurator)
+			{
+				listControl->setConfigurator (makeOwned<WeekdaysListConfigurator> (*configurator));
+			}
+		}
+		return controller->verifyView (view, attributes, description);
+	}
+
+};
+
+//------------------------------------------------------------------------
 Delegate::Delegate ()
 : Application::DelegateAdapter ({"VSTGUI Standalone", "1.0.0", "vstgui.examples.standalone"})
 {
@@ -151,6 +191,11 @@ bool Delegate::handleCommand (const Command& command)
 			    "DisabledControlsController",
 			    [] (const UTF8StringView&, IController* parent, const IUIDescription*) {
 				    return new DisabledControlsController (parent);
+			    });
+			customization->addCreateViewControllerFunc (
+			    "WeekdaysController",
+			    [] (const UTF8StringView&, IController* parent, const IUIDescription*) {
+				    return new WeekdaysController (parent);
 			    });
 			config.customization = customization;
 		}

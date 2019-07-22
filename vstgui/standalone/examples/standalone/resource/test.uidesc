@@ -26,6 +26,7 @@
 		<view angle-range="270" angle-start="135" autosize="right top " circle-drawing="false" class="CKnob" control-tag="Test" corona-color="~ GreenCColor" corona-dash-dot="true" corona-dash-dot-lengths="1.26,0.1" corona-drawing="true" corona-from-center="false" corona-inset="12" corona-inverted="true" corona-line-cap-butt="true" corona-outline="true" corona-outline-width-add="2" default-value="0.5" handle-color="~ WhiteCColor" handle-line-width="8" handle-shadow-color="~ BlackCColor" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="265, 225" size="70, 70" skip-handle-drawing="true" tooltip="Knob" transparent="false" value-inset="3" wants-focus="true" wheel-inc-value="0.1" zoom-factor="1.5"/>
 		<view autosize="left right top " back-color="~ BlackCColor" background-offset="0, 0" class="CTextEdit" control-tag="MutableString" default-value="0.5" font="~ NormalFont" font-antialias="true" font-color="~ WhiteCColor" frame-color="~ WhiteCColor" frame-width="1" immediate-text-change="true" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="40, 50" round-rect-radius="3" secure-style="false" shadow-color="~ RedCColor" size="260, 20" style-3D-in="false" style-3D-out="false" style-doubleclick="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="true" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" text-shadow-offset="1, 1" title="This is a string value" tooltip="Text Edit" transparent="false" value-precision="2" wants-focus="true" wheel-inc-value="0.1"/>
 		<view autosize="left right top " back-color="~ WhiteCColor" background-offset="0, 0" class="CParamDisplay" control-tag="MutableString" default-value="0.5" font="~ NormalFont" font-antialias="true" font-color="~ BlackCColor" frame-color="~ BlackCColor" frame-width="-1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="120, 10" round-rect-radius="3" shadow-color="~ RedCColor" size="280, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="true" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" text-shadow-offset="1, 1" tooltip="Parameter Display" transparent="false" value-precision="2" wants-focus="false" wheel-inc-value="0.1"/>
+		<view back-color="~ WhiteCColor" back-color-selected="TextShadow" class="CStringListControl" control-tag="Weekdays" default-value="0.5" font="~ NormalFont" font-color="~ BlackCColor" font-color-selected="~ BlackCColor" hover-color="#00000064" line-color="~ BlackCColor" line-width="-1" max-value="7" min-value="0" mouse-enabled="true" opacity="1" origin="15, 200" row-height="16" size="110, 144" style-hover="false" sub-controller="WeekdaysController" text-alignment="center" text-inset="5" tooltip="String List Control" transparent="false" wants-focus="true" wheel-inc-value="0.1"/>
 	</template>
 	<control-tags>
 		<control-tag name="Activate" tag="0"/>
@@ -37,13 +38,14 @@
 		<control-tag name="StepTest" tag="2"/>
 		<control-tag name="StringList" tag="6"/>
 		<control-tag name="Test" tag="1"/>
+		<control-tag name="Weekdays" tag="9"/>
 	</control-tags>
 	<custom>
 		<attributes Size="5, 5" name="UIGridController"/>
 		<attributes SelectedTemplate="view" name="UITemplateController"/>
-		<attributes EditViewScale="1" EditorSize="0, 0, 1158, 1005" SplitViewSize_0_0="0.7722165474974463927892998071911279112101" SplitViewSize_0_1="0.2073544433094994809962940962577704340219" SplitViewSize_1_0="0.537282941777323830301327234337804839015" SplitViewSize_1_1="0.4586312563840653777624822851066710427403" SplitViewSize_2_0="0.6036269430051813822402095865982118993998" SplitViewSize_2_1="0.3920552677029360832960946936509571969509" TabSwitchValue="6" Version="1" name="UIEditController"/>
+		<attributes EditViewScale="1" EditorSize="0, 0, 1158, 1005" SplitViewSize_0_0="0.7436159346271705716802102870133239775896" SplitViewSize_0_1="0.2359550561797752743498080008066608570516" SplitViewSize_1_0="0.5842696629213482983900007639022078365088" SplitViewSize_1_1="0.411644535240040854162657524284441024065" SplitViewSize_2_0="0.6424870466321243034357735268713440746069" SplitViewSize_2_1="0.3531951640759931065893795221199980005622" TabSwitchValue="6" Version="1" name="UIEditController"/>
 		<attributes name="UIAttributesController"/>
-		<attributes SelectedRow="8" name="UIViewCreatorDataSource"/>
+		<attributes SelectedRow="24" name="UIViewCreatorDataSource"/>
 		<attributes name="UIDescFilePath" path="/Users/scheffle/Source/vstgui/vstgui/standalone/examples/standalone/resource/test.uidesc"/>
 		<attributes SelectedRow="-1" name="UITagsDataSource"/>
 		<attributes SelectedRow="7" name="UIGradientsDataSource"/>
