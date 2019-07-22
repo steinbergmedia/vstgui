@@ -157,7 +157,7 @@ public:
 
 	CViewContainer* getView () const { return view; }
 	CView* getSubview (int32_t index);
-	bool setSelectedView (CView* view);
+	bool setSelectedView (CView* view, bool makeRowVisible = false);
 	UIViewListDataSource* getNext () const { return next; }
 
 	bool update (CViewContainer* vc);
@@ -395,13 +395,13 @@ void UITemplateController::navigateTo (CView* view)
 	UIViewListDataSource* dataSource = mainViewDataSource;
 	for (auto parent : parents)
 	{
-		dataSource->setSelectedView (parent);
+		dataSource->setSelectedView (parent, true);
 		dataSource = dataSource->getNext ();
 		if (dataSource == nullptr)
 			break;
 	}
 	if (dataSource)
-		dataSource->setSelectedView (view);
+		dataSource->setSelectedView (view, true);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -555,7 +555,7 @@ CCoord UIViewListDataSource::calculateSubViewWidth (CViewContainer* inView) cons
 }
 
 //----------------------------------------------------------------------------------------------------
-bool UIViewListDataSource::setSelectedView (CView* newView)
+bool UIViewListDataSource::setSelectedView (CView* newView, bool makeRowVisible)
 {
 	auto it = std::find (subviews.begin (), subviews.end (), newView);
 	if (it == subviews.end ())
@@ -563,6 +563,8 @@ bool UIViewListDataSource::setSelectedView (CView* newView)
 
 	selectedView = newView;
 	dataBrowser->selectRow (std::distance (subviews.begin (), it));
+	if (makeRowVisible)
+		dataBrowser->makeRowVisible (dataBrowser->getSelectedRow ());
 
 	if (next)
 	{
