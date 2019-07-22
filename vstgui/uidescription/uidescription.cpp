@@ -1219,7 +1219,7 @@ CView* UIDescription::createViewFromNode (UINode* node) const
 	CView* result = nullptr;
 	if (impl->controller)
 	{
-		const std::string* subControllerName = node->getAttributes ()->getAttributeValue ("sub-controller");
+		const auto* subControllerName = node->getAttributes ()->getAttributeValue (UIViewCreator::kAttrSubController);
 		if (subControllerName)
 		{
 			subController = impl->controller->createSubController (subControllerName->c_str (), this);

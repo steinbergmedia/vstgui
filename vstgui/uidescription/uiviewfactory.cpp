@@ -216,7 +216,7 @@ bool UIViewFactory::applyCustomViewAttributeValues (CView* customView, IdStringP
 }
 
 //-----------------------------------------------------------------------------
-IdStringPtr UIViewFactory::getViewName (CView* view) const
+IdStringPtr UIViewFactory::getViewName (CView* view)
 {
 	IdStringPtr viewName = nullptr;
 	uint32_t size = sizeof (IdStringPtr);

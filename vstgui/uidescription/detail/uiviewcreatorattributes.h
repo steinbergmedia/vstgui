@@ -81,6 +81,7 @@ static const std::string kAttrAutosize = "autosize";
 static const std::string kAttrTooltip = "tooltip";
 static const std::string kAttrCustomViewName = IUIDescription::kCustomViewName;
 static const std::string kAttrSubController = "sub-controller";
+static const std::string kAttrUIDescLabel = "uidesc-label";
 static const std::string kAttrOpacity = "opacity";
 
 //-----------------------------------------------------------------------------

@@ -99,23 +99,19 @@ CView* ViewCreator::create (const UIAttributes& attributes, const IUIDescription
 bool ViewCreator::apply (CView* view, const UIAttributes& attributes,
                          const IUIDescription* description) const
 {
-	CPoint p;
-	CRect size;
-	if (attributes.getPointAttribute (kAttrOrigin, p))
+	CPoint origin;
+	CPoint size;
+	CRect viewSize;
+	if (!attributes.getPointAttribute (kAttrOrigin, origin))
+		origin = view->getViewSize ().getTopLeft ();
+	if (!attributes.getPointAttribute (kAttrSize, size))
+		size = view->getViewSize ().getSize ();
+	viewSize.setTopLeft (origin);
+	viewSize.setSize (size);
+	if (viewSize != view->getViewSize ())
 	{
-		CRect origViewSize = view->getViewSize ();
-		size.setTopLeft (p);
-		size.setWidth (origViewSize.getWidth ());
-		size.setHeight (origViewSize.getHeight ());
-		view->setViewSize (size, false);
-		view->setMouseableArea (size);
-	}
-	if (attributes.getPointAttribute (kAttrSize, p))
-	{
-		size = view->getViewSize ();
-		size.setSize (p);
-		view->setViewSize (size, false);
-		view->setMouseableArea (size);
+		view->setViewSize (viewSize, false);
+		view->setMouseableArea (viewSize);
 	}
 
 	CBitmap* bitmap;
@@ -123,7 +119,6 @@ bool ViewCreator::apply (CView* view, const UIAttributes& attributes,
 		view->setBackground (bitmap);
 	if (stringToBitmap (attributes.getAttributeValue (kAttrDisabledBitmap), bitmap, description))
 		view->setDisabledBackground (bitmap);
-
 	bool b;
 	if (attributes.getBooleanAttribute (kAttrTransparent, b))
 		view->setTransparency (b);
@@ -132,44 +127,48 @@ bool ViewCreator::apply (CView* view, const UIAttributes& attributes,
 	if (attributes.hasAttribute (kAttrWantsFocus) &&
 	    attributes.getBooleanAttribute (kAttrWantsFocus, b))
 		view->setWantsFocus (b);
-
-	const auto* autosizeAttr = attributes.getAttributeValue (kAttrAutosize);
-	if (autosizeAttr)
+	if (const auto* attrValue = attributes.getAttributeValue (kAttrAutosize))
 	{
 		int32_t autosize = kAutosizeNone;
-		if (autosizeAttr->find ("left") != string::npos)
+		if (attrValue->find ("left") != string::npos)
 			autosize |= kAutosizeLeft;
-		if (autosizeAttr->find ("top") != string::npos)
+		if (attrValue->find ("top") != string::npos)
 			autosize |= kAutosizeTop;
-		if (autosizeAttr->find ("right") != string::npos)
+		if (attrValue->find ("right") != string::npos)
 			autosize |= kAutosizeRight;
-		if (autosizeAttr->find ("bottom") != string::npos)
+		if (attrValue->find ("bottom") != string::npos)
 			autosize |= kAutosizeBottom;
-		if (autosizeAttr->find ("row") != string::npos)
+		if (attrValue->find ("row") != string::npos)
 			autosize |= kAutosizeRow;
-		if (autosizeAttr->find ("column") != string::npos)
+		if (attrValue->find ("column") != string::npos)
 			autosize |= kAutosizeColumn;
 		view->setAutosizeFlags (autosize);
 	}
-	const auto* tooltipAttr = attributes.getAttributeValue (kAttrTooltip);
-	if (tooltipAttr)
+	if (const auto* attrValue = attributes.getAttributeValue (kAttrTooltip))
 	{
-		if (!tooltipAttr->empty ())
-			view->setTooltipText (tooltipAttr->data ());
+		if (!attrValue->empty ())
+			view->setTooltipText (attrValue->data ());
 		else
 			view->setTooltipText (nullptr);
 	}
-
-	const auto* customViewAttr = attributes.getAttributeValue (kAttrCustomViewName);
-	if (customViewAttr)
-		view->setAttribute ('uicv', static_cast<uint32_t> (customViewAttr->size () + 1),
-		                    customViewAttr->c_str ());
-
-	const auto* subControllerAttr = attributes.getAttributeValue (kAttrSubController);
-	if (subControllerAttr)
-		view->setAttribute ('uisc', static_cast<uint32_t> (subControllerAttr->size () + 1),
-		                    subControllerAttr->c_str ());
-
+	if (const auto* attrValue = attributes.getAttributeValue (kAttrCustomViewName))
+	{
+		view->setAttribute ('uicv', static_cast<uint32_t> (attrValue->size () + 1),
+		                    attrValue->data ());
+	}
+	if (const auto* attrValue = attributes.getAttributeValue (kAttrSubController))
+	{
+		view->setAttribute ('uisc', static_cast<uint32_t> (attrValue->size () + 1),
+		                    attrValue->data ());
+	}
+	if (const auto* attrValue = attributes.getAttributeValue (kAttrUIDescLabel))
+	{
+		if (attrValue->empty ())
+			view->removeAttribute (labelAttrID);
+		else
+			view->setAttribute (labelAttrID, static_cast<uint32_t> (attrValue->size () + 1),
+			                    attrValue->data ());
+	}
 	double opacity;
 	if (attributes.getDoubleAttribute (kAttrOpacity, opacity))
 		view->setAlphaValue (static_cast<float> (opacity));
@@ -192,6 +191,7 @@ bool ViewCreator::getAttributeNames (StringList& attributeNames) const
 	attributeNames.emplace_back (kAttrTooltip);
 	attributeNames.emplace_back (kAttrCustomViewName);
 	attributeNames.emplace_back (kAttrSubController);
+	attributeNames.emplace_back (kAttrUIDescLabel);
 	return true;
 }
 
@@ -221,6 +221,8 @@ auto ViewCreator::getAttributeType (const string& attributeName) const -> AttrTy
 	else if (attributeName == kAttrCustomViewName)
 		return kStringType;
 	else if (attributeName == kAttrSubController)
+		return kStringType;
+	else if (attributeName == kAttrUIDescLabel)
 		return kStringType;
 	return kUnknownType;
 }
@@ -309,6 +311,10 @@ bool ViewCreator::getAttributeValue (CView* view, const string& attributeName, s
 	else if (attributeName == kAttrSubController)
 	{
 		return getViewAttributeString (view, 'uisc', stringValue);
+	}
+	else if (attributeName == kAttrUIDescLabel)
+	{
+		return getViewAttributeString (view, labelAttrID, stringValue);
 	}
 	return false;
 }

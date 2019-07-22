@@ -409,6 +409,7 @@ UIEditController::~UIEditController ()
 	undoManager->unregisterListener (this);
 	editDescription->unregisterListener (this);
 	editorDesc = nullptr;
+	templateController = nullptr;
 	undoManager->clear ();
 	gUIDescription.tryFree ();
 }
@@ -1043,6 +1044,11 @@ CMessageResult UIEditController::onMenuItemSelection (CCommandMenuItem* item)
 			doSelectParents ();
 			return kMessageNotified;
 		}
+		if (cmdName == "Select View in Hierarchy Browser")
+		{
+			doSelectViewInHierarchyBrowser (selection->first ());
+			return kMessageNotified;
+		}
 	}
 	else if (cmdCategory == "Zoom")
 	{
@@ -1181,6 +1187,11 @@ CMessageResult UIEditController::validateMenuItem (CCommandMenuItem* item)
 			item->setTitle (selection->total () > 1 ? "Select Parents" : "Select Parent");
 			return kMessageNotified;
 		}
+		if (cmdName == "Select View in Hierarchy Browser")
+		{
+			item->setEnabled (selection->total () == 1);
+			return kMessageNotified;
+		}
 	}
 	return kMessageUnknown;
 }
@@ -1271,6 +1282,12 @@ void UIEditController::doSelectParents ()
 	selection->clear ();
 	for (auto& parent : parents)
 		selection->add (parent);
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIEditController::doSelectViewInHierarchyBrowser (CView* view)
+{
+	templateController->navigateTo (view);
 }
 
 //----------------------------------------------------------------------------------------------------

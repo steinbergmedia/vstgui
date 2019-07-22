@@ -26,7 +26,7 @@ public:
 	bool applyAttributeValues (CView* view, const UIAttributes& attributes, const IUIDescription* desc) const override;
 	bool applyCustomViewAttributeValues (CView* customView, IdStringPtr baseViewName, const UIAttributes& attributes, const IUIDescription* desc) const override;
 	
-	IdStringPtr getViewName (CView* view) const;
+	static IdStringPtr getViewName (CView* view);
 
 	static void registerViewCreator (const IViewCreator& viewCreator);
 	static void unregisterViewCreator (const IViewCreator& viewCreator);
