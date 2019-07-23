@@ -688,12 +688,15 @@ bool CViewContainer::changeViewZOrder (CView* view, uint32_t newIndex)
 		{
 			if (newIndex == oldIndex)
 				return true;
+			if (newIndex > oldIndex)
+				++newIndex;
+
 			auto dest = pImpl->children.begin ();
 			std::advance (dest, newIndex);
-			if (newIndex > oldIndex)
-				pImpl->children.splice (src, pImpl->children, dest);
-			else
-				pImpl->children.splice (dest, pImpl->children, src);
+
+			pImpl->children.insert (dest, view);
+			pImpl->children.erase (src);
+
 			pImpl->viewContainerListeners.forEach ([&] (IViewContainerListener* listener) {
 				listener->viewContainerViewZOrderChanged (this, view);
 			});
