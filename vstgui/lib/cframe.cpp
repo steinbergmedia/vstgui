@@ -53,7 +53,7 @@ struct ModalViewSession
 struct CFrame::Impl
 {
 	using ViewList = std::list<CView*>;
-	using FunctionQueue = std::queue<Function>;
+	using FunctionQueue = std::queue<EventProcessingFunction>;
 	using ModalViewSessionStack = std::stack<std::unique_ptr<ModalViewSession>>;
 
 	SharedPointer<IPlatformFrame> platformFrame;
@@ -1832,7 +1832,7 @@ void CFrame::platformOnTouchEvent (ITouchEvent& event)
 #endif
 
 //-----------------------------------------------------------------------------
-bool CFrame::doAfterEventProcessing (Function&& func)
+bool CFrame::doAfterEventProcessing (EventProcessingFunction&& func)
 {
 	if (pImpl->inEventHandling)
 		pImpl->postEventFunctionQueue.push (std::move (func));
@@ -1840,7 +1840,7 @@ bool CFrame::doAfterEventProcessing (Function&& func)
 }
 
 //-----------------------------------------------------------------------------
-bool CFrame::doAfterEventProcessing (const Function& func)
+bool CFrame::doAfterEventProcessing (const EventProcessingFunction& func)
 {
 	if (pImpl->inEventHandling)
 		pImpl->postEventFunctionQueue.push (func);
