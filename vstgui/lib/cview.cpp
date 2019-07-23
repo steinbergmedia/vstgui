@@ -644,12 +644,7 @@ DragResult CView::doDrag (IDataPackage* source, const CPoint& offset, CBitmap* d
 bool CView::doDrag (const DragDescription& dragDescription, const SharedPointer<IDragCallback>& callback)
 {
 	if (auto frame = getFrame ())
-	{
-		if (auto platformFrame = frame->getPlatformFrame ())
-		{
-			return platformFrame->doDrag (dragDescription, callback);
-		}
-	}
+		return frame->performDrag (dragDescription, callback);
 	return false;
 }
 

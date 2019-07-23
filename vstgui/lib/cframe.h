@@ -174,6 +174,7 @@ public:
 	bool inEventProcessing () const;
 
 	void onStartLocalEventLoop ();
+	bool performDrag (const DragDescription& desc, const SharedPointer<IDragCallback>& callback);
 
 	void invalid () override { invalidRect (getViewSize ()); setDirty (false); }
 	void invalidRect (const CRect& rect) override;

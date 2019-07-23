@@ -1547,6 +1547,20 @@ CMouseEventResult CFrame::callMouseObserverMouseMoved (const CPoint& _where, con
 	return eventResult;
 }
 
+//------------------------------------------------------------------------
+bool CFrame::performDrag (const DragDescription& desc, const SharedPointer<IDragCallback>& callback)
+{
+	if (auto platformFrame = getPlatformFrame ())
+	{
+		if (platformFrame->doDrag (desc, callback))
+		{
+			setMouseDownView (nullptr);
+			return true;
+		}
+	}
+	return false;
+}
+
 #if DEBUG
 //-----------------------------------------------------------------------------
 void CFrame::dumpHierarchy ()
