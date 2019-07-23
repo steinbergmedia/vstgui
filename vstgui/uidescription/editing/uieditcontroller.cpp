@@ -1242,7 +1242,8 @@ bool UIEditController::doZOrderAction (bool lower)
 	if (selection->total () == 1)
 	{
 		CView* view = selection->first ();
-		undoManager->pushAndPerform (new HierarchyMoveViewOperation (view, selection, lower));
+		undoManager->pushAndPerform (
+		    new HierarchyMoveViewOperation (view, selection, lower ? -1 : 1));
 		return true;
 	}
 	return false;

@@ -231,6 +231,8 @@ struct DragStartMouseObserver
 {
 	void init (CPoint mousePos) { pos = mousePos; }
 	bool shouldStartDrag (CPoint mousePos) const { return VSTGUI::shouldStartDrag (pos, mousePos); }
+
+	CPoint getInitPosition () const { return pos; }
 private:
 	CPoint pos {};
 };

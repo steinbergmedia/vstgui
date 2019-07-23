@@ -13,6 +13,9 @@
 #include "../../lib/controls/coptionmenu.h"
 #include "../../lib/controls/cscrollbar.h"
 #include "../../lib/cgraphicspath.h"
+#include "../../lib/cdropsource.h"
+#include "../../lib/coffscreencontext.h"
+#include "../../lib/dragging.h"
 #include "../../lib/malloc.h"
 #include "uieditcontroller.h"
 #include "uiselection.h"
@@ -191,9 +194,20 @@ protected:
 	
 	CCoord calculateSubViewWidth (CViewContainer* view) const;
 	void dbSelectionChanged (CDataBrowser* browser) override;
-	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) override;
+	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row,
+	                                 int32_t column, CDataBrowser* browser) override;
+	CMouseEventResult dbOnMouseMoved (const CPoint& where, const CButtonState& buttons, int32_t row,
+	                                  int32_t column, CDataBrowser* browser) override;
 	int32_t dbOnKeyDown (const VstKeyCode& key, CDataBrowser* browser) override;
 	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser) override;
+	DragOperation dbOnDragEnterCell (int32_t row, int32_t column, const CPoint& where,
+	                                 IDataPackage* drag, CDataBrowser* browser) override;
+	DragOperation dbOnDragMoveInCell (int32_t row, int32_t column, const CPoint& where,
+	                                  IDataPackage* drag, CDataBrowser* browser) override;
+	void dbOnDragExitCell (int32_t row, int32_t column, IDataPackage* drag,
+	                       CDataBrowser* browser) override;
+	bool dbOnDropInCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag,
+	                     CDataBrowser* browser) override;
 
 	// IUIUndoManagerListener
 	void onUndoManagerChange () override;
@@ -207,6 +221,9 @@ protected:
 	StringVector names;
 	std::vector<CView*> subviews;
 	bool inUpdate;
+	DragStartMouseObserver dragStartMouseObserver;
+	int32_t dragRow {-1};
+	int32_t dragDestinationRow {-1};
 };
 
 //----------------------------------------------------------------------------------------------------
@@ -629,23 +646,124 @@ void UIViewListDataSource::remove ()
 //----------------------------------------------------------------------------------------------------
 CMouseEventResult UIViewListDataSource::dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser)
 {
-	if (buttons.isLeftButton() && buttons.isDoubleClick ())
+	if (buttons.isLeftButton ())
 	{
-		CView* subview = getSubview (row);
-		if (subview)
+		if (buttons.isDoubleClick ())
 		{
-			if (buttons.getModifierState () & kControl)
+			CView* subview = getSubview (row);
+			if (subview)
 			{
-				if (selection->contains (subview))
-					selection->remove (subview);
+				if (buttons.getModifierState () & kControl)
+				{
+					if (selection->contains (subview))
+						selection->remove (subview);
+					else
+						selection->add (subview);
+				}
 				else
-					selection->add (subview);
+					selection->setExclusive (subview);
 			}
-			else
-				selection->setExclusive (subview);
 		}
+		dragStartMouseObserver.init (where);
 	}
-	return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
+	return kMouseEventHandled;
+}
+
+//------------------------------------------------------------------------
+CMouseEventResult UIViewListDataSource::dbOnMouseMoved (const CPoint& where,
+                                                        const CButtonState& buttons, int32_t row,
+                                                        int32_t column, CDataBrowser* browser)
+{
+	if (row >= 0 && buttons.isLeftButton () && dragStartMouseObserver.shouldStartDrag (where))
+	{
+		row = browser->getSelectedRow ();
+		dragRow = row;
+
+		auto cellBounds = browser->getCellBounds ({row, column});
+		auto offscreen = COffscreenContext::create (browser->getFrame (), cellBounds.getWidth (),
+		                                            cellBounds.getHeight (),
+		                                            browser->getFrame ()->getScaleFactor ());
+		auto offscreenSize = cellBounds;
+		offscreenSize.originize ();
+		offscreen->beginDraw ();
+		dbDrawCell (offscreen, offscreenSize, row, column, 0, browser);
+		offscreen->endDraw ();
+		
+		auto startPos = dragStartMouseObserver.getInitPosition ();
+		DragDescription dd (CDropSource::create (&row, sizeof (int32_t), IDataPackage::kBinary),
+		                    {cellBounds.left - startPos.x, cellBounds.top - startPos.y},
+		                    shared (offscreen->getBitmap ()));
+		auto callbackFunc = makeOwned<DragCallbackFunctions> ();
+		auto Self = shared (this);
+		callbackFunc->endedFunc = [Self] (IDraggingSession*, CPoint, DragOperation) {
+			Self->dragRow = -1;
+			Self->dragDestinationRow = -1;
+		};
+
+		browser->doDrag (dd, callbackFunc);
+		return kMouseMoveEventHandledButDontNeedMoreEvents;
+	}
+	return kMouseEventHandled;
+}
+
+//----------------------------------------------------------------------------------------------------
+DragOperation UIViewListDataSource::dbOnDragEnterCell (int32_t row, int32_t column,
+                                                       const CPoint& where, IDataPackage* drag,
+                                                       CDataBrowser* browser)
+{
+	if (dragRow >= 0)
+	{
+		if (dragDestinationRow >= 0)
+			browser->invalidateRow (dragDestinationRow);
+		if (dragRow == row)
+		{
+			dragDestinationRow = -1;
+		}
+		else
+		{
+			dragDestinationRow = row;
+			browser->invalidateRow (dragDestinationRow);
+		}
+		return DragOperation::Move;
+	}
+	return DragOperation::None;
+}
+
+//----------------------------------------------------------------------------------------------------
+DragOperation UIViewListDataSource::dbOnDragMoveInCell (int32_t row, int32_t column,
+                                                        const CPoint& where, IDataPackage* drag,
+                                                        CDataBrowser* browser)
+{
+	if (dragRow >= 0)
+		return DragOperation::Move;
+	return DragOperation::None;
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIViewListDataSource::dbOnDragExitCell (int32_t row, int32_t column, IDataPackage* drag,
+                                             CDataBrowser* browser)
+{
+	if (dragDestinationRow >= 0)
+	{
+		browser->invalidateRow (dragDestinationRow);
+		dragDestinationRow = -1;
+	}
+}
+
+//----------------------------------------------------------------------------------------------------
+bool UIViewListDataSource::dbOnDropInCell (int32_t row, int32_t column, const CPoint& where,
+                                           IDataPackage* drag, CDataBrowser* browser)
+{
+	bool result = false;
+	if (row != dragRow)
+	{
+		int32_t dir = dragDestinationRow - dragRow;
+		undoManager->pushAndPerform (new HierarchyMoveViewOperation (subviews[dragRow], selection, dir));
+		result = true;
+	}
+	dragRow = dragDestinationRow = -1;
+	browser->invalidateRow (row);
+	return result;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -707,6 +825,18 @@ void UIViewListDataSource::dbDrawCell (CDrawContext* context, const CRect& size,
 	if (container)
 		drawTriangle (context, size);
 	drawRowString (context, size, row, flags, browser);
+	if (dragDestinationRow == row)
+	{
+		context->setFrameColor (kRedCColor);
+		context->setLineWidth (1.);
+		auto r = size;
+		r.top += 1.;
+		r.bottom -= 2.;
+		if (dragDestinationRow < dragRow)
+			context->drawLine (r.getTopLeft (), r.getTopRight ());
+		else
+			context->drawLine (r.getBottomLeft (), r.getBottomRight ());
+	}
 }
 
 //----------------------------------------------------------------------------------------------------

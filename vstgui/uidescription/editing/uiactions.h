@@ -457,7 +457,7 @@ protected:
 class HierarchyMoveViewOperation : public IAction
 {
 public:
-	HierarchyMoveViewOperation (CView* view, UISelection* selection, bool up);
+	HierarchyMoveViewOperation (CView* view, UISelection* selection, int32_t dir);
 	~HierarchyMoveViewOperation () override = default;
 
 	UTF8StringPtr getName () override;
@@ -467,7 +467,7 @@ protected:
 	SharedPointer<CView> view;
 	SharedPointer<CViewContainer> parent;
 	SharedPointer<UISelection> selection;
-	bool up;
+	int32_t dir;
 };
 
 //-----------------------------------------------------------------------------
