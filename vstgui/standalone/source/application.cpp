@@ -438,13 +438,17 @@ void Application::onShow (const IWindow& window)
 }
 
 //------------------------------------------------------------------------
+template <typename Cont>
+typename Cont::const_iterator findWindow (const Cont& c, const IWindow& window)
+{
+	return std::find_if (c.begin (), c.end (),
+	                     [&] (const WindowPtr& w) { return &window == w.get (); });
+}
+
+//------------------------------------------------------------------------
 void Application::onClosed (const IWindow& window)
 {
-	auto it = std::find_if (windows.begin (), windows.end (), [&] (const WindowPtr& w) {
-		if (&window == w.get ())
-			return true;
-		return false;
-	});
+	auto it = findWindow (windows, window);
 	if (it != windows.end ())
 		windows.erase (it);
 }
@@ -453,11 +457,7 @@ void Application::onClosed (const IWindow& window)
 void Application::onActivated (const IWindow& window)
 {
 	// move the window in the window list to the first position
-	auto it = std::find_if (windows.begin (), windows.end (), [&] (const WindowPtr& w) {
-		if (&window == w.get ())
-			return true;
-		return false;
-	});
+	auto it = findWindow (windows, window);
 	if (it != windows.begin ())
 	{
 		auto windowPtr = *it;
