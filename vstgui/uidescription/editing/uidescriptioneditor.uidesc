@@ -464,6 +464,7 @@
 		<color name="control.frame" rgba="#0000003d"/>
 		<color name="control.value" rgba="#676767ff"/>
 		<color name="db.background" rgba="#fafafaff"/>
+		<color name="db.drag.indicator" rgba="#df0000ff"/>
 		<color name="db.font" rgba="#000000ff"/>
 		<color name="db.row.alternate.back" rgba="#bcc9d919"/>
 		<color name="db.row.back" rgba="#f3f3f319"/>
@@ -613,12 +614,12 @@
 		<control-tag name="viewcreator.search" tag="100"/>
 	</control-tags>
 	<custom>
-		<attributes EditViewScale="1" EditorSize="0, 0, 1193, 900" EncodeBitmaps="true" SplitViewSize_0_0="0.6819221967963386976663286986877210438251" SplitViewSize_0_1="0.2951945080091533113453294845385244116187" SplitViewSize_1_0="0.6281464530892448827614771289518103003502" SplitViewSize_1_1="0.3661327231121281333692252246692078188062" SplitViewSize_2_0="0.6932103939647946688751289912033826112747" SplitViewSize_2_1="0.3025984911986588365984118809137726202607" TabSwitchValue="3" Version="1" name="UIEditController"/>
+		<attributes EditViewScale="1" EditorSize="0, 0, 1286, 933" EncodeBitmaps="true" SplitViewSize_0_0="0.6934950385887541646212639534496702253819" SplitViewSize_0_1="0.2844542447629547776699610039941035211086" SplitViewSize_1_0="0.4443219404630650570808825250423979014158" SplitViewSize_1_1="0.5501653803748621784919237143185455352068" SplitViewSize_2_0="0.7153965785381026787348446305259130895138" SplitViewSize_2_1="0.2807153965785381122266528564068721607327" TabSwitchValue="2" Version="1" name="UIEditController"/>
 		<attributes name="UIViewCreatorController"/>
 		<attributes Size="5, 5" name="UIGridController"/>
 		<attributes SelectedRow="11" name="UIViewCreatorDataSource"/>
 		<attributes name="UIAttributesController"/>
-		<attributes FilterString="header." SelectedRow="0" name="UIColorsDataSource"/>
+		<attributes FilterString="db." SelectedRow="1" name="UIColorsDataSource"/>
 		<attributes SelectedRow="69" name="UITagsDataSource"/>
 		<attributes SelectedRow="2" name="UIFontsDataSource"/>
 		<attributes SelectedRow="17" name="UIBitmapsDataSource"/>
@@ -665,7 +666,7 @@
 					<view autosize="left right top " class="CView" custom-view-name="ShadingViewVertical" mouse-enabled="true" opacity="1" origin="0, 0" size="175, 20" transparent="false" wants-focus="false"/>
 					<view autosize="left right top " back-color="~ BlackCColor" background-offset="0, 0" class="CTextLabel" control-tag="attributes.viewname" default-value="0.5" font="control.font" font-antialias="true" font-color="control.font" frame-color="~ BlackCColor" frame-width="1" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="0, 0" round-rect-radius="6" shadow-color="~ RedCColor" size="175, 20" style-3D-in="false" style-3D-out="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="false" style-shadow-text="false" text-alignment="center" text-inset="0, 0" text-rotation="0" text-shadow-offset="1, 1" title="Attributes" transparent="true" value-precision="2" wants-focus="false" wheel-inc-value="0.1"/>
 					<view auto-drag-scrolling="false" auto-hide-scrollbars="true" autosize="left right top bottom " background-color="db.background" background-color-draw-style="filled and stroked" bordered="false" class="CScrollView" container-size="175, 0" follow-focus-view="true" horizontal-scrollbar="false" mouse-enabled="true" opacity="1" origin="0, 20" overlay-scrollbars="false" scrollbar-background-color="scrollbar.background" scrollbar-frame-color="scrollbar.frame" scrollbar-scroller-color="scrollbar.scroller" scrollbar-width="12" size="175, 186" transparent="false" vertical-scrollbar="true" wants-focus="false">
-						<view animate-view-resizing="false" autosize="left right " background-color="db.font" background-color-draw-style="filled and stroked" class="CRowColumnView" equal-size-layout="left-top" hide-clipped-subviews="false" margin="0,0,0,0" mouse-enabled="true" opacity="1" origin="0, 0" row-style="true" size="175, 0" spacing="0" transparent="true" view-resize-animation-time="200" wants-focus="false"/>
+						<view animate-view-resizing="false" autosize="left right " background-color="db.font" background-color-draw-style="filled and stroked" class="CRowColumnView" equal-size-layout="left-top" hide-clipped-subviews="false" margin="0, 0, 0, 0" mouse-enabled="true" opacity="1" origin="0, 0" row-style="true" size="175, 0" spacing="0" transparent="true" view-resize-animation-time="200" wants-focus="false"/>
 					</view>
 					<view autosize="left right bottom " class="CView" custom-view-name="ShadingViewVerticalTopLine" mouse-enabled="true" opacity="1" origin="0, 205" size="175, 20" transparent="false" wants-focus="false"/>
 					<view autosize="left right bottom " back-color="~ TransparentCColor" background-offset="0, 0" class="CSearchTextEdit" clearmark-inset="2, 2" control-tag="attributes.search" default-value="0.5" font="control.small.font" font-antialias="true" font-color="control.font" frame-color="control.frame" frame-width="-1" immediate-text-change="true" max-value="1" min-value="0" mouse-enabled="true" opacity="1" origin="5, 207" placeholder-title="Search" round-rect-radius="6" secure-style="false" shadow-color="~ RedCColor" size="163, 16" style-3D-in="false" style-3D-out="false" style-doubleclick="false" style-no-draw="false" style-no-frame="false" style-no-text="false" style-round-rect="true" style-shadow-text="false" text-alignment="left" text-inset="6, 0" text-rotation="0" text-shadow-offset="1, 1" tooltip="Search Attributes" transparent="false" value-precision="2" wants-focus="true" wheel-inc-value="0.1"/>

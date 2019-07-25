@@ -756,7 +756,7 @@ bool UIViewListDataSource::dbOnDropInCell (int32_t row, int32_t column, const CP
                                            IDataPackage* drag, CDataBrowser* browser)
 {
 	bool result = false;
-	if (row != dragRow)
+	if (row != dragRow && dragDestinationRow != -1 && row != -1)
 	{
 		int32_t dir = dragDestinationRow - dragRow;
 		undoManager->pushAndPerform (new HierarchyMoveViewOperation (subviews[dragRow], selection, dir));
@@ -817,13 +817,14 @@ void UIViewListDataSource::dbDrawCell (CDrawContext* context, const CRect& size,
 {
 	drawRowBackground (context, size, row, flags, browser);
 	auto subview = getSubview (row);
-	auto container = subview ? subview->asViewContainer () : nullptr;
-	if (container)
+	if (subview && subview->asViewContainer ())
 		drawTriangle (context, size);
 	drawRowString (context, size, row, flags, browser);
 	if (dragDestinationRow == row)
 	{
-		context->setFrameColor (kRedCColor);
+		CColor color = kRedCColor;
+		UIEditController::getEditorDescription ()->getColor ("db.drag.indicator", color);
+		context->setFrameColor (color);
 		context->setLineWidth (1.);
 		auto r = size;
 		r.top += 1.;
