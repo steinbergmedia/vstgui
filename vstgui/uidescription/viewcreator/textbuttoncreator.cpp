@@ -5,6 +5,7 @@
 #include "textbuttoncreator.h"
 
 #include "../../lib/controls/cbuttons.h"
+#include "../../lib/algorithm.h"
 #include "../detail/uiviewcreatorattributes.h"
 #include "../uiattributes.h"
 #include "../uiviewcreator.h"
@@ -119,12 +120,9 @@ bool TextButtonCreator::apply (CView* view, const UIAttributes& attributes,
 	attr = attributes.getAttributeValue (kAttrIconPosition);
 	if (attr)
 	{
-		auto it = std::find (getPositionStrings ().begin (), getPositionStrings ().end (), *attr);
-		if (it != getPositionStrings ().end ())
-		{
-			auto pos = std::distance (getPositionStrings ().begin (), it);
-			button->setIconPosition (static_cast<CDrawMethods::IconPosition> (pos));
-		}
+		if (auto index =
+		        indexOf (getPositionStrings ().begin (), getPositionStrings ().end (), *attr))
+			button->setIconPosition (static_cast<CDrawMethods::IconPosition> (*index));
 	}
 	attr = attributes.getAttributeValue (kAttrTextAlignment);
 	if (attr)

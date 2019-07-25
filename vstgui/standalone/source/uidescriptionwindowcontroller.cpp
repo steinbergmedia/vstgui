@@ -2,6 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
+#include "../../lib/algorithm.h"
 #include "../../lib/cfileselector.h"
 #include "../../lib/cframe.h"
 #include "../../lib/controls/coptionmenu.h"
@@ -618,10 +619,10 @@ struct WindowController::Impl : public IController, public ICommandHandler
 
 	int32_t getTagForName (UTF8StringPtr name, int32_t registeredTag) const override
 	{
-		auto it = std::find_if (valueWrappers.begin (), valueWrappers.end (),
-		                        [&] (const ValueWrapperPtr& v) { return v->getID () == name; });
-		if (it != valueWrappers.end ())
-			return static_cast<int32_t> (std::distance (valueWrappers.begin (), it));
+		if (auto index =
+		        indexOfTest (valueWrappers.begin (), valueWrappers.end (),
+		                     [&] (const ValueWrapperPtr& v) { return v->getID () == name; }))
+			return *index;
 		return registeredTag;
 	}
 

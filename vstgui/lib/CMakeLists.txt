@@ -12,6 +12,7 @@ set(${target}_common_sources
     animation/itimingfunction.h
     animation/timingfunctions.cpp
     animation/timingfunctions.h
+    algorithm.h
     cbitmap.cpp
     cbitmap.h
     cbitmapfilter.cpp

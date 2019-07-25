@@ -3,6 +3,7 @@
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
 #include "../../include/helpers/value.h"
+#include "../../../lib/algorithm.h"
 #include "../../../lib/dispatchlist.h"
 #include "../../include/ivaluelistener.h"
 #include <algorithm>
@@ -145,11 +146,11 @@ public:
 
 	IValue::Type stringAsValue (const UTF8String& string) const override
 	{
-		auto it = std::find (strings.begin (), strings.end (), string);
-		if (it != strings.end ())
-			return convertStepToValue (
-			    static_cast<IStepValue::StepType> (std::distance (strings.begin (), it)),
-			    static_cast<IStepValue::StepType> (strings.size () - 1));
+		if (auto index = indexOf (strings.begin (), strings.end (), string))
+		{
+			return convertStepToValue (static_cast<IStepValue::StepType> (*index),
+			                           static_cast<IStepValue::StepType> (strings.size () - 1));
+		}
 		return IValue::InvalidValue;
 	}
 

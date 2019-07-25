@@ -12,6 +12,7 @@
 #include "../../lib/controls/ctextedit.h"
 #include "../../lib/controls/coptionmenu.h"
 #include "../../lib/controls/cscrollbar.h"
+#include "../../lib/algorithm.h"
 #include "../../lib/cgraphicspath.h"
 #include "../../lib/cdropsource.h"
 #include "../../lib/coffscreencontext.h"
@@ -574,12 +575,12 @@ CCoord UIViewListDataSource::calculateSubViewWidth (CViewContainer* inView) cons
 //----------------------------------------------------------------------------------------------------
 bool UIViewListDataSource::setSelectedView (CView* newView, bool makeRowVisible)
 {
-	auto it = std::find (subviews.begin (), subviews.end (), newView);
-	if (it == subviews.end ())
+	auto index = indexOf (subviews.begin (), subviews.end (), newView);
+	if (!index)
 		return false;
 
 	selectedView = newView;
-	dataBrowser->selectRow (std::distance (subviews.begin (), it));
+	dataBrowser->selectRow (*index);
 	if (makeRowVisible)
 		dataBrowser->makeRowVisible (dataBrowser->getSelectedRow ());
 
@@ -774,15 +775,10 @@ void UIViewListDataSource::onUndoManagerChange ()
 	{
 		if (dataBrowser)
 		{
-			int32_t index = 0;
-			for (std::vector<CView*>::const_iterator it = subviews.begin (); it != subviews.end ();
-			     ++it, index++)
+			if (auto index = indexOf (subviews.begin (), subviews.end (), selectedView))
 			{
-				if (*it == selectedView)
-				{
-					dataBrowser->setSelectedRow (index, true);
-					return;
-				}
+				dataBrowser->setSelectedRow (*index, true);
+				return;
 			}
 		}
 		selectedView = nullptr;
