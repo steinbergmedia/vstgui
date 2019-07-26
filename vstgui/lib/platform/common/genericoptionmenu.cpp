@@ -268,7 +268,7 @@ private:
 				view->addAnimation (
 				    "AlphaAnimation", new AlphaValueAnimation (0.f, true),
 				    new CubicBezierTimingFunction (
-				        CubicBezierTimingFunction::easyIn (theme.menuAnimationTime)),
+				        CubicBezierTimingFunction::easyOut (theme.menuAnimationTime)),
 				    [view] (CView*, const IdStringPtr, IAnimationTarget*) {
 					    if (view->isAttached ())
 						    view->getParentView ()->asViewContainer ()->removeView (view);
@@ -345,8 +345,6 @@ private:
 			context->setDrawMode (kAntiAliasing);
 			if (item->isSeparator ())
 			{
-				context->setFillColor (theme.backgroundColor);
-				context->drawRect (size, kDrawFilled);
 				context->setFillColor (theme.separatorColor);
 				auto r = size;
 				r.inset (0, r.getHeight () / 2);
@@ -530,7 +528,7 @@ CView* setupGenericOptionMenu (Proc clickCallback, CViewContainer* container,
 	decorView->setAlphaValue (0.f);
 	decorView->addAnimation ("AlphaAnimation", new AlphaValueAnimation (1.f, true),
 	                         new CubicBezierTimingFunction (
-	                             CubicBezierTimingFunction::easyIn (theme.menuAnimationTime)));
+	                             CubicBezierTimingFunction::easyIn (theme.menuAnimationTime / 2)));
 	if (!parentDataSource && optionMenu->isCheckStyle ())
 	{
 		browser->makeRowVisible (static_cast<int32_t> (optionMenu->getValue ()));
@@ -603,7 +601,7 @@ void GenericOptionMenu::removeModalView (PlatformOptionMenuResult result)
 		impl->container->addAnimation (
 		    "OptionMenuDone", new AlphaValueAnimation (0.f, true),
 		    new CubicBezierTimingFunction (
-		        CubicBezierTimingFunction::easyIn (impl->theme.menuAnimationTime)),
+		        CubicBezierTimingFunction::easyOut (impl->theme.menuAnimationTime)),
 		    [self, result] (CView*, const IdStringPtr, IAnimationTarget*) {
 			    if (!self->impl->container)
 				    return;
