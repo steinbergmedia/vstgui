@@ -93,8 +93,8 @@ void UIDialogController::close ()
 
 	if (modalSession)
 	{
-		CView* dialog = frame->getModalView ();
-		dialog->unregisterViewListener (this);
+		if (auto dialog = frame->getModalView ())
+			dialog->unregisterViewListener (this);
 		frame->endModalViewSession (modalSession);
 	}
 	forget ();
