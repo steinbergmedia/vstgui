@@ -155,6 +155,7 @@ protected:
 	bool addBitmap (UTF8StringPtr path, std::string& outName);
 
 	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser) override;
+	void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* control, CDataBrowser* browser) override;
 	void dbOnDragEnterBrowser (IDataPackage* drag, CDataBrowser* browser) override;
 	void dbOnDragExitBrowser (IDataPackage* drag, CDataBrowser* browser) override;
 	DragOperation dbOnDragEnterCell (int32_t row, int32_t column, const CPoint& where, IDataPackage* drag, CDataBrowser* browser) override;
@@ -207,8 +208,29 @@ void UIBitmapsDataSource::dbDrawCell (CDrawContext* context, const CRect& size, 
 }
 
 //----------------------------------------------------------------------------------------------------
+void UIBitmapsDataSource::dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* control, CDataBrowser* browser)
+{
+	UIBaseDataSource::dbCellSetupTextEdit (row, column, control, browser);
+	CRect r (control->getViewSize ());
+	auto drawWidth = r.getHeight ();
+	r.right -= drawWidth;
+	control->setViewSize (r);
+}
+
+//----------------------------------------------------------------------------------------------------
 CMouseEventResult UIBitmapsDataSource::dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser)
 {
+	if (buttons.isDoubleClick () && row >= 0 && row < names.size ())
+	{
+		auto r = browser->getCellBounds ({row, column});
+		auto drawWidth = r.getHeight ();
+		r.left = r.right - drawWidth;
+		if (r.pointInside (where))
+		{
+			delegate->dbRowDoubleClick (row, this);
+			return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
+		}
+	}
 	dragStartMouseObserver.init (where);
 	UIBaseDataSource::dbOnMouseDown (where, buttons, row, column, browser);
 	return kMouseEventHandled;
@@ -928,6 +950,12 @@ void UIBitmapsController::dbSelectionChanged (int32_t selectedRow, GenericString
 			settingButton->setMouseEnabled (selectedBitmapName ? true : false);
 		}
 	}
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIBitmapsController::dbRowDoubleClick (int32_t row, GenericStringListDataBrowserSource* source)
+{
+	showSettingsDialog ();
 }
 
 //----------------------------------------------------------------------------------------------------
