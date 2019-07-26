@@ -549,7 +549,7 @@ struct GenericOptionMenu::Impl
 	SharedPointer<COptionMenu> menu;
 	SharedPointer<ContainerT> container;
 	SharedPointer<CVSTGUITimer> mouseUpTimer;
-	ModalViewSession* modalViewSession {nullptr};
+	Optional<ModalViewSessionID> modalViewSession;
 	IGenericOptionMenuListener* listener {nullptr};
 	GenericOptionMenuTheme theme;
 	Callback callback;
@@ -610,7 +610,11 @@ void GenericOptionMenu::removeModalView (PlatformOptionMenuResult result)
 			    auto callback = std::move (self->impl->callback);
 			    self->impl->callback = nullptr;
 			    self->impl->container->unregisterViewMouseListener (self);
-			    self->impl->frame->endModalViewSession (self->impl->modalViewSession);
+			    if (self->impl->modalViewSession)
+			    {
+					self->impl->frame->endModalViewSession (*self->impl->modalViewSession);
+					self->impl->modalViewSession = {};
+				}
 			    callback (self->impl->menu, result);
 			    self->impl->frame->setFocusView (self->impl->menu);
 			    self->impl->container = nullptr;

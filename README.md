@@ -23,6 +23,7 @@ Supported IDE:
 - Visual Studio 2015/2017
 - minimum Xcode 8
 - Qt Creator
+- Visual Studio Code
 
 ## Contributing
 

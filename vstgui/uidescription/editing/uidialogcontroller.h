@@ -58,7 +58,7 @@ protected:
 	int32_t onKeyUp (const VstKeyCode& code, CFrame* frame) override;
 
 	CFrame* frame;
-	ModalViewSession* modalSession {nullptr};
+	Optional<ModalViewSessionID> modalSession;
 	SharedPointer<IDialogController> dialogController;
 	UIDescription* dialogDescription;
 	SharedPointer<CControl> button1;

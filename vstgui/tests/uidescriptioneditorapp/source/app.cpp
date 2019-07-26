@@ -5,6 +5,8 @@
 #include "vstgui/lib/cbitmap.h"
 #include "vstgui/lib/ccolor.h"
 #include "vstgui/lib/cframe.h"
+#include "vstgui/lib/platform/iplatformframe.h"
+#include "vstgui/lib/platform/common/genericoptionmenu.h"
 #include "vstgui/standalone/include/helpers/appdelegate.h"
 #include "vstgui/standalone/include/helpers/menubuilder.h"
 #include "vstgui/standalone/include/helpers/uidesc/modelbinding.h"
@@ -152,6 +154,14 @@ public:
 			}
 		}
 		return false;
+	}
+
+	void onSetContentView (IWindow& window, const SharedPointer<CFrame>& contentView) override
+	{
+		if (auto platformFrame = contentView->getPlatformFrame ())
+		{
+			platformFrame->setupGenericOptionMenu (true);
+		}
 	}
 
 	std::string descPath;

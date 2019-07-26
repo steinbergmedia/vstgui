@@ -46,6 +46,7 @@ private:
 //------------------------------------------------------------------------
 struct ModalViewSession
 {
+	ModalViewSessionID identifier {};
 	SharedPointer<CView> view;
 };
 
@@ -54,7 +55,7 @@ struct CFrame::Impl
 {
 	using ViewList = std::list<CView*>;
 	using FunctionQueue = std::queue<EventProcessingFunction>;
-	using ModalViewSessionStack = std::stack<std::unique_ptr<ModalViewSession>>;
+	using ModalViewSessionStack = std::stack<ModalViewSession>;
 
 	SharedPointer<IPlatformFrame> platformFrame;
 	VSTGUIEditorInterface* editor {nullptr};
@@ -62,7 +63,7 @@ struct CFrame::Impl
 	SharedPointer<CTooltipSupport> tooltips;
 	SharedPointer<Animation::Animator> animator;
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
-	ModalViewSession* legacyModalViewSession {nullptr};
+	Optional<ModalViewSessionID> legacyModalViewSessionID;
 #endif
 	CView* focusView {nullptr};
 	CView* activeFocusView {nullptr};
@@ -77,6 +78,7 @@ struct CFrame::Impl
 	DispatchList<IKeyboardHook*> keyboardHooks;
 	FunctionQueue postEventFunctionQueue;
 
+	ModalViewSessionID modalViewSessionIDCounter {0};
 	double userScaleFactor {1.};
 	double platformScaleFactor {1.};
 	bool active {false};
@@ -888,7 +890,7 @@ bool CFrame::setModalView (CView* pView)
 	if (!pView)
 		endLegacyModalViewSession ();
 	else
-		pImpl->legacyModalViewSession = beginModalViewSession (pView);
+		pImpl->legacyModalViewSessionID = beginModalViewSession (pView);
 	
 	return true;
 }
@@ -896,10 +898,12 @@ bool CFrame::setModalView (CView* pView)
 //-----------------------------------------------------------------------------
 void CFrame::endLegacyModalViewSession ()
 {
-	vstgui_assert (pImpl->legacyModalViewSession != nullptr);
-	pImpl->legacyModalViewSession->view->remember ();
-	endModalViewSession (pImpl->legacyModalViewSession);
-	pImpl->legacyModalViewSession = nullptr;
+	vstgui_assert (pImpl->legacyModalViewSessionID);
+	vstgui_assert (pImpl->modalViewSessionStack.top ().identifier ==
+	               *pImpl->legacyModalViewSessionID);
+	pImpl->modalViewSessionStack.top ().view->remember ();
+	endModalViewSession (*pImpl->legacyModalViewSessionID);
+	pImpl->legacyModalViewSessionID = {};
 }
 
 #endif
@@ -908,22 +912,22 @@ void CFrame::endLegacyModalViewSession ()
 CView* CFrame::getModalView () const
 {
 	if (!pImpl->modalViewSessionStack.empty ())
-		return pImpl->modalViewSessionStack.top ()->view;
+		return pImpl->modalViewSessionStack.top ().view;
 	return nullptr;
 }
 
 //-----------------------------------------------------------------------------
-void CFrame::initModalViewSession (ModalViewSession* session)
+void CFrame::initModalViewSession (const ModalViewSession& session)
 {
 	if (auto view = getMouseDownView ())
 	{
 		onMouseCancel ();
 	}
 	clearMouseViews (CPoint (0, 0), 0, true);
-	if (auto container = session->view->asViewContainer ())
+	if (auto container = session.view->asViewContainer ())
 		container->advanceNextFocusView (nullptr, false);
 	else
-		setFocusView (session->view->wantsFocus () ? session->view : nullptr);
+		setFocusView (session.view->wantsFocus () ? session.view : nullptr);
 
 	if (isAttached ())
 	{
@@ -937,47 +941,54 @@ void CFrame::initModalViewSession (ModalViewSession* session)
 void CFrame::clearModalViewSessions ()
 {
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
-	if (pImpl->legacyModalViewSession)
+	if (pImpl->legacyModalViewSessionID)
 		endLegacyModalViewSession ();
 #endif
 	while (!pImpl->modalViewSessionStack.empty ())
-		endModalViewSession (pImpl->modalViewSessionStack.top ().get ());
+		endModalViewSession (pImpl->modalViewSessionStack.top ().identifier);
 }
 
 //-----------------------------------------------------------------------------
-ModalViewSession* CFrame::beginModalViewSession (CView* view)
+Optional<ModalViewSessionID> CFrame::beginModalViewSession (CView* view)
 {
 	if (view->isAttached ())
-		return nullptr;
+	{
+#if DEBUG
+		DebugPrint ("the view must not be attached when used for beginModalViewSession");
+#endif
+		return {};
+	}
 
 	if (!addView (view))
-		return nullptr;
+	{
+		return {};
+	}
 
-	auto session = std::unique_ptr<ModalViewSession> (new ModalViewSession);
-	session->view = view;
-	pImpl->modalViewSessionStack.push (std::move (session));
+	ModalViewSession session;
+	session.identifier = ++pImpl->modalViewSessionIDCounter;
+	session.view = view;
+	pImpl->modalViewSessionStack.push (session);
 
-	initModalViewSession (pImpl->modalViewSessionStack.top ().get ());
+	initModalViewSession (session);
 
-	return pImpl->modalViewSessionStack.top ().get ();
+	return makeOptional (session.identifier);
 }
 
 //-----------------------------------------------------------------------------
-bool CFrame::endModalViewSession (ModalViewSession* session)
+bool CFrame::endModalViewSession (ModalViewSessionID sessionID)
 {
 	if (pImpl->modalViewSessionStack.empty ())
 		return false;
-	auto& topSession = pImpl->modalViewSessionStack.top ();
-	if (topSession == nullptr || topSession.get () != session)
+	if (pImpl->modalViewSessionStack.top ().identifier != sessionID)
 		return false;
 
-	auto view = session->view;
+	auto view = pImpl->modalViewSessionStack.top ().view;
 	pImpl->modalViewSessionStack.pop ();
 
 	removeView (view);
 
 	if (!pImpl->modalViewSessionStack.empty ())
-		initModalViewSession (pImpl->modalViewSessionStack.top ().get ());
+		initModalViewSession (pImpl->modalViewSessionStack.top ());
 
 	return true;
 }
@@ -1093,16 +1104,15 @@ void CFrame::setFocusView (CView *pView)
 	if (pView == pImpl->focusView || (recursion && pImpl->focusView != nullptr))
 		return;
 
-	if (!pImpl->modalViewSessionStack.empty ())
+	if (pView && !pImpl->modalViewSessionStack.empty ())
 	{
-		if (auto modalContainer =
-		        pImpl->modalViewSessionStack.top ().get ()->view->asViewContainer ())
+		if (auto modalContainer = pImpl->modalViewSessionStack.top ().view->asViewContainer ())
 		{
 			if (!modalContainer->isChild (pView, true))
 			{
 #if DEBUG
 				DebugPrint (
-				    "VSTGUI: Could not set the focus view " \
+				    "Could not set the focus view " \
 				     "as it is not a child of the currently displayed modal view\n");
 #endif
 				return;

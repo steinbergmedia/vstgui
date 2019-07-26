@@ -21,6 +21,10 @@ It's recommended to start new projects with version 4 while old projects should 
 
 @section new_stuff New Stuff
 
+@subsection version4_9 Version 4.9
+
+- new control: VSTGUI::CListControl in play with VSTGUI::CStringList
+
 @subsection version4_8 Version 4.8
 
 - new VSTGUI::CSegmentButton selection mode \link VSTGUI::CSegmentButton::SelectionMode::kSingleToggle kSingleToggle\endlink and styles \link VSTGUI::CSegmentButton::Style::kHorizontalInverse kHorizontalInverse\endlink and  \link VSTGUI::CSegmentButton::Style::kVerticalInverse kVerticalInverse\endlink.
@@ -99,7 +103,9 @@ Note: All current deprecated methods will be removed in the next version. So mak
 @subsection code_changes_4_8_to_4_9 VSTGUI 4.8 -> VSTGUI 4.9
 
 - removed method CView::onWheel (..) where the axis of the event was not included. You have to use the other onWheel method for your custom classes now.
-- new interface method IViewMouseListener::viewOnMouseEnabled
+- new IViewMouseListener interface method IViewMouseListener::viewOnMouseEnabled
+- changed ModalViewSession type name to ModalViewSessionID and its type to an integer type
+- changed the CFrame::beginModalViewSession return value to be an Optional<ModalViewSessionID> for safer use.
 
 @subsection code_changes_4_7_to_4_8 VSTGUI 4.7 -> VSTGUI 4.8
 

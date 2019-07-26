@@ -6,6 +6,7 @@
 
 #include "vstguifwd.h"
 #include "cviewcontainer.h"
+#include "optional.h"
 #include "platform/iplatformframecallback.h"
 
 namespace VSTGUI {
@@ -70,11 +71,28 @@ public:
 	bool getSize (CRect* pSize) const;
 	bool getSize (CRect& pSize) const;
 
-	VSTGUI_DEPRECATED (bool setModalView (CView* pView);)
+	VSTGUI_DEPRECATED (
+	/** set a modal view. deprecated use beginModalViewSession instead */
+	bool setModalView (CView* pView);)
+	/** get the currently active modal view or nullptr if there is none */
 	CView* getModalView () const;
 
-	ModalViewSession* beginModalViewSession (CView* view);
-	bool endModalViewSession (ModalViewSession* session);
+	/** begin a new modal view session
+	 *
+	 *	A modal view session is active until endModalViewSession is called and in that time all UI
+	 *	events are only dispatched to the modal view or its child views.
+	 *	Modal view sessions can be stacked but must be ended in the same order.
+	 *
+	 *	@param view new modal view (ownership is shared with the caller)
+	 *	@return a unique session identifier
+	 */
+	Optional<ModalViewSessionID> beginModalViewSession (CView* view);
+	/** end a modal view session
+	 *
+	 *	@param session a session identifer
+	 *	@return true on success
+	 */
+	bool endModalViewSession (ModalViewSessionID session);
 
 	void  beginEdit (int32_t index);
 	void  endEdit (int32_t index);
@@ -257,7 +275,7 @@ private:
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 	void endLegacyModalViewSession ();
 #endif
-	void initModalViewSession (ModalViewSession* session);
+	void initModalViewSession (const ModalViewSession& session);
 	void clearModalViewSessions ();
 
 	struct Impl;

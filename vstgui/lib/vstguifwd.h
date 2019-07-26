@@ -11,6 +11,7 @@ namespace VSTGUI {
 
 //-----------------------------------------------------------------------------
 using CViewAttributeID = size_t;
+using ModalViewSessionID = uint32_t;
 
 //-----------------------------------------------------------------------------
 static constexpr uint32_t kStreamIOError = std::numeric_limits<uint32_t>::max ();
