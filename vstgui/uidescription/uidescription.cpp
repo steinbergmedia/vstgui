@@ -3341,12 +3341,13 @@ CBitmap* UIBitmapNode::getBitmap (const std::string& pathHint)
 //-----------------------------------------------------------------------------
 void UIBitmapNode::setBitmap (UTF8StringPtr bitmapName)
 {
-	attributes->setAttribute ("path", std::string (bitmapName));
+	std::string name (bitmapName);
+	attributes->setAttribute ("path", name);
 	if (bitmap)
 		bitmap->forget ();
 	bitmap = nullptr;
 	double scaleFactor = 1.;
-	if (UIDescriptionPrivate::decodeScaleFactorFromName (bitmapName, scaleFactor))
+	if (UIDescriptionPrivate::decodeScaleFactorFromName (name, scaleFactor))
 		attributes->setDoubleAttribute ("scale-factor", scaleFactor);
 	removeXMLData ();
 }
