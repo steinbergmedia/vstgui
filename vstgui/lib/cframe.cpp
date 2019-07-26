@@ -1091,6 +1091,23 @@ void CFrame::setFocusView (CView *pView)
 	if (pView == pImpl->focusView || (recursion && pImpl->focusView != nullptr))
 		return;
 
+	if (!pImpl->modalViewSessionStack.empty ())
+	{
+		if (auto modalContainer =
+		        pImpl->modalViewSessionStack.top ().get ()->view->asViewContainer ())
+		{
+			if (!modalContainer->isChild (pView, true))
+			{
+#if DEBUG
+				DebugPrint (
+				    "VSTGUI: Could not set the focus view " \
+				     "as it is not a child of the currently displayed modal view\n");
+#endif
+				return;
+			}
+		}
+	}
+
 	if (!pImpl->active)
 	{
 		pImpl->activeFocusView = pView;
