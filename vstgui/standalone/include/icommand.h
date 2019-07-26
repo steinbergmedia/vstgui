@@ -79,6 +79,7 @@ static constexpr IdStringPtr New = "New";
 static constexpr IdStringPtr Open = "Open...";
 static constexpr IdStringPtr Save = "Save";
 static constexpr IdStringPtr SaveAs = "Save As...";
+static constexpr IdStringPtr Revert = "Revert";
 static constexpr IdStringPtr CloseWindow = "Close Window";
 static constexpr IdStringPtr Undo = "Undo";
 static constexpr IdStringPtr Redo = "Redo";
@@ -108,6 +109,7 @@ static const Command NewDocument {CommandGroup::File, CommandName::New};
 static const Command OpenDocument {CommandGroup::File, CommandName::Open};
 static const Command SaveDocument {CommandGroup::File, CommandName::Save};
 static const Command SaveDocumentAs {CommandGroup::File, CommandName::SaveAs};
+static const Command RevertDocument {CommandGroup::File, CommandName::Revert};
 static const Command CloseWindow {CommandGroup::File, CommandName::CloseWindow};
 
 static const Command Undo {CommandGroup::Edit, CommandName::Undo};
