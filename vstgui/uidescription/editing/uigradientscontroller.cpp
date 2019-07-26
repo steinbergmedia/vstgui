@@ -553,6 +553,7 @@ protected:
 
 	void dbDrawCell (CDrawContext* context, const CRect& size, int32_t row, int32_t column, int32_t flags, CDataBrowser* browser) override;
 	void dbCellSetupTextEdit (int32_t row, int32_t column, CTextEdit* control, CDataBrowser* browser) override;
+	CMouseEventResult dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser) override;
 
 	CCoord getGradientIconWidth ();
 };
@@ -624,6 +625,22 @@ void UIGradientsDataSource::update ()
 CCoord UIGradientsDataSource::getGradientIconWidth ()
 {
 	return dataBrowser ? dbGetRowHeight (dataBrowser) * 2. : 0.;
+}
+
+//----------------------------------------------------------------------------------------------------
+CMouseEventResult UIGradientsDataSource::dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser)
+{
+	if (buttons.isDoubleClick () && row >= 0 && row < names.size ())
+	{
+		auto r = browser->getCellBounds ({row, column});
+		r.left = r.right - getGradientIconWidth ();
+		if (r.pointInside (where))
+		{
+			delegate->dbRowDoubleClick (row, this);
+			return kMouseDownEventHandledButDontNeedMovedOrUpEvents;
+		}
+	}
+	return UIBaseDataSource::dbOnMouseDown (where, buttons, row, column, browser);
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -765,6 +782,12 @@ void UIGradientsController::dbSelectionChanged (int32_t selectedRow, GenericStri
 		if (editButton)
 			editButton->setMouseEnabled (gradient ? true : false);
 	}
+}
+
+//----------------------------------------------------------------------------------------------------
+void UIGradientsController::dbRowDoubleClick (int32_t row, GenericStringListDataBrowserSource* source)
+{
+	showEditDialog ();
 }
 
 //----------------------------------------------------------------------------------------------------
