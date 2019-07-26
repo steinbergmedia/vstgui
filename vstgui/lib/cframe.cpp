@@ -965,6 +965,8 @@ ModalViewSession* CFrame::beginModalViewSession (CView* view)
 //-----------------------------------------------------------------------------
 bool CFrame::endModalViewSession (ModalViewSession* session)
 {
+	if (pImpl->modalViewSessionStack.empty ())
+		return false;
 	auto& topSession = pImpl->modalViewSessionStack.top ();
 	if (topSession == nullptr || topSession.get () != session)
 		return false;
