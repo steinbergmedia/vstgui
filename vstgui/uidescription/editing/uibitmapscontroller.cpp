@@ -10,6 +10,7 @@
 #include "uieditcontroller.h"
 #include "uidialogcontroller.h"
 #include "uiviewcreatecontroller.h"
+#include "../cstream.h"
 #include "../detail/uiviewcreatorattributes.h"
 #include "../../lib/cbitmap.h"
 #include "../../lib/cbitmapfilter.h"

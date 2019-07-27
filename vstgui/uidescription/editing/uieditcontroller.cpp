@@ -23,6 +23,7 @@
 #include "uidialogcontroller.h"
 #include "uitemplatesettingscontroller.h"
 #include "uifocussettingscontroller.h"
+#include "../cstream.h"
 #include "../uiattributes.h"
 #include "../../lib/controls/coptionmenu.h"
 #include "../../lib/controls/csegmentbutton.h"

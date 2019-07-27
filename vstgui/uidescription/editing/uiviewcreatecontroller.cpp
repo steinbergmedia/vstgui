@@ -8,6 +8,7 @@
 
 #include "uieditcontroller.h"
 #include "uibasedatasource.h"
+#include "../cstream.h"
 #include "../../lib/cdropsource.h"
 #include "../../lib/dragging.h"
 #include "../../lib/controls/coptionmenu.h"

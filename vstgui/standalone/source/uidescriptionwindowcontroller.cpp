@@ -14,6 +14,7 @@
 #include "../../lib/iviewlistener.h"
 #include "../../uidescription/compresseduidescription.h"
 #include "../../uidescription/cstream.h"
+#include "../../uidescription/xmlparser.h"
 #include "../../uidescription/detail/uiviewcreatorattributes.h"
 #include "../../uidescription/editing/uieditcontroller.h"
 #include "../../uidescription/editing/uieditmenucontroller.h"
