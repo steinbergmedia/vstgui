@@ -15,6 +15,7 @@
 #include "../uiattributes.h"
 #include "../uidescription.h"
 #include "../uiviewfactory.h"
+#include "../cstream.h"
 #include "../detail/uiviewcreatorattributes.h"
 #include "../../lib/cvstguitimer.h"
 #include "../../lib/cframe.h"

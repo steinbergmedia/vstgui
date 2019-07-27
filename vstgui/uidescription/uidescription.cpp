@@ -10,6 +10,7 @@
 #include "cstream.h"
 #include "base64codec.h"
 #include "icontroller.h"
+#include "xmlparser.h"
 #include "../lib/cfont.h"
 #include "../lib/cstring.h"
 #include "../lib/cframe.h"
@@ -659,6 +660,189 @@ static std::string removeScaleFactorFromName (const std::string& name)
 	return result;
 }
 
+//-----------------------------------------------------------------------------
+struct Parser : public Xml::IHandler
+{
+	SharedPointer<UINode> parse (Xml::IContentProvider* provider);
+
+	void startXmlElement (Xml::Parser* parser, IdStringPtr elementName, UTF8StringPtr* elementAttributes) override;
+	void endXmlElement (Xml::Parser* parser, IdStringPtr name) override;
+	void xmlCharData (Xml::Parser* parser, const int8_t* data, int32_t length) override;
+	void xmlComment (Xml::Parser* parser, IdStringPtr comment) override;
+
+	const SharedPointer<UINode> getNodes () const { return nodes; }
+
+private:
+	SharedPointer<UINode> nodes;
+	std::deque<UINode*> nodeStack;
+	bool restoreViewsMode {false};
+};
+
+//-----------------------------------------------------------------------------
+SharedPointer<UINode> Parser::parse (Xml::IContentProvider* provider)
+{
+	Xml::Parser parser;
+	if (parser.parse (provider, this))
+		return std::move (nodes);
+	return nullptr;
+}
+
+//-----------------------------------------------------------------------------
+void Parser::startXmlElement (Xml::Parser* parser, IdStringPtr elementName, UTF8StringPtr* elementAttributes)
+{
+	std::string name (elementName);
+	if (nodes)
+	{
+		UINode* parent = nodeStack.back ();
+		UINode* newNode = nullptr;
+		if (restoreViewsMode)
+		{
+			if (name != "view" && name != MainNodeNames::kCustom)
+			{
+				parser->stop ();
+			}
+			newNode = new UINode (name, makeOwned<UIAttributes> (elementAttributes));
+		}
+		else
+		{
+			if (parent == nodes)
+			{
+				// only allowed second level elements
+				if (name == MainNodeNames::kControlTag || name == MainNodeNames::kColor || name == MainNodeNames::kBitmap)
+					newNode = new UINode (name, makeOwned<UIAttributes> (elementAttributes), true);
+				else if (name == MainNodeNames::kFont || name == MainNodeNames::kTemplate
+					  || name == MainNodeNames::kControlTag || name == MainNodeNames::kCustom
+					  || name == MainNodeNames::kVariable || name == MainNodeNames::kGradient)
+					newNode = new UINode (name, makeOwned<UIAttributes> (elementAttributes));
+				else
+					parser->stop ();
+			}
+			else if (parent->getName () == MainNodeNames::kBitmap)
+			{
+				if (name == "bitmap")
+					newNode = new UIBitmapNode (name, makeOwned<UIAttributes> (elementAttributes));
+				else
+					parser->stop ();
+			}
+			else if (parent->getName () == MainNodeNames::kFont)
+			{
+				if (name == "font")
+					newNode = new UIFontNode (name, makeOwned<UIAttributes> (elementAttributes));
+				else
+					parser->stop ();
+			}
+			else if (parent->getName () == MainNodeNames::kColor)
+			{
+				if (name == "color")
+					newNode = new UIColorNode (name, makeOwned<UIAttributes> (elementAttributes));
+				else
+					parser->stop ();
+			}
+			else if (parent->getName () == MainNodeNames::kControlTag)
+			{
+				if (name == "control-tag")
+					newNode = new UIControlTagNode (name, makeOwned<UIAttributes> (elementAttributes));
+				else
+					parser->stop ();
+			}
+			else if (parent->getName () == MainNodeNames::kVariable)
+			{
+				if (name == "var")
+					newNode = new UIVariableNode (name, makeOwned<UIAttributes> (elementAttributes));
+				else
+					parser->stop ();
+			}
+			else if (parent->getName () == MainNodeNames::kGradient)
+			{
+				if (name == "gradient")
+					newNode = new UIGradientNode (name, makeOwned<UIAttributes> (elementAttributes));
+				else
+					parser->stop ();
+			}
+			else
+				newNode = new UINode (name, makeOwned<UIAttributes> (elementAttributes));
+		}
+		if (newNode)
+		{
+			parent->getChildren ().add (newNode);
+			nodeStack.emplace_back (newNode);
+		}
+	}
+	else if (name == "vstgui-ui-description")
+	{
+		nodes = makeOwned<UINode> (name, makeOwned<UIAttributes> (elementAttributes));
+		nodeStack.emplace_back (nodes);
+	}
+	else if (name == "vstgui-ui-description-view-list")
+	{
+		vstgui_assert (nodes == nullptr);
+		nodes = makeOwned<UINode> (name, makeOwned<UIAttributes> (elementAttributes));
+		nodeStack.emplace_back (nodes);
+		restoreViewsMode = true;
+	}
+}
+
+//-----------------------------------------------------------------------------
+void Parser::endXmlElement (Xml::Parser* parser, IdStringPtr name)
+{
+	if (nodeStack.back () == nodes)
+		restoreViewsMode = false;
+	nodeStack.pop_back ();
+}
+
+//-----------------------------------------------------------------------------
+void Parser::xmlCharData (Xml::Parser* parser, const int8_t* data, int32_t length)
+{
+	if (nodeStack.size () == 0)
+		return;
+	auto& nodeData = nodeStack.back ()->getData ();
+	const int8_t* dataStart = nullptr;
+	uint32_t validChars = 0;
+	for (int32_t i = 0; i < length; i++, ++data)
+	{
+		if (*data < 0x21)
+		{
+			if (dataStart)
+			{
+				nodeData.append (reinterpret_cast<const char*> (dataStart), validChars);
+				dataStart = nullptr;
+				validChars = 0;
+			}
+			continue;
+		}
+		if (dataStart == nullptr)
+			dataStart = data;
+		++validChars;
+	}
+	if (dataStart && validChars > 0)
+		nodeData.append (reinterpret_cast<const char*> (dataStart), validChars);
+}
+
+//-----------------------------------------------------------------------------
+void Parser::xmlComment (Xml::Parser* parser, IdStringPtr comment)
+{
+#if VSTGUI_LIVE_EDITING
+	if (nodeStack.size () == 0)
+	{
+	#if DEBUG
+		DebugPrint ("*** WARNING : Comment outside of root tag will be removed on save !\nComment: %s\n", comment);
+	#endif
+		return;
+	}
+	UINode* parent = nodeStack.back ();
+	if (parent && comment)
+	{
+		std::string commentStr (comment);
+		if (!commentStr.empty ())
+		{
+			UICommentNode* commentNode = new UICommentNode (comment);
+			parent->getChildren ().add (commentNode);
+		}
+	}
+#endif
+}
+
+//-----------------------------------------------------------------------------
 } // UIDescriptionPrivate
 
 IdStringPtr IUIDescription::kCustomViewName = "custom-view-name";
@@ -678,10 +862,7 @@ struct UIDescription::Impl : ListenerProvider<Impl, UIDescriptionListener>
 	SharedPointer<UIDescription> sharedResources;
 	
 	mutable std::deque<IController*> subControllerStack;
-	std::deque<UINode*> nodeStack;
 	
-	bool restoreViewsMode {false};
-
 	Optional<UINode*> variableBaseNode;
 
 	UINode* getVariableBaseNode ()
@@ -832,10 +1013,10 @@ bool UIDescription::parse ()
 {
 	if (parsed ())
 		return true;
-	Xml::Parser parser;
+	UIDescriptionPrivate::Parser parser;
 	if (impl->xmlContentProvider)
 	{
-		if (parser.parse (impl->xmlContentProvider, this))
+		if ((impl->nodes = parser.parse (impl->xmlContentProvider)))
 		{
 			addDefaultNodes ();
 			return true;
@@ -847,7 +1028,7 @@ bool UIDescription::parse ()
 		if (resInputStream.open (impl->xmlFile))
 		{
 			Xml::InputStreamContentProvider contentProvider (resInputStream);
-			if (parser.parse (&contentProvider, this))
+			if ((impl->nodes = parser.parse (&contentProvider)))
 			{
 				addDefaultNodes ();
 				return true;
@@ -859,7 +1040,7 @@ bool UIDescription::parse ()
 			if (fileStream.open (impl->xmlFile.u.name, CFileStream::kReadMode))
 			{
 				Xml::InputStreamContentProvider contentProvider (fileStream);
-				if (parser.parse (&contentProvider, this))
+				if ((impl->nodes = parser.parse (&contentProvider)))
 				{
 					addDefaultNodes ();
 					return true;
@@ -1162,20 +1343,9 @@ bool UIDescription::storeViews (const std::list<CView*>& views, OutputStream& st
 //-----------------------------------------------------------------------------
 bool UIDescription::restoreViews (InputStream& stream, std::list<SharedPointer<CView> >& views, UIAttributes** customData)
 {
-	SharedPointer<UINode> baseNode;
-	if (impl->nodes)
-	{
-		auto origNodes = std::move (impl->nodes);
-		impl->nodes = baseNode;
-
-		Xml::InputStreamContentProvider contentProvider (stream);
-		Xml::Parser parser;
-		if (parser.parse (&contentProvider, this))
-		{
-			baseNode = impl->nodes;
-		}
-		impl->nodes = std::move (origNodes);
-	}
+	Xml::InputStreamContentProvider contentProvider (stream);
+	UIDescriptionPrivate::Parser parser;
+	SharedPointer<UINode> baseNode = parser.parse (&contentProvider);
 	if (baseNode)
 	{
 		UIDescList& children = baseNode->getChildren ();
@@ -2791,161 +2961,6 @@ bool UIDescription::calculateStringValue (UTF8StringPtr _str, double& result) co
 	}
 	result = 0;
 	return UIDescriptionPrivate::computeTokens (tokens, result);
-}
-
-//-----------------------------------------------------------------------------
-void UIDescription::startXmlElement (Xml::Parser* parser, IdStringPtr elementName, UTF8StringPtr* elementAttributes)
-{
-	std::string name (elementName);
-	if (impl->nodes)
-	{
-		UINode* parent = impl->nodeStack.back ();
-		UINode* newNode = nullptr;
-		if (impl->restoreViewsMode)
-		{
-			if (name != "view" && name != MainNodeNames::kCustom)
-			{
-				parser->stop ();
-			}
-			newNode = new UINode (name, makeOwned<UIAttributes> (elementAttributes));
-		}
-		else
-		{
-			if (parent == impl->nodes)
-			{
-				// only allowed second level elements
-				if (name == MainNodeNames::kControlTag || name == MainNodeNames::kColor || name == MainNodeNames::kBitmap)
-					newNode = new UINode (name, makeOwned<UIAttributes> (elementAttributes), true);
-				else if (name == MainNodeNames::kFont || name == MainNodeNames::kTemplate
-					  || name == MainNodeNames::kControlTag || name == MainNodeNames::kCustom
-					  || name == MainNodeNames::kVariable || name == MainNodeNames::kGradient)
-					newNode = new UINode (name, makeOwned<UIAttributes> (elementAttributes));
-				else
-					parser->stop ();
-			}
-			else if (parent->getName () == MainNodeNames::kBitmap)
-			{
-				if (name == "bitmap")
-					newNode = new UIBitmapNode (name, makeOwned<UIAttributes> (elementAttributes));
-				else
-					parser->stop ();
-			}
-			else if (parent->getName () == MainNodeNames::kFont)
-			{
-				if (name == "font")
-					newNode = new UIFontNode (name, makeOwned<UIAttributes> (elementAttributes));
-				else
-					parser->stop ();
-			}
-			else if (parent->getName () == MainNodeNames::kColor)
-			{
-				if (name == "color")
-					newNode = new UIColorNode (name, makeOwned<UIAttributes> (elementAttributes));
-				else
-					parser->stop ();
-			}
-			else if (parent->getName () == MainNodeNames::kControlTag)
-			{
-				if (name == "control-tag")
-					newNode = new UIControlTagNode (name, makeOwned<UIAttributes> (elementAttributes));
-				else
-					parser->stop ();
-			}
-			else if (parent->getName () == MainNodeNames::kVariable)
-			{
-				if (name == "var")
-					newNode = new UIVariableNode (name, makeOwned<UIAttributes> (elementAttributes));
-				else
-					parser->stop ();
-			}
-			else if (parent->getName () == MainNodeNames::kGradient)
-			{
-				if (name == "gradient")
-					newNode = new UIGradientNode (name, makeOwned<UIAttributes> (elementAttributes));
-				else
-					parser->stop ();
-			}
-			else
-				newNode = new UINode (name, makeOwned<UIAttributes> (elementAttributes));
-		}
-		if (newNode)
-		{
-			parent->getChildren ().add (newNode);
-			impl->nodeStack.emplace_back (newNode);
-		}
-	}
-	else if (name == "vstgui-ui-description")
-	{
-		impl->nodes = makeOwned<UINode> (name, makeOwned<UIAttributes> (elementAttributes));
-		impl->nodeStack.emplace_back (impl->nodes);
-	}
-	else if (name == "vstgui-ui-description-view-list")
-	{
-		vstgui_assert (impl->nodes == nullptr);
-		impl->nodes = makeOwned<UINode> (name, makeOwned<UIAttributes> (elementAttributes));
-		impl->nodeStack.emplace_back (impl->nodes);
-		impl->restoreViewsMode = true;
-	}
-}
-
-//-----------------------------------------------------------------------------
-void UIDescription::endXmlElement (Xml::Parser* parser, IdStringPtr name)
-{
-	if (impl->nodeStack.back () == impl->nodes)
-		impl->restoreViewsMode = false;
-	impl->nodeStack.pop_back ();
-}
-
-//-----------------------------------------------------------------------------
-void UIDescription::xmlCharData (Xml::Parser* parser, const int8_t* data, int32_t length)
-{
-	if (impl->nodeStack.size () == 0)
-		return;
-	auto& nodeData = impl->nodeStack.back ()->getData ();
-	const int8_t* dataStart = nullptr;
-	uint32_t validChars = 0;
-	for (int32_t i = 0; i < length; i++, ++data)
-	{
-		if (*data < 0x21)
-		{
-			if (dataStart)
-			{
-				nodeData.append (reinterpret_cast<const char*> (dataStart), validChars);
-				dataStart = nullptr;
-				validChars = 0;
-			}
-			continue;
-		}
-		if (dataStart == nullptr)
-			dataStart = data;
-		++validChars;
-	}
-	if (dataStart && validChars > 0)
-		nodeData.append (reinterpret_cast<const char*> (dataStart), validChars);
-}
-
-//-----------------------------------------------------------------------------
-void UIDescription::xmlComment (Xml::Parser* parser, IdStringPtr comment)
-{
-#if VSTGUI_LIVE_EDITING
-	if (impl->nodeStack.size () == 0)
-	{
-	#if DEBUG
-		DebugPrint ("*** WARNING : Comment outside of root tag will be removed on save !\nComment: %s\n", comment);
-	#endif
-		return;
-	}
-	UINode* parent = impl->nodeStack.back ();
-	if (parent && comment)
-	{
-		std::string commentStr (comment);
-		if (!commentStr.empty ())
-		{
-			UICommentNode* commentNode = new UICommentNode (comment);
-			parent->getChildren ().add (commentNode);
-		}
-	}
-#endif
 }
 
 //-----------------------------------------------------------------------------

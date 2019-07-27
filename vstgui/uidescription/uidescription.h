@@ -7,7 +7,6 @@
 #include "../lib/idependency.h"
 #include "iuidescription.h"
 #include "uidescriptionfwd.h"
-#include "xmlparser.h"
 #include <list>
 #include <string>
 #include <memory>
@@ -20,7 +19,7 @@ class UINode;
 /// @brief XML description parser and view creator
 /// @ingroup new_in_4_0
 //-----------------------------------------------------------------------------
-class UIDescription : public NonAtomicReferenceCounted, public IUIDescription, public Xml::IHandler
+class UIDescription : public NonAtomicReferenceCounted, public IUIDescription
 {
 protected:
 	enum SaveFlagBits
@@ -154,12 +153,6 @@ protected:
 
 	const CResourceDescription& getXmlFile () const;
 private:
-	// Xml::IHandler
-	void startXmlElement (Xml::Parser* parser, IdStringPtr elementName, UTF8StringPtr* elementAttributes) override;
-	void endXmlElement (Xml::Parser* parser, IdStringPtr name) override;
-	void xmlCharData (Xml::Parser* parser, const int8_t* data, int32_t length) override;
-	void xmlComment (Xml::Parser* parser, IdStringPtr comment) override;
-	
 	CView* createViewFromNode (UINode* node) const;
 	UINode* getBaseNode (UTF8StringPtr name) const;
 	UINode* findChildNodeByNameAttribute (UINode* node, UTF8StringPtr nameAttribute) const;
