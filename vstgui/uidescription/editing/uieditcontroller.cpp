@@ -25,6 +25,7 @@
 #include "uifocussettingscontroller.h"
 #include "../cstream.h"
 #include "../uiattributes.h"
+#include "../xmlparser.h"
 #include "../../lib/controls/coptionmenu.h"
 #include "../../lib/controls/csegmentbutton.h"
 #include "../../lib/controls/csearchtextedit.h"
