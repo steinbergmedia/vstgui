@@ -222,7 +222,7 @@ inline bool shouldStartDrag (CPoint mouseDownPos, CPoint mouseMovePos)
 }
 
 //------------------------------------------------------------------------
-/** Helper object to be used to device if a mouse move is far enough to start a drag operation
+/** Helper object to be used to decide if a mouse move is far enough to start a drag operation
  *	\sa shouldStartDrag
  *
  *	@ingroup new_in_4_9
