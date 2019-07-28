@@ -98,7 +98,7 @@ private:
 		basePath.erase (basePath.size () - 1);
 		do
 		{
-			if (findData.dwFileAttributes & FILE_ATTRIBUTE_NORMAL)
+			if (!(findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
 			{
 				result.emplace_back (basePath + findData.cFileName);
 			}
