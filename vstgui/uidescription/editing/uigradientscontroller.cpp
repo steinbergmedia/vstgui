@@ -630,7 +630,7 @@ CCoord UIGradientsDataSource::getGradientIconWidth ()
 //----------------------------------------------------------------------------------------------------
 CMouseEventResult UIGradientsDataSource::dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser)
 {
-	if (buttons.isDoubleClick () && row >= 0 && row < names.size ())
+	if (buttons.isDoubleClick () && row >= 0 && row < static_cast<int32_t> (names.size ()))
 	{
 		auto r = browser->getCellBounds ({row, column});
 		r.left = r.right - getGradientIconWidth ();

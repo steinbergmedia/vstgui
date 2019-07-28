@@ -221,7 +221,7 @@ void UIBitmapsDataSource::dbCellSetupTextEdit (int32_t row, int32_t column, CTex
 //----------------------------------------------------------------------------------------------------
 CMouseEventResult UIBitmapsDataSource::dbOnMouseDown (const CPoint& where, const CButtonState& buttons, int32_t row, int32_t column, CDataBrowser* browser)
 {
-	if (buttons.isDoubleClick () && row >= 0 && row < names.size ())
+	if (buttons.isDoubleClick () && row >= 0 && row < static_cast<int32_t> (names.size ()))
 	{
 		auto r = browser->getCellBounds ({row, column});
 		auto drawWidth = r.getHeight ();
