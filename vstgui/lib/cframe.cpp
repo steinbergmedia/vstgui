@@ -1317,6 +1317,36 @@ CViewContainer* CFrame::getContainerAt (const CPoint& where, const GetViewOption
 	return CViewContainer::getContainerAt (where, options);
 }
 
+//------------------------------------------------------------------------
+bool CFrame::getViewsAt (const CPoint& where, ViewList& views, const GetViewOptions& options) const
+{
+	if (auto modalView = getModalView ())
+	{
+		CPoint where2 (where);
+		getTransform ().inverse ().transform (where2);
+		if (modalView->getViewSize ().pointInside (where2))
+		{
+			if (options.getDeep ())
+			{
+				if (auto container = modalView->asViewContainer ())
+				{
+					container->getViewsAt (where2, views, options);
+				}
+			}
+			if (!options.getIncludeViewContainer () && modalView->asViewContainer ())
+				return true;
+			if (options.getMouseEnabled () && modalView->getMouseEnabled () == false)
+				return true;
+			if (!options.getIncludeInvisible () && !modalView->isVisible ())
+				return true;
+			views.emplace_back (modalView);
+			return true;
+		}
+		return false;
+	}
+	return CViewContainer::getViewsAt (where, views, options);
+}
+
 //-----------------------------------------------------------------------------
 void CFrame::onActivate (bool state)
 {
