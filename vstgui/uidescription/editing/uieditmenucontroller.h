@@ -88,7 +88,7 @@ static const MenuEntry editMenu[] = {
 	{ "SelectionZOrder", "Raise" , 0, kAlt, VKEY_DOWN },
 	kSubMenuEnd,
 	kMenuSeparator,
-	{ "Selection", "Select SubViews Of Type" , 0, 0, 0 },
+	{ "Selection", "Select Children Of Type" , 0, 0, 0 },
 	kMenuSeparator,
 	{ "Selection", "Select Parent(s)" , 0, 0, 0 },
 	{ "Selection", "Select All Children" , 0, 0, 0 },
@@ -164,6 +164,8 @@ protected:
 	void controlBeginEdit (CControl* pControl) override;
 	void controlEndEdit (CControl* pControl) override;
 
+	void getChildrenOfType (CViewContainer* container, UTF8StringView type, std::vector<CView*>& result) const;
+	
 	SharedPointer<UISelection> selection;
 	SharedPointer<UIUndoManager> undoManager;
 	SharedPointer<UIDescription> description;
