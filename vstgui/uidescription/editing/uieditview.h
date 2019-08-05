@@ -19,7 +19,7 @@ class UIDescription;
 class IUIDescription;
 class UICrossLines;
 class ViewSizeChangeOperation;
-class UIGrid;
+class IGridProcessor;
 namespace UIEditViewInternal {
 	class UIHighlightView;
 } // UIEditViewInternal
@@ -47,7 +47,7 @@ public:
 	void setSelection (UISelection* selection);
 	UISelection* getSelection ();
 	
-	void setGrid (UIGrid* grid);
+	void setGrid (IGridProcessor* grid);
 
 	void setupColors (const IUIDescription* description);
 	
@@ -124,7 +124,7 @@ protected:
 	SharedPointer<UISelection> selection;
 	SharedPointer<UISelection> dragSelection;
 	UIDescription* description {nullptr};
-	SharedPointer<UIGrid> grid;
+	SharedPointer<IGridProcessor> grid;
 	
 	UIEditViewInternal::UIHighlightView* highlightView {nullptr};
 	CLayeredViewContainer* overlayView {nullptr};

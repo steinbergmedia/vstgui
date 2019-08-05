@@ -31,6 +31,7 @@ set(${target}_sources
     xmlparser.h
     editing/doc.h
     editing/iaction.h
+    editing/igridprocessor.h
     editing/uiactions.cpp
     editing/uiactions.h
     editing/uiattributescontroller.cpp

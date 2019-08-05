@@ -9,7 +9,7 @@
 #include "uiundomanager.h"
 #include "uiactions.h"
 #include "uicrosslines.h"
-#include "uigrid.h"
+#include "igridprocessor.h"
 #include "uiselection.h"
 #include "../icontroller.h"
 #include "../uiattributes.h"
@@ -389,7 +389,7 @@ UISelection* UIEditView::getSelection ()
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIEditView::setGrid (UIGrid* inGrid)
+void UIEditView::setGrid (IGridProcessor* inGrid)
 {
 	grid = inGrid;
 }
@@ -1008,10 +1008,7 @@ void UIEditView::doSizeEditingMove (CPoint& where)
 	if (!moveSizeOperation)
 		moveSizeOperation = new ViewSizeChangeOperation (selection, true, autosizing);
 	if (grid)
-	{
-		where.offset (grid->getSize ().x / 2., grid->getSize ().y / 2.);
 		grid->process (where);
-	}
 	if (mouseStartPoint == where)
 		return;
 
@@ -1193,7 +1190,6 @@ bool UIEditView::onDrop (DragEventData data)
 		where2.offset (dragSelection->getDragOffset ().x, dragSelection->getDragOffset ().y);
 		if (grid)
 		{
-			where2.offset (grid->getSize ().x / 2., grid->getSize ().y / 2.);
 			getTransform ().inverse ().transform (where2);
 			grid->process (where2);
 			getTransform ().transform (where2);
@@ -1262,7 +1258,6 @@ DragOperation UIEditView::onDragMove (DragEventData data)
 				where2.offset (-getViewSize ().left, -getViewSize ().top);
 				if (grid)
 				{
-					where2.offset (grid->getSize ().x / 2., grid->getSize ().y / 2.);
 					getTransform ().inverse ().transform (where2);
 					grid->process (where2);
 					getTransform ().transform (where2);
