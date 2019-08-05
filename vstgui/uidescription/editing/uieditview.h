@@ -47,7 +47,7 @@ public:
 	void setSelection (UISelection* selection);
 	UISelection* getSelection ();
 	
-	void setGrid (IGridProcessor* grid);
+	void setGridProcessor (IGridProcessor* grid);
 
 	void setupColors (const IUIDescription* description);
 	
@@ -124,7 +124,7 @@ protected:
 	SharedPointer<UISelection> selection;
 	SharedPointer<UISelection> dragSelection;
 	UIDescription* description {nullptr};
-	SharedPointer<IGridProcessor> grid;
+	SharedPointer<IGridProcessor> gridProcessor;
 	
 	UIEditViewInternal::UIHighlightView* highlightView {nullptr};
 	CLayeredViewContainer* overlayView {nullptr};

@@ -450,7 +450,7 @@ CView* UIEditController::createView (const UIAttributes& attributes, const IUIDe
 			editView = new UIEditView (CRect (0, 0, 0, 0), editDescription);
 			editView->setSelection (selection);
 			editView->setUndoManager (undoManager);
-			editView->setGrid (gridController);
+			editView->setGridProcessor (gridController);
 			editView->setupColors (description);
 			return editView;
 		}

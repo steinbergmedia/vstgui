@@ -270,7 +270,7 @@ static constexpr auto UIEditViewMargin = 8.;
 UIEditView::UIEditView (const CRect& size, UIDescription* uidescription)
 : CViewContainer (size)
 , description (uidescription)
-, grid (nullptr)
+, gridProcessor (nullptr)
 {
 	setScale (1.);
 	setWantsFocus (true);
@@ -389,9 +389,9 @@ UISelection* UIEditView::getSelection ()
 }
 
 //----------------------------------------------------------------------------------------------------
-void UIEditView::setGrid (IGridProcessor* inGrid)
+void UIEditView::setGridProcessor (IGridProcessor* inGrid)
 {
-	grid = inGrid;
+	gridProcessor = inGrid;
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -692,8 +692,8 @@ CMouseEventResult UIEditView::onMouseDown (CPoint &where, const CButtonState& bu
 			}
 			mouseEditMode = MouseEditMode::DragEditing;
 			mouseStartPoint = where2;
-			if (grid)
-				grid->process (mouseStartPoint);
+			if (gridProcessor)
+				gridProcessor->process (mouseStartPoint);
 			editTimer = owned (new CVSTGUITimer (this, 500));
 			editTimer->start ();
 			return kMouseEventHandled;
@@ -702,8 +702,8 @@ CMouseEventResult UIEditView::onMouseDown (CPoint &where, const CButtonState& bu
 		{
 			mouseEditMode = MouseEditMode::SizeEditing;
 			mouseStartPoint = where2;
-			if (grid)
-				grid->process (mouseStartPoint);
+			if (gridProcessor)
+				gridProcessor->process (mouseStartPoint);
 			mouseSizeMode = sizeMode;
 			if (true)
 			{
@@ -977,8 +977,8 @@ std::vector<CView*> UIEditView::findChildsInArea (CViewContainer* view, CRect r)
 //----------------------------------------------------------------------------------------------------
 void UIEditView::doDragEditingMove (CPoint& where)
 {
-	if (grid)
-		grid->process (where);
+	if (gridProcessor)
+		gridProcessor->process (where);
 	CPoint diff (where.x - mouseStartPoint.x, where.y - mouseStartPoint.y);
 	if (diff.x != 0. || diff.y != 0.)
 	{
@@ -1007,8 +1007,8 @@ void UIEditView::doSizeEditingMove (CPoint& where)
 {
 	if (!moveSizeOperation)
 		moveSizeOperation = new ViewSizeChangeOperation (selection, true, autosizing);
-	if (grid)
-		grid->process (where);
+	if (gridProcessor)
+		gridProcessor->process (where);
 	if (mouseStartPoint == where)
 		return;
 
@@ -1188,10 +1188,10 @@ bool UIEditView::onDrop (DragEventData data)
 		}
 		CPoint where2 (data.pos);
 		where2.offset (dragSelection->getDragOffset ().x, dragSelection->getDragOffset ().y);
-		if (grid)
+		if (gridProcessor)
 		{
 			getTransform ().inverse ().transform (where2);
-			grid->process (where2);
+			gridProcessor->process (where2);
 			getTransform ().transform (where2);
 		}
 		CViewContainer* viewContainer = getContainerAt (where2, GetViewOptions ().deep ());
@@ -1256,10 +1256,10 @@ DragOperation UIEditView::onDragMove (DragEventData data)
 				CPoint where2 (data.pos);
 				where2.offset (dragSelection->getDragOffset ().x, dragSelection->getDragOffset ().y);
 				where2.offset (-getViewSize ().left, -getViewSize ().top);
-				if (grid)
+				if (gridProcessor)
 				{
 					getTransform ().inverse ().transform (where2);
-					grid->process (where2);
+					gridProcessor->process (where2);
 					getTransform ().transform (where2);
 				}
 				CPoint where3 (where2);
