@@ -363,7 +363,8 @@ bool UIColorStopEditView::getFocusPath (CGraphicsPath& outPath)
 class UIGradientEditorController : public NonAtomicReferenceCounted,
                                    public IDialogController,
                                    public UIColorListenerAdapter,
-                                   public IUIColorStopEditViewListener
+                                   public IUIColorStopEditViewListener,
+                                   public IController
 {
 public:
 	UIGradientEditorController (const std::string& gradientName, CGradient* gradient, UIDescription* description, IActionPerformer* actionPerformer);
@@ -794,8 +795,11 @@ void UIGradientsController::dbRowDoubleClick (int32_t row, GenericStringListData
 void UIGradientsController::showEditDialog ()
 {
 	UIDialogController* dc = new UIDialogController (this, editButton->getFrame ());
-	UIGradientEditorController* fsController = new UIGradientEditorController (dataSource->getSelectedGradientName (), dataSource->getSelectedGradient (), editDescription, actionPerformer);
-	dc->run ("gradient.editor", "Gradient Editor", "OK", "Cancel", fsController, UIEditController::getEditorDescription ());
+	auto fsController = makeOwned<UIGradientEditorController> (
+	    dataSource->getSelectedGradientName (), dataSource->getSelectedGradient (), editDescription,
+	    actionPerformer);
+	dc->run ("gradient.editor", "Gradient Editor", "OK", "Cancel", fsController,
+	         UIEditController::getEditorDescription ());
 }
 
 } // VSTGUI

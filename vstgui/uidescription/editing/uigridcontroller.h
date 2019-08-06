@@ -9,33 +9,54 @@
 #if VSTGUI_LIVE_EDITING
 
 #include "uigrid.h"
+#include "uidialogcontroller.h"
 #include "../delegationcontroller.h"
 #include "../../lib/controls/ctextedit.h"
+#include <vector>
 
 namespace VSTGUI {
 
 //----------------------------------------------------------------------------------------------------
-class UIGridController : public UIGrid, public DelegationController
+class UIGridController : public UIGrid, public DelegationController, public IDialogController
 {
 public:
 	UIGridController (IController* baseController, UIDescription* description);
 	~UIGridController () override;
-
+	
 protected:
 	void valueChanged (CControl* pControl) override;
 	CView* verifyView (CView* view, const UIAttributes& attributes, const IUIDescription* description) override;
 	IControlListener* getControlListener (UTF8StringPtr name) override;
+	void setSize (const CPoint& p) override;
+
+	void onDialogButton1Clicked (UIDialogController*) override;
+	void onDialogButton2Clicked (UIDialogController*) override;
+	void onDialogShow (UIDialogController*) override;
+
+	void syncMenuValueAndSize ();
+	void loadDefGrids ();
+	void saveDefGrids ();
+	UTF8String pointToDisplayString (const CPoint& p) const;
+	void setupTextEdit (CTextEdit* te) const;
+	void setupMenu ();
 
 	SharedPointer<UIDescription> editDescription;
-	SharedPointer<CTextEdit> gridControls[2];
+	SharedPointer<COptionMenu> gridMenu;
+	SharedPointer<CListControl> gridList;
+	SharedPointer<CTextEdit> gridXEdit;
+	SharedPointer<CTextEdit> gridYEdit;
 
-	static bool valueToString (float value, char utf8String[256], CParamDisplay::ValueToStringUserData* userData);
-	static bool stringToValue (UTF8StringPtr txt, float& result, CTextEdit::StringToValueUserData* userData);
+	std::vector<CPoint> defGrids;
 
 	enum {
+		kGridMenuTag,
+		kGridListTag,
+		kGridAddTag,
+		kGridRemoveTag,
 		kGridXTag,
 		kGridYTag
 	};
+	
 };
 
 } // VSTGUI

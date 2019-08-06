@@ -27,7 +27,7 @@ public:
 		p.y = y * size.y;
 	}
 
-	void setSize (const CPoint& p) { size = p; }
+	virtual void setSize (const CPoint& p) { size = p; }
 	const CPoint& getSize () const { return size; }
 protected:
 	CPoint size;
