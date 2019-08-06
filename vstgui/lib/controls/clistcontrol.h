@@ -42,6 +42,9 @@ public:
 	Optional<CRect> getRowRect (int32_t row) const;
 	Optional<int32_t> getHoveredRow () const;
 
+	int32_t getIntValue () const;
+	int32_t getNumRows () const;
+
 	// overrides
 	void setMin (float val) override;
 	void setMax (float val) override;
@@ -55,12 +58,12 @@ public:
 	CMouseEventResult onMouseExited (CPoint& where, const CButtonState& buttons) override;
 	int32_t onKeyDown (VstKeyCode& keyCode) override;
 	void setViewSize (const CRect& rect, bool invalid = true) override;
+	bool drawFocusOnTop () override;
+	bool getFocusPath (CGraphicsPath& outPath) override;
 
 	CLASS_METHODS_NOCOPY (CListControl, CControl)
 private:
 	int32_t getNextSelectableRow (int32_t r, int32_t direction) const;
-	int32_t getNumRows () const;
-	int32_t getIntValue () const;
 	int32_t getMinRowIndex () const;
 	int32_t getMaxRowIndex () const;
 	size_t getNormalizedRowIndex (int32_t row) const;

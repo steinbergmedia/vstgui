@@ -4,6 +4,8 @@
 
 #include "../cbitmap.h"
 #include "../cdrawcontext.h"
+#include "../cframe.h"
+#include "../cgraphicspath.h"
 #include "../cscrollview.h"
 #include "clistcontrol.h"
 #include <vector>
@@ -205,20 +207,26 @@ void CListControl::setMin (float val)
 {
 	if (getMin () != val && val < getMax ())
 	{
+		auto ov = getValue ();
 		CControl::setMin (val);
 		if (isAttached ())
 			recalculateLayout ();
+		if (ov != getValue ())
+			valueChanged ();
 	}
 }
 
 //------------------------------------------------------------------------
 void CListControl::setMax (float val)
 {
-	if (getMax () != val && val > getMin ())
+	if (getMax () != val && val >= getMin ())
 	{
+		auto ov = getValue ();
 		CControl::setMax (val);
 		if (isAttached ())
 			recalculateLayout ();
+		if (ov != getValue ())
+			valueChanged ();
 	}
 }
 
@@ -485,6 +493,24 @@ void CListControl::setViewSize (const CRect& rect, bool invalid)
 	CControl::setViewSize (rect, invalid);
 	impl->hoveredRow.reset ();
 }
+
+//------------------------------------------------------------------------
+bool CListControl::drawFocusOnTop ()
+{
+	return true;
+}
+
+//------------------------------------------------------------------------
+bool CListControl::getFocusPath (CGraphicsPath& outPath)
+{
+	CRect r = getVisibleViewSize ();
+	outPath.addRect (r);
+	CCoord focusWidth = getFrame ()->getFocusWidth ();
+	r.inset (focusWidth, focusWidth);
+	outPath.addRect (r);
+	return true;
+}
+
 
 //------------------------------------------------------------------------
 } // VSTGUI
