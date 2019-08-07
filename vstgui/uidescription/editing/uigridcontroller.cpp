@@ -57,7 +57,7 @@ void UIGridController::valueChanged (CControl* control)
 			if (control->getValue () == control->getMin ())
 				break;
 			defGrids.push_back ({2., 2.});
-			gridList->setMax (defGrids.size () - 1);
+			gridList->setMax (static_cast<float> (defGrids.size () - 1));
 			gridList->setValue (gridList->getMax ());
 			gridList->valueChanged ();
 			break;
@@ -72,7 +72,7 @@ void UIGridController::valueChanged (CControl* control)
 				auto it = defGrids.begin ();
 				std::advance (it, index);
 				defGrids.erase (it);
-				gridList->setMax (defGrids.size () - 1);
+				gridList->setMax (static_cast<float> (defGrids.size () - 1));
 			}
 			break;
 		}
@@ -100,9 +100,9 @@ void UIGridController::valueChanged (CControl* control)
 		{
 			auto index = gridList->getIntValue ();
 			if (gridXEdit)
-				gridXEdit->setValue (defGrids[index].x);
+				gridXEdit->setValue (static_cast<float> (defGrids[index].x));
 			if (gridYEdit)
-				gridYEdit->setValue (defGrids[index].y);
+				gridYEdit->setValue (static_cast<float> (defGrids[index].y));
 			break;
 		}
 	}
@@ -132,7 +132,7 @@ CView* UIGridController::verifyView (CView* view, const UIAttributes& attributes
 				});
 			}
 			gridList = listControl;
-			gridList->setMax (defGrids.size () - 1);
+			gridList->setMax (static_cast<float> (defGrids.size () - 1));
 		}
 	}
 	else if (auto textEdit = dynamic_cast<CTextEdit*> (view))
@@ -270,7 +270,7 @@ void UIGridController::syncMenuValueAndSize ()
 		return;
 	}
 	auto index = std::distance (defGrids.begin (), it);
-	gridMenu->setValue (index);
+	gridMenu->setValue (static_cast<float> (index));
 }
 
 //----------------------------------------------------------------------------------------------------
