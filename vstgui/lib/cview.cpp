@@ -376,7 +376,12 @@ void CView::setDirty (bool state)
 	if (kDirtyCallAlwaysOnMainThread)
 	{
 		if (state)
-			invalidRect (getViewSize ());
+		{
+			if (asViewContainer () && getParentView ())
+				getParentView ()->invalidRect (getViewSize ());
+			else
+				invalidRect (getViewSize ());
+		}
 		setViewFlag (kDirty, false);
 	}
 	else
