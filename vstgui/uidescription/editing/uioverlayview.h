@@ -11,8 +11,6 @@
 #include "../../lib/cviewcontainer.h"
 #include "../../lib/iviewlistener.h"
 
-#include <cmath>
-
 namespace VSTGUI {
 
 //----------------------------------------------------------------------------------------------------
@@ -31,6 +29,7 @@ protected:
 
 private:
 	CViewContainer* targetView;
+	CView* targetViewParent;
 };
 
 } // VSTGUI

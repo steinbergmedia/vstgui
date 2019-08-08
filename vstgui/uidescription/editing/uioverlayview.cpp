@@ -10,17 +10,18 @@
 namespace VSTGUI {
 
 //----------------------------------------------------------------------------------------------------
-UIOverlayView::UIOverlayView (CViewContainer* view) : CView ({}), targetView (view)
+UIOverlayView::UIOverlayView (CViewContainer* view)
+: CView ({}), targetView (view), targetViewParent (view->getParentView ())
 {
 	setMouseEnabled (false);
-	targetView->getParentView ()->registerViewListener (this);
+	targetViewParent->registerViewListener (this);
 	targetView->registerViewListener (this);
 }
 
 //----------------------------------------------------------------------------------------------------
 UIOverlayView::~UIOverlayView ()
 {
-	targetView->getParentView ()->unregisterViewListener (this);
+	targetViewParent->unregisterViewListener (this);
 	targetView->unregisterViewListener (this);
 }
 
@@ -28,18 +29,18 @@ UIOverlayView::~UIOverlayView ()
 bool UIOverlayView::attached (CView* parent)
 {
 	auto result = CView::attached (parent);
-	viewSizeChanged (targetView->getParentView (), {});
+	viewSizeChanged (targetViewParent, {});
 	return result;
 }
 
 //----------------------------------------------------------------------------------------------------
 void UIOverlayView::viewSizeChanged (CView* view, const CRect& oldSize)
 {
-	invalid ();
+	if (view == targetView)
+		invalid ();
 	CRect r = targetView->getVisibleViewSize ();
-	r.originize ();
 	CPoint p;
-	targetView->getParentView ()->localToFrame (p);
+	targetViewParent->localToFrame (p);
 	r.offset (p.x, p.y);
 	if (getViewSize () != r)
 	{
