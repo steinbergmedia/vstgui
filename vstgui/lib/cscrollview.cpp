@@ -134,6 +134,7 @@ void CScrollContainer::setScrollOffset (CPoint newOffset, bool redraw)
 	CPoint diff ((int32_t)(newOffset.x - offset.x), (int32_t)(offset.y - newOffset.y));
 	if (diff.x == 0 && diff.y == 0)
 		return;
+	offset = newOffset;
 	inScrolling = true;
 	for (const auto& pV : getChildren ())
 	{
@@ -146,7 +147,6 @@ void CScrollContainer::setScrollOffset (CPoint newOffset, bool redraw)
 		pV->setMouseableArea (mr);
 	}
 	inScrolling = false;
-	offset = newOffset;
 	if (!isAttached ())
 		return;
 
