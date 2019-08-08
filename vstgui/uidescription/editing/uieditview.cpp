@@ -11,6 +11,7 @@
 #include "uicrosslines.h"
 #include "igridprocessor.h"
 #include "uiselection.h"
+#include "uioverlayview.h"
 #include "../icontroller.h"
 #include "../uiattributes.h"
 #include "../uidescription.h"
@@ -33,59 +34,7 @@ namespace VSTGUI {
 namespace UIEditViewInternal {
 	
 //----------------------------------------------------------------------------------------------------
-class UIEditViewOverlay : public CView, public ViewListenerAdapter
-//----------------------------------------------------------------------------------------------------
-{
-public:
-	UIEditViewOverlay (CViewContainer* editView);
-	~UIEditViewOverlay () override;
-	
-	bool attached (CView* parent) override;
-	void viewSizeChanged (CView* view, const CRect& oldSize) override;
-protected:
-	CViewContainer* editView;
-};
-
-//----------------------------------------------------------------------------------------------------
-UIEditViewOverlay::UIEditViewOverlay (CViewContainer* editView)
-: CView (CRect (0, 0, 0, 0))
-, editView (editView)
-{
-	setMouseEnabled (false);
-	editView->getParentView ()->registerViewListener (this);
-	editView->registerViewListener (this);
-}
-
-//----------------------------------------------------------------------------------------------------
-UIEditViewOverlay::~UIEditViewOverlay ()
-{
-	editView->getParentView ()->unregisterViewListener (this);
-	editView->unregisterViewListener (this);
-}
-
-//----------------------------------------------------------------------------------------------------
-bool UIEditViewOverlay::attached (CView* parent)
-{
-	auto result = CView::attached (parent);
-	viewSizeChanged (editView->getParentView (), CRect (0, 0, 0, 0));
-	return result;
-}
-
-//----------------------------------------------------------------------------------------------------
-void UIEditViewOverlay::viewSizeChanged (CView* view, const CRect& oldSize)
-{
-	invalid ();
-	CRect r = editView->getVisibleViewSize ();
-	r.originize ();
-	CPoint p;
-	editView->getParentView ()->localToFrame (p);
-	r.offset (p.x, p.y);
-	setViewSize (r);
-	invalid ();
-}
-
-//----------------------------------------------------------------------------------------------------
-class UISelectionView : public UIEditViewOverlay, public UISelectionListenerAdapter
+class UISelectionView : public UIOverlayView, public UISelectionListenerAdapter
 //----------------------------------------------------------------------------------------------------
 {
 public:
@@ -110,7 +59,7 @@ private:
 
 //----------------------------------------------------------------------------------------------------
 UISelectionView::UISelectionView (CViewContainer* editView, UISelection* selection, const CColor& selectionColor, CCoord handleSize)
-: UIEditViewOverlay (editView)
+: UIOverlayView (editView)
 , selection (selection)
 , selectionColor (selectionColor)
 , handleInset (handleSize / 2.)
@@ -146,7 +95,7 @@ void UISelectionView::draw (CDrawContext* pContext)
 	lightColor.alpha = 140;
 	pContext->setFillColor (lightColor);
 
-	CView* mainView = editView->getView (0);
+	CView* mainView = getTargetView ()->getView (0);
 	CPoint p;
 	frameToLocal (p);
 	for (auto view : *selection)
@@ -201,7 +150,7 @@ void UISelectionView::onSelectionChanged ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-class UIHighlightView : public UIEditViewOverlay
+class UIHighlightView : public UIOverlayView
 {
 public:
 	UIHighlightView (CViewContainer* editView, const CColor& viewHighlightColor);
@@ -217,7 +166,7 @@ private:
 
 //----------------------------------------------------------------------------------------------------
 UIHighlightView::UIHighlightView (CViewContainer* editView, const CColor& viewHighlightColor)
-: UIEditViewOverlay (editView)
+: UIOverlayView (editView)
 , highlightView (nullptr)
 , strokeColor (viewHighlightColor)
 {

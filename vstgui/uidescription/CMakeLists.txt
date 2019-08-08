@@ -67,6 +67,8 @@ set(${target}_sources
     editing/uigrid.h
     editing/uigridcontroller.cpp
     editing/uigridcontroller.h
+    editing/uioverlayview.cpp
+    editing/uioverlayview.h
     editing/uiselection.cpp
     editing/uiselection.h
     editing/uitagscontroller.cpp
