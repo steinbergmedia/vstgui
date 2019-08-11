@@ -8,23 +8,22 @@
 
 #if VSTGUI_LIVE_EDITING
 
+#include "igridprocessor.h"
 #include <cmath>
 
 namespace VSTGUI {
 
 //----------------------------------------------------------------------------------------------------
-class UIGrid : public NonAtomicReferenceCounted
+class UIGrid : public IGridProcessor, public NonAtomicReferenceCounted
 {
 public:
 	UIGrid (const CPoint& size = CPoint (10, 10)) : size (size) {}
 	
-	virtual void process (CPoint& p)
+	void process (CPoint& p) override
 	{
-		p.x -= size.x / 2.;
-		p.y -= size.y / 2.;
-		int32_t x = (int32_t) std::floor (p.x / size.x + 0.5);
+		auto x = static_cast<int32_t> (std::round (p.x / size.x));
 		p.x = x * size.x;
-		int32_t y = (int32_t) std::floor (p.y / size.y + 0.5);
+		auto y = static_cast<int32_t> (std::round (p.y / size.y));
 		p.y = y * size.y;
 	}
 

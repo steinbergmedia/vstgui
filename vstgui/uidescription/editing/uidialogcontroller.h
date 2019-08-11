@@ -20,7 +20,7 @@ namespace VSTGUI {
 class UIDialogController;
 
 //------------------------------------------------------------------------
-class IDialogController : public IController, public virtual IReference
+class IDialogController : public virtual IReference
 {
 public:
 	virtual void onDialogButton1Clicked (UIDialogController*) = 0;

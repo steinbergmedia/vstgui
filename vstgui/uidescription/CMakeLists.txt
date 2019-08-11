@@ -31,6 +31,7 @@ set(${target}_sources
     xmlparser.h
     editing/doc.h
     editing/iaction.h
+    editing/igridprocessor.h
     editing/uiactions.cpp
     editing/uiactions.h
     editing/uiattributescontroller.cpp
@@ -66,6 +67,8 @@ set(${target}_sources
     editing/uigrid.h
     editing/uigridcontroller.cpp
     editing/uigridcontroller.h
+    editing/uioverlayview.cpp
+    editing/uioverlayview.h
     editing/uiselection.cpp
     editing/uiselection.h
     editing/uitagscontroller.cpp

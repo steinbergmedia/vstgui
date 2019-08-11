@@ -451,15 +451,13 @@ void CScrollView::recalculateSubViews ()
 	{
 		sc = new CScrollContainer (scsize, containerSize);
 		sc->setAutosizeFlags (kAutosizeAll);
-		CViewContainer::addView (sc, nullptr);
+		CViewContainer::addView (sc, CViewContainer::getView (0));
 	}
 	else
 	{
 		sc->setViewSize (scsize, true);
 		sc->setMouseableArea (scsize);
 	}
-	if (style & kOverlayScrollbars)
-		CViewContainer::changeViewZOrder (sc, 0);
 	sc->setAutoDragScroll ((style & kAutoDragScrolling) ? true : false);
 	recalculateSubViewsRecursionGard = false;
 }

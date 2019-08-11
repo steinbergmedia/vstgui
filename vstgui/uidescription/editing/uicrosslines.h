@@ -8,6 +8,7 @@
 
 #if VSTGUI_LIVE_EDITING
 
+#include "uioverlayview.h"
 #include "../../lib/crect.h"
 #include "../../lib/ccolor.h"
 #include "../../lib/cview.h"
@@ -17,7 +18,7 @@ namespace VSTGUI {
 class UISelection;
 
 //----------------------------------------------------------------------------------------------------
-class UICrossLines : public CView, public ViewListenerAdapter
+class UICrossLines : public UIOverlayView
 {
 public:
 	enum {
@@ -26,7 +27,7 @@ public:
 		kLassoStyle,
 	};
 	
-	UICrossLines (CViewContainer* editView, int32_t style, const CColor& background = kWhiteCColor, const CColor& foreground = kBlackCColor);
+	UICrossLines (CViewContainer* view, int32_t style, const CColor& background = kWhiteCColor, const CColor& foreground = kBlackCColor);
 	~UICrossLines () override;
 
 	int32_t getStyle () const { return style; }
@@ -38,7 +39,6 @@ public:
 	void draw (CDrawContext* pContext) override;
 protected:
 	void drawLines (CDrawContext* pContext, const CRect& size, const CRect& selectionSize);
-	void viewSizeChanged (CView* view, const CRect& oldSize) override;
 
 	CViewContainer* editView;
 	CRect currentRect;

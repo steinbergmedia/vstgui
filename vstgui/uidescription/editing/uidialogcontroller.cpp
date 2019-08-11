@@ -209,9 +209,8 @@ CView* UIDialogController::verifyView (CView* view, const UIAttributes& attribut
 	{
 		if (*name == "view")
 		{
-			auto* controller = dialogController.cast<IController> ();
-			CView* subView = dialogDescription->createView (templateName.c_str (), controller);
-			if (subView)
+			auto controller = dialogController.cast<IController> ();
+			if (auto subView = dialogDescription->createView (templateName.c_str (), controller))
 			{
 				subView->setAttribute (kCViewControllerAttribute, controller);
 				sizeDiff.x = subView->getWidth () - view->getWidth ();
@@ -223,6 +222,8 @@ CView* UIDialogController::verifyView (CView* view, const UIAttributes& attribut
 				view->setMouseableArea (size);
 				if (auto container = view->asViewContainer ())
 					container->addView (subView);
+				if (controller)
+					dialogController->remember ();
 			}
 		}
 	}

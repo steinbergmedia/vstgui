@@ -479,7 +479,9 @@ bool UIBitmapsDataSource::add ()
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------
-class UIBitmapSettingsController : public NonAtomicReferenceCounted, public IDialogController
+class UIBitmapSettingsController : public NonAtomicReferenceCounted,
+                                   public IDialogController,
+                                   public IController
 {
 public:
 	UIBitmapSettingsController (CBitmap* bitmap, const std::string& bitmapName, UIDescription* description, IActionPerformer* actionPerformer);
@@ -818,8 +820,11 @@ UIBitmapsController::~UIBitmapsController ()
 void UIBitmapsController::showSettingsDialog ()
 {
 	auto* dc = new UIDialogController (this, bitmapPathEdit->getFrame ());
-	UIBitmapSettingsController* fsController = new UIBitmapSettingsController (dataSource->getSelectedBitmap (), dataSource->getSelectedBitmapName (), editDescription, actionPerformer);
-	dc->run ("bitmap.settings", "Bitmap Settings", "Close", nullptr, fsController, UIEditController::getEditorDescription ());
+	auto fsController = makeOwned<UIBitmapSettingsController> (dataSource->getSelectedBitmap (),
+	                                                           dataSource->getSelectedBitmapName (),
+	                                                           editDescription, actionPerformer);
+	dc->run ("bitmap.settings", "Bitmap Settings", "Close", nullptr, fsController,
+	         UIEditController::getEditorDescription ());
 }
 
 //----------------------------------------------------------------------------------------------------

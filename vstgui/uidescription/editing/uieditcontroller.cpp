@@ -450,7 +450,7 @@ CView* UIEditController::createView (const UIAttributes& attributes, const IUIDe
 			editView = new UIEditView (CRect (0, 0, 0, 0), editDescription);
 			editView->setSelection (selection);
 			editView->setUndoManager (undoManager);
-			editView->setGrid (gridController);
+			editView->setGridProcessor (gridController);
 			editView->setupColors (description);
 			return editView;
 		}
@@ -936,16 +936,17 @@ void UIEditController::showTemplateSettings ()
 	{
 		updateTemplate (editTemplateName.c_str ());
 	}
-	auto* dc = new UIDialogController (this, editView->getFrame ());
-	auto* tsController = new UITemplateSettingsController (editTemplateName, editDescription, this);
+	auto dc = new UIDialogController (this, editView->getFrame ());
+	auto tsController =
+	    makeOwned<UITemplateSettingsController> (editTemplateName, editDescription, this);
 	dc->run ("template.settings", "Template Settings", "OK", "Cancel", tsController, editorDesc);
 }
 
 //----------------------------------------------------------------------------------------------------
 void UIEditController::showFocusSettings ()
 {
-	auto* dc = new UIDialogController (this, editView->getFrame ());
-	auto* fsController = new UIFocusSettingsController (editDescription, this);
+	auto dc = new UIDialogController (this, editView->getFrame ());
+	auto fsController = makeOwned<UIFocusSettingsController> (editDescription, this);
 	dc->run ("focus.settings", "Focus Drawing Settings", "OK", "Cancel", fsController, editorDesc);
 }
 

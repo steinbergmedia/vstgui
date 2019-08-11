@@ -13,37 +13,17 @@
 namespace VSTGUI {
 
 //----------------------------------------------------------------------------------------------------
-UICrossLines::UICrossLines (CViewContainer* editView, int32_t style, const CColor& background, const CColor& foreground)
-: CView (CRect (0, 0, 0, 0))
-, editView (editView)
+UICrossLines::UICrossLines (CViewContainer* view, int32_t style, const CColor& background, const CColor& foreground)
+: UIOverlayView (view)
 , style (style)
 , background (background)
 , foreground (foreground)
 {
-	setMouseEnabled (false);
-	viewSizeChanged (editView, CRect (0, 0, 0, 0));
-	editView->registerViewListener (this);
 }
 
 //----------------------------------------------------------------------------------------------------
 UICrossLines::~UICrossLines ()
 {
-	editView->unregisterViewListener (this);
-}
-
-//----------------------------------------------------------------------------------------------------
-void UICrossLines::viewSizeChanged (CView* view, const CRect& oldSize)
-{
-	CRect r = editView->getVisibleViewSize ();
-	r.originize ();
-	CPoint p;
-	editView->getParentView ()->localToFrame (p);
-	r.offset (p.x, p.y);
-	if (getViewSize () != r)
-	{
-		invalidRect (getViewSize ());
-		setViewSize (r);
-	}
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -68,11 +48,11 @@ void UICrossLines::update (const CPoint& point)
 	currentRect.top = point.y-1;
 	currentRect.setWidth (1);
 	currentRect.setHeight (1);
-	editView->getTransform ().transform (currentRect);
+	getTargetView ()->getTransform ().transform (currentRect);
 	CPoint p;
 	getParentView ()->frameToLocal (p);
 	currentRect.offset (p.x, p.y);
-	editView->localToFrame (p);
+	getTargetView ()->localToFrame (p);
 	currentRect.offset (p.x, p.y);
 
 	invalid ();
@@ -83,11 +63,11 @@ void UICrossLines::update (const CRect& rect)
 {
 	invalid ();
 	currentRect = rect;
-	editView->getTransform ().transform (currentRect);
+	getTargetView ()->getTransform ().transform (currentRect);
 	CPoint p;
 	getParentView ()->frameToLocal (p);
 	currentRect.offset (p.x, p.y);
-	editView->localToFrame (p);
+	getTargetView ()->localToFrame (p);
 	currentRect.offset (p.x, p.y);
 	invalid ();
 }
