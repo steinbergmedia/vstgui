@@ -1144,7 +1144,7 @@ bool UIEditView::onDrop (DragEventData data)
 			getTransform ().transform (where2);
 		}
 		CViewContainer* viewContainer = getContainerAt (where2, GetViewOptions ().deep ());
-		if (viewContainer)
+		if (viewContainer && viewContainer != this)
 		{
 			where2.offset (-getViewSize ().left, -getViewSize ().top);
 			getTransform ().inverse ().transform (where2);
@@ -1219,7 +1219,14 @@ DragOperation UIEditView::onDragMove (DragEventData data)
 					CRect visibleRect = getVisibleViewSize ();
 					where2.offset (getViewSize ().left, getViewSize ().top);
 					where2.offset (-visibleRect.left, -visibleRect.top);
-					highlightView->setHighlightView (getContainerAt (where2, GetViewOptions ().deep ()));
+					auto container = getContainerAt (where2, GetViewOptions ().deep ());
+					if (container == this)
+					{
+						container = nullptr;
+						highlightView->setHighlightView (nullptr);
+						return DragOperation::None;
+					}
+					highlightView->setHighlightView (container);
 				}
 				return DragOperation::Copy;
 			}
