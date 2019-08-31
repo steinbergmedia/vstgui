@@ -95,7 +95,10 @@ HIDDEN inline VSTGUI::CPoint pointFromNSPoint (const NSPoint& point)
 //------------------------------------------------------------------------------------
 HIDDEN inline NSColor* nsColorFromCColor (const VSTGUI::CColor& color)
 {
-	return [NSColor colorWithDeviceRed:static_cast<CGFloat> (color.red/255.) green:static_cast<CGFloat> (color.green/255.) blue:static_cast<CGFloat> (color.blue/255.) alpha:static_cast<CGFloat> (color.alpha/255.)];
+	return [NSColor colorWithDeviceRed:color.normRed<CGFloat> ()
+	                             green:color.normGreen<CGFloat> ()
+	                              blue:color.normBlue<CGFloat> ()
+	                             alpha:color.normAlpha<CGFloat> ()];
 }
 
 //------------------------------------------------------------------------------------

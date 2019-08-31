@@ -1,4 +1,4 @@
-﻿// This file is part of VSTGUI. It is subject to the license terms
+// This file is part of VSTGUI. It is subject to the license terms
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
@@ -342,9 +342,9 @@ void Font::drawString (CDrawContext* context, IPlatformString* string, const CPo
 			{
 				auto color = cairoContext->getFontColor ();
 				const auto& cr = cairoContext->getCairo ();
-				auto alpha = color.alpha * cairoContext->getGlobalAlpha ();
-				cairo_set_source_rgba (cr, color.red / 255., color.green / 255., color.blue / 255.,
-									   alpha);
+				auto alpha = color.normAlpha<double> () * cairoContext->getGlobalAlpha ();
+				cairo_set_source_rgba (cr, color.normRed<double> (), color.normGreen<double> (),
+				                       color.normBlue<double> (), alpha);
 				cairo_move_to (cr, p.x, p.y);
 				cairo_set_scaled_font (cr, impl->font);
 				cairo_show_text (cr, linuxString->get ().data ());
