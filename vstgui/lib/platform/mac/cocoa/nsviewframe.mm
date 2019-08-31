@@ -1397,7 +1397,7 @@ void CocoaTooltipWindow::set (NSViewFrame* nsViewFrame, const CRect& rect, const
 		[textfield setDrawsBackground:NO];
 		[window.contentView addSubview:textfield];
 	}
-	auto paragrapheStyle = [NSMutableParagraphStyle new];
+	auto paragrapheStyle = [[NSMutableParagraphStyle new] autorelease];
 	[paragrapheStyle setParagraphStyle:[NSParagraphStyle defaultParagraphStyle]];
 	paragrapheStyle.alignment = NSTextAlignmentCenter;
 	auto string = [NSString stringWithCString:tooltip encoding:NSUTF8StringEncoding];
