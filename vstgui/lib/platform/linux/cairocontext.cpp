@@ -160,7 +160,7 @@ void Context::setSourceColor (CColor color)
 {
 	auto alpha = color.normAlpha<double> ();
 	alpha *= getGlobalAlpha ();
-	cairo_set_source_rgba (cr, color.normRed<double>, color.normGreen<double> (),
+	cairo_set_source_rgba (cr, color.normRed<double> (), color.normGreen<double> (),
 	                       color.normBlue<double> (), alpha);
 	checkCairoStatus (cr);
 }

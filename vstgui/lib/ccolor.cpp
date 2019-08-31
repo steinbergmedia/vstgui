@@ -4,6 +4,7 @@
 
 #include "ccolor.h"
 #include "cstring.h"
+#include "algorithm.h"
 #include <cmath>
 #include <sstream>
 #include <iomanip>
@@ -120,9 +121,9 @@ void CColor::fromHSL (double hue, double saturation, double lightness)
 		b = X;
 	}
 	double m = lightness - (C / 2.);
-	setNormRed (r + m);
-	setNormGreen (g + m);
-	setNormBlue (b + m);
+	setNormRed (clampNorm (r + m));
+	setNormGreen (clampNorm (g + m));
+	setNormBlue (clampNorm (b + m));
 }
 
 //-----------------------------------------------------------------------------
@@ -270,9 +271,9 @@ void CColor::fromHSV (double hue, double saturation, double value)
 			break;
 		}
 	}
-	setNormRed (r);
-	setNormGreen (g);
-	setNormBlue (b);
+	setNormRed (clampNorm (r));
+	setNormGreen (clampNorm (g));
+	setNormBlue (clampNorm (b));
 }
 
 //-----------------------------------------------------------------------------
