@@ -18,6 +18,13 @@ namespace VSTGUI {
 static D2D1_RENDER_TARGET_TYPE gRenderTargetType = D2D1_RENDER_TARGET_TYPE_SOFTWARE;
 
 //-----------------------------------------------------------------------------
+inline D2D1::ColorF toColorF (CColor c, float alpha)
+{
+	return D2D1::ColorF (c.normRed<float> (), c.normGreen<float> (), c.normBlue<float> (),
+	                     c.normAlpha<float> () * alpha);
+}
+
+//-----------------------------------------------------------------------------
 void useD2DHardwareRenderer (bool state)
 {
 	if (state)
@@ -280,7 +287,7 @@ ID2D1GradientStopCollection* D2DDrawContext::createGradientStopCollection (const
 	for (CGradient::ColorStopMap::const_iterator it = d2dGradient.getColorStops ().begin (); it != d2dGradient.getColorStops ().end (); ++it, ++index)
 	{
 		gradientStops[index].position = (FLOAT)it->first;
-		gradientStops[index].color = D2D1::ColorF (it->second.red/255.f, it->second.green/255.f, it->second.blue/255.f, it->second.alpha/255.f * getCurrentState ().globalAlpha);
+		gradientStops[index].color = toColorF (it->second, getCurrentState ().globalAlpha);
 	}
 	getRenderTarget ()->CreateGradientStopCollection (gradientStops, static_cast<UINT32> (d2dGradient.getColorStops ().size ()), &collection);
 	delete [] gradientStops;
@@ -747,8 +754,8 @@ void D2DDrawContext::setFillColorInternal (const CColor& color)
 	}
 	if (renderTarget)
 	{
-		D2D1_COLOR_F d2Color = {color.red/255.f, color.green/255.f, color.blue/255.f, (color.alpha/255.f) * getCurrentState ().globalAlpha};
-		renderTarget->CreateSolidColorBrush (d2Color, &fillBrush);
+		renderTarget->CreateSolidColorBrush (toColorF (color, getCurrentState ().globalAlpha),
+		                                     &fillBrush);
 	}
 }
 
@@ -762,8 +769,8 @@ void D2DDrawContext::setFrameColorInternal (const CColor& color)
 	}
 	if (renderTarget)
 	{
-		D2D1_COLOR_F d2Color = {color.red/255.f, color.green/255.f, color.blue/255.f, (color.alpha/255.f) * getCurrentState ().globalAlpha};
-		renderTarget->CreateSolidColorBrush (d2Color, &strokeBrush);
+		renderTarget->CreateSolidColorBrush (toColorF (color, getCurrentState ().globalAlpha),
+		                                     &strokeBrush);
 	}
 }
 
@@ -777,8 +784,8 @@ void D2DDrawContext::setFontColorInternal (const CColor& color)
 	}
 	if (renderTarget)
 	{
-		D2D1_COLOR_F d2Color = {color.red/255.f, color.green/255.f, color.blue/255.f, (color.alpha/255.f) * getCurrentState ().globalAlpha};
-		renderTarget->CreateSolidColorBrush (d2Color, &fontBrush);
+		renderTarget->CreateSolidColorBrush (toColorF (color, getCurrentState ().globalAlpha),
+		                                     &fontBrush);
 	}
 }
 

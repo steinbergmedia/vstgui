@@ -33,4 +33,19 @@ Optional<ResultType> indexOfTest (Iter first, Iter last, Proc p)
 }
 
 //------------------------------------------------------------------------
+/** Returns the value clamped to min and max */
+template <typename T>
+T clamp (T value, T min, T max)
+{
+	return std::min (max, std::max (value, min));
+}
+
+//------------------------------------------------------------------------
+/** Returns the value clamped to zero and one */
+template <typename T>
+T clampNorm (T value)
+{
+	return clamp (value, static_cast<T> (0), static_cast<T> (1));
+}
+//------------------------------------------------------------------------
 } // VSTGUI

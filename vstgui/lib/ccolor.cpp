@@ -4,6 +4,7 @@
 
 #include "ccolor.h"
 #include "cstring.h"
+#include "algorithm.h"
 #include <cmath>
 #include <sstream>
 #include <iomanip>
@@ -39,9 +40,9 @@ uint8_t CColor::getLightness () const
 //-----------------------------------------------------------------------------
 void CColor::toHSL (double& hue, double& saturation, double& lightness) const
 {
-	double r = red / 255.;
-	double g = green / 255.;
-	double b = blue / 255.;
+	double r = normRed<double> ();
+	double g = normGreen<double> ();
+	double b = normBlue<double> ();
 	double M = max3<double> (r, g ,b);
 	double m = min3<double> (r, g ,b);
 	double C = M - m;
@@ -120,12 +121,9 @@ void CColor::fromHSL (double hue, double saturation, double lightness)
 		b = X;
 	}
 	double m = lightness - (C / 2.);
-	r = (r + m) * 255;
-	g = (g + m ) * 255.;
-	b = (b + m ) * 255.;
-	red = static_cast<uint8_t> (floor (r + 0.5));
-	green = static_cast<uint8_t> (floor (g + 0.5));
-	blue = static_cast<uint8_t> (floor (b + 0.5));
+	setNormRed (clampNorm (r + m));
+	setNormGreen (clampNorm (g + m));
+	setNormBlue (clampNorm (b + m));
 }
 
 //-----------------------------------------------------------------------------
@@ -140,9 +138,9 @@ void CColor::toHSV (double& hue, double& saturation, double& value) const
 	}
 
 	/* Normalize value to 1 */
-	double r = (red / 255.) / value;
-	double g = (green / 255.) / value;
-	double b = (blue / 255.) / value;
+	double r = normRed<double> () / value;
+	double g = normGreen<double> () / value;
+	double b = normBlue<double> () / value;
 	double rgbMin = min3<double> (r, g, b);
 	rgbMax = max3<double> (r, g, b);
 
@@ -273,9 +271,9 @@ void CColor::fromHSV (double hue, double saturation, double value)
 			break;
 		}
 	}
-	red = static_cast<uint8_t> (floor (r * 255. + 0.5));
-	green = static_cast<uint8_t> (floor (g * 255. + 0.5));
-	blue = static_cast<uint8_t> (floor (b * 255. + 0.5));
+	setNormRed (clampNorm (r));
+	setNormGreen (clampNorm (g));
+	setNormBlue (clampNorm (b));
 }
 
 //-----------------------------------------------------------------------------
