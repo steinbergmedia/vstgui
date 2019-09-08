@@ -139,8 +139,7 @@ void CScrollContainer::setScrollOffset (CPoint newOffset, bool redraw)
 	for (const auto& pV : getChildren ())
 	{
 		CRect r = pV->getViewSize ();
-		CRect mr;
-		pV->getMouseableArea (mr);
+		CRect mr = pV->getMouseableArea ();
 		r.offset (diff.x , diff.y);
 		pV->setViewSize (r, false);
 		mr.offset (diff.x , diff.y);

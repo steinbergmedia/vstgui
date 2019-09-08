@@ -115,11 +115,12 @@ public:
 	bool getMouseEnabled () const { return hasViewFlag (kMouseEnabled); }
 
 	/** set the area in which the view reacts to the mouse */
-	virtual void setMouseableArea (const CRect& rect);
+	void setMouseableArea (const CRect& rect);
+	VSTGUI_DEPRECATED(
 	/** get the area in which the view reacts to the mouse */
-	CRect& getMouseableArea (CRect& rect) const;
-	/** read only access to the mouseable area */
-	const CRect& getMouseableArea () const;
+	CRect& getMouseableArea (CRect& rect) const;)
+	/** get the area in which the view reacts to the mouse */
+	CRect getMouseableArea () const;
 	//@}
 
 #if VSTGUI_TOUCH_EVENT_HANDLING
@@ -384,7 +385,11 @@ protected:
 		kDirty					= 1 << 5,
 		kWantsIdle				= 1 << 6,
 		kIsSubview				= 1 << 7,
-		kLastCViewFlag			= 7
+		kHasAlpha				= 1 << 8,
+		kHasBackground			= 1 << 9,
+		kHasDisabledBackground	= 1 << 10,
+		kHasMouseableArea		= 1 << 11,
+		kLastCViewFlag			= 11
 	};
 
 	~CView () noexcept override;

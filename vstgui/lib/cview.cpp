@@ -164,8 +164,12 @@ IdStringPtr kMsgViewSizeChanged = "kMsgViewSizeChanged";
 bool CView::kDirtyCallAlwaysOnMainThread = false;
 
 //-----------------------------------------------------------------------------
-static constexpr CViewAttributeID kCViewHitTestPathAttribute = 'cvht';
-static constexpr CViewAttributeID kCViewCustomDropTarget = 'cvdt';
+static constexpr CViewAttributeID kCViewHitTestPathAttrID = 'cvht';
+static constexpr CViewAttributeID kCViewCustomDropTargetAttrID = 'cvdt';
+static constexpr CViewAttributeID kCViewAlphaValueAttrID = 'cvav';
+static constexpr CViewAttributeID kCViewMouseableAreaAttrID = 'cvma';
+static constexpr CViewAttributeID kCViewBackgroundBitmapAttrID = 'cvbb';
+static constexpr CViewAttributeID kCViewDisabledBackgroundBitmapAttrID = 'cvdb';
 
 //-----------------------------------------------------------------------------
 // CView
@@ -181,15 +185,10 @@ struct CView::Impl
 	std::unique_ptr<ViewMouseListenerDispatcher> viewMouseListener;
 	
 	CRect size;
-	CRect mouseableArea;
 	int32_t viewFlags {0};
 	int32_t autosizeFlags {kAutosizeNone};
-	float alphaValue {1.f};
 	CFrame* parentFrame {nullptr};
 	CView* parentView {nullptr};
-	
-	SharedPointer<CBitmap> background;
-	SharedPointer<CBitmap> disabledBackground;
 };
 
 //-----------------------------------------------------------------------------
@@ -197,7 +196,6 @@ CView::CView (const CRect& size)
 {
 	pImpl = std::unique_ptr<Impl> (new Impl ());
 	pImpl->size = size;
-	pImpl->mouseableArea = size;
 	
 	#if VSTGUI_CHECK_VIEW_RELEASING
 	static CViewInternal::AllocatedViews allocatedViews;
@@ -213,13 +211,13 @@ CView::CView (const CView& v)
 {
 	pImpl = std::unique_ptr<Impl> (new Impl ());
 	pImpl->size = v.pImpl->size;
-	pImpl->mouseableArea = v.pImpl->mouseableArea;
 	pImpl->viewFlags = v.pImpl->viewFlags;
 	pImpl->autosizeFlags = v.pImpl->autosizeFlags;
-	pImpl->alphaValue = v.pImpl->alphaValue;
-	pImpl->background = v.pImpl->background;
-	pImpl->disabledBackground = v.pImpl->disabledBackground;
+
+	setMouseableArea (v.getMouseableArea ());
 	setHitTestPath (v.getHitTestPath ());
+	setBackground (v.getBackground ());
+	setDisabledBackground (v.getDisabledBackground ());
 
 	for (auto& attribute : v.pImpl->attributes)
 		setAttribute (attribute.first, attribute.second->getSize (), attribute.second->getData ());
@@ -247,6 +245,8 @@ void CView::beforeDelete ()
 
 	setHitTestPath (nullptr);
 	setDropTarget (nullptr);
+	setBackground (nullptr);
+	setDisabledBackground (nullptr);
 	
 	IController* controller = nullptr;
 	if (getAttribute (kCViewControllerAttribute, controller) == true)
@@ -270,7 +270,16 @@ void CView::beforeDelete ()
 //-----------------------------------------------------------------------------
 void CView::setMouseableArea (const CRect& rect)
 {
-	pImpl->mouseableArea = rect;
+	if (pImpl->size == rect)
+	{
+		setViewFlag (kHasMouseableArea, false);
+		removeAttribute (kCViewMouseableAreaAttrID);
+	}
+	else
+	{
+		setViewFlag (kHasMouseableArea, true);
+		setAttribute (kHasMouseableArea, rect);
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -281,9 +290,15 @@ CRect& CView::getMouseableArea (CRect& rect) const
 }
 
 //-----------------------------------------------------------------------------
-const CRect& CView::getMouseableArea () const
+CRect CView::getMouseableArea () const
 {
-	return pImpl->mouseableArea;
+	if (hasViewFlag (kHasMouseableArea))
+	{
+		CRect r;
+		if (getAttribute (kCViewMouseableAreaAttrID, r))
+			return r;
+	}
+	return pImpl->size;
 }
 
 //-----------------------------------------------------------------------------
@@ -295,12 +310,12 @@ void CView::setHitTestPath (CGraphicsPath* path)
 	if (auto p = getHitTestPath ())
 	{
 		p->forget ();
-		removeAttribute (kCViewHitTestPathAttribute);
+		removeAttribute (kCViewHitTestPathAttrID);
 	}
 	if (path)
 	{
 		path->remember ();
-		setAttribute (kCViewHitTestPathAttribute, path);
+		setAttribute (kCViewHitTestPathAttrID, path);
 	}
 }
 
@@ -308,7 +323,7 @@ void CView::setHitTestPath (CGraphicsPath* path)
 CGraphicsPath* CView::getHitTestPath () const
 {
 	CGraphicsPath* path = nullptr;
-	if (getAttribute (kCViewHitTestPathAttribute, path))
+	if (getAttribute (kCViewHitTestPathAttrID, path))
 		return path;
 	return nullptr;
 }
@@ -332,7 +347,7 @@ void CView::setMouseEnabled (bool state)
 	{
 		setViewFlag (kMouseEnabled, state);
 
-		if (pImpl->disabledBackground)
+		if (hasViewFlag (kHasDisabledBackground))
 		{
 			setDirty (true);
 		}
@@ -373,7 +388,7 @@ void CView::setWantsIdle (bool state)
 //-----------------------------------------------------------------------------
 void CView::setDirty (bool state)
 {
-	if (kDirtyCallAlwaysOnMainThread)
+	if (kDirtyCallAlwaysOnMainThread && isAttached ())
 	{
 		if (state)
 		{
@@ -745,15 +760,36 @@ void CView::setVisible (bool state)
 //-----------------------------------------------------------------------------
 void CView::setAlphaValueNoInvalidate (float value)
 {
-	pImpl->alphaValue = value;
+	if (value == 1.f)
+	{
+		removeAttribute (kCViewAlphaValueAttrID);
+		setViewFlag (kHasAlpha, false);
+	}
+	else
+	{
+		setAttribute (kCViewAlphaValueAttrID, value);
+		setViewFlag (kHasAlpha, true);
+	}
 }
 
 //-----------------------------------------------------------------------------
 void CView::setAlphaValue (float alpha)
 {
-	if (pImpl->alphaValue != alpha)
+	float oldAlpha = 1.f;
+	if (hasViewFlag (kHasAlpha))
+		getAttribute (kCViewAlphaValueAttrID, oldAlpha);
+	if (alpha == 1.f)
 	{
-		pImpl->alphaValue = alpha;
+		removeAttribute (kCViewAlphaValueAttrID);
+		setViewFlag (kHasAlpha, false);
+	}
+	else
+	{
+		setAttribute (kCViewAlphaValueAttrID, alpha);
+		setViewFlag (kHasAlpha, true);
+	}
+	if (oldAlpha != alpha)
+	{
 		// we invalidate the parent to make sure that when alpha == 0 that a redraw occurs
 		if (pImpl->parentView)
 			pImpl->parentView->invalidRect (getViewSize ());
@@ -763,7 +799,10 @@ void CView::setAlphaValue (float alpha)
 //-----------------------------------------------------------------------------
 float CView::getAlphaValue () const
 {
-	return pImpl->alphaValue;
+	float a = 1.f;
+	if (hasViewFlag (kHasAlpha))
+		getAttribute (kCViewAlphaValueAttrID, a);
+	return a;
 }
 
 //-----------------------------------------------------------------------------
@@ -814,7 +853,22 @@ VSTGUIEditorInterface* CView::getEditor () const
  */
 void CView::setBackground (CBitmap* background)
 {
-	pImpl->background = background;
+	if (hasViewFlag (kHasBackground))
+	{
+		CBitmap* old;
+		if (getAttribute (kCViewBackgroundBitmapAttrID, old))
+		{
+			old->forget ();
+			removeAttribute (kCViewBackgroundBitmapAttrID);
+		}
+		setViewFlag (kHasBackground, false);
+	}
+	if (background)
+	{
+		background->remember ();
+		setAttribute (kCViewBackgroundBitmapAttrID, background);
+		setViewFlag (kHasBackground, true);
+	}
 	if (getMouseEnabled () == true)
 		setDirty (true);
 }
@@ -822,19 +876,27 @@ void CView::setBackground (CBitmap* background)
 //-----------------------------------------------------------------------------
 CBitmap* CView::getBackground () const
 {
-	return pImpl->background;
+	CBitmap* result = nullptr;
+	if (hasViewFlag (kHasBackground))
+		getAttribute (kCViewBackgroundBitmapAttrID, result);
+	return result;
 }
 
 //-----------------------------------------------------------------------------
 CBitmap* CView::getDisabledBackground () const
 {
-	return pImpl->disabledBackground;
+	CBitmap* result = nullptr;
+	if (hasViewFlag (kHasDisabledBackground))
+		getAttribute (kCViewDisabledBackgroundBitmapAttrID, result);
+	return result;
 }
 
 //-----------------------------------------------------------------------------
 CBitmap* CView::getDrawBackground () const
 {
-	return (pImpl->disabledBackground ? (getMouseEnabled () ? pImpl->background : pImpl->disabledBackground): pImpl->background);
+	return (hasViewFlag (kHasDisabledBackground) ?
+	            (getMouseEnabled () ? getBackground () : getDisabledBackground ()) :
+	            getBackground ());
 }
 
 //-----------------------------------------------------------------------------
@@ -843,7 +905,22 @@ CBitmap* CView::getDrawBackground () const
  */
 void CView::setDisabledBackground (CBitmap* background)
 {
-	pImpl->disabledBackground = background;
+	if (hasViewFlag (kHasDisabledBackground))
+	{
+		CBitmap* old;
+		if (getAttribute (kCViewDisabledBackgroundBitmapAttrID, old))
+		{
+			old->forget ();
+			removeAttribute (kCViewDisabledBackgroundBitmapAttrID);
+		}
+		setViewFlag (kHasDisabledBackground, false);
+	}
+	if (background)
+	{
+		background->remember ();
+		setAttribute (kCViewDisabledBackgroundBitmapAttrID, background);
+		setViewFlag (kHasDisabledBackground, true);
+	}
 	if (getMouseEnabled () == false)
 		setDirty (true);
 }
@@ -971,7 +1048,7 @@ void CView::dumpInfo ()
 		DebugPrint ("(Mouse Enabled) ");
 	if (getTransparency ())
 		DebugPrint ("(Transparent) ");
-	CRect mouseRect = getMouseableArea (mouseRect);
+	CRect mouseRect = getMouseableArea ();
 	if (mouseRect != viewRect)
 		DebugPrint (" (Mouseable Area: left:%4d, top:%4d, width:%4d, height:%4d ", mouseRect.left, mouseRect.top, mouseRect.getWidth (), mouseRect.getHeight ());
 }
@@ -1056,7 +1133,7 @@ void CView::callMouseListenerEnteredExited (bool mouseEntered)
 SharedPointer<IDropTarget> CView::getDropTarget ()
 {
 	IDropTarget* dropTarget = nullptr;
-	if (getAttribute (kCViewCustomDropTarget, dropTarget))
+	if (getAttribute (kCViewCustomDropTargetAttrID, dropTarget))
 		return dropTarget;
 	return nullptr;
 }
@@ -1065,17 +1142,17 @@ SharedPointer<IDropTarget> CView::getDropTarget ()
 void CView::setDropTarget (const SharedPointer<IDropTarget>& dt)
 {
 	IDropTarget* dropTarget = nullptr;
-	if (getAttribute (kCViewCustomDropTarget, dropTarget))
+	if (getAttribute (kCViewCustomDropTargetAttrID, dropTarget))
 		dropTarget->forget ();
 	dropTarget = dt;
 	if (dropTarget)
 	{
-		setAttribute (kCViewCustomDropTarget, dropTarget);
+		setAttribute (kCViewCustomDropTargetAttrID, dropTarget);
 		dropTarget->remember ();
 	}
 	else
 	{
-		removeAttribute (kCViewCustomDropTarget);
+		removeAttribute (kCViewCustomDropTargetAttrID);
 	}
 }
 
