@@ -278,7 +278,7 @@ void CView::setMouseableArea (const CRect& rect)
 	else
 	{
 		setViewFlag (kHasMouseableArea, true);
-		setAttribute (kHasMouseableArea, rect);
+		setAttribute (kCViewMouseableAreaAttrID, rect);
 	}
 }
 
