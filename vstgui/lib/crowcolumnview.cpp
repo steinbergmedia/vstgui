@@ -100,8 +100,8 @@ void CRowColumnView::resizeSubView (CView* view, const CRect& newSize)
 		}
 		else
 		{
-			view->setMouseableArea (newSize);
 			view->setViewSize (newSize);
+			view->setMouseableArea (newSize);
 		}
 	}
 }

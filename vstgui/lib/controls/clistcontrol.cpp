@@ -102,8 +102,8 @@ void CListControl::recalculateLayout ()
 	if (viewSize.getHeight () != height)
 	{
 		viewSize.setHeight (height);
-		setMouseableArea (viewSize);
 		setViewSize (viewSize);
+		setMouseableArea (viewSize);
 	}
 }
 
