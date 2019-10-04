@@ -165,28 +165,28 @@ inline constexpr uint8_t CColor::getLuma () const
 template <typename T>
 constexpr T CColor::normRed () const
 {
-	return static_cast<T> (red) / 255.;
+	return static_cast<T> (red) / static_cast<T> (255.);
 }
 
 //-----------------------------------------------------------------------------
 template <typename T>
 constexpr T CColor::normGreen () const
 {
-	return static_cast<T> (green) / 255.;
+	return static_cast<T> (green) / static_cast<T> (255.);
 }
 
 //-----------------------------------------------------------------------------
 template <typename T>
 constexpr T CColor::normBlue () const
 {
-	return static_cast<T> (blue) / 255.;
+	return static_cast<T> (blue) / static_cast<T> (255.);
 }
 
 //-----------------------------------------------------------------------------
 template <typename T>
 constexpr T CColor::normAlpha () const
 {
-	return static_cast<T> (alpha) / 255.;
+	return static_cast<T> (alpha) / static_cast<T> (255.);
 }
 
 //-----------------------------------------------------------------------------
