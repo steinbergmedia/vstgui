@@ -230,7 +230,8 @@ CGraphicsTransform CLayeredViewContainer::getDrawTransform () const
 	if (self)
 		transform = self->getTransform () * transform;
 
-	transform = frame->getTransform () * transform;
+	if (frame)
+		transform = frame->getTransform () * transform;
 
 	return transform;
 }
