@@ -243,6 +243,7 @@ void CScrollContainer::onDragMove (CPoint where)
 		if (scrollView)
 		{
 			CRect r (getViewSize ());
+			r.originize ();
 			r.offset (x, y);
 			scrollView->makeRectVisible (r);
 		}
