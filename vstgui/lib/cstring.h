@@ -159,10 +159,10 @@ UTF8String trim (const UTF8String& str, TrimOptions options = TrimOptions ().lef
 #if VSTGUI_ENABLE_DEPRECATED_METHODS
 //-----------------------------------------------------------------------------
 namespace String {
-	/** @deprecated Allocates a new UTF8StringBuffer with enough size for string and copy the string into it. Returns nullptr if string is a nullptr. */
-	UTF8StringBuffer newWithString (UTF8StringPtr string);
-	/** @deprecated Frees an UTF8StringBuffer. If buffer is a nullptr it does nothing. */
-	void free (UTF8StringBuffer buffer);
+	VSTGUI_DEPRECATED(/** @deprecated Allocates a new UTF8StringBuffer with enough size for string and copy the string into it. Returns nullptr if string is a nullptr. */
+	UTF8StringBuffer newWithString (UTF8StringPtr string);)
+	VSTGUI_DEPRECATED(/** @deprecated Frees an UTF8StringBuffer. If buffer is a nullptr it does nothing. */
+	void free (UTF8StringBuffer buffer);)
 }
 #endif
 
