@@ -6,6 +6,7 @@
 
 #if VSTGUI_LIVE_EDITING
 
+#include "../../lib/algorithm.h"
 #include "../../lib/controls/coptionmenu.h"
 #include "../../lib/controls/cstringlist.h"
 #include "../uiattributes.h"
@@ -262,15 +263,14 @@ void UIGridController::syncMenuValueAndSize ()
 	if (!gridMenu)
 		return;
 
-	auto it = std::find (defGrids.begin (), defGrids.end (), getSize ());
-	if (it == defGrids.end ())
+	auto index = indexOf (defGrids.begin (), defGrids.end (), getSize ());
+	if (!index)
 	{
 		gridMenu->setValue (0.f);
 		setSize (defGrids[0]);
 		return;
 	}
-	auto index = std::distance (defGrids.begin (), it);
-	gridMenu->setValue (static_cast<float> (index));
+	gridMenu->setValue (static_cast<float> (*index));
 }
 
 //----------------------------------------------------------------------------------------------------

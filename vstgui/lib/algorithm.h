@@ -45,6 +45,7 @@ T clamp (T value, T min, T max)
 template <typename T>
 T clampNorm (T value)
 {
+	static_assert (std::is_floating_point<T>::value, "Only floating point types allowed");
 	return clamp (value, static_cast<T> (0), static_cast<T> (1));
 }
 //------------------------------------------------------------------------
