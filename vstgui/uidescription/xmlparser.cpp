@@ -229,7 +229,7 @@ InputStreamContentProvider::InputStreamContentProvider (InputStream& stream)
 : stream (stream)
 , startPos (0)
 {
-	SeekableStream* seekStream = dynamic_cast<SeekableStream*> (&stream);
+	auto* seekStream = dynamic_cast<SeekableStream*> (&stream);
 	if (seekStream)
 		startPos = seekStream->tell ();	
 }
@@ -243,7 +243,7 @@ uint32_t InputStreamContentProvider::readRawXmlData (int8_t* buffer, uint32_t si
 //------------------------------------------------------------------------
 void InputStreamContentProvider::rewind ()
 {
-	SeekableStream* seekStream = dynamic_cast<SeekableStream*> (&stream);
+	auto* seekStream = dynamic_cast<SeekableStream*> (&stream);
 	if (seekStream)
 		seekStream->seek (startPos, SeekableStream::kSeekSet);
 }

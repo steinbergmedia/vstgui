@@ -2,8 +2,7 @@
 // in the LICENSE file found in the top-level directory of this
 // distribution and at http://github.com/steinbergmedia/vstgui/LICENSE
 
-#ifndef __cdrawmethods__
-#define __cdrawmethods__
+#pragma once
 
 #include "vstguifwd.h"
 #include "cdrawdefs.h"
@@ -73,5 +72,3 @@ void drawIconAndText (CDrawContext* context, CBitmap* iconToDraw, IconPosition i
                       const UTF8String& title, CFontRef font, CColor textColor,
                       TextTruncateMode truncateMode = kTextTruncateNone);
 }} // namespaces
-
-#endif // __cdrawmethods__

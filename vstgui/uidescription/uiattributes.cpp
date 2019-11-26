@@ -62,7 +62,7 @@ bool UIAttributes::stringToPoint (const std::string& str, CPoint& p)
 		std::vector<std::string> subStrings;
 		while (pos != std::string::npos)
 		{
-			if (subStrings.size () >= 1)
+			if (!subStrings.empty ())
 				return false;
 			if (auto subStr = trimmedNumericalString<false> (str, start, pos - start))
 				subStrings.emplace_back (std::move (*subStr));

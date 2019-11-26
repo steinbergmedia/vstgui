@@ -239,7 +239,7 @@ bool CTabView::addTab (CView* view, CControl* button)
 	view->setViewSize (tabViewSize);
 	view->setMouseableArea (tabViewSize);
 
-	CTabChildView* v = new CTabChildView (view);
+	auto* v = new CTabChildView (view);
 	v->button = button;
 	if (lastChild)
 	{
@@ -413,8 +413,7 @@ void CTabView::setTabFontStyle (const CFontRef font, CCoord fontSize, CColor sel
 	CTabChildView* v = firstChild;
 	while (v)
 	{
-		CTabButton* button = dynamic_cast<CTabButton*>(v->button);
-		if (button)
+		if (auto* button = dynamic_cast<CTabButton*>(v->button))
 		{
 			button->setTextFont (tabFont);
 			button->setActiveTextColor (selectedColor);

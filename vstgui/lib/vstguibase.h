@@ -307,7 +307,7 @@ public:
 	//@}
 
 	/// @cond ignore
-	virtual CBaseObject* newCopy () const { return 0; }
+	virtual CBaseObject* newCopy () const { return nullptr; }
 	/// @endcond
 };
 

@@ -472,7 +472,7 @@ CMessageResult CViewContainer::notify (CBaseObject* sender, IdStringPtr message)
 {
 	if (message == kMsgNewFocusView)
 	{
-		CView* view = dynamic_cast<CView*> (sender);
+		auto* view = dynamic_cast<CView*> (sender);
 		if (view && isChild (view, false) && getFrame ()->focusDrawingEnabled ())
 		{
 			CCoord width = getFrame ()->getFocusWidth ();

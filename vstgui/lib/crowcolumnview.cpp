@@ -110,7 +110,7 @@ void CRowColumnView::resizeSubView (CView* view, const CRect& newSize)
 void CRowColumnView::getMaxChildViewSize (CPoint& maxSize)
 {
 	forEachChild ([&] (CView* view) {
-		CRect viewSize = view->getViewSize ();
+		const CRect& viewSize = view->getViewSize ();
 		if (viewSize.getWidth () > maxSize.x)
 			maxSize.x = viewSize.getWidth ();
 		if (viewSize.getHeight () > maxSize.y)
@@ -201,7 +201,7 @@ bool CRowColumnView::sizeToFit ()
 		if (style == kRowStyle)
 		{
 			forEachChild ([&] (CView* view) {
-				CRect size = view->getViewSize ();
+				const CRect& size = view->getViewSize ();
 				if (size.getWidth () > maxSize.x)
 					maxSize.x = size.getWidth ();
 				maxSize.y += size.getHeight () + spacing;

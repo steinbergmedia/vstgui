@@ -36,7 +36,7 @@ void CLayeredViewContainer::updateLayerSize ()
 	getTransform ().transform (newSize);
 	auto frame = getFrame ();
 
-	CViewContainer* parent = static_cast<CViewContainer*> (getParentView ());
+	auto* parent = static_cast<CViewContainer*> (getParentView ());
 	while (parent && parent != frame)
 	{
 		CRect parentSize = parent->getViewSize ();
@@ -114,7 +114,7 @@ bool CLayeredViewContainer::attached (CView* parent)
 //-----------------------------------------------------------------------------
 void CLayeredViewContainer::registerListeners (bool state)
 {
-	CViewContainer* parent = static_cast<CViewContainer*> (getParentView ());
+	auto* parent = static_cast<CViewContainer*> (getParentView ());
 	while (parent)
 	{
 		if (state)
@@ -217,7 +217,7 @@ CGraphicsTransform CLayeredViewContainer::getDrawTransform () const
 	ParentViews parents;
 	auto frame = getFrame ();
 	
-	CViewContainer* parent = static_cast<CViewContainer*> (getParentView ());
+	auto* parent = static_cast<CViewContainer*> (getParentView ());
 	while (parent && parent != frame)
 	{
 		parents.push_front (parent);

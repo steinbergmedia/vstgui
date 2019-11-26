@@ -1189,8 +1189,7 @@ bool CFrame::advanceNextFocusView (CView* oldFocus, bool reverse)
 				return container->advanceNextFocusView (nullptr, reverse);
 			else
 			{
-				CViewContainer* parentView = static_cast<CViewContainer*> (oldFocus->getParentView ());
-				if (parentView)
+				if (auto* parentView = static_cast<CViewContainer*> (oldFocus->getParentView ()))
 				{
 					CView* tempOldFocus = oldFocus;
 					while (parentView != container)
@@ -1232,8 +1231,7 @@ bool CFrame::advanceNextFocusView (CView* oldFocus, bool reverse)
 			return false;
 		}
 	}
-	CViewContainer* parentView = static_cast<CViewContainer*> (oldFocus->getParentView ());
-	if (parentView)
+	if (auto* parentView = static_cast<CViewContainer*> (oldFocus->getParentView ()))
 	{
 		CView* tempOldFocus = oldFocus;
 		while (parentView)

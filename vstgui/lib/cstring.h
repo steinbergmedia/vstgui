@@ -231,7 +231,7 @@ class UTF8CharacterIterator
 public:
 	UTF8CharacterIterator (const UTF8StringPtr utf8Str)
 	: startPos ((uint8_t*)utf8Str)
-	, currentPos (0)
+	, currentPos (nullptr)
 	, strLen (std::strlen (utf8Str))
 	{
 		begin ();
@@ -239,7 +239,7 @@ public:
 
 	UTF8CharacterIterator (const UTF8StringPtr utf8Str, size_t strLen)
 	: startPos ((uint8_t*)utf8Str)
-	, currentPos (0)
+	, currentPos (nullptr)
 	, strLen (strLen)
 	{
 		begin ();
@@ -247,7 +247,7 @@ public:
 	
 	UTF8CharacterIterator (const std::string& stdStr)
 	: startPos ((uint8_t*)stdStr.c_str ())
-	, currentPos (0)
+	, currentPos (nullptr)
 	, strLen (stdStr.size ())
 	{
 		begin ();
@@ -354,7 +354,7 @@ inline UTF8StringView& UTF8StringView::operator= (const UTF8StringView& other) n
 inline size_t UTF8StringView::calculateCharacterCount () const
 {
 	size_t count = 0;
-	if (str == 0)
+	if (str == nullptr)
 		return count;
 	
 	UTF8CharacterIterator it (str);

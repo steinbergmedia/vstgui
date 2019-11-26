@@ -238,8 +238,7 @@ void CScrollContainer::onDragMove (CPoint where)
 	float x, y;
 	if (getScrollValue (where, x, y))
 	{
-		CScrollView* scrollView = static_cast<CScrollView*> (getParentView ());
-		if (scrollView)
+		if (auto* scrollView = static_cast<CScrollView*> (getParentView ()))
 		{
 			CRect r (getViewSize ());
 			r.originize ();
@@ -255,17 +254,17 @@ bool CScrollContainer::attached (CView* parent)
 	bool result = CViewContainer::attached (parent);
 	if (getNbViews () == 1)
 	{
-		CView* view = getView (0);
-		if (view)
+		if (CView* view = getView (0))
 		{
-			CRect r (view->getViewSize ());
+			const CRect& r (view->getViewSize ());
 			CRect newContainerSize (containerSize);
 			newContainerSize.setWidth (r.getWidth ());
 			newContainerSize.setHeight (r.getHeight ());
 			if (newContainerSize != containerSize)
 			{
-				CScrollView* scrollView = static_cast<CScrollView*> (getParentView ());
-				scrollView->setContainerSize (newContainerSize);
+				auto* scrollView = static_cast<CScrollView*> (getParentView ());
+				if (scrollView)
+					scrollView->setContainerSize (newContainerSize);
 			}
 		}
 	}
@@ -278,17 +277,18 @@ CMessageResult CScrollContainer::notify (CBaseObject* sender, IdStringPtr messag
 	if (message == kMsgViewSizeChanged && !inScrolling)
 	{
 		uint32_t numSubViews = getNbViews ();
-		CView* view = static_cast<CView*> (sender);
+		auto* view = static_cast<CView*> (sender);
 		if (numSubViews == 1 && view && isChild (view))
 		{
-			CRect r (view->getViewSize ());
+			const CRect& r (view->getViewSize ());
 			CRect newContainerSize (containerSize);
 			newContainerSize.setWidth (r.getWidth ());
 			newContainerSize.setHeight (r.getHeight ());
 			if (newContainerSize != containerSize)
 			{
-				CScrollView* scrollView = static_cast<CScrollView*> (getParentView ());
-				scrollView->setContainerSize (newContainerSize);
+				auto* scrollView = static_cast<CScrollView*> (getParentView ());
+				if (scrollView)
+					scrollView->setContainerSize (newContainerSize);
 			}
 		}
 	}
@@ -764,7 +764,7 @@ CMessageResult CScrollView::notify (CBaseObject* sender, IdStringPtr message)
 {
 	if (message == kMsgNewFocusView && getStyle () & kFollowFocusView)
 	{
-		CView* focusView = static_cast<CView*> (sender);
+		auto* focusView = static_cast<CView*> (sender);
 		if (sc->isChild (focusView, true))
 		{
 			CRect r = focusView->getViewSize ();

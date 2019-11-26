@@ -499,7 +499,7 @@ bool UIDescWriter::writeNode (UINode* node, OutputStream& stream)
 	if (node->noExport ())
 		return result;
 	for (int32_t i = 0; i < intendLevel; i++) stream << "\t";
-	if (UICommentNode* commentNode = dynamic_cast<UICommentNode*> (node))
+	if (auto* commentNode = dynamic_cast<UICommentNode*> (node))
 	{
 		return writeComment (commentNode, stream);
 	}
@@ -793,7 +793,7 @@ void Parser::endXmlElement (Xml::Parser* parser, IdStringPtr name)
 //-----------------------------------------------------------------------------
 void Parser::xmlCharData (Xml::Parser* parser, const int8_t* data, int32_t length)
 {
-	if (nodeStack.size () == 0)
+	if (nodeStack.empty ())
 		return;
 	auto& nodeData = nodeStack.back ()->getData ();
 	const int8_t* dataStart = nullptr;
@@ -822,7 +822,7 @@ void Parser::xmlCharData (Xml::Parser* parser, const int8_t* data, int32_t lengt
 void Parser::xmlComment (Xml::Parser* parser, IdStringPtr comment)
 {
 #if VSTGUI_LIVE_EDITING
-	if (nodeStack.size () == 0)
+	if (nodeStack.empty ())
 	{
 	#if DEBUG
 		DebugPrint ("*** WARNING : Comment outside of root tag will be removed on save !\nComment: %s\n", comment);
@@ -1197,8 +1197,7 @@ bool UIDescription::saveToStream (OutputStream& stream, int32_t flags)
 		{
 			for (auto& childNode : bitmapNodes->getChildren ())
 			{
-				UIBitmapNode* bitmapNode = dynamic_cast<UIBitmapNode*> (childNode);
-				if (bitmapNode)
+				if (auto* bitmapNode = dynamic_cast<UIBitmapNode*> (childNode))
 				{
 					if (flags & kWriteImagesIntoXMLFile)
 					{
@@ -1311,8 +1310,7 @@ bool UIDescription::storeViews (const std::list<CView*>& views, OutputStream& st
 		else
 		{
 		#if VSTGUI_LIVE_EDITING
-			UIViewFactory* factory = dynamic_cast<UIViewFactory*> (impl->viewFactory);
-			if (factory)
+			if (auto* factory = dynamic_cast<UIViewFactory*> (impl->viewFactory))
 			{
 				auto attr = makeOwned<UIAttributes> ();
 				if (factory->getAttributesForView (view, const_cast<UIDescription*> (this), *attr) == false)
@@ -1576,8 +1574,7 @@ UINode* UIDescription::findChildNodeByNameAttribute (UINode* node, UTF8StringPtr
 int32_t UIDescription::getTagForName (UTF8StringPtr name) const
 {
 	int32_t tag = -1;
-	UIControlTagNode* controlTagNode = dynamic_cast<UIControlTagNode*> (findChildNodeByNameAttribute (getBaseNode (MainNodeNames::kControlTag), name));
-	if (controlTagNode)
+	if (auto* controlTagNode = dynamic_cast<UIControlTagNode*> (findChildNodeByNameAttribute (getBaseNode (MainNodeNames::kControlTag), name)))
 	{
 		tag = controlTagNode->getTag ();
 		if (tag == -1)
@@ -1602,35 +1599,35 @@ int32_t UIDescription::getTagForName (UTF8StringPtr name) const
 //-----------------------------------------------------------------------------
 bool UIDescription::hasColorName (UTF8StringPtr name) const
 {
-	UIColorNode* node = dynamic_cast<UIColorNode*> (findChildNodeByNameAttribute (getBaseNode (MainNodeNames::kColor), name));
+	auto* node = dynamic_cast<UIColorNode*> (findChildNodeByNameAttribute (getBaseNode (MainNodeNames::kColor), name));
 	return node ? true : false;
 }
 
 //-----------------------------------------------------------------------------
 bool UIDescription::hasTagName (UTF8StringPtr name) const
 {
-	UIControlTagNode* node = dynamic_cast<UIControlTagNode*> (findChildNodeByNameAttribute (getBaseNode (MainNodeNames::kControlTag), name));
+	auto* node = dynamic_cast<UIControlTagNode*> (findChildNodeByNameAttribute (getBaseNode (MainNodeNames::kControlTag), name));
 	return node ? true : false;
 }
 
 //-----------------------------------------------------------------------------
 bool UIDescription::hasFontName (UTF8StringPtr name) const
 {
-	UIFontNode* node = dynamic_cast<UIFontNode*> (findChildNodeByNameAttribute (getBaseNode (MainNodeNames::kFont), name));
+	auto* node = dynamic_cast<UIFontNode*> (findChildNodeByNameAttribute (getBaseNode (MainNodeNames::kFont), name));
 	return node ? true : false;
 }
 
 //-----------------------------------------------------------------------------
 bool UIDescription::hasBitmapName (UTF8StringPtr name) const
 {
-	UIBitmapNode* node = dynamic_cast<UIBitmapNode*> (findChildNodeByNameAttribute (getBaseNode (MainNodeNames::kBitmap), name));
+	auto* node = dynamic_cast<UIBitmapNode*> (findChildNodeByNameAttribute (getBaseNode (MainNodeNames::kBitmap), name));
 	return node ? true : false;
 }
 
 //-----------------------------------------------------------------------------
 bool UIDescription::hasGradientName (UTF8StringPtr name) const
 {
-	UIGradientNode* node = dynamic_cast<UIGradientNode*> (findChildNodeByNameAttribute (getBaseNode (MainNodeNames::kGradient), name));
+	auto* node = dynamic_cast<UIGradientNode*> (findChildNodeByNameAttribute (getBaseNode (MainNodeNames::kGradient), name));
 	return node ? true : false;
 }
 
@@ -1645,7 +1642,7 @@ IControlListener* UIDescription::getControlListener (UTF8StringPtr name) const
 //-----------------------------------------------------------------------------
 CBitmap* UIDescription::getBitmap (UTF8StringPtr name) const
 {
-	UIBitmapNode* bitmapNode = dynamic_cast<UIBitmapNode*> (findChildNodeByNameAttribute (getBaseNode (MainNodeNames::kBitmap), name));
+	auto* bitmapNode = dynamic_cast<UIBitmapNode*> (findChildNodeByNameAttribute (getBaseNode (MainNodeNames::kBitmap), name));
 	if (bitmapNode)
 	{
 		CBitmap* bitmap = bitmapNode->getBitmap (impl->filePath);
@@ -1738,8 +1735,7 @@ CBitmap* UIDescription::getBitmap (UTF8StringPtr name) const
 				if (filter->run ())
 				{
 					auto obj = filter->getProperty (BitmapFilter::Standard::Property::kOutputBitmap).getObject ();
-					CBitmap* outputBitmap = dynamic_cast<CBitmap*>(obj);
-					if (outputBitmap)
+					if (auto* outputBitmap = dynamic_cast<CBitmap*>(obj))
 					{
 						bitmap->setPlatformBitmap (outputBitmap->getPlatformBitmap ());
 					}
@@ -1756,7 +1752,7 @@ CBitmap* UIDescription::getBitmap (UTF8StringPtr name) const
 				UINode* bitmapsNode = getBaseNode (MainNodeNames::kBitmap);
 				for (auto& it : bitmapsNode->getChildren ())
 				{
-					UIBitmapNode* childNode = dynamic_cast<UIBitmapNode*>(it);
+					auto* childNode = dynamic_cast<UIBitmapNode*>(it);
 					if (childNode == nullptr || childNode == bitmapNode)
 						continue;
 					const std::string* childNodeBitmapName = childNode->getAttributes()->getAttributeValue ("name");
@@ -1782,7 +1778,7 @@ CBitmap* UIDescription::getBitmap (UTF8StringPtr name) const
 //-----------------------------------------------------------------------------
 CFontRef UIDescription::getFont (UTF8StringPtr name) const
 {
-	UIFontNode* fontNode = dynamic_cast<UIFontNode*> (findChildNodeByNameAttribute (getBaseNode (MainNodeNames::kFont), name));
+	auto* fontNode = dynamic_cast<UIFontNode*> (findChildNodeByNameAttribute (getBaseNode (MainNodeNames::kFont), name));
 	if (fontNode)
 		return fontNode->getFont ();
 	return nullptr;
@@ -1791,7 +1787,7 @@ CFontRef UIDescription::getFont (UTF8StringPtr name) const
 //-----------------------------------------------------------------------------
 bool UIDescription::getColor (UTF8StringPtr name, CColor& color) const
 {
-	UIColorNode* colorNode = dynamic_cast<UIColorNode*> (findChildNodeByNameAttribute (getBaseNode (MainNodeNames::kColor), name));
+	auto* colorNode = dynamic_cast<UIColorNode*> (findChildNodeByNameAttribute (getBaseNode (MainNodeNames::kColor), name));
 	if (colorNode)
 	{
 		color = colorNode->getColor ();
@@ -1805,7 +1801,7 @@ bool UIDescription::getColor (UTF8StringPtr name, CColor& color) const
 //-----------------------------------------------------------------------------
 CGradient* UIDescription::getGradient (UTF8StringPtr name) const
 {
-	UIGradientNode* gradientNode = dynamic_cast<UIGradientNode*> (findChildNodeByNameAttribute (getBaseNode(MainNodeNames::kGradient), name));
+	auto* gradientNode = dynamic_cast<UIGradientNode*> (findChildNodeByNameAttribute (getBaseNode(MainNodeNames::kGradient), name));
 	if (gradientNode)
 		return gradientNode->getGradient ();
 	return nullptr;
@@ -1820,7 +1816,7 @@ template<typename NodeType, typename ObjType, typename CompareFunction> UTF8Stri
 		UIDescList& children = baseNode->getChildren ();
 		for (const auto& itNode : children)
 		{
-			NodeType* node = dynamic_cast<NodeType*>(itNode);
+			auto* node = dynamic_cast<NodeType*>(itNode);
 			if (node && compare (this, node, obj))
 			{
 				const std::string* name = node->getAttributes ()->getAttributeValue ("name");
@@ -1883,7 +1879,7 @@ template<typename NodeType>
 void UIDescription::changeNodeName (UTF8StringPtr oldName, UTF8StringPtr newName, IdStringPtr mainNodeName)
 {
 	UINode* mainNode = getBaseNode (mainNodeName);
-	NodeType* node = dynamic_cast<NodeType*> (findChildNodeByNameAttribute(mainNode, oldName));
+	auto* node = dynamic_cast<NodeType*> (findChildNodeByNameAttribute(mainNode, oldName));
 	if (node)
 	{
 		node->getAttributes ()->setAttribute ("name", newName);
@@ -1941,7 +1937,7 @@ void UIDescription::changeGradientName (UTF8StringPtr oldName, UTF8StringPtr new
 void UIDescription::changeColor (UTF8StringPtr name, const CColor& newColor)
 {
 	UINode* colorsNode = getBaseNode (MainNodeNames::kColor);
-	UIColorNode* node = dynamic_cast<UIColorNode*> (findChildNodeByNameAttribute (colorsNode, name));
+	auto* node = dynamic_cast<UIColorNode*> (findChildNodeByNameAttribute (colorsNode, name));
 	if (node)
 	{
 		if (!node->noExport ())
@@ -1975,7 +1971,7 @@ void UIDescription::changeColor (UTF8StringPtr name, const CColor& newColor)
 void UIDescription::changeFont (UTF8StringPtr name, CFontRef newFont)
 {
 	UINode* fontsNode = getBaseNode (MainNodeNames::kFont);
-	UIFontNode* node = dynamic_cast<UIFontNode*> (findChildNodeByNameAttribute (fontsNode, name));
+	auto* node = dynamic_cast<UIFontNode*> (findChildNodeByNameAttribute (fontsNode, name));
 	if (node)
 	{
 		if (!node->noExport ())
@@ -2007,7 +2003,7 @@ void UIDescription::changeFont (UTF8StringPtr name, CFontRef newFont)
 void UIDescription::changeGradient (UTF8StringPtr name, CGradient* newGradient)
 {
 	UINode* gradientsNode = getBaseNode (MainNodeNames::kGradient);
-	UIGradientNode* node = dynamic_cast<UIGradientNode*> (findChildNodeByNameAttribute (gradientsNode, name));
+	auto* node = dynamic_cast<UIGradientNode*> (findChildNodeByNameAttribute (gradientsNode, name));
 	if (node)
 	{
 		if (!node->noExport ())
@@ -2039,7 +2035,7 @@ void UIDescription::changeGradient (UTF8StringPtr name, CGradient* newGradient)
 void UIDescription::changeBitmap (UTF8StringPtr name, UTF8StringPtr newName, const CRect* nineparttiledOffset)
 {
 	UINode* bitmapsNode = getBaseNode (MainNodeNames::kBitmap);
-	UIBitmapNode* node = dynamic_cast<UIBitmapNode*> (findChildNodeByNameAttribute (bitmapsNode, name));
+	auto* node = dynamic_cast<UIBitmapNode*> (findChildNodeByNameAttribute (bitmapsNode, name));
 	if (node)
 	{
 		if (!node->noExport ())
@@ -2073,7 +2069,7 @@ void UIDescription::changeBitmap (UTF8StringPtr name, UTF8StringPtr newName, con
 //-----------------------------------------------------------------------------
 void UIDescription::changeBitmapFilters (UTF8StringPtr bitmapName, const std::list<SharedPointer<UIAttributes> >& filters)
 {
-	UIBitmapNode* bitmapNode = dynamic_cast<UIBitmapNode*> (findChildNodeByNameAttribute (getBaseNode (MainNodeNames::kBitmap), bitmapName));
+	auto* bitmapNode = dynamic_cast<UIBitmapNode*> (findChildNodeByNameAttribute (getBaseNode (MainNodeNames::kBitmap), bitmapName));
 	if (bitmapNode)
 	{
 		bitmapNode->getChildren().removeAll ();
@@ -2105,7 +2101,7 @@ void UIDescription::changeBitmapFilters (UTF8StringPtr bitmapName, const std::li
 //-----------------------------------------------------------------------------
 void UIDescription::collectBitmapFilters (UTF8StringPtr bitmapName, std::list<SharedPointer<UIAttributes> >& filters) const
 {
-	UIBitmapNode* bitmapNode = dynamic_cast<UIBitmapNode*> (findChildNodeByNameAttribute (getBaseNode (MainNodeNames::kBitmap), bitmapName));
+	auto* bitmapNode = dynamic_cast<UIBitmapNode*> (findChildNodeByNameAttribute (getBaseNode (MainNodeNames::kBitmap), bitmapName));
 	if (bitmapNode)
 	{
 		for (auto& childNode : bitmapNode->getChildren ())
@@ -2209,7 +2205,7 @@ void UIDescription::removeGradient (UTF8StringPtr name)
 //-----------------------------------------------------------------------------
 void UIDescription::changeAlternativeFontNames (UTF8StringPtr name, UTF8StringPtr alternativeFonts)
 {
-	UIFontNode* node = dynamic_cast<UIFontNode*> (findChildNodeByNameAttribute (getBaseNode (MainNodeNames::kFont), name));
+	auto* node = dynamic_cast<UIFontNode*> (findChildNodeByNameAttribute (getBaseNode (MainNodeNames::kFont), name));
 	if (node)
 	{
 		node->setAlternativeFontNames (alternativeFonts);
@@ -2222,7 +2218,7 @@ void UIDescription::changeAlternativeFontNames (UTF8StringPtr name, UTF8StringPt
 //-----------------------------------------------------------------------------
 bool UIDescription::getAlternativeFontNames (UTF8StringPtr name, std::string& alternativeFonts) const
 {
-	UIFontNode* node = dynamic_cast<UIFontNode*> (findChildNodeByNameAttribute (getBaseNode (MainNodeNames::kFont), name));
+	auto* node = dynamic_cast<UIFontNode*> (findChildNodeByNameAttribute (getBaseNode (MainNodeNames::kFont), name));
 	if (node)
 	{
 		if (node->getAlternativeFontNames (alternativeFonts))
@@ -2250,14 +2246,12 @@ void UIDescription::collectTemplateViewNames (std::list<const std::string*>& nam
 //-----------------------------------------------------------------------------
 template<typename NodeType> void UIDescription::collectNamesFromNode (IdStringPtr mainNodeName, std::list<const std::string*>& names) const
 {
-	UINode* node = getBaseNode (mainNodeName);
-	if (node)
+	if (UINode* node = getBaseNode (mainNodeName))
 	{
 		UIDescList& children = node->getChildren ();
 		for (const auto& itNode : children)
 		{
-			NodeType* nodeType = dynamic_cast<NodeType*>(itNode);
-			if (nodeType)
+			if (auto* nodeType = dynamic_cast<NodeType*>(itNode))
 			{
 				const std::string* name = nodeType->getAttributes ()->getAttributeValue ("name");
 				if (name)
@@ -2302,7 +2296,7 @@ bool UIDescription::updateAttributesForView (UINode* node, CView* view, bool dee
 {
 	bool result = false;
 #if VSTGUI_LIVE_EDITING
-	UIViewFactory* factory = dynamic_cast<UIViewFactory*> (impl->viewFactory);
+	auto* factory = dynamic_cast<UIViewFactory*> (impl->viewFactory);
 	std::list<std::string> attributeNames;
 	CViewContainer* container = view->asViewContainer ();
 	if (factory->getAttributeNamesForView (view, attributeNames))
@@ -2381,7 +2375,7 @@ void UIDescription::updateViewDescription (UTF8StringPtr name, CView* view)
 	if (!doIt)
 		return;
 
-	UIViewFactory* factory = dynamic_cast<UIViewFactory*> (impl->viewFactory);
+	auto* factory = dynamic_cast<UIViewFactory*> (impl->viewFactory);
 	if (factory && impl->nodes)
 	{
 		UINode* node = nullptr;
@@ -2468,7 +2462,7 @@ bool UIDescription::duplicateTemplate (UTF8StringPtr name, UTF8StringPtr duplica
 	UINode* templateNode = findChildNodeByNameAttribute (impl->nodes, name);
 	if (templateNode)
 	{
-		UINode* duplicate = new UINode (*templateNode);
+		auto* duplicate = new UINode (*templateNode);
 		vstgui_assert (duplicate);
 		if (duplicate)
 		{
@@ -2549,7 +2543,7 @@ void UIDescription::setFocusDrawingSettings (const FocusDrawing& fd)
 //-----------------------------------------------------------------------------
 bool UIDescription::getControlTagString (UTF8StringPtr tagName, std::string& tagString) const
 {
-	UIControlTagNode* controlTagNode = dynamic_cast<UIControlTagNode*> (findChildNodeByNameAttribute (getBaseNode (MainNodeNames::kControlTag), tagName));
+	auto* controlTagNode = dynamic_cast<UIControlTagNode*> (findChildNodeByNameAttribute (getBaseNode (MainNodeNames::kControlTag), tagName));
 	if (controlTagNode)
 	{
 		const std::string* tagStr = controlTagNode->getTagString ();
@@ -2566,15 +2560,13 @@ bool UIDescription::getControlTagString (UTF8StringPtr tagName, std::string& tag
 bool UIDescription::changeControlTagString  (UTF8StringPtr tagName, const std::string& newTagString, bool create)
 {
 	UINode* tagsNode = getBaseNode (MainNodeNames::kControlTag);
-	UIControlTagNode* controlTagNode = dynamic_cast<UIControlTagNode*> (findChildNodeByNameAttribute (tagsNode, tagName));
-	if (controlTagNode)
+	if (auto* controlTagNode =
+			dynamic_cast<UIControlTagNode*> (findChildNodeByNameAttribute (tagsNode, tagName)))
 	{
 		if (create)
 			return false;
 		controlTagNode->setTagString (newTagString);
-		impl->forEachListener ([this] (UIDescriptionListener* l) {
-			l->onUIDescTagChanged (this);
-		});
+		impl->forEachListener ([this](UIDescriptionListener* l) { l->onUIDescTagChanged (this); });
 		return true;
 	}
 	if (create)
@@ -2599,7 +2591,8 @@ bool UIDescription::changeControlTagString  (UTF8StringPtr tagName, const std::s
 //-----------------------------------------------------------------------------
 bool UIDescription::getVariable (UTF8StringPtr name, double& value) const
 {
-	UIVariableNode* node = dynamic_cast<UIVariableNode*> (findChildNodeByNameAttribute (impl->getVariableBaseNode (), name));
+	auto* node = dynamic_cast<UIVariableNode*> (
+	    findChildNodeByNameAttribute (impl->getVariableBaseNode (), name));
 	if (node)
 	{
 		if (node->getType () == UIVariableNode::kNumber)
@@ -2623,7 +2616,7 @@ bool UIDescription::getVariable (UTF8StringPtr name, double& value) const
 //-----------------------------------------------------------------------------
 bool UIDescription::getVariable (UTF8StringPtr name, std::string& value) const
 {
-	UIVariableNode* node = dynamic_cast<UIVariableNode*> (findChildNodeByNameAttribute (impl->getVariableBaseNode (), name));
+	auto* node = dynamic_cast<UIVariableNode*> (findChildNodeByNameAttribute (impl->getVariableBaseNode (), name));
 	if (node)
 	{
 		value = node->getString ();
@@ -3372,7 +3365,7 @@ void UIBitmapNode::setNinePartTiledOffset (const CRect* offsets)
 {
 	if (bitmap)
 	{
-		CNinePartTiledBitmap* tiledBitmap = dynamic_cast<CNinePartTiledBitmap*> (bitmap);
+		auto* tiledBitmap = dynamic_cast<CNinePartTiledBitmap*> (bitmap);
 		if (offsets && tiledBitmap)
 		{
 			tiledBitmap->setPartOffsets (CNinePartTiledDescription (offsets->left, offsets->top, offsets->right, offsets->bottom));

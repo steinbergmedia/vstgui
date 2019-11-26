@@ -82,7 +82,7 @@ public:
 	void updateData (uint32_t _size, const void* _data)
 	{
 		data.allocate (_size);
-		if (data.size ())
+		if (!data.empty ())
 		{
 			std::memcpy (data.get (), _data, data.size ());
 		}
@@ -151,12 +151,12 @@ uint32_t CView::idleRate = 30;
 /// @endcond
 
 UTF8StringPtr kDegreeSymbol		= "\xC2\xB0";
-UTF8StringPtr kInfiniteSymbol		= "\xE2\x88\x9E";
+UTF8StringPtr kInfiniteSymbol	= "\xE2\x88\x9E";
 UTF8StringPtr kCopyrightSymbol	= "\xC2\xA9";
 UTF8StringPtr kTrademarkSymbol	= "\xE2\x84\xA2";
 UTF8StringPtr kRegisteredSymbol	= "\xC2\xAE";
 UTF8StringPtr kMicroSymbol		= "\xC2\xB5";
-UTF8StringPtr kPerthousandSymbol	= "\xE2\x80\xB0";
+UTF8StringPtr kPerthousandSymbol= "\xE2\x80\xB0";
 
 //-----------------------------------------------------------------------------
 IdStringPtr kMsgViewSizeChanged = "kMsgViewSizeChanged";

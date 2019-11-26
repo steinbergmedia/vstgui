@@ -72,8 +72,8 @@ protected:
 	CDataBrowser* browser;
 
 	CPoint startMousePoint;
-	int32_t mouseColumn;
-	CCoord startWidth;
+	int32_t mouseColumn {0};
+	CCoord startWidth {0};
 };
 /// @endcond
 
@@ -295,7 +295,7 @@ void CDataBrowser::recalculateLayout (bool rememberSelection)
 	CControl* scrollbar = getVerticalScrollbar ();
 	if (scrollbar && newContainerSize.getHeight () > 0.)
 	{
-		float wheelInc = (float) (rowHeight / newContainerSize.getHeight ());
+		float wheelInc = (float)(rowHeight / newContainerSize.getHeight ());
 		scrollbar->setWheelInc (wheelInc);
 	}
 
@@ -382,7 +382,7 @@ void CDataBrowser::setSelectedRow (int32_t index, bool makeVisible)
 	if (alreadySelected != selection.end ())
 	{
 		selection.erase (alreadySelected);
-		hasChanged = selection.size () > 0;
+		hasChanged = !selection.empty ();
 	}
 	else
 	{
@@ -406,7 +406,7 @@ void CDataBrowser::setSelectedRow (int32_t index, bool makeVisible)
 //-----------------------------------------------------------------------------------------------
 int32_t CDataBrowser::getSelectedRow () const
 {
-	if (selection.size () > 0)
+	if (!selection.empty ())
 		return selection[0];
 	return kNoSelection;
 }
@@ -456,7 +456,7 @@ void CDataBrowser::unselectRow (int32_t row)
 //-----------------------------------------------------------------------------------------------
 void CDataBrowser::unselectAll ()
 {
-	if (selection.size () > 0)
+	if (!selection.empty ())
 	{
 		for (auto row : selection)
 		{
@@ -546,7 +546,7 @@ void CDataBrowser::beginTextEdit (const Cell& cell, UTF8StringPtr initialText)
 	CRect r = getCellBounds (cell);
 	makeRectVisible (r);
 	CRect cellRect = getCellBounds (cell);
-	CTextEdit* te = new CTextEdit (cellRect, nullptr, -1, initialText);
+	auto* te = new CTextEdit (cellRect, nullptr, -1, initialText);
 	db->dbCellSetupTextEdit (cell.row, cell.column, te, this);
 	addView (te);
 	getFrame ()->setFocusView (te);
@@ -560,8 +560,7 @@ CMessageResult CDataBrowser::notify (CBaseObject* sender, IdStringPtr message)
 {
 	if (message == kMsgLooseFocus)
 	{
-		CTextEdit* te = dynamic_cast<CTextEdit*>(sender);
-		if (te)
+		if (auto* te = dynamic_cast<CTextEdit*>(sender))
 		{
 			// get row and column
 			int32_t row = kNoSelection;
@@ -848,7 +847,7 @@ void CDataBrowserView::drawRect (CDrawContext* context, const CRect& updateRect)
 			}
 		}
 	}
-	if (lines.size ())
+	if (!lines.empty ())
 	{
 		context->setClipRect (updateRect);
 		context->setDrawMode (kAntiAliasing);
@@ -918,7 +917,7 @@ CMouseEventResult CDataBrowserView::onMouseDown (CPoint &where, const CButtonSta
 			}
 			else if (buttons.getModifierState () == kShift)
 			{
-				int32_t lastSelectedRow = selection.size () > 0 ? selection.back () : -1;
+				int32_t lastSelectedRow = !selection.empty () ? selection.back () : -1;
 				if (lastSelectedRow < cell.row)
 				{
 					for (int32_t i = lastSelectedRow; i <= cell.row; i++)
