@@ -5,6 +5,7 @@
 #pragma once
 
 #include "document.h"
+#include "vstgui/lib/cbitmap.h"
 #include "vstgui/lib/cfileselector.h"
 #include "vstgui/lib/cvstguitimer.h"
 #include "vstgui/standalone/include/helpers/windowcontroller.h"
@@ -30,6 +31,13 @@ struct Image
 	SharedPointer<CBitmap> bitmap;
 	Path path;
 	bool selected {false};
+
+#if defined(_MSC_VER) && _MSC_VER < 1910 // Can be removed when dropping VS 2015 Support
+	Image (SharedPointer<CBitmap> bitmap, Path path, bool selected)
+	: bitmap (bitmap), path (path), selected (selected)
+	{
+	}
+#endif
 };
 using ImageList = std::vector<Image>;
 
