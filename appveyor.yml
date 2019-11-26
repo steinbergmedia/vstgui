@@ -7,8 +7,10 @@ environment:
   BUILD_TYPE: Release
   ARCH: Win64
   matrix:
-  - GENERATOR: Visual Studio 15 2017 %ARCH%
-  - GENERATOR: Visual Studio 14 2015 %ARCH%
+  - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+    GENERATOR: Visual Studio 15 2017 %ARCH%
+  - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+    GENERATOR: Visual Studio 14 2015 %ARCH%
 build_script:
 - cmd: >-
     cd %APPVEYOR_BUILD_FOLDER%
