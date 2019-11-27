@@ -282,12 +282,14 @@ void CView::setMouseableArea (const CRect& rect)
 	}
 }
 
+#if VSTGUI_ENABLE_DEPRECATED_METHODS
 //-----------------------------------------------------------------------------
 CRect& CView::getMouseableArea (CRect& rect) const
 {
 	rect = getMouseableArea ();
 	return rect;
 }
+#endif
 
 //-----------------------------------------------------------------------------
 CRect CView::getMouseableArea () const
