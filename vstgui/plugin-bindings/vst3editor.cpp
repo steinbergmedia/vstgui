@@ -11,6 +11,7 @@
 #include "../uidescription/editing/uieditmenucontroller.h"
 #include "../uidescription/uiattributes.h"
 #include "../uidescription/uiviewfactory.h"
+#include "../uidescription/cstream.h"
 #include "base/source/fstring.h"
 #include "base/source/updatehandler.h"
 #include "pluginterfaces/base/keycodes.h"
