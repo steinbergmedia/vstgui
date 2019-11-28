@@ -815,7 +815,6 @@ WARN_LOGFILE           =
 
 INPUT                  = ./doc.h \
                          ./page_changes.h \
-                         ./page_tutorial.h \
                          ./page_changelog.h \
                          ./page_license.h \
                          ../lib/ \
