@@ -24,6 +24,7 @@ It's recommended to start new projects with version 4 while old projects should 
 @subsection version4_9 Version 4.9
 
 - new control: VSTGUI::CListControl in play with VSTGUI::CStringList
+- custom font support: VSTGUI now supports using fonts embedded in its Bundle/Package at Resources/Fonts. Note that this works on Windows only when building with the Windows 10 SDK and it does also only work on Windows 10. There's no such restriction on macOS or Linux.
 
 @subsection version4_8 Version 4.8
 
